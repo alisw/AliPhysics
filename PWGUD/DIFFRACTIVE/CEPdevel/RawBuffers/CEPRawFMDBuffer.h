@@ -36,7 +36,7 @@ class CEPRawFMDBuffer : public TObject
     Float_t             GetFMDCellMultiplicity(UInt_t i) const;
 
 
-    ClassDef(CEPRawFMDBuffer,1);
+    ClassDef(CEPRawFMDBuffer,1)
 };
 
 #endif

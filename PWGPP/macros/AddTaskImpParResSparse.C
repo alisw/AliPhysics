@@ -1,3 +1,14 @@
+#if !(defined(__CINT__) || defined(__MAKECINT__))
+
+#include "AliAnalysisTaskSEImpParResSparse.h"
+#include "AliAnalysisManager.h"
+#include "AliESDtrackCuts.h"
+#include "AliAnalysisDataContainer.h"
+#include "TChain.h"
+
+
+#endif
+
 AliAnalysisTaskSEImpParResSparse *AddTaskImpParResSparse(Bool_t readMC=kFALSE,
                                                          Int_t selPdg=-1,
                                                          Bool_t diamond=kTRUE,
@@ -12,7 +23,10 @@ AliAnalysisTaskSEImpParResSparse *AddTaskImpParResSparse(Bool_t readMC=kFALSE,
                                                          Bool_t useCutGeoNcrNcl=kFALSE,
                                                          Bool_t fillexpertSparse=kFALSE,
                                                          Bool_t usetriggersel=kFALSE,
-                                          							 Int_t species=-1)
+                                                         Int_t species=-1,
+                                                         Bool_t finebinphi = kFALSE,
+                                                         Bool_t checkSPDmod = kFALSE
+                                          							 )
 {
     
     // Get the pointer to the existing analysis manager via the static access method.
@@ -47,6 +61,8 @@ AliAnalysisTaskSEImpParResSparse *AddTaskImpParResSparse(Bool_t readMC=kFALSE,
         //d0ResTask->SetTriggerMask(0);
     }
     d0ResTask->SetTrackType(tracktype);
+    d0ResTask->SetUseFinerPhiBins(finebinphi);
+    d0ResTask->SetStoreSPDmodulesInfo(checkSPDmod);
     
     AliESDtrackCuts* esdTrackCuts = new AliESDtrackCuts("d0ResAnalysisESDTrackCuts");
     esdTrackCuts->SetRequireTPCRefit(kTRUE);

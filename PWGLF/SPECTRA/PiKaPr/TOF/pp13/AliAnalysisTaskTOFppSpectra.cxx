@@ -54,8 +54,7 @@
 
 //#endif
 Double_t V0mpc;
-Int_t value_Sigma;
-Float_t value_Slope;
+Int_t value_Sigma, value_Slope;
 // Authors:Pranjal Sarma  (22/03/17)
 
 ClassImp(AliAnalysisTaskTOFppSpectra)
@@ -113,9 +112,6 @@ fTOFMismatchTimeV0MPtPosP(0),fTOFMismatchTimeV0MPtNegP(0),
 fTOFDCAxyV0MPtPosP(0),fTOFDCAxyV0MPtNegP(0),
 fTPCTOFnSigmaP(0),
 
-fGausTime_K(0),fTOFGausTime_K(0),
-fGausTime_P(0),fTOFGausTime_P(0),
-
 
 fEventV0MPS(0),fEventV0MVtx(0), fSec(0),fSecondary(0),fSec_p(0),fSec_k(0),
 fV0MPC(0),  ftail(0),fV0MPC_vertexcut(0),ftail_Random(0),
@@ -127,7 +123,7 @@ fMinTPCcr(0),fMaxChi2PerTPC(0),fMaxDCAz(0),fMaxDCAxy(0), fSigma(value_Sigma), fS
 {}
 
 //________________________________________________________________________
-AliAnalysisTaskTOFppSpectra::AliAnalysisTaskTOFppSpectra(const char *Periodname, Int_t nTPC_CR, Int_t Chi2_TPCcluser, Int_t DCAz, Int_t DCAxy, Int_t value_Sigma, Float_t value_slope)
+AliAnalysisTaskTOFppSpectra::AliAnalysisTaskTOFppSpectra(const char *Periodname, Int_t nTPC_CR, Int_t Chi2_TPCcluser, Int_t DCAz, Int_t DCAxy, Int_t value_Sigma, Int_t value_Slope)
   : AliAnalysisTaskSE("name"), fESD(0), fOutputList(0), fPIDResponse(0), fesdTrackCuts(0x0),fesdTrackCuts_no_dca(0x0),
 fTrigSel(AliVEvent::kINT7),fMultSelection(0x0), 
 fEventCounter(0), fEventPS(0), fEventVtx(0),fEventVtx10(0),fZVertex(0),
@@ -179,10 +175,6 @@ fTOFMismatchTimeV0MPtPosP(0),fTOFMismatchTimeV0MPtNegP(0),
 
 fTOFDCAxyV0MPtPosP(0),fTOFDCAxyV0MPtNegP(0),
 fTPCTOFnSigmaP(0),
-
-
-fGausTime_K(0),fTOFGausTime_K(0),
-fGausTime_P(0),fTOFGausTime_P(0),
 
 
 fEventV0MPS(0),fEventV0MVtx(0), fSec(0),fSecondary(0),fSec_p(0),fSec_k(0),
@@ -274,20 +266,20 @@ inputHandler->SetNeedField();
 	fZVertex = new TH1F("fZVertex","Z vertex dist;Vtx_{z};Counts",40,-20,20);
 	fOutputList->Add(fZVertex);
 
-	Int_t nTimebins=1000;
-	Int_t nSigmabins=1000;
-	Int_t nResobins=1000;
-	Double_t Timebins[1001];
-	Double_t Sigmabins[1001];
-	Double_t Resobins[1001];
+	Int_t nTimebins=2000;
+//	Int_t nSigmabins=1000;
+//	Int_t nResobins=1000;
+	Double_t Timebins[2001];
+//	Double_t Sigmabins[1001];
+//	Double_t Resobins[1001];
 	
-	Timebins[0]=-10000.0;
-	Sigmabins[0]=-300.0;
-	Resobins[0]=0;
-        for (Int_t i=1;i<1001;i++){
+	Timebins[0]=-20000.0;
+//	Sigmabins[0]=-300.0;
+//	Resobins[0]=0;
+        for (Int_t i=1;i<2001;i++){
 	Timebins[i]=Timebins[i-1]+20.0;
-	Sigmabins[i]=Sigmabins[i-1]+0.6;
-	Resobins[i]=Resobins[i-1]+1.0;
+//	Sigmabins[i]=Sigmabins[i-1]+0.6;
+//	Resobins[i]=Resobins[i-1]+1.0;
 }
 	
 	fTOFTimeV0MPtPosPi=new TH3F("fTOFTimeV0MPtPosPi","TOF Time vs pT #pi^{+};p_{T} (GeV/c);T-T_{0}-T_{exp #pi} (ps);V0M PC",nPtbins,Ptbins,nTimebins,Timebins,nV0Mbins,V0Mbins);
@@ -531,15 +523,6 @@ fTOFChannelVsTime = new TH2F("fTOFChannelVsTime", "TOF Raw time Vs TOF Channel;T
 
 	fTPCTOFnSigmaP = new TH2F("fTPCTOFnSigmaP","TPC TOF separation for Proton;TOF (n#sigma);TPC (n#sigma)",200,-20.10,19.90,200,-20.10,19.90);
         fOutputList->Add(fTPCTOFnSigmaP);
-
-	fGausTime_K = new TH1F("fGausTime_K", "Gaussian;TOF raw Times(ps);Counts",200,-1000,1000);
-	fOutputList->Add(fGausTime_K);
-	fTOFGausTime_K = new TH1F("fTOFGausTime_K", "TOF Gaussian;TOF raw Times(ps);Counts",200,-1000,1000);
-	fOutputList->Add(fTOFGausTime_K);
-	fGausTime_P = new TH1F("fGausTime_P", "Gaussian;TOF raw Times(ps);Counts",200,-1000,1000);
-	fOutputList->Add(fGausTime_P);
-	fTOFGausTime_P = new TH1F("fTOFGausTime_P", "TOF Gaussian;TOF raw Times(ps);Counts",200,-1000,1000);
-	fOutputList->Add(fTOFGausTime_P);
 
 
         fEventV0MPS = new TH2F("fEventV0MPS","Event vs V0M after PS;Events;V0M percentile",3,eventbins,nV0Mbins,V0Mbins);
@@ -847,11 +830,16 @@ void AliAnalysisTaskTOFppSpectra::UserExec(Option_t *)
 	fTOFsignal->SetParameter(1, 0);
 	fTOFsignal->SetParameter(2, fSigma);
 	fTOFsignal->SetParameter(3, 95);
-	fTOFsignal->SetParameter(4, fSlope);
+
+	if (fSlope==0)	fTOFsignal->SetParameter(4, 0.0125);
+	else if (fSlope==+1)	fTOFsignal->SetParameter(4, 0.01375);
+	else if (fSlope==-1)	fTOFsignal->SetParameter(4, 0.01125);
 
 	Double_t tof_sig=fTOFsignal->GetRandom();
 	Double_t sec_tail=ftail->GetRandom()-20;
 	ftail_Random->Fill(sec_tail);
+
+	fTOFGausTime->Fill(tof_sig);
 	
 	Double_t sigma_el=TMath::Sqrt(fTOFExpSigmaEl*fTOFExpSigmaEl-80*80);
 	Double_t sigma_mu=TMath::Sqrt(fTOFExpSigmaMu*fTOFExpSigmaMu-80*80);
@@ -883,7 +871,6 @@ void AliAnalysisTaskTOFppSpectra::UserExec(Option_t *)
 
 //	Double_t gaus= gRandom->Gaus(0., 95.);
 //	fGausTime->Fill(gaus);
-//	fTOFGausTime->Fill(pi_tof_sig);
 	
 
 	Double_t pi_expTdiffEl=0,pi_expTdiffMu=0,pi_expTdiffPi=0,pi_expTdiffK=0,pi_expTdiffP=0,pi_expTdiffD=0;
@@ -965,11 +952,6 @@ void AliAnalysisTaskTOFppSpectra::UserExec(Option_t *)
 	Double_t K_extra_sm_d= gRandom->Gaus(0, K_sigma_d);
 */
 
-//	Double_t gaus= gRandom->Gaus(0., 95.);
-//	fGausTime_K->Fill(gaus);
-//	fTOFGausTime_K->Fill(K_tof_sig);
-	
-
 	Double_t K_expTdiffEl=0,K_expTdiffMu=0,K_expTdiffPi=0,K_expTdiffK=0,K_expTdiffP=0,K_expTdiffD=0;
 	
 	K_expTdiffEl=fTOFExpTimeEl-fTOFExpTimeK+tof_sig+extra_sm_el;
@@ -1042,11 +1024,6 @@ void AliAnalysisTaskTOFppSpectra::UserExec(Option_t *)
 	Double_t P_extra_sm_p= gRandom->Gaus(0, P_sigma_p);
 	Double_t P_extra_sm_d= gRandom->Gaus(0, P_sigma_d);
 */
-
-//	Double_t P_tof_sig=fTOFsignal->GetRandom();
-//	Double_t gaus= gRandom->Gaus(0., 95.);
-//	fGausTime_P->Fill(gaus);
-//	fTOFGausTime_P->Fill(P_tof_sig);	
 
 	Double_t P_expTdiffEl=0,P_expTdiffMu=0,P_expTdiffPi=0,P_expTdiffK=0,P_expTdiffP=0,P_expTdiffD=0;
 	
@@ -1281,30 +1258,22 @@ void AliAnalysisTaskTOFppSpectra::Terminate(Option_t *)
 	fTOFDCAxyV0MPtNegP= dynamic_cast<TH3F*> (fOutputList->At(76));
 
 	fTPCTOFnSigmaP= dynamic_cast<TH2F*> (fOutputList->At(77));
-	fGausTime_K= dynamic_cast<TH1F*> (fOutputList->At(78));
-	fTOFGausTime_K= dynamic_cast<TH1F*> (fOutputList->At(79));
-	fGausTime_P= dynamic_cast<TH1F*> (fOutputList->At(80));
-	fTOFGausTime_P= dynamic_cast<TH1F*> (fOutputList->At(81));
-
-	fEventV0MPS= dynamic_cast<TH2F*> (fOutputList->At(82));
-        fEventV0MVtx= dynamic_cast<TH2F*> (fOutputList->At(83));
-        fV0MPC= dynamic_cast<TH1F*> (fOutputList->At(84));
-        
-	ftail= dynamic_cast<TH1F*> (fOutputList->At(85));
-        
-	fV0MPC_vertexcut= dynamic_cast<TH1F*> (fOutputList->At(86));
+	fEventV0MPS= dynamic_cast<TH2F*> (fOutputList->At(78));
+        fEventV0MVtx= dynamic_cast<TH2F*> (fOutputList->At(79));
+        fV0MPC= dynamic_cast<TH1F*> (fOutputList->At(80));
+	ftail= dynamic_cast<TH1F*> (fOutputList->At(81));
+	fV0MPC_vertexcut= dynamic_cast<TH1F*> (fOutputList->At(82));
 	
-	fPtTPC_AllP= dynamic_cast<TH1F*> (fOutputList->At(87));
-	fPtTPC_AllN= dynamic_cast<TH1F*> (fOutputList->At(88));
-	fPtTOF_AllP= dynamic_cast<TH1F*> (fOutputList->At(89));
-	fPtTOF_AllN= dynamic_cast<TH1F*> (fOutputList->At(90));
+	fPtTPC_AllP= dynamic_cast<TH1F*> (fOutputList->At(83));
+	fPtTPC_AllN= dynamic_cast<TH1F*> (fOutputList->At(84));
+	fPtTOF_AllP= dynamic_cast<TH1F*> (fOutputList->At(85));
+	fPtTOF_AllN= dynamic_cast<TH1F*> (fOutputList->At(86));
 
-	ftail_Random= dynamic_cast<TH1F*> (fOutputList->At(91));
-
-	fTPC_CR= dynamic_cast<TH1F*> (fOutputList->At(92));
-        fChi2TPCcluster= dynamic_cast<TH1F*> (fOutputList->At(93));
-        fDCAZ= dynamic_cast<TH1F*> (fOutputList->At(94));
-        fDCAxy= dynamic_cast<TH1F*> (fOutputList->At(95));
+	ftail_Random= dynamic_cast<TH1F*> (fOutputList->At(87));
+	fTPC_CR= dynamic_cast<TH1F*> (fOutputList->At(88));
+        fChi2TPCcluster= dynamic_cast<TH1F*> (fOutputList->At(89));
+        fDCAZ= dynamic_cast<TH1F*> (fOutputList->At(90));
+        fDCAxy= dynamic_cast<TH1F*> (fOutputList->At(91));
 
 /*
 TFile *f=new TFile("result/12dec/ALICE_final_TOF_output_run1.root","recreate");//runlist1

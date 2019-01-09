@@ -98,10 +98,9 @@ public:
     //Special dedx
     void SetCut276TeVLikedEdx ( Bool_t lCut ) { fCut276TeVLikedEdx = lCut; }
     
-    //Feeddown matrix initializer
-    void InitializeFeeddownMatrix(Long_t lNLambdaPtBins, Double_t *lLambdaPtBins,
-                                  Long_t lNXiPtPins, Double_t *lXiPtPins,
-                                  Long_t lNCentBins, Double_t *lCentBins );
+    void SetCutAtLeastOneTOF (Bool_t lCut) { fCutAtLeastOneTOF = lCut; }
+    
+    void SetCutIsCowboy (Int_t lCut) { fCutIsCowboy = lCut; }
     
     AliV0Result::EMassHypo GetMassHypothesis () const { return fMassHypo; }
     Double_t GetMass() const;
@@ -150,6 +149,10 @@ public:
     //Use OTF V0s
     Bool_t GetUseOnTheFly() const { return fUseOnTheFly; }
     
+    Bool_t GetCutAtLeastOneTOF () const { return fCutAtLeastOneTOF; }
+
+    Int_t GetCutIsCowboy () const { return fCutIsCowboy; }
+    
     //Special dedx
     Bool_t GetCut276TeVLikedEdx () const { return fCut276TeVLikedEdx; }
     
@@ -159,18 +162,58 @@ public:
     //Proton Profile
     TProfile *GetProtonProfile       ()       { return fProtonProfile; }
     TProfile *GetProtonProfileToCopy () const { return fProtonProfile; }
-    void InitializeProtonProfile(Long_t lNPtBins, Double_t *lPtBins); //Initialize profile, otherwise not stored
-
+    
+    void InitializeHisto();         //Initialize main histogram as per request
+    void InitializeProtonProfile(); //Initialize profile, otherwise not stored
+    void InitializeProtonProfile(Long_t lNPtBins, Double_t *lPtBins); //kept for compatibility
+    //Feeddown matrix setup/initialize stuff
+    void SetupFeeddownMatrix(Long_t lNXiPtPins, Double_t *lXiPtPins);
+    void InitializeFeeddownMatrix(); //Initialize FD matrix histogram
+    
+    //Kept for compatibility (not to be used depending on implementation 
+    void InitializeFeeddownMatrix(Long_t lNLambdaPtBins, Double_t *lLambdaPtBins,
+                                  Long_t lNXiPtPins, Double_t *lXiPtPins,
+                                  Long_t lNCentBins, Double_t *lCentBins);
+    
     TH3F* GetHistogramFeeddown       ()       { return fHistoFeeddown; }
     TH3F* GetHistogramFeeddownToCopy () const { return fHistoFeeddown; }
     
     Bool_t HasSameCuts( AliVWeakResult *lCompare, Bool_t lCheckdEdx = kTRUE );
     void Print();
     
+    Long_t      GetNPtBins()   const { return fhNPtBounds-1;   }
+    Double_t*   GetPtBins()    const { return fhPtBins;        }
+    Long_t      GetNPtBinsFeeddown()   const { return fhNPtBoundsFeeddown-1;   }
+    Double_t*   GetPtBinsFeeddown()    const { return fhPtBinsFeeddown;        }
+    Long_t      GetNCentBins() const { return fhNCentBounds-1; }
+    Double_t*   GetCentBins()  const { return fhCentBins;      }
+    Long_t      GetNMassBins() const { return fhNMassBins;     }
+    Double_t    GetMinMass()   const { return fhMinMass;       }
+    Double_t    GetMaxMass()   const { return fhMaxMass;       }
+    
 private:
     //V0 Selection Criteria
     AliV0Result::EMassHypo fMassHypo; //For determining invariant mass
 
+    //------------------------------------------------------------------------
+    //Histogram-controlling stuff
+    //beware: comments here ARE IMPORTANT!!!
+    //They are interpreted as arrays for streaming!
+    Int_t fhNCentBounds;
+    Double_t *fhCentBins; //[fhNCentBounds]
+    Int_t fhNPtBounds;
+    Double_t *fhPtBins; //[fhNPtBounds]
+    Int_t fhNPtBoundsFeeddown;
+    Double_t *fhPtBinsFeeddown; //[fhNPtBoundsFeeddown]
+    Long_t fhNMassBins;
+    Double_t fhMinMass;
+    Double_t fhMaxMass;
+    //------------------------------------------------------------------------
+    TProfile *fProtonProfile; //Histogram for bookkeeping proton momenta (optional)
+    TH3F *fHisto; //Histogram for storing output with these configurations
+    TH3F *fHistoFeeddown; //Feeddown matrix (optional)
+    //------------------------------------------------------------------------
+    
     //Basic acceptance criteria
     Double_t fCutMinRapidity; //min rapidity
     Double_t fCutMaxRapidity; //max rapidity
@@ -215,14 +258,15 @@ private:
     Bool_t fUseOnTheFly; //if zero -> offline, if kTRUE -> go on-the-fly
     
     //2.76-TeV like dE/dx selection (only baryons at low pT)
-    Bool_t fCut276TeVLikedEdx; 
+    Bool_t fCut276TeVLikedEdx;
     
-    TH3F *fHisto; //Histogram for storing output with these configurations
-    TH3F *fHistoFeeddown; //Feeddown matrix (optional)
+    //At least one track has TOF signal
+    Bool_t fCutAtLeastOneTOF;
     
-    TProfile *fProtonProfile; //Histogram for bookkeeping proton momenta (optional)
+    //Cowboy/sailor
+    Int_t fCutIsCowboy; //-1: sailor, 0: don't select, 1: cowboy
     
-    ClassDef(AliV0Result, 19)
+    ClassDef(AliV0Result, 22)
     // 1 - original implementation
     // 2 - first implementation of MC association (to be adjusted)
     // 3 - Variable binning constructor + re-order variables in main output for convenience
@@ -242,5 +286,7 @@ private:
     //17 - added real possibility of having proton profiles (re-analysis material)
     //18 - added configurable max V0 radius
     //19 - added 2.76TeV-like dE/dx switch
+    //20 - TOF cut: at-least-one type
+    //22 - cowboy/sailor check
 };
 #endif

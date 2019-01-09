@@ -29,11 +29,11 @@ ClassImp(AliAnalysisTaskEmcalJetTreeBase::AliEmcalJetEventInfoSummaryPbPb);
 ///
 /// \param cent Event centrality
 /// \param ep Event plane
-AliAnalysisTaskEmcalJetTreeBase::AliEmcalJetEventInfoSummaryPbPb::AliEmcalJetEventInfoSummaryPbPb(Double_t cent, Double_t ep) :
+AliAnalysisTaskEmcalJetTreeBase::AliEmcalJetEventInfoSummaryPbPb::AliEmcalJetEventInfoSummaryPbPb(EventInfo event) :
   fCent(0),
   fEP(0)
 {
-  Set(cent, ep);
+  Set(event);
 }
 
 /// Reset the object
@@ -47,10 +47,44 @@ void AliAnalysisTaskEmcalJetTreeBase::AliEmcalJetEventInfoSummaryPbPb::Reset()
 ///
 /// \param cent Event centrality
 /// \param ep Event plane
-void AliAnalysisTaskEmcalJetTreeBase::AliEmcalJetEventInfoSummaryPbPb::Set(Double_t cent, Double_t ep)
+void AliAnalysisTaskEmcalJetTreeBase::AliEmcalJetEventInfoSummaryPbPb::Set(EventInfo event)
 {
-  fCent = cent;
-  fEP = ep;
+  fCent = event.fCent;
+  fEP = event.fEP;
+}
+
+// Definitions of class AliAnalysisTaskEmcalJetTreeBase::AliEmcalJetEventInfoSummaryPPSimulation
+
+/// \cond CLASSIMP
+ClassImp(AliAnalysisTaskEmcalJetTreeBase::AliEmcalJetEventInfoSummaryPPSimulation);
+/// \endcond
+
+/// Constructor that sets the object with the provided event information
+///
+/// \param cent Event centrality
+/// \param ep Event plane
+AliAnalysisTaskEmcalJetTreeBase::AliEmcalJetEventInfoSummaryPPSimulation::AliEmcalJetEventInfoSummaryPPSimulation(EventInfo event) :
+  fWeight(1),
+  fPtHard(0)
+{
+  Set(event);
+}
+
+/// Reset the object
+void AliAnalysisTaskEmcalJetTreeBase::AliEmcalJetEventInfoSummaryPPSimulation::Reset()
+{
+  fWeight = 1;
+  fPtHard = 0;
+}
+
+/// Set the object with the provided event information
+///
+/// \param cent Event centrality
+/// \param ep Event plane
+void AliAnalysisTaskEmcalJetTreeBase::AliEmcalJetEventInfoSummaryPPSimulation::Set(EventInfo event)
+{
+  fWeight = event.fWeight;
+  fPtHard = event.fPtHard;
 }
 
 // Definitions of class AliAnalysisTaskEmcalJetTreeBase::AliEmcalJetInfoSummaryPP
@@ -333,6 +367,14 @@ AliAnalysisTaskEmcalJetTreeBase* AliAnalysisTaskEmcalJetTreeBase::CreateInstance
     ::Info("AliAnalysisTaskEmcalJetTreeBase::CreateInstance", "Created an instance of AliAnalysisTaskEmcalJetTree<AliEmcalJetInfoSummaryPbPbCharged>");
     return new AliAnalysisTaskEmcalJetTree<AliEmcalJetInfoSummaryPbPbCharged, AliEmcalJetEventInfoSummaryPbPb>(name);
     break;
+  case kJetPPSimulation:
+    ::Info("AliAnalysisTaskEmcalJetTreeBase::CreateInstance", "Created an instance of AliAnalysisTaskEmcalJetTree<AliEmcalJetInfoSummaryPP>");
+    return new AliAnalysisTaskEmcalJetTree<AliEmcalJetInfoSummaryPP, AliEmcalJetEventInfoSummaryPPSimulation>(name);
+    break;
+  case kJetPPChargedSimulation:
+    ::Info("AliAnalysisTaskEmcalJetTreeBase::CreateInstance", "Created an instance of AliAnalysisTaskEmcalJetTree<AliEmcalJetInfoSummaryPPCharged>");
+    return new AliAnalysisTaskEmcalJetTree<AliEmcalJetInfoSummaryPPCharged, AliEmcalJetEventInfoSummaryPPSimulation>(name);
+    break;
   default:
     ::Error("AliAnalysisTaskEmcalJetTreeBase::CreateInstance", "Type %d not implemented!", type);
     return 0;
@@ -468,7 +510,7 @@ Bool_t AliAnalysisTaskEmcalJetTree<T, U>::FillHistograms()
     it->second.clear();
   }
 
-  fCurrentEvent->Set(fCent, fEPV0);
+  fCurrentEvent->Set(EventInfo(fCent, fEPV0, fEventWeight, fPtHard));
 
   Bool_t r = AliAnalysisTaskEmcalJetSpectraQA::FillHistograms();
   if (!r) return kFALSE;

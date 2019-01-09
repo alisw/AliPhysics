@@ -75,6 +75,8 @@ TObject(),
   fTOFmismatchProb(0.),
   fITSsigmaEl(-1000.),
   fITSsigmaP(-1000.),
+  fITSchi2(0.),
+  fITSsharedClusterMap(0),
   fEoverP(-1.),
   fEMCALsigmaEl(-1000.),
   fV0PID(kV0undef),
@@ -140,6 +142,8 @@ AliHFEreducedTrack::AliHFEreducedTrack(const AliHFEreducedTrack &ref):
   fTOFmismatchProb(ref.fTOFmismatchProb),
   fITSsigmaEl(ref.fITSsigmaEl),
   fITSsigmaP(ref.fITSsigmaP),
+  fITSchi2(ref.fITSchi2),
+  fITSsharedClusterMap(ref.fITSsharedClusterMap),
   fEoverP(ref.fEoverP),
   fEMCALsigmaEl(ref.fEMCALsigmaEl),
   fV0PID(ref.fV0PID),
@@ -216,6 +220,8 @@ AliHFEreducedTrack &AliHFEreducedTrack::operator=(const AliHFEreducedTrack &ref)
     memcpy(fShowerShape, ref.fShowerShape, sizeof(Double_t)*4);
     memcpy(fDCA, ref.fDCA, sizeof(Float_t)*2);
     memcpy(fHFEImpactParam, ref.fHFEImpactParam, sizeof(Double_t) * 2);
+    fITSchi2 = ref.fITSchi2;
+    fITSsharedClusterMap = ref.fITSsharedClusterMap;
   }
   return *this;
 }

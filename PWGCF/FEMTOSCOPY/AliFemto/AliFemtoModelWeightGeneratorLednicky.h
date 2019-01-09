@@ -1,12 +1,7 @@
-///////////////////////////////////////////////////////////////////////////
-//                                                                       //
-// AliFemtoModelWeightGeneratorLednicky : the most advanced weight       //
-// generator available. Supports a large number of different pair types  //
-// and interaction types. Can calculate pair weights coming from         //
-// quantum statistics, coulomb interation and strong interaction ot any  //
-// combination of the three, as applicable.                              //
-//                                                                       //
-///////////////////////////////////////////////////////////////////////////
+///
+/// \file AliFemtoModelWeightGeneratorLednicky.h
+///
+
 
 #ifndef ALIFEMTOMODELWEIGHTGENERATORLEDNICKY_H
 #define ALIFEMTOMODELWEIGHTGENERATORLEDNICKY_H
@@ -14,29 +9,43 @@
 #include "AliFemtoTypes.h"
 #include "AliFemtoModelWeightGenerator.h"
 
-class AliFemtoModelWeightGeneratorLednicky : public  AliFemtoModelWeightGenerator {
- public: 
-// --- Constructor
-  AliFemtoModelWeightGeneratorLednicky(); // call SetDefaultCalcPar
-  AliFemtoModelWeightGeneratorLednicky(const AliFemtoModelWeightGeneratorLednicky &aWeight); // call SetDefaultCalcPar
-// --- Destructor : nothing to explicitly delete
+#include <vector>
+#include <string>
+
+
+/// \class AliFemtoModelWeightGeneratorLednicky
+/// \brief The most advanced femto weight generator available
+///
+/// Supports a large number of different pair types and interaction types.
+/// Can calculate pair weights coming from quantum statistics, coulomb
+/// interation and strong interaction ot any combination of the three,
+/// as applicable.
+///
+class AliFemtoModelWeightGeneratorLednicky : public AliFemtoModelWeightGenerator {
+public:
+  /// Constructor
+  ///
+  /// Calls SetDefaultCalcPar
+  AliFemtoModelWeightGeneratorLednicky();
+
+  /// Copy constructor
+  /// call SetDefaultCalcPar
+  AliFemtoModelWeightGeneratorLednicky(const AliFemtoModelWeightGeneratorLednicky &aWeight);
+
   AliFemtoModelWeightGeneratorLednicky& operator=(const AliFemtoModelWeightGeneratorLednicky& aWeight);
+
+  /// Destructor : nothing to explicitly delete
   ~AliFemtoModelWeightGeneratorLednicky();
 
   virtual Double_t GenerateWeight(AliFemtoPair *aPair);
 
-  virtual void     SetPairType(Int_t aPairType);
-  virtual void     SetPairTypeFromPair(AliFemtoPair *aPair);
-  virtual Int_t    GetPairType() const;
-
-  virtual Double_t GetKStar() const;
-  virtual Double_t GetKStarOut() const;
-  virtual Double_t GetKStarSide() const;
-  virtual Double_t GetKStarLong() const;
-  virtual Double_t GetRStar() const;
-  virtual Double_t GetRStarOut() const;
-  virtual Double_t GetRStarSide() const;
-  virtual Double_t GetRStarLong() const;
+  /// Set the pair type
+  ///
+  /// See static members of :class:`AliFemtoMdoelWeightGenerator`
+  ///
+  virtual void  SetPairType(Int_t aPairType);
+  virtual void  SetPairTypeFromPair(AliFemtoPair *aPair);
+  virtual Int_t GetPairType() const;
 
   virtual AliFemtoModelWeightGenerator* Clone() const;
 
@@ -56,11 +65,11 @@ class AliFemtoModelWeightGeneratorLednicky : public  AliFemtoModelWeightGenerato
   void SetSphere(); // use Spherical wave approximation
   void SetSquare(); // use use Square potential (only for p-p and pi+Pi-) otherwise, use spherical wave approx
   void SetT0ApproxOff();//only with  Spherical wave Approximation - this is default mode
-  void SetT0ApproxOn(); 
- 
+  void SetT0ApproxOn();
+
 // Test Lambda parameters
   void PrintLambdas(){;}
-  
+
   void SetNuclCharge(const double aNuclCharge); // for 3-body calculation
   void SetNuclMass(const double aNuclMass);
 
@@ -92,9 +101,12 @@ protected:
   //Pair identification
   int       fLL;             // internal pair type code
   short     fNuclChargeSign; // sign of the 3rd body charge
-  bool      fSwap;           // are particle in right order ? 
+  bool      fSwap;           // are particle in right order ?
   int const fLLMax;          // number of supported pairs
-  char**    fLLName;         // name of the system
+
+  /// names of each system
+  std::vector<std::string> fLLName;
+
   int *     fNumProcessPair; // number of process pairs of each type
   int       fNumbNonId;      // Number of unidentified pairs
 
@@ -111,7 +123,7 @@ protected:
   bool SetPid(const int aPid1,const int aPid2);
 
 #ifdef __ROOT__
-  ClassDef(AliFemtoModelWeightGeneratorLednicky,1)
+  ClassDef(AliFemtoModelWeightGeneratorLednicky, 2);
 #endif
 };
 

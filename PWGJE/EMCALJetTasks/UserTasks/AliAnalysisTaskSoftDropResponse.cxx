@@ -22,6 +22,7 @@
 #include "AliAnalysisTaskSoftDropResponse.h"
 #include "AliAnalysisManager.h"
 #include "AliAnalysisTaskSoftDrop.h"
+#include "AliAnalysisTaskEmcalEmbeddingHelper.h"
 
 ClassImp(AliAnalysisTaskSoftDropResponse)
 
@@ -149,18 +150,6 @@ void AliAnalysisTaskSoftDropResponse::AllocateTHnSparse()
   max[dim] = 1.2;
   dim++;
 
-  title[dim] = "CE1";
-  nbins[dim] = fNbins/2;
-  min[dim] = 0;
-  max[dim] = 1.2;
-  dim++;
-
-  title[dim] = "CE2";
-  nbins[dim] = fNbins/2;
-  min[dim] = 0;
-  max[dim] = 1.2;
-  dim++;
-
   if (fDeltaPtAxis) {
     title[dim] = "#deltaA_{jet}";
     nbins[dim] = fNbins/2;
@@ -251,13 +240,13 @@ void AliAnalysisTaskSoftDropResponse::AllocateTHnSparse()
   }
 
   if (fdRAxis) {
-    title[dim] = "dR_{1}";
-    nbins[dim] = 40;
+    title[dim] = "R_{g,1}";
+    nbins[dim] = 20;
     min[dim] = 0.0;
     max[dim] = 0.5;
     dim++;
-    title[dim] = "dR_{2}";
-    nbins[dim] = 40;
+    title[dim] = "R_{g,2}";
+    nbins[dim] = 20;
     min[dim] = 0.0;
     max[dim] = 0.5;
     dim++;
@@ -288,34 +277,127 @@ void AliAnalysisTaskSoftDropResponse::AllocateTHnSparse()
     max[dim] = 20.0;
     dim++;
   }
+  
+  title[dim] = "nsdsteps_{jet,1}";
+  nbins[dim] = 10;
+  min[dim]   = 1;
+  max[dim]   = 10;
+  dim++;
+  
+  title[dim] = "nsdsteps_{jet,2}";
+  nbins[dim] = 10;
+  min[dim]   = 1;
+  max[dim]   = 10;
+  dim++;
+  
+  title[dim] = "nhsplits_{jet,1}";
+  nbins[dim] = 10;
+  min[dim]   = 1;
+  max[dim]   = 10;
+  dim++;
+  
+  title[dim] = "nhsplits_{jet,2}";
+  nbins[dim] = 10;
+  min[dim]   = 1;
+  max[dim]   = 10;
+  dim++;
+  
+  title[dim] = "Z^{2}_{g,1}";
+  nbins[dim] = 20;
+  min[dim] = 0.0;
+  max[dim] = 0.5;
+  dim++;
+  
+  title[dim] = "Z^{2}_{g,2}";
+  nbins[dim] = 20;
+  min[dim] = 0.0;
+  max[dim] = 0.5;
+  dim++;
+  
+  title[dim] = "R^{2}_{g,1}";
+  nbins[dim] = 20;
+  min[dim] = 0.0;
+  max[dim] = 0.5;
+  dim++;
+  
+  title[dim] = "R^{2}_{g,2}";
+  nbins[dim] = 20;
+  min[dim] = 0.0;
+  max[dim] = 0.5;
+  dim++;
 
   fHistMatching = new THnSparseD("fHistMatching","fHistMatching",dim,nbins,min,max);
 
-  for (Int_t i = 0; i < dim; i++)
-    fHistMatching->GetAxis(i)->SetTitle(title[i]);
+  for (Int_t i = 0; i < dim; i++) fHistMatching->GetAxis(i)->SetTitle(title[i]);
 
   fOutput->Add(fHistMatching);
 }
 
 //________________________________________________________________________
-void AliAnalysisTaskSoftDropResponse::CalculateZg(AliEmcalJet* jet, const Float_t zcut, const Float_t beta, Float_t zg)
+Bool_t AliAnalysisTaskSoftDropResponse::FillHistograms()
 {
+  // Fill histograms.
 
-  zg = -1.0;
+  AliJetContainer *jets1 = static_cast<AliJetContainer*>(fJetCollArray.At(0));
+  AliJetContainer *jets2 = static_cast<AliJetContainer*>(fJetCollArray.At(1));
 
-  std::vector<fastjet::PseudoJet> particles;
-  UShort_t ntracks = jet->GetNumberOfTracks();
-  for (int j = 0; j < ntracks; j++) {
-    particles.push_back( fastjet::PseudoJet( jet->Track(j)->Px(), jet->Track(j)->Py(), jet->Track(j)->Pz(), jet->Track(j)->E() ) );
+  if (!jets1 || !jets1->GetArray() || !jets2 || !jets2->GetArray()) return kFALSE;
+
+  AliEmcalJet* jet1 = 0;  
+  AliEmcalJet* jet2 = 0;
+
+  jets2->ResetCurrentID();
+  while ((jet2 = jets2->GetNextJet())) {
+
+    AliDebug(2,Form("Processing jet (2) %d", jets2->GetCurrentID()));
+
+    if (jet2->Pt() < jets2->GetJetPtCut()) continue;
+
+    UInt_t rejectionReason = 0;
+    if (jets2->AcceptJet(jet2, rejectionReason))
+      FillJetHisto(jet2, 2);
+    else
+      fHistRejectionReason2->Fill(jets2->GetRejectionReasonBitPosition(rejectionReason), jet2->Pt());
+
+    jet1 = jet2->MatchedJet();
+
+    if (!jet1) continue;
+    rejectionReason = 0;
+    if (!jets1->AcceptJet(jet1, rejectionReason)) continue;
+    if (jet1->MCPt() < fMinJetMCPt) continue;
+
+    Double_t d=-1, ce1=-1, ce2=-1;
+    if (jet2->GetMatchingType() == kGeometrical) {
+      if (jets2->GetIsParticleLevel() && !jets1->GetIsParticleLevel()) // the other way around is not supported
+        GetMCLabelMatchingLevel(jet1, jet2, ce1, ce2);
+      else if (jets1->GetIsParticleLevel() == jets2->GetIsParticleLevel())
+        GetSameCollectionsMatchingLevel(jet1, jet2, ce1, ce2);
+
+      d = jet2->ClosestJetDistance();
+    }
+    else if (jet2->GetMatchingType() == kMCLabel || jet2->GetMatchingType() == kSameCollections) {
+      GetGeometricalMatchingLevel(jet1, jet2, d);
+
+      ce1 = jet1->ClosestJetDistance();
+      ce2 = jet2->ClosestJetDistance();
+    }
+
+    FillMatchingHistos(jet1, jet2, d, ce1, ce2);
   }
-  fastjet::JetDefinition jet_def(fastjet::cambridge_algorithm, 0.4, fastjet::E_scheme);
-  fastjet::ClusterSequence cs(particles, jet_def);
-  std::vector<fastjet::PseudoJet> jets = sorted_by_pt(cs.inclusive_jets());
 
-  if (jets.size() > 0) {
-    zg = AliAnalysisTaskSoftDrop::SoftDropDeclustering(jets[0], zcut, beta);
+  jets1->ResetCurrentID();
+  while ((jet1 = jets1->GetNextJet())) {
+    UInt_t rejectionReason = 0;
+    if (!jets1->AcceptJet(jet1, rejectionReason)) {
+      fHistRejectionReason1->Fill(jets1->GetRejectionReasonBitPosition(rejectionReason), jet1->Pt());
+      continue;
+    }
+    if (jet1->MCPt() < fMinJetMCPt) continue;
+    AliDebug(2,Form("Processing jet (1) %d", jets1->GetCurrentID()));
+
+    FillJetHisto(jet1, 1);
   }
-
+  return kTRUE;
 }
 
 //________________________________________________________________________
@@ -327,13 +409,37 @@ void AliAnalysisTaskSoftDropResponse::FillMatchingHistos(AliEmcalJet* jet1, AliE
   Double_t corrpt1 = jet1->Pt() - jets1->GetRhoVal() * jet1->Area();
   Double_t corrpt2 = jet2->Pt() - jets2->GetRhoVal() * jet2->Area();
 
-  Float_t z2g1 = -1.0;
-  Float_t z2g2 = -1.0;
-  CalculateZg(jet1, 0.5, 1.5, z2g1);
-  CalculateZg(jet2, 0.5, 1.5, z2g2);
-
+  //Float_t z2g1 = -1.0;
+  //Float_t z2g2 = -1.0;
+  //CalculateZg(jet1, 0.5, 1.5, z2g1);
+  //CalculateZg(jet2, 0.5, 1.5, z2g2);
+ 
+  FillZgRgVectors(jet1);
+  
+  Int_t nsdsteps_jet1 = 0;
+  Int_t nhsplits_jet1 = fZg_values.size();
+  Float_t zg2_1 = 0.0;
+  Float_t rg2_1 = 0.0;
+  if (nhsplits_jet1 > 0) nsdsteps_jet1 = fSDsteps_values[0];
+  if (nhsplits_jet1 > 1) {
+    zg2_1 = fZg_values[1];
+    rg2_1 = fRg_values[1];
+  }
+  
+  FillZgRgVectors(jet2);
+  
+  Int_t nsdsteps_jet2 = 0;
+  Int_t nhsplits_jet2 = fZg_values.size();
+  Float_t zg2_2 = 0.0;
+  Float_t rg2_2 = 0.0;
+  if (nhsplits_jet2 > 0) nsdsteps_jet2 = fSDsteps_values[0];
+  if (nhsplits_jet2 > 1) {
+    zg2_2 = fZg_values[1];
+    rg2_2 = fRg_values[1];
+  }
+  
   if (fHistoType==1) {
-    Double_t contents[20]={0};
+    Double_t contents[25]={0};
 
     for (Int_t i = 0; i < fHistMatching->GetNdimensions(); i++) {
       TString title(fHistMatching->GetAxis(i)->GetTitle());
@@ -347,10 +453,6 @@ void AliAnalysisTaskSoftDropResponse::FillMatchingHistos(AliEmcalJet* jet1, AliE
         contents[i] = jet2->Area();
       else if (title=="distance")
         contents[i] = d;
-      else if (title=="CE1")
-        contents[i] = CE1;
-      else if (title=="CE2")
-        contents[i] = CE2;
       else if (title=="#deltaA_{jet}")
         contents[i] = jet1->Area()-jet2->Area();
       else if (title=="#deltap_{T}")
@@ -374,12 +476,12 @@ void AliAnalysisTaskSoftDropResponse::FillMatchingHistos(AliEmcalJet* jet1, AliE
       else if (title=="Z_{g,2}")
         contents[i] = jet2->GetShapeProperties()->GetSoftDropZg();
       else if (title=="Z2_{g,1}")
-        contents[i] = z2g1;
+        contents[i] = 0.0;
       else if (title=="Z2_{g,2}")
-        contents[i] = z2g2;
-      else if (title=="dR_{1}")
+        contents[i] = 0.0;
+      else if (title=="R_{g,1}")
         contents[i] = jet1->GetShapeProperties()->GetSoftDropdR();
-      else if (title=="dR_{2}")
+      else if (title=="R_{g,2}")
         contents[i] = jet2->GetShapeProperties()->GetSoftDropdR();
       else if (title=="p_{T,g,1}")
         contents[i] = ( jet1->GetShapeProperties()->GetSoftDropPtfrac() )*( jet1->Pt() );
@@ -389,6 +491,22 @@ void AliAnalysisTaskSoftDropResponse::FillMatchingHistos(AliEmcalJet* jet1, AliE
         contents[i] = ( jet1->GetShapeProperties()->GetSoftDropDropCount() );
       else if (title=="DBC_{2}")
         contents[i] = ( jet2->GetShapeProperties()->GetSoftDropDropCount() );
+      else if (title=="nsdsteps_{jet,1}")
+        contents[i] = nsdsteps_jet1;
+      else if (title=="nsdsteps_{jet,2}")
+        contents[i] = nsdsteps_jet2;
+      else if (title=="nhsplits_{jet,1}")
+        contents[i] = nhsplits_jet1;
+      else if (title=="nhsplits_{jet,2}")
+        contents[i] = nhsplits_jet2;
+      else if (title=="Z^{2}_{g,1}")    
+        contents[i] = zg2_1;
+      else if (title=="Z^{2}_{g,2}")
+        contents[i] = zg2_2;
+      else if (title=="R^{2}_{g,1}")
+        contents[i] = rg2_1;
+      else if (title=="R^{2}_{g,2}")
+        contents[i] = rg2_2;
       else 
         AliWarning(Form("Unable to fill dimension %s!",title.Data()));
     }
@@ -519,6 +637,110 @@ AliAnalysisTaskSoftDropResponse* AliAnalysisTaskSoftDropResponse::AddTaskSoftDro
   mgr->ConnectOutput (jetTask, 1, coutput1 );
 
   return jetTask;
+}
+
+void AliAnalysisTaskSoftDropResponse::Decluster(const fastjet::PseudoJet& jet) {
+
+  fastjet::PseudoJet jet1;
+  fastjet::PseudoJet jet2;
+
+  if ( jet.has_parents(jet1, jet2) ) {
+
+    ++fNsdsteps;    
+
+    Float_t pt1 = jet1.pt();
+    Float_t pt2 = jet2.pt();
+
+    Float_t dr = TMath::Sqrt( jet1.plain_distance(jet2) );
+
+    Float_t z;
+    if (pt1 < pt2) z = pt1/(pt1+pt2);
+    else z = pt2/(pt1+pt2);
+
+    if (z > 0.1) {
+      fZg_values.push_back(z);
+      fRg_values.push_back(dr);
+      fSDsteps_values.push_back(fNsdsteps);
+    }
+
+    if (pt1 > pt2) Decluster(jet1);
+    else Decluster(jet2);
+
+  }
+
+}
+
+//________________________________________________________________________
+fastjet::ClusterSequence* AliAnalysisTaskSoftDropResponse::Recluster(const AliEmcalJet* jet) {
+
+  std::vector<fastjet::PseudoJet> particles;
+  UShort_t ntracks = jet->GetNumberOfTracks();
+  for (int j = 0; j < ntracks; j++) {
+    particles.push_back( fastjet::PseudoJet( jet->Track(j)->Px(), jet->Track(j)->Py(), jet->Track(j)->Pz(), jet->Track(j)->E() ) );
+  }
+  fastjet::JetDefinition jet_def(fastjet::cambridge_algorithm, 0.4, fastjet::E_scheme);
+  return ( new fastjet::ClusterSequence(particles, jet_def) );
+}
+
+void AliAnalysisTaskSoftDropResponse::FillZgRgVectors(const AliEmcalJet* jet) {
+  fNsdsteps = 0;
+  fZg_values.clear();
+  fRg_values.clear();
+  fSDsteps_values.clear();
+  fastjet::ClusterSequence* cs = Recluster(jet);
+  if (cs) { 
+    std::vector<fastjet::PseudoJet> jetrecl = sorted_by_pt( cs->inclusive_jets() );
+    if (jetrecl.size() > 0) Decluster( jetrecl[0] );
+  }
+  delete cs;
+}
+
+//________________________________________________________________________
+void AliAnalysisTaskSoftDropResponse::UserCreateOutputObjects()
+{
+  // Create user objects.
+
+  AliAnalysisTaskEmcalJet::UserCreateOutputObjects();
+
+  AliJetContainer *jets1 = static_cast<AliJetContainer*>(fJetCollArray.At(0));
+  AliJetContainer *jets2 = static_cast<AliJetContainer*>(fJetCollArray.At(1));
+
+  if (!jets1 || !jets2) return;
+
+  if (jets1->GetRhoName().IsNull()) fIsJet1Rho = kFALSE;
+  else fIsJet1Rho = kTRUE;
+  if (jets2->GetRhoName().IsNull()) fIsJet2Rho = kFALSE;
+  else fIsJet2Rho = kTRUE;
+
+  fHistRejectionReason1 = new TH2F("fHistRejectionReason1", "fHistRejectionReason1", 32, 0, 32, 100, 0, 250);
+  fHistRejectionReason1->GetXaxis()->SetTitle("Rejection reason");
+  fHistRejectionReason1->GetYaxis()->SetTitle("p_{T,jet} (GeV/c)");
+  fHistRejectionReason1->GetZaxis()->SetTitle("counts");
+  SetRejectionReasonLabels(fHistRejectionReason1->GetXaxis());
+  fOutput->Add(fHistRejectionReason1);
+
+  fHistRejectionReason2 = new TH2F("fHistRejectionReason2", "fHistRejectionReason2", 32, 0, 32, 100, 0, 250);
+  fHistRejectionReason2->GetXaxis()->SetTitle("Rejection reason");
+  fHistRejectionReason2->GetYaxis()->SetTitle("p_{T,jet} (GeV/c)");
+  fHistRejectionReason2->GetZaxis()->SetTitle("counts");
+  SetRejectionReasonLabels(fHistRejectionReason2->GetXaxis());
+  fOutput->Add(fHistRejectionReason2);
+
+  if (fHistoType==0)
+    AllocateTH2();
+  else 
+    AllocateTHnSparse();
+
+  // Initialize
+  const AliAnalysisTaskEmcalEmbeddingHelper * embeddingHelper = AliAnalysisTaskEmcalEmbeddingHelper::GetInstance();
+  if (embeddingHelper) {
+    bool res = fEmbeddingQA.Initialize();
+    if (res) {
+      fEmbeddingQA.AddQAPlotsToList(fOutput);
+    }
+  }
+
+  PostData(1, fOutput); // Post data for ALL output slots > 0 here, to get at least an empty histogram
 }
 
 

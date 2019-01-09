@@ -20,17 +20,19 @@
 //                   Deepika Rathee  | Satyajit Jena                       //
 //                   drathee@cern.ch | sjena@cern.ch                       //
 //                                                                         //
-//                        (Last Modified 2018/03/14)                       //
+//                        (Last Modified 2018/08/27)                       //
 //                 Dealing with Wide pT Window Modified to ESDs            //
 //Some parts of the code are taken from J. Thaeder/ M. Weber NetParticle   //
 //analysis task.                                                           //
 //=========================================================================//
+//ver:2018/08/27 : tested only for proton
 
 #ifndef AliEbyEPidEfficiencyContamination_H
 #define AliEbyEPidEfficiencyContamination_H
 
 class TList;
 class TH2F;
+class TH3F;
 class TH1D;
 class THnSparse;
 
@@ -62,7 +64,6 @@ AliEbyEPidEfficiencyContamination( const char *name );
   void SetIsAOD(Bool_t IsAOD) {fIsAOD = IsAOD;}
   void SetAODtrackCutBit(Int_t bit) {fAODtrackCutBit = bit; }
   void SetIsMC(Bool_t Ismc) {fIsMC = Ismc;}
-  void RunQA(Bool_t IsQA) {fIsQA = IsQA;}
   
   void SetAnalysisCutObject(AliESDtrackCuts *const trackCuts) {
     fESDtrackCuts = trackCuts;}
@@ -72,6 +73,7 @@ AliEbyEPidEfficiencyContamination( const char *name );
   }
   
   void SetIsRapidityCut(Bool_t IsRapCut){ fIsRapCut = IsRapCut; }
+  void SetUseTotalMomentumCut( Bool_t IsTotalMom){ fTotP = IsTotalMom; }
   void SetKinematicsCuts(Double_t ptl, Double_t pth, Double_t eta) {
     fPtMin = ptl; fPtMax = pth; fEtaMin = -eta; fEtaMax = eta; 
   }
@@ -84,17 +86,12 @@ AliEbyEPidEfficiencyContamination( const char *name );
   }
   
   void SetCentralityEstimator(const char* centralityEstimator) { fCentralityEstimator = centralityEstimator;}
-  void SetIsKMb() { fIsTrig = kTRUE; } 
-  static const Int_t kTrack = 15000;
   
   void SetPidType(Int_t i);
   void SetPidStrategy(Int_t i)                       {fPidStrategy         = i;}
   void SetNSigmaMaxITS(Float_t f)                    {fNSigmaMaxITS        = f;}
   void SetNSigmaMaxTPC(Float_t f)                    {fNSigmaMaxTPC        = f;}
   void SetNSigmaMaxTOF(Float_t f)                    {fNSigmaMaxTOF        = f;}
-  void SetNSigmaMaxTPClow(Float_t f)                 {fNSigmaMaxTPClow     = f;}
-  void SetMinPtForTOFRequired(Float_t f)             {fMinPtForTOFRequired = f;}
-  void SetMaxPtForTPClow(Float_t f)                  {fMaxPtForTPClow      = f;}
   
  private:
   TList               *fThnList;       //
@@ -125,10 +122,8 @@ AliEbyEPidEfficiencyContamination( const char *name );
   Double_t   fChi2NDF;                      //TPC track fit chi2/NDF 
   Bool_t     fIsMC;                         // Is MC event - Auto set by Add Task
   Bool_t     fIsAOD;                        // analysis mode: 0 = ESDs  | 1 = AODs
-  Bool_t     fIsQA;                         // Check for QA
   Bool_t     fIsRapCut;                     // Use rapidity cut 1= yes, 0= no
-  Bool_t     fIsTrig;           //
-  Bool_t     fIsThn;            //
+  Bool_t     fTotP;                        // Swith to use total momentum cut
 
   Int_t   fNTracks;            // Number of Tracks of Current Events
   Float_t fCentrality;         //
@@ -139,13 +134,13 @@ AliEbyEPidEfficiencyContamination( const char *name );
   TH2F  *fHitCentRec[2];
   TH2F  *fHitCentGen[2];
   
-  TH2F  *fHistERec[2][3];         //! Reconstructed Plus
-  TH2F  *fHistERecPri[2][3];      //! Reconstructed Primary Plus
-  TH2F  *fHistEGen[2][3];         //!
-  
-  TH2F  *fHistCSec[2][3];         //!
-  TH2F  *fHistCMat[2][3];         //!
-  TH2F  *fHistCMisId[2][3];       //!
+
+  TH3F *fCentPtEtaPhiThnGen[2];           //!
+  TH3F *fCentPtEtaPhiThnRec[2];           //!
+  TH3F *fCentPtEtaPhiThnRecPrim[2];       //!
+  TH3F *fCentPtEtaPhiThnSec[2];           //!
+  TH3F *fCentPtEtaPhiThnMat[2];           //!
+  TH3F *fCentPtEtaPhiThnMisId[2];         //!
   
   AliPIDResponse   *fPIDResponse;              //! Ptr to PID response Object
   AliPIDCombined   *fPIDCombined;              //
@@ -155,43 +150,13 @@ AliEbyEPidEfficiencyContamination( const char *name );
   Int_t            fPidStrategy;              // 0: default, 1: ITS+TPC, 2: TPC+TOF
   Float_t          fNSigmaMaxITS;             //  N Sigma for ITS PID
   Float_t          fNSigmaMaxTPC;             //  N Sigma for TPC PID
-  Float_t          fNSigmaMaxTPClow;          //  N Sigma for TPC PID lower part
   Float_t          fNSigmaMaxTOF;             //  N Sigma for TOF PID
-  Float_t          fMinPtForTOFRequired;      //  Min pt from where TOF is required
-  Float_t          fMaxPtForTPClow;           //  Max pt until TPClow is used
-  Double_t nPidRec[2];
-  Double_t nPidRecP[2];
-  Double_t nPidRecMid[2];
-  Double_t nPidRecSec[2];
-  Double_t nPidRecWD[2];
-  Double_t nPidWoPID[2];
 
   AliPID::EParticleType fParticleSpecies;     //  Particle species on basis of AliPID
 
 
-  TH2F *fHistTPC; //! 
-  TH2F *fHistTOF; //!
-  TH2F *fHistITS; //!
-
-  TH2F *fHistTPCc; //!
-  TH2F *fHistTOFc; //!
-  TH2F *fHistITSc; //!
-
-  TH2F *fHistTPCTOF;  //!
-  TH2F *fHistTPCTOFc; //!
-  
-
-  TH2F *fHistNsTPC; //!
-  TH2F *fHistNsTOF; //!
-  TH2F *fHistNsITS; //!
-
-  TH2F *fHistNsTPCc; //!
-  TH2F *fHistNsTOFc; //!
-  TH2F *fHistNsITSc; //!
-
   THnSparse *fPtBinNplusNminusCh;
   THnSparse *fPtBinNplusNminusChTruth;
-  THnSparse *fTHnCentNplusNminusCh;
 
   enum EbyEPIDType_t { kNSigmaTPC = 0, kNSigmaTOF, kNSigmaTPCTOF, kBayes };
   enum EbyEDetectorType_t { kITS = 0, kTPC,  kTOF,  kNDetectors };
@@ -205,14 +170,16 @@ AliEbyEPidEfficiencyContamination( const char *name );
   
   Bool_t   AcceptTrackLMC(AliVParticle *particle) const; //
   Bool_t   AcceptTrackL(AliVTrack *track) const; //
+  Double_t GetRapidity(Float_t pt, Float_t pz) const; //to get rapidity
   Int_t    GetPtBin(Double_t pt); //to get the bin number of the pt
+  Int_t    GetEtaBin(Float_t eta);   //To get the eta bin
   void     LocalPost(); //
   void     CreateEffCont();
 
   //________________________________
   AliEbyEPidEfficiencyContamination(const AliEbyEPidEfficiencyContamination&);
   AliEbyEPidEfficiencyContamination& operator = (const AliEbyEPidEfficiencyContamination&);
-  ClassDef(AliEbyEPidEfficiencyContamination, 5);
+  ClassDef(AliEbyEPidEfficiencyContamination, 6);
 };
 
 #endif

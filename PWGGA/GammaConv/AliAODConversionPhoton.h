@@ -46,6 +46,7 @@ class AliAODConversionPhoton : public AliAODConversionParticle, public AliConver
     void SetMassToZero() { SetE(P()); }
 
     void SetInvMassPair(Float_t mass) {fInvMassPair=mass;}
+    void SetUseForMesonPair(Bool_t useForMeson) {fUseForMesonPair=useForMeson;}
     Float_t GetInvMassPair(){return fInvMassPair;}
 
     void SetIsTrueConvertedPhoton(){
@@ -92,19 +93,22 @@ class AliAODConversionPhoton : public AliAODConversionParticle, public AliConver
       if (!fCaloPhoton && fCaloPhotonMCFlags == 1) return kTRUE;
         else return kFALSE;
     }
+    Bool_t GetUseForMesonPair() {return fUseForMesonPair;}
 
+    Long_t fCaloPhotonMCLabels[50];         //!
+    Long_t fCaloPhotonMotherMCLabels[20];   //!
+    Long_t fCaloClusterRef;                 //!
     Float_t fDCArPrimVtx;
     Float_t fDCAzPrimVtx;
     Float_t fInvMassPair;
-    Bool_t fCaloPhoton;
-    Long_t fCaloClusterRef;
-    Int_t fNCaloPhotonMCLabels;
-    Int_t fNCaloPhotonMotherMCLabels;
-    Int_t fCaloPhotonMCFlags;
-    Long_t fCaloPhotonMCLabels[50];
-    Long_t fCaloPhotonMotherMCLabels[20];
+    Int_t fNCaloPhotonMCLabels;             //!
+    Int_t fNCaloPhotonMotherMCLabels;       //!
+    Int_t fCaloPhotonMCFlags;               //!
+    Int_t fPairedId;                        //!
+    Bool_t fCaloPhoton;                     //!
+    Bool_t fUseForMesonPair;                //!
 
-    ClassDef(AliAODConversionPhoton,6)
+    ClassDef(AliAODConversionPhoton,7)
 };
 
 

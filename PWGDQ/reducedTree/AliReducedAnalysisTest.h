@@ -38,14 +38,37 @@ public:
   void AddMCBitNames(const Char_t* names) {fMCBitsNames += names;}
   void SetTrackFilterBitNames(const Char_t* names) {fTrackFilterBitNames = names;}
   void AddTrackFilterBitNames(const Char_t* names) {fTrackFilterBitNames += names;}
+  void SetFillEventHistograms(Bool_t option) {fFillEventHistograms = option;}
+  void SetFillTriggerHistograms(Bool_t option) {fFillTriggerHistograms = option;}
+  void SetFillTrackHistograms(Bool_t option) {fFillTrackHistograms = option;}
+  void SetFillTrackMCTruthHistograms(Bool_t option) {fFillTrackMCTruthHistograms = option;}
+  void SetFillTrackV0Histograms(Bool_t option) {fFillTrackV0Histograms = option;}
+  void SetFillPairHistograms(Bool_t option) {fFillPairHistograms = option;}
+  void SetFillCaloClusterHistograms(Bool_t option) {fFillCaloClusterHistograms = option;}
   
   // getters
   virtual AliHistogramManager* GetHistogramManager() const {return fHistosManager;}
   TString GetMCBitNames() const {return fMCBitsNames;}
   TString GetTrackFilterBitNames() const {return fTrackFilterBitNames;}
   
+  Bool_t GetFillEventHistograms() {return fFillEventHistograms;}
+  Bool_t GetFillTriggerHistograms() {return fFillTriggerHistograms;}
+  Bool_t GetFillTrackHistograms() {return fFillTrackHistograms;}
+  Bool_t GetFillTrackMCTruthHistograms() {return fFillTrackMCTruthHistograms;}
+  Bool_t GetFillTrackV0Histograms() {return fFillTrackV0Histograms;}
+  Bool_t GetFillPairHistograms() {return fFillPairHistograms;}
+  Bool_t GetFillCaloClusterHistograms() {return fFillCaloClusterHistograms;}
+  
 protected:
    AliHistogramManager* fHistosManager;   // Histogram manager
+   
+   Bool_t fFillEventHistograms;
+   Bool_t fFillTriggerHistograms;
+   Bool_t fFillTrackHistograms;
+   Bool_t fFillTrackMCTruthHistograms;
+   Bool_t fFillTrackV0Histograms;
+   Bool_t fFillPairHistograms;
+   Bool_t fFillCaloClusterHistograms;
    
    TList fEventCuts;     // array of event cuts
    TList fTrackCuts;     // array of track cuts
@@ -60,7 +83,7 @@ protected:
   
   void FillTrackHistograms(TClonesArray* trackList);
   
-  ClassDef(AliReducedAnalysisTest,3);
+  ClassDef(AliReducedAnalysisTest,4);
 };
 
 #endif

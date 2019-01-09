@@ -1,5 +1,5 @@
-#ifndef ALIANALYSISTASKSEIMPPARRESSPARSE_H
-#define ALIANALYSISTASKSEIMPPARRESSPARSE_H
+#ifndef AliAnalysisTaskSEImpParResSparse_H
+#define AliAnalysisTaskSEImpParResSparse_H
 
 /* Copyright(c) 1998-2010, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
@@ -23,6 +23,8 @@ class AliESDtrackCuts;
 
 #include "AliAnalysisTaskSE.h"
 #include <THnSparse.h>
+#include "AliESDEvent.h"
+#include "AliESDtrack.h"
 
 
 class AliAnalysisTaskSEImpParResSparse : public AliAnalysisTaskSE {
@@ -73,12 +75,15 @@ class AliAnalysisTaskSEImpParResSparse : public AliAnalysisTaskSE {
   void SetUsePhysicalPrimaries(Bool_t opt) {fUsePhysicalPrimary=opt;}
   void SetUseGenPt(Bool_t opt) {fUseGeneratedPt=opt;}
 
+  void SetUseFinerPhiBins(Bool_t flag) {fUseFinerPhiBins=flag;}   // mfaggin
+  void SetStoreSPDmodulesInfo(Bool_t flag) {fStoreSPDmodulesInfo=flag;}  // mfaggin
+
  private:
   
   AliAnalysisTaskSEImpParResSparse(const AliAnalysisTaskSEImpParResSparse &source);
   AliAnalysisTaskSEImpParResSparse& operator=(const AliAnalysisTaskSEImpParResSparse& source);  
   
-  Int_t PhiBin(Double_t phi) const;
+  Int_t PhiBin(Double_t phi, Bool_t usefinebinsphi=kFALSE) const; // mfaggin (added a new argument)
   Int_t ClusterTypeOnITSLayer(AliESDtrack *t,Int_t layer) const;
   Bool_t IsTrackSelected(AliVTrack *t,AliVVertex *v, AliESDtrackCuts *cuts, const AliVEvent* aod) const;
   Bool_t fIsAOD;  // flag to read AOD or ESD (default is ESD)
@@ -104,6 +109,11 @@ class AliAnalysisTaskSEImpParResSparse : public AliAnalysisTaskSE {
   Double_t fCutGeoNcrNclGeom1Pt; /// 3rd parameter of GeoNcrNcl cut
   Double_t fCutGeoNcrNclFractionNcr; /// 4th parameter of GeoNcrNcl cut
   Double_t fCutGeoNcrNclFractionNcl; /// 5th parameter of GeoNcrNcl cut
+
+  // mfaggin
+  Bool_t fUseFinerPhiBins; /// flag to impose fine phi binning in fImpParrphiSparsePtEtaPhi sparse 
+  Bool_t fStoreSPDmodulesInfo; /// flag to decide wheter to store info about SPD modules (layer, detector index)
+
   Int_t fTrackType;
   Bool_t fFillSparseForExpert;
   THnSparseF *fImpParrphiSparsePtBchargePhi; //!<! sparse
@@ -125,7 +135,8 @@ class AliAnalysisTaskSEImpParResSparse : public AliAnalysisTaskSE {
   Bool_t fUsePhysicalPrimary; //
   Bool_t fUseGeneratedPt; //
 
-  ClassDef(AliAnalysisTaskSEImpParResSparse,5); // AliAnalysisTaskSE for the study of the impact parameter resolution
+                                             // mfaggin (number 7 inserted)
+  ClassDef(AliAnalysisTaskSEImpParResSparse,7); // AliAnalysisTaskSE for the study of the impact parameter resolution
 };
 
 #endif

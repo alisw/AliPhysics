@@ -94,17 +94,17 @@ Bool_t ConfigF0(AliRsnMiniAnalysisTask *task,
   
 
   //Template for BG
-  TString bgTemplate[6]  = {"rho", "omega", "Kstar", "antiKstar", "K0s", "phi"};
-  Char_t bgTemplateC1[6] = {'+', '+', '+', '+', '+', '+'};
-  Char_t bgTemplateC2[6] = {'-', '-', '-', '-', '-', '-'};
-  Int_t bgTemplatePDG[6] = {113, 223, 313, -313, 310, 333};
-  Int_t bgTemplateM[6]   = {775.26, 8.49, 891.66, 891.66, 497.611, 1019.461};
-  RSNPID bgID1[6] = {AliRsnDaughter::kPion, AliRsnDaughter::kPion,AliRsnDaughter::kKaon, AliRsnDaughter::kPion, AliRsnDaughter::kPion, AliRsnDaughter::kKaon};
-  RSNPID bgID2[6] = {AliRsnDaughter::kPion, AliRsnDaughter::kPion,AliRsnDaughter::kPion, AliRsnDaughter::kKaon, AliRsnDaughter::kPion, AliRsnDaughter::kKaon};
+  TString bgTemplate[7]  = {"rho", "omega", "Kstar", "antiKstar", "K0s", "phi","f2"};
+  Char_t bgTemplateC1[7] = {'+', '+', '+', '+', '+', '+', '+'};
+  Char_t bgTemplateC2[7] = {'-', '-', '-', '-', '-', '-', '-'};
+  Int_t bgTemplatePDG[7] = {113, 223, 313, -313, 310, 333, 225};
+  Int_t bgTemplateM[7]   = {775.26, 8.49, 891.66, 891.66, 497.611, 1019.461, 1275.5};
+  RSNPID bgID1[7] = {AliRsnDaughter::kPion, AliRsnDaughter::kPion,AliRsnDaughter::kKaon, AliRsnDaughter::kPion, AliRsnDaughter::kPion, AliRsnDaughter::kKaon, AliRsnDaughter::kPion};
+  RSNPID bgID2[7] = {AliRsnDaughter::kPion, AliRsnDaughter::kPion,AliRsnDaughter::kPion, AliRsnDaughter::kKaon, AliRsnDaughter::kPion, AliRsnDaughter::kKaon, AliRsnDaughter::kPion};
 
   if (isMC) {
     //TRUE RECO PAIRS - TEMPLATE FOR BG
-    for (Int_t ibg = 0; ibg <6; ibg++) {
+    for (Int_t ibg = 0; ibg <7; ibg++) {
       AliRsnMiniOutput * outtempl = task->CreateOutput(Form("bg_%s", bgTemplate[ibg].Data()), output.Data(),"TRUE");
       outtempl->SetCutID(0, icut1);
       outtempl->SetCutID(1, icut2);
@@ -158,6 +158,22 @@ Bool_t ConfigF0(AliRsnMiniAnalysisTask *task,
     outres->AddAxis(ptID, 200, 0.0, 20.0);
     // axis Z: multiplicity
     if (enaMultSel) outres->AddAxis(multID, 100, 0.0, 100.0);
+
+    //TRUE RECO PAIRS - rapidity
+    AliRsnMiniOutput * outrap = task->CreateOutput(Form("trueRap_%s", partname.Data()), output.Data(),"TRUE");
+    outrap->SetCutID(0, icut1);
+    outrap->SetCutID(1, icut2);
+    outrap->SetCharge(0, charge1[0]);
+    outrap->SetCharge(1, charge2[0])
+    outrap->SetDaughter(0, d1);
+    outrap->SetDaughter(1, d2);
+    outrap->SetMotherPDG(pdgCode);
+    outrap->SetMotherMass(mass);
+    outrap->SetPairCuts(cutsPair);
+    outrap->AddAxis(ptID, 160, 0.0, 16.0);
+    outrap->AddAxis(yID,  120, -0.6, 0.6);
+    outrap->AddAxis(etaID, 200, -1., 1.);
+
     
     //GENERATED PAIRS
     AliRsnMiniOutput * outm = task->CreateOutput(Form("motherf0_%s", partname.Data()), output.Data(),"MOTHER");
@@ -169,6 +185,39 @@ Bool_t ConfigF0(AliRsnMiniAnalysisTask *task,
     outm->AddAxis(imID, nbins, masslow, massup);
     outm->AddAxis(ptID, 200, 0.0, 20.0);
     if (enaMultSel) outm->AddAxis(multID, 100, 0.0, 100.0);
+
+    //GENERATED PAIRS
+    AliRsnMiniOutput * outmy = task->CreateOutput(Form("motherRap_%s", partname.Data()), output.Data(),"MOTHER");
+    outmy->SetDaughter(0, d1);
+    outmy->SetDaughter(1, d2);
+    outmy->SetMotherPDG(pdgCode);
+    outmy->SetMotherMass(mass);
+    outmy->SetPairCuts(cutsPair);
+    outmy->AddAxis(ptID, 160, 0.0, 16.0);
+    outmy->AddAxis(yID,  120, -0.6, 0.6);
+    outmy->AddAxis(etaID, 200, -1., 1.);
+
+    //f2 GENERATED PAIRS
+    AliRsnMiniOutput * outm = task->CreateOutput("motherf2", output.Data(),"MOTHER");
+    outm->SetDaughter(0, d1);
+    outm->SetDaughter(1, d2);
+    outm->SetMotherPDG(bgTemplatePDG[6]);
+    outm->SetMotherMass(bgTemplateM[6]);
+    outm->SetPairCuts(cutsPair);
+    outm->AddAxis(imID, nbins, masslow, massup);
+    outm->AddAxis(ptID, 200, 0.0, 20.0);
+    if (enaMultSel) outm->AddAxis(multID, 100, 0.0, 100.0);
+
+    //f2 GENERATED PAIRS
+    AliRsnMiniOutput * outmy = task->CreateOutput("motherf2Rap", output.Data(),"MOTHER");
+    outmy->SetDaughter(0, d1);
+    outmy->SetDaughter(1, d2);
+    outmy->SetMotherPDG(bgTemplatePDG[6]);
+    outmy->SetMotherMass(bgTemplateM[6]);
+    outmy->SetPairCuts(cutsPair);
+    outmy->AddAxis(ptID, 160, 0.0, 16.0);
+    outmy->AddAxis(yID,  120, -0.6, 0.6);
+    outmy->AddAxis(etaID, 200, -1., 1.);
   }
 
   return kTRUE;

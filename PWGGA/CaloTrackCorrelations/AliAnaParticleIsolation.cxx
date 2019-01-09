@@ -444,8 +444,14 @@ fhPerpConeSumPtTOFBC0ITSRefitOnSPDOn (0), fhPtInPerpConeTOFBC0ITSRefitOnSPDOn (0
   fhPtPerSM[1] = 0;
   for(Int_t ism =0; ism < 20; ism++)
   {
-    fhPtLambda0PerSM    [0][ism] = 0;
-    fhPtLambda0PerSM    [1][ism] = 0;
+    for(Int_t iso =0; iso < 2; iso++)
+    {
+      fhPtLambda0PerSM     [iso][ism] = 0;
+      fhPtLambda0PerSMNCellCut[iso][ism] = 0;
+      fhPtNCellPerSM       [iso][ism] = 0;
+      fhPtNCellLowM02PerSM [iso][ism] = 0; 
+      fhPtNCellHighM02PerSM[iso][ism] = 0;  
+    }
     
     fhConeSumPtPerSM       [ism] = 0;
     fhConeSumPtClusterPerSM[ism] = 0;
@@ -458,18 +464,18 @@ fhPerpConeSumPtTOFBC0ITSRefitOnSPDOn (0), fhPtInPerpConeTOFBC0ITSRefitOnSPDOn (0
   
   fhPtPerTCardIndex[0] = 0;
   fhPtPerTCardIndex[1] = 0;
-  for(Int_t ism =0; ism < 20; ism++)
+  for(Int_t itc =0; itc < 16; itc++)
   {
-    fhPtLambda0PerTCardIndex    [0][ism] = 0;
-    fhPtLambda0PerTCardIndex    [1][ism] = 0;
+    fhPtLambda0PerTCardIndex    [0][itc] = 0;
+    fhPtLambda0PerTCardIndex    [1][itc] = 0;
     
-    fhConeSumPtPerTCardIndex       [ism] = 0;
-    fhConeSumPtClusterPerTCardIndex[ism] = 0;
-    fhConeSumPtTrackPerTCardIndex  [ism] = 0;
+    fhConeSumPtPerTCardIndex       [itc] = 0;
+    fhConeSumPtClusterPerTCardIndex[itc] = 0;
+    fhConeSumPtTrackPerTCardIndex  [itc] = 0;
     
-    fhPtInConePerTCardIndex        [ism] = 0;
-    fhPtClusterInConePerTCardIndex [ism] = 0;
-    fhPtTrackInConePerTCardIndex   [ism] = 0;
+    fhPtInConePerTCardIndex        [itc] = 0;
+    fhPtClusterInConePerTCardIndex [itc] = 0;
+    fhPtTrackInConePerTCardIndex   [itc] = 0;
   }
 }
 
@@ -2498,6 +2504,17 @@ void AliAnaParticleIsolation::FillTrackMatchingShowerShapeControlHistograms
     {
       fhPtPerSM       [isolated]     ->Fill(pt,iSM, GetEventWeight());
       fhPtLambda0PerSM[isolated][iSM]->Fill(pt,m02, GetEventWeight());
+      
+      if ( fStudyNCellsCut )
+      {
+        if ( fNCellsWithWeight > 4 ) 
+          fhPtLambda0PerSMNCellCut[isolated][iSM]->Fill(pt, m02, GetEventWeight());
+        
+        fhPtNCellPerSM[isolated][iSM]->Fill(pt, fNCellsWithWeight, GetEventWeight());
+        
+        if      ( m02 > 0.1 && m02 <= 0.3 ) fhPtNCellLowM02PerSM [isolated][iSM]->Fill(pt, fNCellsWithWeight, GetEventWeight());
+        else if ( m02 > 0.5 && m02 <= 2   ) fhPtNCellHighM02PerSM[isolated][iSM]->Fill(pt, fNCellsWithWeight, GetEventWeight());
+      }
     }
 
     if ( fFillPerTCardIndexHistograms )
@@ -2512,16 +2529,27 @@ void AliAnaParticleIsolation::FillTrackMatchingShowerShapeControlHistograms
     if(IsDataMC())
     {
       if( GetMCAnalysisUtils()->CheckTagBit(mcTag,AliMCAnalysisUtils::kMCPhoton) )
+      {
         fhPtLambda0MC[kmcPhoton][isolated]->Fill(pt, m02, GetEventWeight());
+        if ( fNCellsWithWeight > 4 &&  fStudyNCellsCut )
+          fhPtLambda0MCNCellCut[kmcPhoton][isolated]->Fill(pt, m02, GetEventWeight());
+      }
       
       if( GetMCAnalysisUtils()->CheckTagBit(mcTag,AliMCAnalysisUtils::kMCDecayPairLost) )
       {
         if     ( mcIndex == kmcPi0Decay ) fhPtLambda0MC[kmcPi0DecayLostPair][isolated]->Fill(pt, m02, GetEventWeight());
         else if( mcIndex == kmcEtaDecay ) fhPtLambda0MC[kmcEtaDecayLostPair][isolated]->Fill(pt, m02, GetEventWeight());
+        if ( fNCellsWithWeight > 4 && fStudyNCellsCut )
+        {
+          if     ( mcIndex == kmcPi0Decay ) fhPtLambda0MCNCellCut[kmcPi0DecayLostPair][isolated]->Fill(pt, m02, GetEventWeight());
+          else if( mcIndex == kmcEtaDecay ) fhPtLambda0MCNCellCut[kmcEtaDecayLostPair][isolated]->Fill(pt, m02, GetEventWeight()); 
+        }
       }
       
       fhPtLambda0MC[mcIndex][isolated]->Fill(pt, m02, GetEventWeight());
-      
+      if ( fNCellsWithWeight > 4 && fStudyNCellsCut )
+        fhPtLambda0MCNCellCut[mcIndex][isolated]->Fill(pt, m02, GetEventWeight());
+
       if( GetMCAnalysisUtils()->CheckTagBit(mcTag,AliMCAnalysisUtils::kMCConversion) )
       {
         if( GetMCAnalysisUtils()->CheckTagBit(mcTag,AliMCAnalysisUtils::kMCPhoton) )
@@ -2979,9 +3007,9 @@ TList *  AliAnaParticleIsolation::GetCreateOutputObjects()
   Int_t   ndedxbins   = GetHistogramRanges()->GetHistodEdxBins();
   Float_t dedxmax     = GetHistogramRanges()->GetHistodEdxMax();
   Float_t dedxmin     = GetHistogramRanges()->GetHistodEdxMin();
-  Int_t   nPoverEbins = GetHistogramRanges()->GetHistoPOverEBins();
-  Float_t pOverEmax   = GetHistogramRanges()->GetHistoPOverEMax();
-  Float_t pOverEmin   = GetHistogramRanges()->GetHistoPOverEMin();
+  Int_t   nPoverEbins = GetHistogramRanges()->GetHistoEOverPBins();
+  Float_t pOverEmax   = GetHistogramRanges()->GetHistoEOverPMax();
+  Float_t pOverEmin   = GetHistogramRanges()->GetHistoEOverPMin();
   
   Int_t   nptsumbins    = GetHistogramRanges()->GetHistoNPtSumBins();
   Float_t ptsummax      = GetHistogramRanges()->GetHistoPtSumMax();
@@ -6013,11 +6041,46 @@ TList *  AliAnaParticleIsolation::GetCreateOutputObjects()
             
             fhPtLambda0PerSM[iso][ism]  = new TH2F
             (Form("hPtLambda0_SM%d_%s",ism,isoName[iso].Data()),
-             Form("%s cluster : #it{p}_{T} vs #lambda_{0}, SM %d, %s",isoTitle[iso].Data(), ism, parTitle.Data()),
+             Form("%s cluster : #it{p}_{T} vs #lambda_{0}^{2}, SM %d, %s",isoTitle[iso].Data(), ism, parTitle.Data()),
              nptbins,ptmin,ptmax,ssbins,ssmin,ssmax);
             fhPtLambda0PerSM[iso][ism]->SetYTitle("#lambda_{0}^{2}");
             fhPtLambda0PerSM[iso][ism]->SetXTitle("#it{p}_{T} (GeV/#it{c})");
             outputContainer->Add(fhPtLambda0PerSM[iso][ism]) ;
+            
+            if ( fStudyNCellsCut )
+            {
+              fhPtLambda0PerSMNCellCut[iso][ism]  = new TH2F
+              (Form("hPtLambda0_NCellCut_SM%d_%s",ism,isoName[iso].Data()),
+               Form("%s cluster : #it{p}_{T} vs #lambda_{0}^{2}, n_{cell}^{w>0} > 4, SM %d, %s",isoTitle[iso].Data(), ism, parTitle.Data()),
+               nptbins,ptmin,ptmax,ssbins,ssmin,ssmax);
+              fhPtLambda0PerSMNCellCut[iso][ism]->SetYTitle("#lambda_{0}^{2}");
+              fhPtLambda0PerSMNCellCut[iso][ism]->SetXTitle("#it{p}_{T} (GeV/#it{c})");
+              outputContainer->Add(fhPtLambda0PerSMNCellCut[iso][ism]) ;
+              
+              fhPtNCellPerSM[iso][ism]  = new TH2F
+              (Form("hPtNCell_SM%d_%s",ism,isoName[iso].Data()),
+               Form("%s cluster : #it{p}_{T} vs n_{cell}^{w>0}, SM %d, %s",isoTitle[iso].Data(), ism, parTitle.Data()),
+               nptbins,ptmin,ptmax,30,-0.5,29.5);
+              fhPtNCellPerSM[iso][ism]->SetYTitle("n_{cell}^{w>0}");
+              fhPtNCellPerSM[iso][ism]->SetXTitle("#it{p}_{T} (GeV/#it{c})");
+              outputContainer->Add(fhPtNCellPerSM[iso][ism]) ;
+              
+              fhPtNCellLowM02PerSM[iso][ism]  = new TH2F
+              (Form("hPtNCell_LowM02_SM%d_%s",ism,isoName[iso].Data()),
+               Form("%s cluster : #it{p}_{T} vs n_{cell}^{w>0}, 0.1<#lambda_{0}^{2}<0.3, SM %d, %s",isoTitle[iso].Data(), ism, parTitle.Data()),
+               nptbins,ptmin,ptmax,30,-0.5,29.5);
+              fhPtNCellLowM02PerSM[iso][ism]->SetYTitle("n_{cell}^{w>0}");
+              fhPtNCellLowM02PerSM[iso][ism]->SetXTitle("#it{p}_{T} (GeV/#it{c})");
+              outputContainer->Add(fhPtNCellLowM02PerSM[iso][ism]) ;
+              
+              fhPtNCellHighM02PerSM[iso][ism]  = new TH2F
+              (Form("hPtNCell_HighM02_SM%d_%s",ism,isoName[iso].Data()),
+               Form("%s cluster : #it{p}_{T} vs n_{cell}^{w>0}, 0.5<#lambda_{0}^{2}<2, SM %d, %s",isoTitle[iso].Data(), ism, parTitle.Data()),
+               nptbins,ptmin,ptmax,30,-0.5,29.5);
+              fhPtNCellHighM02PerSM[iso][ism]->SetYTitle("n_{cell}^{w>0}");
+              fhPtNCellHighM02PerSM[iso][ism]->SetXTitle("#it{p}_{T} (GeV/#it{c})");
+              outputContainer->Add(fhPtNCellHighM02PerSM[iso][ism]) ;
+            }
           }
         }
   
@@ -6054,7 +6117,7 @@ TList *  AliAnaParticleIsolation::GetCreateOutputObjects()
             fhPtLambda0MC[imc][iso]->SetYTitle("#lambda_{0}^{2}");
             fhPtLambda0MC[imc][iso]->SetXTitle("#it{p}_{T}(GeV/#it{c})");
             outputContainer->Add( fhPtLambda0MC[imc][iso]) ;
-
+          
             fhPtLambda0MCConv[imc][iso]  = new TH2F
             (Form("hPtLambda0%s_MC%sConv",isoName[iso].Data(),mcPartName[imc].Data()),
                                                 Form("%s cluster : #it{p}_{T} vs #lambda_{0}: %s %s, from conversion",isoTitle[iso].Data(),mcPartType[imc].Data(),parTitle.Data()),
@@ -6062,6 +6125,17 @@ TList *  AliAnaParticleIsolation::GetCreateOutputObjects()
             fhPtLambda0MCConv[imc][iso]->SetYTitle("#lambda_{0}^{2}");
             fhPtLambda0MCConv[imc][iso]->SetXTitle("#it{p}_{T}(GeV/#it{c})");
             outputContainer->Add( fhPtLambda0MCConv[imc][iso]) ;
+            
+            if (  fStudyNCellsCut )
+            {
+              fhPtLambda0MCNCellCut[imc][iso]  = new TH2F
+              (Form("hPtLambda0%s_MC%sNCellCut",isoName[iso].Data(),mcPartName[imc].Data()),
+               Form("%s cluster : #it{p}_{T} vs #lambda_{0}, n_{cell}^{w>0.1} > 4: %s %s",isoTitle[iso].Data(),mcPartType[imc].Data(),parTitle.Data()),
+               nptbins,ptmin,ptmax,ssbins,ssmin,ssmax);
+              fhPtLambda0MCNCellCut[imc][iso]->SetYTitle("#lambda_{0}^{2}");
+              fhPtLambda0MCNCellCut[imc][iso]->SetXTitle("#it{p}_{T}(GeV/#it{c})");
+              outputContainer->Add( fhPtLambda0MCNCellCut[imc][iso]) ;
+            }
             
             if(fFillOverlapHistograms)
             {
@@ -7733,7 +7807,9 @@ void AliAnaParticleIsolation::FillAcceptanceHistograms()
     
     // Get tag of this particle photon from fragmentation, decay, prompt ...
     // Set the origin of the photon.
-    tag = GetMCAnalysisUtils()->CheckOrigin(i, GetMC());
+    tag = GetMCAnalysisUtils()->CheckOrigin(i, GetMC(),
+                                            GetReader()->GetNameOfMCEventHederGeneratorToAccept(),
+                                            photonE); // Not used, should be cluster
     
     if(pdg == 22 && !GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCPhoton))
     {
@@ -7839,7 +7915,7 @@ void AliAnaParticleIsolation::FillAcceptanceHistograms()
       // Consider only final state particles, but this depends on generator,
       // status 1 is the usual one, in case of not being ok, leave the possibility
       // to not consider this.
-      if( partInConeStatus  > 1 &&
+      if( partInConeStatus  != 1 &&
          GetMCAnalysisUtils()->GetMCGenerator()!= AliMCAnalysisUtils::kBoxLike ) continue ;
       
       // Protection against floating point exception
@@ -7866,7 +7942,7 @@ void AliAnaParticleIsolation::FillAcceptanceHistograms()
       // select only charged final particles and photons
       if(fSelectPrimariesInCone)
       {
-        if( partInConeCharge > 0) // charged pT cut and acceptance
+        if( partInConeCharge > 0 ) // charged pT cut and acceptance
         {
           if( GetIsolationCut()->GetParticleTypeInCone() == AliIsolationCut::kOnlyNeutral ) continue;
           
@@ -7891,8 +7967,9 @@ void AliAnaParticleIsolation::FillAcceptanceHistograms()
         }
       }
       
-      //printf("status %d, E %f, pt %f, pz %f, pdg %d, gamma eta %f, phi %f, par in cone eta %f phi %f\n",
-      //       partInConeStatus, partInConeE, partInConePt, mcisopAOD->Pz(), partInConePDG, photonEta, photonPhi, partInConeEta, partInConePhi);
+//      printf("Input status %d, E %f, pt %f, pz %f, pdg %d, gamma eta %f, phi %f, par in cone eta %f phi %f\n",
+//             partInConeStatus, partInConeE, partInConePt, mcisop->Pz(), partInConePDG, 
+//             photonEta, photonPhi, partInConeEta, partInConePhi);
       
       dR = GetIsolationCut()->Radius(photonEta, photonPhi, partInConeEta, partInConePhi);
 
@@ -7901,7 +7978,7 @@ void AliAnaParticleIsolation::FillAcceptanceHistograms()
       
       if(dR > GetIsolationCut()->GetConeSize())
         continue;
-      
+            
       if ( partInConeCharge > 0 &&  TMath::Abs(partInConePDG) != 11 ) // exclude electrons and neutrals
       {
         Int_t mcChTag = 3;
@@ -7916,13 +7993,16 @@ void AliAnaParticleIsolation::FillAcceptanceHistograms()
 
         //printf("Selected particles pdg %d, status %d\n", partInConePDG, partInConeStatus);
       }
-      
-
+        
       if ( !physPrimary ) continue ; 
-          
+      
       sumPtInCone += partInConePt;
       if(partInConePt > GetIsolationCut()->GetPtThreshold() &&
          partInConePt < GetIsolationCut()->GetPtThresholdMax()) npart++;
+      
+//      printf("Selected: status %d, E %f, pt %f, pz %f, pdg %d, eta %f, phi %f, par in cone eta %f phi %f\n",
+//             partInConeStatus, partInConeE, partInConePt, mcisop->Pz(), partInConePDG, 
+//             photonEta, photonPhi, partInConeEta, partInConePhi);      
     }
     
     ///////END ISO MC/////////////////////////
@@ -8085,6 +8165,8 @@ void AliAnaParticleIsolation::FillAcceptanceHistograms()
        (sumPtInCone < GetIsolationCut()->GetSumPtThreshold() ||
         sumPtInCone > GetIsolationCut()->GetSumPtThresholdMax()))
       isolated = kTRUE;
+   
+    //printf("Primary in cone n Part %d sum pT in cone %2.2f\n",npart, sumPtInCone);
     
     if(GetIsolationCut()->GetICMethod() == AliIsolationCut::kPtThresIC &&
        npart == 0)
@@ -8585,7 +8667,7 @@ void AliAnaParticleIsolation::Print(const Option_t * opt) const
 //_____________________________________________________________
 /// Set the detector for the analysis.
 //_____________________________________________________________
-void AliAnaParticleIsolation::SetTriggerDetector(TString & det)
+void AliAnaParticleIsolation::SetTriggerDetector(TString det)
 {
   fIsoDetectorString = det;
   

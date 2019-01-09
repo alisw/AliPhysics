@@ -68,23 +68,25 @@ AliAnalysisTaskPHOSSingleSim* AddTaskPHOSSingleSim(
 
   Double_t Ethre = 0.0;
 
-  if(trigger == (UInt_t)AliVEvent::kPHI7) task->SetPHOSTriggerAnalysis(L1input,L0input,Ethre,isMC,kFALSE,dummy);
-  if(kMC && trigger == (UInt_t)AliVEvent::kPHI7) trigger = AliVEvent::kAny;//change trigger selection in MC when you do PHOS trigger analysis.
+  //if(trigger == (UInt_t)AliVEvent::kPHI7) task->SetPHOSTriggerAnalysis(L1input,L0input,Ethre,isMC,kFALSE,dummy);
+  if(trigger == (UInt_t)AliVEvent::kPHI7)       task->SetPHOSTriggerAnalysis(L1input,L0input,Ethre,isMC,kFALSE,dummy);
+  else if(trigger  == (UInt_t) AliVEvent::kAny) task->SetPHOSTriggerAnalysisMB(L1input,L0input,Ethre,isMC,kFALSE,dummy);
+  if(isMC && trigger == (UInt_t)AliVEvent::kPHI7) trigger = AliVEvent::kAny;//change trigger selection in MC when you do PHOS trigger analysis.
 
   //task->SelectCollisionCandidates(trigger);
 
   task->SetCollisionSystem(0);//colliions system : pp=0, PbPb=1, pPb (Pbp)=2;
   task->SetJetJetMC(kFALSE);
   task->SetMCType("MBMC");
-  task->SetNonLinearityStudy(NonLinStudy,1.012);
+  task->SetNonLinearityStudy(NonLinStudy,1.018);
   task->SetParticle(parname); 
   task->SetTenderFlag(usePHOSTender);
   task->SetMCFlag(isMC);
-  task->SetCoreEnergyFlag(useCoreE);
+//  task->SetCoreEnergyFlag(useCoreE);
 
   const AliPHOSEventCuts::PileupFinder pf = AliPHOSEventCuts::kSPDInMultBins;
   task->SetEventCuts(isMC,pf);
-  task->SetClusterCuts(useCoreDisp,NsigmaCPV,NsigmaDisp,distBC);
+  task->SetClusterCuts(useCoreDisp,NsigmaCPV,NsigmaDisp,useCoreE,distBC);
 
   task->SetCentralityMin(0);
   task->SetCentralityMax(9999);
@@ -98,15 +100,19 @@ AliAnalysisTaskPHOSSingleSim* AddTaskPHOSSingleSim(
   //centrality setting
   task->SetCentralityEstimator("HybridTrack");
 
-  //setting esd track selection for hybrid track
-  gROOT->LoadMacro("$ALICE_PHYSICS/PWGJE/macros/CreateTrackCutsPWGJE.C");
-  AliESDtrackCuts *cutsG = CreateTrackCutsPWGJE(10001008);//for good global tracks
+  AliESDtrackCuts *cutsG = AliESDtrackCuts::GetStandardITSTPCTrackCuts2011(kFALSE);//standard cuts with very loose DCA
+  cutsG->SetMaxDCAToVertexXY(2.4);
+  cutsG->SetMaxDCAToVertexZ(3.2);
+  cutsG->SetDCAToVertex2D(kTRUE);
   task->SetESDtrackCutsForGlobal(cutsG);
-  AliESDtrackCuts *cutsGC = CreateTrackCutsPWGJE(10011008);//for good global-constrained tracks
+
+  AliESDtrackCuts *cutsGC = AliESDtrackCuts::GetStandardITSTPCTrackCuts2011();//standard cuts with tight DCA cut
   task->SetESDtrackCutsForGlobalConstrained(cutsGC);
 
   //bunch space for TOF cut
   task->SetBunchSpace(bs);//in unit of ns.
+
+  printf("Your particle is %s\n",parname.Data());
 
   if(isMC){
     if(parname=="Pi0"){
@@ -139,17 +145,38 @@ AliAnalysisTaskPHOSSingleSim* AddTaskPHOSSingleSim(
       TObjArray *farray_Eta = new TObjArray(Ncen_Eta-1);
       TF1 *f1weightEta[Ncen_Eta-1];
 
-      const Double_t p0[Ncen_Eta-1] = {2.70};
-      const Double_t p1[Ncen_Eta-1] = {0.132};
-      const Double_t p2[Ncen_Eta-1] = {6.64};
+      const Double_t p0[Ncen_Eta-1] = {0.25};
+      const Double_t p1[Ncen_Eta-1] = {0.218};
+      const Double_t p2[Ncen_Eta-1] = {6.60};
 
       for(Int_t icen=0;icen<Ncen_Eta-1;icen++){
-        f1weightEta[icen] = new TF1(Form("f1weightEta_%d",icen),"0.48 * ([0]/TMath::TwoPi() * ([2]-1)*([2]-2)/([2]*[1]*([2]*[1] + 0.547*([2]-2) )) * TMath::Power(1+(TMath::Sqrt(x*x+0.547*0.547) - 0.547)/([2]*[1]),-[2]))",0,100);//1/2pi x 1/Nev x 1/pT x d2N/dpTdy
+        f1weightEta[icen] = new TF1(Form("f1weightEta_%d",icen),"[0]/TMath::TwoPi() * ([2]-1)*([2]-2)/([2]*[1]*([2]*[1] + 0.547*([2]-2) )) * TMath::Power(1+(TMath::Sqrt(x*x+0.547*0.547) - 0.547)/([2]*[1]),-[2])",0,100);//1/2pi x 1/Nev x 1/pT x d2N/dpTdy
         f1weightEta[icen]->SetNpx(1000);
         f1weightEta[icen]->SetParameters(p0[icen],p1[icen],p2[icen]);
         farray_Eta->Add(f1weightEta[icen]);
       }
       task->SetAdditionalEtaPtWeightFunction(centarray_Eta,farray_Eta);
+    }
+    else if(parname=="Gamma"){
+      //for gamma pT weighting
+      const Int_t Ncen_Gamma = 2;
+      const Double_t centrality_Gamma[Ncen_Gamma] = {0,9999};
+      TArrayD *centarray_Gamma = new TArrayD(Ncen_Gamma,centrality_Gamma);
+
+      TObjArray *farray_Gamma = new TObjArray(Ncen_Gamma-1);
+      TF1 *f1weightGamma[Ncen_Gamma-1];
+
+      const Double_t p0[Ncen_Gamma-1] = {2.70};
+      const Double_t p1[Ncen_Gamma-1] = {0.132};
+      const Double_t p2[Ncen_Gamma-1] = {6.64};
+
+      for(Int_t icen=0;icen<Ncen_Gamma-1;icen++){
+        f1weightGamma[icen] = new TF1(Form("f1weightGamma_%d",icen),"1.0 * ([0]/TMath::TwoPi() * ([2]-1)*([2]-2)/([2]*[1]*([2]*[1] + 0.139*([2]-2) )) * TMath::Power(1+(TMath::Sqrt(x*x+0.139*0.139) - 0.139)/([2]*[1]),-[2]))",0,100);//1/2pi x 1/Nev x 1/pT x d2N/dpTdy
+        f1weightGamma[icen]->SetNpx(1000);
+        f1weightGamma[icen]->SetParameters(p0[icen],p1[icen],p2[icen]);
+        farray_Gamma->Add(f1weightGamma[icen]);
+      }
+      task->SetAdditionalGammaPtWeightFunction(centarray_Gamma,farray_Gamma);
     }
   }
 

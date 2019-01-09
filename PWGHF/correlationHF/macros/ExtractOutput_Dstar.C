@@ -33,7 +33,9 @@ void ExtractOutput(
    Int_t npools=9, //number of pools for the event-mixing
    Bool_t poolByPool=kTRUE, //kTRUE=pool-by-pool ME correction; kFALSE=merged-pools ME correction (set the options that you used in the online analysis)
    Double_t deltaEtaMin=-1., Double_t deltaEtaMax=1., //deltaEta ranges for correlation distributions
-   Bool_t use2Dmassplots=kFALSE, Double_t mincent=0., Double_t maxcent=100.) // ***NOTE: ONLY FOR OFFLINE APPROACH*** takes mass plots from 2D massVscent - ***use only if you did a centrality selection in CorrelateOffline.C, and put the same range!!***
+   Bool_t use2Dmassplots=kFALSE,
+   Double_t mincent=0., Double_t maxcent=100.,  // ***NOTE: ONLY FOR OFFLINE APPROACH*** takes mass plots from 2D massVscent - ***use only if you did a centrality selection in CorrelateOffline.C, and put the same range!!***
+   Bool_t useOneMEpoolOnly=kFALSE)  //****KEEP AT kFALSE!!**** Put as kTRUE only in case of crashed for very low stat (ME pools with empty bins)
 {
  
   //Create and set the correlation plotter class
@@ -55,6 +57,7 @@ void ExtractOutput(
   plotter->SetSubtractSoftPiInMEdistr(kFALSE);
   plotter->ReadTTreeOutputFiles(treeSE,treeME);
   plotter->SetUseMassVsCentPlots(use2Dmassplots);
+  plotter->SetUseOneMEPool(useOneMEpoolOnly);    
   if(use2Dmassplots) plotter->SetCentralitySelection(mincent,maxcent);
   if(!flagSpecie) return;
 

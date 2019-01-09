@@ -20,7 +20,7 @@ class AliRsnMiniEvent;
 class AliRsnMiniPair : public TObject {
 public:
 
-   AliRsnMiniPair() : fDCA1(0), fDCA2(0), fMother(-1), fMotherPDG(0), fNSisters(-1), fIsFromB(kFALSE), fIsQuarkFound(kFALSE),fContainsV0Daughter(kFALSE) {Int_t i = 3; while (i--) fPmother[i] = 0.0;}
+ AliRsnMiniPair() : fDCA1(0), fDCA2(0), fMother(-1), fMotherPDG(0), fNSisters(-1), fIsFromB(kFALSE), fIsQuarkFound(kFALSE),fContainsV0Daughter(kFALSE) {for (Int_t i = 0; i<3; i++) fPmother[i] = 0.0;}
   
    Int_t          &Mother()    {return fMother;}
    Long_t         &MotherPDG() {return fMotherPDG;}

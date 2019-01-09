@@ -1,6 +1,6 @@
 #ifdef __CINT__
 
-#pragma link off all glols;
+#pragma link off all globals;
 #pragma link off all classes;
 #pragma link off all functions;
 
@@ -64,6 +64,7 @@
 #pragma link C++ class AliAnalysisTaskCheckVertexAOD+;
 #pragma link C++ class AliAnalysisTaskCheckESDTracks+;
 #pragma link C++ class AliAnalysisTaskCheckAODTracks+;
+#pragma link C++ class AliAnalysisTaskCheckGenKine+;
 #pragma link C++ class AliAnalysisTaskTrackingEffPID+;
 #pragma link C++ class AliAlignmentDataFilterITS+;
 #pragma link C++ class AliAnalysisTaskITSTrackingCheck+;
@@ -94,6 +95,8 @@
 
 #pragma link C++ class AliTaskConfigOCDB+;
 
+#pragma link C++ class AliAnalysisTaskTrackRefsChecksMultipleSpecies+;
+#pragma link C++ class AliAnalysisTaskTrackRefsChecks+;
 
 // TRD performance classes
 #pragma link C++ class  AliTenderSupplyTRD+;
@@ -171,6 +174,7 @@
 #pragma link C++ class  ADESDFriendUtils+;
 #pragma link C++ class  AliAnalysisTaskADCalib+;
 #pragma link C++ class  AliAnalysisTaskADChargeMonitoring+;
+#pragma link C++ class  AliAnalysisTaskADCent+;
 //Beam Gas Monitoring HMTF
 //#pragma link C++ class  AliAnalysisMBVeto+;
 #pragma link C++ class  AliAnalysisMultCorrTaskQA+;

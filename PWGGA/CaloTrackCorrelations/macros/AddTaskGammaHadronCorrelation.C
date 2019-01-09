@@ -20,11 +20,19 @@
 
 #if !defined(__CINT__) || defined(__MAKECINT__)
 
+// ROOT
 #include <TString.h>
 #include <TSystem.h>
 #include <TROOT.h>
 
+// ALIROOT/ALIPHYSICS
 #include "AliLog.h"
+#include "AliAnalysisManager.h"
+#include "AliInputEventHandler.h"
+#include "AliVTrack.h"
+#include "AliESDtrackCuts.h"
+
+// CaloTrackCorr
 #include "AliAnalysisTaskCaloTrackCorrelation.h"
 #include "AliCaloTrackESDReader.h"
 #include "AliCaloTrackAODReader.h"
@@ -39,14 +47,15 @@
 #include "AliAnaGeneratorKine.h"
 #include "AliAnalysisTaskCaloTrackCorrelation.h"
 #include "AliAnaCaloTrackCorrMaker.h"
-#include "AliAnalysisManager.h"
-#include "AliInputEventHandler.h"
-#include "AliVTrack.h"
-#include "ConfigureAndGetEventTriggerMaskAndCaloTriggerString.C"
-#include "AliESDtrackCuts.h"
-#include "CreateTrackCutsPWGJE.C"
+
+// Macros
+R__ADD_INCLUDE_PATH($ALICE_PHYSICS)
 //#include "ConfigureEMCALRecoUtils.C"
-#include "GetAlienGlobalProductionVariables.C"
+#include "PWGGA/CaloTrackCorrelations/macros/ConfigureAndGetEventTriggerMaskAndCaloTriggerString.C"
+#include "PWGGA/CaloTrackCorrelations/macros/CheckActiveEMCalTriggerPerPeriod.C"
+#include "PWGGA/CaloTrackCorrelations/macros/GetAlienGlobalProductionVariables.C"
+#include "PWGJE/macros/CreateTrackCutsPWGJE.C"
+
 #endif
 
 // Declare methods for compilation
@@ -223,18 +232,17 @@ AliAnalysisTaskCaloTrackCorrelation * AddTaskGammaHadronCorrelation
   //
   maker->AddAnalysis(ConfigurePhotonAnalysis(col,simulation,calorimeter,year,tm,printSettings,debug), n++); // Photon cluster selection
   
-  
-  maker->AddAnalysis(ConfigurePi0EbEAnalysis("Pi0"        , AliAnaPi0EbE::kIMCalo,kFALSE,kFALSE,
-                                             col,simulation,calorimeter,year,tm,printSettings,debug), n++); // Pi0 event by event selection, invariant mass and photon tagging from decay
-  
-  maker->AddAnalysis(ConfigurePi0EbEAnalysis("Eta"        , AliAnaPi0EbE::kIMCalo,kFALSE,kFALSE,
-                                             col,simulation,calorimeter,year,tm,printSettings,debug), n++); // Eta event by event selection, invariant mass and photon tagging from decay
-  
-  maker->AddAnalysis(ConfigurePi0EbEAnalysis("Pi0SideBand", AliAnaPi0EbE::kIMCalo,kFALSE,kFALSE,
-                                             col,simulation,calorimeter,year,tm,printSettings,debug), n++); // Pi0 out of peak event by event selection, and photon tagging from decay
-  
-  maker->AddAnalysis(ConfigurePi0EbEAnalysis("EtaSideBand", AliAnaPi0EbE::kIMCalo,kFALSE,kFALSE,
-                                             col,simulation,calorimeter,year,tm,printSettings,debug), n++); // Eta out of peak event by event selection, and photon tagging from decay
+//  maker->AddAnalysis(ConfigurePi0EbEAnalysis("Pi0"        , AliAnaPi0EbE::kIMCalo,kFALSE,kFALSE,
+//                                             col,simulation,calorimeter,year,tm,printSettings,debug), n++); // Pi0 event by event selection, invariant mass and photon tagging from decay
+//  
+//  maker->AddAnalysis(ConfigurePi0EbEAnalysis("Eta"        , AliAnaPi0EbE::kIMCalo,kFALSE,kFALSE,
+//                                             col,simulation,calorimeter,year,tm,printSettings,debug), n++); // Eta event by event selection, invariant mass and photon tagging from decay
+//  
+//  maker->AddAnalysis(ConfigurePi0EbEAnalysis("Pi0SideBand", AliAnaPi0EbE::kIMCalo,kFALSE,kFALSE,
+//                                             col,simulation,calorimeter,year,tm,printSettings,debug), n++); // Pi0 out of peak event by event selection, and photon tagging from decay
+//  
+//  maker->AddAnalysis(ConfigurePi0EbEAnalysis("EtaSideBand", AliAnaPi0EbE::kIMCalo,kFALSE,kFALSE,
+//                                             col,simulation,calorimeter,year,tm,printSettings,debug), n++); // Eta out of peak event by event selection, and photon tagging from decay
   
   
   maker->AddAnalysis(ConfigureIsolationAnalysis("Photon", leading, isoContent,isoMethod,isoCone,isoPtTh, kFALSE,
@@ -264,8 +272,8 @@ AliAnalysisTaskCaloTrackCorrelation * AddTaskGammaHadronCorrelation
                                                         col,simulation,calorimeter,year,tm,printSettings,debug) , n++); // Isolated pi0-hadron correlation
   
   // Check the generated kinematics
-  if(simulation)  maker->AddAnalysis(ConfigureGenKineAnalysis(isoMethod,isoCone,isoPtTh,
-                                                              col,simulation,calorimeter,year,printSettings,debug), n++);
+//  if(simulation)  maker->AddAnalysis(ConfigureGenKineAnalysis(isoMethod,isoCone,isoPtTh,
+//                                                              col,simulation,calorimeter,year,printSettings,debug), n++);
   
   // Charged analysis
   if(chargedAn)   maker->AddAnalysis(ConfigureChargedAnalysis(simulation,printSettings,debug), n++); // track selection checks
@@ -747,7 +755,7 @@ AliAnaPhoton* ConfigurePhotonAnalysis(TString col,           Bool_t simulation,
   
   // cluster selection cuts
   
-  ana->SwitchOnRealCaloAcceptance();
+  ana->SwitchOffRealCaloAcceptance();
   
   ana->SwitchOffFiducialCut();
   
@@ -1077,7 +1085,7 @@ AliAnaParticleIsolation* ConfigureIsolationAnalysis(TString particle,      Int_t
   
   //if(!simulation) ana->SwitchOnFillPileUpHistograms();
   
-  ana->SwitchOnRealCaloAcceptance();
+  ana->SwitchOffRealCaloAcceptance();
   ana->SwitchOnFiducialCut();
   
   // Avoid borders of calorimeter
@@ -1263,16 +1271,28 @@ AliAnaParticleHadronCorrelation* ConfigureHadronCorrelationAnalysis(TString part
   ana->SwitchOffFillBradHistograms();
   
   //if(!simulation) ana->SwitchOnFillPileUpHistograms();
+
+  ana->SwitchOnFillDeltaEtaPhiPtTrigHistograms();
+
+  ana->SetNAssocPtBins(16); // set last bin [20,30] GeV/c
+  // See AliAnaParticleCorrelation::InitParameters();
+  // Default bins{0.2,0.5,1,2,3,4,5,6,7,8,9,10,12,14,16,20,30,40,50,100} GeV/c
+  // If you want to change it:
+  //  ana->SetAssocPtBinLimit(0, 1) ;
+  //  ana->SetAssocPtBinLimit(1, 2) ;
+  //  ana->SetAssocPtBinLimit(2, 3) ;
+  //  ana->SetAssocPtBinLimit(3, 4) ;
+  //  ana->SetAssocPtBinLimit(4, 5) ;
+  //  ana->SetAssocPtBinLimit(5, 8) ;
+  //  ana->SetAssocPtBinLimit(6, 10) ;
+  //  ana->SetAssocPtBinLimit(7, 100);
   
-  ana->SetNAssocPtBins(8);
-  ana->SetAssocPtBinLimit(0, 1) ;
-  ana->SetAssocPtBinLimit(1, 2) ;
-  ana->SetAssocPtBinLimit(2, 3) ;
-  ana->SetAssocPtBinLimit(3, 4) ;
-  ana->SetAssocPtBinLimit(4, 5) ;
-  ana->SetAssocPtBinLimit(5, 8) ;
-  ana->SetAssocPtBinLimit(6, 10) ;
-  ana->SetAssocPtBinLimit(7, 100);
+  ana->SetNTriggerPtBins(5); // set last bin [25,30] GeV/c
+  // See AliAnaParticleCorrelation::InitParameters();
+  // Default bins{10,12,16,20,25,30,40,50,75,100} GeV/c
+  // If you want to change it:
+  //  ana->SetTriggerPtBinLimit(0,  5) ;
+  //  ana->SetTriggerPtBinLimit(1, 10) ;
   
   ana->SelectIsolated(bIsolated); // do correlation with isolated photons
   
@@ -1423,7 +1443,7 @@ AliAnaCalorimeterQA* ConfigureQAAnalysis(TString col,           Bool_t  simulati
   
   ana->SwitchOffCorrelation(); // make sure you switch in the reader PHOS and EMCAL cells and clusters if option is ON
   
-  ana->SwitchOnRealCaloAcceptance();
+  ana->SwitchOffRealCaloAcceptance();
   
   ana->SwitchOffFiducialCut();
   ana->SwitchOffFillAllTH3Histogram();
@@ -1580,7 +1600,7 @@ void SetAnalysisCommonParameters(AliAnaCaloTrackCorrBaseClass* ana,
   histoRanges->SetHistodRRangeAndNBins(0.,0.15,150);//QA
   
   // QA, electron, charged
-  histoRanges->SetHistoPOverERangeAndNBins(0,2.,200);
+  histoRanges->SetHistoEOverPRangeAndNBins(0,2.,200);
   histoRanges->SetHistodEdxRangeAndNBins(0.,200.,200);
   
   // QA
@@ -1618,9 +1638,6 @@ void SetAnalysisCommonParameters(AliAnaCaloTrackCorrBaseClass* ana,
   //
   if(simulation) ana->SwitchOnDataMC() ;//Access MC stack and fill more histograms, AOD MC not implemented yet.
   else           ana->SwitchOffDataMC() ;
-  
-  //Set here generator name, default pythia
-  //ana->GetMCAnalysisUtils()->SetMCGenerator("");
   
   //
   // Debug

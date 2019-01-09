@@ -86,6 +86,8 @@ fCutGeoNcrNclLength(130.),
 fCutGeoNcrNclGeom1Pt(1.5),
 fCutGeoNcrNclFractionNcr(0.85),
 fCutGeoNcrNclFractionNcl(0.7),
+fUseFinerPhiBins(kFALSE),   // mfaggin
+fStoreSPDmodulesInfo(kFALSE),   // mfaggin
 fTrackType(0),
 fFillSparseForExpert(kFALSE),
 fImpParrphiSparsePtBchargePhi(0),
@@ -103,6 +105,7 @@ fhPtWeights(0x0),
 fUseptWeights(0),
 fScalingFactPtWeight(1.0),
 fOutput(0),
+fParticleSpecies(-2),
 fUsePhysicalPrimary(kFALSE),
 fUseGeneratedPt(kFALSE)
 {
@@ -137,6 +140,8 @@ fCutGeoNcrNclLength(130.),
 fCutGeoNcrNclGeom1Pt(1.5),
 fCutGeoNcrNclFractionNcr(0.85),
 fCutGeoNcrNclFractionNcl(0.7),
+fUseFinerPhiBins(kFALSE),   // mfaggin
+fStoreSPDmodulesInfo(kFALSE),   // mfaggin
 fTrackType(0),
 fFillSparseForExpert(kFALSE),
 fImpParrphiSparsePtBchargePhi(0),
@@ -154,6 +159,7 @@ fhPtWeights(0x0),
 fUseptWeights(0),
 fScalingFactPtWeight(1.0),
 fOutput(0),
+fParticleSpecies(-2),
 fUsePhysicalPrimary(kFALSE),
 fUseGeneratedPt(kFALSE)
 {
@@ -291,14 +297,83 @@ void AliAnalysisTaskSEImpParResSparse::UserCreateOutputObjects()
     Int_t nbinsImpParSparse_rphi[4] =       {3000, 50, 4, 2};
     Double_t limitLowImpParSparse_rphi[4] = {-1500., 0.1, 0., 0.};
     Double_t limitUpImpParSparse_rphi[4] =  {1500., 25., 4., 2.};
+    if (fUseFinerPhiBins) {     // mfaggin
+        nbinsImpParSparse_rphi[2]   = 24; // 1 bin every 15°
+        limitUpImpParSparse_rphi[2] = 24;
+    }    
     TString axTitle_rphi[4]={"rphi imp. par. (#mum)",
         "#it{p}_{T} (GeV/c)",
         "#phi",
         "#eta"};
-    fImpParrphiSparsePtEtaPhi=new THnSparseF("fImpParrphiSparsePtEtaPhi","fImpParrphiSparsePtEtaPhi",4,nbinsImpParSparse_rphi,limitLowImpParSparse_rphi,limitUpImpParSparse_rphi);
-    for(Int_t iax=0; iax<4; iax++) fImpParrphiSparsePtEtaPhi->GetAxis(iax)->SetTitle(axTitle_rphi[iax].Data());
+
+    // more axes for SPD modules info storage (mfaggin)
+    Int_t nbinsImpParSparse_rphi_wSPDmod[11];
+    Double_t limitLowImpParSparse_rphi_wSPDmod[11];
+    Double_t limitUpImpParSparse_rphi_wSPDmod[11];
+    TString axTitle_rphi_wSPDmod[11];
+    if (fStoreSPDmodulesInfo) {
+        printf("\n--- Adding info on SPD modules\n");
+        // first 4 values copied from original arrays
+        for(UInt_t i = 0; i < 4; i++)
+        {
+            nbinsImpParSparse_rphi_wSPDmod[i] = nbinsImpParSparse_rphi[i];
+            limitLowImpParSparse_rphi_wSPDmod[i] = limitLowImpParSparse_rphi[i];
+            limitUpImpParSparse_rphi_wSPDmod[i] = limitUpImpParSparse_rphi[i];
+            axTitle_rphi_wSPDmod[i] = axTitle_rphi[i];
+        }
+        // --- parameters for SPD modules axes ---
+        //  5) ladID in SPDinner (0-19)
+        nbinsImpParSparse_rphi_wSPDmod[4] = 20;
+        limitLowImpParSparse_rphi_wSPDmod[4] = -0.5;
+        limitUpImpParSparse_rphi_wSPDmod[4] = 19.5;
+        axTitle_rphi_wSPDmod[4] = "ladder in SPDinner";
+        //  6) ladID in SPDouter (0-39)
+        nbinsImpParSparse_rphi_wSPDmod[5] = 40;
+        limitLowImpParSparse_rphi_wSPDmod[5] = -0.5;
+        limitUpImpParSparse_rphi_wSPDmod[5] = 39.5;
+        axTitle_rphi_wSPDmod[5] = "ladder in SPDouter";
+        //  7) detID in SPDinner (0-1 side A, 2-3 side C)
+        nbinsImpParSparse_rphi_wSPDmod[6] = 4;
+        limitLowImpParSparse_rphi_wSPDmod[6] = -0.5;
+        limitUpImpParSparse_rphi_wSPDmod[6] = 3.5;
+        axTitle_rphi_wSPDmod[6] = "module ID in SPDinner";
+        //  8) detID in SPDouter (0-1 side A, 2-3 side C)
+        nbinsImpParSparse_rphi_wSPDmod[7] = 4;
+        limitLowImpParSparse_rphi_wSPDmod[7] = -0.5;
+        limitUpImpParSparse_rphi_wSPDmod[7] = 3.5;
+        axTitle_rphi_wSPDmod[7] = "module ID in SPDouter";
+        //  9) status in SPDinner (see AliESDtrack::GetITSModuleIndexInfo as reference)
+        nbinsImpParSparse_rphi_wSPDmod[8] = 8;
+        limitLowImpParSparse_rphi_wSPDmod[8] = 0.5;
+        limitUpImpParSparse_rphi_wSPDmod[8] = 8.5;
+        axTitle_rphi_wSPDmod[8] = "status in SPDinner";    
+        //  10) status in SPDouter (see AliESDtrack::GetITSModuleIndexInfo as reference)
+        nbinsImpParSparse_rphi_wSPDmod[9] = 8;
+        limitLowImpParSparse_rphi_wSPDmod[9] = 0.5;
+        limitUpImpParSparse_rphi_wSPDmod[9] = 8.5;
+        axTitle_rphi_wSPDmod[9] = "status in SPDouter"; 
+        //  11) z of primary vertex 
+        nbinsImpParSparse_rphi_wSPDmod[10] = 100;
+        limitLowImpParSparse_rphi_wSPDmod[10] = -20;
+        limitUpImpParSparse_rphi_wSPDmod[10] = 20;
+        axTitle_rphi_wSPDmod[10] = "z of primary vertex (cm)";
+    }
+    // mfaggin    
+    if(fStoreSPDmodulesInfo)
+    {
+        fImpParrphiSparsePtEtaPhi=new THnSparseF("fImpParrphiSparsePtEtaPhi","fImpParrphiSparsePtEtaPhi",11,nbinsImpParSparse_rphi_wSPDmod,limitLowImpParSparse_rphi_wSPDmod,limitUpImpParSparse_rphi_wSPDmod);
+        for(Int_t iax=0; iax<11; iax++) fImpParrphiSparsePtEtaPhi->GetAxis(iax)->SetTitle(axTitle_rphi_wSPDmod[iax].Data());
+    }
+    // original
+    else
+    {
+        fImpParrphiSparsePtEtaPhi=new THnSparseF("fImpParrphiSparsePtEtaPhi","fImpParrphiSparsePtEtaPhi",4,nbinsImpParSparse_rphi,limitLowImpParSparse_rphi,limitUpImpParSparse_rphi);
+        for(Int_t iax=0; iax<4; iax++) fImpParrphiSparsePtEtaPhi->GetAxis(iax)->SetTitle(axTitle_rphi[iax].Data());
+    }
+
     BinLogAxis(fImpParrphiSparsePtEtaPhi, 1);
     fOutput->Add(fImpParrphiSparsePtEtaPhi);
+
     Int_t nbinsImpParSparse_z[4] =       {1000, 50, 4, 2};
     Double_t limitLowImpParSparse_z[4] = {-1500., 0.1, 0., 0.};
     Double_t limitUpImpParSparse_z[4] =  {1500., 25., 4., 2.};
@@ -544,13 +619,11 @@ void AliAnalysisTaskSEImpParResSparse::UserExec(Option_t */*option*/)
     Double_t dzRec[2], covdzRec[3], dzRecSkip[2], covdzRecSkip[3], dzTrue[2], covdzTrue[3];
     Double_t dz[2], covdz[3];
     Double_t pt;
-    Int_t bin;
     Int_t nClsTotTPC=0;
     Bool_t haskITSrefit=kFALSE;
     Bool_t haskTPCrefit=kFALSE;
     Int_t charge=0;
     Double_t phi=0.;
-    Double_t theta=0.;
     Double_t eta=0.;
     Double_t pointrphi[4];
     Double_t pullrphi[4];
@@ -638,7 +711,10 @@ void AliAnalysisTaskSEImpParResSparse::UserExec(Option_t */*option*/)
         pullz[2]=phibin;
         pullrphi1[2]=phibin;
         pullz1[2]=phibin;
-        pointrphi[2]=phibin;
+
+        //pointrphi[2]=phibin;
+        pointrphi[2]=PhiBin(phi,fUseFinerPhiBins);  // mfaggin
+
         pointz[2]=phibin;
         pointrphi1[2]=phibin;
         pointz1[2]=phibin;
@@ -670,10 +746,13 @@ void AliAnalysisTaskSEImpParResSparse::UserExec(Option_t */*option*/)
                 if(fUseGeneratedPt) pt=AODpart->Pt();
             }
             if(!fIsAOD && mcEvent) {
-                part = ((AliMCParticle*)mcEvent->GetTrack(trkLabel))->Particle();
-                pdgCode = TMath::Abs(part->GetPdgCode());
-                if(fUsePhysicalPrimary) {if(!((AliMCParticle*)part)->IsPhysicalPrimary()) continue;}
-                if(fUseGeneratedPt) pt=part->Pt();
+	      AliMCParticle* mcPart = (AliMCParticle*)mcEvent->GetTrack(trkLabel);
+	      if(!mcPart) continue;
+	      part = mcPart->Particle();
+	      if(!part) continue;
+	      pdgCode = TMath::Abs(part->GetPdgCode());
+	      if(fUsePhysicalPrimary) {if(!mcPart->IsPhysicalPrimary()) continue;}
+	      if(fUseGeneratedPt) pt=part->Pt();
             }
             //pdgCode = TMath::Abs(part->GetPdgCode());
             //printf("pdgCode===%d\n", pdgCode);
@@ -734,7 +813,8 @@ void AliAnalysisTaskSEImpParResSparse::UserExec(Option_t */*option*/)
         // Select primary particle if MC event (for ESD event), Rprod < 1 micron
         if(fReadMC){
             if(fIsAOD){
-                if((AODpart->Xv()-vtxTrue[0])*(AODpart->Xv()-vtxTrue[0])+
+                if(AODpart &&
+		   (AODpart->Xv()-vtxTrue[0])*(AODpart->Xv()-vtxTrue[0])+
                    (AODpart->Yv()-vtxTrue[1])*(AODpart->Yv()-vtxTrue[1])
                    > 0.0001*0.0001) {
                     delete vtxVSkip; vtxVSkip=NULL;
@@ -742,7 +822,8 @@ void AliAnalysisTaskSEImpParResSparse::UserExec(Option_t */*option*/)
                 }
             }
             else{
-                if((part->Vx()-vtxTrue[0])*(part->Vx()-vtxTrue[0])+
+                if(part &&
+		   (part->Vx()-vtxTrue[0])*(part->Vx()-vtxTrue[0])+
                    (part->Vy()-vtxTrue[1])*(part->Vy()-vtxTrue[1])
                    > 0.0001*0.0001) {
                     delete vtxVSkip; vtxVSkip=NULL;
@@ -819,6 +900,40 @@ void AliAnalysisTaskSEImpParResSparse::UserExec(Option_t */*option*/)
         if(fESDtrackCuts->GetClusterRequirementITS(AliESDtrackCuts::kSPD)==AliESDtrackCuts::kOnlyFirst)spdreq=1;
         else if(fESDtrackCuts->GetClusterRequirementITS(AliESDtrackCuts::kSPD)==AliESDtrackCuts::kOnlySecond)spdreq=2;
         //else if(fESDtrackCuts->GetClusterRequirementITS(AliESDtrackCuts::kSPD)==AliESDtrackCuts::kBoth)spdreq=3;
+
+        // store SPD modules info (mfaggin)
+        Double_t pointrphi_wSPDmod[11];
+        if (fStoreSPDmodulesInfo) {
+            for(UInt_t i = 0; i < 4; i++)
+            {
+                // first 4 values copied from original arrays
+                pointrphi_wSPDmod[i] = pointrphi[i];
+            }
+            // get information about SPD modules
+            int dt,st;
+            float xl,zl;
+            for(UInt_t il=0; il<2;il++){
+                ((AliESDtrack*)vtrack)->GetITSModuleIndexInfo(il,dt,st,xl,zl);
+                // NB: AliITSgeomTGeo::GetNDetectors wants as argument an integer between 1 and 6, not 0 and 5!
+                if (il&0x1) dt -= AliITSgeomTGeo::GetNDetectors(il)*AliITSgeomTGeo::GetNLadders(il); // module id is stored wrt module0 of given sensor type
+                int ladID = dt/AliITSgeomTGeo::GetNDetectors(il+1);
+                int detID = dt%AliITSgeomTGeo::GetNDetectors(il+1);
+                if(il==0)
+                {
+                    pointrphi_wSPDmod[4] = ladID;
+                    pointrphi_wSPDmod[6] = detID;
+                    pointrphi_wSPDmod[8] = st;
+                }
+                if(il==1)
+                {
+                    pointrphi_wSPDmod[5] = ladID;
+                    pointrphi_wSPDmod[7] = detID;
+                    pointrphi_wSPDmod[9] = st;
+                }
+            }
+            pointrphi_wSPDmod[10] = zvtx;
+        }
+
         if(fTrackType==0){
             if(!haskTPCrefit || nClsTotTPC<70) continue;
             if( (sddIsIn && (npointsITS==6)) || (sddIsIn && (npointsITS==5) && (spdreq==npointsSPD)) || (!sddIsIn && (npointsITS==4)) || (!sddIsIn && (npointsITS==3) && (spdreq==npointsSPD)) ){
@@ -831,7 +946,8 @@ void AliAnalysisTaskSEImpParResSparse::UserExec(Option_t */*option*/)
                     fImpParPullzSparsePtBchargePhi->Fill(pullz1);
                 }
                 fPtDistrib->Fill(pt);
-                fImpParrphiSparsePtEtaPhi->Fill(pointrphi);
+                if(fStoreSPDmodulesInfo)    fImpParrphiSparsePtEtaPhi->Fill(pointrphi_wSPDmod); // SPD module info stored (mfaggin)
+                else                        fImpParrphiSparsePtEtaPhi->Fill(pointrphi);         // original
                 fImpParzSparsePtEtaPhi->Fill(pointz);
                 fImpParPullrphiSparsePtEtaPhi->Fill(pullrphi);
                 fImpParPullzSparsePtEtaPhi->Fill(pullz);
@@ -849,7 +965,8 @@ void AliAnalysisTaskSEImpParResSparse::UserExec(Option_t */*option*/)
                 fImpParPullzSparsePtBchargePhi->Fill(pullz1);
             }
             fPtDistrib->Fill(pt);
-            fImpParrphiSparsePtEtaPhi->Fill(pointrphi);
+            if(fStoreSPDmodulesInfo)    fImpParrphiSparsePtEtaPhi->Fill(pointrphi_wSPDmod);
+            else                        fImpParrphiSparsePtEtaPhi->Fill(pointrphi);
             fImpParzSparsePtEtaPhi->Fill(pointz);
             fImpParPullrphiSparsePtEtaPhi->Fill(pullrphi);
             fImpParPullzSparsePtEtaPhi->Fill(pullz);
@@ -866,7 +983,8 @@ void AliAnalysisTaskSEImpParResSparse::UserExec(Option_t */*option*/)
                 fImpParPullzSparsePtBchargePhi->Fill(pullz1);
             }
             fPtDistrib->Fill(pt);
-            fImpParrphiSparsePtEtaPhi->Fill(pointrphi);
+            if(fStoreSPDmodulesInfo)    fImpParrphiSparsePtEtaPhi->Fill(pointrphi_wSPDmod);
+            else                        fImpParrphiSparsePtEtaPhi->Fill(pointrphi);
             fImpParzSparsePtEtaPhi->Fill(pointz);
             fImpParPullrphiSparsePtEtaPhi->Fill(pullrphi);
             fImpParPullzSparsePtEtaPhi->Fill(pullz);
@@ -931,13 +1049,25 @@ void AliAnalysisTaskSEImpParResSparse::BinLogPtAxis(TH1F *h) {
 }
 //________________________________________________________________________
 
-Int_t AliAnalysisTaskSEImpParResSparse::PhiBin(Double_t phi) const {
+Int_t AliAnalysisTaskSEImpParResSparse::PhiBin(Double_t phi, Bool_t usefinebinsphi) const {
     Double_t pi=TMath::Pi();
-    if(phi>2.*pi || phi<0.) return -1;
-    if((phi<=(pi/4.)) || (phi>7.*(pi/4.))) return 0;
-    if((phi>(pi/4.)) && (phi<=3.*(pi/4.))) return 1;
-    if((phi>3.*(pi/4.)) && (phi<=5.*(pi/4.))) return 2;
-    if((phi>(5.*pi/4.)) && (phi<=7.*(pi/4.))) return 3;
+    
+    if (usefinebinsphi) {   // mfaggin
+        UInt_t nBins = fImpParrphiSparsePtEtaPhi->GetAxis(2)->GetNbins();
+        Double_t width = 2.*pi/nBins;
+        for(UInt_t i = 0; i < nBins; i++)
+        {
+            if(phi>i*width && phi<=(i+1)*width)    return i;
+        }  
+    }
+
+    else {
+        if(phi>2.*pi || phi<0.) return -1;
+        if((phi<=(pi/4.)) || (phi>7.*(pi/4.))) return 0;
+        if((phi>(pi/4.)) && (phi<=3.*(pi/4.))) return 1;
+        if((phi>3.*(pi/4.)) && (phi<=5.*(pi/4.))) return 2;
+        if((phi>(5.*pi/4.)) && (phi<=7.*(pi/4.))) return 3;
+    }
     return -1;
 }
 //___________________________________________________________________________
@@ -988,10 +1118,10 @@ Bool_t AliAnalysisTaskSEImpParResSparse::IsSelectedCentrality(AliESDEvent *esd) 
     //
     
     const AliMultiplicity *alimult = esd->GetMultiplicity();
-    Int_t ntrklets=1;
+    //    Int_t ntrklets=1;
     Int_t nclsSPDouter=0;
     if(alimult) {
-        ntrklets = alimult->GetNumberOfTracklets();
+      //        ntrklets = alimult->GetNumberOfTracklets();
         nclsSPDouter = alimult->GetNumberOfITSClusters(1);
     }
     

@@ -41,7 +41,11 @@ TObject(),
   fV0PlanePhi(0.),
   fV0APlanePhi(0.),
   fV0CPlanePhi(0.),
-  fTPCPlanePhi(0.)
+  fTPCPlanePhi(0.),
+  fV0PlanePhiCorrected(0.),
+  fV0APlanePhiCorrected(0.),
+  fV0CPlanePhiCorrected(0.),
+  fMagneticField(0.)
 {
   //
   // Default constructor
@@ -78,7 +82,8 @@ AliHFEreducedEvent::AliHFEreducedEvent(const AliHFEreducedEvent &ref):
   fV0PlanePhi(ref.fV0PlanePhi),
   fV0APlanePhi(ref.fV0APlanePhi),
   fV0CPlanePhi(ref.fV0CPlanePhi),
-  fTPCPlanePhi(ref.fTPCPlanePhi)
+  fTPCPlanePhi(ref.fTPCPlanePhi),
+  fMagneticField(ref.fMagneticField)
 {
   //
   // Copy constructor
@@ -134,6 +139,7 @@ AliHFEreducedEvent &AliHFEreducedEvent::operator=(const AliHFEreducedEvent &ref)
     memcpy(fCentrality, ref.fCentrality, sizeof(Float_t) * kCentBuff);
     memcpy(fV0Multiplicity, ref.fV0Multiplicity, sizeof(Float_t) * 2);
     memcpy(fZDCEnergy, ref.fZDCEnergy, sizeof(Float_t) *4);
+    fMagneticField = ref.fMagneticField;
   }
   return *this;
 }

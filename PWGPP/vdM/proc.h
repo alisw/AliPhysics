@@ -9,6 +9,6 @@
 #include "AliVdMMetaData.h"
 #include "AliVdMScanData.h"
 
-void proc(const AliVdMMetaData&, AliVdMScanData&, const std::vector<std::string>& triggerNames);
+void proc(const AliVdMMetaData&, AliVdMScanData&, const std::vector<std::string>& triggerNames, Bool_t computeBkgd=kTRUE);
 
 #endif // PWGPP_VDM_PROC_H

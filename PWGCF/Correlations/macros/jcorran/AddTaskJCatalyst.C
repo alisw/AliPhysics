@@ -19,7 +19,7 @@ AliAnalysisTask *AddTaskJCatalyst(TString taskName = "JCatalyst", UInt_t flags =
     FFtask->SetEtaRange( eta_min, eta_max);
     FFtask->SetDebugLevel( debuglevel ) ; 
     FFtask->SetPtRange( pt_min, pt_max);
-    FFtask->SetParticleCharge( 0 );  
+    FFtask->SetParticleCharge( 0 );  // 0 : all charged particles 1 : positive -1 :negative 
     //==== Add task
     mgr->AddTask((AliAnalysisTask*) FFtask);
 

@@ -43,12 +43,8 @@ set(SRCS
         AliSigma0ParticleBase.cxx
         AliSigma0ParticlePhotonMother.cxx
         AliSigma0ParticleV0.cxx
-        AliSigma0EventCuts.cxx
-        AliSigma0SingleParticleCuts.cxx
         AliSigma0V0Cuts.cxx
-        AliSigma0PhotonCuts.cxx
         AliSigma0PhotonMotherCuts.cxx
-        AliSigma0EventContainer.cxx
         AliAnalysisTaskSigma0Run2.cxx
    )
 

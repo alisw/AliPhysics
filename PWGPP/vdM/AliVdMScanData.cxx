@@ -2,6 +2,8 @@
 
 #include <sstream>
 
+#include <TTimeStamp.h>
+
 #include "AliVdMScanData.h"
 
 ClassImp(AliVdMScanData);
@@ -82,5 +84,91 @@ AliVdMScanData& AliVdMScanData::FillDefaultBranches(const AliVdMMetaData& vdmMet
     }
     ++counter;
   }
+  return *this;
+}
+
+AliVdMScanData& AliVdMScanData::FillDefaultBranchesFromCTPScalers(const AliVdMMetaData& vdmMetaData,
+                                                                  TTree *TS,
+                                                                  const std::vector<std::string>& triggerNames)
+{
+  Double_t counters[8][6];
+  const AliTriggerBCMask& bcMask = vdmMetaData.GetTriggerBCMask();
+
+  Int_t counter = 0;
+  for (auto it=vdmMetaData.GetScansBegin(), iend=vdmMetaData.GetScansEnd(); it!=iend; ++it) {
+    const AliXMLEngine::Node xmlNode(*it);
+    if (TString(xmlNode.GetAttr("type").GetData()) == "LSC")
+      continue;
+    Printf("%s %d",
+           AliVdMMetaData::GetScanName(xmlNode).Data(),
+           AliVdMMetaData::GetScanType(xmlNode));
+    Printf("counter=%d", counter);
+    const Int_t iScanType = AliVdMMetaData::GetScanType(xmlNode);
+
+    for (const std::string& triggerName : triggerNames)
+      CreateDefaultBranches(counter, triggerName);
+
+    TTree tSep;
+    std::istringstream iss(xmlNode.GetData());
+    tSep.ReadStream(iss);
+
+    AliVdMTree::DefaultBranchData defBranchData;
+    defBranchData.fSep(1-iScanType) = 1e-3*atof(xmlNode.GetAttr("offset_um").GetData()); // mu -> mm
+    Double_t timeStart=0, timeEnd=0;
+    tSep.SetBranchAddress("timeStart", &timeStart);
+    tSep.SetBranchAddress("timeEnd",   &timeEnd);
+    tSep.SetBranchAddress("sep",       defBranchData.fSep.GetMatrixArray() + iScanType);
+    for (Int_t i=0, n=tSep.GetEntries(); i<n; ++i) {
+      tSep.GetEntry(i);
+
+      Double_t counters[8][6]; // 8 BCs times L{0,1,2}{b,a}
+      Double_t offsetCounters[8];
+      Double_t sumOfCounters[8];
+      for (Int_t j=0, m=triggerNames.size(); j<m; ++j) {
+        AliVdMTree& t = GetMap(counter)[triggerNames[j]];
+
+        TTimeStamp *timeStamp = nullptr;
+        TS->SetBranchAddress("TimeStamp", &timeStamp);
+        for (Int_t k=0; k<8; ++k) {
+          TS->SetBranchAddress(TString::Format("%s_I%d", triggerNames[j].c_str(), 1+k), counters[k]);
+          sumOfCounters[k] = 0.0;
+          offsetCounters[k] = 0.0;
+        }
+
+        defBranchData.fTime = 0;
+        for (Long64_t l=0; l<TS->GetEntries(); ++l) {
+          TS->GetEntry(l);
+          const Double_t timeSec = timeStamp->AsDouble();
+          if (timeSec < timeStart)
+            continue;
+          if (timeSec > timeEnd)
+            break;
+          if (!defBranchData.StartTime()) {
+            defBranchData.StartTime() = timeSec;
+            for (Int_t k=0; k<8; ++k)
+              offsetCounters[k] = counters[k][0];
+          }
+          defBranchData.EndTime() = timeSec;
+          for (Int_t k=0; k<8; ++k)
+            sumOfCounters[k] = counters[k][0] - offsetCounters[k];
+        }
+        TS->ResetBranchAddresses();
+
+        for (Int_t k=0; k<8; ++k) {
+          const AliTriggerBCMask& bcMask = vdmMetaData.GetTriggerBCMask(1+k);
+          for (Int_t bc=0; bc<3564; ++bc) { // only one BC is in the mask
+            if (bcMask.GetMask(bc))
+              continue;
+            defBranchData.BCID() = bc;
+            defBranchData.Counter(0) = sumOfCounters[k];
+            t.FillDefaultBranches(defBranchData);
+          }
+        }
+      }  // next trigger class
+    } // next sep
+    ++counter;
+  }
+
+  TS->ResetBranchAddresses();
   return *this;
 }

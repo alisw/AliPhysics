@@ -15,6 +15,7 @@ class AliVCaloCells;
 class TH1;
 class TProfile;
 class AliEMCALGeometry;
+class AliGenEventHeader;
 class AliGenPythiaEventHeader;
 class AliVCaloTrigger;
 class AliAnalysisUtils;
@@ -123,7 +124,9 @@ class AliAnalysisTaskEmcalLight : public AliAnalysisTaskSE {
   void                        SetCaloTriggerPatchInfoName(const char *n)            { fCaloTriggerPatchInfoName = n                       ; }
   void                        SetCaloTriggersName(const char *n)                    { fCaloTriggersName  = n                              ; }
   void                        SetCentralityEstimator(const char *c)                 { fCentEst           = c                              ; }
-  void                        SetIsPythia(Bool_t i)                                 { fIsPythia          = i                              ; }
+  void                        SetIsMonteCarlo(Bool_t i)                             { fIsMonteCarlo      = i                              ; }
+  void                        SetIsPythia(Bool_t i);
+  void                        SetMCEventHeaderName(const char* name);
   void                        SetForceBeamType(EBeamType_t f)                       { fForceBeamType     = f                              ; }
 
   // Task configuration
@@ -157,6 +160,7 @@ class AliAnalysisTaskEmcalLight : public AliAnalysisTaskSE {
   void                        SetEventSelectionAfterRun(Bool_t b)                   { fEventSelectionAfterRun = b                         ; }
   void                        SelectGeneratorName(TString gen)                      { fSelectGeneratorName = gen                          ; }
   void                        SetInhibit(Bool_t s)                                  { fInhibit = s                                        ; }
+  void                        SetEventWeightRange(Double_t min, Double_t max)       { fMinimumEventWeight = min; fMaximumEventWeight = max; }
 
   Bool_t IsInhibit() const { return fInhibit; }
 
@@ -165,7 +169,7 @@ class AliAnalysisTaskEmcalLight : public AliAnalysisTaskSE {
   void                        AddObjectToEvent(TObject *obj, Bool_t attempt = kFALSE);
   TClonesArray               *GetArrayFromEvent(const char *name, const char *clname=0);
   EBeamType_t                 GetBeamType();
-  Bool_t                      PythiaInfoFromFile(const char* currFile, Float_t &fXsec, Float_t &fTrials, Int_t &pthard);
+  Bool_t                      PythiaInfoFromFile(const char* currFile, Float_t &fXsec, Float_t &fTrials, Int_t &pthard, Bool_t &useXsecFromHeader);
   Bool_t                      IsTrackInEmcalAcceptance(AliVParticle* part, Double_t edges=0.9) const;
   Bool_t                      CheckMCOutliers();
 
@@ -201,6 +205,8 @@ class AliAnalysisTaskEmcalLight : public AliAnalysisTaskSE {
   static Double_t             DeltaPhi(Double_t phia, Double_t phib, Double_t rMin = -TMath::Pi()/2, Double_t rMax = 3*TMath::Pi()/2);
   static std::vector<double>  GenerateFixedBinArray(int n, double min, double max, bool last = true);
   static void                 GenerateFixedBinArray(int n, double min, double max, std::vector<double>& array, bool last = true);
+  static std::vector<double>  GenerateLogFixedBinArray(int n, double min, double max, bool last = true);
+  static void                 GenerateLogFixedBinArray(int n, double min, double max, std::vector<double>& array, bool last = true);
   static Double_t             GetParallelFraction(AliVParticle* part1, AliVParticle* part2);
   static Double_t             GetParallelFraction(const TVector3& vect1, AliVParticle* part2);
   static EBeamType_t          BeamTypeFromRunNumber(Int_t runnumber);
@@ -217,6 +223,8 @@ class AliAnalysisTaskEmcalLight : public AliAnalysisTaskSE {
 
   // Input data
   Bool_t                      fIsPythia;                   ///< if it is a PYTHIA production
+  Bool_t                      fIsMonteCarlo;               ///< if it is a MC production
+  TString                     fMCEventHeaderName;          ///< Looks for MC event properties in a particular MC event type (useful for a MC cocktail production)
   TString                     fCaloCellsName;              ///< name of calo cell collection
   TString                     fCaloTriggersName;           ///< name of calo triggers collection
   TString                     fCaloTriggerPatchInfoName;   ///< trigger patch info array name
@@ -247,6 +255,8 @@ class AliAnalysisTaskEmcalLight : public AliAnalysisTaskSE {
   Bool_t                      fSwitchOffLHC15oFaultyBranches; ///< Switch off faulty tree branches in LHC15o AOD trees
   Bool_t                      fEventSelectionAfterRun;     ///< If kTRUE, the event selection is performed after Run() but before FillHistograms()
   TString                     fSelectGeneratorName;        ///< Selects only events produced by a generator that has a name containing a string
+  Double_t                    fMinimumEventWeight;         ///< Minimum event weight for the related bookkeping histogram
+  Double_t                    fMaximumEventWeight;         ///< Minimum event weight for the related bookkeping histogram
 
   // Service fields
   Bool_t                      fInhibit;                    //!<!inhibit execution of the task
@@ -268,41 +278,30 @@ class AliAnalysisTaskEmcalLight : public AliAnalysisTaskSE {
   ULong_t                     fFiredTriggerBitMap;         //!<!bit map of fired triggers
   std::vector<std::string>    fFiredTriggerClasses;        //!<!trigger classes fired by the current event
   EBeamType_t                 fBeamType;                   //!<!event beam type
+  AliGenEventHeader          *fMCHeader;                   //!<!event MC header
   AliGenPythiaEventHeader    *fPythiaHeader;               //!<!event Pythia header
-  Int_t                       fPtHardBin;                  //!<!event pt hard
+  Bool_t                      fUseXsecFromHeader;          //!<!Switch for using cross section from header (if not found in pythia file)
+  Int_t                       fPtHardBin;                  //!<!event pt hard bin
   Double_t                    fPtHard;                     //!<!event pt hard
   Int_t                       fNTrials;                    //!<!event trials
   Float_t                     fXsection;                   //!<!x-section from pythia header
+  Float_t                     fEventWeight;                //!<!event weight
   TString                     fGeneratorName;              //!<!name of the MC generator used to produce the current event (only AOD)
 
   // Output
   TList                      *fOutput;                     //!<!output list
-  TH1                        *fHistTrialsVsPtHardNoSel;    //!<!total number of trials per pt hard bin after selection (no event selection)
-  TH1                        *fHistEventsVsPtHardNoSel;    //!<!total number of events per pt hard bin after selection (no event selection)
-  TProfile                   *fHistXsectionVsPtHardNoSel;  //!<!x section from pythia header (no event selection)
-  TH1                        *fHistTriggerClassesNoSel;    //!<!number of events in each trigger class (no event selection)
-  TH1                        *fHistZVertexNoSel;           //!<!z vertex position (no event selection)
-  TH1                        *fHistCentralityNoSel;        //!<!event centrality distribution (no event selection)
-  TH1                        *fHistEventPlaneNoSel;        //!<!event plane distribution (no event selection)
-  TH1                        *fHistTrialsVsPtHard;         //!<!total number of trials per pt hard bin after selection
-  TH1                        *fHistEventsVsPtHard;         //!<!total number of events per pt hard bin after selection
-  TProfile                   *fHistXsectionVsPtHard;       //!<!x section from pythia header
-  TH1                        *fHistTriggerClasses;         //!<!number of events in each trigger class
-  TH1                        *fHistZVertex;                //!<!z vertex position
-  TH1                        *fHistCentrality;             //!<!event centrality distribution
-  TH1                        *fHistEventPlane;             //!<!event plane distribution
-  TH1                        *fHistEventCount;             //!<!incoming and selected events
-  TH1                        *fHistEventRejection;         //!<!book keep reasons for rejecting event
-  TH1                        *fHistTrials;                 //!<!trials from pyxsec.root
-  TH1                        *fHistEvents;                 //!<!total number of events per pt hard bin
-  TProfile                   *fHistXsection;               //!<!x section from pyxsec.root
 
  private:
+  std::map<std::string, TH1*> fHistograms;                 //!<!general QA histograms
+  TH1* GetGeneralTH1(const char* name, bool warn=false);
+  TH2* GetGeneralTH2(const char* name, bool warn=false);
+  TProfile* GetGeneralTProfile(const char* name, bool warn=false);
+
   AliAnalysisTaskEmcalLight(const AliAnalysisTaskEmcalLight&);            // not implemented
   AliAnalysisTaskEmcalLight &operator=(const AliAnalysisTaskEmcalLight&); // not implemented
 
   /// \cond CLASSIMP
-  ClassDef(AliAnalysisTaskEmcalLight, 4);
+  ClassDef(AliAnalysisTaskEmcalLight, 5);
   /// \endcond
 };
 

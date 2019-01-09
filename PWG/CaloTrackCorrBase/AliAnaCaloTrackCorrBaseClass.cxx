@@ -64,7 +64,7 @@ fOutputAODName(""),           fOutputAODClassName(""),
 fAODObjArrayName(""),         fAddToHistogramsName(""),
 fCaloPID(0x0),                fCaloUtils(0x0),
 fFidCut(0x0),                 fHisto(0x0),
-fIC(0x0),                     fMCUtils(0x0),                
+fIC(0x0),                                    
 fNMS(0x0),                    fReader(0x0),
 fStudyClusterOverlapsPerGenerator(0),
 fNCocktailGenNames(0)
@@ -83,7 +83,6 @@ AliAnaCaloTrackCorrBaseClass::~AliAnaCaloTrackCorrBaseClass()
   delete fCaloPID ; 
   delete fFidCut  ;  
   delete fIC      ;      
-  delete fMCUtils ; 
   delete fNMS     ;     
   delete fHisto   ;    
 }
@@ -96,7 +95,7 @@ void AliAnaCaloTrackCorrBaseClass::AddAODParticle(AliCaloTrackParticle pc)
 {  
   if(!fOutputAODBranch)
   {
-    AliFatal("No AOD branch available!!!\n");
+    AliFatal("No AOD branch available!!!");
     return; // coverity
   }
   
@@ -112,7 +111,7 @@ void AliAnaCaloTrackCorrBaseClass::AddAODParticle(AliCaloTrackParticle pc)
   }
   else
   {
-    AliFatal(Form("Cannot add an object of type < %s >, to the AOD TClonesArray \n", fOutputAODBranch->GetClass()->GetName()));
+    AliFatal(Form("Cannot add an object of type < %s >, to the AOD TClonesArray", fOutputAODBranch->GetClass()->GetName()));
   }
 }
 
@@ -153,7 +152,7 @@ Int_t AliAnaCaloTrackCorrBaseClass::CheckMixedEventVertex(Int_t caloLabel, Int_t
 //________________________________________________________________
 void AliAnaCaloTrackCorrBaseClass::ConnectInputOutputAODBranches() 
 {	
-  AliDebug(3,Form("AliAnaCaloTrackCorrBaseClass::ConnectInputOutputAODBranches() - Connect Input with name: <%s>; Connect output with name <%s>\n",fInputAODName.Data(),fOutputAODName.Data()));
+  AliDebug(3,Form("AliAnaCaloTrackCorrBaseClass::ConnectInputOutputAODBranches() - Connect Input with name: <%s>; Connect output with name <%s>",fInputAODName.Data(),fOutputAODName.Data()));
   
   //Get the AOD handler, if output AOD is created use it, if not get the branches from the input which should be deltaAODs
   AliAODHandler* aodHandler = 0x0;
@@ -211,9 +210,9 @@ void AliAnaCaloTrackCorrBaseClass::ConnectInputOutputAODBranches()
 //  if(GetDebug() > 1)
 //  {
 //    if(fNewAOD && !fOutputAODBranch) 
-//      AliInfo(Form("Output Branch <%s>, not found!\n",fOutputAODName.Data()));
+//      AliInfo(Form("Output Branch <%s>, not found!",fOutputAODName.Data()));
 //    if(!fNewAOD && !fInputAODBranch) 
-//      AliInfo(Form("Input Branch  <%s>, not found!\n",fInputAODName.Data()));
+//      AliInfo(Form("Input Branch  <%s>, not found!",fInputAODName.Data()));
 //  }
 }
 
@@ -249,9 +248,9 @@ AliVCluster * AliAnaCaloTrackCorrBaseClass::FindCluster(TObjArray* clusters, Int
 //______________________________________________________________________________________
 /// Recover ouput and input AOD pointers for each event in AliCaloTrackMaker.
 //______________________________________________________________________________________
-TClonesArray * AliAnaCaloTrackCorrBaseClass::GetAODBranch(const TString & aodName) const
+TClonesArray * AliAnaCaloTrackCorrBaseClass::GetAODBranch(TString & aodName) const
 {
-	AliDebug(3,Form("AliAnaCaloTrackCorrBaseClass::GetAODBranch() - Get Input Branch with name: <%s>; \n",aodName.Data()));
+	AliDebug(3,Form("AliAnaCaloTrackCorrBaseClass::GetAODBranch() - Get Input Branch with name: <%s>;",aodName.Data()));
 	
   //Get the AOD handler, if output AOD is created use it, if not get the branches from the input which should be deltaAODs
   AliAODHandler* aodHandler = 0x0;
@@ -336,36 +335,36 @@ TString  AliAnaCaloTrackCorrBaseClass::GetBaseParametersList()
   TString parList ; //this will be list of parameters used for this analysis.
   const Int_t buffersize = 255;
   char onePar[buffersize] ;
-  snprintf(onePar,buffersize,"--- AliAnaCaloTrackCorrBaseClass ---\n") ;
+  snprintf(onePar,buffersize,"--- AliAnaCaloTrackCorrBaseClass ---") ;
   parList+=onePar ;	
-  snprintf(onePar,buffersize,"Minimal P_t: %2.2f ; Max\n", fMinPt) ;
+  snprintf(onePar,buffersize,"Minimal P_t: %2.2f ;", fMinPt) ;
   parList+=onePar ;
-  snprintf(onePar,buffersize,"Minimal P_t: %2.2f ; Max\n", fMaxPt) ;
+  snprintf(onePar,buffersize,"Minimal P_t: %2.2f ;", fMaxPt) ;
   parList+=onePar ;
-  snprintf(onePar,buffersize,"|t_{1}-t_{2}| < %2.2f ; Max\n", fPairTimeCut) ;
+  snprintf(onePar,buffersize,"|t_{1}-t_{2}| < %2.2f;", fPairTimeCut) ;
   parList+=onePar ;
-  snprintf(onePar,buffersize,"fDataMC =%d (Check MC information, on/off) \n",fDataMC) ;
+  snprintf(onePar,buffersize,"fDataMC =%d (Check MC information, on/off);",fDataMC) ;
   parList+=onePar ;
-  snprintf(onePar,buffersize,"fCheckFidCut=%d (Check Fiducial cut selection on/off) \n",fCheckFidCut) ;
+  snprintf(onePar,buffersize,"fCheckFidCut=%d (Check Fiducial cut selection on/off);",fCheckFidCut) ;
   parList+=onePar ;
-  snprintf(onePar,buffersize,"fCheckRealCaloAcc=%d (Check Real Calo Acceptance on/off) \n",fCheckRealCaloAcc) ;
+  snprintf(onePar,buffersize,"fCheckRealCaloAcc=%d (Check Real Calo Acceptance on/off);",fCheckRealCaloAcc) ;
   parList+=onePar ;
-  snprintf(onePar,buffersize,"fCheckCaloPID =%d (Use Bayesian PID in calorimetes, on/off) \n",fCheckCaloPID) ;
+  snprintf(onePar,buffersize,"fCheckCaloPID =%d (Use Bayesian PID in calorimetes, on/off);",fCheckCaloPID) ;
   parList+=onePar ;
-  snprintf(onePar,buffersize,"fRecalculateCaloPID  =%d (Calculate PID from shower/tof/tracking parameters, on/off) \n",fRecalculateCaloPID) ;
+  snprintf(onePar,buffersize,"fRecalculateCaloPID  =%d (Calculate PID from shower/tof/tracking parameters, on/off);",fRecalculateCaloPID) ;
   parList+=onePar ;
-  snprintf(onePar,buffersize,"fInputAODName  =%s Input AOD name \n",fInputAODName.Data()) ;
+  snprintf(onePar,buffersize,"fInputAODName  =%s Input AOD name;",fInputAODName.Data()) ;
   parList+=onePar ;	
   if(fNewAOD)
   {
-    snprintf(onePar,buffersize,"fOutputAODName  =%s Output AOD name \n",fOutputAODName.Data()) ;
+    snprintf(onePar,buffersize,"fOutputAODName  =%s Output AOD name",fOutputAODName.Data()) ;
     parList+=onePar ;	
-    snprintf(onePar,buffersize,"fOutputAODClassName  =%s Output AOD class name \n",fOutputAODClassName.Data()) ;
+    snprintf(onePar,buffersize,"fOutputAODClassName  =%s Output AOD class name;",fOutputAODClassName.Data()) ;
     parList+=onePar ;	
   }
-  snprintf(onePar,buffersize,"fAODObjArrayName  =%s Reference arrays in AOD name \n",fAODObjArrayName.Data()) ;
+  snprintf(onePar,buffersize,"fAODObjArrayName  =%s Reference arrays in AOD name;",fAODObjArrayName.Data()) ;
   parList+=onePar ;	
-  snprintf(onePar,buffersize,"fAddToHistogramsName  =%s String added to beginning of histograms name \n",fAddToHistogramsName.Data()) ;
+  snprintf(onePar,buffersize,"fAddToHistogramsName  =%s String added to beginning of histograms name;",fAddToHistogramsName.Data()) ;
   parList+=onePar ;	
 	
   return parList; 
@@ -493,7 +492,7 @@ Int_t AliAnaCaloTrackCorrBaseClass::GetCocktailGeneratorBackgroundTag(AliVCluste
 //_____________________________________________________________________
 TClonesArray * AliAnaCaloTrackCorrBaseClass::GetCreateOutputAODBranch() 
 {  
-  AliInfo(Form("Create AOD branch of %s objects and with name < %s >\n",
+  AliInfo(Form("Create AOD branch of %s objects and with name < %s >",
           fOutputAODClassName.Data(),fOutputAODName.Data())) ;
   
   TClonesArray * aodBranch = new TClonesArray(fOutputAODClassName, 0);
@@ -581,7 +580,7 @@ Int_t AliAnaCaloTrackCorrBaseClass::GetEventCentralityBin() const
       if(curCentrBin==GetNCentrBin())
       {
         curCentrBin = GetNCentrBin()-1;
-        AliDebug(1,Form("Centrality = %d, put it in last bin \n",GetEventCentrality()));
+        AliDebug(1,Form("Centrality = %d, put it in last bin",GetEventCentrality()));
       }
     }
     else
@@ -610,7 +609,7 @@ Int_t AliAnaCaloTrackCorrBaseClass::GetEventRPBin() const
     
     if(epAngle < 0 || epAngle >TMath::Pi())
     { 
-      AliWarning(Form("Wrong event plane angle : %f \n",epAngle));
+      AliWarning(Form("Wrong event plane angle : %f",epAngle));
       return -1;
     }
     
@@ -683,16 +682,13 @@ void AliAnaCaloTrackCorrBaseClass::InitDebug()
   if( fDebug >= 0 )
     (AliAnalysisManager::GetAnalysisManager())->AddClassDebug(this->ClassName(),fDebug);
   
-  if( GetMCAnalysisUtils()->GetDebug() >= 0 )
-    (AliAnalysisManager::GetAnalysisManager())->AddClassDebug(GetMCAnalysisUtils()->ClassName(),GetMCAnalysisUtils()->GetDebug());
-  
   if( GetIsolationCut()->GetDebug() >= 0 )
     (AliAnalysisManager::GetAnalysisManager())->AddClassDebug(GetIsolationCut()->ClassName(),GetIsolationCut()->GetDebug());
 
   if( GetNeutralMesonSelection()->GetDebug() >= 0 )
     (AliAnalysisManager::GetAnalysisManager())->AddClassDebug(GetNeutralMesonSelection()->ClassName(),GetNeutralMesonSelection()->GetDebug());
     
-  //printf("Debug levels: Ana %d, MC %d, Iso %d\n",fDebug,GetMCAnalysisUtils()->GetDebug(),GetIsolationCut()->GetDebug());
+  //printf("Debug levels: Ana %d, Neutral Sel %d, Iso %d\n",fDebug,GetNeutralMesonSelection()->GetDebug(),GetIsolationCut()->GetDebug());
 }
 
 //_________________________________________________
@@ -891,7 +887,7 @@ void AliAnaCaloTrackCorrBaseClass::Print(const Option_t * opt) const
 //_______________________________________________________________
 /// Set the calorimeter for the analysis. A string.
 //_______________________________________________________________
-void AliAnaCaloTrackCorrBaseClass::SetCalorimeter(TString & calo)
+void AliAnaCaloTrackCorrBaseClass::SetCalorimeter(TString calo)
 {
   fCalorimeterString = calo;
   

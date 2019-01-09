@@ -27,7 +27,7 @@ include_directories(${ROOT_INCLUDE_DIRS}
                     ${AliPhysics_SOURCE_DIR}/OADB
                     ${AliPhysics_SOURCE_DIR}/OADB/COMMON/MULTIPLICITY
                     ${AliPhysics_SOURCE_DIR}/PWGCF/Correlations/Base
-		    ${AliPhysics_SOURCE_DIR}/PWGLF/FORWARD/analysis2
+		                ${AliPhysics_SOURCE_DIR}/PWGLF/FORWARD/analysis2
                     ${AliPhysics_SOURCE_DIR}/PWGLF/STRANGENESS/Cascades/lightvertexers
                     ${AliPhysics_SOURCE_DIR}/PWGLF/STRANGENESS/Cascades/Run2
                     ${AliPhysics_SOURCE_DIR}/PWGUD/base
@@ -53,6 +53,7 @@ set(SRCS
   LambdaK0/AliAnalysisTaskExtractPerformanceV0.cxx
   LambdaK0/AliAnalysisTaskExtractPerformanceV0pPb.cxx
   LambdaK0PbPb/AliAnalysisTaskLK0Spectra.cxx
+  Lifetimes/AliAnalysisTaskStrangenessLifetimes.cxx
   Cascades/AliAnalysisTaskExtractCascade.cxx
   Cascades/AliAnalysisTaskExtractCascadePbPbRun2.cxx
   Cascades/AliAnalysisTaskExtractPerformanceCascade.cxx
@@ -82,8 +83,25 @@ set(SRCS
   Cascades/Run2/AliAnalysisTaskMCPredictions.cxx
   )
 
+if(ROOT_VERSION_MAJOR EQUAL 6)
+  set(SRCS
+    ${SRCS}
+    Lifetimes/AliAnalysisTaskFindableHyperTriton.cxx
+    Cascades/Run2/selectors/AliSelectorFindableHyperTriton3Body.cxx
+    )
+endif()
+
 # Headers from sources
 string(REPLACE ".cxx" ".h" HDRS "${SRCS}")
+
+# Add header only files
+set(HDRS
+  ${HDRS}
+  Lifetimes/HyperTriton2Body.h
+  Lifetimes/MCparticle.h
+  Lifetimes/MiniV0.h
+  Lifetimes/Utils.h
+)
 
 # Generate the dictionary
 # It will create G_ARG1.cxx and G_ARG1.h / ARG1 = function first argument
@@ -143,6 +161,7 @@ install(FILES ${HDRS} DESTINATION include)
 install(DIRECTORY Cascades/macros DESTINATION PWGLF/STRANGENESS/Cascades)
 install(DIRECTORY Cascades/Run2/macros DESTINATION PWGLF/STRANGENESS/Cascades/Run2)
 install(DIRECTORY Correlations/macros DESTINATION PWGLF/STRANGENESS/Correlations)
+install(DIRECTORY Lifetimes/macros DESTINATION PWGLF/STRANGENESS/Lifetimes)
 install(DIRECTORY LambdaK0/macros DESTINATION PWGLF/STRANGENESS/LambdaK0)
 install(DIRECTORY LambdaK0PbPb DESTINATION  PWGLF/STRANGENESS)
 if(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/Cascades/corrections)

@@ -37,6 +37,7 @@ include_directories(${ROOT_INCLUDE_DIRS}
                     ${AliPhysics_SOURCE_DIR}/PWG/Tools
                     ${AliPhysics_SOURCE_DIR}/PWG/JETFW
                     ${AliPhysics_SOURCE_DIR}/PWGGA/GammaConv
+                    ${AliPhysics_SOURCE_DIR}/PWGLF/STRANGENESS/Cascades/Run2
                     ${AliRoot_SOURCE_DIR}/PYTHIA6/pythia6
                     ${AliRoot_SOURCE_DIR}/STEER/AOD
                     ${AliRoot_SOURCE_DIR}/STEER/ESD
@@ -82,7 +83,7 @@ string(REPLACE ".cxx" ".h" HDRS "${SRCS}")
 list (APPEND HDRS AliHFJetsUtils.h)
 
 if(FASTJET_FOUND)
-  list(APPEND HDRS ${AliPhysics_SOURCE_DIR}/PWGJE/EMCALJetTasks/FJ_includes.h)
+  list(APPEND HDRS ../../PWGJE/EMCALJetTasks/FJ_includes.h)
 endif(FASTJET_FOUND)
 
 # Generate the dictionary

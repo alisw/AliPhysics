@@ -3,12 +3,14 @@
 #include "AliAnalysisTaskEmcalJet.h"
 #include "AliV0ReaderV1.h"
 #include "AliConvEventCuts.h"
+#include "AliAnalysisTaskWeakDecayVertexer.h"
 class AliEmcalJet;
 class AliAODVertex;
 class AliAODTrack;
 class TList;
 class TH1D;
 class TH2D;
+class TH3D;
 class THnSparse;
 class AliHFJetsTagging;
 class TClonesArray;
@@ -16,6 +18,9 @@ class AliAODMCParticle;
 class AliAnalysisUtils;
 class TRandom3;
 class AliPIDResponse;
+class AliHFJetsTaggingVertex;
+class AliRDHFJetsCutsVertex;
+class AliVertexerTracks;
 
 
 
@@ -35,11 +40,12 @@ public:
   	virtual void  Terminate(Option_t *);
 	virtual Bool_t Run();
 	virtual Double_t GetDeltaPtRandomCone();
-	virtual Double_t GetDeltaPtRandomConeTagCuts();
+	virtual Double_t GetDeltaPtRandomConeWithSignal();
 	virtual Bool_t Notify();
 
 
   	void SetPtHardBin(Int_t b){ fSelectPtHardBin   = b;}
+  	void SetPtHardThreshold(Double_t b){ fPtHardThreshold   = b;}
 
 	Bool_t IsEventSelected();
 	  enum EPileup {kNoPileupSelection,kRejectPileupEvent,kRejectTracksFromPileupVertex};
@@ -48,6 +54,7 @@ public:
 	Bool_t IsSelected(Int_t &WhyRejected,ULong_t &RejectionBits);
         void DoJetProbabilityAnalysis(Bool_t val=true){fDoJetProbabilityAnalysis=val;}
         void DoPtRelAnalysis(Bool_t val=true){fDoPtRelAnalysis=val;}
+        void DoPtRelEventSelection(Bool_t val=true){fDoSelectionPtRel=val;}
 
 	void UseCorrectedRhoPt(bool val = true){fUseCorrPt =val;};
 	void UseGammaV0Rejection(bool val = true){fEnableV0GammaRejection =val;};
@@ -91,8 +98,25 @@ public:
 
 	void SetV0ReaderName(TString name){fV0ReaderName=name; return;}
 
-	// B jet tracks selection
+	void SetDoSVAnalysis(Bool_t value){fDoSVAnalysis = value;}
+	void SetDoTCAnalysis(Bool_t value){fDoTrackCountingAnalysis = value;}
+	void SetDoForthLargestIP(Bool_t value){fDoForthIP = value;}
 
+	void SetMinTrackProbability(Double_t value){fMinTrackProb = value;}
+
+	void SetDoImprovedDCACut(Bool_t value){fDoImprovedDCACut = value;}
+
+	void SetMaxFactorPtHardJet(Double_t value){fMaxFactorPtHardJet = value;}
+
+	void SetCalculateDCATruth(Bool_t value){fCalcDCATruth = value;}
+
+	void SetTaggerWorkingPoint(Double_t value){fThresholdIP = value;}
+
+	void SetDoDeltaPtWithSignal(Bool_t value){fDoDeltaPtWithSignal = value;}
+
+	void SetDoTaggedJetsDRM(Bool_t value){fDoTaggedDRM = value;}
+
+	// B jet tracks selection
 	void SetTrackMinPt(Double_t val){ fTCMinTrackPt = val;}
 	void SetTPCClusterMin(Int_t val){ fTCMinClusTPC = val;}
 	void SetITSHitsMin(Int_t val){ fTCMinHitsITS = val;}
@@ -135,9 +159,17 @@ private:
 
 	AliHFJetsTagging* fHFJetUtils;//!
 
+	Double_t fPtHardThreshold;//
 	Bool_t fUseCorrPt;//
 	Bool_t fEnableV0GammaRejection;//
 	Float_t fPythiaEventWeight;//!
+	Bool_t fDoImprovedDCACut;//
+	Bool_t fVertexConstraint;//!
+	Double_t fThresholdIP;//
+	Bool_t fDoDeltaPtWithSignal;//
+
+	AliESDVertex* fDiamond;//!
+	AliVertexerTracks *fVertexer;//!
 
   	AliPIDResponse   *fRespoPID;//!
 
@@ -159,6 +191,8 @@ private:
 	Double_t fTCMaxIPz;//
 	Double_t fTCMaxDecayLength;//
 	Double_t fTCMaxDCATrackJet;//
+
+	Double_t fMaxFactorPtHardJet;//
 	
 	TH1D * fhistInclusiveJetCuts;//!
 	TH1D * fhistbJetCuts;//!
@@ -169,8 +203,15 @@ private:
 
 	TH1D * fh1dJetRecPtAcceptedunCorr;//!
 
-	TH1D * fhist_BJet_Background_Fluctuation;//!
 	TH2D * f2histRhoVsDeltaPt;//!
+	TH2D * f2histRhoVsDeltaPtFirst;//!
+	TH2D * f2histRhoVsDeltaPtSecond;//!
+	TH2D * f2histRhoVsDeltaPtThird;//!
+
+	TH2D * f2histRhoVsDeltaPtWithSignal;//!
+	TH2D * f2histRhoVsDeltaPtWithSignalFirst;//!
+	TH2D * f2histRhoVsDeltaPtWithSignalSecond;//!
+	TH2D * f2histRhoVsDeltaPtWithSignalThird;//!
 
 	TH1D * fh1dTracksImpParXY;//! R Impact Parameter
 	TH1D * fh1dTracksImpParXYZ;//! R+z Impact Parameter
@@ -204,7 +245,11 @@ private:
 	TH1D * fh1dJetRecPtcAccepted; //!
 	TH1D * fh1dJetRecPtbAccepted; //!
 
+	Bool_t fDoTaggedDRM; //Flag whether to do tagged jets RDM
 	TH2D * fh2dJetGenPtVsJetRecPt; //! raw momentum response matrix
+	TH2D * fh2dJetGenPtVsJetRecPtFirst; //! raw momentum response matrix N=1
+	TH2D * fh2dJetGenPtVsJetRecPtSecond; //! raw momentum response matrix N=2 
+	TH2D * fh2dJetGenPtVsJetRecPtThird; //! raw momentum response matrix N=3
 	TH2D * fh2dJetGenPtVsJetRecPtb; //! b momentum response matrix
 	TH2D * fh2dJetGenPtVsJetRecPtc; //! c momentum response matrix
 	TH2D * fh2dJetGenPtVsJetRecPtudsg; //! udsg momentum response matrix
@@ -267,6 +312,37 @@ private:
         TH2D * fhistJetProbability_cLog;//!
         TH2D * fhistJetProbability_bLog;//!
 
+	TH2D * fhistJetProbabilityLogFirst;//!
+        TH2D * fhistJetProbability_UnidentifiedLogFirst;//!
+        TH2D * fhistJetProbability_udsgLogFirst;//!
+        TH2D * fhistJetProbability_cLogFirst;//!
+        TH2D * fhistJetProbability_bLogFirst;//!
+
+	TH2D * fhistJetProbabilityLogSecond;//!
+        TH2D * fhistJetProbability_UnidentifiedLogSecond;//!
+        TH2D * fhistJetProbability_udsgLogSecond;//!
+        TH2D * fhistJetProbability_cLogSecond;//!
+        TH2D * fhistJetProbability_bLogSecond;//!
+
+	TH2D * fhistJetProbabilityLogThird;//!
+        TH2D * fhistJetProbability_UnidentifiedLogThird;//!
+        TH2D * fhistJetProbability_udsgLogThird;//!
+        TH2D * fhistJetProbability_cLogThird;//!
+        TH2D * fhistJetProbability_bLogThird;//!
+
+	TH2D * fhistJetProbabilityLogSVHE;//!
+	TH2D * fhistJetProbability_UnidentifiedLogSVHE;//!
+	TH2D * fhistJetProbability_udsgLogSVHE;//!
+	TH2D * fhistJetProbability_cLogSVHE;//!
+	TH2D * fhistJetProbability_bLogSVHE;//!
+
+	TH2D * fhistJetProbabilityLogSVHP;//!
+	TH2D * fhistJetProbability_UnidentifiedLogSVHP;//!
+	TH2D * fhistJetProbability_udsgLogSVHP;//!
+	TH2D * fhistJetProbability_cLogSVHP;//!
+	TH2D * fhistJetProbability_bLogSVHP;//!
+
+	Double_t fMinTrackProb;
 
 	// inclusive signed impact parameter distributions
 	//First
@@ -342,8 +418,21 @@ private:
 	TH2D * fh2dJetSignedImpParXYZSignificancebThird; //!
 	TH2D * fh2dJetSignedImpParXYZSignificancecThird; //!
 
+	//Forth
+	Bool_t fDoForthIP;
+
+	TH2D * fh2dJetSignedImpParXYForth; //!
+	TH2D * fh2dJetSignedImpParXYudsgForth; //!
+	TH2D * fh2dJetSignedImpParXYbForth; //!
+	TH2D * fh2dJetSignedImpParXYcForth; //!
+
+	TH2D * fh2dJetSignedImpParXYSignificanceForth; //!
+	TH2D * fh2dJetSignedImpParXYSignificanceudsgForth; //!
+	TH2D * fh2dJetSignedImpParXYSignificancebForth; //!
+	TH2D * fh2dJetSignedImpParXYSignificancecForth; //!
 
 
+	//V0
 	TH2D* fh2dKshortMassVsPt;//!
 	TH2D* fh2dLamdaMassVsPt;//!
 	TH2D* fh2dAnLamdaMassVsPt;//!
@@ -356,7 +445,7 @@ private:
 	TH2D* fh2dLamdaRecPtVsGenPt;//!
 	TH2D* fh2dAnLamdaRecPtVsGenPt;//!
 
-	TH2D* fh2dPhotonMassVsPt;//!
+	TH1D* fh1dPhotonPt;//!
 
 	TH1D* fh1dKshortPtMC;//!
 	TH1D* fh1dLamdaPtMC;//!
@@ -377,6 +466,7 @@ private:
 	AliAnalysisUtils *fUtils;//!
   	Bool_t fDoJetProbabilityAnalysis;//
 	Bool_t fDoPtRelAnalysis;//
+	Bool_t fDoSelectionPtRel;//
 	Bool_t fUsePicoTracks;//!
 
 
@@ -486,13 +576,58 @@ private:
 
   TF1* fResolutionFunction[7];//
 
+  //Secondary Vertex
+  Bool_t fDoSVAnalysis;//
+  Bool_t fDoTrackCountingAnalysis;//
+
+  AliHFJetsTaggingVertex*  fVtxTagger3Prong;//!
+  AliHFJetsTaggingVertex*  fVtxTagger2Prong;//!
+
+  TH3D* fHistSV2Prong;//!
+  TH3D* fHistSV2ProngUnidentified;//!
+  TH3D* fHistSV2Prongb;//!
+  TH3D* fHistSV2Prongc;//!
+  TH3D* fHistSV2Pronglf;//!
+
+  TH2D* fHistDispersion2Prong;//!
+  TH2D* fHistDispersion2ProngUnidentified;//!
+  TH2D* fHistDispersion2Prongb;//!
+  TH2D* fHistDispersion2Prongc;//!
+  TH2D* fHistDispersion2Pronglf;//!
+
+  TH3D* fHistSV3Prong;//!
+  TH3D* fHistSV3ProngUnidentified;//!
+  TH3D* fHistSV3Prongb;//!
+  TH3D* fHistSV3Prongc;//!
+  TH3D* fHistSV3Pronglf;//!
+
+  TH2D* fHistDispersion3Prong;//!
+  TH2D* fHistDispersion3ProngUnidentified;//!
+  TH2D* fHistDispersion3Prongb;//!
+  TH2D* fHistDispersion3Prongc;//!
+  TH2D* fHistDispersion3Pronglf;//!
+
+  Double_t fInvariantMass;//!
+  Double_t fJetMass;//!
+  Double_t fDispersion;//!
+  Double_t fDecayLength;//!
+  Double_t fLxySign;//!
+  Double_t fJetPt;//!
+  Int_t    fJetFlavor;//!
+  Double_t fValJetProb;//!
+  Double_t fLogJetProb;//!
+
+  Bool_t fCalcDCATruth;//
+
+  AliAnalysisTaskWeakDecayVertexer* fDecayVertex;//!
+
   static const Double_t fgkMassPion;    //
   static const Double_t fgkMassKshort;  //
   static const Double_t fgkMassLambda;  //
   static const Double_t fgkMassProton;  //
   static const Int_t fgkiNCategV0 = 18; // number of V0 selection steps
 
-	ClassDef(AliAnalysisTaskBJetTC, 48)
+	ClassDef(AliAnalysisTaskBJetTC, 54)
 };
 #endif
  //

@@ -74,10 +74,12 @@ AliAnalysisTaskFlowModes::AliAnalysisTaskFlowModes() : AliAnalysisTaskSE(),
   fFlowNUAWeightsFile(0x0),
   fFlowNUEWeightsFile(0x0),
   fInit(kFALSE),
+  fIndexSampling(0),
   fIndexCentrality(-1),
   fEventCounter(0),
   fNumEventsAnalyse(50),
   fRunNumber(-1),
+  fExtraPileUp(kFALSE),
   fPDGMassPion(TDatabasePDG::Instance()->GetParticle(211)->Mass()),
   fPDGMassKaon(TDatabasePDG::Instance()->GetParticle(321)->Mass()),
   fPDGMassProton(TDatabasePDG::Instance()->GetParticle(2212)->Mass()),
@@ -91,6 +93,7 @@ AliAnalysisTaskFlowModes::AliAnalysisTaskFlowModes() : AliAnalysisTaskSE(),
   // analysis selection
   fRunMode(kFull),
   fAnalType(kAOD),
+  fSampling(kFALSE),
   fFillQA(kTRUE),
   fProcessCharged(kFALSE),
   fProcessPID(kFALSE),
@@ -194,24 +197,11 @@ AliAnalysisTaskFlowModes::AliAnalysisTaskFlowModes() : AliAnalysisTaskSE(),
   fh3NUAWeightKaonMinus(0x0),
   fh3NUAWeightProtonMinus(0x0),
 
-  fhNUEWeightRefsPlus(0x0),
-  fhNUEWeightChargedPlus(0x0),
-  fhNUEWeightPionPlus(0x0),
-  fhNUEWeightKaonPlus(0x0),
-  fhNUEWeightProtonPlus(0x0),
-
-  fhNUEWeightRefsMinus(0x0),
-  fhNUEWeightChargedMinus(0x0),
-  fhNUEWeightPionMinus(0x0),
-  fhNUEWeightKaonMinus(0x0),
-  fhNUEWeightProtonMinus(0x0),
-
-
   // event histograms
+  fhEventSampling(0x0),  
   fhEventCentrality(0x0),
   fh2EventCentralityNumSelCharged(0x0),
   fhEventCounter(0x0),
-  fhEventsMultTOFFilterbit32(0x0),
  
   // charged histogram
   fh2RefsMult(0x0),
@@ -279,10 +269,12 @@ AliAnalysisTaskFlowModes::AliAnalysisTaskFlowModes(const char* name) : AliAnalys
   fFlowNUAWeightsFile(0x0),
   fFlowNUEWeightsFile(0x0),
   fInit(kFALSE),
+  fIndexSampling(0),
   fIndexCentrality(-1),
   fEventCounter(0),
   fNumEventsAnalyse(50),
   fRunNumber(-1),
+  fExtraPileUp(kFALSE),
   fPDGMassPion(TDatabasePDG::Instance()->GetParticle(211)->Mass()),
   fPDGMassKaon(TDatabasePDG::Instance()->GetParticle(321)->Mass()),
   fPDGMassProton(TDatabasePDG::Instance()->GetParticle(2212)->Mass()),
@@ -296,6 +288,7 @@ AliAnalysisTaskFlowModes::AliAnalysisTaskFlowModes(const char* name) : AliAnalys
   // analysis selection
   fRunMode(kFull),
   fAnalType(kAOD),
+  fSampling(kFALSE),  
   fFillQA(kTRUE),
   fProcessCharged(kFALSE),
   fProcessPID(kFALSE),
@@ -397,23 +390,11 @@ AliAnalysisTaskFlowModes::AliAnalysisTaskFlowModes(const char* name) : AliAnalys
   fh3NUAWeightKaonMinus(0x0),
   fh3NUAWeightProtonMinus(0x0),
 
-  fhNUEWeightRefsPlus(0x0),
-  fhNUEWeightChargedPlus(0x0),
-  fhNUEWeightPionPlus(0x0),
-  fhNUEWeightKaonPlus(0x0),
-  fhNUEWeightProtonPlus(0x0),
-
-  fhNUEWeightRefsMinus(0x0),
-  fhNUEWeightChargedMinus(0x0),
-  fhNUEWeightPionMinus(0x0),
-  fhNUEWeightKaonMinus(0x0),
-  fhNUEWeightProtonMinus(0x0),
-
   // event histograms
+  fhEventSampling(0x0), 
   fhEventCentrality(0x0),
   fh2EventCentralityNumSelCharged(0x0),
   fhEventCounter(0x0),
-  fhEventsMultTOFFilterbit32(0x0),
 
   // charged histogram
   fh2RefsMult(0x0),
@@ -468,6 +449,19 @@ AliAnalysisTaskFlowModes::AliAnalysisTaskFlowModes(const char* name) : AliAnalys
   // New PID procedure (Bayesian Combined PID)
   fBayesianResponse = new AliFlowBayesianPID();
   fBayesianResponse->SetNewTrackParam();
+  for(Short_t iCent(0); iCent<fNumCentralities; iCent++){
+       fhNUEWeightRefsPlus[iCent] = 0x0;
+       fhNUEWeightRefsMinus[iCent] = 0x0;
+       fhNUEWeightChargedPlus[iCent] = 0x0;
+       fhNUEWeightChargedMinus[iCent] = 0x0;
+       fhNUEWeightPionPlus[iCent] = 0x0;
+       fhNUEWeightPionMinus[iCent] = 0x0;
+       fhNUEWeightKaonPlus[iCent] = 0x0;
+       fhNUEWeightKaonMinus[iCent] = 0x0;
+       fhNUEWeightProtonPlus[iCent] = 0x0;
+       fhNUEWeightProtonMinus[iCent] = 0x0;
+  }
+
   // Flow vectors
   for(Short_t iHarm(0); iHarm < fFlowNumHarmonicsMax; iHarm++)
   {
@@ -491,30 +485,33 @@ AliAnalysisTaskFlowModes::AliAnalysisTaskFlowModes(const char* name) : AliAnalys
       {
         for(Short_t iGap(0); iGap < fNumEtaGap; iGap++)
         {
-              fpMixedRefsCor4[iGap][iMixedHarm] = 0x0;
-              if(iMixedHarm==3)fpMixedRefsCor6[iGap] = 0x0;
+	     for(Short_t iSample(0); iSample < fNumSamples; iSample++)
+             { 
+             fpMixedRefsCor4[iSample][iGap][iMixedHarm] = 0x0;
+              if(iMixedHarm==3)fpMixedRefsCor6[iSample][iGap] = 0x0;
 
-              fpMixedChargedCor3Pos[iGap][iMixedHarm] = 0x0;
-              fpMixedChargedCor3Neg[iGap][iMixedHarm] = 0x0;
+              fpMixedChargedCor3Pos[iSample][iGap][iMixedHarm] = 0x0;
+              fpMixedChargedCor3Neg[iSample][iGap][iMixedHarm] = 0x0;
                
-              fpMixedPionCor3Pos[iGap][iMixedHarm] = 0x0;
-              fpMixedPionCor3Neg[iGap][iMixedHarm] = 0x0;
-              fpMixedKaonCor3Pos[iGap][iMixedHarm] = 0x0;
-              fpMixedKaonCor3Neg[iGap][iMixedHarm] = 0x0;
-              fpMixedProtonCor3Pos[iGap][iMixedHarm] = 0x0;
-              fpMixedProtonCor3Neg[iGap][iMixedHarm] = 0x0;
+              fpMixedPionCor3Pos[iSample][iGap][iMixedHarm] = 0x0;
+              fpMixedPionCor3Neg[iSample][iGap][iMixedHarm] = 0x0;
+              fpMixedKaonCor3Pos[iSample][iGap][iMixedHarm] = 0x0;
+              fpMixedKaonCor3Neg[iSample][iGap][iMixedHarm] = 0x0;
+              fpMixedProtonCor3Pos[iSample][iGap][iMixedHarm] = 0x0;
+              fpMixedProtonCor3Neg[iSample][iGap][iMixedHarm] = 0x0;
                
                if(iMixedHarm==3){
-                   fpMixedChargedCor4Pos[iGap] = 0x0;
-                   fpMixedChargedCor4Neg[iGap] = 0x0;
+                   fpMixedChargedCor4Pos[iSample][iGap] = 0x0;
+                   fpMixedChargedCor4Neg[iSample][iGap] = 0x0;
                    
-                   fpMixedPionCor4Pos[iGap] = 0x0;
-                   fpMixedPionCor4Neg[iGap] = 0x0;
-                   fpMixedKaonCor4Pos[iGap] = 0x0;
-                   fpMixedKaonCor4Neg[iGap] = 0x0;
-                   fpMixedProtonCor4Pos[iGap] = 0x0;
-                   fpMixedProtonCor4Neg[iGap] = 0x0;
+                   fpMixedPionCor4Pos[iSample][iGap] = 0x0;
+                   fpMixedPionCor4Neg[iSample][iGap] = 0x0;
+                   fpMixedKaonCor4Pos[iSample][iGap] = 0x0;
+                   fpMixedKaonCor4Neg[iSample][iGap] = 0x0;
+                   fpMixedProtonCor4Pos[iSample][iGap] = 0x0;
+                   fpMixedProtonCor4Neg[iSample][iGap] = 0x0;
                }
+              } 
                
         }//endfor(Short_t iGap(0); iGap < fNumEtaGap; iGap++)
       }//endfor(Short_t iMixedHarm(0); iMixedHarm < fNumMixedHarmonics; iMixedHarm++)
@@ -522,31 +519,30 @@ AliAnalysisTaskFlowModes::AliAnalysisTaskFlowModes(const char* name) : AliAnalys
 
     if(!fDoOnlyMixedCorrelations){
       for(Short_t iHarm(0); iHarm < fNumHarmonics; iHarm++){
-          //fpRefsCor4[iHarm] = 0x0;
-          //fp2ChargedCor4[iHarm] = 0x0;
-          //fp2PionCor4[iHarm] = 0x0;
-          //fp2KaonCor4[iHarm] = 0x0;
-          //fp2ProtonCor4[iHarm] = 0x0;
-
-       
+        //fpRefsCor4[iHarm] = 0x0;
+        //fp2ChargedCor4[iHarm] = 0x0;
+        //fp2PionCor4[iHarm] = 0x0;
+        //fp2KaonCor4[iHarm] = 0x0;
+        //fp2ProtonCor4[iHarm] = 0x0;
         for(Short_t iGap(0); iGap < fNumEtaGap; iGap++){
-
           // mean Qx,Qy
           fpMeanQxRefsPos[iGap][iHarm] = 0x0;
           fpMeanQxRefsNeg[iGap][iHarm] = 0x0;
           fpMeanQyRefsPos[iGap][iHarm] = 0x0;
           fpMeanQyRefsNeg[iGap][iHarm] = 0x0;
-
-          fpRefsCor2[iGap][iHarm] = 0x0;
-          fp2ChargedCor2Pos[iGap][iHarm] = 0x0;
-          fp2ChargedCor2Neg[iGap][iHarm] = 0x0;
-          fp2PionCor2Pos[iGap][iHarm] = 0x0;
-          fp2PionCor2Neg[iGap][iHarm] = 0x0;
-          fp2KaonCor2Pos[iGap][iHarm] = 0x0;
-          fp2KaonCor2Neg[iGap][iHarm] = 0x0;
-          fp2ProtonCor2Pos[iGap][iHarm] = 0x0;
-          fp2ProtonCor2Neg[iGap][iHarm] = 0x0;
-
+          for(Short_t iSample(0); iSample < fNumSamples; iSample++)
+          {
+              
+          	fpRefsCor2[iSample][iGap][iHarm] = 0x0;
+          	fp2ChargedCor2Pos[iSample][iGap][iHarm] = 0x0;
+          	fp2ChargedCor2Neg[iSample][iGap][iHarm] = 0x0;
+          	fp2PionCor2Pos[iSample][iGap][iHarm] = 0x0;
+          	fp2PionCor2Neg[iSample][iGap][iHarm] = 0x0;
+          	fp2KaonCor2Pos[iSample][iGap][iHarm] = 0x0;
+          	fp2KaonCor2Neg[iSample][iGap][iHarm] = 0x0;
+          	fp2ProtonCor2Pos[iSample][iGap][iHarm] = 0x0;
+          	fp2ProtonCor2Neg[iSample][iGap][iHarm] = 0x0;
+          }
         }//endfor(Short_t iGap(0); iGap < fNumEtaGap; iGap++)
       }//endfor(Short_t iHarm(0); iHarm < fNumHarmonics; iHarm++)
     }//endif(!fDoOnlyMixedCorrelations)
@@ -562,7 +558,7 @@ AliAnalysisTaskFlowModes::AliAnalysisTaskFlowModes(const char* name) : AliAnalys
     fhQAEventsSPDresol[iQA] = 0x0;
     fhQAEventsPileUp[iQA] = 0x0;
     fhQAEventsCentralityOutliers[iQA] = 0x0;
-
+    fhEventsMultTOFFilterbit32[iQA] = 0x0;
     // charged
     fhQAChargedMult[iQA] = 0x0;
     fhQAChargedPt[iQA] = 0x0;
@@ -677,6 +673,8 @@ void AliAnalysisTaskFlowModes::UserCreateOutputObjects()
   // creating histograms
     // event histogram
     
+    fhEventSampling = new TH2D("fhEventSampling","Event sampling; centrality/multiplicity; sample index", fFlowCentNumBins,0,fFlowCentNumBins, fNumSamples,0,fNumSamples);
+    fQAEvents->Add(fhEventSampling);
     fhEventCentrality = new TH1D("fhEventCentrality",Form("Event centrality (%s); centrality/multiplicity",fMultEstimator.Data()), fFlowCentNumBins,0,fFlowCentNumBins);
     fQAEvents->Add(fhEventCentrality);
     fh2EventCentralityNumSelCharged = new TH2D("fh2EventCentralityNumSelCharged",Form("Event centrality (%s) vs. N^{sel}_{ch}; N^{sel}_{ch}; centrality/multiplicity",fMultEstimator.Data()), 3000,0,3000, fFlowCentNumBins,0,fFlowCentNumBins);
@@ -688,8 +686,6 @@ void AliAnalysisTaskFlowModes::UserCreateOutputObjects()
     for(Short_t i(0); i < iEventCounterBins; i++) fhEventCounter->GetXaxis()->SetBinLabel(i+1, sEventCounterLabel[i].Data() );
     fQAEvents->Add(fhEventCounter);
     
-    fhEventsMultTOFFilterbit32 = new TH2D("fhEventsMultTOFFilterbit32","filterbit32 vs. TOF multiplicity; multiplicity(fb32);multiplicity(fb32+TOF)", 4000,0,4000,2000,0,2000);
-    fQAEvents->Add(fhEventsMultTOFFilterbit32); 
     // flow histograms & profiles
     // weights
     if(fFlowFillWeights || fRunMode == kFillWeights)
@@ -771,91 +767,94 @@ void AliAnalysisTaskFlowModes::UserCreateOutputObjects()
         {
           for(Short_t iGap(0); iGap < fNumEtaGap; iGap++)//For now only for nonoverlapping subevents...
           {
-            //reference flow for mixed harmonics 422,633,523
-            if(iMixedHarm!=3){
-                fpMixedRefsCor4[iGap][iMixedHarm] = new TProfile(Form("fpRefs_<4>_MixedHarm%d_gap%02.2g",fMixedHarmonics[iMixedHarm],10*fEtaGap[iGap]),Form("Ref: <<4>> | Gap %g | v%d ; centrality/multiplicity;",fEtaGap[iGap],fMixedHarmonics[iMixedHarm]), fFlowCentNumBins,fFlowCentMin,fFlowCentMax);
-                	fpMixedRefsCor4[iGap][iMixedHarm]->Sumw2(kTRUE);
-                	fFlowRefs->Add(fpMixedRefsCor4[iGap][iMixedHarm]);
-            }
-            if(iMixedHarm==3){
+            for(Short_t iSample(0); iSample < fNumSamples; iSample++)
+            { 
+              //reference flow for mixed harmonics 422,633,523
+              if(iMixedHarm!=3){
+                fpMixedRefsCor4[iSample][iGap][iMixedHarm] = new TProfile(Form("fpRefs_<4>_MixedHarm%d_gap%02.2g_sample%d",fMixedHarmonics[iMixedHarm],10*fEtaGap[iGap],iSample),Form("Ref: <<4>> | Gap %g | v%d | sample %d ; centrality/multiplicity;",fEtaGap[iGap],fMixedHarmonics[iMixedHarm],iSample), fFlowCentNumBins,fFlowCentMin,fFlowCentMax);
+                	fpMixedRefsCor4[iSample][iGap][iMixedHarm]->Sumw2(kTRUE);
+                	fFlowRefs->Add(fpMixedRefsCor4[iSample][iGap][iMixedHarm]);
+              }
+              if(iMixedHarm==3){
                 //reference flow for mixed harmonics 6222
-                fpMixedRefsCor6[iGap] = new TProfile(Form("fpRefs_<6>_MixedHarm%d_gap%02.2g",fMixedHarmonics[iMixedHarm],10*fEtaGap[iGap]),Form("Ref: <<6>> | Gap %g | v%d  ; centrality/multiplicity;",fEtaGap[iGap],fMixedHarmonics[iMixedHarm]), fFlowCentNumBins,fFlowCentMin,fFlowCentMax);
-                fpMixedRefsCor6[iGap]->Sumw2(kTRUE);
-                fFlowRefs->Add(fpMixedRefsCor6[iGap]);
-            }
+                fpMixedRefsCor6[iSample][iGap] = new TProfile(Form("fpRefs_<6>_MixedHarm%d_gap%02.2g_sample%d",fMixedHarmonics[iMixedHarm],10*fEtaGap[iGap],iSample),Form("Ref: <<6>> | Gap %g | v%d  | sample %d ; centrality/multiplicity;",fEtaGap[iGap],fMixedHarmonics[iMixedHarm],iSample), fFlowCentNumBins,fFlowCentMin,fFlowCentMax);
+                fpMixedRefsCor6[iSample][iGap]->Sumw2(kTRUE);
+                fFlowRefs->Add(fpMixedRefsCor6[iSample][iGap]);
+              }
             
-            if(fProcessCharged){
+              if(fProcessCharged){
                 if(iMixedHarm!=3){
-                    fpMixedChargedCor3Pos[iGap][iMixedHarm] = new TProfile2D(Form("fp2Charged_<3>_MixedHarm%d_gap%02.2g_Pos",fMixedHarmonics[iMixedHarm],10*fEtaGap[iGap]),Form("Charged: <<3'>> | Gap %g | v%d  | POIs pos; centrality/multiplicity; #it{p}_{T} (GeV/c)",fEtaGap[iGap],fMixedHarmonics[iMixedHarm]), fFlowCentNumBins,fFlowCentMin,fFlowCentMax, fFlowPOIsPtNumBins,fFlowPOIsPtMin,fFlowPOIsPtMax);
-                    fpMixedChargedCor3Pos[iGap][iMixedHarm]->Sumw2(kTRUE);
-                    fFlowCharged->Add(fpMixedChargedCor3Pos[iGap][iMixedHarm]);
+                    fpMixedChargedCor3Pos[iSample][iGap][iMixedHarm] = new TProfile2D(Form("fp2Charged_<3>_MixedHarm%d_gap%02.2g_Pos_sample%d",fMixedHarmonics[iMixedHarm],10*fEtaGap[iGap],iSample),Form("Charged: <<3'>> | Gap %g | v%d  | POIs pos | sample %d ; centrality/multiplicity; #it{p}_{T} (GeV/c)",fEtaGap[iGap],fMixedHarmonics[iMixedHarm],iSample), fFlowCentNumBins,fFlowCentMin,fFlowCentMax, fFlowPOIsPtNumBins,fFlowPOIsPtMin,fFlowPOIsPtMax);
+                    fpMixedChargedCor3Pos[iSample][iGap][iMixedHarm]->Sumw2(kTRUE);
+                    fFlowCharged->Add(fpMixedChargedCor3Pos[iSample][iGap][iMixedHarm]);
 
-                    fpMixedChargedCor3Neg[iGap][iMixedHarm] = new TProfile2D(Form("fp2Charged_<3>_MixedHarm%d_gap%02.2g_Neg",fMixedHarmonics[iMixedHarm],10*fEtaGap[iGap]),Form("Charged: <<3'>> | Gap %g | v%d  | POIs neg; centrality/multiplicity; #it{p}_{T} (GeV/c)",fEtaGap[iGap],fMixedHarmonics[iMixedHarm]), fFlowCentNumBins,fFlowCentMin,fFlowCentMax, fFlowPOIsPtNumBins,fFlowPOIsPtMin,fFlowPOIsPtMax);
-                    fpMixedChargedCor3Neg[iGap][iMixedHarm]->Sumw2(kTRUE);
-                    fFlowCharged->Add(fpMixedChargedCor3Neg[iGap][iMixedHarm]);
+                    fpMixedChargedCor3Neg[iSample][iGap][iMixedHarm] = new TProfile2D(Form("fp2Charged_<3>_MixedHarm%d_gap%02.2g_Neg_sample%d",fMixedHarmonics[iMixedHarm],10*fEtaGap[iGap],iSample),Form("Charged: <<3'>> | Gap %g | v%d  | POIs neg | sample %d; centrality/multiplicity; #it{p}_{T} (GeV/c)",fEtaGap[iGap],fMixedHarmonics[iMixedHarm],iSample), fFlowCentNumBins,fFlowCentMin,fFlowCentMax, fFlowPOIsPtNumBins,fFlowPOIsPtMin,fFlowPOIsPtMax);
+                    fpMixedChargedCor3Neg[iSample][iGap][iMixedHarm]->Sumw2(kTRUE);
+                    fFlowCharged->Add(fpMixedChargedCor3Neg[iSample][iGap][iMixedHarm]);
                 }
                 if(iMixedHarm==3){
-                    fpMixedChargedCor4Pos[iGap] = new TProfile2D(Form("fp2Charged_<4>_MixedHarm%d_gap%02.2g_Pos",fMixedHarmonics[iMixedHarm],10*fEtaGap[iGap]),Form("Charged: <<4'>> | Gap %g | v%d  | POIs pos; centrality/multiplicity; #it{p}_{T} (GeV/c)",fEtaGap[iGap],fMixedHarmonics[iMixedHarm]), fFlowCentNumBins,fFlowCentMin,fFlowCentMax, fFlowPOIsPtNumBins,fFlowPOIsPtMin,fFlowPOIsPtMax);
-                    fpMixedChargedCor4Pos[iGap]->Sumw2(kTRUE);
-                    fFlowCharged->Add(fpMixedChargedCor4Pos[iGap]);
+                    fpMixedChargedCor4Pos[iSample][iGap] = new TProfile2D(Form("fp2Charged_<4>_MixedHarm%d_gap%02.2g_Pos_sample%d",fMixedHarmonics[iMixedHarm],10*fEtaGap[iGap],iSample),Form("Charged: <<4'>> | Gap %g | v%d  | POIs pos | sample %d; centrality/multiplicity; #it{p}_{T} (GeV/c)",fEtaGap[iGap],fMixedHarmonics[iMixedHarm],iSample), fFlowCentNumBins,fFlowCentMin,fFlowCentMax, fFlowPOIsPtNumBins,fFlowPOIsPtMin,fFlowPOIsPtMax);
+                    fpMixedChargedCor4Pos[iSample][iGap]->Sumw2(kTRUE);
+                    fFlowCharged->Add(fpMixedChargedCor4Pos[iSample][iGap]);
                         
-                    fpMixedChargedCor4Neg[iGap] = new TProfile2D(Form("fp2Charged_<4>_MixedHarm%d_gap%02.2g_Neg",fMixedHarmonics[iMixedHarm],10*fEtaGap[iGap]),Form("Charged: <<4'>> | Gap %g | v%d  | POIs neg; centrality/multiplicity; #it{p}_{T} (GeV/c)",fEtaGap[iGap],fMixedHarmonics[iMixedHarm]), fFlowCentNumBins,fFlowCentMin,fFlowCentMax, fFlowPOIsPtNumBins,fFlowPOIsPtMin,fFlowPOIsPtMax);
-                    fpMixedChargedCor4Neg[iGap]->Sumw2(kTRUE);
-                    fFlowCharged->Add(fpMixedChargedCor4Neg[iGap]);
+                    fpMixedChargedCor4Neg[iSample][iGap] = new TProfile2D(Form("fp2Charged_<4>_MixedHarm%d_gap%02.2g_Neg_sample%d",fMixedHarmonics[iMixedHarm],10*fEtaGap[iGap],iSample),Form("Charged: <<4'>> | Gap %g | v%d  | POIs neg | sample %d; centrality/multiplicity; #it{p}_{T} (GeV/c)",fEtaGap[iGap],fMixedHarmonics[iMixedHarm],iSample), fFlowCentNumBins,fFlowCentMin,fFlowCentMax, fFlowPOIsPtNumBins,fFlowPOIsPtMin,fFlowPOIsPtMax);
+                    fpMixedChargedCor4Neg[iSample][iGap]->Sumw2(kTRUE);
+                    fFlowCharged->Add(fpMixedChargedCor4Neg[iSample][iGap]);
                 }
-            }//if(fProcessCharged)
-            if(fProcessPID){
+              }//if(fProcessCharged)
+              if(fProcessPID){
                 if(iMixedHarm!=3){
-                    fpMixedPionCor3Pos[iGap][iMixedHarm] = new TProfile2D(Form("fp2Pion_<3>_MixedHarm%d_gap%02.2g_Pos",fMixedHarmonics[iMixedHarm],10*fEtaGap[iGap]),Form("Pion: <<3'>> | Gap %g | v%d  | POIs pos; centrality/multiplicity; #it{p}_{T} (GeV/c)",fEtaGap[iGap],fMixedHarmonics[iMixedHarm]), fFlowCentNumBins,fFlowCentMin,fFlowCentMax, fFlowPOIsPtNumBins,fFlowPOIsPtMin,fFlowPOIsPtMax);
-                    fpMixedPionCor3Pos[iGap][iMixedHarm]->Sumw2(kTRUE);
-                    fFlowPID->Add(fpMixedPionCor3Pos[iGap][iMixedHarm]);
+                    fpMixedPionCor3Pos[iSample][iGap][iMixedHarm] = new TProfile2D(Form("fp2Pion_<3>_MixedHarm%d_gap%02.2g_Pos_sample%d",fMixedHarmonics[iMixedHarm],10*fEtaGap[iGap],iSample),Form("Pion: <<3'>> | Gap %g | v%d  | POIs pos | sample %d; centrality/multiplicity; #it{p}_{T} (GeV/c)",fEtaGap[iGap],fMixedHarmonics[iMixedHarm],iSample), fFlowCentNumBins,fFlowCentMin,fFlowCentMax, fFlowPOIsPtNumBins,fFlowPOIsPtMin,fFlowPOIsPtMax);
+                    fpMixedPionCor3Pos[iSample][iGap][iMixedHarm]->Sumw2(kTRUE);
+                    fFlowPID->Add(fpMixedPionCor3Pos[iSample][iGap][iMixedHarm]);
 
-                    fpMixedPionCor3Neg[iGap][iMixedHarm] = new TProfile2D(Form("fp2Pion_<3>_MixedHarm%d_gap%02.2g_Neg",fMixedHarmonics[iMixedHarm],10*fEtaGap[iGap]),Form("Pion: <<3'>> | Gap %g | v%d  | POIs neg; centrality/multiplicity; #it{p}_{T} (GeV/c)",fEtaGap[iGap],fMixedHarmonics[iMixedHarm]), fFlowCentNumBins,fFlowCentMin,fFlowCentMax, fFlowPOIsPtNumBins,fFlowPOIsPtMin,fFlowPOIsPtMax);
-                    fpMixedPionCor3Neg[iGap][iMixedHarm]->Sumw2(kTRUE);
-                    fFlowPID->Add(fpMixedPionCor3Neg[iGap][iMixedHarm]);
+                    fpMixedPionCor3Neg[iSample][iGap][iMixedHarm] = new TProfile2D(Form("fp2Pion_<3>_MixedHarm%d_gap%02.2g_Neg_sample%d",fMixedHarmonics[iMixedHarm],10*fEtaGap[iGap],iSample),Form("Pion: <<3'>> | Gap %g | v%d  | POIs neg | sample %d; centrality/multiplicity; #it{p}_{T} (GeV/c)",fEtaGap[iGap],fMixedHarmonics[iMixedHarm],iSample), fFlowCentNumBins,fFlowCentMin,fFlowCentMax, fFlowPOIsPtNumBins,fFlowPOIsPtMin,fFlowPOIsPtMax);
+                    fpMixedPionCor3Neg[iSample][iGap][iMixedHarm]->Sumw2(kTRUE);
+                    fFlowPID->Add(fpMixedPionCor3Neg[iSample][iGap][iMixedHarm]);
 
-                    fpMixedKaonCor3Pos[iGap][iMixedHarm] = new TProfile2D(Form("fp2Kaon_<3>_MixedHarm%d_gap%02.2g_Pos",fMixedHarmonics[iMixedHarm],10*fEtaGap[iGap]),Form("Pion: <<3'>> | Gap %g | v%d  | POIs pos; centrality/multiplicity; #it{p}_{T} (GeV/c)",fEtaGap[iGap],fMixedHarmonics[iMixedHarm]), fFlowCentNumBins,fFlowCentMin,fFlowCentMax, fFlowPOIsPtNumBins,fFlowPOIsPtMin,fFlowPOIsPtMax);
-                    fpMixedKaonCor3Pos[iGap][iMixedHarm]->Sumw2(kTRUE);
-                    fFlowPID->Add(fpMixedKaonCor3Pos[iGap][iMixedHarm]);
+                    fpMixedKaonCor3Pos[iSample][iGap][iMixedHarm] = new TProfile2D(Form("fp2Kaon_<3>_MixedHarm%d_gap%02.2g_Pos_sample%d",fMixedHarmonics[iMixedHarm],10*fEtaGap[iGap],iSample),Form("Pion: <<3'>> | Gap %g | v%d  | POIs pos | sample %d; centrality/multiplicity; #it{p}_{T} (GeV/c)",fEtaGap[iGap],fMixedHarmonics[iMixedHarm],iSample), fFlowCentNumBins,fFlowCentMin,fFlowCentMax, fFlowPOIsPtNumBins,fFlowPOIsPtMin,fFlowPOIsPtMax);
+                    fpMixedKaonCor3Pos[iSample][iGap][iMixedHarm]->Sumw2(kTRUE);
+                    fFlowPID->Add(fpMixedKaonCor3Pos[iSample][iGap][iMixedHarm]);
 
-                    fpMixedKaonCor3Neg[iGap][iMixedHarm] = new TProfile2D(Form("fp2Kaon_<3>_MixedHarm%d_gap%02.2g_Neg",fMixedHarmonics[iMixedHarm],10*fEtaGap[iGap]),Form("Kaon: <<3'>> | Gap %g | v%d  | POIs neg; centrality/multiplicity; #it{p}_{T} (GeV/c)",fEtaGap[iGap],fMixedHarmonics[iMixedHarm]), fFlowCentNumBins,fFlowCentMin,fFlowCentMax, fFlowPOIsPtNumBins,fFlowPOIsPtMin,fFlowPOIsPtMax);
-                    fpMixedKaonCor3Neg[iGap][iMixedHarm]->Sumw2(kTRUE);
-                    fFlowPID->Add(fpMixedKaonCor3Neg[iGap][iMixedHarm]);
+                    fpMixedKaonCor3Neg[iSample][iGap][iMixedHarm] = new TProfile2D(Form("fp2Kaon_<3>_MixedHarm%d_gap%02.2g_Neg_sample%d",fMixedHarmonics[iMixedHarm],10*fEtaGap[iGap],iSample),Form("Kaon: <<3'>> | Gap %g | v%d  | POIs neg | sample %d; centrality/multiplicity; #it{p}_{T} (GeV/c)",fEtaGap[iGap],fMixedHarmonics[iMixedHarm],iSample), fFlowCentNumBins,fFlowCentMin,fFlowCentMax, fFlowPOIsPtNumBins,fFlowPOIsPtMin,fFlowPOIsPtMax);
+                    fpMixedKaonCor3Neg[iSample][iGap][iMixedHarm]->Sumw2(kTRUE);
+                    fFlowPID->Add(fpMixedKaonCor3Neg[iSample][iGap][iMixedHarm]);
 
-                    fpMixedProtonCor3Pos[iGap][iMixedHarm] = new TProfile2D(Form("fp2Proton_<3>_MixedHarm%d_gap%02.2g_Pos",fMixedHarmonics[iMixedHarm],10*fEtaGap[iGap]),Form("Proton: <<3'>> | Gap %g | v%d  | POIs pos; centrality/multiplicity; #it{p}_{T} (GeV/c)",fEtaGap[iGap],fMixedHarmonics[iMixedHarm]), fFlowCentNumBins,fFlowCentMin,fFlowCentMax, fFlowPOIsPtNumBins,fFlowPOIsPtMin,fFlowPOIsPtMax);
-                    fpMixedProtonCor3Pos[iGap][iMixedHarm]->Sumw2(kTRUE);
-                    fFlowPID->Add(fpMixedProtonCor3Pos[iGap][iMixedHarm]);
+                    fpMixedProtonCor3Pos[iSample][iGap][iMixedHarm] = new TProfile2D(Form("fp2Proton_<3>_MixedHarm%d_gap%02.2g_Pos_sample%d",fMixedHarmonics[iMixedHarm],10*fEtaGap[iGap],iSample),Form("Proton: <<3'>> | Gap %g | v%d  | POIs pos | sample %d; centrality/multiplicity; #it{p}_{T} (GeV/c)",fEtaGap[iGap],fMixedHarmonics[iMixedHarm],iSample), fFlowCentNumBins,fFlowCentMin,fFlowCentMax, fFlowPOIsPtNumBins,fFlowPOIsPtMin,fFlowPOIsPtMax);
+                    fpMixedProtonCor3Pos[iSample][iGap][iMixedHarm]->Sumw2(kTRUE);
+                    fFlowPID->Add(fpMixedProtonCor3Pos[iSample][iGap][iMixedHarm]);
 
-                    fpMixedProtonCor3Neg[iGap][iMixedHarm] = new TProfile2D(Form("fp2Proton_<3>_MixedHarm%d_gap%02.2g_Neg",fMixedHarmonics[iMixedHarm],10*fEtaGap[iGap]),Form("Proton: <<3'>> | Gap %g | v%d  | POIs neg; centrality/multiplicity; #it{p}_{T} (GeV/c)",fEtaGap[iGap],fMixedHarmonics[iMixedHarm]), fFlowCentNumBins,fFlowCentMin,fFlowCentMax, fFlowPOIsPtNumBins,fFlowPOIsPtMin,fFlowPOIsPtMax);
-                    fpMixedProtonCor3Neg[iGap][iMixedHarm]->Sumw2(kTRUE);
-                    fFlowPID->Add(fpMixedProtonCor3Neg[iGap][iMixedHarm]);
+                    fpMixedProtonCor3Neg[iSample][iGap][iMixedHarm] = new TProfile2D(Form("fp2Proton_<3>_MixedHarm%d_gap%02.2g_Neg_sample%d",fMixedHarmonics[iMixedHarm],10*fEtaGap[iGap],iSample),Form("Proton: <<3'>> | Gap %g | v%d  | POIs neg | sample %d; centrality/multiplicity; #it{p}_{T} (GeV/c)",fEtaGap[iGap],fMixedHarmonics[iMixedHarm],iSample), fFlowCentNumBins,fFlowCentMin,fFlowCentMax, fFlowPOIsPtNumBins,fFlowPOIsPtMin,fFlowPOIsPtMax);
+                    fpMixedProtonCor3Neg[iSample][iGap][iMixedHarm]->Sumw2(kTRUE);
+                    fFlowPID->Add(fpMixedProtonCor3Neg[iSample][iGap][iMixedHarm]);
                 }
                 if(iMixedHarm==3){
-                    fpMixedPionCor4Pos[iGap] = new TProfile2D(Form("fp2Pion_<4>_MixedHarm%d_gap%02.2g_Pos",fMixedHarmonics[iMixedHarm],10*fEtaGap[iGap]),Form("Pion: <<4'>> | Gap %g | v%d  | POIs pos; centrality/multiplicity; #it{p}_{T} (GeV/c)",fEtaGap[iGap],fMixedHarmonics[iMixedHarm]), fFlowCentNumBins,fFlowCentMin,fFlowCentMax, fFlowPOIsPtNumBins,fFlowPOIsPtMin,fFlowPOIsPtMax);
-                    fpMixedPionCor4Pos[iGap]->Sumw2(kTRUE);
-                    fFlowPID->Add(fpMixedPionCor4Pos[iGap]);
+                    fpMixedPionCor4Pos[iSample][iGap] = new TProfile2D(Form("fp2Pion_<4>_MixedHarm%d_gap%02.2g_Pos_sample%d",fMixedHarmonics[iMixedHarm],10*fEtaGap[iGap],iSample),Form("Pion: <<4'>> | Gap %g | v%d  | POIs pos | sample %d; centrality/multiplicity; #it{p}_{T} (GeV/c)",fEtaGap[iGap],fMixedHarmonics[iMixedHarm],iSample), fFlowCentNumBins,fFlowCentMin,fFlowCentMax, fFlowPOIsPtNumBins,fFlowPOIsPtMin,fFlowPOIsPtMax);
+                    fpMixedPionCor4Pos[iSample][iGap]->Sumw2(kTRUE);
+                    fFlowPID->Add(fpMixedPionCor4Pos[iSample][iGap]);
                         
-                    fpMixedPionCor4Neg[iGap] = new TProfile2D(Form("fp2Pion_<4>_MixedHarm%d_gap%02.2g_Neg",fMixedHarmonics[iMixedHarm],10*fEtaGap[iGap]),Form("Pion: <<4'>> | Gap %g | v%d  | POIs neg; centrality/multiplicity; #it{p}_{T} (GeV/c)",fEtaGap[iGap],fMixedHarmonics[iMixedHarm]), fFlowCentNumBins,fFlowCentMin,fFlowCentMax, fFlowPOIsPtNumBins,fFlowPOIsPtMin,fFlowPOIsPtMax);
-                    fpMixedPionCor4Neg[iGap]->Sumw2(kTRUE);
-                    fFlowPID->Add(fpMixedPionCor4Neg[iGap]);
+                    fpMixedPionCor4Neg[iSample][iGap] = new TProfile2D(Form("fp2Pion_<4>_MixedHarm%d_gap%02.2g_Neg_sample%d",fMixedHarmonics[iMixedHarm],10*fEtaGap[iGap],iSample),Form("Pion: <<4'>> | Gap %g | v%d  | POIs neg | sample %d; centrality/multiplicity; #it{p}_{T} (GeV/c)",fEtaGap[iGap],fMixedHarmonics[iMixedHarm],iSample), fFlowCentNumBins,fFlowCentMin,fFlowCentMax, fFlowPOIsPtNumBins,fFlowPOIsPtMin,fFlowPOIsPtMax);
+                    fpMixedPionCor4Neg[iSample][iGap]->Sumw2(kTRUE);
+                    fFlowPID->Add(fpMixedPionCor4Neg[iSample][iGap]);
                     
-                    fpMixedKaonCor4Pos[iGap] = new TProfile2D(Form("fp2Kaon_<4>_MixedHarm%d_gap%02.2g_Pos",fMixedHarmonics[iMixedHarm],10*fEtaGap[iGap]),Form("Kaon: <<4'>> | Gap %g | v%d  | POIs pos; centrality/multiplicity; #it{p}_{T} (GeV/c)",fEtaGap[iGap],fMixedHarmonics[iMixedHarm]), fFlowCentNumBins,fFlowCentMin,fFlowCentMax, fFlowPOIsPtNumBins,fFlowPOIsPtMin,fFlowPOIsPtMax);
-                    fpMixedKaonCor4Pos[iGap]->Sumw2(kTRUE);
-                    fFlowPID->Add(fpMixedKaonCor4Pos[iGap]);
+                    fpMixedKaonCor4Pos[iSample][iGap] = new TProfile2D(Form("fp2Kaon_<4>_MixedHarm%d_gap%02.2g_Pos_sample%d",fMixedHarmonics[iMixedHarm],10*fEtaGap[iGap],iSample),Form("Kaon: <<4'>> | Gap %g | v%d  | POIs pos | sample %d; centrality/multiplicity; #it{p}_{T} (GeV/c)",fEtaGap[iGap],fMixedHarmonics[iMixedHarm],iSample), fFlowCentNumBins,fFlowCentMin,fFlowCentMax, fFlowPOIsPtNumBins,fFlowPOIsPtMin,fFlowPOIsPtMax);
+                    fpMixedKaonCor4Pos[iSample][iGap]->Sumw2(kTRUE);
+                    fFlowPID->Add(fpMixedKaonCor4Pos[iSample][iGap]);
                         
-                    fpMixedKaonCor4Neg[iGap] = new TProfile2D(Form("fp2Kaon_<4>_MixedHarm%d_gap%02.2g_Neg",fMixedHarmonics[iMixedHarm],10*fEtaGap[iGap]),Form("Kaon: <<4'>> | Gap %g | v%d  | POIs neg; centrality/multiplicity; #it{p}_{T} (GeV/c)",fEtaGap[iGap],fMixedHarmonics[iMixedHarm]), fFlowCentNumBins,fFlowCentMin,fFlowCentMax, fFlowPOIsPtNumBins,fFlowPOIsPtMin,fFlowPOIsPtMax);
-                    fpMixedKaonCor4Neg[iGap]->Sumw2(kTRUE);
-                    fFlowPID->Add(fpMixedKaonCor4Neg[iGap]);
+                    fpMixedKaonCor4Neg[iSample][iGap] = new TProfile2D(Form("fp2Kaon_<4>_MixedHarm%d_gap%02.2g_Neg_sample%d",fMixedHarmonics[iMixedHarm],10*fEtaGap[iGap],iSample),Form("Kaon: <<4'>> | Gap %g | v%d  | POIs neg | sample %d; centrality/multiplicity; #it{p}_{T} (GeV/c)",fEtaGap[iGap],fMixedHarmonics[iMixedHarm],iSample), fFlowCentNumBins,fFlowCentMin,fFlowCentMax, fFlowPOIsPtNumBins,fFlowPOIsPtMin,fFlowPOIsPtMax);
+                    fpMixedKaonCor4Neg[iSample][iGap]->Sumw2(kTRUE);
+                    fFlowPID->Add(fpMixedKaonCor4Neg[iSample][iGap]);
                         
-                    fpMixedProtonCor4Pos[iGap] = new TProfile2D(Form("fp2Proton_<4>_MixedHarm%d_gap%02.2g_Pos",fMixedHarmonics[iMixedHarm],10*fEtaGap[iGap]),Form("Proton: <<4'>> | Gap %g | v%d  | POIs pos; centrality/multiplicity; #it{p}_{T} (GeV/c)",fEtaGap[iGap],fMixedHarmonics[iMixedHarm]), fFlowCentNumBins,fFlowCentMin,fFlowCentMax, fFlowPOIsPtNumBins,fFlowPOIsPtMin,fFlowPOIsPtMax);
-                    fpMixedProtonCor4Pos[iGap]->Sumw2(kTRUE);
-                    fFlowPID->Add(fpMixedProtonCor4Pos[iGap]);
+                    fpMixedProtonCor4Pos[iSample][iGap] = new TProfile2D(Form("fp2Proton_<4>_MixedHarm%d_gap%02.2g_Pos_sample%d",fMixedHarmonics[iMixedHarm],10*fEtaGap[iGap],iSample),Form("Proton: <<4'>> | Gap %g | v%d  | POIs pos | sample %d; centrality/multiplicity; #it{p}_{T} (GeV/c)",fEtaGap[iGap],fMixedHarmonics[iMixedHarm],iSample), fFlowCentNumBins,fFlowCentMin,fFlowCentMax, fFlowPOIsPtNumBins,fFlowPOIsPtMin,fFlowPOIsPtMax);
+                    fpMixedProtonCor4Pos[iSample][iGap]->Sumw2(kTRUE);
+                    fFlowPID->Add(fpMixedProtonCor4Pos[iSample][iGap]);
                         
-                    fpMixedProtonCor4Neg[iGap] = new TProfile2D(Form("fp2Proton_<4>_MixedHarm%d_gap%02.2g_Neg",fMixedHarmonics[iMixedHarm],10*fEtaGap[iGap]),Form("Proton: <<4'>> | Gap %g | v%d  | POIs neg; centrality/multiplicity; #it{p}_{T} (GeV/c)",fEtaGap[iGap],fMixedHarmonics[iMixedHarm]), fFlowCentNumBins,fFlowCentMin,fFlowCentMax, fFlowPOIsPtNumBins,fFlowPOIsPtMin,fFlowPOIsPtMax);
-                    fpMixedProtonCor4Neg[iGap]->Sumw2(kTRUE);
-                    fFlowPID->Add(fpMixedProtonCor4Neg[iGap]);
+                    fpMixedProtonCor4Neg[iSample][iGap] = new TProfile2D(Form("fp2Proton_<4>_MixedHarm%d_gap%02.2g_Neg_sample%d",fMixedHarmonics[iMixedHarm],10*fEtaGap[iGap],iSample),Form("Proton: <<4'>> | Gap %g | v%d  | POIs neg | sample %d; centrality/multiplicity; #it{p}_{T} (GeV/c)",fEtaGap[iGap],fMixedHarmonics[iMixedHarm],iSample), fFlowCentNumBins,fFlowCentMin,fFlowCentMax, fFlowPOIsPtNumBins,fFlowPOIsPtMin,fFlowPOIsPtMax);
+                    fpMixedProtonCor4Neg[iSample][iGap]->Sumw2(kTRUE);
+                    fFlowPID->Add(fpMixedProtonCor4Neg[iSample][iGap]);
                 }
-            }//if(fProcessPID)
+              }//if(fProcessPID)
+            }//for(Short_t iSample(0); iSample < fNumSamples; iSample++)
           }//for(Short_t iGap(0); iGap < fNumEtaGap; iGap++)
         }//for(Short_t iMixedHarm(0); iMixedHarm < fNumMixedHarmonics; iMixedHarm++)
     }//if(fDoOnlyMixedCorrelations)
@@ -866,49 +865,52 @@ void AliAnalysisTaskFlowModes::UserCreateOutputObjects()
         {
           for(Short_t iGap(0); iGap < fNumEtaGap; iGap++)
           {
-              fpRefsCor2[iGap][iHarm] = new TProfile(Form("fpRefs_<2>_harm%d_gap%02.2g",fHarmonics[iHarm],10*fEtaGap[iGap]),Form("Ref: <<2>> | Gap %g | n=%d  ; centrality/multiplicity;",fEtaGap[iGap],fHarmonics[iHarm]), fFlowCentNumBins,fFlowCentMin,fFlowCentMax);
-              fpRefsCor2[iGap][iHarm]->Sumw2(kTRUE);
-              fFlowRefs->Add(fpRefsCor2[iGap][iHarm]);
+            for(Short_t iSample(0); iSample < fNumSamples; iSample++)
+            {
+              fpRefsCor2[iSample][iGap][iHarm] = new TProfile(Form("fpRefs_<2>_harm%d_gap%02.2g_sample%d",fHarmonics[iHarm],10*fEtaGap[iGap],iSample),Form("Ref: <<2>> | Gap %g | n=%d | sample %d; centrality/multiplicity;",fEtaGap[iGap],fHarmonics[iHarm],iSample), fFlowCentNumBins,fFlowCentMin,fFlowCentMax);
+              fpRefsCor2[iSample][iGap][iHarm]->Sumw2(kTRUE);
+              fFlowRefs->Add(fpRefsCor2[iSample][iGap][iHarm]);
 
               if(fProcessCharged)
               {
-                fp2ChargedCor2Pos[iGap][iHarm] = new TProfile2D(Form("fp2Charged_<2>_harm%d_gap%02.2g_Pos",fHarmonics[iHarm],10*fEtaGap[iGap]),Form("Charged: <<2'>> | Gap %g | n=%d  | POIs pos; centrality/multiplicity; #it{p}_{T} (GeV/c)",fEtaGap[iGap],fHarmonics[iHarm]), fFlowCentNumBins,fFlowCentMin,fFlowCentMax, fFlowPOIsPtNumBins,fFlowPOIsPtMin,fFlowPOIsPtMax);
-                fp2ChargedCor2Pos[iGap][iHarm]->Sumw2(kTRUE);
-                fFlowCharged->Add(fp2ChargedCor2Pos[iGap][iHarm]);
+                fp2ChargedCor2Pos[iSample][iGap][iHarm] = new TProfile2D(Form("fp2Charged_<2>_harm%d_gap%02.2g_Pos_sample%d",fHarmonics[iHarm],10*fEtaGap[iGap],iSample),Form("Charged: <<2'>> | Gap %g | n=%d  | POIs pos | sample %d; centrality/multiplicity; #it{p}_{T} (GeV/c)",fEtaGap[iGap],fHarmonics[iHarm],iSample), fFlowCentNumBins,fFlowCentMin,fFlowCentMax, fFlowPOIsPtNumBins,fFlowPOIsPtMin,fFlowPOIsPtMax);
+                fp2ChargedCor2Pos[iSample][iGap][iHarm]->Sumw2(kTRUE);
+                fFlowCharged->Add(fp2ChargedCor2Pos[iSample][iGap][iHarm]);
 
 
-                fp2ChargedCor2Neg[iGap][iHarm] = new TProfile2D(Form("fp2Charged_<2>_harm%d_gap%02.2g_Neg",fHarmonics[iHarm],10*fEtaGap[iGap]),Form("Charged: <<2'>> | Gap %g | n=%d  | POIs neg; centrality/multiplicity; #it{p}_{T} (GeV/c)",fEtaGap[iGap],fHarmonics[iHarm]), fFlowCentNumBins,fFlowCentMin,fFlowCentMax, fFlowPOIsPtNumBins,fFlowPOIsPtMin,fFlowPOIsPtMax);
-                fp2ChargedCor2Neg[iGap][iHarm]->Sumw2(kTRUE);
-                fFlowCharged->Add(fp2ChargedCor2Neg[iGap][iHarm]);
+                fp2ChargedCor2Neg[iSample][iGap][iHarm] = new TProfile2D(Form("fp2Charged_<2>_harm%d_gap%02.2g_Neg_sample%d",fHarmonics[iHarm],10*fEtaGap[iGap],iSample),Form("Charged: <<2'>> | Gap %g | n=%d  | POIs neg | sample %d; centrality/multiplicity; #it{p}_{T} (GeV/c)",fEtaGap[iGap],fHarmonics[iHarm],iSample), fFlowCentNumBins,fFlowCentMin,fFlowCentMax, fFlowPOIsPtNumBins,fFlowPOIsPtMin,fFlowPOIsPtMax);
+                fp2ChargedCor2Neg[iSample][iGap][iHarm]->Sumw2(kTRUE);
+                fFlowCharged->Add(fp2ChargedCor2Neg[iSample][iGap][iHarm]);
                 
               }//if(fProcessCharged)
 
               if(fProcessPID)
               {
-                fp2PionCor2Pos[iGap][iHarm] = new TProfile2D(Form("fp2Pion_<2>_harm%d_gap%02.2g_Pos",fHarmonics[iHarm],10*fEtaGap[iGap]),Form("PID #pi: <<2'>> | Gap %g | n=%d   | POIs pos; centrality/multiplicity; #it{p}_{T} (GeV/c)",fEtaGap[iGap],fHarmonics[iHarm]), fFlowCentNumBins,fFlowCentMin,fFlowCentMax, fFlowPOIsPtNumBins,fFlowPOIsPtMin,fFlowPOIsPtMax);
-                fp2PionCor2Pos[iGap][iHarm]->Sumw2(kTRUE);
-                fFlowPID->Add(fp2PionCor2Pos[iGap][iHarm]);
+                fp2PionCor2Pos[iSample][iGap][iHarm] = new TProfile2D(Form("fp2Pion_<2>_harm%d_gap%02.2g_Pos_sample%d",fHarmonics[iHarm],10*fEtaGap[iGap],iSample),Form("PID #pi: <<2'>> | Gap %g | n=%d   | POIs pos | sample %d; centrality/multiplicity; #it{p}_{T} (GeV/c)",fEtaGap[iGap],fHarmonics[iHarm],iSample), fFlowCentNumBins,fFlowCentMin,fFlowCentMax, fFlowPOIsPtNumBins,fFlowPOIsPtMin,fFlowPOIsPtMax);
+                fp2PionCor2Pos[iSample][iGap][iHarm]->Sumw2(kTRUE);
+                fFlowPID->Add(fp2PionCor2Pos[iSample][iGap][iHarm]);
 
-                fp2KaonCor2Pos[iGap][iHarm] = new TProfile2D(Form("fp2Kaon_<2>_harm%d_gap%02.2g_Pos",fHarmonics[iHarm],10*fEtaGap[iGap]),Form("PID K: <<2'>> | Gap %g | n=%d  | POIs pos; centrality/multiplicity; #it{p}_{T} (GeV/c)",fEtaGap[iGap],fHarmonics[iHarm]), fFlowCentNumBins,fFlowCentMin,fFlowCentMax, fFlowPOIsPtNumBins,fFlowPOIsPtMin,fFlowPOIsPtMax);
-                fp2KaonCor2Pos[iGap][iHarm]->Sumw2(kTRUE);
-                fFlowPID->Add(fp2KaonCor2Pos[iGap][iHarm]);
+                fp2KaonCor2Pos[iSample][iGap][iHarm] = new TProfile2D(Form("fp2Kaon_<2>_harm%d_gap%02.2g_Pos_sample%d",fHarmonics[iHarm],10*fEtaGap[iGap],iSample),Form("PID K: <<2'>> | Gap %g | n=%d  | POIs pos | sample %d; centrality/multiplicity; #it{p}_{T} (GeV/c)",fEtaGap[iGap],fHarmonics[iHarm],iSample), fFlowCentNumBins,fFlowCentMin,fFlowCentMax, fFlowPOIsPtNumBins,fFlowPOIsPtMin,fFlowPOIsPtMax);
+                fp2KaonCor2Pos[iSample][iGap][iHarm]->Sumw2(kTRUE);
+                fFlowPID->Add(fp2KaonCor2Pos[iSample][iGap][iHarm]);
 
-                fp2ProtonCor2Pos[iGap][iHarm] = new TProfile2D(Form("fp2Proton_<2>_harm%d_gap%02.2g_Pos",fHarmonics[iHarm],10*fEtaGap[iGap]),Form("PID p: <<2'>> | Gap %g | n=%d  | POIs pos; centrality/multiplicity; #it{p}_{T} (GeV/c)",fEtaGap[iGap],fHarmonics[iHarm]), fFlowCentNumBins,fFlowCentMin,fFlowCentMax, fFlowPOIsPtNumBins,fFlowPOIsPtMin,fFlowPOIsPtMax);
-                fp2ProtonCor2Pos[iGap][iHarm]->Sumw2(kTRUE);
-                fFlowPID->Add(fp2ProtonCor2Pos[iGap][iHarm]);
+                fp2ProtonCor2Pos[iSample][iGap][iHarm] = new TProfile2D(Form("fp2Proton_<2>_harm%d_gap%02.2g_Pos_sample%d",fHarmonics[iHarm],10*fEtaGap[iGap],iSample),Form("PID p: <<2'>> | Gap %g | n=%d  | POIs pos | sample %d; centrality/multiplicity; #it{p}_{T} (GeV/c)",fEtaGap[iGap],fHarmonics[iHarm],iSample), fFlowCentNumBins,fFlowCentMin,fFlowCentMax, fFlowPOIsPtNumBins,fFlowPOIsPtMin,fFlowPOIsPtMax);
+                fp2ProtonCor2Pos[iSample][iGap][iHarm]->Sumw2(kTRUE);
+                fFlowPID->Add(fp2ProtonCor2Pos[iSample][iGap][iHarm]);
 
-                fp2PionCor2Neg[iGap][iHarm] = new TProfile2D(Form("fp2Pion_<2>_harm%d_gap%02.2g_Neg",fHarmonics[iHarm],10*fEtaGap[iGap]),Form("PID #pi: <<2'>> | Gap %g | n=%d  | POIs neg; centrality/multiplicity; #it{p}_{T} (GeV/c)",fEtaGap[iGap],fHarmonics[iHarm]), fFlowCentNumBins,fFlowCentMin,fFlowCentMax, fFlowPOIsPtNumBins,fFlowPOIsPtMin,fFlowPOIsPtMax);
-                fp2PionCor2Neg[iGap][iHarm]->Sumw2(kTRUE);
-                fFlowPID->Add(fp2PionCor2Neg[iGap][iHarm]);
+                fp2PionCor2Neg[iSample][iGap][iHarm] = new TProfile2D(Form("fp2Pion_<2>_harm%d_gap%02.2g_Neg_sample%d",fHarmonics[iHarm],10*fEtaGap[iGap],iSample),Form("PID #pi: <<2'>> | Gap %g | n=%d  | POIs neg | sample %d; centrality/multiplicity; #it{p}_{T} (GeV/c)",fEtaGap[iGap],fHarmonics[iHarm],iSample), fFlowCentNumBins,fFlowCentMin,fFlowCentMax, fFlowPOIsPtNumBins,fFlowPOIsPtMin,fFlowPOIsPtMax);
+                fp2PionCor2Neg[iSample][iGap][iHarm]->Sumw2(kTRUE);
+                fFlowPID->Add(fp2PionCor2Neg[iSample][iGap][iHarm]);
 
-                fp2KaonCor2Neg[iGap][iHarm] = new TProfile2D(Form("fp2Kaon_<2>_harm%d_gap%02.2g_Neg",fHarmonics[iHarm],10*fEtaGap[iGap]),Form("PID K: <<2'>> | Gap %g | n=%d  | POIs neg; centrality/multiplicity; #it{p}_{T} (GeV/c)",fEtaGap[iGap],fHarmonics[iHarm]), fFlowCentNumBins,fFlowCentMin,fFlowCentMax, fFlowPOIsPtNumBins,fFlowPOIsPtMin,fFlowPOIsPtMax);
-                fp2KaonCor2Neg[iGap][iHarm]->Sumw2(kTRUE);
-                fFlowPID->Add(fp2KaonCor2Neg[iGap][iHarm]);
+                fp2KaonCor2Neg[iSample][iGap][iHarm] = new TProfile2D(Form("fp2Kaon_<2>_harm%d_gap%02.2g_Neg_sample%d",fHarmonics[iHarm],10*fEtaGap[iGap],iSample),Form("PID K: <<2'>> | Gap %g | n=%d  | POIs neg | sample %d; centrality/multiplicity; #it{p}_{T} (GeV/c)",fEtaGap[iGap],fHarmonics[iHarm],iSample), fFlowCentNumBins,fFlowCentMin,fFlowCentMax, fFlowPOIsPtNumBins,fFlowPOIsPtMin,fFlowPOIsPtMax);
+                fp2KaonCor2Neg[iSample][iGap][iHarm]->Sumw2(kTRUE);
+                fFlowPID->Add(fp2KaonCor2Neg[iSample][iGap][iHarm]);
 
-                fp2ProtonCor2Neg[iGap][iHarm] = new TProfile2D(Form("fp2Proton_<2>_harm%d_gap%02.2g_Neg",fHarmonics[iHarm],10*fEtaGap[iGap]),Form("PID p: <<2'>> | Gap %g | n=%d  | POIs neg; centrality/multiplicity; #it{p}_{T} (GeV/c)",fEtaGap[iGap],fHarmonics[iHarm]), fFlowCentNumBins,fFlowCentMin,fFlowCentMax, fFlowPOIsPtNumBins,fFlowPOIsPtMin,fFlowPOIsPtMax);
-                fp2ProtonCor2Neg[iGap][iHarm]->Sumw2(kTRUE);
-                fFlowPID->Add(fp2ProtonCor2Neg[iGap][iHarm]);
+                fp2ProtonCor2Neg[iSample][iGap][iHarm] = new TProfile2D(Form("fp2Proton_<2>_harm%d_gap%02.2g_Neg_sample%d",fHarmonics[iHarm],10*fEtaGap[iGap],iSample),Form("PID p: <<2'>> | Gap %g | n=%d  | POIs neg | sample %d; centrality/multiplicity; #it{p}_{T} (GeV/c)",fEtaGap[iGap],fHarmonics[iHarm],iSample), fFlowCentNumBins,fFlowCentMin,fFlowCentMax, fFlowPOIsPtNumBins,fFlowPOIsPtMin,fFlowPOIsPtMax);
+                fp2ProtonCor2Neg[iSample][iGap][iHarm]->Sumw2(kTRUE);
+                fFlowPID->Add(fp2ProtonCor2Neg[iSample][iGap][iHarm]);
             }//endif(fProcessPID)
+          }//for(Short_t iSample(0); iSample < fNumSamples; iSample++)
         }//for(Short_t iGap(0); iGap < fNumEtaGap; iGap++)
       }//for(Short_t iHarm(0); iHarm < fNumHarmonics; iHarm++)
     }//endif(!fDoOnlyMixedCorrelations)
@@ -980,41 +982,41 @@ void AliAnalysisTaskFlowModes::UserCreateOutputObjects()
         fQAPID->Add(fh2PIDProtonTPCdEdx);
         fh2PIDProtonTOFbeta = new TH2D("fh2PIDProtonTOFbeta","PID: p: TOF #beta; #it{p} (GeV/#it{c});TOF #beta", 200,0,20, 101,-0.1,1.5);
         fQAPID->Add(fh2PIDProtonTOFbeta);
-        fh2PIDPionTPCnSigmaPion = new TH2D("fh2PIDPionTPCnSigmaPion","PID: #pi: TPC n#sigma (#pi hyp.); #it{p}_{T} (GeV/#it{c}); TPC n#sigma", 200,0,20, 21,-11,10);
+        fh2PIDPionTPCnSigmaPion = new TH2D("fh2PIDPionTPCnSigmaPion","PID: #pi: TPC n#sigma (#pi hyp.); #it{p}_{T} (GeV/#it{c}); TPC n#sigma", 200,0,20, 42,-11,10);
         fQAPID->Add(fh2PIDPionTPCnSigmaPion);
-        fh2PIDPionTOFnSigmaPion = new TH2D("fh2PIDPionTOFnSigmaPion","PID: #pi: TOF n#sigma (#pi hyp.); #it{p}_{T} (GeV/#it{c}); TOF n#sigma", 200,0,20, 21,-11,10);
+        fh2PIDPionTOFnSigmaPion = new TH2D("fh2PIDPionTOFnSigmaPion","PID: #pi: TOF n#sigma (#pi hyp.); #it{p}_{T} (GeV/#it{c}); TOF n#sigma", 200,0,20, 42,-11,10);
         fQAPID->Add(fh2PIDPionTOFnSigmaPion);
-        fh2PIDPionTPCnSigmaKaon = new TH2D("fh2PIDPionTPCnSigmaKaon","PID: #pi: TPC n#sigma (K hyp.); #it{p}_{T} (GeV/#it{c}); TPC n#sigma", 200,0,20, 21,-11,10);
+        fh2PIDPionTPCnSigmaKaon = new TH2D("fh2PIDPionTPCnSigmaKaon","PID: #pi: TPC n#sigma (K hyp.); #it{p}_{T} (GeV/#it{c}); TPC n#sigma", 200,0,20, 42,-11,10);
         fQAPID->Add(fh2PIDPionTPCnSigmaKaon);
-        fh2PIDPionTOFnSigmaKaon = new TH2D("fh2PIDPionTOFnSigmaKaon","PID: #pi: TOF n#sigma (K hyp.); #it{p}_{T} (GeV/#it{c}); TOF n#sigma", 200,0,20, 21,-11,10);
+        fh2PIDPionTOFnSigmaKaon = new TH2D("fh2PIDPionTOFnSigmaKaon","PID: #pi: TOF n#sigma (K hyp.); #it{p}_{T} (GeV/#it{c}); TOF n#sigma", 200,0,20, 42,-11,10);
         fQAPID->Add(fh2PIDPionTOFnSigmaKaon);
-        fh2PIDPionTPCnSigmaProton = new TH2D("fh2PIDPionTPCnSigmaProton","PID: #pi: TPC n#sigma (p hyp.); #it{p}_{T} (GeV/#it{c}); TPC n#sigma", 200,0,20, 21,-11,10);
+        fh2PIDPionTPCnSigmaProton = new TH2D("fh2PIDPionTPCnSigmaProton","PID: #pi: TPC n#sigma (p hyp.); #it{p}_{T} (GeV/#it{c}); TPC n#sigma", 200,0,20, 42,-11,10);
         fQAPID->Add(fh2PIDPionTPCnSigmaProton);
-        fh2PIDPionTOFnSigmaProton = new TH2D("fh2PIDPionTOFnSigmaProton","PID: #pi: TOF n#sigma (p hyp.); #it{p}_{T} (GeV/#it{c}); TOF n#sigma", 200,0,20, 21,-11,10);
+        fh2PIDPionTOFnSigmaProton = new TH2D("fh2PIDPionTOFnSigmaProton","PID: #pi: TOF n#sigma (p hyp.); #it{p}_{T} (GeV/#it{c}); TOF n#sigma", 200,0,20, 42,-11,10);
         fQAPID->Add(fh2PIDPionTOFnSigmaProton);
-        fh2PIDKaonTPCnSigmaPion = new TH2D("fh2PIDKaonTPCnSigmaPion","PID: K: TPC n#sigma (#pi hyp.); #it{p}_{T} (GeV/#it{c}); TPC n#sigma", 200,0,20, 21,-11,10);
+        fh2PIDKaonTPCnSigmaPion = new TH2D("fh2PIDKaonTPCnSigmaPion","PID: K: TPC n#sigma (#pi hyp.); #it{p}_{T} (GeV/#it{c}); TPC n#sigma", 200,0,20, 42,-11,10);
         fQAPID->Add(fh2PIDKaonTPCnSigmaPion);
-        fh2PIDKaonTOFnSigmaPion = new TH2D("fh2PIDKaonTOFnSigmaPion","PID: K: TOF n#sigma (#pi hyp.); #it{p}_{T} (GeV/#it{c}); TOF n#sigma", 200,0,20, 21,-11,10);
+        fh2PIDKaonTOFnSigmaPion = new TH2D("fh2PIDKaonTOFnSigmaPion","PID: K: TOF n#sigma (#pi hyp.); #it{p}_{T} (GeV/#it{c}); TOF n#sigma", 200,0,20, 42,-11,10);
         fQAPID->Add(fh2PIDKaonTOFnSigmaPion);
-        fh2PIDKaonTPCnSigmaKaon = new TH2D("fh2PIDKaonTPCnSigmaKaon","PID: K: TPC n#sigma (K hyp.); #it{p}_{T} (GeV/#it{c}); TPC n#sigma", 200,0,20, 21,-11,10);
+        fh2PIDKaonTPCnSigmaKaon = new TH2D("fh2PIDKaonTPCnSigmaKaon","PID: K: TPC n#sigma (K hyp.); #it{p}_{T} (GeV/#it{c}); TPC n#sigma", 200,0,20, 42,-11,10);
         fQAPID->Add(fh2PIDKaonTPCnSigmaKaon);
-        fh2PIDKaonTOFnSigmaKaon = new TH2D("fh2PIDKaonTOFnSigmaKaon","PID: K: TOF n#sigma (K hyp.); #it{p}_{T} (GeV/#it{c}); TOF n#sigma", 200,0,20, 21,-11,10);
+        fh2PIDKaonTOFnSigmaKaon = new TH2D("fh2PIDKaonTOFnSigmaKaon","PID: K: TOF n#sigma (K hyp.); #it{p}_{T} (GeV/#it{c}); TOF n#sigma", 200,0,20, 42,-11,10);
         fQAPID->Add(fh2PIDKaonTOFnSigmaKaon);
-        fh2PIDKaonTPCnSigmaProton = new TH2D("fh2PIDKaonTPCnSigmaProton","PID: K: TPC n#sigma (p hyp.); #it{p}_{T} (GeV/#it{c}); TPC n#sigma", 200,0,20, 21,-11,10);
+        fh2PIDKaonTPCnSigmaProton = new TH2D("fh2PIDKaonTPCnSigmaProton","PID: K: TPC n#sigma (p hyp.); #it{p}_{T} (GeV/#it{c}); TPC n#sigma", 200,0,20, 42,-11,10);
         fQAPID->Add(fh2PIDKaonTPCnSigmaProton);
-        fh2PIDKaonTOFnSigmaProton = new TH2D("fh2PIDKaonTOFnSigmaProton","PID: K: TOF n#sigma (p hyp.); #it{p}_{T} (GeV/#it{c}); TOF n#sigma", 200,0,20, 21,-11,10);
+        fh2PIDKaonTOFnSigmaProton = new TH2D("fh2PIDKaonTOFnSigmaProton","PID: K: TOF n#sigma (p hyp.); #it{p}_{T} (GeV/#it{c}); TOF n#sigma", 200,0,20, 42,-11,10);
         fQAPID->Add(fh2PIDKaonTOFnSigmaProton);
-        fh2PIDProtonTPCnSigmaPion = new TH2D("fh2PIDProtonTPCnSigmaPion","PID: p: TPC n#sigma (#pi hyp.); #it{p}_{T} (GeV/#it{c}); TPC n#sigma", 200,0,20, 21,-11,10);
+        fh2PIDProtonTPCnSigmaPion = new TH2D("fh2PIDProtonTPCnSigmaPion","PID: p: TPC n#sigma (#pi hyp.); #it{p}_{T} (GeV/#it{c}); TPC n#sigma", 200,0,20, 42,-11,10);
         fQAPID->Add(fh2PIDProtonTPCnSigmaPion);
-        fh2PIDProtonTOFnSigmaPion = new TH2D("fh2PIDProtonTOFnSigmaPion","PID: p: TOF n#sigma (#pi hyp.); #it{p}_{T} (GeV/#it{c}); TOF n#sigma", 200,0,20, 21,-11,10);
+        fh2PIDProtonTOFnSigmaPion = new TH2D("fh2PIDProtonTOFnSigmaPion","PID: p: TOF n#sigma (#pi hyp.); #it{p}_{T} (GeV/#it{c}); TOF n#sigma", 200,0,20, 42,-11,10);
         fQAPID->Add(fh2PIDProtonTOFnSigmaPion);
-        fh2PIDProtonTPCnSigmaKaon = new TH2D("fh2PIDProtonTPCnSigmaKaon","PID: p: TPC n#sigma (K hyp.); #it{p}_{T} (GeV/#it{c}); TPC n#sigma", 200,0,20, 21,-11,10);
+        fh2PIDProtonTPCnSigmaKaon = new TH2D("fh2PIDProtonTPCnSigmaKaon","PID: p: TPC n#sigma (K hyp.); #it{p}_{T} (GeV/#it{c}); TPC n#sigma", 200,0,20, 42,-11,10);
         fQAPID->Add(fh2PIDProtonTPCnSigmaKaon);
-        fh2PIDProtonTOFnSigmaKaon = new TH2D("fh2PIDProtonTOFnSigmaKaon","PID: p: TOF n#sigma (K hyp.); #it{p}_{T} (GeV/#it{c}); TOF n#sigma", 200,0,20, 21,-11,10);
+        fh2PIDProtonTOFnSigmaKaon = new TH2D("fh2PIDProtonTOFnSigmaKaon","PID: p: TOF n#sigma (K hyp.); #it{p}_{T} (GeV/#it{c}); TOF n#sigma", 200,0,20, 42,-11,10);
         fQAPID->Add(fh2PIDProtonTOFnSigmaKaon);
-        fh2PIDProtonTPCnSigmaProton = new TH2D("fh2PIDProtonTPCnSigmaProton","PID: p: TPC n#sigma (p hyp.); #it{p}_{T} (GeV/#it{c}); TPC n#sigma", 200,0,20, 21,-11,10);
+        fh2PIDProtonTPCnSigmaProton = new TH2D("fh2PIDProtonTPCnSigmaProton","PID: p: TPC n#sigma (p hyp.); #it{p}_{T} (GeV/#it{c}); TPC n#sigma", 200,0,20, 42,-11,10);
         fQAPID->Add(fh2PIDProtonTPCnSigmaProton);
-        fh2PIDProtonTOFnSigmaProton = new TH2D("fh2PIDProtonTOFnSigmaProton","PID: p: TOF n#sigma (p hyp.); #it{p}_{T} (GeV/#it{c}); TOF n#sigma", 200,0,20, 21,-11,10);
+        fh2PIDProtonTOFnSigmaProton = new TH2D("fh2PIDProtonTOFnSigmaProton","PID: p: TOF n#sigma (p hyp.); #it{p}_{T} (GeV/#it{c}); TOF n#sigma", 200,0,20, 42,-11,10);
         fQAPID->Add(fh2PIDProtonTOFnSigmaProton);
       }
 
@@ -1047,7 +1049,8 @@ void AliAnalysisTaskFlowModes::UserCreateOutputObjects()
           
         fhQAEventsPileUp[iQA] = new TH2D(Form("fhQAEventsPileUp_%s",sQAindex[iQA].Data()),"QA Events: TPC vs. ESD multiplicity; TPC multiplicity; ESD multiplicity",500,0,6000,500,0,6000);
         fQAEvents->Add(fhQAEventsPileUp[iQA]);
-          
+        fhEventsMultTOFFilterbit32[iQA] = new TH2D(Form("fhEventsMultTOFFilterbit32_%s",sQAindex[iQA].Data()),"filterbit32 vs. TOF multiplicity; multiplicity(fb32);multiplicity(fb32+TOF)", 4000,0,4000,2000,0,2000);
+        fQAEvents->Add(fhEventsMultTOFFilterbit32[iQA]);
         // Charged tracks QA
         if(fProcessCharged)
         {
@@ -1360,7 +1363,24 @@ Bool_t AliAnalysisTaskFlowModes::IsEventSelected_PbPb()
    Double_t centrCL1 = fMultSelection->GetMultiplicityPercentile("CL1");
     
   // cut on consistency between centrality estimators: VOM vs CL1
-  if(fabs(centrV0M-centrCL1)>7.5) return kFALSE;
+   
+  double fEstimatorsCorrelationCoef[2];
+  double fEstimatorsSigmaPars[4];
+  double fDeltaEstimatorNsigma[2];
+    
+  fEstimatorsCorrelationCoef[0] = 0.0157497;
+  fEstimatorsCorrelationCoef[1] = 0.973488;
+  fEstimatorsSigmaPars[0] = 0.673612;
+  fEstimatorsSigmaPars[1] = 0.0290718;
+  fEstimatorsSigmaPars[2] = -0.000546728;
+  fEstimatorsSigmaPars[3] = 5.82749e-06;
+  fDeltaEstimatorNsigma[0] = 5.;
+  fDeltaEstimatorNsigma[1] = 5.5;
+
+  const double center = centrCL1 * fEstimatorsCorrelationCoef[1] + fEstimatorsCorrelationCoef[0];
+  const double sigma = fEstimatorsSigmaPars[0] + fEstimatorsSigmaPars[1] * centrCL1 + fEstimatorsSigmaPars[2] * centrCL1 * centrCL1 + fEstimatorsSigmaPars[3] * centrCL1 * centrCL1 * centrCL1;
+  if (centrV0M < center - fDeltaEstimatorNsigma[0] * sigma && centrV0M > center + fDeltaEstimatorNsigma[1] * sigma) {return kFALSE;}
+  //if(fabs(centrV0M-centrCL1)>7.5) return kFALSE;
   fhEventCounter->Fill("Centr. Est. Consis. OK",1);
 
   
@@ -1467,16 +1487,48 @@ Bool_t AliAnalysisTaskFlowModes::IsEventSelected_PbPb()
   } // end of for (Int_t it = 0; it < nTracks; it++)
   Double_t multTPCn = multTPC;
   Double_t multEsdn = multEsd;
+  Double_t fESDvsTPConlyLinearCut[2];
 
-  Double_t multESDTPCDif = multEsdn - multTPCn*3.38;
-  if (multESDTPCDif > 15000.) return kFALSE;
+  fESDvsTPConlyLinearCut[0] = 700.;
+  fESDvsTPConlyLinearCut[1] = 3.38;
+    
+  if(multEsdn > fESDvsTPConlyLinearCut[0] + fESDvsTPConlyLinearCut[1] * multTPCn) return kFALSE;
   fhEventCounter->Fill("ESD TPC Mult. Diff. OK",1);
 
+  Int_t fTOFvsFB32nSigmaCut[2];
+  fTOFvsFB32nSigmaCut[0] = 4.;
+  fTOFvsFB32nSigmaCut[1] = 4.;
+    
   Double_t multTrkn = multTrk;
   Double_t multTrkTOFn = multTrkTOF;
-  
-  fhEventsMultTOFFilterbit32->Fill(multTrkn,multTrkTOFn);
     
+  Double_t  fTOFvsFB32correlationPars[4];
+  Double_t  fTOFvsFB32sigmaPars[6];
+ 
+  fTOFvsFB32correlationPars[0] = -1.0178;
+  fTOFvsFB32correlationPars[1] = 0.333132;
+  fTOFvsFB32correlationPars[2] = 9.10282e-05;
+  fTOFvsFB32correlationPars[3] = -1.61861e-08;
+
+  fTOFvsFB32sigmaPars[0] = 1.47848;
+  fTOFvsFB32sigmaPars[1] = 0.0385923;
+  fTOFvsFB32sigmaPars[2] = -5.06153e-05;
+  fTOFvsFB32sigmaPars[3] = 4.37641e-08;
+  fTOFvsFB32sigmaPars[4] = -1.69082e-11;
+  fTOFvsFB32sigmaPars[5] = 2.35085e-15;
+    
+  //Double_t mu32tof = PolN(multTrkn,fTOFvsFB32correlationPars,3);
+  //Double_t sigma32tof = PolN(multTrkn,fTOFvsFB32sigmaPars, 5);
+
+  Double_t mu32tof = fTOFvsFB32correlationPars[0] + fTOFvsFB32correlationPars[1]* multTrkn + fTOFvsFB32correlationPars[2]* pow(multTrkn,2) + fTOFvsFB32correlationPars[3]* pow(multTrkn,3);
+  Double_t sigma32tof = fTOFvsFB32sigmaPars[0] + fTOFvsFB32sigmaPars[1]* multTrkn + fTOFvsFB32sigmaPars[2]* pow(multTrkn,2) + fTOFvsFB32sigmaPars[3]* pow(multTrkn,3) + fTOFvsFB32sigmaPars[4]* pow(multTrkn,4) + fTOFvsFB32sigmaPars[5]* pow(multTrkn,5);
+
+
+  if ((multTrkTOFn > mu32tof + fTOFvsFB32nSigmaCut[0] * sigma32tof || multTrkTOFn < mu32tof - fTOFvsFB32nSigmaCut[1] * sigma32tof)) return kFALSE;
+  //if(fExtraPileUp && multTrkTOFn< (-32+ 0.32*multTrkn+0.000037*multTrkn*multTrkn)) return kFALSE;
+  //if(fExtraPileUp && multTrkTOFn> (13+0.46*multTrkn+0.000018*multTrkn*multTrkn)) return kFALSE;
+  fhEventCounter->Fill("TOF fb32 Mult. correlation OK",1);
+
   fhEventCounter->Fill("Selected",1);
     
   // Fill event QA AFTER cuts
@@ -1636,48 +1688,117 @@ void AliAnalysisTaskFlowModes::FillEventsQA(const Short_t iQAindex)
   const Int_t nTracks = fEventAOD->GetNumberOfTracks();
   Int_t multEsd = ((AliAODHeader*)fEventAOD->GetHeader())->GetNumberOfESDTracks();
   Int_t multTPC = 0;
+  Int_t multTrk = 0;
+  Int_t multTrkTOF = 0;
   for (Int_t it = 0; it < nTracks; it++) {
       AliAODTrack* AODTrk = (AliAODTrack*)fEventAOD->GetTrack(it);
       if (!AODTrk){ delete AODTrk; continue; }
       if (AODTrk->TestFilterBit(128)) {multTPC++;}
+      if (AODTrk->TestFilterBit(32)){
+         multTrk++;
+         if ( TMath::Abs(AODTrk->GetTOFsignalDz()) <= 10 && AODTrk->GetTOFsignal() >= 12000 && AODTrk->GetTOFsignal() <= 25000) multTrkTOF++;
+      }
+
   }// end of for (Int_t it = 0; it < nTracks; it++)
+  if(iQAindex==1){
+	Double_t multTPCn = multTPC;
+  	Double_t multEsdn = multEsd;
+
+  	//Double_t multESDTPCDif = multEsdn - multTPCn*3.38;
+  	//if (multESDTPCDif > 700.) return;//15000
+
+        Double_t fESDvsTPConlyLinearCut[2];
+
+        fESDvsTPConlyLinearCut[0] = 700.;
+        fESDvsTPConlyLinearCut[1] = 3.38;
+
+        if(multEsdn > fESDvsTPConlyLinearCut[0] + fESDvsTPConlyLinearCut[1] * multTPCn) return;
+  }
   fhQAEventsPileUp[iQAindex]->Fill(multTPC,multEsd);
+  
+
+  if(iQAindex==1){
+  	Double_t multTrkn = multTrk;
+  	Double_t multTrkTOFn = multTrkTOF;
+
+        Int_t fTOFvsFB32nSigmaCut[2];
+        fTOFvsFB32nSigmaCut[0] = 4.;
+        fTOFvsFB32nSigmaCut[1] = 4.;
+
+        Double_t  fTOFvsFB32correlationPars[4];
+        Double_t  fTOFvsFB32sigmaPars[6];
+
+	fTOFvsFB32correlationPars[0] = -1.0178;
+        fTOFvsFB32correlationPars[1] = 0.333132;
+        fTOFvsFB32correlationPars[2] = 9.10282e-05;
+        fTOFvsFB32correlationPars[3] = -1.61861e-08;
+
+        fTOFvsFB32sigmaPars[0] = 1.47848;
+        fTOFvsFB32sigmaPars[1] = 0.0385923;
+        fTOFvsFB32sigmaPars[2] = -5.06153e-05;
+        fTOFvsFB32sigmaPars[3] = 4.37641e-08;
+        fTOFvsFB32sigmaPars[4] = -1.69082e-11;
+        fTOFvsFB32sigmaPars[5] = 2.35085e-15;
+
+        //Double_t mu32tof = PolN(multTrkn,fTOFvsFB32correlationPars,3);
+        //Double_t sigma32tof = PolN(multTrkn,fTOFvsFB32sigmaPars, 5);
+
+	Double_t mu32tof = fTOFvsFB32correlationPars[0] + fTOFvsFB32correlationPars[1]* multTrkn + fTOFvsFB32correlationPars[2]* pow(multTrkn,2) + fTOFvsFB32correlationPars[3]* pow(multTrkn,3);
+        Double_t sigma32tof = fTOFvsFB32sigmaPars[0] + fTOFvsFB32sigmaPars[1]* multTrkn + fTOFvsFB32sigmaPars[2]* pow(multTrkn,2) + fTOFvsFB32sigmaPars[3]* pow(multTrkn,3) + fTOFvsFB32sigmaPars[4]* pow(multTrkn,4) + fTOFvsFB32sigmaPars[5]* pow(multTrkn,5);
+
+        if ((multTrkTOFn > mu32tof + fTOFvsFB32nSigmaCut[0] * sigma32tof || multTrkTOFn < mu32tof - fTOFvsFB32nSigmaCut[1] * sigma32tof)) return;
+
+  	//if(fExtraPileUp && multTrkTOFn< (-32+ 0.32*multTrkn+0.000037*multTrkn*multTrkn)) return;
+  	//if(fExtraPileUp && multTrkTOFn> (13+0.46*multTrkn+0.000018*multTrkn*multTrkn)) return;	
+  }
+  fhEventsMultTOFFilterbit32[iQAindex]->Fill(multTrk,multTrkTOF);
 
   return;
 }
 //_____________________________________________________________________________
-void AliAnalysisTaskFlowModes::Filtering()
+Bool_t AliAnalysisTaskFlowModes::Filtering() //void
 {
 
   // main (envelope) method for filtering all particles of interests (POIs) in selected events
   // All POIs passing selection criteria are saved to relevant TClonesArray for further processing
   // return kTRUE if succesfull (no errors in process)
   // *************************************************************
-
   if(!fProcessCharged && !fProcessPID) // if neither is ON, filtering is skipped
-    return;
+    return kFALSE; //return;
 
   fVectorCharged->clear();
   FilterCharged();
 
   // estimate centrality & assign indexes (centrality/percentile, ...)
   if(fColSystem == kPbPb){
+
       fIndexCentrality = GetCentralityIndex();
-      if(fIndexCentrality < 0) return; // not succesfull estimation
+      if(fIndexCentrality < 0) return kFALSE; // return; not succesfull estimation
+      Double_t Mult = fVectorCharged->size();
+      if(fExtraPileUp && fIndexCentrality< (-1.5*TMath::Power(Mult,0.46)-0.6*TMath::Log(Mult)*TMath::Log(Mult)+81)) return kFALSE;
+      if(fExtraPileUp && fIndexCentrality>(-2.3*TMath::Power(Mult,0.39)-0.9*TMath::Log(Mult)*TMath::Log(Mult)+110)) return kFALSE;
+  
   }
   if(fColSystem == kPP){fIndexCentrality = 1;}
-    
-  fhEventCentrality->Fill(fIndexCentrality);
+ 
   fh2EventCentralityNumSelCharged->Fill(fVectorCharged->size(),fIndexCentrality); 
+
+  fhEventCentrality->Fill(fIndexCentrality);
+
+  fIndexSampling = GetSamplingIndex();
+  
+  fhEventSampling->Fill(fIndexCentrality,fIndexSampling);
 
   if(fProcessPID)
   {
+
     fVectorPion->clear();
     fVectorKaon->clear();
     fVectorProton->clear();
     FilterPID();
   }
-  return;
+
+  return kTRUE; //return;
 }
 //_____________________________________________________________________________
 void AliAnalysisTaskFlowModes::FilterCharged()
@@ -1696,6 +1817,14 @@ void AliAnalysisTaskFlowModes::FilterCharged()
   Int_t iNumRefs = 0;
   Double_t NUAweight = 0;
   Double_t NUEweight = 0;
+ 
+  Int_t c = -1;
+  if(fIndexCentrality>=0 && fIndexCentrality<5) c = 0;
+  if(fIndexCentrality>=5 && fIndexCentrality<10) c = 1;
+  if(fIndexCentrality>=10 && fIndexCentrality<20) c = 2;
+  if(fIndexCentrality>=20 && fIndexCentrality<30) c = 3;
+  if(fIndexCentrality>=30 && fIndexCentrality<40) c = 4;
+  if(fIndexCentrality>=40 && fIndexCentrality<50) c = 5;
 
   for(Short_t iTrack(0); iTrack < iNumTracks; iTrack++)
   {
@@ -1722,8 +1851,9 @@ void AliAnalysisTaskFlowModes::FilterCharged()
           fh3AfterNUAWeightsCharged->Fill(track->Phi(),track->Eta(),fEventAOD->GetPrimaryVertex()->GetZ(),NUAweight);
       }
       if(fFlowUseNUEWeights){
-          if(track->Charge()>0){ NUEweight = fhNUEWeightChargedPlus->GetBinContent( fhNUEWeightChargedPlus->FindBin(track->Pt()));}
-          if(track->Charge()<0){ NUEweight = fhNUEWeightChargedMinus->GetBinContent( fhNUEWeightChargedMinus->FindBin(track->Pt()));}
+       
+	  if(track->Charge()>0 && c>=0 && c<6){NUEweight = fhNUEWeightChargedPlus[c]->GetBinContent( fhNUEWeightChargedPlus[c]->FindBin(track->Pt()));}
+	  if(track->Charge()<0 && c>=0 && c<6){NUEweight = fhNUEWeightChargedMinus[c]->GetBinContent( fhNUEWeightChargedMinus[c]->FindBin(track->Pt()));}
 
           fhAfterNUEWeightsCharged->Fill(track->Pt(),NUEweight);
       }
@@ -1747,8 +1877,8 @@ void AliAnalysisTaskFlowModes::FilterCharged()
         }
         if(fFlowUseNUEWeights)
         {
-            if(track->Charge()>0){NUEweight = fhNUEWeightRefsPlus->GetBinContent( fhNUEWeightRefsPlus->FindBin(track->Pt()) );}
-            if(track->Charge()<0){NUEweight = fhNUEWeightRefsMinus->GetBinContent( fhNUEWeightRefsMinus->FindBin(track->Pt()) );}
+            if(track->Charge()>0 && c>=0 && c<6){NUEweight = fhNUEWeightRefsPlus[c]->GetBinContent( fhNUEWeightRefsPlus[c]->FindBin(track->Pt()) );} 
+	    if(track->Charge()<0 && c>=0 && c<6){NUEweight = fhNUEWeightRefsMinus[c]->GetBinContent( fhNUEWeightRefsMinus[c]->FindBin(track->Pt()) );}
 
             fhAfterNUEWeightsRefs->Fill(track->Pt(),NUEweight);
         }
@@ -1897,6 +2027,15 @@ void AliAnalysisTaskFlowModes::FilterPID()
   Double_t NUAweight = 0;
   Double_t NUEweight = 0;
 
+
+  Int_t c = -1;
+  if(fIndexCentrality>=0 && fIndexCentrality<5) c = 0;
+  if(fIndexCentrality>=5 && fIndexCentrality<10) c = 1;
+  if(fIndexCentrality>=10 && fIndexCentrality<20) c = 2;
+  if(fIndexCentrality>=20 && fIndexCentrality<30) c = 3;
+  if(fIndexCentrality>=30 && fIndexCentrality<40) c = 4;
+  if(fIndexCentrality>=40 && fIndexCentrality<50) c = 5;
+
   for(Short_t iTrack(0); iTrack < iNumTracks; iTrack++)
   {
     track = static_cast<AliAODTrack*>(fEventAOD->GetTrack(iTrack));
@@ -1933,8 +2072,9 @@ void AliAnalysisTaskFlowModes::FilterPID()
         }
         if(fFlowUseNUEWeights)
         {
-            if(track->Charge() > 0){ NUEweight = fhNUEWeightPionPlus->GetBinContent( fhNUEWeightPionPlus->FindBin(track->Pt()) );}
-            if(track->Charge() < 0){ NUEweight = fhNUEWeightPionMinus->GetBinContent( fhNUEWeightPionMinus->FindBin(track->Pt()) );}
+            
+            if(track->Charge() > 0 && c>=0 && c<6){ NUEweight = fhNUEWeightPionPlus[c]->GetBinContent( fhNUEWeightPionPlus[c]->FindBin(track->Pt()) );}
+            if(track->Charge() < 0 && c>=0 && c<6){ NUEweight = fhNUEWeightPionMinus[c]->GetBinContent( fhNUEWeightPionMinus[c]->FindBin(track->Pt()) );}
             
             fhAfterNUEWeightsPion->Fill(track->Pt(),NUEweight);
         }
@@ -1954,8 +2094,8 @@ void AliAnalysisTaskFlowModes::FilterPID()
         }
         if(fFlowUseNUEWeights)
         {
-            if(track->Charge() > 0){ NUEweight = fhNUEWeightKaonPlus->GetBinContent( fhNUEWeightKaonPlus->FindBin(track->Pt()) );}
-            if(track->Charge() < 0){ NUEweight = fhNUEWeightKaonMinus->GetBinContent( fhNUEWeightKaonMinus->FindBin(track->Pt()) );}
+            if(track->Charge() > 0 && c>=0 && c<6){ NUEweight = fhNUEWeightKaonPlus[c]->GetBinContent( fhNUEWeightKaonPlus[c]->FindBin(track->Pt()) );}
+            if(track->Charge() < 0 && c>=0 && c<6){ NUEweight = fhNUEWeightKaonMinus[c]->GetBinContent( fhNUEWeightKaonMinus[c]->FindBin(track->Pt()) );}
 
             fhAfterNUEWeightsKaon->Fill(track->Pt(),NUEweight);
         }
@@ -1975,8 +2115,8 @@ void AliAnalysisTaskFlowModes::FilterPID()
         }
         if(fFlowUseNUEWeights)
         {
-            if(track->Charge() > 0){ NUEweight = fhNUEWeightProtonPlus->GetBinContent( fhNUEWeightProtonPlus->FindBin(track->Pt()) );}
-            if(track->Charge() < 0){ NUEweight = fhNUEWeightProtonMinus->GetBinContent( fhNUEWeightProtonMinus->FindBin(track->Pt()) );}
+            if(track->Charge() > 0 && c>=0 && c<6){ NUEweight = fhNUEWeightProtonPlus[c]->GetBinContent( fhNUEWeightProtonPlus[c]->FindBin(track->Pt()) );}
+            if(track->Charge() < 0 && c>=0 && c<6){ NUEweight = fhNUEWeightProtonMinus[c]->GetBinContent( fhNUEWeightProtonMinus[c]->FindBin(track->Pt()) );}
 
             fhAfterNUEWeightsProton->Fill(track->Pt(),NUEweight);
         }
@@ -1985,7 +2125,7 @@ void AliAnalysisTaskFlowModes::FilterPID()
         break;
     }
 
-    if(fFillQA) FillPIDQA(1,track,species); // filling QA for tracks AFTER selection
+    //if(fFillQA) FillPIDQA(1,track,species); // filling QA for tracks AFTER selection
   }
 
   fh2PIDPionMult->Fill(fIndexCentrality,fVectorPion->size());
@@ -2022,6 +2162,11 @@ AliAnalysisTaskFlowModes::PartSpecies AliAnalysisTaskFlowModes::IsPIDSelected(co
   Float_t mismProb;
   Float_t ProbBayes[5] = {0,0,0,0,0}; //0=el, 1=mu, 2=pi, 3=ka, 4=pr, 5=deuteron, 6=triton, 7=He3
 
+  Double_t probTPC[AliPID::kSPECIES]={0.};
+  Double_t probTOF[AliPID::kSPECIES]={0.};
+  Double_t probTPCTOF[AliPID::kSPECIES]={0.};
+
+
   // filling nSigma arrays
   if(bIsTPCok) // should be anyway
   {
@@ -2051,125 +2196,175 @@ AliAnalysisTaskFlowModes::PartSpecies AliAnalysisTaskFlowModes::IsPIDSelected(co
       }
       fBayesianResponse->SetDetAND(1);
   }
-    
-  // TPC nSigma cuts
-  if(dP <= 0.5)
-  {
-      if(fPIDnsigma){
 
-          Double_t dMinSigmasTPC = TMath::MinElement(5,dNumSigmaTPC);
-          // electron rejection
-          if(dMinSigmasTPC == dNumSigmaTPC[0] && TMath::Abs(dNumSigmaTPC[0]) <= fCutPIDnSigmaTPCRejectElectron) return kUnknown;
-          if(dMinSigmasTPC == dNumSigmaTPC[2] && TMath::Abs(dNumSigmaTPC[2]) <= fCutPIDnSigmaPionMax) return kPion;
-          if(dMinSigmasTPC == dNumSigmaTPC[3] && TMath::Abs(dNumSigmaTPC[3]) <= fCutPIDnSigmaKaonMax) return kKaon;
-          if(dMinSigmasTPC == dNumSigmaTPC[4] && TMath::Abs(dNumSigmaTPC[4]) <= fCutPIDnSigmaProtonMax) return kProton;
-      }
-      if(fPIDbayesian){
+  Int_t ParticleFlag[]={0,0,0,0};//Unknown (electron), pion, kaon, proton  
+  fPIDCombined->SetDetectorMask(AliPIDResponse::kDetTPC);
+  UInt_t detUsed = fPIDCombined->ComputeProbabilities(track, fPIDResponse, probTPC);
+  if (detUsed  == (UInt_t)fPIDCombined->GetDetectorMask() ) {  // TPC is available  
 
-          fBayesianResponse->ComputeProb(track,track->GetAODEvent()); // fCurrCentr is needed for mismatch fraction
-          probabilities = fBayesianResponse->GetProb(); // Bayesian Probability (from 0 to 4) (Combined TPC || TOF) including a tuning of priors and TOF mism$
-          ProbBayes[0] = probabilities[0];
-          ProbBayes[1] = probabilities[1];
-          ProbBayes[2] = probabilities[2];
-          ProbBayes[3] = probabilities[3];
-          ProbBayes[4] = probabilities[4];
+	// TPC nSigma cuts
+ 	 if(dP>0.2 && dP <= 0.5)
+ 	 {
+   	   if(fPIDnsigma){
+        	 Double_t dMinSigmasTPC = TMath::MinElement(5,dNumSigmaTPC);
+          	// electron rejection
+         	 if(dMinSigmasTPC == dNumSigmaTPC[0] && TMath::Abs(dNumSigmaTPC[0]) <= fCutPIDnSigmaTPCRejectElectron) ParticleFlag[0] = 1; //return kUnknown;
+         	 if(dMinSigmasTPC == dNumSigmaTPC[2] && TMath::Abs(dNumSigmaTPC[2]) <= fCutPIDnSigmaPionMax) ParticleFlag[1] = 1;//return kPion;
+          	 if(dMinSigmasTPC == dNumSigmaTPC[3] && TMath::Abs(dNumSigmaTPC[3]) <= fCutPIDnSigmaKaonMax) ParticleFlag[2] = 1;//return kKaon;
+          	 if(dMinSigmasTPC == dNumSigmaTPC[4] && TMath::Abs(dNumSigmaTPC[4]) <= fCutPIDnSigmaProtonMax) ParticleFlag[3] = 1;//return kProton;
+      	   }
+      	   if(fPIDbayesian){
+		ProbBayes[0] = probTPC[0];
+                ProbBayes[1] = probTPC[1];
+                ProbBayes[2] = probTPC[2];
+                ProbBayes[3] = probTPC[3];
+                ProbBayes[4] = probTPC[4];
+
+                Double_t dMaxBayesianProb = TMath::MaxElement(5,ProbBayes);
+		if(dMaxBayesianProb > fParticleProbability){
+			if(dMaxBayesianProb == ProbBayes[0] && TMath::Abs(dNumSigmaTPC[0]) <= fCutPIDnSigmaTPCRejectElectron)ParticleFlag[0] = 1;// return kUnknown;
+              		if(dMaxBayesianProb == ProbBayes[2] && TMath::Abs(dNumSigmaTPC[2]) <= fCutPIDnSigmaPionMax)ParticleFlag[1] = 1;//return kPion;
+              		if(dMaxBayesianProb == ProbBayes[3] && TMath::Abs(dNumSigmaTPC[3]) <= fCutPIDnSigmaKaonMax)ParticleFlag[2] = 1;//return kKaon;
+              		if(dMaxBayesianProb == ProbBayes[4] && TMath::Abs(dNumSigmaTPC[4]) <= fCutPIDnSigmaProtonMax)ParticleFlag[3] = 1;//return kProton;
+		}
+	  	/*
+          	fBayesianResponse->ComputeProb(track,track->GetAODEvent()); // fCurrCentr is needed for mismatch fraction
+          	probabilities = fBayesianResponse->GetProb(); // Bayesian Probability (from 0 to 4) (Combined TPC || TOF) including a tuning of priors and TOF mism$
+          	ProbBayes[0] = probabilities[0];
+          	ProbBayes[1] = probabilities[1];
+          	ProbBayes[2] = probabilities[2];
+          	ProbBayes[3] = probabilities[3];
+          	ProbBayes[4] = probabilities[4];
           
-          mismProb = fBayesianResponse->GetTOFMismProb(); // mismatch Bayesian probabilities
+          	mismProb = fBayesianResponse->GetTOFMismProb(); // mismatch Bayesian probabilities
           
-          Double_t dMaxBayesianProb = TMath::MaxElement(5,ProbBayes);
-          if(dMaxBayesianProb > fParticleProbability && mismProb < 0.5){
-              // electron rejection
-              if(dMaxBayesianProb == ProbBayes[0] && TMath::Abs(dNumSigmaTPC[0]) <= fCutPIDnSigmaTPCRejectElectron) return kUnknown;
-              if(dMaxBayesianProb == ProbBayes[2] && TMath::Abs(dNumSigmaTPC[2]) <= fCutPIDnSigmaPionMax){return kPion;}
-              if(dMaxBayesianProb == ProbBayes[3] && TMath::Abs(dNumSigmaTPC[3]) <= fCutPIDnSigmaKaonMax){return kKaon;}
-              if(dMaxBayesianProb == ProbBayes[4] && TMath::Abs(dNumSigmaTPC[4]) <= fCutPIDnSigmaProtonMax){return kProton;}
-          }
-      }
-  }
+          	Double_t dMaxBayesianProb = TMath::MaxElement(5,ProbBayes);
+          	if(dMaxBayesianProb > fParticleProbability && mismProb < 0.5){
+              	// electron rejection
+              	if(dMaxBayesianProb == ProbBayes[0] && TMath::Abs(dNumSigmaTPC[0]) <= fCutPIDnSigmaTPCRejectElectron)ParticleFlag[0] = 1;// return kUnknown;
+              	if(dMaxBayesianProb == ProbBayes[2] && TMath::Abs(dNumSigmaTPC[2]) <= fCutPIDnSigmaPionMax)ParticleFlag[1] = 1;//return kPion;
+              	if(dMaxBayesianProb == ProbBayes[3] && TMath::Abs(dNumSigmaTPC[3]) <= fCutPIDnSigmaKaonMax)ParticleFlag[2] = 1;//return kKaon;
+              	if(dMaxBayesianProb == ProbBayes[4] && TMath::Abs(dNumSigmaTPC[4]) <= fCutPIDnSigmaProtonMax)ParticleFlag[3] = 1;//return kProton;
+          	}*/
+      	  }
+  	}
+        fPIDCombined->SetDetectorMask(AliPIDResponse::kDetTOF|AliPIDResponse::kDetTPC);
+        detUsed = fPIDCombined->ComputeProbabilities(track, fPIDResponse, probTPCTOF);
 
-  // combined TPC + TOF nSigma cuts
-  if(dP > 0.5) // && < 4 GeV TODO once TPC dEdx parametrisation is available
-  {
-      Double_t dNumSigmaCombined[5] = {-99,-99,-99,-99,-99};
+        if (detUsed == (UInt_t)fPIDCombined->GetDetectorMask()){
+                AliAODPid* pidObj = track->GetDetPid();
+                if ((detUsed >= AliPIDResponse::kDetTOF) && (pidObj && pidObj->GetTOFsignal() < 99999)){
 
-      // discard candidates if no TOF is available if cut is on
-      if(fCutPIDnSigmaCombinedNoTOFrejection && !bIsTOFok) return kUnknown;
+  			// combined TPC + TOF nSigma cuts
+  			if(dP > 0.5) // && < 4 GeV TODO once TPC dEdx parametrisation is available
+        		{
+      				Double_t dNumSigmaCombined[5] = {-99,-99,-99,-99,-99};
 
-      // calculating combined nSigmas
-      for(Short_t i(0); i < 5; i++)
-      {
-        if(bIsTOFok) { dNumSigmaCombined[i] = TMath::Sqrt(dNumSigmaTPC[i]*dNumSigmaTPC[i] + dNumSigmaTOF[i]*dNumSigmaTOF[i]); }
-        else { dNumSigmaCombined[i] = dNumSigmaTPC[i]; }
-      }
+      				// discard candidates if no TOF is available if cut is on
+      				if(fCutPIDnSigmaCombinedNoTOFrejection && !bIsTOFok) ParticleFlag[0] = 1;// return kUnknown;
 
-      if(fPIDnsigma){
-          Double_t dMinSigmasCombined = TMath::MinElement(5,dNumSigmaCombined);
+      				// calculating combined nSigmas
+      				for(Short_t i(0); i < 5; i++)
+      				{
+        				if(bIsTOFok) { dNumSigmaCombined[i] = TMath::Sqrt(dNumSigmaTPC[i]*dNumSigmaTPC[i] + dNumSigmaTOF[i]*dNumSigmaTOF[i]); }
+        				else { dNumSigmaCombined[i] = dNumSigmaTPC[i]; }
+      				}
 
-          // electron rejection
-          if(dMinSigmasCombined == dNumSigmaCombined[0] && TMath::Abs(dNumSigmaCombined[0]) <= fCutPIDnSigmaPionMax) return kUnknown;
+      				if(fPIDnsigma){
+          				Double_t dMinSigmasCombined = TMath::MinElement(5,dNumSigmaCombined);
+
+          				// electron rejection
+          				if(dMinSigmasCombined == dNumSigmaCombined[0] && TMath::Abs(dNumSigmaCombined[0]) <= fCutPIDnSigmaPionMax) ParticleFlag[0] = 1;// return kUnknown;
           
-          switch (fPIDnsigmaCombination) {
-              case 1:
-                  //combination 1
-                  if(dMinSigmasCombined == dNumSigmaCombined[2] && TMath::Abs(dNumSigmaCombined[2]) <= 3.){return kPion;}
-                  if(dMinSigmasCombined == dNumSigmaCombined[3] && TMath::Abs(dNumSigmaCombined[3]) <= 2.5){return kKaon;}
-                  if(dMinSigmasCombined == dNumSigmaCombined[4] && TMath::Abs(dNumSigmaCombined[4]) <= 3.){return kProton;}
-                  break;
-              case 2:
-                  //combination 2
-                  if(dP < 2.5 && dMinSigmasCombined == dNumSigmaCombined[2] && TMath::Abs(dNumSigmaCombined[2]) <= 3.){return kPion;}
-                  if(dP > 2.5 && dMinSigmasCombined == dNumSigmaCombined[2] && TMath::Abs(dNumSigmaCombined[2]) <= 2.){return kPion;}
+          				switch (fPIDnsigmaCombination) {
+              					case 1:
+                  				//combination 1
+                  				if(dMinSigmasCombined == dNumSigmaCombined[2] && TMath::Abs(dNumSigmaCombined[2]) <= 3.) ParticleFlag[1] = 1;//return kPion;
+                  				if(dMinSigmasCombined == dNumSigmaCombined[3] && TMath::Abs(dNumSigmaCombined[3]) <= 2.5) ParticleFlag[2] = 1; //return kKaon;
+                  				if(dMinSigmasCombined == dNumSigmaCombined[4] && TMath::Abs(dNumSigmaCombined[4]) <= 3.) ParticleFlag[3] = 1;//return kProton;
+                  				break;
+              					case 2:
+                  				//combination 2
+                  				if(dP < 2.5 && dMinSigmasCombined == dNumSigmaCombined[2] && TMath::Abs(dNumSigmaCombined[2]) <= 3.) ParticleFlag[1] = 1; //return kPion;
+                  				if(dP > 2.5 && dMinSigmasCombined == dNumSigmaCombined[2] && TMath::Abs(dNumSigmaCombined[2]) <= 2.) ParticleFlag[1] = 1; //return kPion;
 
-                  if(dP < 2. && dMinSigmasCombined == dNumSigmaCombined[3] && TMath::Abs(dNumSigmaCombined[3]) <= 2.5){return kKaon;}
-                  if(dP > 2. && dP < 3. && dMinSigmasCombined == dNumSigmaCombined[3] && TMath::Abs(dNumSigmaCombined[3]) <= 2.){return kKaon;}
-                  if(dP > 3. && dMinSigmasCombined == dNumSigmaCombined[3] && TMath::Abs(dNumSigmaCombined[3]) <= 1.5){return kKaon;}
+                  				if(dP < 2. && dMinSigmasCombined == dNumSigmaCombined[3] && TMath::Abs(dNumSigmaCombined[3]) <= 2.5) ParticleFlag[2] = 1; //return kKaon;
+                  				if(dP > 2. && dP < 3. && dMinSigmasCombined == dNumSigmaCombined[3] && TMath::Abs(dNumSigmaCombined[3]) <= 2.) ParticleFlag[2] = 1; //return kKaon;
+                  				if(dP > 3. && dMinSigmasCombined == dNumSigmaCombined[3] && TMath::Abs(dNumSigmaCombined[3]) <= 1.5) ParticleFlag[2] = 1; //return kKaon;
 
-                  if(dP < 3. && dMinSigmasCombined == dNumSigmaCombined[4] && TMath::Abs(dNumSigmaCombined[4]) <= 3.){return kProton;}
-                  if(dP > 3. && dP < 5. && dMinSigmasCombined == dNumSigmaCombined[4] && TMath::Abs(dNumSigmaCombined[4]) <= 2.){return kProton;}
-                  if(dP > 5. && dMinSigmasCombined == dNumSigmaCombined[4] && TMath::Abs(dNumSigmaCombined[4]) <= 1.5){return kProton;}
+                  				if(dP < 3. && dMinSigmasCombined == dNumSigmaCombined[4] && TMath::Abs(dNumSigmaCombined[4]) <= 3.) ParticleFlag[3] = 1; //return kProton;
+                  				if(dP > 3. && dP < 5. && dMinSigmasCombined == dNumSigmaCombined[4] && TMath::Abs(dNumSigmaCombined[4]) <= 2.) ParticleFlag[3] = 1; //return kProton;
+                  				if(dP > 5. && dMinSigmasCombined == dNumSigmaCombined[4] && TMath::Abs(dNumSigmaCombined[4]) <= 1.5) ParticleFlag[3] = 1; //return kProton;
 
+                  				break;
+              					case 3:
+                  				//combination 3
+                  				if(dP < 2.5 && dMinSigmasCombined == dNumSigmaCombined[2] && TMath::Abs(dNumSigmaCombined[2]) <= 3.) ParticleFlag[1] = 1; //return kPion;
+                  				if(dP > 2.5 && dP < 4. && dMinSigmasCombined == dNumSigmaCombined[2] && TMath::Abs(dNumSigmaCombined[2]) <= 1.5) ParticleFlag[1] = 1; //return kPion;
+                  				if(dP > 4. && dMinSigmasCombined == dNumSigmaCombined[2] && TMath::Abs(dNumSigmaCombined[2]) <= 1.) ParticleFlag[1] = 1; //return kPion;
+
+                 				if(dP < 2. && dMinSigmasCombined == dNumSigmaCombined[3] && TMath::Abs(dNumSigmaCombined[3]) <= 2.5) ParticleFlag[2] = 1; //return kKaon;
+                  				if(dP > 2. && dP < 3. && dMinSigmasCombined == dNumSigmaCombined[3] && TMath::Abs(dNumSigmaCombined[3]) <= 1.5)ParticleFlag[2] = 1; //return kKaon;
+                  				if(dP > 3. && dMinSigmasCombined == dNumSigmaCombined[3] && TMath::Abs(dNumSigmaCombined[3]) <= 1.) ParticleFlag[2] = 1; //return kKaon;
                   
-              case 3:
-                  //combination 3
-                  if(dP < 2.5 && dMinSigmasCombined == dNumSigmaCombined[2] && TMath::Abs(dNumSigmaCombined[2]) <= 3.){return kPion;}
-                  if(dP > 2.5 && dP < 4. && dMinSigmasCombined == dNumSigmaCombined[2] && TMath::Abs(dNumSigmaCombined[2]) <= 1.5){return kPion;}
-                  if(dP > 4. && dMinSigmasCombined == dNumSigmaCombined[2] && TMath::Abs(dNumSigmaCombined[2]) <= 1.){return kPion;}
-
-                  if(dP > 2. && dP < 3. && dMinSigmasCombined == dNumSigmaCombined[3] && TMath::Abs(dNumSigmaCombined[3]) <= 1.5){return kKaon;}
-                  if(dP > 3. && dMinSigmasCombined == dNumSigmaCombined[3] && TMath::Abs(dNumSigmaCombined[3]) <= 1.){return kKaon;}
-                  
-                  if(dP < 3. && dMinSigmasCombined == dNumSigmaCombined[4] && TMath::Abs(dNumSigmaCombined[4]) <= 3.){return kProton;}
-                  if(dP > 3. && dP < 5. && dMinSigmasCombined == dNumSigmaCombined[4] && TMath::Abs(dNumSigmaCombined[4]) <= 2.){return kProton;}
-                  if(dP > 5. && dMinSigmasCombined == dNumSigmaCombined[4] && TMath::Abs(dNumSigmaCombined[4]) <= 1.){return kProton;}
-              default:
-                  break;
-          }
-      }
-      if(fPIDbayesian){
-
-          fBayesianResponse->ComputeProb(track,track->GetAODEvent()); // fCurrCentr is needed for mismatch fraction
-          probabilities = fBayesianResponse->GetProb(); // Bayesian Probability (from 0 to 4) (Combined TPC || TOF) including a tuning of priors and TOF mism$
-          ProbBayes[0] = probabilities[0];
-          ProbBayes[1] = probabilities[1];
-          ProbBayes[2] = probabilities[2];
-          ProbBayes[3] = probabilities[3];
-          ProbBayes[4] = probabilities[4];
+                  				if(dP < 3. && dMinSigmasCombined == dNumSigmaCombined[4] && TMath::Abs(dNumSigmaCombined[4]) <= 3.) ParticleFlag[3] = 1; //return kProton;
+                  				if(dP > 3. && dP < 5. && dMinSigmasCombined == dNumSigmaCombined[4] && TMath::Abs(dNumSigmaCombined[4]) <= 2.) ParticleFlag[3] = 1; //return kProton;
+                  				if(dP > 5. && dMinSigmasCombined == dNumSigmaCombined[4] && TMath::Abs(dNumSigmaCombined[4]) <= 1.) ParticleFlag[3] = 1; //return kProton;
+              					break;
+						default:
+                  				break;
+          				}
+      				}
+      				if(fPIDbayesian){
+					ProbBayes[0] = probTPCTOF[0];
+                       			ProbBayes[1] = probTPCTOF[1];
+                       			ProbBayes[2] = probTPCTOF[2];
+                       			ProbBayes[3] = probTPCTOF[3];
+                       			ProbBayes[4] = probTPCTOF[4];
+                       			Double_t dMaxBayesianProb = TMath::MaxElement(5,ProbBayes);
+					if(dMaxBayesianProb > fParticleProbability){
+						if(dMaxBayesianProb == ProbBayes[0] && TMath::Abs(dNumSigmaCombined[0]) <= fCutPIDnSigmaPionMax) ParticleFlag[0] = 1; //return kUnknown;
+       						if(dMaxBayesianProb == ProbBayes[2] && TMath::Abs(dNumSigmaCombined[2]) <= fCutPIDnSigmaPionMax) ParticleFlag[1] = 1; //return kPion;
+              					if(dMaxBayesianProb == ProbBayes[3] && TMath::Abs(dNumSigmaCombined[3]) <= fCutPIDnSigmaKaonMax) ParticleFlag[2] = 1; //return kKaon;
+              					if(dMaxBayesianProb == ProbBayes[4] && TMath::Abs(dNumSigmaCombined[4]) <= fCutPIDnSigmaProtonMax) ParticleFlag[3] = 1; //return kProton;
+					}else{ParticleFlag[0] = 1;}
+	  				/*
+          				fBayesianResponse->ComputeProb(track,track->GetAODEvent()); // fCurrCentr is needed for mismatch fraction
+       					probabilities = fBayesianResponse->GetProb(); // Bayesian Probability (from 0 to 4) (Combined TPC || TOF) including a tuning of priors and TOF mism$
+       					ProbBayes[0] = probabilities[0];
+       					ProbBayes[1] = probabilities[1];
+          				ProbBayes[2] = probabilities[2];
+          				ProbBayes[3] = probabilities[3];
+          				ProbBayes[4] = probabilities[4];
           
-          mismProb = fBayesianResponse->GetTOFMismProb(); // mismatch Bayesian probabilities
+          				mismProb = fBayesianResponse->GetTOFMismProb(); // mismatch Bayesian probabilities
           
-          Double_t dMaxBayesianProb = TMath::MaxElement(5,ProbBayes);
-          if(dMaxBayesianProb > fParticleProbability && mismProb < 0.5){
-              // electron rejection
-              if(dMaxBayesianProb == ProbBayes[0] && TMath::Abs(dNumSigmaCombined[0]) <= fCutPIDnSigmaPionMax) return kUnknown;
-              if(dMaxBayesianProb == ProbBayes[2] && TMath::Abs(dNumSigmaCombined[2]) <= fCutPIDnSigmaPionMax){return kPion;}
-              if(dMaxBayesianProb == ProbBayes[3] && TMath::Abs(dNumSigmaCombined[3]) <= fCutPIDnSigmaKaonMax){return kKaon;}
-              if(dMaxBayesianProb == ProbBayes[4] && TMath::Abs(dNumSigmaCombined[4]) <= fCutPIDnSigmaProtonMax){return kProton;}
-          }
-      }
-  }
+          				Double_t dMaxBayesianProb = TMath::MaxElement(5,ProbBayes);
+       					if(dMaxBayesianProb > fParticleProbability && mismProb < 0.5){
+              				// electron rejection
+              				if(dMaxBayesianProb == ProbBayes[0] && TMath::Abs(dNumSigmaCombined[0]) <= fCutPIDnSigmaPionMax) ParticleFlag[0] = 1; //return kUnknown;
+              				if(dMaxBayesianProb == ProbBayes[2] && TMath::Abs(dNumSigmaCombined[2]) <= fCutPIDnSigmaPionMax) ParticleFlag[1] = 1; //return kPion;
+              				if(dMaxBayesianProb == ProbBayes[3] && TMath::Abs(dNumSigmaCombined[3]) <= fCutPIDnSigmaKaonMax) ParticleFlag[2] = 1; //return kKaon;
+              				if(dMaxBayesianProb == ProbBayes[4] && TMath::Abs(dNumSigmaCombined[4]) <= fCutPIDnSigmaProtonMax) ParticleFlag[3] = 1; //return kProton;
+       					}*/
+  				}
+  			}//if(dP > 0.5)
+ 		}//if ((detUsed >= AliPIDResponse::kDetTOF) && (pidObj && pidObj->GetTOFsignal() < 99999))
+	}//TPC or TOF if (detUsed)
+  }//TPC if (detUsed)
 
+  PartSpecies species;
+  if(!ParticleFlag[0] && ParticleFlag[1] && !ParticleFlag[2] && !ParticleFlag[3]){ 
+	species = kPion;
+  }else if(!ParticleFlag[0] && !ParticleFlag[1] && ParticleFlag[2] && !ParticleFlag[3]){ 
+	species = kKaon;
+  }else if(!ParticleFlag[0] && !ParticleFlag[1] && !ParticleFlag[2] && ParticleFlag[3]){
+	 species = kProton;
+  }else{species = kUnknown;}
 
-  return kUnknown;
+  if(fFillQA) FillPIDQA(1,track,species); // filling QA for tracks AFTER selection
+ 
+  return species;
 }
 //_____________________________________________________________________________
 void AliAnalysisTaskFlowModes::FillPIDQA(const Short_t iQAindex, const AliAODTrack* track, const PartSpecies species)
@@ -2177,7 +2372,6 @@ void AliAnalysisTaskFlowModes::FillPIDQA(const Short_t iQAindex, const AliAODTra
   // Filling various QA plots related to PID (pi,K,p) track selection
   // *************************************************************
   if(!track) return;
-
   if(!fPIDResponse || !fPIDCombined)
   {
     ::Error("FillPIDQA","AliPIDResponse or AliPIDCombined object not found!");
@@ -2339,6 +2533,7 @@ Bool_t AliAnalysisTaskFlowModes::ProcessEvent()
 
   // printf("======= EVENT ================\n");
 
+
   // checking the run number for applying weights & loading TList with weights
   if(fRunNumber < 0 || fRunNumber != fEventAOD->GetRunNumber() )
   { 
@@ -2348,61 +2543,58 @@ Bool_t AliAnalysisTaskFlowModes::ProcessEvent()
     {
       TDirectory* dirFlowNUAWeights = (TDirectory*) fFlowNUAWeightsFile->Get(Form("000%d",fRunNumber));
       if(!dirFlowNUAWeights) {::Error("ProcessEvent","TList from flow weights not found."); return kFALSE; }
-      fh3NUAWeightRefsPlus = (TH3D*) dirFlowNUAWeights->Get("ChargedPlus"); if(!fh3NUAWeightRefsPlus) { ::Error("ProcessEvent","Positive Refs weights not found"); return kFALSE; }
-      fh3NUAWeightRefsMinus = (TH3D*) dirFlowNUAWeights->Get("ChargedMinus"); if(!fh3NUAWeightRefsMinus) { ::Error("ProcessEvent","Negative Refs weights not found"); return kFALSE; }
+      fh3NUAWeightRefsPlus = (TH3D*) dirFlowNUAWeights->Get("ChargedPlus"); if(!fh3NUAWeightRefsPlus) { ::Error("ProcessEvent","Positive Refs NUA weights not found"); return kFALSE; }
+      fh3NUAWeightRefsMinus = (TH3D*) dirFlowNUAWeights->Get("ChargedMinus"); if(!fh3NUAWeightRefsMinus) { ::Error("ProcessEvent","Negative Refs NUA weights not found"); return kFALSE; }
 
-      fh3NUAWeightChargedPlus = (TH3D*) dirFlowNUAWeights->Get("ChargedPlus"); if(!fh3NUAWeightChargedPlus) { ::Error("ProcessEvent","Positive Charged weights not found"); return kFALSE; }
-      fh3NUAWeightChargedMinus = (TH3D*) dirFlowNUAWeights->Get("ChargedMinus"); if(!fh3NUAWeightChargedMinus) { ::Error("ProcessEvent","Nagative Charged weights not found"); return kFALSE; }
+      fh3NUAWeightChargedPlus = (TH3D*) dirFlowNUAWeights->Get("ChargedPlus"); if(!fh3NUAWeightChargedPlus) { ::Error("ProcessEvent","Positive Charged NUA weights not found"); return kFALSE; }
+      fh3NUAWeightChargedMinus = (TH3D*) dirFlowNUAWeights->Get("ChargedMinus"); if(!fh3NUAWeightChargedMinus) { ::Error("ProcessEvent","Nagative Charged NUA weights not found"); return kFALSE; }
 
-      fh3NUAWeightPionPlus = (TH3D*) dirFlowNUAWeights->Get("PionPlus"); if(!fh3NUAWeightPionPlus) { ::Error("ProcessEvent","Positive Pion weights not found"); return kFALSE; }
-      fh3NUAWeightPionMinus = (TH3D*) dirFlowNUAWeights->Get("PionMinus"); if(!fh3NUAWeightPionMinus) { ::Error("ProcessEvent","Negative Pion weights not found"); return kFALSE; }
-
-        
-      fh3NUAWeightKaonPlus = (TH3D*) dirFlowNUAWeights->Get("KaonPlus"); if(!fh3NUAWeightKaonPlus) { ::Error("ProcessEvent","Positive Kaon weights not found"); return kFALSE; }
-      fh3NUAWeightKaonMinus = (TH3D*) dirFlowNUAWeights->Get("KaonMinus"); if(!fh3NUAWeightKaonMinus) { ::Error("ProcessEvent","Negative Kaon weights not found"); return kFALSE; }
+      fh3NUAWeightPionPlus = (TH3D*) dirFlowNUAWeights->Get("PionPlus"); if(!fh3NUAWeightPionPlus) { ::Error("ProcessEvent","Positive Pion NUA weights not found"); return kFALSE; }
+      fh3NUAWeightPionMinus = (TH3D*) dirFlowNUAWeights->Get("PionMinus"); if(!fh3NUAWeightPionMinus) { ::Error("ProcessEvent","Negative Pion NUA weights not found"); return kFALSE; }
 
         
-      fh3NUAWeightProtonPlus = (TH3D*) dirFlowNUAWeights->Get("ProtonPlus"); if(!fh3NUAWeightProtonPlus) { ::Error("ProcessEvent","Positive Proton weights not found"); return kFALSE; }
-      fh3NUAWeightProtonMinus = (TH3D*) dirFlowNUAWeights->Get("ProtonMinus"); if(!fh3NUAWeightProtonMinus) { ::Error("ProcessEvent","Negative Proton weights not found"); return kFALSE; }
+      fh3NUAWeightKaonPlus = (TH3D*) dirFlowNUAWeights->Get("KaonPlus"); if(!fh3NUAWeightKaonPlus) { ::Error("ProcessEvent","Positive Kaon NUA weights not found"); return kFALSE; }
+      fh3NUAWeightKaonMinus = (TH3D*) dirFlowNUAWeights->Get("KaonMinus"); if(!fh3NUAWeightKaonMinus) { ::Error("ProcessEvent","Negative Kaon NUA weights not found"); return kFALSE; }
+
+        
+      fh3NUAWeightProtonPlus = (TH3D*) dirFlowNUAWeights->Get("ProtonPlus"); if(!fh3NUAWeightProtonPlus) { ::Error("ProcessEvent","Positive Proton NUA weights not found"); return kFALSE; }
+      fh3NUAWeightProtonMinus = (TH3D*) dirFlowNUAWeights->Get("ProtonMinus"); if(!fh3NUAWeightProtonMinus) { ::Error("ProcessEvent","Negative Proton NUA weights not found"); return kFALSE; }
 
         
     }
    }
-   // filtering particles
-   Filtering();
-   // at this point, centrality index (percentile) should be properly estimated, if not, skip event
-   if(fIndexCentrality < 0) {return kFALSE;}
-  
+
+   if(fColSystem == kPbPb){
+       fIndexCentrality = GetCentralityIndex();
+       if(fIndexCentrality < 0) { return kFALSE;}
+   }
 
    if(fFlowUseNUEWeights && fFlowNUEWeightsFile)
    {
-        TDirectory* dirFlowNUEWeights = 0x0;
-        if(fIndexCentrality>0. && fIndexCentrality<5.) dirFlowNUEWeights = (TDirectory*) fFlowNUEWeightsFile->Get(Form("0-5cc"));
-        if(fIndexCentrality>5. && fIndexCentrality<10.) dirFlowNUEWeights = (TDirectory*) fFlowNUEWeightsFile->Get(Form("5-10cc"));
-        if(fIndexCentrality>10. && fIndexCentrality<20.) dirFlowNUEWeights = (TDirectory*) fFlowNUEWeightsFile->Get(Form("10-20cc"));
-        if(fIndexCentrality>20. && fIndexCentrality<30.) dirFlowNUEWeights = (TDirectory*) fFlowNUEWeightsFile->Get(Form("20-30cc"));
-        if(fIndexCentrality>30. && fIndexCentrality<40.) dirFlowNUEWeights = (TDirectory*) fFlowNUEWeightsFile->Get(Form("30-60cc"));
-        if(fIndexCentrality>40. && fIndexCentrality<50.) dirFlowNUEWeights = (TDirectory*) fFlowNUEWeightsFile->Get(Form("40-50cc"));
+        TDirectory* dirFlowNUEWeights[6] = {0x0};
 
-        if(!dirFlowNUEWeights) {::Error("ProcessEvent","TDirectoy from NUE weights not found."); return kFALSE; }
-        fhNUEWeightRefsPlus = (TH1D*) dirFlowNUEWeights->FindObject("ChargedPlus"); if(!fhNUEWeightRefsPlus) { ::Error("ProcessEvent","Positive Refs weights not found"); return kFALSE; }
-        fhNUEWeightRefsMinus = (TH1D*) dirFlowNUEWeights->FindObject("ChargedMinus"); if(!fhNUEWeightRefsMinus) { ::Error("ProcessEvent","Negative Refs weights not found"); return kFALSE; }
+	const char* gCentrality[] = {"0-5cc","5-10cc","10-20cc","20-30cc","30-40cc","40-50cc"};
+	for(int iCentrality = 0; iCentrality<6;iCentrality++){
+             dirFlowNUEWeights[iCentrality] = (TDirectory*) fFlowNUEWeightsFile->Get(gCentrality[iCentrality]);
+             if(!dirFlowNUEWeights[iCentrality]) {::Error("ProcessEvent","TDirectoy from NUE weights not found."); return kFALSE; }
+             fhNUEWeightRefsPlus[iCentrality] = dynamic_cast<TH1F*>( dirFlowNUEWeights[iCentrality]->FindObject("ChargedPlus")); if(!fhNUEWeightRefsPlus[iCentrality]) { ::Error("ProcessEvent","Positive Refs NUE weights not found"); return kFALSE; }
+             fhNUEWeightRefsMinus[iCentrality] = dynamic_cast<TH1F*>(dirFlowNUEWeights[iCentrality]->FindObject("ChargedMinus")); if(!fhNUEWeightRefsMinus[iCentrality]) { ::Error("ProcessEvent","Negative Refs NUE weights not found"); return kFALSE; }
+	     fhNUEWeightChargedPlus[iCentrality] = dynamic_cast<TH1F*>(dirFlowNUEWeights[iCentrality]->FindObject("ChargedPlus")); if(!fhNUEWeightChargedPlus[iCentrality]) { ::Error("ProcessEvent","Positive Charged NUE weights not found"); return kFALSE; }
+             fhNUEWeightChargedMinus[iCentrality] = dynamic_cast<TH1F*>(dirFlowNUEWeights[iCentrality]->FindObject("ChargedMinus")); if(!fhNUEWeightChargedMinus[iCentrality]) { ::Error("ProcessEvent","Negative Charged NUE weights not found"); return kFALSE; }
+	     fhNUEWeightPionPlus[iCentrality] = dynamic_cast<TH1F*>(dirFlowNUEWeights[iCentrality]->FindObject("PionPlus")); if(!fhNUEWeightPionPlus[iCentrality]) { ::Error("ProcessEvent","Positive Pion NUE weights not found"); return kFALSE; }
+             fhNUEWeightPionMinus[iCentrality] = dynamic_cast<TH1F*>(dirFlowNUEWeights[iCentrality]->FindObject("PionMinus")); if(!fhNUEWeightPionMinus[iCentrality]) { ::Error("ProcessEvent","Negative Pion NUE weights not found"); return kFALSE; }
+             fhNUEWeightKaonPlus[iCentrality] = dynamic_cast<TH1F*>(dirFlowNUEWeights[iCentrality]->FindObject("KaonPlus")); if(!fhNUEWeightKaonPlus[iCentrality]) { ::Error("ProcessEvent","Positive Kaon NUE weights not found"); return kFALSE; }
+             fhNUEWeightKaonMinus[iCentrality] = dynamic_cast<TH1F*>(dirFlowNUEWeights[iCentrality]->FindObject("KaonMinus")); if(!fhNUEWeightKaonMinus[iCentrality]) { ::Error("ProcessEvent","Negative Kaon NUE weights not found"); return kFALSE; }
+             fhNUEWeightProtonPlus[iCentrality] = dynamic_cast<TH1F*>(dirFlowNUEWeights[iCentrality]->FindObject("ProtonPlus")); if(!fhNUEWeightProtonPlus[iCentrality]) { ::Error("ProcessEvent","Positive Proton NUE weights not found"); return kFALSE; }
+             fhNUEWeightProtonMinus[iCentrality] = dynamic_cast<TH1F*>(dirFlowNUEWeights[iCentrality]->FindObject("ProtonMinus")); if(!fhNUEWeightProtonMinus[iCentrality]) { ::Error("ProcessEvent","Negative Proton NUE weights not found"); return kFALSE; }
 
-        fhNUEWeightChargedPlus = (TH1D*) dirFlowNUEWeights->FindObject("ChargedPlus"); if(!fhNUEWeightChargedPlus) { ::Error("ProcessEvent","Positive Charged weights not found"); return kFALSE; }
-        fhNUEWeightChargedMinus = (TH1D*) dirFlowNUEWeights->FindObject("ChargedMinus"); if(!fhNUEWeightChargedMinus) { ::Error("ProcessEvent","Negative Charged weights not found"); return kFALSE; }
-
-        fhNUEWeightPionPlus = (TH1D*) dirFlowNUEWeights->FindObject("PionPlus"); if(!fhNUEWeightPionPlus) { ::Error("ProcessEvent","Positive Pion weights not found"); return kFALSE; }
-        fhNUEWeightPionMinus = (TH1D*) dirFlowNUEWeights->FindObject("PionMinus"); if(!fhNUEWeightPionMinus) { ::Error("ProcessEvent","Negative Pion weights not found"); return kFALSE; }
-
-        fhNUEWeightKaonPlus = (TH1D*) dirFlowNUEWeights->FindObject("KaonPlus"); if(!fhNUEWeightKaonPlus) { ::Error("ProcessEvent","Positive Kaon weights not found"); return kFALSE; }
-        fhNUEWeightKaonMinus = (TH1D*) dirFlowNUEWeights->FindObject("KaonMinus"); if(!fhNUEWeightKaonMinus) { ::Error("ProcessEvent","Negative Kaon weights not found"); return kFALSE; }
-
-        fhNUEWeightProtonPlus = (TH1D*) dirFlowNUEWeights->FindObject("ProtonPlus"); if(!fhNUEWeightProtonPlus) { ::Error("ProcessEvent","Positive Proton weights not found"); return kFALSE; }
-        fhNUEWeightProtonMinus = (TH1D*) dirFlowNUEWeights->FindObject("ProtonMinus"); if(!fhNUEWeightProtonMinus) { ::Error("ProcessEvent","Negative Proton weights not found"); return kFALSE; }
-
+	}
     }
- 
-    
+
+ // filtering particles
+ if(!Filtering()) return kFALSE;
+ // at this point, centrality index (percentile) should be properly estimated, if not, skip event
+         
   // if running in kFillWeights mode, skip the remaining part
   if(fRunMode == kFillWeights) { fEventCounter++; return kTRUE; }
 
@@ -2474,7 +2666,7 @@ void AliAnalysisTaskFlowModes::DoFlowRefs(const Short_t iEtaGapIndex)
             dValue = vector.Re()/Cn2;
             // printf("Gap (RFPs): %g Harm %d | Dn2: %g | fFlowVecQpos[0][0]: %g | fFlowVecQneg[0][0]: %g | fIndexCentrality %d\n\n", dEtaGap,iHarmonics,Cn2,fFlowVecQpos[0][0].Re(),fFlowVecQneg[0][0].Re(),fIndexCentrality);
             if( TMath::Abs(dValue < 1) )
-              fpRefsCor2[iEtaGapIndex][iHarm]->Fill(fIndexCentrality, dValue, Cn2);
+              fpRefsCor2[fIndexSampling][iEtaGapIndex][iHarm]->Fill(fIndexCentrality, dValue, Cn2);
 
           }
         }
@@ -2488,15 +2680,15 @@ void AliAnalysisTaskFlowModes::DoFlowRefs(const Short_t iEtaGapIndex)
             // (2,2 | 2,2)_gap , referece flow for v4/psi2
             TComplex Four_2222_GapP = FourGapPos(2, 2, -2, -2);
             double c4_2222_GapP = Four_2222_GapP.Re()/Dn4GapP;
-            fpMixedRefsCor4[iEtaGapIndex][0]->Fill(fIndexCentrality, c4_2222_GapP, Dn4GapP);
+            fpMixedRefsCor4[fIndexSampling][iEtaGapIndex][0]->Fill(fIndexCentrality, c4_2222_GapP, Dn4GapP);
             // (3,3 | 3,3)_gap, referece flow for v6/psi3
             TComplex Four_3333_GapP = FourGapPos(3, 3, -3, -3);
             double c4_3333_GapP = Four_3333_GapP.Re()/Dn4GapP;
-            fpMixedRefsCor4[iEtaGapIndex][1]->Fill(fIndexCentrality, c4_3333_GapP, Dn4GapP);
+            fpMixedRefsCor4[fIndexSampling][iEtaGapIndex][1]->Fill(fIndexCentrality, c4_3333_GapP, Dn4GapP);
             // (3,2 | 3,2)_gap, reference flow for v5/psi23
             TComplex Four_3232_GapP = FourGapPos(3, 2, -3, -2);
             double c4_3232_GapP = Four_3232_GapP.Re()/Dn4GapP;
-            fpMixedRefsCor4[iEtaGapIndex][2]->Fill(fIndexCentrality, c4_3232_GapP, Dn4GapP);
+            fpMixedRefsCor4[fIndexSampling][iEtaGapIndex][2]->Fill(fIndexCentrality, c4_3232_GapP, Dn4GapP);
         }
         //estimating <6>
         Dn6GapP = SixGapPos(0,0,0,0,0,0).Re();
@@ -2505,7 +2697,7 @@ void AliAnalysisTaskFlowModes::DoFlowRefs(const Short_t iEtaGapIndex)
             // (2,2,2 | 2,2,2)_gap, reference flow for v6/psi2
             TComplex Six_222222_GapP = SixGapPos(2, 2, 2, -2, -2, -2);
             double c6_222222_GapP = Six_222222_GapP.Re()/Dn6GapP;
-            fpMixedRefsCor6[iEtaGapIndex]->Fill(fIndexCentrality, c6_222222_GapP, Dn6GapP);
+            fpMixedRefsCor6[fIndexSampling][iEtaGapIndex]->Fill(fIndexCentrality, c6_222222_GapP, Dn6GapP);
         } 
     }
   return;
@@ -2543,7 +2735,7 @@ void AliAnalysisTaskFlowModes::DoFlowCharged(const Short_t iEtaGapIndex)
               vector = TwoDiffGapPos(iHarmonics,-iHarmonics,iPt);
               dValue = vector.Re()/Dn2;
               if( TMath::Abs(dValue < 1) )
-                fp2ChargedCor2Pos[iEtaGapIndex][iHarm]->Fill(fIndexCentrality, iPt*dPtBinWidth, dValue, Dn2);
+                fp2ChargedCor2Pos[fIndexSampling][iEtaGapIndex][iHarm]->Fill(fIndexCentrality, iPt*dPtBinWidth, dValue, Dn2);
             }
           }
 
@@ -2557,7 +2749,7 @@ void AliAnalysisTaskFlowModes::DoFlowCharged(const Short_t iEtaGapIndex)
               vector = TwoDiffGapNeg(iHarmonics,-iHarmonics,iPt);
               dValue = vector.Re()/Dn2;
               if( TMath::Abs(dValue < 1) )
-                fp2ChargedCor2Neg[iEtaGapIndex][iHarm]->Fill(fIndexCentrality, iPt*dPtBinWidth, dValue, Dn2);
+                fp2ChargedCor2Neg[fIndexSampling][iEtaGapIndex][iHarm]->Fill(fIndexCentrality, iPt*dPtBinWidth, dValue, Dn2);
             }
           }
     }
@@ -2574,7 +2766,7 @@ void AliAnalysisTaskFlowModes::DoFlowCharged(const Short_t iEtaGapIndex)
                  if(iMixedHarm==2){ vector = ThreeDiffGapPos(5,-3,-2,iPt);} 
                  dValue = vector.Re()/DDn3GapP;
                  if( TMath::Abs(dValue < 1) ){
-            fpMixedChargedCor3Pos[iEtaGapIndex][iMixedHarm]->Fill(fIndexCentrality,iPt*dPtBinWidth, dValue, DDn3GapP);
+            fpMixedChargedCor3Pos[fIndexSampling][iEtaGapIndex][iMixedHarm]->Fill(fIndexCentrality,iPt*dPtBinWidth, dValue, DDn3GapP);
                  }
              }
           }     
@@ -2589,7 +2781,7 @@ void AliAnalysisTaskFlowModes::DoFlowCharged(const Short_t iEtaGapIndex)
                  if(iMixedHarm==2){ vector = ThreeDiffGapNeg(5,-2,-3,iPt);}
                  dValue = vector.Re()/DDn3GapP;
                  if( TMath::Abs(dValue < 1) ){
-                    fpMixedChargedCor3Neg[iEtaGapIndex][iMixedHarm]->Fill(fIndexCentrality,iPt*dPtBinWidth, dValue, DDn3GapP);
+                    fpMixedChargedCor3Neg[fIndexSampling][iEtaGapIndex][iMixedHarm]->Fill(fIndexCentrality,iPt*dPtBinWidth, dValue, DDn3GapP);
                  }
              }
           }
@@ -2599,8 +2791,9 @@ void AliAnalysisTaskFlowModes::DoFlowCharged(const Short_t iEtaGapIndex)
         if(DDn4GapP!=0)
         {
             vector = Four13DiffGapPos(6,-2,-2,-2,iPt);
+            dValue = vector.Re()/DDn4GapP;
             if( TMath::Abs(dValue < 1) ){
-                fpMixedChargedCor4Pos[iEtaGapIndex]->Fill(fIndexCentrality,iPt*dPtBinWidth, dValue, DDn4GapP);
+                fpMixedChargedCor4Pos[fIndexSampling][iEtaGapIndex]->Fill(fIndexCentrality,iPt*dPtBinWidth, dValue, DDn4GapP);
             }
         }
         // POIs in negative eta
@@ -2608,8 +2801,9 @@ void AliAnalysisTaskFlowModes::DoFlowCharged(const Short_t iEtaGapIndex)
         if(DDn4GapP!=0)
         {
             vector = Four13DiffGapNeg(6,-2,-2,-2,iPt);
+            dValue = vector.Re()/DDn4GapP;
             if( TMath::Abs(dValue < 1) ){
-                fpMixedChargedCor4Neg[iEtaGapIndex]->Fill(fIndexCentrality,iPt*dPtBinWidth, dValue, DDn4GapP);
+                fpMixedChargedCor4Neg[fIndexSampling][iEtaGapIndex]->Fill(fIndexCentrality,iPt*dPtBinWidth, dValue, DDn4GapP);
             }
         }
     }
@@ -2636,20 +2830,20 @@ void AliAnalysisTaskFlowModes::DoFlowPID(const Short_t iEtaGapIndex, const PartS
       switch (species)
       {
           case kPion:
-              profile2Pos = fp2PionCor2Pos[iEtaGapIndex];
-              profile2Neg = fp2PionCor2Neg[iEtaGapIndex];
+              profile2Pos = fp2PionCor2Pos[fIndexSampling][iEtaGapIndex];
+              profile2Neg = fp2PionCor2Neg[fIndexSampling][iEtaGapIndex];
               //profile4 = fp2PionCor4;
               break;
               
           case kKaon:
-              profile2Pos = fp2KaonCor2Pos[iEtaGapIndex];
-              profile2Neg = fp2KaonCor2Neg[iEtaGapIndex];
+              profile2Pos = fp2KaonCor2Pos[fIndexSampling][iEtaGapIndex];
+              profile2Neg = fp2KaonCor2Neg[fIndexSampling][iEtaGapIndex];
               //profile4 = fp2KaonCor4;
               break;
               
           case kProton:
-              profile2Pos = fp2ProtonCor2Pos[iEtaGapIndex];
-              profile2Neg = fp2ProtonCor2Neg[iEtaGapIndex];
+              profile2Pos = fp2ProtonCor2Pos[fIndexSampling][iEtaGapIndex];
+              profile2Neg = fp2ProtonCor2Neg[fIndexSampling][iEtaGapIndex];
               //profile4 = fp2ProtonCor4;
               break;
               
@@ -2664,27 +2858,27 @@ void AliAnalysisTaskFlowModes::DoFlowPID(const Short_t iEtaGapIndex, const PartS
     switch (species)
     {
         case kPion:
-            profile3Pos = fpMixedPionCor3Pos[iEtaGapIndex];
-            profile3Neg = fpMixedPionCor3Neg[iEtaGapIndex];
+            profile3Pos = fpMixedPionCor3Pos[fIndexSampling][iEtaGapIndex];
+            profile3Neg = fpMixedPionCor3Neg[fIndexSampling][iEtaGapIndex];
             
-            profile4Pos = fpMixedPionCor4Pos[iEtaGapIndex];
-            profile4Neg = fpMixedPionCor4Neg[iEtaGapIndex];
+            profile4Pos = fpMixedPionCor4Pos[fIndexSampling][iEtaGapIndex];
+            profile4Neg = fpMixedPionCor4Neg[fIndexSampling][iEtaGapIndex];
             break;
                 
         case kKaon:
-            profile3Pos = fpMixedKaonCor3Pos[iEtaGapIndex];
-            profile3Neg = fpMixedKaonCor3Neg[iEtaGapIndex];
+            profile3Pos = fpMixedKaonCor3Pos[fIndexSampling][iEtaGapIndex];
+            profile3Neg = fpMixedKaonCor3Neg[fIndexSampling][iEtaGapIndex];
             
-            profile4Pos = fpMixedKaonCor4Pos[iEtaGapIndex];
-            profile4Neg = fpMixedKaonCor4Neg[iEtaGapIndex];
+            profile4Pos = fpMixedKaonCor4Pos[fIndexSampling][iEtaGapIndex];
+            profile4Neg = fpMixedKaonCor4Neg[fIndexSampling][iEtaGapIndex];
             break;
                 
         case kProton:
-            profile3Pos = fpMixedProtonCor3Pos[iEtaGapIndex];
-            profile3Neg = fpMixedProtonCor3Neg[iEtaGapIndex];
+            profile3Pos = fpMixedProtonCor3Pos[fIndexSampling][iEtaGapIndex];
+            profile3Neg = fpMixedProtonCor3Neg[fIndexSampling][iEtaGapIndex];
             
-            profile4Pos = fpMixedProtonCor4Pos[iEtaGapIndex];
-            profile4Neg = fpMixedProtonCor4Neg[iEtaGapIndex];
+            profile4Pos = fpMixedProtonCor4Pos[fIndexSampling][iEtaGapIndex];
+            profile4Neg = fpMixedProtonCor4Neg[fIndexSampling][iEtaGapIndex];
             break;
                 
         default:
@@ -2805,11 +2999,17 @@ void AliAnalysisTaskFlowModes::FillRefsVectors(const Short_t iEtaGapIndex)
   // *************************************************************
   const Float_t dEtaGap = fEtaGap[iEtaGapIndex];
   TH3D* h3NUAWeights = 0x0;
-  TH1D* hNUEWeights = 0x0;
+  TH1F* hNUEWeights = 0x0;
   Double_t dNUAWeight = 1.;
   Double_t dNUEWeight = 1.;
   
-
+  Int_t c = -1;
+  if(fIndexCentrality>=0 && fIndexCentrality<5) c = 0;
+  if(fIndexCentrality>=5 && fIndexCentrality<10) c = 1;
+  if(fIndexCentrality>=10 && fIndexCentrality<20) c = 2;
+  if(fIndexCentrality>=20 && fIndexCentrality<30) c = 3;
+  if(fIndexCentrality>=30 && fIndexCentrality<40) c = 4;
+  if(fIndexCentrality>=40 && fIndexCentrality<50) c = 5;
   // clearing output (global) flow vectors
   ResetRFPsVector(fFlowVecQpos);
   ResetRFPsVector(fFlowVecQneg);
@@ -2839,8 +3039,8 @@ void AliAnalysisTaskFlowModes::FillRefsVectors(const Short_t iEtaGapIndex)
       
     if(fFlowUseNUEWeights)
     {
-        if(part->charge >0) hNUEWeights = fhNUEWeightRefsPlus;
-        if(part->charge <0) hNUEWeights = fhNUEWeightRefsMinus;
+        if(part->charge >0 && c>=0 && c<6) hNUEWeights = fhNUEWeightRefsPlus[c];
+        if(part->charge <0 && c>=0 && c<6) hNUEWeights = fhNUEWeightRefsMinus[c];
 
         if(!hNUEWeights) { ::Error("FillRefsVectors","Histogram with NUE weights not found."); return; }
     }
@@ -2931,8 +3131,16 @@ void AliAnalysisTaskFlowModes::FillPOIsVectors(const Short_t iEtaGapIndex, const
   //TH3D* hist = 0x0;
   //Double_t dMassLow = 0, dMassHigh = 0;
   TH3D* h3NUAWeights = 0x0;
-  TH1D* hNUEWeights = 0x0;
-    
+  TH1F* hNUEWeights = 0x0;
+ 
+  Int_t c = -1;
+  if(fIndexCentrality>=0 && fIndexCentrality<5) c = 0;
+  if(fIndexCentrality>=5 && fIndexCentrality<10) c = 1;
+  if(fIndexCentrality>=10 && fIndexCentrality<20) c = 2;
+  if(fIndexCentrality>=20 && fIndexCentrality<30) c = 3;
+  if(fIndexCentrality>=30 && fIndexCentrality<40) c = 4;
+  if(fIndexCentrality>=40 && fIndexCentrality<50) c = 5;
+   
   // swich based on species
   switch (species)
   {
@@ -2975,8 +3183,8 @@ void AliAnalysisTaskFlowModes::FillPOIsVectors(const Short_t iEtaGapIndex, const
                   if(part->charge <0) h3NUAWeights = fh3NUAWeightChargedMinus;
               }
               if(fFlowUseNUEWeights) {
-                  if(part->charge >0) hNUEWeights = fhNUEWeightChargedPlus;
-                  if(part->charge <0) hNUEWeights = fhNUEWeightChargedMinus;
+                  if(part->charge >0 && c>=0 && c<6) hNUEWeights = fhNUEWeightChargedPlus[c];
+                  if(part->charge <0 && c>=0 && c<6) hNUEWeights = fhNUEWeightChargedMinus[c];
               }
               break;
               
@@ -2986,8 +3194,8 @@ void AliAnalysisTaskFlowModes::FillPOIsVectors(const Short_t iEtaGapIndex, const
                   if(part->charge <0) h3NUAWeights = fh3NUAWeightPionMinus;
               }
               if(fFlowUseNUEWeights) {
-                 if(part->charge >0) hNUEWeights = fhNUEWeightPionPlus;
-                 if(part->charge <0) hNUEWeights = fhNUEWeightPionMinus;
+                 if(part->charge >0 && c>=0 && c<6) hNUEWeights = fhNUEWeightPionPlus[c];
+                 if(part->charge <0 && c>=0 && c<6) hNUEWeights = fhNUEWeightPionMinus[c];
               }
               break;
               
@@ -2997,8 +3205,8 @@ void AliAnalysisTaskFlowModes::FillPOIsVectors(const Short_t iEtaGapIndex, const
                   if(part->charge <0) h3NUAWeights = fh3NUAWeightKaonMinus;
               }
               if(fFlowUseNUEWeights) {
-                 if(part->charge >0) hNUEWeights = fhNUEWeightKaonPlus;
-                 if(part->charge <0) hNUEWeights = fhNUEWeightKaonMinus;
+                 if(part->charge >0 && c>=0 && c<6) hNUEWeights = fhNUEWeightKaonPlus[c];
+                 if(part->charge <0 && c>=0 && c<6) hNUEWeights = fhNUEWeightKaonMinus[c];
               }
               break;
               
@@ -3008,8 +3216,8 @@ void AliAnalysisTaskFlowModes::FillPOIsVectors(const Short_t iEtaGapIndex, const
                   if(part->charge <0) h3NUAWeights = fh3NUAWeightProtonMinus;
               }
               if(fFlowUseNUEWeights) {
-                 if(part->charge >0) hNUEWeights = fhNUEWeightProtonPlus;
-                 if(part->charge <0) hNUEWeights = fhNUEWeightProtonMinus;
+                 if(part->charge >0 && c>=0 && c<6) hNUEWeights = fhNUEWeightProtonPlus[c];
+                 if(part->charge <0 && c>=0 && c<6) hNUEWeights = fhNUEWeightProtonMinus[c];
               }
               break;
             
@@ -3161,6 +3369,34 @@ void AliAnalysisTaskFlowModes::ListFlowVector(TComplex (&array)[fFlowNumHarmonic
   }
   return;
 }
+//_____________________________________________________________________________
+Short_t AliAnalysisTaskFlowModes::GetSamplingIndex()
+{
+  // Assessing sampling index based on generated random number
+  // returns centrality index
+  // *************************************************************
+
+  Short_t index = 0x0;
+
+  if(fSampling && fNumSamples > 1)
+  {
+    TRandom3 rr(0);
+    Double_t ranNum = rr.Rndm(); // getting random number in (0,1)
+    Double_t generated = ranNum * fNumSamples; // getting random number in range (0, fNumSamples)
+    // finding right index for sampling based on generated number and total number of samples
+    for(Short_t i(0); i < fNumSamples; i++)
+    {
+      if(generated < (i+1) )
+      {
+        index = i;
+        break;
+      }
+    }
+  }
+
+  return index;
+}
+
 //_____________________________________________________________________________
 Short_t AliAnalysisTaskFlowModes::GetCentralityIndex()
 {
@@ -3386,7 +3622,7 @@ TComplex AliAnalysisTaskFlowModes::Four13DiffGapNeg(const Short_t n1, const Shor
 //____________________________________________________________________
 TComplex AliAnalysisTaskFlowModes::SixGapPos(const Short_t n1, const Short_t n2, const Short_t n3, const Short_t n4, const Short_t n5, const Short_t n6) // n1 + n2 + n3 = n4 + n5 + n6
 {
-    TComplex formula = QGapPos(n1,1)*QGapPos(n2,1)*QGapPos(n3,1)*QGapNeg(n4,1)*QGapNeg(n5,1)*QGapNeg(n6,1) - QGapPos(n1,1)*QGapPos(n2,1)*QGapPos(n3,1)*QGapNeg(n4+n5,2)*QGapNeg(n6,1) - QGapPos(n1,1)*QGapPos(n2,1)*QGapPos(n3,1)*QGapNeg(n4+n6,2)*QGapNeg(n5,1) - QGapPos(n1,1)*QGapPos(n2,1)*QGapPos(n3,1)*QGapNeg(n5+n6,2)*QGapNeg(n4,1) + 2.*QGapPos(n1,1)*QGapPos(n2,1)*QGapPos(n3,1)*QGapNeg(n4+n5+n6,3) - QGapPos(n1+n2,2)*QGapPos(n3,1)*QGapNeg(n4,1)*QGapNeg(n5,1)*QGapNeg(n6,1) + QGapPos(n1+n2,2)*QGapPos(n3,1)*QGapNeg(n4+n5,2)*QGapNeg(n6,1) + QGapPos(n1+n2,2)*QGapPos(n3,1)*QGapNeg(n4+n6,2)*QGapNeg(n5,1) + QGapPos(n1+n2,2)*QGapPos(n3,1)*QGapNeg(n5+n6,2)*QGapNeg(n4,1) - 2.*QGapPos(n1+n2,2)*QGapPos(n3,1)*QGapNeg(n4+n5+n6,3) - QGapPos(n1+n3,2)*QGapPos(n2,1)*QGapNeg(n4,1)*QGapNeg(n5,1)*QGapNeg(n6,1) + QGapPos(n1+n3,2)*QGapPos(n2,1)*QGapNeg(n4+n5,2)*QGapNeg(n6,1) + QGapPos(n1+n3,2)*QGapPos(n2,1)*QGapNeg(n4+n6,2)*QGapNeg(n5,1) + QGapPos(n1+n3,2)*QGapPos(n2,1)*QGapNeg(n5+n6,2)*QGapNeg(n4,1) - 2.*QGapPos(n1+n3,2)*QGapPos(n2,1)*QGapNeg(n4+n5+n6,3) - QGapPos(n2+n3,2)*QGapPos(n1,1)*QGapNeg(n4,1)*QGapNeg(n5,1)*QGapNeg(n6,1) + QGapPos(n2+n3,2)*QGapPos(n1,1)*QGapNeg(n4+n5,2)*QGapNeg(n6,1) + QGapPos(n2+n3,2)*QGapPos(n1,1)*QGapNeg(n4+n6,2)*QGapNeg(n5,1) + QGapPos(n2+n3,2)*QGapPos(n1,1)*QGapNeg(n5+n6,2)*QGapNeg(n4,1) - 2.*QGapPos(n2+n3,2)*QGapPos(n1,1)*QGapNeg(n4+n5+n6,3)+ 2.*QGapPos(n1+n2+n3,3)*QGapNeg(n4,1)*QGapNeg(n5,1)*QGapNeg(n6,1) - 2.*QGapPos(n1+n2+n3,3)*QGapNeg(n4+n5,2)*QGapNeg(n6,1) - 2.*QGapPos(n1+n2+n3,3)*QGapNeg(n4+n6,2)*QGapNeg(n5,1) - 2.*QGapPos(n1+n2+n3,3)*QGapNeg(n5+n6,2)*QGapNeg(n4,1) + 4.*QGapPos(n1+n2+n3,3)*QGapNeg(n4+n5+n6,3);    
+    TComplex formula = QGapPos(n1,1)*QGapPos(n2,1)*QGapPos(n3,1)*QGapNeg(n4,1)*QGapNeg(n5,1)*QGapNeg(n6,1) - QGapPos(n1,1)*QGapPos(n2,1)*QGapPos(n3,1)*QGapNeg(n4+n5,2)*QGapNeg(n6,1) - QGapPos(n1,1)*QGapPos(n2,1)*QGapPos(n3,1)*QGapNeg(n4+n6,2)*QGapNeg(n5,1) - QGapPos(n1,1)*QGapPos(n2,1)*QGapPos(n3,1)*QGapNeg(n5+n6,2)*QGapNeg(n4,1) + 2.*QGapPos(n1,1)*QGapPos(n2,1)*QGapPos(n3,1)*QGapNeg(n4+n5+n6,3)- QGapPos(n1+n2,2)*QGapPos(n3,1)*QGapNeg(n4,1)*QGapNeg(n5,1)*QGapNeg(n6,1) + QGapPos(n1+n2,2)*QGapPos(n3,1)*QGapNeg(n4+n5,2)*QGapNeg(n6,1) + QGapPos(n1+n2,2)*QGapPos(n3,1)*QGapNeg(n4+n6,2)*QGapNeg(n5,1) + QGapPos(n1+n2,2)*QGapPos(n3,1)*QGapNeg(n5+n6,2)*QGapNeg(n4,1) - 2.*QGapPos(n1+n2,2)*QGapPos(n3,1)*QGapNeg(n4+n5+n6,3) - QGapPos(n1+n3,2)*QGapPos(n2,1)*QGapNeg(n4,1)*QGapNeg(n5,1)*QGapNeg(n6,1) + QGapPos(n1+n3,2)*QGapPos(n2,1)*QGapNeg(n4+n5,2)*QGapNeg(n6,1) + QGapPos(n1+n3,2)*QGapPos(n2,1)*QGapNeg(n4+n6,2)*QGapNeg(n5,1) + QGapPos(n1+n3,2)*QGapPos(n2,1)*QGapNeg(n5+n6,2)*QGapNeg(n4,1) - 2.*QGapPos(n1+n3,2)*QGapPos(n2,1)*QGapNeg(n4+n5+n6,3) - QGapPos(n2+n3,2)*QGapPos(n1,1)*QGapNeg(n4,1)*QGapNeg(n5,1)*QGapNeg(n6,1) + QGapPos(n2+n3,2)*QGapPos(n1,1)*QGapNeg(n4+n5,2)*QGapNeg(n6,1) + QGapPos(n2+n3,2)*QGapPos(n1,1)*QGapNeg(n4+n6,2)*QGapNeg(n5,1) + QGapPos(n2+n3,2)*QGapPos(n1,1)*QGapNeg(n5+n6,2)*QGapNeg(n4,1) - 2.*QGapPos(n2+n3,2)*QGapPos(n1,1)*QGapNeg(n4+n5+n6,3)+ 2.*QGapPos(n1+n2+n3,3)*QGapNeg(n4,1)*QGapNeg(n5,1)*QGapNeg(n6,1) - 2.*QGapPos(n1+n2+n3,3)*QGapNeg(n4+n5,2)*QGapNeg(n6,1) - 2.*QGapPos(n1+n2+n3,3)*QGapNeg(n4+n6,2)*QGapNeg(n5,1) - 2.*QGapPos(n1+n2+n3,3)*QGapNeg(n5+n6,2)*QGapNeg(n4,1) + 4.*QGapPos(n1+n2+n3,3)*QGapNeg(n4+n5+n6,3);
    return formula;
 }
 //____________________________________________________________________

@@ -1,7 +1,7 @@
 /***************************************************************************
  //            Modified by Kishora Nayak - 14/06/2016
  //            Modified by Enrico Fragiacomo - 15/01/2014
- //            Modified by Kunal Garg - 04/02/2017
+ //            Modified by Kunal Garg - 13/05/2018 (kgarg@cern.ch)
  //            Based on AddAnalysisTaskRsnMini
  //            pPb specific settings from AddTaskKStarPPB.C
  //
@@ -65,7 +65,7 @@ AliRsnMiniAnalysisTask *AddTaskKStarPlusMinusRun2
  Float_t     pi_k0s_PIDCut = 5.0,
  Float_t     massTol = 0.03,
  Float_t     massTolVeto = 0.0043,
- Bool_t      tol_switch = kTRUE,
+ Int_t       tol_switch = 1,
  Double_t    tol_sigma = 6,
  Float_t     pLife = 20,
  Float_t     radiuslow = 0.5,
@@ -75,18 +75,15 @@ AliRsnMiniAnalysisTask *AddTaskKStarPlusMinusRun2
  Float_t     k0sDaughDCA = 1.0,
  Int_t       NTPCcluster = 70,
  Float_t     maxDiffVzMix = 1.0,
- Float_t     maxDiffMultMix = 3.0,
+ Float_t     maxDiffMultMix = 5.0,
  Float_t     maxDiffAngleMixDeg = 20.0,
  Int_t       aodN = 68,
  TString     outNameSuffix = "KStarPlusMinus_V0Mass_Pt",
- Int_t       centr = 0,
- Bool_t      ptDep = kFALSE,
  Float_t     DCAxy = 0.06,
  Bool_t      enableSys = kFALSE,
  Float_t     crossedRows = 70,
  Float_t     rowsbycluster = 0.8,
- Double_t    pt1 = 0.0105,
- Double_t    pt2 = 0.0350,
+ Float_t 	 v0rapidity= 0.8,
  Int_t       Sys= 0
  )
 {
@@ -178,6 +175,7 @@ AliRsnMiniAnalysisTask *AddTaskKStarPlusMinusRun2
         if(!MultBins){
             cutEventUtils->SetCheckIncompleteDAQ();
             cutEventUtils->SetCheckSPDClusterVsTrackletBG();
+			  	cutEventUtils->SetCheckInelGt0MC(kFALSE);
         }else{
             //cutEventUtils->SetCheckInelGt0SPDtracklets();
             cutEventUtils->SetRemovePileUppA2013(kFALSE);
@@ -261,7 +259,7 @@ AliRsnMiniAnalysisTask *AddTaskKStarPlusMinusRun2
     } else
         Printf("========================== DATA analysis - PID cuts used");
     
-    if (!ConfigKStarPlusMinusRun2(task, isPP, isMC, isGT, piPIDCut,customQualityCutsID, cutPiCandidate, pi_k0s_PIDCut, aodFilterBit, enableMonitor, monitorOpt.Data(), massTol, massTolVeto, tol_switch, tol_sigma, pLife, radiuslow, Switch, k0sDCA, k0sCosPoinAn, k0sDaughDCA, NTPCcluster, "", PairCutsSame, PairCutsMix, ptDep, DCAxy, enableSys, crossedRows, rowsbycluster, pt1, pt2, Sys)) return 0x0;
+    if (!ConfigKStarPlusMinusRun2(task, isPP, isMC, isGT, piPIDCut,customQualityCutsID, cutPiCandidate, pi_k0s_PIDCut, aodFilterBit, enableMonitor, monitorOpt.Data(), massTol, massTolVeto, tol_switch, tol_sigma, pLife, radiuslow, Switch, k0sDCA, k0sCosPoinAn, k0sDaughDCA, NTPCcluster, "", PairCutsSame, PairCutsMix, DCAxy, enableSys, crossedRows, rowsbycluster, v0rapidity, Sys)) return 0x0;
     
     //
     // -- CONTAINERS --------------------------------------------------------------------------------

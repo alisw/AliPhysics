@@ -25,6 +25,23 @@ void HFEemcQA_PlotHisto()
   SetTrigQA(dQA0,dQA1,iMC);
   cout << "MC = " << iMC << endl;
 
+  cout << "setting productions" << endl;
+  cout << "collisions; pp=0, pPb=1, PbPb=2" << endl;
+  Int_t Coll = 0;
+  cin >> Coll;
+  Bool_t ipp = kFALSE;
+  if(Coll==0)ipp = kTRUE;
+
+  Bool_t iHFE = kFALSE;
+  if(iMC)
+     {
+      cout << "setting MC type" << endl;
+      cout << "pi0 & eta enhance sample (general HFE production); no=0, yes=1" << endl;
+      Int_t Enh = 0;
+      cin >> Enh;
+      if(Enh==1)iHFE= kTRUE;
+     }
+
   TString file;
   file.Form("%s.pdf",dQA1);
   //file.Form("EMC.pdf");
@@ -94,12 +111,15 @@ void HFEemcQA_PlotHisto()
   NEvents->Draw();
   NE->Print(file + "(","pdf");
 
-  TCanvas *c1 = new TCanvas("Centrality", "Centrality distribution",50,50,700,500);
-  ProcessHisto(cent);
-  //VtxZ->GetXaxis()->SetRangeUser(-25,25);
-  gPad->SetLogy();
-  cent->Draw();
-  c1->Print(file,"pdf");
+  if((!ipp)||(!iMC))
+    {
+     TCanvas *c1 = new TCanvas("Centrality", "Centrality distribution",50,50,700,500);
+     ProcessHisto(cent);
+      //VtxZ->GetXaxis()->SetRangeUser(-25,25);
+      gPad->SetLogy();
+      cent->Draw();
+       c1->Print(file,"pdf");
+    }
 
   TCanvas *c2 = new TCanvas("VtxZ", "Z vertex postion",50,50,700,500);
   ProcessHisto(VtxZ);
@@ -412,7 +432,7 @@ void HFEemcQA_PlotHisto()
   fm02->Draw();
   //c25->Print(file,"pdf");
 
-  if(!iMC)
+  if((!iMC) || (!iHFE))
     {
      c25->Print(file + ")","pdf");
     }

@@ -63,7 +63,7 @@ ClassImp(AliAnalysisTaskSEITSsaSpectra)
   //
   //
   //________________________________________________________________________
-  AliAnalysisTaskSEITSsaSpectra::AliAnalysisTaskSEITSsaSpectra()
+  AliAnalysisTaskSEITSsaSpectra::AliAnalysisTaskSEITSsaSpectra(bool __def_prior, bool __fill_ntuple)
   : AliAnalysisTaskSE("TaskITSsaSpectra"),
     fESD(NULL),
     fITSPidParams(NULL),
@@ -124,9 +124,10 @@ ClassImp(AliAnalysisTaskSEITSsaSpectra)
     fNSigmaDCAz(7.),
     fYear(2010),
     fPidMethod(kMeanCut),
-    fUseDefaultPriors(kTRUE),
+    fUseDefaultPriors(__def_prior),
+    fFillNtuple(__fill_ntuple),
     fIsMC(kFALSE),
-    fFillNtuple(kFALSE),
+    fIsNominalBfield(kTRUE),
     fFillIntDistHist(kFALSE),
     fRandGener(0x0),
     fSmearMC(kFALSE),
@@ -213,9 +214,14 @@ ClassImp(AliAnalysisTaskSEITSsaSpectra)
   fHistMCNegPrHypKaon = NULL;
   fHistMCNegPrHypProt = NULL;
 
+  //Define input
   DefineInput(0, TChain::Class());
+  if (!fUseDefaultPriors) DefineInput(1, TList::Class());
+
+  //Define output
   DefineOutput(1, TList::Class());
   DefineOutput(2, TList::Class());
+  if (fFillNtuple) DefineOutput(3, TList::Class());
   AliInfo("End of AliAnalysisTaskSEITSsaSpectra");
 }
 
@@ -636,13 +642,12 @@ void AliAnalysisTaskSEITSsaSpectra::UserCreateOutputObjects()
     fListTree = new TList();
     fListTree->SetOwner();
 
-    fNtupleData = new TNtuple("fNtupleData", "fNtupleData", "mult:p:pt:s0:s1:s2:s3:dEdx:sign:eta:dcaXY:dcaZ:clumap");
+    fNtupleData = new TNtuple("fNtupleData", "fNtupleData", "mult:p:pt:s0:s1:s2:s3:dEdx:sign:eta:dcaXY:dcaZ:clumap:MCisph:MCdpg:MCpt");
     fListTree->Add(fNtupleData);
     fNtupleMC = new TNtuple("fNtupleMC", "fNtupleMC", "mult:mcPt:pdgcode:sign:mcEta:mcRap:isph:run");
     fListTree->Add(fNtupleMC);
-  }
-  if (fFillNtuple)
     PostData(3, fListTree);
+  }
 
   AliInfo("End of CreateOutputObjects");
 }
@@ -708,14 +713,10 @@ void AliAnalysisTaskSEITSsaSpectra::CreateDCAcutFunctions()
 //
 //
 //________________________________________________________________________
-void AliAnalysisTaskSEITSsaSpectra::Init()
+void AliAnalysisTaskSEITSsaSpectra::Initialization()
 {
   // Initialization
   Printf("Inizializing Task, be sure to run after all configuration have been set...");
-  if (!fUseDefaultPriors)
-    DefineInput(1, TList::Class());
-  if (fFillNtuple)
-    DefineOutput(3, TList::Class());
   AliInfo("Tracks selections");
   AliInfoF(
     " y = yLab + %.3f,  Ymin %.1f, Ymax %.1f, Eabs %.1f, DCAxyCut %.1f, DCAzCut %.1f, Chi2 %.1f,   nSPD %d,   nPID %d",
@@ -914,7 +915,7 @@ void AliAnalysisTaskSEITSsaSpectra::UserExec(Option_t *)
     fHistNTracks[i_chg]->Fill(fEvtMult, trkPt, trkSel);
 
     if (fFillNtuple) {
-      float xnt[12];
+      float xnt[16];
       int index = 0;
       /*1 */ xnt[index++] = (float)fEvtMult;
       /*2 */ xnt[index++] = (float)track->GetP();
@@ -930,6 +931,20 @@ void AliAnalysisTaskSEITSsaSpectra::UserExec(Option_t *)
       /*12*/ xnt[index++] = (float)impactZ;
       /*13*/ xnt[index++] = (float)clumap;
 
+      float lMCpt = -999;
+      int lMCpdg = -999;
+      int lMCisph = -999;
+      if (fIsMC) {
+        int lMCtrk = TMath::Abs(track->GetLabel());
+        lMCisph=lMCevent->IsPhysicalPrimary(lMCtrk);
+
+        AliMCParticle *trkMC = (AliMCParticle *)lMCevent->GetTrack(lMCtrk);
+        lMCpdg = trkMC->PdgCode();
+        lMCpt =  trkMC->Pt();
+      }
+      /*14*/ xnt[index++] = (float)lMCisph;
+      /*15*/ xnt[index++] = (float)lMCpdg;
+      /*16*/ xnt[index++] = (float)lMCpt;
       fNtupleData->Fill(xnt);
     } else {
       // track PID aproach
@@ -1630,7 +1645,7 @@ void AliAnalysisTaskSEITSsaSpectra::AnalyseMCParticles(AliMCEvent *lMCevent, EEv
       xntMC[indexMC++] = (float)mcEta;
       xntMC[indexMC++] = (float)mcRap;
       xntMC[indexMC++] = (float)lIsPhysPrimary;
-      xntMC[indexMC++] = (float)lastEvtCutPassed;
+      //xntMC[indexMC++] = (float)lastEvtCutPassed;
       xntMC[indexMC++] = (float)fESD->GetRunNumber();
 
       fNtupleMC->Fill(xntMC);
@@ -1666,6 +1681,130 @@ void AliAnalysisTaskSEITSsaSpectra::PostAllData()
 //
 //
 //________________________________________________________________________
+double AliAnalysisTaskSEITSsaSpectra::BetheITSsaHybrid(double p, double mass) const
+{
+  //
+  // returns AliExternalTrackParam::BetheBloch normalized to
+  // fgMIP at the minimum. The PHOBOS parameterization is used for beta*gamma>0.76.
+  // For beta*gamma<0.76 a polinomial function is used
+
+  Double_t fBBsaHybrid[10];
+  Double_t fBBsaElectron[6];
+
+  if(!fIsMC) {//DATA
+    if(fIsNominalBfield || (mass>0.130 && mass<0.140) || (mass>0.0005 && mass<0.00052)){//pions&elect want always the same parametrization
+      fBBsaHybrid[0]=1.43505E7;  //PHOBOS+Polinomial parameterization
+      fBBsaHybrid[1]=49.3402;
+      fBBsaHybrid[2]=1.77741E-7;
+      fBBsaHybrid[3]=1.77741E-7;
+      fBBsaHybrid[4]=1.01311E-7;
+      fBBsaHybrid[5] = -2.; //exponent of beta in the PHOBOS
+      fBBsaHybrid[6]=77.2777;
+      fBBsaHybrid[7]=33.4099;
+      fBBsaHybrid[8]=46.0089;
+      fBBsaHybrid[9]=-2.26583;
+      fBBsaElectron[0]=4.05799E6;  //electrons in the ITS
+      fBBsaElectron[1]=38.5713;
+      fBBsaElectron[2]=1.46462E-7;
+      fBBsaElectron[3]=1.46462E-7;
+      fBBsaElectron[4]=4.40284E-7;
+      fBBsaElectron[5]=-2.;
+    }
+    else{
+      fBBsaHybrid[0]=2.1617e7;//E0  //PHOBOS+Polinomial parameterization
+      fBBsaHybrid[1]=19.970580;//b
+      fBBsaHybrid[2]=2.4726e-7;//a
+      fBBsaHybrid[3]=2.4726e-7;//c
+      fBBsaHybrid[4]=1.6012e-7;//d
+      fBBsaHybrid[5]=-2.0;
+      fBBsaHybrid[6]=80.461549;//p0
+      fBBsaHybrid[7]=-21.954755;//p1
+      fBBsaHybrid[8]=83.189581;//p2
+      fBBsaHybrid[9]=-10.196385;//p3
+
+      fBBsaElectron[0]=79.856480;//E0 //electrons in the ITS
+      fBBsaElectron[1]=64.838062;//b
+      fBBsaElectron[2]=1.1440e-1;//a
+      fBBsaElectron[3]=-8.6559e-3;//c
+      fBBsaElectron[4]=-5.5526e-4;//d
+      fBBsaElectron[5]=-1.54;//exp
+    }
+
+  } else {//MC
+
+    if(fIsNominalBfield || (mass>0.130 && mass<0.140) || (mass>0.0005 && mass<0.00052)){
+      fBBsaHybrid[0]=1.05381E7; //PHOBOS+Polinomial parameterization
+      fBBsaHybrid[1]=89.3933;
+      fBBsaHybrid[2]=2.4831E-7;
+      fBBsaHybrid[3]=2.4831E-7;
+      fBBsaHybrid[4]=7.80591E-8;
+      fBBsaHybrid[5]=-2.;
+      fBBsaHybrid[6]=62.9214;
+      fBBsaHybrid[7]=32.347;
+      fBBsaHybrid[8]=58.7661;
+      fBBsaHybrid[9]=-3.39869;
+      fBBsaElectron[0]=2.26807E6; //electrons in the ITS
+      fBBsaElectron[1]=99.985;
+      fBBsaElectron[2]=0.000714841;
+      fBBsaElectron[3]=0.000259585;
+      fBBsaElectron[4]=1.39412E-7;
+      fBBsaElectron[5]=-2.;
+    }
+    else{//low B field
+      fBBsaHybrid[0]=1.2292e7;//E0  //PHOBOS+Polinomial parameterization
+      fBBsaHybrid[1]=25.134119;//b
+      fBBsaHybrid[2]=1.8838e-4;//a
+      fBBsaHybrid[3]=-1.8207e-4;//c
+      fBBsaHybrid[4]=8.8786e-8;//d
+      fBBsaHybrid[5]=-2.0;//exp of beta
+      fBBsaHybrid[6]=76.577272;//p0
+      fBBsaHybrid[7]=-11.171906;//p1
+      fBBsaHybrid[8]=76.043339;//p2
+      fBBsaHybrid[9]=-6.288562;//p3
+
+      fBBsaElectron[0]=80.981442;//E0 //electrons in the ITS
+      fBBsaElectron[1]=61.698532;//b
+      fBBsaElectron[2]=1.1459e-1;//a
+      fBBsaElectron[3]=-9.3479e-3;//c
+      fBBsaElectron[4]=-4.8142e-4;//d
+      fBBsaElectron[5]=-1.58;//exp of beta
+    }
+
+}
+
+  Double_t bg=p/mass;
+  Double_t beta = bg/TMath::Sqrt(1.+ bg*bg);
+  Double_t gamma=bg/beta;
+  Double_t bb=1.;
+
+  Double_t betagcut = (fIsNominalBfield || (mass>0.130 && mass<0.140) || (mass>0.0005 && mass<0.00052)) ? 0.76 : 2.4;
+
+  Double_t par[10];
+  //parameters for pi, K, p
+  for(Int_t ip=0; ip<10;ip++) par[ip]=fBBsaHybrid[ip];
+    //if it is an electron the PHOBOS part of the parameterization is tuned for e
+    //in the range used for identification beta*gamma is >0.76 for electrons
+    //To be used only between 100 and 160 MeV/c
+    if(mass>0.0005 && mass<0.00052) for(Int_t ip=0; ip<6; ip++) par[ip]=fBBsaElectron[ip];
+
+      if(gamma>=0. && beta>0. && bg>0.1){
+        if(bg>betagcut){//PHOBOS
+          Double_t eff=1.0;
+          if(bg<par[2])
+           eff=(bg-par[3])*(bg-par[3])+par[4];
+          else
+           eff=(par[2]-par[3])*(par[2]-par[3])+par[4];
+          bb=(par[1]+2.0*TMath::Log(gamma)-beta*beta)*(par[0]/(TMath::Power(beta, -par[5])))*eff;
+        }else{//Polinomial
+          bb=par[6] + par[7]/bg + par[8]/(bg*bg) + par[9]/(bg*bg*bg);
+        }
+      }
+  return bb;
+}
+
+//
+//
+//________________________________________________________________________
 int AliAnalysisTaskSEITSsaSpectra::GetTrackPid(AliESDtrack *track, double *logdiff) const
 {
   AliPID::EParticleType iType[4] = { AliPID::kPion, AliPID::kKaon, AliPID::kProton, AliPID::kDeuteron };
@@ -1684,7 +1823,8 @@ int AliAnalysisTaskSEITSsaSpectra::GetTrackPid(AliESDtrack *track, double *logdi
   double bbtheo[4];
   for (int i = 0; i < 4; i++) {
     float mass = AliPID::ParticleMass(iType[i]);
-    bbtheo[i] = fITSPIDResponse->BetheITSsaHybrid(p, mass);
+    //bbtheo[i] = fITSPIDResponse->BetheITSsaHybrid(p, mass);
+    bbtheo[i] = BetheITSsaHybrid(p, mass);
     logdiff[i] = TMath::Log(dedx) - TMath::Log(bbtheo[i]);
   }
 

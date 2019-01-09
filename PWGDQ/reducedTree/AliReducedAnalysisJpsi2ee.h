@@ -47,10 +47,13 @@ public:
   }
   void SetRunPrefilter(Bool_t option) {fOptionRunPrefilter = option;}
   void SetStoreJpsiCandidates(Bool_t option) {fOptionStoreJpsiCandidates = option;}
-  
-  void AddLegCandidateMCcut(AliReducedInfoCut* cut) {
+  void SetMCJpsiPtWeights(TH1F* weights) {fMCJpsiPtWeights = weights;}
+  void SetFillCaloClusterHistograms(Bool_t option) {fFillCaloClusterHistograms = option;}
+
+  void AddLegCandidateMCcut(AliReducedInfoCut* cut, Bool_t sameMother=kTRUE) {
      if(fLegCandidatesMCcuts.GetEntries()>=32) return;
      fLegCandidatesMCcuts.Add(cut);
+     fLegCandidatesMCcuts_RequestSameMother[fLegCandidatesMCcuts.GetEntries()-1] = sameMother;
   }
   void AddJpsiMotherMCCut(AliReducedInfoCut* cutMother, AliReducedInfoCut* cutElectron) {
      if(fJpsiMotherMCcuts.GetEntries()>=32) return;
@@ -86,6 +89,7 @@ protected:
    Bool_t fOptionLoopOverTracks;       // true (default); if false do not loop over tracks and consequently no pairing
    Bool_t fOptionRunPrefilter;        // true (default); if false do not run the prefilter
    Bool_t fOptionStoreJpsiCandidates;   // false (default); if true, store the same event jpsi candidates in a TList 
+   Bool_t fFillCaloClusterHistograms;   // false (default); if true, fill calorimeter cluster histograms
   
    TList fEventCuts;               // array of event cuts
    TList fTrackCuts;               // array of track cuts
@@ -104,6 +108,7 @@ protected:
    //              apply cuts on the MC flags of the tracks.
    // NOTE: The names of the cuts are used in the naming of the histogram classes
    TList fLegCandidatesMCcuts;
+   Bool_t fLegCandidatesMCcuts_RequestSameMother[32];
    
    // selection cuts for the pure MC truth (select the J/psi from stack)
    // the list should contains cuts which can be applied to a pure MC truth particle (no reconstructed information)
@@ -139,8 +144,11 @@ protected:
   void FillTrackHistograms(AliReducedBaseTrack* track, TString trackClass = "Track");
   void FillPairHistograms(ULong_t mask, Int_t pairType, TString pairClass = "PairSE", UInt_t mcDecisions = 0);
   void FillMCTruthHistograms();
+
+  Bool_t fSkipMCEvent;          // decision to skip MC event
+  TH1F*  fMCJpsiPtWeights;            // weights vs pt to reject events depending on the jpsi true pt (needed to re-weights jpsi Pt distribution)
   
-  ClassDef(AliReducedAnalysisJpsi2ee,5);
+  ClassDef(AliReducedAnalysisJpsi2ee,8);
 };
 
 #endif

@@ -21,7 +21,7 @@
 /// root [1] Plot_BCMap("runList.txt","pathToYourOtherOADBCopy")  If you have an OADB copy other than in $ALICE_DATA/ you can add an explicit path here <br>
 /// These are functions for BC exerts:                       <br>
 /// root [1] Test_OADB("LHC16k",804,0,"runList16k.txt")     <br>
-/// root [1] Plot_CellList("LHC15o",771,"1","List115o.txt") <br>
+/// root [1] Plot_CellList("LHC15o",771,"List115o.txt") <br>
 ///
 ///
 /// \author Eliane Epple <eliane.epple@yale.edu>, Yale University
@@ -36,6 +36,8 @@
 #include <TLatex.h>
 #include <TLegend.h>
 #include <TStyle.h>
+#include <TROOT.h>
+
 
 // --- ANALYSIS system ---
 #include "AliEMCALGeometry.h"          //include when compile
@@ -476,6 +478,7 @@ void Test_OADB(TString period="LHC15n",Int_t trainNo=603,TString version="INT7Em
 ///________________________________________________________________________
 void Plot_CellList(TString period="LHC15n",Int_t trainNo=603,TString cellList="")
 {
+	gROOT->SetBatch(1); //..Prevent ROOT from stealing focus when plotting
 	gStyle->SetPadTopMargin(0.05);//0.05
 	gStyle->SetPadBottomMargin(0.18);//0.15
 	gStyle->SetPadRightMargin(0.05);
@@ -485,12 +488,13 @@ void Plot_CellList(TString period="LHC15n",Int_t trainNo=603,TString cellList=""
 
 	//......................................................
 	//..Settings
-	const Int_t nBlocks=1; //..number of different runblocks of the period
+	const Int_t nBlocks=3; //..number of different runblocks of the period
 
 	Int_t zoomRange=20;
 	Double_t range=5; //10 GeV
-	Double_t tRange1=-200;
-	Double_t	 tRange2=400;
+	Double_t tRange1,tRange2;
+	tRange1=-200;
+    tRange2=400;
 	//..uncalibrated:
 	//tRange1 =400;
 	//tRange2 =900;
@@ -523,7 +527,7 @@ void Plot_CellList(TString period="LHC15n",Int_t trainNo=603,TString cellList=""
 	//..sort the vector by size to be shure to use the right order
 	std::sort (cellIdVec.begin(), cellIdVec.end());
     Int_t nCells=cellIdVec.size();
-
+    cout<<"o found "<<cellIdVec.size()<<" cells in list"<<endl;
 	//......................................................
 	//..Get the .root file with the original histogram to compare if they coincide
 	TString path        = Form("./AnalysisOutput/%s/Train_%i",period.Data(),trainNo);
@@ -556,13 +560,37 @@ void Plot_CellList(TString period="LHC15n",Int_t trainNo=603,TString cellList=""
 		if(iBlock==2)rootFileName[iBlock]= Form("Version4OADB/%s_INT7_Histograms_V4.root",period.Data());
 		 */
 		//..16k
+		if(period=="LHC16i")
+		{
 		if(iBlock==0)rootFileName[iBlock]= Form("Version0/%s_INT7_Histograms_V0.root",period.Data());
-
+		}
+		//..17n
+		if(period=="LHC17n")
+		{
+		if(iBlock==0)rootFileName[iBlock]= Form("Version2/%s_INT7_Histograms_V2.root",period.Data());
+		}
+		if(period=="LHC16i")
+		{
+			if(iBlock==0)rootFileName[iBlock]= "Version2/LHC16i_INT7_Histograms_V1.root";
+			if(iBlock==1)rootFileName[iBlock]= "Version2/LHC16i_INT7_Histograms_V2.root";
+		}
+		if(period=="LHC16g")
+		{
+			if(iBlock==0)rootFileName[iBlock]= "LHC16g_Block1_INT7_Histograms_V0.root";
+			if(iBlock==1)rootFileName[iBlock]= "LHC16g_Block2_INT7_Histograms_V0.root";
+			if(iBlock==2)rootFileName[iBlock]= "LHC16g_Block3_INT7_Histograms_V0.root";
+		}
+		cout<<"Look for filename: "<<rootFileName[iBlock]<<endl;
+		cout<<"in path: "<<path<<endl;
 		outputRoot[iBlock]   = TFile::Open(Form("%s/%s",path.Data(),rootFileName[iBlock].Data()));
 		if(!outputRoot[iBlock])cout<<"File "<<outputRoot[iBlock]->GetName()<<" does not exist"<<endl;
+		else cout<<"open File "<<outputRoot[iBlock]->GetName()<<endl;
 		h2DAmp[iBlock]     =(TH2F*)outputRoot[iBlock]->Get("hCellAmplitude");
 		h2DRatio[iBlock]   =(TH2F*)outputRoot[iBlock]->Get("ratio2DAmp");
 		h2DCellTime[iBlock]=(TH2F*)outputRoot[iBlock]->Get("hCellTime");
+		if(!h2DAmp[iBlock])cout<<"Problem 1"<<endl;
+		if(!h2DRatio[iBlock])cout<<"Problem 2"<<endl;
+		if(!h2DCellTime[iBlock])cout<<"Problem 3"<<endl;
 	}
 
 	TCanvas *c1 = new TCanvas(1);
@@ -576,8 +604,8 @@ void Plot_CellList(TString period="LHC15n",Int_t trainNo=603,TString cellList=""
 
 	//.. be aware of the special sturcture of the canvas
 	//.. canvas has totalperCv*2 pads
-//	Int_t totalperCv = 4;
-	Int_t totalperCv = 8;
+	Int_t totalperCv = 5;
+//	Int_t totalperCv = 8;
 	Int_t nPad = TMath::Sqrt(totalperCv);
 	Int_t nCv  = nCells/totalperCv+1;
 	if(nCv<1)nCv=1;
@@ -585,14 +613,11 @@ void Plot_CellList(TString period="LHC15n",Int_t trainNo=603,TString cellList=""
 	cout<<"    o create: "<<nCv<<" Canvases with "<<nPad*nPad<<" pads"<<endl;
 	//..to compare specific cells over the runs
 	TCanvas **cCompAll      = new TCanvas*[nCv];
-	TCanvas **cCompTimeAll  = new TCanvas*[nCv];
 	for(Int_t i=0;i<nCv;i++)
 	{
-		cCompAll[i] = new TCanvas(TString::Format("CompareGoodAll%d", i), TString::Format("V) Both (%d/%d)", i+1, nCv), 1000,750);
-		CanvasPartition(cCompAll[i],4,totalperCv/2,0.15,0.02,0.13,0.05);
-		cCompTimeAll[i] = new TCanvas(TString::Format("CompareGoodTimeAll%d", i), TString::Format("V) Time (%d/%d)", i+1, nCv), 1000,750);
-		cCompTimeAll[i]->Divide(4,4,0.001,0.001);
-		//CanvasPartition(cCompTimeAll[i],4,totalperCv/2,0.15,0.02,0.13,0.05);
+		cCompAll[i] = new TCanvas(TString::Format("CompareGoodAll%d", i), TString::Format("V) Both (%d/%d)", i+1, nCv), 1200,600);
+//		CanvasPartition(cCompAll[i],4,totalperCv/2,0.15,0.02,0.13,0.05);
+		CanvasPartition(cCompAll[i],5,3,0.15,0.02,0.13,0.05);
 	}
 	TLegend *leg2 = new TLegend(0.60,0.60,0.9,0.85);
 	cout<<"    o Fill Canvases with bad cells histograms"<<endl;
@@ -616,10 +641,8 @@ void Plot_CellList(TString period="LHC15n",Int_t trainNo=603,TString cellList=""
 			htmpCellTimeRuns[iBlock]  =h2DCellTime[iBlock]->ProjectionX(TString::Format("hIDTimeProj%i_cell%d", iBlock, cellID), cellID+1, cellID+1);
 			SetHisto(htmpCellTimeRuns[iBlock],Form("Time, ns [cell %i]",cellID),"Entries/Events");
 
-			if(((icell)%8)<4) shift=0;
-			else              shift=8;
 			//..Amplitude
-			cCompAll[(icell)/totalperCv]->cd(((icell)%4)+1+shift)->SetLogy();
+			cCompAll[(icell)/totalperCv]->cd(((icell)%5)+1)->SetLogy();
 			if(iBlock==0)htmpCellAllRuns[iBlock]->GetXaxis()->SetRangeUser(0,range);
 			if(iBlock==0)htmpCellAllRuns[iBlock]->Draw("hist");
 			if(iBlock==1)htmpCellAllRuns[iBlock]->SetLineColor(kBlue-7);
@@ -635,13 +658,13 @@ void Plot_CellList(TString period="LHC15n",Int_t trainNo=603,TString cellList=""
 				leg2->SetFillColorAlpha(10, 0);
 				leg2->Draw("same");
 			}
-			else if((icell)%4==0)
+			else if((icell)%5==0)
 			{
 				leg2->Draw("same");
 			}
 
 			//..Ratio
-			cCompAll[(icell)/totalperCv]->cd(((icell)%4)+5+shift)->SetLogy();
+			cCompAll[(icell)/totalperCv]->cd(((icell)%5)+6)->SetLogy();
 			if(iBlock==0)htmpCellRatioAllRuns[iBlock]->GetXaxis()->SetRangeUser(0,range);
 			if(iBlock==0)htmpCellRatioAllRuns[iBlock]->Draw("hist");
 			if(iBlock==1)htmpCellRatioAllRuns[iBlock]->SetLineColor(kBlue-7);
@@ -650,7 +673,7 @@ void Plot_CellList(TString period="LHC15n",Int_t trainNo=603,TString cellList=""
 			if(iBlock>0)htmpCellRatioAllRuns[iBlock]->DrawCopy("same hist");
 
 			//..Time
-			cCompTimeAll[(icell)/totalperCv]->cd(((icell)%4)+1+shift)->SetLogy();
+			cCompAll[(icell)/totalperCv]->cd(((icell)%5)+11)->SetLogy();
 			if(iBlock==0)htmpCellTimeRuns[iBlock]->GetXaxis()->SetRangeUser(tRange1,tRange2);
 			if(iBlock==0)htmpCellTimeRuns[iBlock]->Draw("hist");
 			if(iBlock==1)htmpCellTimeRuns[iBlock]->SetLineColor(kBlue-7);
@@ -672,25 +695,21 @@ void Plot_CellList(TString period="LHC15n",Int_t trainNo=603,TString cellList=""
 			if(nCv>1)
 			{
 				cCompAll[can]    ->Print(Form("%s(",pdfName.Data()));
-				cCompTimeAll[can]->Print(Form("%s",pdfName.Data()));
 			}
 			else
 			{
-				cCompAll[can]    ->Print(Form("%s(",pdfName.Data()));
-				cCompTimeAll[can]->Print(Form("%s)",pdfName.Data()));
+				cCompAll[can]    ->Print(Form("%s",pdfName.Data()));
 			}
 		}
 		else if(can==(nCv-1))//..last canvas
 		{
 			//..last pad
-			cCompAll[can]    ->Print(Form("%s",pdfName.Data()));
-			cCompTimeAll[can]->Print(Form("%s)",pdfName.Data()));
+			cCompAll[can]    ->Print(Form("%s)",pdfName.Data()));
 		}
 		else
 		{
 			//..all pads in between
 			cCompAll[can]    ->Print(Form("%s",pdfName.Data()));
-			cCompTimeAll[can]    ->Print(Form("%s",pdfName.Data()));
 		}
 	}
 }
@@ -760,9 +779,12 @@ void CanvasPartition(TCanvas *C,const Int_t Nx,const Int_t Ny,
 	   C->cd(i+1+2*Nx)->SetLogy();
 	   gPad->SetLeftMargin(lMargin);
 	   gPad->SetRightMargin(rMargin);
-	   gPad->SetBottomMargin(0);
+	   //gPad->SetBottomMargin(0);
+	   gPad->SetBottomMargin(bMargin);
 	   gPad->SetTopMargin(tMargin);
    }
+ /*
+
    //..Bottom row
    for (Int_t i=0;i<Nx;i++)
    {
@@ -772,4 +794,5 @@ void CanvasPartition(TCanvas *C,const Int_t Nx,const Int_t Ny,
 	   gPad->SetBottomMargin(bMargin);
 	   gPad->SetTopMargin(0);
    }
+*/
 }

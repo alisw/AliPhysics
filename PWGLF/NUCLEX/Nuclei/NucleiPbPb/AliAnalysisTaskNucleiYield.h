@@ -63,7 +63,7 @@ public:
   void SetRequireTPCrecPoints (int rec = 70) { fRequireTPCrecPoints = rec; }
   void SetRequireTPCfoundFraction (float rec = 0.8) { fRequireTPCfoundFraction = rec; }
   void SetRequireITSsignal (int sig = 3) { fRequireITSsignal = sig; }
-  void SetRequireTPCsignal (int sig = 70) { fRequireITSsignal = sig; }
+  void SetRequireTPCsignal (int sig = 70) { fRequireTPCsignal = sig; }
   void SetRequireSDDrecPoints (int rec = 1) { fRequireSDDrecPoints = rec; }
   void SetRequireSPDrecPoints (int rec = 1) { fRequireSPDrecPoints = rec; }
   void SetEtaRange (float emin, float emax) { fRequireEtaMin = emin; fRequireEtaMax = emax; }

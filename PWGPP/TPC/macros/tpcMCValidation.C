@@ -751,6 +751,27 @@ void MakeJSROOTHTML(TString prefix, TString outputName){
 }
 
 
+///
+void makeSummaryProcutionInfo(TTree * tree){
+  // ? we should get tree from the AliExternalInfo later
+  if (!tree) {
+    TFile *f = TFile::Open("MCQATree.root");
+    tree = (TTree*)f->Get("tree");
+  }
+  tree->SetAlias("TPCOn","MCTPC&&AnchorTPC");
+  tree->SetAlias("checkRunTPC","runNMatchTPC<=min(runNMCTPC,runNAnchTPC)");
+  tree->SetAlias("checkRunTRD","runNMatchTRD<=min(runNMCTRD,runNAnchTRD)");
+  tree->SetAlias("checkRunITS","runNMatchITS<=min(runNMCITS,runNAnchITS)");
+  //
+  tree->SetAlias("check","checkRunTPC&&checkRunITS&&checkRunTRD");
+  //
+  // tree->Draw("runNMatchTPC<runNMCTPC","TPCOn&&runNMCTPC>1"); //this can happen but should be understood
+  //
+  Int_t  nTPC=tree->Draw("runNAnchTPC","MCTPC","goff");
+  Int_t  nTPCAnchor=tree->Draw("runNAnchTPC","MCTPC&&AnchorTPC","goff");
+
+
+}
 
 
 /// DONE  - automatic decomposition status aliases

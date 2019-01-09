@@ -41,6 +41,7 @@
 #include "AliESDEvent.h"
 #include "AliAODInputHandler.h"
 #include "AliESDInputHandler.h"
+#include "AliEventCuts.h"
 #include "AliEventplane.h"
 #include "AliGenPythiaEventHeader.h"
 #include "AliGenHerwigEventHeader.h"
@@ -79,6 +80,7 @@ AliAnalysisTaskEmcal::AliAnalysisTaskEmcal() :
   fMaxCent(-999),
   fMinVz(-999),
   fMaxVz(999),
+  fMinVertexContrib(1),
   fTrackPtCut(0),
   fMinNTrack(0),
   fZvertexDiff(0.5),
@@ -117,10 +119,12 @@ AliAnalysisTaskEmcal::AliAnalysisTaskEmcal() :
   fUseXsecFromHeader(kFALSE),
   fMCRejectFilter(kFALSE),
   fCountDownscaleCorrectedEvents(kFALSE),
+  fUseInternalEventSelection(kFALSE),
   fPtHardAndJetPtFactor(0.),
   fPtHardAndClusterPtFactor(0.),
   fPtHardAndTrackPtFactor(0.),
   fRunNumber(-1),
+  fAliEventCuts(nullptr),
   fAliAnalysisUtils(nullptr),
   fIsEsd(kFALSE),
   fGeom(nullptr),
@@ -193,6 +197,7 @@ AliAnalysisTaskEmcal::AliAnalysisTaskEmcal(const char *name, Bool_t histo) :
   fMaxCent(-999),
   fMinVz(-999),
   fMaxVz(999),
+  fMinVertexContrib(1),
   fTrackPtCut(0),
   fMinNTrack(0),
   fZvertexDiff(0.5),
@@ -231,10 +236,12 @@ AliAnalysisTaskEmcal::AliAnalysisTaskEmcal(const char *name, Bool_t histo) :
   fUseXsecFromHeader(kFALSE),
   fMCRejectFilter(kFALSE),
   fCountDownscaleCorrectedEvents(kFALSE),
+  fUseInternalEventSelection(kFALSE),
   fPtHardAndJetPtFactor(0.),
   fPtHardAndClusterPtFactor(0.),
   fPtHardAndTrackPtFactor(0.),
   fRunNumber(-1),
+  fAliEventCuts(nullptr),
   fAliAnalysisUtils(nullptr),
   fIsEsd(kFALSE),
   fGeom(nullptr),
@@ -360,6 +367,7 @@ void AliAnalysisTaskEmcal::UserCreateOutputObjects()
     AliError("Analysis manager not found!");
   }  
 
+
   if (!fCreateHisto)
     return;
 
@@ -478,29 +486,31 @@ void AliAnalysisTaskEmcal::UserCreateOutputObjects()
     fOutput->Add(fHistEventPlane);
   }
 
-  fHistEventRejection = new TH1F("fHistEventRejection","Reasons to reject event",20,0,20);
+  if(fUseInternalEventSelection){
+    fHistEventRejection = new TH1F("fHistEventRejection","Reasons to reject event",20,0,20);
 #if ROOT_VERSION_CODE < ROOT_VERSION(6,4,2)
-  fHistEventRejection->SetBit(TH1::kCanRebin);
+    fHistEventRejection->SetBit(TH1::kCanRebin);
 #else
-  fHistEventRejection->SetCanExtend(TH1::kAllAxes);
+    fHistEventRejection->SetCanExtend(TH1::kAllAxes);
 #endif
-  fHistEventRejection->GetXaxis()->SetBinLabel(1,"PhysSel");
-  fHistEventRejection->GetXaxis()->SetBinLabel(2,"trigger");
-  fHistEventRejection->GetXaxis()->SetBinLabel(3,"trigTypeSel");
-  fHistEventRejection->GetXaxis()->SetBinLabel(4,"Cent");
-  fHistEventRejection->GetXaxis()->SetBinLabel(5,"vertex contr.");
-  fHistEventRejection->GetXaxis()->SetBinLabel(6,"Vz");
-  fHistEventRejection->GetXaxis()->SetBinLabel(7,"VzSPD");
-  fHistEventRejection->GetXaxis()->SetBinLabel(8,"trackInEmcal");
-  fHistEventRejection->GetXaxis()->SetBinLabel(9,"minNTrack");
-  fHistEventRejection->GetXaxis()->SetBinLabel(10,"VtxSel2013pA");
-  fHistEventRejection->GetXaxis()->SetBinLabel(11,"PileUp");
-  fHistEventRejection->GetXaxis()->SetBinLabel(12,"EvtPlane");
-  fHistEventRejection->GetXaxis()->SetBinLabel(13,"SelPtHardBin");
-  fHistEventRejection->GetXaxis()->SetBinLabel(14,"Bkg evt");
-  fHistEventRejection->GetXaxis()->SetBinLabel(15,"RecycleEmbeddedEvent");
-  fHistEventRejection->GetYaxis()->SetTitle("counts");
-  fOutput->Add(fHistEventRejection);
+    fHistEventRejection->GetXaxis()->SetBinLabel(1,"PhysSel");
+    fHistEventRejection->GetXaxis()->SetBinLabel(2,"trigger");
+    fHistEventRejection->GetXaxis()->SetBinLabel(3,"trigTypeSel");
+    fHistEventRejection->GetXaxis()->SetBinLabel(4,"Cent");
+    fHistEventRejection->GetXaxis()->SetBinLabel(5,"vertex contr.");
+    fHistEventRejection->GetXaxis()->SetBinLabel(6,"Vz");
+    fHistEventRejection->GetXaxis()->SetBinLabel(7,"VzSPD");
+    fHistEventRejection->GetXaxis()->SetBinLabel(8,"trackInEmcal");
+    fHistEventRejection->GetXaxis()->SetBinLabel(9,"minNTrack");
+    fHistEventRejection->GetXaxis()->SetBinLabel(10,"VtxSel2013pA");
+    fHistEventRejection->GetXaxis()->SetBinLabel(11,"PileUp");
+    fHistEventRejection->GetXaxis()->SetBinLabel(12,"EvtPlane");
+    fHistEventRejection->GetXaxis()->SetBinLabel(13,"SelPtHardBin");
+    fHistEventRejection->GetXaxis()->SetBinLabel(14,"Bkg evt");
+    fHistEventRejection->GetXaxis()->SetBinLabel(15,"RecycleEmbeddedEvent");
+    fHistEventRejection->GetYaxis()->SetTitle("counts");
+    fOutput->Add(fHistEventRejection);
+  }
 
   fHistTriggerClasses = new TH1F("fHistTriggerClasses","fHistTriggerClasses",3,0,3);
 #if ROOT_VERSION_CODE < ROOT_VERSION(6,4,2)
@@ -594,6 +604,15 @@ void AliAnalysisTaskEmcal::UserExec(Option_t *option)
   if (!fLocalInitialized){
     ExecOnce();
     UserExecOnce();
+
+    // Initialize event cuts here: This prevents a segfault
+    // in case a user task overwrites the function UserCreateOutputObjects
+    if(!fUseInternalEventSelection) {
+      fAliEventCuts = new AliEventCuts(false); // Event cut should add the QA plots to the EMCAL list directly
+      // Do not perform trigger selection in the AliEvent cuts but let the task do this before
+      fAliEventCuts->OverrideAutomaticTriggerSelection(AliVEvent::kAny, true);
+      if(fOutput) fAliEventCuts->AddQAplotsToList(fOutput);
+    }
   }
 
   if (!fLocalInitialized)
@@ -1085,8 +1104,16 @@ Bool_t AliAnalysisTaskEmcal::HasTriggerType(TriggerType trigger)
   return TESTBIT(fTriggers, trigger);
 }
 
-Bool_t AliAnalysisTaskEmcal::IsEventSelected()
+Bool_t AliAnalysisTaskEmcal::IsEventSelected(){
+  if(fUseInternalEventSelection) return IsEventSelectedInternal();
+  if(!IsTriggerSelected()) return false;
+  if(!CheckMCOutliers()) return false;
+  return fAliEventCuts->AcceptEvent(fInputEvent);
+}
+
+Bool_t AliAnalysisTaskEmcal::IsEventSelectedInternal()
 {
+  AliDebugStream(1) << "Using default event selection" << std::endl;
   if (fOffTrigger != AliVEvent::kAny) {
     UInt_t res = 0;
     const AliESDEvent *eev = dynamic_cast<const AliESDEvent*>(InputEvent());
@@ -1095,7 +1122,7 @@ Bool_t AliAnalysisTaskEmcal::IsEventSelected()
     } else {
       const AliAODEvent *aev = dynamic_cast<const AliAODEvent*>(InputEvent());
       if (aev) {
-	 res = ((AliVAODHeader*)aev->GetHeader())->GetOfflineTrigger();
+	      res = ((AliVAODHeader*)aev->GetHeader())->GetOfflineTrigger();
       }
     }
     if ((res & fOffTrigger) == 0) {
@@ -1104,67 +1131,9 @@ Bool_t AliAnalysisTaskEmcal::IsEventSelected()
     }
   }
 
-  if (!fTrigClass.IsNull()) {
-    TString fired;
-    const AliESDEvent *eev = dynamic_cast<const AliESDEvent*>(InputEvent());
-    if (eev) {
-      fired = eev->GetFiredTriggerClasses();
-    } else {
-      const AliAODEvent *aev = dynamic_cast<const AliAODEvent*>(InputEvent());
-      if (aev) {
-        fired = aev->GetFiredTriggerClasses();
-      }
-    }
-    if (!fired.Contains("-B-")) {
-      if (fGeneralHistograms) fHistEventRejection->Fill("trigger",1);
-      return kFALSE;
-    }
-
-    std::unique_ptr<TObjArray> arr(fTrigClass.Tokenize("|"));
-    if (!arr) {
-      if (fGeneralHistograms) fHistEventRejection->Fill("trigger",1);
-      return kFALSE;
-    }
-    Bool_t match = 0;
-    for (Int_t i=0;i<arr->GetEntriesFast();++i) {
-      TObject *obj = arr->At(i);
-      if (!obj)
-        continue;
-
-      //Check if requested trigger was fired
-      TString objStr = obj->GetName();
-      if(fEMCalTriggerMode == kOverlapWithLowThreshold &&
-          (objStr.Contains("J1") || objStr.Contains("J2") || objStr.Contains("G1") || objStr.Contains("G2"))) {
-        // This is relevant for EMCal triggers with 2 thresholds
-        // If the kOverlapWithLowThreshold was requested than the overlap between the two triggers goes with the lower threshold trigger
-        TString trigType1 = "J1";
-        TString trigType2 = "J2";
-        if(objStr.Contains("G")) {
-          trigType1 = "G1";
-          trigType2 = "G2";
-        }
-        if(objStr.Contains(trigType2) && fired.Contains(trigType2.Data())) { //requesting low threshold + overlap
-          match = 1;
-          break;
-        } 
-        else if(objStr.Contains(trigType1) && fired.Contains(trigType1.Data()) && !fired.Contains(trigType2.Data())) { //high threshold only
-          match = 1;
-          break;
-        }
-      }
-      else {
-        // If this is not an EMCal trigger, or no particular treatment of EMCal triggers was requested,
-        // simply check that the trigger was fired
-        if (fired.Contains(obj->GetName())) {
-          match = 1;
-          break;
-        }
-      }
-    }
-    if (!match) {
-      if (fGeneralHistograms) fHistEventRejection->Fill("trigger",1);
-      return kFALSE;
-    }
+  if(!IsTriggerSelected()) {
+    if (fGeneralHistograms) fHistEventRejection->Fill("trigger",1);
+    return kFALSE;
   }
 
   if (fTriggerTypeSel != kND) {
@@ -1184,7 +1153,7 @@ Bool_t AliAnalysisTaskEmcal::IsEventSelected()
   if (fUseAliAnaUtils) {
     if (!fAliAnalysisUtils)
       fAliAnalysisUtils = new AliAnalysisUtils();
-    fAliAnalysisUtils->SetMinVtxContr(2);
+    fAliAnalysisUtils->SetMinVtxContr(fMinVertexContrib);
     fAliAnalysisUtils->SetMaxVtxZ(999);
     if(fMinVz<-998.) fMinVz = -10.;
     if(fMaxVz>998.)  fMaxVz = 10.;
@@ -1291,6 +1260,58 @@ Bool_t AliAnalysisTaskEmcal::IsEventSelected()
   // Reject filter for MC data
   if (!CheckMCOutliers()) return kFALSE;
 
+  return kTRUE;
+}
+
+Bool_t AliAnalysisTaskEmcal::IsTriggerSelected(){
+  // Default implementation of trigger selection
+  // same as previously (code moved from IsEventSelected
+  // to trigger selection). Users should re-implement
+  // this function in case they have certain needs, in
+  // particular for EMCAL triggers
+  AliDebugStream(1) << "Using default trigger selection" << std::endl;
+  if (!fTrigClass.IsNull()) {
+    TString fired = InputEvent()->GetFiredTriggerClasses();
+    if (!fired.Contains("-B-")) return kFALSE;
+
+    std::unique_ptr<TObjArray> arr(fTrigClass.Tokenize("|"));
+    if (!arr) return kFALSE;
+    Bool_t match = false;
+    for (Int_t i=0;i<arr->GetEntriesFast();++i) {
+      TObject *obj = arr->At(i);
+      if (!obj) continue;
+
+      //Check if requested trigger was fired
+      TString objStr = obj->GetName();
+      if(fEMCalTriggerMode == kOverlapWithLowThreshold &&
+          (objStr.Contains("J1") || objStr.Contains("J2") || objStr.Contains("G1") || objStr.Contains("G2"))) {
+        // This is relevant for EMCal triggers with 2 thresholds
+        // If the kOverlapWithLowThreshold was requested than the overlap between the two triggers goes with the lower threshold trigger
+        TString trigType1 = "J1";
+        TString trigType2 = "J2";
+        if(objStr.Contains("G")) {
+          trigType1 = "G1";
+          trigType2 = "G2";
+        }
+        if(objStr.Contains(trigType2) && fired.Contains(trigType2.Data())) { //requesting low threshold + overlap
+          match = 1;
+          break;
+        } else if(objStr.Contains(trigType1) && fired.Contains(trigType1.Data()) && !fired.Contains(trigType2.Data())) { //high threshold only
+          match = 1;
+          break;
+        }
+      }
+      else {
+        // If this is not an EMCal trigger, or no particular treatment of EMCal triggers was requested,
+        // simply check that the trigger was fired
+        if (fired.Contains(obj->GetName())) {
+          match = 1;
+          break;
+        }
+      }
+    }
+    if (!match) return kFALSE;
+  }
   return kTRUE;
 }
 

@@ -17,8 +17,11 @@
 #include ( CMakeListsJCORRAN.cfg )
 #Module for JCORRANPro
 #include ( CMakeListsJCORRANPro.cfg )
+#Module for JFlowBase
+#include ( CMakeListsJFlowBase.cfg )
 
 
 add_subdirectory(Base)
 add_subdirectory(Pro)
+add_subdirectory(FlowBase)
 

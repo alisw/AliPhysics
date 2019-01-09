@@ -46,7 +46,7 @@ class AliJBaseTrack : public TLorentzVector {
         Int_t         GetID()           const { return fID;}
         Int_t         GetLabel()        const { return fLabel; }
         Short_t       GetParticleType() const { return fParticleType;}
-        ULong_t       GetStatus()       const { return fStatus; }
+        ULong64_t     GetStatus()       const { return fStatus; }
         Short_t       GetCharge()       const { return fCharge; } 
         UInt_t        GetFlags()        const { return fFlags; }
         Bool_t        GetIsIsolated()   const { return IsTrue(kIsIsolated);}
@@ -64,7 +64,7 @@ class AliJBaseTrack : public TLorentzVector {
         void SetID      (const int id){fID=id;}
         void SetLabel   (const Int_t label ){ fLabel=label; }
         void SetParticleType(const Short_t ptype){ fParticleType=ptype; }
-        void SetStatus  (const ULong_t status){ fStatus=status; }
+        void SetStatus  (const ULong64_t status){ fStatus=status; }
         void SetCharge  (const Char_t charge){ fCharge=charge; }
         void SetFlags   (const UInt_t bits ){ fFlags=bits; }        //MC, is primary flag
         void SetIsIsolated(Bool_t tf){ SetFlag( kIsIsolated, tf); }
@@ -93,7 +93,7 @@ class AliJBaseTrack : public TLorentzVector {
         Int_t         fLabel;         // Unique track label for MC-Data relation
         Short_t       fParticleType;  // ParticleType 
         Char_t        fCharge;        // track charge for real data
-        ULong_t       fStatus;        // reconstruction status flags or MC status 
+        ULong64_t     fStatus;        // reconstruction status flags or MC status 
         UInt_t        fFlags;         // store series of any boolen value.
 
         Int_t         fTriggID, fAssocID; //!   //id of trigger and assoc particle 
@@ -101,7 +101,7 @@ class AliJBaseTrack : public TLorentzVector {
         Int_t         fMCIndex;           //!   //index of corresp. MC track
         Double_t      fWeight;            //!   //particle weight
 
-        ClassDef(AliJBaseTrack,1)
+        ClassDef(AliJBaseTrack,2)
 };
 
 #endif

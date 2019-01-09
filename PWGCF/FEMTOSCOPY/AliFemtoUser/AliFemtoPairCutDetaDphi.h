@@ -70,15 +70,19 @@ public:
 
   /// Sets which method to use
   void SetCutTechnique(Technique t);
+  Bool_t GetUsesQuadratureTechnique() const;
 
   /// Set the radius for $\Delta\phi^{*}$ calculations
   void SetR(Float_t r);
+  Float_t GetRadius() const;
 
   /// Set the minimum allowed Delta eta value
   void SetMinEta(Float_t eta);
+  Float_t GetMinDeltaEta() const;
 
   /// Set the minimum allowed Delta phi value
   void SetMinPhi(Float_t phi);
+  Float_t GetMinDeltaPhi() const;
 
   /// Calculate \Delta\eta between two particles.
   /// \param a Momentum of first particle
@@ -150,6 +154,12 @@ void AliFemtoPairCutDetaDphi::SetCutTechnique(Technique t)
 }
 
 inline
+Bool_t AliFemtoPairCutDetaDphi::GetUsesQuadratureTechnique() const
+{
+  return fCutTechnique == Quad;
+}
+
+inline
 AliFemtoPairCutDetaDphi::AliFemtoPairCutDetaDphi():
   AliFemtoShareQualityPairCut()
   , fCurrentMagneticField(0.0)
@@ -181,6 +191,12 @@ void AliFemtoPairCutDetaDphi::SetR(Float_t R)
   fR = R;
 }
 
+inline
+Float_t AliFemtoPairCutDetaDphi::GetRadius() const
+{
+  return fR;
+}
+
 
 inline
 void AliFemtoPairCutDetaDphi::SetMinEta(Float_t eta)
@@ -190,11 +206,28 @@ void AliFemtoPairCutDetaDphi::SetMinEta(Float_t eta)
 
 
 inline
+Float_t AliFemtoPairCutDetaDphi::GetMinDeltaEta() const
+{
+  return fDeltaEtaMin;
+}
+
+
+inline
 void AliFemtoPairCutDetaDphi::SetMinPhi(Float_t phi)
 {
   fDeltaPhiMin = phi;
+  if (fCutTechnique == Quad) {
+    fDeltaPhiMin *= fDeltaPhiMin;
+  }
 }
 
+inline
+Float_t AliFemtoPairCutDetaDphi::GetMinDeltaPhi() const
+{
+  return (fCutTechnique == Quad)
+       ? std::sqrt(fDeltaPhiMin)
+       : fDeltaPhiMin;
+}
 
 inline
 bool AliFemtoPairCutDetaDphi::Pass(AliFemtoPair *pair)
@@ -350,18 +383,9 @@ TList*
 AliFemtoPairCutDetaDphi::AppendSettings(TList *setting_list, const TString &prefix)
 {
   setting_list->AddVector(
-    new TObjString(
-      prefix + TString::Format("AliFemtoPairCutDetaDphi.radius=%f", fR)
-    ),
-
-    new TObjString(
-      prefix + TString::Format("AliFemtoPairCutDetaDphi.min_delta_eta=%f", fDeltaEtaMin)
-    ),
-
-    new TObjString(
-      prefix + TString::Format("AliFemtoPairCutDetaDphi.min_delta_phi=%f", fDeltaPhiMin)
-    ),
-
+    new TObjString(prefix + Form("AliFemtoPairCutDetaDphi.radius=%g", fR)),
+    new TObjString(prefix + Form("AliFemtoPairCutDetaDphi.min_delta_eta=%g", GetMinDeltaEta())),
+    new TObjString(prefix + Form("AliFemtoPairCutDetaDphi.min_delta_phi=%g", GetMinDeltaPhi())),
   nullptr);
 
   return setting_list;

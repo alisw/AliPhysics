@@ -50,7 +50,9 @@ AliAnalysisTaskPHOSObjectCreator::AliAnalysisTaskPHOSObjectCreator(const char *n
   fBunchSpace(25.),
   fMCArrayESD(0x0),
   fMCArrayAOD(0x0),
-  fIsM4Excluded(kTRUE)
+  fIsM4Excluded(kTRUE),
+  fIsSingleSim(kFALSE),
+  fIsEmbedding(kFALSE)
 {
   // Constructor
   for(Int_t i=0;i<3;i++){
@@ -205,6 +207,7 @@ void AliAnalysisTaskPHOSObjectCreator::UserExec(Option_t *option)
     if(cluster->GetType() != AliVCluster::kPHOSNeutral) continue;
     if(cluster->E() < 0.1) continue;//energy is set to 0 GeV in PHOS Tender, if its position is one th bad channel.//0.05 GeV is threshold of seed in a cluster by clustering algorithm.
 
+
     //printf("energy = %e , coreE = %e\n",cluster->E(),cluster->GetCoreEnergy());
 
     distance = cluster->GetDistanceToBadChannel();//in cm.
@@ -309,6 +312,7 @@ void AliAnalysisTaskPHOSObjectCreator::UserExec(Option_t *option)
       Bool_t sure = kTRUE;
       Int_t label = FindPrimary(ph,sure);
       ph->SetPrimary(label);
+      //ph->SetPrimary(cluster->GetLabel());
     }
 
     ph->SetLambdas(M20,M02);
@@ -1007,8 +1011,10 @@ Int_t AliAnalysisTaskPHOSObjectCreator::FindPrimary(AliCaloPhoton *ph,  Bool_t&s
 //________________________________________________________________________
 Bool_t AliAnalysisTaskPHOSObjectCreator::PassSTDCut(AliVCluster *cluster)
 {
+  if(cluster->GetM20() > 2.0) return kFALSE;
   if(cluster->E() > 1.0 && cluster->GetM02() < 0.1) return kFALSE;
-  else return kTRUE;
+  //if(cluster->E() > 1.0 && cluster->GetNCells() < 2.5) return kFALSE;
+  return kTRUE;
 
 }
 //________________________________________________________________________
@@ -1019,11 +1025,26 @@ void AliAnalysisTaskPHOSObjectCreator::EstimateSTDCutEfficiency(TClonesArray *ar
   TLorentzVector p12;
   Double_t m12=0;
   Double_t energy=0;
+  Double_t weight = 1.;
+
+  if(fIsSingleSim || fIsEmbedding){
+    TF1 *f1 = new TF1("f1","[0]/TMath::TwoPi() * ([2]-1)*([2]-2)/([2]*[1]*([2]*[1] + 0.139*([2]-2) )) * TMath::Power(1+(TMath::Sqrt(x*x+0.139*0.139) - 0.139)/([2]*[1]),-[2])",0,100);//1/2pi x 1/Nev x 1/pT x d2N/dpTdy //TSallis pi0 in pp
+    f1->SetNpx(1000);
+    f1->SetParameters(2.70,0.132,6.64);
+    AliAODMCParticle *p = (AliAODMCParticle*)fMCArrayAOD->At(0);//0 is always generated particle in single simulation.
+    Double_t pT = p->Pt();
+    weight = pT * f1->Eval(pT);
+
+    delete f1;
+    f1 = 0x0;
+  }
+
+  AliInfo(Form("weight is %e",weight));
 
   for(Int_t i1=0;i1<multClust;i1++){
     AliCaloPhoton *ph1 = (AliCaloPhoton*)array->At(i1);
-    if(ph1->GetNsigmaCoreDisp() > 3.0) continue;
-    if(ph1->Energy() < 0.5) continue;
+    if(ph1->GetNsigmaCoreDisp() > 2.5) continue;
+    if(ph1->Energy() < 1.0) continue;//to get high S/B
 
     for(Int_t i2=0;i2<multClust;i2++){
       AliCaloPhoton *ph2 = (AliCaloPhoton*)array->At(i2);
@@ -1035,11 +1056,14 @@ void AliAnalysisTaskPHOSObjectCreator::EstimateSTDCutEfficiency(TClonesArray *ar
       m12 = p12.M();
       energy = ph2->Energy();
 
-      fHistoMggvsEProbe->Fill(m12,energy);
-      if(PassSTDCut(cluster)) fHistoMggvsEPassingProbe->Fill(m12,energy);
+      fHistoMggvsEProbe->Fill(m12,energy,weight);
+      if(PassSTDCut(cluster)) fHistoMggvsEPassingProbe->Fill(m12,energy,weight);
 
     }//end of ph2
 
   }//end of ph1
 
 }
+
+
+

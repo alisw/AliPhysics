@@ -33,7 +33,9 @@ include_directories(${ROOT_INCLUDE_DIRS}
                     ${AliPhysics_SOURCE_DIR}/PWG/Tools
                     ${AliPhysics_SOURCE_DIR}/PWG/Tools/yaml-cpp/include
                     ${AliPhysics_SOURCE_DIR}/PWG/CaloTrackCorrBase
-                   )
+                    ${AliPhysics_SOURCE_DIR}/PWGHF/jetsHF
+                    ${AliPhysics_SOURCE_DIR}/PWGHF/vertexingHF
+		                     )
 
 # Sources in alphabetical order
 set(SRCS
@@ -69,6 +71,7 @@ set(SRCS
     AliJetResponseMaker.cxx
     AliJetTriggerSelectionTask.cxx
     AliNanoAODArrayMaker.cxx
+    AliPWGJETrainHelpers.cxx
     Tracks/AliAnalysisTaskEmcalTriggerBase.cxx
     Tracks/AliAnalysisTaskEmcalTriggerPosition.cxx
     Tracks/AliAnalysisTaskPtEMCalTrigger.cxx
@@ -121,6 +124,7 @@ set(SRCS
     Tracks/AliAnalysisTaskEmcalOnlinePatchesRef.cxx
     Tracks/AliAnalysisTaskEmcalOfflinePatchesRef.cxx
     Tracks/AliAnalysisTaskEmcalRecalcPatchesRef.cxx
+    Tracks/AliAnalysisTaskEmcalTriggerCorrelation.cxx
     Tracks/AliAnalysisTaskEventSelectionRef.cxx
     Tracks/AliAnalysisTaskEventFilter.cxx
     Tracks/AliAnalysisTaskEtaPhiEfficiency.cxx
@@ -131,13 +135,17 @@ set(SRCS
     Tracks/AliAnalysisTaskEmcalTriggerEmulation.cxx
     Tracks/AliAnalysisTaskEGAMonitor.cxx
     Tracks/AliAnalysisTaskEmcalPatchMasking.cxx
-    Tracks/AliAnalysisTaskEmcalNoiseTriggers.cxx
     Tracks/AliAnalysisTaskCountITStracks.cxx
     Tracks/AliAnalysisTaskEmcalTriggerJets.cxx
     Tracks/AliAnalysisTaskEmcalTriggerJetsIDcorr.cxx
     Tracks/AliAnalysisTaskEmcalJetConstituentQA.cxx
     Tracks/AliAnalysisTaskEmcalJetEnergyScale.cxx
     Tracks/AliAnalysisTaskEmcalJetEnergySpectrum.cxx
+    Tracks/AliAnalysisTaskEmcalPatchMultCorr.cxx
+    Tracks/AliAnalysisTaskEmcalClustersInJets.cxx
+    Tracks/AliAnalysisTaskEmcalTriggerCorrelationMC.cxx
+    Tracks/AliAnalysisTaskEmcalEG1Correlation.cxx
+    Tracks/AliAnalysisTaskEmcalTriggerBackground.cxx
     Tracks/AliAnalysisTaskEmcalTriggerSelectionTest.cxx
     UserTasks/AliAnalysisTaskJetUEStudies.cxx
     UserTasks/AliAnalysisTaskBackFlucRandomCone.cxx
@@ -157,6 +165,7 @@ set(SRCS
     UserTasks/AliAnalysisTaskEmcalDijetImbalance.cxx
     UserTasks/AliAnalysisTaskEmcalVsPhos.cxx
     UserTasks/AliAnalysisTaskEmcalJetPerformance.cxx
+    UserTasks/AliAnalysisTaskGenerateThermalBackgroundMC.cxx
     UserTasks/AliAnalysisTaskEmcalHighMultTrigger.cxx
     UserTasks/AliAnalysisTaskEmcalHJetMass.cxx
     UserTasks/AliAnalysisTaskIDFragmentationFunction.cxx
@@ -189,6 +198,7 @@ set(SRCS
     UserTasks/AliAnalysisTaskEmcalTriggerInfoQA.cxx
     UserTasks/AliAnalysisTaskEmcalTriggerTreeWriter.cxx
     UserTasks/AliAnalysisTaskHJetEmbed.cxx
+    UserTasks/AliAnalysisTaskJetExtractor.cxx
     UserTasks/AliAnalysisTaskJetJTJT.cxx
     UserTasks/AliAnalysisTaskJetMassResponseDet.cxx
     UserTasks/AliAnalysisTaskJetMatching.cxx
@@ -232,11 +242,14 @@ if(FASTJET_FOUND)
         AliJetShape.cxx
 	UserTasks/AliAnalysisTaskEmcalQGTagging.cxx
         UserTasks/AliAnalysisTaskEmcalJetShapesMC.cxx
-        UserTasks/AliAnalysisTaskFullpAJets.cxx
+        UserTasks/AliAnalysisTaskEmcalJetShapeExtra.cxx
+	UserTasks/AliAnalysisTaskFullpAJets.cxx
         UserTasks/AliAnalysisTaskFullppJet.cxx
         UserTasks/AliAnalysisTaskHJetDphi.cxx
         UserTasks/AliAnalysisTaskHJetSpectra.cxx
         UserTasks/AliAnalysisTaskJetPP.cxx
+        UserTasks/AliAnalysisTaskSVtaskMCFilter.cxx
+        UserTasks/AliAnalysisTaskEA.cxx
         UserTasks/AliAnalysisTaskSubJetFraction.cxx
 	UserTasks/AliAnalysisTaskRecoilJetYield.cxx
 	UserTasks/AliAnalysisTaskRecursiveSoftDrop.cxx

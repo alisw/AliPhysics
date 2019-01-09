@@ -55,7 +55,8 @@ public:
     kLHC11a    = 3,
     kLHC11c    = 4,
     kLHC11d    = 5,
-    kLHC11h    = 6
+    kLHC11h    = 6,
+    kLHC17o_TRD = 7
   };
 
   enum EStdCutMode_t {

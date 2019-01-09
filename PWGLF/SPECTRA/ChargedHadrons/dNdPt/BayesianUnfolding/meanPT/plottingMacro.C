@@ -22,8 +22,6 @@
 #include <iostream>
 
 #include "Plotting.h"
-//#include "plotting_functions.cpp"
-//#include "plotting_functionsPatrick.h"
 
 using namespace std;
 TList* makeIndividualPlots(string fileName, TList* histos);
@@ -54,16 +52,21 @@ void plottingMacro(){
   }
 
   histos->Add(getHistosFromFile("pp_5TeV_08"));
+  histos->Add(getHistosFromFile("pp_5TeV_08_pass3"));
+  histos->Add(getHistosFromFile("pp_5TeV_08_pass3_Pythia6"));
+  histos->Add(getHistosFromFile("pp_5TeV_08_pass3_secondMC"));
   histos->Add(getHistosFromFile("pp_7TeV_08"));
   histos->Add(getHistosFromFile("pp_8TeV_08"));
   histos->Add(getHistosFromFile("pp_13TeV_08"));
+  histos->Add(getHistosFromFile("pp_13TeV_08_EPOS"));
+  histos->Add(getHistosFromFile("pp_13TeV_08_secondMC"));
   histos->Add(getHistosFromFile("pPb_5TeV_08"));
   histos->Add(getHistosFromFile("PbPb_5TeV_08_rebin"));
   histos->Add(getHistosFromFile("XeXe_5TeV_08_rebin"));
   histos->Add(getHistosFromFile("pp_5TeV_08_iterationCheck"));
 
   // obtain plots from publication
-  //histos->Add(getHistosFromMacro("pp_7TeV_03_pub"));
+  histos->Add(getHistosFromMacro());
 
 
 //==================================================================================================
@@ -74,18 +77,29 @@ void plottingMacro(){
   plots->SetOwner();
 
   // individual plots
-  /*
+  plots->Add(makeIndividualPlots("pp_5TeV_08", histos));
+
+//  plots->Add(makeIndividualPlots("pp_5TeV_08", histos));
+//  plots->Add(makeIndividualPlots("pp_5TeV_08_pass3", histos));
+//  plots->Add(makeIndividualPlots("pp_5TeV_08_pass3_Pythia6", histos));
+//  plots->Add(makeIndividualPlots("pp_5TeV_08_pass3_secondMC", histos));
+//  plots->Add(makeIndividualPlots("pp_13TeV_08", histos));
+//  plots->Add(makeIndividualPlots("pp_13TeV_08_EPOS", histos));
+//  plots->Add(makeIndividualPlots("pp_13TeV_08_secondMC", histos));
+//  plots->Add(makeIndividualPlots("pp_8TeV_08", histos));
+
+
+//  ((TCanvas*)((TList*)plots->At(0))->At(0))->ls();//Print("basdf.pdf");//tempCanvas->Print("mario.pdf");
+
+/*
   plots->Add(makeIndividualPlots("pp_7TeV_08", histos));
   plots->Add(makeIndividualPlots("pp_8TeV_08", histos));
-  plots->Add(makeIndividualPlots("pp_13TeV_08", histos));
 
   plots->Add(makeIndividualPlots("pPb_5TeV_08", histos));
   plots->Add(makeIndividualPlots("PbPb_5TeV_08_rebin", histos));
   plots->Add(makeIndividualPlots("XeXe_5TeV_08_rebin", histos));
 */
   // combined plots
-  plots->Add(makeIndividualPlots("pp_5TeV_08", histos));
-//  plots->Add(makeIndividualPlots("PbPb_5TeV_08_rebin", histos));
   plots->Add(makeComparisons(histos));
 
 
@@ -133,8 +147,8 @@ TList* makeIndividualPlots(string fileName, TList* histos){
   list->SetOwner();
   list->SetName((fileName + "_plots").c_str());
 
-  string alice = "ALICE work in progress";
-  string mc = "MC Simulation (PYTHIA8)";
+  string alice = "#bf{ALICE work in progress}";
+  string mc = "#bf{ALICE simulation}";
   string charged = "Charged Particles";
 
   string colsys = "pp";
@@ -151,9 +165,9 @@ TList* makeIndividualPlots(string fileName, TList* histos){
   Int_t viewingRangeMoment2Measured = 40;
   Int_t viewingRangeMoment3Measured = 30;
 
-  Int_t viewingRangeMoment1 = 60;
-  Int_t viewingRangeMoment2 = 60;
-  Int_t viewingRangeMoment3 = 50;
+  Int_t viewingRangeMoment1 = 60;//60
+  Int_t viewingRangeMoment2 = 60; //60
+  Int_t viewingRangeMoment3 = 60;//50
 
   Double_t yRangeMoments[] = {0.41, 5.3};
   Double_t yRangeMomentsMeasured[] = {0.41, 5.3};
@@ -209,6 +223,97 @@ TList* makeIndividualPlots(string fileName, TList* histos){
   Short_t colors[14]={kGray,kGreen+2,28,7,8,9,11,kRed,kBlue,13,kBlack,16,17,12};
   Short_t markers[14]={20,21,22,23,24,25,26,27,28,29,30,2,3,5};
 
+
+  //-------------------- Unfolding Ratio  ------------------------------------------------------
+  tempCanvasName = "ratioUnfoldedNotUnfolded";
+  TH2D* tempStandard = (TH2D*)getClone("multPtMeasuredMC", fileName, histos);
+  TH2D* tempUnfolded = (TH2D*)getClone("multPtMeasuredPtResUnfoldedMC", fileName, histos);
+  TH2D* tempGenerated = (TH2D*)getClone("multPtGeneratedMC", fileName, histos);
+
+  TH1D* withUnf = tempUnfolded->ProjectionY();
+  TH1D* woUnf = tempStandard->ProjectionY();
+  TH1D* gen = tempGenerated->ProjectionY();
+
+  TH1D* ratioWith = withUnf->Clone();
+  ratioWith->Divide(gen);
+  TH1D* ratioWo = woUnf->Clone();
+  ratioWo->Divide(gen);
+
+  TH1D* ratioWwo = withUnf->Clone();
+  ratioWwo->Divide(woUnf);
+
+  tempArray->Add(withUnf);
+  tempArray->Add(woUnf);
+//  tempArray->Add(gen);
+
+  tempText = mc + "<|>" + colsys + ", " + erg + ", " +  eta + "<|>" + ptReach;
+//  tempArray->Add(makeText(0.4, 0.3, tempText, 3));
+
+  tempArrayRatios->Add(ratioWwo);
+//  tempArrayRatios->Add(ratioWith);
+//  tempArrayRatios->Add(ratioWo);
+  tempArrayRatios->Add(new TF1("line", "1", 0.15, 10));
+
+  tempTitles[0] = "unfolded";
+  tempTitles[1] = "not unfolded";
+//  tempTitles[2] = "truth";
+  tempArray->Add(makeLegend(0.15, 0.75, tempArray, tempTitles));
+
+
+  tempCanvas = makeCanvas(appendFileName(tempCanvasName, fileName), tempArray, tempArrayRatios, "logX logY square");
+
+  list->Add((tempCanvas->Clone()));
+  tempCanvas->Close();
+  tempArray->Clear();
+
+  //-------------------- ptRes  ------------------------------------------------------
+  tempCanvasName = "ptResolution";
+  tempArray->Add(getClone("ptResolution", fileName, histos));
+
+  tempCanvas = makeCanvas(appendFileName(tempCanvasName, fileName), tempArray, 0, "logZ square");
+
+  list->Add((tempCanvas->Clone()));
+  tempCanvas->Close();
+  tempArray->Clear();
+
+  tempCanvasName = "ptResponseMatrix";
+  tempArray->Add(getClone("ptResponseMatrix", fileName, histos));
+
+  tempCanvas = makeCanvas(appendFileName(tempCanvasName, fileName), tempArray, 0, "logZ square");
+
+  list->Add((tempCanvas->Clone()));
+  tempCanvas->Close();
+  tempArray->Clear();
+
+/*
+  //-------------------- Efficiency  ------------------------------------------------------
+  tempCanvasName = "efficiencyPt";
+  tempArray->Add(getClone("efficiencyPt", fileName, histos));
+  setTitle("Y", "#it{#epsilon}^{MC}_{prim}", (TH1D*)tempArray->At(0));
+
+  tempText = mc + "<|>" + colsys + ", " + erg + ", " +  eta + "<|>" + ptReach;
+  tempArray->Add(makeText(0.4, 0.3, tempText, 3));
+
+  tempCanvas = makeCanvas(appendFileName(tempCanvasName, fileName), tempArray, 0, "logX square");
+
+  list->Add((tempCanvas->Clone()));
+  tempCanvas->Close();
+  tempArray->Clear();
+
+  //-------------------- Secondary contamination  ------------------------------------------------------
+  tempCanvasName = "secContPt";
+  tempArray->Add(getClone("secContPt", fileName, histos));
+  setTitle("Y", "#it{#xi}^{MC}_{sec}", (TH1D*)tempArray->At(0));
+
+  tempText = mc + "<|>" + colsys + ", " + erg + ", " +  eta + "<|>" + ptReach;
+  tempArray->Add(makeText(0.4, 0.3, tempText, 3));
+
+  tempCanvas = makeCanvas(appendFileName(tempCanvasName, fileName), tempArray, 0, "logX square");
+
+  list->Add((tempCanvas->Clone()));
+  tempCanvas->Close();
+  tempArray->Clear();
+*/
   //-------------------- Response Matrix ------------------------------------------------------
   tempCanvasName = "responseMatrix";
   tempArray->Add(getClone("responseMatrix", fileName, histos));
@@ -309,9 +414,10 @@ TList* makeIndividualPlots(string fileName, TList* histos){
   tempArray->Clear();
 
   //-------------------- Pt Spectrum Measured ------------------------------------------------------
-  tempCanvasName = "ptSpectrumMeasured";
+  tempCanvasName = "multPtMeasured";
   tempArray->Add(getClone("multPtMeasured", fileName, histos));
   setTitle("Z", "1/#it{N}_{evt} 1/(2#pi #it{p}_{T}) (d^{3}#it{N})/(d#it{p}_{T}d#it{#eta}d#it{N}_{acc}) (GeV/#it{c})^{-2}", (TH1D*)tempArray->At(0));
+
   setRange("X", 0, 90, (TH1D*)tempArray->At(0));
   setRange("Y", 0.15, 10, (TH1D*)tempArray->At(0));
   setRange("Z", 1e-10, 5, (TH1D*)tempArray->At(0));
@@ -326,15 +432,16 @@ TList* makeIndividualPlots(string fileName, TList* histos){
   tempArray->Clear();
 
   //-------------------- Pt Spectrum Measured MC --------------------------------------------------
-  tempCanvasName = "ptSpectrumMeasuredMC";
+  tempCanvasName = "multPtMeasuredMC";
   tempArray->Add(getClone("multPtMeasuredMC", fileName, histos));
   setTitle("Z", "1/#it{N}_{evt} 1/(2#pi #it{p}_{T}) (d^{3}#it{N})/(d#it{p}_{T}d#it{#eta}d#it{N}_{acc}) (GeV/#it{c})^{-2}", (TH1D*)tempArray->At(0));
+  setTitle("Y", "#it{p}_{T} (GeV/#it{c})", (TH1D*)tempArray->At(0));
   setRange("X", 0, 90, (TH1D*)tempArray->At(0));
   setRange("Y", 0.15, 10, (TH1D*)tempArray->At(0));
   setRange("Z", 1e-10, 5, (TH1D*)tempArray->At(0));
 
   tempText = mc + "<|>" + colsys + ", " + erg + ", " +  eta + "<|>" + ptReach;
-  tempArray->Add(makeText(0.15, 0.5, tempText));
+  tempArray->Add(makeText(0.14, 0.28, tempText));
 
   tempCanvas = makeCanvas(appendFileName(tempCanvasName, fileName), tempArray, 0, "logz square 2D");
 
@@ -343,7 +450,7 @@ TList* makeIndividualPlots(string fileName, TList* histos){
   tempArray->Clear();
 
   //-------------------- Pt Spectrum Unfolded ------------------------------------------------------
-  tempCanvasName = "ptSpectrumUnfolded";
+  tempCanvasName = "multPtUnfolded";
   tempArray->Add(getClone("multPtUnfolded", fileName, histos));
   setTitle("Z", "1/#it{N}_{evt} 1/(2#pi #it{p}_{T}) (d^{3}#it{N})/(d#it{p}_{T}d#it{#eta}d#it{N}_{ch}) (GeV/#it{c})^{-2}", (TH1D*)tempArray->At(0));
   setRange("X", 0, 90, (TH1D*)tempArray->At(0));
@@ -360,15 +467,16 @@ TList* makeIndividualPlots(string fileName, TList* histos){
   tempArray->Clear();
 
   //-------------------- Pt Spectrum Unfolded MC -----------------------------------------------
-  tempCanvasName = "ptSpectrumUnfoldedMC";
+  tempCanvasName = "multPtUnfoldedMC";
   tempArray->Add(getClone("multPtUnfoldedMC", fileName, histos));
   setTitle("Z", "1/#it{N}_{evt} 1/(2#pi #it{p}_{T}) (d^{3}#it{N})/(d#it{p}_{T}d#it{#eta}d#it{N}_{ch}) (GeV/#it{c})^{-2}", (TH1D*)tempArray->At(0));
+  setTitle("Y", "#it{p}_{T} (GeV/#it{c})", (TH1D*)tempArray->At(0));
   setRange("X", 0, 90, (TH1D*)tempArray->At(0));
   setRange("Y", 0.15, 10, (TH1D*)tempArray->At(0));
   setRange("Z", 1e-10, 5, (TH1D*)tempArray->At(0));
 
   tempText = mc + "<|>" + colsys + ", " + erg + ", " +  eta + "<|>" + ptReach;
-  tempArray->Add(makeText(0.15, 0.5, tempText));
+  tempArray->Add(makeText(0.14, 0.28, tempText));
 
   tempCanvas = makeCanvas(appendFileName(tempCanvasName, fileName), tempArray, 0, "logz square 2D");
 
@@ -632,7 +740,7 @@ TList* makeIndividualPlots(string fileName, TList* histos){
 
   tempArray->Add(makeLegend(0.15, 0.7, tempArray, tempTitles));
 
-  tempText = alice + "<|>" + colsys + ", " + erg + ", " +  eta + "<|>" + ptReach + "<|><|>Unfolded";
+  tempText = alice + "<|>" + colsys + ", " + erg + ", " +  eta + "<|>" + ptReach + "<|><|>Generated";
   tempArray->Add(makeText(0.15, 0.9, tempText, 5));
 
   tempCanvas = makeCanvas(appendFileName(tempCanvasName, fileName), tempArray, 0, "thick square");
@@ -655,9 +763,9 @@ TList* makeIndividualPlots(string fileName, TList* histos){
     tempArray->Add(getClone("momentSimulatedMPI2MC1", fileName, histos));
     tempArray->Add(getClone("momentSimulatedMPI3MC1", fileName, histos));
 
-    setRange("X", 0, viewingRangeMoment1, (TH1D*)tempArray->At(0));
+    setRange("X", 0, 75, (TH1D*)tempArray->At(0));
     setRange("Y", 0.4, 0.95, (TH1D*)tempArray->At(0));
-    cutHist((TH1D*)tempArray->At(0), viewingRangeMoment1);
+    cutHist((TH1D*)tempArray->At(0), 75);
 
     tempTitles[0] = "data";
     tempTitles[1] = "dummy";
@@ -684,8 +792,8 @@ TList* makeIndividualPlots(string fileName, TList* histos){
     tempArray->Add(getClone("momentGeneratedMC2", fileName, histos));
     tempArray->Add(getClone("momentSimulatedMC2", fileName, histos));
 
-    setRange("X", 0, viewingRangeMoment2, (TH1D*)tempArray->At(0));
-    cutHist((TH1D*)tempArray->At(0), viewingRangeMoment2);
+    setRange("X", 0, 75, (TH1D*)tempArray->At(0));
+    cutHist((TH1D*)tempArray->At(0), 75);
     setRange("Y", 0.25, 1.425, (TH1D*)tempArray->At(0));
 
     tempTitles[0] = "data";
@@ -711,8 +819,8 @@ TList* makeIndividualPlots(string fileName, TList* histos){
     tempArray->Add(getClone("momentGeneratedMC3", fileName, histos));
     tempArray->Add(getClone("momentSimulatedMC3", fileName, histos));
 
-    setRange("X", 0, viewingRangeMoment2, (TH1D*)tempArray->At(0));
-    cutHist((TH1D*)tempArray->At(0), viewingRangeMoment2);
+    setRange("X", 0, 75, (TH1D*)tempArray->At(0));
+    cutHist((TH1D*)tempArray->At(0), 75);
 
     tempTitles[0] = "data";
     tempTitles[1] = "dummy";
@@ -801,7 +909,7 @@ TList* makeIndividualPlots(string fileName, TList* histos){
 
     tempArrayRatios->Add(getRatio("multDistUnfoldedClosureTest", "multDistGeneratedClosureTest", "unf./gen.", fileName, histos));
     tempArrayRatios->Add(new TF1("line", "1", -0.5, 99.5));
-    setRange("Y", -1.2, 3.2, (TH1D*)tempArrayRatios->At(0));
+    setRange("Y", 0.8, 1.2, (TH1D*)tempArrayRatios->At(0));
     setTitle("X", "Multiplicity", (TH1D*)tempArrayRatios->At(0));
 
     tempTitles[0] = "#it{n}_{evt}(#it{N}_{acc})_{MC} - reconstructed";
@@ -811,7 +919,7 @@ TList* makeIndividualPlots(string fileName, TList* histos){
     tempArray->Add(makeLegend(0.33, 0.94, tempArray, tempTitles));
 
     tempText = mc + "<|>" + colsys + ", " + erg + ", " +  eta + "<|>" + ptReach;
-    tempArray->Add(makeText(0.15, 0.2, tempText,4));
+    tempArray->Add(makeText(0.15, 0.23, tempText,4));
 
     tempCanvas = makeCanvas(appendFileName(tempCanvasName, fileName), tempArray, tempArrayRatios, "thick square logY");
 
@@ -819,7 +927,40 @@ TList* makeIndividualPlots(string fileName, TList* histos){
     tempCanvas->Close();
     tempArray->Clear();
     tempArrayRatios->Clear();
+/*
+    //----------------- Closure Test MultDist Flat --------------------------------------
+    tempCanvasName = "closureTestMultDistFlat";
+    tempArray->Add(getClone("multDistMeasuredClosureTest", fileName, histos));
+    tempArray->Add(getClone("multDistUnfoldedClosureTestFlat", fileName, histos));
+    tempArray->Add(getClone("multDistGeneratedClosureTest", fileName, histos));
+    tempArray->Add(getClone("multDistInitialClosureTestFlat", fileName, histos));
 
+    setTitle("X", "Multiplicity", (TH1D*)tempArray->At(0));
+    setTitle("Y", "# Events", (TH1D*)tempArray->At(0));
+    setRange("Y", 0.2, 3e7, (TH1D*)tempArray->At(0));
+
+    tempArrayRatios->Add(getRatio("multDistUnfoldedClosureTestFlat", "multDistGeneratedClosureTest", "unf./gen.", fileName, histos));
+    tempArrayRatios->Add(new TF1("line", "1", -0.5, 99.5));
+    setRange("Y", 0.8, 1.2, (TH1D*)tempArrayRatios->At(0));
+    setTitle("X", "Multiplicity", (TH1D*)tempArrayRatios->At(0));
+
+    tempTitles[0] = "#it{n}_{evt}(#it{N}_{acc})_{MC} - reconstructed";
+    tempTitles[1] = "#hat{#it{n}}_{evt}(#it{N}_{ch})_{MC}   - unfolded " + nIter;
+    tempTitles[2] = "#it{n}_{evt}(#it{N}_{ch})_{MC}   - generated";
+    tempTitles[3] = "#it{n}_{evt}(#it{N}_{ch})_{MC}   - initial";
+
+    tempArray->Add(makeLegend(0.33, 0.94, tempArray, tempTitles));
+
+    tempText = mc + "<|>" + colsys + ", " + erg + ", " +  eta + "<|>" + ptReach;
+    tempArray->Add(makeText(0.15, 0.23, tempText,4));
+
+    tempCanvas = makeCanvas(appendFileName(tempCanvasName, fileName), tempArray, tempArrayRatios, "thick square logY");
+
+    closureList->Add((tempCanvas->Clone()));
+    tempCanvas->Close();
+    tempArray->Clear();
+    tempArrayRatios->Clear();
+*/
     //----------------- Closure Test pt MultDistTracks --------------------------------------
     tempCanvasName = "closureTestPtDistTracks";
     tempArray->Add(getClone("ptDistMeasuredMC", fileName, histos));
@@ -874,6 +1015,8 @@ TList* makeIndividualPlots(string fileName, TList* histos){
     tempArray->Clear();
     tempArrayRatios->Clear();
 
+
+/*
     //----------------- Closure Test MultPt --------------------------------------
     tempCanvasName = "closureTestMultPt";
 
@@ -893,6 +1036,28 @@ TList* makeIndividualPlots(string fileName, TList* histos){
     tempArray->Clear();
     tempArrayRatios->Clear();
 
+
+    //----------------- Closure Test MultPt --------------------------------------
+    tempCanvasName = "closureTestMultPt_ProjMult";
+
+    tempArray->Add(efficiency2D->ProjectionX());
+    tempCanvas = makeCanvas(appendFileName(tempCanvasName, fileName), tempArray, 0, "thick square");
+
+    closureList->Add((tempCanvas->Clone()));
+    tempCanvas->Close();
+    tempArray->Clear();
+
+    //----------------- Closure Test MultPt --------------------------------------
+    tempCanvasName = "closureTestMultPt_ProjPt";
+
+    tempArray->Add(efficiency2D->ProjectionY());
+    tempCanvas = makeCanvas(appendFileName(tempCanvasName, fileName), tempArray, 0, "thick square logX");
+
+    closureList->Add((tempCanvas->Clone()));
+    tempCanvas->Close();
+    tempArray->Clear();
+
+
     //----------------- Closure Test MultPt staterr --------------------------------------
     tempCanvasName = "closureTestMultPtErrors";
 
@@ -910,7 +1075,7 @@ TList* makeIndividualPlots(string fileName, TList* histos){
     tempArrayRatios->Clear();
     delete efficiency2D;
     delete relativeError;
-
+*/
     //----------------- Closure Test Moments ----------------------------------------
     Short_t colorsMoments[14]={kBlack,kRed,kBlue+1,kOrange+2,8,kCyan-6,kMagenta+3,kRed,kBlue,13,kBlack,16,17,12};
     Short_t markersMoments[14]={20,28,4,23,24,25,26,27,28,29,30,2,3,5};
@@ -940,10 +1105,10 @@ TList* makeIndividualPlots(string fileName, TList* histos){
     setRange("Y", 0.94, 1.055, (TH1D*)tempArrayRatios->At(0));
 
     tempTitles[0] = "truth";
-    tempTitles[1] = "unfolded (this work)";
-    tempTitles[2] = "re-weighted (as in [1])";
+    tempTitles[1] = "unfolding method";
+    tempTitles[2] = "re-weighting method";
 
-    tempArray->Add(makeLegend(0.55, 0.4, tempArray, tempTitles));
+    tempArray->Add(makeLegend(0.55, 0.27, tempArray, tempTitles));
 
     tempText = "";
     tempText = tempText + mc + "<|>" + colsys + ", " + erg + ", " +  eta + "<|>" + ptReach;
@@ -961,26 +1126,26 @@ TList* makeIndividualPlots(string fileName, TList* histos){
     tempArray->Add(getClone("momentGeneratedMC2", fileName, histos));
     tempArray->Add(getClone("momentUnfoldedMC2", fileName, histos));
     tempArray->Add(getClone("momentReweightedMC2", fileName, histos));
-    setRange("X", 0, viewingRangeMoment2, (TH1D*)tempArray->At(0));
+    setRange("X", 0, viewingRangeMoment1, (TH1D*)tempArray->At(0));
 
 
-    cutHist((TH1D*)tempArray->At(0), viewingRangeMoment2);
-    cutHist((TH1D*)tempArray->At(1), viewingRangeMoment2);
-    cutHist((TH1D*)tempArray->At(2), viewingRangeMoment2);
+    cutHist((TH1D*)tempArray->At(0), viewingRangeMoment1);
+    cutHist((TH1D*)tempArray->At(1), viewingRangeMoment1);
+    cutHist((TH1D*)tempArray->At(2), viewingRangeMoment1);
 
     tempArrayRatios->Add(getRatio("momentUnfoldedMC2", "momentGeneratedMC2", "ratio", fileName, histos));
     tempArrayRatios->Add(new TF1("line", "1", -0.5, viewingRangeFull));
     tempArrayRatios->Add(getRatio("momentReweightedMC2", "momentGeneratedMC2", "ratio", fileName, histos));
-    setRange("X", 0, viewingRangeMoment2, (TH1D*)tempArrayRatios->At(0));
+    setRange("X", 0, viewingRangeMoment1, (TH1D*)tempArrayRatios->At(0));
 
     setRange("Y", 0.25, 1.425, (TH1D*)tempArray->At(0));
     setRange("Y", 0.75, 1.25, (TH1D*)tempArrayRatios->At(0));
 
     tempTitles[0] = "truth";
-    tempTitles[1] = "unfolded (this work)";
-    tempTitles[2] = "re-weighted (as in [1])";
+    tempTitles[1] = "unfolding method";
+    tempTitles[2] = "re-weighting method";
 
-    tempArray->Add(makeLegend(0.55, 0.4, tempArray, tempTitles));
+    tempArray->Add(makeLegend(0.55, 0.27, tempArray, tempTitles));
 
     tempText = "";
     tempText = tempText + mc + "<|>" + colsys + ", " + erg + ", " +  eta + "<|>" + ptReach;
@@ -998,25 +1163,25 @@ TList* makeIndividualPlots(string fileName, TList* histos){
    tempArray->Add(getClone("momentGeneratedMC3", fileName, histos));
    tempArray->Add(getClone("momentUnfoldedMC3", fileName, histos));
    tempArray->Add(getClone("momentReweightedMC3", fileName, histos));
-   setRange("X", 0, viewingRangeMoment3, (TH1D*)tempArray->At(0));
-   setRange("Y", 0.1, 3.2, (TH1D*)tempArray->At(0));
+   setRange("X", 0, viewingRangeMoment1, (TH1D*)tempArray->At(0));
+   setRange("Y", 0.2, 4.4, (TH1D*)tempArray->At(0));
 
 
-   cutHist((TH1D*)tempArray->At(0), viewingRangeMoment3);
-   cutHist((TH1D*)tempArray->At(1), viewingRangeMoment3);
-   cutHist((TH1D*)tempArray->At(2), viewingRangeMoment3);
+   cutHist((TH1D*)tempArray->At(0), viewingRangeMoment1);
+   cutHist((TH1D*)tempArray->At(1), viewingRangeMoment1);
+   cutHist((TH1D*)tempArray->At(2), viewingRangeMoment1);
 
    tempArrayRatios->Add(getRatio("momentUnfoldedMC3", "momentGeneratedMC3", "ratio", fileName, histos));
    tempArrayRatios->Add(new TF1("line", "1", -0.5, viewingRangeFull));
    tempArrayRatios->Add(getRatio("momentReweightedMC3", "momentGeneratedMC3", "ratio", fileName, histos));
-   setRange("X", 0, viewingRangeMoment3, (TH1D*)tempArrayRatios->At(0));
+   setRange("X", 0, viewingRangeMoment1, (TH1D*)tempArrayRatios->At(0));
     setRange("Y", 0.75, 1.25, (TH1D*)tempArrayRatios->At(0));
 
     tempTitles[0] = "truth";
-    tempTitles[1] = "unfolded (this work)";
-    tempTitles[2] = "re-weighted (as in [1])";
+    tempTitles[1] = "unfolding method";
+    tempTitles[2] = "re-weighting method";
 
-   tempArray->Add(makeLegend(0.55, 0.4, tempArray, tempTitles));
+   tempArray->Add(makeLegend(0.55, 0.27, tempArray, tempTitles));
 
    tempText = "";
    tempText = tempText + mc + "<|>" + colsys + ", " + erg + ", " +  eta + "<|>" + ptReach;
@@ -1030,7 +1195,7 @@ TList* makeIndividualPlots(string fileName, TList* histos){
    tempArray->Clear();
    tempArrayRatios->Clear();
 
-
+/*
     //----------------- Closure Test Pt bins ----------------------------------------
     TH2D* multPtMeasuredMC = ((TH2D*) getClone("multPtMeasuredMC", fileName, histos));
     TH2D* multPtUnfoldedMC = ((TH2D*) getClone("multPtUnfoldedMC", fileName, histos));
@@ -1094,7 +1259,7 @@ TList* makeIndividualPlots(string fileName, TList* histos){
       delete tempProjectionGenerated;
       delete tempRatio;
     }
-
+*/
 
     list->Add(closureList);
 
@@ -1164,6 +1329,9 @@ TList* makeIndividualPlots(string fileName, TList* histos){
 
 TList* makeComparisons(TList* histos){
 
+  string alice = "#bf{ALICE work in progress}";
+  string mc = "#bf{ALICE simulation}";
+
   TList* list = new TList();
   list->SetOwner();
   list->SetName("combinedPlots");
@@ -1181,18 +1349,24 @@ TList* makeComparisons(TList* histos){
   //-------------------- System Size Comparison MC ------------------------------------------
   Short_t colorsSystSize[14]={0};
   Short_t markersSystSize[14]={0};
-  Short_t tempColors[6] = {kWhite, kBlue, kMagenta+1, kRed, kGreen+2, kCyan+3};
-  Short_t tempMarkers[6] = {20, 20, 21, 22, 34, 20};
+  Short_t tempColors[7] = {kWhite, kBlue+1, kMagenta+1, kRed+1, kRed, kRed, kRed};
+  Short_t tempMarkers[7] = {20, 20, 24, 21, 25, 34, 28};
 
   colorsSystSize[0] = tempColors[0];
   colorsSystSize[1] = tempColors[1];
-  colorsSystSize[2] = tempColors[2];
-  colorsSystSize[3] = tempColors[3];
+  colorsSystSize[2] = tempColors[1];
+  colorsSystSize[3] = tempColors[2];
+  colorsSystSize[4] = tempColors[2];
+  colorsSystSize[5] = tempColors[3];
+  colorsSystSize[6] = tempColors[3];
 
   markersSystSize[0] = tempMarkers[0];
   markersSystSize[1] = tempMarkers[1];
   markersSystSize[2] = tempMarkers[2];
   markersSystSize[3] = tempMarkers[3];
+  markersSystSize[4] = tempMarkers[4];
+  markersSystSize[5] = tempMarkers[5];
+  markersSystSize[6] = tempMarkers[6];
 
   TH1D* dummyHist  = (TH1D*)getClone("momentUnfoldedMC1", "PbPb_5TeV_08_rebin", histos);
   dummyHist->SetName("dummyHist");
@@ -1201,30 +1375,44 @@ TList* makeComparisons(TList* histos){
   tempCanvasName = "systemSizeMoment1MC";
   tempArray->Add(dummyHist->Clone());
   tempArray->Add(getClone("momentUnfoldedMC1", "pp_5TeV_08", histos));
+  tempArray->Add(getClone("momentGeneratedMC1", "pp_5TeV_08", histos));
   tempArray->Add(getClone("momentUnfoldedMC1", "pPb_5TeV_08", histos));
+  tempArray->Add(getClone("momentGeneratedMC1", "pPb_5TeV_08", histos));
   tempArray->Add(getClone("momentUnfoldedMC1", "PbPb_5TeV_08_rebin", histos));
+  tempArray->Add(getClone("momentGeneratedMC1", "PbPb_5TeV_08_rebin", histos));
 
   setRange("X", 0, 250, (TH1D*)tempArray->At(0));
   setRange("Y", 0.45, 0.92, (TH1D*)tempArray->At(0));
 
   for(Int_t i = 2; i <= 8; i++){
-    ((TH1D*)tempArray->At(3))->SetBinContent(i, 0);
-    ((TH1D*)tempArray->At(3))->SetBinError(i, 0);
+    ((TH1D*)tempArray->At(5))->SetBinContent(i, 0);
+    ((TH1D*)tempArray->At(5))->SetBinError(i, 0);
+    ((TH1D*)tempArray->At(6))->SetBinContent(i, 0);
+    ((TH1D*)tempArray->At(6))->SetBinError(i, 0);
   }
 
   cutHist((TH1D*)tempArray->At(1), 60);
-  cutHist((TH1D*)tempArray->At(2), 100);
-  cutHist((TH1D*)tempArray->At(3), 250);
+  cutHist((TH1D*)tempArray->At(2), 60);
+  cutHist((TH1D*)tempArray->At(3), 100);
+  cutHist((TH1D*)tempArray->At(4), 100);
+  cutHist((TH1D*)tempArray->At(5), 250);
+  cutHist((TH1D*)tempArray->At(6), 250);
 
-  tempTitles[1] = "pp";
-  tempTitles[2] = "p-Pb";
-  tempTitles[3] = "Pb-Pb";
+  tempTitles[1] = "pp (PYTHIA8 Monash13)";
+  tempTitles[2] = "dummy";
+  tempTitles[3] = "p-Pb (DPMJET)";
+  tempTitles[4] = "dummy";
+  tempTitles[5] = "Pb-Pb 0-80% (HIJING)";
+  tempTitles[6] = "dummy";
 //  tempTitles[1] = "Xe-Xe (#sqrt{#it{s}_{NN}} = 5.44 TeV)";
-  tempArray->Add(makeLegend(0.7, 0.35, tempArray, tempTitles));
+  tempArray->Add(makeLegend(0.43, 0.63, tempArray, tempTitles));
+  tempText = "";
+  tempText = tempText + "closed: unfolded<|>open:   truth";
+  tempArray->Add(makeText(0.45, 0.72, tempText,2));
 
   tempText = "";
-  tempText = tempText + "MC simulation" + "<|>" +  "#sqrt{#it{s}} = 5.02 TeV , |#it{#eta}| < 0.8" + "<|>" + "0.15 GeV/#it{c} < #it{p}_{T} < 10 GeV/#it{c}" + "<|>"  + "PbPb: 0\% - 80\% cent";
-  tempArray->Add(makeText(0.5, 0.9, tempText,4));
+  tempText = tempText + mc + "<|>" +  "#sqrt{#it{s}} = 5.02 TeV , |#it{#eta}| < 0.8" + "<|>" + "0.15 GeV/#it{c} < #it{p}_{T} < 10 GeV/#it{c}";
+  tempArray->Add(makeText(0.45, 0.9, tempText,3));
 
   tempCanvas = makeCanvas(tempCanvasName.c_str(), tempArray, 0, "thick square", colorsSystSize, markersSystSize);
 
@@ -1232,7 +1420,7 @@ TList* makeComparisons(TList* histos){
   tempCanvas->Close();
   tempArray->Clear();
 
-  //-------------------- System Size Comparison MC ------------------------------------------
+  //-------------------- System Size Comparison Moment 2 MC ------------------------------------------
   delete dummyHist;
   TH1D* dummyHist  = (TH1D*)getClone("momentUnfoldedMC2", "PbPb_5TeV_08_rebin", histos);
   dummyHist->SetName("dummyHist");
@@ -1241,32 +1429,40 @@ TList* makeComparisons(TList* histos){
   tempCanvasName = "systemSizeMoment2MC";
   tempArray->Add(dummyHist->Clone());
   tempArray->Add(getClone("momentUnfoldedMC2", "pp_5TeV_08", histos));
+  tempArray->Add(getClone("momentGeneratedMC2", "pp_5TeV_08", histos));
   tempArray->Add(getClone("momentUnfoldedMC2", "pPb_5TeV_08", histos));
+  tempArray->Add(getClone("momentGeneratedMC2", "pPb_5TeV_08", histos));
   tempArray->Add(getClone("momentUnfoldedMC2", "PbPb_5TeV_08_rebin", histos));
-//  tempArray->Add(getClone("momentUnfoldedMC2", "XeXe_5TeV_08_rebin", histos));
+  tempArray->Add(getClone("momentGeneratedMC2", "PbPb_5TeV_08_rebin", histos));
 
   setRange("X", 0, 250, (TH1D*)tempArray->At(0));
   setRange("Y", 0.3, 1.4, (TH1D*)tempArray->At(0));
 
   for(Int_t i = 2; i <= 8; i++){
-    ((TH1D*)tempArray->At(3))->SetBinContent(i, 0);
-    ((TH1D*)tempArray->At(3))->SetBinError(i, 0);
+    ((TH1D*)tempArray->At(5))->SetBinContent(i, 0);
+    ((TH1D*)tempArray->At(5))->SetBinError(i, 0);
+    ((TH1D*)tempArray->At(6))->SetBinContent(i, 0);
+    ((TH1D*)tempArray->At(6))->SetBinError(i, 0);
   }
 
   cutHist((TH1D*)tempArray->At(1), 60);
-  cutHist((TH1D*)tempArray->At(2), 100);
-  cutHist((TH1D*)tempArray->At(3), 250);
-  //  cutHist((TH1D*)tempArray->At(1), 1000);
+  cutHist((TH1D*)tempArray->At(2), 60);
+  cutHist((TH1D*)tempArray->At(3), 100);
+  cutHist((TH1D*)tempArray->At(4), 100);
+  cutHist((TH1D*)tempArray->At(5), 250);
+  cutHist((TH1D*)tempArray->At(6), 250);
 
   tempTitles[1] = "pp";
-  tempTitles[2] = "p-Pb";
-  tempTitles[3] = "Pb-Pb";
+  tempTitles[2] = "dummy";
+  tempTitles[3] = "p-Pb";
+  tempTitles[4] = "dummy";
+  tempTitles[5] = "Pb-Pb";
+  tempTitles[6] = "dummy";
 //  tempTitles[1] = "Xe-Xe (#sqrt{#it{s}_{NN}} = 5.44 TeV)";
-  tempArray->Add(makeLegend(0.7, 0.35, tempArray, tempTitles));
-
+  tempArray->Add(makeLegend(0.6, 0.63, tempArray, tempTitles));
   tempText = "";
-  tempText = tempText + "MC simulation" + "<|>" +  "#sqrt{#it{s}} = 5.02 TeV , |#it{#eta}| < 0.8" + "<|>" + "0.15 GeV/#it{c} < #it{p}_{T} < 10 GeV/#it{c}" + "<|>"  + "PbPb, XeXe: 0\% - 80\%";
-  tempArray->Add(makeText(0.5, 0.9, tempText,4));
+  tempText = tempText + "closed: unfolded<|>open:   truth";
+  tempArray->Add(makeText(0.6, 0.7, tempText,2));
 
   tempCanvas = makeCanvas(tempCanvasName.c_str(), tempArray, 0, "thick square", colorsSystSize, markersSystSize);
 
@@ -1306,7 +1502,7 @@ TList* makeComparisons(TList* histos){
   tempArray->Add(makeLegend(0.7, 0.35, tempArray, tempTitles));
 
   tempText = "";
-  tempText = tempText + "MC simulation" + "<|>" +  "#sqrt{#it{s}} = 5.02 TeV , |#it{#eta}| < 0.8" + "<|>" + "0.15 GeV/#it{c} < #it{p}_{T} < 10 GeV/#it{c}" + "<|>"  + "PbPb, XeXe: 0\% - 80\%";
+  tempText = tempText + mc + "<|>" +  "#sqrt{#it{s}} = 5.02 TeV , |#it{#eta}| < 0.8" + "<|>" + "0.15 GeV/#it{c} < #it{p}_{T} < 10 GeV/#it{c}" + "<|>"  + "PbPb: 0\% - 80\% cent";
   tempArray->Add(makeText(0.5, 0.9, tempText,4));
 
   tempCanvas = makeCanvas(tempCanvasName.c_str(), tempArray, 0, "thick square", colorsSystSize, markersSystSize);
@@ -1316,6 +1512,23 @@ TList* makeComparisons(TList* histos){
   tempArray->Clear();
 
   //-------------------- System Size Comparison data ------------------------------------------
+
+  colorsSystSize[0] = tempColors[0];
+  colorsSystSize[1] = tempColors[1];
+  colorsSystSize[2] = tempColors[2];
+  colorsSystSize[3] = tempColors[3];
+  colorsSystSize[4] = tempColors[4];
+  colorsSystSize[5] = tempColors[3];
+  colorsSystSize[6] = tempColors[3];
+
+  markersSystSize[0] = tempMarkers[0];
+  markersSystSize[1] = tempMarkers[1];
+  markersSystSize[2] = tempMarkers[3];
+  markersSystSize[3] = tempMarkers[5];
+  markersSystSize[4] = tempMarkers[4];
+  markersSystSize[5] = tempMarkers[5];
+  markersSystSize[6] = tempMarkers[6];
+
   delete dummyHist;
   TH1D* dummyHist  = (TH1D*)getClone("momentUnfolded1", "PbPb_5TeV_08_rebin", histos);
   dummyHist->SetName("dummyHist");
@@ -1345,7 +1558,7 @@ TList* makeComparisons(TList* histos){
   tempArray->Add(makeLegend(0.7, 0.35, tempArray, tempTitles));
 
   tempText = "";
-  tempText = tempText + "ALICE work in progress" + "<|>" +  "#sqrt{#it{s}_{NN}} = 5.02 TeV , |#it{#eta}| < 0.8" + "<|>" + "0.15 GeV/#it{c} < #it{p}_{T} < 10 GeV/#it{c}" + "<|>"  + "Pb-Pb: 0\% - 80\% cent";
+  tempText = tempText + alice + "<|>" +  "#sqrt{#it{s}_{NN}} = 5.02 TeV , |#it{#eta}| < 0.8" + "<|>" + "0.15 GeV/#it{c} < #it{p}_{T} < 10 GeV/#it{c}" + "<|>"  + "Pb-Pb: 0\% - 80\% cent";
   tempArray->Add(makeText(0.5, 0.9, tempText,4));
 
   tempCanvas = makeCanvas(tempCanvasName.c_str(), tempArray, 0, "thick square", colorsSystSize, markersSystSize);
@@ -1387,7 +1600,7 @@ TList* makeComparisons(TList* histos){
   tempArray->Add(makeLegend(0.7, 0.35, tempArray, tempTitles));
 
   tempText = "";
-  tempText = tempText + "ALICE work in progress" + "<|>" +  "#sqrt{#it{s}_{NN}} = 5.02 TeV , |#it{#eta}| < 0.8" + "<|>" + "0.15 GeV/#it{c} < #it{p}_{T} < 10 GeV/#it{c}" + "<|>"  + "PbPb, XeXe: 0\% - 80\%";
+  tempText = tempText + alice + "<|>" +  "#sqrt{#it{s}_{NN}} = 5.02 TeV , |#it{#eta}| < 0.8" + "<|>" + "0.15 GeV/#it{c} < #it{p}_{T} < 10 GeV/#it{c}" + "<|>"  + "PbPb: 0\% - 80\% cent";
   tempArray->Add(makeText(0.5, 0.9, tempText,4));
 
   tempCanvas = makeCanvas(tempCanvasName.c_str(), tempArray, 0, "thick square", colorsSystSize, markersSystSize);
@@ -1429,7 +1642,7 @@ TList* makeComparisons(TList* histos){
   tempArray->Add(makeLegend(0.7, 0.35, tempArray, tempTitles));
 
   tempText = "";
-  tempText = tempText + "ALICE work in progress" + "<|>" +  "#sqrt{#it{s}_{NN}} = 5.02 TeV , |#it{#eta}| < 0.8" + "<|>" + "0.15 GeV/#it{c} < #it{p}_{T} < 10 GeV/#it{c}" + "<|>"  + "PbPb, XeXe: 0\% - 80\%";
+  tempText = tempText + alice + "<|>" +  "#sqrt{#it{s}_{NN}} = 5.02 TeV , |#it{#eta}| < 0.8" + "<|>" + "0.15 GeV/#it{c} < #it{p}_{T} < 10 GeV/#it{c}" + "<|>"  + "PbPb: 0\% - 80\% cent";
   tempArray->Add(makeText(0.5, 0.9, tempText,4));
 
   tempCanvas = makeCanvas(tempCanvasName.c_str(), tempArray, 0, "thick square", colorsSystSize, markersSystSize);
@@ -1437,6 +1650,54 @@ TList* makeComparisons(TList* histos){
   list->Add((tempCanvas->Clone()));
   tempCanvas->Close();
   tempArray->Clear();
+
+
+
+  //-------------------- System Size Comparison data ------------------------------------------
+  delete dummyHist;
+  TH1D* dummyHist  = (TH1D*)getClone("momentUnfolded1", "PbPb_5TeV_08_rebin", histos);
+  dummyHist->SetName("dummyHist");
+  dummyHist->Reset();
+
+  tempCanvasName = "systemSizeMoment1_withPub";
+  tempArray->Add(dummyHist->Clone());
+  tempArray->Add(getClone("momentUnfolded1", "pp_5TeV_08", histos));
+  tempArray->Add(getClone("momentReweighted1Sys_pp_7TeV_03", "pub", histos));
+  tempArray->Add(getClone("momentUnfolded1", "pPb_5TeV_08", histos));
+  tempArray->Add(getClone("momentReweighted1Sys_pPb_5TeV_03", "pub", histos));
+  tempArray->Add(getClone("momentUnfolded1", "PbPb_5TeV_08_rebin", histos));
+  tempArray->Add(getClone("momentReweighted1Sys_PbPb_2TeV_03", "pub", histos));
+
+  setRange("X", 0, 100, (TH1D*)tempArray->At(0));
+  setRange("Y", 0.45, 0.92, (TH1D*)tempArray->At(0));
+
+//  ((TH1D*)tempArray->At(0))->SetBinContent(2, 0);
+//  ((TH1D*)tempArray->At(0))->SetBinError(2, 0);
+
+  cutHist((TH1D*)tempArray->At(1), 60);
+  cutHist((TH1D*)tempArray->At(3), 100);
+  cutHist((TH1D*)tempArray->At(4), 100);
+
+  tempTitles[0] = "dummy";
+  tempTitles[1] = "pp #sqrt{#it{s}} = 5.02 TeV , |#it{#eta}| < 0.8";
+  tempTitles[2] = "pp #sqrt{#it{s}} = 7 TeV , |#it{#eta}| < 0.3";
+  tempTitles[3] = "p-Pb #sqrt{#it{s}_{NN}} = 5.02 TeV , |#it{#eta}| < 0.8";
+  tempTitles[4] = "p-Pb #sqrt{#it{s}_{NN}} = 5.02 TeV , |#it{#eta}| < 0.3";
+  tempTitles[5] = "Pb-Pb #sqrt{#it{s}_{NN}} = 5.02 TeV , |#it{#eta}| < 0.8";
+  tempTitles[6] = "Pb-Pb #sqrt{#it{s}_{NN}} = 2.76 TeV , |#it{#eta}| < 0.3";
+//  tempTitles[1] = "Xe-Xe (#sqrt{#it{s}_{NN}} = 5.44 TeV)";
+  tempArray->Add(makeLegend(0.5, 0.35, tempArray, tempTitles));
+
+  tempText = "";
+  tempText = tempText + alice + "<|>" + "0.15 GeV/#it{c} < #it{p}_{T} < 10 GeV/#it{c}";
+  tempArray->Add(makeText(0.5, 0.9, tempText,2));
+
+  tempCanvas = makeCanvas(tempCanvasName.c_str(), tempArray, 0, "thick square", colorsSystSize, markersSystSize);
+
+  list->Add((tempCanvas->Clone()));
+  tempCanvas->Close();
+  tempArray->Clear();
+
 
   //-------------------- Energy Comparison MC ------------------------------------------
   Short_t colorsErg[14]={0};
@@ -1446,19 +1707,19 @@ TList* makeComparisons(TList* histos){
 
   tempCanvasName = "energyDependenceMoment1MC";
   tempArray->Add(getClone("momentUnfoldedMC1", "pp_5TeV_08", histos));
-  tempArray->Add(getClone("momentUnfoldedMC1", "pp_7TeV_08", histos));
+//  tempArray->Add(getClone("momentUnfoldedMC1", "pp_7TeV_08", histos));
   tempArray->Add(getClone("momentUnfoldedMC1", "pp_8TeV_08", histos));
   tempArray->Add(getClone("momentUnfoldedMC1", "pp_13TeV_08", histos));
 
 
   colorsErg[0] = tempColorsErg[0];
-  colorsErg[1] = tempColorsErg[1];
-  colorsErg[2] = tempColorsErg[2];
+  colorsErg[1] = tempColorsErg[2];
+  colorsErg[2] = tempColorsErg[3];
   colorsErg[3] = tempColorsErg[3];
 
   markersErg[0] = tempMarkersErg[0];
-  markersErg[1] = tempMarkersErg[1];
-  markersErg[2] = tempMarkersErg[2];
+  markersErg[1] = tempMarkersErg[2];
+  markersErg[2] = tempMarkersErg[3];
   markersErg[3] = tempMarkersErg[3];
 
   setRange("X", 0, 60, (TH1D*)tempArray->At(0));
@@ -1468,13 +1729,17 @@ TList* makeComparisons(TList* histos){
   cutHist((TH1D*)tempArray->At(1), 60);
 
   tempTitles[0] = "#sqrt{#it{s}} = 5.02 TeV";
-  tempTitles[1] = "#sqrt{#it{s}} = 7 TeV";
-  tempTitles[2] = "#sqrt{#it{s}} = 8 TeV";
-  tempTitles[3] = "#sqrt{#it{s}} = 13 TeV";
+  tempTitles[1] = "#sqrt{#it{s}} = 8 TeV";
+  tempTitles[2] = "#sqrt{#it{s}} = 13 TeV";
+
+//  tempTitles[0] = "#sqrt{#it{s}} = 5.02 TeV PYTHIA8 Monash13";
+//  tempTitles[1] = "#sqrt{#it{s}} = 7 TeV PYTHIA6 Perugia11";
+//  tempTitles[2] = "#sqrt{#it{s}} = 8 TeV PYTHIA8 Monash13";
+//  tempTitles[3] = "#sqrt{#it{s}} = 13 TeV PYTHIA8 Monash13";
   tempArray->Add(makeLegend(0.15, 0.75, tempArray, tempTitles));
 
   tempText = "";
-  tempText = tempText + "MC simulation" + "<|>" +  "pp , |#it{#eta}| < 0.8" + "<|>" + "0.15 GeV/#it{c} < #it{p}_{T} < 10 GeV/#it{c}";
+  tempText = tempText + mc + "<|>" +  "pp , |#it{#eta}| < 0.8" + "<|>" + "0.15 GeV/#it{c} < #it{p}_{T} < 10 GeV/#it{c}";
   tempArray->Add(makeText(0.15, 0.9, tempText,3));
 
   tempCanvas = makeCanvas(tempCanvasName.c_str(), tempArray, 0, "thick square", colorsErg, markersErg);
@@ -1513,24 +1778,23 @@ TList* makeComparisons(TList* histos){
   tempArray->Add(getClone("momentUnfolded1", "pp_13TeV_08", histos));
   tempArray->Add(getClone("momentUnfolded1SystErr", "pp_13TeV_08", histos));
 
-  setRange("X", 0, 60, (TH1D*)tempArray->At(0));
+  setRange("X", 0, 75, (TH1D*)tempArray->At(0));
   setRange("Y", 0.44, 0.95, (TH1D*)tempArray->At(0));
-  cutHist((TH1D*)tempArray->At(0), 60);
-  cutHist((TH1D*)tempArray->At(1), 60);
-
+  cutHist((TH1D*)tempArray->At(0), 75);
+  cutHist((TH1D*)tempArray->At(1), 75);
 
   tempTitles[0] = "#sqrt{#it{s}} = 5.02 TeV";
-  tempTitles[1] = "werdasliesstistdoof";
+  tempTitles[1] = "dummy";
   tempTitles[2] = "#sqrt{#it{s}} = 7 TeV";
-  tempTitles[3] = "werdasliesstistdoof";
+  tempTitles[3] = "dummy";
   tempTitles[4] = "#sqrt{#it{s}} = 8 TeV";
-  tempTitles[6] = "werdasliesstistdoof";
+  tempTitles[6] = "dummy";
   tempTitles[6] = "#sqrt{#it{s}} = 13 TeV";
-  tempTitles[7] = "werdasliesstistdoof";
-  tempArray->Add(makeLegend(0.15, 0.75, tempArray, tempTitles));
+  tempTitles[7] = "dummy";
+  tempArray->Add(makeLegend(0.2, 0.5, tempArray, tempTitles));
 
   tempText = "";
-  tempText = tempText + "ALICE work in progress" + "<|>" +  "pp , |#it{#eta}| < 0.8" + "<|>" + "0.15 GeV/#it{c} < #it{p}_{T} < 10 GeV/#it{c}";
+  tempText = tempText + alice + "<|>" +  "pp , |#it{#eta}| < 0.8" + "<|>" + "0.15 GeV/#it{c} < #it{p}_{T} < 10 GeV/#it{c}";
   tempArray->Add(makeText(0.15, 0.9, tempText,3));
 
   tempCanvas = makeCanvas(tempCanvasName.c_str(), tempArray, 0, "thick square", colorsErg, markersErg);
@@ -1557,17 +1821,17 @@ TList* makeComparisons(TList* histos){
 
 
   tempTitles[0] = "#sqrt{#it{s}} = 5.02 TeV";
-  tempTitles[1] = "werdasliesstistdoof";
+  tempTitles[1] = "dummy";
   tempTitles[2] = "#sqrt{#it{s}} = 7 TeV";
-  tempTitles[3] = "werdasliesstistdoof";
+  tempTitles[3] = "dummy";
   tempTitles[4] = "#sqrt{#it{s}} = 8 TeV";
-  tempTitles[6] = "werdasliesstistdoof";
+  tempTitles[6] = "dummy";
   tempTitles[6] = "#sqrt{#it{s}} = 13 TeV";
-  tempTitles[7] = "werdasliesstistdoof";
+  tempTitles[7] = "dummy";
   tempArray->Add(makeLegend(0.15, 0.75, tempArray, tempTitles));
 
   tempText = "";
-  tempText = tempText + "ALICE work in progress" + "<|>" +  "pp , |#it{#eta}| < 0.8" + "<|>" + "0.15 GeV/#it{c} < #it{p}_{T} < 10 GeV/#it{c}";
+  tempText = tempText + alice + "<|>" +  "pp , |#it{#eta}| < 0.8" + "<|>" + "0.15 GeV/#it{c} < #it{p}_{T} < 10 GeV/#it{c}";
   tempArray->Add(makeText(0.15, 0.9, tempText,3));
 
   tempCanvas = makeCanvas(tempCanvasName.c_str(), tempArray, 0, "thick square", colorsErg, markersErg);
@@ -1594,17 +1858,17 @@ TList* makeComparisons(TList* histos){
 
 
   tempTitles[0] = "#sqrt{#it{s}} = 5.02 TeV";
-  tempTitles[1] = "werdasliesstistdoof";
+  tempTitles[1] = "dummy";
   tempTitles[2] = "#sqrt{#it{s}} = 7 TeV";
-  tempTitles[3] = "werdasliesstistdoof";
+  tempTitles[3] = "dummy";
   tempTitles[4] = "#sqrt{#it{s}} = 8 TeV";
-  tempTitles[6] = "werdasliesstistdoof";
+  tempTitles[6] = "dummy";
   tempTitles[6] = "#sqrt{#it{s}} = 13 TeV";
-  tempTitles[7] = "werdasliesstistdoof";
+  tempTitles[7] = "dummy";
   tempArray->Add(makeLegend(0.15, 0.75, tempArray, tempTitles));
 
   tempText = "";
-  tempText = tempText + "ALICE work in progress" + "<|>" +  "pp , |#it{#eta}| < 0.8" + "<|>" + "0.15 GeV/#it{c} < #it{p}_{T} < 10 GeV/#it{c}";
+  tempText = tempText + alice + "<|>" +  "pp , |#it{#eta}| < 0.8" + "<|>" + "0.15 GeV/#it{c} < #it{p}_{T} < 10 GeV/#it{c}";
   tempArray->Add(makeText(0.15, 0.9, tempText,3));
 
   tempCanvas = makeCanvas(tempCanvasName.c_str(), tempArray, 0, "thick square", colorsErg, markersErg);
@@ -1612,6 +1876,46 @@ TList* makeComparisons(TList* histos){
   list->Add((tempCanvas->Clone()));
   tempCanvas->Close();
   tempArray->Clear();
+
+
+// ratio to 8 tev
+tempCanvasName = "energyRatios";
+tempArray->Add(getClone("momentUnfolded1", "pp_5TeV_08", histos));
+tempArray->Add(getClone("momentUnfolded1", "pp_8TeV_08", histos));
+tempArray->Add(getClone("momentUnfolded1", "pp_13TeV_08", histos));
+
+setRange("X", 0, 60, (TH1D*)tempArray->At(0));
+setRange("Y", 0.44, 0.95, (TH1D*)tempArray->At(0));
+cutHist((TH1D*)tempArray->At(0), 60);
+cutHist((TH1D*)tempArray->At(1), 60);
+
+TH1D* base5 = getClone("momentUnfolded1", "pp_5TeV_08", histos);
+TH1D* ratio8 = getClone("momentUnfolded1", "pp_8TeV_08", histos);
+ratio8->Divide(base5);
+TH1D* ratio13 = getClone("momentUnfolded1", "pp_13TeV_08", histos);
+ratio13->Divide(base5);
+
+tempArrayRatios->Add(ratio8);
+tempArrayRatios->Add(ratio13);
+//tempArrayRatios->Add(new TF1("line", "1", -0.5, 99.5));
+setRange("X", 0, 60, (TH1D*)tempArrayRatios->At(0));
+
+
+tempTitles[0] = "#sqrt{#it{s}} = 5.02 TeV";
+tempTitles[1] = "#sqrt{#it{s}} = 8 TeV";
+tempTitles[2] = "#sqrt{#it{s}} = 13 TeV";
+tempArray->Add(makeLegend(0.15, 0.75, tempArray, tempTitles));
+
+tempText = "";
+tempText = tempText + alice + "<|>" +  "pp , |#it{#eta}| < 0.8" + "<|>" + "0.15 GeV/#it{c} < #it{p}_{T} < 10 GeV/#it{c}";
+tempArray->Add(makeText(0.15, 0.9, tempText,3));
+
+tempCanvas = makeCanvas(tempCanvasName.c_str(), tempArray, tempArrayRatios, "thick square", colorsErg, markersErg);
+
+list->Add((tempCanvas->Clone()));
+tempCanvas->Close();
+tempArray->Clear();
+tempArrayRatios->Clear();
 
   //_________________________________________________________________________________
 
@@ -1642,13 +1946,13 @@ TList* makeComparisons(TList* histos){
   tempTitles[8] = "  9  ";
   tempTitles[9] = "  10 ";
 
-  setRange("X", 0, 60, (TH1D*)tempArray->At(0));
+//  setRange("X", 0, 60, (TH1D*)tempArray->At(0));
   setRange("Y", 0.48, 0.83, (TH1D*)tempArray->At(0));
 
   tempArray->Add(makeLegend(0.5, 0.5, tempArray, tempTitles,0.6));
 
   tempText = "";
-  tempText = tempText + "ALICE work in progress" + "<|>" +  "pp , #sqrt{#it{s}} = 5.02 TeV , |#it{#eta}| < 0.8" + "<|>" + "0.15 GeV/#it{c} < #it{p}_{T} < 10 GeV/#it{c}";
+  tempText = tempText + alice + "<|>" +  "pp , #sqrt{#it{s}} = 5.02 TeV , |#it{#eta}| < 0.8" + "<|>" + "0.15 GeV/#it{c} < #it{p}_{T} < 10 GeV/#it{c}";
   tempArray->Add(makeText(0.5, 0.8, tempText, 3));
 
   tempText = "n_{iter} = ";
@@ -1683,6 +1987,354 @@ TList* makeComparisons(TList* histos){
   tempCanvas->Close();
   tempArray->Clear();
 
+
+//------------------ QM playground -----------------------------------------------
+//----------------------secondMC -------------------------------------------------
+tempCanvasName = "ratioToDataMoment1";
+tempArray->Add(getClone("momentGeneratedMC1", "pp_5TeV_08_pass3", histos));
+tempArray->Add(getClone("momentGeneratedMC1", "pp_5TeV_08_pass3_Pythia6", histos));
+tempArray->Add(getClone("momentUnfolded1", "pp_5TeV_08_pass3", histos));
+setRange("X", 0, 75, (TH1D*)tempArray->At(0));
+
+tempTitles[0] = "Monash13 truth";
+tempTitles[1] = "Perugia11 truth";
+tempTitles[2] = "Data unfolded";
+tempArray->Add(makeLegend(0.5, 0.35, tempArray, tempTitles));
+
+tempText = "";
+tempText = tempText + alice + "<|>" +  "pp , #sqrt{#it{s}} = 5.02 TeV , |#it{#eta}| < 0.8" + "<|>" + "0.15 GeV/#it{c} < #it{p}_{T} < 10 GeV/#it{c}";
+tempArray->Add(makeText(0.5, 0.8, tempText, 3));
+
+tempArrayRatios->Add(getRatio("momentGeneratedMC1", "momentUnfolded1", "mc/data", "pp_5TeV_08_pass3", histos, "pp_5TeV_08_pass3"));
+tempArrayRatios->Add(getRatio("momentGeneratedMC1", "momentUnfolded1", "mc/data", "pp_5TeV_08_pass3_Pythia6", histos, "pp_5TeV_08_pass3"));
+tempArrayRatios->Add(new TF1("line", "1", -0.5, 99.5));
+
+setRange("X", 0, 60, (TH1D*)tempArrayRatios->At(0));
+
+
+tempCanvas = makeCanvas(tempCanvasName.c_str(), tempArray, tempArrayRatios, "thick square");
+
+list->Add((tempCanvas->Clone()));
+tempCanvas->Close();
+tempArray->Clear();
+tempArrayRatios->Clear();
+
+tempCanvasName = "ratioToDataMoment2";
+tempArray->Add(getClone("momentGeneratedMC2", "pp_5TeV_08_pass3", histos));
+tempArray->Add(getClone("momentGeneratedMC2", "pp_5TeV_08_pass3_Pythia6", histos));
+tempArray->Add(getClone("momentUnfolded2", "pp_5TeV_08_pass3", histos));
+setRange("X", 0, 75, (TH1D*)tempArray->At(0));
+
+tempTitles[0] = "Monash13 truth";
+tempTitles[1] = "Perugia11 truth";
+tempTitles[2] = "Data unfolded";
+tempArray->Add(makeLegend(0.5, 0.35, tempArray, tempTitles));
+
+tempText = "";
+tempText = tempText + alice + "<|>" +  "pp , #sqrt{#it{s}} = 5.02 TeV , |#it{#eta}| < 0.8" + "<|>" + "0.15 GeV/#it{c} < #it{p}_{T} < 10 GeV/#it{c}";
+tempArray->Add(makeText(0.5, 0.8, tempText, 3));
+
+tempArrayRatios->Add(getRatio("momentGeneratedMC2", "momentUnfolded2", "mc/data", "pp_5TeV_08_pass3", histos, "pp_5TeV_08_pass3"));
+tempArrayRatios->Add(getRatio("momentGeneratedMC2", "momentUnfolded2", "mc/data", "pp_5TeV_08_pass3_Pythia6", histos, "pp_5TeV_08_pass3"));
+tempArrayRatios->Add(new TF1("line", "1", -0.5, 99.5));
+
+setRange("X", 0, 60, (TH1D*)tempArrayRatios->At(0));
+
+
+tempCanvas = makeCanvas(tempCanvasName.c_str(), tempArray, tempArrayRatios, "thick square");
+
+list->Add((tempCanvas->Clone()));
+tempCanvas->Close();
+tempArray->Clear();
+tempArrayRatios->Clear();
+
+tempCanvasName = "ratioToDataMoment3";
+tempArray->Add(getClone("momentGeneratedMC3", "pp_5TeV_08_pass3", histos));
+tempArray->Add(getClone("momentGeneratedMC3", "pp_5TeV_08_pass3_Pythia6", histos));
+tempArray->Add(getClone("momentUnfolded3", "pp_5TeV_08_pass3", histos));
+setRange("X", 0, 75, (TH1D*)tempArray->At(0));
+
+tempTitles[0] = "Monash13 truth";
+tempTitles[1] = "Perugia11 truth";
+tempTitles[2] = "Data unfolded";
+tempArray->Add(makeLegend(0.5, 0.35, tempArray, tempTitles));
+
+tempText = "";
+tempText = tempText + alice + "<|>" +  "pp , #sqrt{#it{s}} = 5.02 TeV , |#it{#eta}| < 0.8" + "<|>" + "0.15 GeV/#it{c} < #it{p}_{T} < 10 GeV/#it{c}";
+tempArray->Add(makeText(0.5, 0.8, tempText, 3));
+
+tempArrayRatios->Add(getRatio("momentGeneratedMC3", "momentUnfolded3", "mc/data", "pp_5TeV_08_pass3", histos, "pp_5TeV_08_pass3"));
+tempArrayRatios->Add(getRatio("momentGeneratedMC3", "momentUnfolded3", "mc/data", "pp_5TeV_08_pass3_Pythia6", histos, "pp_5TeV_08_pass3"));
+tempArrayRatios->Add(new TF1("line", "1", -0.5, 99.5));
+
+setRange("X", 0, 60, (TH1D*)tempArrayRatios->At(0));
+
+
+tempCanvas = makeCanvas(tempCanvasName.c_str(), tempArray, tempArrayRatios, "thick square");
+
+list->Add((tempCanvas->Clone()));
+tempCanvas->Close();
+tempArray->Clear();
+tempArrayRatios->Clear();
+
+
+
+
+tempCanvasName = "multDistMeasuredMC_MonashPerugia";
+tempArray->Add(getClone("multDistMeasuredMC", "pp_5TeV_08_pass3_Pythia6", histos));
+tempArray->Add(getClone("multDistMeasuredMC", "pp_5TeV_08_pass3", histos));
+setRange("X", 0, 60, (TH1D*)tempArray->At(0));
+
+tempTitles[0] = "Perugia11";
+tempTitles[1] = "Monash13";
+tempArray->Add(makeLegend(0.5, 0.35, tempArray, tempTitles));
+
+tempArrayRatios->Add(getRatio("multDistMeasuredMC", "multDistMeasuredMC", "Peru/Mona", "pp_5TeV_08_pass3_Pythia6", histos, "pp_5TeV_08_pass3"));
+tempArrayRatios->Add(new TF1("line", "1", -0.5, 99.5));
+
+setRange("X", 0, 60, (TH1D*)tempArrayRatios->At(0));
+
+
+tempCanvas = makeCanvas(tempCanvasName.c_str(), tempArray, tempArrayRatios, "thick square logY");
+
+list->Add((tempCanvas->Clone()));
+tempCanvas->Close();
+tempArray->Clear();
+tempArrayRatios->Clear();
+
+
+tempCanvasName = "multDistGeneratedMC_MonashPerugia";
+tempArray->Add(getClone("multDistGeneratedMC", "pp_5TeV_08_pass3_Pythia6", histos));
+tempArray->Add(getClone("multDistGeneratedMC", "pp_5TeV_08_pass3", histos));
+setRange("X", 0, 80, (TH1D*)tempArray->At(0));
+
+tempTitles[0] = "Perugia11";
+tempTitles[1] = "Monash13";
+tempArray->Add(makeLegend(0.5, 0.35, tempArray, tempTitles));
+
+tempArrayRatios->Add(getRatio("multDistGeneratedMC", "multDistGeneratedMC", "Peru/Mona", "pp_5TeV_08_pass3_Pythia6", histos, "pp_5TeV_08_pass3"));
+tempArrayRatios->Add(new TF1("line", "1", -0.5, 99.5));
+setRange("X", 0, 80, (TH1D*)tempArrayRatios->At(0));
+
+
+tempCanvas = makeCanvas(tempCanvasName.c_str(), tempArray, tempArrayRatios, "thick square logY");
+
+list->Add((tempCanvas->Clone()));
+tempCanvas->Close();
+tempArray->Clear();
+tempArrayRatios->Clear();
+
+
+tempCanvasName = "ptDistMeasuredMC_MonashPerugia";
+tempArray->Add(getClone("ptDistMeasuredMC", "pp_5TeV_08_pass3_Pythia6", histos));
+tempArray->Add(getClone("ptDistMeasuredMC", "pp_5TeV_08_pass3", histos));
+
+tempTitles[0] = "Perugia11";
+tempTitles[1] = "Monash13";
+tempArray->Add(makeLegend(0.5, 0.35, tempArray, tempTitles));
+
+tempArrayRatios->Add(getRatio("ptDistMeasuredMC", "ptDistMeasuredMC", "Peru/Mona", "pp_5TeV_08_pass3_Pythia6", histos, "pp_5TeV_08_pass3"));
+tempArrayRatios->Add(new TF1("line", "1", -0.5, 99.5));
+
+
+tempCanvas = makeCanvas(tempCanvasName.c_str(), tempArray, tempArrayRatios, "thick square logY logX");
+
+list->Add((tempCanvas->Clone()));
+tempCanvas->Close();
+tempArray->Clear();
+tempArrayRatios->Clear();
+
+
+tempCanvasName = "ptDistGeneratedMC_MonashPerugia";
+tempArray->Add(getClone("ptDistGeneratedMC", "pp_5TeV_08_pass3_Pythia6", histos));
+tempArray->Add(getClone("ptDistGeneratedMC", "pp_5TeV_08_pass3", histos));
+
+tempTitles[0] = "Perugia11";
+tempTitles[1] = "Monash13";
+tempArray->Add(makeLegend(0.5, 0.35, tempArray, tempTitles));
+
+tempArrayRatios->Add(getRatio("ptDistGeneratedMC", "ptDistGeneratedMC", "Peru/Mona", "pp_5TeV_08_pass3_Pythia6", histos, "pp_5TeV_08_pass3"));
+tempArrayRatios->Add(new TF1("line", "1", -0.5, 99.5));
+
+tempCanvas = makeCanvas(tempCanvasName.c_str(), tempArray, tempArrayRatios, "thick square logY logX");
+
+list->Add((tempCanvas->Clone()));
+tempCanvas->Close();
+tempArray->Clear();
+tempArrayRatios->Clear();
+
+
+tempCanvasName = "moment1Ratio_MonashPerugia";
+tempArray->Add(getClone("momentGeneratedMC1", "pp_5TeV_08_pass3_Pythia6", histos));
+tempArray->Add(getClone("momentGeneratedMC1", "pp_5TeV_08_pass3", histos));
+setRange("X", 0, 60, (TH1D*)tempArray->At(0));
+
+tempTitles[0] = "Perugia11";
+tempTitles[1] = "Monash13";
+tempArray->Add(makeLegend(0.5, 0.35, tempArray, tempTitles));
+
+tempArrayRatios->Add(getRatio("momentGeneratedMC1", "momentGeneratedMC1", "Peru/Mona", "pp_5TeV_08_pass3_Pythia6", histos, "pp_5TeV_08_pass3"));
+tempArrayRatios->Add(new TF1("line", "1", -0.5, 99.5));
+setRange("X", 0, 60, (TH1D*)tempArrayRatios->At(0));
+
+tempCanvas = makeCanvas(tempCanvasName.c_str(), tempArray, tempArrayRatios, "thick square");
+
+list->Add((tempCanvas->Clone()));
+tempCanvas->Close();
+tempArray->Clear();
+tempArrayRatios->Clear();
+
+tempCanvasName = "moment2Ratio_MonashPerugia";
+tempArray->Add(getClone("momentGeneratedMC2", "pp_5TeV_08_pass3_Pythia6", histos));
+tempArray->Add(getClone("momentGeneratedMC2", "pp_5TeV_08_pass3", histos));
+setRange("X", 0, 60, (TH1D*)tempArray->At(0));
+
+tempTitles[0] = "Perugia11";
+tempTitles[1] = "Monash13";
+tempArray->Add(makeLegend(0.5, 0.35, tempArray, tempTitles));
+
+tempArrayRatios->Add(getRatio("momentGeneratedMC2", "momentGeneratedMC2", "Peru/Mona", "pp_5TeV_08_pass3_Pythia6", histos, "pp_5TeV_08_pass3"));
+tempArrayRatios->Add(new TF1("line", "1", -0.5, 99.5));
+setRange("X", 0, 60, (TH1D*)tempArrayRatios->At(0));
+
+tempCanvas = makeCanvas(tempCanvasName.c_str(), tempArray, tempArrayRatios, "thick square");
+
+list->Add((tempCanvas->Clone()));
+tempCanvas->Close();
+tempArray->Clear();
+tempArrayRatios->Clear();
+
+
+// _EPOS
+
+tempCanvasName = "multDistMeasuredMC_MonashEPOS";
+tempArray->Add(getClone("multDistMeasuredMC", "pp_13TeV_08_EPOS", histos));
+tempArray->Add(getClone("multDistMeasuredMC", "pp_13TeV_08", histos));
+setRange("X", 0, 60, (TH1D*)tempArray->At(0));
+
+tempTitles[0] = "EPOS";
+tempTitles[1] = "Monash13";
+tempArray->Add(makeLegend(0.5, 0.35, tempArray, tempTitles));
+
+tempArrayRatios->Add(getRatio("multDistMeasuredMC", "multDistMeasuredMC", "EPOS/Mona", "pp_13TeV_08_EPOS", histos, "pp_13TeV_08"));
+tempArrayRatios->Add(new TF1("line", "1", -0.5, 99.5));
+
+setRange("X", 0, 60, (TH1D*)tempArrayRatios->At(0));
+
+
+tempCanvas = makeCanvas(tempCanvasName.c_str(), tempArray, tempArrayRatios, "thick square logY");
+
+list->Add((tempCanvas->Clone()));
+tempCanvas->Close();
+tempArray->Clear();
+tempArrayRatios->Clear();
+
+
+tempCanvasName = "multDistGeneratedMC_MonashEPOS";
+tempArray->Add(getClone("multDistGeneratedMC", "pp_13TeV_08_EPOS", histos));
+tempArray->Add(getClone("multDistGeneratedMC", "pp_13TeV_08", histos));
+setRange("X", 0, 80, (TH1D*)tempArray->At(0));
+
+tempTitles[0] = "EPOS";
+tempTitles[1] = "Monash13";
+tempArray->Add(makeLegend(0.5, 0.35, tempArray, tempTitles));
+
+tempArrayRatios->Add(getRatio("multDistGeneratedMC", "multDistGeneratedMC", "EPOS/Mona", "pp_13TeV_08_EPOS", histos, "pp_13TeV_08"));
+tempArrayRatios->Add(new TF1("line", "1", -0.5, 99.5));
+setRange("X", 0, 80, (TH1D*)tempArrayRatios->At(0));
+
+
+tempCanvas = makeCanvas(tempCanvasName.c_str(), tempArray, tempArrayRatios, "thick square logY");
+
+list->Add((tempCanvas->Clone()));
+tempCanvas->Close();
+tempArray->Clear();
+tempArrayRatios->Clear();
+
+
+tempCanvasName = "ptDistMeasuredMC_MonashEPOS";
+tempArray->Add(getClone("ptDistMeasuredMC", "pp_13TeV_08_EPOS", histos));
+tempArray->Add(getClone("ptDistMeasuredMC", "pp_13TeV_08", histos));
+
+tempTitles[0] = "EPOS";
+tempTitles[1] = "Monash13";
+tempArray->Add(makeLegend(0.5, 0.35, tempArray, tempTitles));
+
+tempArrayRatios->Add(getRatio("ptDistMeasuredMC", "ptDistMeasuredMC", "EPOS/Mona", "pp_13TeV_08_EPOS", histos, "pp_13TeV_08"));
+tempArrayRatios->Add(new TF1("line", "1", -0.5, 99.5));
+
+
+tempCanvas = makeCanvas(tempCanvasName.c_str(), tempArray, tempArrayRatios, "thick square logY logX");
+
+list->Add((tempCanvas->Clone()));
+tempCanvas->Close();
+tempArray->Clear();
+tempArrayRatios->Clear();
+
+
+tempCanvasName = "ptDistGeneratedMC_MonashEPOS";
+tempArray->Add(getClone("ptDistGeneratedMC", "pp_13TeV_08_EPOS", histos));
+tempArray->Add(getClone("ptDistGeneratedMC", "pp_13TeV_08", histos));
+
+tempTitles[0] = "EPOS";
+tempTitles[1] = "Monash13";
+tempArray->Add(makeLegend(0.5, 0.35, tempArray, tempTitles));
+
+tempArrayRatios->Add(getRatio("ptDistGeneratedMC", "ptDistGeneratedMC", "EPOS/Mona", "pp_13TeV_08_EPOS", histos, "pp_13TeV_08"));
+tempArrayRatios->Add(new TF1("line", "1", -0.5, 99.5));
+
+tempCanvas = makeCanvas(tempCanvasName.c_str(), tempArray, tempArrayRatios, "thick square logY logX");
+
+list->Add((tempCanvas->Clone()));
+tempCanvas->Close();
+tempArray->Clear();
+tempArrayRatios->Clear();
+
+
+tempCanvasName = "moment1Ratio_MonashEPOS";
+tempArray->Add(getClone("momentGeneratedMC1", "pp_13TeV_08_EPOS", histos));
+tempArray->Add(getClone("momentGeneratedMC1", "pp_13TeV_08", histos));
+setRange("X", 0, 80, (TH1D*)tempArray->At(0));
+
+tempTitles[0] = "EPOS";
+tempTitles[1] = "Monash13";
+tempArray->Add(makeLegend(0.5, 0.35, tempArray, tempTitles));
+
+tempArrayRatios->Add(getRatio("momentGeneratedMC1", "momentGeneratedMC1", "EPOS/Mona", "pp_13TeV_08_EPOS", histos, "pp_13TeV_08"));
+tempArrayRatios->Add(new TF1("line", "1", -0.5, 99.5));
+setRange("X", 0, 80, (TH1D*)tempArrayRatios->At(0));
+
+tempCanvas = makeCanvas(tempCanvasName.c_str(), tempArray, tempArrayRatios, "thick square");
+
+list->Add((tempCanvas->Clone()));
+tempCanvas->Close();
+tempArray->Clear();
+tempArrayRatios->Clear();
+
+tempCanvasName = "moment2Ratio_MonashEPOS";
+tempArray->Add(getClone("momentGeneratedMC2", "pp_13TeV_08_EPOS", histos));
+tempArray->Add(getClone("momentGeneratedMC2", "pp_13TeV_08", histos));
+setRange("X", 0, 80, (TH1D*)tempArray->At(0));
+
+tempTitles[0] = "EPOS";
+tempTitles[1] = "Monash13";
+tempArray->Add(makeLegend(0.5, 0.35, tempArray, tempTitles));
+
+tempArrayRatios->Add(getRatio("momentGeneratedMC2", "momentGeneratedMC2", "EPOS/Mona", "pp_13TeV_08_EPOS", histos, "pp_13TeV_08"));
+tempArrayRatios->Add(new TF1("line", "1", -0.5, 99.5));
+setRange("X", 0, 80, (TH1D*)tempArrayRatios->At(0));
+
+tempCanvas = makeCanvas(tempCanvasName.c_str(), tempArray, tempArrayRatios, "thick square");
+
+list->Add((tempCanvas->Clone()));
+tempCanvas->Close();
+tempArray->Clear();
+tempArrayRatios->Clear();
+
+
+
+
+// end qm playground
   cout << "-> created " << list->GetEntries() << " plots in " << list->GetName() << endl;
   return list;
 }

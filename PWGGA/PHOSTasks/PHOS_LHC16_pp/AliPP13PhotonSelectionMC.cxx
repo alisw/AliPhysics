@@ -18,12 +18,11 @@ ClassImp(AliPP13PhotonSelectionMC);
 //________________________________________________________________
 TLorentzVector AliPP13PhotonSelectionMC::ClusterMomentum(const AliVCluster * c1, const EventFlags & eflags) const
 {
-    TLorentzVector p;
-    c1->GetMomentum(p, eflags.vtxBest);
+	TLorentzVector p;
+	c1->GetMomentum(p, eflags.vtxBest);
 
-    // NB: Apply nonlinearity Correction Here
-    // Float_t energy = c1->E();
-    // p *= fWeights->Nonlinearity(energy);
+	// NB: Apply nonlinearity Correction Here
+	Float_t energy = c1->E();
+	p *= fWeights->Nonlinearity(energy);
 	return p;
 }
-	

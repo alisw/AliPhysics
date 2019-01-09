@@ -432,7 +432,7 @@ void AliAnaCalorimeterQA::CellHistograms(AliVCaloCells *cells)
   Bool_t   highG  = kFALSE;
   Float_t  recalF = 1.;  
   Int_t    bc     = GetReader()->GetInputEvent()->GetBunchCrossNumber();
-  
+  Int_t    status = 0;
   for (Int_t iCell = 0; iCell < cells->GetNumberOfCells(); iCell++)
   {
     if ( cells->GetCellNumber(iCell) < 0 ) continue; // CPV 
@@ -456,7 +456,7 @@ void AliAnaCalorimeterQA::CellHistograms(AliVCaloCells *cells)
     {
       if(GetCalorimeter()==kEMCAL)
       {
-        if(GetCaloUtils()->GetEMCALChannelStatus(nModule,icol,irow)) continue;
+        if(GetCaloUtils()->GetEMCALChannelStatus(nModule,icol,irow,status)) continue;
       }
       else 
       {
@@ -1053,7 +1053,9 @@ void AliAnaCalorimeterQA::ClusterLoopHistograms(const TObjArray *caloClusters,
     Int_t  mcOK = kFALSE;
     Int_t  pdg  = -1;
     if(IsDataMC() && nLabel > 0 && labels) 
-      mcOK = ClusterMCHistograms(matched, labels, nLabel, pdg);
+      mcOK = ClusterMCHistograms(matched, labels, 
+                                 clus->GetClusterMCEdepFraction(),
+                                 nLabel, pdg);
 
     // Matched clusters with tracks, also do some MC comparison, needs input from ClusterMCHistograms
     if( matched &&  fFillAllTMHisto)
@@ -1106,7 +1108,9 @@ void AliAnaCalorimeterQA::ClusterLoopHistograms(const TObjArray *caloClusters,
 /// \param nLabels: number of mc labels 
 /// \param pdg: id of primary particle originating the cluster
 //__________________________________________________________________________________
-Bool_t AliAnaCalorimeterQA::ClusterMCHistograms(Bool_t matched,const Int_t * labels,
+Bool_t AliAnaCalorimeterQA::ClusterMCHistograms(Bool_t matched,
+                                                const Int_t * labels,
+                                                const UShort_t * edepFrac,
                                                 Int_t nLabels, Int_t & pdg )
 {
   if(!labels || nLabels<=0)
@@ -1146,7 +1150,8 @@ Bool_t AliAnaCalorimeterQA::ClusterMCHistograms(Bool_t matched,const Int_t * lab
   Int_t charge  = 0;
   
   // Check the origin.
-  Int_t tag = GetMCAnalysisUtils()->CheckOrigin(labels, nLabels, GetMC());
+  Int_t tag = GetMCAnalysisUtils()->CheckOrigin(labels, edepFrac,nLabels, GetMC(),
+                                                GetReader()->GetNameOfMCEventHederGeneratorToAccept(),e);
   
   if ( !GetMCAnalysisUtils()->CheckTagBit(tag, AliMCAnalysisUtils::kMCUnknown) )
   { 
@@ -1698,7 +1703,7 @@ TList * AliAnaCalorimeterQA::GetCreateOutputObjects()
   Int_t netabins    = GetHistogramRanges()->GetHistoEtaBins();          Float_t etamax    = GetHistogramRanges()->GetHistoEtaMax();          Float_t etamin    = GetHistogramRanges()->GetHistoEtaMin();	
   Int_t nmassbins   = GetHistogramRanges()->GetHistoMassBins();         Float_t massmax   = GetHistogramRanges()->GetHistoMassMax(); 	       Float_t massmin   = GetHistogramRanges()->GetHistoMassMin();
   Int_t nasymbins   = GetHistogramRanges()->GetHistoAsymmetryBins();    Float_t asymmax   = GetHistogramRanges()->GetHistoAsymmetryMax();    Float_t asymmin   = GetHistogramRanges()->GetHistoAsymmetryMin();
-  Int_t nPoverEbins = GetHistogramRanges()->GetHistoPOverEBins();       Float_t eOverPmax = GetHistogramRanges()->GetHistoPOverEMax();       Float_t eOverPmin = GetHistogramRanges()->GetHistoPOverEMin();
+  Int_t nPoverEbins = GetHistogramRanges()->GetHistoEOverPBins();       Float_t eOverPmax = GetHistogramRanges()->GetHistoEOverPMax();       Float_t eOverPmin = GetHistogramRanges()->GetHistoEOverPMin();
   Int_t ndedxbins   = GetHistogramRanges()->GetHistodEdxBins();         Float_t dedxmax   = GetHistogramRanges()->GetHistodEdxMax();         Float_t dedxmin   = GetHistogramRanges()->GetHistodEdxMin();
   Int_t ndRbins     = GetHistogramRanges()->GetHistodRBins();           Float_t dRmax     = GetHistogramRanges()->GetHistodRMax();           Float_t dRmin     = GetHistogramRanges()->GetHistodRMin();
   Int_t ntimebins   = GetHistogramRanges()->GetHistoTimeBins();         Float_t timemax   = GetHistogramRanges()->GetHistoTimeMax();         Float_t timemin   = GetHistogramRanges()->GetHistoTimeMin();       
@@ -3582,8 +3587,8 @@ void  AliAnaCalorimeterQA::MakeAnalysisFillHistograms()
   
   if( !caloClusters || !cells )
   {
-    AliFatal(Form("AliAnaCalorimeterQA::MakeAnalysisFillHistograms() - No CaloClusters or CaloCells available"));
-    return; // trick coverity
+    AliWarning(Form("AliAnaCalorimeterQA::MakeAnalysisFillHistograms() - No CaloClusters or CaloCells available"));
+    return; 
   }
   
   if(caloClusters->GetEntriesFast() == 0) return ;

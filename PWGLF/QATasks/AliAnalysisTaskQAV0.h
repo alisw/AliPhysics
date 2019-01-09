@@ -126,6 +126,16 @@ class AliAnalysisTaskQAV0 : public AliAnalysisTaskSE {
   TH2D *f2dHistInvMassWithdEdxLambda;       //!
   TH2D *f2dHistInvMassWithdEdxAntiLambda;   //!
 
+    //With dE/dx Selection + are cowboys
+    TH2D *f2dHistInvMassWithdEdxCowboysK0Short;      //!
+    TH2D *f2dHistInvMassWithdEdxCowboysLambda;       //!
+    TH2D *f2dHistInvMassWithdEdxCowboysAntiLambda;   //!
+    
+    //With dE/dx Selection + are sailors
+    TH2D *f2dHistInvMassWithdEdxSailorsK0Short;      //!
+    TH2D *f2dHistInvMassWithdEdxSailorsLambda;       //!
+    TH2D *f2dHistInvMassWithdEdxSailorsAntiLambda;   //!
+    
   //dEdx QA Histograms (extra) 
   //PIDFrameWork
   TH2D *f2dHistResponseNegativeAsPion;   //! 

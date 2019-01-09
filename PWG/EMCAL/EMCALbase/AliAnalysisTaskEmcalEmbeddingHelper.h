@@ -29,6 +29,7 @@ class AliEmcalList;
 #include <string>
 
 #include <TStopwatch.h>
+#include <TRandom3.h>
 #include <AliAnalysisTaskSE.h>
 #include "AliEventCuts.h"
 #include "AliYAMLConfiguration.h"
@@ -182,6 +183,7 @@ class AliAnalysisTaskEmcalEmbeddingHelper : public AliAnalysisTaskSE {
   AliEventCuts * GetInternalEventCuts();
   /// Set internal event centrality selection
   void SetCentralityRange(double min, double max)                 { fCentMin = min; fCentMax = max; }
+  void SetRandomRejectionFactor(Double_t configure = 1.)          { fRandomRejectionFactor = configure; }
   /* @} */
 
   /**
@@ -329,6 +331,8 @@ class AliAnalysisTaskEmcalEmbeddingHelper : public AliAnalysisTaskSE {
   bool                                          fEmbeddedEventUsed; //!<! If true, the internal event was selected, so the embedded event is used. Defaults to true so other tasks are not disrupted if internal event selection is disabled.
   double                                        fCentMin          ; ///<  Minimum centrality for internal event selection
   double                                        fCentMax          ; ///<  Maximum centrality for internal event selection
+  Double_t                                      fRandomRejectionFactor; ///< factor by which to reject events
+  TRandom3                                      fRandom           ; ///< for random rejection of events
 
   bool                                    fAutoConfigurePtHardBins; ///<  If true, attempt to auto configure pt hard bins. Only works on the LEGO train.
   std::string                               fAutoConfigureBasePath; ///<  The base path to the auto configuration (for example, "/alice/cern.ch/user/a/alitrain/")

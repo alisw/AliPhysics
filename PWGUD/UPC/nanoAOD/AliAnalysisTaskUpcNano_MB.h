@@ -21,17 +21,23 @@ class AliAnalysisTaskUpcNano_MB : public AliAnalysisTaskSE {
 
   virtual void UserCreateOutputObjects();
   virtual void UserExec(Option_t *option);
-  virtual void RunMC(AliAODEvent *aod);
+  virtual void RunMC(AliVEvent *aod);
   virtual void Terminate(Option_t *);
   
   void SetIsMC(Bool_t MC){isMC = MC;}
-  void SetCutEta(Bool_t toCut){cutEta = toCut;}
+  void SetIsESD(Bool_t ESD){isESD = ESD;}
+  void SetCutEta(Float_t cut){cutEta = cut;}
   Double_t GetMedian(Double_t *daArray);
   void FillTree(TTree *t, TLorentzVector v);
  private:
  
   AliPIDResponse *fPIDResponse;
-  Bool_t isMC, cutEta;
+  AliESDtrackCuts *fTrackCutsBit0;
+  AliESDtrackCuts *fTrackCutsBit1;
+  AliESDtrackCuts *fTrackCutsBit5;
+  Bool_t isMC; 
+  Bool_t isESD;
+  Float_t cutEta;
 
   TList *fOutputList;		//<
   TH1D *fHistEvents;		//!
@@ -54,10 +60,11 @@ class AliAnalysisTaskUpcNano_MB : public AliAnalysisTaskSE {
   TH1D *hITSPIDKaon;		//!
   TH2D *hITSPIDKaonCorr;	//!
   TH2D *hTPCdEdxCorr;		//!
+  TH2I *hTriggerCounter;	//!
   
   Float_t fPt, fY, fM, fDiLeptonM, fDiLeptonPt, fZNAenergy, fZNCenergy, fZNAtime[4], fZNCtime[4], fPIDsigma;
-  Int_t fChannel, fSign, fRunNumber, fNFiredMaxiPads;
-  Bool_t fTriggerInputsMC[10];
+  Int_t fChannel, fSign, fRunNumber;
+  Bool_t fTriggerInputsMC[10], fTriggers[8], fInEtaGen, fInEtaRec;
   
   TFile *fSPDfile;
   TH1D *hBCmod4;
@@ -66,7 +73,7 @@ class AliAnalysisTaskUpcNano_MB : public AliAnalysisTaskSE {
   AliAnalysisTaskUpcNano_MB(const AliAnalysisTaskUpcNano_MB&); //not implemented
   AliAnalysisTaskUpcNano_MB& operator =(const AliAnalysisTaskUpcNano_MB&); //not implemented
   
-  ClassDef(AliAnalysisTaskUpcNano_MB, 14); 
+  ClassDef(AliAnalysisTaskUpcNano_MB, 20); 
 };
 
 #endif

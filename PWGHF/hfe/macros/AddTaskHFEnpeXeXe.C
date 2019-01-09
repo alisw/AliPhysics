@@ -651,7 +651,7 @@ AliAnalysisTask *RegisterTaskNPEXeXe(
         ConfigWeightFactors(task,kFALSE,wei,"nonHFEcorrect_XeXe.root");
     }
     if(useMC && weightlevelback>=0 && systweights ==8) {
-        ConfigWeightFactors(task,kFALSE,wei,"nonHFEcorrect_XeXe_LastSystNewCent.root");
+        ConfigWeightFactors(task,kFALSE,wei,"nonHFEcorrect_XeXe_ChargedPion.root");
     }
     
     // ----- trigger selecton ---------

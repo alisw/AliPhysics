@@ -71,8 +71,11 @@ AliUEHistograms::AliUEHistograms(const char* name, const char* histograms, const
   fEtaOrdering(kFALSE),
   fCutConversionsV(-1),
   fCutResonancesV(-1),
+  fCutOnPhi(kFALSE),
+  fCutOnRho(kFALSE),
   fRejectResonanceDaughters(-1),
   fOnlyOneEtaSide(0),
+  fOnlyOneAssocEtaSide(0),
   fWeightPerEvent(kFALSE),
   fPtOrder(kTRUE),
   fTwoTrackCutMinRadius(0.8),
@@ -208,7 +211,7 @@ AliUEHistograms::AliUEHistograms(const char* name, const char* histograms, const
   
   fITSClusterMap = new TH3F("fITSClusterMap", "; its cluster map; centrality; pT", 256, -0.5, 255.5, 20, 0, 100.001, 100, 0, 20);
   
-  fControlConvResoncances = new TH2F("fControlConvResoncances", ";id;delta mass", 3, -0.5, 2.5, 100, -0.1, 0.1);
+  fControlConvResoncances = new TH2F("fControlConvResoncances", ";id;delta mass", 5, -0.5, 4.5, 100, -0.1, 0.1);
   
   TH1::AddDirectory(oldStatus);
 }
@@ -246,6 +249,7 @@ AliUEHistograms::AliUEHistograms(const AliUEHistograms &c) :
   fCutResonancesV(-1),
   fRejectResonanceDaughters(-1),
   fOnlyOneEtaSide(0),
+  fOnlyOneAssocEtaSide(0),
   fWeightPerEvent(kFALSE),
   fPtOrder(kTRUE),
   fTwoTrackCutMinRadius(0.8),
@@ -766,6 +770,10 @@ void AliUEHistograms::FillCorrelations(Double_t centrality, Float_t zVtx, AliUEH
             continue;
         }
         
+        if (fOnlyOneAssocEtaSide != 0)
+          if (fOnlyOneAssocEtaSide * eta[j] < 0)
+            continue;
+
 	if (fEtaOrdering)
 	{
 	  if (triggerEta < 0 && eta[j] < triggerEta)
@@ -814,7 +822,7 @@ void AliUEHistograms::FillCorrelations(Double_t centrality, Float_t zVtx, AliUEH
 	      continue;
 	  }
 	}
-	
+
 	// Lambda
 	if (fCutResonancesV > 0 && particle->Charge() * triggerParticle->Charge() < 0)
 	{
@@ -842,6 +850,48 @@ void AliUEHistograms::FillCorrelations(Double_t centrality, Float_t zVtx, AliUEH
 	      continue;
 	  }
 	}
+
+        // Phi
+        if (fCutOnPhi)
+        {
+          if (fCutResonancesV > 0 && particle->Charge() * triggerParticle->Charge() < 0)
+          {
+            Float_t mass = GetInvMassSquaredCheap(triggerParticle->Pt(), triggerEta, triggerParticle->Phi(), particle->Pt(), eta[j], particle->Phi(), 0.4937, 0.4937);
+  
+            const Float_t kPhimass = 1.019;
+
+            if (TMath::Abs(mass - kPhimass*kPhimass) < fCutResonancesV * 5)
+            {
+              mass = GetInvMassSquared(triggerParticle->Pt(), triggerEta, triggerParticle->Phi(), particle->Pt(), eta[j], particle->Phi(), 0.4937, 0.4937);
+
+              fControlConvResoncances->Fill(3, mass - kPhimass*kPhimass);
+
+              if (mass > (kPhimass-fCutResonancesV)*(kPhimass-fCutResonancesV) && mass < (kPhimass+fCutResonancesV)*(kPhimass+fCutResonancesV))
+                continue;
+            }
+          }
+        }	
+
+        // Rho
+        if (fCutOnRho)
+        {
+          if (fCutResonancesV > 0 && particle->Charge() * triggerParticle->Charge() < 0)
+          {
+            Float_t mass = GetInvMassSquaredCheap(triggerParticle->Pt(), triggerEta, triggerParticle->Phi(), particle->Pt(), eta[j], particle->Phi(), 0.1396, 0.1396);
+  
+            const Float_t kRhomass = 0.770;
+
+            if (TMath::Abs(mass - kRhomass*kRhomass) < fCutResonancesV * 5)
+            {
+              mass = GetInvMassSquared(triggerParticle->Pt(), triggerEta, triggerParticle->Phi(), particle->Pt(), eta[j], particle->Phi(), 0.1396, 0.1396);
+
+              fControlConvResoncances->Fill(4, mass - kRhomass*kRhomass);
+
+              if (mass > (kRhomass-fCutResonancesV)*(kRhomass-fCutResonancesV) && mass < (kRhomass+fCutResonancesV)*(kRhomass+fCutResonancesV))
+                continue;
+            }
+          }
+        }
 
 	if (twoTrackEfficiencyCut)
 	{
@@ -1287,6 +1337,7 @@ void AliUEHistograms::Copy(TObject& c) const
   target.fCutConversionsV = fCutConversionsV;
   target.fCutResonancesV = fCutResonancesV;
   target.fOnlyOneEtaSide = fOnlyOneEtaSide;
+  target.fOnlyOneAssocEtaSide = fOnlyOneAssocEtaSide;
   target.fWeightPerEvent = fWeightPerEvent;
   target.fRunNumber = fRunNumber;
   target.fMergeCount = fMergeCount;

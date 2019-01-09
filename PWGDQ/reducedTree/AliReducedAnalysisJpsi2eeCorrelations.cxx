@@ -43,6 +43,7 @@ ClassImp(AliReducedAnalysisJpsi2eeCorrelations);
 AliReducedAnalysisJpsi2eeCorrelations::AliReducedAnalysisJpsi2eeCorrelations() :
   AliReducedAnalysisJpsi2ee(),
   fCorrelationsMixingHandler(new AliMixingHandler("J/psi - hadron correlations","",AliMixingHandler::kMixCorrelation)),
+  fOptionUseLikeSignPairs(fOptionRunLikeSignPairing),
   fOptionRunCorrelation(kTRUE),
   fOptionRunCorrelationMixing(kTRUE),
   fAssociatedTrackCuts(),
@@ -57,6 +58,7 @@ AliReducedAnalysisJpsi2eeCorrelations::AliReducedAnalysisJpsi2eeCorrelations() :
 AliReducedAnalysisJpsi2eeCorrelations::AliReducedAnalysisJpsi2eeCorrelations(const Char_t* name, const Char_t* title) :
   AliReducedAnalysisJpsi2ee(name, title),
   fCorrelationsMixingHandler(new AliMixingHandler("J/psi - hadron correlations", "", AliMixingHandler::kMixCorrelation)),
+  fOptionUseLikeSignPairs(fOptionRunLikeSignPairing),
   fOptionRunCorrelation(kTRUE),
   fOptionRunCorrelationMixing(kTRUE),
   fAssociatedTrackCuts(),
@@ -105,9 +107,21 @@ void AliReducedAnalysisJpsi2eeCorrelations::Process() {
    RunAssociatedTrackSelection();
    FillAssociatedTrackHistograms();
    
-   // Feed the selected triggers and associated to the event mixing handler 
-   if(!fOptionRunOverMC && fOptionRunCorrelationMixing && fOptionRunCorrelation)
+  // Feed the selected triggers and associated to the event mixing handler
+  if(!fOptionRunOverMC && fOptionRunCorrelationMixing && fOptionRunCorrelation) {
+    if (!fOptionUseLikeSignPairs) {
+      TList jpsiCandidatesTemp;
+      TIter nextJpsi(&fJpsiCandidates);
+      AliReducedPairInfo* jpsi = 0x0;
+      for (Int_t i=0; i<fJpsiCandidates.GetEntries(); ++i) {
+        jpsi = (AliReducedPairInfo*)nextJpsi();
+        if ((Int_t)jpsi->PairType() == 1) jpsiCandidatesTemp.Add(jpsi->Clone());
+      }
+      fCorrelationsMixingHandler->FillEvent(&jpsiCandidatesTemp, &fAssociatedTracks, fValues);
+    } else {
       fCorrelationsMixingHandler->FillEvent(&fJpsiCandidates, &fAssociatedTracks, fValues);
+    }
+  }
 
    // run same event correlation
    if(fOptionRunCorrelation) RunSameEventCorrelation();
@@ -129,13 +143,14 @@ void AliReducedAnalysisJpsi2eeCorrelations::AddAssociatedTrackCut(AliReducedInfo
   // add a new associated track cut
   //
   fAssociatedTrackCuts.Add(cut);
+
   // NOTE: number of parallel must be equal to number of hist classes in AliMixingHandler::Init()
-  if (fOptionRunLikeSignPairing)  fCorrelationsMixingHandler->SetNParallelCuts(fCorrelationsMixingHandler->GetNParallelCuts()+3);
-  else                            fCorrelationsMixingHandler->SetNParallelCuts(fCorrelationsMixingHandler->GetNParallelCuts()+1);
+  if (fOptionUseLikeSignPairs)  fCorrelationsMixingHandler->SetNParallelCuts(fCorrelationsMixingHandler->GetNParallelCuts()+3);
+  else                          fCorrelationsMixingHandler->SetNParallelCuts(fCorrelationsMixingHandler->GetNParallelCuts()+1);
   TString histClassNames = fCorrelationsMixingHandler->GetHistClassNames();
-  if (fOptionRunLikeSignPairing) histClassNames += Form("CorrMEPP_%s_%s;", fTrackCuts.At(fAssociatedTrackCuts.GetEntries()-1)->GetName(), cut->GetName());
+  if (fOptionUseLikeSignPairs) histClassNames += Form("CorrMEPP_%s_%s;", fTrackCuts.At(fAssociatedTrackCuts.GetEntries()-1)->GetName(), cut->GetName());
   histClassNames += Form("CorrMEPM_%s_%s;", fTrackCuts.At(fAssociatedTrackCuts.GetEntries()-1)->GetName(), cut->GetName());
-  if (fOptionRunLikeSignPairing) histClassNames += Form("CorrMEMM_%s_%s;", fTrackCuts.At(fAssociatedTrackCuts.GetEntries()-1)->GetName(), cut->GetName());
+  if (fOptionUseLikeSignPairs) histClassNames += Form("CorrMEMM_%s_%s;", fTrackCuts.At(fAssociatedTrackCuts.GetEntries()-1)->GetName(), cut->GetName());
   fCorrelationsMixingHandler->SetHistClassNames(histClassNames.Data());
 }
   
@@ -205,9 +220,9 @@ void AliReducedAnalysisJpsi2eeCorrelations::RunSameEventCorrelation(TString pair
   //
   // run the same event pairing for candidates (e+e-) and the correlation to associated tracks
   //
-   if(fJpsiCandidates.GetEntries()==0) return;
-   if(fAssociatedTracks.GetEntries()==0) return;
-   TString pairTypeNames[3] = {"PP","PM","MM"};
+  if(fJpsiCandidates.GetEntries()==0) return;
+  if(fAssociatedTracks.GetEntries()==0) return;
+  TString pairTypeNames[3] = {"PP","PM","MM"};
 
   TIter nextAssocTrack(&fAssociatedTracks);
   TIter nextJpsi(&fJpsiCandidates);
@@ -229,8 +244,10 @@ void AliReducedAnalysisJpsi2eeCorrelations::RunSameEventCorrelation(TString pair
         // TODO: we need to make sure there are equal numbers of bits for both trigger and assoc
         //           Right now, the extra bits from the particle with more bits (cuts defined) are ignored
         if(!(jpsi->GetFlags() & assoc->GetFlags())) continue;
+        if (!fOptionUseLikeSignPairs && ((Int_t)jpsi->PairType() == 0 || (Int_t)jpsi->PairType() == 2)) continue;
+
         AliReducedVarManager::FillCorrelationInfo(jpsi, assoc, fValues);
-        
+
         // fill correlation histograms
         // TODO: isMCTruth must be handled; can be either a Bool or a bit map
         //             Not sure if we need MC truth for correlation -> if so remove from code

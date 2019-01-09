@@ -30,6 +30,7 @@
 #include "AliPythia.h"
 #include "AliStack.h"
 
+#include "AliCentrality.h"
 #include "AliVTrack.h"
 #include "AliVHeader.h"
 #include "AliEmcalJet.h"
@@ -93,6 +94,7 @@ AliAnalysisTaskChargedJetsHadronCF::AliAnalysisTaskChargedJetsHadronCF() :
   fNumRandomConesPerEvent(10),
   fUseDataConstituents(kTRUE),
   fUseMCConstituents(kTRUE),
+  fRemoveEventOutliers(kFALSE),
   fJetOutputMode(0),
   fLeadingJet(0),
   fSubleadingJet(0),
@@ -143,6 +145,7 @@ AliAnalysisTaskChargedJetsHadronCF::AliAnalysisTaskChargedJetsHadronCF(const cha
   fNumRandomConesPerEvent(10),
   fUseDataConstituents(kTRUE),
   fUseMCConstituents(kTRUE),
+  fRemoveEventOutliers(kFALSE),
   fJetOutputMode(0),
   fLeadingJet(0),
   fSubleadingJet(0),
@@ -740,6 +743,15 @@ Bool_t AliAnalysisTaskChargedJetsHadronCF::Run()
   AliEmcalJet* vetoJet = 0;
   if(!fJetVetoJetByJet)
     vetoJet = GetLeadingVetoJet();
+
+  // Remove event outliers in LHC11h with code suggested by Redmer
+  if(fRemoveEventOutliers)
+  {
+    if(TMath::Abs(fInputEvent->GetPrimaryVertexSPD()->GetZ() - fInputEvent->GetPrimaryVertex()->GetZ()) > .5)
+      return kFALSE;
+    else if (TMath::Abs(fCent-fInputEvent->GetCentrality()->GetCentralityPercentile("TRK")) > 5.)
+      return kFALSE;
+  }
 
   // ####### Jet loop
   fAcceptedJets = 0;

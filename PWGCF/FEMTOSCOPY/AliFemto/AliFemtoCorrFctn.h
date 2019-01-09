@@ -72,9 +72,9 @@ protected:
 #endif
 };
 
-inline void AliFemtoCorrFctn::SetAnalysis(AliFemtoAnalysis* analysis)
+inline void AliFemtoCorrFctn::SetAnalysis(AliFemtoAnalysis* aAnalysis)
 {
-  fyAnalysis = analysis;
+  fyAnalysis = aAnalysis;
 }
 
 inline void AliFemtoCorrFctn::SetPairSelectionCut(AliFemtoPairCut* cut)

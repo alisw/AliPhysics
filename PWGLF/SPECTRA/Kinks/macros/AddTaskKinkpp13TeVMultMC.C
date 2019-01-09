@@ -27,10 +27,12 @@ AliAnalysisKinkTaskMult13ppMC* AddTaskKinkpp13TeVMultMC(TString lCustomName="")
   //Attach input
   AliAnalysisDataContainer *cinput = mgr->GetCommonInputContainer(); 
   mgr->ConnectInput(task,0,cinput);
+
+  TString outputFileName = Form("%s:PWGLFKinksMC13TeVMult", AliAnalysisManager::GetCommonFileName());
   
   TString lContainerName="PWGLFKinks13TeVMultMC";
   lContainerName.Append(lCustomName);
-  AliAnalysisDataContainer *coutput1= mgr->CreateContainer(lContainerName.Data(),TList::Class(), AliAnalysisManager::kOutputContainer,"AnalysisResults13TeVppMultMC.root");
+  AliAnalysisDataContainer *coutput1= mgr->CreateContainer(lContainerName.Data(),TList::Class(), AliAnalysisManager::kOutputContainer,outputFileName);
   mgr->ConnectOutput(task, 1, coutput1);
   
   

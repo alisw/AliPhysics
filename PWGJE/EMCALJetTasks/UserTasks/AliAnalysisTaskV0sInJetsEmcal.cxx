@@ -38,6 +38,7 @@
 #include "AliAODTrack.h"
 #include "AliAODMCParticle.h"
 #include "AliMCEvent.h"
+#include "AliMultSelection.h"
 
 #include "AliEmcalJet.h"
 #include "AliJetContainer.h"
@@ -104,6 +105,7 @@ AliAnalysisTaskV0sInJetsEmcal::AliAnalysisTaskV0sInJetsEmcal():
   fdCutCentHigh(0),
   fdCutDeltaZMax(0),
   fdCentrality(0),
+  fbUseMultiplicity(0),
 
   fbCorrelations(0),
   fiSizePool(0),
@@ -155,6 +157,7 @@ AliAnalysisTaskV0sInJetsEmcal::AliAnalysisTaskV0sInJetsEmcal():
   fh1EventCent2Jets(0),
   fh1EventCent2NoJets(0),
   fh2EventCentTracks(0),
+  fh2EventCentMult(0),
   fh1V0CandPerEvent(0),
   fh1NRndConeCent(0),
   fh1NMedConeCent(0),
@@ -390,6 +393,7 @@ AliAnalysisTaskV0sInJetsEmcal::AliAnalysisTaskV0sInJetsEmcal(const char* name):
   fdCutCentHigh(0),
   fdCutDeltaZMax(0),
   fdCentrality(0),
+  fbUseMultiplicity(0),
 
   fbCorrelations(0),
   fiSizePool(0),
@@ -441,6 +445,7 @@ AliAnalysisTaskV0sInJetsEmcal::AliAnalysisTaskV0sInJetsEmcal(const char* name):
   fh1EventCent2Jets(0),
   fh1EventCent2NoJets(0),
   fh2EventCentTracks(0),
+  fh2EventCentMult(0),
   fh1V0CandPerEvent(0),
   fh1NRndConeCent(0),
   fh1NMedConeCent(0),
@@ -751,6 +756,7 @@ void AliAnalysisTaskV0sInJetsEmcal::UserCreateOutputObjects()
   fh1EventCent2Jets = new TH1D("fh1EventCent2Jets", "Number of sel.-jet events vs centrality;centrality;counts", 100, 0, 100);
   fh1EventCent2NoJets = new TH1D("fh1EventCent2NoJets", "Number of no-jet events vs centrality;centrality;counts", 100, 0, 100);
   fh2EventCentTracks = new TH2D("fh2EventCentTracks", "Number of tracks vs centrality;centrality;tracks;counts", 100, 0, 100, 150, 0, 15e3);
+  fh2EventCentMult = new TH2D("fh2EventCentMult", "Ref. multiplicity vs centrality;centrality;multiplicity;counts", 100, 0, 100, 150, 0, 15e3);
   fh1EventCent = new TH1D("fh1EventCent", "Number of events in centrality bins;centrality;counts", fgkiNBinsCent, 0, fgkiNBinsCent);
   for(Int_t i = 0; i < fgkiNBinsCent; i++)
     fh1EventCent->GetXaxis()->SetBinLabel(i + 1, GetCentBinLabel(i).Data());
@@ -772,6 +778,7 @@ void AliAnalysisTaskV0sInJetsEmcal::UserCreateOutputObjects()
   fOutputListStd->Add(fh1NMedConeCent);
   fOutputListStd->Add(fh1AreaExcluded);
   fOutputListStd->Add(fh2EventCentTracks);
+  fOutputListStd->Add(fh2EventCentMult);
 
   fh1V0CandPerEvent = new TH1D("fh1V0CandPerEvent", "Number of all V0 candidates per event;candidates;events", 300, 0, 30000);
   fOutputListStd->Add(fh1V0CandPerEvent);
@@ -1152,7 +1159,7 @@ void AliAnalysisTaskV0sInJetsEmcal::UserCreateOutputObjects()
     fh2QAV0EtaRows[i] = new TH2D(Form("fh2QAV0EtaRows_%d", i), "QA: Daughter Eta vs TPC rows;#eta;TPC rows", 200, -2, 2, 160, 0, 160);
     fh2QAV0PtRows[i] = new TH2D(Form("fh2QAV0PtRows_%d", i), "QA: Daughter Pt vs TPC rows;pt;TPC rows", 100, 0, 10, 160, 0, 160);
     fh2QAV0PhiRows[i] = new TH2D(Form("fh2QAV0PhiRows_%d", i), "QA: Daughter Phi vs TPC rows;#phi;TPC rows", 90, 0, TMath::TwoPi(), 160, 0, 160);
-    fh2QAV0NClRows[i] = new TH2D(Form("fh2QAV0NClRows_%d", i), "QA: Daughter NCl vs TPC rows;findable clusters;TPC rows", 100, 0, 160, 160, 0, 160);
+    fh2QAV0NClRows[i] = new TH2D(Form("fh2QAV0NClRows_%d", i), "QA: Daughter NCl vs TPC rows;findable clusters;TPC rows", 160, 0, 160, 160, 0, 160);
     fh2QAV0EtaNCl[i] = new TH2D(Form("fh2QAV0EtaNCl_%d", i), "QA: Daughter Eta vs NCl;#eta;findable clusters", 200, -2, 2, 160, 0, 160);
 
     fh2QAV0EtaPtK0sPeak[i] = new TH2D(Form("fh2QAV0EtaPtK0sPeak_%d", i), "QA: K0s: Daughter Eta vs V0 pt, peak;track eta;V0 pt", 200, -2, 2, iNBinsPtV0, dPtV0Min, dPtV0Max);
@@ -1389,7 +1396,10 @@ void AliAnalysisTaskV0sInJetsEmcal::ExecOnce()
   if(fbMCAnalysis)
     printf("MC generator: %s\n", fsGeneratorName.Length() ? fsGeneratorName.Data() : "any");
   if(fbIsPbPb)
+  {
     printf("centrality range: %g-%g %%\n", fdCutCentLow, fdCutCentHigh);
+    printf("centrality estimator: %s\n", fbUseMultiplicity ? "AliMultSelection" : "AliCentrality");
+  }
   if(fdCutVertexZ > 0.) printf("max |z| of the prim vtx [cm]: %g\n", fdCutVertexZ);
   if(fdCutVertexR2 > 0.) printf("max r^2 of the prim vtx [cm^2]: %g\n", fdCutVertexR2);
   if(fdCutDeltaZMax > 0.) printf("max |Delta z| between nominal prim vtx and SPD vtx [cm]: %g\n", fdCutDeltaZMax);
@@ -1470,8 +1480,14 @@ Bool_t AliAnalysisTaskV0sInJetsEmcal::FillHistograms()
   fAODIn = dynamic_cast<AliAODEvent*>(InputEvent()); // input AOD
   if(!fAODIn)
   {
-    AliError("No input AOD found!");
-    return kFALSE;
+    AliWarning("Input AOD not available from InputEvent() trying with AODEvent().");
+    // Assume that the AOD is in the general output.
+    fAODIn = AODEvent();
+    if(!fAODIn)
+    {
+      AliError("No input AOD found!");
+      return kFALSE;
+    }
   }
   if(fDebug > 1) printf("%s %s::%s: %s\n", GetName(), ClassName(), __func__, "Loading AOD OK");
 
@@ -1542,6 +1558,12 @@ Bool_t AliAnalysisTaskV0sInJetsEmcal::FillHistograms()
 
   UInt_t iNTracks = fAODIn->GetNumberOfTracks(); // get number of tracks in event
   if(fDebug > 2) printf("%s %s::%s: %s\n", GetName(), ClassName(), __func__, Form("There are %d tracks in this event", iNTracks));
+  AliAODHeader* header = dynamic_cast<AliAODHeader*>(fAODIn->GetHeader());
+  UInt_t iNTracksRef = 0;
+  if(!header)
+    AliError("Cannot get AOD header");
+  else
+    iNTracksRef = header->GetRefMultiplicityComb08(); // get reference multiplicity
 
 //  Double_t dMagField = fAODIn->GetMagneticField();
 //  if(fDebug > 2) printf("%s %s::%s: %s\n", GetName(), ClassName(), __func__, Form("Magnetic field: %g", dMagField));
@@ -1556,6 +1578,7 @@ Bool_t AliAnalysisTaskV0sInJetsEmcal::FillHistograms()
   fh1EventCent->Fill(iCentIndex);
   fh1EventCent2->Fill(fdCentrality);
   fh2EventCentTracks->Fill(fdCentrality, iNTracks);
+  fh2EventCentMult->Fill(fdCentrality, iNTracksRef);
 
   AliEventPool* pool = 0;
   Bool_t bPoolReady = kFALSE; // status of pool
@@ -3465,7 +3488,19 @@ Bool_t AliAnalysisTaskV0sInJetsEmcal::IsSelectedForJets(AliAODEvent* fAOD, Doubl
   fh1EventCounterCut->Fill(7); // radius within range
   if(fbIsPbPb)
   {
-    fdCentrality = ((AliVAODHeader*)fAOD->GetHeader())->GetCentralityP()->GetCentralityPercentile("V0M");
+    if(fbUseMultiplicity) // from https://twiki.cern.ch/twiki/bin/viewauth/ALICE/CentralityCodeSnippets
+    {
+      AliMultSelection* MultSelection = 0x0;
+      MultSelection = (AliMultSelection*)fAOD->FindListObject("MultSelection");
+      if(!MultSelection)
+      {
+        AliWarning("AliMultSelection object not found!");
+        return kFALSE;
+      }
+      fdCentrality = MultSelection->GetMultiplicityPercentile("V0M");
+    }
+    else
+      fdCentrality = ((AliVAODHeader*)fAOD->GetHeader())->GetCentralityP()->GetCentralityPercentile("V0M");
     if(fdCentrality < 0)
     {
       if(fDebug > 0) printf("%s %s::%s: %s\n", GetName(), ClassName(), __func__, "Negative centrality");

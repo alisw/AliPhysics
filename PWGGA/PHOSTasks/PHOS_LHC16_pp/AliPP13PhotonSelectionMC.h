@@ -32,7 +32,7 @@ public:
 	}
 	
 protected:
-	TLorentzVector ClusterMomentum(const AliVCluster * c1, const EventFlags & eflags) const;
+	virtual TLorentzVector ClusterMomentum(const AliVCluster * c1, const EventFlags & eflags) const;
 	AliPP13PhotonSelectionMC(const AliPP13PhotonSelectionMC &);
 	AliPP13PhotonSelectionMC & operator = (const AliPP13PhotonSelectionMC &);
 

@@ -139,7 +139,7 @@ class CEPRawADBuffer : public TObject
     UInt_t              GetNCells()                 const { return fNCells; }
 
 
-    ClassDef(CEPRawADBuffer, 1);     // CEP raw track buffer
+    ClassDef(CEPRawADBuffer, 1)     // CEP raw track buffer
 };
 
 #endif

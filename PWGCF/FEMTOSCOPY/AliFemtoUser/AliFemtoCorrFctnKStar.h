@@ -75,6 +75,11 @@ public:
                  int aNbinsKStarSide, double aKStarSideMin, double aKStarSideMax,
                  int aNbinsKStarLong, double aKStarLongMin, double aKStarLongMax);
 
+  void RotateThreeVecBy180InTransversePlane(AliFemtoThreeVector &a3Vec);
+  bool PassPairCut_RotatePar2(const AliFemtoPair* aPair);
+  double CalcKStar_RotatePar2(const AliFemtoPair* aPair);    //Rotate the second particle in the pair by 180 degrees
+                                                             // about the z-axis
+
   float CalcMt(const AliFemtoPair* aPair);
   float CalcMtv2(const AliFemtoPair* aPair);  //TODO testing effect of m_reduced vs 0.5(m1+m2) in calculation
 
@@ -101,6 +106,8 @@ protected:
   TH1D* fDenominator;        // denominator - mixed pairs
   TH1D* fRatio;              // unnormalized ratio num/den
   TH1D* fkTMonitor;          // Monitor the kT of pairs in the function
+
+  TH1D* fNumerator_RotatePar2;
 
   Bool_t fDetaDphiscal;
   Bool_t fPairKinematics;

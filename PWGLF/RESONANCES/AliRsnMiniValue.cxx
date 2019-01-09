@@ -98,6 +98,7 @@ const char *AliRsnMiniValue::TypeName(EType type)
 
    switch (type) {
       case kVz:           return "EventVz";
+      case kSpherocity:   return "EventSpherocity";
       case kMult:         return "EventMult";
       case kRefMult:      return "EventReferenceMult";
       case kTracklets:    return "EventTracklets";
@@ -160,6 +161,8 @@ Float_t AliRsnMiniValue::Eval(AliRsnMiniPair *pair, AliRsnMiniEvent *event)
          // ---- event values -------------------------------------------------------------------------
       case kVz:
          return event->Vz();
+      case kSpherocity:
+         return event->Spherocity();
       case kMult:
          return event->Mult();
       case kRefMult:

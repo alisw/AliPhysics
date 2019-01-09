@@ -17,7 +17,7 @@ class AliJIaaCorrelations;
 class AliJEventPool;
 class AliJEfficiency;
 class AliJTrackCounter;
-class AliJAcceptanceCorrection;
+//class AliJAcceptanceCorrection;
 
 class TClonesArray;
 class TF1;
@@ -87,7 +87,7 @@ private:
 	Int_t fevt; // Event counter
 	AliJIaaHistograms *fhistos; //! Histogram container
 	AliJIaaCorrelations *fcorrelations; //! Correlation analysis details
-	AliJAcceptanceCorrection *fAcceptanceCorrection; //! Class for acceptance correction
+	//AliJAcceptanceCorrection *fAcceptanceCorrection; //! Class for acceptance correction
 	AliJEventPool *fassocPool; //! Pool of associated particles for event mixing
 	TClonesArray *ftriggList; //! List of trigger particles
 	TClonesArray *fassocList; //! List of associated particles

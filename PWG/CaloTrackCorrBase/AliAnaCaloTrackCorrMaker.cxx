@@ -27,10 +27,14 @@
 #include "AliInputEventHandler.h"
 #include "AliESDEvent.h"
 #include "AliAODEvent.h"
-#include "AliAnaCaloTrackCorrBaseClass.h"
-#include "AliAnaCaloTrackCorrMaker.h"
 #include "AliLog.h"
 #include "AliGenPythiaEventHeader.h"
+#include "AliMCEvent.h"
+
+//---- CaloTrack corr system ----
+#include "AliAnaCaloTrackCorrBaseClass.h"
+#include "AliAnaCaloTrackCorrMaker.h"
+#include "AliMCAnalysisUtils.h"
 
 /// \cond CLASSIMP
 ClassImp(AliAnaCaloTrackCorrMaker) ;
@@ -251,25 +255,22 @@ void AliAnaCaloTrackCorrMaker::FillControlHistograms()
     fhEventPlaneAngleWeighted->Fill(fReader->GetEventPlaneAngle  (),eventWeight);
   }
   
-  // Check the pT hard in MC
-  if ( fCheckPtHard && fReader->GetGenEventHeader()  )
+  // Check the pT hard in MC, assume it is pythia
+  // Make sure AliCaloTrackReader::FillInputEvent() run before
+  if ( fCheckPtHard &&  fReader->GetGenPythiaEventHeader() ) 
   {
-    if(!strcmp(fReader->GetGenEventHeader()->ClassName(), "AliGenPythiaEventHeader"))
-    {
-      AliGenPythiaEventHeader* pygeh= (AliGenPythiaEventHeader*) fReader->GetGenEventHeader();
-      
-      Float_t pTHard = pygeh->GetPtHard();
-      
-      //printf("pT hard %f, event weight %e\n",pTHard,fReader->GetEventWeight());
-      
-      fhPtHard->Fill(pTHard);
-      
-      if ( fReader->GetWeightUtils()->IsMCCrossSectionCalculationOn() && 
-          !fReader->GetWeightUtils()->IsMCCrossSectionJustHistoFillOn()  )     
-        fhPtHardWeighted->Fill(pTHard,fReader->GetEventWeight());
-    }
+    Float_t pTHard = (fReader->GetGenPythiaEventHeader())->GetPtHard();
+    
+    fhPtHard->Fill(pTHard);
+    
+    if ( fReader->GetWeightUtils()->IsMCCrossSectionCalculationOn() && 
+        !fReader->GetWeightUtils()->IsMCCrossSectionJustHistoFillOn()  )     
+      fhPtHardWeighted->Fill(pTHard,fReader->GetEventWeight());
+    
+    AliDebug(1,Form("Pythia event selected with pT hard %2.2f GeV/c and weight %2.2e",
+                    pTHard,fReader->GetEventWeight()));
   }
-  
+    
   if(fFillDataControlHisto)
   {
     if( fReader->IsPileUpFromSPD())
@@ -956,37 +957,38 @@ TList *AliAnaCaloTrackCorrMaker::GetOutputContainer()
 void AliAnaCaloTrackCorrMaker::Init()
 {  
   // Activate debug level in maker
-  if( fAnaDebug >= 0 )
+  if ( fAnaDebug >= 0 )
     (AliAnalysisManager::GetAnalysisManager())->AddClassDebug(this->ClassName(),fAnaDebug);
-  
-  //Initialize reader
+
+  // Initialize reader
   GetReader()->Init();
+
   GetReader()->SetCaloUtils(GetCaloUtils()); // pass the calo utils pointer to the reader
 
-  // Activate debug level in reader
-  if( fReader->GetDebug() >= 0 )
-    (AliAnalysisManager::GetAnalysisManager())->AddClassDebug(fReader->ClassName(), fReader->GetDebug());
-  
   // Activate debug level in calo utils
-  if( fCaloUtils->GetDebug() >= 0 )
+  if ( fCaloUtils->GetDebug() >= 0 )
     (AliAnalysisManager::GetAnalysisManager())->AddClassDebug(fCaloUtils->ClassName(), fCaloUtils->GetDebug());
-  
+
   if(!fAnalysisContainer || fAnalysisContainer->GetEntries()==0)
   {
     AliWarning("Analysis job list not initialized");
     return;
   }
-  
+
   for(Int_t iana = 0; iana <  fAnalysisContainer->GetEntries(); iana++)
   {
     AliAnaCaloTrackCorrBaseClass * ana =  ((AliAnaCaloTrackCorrBaseClass *) fAnalysisContainer->At(iana)) ;
     
     ana->SetReader(fReader);       // Set Reader for each analysis
+
     ana->SetCaloUtils(fCaloUtils); // Set CaloUtils for each analysis
-    
+
     ana->Init();
+
     ana->InitDebug();
-  }//Loop on analysis defined
+
+  } // Loop on analysis defined
+
 }
 
 //_____________________________________________

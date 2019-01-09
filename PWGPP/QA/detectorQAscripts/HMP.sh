@@ -8,21 +8,13 @@
 runLevelQA()
 {
   qaFile=$1
-
   cp $ALICE_PHYSICS/PWGPP/HMPID/macros/makeHMPQA.C .
-
-  gROOT->ProcessLine(".L makeHMPQA+");
-
   aliroot -b -q -l "Analyze_QA_run(\"$dataType\", ${year}, \"$period\", \"$pass\",${runNumber})"
 }
 
 periodLevelQA()
 {
   trendingFile=$1
-
   cp $ALICE_PHYSICS/PWGPP/HMPID/macros/makeHMPQA.C .
-
-  gROOT->ProcessLine(".L makeHMPQA+");
-
   aliroot -b -q -l "makeHMPQA(\"$dataType\", ${year}, \"$period\", \"$pass\")"
 }

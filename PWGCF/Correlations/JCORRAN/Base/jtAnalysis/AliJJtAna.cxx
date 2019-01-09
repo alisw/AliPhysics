@@ -414,6 +414,8 @@ void AliJJtAna::UserExec(){
 	int zBin        = fcard->GetBin(kZVertType, fZvert); //
 
 	fhistos->fhZVert[cBin]->Fill(fZvert);
+	fhistos->fhCentr->Fill(fcent);
+	fhistos->fhiCentr->Fill(cBin);
 
 	//------------------------------------------------------------------
 	// Triggers and associated
@@ -599,7 +601,7 @@ void AliJJtAna::Terminate() {
 
 }
 
-particleType  AliJJtAna::GetParticleType(char *inchar){
+particleType  AliJJtAna::GetParticleType(char const *inchar){
 	// part type
 	for(int i=0;i<kNumberOfParticleTypes;i++) {
 		if(strcmp(inchar,kParticleTypeStrName[i])==0) return (particleType)i;

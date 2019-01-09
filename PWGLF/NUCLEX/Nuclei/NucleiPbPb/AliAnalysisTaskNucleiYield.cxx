@@ -19,6 +19,7 @@
 #include <TRandom3.h>
 
 // ALIROOT includes
+#include "AdditionalFunctions.h"
 #include "AliAnalysisManager.h"
 #include "AliCentrality.h"
 #include "AliPWGFunc.h"
@@ -41,6 +42,7 @@
 #define EPS 1.e-16
 
 using TMath::TwoPi;
+using std::string;
 
 ///\cond CLASSIMP
 ClassImp(AliAnalysisTaskNucleiYield);
@@ -186,7 +188,7 @@ void AliAnalysisTaskNucleiYield::UserCreateOutputObjects() {
     case kBlastWaveShape:
       fPtShape = fFunctCollection->GetBGBW(fPDGMass, fPtShapeParams[0], fPtShapeParams[1], fPtShapeParams[2], 1.);
     case kTsallisShape:
-      fPtShape = fFunctCollection->GetTsallis(fPDGMass, fPtShapeParams[0], fPtShapeParams[1], 1.);
+      fPtShape = LevyTsallis("nuclei_levytsallis", fPDGMass, fPtShapeParams[0], fPtShapeParams[1], 1.);
   }
   if (fPtShape)
     fPtShapeMaximum = fPtShape->GetMaximum(0,10,1.e-10,10000);
@@ -369,7 +371,8 @@ void AliAnalysisTaskNucleiYield::UserExec(Option_t *){
     Double_t dca[2] = {0.};
     if (!track->TestFilterBit(fFilterBit) && fFilterBit) continue;
     if (!AcceptTrack(track,dca)) continue;
-    const float beta = HasTOF(track,fPID);
+    float beta = HasTOF(track,fPID);
+    if (beta > 1. - EPS) beta = -1;
     const int iTof = beta > EPS ? 1 : 0;
     float pT = track->Pt() * fCharge;
     int pid_mask = PassesPIDSelection(track);
@@ -509,11 +512,8 @@ float AliAnalysisTaskNucleiYield::HasTOF(AliAODTrack *track, AliPIDResponse *pid
   if (!hasTOF) return -1.;
   const float p = track->GetTPCmomentum();
   const float tim = track->GetTOFsignal() - pid->GetTOFResponse().GetStartTime(p);
-  if (tim < len / LIGHT_SPEED) return -1.;
-  else {
-    const float beta = len / (tim * LIGHT_SPEED);
-    return beta;
-  }
+  const float beta = len / (tim * LIGHT_SPEED);
+  return beta;
 }
 
 /// This functions sets the centrality bins used in the analysis

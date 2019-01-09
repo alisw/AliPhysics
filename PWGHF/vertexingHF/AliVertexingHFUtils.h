@@ -151,6 +151,8 @@ class AliVertexingHFUtils : public TObject{
   static Int_t CheckLcpKpiDecay(TClonesArray* arrayMC, AliAODMCParticle *mcPart, Int_t* arrayDauLab);
   static Int_t CheckLcV0bachelorDecay(AliMCEvent* mcEvent, Int_t label, Int_t* arrayDauLab);
   static Int_t CheckXicXipipiDecay(AliMCEvent* mcEvent, Int_t label, Int_t* arrayDauLab);
+  static Int_t CheckBplusDecay(AliMCEvent* mcEvent, Int_t label, Int_t* arrayDauLab);
+  static Int_t CheckBplusDecay(TClonesArray* arrayMC, AliAODMCParticle *mcPart, Int_t* arrayDauLab);
 
  private:
 
