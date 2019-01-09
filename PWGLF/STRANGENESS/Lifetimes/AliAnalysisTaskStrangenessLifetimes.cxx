@@ -566,8 +566,10 @@ void AliAnalysisTaskStrangenessLifetimes::UserExec(Option_t *) {
           }
         }
       }
-      if (fake=true && fDownscale<1){
-         if((gRandom->Rndm())>fDownscale){continue;}
+      if (fake && fDownscale<1){
+         if((gRandom->Rndm())>fDownscale){
+             continue;
+          }
       }
       if (isHyperCandidate){
          auto miniHyper = HyperTriton2Body::FillHyperTriton2Body(v0,pTrack,nTrack,nSigmaPosHe3,
