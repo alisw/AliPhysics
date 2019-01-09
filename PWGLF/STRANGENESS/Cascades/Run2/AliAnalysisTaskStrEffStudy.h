@@ -58,7 +58,7 @@ class AliExternalTrackParam;
 class AliAnalysisTaskStrEffStudy : public AliAnalysisTaskSE {
 public:
     AliAnalysisTaskStrEffStudy();
-    AliAnalysisTaskStrEffStudy(Bool_t lSaveEventTree, Bool_t lSaveV0Tree, Bool_t lSaveCascadeTree, const char *name, TString lExtraOptions = "");
+    AliAnalysisTaskStrEffStudy(Bool_t lSaveEventTree, Bool_t lSaveV0Tree, Bool_t lSaveCascadeTree, Bool_t lSaveHyperTriton, const char *name, TString lExtraOptions = "");
     virtual ~AliAnalysisTaskStrEffStudy();
 
     virtual void   UserCreateOutputObjects();
