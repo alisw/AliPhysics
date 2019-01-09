@@ -538,6 +538,7 @@ void AliAnalysisTaskStrangenessLifetimes::UserExec(Option_t *) {
 
       // Filling the V0 vector
       int ilab=-1;
+      bool fake = true;
       if (fMC) {
         AliESDtrack* one = esdEvent->GetTrack(v0->GetNindex());
         AliESDtrack* two = esdEvent->GetTrack(v0->GetPindex());
@@ -546,27 +547,30 @@ void AliAnalysisTaskStrangenessLifetimes::UserExec(Option_t *) {
             "Missing V0 tracks %p %p",(void*)one,(void*)two);
         ilab = std::abs(ComputeMother(mcEvent, one, two));
         TParticle* part = mcEvent->Particle(ilab);
-        if(!part) {
-          continue;
+        
+        if(!part || (isHyperCandidate && (part->GetPdgCode())!=pdgCodes[2])) {
+        fake=false;
         }
-        int currentPDG = part->GetPdgCode();
-        for (auto code : pdgCodes) {
-          if (code == std::abs(currentPDG)) {
-            if (isHyperCandidate) {
-              fMCvector[mcMap[ilab]].SetRecoIndex(fV0Hyvector.size());
-              fMCvector[mcMap[ilab]].SetHyperCandidate(true);
-            }  
-            else {
-              fMCvector[mcMap[ilab]].SetRecoIndex(fV0vector.size());
-              fMCvector[mcMap[ilab]].SetHyperCandidate(false);
+        else{
+          int currentPDG = part->GetPdgCode();
+          for (auto code : pdgCodes) {
+            if (code == std::abs(currentPDG)) {
+              if (isHyperCandidate) {
+                fMCvector[mcMap[ilab]].SetRecoIndex(fV0Hyvector.size());
+                fMCvector[mcMap[ilab]].SetHyperCandidate(true);
+              }  
+              else {
+                fMCvector[mcMap[ilab]].SetRecoIndex(fV0vector.size());
+                fMCvector[mcMap[ilab]].SetHyperCandidate(false);
+              }
+              break;
             }
-            break;
           }
         }
       }
       if (isHyperCandidate){
          auto miniHyper = HyperTriton2Body::FillHyperTriton2Body(v0,pTrack,nTrack,nSigmaPosHe3,
-         nSigmaNegHe3,nSigmaPosPion,nSigmaNegPion,magneticField,primaryVertex); 
+         nSigmaNegHe3,nSigmaPosPion,nSigmaNegPion,magneticField,primaryVertex,fake); 
                  
          fV0Hyvector.push_back(miniHyper);         
          fHistV0radius->Fill(miniHyper.GetV0radius());

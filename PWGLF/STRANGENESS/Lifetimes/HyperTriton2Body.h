@@ -76,8 +76,9 @@ class HyperTriton2Body {
   void SetCowboyAndSailor(bool cs) { fFlags = flipBits(fFlags, static_cast<unsigned char>(kCowboySailor), cs); }
   void SetTOFbits(bool pTOF, bool nTOF);
   void SetOptimalParameters(bool opt) { fFlags = flipBits(fFlags, static_cast<unsigned char>(kOptimalParams), opt); }
+  void SetFake(bool fake){ffake=fake; };
   static HyperTriton2Body FillHyperTriton2Body(AliESDv0 *v0, AliESDtrack *pTrack , AliESDtrack *nTrack, float nsigmaposhe3
-,float nsigmaneghe3, float nsigmapospion,float nsigmanegpion, float magneticField , double primaryVertex[3]);
+,float nsigmaneghe3, float nsigmapospion,float nsigmanegpion, float magneticField , double primaryVertex[3], bool fake);
   LVector_t GetV0LorentzVector(AliESDtrack* negTrack, AliESDtrack* posTrack, double alpha);
 
  private:
@@ -115,6 +116,7 @@ class HyperTriton2Body {
   Double32_t fEtaNeg;                   //[-1.0,1.0,7] Pseudorapidity of the negative prong. MSB is the TOF bit.
   unsigned char fITSInfo;               // Starting from the MSB: kITSrefit for neg and pos, kSPDany for neg and pos, least number of ITS clusters (last 4 bits)
   unsigned char fFlags;                 // Cowboy&Saylor, TOF bits for neg and pos, optimal tracking parameters
+  unsigned char ffake;                  // background flag
 };
 /// Cowboy&saylor, 2xTOF bit
 
@@ -189,7 +191,7 @@ inline void HyperTriton2Body::SetTOFbits(bool pTOF, bool nTOF) {
 }
 
 inline HyperTriton2Body HyperTriton2Body::FillHyperTriton2Body(AliESDv0 *v0, AliESDtrack *pTrack , AliESDtrack *nTrack, float nsigmaposhe3
-,float nsigmaneghe3, float nsigmapospion,float nsigmanegpion, float magneticField , double primaryVertex[3]){
+,float nsigmaneghe3, float nsigmapospion,float nsigmanegpion, float magneticField , double primaryVertex[3],bool fake){
 
 HyperTriton2Body miniHyper;
 double decayVtx[3];
@@ -246,7 +248,7 @@ v0->GetNPxPyPz(momNeg[0], momNeg[1], momNeg[2]);
 double lVecProd = momPos[0] * momNeg[1] - momPos[1] * momNeg[0];
 bool isCowboy = lVecProd * magneticField < 0;
 
-
+miniHyper.SetFake(fake);
 miniHyper.SetV0ptAndFake(v0Pt, false);
 miniHyper.SetV0eta(v0->Eta());
 miniHyper.SetLeastNumberOfXedRows(minXedRows);
