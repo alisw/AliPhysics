@@ -295,7 +295,7 @@ AliAnalysisManager *man = AliAnalysisManager::GetAnalysisManager();
   hTPCdEdxCorr->GetYaxis()->SetTitle("dE/dx^{TPC} (a.u.)");
   fOutputList->Add(hTPCdEdxCorr);
   
-  hTriggerCounter = new TH2I("hTriggerCounter","Number of analyzed UPC triggers per run",3,1,4,2000,295000,297000);
+  hTriggerCounter = new TH2I("hTriggerCounter","Number of analyzed UPC triggers per run",3,1,4,3000,295000,298000);
   fOutputList->Add(hTriggerCounter);
   
   fSPDfile = AliDataFile::OpenOADB("PWGUD/UPC/SPDFOEfficiency_run245067.root");
