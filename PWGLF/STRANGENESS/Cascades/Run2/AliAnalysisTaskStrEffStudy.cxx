@@ -387,7 +387,7 @@ fHistGeneratedPtVsYVsCentralityAntiHypTrit(0)
 
 }
 
-AliAnalysisTaskStrEffStudy::AliAnalysisTaskStrEffStudy(Bool_t lSaveEventTree, Bool_t lSaveV0Tree, Bool_t lSaveCascadeTree, const char *name, TString lExtraOptions)
+AliAnalysisTaskStrEffStudy::AliAnalysisTaskStrEffStudy(Bool_t lSaveEventTree, Bool_t lSaveV0Tree, Bool_t lSaveCascadeTree, Bool_t lSaveHyperTriton, const char *name, TString lExtraOptions)
 : AliAnalysisTaskSE(name), fListHist(0), fListV0(0), fListCascade(0), fTreeEvent(0), fTreeV0(0), fTreeCascade(0), fTreeHyperTriton3Body(nullptr),fPIDResponse(0), fESDtrackCuts(0), fESDtrackCutsITSsa2010(0), fESDtrackCutsGlobal2015(0), fUtils(0), fEventCuts(), fRand(0),
 
 //---> Flags controlling Event Tree output
@@ -418,7 +418,7 @@ fMinPtToSave( 0.00   ) ,
 fMaxPtToSave( 100.00 ) ,
 
 //---> Flags controlling HyperTriton3Body TTree output
-fkSaveHyperTriton3BodyTree(false),
+fkSaveHyperTriton3BodyTree(lSaveHyperTriton),
 fkDownScaleHyperTriton3Body(false),
 fDownScaleFactorHyperTriton3Body(1.),
 
