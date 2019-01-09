@@ -299,9 +299,12 @@ void AliAnalysisTaskEmcalJetHPerformance::UserCreateOutputObjects()
 void AliAnalysisTaskEmcalJetHPerformance::SetupQAHists()
 {
   // Cell level QA
-  std::string name = "QA/embedding/cells/fHistCellTime";
-  std::string title = name + ";E_{time} (s);counts";
-  fHistManager.CreateTH1(name.c_str(), title.c_str(), 1000, -10e-6, 10e-6);
+  auto embeddingInstance = AliAnalysisTaskEmcalEmbeddingHelper::GetInstance();
+  if (embeddingInstance) {
+    std::string name = "QA/embedding/cells/fHistCellTime";
+    std::string title = name + ";E_{time} (s);counts";
+    fHistManager.CreateTH1(name.c_str(), title.c_str(), 1000, -10e-6, 10e-6);
+  }
 
   // Clusters
   AliEmcalContainer* cont = 0;
