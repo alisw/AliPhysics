@@ -26,7 +26,7 @@ typedef ROOT::Math::LorentzVector<ROOT::Math::PxPyPzM4D<double>> LVector_t;
 
 class AliAnalysisTaskStrangenessLifetimes : public AliAnalysisTaskSE {
  public:
-  AliAnalysisTaskStrangenessLifetimes(bool mc = false, std::string name = "TaskStrangenessLifetimes",float downscale=1);
+  AliAnalysisTaskStrangenessLifetimes(bool mc = false, std::string name = "TaskStrangenessLifetimes",float downscale=1,bool Hypertriton=true, bool V0s=true);
   virtual ~AliAnalysisTaskStrangenessLifetimes();
 
   virtual void UserCreateOutputObjects();
@@ -64,6 +64,8 @@ class AliAnalysisTaskStrangenessLifetimes : public AliAnalysisTaskSE {
 
   bool fDoV0Refit;
   bool fMC;
+  bool fHypertriton;
+  bool fV0s;
   float fDownscale;
   bool fUseOnTheFly;
 
