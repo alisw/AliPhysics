@@ -67,7 +67,7 @@ int ComputeMother(AliMCEvent* mcEvent, const AliESDtrack* one, const AliESDtrack
 }  // namespace
 
 AliAnalysisTaskStrangenessLifetimes::AliAnalysisTaskStrangenessLifetimes(
-    bool mc, std::string name, float downscale)
+    bool mc, std::string name, float downscale, bool Hypertriton, bool V0s)
     : AliAnalysisTaskSE(name.data()),
       fEventCuts{},
       fListHist{nullptr},
@@ -75,6 +75,8 @@ AliAnalysisTaskStrangenessLifetimes::AliAnalysisTaskStrangenessLifetimes(
       fPIDResponse{nullptr},
       fDoV0Refit{true},
       fMC{mc},
+      fHypertriton{Hypertriton},
+      fV0s{V0s},
       fDownscale{downscale},
       fUseOnTheFly{false},
       fHistMCct{nullptr},
@@ -141,8 +143,12 @@ void AliAnalysisTaskStrangenessLifetimes::UserCreateOutputObjects() {
 
   fTreeV0 = new TTree("fTreeV0", "V0 Candidates");
   fTreeV0->Branch("Event", &fMiniEvent);
-  fTreeV0->Branch("V0s", &fV0vector);
-  fTreeV0->Branch("V0Hyper",&fV0Hyvector);
+  if(fV0s){
+    fTreeV0->Branch("V0s", &fV0vector);
+  }
+  if(fHypertriton){
+    fTreeV0->Branch("V0Hyper",&fV0Hyvector);
+  }
   if (man->GetMCtruthEventHandler()) {
     fTreeV0->Branch("MCparticles",&fMCvector);
   }
