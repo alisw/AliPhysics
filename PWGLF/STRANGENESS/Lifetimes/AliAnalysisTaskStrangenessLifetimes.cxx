@@ -539,7 +539,7 @@ void AliAnalysisTaskStrangenessLifetimes::UserExec(Option_t *) {
 
       // Filling the V0 vector
       int ilab=-1;
-      bool fake=true;
+      bool fake=fMC;
       if (fMC) {
         AliESDtrack* one = esdEvent->GetTrack(v0->GetNindex());
         AliESDtrack* two = esdEvent->GetTrack(v0->GetPindex());
