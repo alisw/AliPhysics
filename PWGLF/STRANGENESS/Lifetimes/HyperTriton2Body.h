@@ -77,7 +77,7 @@ class HyperTriton2Body {
   void SetTOFbits(bool pTOF, bool nTOF);
   void SetOptimalParameters(bool opt) { fFlags = flipBits(fFlags, static_cast<unsigned char>(kOptimalParams), opt); }
   static HyperTriton2Body FillHyperTriton2Body(AliESDv0 *v0, AliESDtrack *pTrack , AliESDtrack *nTrack, float nsigmaposhe3
-,float nsigmaneghe3, float nsigmapospion,float nsigmanegpion, float magneticField , double primaryVertex[3]);
+,float nsigmaneghe3, float nsigmapospion,float nsigmanegpion, float magneticField , double primaryVertex[3], bool fake);
   LVector_t GetV0LorentzVector(AliESDtrack* negTrack, AliESDtrack* posTrack, double alpha);
 
  private:
@@ -189,7 +189,7 @@ inline void HyperTriton2Body::SetTOFbits(bool pTOF, bool nTOF) {
 }
 
 inline HyperTriton2Body HyperTriton2Body::FillHyperTriton2Body(AliESDv0 *v0, AliESDtrack *pTrack , AliESDtrack *nTrack, float nsigmaposhe3
-,float nsigmaneghe3, float nsigmapospion,float nsigmanegpion, float magneticField , double primaryVertex[3]){
+,float nsigmaneghe3, float nsigmapospion,float nsigmanegpion, float magneticField , double primaryVertex[3], bool fake){
 
 HyperTriton2Body miniHyper;
 double decayVtx[3];
@@ -247,7 +247,7 @@ double lVecProd = momPos[0] * momNeg[1] - momPos[1] * momNeg[0];
 bool isCowboy = lVecProd * magneticField < 0;
 
 
-miniHyper.SetV0ptAndFake(v0Pt, false);
+miniHyper.SetV0ptAndFake(v0Pt, fake);
 miniHyper.SetV0eta(v0->Eta());
 miniHyper.SetLeastNumberOfXedRows(minXedRows);
 miniHyper.SetDistOverP(distOverP);

@@ -2,7 +2,7 @@
 
 #include <array>
 #include <unordered_map>
-
+#include <TRandom3.h>
 #include <Riostream.h>
 #include <TChain.h>
 #include <TFile.h>
@@ -67,7 +67,7 @@ int ComputeMother(AliMCEvent* mcEvent, const AliESDtrack* one, const AliESDtrack
 }  // namespace
 
 AliAnalysisTaskStrangenessLifetimes::AliAnalysisTaskStrangenessLifetimes(
-    bool mc, std::string name)
+    bool mc, std::string name, float downscale)
     : AliAnalysisTaskSE(name.data()),
       fEventCuts{},
       fListHist{nullptr},
@@ -75,6 +75,7 @@ AliAnalysisTaskStrangenessLifetimes::AliAnalysisTaskStrangenessLifetimes(
       fPIDResponse{nullptr},
       fDoV0Refit{true},
       fMC{mc},
+      fDownscale{downscale},
       fUseOnTheFly{false},
       fHistMCct{nullptr},
       fHistMCctPrimary{nullptr},
@@ -538,6 +539,7 @@ void AliAnalysisTaskStrangenessLifetimes::UserExec(Option_t *) {
 
       // Filling the V0 vector
       int ilab=-1;
+      bool fake=true;
       if (fMC) {
         AliESDtrack* one = esdEvent->GetTrack(v0->GetNindex());
         AliESDtrack* two = esdEvent->GetTrack(v0->GetPindex());
@@ -546,27 +548,32 @@ void AliAnalysisTaskStrangenessLifetimes::UserExec(Option_t *) {
             "Missing V0 tracks %p %p",(void*)one,(void*)two);
         ilab = std::abs(ComputeMother(mcEvent, one, two));
         TParticle* part = mcEvent->Particle(ilab);
-        if(!part) {
-          continue;
-        }
-        int currentPDG = part->GetPdgCode();
-        for (auto code : pdgCodes) {
-          if (code == std::abs(currentPDG)) {
-            if (isHyperCandidate) {
-              fMCvector[mcMap[ilab]].SetRecoIndex(fV0Hyvector.size());
-              fMCvector[mcMap[ilab]].SetHyperCandidate(true);
-            }  
-            else {
-              fMCvector[mcMap[ilab]].SetRecoIndex(fV0vector.size());
-              fMCvector[mcMap[ilab]].SetHyperCandidate(false);
+        if(part) {
+          int currentPDG = part->GetPdgCode();
+          for (auto code : pdgCodes) {
+            if (code == std::abs(currentPDG)) {
+              fake=false;
+              if (isHyperCandidate) {
+                fMCvector[mcMap[ilab]].SetRecoIndex(fV0Hyvector.size());
+                fMCvector[mcMap[ilab]].SetHyperCandidate(true);
+              }  
+              else {
+                fMCvector[mcMap[ilab]].SetRecoIndex(fV0vector.size());
+                fMCvector[mcMap[ilab]].SetHyperCandidate(false);
+              }
+              break;
             }
-            break;
           }
         }
       }
+      if (fake && fDownscale<1){
+         if((gRandom->Rndm())>fDownscale){
+             continue;
+          }
+      }
       if (isHyperCandidate){
          auto miniHyper = HyperTriton2Body::FillHyperTriton2Body(v0,pTrack,nTrack,nSigmaPosHe3,
-         nSigmaNegHe3,nSigmaPosPion,nSigmaNegPion,magneticField,primaryVertex); 
+         nSigmaNegHe3,nSigmaPosPion,nSigmaNegPion,magneticField,primaryVertex,fake); 
                  
          fV0Hyvector.push_back(miniHyper);         
          fHistV0radius->Fill(miniHyper.GetV0radius());
@@ -599,7 +606,7 @@ void AliAnalysisTaskStrangenessLifetimes::UserExec(Option_t *) {
 
       else{
          auto miniV0 = MiniV0::FillMiniV0(v0,pTrack,nTrack,nSigmaPosProton,nSigmaNegProton,
-         nSigmaPosPion,nSigmaNegPion,magneticField,primaryVertex);
+         nSigmaPosPion,nSigmaNegPion,magneticField,primaryVertex,fake);
          fV0vector.push_back(miniV0);
          fHistV0radius->Fill(miniV0.GetV0radius());
          fHistV0pt->Fill(miniV0.GetV0pt());
