@@ -538,7 +538,7 @@ void AliAnalysisTaskStrangenessLifetimes::UserExec(Option_t *) {
 
       // Filling the V0 vector
       int ilab=-1;
-      bool fake = true;
+      bool fake=true;
       if (fMC) {
         AliESDtrack* one = esdEvent->GetTrack(v0->GetNindex());
         AliESDtrack* two = esdEvent->GetTrack(v0->GetPindex());
@@ -547,14 +547,11 @@ void AliAnalysisTaskStrangenessLifetimes::UserExec(Option_t *) {
             "Missing V0 tracks %p %p",(void*)one,(void*)two);
         ilab = std::abs(ComputeMother(mcEvent, one, two));
         TParticle* part = mcEvent->Particle(ilab);
-        
-        if(!part || (isHyperCandidate && (part->GetPdgCode())!=pdgCodes[2])) {
-        fake=false;
-        }
-        else{
+        if(part) {
           int currentPDG = part->GetPdgCode();
           for (auto code : pdgCodes) {
             if (code == std::abs(currentPDG)) {
+              fake=false;
               if (isHyperCandidate) {
                 fMCvector[mcMap[ilab]].SetRecoIndex(fV0Hyvector.size());
                 fMCvector[mcMap[ilab]].SetHyperCandidate(true);
@@ -603,7 +600,7 @@ void AliAnalysisTaskStrangenessLifetimes::UserExec(Option_t *) {
 
       else{
          auto miniV0 = MiniV0::FillMiniV0(v0,pTrack,nTrack,nSigmaPosProton,nSigmaNegProton,
-         nSigmaPosPion,nSigmaNegPion,magneticField,primaryVertex);
+         nSigmaPosPion,nSigmaNegPion,magneticField,primaryVertex,fake);
          fV0vector.push_back(miniV0);
          fHistV0radius->Fill(miniV0.GetV0radius());
          fHistV0pt->Fill(miniV0.GetV0pt());

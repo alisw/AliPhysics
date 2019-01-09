@@ -69,7 +69,7 @@ class MiniV0 {
   void SetTOFbits(bool pTOF, bool nTOF);
   void SetOptimalParameters(bool opt) { fFlags = flipBits(fFlags, static_cast<unsigned char>(kOptimalParams), opt); }
   static MiniV0 FillMiniV0(AliESDv0 *v0, AliESDtrack *pTrack , AliESDtrack *nTrack, float nsigmaposproton
-,float nsigmanegproton, float nsigmapospion,float nsigmanegpion, float magneticField , double primaryVertex[3]);
+,float nsigmanegproton, float nsigmapospion,float nsigmanegpion, float magneticField , double primaryVertex[3],bool fake);
 
  private:
   enum Flags {
@@ -142,7 +142,7 @@ inline void MiniV0::SetTOFbits(bool pTOF, bool nTOF) {
 }
 
 inline MiniV0 MiniV0::FillMiniV0(AliESDv0 *v0, AliESDtrack *pTrack , AliESDtrack *nTrack, float nsigmaposproton
-,float nsigmanegproton, float nsigmapospion,float nsigmanegpion, float magneticField , double primaryVertex[3]){
+,float nsigmanegproton, float nsigmapospion,float nsigmanegpion, float magneticField , double primaryVertex[3], bool fake){
 
 MiniV0 miniV0;
 double decayVtx[3];
@@ -206,7 +206,7 @@ double lVecProd = momPos[0] * momNeg[1] - momPos[1] * momNeg[0];
 bool isCowboy = lVecProd * magneticField < 0;
 
 
-miniV0.SetV0ptAndFake(v0Pt, false);
+miniV0.SetV0ptAndFake(v0Pt, fake);
 miniV0.SetV0eta(v0->Eta());
 miniV0.SetLeastNumberOfXedRows(minXedRows);
 miniV0.SetDistOverP(distOverP);
