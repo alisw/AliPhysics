@@ -75,6 +75,9 @@ public:
     void SetSaveCascades           (Bool_t lSaveCascades   = kTRUE ) {
         fkSaveCascadeTree   = lSaveCascades;
     }
+    void SetSaveHyperTriton3Body (Bool_t lSaveHyp3Body   = kTRUE ) {
+        fkSaveHyperTriton3BodyTree   = lSaveHyp3Body;
+    }
     void SetPreselectDedx (Bool_t lPreselectDedx= kTRUE ) {
         fkPreselectDedx   = lPreselectDedx;
     }
@@ -146,6 +149,10 @@ public:
     void SetDownScaleCascade ( Bool_t lOpt = kTRUE, Float_t lVal = 0.001 ) {
         fkDownScaleCascade = lOpt;
         fDownScaleFactorCascade = lVal;
+    }
+    void SetDownScaleHyperTriton3Body ( Bool_t lOpt = kTRUE, Float_t lVal = 0.001 ) {
+        fkDownScaleHyperTriton3Body = lOpt;
+        fDownScaleFactorHyperTriton3Body = lVal;
     }
 //---------------------------------------------------------------------------------------
 //Setters for the V0 Vertexer Parameters

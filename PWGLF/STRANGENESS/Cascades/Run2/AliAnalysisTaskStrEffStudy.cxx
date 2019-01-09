@@ -148,7 +148,7 @@ fMinPtToSave( 0.00   ) ,
 fMaxPtToSave( 100.00 ) ,
 
 //---> Flags controlling HyperTriton3Body TTree output
-fkSaveHyperTriton3BodyTree(true),
+fkSaveHyperTriton3BodyTree(false),
 fkDownScaleHyperTriton3Body(false),
 fDownScaleFactorHyperTriton3Body(1.),
 
@@ -418,7 +418,7 @@ fMinPtToSave( 0.00   ) ,
 fMaxPtToSave( 100.00 ) ,
 
 //---> Flags controlling HyperTriton3Body TTree output
-fkSaveHyperTriton3BodyTree(true),
+fkSaveHyperTriton3BodyTree(false),
 fkDownScaleHyperTriton3Body(false),
 fDownScaleFactorHyperTriton3Body(1.),
 
