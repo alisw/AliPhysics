@@ -134,7 +134,12 @@ struct MacroParams : public TNamed {
 
   bool do_detadphi_simple_cf { false };
   bool do_kt_detadphi_simple_cf { false };
+
+  // ClassDef(MacroParams, 1);
 };
+
+
+// ClassImp(MacroParams);
 
 void
 BuildConfiguration(
@@ -165,7 +170,7 @@ ConfigFemtoAnalysis(const AliFemtoConfigObject& cfg)
 AliFemtoManager*
 ConfigFemtoAnalysis(const TString& param_str="")
 {
-  std::cout << "[ConfigFemtoAnalysisRun2 (PionPion)]\n";
+  std::cout << "[ConfigFemtoAnalysisRun2 Nu (PionPion)]\n";
 
   const double PionMass = 0.13956995;
 
@@ -566,13 +571,14 @@ BuildConfiguration(const TString &text,
   std::cout << "I-BuildConfiguration (BASE64-Encoded): " << TBase64::Encode(text) << " \n";
 
   const TString analysis_varname = a.GetName(),
-                     cut_varname = cut.GetName(),
-                   macro_varname = mac.GetName();
+                    cut_varname = cut.GetName(),
+  // const TString analysis_varname = Form("static_cast<AliFemtoAnalysisPionPion::AnalysisParams*>(%s)", a.GetName()),
+                    //  cut_varname = Form("static_cast<AliFemtoAnalysisPionPion::CutParams*>(%s)", cut.GetName()),
+                   macro_varname = Form("static_cast<MacroParams*>(%s)", mac.GetName());
 
-  auto globals = gROOT->GetListOfGlobals();
-  globals->Add(&a);
-  globals->Add(&cut);
-  globals->Add(&mac);
+  gDirectory->Add(&a);
+  gDirectory->Add(&cut);
+  gDirectory->Add(&mac);
 
   TObjArray* lines = text.Tokenize("\n;");
 
@@ -600,11 +606,12 @@ BuildConfiguration(const TString &text,
 
     case '{':
     {
-      UInt_t rangeend = text.Index("}");
+      UInt_t rangeend = line.Index("}");
       if (rangeend == -1) {
         rangeend = line.Length();
       }
       TString centrality_ranges = line(1, rangeend - 1);
+      std::cout << "Loading centrality-ranges: '" << centrality_ranges << "'\n";
       TObjArray *range_groups = centrality_ranges.Tokenize(",");
 
       TIter next_range_group(range_groups);
@@ -631,13 +638,13 @@ BuildConfiguration(const TString &text,
 
     case '(':
     {
-      UInt_t rangeend = text.Index(")");
+      UInt_t rangeend = line.Index(")");
       if (rangeend == -1) {
         std::cerr << "W-ConfigFemtoAnalysis: " << "Expected closing parens ')' in configuration string. Using rest of line as kT-bins\n";
         rangeend = line.Length();
       }
-      TString kt_ranges = line(1, rangeend - 3);
-      std::cout << "Loaded kt-ranges: '" << kt_ranges << "'\n";
+      TString kt_ranges = line(1, rangeend - 1);
+      std::cout << "Loading kt-ranges: '" << kt_ranges << "'\n";
       TObjArray *range_groups = kt_ranges.Tokenize(",");
 
       TIter next_range_group(range_groups);
@@ -698,8 +705,8 @@ BuildConfiguration(const TString &text,
     gROOT->ProcessLineFast(cmd);
   }
 
-  globals->Remove(&a);
-  globals->Remove(&cut);
-  globals->Remove(&mac);
+  gDirectory->Remove(&a);
+  gDirectory->Remove(&cut);
+  gDirectory->Remove(&mac);
 
 }

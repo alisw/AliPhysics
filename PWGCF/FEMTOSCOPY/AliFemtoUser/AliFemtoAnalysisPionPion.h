@@ -200,6 +200,8 @@ struct AliFemtoAnalysisPionPion::AnalysisParams : public TNamed {
 
   /// Default Values
   AnalysisParams();
+
+  ClassDef(AnalysisParams, 1);
 };
 
 /// \class AliFemtoAnalysisPionPion::CutParams
@@ -296,6 +298,9 @@ struct AliFemtoAnalysisPionPion::CutParams : public TNamed {
 
   /// Default Values
   CutParams();
+
+
+  ClassDef(CutParams, 0);
 };
 
 template <typename T>
