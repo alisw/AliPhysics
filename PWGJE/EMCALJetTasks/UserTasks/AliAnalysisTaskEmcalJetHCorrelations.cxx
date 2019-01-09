@@ -1745,7 +1745,7 @@ std::string AliAnalysisTaskEmcalJetHCorrelations::toString() const
   tempSS << "Event selection\n";
   tempSS << "\tUse AliEventCuts: " << fUseAliEventCuts << "\n";
   // AliEventCuts in the base class needs to be __disabled__ because the implementation isn't compatible with how it's implemented here.
-  tempSS << "\tUse AliAnalysisTaskEmcal event selection (needs to be enabled to use AliEventCuts): " << fUseInternalEventSelection << "\n";
+  tempSS << "\tUse AliAnalysisTaskEmcal event selection (needs to be enabled to use AliEventCuts): " << fUseBuiltinEventSelection << "\n";
   tempSS << "\tTrigger event selection: " << std::bitset<32>(fTriggerType) << "\n";
   tempSS << "\tMixed event selection: " << std::bitset<32>(fMixingEventType) << "\n";
   tempSS << "\tEnabled only for non-fast partition: " << fDisableFastPartition << "\n";

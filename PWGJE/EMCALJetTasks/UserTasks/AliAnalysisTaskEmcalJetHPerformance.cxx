@@ -694,7 +694,7 @@ std::string AliAnalysisTaskEmcalJetHPerformance::toString() const
   tempSS << "AliEventCuts\n";
   tempSS << "\tEnabled: " << fUseAliEventCuts << "\n";
   // AliEventCuts in the base class needs to be __disabled__ because the implementation isn't compatible with how it's implemented here.
-  tempSS << "\tUse AliAnalysisTaskEmcal event selection (needs to be enabled to use AliEventCuts): " << fUseInternalEventSelection << "\n";
+  tempSS << "\tUse AliAnalysisTaskEmcal event selection (needs to be enabled to use AliEventCuts): " << fUseBuiltinEventSelection << "\n";
   tempSS << "QA Hists:\n";
   tempSS << "\tEnabled: " << fCreateQAHists << "\n";
   tempSS << "Response matrix:\n";
