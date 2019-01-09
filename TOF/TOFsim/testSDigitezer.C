@@ -48,15 +48,23 @@ testSDigitezer(){
 
   for(Int_t i=0;i < nevents;i++){
 
+    Int_t ix0 = gRandom->Rndm()*48;
+    Int_t iz0 = gRandom->Rndm()*2;
+
     isF[0]=isF[1]=isF[2]=isF[3]=isF[4]=isF[5]=0;
 
     digitezer.SetEdgeEffect(1);
     digitezer.SetTimeDelayFlag(0);
 
-    z0 = (gRandom->Rndm())*3.5;
-    x0 = (gRandom->Rndm())*2.5;
+    z0 = (gRandom->Rndm())*3.5;//7-0.1;
+    x0 = (gRandom->Rndm())*2.5;//7-0.1;
 
-    digitezer.SimulateDetectorResponse(z0, x0, geantTime, nActivatedPads, nFiredPads, isF, nPlace, qInduced, tofTime, averageTime);
+    if(x0<0) x0 = 0; 
+    else if(x0 >= AliTOFGeometry::XPad()) x0 = AliTOFGeometry::XPad()-1E-3; 
+    if(z0<0) z0 = 0; 
+    else if(z0 >= AliTOFGeometry::ZPad()) z0 = AliTOFGeometry::ZPad()-1E-3; 
+
+    digitezer.SimulateDetectorResponse(z0+(iz0-1)*3.5,x0+(ix0-24)*2.5, geantTime, nActivatedPads, nFiredPads, isF, nPlace, qInduced, tofTime, averageTime);
     isFired[0]=isF[0]>0;
     isFired[1]=isF[1]>0;
     isFired[2]=isF[2]>0;
@@ -72,7 +80,7 @@ testSDigitezer(){
     
     isF[0]=isF[1]=isF[2]=isF[3]=isF[4]=isF[5]=0;
 
-    digitezer.SimulateDetectorResponse(z0, x0, geantTime, nActivatedPads2, nFiredPads2, isF, nPlace2, qInduced, tofTime2, averageTime);
+    digitezer.SimulateDetectorResponse(z0+(iz0-1)*3.5,x0+(ix0-24)*2.5, geantTime, nActivatedPads2, nFiredPads2, isF, nPlace2, qInduced, tofTime2, averageTime);
     isFired2[0]=isF[0]>0;
     isFired2[1]=isF[1]>0;
     isFired2[2]=isF[2]>0;
@@ -97,32 +105,12 @@ convertNplace(Int_t nActivatedPads,Int_t nFiredPads,Int_t isfired[6],Int_t nplac
 
   for(Int_t i=0;i<6;i++){
     if(isfired[i]==0)continue;
-    switch(nplace[i]){
-    case 73:
-      ix[ipad]=0;
-      iz[ipad]=0;
-      break;
-    case 25:
-      ix[ipad]=0;
-      iz[ipad]=-1;
-      break;
-    case 72:
-      ix[ipad]=-1;
-      iz[ipad]=0;
-      break;
-    case 74:
-      ix[ipad]=1;
-      iz[ipad]=0;
-      break;
-    case 24:
-      ix[ipad]=-1;
-      iz[ipad]=-1;
-      break;
-    case 26:
-      ix[ipad]=1;
-      iz[ipad]=-1;
-      break;
-    }
+    if(nplace[i] < 0 || nplace[i]>96) 
+      printf("nplace = %i\n",nplace[i]);
+
+    (nplace[i]<=AliTOFGeometry::NpadX()) ? iz[ipad] = 0 : iz[ipad] = 1;
+    (nplace[i]<=AliTOFGeometry::NpadX()) ? ix[ipad] = nplace[i] - 1 : ix[ipad] = nplace[i] - AliTOFGeometry::NpadX() - 1;
+
     tofTime[ipad]=tofTime[i];
     qInduced[ipad]=qInduced[i];
     ipad++;

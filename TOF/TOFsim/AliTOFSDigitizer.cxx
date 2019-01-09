@@ -485,6 +485,12 @@ void AliTOFSDigitizer::Digitize(Option_t *verboseOption) {
 	  geantTime = tofHit->GetTof(); // unit [s] // already corrected per event_time_smearing
 	}
 	
+	// check in case of residuals outside the pad
+	if(dxPad < -AliTOFGeometry::XPad()*0.5) dxPad = -AliTOFGeometry::XPad()*0.5; 
+	else if(dxPad >= AliTOFGeometry::XPad()*0.5) dxPad = AliTOFGeometry::XPad()*0.5-1E-3; 
+	if(dzPad < -AliTOFGeometry::ZPad()*0.5) dzPad = -AliTOFGeometry::ZPad()*0.5; 
+	else if(dzPad >= AliTOFGeometry::ZPad()*0.5) dzPad = AliTOFGeometry::ZPad()*0.5-1E-3; 
+
 	geantTime *= 1.e+09;  // conversion from [s] to [ns]
 	// TOF matching window (-200ns - 400 ns) control
 	if (geantTime>=AliTOFGeometry::MatchingWindow()*2E-3 || geantTime<-AliTOFGeometry::MatchingWindow()*1E-3) {
