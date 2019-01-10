@@ -19,7 +19,8 @@ class MiniV0 {
   float GetV0radius() const { return std::abs(fV0radius); }
   float GetV0pt() const { return std::abs(fV0pt); }
   float GetV0eta() const { return fV0eta; }
-  float GetCandidateInvMass(int i) const { return fInvMass[i]; }
+  float GetKInvMass() const { return fKInvMass; }
+  float GetLambdaInvMass() const { return fLambdaInvMass; }  
   float GetDistOverP() const { return fDistOverTotMom; }
   Double32_t GetV0CosPA() const { return fV0CosPA; }
   Double32_t GetV0chi2() const { return fChi2V0; }
@@ -52,7 +53,8 @@ class MiniV0 {
   void SetV0radiusAndLikeSign(float r, bool ls = false) { fV0radius = ls ? -r : r; }
   void SetV0ptAndFake(float pt, bool fake) { fV0pt = fake ? -pt : pt; }
   void SetV0eta(float eta) { fV0eta = eta; }
-  void SetInvMass(int i, float m) { fInvMass[i] = m; }
+  void SetKInvMass(float m) { fKInvMass = m; }
+  void SetLambdaInvMass(float m2){fLambdaInvMass= m2;}
   void SetDistOverP(float distOnP) { fDistOverTotMom = distOnP; }
   void SetV0CosPA(float cospa) { fV0CosPA = cospa; }
   void SetV0Chi2(float chi2) { fChi2V0 = chi2; }
@@ -81,7 +83,8 @@ class MiniV0 {
   float fV0radius;                      // V0 decay vertex radius (negarive -> LikeSign V0)
   float fV0pt;                          // V0 transverse momentum (in MC if negative -> fake V0)
   float fV0eta;                         // V0 pseudorapidity
-  float fInvMass[2];                    // Invariant mass for the candidate
+  float fKInvMass;                      // k invariant mass for the candidate
+  float fLambdaInvMass;                 // lambda invariant mass for the candidate
   float fDistOverTotMom;                // L/p
   Double32_t fV0CosPA;                  //[0.9,1.0,16] V0 cosine of pointing angle
   Double32_t fChi2V0;                   //[0.0,10.24,8] V0 fit chi2
@@ -210,8 +213,8 @@ miniV0.SetV0ptAndFake(v0Pt, fake);
 miniV0.SetV0eta(v0->Eta());
 miniV0.SetLeastNumberOfXedRows(minXedRows);
 miniV0.SetDistOverP(distOverP);
-miniV0.SetInvMass(0,masses[0]);
-miniV0.SetInvMass(1,masses[1]);
+miniV0.SetKInvMass(masses[0]);
+miniV0.SetLambdaInvMass(masses[1]);
 miniV0.SetArmenterosVariables(v0->AlphaV0(), v0->PtArmV0());
 miniV0.SetV0CosPA(cosPA);
 miniV0.SetV0Chi2(v0->GetChi2V0());
