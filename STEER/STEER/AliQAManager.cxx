@@ -872,7 +872,7 @@ Bool_t AliQAManager::MergeXML(const Char_t * collectionFile, const Char_t * subF
   // Open the file collection 
   AliInfoClass(Form("*** Create Collection       ***\n***  Wk-Dir = |%s|             \n***  Coll   = |%s|             \n",gSystem->WorkingDirectory(), collectionFile));              	
   
-  TGridCollection * collection = (TGridCollection*)gROOT->ProcessLine(Form("TAlienCollection::Open(\"%s\")",collectionFile));
+  TGridCollection * collection = gGrid->OpenCollection(collectionFile);
   TGridResult* result = collection->GetGridResult("", 0, 0);
   
   Int_t index = 0  ;
