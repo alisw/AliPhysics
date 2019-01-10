@@ -164,6 +164,8 @@ AliAnalysisTaskNucleiYield::AliAnalysisTaskNucleiYield(TString taskname)
 AliAnalysisTaskNucleiYield::~AliAnalysisTaskNucleiYield(){
   if (AliAnalysisManager::GetAnalysisManager()->IsProofMode()) return;
   if (fList) delete fList;
+  if (fRTree) delete fRTree;
+  if (fSTree) delete fSTree;
   if (fTOFfunction) delete fTOFfunction;
   if (fFunctCollection) delete fFunctCollection;
 }

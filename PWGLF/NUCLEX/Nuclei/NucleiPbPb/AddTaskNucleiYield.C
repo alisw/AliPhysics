@@ -67,15 +67,15 @@ AliAnalysisTaskNucleiYield* AddTaskNucleiYield(Bool_t isMC = kFALSE,
   mgr->AddTask(deu);
 
   TString output = "AnalysisResults.root";
-  AliAnalysisDataContainer *deuCont = mgr->CreateContainer(Form("mpuccio_%s",tskname.Data()),
+  AliAnalysisDataContainer *deuCont = mgr->CreateContainer(Form("mpuccio_%s",suffix.Data()),
       TList::Class(),
       AliAnalysisManager::kOutputContainer,
       output.Data());
-  AliAnalysisDataContainer *deuCont1 = mgr->CreateContainer(Form("RTree",tskname.Data()),
+  AliAnalysisDataContainer *deuCont1 = mgr->CreateContainer(Form("RTree%s",suffix.Data()),
       TTree::Class(),
       AliAnalysisManager::kOutputContainer,
       output.Data());
-  AliAnalysisDataContainer *deuCont2 = mgr->CreateContainer(Form("STree",tskname.Data()),
+  AliAnalysisDataContainer *deuCont2 = mgr->CreateContainer(Form("STree%s",suffix.Data()),
       TTree::Class(),
       AliAnalysisManager::kOutputContainer,
       output.Data());
