@@ -116,7 +116,7 @@ class AliAnalysisTaskStrangenessLifetimes : public AliAnalysisTaskSE {
   AliAnalysisTaskStrangenessLifetimes& operator=(
       const AliAnalysisTaskStrangenessLifetimes&);  // not implemented
 
-  ClassDef(AliAnalysisTaskStrangenessLifetimes, 5);
+  ClassDef(AliAnalysisTaskStrangenessLifetimes, 6);
 };
 
 #endif
