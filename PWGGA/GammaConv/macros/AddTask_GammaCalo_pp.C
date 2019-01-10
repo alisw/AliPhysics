@@ -1346,11 +1346,33 @@ void AddTask_GammaCalo_pp(
   } else if (trainConfig == 900){
     cuts.AddCutCalo("00010113","11111110a7032230000","21631031000000d0"); // std
   } else if (trainConfig == 901){
-    cuts.AddCutCalo("00010113","11111110a7032230000","2i631031000000d0");
+    cuts.AddCutCalo("00010113","11111110a7032230000","2i631031000000d0"); // MaxPtSector mixing
   } else if (trainConfig == 902){
-    cuts.AddCutCalo("00010113","11111110a7032230000","2j631031000000d0");
+    cuts.AddCutCalo("00010113","11111110a7032230000","2j631031000000d0"); // JetSector mixing
   } else if (trainConfig == 903){
     cuts.AddCutCalo("00010113","11111110a7032230000","31631031000000d0"); // std QA
+  } else if (trainConfig == 904){
+    cuts.AddCutCalo("00010113","11111110a7032230000","21631031000000d0"); // for R02
+  } else if (trainConfig == 905){
+    cuts.AddCutCalo("00010113","11111110a7032230000","21631031000000d0"); // for R06
+  } else if (trainConfig == 906){
+    cuts.AddCutCalo("00010113","11111110a7032230000","21631031000000d0"); // for MinJetPt 9
+  } else if (trainConfig == 907){
+    cuts.AddCutCalo("00010113","11111110a7032230000","21631031000000d0"); // for MinJetPt 11
+  } else if (trainConfig == 908){
+    cuts.AddCutCalo("00010113","11111110a7032230000","21631031000000d0"); // for MinJetPt 5
+  } else if (trainConfig == 909){
+    cuts.AddCutCalo("00010113","11111110a7022230000","21631031000000d0"); // min energy cluster variation 1  600 MeV
+    cuts.AddCutCalo("00010113","11111110a7042230000","21631031000000d0"); // min energy cluster variation 2  800 MeV
+    cuts.AddCutCalo("00010113","11111110a7052230000","21631031000000d0"); // min energy cluster variation 2  900 MeV
+    cuts.AddCutCalo("00010113","11111110a7032230000","2163103100000040"); // min opening angle 0.0152
+    cuts.AddCutCalo("00010113","11111110a7032230000","2163103100000060"); // min opening angle 0.017
+  } else if (trainConfig == 910){
+    cuts.AddCutCalo("00010113","11111110a7032230000","2163103100000070"); // min opening angle 0.016
+    cuts.AddCutCalo("00010113","11111110a0032230000","21631031000000d0"); // tm off
+    cuts.AddCutCalo("00010113","11111110a3032230000","21631031000000d0"); // fixed window
+    cuts.AddCutCalo("00010113","11111110a6032230000","21631031000000d0"); // tm pt dependent var 1
+    cuts.AddCutCalo("00010113","11111110a8032230000","21631031000000d0"); // tm pt dependent var 2
 
   } else {
     Error(Form("GammaCalo_%i",trainConfig), "wrong trainConfig variable no cuts have been specified for the configuration");
