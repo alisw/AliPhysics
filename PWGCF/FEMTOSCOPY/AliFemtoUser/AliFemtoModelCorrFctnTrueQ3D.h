@@ -12,7 +12,7 @@
 
 class AliFemtoPair;
 class AliFemtoModelManager;
-class TH3D;
+class TH3F;
 class TRandom;
 
 /// \class AliFemtoModelCorrFctnTrueQ3D
@@ -105,7 +105,7 @@ public:
 
   /// Custom constructor
   ///
-  AliFemtoModelCorrFctnTrueQ3D(const char *prefix, UInt_t nbins, Double_t aQinvLo, Double_t aQinvHi);
+  AliFemtoModelCorrFctnTrueQ3D(const TString &prefix, UInt_t nbins, Double_t aQinvLo, Double_t aQinvHi);
 
   /// Unnamed, q-symmetric constructor
   ///
@@ -128,7 +128,7 @@ public:
   /// Destructor - histograms destroyed, ModelManager is NOT
   virtual ~AliFemtoModelCorrFctnTrueQ3D();
 
-
+  ///
   AliFemtoModelCorrFctnTrueQ3D& operator=(const AliFemtoModelCorrFctnTrueQ3D&);
 
   /// Set the MC model manager
@@ -156,16 +156,23 @@ protected:
   AliFemtoModelManager *fManager; //!<! Link back to the manager to retrieve weights
 
   /// Numerator made with pairs using monte-carlo generated momentum
-  TH3D *fNumeratorGenerated;
+  TH3F *fNumeratorGenerated;
 
   /// Numerator made with pairs from the same event
-  TH3D *fNumeratorReconstructed;
+  TH3F *fNumeratorReconstructed;
+
+  /// Numerator made with pairs from the same event - no femto weighting
+  TH3F *fNumeratorGenUnweighted;
+  TH3F *fNumeratorRecUnweighted;
 
   /// Denominator with the monte-carlo generated momentum
-  TH3D *fDenominatorGenerated;
+  TH3F *fDenominatorGenerated;
 
   /// Denominator with reconstructed data
-  TH3D *fDenominatorReconstructed;
+  TH3F *fDenominatorReconstructed;
+
+  TH3F *fDenominatorRecWeighted;
+  TH3F *fDenominatorGenWeighted;
 
   /// Random number generator used for randomizing order of pair momentums
   TRandom *fRng;
@@ -176,14 +183,6 @@ void
 AliFemtoModelCorrFctnTrueQ3D::SetManager(AliFemtoModelManager *manager)
 {
   fManager = manager;
-  std::cout << "fManager set to " << fManager << "\n";
-}
-
-inline
-void
-AliFemtoModelCorrFctnTrueQ3D::Finish()
-{
-  // no-op
 }
 
 inline
