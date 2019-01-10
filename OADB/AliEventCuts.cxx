@@ -432,7 +432,7 @@ void AliEventCuts::AutomaticSetup(AliVEvent *ev) {
   /// Run 2 Pb-Pb
   if ( (fCurrentRun >= 244917 && fCurrentRun <= 246994) ||
        (fCurrentRun >= 295369 && fCurrentRun <= 297624)) {
-    SetupLHC15o();
+    SetupRun2PbPb();
     return;
   }
 
@@ -616,9 +616,9 @@ void AliEventCuts::SetupRun2pp() {
 
 }
 
-void AliEventCuts::SetupLHC15o() {
-  ::Info("AliEventCuts::SetupLHC15o","Setup event cuts for the LHC15o period.");
-  SetName("StandardLHC15oEventCuts");
+void AliEventCuts::SetupRun2PbPb() {
+  ::Info("AliEventCuts::SetupRun2PbPb","Setup event cuts for the Run2 Pb-Pb periods.");
+  SetName("StandardRun2PbPbEventCuts");
 
   fRequireTrackVertex = true;
   fMinVtz = -10.f;
@@ -673,7 +673,11 @@ void AliEventCuts::SetupLHC15o() {
   if(!fMultiplicityV0McorrCut) fMultiplicityV0McorrCut = new TF1("fMultiplicityV0McorrCut","[0]+[1]*x+[2]*exp([3]-[4]*x) - 5.*([5]+[6]*exp([7]-[8]*x))",0,100);
   fMultiplicityV0McorrCut->SetParameters(-6.15980e+02, 4.89828e+00, 4.84776e+03, -5.22988e-01, 3.04363e-02, -1.21144e+01, 2.95321e+02, -9.20062e-01, 2.17372e-02);
 
-  if (!fOverrideAutoTriggerMask) fTriggerMask = AliVEvent::kINT7;
+  if (!fOverrideAutoTriggerMask) {
+    fTriggerMask = AliVEvent::kINT7;
+    if (fCurrentRun >= 295369)
+      fTriggerMask |= AliVEvent::kCentral | AliVEvent::kSemiCentral;
+  }
 
 }
 
@@ -822,7 +826,7 @@ void AliEventCuts::UseMultSelectionEventSelection(bool useIt) {
 void AliEventCuts::SetupLHC17n() {
   ::Info("AliEventCuts::AutomaticSetup","Xe-Xe runs found: we will setup the same LHC15o cuts with somewhat different correlation cuts settings (switched off by default).");
   SetName("StandardLHC17nEventCuts");
-  SetupLHC15o();
+  SetupRun2PbPb();
   fUseEstimatorsCorrelationCut = false;
 
   array<double,5> vzero_tpcout_polcut = {-1000.0, 2.8, 1.2e-5,0.,0.};
