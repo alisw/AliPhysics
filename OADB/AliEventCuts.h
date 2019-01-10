@@ -83,7 +83,8 @@ class AliEventCuts : public TList {
     void   OverridePileUpCuts(int minContrib, float minZdist, float nSigmaZdist, float nSigmaDiamXY, float nSigmaDiamZ, bool ov = true);
     void   SetManualMode (bool man = true) { fManualMode = man; }
     void   SetupRun1PbPb();
-    void   SetupLHC15o();
+    void   SetupLHC15o() { SetupRun2PbPb(); }
+    void   SetupRun2PbPb();
     void   SetupLHC17n();
     void   SetupRun2pp();
     void   SetupRun1pA(int iPeriod);
