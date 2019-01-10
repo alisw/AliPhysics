@@ -51,6 +51,11 @@ class AliAnalysisHFjetTagHFE : public AliAnalysisTaskEmcalJet {
   void SetInvMassCut0(Double_t InvmassCut) {fInvmassCut = InvmassCut;};
   void SetInvMassCut1(Double_t ptAssocut) {fptAssocut = ptAssocut;};
   void SetMCcorr(Bool_t MCcorr){iMCcorr = MCcorr;};
+  //void SetEMCalTriggerEG1(Bool_t flagTr1) { fEMCEG1=flagTr1; fEMCEG2=kFALSE;};
+  //void SetEMCalTriggerEG2(Bool_t flagTr2) { fEMCEG2=flagTr2; fEMCEG1=kFALSE;};
+  void SetEMCalTriggerEG1(Bool_t flagTr1) { fEMCEG1=flagTr1;};
+  void SetEMCalTriggerEG2(Bool_t flagTr2) { fEMCEG2=flagTr2;};
+
 
  protected:
   void                        ExecOnce();
@@ -72,6 +77,8 @@ class AliAnalysisHFjetTagHFE : public AliAnalysisTaskEmcalJet {
     Bool_t iHybrid;
     Bool_t iOccCorr;
     Bool_t ippcoll;
+    Bool_t fEMCEG1;//EMcal Threshold EG1
+    Bool_t fEMCEG2;//EMcal Threshold EG2
     Double_t fmimSig; // max. centrality
     Double_t fmimEop; // max. centrality
     Double_t fmimM20; // max. centrality
@@ -121,13 +128,15 @@ class AliAnalysisHFjetTagHFE : public AliAnalysisTaskEmcalJet {
   TH1F                        *fHisteJetBG;
   TH1F                        *fHisteJetSub;
   TH1F                        *fHistIncEle;
+  TH1F                        *fHistIncEle2;
   TH1F                        *fHistIncEleInJet0;
   TH1F                        *fHistIncEleInJet1;
   TH1F                        *fHistHfEleMC;
   TH1F                        *fHistHfEleMCreco;
   TH2F                        *fHistHfEleMCiso;
-  TH1F                        *fHistHfEle_wISO;
-  TH1F                        *fHistHfEle_woISO;
+  TH2F                        *fHistEleiso;
+  TH1F                        *fHistEle_wISO;
+  TH1F                        *fHistEle_woISO;
   TH1F                        *fHistPhoEleMC;
   TH1F                        *fHistPhoEleMCpi0;
   TH1F                        *fHistPhoEleMCeta;
@@ -191,6 +200,10 @@ class AliAnalysisHFjetTagHFE : public AliAnalysisTaskEmcalJet {
   TH2D                        *fHistJetEnergyReso;
   TF1                         *fPi0Weight;
   TF1                         *fEtaWeight;
+  TF1                         *fpythia_b;
+  TF1                         *fpowheg_b;
+  TF1                         *fpythia_c;
+  TF1                         *fpowheg_c;
   TRandom                     *generator;
 
   AliJetContainer            *fJetsCont;                   //!Jets
