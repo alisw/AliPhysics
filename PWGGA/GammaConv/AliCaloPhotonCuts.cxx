@@ -6549,17 +6549,6 @@ Float_t AliCaloPhotonCuts::FunctionNL_SPOW(Float_t e, Float_t p0, Float_t p1, Fl
 }
 
 //________________________________________________________________________
-Float_t AliCaloPhotonCuts::FunctionNL_DExp(Float_t e, Float_t p0, Float_t p1, Float_t p2, Float_t p3, Float_t p4, Float_t p5){
-  Float_t ret = 1;
-  if ( (p3 - TMath::Exp(-p4*e+p5) ) != 0)
-    ret = ( (p0 - TMath::Exp(-p1*e+p2) )/(p3 - TMath::Exp(-p4*e+p5) ) );
-  if (ret != 0.)
-    return ret;
-  else
-    return 1.;
-}
-
-//________________________________________________________________________
 Float_t AliCaloPhotonCuts::FunctionNL_DExp(Float_t e, Float_t p0, Float_t p1, Float_t p2, Float_t p3, Float_t p4, Float_t p5, Float_t p6, Float_t p7){
   Float_t ret = 1;
   if ( (p3 - p7*TMath::Exp(-p4*e+p5) ) != 0)
