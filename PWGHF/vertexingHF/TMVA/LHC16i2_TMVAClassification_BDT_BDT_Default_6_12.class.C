@@ -27576,3 +27576,9 @@ inline void ReadBDT_Default::Clear()
 
       return retval;
    }
+
+extern "C" {
+ ReadBDT_Default *ReadBDT_Default_maker(std::vector<std::string> &pippo){
+  return new ReadBDT_Default(pippo);
+}
+}
