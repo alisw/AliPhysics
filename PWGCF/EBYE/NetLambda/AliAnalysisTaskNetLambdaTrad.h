@@ -68,6 +68,7 @@ protected:
     UInt_t fEvSel;
     Int_t  fNptBins;
     
+    THnSparse *fPtBinNplusNminusChALL;
     THnSparse *fPtBinNplusNminusChCut;
     Int_t    GetPtBin(Double_t pt);
 
