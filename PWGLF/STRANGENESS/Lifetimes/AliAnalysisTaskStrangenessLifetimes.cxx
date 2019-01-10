@@ -635,8 +635,8 @@ void AliAnalysisTaskStrangenessLifetimes::UserExec(Option_t *) {
          fHistEtaPos->Fill(pTrack->Eta());
          fHistEtaNeg->Fill(nTrack->Eta());
          fHistArmenteros->Fill(miniV0.GetArmenterosAlpha(),miniV0.GetArmenterosPt());
-         fHistInvMassK0s->Fill(miniV0.GetV0pt(), miniV0.GetCandidateInvMass(0));
-         fHistInvMassLambda->Fill(miniV0.GetV0pt(), miniV0.GetCandidateInvMass(1));           
+         fHistInvMassK0s->Fill(miniV0.GetV0pt(), miniV0.GetKInvMass());
+         fHistInvMassLambda->Fill(miniV0.GetV0pt(), miniV0.GetLambdaInvMass());           
 
       }
 
