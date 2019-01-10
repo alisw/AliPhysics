@@ -183,48 +183,35 @@ if(ROOTSYS)
     string(STRIP "${ROOT_GLIBRARIES}" ROOT_GLIBRARIES)
     separate_arguments(ROOT_GLIBRARIES)
 
-    # Checking for AliEn support
-    # If AliEn support is enabled we need to point to AliEn
-    execute_process(COMMAND ${ROOT_CONFIG} --has-alien OUTPUT_VARIABLE ROOT_HASALIEN ERROR_VARIABLE error OUTPUT_STRIP_TRAILING_WHITESPACE )
-    if(error)
-        message(FATAL_ERROR "Error checking if ROOT was built with AliEn support: ${error}")
-    endif(error)
+    # We assume that AliEn support comes as an external ROOT plugin, 
+    # so we don't check if ROOT has alien feature enabled.
+    if(ALIEN)
+        add_definitions(-DWITHALIEN)
 
-    #if defined
-    if(ROOT_HASALIEN)
-        string(STRIP "${ROOT_HASALIEN}" ROOT_HASALIEN)
-        if(ROOT_HASALIEN STREQUAL "yes")
-            if(ALIEN)
-                add_definitions(-DWITHALIEN)
-
-                # AliEn might bring some system libraries, we need to use them
-                if(EXISTS "${ALIEN}/lib")
-                    link_directories(${ALIEN}/lib)
-                endif()
-
-                # api/lib should always exists
-                if(EXISTS "${ALIEN}/api/lib")
-                    link_directories(${ALIEN}/api/lib)
-                endif()
-
-                # include for AliEn
-                if(EXISTS "${ALIEN}/include")
-                    include_directories(SYSTEM ${ALIEN}/include)
-                endif()
-
-                # api/include always exists
-                if(EXISTS "${ALIEN}/api/include")
-                    include_directories(SYSTEM ${ALIEN}/api/include)
-                endif()
-
-                set(ROOT_HASALIEN TRUE)
-            else(ALIEN)
-                message(FATAL_ERROR "ROOT was built with AliEn support but no AliEn installation found. Please set \"ALIEN\" to point to your AliEn installation.")
-            endif(ALIEN)
-        else()
-            set(ROOT_HASALIEN FALSE)
+        # AliEn might bring some system libraries, we need to use them
+        if(EXISTS "${ALIEN}/lib")
+            link_directories(${ALIEN}/lib)
         endif()
-    endif(ROOT_HASALIEN)
+
+        # api/lib should always exists
+        if(EXISTS "${ALIEN}/api/lib")
+            link_directories(${ALIEN}/api/lib)
+        endif()
+
+        # include for AliEn
+        if(EXISTS "${ALIEN}/include")
+            include_directories(SYSTEM ${ALIEN}/include)
+        endif()
+
+        # api/include always exists
+        if(EXISTS "${ALIEN}/api/include")
+            include_directories(SYSTEM ${ALIEN}/api/include)
+        endif()
+
+        set(ROOT_HASALIEN TRUE)
+    else(ALIEN)
+        message(FATAL_ERROR "No AliEn installation found. Please set \"ALIEN\" to point to your AliEn installation.")
+    endif(ALIEN)
 
     # Checking for xml support
     execute_process(COMMAND ${ROOT_CONFIG} --has-xml OUTPUT_VARIABLE ROOT_HASXML ERROR_VARIABLE error OUTPUT_STRIP_TRAILING_WHITESPACE )
