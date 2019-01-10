@@ -1,7 +1,7 @@
 
 // For: Net Lambda fluctuation analysis via traditional method
 // By: Ejiro Naomi Umaka Apr 2018
-// Updated Jan 07
+// Updated Jan 09
 
 
 #include "AliAnalysisManager.h"
@@ -67,7 +67,7 @@ fTreeVariableDcaV0ToPrimVertex(0),
 fTreeVariableDcaPosToPrimVertex(0),
 fTreeVariableDcaNegToPrimVertex(0),
 
-
+fPtBinNplusNminusChALL(NULL),
 fPtBinNplusNminusChCut(NULL)
 
 {
@@ -151,6 +151,9 @@ void AliAnalysisTaskNetLambdaTrad::UserCreateOutputObjects()
         499.5, 499.5, 499.5, 499.5, 499.5, 499.5, 499.5, 499.5,499.5,499.5,499.5,499.5,
         199.5, 199.5, 199.5, 199.5, 199.5, 199.5, 199.5, 199.5 };
     
+    fPtBinNplusNminusChALL = new THnSparseI("fPtBinNplusNminusChALL","cent-nlambda-nantilambda masscut", dim, bin, min, max);
+    fListHist->Add(fPtBinNplusNminusChALL);
+    
     fPtBinNplusNminusChCut = new THnSparseI("fPtBinNplusNminusChCut","cent-nlambda-nantilambda masscut", dim, bin, min, max);
     fListHist->Add(fPtBinNplusNminusChCut); //V0masscut
     
@@ -175,10 +178,12 @@ void AliAnalysisTaskNetLambdaTrad::UserExec(Option_t *)
 {
     
     const Int_t dim = fNptBins*2;
+    Int_t ptCh[dim];
     Int_t ptChCut[dim];
     
     for(Int_t idx = 0; idx < dim; idx++)
     {
+        ptCh[idx] = 0.;
         ptChCut[idx] = 0.;
     }
     
@@ -348,6 +353,7 @@ void AliAnalysisTaskNetLambdaTrad::UserExec(Option_t *)
             {
                 f2fHistInvMassVsPtLambda->Fill(invMassLambda,V0pt);
                 f2fHistRecCentVsPtLambda->Fill(fCentrality,V0pt);
+                 ptCh[iptbin] += 1;
                 
                 if(invMassLambda > 1.11 && invMassLambda < 1.122)
                 {
@@ -361,7 +367,7 @@ void AliAnalysisTaskNetLambdaTrad::UserExec(Option_t *)
             {
                 f2fHistInvMassVsPtAntiLambda->Fill(invMassAntiLambda,V0pt);
                 f2fHistRecCentVsPtAntiLambda->Fill(fCentrality,V0pt);
-                
+                  ptCh[iptbin+fNptBins] += 1;
                 if(invMassAntiLambda > 1.11 && invMassAntiLambda < 1.122)
                 {
                     f2fHistPtmassctAntiLambda->Fill(fCentrality,V0pt);
@@ -373,7 +379,14 @@ void AliAnalysisTaskNetLambdaTrad::UserExec(Option_t *)
         }// zero onfly V0
     }// end of V0 loop
     
-
+    Double_t ptContainer[dim+1];
+    ptContainer[0] = (Double_t)fCentrality;
+    for(Int_t i = 1; i <= dim; i++)
+    {
+        ptContainer[i] = ptCh[i-1];
+    }
+    fPtBinNplusNminusChALL->Fill(ptContainer);
+    ////////////////////
     Double_t ptContainerCut[dim+1];
     ptContainerCut[0] = (Double_t)fCentrality;
     for(Int_t i = 1; i <= dim; i++)
