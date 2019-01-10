@@ -19,10 +19,10 @@
 #include "AliExternalTrackParam.h"
 #include "AlidNdPtEventCuts.h"
 
-#include "AliAODEvent.h"
+/*#include "AliAODEvent.h"
 #include "AliAODInputHandler.h"
 #include "AliAODTrack.h"
-#include "AliAODTrackSelection.h"
+#include "AliAODTrackSelection.h"*/
 
 #include "AliPhysicsSelection.h"
 #include "AliVMultiplicity.h"
@@ -53,7 +53,7 @@ AlidNdPtUnifiedAnalysisTask::AlidNdPtUnifiedAnalysisTask(const char *name) : Ali
   fFunTrkEff(0),
   fEventCuts(0),
   fESDtrackCuts(0),
-  fAODtrackCuts(0),
+  //fAODtrackCuts(0),
   fUtils(0),
   //Toggles
   fIsESD(kTRUE),
@@ -611,7 +611,7 @@ void AlidNdPtUnifiedAnalysisTask::UserCreateOutputObjects(){
 AlidNdPtUnifiedAnalysisTask::~AlidNdPtUnifiedAnalysisTask(){
   if(fUtils){delete fUtils; fUtils=0;}
   if(fESDtrackCuts){delete fESDtrackCuts; fESDtrackCuts=0;}
-  if(fAODtrackCuts){delete fAODtrackCuts; fAODtrackCuts=0;}
+ // if(fAODtrackCuts){delete fAODtrackCuts; fAODtrackCuts=0;}
   //if(fEventCuts){delete fEventCuts; fEventCuts=0;}
   if(fDCAyEtaPt) delete fDCAyEtaPt;
   if(fDCAyEtaPtMCPrim) delete fDCAyEtaPtMCPrim;
@@ -1020,9 +1020,9 @@ Bool_t AlidNdPtUnifiedAnalysisTask::IsTrackAcceptedQuality(AliVTrack *track){
     if(!fESDtrackCuts->AcceptTrack(esdTrack)) return kFALSE;
   }
   else{
-    AliAODTrack *aodTrack = dynamic_cast<AliAODTrack*> (track);
+  //  AliAODTrack *aodTrack = dynamic_cast<AliAODTrack*> (track);
     //if(!fAODtrackCuts->AcceptTrack(aodTrack)) return kFALSE;
-    return aodTrack->TestFilterBit(AliAODTrack::AODTrkFilterBits_t::kTrkGlobal);
+    //return aodTrack->TestFilterBit(AliAODTrack::AODTrkFilterBits_t::kTrkGlobal);
     }
   return kTRUE;
 }
@@ -1053,10 +1053,10 @@ Bool_t AlidNdPtUnifiedAnalysisTask::IsEventAccepted2015data(AliVEvent *event)
   else
   {
   ///AOD
-  AliAODEvent* AODevent = dynamic_cast<AliAODEvent*>(event);
+  /*AliAODEvent* AODevent = dynamic_cast<AliAODEvent*>(event);
   if (AODevent->IsIncompleteDAQ()) { return kFALSE; }
   if (fUtils->IsSPDClusterVsTrackletBG(event)) { return kFALSE; }
-  if (AODevent->IsPileupFromSPD(5,0.8)) {return kFALSE; }
+  if (AODevent->IsPileupFromSPD(5,0.8)) {return kFALSE; }*/
   }
   return kTRUE;
 }
@@ -1226,7 +1226,7 @@ Bool_t AlidNdPtUnifiedAnalysisTask::IsVertexOK(AliVEvent *event){
   }
 
   else{
-    Float_t requiredZResolution = 1000;
+   /* Float_t requiredZResolution = 1000;
     AliAODEvent* AODevent = dynamic_cast<AliAODEvent*>(event);
     const AliAODVertex *aodVertex = (AliAODVertex*)AODevent->GetVertex(0);
     if(!aodVertex){printf("ERROR: vertex not available\n"); return kFALSE;}
@@ -1248,7 +1248,7 @@ Bool_t AlidNdPtUnifiedAnalysisTask::IsVertexOK(AliVEvent *event){
     //if (vertexSPD->IsFromVertexerZ() && !(vertexSPD->GetDispersion()<0.04 && vertexSPD->GetZRes()<0.25)) return kFALSE; There didn't find an analogous function to GetZRes() for AODs.
     //if (vertexSPD->IsFromVertexerZ() && vertexSPD->GetDispersion() > 0.04) return kFALSE; /// vertexSPD->GetDispersion() > 0.02 to 0.04
     if ((TMath::Abs(vertexSPD->GetZ() - trkVertex->GetZ())>0.5)) return kFALSE;
-  }
+  */}
   return kTRUE;
 }
 
