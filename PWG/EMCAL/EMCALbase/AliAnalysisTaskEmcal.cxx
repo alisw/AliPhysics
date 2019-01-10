@@ -608,10 +608,10 @@ void AliAnalysisTaskEmcal::UserExec(Option_t *option)
     // Initialize event cuts here: This prevents a segfault
     // in case a user task overwrites the function UserCreateOutputObjects
     if(!fUseInternalEventSelection) {
-      fAliEventCuts = new AliEventCuts(true);
+      fAliEventCuts = new AliEventCuts(false); // Event cut should add the QA plots to the EMCAL list directly
       // Do not perform trigger selection in the AliEvent cuts but let the task do this before
       fAliEventCuts->OverrideAutomaticTriggerSelection(AliVEvent::kAny, true);
-      if(fOutput) fOutput->Add(fAliEventCuts);
+      if(fOutput) fAliEventCuts->AddQAplotsToList(fOutput);
     }
   }
 
@@ -1113,7 +1113,7 @@ Bool_t AliAnalysisTaskEmcal::IsEventSelected(){
 
 Bool_t AliAnalysisTaskEmcal::IsEventSelectedInternal()
 {
-  AliDebugStream(1) << "Using default event selection" << std::endl;
+  AliDebugStream(3) << "Using default event selection" << std::endl;
   if (fOffTrigger != AliVEvent::kAny) {
     UInt_t res = 0;
     const AliESDEvent *eev = dynamic_cast<const AliESDEvent*>(InputEvent());
@@ -1269,7 +1269,7 @@ Bool_t AliAnalysisTaskEmcal::IsTriggerSelected(){
   // to trigger selection). Users should re-implement
   // this function in case they have certain needs, in
   // particular for EMCAL triggers
-  AliDebugStream(1) << "Using default trigger selection" << std::endl;
+  AliDebugStream(3) << "Using default trigger selection" << std::endl;
   if (!fTrigClass.IsNull()) {
     TString fired = InputEvent()->GetFiredTriggerClasses();
     if (!fired.Contains("-B-")) return kFALSE;

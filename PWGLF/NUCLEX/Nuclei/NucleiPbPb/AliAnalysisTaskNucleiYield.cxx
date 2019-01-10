@@ -74,6 +74,8 @@ AliAnalysisTaskNucleiYield::AliAnalysisTaskNucleiYield(TString taskname)
    ,fPtCorrectionM{3}
    ,fTOFfunction{nullptr}
    ,fList{nullptr}
+   ,fRTree{nullptr}
+   ,fSTree{nullptr}
    ,fCutVec{}
    ,fPDG{0}
    ,fPDGMass{0}
@@ -119,6 +121,9 @@ AliAnalysisTaskNucleiYield::AliAnalysisTaskNucleiYield(TString taskname)
    ,fPtShapeMaximum{0.f}
    ,fITSelectronRejectionSigma{-1.}
    ,fEnableFlattening{false}
+   ,fSaveTrees{false}
+   ,fRecNucleus{}
+   ,fSimNucleus{}
    ,fParticle{AliPID::kUnknown}
    ,fCentBins{0}
    ,fDCABins{0}
@@ -150,6 +155,8 @@ AliAnalysisTaskNucleiYield::AliAnalysisTaskNucleiYield(TString taskname)
      fPtCorrectionM.Set(3,mCorrection);
      DefineInput(0, TChain::Class());
      DefineOutput(1, TList::Class());
+     DefineOutput(2, TTree::Class());
+     DefineOutput(3, TTree::Class());
    }
 
 /// Standard destructor
@@ -157,6 +164,8 @@ AliAnalysisTaskNucleiYield::AliAnalysisTaskNucleiYield(TString taskname)
 AliAnalysisTaskNucleiYield::~AliAnalysisTaskNucleiYield(){
   if (AliAnalysisManager::GetAnalysisManager()->IsProofMode()) return;
   if (fList) delete fList;
+  if (fRTree) delete fRTree;
+  if (fSTree) delete fSTree;
   if (fTOFfunction) delete fTOFfunction;
   if (fFunctCollection) delete fFunctCollection;
 }
@@ -278,6 +287,18 @@ void AliAnalysisTaskNucleiYield::UserCreateOutputObjects() {
 
   AliPDG::AddParticlesToPdgDataBase();
   PostData(1,fList);
+
+  if (fSaveTrees) {
+    fRTree = new TTree("RTree", "Reconstructed nuclei");
+    fRTree->Branch("RLightNucleus", &fRecNucleus);
+    PostData(2, fRTree);
+
+    if (fIsMC) {
+      fSTree = new TTree("STree", "Simulated nuclei");
+      fSTree->Branch("SLightNucleus", &fSimNucleus);
+      PostData(3, fSTree);
+    }
+  }
 }
 
 /// This is the function that is evaluated for each event. The analysis code stays here.
@@ -370,9 +391,40 @@ void AliAnalysisTaskNucleiYield::UserExec(Option_t *){
     if (track->GetID() < 0) continue;
     Double_t dca[2] = {0.};
     if (!track->TestFilterBit(fFilterBit) && fFilterBit) continue;
-    if (!AcceptTrack(track,dca)) continue;
+    bool acceptedTrack = AcceptTrack(track,dca);
     float beta = HasTOF(track,fPID);
     if (beta > 1. - EPS) beta = -1;
+
+    if (fSaveTrees) {
+      double mcPt = 0;
+      if (fIsMC) {
+        int mcId = std::abs(track->GetLabel());
+        AliAODMCParticle *part = (AliAODMCParticle*)stack->At(mcId);
+        if (part)
+          mcPt = part->Pt();
+      }
+      fRecNucleus.pt = track->Pt() * track->Charge();
+      fRecNucleus.eta = track->Eta();
+      fRecNucleus.phi = track->Phi();
+      fRecNucleus.beta = beta;
+      fRecNucleus.dcaxy = dca[0];
+      fRecNucleus.dcaz = dca[1];
+      AliTPCPIDResponse &tpcPidResp = fPID->GetTPCResponse();
+      fRecNucleus.tpcNsigmaD = tpcPidResp.GetNumberOfSigmas(track, AliPID::kDeuteron);
+      fRecNucleus.tpcNsigmaT = tpcPidResp.GetNumberOfSigmas(track, AliPID::kTriton);;
+      fRecNucleus.tpcNsigmaHe3 = tpcPidResp.GetNumberOfSigmas(track, AliPID::kHe3);;
+      fRecNucleus.tpcNsigmaHe4 = tpcPidResp.GetNumberOfSigmas(track, AliPID::kAlpha);;
+      fRecNucleus.centrality = centrality;
+      fRecNucleus.deltapt = mcPt - track->Pt();
+      fRecNucleus.itsCls = track->GetITSClusterMap();
+      fRecNucleus.tpcCls = track->GetTPCNcls();
+      fRecNucleus.tpcPIDcls = track->GetTPCsignalN();
+      if (fRecNucleus.tpcNsigmaD > -5.)
+        fRTree->Fill();
+    }
+
+    if (!acceptedTrack) continue;
+
     const int iTof = beta > EPS ? 1 : 0;
     float pT = track->Pt() * fCharge;
     int pid_mask = PassesPIDSelection(track);
@@ -445,7 +497,11 @@ void AliAnalysisTaskNucleiYield::UserExec(Option_t *){
   } // End AOD track loop
 
   //  Post output data.
-  PostData(1,fList);
+  PostData(1, fList);
+  if (fSaveTrees) {
+    PostData(2, fRTree);
+    PostData(3, fSTree);
+  }
 }
 
 /// Merge the output. Called once at the end of the query.

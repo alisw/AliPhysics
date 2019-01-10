@@ -58,7 +58,7 @@ class AliExternalTrackParam;
 class AliAnalysisTaskStrEffStudy : public AliAnalysisTaskSE {
 public:
     AliAnalysisTaskStrEffStudy();
-    AliAnalysisTaskStrEffStudy(Bool_t lSaveEventTree, Bool_t lSaveV0Tree, Bool_t lSaveCascadeTree, const char *name, TString lExtraOptions = "");
+    AliAnalysisTaskStrEffStudy(Bool_t lSaveEventTree, Bool_t lSaveV0Tree, Bool_t lSaveCascadeTree, Bool_t lSaveHyperTriton, const char *name, TString lExtraOptions = "");
     virtual ~AliAnalysisTaskStrEffStudy();
 
     virtual void   UserCreateOutputObjects();
@@ -74,6 +74,9 @@ public:
     }
     void SetSaveCascades           (Bool_t lSaveCascades   = kTRUE ) {
         fkSaveCascadeTree   = lSaveCascades;
+    }
+    void SetSaveHyperTriton3Body (Bool_t lSaveHyp3Body   = kTRUE ) {
+        fkSaveHyperTriton3BodyTree   = lSaveHyp3Body;
     }
     void SetPreselectDedx (Bool_t lPreselectDedx= kTRUE ) {
         fkPreselectDedx   = lPreselectDedx;
@@ -146,6 +149,10 @@ public:
     void SetDownScaleCascade ( Bool_t lOpt = kTRUE, Float_t lVal = 0.001 ) {
         fkDownScaleCascade = lOpt;
         fDownScaleFactorCascade = lVal;
+    }
+    void SetDownScaleHyperTriton3Body ( Bool_t lOpt = kTRUE, Float_t lVal = 0.001 ) {
+        fkDownScaleHyperTriton3Body = lOpt;
+        fDownScaleFactorHyperTriton3Body = lVal;
     }
 //---------------------------------------------------------------------------------------
 //Setters for the V0 Vertexer Parameters

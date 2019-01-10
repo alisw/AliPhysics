@@ -1,6 +1,7 @@
 #include "AliSigma0PhotonMotherCuts.h"
 #include <iostream>
 #include "AliMultSelection.h"
+#include "TMath.h"
 
 ClassImp(AliSigma0PhotonMotherCuts)
 
@@ -321,15 +322,16 @@ void AliSigma0PhotonMotherCuts::SigmaToLambdaGamma(
 
       fHistInvMass->Fill(invMass);
 
-      if (std::abs(rap) > fRapidityMax || multBin < 0) continue;
+      if (TMath::Abs(rap) > fRapidityMax) continue;
+      fHistInvMassPt->Fill(pT, invMass);
+
       if (!fIsLightweight) {
         fHistArmenterosAfter->Fill(armAlpha, armQt);
         fHistInvMassRecPhoton->Fill(pT, sigma.GetRecMassPhoton());
         fHistInvMassRecLambda->Fill(pT, sigma.GetRecMassLambda());
         fHistInvMassRec->Fill(pT, sigma.GetRecMass());
       }
-      fHistInvMassPt->Fill(pT, invMass);
-      fHistPtMult[multBin]->Fill(pT, invMass);
+      if (multBin >= 0) fHistPtMult[multBin]->Fill(pT, invMass);
 
       if (fIsMC) {
         if (label > 0) {
@@ -339,16 +341,16 @@ void AliSigma0PhotonMotherCuts::SigmaToLambdaGamma(
         if (!fIsLightweight) {
           // let's where the other particle comes from if one of them stems from
           // a Sigma0
-          if (std::abs(pdgLambdaMother) == 3212 &&
-              std::abs(pdgLambdaMother) != 3212) {
-            fHistMCV0Mother->Fill(invMass, std::abs(pdgPhotonMother));
+          if (TMath::Abs(pdgLambdaMother) == 3212 &&
+              TMath::Abs(pdgLambdaMother) != 3212) {
+            fHistMCV0Mother->Fill(invMass, TMath::Abs(pdgPhotonMother));
           }
-          if (std::abs(pdgLambdaMother) == 3212 &&
-              std::abs(pdgLambdaMother) != 3212) {
-            fHistMCV0Mother->Fill(invMass, std::abs(pdgLambdaMother));
+          if (TMath::Abs(pdgLambdaMother) == 3212 &&
+              TMath::Abs(pdgLambdaMother) != 3212) {
+            fHistMCV0Mother->Fill(invMass, TMath::Abs(pdgLambdaMother));
           }
-          fHistMCV0MotherCheck->Fill(std::abs(pdgLambdaMother),
-                                     std::abs(pdgPhotonMother));
+          fHistMCV0MotherCheck->Fill(TMath::Abs(pdgLambdaMother),
+                                     TMath::Abs(pdgPhotonMother));
 
           const int labV0 = photon.GetMCLabelV0();
           const int labPhoton = lambda.GetMCLabelV0();
@@ -360,8 +362,8 @@ void AliSigma0PhotonMotherCuts::SigmaToLambdaGamma(
               static_cast<AliMCParticle *>(fMCEvent->GetTrack(labPhoton));
           if (!partV0 || !partPhoton) continue;
 
-          fHistMCV0Check->Fill(std::abs(partV0->PdgCode()),
-                               std::abs(partPhoton->PdgCode()));
+          fHistMCV0Check->Fill(TMath::Abs(partV0->PdgCode()),
+                               TMath::Abs(partPhoton->PdgCode()));
         }
       }
     }
@@ -402,7 +404,7 @@ void AliSigma0PhotonMotherCuts::SigmaToLambdaGammaMixedEvent(
         const float invMass = sigma.GetMass();
         const float rap = sigma.GetRapidity();
         const int multBin = GetMultiplicityBin(lPercentile, fMultMode);
-        if (std::abs(rap) > fRapidityMax || multBin < 0) continue;
+        if (TMath::Abs(rap) > fRapidityMax || multBin < 0) continue;
         fHistMixedInvMassPt->Fill(pT, invMass);
       }
     }
@@ -428,7 +430,7 @@ void AliSigma0PhotonMotherCuts::SigmaToLambdaGammaMixedEvent(
         const float invMass = sigma.GetMass();
         const float rap = sigma.GetRapidity();
         const int multBin = GetMultiplicityBin(lPercentile, fMultMode);
-        if (std::abs(rap) > fRapidityMax || multBin < 0) continue;
+        if (TMath::Abs(rap) > fRapidityMax || multBin < 0) continue;
         fHistMixedInvMassPt->Fill(pT, invMass);
       }
     }
@@ -470,7 +472,7 @@ void AliSigma0PhotonMotherCuts::SigmaToLambdaGammaMixedEventBinned(
         }
         const float invMass = sigma.GetMass();
         const float rap = sigma.GetRapidity();
-        if (std::abs(rap) > fRapidityMax) continue;
+        if (TMath::Abs(rap) > fRapidityMax) continue;
         fHistMixedInvMassBinnedMultPt[multBin]->Fill(pT, invMass);
       }
     }
@@ -495,7 +497,7 @@ void AliSigma0PhotonMotherCuts::SigmaToLambdaGammaMixedEventBinned(
         }
         const float invMass = sigma.GetMass();
         const float rap = sigma.GetRapidity();
-        if (std::abs(rap) > fRapidityMax) continue;
+        if (TMath::Abs(rap) > fRapidityMax) continue;
         fHistMixedInvMassBinnedMultPt[multBin]->Fill(pT, invMass);
       }
     }
@@ -585,10 +587,10 @@ void AliSigma0PhotonMotherCuts::ProcessMC() const {
     if (mcParticle->GetNDaughters() != 2) continue;
     if (mcParticle->PdgCode() != fPDG) continue;
 
-    if (std::abs(mcParticle->Y()) <= fRapidityMax) {
+    if (TMath::Abs(mcParticle->Y()) <= fRapidityMax) {
       fHistMCTruthPt->Fill(mcParticle->Pt());
     }
-    if (multBin >= 0 && std::abs(mcParticle->Y()) <= fRapidityMax) {
+    if (multBin >= 0 && TMath::Abs(mcParticle->Y()) <= fRapidityMax) {
       fHistMCTruthPtMult[multBin]->Fill(mcParticle->Pt());
     }
 
@@ -644,7 +646,7 @@ bool AliSigma0PhotonMotherCuts::CheckDaughtersInAcceptance(
   AliMCParticle *lambdaDaughter = nullptr;
   AliMCParticle *photonDaughter = nullptr;
 
-  if (std::abs(particle->Y()) > fRapidityMax) return false;
+  if (TMath::Abs(particle->Y()) > fRapidityMax) return false;
 
   if (particle->GetNDaughters() != 2) return false;
 

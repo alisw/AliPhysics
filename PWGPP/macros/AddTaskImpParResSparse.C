@@ -23,8 +23,10 @@ AliAnalysisTaskSEImpParResSparse *AddTaskImpParResSparse(Bool_t readMC=kFALSE,
                                                          Bool_t useCutGeoNcrNcl=kFALSE,
                                                          Bool_t fillexpertSparse=kFALSE,
                                                          Bool_t usetriggersel=kFALSE,
-                                          							 Int_t species=-1
-                                                         ,Bool_t finebinphi = kFALSE)
+                                                         Int_t species=-1,
+                                                         Bool_t finebinphi = kFALSE,
+                                                         Bool_t checkSPDmod = kFALSE
+                                          							 )
 {
     
     // Get the pointer to the existing analysis manager via the static access method.
@@ -60,6 +62,7 @@ AliAnalysisTaskSEImpParResSparse *AddTaskImpParResSparse(Bool_t readMC=kFALSE,
     }
     d0ResTask->SetTrackType(tracktype);
     d0ResTask->SetUseFinerPhiBins(finebinphi);
+    d0ResTask->SetStoreSPDmodulesInfo(checkSPDmod);
     
     AliESDtrackCuts* esdTrackCuts = new AliESDtrackCuts("d0ResAnalysisESDTrackCuts");
     esdTrackCuts->SetRequireTPCRefit(kTRUE);

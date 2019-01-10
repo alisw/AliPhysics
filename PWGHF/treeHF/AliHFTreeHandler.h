@@ -24,7 +24,7 @@
 #include "vector"
 #include <TTree.h>
 #include "AliAODTrack.h"
-#include "AliAODPidHF.h"
+#include "AliPIDResponse.h"
 #include "AliAODRecoDecayHF.h"
 #include "AliAODMCParticle.h"
 
@@ -67,7 +67,7 @@ class AliHFTreeHandler : public TObject
 
     //core methods --> implemented in each derived class
     virtual TTree* BuildTree(TString name, TString title) = 0;
-    virtual bool SetVariables(AliAODRecoDecayHF* cand, float bfield, int masshypo, AliAODPidHF* pidHF) = 0;
+    virtual bool SetVariables(AliAODRecoDecayHF* cand, float bfield, int masshypo, AliPIDResponse* pidrespo) = 0;
     //for MC gen --> common implementation
     TTree* BuildTreeMCGen(TString name, TString title);
     bool SetMCGenVariables(AliAODMCParticle* mcpart);
@@ -124,7 +124,7 @@ class AliHFTreeHandler : public TObject
     void AddSingleTrackBranches();
     void AddPidBranches(bool usePionHypo, bool useKaonHypo, bool useProtonHypo, bool useTPC, bool useTOF);
     bool SetSingleTrackVars(AliAODTrack* prongtracks[]);
-    bool SetPidVars(AliAODTrack* prongtracks[], AliAODPidHF* pidHF, bool usePionHypo, bool useKaonHypo, bool useProtonHypo, bool useTPC, bool useTOF);
+    bool SetPidVars(AliAODTrack* prongtracks[], AliPIDResponse* pidrespo, bool usePionHypo, bool useKaonHypo, bool useProtonHypo, bool useTPC, bool useTOF);
     void ResetDmesonCommonVarVectors();
     void ResetSingleTrackVarVectors();
     void ResetPidVarVectors();

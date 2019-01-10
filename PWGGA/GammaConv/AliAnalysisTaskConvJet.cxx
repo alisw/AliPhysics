@@ -205,7 +205,7 @@ void AliAnalysisTaskConvJet::Terminate(Option_t *)
 AliAnalysisTaskConvJet * AliAnalysisTaskConvJet::AddTask_GammaConvJet(
   const char *ntracks,
   const char *nclusters,
-  const char* ncells,
+  const char *ncells,
   const char *suffix)
 {
   // Get the pointer to the existing analysis manager via the static access method.
@@ -325,7 +325,7 @@ AliAnalysisTaskConvJet * AliAnalysisTaskConvJet::AddTask_GammaConvJet(
   // Create containers for input/output
   AliAnalysisDataContainer *cinput1  = mgr->GetCommonInputContainer()  ;
   TString contname(trackName);
-  contname += "_histos";
+  contname += suffix;
   AliAnalysisDataContainer *coutput1 = mgr->CreateContainer(contname.Data(),
       TList::Class(),AliAnalysisManager::kOutputContainer,
       Form("%s", AliAnalysisManager::GetCommonFileName()));

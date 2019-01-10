@@ -18,7 +18,7 @@ AliAnalysisTaskStrEffStudy *AddTaskStrEffStudy( Bool_t lSaveEventTree = kTRUE, B
     TString type = mgr->GetInputEventHandler()->GetDataType(); // can be "ESD" or "AOD"
     
     // Create and configure the task
-    AliAnalysisTaskStrEffStudy *taskAuxiliary = new AliAnalysisTaskStrEffStudy(lSaveEventTree, lSaveV0, lSaveCascade, "taskAuxiliary", lExtraOptions);
+    AliAnalysisTaskStrEffStudy *taskAuxiliary = new AliAnalysisTaskStrEffStudy(lSaveEventTree, lSaveV0, lSaveCascade, lSaveHyperTriton, "taskAuxiliary", lExtraOptions);
     mgr->AddTask(taskAuxiliary);
     TString outputFileName = AliAnalysisManager::GetCommonFileName();
     

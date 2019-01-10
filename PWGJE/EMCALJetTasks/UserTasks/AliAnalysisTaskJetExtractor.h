@@ -289,6 +289,7 @@ class AliEmcalJetTree : public TNamed
     Float_t*        fBuffer_Cluster_Eta;                  //!<! array buffer
     Float_t*        fBuffer_Cluster_Phi;                  //!<! array buffer
     Float_t*        fBuffer_Cluster_M02;                  //!<! array buffer
+    Float_t*        fBuffer_Cluster_Time;                 //!<! array buffer
     Int_t*          fBuffer_Cluster_Label;                //!<! array buffer
 
     Float_t         fBuffer_Shape_Mass;                   //!<! array buffer

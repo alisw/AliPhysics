@@ -15,6 +15,7 @@ class TTree;
 #include "Math/Vector4D.h"
 #include "MCparticle.h"
 #include "MiniV0.h"
+#include "MiniEvent.h"
 #include "HyperTriton2Body.h"
 
 
@@ -25,7 +26,7 @@ typedef ROOT::Math::LorentzVector<ROOT::Math::PxPyPzM4D<double>> LVector_t;
 
 class AliAnalysisTaskStrangenessLifetimes : public AliAnalysisTaskSE {
  public:
-  AliAnalysisTaskStrangenessLifetimes(bool mc = false, std::string name = "TaskStrangenessLifetimes");
+  AliAnalysisTaskStrangenessLifetimes(bool mc = false, std::string name = "TaskStrangenessLifetimes",float downscale=1,bool Hypertriton=true, bool V0s=true);
   virtual ~AliAnalysisTaskStrangenessLifetimes();
 
   virtual void UserCreateOutputObjects();
@@ -63,6 +64,9 @@ class AliAnalysisTaskStrangenessLifetimes : public AliAnalysisTaskSE {
 
   bool fDoV0Refit;
   bool fMC;
+  bool fHypertriton;
+  bool fV0s;
+  float fDownscale;
   bool fUseOnTheFly;
 
   /// Control histograms to monitor the filtering
@@ -105,14 +109,14 @@ class AliAnalysisTaskStrangenessLifetimes : public AliAnalysisTaskSE {
   std::vector<Lifetimes::MiniV0 > fV0vector;
   std::vector<Lifetimes::MCparticle> fMCvector;
   std::vector<Lifetimes::HyperTriton2Body> fV0Hyvector;
-  float fMultiplicity;
+  Lifetimes::MiniEvent fMiniEvent;
 
   AliAnalysisTaskStrangenessLifetimes(
       const AliAnalysisTaskStrangenessLifetimes&);  // not implemented
   AliAnalysisTaskStrangenessLifetimes& operator=(
       const AliAnalysisTaskStrangenessLifetimes&);  // not implemented
 
-  ClassDef(AliAnalysisTaskStrangenessLifetimes, 4);
+  ClassDef(AliAnalysisTaskStrangenessLifetimes, 6);
 };
 
 #endif
