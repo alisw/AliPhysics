@@ -13,7 +13,6 @@ AliGenerator* AddMCGenRELDIS_EMD(TString reldisFile="mpbpb2510nt_cwn.root", TStr
     reader->SetFileName(Form("alien:///alice/cern.ch/user/p/pwg_mm/%s", reldisFile.Data())); // put the location of the input file
     reader->SetNtupleName(ntupleName); // name of the tree inside the input file
     reader->SetStartEvent(firstev); // # of event to start with
-    reader->TrackOnlyNeutrons(); // include this if you want to track only neutrons
 
     gener->SetReader(reader); 
 
