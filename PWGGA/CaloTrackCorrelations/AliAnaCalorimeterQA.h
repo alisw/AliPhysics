@@ -421,6 +421,8 @@ public:
   TH2F *   fhCaloCenNCells;                     //!<! Calo vs centrality, number of cells
   TH2F *   fhCaloCenECells;                     //!<! Calo vs centrality,  total measured cell energy
 
+  TH2F **   fhCaloCenECellsMod;                 //!<! Calo vs centrality,  total measured cell energy per SM
+
   // Event plane
   
   TH2F *   fhCaloEvPNClusters;                  //!<! Calo vs event plane angle, number of clusters
@@ -541,7 +543,7 @@ public:
   AliAnaCalorimeterQA(              const AliAnaCalorimeterQA & qa) ;
   
   /// \cond CLASSIMP
-  ClassDef(AliAnaCalorimeterQA,38) ;
+  ClassDef(AliAnaCalorimeterQA,39) ;
   /// \endcond
 
 } ;

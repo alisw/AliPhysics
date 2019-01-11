@@ -150,7 +150,7 @@ fhCaloV0MCorrNCells(0),                fhCaloV0MCorrECells(0),
 fhCaloTrackMCorrNClusters(0),          fhCaloTrackMCorrEClusters(0), 
 fhCaloTrackMCorrNCells(0),             fhCaloTrackMCorrECells(0),
 fhCaloCenNClusters(0),                 fhCaloCenEClusters(0),
-fhCaloCenNCells(0),                    fhCaloCenECells(0),
+fhCaloCenNCells(0),                    fhCaloCenECells(0),                    fhCaloCenECellsMod(0),
 fhCaloEvPNClusters(0),                 fhCaloEvPEClusters(0),
 fhCaloEvPNCells(0),                    fhCaloEvPECells(0),
 
@@ -637,6 +637,8 @@ void AliAnaCalorimeterQA::CellHistograms(AliVCaloCells *cells)
   if( ncellsCut > 0 ) fhNCellsCutAmpMin->Fill(ncellsCut, GetEventWeight()) ;
   
   // Number of cells per module
+  Float_t cen = -1;
+  if ( fCorrelate ) cen = GetEventCentrality();
   for(Int_t imod = 0; imod < fNModules; imod++ )
   {
     if ( imod < fFirstModule || imod > fLastModule ) continue ;
@@ -648,6 +650,11 @@ void AliAnaCalorimeterQA::CellHistograms(AliVCaloCells *cells)
     
     if(fFillAllCellAbsIdHistograms)
       fhNCellsSumAmpPerMod[imod]->Fill(eCellsInModule[imod], nCellsInModule[imod], GetEventWeight());
+    
+    if ( fCorrelate )
+    {
+      fhCaloCenECellsMod[imod]->Fill(cen, eCellsInModule[imod], GetEventWeight());
+    }
   }
     
   delete [] nCellsInModule;
@@ -2916,6 +2923,21 @@ TList * AliAnaCalorimeterQA::GetCreateOutputObjects()
     fhCaloCenECells->SetYTitle("#Sigma #it{E} of Cells in calorimeter (GeV)");
     fhCaloCenECells->SetXTitle("Centrality");
     outputContainer->Add(fhCaloCenECells);
+  
+    fhCaloCenECellsMod = new TH2F*[fNModules];
+
+    for(Int_t imod = 0; imod < fNModules; imod++)
+    {
+      if ( imod < fFirstModule || imod > fLastModule ) continue;
+      
+      fhCaloCenECellsMod[imod]  = new TH2F 
+      (Form("hCaloCenECells_Mod%d",imod),
+       Form("summed energy of Cells in calorimeter vs centrality in SM %d",imod),
+       50,0,100,nptbins/2,ptmin,ptmax);
+      fhCaloCenECellsMod[imod]->SetYTitle("#Sigma #it{E} of Cells in calorimeter (GeV)");
+      fhCaloCenECellsMod[imod]->SetXTitle("Centrality");
+      outputContainer->Add(fhCaloCenECellsMod[imod]);
+    }
     
     fhCaloEvPNClusters  = new TH2F ("hCaloEvPNClusters","# clusters in calorimeter vs event plane angle",100,0,TMath::Pi(),nclbins,nclmin,nclmax);
     fhCaloEvPNClusters->SetYTitle("number of clusters in calorimeter");
