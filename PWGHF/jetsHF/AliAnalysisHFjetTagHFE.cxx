@@ -589,7 +589,7 @@ void AliAnalysisHFjetTagHFE::UserCreateOutputObjects()
   fOutput->Add(fHistIncEle);
 
   fHistIncEle2 = new TH1F("fHistIncEle2","Inclusive electron;p_{T}",1000,0.,100.);
-  fOutput->Add(fHistIncEle);
+  fOutput->Add(fHistIncEle2);
 
   fHistHfEleMC = new TH1F("fHistHfEleMC","HF electron;p_{T}",100,0.,20.);
   fOutput->Add(fHistHfEleMC);
@@ -1520,6 +1520,7 @@ Bool_t AliAnalysisHFjetTagHFE::Run()
 
     // data
     fHistIncEle->Fill(pt);  
+    fHistIncEle2->Fill(pt);  
     // MC
     if(iMCHF)
        {
