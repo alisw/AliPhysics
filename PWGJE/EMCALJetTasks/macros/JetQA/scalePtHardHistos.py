@@ -164,14 +164,15 @@ def scalePtHardHistos(referenceFile):
       # Open input file and get relevant lists
       inputFile = "{0}/AnalysisResultsPtHard{0}.root".format(bin+1)
       print("ooo Scaling Pt-hard bin %d" % (bin+1))
+      print("  o File: {}".format(inputFile))
       f = ROOT.TFile(inputFile, "UPDATE")
 
       qaList = f.Get(qaListNames[0])
       print("ooo Computing scaling factors with list: " + qaList.GetName())
       
-      hXsecPtHard = qaList.FindObject("hXsec")
-      hTrialsPtHard = qaList.FindObject("hNtrials")
-      hNEventsTotal = f.Get("hNEventsTot") # Get NEvents histos from file, since we undo the entry after writing it
+      hXsecPtHard      = qaList.FindObject("hXsec")
+      hTrialsPtHard    = qaList.FindObject("hNtrials")
+      hNEventsTotal    = f.Get("hNEventsTot") # Get NEvents histos from file, since we undo the entry after writing it
       hNEventsAccepted = f.Get("hNEventsAcc")
 
       # Compute: scale factor = xsec per event / trials per event
@@ -181,9 +182,15 @@ def scalePtHardHistos(referenceFile):
       #print("ooo Test entries: {0}".format(hXsecPtHard.GetEntries()))
       trials = 1.*hTrialsPtHard.GetBinContent(1) / nEventsTot
       scaleFactor = xsec/trials
-      eventScaleFactorAcc = nEventsAccAvg/nEventsAcc # also scale to account that there are different number of events in each Pt-hard bin
-      eventScaleFactorTot = nNEventsTotAvg/nEventsTot
-      
+      if nEventsAcc>0:
+        eventScaleFactorAcc = nEventsAccAvg/nEventsAcc # also scale to account that there are different number of events in each Pt-hard bin
+      else:
+        eventScaleFactorAcc = 0
+      if nEventsTot>0:
+        eventScaleFactorTot = nNEventsTotAvg/nEventsTot
+      else:
+        eventScaleFactorTot = 0
+
       print("ooo nEventsAcc: {0}".format(nEventsAcc))
       print("ooo nEventsTot: {0}".format(nEventsTot))
       print("ooo nTrials: {0}".format(trials))
@@ -237,9 +244,9 @@ def GetNEvents(eventList, bin, hNEvents, verbose, bAcceptedEventsOnly = True):
   if eventCutList:
     hNEventsPtHard = eventCutList.FindObject("fCutStats")
     if bAcceptedEventsOnly:
-      nEvents = hNEventsPtHard.GetBinContent(16)
+      nEvents = hNEventsPtHard.GetBinContent(hNEventsPtHard.GetXaxis().FindBin("All cuts")) #Bin All cuts
     else:
-      nEvents = hNEventsPtHard.GetBinContent(1)
+      nEvents = hNEventsPtHard.GetBinContent(hNEventsPtHard.GetXaxis().FindBin("No cuts")) #Bin No cuts
     if bin is 0:
       if bAcceptedEventsOnly:
         print("Getting accepted number of events from EventCutOutput.")
