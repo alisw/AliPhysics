@@ -12,6 +12,7 @@ ClassImp(AliSigma0PhotonMotherCuts)
       fHistogramsMC(nullptr),
       fIsMC(false),
       fIsLightweight(false),
+      fIsSpectrumAnalysis(true),
       fInputEvent(nullptr),
       fMCEvent(nullptr),
       fDataBasePDG(),
@@ -99,6 +100,7 @@ AliSigma0PhotonMotherCuts::AliSigma0PhotonMotherCuts(
       fHistogramsMC(nullptr),
       fIsMC(false),
       fIsLightweight(false),
+      fIsSpectrumAnalysis(true),
       fInputEvent(nullptr),
       fMCEvent(nullptr),
       fDataBasePDG(),
@@ -331,7 +333,8 @@ void AliSigma0PhotonMotherCuts::SigmaToLambdaGamma(
         fHistInvMassRecLambda->Fill(pT, sigma.GetRecMassLambda());
         fHistInvMassRec->Fill(pT, sigma.GetRecMass());
       }
-      if (multBin >= 0) fHistPtMult[multBin]->Fill(pT, invMass);
+      if (multBin >= 0 && fIsSpectrumAnalysis)
+        fHistPtMult[multBin]->Fill(pT, invMass);
 
       if (fIsMC) {
         if (label > 0) {
@@ -473,7 +476,8 @@ void AliSigma0PhotonMotherCuts::SigmaToLambdaGammaMixedEventBinned(
         const float invMass = sigma.GetMass();
         const float rap = sigma.GetRapidity();
         if (TMath::Abs(rap) > fRapidityMax) continue;
-        fHistMixedInvMassBinnedMultPt[multBin]->Fill(pT, invMass);
+        if (fIsSpectrumAnalysis)
+          fHistMixedInvMassBinnedMultPt[multBin]->Fill(pT, invMass);
       }
     }
   }
@@ -498,7 +502,8 @@ void AliSigma0PhotonMotherCuts::SigmaToLambdaGammaMixedEventBinned(
         const float invMass = sigma.GetMass();
         const float rap = sigma.GetRapidity();
         if (TMath::Abs(rap) > fRapidityMax) continue;
-        fHistMixedInvMassBinnedMultPt[multBin]->Fill(pT, invMass);
+        if (fIsSpectrumAnalysis)
+          fHistMixedInvMassBinnedMultPt[multBin]->Fill(pT, invMass);
       }
     }
   }
@@ -804,22 +809,24 @@ void AliSigma0PhotonMotherCuts::InitCutHistograms(TString appendix) {
     multBinsUp = {{0.01, 0.05, 0.1, 1, 100.}};
   }
 
-  for (int i = 0; i < static_cast<int>(multBinsUp.size()); ++i) {
-    fHistPtMult[i] =
-        new TH2F(Form("fHistPtMult_%i", i),
-                 Form("V0M: %.2f - %.2f %%; #it{p}_{T} (GeV/#it{c}); "
-                      "M_{#Lambda#gamma} (GeV/#it{c}^{2})",
-                      multBinsLow[i], multBinsUp[i]),
-                 100, 0, 10, 300, 1.15, 1.3);
-    fHistograms->Add(fHistPtMult[i]);
+  if (fIsSpectrumAnalysis) {
+    for (int i = 0; i < static_cast<int>(multBinsUp.size()); ++i) {
+      fHistPtMult[i] =
+          new TH2F(Form("fHistPtMult_%i", i),
+                   Form("V0M: %.2f - %.2f %%; #it{p}_{T} (GeV/#it{c}); "
+                        "M_{#Lambda#gamma} (GeV/#it{c}^{2})",
+                        multBinsLow[i], multBinsUp[i]),
+                   100, 0, 10, 300, 1.15, 1.3);
+      fHistograms->Add(fHistPtMult[i]);
 
-    fHistMixedInvMassBinnedMultPt[i] =
-        new TH2F(Form("fHistMixedInvMassBinnedMultPt_%i", i),
-                 Form("V0M: %.2f - %.2f %%; #it{p}_{T} (GeV/#it{c}); "
-                      "M_{#Lambda#gamma} (GeV/#it{c}^{2})",
-                      multBinsLow[i], multBinsUp[i]),
-                 100, 0, 10, 300, 1.15, 1.3);
-    fHistograms->Add(fHistMixedInvMassBinnedMultPt[i]);
+      fHistMixedInvMassBinnedMultPt[i] =
+          new TH2F(Form("fHistMixedInvMassBinnedMultPt_%i", i),
+                   Form("V0M: %.2f - %.2f %%; #it{p}_{T} (GeV/#it{c}); "
+                        "M_{#Lambda#gamma} (GeV/#it{c}^{2})",
+                        multBinsLow[i], multBinsUp[i]),
+                   100, 0, 10, 300, 1.15, 1.3);
+      fHistograms->Add(fHistMixedInvMassBinnedMultPt[i]);
+    }
   }
 
   if (!fIsLightweight) {
