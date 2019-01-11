@@ -4504,7 +4504,8 @@ void AliAnalysisTaskEMCALPhotonIsolation::ComputeConeAreaInEMCal(Double_t etaCan
     coneArea = fullConeArea;
 
   // Scaling by the non-projectiveness factor
-  coneArea *= proj_factor;
+  if(fAnalysispPb)
+    coneArea *= proj_factor;
 }
 
   //__________________________________________________________________________
@@ -4534,7 +4535,8 @@ void AliAnalysisTaskEMCALPhotonIsolation::ComputeConeAreaInTPC(Double_t etaCand,
     coneArea = fullConeArea;
 
   // Scaling by the non-projectiveness factor
-  coneArea *= proj_factor;
+  if(fAnalysispPb)
+    coneArea *= proj_factor;
 }
 
   //__________________________________________________________________________
@@ -4639,7 +4641,8 @@ void AliAnalysisTaskEMCALPhotonIsolation::ComputePhiBandAreaInEMCal(Double_t eta
   phiBandArea -= coneArea;
 
   // Scaling by the non-projectiveness factor
-  phiBandArea *= proj_factor;
+  if(fAnalysispPb)
+    phiBandArea *= proj_factor;
 }
 
   //__________________________________________________________________________
@@ -4670,7 +4673,8 @@ void AliAnalysisTaskEMCALPhotonIsolation::ComputePhiBandAreaInTPC(Double_t etaCa
   phiBandArea -= coneArea;
 
   // Scaling by the non-projectiveness factor
-  phiBandArea *= proj_factor;
+  if(fAnalysispPb)
+    phiBandArea *= proj_factor;
 }
 
   //__________________________________________________________________________
