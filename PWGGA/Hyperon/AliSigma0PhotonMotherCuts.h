@@ -52,6 +52,7 @@ class AliSigma0PhotonMotherCuts : public TObject {
 
   void SetIsMC(bool isMC) { fIsMC = isMC; }
   void SetLightweight(bool isLightweight) { fIsLightweight = isLightweight; }
+  void SetIsSpectrum(bool isSpectrum) { fIsSpectrumAnalysis = isSpectrum; }
 
   void SetSigmaMass(float mass) { fMassSigma = mass; }
   void SetMixingDepth(short mixDepth) { fMixingDepth = mixDepth; }
@@ -114,6 +115,7 @@ class AliSigma0PhotonMotherCuts : public TObject {
 
   bool fIsMC;           //
   bool fIsLightweight;  //
+  bool fIsSpectrumAnalysis; //
 
   AliVEvent *fInputEvent;     //!
   AliMCEvent *fMCEvent;       //!
@@ -211,7 +213,7 @@ class AliSigma0PhotonMotherCuts : public TObject {
   TH2F *fHistMCV0MotherCheck;  //!
 
  private:
-  ClassDef(AliSigma0PhotonMotherCuts, 16)
+  ClassDef(AliSigma0PhotonMotherCuts, 17)
 };
 
 #endif
