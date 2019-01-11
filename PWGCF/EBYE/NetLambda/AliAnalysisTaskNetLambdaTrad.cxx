@@ -1,7 +1,7 @@
 
 // For: Net Lambda fluctuation analysis via traditional method
 // By: Ejiro Naomi Umaka Apr 2018
-// Updated Jan 10
+// Updated Jan 11
 
 
 #include "AliAnalysisManager.h"
@@ -166,7 +166,7 @@ void AliAnalysisTaskNetLambdaTrad::UserCreateOutputObjects()
     fTreeV0->Branch("fTreeVariableInvMassLambda",&fTreeVariableInvMassLambda,"fTreeVariableInvMassLambda/F");
     fTreeV0->Branch("fTreeVariableInvMassAntiLambda",&fTreeVariableInvMassAntiLambda,"fTreeVariableInvMassAntiLambda/F");
     
-
+    
     
     PostData(1,fListHist);
     PostData(2,fTreeV0);
@@ -192,7 +192,7 @@ void AliAnalysisTaskNetLambdaTrad::UserExec(Option_t *)
     
     fESD = dynamic_cast<AliESDEvent*>(InputEvent());
     if (!fESD) return;
-  
+    
     
     fPIDResponse = fInputHandler->GetPIDResponse();
     if(!fPIDResponse) return;
@@ -200,7 +200,7 @@ void AliAnalysisTaskNetLambdaTrad::UserExec(Option_t *)
     Double_t lMagneticField = -10;
     lMagneticField = fESD->GetMagneticField();
     
- 
+    
     AliMultSelection *MultSelection = (AliMultSelection*) fInputEvent->FindListObject("MultSelection");
     if(!MultSelection) return;
     
@@ -227,9 +227,9 @@ void AliAnalysisTaskNetLambdaTrad::UserExec(Option_t *)
     const AliESDVertex *lPrimaryBestESDVtx     = fESD->GetPrimaryVertex();
     Double_t lBestPrimaryVtxPos[3]          = {-100.0, -100.0, -100.0};
     lPrimaryBestESDVtx->GetXYZ( lBestPrimaryVtxPos );
-
-
-
+    
+    
+    
     Int_t nV0 = 0;
     Double_t fMinV0Pt = 0.0;
     Double_t fMaxV0Pt = 5.0;
@@ -237,7 +237,7 @@ void AliAnalysisTaskNetLambdaTrad::UserExec(Option_t *)
     AliESDv0 *esdv0 = 0x0;
     AliESDtrack *esdpTrack = 0x0;
     AliESDtrack *esdnTrack = 0x0;
-
+    
     for(Int_t iV0 = 0; iV0 < nV0; iV0++)
     {
         esdv0 = 0x0;
@@ -252,81 +252,81 @@ void AliAnalysisTaskNetLambdaTrad::UserExec(Option_t *)
         Float_t npt = -999,  neta = -999, negprnsg = -999;
         Bool_t  ontheflystat = kFALSE;
         Float_t dcaPosToVertex = -999, dcaNegToVertex = -999, dcaDaughters = -999, dcaV0ToVertex = -999, cosPointingAngle = -999;
- 
-            esdv0 = fESD->GetV0(iV0);
-            if(!esdv0) continue;
-            esdpTrack =  (AliESDtrack*)fESD->GetTrack(TMath::Abs(esdv0->GetPindex()));
-            if(!esdpTrack) continue;
-            esdnTrack = (AliESDtrack*)fESD->GetTrack(TMath::Abs(esdv0->GetNindex()));
-            if(!esdnTrack) continue;
+        
+        esdv0 = fESD->GetV0(iV0);
+        if(!esdv0) continue;
+        esdpTrack =  (AliESDtrack*)fESD->GetTrack(TMath::Abs(esdv0->GetPindex()));
+        if(!esdpTrack) continue;
+        esdnTrack = (AliESDtrack*)fESD->GetTrack(TMath::Abs(esdv0->GetNindex()));
+        if(!esdnTrack) continue;
         
         if(esdpTrack->Charge() == esdnTrack->Charge())
         {
             continue;
         }
-            esdv0->GetXYZ(vertx[0], vertx[1], vertx[2]); //decay vertex
-            v0Radius = TMath::Sqrt(vertx[0]*vertx[0]+vertx[1]*vertx[1]);
+        esdv0->GetXYZ(vertx[0], vertx[1], vertx[2]); //decay vertex
+        v0Radius = TMath::Sqrt(vertx[0]*vertx[0]+vertx[1]*vertx[1]);
         
         V0pt = esdv0->Pt();
         if ((V0pt<fMinV0Pt)||(fMaxV0Pt<V0pt)) continue;
         
         ///////////////////////////////////////////////////////////////////////
-
-            Float_t lPosTrackCrossedRows = esdpTrack->GetTPCClusterInfo(2,1);
-            Float_t lNegTrackCrossedRows = esdnTrack->GetTPCClusterInfo(2,1);
-            
-            fTreeVariableLeastNbrCrossedRows = (Int_t) lPosTrackCrossedRows;
-            if( lNegTrackCrossedRows < fTreeVariableLeastNbrCrossedRows )
-                fTreeVariableLeastNbrCrossedRows = (Int_t) lNegTrackCrossedRows;
-            
-            if( !(esdpTrack->GetStatus() & AliESDtrack::kTPCrefit)) continue;
-            if( !(esdnTrack->GetStatus() & AliESDtrack::kTPCrefit)) continue;
-            
-            if ( ( ( esdpTrack->GetTPCClusterInfo(2,1) ) < 70 ) || ( ( esdnTrack->GetTPCClusterInfo(2,1) ) < 70 ) ) continue;
-            
-            if( esdpTrack->GetKinkIndex(0)>0 || esdnTrack->GetKinkIndex(0)>0 ) continue;
-            
-            if( esdpTrack->GetTPCNclsF()<=0 || esdnTrack->GetTPCNclsF()<=0 ) continue;
-            
-            Float_t lPosTrackCrossedRowsOverFindable = lPosTrackCrossedRows / ((double)(esdpTrack->GetTPCNclsF()));
-            Float_t lNegTrackCrossedRowsOverFindable = lNegTrackCrossedRows / ((double)(esdnTrack->GetTPCNclsF()));
-            
-            fTreeVariableLeastRatioCrossedRowsOverFindable = lPosTrackCrossedRowsOverFindable;
-            if( lNegTrackCrossedRowsOverFindable < fTreeVariableLeastRatioCrossedRowsOverFindable )
-                fTreeVariableLeastRatioCrossedRowsOverFindable = lNegTrackCrossedRowsOverFindable;
-            
-            if ( fTreeVariableLeastRatioCrossedRowsOverFindable < 0.8 ) continue;
-            
-            pmom = esdv0->P();
-            eta = esdv0->Eta();
-            ppt = esdpTrack->Pt();
-            peta = esdpTrack->Eta();
-            npt = esdnTrack->Pt();
-            neta = esdnTrack->Eta();
-            ontheflystat = esdv0->GetOnFlyStatus();
         
-            dcaPosToVertex = TMath::Abs(esdpTrack->GetD(lBestPrimaryVtxPos[0],
-                                                 lBestPrimaryVtxPos[1],
-                                                 lMagneticField) );
+        Float_t lPosTrackCrossedRows = esdpTrack->GetTPCClusterInfo(2,1);
+        Float_t lNegTrackCrossedRows = esdnTrack->GetTPCClusterInfo(2,1);
         
-            dcaNegToVertex = TMath::Abs(esdnTrack->GetD(lBestPrimaryVtxPos[0],
-                                                 lBestPrimaryVtxPos[1],
-                                                 lMagneticField) );
+        fTreeVariableLeastNbrCrossedRows = (Int_t) lPosTrackCrossedRows;
+        if( lNegTrackCrossedRows < fTreeVariableLeastNbrCrossedRows )
+            fTreeVariableLeastNbrCrossedRows = (Int_t) lNegTrackCrossedRows;
         
-            cosPointingAngle = esdv0->GetV0CosineOfPointingAngle(lBestPrimaryVtxPos[0],lBestPrimaryVtxPos[1],lBestPrimaryVtxPos[2]);
-            dcaDaughters = esdv0->GetDcaV0Daughters();
-//          dcaV0ToVertex = esdv0->GetD(vVtx[0],vVtx[1],vVtx[2]);
-            dcaV0ToVertex = esdv0->GetD(lBestPrimaryVtxPos[0],lBestPrimaryVtxPos[1],lBestPrimaryVtxPos[2]);
-
-            esdv0->ChangeMassHypothesis(3122);
-            invMassLambda = esdv0->GetEffMass();
-            esdv0->ChangeMassHypothesis(-3122);
-            invMassAntiLambda = esdv0->GetEffMass();
+        if( !(esdpTrack->GetStatus() & AliESDtrack::kTPCrefit)) continue;
+        if( !(esdnTrack->GetStatus() & AliESDtrack::kTPCrefit)) continue;
+        
+        if ( ( ( esdpTrack->GetTPCClusterInfo(2,1) ) < 70 ) || ( ( esdnTrack->GetTPCClusterInfo(2,1) ) < 70 ) ) continue;
+        
+        if( esdpTrack->GetKinkIndex(0)>0 || esdnTrack->GetKinkIndex(0)>0 ) continue;
+        
+        if( esdpTrack->GetTPCNclsF()<=0 || esdnTrack->GetTPCNclsF()<=0 ) continue;
+        
+        Float_t lPosTrackCrossedRowsOverFindable = lPosTrackCrossedRows / ((double)(esdpTrack->GetTPCNclsF()));
+        Float_t lNegTrackCrossedRowsOverFindable = lNegTrackCrossedRows / ((double)(esdnTrack->GetTPCNclsF()));
+        
+        fTreeVariableLeastRatioCrossedRowsOverFindable = lPosTrackCrossedRowsOverFindable;
+        if( lNegTrackCrossedRowsOverFindable < fTreeVariableLeastRatioCrossedRowsOverFindable )
+            fTreeVariableLeastRatioCrossedRowsOverFindable = lNegTrackCrossedRowsOverFindable;
+        
+        if ( fTreeVariableLeastRatioCrossedRowsOverFindable < 0.8 ) continue;
+        
+        pmom = esdv0->P();
+        eta = esdv0->Eta();
+        ppt = esdpTrack->Pt();
+        peta = esdpTrack->Eta();
+        npt = esdnTrack->Pt();
+        neta = esdnTrack->Eta();
+        ontheflystat = esdv0->GetOnFlyStatus();
+        
+        dcaPosToVertex = TMath::Abs(esdpTrack->GetD(lBestPrimaryVtxPos[0],
+                                                    lBestPrimaryVtxPos[1],
+                                                    lMagneticField) );
+        
+        dcaNegToVertex = TMath::Abs(esdnTrack->GetD(lBestPrimaryVtxPos[0],
+                                                    lBestPrimaryVtxPos[1],
+                                                    lMagneticField) );
+        
+        cosPointingAngle = esdv0->GetV0CosineOfPointingAngle(lBestPrimaryVtxPos[0],lBestPrimaryVtxPos[1],lBestPrimaryVtxPos[2]);
+        dcaDaughters = esdv0->GetDcaV0Daughters();
+        //          dcaV0ToVertex = esdv0->GetD(vVtx[0],vVtx[1],vVtx[2]);
+        dcaV0ToVertex = esdv0->GetD(lBestPrimaryVtxPos[0],lBestPrimaryVtxPos[1],lBestPrimaryVtxPos[2]);
+        
+        esdv0->ChangeMassHypothesis(3122);
+        invMassLambda = esdv0->GetEffMass();
+        esdv0->ChangeMassHypothesis(-3122);
+        invMassAntiLambda = esdv0->GetEffMass();
         
         posprnsg = fPIDResponse->NumberOfSigmasTPC(esdpTrack, AliPID::kProton);
         negprnsg = fPIDResponse->NumberOfSigmasTPC(esdnTrack, AliPID::kProton);
         
- 
+        
         fTreeVariableDcaV0ToPrimVertex = dcaV0ToVertex;
         fTreeVariableDcaV0Daughters = dcaDaughters;
         fTreeVariableDcaPosToPrimVertex = dcaPosToVertex;
@@ -343,47 +343,47 @@ void AliAnalysisTaskNetLambdaTrad::UserExec(Option_t *)
         if(v0Radius < 5.0) continue;
         if(v0Radius > 200.) continue;
         
- 
+        
         Int_t iptbin = GetPtBin(V0pt);
         
         if( ontheflystat == 0 )
         {
             
-            if(dcaV0ToVertex < 0.1 && dcaNegToVertex > 0.1 && dcaPosToVertex >  0.05 && TMath::Abs(posprnsg)  <= 3.)
+            if(dcaV0ToVertex < 0.25 && dcaNegToVertex > 0.1 && dcaPosToVertex >  0.05 && TMath::Abs(posprnsg)  <= 3.)
             {
                 f2fHistInvMassVsPtLambda->Fill(invMassLambda,V0pt);
                 f2fHistRecCentVsPtLambda->Fill(fCentrality,V0pt);
                 
                 if(invMassLambda > 1.11 && invMassLambda < 1.122)
                 {
+                    f2fHistPtmassctLambda->Fill(fCentrality,V0pt);
+                    f1fHistmassctLambda->Fill(invMassLambda);
                     ptCh[iptbin] += 1;
                 }
                 
-                if(invMassLambda > 1.11341197 && invMassLambda < 1.11885)
+                if(invMassLambda > 1.11341197 && invMassLambda < 1.11885) //1sigma
                 {
-                    f2fHistPtmassctLambda->Fill(fCentrality,V0pt);
-                    f1fHistmassctLambda->Fill(invMassLambda);
                     ptChCut[iptbin] += 1;
                 }
                 
             }
-            if(dcaV0ToVertex < 0.1 && dcaNegToVertex > 0.05 && dcaPosToVertex >  0.1 && TMath::Abs(negprnsg)  <= 3.)
+            if(dcaV0ToVertex < 0.25 && dcaNegToVertex > 0.05 && dcaPosToVertex >  0.1 && TMath::Abs(negprnsg)  <= 3.)
             {
                 f2fHistInvMassVsPtAntiLambda->Fill(invMassAntiLambda,V0pt);
                 f2fHistRecCentVsPtAntiLambda->Fill(fCentrality,V0pt);
                 
                 if(invMassAntiLambda > 1.11 && invMassAntiLambda < 1.122)
                 {
-                   ptCh[iptbin+fNptBins] += 1;
-                }
-                if(invMassAntiLambda > 1.11341 && invMassAntiLambda < 1.11887)
-                {
                     f2fHistPtmassctAntiLambda->Fill(fCentrality,V0pt);
                     f1fHistmassctAntiLambda->Fill(invMassAntiLambda);
+                    ptCh[iptbin+fNptBins] += 1;
+                }
+                if(invMassAntiLambda > 1.11341 && invMassAntiLambda < 1.11887) //1sigma
+                {
                     ptChCut[iptbin+fNptBins] += 1;
                 }
             }
-
+            
         }// zero onfly V0
     }// end of V0 loop
     
