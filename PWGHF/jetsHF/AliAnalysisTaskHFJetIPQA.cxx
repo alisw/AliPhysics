@@ -10,6 +10,8 @@
 #include "TLorentzVector.h"
 #include "Math/SVector.h"
 #include "Math/SMatrix.h"
+#include "TCanvas.h"
+#include "TPaveText.h"
 #include "AliEmcalJet.h"
 #include "AliParticleContainer.h"
 #include "AliAnalysisUtils.h"
@@ -59,11 +61,13 @@ AliAnalysisTaskHFJetIPQA::AliAnalysisTaskHFJetIPQA():
 AliAnalysisTaskEmcalJet(),fHistManager(),
 fEventVertex(nullptr),
 fPidResponse(nullptr),
+fRunSmearing(kFALSE),
 fUsePIDJetProb(kFALSE),
+fDoMCCorrection(kFALSE),
+fDoUnderlyingEventSub(kFALSE),
 fFillCorrelations(kFALSE),
 fParam_Smear_Sigma(1.),
 fParam_Smear_Mean(0.),
-fRunSmearing(kTRUE),
 fGlobalVertex(kFALSE),
 fDoNotCheckIsPhysicalPrimary(kFALSE),
 fDoJetProb(kFALSE),
@@ -79,6 +83,8 @@ fGeant3FlukaAntiProton(nullptr),
 fGeant3FlukaLambda(nullptr),
 fGeant3FlukaAntiLambda(nullptr),
 fGeant3FlukaKMinus(nullptr),
+fSetup(0),
+cCuts(0),
 fMCArray(nullptr),
 fJetCutsHF(new AliRDHFJetsCuts()),
 fMCEvent(nullptr),
@@ -87,17 +93,17 @@ fVertexer(nullptr),
 fMcEvtSampled(kFALSE),
 fBackgroundFactorLinus{0},
 fEtaSEvt(100),fPhiSEvt(100),fEtaBEvt(100),fPhiBEvt(100),fEtaCEvt(100),fPhiCEvt(100),fEtaUdsgEvt(100),fPhiUdsgEvt(100),
-fAnalysisCuts{0,0,0,0,0,0,0,0,0,0,0},
+fAnalysisCuts{0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
 fCombined(nullptr),
 fXsectionWeightingFactor(1),
 fProductionNumberPtHard(-1),
+fJetRadius(0.4),
 fMCglobalDCAxyShift(0.0008),
 fMCglobalDCASmear(1),
 fVertexRecalcMinPt(1.0),
 fn1_mix(-999.),
 fn2_mix(-999.),
 fn3_mix(-999.),
-fJetRadius(0.4),
 fIsMixSignalReady_n1(kFALSE),
 fIsMixSignalReady_n2(kFALSE),
 fIsMixSignalReady_n3(kFALSE),
@@ -121,18 +127,20 @@ fTREE_pt(-1.)
     SetVzRange(-10,10);
     SetUseSPDTrackletVsClusterBG(kTRUE);
     for(Int_t i =0 ; i<200;++i)this->fResolutionFunction[i].Set(1000);
-        DefineOutput(1,  TList::Class()) ;
-        if(fUseTreeForCorrelations)  DefineOutput(0,  TTree::Class()) ;    
+    DefineOutput(1,  TList::Class()) ;
+    DefineOutput(2,  TList::Class()) ;
 }
 AliAnalysisTaskHFJetIPQA::AliAnalysisTaskHFJetIPQA(const char *name):
 AliAnalysisTaskEmcalJet(name, kTRUE),fHistManager(name),
 fEventVertex(nullptr),
 fPidResponse(nullptr),
+fRunSmearing(kFALSE),
 fUsePIDJetProb(kFALSE),
+fDoMCCorrection(kFALSE),
+fDoUnderlyingEventSub(kFALSE),
 fFillCorrelations(kFALSE),
 fParam_Smear_Sigma(1.),
 fParam_Smear_Mean(0.),
-fRunSmearing(kTRUE),
 fGlobalVertex(kFALSE),
 fDoNotCheckIsPhysicalPrimary(kFALSE),
 fDoJetProb(kFALSE),
@@ -148,6 +156,8 @@ fGeant3FlukaAntiProton(nullptr),
 fGeant3FlukaLambda(nullptr),
 fGeant3FlukaAntiLambda(nullptr),
 fGeant3FlukaKMinus(nullptr),
+fSetup(0),
+cCuts(0),
 fMCArray(nullptr),
 fJetCutsHF(new AliRDHFJetsCuts()),
 fMCEvent(nullptr),
@@ -156,17 +166,17 @@ fVertexer(nullptr),
 fMcEvtSampled(kFALSE),
 fBackgroundFactorLinus{0},
 fEtaSEvt(100),fPhiSEvt(100),fEtaBEvt(100),fPhiBEvt(100),fEtaCEvt(100),fPhiCEvt(100),fEtaUdsgEvt(100),fPhiUdsgEvt(100),
-fAnalysisCuts{0,0,0,0,0,0,0,0,0,0,0},
+fAnalysisCuts{0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
 fCombined(nullptr),
 fXsectionWeightingFactor(1.),
 fProductionNumberPtHard(-1),
+fJetRadius(0.4),
 fMCglobalDCAxyShift(0.000668),
 fMCglobalDCASmear(1),
 fVertexRecalcMinPt(1.0),
 fn1_mix(-999.),
 fn2_mix(-999.),
 fn3_mix(-999.),
-fJetRadius(0.4),
 fIsMixSignalReady_n1(kFALSE),
 fIsMixSignalReady_n2(kFALSE),
 fIsMixSignalReady_n3(kFALSE),
@@ -188,7 +198,7 @@ fTREE_pt(-1.)
     SetMakeGeneralHistograms(kTRUE);
     SetDefaultAnalysisCuts();
     DefineOutput(1,  TList::Class()) ;
-    if(fUseTreeForCorrelations)  DefineOutput(0,  TTree::Class()) ;    
+    DefineOutput(2,  TList::Class()) ;
 
     for(Int_t i =0 ; i<498;++i)for(Int_t j =0 ; j<19;++j)  fBackgroundFactorLinus[j][i]=1;
         for(Int_t i =0 ; i<200;++i)this->fResolutionFunction[i].Set(1000);
@@ -220,10 +230,15 @@ void AliAnalysisTaskHFJetIPQA::SetDefaultAnalysisCuts(){
     fAnalysisCuts[bAnalysisCut_Sigma_Z]         = 0.3;
     fAnalysisCuts[bAnalysisCut_SigmaDiamond]    = 2.;
     fAnalysisCuts[bAnalysisCut_MaxVtxZ]         = 10.;
+    fAnalysisCuts[bAnalysisCut_Z_Chi2perNDF]    =3.5*3.5;
+    fAnalysisCuts[bAnalysisCut_MinTrackPt]      =1.;
+    fAnalysisCuts[bAnalysisCut_MinTrackPtMC]    =.5;
+    fAnalysisCuts[bAnalysisCut_MinTPCClus]      =100;
 }
 
 void AliAnalysisTaskHFJetIPQA::SmearTrack(AliAODTrack *track) {
     if(!fIsPythia) return;
+    printf("Run Track Smearing.\n");
     // Get reconstructed track parameters
     AliExternalTrackParam et; et.CopyFromVTrack(track);
     Double_t *param=const_cast<Double_t*>(et.GetParameter());
@@ -389,7 +404,7 @@ Bool_t AliAnalysisTaskHFJetIPQA::Run(){
     if(fEventVertex->GetNContributors()<1) {
         return kFALSE;
     }
-    if(fEventVertex->GetChi2perNDF()>3.5*3.5) {
+    if(fEventVertex->GetChi2perNDF()>fAnalysisCuts[bAnalysisCut_Z_Chi2perNDF]) {
         return kFALSE;
     }
     if(fEventVertex->GetNContributors()<(int)(fAnalysisCuts[bAnalysisCut_NContibutors])) {
@@ -427,7 +442,7 @@ Bool_t AliAnalysisTaskHFJetIPQA::Run(){
             }
         }
     }
-    if(fIsPythia)FillParticleCompositionEvent(); //Added  for in cone vs inclusive comparison
+    //if(fIsPythia)FillParticleCompositionEvent(); //Added  for in cone vs inclusive comparison
 
     FillHist("fh1dNoParticlesPerEvent",InputEvent()->GetNumberOfTracks(),1);
 
@@ -458,7 +473,7 @@ Bool_t AliAnalysisTaskHFJetIPQA::Run(){
         if(fIsPythia){
             Int_t corrpartidx =-1;
             double ppt;
-            TrackWeight *= GetMonteCarloCorrectionFactor(trackV,corrpartidx,ppt);
+            //if(fDoMCCorrection) TrackWeight *= GetMonteCarloCorrectionFactor(trackV,corrpartidx,ppt);
         }
         FillTrackHistograms(trackV,dca,cov,TrackWeight);
     }
@@ -494,18 +509,20 @@ Bool_t AliAnalysisTaskHFJetIPQA::Run(){
     jetconrec->ResetCurrentID();
     Double_t jetpt=0;
     while ((jetrec = jetconrec->GetNextAcceptJet()))
-    {
+    {//start jetloop
         if(!jetrec) continue;
         jetpt = jetrec->Pt();
-        if(!(jetconrec->GetRhoParameter() == nullptr))
+        if((!(jetconrec->GetRhoParameter() == nullptr))&&fDoUnderlyingEventSub)
         {
+            printf("Correct for Underlying Event.\n");
             jetpt = jetpt - jetconrec->GetRhoVal() * jetrec->Area();
         }
         if(fIsPythia){
             if (jetrec->MatchedJet()) {
                 Double_t genpt = jetrec->MatchedJet()->Pt();
-                if(!(jetcongen->GetRhoParameter() == nullptr))
+                if((!(jetcongen->GetRhoParameter() == nullptr))&&fDoUnderlyingEventSub)
                 {
+                    printf("Correct for Underlying Event.\n");
                     genpt = genpt - jetcongen->GetRhoVal() * jetrec->MatchedJet()->Area();
                 }
                 FillHist("fh2dJetGenPtVsJetRecPt",genpt,jetpt,1);    // this->fXsectionWeightingFactor );
@@ -541,7 +558,7 @@ Bool_t AliAnalysisTaskHFJetIPQA::Run(){
                     else if(jetflavour==1)FillHist("fh1dJetRecPtudsgAccepted",        jetpt,1);  //this->fXsectionWeightingFactor );
                     else if(jetflavour==2)FillHist("fh1dJetRecPtcAccepted",           jetpt,1);  //this->fXsectionWeightingFactor );
                     else if(jetflavour==3)FillHist("fh1dJetRecPtbAccepted",           jetpt,1);  //this->fXsectionWeightingFactor );
-                    GetOutOfJetParticleComposition(jetrec,jetflavour);
+                    //GetOutOfJetParticleComposition(jetrec,jetflavour);
                 }
                 std::vector<SJetIpPati> sImpParXY,sImpParXYZ,sImpParXYSig,sImpParXYZSig;
 
@@ -570,13 +587,13 @@ Bool_t AliAnalysisTaskHFJetIPQA::Run(){
                  AliVParticle *vp=0x0;
 
                 int NJetParticles=0;  //Used for counting particles per jet
-                for(UInt_t i = 0; i < jetrec->GetNumberOfTracks(); i++) {
+                for(UInt_t i = 0; i < jetrec->GetNumberOfTracks(); i++) {//start trackloop
                     TrackWeight=1;
                     Double_t xyzatcda[3];
 
                     vp = static_cast<AliVParticle*>(jetrec->TrackAt(i, jetconrec->GetParticleContainer()->GetArray()));
                     if (!vp){
-                      Printf("AliVParticle associated to constituent not found");
+                      Printf("ERROR: AliVParticle associated to constituent not found");
                       continue;
                     }
 
@@ -602,7 +619,7 @@ Bool_t AliAnalysisTaskHFJetIPQA::Run(){
 
 
                         Int_t corridx=-1;double ppt;
-                        fIsPythia ? TrackWeight = GetMonteCarloCorrectionFactor(trackV,corridx,ppt) : TrackWeight =1;
+                        //(fIsPythia&&fDoMCCorrection) ? TrackWeight = GetMonteCarloCorrectionFactor(trackV,corridx,ppt) : TrackWeight =1;
                         dca[0]=fabs(dca[0]);
                       //  Double_t cursImParXY     =TMath::Abs(GetValImpactParameter(   kXY,dca,cov))*sign;
                         Double_t cursImParXYSig  =TMath::Abs(GetValImpactParameter(kXYSig,dca,cov))*sign;
@@ -780,7 +797,7 @@ Bool_t AliAnalysisTaskHFJetIPQA::Run(){
 
 
                         Int_t corridx=-1;double ppt;
-                        fIsPythia ? TrackWeight = GetMonteCarloCorrectionFactor(trackV,corridx,ppt) : TrackWeight =1;
+                        //(fIsPythia&&fDoMCCorrection) ? TrackWeight = GetMonteCarloCorrectionFactor(trackV,corridx,ppt) : TrackWeight =1;
                         dca[0]=fabs(dca[0]);
                         Double_t cursImParXY     =TMath::Abs(GetValImpactParameter(   kXY,dca,cov))*sign;
                         Double_t cursImParXYSig  =TMath::Abs(GetValImpactParameter(kXYSig,dca,cov))*sign;
@@ -943,7 +960,7 @@ Bool_t AliAnalysisTaskHFJetIPQA::Run(){
                                 sImpParXYSig.clear();
                                 sImpParXYZ.clear();
                                 sImpParXYZSig.clear();
-                            }
+                            }//end jetloop
                             return kTRUE;
                         }
 
@@ -1034,7 +1051,7 @@ Bool_t AliAnalysisTaskHFJetIPQA::Run(){
                                 return kFALSE;
                             }
 
-                            if(fEventVertex->GetChi2perNDF()>3.5*3.5) {
+                            if(fEventVertex->GetChi2perNDF()>fAnalysisCuts[bAnalysisCut_Z_Chi2perNDF]) {
                                 WhyRejected=kVertexChi2NDF;
                                 return kFALSE;
                             }
@@ -1624,13 +1641,21 @@ void AliAnalysisTaskHFJetIPQA::UserCreateOutputObjects(){
       printf("Adding Object %s\n",obj->GetName());
       fOutput->Add(obj);
     }
-    PostData(1, fOutput); // Post data for ALL output slots > 0 here.
-    if(fUseTreeForCorrelations)    PostData(0, fCorrelationCrossCheck); // Post data for ALL output slots > 0 here.
+
+    //Documentation Canvas
+    fSetup=new AliEmcalList();
+    fSetup->SetOwner(kTRUE);
+    Printf("Adding Cut Canvas to output file");
+    cCuts=new TCanvas("Cuts","Cuts",800,800);
+    fOutput->Add(cCuts);
+
+    PostData(1, fOutput); 
+    PostData(2, fSetup);
 }
 
 
-
-void AliAnalysisTaskHFJetIPQA::GetMaxImpactParameterCutR(const AliVTrack * const track, Double_t &maximpactRcut){
+//NotInUse
+/*void AliAnalysisTaskHFJetIPQA::GetMaxImpactParameterCutR(const AliVTrack * const track, Double_t &maximpactRcut){
     //
     // Get max impact parameter cut r (pt dependent)
     //
@@ -1639,7 +1664,7 @@ void AliAnalysisTaskHFJetIPQA::GetMaxImpactParameterCutR(const AliVTrack * const
             maximpactRcut = 0.0182 + 0.035/TMath::Power(pt,1.01);  // abs R cut
         }
         else maximpactRcut = 9999999999.0;
-    }
+    }*/
 
 
     bool AliAnalysisTaskHFJetIPQA::GetPIDCombined(AliAODTrack * track, double  * prob, int &nDetectors,UInt_t &usedDet ,AliPID::EParticleType &MostProbablePID, bool setTrackPID ){
@@ -1778,7 +1803,7 @@ void AliAnalysisTaskHFJetIPQA::GetMaxImpactParameterCutR(const AliVTrack * const
                 return 0;
             }
 
-            if(vtxESDNew->GetChi2toNDF()>3.5*3.5) {
+            if(vtxESDNew->GetChi2toNDF()>fAnalysisCuts[bAnalysisCut_Z_Chi2perNDF]) {
                 delete vtxESDNew; vtxESDNew=nullptr;
                 return 0;
             }
@@ -1790,7 +1815,8 @@ void AliAnalysisTaskHFJetIPQA::GetMaxImpactParameterCutR(const AliVTrack * const
     vtxESDNew->GetXYZ(pos); // position
     vtxESDNew->GetCovMatrix(cov); //covariance matrix
     chi2perNDF = vtxESDNew->GetChi2toNDF();
-    if(vtxESDNew) delete vtxESDNew; vtxESDNew=NULL;
+    if(vtxESDNew) delete vtxESDNew;
+    vtxESDNew=NULL;
     AliAODVertex *vtxAODNew = new AliAODVertex(pos,cov,chi2perNDF);
     vtxAODNew->	SetNContributors(nContrib);
     return vtxAODNew;
@@ -1810,16 +1836,19 @@ void AliAnalysisTaskHFJetIPQA::FillParticleCompositionSpectra(AliEmcalJet * jet,
   return;
 }
 
-
+/*! \brief FillParticleCompositionEvent
+ *
+ *
+ * Fill Histogram with Correction Factors vs. pT
+ */
 void AliAnalysisTaskHFJetIPQA::FillParticleCompositionEvent( ){
-    
     AliVTrack* tr=0x0; 
     for(Int_t j = 0; j < InputEvent()->GetNumberOfTracks(); ++j) {
       tr = (AliVTrack*)(InputEvent()->GetTrack(j));
       if(!tr) continue;
       double pT=0x0;
       Int_t pCorr_indx=-1;
-       GetMonteCarloCorrectionFactor(tr,pCorr_indx,pT);
+      GetMonteCarloCorrectionFactor(tr,pCorr_indx,pT);
       if(pCorr_indx<0) continue;
       FillHist("fh2dParticleSpectra_Event",pCorr_indx+0.5,pT, 1);     //*this->fXsectionWeightingFactor );
   }
@@ -1943,8 +1972,8 @@ Bool_t AliAnalysisTaskHFJetIPQA::IsTrackAccepted(AliVTrack* track ,Int_t n){
         if(!(((AliAODTrack*)track)->TestFilterBit(9) || ((AliAODTrack*)track)->TestFilterBit(4)))return kFALSE;
         if(!(((AliAODTrack*)track->HasPointOnITSLayer(0))&&(AliAODTrack*)track->HasPointOnITSLayer(1)))  return kFALSE;
         if(((AliAODTrack*)track)->GetNcls(0)<abs(n)) return kFALSE;
-        if(((AliAODTrack*)track)->GetNcls(1)<100) return kFALSE;
-        if(track->Pt()<1.)return kFALSE;
+        if(((AliAODTrack*)track)->GetNcls(1)<fAnalysisCuts[bAnalysisCut_MinTPCClus]) return kFALSE;
+        if(track->Pt()<fAnalysisCuts[bAnalysisCut_MinTrackPt])return kFALSE;
         AliAODVertex *aodvertex = (( AliAODTrack *)track)->GetProdVertex();
         if(!aodvertex) return kFALSE;
         if(aodvertex->GetType()==AliAODVertex::kKink) return kFALSE;
@@ -1970,8 +1999,8 @@ Bool_t AliAnalysisTaskHFJetIPQA::IsTrackAcceptedJP(AliVTrack* track ,Int_t n){
             return kFALSE;
         }
         if(((AliAODTrack*)track)->GetNcls(0)<abs(n)) return kFALSE;
-        if(((AliAODTrack*)track)->GetNcls(1)<100) return kFALSE;
-        if(track->Pt()<.5)return kFALSE;
+        if(((AliAODTrack*)track)->GetNcls(1)<fAnalysisCuts[bAnalysisCut_MinTPCClus]) return kFALSE;
+        if(track->Pt()<fAnalysisCuts[bAnalysisCut_MinTrackPtMC])return kFALSE;
         AliAODVertex *aodvertex = (( AliAODTrack *)track)->GetProdVertex();
         if(!aodvertex) return kFALSE;
         if(aodvertex->GetType()==AliAODVertex::kKink) return kFALSE;
@@ -2016,7 +2045,9 @@ Bool_t AliAnalysisTaskHFJetIPQA::MatchJetsGeometricDefault()
 /*! \brief DoJetLoop
  *
  *
- * jet matching loop
+ * jet matching loop:
+ * - reset previous matching and jet IDs
+ * - redo jet matching
  */
 void AliAnalysisTaskHFJetIPQA::DoJetLoop()
 {
@@ -2060,8 +2091,9 @@ void AliAnalysisTaskHFJetIPQA::DoJetLoop()
     }
 /*! \brief Composition correction factor  getter
  *
- * finds the corresponding re-weighing factor for a certain track
- *
+ * finds the corresponding re-weighing factor for a certain track:
+ *      - find mother particle
+ *      - define fluca factor according to mother particle
  */
     Double_t AliAnalysisTaskHFJetIPQA::GetWeightFactor( AliVTrack * track,Int_t &pCorr_indx, double &ppt){
         AliMCParticle *pMCESD = nullptr;
@@ -2558,7 +2590,8 @@ Bool_t AliAnalysisTaskHFJetIPQA::IsSelectionParticleOmegaXiSigmaP( AliVParticle 
     }
 /*! \brief SetMatchingLevel
  *
- * jet matching helper
+ * jet matching helper:
+ * - define closest and second closest jet 
  */
     void AliAnalysisTaskHFJetIPQA::SetMatchingLevel(AliEmcalJet *jet1, AliEmcalJet *jet2, Int_t matching)
     {
@@ -2609,6 +2642,7 @@ Bool_t AliAnalysisTaskHFJetIPQA::IsSelectionParticleOmegaXiSigmaP( AliVParticle 
  * Composition  correction base function caller
  */
     Double_t AliAnalysisTaskHFJetIPQA::GetMonteCarloCorrectionFactor(AliVTrack* track,Int_t &pCorr_indx, double &ppt){
+        printf("Doing MC Correction.\n");
         double val=  GetWeightFactor(track,pCorr_indx,ppt);
         if(val > 0 ) return val;
         return 1.;
@@ -2632,9 +2666,10 @@ Bool_t AliAnalysisTaskHFJetIPQA::IsSelectionParticleOmegaXiSigmaP( AliVParticle 
     {
         AliJetContainer * jetconrec = nullptr;
         jetconrec = static_cast<AliJetContainer*>(fJetCollArray.At(0));
-        if(jet && jetconrec)
+        if(jet && jetconrec&&fDoUnderlyingEventSub){
+            printf("Correct for Underlying Event.\n");
             return jet->Pt() - jetconrec->GetRhoVal() * jet->Area();
-
+        }
         return -1.;
     }
 /*! \brief GetPtCorrectedMC
@@ -2645,8 +2680,10 @@ Bool_t AliAnalysisTaskHFJetIPQA::IsSelectionParticleOmegaXiSigmaP( AliVParticle 
     {
         AliJetContainer * jetconrec = nullptr;
         jetconrec = static_cast<AliJetContainer*>(fJetCollArray.At(1));
-        if(jet && jetconrec)
+        if(jet && jetconrec&&fDoUnderlyingEventSub){
+            printf("Correct for Underlying Event.\n");
             return jet->Pt() - jetconrec->GetRhoVal() * jet->Area();
+        }
         return -1.;
     }
 
@@ -2875,13 +2912,13 @@ void AliAnalysisTaskHFJetIPQA::setFMCglobalDCAxyShift(const Double_t &value)
  */
 
 
-
-void AliAnalysisTaskHFJetIPQA::SubtractMean(Double_t val[], AliVTrack *track){
+//Currently not in use
+/*void AliAnalysisTaskHFJetIPQA::SubtractMean(Double_t val[], AliVTrack *track){
     Double_t  deltamean=fGraphMean->Eval(track->Pt() < 3. ? track->Pt() : 3 );//(fCurrentMeanFactors[0]-fCurrentMeanFactors[1]*TMath::Exp(-1*fCurrentMeanFactors[2]*(track->Pt()-fCurrentMeanFactors[3]))) *1e-4;
 
     val[0] -=deltamean*1e-4;;
 }
-//Helpers
+//Helpers*/
 
 
 Bool_t AliAnalysisTaskHFJetIPQA::GetImpactParameter(const AliAODTrack *track, const AliAODEvent *event, Double_t *dca, Double_t *cov, Double_t *XYZatDCA)
@@ -3201,4 +3238,73 @@ Double_t AliAnalysisTaskHFJetIPQA::CalculatePSTrackPID(Double_t sign, Double_t s
     if(TMath::Abs(significance) >99) significance =99; //Limit to function definition range
     retval = sign * ((fResolutionFunction[20*species + 4*trclass +ptbin])).Eval(TMath::Abs(significance));
     return retval;
+}
+
+void AliAnalysisTaskHFJetIPQA::Terminate(Option_t *){
+    cCuts->cd();
+    //TPaveText* pJetCuts=new TPaveText(0.05,0.64,0.95, 0.95);
+    TPaveText* pJetCuts=new TPaveText(0.05,0.67,0.49,0.95);
+    pJetCuts->SetTextSize(0.02);
+    pJetCuts->SetTextAlign(11);
+    pJetCuts->AddBox(0.05,0.4,0.95, 0.8);
+    pJetCuts->AddText(Form("JetCuts:\n"));
+    pJetCuts->AddText(Form("MaxEtaJet: %.2f\n",fJetCutsHF->GetMaxEtaJet()));
+    pJetCuts->AddText(Form("MinPtJet: %.2f\n",fJetCutsHF->GetMinPtJet()));
+    pJetCuts->AddText(Form("MaxPtJet: %.2f\n",fJetCutsHF->GetMaxPtJet()));
+    pJetCuts->AddText(Form("MinCentrality: %.2f\n",fJetCutsHF->GetMinCentrality()));
+    pJetCuts->AddText(Form("MaxCentrality: %.2f\n",fJetCutsHF->GetMaxCentrality()));
+    pJetCuts->AddText(Form("UsePhysicsSel: %i\n",fJetCutsHF->GetUsePhysicsSelection()));
+    pJetCuts->AddText(Form("GetOptPileUp: %i\n",fJetCutsHF->GetOptPileUp()));
+    pJetCuts->Draw();
+
+    TPaveText* pTrackCuts=new TPaveText(0.05,0.37,0.49, 0.65);
+    pTrackCuts->SetTextSize(0.02);
+    pTrackCuts->SetTextAlign(11);
+    pTrackCuts->AddText(Form("Track Cuts:\n"));
+    pTrackCuts->AddText(Form("DCAJet<->Track: %.2f\n",fAnalysisCuts[bAnalysisCut_DCAJetTrack]));
+    pTrackCuts->AddText(Form("MaxDecayLength: %.2f\n",fAnalysisCuts[bAnalysisCut_MaxDecayLength]));
+    //pTrackCuts->AddText(Form("MaxDCAXY: %.2f\n",fAnalysisCuts[bAnalysisCut_MaxDCA_XY]));
+    //pTrackCuts->AddText(Form("MaxDCAZ: %.2f\n",fAnalysisCuts[bAnalysisCut_MaxDCA_Z]));
+    pTrackCuts->AddText(Form("MinTrackPt: %.2f\n",fAnalysisCuts[bAnalysisCut_MinTrackPt]));
+    pTrackCuts->AddText(Form("MinTrackPtMC: %.2f\n",fAnalysisCuts[bAnalysisCut_MinTrackPtMC]));
+    pTrackCuts->AddText(Form("MinTPCClusters: %.2f\n",fAnalysisCuts[bAnalysisCut_MinTPCClus] ));
+    pTrackCuts->AddText(Form("Kink candidates rejected."));
+    pTrackCuts->AddText(Form("Hits in SPD1 and SPD2 required"));
+    pTrackCuts->Draw();
+
+    TPaveText* pVertexCuts=new TPaveText(0.05,0.05,0.49, 0.35);
+    pVertexCuts->SetTextSize(0.02);
+    pVertexCuts->SetTextAlign(11);
+    pVertexCuts->AddText(Form("Vertex Cuts:\n"));
+    pVertexCuts->AddText(Form("MinNContr. to ZVertex: %.2f\n",fAnalysisCuts[bAnalysisCut_NContibutors]));
+    pVertexCuts->AddText(Form("Sigma Diamond: %.2f\n",fAnalysisCuts[bAnalysisCut_SigmaDiamond]));
+    pVertexCuts->AddText(Form("MaxVtxZ: %.2f\n",fAnalysisCuts[bAnalysisCut_MaxVtxZ]));
+    pVertexCuts->AddText(Form("Chi2perNDFZ: %.2f\n",fAnalysisCuts[bAnalysisCut_Z_Chi2perNDF]));
+    pVertexCuts->AddText(Form("fVertexRecalcMinPt=%.2f\n",fVertexRecalcMinPt));
+    pVertexCuts->Draw();
+
+    TPaveText* pHardCodedCuts=new TPaveText(0.51,0.67,0.95,0.95);
+    pHardCodedCuts->SetTextSize(0.02);
+    pHardCodedCuts->SetTextAlign(11);
+    pHardCodedCuts->AddText(Form("Hardcoded Cuts:\n"));
+    pHardCodedCuts->AddText(Form("JetFinder Track Efficiency: 0.97\n"));
+    pHardCodedCuts->AddText(Form("MaxTrackPtMC: 1000\n"));
+    pHardCodedCuts->Draw();
+
+    TPaveText* pCorrections=new TPaveText(0.51,0.37,0.95,0.65);
+    pCorrections->SetTextSize(0.02);
+    pCorrections->SetTextAlign(11);
+    pCorrections->SetTextAlign(11);
+    pCorrections->AddText("Corrections: \n");
+    pCorrections->AddText(Form("MC Corrections (Data/MC+Fluka):%i\n",fDoMCCorrection));
+    pCorrections->AddText(Form("Track Smearing:%i\n",fRunSmearing ));
+    pCorrections->AddText(Form("Underlying Event Subtraction:%i", fDoUnderlyingEventSub));
+    pCorrections->Draw();
+
+    printf("\n*********************************\n");
+    printf("Corrections:\n");
+    printf("    MC Corrections (Data/MC+Fluka):%i\n",fDoMCCorrection);
+    printf("    Track Smearing:%i\n",fRunSmearing );
+    printf("    Underlying Event Subtraction:%i\n", fDoUnderlyingEventSub);
+    printf("*********************************\n");
 }
