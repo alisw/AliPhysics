@@ -5945,7 +5945,7 @@ void AliCaloPhotonCuts::ApplyNonLinearity(AliVCluster* cluster, Int_t isMC)
             energy /= FunctionNL_kSDM(energy, 0.944223, -3.2442, -0.599841) ;   //  2018 02 20
             energy /= FunctionNL_kSDM(energy, 0.99851, -4.18038, -0.289851) ;   //  2018 03 22
             energy /= 0.9907587828; // 2018 12 09
-            energy /= 0.9946; // 2019 01 11
+            energy /= 1.0034; // 2019 01 11
           } else if (fClusterType==2){
             energy /= FunctionNL_kSDM(energy, 0.966329, -2.60954, -0.712271) ;
             energy /= 1.0105;
