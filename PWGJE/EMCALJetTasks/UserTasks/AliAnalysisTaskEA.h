@@ -50,6 +50,7 @@ class AliAnalysisTaskEA : public AliAnalysisTaskEmcalJet {
 
    enum {fkV0A, fkV0C, fkSPD, fkZNA, fkZNC, fkCE}; 
 
+   enum {kpp=0, kpPb=1};
 
 
    // ######### CONTRUCTORS/DESTRUCTORS AND STD FUNCTIONS
@@ -60,7 +61,8 @@ class AliAnalysisTaskEA : public AliAnalysisTaskEmcalJet {
    void     Terminate(Option_t *);
 
    static AliAnalysisTaskEA* AddTaskEA(
-      const char*  jetarrayname       = "Jet_AKTChargedR040_tracks_pT0150_pt_scheme", //name of jet TClones array for detector level jets
+       Int_t       system             = AliAnalysisTaskEA::kpPb, // collision system 
+       const char* jetarrayname       = "Jet_AKTChargedR040_tracks_pT0150_pt_scheme", //name of jet TClones array for detector level jets
        const char* jetarraynameMC     = "Jet_AKTChargedR040_mcparticles_pT0150_pt_scheme", //name of jet TClones array for MC particle level jets
        const char* trackarrayname     = "tracks", //name of track TClonesArray for detector level jets
        const char* mcpariclearrayname = "mcparticles", //name of track TClonesArray array for MC particle level jets
@@ -74,6 +76,7 @@ class AliAnalysisTaskEA : public AliAnalysisTaskEmcalJet {
        Bool_t      useVertexCut       = kTRUE,  // vertex cut
        Bool_t      usePileUpCut       = kTRUE, // discard pile up event
        Double_t    acut               = 0.6,   //cut on relative jet area
+       Double_t    emcaltofcut        = 30e-9,   //cut on relative jet area
        const char* suffix = ""                              //SUBWAGON has to be the last parameter
   );
 
@@ -107,6 +110,7 @@ class AliAnalysisTaskEA : public AliAnalysisTaskEmcalJet {
   void        SetJetChTT(Int_t tl,Int_t th){  fJetChTTLowPt[fnJetChTTBins] = tl;   fJetChTTHighPt[fnJetChTTBins] = th;   fnJetChTTBins++;  }
   void        SetClusterTT(Int_t tl,Int_t th){  fClusterTTLowPt[fnClusterTTBins] = tl;   fClusterTTHighPt[fnClusterTTBins] = th;   fnClusterTTBins++;  }
   void        SetFillTTree(Bool_t b){ fFillTTree = b; } //fill output TTree
+  void        SetSystem(Int_t sys){ fSystem = sys;}     // Collision system pp or pP pp or pPb 
 
   Bool_t      PassedGATrigger();
   Bool_t      PassedMinBiasTrigger();
@@ -218,6 +222,10 @@ class AliAnalysisTaskEA : public AliAnalysisTaskEmcalJet {
    TH2F     *fhClusterEtaInclGA;                      //! minimum bias eta inclusive
  
    TH1F     *fhRhoIncl;                               //! minimum bias rho inclusive
+   TH1F     *fhRhoTTH[fkTTbins];                      //! in events MB with hadron TT
+   TH1F     *fhRhoTTJ[fkTTbins];                      //! in events MB with jet TT
+   TH1F     *fhRhoTTCinMB[fkTTbins];                  //! in events MB with cluster TT
+   TH1F     *fhRhoTTCinGA[fkTTbins];                  //! in events GA with cluster TT
 
    TH1D* fhVertex[fkVtx];                             //! vertex distribution 
    TH1D* fhVertexTTH[fkVtx][fkTTbins];                //! vertex distribution in events biased with hadron TT
@@ -258,12 +266,13 @@ class AliAnalysisTaskEA : public AliAnalysisTaskEmcalJet {
    Int_t    fClusterTT[fkTTbins];                     //! array which stores the number of jets in given event 
                                                       
    Bool_t   fFillTTree;                               // Fill output TTree
+   Int_t    fSystem;                                  // Collision system 
    AliEMCALRecoUtils          *fFiducialCellCut;      //!<!
 
    AliAnalysisTaskEA(const AliAnalysisTaskEA&);
    AliAnalysisTaskEA& operator=(const AliAnalysisTaskEA&);
 
-   ClassDef(AliAnalysisTaskEA, 3); // Charged jet analysis for pAliAnalysisTaskHJetSpectra/home/fkrizek/z501.ALIC
+   ClassDef(AliAnalysisTaskEA, 4); // Charged jet analysis for pAliAnalysisTaskHJetSpectra/home/fkrizek/z501.ALIC
 
 };
 #endif
