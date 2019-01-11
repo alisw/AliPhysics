@@ -55,6 +55,8 @@ class AliAnalysisTaskStrangenessLifetimes : public AliAnalysisTaskSE {
   static LVector_t GetV0LorentzVector(int pdg, AliESDtrack* nTrack, AliESDtrack* pTrack, double alpha);
 
   AliEventCuts fEventCuts;  /// Event cuts class
+  bool fHypertriton;
+  bool fV0s;
 
  private:
   TList* fListHist;  //! List of Cascade histograms
@@ -64,8 +66,6 @@ class AliAnalysisTaskStrangenessLifetimes : public AliAnalysisTaskSE {
 
   bool fDoV0Refit;
   bool fMC;
-  bool fHypertriton;
-  bool fV0s;
   float fDownscale;
   bool fUseOnTheFly;
 
@@ -116,7 +116,7 @@ class AliAnalysisTaskStrangenessLifetimes : public AliAnalysisTaskSE {
   AliAnalysisTaskStrangenessLifetimes& operator=(
       const AliAnalysisTaskStrangenessLifetimes&);  // not implemented
 
-  ClassDef(AliAnalysisTaskStrangenessLifetimes, 6);
+  ClassDef(AliAnalysisTaskStrangenessLifetimes, 7);
 };
 
 #endif
