@@ -91,6 +91,9 @@ set(SRCS
       LMEE/AliDielectronReducedTrack.cxx
       LMEE/AliAnalysisTaskTGReducedTree.cxx
       LMEE/AliAnalysisTaskLMeeCocktailMC.cxx
+      LMEE/AliCocktailSmearing.cxx
+      LMEE/AliAnalysisTaskCharm.cxx
+      LMEE/AliAnalysisTaskBeauty.cxx
   )
 
 # Headers from sources
