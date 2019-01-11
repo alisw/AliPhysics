@@ -394,6 +394,7 @@ void AliAnalysisTaskNucleiYield::UserExec(Option_t *){
     bool acceptedTrack = AcceptTrack(track,dca);
     float beta = HasTOF(track,fPID);
     if (beta > 1. - EPS) beta = -1;
+    const float m2 = track->P() * track->P() * (1.f / (beta * beta) - 1.f);
 
     if (fSaveTrees) {
       double mcPt = 0;
@@ -419,7 +420,11 @@ void AliAnalysisTaskNucleiYield::UserExec(Option_t *){
       fRecNucleus.itsCls = track->GetITSClusterMap();
       fRecNucleus.tpcCls = track->GetTPCNcls();
       fRecNucleus.tpcPIDcls = track->GetTPCsignalN();
-      if (fRecNucleus.tpcNsigmaD > -5.)
+      if ((fRecNucleus.tpcNsigmaD > -5. && track->Pt() < 1.4) ||
+          (fRecNucleus.tpcNsigmaT > -5. && track->Pt() < 1.6) ||
+          (fRecNucleus.tpcNsigmaHe3 > -6.) ||
+          (m2 >= 1.11)
+        )
         fRTree->Fill();
     }
 
@@ -489,7 +494,6 @@ void AliAnalysisTaskNucleiYield::UserExec(Option_t *){
 
       if (!pid_check) continue;
       /// \f$ m = \frac{p}{\beta\gamma} \f$
-      const float m2 = track->P() * track->P() * (1.f / (beta * beta) - 1.f);
       fTOFsignal[iC]->Fill(centrality, pT, m2 - fPDGMassOverZ * fPDGMassOverZ);
 
     }
