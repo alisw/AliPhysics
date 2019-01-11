@@ -71,6 +71,10 @@ void PlotAODtrackQA(TString filename="AnalysisResults.root", TString suffix="QA"
     return;    
   }
 
+  
+  TH1F* hNEvents=(TH1F*)l->FindObject("hNEvents");
+  Int_t nSelectedEvents=hNEvents->GetBinContent(6);
+
   TH3F* hEtaPhiPtTPCsel=(TH3F*)l->FindObject("hEtaPhiPtTPCsel");
   TH3F* hEtaPhiPtTPCselITSref=(TH3F*)l->FindObject("hEtaPhiPtTPCselITSref");
   TH3F* hEtaPhiPtTPCselSPDany=(TH3F*)l->FindObject("hEtaPhiPtTPCselSPDany");
@@ -1595,6 +1599,9 @@ void PlotAODtrackQA(TString filename="AnalysisResults.root", TString suffix="QA"
 
   if(outputForm=="pdf") gSystem->Exec(Form("gs -q -dNOPAUSE -dBATCH -sDEVICE=pdfwrite -sOutputFile=PlotsAODTrackQA.pdf %s",pdfFileNames.Data()));
 
+  printf("SUMMARY:\n");
+  printf("Number of events used in the plots = %d\n",nSelectedEvents);
+
 }
 
 void InitFuncAndFit(TH1D* hm, TF1* fmass, Bool_t isK0s){
@@ -1674,7 +1681,7 @@ void DrawDistrib(TH1D* h1, TH1D* h2, TH1D* h3, Bool_t showStat){
   }else{
     h3->Draw("same");
   }
-    h3->Draw("histosame");
+  h3->Draw("histosame");
 }
 
 TH1D* ComputeMatchEff(TH1D* hnumer, TH1D* hdenom, TString name, Int_t iCol, Int_t iMarker, TString xtitle){
