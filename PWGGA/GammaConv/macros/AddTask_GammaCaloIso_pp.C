@@ -150,32 +150,81 @@ void AddTask_GammaCaloIso_pp(
   //*************************** STANDARD EMC EMC MESON CUTS **********************************************
   //******************************************************************************************************
 
-  if (trainConfig == 32){ //Isolation Cut variations, Trackmatching, maxM02
-  cuts.AddCutCalo("00083113","e2211000600322l0000","0163103100000050"); // EMCEG1, with TrackMatcher off
-  cuts.AddCutCalo("00083113","e221100060032230000","0163103100000050"); // EMCEG1, with shape cut changed slightly
-  cuts.AddCutCalo("00083113","e2211000600322l0000","0163103100000050"); // EMCEG1, with TrackMatcher off
-  //PhotonIsolation Variations, LHC17i3 MC without non linearity
-  } else if (trainConfig == 33){ // without TrackMatching
-  cuts.AddCutCalo("00085113","12211000670322l0000","0163103100000050"); //with TrackMatching
-  cuts.AddCutCalo("00083113","12211000600322l0000","0163103100000050"); //without TrackMatching
-  cuts.AddCutCalo("00083113","b2211000600322l0000","0163103100000050"); //without TrackMatching, R=0.1
-  cuts.AddCutCalo("00083113","c2211000600322l0000","0163103100000050"); //without TrackMatching, R=0.2
-  cuts.AddCutCalo("00083113","d2211000600322l0000","0163103100000050"); //without TrackMatching, R=0.3
-  cuts.AddCutCalo("00083113","e2211000600322l0000","0163103100000050"); //without TrackMatching, R=0.4
+  //*********************************NO NONLINEARITY CUTS*************************************************
+
+  //EG2Trigger
+
+//adopted to Isolated Photon Analysis 13TeV
+  if (trainConfig == 22){ //Isolation Cut variations, Trackmatching, maxM02
+  cuts.AddCutCalo("00085113","e2211000600322l0000","0163103100000050"); //Standard Meson EmCal Cuts
+  cuts.AddCutCalo("00085113","e221100360512260000","0163103100000050"); //Isolation Analysis Cuts
+  cuts.AddCutCalo("00085113","e221100060512260000","0163103100000050"); //test distance to bad channel
+  cuts.AddCutCalo("00085113","e221100360012260000","0163103100000050"); //test exotic cluster rejection
+  cuts.AddCutCalo("00085113","e2211003605122l0000","0163103100000050"); //test shape cut
+
+  //standart Meson EmCal Cuts + Isolation
+  } else if (trainConfig == 23){ // with Time Cut
+  cuts.AddCutCalo("00085113","12211000600322l0000","0163103100000050");
+  cuts.AddCutCalo("00085113","b2211000600322l0000","0163103100000050"); // R=0.1
+  cuts.AddCutCalo("00085113","c2211000600322l0000","0163103100000050"); // R=0.2
+  cuts.AddCutCalo("00085113","d2211000600322l0000","0163103100000050"); // R=0.3
+  cuts.AddCutCalo("00085113","e2211000600322l0000","0163103100000050"); // R=0.4
 
   // *****************************************************************************************************
-  // *************************** pp 7 TeV cuts paper EMC ************************************************
-  // *****************************************************************************************************
-  //*************************** STANDARD EMC EMC MESON CUTS **********************************************
-  //******************************************************************************************************
-} else if (trainConfig == 35){ // without TrackMatching
-cuts.AddCutCalo("00083113","12211000670322l0000","0163103100000050"); //with TrackMatching
-cuts.AddCutCalo("00083113","12211000600322l0000","0163103100000050"); //without TrackMatching
-cuts.AddCutCalo("00083113","b2211000600322l0000","0163103100000050"); //without TrackMatching, R=0.1
-cuts.AddCutCalo("00083113","c2211000600322l0000","0163103100000050"); //without TrackMatching, R=0.2
-cuts.AddCutCalo("00083113","d2211000600322l0000","0163103100000050"); //without TrackMatching, R=0.3
-cuts.AddCutCalo("00083113","e2211000600322l0000","0163103100000050"); //without TrackMatching, R=0.4
+  // ******************************* pp 13 TeV DATA 16k,l ************************************************
 
+  //standart Meson EmCal Cuts + Isolation
+  } else if (trainConfig == 25){ // without Timing Cut for V2Clusterizer
+  cuts.AddCutCalo("00085113","12211000000322l0000","0163103100000050");
+  cuts.AddCutCalo("00085113","b2211000000322l0000","0163103100000050"); // R=0.1
+  cuts.AddCutCalo("00085113","c2211000000322l0000","0163103100000050"); // R=0.2
+  cuts.AddCutCalo("00085113","d2211000000322l0000","0163103100000050"); // R=0.3
+  cuts.AddCutCalo("00085113","e2211000000322l0000","0163103100000050"); // R=0.4
+
+  //adopted to Isolated Photon Analysis 13TeV
+  } else if (trainConfig == 26){ // without TrackMatching
+  cuts.AddCutCalo("00085113","e2211000000322l0000","0163103100000050"); //Standard Meson EmCal Cuts
+  cuts.AddCutCalo("00085113","e221100300512260000","0163103100000050"); //Isolation Analysis Cuts
+  cuts.AddCutCalo("00085113","e221100000512260000","0163103100000050"); //test distance to bad channel
+  cuts.AddCutCalo("00085113","e221100300012260000","0163103100000050"); //test exotic cluster rejection
+  cuts.AddCutCalo("00085113","e2211003005122l0000","0163103100000050"); //test shape cut
+
+  //EG1 Trigger
+
+  //adopted to Isolated Photon Analysis 13TeV
+   } else if (trainConfig == 32){ //Isolation Cut variations, Trackmatching, maxM02
+    cuts.AddCutCalo("00083113","e2211000600322l0000","0163103100000050"); //Standard Meson EmCal Cuts
+    cuts.AddCutCalo("00083113","e221100360512260000","0163103100000050"); //Isolation Analysis Cuts
+    cuts.AddCutCalo("00083113","e221100060512260000","0163103100000050"); //test distance to bad channel
+    cuts.AddCutCalo("00083113","e221100360012260000","0163103100000050"); //test exotic cluster rejection
+    cuts.AddCutCalo("00083113","e2211003605122l0000","0163103100000050"); //test shape cut
+
+    //standart Meson EmCal Cuts + Isolation
+    } else if (trainConfig == 33){ // with Time Cut
+    cuts.AddCutCalo("00083113","12211000600322l0000","0163103100000050");
+    cuts.AddCutCalo("00083113","b2211000600322l0000","0163103100000050"); // R=0.1
+    cuts.AddCutCalo("00083113","c2211000600322l0000","0163103100000050"); // R=0.2
+    cuts.AddCutCalo("00083113","d2211000600322l0000","0163103100000050"); // R=0.3
+    cuts.AddCutCalo("00083113","e2211000600322l0000","0163103100000050"); // R=0.4
+
+    // *****************************************************************************************************
+    // ******************************* pp 13 TeV DATA 16k,l ************************************************
+
+    //standart Meson EmCal Cuts + Isolation
+    } else if (trainConfig == 35){ // without Timing Cut for V2Clusterizer
+    cuts.AddCutCalo("00083113","12211000000322l0000","0163103100000050");
+    cuts.AddCutCalo("00083113","b2211000000322l0000","0163103100000050"); // R=0.1
+    cuts.AddCutCalo("00083113","c2211000000322l0000","0163103100000050"); // R=0.2
+    cuts.AddCutCalo("00083113","d2211000000322l0000","0163103100000050"); // R=0.3
+    cuts.AddCutCalo("00083113","e2211000000322l0000","0163103100000050"); // R=0.4
+
+    //adopted to Isolated Photon Analysis 13TeV
+    } else if (trainConfig == 36){ // without TrackMatching
+    cuts.AddCutCalo("00083113","e2211000000322l0000","0163103100000050"); //Standard Meson EmCal Cuts
+    cuts.AddCutCalo("00083113","e221100300512260000","0163103100000050"); //Isolation Analysis Cuts
+    cuts.AddCutCalo("00083113","e221100000512260000","0163103100000050"); //test distance to bad channel
+    cuts.AddCutCalo("00083113","e221100300012260000","0163103100000050"); //test exotic cluster rejection
+    cuts.AddCutCalo("00083113","e2211003005122l0000","0163103100000050"); //test shape cut
 
   } else {
     Error(Form("GammaCaloIso_%i",trainConfig), "wrong trainConfig variable no cuts have been specified for the configuration");
