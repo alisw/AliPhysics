@@ -566,6 +566,7 @@ void AliAnalysisTaskSEHFTreeCreator::UserCreateOutputObjects()
         TString nameoutput = "tree_Ds";
         fTreeHandlerDs = new AliHFTreeHandlerDstoKKpi(fPIDoptDs);
         if(fReadMC && fWriteOnlySignal) fTreeHandlerDs->SetFillOnlySignal(fWriteOnlySignal);
+        fTreeHandlerDs->SetMassKKOption(fDsMassKKOpt);
         fVariablesTreeDs = (TTree*)fTreeHandlerDs->BuildTree(nameoutput,nameoutput);
         fVariablesTreeDs->SetMaxVirtualSize(1.e+8/nEnabledTrees);
         fTreeEvChar->AddFriend(fVariablesTreeDs);
@@ -775,19 +776,28 @@ void AliAnalysisTaskSEHFTreeCreator::UserExec(Option_t */*option*/)
         }
       fzVtxGen = mcHeader->GetVtxZ();
     }
-    Bool_t isSameEvSelD0=!((fFiltCutsD0toKpi->IsEventSelected(aod) && !fCutsD0toKpi->IsEventSelected(aod))||(!fFiltCutsD0toKpi->IsEventSelected(aod) && fCutsD0toKpi->IsEventSelected(aod)));
-    Bool_t isSameEvSelDs=!((fFiltCutsDstoKKpi->IsEventSelected(aod) && !fCutsDstoKKpi->IsEventSelected(aod))||(!fFiltCutsDstoKKpi->IsEventSelected(aod) && fCutsDstoKKpi->IsEventSelected(aod)));
-    Bool_t isSameEvSelDplus=!((fFiltCutsDplustoKpipi->IsEventSelected(aod) && !fCutsDplustoKpipi->IsEventSelected(aod))||(!fFiltCutsDplustoKpipi->IsEventSelected(aod) && fCutsDplustoKpipi->IsEventSelected(aod)));
-    Bool_t isSameEvSelLctopKpi=!((fFiltCutsLctopKpi->IsEventSelected(aod) && !fCutsLctopKpi->IsEventSelected(aod))||(!fFiltCutsLctopKpi->IsEventSelected(aod) && fCutsLctopKpi->IsEventSelected(aod)));
-    Bool_t isSameEvSelBplus = !((fFiltCutsBplustoD0pi->IsEventSelected(aod) && !fCutsBplustoD0pi->IsEventSelected(aod)) || (!fFiltCutsBplustoD0pi->IsEventSelected(aod) && fCutsBplustoD0pi->IsEventSelected(aod)));
-    Bool_t isSameEvSelDstar=!((fFiltCutsDstartoKpipi->IsEventSelected(aod) && !fCutsDstartoKpipi->IsEventSelected(aod))||(!fFiltCutsDstartoKpipi->IsEventSelected(aod) && fCutsDstartoKpipi->IsEventSelected(aod)));
-    Bool_t isSameEvSel=true;
-    if(fWriteVariableTreeD0) isSameEvSel = isSameEvSel && isSameEvSelD0;
-    if(fWriteVariableTreeDs) isSameEvSel = isSameEvSel && isSameEvSelDs;
-    if(fWriteVariableTreeDplus) isSameEvSel = isSameEvSel && isSameEvSelDplus;
-    if(fWriteVariableTreeLctopKpi) isSameEvSel = isSameEvSel && isSameEvSelLctopKpi;
-    if(fWriteVariableTreeBplus) isSameEvSel = isSameEvSel && isSameEvSelBplus;
-    if(fWriteVariableTreeDstar) isSameEvSel = isSameEvSel && isSameEvSelDstar;
+  
+    Bool_t isSameEvSelD0=kTRUE;
+    Bool_t isSameEvSelDs=kTRUE;
+    Bool_t isSameEvSelDplus=kTRUE;
+    Bool_t isSameEvSelLctopKpi=kTRUE;
+    Bool_t isSameEvSelBplus=kTRUE;
+    Bool_t isSameEvSelDstar=kTRUE;
+
+    if(fWriteVariableTreeD0)
+      isSameEvSelD0=!((fFiltCutsD0toKpi->IsEventSelected(aod) && !fCutsD0toKpi->IsEventSelected(aod))||(!fFiltCutsD0toKpi->IsEventSelected(aod) && fCutsD0toKpi->IsEventSelected(aod)));
+    if(fWriteVariableTreeD0)
+      isSameEvSelDs=!((fFiltCutsDstoKKpi->IsEventSelected(aod) && !fCutsDstoKKpi->IsEventSelected(aod))||(!fFiltCutsDstoKKpi->IsEventSelected(aod) && fCutsDstoKKpi->IsEventSelected(aod)));
+    if(fWriteVariableTreeD0)
+      isSameEvSelDplus=!((fFiltCutsDplustoKpipi->IsEventSelected(aod) && !fCutsDplustoKpipi->IsEventSelected(aod))||(!fFiltCutsDplustoKpipi->IsEventSelected(aod) && fCutsDplustoKpipi->IsEventSelected(aod)));
+    if(fWriteVariableTreeD0)
+      isSameEvSelLctopKpi=!((fFiltCutsLctopKpi->IsEventSelected(aod) && !fCutsLctopKpi->IsEventSelected(aod))||(!fFiltCutsLctopKpi->IsEventSelected(aod) && fCutsLctopKpi->IsEventSelected(aod)));
+    if(fWriteVariableTreeD0)
+      isSameEvSelBplus = !((fFiltCutsBplustoD0pi->IsEventSelected(aod) && !fCutsBplustoD0pi->IsEventSelected(aod)) || (!fFiltCutsBplustoD0pi->IsEventSelected(aod) && fCutsBplustoD0pi->IsEventSelected(aod)));
+    if(fWriteVariableTreeD0)
+      isSameEvSelDstar=!((fFiltCutsDstartoKpipi->IsEventSelected(aod) && !fCutsDstartoKpipi->IsEventSelected(aod))||(!fFiltCutsDstartoKpipi->IsEventSelected(aod) && fCutsDstartoKpipi->IsEventSelected(aod)));
+
+    Bool_t isSameEvSel = isSameEvSelD0 && isSameEvSelDs && isSameEvSelDplus && isSameEvSelLctopKpi && isSameEvSelBplus && isSameEvSelDstar;
     if(!isSameEvSel) {
       Printf("AliAnalysisTaskSEHFTreeCreator::UserExec: differences in the event selection cuts same meson");
       return;
