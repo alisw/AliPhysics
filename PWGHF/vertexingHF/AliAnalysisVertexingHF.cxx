@@ -1700,7 +1700,13 @@ AliAODTrack* AliAnalysisVertexingHF::GetProng(AliVEvent *event,AliAODRecoDecayHF
   if(!fAODMap)MapAODtracks(event);
   return (AliAODTrack*)event->GetTrack(fAODMap[rd->GetProngID(iprong)]);
 }
+//----------------------------------------------------------------------------
+AliAODTrack* AliAnalysisVertexingHF::GetProngDstar(AliVEvent *event,AliAODRecoDecayHF *rd,AliAODRecoDecayHF *rdd,Int_t iprong){
+    if(!fAODMap)MapAODtracks(event);
 
+    if(iprong==0) return (AliAODTrack*)event->GetTrack(fAODMap[rd->GetProngID(0)]); //soft pion
+    else          return (AliAODTrack*)event->GetTrack(fAODMap[rdd->GetProngID(iprong-1)]); //D0 prongs
+}
 
 //----------------------------------------------------------------------------
 Bool_t AliAnalysisVertexingHF::FillRecoCand(AliVEvent *event,AliAODRecoDecayHF3Prong *rd){
