@@ -1,7 +1,7 @@
 
 // For: Net Lambda fluctuation analysis via traditional method
 // By: Ejiro Naomi Umaka Apr 2018
-// Updated Jan 09
+// Updated Jan 10
 
 
 #include "AliAnalysisManager.h"
@@ -349,13 +349,17 @@ void AliAnalysisTaskNetLambdaTrad::UserExec(Option_t *)
         if( ontheflystat == 0 )
         {
             
-            if(dcaV0ToVertex < 0.5 && dcaNegToVertex > 0.1 && dcaPosToVertex >  0.05 && TMath::Abs(posprnsg)  <= 3.)
+            if(dcaV0ToVertex < 0.1 && dcaNegToVertex > 0.1 && dcaPosToVertex >  0.05 && TMath::Abs(posprnsg)  <= 3.)
             {
                 f2fHistInvMassVsPtLambda->Fill(invMassLambda,V0pt);
                 f2fHistRecCentVsPtLambda->Fill(fCentrality,V0pt);
-                 ptCh[iptbin] += 1;
                 
                 if(invMassLambda > 1.11 && invMassLambda < 1.122)
+                {
+                    ptCh[iptbin] += 1;
+                }
+                
+                if(invMassLambda > 1.11341197 && invMassLambda < 1.11885)
                 {
                     f2fHistPtmassctLambda->Fill(fCentrality,V0pt);
                     f1fHistmassctLambda->Fill(invMassLambda);
@@ -363,12 +367,16 @@ void AliAnalysisTaskNetLambdaTrad::UserExec(Option_t *)
                 }
                 
             }
-            if(dcaV0ToVertex < 0.5 && dcaNegToVertex > 0.05 && dcaPosToVertex >  0.1 && TMath::Abs(negprnsg)  <= 3.)
+            if(dcaV0ToVertex < 0.1 && dcaNegToVertex > 0.05 && dcaPosToVertex >  0.1 && TMath::Abs(negprnsg)  <= 3.)
             {
                 f2fHistInvMassVsPtAntiLambda->Fill(invMassAntiLambda,V0pt);
                 f2fHistRecCentVsPtAntiLambda->Fill(fCentrality,V0pt);
-                  ptCh[iptbin+fNptBins] += 1;
+                
                 if(invMassAntiLambda > 1.11 && invMassAntiLambda < 1.122)
+                {
+                   ptCh[iptbin+fNptBins] += 1;
+                }
+                if(invMassAntiLambda > 1.11341 && invMassAntiLambda < 1.11887)
                 {
                     f2fHistPtmassctAntiLambda->Fill(fCentrality,V0pt);
                     f1fHistmassctAntiLambda->Fill(invMassAntiLambda);
