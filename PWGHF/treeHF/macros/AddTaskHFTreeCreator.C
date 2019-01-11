@@ -42,29 +42,29 @@ AliAnalysisTaskSEHFTreeCreator *AddTaskHFTreeCreator(Bool_t readMC=kTRUE,
     }
 
     AliRDHFCutsD0toKpi*      looseCutsD0toKpi        =(AliRDHFCutsD0toKpi*)filecuts->Get("D0toKpiFilteringCuts");
-    if(!looseCutsD0toKpi)         ::Fatal("AddTaskHFTreeCreator", "looseCutsD0toKpi : check your cut file");
+    if(!looseCutsD0toKpi && fillTreeD0)         ::Fatal("AddTaskHFTreeCreator", "looseCutsD0toKpi : check your cut file");
     AliRDHFCutsDstoKKpi*     looseCutsDstoKKpi       =(AliRDHFCutsDstoKKpi*)filecuts->Get("DstoKKpiFilteringCuts");
-    if(!looseCutsDstoKKpi)        ::Fatal("AddTaskHFTreeCreator", "looseCutsDstoKKpi : check your cut file");
+    if(!looseCutsDstoKKpi && fillTreeDs)        ::Fatal("AddTaskHFTreeCreator", "looseCutsDstoKKpi : check your cut file");
     AliRDHFCutsDplustoKpipi* looseCutsDplustoKpipi   =(AliRDHFCutsDplustoKpipi*)filecuts->Get("DplustoKpipiFilteringCuts");
-    if(!looseCutsDplustoKpipi)    ::Fatal("AddTaskHFTreeCreator", "looseCutsDplustoKpipi : check your cut file");
+    if(!looseCutsDplustoKpipi && fillTreeDplus)    ::Fatal("AddTaskHFTreeCreator", "looseCutsDplustoKpipi : check your cut file");
     AliRDHFCutsLctopKpi* looseCutsLctopKpi           =(AliRDHFCutsLctopKpi*)filecuts->Get("LctopKpiFilteringCuts");
-    if(!looseCutsLctopKpi)        ::Fatal("AddTaskHFTreeCreator", "looseCutsLctopKpi : check your cut file");
+    if(!looseCutsLctopKpi && fillTreeLctopKpi)        ::Fatal("AddTaskHFTreeCreator", "looseCutsLctopKpi : check your cut file");
     AliRDHFCutsBPlustoD0Pi* looseCutsBplustoD0pi   =(AliRDHFCutsBPlustoD0Pi*)filecuts->Get("BplustoD0piFilteringCuts");
-    if(!looseCutsBplustoD0pi)    ::Fatal("AddTaskHFTreeCreator", "looseCutsBplustoD0pi : check your cut file");
+    if(!looseCutsBplustoD0pi && fillTreeBplus)    ::Fatal("AddTaskHFTreeCreator", "looseCutsBplustoD0pi : check your cut file");
     AliRDHFCutsDStartoKpipi* looseCutsDstartoKpipi   =(AliRDHFCutsDStartoKpipi*)filecuts->Get("DstartoKpipiFilteringCuts");
-    if(!looseCutsDstartoKpipi)    ::Fatal("AddTaskHFTreeCreator", "looseCutsDstartoKpipi : check your cut file");
+    if(!looseCutsDstartoKpipi && fillTreeDstar)    ::Fatal("AddTaskHFTreeCreator", "looseCutsDstartoKpipi : check your cut file");
     AliRDHFCutsD0toKpi*      analysisCutsD0toKpi     =(AliRDHFCutsD0toKpi*)filecuts->Get("D0toKpiAnalysisCuts");
-    if(!analysisCutsD0toKpi)      ::Fatal("AddTaskHFTreeCreator", "analysisCutsD0toKpi : check your cut file");
+    if(!analysisCutsD0toKpi && fillTreeD0)      ::Fatal("AddTaskHFTreeCreator", "analysisCutsD0toKpi : check your cut file");
     AliRDHFCutsDstoKKpi*     analysisCutsDstoKKpi    =(AliRDHFCutsDstoKKpi*)filecuts->Get("DstoKKpiAnalysisCuts");
-    if(!analysisCutsDstoKKpi)     ::Fatal("AddTaskHFTreeCreator", "analysisCutsDstoKKpi : check your cut file");
+    if(!analysisCutsDstoKKpi && fillTreeDs)     ::Fatal("AddTaskHFTreeCreator", "analysisCutsDstoKKpi : check your cut file");
     AliRDHFCutsDplustoKpipi* analysisCutsDplustoKpipi=(AliRDHFCutsDplustoKpipi*)filecuts->Get("DplustoKpipiAnalysisCuts");
-    if(!analysisCutsDplustoKpipi) ::Fatal("AddTaskHFTreeCreator", "analysisCutsDplustoKpipi : check your cut file");
+    if(!analysisCutsDplustoKpipi && fillTreeDplus) ::Fatal("AddTaskHFTreeCreator", "analysisCutsDplustoKpipi : check your cut file");
     AliRDHFCutsLctopKpi*     analysisCutsLctopKpi    =(AliRDHFCutsLctopKpi*)filecuts->Get("LctopKpiAnalysisCuts");
-    if(!analysisCutsLctopKpi) ::Fatal("AddTaskHFTreeCreator", "analysisCutsLctopKpi : check your cut file");
+    if(!analysisCutsLctopKpi && fillTreeLctopKpi) ::Fatal("AddTaskHFTreeCreator", "analysisCutsLctopKpi : check your cut file");
     AliRDHFCutsBPlustoD0Pi* analysisCutsBplustoD0pi=(AliRDHFCutsBPlustoD0Pi*)filecuts->Get("BplustoD0piAnalysisCuts");
-    if(!analysisCutsBplustoD0pi) ::Fatal("AddTaskHFTreeCreator", "analysisCutsBplustoD0pi : check your cut file");
+    if(!analysisCutsBplustoD0pi && fillTreeBplus) ::Fatal("AddTaskHFTreeCreator", "analysisCutsBplustoD0pi : check your cut file");
     AliRDHFCutsDStartoKpipi* analysisCutsDstartoKpipi=(AliRDHFCutsDStartoKpipi*)filecuts->Get("DstartoKpipiAnalysisCuts");
-    if(!analysisCutsDstartoKpipi) ::Fatal("AddTaskHFTreeCreator", "analysisCutsDstartoKpipi : check your cut file");
+    if(!analysisCutsDstartoKpipi && fillTreeDstar) ::Fatal("AddTaskHFTreeCreator", "analysisCutsDstartoKpipi : check your cut file");
 
     TList *cutsList=new TList();
     cutsList->SetOwner(kTRUE);
