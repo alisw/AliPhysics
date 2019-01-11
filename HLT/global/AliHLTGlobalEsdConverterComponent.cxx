@@ -70,10 +70,10 @@
 #include "AliFlatESDVertex.h"
 #include "AliHLTTRDDefinitions.h"
 #ifdef HAVE_ALITPCCOMMON
-#include "AliHLTTRDTrack.h"
-#include "AliHLTTRDTrackData.h"
-#include "AliHLTTRDTrackPoint.h"
-#include "AliHLTTRDInterfaces.h"
+#include "AliGPUTRDTrack.h"
+#include "AliGPUTRDTrackData.h"
+#include "AliGPUTRDTrackPoint.h"
+#include "AliGPUTRDInterfaces.h"
 #endif
 #include "AliHLTITSTrackPoint.h"
 #include "AliGRPManager.h"
@@ -1227,10 +1227,10 @@ int AliHLTGlobalEsdConverterComponent::ProcessBlocks(TTree* pTree, AliESDEvent* 
 #ifdef HAVE_ALITPCCOMMON
   if (storeTracks){
 
-    const AliHLTTRDTrackPointData * trackPoints = 0;
+    const AliGPUTRDTrackPointData * trackPoints = 0;
     for (const AliHLTComponentBlockData* pBlock=GetFirstInputBlock(AliHLTTRDDefinitions::fgkTRDTrackPointDataType);
 	 pBlock!=NULL; pBlock=GetNextInputBlock()) {          
-      trackPoints = reinterpret_cast<const AliHLTTRDTrackPointData*>(pBlock->fPtr);    
+      trackPoints = reinterpret_cast<const AliGPUTRDTrackPointData*>(pBlock->fPtr);    
       break;
     }
 
@@ -1238,16 +1238,16 @@ int AliHLTGlobalEsdConverterComponent::ProcessBlocks(TTree* pTree, AliESDEvent* 
 	 pBlock!=NULL; pBlock=GetNextInputBlock()) {      
       fBenchmark.AddInput(pBlock->fSize);
       
-      const AliHLTTRDTrackData* trackData = reinterpret_cast<const AliHLTTRDTrackData*>(pBlock->fPtr);    
+      const AliGPUTRDTrackData* trackData = reinterpret_cast<const AliGPUTRDTrackData*>(pBlock->fPtr);    
 
-      if( pBlock->fSize < sizeof(AliHLTTRDTrackData) || pBlock->fSize < trackData->GetSize()  ){
+      if( pBlock->fSize < sizeof(AliGPUTRDTrackData) || pBlock->fSize < trackData->GetSize()  ){
 	iResult=-EINVAL; break;
       }
 
       for (unsigned itr=0; itr<trackData->fCount; itr++) {
 
-	const AliHLTTRDTrackDataRecord &track=trackData->fTracks[itr];
-	AliHLTTRDTrack<trackInterface<AliExternalTrackParam>> trdTrack;
+	const AliGPUTRDTrackDataRecord &track=trackData->fTracks[itr];
+	AliGPUTRDTrack<trackInterface<AliExternalTrackParam>> trdTrack;
 	trdTrack.ConvertFrom( track );
 	
 	Double_t TRDpid[AliPID::kSPECIES], eProb(0.2), restProb((1-eProb)/(AliPID::kSPECIES-1)); //eprob(element->GetTRDpid...);
@@ -1292,7 +1292,7 @@ int AliHLTGlobalEsdConverterComponent::ProcessBlocks(TTree* pTree, AliESDEvent* 
 	      for( int iLayer=0; iLayer<6; iLayer++){
 		int ind = track.fAttachedTracklets[iLayer];
 		if( ind<0 || ind>=trackPoints->fCount ) continue;
-		const AliHLTTRDTrackPoint &sp = trackPoints->fPoints[ind];
+		const AliGPUTRDTrackPoint &sp = trackPoints->fPoints[ind];
 		AliTrackPoint p( sp.fX[0], sp.fX[1], sp.fX[2], NULL, sp.fVolumeId );
 		spArray->AddPoint( iPoint, &p );
 		p.Print("");

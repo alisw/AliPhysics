@@ -63,13 +63,12 @@
 #include "AliFlatESDVertex.h"
 #include "AliHLTTPCCADefinitions.h"
 #include "AliHLTTPCCASliceOutput.h"
-#include "AliHLTTRDDefinitions.h"
 #include "AliHLTEMCALDefinitions.h"
 #include "AliHLTTPCHWCFData.h"
 #include "AliHLTTPCdEdxData.h"
 #include "AliHLTTRDDefinitions.h"
-#include "AliHLTTRDTrackletWord.h"
-#include "AliHLTTRDTrackData.h"
+#include "AliGPUTRDTrackletWord.h"
+#include "AliGPUTRDTrackData.h"
 #include "AliGRPManager.h"
 #include "AliGRPObject.h"
 #include "TMath.h"
@@ -1385,8 +1384,8 @@ int AliHLTGlobalPromptRecoQAComponent::DoEvent( const AliHLTComponentEventData& 
     //TRD Tracklets
     if (iter->fDataType == AliHLTTRDDefinitions::fgkTRDTrackletDataType)
     {
-      AliHLTTRDTrackletWord* tracklets = reinterpret_cast<AliHLTTRDTrackletWord*>( iter->fPtr );
-      int nTRDTrackletsTotal = iter->fSize / sizeof(AliHLTTRDTrackletWord);
+      AliGPUTRDTrackletWord* tracklets = reinterpret_cast<AliGPUTRDTrackletWord*>( iter->fPtr );
+      int nTRDTrackletsTotal = iter->fSize / sizeof(AliGPUTRDTrackletWord);
       nTRDTracklets += nTRDTrackletsTotal;
       if (fHistTRDHCId)
       {
@@ -1400,7 +1399,7 @@ int AliHLTGlobalPromptRecoQAComponent::DoEvent( const AliHLTComponentEventData& 
     //TRD Tracks
     if (iter->fDataType == (AliHLTTRDDefinitions::fgkTRDTrackDataType|kAliHLTDataOriginTRD))
     {
-      AliHLTTRDTrackData* outTracks = (AliHLTTRDTrackData*) (iter->fPtr);
+      AliGPUTRDTrackData* outTracks = (AliGPUTRDTrackData*) (iter->fPtr);
       nTRDTracks += outTracks->fCount;
     }
 
