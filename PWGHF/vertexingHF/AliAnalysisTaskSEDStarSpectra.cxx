@@ -292,7 +292,9 @@ void AliAnalysisTaskSEDStarSpectra::UserExec(Option_t *)
     fCEvents->Fill(10);
     TObjArray arrTracks(3);
     for(Int_t ipr=0;ipr<3;ipr++){
-      AliAODTrack *tr=vHF->GetProngDstar(aodEvent,dstarD0pi,trackD0,ipr);
+      AliAODTrack *tr;
+      if(ipr == 0) tr=vHF->GetProng(aodEvent,dstarD0pi,ipr); //soft pion
+      else         tr=vHF->GetProng(aodEvent,trackD0,ipr-1); //D0 daughters
       arrTracks.AddAt(tr,ipr);
     }
     if(!fCuts->PreSelect(arrTracks)){
