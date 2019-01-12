@@ -133,8 +133,28 @@ AliAnalysisTaskElectronEfficiencyV2* AddTask_acapon_Efficiency(TString names    
   task->SetEtaBinsLinear  (minEtaBin, maxEtaBin, stepsEtaBin);
   task->SetPhiBinsLinear  (minPhiBin, maxPhiBin, stepsPhiBin);
   task->SetThetaBinsLinear(minThetaBin, maxThetaBin, stepsThetaBin);
-  task->SetMassBinsLinear (minMassBin, maxMassBin, stepsMassBin);
-  task->SetPairPtBinsLinear(minPairPtBin, maxPairPtBin, stepsPairPtBin);
+  /* task->SetMassBinsLinear (minMassBin, maxMassBin, stepsMassBin); */
+  /* task->SetPairPtBinsLinear(minPairPtBin, maxPairPtBin, stepsPairPtBin); */
+
+	// Use non linear binning for mass and pair pt
+	// Vectors must be initliased in the following because ROOT....
+	Double_t massBinsArr[] = {0., 0.01, 0.02, 0.03, 0.04, 0.05, 0.06, 0.07, 0.08,
+                            0.09, 0.1, 0.14, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8,
+                            0.95, 1.05, 1.25, 1.5, 1.75, 2.0, 2.25, 2.5, 2.75,
+                            2.9, 3.0, 3.05, 3.1, 3.3, 3.8, 5.00};
+	std::vector<Double_t> massBins;
+	for(Int_t j = 0; j < sizeof(massBinsArr)/sizeof(massBinsArr[0]); j++){
+		massBins.push_back(massBinsArr[j]);
+	}
+	task->SetMassBins(massBins);
+
+
+	Double_t pairPtBinsArr[] = {0.0, 0.1, 0.3, 0.5, 1, 1.5, 2.5, 2.5, 4, 6, 10};
+	std::vector<Double_t> pairPtBins;
+	for(Int_t k = 0; k < sizeof(pairPtBinsArr)/sizeof(pairPtBinsArr[0]); k++){
+		pairPtBins.push_back(pairPtBinsArr[k]);
+	}
+	task->SetPairPtBins(pairPtBins);
 
   // #########################################################
   // #########################################################
