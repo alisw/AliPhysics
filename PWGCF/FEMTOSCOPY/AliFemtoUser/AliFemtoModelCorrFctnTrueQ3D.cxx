@@ -216,13 +216,19 @@ AddPair(const AliFemtoParticle &particle1,
         const AliFemtoParticle &particle2,
         TH3F &gen_hist,
         TH3F &rec_hist,
+        TH3F &gen_hist_unw,
+        TH3F &rec_hist_unw,
         Double_t weight)
 {
   Double_t q_out, q_side, q_long;
 
   // Fill reconstructed histogram with "standard" particle momentum
   std::tie(q_out, q_side, q_long) = Qcms(particle1.FourMomentum(), particle2.FourMomentum());
-  rec_hist.Fill(q_out, q_side, q_long, weight);
+  Int_t rec_bin = gen_hist.GetBin(q_out, q_long, q_side);
+  if (!(gen_hist.IsBinOverflow(rec_bin) or gen_hist.IsBinUnderflow(rec_bin))) {
+    rec_hist.Fill(q_out, q_side, q_long, weight);
+    rec_hist_unw.Fill(q_out, q_side, q_long, 1.0);
+  }
 
   // Get generated momentum from hidden info
   const AliFemtoModelHiddenInfo
@@ -252,14 +258,16 @@ AddPair(const AliFemtoParticle &particle1,
 
   // Fill generated-momentum histogram with "true" particle momentum
   std::tie(q_out, q_side, q_long) = Qcms(p1, p2);
-  gen_hist.Fill(q_out, q_side, q_long, weight);
+  Int_t gen_bin = gen_hist.GetBin(q_out, q_long, q_side);
+  if (!(gen_hist.IsBinOverflow(gen_bin) or gen_hist.IsBinUnderflow(gen_bin))) {
+    gen_hist.Fill(q_out, q_side, q_long, weight);
+    gen_hist_unw.Fill(q_out, q_side, q_long, weight);
+  }
 }
 
 void
 AliFemtoModelCorrFctnTrueQ3D::AddRealPair(AliFemtoPair *pair)
 {
-  Double_t weight = fManager->GetWeight(pair);
-
   const AliFemtoParticle *p1 = pair->Track1(),
                          *p2 = pair->Track2();
 
@@ -267,8 +275,12 @@ AliFemtoModelCorrFctnTrueQ3D::AddRealPair(AliFemtoPair *pair)
   if (fRng->Uniform() >= 0.5) {
     std::swap(p1, p2);
   }
-  AddPair(*p1, *p2, *fNumeratorGenerated, *fNumeratorReconstructed, weight);
-  AddPair(*p1, *p2, *fNumeratorGenUnweighted, *fNumeratorRecUnweighted, 1.0);
+  AddPair(*p1, *p2,
+          *fNumeratorGenUnweighted,
+          *fNumeratorRecUnweighted,
+          *fNumeratorGenerated,
+          *fNumeratorReconstructed,
+          fManager->GetWeight(pair));
 }
 
 void
@@ -283,13 +295,10 @@ AliFemtoModelCorrFctnTrueQ3D::AddMixedPair(AliFemtoPair *pair)
   }
 
   AddPair(*p1, *p2,
-          *fDenominatorGenerated,
-          *fDenominatorReconstructed,
-          1.0);
-
-  AddPair(*p1, *p2,
           *fDenominatorGenWeighted,
           *fDenominatorRecWeighted,
+          *fDenominatorGenerated,
+          *fDenominatorReconstructed,
           fManager->GetWeight(pair));
 }
 

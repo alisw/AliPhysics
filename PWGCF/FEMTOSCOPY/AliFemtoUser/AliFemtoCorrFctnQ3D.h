@@ -11,7 +11,6 @@
 #include "AliFemtoCorrFctn.h"
 #include "AliFemtoPairCut.h"
 
-#include <TH3I.h>
 #include <TH3F.h>
 
 #if __cplusplus >= 201103L
@@ -219,12 +218,16 @@ protected:
     // auto [qout, qside, qlong] = Frame_t::GetQ(pair); // maybe someday...
     double qout, qside, qlong;
     Frame_t::GetQ(pair, qout, qside, qlong);
-    dest.Fill(qout, qside, qlong);
-    qinv.Fill(qout, qside, qlong, pair.QInv());
+
+    Int_t bin = dest.GetBin(qout, qlong, qside);
+    if (!(dest.IsBinOverflow(bin) or dest.IsBinUnderflow(bin))) {
+      dest.Fill(qout, qside, qlong);
+      qinv.Fill(qout, qside, qlong, pair.QInv());
+    }
   }
 
-  TH3I* fNumerator;     ///<!< Numerator
-  TH3I* fDenominator;   ///<!< Denominator
+  TH3F* fNumerator;     ///<!< Numerator
+  TH3F* fDenominator;   ///<!< Denominator
 #ifdef SINGLE_WQINV
   TH3F* fQinvW;         ///<!< Qinv-Weighted histogram
 #elif defined(USE_TPROFILE)
@@ -259,13 +262,13 @@ AliFemtoCorrFctnQ3D<T>::AliFemtoCorrFctnQ3D(const char* title,
   TString hist_title = TString::Format("%s (Frame=%s); q_{out} (GeV); q_{side} (GeV); q_{long} (GeV)", title, T::FrameName());
   TString hist_name = simple_name ? "" : title;
 
-  fNumerator = new TH3I(simple_name ? "Num" : (TString("Num") + title).Data(),
+  fNumerator = new TH3F(simple_name ? "Num" : (TString("Num") + title).Data(),
                         "Numerator " + hist_title,
                         nbins, -QHi, QHi,
                         nbins, -QHi, QHi,
                         nbins, -QHi, QHi);
 
-  fDenominator = new TH3I(simple_name ? "Den" : (TString("Den") + title).Data(),
+  fDenominator = new TH3F(simple_name ? "Den" : (TString("Den") + title).Data(),
                           "Denominator " + hist_title,
                           nbins, -QHi, QHi,
                           nbins, -QHi, QHi,
@@ -302,8 +305,8 @@ AliFemtoCorrFctnQ3D<T>::AliFemtoCorrFctnQ3D(const char* title,
 template <typename T>
 AliFemtoCorrFctnQ3D<T>::AliFemtoCorrFctnQ3D(const AliFemtoCorrFctnQ3D<T>& orig)
   : AliFemtoCorrFctn(orig)
-  , fNumerator(new TH3I(*orig.fNumerator))
-  , fDenominator(new TH3I(*orig.fDenominator))
+  , fNumerator(new TH3F(*orig.fNumerator))
+  , fDenominator(new TH3F(*orig.fDenominator))
 #ifdef SINGLE_WQINV
   , fQinvW(new TH3F(*orig.fQinvW))
 #else
