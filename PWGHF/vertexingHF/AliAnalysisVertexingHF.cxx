@@ -1701,7 +1701,6 @@ AliAODTrack* AliAnalysisVertexingHF::GetProng(AliVEvent *event,AliAODRecoDecayHF
   return (AliAODTrack*)event->GetTrack(fAODMap[rd->GetProngID(iprong)]);
 }
 
-
 //----------------------------------------------------------------------------
 Bool_t AliAnalysisVertexingHF::FillRecoCand(AliVEvent *event,AliAODRecoDecayHF3Prong *rd){
   // method to retrieve daughters from trackID and reconstruct secondary vertex
