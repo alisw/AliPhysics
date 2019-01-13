@@ -53,17 +53,15 @@ struct RLightNucleus {
   float pt;
   float eta;
   float phi;
-  float beta;
-  Double32_t dcaxy;          //[-2,2,16]
-  Double32_t dcaz;           //[-2,2,16]
+  Double32_t m2;             //[1.1,21.58,13]
+  Double32_t dcaxy;          //[-2,2,10]
+  Double32_t dcaz;           //[-2,2,10]
   Double32_t tpcNsigmaD;     //[-6.4,6.4,8]
   Double32_t tpcNsigmaT;     //[-6.4,6.4,8]
   Double32_t tpcNsigmaHe3;   //[-6.4,6.4,8]
-  Double32_t tpcNsigmaHe4;   //[-6.4,6.4,8]
   Double32_t centrality;     //[0,128,8]
-  Double32_t deltapt;        //[-1.28,1.28,8]
+  Double32_t deltapt;        //[-1.28,1.28,7]
   unsigned char itsCls;
-  unsigned char tpcCls;
   unsigned char tpcPIDcls;
 };
 
