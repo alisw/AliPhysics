@@ -396,7 +396,7 @@ void AliAnalysisTaskNucleiYield::UserExec(Option_t *){
     if (beta > 1. - EPS) beta = -1;
     const float m2 = track->P() * track->P() * (1.f / (beta * beta) - 1.f);
 
-    if (fSaveTrees) {
+    if (fSaveTrees && track->Pt() < 10.) {
       double mcPt = 0;
       if (fIsMC) {
         int mcId = std::abs(track->GetLabel());
@@ -407,23 +407,21 @@ void AliAnalysisTaskNucleiYield::UserExec(Option_t *){
       fRecNucleus.pt = track->Pt() * track->Charge();
       fRecNucleus.eta = track->Eta();
       fRecNucleus.phi = track->Phi();
-      fRecNucleus.beta = beta;
+      fRecNucleus.m2 = m2;
       fRecNucleus.dcaxy = dca[0];
       fRecNucleus.dcaz = dca[1];
       AliTPCPIDResponse &tpcPidResp = fPID->GetTPCResponse();
       fRecNucleus.tpcNsigmaD = tpcPidResp.GetNumberOfSigmas(track, AliPID::kDeuteron);
       fRecNucleus.tpcNsigmaT = tpcPidResp.GetNumberOfSigmas(track, AliPID::kTriton);;
       fRecNucleus.tpcNsigmaHe3 = tpcPidResp.GetNumberOfSigmas(track, AliPID::kHe3);;
-      fRecNucleus.tpcNsigmaHe4 = tpcPidResp.GetNumberOfSigmas(track, AliPID::kAlpha);;
       fRecNucleus.centrality = centrality;
       fRecNucleus.deltapt = mcPt - track->Pt();
       fRecNucleus.itsCls = track->GetITSClusterMap();
-      fRecNucleus.tpcCls = track->GetTPCNcls();
       fRecNucleus.tpcPIDcls = track->GetTPCsignalN();
       if ((fRecNucleus.tpcNsigmaD > -5. && track->Pt() < 1.4) ||
           (fRecNucleus.tpcNsigmaT > -5. && track->Pt() < 1.6) ||
           (fRecNucleus.tpcNsigmaHe3 > -6.) ||
-          (m2 >= 1.11)
+          (m2 > 1.11 && m2 < 21.58)
         )
         fRTree->Fill();
     }
