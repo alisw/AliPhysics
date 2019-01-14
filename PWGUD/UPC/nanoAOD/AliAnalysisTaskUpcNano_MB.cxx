@@ -432,7 +432,7 @@ void AliAnalysisTaskUpcNano_MB::UserExec(Option_t *)
 	if(fTrackCutsBit0->AcceptTrack(trk))nGoodTracksLoose++;
     	if(!fTrackCutsBit5->AcceptTrack(trk))goodTPCTrack = kFALSE;
     	else{
-    		if(trk->HasPointOnITSLayer(0) && trk->HasPointOnITSLayer(1) && trk->GetTOFsignal()<99998)nGoodTracksSPD++;
+    		if(trk->HasPointOnITSLayer(0) && trk->HasPointOnITSLayer(1))nGoodTracksSPD++;
     		}
     
     	if(!fTrackCutsBit1->AcceptTrack(trk)) goodITSTrack = kFALSE;
@@ -442,9 +442,9 @@ void AliAnalysisTaskUpcNano_MB::UserExec(Option_t *)
     	if( !trk ) continue;
     
     	if(trk->TestFilterBit(1<<0) && (trk->HasPointOnITSLayer(0) || trk->HasPointOnITSLayer(1)))nGoodTracksLoose++;
-    	if(!(trk->TestFilterBit(1<<4)))goodTPCTrack = kFALSE;
+    	if(!(trk->TestFilterBit(1<<5)))goodTPCTrack = kFALSE;
     	else{
-    		if(trk->HasPointOnITSLayer(0) && trk->HasPointOnITSLayer(1) && trk->GetTOFsignal()<99998)nGoodTracksSPD++;
+    		if(trk->HasPointOnITSLayer(0) && trk->HasPointOnITSLayer(1))nGoodTracksSPD++;
     		}
     
     	if(!(trk->TestFilterBit(1<<1))) goodITSTrack = kFALSE;
@@ -552,8 +552,8 @@ void AliAnalysisTaskUpcNano_MB::UserExec(Option_t *)
   //Two track loop
   nHighPt = 0;
   fInEtaRec = kTRUE;
-  //if(nGoodTracksTPC == 2 && nGoodTracksLoose == 2 && nGoodTracksITS == 0){
-  if(nGoodTracksTPC == 2){
+  if(nGoodTracksTPC == 2 && nGoodTracksLoose == 2 && nGoodTracksITS == 0){
+  //if(nGoodTracksTPC == 2){
   	for(Int_t iTrack=0; iTrack<2; iTrack++) {
     	AliVTrack *trk = dynamic_cast<AliVTrack*>(fEvent->GetTrack(TrackIndexTPC[iTrack]));
 	
