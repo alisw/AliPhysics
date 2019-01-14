@@ -76,7 +76,7 @@
 #include "AliHLTMUONDataBlockReader.h"
 #include "AliHLTTriggerDecision.h"
 #include "AliHLTGlobalTriggerDecision.h"
-#include "AliHLTTPCCATrackParam.h"
+#include "AliGPUTPCTrackParam.h"
 
 //****************** AliRoot/MUON **********************************
 #include "AliMUONCalibrationData.h"

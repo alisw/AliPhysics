@@ -30,7 +30,7 @@ double GetSliceAngle( int iSlice )
   return kSliceAngleOffset + iSlice*kSliceDAngle;
 }
 
-int RecalculateSlice( AliHLTTPCGMPhysicalTrackModel &t, AliExternalTrackParam &t0, int &iSlice )
+int RecalculateSlice( AliGPUTPCGMPhysicalTrackModel &t, AliExternalTrackParam &t0, int &iSlice )
 {
   double phi = atan2( t.GetY(), t.GetX() );
   //  std::cout<<" recalculate: phi = "<<phi<<std::endl;
@@ -69,11 +69,11 @@ int checkPropagation()
 
   AliMagF* fld = new AliMagF("Fit", "Fit", 1., 1., AliMagF::k5kG);
 
-  AliHLTTPCGMPolynomialField field;
-  AliHLTTPCGMPolynomialFieldCreator fieldCr;  
+  AliGPUTPCGMPolynomialField field;
+  AliGPUTPCGMPolynomialFieldCreator fieldCr;  
   fieldCr.GetPolynomialField( field );
 
-  AliHLTTPCGMPropagator prop;
+  AliGPUTPCGMPropagator prop;
   prop.SetPolynomialField( &field );
   prop.SetToyMCEventsFlag( kTRUE );
 
@@ -101,7 +101,7 @@ int checkPropagation()
     double px = pt*x0;
     double py = pt*y0;
     double pz = pt*z0;
-    AliHLTTPCGMPhysicalTrackModel t;
+    AliGPUTPCGMPhysicalTrackModel t;
     t.Set( x0, y0, z0, px, py, pz, q);
     
     AliExternalTrackParam t0;

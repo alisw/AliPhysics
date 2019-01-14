@@ -14,8 +14,8 @@
 /**
  * @class AliHLTITSLayer
  *
- * The AliHLTTPCCAHit class is the internal representation
- * of the TPC clusters for the AliHLTTPCCATracker algorithm.
+ * The AliGPUTPCHit class is the internal representation
+ * of the TPC clusters for the AliGPUTPCTracker algorithm.
  *
  */
 class AliHLTITSLayer 

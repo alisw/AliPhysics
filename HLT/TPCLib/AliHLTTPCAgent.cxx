@@ -41,8 +41,8 @@ AliHLTTPCAgent gAliHLTTPCAgent;
 
 // component headers
 #ifdef HAVE_ALITPCCOMMON
-#include "AliHLTTPCCATrackerComponent.h"
-#include "AliHLTTPCCAGlobalMergerComponent.h"
+#include "AliGPUTPCTrackerComponent.h"
+#include "AliGPUTPCGlobalMergerComponent.h"
 #include "AliHLTTPCClusterStatComponent.h"
 #include "AliHLTGPUDumpComponent.h"
 #endif
@@ -412,8 +412,8 @@ int AliHLTTPCAgent::RegisterComponents(AliHLTComponentHandler* pHandler) const
   if (!pHandler) return -EINVAL;
 
 #ifdef HAVE_ALITPCCOMMON
-  pHandler->AddComponent(new AliHLTTPCCATrackerComponent);
-  pHandler->AddComponent(new AliHLTTPCCAGlobalMergerComponent);
+  pHandler->AddComponent(new AliGPUTPCTrackerComponent);
+  pHandler->AddComponent(new AliGPUTPCGlobalMergerComponent);
   pHandler->AddComponent(new AliHLTTPCClusterStatComponent);
   pHandler->AddComponent(new AliHLTGPUDumpComponent);
 #endif
