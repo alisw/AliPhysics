@@ -8,7 +8,10 @@
 #include "AliFemtoCorrFctn3DLCMSSym.h"
 
 #include <TObjArray.h>
+
+#include <algorithm>
 #include <cassert>
+#include <cmath>
 
 #ifdef __ROOT__
   /// \cond CLASSIMP
@@ -36,39 +39,21 @@ UInt_t AliFemtoKtBinnedCorrFunc::AddKtRange(float low, float high)
   const UInt_t index = fCFBuffer.size();
 
   AliFemtoCorrFctn *clone = fPrototypeCF->Clone();
-  if (clone == NULL) {
-    AliFemtoQinvCorrFctn *qcorr = dynamic_cast<AliFemtoQinvCorrFctn*>(fPrototypeCF);
-    if (qcorr != NULL) {
-      clone = new AliFemtoQinvCorrFctn(*qcorr);
-    } else {
-      AliFemtoCorrFctn3DLCMSSym *q3dcorr = dynamic_cast<AliFemtoCorrFctn3DLCMSSym*>(fPrototypeCF);
-      if (q3dcorr != NULL) {
-        clone = new AliFemtoCorrFctn3DLCMSSym(*q3dcorr);
-      } else {
-        return NPos;
-      }
-    }
+  if (!clone) {
+    return NPos;
   }
   fCFBuffer.push_back(clone);
 
-  std::vector<std::pair<Float_t, Float_t> >::iterator it;
-
   // Find first element which has a higher lower bound than this range.
   // We will insert at this location.
-  for (it = fRanges.begin(); it != fRanges.end(); ++it) {
-    if (low < it->first) {
-      break;
-    }
-  }
+  const auto insert_location = std::find_if(fRanges.begin(), fRanges.end(),
+                                            [low] (const std::pair<float,float> pair) {
+                                              return low < pair.first;
+                                            });
 
-  // get index of where the range will be stored
-  const UInt_t mapped_index = std::distance(fRanges.begin(), it);
-
-  // get corresponding iterator for the map
-  std::vector<UInt_t>::iterator map_it = fIndexMap.begin() + mapped_index;
-
-  fRanges.insert(it, std::pair<Float_t, Float_t>(low, high));
-  fIndexMap.insert(map_it, index);
+  // store at same offset in map
+  fRanges.insert(insert_location, std::pair<Float_t, Float_t>(low, high));
+  fIndexMap.insert(fIndexMap.begin() + std::distance(fRanges.begin(), insert_location), index);
 
   return index;
 }
@@ -117,9 +102,24 @@ TList* AliFemtoKtBinnedCorrFunc::GetOutputList()
     const std::pair<Float_t, Float_t> &range = fRanges[i];
     AliFemtoCorrFctn *cf = fCFBuffer[i];
 
-    const TString range_name = TString::Format("%0.3f_%0.3f", range.first, range.second);
+    auto stringify = [] (const std::pair<float, float> pair) {
+      auto stringify_float = [] (float n) {
+        const auto res = (std::floor(n) == n)
+                       ? Form("%0.1f", n)
+                       : Form("%g", n);
+        return TString(res);
+      };
+
+      TString lo = stringify_float(pair.first),
+              hi = stringify_float(pair.second);
+
+      return lo + "_" + hi;
+    };
+
+    const TString range_name = stringify(range);
     TObjArray *cf_output = new TObjArray();
     cf_output->SetName(range_name);
+
     TList *cf_list = cf->GetOutputList();
     cf_output->AddAll(cf_list);
     delete cf_list;
