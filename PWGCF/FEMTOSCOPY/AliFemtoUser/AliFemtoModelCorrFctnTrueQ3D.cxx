@@ -20,15 +20,15 @@ AliFemtoModelCorrFctnTrueQ3D::AliFemtoModelCorrFctnTrueQ3D():
 {
 }
 
-AliFemtoModelCorrFctnTrueQ3D::AliFemtoModelCorrFctnTrueQ3D(const char *title):
-  AliFemtoModelCorrFctnTrueQ3D(title, 56, 0.14)
+AliFemtoModelCorrFctnTrueQ3D::AliFemtoModelCorrFctnTrueQ3D(const char *prefix):
+  AliFemtoModelCorrFctnTrueQ3D(prefix, 56, 0.14)
 {
 }
 
-AliFemtoModelCorrFctnTrueQ3D::AliFemtoModelCorrFctnTrueQ3D(const char *title,
+AliFemtoModelCorrFctnTrueQ3D::AliFemtoModelCorrFctnTrueQ3D(const char *prefix,
                                                            UInt_t nbins,
                                                            Double_t qmax):
-  AliFemtoModelCorrFctnTrueQ3D(title, nbins, -qmax, qmax)
+  AliFemtoModelCorrFctnTrueQ3D(prefix, nbins, -qmax, qmax)
 {
 }
 
@@ -40,10 +40,10 @@ AliFemtoModelCorrFctnTrueQ3D::AliFemtoModelCorrFctnTrueQ3D(const TString &prefix
   , fManager(nullptr)
   , fNumeratorGenerated(nullptr)
   , fNumeratorReconstructed(nullptr)
-  , fDenominatorGenerated(nullptr)
-  , fDenominatorReconstructed(nullptr)
   , fNumeratorGenUnweighted(nullptr)
   , fNumeratorRecUnweighted(nullptr)
+  , fDenominatorGenerated(nullptr)
+  , fDenominatorReconstructed(nullptr)
   , fDenominatorGenWeighted(nullptr)
   , fDenominatorRecWeighted(nullptr)
   , fRng(new TRandom())
@@ -105,7 +105,7 @@ AliFemtoModelCorrFctnTrueQ3D::AliFemtoModelCorrFctnTrueQ3D(UInt_t nbins, Double_
 }
 
 AliFemtoModelCorrFctnTrueQ3D::AliFemtoModelCorrFctnTrueQ3D(const AliFemtoModelCorrFctnTrueQ3D::Parameters &params):
-  AliFemtoModelCorrFctnTrueQ3D(params.title.Data(), params.bin_count, params.qmin, params.qmax)
+  AliFemtoModelCorrFctnTrueQ3D(params.prefix.Data(), params.bin_count, params.qmin, params.qmax)
 {
   SetManager(params.mc_manager);
 }
@@ -116,10 +116,10 @@ AliFemtoModelCorrFctnTrueQ3D::AliFemtoModelCorrFctnTrueQ3D(const AliFemtoModelCo
   , fManager(orig.fManager)
   , fNumeratorGenerated(nullptr)
   , fNumeratorReconstructed(nullptr)
-  , fDenominatorGenerated(nullptr)
-  , fDenominatorReconstructed(nullptr)
   , fNumeratorGenUnweighted(nullptr)
   , fNumeratorRecUnweighted(nullptr)
+  , fDenominatorGenerated(nullptr)
+  , fDenominatorReconstructed(nullptr)
   , fDenominatorGenWeighted(nullptr)
   , fDenominatorRecWeighted(nullptr)
   , fRng(new TRandom())
@@ -133,7 +133,6 @@ AliFemtoModelCorrFctnTrueQ3D::AliFemtoModelCorrFctnTrueQ3D(const AliFemtoModelCo
   fNumeratorRecUnweighted = new TH3F(*orig.fNumeratorRecUnweighted);
   fDenominatorGenWeighted = new TH3F(*orig.fDenominatorGenWeighted);
   fDenominatorRecWeighted = new TH3F(*orig.fDenominatorRecWeighted);
-
 }
 
 
@@ -181,7 +180,7 @@ AliFemtoModelCorrFctnTrueQ3D::AppendOutputList(TList &list)
   return &list;
 }
 
-//Double_t
+/// Return q{Out-Side-Long} tuple, calculated from momentum vectors p1 & p2
 static
 std::tuple<Double_t, Double_t, Double_t>
 Qcms(const AliFemtoLorentzVector &p1, const AliFemtoLorentzVector &p2)

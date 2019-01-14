@@ -813,7 +813,7 @@ struct Configuration<AliFemtoModelCorrFctnTrueQ3D> : AbstractConfiguration<AliFe
   : Super(obj)
   {
     obj.pop_all()
-      ("title", params.title)
+      ("title", params.prefix)
       ("bin_count", params.bin_count)
       ("qmin", params.qmin)
       ("qmax", params.qmax)
