@@ -341,8 +341,11 @@ ConfigFemtoAnalysis(const TString& param_str="")
       }
 
       if (macro_config.do_trueq3d_cf) {
-        AliFemtoModelCorrFctnTrueQ3D *trueq3d_cf = new AliFemtoModelCorrFctnTrueQ3D("", macro_config.q3d_bin_count, macro_config.q3d_maxq);
-        trueq3d_cf->SetManager(model_manager);
+        AliFemtoModelCorrFctnTrueQ3D *trueq3d_cf = AliFemtoModelCorrFctnTrueQ3D::Build()
+                                                          .NamePrefix("TrueQ3D_")
+                                                          .BinCount(macro_config.q3d_bin_count)
+                                                          .QRange(macro_config.q3d_maxq)
+                                                          .Manager(model_manager);
         analysis->AddCorrFctn(trueq3d_cf);
       }
 
@@ -443,10 +446,11 @@ ConfigFemtoAnalysis(const TString& param_str="")
       }
 
       if (macro_config.do_kt_trueq3d_cf) {
-        TString q3d_cf_name("Trueq3D");
-
-        AliFemtoModelCorrFctnTrueQ3D *kt_trueq3d_cf = new AliFemtoModelCorrFctnTrueQ3D(q3d_cf_name, macro_config.q3d_bin_count, macro_config.q3d_maxq);
-        kt_trueq3d_cf->SetManager(model_manager);
+        AliFemtoModelCorrFctnTrueQ3D *kt_trueq3d_cf = AliFemtoModelCorrFctnTrueQ3D::Build()
+                                                          .NamePrefix("")
+                                                          .BinCount(macro_config.q3d_bin_count)
+                                                          .QRange(macro_config.q3d_maxq)
+                                                          .Manager(model_manager);
 
         AliFemtoKtBinnedCorrFunc *kt_trueq3d_cfs = new AliFemtoKtBinnedCorrFunc("KT_TrueQ3D", kt_trueq3d_cf);
 
