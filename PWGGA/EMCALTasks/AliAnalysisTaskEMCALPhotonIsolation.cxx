@@ -69,6 +69,8 @@ fVariableCPV(kFALSE),
 fVariableCPVInCone(kFALSE),
 fVariableCPVBoth(kFALSE),
 fVariableCPVSyst(""),
+fEOverPMin(0.),
+fEOverPMax(2000.),
 fNonLinRecoEnergyScaling(kFALSE),
 fExtraPerpConesFactor(1.347),
 fTracksAna(0),
@@ -291,6 +293,8 @@ fVariableCPV(kFALSE),
 fVariableCPVInCone(kFALSE),
 fVariableCPVBoth(kFALSE),
 fVariableCPVSyst(""),
+fEOverPMin(0.),
+fEOverPMax(2000.),
 fNonLinRecoEnergyScaling(kFALSE),
 fExtraPerpConesFactor(1.347),
 fTracksAna(0),
@@ -1989,6 +1993,10 @@ Bool_t AliAnalysisTaskEMCALPhotonIsolation::ClustTrackMatching(AliVCluster *clus
 
       matched = kTRUE;
     }
+
+    // E/p cut
+    if ( (clust->GetNonLinCorrEnergy()/mt->P()) > fEOverPMax || (clust->GetNonLinCorrEnergy()/mt->P()) < fEOverPMin )
+      matched = kFALSE;
   }
 
   if(fWho != 2)

@@ -130,6 +130,7 @@ class AliAnalysisTaskEMCALPhotonIsolation: public AliAnalysisTaskEmcal {
   void                         SetVariableCPVInCone        ( Bool_t   variable                             ) { fVariableCPVInCone = variable;                            }
   void                         SetVariableCPVBoth          ( Bool_t   variable                             ) { fVariableCPVBoth = variable;                              }
   void                         SetVariableCPVSystematics   ( TString  systematics                          ) { fVariableCPVSyst = systematics;                           }
+  void                         SetEOverP                   ( Float_t  min, Float_t max                     ) { fEOverPMin = min; fEOverPMax = max;                       }
   void                         SetNonLinRecoEnergyScaling  ( Bool_t   scaling                              ) { fNonLinRecoEnergyScaling = scaling;                       }
   void                         SetExtraPerpConesFactor     ( Double_t factor                               ) { fExtraPerpConesFactor = factor;                           }
   
@@ -196,6 +197,8 @@ class AliAnalysisTaskEMCALPhotonIsolation: public AliAnalysisTaskEmcal {
   Bool_t		       fVariableCPVInCone;	     ///<
   Bool_t		       fVariableCPVBoth;             ///<
   TString		       fVariableCPVSyst;	     ///<
+  Float_t		       fEOverPMin;		     ///< Min calo cluster E / track p
+  Float_t		       fEOverPMax;		     ///< Max calo cluster E / track p
   Bool_t		       fNonLinRecoEnergyScaling;     ///< Set a scaling factor for reconstructed energy (regarding non-linearity correction)
   Double_t                     fExtraPerpConesFactor;        ///< Charged to neutral + charged UE extrapolation factor (perpendicular cones)
   TClonesArray		     * fTracksAna;		     ///< Hybrid track array in
