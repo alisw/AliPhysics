@@ -297,7 +297,7 @@ std::string AliAnalysisTaskEmcalJetEnergySpectrum::MatchTrigger(const std::strin
   for(const auto &t : triggerclasses) {
     // Use CENT cluster for downscaling
     if(t.Triggercluster() != "CENT") continue;
-    if(t.Triggerclass().find(fTriggerSelectionString.Data()) != std::string::npos) continue; 
+    if(t.Triggerclass().find(fTriggerSelectionString.Data()) == std::string::npos) continue; 
     result = t.ExpandClassName();
     break;
   }
