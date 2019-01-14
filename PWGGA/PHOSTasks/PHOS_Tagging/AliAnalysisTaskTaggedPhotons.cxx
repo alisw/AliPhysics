@@ -60,12 +60,9 @@
 #include "AliMultSelection.h"
 
 ClassImp(AliAnalysisTaskTaggedPhotons)
-
 //______________________________________________________________________________
 AliAnalysisTaskTaggedPhotons::AliAnalysisTaskTaggedPhotons() : 
   AliAnalysisTaskSE(),
-  fCentEstimator(1),
-  fNCenBin(5),     
   fPHOSgeom(0x0),
   fOutputContainer(0x0),
   fStack(0x0),
@@ -75,42 +72,46 @@ AliAnalysisTaskTaggedPhotons::AliAnalysisTaskTaggedPhotons() :
   fTriggerAnalysis(0x0),
   fUtils(0x0),
   fPHOSTrigUtils(0x0),
+  fCentEstimator(1),
+  fNCenBin(5),   
+  fCentrality(0),
+  fCentWeight(1.),
+  fCentBin(0), 
+  fRunNumber(0),
+  fIsMB(kTRUE),
+  fIsMC(0),
+  fIsFastMC(0),
+  fRP(0.),
   fZmax(0.),
   fZmin(0.),
   fPhimax(0.),
   fPhimin(0.),
   fMinBCDistance(0.),
-  fTimeCut(0.),
-  fCentrality(0.),
-  fCentBin(0), 
-  fRunNumber(0),
-  fIsMB(kTRUE),
-  fIsUserDefinedNonlinearity(kFALSE),
-  fNonlin1(0),
-  fNonlin2(0),
-  fNonlin3(1.),
-  fNonlin4(0),
-  fIsMC(0),
-  fIsFastMC(0)
+  fTimeCut(12.5e-9)
 {
   //Deafult constructor
   //no memory allocations
   for(Int_t i=0;i<10;i++)
-    for(Int_t j=0;j<2;j++)
+    for(Int_t j=0;j<5;j++)
       fPHOSEvents[i][j]=0x0 ;    //Container for PHOS photons
+      
   for(Int_t i=0;i<6;i++)
     fPHOSBadMap[i]=0x0;
-  //Centrality edges
+  //Centrality binning
   fCenBinEdges.Set(fNCenBin);
   for(int cen=1; cen<=fNCenBin; cen++)
     fCenBinEdges.AddAt(int(100.*cen/fNCenBin),cen-1) ; 
+
+  for(Int_t i=0; i<7; i++)
+    fWeightParamPi0[i]=0.;  
+
+  for(Int_t i=0; i<6; i++)
+   fCentralityWeights[i]= 0x0; //!Weights to correct centrality non-flatness
 
 }
 //______________________________________________________________________________
 AliAnalysisTaskTaggedPhotons::AliAnalysisTaskTaggedPhotons(const char *name) : 
   AliAnalysisTaskSE(name),
-  fCentEstimator(1),
-  fNCenBin(5),     
   fPHOSgeom(0x0),
   fOutputContainer(0x0),
   fStack(0x0),
@@ -120,23 +121,22 @@ AliAnalysisTaskTaggedPhotons::AliAnalysisTaskTaggedPhotons(const char *name) :
   fTriggerAnalysis(new AliTriggerAnalysis),
   fUtils(0x0),
   fPHOSTrigUtils(0x0),
-  fZmax(-60.),
-  fZmin(60.),
-  fPhimax(250.),
-  fPhimin(320.),
-  fMinBCDistance(0.),
-  fTimeCut(100.e-9),
-  fCentrality(0.),
-  fCentBin(0),
+  fCentEstimator(1),
+  fNCenBin(5),   
+  fCentrality(0),
+  fCentWeight(1.),
+  fCentBin(0), 
   fRunNumber(0),
-  fIsMB(0),
-  fIsUserDefinedNonlinearity(kFALSE),
-  fNonlin1(0),
-  fNonlin2(0),
-  fNonlin3(1.),
-  fNonlin4(0),
+  fIsMB(kTRUE),
   fIsMC(0),
-  fIsFastMC(0)
+  fIsFastMC(0),
+  fRP(0.),
+  fZmax(0.),
+  fZmin(0.),
+  fPhimax(0.),
+  fPhimin(0.),
+  fMinBCDistance(0.),
+  fTimeCut(12.5e-9)
 {
   // Constructor.
 
@@ -148,7 +148,7 @@ AliAnalysisTaskTaggedPhotons::AliAnalysisTaskTaggedPhotons(const char *name) :
       fPHOSEvents[i][j]=0x0 ;    //Container for PHOS photons  
   for(Int_t i=0;i<6;i++)
     fPHOSBadMap[i]=0x0;
-  //Centrality edges
+  //Centrality binning
   fCenBinEdges.Set(fNCenBin);
   for(int cen=1; cen<=fNCenBin; cen++)
     fCenBinEdges.AddAt(int(100.*cen/fNCenBin),cen-1) ; 
@@ -158,34 +158,31 @@ AliAnalysisTaskTaggedPhotons::AliAnalysisTaskTaggedPhotons(const char *name) :
 //____________________________________________________________________________
 AliAnalysisTaskTaggedPhotons::AliAnalysisTaskTaggedPhotons(const AliAnalysisTaskTaggedPhotons& ap) :
   AliAnalysisTaskSE(ap.GetName()),  
-  fCentEstimator(1),
-  fNCenBin(5),     
   fPHOSgeom(0x0),
   fOutputContainer(0x0),
   fStack(0x0),
   fTrackEvent(0x0),
   fPHOSEvent(0x0),
   fCurrentMixedList(0x0),
-  fTriggerAnalysis(new AliTriggerAnalysis),  
+  fTriggerAnalysis(new AliTriggerAnalysis),
   fUtils(0x0),
   fPHOSTrigUtils(0x0),
-  fZmax(-60.),
-  fZmin(60.),
-  fPhimax(250.),
-  fPhimin(320.),
-  fMinBCDistance(0.),  
-  fTimeCut(100.e-9),
-  fCentrality(0.),
-  fCentBin(0),
+  fCentEstimator(1),
+  fNCenBin(5),   
+  fCentrality(0),
+  fCentWeight(1.),
+  fCentBin(0), 
   fRunNumber(0),
   fIsMB(kTRUE),
-  fIsUserDefinedNonlinearity(kFALSE),
-  fNonlin1(0),
-  fNonlin2(0),
-  fNonlin3(1.),
-  fNonlin4(0),
   fIsMC(0),
-  fIsFastMC(0)
+  fIsFastMC(0),
+  fRP(0.),
+  fZmax(0.),
+  fZmin(0.),
+  fPhimax(0.),
+  fPhimin(0.),
+  fMinBCDistance(0.),
+  fTimeCut(12.5e-9)
 {
   // cpy ctor
   fZmax=ap.fZmax ;
@@ -297,27 +294,23 @@ void AliAnalysisTaskTaggedPhotons::UserCreateOutputObjects()
   fOutputContainer->Add(new TH2F("hPHOSCentrality","PHOS vs centrality",105,0.,105.,100,0.,100.)); 
   fOutputContainer->Add(new TH2F("hTOF","cluster TOF",200,0.,20.,300,-3.e-6,6.e-6));
   
-  //Reactino Plane
+  //Reaction Plane
   fOutputContainer->Add(new TH2F("hRPCentrality","Reaction plane",100,0.,100.,50,0.,TMath::Pi()));
   
   
   fOutputContainer->Add(new TH2F("hCluNXZM1","Clu (X,Z), M1"   ,64,0.5,64.5, 56,0.5,56.5));
   fOutputContainer->Add(new TH2F("hCluNXZM2","Clu (X,Z), M2"   ,64,0.5,64.5, 56,0.5,56.5));
   fOutputContainer->Add(new TH2F("hCluNXZM3","Clu (X,Z), M3"   ,64,0.5,64.5, 56,0.5,56.5));
+  fOutputContainer->Add(new TH2F("hCluNXZM4","Clu (X,Z), M4"   ,64,0.5,64.5, 56,0.5,56.5));
   fOutputContainer->Add(new TH2F("hCluEXZM1","Clu E(X,Z), M1"  ,64,0.5,64.5, 56,0.5,56.5));
   fOutputContainer->Add(new TH2F("hCluEXZM2","Clu E(X,Z), M2"  ,64,0.5,64.5, 56,0.5,56.5));
   fOutputContainer->Add(new TH2F("hCluEXZM3","Clu E(X,Z), M3"  ,64,0.5,64.5, 56,0.5,56.5));
-
-  fOutputContainer->Add(new TH2F("hCluArea2M1","Clu (X,Z), M1"   ,64,0.5,64.5, 56,0.5,56.5));
-  fOutputContainer->Add(new TH2F("hCluArea2M2","Clu (X,Z), M1"   ,64,0.5,64.5, 56,0.5,56.5));
-  fOutputContainer->Add(new TH2F("hCluArea2M3","Clu (X,Z), M1"   ,64,0.5,64.5, 56,0.5,56.5));
-  fOutputContainer->Add(new TH2F("hCluArea3M1","Clu (X,Z), M1"   ,64,0.5,64.5, 56,0.5,56.5));
-  fOutputContainer->Add(new TH2F("hCluArea3M2","Clu (X,Z), M1"   ,64,0.5,64.5, 56,0.5,56.5));
-  fOutputContainer->Add(new TH2F("hCluArea3M3","Clu (X,Z), M1"   ,64,0.5,64.5, 56,0.5,56.5));
+  fOutputContainer->Add(new TH2F("hCluEXZM4","Clu E(X,Z), M4"  ,64,0.5,64.5, 56,0.5,56.5));
   
   fOutputContainer->Add(new TH2F("hTofM1","TOF in mod1",200,-1.e-6,1.e-6,200,0.,20.)) ;
   fOutputContainer->Add(new TH2F("hTofM2","TOF in mod2",200,-1.e-6,1.e-6,200,0.,20.)) ;
   fOutputContainer->Add(new TH2F("hTofM3","TOF in mod3",200,-1.e-6,1.e-6,200,0.,20.)) ;
+  fOutputContainer->Add(new TH2F("hTofM4","TOF in mod4",200,-1.e-6,1.e-6,200,0.,20.)) ;
 
   fOutputContainer->Add(new TH3F("hDispE","Dispersion vs E",130,0.,65.,100,0.,10.,100,0.,10.)) ;
   fOutputContainer->Add(new TH3F("hDispEneu","Dispersion vs E",130,0.,65.,100,0.,10.,100,0.,10.)) ;
@@ -350,19 +343,26 @@ void AliAnalysisTaskTaggedPhotons::UserCreateOutputObjects()
     fOutputContainer->Add(new TH1F(Form("hPhotM1_%s",cPID[iPID]),"Spectrum of all reconstructed particles, M1",nPt,ptBins)) ;
     fOutputContainer->Add(new TH1F(Form("hPhotM2_%s",cPID[iPID]),"Spectrum of all reconstructed particles, M2",nPt,ptBins)) ;
     fOutputContainer->Add(new TH1F(Form("hPhotM3_%s",cPID[iPID]),"Spectrum of all reconstructed particles, M3",nPt,ptBins)) ;
+    fOutputContainer->Add(new TH1F(Form("hPhotM4_%s",cPID[iPID]),"Spectrum of all reconstructed particles, M3",nPt,ptBins)) ;
     fOutputContainer->Add(new TH1F(Form("hPhotM1A2_%s",cPID[iPID]),"Spectrum of all reconstructed particles, M1",nPt,ptBins)) ;
     fOutputContainer->Add(new TH1F(Form("hPhotM2A2_%s",cPID[iPID]),"Spectrum of all reconstructed particles, M2",nPt,ptBins)) ;
     fOutputContainer->Add(new TH1F(Form("hPhotM3A2_%s",cPID[iPID]),"Spectrum of all reconstructed particles, M3",nPt,ptBins)) ;
+    fOutputContainer->Add(new TH1F(Form("hPhotM4A2_%s",cPID[iPID]),"Spectrum of all reconstructed particles, M3",nPt,ptBins)) ;
     fOutputContainer->Add(new TH1F(Form("hPhotM1A3_%s",cPID[iPID]),"Spectrum of all reconstructed particles, M1",nPt,ptBins)) ;
     fOutputContainer->Add(new TH1F(Form("hPhotM2A3_%s",cPID[iPID]),"Spectrum of all reconstructed particles, M2",nPt,ptBins)) ;
     fOutputContainer->Add(new TH1F(Form("hPhotM3A3_%s",cPID[iPID]),"Spectrum of all reconstructed particles, M3",nPt,ptBins)) ;
+    fOutputContainer->Add(new TH1F(Form("hPhotM4A3_%s",cPID[iPID]),"Spectrum of all reconstructed particles, M3",nPt,ptBins)) ;
    }
 
    //Trigger QA
    fOutputContainer->Add(new TH2F("hInvM_Re_mod1","Two-photon inv. mass (both in m1)",nM,0.,mMax,nPt,ptBins)) ;
+   fOutputContainer->Add(new TH2F("hInvM_Re_mod2","Two-photon inv. mass (both in m2)",nM,0.,mMax,nPt,ptBins)) ;
    fOutputContainer->Add(new TH2F("hInvM_Re_mod3","Two-photon inv. mass (both in m3)",nM,0.,mMax,nPt,ptBins)) ;
+   fOutputContainer->Add(new TH2F("hInvM_Re_mod4","Two-photon inv. mass (both in m4)",nM,0.,mMax,nPt,ptBins)) ;
    fOutputContainer->Add(new TH2F("hInvM_Mi_mod1","Two-photon inv. mass (both in m1)",nM,0.,mMax,nPt,ptBins)) ;
+   fOutputContainer->Add(new TH2F("hInvM_Mi_mod2","Two-photon inv. mass (both in m2)",nM,0.,mMax,nPt,ptBins)) ;
    fOutputContainer->Add(new TH2F("hInvM_Mi_mod3","Two-photon inv. mass (both in m3)",nM,0.,mMax,nPt,ptBins)) ;
+   fOutputContainer->Add(new TH2F("hInvM_Mi_mod4","Two-photon inv. mass (both in m4)",nM,0.,mMax,nPt,ptBins)) ;
 
   
   
@@ -375,29 +375,16 @@ void AliAnalysisTaskTaggedPhotons::UserCreateOutputObjects()
     fOutputContainer->Add(new TH1F(Form("hPhot_Dist2_%s_cent%d",cPID[iPID],cen),"Spectrum of all reconstructed particles",nPt,ptBins)) ;
     fOutputContainer->Add(new TH1F(Form("hPhot_Dist3_%s_cent%d",cPID[iPID],cen),"Spectrum of all reconstructed particles",nPt,ptBins)) ;
   
-    fOutputContainer->Add(new TH1F(Form("hPhot_Area1_%s_cent%d",cPID[iPID],cen),"Spectrum of all reconstructed particles",nPt,ptBins)) ;
-    fOutputContainer->Add(new TH1F(Form("hPhot_Area2_%s_cent%d",cPID[iPID],cen),"Spectrum of all reconstructed particles",nPt,ptBins)) ;
-    fOutputContainer->Add(new TH1F(Form("hPhot_Area3_%s_cent%d",cPID[iPID],cen),"Spectrum of all reconstructed particles",nPt,ptBins)) ;
-
     for(Int_t itag=0; itag<18; itag++){
+      fOutputContainer->Add(new TH1F(Form("hPhot_TaggedMult%d_Isolation2_%s_cent%d",itag,cPID[iPID],cen),"Spectrum of multiply tagged photons",nPt,ptBins)) ;
       fOutputContainer->Add(new TH1F(Form("hPhot_TaggedMult%d_%s_cent%d",itag,cPID[iPID],cen),"Spectrum of multiply tagged photons",nPt,ptBins)) ;
-      fOutputContainer->Add(new TH1F(Form("hPhot_TaggedMult%d_Area1_%s_cent%d",itag,cPID[iPID],cen),"Spectrum of multiply tagged photons",nPt,ptBins)) ;
-      fOutputContainer->Add(new TH1F(Form("hPhot_TaggedMult%d_Area2_%s_cent%d",itag,cPID[iPID],cen),"Spectrum of multiply tagged photons",nPt,ptBins)) ;
-      fOutputContainer->Add(new TH1F(Form("hPhot_TaggedMult%d_Area3_%s_cent%d",itag,cPID[iPID],cen),"Spectrum of multiply tagged photons",nPt,ptBins)) ;
       fOutputContainer->Add(new TH1F(Form("hPhot_Tagged%d_%s_cent%d",itag,cPID[iPID],cen),"Spectrum of all reconstructed particles, no PID",nPt,ptBins)) ;
-      fOutputContainer->Add(new TH1F(Form("hPhot_Tagged%d_Area1_%s_cent%d",itag,cPID[iPID],cen),"Spectrum of all reconstructed particles, no PID",nPt,ptBins)) ;
-      fOutputContainer->Add(new TH1F(Form("hPhot_Tagged%d_Area2_%s_cent%d",itag,cPID[iPID],cen),"Spectrum of all reconstructed particles, no PID",nPt,ptBins)) ;
-      fOutputContainer->Add(new TH1F(Form("hPhot_Tagged%d_Area3_%s_cent%d",itag,cPID[iPID],cen),"Spectrum of all reconstructed particles, no PID",nPt,ptBins)) ;
-
+      fOutputContainer->Add(new TH1F(Form("hPhot_Tagged%d_Isolation2_%s_cent%d",itag,cPID[iPID],cen),"Spectrum of all reconstructed particles, no PID",nPt,ptBins)) ;
       fOutputContainer->Add(new TH1F(Form("hPhot_TrueTagged%d_%s_cent%d",itag,cPID[iPID],cen),"Spectrum of all tagged particles",nPt,ptBins)) ;      
     }    
     for(Int_t kind=1; kind<2049; kind*=2){
       fOutputContainer->Add(new TH1F(Form("hPhot_Isolation%d_%s_cent%d",kind,cPID[iPID],cen),"Spectrum of all reconstructed particles, no PID",nPt,ptBins)) ;
-      fOutputContainer->Add(new TH1F(Form("hPhot_TaggedIsolation%d_%s_cent%d",kind,cPID[iPID],cen),"Spectrum of all reconstructed particles, no PID",nPt,ptBins)) ;
-    }
-    for(Int_t kind=1; kind<33; kind*=2){
-      fOutputContainer->Add(new TH1F(Form("hPhot_Isolation%d_Area1_%s_cent%d",kind,cPID[iPID],cen),"Spectrum of all reconstructed particles, no PID",nPt,ptBins)) ;
-      fOutputContainer->Add(new TH1F(Form("hPhot_nTagged_Isolation%d_Area1_%s_cent%d",kind,cPID[iPID],cen),"Spectrum of all reconstructed particles, no PID",nPt,ptBins)) ;
+      fOutputContainer->Add(new TH1F(Form("hPhot_Tagged_Isolation%d_%s_cent%d",kind,cPID[iPID],cen),"Spectrum of all reconstructed particles, no PID",nPt,ptBins)) ;
     }
   }
   for(Int_t kind=1; kind<33; kind*=2){
@@ -410,7 +397,6 @@ void AliAnalysisTaskTaggedPhotons::UserCreateOutputObjects()
   
   for(Int_t iPID=0; iPID<nPID; iPID++){
 
-
     fOutputContainer->Add(new TH2F(Form("hInvM_Re_Emin1_%s_cent%d",cPID[iPID],cen),"Two-photon inv. mass vs first photon pt",nM,0.,mMax,nPt,ptBins)) ;
     fOutputContainer->Add(new TH2F(Form("hInvM_Re_Emin2_%s_cent%d",cPID[iPID],cen),"Two-photon inv. mass vs first photon pt",nM,0.,mMax,nPt,ptBins)) ;
     fOutputContainer->Add(new TH2F(Form("hInvM_Re_Emin3_%s_cent%d",cPID[iPID],cen),"Two-photon inv. mass vs first photon pt",nM,0.,mMax,nPt,ptBins)) ;
@@ -421,6 +407,9 @@ void AliAnalysisTaskTaggedPhotons::UserCreateOutputObjects()
     fOutputContainer->Add(new TH2F(Form("hSingleInvM_Re_Emin1_%s_cent%d",cPID[iPID],cen),"Two-photon inv. mass vs first photon pt",nM,0.,mMax,nPt,ptBins)) ;
     fOutputContainer->Add(new TH2F(Form("hSingleInvM_Re_Emin2_%s_cent%d",cPID[iPID],cen),"Two-photon inv. mass vs first photon pt",nM,0.,mMax,nPt,ptBins)) ;
     fOutputContainer->Add(new TH2F(Form("hSingleInvM_Re_Emin3_%s_cent%d",cPID[iPID],cen),"Two-photon inv. mass vs first photon pt",nM,0.,mMax,nPt,ptBins)) ;
+    fOutputContainer->Add(new TH2F(Form("hSingleInvM_Re_Emin1_Iso_%s_cent%d",cPID[iPID],cen),"Two-photon inv. mass vs first photon pt",nM,0.,mMax,nPt,ptBins)) ;
+    fOutputContainer->Add(new TH2F(Form("hSingleInvM_Re_Emin2_Iso_%s_cent%d",cPID[iPID],cen),"Two-photon inv. mass vs first photon pt",nM,0.,mMax,nPt,ptBins)) ;
+    fOutputContainer->Add(new TH2F(Form("hSingleInvM_Re_Emin3_Iso_%s_cent%d",cPID[iPID],cen),"Two-photon inv. mass vs first photon pt",nM,0.,mMax,nPt,ptBins)) ;
     fOutputContainer->Add(new TH2F(Form("hSingleInvM_Re_Emin1_Strict_%s_cent%d",cPID[iPID],cen),"Two-photon inv. mass vs first photon pt",nM,0.,mMax,nPt,ptBins)) ;
     fOutputContainer->Add(new TH2F(Form("hSingleInvM_Re_Emin2_Strict_%s_cent%d",cPID[iPID],cen),"Two-photon inv. mass vs first photon pt",nM,0.,mMax,nPt,ptBins)) ;
     fOutputContainer->Add(new TH2F(Form("hSingleInvM_Re_Emin3_Strict_%s_cent%d",cPID[iPID],cen),"Two-photon inv. mass vs first photon pt",nM,0.,mMax,nPt,ptBins)) ;
@@ -428,12 +417,13 @@ void AliAnalysisTaskTaggedPhotons::UserCreateOutputObjects()
     fOutputContainer->Add(new TH2F(Form("hSingleInvM_Mi_Emin1_%s_cent%d",cPID[iPID],cen),"Two-photon inv. mass vs first photon pt",nM,0.,mMax,nPt,ptBins)) ;
     fOutputContainer->Add(new TH2F(Form("hSingleInvM_Mi_Emin2_%s_cent%d",cPID[iPID],cen),"Two-photon inv. mass vs first photon pt",nM,0.,mMax,nPt,ptBins)) ;
     fOutputContainer->Add(new TH2F(Form("hSingleInvM_Mi_Emin3_%s_cent%d",cPID[iPID],cen),"Two-photon inv. mass vs first photon pt",nM,0.,mMax,nPt,ptBins)) ;
+    fOutputContainer->Add(new TH2F(Form("hSingleInvM_Mi_Emin1_Iso_%s_cent%d",cPID[iPID],cen),"Two-photon inv. mass vs first photon pt",nM,0.,mMax,nPt,ptBins)) ;
+    fOutputContainer->Add(new TH2F(Form("hSingleInvM_Mi_Emin2_Iso_%s_cent%d",cPID[iPID],cen),"Two-photon inv. mass vs first photon pt",nM,0.,mMax,nPt,ptBins)) ;
+    fOutputContainer->Add(new TH2F(Form("hSingleInvM_Mi_Emin3_Iso_%s_cent%d",cPID[iPID],cen),"Two-photon inv. mass vs first photon pt",nM,0.,mMax,nPt,ptBins)) ;
     fOutputContainer->Add(new TH2F(Form("hSingleInvM_Mi_Emin1_Strict_%s_cent%d",cPID[iPID],cen),"Two-photon inv. mass vs first photon pt",nM,0.,mMax,nPt,ptBins)) ;
     fOutputContainer->Add(new TH2F(Form("hSingleInvM_Mi_Emin2_Strict_%s_cent%d",cPID[iPID],cen),"Two-photon inv. mass vs first photon pt",nM,0.,mMax,nPt,ptBins)) ;
     fOutputContainer->Add(new TH2F(Form("hSingleInvM_Mi_Emin3_Strict_%s_cent%d",cPID[iPID],cen),"Two-photon inv. mass vs first photon pt",nM,0.,mMax,nPt,ptBins)) ;
 
-    
-    
   }  
 
  
@@ -467,7 +457,24 @@ void AliAnalysisTaskTaggedPhotons::UserCreateOutputObjects()
   fOutputContainer->Add(new TH3F(Form("QA_PConeRP_Tracks_cent%d",cen),"Cone1 vs RP",65,0.,65.,100,0.,25.,6,0.,TMath::Pi())) ;
   
   }//centrality
-  
+ 
+  //pi0 partners energy (asimmetry)
+  fOutputContainer->Add(new TH2F("QA_Iso_Epartn","Partner energy distribuion",60,0.,60.,100,0.,1.)) ;
+  fOutputContainer->Add(new TH2F("QA_All_Epartn","Partner energy distribuion",60,0.,60.,100,0.,1.)) ;
+  fOutputContainer->Add(new TH2F("QA_Iso_Epartn_Bg","Partner energy distribuion, Bg region",60,0.,60.,100,0.,1.)) ;
+  fOutputContainer->Add(new TH2F("QA_All_Epartn_Bg","Partner energy distribuion, Bg region",60,0.,60.,100,0.,1.)) ;
+
+  fOutputContainer->Add(new TH2F("QA_Iso_zpartn","Partner dZ distribuion",60,0.,60.,100,0.,100.)) ;
+  fOutputContainer->Add(new TH2F("QA_All_zpartn","Partner dZ distribuion",60,0.,60.,100,0.,100.)) ;
+  fOutputContainer->Add(new TH2F("QA_Iso_zpartn_Bg","Partner dZ distribuion, Bg region",60,0.,60.,100,0.,100.)) ;
+  fOutputContainer->Add(new TH2F("QA_All_zpartn_Bg","Partner dZ distribuion, Bg region",60,0.,60.,100,0.,100.)) ;
+ 
+  fOutputContainer->Add(new TH2F("QA_Iso_xpartn","Partner dX distribuion",60,0.,60.,100,0.,100.)) ;
+  fOutputContainer->Add(new TH2F("QA_All_xpartn","Partner dX distribuion",60,0.,60.,100,0.,100.)) ;
+  fOutputContainer->Add(new TH2F("QA_Iso_xpartn_Bg","Partner dX distribuion, Bg region",60,0.,60.,100,0.,100.)) ;
+  fOutputContainer->Add(new TH2F("QA_All_xpartn_Bg","Partner dX distribuion, Bg region",60,0.,60.,100,0.,100.)) ;
+ 
+ 
   //MC  
   char partName[15][10] ;
   snprintf(partName[0],10,"gamma") ;
@@ -525,9 +532,6 @@ void AliAnalysisTaskTaggedPhotons::UserCreateOutputObjects()
        //Sort registered particles spectra according MC information
        for(Int_t iPID=0; iPID<nPID; iPID++){
          fOutputContainer->Add(new TH1F(Form("hMCRecPhoton_%s_cent%d",cPID[iPID],cen),"Spectrum of rec. photons", nPt,ptBins )) ;
-         fOutputContainer->Add(new TH1F(Form("hMCRecPhoton_Area1_%s_cent%d",cPID[iPID],cen),"Spectrum of rec. photons", nPt,ptBins )) ;
-         fOutputContainer->Add(new TH1F(Form("hMCRecPhoton_Area2_%s_cent%d",cPID[iPID],cen),"Spectrum of rec. photons", nPt,ptBins )) ;
-         fOutputContainer->Add(new TH1F(Form("hMCRecPhoton_Area3_%s_cent%d",cPID[iPID],cen),"Spectrum of rec. photons", nPt,ptBins )) ;
          fOutputContainer->Add(new TH1F(Form("hMCRecE_%s_cent%d",cPID[iPID],cen),"Spectrum of rec. electrons", nPt,ptBins )) ;
          fOutputContainer->Add(new TH1F(Form("hMCRecPbar_%s_cent%d",cPID[iPID],cen),"Spectrum of rec. electrons", nPt,ptBins )) ;
          fOutputContainer->Add(new TH1F(Form("hMCRecNbar_%s_cent%d",cPID[iPID],cen),"Spectrum of rec. electrons", nPt,ptBins )) ;
@@ -614,11 +618,7 @@ void AliAnalysisTaskTaggedPhotons::UserExec(Option_t *)
   //Select photons
   //Fill QA histograms
   //Fill Tagging histogsms
-  
-//   const Double_t kEcrossCut=0.98 ;
-//   const Double_t kTOFMaxCut= 100.e-9 ;  
-//   const Double_t kTOFMinCut=-100.e-9 ;  
-  
+    
   // Event selection flags
   //  FillHistogram("hSelEvents",0) ;
     
@@ -779,7 +779,10 @@ void AliAnalysisTaskTaggedPhotons::UserExec(Option_t *)
     Int_t mod  = relId[0] ;
     Int_t cellX = relId[2];
     Int_t cellZ = relId[3] ;
-
+    
+    TVector3 local ;
+    fPHOSgeom->Global2Local(local,global1,mod);
+    
     FillHistogram("hTOF",clu->E(),clu->GetTOF()) ;
     FillHistogram(Form("hTofM%d",mod),clu->GetTOF(),clu->E()) ;
 //     if((!fIsMC) && (clu->GetTOF() < kTOFMinCut || clu->GetTOF() > kTOFMaxCut))
@@ -791,16 +794,7 @@ void AliAnalysisTaskTaggedPhotons::UserExec(Option_t *)
     TLorentzVector momentum ;
     clu->GetMomentum(momentum, vtx5);
     
-//    AliCaloPhoton *p = new ((*fPHOSEvent)[inList]) AliCaloPhoton(momentum.Px(),momentum.Py(),momentum.Pz(),clu->E() );
-
-    Double_t e = clu->E();
-    if (fIsUserDefinedNonlinearity){
-      momentum*= CorrectNonlinearity(clu->E())/clu->E() ;
-      e = CorrectNonlinearity(clu->E());
-    }
-
-    AliCaloPhoton *p = new ((*fPHOSEvent)[inList]) AliCaloPhoton(momentum.Px(),momentum.Py(),momentum.Pz(),e );
-
+    AliCaloPhoton *p = new ((*fPHOSEvent)[inList]) AliCaloPhoton(momentum.Px(),momentum.Py(),momentum.Pz(),clu->E() );
     inList++;
     
     p->SetModule(mod) ;
@@ -812,7 +806,8 @@ void AliAnalysisTaskTaggedPhotons::UserExec(Option_t *)
     p->SetBC(i) ; //reference to CaloCluster
     p->SetTagInfo(0); //No pi0 partners found so far
     p->SetTagged(kFALSE);   //Reconstructed pairs found
-    
+    p->SetEMCx(local.X()) ;
+    p->SetEMCz(local.Z()) ;
     
     p->SetFiducialArea(fidArea) ;
 
@@ -828,12 +823,6 @@ void AliAnalysisTaskTaggedPhotons::UserExec(Option_t *)
     if(fIsMB || ((!fIsMB) && p->IsTrig()) ){
       FillHistogram(Form("hCluNXZM%d",mod),cellX,cellZ,1.);
       FillHistogram(Form("hCluEXZM%d",mod),cellX,cellZ,clu->E());
-      if(fidArea>1){
-        FillHistogram(Form("hCluArea2M%d",mod),cellX,cellZ,1.);
-        if(fidArea>2){
-          FillHistogram(Form("hCluArea3M%d",mod),cellX,cellZ,1.);
-        }
-      }
     }
     
     if(fIsMC){    
@@ -1344,9 +1333,17 @@ void AliAnalysisTaskTaggedPhotons::FillTaggingHistos(){
 
   const Double_t minAngle=TMath::ATan(2.2*sqrt(2.)/460.) ;   
 
- //First fill invariant mass distrubutions and mark tagged photons
-  //Invariant Mass analysis
   const Int_t n=fPHOSEvent->GetEntriesFast() ;
+  for(Int_t i=0;i<n;i++){
+    AliCaloPhoton *p = static_cast<AliCaloPhoton*>(fPHOSEvent->At(i));
+    
+    //Isolation tags for all photons
+    Int_t isolation = EvalIsolation(p,kTRUE) ;
+    p->SetIsolationTag(isolation) ;
+  }
+     
+  //First fill invariant mass distrubutions and mark tagged photons
+  //Invariant Mass analysis
   for(Int_t i=0;i<n-1;i++){
     AliCaloPhoton *p1 = static_cast<AliCaloPhoton*>(fPHOSEvent->At(i));
     for(Int_t j = i+1 ; j < n ; j++) {
@@ -1390,6 +1387,47 @@ void AliAnalysisTaskTaggedPhotons::FillTaggingHistos(){
               }
 	    }
 	    
+	    double alpha=TMath::Abs(p1->E()-p2->E())/(p1->E()+p2->E()) ;
+            double dz = TMath::Abs(p1->EMCz()-p2->EMCz()) ;
+            double dx = TMath::Abs(p1->EMCx()-p2->EMCx()) ;
+	    if(nsigma1<2 || nsigma2<2){ //2 sigma band
+	       FillHistogram("QA_All_Epartn",p1->Pt(),alpha) ;
+	       FillHistogram("QA_All_zpartn",p1->Pt(),dz) ;
+	       FillHistogram("QA_All_xpartn",p1->Pt(),dx) ;
+               if(p1->GetIsolationTag()&2){//default isolation
+	         FillHistogram("QA_Iso_Epartn",p1->Pt(),alpha) ; 
+	         FillHistogram("QA_Iso_zpartn",p1->Pt(),dz) ; 
+	         FillHistogram("QA_Iso_xpartn",p1->Pt(),dx) ; 
+               }
+	       FillHistogram("QA_All_Epartn",p2->Pt(),alpha) ;
+	       FillHistogram("QA_All_zpartn",p2->Pt(),dz) ;
+	       FillHistogram("QA_All_xpartn",p2->Pt(),dx) ;
+               if(p2->GetIsolationTag()&2){
+	         FillHistogram("QA_Iso_Epartn",p2->Pt(),alpha) ; //default isolation
+	         FillHistogram("QA_Iso_zpartn",p2->Pt(),dz) ; 
+	         FillHistogram("QA_Iso_xpartn",p2->Pt(),dx) ; 
+               }
+            }
+            else{
+	      if(nsigma1<4 || nsigma2<4){ //2 sigma band
+	        FillHistogram("QA_All_Epartn_Bg",p1->Pt(),alpha) ;
+	        FillHistogram("QA_All_zpartn_Bg",p1->Pt(),dz) ;
+	        FillHistogram("QA_All_xpartn_Bg",p1->Pt(),dx) ;
+                if(p1->GetIsolationTag()&2){
+	          FillHistogram("QA_Iso_Epartn_Bg",p1->Pt(),alpha) ;
+	          FillHistogram("QA_Iso_zpartn_Bg",p1->Pt(),dz) ; 
+	          FillHistogram("QA_Iso_xpartn_Bg",p1->Pt(),dx) ; 
+                }
+	        FillHistogram("QA_All_Epartn_Bg",p2->Pt(),alpha) ;
+	        FillHistogram("QA_All_zpartn_Bg",p2->Pt(),dz) ;
+	        FillHistogram("QA_All_xpartn_Bg",p2->Pt(),dx) ;
+                if(p2->GetIsolationTag()&2){
+	          FillHistogram("QA_Iso_Epartn_Bg",p2->Pt(),alpha) ;
+	          FillHistogram("QA_Iso_zpartn_Bg",p2->Pt(),dz) ; 
+	          FillHistogram("QA_Iso_xpartn_Bg",p2->Pt(),dx) ; 
+                }
+              }
+            }
 	  }
 	}
       }
@@ -1397,20 +1435,32 @@ void AliAnalysisTaskTaggedPhotons::FillTaggingHistos(){
       
       if(p2->E()>0.1){
         FillPIDHistograms("hSingleInvM_Re_Emin1",p1,invMass) ;
+        if(p1->GetIsolationTag()&2)
+          FillPIDHistograms("hSingleInvM_Re_Emin1_Iso",p1,invMass) ;
         if(p2->E()>0.2){
           FillPIDHistograms("hSingleInvM_Re_Emin2",p1,invMass) ;
+          if(p1->GetIsolationTag()&2)
+            FillPIDHistograms("hSingleInvM_Re_Emin2_Iso",p1,invMass) ;
           if(p2->E()>0.3){
             FillPIDHistograms("hSingleInvM_Re_Emin3",p1,invMass) ;
+            if(p1->GetIsolationTag()&2)
+              FillPIDHistograms("hSingleInvM_Re_Emin3_Iso",p1,invMass) ;
 	  }
 	}
       }
 	
       if(p1->E()>0.1){
         FillPIDHistograms("hSingleInvM_Re_Emin1",p2,invMass) ;
+        if(p2->GetIsolationTag()&2)
+          FillPIDHistograms("hSingleInvM_Re_Emin1_Iso",p2,invMass) ;
         if(p1->E()>0.2){
           FillPIDHistograms("hSingleInvM_Re_Emin2",p2,invMass) ;
+          if(p2->GetIsolationTag()&2)
+            FillPIDHistograms("hSingleInvM_Re_Emin2_Iso",p2,invMass) ;
           if(p1->E()>0.3){
             FillPIDHistograms("hSingleInvM_Re_Emin3",p2,invMass) ;
+            if(p2->GetIsolationTag()&2)
+              FillPIDHistograms("hSingleInvM_Re_Emin3_Iso",p2,invMass) ;
 	  }
 	}
       }
@@ -1468,16 +1518,10 @@ void AliAnalysisTaskTaggedPhotons::FillTaggingHistos(){
       for(Int_t ibit=0; ibit<18; ibit++){
         if(((oldTag1 & (1<<ibit))!=0) && //Already tagged 
            ((tag1 & (1<<ibit))!=0)){//Multiple tagging
-         Int_t iFidArea = p1->GetFiducialArea(); 
-         if(iFidArea>0){
-           FillPIDHistograms(Form("hPhot_TaggedMult%d_Area1",ibit),p1) ;
-           if(iFidArea>1){
-             FillPIDHistograms(Form("hPhot_TaggedMult%d_Area2",ibit),p1) ;
-             if(iFidArea>2){
-               FillPIDHistograms(Form("hPhot_TaggedMult%d_Area3",ibit),p1) ;
-             }
-	   }
-	 }
+           FillPIDHistograms(Form("hPhot_TaggedMult%d",ibit),p1) ;
+           if(p1->GetIsolationTag()&2){               
+             FillPIDHistograms(Form("hPhot_TaggedMult%d_Isolation2",ibit),p1) ;
+           }
 	}
       }
       tag1=tag1|oldTag1 ;
@@ -1499,16 +1543,10 @@ void AliAnalysisTaskTaggedPhotons::FillTaggingHistos(){
       for(Int_t ibit=0; ibit<18; ibit++){
         if(((oldTag2 & (1<<ibit))!=0) && //Already tagged 
            ((tag2 & (1<<ibit))!=0)){//Multiple tagging
-         Int_t iFidArea = p2->GetFiducialArea(); 
-         if(iFidArea>0){
-           FillPIDHistograms(Form("hPhot_TaggedMult%d_Area1",ibit),p2) ;
-           if(iFidArea>1){
-             FillPIDHistograms(Form("hPhot_TaggedMult%d_Area2",ibit),p2) ;
-             if(iFidArea>2){
-               FillPIDHistograms(Form("hPhot_TaggedMult%d_Area3",ibit),p2) ;
-             }
-	   }
-	 }
+           FillPIDHistograms(Form("hPhot_TaggedMult%d",ibit),p2) ;
+           if(p2->GetIsolationTag()&2){               
+             FillPIDHistograms(Form("hPhot_TaggedMult%d_Isolation2",ibit),p2) ;
+           }
 	}
       }
       tag2=tag2|oldTag2 ;
@@ -1531,10 +1569,8 @@ void AliAnalysisTaskTaggedPhotons::FillTaggingHistos(){
    if(!fIsMB && !p->IsTrig() ) 
      continue ;
 
-//    Int_t isolation = p->GetIsolationTag();
-     Int_t isolation = EvalIsolation(p,kTRUE) ;
-     p->SetIsolationTag(isolation) ;
-
+   Int_t isolation=p->GetIsolationTag() ;
+   
     //Inclusive spectra
     FillPIDHistograms("hPhot",p) ;
       
@@ -1551,7 +1587,7 @@ void AliAnalysisTaskTaggedPhotons::FillTaggingHistos(){
       if((isolation&kind)){
         FillPIDHistograms(Form("hPhot_Isolation%d",kind),p) ;
         if((tag & (1<<6))!=0){ //bit6: Emin=300 MeV+1sigma+all partners
-          FillPIDHistograms(Form("hPhot_TaggedIsolation%d",kind),p) ;
+          FillPIDHistograms(Form("hPhot_Tagged_Isolation%d",kind),p) ;
 	}
       }
     }
@@ -1559,51 +1595,14 @@ void AliAnalysisTaskTaggedPhotons::FillTaggingHistos(){
    for(Int_t ibit=0; ibit<18; ibit++){
      if((tag & (1<<ibit))!=0){ 
        FillPIDHistograms(Form("hPhot_Tagged%d",ibit),p) ;
+       if(isolation&2){
+          FillPIDHistograms(Form("hPhot_Tagged%d_Isolation2",ibit),p) ;           
+       }
      }
    }
-    
-    Int_t iFidArea = p->GetFiducialArea(); 
-    if(iFidArea>0){
-      FillPIDHistograms("hPhot_Area1",p) ;
-      for(Int_t kind=1; kind<33; kind*=2){
-        if((isolation&kind)){
-          FillPIDHistograms(Form("hPhot_Isolation%d_Area1",kind),p) ;
-	}
-      }
-
-      //Fill taggings with 
-      //3 Emin cuts
-      //Default Emin, 1,2,3 sigmas
-      //strict and loose PID cut on partner
-      for(Int_t ibit=0; ibit<18; ibit++){
-        if((tag & (1<<ibit))!=0){ 
-          FillPIDHistograms(Form("hPhot_Tagged%d_Area1",ibit),p) ;
-	  if(p->IsntUnfolded()) //true tag
-             FillPIDHistograms(Form("hPhot_TrueTagged%d",ibit),p) ;
-	  
-	}
-      }
-
-      if(iFidArea>1){
-        FillPIDHistograms("hPhot_Area2",p) ;
-        for(Int_t ibit=0; ibit<18; ibit++){
-          if((tag & (1<<ibit))!=0){ 
-            FillPIDHistograms(Form("hPhot_Tagged%d_Area2",ibit),p) ;
-	  }
-        }
-	if(iFidArea>2){
-          FillPIDHistograms("hPhot_Area3",p) ;
-          for(Int_t ibit=0; ibit<18; ibit++){
-            if((tag & (1<<ibit))!=0){ 
-              FillPIDHistograms(Form("hPhot_Tagged%d_Area3",ibit),p) ;
-	    }
-	  }
-	}
-      }
-    }
   } 
   
-   //Fill Mixed InvMass distributions:
+  //Fill Mixed InvMass distributions:
   TIter nextEv(fCurrentMixedList) ;
   for(Int_t i=0;i<n;i++){
     AliCaloPhoton *p1 = static_cast<AliCaloPhoton*>(fPHOSEvent->At(i));
@@ -1644,10 +1643,16 @@ void AliAnalysisTaskTaggedPhotons::FillTaggingHistos(){
 	
 	if(p2->E()>0.1){
           FillPIDHistograms("hSingleInvM_Mi_Emin1",p1,invMass) ;
+          if(p1->GetIsolationTag()&2)
+            FillPIDHistograms("hSingleInvM_Mi_Emin1_Iso",p1,invMass) ;
 	  if(p2->E()>0.2){
             FillPIDHistograms("hSingleInvM_Mi_Emin2",p1,invMass) ;
+            if(p1->GetIsolationTag()&2)
+              FillPIDHistograms("hSingleInvM_Mi_Emin2_Iso",p1,invMass) ;
 	    if(p2->E()>0.3){
               FillPIDHistograms("hSingleInvM_Mi_Emin3",p1,invMass) ;
+              if(p1->GetIsolationTag()&2)
+                FillPIDHistograms("hSingleInvM_Mi_Emin3_Iso",p1,invMass) ;
 	    }
 	  }
 	}
@@ -1665,10 +1670,16 @@ void AliAnalysisTaskTaggedPhotons::FillTaggingHistos(){
 	
 	if(p1->E()>0.1){
           FillPIDHistograms("hSingleInvM_Mi_Emin1",p2,invMass) ;
+          if(p2->GetIsolationTag()&2)
+            FillPIDHistograms("hSingleInvM_Mi_Emin1_Iso",p2,invMass) ;
   	  if(p1->E()>0.2){
             FillPIDHistograms("hSingleInvM_Mi_Emin2",p2,invMass) ;
+            if(p2->GetIsolationTag()&2)
+              FillPIDHistograms("hSingleInvM_Mi_Emin2_Iso",p2,invMass) ;
 	    if(p1->E()>0.3){
               FillPIDHistograms("hSingleInvM_Mi_Emin3",p2,invMass) ;
+              if(p2->GetIsolationTag()&2)
+                FillPIDHistograms("hSingleInvM_Mi_Emin3_Iso",p2,invMass) ;
 	    }
 	  }
 	}
@@ -1708,12 +1719,20 @@ Double_t AliAnalysisTaskTaggedPhotons::InPi0Band(Double_t m, Double_t pt)const
   //for LHC13bcdef
 //  Double_t mpi0mean =  0.13447 - 1.41259e-03 * TMath::Exp(-pt/1.30044) ;  
   //Parameterization of data 30.08.2014
-  Double_t mpi0mean =  0.135 ;  
+//  Double_t mpi0mean =  0.135 ;  
 
+  //Parameterization 13.10.2018
+  Double_t mpi0mean =1.34693e-01-3.68195e-04*TMath::TanH((pt-5.00834e+00)/1.81347e+00) ;  
+  
+  
+  
   //Double_t mpi0sigma=TMath::Sqrt(5.22245e-03*5.22245e-03 +2.86851e-03*2.86851e-03/pt) + 9.09932e-05*pt ;
   //Parameterization of data 30.08.2014
-  Double_t mpi0sigma=TMath::Sqrt(4.67491e-03*4.67491e-03 +3.42884e-03*3.42884e-03/pt) + 1.24324e-04*pt ;
+//   Double_t mpi0sigma=TMath::Sqrt(4.67491e-03*4.67491e-03 +3.42884e-03*3.42884e-03/pt) + 1.24324e-04*pt ;
 
+  //Parameterization 13.10.2018
+  Double_t mpi0sigma=TMath::Sqrt(3.79261e-03*3.79261e-03/pt+4.76506e-03*4.76506e-03+4.87152e-05*4.87152e-05*pt*pt*pt) ;
+  
   return TMath::Abs(m-mpi0mean)/mpi0sigma ;
 }
 //______________________________________________________________________________
@@ -1777,11 +1796,17 @@ void  AliAnalysisTaskTaggedPhotons::InitGeometry(){
   fPHOSgeom = AliPHOSGeometry::GetInstance() ;
  
   if(!fPHOSgeom){ //Geometry not yet constructed with Tender
-    fPHOSgeom = AliPHOSGeometry::GetInstance("IHEP","");
-
+    if(fRunNumber<209122){ //Run1  
+       AliError("TaggedPhotons: Can not get geometry from TENDER, creating PHOS geometry for Run1\n") ;    
+       fPHOSgeom = AliPHOSGeometry::GetInstance("IHEP","");
+    }
+    else{
+       AliError("TaggedPhotons: Can not get geometry from TENDER, creating PHOS geometry for Run2\n") ;    
+       fPHOSgeom = AliPHOSGeometry::GetInstance("Run2","");
+    }
     AliOADBContainer geomContainer("phosGeo");
     geomContainer.InitFromFile("$ALICE_PHYSICS/OADB/PHOS/PHOSGeometry.root","PHOSRotationMatrixes");
-    TObjArray *matrixes = (TObjArray*)geomContainer.GetObject(170000,"PHOSRotationMatrixes");
+    TObjArray *matrixes = (TObjArray*)geomContainer.GetObject(fRunNumber,"PHOSRotationMatrixes");
     for(Int_t mod=0; mod<5; mod++) {
       if(!matrixes->At(mod)) continue;
       fPHOSgeom->SetMisalMatrix(((TGeoHMatrix*)matrixes->At(mod)),mod) ;   
@@ -2440,8 +2465,6 @@ Bool_t AliAnalysisTaskTaggedPhotons::SelectCentrality(AliVEvent * event){
     Double_t znc =centrality->GetCentralityPercentile("ZNC");
     FillHistogram("hCentrality1ZNC",znc) ;
     
-        
-  
 //       if(fRunNumber >=195344 && fRunNumber <= 197388){ //LHC13bcdef  
     if(!fUtils->IsVertexSelected2013pA(event)){
       return kFALSE ;
@@ -2455,6 +2478,8 @@ Bool_t AliAnalysisTaskTaggedPhotons::SelectCentrality(AliVEvent * event){
     }
     FillHistogram("hSelEvents",5) ;
     
+    
+    //Centrality distribution after event selection
     v0A =centrality->GetCentralityPercentile("V0A");
     FillHistogram("hCentrality2V0A",v0A) ;
       
@@ -2517,8 +2542,10 @@ Bool_t AliAnalysisTaskTaggedPhotons::SelectCentrality(AliVEvent * event){
   //Fill Multiplicity before vertex/pileup cuts
   AliMultSelection *multSelection = (AliMultSelection*) event -> FindListObject("MultSelection");
     
-  if (!multSelection )
+  if (!multSelection ){
     return kFALSE ;  
+  }
+  else{
       
 
     Double_t v0M = multSelection->GetMultiplicityPercentile("V0M");
@@ -2607,8 +2634,6 @@ Bool_t AliAnalysisTaskTaggedPhotons::SelectCentrality(AliVEvent * event){
     FillHistogram("hCentrality2RefMult08",refMu08) ;
     
     
-    
-    
     //centrality
     fCentrality=1.;
     switch(fCentEstimator){
@@ -2640,7 +2665,8 @@ Bool_t AliAnalysisTaskTaggedPhotons::SelectCentrality(AliVEvent * event){
             default: fCentrality=multSelection->GetMultiplicityPercentile("RefMult08");
                      break;         
       }
-
+    }
+    
      fCentBin=0;
      while(fCentBin<fNCenBin && fCentrality>fCenBinEdges.At(fCentBin))
         fCentBin++ ;
@@ -2652,11 +2678,4 @@ Bool_t AliAnalysisTaskTaggedPhotons::SelectCentrality(AliVEvent * event){
         fCentWeight=1. ; //TrigCentralityWeightPP(fCentrality); 
      return kTRUE ;
 
-}
-
-Double_t AliAnalysisTaskTaggedPhotons::CorrectNonlinearity(Double_t en){
-
-  //As in PHOS Calibration Paper
-//    return 0.03+0.09*TMath::Sqrt(en)+1.05*en+0.000249*en*en ;
-  return fNonlin1+fNonlin2*TMath::Sqrt(en)+fNonlin3*en+fNonlin4*en*en;
 }
