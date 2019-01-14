@@ -152,7 +152,7 @@ Bool_t AliMCEventHandler::Init(Option_t* opt)
       embBKGPaths->Print();
       for (int ib=0;ib<embBKGPaths->GetEntriesFast();ib++) {
 	TObjString* objstr = (TObjString*)embBKGPaths->At(ib);
-	TString pth = objstr->GetName();
+	TString pth = gSystem->DirName( objstr->GetName() );
 	if (objstr->TestBit(AliStack::GetEmbeddingRawBit())) {
 	  AliInfoF("Backround from %s flagged is as RAW, skip MCEvent creation",pth.Data());
 	  continue;
