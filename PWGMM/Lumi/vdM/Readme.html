@@ -15,7 +15,6 @@
         <li><a href="#Instructions">Instructions</a></li>
         <li><a href="#Example">Example</a><br>
         </li>
-        <li>Files</li>
       </ul>
     </div>
     <br>
@@ -403,57 +402,5 @@ xs_IntensityCorrFBCTRate_VBAandVBC_NomSep_FBCT_Scan_0_Fit_GP2.root<br>
 xs_IntensityCorrFBCTRate_VBAandVBC_NomSep_FBCT_Scan_1_Fit_GP2.root<br>
       </li>
     </ol>
-    <hr size="2" width="100%">
-    <h2>Files</h2>
-    <ul>
-      <li>Header files</li>
-      <ul>
-        <li>CandRoot.h<br>
-          Contains C and Root headers<br>
-        </li>
-        <li>GlobalVariables.h <br>
-          Containes global variables used by the different parts of the
-          code<br>
-        </li>
-        <li>InputFromUser.h<br>
-          Contains setting routines to be provided by the user for each
-          new fill<br>
-        </li>
-        <li>vdmUtilities.h<br>
-          Contains some goodies needed somewhere else</li>
-      </ul>
-      <li>Macros</li>
-      <ul>
-        <li>Checks.C <br>
-          Contains functions to performes basic checks in the input data</li>
-        <li>CreateBCHeaders.C<br>
-          Produces a header file with the indices of the interacting
-          bunch crossings</li>
-        <li>CreateIntensityIndexHeader.C<br>
-          Produces a header file with the indices where the bunch
-          intensities will be evaluated<br>
-        </li>
-        <li>Create_nominal_separation_file.C<br>
-          Looks into the original files to extract the nominal
-          separations for each scan<br>
-        </li>
-        <li>Create_raw_rate_file.C<br>
-          Looks into the original file to extract the raw rates for each
-          scan<br>
-        </li>
-      </ul>
-    </ul>
-    <br>
-    <hr style="width: 100%; height: 2px;">
-    <h2>Exit codes</h2>
-    <ul>
-      <li>-100: Fill not known</li>
-      <li>-101: Wrong number of x-scans found</li>
-      <li>-102: Wrong number of y-scans found</li>
-      <li>-103: Scan file not found</li>
-      <li>-104: Branch not found</li>
-      <li>-105: Fit model not known<br>
-      </li>
-    </ul>
   </body>
 </html>
