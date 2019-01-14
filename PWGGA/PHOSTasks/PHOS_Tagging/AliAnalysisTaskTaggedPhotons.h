@@ -40,37 +40,35 @@ public:
   virtual void UserExec(Option_t * opt = "") ;
   virtual void Terminate(Option_t * opt = "") ;
 
-  void SetTrigger(Bool_t isPHOSTrig){fIsMB=isPHOSTrig;}
-  void SetMC(Bool_t isMC=kTRUE){fIsMC=isMC;}
-  void SetFastMC(void){fIsFastMC=kTRUE;fIsMC=kTRUE; } //same as MC, but bypass event checks
-  void SetPi0WeightParameters(TArrayD * ar) ;
-  void SetDistanceToBad(Float_t cut=2.5){fMinBCDistance=cut;}
-  void SetTimeCut(Float_t cut=25.e-9){fTimeCut=cut;}
+  void SetTrigger(Bool_t isPHOSTrig){fIsMB=isPHOSTrig;}   //Analyse MinBias of PHOS triggered events
+  void SetMC(Bool_t isMC=kTRUE){fIsMC=isMC;}              //Is is MC or real data
+  void SetFastMC(void){fIsFastMC=kTRUE;fIsMC=kTRUE; }     //Only for MC, bypass event quality checks (e.g. for single pi0 MC)
+  void SetPi0WeightParameters(TArrayD * ar) ;             //Introduce weight for primary pi0
+  void SetDistanceToBad(Float_t cut=2.5){fMinBCDistance=cut;}     //Distance to bad module
+  void SetTimeCut(Float_t cut=25.e-9){fTimeCut=cut;}              //Time selection, use only for data
   void SetCentralityEstimator(Int_t est=1){fCentEstimator=est;}   //Centrality estimator, pPb: 1: V0A/C, 2: V0M, 3: ZNA/C,  4: CL1
-           //for pp: 
-  void SetCentralityWeights(TString filename="MBCentralityWeights.root") ;
-  void SetMultiplicityBins(TArrayI ar){fNCenBin=ar.GetSize() ; fCenBinEdges.Copy(ar);}
-  void SetUserDefinedNonlinearity(Bool_t isUserDef=kTRUE){fIsUserDefinedNonlinearity=isUserDef; }
-  void SetNonlinearityParameters(Double_t a, Double_t b, Double_t c, Double_t d){fNonlin1=a;fNonlin2=b;fNonlin3=c;fNonlin4=d;};
+  void SetCentralityWeights(TString filename="MBCentralityWeights.root") ;  //for pp: 
+  void SetMultiplicityBins(TArrayI ar){fNCenBin=ar.GetSize() ; fCenBinEdges.Copy(ar);} //for pp: 
 protected:
   void    FillMCHistos() ;
   void    FillTaggingHistos() ;
-  Int_t   GetFiducialArea(const Float_t * pos)const ; //what kind of fiducial area hit the photon
+  Int_t   GetFiducialArea(const Float_t * pos)const ;                           //what kind of fiducial area hit the photon
   Int_t   IsSameParent(const AliCaloPhoton *p1, const AliCaloPhoton *p2) const; //Check MC genealogy; return PDG of parent
   Bool_t  IsGoodChannel(Int_t mod, Int_t ix, Int_t iz) ;
   Double_t  InPi0Band(Double_t m, Double_t pt)const; //Check if invariant mass is within pi0 peak
   Bool_t  TestDisp(Double_t l0, Double_t l1, Double_t e)const  ;
   Bool_t  TestTOF(Double_t /*t*/,Double_t /*en*/)const{return kTRUE;} 
   Bool_t  TestCharged(Double_t dr,Double_t en)const ;
-  void    InitGeometry() ;  //read reotation matrixes from AOD/AOD
+  void    InitGeometry() ;  //read geometry from TENDER, if not, get rotation matrixes from AODB
   Int_t   EvalIsolation(TLorentzVector * ph,Bool_t isPhoton) ;
   Bool_t  TestLambda(Double_t pt,Double_t l1,Double_t l2) ;
   Bool_t  TestPID(Int_t iPID, AliCaloPhoton* part) ;
   Double_t PrimaryParticleWeight(AliAODMCParticle * particle) ;
   Int_t   FindPrimary(AliVCluster*, Bool_t&);
+  
+  Bool_t   SelectCentrality(AliVEvent * event) ;
   Double_t TrigCentralityWeight(Double_t x); //Correction for PHOS trigger centrality bias
   Double_t MBCentralityWeight(Double_t x);   //Correction for Pileup cut centrality bias
-  Double_t CorrectNonlinearity(Double_t en);
   
   void FillHistogram(const char * key,Double_t x) const ; //Fill 1D histogram witn name key
   void FillHistogram(const char * key,Double_t x, Double_t y) const ; //Fill 2D histogram witn name key
@@ -78,15 +76,9 @@ protected:
   void FillPIDHistograms(const char * name,  AliCaloPhoton * p) const ;
   void FillPIDHistograms(const char * name,  AliCaloPhoton * p ,Double_t y) const ;
   void FillPIDHistograms(const char * name,  AliCaloPhoton * p ,  AliCaloPhoton * p2,Double_t y, Bool_t isReal) const ;
-  Bool_t SelectCentrality(AliVEvent * event) ;
-
 
 private:
 
-  Int_t   fCentEstimator;       //Centrality estimator: 1: V0A/C, 2: V0M, 3: ZNA/C,  4: CL1
-  Int_t   fNCenBin ;     
-  TArrayI fCenBinEdges;   
-  
   AliPHOSGeometry  *fPHOSgeom;      //!PHOS geometry
   THashList *   fOutputContainer ;  //!List of output histograms
   TClonesArray *fStack ;            //!Pointer to MC stack (AOD)
@@ -98,6 +90,19 @@ private:
   AliAnalysisUtils * fUtils ;       //!
   AliPHOSTriggerUtils * fPHOSTrigUtils ; //! utils to analyze PHOS trigger
  
+  Int_t   fCentEstimator;       //Centrality estimator: 1: V0A/C, 2: V0M, 3: ZNA/C,  4: CL1
+  Int_t   fNCenBin ;            //NUmber of centrality bins
+  TArrayI fCenBinEdges;         //Centrality binning
+  Double_t fCentrality;   //!
+  Double_t fCentWeight ;  //! Weight to correct bias in PHOS triigeered events
+  TH1F * fCentralityWeights[6]; //!Weights to correct centrality non-flatness
+  Int_t  fCentBin ;       //! 
+  Int_t  fRunNumber ;     //! current run number
+  Bool_t fIsMB ;          //which trigger to use
+  Bool_t fIsMC ;          //Is this is MC
+  Bool_t fIsFastMC;       //This is fast MC, bypass event checks
+  Double_t fRP;           //! Reaction plane orientation
+  
   //Fiducial area parameters
   Float_t fZmax ;               //Rectangular
   Float_t fZmin ;               //area
@@ -105,25 +110,10 @@ private:
   Float_t fPhimin ;             //full calorimeter
   Float_t fMinBCDistance;       //minimal distance to bad channel
   Float_t fTimeCut ;            //Time cut
-  Double_t fWeightParamPi0[7] ; //!Parameters to calculate weights
-  Double_t fNonlin1;
-  Double_t fNonlin2;
-  Double_t fNonlin3;
-  Double_t fNonlin4;
-
+  Double_t fWeightParamPi0[7] ; //!Parameters to calculate weights in MC
   //
-  Double_t fRP;           //! Reaction plane orientation
-  Double_t fCentrality;   //!
-  Double_t fCentWeight ;  //! Weight to correct bias in PHOS triigeered events
-  Int_t  fCentBin ;       //! 
-  Int_t  fRunNumber ;     //! current run number
-  Bool_t fIsMB ;          //which trigger to use
-  Bool_t fIsMC ;          //Is this is MC
-  Bool_t fIsFastMC;       //This is fast MC, bypass event checks
-  Bool_t fIsUserDefinedNonlinearity; //Correct for Nonlinearity in the class, not TenderSupply - use for Nonlinearity studies
   TH2I * fPHOSBadMap[6] ; //! 
-  TH1F * fCentralityWeights[6]; //!Weights to correct centrality non-flatness
     
-  ClassDef(AliAnalysisTaskTaggedPhotons, 3);   // a PHOS photon analysis task 
+  ClassDef(AliAnalysisTaskTaggedPhotons, 4);   // a PHOS photon analysis task 
 };
 #endif // ALIANALYSISTASKTAGGEDPHOTONSLOCAL_H
