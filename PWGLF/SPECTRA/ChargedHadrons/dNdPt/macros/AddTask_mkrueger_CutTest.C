@@ -1,3 +1,5 @@
+#include "$ALICE_ROOT/PWGLF/SPECTRA/ChargedHadrons/dNdPt/macros/CreatedNdPtTrackCuts.C"
+
 AliAnalysisTaskSE *AddTask_mkrueger_CutTest(){
   //get the current analysis manager
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
@@ -26,8 +28,8 @@ AliAnalysisTaskSE *AddTask_mkrueger_CutTest(){
   accCuts->SetEtaRange(-etaWindow,etaWindow);
   accCuts->SetPtRange(ptMin,1.e10);
 
-//    gROOT->LoadMacro("$ALICE_ROOT/PWGLF/SPECTRA/ChargedHadrons/dNdPt/macros/CreatedNdPtTrackCuts.C");
-   gROOT->LoadMacro("CreatedNdPtTrackCuts.C");
+//  gROOT->LoadMacro("$ALICE_ROOT/PWGLF/SPECTRA/ChargedHadrons/dNdPt/macros/CreatedNdPtTrackCuts.C");
+//   gROOT->LoadMacro("CreatedNdPtTrackCuts.C");
    AliESDtrackCuts* esdTrackCuts = CreatedNdPtTrackCuts(222);
    esdTrackCuts->SetHistogramsOn(kFALSE);
 
@@ -37,7 +39,7 @@ AliAnalysisTaskSE *AddTask_mkrueger_CutTest(){
   //
   // Create task
   //
-  gROOT->LoadMacro("cuttest/AliAnalysisTaskCutTest.cxx+g");
+//  gROOT->LoadMacro("cuttest/AliAnalysisTaskCutTest.cxx+g");
   AliAnalysisTaskCutTest *task = new AliAnalysisTaskCutTest("cuttestANDresolution");
 
   task->SetUseMCInfo(hasMC);
