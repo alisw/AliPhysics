@@ -166,7 +166,7 @@ AliAnalysisTaskEMCALPhotonIsolation* AddTaskEMCALPhotonIsolation(
   TString configFileMD5 = configFile;
   TDatime time; // Get timestamp
   Int_t timeStamp = time.GetTime();
-  configFileMD5.ReplaceAll(".C",Form("\_%s_%i.C",configMD5.Data(),timeStamp));
+  configFileMD5.ReplaceAll(".C",Form("_%s_%i.C",configMD5.Data(),timeStamp));
 
   if(gSystem->AccessPathName(configFileMD5.Data())){ // Add additional identifier if file exists
     gSystem->Exec(Form("mv %s %s",configFile.Data(),configFileMD5.Data()));
