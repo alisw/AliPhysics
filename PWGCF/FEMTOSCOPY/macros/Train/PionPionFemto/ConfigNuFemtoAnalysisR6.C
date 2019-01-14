@@ -683,10 +683,10 @@ BuildConfiguration(const TString &text,
         cmd = macro_varname + "->pair_codes.push_back(0)";
       }
       else if (line == "+pp") {
-        cmd = macro_varname + ".pair_codes.push_back(3)";
+        cmd = macro_varname + "->pair_codes.push_back(3)";
       }
       else if (line == "+mm") {
-        cmd = macro_varname + ".pair_codes.push_back(4)";
+        cmd = macro_varname + "->pair_codes.push_back(4)";
       }
       else if (line == "+pm") {
         cmd = macro_varname + "->pair_codes.push_back(2)";
