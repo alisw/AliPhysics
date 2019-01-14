@@ -48,7 +48,8 @@ AliForwardFlowUtil::AliForwardFlowUtil():
 fevent(),
 fAODevent(),
 fMCevent(),
-mc(kFALSE)
+mc(kFALSE),
+dNdeta()
 {
 }
 
@@ -154,6 +155,8 @@ void AliForwardFlowUtil::FillFromTrackrefs(TH2D*& cen, TH2D*& fwd) const
           thetaR += 2*TMath::Pi();
         }
         cen->Fill(-TMath::Log(TMath::Tan(thetaR / 2)),phiR);
+        dNdeta->Fill(-TMath::Log(TMath::Tan(thetaR / 2)),1);
+
       }
       else if (AliTrackReference::kFMD == ref->DetectorId()) {
         Double_t x      = ref->X() - fMCevent->GetPrimaryVertex()->GetX();
@@ -170,6 +173,8 @@ void AliForwardFlowUtil::FillFromTrackrefs(TH2D*& cen, TH2D*& fwd) const
           thetaR += 2*TMath::Pi();
         }
         fwd->Fill(-TMath::Log(TMath::Tan(thetaR / 2)),phiR);
+        dNdeta->Fill(-TMath::Log(TMath::Tan(thetaR / 2)),1);
+
       }
     }
   }
@@ -206,6 +211,8 @@ void AliForwardFlowUtil::FillFromTrackrefs(TH2D*& fwd) const
           thetaR += 2*TMath::Pi();
         }
         fwd->Fill(-TMath::Log(TMath::Tan(thetaR / 2)),phiR);
+        dNdeta->Fill(-TMath::Log(TMath::Tan(thetaR / 2)),1);
+
       }
     }
   }
@@ -222,8 +229,10 @@ void AliForwardFlowUtil::FillFromPrimariesAOD(TH2D*& cen) const
 
     Double_t eta = p->Eta();
     if (TMath::Abs(eta) < 1.1) {
-      if (p->Pt()>=0.2 && p->Pt()<=5)
+      if (p->Pt()>=0.2 && p->Pt()<=5){
         cen->Fill(eta,p->Phi(),1);
+        dNdeta->Fill(eta,1);
+      }
     }
   }
 }
@@ -239,8 +248,10 @@ void AliForwardFlowUtil::FillFromPrimaries(TH2D*& cen) const
 
     Double_t eta = p->Eta();
     if (TMath::Abs(eta) < 1.1) {
-      if (p->Pt()>=0.2 && p->Pt()<=5)
+      if (p->Pt()>=0.2 && p->Pt()<=5){
         cen->Fill(eta,p->Phi(),1);
+        dNdeta->Fill(eta,1);
+      }
     }
   }
 }
@@ -256,12 +267,16 @@ void AliForwardFlowUtil::FillFromPrimaries(TH2D*& cen, TH2D*& fwd) const
 
     Double_t eta = p->Eta();
     if (TMath::Abs(eta) < 1.1) {
-      if (p->Pt()>=0.2 && p->Pt()<=5)
+      if (p->Pt()>=0.2 && p->Pt()<=5){
         cen->Fill(eta,p->Phi(),1);
+        dNdeta->Fill(eta,1);
+      }
     }
     if (eta < 5 /*fwd->GetXaxis()-GetXmax()*/ && eta > -3.5 /*fwd->GetXaxis()-GetXmin()*/) {
-      if (TMath::Abs(eta) >= 1.7)
+      if (TMath::Abs(eta) >= 1.7){
         fwd->Fill(eta,p->Phi(),1);
+        dNdeta->Fill(eta,1);
+      }
     }
   }
 }
@@ -278,12 +293,16 @@ void AliForwardFlowUtil::FillFromPrimariesAOD(TH2D*& cen, TH2D*& fwd) const
 
     Double_t eta = p->Eta();
     if (TMath::Abs(eta) < 1.1) {
-      if (p->Pt()>=0.2 && p->Pt()<=5)
+      if (p->Pt()>=0.2 && p->Pt()<=5){
         cen->Fill(eta,p->Phi(),1);
+        dNdeta->Fill(eta,1);
+      }
     }
     if (eta < 5 /*fwd->GetXaxis()-GetXmax()*/ && eta > -3.5 /*fwd->GetXaxis()-GetXmin()*/) {
-      if (TMath::Abs(eta) >= 1.7)
+      if (TMath::Abs(eta) >= 1.7){
         fwd->Fill(eta,p->Phi(),1);
+        dNdeta->Fill(eta,1);
+      }
     }
   }
 }
@@ -294,6 +313,7 @@ void AliForwardFlowUtil::FillFromTracklets(TH2D*& cen) const {
 
   for (Int_t i = 0; i < aodTracklets->GetNumberOfTracklets(); i++) {
     cen->Fill(aodTracklets->GetEta(i),aodTracklets->GetPhi(i), 1);
+    dNdeta->Fill(aodTracklets->GetEta(i),1);
   }
 }
 
@@ -305,10 +325,10 @@ void AliForwardFlowUtil::FillFromTracks(TH2D*& cen, UInt_t tracktype) const {
   // loop  over  all  the  tracks
     AliAODTrack* track = static_cast<AliAODTrack *>(fAODevent->GetTrack(i));
 
-
     if (track->TestFilterBit(tracktype)){
       if (track->Pt() >= 0.2 && track->Pt() <= 5){
         cen->Fill(track->Eta(),track->Phi(), 1);
+        dNdeta->Fill(track->Eta(),1);
       }
     }
   }
@@ -318,7 +338,6 @@ void AliForwardFlowUtil::FillFromTracks(TH2D*& cen, UInt_t tracktype) const {
 
 void AliForwardFlowUtil::FillFromTrackrefs(TH3D*& cen, TH3D*& fwd, Double_t zvertex) const
 {
-
   Int_t nTracks = fMCevent->Stack()->GetNtrack();
 
   for (Int_t iTr = 0; iTr < nTracks; iTr++) {
@@ -344,6 +363,8 @@ void AliForwardFlowUtil::FillFromTrackrefs(TH3D*& cen, TH3D*& fwd, Double_t zver
           thetaR += 2*TMath::Pi();
         }
         cen->Fill(-TMath::Log(TMath::Tan(thetaR / 2)),phiR, zvertex);
+        dNdeta->Fill(-TMath::Log(TMath::Tan(thetaR / 2)),1);
+
       }
       else if (AliTrackReference::kFMD == ref->DetectorId()) {
         Double_t x      = ref->X() - fMCevent->GetPrimaryVertex()->GetX();
@@ -360,6 +381,7 @@ void AliForwardFlowUtil::FillFromTrackrefs(TH3D*& cen, TH3D*& fwd, Double_t zver
           thetaR += 2*TMath::Pi();
         }
         fwd->Fill(-TMath::Log(TMath::Tan(thetaR / 2)),phiR, zvertex);
+        dNdeta->Fill(-TMath::Log(TMath::Tan(thetaR / 2)),1);
       }
     }
   }
@@ -377,12 +399,16 @@ void AliForwardFlowUtil::FillFromPrimaries(TH3D*& cen, TH3D*& fwd, Double_t zver
 
     Double_t eta = p->Eta();
     if (TMath::Abs(eta) < 1.1) {
-      if (p->Pt()>=0.2 && p->Pt()<=5)
+      if (p->Pt()>=0.2 && p->Pt()<=5){
         cen->Fill(eta,p->Phi(),zvertex,1);
+        dNdeta->Fill(eta,1);
+      }
     }
     if (eta < 5 /*fwd->GetXaxis()-GetXmax()*/ && eta > -3.5 /*fwd->GetXaxis()-GetXmin()*/) {
-      if (TMath::Abs(eta) >= 1.7)
+      if (TMath::Abs(eta) >= 1.7){
         fwd->Fill(eta,p->Phi(),zvertex,1);
+        dNdeta->Fill(eta,1);
+      }
     }
   }
 }
@@ -393,6 +419,7 @@ void AliForwardFlowUtil::FillFromTracklets(TH3D*& cen, Double_t zvertex) const {
 
   for (Int_t i = 0; i < aodTracklets->GetNumberOfTracklets(); i++) {
     cen->Fill(aodTracklets->GetEta(i),aodTracklets->GetPhi(i),zvertex, 1);
+    dNdeta->Fill(aodTracklets->GetEta(i),1);
   }
 }
 
@@ -406,6 +433,7 @@ void AliForwardFlowUtil::FillFromTracks(TH3D*& cen, Int_t tracktype, Double_t zv
     if (track->TestFilterBit(tracktype)){
       if (track->Pt() >= 0.2 && track->Pt() <= 5){
         cen->Fill(track->Eta(),track->Phi(), zvertex, 1);
+        dNdeta->Fill(track->Eta(),1);
       }
     }
   }
@@ -441,7 +469,6 @@ AliTrackReference* AliForwardFlowUtil::IsHitTPC(AliMCParticle* p) {
   }
   return 0x0;
 }
-
 
 
 void AliForwardFlowUtil::MakeFakeHoles(TH2D& forwarddNdedp){

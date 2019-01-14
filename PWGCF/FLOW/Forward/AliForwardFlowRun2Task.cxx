@@ -42,7 +42,7 @@
 #include "AliMultiplicity.h"
 #include "AliAnalysisManager.h"
 #include "AliInputEventHandler.h"
-
+#include "AliAODMCParticle.h"
 #include "AliStack.h"
 #include "AliMCEvent.h"
 #include "AliMCParticle.h"
@@ -63,7 +63,7 @@ AliForwardFlowRun2Task::AliForwardFlowRun2Task() : AliAnalysisTaskSE(),
   fRandom(0),
   centralDist(),
   forwardDist(),
-  calculator(),
+  //calculator(),
   fSettings(),
   fUtil(),
   useEvent(true)
@@ -74,7 +74,7 @@ AliForwardFlowRun2Task::AliForwardFlowRun2Task() : AliAnalysisTaskSE(),
   }
 
 //_____________________________________________________________________
-  AliForwardFlowRun2Task::AliForwardFlowRun2Task(const char* name) : AliAnalysisTaskSE(name),
+AliForwardFlowRun2Task::AliForwardFlowRun2Task(const char* name) : AliAnalysisTaskSE(name),
   fAOD(0),           // input event
   fOutputList(0),    // output list
   fAnalysisList(0),
@@ -82,7 +82,7 @@ AliForwardFlowRun2Task::AliForwardFlowRun2Task() : AliAnalysisTaskSE(),
   fRandom(0),
   centralDist(),
   forwardDist(),
-  calculator(),
+  //calculator(),
   fSettings(),
   fUtil(),
   useEvent(true)
@@ -95,12 +95,12 @@ AliForwardFlowRun2Task::AliForwardFlowRun2Task() : AliAnalysisTaskSE(),
   //
 
   // Rely on validation task for event and track selection
-  DefineInput(1, AliAnalysisTaskValidation::Class());
+  //DefineInput(1, AliAnalysisTaskValidation::Class());
   DefineOutput(1, TList::Class());
 }
 
 //_____________________________________________________________________
-  void AliForwardFlowRun2Task::UserCreateOutputObjects()
+void AliForwardFlowRun2Task::UserCreateOutputObjects()
   {
     //
     //  Create output objects
@@ -115,9 +115,9 @@ AliForwardFlowRun2Task::AliForwardFlowRun2Task() : AliAnalysisTaskSE(),
                                           // Needs to be created here, otherwise it will draw the same random number.
 
     fAnalysisList    = new TList();
-    fEventList = new TList();
+    fEventList       = new TList();
     fAnalysisList   ->SetName("Analysis");
-    fEventList->SetName("EventInfo");
+    fEventList      ->SetName("EventInfo");
 
     fEventList->Add(new TH1D("Centrality","Centrality",fSettings.fCentBins,0,100));
     fEventList->Add(new TH1D("Vertex","Vertex",fSettings.fNZvtxBins,fSettings.fZVtxAcceptanceLowEdge,fSettings.fZVtxAcceptanceUpEdge));
@@ -125,7 +125,7 @@ AliForwardFlowRun2Task::AliForwardFlowRun2Task() : AliAnalysisTaskSE(),
        20, 0., 100., 500, 0., 5.)); //((fFlags & kMC) ? 15. : 5. // Sigma <M> histogram
     fEventList->Add(new TH1D("FMDHits","FMDHits",100,0,10));
     fEventList->Add(new TH1D("EventCuts_FMD","EventCuts_FMD",3,0,3));
-    fEventList->Add(new TH1D("dNdeta","dNdeta",fSettings.fNDiffEtaBins,fSettings.fEtaLowEdge,fSettings.fEtaUpEdge));
+    fEventList->Add(new TH1F("dNdeta","dNdeta",100 /*fSettings.fNDiffEtaBins*/,fSettings.fEtaLowEdge,fSettings.fEtaUpEdge));
 
     fAnalysisList->Add(new TList());
     fAnalysisList->Add(new TList());
@@ -168,7 +168,6 @@ AliForwardFlowRun2Task::AliForwardFlowRun2Task() : AliAnalysisTaskSE(),
       static_cast<THnD*>(static_cast<TList*>(fAnalysisList->At(1))   ->FindObject(Form("cumuDiff_v%d", n)))->GetAxis(4)->SetName("identifier");
     }
 
-
     PostData(1, fOutputList);
     TH1::AddDirectory(saveAutoAdd);
   }
@@ -184,7 +183,7 @@ void AliForwardFlowRun2Task::UserExec(Option_t *)
   //   option: Not used
   //
   // Get the event validation object
-  AliAnalysisTaskValidation* ev_val = dynamic_cast<AliAnalysisTaskValidation*>(this->GetInputData(1));
+  //AliAnalysisTaskValidation* ev_val = dynamic_cast<AliAnalysisTaskValidation*>(this->GetInputData(1));
 
   fUtil.fevent = fInputEvent;
 
@@ -200,20 +199,27 @@ void AliForwardFlowRun2Task::UserExec(Option_t *)
   centralDist = &centralDist_tmp;
   centralDist->SetDirectory(0);
 
+  TH1F* dNdeta = static_cast<TH1F*>(fEventList->FindObject("dNdeta"));
+  fUtil.dNdeta = dNdeta;
+
   if (!fSettings.mc) {
 
     AliAODEvent* aodevent = dynamic_cast<AliAODEvent*>(InputEvent());
     fUtil.fAODevent = aodevent;
-    if(!aodevent)
-      throw std::runtime_error("Not AOD as expected");
+    if(!aodevent) throw std::runtime_error("Not AOD as expected");
 
-      if (!ev_val->IsValidEvent()){
-        PostData(1, this->fOutputList);
-        return;
-      }
+    // if (!ev_val->IsValidEvent()){
+    //  PostData(1, this->fOutputList);
+    //  return;
+    // }
 
     AliAODForwardMult* aodfmult = static_cast<AliAODForwardMult*>(aodevent->FindListObject("Forward"));
     forwardDist = &aodfmult->GetHistogram();
+    for (Int_t etaBin = 1; etaBin <= forwardDist->GetNbinsX(); etaBin++) {
+      for (Int_t phiBin = 1; phiBin <= forwardDist->GetNbinsX(); phiBin++) {
+        dNdeta->Fill(forwardDist->GetXaxis()->GetBinCenter(etaBin),forwardDist->GetBinContent(etaBin, phiBin));
+      }
+    }
 
     if (fSettings.useSPD) fUtil.FillFromTracklets(centralDist);
     else                  fUtil.FillFromTracks(centralDist, fSettings.tracktype);
@@ -222,7 +228,21 @@ void AliForwardFlowRun2Task::UserExec(Option_t *)
     AliMCEvent* mcevent = this->MCEvent();
     fUtil.fMCevent = mcevent;
 
+    if (fSettings.use_primaries_fwd || fSettings.use_primaries_cen){
+      if (mcevent->GetNumberOfPrimaries() <= 0) {
+        std::cout << "No primaries" << std::endl;
+        return;
+      }
+    }
+
+    Float_t zvertex = mcevent->GetPrimaryVertex()->GetZ();
+    if (!(TMath::Abs(zvertex) > 0)) {
+      return;
+    }
+
     fUtil.mc = kTRUE;
+    TH1F* dNdeta = static_cast<TH1F*>(fEventList->FindObject("dNdeta"));
+    fUtil.dNdeta = dNdeta;
 
     if(!mcevent)
       throw std::runtime_error("Not MC as expected");
@@ -247,12 +267,21 @@ void AliForwardFlowRun2Task::UserExec(Option_t *)
     }
     else{ // AOD
       if (fSettings.use_primaries_cen && fSettings.use_primaries_fwd){ //prim central and forward
-        fUtil.FillFromPrimaries(centralDist, forwardDist);
+        fUtil.FillFromPrimariesAOD(centralDist, forwardDist);
       }
       else if (fSettings.use_primaries_cen && !fSettings.use_primaries_fwd){ //prim central, AOD forward
-        fUtil.FillFromPrimaries(centralDist);
+
+        fUtil.FillFromPrimariesAOD(centralDist);
+        AliAODEvent* aodevent = dynamic_cast<AliAODEvent*>(InputEvent());
+
         AliAODForwardMult* aodfmult = static_cast<AliAODForwardMult*>(aodevent->FindListObject("Forward"));
         forwardDist = &aodfmult->GetHistogram();
+
+        for (Int_t etaBin = 1; etaBin <= forwardDist->GetNbinsX(); etaBin++) {
+          for (Int_t phiBin = 1; phiBin <= forwardDist->GetNbinsX(); phiBin++) {
+            dNdeta->Fill(forwardDist->GetXaxis()->GetBinCenter(etaBin),forwardDist->GetBinContent(etaBin, phiBin));
+          }
+        }
       }
     }
   }
@@ -262,15 +291,16 @@ void AliForwardFlowRun2Task::UserExec(Option_t *)
   Double_t zvertex = fUtil.GetZ();
   Double_t cent = fUtil.GetCentrality(fSettings.centrality_estimator);
 
-  if (!fSettings.use_primaries){
+  if (!fSettings.use_primaries_fwd && !fSettings.esd){
     if (!fUtil.ExtraEventCutFMD(*forwardDist, cent, fSettings.mc)) {
       useEvent = false;
       static_cast<TH1D*>(fEventList->FindObject("EventCuts_FMD"))->Fill(1.0);
+      PostData(1, fOutputList);
+      return;
     }
   }
 
   if (fSettings.makeFakeHoles) fUtil.MakeFakeHoles(*forwardDist);
-
 
   if (useEvent){
     UInt_t randomInt = fRandom.Integer(fSettings.fnoSamples);
@@ -278,12 +308,13 @@ void AliForwardFlowRun2Task::UserExec(Option_t *)
     static_cast<TH1D*>(fEventList->FindObject("Centrality"))->Fill(cent);
     static_cast<TH1D*>(fEventList->FindObject("Vertex"))->Fill(zvertex);
 
+    AliForwardGenericFramework calculator = AliForwardGenericFramework();
     calculator.fSettings = fSettings;
 
     calculator.CumulantsAccumulate(*centralDist, fOutputList, cent, zvertex,"central",true,true);
     calculator.CumulantsAccumulate(*forwardDist, fOutputList, cent, zvertex,"forward",false,true);
     calculator.saveEvent(fOutputList, cent, zvertex,  randomInt);
-
+    calculator.reset();
     PostData(1, fOutputList);
   }
 
@@ -299,7 +330,4 @@ void AliForwardFlowRun2Task::Terminate(Option_t */*option*/)
 }
 
 
-//_____________________________________________________________________
-//
-//
-// EOF
+//_______________________________________________________________

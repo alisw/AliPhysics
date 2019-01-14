@@ -22,8 +22,9 @@
 #include <TF1.h>
 #include "AliAODVertex.h"
 #include "AliForwardFlowUtil.h"
-#include <AliAnalysisTaskValidation.h>
-//#include </path/to/custom/header/headerFile.h>
+#include "AliAnalysisTaskValidation.h"
+
+
 class AliAODForwardMult;
 class TH2D;
 class AliESDEvent;
@@ -32,8 +33,6 @@ class THn;
 class AliTrackReference;
 class TParticle;
 class TCutG;
-class TH2D;
-class AliESDEvent;
 
 /**
  * @defgroup pwglf_forward_tasks_flow Flow tasks
@@ -116,7 +115,7 @@ public:
   TH2D*   centralDist;//!
   TH2D*   forwardDist;//!
 
-  AliForwardGenericFramework calculator; //!
+  //AliForwardGenericFramework calculator; //!
 
   // A class combining all the settings for this analysis
   AliForwardSettings fSettings;

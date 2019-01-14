@@ -32,8 +32,8 @@ AliForwardGenericFramework::AliForwardGenericFramework()
   fpvector = new THnD("pvector", "pvector", dimensions, dbins, xmin, xmax);
   fqvector = new THnD("qvector", "qvector", dimensions, dbins, xmin, xmax);
 
-  fAutoRef = TH1F("fAutoRef","fAutoRef", fSettings.fNRefEtaBins, fSettings.fEtaLowEdge, fSettings.fEtaUpEdge); // not used at the moment
-  fAutoDiff = TH1F("fAutoDiff","fAutoDiff", fSettings.fNDiffEtaBins, fSettings.fEtaLowEdge, fSettings.fEtaUpEdge); // not used at the moment
+  fAutoRef = TH1F("fAutoRef","fAutoRef", fSettings.fNRefEtaBins, fSettings.fEtaLowEdge, fSettings.fEtaUpEdge);
+  fAutoDiff = TH1F("fAutoDiff","fAutoDiff", fSettings.fNDiffEtaBins, fSettings.fEtaLowEdge, fSettings.fEtaUpEdge);
   fAutoRef.SetDirectory(0);
   fAutoDiff.SetDirectory(0);
 }
@@ -49,10 +49,14 @@ void AliForwardGenericFramework::CumulantsAccumulate(TH2D& dNdetadphi, TList* ou
   for (Int_t etaBin = 1; etaBin <= dNdetadphi.GetNbinsX(); etaBin++) {
 
     Double_t eta = dNdetadphi.GetXaxis()->GetBinCenter(etaBin);
+    //std::cout << "eta = " << eta << std::endl;
     Double_t difEtaBin = fpvector->GetAxis(3)->FindBin(eta);
     Double_t difEta = fpvector->GetAxis(3)->GetBinCenter(difEtaBin);
+    //std::cout << "difEta = " << difEta << std::endl;
+
     Double_t refEtaBin = fQvector->GetAxis(3)->FindBin(eta);
     Double_t refEta = fQvector->GetAxis(3)->GetBinCenter(refEtaBin);
+    //std::cout << "refEta = " << refEta << std::endl;
 
     for (Int_t phiBin = 1; phiBin <= dNdetadphi.GetNbinsY(); phiBin++) {
       Double_t phi = dNdetadphi.GetYaxis()->GetBinCenter(phiBin);
@@ -118,7 +122,6 @@ void AliForwardGenericFramework::CumulantsAccumulate(TH2D& dNdetadphi, TList* ou
             fAutoRef.Fill(eta, TMath::Gamma(weight+1)/TMath::Gamma(weight-1));
           }
         }
-
       } // end p loop
     } // End of n loop
   } // End of phi loop
@@ -140,87 +143,88 @@ void AliForwardGenericFramework::saveEvent(TList* outputList, double cent, doubl
   THnD* cumuRef = 0;
   THnD* cumuDiff = 0;
 
-    // For each n we loop over the hists
-    Double_t noSamples = static_cast<Double_t>(r);
+  // For each n we loop over the hists
+  Double_t noSamples = static_cast<Double_t>(r);
 
-    for (Int_t n = 2; n <= 5; n++) {
-      Int_t prevRefEtaBin = kTRUE;
+  for (Int_t n = 2; n <= 5; n++) {
+    Int_t prevRefEtaBin = kTRUE;
 
-      cumuRef = static_cast<THnD*>(refList->FindObject(Form("cumuRef_v%d", n)));
-      cumuDiff = static_cast<THnD*>(difList->FindObject(Form("cumuDiff_v%d", n)));
+    cumuRef = static_cast<THnD*>(refList->FindObject(Form("cumuRef_v%d", n)));
+    cumuDiff = static_cast<THnD*>(difList->FindObject(Form("cumuDiff_v%d", n)));
 
-      for (Int_t etaBin = 1; etaBin <= fpvector->GetAxis(3)->GetNbins(); etaBin++) {
-        Double_t eta = fpvector->GetAxis(3)->GetBinCenter(etaBin);
+    for (Int_t etaBin = 1; etaBin <= fpvector->GetAxis(3)->GetNbins(); etaBin++) {
+      Double_t eta = fpvector->GetAxis(3)->GetBinCenter(etaBin);
 
-        Double_t refEtaBinA = fQvector->GetAxis(3)->FindBin(eta);
-        Double_t refEtaBinB = refEtaBinA;
+      Double_t refEtaBinA = fQvector->GetAxis(3)->FindBin(eta);
+      Double_t refEtaBinB = refEtaBinA;
 
-        if ((fSettings.etagap)) {
-        //  if (eta > 3.75) refEtaBinB = fQvector->GetAxis(3)->FindBin(-3.75); // code for if FMD is reference
-          refEtaBinB = fQvector->GetAxis(3)->FindBin(-eta);
-        }
+      if ((fSettings.etagap)) {
+      //  if (eta > 3.75) refEtaBinB = fQvector->GetAxis(3)->FindBin(-3.75); // code for if FMD is reference
+        refEtaBinB = fQvector->GetAxis(3)->FindBin(-eta);
+        //std::cout << "etabinA " << refEtaBinA << ", etabinB " << refEtaBinB << std::endl;
+      }
 
-        Double_t refEtaA = fQvector->GetAxis(3)->GetBinCenter(refEtaBinA);
+      Double_t refEtaA = fQvector->GetAxis(3)->GetBinCenter(refEtaBinA);
 
-        Int_t n_0 = 0;
-        Int_t p_1 = 1;
-        // index to get sum of weights
-        Int_t index1[4] = {fQvector->GetAxis(0)->FindBin(0.5), fQvector->GetAxis(1)->FindBin(n_0), fQvector->GetAxis(2)->FindBin(p_1), static_cast<Int_t>(refEtaBinB)};
+      Int_t n_0 = 0;
+      Int_t p_1 = 1;
+      // index to get sum of weights
+      Int_t index1[4] = {fQvector->GetAxis(0)->FindBin(0.5), fQvector->GetAxis(1)->FindBin(n_0), fQvector->GetAxis(2)->FindBin(p_1), static_cast<Int_t>(refEtaBinB)};
+      //std::cout << "fQvector->GetBinContent(index1)" << fQvector->GetBinContent(index1) << std::endl;
+      if (fQvector->GetBinContent(index1) > 0){
+        // REFERENCE FLOW --------------------------------------------------------------------------------
+        if (prevRefEtaBin){ // only used once
 
-        if (fQvector->GetBinContent(index1) > 0){
-          // REFERENCE FLOW --------------------------------------------------------------------------------
-          if (prevRefEtaBin){ // only used once
-
-            if (!(fSettings.etagap)){
-              Double_t z[5] = {noSamples, zvertex, refEtaA, cent, fSettings.kW2Two};
-              fQcorrfactor->Fill(z, fAutoRef.GetBinContent(etaBin));
-            }
-            // two-particle cumulant
-            double two = Two(n, -n, refEtaBinA, refEtaBinB).Re();
-            double dn2 = Two(0,0, refEtaBinA, refEtaBinB).Re();
-
-            Double_t x[5] = {noSamples, zvertex, refEtaA, cent, fSettings.kW4Four};
-            x[4] = fSettings.kW2Two;
-            cumuRef->Fill(x, two);
-            x[4] = fSettings.kW2;
-            cumuRef->Fill(x, dn2);
-
-            // four-particle cumulant
-            double four = Four(n, n, -n, -n, refEtaBinA, refEtaBinB).Re();
-            double dn4 = Four(0,0,0,0 , refEtaBinA, refEtaBinB).Re();
-
-            x[4] = fSettings.kW4Four;
-            cumuRef->Fill(x, four);
-            x[4] = fSettings.kW4;
-            cumuRef->Fill(x, dn4);
-
-            prevRefEtaBin = kFALSE;
-          }
-          // DIFFERENTIAL FLOW -----------------------------------------------------------------------------
-          if (n == 2 && (!(fSettings.etagap))){
-            Double_t k[5] = {noSamples, zvertex, eta, cent, fSettings.kW2Two};
-            fpcorrfactor->Fill(k, fAutoDiff.GetBinContent(etaBin));
+          if (!(fSettings.etagap)){
+            Double_t z[5] = {noSamples, zvertex, refEtaA, cent, fSettings.kW2Two};
+            fQcorrfactor->Fill(z, fAutoRef.GetBinContent(etaBin));
           }
           // two-particle cumulant
-          double twodiff = TwoDiff(n, -n, refEtaBinB, etaBin).Re();
-          double dn2diff = TwoDiff(0,0, refEtaBinB, etaBin).Re();
+          double two = Two(n, -n, refEtaBinA, refEtaBinB).Re();
+          double dn2 = Two(0,0, refEtaBinA, refEtaBinB).Re();
 
-          Double_t y[5] = {noSamples, zvertex, eta, cent, fSettings.kW2Two};
-          cumuDiff->Fill(y, twodiff);
-          y[4] = fSettings.kW2;
-          cumuDiff->Fill(y, dn2diff);
+          Double_t x[5] = {noSamples, zvertex, refEtaA, cent, fSettings.kW4Four};
+          x[4] = fSettings.kW2Two;
+          cumuRef->Fill(x, two);
+          x[4] = fSettings.kW2;
+          cumuRef->Fill(x, dn2);
 
           // four-particle cumulant
-          double fourdiff = FourDiff(n, n, -n, -n, refEtaBinB, etaBin,etaBin).Re();
-          double dn4diff = FourDiff(0,0,0,0, refEtaBinB, etaBin,etaBin).Re();
+          double four = Four(n, n, -n, -n, refEtaBinA, refEtaBinB).Re();
+          double dn4 = Four(0,0,0,0 , refEtaBinA, refEtaBinB).Re();
 
-          y[4] = fSettings.kW4Four;
-          cumuDiff->Fill(y, fourdiff);
-          y[4] = fSettings.kW4;
-          cumuDiff->Fill(y, dn4diff);
-        } // if w2 > 0
-      } //eta
-    } // moment
+          x[4] = fSettings.kW4Four;
+          cumuRef->Fill(x, four);
+          x[4] = fSettings.kW4;
+          cumuRef->Fill(x, dn4);
+
+          prevRefEtaBin = kFALSE;
+        }
+        // DIFFERENTIAL FLOW -----------------------------------------------------------------------------
+        if (n == 2 && (!(fSettings.etagap))){
+          Double_t k[5] = {noSamples, zvertex, eta, cent, fSettings.kW2Two};
+          fpcorrfactor->Fill(k, fAutoDiff.GetBinContent(etaBin));
+        }
+        // two-particle cumulant
+        double twodiff = TwoDiff(n, -n, refEtaBinB, etaBin).Re();
+        double dn2diff = TwoDiff(0,0, refEtaBinB, etaBin).Re();
+
+        Double_t y[5] = {noSamples, zvertex, eta, cent, fSettings.kW2Two};
+        cumuDiff->Fill(y, twodiff);
+        y[4] = fSettings.kW2;
+        cumuDiff->Fill(y, dn2diff);
+
+        // four-particle cumulant
+        double fourdiff = FourDiff(n, n, -n, -n, refEtaBinB, etaBin,etaBin).Re();
+        double dn4diff = FourDiff(0,0,0,0, refEtaBinB, etaBin,etaBin).Re();
+
+        y[4] = fSettings.kW4Four;
+        cumuDiff->Fill(y, fourdiff);
+        y[4] = fSettings.kW4;
+        cumuDiff->Fill(y, dn4diff);
+      } // if w2 > 0
+    } //eta
+  } // moment
 
   return;
 }
