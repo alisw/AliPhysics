@@ -1,6 +1,6 @@
 #include "$ALICE_ROOT/PWGLF/SPECTRA/ChargedHadrons/dNdPt/macros/CreatedNdPtTrackCuts.C"
 
-AliAnalysisTaskSE *AddTask_mkrueger_CutTest(){
+AliAnalysisTaskSE *AddTask_mkrueger_CutTest(Int_t cutMode = 223){
   //get the current analysis manager
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
   if (!mgr) {
@@ -30,7 +30,7 @@ AliAnalysisTaskSE *AddTask_mkrueger_CutTest(){
 
 //  gROOT->LoadMacro("$ALICE_ROOT/PWGLF/SPECTRA/ChargedHadrons/dNdPt/macros/CreatedNdPtTrackCuts.C");
 //   gROOT->LoadMacro("CreatedNdPtTrackCuts.C");
-   AliESDtrackCuts* esdTrackCuts = CreatedNdPtTrackCuts(222);
+   AliESDtrackCuts* esdTrackCuts = CreatedNdPtTrackCuts(cutMode);
    esdTrackCuts->SetHistogramsOn(kFALSE);
 
     // check for mc
