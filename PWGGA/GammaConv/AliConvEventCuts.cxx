@@ -6001,6 +6001,9 @@ void AliConvEventCuts::SetPeriodEnum (TString periodName){
   } else if ( periodName.CompareTo("LHC18c") == 0 ){
     fPeriodEnum = kLHC18LowB;
     fEnergyEnum = k13TeVLowB;
+  } else if ( periodName.CompareTo("LHC18q") == 0 || periodName.CompareTo("LHC18r") == 0 || periodName.CompareTo("LHC18qr") == 0){
+    fPeriodEnum = kLHC18qr;
+    fEnergyEnum = kPbPb5TeV;
 
   // LHC10x anchored MCs
   } else if (periodName.CompareTo("LHC10d1") == 0){
@@ -6321,6 +6324,15 @@ void AliConvEventCuts::SetPeriodEnum (TString periodName){
     fEnergyEnum = k13TeV;
   } else if ( periodName.CompareTo("LHC18b11c") == 0){
     fPeriodEnum = kLHC18b11c;
+    fEnergyEnum = kPbPb5TeV;
+  } else if ( periodName.CompareTo("LHC18l8a") == 0 ){
+    fPeriodEnum = kLHC18l8a;
+    fEnergyEnum = kPbPb5TeV;
+  } else if ( periodName.CompareTo("LHC18l8b") == 0 ){
+    fPeriodEnum = kLHC18l8b;
+    fEnergyEnum = kPbPb5TeV;
+  } else if ( periodName.CompareTo("LHC18l8c") == 0 ){
+    fPeriodEnum = kLHC18l8c;
     fEnergyEnum = kPbPb5TeV;
 
   // LHC16x anchored MCs
