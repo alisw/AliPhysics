@@ -16,8 +16,63 @@
 #include "AliEventplane.h"
 
 #include <algorithm>
+#include <type_traits>
 
 // Mike removed all of the AliFemtoTTree stuff here 21apr2006 - it was not used for a long time.
+
+
+template <typename TrackType>
+void copy_collection(const std::vector<TrackType*> &source, std::vector<TrackType*> &dest)
+{
+  if (source.size() < dest.size()) {
+    auto extra_it = std::next(dest.begin(), source.size());
+    for (auto it = extra_it; it != dest.end(); ++it) {
+      delete *it;
+    }
+    dest.erase(extra_it, dest.end());
+  } else {
+    dest.reserve(source.size());
+  }
+
+  auto source_it = source.cbegin();
+
+  for (auto it = dest.begin(); it != dest.end(); ++it, ++source_it) {
+    *it = *source_it;
+  }
+
+  for (; source_it != source.cend(); ++source_it) {
+    dest.emplace_back(new TrackType(**source_it));
+  }
+}
+
+/// copies collection from source to dest
+template <typename TrackType>
+void copy_collection(const std::list<TrackType*> &source, std::list<TrackType*> &dest)
+{
+  auto insert_ptr = dest.begin();
+  auto source_ptr = source.cbegin();
+
+  for (; insert_ptr != dest.end(); ++insert_ptr, ++source_ptr) {
+    // reached the end of the source - delete objects remaining in
+    // dest and return
+    if (source_ptr == source.cend()) {
+      auto last_element = insert_ptr;
+      for (; insert_ptr != dest.end(); ++insert_ptr) {
+        delete *insert_ptr;
+      }
+      dest.erase(last_element, dest.end());
+      return;
+    }
+
+    /// copy values
+    *insert_ptr = *source_ptr;
+  }
+
+  // push remaining source onto destination
+  for (; source_ptr != source.cend(); ++source_ptr) {
+    dest.emplace_back(new TrackType(**source_ptr));
+  }
+}
 
 //___________________
 AliFemtoEvent::AliFemtoEvent():
@@ -65,6 +120,7 @@ AliFemtoEvent::AliFemtoEvent():
 
   // fill all 6 entries of fPrimVertCov with 0.000000000001
   std::fill_n(fPrimVertCov, 6, 1.0e-12);
+
   fTrackCollection = new AliFemtoTrackCollection;
   fV0Collection = new AliFemtoV0Collection;
   fXiCollection = new AliFemtoXiCollection;
@@ -125,35 +181,12 @@ AliFemtoEvent::AliFemtoEvent(const AliFemtoEvent& ev,
   fV0Collection = new AliFemtoV0Collection;
   fXiCollection = new AliFemtoXiCollection;
   fKinkCollection = new AliFemtoKinkCollection;
+
   // copy track collection
-  for (auto &track_ptr : *ev.fTrackCollection) {
-    if ( !tCut || tCut->Pass(track_ptr) ) {
-      AliFemtoTrack* trackCopy = new AliFemtoTrack(*track_ptr);
-      fTrackCollection->push_back(trackCopy);
-    }
-  }
-  // copy v0 collection
-  for (auto *v0_ptr : *ev.fV0Collection) {
-    if ( !vCut || vCut->Pass(v0_ptr) ) {
-      AliFemtoV0* v0Copy = new AliFemtoV0(*v0_ptr);
-      fV0Collection->push_back(v0Copy);
-    }
-  }
-  // copy xi collection
-  for (const auto *xi : *ev.fXiCollection) {
-    if ( !xCut || xCut->Pass(xi) ) {
-      AliFemtoXi* xiCopy = new AliFemtoXi(*xi);
-      fXiCollection->push_back(xiCopy);
-    }
-  }
-  // copy kink collection
-  for (const auto *kink : *ev.fKinkCollection) {
-    if ( !kCut || kCut->Pass(kink) ) {
-      //cout << " kinkCut passed " << endl;
-      AliFemtoKink* kinkCopy = new AliFemtoKink(**kIter);
-      fKinkCollection->push_back(kinkCopy);
-    }
-  }
+  copy_collection(*ev.fTrackCollection, *fTrackCollection);
+  copy_collection(*ev.fV0Collection, *fV0Collection);
+  copy_collection(*ev.fXiCollection, *fXiCollection);
+  copy_collection(*ev.fKinkCollection, *fKinkCollection);
 }
 //___________________
 AliFemtoEvent::AliFemtoEvent(const AliFemtoEvent& ev):
@@ -205,27 +238,12 @@ AliFemtoEvent::AliFemtoEvent(const AliFemtoEvent& ev):
   fV0Collection = new AliFemtoV0Collection;
   fXiCollection = new AliFemtoXiCollection;
   fKinkCollection = new AliFemtoKinkCollection;
+
   // copy track collection
-  for ( AliFemtoTrackIterator tIter=ev.fTrackCollection->begin(); tIter!=ev.fTrackCollection->end(); tIter++) {
-    AliFemtoTrack* trackCopy = new AliFemtoTrack(**tIter);
-    fTrackCollection->push_back(trackCopy);
-  }
-  // copy v0 collection
-  for ( AliFemtoV0Iterator vIter=ev.fV0Collection->begin(); vIter!=ev.fV0Collection->end(); vIter++) {
-    AliFemtoV0* v0Copy = new AliFemtoV0(**vIter);
-    fV0Collection->push_back(v0Copy);
-  }
-  // copy xi collection
-  for ( AliFemtoXiIterator xIter=ev.fXiCollection->begin(); xIter!=ev.fXiCollection->end(); xIter++) {
-    AliFemtoXi* xiCopy = new AliFemtoXi(**xIter);
-    fXiCollection->push_back(xiCopy);
-  }
-  // copy kink collection
-  for ( AliFemtoKinkIterator kIter=ev.fKinkCollection->begin(); kIter!=ev.fKinkCollection->end(); kIter++) {
-    //cout << " kinkCut passed " << endl;
-    AliFemtoKink* kinkCopy = new AliFemtoKink(**kIter);
-    fKinkCollection->push_back(kinkCopy);
-  }
+  copy_collection(*ev.fTrackCollection, *fTrackCollection);
+  copy_collection(*ev.fV0Collection, *fV0Collection);
+  copy_collection(*ev.fXiCollection, *fXiCollection);
+  copy_collection(*ev.fKinkCollection, *fKinkCollection);
 }
 //______________________________
 AliFemtoEvent& AliFemtoEvent::operator=(const AliFemtoEvent& aEvent)
@@ -273,62 +291,10 @@ AliFemtoEvent& AliFemtoEvent::operator=(const AliFemtoEvent& aEvent)
   fReactionPlaneAngle = aEvent.fReactionPlaneAngle;
   fEP = aEvent.fEP;
 
-  if (fTrackCollection) {
-    for (AliFemtoTrackIterator iter=fTrackCollection->begin();iter!=fTrackCollection->end();iter++){
-      delete *iter;
-    }
-    fTrackCollection->clear();
-  } else {
-    fTrackCollection = new AliFemtoTrackCollection;
-  }
-
-  if (fV0Collection) {
-    for (auto *v0_ptr : *fV0Collection) {
-      delete v0_ptr;
-    }//added by M Chojnacki To avoid memory leak
-    fV0Collection->clear();
-  } else {
-    fV0Collection = new AliFemtoV0Collection;
-  }
-
-  if (fXiCollection) {
-    for (auto *xi_ptr : *fXiCollection) {
-      delete xi_ptr;
-    }
-    fXiCollection->clear();
-  } else {
-    fXiCollection = new AliFemtoXiCollection;
-  }
-
-  if (fKinkCollection) {
-    for (auto *kink_ptr : *fKinkCollection) {
-      delete kink_ptr;
-    }
-    fKinkCollection->clear();
-  } else {
-    fKinkCollection = new AliFemtoKinkCollection;
-  }
-
-  // copy track collection
-  for ( AliFemtoTrackIterator tIter=aEvent.fTrackCollection->begin(); tIter!=aEvent.fTrackCollection->end(); tIter++) {
-    AliFemtoTrack* trackCopy = new AliFemtoTrack(**tIter);
-    fTrackCollection->push_back(trackCopy);
-  }
-  // copy v0 collection
-  for ( AliFemtoV0Iterator vIter=aEvent.fV0Collection->begin(); vIter!=aEvent.fV0Collection->end(); vIter++) {
-    AliFemtoV0* v0Copy = new AliFemtoV0(**vIter);
-    fV0Collection->push_back(v0Copy);
-  }
-  // copy xi collection
-  for ( AliFemtoXiIterator xIter=aEvent.fXiCollection->begin(); xIter!=aEvent.fXiCollection->end(); xIter++) {
-    AliFemtoXi* xiCopy = new AliFemtoXi(**xIter);
-    fXiCollection->push_back(xiCopy);
-  }
-  // copy kink collection
-  for (auto kink_ptr : *aEvent.fKinkCollection) {
-    AliFemtoKink* kinkCopy = new AliFemtoKink(*kink_ptr);
-    fKinkCollection->push_back(kinkCopy);
-  }
+  copy_collection(*aEvent.fTrackCollection, *fTrackCollection);
+  copy_collection(*aEvent.fV0Collection, *fV0Collection);
+  copy_collection(*aEvent.fXiCollection, *fXiCollection);
+  copy_collection(*aEvent.fKinkCollection, *fKinkCollection);
 
   return *this;
 }
