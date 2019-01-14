@@ -1,4 +1,4 @@
-#include "$ALICE_ROOT/PWGLF/SPECTRA/ChargedHadrons/dNdPt/macros/CreatedNdPtTrackCuts.C"
+#include "$ALICE_PHYSICS/PWGLF/SPECTRA/ChargedHadrons/dNdPt/macros/CreatedNdPtTrackCuts.C"
 
 AliAnalysisTaskSE *AddTask_mkrueger_CutTest(Int_t cutMode = 223){
   //get the current analysis manager
