@@ -163,6 +163,7 @@ class AliConvEventCuts : public AliAnalysisCuts {
         kLHC15fm,         //!< pp 13 TeV
         kLHC15n,          //!< pp 5 TeV
         kLHC15o,          //!< PbPb 5 TeV
+        kLHC18qr,         //!< PbPb 5 TeV
         // MC's corresponding to 2015 data
         kLHC15g3a3,       //!< anchored LHC15f pass 1
         kLHC15g3a,        //!< anchored LHC15f pass 1
@@ -214,6 +215,9 @@ class AliConvEventCuts : public AliAnalysisCuts {
         kLHC15k5b,        //!< anchored LHC15f pass2 - HF-forced MC for HFE analyses
         kLHC15k5c,        //!< anchored LHC15f pass2 - HF-forced MC for HFCJ analyses
         kLHC18b11c,       //!< anchored to LHC15o    - gamma-jets Pythia events embedded in HI MC events
+        kLHC18l8a,        //!< anchored to LHC18qr    - general purpose Pythia8
+        kLHC18l8b,        //!< anchored to LHC18qr    - general purpose Pythia8
+        kLHC18l8c,        //!< anchored to LHC18qr    - general purpose Pythia8
 
 
         // MC upgrade
@@ -691,7 +695,7 @@ class AliConvEventCuts : public AliAnalysisCuts {
   private:
 
       /// \cond CLASSIMP
-      ClassDef(AliConvEventCuts,60)
+      ClassDef(AliConvEventCuts,61)
       /// \endcond
 };
 
