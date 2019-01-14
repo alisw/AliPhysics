@@ -38,53 +38,64 @@ ClassImp(AliAnalysisTaskConvJet);
 /// \endcond
 
 
-AliAnalysisTaskConvJet::AliAnalysisTaskConvJet() : 
+AliAnalysisTaskConvJet::AliAnalysisTaskConvJet(Int_t IsMC) :
   AliAnalysisTaskEmcalJet(),
-  fNJets(0),
-  fVectorJetPt(0),
-  fVectorJetPx(0),
-  fVectorJetPy(0),
-  fVectorJetPz(0),
-  fVectorJetEta(0),
-  fVectorJetPhi(0),
-  fVectorJetR(0),
-  fTrueNJets(0),
-  fTrueVectorJetPt(0),
-  fTrueVectorJetPx(0),
-  fTrueVectorJetPy(0),
-  fTrueVectorJetPz(0),
-  fTrueVectorJetEta(0),
-  fTrueVectorJetPhi(0),
-  fTrueVectorJetR(0)
+  fIsMC(IsMC),
+  fNJetContainers(0),
+  fJetContainersAdded(0),
+  fTrueJetContainersAdded(0),
+  fJetNameArray(NULL),
+  fTrueJetNameArray(NULL),
+  fTrainconfigArray(NULL),
+  fTrueTrainconfigArray(NULL),
+  fListNJets(0),
+  fListJetPt(0),
+  fListJetPx(0),
+  fListJetPy(0),
+  fListJetPz(0),
+  fListJetEta(0),
+  fListJetPhi(0),
+  fListJetArea(0),
+  fListTrueNJets(0),
+  fListTrueJetPt(0),
+  fListTrueJetPx(0),
+  fListTrueJetPy(0),
+  fListTrueJetPz(0),
+  fListTrueJetEta(0),
+  fListTrueJetPhi(0),
+  fListTrueJetArea(0)
 {
 }
 
-AliAnalysisTaskConvJet::AliAnalysisTaskConvJet(const char *name) : 
+AliAnalysisTaskConvJet::AliAnalysisTaskConvJet(const char *name, Int_t IsMC) :
   AliAnalysisTaskEmcalJet(name, kTRUE),
-  fNJets(0),
-  fVectorJetPt(0),
-  fVectorJetPx(0),
-  fVectorJetPy(0),
-  fVectorJetPz(0),
-  fVectorJetEta(0),
-  fVectorJetPhi(0),
-  fVectorJetR(0),
-  fTrueVectorJetPt(0),
-  fTrueVectorJetPx(0),
-  fTrueVectorJetPy(0),
-  fTrueVectorJetPz(0),
-  fTrueVectorJetEta(0),
-  fTrueVectorJetPhi(0),
-  fTrueVectorJetR(0)
+  fIsMC(IsMC),
+  fNJetContainers(0),
+  fJetContainersAdded(0),
+  fTrueJetContainersAdded(0),
+  fJetNameArray(NULL),
+  fTrueJetNameArray(NULL),
+  fTrainconfigArray(NULL),
+  fTrueTrainconfigArray(NULL),
+  fListNJets(0),
+  fListJetPt(0),
+  fListJetPx(0),
+  fListJetPy(0),
+  fListJetPz(0),
+  fListJetEta(0),
+  fListJetPhi(0),
+  fListJetArea(0),
+  fListTrueNJets(0),
+  fListTrueJetPt(0),
+  fListTrueJetPx(0),
+  fListTrueJetPy(0),
+  fListTrueJetPz(0),
+  fListTrueJetEta(0),
+  fListTrueJetPhi(0),
+  fListTrueJetArea(0)
 {
   SetMakeGeneralHistograms(kTRUE);
 }
-
-
-AliAnalysisTaskConvJet::~AliAnalysisTaskConvJet()
-{
-}
-
 /**
  * Performing run-independent initialization.
  * Here the histograms should be instantiated.
@@ -116,55 +127,69 @@ Bool_t AliAnalysisTaskConvJet::FillHistograms()
 void AliAnalysisTaskConvJet::DoJetLoop()
 {
   AliJetContainer* jetCont = 0;
+  Int_t j = 0;
   TIter next(&fJetCollArray);
   while ((jetCont = static_cast<AliJetContainer*>(next()))) {
     TString JetName = jetCont->GetTitle();
     TObjArray *arr = JetName.Tokenize("__");
     TObjString* testObjString = (TObjString*)arr->At(2);
+    Int_t TotalContainers;
+    if(fIsMC == 0) TotalContainers = fNJetContainers;
+    else TotalContainers = fNJetContainers/2;
     if(testObjString->GetString() != "mcparticles"){
+      for(Int_t i = 0; i < TotalContainers; i++){
+        if(JetName == fJetNameArray[i]){
+          j = i;
+          break;
+        }
+      }
       UInt_t count = 0;
-      fNJets = 0 ;
-      fVectorJetPt.clear();
-      fVectorJetPx.clear();
-      fVectorJetPy.clear();
-      fVectorJetPz.clear();
-      fVectorJetEta.clear();
-      fVectorJetPhi.clear();
-      fVectorJetR.clear();
+      fListJetPt.at(j).clear();
+      fListJetPx.at(j).clear();
+      fListJetPy.at(j).clear();
+      fListJetPz.at(j).clear();
+      fListJetEta.at(j).clear();
+      fListJetPhi.at(j).clear();
+      fListJetArea.at(j).clear();
       for(auto jet : jetCont->accepted()) {
         if (!jet) continue;
         count++;
-        fVectorJetPt.push_back(jet->Pt());
-        fVectorJetPx.push_back(jet->Px());
-        fVectorJetPy.push_back(jet->Py());
-        fVectorJetPz.push_back(jet->Pz());
-        fVectorJetEta.push_back(jet->Eta());
-        fVectorJetPhi.push_back(jet->Phi());
-        fVectorJetR.push_back(jet->Area());
+        fListJetPt.at(j).push_back(jet->Pt());
+        fListJetPx.at(j).push_back(jet->Px());
+        fListJetPy.at(j).push_back(jet->Py());
+        fListJetPz.at(j).push_back(jet->Pz());
+        fListJetEta.at(j).push_back(jet->Eta());
+        fListJetPhi.at(j).push_back(jet->Phi());
+        fListJetArea.at(j).push_back(jet->Area());
       }
-      fNJets = count ;
+      fListNJets.at(j) = count;
     }else{
+      for(Int_t i = 0; i < fNJetContainers/2; i++){
+        if(JetName == fTrueJetNameArray[i]){
+          j = i;
+          break;
+        }
+      }
       UInt_t count = 0;
-      fTrueNJets = 0 ;
-      fTrueVectorJetPt.clear();
-      fTrueVectorJetPx.clear();
-      fTrueVectorJetPy.clear();
-      fTrueVectorJetPz.clear();
-      fTrueVectorJetEta.clear();
-      fTrueVectorJetPhi.clear();
-      fTrueVectorJetR.clear();
+      fListTrueJetPt.at(j).clear();
+      fListTrueJetPx.at(j).clear();
+      fListTrueJetPy.at(j).clear();
+      fListTrueJetPz.at(j).clear();
+      fListTrueJetEta.at(j).clear();
+      fListTrueJetPhi.at(j).clear();
+      fListTrueJetArea.at(j).clear();
       for(auto jet : jetCont->accepted()) {
         if (!jet) continue;
         count++;
-        fTrueVectorJetPt.push_back(jet->Pt());
-        fTrueVectorJetPx.push_back(jet->Px());
-        fTrueVectorJetPy.push_back(jet->Py());
-        fTrueVectorJetPz.push_back(jet->Pz());
-        fTrueVectorJetEta.push_back(jet->Eta());
-        fTrueVectorJetPhi.push_back(jet->Phi());
-        fTrueVectorJetR.push_back(jet->Area());
+        fListTrueJetPt.at(j).push_back(jet->Pt());
+        fListTrueJetPx.at(j).push_back(jet->Px());
+        fListTrueJetPy.at(j).push_back(jet->Py());
+        fListTrueJetPz.at(j).push_back(jet->Pz());
+        fListTrueJetEta.at(j).push_back(jet->Eta());
+        fListTrueJetPhi.at(j).push_back(jet->Phi());
+        fListTrueJetArea.at(j).push_back(jet->Area());
       }
-      fTrueNJets = count ;
+      fListTrueNJets.at(j) = count;
     }
   }
 }
@@ -206,7 +231,9 @@ AliAnalysisTaskConvJet * AliAnalysisTaskConvJet::AddTask_GammaConvJet(
   const char *ntracks,
   const char *nclusters,
   const char *ncells,
-  const char *suffix)
+  const char *suffix,
+  Int_t IsMC,
+  Int_t NContainers)
 {
   // Get the pointer to the existing analysis manager via the static access method.
   //==============================================================================
@@ -287,33 +314,38 @@ AliAnalysisTaskConvJet * AliAnalysisTaskConvJet::AddTask_GammaConvJet(
 
   TString name("AliAnalysisTaskConvJet");
 
-  AliAnalysisTaskConvJet* sampleTask = new AliAnalysisTaskConvJet(name);
+  AliAnalysisTaskConvJet* sampleTask = new AliAnalysisTaskConvJet(name, IsMC);
   sampleTask->SetCaloCellsName(cellName);
   sampleTask->SetVzRange(-10,10);
 
-  if (trackName == "mcparticles") {
-    sampleTask->AddMCParticleContainer(trackName);
-  }
-  else if (trackName == "tracks" || trackName == "Tracks") {
-    sampleTask->AddTrackContainer(trackName);
-  }
-  else if (!trackName.IsNull()) {
-    sampleTask->AddParticleContainer(trackName);
-  }
-  sampleTask->AddClusterContainer(clusName);
-  
-  sampleTask->GetClusterContainer(0)->SetClusECut(0.);
-  sampleTask->GetClusterContainer(0)->SetClusPtCut(0.);
-  sampleTask->GetClusterContainer(0)->SetClusNonLinCorrEnergyCut(0.);
-  sampleTask->GetClusterContainer(0)->SetClusHadCorrEnergyCut(0.30);
-  sampleTask->GetClusterContainer(0)->SetDefaultClusterEnergy(AliVCluster::kHadCorr);
-  sampleTask->GetParticleContainer(0)->SetParticlePtCut(0.15);
-  sampleTask->GetParticleContainer(0)->SetParticleEtaLimits(-0.8,0.8);
+  sampleTask->SetNumberOfContainers(NContainers);
 
-  if(trackName != "mcparticles"){
-      sampleTask->GetTrackContainer(0)->SetFilterHybridTracks(kTRUE);
-      sampleTask->GetTrackContainer(0)->SetParticlePtCut(0.15);
-      sampleTask->GetTrackContainer(0)->SetParticleEtaLimits(-0.8,0.8);
+  for(Int_t i = 0; i < sampleTask->GetNumberOfContainers(); i++){
+
+    if (trackName == "mcparticles") {
+      sampleTask->AddMCParticleContainer(trackName);
+    }
+    else if (trackName == "tracks" || trackName == "Tracks") {
+      sampleTask->AddTrackContainer(trackName);
+    }
+    else if (!trackName.IsNull()) {
+     sampleTask->AddParticleContainer(trackName);
+    }
+    sampleTask->AddClusterContainer(clusName);
+  
+    sampleTask->GetClusterContainer(i)->SetClusECut(0.);
+    sampleTask->GetClusterContainer(i)->SetClusPtCut(0.);
+    sampleTask->GetClusterContainer(i)->SetClusNonLinCorrEnergyCut(0.);
+    sampleTask->GetClusterContainer(i)->SetClusHadCorrEnergyCut(0.30);
+    sampleTask->GetClusterContainer(i)->SetDefaultClusterEnergy(AliVCluster::kHadCorr);
+    sampleTask->GetParticleContainer(i)->SetParticlePtCut(0.15);
+    sampleTask->GetParticleContainer(i)->SetParticleEtaLimits(-0.8,0.8);
+
+    if(trackName != "mcparticles"){
+      sampleTask->GetTrackContainer(i)->SetFilterHybridTracks(kTRUE);
+      sampleTask->GetTrackContainer(i)->SetParticlePtCut(0.15);
+      sampleTask->GetTrackContainer(i)->SetParticleEtaLimits(-0.8,0.8);
+    }
   }
 
   //-------------------------------------------------------
