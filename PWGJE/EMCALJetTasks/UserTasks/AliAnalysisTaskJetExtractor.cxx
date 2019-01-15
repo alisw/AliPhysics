@@ -155,7 +155,7 @@ Bool_t AliEmcalJetTree::AddJetToTree(AliEmcalJet* jet, Float_t vertexX, Float_t 
   if(fSaveEventProperties)
   {
     fBuffer_Event_BackgroundDensity               = fJetContainer->GetRhoVal();
-    fBuffer_Event_BackgroundDensityMass           = fJetContainer->GetRhoMassVal();
+    fBuffer_Event_BackgroundDensityMass           = jet->M()-jet->GetShapeProperties()->GetFirstOrderSubtracted();
     fBuffer_Event_Vertex_X                        = vertexX;
     fBuffer_Event_Vertex_Y                        = vertexY;
     fBuffer_Event_Vertex_Z                        = vertexZ;
@@ -255,7 +255,10 @@ Bool_t AliEmcalJetTree::AddJetToTree(AliEmcalJet* jet, Float_t vertexX, Float_t 
   }
 
   // Set jet shape observables
-  fBuffer_Shape_Mass  = jet->M() - fJetContainer->GetRhoMassVal()*jet->Area();
+  if(fJetContainer->GetRhoMassVal())
+    fBuffer_Shape_Mass  = jet->GetShapeProperties()->GetFirstOrderSubtracted();
+  else
+    fBuffer_Shape_Mass  = jet->M();
 
   // Set Monte Carlo information
   if(fSaveMCInformation)
@@ -871,10 +874,6 @@ Double_t AliAnalysisTaskJetExtractor::GetMatchedTrueJetObservables(AliEmcalJet* 
 
     // "True" background for mass
     AliRhoParameter* rhoMass = static_cast<AliRhoParameter*>(InputEvent()->FindListObject(fTruthJetsRhoMassName.Data()));
-    Double_t trueRhoMass = 0;
-    if(rhoMass)
-     trueRhoMass = rhoMass->GetVal();
-
     TClonesArray* truthArray = static_cast<TClonesArray*>(InputEvent()->FindListObject(Form("%s", fTruthJetsArrayName.Data())));
 
     // Loop over all true jets to find the best match
@@ -900,7 +899,10 @@ Double_t AliAnalysisTaskJetExtractor::GetMatchedTrueJetObservables(AliEmcalJet* 
         {
           bestMatchDeltaR = deltaR;
           matchedJetPt   = truthJet->Pt() - truthJet->Area()* trueRho;
-          matchedJetMass = truthJet->M() - truthJet->Area()* trueRhoMass;
+          if(rhoMass)
+            matchedJetMass = truthJet->GetShapeProperties()->GetFirstOrderSubtracted();
+          else
+            matchedJetMass = truthJet->M();
         }
       }
   }
