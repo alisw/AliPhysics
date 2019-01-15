@@ -42,6 +42,7 @@ AliAnalysisTaskConvJet::AliAnalysisTaskConvJet(Int_t IsMC) :
   AliAnalysisTaskEmcalJet(),
   fIsMC(IsMC),
   fNJetContainers(0),
+  fNTrueJetContainers(0),
   fJetContainersAdded(0),
   fTrueJetContainersAdded(0),
   fJetNameArray(NULL),
@@ -71,6 +72,7 @@ AliAnalysisTaskConvJet::AliAnalysisTaskConvJet(const char *name, Int_t IsMC) :
   AliAnalysisTaskEmcalJet(name, kTRUE),
   fIsMC(IsMC),
   fNJetContainers(0),
+  fNTrueJetContainers(0),
   fJetContainersAdded(0),
   fTrueJetContainersAdded(0),
   fJetNameArray(NULL),
@@ -127,69 +129,73 @@ Bool_t AliAnalysisTaskConvJet::FillHistograms()
 void AliAnalysisTaskConvJet::DoJetLoop()
 {
   AliJetContainer* jetCont = 0;
-  Int_t j = 0;
+  vector<Int_t> MatchRec;
+  vector<Int_t> MatchTrue;
   TIter next(&fJetCollArray);
   while ((jetCont = static_cast<AliJetContainer*>(next()))) {
+    MatchRec.clear();
+    MatchTrue.clear();
     TString JetName = jetCont->GetTitle();
     TObjArray *arr = JetName.Tokenize("__");
     TObjString* testObjString = (TObjString*)arr->At(2);
-    Int_t TotalContainers;
-    if(fIsMC == 0) TotalContainers = fNJetContainers;
-    else TotalContainers = fNJetContainers/2;
     if(testObjString->GetString() != "mcparticles"){
-      for(Int_t i = 0; i < TotalContainers; i++){
+      for(Int_t i = 0; i < fNJetContainers; i++){
         if(JetName == fJetNameArray[i]){
-          j = i;
-          break;
+          MatchRec.push_back(i);
         }
       }
-      UInt_t count = 0;
-      fListJetPt.at(j).clear();
-      fListJetPx.at(j).clear();
-      fListJetPy.at(j).clear();
-      fListJetPz.at(j).clear();
-      fListJetEta.at(j).clear();
-      fListJetPhi.at(j).clear();
-      fListJetArea.at(j).clear();
-      for(auto jet : jetCont->accepted()) {
-        if (!jet) continue;
-        count++;
-        fListJetPt.at(j).push_back(jet->Pt());
-        fListJetPx.at(j).push_back(jet->Px());
-        fListJetPy.at(j).push_back(jet->Py());
-        fListJetPz.at(j).push_back(jet->Pz());
-        fListJetEta.at(j).push_back(jet->Eta());
-        fListJetPhi.at(j).push_back(jet->Phi());
-        fListJetArea.at(j).push_back(jet->Area());
+      for(UInt_t k = 0; k < MatchRec.size(); k++){
+        Int_t j = MatchRec.at(k);
+        UInt_t count = 0;
+        fListJetPt.at(j).clear();
+        fListJetPx.at(j).clear();
+        fListJetPy.at(j).clear();
+        fListJetPz.at(j).clear();
+        fListJetEta.at(j).clear();
+        fListJetPhi.at(j).clear();
+        fListJetArea.at(j).clear();
+        for(auto jet : jetCont->accepted()) {
+          if (!jet) continue;
+          count++;
+          fListJetPt.at(j).push_back(jet->Pt());
+          fListJetPx.at(j).push_back(jet->Px());
+          fListJetPy.at(j).push_back(jet->Py());
+          fListJetPz.at(j).push_back(jet->Pz());
+          fListJetEta.at(j).push_back(jet->Eta());
+          fListJetPhi.at(j).push_back(jet->Phi());
+          fListJetArea.at(j).push_back(jet->Area());
+        }
+        fListNJets.at(j) = count;
       }
-      fListNJets.at(j) = count;
     }else{
-      for(Int_t i = 0; i < fNJetContainers/2; i++){
+      for(Int_t i = 0; i < fNTrueJetContainers; i++){
         if(JetName == fTrueJetNameArray[i]){
-          j = i;
-          break;
+            MatchTrue.push_back(i);
         }
       }
-      UInt_t count = 0;
-      fListTrueJetPt.at(j).clear();
-      fListTrueJetPx.at(j).clear();
-      fListTrueJetPy.at(j).clear();
-      fListTrueJetPz.at(j).clear();
-      fListTrueJetEta.at(j).clear();
-      fListTrueJetPhi.at(j).clear();
-      fListTrueJetArea.at(j).clear();
-      for(auto jet : jetCont->accepted()) {
-        if (!jet) continue;
-        count++;
-        fListTrueJetPt.at(j).push_back(jet->Pt());
-        fListTrueJetPx.at(j).push_back(jet->Px());
-        fListTrueJetPy.at(j).push_back(jet->Py());
-        fListTrueJetPz.at(j).push_back(jet->Pz());
-        fListTrueJetEta.at(j).push_back(jet->Eta());
-        fListTrueJetPhi.at(j).push_back(jet->Phi());
-        fListTrueJetArea.at(j).push_back(jet->Area());
+      for(UInt_t k = 0; k < MatchTrue.size(); k++){
+        Int_t j = MatchTrue.at(k);
+        UInt_t count = 0;
+        fListTrueJetPt.at(j).clear();
+        fListTrueJetPx.at(j).clear();
+        fListTrueJetPy.at(j).clear();
+        fListTrueJetPz.at(j).clear();
+        fListTrueJetEta.at(j).clear();
+        fListTrueJetPhi.at(j).clear();
+        fListTrueJetArea.at(j).clear();
+        for(auto jet : jetCont->accepted()) {
+          if (!jet) continue;
+          count++;
+          fListTrueJetPt.at(j).push_back(jet->Pt());
+          fListTrueJetPx.at(j).push_back(jet->Px());
+          fListTrueJetPy.at(j).push_back(jet->Py());
+          fListTrueJetPz.at(j).push_back(jet->Pz());
+          fListTrueJetEta.at(j).push_back(jet->Eta());
+          fListTrueJetPhi.at(j).push_back(jet->Phi());
+          fListTrueJetArea.at(j).push_back(jet->Area());
+        }
+        fListTrueNJets.at(j) = count;
       }
-      fListTrueNJets.at(j) = count;
     }
   }
 }
@@ -320,7 +326,7 @@ AliAnalysisTaskConvJet * AliAnalysisTaskConvJet::AddTask_GammaConvJet(
 
   sampleTask->SetNumberOfContainers(NContainers);
 
-  for(Int_t i = 0; i < sampleTask->GetNumberOfContainers(); i++){
+  for(Int_t i = 0; i < NContainers; i++){
 
     if (trackName == "mcparticles") {
       sampleTask->AddMCParticleContainer(trackName);

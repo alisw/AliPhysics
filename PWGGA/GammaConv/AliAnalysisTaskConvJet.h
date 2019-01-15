@@ -47,19 +47,19 @@ class AliAnalysisTaskConvJet : public AliAnalysisTaskEmcalJet {
       Int_t NContainers              = 0);
 
   void SetNumberOfContainers(Int_t NContainers){
-      fNJetContainers = NContainers;
       if(fIsMC == 0){
+        fNJetContainers = NContainers;
         fTrainconfigArray = new Int_t[fNJetContainers];
         fJetNameArray = new TString[fNJetContainers];
       }else{
-        fTrainconfigArray = new Int_t[fNJetContainers/2];
-        fJetNameArray = new TString[fNJetContainers/2];
-        fTrueTrainconfigArray = new Int_t[fNJetContainers/2];
-        fTrueJetNameArray = new TString[fNJetContainers/2];
+        fNJetContainers = NContainers/2;
+        fNTrueJetContainers = NContainers/2;
+        fTrainconfigArray = new Int_t[fNJetContainers];
+        fJetNameArray = new TString[fNJetContainers];
+        fTrueTrainconfigArray = new Int_t[fNTrueJetContainers];
+        fTrueJetNameArray = new TString[fNTrueJetContainers];
       }
   }
-
-  Int_t GetNumberOfContainers(){return fNJetContainers;}
 
   void AddJetContainerwithTrainConfig(TString JetContainerName, Int_t Trainconfig, Double_t Radius){
       TString Add = "_";
@@ -97,7 +97,7 @@ class AliAnalysisTaskConvJet : public AliAnalysisTaskEmcalJet {
       TString AddTrue = "_";
       AddTrue.Append(TrueJetContainerName);
       AddTrue.Append("_pT1000");
-      if(fJetContainersAdded < fNJetContainers/2){
+      if(fJetContainersAdded < fNJetContainers){
         jetContRec = AddJetContainer(RecJetContainerName, AliEmcalJet::kTPCfid, Radius);
         fJetNameArray[fJetContainersAdded] = AddRec;
         fTrainconfigArray[fJetContainersAdded] = Trainconfig;
@@ -118,7 +118,7 @@ class AliAnalysisTaskConvJet : public AliAnalysisTaskEmcalJet {
         fListNJets.push_back(0);
         fJetContainersAdded++;
       }
-      if(fTrueJetContainersAdded < fNJetContainers/2){
+      if(fTrueJetContainersAdded < fNTrueJetContainers){
         AliParticleContainer *trackCont = AddParticleContainer("tracks");
         AliClusterContainer *clusterCont = AddClusterContainer("caloClusters");
         jetContRec->ConnectParticleContainer(trackCont);
@@ -230,7 +230,7 @@ class AliAnalysisTaskConvJet : public AliAnalysisTaskEmcalJet {
 //------------------------------------------------------------------
     Double_t GetTrueNJets(Int_t Trainconfig) {
         Int_t NJets = 0;
-      for(Int_t i = 0; i < fNJetContainers; i++){
+      for(Int_t i = 0; i < fNTrueJetContainers; i++){
         if(Trainconfig == fTrueTrainconfigArray[i]){
           NJets = fListTrueNJets.at(i);
           break;
@@ -240,7 +240,7 @@ class AliAnalysisTaskConvJet : public AliAnalysisTaskEmcalJet {
 }
   vector<Double_t> GetTrueVectorJetPt(Int_t Trainconfig){
       vector<Double_t> VectorJetPt;
-      for(Int_t i = 0; i < fNJetContainers; i++){
+      for(Int_t i = 0; i < fNTrueJetContainers; i++){
         if(Trainconfig == fTrueTrainconfigArray[i]){
           VectorJetPt = fListTrueJetPt.at(i);
           break;
@@ -250,7 +250,7 @@ class AliAnalysisTaskConvJet : public AliAnalysisTaskEmcalJet {
 }
   vector<Double_t> GetTrueVectorJetPx(Int_t Trainconfig){
       vector<Double_t> VectorJetPx;
-      for(Int_t i = 0; i < fNJetContainers; i++){
+      for(Int_t i = 0; i < fNTrueJetContainers; i++){
         if(Trainconfig == fTrueTrainconfigArray[i]){
           VectorJetPx = fListTrueJetPx.at(i);
           break;
@@ -260,7 +260,7 @@ class AliAnalysisTaskConvJet : public AliAnalysisTaskEmcalJet {
 }
   vector<Double_t> GetTrueVectorJetPy(Int_t Trainconfig){
       vector<Double_t> VectorJetPy;
-      for(Int_t i = 0; i < fNJetContainers; i++){
+      for(Int_t i = 0; i < fNTrueJetContainers; i++){
         if(Trainconfig == fTrueTrainconfigArray[i]){
           VectorJetPy = fListTrueJetPy.at(i);
           break;
@@ -270,7 +270,7 @@ class AliAnalysisTaskConvJet : public AliAnalysisTaskEmcalJet {
 }
   vector<Double_t> GetTrueVectorJetPz(Int_t Trainconfig){
       vector<Double_t> VectorJetPz;
-      for(Int_t i = 0; i < fNJetContainers; i++){
+      for(Int_t i = 0; i < fNTrueJetContainers; i++){
         if(Trainconfig == fTrueTrainconfigArray[i]){
           VectorJetPz = fListTrueJetPz.at(i);
           break;
@@ -280,7 +280,7 @@ class AliAnalysisTaskConvJet : public AliAnalysisTaskEmcalJet {
 }
   vector<Double_t> GetTrueVectorJetEta(Int_t Trainconfig){
       vector<Double_t> VectorJetEta;
-      for(Int_t i = 0; i < fNJetContainers; i++){
+      for(Int_t i = 0; i < fNTrueJetContainers; i++){
         if(Trainconfig == fTrueTrainconfigArray[i]){
           VectorJetEta = fListTrueJetEta.at(i);
           break;
@@ -290,7 +290,7 @@ class AliAnalysisTaskConvJet : public AliAnalysisTaskEmcalJet {
 }
   vector<Double_t> GetTrueVectorJetPhi(Int_t Trainconfig){
       vector<Double_t> VectorJetPhi;
-      for(Int_t i = 0; i < fNJetContainers; i++){
+      for(Int_t i = 0; i < fNTrueJetContainers; i++){
         if(Trainconfig == fTrueTrainconfigArray[i]){
           VectorJetPhi = fListTrueJetPhi.at(i);
           break;
@@ -300,7 +300,7 @@ class AliAnalysisTaskConvJet : public AliAnalysisTaskEmcalJet {
 }
   vector<Double_t> GetTrueVectorJetArea(Int_t Trainconfig){
       vector<Double_t> VectorJetArea;
-      for(Int_t i = 0; i < fNJetContainers; i++){
+      for(Int_t i = 0; i < fNTrueJetContainers; i++){
         if(Trainconfig == fTrueTrainconfigArray[i]){
           VectorJetArea = fListTrueJetArea.at(i);
           break;
@@ -311,7 +311,7 @@ class AliAnalysisTaskConvJet : public AliAnalysisTaskEmcalJet {
 //------------------------------------------------------------------
   Double_t Get_Jet_Radius(Int_t Trainconfig){
       TString JetName;
-      for(Int_t i = 0; i < fNJetContainers; i++){
+      for(Int_t i = 0; i < fNTrueJetContainers; i++){
         if(Trainconfig == fTrainconfigArray[i]){
           JetName = fJetNameArray[i];
           break;
@@ -337,6 +337,7 @@ class AliAnalysisTaskConvJet : public AliAnalysisTaskEmcalJet {
 
   Int_t fIsMC                                                                   ;
   Int_t fNJetContainers                                                         ;
+  Int_t fNTrueJetContainers                                                     ;
   Int_t fJetContainersAdded                                                     ;
   Int_t fTrueJetContainersAdded                                                 ;
   TString *fJetNameArray                                                        ;
