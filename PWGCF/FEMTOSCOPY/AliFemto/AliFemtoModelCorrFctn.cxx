@@ -42,10 +42,11 @@ AliFemtoCorrFctn(),
 
   fQgenQrec = new TH2D("QgenQrec","QgenQrec",50,0.0,0.5,50,0.0,0.5);
 
-    for(int i=0;i<fNbbPairs;i++){
-        fkTdists[i] = new TH1D(Form("fkTdists[%i]",i),Form("fkTdists[%i]",i),100,0.0,5.0);
-        fkTdists[i]->Sumw2();
-    }
+  for (int i=0;i<fNbbPairs;i++){
+    auto *name = Form("fkTdists[%i]", i);
+    fkTdists[i] = new TH1D(name, name,100,0.0,5.0);
+    fkTdists[i]->Sumw2();
+  }
 
   fNumeratorTrue->Sumw2();
   fNumeratorFake->Sumw2();
@@ -72,30 +73,35 @@ AliFemtoModelCorrFctn::AliFemtoModelCorrFctn(const char *title, Int_t aNbins, Do
   fKaonPDG(kFALSE)
 {
   // Normal constructor
-  char buf[100];
-  snprintf(buf , 100,  "NumTrue%s", title);
+  char *buf;
+  buf = Form("NumTrue%s", title);
   fNumeratorTrue = new TH1D(buf,buf,aNbins,aQinvLo,aQinvHi);
-  snprintf(buf , 100,  "NumFake%s", title);
+
+  buf = Form("NumFake%s", title);
   fNumeratorFake = new TH1D(buf,buf,aNbins,aQinvLo,aQinvHi);
-  snprintf(buf , 100,  "Den%s", title);
+
+  buf = Form("Den%s", title);
   fDenominator = new TH1D(buf,buf,aNbins,aQinvLo,aQinvHi);
 
-  snprintf(buf , 100,  "NumTrueIdeal%s", title);
+  buf = Form("NumTrueIdeal%s", title);
   fNumeratorTrueIdeal = new TH1D(buf,buf,aNbins,aQinvLo,aQinvHi);
-  snprintf(buf , 100,  "NumFakeIdeal%s", title);
+
+  buf = Form("NumFakeIdeal%s", title);
   fNumeratorFakeIdeal = new TH1D(buf,buf,aNbins,aQinvLo,aQinvHi);
-  snprintf(buf , 100,  "DenIdeal%s", title);
+
+  buf = Form("DenIdeal%s", title);
   fDenominatorIdeal = new TH1D(buf,buf,aNbins,aQinvLo,aQinvHi);
 
-  snprintf(buf , 100,  "QgenQrec%s", title);
+  buf = Form("QgenQrec%s", title);
   fQgenQrec = new TH2D(buf,buf,aNbins,aQinvLo,aQinvHi,aNbins,aQinvLo,aQinvHi);
   //test
   //fQgenQrec = new TH2D(buf,buf,aNbins,aQinvLo,aQinvHi,aNbins,-0.05,0.05);
 
-    for(int i=0;i<fNbbPairs;i++){
-        fkTdists[i] = new TH1D(Form("fkTdists[%i]_%s",i,title),Form("fkTdists[%i]_%s",i,title),100,0.0,5.0);
-        fkTdists[i]->Sumw2();
-    }
+  for (int i=0;i<fNbbPairs;i++){
+    const char *name = Form("fkTdists[%i]_%s",i,title);
+    fkTdists[i] = new TH1D(name, name, 100, 0.0, 5.0);
+    fkTdists[i]->Sumw2();
+  }
 
   fNumeratorTrue->Sumw2();
   fNumeratorFake->Sumw2();
@@ -121,27 +127,19 @@ AliFemtoModelCorrFctn::AliFemtoModelCorrFctn(const AliFemtoModelCorrFctn& aCorrF
   fKaonPDG(aCorrFctn.fKaonPDG)
 {
   // Copy constructor
-  if (aCorrFctn.fNumeratorTrue)
-    fNumeratorTrue = new TH1D(*(aCorrFctn.fNumeratorTrue));
-  if (aCorrFctn.fNumeratorFake)
-    fNumeratorFake = new TH1D(*(aCorrFctn.fNumeratorFake));
-  if (aCorrFctn.fDenominator)
-    fDenominator = new TH1D(*(aCorrFctn.fDenominator));
+  fNumeratorTrue = new TH1D(*(aCorrFctn.fNumeratorTrue));
+  fNumeratorFake = new TH1D(*(aCorrFctn.fNumeratorFake));
+  fDenominator = new TH1D(*(aCorrFctn.fDenominator));
 
-  if (aCorrFctn.fNumeratorTrueIdeal)
-    fNumeratorTrueIdeal = new TH1D(*(aCorrFctn.fNumeratorTrueIdeal));
-  if (aCorrFctn.fNumeratorFakeIdeal)
-    fNumeratorFakeIdeal = new TH1D(*(aCorrFctn.fNumeratorFakeIdeal));
-  if (aCorrFctn.fDenominatorIdeal)
-    fDenominatorIdeal = new TH1D(*(aCorrFctn.fDenominatorIdeal));
+  fNumeratorTrueIdeal = new TH1D(*(aCorrFctn.fNumeratorTrueIdeal));
+  fNumeratorFakeIdeal = new TH1D(*(aCorrFctn.fNumeratorFakeIdeal));
+  fDenominatorIdeal = new TH1D(*(aCorrFctn.fDenominatorIdeal));
 
-  if (aCorrFctn.fQgenQrec)
-    fQgenQrec = new TH2D(*(aCorrFctn.fQgenQrec));
+  fQgenQrec = new TH2D(*aCorrFctn.fQgenQrec);
 
-    for(int i=0;i<fNbbPairs;i++){
-        if(aCorrFctn.fkTdists[i])
-            fkTdists[i] = aCorrFctn.fkTdists[i];
-    }
+  for (int i=0;i<fNbbPairs;i++) {
+    *fkTdists[i] = *aCorrFctn.fkTdists[i];
+  }
 
   fManager = aCorrFctn.fManager;
 }
@@ -149,72 +147,45 @@ AliFemtoModelCorrFctn::AliFemtoModelCorrFctn(const AliFemtoModelCorrFctn& aCorrF
 AliFemtoModelCorrFctn::~AliFemtoModelCorrFctn()
 {
   // Destructor
-  if (fNumeratorTrue) delete fNumeratorTrue;
-  if (fNumeratorFake) delete fNumeratorFake;
-  if (fDenominator) delete fDenominator;
+  delete fNumeratorTrue;
+  delete fNumeratorFake;
+  delete fDenominator;
 
-  if (fNumeratorTrueIdeal) delete fNumeratorTrueIdeal;
-  if (fNumeratorFakeIdeal) delete fNumeratorFakeIdeal;
-  if (fDenominatorIdeal) delete fDenominatorIdeal;
+  delete fNumeratorTrueIdeal;
+  delete fNumeratorFakeIdeal;
+  delete fDenominatorIdeal;
 
-  if (fQgenQrec) delete fQgenQrec;
+  delete fQgenQrec;
 
-    for(int i=0;i<fNbbPairs;i++){
-        if(fkTdists[i]) delete fkTdists[i];
-    }
+  for (int i=0; i<fNbbPairs; i++) {
+    delete fkTdists[i];
+  }
 
 }
 //_______________________
 AliFemtoModelCorrFctn& AliFemtoModelCorrFctn::operator=(const AliFemtoModelCorrFctn& aCorrFctn)
 {
   // Assignment operator
-  if (this == &aCorrFctn)
+  if (this == &aCorrFctn) {
     return *this;
+  }
 
-  delete fNumeratorTrue;
-  fNumeratorTrue = aCorrFctn.fNumeratorTrue
-                 ? new TH1D(*aCorrFctn.fNumeratorTrue)
-                 : nullptr;
+  AliFemtoCorrFctn::operator=(aCorrFctn);
 
-  delete fNumeratorFake;
-  fNumeratorFake = (aCorrFctn.fNumeratorFake)
-                 ? new TH1D(*aCorrFctn.fNumeratorFake)
-                 : nullptr;
+  *fNumeratorTrue = *aCorrFctn.fNumeratorTrue;
+  *fNumeratorFake = *aCorrFctn.fNumeratorFake;
+  *fDenominator = *aCorrFctn.fDenominator;
+  *fQgenQrec = *aCorrFctn.fQgenQrec;
 
-  delete fDenominator;
-  fDenominator = (aCorrFctn.fDenominator)
-               ? new TH1D(*aCorrFctn.fDenominator)
-               : nullptr;
+  for (int i=0; i<fNbbPairs; i++) {
+    *fkTdists[i] = *aCorrFctn.fkTdists[i];
+  }
 
-  delete fQgenQrec;
-  fQgenQrec = (aCorrFctn.fQgenQrec)
-            ? new TH2D(*aCorrFctn.fQgenQrec)
-            : nullptr;
-
-    for(int i=0;i<fNbbPairs;i++){
-        delete fkTdists[i];
-        fkTdists[i] = (aCorrFctn.fkTdists[i])
-        ? new TH1D(*aCorrFctn.fkTdists[i])
-        : nullptr;
-
-    }
-  delete fNumeratorTrueIdeal;
-  fNumeratorTrueIdeal = (aCorrFctn.fNumeratorTrueIdeal)
-                      ? new TH1D(*aCorrFctn.fNumeratorTrueIdeal)
-                      : nullptr;
-
-  delete fNumeratorFakeIdeal;
-  fNumeratorFakeIdeal = (aCorrFctn.fNumeratorFakeIdeal)
-                      ? new TH1D(*aCorrFctn.fNumeratorFakeIdeal)
-                      : nullptr;
-
-  delete fDenominatorIdeal;
-  fDenominatorIdeal = (aCorrFctn.fDenominatorIdeal)
-                    ? new TH1D(*aCorrFctn.fDenominatorIdeal)
-                    : nullptr;
+  *fNumeratorTrueIdeal = *aCorrFctn.fNumeratorTrueIdeal;
+  *fNumeratorFakeIdeal = *aCorrFctn.fNumeratorFakeIdeal;
+  *fDenominatorIdeal = *aCorrFctn.fDenominatorIdeal;
 
   fManager = aCorrFctn.fManager;
-
   fKaonPDG = aCorrFctn.fKaonPDG;
 
   return *this;
@@ -316,32 +287,28 @@ Double_t AliFemtoModelCorrFctn::GetQinvTrue(AliFemtoPair* aPair)
 {
   if(!fKaonPDG) {
 
-      AliFemtoParticle *first = (AliFemtoParticle*)aPair->Track1();
-      AliFemtoParticle *second = (AliFemtoParticle*)aPair->Track2();
+      const AliFemtoParticle *first = aPair->Track1(),
+                             *second = aPair->Track2();
 
       if(!first || !second) return -1;
 
-      AliFemtoModelHiddenInfo *inf1 = (AliFemtoModelHiddenInfo*)first->GetHiddenInfo();
-      AliFemtoModelHiddenInfo *inf2 = (AliFemtoModelHiddenInfo*)second->GetHiddenInfo();
+      const AliFemtoModelHiddenInfo *inf1 = (AliFemtoModelHiddenInfo*)first->GetHiddenInfo(),
+                                    *inf2 = (AliFemtoModelHiddenInfo*)second->GetHiddenInfo();
 
       if(!inf1 || !inf2){
 //          cout<<"no hidden info"<<endl;
           return -1;
       }
 
-      AliFemtoLorentzVector fm1;
       AliFemtoThreeVector* temp = inf1->GetTrueMomentum();
-      fm1.SetVect(*temp);
       Double_t am1 = inf1->GetMass();
-      Double_t am2 = inf2->GetMass();
       double ener = TMath::Sqrt(temp->Mag2()+am1*am1);
-      fm1.SetE(ener);
+      AliFemtoLorentzVector fm1(ener, *temp);
 
-      AliFemtoLorentzVector fm2;
-      AliFemtoThreeVector* temp2 =  inf2->GetTrueMomentum();
-      fm2.SetVect(*temp2);
+      AliFemtoThreeVector* temp2 = inf2->GetTrueMomentum();
+      const Double_t am2 = inf2->GetMass();
       ener = TMath::Sqrt(temp2->Mag2()+am2*am2);
-      fm2.SetE(ener);
+      AliFemtoLorentzVector fm2(ener, *temp2);
 
       //std::cout<<" CFModel mass1 mass2 "<<am1<<" "<<am2<<std::endl;
 
@@ -352,8 +319,8 @@ Double_t AliFemtoModelCorrFctn::GetQinvTrue(AliFemtoPair* aPair)
   }
   //Special MC analysis for K selected by PDG code -->
   else {
-      AliFemtoTrack *inf1 = (AliFemtoTrack *) aPair->Track1()->Track();
-  AliFemtoTrack *inf2 = (AliFemtoTrack *) aPair->Track2()->Track();
+    const AliFemtoTrack *inf1 = aPair->Track1()->Track(),
+                        *inf2 = aPair->Track2()->Track();
 
   AliFemtoLorentzVector fm1;
   AliFemtoThreeVector* temp = ((AliFemtoModelHiddenInfo*)inf1->GetHiddenInfo())->GetTrueMomentum();
@@ -560,6 +527,3 @@ int AliFemtoModelCorrFctn::GetPairNumber(AliFemtoPair *pair)
 
     return -1;
 }
-
-
-
