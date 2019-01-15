@@ -468,8 +468,8 @@ AliAnalysisTaskRecursiveSoftDrop* AliAnalysisTaskRecursiveSoftDrop::AddTaskRecur
 											     TString     trigClass,
 											     TString     kEmcalTriggers,
 											     TString     tag,
-											     AliAnalysisTaskRecursiveSoftDrop::JetShapeSub jetShapeSub = AliAnalysisTaskRecursiveSoftDrop::kNoSub,
-											     AliAnalysisTaskRecursiveSoftDrop::JetType fjetType AliAnalysisTaskRecursiveSoftDrop::kData
+											     AliAnalysisTaskRecursiveSoftDrop::JetShapeSub jetShapeSub,
+											     AliAnalysisTaskRecursiveSoftDrop::JetType fjetType
 											     ) {
 
 
