@@ -31,7 +31,6 @@ R__ADD_INCLUDE_PATH($ALICE_PHYSICS)
 
 #include "TGrid.h"
 #include "TGridCollection.h"
-#include "TAlienCollection.h"
 #include "TGridResult.h"
 //#include "TProof.h"
 //#include "TFileCollection.h"
@@ -341,7 +340,7 @@ void CheckInputData(const anaModes mode)
     TGrid::Connect("alien://") ;
         
     // Feed Grid with collection file
-    TGridCollection * collection = (TGridCollection*) TAlienCollection::Open(kXML);
+    TGridCollection * collection = gGrid->OpenCollection(kXML);
     if ( !collection )
     {
       printf("%s not found\n", kXML) ; 
@@ -639,7 +638,7 @@ void CreateChain(const anaModes mode, TChain * chain, TChain * chainxs)
     // variable XML
     
     // Feed Grid with collection file
-    TGridCollection * collection = (TGridCollection*) TAlienCollection::Open(kXML);
+    TGridCollection * collection = gGrid->OpenCollection(kXML);
     if (! collection ) 
     {
       printf("%s not found \n", kXML) ; 
