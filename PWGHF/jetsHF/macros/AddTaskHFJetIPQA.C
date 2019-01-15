@@ -230,14 +230,19 @@ AliAnalysisTaskHFJetIPQA* AddTaskHFJetIPQA(
     contname += Form("_histos_R%.1f",jetradius);
     TString contnamecorr(combinedName);
     contnamecorr += Form("_correlations_R%.1f",jetradius);
+    TString contname2("Setup Comments");
 
     AliAnalysisDataContainer *coutput1 = mgr->CreateContainer(contname.Data(),
                                                               TList::Class(),AliAnalysisManager::kOutputContainer,
                                                               Form("%s", AliAnalysisManager::GetCommonFileName()));
+    AliAnalysisDataContainer *coutput2 = mgr->CreateContainer(contname2.Data(),
+                                                              TList::Class(),AliAnalysisManager::kOutputContainer,
+                                                              Form("%s", AliAnalysisManager::GetCommonFileName()));
     mgr->ConnectInput  (jetTask, 0,  cinput1 );
     mgr->ConnectOutput (jetTask, 1, coutput1 );
+    mgr->ConnectOutput (jetTask, 2, coutput2 );
     
-    
+
     
 
     return jetTask;
