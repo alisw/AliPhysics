@@ -336,10 +336,10 @@ void AliAnalysisTaskStrangenessLifetimes::UserExec(Option_t *) {
           v0part.SetPDGcode(currentPDG);
           v0part.SetEta(part->Eta());
           v0part.SetPt(part->Pt());
-          v0part.SetDistOverP(dist / part->P() + 1e-16);
+          v0part.SetDistOverP(dist / (part->P() + 1.e-16));
           v0part.SetRadius(radius);
           bool isSecondary = mcEvent->IsSecondaryFromWeakDecay(ilab);
-          fHistMCct[idx]->Fill(dist * part->GetMass() / part->P());
+          fHistMCct[idx]->Fill(v0part.GetDistOverP() * part->GetMass());
           TParticle* mother = mcEvent->Particle(part->GetFirstMother());
           if (isSecondary && mother) {
             v0part.SetStatus(MCparticle::kSecondaryFromWeakDecay);
@@ -350,7 +350,7 @@ void AliAnalysisTaskStrangenessLifetimes::UserExec(Option_t *) {
             motherPart.SetPDGcode(mother->GetPdgCode());
             motherPart.SetEta(mother->Eta());
             motherPart.SetPt(mother->Pt());
-            motherPart.SetDistOverP(motherDist / mother->P() + 1e-16);
+            motherPart.SetDistOverP(motherDist / (mother->P() + 1.e-16));
             motherPart.SetRadius(motherR);
             fMCvector.push_back(motherPart);
           } else if (mcEvent->IsPhysicalPrimary(ilab)) {
