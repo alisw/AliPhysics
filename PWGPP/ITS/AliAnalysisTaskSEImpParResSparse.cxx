@@ -88,6 +88,16 @@ fCutGeoNcrNclFractionNcr(0.85),
 fCutGeoNcrNclFractionNcl(0.7),
 fUseFinerPhiBins(kFALSE),   // mfaggin
 fStoreSPDmodulesInfo(kFALSE),   // mfaggin
+fFillSparse_ImpParrphiSparsePtBchargePhi(kTRUE),       /// bool to switch on/off the fImpParrphiSparsePtBchargePhi (mfaggin)
+fFillSparse_ImpParrphiSparsePtzVtxEtaPhi(kTRUE),       /// bool to switch on/off the fImpParrphiSparsePtzVtxEtaPhi (mfaggin)
+fFillSparse_ImpParrphiSparsePtEtaPhi(kTRUE),       /// bool to switch on/off the fImpParrphiSparsePtEtaPhi (mfaggin)
+fFillSparse_ImpParPullrphiSparsePtEtaPhi(kTRUE),       /// bool to switch on/off the fImpParPullrphiSparsePtEtaPhi (mfaggin)
+fFillSparse_ImpParPullrphiSparsePtBchargePhi(kTRUE),  /// bool to switch on/off the fImpParPullrphiSparsePtBchargePhi (mfaggin)
+fFillSparse_ImpParzSparsePtBchargePhi(kTRUE),         /// bool to switch on/off the fImpParzSparsePtBchargePhi (mfaggin)
+fFillSparse_ImpParzSparsePtzVtxEtaPhi(kTRUE),        /// bool to switch on/off the fImpParzSparsePtzVtxEtaPhi (mfaggin)
+fFillSparse_ImpParzSparsePtEtaPhi(kTRUE),            /// bool to switch on/off the fImpParzSparsePtEtaPhi (mfaggin)
+fFillSparse_ImpParPullzSparsePtEtaPhi(kTRUE),         /// bool to switch on/off the fImpParPullzSparsePtEtaPhi (mfaggin)
+fFillSparse_ImpParPullzSparsePtBchargePhi(kTRUE),      /// bool to switch on/off the fImpParPullzSparsePtBchargePhi (mfaggin)
 fTrackType(0),
 fFillSparseForExpert(kFALSE),
 fImpParrphiSparsePtBchargePhi(0),
@@ -100,6 +110,7 @@ fImpParzSparsePtzVtxEtaPhi(0),
 fImpParzSparsePtEtaPhi(0),
 fImpParPullzSparsePtEtaPhi(0),
 fImpParPullzSparsePtBchargePhi(0),
+fImpParrphiSparsePtEtaPhi_SPDmod(0),
 fPtDistrib(0),
 fhPtWeights(0x0),
 fUseptWeights(0),
@@ -142,6 +153,16 @@ fCutGeoNcrNclFractionNcr(0.85),
 fCutGeoNcrNclFractionNcl(0.7),
 fUseFinerPhiBins(kFALSE),   // mfaggin
 fStoreSPDmodulesInfo(kFALSE),   // mfaggin
+fFillSparse_ImpParrphiSparsePtBchargePhi(kTRUE),       /// bool to switch on/off the fImpParrphiSparsePtBchargePhi (mfaggin)
+fFillSparse_ImpParrphiSparsePtzVtxEtaPhi(kTRUE),       /// bool to switch on/off the fImpParrphiSparsePtzVtxEtaPhi (mfaggin)
+fFillSparse_ImpParrphiSparsePtEtaPhi(kTRUE),       /// bool to switch on/off the fImpParrphiSparsePtEtaPhi (mfaggin)
+fFillSparse_ImpParPullrphiSparsePtEtaPhi(kTRUE),       /// bool to switch on/off the fImpParPullrphiSparsePtEtaPhi (mfaggin)
+fFillSparse_ImpParPullrphiSparsePtBchargePhi(kTRUE),  /// bool to switch on/off the fImpParPullrphiSparsePtBchargePhi (mfaggin)
+fFillSparse_ImpParzSparsePtBchargePhi(kTRUE),         /// bool to switch on/off the fImpParzSparsePtBchargePhi (mfaggin)
+fFillSparse_ImpParzSparsePtzVtxEtaPhi(kTRUE),        /// bool to switch on/off the fImpParzSparsePtzVtxEtaPhi (mfaggin)
+fFillSparse_ImpParzSparsePtEtaPhi(kTRUE),            /// bool to switch on/off the fImpParzSparsePtEtaPhi (mfaggin)
+fFillSparse_ImpParPullzSparsePtEtaPhi(kTRUE),         /// bool to switch on/off the fImpParPullzSparsePtEtaPhi (mfaggin)
+fFillSparse_ImpParPullzSparsePtBchargePhi(kTRUE),      /// bool to switch on/off the fImpParPullzSparsePtBchargePhi (mfaggin)
 fTrackType(0),
 fFillSparseForExpert(kFALSE),
 fImpParrphiSparsePtBchargePhi(0),
@@ -154,6 +175,8 @@ fImpParzSparsePtzVtxEtaPhi(0),
 fImpParzSparsePtEtaPhi(0),
 fImpParPullzSparsePtEtaPhi(0),
 fImpParPullzSparsePtBchargePhi(0),
+fImpParrphiSparsePtEtaPhi_SPDmod(0),
+
 fPtDistrib(0),
 fhPtWeights(0x0),
 fUseptWeights(0),
@@ -192,6 +215,7 @@ AliAnalysisTaskSEImpParResSparse::~AliAnalysisTaskSEImpParResSparse()
     delete fImpParzSparsePtEtaPhi;
     delete fImpParPullzSparsePtEtaPhi;
     delete fImpParPullzSparsePtBchargePhi;
+    delete fImpParrphiSparsePtEtaPhi_SPDmod;
     delete fPtDistrib;
     delete fhPtWeights;
     
@@ -222,10 +246,12 @@ void AliAnalysisTaskSEImpParResSparse::UserCreateOutputObjects()
             "#phi",
             "mag. field",
             "charge"};
-        fImpParrphiSparsePtBchargePhi=new THnSparseF("fImpParrphiSparsePtBchargePhi","fImpParrphiSparsePtBchargePhi",5,nbinsImpParSparse1,limitLowImpParSparse1,limitUpImpParSparse1);
-        for(Int_t iax=0; iax<5; iax++) fImpParrphiSparsePtBchargePhi->GetAxis(iax)->SetTitle(axTitle1[iax].Data());
-        BinLogAxis(fImpParrphiSparsePtBchargePhi, 1);
-        fOutput->Add(fImpParrphiSparsePtBchargePhi);
+        if(fFillSparse_ImpParrphiSparsePtBchargePhi){
+            fImpParrphiSparsePtBchargePhi=new THnSparseF("fImpParrphiSparsePtBchargePhi","fImpParrphiSparsePtBchargePhi",5,nbinsImpParSparse1,limitLowImpParSparse1,limitUpImpParSparse1);
+            for(Int_t iax=0; iax<5; iax++) fImpParrphiSparsePtBchargePhi->GetAxis(iax)->SetTitle(axTitle1[iax].Data());
+            BinLogAxis(fImpParrphiSparsePtBchargePhi, 1);
+            fOutput->Add(fImpParrphiSparsePtBchargePhi);
+        }
         
         
         Int_t nbinsImpParSparse2[5] =       {3000, 50, 4, 2, 10};
@@ -236,10 +262,12 @@ void AliAnalysisTaskSEImpParResSparse::UserCreateOutputObjects()
             "#phi",
             "#eta",
             "{z}_{vtx} (cm)"};
-        fImpParrphiSparsePtzVtxEtaPhi=new THnSparseF("fImpParrphiSparsePtzVtxEtaPhi","fImpParrphiSparsePtzVtxEtaPhi",5,nbinsImpParSparse2,limitLowImpParSparse2,limitUpImpParSparse2);
-        for(Int_t iax=0; iax<5; iax++) fImpParrphiSparsePtzVtxEtaPhi->GetAxis(iax)->SetTitle(axTitle2[iax].Data());
-        BinLogAxis(fImpParrphiSparsePtzVtxEtaPhi, 1);
-        fOutput->Add(fImpParrphiSparsePtzVtxEtaPhi);
+        if(fFillSparse_ImpParrphiSparsePtzVtxEtaPhi){
+            fImpParrphiSparsePtzVtxEtaPhi=new THnSparseF("fImpParrphiSparsePtzVtxEtaPhi","fImpParrphiSparsePtzVtxEtaPhi",5,nbinsImpParSparse2,limitLowImpParSparse2,limitUpImpParSparse2);
+            for(Int_t iax=0; iax<5; iax++) fImpParrphiSparsePtzVtxEtaPhi->GetAxis(iax)->SetTitle(axTitle2[iax].Data());
+            BinLogAxis(fImpParrphiSparsePtzVtxEtaPhi, 1);
+            fOutput->Add(fImpParrphiSparsePtzVtxEtaPhi);
+        }
         
         
         Int_t nbinsImpParSparse3[5] =       {1000, 50, 4, 2, 2};
@@ -250,10 +278,12 @@ void AliAnalysisTaskSEImpParResSparse::UserCreateOutputObjects()
             "#phi",
             "mag. field",
             "charge"};
-        fImpParzSparsePtBchargePhi=new THnSparseF("fImpParzSparsePtBchargePhi","fImpParzSparsePtBchargePhi",5,nbinsImpParSparse3,limitLowImpParSparse3,limitUpImpParSparse3);
-        for(Int_t iax=0; iax<5; iax++) fImpParzSparsePtBchargePhi->GetAxis(iax)->SetTitle(axTitle3[iax].Data());
-        BinLogAxis(fImpParzSparsePtBchargePhi, 1);
-        fOutput->Add(fImpParzSparsePtBchargePhi);
+        if(fFillSparse_ImpParzSparsePtBchargePhi){
+            fImpParzSparsePtBchargePhi=new THnSparseF("fImpParzSparsePtBchargePhi","fImpParzSparsePtBchargePhi",5,nbinsImpParSparse3,limitLowImpParSparse3,limitUpImpParSparse3);
+            for(Int_t iax=0; iax<5; iax++) fImpParzSparsePtBchargePhi->GetAxis(iax)->SetTitle(axTitle3[iax].Data());
+            BinLogAxis(fImpParzSparsePtBchargePhi, 1);
+            fOutput->Add(fImpParzSparsePtBchargePhi);
+        }
         
         Int_t nbinsImpParSparse4[5] =       {1000, 50, 4, 2, 10};
         Double_t limitLowImpParSparse4[5] = {-1500., 0.1, 0., 0., -10.};
@@ -263,10 +293,12 @@ void AliAnalysisTaskSEImpParResSparse::UserCreateOutputObjects()
             "#phi",
             "#eta",
             "{z}_{vtx} (cm)"};
-        fImpParzSparsePtzVtxEtaPhi=new THnSparseF("fImpParzSparsePtzVtxEtaPhi","fImpParzSparsePtzVtxEtaPhi",5,nbinsImpParSparse4,limitLowImpParSparse4,limitUpImpParSparse4);
-        for(Int_t iax=0; iax<5; iax++) fImpParzSparsePtzVtxEtaPhi->GetAxis(iax)->SetTitle(axTitle4[iax].Data());
-        BinLogAxis(fImpParzSparsePtzVtxEtaPhi, 1);
-        fOutput->Add(fImpParzSparsePtzVtxEtaPhi);
+        if(fFillSparse_ImpParzSparsePtzVtxEtaPhi){
+            fImpParzSparsePtzVtxEtaPhi=new THnSparseF("fImpParzSparsePtzVtxEtaPhi","fImpParzSparsePtzVtxEtaPhi",5,nbinsImpParSparse4,limitLowImpParSparse4,limitUpImpParSparse4);
+            for(Int_t iax=0; iax<5; iax++) fImpParzSparsePtzVtxEtaPhi->GetAxis(iax)->SetTitle(axTitle4[iax].Data());
+            BinLogAxis(fImpParzSparsePtzVtxEtaPhi, 1);
+            fOutput->Add(fImpParzSparsePtzVtxEtaPhi);
+        }
         
         
         //pulls
@@ -278,19 +310,24 @@ void AliAnalysisTaskSEImpParResSparse::UserCreateOutputObjects()
             "#phi",
             "mag. field",
             "charge"};
-        fImpParPullrphiSparsePtBchargePhi=new THnSparseF("fImpParPullrphiSparsePtBchargePhi","fImpParPullrphiSparsePtBchargePhi",5,nbinsImpParSparse_pullPtBchargePhi,limitLowImpParSparse_pullPtBchargePhi,limitUpImpParSparse_pullPtBchargePhi);
-        for(Int_t iax=0; iax<5; iax++) fImpParPullrphiSparsePtBchargePhi->GetAxis(iax)->SetTitle(axTitle_rphi_pullPtBchargePhi[iax].Data());
-        BinLogAxis(fImpParPullrphiSparsePtBchargePhi, 1);
-        fOutput->Add(fImpParPullrphiSparsePtBchargePhi);
+        if(fFillSparse_ImpParPullrphiSparsePtBchargePhi){
+            fImpParPullrphiSparsePtBchargePhi=new THnSparseF("fImpParPullrphiSparsePtBchargePhi","fImpParPullrphiSparsePtBchargePhi",5,nbinsImpParSparse_pullPtBchargePhi,limitLowImpParSparse_pullPtBchargePhi,limitUpImpParSparse_pullPtBchargePhi);
+            for(Int_t iax=0; iax<5; iax++) fImpParPullrphiSparsePtBchargePhi->GetAxis(iax)->SetTitle(axTitle_rphi_pullPtBchargePhi[iax].Data());
+            BinLogAxis(fImpParPullrphiSparsePtBchargePhi, 1);
+            fOutput->Add(fImpParPullrphiSparsePtBchargePhi);
+        }
+
         TString axTitle_z_pullPtBchargePhi[5]={"z pull",
             "#it{p}_{T} (GeV/c)",
             "#phi",
             "mag. field",
             "charge"};
-        fImpParPullzSparsePtBchargePhi=new THnSparseF("fImpParPullzSparsePtBchargePhi","fImpParPullzSparsePtBchargePhi",5,nbinsImpParSparse_pullPtBchargePhi,limitLowImpParSparse_pullPtBchargePhi,limitUpImpParSparse_pullPtBchargePhi);
-        for(Int_t iax=0; iax<5; iax++) fImpParPullzSparsePtBchargePhi->GetAxis(iax)->SetTitle(axTitle_z_pullPtBchargePhi[iax].Data());
-        BinLogAxis(fImpParPullzSparsePtBchargePhi, 1);
-        fOutput->Add(fImpParPullzSparsePtBchargePhi);
+        if(fFillSparse_ImpParPullzSparsePtBchargePhi){
+            fImpParPullzSparsePtBchargePhi=new THnSparseF("fImpParPullzSparsePtBchargePhi","fImpParPullzSparsePtBchargePhi",5,nbinsImpParSparse_pullPtBchargePhi,limitLowImpParSparse_pullPtBchargePhi,limitUpImpParSparse_pullPtBchargePhi);
+            for(Int_t iax=0; iax<5; iax++) fImpParPullzSparsePtBchargePhi->GetAxis(iax)->SetTitle(axTitle_z_pullPtBchargePhi[iax].Data());
+            BinLogAxis(fImpParPullzSparsePtBchargePhi, 1);
+            fOutput->Add(fImpParPullzSparsePtBchargePhi);
+        }
     }
     
     //default THnSparses
@@ -306,73 +343,72 @@ void AliAnalysisTaskSEImpParResSparse::UserCreateOutputObjects()
         "#phi",
         "#eta"};
 
-    // more axes for SPD modules info storage (mfaggin)
-    Int_t nbinsImpParSparse_rphi_wSPDmod[11];
-    Double_t limitLowImpParSparse_rphi_wSPDmod[11];
-    Double_t limitUpImpParSparse_rphi_wSPDmod[11];
-    TString axTitle_rphi_wSPDmod[11];
-    if (fStoreSPDmodulesInfo) {
-        printf("\n--- Adding info on SPD modules\n");
-        // first 4 values copied from original arrays
-        for(UInt_t i = 0; i < 4; i++)
-        {
-            nbinsImpParSparse_rphi_wSPDmod[i] = nbinsImpParSparse_rphi[i];
-            limitLowImpParSparse_rphi_wSPDmod[i] = limitLowImpParSparse_rphi[i];
-            limitUpImpParSparse_rphi_wSPDmod[i] = limitUpImpParSparse_rphi[i];
-            axTitle_rphi_wSPDmod[i] = axTitle_rphi[i];
-        }
-        // --- parameters for SPD modules axes ---
-        //  5) ladID in SPDinner (0-19)
-        nbinsImpParSparse_rphi_wSPDmod[4] = 20;
-        limitLowImpParSparse_rphi_wSPDmod[4] = -0.5;
-        limitUpImpParSparse_rphi_wSPDmod[4] = 19.5;
-        axTitle_rphi_wSPDmod[4] = "ladder in SPDinner";
-        //  6) ladID in SPDouter (0-39)
-        nbinsImpParSparse_rphi_wSPDmod[5] = 40;
-        limitLowImpParSparse_rphi_wSPDmod[5] = -0.5;
-        limitUpImpParSparse_rphi_wSPDmod[5] = 39.5;
-        axTitle_rphi_wSPDmod[5] = "ladder in SPDouter";
-        //  7) detID in SPDinner (0-1 side A, 2-3 side C)
-        nbinsImpParSparse_rphi_wSPDmod[6] = 4;
-        limitLowImpParSparse_rphi_wSPDmod[6] = -0.5;
-        limitUpImpParSparse_rphi_wSPDmod[6] = 3.5;
-        axTitle_rphi_wSPDmod[6] = "module ID in SPDinner";
-        //  8) detID in SPDouter (0-1 side A, 2-3 side C)
-        nbinsImpParSparse_rphi_wSPDmod[7] = 4;
-        limitLowImpParSparse_rphi_wSPDmod[7] = -0.5;
-        limitUpImpParSparse_rphi_wSPDmod[7] = 3.5;
-        axTitle_rphi_wSPDmod[7] = "module ID in SPDouter";
-        //  9) status in SPDinner (see AliESDtrack::GetITSModuleIndexInfo as reference)
-        nbinsImpParSparse_rphi_wSPDmod[8] = 8;
-        limitLowImpParSparse_rphi_wSPDmod[8] = 0.5;
-        limitUpImpParSparse_rphi_wSPDmod[8] = 8.5;
-        axTitle_rphi_wSPDmod[8] = "status in SPDinner";    
-        //  10) status in SPDouter (see AliESDtrack::GetITSModuleIndexInfo as reference)
-        nbinsImpParSparse_rphi_wSPDmod[9] = 8;
-        limitLowImpParSparse_rphi_wSPDmod[9] = 0.5;
-        limitUpImpParSparse_rphi_wSPDmod[9] = 8.5;
-        axTitle_rphi_wSPDmod[9] = "status in SPDouter"; 
-        //  11) z of primary vertex 
-        nbinsImpParSparse_rphi_wSPDmod[10] = 100;
-        limitLowImpParSparse_rphi_wSPDmod[10] = -20;
-        limitUpImpParSparse_rphi_wSPDmod[10] = 20;
-        axTitle_rphi_wSPDmod[10] = "z of primary vertex (cm)";
-    }
     // mfaggin    
-    if(fStoreSPDmodulesInfo)
-    {
-        fImpParrphiSparsePtEtaPhi=new THnSparseF("fImpParrphiSparsePtEtaPhi","fImpParrphiSparsePtEtaPhi",11,nbinsImpParSparse_rphi_wSPDmod,limitLowImpParSparse_rphi_wSPDmod,limitUpImpParSparse_rphi_wSPDmod);
-        for(Int_t iax=0; iax<11; iax++) fImpParrphiSparsePtEtaPhi->GetAxis(iax)->SetTitle(axTitle_rphi_wSPDmod[iax].Data());
-    }
-    // original
-    else
-    {
+    //if(fStoreSPDmodulesInfo)
+    //{
+    //    fImpParrphiSparsePtEtaPhi=new THnSparseF("fImpParrphiSparsePtEtaPhi","fImpParrphiSparsePtEtaPhi",11,nbinsImpParSparse_rphi_wSPDmod,limitLowImpParSparse_rphi_wSPDmod,limitUpImpParSparse_rphi_wSPDmod);
+    //    for(Int_t iax=0; iax<11; iax++) fImpParrphiSparsePtEtaPhi->GetAxis(iax)->SetTitle(axTitle_rphi_wSPDmod[iax].Data());
+    //}
+
+    if(fFillSparse_ImpParrphiSparsePtEtaPhi){
+        // original
         fImpParrphiSparsePtEtaPhi=new THnSparseF("fImpParrphiSparsePtEtaPhi","fImpParrphiSparsePtEtaPhi",4,nbinsImpParSparse_rphi,limitLowImpParSparse_rphi,limitUpImpParSparse_rphi);
         for(Int_t iax=0; iax<4; iax++) fImpParrphiSparsePtEtaPhi->GetAxis(iax)->SetTitle(axTitle_rphi[iax].Data());
+        BinLogAxis(fImpParrphiSparsePtEtaPhi, 1);
+        fOutput->Add(fImpParrphiSparsePtEtaPhi);
     }
 
-    BinLogAxis(fImpParrphiSparsePtEtaPhi, 1);
-    fOutput->Add(fImpParrphiSparsePtEtaPhi);
+    // mfaggin
+    // more axes for SPD modules info storage 
+    Int_t nbinsImpParSparse_rphi_wSPDmod[7];
+    Double_t limitLowImpParSparse_rphi_wSPDmod[7];
+    Double_t limitUpImpParSparse_rphi_wSPDmod[7];
+    TString axTitle_rphi_wSPDmod[7];
+    if (fStoreSPDmodulesInfo) {
+        printf("\n--- Adding info on SPD modules\n");
+        //  1) d0 
+        nbinsImpParSparse_rphi_wSPDmod[0] = 3000;
+        limitLowImpParSparse_rphi_wSPDmod[0] = -1500.;
+        limitUpImpParSparse_rphi_wSPDmod[0] = 1500;
+        axTitle_rphi_wSPDmod[0] = "rphi imp. par. (#mum)";
+        //  2) pt
+        nbinsImpParSparse_rphi_wSPDmod[1] = 50;
+        limitLowImpParSparse_rphi_wSPDmod[1] = 0.1;
+        limitUpImpParSparse_rphi_wSPDmod[1] = 25;
+        axTitle_rphi_wSPDmod[1] = "#it{p}_{T} (GeV/c)";   
+        // --- parameters for SPD modules axes ---     
+        //  3) ladID in SPDinner (0-19)
+        nbinsImpParSparse_rphi_wSPDmod[2] = 20;
+        limitLowImpParSparse_rphi_wSPDmod[2] = -0.5;
+        limitUpImpParSparse_rphi_wSPDmod[2] = 19.5;
+        axTitle_rphi_wSPDmod[2] = "ladder in SPDinner";
+        //  4) ladID in SPDouter (0-39)
+        nbinsImpParSparse_rphi_wSPDmod[3] = 40;
+        limitLowImpParSparse_rphi_wSPDmod[3] = -0.5;
+        limitUpImpParSparse_rphi_wSPDmod[3] = 39.5;
+        axTitle_rphi_wSPDmod[3] = "ladder in SPDouter";
+        //  5) detID in SPDinner (0-1 side A, 2-3 side C)
+        nbinsImpParSparse_rphi_wSPDmod[4] = 4;
+        limitLowImpParSparse_rphi_wSPDmod[4] = -0.5;
+        limitUpImpParSparse_rphi_wSPDmod[4] = 3.5;
+        axTitle_rphi_wSPDmod[4] = "module ID in SPDinner";
+        //  6) detID in SPDouter (0-1 side A, 2-3 side C)
+        nbinsImpParSparse_rphi_wSPDmod[5] = 4;
+        limitLowImpParSparse_rphi_wSPDmod[5] = -0.5;
+        limitUpImpParSparse_rphi_wSPDmod[5] = 3.5;
+        axTitle_rphi_wSPDmod[5] = "module ID in SPDouter"; 
+        //  7) z of primary vertex 
+        nbinsImpParSparse_rphi_wSPDmod[6] = 50;
+        limitLowImpParSparse_rphi_wSPDmod[6] = -20;
+        limitUpImpParSparse_rphi_wSPDmod[6] = 20;
+        axTitle_rphi_wSPDmod[6] = "z of primary vertex (cm)";
+
+        fImpParrphiSparsePtEtaPhi_SPDmod=new THnSparseF("fImpParrphiSparsePtEtaPhi_SPDmod","fImpParrphiSparsePtEtaPhi_SPDmod",7,nbinsImpParSparse_rphi_wSPDmod,limitLowImpParSparse_rphi_wSPDmod,limitUpImpParSparse_rphi_wSPDmod);
+        for(Int_t iax=0; iax<7; iax++) fImpParrphiSparsePtEtaPhi_SPDmod->GetAxis(iax)->SetTitle(axTitle_rphi_wSPDmod[iax].Data());
+        BinLogAxis(fImpParrphiSparsePtEtaPhi_SPDmod, 1);
+        fOutput->Add(fImpParrphiSparsePtEtaPhi_SPDmod);
+    }
+
 
     Int_t nbinsImpParSparse_z[4] =       {1000, 50, 4, 2};
     Double_t limitLowImpParSparse_z[4] = {-1500., 0.1, 0., 0.};
@@ -381,10 +417,12 @@ void AliAnalysisTaskSEImpParResSparse::UserCreateOutputObjects()
         "#it{p}_{T} (GeV/c)",
         "#phi",
         "#eta"};
-    fImpParzSparsePtEtaPhi=new THnSparseF("fImpParzSparsePtEtaPhi","fImpParzSparsePtEtaPhi",4,nbinsImpParSparse_z,limitLowImpParSparse_z,limitUpImpParSparse_z);
-    for(Int_t iax=0; iax<4; iax++) fImpParzSparsePtEtaPhi->GetAxis(iax)->SetTitle(axTitle_z[iax].Data());
-    BinLogAxis(fImpParzSparsePtEtaPhi, 1);
-    fOutput->Add(fImpParzSparsePtEtaPhi);
+    if(fFillSparse_ImpParzSparsePtEtaPhi){
+        fImpParzSparsePtEtaPhi=new THnSparseF("fImpParzSparsePtEtaPhi","fImpParzSparsePtEtaPhi",4,nbinsImpParSparse_z,limitLowImpParSparse_z,limitUpImpParSparse_z);
+        for(Int_t iax=0; iax<4; iax++) fImpParzSparsePtEtaPhi->GetAxis(iax)->SetTitle(axTitle_z[iax].Data());
+        BinLogAxis(fImpParzSparsePtEtaPhi, 1);
+        fOutput->Add(fImpParzSparsePtEtaPhi);
+    }
     
     //pulls
     Int_t nbinsImpParSparse_pull[4] =       {400, 50, 4, 2};
@@ -394,18 +432,23 @@ void AliAnalysisTaskSEImpParResSparse::UserCreateOutputObjects()
         "#it{p}_{T} (GeV/c)",
         "#phi",
         "#eta"};
-    fImpParPullrphiSparsePtEtaPhi=new THnSparseF("fImpParPullrphiSparsePtEtaPhi","fImpParPullrphiSparsePtEtaPhi",4,nbinsImpParSparse_pull,limitLowImpParSparse_pull,limitUpImpParSparse_pull);
-    for(Int_t iax=0; iax<4; iax++) fImpParPullrphiSparsePtEtaPhi->GetAxis(iax)->SetTitle(axTitle_rphi_pull[iax].Data());
-    BinLogAxis(fImpParPullrphiSparsePtEtaPhi, 1);
-    fOutput->Add(fImpParPullrphiSparsePtEtaPhi);
+    if(fFillSparse_ImpParPullrphiSparsePtEtaPhi){
+        fImpParPullrphiSparsePtEtaPhi=new THnSparseF("fImpParPullrphiSparsePtEtaPhi","fImpParPullrphiSparsePtEtaPhi",4,nbinsImpParSparse_pull,limitLowImpParSparse_pull,limitUpImpParSparse_pull);
+        for(Int_t iax=0; iax<4; iax++) fImpParPullrphiSparsePtEtaPhi->GetAxis(iax)->SetTitle(axTitle_rphi_pull[iax].Data());
+        BinLogAxis(fImpParPullrphiSparsePtEtaPhi, 1);
+        fOutput->Add(fImpParPullrphiSparsePtEtaPhi);
+    }
+
     TString axTitle_z_pull[4]={"z pull",
         "#it{p}_{T} (GeV/c)",
         "#phi",
         "#eta"};
-    fImpParPullzSparsePtEtaPhi=new THnSparseF("fImpParPullzSparsePtEtaPhi","fImpParPullzSparsePtEtaPhi",4,nbinsImpParSparse_pull,limitLowImpParSparse_pull,limitUpImpParSparse_pull);
-    for(Int_t iax=0; iax<4; iax++) fImpParPullzSparsePtEtaPhi->GetAxis(iax)->SetTitle(axTitle_z_pull[iax].Data());
-    BinLogAxis(fImpParPullzSparsePtEtaPhi, 1);
-    fOutput->Add(fImpParPullzSparsePtEtaPhi);
+    if(fFillSparse_ImpParPullzSparsePtEtaPhi){
+        fImpParPullzSparsePtEtaPhi=new THnSparseF("fImpParPullzSparsePtEtaPhi","fImpParPullzSparsePtEtaPhi",4,nbinsImpParSparse_pull,limitLowImpParSparse_pull,limitUpImpParSparse_pull);
+        for(Int_t iax=0; iax<4; iax++) fImpParPullzSparsePtEtaPhi->GetAxis(iax)->SetTitle(axTitle_z_pull[iax].Data());
+        BinLogAxis(fImpParPullzSparsePtEtaPhi, 1);
+        fOutput->Add(fImpParPullzSparsePtEtaPhi);
+    }
     
     
     fPtDistrib = new TH1F("fhpTdistr",";p_{T} (GeV/c)",500,0.1,25.);
@@ -902,9 +945,9 @@ void AliAnalysisTaskSEImpParResSparse::UserExec(Option_t */*option*/)
         //else if(fESDtrackCuts->GetClusterRequirementITS(AliESDtrackCuts::kSPD)==AliESDtrackCuts::kBoth)spdreq=3;
 
         // store SPD modules info (mfaggin)
-        Double_t pointrphi_wSPDmod[11];
+        Double_t pointrphi_wSPDmod[7];
         if (fStoreSPDmodulesInfo) {
-            for(UInt_t i = 0; i < 4; i++)
+            for(UInt_t i = 0; i < 2; i++)
             {
                 // first 4 values copied from original arrays
                 pointrphi_wSPDmod[i] = pointrphi[i];
@@ -918,76 +961,78 @@ void AliAnalysisTaskSEImpParResSparse::UserExec(Option_t */*option*/)
                 if (il&0x1) dt -= AliITSgeomTGeo::GetNDetectors(il)*AliITSgeomTGeo::GetNLadders(il); // module id is stored wrt module0 of given sensor type
                 int ladID = dt/AliITSgeomTGeo::GetNDetectors(il+1);
                 int detID = dt%AliITSgeomTGeo::GetNDetectors(il+1);
+                if(st>1){   // this is the case in which a module is assigned anyway to the track, but for some reason the track does not have really a hit on this module for the reconstruction
+                    ladID = 999;
+                    detID = 999;
+                }
                 if(il==0)
                 {
-                    pointrphi_wSPDmod[4] = ladID;
-                    pointrphi_wSPDmod[6] = detID;
-                    pointrphi_wSPDmod[8] = st;
+                    pointrphi_wSPDmod[2] = ladID;
+                    pointrphi_wSPDmod[4] = detID;
                 }
                 if(il==1)
                 {
-                    pointrphi_wSPDmod[5] = ladID;
-                    pointrphi_wSPDmod[7] = detID;
-                    pointrphi_wSPDmod[9] = st;
+                    pointrphi_wSPDmod[3] = ladID;
+                    pointrphi_wSPDmod[5] = detID;
                 }
             }
-            pointrphi_wSPDmod[10] = zvtx;
+            pointrphi_wSPDmod[6] = zvtx;
         }
 
         if(fTrackType==0){
             if(!haskTPCrefit || nClsTotTPC<70) continue;
             if( (sddIsIn && (npointsITS==6)) || (sddIsIn && (npointsITS==5) && (spdreq==npointsSPD)) || (!sddIsIn && (npointsITS==4)) || (!sddIsIn && (npointsITS==3) && (spdreq==npointsSPD)) ){
                 if(fFillSparseForExpert){
-                    fImpParrphiSparsePtBchargePhi->Fill(pointrphi1);
-                    fImpParrphiSparsePtzVtxEtaPhi->Fill(pointrphi2);
-                    fImpParzSparsePtBchargePhi->Fill(pointz1);
-                    fImpParzSparsePtzVtxEtaPhi->Fill(pointz2);
-                    fImpParPullrphiSparsePtBchargePhi->Fill(pullrphi1);
-                    fImpParPullzSparsePtBchargePhi->Fill(pullz1);
+                    if(fFillSparse_ImpParrphiSparsePtBchargePhi)        fImpParrphiSparsePtBchargePhi->Fill(pointrphi1);
+                    if(fFillSparse_ImpParrphiSparsePtzVtxEtaPhi)        fImpParrphiSparsePtzVtxEtaPhi->Fill(pointrphi2);
+                    if(fFillSparse_ImpParzSparsePtBchargePhi)           fImpParzSparsePtBchargePhi->Fill(pointz1);
+                    if(fFillSparse_ImpParzSparsePtzVtxEtaPhi)           fImpParzSparsePtzVtxEtaPhi->Fill(pointz2);
+                    if(fFillSparse_ImpParPullrphiSparsePtBchargePhi)    fImpParPullrphiSparsePtBchargePhi->Fill(pullrphi1);
+                    if(fFillSparse_ImpParPullzSparsePtBchargePhi)       fImpParPullzSparsePtBchargePhi->Fill(pullz1);
                 }
                 fPtDistrib->Fill(pt);
-                if(fStoreSPDmodulesInfo)    fImpParrphiSparsePtEtaPhi->Fill(pointrphi_wSPDmod); // SPD module info stored (mfaggin)
-                else                        fImpParrphiSparsePtEtaPhi->Fill(pointrphi);         // original
-                fImpParzSparsePtEtaPhi->Fill(pointz);
-                fImpParPullrphiSparsePtEtaPhi->Fill(pullrphi);
-                fImpParPullzSparsePtEtaPhi->Fill(pullz);
+                if(fStoreSPDmodulesInfo)                        fImpParrphiSparsePtEtaPhi_SPDmod->Fill(pointrphi_wSPDmod); // SPD module info stored (mfaggin)
+                if(fFillSparse_ImpParrphiSparsePtEtaPhi)        fImpParrphiSparsePtEtaPhi->Fill(pointrphi);         // original
+                if(fFillSparse_ImpParzSparsePtEtaPhi)           fImpParzSparsePtEtaPhi->Fill(pointz);
+                if(fFillSparse_ImpParPullrphiSparsePtEtaPhi)    fImpParPullrphiSparsePtEtaPhi->Fill(pullrphi);
+                if(fFillSparse_ImpParPullzSparsePtEtaPhi)       fImpParPullzSparsePtEtaPhi->Fill(pullz);
             }
         }
         // ITS standalone
         else if(fTrackType==1 && nClsTotTPC==0 && haskITSrefit && npointsSPD>0 && npointsITS>=4) {
             if(fFillSparseForExpert){
                 fPtDistrib->Fill(pt);
-                fImpParrphiSparsePtBchargePhi->Fill(pointrphi1);
-                fImpParrphiSparsePtzVtxEtaPhi->Fill(pointrphi2);
-                fImpParzSparsePtBchargePhi->Fill(pointz1);
-                fImpParzSparsePtzVtxEtaPhi->Fill(pointz2);
-                fImpParPullrphiSparsePtBchargePhi->Fill(pullrphi1);
-                fImpParPullzSparsePtBchargePhi->Fill(pullz1);
+                if(fFillSparse_ImpParrphiSparsePtBchargePhi)        fImpParrphiSparsePtBchargePhi->Fill(pointrphi1);
+                if(fFillSparse_ImpParrphiSparsePtzVtxEtaPhi)        fImpParrphiSparsePtzVtxEtaPhi->Fill(pointrphi2);
+                if(fFillSparse_ImpParzSparsePtBchargePhi)           fImpParzSparsePtBchargePhi->Fill(pointz1);
+                if(fFillSparse_ImpParzSparsePtzVtxEtaPhi)           fImpParzSparsePtzVtxEtaPhi->Fill(pointz2);
+                if(fFillSparse_ImpParPullrphiSparsePtBchargePhi)    fImpParPullrphiSparsePtBchargePhi->Fill(pullrphi1);
+                if(fFillSparse_ImpParPullzSparsePtBchargePhi)       fImpParPullzSparsePtBchargePhi->Fill(pullz1);
             }
             fPtDistrib->Fill(pt);
-            if(fStoreSPDmodulesInfo)    fImpParrphiSparsePtEtaPhi->Fill(pointrphi_wSPDmod);
-            else                        fImpParrphiSparsePtEtaPhi->Fill(pointrphi);
-            fImpParzSparsePtEtaPhi->Fill(pointz);
-            fImpParPullrphiSparsePtEtaPhi->Fill(pullrphi);
-            fImpParPullzSparsePtEtaPhi->Fill(pullz);
+            if(fStoreSPDmodulesInfo)                        fImpParrphiSparsePtEtaPhi_SPDmod->Fill(pointrphi_wSPDmod);
+            if(fFillSparse_ImpParrphiSparsePtEtaPhi)        fImpParrphiSparsePtEtaPhi->Fill(pointrphi);
+            if(fFillSparse_ImpParzSparsePtEtaPhi)           fImpParzSparsePtEtaPhi->Fill(pointz);
+            if(fFillSparse_ImpParPullrphiSparsePtEtaPhi)    fImpParPullrphiSparsePtEtaPhi->Fill(pullrphi);
+            if(fFillSparse_ImpParPullzSparsePtEtaPhi)       fImpParPullzSparsePtEtaPhi->Fill(pullz);
         }
         // ESD TRACK CUTS
         else if(fTrackType==2 && IsTrackSelected(vtrack,primaryVtx,fESDtrackCuts,event)){
             if(fFillSparseForExpert){
                 fPtDistrib->Fill(pt);
-                fImpParrphiSparsePtBchargePhi->Fill(pointrphi1);
-                fImpParrphiSparsePtzVtxEtaPhi->Fill(pointrphi2);
-                fImpParzSparsePtBchargePhi->Fill(pointz1);
-                fImpParzSparsePtzVtxEtaPhi->Fill(pointz2);
-                fImpParPullrphiSparsePtBchargePhi->Fill(pullrphi1);
-                fImpParPullzSparsePtBchargePhi->Fill(pullz1);
+                if(fFillSparse_ImpParrphiSparsePtBchargePhi)        fImpParrphiSparsePtBchargePhi->Fill(pointrphi1);
+                if(fFillSparse_ImpParrphiSparsePtzVtxEtaPhi)        fImpParrphiSparsePtzVtxEtaPhi->Fill(pointrphi2);
+                if(fFillSparse_ImpParzSparsePtBchargePhi)           fImpParzSparsePtBchargePhi->Fill(pointz1);
+                if(fFillSparse_ImpParzSparsePtzVtxEtaPhi)           fImpParzSparsePtzVtxEtaPhi->Fill(pointz2);
+                if(fFillSparse_ImpParPullrphiSparsePtBchargePhi)    fImpParPullrphiSparsePtBchargePhi->Fill(pullrphi1);
+                if(fFillSparse_ImpParPullzSparsePtBchargePhi)       fImpParPullzSparsePtBchargePhi->Fill(pullz1);
             }
             fPtDistrib->Fill(pt);
-            if(fStoreSPDmodulesInfo)    fImpParrphiSparsePtEtaPhi->Fill(pointrphi_wSPDmod);
-            else                        fImpParrphiSparsePtEtaPhi->Fill(pointrphi);
-            fImpParzSparsePtEtaPhi->Fill(pointz);
-            fImpParPullrphiSparsePtEtaPhi->Fill(pullrphi);
-            fImpParPullzSparsePtEtaPhi->Fill(pullz);
+            if(fStoreSPDmodulesInfo)                        fImpParrphiSparsePtEtaPhi_SPDmod->Fill(pointrphi_wSPDmod);
+            if(fFillSparse_ImpParrphiSparsePtEtaPhi)        fImpParrphiSparsePtEtaPhi->Fill(pointrphi);
+            if(fFillSparse_ImpParzSparsePtEtaPhi)           fImpParzSparsePtEtaPhi->Fill(pointz);
+            if(fFillSparse_ImpParPullrphiSparsePtEtaPhi)    fImpParPullrphiSparsePtEtaPhi->Fill(pullrphi);
+            if(fFillSparse_ImpParPullzSparsePtEtaPhi)       fImpParPullzSparsePtEtaPhi->Fill(pullz);
         }
         
         
@@ -1053,6 +1098,9 @@ Int_t AliAnalysisTaskSEImpParResSparse::PhiBin(Double_t phi, Bool_t usefinebinsp
     Double_t pi=TMath::Pi();
     
     if (usefinebinsphi) {   // mfaggin
+        if(!fImpParrphiSparsePtEtaPhi){
+            return 999;
+        }
         UInt_t nBins = fImpParrphiSparsePtEtaPhi->GetAxis(2)->GetNbins();
         Double_t width = 2.*pi/nBins;
         for(UInt_t i = 0; i < nBins; i++)
