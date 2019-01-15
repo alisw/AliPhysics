@@ -42,7 +42,7 @@ Bool_t CreateXML(char * coll_in="pp.xml", char * coll_out="global2")
 
   TGrid::Connect("alien://pcapiserv01.cern.ch:10000","elopez");
   //TGrid::Connect("alien://"); 
-  TAlienCollection* coll = TAlienCollection::Open(coll_in);
+  TGridCollection* coll = gGrid->OpenCollection(coll_in);
   TGridResult* TagResult = coll->GetGridResult("",0,0);
   cout << endl << "Chain Grid Tags..."  << endl;
   TagAna->ChainGridTags(TagResult);

@@ -1,7 +1,7 @@
 #include <iostream>
 #include <fstream>
 
-#include <TAlienCollection.h>
+#include <TGridCollection.h>
 #include <TFile.h>
 #include <TGrid.h>
 #include <TGridResult.h>
@@ -55,8 +55,8 @@ void rawqa(const Int_t runNumber, Int_t maxFiles = 10, const char* year = "08")
 		TString collectionFile(pattern) ; 
 		collectionFile.ReplaceAll("*.root", ".xml") ; 
 		if ( gSystem->AccessPathName(collectionFile) == 0 ) { // get the list of files from an a-priori created collection file
-			TAlienCollection collection(collectionFile.Data(), maxFiles) ; 
-			result = collection.GetGridResult("", 0, 0); 
+			TGridCollection *collection gGrid->OpenCollection(collectionFile.Data(), maxFiles);
+			result = collection->GetGridResult("", 0, 0);
 		} else { 
 			TString baseDir; 
 			baseDir.Form("/alice/data/20%s/",year);

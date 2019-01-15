@@ -18,7 +18,7 @@ void runTaskNormalization(const char * incollection,const char * filename = "LHC
   }
   else if (TString(incollection).Contains("xml")){
     TGrid::Connect("alien://");
-    TAlienCollection * coll = TAlienCollection::Open (incollection);
+    TGridCollection * coll = gGrid->OpenCollection(incollection);
     while(coll->Next()){
       analysisChain->Add(TString("alien://")+coll->GetLFN());
     }

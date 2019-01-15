@@ -50,7 +50,7 @@ void CreateTags() {
   //_________Alien stored ESDs_________//
   //___________________________________//
   //XML collection
-  //TAlienCollection *collection = TAlienCollection::Open("pp.xml");
+  //TGridCollection *collection = gGrid->OpenCollection("pp.xml");
   //TGridResult* result = collection->GetGridResult("");
   //Read the TGridResult, create the tags and store them
   //t->ReadGridCollection(result);

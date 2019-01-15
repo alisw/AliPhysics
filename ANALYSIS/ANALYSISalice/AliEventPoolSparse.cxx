@@ -29,7 +29,7 @@
   2) Merging the tag files
 
   TGrid::Connect("alien://");
-  TAlienCollection *collection = TAlienCollection::Open(xmlfile);
+  TGridCollection *collection = gGrid->OpenCollection(xmlfile);
   TGridResult* result = collection->GetGridResult("",0);
   AliTagCreator *t = new AliTagCreator();
   t->MergeTags("ESD",result);

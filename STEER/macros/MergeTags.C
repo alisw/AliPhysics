@@ -28,7 +28,7 @@ void MergeTags(const char* fCollectionName) {
   //__________Merge tag files__________//
   //___________________________________//
   //XML collection
-  TAlienCollection *collection = TAlienCollection::Open(fCollectionName);
+  TGridCollection *collection = gGrid->OpenCollection(fCollectionName);
   TGridResult* result = collection->GetGridResult("");
   //Read the TGridResult and merge the tags
   t->MergeTags(result);
