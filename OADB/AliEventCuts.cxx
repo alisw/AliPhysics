@@ -848,7 +848,7 @@ bool AliEventCuts::IsTrueINELgtZero(AliVEvent *ev, bool chkGenVtxZ) {
       return false;
     }
     if (chkGenVtxZ && !(mcHeader->GetVtxZ() >= fMinVtz &&  mcHeader->GetVtxZ() <= fMaxVtz)) return false;
-    for (unsigned int i_mcTrk = 0; i_mcTrk < stack->GetEntriesFast(); ++i_mcTrk) {
+    for (int i_mcTrk = 0; i_mcTrk < stack->GetEntriesFast(); ++i_mcTrk) {
       AliAODMCParticle* aliMCPart = dynamic_cast<AliAODMCParticle*>(stack->At(i_mcTrk));
       if (!aliMCPart) continue;
       if (aliMCPart->Charge() == -99) continue;                      // dummy value for particles w/o TParticlePDG informations
@@ -864,7 +864,7 @@ bool AliEventCuts::IsTrueINELgtZero(AliVEvent *ev, bool chkGenVtxZ) {
     AliMCEvent* mcEvent = eventHandler->MCEvent();
     const AliVVertex* gVtx = mcEvent->GetPrimaryVertex();
     if (chkGenVtxZ && !(gVtx->GetZ() >= fMinVtz && gVtx->GetZ() <= fMaxVtz)) return false;
-    for (unsigned int i_mcTrk = 0; i_mcTrk < mcEvent->GetNumberOfTracks(); ++i_mcTrk) {
+    for (int i_mcTrk = 0; i_mcTrk < mcEvent->GetNumberOfTracks(); ++i_mcTrk) {
       AliMCParticle *aliMCPart = (AliMCParticle *)mcEvent->GetTrack(i_mcTrk);
       if (!aliMCPart) continue;
       if (aliMCPart->Charge() == -99) continue;                         // dummy value for particles w/o TParticlePDG informations
