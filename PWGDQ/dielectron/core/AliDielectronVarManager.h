@@ -2463,7 +2463,7 @@ inline void AliDielectronVarManager::FillVarDielectronPair(const AliDielectronPa
     values[AliDielectronVarManager::kOneOverPairEffSq] = (values[AliDielectronVarManager::kPairEff]>0.0 ? 1./values[AliDielectronVarManager::kPairEff]/values[AliDielectronVarManager::kPairEff] : 1.0);
   }
 
-  if(kRndmPair) values[AliDielectronVarManager::kRndmPair] = gRandom->Rndm();
+  if(Req(kRndmPair)) values[AliDielectronVarManager::kRndmPair] = gRandom->Rndm();
 } // end FillVarDielectronPair
 
 inline void AliDielectronVarManager::FillVarKFParticle(const AliKFParticle *particle, Double_t * const values)

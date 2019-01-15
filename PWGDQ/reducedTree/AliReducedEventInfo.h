@@ -144,17 +144,12 @@ class AliReducedEventInfo : public AliReducedBaseEvent {
 	 			    Bool_t (*IsTrackSelected)(AliReducedTrackInfo*)=NULL);
   
   // Event plane information handling for the case when event plane information is written directly in the trees
-  //void SetEventPlane(const AliReducedEventPlaneInfo* ep) 
-  //    {if(ep) {fEventPlane=new AliReducedEventPlaneInfo(); fEventPlane->CopyEvent(ep);}};
-  //AliReducedEventPlaneInfo* GetEventPlane() const {return fEventPlane;};
   void SetEventPlane(const AliReducedEventPlaneInfo* ep) {if(ep) fEventPlane.CopyEvent(ep);}
+  Double_t GetEventPlane(Int_t detector, Int_t harmonic) const {return fEventPlane.EventPlane(detector, harmonic);};    
+  Double_t GetQx(Int_t detector, Int_t harmonic) const {return fEventPlane.Qx(detector, harmonic);}
+  Double_t GetQy(Int_t detector, Int_t harmonic) const {return fEventPlane.Qy(detector, harmonic);}
+  Double_t GetEventPlaneStatus(Int_t detector, Int_t harmonic) const {return fEventPlane.GetEventPlaneStatus(detector, harmonic);}
   
-  //Double_t GetEventPlane(Int_t detector, Int_t harmonic) const 
-   //   {if(fEventPlane) return fEventPlane->EventPlane(detector, harmonic); return 0.0;};
-  Double_t GetEventPlane(Int_t detector, Int_t harmonic) const 
-      {return fEventPlane.EventPlane(detector, harmonic); return 0.0;};    
-      
-
   virtual void ClearEvent();
   
   static const Float_t fgkZdcNalpha;
