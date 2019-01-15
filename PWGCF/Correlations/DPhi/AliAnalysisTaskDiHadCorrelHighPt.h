@@ -59,6 +59,8 @@ class AliAnalysisTaskDiHadCorrelHighPt : public AliAnalysisTaskSE
         void                    SetPurityCheckAnalysis(Bool_t pur) { fPurityCheck = pur; }
         void                    SetCorrelationsAnalysis(Bool_t corr) { fCorrelations = corr; }
         void                    SetMixedEvents(Int_t nmix) { fMixedEvents = nmix; }
+        void                    SetNofPtBinsTrigger(Int_t nbins) { fNumberOfPtBinsTrigger = nbins; }
+        void                    SetNofPtBinsAssoc(Int_t nbins) { fNumberOfPtBinsAssoc = nbins; }
     
     private:
         AliAODEvent*            fAOD;           		//! input event
@@ -120,13 +122,15 @@ class AliAnalysisTaskDiHadCorrelHighPt : public AliAnalysisTaskSE
         Bool_t                  fEfficiency; //
         Bool_t                  fPurityCheck;//
         Bool_t                  fCorrelations;//
-        THnSparse*              fHistNumberOfTriggersPur;//
-        TH3F*                   fHistPtResolution;//
+        THnSparse*              fHistNumberOfTriggersPur;//!
+        TH3F*                   fHistPtResolution;//!
+        Int_t                   fNumberOfPtBinsTrigger; //
+        Int_t                   fNumberOfPtBinsAssoc;//
 
         AliAnalysisTaskDiHadCorrelHighPt(const AliAnalysisTaskDiHadCorrelHighPt&); // not implemented
         AliAnalysisTaskDiHadCorrelHighPt& operator=(const AliAnalysisTaskDiHadCorrelHighPt&); // not implemented
 
-        ClassDef(AliAnalysisTaskDiHadCorrelHighPt, 8);
+        ClassDef(AliAnalysisTaskDiHadCorrelHighPt, 9);
 };
 
 class AliV0ChParticle : public AliVParticle
