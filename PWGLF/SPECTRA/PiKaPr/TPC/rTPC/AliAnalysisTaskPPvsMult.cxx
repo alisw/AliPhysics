@@ -139,6 +139,7 @@ ClassImp(AliAnalysisTaskPPvsMult)
 	fAnalysisPbPb(kFALSE),
 //	ftrigBit(0x0),
 	fRandom(0x0),
+	fVtxCut(0x0),
         fNcl(70),
 //	fPileUpRej(kFALSE),
 	fEtaCut(0.9),
@@ -303,6 +304,7 @@ AliAnalysisTaskPPvsMult::AliAnalysisTaskPPvsMult(const char *name):
 	fAnalysisPbPb(kFALSE),
 //	ftrigBit(0x0),
 	fRandom(0x0),
+	fVtxCut(0x0),
         fNcl(70),
 	//fPileUpRej(kFALSE),
 	fEtaCut(0.9),
@@ -1027,12 +1029,12 @@ void AliAnalysisTaskPPvsMult::UserExec(Option_t *)
   	if (!hasTrk){
 	if (!hasSPD){ return; } 
 	else{
-    	if ( !(TMath::Abs(spdVertex->GetZ())<10)  ){ return; }
+    	if ( !(TMath::Abs(spdVertex->GetZ())<fVtxCut)  ){ return; }
 	}
 	}
 	else {
 	if(hasTrk){
-    	if ( !(TMath::Abs(trkVertex->GetZ())<10)  ){ return; }
+    	if ( !(TMath::Abs(trkVertex->GetZ())<fVtxCut)  ){ return; }
 	}
 	}
 
