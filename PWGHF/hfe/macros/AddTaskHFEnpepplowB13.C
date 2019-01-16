@@ -1,3 +1,24 @@
+#ifdef __CLING__
+R__ADD_INCLUDE_PATH($ALICE_ROOT)
+R__ADD_INCLUDE_PATH($ALICE_PHYSICS)
+#include "$ALICE_PHYSICS/PWGHF/hfe/macros/configs/pp/ConfigHFEnpepplowB13.C"
+#include "$ALICE_PHYSICS/PWGHF/hfe/macros/configs/ConfigWeightFactors.C"
+
+AliAnalysisTask *RegisterTaskNpepplowB13(Bool_t useMC, Bool_t isAOD,
+                                   Int_t tpcCls=120, Int_t tpcClsPID=80,
+                                   Int_t itsCls=4, Double_t dcaxy=1.0, Double_t dcaz=2.0,
+                                   Double_t *tpcdEdxcutlow=NULL, Double_t *tpcdEdxcuthigh=NULL,
+                                   Double_t tofs=3., Int_t itshitpixel =AliHFEextraCuts::kBoth,
+                                   Int_t iKink = 0, Int_t assITS=2, Int_t assTPCcl=100,
+                                   Int_t assTPCPIDcl=80, Double_t assDCAr=1.0, Double_t assDCAz=2.0,
+                                   Double_t *assTPCSminus = NULL, Double_t *assTPCSplus=NULL,
+                                   Double_t assITSpid = 3.0, Double_t assTOFpid = 0.0, Double_t assMinPt = 0.0,
+                                   Double_t assETAm = -0.9,Double_t assETAp = 0.9,
+                                   Bool_t useCat1Tracks = kTRUE, Bool_t useCat2Tracks = kFALSE,
+                                   Int_t weightlevelback = -1, Int_t WhichWei = 0,Int_t HadronContFunc=0);
+#endif
+
+
 AliAnalysisTask *AddTaskHFEnpepplowB13(Bool_t MCthere,
                                  Bool_t isAOD = kTRUE,
                                  Bool_t kNPERef = kTRUE,
@@ -77,8 +98,8 @@ AliAnalysisTask *AddTaskHFEnpepplowB13(Bool_t MCthere,
     const double	kassTPCSplus	=  3.0;
     const double  kassITSpid      =  3.0;
     const double  kassTOFpid      =  0.0;
-    const double assETAm        =   -0.9;
-    const double assETAp        =   0.9;
+    const double assETAm        =   -0.8;
+    const double assETAp        =   0.8;
     const int	kasspTmin		=    0.0;
     
     
@@ -114,8 +135,8 @@ AliAnalysisTask *AddTaskHFEnpepplowB13(Bool_t MCthere,
         kWeiLHC11b10b = 20,    // pass2                                LHC11b10b, Pythia + HF + pi0
         kWeiLHC12a9 = 21,      //                                      LHC12a9: Pythia + HF->e
         kWeiLHC12e6 = 22,      //                                      LHC12e6: Pythia min. bias
-        kWeiLHC18h1_tu = 59,      //                                      LHC18h1: Pythia + HF->e
-        kWeiLHC18h1_td = 60,      //                                      LHC18h1: Pythia min. bias
+        kWeiLHC18h1_tu = 59,      //                                      LHC18h1: tilted up weights
+        kWeiLHC18h1_td = 60,      //                                      LHC18h1: tilted down weights
     };
     int kWeiData;
     // The re-weighting concerns the photonic sources. The tagging efficiency is best taken
