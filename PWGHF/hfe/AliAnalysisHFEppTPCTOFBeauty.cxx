@@ -981,18 +981,19 @@ void AliAnalysisHFEppTPCTOFBeauty::UserCreateOutputObjects()
      2.28928,2.58223,2.91267,3.2854,3.70582,4.18004,4.71494,5.3183,5.99886,6.76651,7.6324,8.60909,9.71076,10.9534,12.3551,13.9361,15.7195,17.731,20};//bin limits from the measured pi0 spectrum
      */
     
-    const Int_t nDima2=9;
-    Int_t nBina2[nDima2] = {32,nBinspdg2,nBinsdcaxy,nBinsg,nBinsR,nBinsITSchi2,nBinsITSsha,nBinstype,nBinspdg2};
+    const Int_t nDima2=10;
+    Int_t nBina2[nDima2] = {32,nBinspdg2,nBinsdcaxy,nBinsg,nBinsR,nBinsITSchi2,nBinsITSsha,nBinstype,nBinspdg2,nBinsdcaxy};
     fD0 = new THnSparseF("fD0","fD0",nDima2,nBina2);
     fD0->SetBinEdges(0,ptbinning); ///pt spectra -> same binning as other histograms
     fD0->SetBinEdges(1,binLimpdg2); /// electrons from D,charm baryons, B, beauty baryons, gamma, pi0, eta, Dcorrected, Dcorrected by weight, protons, kaons, D0_corr, D+-_corr,Ds_corr,Lc_corr, D0, D+-,Ds,Lc
-    fD0->SetBinEdges(2,binLimdcaxy); ///dca distribution
+    fD0->SetBinEdges(2,binLimdcaxy); ///dca distribution without Manual Mean and Sigma correction
     fD0->SetBinEdges(3,binLimg);  ///From which generator (Hijing, else, pi0, eta)
     fD0->SetBinEdges(4,binLimR); ///Position where the electron is created
     fD0->SetBinEdges(5,binLimITSchi2); ///ITS chi2 
     fD0->SetBinEdges(6,binLimITSsha); ///fraction ITS shared clusters 
     fD0->SetBinEdges(7,binLimtype); ///pi0 and eta type  ///kNoMother, kNoFeedDown, kNoIsPrimary, kLightMesons, kBeauty, kCharm, kKaonFromHF, kKaonFromNonHF
     fD0->SetBinEdges(8,binLimpdg2); /// storing particles (charm and beauty) before correction: 
+    fD0->SetBinEdges(9,binLimdcaxy); ///dca distribution with Manual Mean and Sigma correction
     fD0->Sumw2();
     fOutputList->Add(fD0);
     ///-----------------------------------------------------------------
@@ -1615,20 +1616,20 @@ void AliAnalysisHFEppTPCTOFBeauty::UserExec(Option_t *)
         //=======================================================================
         // Here the PID cuts defined in the file "Config.C" is applied
         //=======================================================================
-        /*Int_t pidpassed = 1;
+        Int_t pidpassed = 1;
         AliHFEpidObject hfetrack;
         hfetrack.SetAnalysisType(AliHFEpidObject::kESDanalysis);
         hfetrack.SetRecTrack(track);
         hfetrack.SetPP();	//proton-proton analysis
         if(!fPID->IsSelected(&hfetrack, NULL, "", fPIDqa)) pidpassed = 0;
-        cout<<"Before the pidpassed = = = = = = = = = = = ======================================"<<endl;
+      //  cout<<"Before the pidpassed = = = = = = = = = = = ======================================"<<endl;
         if(pidpassed==0) continue;
-        cout<<"After  the pidpassed = = = = = = = = = = = ======================================"<<endl;*/
+       // cout<<"After  the pidpassed = = = = = = = = = = = ======================================"<<endl;
         
      //   if(fTPCnSigma < ftpcPIDmincut || fTPCnSigma > ftpcPIDmaxcut && fTOFnSigma < ftofPIDmincut || fTOFnSigma > ftofPIDmaxcut) continue;   // Applying simultaneous pid cuts manually by sudhir, since above cut function does not work in grid...
       //  if(fTOFnSigma == -999 || fTPCnSigma == -999)continue;
            //   cout<<ftpcPIDmincut<<"    "<<fTPCnSigma<<"     "<<ftpcPIDmaxcut<<"       "<<ftofPIDmincut<<"     "<<fTOFnSigma<<"     "<<ftofPIDmaxcut<<endl;
-      if(fTPCnSigma >= ftpcPIDmincut && fTPCnSigma <= ftpcPIDmaxcut && fTOFnSigma >= ftofPIDmincut && fTOFnSigma <= ftofPIDmaxcut){
+     // if(fTPCnSigma >= ftpcPIDmincut && fTPCnSigma <= ftpcPIDmaxcut && fTOFnSigma >= ftofPIDmincut && fTOFnSigma <= ftofPIDmaxcut){
        // cout<<fTPCnSigma<<"       "<<fTOFnSigma<<endl;
         /////////////////////////
 		//AFTER PID SELECTION////
@@ -1970,7 +1971,9 @@ void AliAnalysisHFEppTPCTOFBeauty::UserExec(Option_t *)
 		DCAResCorr =  DCAxy*track->Charge()*signB + correction_phi4;
 		}
 		
-	    qadca[2]=DCAResCorr;	
+	    qadca[2]=DCAxy*track->Charge()*signB;	
+            
+            qadca[9]=DCAResCorr;
             
             Double_t ITSNcls = atrack->GetITSNcls();
             //cout<<"atrack->GetITSNcls() = "<<atrack->GetITSNcls()<<endl;
@@ -1997,7 +2000,7 @@ void AliAnalysisHFEppTPCTOFBeauty::UserExec(Option_t *)
             if(qadca[1]>0.) fD0->Fill(qadca);
         }
         
-       }
+    //   } // manual PID selection
 
     }//End of track loop
     
