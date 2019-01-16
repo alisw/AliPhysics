@@ -103,7 +103,7 @@ AliAnalysisTaskFlowModes::AliAnalysisTaskFlowModes() : AliAnalysisTaskSE(),
   fCutFlowRFPsPtMin(0),
   fCutFlowRFPsPtMax(0),
   fFlowPOIsPtMin(0),
-  fFlowPOIsPtMax(20.),
+  fFlowPOIsPtMax(10.),
   fFlowCentMin(0),
   fFlowCentMax(150),
   fFlowCentNumBins(150),
@@ -1818,14 +1818,6 @@ void AliAnalysisTaskFlowModes::FilterCharged()
   Double_t NUAweight = 0;
   Double_t NUEweight = 0;
  
-  Int_t c = -1;
-  if(fIndexCentrality>=0 && fIndexCentrality<5) c = 0;
-  if(fIndexCentrality>=5 && fIndexCentrality<10) c = 1;
-  if(fIndexCentrality>=10 && fIndexCentrality<20) c = 2;
-  if(fIndexCentrality>=20 && fIndexCentrality<30) c = 3;
-  if(fIndexCentrality>=30 && fIndexCentrality<40) c = 4;
-  if(fIndexCentrality>=40 && fIndexCentrality<50) c = 5;
-
   for(Short_t iTrack(0); iTrack < iNumTracks; iTrack++)
   {
     track = static_cast<AliAODTrack*>(fEventAOD->GetTrack(iTrack));
@@ -1851,10 +1843,11 @@ void AliAnalysisTaskFlowModes::FilterCharged()
           fh3AfterNUAWeightsCharged->Fill(track->Phi(),track->Eta(),fEventAOD->GetPrimaryVertex()->GetZ(),NUAweight);
       }
       if(fFlowUseNUEWeights){
-       
-	  if(track->Charge()>0 && c>=0 && c<6){NUEweight = fhNUEWeightChargedPlus[c]->GetBinContent( fhNUEWeightChargedPlus[c]->FindBin(track->Pt()));}
-	  if(track->Charge()<0 && c>=0 && c<6){NUEweight = fhNUEWeightChargedMinus[c]->GetBinContent( fhNUEWeightChargedMinus[c]->FindBin(track->Pt()));}
-
+          if(track->Charge()>0 && fIndexCentrality<10){NUEweight = fhNUEWeightChargedPlus[fIndexCentrality/5]->GetBinContent( fhNUEWeightChargedPlus[fIndexCentrality/5]->FindBin(track->Pt()));}
+            if(track->Charge()>0 && fIndexCentrality>=10 && fIndexCentrality<60){NUEweight = fhNUEWeightChargedPlus[1+fIndexCentrality/10]->GetBinContent( fhNUEWeightChargedPlus[1+fIndexCentrality/10]->FindBin(track->Pt()));}
+          if(track->Charge()<0 && fIndexCentrality<10){NUEweight = fhNUEWeightChargedMinus[fIndexCentrality/5]->GetBinContent( fhNUEWeightChargedMinus[fIndexCentrality/5]->FindBin(track->Pt()));}
+          if(track->Charge()<0 && fIndexCentrality>=10 && fIndexCentrality<60){NUEweight = fhNUEWeightChargedMinus[1+fIndexCentrality/10]->GetBinContent( fhNUEWeightChargedMinus[1+fIndexCentrality/10]->FindBin(track->Pt()));}
+          
           fhAfterNUEWeightsCharged->Fill(track->Pt(),NUEweight);
       }
         
@@ -1877,9 +1870,12 @@ void AliAnalysisTaskFlowModes::FilterCharged()
         }
         if(fFlowUseNUEWeights)
         {
-            if(track->Charge()>0 && c>=0 && c<6){NUEweight = fhNUEWeightRefsPlus[c]->GetBinContent( fhNUEWeightRefsPlus[c]->FindBin(track->Pt()) );} 
-	    if(track->Charge()<0 && c>=0 && c<6){NUEweight = fhNUEWeightRefsMinus[c]->GetBinContent( fhNUEWeightRefsMinus[c]->FindBin(track->Pt()) );}
-
+            if(track->Charge()>0 && fIndexCentrality<10){NUEweight = fhNUEWeightRefsPlus[fIndexCentrality/5]->GetBinContent( fhNUEWeightRefsPlus[fIndexCentrality/5]->FindBin(track->Pt()) );}
+            if(track->Charge()>0 && fIndexCentrality>=10 && fIndexCentrality<60){NUEweight = fhNUEWeightRefsPlus[1+fIndexCentrality/10]->GetBinContent( fhNUEWeightRefsPlus[1+fIndexCentrality/10]->FindBin(track->Pt()) );}
+            
+	        if(track->Charge()<0 && fIndexCentrality<10){NUEweight = fhNUEWeightRefsMinus[fIndexCentrality/5]->GetBinContent( fhNUEWeightRefsMinus[fIndexCentrality/5]->FindBin(track->Pt()) );}
+            if(track->Charge()<0 && fIndexCentrality>=10 && fIndexCentrality<60){NUEweight = fhNUEWeightRefsMinus[1+fIndexCentrality/10]->GetBinContent( fhNUEWeightRefsMinus[1+fIndexCentrality/10]->FindBin(track->Pt()) );}
+            
             fhAfterNUEWeightsRefs->Fill(track->Pt(),NUEweight);
         }
         FillQARefs(1,track);
@@ -2027,15 +2023,6 @@ void AliAnalysisTaskFlowModes::FilterPID()
   Double_t NUAweight = 0;
   Double_t NUEweight = 0;
 
-
-  Int_t c = -1;
-  if(fIndexCentrality>=0 && fIndexCentrality<5) c = 0;
-  if(fIndexCentrality>=5 && fIndexCentrality<10) c = 1;
-  if(fIndexCentrality>=10 && fIndexCentrality<20) c = 2;
-  if(fIndexCentrality>=20 && fIndexCentrality<30) c = 3;
-  if(fIndexCentrality>=30 && fIndexCentrality<40) c = 4;
-  if(fIndexCentrality>=40 && fIndexCentrality<50) c = 5;
-
   for(Short_t iTrack(0); iTrack < iNumTracks; iTrack++)
   {
     track = static_cast<AliAODTrack*>(fEventAOD->GetTrack(iTrack));
@@ -2072,9 +2059,11 @@ void AliAnalysisTaskFlowModes::FilterPID()
         }
         if(fFlowUseNUEWeights)
         {
-            
-            if(track->Charge() > 0 && c>=0 && c<6){ NUEweight = fhNUEWeightPionPlus[c]->GetBinContent( fhNUEWeightPionPlus[c]->FindBin(track->Pt()) );}
-            if(track->Charge() < 0 && c>=0 && c<6){ NUEweight = fhNUEWeightPionMinus[c]->GetBinContent( fhNUEWeightPionMinus[c]->FindBin(track->Pt()) );}
+            if(track->Charge()>0 && fIndexCentrality<10){NUEweight = fhNUEWeightChargedPlus[fIndexCentrality/5]->GetBinContent( fhNUEWeightChargedPlus[fIndexCentrality/5]->FindBin(track->Pt()));}
+            if(track->Charge()>0 && fIndexCentrality>=10 && fIndexCentrality<60){NUEweight = fhNUEWeightChargedPlus[1+fIndexCentrality/10]->GetBinContent( fhNUEWeightChargedPlus[1+fIndexCentrality/10]->FindBin(track->Pt()));}
+
+            if(track->Charge() < 0 && fIndexCentrality<10){ NUEweight = fhNUEWeightPionMinus[fIndexCentrality/5]->GetBinContent( fhNUEWeightPionMinus[fIndexCentrality/5]->FindBin(track->Pt()) );}
+            if(track->Charge() < 0 && fIndexCentrality>=10 && fIndexCentrality<60){ NUEweight = fhNUEWeightPionMinus[1+fIndexCentrality/10]->GetBinContent( fhNUEWeightPionMinus[1+fIndexCentrality/10]->FindBin(track->Pt()) );}
             
             fhAfterNUEWeightsPion->Fill(track->Pt(),NUEweight);
         }
@@ -2094,8 +2083,13 @@ void AliAnalysisTaskFlowModes::FilterPID()
         }
         if(fFlowUseNUEWeights)
         {
-            if(track->Charge() > 0 && c>=0 && c<6){ NUEweight = fhNUEWeightKaonPlus[c]->GetBinContent( fhNUEWeightKaonPlus[c]->FindBin(track->Pt()) );}
-            if(track->Charge() < 0 && c>=0 && c<6){ NUEweight = fhNUEWeightKaonMinus[c]->GetBinContent( fhNUEWeightKaonMinus[c]->FindBin(track->Pt()) );}
+            if(track->Charge() > 0 && fIndexCentrality<10){ NUEweight = fhNUEWeightKaonPlus[fIndexCentrality/5]->GetBinContent( fhNUEWeightKaonPlus[fIndexCentrality/5]->FindBin(track->Pt()) );}
+            if(track->Charge() > 0 && fIndexCentrality>=10 && fIndexCentrality<60){ NUEweight = fhNUEWeightKaonPlus[1+fIndexCentrality/10]->GetBinContent( fhNUEWeightKaonPlus[1+fIndexCentrality/10]->FindBin(track->Pt()) );}
+
+            
+            
+            if(track->Charge() < 0 && fIndexCentrality<10){ NUEweight = fhNUEWeightKaonMinus[fIndexCentrality/5]->GetBinContent( fhNUEWeightKaonMinus[fIndexCentrality/5]->FindBin(track->Pt()) );}
+            if(track->Charge() < 0 && fIndexCentrality>=10 && fIndexCentrality<60){ NUEweight = fhNUEWeightKaonMinus[1+fIndexCentrality/10]->GetBinContent( fhNUEWeightKaonMinus[1+fIndexCentrality/10]->FindBin(track->Pt()) );}
 
             fhAfterNUEWeightsKaon->Fill(track->Pt(),NUEweight);
         }
@@ -2115,8 +2109,12 @@ void AliAnalysisTaskFlowModes::FilterPID()
         }
         if(fFlowUseNUEWeights)
         {
-            if(track->Charge() > 0 && c>=0 && c<6){ NUEweight = fhNUEWeightProtonPlus[c]->GetBinContent( fhNUEWeightProtonPlus[c]->FindBin(track->Pt()) );}
-            if(track->Charge() < 0 && c>=0 && c<6){ NUEweight = fhNUEWeightProtonMinus[c]->GetBinContent( fhNUEWeightProtonMinus[c]->FindBin(track->Pt()) );}
+            if(track->Charge() > 0  && fIndexCentrality<10){ NUEweight = fhNUEWeightProtonPlus[fIndexCentrality/5]->GetBinContent( fhNUEWeightProtonPlus[fIndexCentrality/5]->FindBin(track->Pt()) );}
+            if(track->Charge() > 0 && fIndexCentrality>=10 && fIndexCentrality<60){ NUEweight = fhNUEWeightProtonPlus[1+fIndexCentrality/10]->GetBinContent( fhNUEWeightProtonPlus[1+fIndexCentrality/10]->FindBin(track->Pt()) );}
+
+            
+            if(track->Charge() < 0  && fIndexCentrality<10){ NUEweight = fhNUEWeightProtonMinus[fIndexCentrality/5]->GetBinContent( fhNUEWeightProtonMinus[fIndexCentrality/5]->FindBin(track->Pt()) );}
+            if(track->Charge() < 0 && fIndexCentrality>=10 && fIndexCentrality<60){ NUEweight = fhNUEWeightProtonMinus[1+fIndexCentrality/10]->GetBinContent( fhNUEWeightProtonMinus[1+fIndexCentrality/10]->FindBin(track->Pt()) );}
 
             fhAfterNUEWeightsProton->Fill(track->Pt(),NUEweight);
         }
@@ -2573,7 +2571,7 @@ Bool_t AliAnalysisTaskFlowModes::ProcessEvent()
    {
         TDirectory* dirFlowNUEWeights[6] = {0x0};
 
-	const char* gCentrality[] = {"0-5cc","5-10cc","10-20cc","20-30cc","30-40cc","40-50cc"};
+	const char* gCentrality[] = {"0-5","5-10","10-20","20-30","30-40","40-50","50-60"};
 	for(int iCentrality = 0; iCentrality<6;iCentrality++){
              dirFlowNUEWeights[iCentrality] = (TDirectory*) fFlowNUEWeightsFile->Get(gCentrality[iCentrality]);
              if(!dirFlowNUEWeights[iCentrality]) {::Error("ProcessEvent","TDirectoy from NUE weights not found."); return kFALSE; }
@@ -3002,14 +3000,7 @@ void AliAnalysisTaskFlowModes::FillRefsVectors(const Short_t iEtaGapIndex)
   TH1F* hNUEWeights = 0x0;
   Double_t dNUAWeight = 1.;
   Double_t dNUEWeight = 1.;
-  
-  Int_t c = -1;
-  if(fIndexCentrality>=0 && fIndexCentrality<5) c = 0;
-  if(fIndexCentrality>=5 && fIndexCentrality<10) c = 1;
-  if(fIndexCentrality>=10 && fIndexCentrality<20) c = 2;
-  if(fIndexCentrality>=20 && fIndexCentrality<30) c = 3;
-  if(fIndexCentrality>=30 && fIndexCentrality<40) c = 4;
-  if(fIndexCentrality>=40 && fIndexCentrality<50) c = 5;
+ 
   // clearing output (global) flow vectors
   ResetRFPsVector(fFlowVecQpos);
   ResetRFPsVector(fFlowVecQneg);
@@ -3039,8 +3030,11 @@ void AliAnalysisTaskFlowModes::FillRefsVectors(const Short_t iEtaGapIndex)
       
     if(fFlowUseNUEWeights)
     {
-        if(part->charge >0 && c>=0 && c<6) hNUEWeights = fhNUEWeightRefsPlus[c];
-        if(part->charge <0 && c>=0 && c<6) hNUEWeights = fhNUEWeightRefsMinus[c];
+        if(part->charge >0 && fIndexCentrality<10) hNUEWeights = fhNUEWeightRefsPlus[fIndexCentrality/5];
+        if(part->charge >0 && fIndexCentrality>=10 && fIndexCentrality<60) hNUEWeights = fhNUEWeightRefsPlus[1+fIndexCentrality/10];
+
+        if(part->charge <0 && fIndexCentrality<10) hNUEWeights = fhNUEWeightRefsMinus[fIndexCentrality/5];
+        if(part->charge >0 && fIndexCentrality>=10 && fIndexCentrality<60) hNUEWeights = fhNUEWeightRefsPlus[1+fIndexCentrality/10];
 
         if(!hNUEWeights) { ::Error("FillRefsVectors","Histogram with NUE weights not found."); return; }
     }
@@ -3133,14 +3127,6 @@ void AliAnalysisTaskFlowModes::FillPOIsVectors(const Short_t iEtaGapIndex, const
   TH3D* h3NUAWeights = 0x0;
   TH1F* hNUEWeights = 0x0;
  
-  Int_t c = -1;
-  if(fIndexCentrality>=0 && fIndexCentrality<5) c = 0;
-  if(fIndexCentrality>=5 && fIndexCentrality<10) c = 1;
-  if(fIndexCentrality>=10 && fIndexCentrality<20) c = 2;
-  if(fIndexCentrality>=20 && fIndexCentrality<30) c = 3;
-  if(fIndexCentrality>=30 && fIndexCentrality<40) c = 4;
-  if(fIndexCentrality>=40 && fIndexCentrality<50) c = 5;
-   
   // swich based on species
   switch (species)
   {
@@ -3183,8 +3169,12 @@ void AliAnalysisTaskFlowModes::FillPOIsVectors(const Short_t iEtaGapIndex, const
                   if(part->charge <0) h3NUAWeights = fh3NUAWeightChargedMinus;
               }
               if(fFlowUseNUEWeights) {
-                  if(part->charge >0 && c>=0 && c<6) hNUEWeights = fhNUEWeightChargedPlus[c];
-                  if(part->charge <0 && c>=0 && c<6) hNUEWeights = fhNUEWeightChargedMinus[c];
+                  if(part->charge >0 && fIndexCentrality<10) hNUEWeights = fhNUEWeightChargedPlus[fIndexCentrality/5];
+                  if(part->charge >0 && fIndexCentrality>=10 && fIndexCentrality<60) hNUEWeights = fhNUEWeightChargedPlus[1+fIndexCentrality/10];
+
+                  if(part->charge <0 && fIndexCentrality<10) hNUEWeights = fhNUEWeightChargedMinus[fIndexCentrality/5];
+                  if(part->charge <0 && fIndexCentrality>=10 && fIndexCentrality<60) hNUEWeights = fhNUEWeightChargedMinus[1+fIndexCentrality/10];
+
               }
               break;
               
@@ -3194,8 +3184,12 @@ void AliAnalysisTaskFlowModes::FillPOIsVectors(const Short_t iEtaGapIndex, const
                   if(part->charge <0) h3NUAWeights = fh3NUAWeightPionMinus;
               }
               if(fFlowUseNUEWeights) {
-                 if(part->charge >0 && c>=0 && c<6) hNUEWeights = fhNUEWeightPionPlus[c];
-                 if(part->charge <0 && c>=0 && c<6) hNUEWeights = fhNUEWeightPionMinus[c];
+                 if(part->charge >0 && fIndexCentrality<10) hNUEWeights = fhNUEWeightPionPlus[fIndexCentrality/5];
+                  if(part->charge >0 && fIndexCentrality>=10 && fIndexCentrality<60) hNUEWeights = fhNUEWeightPionPlus[fIndexCentrality/5];
+
+                 if(part->charge <0 && fIndexCentrality<10) hNUEWeights = fhNUEWeightPionMinus[fIndexCentrality/5];
+                  if(part->charge <0 && fIndexCentrality>=10 && fIndexCentrality<60) hNUEWeights = fhNUEWeightPionMinus[1+fIndexCentrality/10];
+
               }
               break;
               
@@ -3205,8 +3199,11 @@ void AliAnalysisTaskFlowModes::FillPOIsVectors(const Short_t iEtaGapIndex, const
                   if(part->charge <0) h3NUAWeights = fh3NUAWeightKaonMinus;
               }
               if(fFlowUseNUEWeights) {
-                 if(part->charge >0 && c>=0 && c<6) hNUEWeights = fhNUEWeightKaonPlus[c];
-                 if(part->charge <0 && c>=0 && c<6) hNUEWeights = fhNUEWeightKaonMinus[c];
+                  if(part->charge >0 && fIndexCentrality<10) hNUEWeights = fhNUEWeightKaonPlus[fIndexCentrality/5];
+                  if(part->charge >0 && fIndexCentrality>=10 && fIndexCentrality<60) hNUEWeights = fhNUEWeightKaonPlus[fIndexCentrality/5];
+                  
+                  if(part->charge <0 && fIndexCentrality<10) hNUEWeights = fhNUEWeightKaonMinus[fIndexCentrality/5];
+                  if(part->charge <0 && fIndexCentrality>=10 && fIndexCentrality<60) hNUEWeights = fhNUEWeightKaonMinus[1+fIndexCentrality/10];
               }
               break;
               
@@ -3216,8 +3213,11 @@ void AliAnalysisTaskFlowModes::FillPOIsVectors(const Short_t iEtaGapIndex, const
                   if(part->charge <0) h3NUAWeights = fh3NUAWeightProtonMinus;
               }
               if(fFlowUseNUEWeights) {
-                 if(part->charge >0 && c>=0 && c<6) hNUEWeights = fhNUEWeightProtonPlus[c];
-                 if(part->charge <0 && c>=0 && c<6) hNUEWeights = fhNUEWeightProtonMinus[c];
+                  if(part->charge >0 && fIndexCentrality<10) hNUEWeights = fhNUEWeightProtonPlus[fIndexCentrality/5];
+                  if(part->charge >0 && fIndexCentrality>=10 && fIndexCentrality<60) hNUEWeights = fhNUEWeightProtonPlus[fIndexCentrality/5];
+                  
+                  if(part->charge <0 && fIndexCentrality<10) hNUEWeights = fhNUEWeightProtonMinus[fIndexCentrality/5];
+                  if(part->charge <0 && fIndexCentrality>=10 && fIndexCentrality<60) hNUEWeights = fhNUEWeightProtonMinus[1+fIndexCentrality/10];
               }
               break;
             
