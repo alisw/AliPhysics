@@ -17,7 +17,8 @@ AliAnalysisTaskPPvsMult* AddTaskPPvsMult(
 		const Int_t LHC16l = 1,  // 1-LHC16l 0-LHC16k 
 		const Int_t CrossedRowsTPC = 60,
 		const Int_t ChiSquaredTPC = 5,
-		const Int_t MaxDCAz = 1
+		const Int_t MaxDCAz = 1,
+		const Int_t VtxZcut = 10
 		)   
 {
 
@@ -79,7 +80,7 @@ AliAnalysisTaskPPvsMult* AddTaskPPvsMult(
 	task->SetNcl(70);
 	task->SetDebugLevel(0);
 	task->SetEtaCut(0.8);
-//	task->SetVtxCut(10.0);
+	task->SetVtxCut(VtxZcut);
 //	task->SetTrigger(AliVEvent::kINT7);
 //	task->SetPileUpRej(ispileuprej);
 	//Set Filtesr

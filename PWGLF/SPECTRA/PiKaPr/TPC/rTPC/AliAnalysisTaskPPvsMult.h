@@ -56,7 +56,7 @@ public:
 //		virtual void  SetCentralityEstimator(const char * centEst) {fCentEst = centEst;}
 		virtual void  SetAnalysisType(const char* analysisType) {fAnalysisType = analysisType;}
 		virtual void  SetAnalysisMC(Bool_t isMC) {fAnalysisMC = isMC;}
-		//  virtual void  SetVtxCut(Double_t vtxCut){fVtxCut = vtxCut;}
+		virtual void  SetVtxCut(Double_t vtxCut){fVtxCut = vtxCut;}
 		virtual void  SetNcl(const Int_t ncl){fNcl = ncl;}
 		virtual void  SetEtaCut(Double_t etaCut){fEtaCut = etaCut;}
 //		virtual void  SetPileUpRej(Bool_t isrej) {fPileUpRej = isrej;}   
@@ -135,7 +135,7 @@ public:
 		// Cuts and options
 		//
 
-//		Double_t     fVtxCut;             // Vtx cut on z position in cm
+		Double_t     fVtxCut;             // Vtx cut on z position in cm
 		Int_t        fNcl;                
 		Double_t     fEtaCut;             // Eta cut used to select particles
 		Int_t        cent; //minimum centrality
