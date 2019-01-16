@@ -2569,10 +2569,10 @@ Bool_t AliAnalysisTaskFlowModes::ProcessEvent()
 
    if(fFlowUseNUEWeights && fFlowNUEWeightsFile)
    {
-        TDirectory* dirFlowNUEWeights[6] = {0x0};
+        TDirectory* dirFlowNUEWeights[7] = {0x0};
 
 	const char* gCentrality[] = {"0-5","5-10","10-20","20-30","30-40","40-50","50-60"};
-	for(int iCentrality = 0; iCentrality<6;iCentrality++){
+	for(int iCentrality = 0; iCentrality<7;iCentrality++){
              dirFlowNUEWeights[iCentrality] = (TDirectory*) fFlowNUEWeightsFile->Get(gCentrality[iCentrality]);
              if(!dirFlowNUEWeights[iCentrality]) {::Error("ProcessEvent","TDirectoy from NUE weights not found."); return kFALSE; }
              fhNUEWeightRefsPlus[iCentrality] = dynamic_cast<TH1F*>( dirFlowNUEWeights[iCentrality]->FindObject("ChargedPlus")); if(!fhNUEWeightRefsPlus[iCentrality]) { ::Error("ProcessEvent","Positive Refs NUE weights not found"); return kFALSE; }
