@@ -122,12 +122,9 @@ AliAnalysisTaskStrangenessLifetimes::AliAnalysisTaskStrangenessLifetimes(
   // Standard output
   DefineInput(0, TChain::Class());
   DefineOutput(1, TList::Class());
-  if (fV0s)
-    DefineOutput(2, TTree::Class());
-  if (fHypertriton)
-    DefineOutput(3, TTree::Class());
-  if (fMC)
-    DefineOutput(4, TTree::Class());
+  DefineOutput(2, TTree::Class());
+  DefineOutput(3, TTree::Class());
+  DefineOutput(4, TTree::Class());
 }
 
 AliAnalysisTaskStrangenessLifetimes::~AliAnalysisTaskStrangenessLifetimes() {
@@ -136,18 +133,18 @@ AliAnalysisTaskStrangenessLifetimes::~AliAnalysisTaskStrangenessLifetimes() {
     fListHist = 0x0;
   }
 
-  if (fTreeV0 && fV0s) {
+  if (fTreeV0) {
     delete fTreeV0;
     fTreeV0 = 0x0;
   }
-  if (fTreeHypertriton && fHypertriton) {
+  if (fTreeHypertriton) {
     delete fTreeHypertriton;
     fTreeHypertriton = 0x0;
   }
-  if (fTreeMC && fMC) {
+  if (fTreeMC) {
     delete fTreeMC;
     fTreeMC = 0x0;
-  }    
+  }
 
 }
 
@@ -157,21 +154,15 @@ void AliAnalysisTaskStrangenessLifetimes::UserCreateOutputObjects() {
   fPIDResponse = inputHandler->GetPIDResponse();
   inputHandler->SetNeedField();
 
-  if(fV0s){
-    fTreeV0 = new TTree("fTreeV0", "V0 Candidates");
-    fTreeV0->Branch("V0s",&fV0);
-    PostData(2, fTreeV0);
-  }
-  if(fHypertriton){
-    fTreeHypertriton = new TTree("fTreeHypertriton", "Hypertriton Candidates");
-    fTreeHypertriton->Branch("V0Hyper",&fV0Hy);
-    PostData(3, fTreeHypertriton);
-  }
-  if (man->GetMCtruthEventHandler()) {
-    fTreeMC = new TTree("fTreeMC", "MC Particles");
-    fTreeMC->Branch("MCparticles",&fMCpart);
-    PostData(4, fTreeV0);
-  }
+  fTreeV0 = new TTree("fTreeV0", "V0 Candidates");
+  fTreeV0->Branch("V0s",&fV0);
+  PostData(2, fTreeV0);
+  fTreeHypertriton = new TTree("fTreeHypertriton", "Hypertriton Candidates");
+  fTreeHypertriton->Branch("V0Hyper",&fV0Hy);
+  PostData(3, fTreeHypertriton);
+  fTreeMC = new TTree("fTreeMC", "MC Particles");
+  fTreeMC->Branch("MCparticles",&fMCpart);
+  PostData(4, fTreeV0);
 
   fListHist = new TList();
   fListHist->SetOwner();
@@ -305,15 +296,9 @@ void AliAnalysisTaskStrangenessLifetimes::UserExec(Option_t *) {
 
   if (!fEventCuts.AcceptEvent(esdEvent)) {
     PostData(1, fListHist);
-    if(fV0s){
-      PostData(2, fTreeV0);
-    }
-    if(fHypertriton){
-      PostData(3,fTreeHypertriton);
-    }
-    if(fMC){
-      PostData(4,fTreeMC);
-    }    
+    PostData(2, fTreeV0);
+    PostData(3,fTreeHypertriton);
+    PostData(4,fTreeMC);
     return;
   }
 
@@ -393,7 +378,8 @@ void AliAnalysisTaskStrangenessLifetimes::UserExec(Option_t *) {
              fHistNhyp->Fill(v0part.GetPt());}
           }
           fMCpart=v0part;
-          fTreeMC->Fill();
+          if (fMC)
+            fTreeMC->Fill();
         }
         ++idx;
       }
@@ -593,7 +579,8 @@ void AliAnalysisTaskStrangenessLifetimes::UserExec(Option_t *) {
          auto miniHyper = HyperTriton2Body::FillHyperTriton2Body(v0,pTrack,nTrack,nSigmaPosHe3,
          nSigmaNegHe3,nSigmaPosPion,nSigmaNegPion,magneticField,primaryVertex,fake,centrality);       
          fV0Hy=miniHyper;  
-         fTreeHypertriton->Fill();       
+         if (fHypertriton)
+           fTreeHypertriton->Fill();       
          fHistV0radius->Fill(miniHyper.GetV0radius());
          fHistV0pt->Fill(miniHyper.GetV0pt());
          fHistV0eta->Fill(miniHyper.GetV0eta());
@@ -622,7 +609,8 @@ void AliAnalysisTaskStrangenessLifetimes::UserExec(Option_t *) {
          auto miniV0 = MiniV0::FillMiniV0(v0,pTrack,nTrack,nSigmaPosProton,nSigmaNegProton,
          nSigmaPosPion,nSigmaNegPion,magneticField,primaryVertex,fake,centrality);
          fV0=miniV0;
-         fTreeV0->Fill();
+         if (fV0s)
+           fTreeV0->Fill();
          fHistV0radius->Fill(miniV0.GetV0radius());
          fHistV0pt->Fill(miniV0.GetV0pt());
          fHistV0eta->Fill(miniV0.GetV0eta());
@@ -652,15 +640,9 @@ void AliAnalysisTaskStrangenessLifetimes::UserExec(Option_t *) {
   }
 
   PostData(1, fListHist);
-  if(fV0s){
-    PostData(2, fTreeV0);
-  }
-  if(fHypertriton){
-    PostData(3,fTreeHypertriton);
-  }
-  if(fMC){
-    PostData(4,fTreeMC);
-  }      
+  PostData(2, fTreeV0);
+  PostData(3,fTreeHypertriton);
+  PostData(4,fTreeMC);
 }
 
 void AliAnalysisTaskStrangenessLifetimes::Terminate(Option_t *) {}
