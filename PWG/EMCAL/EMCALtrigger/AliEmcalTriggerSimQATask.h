@@ -60,6 +60,9 @@ class AliEmcalTriggerSimQATask : public AliAnalysisTaskEmcal {
 
   static AliEmcalTriggerSimQATask * AddTaskEmcalTriggerSimQA();
 
+  void SetMinAmplitude(Int_t m)             { fMinAmplitude = m; }
+
+
  protected:
   void                                      UserCreateOutputObjects();
   void                                      ExecOnce();
