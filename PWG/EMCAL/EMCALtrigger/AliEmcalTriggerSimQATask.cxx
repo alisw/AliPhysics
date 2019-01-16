@@ -87,6 +87,17 @@ void AliEmcalTriggerSimQATask::UserCreateOutputObjects() {
 
   Int_t nPtBins = TMath::CeilNint(fMaxPt/fPtBinWidth);
 
+  Double_t fMinEta = -0.7;
+  Double_t fMaxEta = 0.7;
+  Double_t fMinPhi = 0;
+  Double_t fMaxPhi = 2*TMath::Pi();
+  Int_t nEtaBins = 96;
+  Int_t nPhiBins = 208;
+
+  Double_t fMaxADCValue = 1024;
+  Double_t nADCBins = 512;
+
+
   // Hist for counting clusters
   fHistManager.CreateTH1("NClusters","NClusters;N_{cluster}; counts",300,0,300);
 
@@ -95,6 +106,25 @@ void AliEmcalTriggerSimQATask::UserCreateOutputObjects() {
     histname = TString::Format("fHistClusEnergy_Trig_%s",fTriggerNames[i].Data());
     title = histname + ";#it{E}_{cluster} (GeV); counts";
     fHistManager.CreateTH1(histname.Data(),title.Data(),nPtBins,0,fMaxPt);
+  }
+
+  for (Int_t i = 0; i < kNTriggerTypes; i++) {
+    histname = TString::Format("fHistClusEtaPhi_Trig_%s",fTriggerNames[i].Data());
+    title = histname + ";#eta_{cluster};#phi_{cluster};counts";
+    fHistManager.CreateTH2(histname.Data(),title.Data(),nEtaBins,fMinEta,fMaxEta,nPhiBins,fMinPhi,fMaxPhi);
+  }
+
+  // Only make patch histgrams for L1 patches:
+  for (Int_t i = 1; i < kNTriggerTypes; i++) {
+    histname = TString::Format("fHistPatchEnergy_Trig_%s",fTriggerNames[i].Data());
+    title = histname + ";#it{E}_{patch} (GeV); counts";
+    fHistManager.CreateTH1(histname.Data(),title.Data(),nPtBins,0,fMaxPt);
+  }
+
+  for (Int_t i = 1; i < kNTriggerTypes; i++) {
+    histname = TString::Format("fHistPatchOnlineADCAmp_Trig_%s",fTriggerNames[i].Data());
+    title = histname + ";#it{E}_{patch} (ADC); counts";
+    fHistManager.CreateTH1(histname.Data(),title.Data(),nADCBins,0,fMaxADCValue);
   }
 
   fOutput->Add(fHistManager.GetListOfHistograms());
@@ -177,11 +207,31 @@ void AliEmcalTriggerSimQATask::DoPatchLoop() {
     AliEMCALTriggerPatchInfo* patch = static_cast<AliEMCALTriggerPatchInfo*>(fTriggerPatches->At(i));
     if (!patch) continue;
     if (patch->GetADCAmp() < fMinAmplitude) continue;
-    if (patch->IsLevel0()) fEventTriggerBits |= 0x1 << kL0;
-    if (patch->IsGammaLow()) fEventTriggerBits |= 0x1 << kEG1;
-    if (patch->IsGammaHigh()) fEventTriggerBits |= 0x1 << kEG2;
-    if (patch->IsJetLow()) fEventTriggerBits |= 0x1 << kEJ1;
-    if (patch->IsJetHigh()) fEventTriggerBits |= 0x1 << kEJ2;
+    if (patch->IsLevel0()) {
+      fEventTriggerBits |= 0x1 << kL0;
+      fHistManager.FillTH1("fHistPatchEnergy_Trig_L0",patch->GetPatchE());
+      fHistManager.FillTH1("fHistPatchOnlineADCAmp_Trig_L0",patch->GetADCAmp());
+    }
+    if (patch->IsGammaLow()) {
+      fEventTriggerBits |= 0x1 << kEG1;
+      fHistManager.FillTH1("fHistPatchEnergy_Trig_EG1",patch->GetPatchE());
+      fHistManager.FillTH1("fHistPatchOnlineADCAmp_Trig_EG1",patch->GetADCAmp());
+    }
+    if (patch->IsGammaHigh()) {
+      fEventTriggerBits |= 0x1 << kEG2;
+      fHistManager.FillTH1("fHistPatchEnergy_Trig_EG2",patch->GetPatchE());
+      fHistManager.FillTH1("fHistPatchOnlineADCAmp_Trig_EG2",patch->GetADCAmp());
+    }
+    if (patch->IsJetLow()) {
+      fEventTriggerBits |= 0x1 << kEJ1;
+      fHistManager.FillTH1("fHistPatchEnergy_Trig_EJ1",patch->GetPatchE());
+      fHistManager.FillTH1("fHistPatchOnlineADCAmp_Trig_EJ1",patch->GetADCAmp());
+    }
+    if (patch->IsJetHigh()) {
+      fEventTriggerBits |= 0x1 << kEJ2;
+      fHistManager.FillTH1("fHistPatchEnergy_Trig_EJ2",patch->GetPatchE());
+      fHistManager.FillTH1("fHistPatchOnlineADCAmp_Trig_EJ2",patch->GetADCAmp());
+    }
   }
 }
 
@@ -209,8 +259,16 @@ void AliEmcalTriggerSimQATask::DoClusterLoop() {
         continue;
       }
 
+      // Get Cluster vector
+      TLorentzVector vCluster;
+      clusters->GetMomentum(vCluster,cluster);
+      Double_t fPhi = vCluster.Phi();
+      if (fPhi < 0) fPhi+=2*TMath::Pi();
+
       histname = TString::Format("fHistClusEnergy_Trig_%s",fTriggerNames[j].Data());
       fHistManager.FillTH1(histname,cluster->E());
+      histname = TString::Format("fHistClusEtaPhi_Trig_%s",fTriggerNames[j].Data());
+      fHistManager.FillTH1(histname,vCluster.Eta(),fPhi);
     }
   }
 }
