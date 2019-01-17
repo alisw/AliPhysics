@@ -162,8 +162,17 @@ AliAnalysisHFjetTagHFE::AliAnalysisHFjetTagHFE() :
   fHistDiJetMomBalance_MC(0), 
   fHistQjet(0),
   fHistQjet_mult(0),
+  fHistGjet_mult(0),
   fHistJetWidthIncjet(0),
   fHistJetWidthQjet(0),
+  fHistIncjetCont(0),
+  fHistQjetCont(0),
+  fHistIncjetR(0),
+  fHistQjetR(0),
+  fHistIncjetPhi(0),
+  fHistQjetPhi(0),
+  fHistIncjetPtD(0),
+  fHistQjetPtD(0),
   fInvmassULS(0),
   fInvmassLS(0),
   fInvmassHFuls(0),
@@ -333,8 +342,17 @@ AliAnalysisHFjetTagHFE::AliAnalysisHFjetTagHFE(const char *name) :
   fHistDiJetMomBalance_MC(0),
   fHistQjet(0),
   fHistQjet_mult(0),
+  fHistGjet_mult(0),
   fHistJetWidthIncjet(0),
   fHistJetWidthQjet(0),
+  fHistIncjetCont(0),
+  fHistQjetCont(0),
+  fHistIncjetR(0),
+  fHistQjetR(0),
+  fHistIncjetPhi(0),
+  fHistQjetPhi(0),
+  fHistIncjetPtD(0),
+  fHistQjetPtD(0),
   fInvmassULS(0),
   fInvmassLS(0),//my
   fInvmassHFuls(0),//my
@@ -707,11 +725,38 @@ void AliAnalysisHFjetTagHFE::UserCreateOutputObjects()
   fHistQjet_mult = new TH2F("fHistQjet_mult","Q jet mult;p_{T}",70,30,100,10,-0.5,9.5);
   fOutput->Add(fHistQjet_mult);
 
+  fHistGjet_mult = new TH2F("fHistGjet_mult","G jet mult;p_{T}",70,30,100,10,-0.5,9.5);
+  fOutput->Add(fHistGjet_mult);
+
   fHistJetWidthIncjet = new TH2F("fHistJetWidthIncjet","jet width inc;p_{T}",300,-100,200,100,0,1);
   fOutput->Add(fHistJetWidthIncjet);
 
   fHistJetWidthQjet = new TH2F("fHistJetWidthQjet","jet width Q;p_{T}",300,-100,200,100,0,1);
   fOutput->Add(fHistJetWidthQjet);
+ 
+  fHistIncjetCont = new TH2F("fHistIncjetCont","jet constituent",100,0,100,30,0,30); 
+  fOutput->Add(fHistIncjetCont);
+
+  fHistQjetCont = new TH2F("fHistQjetCont","jet constituent",100,0,100,30,0,30); 
+  fOutput->Add(fHistQjetCont);
+
+  fHistIncjetR = new TH2F("fHistIncjetR","jet constituent R",100,0,100,100,0,1); 
+  fOutput->Add(fHistIncjetR);
+
+  fHistIncjetPhi = new TH2F("fHistIncjetPhi","jet constituent R",100,0,100,300,-1.5,1.5); 
+  fOutput->Add(fHistIncjetPhi);
+
+  fHistQjetR = new TH2F("fHistQjetR","jet constituent R",100,0,100,300,0,6); 
+  fOutput->Add(fHistQjetR);
+
+  fHistQjetPhi = new TH2F("fHistQjetPhi","jet constituent R",100,0,100,300,-1.5,1.5); 
+  fOutput->Add(fHistQjetPhi);
+
+  fHistIncjetPtD = new TH2F("fHistIncjetPtD","jet constituent ptd",100,0,100,100,0,1.); 
+  fOutput->Add(fHistIncjetPtD);
+
+  fHistQjetPtD = new TH2F("fHistQjetPtD","jet constituent ptd",100,0,100,100,0,1.); 
+  fOutput->Add(fHistQjetPtD);
 
   fInvmassULS = new TH2F("fInvmassULS","ULS mass;p_{T};mass",20,0,20,150,0.,0.3);
   fOutput->Add(fInvmassULS);
@@ -1309,7 +1354,6 @@ Bool_t AliAnalysisHFjetTagHFE::Run()
         Int_t pidM = 0;
         Int_t ilabelM = 0;
         Double_t pTmom = 0.0;
-        int Njet_q = 0;
 
         if(fmcData && track->GetLabel()!=0)
           {
@@ -1515,6 +1559,7 @@ Bool_t AliAnalysisHFjetTagHFE::Run()
 
     if(idbHFEj)cout << "electron in event" << endl;
  
+
     //-------------
 
 
@@ -1596,6 +1641,10 @@ Bool_t AliAnalysisHFjetTagHFE::Run()
      if(fmcData && pTeJetTrue<0.0)continue; // reject jets from uncerlying event (like EPOS)
 
     // reco
+
+    int Njet_q = 0;
+    int Njet_g = 0;
+
     if (fJetsCont) 
        {
         //AliEmcalJet *jet = fJetsCont->GetNextAcceptJet(0);  // full or charge ?
@@ -1632,7 +1681,7 @@ Bool_t AliAnalysisHFjetTagHFE::Run()
                Float_t efrac = pt/corrPt;
                
                Double_t JetWidth = 0.0;        
-               JetWidth = CalJetWidth(jet);
+               JetWidth = CalJetWidth(jet,fHistIncjetCont,fHistIncjetR,fHistIncjetPhi,fHistIncjetPtD);
                fHistJetWidthIncjet->Fill(corrPt,JetWidth);
 
                if(ISelectronEv==1)
@@ -1787,14 +1836,19 @@ Bool_t AliAnalysisHFjetTagHFE::Run()
                    } // teg by e,  <---- if(iTagHFjet && isElectron) // TPC+EMCal 
 
                 // Fill jet with high pT electrons 
-                if(pt>30.0 && iso<0.05 && !iTagHFjet && jet->Pt()>10.0)
+                if(pt>35.0 && iso<0.05 && !iTagHFjet && jet->Pt()>10.0)
                    {
                     Double_t dPhi_eJet_tmp = phi - jetPhi;
                     Double_t dPhi_eJet = atan2(sin(dPhi_eJet_tmp),cos(dPhi_eJet_tmp));
                     feJetCorr->Fill(iso,dPhi_eJet);
                     fHistQjet->Fill(pt,jet->Pt());
+                    JetWidth = CalJetWidth(jet,fHistQjetCont,fHistQjetR,fHistQjetPhi,fHistQjetPtD);
                     fHistJetWidthQjet->Fill(corrPt,JetWidth);
                     Njet_q++;
+                   }
+                if(pt>35.0 && iso>0.05 && !iTagHFjet && jet->Pt()>10.0)
+                   {
+                    Njet_g++;
                    }
 
              } // jet eta cut
@@ -1804,9 +1858,11 @@ Bool_t AliAnalysisHFjetTagHFE::Run()
 
            }  // while jet
 
+       fHistQjet_mult->Fill(pt,Njet_q);
+       fHistGjet_mult->Fill(pt,Njet_g);
+
        } // if jet   
  
-       fHistQjet_mult->Fill(pt,Njet_q);
 
    }  // end of Track loop
 
@@ -2371,10 +2427,14 @@ Double_t AliAnalysisHFjetTagHFE::IsolationCut(Int_t itrack, AliVTrack *track, Do
         return riso;
 }
 
-Double_t AliAnalysisHFjetTagHFE::CalJetWidth(AliEmcalJet* jetC)
+Double_t AliAnalysisHFjetTagHFE::CalJetWidth(AliEmcalJet* jetC, TH2F *htmp0, TH2F *htmp1, TH2F *htmp2, TH2F *htmp3)
 {
   Double_t wtrk0 = 0.0;
   Double_t wtrk1 = 0.0;
+  Double_t wtrk2 = 0.0;
+
+  Int_t Ncont = jetC->GetNumberOfTracks();
+  htmp0->Fill(jetC->Pt(),Ncont); 
 
   for (unsigned j = 0; j< jetC->GetNumberOfTracks(); j++) 
       {
@@ -2386,15 +2446,25 @@ Double_t AliAnalysisHFjetTagHFE::CalJetWidth(AliEmcalJet* jetC)
        Double_t dphi = TVector2::Phi_mpi_pi(jetC->Phi() - jetcont->Phi());
        Double_t deta = jetC->Eta() - jetcont->Eta(); 
        Double_t R = sqrt(pow(dphi,2)+pow(deta,2));
+       htmp1->Fill(jetC->Pt(),R); 
+       htmp2->Fill(jetC->Pt(),dphi); 
 
        wtrk0+=jetcont->Pt();
        wtrk1+=(jetcont->Pt()*R);
+       
+       Double_t mom_sq = pow(jetcont->Pt(),2);
+       wtrk2+=mom_sq;
       }
 
-  Double_t wtrk = 0.0;
-  if(wtrk0>0.0)wtrk = wtrk1/wtrk0;
+  Double_t jwidth = 0.0;
+  if(wtrk0>0.0)jwidth = wtrk1/wtrk0;
  
-  return wtrk;
+  Double_t jptD = 0.0;
+  if(wtrk0>0.0)jptD = sqrt(wtrk2)/wtrk0;
+
+  htmp3->Fill(jetC->Pt(),jptD);
+
+  return jwidth;
 }
 
 
