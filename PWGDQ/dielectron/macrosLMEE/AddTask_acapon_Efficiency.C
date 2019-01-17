@@ -19,7 +19,6 @@ AliAnalysisTaskElectronEfficiencyV2* AddTask_acapon_Efficiency(TString names    
 
   std::cout << "########################################\nADDTASK of ANALYSIS started\n########################################" << std::endl;
 	
-  TString configFile  = "Config_acapon_Efficiency.C";
 	TObjArray *arrNames = names.Tokenize(";");
 	Int_t nDie          = arrNames->GetEntries();
 	Printf("Number of implemented cuts: %i", nDie);
@@ -40,9 +39,10 @@ AliAnalysisTaskElectronEfficiencyV2* AddTask_acapon_Efficiency(TString names    
 
   // #########################################################
   // Loading individual config file either local or from Alien
-
+  TString configBasePath("$ALICE_PHYSICS/PWGDQ/dielectron/macrosLMEE/");
+  TString configFile("Config_acapon_Efficiency.C");
+  TString configLMEECutLib("LMEECutLib_acapon.C");
   // TString configBasePath= "$ALICE_PHYSICS/PWGDQ/dielectron/macrosLMEE/";
-  TString configBasePath= "$ALICE_PHYSICS/PWGDQ/dielectron/macrosLMEE/";
   //Load updated macros from private ALIEN path
   if (getFromAlien //&&
       && (!gSystem->Exec(Form("alien_cp alien:///alice/cern.ch/user/a/acapon/PWGDQ/dielectron/macrosLMEE/%s .",configFile.Data())))
@@ -51,19 +51,20 @@ AliAnalysisTaskElectronEfficiencyV2* AddTask_acapon_Efficiency(TString names    
     configBasePath=Form("%s/",gSystem->pwd());
   }
   TString configFilePath(configBasePath+configFile);
-  TString configLMEECutLib("LMEECutLib_acapon.C");
   TString configLMEECutLibPath(configBasePath+configLMEECutLib);
 
 
-  Bool_t err = kFALSE;
-  if(!cutlibPreloaded){ // should not be needed but seems to be...
-    std::cout << "Cutlib was not preloaded" << std::endl;
-    err |= gROOT->LoadMacro(configLMEECutLibPath.Data());
-    err |= gROOT->LoadMacro(configFilePath.Data());
-  }
-  else{
-    std::cout << "Cutlib was preloaded in a previous task" << std::endl;
-  }
+	// Load dielectron configuration files
+	if(!gROOT->GetListOfGlobalFunctions()->FindObject(configLMEECutLib.Data())){
+	std::cout << configLMEECutLibPath << std::endl;
+		gROOT->LoadMacro(configLMEECutLibPath.Data());
+	std::cout << "1" << std::endl;
+	}
+	if(!gROOT->GetListOfGlobalFunctions()->FindObject(configFile.Data())){
+	std::cout << configFilePath << std::endl;
+		gROOT->LoadMacro(configFilePath.Data());
+	std::cout << "1" << std::endl;
+	}
 
   // #########################################################
   // #########################################################
