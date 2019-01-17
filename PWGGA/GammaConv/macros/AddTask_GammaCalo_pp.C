@@ -1379,6 +1379,15 @@ void AddTask_GammaCalo_pp(
     cuts.AddCutCalo("00010113","11111110a6032230000","21631031000000d0"); // tm pt dependent var 1
     cuts.AddCutCalo("00010113","11111110a8032230000","21631031000000d0"); // tm pt dependent var 2
 
+  } else if (trainConfig == 2000){ // EMCAL+DCAL clusters standard cuts
+    cuts.AddCutCalo("00010113","49977000a7032230000","01631031000000d0"); // INT7 - NO NL
+    cuts.AddCutCalo("00010113","49977060a7032230000","01631031000000d0"); // INT7 - TB NL
+    cuts.AddCutCalo("00010113","49977110a7032230000","01631031000000d0"); // Standard EDC
+  } else if (trainConfig == 2001){ // EMCAL+DCAL clusters standard cuts
+    cuts.AddCutCalo("00010113","49977000af032230000","01631031000000d0"); // INT7 - NO NL
+    cuts.AddCutCalo("00010113","49977060af032230000","01631031000000d0"); // INT7 - TB NL
+    cuts.AddCutCalo("00010113","49977110af032230000","01631031000000d0"); // Standard EDC
+
   } else {
     Error(Form("GammaCalo_%i",trainConfig), "wrong trainConfig variable no cuts have been specified for the configuration");
     return;

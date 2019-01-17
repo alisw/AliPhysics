@@ -5555,10 +5555,9 @@ void AliCaloPhotonCuts::ApplyNonLinearity(AliVCluster* cluster, Int_t isMC)
           // pp 5.02 TeV LHC17pq
           // pass1
         } else if(fCurrentMC==k17l3b || fCurrentMC==k18j2 || fCurrentMC==k17l4b || fCurrentMC==k18b8) {
-          if(fClusterType==1){
+          if(fClusterType==1 || (fClusterType == 4 && !isDCal)){
             energy /= FunctionNL_kSDM(energy, 0.95515, -3.19364, -0.936124);
-          }
-          if(fClusterType==3){
+          } else if (fClusterType==3 || (fClusterType == 4 && isDCal)){
             if(fCurrentMC==k17l3b || fCurrentMC==k18j2){
               energy /= FunctionNL_kSDM(energy, 0.982718, -4.93042, -0.48982);
               energy /= FunctionNL_kSDM(energy, 0.992193, -6.97473, 0.0997857);
