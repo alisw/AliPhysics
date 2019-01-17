@@ -74,7 +74,7 @@ AliAnalysisTaskEmcalJetEnergyScale::~AliAnalysisTaskEmcalJetEnergyScale() {
 void AliAnalysisTaskEmcalJetEnergyScale::UserCreateOutputObjects(){
   AliAnalysisTaskEmcal::UserCreateOutputObjects();
 
-  TLinearBinning jetPtBinning(200, 0., 200.), nefbinning(100, 0., 1.), ptdiffbinning(200, -1., 1.), jetEtaBinning(100, -0.9, 0.9), jetPhiBinning(100, 0., TMath::TwoPi());
+  TLinearBinning jetPtBinning(300, 0., 300.), nefbinning(100, 0., 1.), ptdiffbinning(200, -1., 1.), jetEtaBinning(100, -0.9, 0.9), jetPhiBinning(100, 0., TMath::TwoPi());
 
   const TBinning *diffbinning[3] = {&jetPtBinning, &nefbinning, &ptdiffbinning},
                  *corrbinning[3] = {&jetPtBinning, &jetPtBinning, &nefbinning},
