@@ -33,14 +33,19 @@ class LMEECutLib {
 		kPIDcut17,
 		kPIDcut18,
 		kPIDcut19,
-		kPIDcut20
+		kPIDcut20,
+		kTheoPID
 	};
+
 
 
 	LMEECutLib(Bool_t wSDD): wSDD(wSDD){
 		
 		::Info("LMEECutLib_acapon", "Creating new LMEECutLib");
 		fUsedVars = new TBits(AliDielectronVarManager::kNMaxValues);
+
+		// Set the twenty different MVA cut settings here
+		Float_t PIDcutRange[20] = {-0.03, 0.0, 0.03, 0.06, 0.09, 0.12, 0.15, 0.18, 0.21, 0.24, 0.27, 0.30, 0.33, 0.36, 0.39, 0.42, 0.45, 0.48, 0.51};
 	}
 
 	//Getters
@@ -647,6 +652,14 @@ AliAnalysisCuts* LMEECutLib::GetPIDCuts(Int_t PIDcuts) {
 
 	// TMVA weight file (BDT for ePID)
 	TString weightFile = "alien:///alice/cern.ch/user/a/acapon/TMVAclassifiers/TMVAClassification_BDT.weights.xml";
+	AliDielectronTMVACuts* pidCuts = new AliDielectronTMVACuts("PIDCutsTMVA","PIDCutsTMVA");
+	pidCuts->AddTMVAInput("pt",          AliDielectronVarManager::kPt);
+	pidCuts->AddTMVAInput("EsigTPC",     AliDielectronVarManager::kTPCnSigmaEle);
+	pidCuts->AddTMVAInput("EsigITScorr", AliDielectronVarManager::kITSnSigmaEle);
+	pidCuts->AddTMVAInput("EsigTOFcorr", AliDielectronVarManager::kTOFnSigmaEle);
+	//pidCuts->AddTMVAInput("PsigTPC",   AliDielectronVarManager::kTPCnSigmaPio);
+	pidCuts->AddTMVASpectator("pdg",     AliDielectronVarManager::kPdgCode);
+	pidCuts->SetTMVAWeights("BDT", weightFile.Data());
 
 	switch(PIDcuts){
 		case kElectrons:
@@ -669,15 +682,6 @@ AliAnalysisCuts* LMEECutLib::GetPIDCuts(Int_t PIDcuts) {
 			break;
 		case kCutSet1:{
 			cutsPID->AddCut(AliDielectronPID::kTPC, AliPID::kElectron, -4., 4., 0., 100., kFALSE);
-			
-			AliDielectronTMVACuts* pidCuts = new AliDielectronTMVACuts("PIDCutsTMVA","PIDCutsTMVA");
-			pidCuts->AddTMVAInput("pt", AliDielectronVarManager::kPt);
-			pidCuts->AddTMVAInput("EsigTPC", AliDielectronVarManager::kTPCnSigmaEle);
-			pidCuts->AddTMVAInput("EsigITScorr", AliDielectronVarManager::kITSnSigmaEle);
-			pidCuts->AddTMVAInput("EsigTOFcorr", AliDielectronVarManager::kTOFnSigmaEle);
-			//pidCuts->AddTMVAInput("PsigTPC", AliDielectronVarManager::kTPCnSigmaPio);
-			pidCuts->AddTMVASpectator("pdg", AliDielectronVarManager::kPdgCode);
-			pidCuts->SetTMVAWeights("BDT", weightFile.Data());
 
 			Printf("Use TMVA cut value = %f",0.1);
 			pidCuts->SetTMVACutValue(0.1);
@@ -713,6 +717,154 @@ AliAnalysisCuts* LMEECutLib::GetPIDCuts(Int_t PIDcuts) {
 			return cuts;
 		case kPdgSel:
 			cuts->AddCut(PdgLepton);
+			return cuts;
+		case kPIDcut1:
+			cutsPID->AddCut(AliDielectronPID::kTPC, AliPID::kElectron, -4., 4., 0., 100., kFALSE);
+			Printf("Use TMVA cut value = %f", PIDcutRange[0]);
+			pidCuts->SetTMVACutValue(PIDcutRange[0]);
+			cuts->AddCut(cutsPID);
+			cuts->AddCut(pidCuts);
+			return cuts;
+		case kPIDcut2:
+			cutsPID->AddCut(AliDielectronPID::kTPC, AliPID::kElectron, -4., 4., 0., 100., kFALSE);
+			Printf("Use TMVA cut value = %f", PIDcutRange[1]);
+			pidCuts->SetTMVACutValue(PIDcutRange[1]);
+			cuts->AddCut(cutsPID);
+			cuts->AddCut(pidCuts);
+			return cuts;
+		case kPIDcut3:
+			cutsPID->AddCut(AliDielectronPID::kTPC, AliPID::kElectron, -4., 4., 0., 100., kFALSE);
+			Printf("Use TMVA cut value = %f", PIDcutRange[2]);
+			pidCuts->SetTMVACutValue(PIDcutRange[2]);
+			cuts->AddCut(cutsPID);
+			cuts->AddCut(pidCuts);
+			return cuts;
+		case kPIDcut4:
+			cutsPID->AddCut(AliDielectronPID::kTPC, AliPID::kElectron, -4., 4., 0., 100., kFALSE);
+			Printf("Use TMVA cut value = %f", PIDcutRange[3]);
+			pidCuts->SetTMVACutValue(PIDcutRange[3]);
+			cuts->AddCut(cutsPID);
+			cuts->AddCut(pidCuts);
+			return cuts;
+		case kPIDcut5:
+			cutsPID->AddCut(AliDielectronPID::kTPC, AliPID::kElectron, -4., 4., 0., 100., kFALSE);
+			Printf("Use TMVA cut value = %f", PIDcutRange[4]);
+			pidCuts->SetTMVACutValue(PIDcutRange[4]);
+			cuts->AddCut(cutsPID);
+			cuts->AddCut(pidCuts);
+			return cuts;
+		case kPIDcut6:
+			cutsPID->AddCut(AliDielectronPID::kTPC, AliPID::kElectron, -4., 4., 0., 100., kFALSE);
+			Printf("Use TMVA cut value = %f", PIDcutRange[5]);
+			pidCuts->SetTMVACutValue(PIDcutRange[5]);
+			cuts->AddCut(cutsPID);
+			cuts->AddCut(pidCuts);
+			return cuts;
+		case kPIDcut7:
+			cutsPID->AddCut(AliDielectronPID::kTPC, AliPID::kElectron, -4., 4., 0., 100., kFALSE);
+			Printf("Use TMVA cut value = %f", PIDcutRange[6]);
+			pidCuts->SetTMVACutValue(PIDcutRange[6]);
+			cuts->AddCut(cutsPID);
+			cuts->AddCut(pidCuts);
+			return cuts;
+		case kPIDcut8:
+			cutsPID->AddCut(AliDielectronPID::kTPC, AliPID::kElectron, -4., 4., 0., 100., kFALSE);
+			Printf("Use TMVA cut value = %f", PIDcutRange[7]);
+			pidCuts->SetTMVACutValue(PIDcutRange[7]);
+			cuts->AddCut(cutsPID);
+			cuts->AddCut(pidCuts);
+			return cuts;
+		case kPIDcut9:
+			cutsPID->AddCut(AliDielectronPID::kTPC, AliPID::kElectron, -4., 4., 0., 100., kFALSE);
+			Printf("Use TMVA cut value = %f", PIDcutRange[8]);
+			pidCuts->SetTMVACutValue(PIDcutRange[8]);
+			cuts->AddCut(cutsPID);
+			cuts->AddCut(pidCuts);
+			return cuts;
+		case kPIDcut10:
+			cutsPID->AddCut(AliDielectronPID::kTPC, AliPID::kElectron, -4., 4., 0., 100., kFALSE);
+			Printf("Use TMVA cut value = %f", PIDcutRange[9]);
+			pidCuts->SetTMVACutValue(PIDcutRange[9]);
+			cuts->AddCut(cutsPID);
+			cuts->AddCut(pidCuts);
+			return cuts;
+		case kPIDcut11:
+			cutsPID->AddCut(AliDielectronPID::kTPC, AliPID::kElectron, -4., 4., 0., 100., kFALSE);
+			Printf("Use TMVA cut value = %f", PIDcutRange[10]);
+			pidCuts->SetTMVACutValue(PIDcutRange[10]);
+			cuts->AddCut(cutsPID);
+			cuts->AddCut(pidCuts);
+			return cuts;
+		case kPIDcut12:
+			cutsPID->AddCut(AliDielectronPID::kTPC, AliPID::kElectron, -4., 4., 0., 100., kFALSE);
+			Printf("Use TMVA cut value = %f", PIDcutRange[11]);
+			pidCuts->SetTMVACutValue(PIDcutRange[11]);
+			cuts->AddCut(cutsPID);
+			cuts->AddCut(pidCuts);
+			return cuts;
+		case kPIDcut13:
+			cutsPID->AddCut(AliDielectronPID::kTPC, AliPID::kElectron, -4., 4., 0., 100., kFALSE);
+			Printf("Use TMVA cut value = %f", PIDcutRange[12]);
+			pidCuts->SetTMVACutValue(PIDcutRange[12]);
+			cuts->AddCut(cutsPID);
+			cuts->AddCut(pidCuts);
+			return cuts;
+		case kPIDcut14:
+			cutsPID->AddCut(AliDielectronPID::kTPC, AliPID::kElectron, -4., 4., 0., 100., kFALSE);
+			Printf("Use TMVA cut value = %f", PIDcutRange[13]);
+			pidCuts->SetTMVACutValue(PIDcutRange[13]);
+			cuts->AddCut(cutsPID);
+			cuts->AddCut(pidCuts);
+			return cuts;
+		case kPIDcut15:
+			cutsPID->AddCut(AliDielectronPID::kTPC, AliPID::kElectron, -4., 4., 0., 100., kFALSE);
+			Printf("Use TMVA cut value = %f", PIDcutRange[14]);
+			pidCuts->SetTMVACutValue(PIDcutRange[14]);
+			cuts->AddCut(cutsPID);
+			cuts->AddCut(pidCuts);
+			return cuts;
+		case kPIDcut16:
+			cutsPID->AddCut(AliDielectronPID::kTPC, AliPID::kElectron, -4., 4., 0., 100., kFALSE);
+			Printf("Use TMVA cut value = %f", PIDcutRange[15]);
+			pidCuts->SetTMVACutValue(PIDcutRange[15]);
+			cuts->AddCut(cutsPID);
+			cuts->AddCut(pidCuts);
+			return cuts;
+		case kPIDcut17:
+			cutsPID->AddCut(AliDielectronPID::kTPC, AliPID::kElectron, -4., 4., 0., 100., kFALSE);
+			Printf("Use TMVA cut value = %f", PIDcutRange[16]);
+			pidCuts->SetTMVACutValue(PIDcutRange[16]);
+			cuts->AddCut(cutsPID);
+			cuts->AddCut(pidCuts);
+			return cuts;
+		case kPIDcut18:
+			cutsPID->AddCut(AliDielectronPID::kTPC, AliPID::kElectron, -4., 4., 0., 100., kFALSE);
+			Printf("Use TMVA cut value = %f", PIDcutRange[17]);
+			pidCuts->SetTMVACutValue(PIDcutRange[17]);
+			cuts->AddCut(cutsPID);
+			cuts->AddCut(pidCuts);
+			return cuts;
+		case kPIDcut19:
+			cutsPID->AddCut(AliDielectronPID::kTPC, AliPID::kElectron, -4., 4., 0., 100., kFALSE);
+			Printf("Use TMVA cut value = %f", PIDcutRange[18]);
+			pidCuts->SetTMVACutValue(PIDcutRange[18]);
+			cuts->AddCut(cutsPID);
+			cuts->AddCut(pidCuts);
+			return cuts;
+		case kPIDcut20:
+			cutsPID->AddCut(AliDielectronPID::kTPC, AliPID::kElectron, -4., 4., 0., 100., kFALSE);
+			Printf("Use TMVA cut value = %f", PIDcutRange[19]);
+			pidCuts->SetTMVACutValue(PIDcutRange[19]);
+			cuts->AddCut(cutsPID);
+			cuts->AddCut(pidCuts);
+			return cuts;
+		case kTheoPID:
+			cutsPID->AddCut(AliDielectronPID::kTPC,AliPID::kPion,    -100. ,4. ,0.0, 100., kTRUE ,AliDielectronPID::kRequire    ,AliDielectronVarManager::kPt);
+			cutsPID->AddCut(AliDielectronPID::kTOF,AliPID::kElectron,  -3. ,3. ,0.0, 100., kFALSE,AliDielectronPID::kIfAvailable,AliDielectronVarManager::kPt);
+			cutsPID->AddCut(AliDielectronPID::kITS,AliPID::kElectron,  -4. ,1. ,0.0, 100., kFALSE,AliDielectronPID::kRequire    ,AliDielectronVarManager::kPt);
+			cutsPID->AddCut(AliDielectronPID::kTPC,AliPID::kElectron,  -1.5,3. ,0.0, 100., kFALSE,AliDielectronPID::kRequire    ,AliDielectronVarManager::kPt);
+			cuts->AddCut(cutsPID);
+			cuts->Print();
 			return cuts;
 		default:
 			std::cout << "No Analysis PID Cut defined " << std::endl;

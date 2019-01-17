@@ -154,6 +154,12 @@ AliAnalysisFilter* SetupTrackCutsAndSettings(TString cutDefinition)
 		anaFilter->SetName(cutDefinition);
 		anaFilter->Print();
 	}
+	else if(cutDefinition == "kTheoPID"){ // PID cut set from a Run 1 pPb analysis. Standard track cuts
+		std::cout << "Setting up Theo PID. Standard track cuts." << std::endl;
+		anaFilter->AddCuts(LMcutlib->GetTrackCuts(LMEECutLib::kCutSet1, LMEECutLib::kTheoPID));
+		anaFilter->SetName(cutDefinition);
+		anaFilter->Print();
+	}
 	else{
 		std::cout << "Undefined cut definition...." << std::endl;
 		return 0x0;
