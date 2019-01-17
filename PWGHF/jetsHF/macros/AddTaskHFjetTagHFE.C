@@ -162,6 +162,7 @@ AliAnalysisHFjetTagHFE* AddTaskHFjetTagHFE(
       if(jetradius==0.3)jetContMC = jetTask->AddJetContainer("JetMC_AKTChargedR030_mcparticles_pT0150_pt_scheme");
       if(jetradius==0.2)jetContMC = jetTask->AddJetContainer("JetMC_AKTChargedR020_mcparticles_pT0150_pt_scheme");
       if(jetradius==0.4)jetContMC = jetTask->AddJetContainer("JetMC_AKTChargedR040_mcparticles_pT0150_pt_scheme");
+      if(jetradius==0.6)jetContMC = jetTask->AddJetContainer("JetMC_AKTChargedR060_mcparticles_pT0150_pt_scheme");
      
       if (jetContMC) {
       //jetCont->SetRhoName(nrho);
