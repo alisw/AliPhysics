@@ -144,8 +144,8 @@ class AliAnalysisTaskHighPtDeDx : public AliAnalysisTaskSE {
   Double_t     fMinPt;              // Min pt - for histogram limits
   Double_t     fMinPtV0;            // Min pt - for histogram limits - V0s / strangeness part
   Double_t     fLowPtFraction;      // Fraction of tracks below min pt to keep
-  Double_t     fCosPACut;              // Min cosPA - for histogram limits
-  Double_t     fDecayRCut;              // Min decay radius
+  Double_t     fCosPACut;           // Min cosPA - for histogram limits
+  Double_t     fDecayRCut;          // Min decay radius
   Double_t     fMassCut;            // Reject all v0 with all dmass > masscut!
   Float_t      fMinCent; //minimum centrality
   Float_t      fMaxCent; //maximum centrality
@@ -159,6 +159,10 @@ class AliAnalysisTaskHighPtDeDx : public AliAnalysisTaskSE {
   Float_t      fZvtxMC;             // z vertex MC (truth)
   Int_t        fRun;                // run no
   ULong64_t    fEventId;            // unique event id
+
+  Int_t        fTriggerInt;         // 0 = kMB, 1 = kCent, 2 = kSemiCent
+  Int_t        fV0Finder;           // 0 = oldFinder, 1 = newFinder
+  Int_t        fCentFramework;      // 0 = AliCentrality, 1 = AliMultSelection
     
   //
   // Output objects

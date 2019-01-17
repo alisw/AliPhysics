@@ -27,6 +27,10 @@
   * 13 aug 2018: fill tree with AliAODEvent::GetNumberOfTracks() so I can plot is vs centrality
                  and: switch to use AliMultSelection instead of AliCentrality: CentFramework(CentFrameworkAliCen) kTRUE: use AliCentrality, kFALSE: use AliMultSelection
   * 31 oct 2018: fill tree with fEvent->refMult
+  * 17 jan 2019: add x-check histos to get quick overview of which: finder, calib, trig
+                 fTriggerInt;         // 0 = kMB, 1 = kCent, 2 = kSemiCent
+                 fV0Finder;           // 0 = oldFinder, 1 = newFinder
+                 fCentFramework;      // 0 = AliCentrality, 1 = AliMultSelection
 
   Remiders:
   * For pp: remove pile up thing
@@ -109,7 +113,7 @@ AliAnalysisTaskHighPtDeDx::AliAnalysisTaskHighPtDeDx():
   fRandom(0x0),
   fEvent(0x0),
   fTrackArrayGlobalPar(0x0),
-  fV0ArrayGlobalPar(0x0), //
+  fV0ArrayGlobalPar(0x0), 
   fTrackArrayMC(0x0),
   fVZEROArray(0x0),
   ftrigBit1(0x0),
@@ -135,6 +139,9 @@ AliAnalysisTaskHighPtDeDx::AliAnalysisTaskHighPtDeDx():
   fZvtxMC(-999),
   fRun(-999),
   fEventId(-999),
+  fTriggerInt(-999),
+  fV0Finder(-999),
+  fCentFramework(-999),
   fListOfObjects(0), 
   fEvents(0x0), fVtx(0x0), fVtxMC(0x0), fVtxBeforeCuts(0x0), fVtxAfterCuts(0x0),
   fn1(0),
@@ -192,6 +199,9 @@ AliAnalysisTaskHighPtDeDx::AliAnalysisTaskHighPtDeDx(const char *name):
   fZvtxMC(-999),
   fRun(-999),
   fEventId(-999),
+  fTriggerInt(-999),
+  fV0Finder(-999),
+  fCentFramework(-999),
   fListOfObjects(0), 
   fEvents(0x0), fVtx(0x0), fVtxMC(0x0), fVtxBeforeCuts(0x0), fVtxAfterCuts(0x0),
   fn1(0),
@@ -400,6 +410,22 @@ void AliAnalysisTaskHighPtDeDx::UserExec(Option_t *)
     fTriggeredEventMB += 2;  
     fn2->Fill(1);
   }
+  
+  //Addition to trigger x-check: fTriggerInt; // 0 = kMB, 1 = kCent, 2 = kSemiCent
+  if(((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))
+     ->IsEventSelected() & AliVEvent::kMB){
+    fTriggerInt = 0; 
+  }
+  if(((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))
+     ->IsEventSelected() & AliVEvent::kCentral){
+    fTriggerInt = 1; 
+  }
+  if(((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))
+     ->IsEventSelected() & AliVEvent::kSemiCentral){
+    fTriggerInt = 2; 
+  }
+
+  
   //  //_____________ end nominal _______________________
   
 
@@ -576,11 +602,13 @@ void AliAnalysisTaskHighPtDeDx::UserExec(Option_t *)
       
       if(fAnalysisPbPb){
 	if(fCentFrameworkAliCen){ // CentFramework in AliCentrality
-	  
+	  fCentFramework = 0; // x-check histo: 0 = AliCentrality, 1 = AliMultSelection
+	    
 	  AliCentrality *centObject =  fAOD->GetCentrality();
 	  if(centObject) centralityV0M = centObject->GetCentralityPercentile("V0M"); 
 	  
 	}else{ // CentFramework in AliMultSelection
+	  fCentFramework = 1; // x-check histo: 0 = AliCentrality, 1 = AliMultSelection
 	  
 	  AliMultSelection* centObject = 0x0; 
 	  centObject = (AliMultSelection*)fAOD->FindListObject("MultSelection");
@@ -607,10 +635,13 @@ void AliAnalysisTaskHighPtDeDx::UserExec(Option_t *)
     else ProcessMCTruthAOD(); // AOD
   }
   
-  fEvent->process = fMcProcessType;
-  fEvent->trig    = fTriggeredEventMB;
-  fEvent->zvtxMC  = fZvtxMC;
-  fEvent->cent    = centralityV0M;
+  fEvent->process       = fMcProcessType;
+  fEvent->trig          = fTriggeredEventMB;
+  fEvent->triggerInt    = fTriggerInt;
+  fEvent->zvtxMC        = fZvtxMC;
+  fEvent->cent          = centralityV0M;
+  fEvent->centFramework = fCentFramework;
+
   //fEvent->centV0A      = centralityV0A;
   //fEvent->centZNA      = centralityZNA;
   //fEvent->centCL1      = centralityCL1;

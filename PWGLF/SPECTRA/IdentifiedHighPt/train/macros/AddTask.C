@@ -1,8 +1,5 @@
 /*
   Last update: 
-  * 20 aug 2015: clean up
-  * 22 aug 2015: match pre defined output
-  * [...]
   * 05 jul 2018: change type to AOD for heavy ion
   * 10 jul 2018: clean-up
 
@@ -31,7 +28,6 @@ AliAnalysisTask* AddTask(Bool_t AnalysisMC, const Char_t* taskname, Int_t typeru
     return NULL;
   }  
   
-
   //
   // Add track filters, with Golden Cuts
   //
@@ -45,10 +41,9 @@ AliAnalysisTask* AddTask(Bool_t AnalysisMC, const Char_t* taskname, Int_t typeru
   esdTrackCutsGolden->SetMaxFractionSharedTPCClusters(0.4);
   esdTrackCutsGolden->SetMaxChi2TPCConstrainedGlobal(36);
   esdTrackCutsGolden->SetMaxDCAToVertexXY(3.0);
-
+  
   trackFilterGolden->AddCuts(esdTrackCutsGolden);
-
-
+  
   //old cuts without golden cut
   AliAnalysisFilter* trackFilter0 = new AliAnalysisFilter("trackFilter");
   Bool_t clusterCut = 0;
@@ -82,7 +77,6 @@ AliAnalysisTask* AddTask(Bool_t AnalysisMC, const Char_t* taskname, Int_t typeru
   esdTrackCutsL0->SetMaxChi2TPCConstrainedGlobal(1e10);
 
   trackFilter0->AddCuts(esdTrackCutsL0);
-
   
   AliAnalysisFilter* trackFilterTPC = new AliAnalysisFilter("trackFilterTPC");
   AliESDtrackCuts* esdTrackCutsTPC = AliESDtrackCuts::GetStandardTPCOnlyTrackCuts();
