@@ -26,6 +26,13 @@
 #include <TList.h>
 #include <TLorentzVector.h>
 #include <TNamed.h>
+#include <TGrid.h>
+#include <TFile.h>
+#include <TSystem.h>
+
+#if ROOT_VERSION_CODE >= ROOT_VERSION(6,0,0)
+  #include <TPython.h>
+#endif
 
 #include "AliMCEvent.h"
 #include "AliESDVertex.h"
@@ -155,7 +162,7 @@ Bool_t AliEmcalJetTree::AddJetToTree(AliEmcalJet* jet, Float_t vertexX, Float_t 
   if(fSaveEventProperties)
   {
     fBuffer_Event_BackgroundDensity               = fJetContainer->GetRhoVal();
-    fBuffer_Event_BackgroundDensityMass           = jet->M()-jet->GetShapeProperties()->GetFirstOrderSubtracted();
+    fBuffer_Event_BackgroundDensityMass           = jet->M()-jet->GetShapeProperties()->GetSecondOrderSubtracted();
     fBuffer_Event_Vertex_X                        = vertexX;
     fBuffer_Event_Vertex_Y                        = vertexY;
     fBuffer_Event_Vertex_Z                        = vertexZ;
@@ -256,7 +263,7 @@ Bool_t AliEmcalJetTree::AddJetToTree(AliEmcalJet* jet, Float_t vertexX, Float_t 
 
   // Set jet shape observables
   if(fJetContainer->GetRhoMassVal())
-    fBuffer_Shape_Mass  = jet->GetShapeProperties()->GetFirstOrderSubtracted();
+    fBuffer_Shape_Mass  = jet->GetShapeProperties()->GetSecondOrderSubtracted();
   else
     fBuffer_Shape_Mass  = jet->M();
 
@@ -422,6 +429,9 @@ void AliEmcalJetTree::InitializeTree()
 //________________________________________________________________________
 AliAnalysisTaskJetExtractor::AliAnalysisTaskJetExtractor() :
   AliAnalysisTaskEmcalJet("AliAnalysisTaskJetExtractor", kTRUE),
+  #if ROOT_VERSION_CODE >= ROOT_VERSION(6,0,0)
+  fPythonCLI(),
+  #endif
   fJetTree(0),
   fVtxTagger(0),
   fHadronMatchingRadius(0.4),
@@ -429,6 +439,8 @@ AliAnalysisTaskJetExtractor::AliAnalysisTaskJetExtractor() :
   fSecondaryVertexMaxChi2(1e10),
   fSecondaryVertexMaxDispersion(0.05),
   fCalculateSecondaryVertices(kTRUE),
+  fCalculateModelBackground(kFALSE),
+  fBackgroundModelFileName(),
   fVertexerCuts(0),
   fSetEmcalJetFlavour(0),
   fEventPercentage(1.0),
@@ -444,6 +456,7 @@ AliAnalysisTaskJetExtractor::AliAnalysisTaskJetExtractor() :
   fJetsCont(0),
   fTracksCont(0),
   fClustersCont(0),
+  fJetOutputArray(0),
   fTruthParticleArray(0),
   fTruthJetsArrayName(""),
   fTruthJetsRhoName(""),
@@ -471,6 +484,9 @@ AliAnalysisTaskJetExtractor::AliAnalysisTaskJetExtractor() :
 //________________________________________________________________________
 AliAnalysisTaskJetExtractor::AliAnalysisTaskJetExtractor(const char *name) :
   AliAnalysisTaskEmcalJet(name, kTRUE),
+  #if ROOT_VERSION_CODE >= ROOT_VERSION(6,0,0)
+  fPythonCLI(),
+  #endif
   fJetTree(0),
   fVtxTagger(0),
   fHadronMatchingRadius(0.4),
@@ -478,6 +494,8 @@ AliAnalysisTaskJetExtractor::AliAnalysisTaskJetExtractor(const char *name) :
   fSecondaryVertexMaxChi2(1e10),
   fSecondaryVertexMaxDispersion(0.05),
   fCalculateSecondaryVertices(kTRUE),
+  fCalculateModelBackground(kFALSE),
+  fBackgroundModelFileName(),
   fVertexerCuts(0),
   fSetEmcalJetFlavour(0),
   fEventPercentage(1.0),
@@ -493,6 +511,7 @@ AliAnalysisTaskJetExtractor::AliAnalysisTaskJetExtractor(const char *name) :
   fJetsCont(0),
   fTracksCont(0),
   fClustersCont(0),
+  fJetOutputArray(0),
   fTruthParticleArray(0),
   fTruthJetsArrayName(""),
   fTruthJetsRhoName(""),
@@ -632,6 +651,33 @@ void AliAnalysisTaskJetExtractor::ExecOnce()
     }
   }
 
+  // ### Model background
+  if (fCalculateModelBackground)
+  {
+    // # Prepare PYTHON cmd, load estimator
+    #if ROOT_VERSION_CODE >= ROOT_VERSION(6,0,0)
+      TGrid::Connect("alien://");
+
+      if (gSystem->AccessPathName(fBackgroundModelFileName.Data()))
+        AliFatal(Form("Background model %s does not exist!", fBackgroundModelFileName.Data()));
+      TFile::Cp(fBackgroundModelFileName.Data(), "./Model.pkl");
+
+      fPythonCLI = new TPython();
+      fPythonCLI->Exec("import sklearn, numpy");
+      fPythonCLI->Exec("estimator = sklearn.externals.joblib.load(\"./Model.pkl\")");
+    #endif
+
+    if (!(InputEvent()->FindListObject(Form("%s_RhoMVA", fJetsCont->GetArrayName().Data())))) {
+      fJetOutputArray = new TClonesArray("AliEmcalJet");
+      fJetOutputArray->SetName(Form("%s_RhoMVA", fJetsCont->GetArrayName().Data()));
+      InputEvent()->AddObject(fJetOutputArray);
+    }
+    else {
+      AliFatal(Form("Jet output array with name %s_RhoMVA already in event! Returning", fJetsCont->GetArrayName().Data()));
+      return;
+    }
+  }
+
   PrintConfig();
 
 }
@@ -690,6 +736,7 @@ Bool_t AliAnalysisTaskJetExtractor::Run()
 
   // ################################### MAIN JET LOOP
   fJetsCont->ResetCurrentID();
+  Int_t jetCount = 0;
   while(AliEmcalJet *jet = fJetsCont->GetNextAcceptJet())
   {
     FillJetControlHistograms(jet);
@@ -750,6 +797,16 @@ Bool_t AliAnalysisTaskJetExtractor::Run()
         triggerTracks_dPhi[i] = -triggerTracks_dPhi[i];
     }
 
+    if(fCalculateModelBackground)
+    {
+      Float_t pt_ML = 0;
+      Float_t mass_ML = 0;
+      GetPtAndMassFromModel(jet, pt_ML, mass_ML);
+      AliEmcalJet *outJet = new ((*fJetOutputArray)[jetCount]) AliEmcalJet(pt_ML, jet->Eta(), jet->Phi(), mass_ML);
+      outJet->SetLabel(jet->Label());
+      outJet->SetArea(jet->Area());
+    }
+
     // Fill jet to tree
     Bool_t accepted = fJetTree->AddJetToTree(jet, vtxX, vtxY, vtxZ, fCent, eventID, InputEvent()->GetMagneticField(),
               currentJetType_PM,currentJetType_HM,currentJetType_IC,matchDistance,matchedJetPt,matchedJetMass,truePtFraction,fPtHard,fEventWeight,fImpactParameter,
@@ -760,6 +817,7 @@ Bool_t AliAnalysisTaskJetExtractor::Run()
 
     if(accepted)
       FillHistogram("hJetPtExtracted", jet->Pt() - fJetsCont->GetRhoVal()*jet->Area(), fCent);
+    jetCount++;
   }
 
   // ################################### PARTICLE PROPERTIES
@@ -768,6 +826,41 @@ Bool_t AliAnalysisTaskJetExtractor::Run()
     FillTrackControlHistograms(track);
 
   return kTRUE;
+}
+
+//________________________________________________________________________
+void AliAnalysisTaskJetExtractor::GetPtAndMassFromModel(AliEmcalJet* jet, Float_t& pt_ML, Float_t& mass_ML)
+{
+  // ####### Calculate inference input parameters
+  Double_t constPtMean = 0;
+  Double_t constPtMedian = 0;
+  std::vector<Int_t> index_sorted_list = jet->GetPtSortedTrackConstituentIndexes(fJetsCont->GetParticleContainer()->GetArray());
+  Int_t     numConst = index_sorted_list.size();
+  Double_t* constPts = new Double_t[TMath::Max(Int_t(index_sorted_list.size()), 10)];
+
+  // Calculate mean, median of constituents
+  for(Int_t i = 0; i < numConst; i++)
+  {
+    AliVParticle* particle = static_cast<AliVParticle*>(jet->TrackAt(index_sorted_list.at(i), fJetsCont->GetParticleContainer()->GetArray()));
+    constPtMean += particle->Pt();
+    constPts[i] = particle->Pt();
+  }
+  if(numConst)
+  {
+    constPtMean   /= numConst;
+    constPtMedian = TMath::Median(numConst, constPts);
+  }
+
+  // ####### Run Python script that does inference on jet
+  #if ROOT_VERSION_CODE >= ROOT_VERSION(6,0,0)
+  fPythonCLI->Exec(Form("data_inference = numpy.array([[%E, %E, %E, %E, %E, %E, %E, %E, %E, %E, %E, %E, %E, %E, %E, %E, %E, %E]])", jet->Pt() - fJetsCont->GetRhoVal()*jet->Area(), (Double_t)numConst, jet->GetShapeProperties()->GetSecondOrderSubtracted(), fJetsCont->GetRhoVal(), jet->M()-jet->GetShapeProperties()->GetSecondOrderSubtracted(), jet->Area(), constPtMean, constPtMedian, constPts[0], constPts[1], constPts[2], constPts[3], constPts[4], constPts[5], constPts[6], constPts[7], constPts[8], constPts[9]));
+  fPythonCLI->Exec("result = estimator.predict(data_inference)");
+  pt_ML   = fPythonCLI->Eval("result[0][0]");
+  mass_ML = fPythonCLI->Eval("result[0][1]");
+  #endif
+
+  delete[] constPts;
+
 }
 
 //________________________________________________________________________
@@ -900,7 +993,7 @@ Double_t AliAnalysisTaskJetExtractor::GetMatchedTrueJetObservables(AliEmcalJet* 
           bestMatchDeltaR = deltaR;
           matchedJetPt   = truthJet->Pt() - truthJet->Area()* trueRho;
           if(rhoMass)
-            matchedJetMass = truthJet->GetShapeProperties()->GetFirstOrderSubtracted();
+            matchedJetMass = truthJet->GetShapeProperties()->GetSecondOrderSubtracted();
           else
             matchedJetMass = truthJet->M();
         }
