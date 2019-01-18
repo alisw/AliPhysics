@@ -45,6 +45,7 @@ ClassImp(AliAnalysisTaskSigma0Femto)
       fHistCentralityProfileBefore(nullptr),
       fHistCentralityProfileAfter(nullptr),
       fHistCentralityProfileCoarseAfter(nullptr),
+      fHistMultiplicityRef08(nullptr),
       fHistTriggerBefore(nullptr),
       fHistTriggerAfter(nullptr),
       fHistMultiplicity(nullptr),
@@ -98,6 +99,7 @@ AliAnalysisTaskSigma0Femto::AliAnalysisTaskSigma0Femto(const char *name)
       fHistCentralityProfileBefore(nullptr),
       fHistCentralityProfileAfter(nullptr),
       fHistCentralityProfileCoarseAfter(nullptr),
+      fHistMultiplicityRef08(nullptr),
       fHistTriggerBefore(nullptr),
       fHistTriggerAfter(nullptr),
       fHistMultiplicity(nullptr),
@@ -401,7 +403,12 @@ bool AliAnalysisTaskSigma0Femto::AcceptEventRun2(AliVEvent *event) {
           ->EventIsSelected(event, static_cast<AliMCEvent *>(fMCEvent));
   if (!isConversionEventSelected) return false;
 
-  if (!fIsLightweight) fHistCentralityProfileCoarseAfter->Fill(lPercentile);
+  if (!fIsLightweight) {
+    fHistCentralityProfileCoarseAfter->Fill(lPercentile);
+    fHistMultiplicityRef08->Fill(AliESDtrackCuts::GetReferenceMultiplicity(
+        static_cast<AliESDEvent *>(event), AliESDtrackCuts::kTrackletsITSTPC,
+        0.8, 0));
+  }
 
   fHistMultiplicity->Fill(
       AliSigma0PhotonMotherCuts::GetMultiplicityBin(lPercentile, fMultMode));
@@ -549,6 +556,11 @@ void AliAnalysisTaskSigma0Femto::UserCreateOutputObjects() {
     fQA->Add(fHistCentralityProfileBefore);
     fQA->Add(fHistCentralityProfileAfter);
     fQA->Add(fHistCentralityProfileCoarseAfter);
+
+    fHistMultiplicityRef08 =
+        new TH1F("fHistMultiplicityRef08", "; Multiplicity Ref08; Entries",
+                 1000, 0, 1000);
+    fQA->Add(fHistMultiplicityRef08);
 
     fHistTriggerBefore = new TH1F("fHistTriggerBefore", ";;Entries", 50, 0, 50);
     fHistTriggerBefore->GetXaxis()->LabelsOption("u");

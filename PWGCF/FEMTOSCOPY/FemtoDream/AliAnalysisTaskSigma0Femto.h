@@ -119,6 +119,7 @@ class AliAnalysisTaskSigma0Femto : public AliAnalysisTaskSE {
   TH1F *fHistCentralityProfileBefore;                      //!
   TH1F *fHistCentralityProfileAfter;                       //!
   TH1F *fHistCentralityProfileCoarseAfter;                 //!
+  TH1F* fHistMultiplicityRef08;                            //!
   TH1F *fHistTriggerBefore;                                //!
   TH1F *fHistTriggerAfter;                                 //!
   TH1I *fHistMultiplicity;                                 //!
