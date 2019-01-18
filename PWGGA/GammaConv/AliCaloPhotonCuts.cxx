@@ -1768,7 +1768,7 @@ Bool_t AliCaloPhotonCuts::ClusterIsSelectedMC(TParticle *particle,AliMCEvent *mc
       //check if outside of EMC and DMC phi acceptance
       if ( (particle->Phi() < fMinPhiCut || particle->Phi() > fMaxPhiCut) && (particle->Phi() < fMinPhiCutDMC || particle->Phi() > fMaxPhiCutDMC) ) return kFALSE;
       //if in DMC phi range, reject clusters in hole
-      if ( particle->Phi() > fMinPhiCutDMC && particle->Phi() < fMaxPhiCutDMC && particle->Eta() < fMaxEtaInnerEdge && particle->Eta() > fMinEtaInnerEdge ) return kFALSE;
+      // if ( particle->Phi() > fMinPhiCutDMC && particle->Phi() < fMaxPhiCutDMC && particle->Eta() < fMaxEtaInnerEdge && particle->Eta() > fMinEtaInnerEdge ) return kFALSE;
     } else {
       if ( particle->Eta() < fMinEtaCut || particle->Eta() > fMaxEtaCut ) return kFALSE;
       if ( particle->Phi() < fMinPhiCut || particle->Phi() > fMaxPhiCut ) return kFALSE;
@@ -1797,7 +1797,7 @@ Bool_t AliCaloPhotonCuts::ClusterIsSelectedElecMC(TParticle *particle,AliMCEvent
       //check if outside of EMC and DMC phi acceptance
       if ( (particle->Phi() < fMinPhiCut || particle->Phi() > fMaxPhiCut) && (particle->Phi() < fMinPhiCutDMC || particle->Phi() > fMaxPhiCutDMC) ) return kFALSE;
       //if in DMC phi range, reject clusters in hole
-      if ( particle->Phi() > fMinPhiCutDMC && particle->Phi() < fMaxPhiCutDMC && particle->Eta() < fMaxEtaInnerEdge && particle->Eta() > fMinEtaInnerEdge ) return kFALSE;
+      // if ( particle->Phi() > fMinPhiCutDMC && particle->Phi() < fMaxPhiCutDMC && particle->Eta() < fMaxEtaInnerEdge && particle->Eta() > fMinEtaInnerEdge ) return kFALSE;
     } else {
       if ( particle->Eta() < fMinEtaCut || particle->Eta() > fMaxEtaCut ) return kFALSE;
       if ( particle->Phi() < fMinPhiCut || particle->Phi() > fMaxPhiCut ) return kFALSE;
@@ -1826,7 +1826,7 @@ Bool_t AliCaloPhotonCuts::ClusterIsSelectedElecAODMC(AliAODMCParticle *particle,
       //check if outside of EMC and DMC phi acceptance
       if ( (particle->Phi() < fMinPhiCut || particle->Phi() > fMaxPhiCut) && (particle->Phi() < fMinPhiCutDMC || particle->Phi() > fMaxPhiCutDMC) ) return kFALSE;
       //if in DMC phi range, reject clusters in hole
-      if ( particle->Phi() > fMinPhiCutDMC && particle->Phi() < fMaxPhiCutDMC && particle->Eta() < fMaxEtaInnerEdge && particle->Eta() > fMinEtaInnerEdge ) return kFALSE;
+      // if ( particle->Phi() > fMinPhiCutDMC && particle->Phi() < fMaxPhiCutDMC && particle->Eta() < fMaxEtaInnerEdge && particle->Eta() > fMinEtaInnerEdge ) return kFALSE;
     } else {
       if ( particle->Eta() < fMinEtaCut || particle->Eta() > fMaxEtaCut ) return kFALSE;
       if ( particle->Phi() < fMinPhiCut || particle->Phi() > fMaxPhiCut ) return kFALSE;
@@ -1854,7 +1854,7 @@ Bool_t AliCaloPhotonCuts::ClusterIsSelectedAODMC(AliAODMCParticle *particle,TClo
       //check if outside of EMC and DMC phi acceptance
       if ( (particle->Phi() < fMinPhiCut || particle->Phi() > fMaxPhiCut) && (particle->Phi() < fMinPhiCutDMC || particle->Phi() > fMaxPhiCutDMC) ) return kFALSE;
       //if in DMC phi range, reject clusters in hole
-      if ( particle->Phi() > fMinPhiCutDMC && particle->Phi() < fMaxPhiCutDMC && particle->Eta() < fMaxEtaInnerEdge && particle->Eta() > fMinEtaInnerEdge ) return kFALSE;
+      // if ( particle->Phi() > fMinPhiCutDMC && particle->Phi() < fMaxPhiCutDMC && particle->Eta() < fMaxEtaInnerEdge && particle->Eta() > fMinEtaInnerEdge ) return kFALSE;
     } else {
       if ( particle->Eta() < fMinEtaCut || particle->Eta() > fMaxEtaCut ) return kFALSE;
       if ( particle->Phi() < fMinPhiCut || particle->Phi() > fMaxPhiCut ) return kFALSE;
@@ -4154,8 +4154,18 @@ Bool_t AliCaloPhotonCuts::SetMaxPhiCut(Int_t maxPhi)
     break;
   case 7:
     if( !fUsePhiCut ) fUsePhiCut=1;
-    fMaxPhiCut = 3.15;//EMCal acceptance
+    fMaxPhiCut = 3.15;//EMCal acceptance Run2 w/o stripe
     fMaxPhiCutDMC = 5.5658;//DCal acceptance
+    break;
+  case 8:
+    if( !fUsePhiCut ) fUsePhiCut=1;
+    fMaxPhiCut = 3.28;//EMCal acceptance Run2 with stripe (w/o stripe 3.15)
+    fMaxPhiCutDMC = 5.5658;//DCal acceptance
+    break;
+  case 9:
+    if( !fUsePhiCut ) fUsePhiCut=1;
+    fMaxPhiCut = 3.28;//EMCal acceptance Run2 w/o stripe
+    fMaxPhiCutDMC = 5.70;//DCal acceptance
     break;
 
   default:
