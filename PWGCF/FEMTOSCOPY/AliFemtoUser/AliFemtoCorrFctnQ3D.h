@@ -219,7 +219,7 @@ protected:
     double qout, qside, qlong;
     Frame_t::GetQ(pair, qout, qside, qlong);
 
-    Int_t bin = dest.GetBin(qout, qlong, qside);
+    Int_t bin = dest.FindBin(qout, qlong, qside);
     if (!(dest.IsBinOverflow(bin) or dest.IsBinUnderflow(bin))) {
       dest.Fill(qout, qside, qlong);
       qinv.Fill(qout, qside, qlong, pair.QInv());
@@ -285,16 +285,16 @@ AliFemtoCorrFctnQ3D<T>::AliFemtoCorrFctnQ3D(const char* title,
 #else
 
   fNumeratorW = new HIST_TYPE(simple_name ? "NumWqinv" : (TString("NumWqinv") + title).Data(),
-                         "Q_{inv} Weighted Numerator " + hist_title,
-                         nbins, -QHi, QHi,
-                         nbins, -QHi, QHi,
-                         nbins, -QHi, QHi);
+                              "Q_{inv} Weighted Numerator " + hist_title,
+                              nbins, -QHi, QHi,
+                              nbins, -QHi, QHi,
+                              nbins, -QHi, QHi);
 
   fDenominatorW = new HIST_TYPE(simple_name ? "DenWqinv" : (TString("DenWqinv") + title).Data(),
-                           "Q_{inv} Weighted Denominator " + hist_title,
-                           nbins, -QHi, QHi,
-                           nbins, -QHi, QHi,
-                           nbins, -QHi, QHi);
+                                "Q_{inv} Weighted Denominator " + hist_title,
+                                nbins, -QHi, QHi,
+                                nbins, -QHi, QHi,
+                                nbins, -QHi, QHi);
 
   // note: non-weighted histograms do not need Sumw2 - save space and time by not enabling
   fNumeratorW->Sumw2();
