@@ -15,7 +15,6 @@ AliAnalysisTaskSE *AddTaskSigma0Femto(bool isMC = false,
 
   // ================== GetInputEventHandler =============================
   AliVEventHandler *inputHandler = mgr->GetInputEventHandler();
-
   AliAnalysisDataContainer *cinput = mgr->GetCommonInputContainer();
 
   //=========  Set Cutnumber for V0Reader ================================
@@ -24,9 +23,11 @@ AliAnalysisTaskSE *AddTaskSigma0Femto(bool isMC = false,
   TString cutnumberEvent = "00000000";
   TString periodNameV0Reader = "";
   Bool_t enableV0findingEffi = kFALSE;
+  Bool_t fillHistos = kTRUE;
   Bool_t runLightOutput = kFALSE;
   if (suffix != "0" && suffix != "999") {
     runLightOutput = kTRUE;
+    fillHistos = kFALSE;
   }
   if (suffix == "23") {
     // eta < 0.8
@@ -75,7 +76,7 @@ AliAnalysisTaskSE *AddTaskSigma0Femto(bool isMC = false,
   //========= Add V0 Reader to  ANALYSIS manager if not yet existent =====
   TString V0ReaderName =
       Form("V0ReaderV1_%s_%s", cutnumberEvent.Data(), cutnumberPhoton.Data());
-  AliConvEventCuts *fEventCuts = NULL;
+  AliConvEventCuts *fEventCuts = nullptr;
 
   if (!(AliV0ReaderV1 *)mgr->GetTask(V0ReaderName.Data())) {
     AliV0ReaderV1 *fV0ReaderV1 = new AliV0ReaderV1(V0ReaderName.Data());
@@ -97,10 +98,10 @@ AliAnalysisTaskSE *AddTaskSigma0Femto(bool isMC = false,
       fEventCuts->SetPreSelectionCutFlag(kTRUE);
       fEventCuts->SetV0ReaderName(V0ReaderName);
       fEventCuts->SetLightOutput(runLightOutput);
+      fEventCuts->SetFillCutHistograms("", fillHistos);
       if (periodNameV0Reader.CompareTo("") != 0)
         fEventCuts->SetPeriodEnum(periodNameV0Reader);
       fV0ReaderV1->SetEventCuts(fEventCuts);
-      fEventCuts->SetFillCutHistograms("", kTRUE);
     }
 
     // Set AnalysisCut Number
@@ -112,14 +113,12 @@ AliAnalysisTaskSE *AddTaskSigma0Femto(bool isMC = false,
       fCuts->SetIsHeavyIon(isHeavyIon);
       fCuts->SetV0ReaderName(V0ReaderName);
       fCuts->SetLightOutput(runLightOutput);
+      fCuts->SetFillCutHistograms("", fillHistos);
       if (fCuts->InitializeCutsFromCutString(cutnumberPhoton.Data())) {
         fV0ReaderV1->SetConversionCuts(fCuts);
-        fCuts->SetFillCutHistograms("", kTRUE);
       }
     }
-
     fV0ReaderV1->Init();
-
     AliLog::SetGlobalLogLevel(AliLog::kFatal);
 
     // connect input V0Reader
