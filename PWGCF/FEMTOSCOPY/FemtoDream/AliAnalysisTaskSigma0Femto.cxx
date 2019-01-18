@@ -162,10 +162,11 @@ void AliAnalysisTaskSigma0Femto::UserExec(Option_t * /*option*/) {
   antiParticles.clear();
   const AliESDEvent *evt = static_cast<AliESDEvent *>(fInputEvent);
   for (int iTrack = 0; iTrack < evt->GetNumberOfTracks(); ++iTrack) {
-    AliESDtrack *track = static_cast<AliESDtrack *>(evt->GetTrack(iTrack));
-    fProtonTrack->SetTrack(track, fMCEvent,
+    fProtonTrack->SetTrack(static_cast<AliESDtrack *>(evt->GetTrack(iTrack)),
+                           fMCEvent,
                            AliESDtrackCuts::GetReferenceMultiplicity(
-                               evt, AliESDtrackCuts::kTrackletsITSTPC, 0.8, 0));
+                               evt, AliESDtrackCuts::kTrackletsITSTPC, 0.8, 0),
+                           false);
     if (fTrackCutsPartProton->isSelected(fProtonTrack)) {
       particles.push_back(*fProtonTrack);
     }
@@ -502,13 +503,6 @@ void AliAnalysisTaskSigma0Femto::UserCreateOutputObjects() {
     if (fV0Reader->GetConversionCuts() &&
         fV0Reader->GetConversionCuts()->GetCutHistograms()) {
       fOutputContainer->Add(fV0Reader->GetConversionCuts()->GetCutHistograms());
-    }
-    if (fV0Reader->GetProduceV0FindingEfficiency() &&
-        fV0Reader->GetV0FindingEfficiencyHistograms()) {
-      fOutputContainer->Add(fV0Reader->GetV0FindingEfficiencyHistograms());
-    }
-    if (fV0Reader->GetProduceImpactParamHistograms()) {
-      fOutputContainer->Add(fV0Reader->GetImpactParamHistograms());
     }
   }
 
