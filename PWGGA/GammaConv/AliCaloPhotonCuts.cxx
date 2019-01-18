@@ -2242,7 +2242,7 @@ Bool_t AliCaloPhotonCuts::ClusterQualityCuts(AliVCluster* cluster, AliVEvent *ev
 
   // Histos after Cuts
 
-  if(fHistClusterEtavsPhiAfterQA) fHistClusterEtavsPhiAfterQA->Fill(phiCluster, etaCluster, weight);
+  if(fHistClusterEtavsPhiAfterQA && cluster->E()>0. ) fHistClusterEtavsPhiAfterQA->Fill(phiCluster, etaCluster, weight);
   if(fHistClusterTimevsEAfterQA) fHistClusterTimevsEAfterQA->Fill(cluster->GetTOF(), cluster->E(), weight);
   if(fHistEnergyOfClusterAfterQA) fHistEnergyOfClusterAfterQA->Fill(cluster->E(), weight);
   if(fHistNCellsAfterQA) fHistNCellsAfterQA->Fill(cluster->GetNCells(), weight);
@@ -3177,7 +3177,7 @@ Bool_t AliCaloPhotonCuts::ClusterIsSelected(AliVCluster *cluster, AliVEvent * ev
   if (phiCluster < 0) phiCluster += 2*TMath::Pi();
 
   // Histos before cuts
-  if(fHistClusterEtavsPhiBeforeAcc) fHistClusterEtavsPhiBeforeAcc->Fill(phiCluster,etaCluster,weight);
+  if(fHistClusterEtavsPhiBeforeAcc && cluster->E()>0. ) fHistClusterEtavsPhiBeforeAcc->Fill(phiCluster,etaCluster,weight);
 
   // Cluster Selection - 0= accept any calo cluster
   if (fClusterType > 0){
@@ -3283,7 +3283,7 @@ Bool_t AliCaloPhotonCuts::AcceptanceCuts(AliVCluster *cluster, AliVEvent* event,
   if(fHistAcceptanceCuts)fHistAcceptanceCuts->Fill(cutIndex);
 
   // Histos after cuts
-  if(fHistClusterEtavsPhiAfterAcc) fHistClusterEtavsPhiAfterAcc->Fill(phiCluster,etaCluster,weight);
+  if(fHistClusterEtavsPhiAfterAcc && cluster->E()>0. ) fHistClusterEtavsPhiAfterAcc->Fill(phiCluster,etaCluster,weight);
 
   return kTRUE;
 }
