@@ -125,10 +125,16 @@ class AliAnalysisTaskSigma0Femto : public AliAnalysisTaskSE {
   TH2F *fHistCorrelationPSigmaPLambda[3];                  //!
   TH2F *fHistCorrelationPSigmaPGamma[3];                   //!
   TH2F *fHistCorrelationPLambdaPGamma[3];                  //!
+  TH1F *fHistDiffPSigma[3];                                //!
+  TH1F *fHistDiffPGamma[3];                                //!
+  TH1F *fHistDiffPLambda[3];                               //!
   TH2F *fHistCorrelationAntiPAntiSigmaAntiPAntiLambda[3];  //!
   TH2F *fHistCorrelationAntiPAntiSigmaAntiPAntiGamma[3];   //!
   TH2F *fHistCorrelationAntiPAntiLambdaAntiPAntiGamma[3];  //!
+  TH1F *fHistDiffPAntiSigma[3];                            //!
+  TH1F *fHistDiffPAntiGamma[3];                            //!
+  TH1F *fHistDiffPAntiLambda[3];                           //!
 
-  ClassDef(AliAnalysisTaskSigma0Femto, 9)
+  ClassDef(AliAnalysisTaskSigma0Femto, 10)
 };
 #endif
