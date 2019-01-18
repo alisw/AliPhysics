@@ -132,6 +132,20 @@ AliAnalysisTaskSE *AddTaskSigma0DebugTest(bool isMC = false,
     antiv0Cuts->SetLightweight(false);
   }
 
+  if (suffix == "1") {
+    v0Cuts->SetPileUpRejectionMode(AliSigma0V0Cuts::OneDaughterCombined);
+    antiv0Cuts->SetPileUpRejectionMode(AliSigma0V0Cuts::OneDaughterCombined);
+  } else if (suffix == "2") {
+    v0Cuts->SetLambdaSelection(1.115683 - 0.01, 1.115683 + 0.01);
+    antiv0Cuts->SetLambdaSelection(1.115683 - 0.01, 1.115683 + 0.01);
+  } else if (suffix == "4") {
+    v0Cuts->SetLambdaSelection(1.115683 - 0.01, 1.115683 + 0.01);
+    antiv0Cuts->SetLambdaSelection(1.115683 - 0.01, 1.115683 + 0.01);
+  } else if (suffix == "6") {
+    v0Cuts->SetLambdaSelection(1.115683 - 0.01, 1.115683 + 0.01);
+    antiv0Cuts->SetLambdaSelection(1.115683 - 0.01, 1.115683 + 0.01);
+  }
+
   AliSigma0PhotonMotherCuts *sigmaCuts =
       AliSigma0PhotonMotherCuts::DefaultCuts();
   sigmaCuts->SetIsMC(isMC);
@@ -150,6 +164,14 @@ AliAnalysisTaskSE *AddTaskSigma0DebugTest(bool isMC = false,
   antiSigmaCuts->SetV0ReaderName(V0ReaderName.Data());
   if (suffix != "0" && suffix != "999") {
     antiSigmaCuts->SetLightweight(true);
+  }
+
+  if (suffix == "3" || suffix == "4") {
+    sigmaCuts->SetSigmaMassCut(0.0015);
+    antiSigmaCuts->SetSigmaMassCut(0.0015);
+  } else if (suffix == "5" || suffix == "6") {
+    sigmaCuts->SetSigmaMassCut(0.003);
+    antiSigmaCuts->SetSigmaMassCut(0.003);
   }
 
   if (trigger == "kINT7") {
@@ -182,15 +204,15 @@ AliAnalysisTaskSE *AddTaskSigma0DebugTest(bool isMC = false,
 
   std::vector<float> ZVtxBins;
   ZVtxBins.push_back(-10);
-  if(suffix == "0" || suffix == "2" || suffix == "4") ZVtxBins.push_back(-8);
+  ZVtxBins.push_back(-8);
   ZVtxBins.push_back(-6);
-  if(suffix == "0" || suffix == "2" || suffix == "4") ZVtxBins.push_back(-4);
+  ZVtxBins.push_back(-4);
   ZVtxBins.push_back(-2);
-  if(suffix == "0" || suffix == "2" || suffix == "4") ZVtxBins.push_back(0);
+  ZVtxBins.push_back(0);
   ZVtxBins.push_back(2);
-  if(suffix == "0" || suffix == "2" || suffix == "4") ZVtxBins.push_back(4);
+  ZVtxBins.push_back(4);
   ZVtxBins.push_back(6);
-  if(suffix == "0" || suffix == "2" || suffix == "4") ZVtxBins.push_back(8);
+  ZVtxBins.push_back(8);
   ZVtxBins.push_back(10);
 
   std::vector<int> NBins;
@@ -215,46 +237,46 @@ AliAnalysisTaskSE *AddTaskSigma0DebugTest(bool isMC = false,
   if (trigger == "kHighMultV0") {
     std::vector<int> MultBins;
     MultBins.push_back(0);
-    if(suffix == "0" || suffix == "1") MultBins.push_back(4);
-    if(suffix == "0" || suffix == "1" || suffix == "2" || suffix == "3") MultBins.push_back(8);
-    if(suffix == "0" || suffix == "1") MultBins.push_back(12);
+    MultBins.push_back(4);
+    MultBins.push_back(8);
+    MultBins.push_back(12);
     MultBins.push_back(16);
-    if(suffix == "0" || suffix == "1") MultBins.push_back(20);
-    if(suffix == "0" || suffix == "1" || suffix == "2" || suffix == "3") MultBins.push_back(24);
-    if(suffix == "0" || suffix == "1") MultBins.push_back(28);
+    MultBins.push_back(20);
+    MultBins.push_back(24);
+    MultBins.push_back(28);
     MultBins.push_back(32);
-    if(suffix == "0" || suffix == "1") MultBins.push_back(36);
-    if(suffix == "0" || suffix == "1" || suffix == "2" || suffix == "3") MultBins.push_back(40);
-    if(suffix == "0" || suffix == "1") MultBins.push_back(44);
+    MultBins.push_back(36);
+    MultBins.push_back(40);
+    MultBins.push_back(44);
     MultBins.push_back(48);
-    if(suffix == "0" || suffix == "1") MultBins.push_back(52);
-    if(suffix == "0" || suffix == "1" || suffix == "2" || suffix == "3") MultBins.push_back(56);
-    if(suffix == "0" || suffix == "1") MultBins.push_back(60);
+    MultBins.push_back(52);
+    MultBins.push_back(56);
+    MultBins.push_back(60);
     MultBins.push_back(64);
-    if(suffix == "0" || suffix == "1") MultBins.push_back(68);
-    if(suffix == "0" || suffix == "1" || suffix == "2" || suffix == "3") MultBins.push_back(72);
-    if(suffix == "0" || suffix == "1") MultBins.push_back(76);
+    MultBins.push_back(68);
+    MultBins.push_back(72);
+    MultBins.push_back(76);
     MultBins.push_back(80);
-    if(suffix == "0" || suffix == "1") MultBins.push_back(84);
-    if(suffix == "0" || suffix == "1" || suffix == "2" || suffix == "3") MultBins.push_back(88);
-    if(suffix == "0" || suffix == "1") MultBins.push_back(92);
+    MultBins.push_back(84);
+    MultBins.push_back(88);
+    MultBins.push_back(92);
     MultBins.push_back(96);
-    if(suffix == "0" || suffix == "1") MultBins.push_back(100);
+    MultBins.push_back(100);
     config->SetMultBins(MultBins);
   } else {
     std::vector<int> MultBins;
     MultBins.push_back(0);
-    if(suffix == "0" || suffix == "1") MultBins.push_back(4);
-    if(suffix == "0" || suffix == "1" || suffix == "2" || suffix == "3") MultBins.push_back(8);
-    if(suffix == "0" || suffix == "1") MultBins.push_back(12);
+    MultBins.push_back(4);
+    MultBins.push_back(8);
+    MultBins.push_back(12);
     MultBins.push_back(16);
-    if(suffix == "0" || suffix == "1") MultBins.push_back(20);
-    if(suffix == "0" || suffix == "1" || suffix == "2" || suffix == "3") MultBins.push_back(24);
-    if(suffix == "0" || suffix == "1") MultBins.push_back(28);
+    MultBins.push_back(20);
+    MultBins.push_back(24);
+    MultBins.push_back(28);
     MultBins.push_back(32);
-    if(suffix == "0" || suffix == "1") MultBins.push_back(36);
-    if(suffix == "0" || suffix == "1" || suffix == "2" || suffix == "3") MultBins.push_back(40);
-    if(suffix == "0" || suffix == "1") MultBins.push_back(60);
+    MultBins.push_back(36);
+    MultBins.push_back(40);
+    MultBins.push_back(60);
     MultBins.push_back(80);
     config->SetMultBins(MultBins);
   }

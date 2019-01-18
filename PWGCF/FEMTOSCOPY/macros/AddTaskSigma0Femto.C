@@ -15,7 +15,6 @@ AliAnalysisTaskSE *AddTaskSigma0Femto(bool isMC = false,
 
   // ================== GetInputEventHandler =============================
   AliVEventHandler *inputHandler = mgr->GetInputEventHandler();
-
   AliAnalysisDataContainer *cinput = mgr->GetCommonInputContainer();
 
   //=========  Set Cutnumber for V0Reader ================================
@@ -24,50 +23,52 @@ AliAnalysisTaskSE *AddTaskSigma0Femto(bool isMC = false,
   TString cutnumberEvent = "00000000";
   TString periodNameV0Reader = "";
   Bool_t enableV0findingEffi = kFALSE;
+  Bool_t fillHistos = kTRUE;
   Bool_t runLightOutput = kFALSE;
   if (suffix != "0" && suffix != "999") {
     runLightOutput = kTRUE;
+    fillHistos = kFALSE;
   }
-  if (suffix == "23") {
+  if (suffix == "22") {
     // eta < 0.8
     cutnumberPhoton = "0d200008400000002280920000";
-  } else if (suffix == "24") {
+  } else if (suffix == "23") {
     // single pT > 0, gammapT > 0
     cutnumberPhoton = "00200078400000002280920000";
-  } else if (suffix == "25") {
+  } else if (suffix == "24") {
     // single pT > 0.050, gammapT > 0.150
     cutnumberPhoton = "002000a8400000002280920000";
-  } else if (suffix == "26") {
+  } else if (suffix == "25") {
     // TPC cluster, findable > 0.6
     cutnumberPhoton = "00200009400000002280920000";
-  } else if (suffix == "27") {
+  } else if (suffix == "26") {
     // TPC PID -10,10
     cutnumberPhoton = "00200008000000002280920000";
-  } else if (suffix == "28") {
+  } else if (suffix == "27") {
     // TPC PID -3,3
     cutnumberPhoton = "00200008a00000002280920000";
-  } else if (suffix == "29") {
+  } else if (suffix == "28") {
     // 1-D Qt cut, qt < 0.1
     cutnumberPhoton = "00200008400000001280920000";
-  } else if (suffix == "30") {
+  } else if (suffix == "29") {
     // 2-D Qt cut, qt < 0.02
     cutnumberPhoton = "00200008400000006280920000";
-  } else if (suffix == "31") {
+  } else if (suffix == "30") {
     // psiPair < 0.2, 1-D
     cutnumberPhoton = "00200008400000002240920000";
-  } else if (suffix == "32") {
+  } else if (suffix == "31") {
     // psiPair < 0.1, 2-D
     cutnumberPhoton = "00200008400000002250920000";
-  } else if (suffix == "33") {
+  } else if (suffix == "32") {
     // cosPA < 0.98
     cutnumberPhoton = "00200008400000002280820000";
-  } else if (suffix == "34") {
+  } else if (suffix == "33") {
     // cosPA < 0.995
     cutnumberPhoton = "00200008400000002280a20000";
-  } else if (suffix == "35") {
+  } else if (suffix == "34") {
     // DCA_R < 5
     cutnumberPhoton = "00200008400000002280920200";
-  } else if (suffix == "36") {
+  } else if (suffix == "35") {
     // DCA_Z < 5
     cutnumberPhoton = "00200008400000002280920020";
   }
@@ -75,7 +76,7 @@ AliAnalysisTaskSE *AddTaskSigma0Femto(bool isMC = false,
   //========= Add V0 Reader to  ANALYSIS manager if not yet existent =====
   TString V0ReaderName =
       Form("V0ReaderV1_%s_%s", cutnumberEvent.Data(), cutnumberPhoton.Data());
-  AliConvEventCuts *fEventCuts = NULL;
+  AliConvEventCuts *fEventCuts = nullptr;
 
   if (!(AliV0ReaderV1 *)mgr->GetTask(V0ReaderName.Data())) {
     AliV0ReaderV1 *fV0ReaderV1 = new AliV0ReaderV1(V0ReaderName.Data());
@@ -97,10 +98,10 @@ AliAnalysisTaskSE *AddTaskSigma0Femto(bool isMC = false,
       fEventCuts->SetPreSelectionCutFlag(kTRUE);
       fEventCuts->SetV0ReaderName(V0ReaderName);
       fEventCuts->SetLightOutput(runLightOutput);
+      fEventCuts->SetFillCutHistograms("", fillHistos);
       if (periodNameV0Reader.CompareTo("") != 0)
         fEventCuts->SetPeriodEnum(periodNameV0Reader);
       fV0ReaderV1->SetEventCuts(fEventCuts);
-      fEventCuts->SetFillCutHistograms("", kTRUE);
     }
 
     // Set AnalysisCut Number
@@ -112,14 +113,12 @@ AliAnalysisTaskSE *AddTaskSigma0Femto(bool isMC = false,
       fCuts->SetIsHeavyIon(isHeavyIon);
       fCuts->SetV0ReaderName(V0ReaderName);
       fCuts->SetLightOutput(runLightOutput);
+      fCuts->SetFillCutHistograms("", fillHistos);
       if (fCuts->InitializeCutsFromCutString(cutnumberPhoton.Data())) {
         fV0ReaderV1->SetConversionCuts(fCuts);
-        fCuts->SetFillCutHistograms("", kTRUE);
       }
     }
-
     fV0ReaderV1->Init();
-
     AliLog::SetGlobalLogLevel(AliLog::kFatal);
 
     // connect input V0Reader
@@ -166,12 +165,9 @@ AliAnalysisTaskSE *AddTaskSigma0Femto(bool isMC = false,
     TrackCuts->SetPID(AliPID::kProton, 0.75, 5);
     AntiTrackCuts->SetPID(AliPID::kProton, 0.75, 5);
   } else if (suffix == "7") {
-    TrackCuts->SetFilterBit(96);
-    AntiTrackCuts->SetFilterBit(96);
-  } else if (suffix == "8") {
     TrackCuts->SetNClsTPC(70);
     AntiTrackCuts->SetNClsTPC(70);
-  } else if (suffix == "9") {
+  } else if (suffix == "8") {
     TrackCuts->SetNClsTPC(90);
     AntiTrackCuts->SetNClsTPC(90);
   }
@@ -198,43 +194,43 @@ AliAnalysisTaskSE *AddTaskSigma0Femto(bool isMC = false,
     v0Cuts->SetLightweight(true);
     antiv0Cuts->SetLightweight(true);
   }
-  if (suffix == "10") {
+  if (suffix == "9") {
     v0Cuts->SetPileUpRejectionMode(AliSigma0V0Cuts::OneDaughterCombined);
     antiv0Cuts->SetPileUpRejectionMode(AliSigma0V0Cuts::OneDaughterCombined);
-  } else if (suffix == "11") {
+  } else if (suffix == "10") {
     v0Cuts->SetV0PtMin(0.24);
     antiv0Cuts->SetV0PtMin(0.24);
-  } else if (suffix == "12") {
+  } else if (suffix == "11") {
     v0Cuts->SetV0PtMin(0.36);
     antiv0Cuts->SetV0PtMin(0.36);
-  } else if (suffix == "13") {
+  } else if (suffix == "12") {
     v0Cuts->SetV0CosPAMin(0.995);
     antiv0Cuts->SetV0CosPAMin(0.995);
-  } else if (suffix == "14") {
+  } else if (suffix == "13") {
     v0Cuts->SetV0CosPAMin(0.98);
     antiv0Cuts->SetV0CosPAMin(0.98);
-  } else if (suffix == "15") {
+  } else if (suffix == "14") {
     v0Cuts->SetPIDnSigma(3);
     antiv0Cuts->SetPIDnSigma(3);
-  } else if (suffix == "16") {
+  } else if (suffix == "15") {
     v0Cuts->SetPIDnSigma(6);
     antiv0Cuts->SetPIDnSigma(6);
-  } else if (suffix == "17") {
+  } else if (suffix == "16") {
     v0Cuts->SetArmenterosCut(0, 1, -1, 1);
     antiv0Cuts->SetArmenterosCut(0, 1, -1, 1);
-  } else if (suffix == "18") {
+  } else if (suffix == "17") {
     v0Cuts->SetTPCclusterMin(80);
     antiv0Cuts->SetTPCclusterMin(80);
-  } else if (suffix == "19") {
+  } else if (suffix == "18") {
     v0Cuts->SetTPCclusterMin(60);
     antiv0Cuts->SetTPCclusterMin(60);
-  } else if (suffix == "20") {
+  } else if (suffix == "19") {
     v0Cuts->SetEtaMax(0.8);
     antiv0Cuts->SetEtaMax(0.8);
-  } else if (suffix == "21") {
+  } else if (suffix == "20") {
     v0Cuts->SetDaughterDCAMax(1.2);
     antiv0Cuts->SetDaughterDCAMax(1.2);
-  } else if (suffix == "22") {
+  } else if (suffix == "21") {
     v0Cuts->SetDaughterDCAtoPV(0.06);
     antiv0Cuts->SetDaughterDCAtoPV(0.06);
   }
