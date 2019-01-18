@@ -297,13 +297,14 @@ bool AliEventCuts::AcceptEvent(AliVEvent *ev) {
   }
 
   /// Filling normalisation histogram
-  array <NormMask,4> norm_masks {
+  array <NormMask,5> norm_masks {
     kAnyEvent,
+    kTriggeredEvent,
     kPassesNonVertexRelatedSelections,
     kHasReconstructedVertex,
     kPassesAllCuts
   };
-  for (int iC = 0; iC < 4; ++iC) {
+  for (int iC = 0; iC < 5; ++iC) {
     if (CheckNormalisationMask(norm_masks[iC])) {
       if (fNormalisationHist) {
         fNormalisationHist->Fill(iC);
@@ -360,6 +361,7 @@ void AliEventCuts::AddQAplotsToList(TList *qaList, bool addCorrelationPlots) {
 
   vector<string> norm_labels = {
     "No cuts",
+    "Trigger selection",
     "Event selection",
     "Vertex reconstruction and quality",
     "Vertex position"
