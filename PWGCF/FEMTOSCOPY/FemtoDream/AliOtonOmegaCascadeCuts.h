@@ -11,7 +11,7 @@
 #include "TList.h"
 #include "AliMCEvent.h"
 #include "AliOtonOmegaCascade.h"
-#include "AliOtonOmegaCascadeHist.h"
+#include "AliFemtoDreamCascadeHist.h"
 #include "AliFemtoDreamv0MCHist.h"
 #include "AliFemtoDreamTrackCuts.h"
 class AliOtonOmegaCascadeCuts {
@@ -206,7 +206,7 @@ class AliOtonOmegaCascadeCuts {
   }
   ;
  private:
-  AliOtonOmegaCascadeHist *fHist;            //!
+  AliFemtoDreamCascadeHist *fHist;            //!
   AliFemtoDreamv0MCHist *fMCHist;             //!
   AliFemtoDreamTrackCuts *fNegCuts;   //
   AliFemtoDreamTrackCuts *fPosCuts;   //

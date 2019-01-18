@@ -528,7 +528,7 @@ void AliOtonOmegaCascadeCuts::Init() {
   fBachCuts->SetMinimalBooking(fMinimalBooking);
   fBachCuts->Init();
   if (!fMinimalBooking) {
-    fHist = new AliOtonOmegaCascadeHist(fXiMass, fRunNumberQA, fMinRunNumber,
+    fHist = new AliFemtoDreamCascadeHist(fXiMass, fRunNumberQA, fMinRunNumber,
                                          fMaxRunNumber);
     BookCuts();
     if (!(fNegCuts || fPosCuts || fBachCuts)) {
@@ -561,7 +561,7 @@ void AliOtonOmegaCascadeCuts::Init() {
       fMCHistList->Add(fBachCuts->GetMCQAHists());
     }
   } else {
-    fHist = new AliOtonOmegaCascadeHist("MinimalBooking", fXiMass);
+    fHist = new AliFemtoDreamCascadeHist("MinimalBooking", fXiMass);
     fHistList = new TList();
     fHistList->SetOwner();
     fHistList->SetName("CascadeCuts");
