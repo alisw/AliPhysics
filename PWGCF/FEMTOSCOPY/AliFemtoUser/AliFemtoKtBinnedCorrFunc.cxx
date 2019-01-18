@@ -12,12 +12,8 @@
 #include <algorithm>
 #include <cassert>
 #include <cmath>
+#include <tuple>
 
-#ifdef __ROOT__
-  /// \cond CLASSIMP
-  ClassImp(AliFemtoKtBinnedCorrFunc);
-  /// \endcond
-#endif
 
 
 AliFemtoKtBinnedCorrFunc::AliFemtoKtBinnedCorrFunc(const TString& name, AliFemtoCorrFctn *cf):
@@ -35,27 +31,22 @@ UInt_t AliFemtoKtBinnedCorrFunc::AddKtRange(float low, float high)
 {
   assert(low < high);
 
-  // 'index' is the location of the correlation function in the buffer
-  const UInt_t index = fCFBuffer.size();
-
   AliFemtoCorrFctn *clone = fPrototypeCF->Clone();
   if (!clone) {
     return NPos;
   }
-  fCFBuffer.push_back(clone);
 
-  // Find first element which has a higher lower bound than this range.
-  // We will insert at this location.
-  const auto insert_location = std::find_if(fRanges.begin(), fRanges.end(),
-                                            [low] (const std::pair<float,float> pair) {
-                                              return low < pair.first;
-                                            });
+  const std::pair<Float_t, Float_t> range(low, high);
 
-  // store at same offset in map
-  fRanges.insert(insert_location, std::pair<Float_t, Float_t>(low, high));
-  fIndexMap.insert(fIndexMap.begin() + std::distance(fRanges.begin(), insert_location), index);
+  const auto insert_location = std::lower_bound(fRanges.begin(), fRanges.end(), range);
+  fRanges.insert(insert_location, range);
 
-  return index;
+  auto offset = std::distance(fRanges.begin(), insert_location);
+  const auto buffer_location = std::next(fCFBuffer.begin(), offset);
+
+  fCFBuffer.insert(buffer_location, clone);
+
+  return static_cast<Int_t>(offset);
 }
 
 UInt_t AliFemtoKtBinnedCorrFunc::AddKtRange(const TString& name, float low, float high)
@@ -73,22 +64,52 @@ void AliFemtoKtBinnedCorrFunc::AddKtRanges(const float data[], float stop_at)
   } while (data[++i] != stop_at);
 }
 
+inline
+std::tuple<Int_t, Int_t>
+load_integers(
+  Float_t kt,
+  const std::vector<std::pair<Float_t, Float_t>> &ranges)
+{
+  auto lower = std::find_if(ranges.begin(), ranges.end(),
+                            [=](std::pair<Float_t, Float_t> r) {
+                              return r.first <= kt && kt < r.second; });
+
+  auto higher = std::find_if(lower, ranges.end(),
+                             [=](std::pair<Float_t, Float_t> r) {
+                               return kt < r.first; });
+
+  return std::make_tuple(std::distance(ranges.begin(), lower),
+                         std::distance(ranges.begin(), higher));
+}
+
 void AliFemtoKtBinnedCorrFunc::AddRealPair(AliFemtoPair *pair)
 {
-  UInt_t index = FindKtBin(pair);
-  if (index == NPos) {
-    return;
+  const Float_t kt = pair->KT();
+
+  Int_t idx, stop;
+  std::tie(idx, stop) = load_integers(kt, fRanges);
+
+  for (; idx < stop; ++idx) {
+    const auto r = fRanges[idx];
+    if (r.first <= kt && kt < r.second) {
+      fCFBuffer[idx]->AddRealPair(pair);
+    }
   }
-  fCFBuffer[index]->AddRealPair(pair);
 }
 
 void AliFemtoKtBinnedCorrFunc::AddMixedPair(AliFemtoPair *pair)
 {
-  UInt_t index = FindKtBin(pair);
-  if (index == NPos) {
-    return;
+  const Float_t kt = pair->KT();
+
+  Int_t idx, stop;
+  std::tie(idx, stop) = load_integers(kt, fRanges);
+
+  for (; idx < stop; ++idx) {
+    const auto r = fRanges[idx];
+    if (r.first <= kt && kt < r.second) {
+      fCFBuffer[idx]->AddMixedPair(pair);
+    }
   }
-  fCFBuffer[index]->AddMixedPair(pair);
 }
 
 TList* AliFemtoKtBinnedCorrFunc::GetOutputList()
