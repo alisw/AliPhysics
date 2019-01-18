@@ -1,5 +1,5 @@
-//Names should contain a comma seperated list of cut settings
-//Current options: all, electrons, kCutSet1, TTreeCuts, V0_TPCcorr, V0_ITScorr
+// Names should contain a comma seperated list of cut settings
+// Current options: all, electrons, kCutSet1, TTreeCuts, V0_TPCcorr, V0_ITScorr
 AliAnalysisTaskElectronEfficiencyV2* AddTask_acapon_Efficiency(TString names                = "kCutSet1",
                                                                Int_t whichGen               = 0, // 0=all sources, 1=Jpsi, 2=HS
                                                                Int_t wagonnr                = 0,
@@ -22,7 +22,6 @@ AliAnalysisTaskElectronEfficiencyV2* AddTask_acapon_Efficiency(TString names    
 	TObjArray *arrNames = names.Tokenize(";");
 	Int_t nDie          = arrNames->GetEntries();
 	Printf("Number of implemented cuts: %i", nDie);
-
 	
 	std::string resoFilenameFromAlien = "/alice/cern.ch/user/a/acapon/ResolutionFiles/";
 	resoFilenameFromAlien.append(resoFilename);
@@ -36,14 +35,12 @@ AliAnalysisTaskElectronEfficiencyV2* AddTask_acapon_Efficiency(TString names    
   TString fileName        = AliAnalysisManager::GetCommonFileName();
   fileName = "AnalysisResults.root"; // create a subfolder in the file
 
-
   // #########################################################
   // Loading individual config file either local or from Alien
   TString configBasePath("$ALICE_PHYSICS/PWGDQ/dielectron/macrosLMEE/");
   TString configFile("Config_acapon_Efficiency.C");
   TString configLMEECutLib("LMEECutLib_acapon.C");
-  // TString configBasePath= "$ALICE_PHYSICS/PWGDQ/dielectron/macrosLMEE/";
-  //Load updated macros from private ALIEN path
+  // Load updated macros from private ALIEN path
   if (getFromAlien //&&
       && (!gSystem->Exec(Form("alien_cp alien:///alice/cern.ch/user/a/acapon/PWGDQ/dielectron/macrosLMEE/%s .",configFile.Data())))
       && (!gSystem->Exec("alien_cp alien:///alice/cern.ch/user/a/acapon/PWGDQ/dielectron/macrosLMEE/LMEECutLib_acapon.C ."))
@@ -53,17 +50,12 @@ AliAnalysisTaskElectronEfficiencyV2* AddTask_acapon_Efficiency(TString names    
   TString configFilePath(configBasePath+configFile);
   TString configLMEECutLibPath(configBasePath+configLMEECutLib);
 
-
 	// Load dielectron configuration files
 	if(!gROOT->GetListOfGlobalFunctions()->FindObject(configLMEECutLib.Data())){
-	std::cout << configLMEECutLibPath << std::endl;
 		gROOT->LoadMacro(configLMEECutLibPath.Data());
-	std::cout << "1" << std::endl;
 	}
 	if(!gROOT->GetListOfGlobalFunctions()->FindObject(configFile.Data())){
-	std::cout << configFilePath << std::endl;
 		gROOT->LoadMacro(configFilePath.Data());
-	std::cout << "1" << std::endl;
 	}
 
   // #########################################################
@@ -99,8 +91,8 @@ AliAnalysisTaskElectronEfficiencyV2* AddTask_acapon_Efficiency(TString names    
   task->SetTriggerMask(triggerNames);
   task->SetEventFilter(cutlib->GetEventCuts(LMEECutLib::kAllSpecies)); // All cut sets have same event cuts
 
-  Double_t centMin = 0.;
-  Double_t centMax = 90.;
+  Double_t centMin = -99.;
+  Double_t centMax = -90.;
   GetCentrality(centrality, centMin, centMax);
   std::cout << "CentMin = " << centMin << "  CentMax = " << centMax << std::endl;
   task->SetCentrality(centMin, centMax);
@@ -125,12 +117,14 @@ AliAnalysisTaskElectronEfficiencyV2* AddTask_acapon_Efficiency(TString names    
   // Set Binning
   if(usePtVector == kTRUE){
     std::vector<Double_t> ptBinsVec;
-    for (UInt_t i = 0; i < nBinsPt+1; ++i){
+    for(UInt_t i = 0; i < nBinsPt+1; ++i){
       ptBinsVec.push_back(ptBins[i]);
     }
     task->SetPtBins(ptBinsVec);
   }
-  else task->SetPtBinsLinear   (minPtBin,  maxPtBin, stepsPtBin);
+  else{
+		task->SetPtBinsLinear(minPtBin,  maxPtBin, stepsPtBin);
+	}
   task->SetEtaBinsLinear  (minEtaBin, maxEtaBin, stepsEtaBin);
   task->SetPhiBinsLinear  (minPhiBin, maxPhiBin, stepsPhiBin);
   task->SetThetaBinsLinear(minThetaBin, maxThetaBin, stepsThetaBin);
