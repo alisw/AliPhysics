@@ -801,6 +801,123 @@ void AddTask_GammaCalo_PbPb(
     cuts.AddCutCalo("10110a13","111118105k032230000","016310d100000050"); //
     cuts.AddCutCalo("11210a13","111118105k032230000","016310d100000050"); //
 
+  //systematics for LHC15o 0-10%
+  } else if (trainConfig == 270){ // EMCAL
+    cuts.AddCutCalo("10110a13","111118105k032230000","016310d1000000d0"); //
+  } else if (trainConfig == 271){ // EMCAL syst 1/7
+    cuts.AddCutCalo("10110a13","111118105k022230000","016310d1000000d0"); // min energy cluster variation 1  600 MeV
+    cuts.AddCutCalo("10110a13","111118105k042230000","016310d1000000d0"); // min energy cluster variation 2  800 MeV
+    cuts.AddCutCalo("10110a13","111118105k052230000","016310d1000000d0"); // min energy cluster variation 3  900 MeV
+    cuts.AddCutCalo("10110a13","111118105k032230000","01631031000000d0"); // alpha meson variation 1 0<alpha<1.0
+    cuts.AddCutCalo("10110a13","111118105k032230000","01631061000000d0"); // alpha meson variation 1 0<alpha<0.8
+  } else if (trainConfig == 272){ // EMCAL syst 2/7
+    cuts.AddCutCalo("10110a13","111118105k032230000","016310d1000000d0"); // min/max M02  0.1<M<0.5
+    cuts.AddCutCalo("10110a13","111118105k032200000","016310d1000000d0"); // min/max M02  0.1<M<100
+    cuts.AddCutCalo("10110a13","111118105k032250000","016310d1000000d0"); // min/max M02  0.1<M<0.3
+    cuts.AddCutCalo("10110a13","111118105k032260000","016310d1000000d0"); // min/max M02  0.1<M<0.27
+  } else if (trainConfig == 273){ // EMCAL syst 3/7
+    cuts.AddCutCalo("10110a13","111218105k032230000","016310d1000000d0"); // only modules with TRD infront
+    cuts.AddCutCalo("10110a13","111138105k032230000","016310d1000000d0"); // no modules with TRD infront
+    cuts.AddCutCalo("10110a13","111118105k032230000","016330d1000000d0"); // rapidity variation  y<0.6
+    cuts.AddCutCalo("10110a13","111118105k032230000","016340d1000000d0"); // rapidity variation  y<0.5
+  } else if (trainConfig == 274){ // EMCAL syst 4/7
+    cuts.AddCutCalo("10110a13","111118105k032230000","016310d100000040"); // min opening angle 0.0152
+    cuts.AddCutCalo("10110a13","111118105k032230000","016310d100000060"); // min opening angle 0.017
+    cuts.AddCutCalo("10110a13","111118105k032230000","016310d100000070"); // min opening angle 0.016
+    cuts.AddCutCalo("10110a13","111118105k032230000","016310d100000080"); // min opening angle 0.018
+    cuts.AddCutCalo("10110a13","111118105k032230000","016310d100000090"); // min opening angle 0.019
+  } else if (trainConfig == 275){ // EMCAL syst 5/7
+    cuts.AddCutCalo("10110a13","1111181053032230000","016310d1000000d0"); // fixed window
+    cuts.AddCutCalo("10110a13","1111181056032230000","016310d1000000d0"); // tm pt dependent var 1
+    cuts.AddCutCalo("10110a13","1111181058032230000","016310d1000000d0"); // tm pt dependent var 2
+    cuts.AddCutCalo("10110a13","1111181059032230000","016310d1000000d0"); // tm pt dependent var 3
+  } else if (trainConfig == 276){ // EMCAL syst 6/7
+    cuts.AddCutCalo("10110a13","111110105k032230000","016310d1000000d0"); // NL variation, TB
+    cuts.AddCutCalo("10110a13","111118105k032230000","016310d1000000d0"); // NL variation, ConvCalo
+    cuts.AddCutCalo("10110a13","111118205k032230000","016310d1000000d0"); // NL variation, Calo
+  } else if (trainConfig == 277){ // EMCAL syst 7/7
+    cuts.AddCutCalo("10110a13","111118104k032230000","016310d1000000d0"); // cluster timing cut
+    cuts.AddCutCalo("10110a13","111118107k032230000","016310d1000000d0"); // cluster timing cut
+    cuts.AddCutCalo("10110a13","11111810ak032230000","016310d1000000d0"); // cluster timing cut
+
+  //systematics for LHC15o 20-40%
+  } else if (trainConfig == 280){ // EMCAL
+    cuts.AddCutCalo("12410a13","111118105k032230000","01631031000000d0"); //
+  } else if (trainConfig == 281){ // EMCAL syst 1/7
+    cuts.AddCutCalo("12410a13","111118105k022230000","01631031000000d0"); // min energy cluster variation 1  600 MeV
+    cuts.AddCutCalo("12410a13","111118105k042230000","01631031000000d0"); // min energy cluster variation 2  800 MeV
+    cuts.AddCutCalo("12410a13","111118105k052230000","01631031000000d0"); // min energy cluster variation 3  900 MeV
+    cuts.AddCutCalo("12410a13","111118105k032230000","01631061000000d0"); // alpha meson variation 1 0<alpha<0.8
+    cuts.AddCutCalo("12410a13","111118105k032230000","01631051000000d0"); // alpha meson variation 2 0<alpha<0.75
+  } else if (trainConfig == 282){ // EMCAL syst 2/7
+    cuts.AddCutCalo("12410a13","111118105k032230000","01631031000000d0"); // min/max M02  0.1<M<0.5
+    cuts.AddCutCalo("12410a13","111118105k032200000","01631031000000d0"); // min/max M02  0.1<M<100
+    cuts.AddCutCalo("12410a13","111118105k032250000","01631031000000d0"); // min/max M02  0.1<M<0.3
+    cuts.AddCutCalo("12410a13","111118105k032260000","01631031000000d0"); // min/max M02  0.1<M<0.27
+  } else if (trainConfig == 283){ // EMCAL syst 3/7
+    cuts.AddCutCalo("12410a13","111218105k032230000","01631031000000d0"); // only modules with TRD infront
+    cuts.AddCutCalo("12410a13","111138105k032230000","01631031000000d0"); // no modules with TRD infront
+    cuts.AddCutCalo("12410a13","111118105k032230000","01633031000000d0"); // rapidity variation  y<0.6
+    cuts.AddCutCalo("12410a13","111118105k032230000","01634031000000d0"); // rapidity variation  y<0.5
+  } else if (trainConfig == 284){ // EMCAL syst 4/7
+    cuts.AddCutCalo("12410a13","111118105k032230000","0163103100000040"); // min opening angle 0.0152
+    cuts.AddCutCalo("12410a13","111118105k032230000","0163103100000060"); // min opening angle 0.017
+    cuts.AddCutCalo("12410a13","111118105k032230000","0163103100000070"); // min opening angle 0.016
+    cuts.AddCutCalo("12410a13","111118105k032230000","0163103100000080"); // min opening angle 0.018
+    cuts.AddCutCalo("12410a13","111118105k032230000","0163103100000090"); // min opening angle 0.019
+  } else if (trainConfig == 285){ // EMCAL syst 5/7
+    cuts.AddCutCalo("12410a13","1111181053032230000","01631031000000d0"); // fixed window
+    cuts.AddCutCalo("12410a13","1111181056032230000","01631031000000d0"); // tm pt dependent var 1
+    cuts.AddCutCalo("12410a13","1111181058032230000","01631031000000d0"); // tm pt dependent var 2
+    cuts.AddCutCalo("12410a13","1111181059032230000","01631031000000d0"); // tm pt dependent var 3
+  } else if (trainConfig == 286){ // EMCAL syst 6/7
+    cuts.AddCutCalo("12410a13","111110105k032230000","01631031000000d0"); // NL variation, TB
+    cuts.AddCutCalo("12410a13","111118105k032230000","01631031000000d0"); // NL variation, ConvCalo
+    cuts.AddCutCalo("12410a13","111118205k032230000","01631031000000d0"); // NL variation, Calo
+  } else if (trainConfig == 287){ // EMCAL syst 7/7
+    cuts.AddCutCalo("12410a13","111118104k032230000","01631031000000d0"); // cluster timing cut
+    cuts.AddCutCalo("12410a13","111118107k032230000","01631031000000d0"); // cluster timing cut
+    cuts.AddCutCalo("12410a13","11111810ak032230000","01631031000000d0"); // cluster timing cut
+
+  //systematics for LHC15o 60-80%
+  } else if (trainConfig == 290){ // EMCAL
+    cuts.AddCutCalo("16810a13","111118105k032230000","01631031000000d0"); //
+  } else if (trainConfig == 291){ // EMCAL syst 1/7
+    cuts.AddCutCalo("16810a13","111118105k022230000","01631031000000d0"); // min energy cluster variation 1  600 MeV
+    cuts.AddCutCalo("16810a13","111118105k042230000","01631031000000d0"); // min energy cluster variation 2  800 MeV
+    cuts.AddCutCalo("16810a13","111118105k052230000","01631031000000d0"); // min energy cluster variation 3  900 MeV
+    cuts.AddCutCalo("16810a13","111118105k032230000","01631061000000d0"); // alpha meson variation 1 0<alpha<0.8
+    cuts.AddCutCalo("16810a13","111118105k032230000","01631051000000d0"); // alpha meson variation 2 0<alpha<0.75
+  } else if (trainConfig == 292){ // EMCAL syst 2/7
+    cuts.AddCutCalo("16810a13","111118105k032230000","01631031000000d0"); // min/max M02  0.1<M<0.5
+    cuts.AddCutCalo("16810a13","111118105k032200000","01631031000000d0"); // min/max M02  0.1<M<100
+    cuts.AddCutCalo("16810a13","111118105k032250000","01631031000000d0"); // min/max M02  0.1<M<0.3
+    cuts.AddCutCalo("16810a13","111118105k032260000","01631031000000d0"); // min/max M02  0.1<M<0.27
+  } else if (trainConfig == 293){ // EMCAL syst 3/7
+    cuts.AddCutCalo("16810a13","111218105k032230000","01631031000000d0"); // only modules with TRD infront
+    cuts.AddCutCalo("16810a13","111138105k032230000","01631031000000d0"); // no modules with TRD infront
+    cuts.AddCutCalo("16810a13","111118105k032230000","01633031000000d0"); // rapidity variation  y<0.6
+    cuts.AddCutCalo("16810a13","111118105k032230000","01634031000000d0"); // rapidity variation  y<0.5
+  } else if (trainConfig == 294){ // EMCAL syst 4/7
+    cuts.AddCutCalo("16810a13","111118105k032230000","0163103100000040"); // min opening angle 0.0152
+    cuts.AddCutCalo("16810a13","111118105k032230000","0163103100000060"); // min opening angle 0.017
+    cuts.AddCutCalo("16810a13","111118105k032230000","0163103100000070"); // min opening angle 0.016
+    cuts.AddCutCalo("16810a13","111118105k032230000","0163103100000080"); // min opening angle 0.018
+    cuts.AddCutCalo("16810a13","111118105k032230000","0163103100000090"); // min opening angle 0.019
+  } else if (trainConfig == 295){ // EMCAL syst 5/7
+    cuts.AddCutCalo("16810a13","1111181053032230000","01631031000000d0"); // fixed window
+    cuts.AddCutCalo("16810a13","1111181056032230000","01631031000000d0"); // tm pt dependent var 1
+    cuts.AddCutCalo("16810a13","1111181058032230000","01631031000000d0"); // tm pt dependent var 2
+    cuts.AddCutCalo("16810a13","1111181059032230000","01631031000000d0"); // tm pt dependent var 3
+  } else if (trainConfig == 296){ // EMCAL syst 6/7
+    cuts.AddCutCalo("16810a13","111110105k032230000","01631031000000d0"); // NL variation, TB
+    cuts.AddCutCalo("16810a13","111118105k032230000","01631031000000d0"); // NL variation, ConvCalo
+    cuts.AddCutCalo("16810a13","111118205k032230000","01631031000000d0"); // NL variation, Calo
+  } else if (trainConfig == 297){ // EMCAL syst 7/7
+    cuts.AddCutCalo("16810a13","111118104k032230000","01631031000000d0"); // cluster timing cut
+    cuts.AddCutCalo("16810a13","111118107k032230000","01631031000000d0"); // cluster timing cut
+    cuts.AddCutCalo("16810a13","11111810ak032230000","01631031000000d0"); // cluster timing cut
+
   // **********************************************************************************************************
   // ***************************** EMC configurations XeXe run 2 **********************************************
   // **********************************************************************************************************
