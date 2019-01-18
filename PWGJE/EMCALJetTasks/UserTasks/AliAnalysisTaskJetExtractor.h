@@ -9,7 +9,9 @@
 class AliRDHFJetsCutsVertex;
 class AliEmcalJetTree;
 class AliHFJetsTaggingVertex;
-class TPython;
+#if ROOT_VERSION_CODE >= ROOT_VERSION(6,0,0)
+  class TPython;
+#endif
 
 /**
  * \class AliAnalysisTaskJetExtractor

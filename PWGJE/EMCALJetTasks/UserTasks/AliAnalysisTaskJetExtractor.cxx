@@ -831,6 +831,7 @@ Bool_t AliAnalysisTaskJetExtractor::Run()
 //________________________________________________________________________
 void AliAnalysisTaskJetExtractor::GetPtAndMassFromModel(AliEmcalJet* jet, Float_t& pt_ML, Float_t& mass_ML)
 {
+  #if ROOT_VERSION_CODE >= ROOT_VERSION(6,0,0)
   // ####### Calculate inference input parameters
   Double_t constPtMean = 0;
   Double_t constPtMedian = 0;
@@ -852,15 +853,13 @@ void AliAnalysisTaskJetExtractor::GetPtAndMassFromModel(AliEmcalJet* jet, Float_
   }
 
   // ####### Run Python script that does inference on jet
-  #if ROOT_VERSION_CODE >= ROOT_VERSION(6,0,0)
   fPythonCLI->Exec(Form("data_inference = numpy.array([[%E, %E, %E, %E, %E, %E, %E, %E, %E, %E, %E, %E, %E, %E, %E, %E, %E, %E]])", jet->Pt() - fJetsCont->GetRhoVal()*jet->Area(), (Double_t)numConst, jet->GetShapeProperties()->GetSecondOrderSubtracted(), fJetsCont->GetRhoVal(), jet->M()-jet->GetShapeProperties()->GetSecondOrderSubtracted(), jet->Area(), constPtMean, constPtMedian, constPts[0], constPts[1], constPts[2], constPts[3], constPts[4], constPts[5], constPts[6], constPts[7], constPts[8], constPts[9]));
   fPythonCLI->Exec("result = estimator.predict(data_inference)");
   pt_ML   = fPythonCLI->Eval("result[0][0]");
   mass_ML = fPythonCLI->Eval("result[0][1]");
-  #endif
 
   delete[] constPts;
-
+  #endif
 }
 
 //________________________________________________________________________
