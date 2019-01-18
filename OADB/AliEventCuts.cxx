@@ -253,7 +253,8 @@ bool AliEventCuts::AcceptEvent(AliVEvent *ev) {
     fFlag |= BIT(kINELgt0);
   }
 
-  if (fUseVariablesCorrelationCuts) {
+  /// If the correlation plots are defined, we should fill them
+  if (fUseVariablesCorrelationCuts || fTOFvsFB32[0]) {
     ComputeTrackMultiplicity(ev);
     const double fb32 = fContainer.fMultTrkFB32;
     const double fb32acc = fContainer.fMultTrkFB32Acc;
@@ -272,7 +273,7 @@ bool AliEventCuts::AcceptEvent(AliVEvent *ev) {
         multV0Mcut &&
         (fb128 < fFB128vsTrklLinearCut[0] + fFB128vsTrklLinearCut[1] * ntrkl) &&
         (!fUseStrongVarCorrelationCut || fContainer.fMultVZERO > vzero_tpcout_limit))
-        || fMC)
+        || fMC || !fUseVariablesCorrelationCuts)
       fFlag |= BIT(kCorrelations);
   } else fFlag |= BIT(kCorrelations);
 
