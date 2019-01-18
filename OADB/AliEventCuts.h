@@ -68,6 +68,7 @@ class AliEventCuts : public TList {
 
     enum NormMask {
       kAnyEvent = BIT(kNoCuts),
+      kTriggeredEvent = BIT(kTrigger),
       kPassesAllCuts = (BIT(kAllCuts) - 1) ^ (BIT(kVertexPositionSPD) | BIT(kVertexPositionTracks) | BIT(kVertexSPD) | BIT(kVertexTracks) | BIT(kTriggerClasses)),
       kPassesNonVertexRelatedSelections = kPassesAllCuts ^ (BIT(kVertex) | BIT(kVertexPosition) | BIT(kVertexQuality)),
       kHasReconstructedVertex = kPassesAllCuts ^ BIT(kVertexPosition)
@@ -84,6 +85,7 @@ class AliEventCuts : public TList {
     void   SetManualMode (bool man = true) { fManualMode = man; }
     void   SetupRun1PbPb();
     void   SetupLHC15o() { SetupRun2PbPb(); }
+    void   SetupPbPb2018();
     void   SetupRun2PbPb();
     void   SetupLHC17n();
     void   SetupRun2pp();

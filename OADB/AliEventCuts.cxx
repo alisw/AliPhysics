@@ -159,6 +159,8 @@ bool AliEventCuts::AcceptEvent(AliVEvent *ev) {
   /// (i.e. if trigger mask is not fired but we see the trigger class we want we enable the trigger bit)
   /// A special bit is set in this case
   TString classes = ev->GetFiredTriggerClasses();
+  if (fTriggerClasses.empty())
+    fFlag |= BIT(kTriggerClasses);
   for (const std::string& myClass : fTriggerClasses) {
     if (classes.Contains(myClass.data()) && !myClass.empty()) {
       fFlag |= BIT(kTrigger);
@@ -251,7 +253,8 @@ bool AliEventCuts::AcceptEvent(AliVEvent *ev) {
     fFlag |= BIT(kINELgt0);
   }
 
-  if (fUseVariablesCorrelationCuts) {
+  /// If the correlation plots are defined, we should fill them
+  if (fUseVariablesCorrelationCuts || fTOFvsFB32[0]) {
     ComputeTrackMultiplicity(ev);
     const double fb32 = fContainer.fMultTrkFB32;
     const double fb32acc = fContainer.fMultTrkFB32Acc;
@@ -270,7 +273,7 @@ bool AliEventCuts::AcceptEvent(AliVEvent *ev) {
         multV0Mcut &&
         (fb128 < fFB128vsTrklLinearCut[0] + fFB128vsTrklLinearCut[1] * ntrkl) &&
         (!fUseStrongVarCorrelationCut || fContainer.fMultVZERO > vzero_tpcout_limit))
-        || fMC)
+        || fMC || !fUseVariablesCorrelationCuts)
       fFlag |= BIT(kCorrelations);
   } else fFlag |= BIT(kCorrelations);
 
@@ -294,13 +297,14 @@ bool AliEventCuts::AcceptEvent(AliVEvent *ev) {
   }
 
   /// Filling normalisation histogram
-  array <NormMask,4> norm_masks {
+  array <NormMask,5> norm_masks {
     kAnyEvent,
+    kTriggeredEvent,
     kPassesNonVertexRelatedSelections,
     kHasReconstructedVertex,
     kPassesAllCuts
   };
-  for (int iC = 0; iC < 4; ++iC) {
+  for (int iC = 0; iC < 5; ++iC) {
     if (CheckNormalisationMask(norm_masks[iC])) {
       if (fNormalisationHist) {
         fNormalisationHist->Fill(iC);
@@ -357,6 +361,7 @@ void AliEventCuts::AddQAplotsToList(TList *qaList, bool addCorrelationPlots) {
 
   vector<string> norm_labels = {
     "No cuts",
+    "Trigger selection",
     "Event selection",
     "Vertex reconstruction and quality",
     "Vertex position"
@@ -613,6 +618,69 @@ void AliEventCuts::SetupRun2pp() {
   fFB128vsTrklLinearCut[1] = 0.932;
 
   if (!fOverrideAutoTriggerMask) fTriggerMask = AliVEvent::kINT7;
+
+}
+
+void AliEventCuts::SetupPbPb2018() {
+  ::Info("AliEventCuts::SetupPbPb2018","EXPERIMENTAL: Setup event cuts for the 2018 Pb-Pb periods.");
+  SetName("StandardSetupPbPb2018");
+
+  fRequireTrackVertex = true;
+  fMinVtz = -10.f;
+  fMaxVtz = 10.f;
+  fMaxDeltaSpdTrackAbsolute = 0.2f;
+  fMaxDeltaSpdTrackNsigmaSPD = 10.f;
+  fMaxDeltaSpdTrackNsigmaTrack = 20.f;
+  fMaxResolutionSPDvertex = 0.25f;
+
+  fRejectDAQincomplete = true;
+
+  fRequiredSolenoidPolarity = 0;
+
+  if (!fOverrideAutoPileUpCuts) {
+    fUseMultiplicityDependentPileUpCuts = true; // If user specify a value it is not overwritten
+    fSPDpileupMinZdist = 0.8;
+    fSPDpileupNsigmaZdist = 3.;
+    fSPDpileupNsigmaDiamXY = 2.;
+    fSPDpileupNsigmaDiamZ = 5.;
+    fTrackletBGcut = false;
+  }
+
+  fCentralityFramework = 1;
+  fCentEstimators[0] = "V0M";
+  fCentEstimators[1] = "CL0";
+  fMinCentrality = 0.f;
+  fMaxCentrality = 90.f;
+
+  fUseEstimatorsCorrelationCut = false;
+  fEstimatorsCorrelationCoef[0] = 0.0157497;
+  fEstimatorsCorrelationCoef[1] = 0.973488;
+  fEstimatorsSigmaPars[0] = 0.673612;
+  fEstimatorsSigmaPars[1] = 0.0290718;
+  fEstimatorsSigmaPars[2] = -0.000546728;
+  fEstimatorsSigmaPars[3] = 5.82749e-06;
+  fDeltaEstimatorNsigma[0] = 5.;
+  fDeltaEstimatorNsigma[1] = 5.5;
+
+  array<double,4> tof_fb32_corr = {-1.0178, 0.333132, 9.10282e-05, -1.61861e-08};
+  std::copy(tof_fb32_corr.begin(),tof_fb32_corr.end(),fTOFvsFB32correlationPars);
+  array<double,6> tof_fb32_sigma = {1.47848, 0.0385923, -5.06153e-05, 4.37641e-08, -1.69082e-11, 2.35085e-15};
+  std::copy(tof_fb32_sigma.begin(),tof_fb32_sigma.end(),fTOFvsFB32sigmaPars);
+  fTOFvsFB32nSigmaCut[0] = 4.;
+  fTOFvsFB32nSigmaCut[1] = 4.;
+
+  fESDvsTPConlyLinearCut[0] = 15000.;
+  fESDvsTPConlyLinearCut[1] = 3.38;
+
+  array<double,5> vzero_tpcout_polcut = {-2000.,2.1,3.5e-5,0.,0.};
+  std::copy(vzero_tpcout_polcut.begin(),vzero_tpcout_polcut.end(),fVZEROvsTPCoutPolCut);
+
+  if(!fMultiplicityV0McorrCut) fMultiplicityV0McorrCut = new TF1("fMultiplicityV0McorrCut","[0]+[1]*x+[2]*exp([3]-[4]*x) - 5.*([5]+[6]*exp([7]-[8]*x))",0,100);
+  fMultiplicityV0McorrCut->SetParameters(-6.15980e+02, 4.89828e+00, 4.84776e+03, -5.22988e-01, 3.04363e-02, -1.21144e+01, 2.95321e+02, -9.20062e-01, 2.17372e-02);
+
+  if (!fOverrideAutoTriggerMask) {
+    fTriggerMask = AliVEvent::kINT7 | AliVEvent::kCentral | AliVEvent::kSemiCentral;
+  }
 
 }
 
