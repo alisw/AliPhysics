@@ -159,6 +159,8 @@ bool AliEventCuts::AcceptEvent(AliVEvent *ev) {
   /// (i.e. if trigger mask is not fired but we see the trigger class we want we enable the trigger bit)
   /// A special bit is set in this case
   TString classes = ev->GetFiredTriggerClasses();
+  if (fTriggerClasses.empty())
+    fFlag |= BIT(kTriggerClasses);
   for (const std::string& myClass : fTriggerClasses) {
     if (classes.Contains(myClass.data()) && !myClass.empty()) {
       fFlag |= BIT(kTrigger);
