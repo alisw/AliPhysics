@@ -4154,12 +4154,12 @@ Bool_t AliCaloPhotonCuts::SetMaxPhiCut(Int_t maxPhi)
     break;
   case 7:
     if( !fUsePhiCut ) fUsePhiCut=1;
-    fMaxPhiCut = 3.28;//EMCal acceptance Run2 with stripe (w/o stripe 3.15)
+    fMaxPhiCut = 3.15;//EMCal acceptance Run2 w/o stripe
     fMaxPhiCutDMC = 5.5658;//DCal acceptance
     break;
   case 8:
     if( !fUsePhiCut ) fUsePhiCut=1;
-    fMaxPhiCut = 3.15;//EMCal acceptance Run2 w/o stripe
+    fMaxPhiCut = 3.28;//EMCal acceptance Run2 with stripe (w/o stripe 3.15)
     fMaxPhiCutDMC = 5.5658;//DCal acceptance
     break;
   case 9:
