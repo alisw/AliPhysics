@@ -9,6 +9,9 @@
 class AliRDHFJetsCutsVertex;
 class AliEmcalJetTree;
 class AliHFJetsTaggingVertex;
+#if ROOT_VERSION_CODE >= ROOT_VERSION(6,0,0)
+  class TPython;
+#endif
 
 /**
  * \class AliAnalysisTaskJetExtractor
@@ -45,6 +48,8 @@ class AliAnalysisTaskJetExtractor : public AliAnalysisTaskEmcalJet {
   void                        SetSecondaryVertexMaxChi2(Double_t val   )          { fSecondaryVertexMaxChi2 = val; }
   void                        SetSecondaryVertexMaxDispersion(Double_t val)       { fSecondaryVertexMaxDispersion = val; }
   void                        SetCalculateSecondaryVertices(Bool_t val)           { fCalculateSecondaryVertices = val; }
+  void                        SetCalculateModelBackground(Bool_t val)             { fCalculateModelBackground = val; }
+  void                        SetBackgroundModelFileName(const char* val)         { fBackgroundModelFileName = val; }
   void                        SetVertexerCuts(AliRDHFJetsCutsVertex* val)         { fVertexerCuts = val; }
   void                        SetSetEmcalJetFlavour(Bool_t val)                   { fSetEmcalJetFlavour = val; }
   void                        SetEventPercentage(Double_t val)                    { fEventPercentage  = val; }
@@ -68,6 +73,7 @@ class AliAnalysisTaskJetExtractor : public AliAnalysisTaskEmcalJet {
   void                        AddPIDInformation(AliVParticle* particle, Float_t& sigITS, Float_t& sigTPC, Float_t& sigTOF, Float_t& sigTRD, Short_t& recoPID, Int_t& truePID);
   Bool_t                      IsTrackInCone(AliVParticle* track, Double_t eta, Double_t phi, Double_t radius);
   Double_t                    GetTrueJetPtFraction(AliEmcalJet* jet);
+  void                        GetPtAndMassFromModel(AliEmcalJet* jet, Float_t& pt_ML, Float_t& mass_ML);
   Double_t                    GetMatchedTrueJetObservables(AliEmcalJet* jet, Double_t& matchedJetPt, Double_t& matchedJetMass);
   void                        GetJetType(AliEmcalJet* jet, Int_t& typeHM, Int_t& typePM, Int_t& typeIC);
   Bool_t                      IsStrangeJet(AliEmcalJet* jet);
@@ -77,6 +83,9 @@ class AliAnalysisTaskJetExtractor : public AliAnalysisTaskEmcalJet {
   void                        ReconstructSecondaryVertices(const AliVVertex* primVtx, const AliEmcalJet* jet, std::vector<Float_t>& secVtx_X, std::vector<Float_t>& secVtx_Y, std::vector<Float_t>& secVtx_Z,
                                   std::vector<Float_t>& secVtx_Mass, std::vector<Float_t>& secVtx_Lxy, std::vector<Float_t>& secVtx_SigmaLxy, std::vector<Float_t>& secVtx_Chi2, std::vector<Float_t>& secVtx_Dispersion);
 
+  #if ROOT_VERSION_CODE >= ROOT_VERSION(6,0,0)
+  TPython*                    fPythonCLI;
+  #endif
   AliEmcalJetTree*            fJetTree;
   AliHFJetsTaggingVertex*     fVtxTagger;                               //!<! class for sec. vertexing
   Double_t                    fHadronMatchingRadius;                    ///< Matching radius to search for beauty/charm hadrons around jet
@@ -84,6 +93,8 @@ class AliAnalysisTaskJetExtractor : public AliAnalysisTaskEmcalJet {
   Double_t                    fSecondaryVertexMaxChi2;                  ///< Max chi2 of secondary vertex (others will be discarded)
   Double_t                    fSecondaryVertexMaxDispersion;            ///< Max dispersion of secondary vertex (others will be discarded)
   Bool_t                      fCalculateSecondaryVertices;              ///< Calculate the secondary vertices (instead of loading)
+  Bool_t                      fCalculateModelBackground;                ///< Calculate MVA model background and attach to event
+  TString                     fBackgroundModelFileName;                 ///< MVA model file name
   AliRDHFJetsCutsVertex*      fVertexerCuts;                            ///< Cuts used for the vertexer (given in add task macro)
   Bool_t                      fSetEmcalJetFlavour;                      ///< if set, the flavour property of the AliEmcalJets will be set
   Double_t                    fEventPercentage;                         ///< percentage (0, 1] which will be extracted
@@ -103,6 +114,7 @@ class AliAnalysisTaskJetExtractor : public AliAnalysisTaskEmcalJet {
   AliJetContainer            *fJetsCont;                                //!<! Jets
   AliParticleContainer       *fTracksCont;                              //!<! Tracks
   AliClusterContainer        *fClustersCont;                            //!<! Clusters
+  TClonesArray*               fJetOutputArray;                          //!<! Array of corr. jets, attached to event
   TClonesArray*               fTruthParticleArray;                      //!<! Array of MC particles in event (mcparticles)
   TString                     fTruthJetsArrayName;                      ///< Array name for particle-level jets
   TString                     fTruthJetsRhoName;                        ///< Array name for particle-level rho
