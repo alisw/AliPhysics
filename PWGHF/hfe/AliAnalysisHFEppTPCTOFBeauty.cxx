@@ -55,6 +55,7 @@
 #include "AliPIDResponse.h"
 #include "AliHFEcontainer.h"
 #include "AliHFEcuts.h"
+#include "AliHFEextraCuts.h"
 #include "AliHFEpid.h"
 #include "AliHFEpidBase.h"
 #include "AliHFEpidQAmanager.h"
@@ -122,6 +123,7 @@ AliAnalysisHFEppTPCTOFBeauty::AliAnalysisHFEppTPCTOFBeauty(const char *name)
 ,fVevent(0)
 ,fOutputList(0)
 ,fPidResponse(0)
+,fExtraCuts(NULL)
 ,fNonHFE(new AliSelectNonHFE())
 ,fIsAOD(kFALSE)
 ,fIsPP(kFALSE)
@@ -340,6 +342,7 @@ AliAnalysisHFEppTPCTOFBeauty::AliAnalysisHFEppTPCTOFBeauty()
 ,fVevent(0)
 ,fOutputList(0)
 ,fPidResponse(0)
+,fExtraCuts(NULL)
 ,fNonHFE(new AliSelectNonHFE())
 ,fIsAOD(kFALSE)
 ,fIsPP(kFALSE)
@@ -939,7 +942,7 @@ void AliAnalysisHFEppTPCTOFBeauty::UserCreateOutputObjects()
     Double_t binLimpdg2[nBinspdg2+1];
     for(Int_t i=0; i<=nBinspdg2; i++) binLimpdg2[i]=(Double_t)minpdg2 + (maxpdg2-minpdg2)/nBinspdg2*(Double_t)i ;
     
-    Int_t nBinsdcaxy = 800;
+    Int_t nBinsdcaxy = 3200; //0.000125 cm
     Double_t mindcaxy = -0.2;
     Double_t maxdcaxy = 0.2;
     Double_t binLimdcaxy[nBinsdcaxy+1];
@@ -1110,7 +1113,7 @@ void AliAnalysisHFEppTPCTOFBeauty::UserExec(Option_t *)
     
     
     
-    ////////////////////
+        ////////////////////
 	//Vertex Selection//
 	////////////////////
  
@@ -1120,11 +1123,6 @@ void AliAnalysisHFEppTPCTOFBeauty::UserExec(Option_t *)
     ///Getting primary vertex    
     AliAODVertex* vtTrc = fAOD->GetPrimaryVertex();
     
-//     AliAODVertex* vtSPD = fAOD->GetPrimaryVertexSPD();
-
-//  if (vtTrc->GetNContributors()<2 || vtSPD->GetNContributors()<1) return; // one of vertices is missing
-
-        
     ///Events with no vertex by tracks-------------------------------
     if(!vtTrc){
 		fNevent_no_vertex->Fill(0);
@@ -1177,7 +1175,7 @@ void AliAnalysisHFEppTPCTOFBeauty::UserExec(Option_t *)
      fNevent_passvertex->Fill(0); 
         
         
-    /////////////////////////
+        /////////////////////////
 	//Centrality Selection///
 	/////////////////////////
 	if(!fIsPP){  
@@ -1388,7 +1386,8 @@ void AliAnalysisHFEppTPCTOFBeauty::UserExec(Option_t *)
 		NAnalizedTracks = NAnalizedTracks+1;
         
         ///Number of analysed tracks from Hijing:
-   /*     Int_t trkLabel = TMath::Abs(track->GetLabel());
+   	
+   	/*Int_t trkLabel = TMath::Abs(track->GetLabel());
 		Int_t labelm = GetPrimary(trkLabel,fMCarray);///gives the label of first mother
 		AliAODMCParticle *AODMCtrack = (AliAODMCParticle*)fMCarray->At(labelm);
 		Int_t trkIndexPrimHFE= AODMCtrack->GetLabel();///gives index of the particle in original MCparticle array (labelm and trkIndexPrimHFE are the same, so I don't understand why this is done)
@@ -1413,12 +1412,23 @@ void AliAnalysisHFEppTPCTOFBeauty::UserExec(Option_t *)
         ////////////////////
 		//Calculating DCA///
 		////////////////////
-        Double_t d0z0[2], cov[3];
-        AliAODVertex *prim_vtx = fAOD->GetPrimaryVertex();
-        if(!(track->PropagateToDCA(prim_vtx, fAOD->GetMagneticField(), 100., d0z0, cov))) continue;
+		
+	 if(!fExtraCuts){
+			fExtraCuts = new AliHFEextraCuts("hfeExtraCuts","HFE Extra Cuts");
+		}
+	
+	fExtraCuts->SetRecEventInfo(fAOD);
+	
+	Double_t d0z0[2], cov[3];
+
+        //AliAODVertex *prim_vtx = fAOD->GetPrimaryVertex();
+        // if(!(track->PropagateToDCA(prim_vtx, fAOD->GetMagneticField(), 3., d0z0, cov))) continue; 
+        //cout<<d0z0[0]<<"    "<<d0z0[1]<<endl;
+        fExtraCuts->GetHFEImpactParameters(track, d0z0, cov); // recalculation of vertex is done here, earlier was not done in the task and was the reason for "shoulder" shape in the DCA templates. Also, this is not giving effect for PbPb but only pp. ====> Sudhir 19 January, 2019 ///Solved
         Double_t DCAxy = d0z0[0];
         Double_t DCAz = d0z0[1];
         
+        //cout<<"After   "<<DCAxy<<"         "<<DCAz<<endl;
   
         ///Checking nsigmaTPC after PID cuts in tof and its
         if(fTOFnSigma >= ftofPIDmincut && fTOFnSigma <= ftofPIDmaxcut){
@@ -1622,16 +1632,18 @@ void AliAnalysisHFEppTPCTOFBeauty::UserExec(Option_t *)
         hfetrack.SetRecTrack(track);
         hfetrack.SetPP();	//proton-proton analysis
         if(!fPID->IsSelected(&hfetrack, NULL, "", fPIDqa)) pidpassed = 0;
-      //  cout<<"Before the pidpassed = = = = = = = = = = = ======================================"<<endl;
+        //cout<<"Before the pidpassed = = = = = = = = = = = ======================================"<<endl;
         if(pidpassed==0) continue;
-       // cout<<"After  the pidpassed = = = = = = = = = = = ======================================"<<endl;
+        //cout<<"After  the pidpassed = = = = = = = = = = = ======================================"<<endl;
         
-     //   if(fTPCnSigma < ftpcPIDmincut || fTPCnSigma > ftpcPIDmaxcut && fTOFnSigma < ftofPIDmincut || fTOFnSigma > ftofPIDmaxcut) continue;   // Applying simultaneous pid cuts manually by sudhir, since above cut function does not work in grid...
-      //  if(fTOFnSigma == -999 || fTPCnSigma == -999)continue;
-           //   cout<<ftpcPIDmincut<<"    "<<fTPCnSigma<<"     "<<ftpcPIDmaxcut<<"       "<<ftofPIDmincut<<"     "<<fTOFnSigma<<"     "<<ftofPIDmaxcut<<endl;
-     // if(fTPCnSigma >= ftpcPIDmincut && fTPCnSigma <= ftpcPIDmaxcut && fTOFnSigma >= ftofPIDmincut && fTOFnSigma <= ftofPIDmaxcut){
-       // cout<<fTPCnSigma<<"       "<<fTOFnSigma<<endl;
-        /////////////////////////
+        //if(fTPCnSigma < ftpcPIDmincut || fTPCnSigma > ftpcPIDmaxcut && fTOFnSigma < ftofPIDmincut || fTOFnSigma > ftofPIDmaxcut) continue;   // Applying simultaneous pid cuts manually by sudhir, since above cut function does not work in grid...
+        //if(fTOFnSigma == -999 || fTPCnSigma == -999)continue;
+        //cout<<ftpcPIDmincut<<"    "<<fTPCnSigma<<"     "<<ftpcPIDmaxcut<<"       "<<ftofPIDmincut<<"     "<<fTOFnSigma<<"     "<<ftofPIDmaxcut<<endl;
+        //if(fTPCnSigma >= ftpcPIDmincut && fTPCnSigma <= ftpcPIDmaxcut && fTOFnSigma >= ftofPIDmincut && fTOFnSigma <= ftofPIDmaxcut){
+        // cout<<fTPCnSigma<<"       "<<fTOFnSigma<<endl;
+        
+        
+                /////////////////////////
 		//AFTER PID SELECTION////
 		/////////////////////////
         ///Beauty reconstruction efficiency block-----------
@@ -2133,7 +2145,7 @@ Bool_t AliAnalysisHFEppTPCTOFBeauty::FindMother(Int_t mcIndex)
         
         fMCparticleMother = (AliAODMCParticle*) fMCarray->At(fMCparticle->GetMother());
         mpdg = TMath::Abs(fMCparticleMother->GetPdgCode());
-        
+
         if(fMCparticleMother->GetMother()<0)
         {
             gmpdg = 0;
@@ -2164,6 +2176,7 @@ Bool_t AliAnalysisHFEppTPCTOFBeauty::FindMother(Int_t mcIndex)
                 }
             }
         }
+            //    cout<<fMCparticle->GetMother()<<"   "<<mpdg<<"    "<<gmpdg<<"    "<<ggmpdg<<"    "<<gggmpdg<<endl;
     }
     else
     {
