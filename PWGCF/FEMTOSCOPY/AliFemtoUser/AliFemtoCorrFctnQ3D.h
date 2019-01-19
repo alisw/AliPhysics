@@ -143,7 +143,8 @@ public:
   TH3& Denominator()
     { return *fDenominator; }
 
-  /// Return bins weighed by qinv (Numerator + Denominator) -- NULL if using two histograms
+  /// Return bins weighed by qinv (Numerator + Denominator)
+  /// -- NULL if using two histograms
   TH3* QinvW()
     { return fDenominatorW == nullptr ? fNumeratorW : nullptr; }
 
@@ -158,16 +159,20 @@ public:
   virtual TList* GetOutputList()
   {
     TList *list = new TList();
-    list->Add(fNumerator);
-    list->Add(fDenominator);
+    AddOutputObjectsTo(*list);
+    return list;
+  }
 
-    list->Add(fNumeratorW);
+  virtual void AddOutputObjectsTo(TCollection &dest)
+  {
+    dest.Add(fNumerator);
+    dest.Add(fDenominator);
+
+    dest.Add(fNumeratorW);
 
     if (fDenominatorW) {
-      list->Add(fDenominatorW);
+      dest.Add(fDenominatorW);
     }
-
-    return list;
   }
 
   /// Load 3D q-vector components into variables
