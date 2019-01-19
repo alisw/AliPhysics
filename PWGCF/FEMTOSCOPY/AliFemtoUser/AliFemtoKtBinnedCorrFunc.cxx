@@ -162,7 +162,12 @@ void AliFemtoKtBinnedCorrFunc::AddMixedPair(AliFemtoPair *pair)
 TList* AliFemtoKtBinnedCorrFunc::GetOutputList()
 {
   TList *olist = new TList();
+  AddOutputObjectsTo(*olist);
+  return olist;
+}
 
+void AliFemtoKtBinnedCorrFunc::AddOutputObjectsTo(TCollection &olist)
+{
   TObjArray *output = new TObjArray();
   output->SetName(fName);
 
@@ -194,13 +199,10 @@ TList* AliFemtoKtBinnedCorrFunc::GetOutputList()
     TObjArray *cf_output = new TObjArray();
     cf_output->SetName(range_name);
 
-    TList *cf_list = cf->GetOutputList();
-    cf_output->AddAll(cf_list);
-    delete cf_list;
+    cf->AddOutputObjectsTo(*cf_output);
 
     output->Add(cf_output);
   }
 
-  olist->Add(output);
-  return olist;
+  olist.Add(output);
 }

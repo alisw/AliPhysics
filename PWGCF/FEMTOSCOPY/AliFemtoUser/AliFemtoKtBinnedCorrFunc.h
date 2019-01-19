@@ -91,6 +91,7 @@ public:
 
   /// Return TList of output objects
   virtual TList* GetOutputList();
+  virtual void AddOutputObjectsTo(TCollection &);
 
   virtual AliFemtoString Report() { return ""; };
 
