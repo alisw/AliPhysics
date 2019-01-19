@@ -29,16 +29,16 @@ public:
     Int_t bin_count;
     Double_t qmin;
     Double_t qmax;
-    TString title;
+    TString prefix;
     AliFemtoModelManager *mc_manager;
 
     /// Build Parameters object with default values
     static Parameters Default()
     {
       return {
-        56, -0.14, 0.14,  // histogram bin-count & range
-        "CF_Q3DByParent", // title
-        NULL              // pointer to MC manager
+        57, -0.1425, 0.1425,  // histogram bin-count & range
+        "CF_Q3DByParent",     // name
+        NULL                  // pointer to MC manager
       };
     }
 
@@ -46,7 +46,7 @@ public:
       Parameters __name(__type var) const  \
         { Parameters p; p.__target = var; return p; }
 
-    ImplSetter(Title, const TString&, title);
+    ImplSetter(NamePrefix, const TString&, prefix);
     ImplSetter(Manager, AliFemtoModelManager *, mc_manager);
     ImplSetter(NBin, UInt_t, bin_count);
 
@@ -82,13 +82,11 @@ public:
     AliFemtoModelCorrFctnTrueQ3DByParent into()
       { return AliFemtoModelCorrFctnTrueQ3DByParent(*this); }
 
-    /*
-    operator AliFemtoModelCorrFctnTrueQ3DByParent()
-      { return into(); }
-    */
+    AliFemtoModelCorrFctnTrueQ3DByParent* into_ptr()
+      { return new AliFemtoModelCorrFctnTrueQ3DByParent(*this); }
 
     operator AliFemtoModelCorrFctnTrueQ3DByParent*()
-      { return new AliFemtoModelCorrFctnTrueQ3DByParent(*this); }
+      { return into_ptr(); }
   };
 
   /// Deafult parameters
@@ -106,11 +104,11 @@ public:
   /// Symmetric constructor
   ///
   /// Construct with nbins from -qmax to qmax in both directions
-  AliFemtoModelCorrFctnTrueQ3DByParent(const char *title, UInt_t nbins, Double_t qmax);
+  AliFemtoModelCorrFctnTrueQ3DByParent(const char *prefix, UInt_t nbins, Double_t qmax);
 
   /// Custom constructor
   ///
-  AliFemtoModelCorrFctnTrueQ3DByParent(const char *title, UInt_t nbins, Double_t qlo, Double_t qhigh);
+  AliFemtoModelCorrFctnTrueQ3DByParent(const char *prefix, UInt_t nbins, Double_t qlo, Double_t qhigh);
 
   /// Construct with standard name
   AliFemtoModelCorrFctnTrueQ3DByParent(Int_t nbins, Double_t qmax);
@@ -147,6 +145,7 @@ public:
 
   virtual TList* GetOutputList();
   virtual TList* AppendOutputList(TList &);
+  virtual void AddOutputObjectsTo(TCollection &);
 
   virtual AliFemtoCorrFctn* Clone() const;
 
@@ -154,6 +153,10 @@ public:
 
   //Special MC analysis for K selected by PDG code -->
   void SetKaonPDG(Bool_t aSetKaonAna);
+
+
+  static Parameters Build()
+    { return Parameters::Default(); }
 
 protected:
   AliFemtoModelManager *fManager; //!<! Link back to the manager to retrieve weights
@@ -169,9 +172,6 @@ protected:
 
   /// Denominator with reconstructed data
   THnSparseF *fDenominatorReconstructed;
-
-  /// Random number generator used for randomizing order of pair momentums
-  TRandom *fRng;
 };
 
 inline

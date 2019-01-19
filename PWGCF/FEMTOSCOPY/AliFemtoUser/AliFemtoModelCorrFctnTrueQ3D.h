@@ -170,6 +170,7 @@ public:
   virtual void Finish();
 
   virtual TList* GetOutputList();
+  virtual void AddOutputObjectsTo(TCollection &);
   virtual TList* AppendOutputList(TList &);
 
   virtual AliFemtoCorrFctn* Clone() const;

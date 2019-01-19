@@ -11,6 +11,9 @@
 #include <TString.h>
 #include <vector>
 
+class TH1I;
+
+
 /// \class AliFemtoKtBinnedCorrFunc
 /// \brief A "wrapper class" that wraps a correlation function
 ///        with code that checks the kt of the pair.
@@ -88,6 +91,7 @@ public:
 
   /// Return TList of output objects
   virtual TList* GetOutputList();
+  virtual void AddOutputObjectsTo(TCollection &);
 
   virtual AliFemtoString Report() { return ""; };
 
@@ -103,6 +107,9 @@ private:
   AliFemtoKtBinnedCorrFunc& operator=(const AliFemtoKtBinnedCorrFunc&);
 
 protected:
+
+  void AddPair(AliFemtoPair *, bool);
+
   /// Name of the output TObjArray
   TString fName;
 
@@ -115,8 +122,12 @@ protected:
 
   /// Internal vector of ranges.
   std::vector<std::pair<Float_t, Float_t> > fRanges;
+
+  /// Histogram monitoring kT distribution
+  TH1I* fKtMonitor;
 };
 
+  // std::vector<std::pair<std::pair<Float_t, Float_t>, A >> fRanges;
 
 template <typename T>
 void AliFemtoKtBinnedCorrFunc::AddKtRanges(const T &start, const T &stop)

@@ -143,7 +143,8 @@ public:
   TH3& Denominator()
     { return *fDenominator; }
 
-  /// Return bins weighed by qinv (Numerator + Denominator) -- NULL if using two histograms
+  /// Return bins weighed by qinv (Numerator + Denominator)
+  /// -- NULL if using two histograms
   TH3* QinvW()
     { return fDenominatorW == nullptr ? fNumeratorW : nullptr; }
 
@@ -158,16 +159,20 @@ public:
   virtual TList* GetOutputList()
   {
     TList *list = new TList();
-    list->Add(fNumerator);
-    list->Add(fDenominator);
+    AddOutputObjectsTo(*list);
+    return list;
+  }
 
-    list->Add(fNumeratorW);
+  virtual void AddOutputObjectsTo(TCollection &dest)
+  {
+    dest.Add(fNumerator);
+    dest.Add(fDenominator);
+
+    dest.Add(fNumeratorW);
 
     if (fDenominatorW) {
-      list->Add(fDenominatorW);
+      dest.Add(fDenominatorW);
     }
-
-    return list;
   }
 
   /// Load 3D q-vector components into variables
@@ -208,10 +213,6 @@ protected:
   TH3* fDenominatorW;   ///<!< Qinv-Weighted denominator
 };
 
-#ifdef SINGLE_WQINV
-#undef fNumeratorW
-#undef fDenominatorW
-#endif
 
 template <typename T>
 AliFemtoCorrFctnQ3D<T>::AliFemtoCorrFctnQ3D(const char* title,
@@ -272,7 +273,7 @@ AliFemtoCorrFctnQ3D<T>::AliFemtoCorrFctnQ3D(const AliFemtoCorrFctnQ3D<T>& orig)
   , fNumerator(new TH3F(*orig.fNumerator))
   , fDenominator(new TH3F(*orig.fDenominator))
   , fNumeratorW(static_cast<TH3*>(orig.fNumeratorW->Clone()))
-  , fDenominatorW(static_cast<TH3*>(orig.fDenominatorW->Clone()))
+  , fDenominatorW(static_cast<TH3*>(orig.fDenominatorW ? orig.fDenominatorW->Clone() : nullptr))
 {
 }
 

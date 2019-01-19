@@ -168,6 +168,13 @@ AliFemtoModelCorrFctnTrueQ3D::GetOutputList()
 TList*
 AliFemtoModelCorrFctnTrueQ3D::AppendOutputList(TList &list)
 {
+  AddOutputObjectsTo(list);
+  return &list;
+}
+
+void
+AliFemtoModelCorrFctnTrueQ3D::AddOutputObjectsTo(TCollection &list)
+{
   list.Add(fNumeratorGenerated);
   list.Add(fNumeratorReconstructed);
   list.Add(fDenominatorGenerated);
@@ -176,8 +183,6 @@ AliFemtoModelCorrFctnTrueQ3D::AppendOutputList(TList &list)
   list.Add(fNumeratorRecUnweighted);
   list.Add(fDenominatorGenWeighted);
   list.Add(fDenominatorRecWeighted);
-
-  return &list;
 }
 
 /// Return q{Out-Side-Long} tuple, calculated from momentum vectors p1 & p2
