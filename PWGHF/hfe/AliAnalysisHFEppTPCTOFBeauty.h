@@ -25,6 +25,7 @@ class AliESDtrackCuts;
 class AliESDtrack;
 class AliHFEcontainer;
 class AliHFEcuts;
+class AliHFEextraCuts;
 class AliHFEpid;
 class AliHFEpidQAmanager;
 class AliCFManager;
@@ -189,7 +190,7 @@ private:
     TList       			*fOutputList;
     AliPIDResponse 			*fPidResponse;
     AliSelectNonHFE 		*fNonHFE;
-    
+    AliHFEextraCuts 		*fExtraCuts;    
     
     //For the case of AOD analysis
     Bool_t					fIsAOD;					//flag for AOD analysis
