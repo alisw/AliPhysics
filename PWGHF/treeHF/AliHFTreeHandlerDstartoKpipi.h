@@ -42,7 +42,6 @@ class AliHFTreeHandlerDstartoKpipi : public AliHFTreeHandler
     vector<float> fImpParProng[knMaxProngs]; ///vectors of prong impact parameter
     vector<float> fCosThetaStar; ///vector of candidate cos theta star
     vector<float> fImpParProd; ///vector of D0 product of impact parameter
-    vector<float> fSoftPiPt; ///vector of pT soft pion
     vector<float> fNormd0MeasMinusExp; ///vector of candidate topomatic variable
 
     vector<float> fInvMass_D0; ///vector of candidate invariant mass D0
@@ -52,7 +51,7 @@ class AliHFTreeHandlerDstartoKpipi : public AliHFTreeHandler
     vector<float> fPhi_D0; ///vector of D0 azimuthal angle
 
     /// \cond CLASSIMP
-    ClassDef(AliHFTreeHandlerDstartoKpipi,1); ///
+    ClassDef(AliHFTreeHandlerDstartoKpipi,2); ///
     /// \endcond
 };
 #endif
