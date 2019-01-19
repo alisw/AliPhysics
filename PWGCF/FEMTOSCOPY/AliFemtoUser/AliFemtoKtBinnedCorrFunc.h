@@ -121,6 +121,9 @@ protected:
 
   /// Internal vector of ranges.
   std::vector<std::pair<Float_t, Float_t> > fRanges;
+
+  /// Histogram monitoring kT distribution
+  TH1I* fKtMonitor;
 };
 
   // std::vector<std::pair<std::pair<Float_t, Float_t>, A >> fRanges;

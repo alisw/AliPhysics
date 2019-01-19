@@ -8,6 +8,7 @@
 #include "AliFemtoCorrFctn3DLCMSSym.h"
 
 #include <TObjArray.h>
+#include <TH1I.h>
 
 #include <algorithm>
 #include <cassert>
@@ -16,15 +17,21 @@
 
 
 
-AliFemtoKtBinnedCorrFunc::AliFemtoKtBinnedCorrFunc(const TString& name, AliFemtoCorrFctn *cf):
-  fName(name),
-  fPrototypeCF(cf)
-{ // no-op
+
+AliFemtoKtBinnedCorrFunc::AliFemtoKtBinnedCorrFunc(const TString& name, AliFemtoCorrFctn *cf)
+  : AliFemtoCorrFctn()
+  , fName(name)
+  , fPrototypeCF(cf)
+  , fCFBuffer()
+  , fRanges()
+  , fKtMonitor(nullptr)
+{
 }
 
 AliFemtoKtBinnedCorrFunc::~AliFemtoKtBinnedCorrFunc()
 {
   delete fPrototypeCF;
+  delete fKtMonitor;
 }
 
 UInt_t AliFemtoKtBinnedCorrFunc::AddKtRange(float low, float high)
@@ -96,6 +103,7 @@ void AliFemtoKtBinnedCorrFunc::AddPair(AliFemtoPair *pair, bool is_same_event)
     }
   }
 
+  bool ktmonitor_needs_update = false;
   for (; idx < fRanges.size(); ++idx) {
     const auto r = fRanges[idx];
 
@@ -107,12 +115,42 @@ void AliFemtoKtBinnedCorrFunc::AddPair(AliFemtoPair *pair, bool is_same_event)
     // we are within this range
     if (kt < r.second) {
       add_pair_to(fCFBuffer[idx]);
+      ktmonitor_needs_update = true;
     }
   }
+
+  // update kt-monitor for real events
+  if (is_same_event and ktmonitor_needs_update) {
+    fKtMonitor->Fill(kt);
+  }
+}
+
+inline
+TH1I* build_kt_monitor(const std::vector<std::pair<float, float>> ranges)
+{
+  // determinte high and low points
+  auto low = ranges.front().first,
+       high = -1.0f;
+
+  for (auto r : ranges) {
+    high = std::max(high, r.second);
+  }
+
+  UInt_t max_bins = 12 * 15 * 7;  // <- easy rebinning, not too big
+  UInt_t small_bins = std::lrint((high - low) / 0.005);  // 5MeV bins
+
+  // determine best limit
+  auto nbins = std::min(small_bins, max_bins);
+
+  auto hist = new TH1I("kTDist", "k_{T} Distribution", nbins, low, high);
+  return hist;
 }
 
 void AliFemtoKtBinnedCorrFunc::AddRealPair(AliFemtoPair *pair)
 {
+  if (__builtin_expect(fKtMonitor == nullptr, 0)) {
+    fKtMonitor = build_kt_monitor(fRanges);
+  }
   AddPair(pair, true);
 }
 
@@ -127,6 +165,12 @@ TList* AliFemtoKtBinnedCorrFunc::GetOutputList()
 
   TObjArray *output = new TObjArray();
   output->SetName(fName);
+
+  if (fKtMonitor == nullptr) {
+    fKtMonitor = build_kt_monitor(fRanges);
+  }
+
+  output->Add(fKtMonitor);
 
   for (UInt_t i = 0; i < fRanges.size(); ++i) {
     const std::pair<Float_t, Float_t> &range = fRanges[i];
