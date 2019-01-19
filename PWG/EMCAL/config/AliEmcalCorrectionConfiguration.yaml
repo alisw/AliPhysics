@@ -251,6 +251,16 @@ ClusterHadronicCorrection:                          # Cluster hadronic correctio
         - defaultClusterContainer_2                 # This object is defined above in the cluster section of the input objects
     trackContainersNames:                           # Names of the track input objects which should be attached to the correection
         - defaultTrackContainer_1                   # This object is defined above in the track section of the input objects
+CellEnergyVariation:                                # Cell energy shift correction component
+    enabled: false                                  # Whether to enable the task
+    createHistos: false                             # Whether the task should create output histograms
+    minCellE: 0.                                    # Min cell E to perform scaling on
+    maxCellE: 150.                                  # Max cell E to perform scaling on
+    energyScaleFactorConstant: 1.                   # Constant factor to scale cell energy by
+    energyScaleFunctionPath: ""                     # Path to file containing TF1 to scale cell energy by, as a function of cell E
+    energyScaleFunctionName: ""                     # Name of TF1 describing factor to scale cell energy by, as a function of cell E
+    cellsNames:                                     # Names of the cells input objects which should be attached to the correction
+        - defaultCells                              # This object is defined above in the cells section of the input objects
 ClusterEnergyVariation:                             # Cluster energy shift correction component (for systematics studies)
     enabled: false                                  # Whether to enable the task
     createHistos: false                             # Whether the task should create output histograms
@@ -269,6 +279,7 @@ PHOSCorrections:                                    # PHOS recalibration compone
 executionOrder:
     - CellEmulateCrosstalk
     - CellEnergy
+    - CellEnergyVariation
     - CellBadChannel
     - CellTimeCalib
     - CellCombineCollections

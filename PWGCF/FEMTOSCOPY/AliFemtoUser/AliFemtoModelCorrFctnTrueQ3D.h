@@ -12,11 +12,23 @@
 
 class AliFemtoPair;
 class AliFemtoModelManager;
-class TH3D;
+class TH3F;
 class TRandom;
 
 /// \class AliFemtoModelCorrFctnTrueQ3D
 /// \brief Correlation function storing true momentum in LCMS frame.
+///
+///
+/// Build with the parameters class
+///
+/// ```cpp
+/// AliFemtoModelCorrFctnTrueQ3D *cf = AliFemtoModelCorrFctnTrueQ3D::Build()
+///                                        .NamePrefix("MRC")
+///                                        .QRange(-.2, .2)
+///                                        .BinCount(87)
+///                                        .Manager(mc_manager);
+///
+/// ```
 ///
 /// \author Andrew Kubera, The Ohio State University <andrew.michael.kubera@cern.ch>
 ///
@@ -27,7 +39,7 @@ public:
     UInt_t bin_count;
     Double_t qmin;
     Double_t qmax;
-    TString title;
+    TString prefix;
     AliFemtoModelManager *mc_manager;
 
     /// Build Parameters object with default values
@@ -35,14 +47,19 @@ public:
     {
       return {
         56, -0.14, 0.14, // histogram bin-count & range
-        "CF_TrueQ3D",    // title
+        "CF_TrueQ3D",    // Prefix
         NULL             // pointer to MC manager
       };
     }
 
+    Parameters NamePrefix(const TString& prefix) const {
+      Parameters p(*this);
+      p.prefix = prefix;
+      return p;
+    }
     Parameters Title(const TString& title) const {
       Parameters p(*this);
-      p.title = title;
+      p.prefix = title;
       return p;
     }
     Parameters Manager(AliFemtoModelManager *manager) const {
@@ -60,6 +77,11 @@ public:
       Parameters p(*this);
       p.qmax = max;
       p.qmin = min;
+      return p;
+    }
+    Parameters BinCount(UInt_t nbins) const {
+      Parameters p(*this);
+      p.bin_count = nbins;
       return p;
     }
     Parameters NBin(UInt_t nbins) const {
@@ -81,7 +103,12 @@ public:
       p.qmax = q_max;
       return p;
     }
-    operator AliFemtoModelCorrFctnTrueQ3D*() {
+
+    operator AliFemtoModelCorrFctnTrueQ3D*() const {
+      return into_ptr();
+    }
+
+    AliFemtoModelCorrFctnTrueQ3D* into_ptr() const {
       return new AliFemtoModelCorrFctnTrueQ3D(*this);
     }
   };
@@ -93,7 +120,7 @@ public:
   ///
   AliFemtoModelCorrFctnTrueQ3D();
 
-  /// Custom title
+  /// Construct with name-prefix
   ///
   /// Use default binning parameters
   AliFemtoModelCorrFctnTrueQ3D(const char *prefix);
@@ -105,7 +132,7 @@ public:
 
   /// Custom constructor
   ///
-  AliFemtoModelCorrFctnTrueQ3D(const char *prefix, UInt_t nbins, Double_t aQinvLo, Double_t aQinvHi);
+  AliFemtoModelCorrFctnTrueQ3D(const TString &prefix, UInt_t nbins, Double_t aQinvLo, Double_t aQinvHi);
 
   /// Unnamed, q-symmetric constructor
   ///
@@ -128,7 +155,7 @@ public:
   /// Destructor - histograms destroyed, ModelManager is NOT
   virtual ~AliFemtoModelCorrFctnTrueQ3D();
 
-
+  ///
   AliFemtoModelCorrFctnTrueQ3D& operator=(const AliFemtoModelCorrFctnTrueQ3D&);
 
   /// Set the MC model manager
@@ -143,6 +170,7 @@ public:
   virtual void Finish();
 
   virtual TList* GetOutputList();
+  virtual void AddOutputObjectsTo(TCollection &);
   virtual TList* AppendOutputList(TList &);
 
   virtual AliFemtoCorrFctn* Clone() const;
@@ -152,20 +180,31 @@ public:
   //Special MC analysis for K selected by PDG code -->
   void SetKaonPDG(Bool_t aSetKaonAna);
 
+  /// Get a builder-pattern constructor object
+  static Parameters Build()
+    { return Parameters(); }
+
 protected:
   AliFemtoModelManager *fManager; //!<! Link back to the manager to retrieve weights
 
   /// Numerator made with pairs using monte-carlo generated momentum
-  TH3D *fNumeratorGenerated;
+  TH3F *fNumeratorGenerated;
 
   /// Numerator made with pairs from the same event
-  TH3D *fNumeratorReconstructed;
+  TH3F *fNumeratorReconstructed;
+
+  /// Numerator made with pairs from the same event - no femto weighting
+  TH3F *fNumeratorGenUnweighted;
+  TH3F *fNumeratorRecUnweighted;
 
   /// Denominator with the monte-carlo generated momentum
-  TH3D *fDenominatorGenerated;
+  TH3F *fDenominatorGenerated;
 
   /// Denominator with reconstructed data
-  TH3D *fDenominatorReconstructed;
+  TH3F *fDenominatorReconstructed;
+
+  TH3F *fDenominatorGenWeighted;
+  TH3F *fDenominatorRecWeighted;
 
   /// Random number generator used for randomizing order of pair momentums
   TRandom *fRng;
@@ -176,14 +215,6 @@ void
 AliFemtoModelCorrFctnTrueQ3D::SetManager(AliFemtoModelManager *manager)
 {
   fManager = manager;
-  std::cout << "fManager set to " << fManager << "\n";
-}
-
-inline
-void
-AliFemtoModelCorrFctnTrueQ3D::Finish()
-{
-  // no-op
 }
 
 inline

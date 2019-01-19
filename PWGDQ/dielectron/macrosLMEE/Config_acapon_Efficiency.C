@@ -1,22 +1,5 @@
-Bool_t SetTPCCorrection = kFALSE;
-Bool_t SetITSCorrection = kFALSE;
-Bool_t SetTOFCorrection = kFALSE;
-
 Bool_t SetGeneratedSmearingHistos = kTRUE;
 
-Bool_t DoPairing    = kFALSE;
-Bool_t DoULSLS      = kFALSE;
-Bool_t DeactivateLS = kTRUE;
-
-// Leave blank to not use resolution files
-std::string resoFilename = "";
-std::string resoFilenameFromAlien = "";
-
-Bool_t DoCocktailWeighting  = kFALSE;
-Bool_t GetCocktailFromAlien = kFALSE;
-std::string CocktailFilename = "";
-std::string CocktailFilenameFromAlien = "/alice/cern.ch/user/a/acapon/.root";
-// std::string CocktailFilenameFromAlien = "/alice/cern.ch/user/c/cklein/data/cocktail_PbPb0080_5TeV.root";
 
 Bool_t GetCentralityFromAlien = kFALSE;
 std::string centralityFilename = "";
@@ -33,7 +16,7 @@ const Double_t minGenEta = -1.5;
 const Double_t maxGenEta = 1.5;
 
 const Double_t minPtCut  = 0.2;
-const Double_t maxPtCut  = 8.0;
+const Double_t maxPtCut  = 20.0;
 const Double_t minEtaCut = -0.8;
 const Double_t maxEtaCut = 0.8;
 // const Double_t minPtCut = 0.2;
@@ -51,8 +34,8 @@ Double_t ptBins[] = {0.000,0.050,0.100,0.150,0.200,0.250,0.300,0.350,0.400,0.450
 const Int_t nBinsPt =  ( sizeof(ptBins) / sizeof(ptBins[0]) )-1;
 
 const Double_t minPtBin   = 0;
-const Double_t maxPtBin   = 8;
-const Int_t    stepsPtBin = 400;
+const Double_t maxPtBin   = 20;
+const Int_t    stepsPtBin = 800;
 
 const Double_t minEtaBin   = -1.0;
 const Double_t maxEtaBin   = 1.0;
@@ -68,10 +51,10 @@ const Int_t    stepsThetaBin = 60;
 
 const Double_t minMassBin     = 0;
 const Double_t maxMassBin     = 5;
-const Int_t    stepsMassBin   = 250;
+const Int_t    stepsMassBin   = 500;
 const Double_t minPairPtBin   = 0;
-const Double_t maxPairPtBin   = 8;
-const Int_t    stepsPairPtBin = 160;
+const Double_t maxPairPtBin   = 10;
+const Int_t    stepsPairPtBin = 100;
 
 // Binning of resolution histograms
 const Int_t    NbinsDeltaMom   = 2000;
@@ -171,6 +154,12 @@ AliAnalysisFilter* SetupTrackCutsAndSettings(TString cutDefinition)
 		anaFilter->SetName(cutDefinition);
 		anaFilter->Print();
 	}
+	else if(cutDefinition == "kTheoPID"){ // PID cut set from a Run 1 pPb analysis. Standard track cuts
+		std::cout << "Setting up Theo PID. Standard track cuts." << std::endl;
+		anaFilter->AddCuts(LMcutlib->GetTrackCuts(LMEECutLib::kCutSet1, LMEECutLib::kTheoPID));
+		anaFilter->SetName(cutDefinition);
+		anaFilter->Print();
+	}
 	else{
 		std::cout << "Undefined cut definition...." << std::endl;
 		return 0x0;
@@ -182,6 +171,7 @@ AliAnalysisFilter* SetupTrackCutsAndSettings(TString cutDefinition)
 // #########################################################
 // #########################################################
 std::vector<Bool_t> AddSingleLegMCSignal(AliAnalysisTaskElectronEfficiencyV2* task){
+
   AliDielectronSignalMC partFinalState("partFinalState","partFinalState");
   partFinalState.SetLegPDGs(0,1);//dummy second leg (never MCkTRUE)\n"
   // partFinalState.SetCheckBothChargesLegs(kTRUE,kTRUE);
@@ -191,6 +181,7 @@ std::vector<Bool_t> AddSingleLegMCSignal(AliAnalysisTaskElectronEfficiencyV2* ta
   eleFinalState.SetLegPDGs(11,1);//dummy second leg (never MCkTRUE)\n"
   eleFinalState.SetCheckBothChargesLegs(kTRUE,kTRUE);
   //eleFinalState.SetLegSources(AliDielectronSignalMC::kFinalState, AliDielectronSignalMC::kFinalState);
+	eleFinalState.SetMotherPDGs(22, 22, kTRUE, kTRUE);
 
   AliDielectronSignalMC eleFinalStateFromSameMotherMeson("eleFinalStateFromSameMotherMeson","eleFinalStateFromSameMotherMeson");
   eleFinalStateFromSameMotherMeson.SetLegPDGs(11,1);//dummy second leg (never MCkTRUE)\n"
@@ -233,12 +224,12 @@ std::vector<Bool_t> AddSingleLegMCSignal(AliAnalysisTaskElectronEfficiencyV2* ta
 
   // this is used to get electrons from charmed mesons in a environment where GEANT is doing the decay of D mesons, like in LHC18b5a
   // ordering is according to MCSignals of single legs
- std::vector<Bool_t> DielectronsPairNotFromSameMother;
- DielectronsPairNotFromSameMother.push_back(kFALSE);
- DielectronsPairNotFromSameMother.push_back(kTRUE);
- DielectronsPairNotFromSameMother.push_back(kTRUE);
- // DielectronsPairNotFromSameMother.push_back(kFALSE);
- return DielectronsPairNotFromSameMother;
+	std::vector<Bool_t> DielectronsPairNotFromSameMother;
+	DielectronsPairNotFromSameMother.push_back(kFALSE);
+	DielectronsPairNotFromSameMother.push_back(kTRUE);
+	DielectronsPairNotFromSameMother.push_back(kTRUE);
+	// DielectronsPairNotFromSameMother.push_back(kFALSE);
+	return DielectronsPairNotFromSameMother;
 }
 
 
@@ -249,7 +240,7 @@ void AddPairMCSignal(AliAnalysisTaskElectronEfficiencyV2* task){
     AliDielectronSignalMC pair_sameMother("sameMother","sameMother");
     pair_sameMother.SetLegPDGs(11,-11);
     pair_sameMother.SetCheckBothChargesLegs(kTRUE,kTRUE);
-    pair_sameMother.SetLegSources(AliDielectronSignalMC::kFinalState, AliDielectronSignalMC::kFinalState);
+    //pair_sameMother.SetLegSources(AliDielectronSignalMC::kFinalState, AliDielectronSignalMC::kFinalState);
     //mother
     pair_sameMother.SetMothersRelation(AliDielectronSignalMC::kSame);
     pair_sameMother.SetMotherPDGs(22,22,kTRUE,kTRUE); // exclude conversion electrons. should have no effect on final state ele.

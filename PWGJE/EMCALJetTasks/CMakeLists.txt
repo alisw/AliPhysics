@@ -279,7 +279,12 @@ set(HDRS ${HDRS} Tracks/AliEMCalTriggerAnaHelper.h)
 get_directory_property(incdirs INCLUDE_DIRECTORIES)
 generate_dictionary("${MODULE}" "${MODULE}LinkDef.h" "${HDRS}" "${incdirs}" "${FASTJET_ROOTDICT_OPTS}")
 
-set(ROOT_DEPENDENCIES)
+if(ROOT_VERSION_MAJOR EQUAL 6)
+    set(ROOT_DEPENDENCIES PyROOT)
+else()
+    set(ROOT_DEPENDENCIES)
+endif()
+
 set(ALIROOT_DEPENDENCIES ANALYSIS CORRFW PHOSbase PWGEMCALbase PWGEMCALtrigger PWGJETFW PWGCaloTrackCorrBase)
 if(FASTJET_FOUND)
     set(ALIROOT_DEPENDENCIES JETAN ${ALIROOT_DEPENDENCIES})

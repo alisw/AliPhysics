@@ -25,7 +25,11 @@ typedef ROOT::Math::LorentzVector<ROOT::Math::PxPyPzM4D<double>> LVector_t;
 
 class AliAnalysisTaskStrangenessLifetimes : public AliAnalysisTaskSE {
  public:
-  AliAnalysisTaskStrangenessLifetimes(bool mc = false, std::string name = "TaskStrangenessLifetimes");
+
+  Lifetimes::MiniV0 fV0;
+  Lifetimes::MCparticle fMCpart;
+  Lifetimes::HyperTriton2Body fV0Hy;
+  AliAnalysisTaskStrangenessLifetimes(bool mc = false, std::string name = "TaskStrangenessLifetimes",float downscale=1,bool Hypertriton=true, bool V0s=true);
   virtual ~AliAnalysisTaskStrangenessLifetimes();
 
   virtual void UserCreateOutputObjects();
@@ -54,15 +58,19 @@ class AliAnalysisTaskStrangenessLifetimes : public AliAnalysisTaskSE {
   static LVector_t GetV0LorentzVector(int pdg, AliESDtrack* nTrack, AliESDtrack* pTrack, double alpha);
 
   AliEventCuts fEventCuts;  /// Event cuts class
-
  private:
   TList* fListHist;  //! List of Cascade histograms
-  TTree* fTreeV0;    //! Output Tree, V0s
+  TTree* fTreeV0;
+  TTree* fTreeHypertriton;  
+  TTree* fTreeMC;
 
   AliPIDResponse* fPIDResponse;  //! PID response object
 
   bool fDoV0Refit;
   bool fMC;
+  bool fHypertriton;
+  bool fV0s;
+  float fDownscale;
   bool fUseOnTheFly;
 
   /// Control histograms to monitor the filtering
@@ -102,17 +110,13 @@ class AliAnalysisTaskStrangenessLifetimes : public AliAnalysisTaskSE {
   float fMaxTPCprotonSigma;
   float fMaxTPChe3Sigma;
 
-  std::vector<Lifetimes::MiniV0 > fV0vector;
-  std::vector<Lifetimes::MCparticle> fMCvector;
-  std::vector<Lifetimes::HyperTriton2Body> fV0Hyvector;
-  float fMultiplicity;
 
   AliAnalysisTaskStrangenessLifetimes(
       const AliAnalysisTaskStrangenessLifetimes&);  // not implemented
   AliAnalysisTaskStrangenessLifetimes& operator=(
       const AliAnalysisTaskStrangenessLifetimes&);  // not implemented
 
-  ClassDef(AliAnalysisTaskStrangenessLifetimes, 4);
+  ClassDef(AliAnalysisTaskStrangenessLifetimes, 8);
 };
 
 #endif

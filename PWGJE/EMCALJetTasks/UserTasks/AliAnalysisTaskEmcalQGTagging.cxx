@@ -72,6 +72,7 @@ AliAnalysisTaskEmcalQGTagging::AliAnalysisTaskEmcalQGTagging() :
   fOneConstSelectOn(kFALSE),
   fTrackCheckPlots(kFALSE),
   fSubjetCutoff(0.1),
+  fMinPtConst(1),
   fHardCutoff(0),
   fDoTwoTrack(kFALSE),
   fPhiCutValue(0.02),
@@ -96,7 +97,7 @@ AliAnalysisTaskEmcalQGTagging::AliAnalysisTaskEmcalQGTagging() :
   fTreeObservableTagging(0)
 
 {
-   for(Int_t i=0;i<17;i++){
+   for(Int_t i=0;i<8;i++){
     fShapesVar[i]=0;}
   SetMakeGeneralHistograms(kTRUE);
   DefineOutput(1, TList::Class());
@@ -126,6 +127,7 @@ AliAnalysisTaskEmcalQGTagging::AliAnalysisTaskEmcalQGTagging(const char *name) :
   fOneConstSelectOn(kFALSE),
   fTrackCheckPlots(kFALSE),
   fSubjetCutoff(0.1),
+  fMinPtConst(1),
   fHardCutoff(0),
   fDoTwoTrack(kFALSE),
   fPhiCutValue(0.02),
@@ -151,7 +153,7 @@ AliAnalysisTaskEmcalQGTagging::AliAnalysisTaskEmcalQGTagging(const char *name) :
   
 {
   // Standard constructor.
-  for(Int_t i=0;i<17;i++){
+  for(Int_t i=0;i<8;i++){
     fShapesVar[i]=0;}
   SetMakeGeneralHistograms(kTRUE);
   
@@ -208,11 +210,11 @@ AliAnalysisTaskEmcalQGTagging::~AliAnalysisTaskEmcalQGTagging()
 
 
   
-   //log(1/theta),log(z*theta),jetpT,algo// 
-   const Int_t dimSpec   = 5;
-   const Int_t nBinsSpec[5]     = {50,50,10,3,10};
-   const Double_t lowBinSpec[5] = {0.0,-10,  0,0,0};
-   const Double_t hiBinSpec[5]  = {5.0,  0,200,3,10};
+   //log(1/theta),log(kt),jetpT,depth, algo, Eradiator// 
+   const Int_t dimSpec   = 7;
+   const Int_t nBinsSpec[7]     = {50,100,100,20,3,100,2};
+   const Double_t lowBinSpec[7] = {0.,-10,0,0,0,0,0};
+   const Double_t hiBinSpec[7]  = {5.,10.,100,20,3,100,2};
    fHLundIterative = new THnSparseF("fHLundIterative",
                    "LundIterativePlot [log(1/theta),log(z*theta),pTjet,algo]",
                    dimSpec,nBinsSpec,lowBinSpec,hiBinSpec);
@@ -220,10 +222,10 @@ AliAnalysisTaskEmcalQGTagging::~AliAnalysisTaskEmcalQGTagging()
 
 
   //// 
-   const Int_t dimResol   = 4;
-   const Int_t nBinsResol[4]     = {10,10,80,80};
-   const Double_t lowBinResol[4] = {0,0,-1,-1};
-   const Double_t hiBinResol[4]  = {200,0.3,1,1};
+   const Int_t dimResol   = 5;
+   const Int_t nBinsResol[5]     = {10,10,80,80,80};
+   const Double_t lowBinResol[5] = {0,0,-1,-1,-1};
+   const Double_t hiBinResol[5]  = {200,0.3,1,1,1};
    fHCheckResolutionSubjets = new THnSparseF("fHCheckResolutionSubjets",
                    "Mom.Resolution of Subjets vs opening angle",
 					     dimResol,nBinsResol,lowBinResol,hiBinResol);
@@ -248,7 +250,7 @@ AliAnalysisTaskEmcalQGTagging::~AliAnalysisTaskEmcalQGTagging()
 
  
   TH1::AddDirectory(oldStatus);
-  const Int_t nVar = 14;
+  const Int_t nVar = 8;
   const char* nameoutput = GetOutputSlot(2)->GetContainer()->GetName();
   fTreeObservableTagging = new TTree(nameoutput, nameoutput);
   
@@ -258,24 +260,24 @@ AliAnalysisTaskEmcalQGTagging::~AliAnalysisTaskEmcalQGTagging()
   fShapesVarNames[0] = "partonCode"; 
   fShapesVarNames[1] = "ptJet"; 
   fShapesVarNames[2] = "ptDJet"; 
-  fShapesVarNames[3] = "phiJet";
+  //fShapesVarNames[3] = "phiJet";
   // fShapesVarNames[4] = "nbOfConst";
-  fShapesVarNames[4] = "angularity";
+  fShapesVarNames[3] = "angularity";
   //fShapesVarNames[5] = "circularity";
-  fShapesVarNames[5] = "lesub";
+  //fShapesVarNames[5] = "lesub";
   //fShapesVarNames[7] = "coronna";
 
-  fShapesVarNames[6] = "ptJetMatch"; 
-  fShapesVarNames[7] = "ptDJetMatch"; 
-  fShapesVarNames[8] = "phiJetMatch";
+  fShapesVarNames[4] = "ptJetMatch"; 
+  fShapesVarNames[5] = "ptDJetMatch"; 
+  //fShapesVarNames[8] = "phiJetMatch";
   // fShapesVarNames[12] = "nbOfConstMatch";
-  fShapesVarNames[9] = "angularityMatch";
+  fShapesVarNames[6] = "angularityMatch";
   //fShapesVarNames[12] = "circularityMatch";
-  fShapesVarNames[10] = "lesubMatch";
+  //fShapesVarNames[10] = "lesubMatch";
   //fShapesVarNames[14] = "coronnaMatch";
-  fShapesVarNames[11]="weightPythia";
-  fShapesVarNames[12]="nsd";
-  fShapesVarNames[13]="nall";
+  fShapesVarNames[7]="weightPythia";
+  //fShapesVarNames[12]="nsd";
+  //fShapesVarNames[13]="nall";
   //fShapesVarNames[14]="ntrksEvt";
   //fShapesVarNames[16]="rhoVal";
   //fShapesVarNames[17]="rhoMassVal";
@@ -392,8 +394,8 @@ Bool_t AliAnalysisTaskEmcalQGTagging::FillHistograms()
   }
   
   
-  AliParticleContainer *partContAn = GetParticleContainer(0);
-  TClonesArray *trackArrayAn = partContAn->GetArray();
+  // AliParticleContainer *partContAn = GetParticleContainer(0);
+  //TClonesArray *trackArrayAn = partContAn->GetArray();
  
   
   Float_t rhoVal=0, rhoMassVal = 0.;
@@ -597,18 +599,18 @@ Bool_t AliAnalysisTaskEmcalQGTagging::FillHistograms()
   
       fShapesVar[1] = ptSubtracted;
       fShapesVar[2] = GetJetpTD(jet1,0);
-      fShapesVar[3] =jet1->Phi();
-      if(fJetShapeType==kData && fJetSelection == kRecoil) fShapesVar[3]=RelativePhi(triggerHadron->Phi(), jet1->Phi());
+      // fShapesVar[3] =jet1->Phi();
+      //if(fJetShapeType==kData && fJetSelection == kRecoil) fShapesVar[3]=RelativePhi(triggerHadron->Phi(), jet1->Phi());
 	//GetJetMass(jet1,0);
-      fShapesVar[4] = GetJetAngularity(jet1,0);
+      fShapesVar[3] = GetJetAngularity(jet1,0);
       //fShapesVar[5] = GetJetCircularity(jet1,0);
-      fShapesVar[5] = GetJetLeSub(jet1,0);
+      //fShapesVar[5] = GetJetLeSub(jet1,0);
       //fShapesVar[6] = GetJetCoronna(jet1,0);
-      RecursiveParents(jet1,jetCont,0);
       RecursiveParents(jet1,jetCont,1);
-      RecursiveParents(jet1,jetCont,2);
+      //RecursiveParents(jet1,jetCont,1);
+      //RecursiveParents(jet1,jetCont,2);
       
-      Float_t ptMatch=0., ptDMatch=0., massMatch=0., constMatch=0.,angulMatch=0.,circMatch=0., lesubMatch=0., sigma2Match=0., coronnaMatch=0;
+      Float_t ptMatch=0., ptDMatch=0., massMatch=0.,angulMatch=0.,lesubMatch=0;
       Int_t kMatched = 0;
 
        if (fJetShapeType==kPythiaDef) {
@@ -659,14 +661,14 @@ Bool_t AliAnalysisTaskEmcalQGTagging::FillHistograms()
       
     
 
-      fShapesVar[6] = ptMatch;
-      fShapesVar[7] = ptDMatch;
-      fShapesVar[8] = massMatch;
-      fShapesVar[9] = angulMatch;
+      fShapesVar[4] = ptMatch;
+      fShapesVar[5] = ptDMatch;
+      // fShapesVar[8] = massMatch;
+      fShapesVar[6] = angulMatch;
       //fShapesVar[12] = circMatch;
-      fShapesVar[10] = lesubMatch;
+      // fShapesVar[10] = lesubMatch;
       //  fShapesVar[14] = coronnaMatch;
-      fShapesVar[11] = kWeight;
+      fShapesVar[7] = kWeight;
       //fShapesVar[16] = ntracksEvt;
       // fShapesVar[16] = rhoVal;
       //fShapesVar[17] = rhoMassVal;
@@ -1216,23 +1218,28 @@ void AliAnalysisTaskEmcalQGTagging::RecursiveParents(AliEmcalJet *fJet,AliJetCon
    jj=fOutputJets[0];
    double ndepth=0;
    double nall=0;
+   double flagSubjet=0;
     while(jj.has_parents(j1,j2)){
       nall=nall+1;
     if(j1.perp() < j2.perp()) swap(j1,j2);
+    flagSubjet=0;
     double delta_R=j1.delta_R(j2);
     double z=j2.perp()/(j1.perp()+j2.perp());
     double y =log(1.0/delta_R);
-    double lnpt_rel=log(z*delta_R);
+    double lnpt_rel=log(j2.perp()*delta_R);
+    double yh=j1.e()+j2.e();
+     vector < fastjet::PseudoJet > constitj1 = sorted_by_pt(j1.constituents());
+     if(constitj1[0].perp()>fMinPtConst) flagSubjet=1; 
     if(z>fHardCutoff){
      ndepth=ndepth+1;  
-    Double_t LundEntries[5] = {y,lnpt_rel,fOutputJets[0].perp(),xflagalgo,ndepth};  
+    Double_t LundEntries[7] = {y,lnpt_rel,fOutputJets[0].perp(),nall,xflagalgo,yh,flagSubjet};  
     fHLundIterative->Fill(LundEntries);}
     jj=j1;} 
 
-    if(ReclusterAlgo==1){
-      fShapesVar[12]=nall;
-      fShapesVar[13]=ndepth;
-    }
+    // if(ReclusterAlgo==1){
+    //  fShapesVar[12]=nall;
+    //  fShapesVar[13]=ndepth;
+    // }
 
   } catch (fastjet::Error) {
     AliError(" [w] FJ Exception caught.");
@@ -1303,41 +1310,40 @@ void AliAnalysisTaskEmcalQGTagging::CheckSubjetResolution(AliEmcalJet *fJet,AliJ
     jj=fOutputJets[0];
     jjM=fOutputJetsM[0];
 
-   double z=0;
+   double z1=0;
+   double z2=0;
    double zcut=0.1;
-   while((jj.has_parents(j1,j2)) && (z<zcut)){
+   while((jj.has_parents(j1,j2)) && (z1<zcut)){
     if(j1.perp() < j2.perp()) swap(j1,j2);
    
-     z=j2.perp()/(j1.perp()+j2.perp());
+     z1=j2.perp()/(j1.perp()+j2.perp());
     jj=j1;} 
-   if(z<zcut) return;
-    z=0;
+   if(z1<zcut) return;
+    
 
      
-   while((jjM.has_parents(j1M,j2M)) && (z<zcut)){
+   while((jjM.has_parents(j1M,j2M)) && (z2<zcut)){
     if(j1M.perp() < j2M.perp()) swap(j1M,j2M);
    
-     z=j2M.perp()/(j1M.perp()+j2M.perp());
+     z2=j2M.perp()/(j1M.perp()+j2M.perp());
     jjM=j1M;}
-   if(z<zcut) return;
+   if(z2<zcut) return;
         
 
 
    double delta_R1=j1.delta_R(j1M);
    double delta_R2=j2.delta_R(j2M);
    double delta_R=j1.delta_R(j2);
-  
+   double residz=(z1-z2)/z2;
    double resid1=(j1.perp()-j1M.perp())/j1M.perp(); 
    double resid2=(j2.perp()-j2M.perp())/j2M.perp(); 
     
    if((delta_R1<fSubjetCutoff) && (delta_R2<fSubjetCutoff)){
-   Double_t ResolEntries[4] = {fOutputJets[0].perp(),delta_R,resid1,resid2};  
+   Double_t ResolEntries[5] = {fOutputJets[0].perp(),delta_R,resid1,resid2,residz};  
    fHCheckResolutionSubjets->Fill(ResolEntries);}
 
-   
 
-
-  } catch (fastjet::Error) {
+   } catch (fastjet::Error) {
     AliError(" [w] FJ Exception caught.");
     //return -1;
   }

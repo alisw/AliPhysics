@@ -25,32 +25,25 @@ void AddTask_GammaConvDalitzV1_pp(  Int_t trainConfig = 1,  //change different s
   TString fileNameMatBudWeights = cuts.GetSpecialFileNameFromString (fileNameExternalInputs, "FMAW:");
   TString fileNamedEdxPostCalib = cuts.GetSpecialFileNameFromString (fileNameExternalInputs, "FEPC:");
   
-  
-  
-  TString sAdditionalTrainConfig  = cuts.GetSpecialSettingFromAddConfig(additionalTrainConfig, "","");
+  TString addTaskName                 = "AddTask_GammaConvDalitzV1_pp";
+  TString sAdditionalTrainConfig  = cuts.GetSpecialSettingFromAddConfig(additionalTrainConfig, "","", addTaskName);
   if (sAdditionalTrainConfig.Atoi() > 0){
     trainConfig = trainConfig + sAdditionalTrainConfig.Atoi();
-    cout << "INFO: AddTask_GammaConvV1_pPb running additionalTrainConfig '" << sAdditionalTrainConfig.Atoi() << "', train config: '" << trainConfig << "'" << endl;
+    cout << "INFO:"<< addTaskName.Data()<< " running additionalTrainConfig '" << sAdditionalTrainConfig.Atoi()   << "', train config: '" << trainConfig << "'" << endl;
   }
-  TString corrTaskSetting         = cuts.GetSpecialSettingFromAddConfig(additionalTrainConfig, "CF","");
+  TString corrTaskSetting         = cuts.GetSpecialSettingFromAddConfig(additionalTrainConfig, "CF","",addTaskName);
   if(corrTaskSetting.CompareTo(""))
     cout << "corrTaskSetting: " << corrTaskSetting.Data() << endl;
   if(additionalTrainConfig.Contains("MaterialBudgetWeights"))
-    fileNameMatBudWeights         = cuts.GetSpecialSettingFromAddConfig(additionalTrainConfig, "MaterialBudgetWeights",fileNameMatBudWeights);
-  TString strTrackMatcherRunningMode         = cuts.GetSpecialSettingFromAddConfig(additionalTrainConfig, "TM","");
+    fileNameMatBudWeights         = cuts.GetSpecialSettingFromAddConfig(additionalTrainConfig, "MaterialBudgetWeights",fileNameMatBudWeights,addTaskName);
+  TString strTrackMatcherRunningMode         = cuts.GetSpecialSettingFromAddConfig(additionalTrainConfig, "TM","",addTaskName);
   if(additionalTrainConfig.Contains("TM"))
     trackMatcherRunningMode = strTrackMatcherRunningMode.Atoi();
-  
-  
-  
-  
-
-
 
   // ================== GetAnalysisManager ===============================
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
   if (!mgr) {
-    Error(Form("AddTask_GammaConvDalitzV1_%i",trainConfig), "No analysis manager found.");
+    Error(Form("%s_%i",addTaskName.Data(), trainConfig), "No analysis manager found.");
     return ;
   }
 
@@ -59,7 +52,7 @@ void AddTask_GammaConvDalitzV1_pp(  Int_t trainConfig = 1,  //change different s
   
    //========= Check whether PID Reponse is there ====
   if(!(AliPIDResponse*)mgr->GetTask("PIDResponseTask")){
-    Error(Form("AddTask_GammaConvV1_%i",trainConfig), "No PID response has been initialized aborting.");
+    Error(Form("%s_%i",addTaskName.Data(), trainConfig), "No PID response has been initialized aborting.");
     return;
   }
 
@@ -79,11 +72,6 @@ void AddTask_GammaConvDalitzV1_pp(  Int_t trainConfig = 1,  //change different s
     cout << "V0Reader: " << V0ReaderName.Data() << " found!!"<< endl;
   }
   
-  
-  
-
-
-
 
   if( !(AliDalitzElectronSelector*)mgr->GetTask("ElectronSelector") ){
     AliDalitzElectronSelector *fElectronSelector = new AliDalitzElectronSelector("ElectronSelector");

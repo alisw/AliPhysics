@@ -38,7 +38,32 @@ class AliAODTrack;
 class AliVVertex;
 class AliPIDResponse;
 class TList;
+class TTree;
 class AliPWGFunc;
+
+struct SLightNucleus {
+  float pt;
+  float eta;
+  float phi;
+  int   pdg;
+  int   flag;
+};
+
+struct RLightNucleus {
+  float pt;
+  float eta;
+  float phi;
+  Double32_t m2;             //[1.1,21.58,13]
+  Double32_t dcaxy;          //[-2,2,10]
+  Double32_t dcaz;           //[-2,2,10]
+  Double32_t tpcNsigmaD;     //[-6.4,6.4,8]
+  Double32_t tpcNsigmaT;     //[-6.4,6.4,8]
+  Double32_t tpcNsigmaHe3;   //[-6.4,6.4,8]
+  Double32_t centrality;     //[0,128,8]
+  Double32_t deltapt;        //[-1.28,1.28,7]
+  unsigned char itsCls;
+  unsigned char tpcPIDcls;
+};
 
 class AliAnalysisTaskNucleiYield : public AliAnalysisTaskSE {
 public:
@@ -98,6 +123,8 @@ public:
     fPtShapeParams.Set(nPars,pars);
   }
 
+  void SaveTrees(bool save=true) { fSaveTrees = save; }
+
   static int    GetNumberOfITSclustersPerLayer(AliVTrack *track, int &nSPD, int &nSDD, int &nSSD);
   static float  HasTOF(AliAODTrack *t, AliPIDResponse* pid);
 
@@ -126,6 +153,8 @@ private:
   TF1                  *fTOFfunction;           //!<! TOF signal function
 
   TList                *fList;                  ///<  Output list
+  TTree                *fRTree;                 ///<  Output reconstructed ttree
+  TTree                *fSTree;                 ///<  Output simulated ttree
   TLorentzVector        fCutVec;                ///<  Vector used to perform some cuts
   Int_t                 fPDG;                   ///<  PDG code of the particle of interest
   Float_t               fPDGMass;               ///<  PDG mass
@@ -175,6 +204,11 @@ private:
   Float_t               fITSelectronRejectionSigma; ///< nSigma rejection band in ITS response around the electron band for TPC only analysis
 
   Bool_t                fEnableFlattening;      ///<  Switch on/off the flattening
+
+  Bool_t                fSaveTrees;             ///<  Switch on/off the output TTrees
+  RLightNucleus         fRecNucleus;            ///<  Reconstructed nucleus
+  SLightNucleus         fSimNucleus;            ///<  Simulated nucleus
+
 
   AliPID::EParticleType fParticle;              ///<  Particle specie
   TArrayF               fCentBins;              ///<  Centrality bins

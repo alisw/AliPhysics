@@ -13,6 +13,9 @@
 // G. Innocenti, gian.michele.innocenti@cern.ch
 // F. Prino, prino@to.infn.it
 // L. Vermunt, luuk.vermunt@cern.ch
+// L. van Doremalen, lennart.van.doremalen@cern.ch
+// J. Norman, jaime.norman@cern.ch
+// G. Luparello, grazia.luparello@cern.ch
 /////////////////////////////////////////////////////////////
 
 #include <TString.h>
@@ -90,7 +93,7 @@ TTree* AliHFTreeHandlerDplustoKpipi::BuildTree(TString name, TString title)
 }
 
 //________________________________________________________________
-bool AliHFTreeHandlerDplustoKpipi::SetVariables(AliAODRecoDecayHF* cand, float bfield, int /*masshypo*/, AliAODPidHF* pidHF) 
+bool AliHFTreeHandlerDplustoKpipi::SetVariables(AliAODRecoDecayHF* cand, float bfield, int /*masshypo*/, AliPIDResponse *pidrespo) 
 {
   if(!cand) return false;
   if(fFillOnlySignal) { //if fill only signal and not signal candidate, do not store
@@ -131,7 +134,7 @@ bool AliHFTreeHandlerDplustoKpipi::SetVariables(AliAODRecoDecayHF* cand, float b
   //pid variables
   if(fPidOpt==kNoPID) return true;
 
-  bool setpid = SetPidVars(prongtracks,pidHF,true,true,false,true,true);
+  bool setpid = SetPidVars(prongtracks,pidrespo,true,true,false,true,true);
   if(!setpid) return false;
 
   return true;

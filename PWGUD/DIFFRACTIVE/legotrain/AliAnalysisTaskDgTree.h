@@ -42,6 +42,8 @@ class AliAnalysisTaskDgTree : public AliAnalysisTaskSE {
   TClonesArray* fTracks;            //!
   TClonesArray* fTracklets;         //!
   TClonesArray* fSATracks;          //!
+  TClonesArray* fMcParticles;       //!
+  Float_t fMcEventWeight;
   TObjString fClassesFired;
   Int_t fEventInFile;
   UInt_t fPeriod;
@@ -79,7 +81,7 @@ class AliAnalysisTaskDgTree : public AliAnalysisTaskSE {
   TArrayI fTrackIndices;
   Int_t fNofTOFtrgPads;
   
-  ClassDef(AliAnalysisTaskDgTree,1)
+  ClassDef(AliAnalysisTaskDgTree,2)
 };
 
 #endif

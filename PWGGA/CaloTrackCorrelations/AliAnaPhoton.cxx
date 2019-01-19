@@ -224,7 +224,9 @@ fhDistance2Hijing(0)
     fhTrackMatchedDEtaMCOverlap[i] = 0;       fhTrackMatchedDPhiMCOverlap[i] = 0;
     fhTrackMatchedDEtaMCNoOverlap[i] = 0;     fhTrackMatchedDPhiMCNoOverlap[i] = 0;
     fhTrackMatchedDEtaMCConversion[i] = 0;    fhTrackMatchedDPhiMCConversion[i] = 0;
-    fhTrackMatchedMCParticle[i] = 0;          fhTrackMatchedMCParticleConverted[i] = 0;
+    fhTrackMatchedMCParticleBeforeTM[i] = 0;  fhTrackMatchedMCParticleTrackPtBeforeTM[i] = 0;          
+    fhTrackMatchedMCParticle[i] = 0;          fhTrackMatchedMCParticleTrackPt[i] = 0;          
+    fhTrackMatchedMCParticleConverted[i] = 0;
     fhTrackMatchedMCParticleVsEOverP[i] = 0;  fhTrackMatchedMCParticleVsErecEgen[i] = 0;
     fhTrackMatchedMCParticleVsNOverlaps[i] = 0;          
     fhdEdx[i] = 0;                            fhEOverP[i] = 0;
@@ -2029,8 +2031,14 @@ void AliAnaPhoton::FillTrackMatchingResidualHistograms(AliVCluster* cluster,
     fhTrackMatchedDPhiTRD[cut]->Fill(ener, dPhi, GetEventWeight());
   }
     
-  // Check dEdx and E/p of matched/unmatched clusters
+  // Check dEdx and E/p and MC origin of matched/unmatched clusters
   //
+  if ( IsDataMC() )
+  {
+    fhTrackMatchedMCParticleBeforeTM       [cut]->Fill(ener       , mcbin, GetEventWeight());
+    fhTrackMatchedMCParticleTrackPtBeforeTM[cut]->Fill(track->Pt(), mcbin, GetEventWeight());
+  }
+  
   if ( (matched && !cut) || (!matched && cut) )
   {
     Float_t dEdx   = track->GetTPCsignal();
@@ -2056,9 +2064,9 @@ void AliAnaPhoton::FillTrackMatchingResidualHistograms(AliVCluster* cluster,
     
     if ( IsDataMC() )
     {
-      fhTrackMatchedMCParticle[cut]->Fill(ener, mcbin, GetEventWeight());
-      
-      fhTrackMatchedMCParticleVsEOverP  [cut]->Fill(ener, mcbin, eOverp, GetEventWeight());
+      fhTrackMatchedMCParticle        [cut]->Fill(ener, mcbin, GetEventWeight());
+      fhTrackMatchedMCParticleTrackPt [cut]->Fill(track->Pt(), mcbin, GetEventWeight());
+      fhTrackMatchedMCParticleVsEOverP[cut]->Fill(ener, mcbin, eOverp, GetEventWeight());
       
       if ( egen > 0.1 )
         fhTrackMatchedMCParticleVsErecEgen[cut]->Fill(ener, mcbin, ener/egen, GetEventWeight());
@@ -2987,6 +2995,28 @@ TList *  AliAnaPhoton::GetCreateOutputObjects()
         outputContainer->Add(fhTrackMatchedDEtaMCConversion[i]) ;
         outputContainer->Add(fhTrackMatchedDPhiMCConversion[i]) ;
         
+        fhTrackMatchedMCParticleBeforeTM[i]  = new TH2F
+        (Form("hTrackMatchedMCParticle%s_BeforeTM",cutTM[i].Data()),
+         Form("Origin of particle vs energy %s, before TM criteria",cutTM[i].Data()),
+         nptbins,ptmin,ptmax,11,0,11);
+        fhTrackMatchedMCParticleBeforeTM[i]->SetXTitle("#it{E} (GeV)");
+        //fhTrackMatchedMCParticleBeforeTM[i]->SetYTitle("Particle type");
+        for(Int_t imcpart = 1; imcpart < 12; imcpart++)
+          fhTrackMatchedMCParticleBeforeTM[i]->GetYaxis()->SetBinLabel(imcpart,mcPartLabels[imcpart-1]);
+        
+        outputContainer->Add(fhTrackMatchedMCParticleBeforeTM[i]);
+        
+        fhTrackMatchedMCParticleTrackPtBeforeTM[i]  = new TH2F
+        (Form("hTrackMatchedMCParticleTrackPt%s_BeforeTM",cutTM[i].Data()),
+         Form("Origin of particle vs track #it{p}_{T} %s, before TM criteria",cutTM[i].Data()),
+         nptbins,ptmin,ptmax,11,0,11);
+        fhTrackMatchedMCParticleTrackPtBeforeTM[i]->SetXTitle("#it{p}_{T}^{track} (GeV/#it{c})");
+        //fhTrackMatchedMCParticleTrackPtBeforeTM[i]->SetYTitle("Particle type");
+        for(Int_t imcpart = 1; imcpart < 12; imcpart++)
+          fhTrackMatchedMCParticleTrackPtBeforeTM[i]->GetYaxis()->SetBinLabel(imcpart,mcPartLabels[imcpart-1]);
+        
+        outputContainer->Add(fhTrackMatchedMCParticleTrackPtBeforeTM[i]); 
+
         fhTrackMatchedMCParticle[i]  = new TH2F
         (Form("hTrackMatchedMCParticle%s",cutTM[i].Data()),
          Form("Origin of particle vs energy %s",cutTM[i].Data()),
@@ -2997,6 +3027,17 @@ TList *  AliAnaPhoton::GetCreateOutputObjects()
           fhTrackMatchedMCParticle[i]->GetYaxis()->SetBinLabel(imcpart,mcPartLabels[imcpart-1]);
        
         outputContainer->Add(fhTrackMatchedMCParticle[i]);
+        
+        fhTrackMatchedMCParticleTrackPt[i]  = new TH2F
+        (Form("hTrackMatchedMCParticleTrackPt%s",cutTM[i].Data()),
+         Form("Origin of particle vs track #it{p}_{T} %s",cutTM[i].Data()),
+         nptbins,ptmin,ptmax,11,0,11);
+        fhTrackMatchedMCParticleTrackPt[i]->SetXTitle("#it{p}_{T}^{track} (GeV/#it{c})");
+        //fhTrackMatchedMCParticleTrackPt[i]->SetYTitle("Particle type");
+        for(Int_t imcpart = 1; imcpart < 12; imcpart++)
+          fhTrackMatchedMCParticleTrackPt[i]->GetYaxis()->SetBinLabel(imcpart,mcPartLabels[imcpart-1]);
+        
+        outputContainer->Add(fhTrackMatchedMCParticleTrackPt[i]); 
         
         fhTrackMatchedMCParticleConverted[i]  = new TH2F
         (Form("hTrackMatchedMCParticle%s_Converted",cutTM[i].Data()),

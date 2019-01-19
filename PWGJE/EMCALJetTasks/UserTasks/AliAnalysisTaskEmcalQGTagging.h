@@ -108,7 +108,7 @@ class AliAnalysisTaskEmcalQGTagging : public AliAnalysisTaskEmcalJet {
   JetShapeType                        fJetShapeType;               // jet type to be used
   JetShapeSub                         fJetShapeSub;                // jet subtraction to be used
   JetSelectionType                    fJetSelection;               // Jet selection: inclusive/recoil jet  
-  Float_t                             fShapesVar[14];                  // jet shapes used for the tagging
+  Float_t                             fShapesVar[8];                  // jet shapes used for the tagging
   Float_t                             fPtThreshold;
   Float_t                             fRMatching;
   Int_t                                 fSelectedShapes;                //chose set of shapes 
@@ -124,6 +124,7 @@ class AliAnalysisTaskEmcalQGTagging : public AliAnalysisTaskEmcalJet {
   Bool_t                              fOneConstSelectOn;                // switch on/off one constituent selection
   Bool_t                              fTrackCheckPlots;              //switch on qa plots
   Float_t                             fSubjetCutoff;                 //angular cutoff for subjets at det/gen level
+  Float_t                             fMinPtConst;                   //constituent pt cutoff   
   Float_t                             fHardCutoff;                   //hard cutoff in the iterative declustering 
   Bool_t                              fDoTwoTrack;                    //switch to consider 2 track effects 
   Float_t                             fPhiCutValue;                  //cuts from HBT

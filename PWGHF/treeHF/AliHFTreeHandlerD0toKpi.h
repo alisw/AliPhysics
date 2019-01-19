@@ -8,7 +8,7 @@
 
 //*************************************************************************
 // \class AliHFTreeHandlerD0toKpi
-// \brief helper class to handle a tree for D+ cut optimisation and MVA analyses
+// \brief helper class to handle a tree for D0 cut optimisation and MVA analyses
 // \authors:
 // F. Catalano, fabio.catalano@cern.ch
 // A. Festanti, andrea.festanti@cern.ch
@@ -16,6 +16,9 @@
 // G. Innocenti, gian.michele.innocenti@cern.ch
 // F. Prino, prino@to.infn.it
 // L. Vermunt, luuk.vermunt@cern.ch
+// L. van Doremalen, lennart.van.doremalen@cern.ch
+// J. Norman, jaime.norman@cern.ch
+// G. Luparello, grazia.luparello@cern.ch
 /////////////////////////////////////////////////////////////
 
 #include "AliHFTreeHandler.h"
@@ -31,7 +34,7 @@ class AliHFTreeHandlerD0toKpi : public AliHFTreeHandler
     virtual ~AliHFTreeHandlerD0toKpi();
 
     virtual TTree* BuildTree(TString name="tree", TString title="tree");
-    virtual bool SetVariables(AliAODRecoDecayHF* cand, float bfiled, int masshypo=0, AliAODPidHF* pidHF=0x0);
+    virtual bool SetVariables(AliAODRecoDecayHF* cand, float bfiled, int masshypo=0, AliPIDResponse *pidrespo=0x0);
     virtual void FillTree(); //to be called for each event, not each candidate!
 
   private:

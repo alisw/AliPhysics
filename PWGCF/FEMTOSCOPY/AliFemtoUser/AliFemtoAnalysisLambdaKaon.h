@@ -119,6 +119,8 @@ struct AnalysisParams
 
   bool buildSphericalHarmonics;
   bool useLCMSforSH;
+
+  bool buildIndmTBinnedCfs;
 };
 
 struct EventCutParams

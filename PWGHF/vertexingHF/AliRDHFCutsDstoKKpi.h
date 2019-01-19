@@ -37,7 +37,9 @@ class AliRDHFCutsDstoKKpi : public AliRDHFCuts
   virtual Int_t IsSelected(TObject* obj,Int_t selectionLevel,AliAODEvent* aod);
 
   virtual Int_t IsSelectedPID(AliAODRecoDecayHF *rd);
+  Int_t IsSelectedPID(Double_t Pt, TObjArray aodtracks);
   virtual Int_t IsSelectedPIDBayes(AliAODRecoDecayHF *rd);
+  Int_t IsSelectedPIDBayes(Double_t Pt, TObjArray aodtracks);
   virtual void SetStandardCutsPP2010();
    
   virtual Bool_t IsInFiducialAcceptance(Double_t pt,Double_t y) const;
@@ -53,6 +55,8 @@ class AliRDHFCutsDstoKKpi : public AliRDHFCuts
   void EnableK0starChannel(){fCheckK0star=kTRUE;}
   void DisableK0starChannel(){fCheckK0star=kFALSE;}
   Bool_t IsK0starChannelEnabled() const{ return fCheckK0star;}
+
+  virtual Int_t PreSelect(TObjArray aodTracks);
 
   enum TrackPIDBit{kTPCPionLess1,kTPCPionMore1Less2,kTPCPionMore2Less3,kTPCPionMore3,
                    kTPCKaonLess1,kTPCKaonMore1Less2,kTPCKaonMore2Less3,kTPCKaonMore3,
@@ -96,6 +100,7 @@ class AliRDHFCutsDstoKKpi : public AliRDHFCuts
     fCutOnResonances=opt;
   }
 
+  Double_t ComputeInvMass2(AliAODTrack* track1, AliAODTrack* track2, Int_t pdg1, Int_t pdg2);
 
  protected:
  

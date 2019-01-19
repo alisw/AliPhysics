@@ -100,6 +100,8 @@ public:
     
     void SetCutAtLeastOneTOF (Bool_t lCut) { fCutAtLeastOneTOF = lCut; }
     
+    void SetCutIsCowboy (Int_t lCut) { fCutIsCowboy = lCut; }
+    
     AliV0Result::EMassHypo GetMassHypothesis () const { return fMassHypo; }
     Double_t GetMass() const;
     TString GetParticleName() const;
@@ -148,6 +150,8 @@ public:
     Bool_t GetUseOnTheFly() const { return fUseOnTheFly; }
     
     Bool_t GetCutAtLeastOneTOF () const { return fCutAtLeastOneTOF; }
+
+    Int_t GetCutIsCowboy () const { return fCutIsCowboy; }
     
     //Special dedx
     Bool_t GetCut276TeVLikedEdx () const { return fCut276TeVLikedEdx; }
@@ -259,7 +263,10 @@ private:
     //At least one track has TOF signal
     Bool_t fCutAtLeastOneTOF;
     
-    ClassDef(AliV0Result, 21)
+    //Cowboy/sailor
+    Int_t fCutIsCowboy; //-1: sailor, 0: don't select, 1: cowboy
+    
+    ClassDef(AliV0Result, 22)
     // 1 - original implementation
     // 2 - first implementation of MC association (to be adjusted)
     // 3 - Variable binning constructor + re-order variables in main output for convenience
@@ -280,5 +287,6 @@ private:
     //18 - added configurable max V0 radius
     //19 - added 2.76TeV-like dE/dx switch
     //20 - TOF cut: at-least-one type
+    //22 - cowboy/sailor check
 };
 #endif

@@ -44,9 +44,13 @@ class AliAnalysisTaskEA : public AliAnalysisTaskEmcalJet {
    enum Analysis {
       kDetLevel=0, 
       kPartLevel=1,
+      fkVtx=3,
       fkTTbins = 20 //maximum number of TT bins
    };
 
+   enum {fkV0A, fkV0C, fkSPD, fkZNA, fkZNC, fkCE}; 
+
+   enum {kpp=0, kpPb=1};
 
 
    // ######### CONTRUCTORS/DESTRUCTORS AND STD FUNCTIONS
@@ -55,6 +59,26 @@ class AliAnalysisTaskEA : public AliAnalysisTaskEmcalJet {
    virtual  ~AliAnalysisTaskEA();
    void     UserCreateOutputObjects();
    void     Terminate(Option_t *);
+
+   static AliAnalysisTaskEA* AddTaskEA(
+       Int_t       system             = AliAnalysisTaskEA::kpPb, // collision system 
+       const char* jetarrayname       = "Jet_AKTChargedR040_tracks_pT0150_pt_scheme", //name of jet TClones array for detector level jets
+       const char* jetarraynameMC     = "Jet_AKTChargedR040_mcparticles_pT0150_pt_scheme", //name of jet TClones array for MC particle level jets
+       const char* trackarrayname     = "tracks", //name of track TClonesArray for detector level jets
+       const char* mcpariclearrayname = "mcparticles", //name of track TClonesArray array for MC particle level jets
+       const char* clusterarrayname   = "caloClusters", //name of EMCAL cluster TClonesArray array  for detector level
+       const char* rhoname            = "", //name of track TClonesArray for detector level jets
+       const char* mcrhoname          = "", //name of track TClonesArray array for MC particle level jets
+       Double_t    jetRadius          = 0.4,  //radius of analyzed jets
+       UInt_t      trigger            = AliVEvent::kAny,  //trigger
+       Int_t       isMC               = 0,     // 0=real data    , 1= particle+detector level simulation 
+       Double_t    trackEtaWindow     = 0.9,   //pseudorapidity range for tracks
+       Bool_t      useVertexCut       = kTRUE,  // vertex cut
+       Bool_t      usePileUpCut       = kTRUE, // discard pile up event
+       Double_t    acut               = 0.6,   //cut on relative jet area
+       Double_t    emcaltofcut        = 30e-9,   //cut on relative jet area
+       const char* suffix = ""                              //SUBWAGON has to be the last parameter
+  );
 
    
   // ######### SETTERS/GETTERS
@@ -77,16 +101,20 @@ class AliAnalysisTaskEA : public AliAnalysisTaskEmcalJet {
   void        SetExternalRhoTaskNameMC(const char* name) {fRhoTaskNameMC = name;}
 
   void        SetTrackContainerName(const char* name){ fMyTrackContainerName = name;}
-  void        SetMCParticleContainerName(const char* name){ fMyParticleContainerName=name;}
+  void        SetMCParticleContainerName(const char* name){ fMyParticleContainerName = name;}
+  void        SetClusterContainerName(const char* name){ fMyClusterContainerName = name;}
 
   void        SetJetContainerName(const char* name){ fMyJetContainerName = name;}
   void        SetMCJetContainerName(const char* name){ fMyJetParticleContainerName = name;}
   void        SetHadronTT(Int_t tl,Int_t th){ fHadronTTLowPt[fnHadronTTBins] = tl; fHadronTTHighPt[fnHadronTTBins] = th; fnHadronTTBins++; }
   void        SetJetChTT(Int_t tl,Int_t th){  fJetChTTLowPt[fnJetChTTBins] = tl;   fJetChTTHighPt[fnJetChTTBins] = th;   fnJetChTTBins++;  }
+  void        SetClusterTT(Int_t tl,Int_t th){  fClusterTTLowPt[fnClusterTTBins] = tl;   fClusterTTHighPt[fnClusterTTBins] = th;   fnClusterTTBins++;  }
+  void        SetFillTTree(Bool_t b){ fFillTTree = b; } //fill output TTree
+  void        SetSystem(Int_t sys){ fSystem = sys;}     // Collision system pp or pP pp or pPb 
 
   Bool_t      PassedGATrigger();
   Bool_t      PassedMinBiasTrigger();
-  Bool_t      PreSelection(AliVCluster* cluster);
+  Int_t       GetMaxDistanceFromBorder(AliVCluster* cluster);
   Bool_t      FinalClusterCuts(AliVCluster* cluster);
 
   Bool_t      RetrieveEventObjects();
@@ -108,103 +136,143 @@ class AliAnalysisTaskEA : public AliAnalysisTaskEmcalJet {
   Double_t    GetExternalRho(Bool_t isMC); 
   
   // ########## USAGE TRIGGERS 
-  Bool_t      fUseDefaultVertexCut;   // trigger if automatic vertex cut from helper class should be done 
-  Bool_t      fUsePileUpCut;          // trigger if pileup cut should be done
+  Bool_t      fUseDefaultVertexCut;                   // trigger if automatic vertex cut from helper class should be done 
+  Bool_t      fUsePileUpCut;                          // trigger if pileup cut should be done
   
 
   // ########## SOURCE INFORMATION
-  TString     fMyTrackContainerName;       // name of detector level track container 
-  TString     fMyParticleContainerName;    // name of particle level MC particle container
-  TString     fMyJetContainerName;         // name of detector level jet container 
-  TString     fMyJetParticleContainerName; // name of particle level MC jet container 
+  TString     fMyTrackContainerName;                  // name of detector level track container 
+  TString     fMyParticleContainerName;               // name of particle level MC particle container
+  TString     fMyJetContainerName;                    // name of detector level jet container 
+  TString     fMyJetParticleContainerName;            // name of particle level MC jet container 
+  TString     fMyClusterContainerName;                // name of detector level jet container 
 
   AliTrackContainer    *fTrkContainerDetLevel;        //! detector level track container
   AliParticleContainer *fParticleContainerPartLevel;  //! particle level container with particles
   AliJetContainer      *fJetContainerDetLevel;        //! detector level jet container  
   AliJetContainer      *fJetContainerPartLevel;       //! particle level jet container
+  AliClusterContainer  *fClusterContainerDetLevel;    //! detector level EMCAL cluster container   
 
-  TString     fRhoTaskName;           // name of rho CMS bg task for this analysis
-  TString     fRhoTaskNameMC;         // MC name of rho CMS bg task for this analysis
+  TString     fRhoTaskName;                           // name of rho CMS bg task for this analysis
+  TString     fRhoTaskNameMC;                         // MC name of rho CMS bg task for this analysis
 
 
   // ########## CENTRALITY
-  TTree   *fCentralityTree;     //! output tree
-  AliMultSelection*  fMultSelection; //! object which handels centrality 
+  TTree   *fCentralityTree;                           //! output tree
+  AliMultSelection*  fMultSelection;                  //! object which handels centrality 
 
-  char    fTrigClass[1000];     //! fired trigger classes
-  Bool_t  fIsMinBiasTrig;       //! triggered by Min Bias Trig
-  Bool_t  fIsEmcalTrig;         //! triggered by EMCAL
-
-  Float_t fCentralityV0A;       //! Centrality from V0A
-  Float_t fCentralityV0C;       //! Centrality from V0C
-  Float_t fCentralityCL1;       //! Centrality from Clusters in layer 1
-  Float_t fCentralityZNA;       //! Centrality from ZNA
-  Float_t fCentralityZNC;       //! Centrality from ZNC
-
-  Double_t fxVertex;            //!  X vertex from ITS
-  Double_t fyVertex;            //!  Y vertex from ITS
-  Double_t fzVertex;            //!  Z vertex from ITS
-  Bool_t   fVertexer3d;         //!  Is vertex from 3d vertexer?
-  //
-  Int_t    fNTracklets;         //!  no. tracklets
-  Int_t    fNClusters[2];       //!  no. clusters on SPD layers
-  //
-  Int_t    fIsV0ATriggered;     //!  VOA decision
-  Int_t    fIsV0CTriggered;     //!  V0C decision
-  Float_t  fMultV0A;            //!  mult. V0A
-  Float_t  fMultV0C;            //!  mult. V0C
-  Float_t  fRingMultV0[8];      //! V0 ring mult.
-  //
-  Float_t  fZEM1Energy;         //!  ZEM1 Energy
-  Float_t  fZEM2Energy;         //!  ZEM2 Energy
-
-  Float_t  fZNCtower[5];        //!  ZNC 5 tower signals
-  Float_t  fZPCtower[5];        //!  ZPC 5 tower signals
-  Float_t  fZNAtower[5];        //!  ZNA 5 tower signals
-  Float_t  fZPAtower[5];        //!  ZPA 5 tower signals
-  Float_t  fZNCtowerLG[5];      //!  ZNC 5 tower signals
-  Float_t  fZPCtowerLG[5];      //!  ZPC 5 tower signals
-  Float_t  fZNAtowerLG[5];      //!  ZNA 5 tower signals
-  Float_t  fZPAtowerLG[5];      //!  ZPA 5 tower signals
+  char    fTrigClass[1000];                           //! fired trigger classes
+  Bool_t  fIsMinBiasTrig;                             //! triggered by Min Bias Trig
+  Bool_t  fIsEmcalTrig;                               //! triggered by EMCAL
+                                                      
+  Float_t fCentralityV0A;                             //! Centrality from V0A
+  Float_t fCentralityV0C;                             //! Centrality from V0C
+  Float_t fCentralityCL1;                             //! Centrality from Clusters in layer 1
+  Float_t fCentralityZNA;                             //! Centrality from ZNA
+  Float_t fCentralityZNC;                             //! Centrality from ZNC
+                                                      
+  Double_t fxVertex;                                  //!  X vertex from ITS
+  Double_t fyVertex;                                  //!  Y vertex from ITS
+  Double_t fzVertex;                                  //!  Z vertex from ITS
+  Bool_t   fVertexer3d;                               //!  Is vertex from 3d vertexer?
+  //                                                  
+  Int_t    fNTracklets;                               //!  no. tracklets
+  Int_t    fNClusters[2];                             //!  no. clusters on SPD layers
+  //                                                  
+  Int_t    fIsV0ATriggered;                           //!  VOA decision
+  Int_t    fIsV0CTriggered;                           //!  V0C decision
+  Float_t  fMultV0A;                                  //!  mult. V0A
+  Float_t  fMultV0C;                                  //!  mult. V0C
+  Float_t  fRingMultV0[8];                            //!  V0 ring mult.
+  //                                                  
+  Float_t  fZEM1Energy;                               //!  ZEM1 Energy
+  Float_t  fZEM2Energy;                               //!  ZEM2 Energy
+                                                      
+  Float_t  fZNCtower[5];                              //!  ZNC 5 tower signals
+  Float_t  fZPCtower[5];                              //!  ZPC 5 tower signals
+  Float_t  fZNAtower[5];                              //!  ZNA 5 tower signals
+  Float_t  fZPAtower[5];                              //!  ZPA 5 tower signals
+  Float_t  fZNCtowerLG[5];                            //!  ZNC 5 tower signals
+  Float_t  fZPCtowerLG[5];                            //!  ZPC 5 tower signals
+  Float_t  fZNAtowerLG[5];                            //!  ZNA 5 tower signals
+  Float_t  fZPAtowerLG[5];                            //!  ZPA 5 tower signals
 
 
   // ########## CUTS 
-  Double_t    fTrackEtaWindow;        //gc +- window in eta for tracks  
-  Double_t    fMinTrackPt;            //gc Min track pt to be accepted  
+  Double_t    fTrackEtaWindow;                        // +- window in eta for tracks  
+  Double_t    fMinTrackPt;                            // Min track pt to be accepted  
 
   // ########## GENERAL ////VARS
-  Bool_t              fMC;                    //  real data  or MC  flag
-  AliAnalysisUtils*   fHelperClass;           //! gc Vertex selection helper
-  Bool_t              fInitializedLocal;      //! gc trigger if tracks/jets are loaded  initiates calling   ExecOnce 
+  Bool_t              fMC;                            //  real data  or MC  flag
+  AliAnalysisUtils*   fHelperClass;                   //! Vertex selection helper
+  Bool_t              fInitializedLocal;              //! trigger if tracks/jets are loaded  initiates calling   ExecOnce 
 
 
-   TH1I               *fHistEvtSelection;     //! gc event statistics
+   TH1I               *fHistEvtSelection;             //! gc event statistics
 
-   TH1F     *fhVertexZ;  //! gc vertexZ inclusive
+   TH1F     *fhVertexZ;                               //! gc vertexZ inclusive
+                                                      
+   TH2F     *fhTrackPhiIncl;                          //! minimum bias phi inclusive ch hadron
+   TH2F     *fhTrackEtaIncl;                          //! minimum bias eta inclusive
+   TH2F     *fhJetPhiIncl;                            //! minimum bias phi inclusive ch jet
+   TH2F     *fhJetEtaIncl;                            //! minimum bias eta inclusive
+   TH2F     *fhClusterPhiInclMB;                        //! minimum bias phi inclusive cluster
+   TH2F     *fhClusterEtaInclMB;                        //! minimum bias eta inclusive
+   TH2F     *fhClusterPhiInclGA;                      //! minimum bias phi inclusive cluster
+   TH2F     *fhClusterEtaInclGA;                      //! minimum bias eta inclusive
+ 
+   TH1F     *fhRhoIncl;                               //! minimum bias rho inclusive
+   TH1F     *fhRhoTTH[fkTTbins];                      //! in events MB with hadron TT
+   TH1F     *fhRhoTTJ[fkTTbins];                      //! in events MB with jet TT
+   TH1F     *fhRhoTTCinMB[fkTTbins];                  //! in events MB with cluster TT
+   TH1F     *fhRhoTTCinGA[fkTTbins];                  //! in events GA with cluster TT
 
-   TH2F     *fhTrackPhiIncl;//!minimum bias phi inclusive
-   TH2F     *fhTrackEtaIncl;//!minimum bias eta inclusive
-   TH2F     *fhJetPhiIncl;//!minimum bias phi inclusive
-   TH2F     *fhJetEtaIncl;//!minimum bias eta inclusive
+   TH1D* fhVertex[fkVtx];                             //! vertex distribution 
+   TH1D* fhVertexTTH[fkVtx][fkTTbins];                //! vertex distribution in events biased with hadron TT
+                                                      
+   TH1D* fhCentralityMB[fkCE];                        //! estimated centrality based on  mult V0, mult VC, tracklets, znatower0, znctower0
+   TH1D* fhCentralityTTH[fkCE][fkTTbins];             //! estimated centrality in events biased with hadron TT
+   TH1D* fhCentralityTTJ[fkCE][fkTTbins];             //! estimated centrality in events biased with ch jet TT
+   TH1D* fhCentralityTTCinMB[fkCE][fkTTbins];         //! estimated centrality in MB events biased with cluster TT
+   TH1D* fhCentralityTTCinGA[fkCE][fkTTbins];         //! estimated centrality in GA events biased with cluster TT
+                                                      
+   TH1D* fhSignalMB[fkCE];                            //! distributions of centrality estimators:  mult V0, mult VC, tracklets, znatower0, znctower0
+   TH1D* fhSignalTTH[fkCE][fkTTbins];                 //! distributions of centrality estimators biased with hadron TT
+   TH1D* fhSignalTTJ[fkCE][fkTTbins];                 //! distributions of centrality estimators biased with ch jet TT
+   TH1D* fhSignalTTCinMB[fkCE][fkTTbins];              //! distributions of centrality estimators biased with cluster TT in min bias 
+   TH1D* fhSignalTTCinGA[fkCE][fkTTbins];              //! distributions of centrality estimators biased with cluster TT in Gamma trigger
+                                                      
+   TH1D* fhMultTTHinMB[fkTTbins];                       //! multiplicity of hadron TT in MB event
+   TH1D* fhMultTTJinMB[fkTTbins];                       //! multiplicity of charged jet TT in MB event
+   TH1D* fhMultTTCinMB[fkTTbins];                       //! multiplicity of cluster TT in MB event
+   TH1D* fhMultTTCinGA[fkTTbins];                       //! multiplicity of cluster TT in Gamma trigger event
 
 
-   Double_t fZVertexCut; // vertex cut in z 
-
-   Int_t    fnHadronTTBins; // number of TT bins
-   Int_t    fnJetChTTBins; // number of TT bins
-   Int_t    fHadronTTLowPt[fkTTbins]; // low pt TT range
-   Int_t    fHadronTTHighPt[fkTTbins]; // low pt TT range
-   Int_t    fJetChTTLowPt[fkTTbins]; // low pt TT range
-   Int_t    fJetChTTHighPt[fkTTbins]; // low pt TT range
-  
-
-   Int_t    fHadronTT[fkTTbins]; //! array which stores the number of triggers in given event 
-   Int_t    fJetChTT[fkTTbins];  //! array which stores the number of jets in given event 
+   Double_t fZVertexCut;                              // vertex cut in z 
+                                                     
+   Int_t    fnHadronTTBins;                           // number of TT bins charged hadron 
+   Int_t    fnJetChTTBins;                            // number of TT bins charged jet
+   Int_t    fnClusterTTBins;                          // number of TT bins gamma cluster
+   Int_t    fHadronTTLowPt[fkTTbins];                 // low pt TT range charged hadron 
+   Int_t    fHadronTTHighPt[fkTTbins];                // high pt TT range charged hadron 
+   Int_t    fJetChTTLowPt[fkTTbins];                  // low pt TT range charged jet
+   Int_t    fJetChTTHighPt[fkTTbins];                 // high pt TT range charged jet
+   Int_t    fClusterTTLowPt[fkTTbins];                // low pt TT range charged jet
+   Int_t    fClusterTTHighPt[fkTTbins];               // high pt TT range charged jet
+                                                     
+                                                     
+   Int_t    fHadronTT[fkTTbins];                      //! array which stores the number of triggers in given event 
+   Int_t    fJetChTT[fkTTbins];                       //! array which stores the number of jets in given event 
+   Int_t    fClusterTT[fkTTbins];                     //! array which stores the number of jets in given event 
+                                                      
+   Bool_t   fFillTTree;                               // Fill output TTree
+   Int_t    fSystem;                                  // Collision system 
+   AliEMCALRecoUtils          *fFiducialCellCut;      //!<!
 
    AliAnalysisTaskEA(const AliAnalysisTaskEA&);
    AliAnalysisTaskEA& operator=(const AliAnalysisTaskEA&);
 
-   ClassDef(AliAnalysisTaskEA, 1); // Charged jet analysis for pAliAnalysisTaskHJetSpectra/home/fkrizek/z501.ALIC
+   ClassDef(AliAnalysisTaskEA, 4); // Charged jet analysis for pAliAnalysisTaskHJetSpectra/home/fkrizek/z501.ALIC
 
 };
 #endif

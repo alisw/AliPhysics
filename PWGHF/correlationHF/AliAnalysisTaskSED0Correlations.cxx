@@ -26,6 +26,7 @@
 
 #include <Riostream.h>
 #include <TClonesArray.h>
+#include <TObjArray.h>
 #include <TCanvas.h>
 #include <TNtuple.h>
 #include <TTree.h>
@@ -634,7 +635,7 @@ void AliAnalysisTaskSED0Correlations::UserCreateOutputObjects()
 
   const char* nameoutput=GetOutputSlot(2)->GetContainer()->GetName();
 
-  fNentries=new TH1F(nameoutput, "Control plot", 20,-0.5,19.5);
+  fNentries=new TH1F(nameoutput, "Control plot", 21,-0.5,20.5);
 
   fNentries->GetXaxis()->SetBinLabel(1,"nEventsAnal");
   fNentries->GetXaxis()->SetBinLabel(2,"nEventsSelected");
@@ -654,8 +655,9 @@ void AliAnalysisTaskSED0Correlations::UserCreateOutputObjects()
   fNentries->GetXaxis()->SetBinLabel(16,"D0 failed to be filled");
   fReadMC ? fNentries->GetXaxis()->SetBinLabel(17,"nTrueD0Selected(MC)") : fNentries->GetXaxis()->SetBinLabel(17,"Dstar<-D0");
   fNentries->GetXaxis()->SetBinLabel(18,"ptbin = -1");
-  if(fSys==0) fNentries->GetXaxis()->SetBinLabel(19,"nCandSel(QualTr)");
-  fNentries->GetXaxis()->SetBinLabel(20,"nCandSel(Cuts)");
+  fNentries->GetXaxis()->SetBinLabel(19,"Preselect Rejection");
+  if(fSys==0) fNentries->GetXaxis()->SetBinLabel(20,"nCandSel(QualTr)");
+  fNentries->GetXaxis()->SetBinLabel(21,"nCandSel(Cuts)");
 
   fNentries->GetXaxis()->SetNdivisions(1,kFALSE);
 
@@ -948,6 +950,18 @@ void AliAnalysisTaskSED0Correlations::UserExec(Option_t */*option*/)
     for (Int_t iD0toKpi = 0; iD0toKpi < nInD0toKpi; iD0toKpi++) {
       AliAODRecoDecayHF2Prong *d = (AliAODRecoDecayHF2Prong*)inputArray->UncheckedAt(iD0toKpi);
 
+      //new preselection check, from PbPb 2018 (to spped up analysis)
+      TObjArray arrTracks(2);
+      for(Int_t ipr=0;ipr<2;ipr++){
+        AliAODTrack *tr=vHF->GetProng(aod,d,ipr);
+        arrTracks.AddAt(tr,ipr);
+      }
+
+      if(!fCutsD0->PreSelect(arrTracks)){
+        fNentries->Fill(18);
+        continue;
+      }
+
       if(!(vHF->FillRecoCand(aod,d))) {//Fill the data members of the candidate only if they are empty.   
         fNentries->Fill(15); //monitor how often this fails 
         continue;
@@ -964,7 +978,7 @@ void AliAnalysisTaskSED0Correlations::UserExec(Option_t */*option*/)
         nSelectedloose++;
         nSelectedtight++;      
         if(fSys==0){
-  	  if(fCutsD0->IsSelected(d,AliRDHFCuts::kTracks,aod)) fNentries->Fill(18);       
+  	     if(fCutsD0->IsSelected(d,AliRDHFCuts::kTracks,aod)) fNentries->Fill(19);       
         }  
         Int_t ptbin=fCutsD0->PtBin(d->Pt());
         if(ptbin==-1) {fNentries->Fill(17); continue;} //out of bounds
@@ -1045,7 +1059,7 @@ void AliAnalysisTaskSED0Correlations::UserExec(Option_t */*option*/)
             Double_t pD0[3] = {mcPart->Px(),mcPart->Py(),mcPart->Pz()};
             if(TMath::Abs( (p1[0]+p2[0]-pD0[0])*(p1[0]+p2[0]-pD0[0]) + (p1[1]+p2[1]-pD0[1])*(p1[1]+p2[1]-pD0[1]) + (p1[2]+p2[2]-pD0[2])*(p1[2]+p2[2]-pD0[2]) )>0.1) continue;
 
-          if(fSys==0) fNentries->Fill(18);
+          if(fSys==0) fNentries->Fill(19);
           Int_t ptbin=fCutsD0->PtBin(mcPart->Pt());
           if(ptbin==-1) {fNentries->Fill(17); continue;} //out of bounds  
   
@@ -1129,7 +1143,7 @@ void AliAnalysisTaskSED0Correlations::FillMassHists(AliAODRecoDecayHF2Prong *par
   if (fReadMC) labD0 = part->MatchToMC(421,arrMC,2,pdgDgD0toKpi); //return MC particle label if the array corresponds to a D0, -1 if not (cf. AliAODRecoDecay.cxx)
 
   //count candidates selected by cuts
-  fNentries->Fill(19);
+  fNentries->Fill(20);
   //count true D0 selected by cuts
   if (fReadMC && labD0>=0) fNentries->Fill(16);
 

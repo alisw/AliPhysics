@@ -22,11 +22,11 @@
 class TParticle;
 
 class AliESDEvent;
-class AliAODEvent;
+//class AliAODEvent;
 class AliVEvent;
 class AliStack;
 class AliESDtrackCuts;
-class AliAODtrackCuts;
+//class AliAODtrackCuts;
 class AlidNdPtEventCuts;
 class AliAnalysisUtils;
 
@@ -65,7 +65,7 @@ class AlidNdPtUnifiedAnalysisTask : public AliAnalysisTaskSE {
     /// Set the flag for the use of ESD \c (fIsESD=kTRUE)
     void SetUseESD(){fIsESD=kTRUE;}
     /// Set the flag for the use of AOD \c (fIsESD=kFALSE)
-    void SetUseAOD(){fIsESD=kFALSE;}
+    //void SetUseAOD(){fIsESD=kFALSE;}
     /// Set the flag for the particle composition
 
     void SetTrkEffParametrisation(TF1 *function){fFunTrkEff = function;}
@@ -161,7 +161,7 @@ class AlidNdPtUnifiedAnalysisTask : public AliAnalysisTaskSE {
 
 
     void InitESDTrackCuts();
-    void InitAODTrackCuts();
+   // void InitAODTrackCuts();
     void InitdNdPtEventCuts();
     void SetFixedBinEdges(Double_t* array, Double_t lowerEdge, Double_t upperEdge, Int_t nBins);
 
@@ -183,7 +183,7 @@ class AlidNdPtUnifiedAnalysisTask : public AliAnalysisTaskSE {
     AliESDtrackCuts   *fESDtrackCuts;
 
     ///AliAODSelection
-    AliAODtrackCuts *fAODtrackCuts;
+   // AliAODtrackCuts *fAODtrackCuts;
 
     AliAnalysisUtils* fUtils;
     Bool_t      	fIsESD;			///< Flag for ESD usage

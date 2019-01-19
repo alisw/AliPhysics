@@ -141,6 +141,8 @@ set(SRCS
   AliAnalysisTaskSEDstoK0sK.cxx
   AliHFVnVsMassFitter.cxx
   AliAnalysisTaskSELc2V0bachelorTMVAApp.cxx
+  AliAnalysisTaskSEHFSystPID.cxx
+  AliAnalysisTaskSEDmesonPIDSysProp.cxx
    )
 
 # Headers from sources
@@ -202,6 +204,7 @@ install(FILES
             ConfigVertexingHF_Pb_AllCent_NoLS.C
             ConfigVertexingHF_DplustoK0s_DstoK0s.C
             ConfigVertexingHF_pPbRHF_DplustoK0s_DstoK0s.C
+	    ConfigVertexingHF_Pb_AllCent_NoLS_PIDLc_PtDepSel_LcMinpt1_DsMinPt15_2018opt.C
         DESTINATION
             PWGHF/vertexingHF/)
 

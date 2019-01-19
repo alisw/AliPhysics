@@ -35,6 +35,7 @@ class AliAnalysisTaskSigma0Femto : public AliAnalysisTaskSE {
   void SetIsRun1(bool isRun1) { fIsRun1 = isRun1; }
   void SetV0Percentile(float v0perc) { fV0PercentileMax = v0perc; }
   void SetTrigger(UInt_t trigger) { fTrigger = trigger; }
+  void SetMultiplicityMode(UInt_t trigger) { fMultMode = trigger; }
   void SetProtonCuts(AliFemtoDreamTrackCuts *cuts) {
     fTrackCutsPartProton = cuts;
   }
@@ -102,6 +103,7 @@ class AliAnalysisTaskSigma0Femto : public AliAnalysisTaskSE {
   bool fPhotonLegPileUpCut;  //
   float fV0PercentileMax;    //
   UInt_t fTrigger;           //
+  UInt_t fMultMode;          //
 
   TClonesArray *fGammaArray;  //!
 
@@ -117,16 +119,23 @@ class AliAnalysisTaskSigma0Femto : public AliAnalysisTaskSE {
   TH1F *fHistCentralityProfileBefore;                      //!
   TH1F *fHistCentralityProfileAfter;                       //!
   TH1F *fHistCentralityProfileCoarseAfter;                 //!
+  TH1F* fHistMultiplicityRef08;                            //!
   TH1F *fHistTriggerBefore;                                //!
   TH1F *fHistTriggerAfter;                                 //!
   TH1I *fHistMultiplicity;                                 //!
   TH2F *fHistCorrelationPSigmaPLambda[3];                  //!
   TH2F *fHistCorrelationPSigmaPGamma[3];                   //!
   TH2F *fHistCorrelationPLambdaPGamma[3];                  //!
+  TH1F *fHistDiffPSigma[3];                                //!
+  TH1F *fHistDiffPGamma[3];                                //!
+  TH1F *fHistDiffPLambda[3];                               //!
   TH2F *fHistCorrelationAntiPAntiSigmaAntiPAntiLambda[3];  //!
   TH2F *fHistCorrelationAntiPAntiSigmaAntiPAntiGamma[3];   //!
   TH2F *fHistCorrelationAntiPAntiLambdaAntiPAntiGamma[3];  //!
+  TH1F *fHistDiffPAntiSigma[3];                            //!
+  TH1F *fHistDiffPAntiGamma[3];                            //!
+  TH1F *fHistDiffPAntiLambda[3];                           //!
 
-  ClassDef(AliAnalysisTaskSigma0Femto, 8)
+  ClassDef(AliAnalysisTaskSigma0Femto, 10)
 };
 #endif

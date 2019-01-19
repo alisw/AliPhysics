@@ -272,7 +272,7 @@ Bool_t AliAnalysisTaskHFSubstructure::FillHistograms()
   fAodEvent = dynamic_cast<AliAODEvent*>(fInputEvent);
 
 
-  fRDHFCuts->IsEventSelected(fAodEvent);
+  if(!fRDHFCuts->IsEventSelected(fAodEvent)) return kTRUE;
   fhEvent->Fill(1); 
   fFastJetWrapper=new AliFJWrapper("fastjetwrapper","fastjetwrapper");
   fFastJetWrapper->SetAreaType(fastjet::active_area); 
@@ -350,7 +350,7 @@ Bool_t AliAnalysisTaskHFSubstructure::FillHistograms()
 	  }
 	  //delete Matched_Truth_Particle;
 	}
-	else continue; 
+	//else continue; 
 	if (fPromptReject && !Is_Prompt_Correct_Quark) continue; 
 
 	//if (TMath::Abs(Matched_Truth_Particle_PDG)!=fCandidatePDG) continue; 

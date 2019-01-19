@@ -224,7 +224,12 @@ AliDielectron* Config_acapon(TString cutDefinition,
 			die->GetPairFilter().AddCuts(LMcutlib->GetPairCuts(LMEECutLib::kCutSet1));
 		}
 	}
-
+	else if(cutDefinition == "kTheoPID"){ // Standard PID cut set taken from a Run 1 analysis
+		die->GetTrackFilter().AddCuts(LMcutlib->GetTrackCuts(LMEECutLib::kCutSet1, LMEECutLib::kTheoPID));
+		if(applyPairCuts){
+			die->GetPairFilter().AddCuts(LMcutlib->GetPairCuts(LMEECutLib::kCutSet1));
+		}
+	}
 	else{
 		cout << " =============================== " << endl;
 		cout << " ==== INVALID CONFIGURATION ==== " << endl;
@@ -327,10 +332,10 @@ void InitHistograms(AliDielectron *die, Bool_t doPairing, Bool_t trackVarPlots, 
 
     if(trackVarPlots){
 			//add histograms to Track classes
-			histos->UserHistogram("Track","Pt",";Pt [GeV];#tracks",100,0,5.,AliDielectronVarManager::kPt);
-			histos->UserHistogram("Track","Px",";Px [GeV];#tracks",100,0,5.,AliDielectronVarManager::kPx);
-			histos->UserHistogram("Track","Py",";Py [GeV];#tracks",100,0,5.,AliDielectronVarManager::kPy);
-			histos->UserHistogram("Track","Pz",";Pz [GeV];#tracks",100,0,5.,AliDielectronVarManager::kPz);
+			histos->UserHistogram("Track","Pt",";Pt (GeV);#tracks",100,0,5.,AliDielectronVarManager::kPt);
+			histos->UserHistogram("Track","Px",";Px (GeV);#tracks",100,0,5.,AliDielectronVarManager::kPx);
+			histos->UserHistogram("Track","Py",";Py (GeV);#tracks",100,0,5.,AliDielectronVarManager::kPy);
+			histos->UserHistogram("Track","Pz",";Pz (GeV);#tracks",100,0,5.,AliDielectronVarManager::kPz);
 			histos->UserHistogram("Track","P_PIn",";p (GeV/c);p_{in} (GeV/c)",100,0,10,AliDielectronVarManager::kPIn);
 			// Eta and Phi
 			histos->UserHistogram("Track","Eta","",200,-2,2,AliDielectronVarManager::kEta);
@@ -366,9 +371,9 @@ void InitHistograms(AliDielectron *die, Bool_t doPairing, Bool_t trackVarPlots, 
 			histos->UserHistogram("Track","TPCcrossedRowsOverFindableMed",";TPC crossed rows over findable clusters;#tracks",200,0.,1.2,AliDielectronVarManager::kNFclsTPCfCross);
 			histos->UserHistogram("Track","TPCcrossedRows_TPCnCls",";TPC number clusters;TPC crossed rows",
 													160,-0.5,159.5, 160,-0.5,159.5, AliDielectronVarManager::kNclsTPC,AliDielectronVarManager::kNFclsTPCr);
-			histos->UserHistogram("Track","TPCcrossedRows_P",";Pt [GeV];TPC crossed rows",
+			histos->UserHistogram("Track","TPCcrossedRows_P",";Pt (GeV);TPC crossed rows",
 													GetVector(kP2D), BinsToVector(160,-0.5,159.5), AliDielectronVarManager::kP,AliDielectronVarManager::kNFclsTPCr);
-			histos->UserHistogram("Track","TPCcrossedRowsOverFindable_P",";P [GeV];TPC crossed rows over findable",
+			histos->UserHistogram("Track","TPCcrossedRowsOverFindable_P",";P (GeV);TPC crossed rows over findable",
 													GetVector(kP2D), BinsToVector(120,0.,1.2), AliDielectronVarManager::kP,AliDielectronVarManager::kNFclsTPCfCross);
 			histos->UserHistogram("Track","TPCcrossedRowsOverFindable_Eta",";Eta;TPC crossed rows over findable",
 													100,-1,1, 120,0.,1.2, AliDielectronVarManager::kEta,AliDielectronVarManager::kNFclsTPCfCross);
@@ -501,8 +506,8 @@ void InitHistograms(AliDielectron *die, Bool_t doPairing, Bool_t trackVarPlots, 
   
     if(doPairing){
         //add histograms to Pair classes
-        histos->UserHistogram("Pair","InvMass","",250,0.,5.,AliDielectronVarManager::kM);
-        histos->UserHistogram("Pair","PairPt","",160,0.,8., AliDielectronVarManager::kPt);
+        histos->UserHistogram("Pair","InvMass","",500,0.,5.,AliDielectronVarManager::kM);
+        histos->UserHistogram("Pair","PairPt","",100, 0.,10., AliDielectronVarManager::kPt);
         histos->UserHistogram("Pair","Rapidity","",200,-2.,2.,AliDielectronVarManager::kY);
         histos->UserHistogram("Pair","OpeningAngle","",240,0.,TMath::Pi(),AliDielectronVarManager::kOpeningAngle);
         histos->UserHistogram("Pair","PhiV","", GetVector(kPhiV), AliDielectronVarManager::kPhivPair);
@@ -516,33 +521,33 @@ void InitHistograms(AliDielectron *die, Bool_t doPairing, Bool_t trackVarPlots, 
         /* histos->UserHistogram("Pair","dZ sigma (linear)","" ,2000,0,20.0, AliDielectronVarManager::kPairLinDCAsigZ); */ 
 
                 //2D and 3D histograms
-        /* histos->UserHistogram("Pair","InvMass_PairPt",";Inv. Mass [GeV];Pair Pt [GeV];#pairs", */
+        /* histos->UserHistogram("Pair","InvMass_PairPt",";Inv. Mass (GeV);Pair Pt (GeV);#pairs", */
         /*                       GetVector(kMee), GetVector(kPtee), */
         /*                       AliDielectronVarManager::kM, AliDielectronVarManager::kPt); */
         /* histos->UserHistogram("Pair","Eta_Phi_Pair",";Eta;Phi;#pairs", */
         /*                       200,-2.,2, 120,0.,TMath::TwoPi(), */
         /*                       AliDielectronVarManager::kEta, AliDielectronVarManager::kPhi); */
-        histos->UserHistogram("Pair","InvMass_PairPt_PhivPair",";Inv. Mass [GeV];Pair Pt [GeV];PhiV",
+        histos->UserHistogram("Pair","InvMass_PairPt_PhivPair",";Inv. Mass (GeV);Pair Pt (GeV);PhiV",
                               GetVector(kMee), GetVector(kPtee), GetVector(kPhiV), 
                               AliDielectronVarManager::kM, AliDielectronVarManager::kPt, AliDielectronVarManager::kPhivPair);
-        histos->UserHistogram("Pair","InvMass_PairPt_OpeningAngle",";Inv. Mass [GeV];Pair Pt [GeV];Opening Angle",
+        histos->UserHistogram("Pair","InvMass_PairPt_OpeningAngle",";Inv. Mass (GeV);Pair Pt (GeV);Opening Angle",
                               GetVector(kMee), GetVector(kPtee), GetVector(kOpAng), 
                               AliDielectronVarManager::kM, AliDielectronVarManager::kPt, AliDielectronVarManager::kOpeningAngle);
-        /* histos->UserHistogram("Pair","InvMass_PhivPair_OpeningAngle",";Inv. Mass [GeV];PhiV;Opening Angle", */
+        /* histos->UserHistogram("Pair","InvMass_PhivPair_OpeningAngle",";Inv. Mass (GeV);PhiV;Opening Angle", */
         /*                       GetVector(kMee500), GetVector(kPhiV), GetVector(kOpAng2), */ 
         /*                       AliDielectronVarManager::kM, AliDielectronVarManager::kPhivPair, AliDielectronVarManager::kOpeningAngle); */
 
         //opening angle and PhiV
-        /* histos->UserHistogram("Pair","InvMass_OpeningAngle",";Inv. Mass [GeV];Opening Angle;#pairs", */
+        /* histos->UserHistogram("Pair","InvMass_OpeningAngle",";Inv. Mass (GeV);Opening Angle;#pairs", */
         /*                       GetVector(kMee), GetVector(kOpAng), */ 
         /*                       AliDielectronVarManager::kM, AliDielectronVarManager::kOpeningAngle); */
-        histos->UserHistogram("Pair","InvMass_PhivPair",";Inv. Mass [GeV];PhiV;#pairs",
+        histos->UserHistogram("Pair","InvMass_PhivPair",";Inv. Mass (GeV);PhiV;#pairs",
                               GetVector(kMee), GetVector(kPhiV), 
                               AliDielectronVarManager::kM, AliDielectronVarManager::kPhivPair);
-        /* histos->UserHistogram("Pair","PairPt_OpeningAngle",";Pair Pt [GeV];Opening Angle;#pairs", */
+        /* histos->UserHistogram("Pair","PairPt_OpeningAngle",";Pair Pt (GeV);Opening Angle;#pairs", */
         /*                       GetVector(kPtee), GetVector(kOpAng), */ 
         /*                       AliDielectronVarManager::kPt, AliDielectronVarManager::kOpeningAngle); */
-        histos->UserHistogram("Pair","PairPt_PhivPair",";Pair Pt [GeV];PhiV;#pairs",
+        histos->UserHistogram("Pair","PairPt_PhivPair",";Pair Pt (GeV);PhiV;#pairs",
                               GetVector(kPtee), GetVector(kPhiV), 
                               AliDielectronVarManager::kPt, AliDielectronVarManager::kPhivPair);
         /* histos->UserHistogram("Pair","OpeningAngle_PhivPair",";Opening Angle;PhiV;#pairs", */
@@ -550,14 +555,14 @@ void InitHistograms(AliDielectron *die, Bool_t doPairing, Bool_t trackVarPlots, 
         /*                       AliDielectronVarManager::kOpeningAngle, AliDielectronVarManager::kPhivPair); */
 
         //centrality
-        /* histos->UserHistogram("Pair","InvMass_Centrality",";Inv. Mass [GeV];Centrality;#pairs", */
+        /* histos->UserHistogram("Pair","InvMass_Centrality",";Inv. Mass (GeV);Centrality;#pairs", */
         /*                       GetVector(kMee), BinsToVector(102,-1,101), */ 
         /*                       AliDielectronVarManager::kM, AliDielectronVarManager::kCentralityNew); */
-        /* histos->UserHistogram("Pair","PairPt_Centrality",";Pair Pt [GeV];Centrality;#pairs", */
+        /* histos->UserHistogram("Pair","PairPt_Centrality",";Pair Pt (GeV);Centrality;#pairs", */
         /*                       GetVector(kPtee), BinsToVector(102,-1,101), */ 
         /*                       AliDielectronVarManager::kPt, AliDielectronVarManager::kCentralityNew); */
-				histos->UserHistogram("Pair", "InvMass_PairPt_Centrality", ";Inv. Mass [GeV];Pair Pt (GeV);Centrality",
-                              GetVector(kMee), GetVector(kPtee), BinsToVector(102, -1, 101),
+				histos->UserHistogram("Pair", "InvMass_PairPt_Centrality", ";Inv. Mass (GeV);Pair Pt (GeV);Centrality",
+                              GetVector(kMee), GetVector(kPtee), GetVector(kCent),
 															AliDielectronVarManager::kM, AliDielectronVarManager::kPt, AliDielectronVarManager::kCentralityNew);
     }//End doMixing histograms
 
@@ -584,44 +589,37 @@ TVectorD* GetVector(Int_t var)
     case kTPCdEdx:
       return AliDielectronHelper::MakeLinBinning( 50, 50.,100.);
       
-    /* case kMee:    return AliDielectronHelper::MakeArbitraryBinning("0.0, 0.01, 0.02, 0.03, 0.04, 0.05, 0.06, 0.07, 0.08, 0.09, */ 
-    /*                                                                0.10, 0.14, 0.18, 0.22, 0.26, 0.30, 0.34, 0.38, 0.42, 0.46, */ 
-    /*                                                                0.50, 0.54, 0.58, 0.62, 0.66, 0.70, 0.74, 0.78, 0.82, 0.86, */ 
-    /*                                                                0.90, 0.94, 0.98, 1.02, 1.06, */ 
-    /*                                                                1.10, 1.30, 1.50, 1.70, 1.90, 2.10, 2.30, 2.50, 2.70, 2.90, */ 
-    /*                                                                3.10, 3.30, 3.50, 4.00, 4.50, 5.00 */ 
-    /*                                                                "); */
-		case kMee: return AliDielectronHelper::MakeLinBinning(250, 0., 5.);
-    case kMee500: return AliDielectronHelper::MakeArbitraryBinning("0.0, 0.01, 0.02, 0.03, 0.04, 0.05, 0.06, 0.07, 0.08, 0.09, 0.10, 0.14, 0.18, 0.22, 0.26, 0.30, 0.34, 0.38, 0.42, 0.46, 0.50 ");
-    /* case kPtee:   return AliDielectronHelper::MakeArbitraryBinning("0.0, 0.05, 0.10, 0.15, 0.20, 0.25, 0.30, 0.35, 0.40, 0.45, */ 
-    /*                                                                0.50, 0.55, 0.60, 0.65, 0.70, 0.75, 0.80, 0.85, 0.90, 0.95, */ 
-    /*                                                                1.00, 1.20, 1.40, 1.60, 1.80, 2.00, 2.20, 2.40, 2.60, 2.80, */ 
-    /*                                                                3.00, 3.20, 3.40, 3.60, 3.80, 4.00, 4.20, 4.40, 4.60, 4.80, */ 
-    /*                                                                5.00, 6.00, 7.00, 8.00 */ 
-    /*                                                                "); */
-		case kPtee: return AliDielectronHelper::MakeLinBinning(160, 0., 8.);
+		case kMee:
+			return AliDielectronHelper::MakeArbitraryBinning("0., 0.01, 0.02, 0.03, 0.04, 0.05, 0.06, 0.07, 0.08,"
+                                                       " 0.09, 0.1, 0.14, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8,"
+                                                       " 0.95, 1.05, 1.25, 1.5, 1.75, 2.0, 2.25, 2.5, 2.75,"
+                                                       " 2.9, 3.0, 3.05, 3.1, 3.3, 3.8, 5.00");
+    case kMee500:
+			return AliDielectronHelper::MakeArbitraryBinning("0.0, 0.01, 0.02, 0.03, 0.04, 0.05, 0.06, 0.07, 0.08, 0.09, 0.10, 0.14, 0.18, 0.22, 0.26, 0.30, 0.34, 0.38, 0.42, 0.46, 0.50 ");
+		//case kPtee: return AliDielectronHelper::MakeLinBinning(100, 0., 10.);
+		case kPtee:
+			return AliDielectronHelper::MakeArbitraryBinning("0.0, 0.1, 0.3, 0.5, 1, 1.5, 2.5, 2.5, 4, 6, 10");
     case kP2D:    return AliDielectronHelper::MakeArbitraryBinning("0.0, 0.05, 0.10, 0.15, 0.20, 0.25, 0.30, 0.35, 0.40, 0.45," 
                                                                   " 0.50, 0.55, 0.60, 0.65, 0.70, 0.75, 0.80, 0.85, 0.90, 0.95," 
                                                                   " 1.00, 1.05, 1.10, 1.15, 1.20, 1.25, 1.30, 1.35, 1.40, 1.45," 
                                                                   " 1.50, 1.55, 1.60, 1.65, 1.70, 1.75, 1.80, 1.85, 1.90, 1.95," 
                                                                   " 2.00, 2.20, 2.40, 2.60, 2.80, 3.00, 3.20, 3.40, 3.60, 3.80," 
                                                                   " 4.00, 4.50, 5.00, 5.50, 6.00, 6.50, 7.00, 7.50, 8.00 ");
-      //2.00, 2.05, 2.10, 2.15, 2.20, 2.25, 2.30, 2.35, 2.40, 2.45, 
-      //2.50, 2.55, 2.60, 2.65, 2.70, 2.75, 2.80, 2.85, 2.90, 2.95, 
-      //3.00, 3.05, 3.10, 3.15, 3.20, 3.25, 3.30, 3.35, 3.40, 3.45, 
-    case kCent: return AliDielectronHelper::MakeLinBinning(10,0.,100.);
+    //case kCent: return AliDielectronHelper::MakeLinBinning(20,0.,100.);
+		case kCent:
+			return AliDielectronHelper::MakeArbitraryBinning("0, 0.5, 10, 20, 40, 60, 100");
     
     //First and lasts bins added for clearer plotting
-    case kRuns:   return AliDielectronHelper::MakeArbitraryBinning("265300, 265309, 265332, 265334, 265336, 265338, 265339, 265342,"
-																																	" 265343, 265344, 265377, 265378, 265381, 265383, 265384, 265385,"
-																																	" 265387, 265388, 265419, 265420, 265421, 265422, 265424, 265425,"
-																																	" 265426, 265427, 265435, 265499, 265500, 265501, 265521, 265525,"
-																																	"265530");
+    case kRuns:
+			return AliDielectronHelper::MakeArbitraryBinning("265300, 265309, 265332, 265334, 265336, 265338, 265339, 265342,"
+                                                       " 265343, 265344, 265377, 265378, 265381, 265383, 265384, 265385,"
+                                                       " 265387, 265388, 265419, 265420, 265421, 265422, 265424, 265425,"
+                                                       " 265426, 265427, 265435, 265499, 265500, 265501, 265521, 265525,"
+                                                       "265530");
 
 		default: std::cout << "ERROR: in 'GetVector(...var)' variable for axis range not defined!" << std::endl;
       break;
   } 
-  //if ( var.EqualTo("p_2D"      , kIgnoreCase) ) return AliDielectronHelper::MakeLinBinning(160,0.,8.);
 	return 0x0;
 }
 

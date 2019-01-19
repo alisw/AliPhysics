@@ -464,7 +464,7 @@ react as appropriate.
 ## Configuring internal event selection (centrality, etc)
 
 Internal event selection is performed via AliEventCuts. By default, AliEventCuts will use an automatic setup based on
-run number. Piratically speaking, if you would like to modify any of these settings, you will need to setup (often by
+run number. Practically speaking, if you would like to modify any of these settings, you will need to setup (often by
 calling `%Setup{Period}()` for the event cuts object) and then configure it via manual cuts mode. Centrality is the one
 notable exception. Additional centrality selection is implemented in the embedding helper. To use it, simply set the
 centrality range ("internalEventSelection:centralityRange" in YAML or via SetCentralityRange(min, max)). Note that if

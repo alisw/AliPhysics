@@ -175,8 +175,7 @@ AliAnalysisTaskSimpleTreeMaker::AliAnalysisTaskSimpleTreeMaker():
 	fWidthTOF(0),
 	fMeanTOF(0),
 	TOFstartMask(0),
-	fGeneratorHashes(0),
-	ignoreFirstMother(kFALSE)
+	fGeneratorHashes(0)
 {
 
 }
@@ -282,8 +281,7 @@ AliAnalysisTaskSimpleTreeMaker::AliAnalysisTaskSimpleTreeMaker(const char *name)
 	fWidthTOF(0),
 	fMeanTOF(0),
 	TOFstartMask(0),
-	fGeneratorHashes(0),
-	ignoreFirstMother(kFALSE)
+	fGeneratorHashes(0)
 
 {
 	if(fIsV0tree){
@@ -630,6 +628,9 @@ void AliAnalysisTaskSimpleTreeMaker::UserExec(Option_t *){
 					mcVert[i] = (Float_t)mcVertD[i];
 				}
 
+				// Check which generator was used
+				isInj = CheckGenerator(track->GetLabel());
+
 				// Get label of mother particle
 				// Will return -1 if no mother particle
 				Int_t gMotherIndex = mcTrack->GetMother();
@@ -652,15 +653,7 @@ void AliAnalysisTaskSimpleTreeMaker::UserExec(Option_t *){
 					iPdgMother  = motherMCtrack->PdgCode();
 					// Get mother label so tracks can be correctly paired
 					motherLabel = TMath::Abs(motherMCtrack->GetLabel());
-				}
-
-				if(!ignoreFirstMother){
-					// Check which generator was used
-					// Returns kTRUE if from injected sample
-					isInj = CheckGenerator(track->GetLabel());
-
 					
-
 					// If index is minus then particle has no mother particle
 					// Otherwise, begin search for original particle
 					Int_t gFirstMotherIndex = motherMCtrack->GetMother();

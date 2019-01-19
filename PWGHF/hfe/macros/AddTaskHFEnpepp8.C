@@ -127,19 +127,14 @@ AliAnalysisTask *AddTaskHFEnpepp8(Bool_t MCthere,
    enum {
       // TPC-TOF
       // default minBias MC from charged pions
-      kWeiLHC17l4b = 400,    // weights pp @ 5.023 TeV: LHC17l4b, Pythia min. bias
+      kWeiLHC15h1 = 61,    // weights pp @ 8 TeV: LHC15h1, Pythia min. bias
       // systematic
       kWeiLHC17l4b_tu = 401,    // weights pp @ 5.023 TeV: LHC17l4b, Pythia min. bias
-      kWeiLHC17l4b_td = 402,    // weights pp @ 5.023 TeV: LHC17l4b, Pythia min. bias
-      kWeiLHC17l4b_tued = 403,    // weights pp @ 5.023 TeV: LHC17l4b, Pythia min. bias
-      kWeiLHC17l4b_tdeu = 404,    // weights pp @ 5.023 TeV: LHC17l4b, Pythia min. bias
-      // from neutral pions
-      kWeiLHC17l4b_neutral = 405    // weights pp @ 5.023 TeV: LHC17l4b, Pythia min. bias
    };
    int kWeiData;
    // The re-weighting concerns the photonic sources. The tagging efficiency is best taken
    // from min bias MC for statistics reasons. Therefore the default is put for min bias MC.
-   kWeiData = kWeiLHC17l4b;
+   kWeiData = kWeiLHC15h1;
 
 
    if(kNPERef){
@@ -2320,7 +2315,8 @@ AliAnalysisTask *AddTaskHFEnpepp8(Bool_t MCthere,
                            kassDCAr, kassDCAz, dEdxaclm, dEdxachm, kassITSpid, kassTOFpid, kTRUE, kFALSE);
 
          if (RunSystematic == kSystAsociatedMinpTWeights) {
-            //tilted weights
+            //tilted weights for now removed since no tilted weights for 8 TeV data
+             
             RegisterTaskNPEpp( MCthere, isAOD, kDefTPCcl, kDefTPCclPID, kDefITScl, kDefDCAr, kDefDCAz, tpcl13,
                               dEdxhm, kDefTOFs, AliHFEextraCuts::kBoth, 0, kassITS, kassTPCcl, kassTPCPIDcl,
                               kassDCAr, kassDCAz, dEdxaclm, dEdxachm, kassITSpid, kassTOFpid, kTRUE, kFALSE, kWei, kWeiLHC17l4b_tu);
@@ -3480,7 +3476,7 @@ AliAnalysisTask *RegisterTaskNPEpp(Bool_t useMC, Bool_t isAOD,
    task->SelectCollisionCandidates(AliVEvent::kINT7);
 
    if(useMC && weightlevelback>=0) {
-      ConfigWeightFactors(task,kFALSE,WhichWei,"nonHFEcorrect_pp5_New.root");
+      ConfigWeightFactors(task,kFALSE,WhichWei,"nonHFEcorrect_pp8TeV.root");
    }
 
    //create data containers

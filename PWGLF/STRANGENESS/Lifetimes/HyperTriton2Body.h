@@ -42,7 +42,8 @@ class HyperTriton2Body {
   Double32_t GetNegProngPt() const { return fPtNeg;}
   Double32_t GetPosProngPt() const { return fPtPos;}
   Double32_t GetNegProngPhi() const { return fPhiNeg;}
-  Double32_t GetPosProngPhi() const { return fPhiPos;}  
+  Double32_t GetPosProngPhi() const { return fPhiPos;} 
+  Double32_t GetCentrality() const  {return fCentrality;} 
   bool IsCowboy() const { return fFlags & kCowboySailor; }
   bool IsLikeSign() const { return fV0radius < 0.; } //TODO: switch to signbit with ROOT6
   bool IsFake() const { return fV0pt < 0.; }         //TODO: switch to signbit with ROOT6
@@ -75,9 +76,10 @@ class HyperTriton2Body {
   void SetITSinformation(bool, bool, bool, bool, int);
   void SetCowboyAndSailor(bool cs) { fFlags = flipBits(fFlags, static_cast<unsigned char>(kCowboySailor), cs); }
   void SetTOFbits(bool pTOF, bool nTOF);
+  void SetCentrality(float centrality){fCentrality=centrality;}
   void SetOptimalParameters(bool opt) { fFlags = flipBits(fFlags, static_cast<unsigned char>(kOptimalParams), opt); }
   static HyperTriton2Body FillHyperTriton2Body(AliESDv0 *v0, AliESDtrack *pTrack , AliESDtrack *nTrack, float nsigmaposhe3
-,float nsigmaneghe3, float nsigmapospion,float nsigmanegpion, float magneticField , double primaryVertex[3]);
+,float nsigmaneghe3, float nsigmapospion,float nsigmanegpion, float magneticField , double primaryVertex[3], bool fake,float centrality);
   LVector_t GetV0LorentzVector(AliESDtrack* negTrack, AliESDtrack* posTrack, double alpha);
 
  private:
@@ -87,7 +89,7 @@ class HyperTriton2Body {
     kPositiveTOF = 1 << 2,
     kOptimalParams = 1 << 3
   };
-
+  
   float fV0radius;                      // V0 decay vertex radius (negarive -> LikeSign V0)
   float fV0pt;                          // V0 transverse momentum (in MC if negative -> fake V0)
   float fV0eta;                         // V0 pseudorapidity
@@ -96,14 +98,14 @@ class HyperTriton2Body {
   Double32_t fV0CosPA;                  //[0.9,1.0,16] V0 cosine of pointing angle
   Double32_t fChi2V0;                   //[0.0,10.24,8] V0 fit chi2
   Double32_t fDcaNeg2PrimaryVertex;     //[0.0,0.256,8] DCA of the negative prong to the PV
-  Double32_t fDcaPos2PrimaryVertex;     //[0.0,0.256,8]  DCA of the positive prong to the PV
+  Double32_t fDcaPos2PrimaryVertex;     // [0.0,0.256,8]  DCA of the positive prong to the PV
   Double32_t fDcaV0daughters;           //[0.0,2.56,8] DCA between the two prongs
   Double32_t fV0armAlpha;               //[-1.28,1.28,8] Armenteros alpha
   Double32_t fV0armPt;                  //[0.0,0.256,8] Armenteros pt
   unsigned char fLeastNxedRows;         // Min number of xed roads
   Double32_t fLeastXedOverFindable;     //[0.0,1.0,8] Min xed roads/findable clusters
   Double32_t fMaxChi2PerCluster;        //[0,12.8,8] Max chi2 per cluster in TPC
-  Double32_t fNsigmaPionPos;            //[0.0,8.0,4] # sigma TPC pion for the positive prong
+  Double32_t fNsigmaPionPos;            //[0.0,8.0,4]
   Double32_t fNsigmaHe3Pos;  
   Double32_t fNsigmaPionNeg;            //[0.0,8.0,4] # sigma TPC pion for the positive prong
   Double32_t fNsigmaHe3Neg;          //[0.0,8.0,4] # sigma TPC proton for the positive prong
@@ -112,7 +114,8 @@ class HyperTriton2Body {
   Double32_t fPhiPos;
   Double32_t fPhiNeg;
   Double32_t fEtaPos;                   //[-1.0,1.0,7] Pseudorapidity of the positive prong. MSB is the TOF bit.
-  Double32_t fEtaNeg;                   //[-1.0,1.0,7] Pseudorapidity of the negative prong. MSB is the TOF bit.
+  Double32_t fEtaNeg;                   //[-1.0,1.0,7] Pseudorapidity of the negative prong. MSB is the TOF bit.   
+  Double32_t fCentrality;               //[0,127,7]        
   unsigned char fITSInfo;               // Starting from the MSB: kITSrefit for neg and pos, kSPDany for neg and pos, least number of ITS clusters (last 4 bits)
   unsigned char fFlags;                 // Cowboy&Saylor, TOF bits for neg and pos, optimal tracking parameters
 };
@@ -189,7 +192,7 @@ inline void HyperTriton2Body::SetTOFbits(bool pTOF, bool nTOF) {
 }
 
 inline HyperTriton2Body HyperTriton2Body::FillHyperTriton2Body(AliESDv0 *v0, AliESDtrack *pTrack , AliESDtrack *nTrack, float nsigmaposhe3
-,float nsigmaneghe3, float nsigmapospion,float nsigmanegpion, float magneticField , double primaryVertex[3]){
+,float nsigmaneghe3, float nsigmapospion,float nsigmanegpion, float magneticField , double primaryVertex[3], bool fake, float centrality){
 
 HyperTriton2Body miniHyper;
 double decayVtx[3];
@@ -247,7 +250,7 @@ double lVecProd = momPos[0] * momNeg[1] - momPos[1] * momNeg[0];
 bool isCowboy = lVecProd * magneticField < 0;
 
 
-miniHyper.SetV0ptAndFake(v0Pt, false);
+miniHyper.SetV0ptAndFake(v0Pt, fake);
 miniHyper.SetV0eta(v0->Eta());
 miniHyper.SetLeastNumberOfXedRows(minXedRows);
 miniHyper.SetDistOverP(distOverP);
@@ -266,6 +269,7 @@ miniHyper.SetProngsTPCnsigmas(nsigmapospion, nsigmaposhe3,
 miniHyper.SetITSinformation(negITSrefit, posITSrefit, negSPDany, posSPDany, ITSnCl);
 miniHyper.SetTOFbits(posTOF, negTOF);
 miniHyper.SetCowboyAndSailor(isCowboy);
+miniHyper.SetCentrality(centrality);
 return miniHyper;
 
 }

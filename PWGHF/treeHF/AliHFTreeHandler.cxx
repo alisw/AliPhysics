@@ -13,6 +13,9 @@
 // G. Innocenti, gian.michele.innocenti@cern.ch
 // F. Prino, prino@to.infn.it
 // L. Vermunt, luuk.vermunt@cern.ch
+// L. van Doremalen, lennart.van.doremalen@cern.ch
+// J. Norman, jaime.norman@cern.ch
+// G. Luparello, grazia.luparello@cern.ch
 /////////////////////////////////////////////////////////////
 
 #include <cmath>
@@ -301,9 +304,9 @@ bool AliHFTreeHandler::SetSingleTrackVars(AliAODTrack* prongtracks[]) {
 }
 
 //________________________________________________________________
-bool AliHFTreeHandler::SetPidVars(AliAODTrack* prongtracks[], AliAODPidHF* pidHF, bool usePionHypo, bool useKaonHypo, bool useProtonHypo, bool useTPC, bool useTOF) 
+bool AliHFTreeHandler::SetPidVars(AliAODTrack* prongtracks[], AliPIDResponse* pidrespo, bool usePionHypo, bool useKaonHypo, bool useProtonHypo, bool useTPC, bool useTOF) 
 {
-  if(!pidHF) return false;
+  if(!pidrespo) return false;
   for(unsigned int iProng=0; iProng<fNProngs; iProng++) {
     if(!prongtracks[iProng]) {
       AliWarning("Prong track not found!");
@@ -318,15 +321,14 @@ bool AliHFTreeHandler::SetPidVars(AliAODTrack* prongtracks[], AliAODPidHF* pidHF
   bool useHypo[knMaxHypo4Pid] = {usePionHypo,useKaonHypo,useProtonHypo};
   bool useDet[knMaxDet4Pid] = {useTPC,useTOF};
   AliPID::EParticleType parthypo[knMaxHypo4Pid] = {AliPID::kPion,AliPID::kKaon,AliPID::kProton};
-  AliPIDResponse* pidrespo=0x0;
   
   //compute PID variables for different options
   for(unsigned int iProng=0; iProng<fNProngs; iProng++) {
     if((fPidOpt>=kNsigmaPID && fPidOpt<=kNsigmaCombPIDfloatandint) || fPidOpt==kRawAndNsigmaPID) {
       for(unsigned int iPartHypo=0; iPartHypo<knMaxHypo4Pid; iPartHypo++) {
         if(useHypo[iPartHypo]) {
-          if(useTPC) pidHF->GetnSigmaTPC(prongtracks[iProng],parthypo[iPartHypo],sig[iProng][kTPC][iPartHypo]);
-          if(useTOF) pidHF->GetnSigmaTOF(prongtracks[iProng],parthypo[iPartHypo],sig[iProng][kTOF][iPartHypo]);
+          if(useTPC) sig[iProng][kTPC][iPartHypo] = pidrespo->NumberOfSigmasTPC(prongtracks[iProng],parthypo[iPartHypo]);
+          if(useTOF) sig[iProng][kTOF][iPartHypo] = pidrespo->NumberOfSigmasTOF(prongtracks[iProng],parthypo[iPartHypo]);
           if(fPidOpt>=kNsigmaCombPID && fPidOpt<=kNsigmaCombPIDfloatandint) {
             sigComb[iProng][iPartHypo] = CombineNsigmaDiffDet(sig[iProng][kTPC][iPartHypo],sig[iProng][kTOF][iPartHypo]);
           }
@@ -334,7 +336,6 @@ bool AliHFTreeHandler::SetPidVars(AliAODTrack* prongtracks[], AliAODPidHF* pidHF
       }
     }
     if(fPidOpt==kRawPID || fPidOpt==kRawAndNsigmaPID) {
-      pidrespo = (AliPIDResponse*)pidHF->GetPidResponse();
       if(useTPC) rawPID[iProng][kTPC] = prongtracks[iProng]->GetTPCsignal();
       if(useTOF) {
         if (!(prongtracks[iProng]->GetStatus() & AliESDtrack::kTOFout) || !(prongtracks[iProng]->GetStatus() & AliESDtrack::kTIME)) {

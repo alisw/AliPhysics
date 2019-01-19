@@ -2,7 +2,7 @@
 //#include "AliGenReadersEMD.h"
 //#include "AliGenExtFile.h"
 
-AliGenerator* AddMCGenRELDIS(TString reldisFile="epbpb2510nt_na50.root", TString ntupleName="h2034",Int_t firstev=0) {
+AliGenerator* AddMCGenRELDIS_sEMD(TString reldisFile="epbpb2510nt_na50.root", TString ntupleName="h2034",Int_t firstev=0) {
 
 
     AliGenExtFile *gener = new AliGenExtFile(-1);

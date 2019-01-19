@@ -1193,7 +1193,6 @@ void AliAnalysisTaskSELc2V0bachelorTMVAApp::MakeAnalysisForLc2prK0S(AliAODEvent 
 
     if (!(lcK0spr->CheckCascadeFlags())) {
       AliDebug(2,Form("Cascade %d is not flagged as Lc candidate",iLctopK0s));
-      Printf(Form("Cascade %d is not flagged as Lc candidate",iLctopK0s));
       continue;
     }
 
@@ -1279,7 +1278,6 @@ void AliAnalysisTaskSELc2V0bachelorTMVAApp::MakeAnalysisForLc2prK0S(AliAODEvent 
       mcLabel = lcK0spr->MatchToMC(pdgCand, pdgDgLctoV0bachelor[1], pdgDgLctoV0bachelor, pdgDgV0toDaughters, mcArray, kTRUE);
       if (mcLabel>=0) {
 	AliDebug(2,Form(" ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~cascade number %d (total cascade number = %d)", iLctopK0s, nCascades));
-	Printf(Form(" ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~cascade number %d (total cascade number = %d)", iLctopK0s, nCascades));
 
 	AliAODMCParticle *partLc = dynamic_cast<AliAODMCParticle*>(mcArray->At(mcLabel));
 	if(partLc){
@@ -1296,9 +1294,7 @@ void AliAnalysisTaskSELc2V0bachelorTMVAApp::MakeAnalysisForLc2prK0S(AliAODEvent 
       }
     }
     AliDebug(2, Form("\n\n\n Analysing candidate %d\n", iLctopK0s));
-    Printf(Form("\n\n\n Analysing candidate %d\n", iLctopK0s));
     AliDebug(2, Form(">>>>>>>>>> Candidate is background, fFillOnlySgn = %d --> SKIPPING", fFillOnlySgn));
-    Printf(Form(">>>>>>>>>> Candidate is background, fFillOnlySgn = %d --> SKIPPING", fFillOnlySgn));
     if (!isLc) {
       if (fFillOnlySgn) { // if it is background, and we want only signal, we do not fill the tree
 	continue;
@@ -1358,8 +1354,6 @@ void AliAnalysisTaskSELc2V0bachelorTMVAApp::MakeAnalysisForLc2prK0S(AliAODEvent 
 
     //FillLc2pK0Sspectrum(lcK0spr, isLc, nSelectedAnal, cutsAnal, mcArray, iLctopK0s);
     FillLc2pK0Sspectrum(lcK0spr, isLc, nSelectedAnal, cutsAnal, mcArray, mcLabel);    
-    AliAODVertex* v = lcK0spr->GetSecondaryVtx();
-    delete v;
   }
   
   delete vHF;
@@ -1446,16 +1440,13 @@ void AliAnalysisTaskSELc2V0bachelorTMVAApp::FillLc2pK0Sspectrum(AliAODRecoCascad
 
   Bool_t isCandidateSelectedCuts = (((cutsAnal->IsSelected(part, AliRDHFCuts::kCandidate)) & (AliRDHFCutsLctoV0::kLcToK0Spr)) == (AliRDHFCutsLctoV0::kLcToK0Spr)); // kinematic/topological cuts
   AliDebug(2, Form("recoAnalysisCuts = %d", cutsAnal->IsSelected(part, AliRDHFCuts::kCandidate) & (AliRDHFCutsLctoV0::kLcToK0Spr)));
-  Printf(Form("recoAnalysisCuts = %d, isLc = %d", cutsAnal->IsSelected(part, AliRDHFCuts::kCandidate) & (AliRDHFCutsLctoV0::kLcToK0Spr), isLc));
   if (!isCandidateSelectedCuts){
     AliDebug(2, "No: Analysis cuts kCandidate level NOT passed");
-    //Printf("No: Analysis cuts kCandidate level NOT passed");
       if (isLc) Printf("SIGNAL candidate rejected");
     return;
   }
   else {
     AliDebug(2, "Yes: Analysis cuts kCandidate level passed");
-    Printf("Yes: Analysis cuts kCandidate level passed");
   }
 
   AliAODTrack *bachelor = (AliAODTrack*)part->GetBachelor();
@@ -1491,13 +1482,11 @@ void AliAnalysisTaskSELc2V0bachelorTMVAApp::FillLc2pK0Sspectrum(AliAODRecoCascad
     }
     else {
       AliDebug(2, "Only TPC did not work...");
-      Printf("Only TPC did not work...");
     }
     // resetting mask to ask for both TPC+TOF
     fPIDCombined->SetDetectorMask(AliPIDResponse::kDetTPC+AliPIDResponse::kDetTOF);
   }
   AliDebug(2, Form("probProton = %f", probProton));
-  Printf(Form("probProton = %f", probProton));
 
   // now we get the TPC and TOF single PID probabilities (only for Proton, or the tree will explode :) )
   Double_t probProtonTPC = -1.;
@@ -1870,7 +1859,6 @@ void AliAnalysisTaskSELc2V0bachelorTMVAApp::FillLc2pK0Sspectrum(AliAODRecoCascad
       
       
       Double_t BDTResponse = -1;
-      Printf("************************************************ fBDTReader = %p", fBDTReader);
       BDTResponse = fBDTReader->GetMvaValue(inputVars);
       fBDTHisto->Fill(BDTResponse, invmassLc); 
       fBDTHistoVsMassK0S->Fill(BDTResponse, invmassK0s);

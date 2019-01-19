@@ -16,6 +16,8 @@ class TList;
 #include "AliFemtoVertexMultAnalysis.h"
 #include "AliFemtoEventReaderAODMultSelection.h"
 
+#include <TNamed.h>
+
 
 /// \class AliFemtoAnalysisPionPion
 /// \brief A simple analysis for studying femtoscopic systems of
@@ -140,6 +142,9 @@ public:
   template <typename T>
   static AliFemtoConfigObject GetConfigurationOf(const T&);
 
+  static TString make_random_string(const TString &prefix="");
+
+
 protected:
 
   /// The name of this analysis used for identification in the output list
@@ -166,7 +171,7 @@ protected:
 };
 
 /// \class AliFemtoAnalysisPionPion::AnalysisParams
-struct AliFemtoAnalysisPionPion::AnalysisParams {
+struct AliFemtoAnalysisPionPion::AnalysisParams : public TNamed {
 
   UInt_t vertex_bins;
   Float_t vertex_min,
@@ -195,6 +200,8 @@ struct AliFemtoAnalysisPionPion::AnalysisParams {
 
   /// Default Values
   AnalysisParams();
+
+  ClassDef(AnalysisParams, 1);
 };
 
 /// \class AliFemtoAnalysisPionPion::CutParams
@@ -203,7 +210,8 @@ struct AliFemtoAnalysisPionPion::AnalysisParams {
 ///
 /// The expected way to use this class
 ///
-struct AliFemtoAnalysisPionPion::CutParams {
+struct AliFemtoAnalysisPionPion::CutParams : public TNamed {
+
   Bool_t event_use_basic;
 
   // EVENT
@@ -288,6 +296,11 @@ struct AliFemtoAnalysisPionPion::CutParams {
   Bool_t pair_remove_same_label;
   Int_t pair_algorithm;
 
+  /// Default Values
+  CutParams();
+
+
+  ClassDef(CutParams, 0);
 };
 
 template <typename T>
