@@ -38,15 +38,20 @@ UInt_t AliFemtoKtBinnedCorrFunc::AddKtRange(float low, float high)
 
   const std::pair<Float_t, Float_t> range(low, high);
 
-  const auto insert_location = std::lower_bound(fRanges.begin(), fRanges.end(), range);
-  fRanges.insert(insert_location, range);
+  const auto r_insert_loc = std::lower_bound(fRanges.begin(), fRanges.end(), range);
+  const auto loc = fRanges.insert(r_insert_loc, range);
 
-  auto offset = std::distance(fRanges.begin(), insert_location);
-  const auto buffer_location = std::next(fCFBuffer.begin(), offset);
+  const auto offset = std::distance(fRanges.begin(), loc);
+  const auto cf_insert_loc = std::next(fCFBuffer.begin(), offset);
 
-  fCFBuffer.insert(buffer_location, clone);
+  // std::cout << "Adding "
+  //           << Form("{%g, %g}", low, high)
+  //           << " to location: " << offset << "/" << fCFBuffer.size()
+  //           << "\n";
 
-  return static_cast<Int_t>(offset);
+  fCFBuffer.insert(cf_insert_loc, clone);
+
+  return offset;
 }
 
 UInt_t AliFemtoKtBinnedCorrFunc::AddKtRange(const TString& name, float low, float high)
@@ -64,52 +69,56 @@ void AliFemtoKtBinnedCorrFunc::AddKtRanges(const float data[], float stop_at)
   } while (data[++i] != stop_at);
 }
 
-inline
-std::tuple<Int_t, Int_t>
-load_integers(
-  Float_t kt,
-  const std::vector<std::pair<Float_t, Float_t>> &ranges)
+void AliFemtoKtBinnedCorrFunc::AddPair(AliFemtoPair *pair, bool is_same_event)
 {
-  auto lower = std::find_if(ranges.begin(), ranges.end(),
-                            [=](std::pair<Float_t, Float_t> r) {
-                              return r.first <= kt && kt < r.second; });
+  auto add_pair_to = [is_same_event, pair] (AliFemtoCorrFctn *cf)
+    {
+      (is_same_event) ? cf->AddRealPair(pair)
+                      : cf->AddMixedPair(pair);
+    };
 
-  auto higher = std::find_if(lower, ranges.end(),
-                             [=](std::pair<Float_t, Float_t> r) {
-                               return kt < r.first; });
+  // auto add_pair_to = mixed
+  //                  ? [pair] (AliFemtoCorrFctn *cf) { cf->AddMixedPair(pair); }
+  //                  : [pair] (AliFemtoCorrFctn *cf) { cf->AddRealPair(pair); };
 
-  return std::make_tuple(std::distance(ranges.begin(), lower),
-                         std::distance(ranges.begin(), higher));
+  const Float_t kt = pair->KT();
+
+  // auto lower = std::lower_bound(fRanges.begin(), fRanges.end(), kt,
+  //                               [](std::pair<Float_t, Float_t> r, float kt) {
+  //                                 return r.first <= kt; });
+  // std::size_t idx = std::distance(fRanges.begin(), lower);
+
+  std::size_t idx = 0;
+  for (; idx < fRanges.size(); ++idx) {
+    const auto r = fRanges[idx];
+    if (r.first <= kt && kt < r.second) {
+      break;
+    }
+  }
+
+  for (; idx < fRanges.size(); ++idx) {
+    const auto r = fRanges[idx];
+
+    // no remaining ranges
+    if (kt < r.first) {
+      break;
+    }
+
+    // we are within this range
+    if (kt < r.second) {
+      add_pair_to(fCFBuffer[idx]);
+    }
+  }
 }
 
 void AliFemtoKtBinnedCorrFunc::AddRealPair(AliFemtoPair *pair)
 {
-  const Float_t kt = pair->KT();
-
-  Int_t idx, stop;
-  std::tie(idx, stop) = load_integers(kt, fRanges);
-
-  for (; idx < stop; ++idx) {
-    const auto r = fRanges[idx];
-    if (r.first <= kt && kt < r.second) {
-      fCFBuffer[idx]->AddRealPair(pair);
-    }
-  }
+  AddPair(pair, true);
 }
 
 void AliFemtoKtBinnedCorrFunc::AddMixedPair(AliFemtoPair *pair)
 {
-  const Float_t kt = pair->KT();
-
-  Int_t idx, stop;
-  std::tie(idx, stop) = load_integers(kt, fRanges);
-
-  for (; idx < stop; ++idx) {
-    const auto r = fRanges[idx];
-    if (r.first <= kt && kt < r.second) {
-      fCFBuffer[idx]->AddMixedPair(pair);
-    }
-  }
+  AddPair(pair, false);
 }
 
 TList* AliFemtoKtBinnedCorrFunc::GetOutputList()

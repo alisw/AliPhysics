@@ -11,6 +11,9 @@
 #include <TString.h>
 #include <vector>
 
+class TH1I;
+
+
 /// \class AliFemtoKtBinnedCorrFunc
 /// \brief A "wrapper class" that wraps a correlation function
 ///        with code that checks the kt of the pair.
@@ -103,6 +106,9 @@ private:
   AliFemtoKtBinnedCorrFunc& operator=(const AliFemtoKtBinnedCorrFunc&);
 
 protected:
+
+  void AddPair(AliFemtoPair *, bool);
+
   /// Name of the output TObjArray
   TString fName;
 
@@ -117,6 +123,7 @@ protected:
   std::vector<std::pair<Float_t, Float_t> > fRanges;
 };
 
+  // std::vector<std::pair<std::pair<Float_t, Float_t>, A >> fRanges;
 
 template <typename T>
 void AliFemtoKtBinnedCorrFunc::AddKtRanges(const T &start, const T &stop)
