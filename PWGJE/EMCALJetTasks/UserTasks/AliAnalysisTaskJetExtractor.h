@@ -304,7 +304,9 @@ class AliEmcalJetTree : public TNamed
     Float_t*        fBuffer_Cluster_Time;                 //!<! array buffer
     Int_t*          fBuffer_Cluster_Label;                //!<! array buffer
 
-    Float_t         fBuffer_Shape_Mass;                   //!<! array buffer
+    Float_t         fBuffer_Shape_Mass_NoCorr;            //!<! array buffer
+    Float_t         fBuffer_Shape_Mass_DerivCorr_1;       //!<! array buffer
+    Float_t         fBuffer_Shape_Mass_DerivCorr_2;       //!<! array buffer
 
     Int_t           fBuffer_Jet_MC_MotherParton;          //!<! array buffer
     Int_t           fBuffer_Jet_MC_MotherHadron;          //!<! array buffer
@@ -319,7 +321,7 @@ class AliEmcalJetTree : public TNamed
 
 
     /// \cond CLASSIMP
-    ClassDef(AliEmcalJetTree, 4) // Jet tree class
+    ClassDef(AliEmcalJetTree, 5) // Jet tree class
     /// \endcond
 };
 
