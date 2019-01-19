@@ -162,7 +162,7 @@ Bool_t AliEmcalJetTree::AddJetToTree(AliEmcalJet* jet, Float_t vertexX, Float_t 
   if(fSaveEventProperties)
   {
     fBuffer_Event_BackgroundDensity               = fJetContainer->GetRhoVal();
-    fBuffer_Event_BackgroundDensityMass           = jet->M()-jet->GetShapeProperties()->GetSecondOrderSubtracted();
+    fBuffer_Event_BackgroundDensityMass           = fJetContainer->GetRhoMassVal();
     fBuffer_Event_Vertex_X                        = vertexX;
     fBuffer_Event_Vertex_Y                        = vertexY;
     fBuffer_Event_Vertex_Z                        = vertexZ;
@@ -262,10 +262,10 @@ Bool_t AliEmcalJetTree::AddJetToTree(AliEmcalJet* jet, Float_t vertexX, Float_t 
   }
 
   // Set jet shape observables
-  if(fJetContainer->GetRhoMassVal())
-    fBuffer_Shape_Mass  = jet->GetShapeProperties()->GetSecondOrderSubtracted();
-  else
-    fBuffer_Shape_Mass  = jet->M();
+  // Jet mass
+  fBuffer_Shape_Mass_NoCorr = jet->M();
+  fBuffer_Shape_Mass_DerivCorr_1 = jet->GetShapeProperties()->GetFirstOrderSubtracted();
+  fBuffer_Shape_Mass_DerivCorr_2 = jet->GetShapeProperties()->GetSecondOrderSubtracted();
 
   // Set Monte Carlo information
   if(fSaveMCInformation)
@@ -386,7 +386,9 @@ void AliEmcalJetTree::InitializeTree()
 
   if(fSaveJetShapes)
   {
-    fJetTree->Branch("Jet_Shape_Mass",&fBuffer_Shape_Mass,"Jet_Shape_Mass/F");
+    fJetTree->Branch("Jet_Shape_Mass_NoCorr",&fBuffer_Shape_Mass_NoCorr,"Jet_Shape_Mass_NoCorr/F");
+    fJetTree->Branch("Jet_Shape_Mass_DerivCorr_1",&fBuffer_Shape_Mass_DerivCorr_1,"Jet_Shape_Mass_DerivCorr_1/F");
+    fJetTree->Branch("Jet_Shape_Mass_DerivCorr_2",&fBuffer_Shape_Mass_DerivCorr_2,"Jet_Shape_Mass_DerivCorr_2/F");
   }
 
   if(fSaveMCInformation)
