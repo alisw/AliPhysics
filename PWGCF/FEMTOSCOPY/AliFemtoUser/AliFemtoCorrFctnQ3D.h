@@ -208,10 +208,6 @@ protected:
   TH3* fDenominatorW;   ///<!< Qinv-Weighted denominator
 };
 
-#ifdef SINGLE_WQINV
-#undef fNumeratorW
-#undef fDenominatorW
-#endif
 
 template <typename T>
 AliFemtoCorrFctnQ3D<T>::AliFemtoCorrFctnQ3D(const char* title,
@@ -272,7 +268,7 @@ AliFemtoCorrFctnQ3D<T>::AliFemtoCorrFctnQ3D(const AliFemtoCorrFctnQ3D<T>& orig)
   , fNumerator(new TH3F(*orig.fNumerator))
   , fDenominator(new TH3F(*orig.fDenominator))
   , fNumeratorW(static_cast<TH3*>(orig.fNumeratorW->Clone()))
-  , fDenominatorW(static_cast<TH3*>(orig.fDenominatorW->Clone()))
+  , fDenominatorW(static_cast<TH3*>(orig.fDenominatorW ? orig.fDenominatorW->Clone() : nullptr))
 {
 }
 
