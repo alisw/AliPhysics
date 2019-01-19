@@ -61,7 +61,7 @@
 #include "AliHFEtools.h"
 #include "AliCFContainer.h"
 #include "AliCFManager.h"
-#include "AliSelectNonHFE.h"
+#include "AliHFEextraCuts.h"
 #include "AliHFEpidTPC.h"
 #include "AliAnalysisHFETPCTOFBeauty.h"
 #include "TMath.h"
@@ -122,7 +122,7 @@ AliAnalysisHFETPCTOFBeauty::AliAnalysisHFETPCTOFBeauty(const char *name)
 ,fVevent(0)
 ,fOutputList(0)
 ,fPidResponse(0)
-,fNonHFE(new AliSelectNonHFE())
+,fExtraCuts(NULL)
 ,fIsAOD(kFALSE)
 ,fIsPP(kFALSE)
 ,fZvtx(0)
@@ -309,7 +309,7 @@ AliAnalysisHFETPCTOFBeauty::AliAnalysisHFETPCTOFBeauty()
 ,fVevent(0)
 ,fOutputList(0)
 ,fPidResponse(0)
-,fNonHFE(new AliSelectNonHFE())
+,fExtraCuts(NULL)
 ,fIsAOD(kFALSE)
 ,fIsPP(kFALSE)
 ,fZvtx(0)
@@ -791,7 +791,7 @@ void AliAnalysisHFETPCTOFBeauty::UserCreateOutputObjects()
     Double_t binLimpdg2[nBinspdg2+1];
     for(Int_t i=0; i<=nBinspdg2; i++) binLimpdg2[i]=(Double_t)minpdg2 + (maxpdg2-minpdg2)/nBinspdg2*(Double_t)i ;
     
-    Int_t nBinsdcaxy = 3200; ///dca bin size 0.000125 cm
+    Int_t nBinsdcaxy = 1600; ///bin size 0.00025 cm
     Double_t mindcaxy = -0.2;
     Double_t maxdcaxy = 0.2;
     Double_t binLimdcaxy[nBinsdcaxy+1];
@@ -1288,12 +1288,39 @@ void AliAnalysisHFETPCTOFBeauty::UserExec(Option_t *)
         ////////////////////
 		//Calculating DCA///
 		////////////////////
-        Double_t d0z0[2], cov[3];
-        AliAODVertex *prim_vtx = fAOD->GetPrimaryVertex();
-        if(!(track->PropagateToDCA(prim_vtx, fAOD->GetMagneticField(), 100., d0z0, cov))) continue;
-        Double_t DCAxy = d0z0[0];
-        Double_t DCAz = d0z0[1];
+		///The way it was done before
+		//Double_t d0z0[2], cov[3];
+		//AliAODVertex *prim_vtx = fAOD->GetPrimaryVertex();
+        //if(!(track->PropagateToDCA(prim_vtx, fAOD->GetMagneticField(), 100., d0z0, cov))) continue;
+        //Double_t DCAxy = d0z0[0];
+        //Double_t DCAz = d0z0[1];
+        //cout<<"---------------------- fPt = "<<fPt<<endl;
+        //cout<<"---------------------- DCAxy = "<<DCAxy<<endl;
         
+        
+        ///Using AliHFEextraCuts method, that includes primary vertex recalculation if the number of contributors is smaller than 30
+        if(!fExtraCuts){
+			fExtraCuts = new AliHFEextraCuts("hfeExtraCuts","HFE Extra Cuts");
+		}
+		fExtraCuts->SetRecEventInfo(fAOD);
+        
+        Double_t hfeDCA[2];
+        hfeDCA[0] = -999.;
+        hfeDCA[1] = -999.;
+        Double_t hfeDCAResol[3];
+        hfeDCAResol[0] = -999.;
+        hfeDCAResol[1] = -999.;
+        hfeDCAResol[2] = -999.;
+		fExtraCuts->GetHFEImpactParameters((AliVTrack *)track, hfeDCA, hfeDCAResol);
+		//Float_t hfeDCA = -999.;
+        //Float_t hfeDCAResol = -999.;
+		//fExtraCuts->GetImpactParameters((AliVTrack *)track, hfeDCA, hfeDCAResol);
+        //cout<<"---------------------- hfeDCA = "<<hfeDCA[0]<<endl;
+        //printf("----------------------- hfeDCA = %0.4f",hfeDCA);
+        //printf("----------------------- hfeDCAResol = %0.4f",hfeDCAResol);
+        Double_t DCAxy = hfeDCA[0];
+        Double_t DCAz = hfeDCA[1];
+  
   
         ///Checking nsigmaTPC after PID cuts in tof and its
         if(fTOFnSigma >= ftofPIDmincut && fTOFnSigma <= ftofPIDmaxcut){
@@ -1418,8 +1445,9 @@ void AliAnalysisHFETPCTOFBeauty::UserExec(Option_t *)
         
                
         //=======================================================================
-        // Here the PID cuts defined in the file "Config.C" is applied
+        // Here the PID cuts are applied
         //=======================================================================
+        /*
         Int_t pidpassed = 1;
         AliHFEpidObject hfetrack;
         hfetrack.SetAnalysisType(AliHFEpidObject::kESDanalysis);
@@ -1428,6 +1456,12 @@ void AliAnalysisHFETPCTOFBeauty::UserExec(Option_t *)
         if(!fPID->IsSelected(&hfetrack, NULL, "", fPIDqa)) pidpassed = 0;
         
         if(pidpassed==0) continue;
+        */
+        
+        
+        if(fTPCnSigma <= ftpcPIDmincut || fTPCnSigma >= ftpcPIDmaxcut) continue;
+		if(fTOFnSigma <= ftofPIDmincut || fTOFnSigma >= ftofPIDmaxcut) continue;
+		
 
         /////////////////////////
 		//AFTER PID SELECTION////

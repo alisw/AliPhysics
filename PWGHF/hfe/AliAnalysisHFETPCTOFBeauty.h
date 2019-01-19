@@ -33,7 +33,7 @@ class AliCentrality;
 class AliAODEvent;
 class AliVEvent;
 class AliAODMCHeader;
-class AliSelectNonHFE;
+class AliHFEextraCuts;
 class AliEventPoolManager;
 class AliEventPool;
 class TObjArray;
@@ -172,7 +172,7 @@ private:
     AliVEvent 		      	*fVevent;			
     TList       			*fOutputList;
     AliPIDResponse 			*fPidResponse;
-    AliSelectNonHFE 		*fNonHFE;
+    AliHFEextraCuts 		*fExtraCuts;
     
     
     //For the case of AOD analysis
