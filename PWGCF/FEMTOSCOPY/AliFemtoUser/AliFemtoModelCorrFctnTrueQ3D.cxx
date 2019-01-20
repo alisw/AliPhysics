@@ -15,6 +15,9 @@
 #include <tuple>
 #include <iostream>
 
+#define OPTIMIZE_EXPECT_FALSE(expr) __builtin_expect(expr, 0)
+
+
 AliFemtoModelCorrFctnTrueQ3D::AliFemtoModelCorrFctnTrueQ3D():
   AliFemtoModelCorrFctnTrueQ3D("CF_TrueQ3D_")
 {
@@ -48,46 +51,28 @@ AliFemtoModelCorrFctnTrueQ3D::AliFemtoModelCorrFctnTrueQ3D(const TString &prefix
   , fDenominatorRecWeighted(nullptr)
   , fRng(new TRandom())
 {
-  fNumeratorGenerated = new TH3F(prefix + "NumGen",
-                                 "Numerator (MC-Generated Momentum)",
-                                 nbins, qmin, qmax,
-                                 nbins, qmin, qmax,
-                                 nbins, qmin, qmax);
-  fNumeratorReconstructed = new TH3F(prefix + "NumRec",
-                                     "Numerator (Reconstructed Momentum)",
-                                     nbins, qmin, qmax,
-                                     nbins, qmin, qmax,
-                                     nbins, qmin, qmax);
-  fNumeratorRecUnweighted = new TH3F(prefix + "NumRecUnweighted",
-                                     "Numerator (Reconstructed Momentum - No femto weight)",
-                                     nbins, qmin, qmax,
-                                     nbins, qmin, qmax,
-                                     nbins, qmin, qmax);
-  fNumeratorGenUnweighted = new TH3F(prefix + "NumGenUnweighted",
-                                     "Numerator (Generated Momentum - No femto weight)",
-                                     nbins, qmin, qmax,
-                                     nbins, qmin, qmax,
-                                     nbins, qmin, qmax);
-  fDenominatorGenerated = new TH3F(prefix + "DenGen",
-                                   "Denominator (MC-Generated Momentum)",
-                                   nbins, qmin, qmax,
-                                   nbins, qmin, qmax,
-                                   nbins, qmin, qmax);
-  fDenominatorReconstructed = new TH3F(prefix + "DenRec",
-                                       "Denominator (Reconstructed Momentum)",
-                                       nbins, qmin, qmax,
-                                       nbins, qmin, qmax,
-                                       nbins, qmin, qmax);
-  fDenominatorGenWeighted = new TH3F(prefix + "DenGenWeight",
-                                     "Denominator (Generated Momentum - with femto weight)",
-                                     nbins, qmin, qmax,
-                                     nbins, qmin, qmax,
-                                     nbins, qmin, qmax);
-  fDenominatorRecWeighted = new TH3F(prefix + "DenRecWeight",
-                                     "Numerator (Reconstructed Momentum - with femto weight)",
-                                     nbins, qmin, qmax,
-                                     nbins, qmin, qmax,
-                                     nbins, qmin, qmax);
+
+  auto new_th3 = [&] (const TString &name, const TString &title)
+    {
+      return new TH3F(prefix + name,
+                      title + "; q_{out} (GeV); q_{side} (GeV); q_{long} (Gev)",
+                      nbins, qmin, qmax,
+                      nbins, qmin, qmax,
+                      nbins, qmin, qmax);
+    };
+
+  fNumeratorGenerated = new_th3("NumGen", "Numerator (MC-Generated Momentum)");
+  fNumeratorReconstructed = new_th3("NumRec", "Numerator (Reconstructed Momentum)");
+
+  fNumeratorRecUnweighted = new_th3("NumRecUnweighted", "Numerator (Reconstructed Momentum - No femto weight)");
+  fNumeratorGenUnweighted = new_th3("NumGenUnweighted", "Numerator (Generated Momentum - No femto weight)");
+
+  fDenominatorGenerated = new_th3("DenGen", "Denominator (MC-Generated Momentum)");
+  fDenominatorReconstructed = new_th3("DenRec", "Denominator (Reconstructed Momentum)");
+
+  fDenominatorGenWeighted = new_th3("DenGenWeight", "Denominator (Generated Momentum - with femto weight)");
+  fDenominatorRecWeighted = new_th3("DenRecWeight", "Denominator (Reconstructed Momentum - with femto weight)");
+
   fNumeratorGenerated->Sumw2();
   fNumeratorReconstructed->Sumw2();
   fDenominatorGenWeighted->Sumw2();
@@ -137,10 +122,23 @@ AliFemtoModelCorrFctnTrueQ3D::AliFemtoModelCorrFctnTrueQ3D(const AliFemtoModelCo
 
 
 AliFemtoModelCorrFctnTrueQ3D&
-AliFemtoModelCorrFctnTrueQ3D::operator=(const AliFemtoModelCorrFctnTrueQ3D&)
+AliFemtoModelCorrFctnTrueQ3D::operator=(const AliFemtoModelCorrFctnTrueQ3D &rhs)
 {
+  AliFemtoCorrFctn::operator=(rhs);
+
+  *fNumeratorGenerated = *rhs.fNumeratorGenerated;
+  *fNumeratorReconstructed = *rhs.fNumeratorReconstructed;
+  *fDenominatorGenerated = *rhs.fDenominatorGenerated;
+  *fDenominatorReconstructed = *rhs.fDenominatorReconstructed;
+
+  *fNumeratorGenUnweighted = *rhs.fNumeratorGenUnweighted;
+  *fNumeratorRecUnweighted = *rhs.fNumeratorRecUnweighted;
+  *fDenominatorGenWeighted = *rhs.fDenominatorGenWeighted;
+  *fDenominatorRecWeighted = *rhs.fDenominatorRecWeighted;
+
   return *this;
 }
+
 
 AliFemtoModelCorrFctnTrueQ3D::~AliFemtoModelCorrFctnTrueQ3D()
 {
@@ -171,6 +169,7 @@ AliFemtoModelCorrFctnTrueQ3D::AppendOutputList(TList &list)
   AddOutputObjectsTo(list);
   return &list;
 }
+
 
 void
 AliFemtoModelCorrFctnTrueQ3D::AddOutputObjectsTo(TCollection &list)
@@ -203,7 +202,6 @@ Qcms(const AliFemtoLorentzVector &p1, const AliFemtoLorentzVector &p2)
   Double_t qside = (k1 == 0) ? 0.0 : 2.0 * (p2.x()*p1.y() - p1.x()*p2.y())/k1;
 
   // relative momentum component in lab frame
-
   Double_t beta = p.z()/p.t(),
           gamma = 1.0 / TMath::Sqrt((1.0-beta)*(1.0+beta));
 
@@ -215,6 +213,35 @@ Qcms(const AliFemtoLorentzVector &p1, const AliFemtoLorentzVector &p2)
 }
 
 
+/// Calculates & fills historams with q-{Out,Side,Long} calculated
+/// from the momentum given. First histogram gets weight, second gets
+/// none
+static void
+fill_hists(TH3 &dest,
+           TH3 &dest_unweighted,
+           const AliFemtoLorentzVector &p1,
+           const AliFemtoLorentzVector &p2,
+           double weight)
+{
+  Double_t q_out, q_side, q_long;
+  std::tie(q_out, q_side, q_long) = Qcms(p1, p2);
+
+  Int_t dest_bin = dest.FindBin(q_out, q_long, q_side);
+
+  const bool is_out_of_bounds
+    = dest.IsBinOverflow(dest_bin) or dest.IsBinUnderflow(dest_bin);
+
+  if (!is_out_of_bounds) {
+    dest.Fill(q_out, q_side, q_long, weight);
+    dest_unweighted.Fill(q_out, q_side, q_long, 1.0);
+  }
+}
+
+
+/// Adds pair to appropriate histograms
+///
+/// Used by AddRealPair & AddMixedPair
+///
 static void
 AddPair(const AliFemtoParticle &particle1,
         const AliFemtoParticle &particle2,
@@ -224,22 +251,19 @@ AddPair(const AliFemtoParticle &particle1,
         TH3F &rec_hist_unw,
         Double_t weight)
 {
-  Double_t q_out, q_side, q_long;
-
-  // Fill reconstructed histogram with "standard" particle momentum
-  std::tie(q_out, q_side, q_long) = Qcms(particle1.FourMomentum(), particle2.FourMomentum());
-  Int_t rec_bin = gen_hist.FindBin(q_out, q_long, q_side);
-  if (!(gen_hist.IsBinOverflow(rec_bin) or gen_hist.IsBinUnderflow(rec_bin))) {
-    rec_hist.Fill(q_out, q_side, q_long, weight);
-    rec_hist_unw.Fill(q_out, q_side, q_long, 1.0);
-  }
+  // fill with reconstructed momentum
+  fill_hists(rec_hist,
+             rec_hist_unw,
+             particle1.FourMomentum(),
+             particle2.FourMomentum(),
+             weight);
 
   // Get generated momentum from hidden info
   const AliFemtoModelHiddenInfo
     *info1 = dynamic_cast<const AliFemtoModelHiddenInfo*>(particle1.HiddenInfo()),
     *info2 = dynamic_cast<const AliFemtoModelHiddenInfo*>(particle2.HiddenInfo());
 
-  if (info1 == nullptr || info2 == nullptr) {
+  if (OPTIMIZE_EXPECT_FALSE(info1 == nullptr || info2 == nullptr)) {
     return;
   }
 
@@ -247,7 +271,7 @@ AddPair(const AliFemtoParticle &particle1,
                 mass2 = info2->GetMass();
 
   // block all zero-mass particles from the correlation function
-  if (mass1 == 0.0 || mass2 == 0.0) {
+  if (OPTIMIZE_EXPECT_FALSE(mass1 == 0.0 || mass2 == 0.0)) {
     return;
   }
 
@@ -257,17 +281,14 @@ AddPair(const AliFemtoParticle &particle1,
   const Double_t e1 = sqrt(mass1 * mass1 + true_momentum1->Mag2()),
                  e2 = sqrt(mass2 * mass2 + true_momentum2->Mag2());
 
-  const AliFemtoLorentzVector p1 = AliFemtoLorentzVector(e1, *true_momentum1),
-                              p2 = AliFemtoLorentzVector(e2, *true_momentum2);
-
-  // Fill generated-momentum histogram with "true" particle momentum
-  std::tie(q_out, q_side, q_long) = Qcms(p1, p2);
-  Int_t gen_bin = gen_hist.FindBin(q_out, q_long, q_side);
-  if (!(gen_hist.IsBinOverflow(gen_bin) or gen_hist.IsBinUnderflow(gen_bin))) {
-    gen_hist.Fill(q_out, q_side, q_long, weight);
-    gen_hist_unw.Fill(q_out, q_side, q_long, weight);
-  }
+  // fill with monte-carlo generated momentum
+  fill_hists(gen_hist,
+             gen_hist_unw,
+             AliFemtoLorentzVector(e1, *true_momentum1),
+             AliFemtoLorentzVector(e2, *true_momentum2),
+             weight);
 }
+
 
 void
 AliFemtoModelCorrFctnTrueQ3D::AddRealPair(AliFemtoPair *pair)
@@ -279,6 +300,7 @@ AliFemtoModelCorrFctnTrueQ3D::AddRealPair(AliFemtoPair *pair)
   if (fRng->Uniform() >= 0.5) {
     std::swap(p1, p2);
   }
+
   AddPair(*p1, *p2,
           *fNumeratorGenUnweighted,
           *fNumeratorRecUnweighted,
@@ -286,6 +308,7 @@ AliFemtoModelCorrFctnTrueQ3D::AddRealPair(AliFemtoPair *pair)
           *fNumeratorReconstructed,
           fManager->GetWeight(pair));
 }
+
 
 void
 AliFemtoModelCorrFctnTrueQ3D::AddMixedPair(AliFemtoPair *pair)
@@ -314,19 +337,8 @@ AliFemtoModelCorrFctnTrueQ3D::Report()
   return report;
 }
 
+
 void
 AliFemtoModelCorrFctnTrueQ3D::Finish()
 {
-#if ROOT_VERSION_CODE >= ROOT_VERSION(6, 10, 8)
-  // remove {under,over}flow to shrink file sizes
-  fNumeratorGenerated->ClearUnderflowAndOverflow();
-  fNumeratorReconstructed->ClearUnderflowAndOverflow();
-  fDenominatorGenerated->ClearUnderflowAndOverflow();
-  fDenominatorReconstructed->ClearUnderflowAndOverflow();
-
-  fNumeratorGenUnweighted->ClearUnderflowAndOverflow();
-  fNumeratorRecUnweighted->ClearUnderflowAndOverflow();
-  fDenominatorGenWeighted->ClearUnderflowAndOverflow();
-  fDenominatorRecWeighted->ClearUnderflowAndOverflow();
-#endif
 }
