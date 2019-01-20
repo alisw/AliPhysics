@@ -149,7 +149,8 @@ fNcontributors(0),
 fNtracks(0),
 fIsEvRej(0),
 fRunNumber(0),
-fFillMCGenTrees(kTRUE)
+fFillMCGenTrees(kTRUE),
+fDsMassKKOpt(1)
 {
 
 /// Default constructor
@@ -225,7 +226,8 @@ fNcontributors(0),
 fNtracks(0),
 fIsEvRej(0),
 fRunNumber(0),
-fFillMCGenTrees(kTRUE)
+fFillMCGenTrees(kTRUE),
+fDsMassKKOpt(1)
 {
     /// Standard constructor
     
