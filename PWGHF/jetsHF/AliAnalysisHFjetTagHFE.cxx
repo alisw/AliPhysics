@@ -721,11 +721,18 @@ void AliAnalysisHFjetTagHFE::UserCreateOutputObjects()
 
   fHistQjet = new TH2F("fHistQjet","Q jet;p_{T}",70,30,100,300,-100.,200.);
   fOutput->Add(fHistQjet);
-  
-  fHistQjet_mult = new TH2F("fHistQjet_mult","Q jet mult;p_{T}",70,30,100,10,-0.5,9.5);
+  /*
+  fHistQjet_mult = new TH1F("fHistQjet_mult","Q jet mult;p_{T}",70,30,100,10,-0.5,9.5);
   fOutput->Add(fHistQjet_mult);
 
   fHistGjet_mult = new TH2F("fHistGjet_mult","G jet mult;p_{T}",70,30,100,10,-0.5,9.5);
+  fOutput->Add(fHistGjet_mult);
+  */
+
+  fHistQjet_mult = new TH1F("fHistQjet_mult","Q jet mult;p_{T}",10,-0.5,9.5);
+  fOutput->Add(fHistQjet_mult);
+
+  fHistGjet_mult = new TH1F("fHistGjet_mult","G jet mult;p_{T}",10,-0.5,9.5);
   fOutput->Add(fHistGjet_mult);
 
   fHistJetWidthIncjet = new TH2F("fHistJetWidthIncjet","jet width inc;p_{T}",300,-100,200,100,0,1);
@@ -746,7 +753,7 @@ void AliAnalysisHFjetTagHFE::UserCreateOutputObjects()
   fHistIncjetPhi = new TH2F("fHistIncjetPhi","jet constituent R",100,0,100,300,-1.5,1.5); 
   fOutput->Add(fHistIncjetPhi);
 
-  fHistQjetR = new TH2F("fHistQjetR","jet constituent R",100,0,100,300,0,6); 
+  fHistQjetR = new TH2F("fHistQjetR","jet constituent R",100,0,100,100,0,1); 
   fOutput->Add(fHistQjetR);
 
   fHistQjetPhi = new TH2F("fHistQjetPhi","jet constituent R",100,0,100,300,-1.5,1.5); 
@@ -1218,6 +1225,8 @@ Bool_t AliAnalysisHFjetTagHFE::Run()
      double rho = 0.0;
      int Ncon = 0;
      int Njet = 0;
+     int Njet_g = 0; // jet pT > 10 GeV/c
+     int Njet_q = 0; // jet pT > 10 GeV/c
 
      Double_t ExJetPt[5], ExJetEta[5], ExJetPhi[5];
      for(int i=0; i<5; i++)
@@ -1287,6 +1296,14 @@ Bool_t AliAnalysisHFjetTagHFE::Run()
             fHistJetOrg->Fill(jetpT);
             fHistJetBG->Fill(Rho_area);
             fHistJetSub->Fill(jetpTsub);
+
+            if(jetpTsub>10.0)
+              {
+               Double_t JetWidthInc = CalJetWidth(jet,fHistIncjetCont,fHistIncjetR,fHistIncjetPhi,fHistIncjetPtD);
+               fHistJetWidthIncjet->Fill(jetpTsub,JetWidthInc);
+               Njet_g++;
+               }
+
             }
 
             for (unsigned j = 0; j< jet->GetNumberOfTracks(); j++) 
@@ -1295,6 +1312,7 @@ Bool_t AliAnalysisHFjetTagHFE::Run()
                   jetcont = static_cast<AliVParticle*>(jet->TrackAt(j, fTracks));
                   Double_t TrPhiJet = jetcont->Phi();
                   fQAHistTrPhiJet->Fill(TrPhiJet);
+             
                   }
  
          jet = fJetsCont->GetNextAcceptJet(); 
@@ -1334,6 +1352,8 @@ Bool_t AliAnalysisHFjetTagHFE::Run()
 
     //Bool_t ISelectronEv = kFALSE;
     Int_t ISelectronEv = 0;
+    Bool_t HaveW = kFALSE;
+    Bool_t HaveH = kFALSE;
 
 
     for (Int_t itrack = 0; itrack < ntracks; itrack++) {
@@ -1432,6 +1452,7 @@ Bool_t AliAnalysisHFjetTagHFE::Run()
 	      }
         if(!kinkmotherpass) continue;
 
+        if(pt>30.0)HaveH = kTRUE;
 
         // Get TPC nSigma
         Double_t dEdx =-999, fTPCnSigma=-999;
@@ -1531,6 +1552,7 @@ Bool_t AliAnalysisHFjetTagHFE::Run()
                    fHistEle_woISO->Fill(pt);
                    if(iso<0.05)fHistEle_wISO->Fill(pt);
                    fHistEleiso->Fill(pt,iso);  // 
+                   if(iso<0.05 && pt>30.0 && pt<70.0)HaveW = kTRUE;
                   }
 
                if(abs(MCpdg)==11)
@@ -1642,9 +1664,6 @@ Bool_t AliAnalysisHFjetTagHFE::Run()
 
     // reco
 
-    int Njet_q = 0;
-    int Njet_g = 0;
-
     if (fJetsCont) 
        {
         //AliEmcalJet *jet = fJetsCont->GetNextAcceptJet(0);  // full or charge ?
@@ -1680,9 +1699,6 @@ Bool_t AliAnalysisHFjetTagHFE::Run()
                Float_t corrPt = pTeJet - pTeJetBG;
                Float_t efrac = pt/corrPt;
                
-               Double_t JetWidth = 0.0;        
-               JetWidth = CalJetWidth(jet,fHistIncjetCont,fHistIncjetR,fHistIncjetPhi,fHistIncjetPtD);
-               fHistJetWidthIncjet->Fill(corrPt,JetWidth);
 
                if(ISelectronEv==1)
                  {
@@ -1836,21 +1852,16 @@ Bool_t AliAnalysisHFjetTagHFE::Run()
                    } // teg by e,  <---- if(iTagHFjet && isElectron) // TPC+EMCal 
 
                 // Fill jet with high pT electrons 
-                if(pt>35.0 && iso<0.05 && !iTagHFjet && jet->Pt()>10.0)
+                if(pt>30.0 && pt<70.0 && iso<0.05 && !iTagHFjet && jet->Pt()>10.0)
                    {
                     Double_t dPhi_eJet_tmp = phi - jetPhi;
                     Double_t dPhi_eJet = atan2(sin(dPhi_eJet_tmp),cos(dPhi_eJet_tmp));
                     feJetCorr->Fill(iso,dPhi_eJet);
                     fHistQjet->Fill(pt,jet->Pt());
-                    JetWidth = CalJetWidth(jet,fHistQjetCont,fHistQjetR,fHistQjetPhi,fHistQjetPtD);
+                    Double_t JetWidth = CalJetWidth(jet,fHistQjetCont,fHistQjetR,fHistQjetPhi,fHistQjetPtD);
                     fHistJetWidthQjet->Fill(corrPt,JetWidth);
                     Njet_q++;
                    }
-                if(pt>35.0 && iso>0.05 && !iTagHFjet && jet->Pt()>10.0)
-                   {
-                    Njet_g++;
-                   }
-
              } // jet eta cut
 
              jet = fJetsCont->GetNextAcceptJet(); 
@@ -1858,13 +1869,12 @@ Bool_t AliAnalysisHFjetTagHFE::Run()
 
            }  // while jet
 
-       fHistQjet_mult->Fill(pt,Njet_q);
-       fHistGjet_mult->Fill(pt,Njet_g);
-
-       } // if jet   
- 
+       } // if jet  .. if (fJetsCont) 
 
    }  // end of Track loop
+
+       if(HaveW)fHistQjet_mult->Fill(Njet_q);
+       if(!HaveW && HaveH)fHistGjet_mult->Fill(Njet_g);
 
  } // end of event selection
 
