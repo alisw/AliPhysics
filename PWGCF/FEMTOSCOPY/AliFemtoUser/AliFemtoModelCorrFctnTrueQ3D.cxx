@@ -228,7 +228,7 @@ AddPair(const AliFemtoParticle &particle1,
 
   // Fill reconstructed histogram with "standard" particle momentum
   std::tie(q_out, q_side, q_long) = Qcms(particle1.FourMomentum(), particle2.FourMomentum());
-  Int_t rec_bin = gen_hist.GetBin(q_out, q_long, q_side);
+  Int_t rec_bin = gen_hist.FindBin(q_out, q_long, q_side);
   if (!(gen_hist.IsBinOverflow(rec_bin) or gen_hist.IsBinUnderflow(rec_bin))) {
     rec_hist.Fill(q_out, q_side, q_long, weight);
     rec_hist_unw.Fill(q_out, q_side, q_long, 1.0);
@@ -262,7 +262,7 @@ AddPair(const AliFemtoParticle &particle1,
 
   // Fill generated-momentum histogram with "true" particle momentum
   std::tie(q_out, q_side, q_long) = Qcms(p1, p2);
-  Int_t gen_bin = gen_hist.GetBin(q_out, q_long, q_side);
+  Int_t gen_bin = gen_hist.FindBin(q_out, q_long, q_side);
   if (!(gen_hist.IsBinOverflow(gen_bin) or gen_hist.IsBinUnderflow(gen_bin))) {
     gen_hist.Fill(q_out, q_side, q_long, weight);
     gen_hist_unw.Fill(q_out, q_side, q_long, weight);
