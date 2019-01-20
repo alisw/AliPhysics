@@ -39,6 +39,17 @@ AliFemtoModelCorrFctnTrueQ3D::AliFemtoModelCorrFctnTrueQ3D(const TString &prefix
                                                            UInt_t nbins,
                                                            Double_t qmin,
                                                            Double_t qmax):
+  AliFemtoModelCorrFctnTrueQ3D(prefix, nbins, -qmax, qmax, false, false)
+{
+}
+
+
+AliFemtoModelCorrFctnTrueQ3D::AliFemtoModelCorrFctnTrueQ3D(const TString &prefix,
+                                                           UInt_t nbins,
+                                                           Double_t qmin,
+                                                           Double_t qmax,
+                                                           Bool_t enable_extra_hists,
+                                                           Bool_t enable_extra_denominators):
   AliFemtoCorrFctn()
   , fManager(nullptr)
   , fNumeratorGenerated(nullptr)
@@ -63,20 +74,24 @@ AliFemtoModelCorrFctnTrueQ3D::AliFemtoModelCorrFctnTrueQ3D(const TString &prefix
 
   fNumeratorGenerated = new_th3("NumGen", "Numerator (MC-Generated Momentum)");
   fNumeratorReconstructed = new_th3("NumRec", "Numerator (Reconstructed Momentum)");
-
-  fNumeratorRecUnweighted = new_th3("NumRecUnweighted", "Numerator (Reconstructed Momentum - No femto weight)");
-  fNumeratorGenUnweighted = new_th3("NumGenUnweighted", "Numerator (Generated Momentum - No femto weight)");
-
   fDenominatorGenerated = new_th3("DenGen", "Denominator (MC-Generated Momentum)");
   fDenominatorReconstructed = new_th3("DenRec", "Denominator (Reconstructed Momentum)");
 
-  fDenominatorGenWeighted = new_th3("DenGenWeight", "Denominator (Generated Momentum - with femto weight)");
-  fDenominatorRecWeighted = new_th3("DenRecWeight", "Denominator (Reconstructed Momentum - with femto weight)");
-
   fNumeratorGenerated->Sumw2();
   fNumeratorReconstructed->Sumw2();
-  fDenominatorGenWeighted->Sumw2();
-  fDenominatorRecWeighted->Sumw2();
+
+  if (enable_extra_hists) {
+    fNumeratorRecUnweighted = new_th3("NumRecUnweighted", "Numerator (Reconstructed Momentum - No femto weight)");
+    fNumeratorGenUnweighted = new_th3("NumGenUnweighted", "Numerator (Generated Momentum - No femto weight)");
+  }
+
+  if (enable_extra_hists || enable_extra_denominators) {
+    fDenominatorGenWeighted = new_th3("DenGenWeight", "Denominator (Generated Momentum - with femto weight)");
+    fDenominatorRecWeighted = new_th3("DenRecWeight", "Denominator (Reconstructed Momentum - with femto weight)");
+
+    fDenominatorGenWeighted->Sumw2();
+    fDenominatorRecWeighted->Sumw2();
+  }
 }
 
 AliFemtoModelCorrFctnTrueQ3D::AliFemtoModelCorrFctnTrueQ3D(UInt_t nbins, Double_t qmax):
@@ -89,8 +104,13 @@ AliFemtoModelCorrFctnTrueQ3D::AliFemtoModelCorrFctnTrueQ3D(UInt_t nbins, Double_
 {
 }
 
-AliFemtoModelCorrFctnTrueQ3D::AliFemtoModelCorrFctnTrueQ3D(const AliFemtoModelCorrFctnTrueQ3D::Parameters &params):
-  AliFemtoModelCorrFctnTrueQ3D(params.prefix.Data(), params.bin_count, params.qmin, params.qmax)
+AliFemtoModelCorrFctnTrueQ3D::AliFemtoModelCorrFctnTrueQ3D(const Parameters &params):
+  AliFemtoModelCorrFctnTrueQ3D(params.prefix.Data(),
+                               params.bin_count,
+                               params.qmin,
+                               params.qmax,
+                               params.enable_extra_hists,
+                               params.enable_extra_denoms)
 {
   SetManager(params.mc_manager);
 }
@@ -114,10 +134,14 @@ AliFemtoModelCorrFctnTrueQ3D::AliFemtoModelCorrFctnTrueQ3D(const AliFemtoModelCo
   fDenominatorGenerated = new TH3F(*orig.fDenominatorGenerated);
   fDenominatorReconstructed = new TH3F(*orig.fDenominatorReconstructed);
 
-  fNumeratorGenUnweighted = new TH3F(*orig.fNumeratorGenUnweighted);
-  fNumeratorRecUnweighted = new TH3F(*orig.fNumeratorRecUnweighted);
-  fDenominatorGenWeighted = new TH3F(*orig.fDenominatorGenWeighted);
-  fDenominatorRecWeighted = new TH3F(*orig.fDenominatorRecWeighted);
+  if (orig.fNumeratorGenUnweighted) {
+    fNumeratorGenUnweighted = new TH3F(*orig.fNumeratorGenUnweighted);
+    fNumeratorRecUnweighted = new TH3F(*orig.fNumeratorRecUnweighted);
+  }
+  if (orig.fDenominatorGenWeighted) {
+    fDenominatorGenWeighted = new TH3F(*orig.fDenominatorGenWeighted);
+    fDenominatorRecWeighted = new TH3F(*orig.fDenominatorRecWeighted);
+  }
 }
 
 
@@ -131,10 +155,26 @@ AliFemtoModelCorrFctnTrueQ3D::operator=(const AliFemtoModelCorrFctnTrueQ3D &rhs)
   *fDenominatorGenerated = *rhs.fDenominatorGenerated;
   *fDenominatorReconstructed = *rhs.fDenominatorReconstructed;
 
-  *fNumeratorGenUnweighted = *rhs.fNumeratorGenUnweighted;
-  *fNumeratorRecUnweighted = *rhs.fNumeratorRecUnweighted;
-  *fDenominatorGenWeighted = *rhs.fDenominatorGenWeighted;
-  *fDenominatorRecWeighted = *rhs.fDenominatorRecWeighted;
+
+  auto copy_if_present = [] (const TH3F* src, TH3F *&dest)
+    {
+      if (src and dest) {
+        *dest = *src;
+      }
+      else if (src) {
+        dest = new TH3F(*src);
+      }
+      else {
+        delete dest;
+        dest = nullptr;
+      }
+    };
+
+  copy_if_present(rhs.fNumeratorGenUnweighted, fNumeratorGenUnweighted);
+  copy_if_present(rhs.fNumeratorRecUnweighted, fNumeratorRecUnweighted);
+
+  copy_if_present(rhs.fDenominatorGenWeighted, fDenominatorGenWeighted);
+  copy_if_present(rhs.fDenominatorRecWeighted, fDenominatorRecWeighted);
 
   return *this;
 }
@@ -178,10 +218,15 @@ AliFemtoModelCorrFctnTrueQ3D::AddOutputObjectsTo(TCollection &list)
   list.Add(fNumeratorReconstructed);
   list.Add(fDenominatorGenerated);
   list.Add(fDenominatorReconstructed);
-  list.Add(fNumeratorGenUnweighted);
-  list.Add(fNumeratorRecUnweighted);
-  list.Add(fDenominatorGenWeighted);
-  list.Add(fDenominatorRecWeighted);
+
+  if (fNumeratorGenUnweighted) {
+    list.Add(fNumeratorGenUnweighted);
+    list.Add(fNumeratorRecUnweighted);
+  }
+  if (fDenominatorGenWeighted) {
+    list.Add(fDenominatorGenWeighted);
+    list.Add(fDenominatorRecWeighted);
+  }
 }
 
 /// Return q{Out-Side-Long} tuple, calculated from momentum vectors p1 & p2
@@ -217,8 +262,8 @@ Qcms(const AliFemtoLorentzVector &p1, const AliFemtoLorentzVector &p2)
 /// from the momentum given. First histogram gets weight, second gets
 /// none
 static void
-fill_hists(TH3 &dest,
-           TH3 &dest_unweighted,
+fill_hists(TH3 *dest,
+           TH3 *dest_unweighted,
            const AliFemtoLorentzVector &p1,
            const AliFemtoLorentzVector &p2,
            double weight)
@@ -226,14 +271,21 @@ fill_hists(TH3 &dest,
   Double_t q_out, q_side, q_long;
   std::tie(q_out, q_side, q_long) = Qcms(p1, p2);
 
-  Int_t dest_bin = dest.FindBin(q_out, q_long, q_side);
+  const Int_t dest_bin
+    = dest ? dest->FindBin(q_out, q_long, q_side)
+           : dest_unweighted->FindBin(q_out, q_long, q_side);
 
   const bool is_out_of_bounds
-    = dest.IsBinOverflow(dest_bin) or dest.IsBinUnderflow(dest_bin);
+    = dest ? dest->IsBinOverflow(dest_bin) or dest->IsBinUnderflow(dest_bin)
+           : dest_unweighted->IsBinOverflow(dest_bin) or dest_unweighted->IsBinUnderflow(dest_bin);
 
   if (!is_out_of_bounds) {
-    dest.Fill(q_out, q_side, q_long, weight);
-    dest_unweighted.Fill(q_out, q_side, q_long, 1.0);
+    if (dest) {
+      dest->Fill(q_out, q_side, q_long, weight);
+    }
+    if (dest_unweighted) {
+      dest_unweighted->Fill(q_out, q_side, q_long, 1.0);
+    }
   }
 }
 
@@ -245,10 +297,10 @@ fill_hists(TH3 &dest,
 static void
 AddPair(const AliFemtoParticle &particle1,
         const AliFemtoParticle &particle2,
-        TH3F &gen_hist,
-        TH3F &rec_hist,
-        TH3F &gen_hist_unw,
-        TH3F &rec_hist_unw,
+        TH3F *gen_hist,
+        TH3F *rec_hist,
+        TH3F *gen_hist_unw,
+        TH3F *rec_hist_unw,
         Double_t weight)
 {
   // fill with reconstructed momentum
@@ -302,10 +354,10 @@ AliFemtoModelCorrFctnTrueQ3D::AddRealPair(AliFemtoPair *pair)
   }
 
   AddPair(*p1, *p2,
-          *fNumeratorGenUnweighted,
-          *fNumeratorRecUnweighted,
-          *fNumeratorGenerated,
-          *fNumeratorReconstructed,
+          fNumeratorGenUnweighted,
+          fNumeratorRecUnweighted,
+          fNumeratorGenerated,
+          fNumeratorReconstructed,
           fManager->GetWeight(pair));
 }
 
@@ -322,10 +374,10 @@ AliFemtoModelCorrFctnTrueQ3D::AddMixedPair(AliFemtoPair *pair)
   }
 
   AddPair(*p1, *p2,
-          *fDenominatorGenWeighted,
-          *fDenominatorRecWeighted,
-          *fDenominatorGenerated,
-          *fDenominatorReconstructed,
+          fDenominatorGenWeighted,
+          fDenominatorRecWeighted,
+          fDenominatorGenerated,
+          fDenominatorReconstructed,
           fManager->GetWeight(pair));
 }
 

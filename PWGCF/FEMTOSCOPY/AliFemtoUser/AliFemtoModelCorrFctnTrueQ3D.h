@@ -40,6 +40,8 @@ public:
     Double_t qmin;
     Double_t qmax;
     TString prefix;
+    bool enable_extra_hists;
+    bool enable_extra_denoms;
     AliFemtoModelManager *mc_manager;
 
     /// Build Parameters object with default values
@@ -48,6 +50,8 @@ public:
       return {
         56, -0.14, 0.14, // histogram bin-count & range
         "CF_TrueQ3D",    // Prefix
+        false,           // Enable extra histograms
+        false,           // Enable extra denoms
         NULL             // pointer to MC manager
       };
     }
@@ -60,6 +64,16 @@ public:
     Parameters Title(const TString& title) const {
       Parameters p(*this);
       p.prefix = title;
+      return p;
+    }
+    Parameters EnableExtraHists(bool t) const {
+      Parameters p(*this);
+      p.enable_extra_hists = t;
+      return p;
+    }
+    Parameters EnableWeightedDenominators(bool t) const {
+      Parameters p(*this);
+      p.enable_extra_denoms = t;
       return p;
     }
     Parameters Manager(AliFemtoModelManager *manager) const {
@@ -133,6 +147,17 @@ public:
   /// Custom constructor
   ///
   AliFemtoModelCorrFctnTrueQ3D(const TString &prefix, UInt_t nbins, Double_t aQinvLo, Double_t aQinvHi);
+
+  /// Big Constructor
+  ///
+  /// enable_extra_hists -- adds four complimentary weighted/unweighted histograms
+  ///
+  AliFemtoModelCorrFctnTrueQ3D(const TString &prefix,
+                               UInt_t nbins,
+                               Double_t aQinvLo,
+                               Double_t aQinvHi,
+                               Bool_t enable_extra_hists,
+                               Bool_t enable_extra_denoms);
 
   /// Unnamed, q-symmetric constructor
   ///
