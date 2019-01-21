@@ -21,23 +21,23 @@ void Config_slehner_diele_TMVA(AliAnalysisTaskMultiDielectron *task,Bool_t usePI
   Int_t PIDCut=0;
   Int_t MVACut=0;
   
-  for(int glcut = 0; glcut <=10; ++glcut){
+  for(int glcut = 0; glcut <=23; ++glcut){
     ////////DEFINE THE CUTS AS FUNCTION OF GLCUT//////
-    if(glcut<11){
+    if(glcut<9){
+      trackCut=0;
+      PIDCut=glcut;
+      MVACut=0;   
+    }
+    else if(glcut<13){
+      trackCut=glcut-8;
+      PIDCut=0;
+      MVACut=0;      
+    }
+    else{
       trackCut=0;
       PIDCut=0;
-      MVACut=glcut;   
+      MVACut=glcut-13;
     }
-//    else if(glcut<13){
-//      trackCut=0;
-//      PIDCut=glcut-5;
-//      MVACut=4;   
-//    }
-//    else{
-//      trackCut=0;
-//      PIDCut=0;
-//      MVACut=glcut-13;      
-//    }
     //////////////////////////////////////////////////
     TString name=TString::Format("DieleTr%d_PID%d_MVA%d",trackCut,PIDCut, MVACut);
 //    cout<<"Diele name: "<<name.Data()<<endl;    
@@ -278,25 +278,21 @@ void InitHistograms(AliDielectron *die, Int_t cutDefinition)
   histos->UserHistogram("Track","nSigmaTPCEl:eta", "", 100,-1,1,100,-5,5,AliDielectronVarManager::kEta,AliDielectronVarManager::kTPCnSigmaEle);  
   histos->UserHistogram("Track","nSigmaTOFEl:eta", "", 100,-1,1,100,-5,5,AliDielectronVarManager::kEta,AliDielectronVarManager::kTOFnSigmaEle);  
  
-
-//  TVectorD* mbins=  AliDielectronHelper::MakeArbitraryBinning(" 0.00, 0.02, 0.04, 0.06, 0.08, 0.10, 0.14, 0.18, 0.22, 0.30, 0.38, 0.46, 0.62, 0.7, 0.86, 1.1, 1.70, 2.30, 2.70, 2.90, 3.00, 3.10, 3.30, 4.00, 5.00");
-  TVectorD* mbins=  AliDielectronHelper::MakeArbitraryBinning(" 0.00, 0.02 ,0.04 ,0.08 ,0.14 ,0.22 ,0.38 ,0.54 ,1.1 ,1.7 ,2.5 ,2.9 ,3.0 ,3.1 ,3.3 ,3.5 ,4.0 ,5.0"); //Carsten's binning
-//  TVectorD* mbins=  AliDielectronHelper::MakeLinBinning(500,0,5);
-  TVectorD* ptbins= AliDielectronHelper::MakeArbitraryBinning("0.0,0.4,0.6,1,2.5,8");
-  TVectorD* centbins= AliDielectronHelper::MakeLinBinning(20,0,100);
-
-//  histos->UserHistogram("Pair","InvMass_pPt_cent","Inv.Mass:PairPt:Cent;Inv. Mass (GeV/c^{2});Pair Pt (GeV/c); Centrality (V0M)",
-//                        mbins, ptbins, centbins,
-//                        AliDielectronVarManager::kM, AliDielectronVarManager::kPt, AliDielectronVarManager::kCentrality);
-
-  histos->UserHistogram("Pair","InvMass_pPt","Inv.Mass:PairPt;Inv. Mass (GeV/c^{2});Pair Pt (GeV/c); ",
-                        mbins, ptbins,
-                        AliDielectronVarManager::kM, AliDielectronVarManager::kPt);
-  
-//  histos->UserHistogram("Pair",
-//                        "InvMass_pPt","Inv.Mass:PairPt;Inv. Mass (GeV/c^{2});Pair Pt (GeV/c)",
-//                        500,0.,5.,250,0.,5.,
+//lmee mass spectrum
+//  TVectorD* mbins=  AliDielectronHelper::MakeArbitraryBinning(" 0.00, 0.02 ,0.04 ,0.08 ,0.14 ,0.22 ,0.38 ,0.54 ,1.1 ,1.7 ,2.5 ,2.9 ,3.0 ,3.1 ,3.3 ,3.5 ,4.0 ,5.0"); //Carsten's binning
+//  TVectorD* ptbins= AliDielectronHelper::MakeArbitraryBinning("0.0,0.4,0.6,1,2.5,8");
+//  histos->UserHistogram("Pair","InvMass_pPt","Inv.Mass:PairPt;Inv. Mass (GeV/c^{2});Pair Pt (GeV/c); ",
+//                        mbins, ptbins,
 //                        AliDielectronVarManager::kM, AliDielectronVarManager::kPt);
+  
+//low ptee
+  TVectorD* mbins=  AliDielectronHelper::MakeArbitraryBinning(" 0.00,0.4,0.5 ,0.6 ,0.7 ,1.0, 1.5,2.0 ,3.0 ,5.0"); // for low ptee
+  TVectorD* ptbins= AliDielectronHelper::MakeArbitraryBinning("0.0,0.025,0.05.0.075,0.1,0.15,0.2,0.3,0.4,0.5,0.6,1, 2.0,8");
+  TVectorD* centbins= AliDielectronHelper::MakeLinBinning(10,0,100);
+  histos->UserHistogram("Pair","InvMass_pPt_cent","Inv.Mass:PairPt:Cent;Inv. Mass (GeV/c^{2});Pair Pt (GeV/c); Centrality (V0M)",
+                        mbins, ptbins, centbins,
+                        AliDielectronVarManager::kM, AliDielectronVarManager::kPt, AliDielectronVarManager::kCentrality);
+  
 //
 //  histos->UserHistogram("Pair","InvMass_PairPt_PhivPair","InvMass:PairPt:PhivPair;Inv. Mass [GeV];Pair Pt [GeV];PhiV",
 //                        600,0.,6., 600,0.,6., 20,0.,TMath::Pi(),
@@ -307,10 +303,10 @@ void InitHistograms(AliDielectron *die, Int_t cutDefinition)
 //                        50,-1.,1.,80,0.,6.4,
 //                        AliDielectronVarManager::kEta,AliDielectronVarManager::kPhi);
 //			
-  histos->UserHistogram("Pair",
-                        "InvMass_PhivPair","InvMass_PhivPair;InvMass;PhivPair",
-                         50, 0. , 0.5, 160 , 0., 3.2,
-                         AliDielectronVarManager::kM , AliDielectronVarManager::kPhivPair );
+//  histos->UserHistogram("Pair",
+//                        "InvMass_PhivPair","InvMass_PhivPair;InvMass;PhivPair",
+//                         50, 0. , 0.5, 160 , 0., 3.2,
+//                         AliDielectronVarManager::kM , AliDielectronVarManager::kPhivPair );
 //
 //  histos->UserHistogram("Pair",
 //		            	"InvMass_OpAngle","InvMass_OpAngle;Invariant Mass;Opening angle",
