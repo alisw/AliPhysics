@@ -72,8 +72,11 @@ class AliAnalysisTaskEMCALTimeCalib : public AliAnalysisTaskSE
    enum { kNSM = 20, kNBCmask = 4 };
 
    AliAnalysisTaskEMCALTimeCalib() : AliAnalysisTaskSE(),
+    fPARvec(),
+    fCurrentPARs(),
+    fCurrentPARIndex(0),
+    fIsPARRun(0),
     fRunNumber(-1),
-    //    fTOFmaker(0),
     fOutputList(0),
     fgeom(0),
     fGeometryName(0),
@@ -87,8 +90,8 @@ class AliAnalysisTaskEMCALTimeCalib : public AliAnalysisTaskSE
     fMaxLambda0LG(0),
     fMaxRtrack(0),
     fMinCellEnergy(0),
-    fReferenceFileName(),
-    fReferenceRunByRunFileName(),
+    fReferenceFileName(0),
+    fReferenceRunByRunFileName(0),
     fPileupFromSPD(kFALSE),
     fMinTime(0),
     fMaxTime(0),
@@ -102,7 +105,7 @@ class AliAnalysisTaskEMCALTimeCalib : public AliAnalysisTaskSE
     fEnergyNbins  (0),
     fEnergyMin(0),
     fEnergyMax(0),
-    fEnergyLGNbins  (0),
+    fEnergyLGNbins(0),
     fEnergyLGMin(0),
     fEnergyLGMax(0),
     fFineNbins(0),
@@ -111,10 +114,10 @@ class AliAnalysisTaskEMCALTimeCalib : public AliAnalysisTaskSE
     fL1PhaseList(0),
     fBadReco(kFALSE),
     fFillHeavyHisto(kFALSE),
-    fBadChannelMapArray(),
+    fBadChannelMapArray(0),
     fBadChannelMapSet(kFALSE),
     fSetBadChannelMapSource(0),
-    fBadChannelFileName(),
+    fBadChannelFileName(0),
     fhcalcEvtTime(0),
     fhEvtTimeHeader(0),
     fhEvtTimeDiff(0),
@@ -147,6 +150,8 @@ class AliAnalysisTaskEMCALTimeCalib : public AliAnalysisTaskSE
     fhRawTimeSumLGBC(),
     fhRawTimeEntriesLGBC(),
     fhRawTimeSumSqLGBC(),
+    fhRawTimePARs(),
+    fhRawTimeLGPARs(),
     fhRawCorrTimeVsIdBC(),
     fhRawCorrTimeVsIdLGBC(),
     fhTimeVsIdBC(),
@@ -158,9 +163,10 @@ class AliAnalysisTaskEMCALTimeCalib : public AliAnalysisTaskSE
   
   // struct for storing PAR info
   struct PARInfo {
-      Int_t runNumber = 0;
-      Int_t numPARs = 0;
+      Int_t runNumber;
+      Int_t numPARs;
       std::vector<ULong64_t> PARGlobalBCs;
+      PARInfo() : runNumber(0), numPARs(0), PARGlobalBCs() {}
   };
 
   //  virtual void   LocalInit();
@@ -278,9 +284,9 @@ class AliAnalysisTaskEMCALTimeCalib : public AliAnalysisTaskSE
   
   // variables and functions needed for PAR handling
   std::vector<PARInfo> fPARvec; ///< vector of PAR info for all runs
-  PARInfo fCurrentPARs; //! Par Info for current Run Number
-  Int_t fCurrentPARIndex = 0; //! Which PAR the currnt event is after
-  Bool_t fIsPARRun = kFALSE; //! Does current run have PAR info? 
+  PARInfo fCurrentPARs;         //! Par Info for current Run Number
+  Int_t fCurrentPARIndex;       //! Which PAR the currnt event is after
+  Bool_t fIsPARRun;             //! Does current run have PAR info? 
   void GetPARInfoForRunNumber(Int_t runnum);
 
   
