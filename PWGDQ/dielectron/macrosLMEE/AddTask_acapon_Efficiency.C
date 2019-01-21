@@ -13,6 +13,7 @@ AliAnalysisTaskElectronEfficiencyV2* AddTask_acapon_Efficiency(TString names    
                                                                Bool_t DoCocktailWeighting   = kFALSE,
                                                                Bool_t GetCocktailFromAlien  = kFALSE,
                                                                std::string CocktailFilename = "",
+																															 Bool_t useRun1binning        = kFALSE,
                                                                Bool_t cutlibPreloaded       = kFALSE,
                                                                Bool_t getFromAlien          = kFALSE)
 {
@@ -137,9 +138,20 @@ AliAnalysisTaskElectronEfficiencyV2* AddTask_acapon_Efficiency(TString names    
                             0.09, 0.1, 0.14, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8,
                             0.95, 1.05, 1.25, 1.5, 1.75, 2.0, 2.25, 2.5, 2.75,
                             2.9, 3.0, 3.05, 3.1, 3.3, 3.8, 5.00};
+	// Mass bins from Run 1 (Theo's analysis)
+	Double_t massBinsRun1arr[] = {0.0, 0.05, 0.1, 0.15, 0.2, 0.3, 0.4, 0.47, 0.62, 0.7,
+																0.77, 0.8, 0.9, 0.95, 0.99, 1.02, 1.03, 1.1, 1.4, 1.7,
+																2, 2.3, 2.6, 2.8, 2.9, 3, 3.04, 3.08, 3.1, 3.12, 3.2,
+																3.5};
 	std::vector<Double_t> massBins;
-	for(Int_t j = 0; j < sizeof(massBinsArr)/sizeof(massBinsArr[0]); j++){
-		massBins.push_back(massBinsArr[j]);
+	if(!useRun1binning){
+		for(Int_t j = 0; j < sizeof(massBinsArr)/sizeof(massBinsArr[0]); j++){
+			massBins.push_back(massBinsArr[j]);
+		}
+	}else{
+		for(Int_t j = 0; j < sizeof(massBinsRun1arr)/sizeof(massBinsRun1arr[0]); j++){
+			massBins.push_back(massBinsRun1arr[j]);
+		}
 	}
 	task->SetMassBins(massBins);
 
