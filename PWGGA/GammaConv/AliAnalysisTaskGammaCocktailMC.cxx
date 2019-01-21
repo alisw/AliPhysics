@@ -63,7 +63,6 @@ AliAnalysisTaskGammaCocktailMC::AliAnalysisTaskGammaCocktailMC(): AliAnalysisTas
   fMCGenerator(NULL),
   fMCCocktailGen(NULL),
   fDoLightOutput(kFALSE),
-  fWideBinning(kFALSE),
   fHasMother{kFALSE},
   fHistNEvents(NULL),
   fHistPtYGamma(NULL),
@@ -96,7 +95,8 @@ AliAnalysisTaskGammaCocktailMC::AliAnalysisTaskGammaCocktailMC(): AliAnalysisTas
   fIsMC(1),
   fMaxY(2),
   fMaxEta(0),
-  fMaxPt(50)
+  fMaxPt(50),
+  fPtBinWidth(0.05)
 {
 
 }
@@ -111,7 +111,6 @@ AliAnalysisTaskGammaCocktailMC::AliAnalysisTaskGammaCocktailMC(const char *name)
   fMCGenerator(NULL),
   fMCCocktailGen(NULL),
   fDoLightOutput(kFALSE),
-  fWideBinning(kFALSE),
   fHasMother{kFALSE},
   fHistNEvents(NULL),
   fHistPtYGamma(NULL),
@@ -144,7 +143,8 @@ AliAnalysisTaskGammaCocktailMC::AliAnalysisTaskGammaCocktailMC(const char *name)
   fIsMC(1),
   fMaxY(2),
   fMaxEta(0),
-  fMaxPt(50)
+  fMaxPt(50),
+  fPtBinWidth(0.05)
 {
   // Define output slots here
   DefineOutput(1, TList::Class());
@@ -169,11 +169,8 @@ void AliAnalysisTaskGammaCocktailMC::UserCreateOutputObjects(){
     fOutputContainer          = new TList();
     fOutputContainer->SetOwner(kTRUE);
   }
-  Int_t nBinsPt = fMaxPt*20;
-  if(fWideBinning)
-    nBinsPt = fMaxPt*10;
-  if(fMaxPt>100 && fWideBinning)
-    nBinsPt = fMaxPt*5;
+  Int_t nBinsPt = fMaxPt/fPtBinWidth;
+
 
   fHistNEvents = (TH1F*)SetHist1D(fHistNEvents,"f","NEvents","","N_{evt}", 1, 0, 1, kTRUE);
   fOutputContainer->Add(fHistNEvents);

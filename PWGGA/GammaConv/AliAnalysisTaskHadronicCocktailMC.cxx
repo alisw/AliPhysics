@@ -66,7 +66,6 @@ AliAnalysisTaskHadronicCocktailMC::AliAnalysisTaskHadronicCocktailMC(): AliAnaly
   fAnalyzeNeutralPi(kFALSE),
   fAnalyzeChargedPi(kFALSE),
   fDoLightOutput(kFALSE),
-  fWideBinning(kFALSE),
   fHasMother{kFALSE},
   fHistNEvents(NULL),
   fHistPtPhiDaughterSource(NULL),
@@ -96,7 +95,8 @@ AliAnalysisTaskHadronicCocktailMC::AliAnalysisTaskHadronicCocktailMC(): AliAnaly
   fIsMC(1),
   fMaxY(2),
   fMaxEta(0),
-  fMaxPt(50)
+  fMaxPt(50),
+  fPtBinWidth(0.05)
 {
 
 }
@@ -114,7 +114,6 @@ AliAnalysisTaskHadronicCocktailMC::AliAnalysisTaskHadronicCocktailMC(const char 
   fAnalyzeNeutralPi(kFALSE),
   fAnalyzeChargedPi(kFALSE),
   fDoLightOutput(kFALSE),
-  fWideBinning(kFALSE),
   fHasMother{kFALSE},
   fHistNEvents(NULL),
   fHistPtPhiDaughterSource(NULL),
@@ -144,7 +143,8 @@ AliAnalysisTaskHadronicCocktailMC::AliAnalysisTaskHadronicCocktailMC(const char 
   fIsMC(1),
   fMaxY(2),
   fMaxEta(0),
-  fMaxPt(50)
+  fMaxPt(50),
+  fPtBinWidth(0.05)
 {
   // Define output slots here
   DefineOutput(1, TList::Class());
@@ -233,11 +233,7 @@ void AliAnalysisTaskHadronicCocktailMC::UserCreateOutputObjects(){
   fHistNEvents = (TH1F*)SetHist1D(fHistNEvents,"f","NEvents","","N_{evt}",1,0,1, kTRUE);
   fOutputContainer->Add(fHistNEvents);
 
-  Int_t nBinsPt = fMaxPt*20;
-  if(fWideBinning)
-    nBinsPt = fMaxPt*10;
-  if(fMaxPt>100 && fWideBinning)
-    nBinsPt = fMaxPt*5;
+  Int_t nBinsPt = fMaxPt/fPtBinWidth;
 
   const Int_t nInputParticles         = 24;
   Int_t   fParticleList_local[]       = {221,310,130,3122,113,331,223,213,-213,333,443,2114,2214,1114,2224,321,-321,-3334,3334,-3312,3312,3224,3114,313};
