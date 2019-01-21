@@ -1,4 +1,4 @@
-void AddTask_HadronicCocktailMC(Int_t particleFlag = 0, Bool_t runLightOutput = kFALSE, Bool_t doWideBinning = kFALSE, TString maxyetaset = "0.80") {
+void AddTask_HadronicCocktailMC(Int_t particleFlag = 0, Bool_t runLightOutput = kFALSE, Bool_t doWideBinning = kFALSE, TString maxyetaset = "0.80", Double_t maxpTset = 50.) {
 
     TObjArray *rConfigRapandEta = maxyetaset.Tokenize("_");
     if(rConfigRapandEta->GetEntries()<1){cout << "ERROR: AddTask_HadronicCocktailMC during parsing of maxyetaset String '" << maxyetaset.Data() << "'" << endl; return;}
@@ -51,6 +51,7 @@ void AddTask_HadronicCocktailMC(Int_t particleFlag = 0, Bool_t runLightOutput = 
   task->SetLightOutput(runLightOutput);
   task->SetAnalyzedParticle(particleFlag);          // switch to run: 0 - pi0, 1 - eta, 2 - pi+-
   task->SetWideBinning(doWideBinning);              // switch to run wider pT binning
+  task->SetMaxPt(maxpTset);
 
   TString                   analyzedParticle = "";
   if (particleFlag==0)      analyzedParticle = "pi0";
