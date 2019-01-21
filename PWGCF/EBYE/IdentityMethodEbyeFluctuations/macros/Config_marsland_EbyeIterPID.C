@@ -4,11 +4,11 @@ void SetDefaults(AliAnalysisTaskEbyeIterPID *defaultTask);
 TTree *GetLookUpTable(Bool_t runOnGrid, Int_t index);
 //
 //
-AliAnalysisTaskEbyeIterPID* Config_marsland_TIdentityPID(Bool_t getFromAlien, Int_t settingType, Int_t lhcPeriod, Int_t lookUpTableIndex) {
+AliAnalysisTaskEbyeIterPID* Config_marsland_EbyeIterPID(Bool_t getFromAlien, Int_t settingType, Int_t lhcPeriod, Int_t lookUpTableIndex, TString combinedName) {
   //
   // Configuration file for the AliAnalysisTaskEbyeIterPID.cxx class
   //
-  AliAnalysisTaskEbyeIterPID *task = new AliAnalysisTaskEbyeIterPID("marslandTIdentityPID");
+  AliAnalysisTaskEbyeIterPID *task = new AliAnalysisTaskEbyeIterPID(combinedName);
   SetDefaults(task);
   if (lhcPeriod==1) task->SelectCollisionCandidates(AliVEvent::kMB);   // select minimum bias events for LHC10h
   if (lhcPeriod==2) task->SelectCollisionCandidates(AliVEvent::kINT7); // select minimum bias events for LHC15o
@@ -74,23 +74,23 @@ AliAnalysisTaskEbyeIterPID* Config_marsland_TIdentityPID(Bool_t getFromAlien, In
     break;
     //
     // ====================================================================================
-    // =================================== MC Settings ====================================
+    // =================================== MC Closure  ====================================
     // ====================================================================================
     //
     case 50:{
-      std::cout << settingType << " Info::marsland: FullMC + EffMatrix + full cout " << std::endl;
-      task->SetUseCouts(kFALSE);
-      task->SetIsMCtrue(kTRUE);
+      std::cout << settingType << " Info::marsland: MC full on lego train --> eff matrix is not filled " << std::endl;
+      task->SetRunOnGrid(kTRUE);
       task->SetEffMatrix(kTRUE);
+      task->SetIsMCtrue(kTRUE);
       task->SetFillAllCutVariables(kTRUE);
       task->SetUsePtCut(1); // 0: tpc momcut, 1: vertex momcut, 2: pT cut
       // acceptance
       const Int_t tmpEtaBinsMC = 8;
-      const Int_t tmpMomBinsMC = 4;
+      const Int_t tmpMomBinsMC = 2;
       Float_t tmpetaDownArr[tmpEtaBinsMC] = {-0.1,-0.2,-0.3,-0.4,-0.5,-0.6,-0.7,-0.8};
       Float_t tmpetaUpArr[tmpEtaBinsMC]   = { 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8};
-      Float_t tmppDownArr[tmpMomBinsMC] = { 0.4, 0.6, 0.6, 0.8};
-      Float_t tmppUpArr[tmpMomBinsMC]   = { 1.0, 1.5, 2.0, 2.0};
+      Float_t tmppDownArr[tmpMomBinsMC] = { 0.4, 0.6};
+      Float_t tmppUpArr[tmpMomBinsMC]   = { 1.0, 1.5};
       task->SetMCEtaScanArray(tmpEtaBinsMC, tmpetaDownArr, tmpetaUpArr);
       task->SetMCMomScanArray(tmpMomBinsMC, tmppDownArr,   tmppUpArr);
       // resonances to exclude
@@ -108,11 +108,11 @@ AliAnalysisTaskEbyeIterPID* Config_marsland_TIdentityPID(Bool_t getFromAlien, In
       task->SetUsePtCut(1); // 0: tpc momcut, 1: vertex momcut, 2: pT cut
       // acceptance
       const Int_t tmpEtaBinsMC = 8;
-      const Int_t tmpMomBinsMC = 4;
+      const Int_t tmpMomBinsMC = 2;
       Float_t tmpetaDownArr[tmpEtaBinsMC] = {-0.1,-0.2,-0.3,-0.4,-0.5,-0.6,-0.7,-0.8};
       Float_t tmpetaUpArr[tmpEtaBinsMC]   = { 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8};
-      Float_t tmppDownArr[tmpMomBinsMC] = { 0.4, 0.6, 0.6, 0.8};
-      Float_t tmppUpArr[tmpMomBinsMC]   = { 1.0, 1.5, 2.0, 2.0};
+      Float_t tmppDownArr[tmpMomBinsMC] = { 0.6, 0.8};
+      Float_t tmppUpArr[tmpMomBinsMC]   = { 2.0, 2.0};
       task->SetMCEtaScanArray(tmpEtaBinsMC, tmpetaDownArr, tmpetaUpArr);
       task->SetMCMomScanArray(tmpMomBinsMC, tmppDownArr,   tmppUpArr);
       // resonances to exclude
@@ -134,11 +134,11 @@ AliAnalysisTaskEbyeIterPID* Config_marsland_TIdentityPID(Bool_t getFromAlien, In
       task->SetUsePtCut(1); // 0: tpc momcut, 1: vertex momcut, 2: pT cut
       // acceptance
       const Int_t tmpEtaBinsMC = 20;
-      const Int_t tmpMomBinsMC = 4;
+      const Int_t tmpMomBinsMC = 1;
       Float_t tmpetaDownArr[tmpEtaBinsMC] = {-0.5,-1.,-1.5,-2.,-2.5,-3.,-3.5,-4.,-4.5,-5.,-5.5,-6.,-6.5,-7.,-7.5,-8,-8.5,-9,-9.5,-10.};
       Float_t tmpetaUpArr[tmpEtaBinsMC]   = { 0.5, 1., 1.5, 2., 2.5, 3., 3.5, 4., 4.5, 5., 5.5, 6., 6.5, 7., 7.5, 8, 8.5, 9, 9.5, 10.};
-      Float_t tmppDownArr[tmpMomBinsMC] = { 0.4, 0.6, 0.};
-      Float_t tmppUpArr[tmpMomBinsMC]   = { 1.0, 1.5, 10000.};
+      Float_t tmppDownArr[tmpMomBinsMC] = { 0.};
+      Float_t tmppUpArr[tmpMomBinsMC]   = { 10000.};
       task->SetMCEtaScanArray(tmpEtaBinsMC, tmpetaDownArr, tmpetaUpArr);
       task->SetMCMomScanArray(tmpMomBinsMC, tmppDownArr,   tmppUpArr);
       // resonances to exclude
@@ -147,7 +147,40 @@ AliAnalysisTaskEbyeIterPID* Config_marsland_TIdentityPID(Bool_t getFromAlien, In
       task->SetMCResonanceArray(tmpNresonances,tmpResArr);
     }
     break;
-    case 53:{
+
+    //
+    // ====================================================================================
+    // ======================== MC to run at GSI or runGrid.C  ============================
+    // ====================================================================================
+    //
+    case 60:{
+      std::cout << settingType << " Info::marsland: FullMC + EffMatrix + full cout  --> At GSI or with RunGrid.C " << std::endl;
+      task->SetUseCouts(kTRUE);
+      task->SetIsMCtrue(kTRUE);
+      task->SetEffMatrix(kTRUE);
+      task->SetFillAllCutVariables(kTRUE);
+      task->SetUsePtCut(1); // 0: tpc momcut, 1: vertex momcut, 2: pT cut
+      // acceptance
+      const Int_t tmpEtaBinsMC = 8;
+      const Int_t tmpMomBinsMC = 4;
+      Float_t tmpetaDownArr[tmpEtaBinsMC] = {-0.1,-0.2,-0.3,-0.4,-0.5,-0.6,-0.7,-0.8};
+      Float_t tmpetaUpArr[tmpEtaBinsMC]   = { 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8};
+      Float_t tmppDownArr[tmpMomBinsMC] = { 0.4, 0.6, 0.6, 0.8};
+      Float_t tmppUpArr[tmpMomBinsMC]   = { 1.0, 1.5, 2.0, 2.0};
+      task->SetMCEtaScanArray(tmpEtaBinsMC, tmpetaDownArr, tmpetaUpArr);
+      task->SetMCMomScanArray(tmpMomBinsMC, tmppDownArr,   tmppUpArr);
+      // resonances to exclude
+      const Int_t tmpNresonances = 1;
+      TString tmpResArr[tmpNresonances] = {"xxx"};
+      task->SetMCResonanceArray(tmpNresonances,tmpResArr);
+    }
+    break;
+    //
+    // ====================================================================================
+    // ============================== MC to run Local  ====================================
+    // ====================================================================================
+    //
+    case 70:{
       std::cout << settingType << " Info::marsland: MC full on lego train --> full acceptance --> too see distributions " << std::endl;
       task->SetFillGenDistributions(kTRUE);
       task->SetRunOnGrid(kTRUE);
@@ -174,42 +207,19 @@ AliAnalysisTaskEbyeIterPID* Config_marsland_TIdentityPID(Bool_t getFromAlien, In
       task->SetMCResonanceArray(tmpNresonances,tmpResArr);
     }
     break;
-
-
-
+    //
+    // ====================================================================================
+    // =================================== MC FastGen  ====================================
+    // ====================================================================================
+    //
     case 100:{
-      std::cout << settingType << " Info::marsland: FullMC: StandardTPCITScuts 8EtaBin_150pBins_9centBins (REFERENCE settings) MC CLOSURE " << std::endl;
-      task->SetUseCouts(kTRUE);
-      task->SetFillAllCutVariables(kTRUE);
-      task->SetIsMCtrue(kTRUE);
-      task->SetEffMatrix(kTRUE);
-      task->SetNEtabins(8);
-      const Int_t tmpCentbins  = 10;
-      const Int_t tmpEtaBinsMC = 1;
-      const Int_t tmpMomBinsMC = 1;
-      Float_t tmpfxCentBins[tmpCentbins] = {0,5,10,20,30,40,50,60,70,80};
-      Float_t tmpetaDownArr[tmpEtaBinsMC] = {-0.8};
-      Float_t tmpetaUpArr[tmpEtaBinsMC]   = { 0.8};
-      Float_t tmppDownArr[tmpMomBinsMC] = { 0.6};
-      Float_t tmppUpArr[tmpMomBinsMC]   = { 1.5};
-      // Float_t tmpfxCentBins[tmpCentbins] = {0,5,10,20,30,40,50,60,70,80};
-      // Float_t tmpetaDownArr[tmpEtaBinsMC] = {-0.5,-0.8};
-      // Float_t tmpetaUpArr[tmpEtaBinsMC]   = { 0.5, 0.8};
-      // Float_t tmppDownArr[tmpMomBinsMC] = { 0.2, 0.2, 0.6, 0.6};
-      // Float_t tmppUpArr[tmpMomBinsMC]   = { 1.5, 1.8, 1.5, 1.8};
-      task->SetMCEtaScanArray(tmpEtaBinsMC, tmpetaDownArr, tmpetaUpArr);
-      task->SetMCMomScanArray(tmpMomBinsMC, tmppDownArr,   tmppUpArr);
-      task->SetCentralityBinning(tmpCentbins,tmpfxCentBins);
-    }
-    break;
-    case 101:{
       std::cout << settingType << " Info::marsland: FastSimul: StandardTPCITScuts 8EtaBin_150pBins_9centBins (REFERENCE settings) " << std::endl;
       task->SetIsMCtrue(kTRUE);
       task->SetNEtabins(8);
       task->SetRunFastSimulation(kTRUE);
     }
     break;
-    case 102:{
+    case 101:{
       std::cout << settingType << " Info::marsland: FastSimul: StandardTPCITScuts 8EtaBin_150pBins_9centBins ETA DEPENDENCE " << std::endl;
       task->SetIsMCtrue(kTRUE);
       task->SetNEtabins(8);
@@ -227,7 +237,7 @@ AliAnalysisTaskEbyeIterPID* Config_marsland_TIdentityPID(Bool_t getFromAlien, In
       task->SetCentralityBinning(tmpCentbins,tmpfxCentBins);
     }
     break;
-    case 103:{
+    case 102:{
       std::cout << settingType << " Info::marsland: FastSimul: StandardTPCITScuts 8EtaBin_150pBins_9centBins Momentum DEPENDENCE " << std::endl;
       task->SetIsMCtrue(kTRUE);
       task->SetNEtabins(8);
@@ -245,7 +255,7 @@ AliAnalysisTaskEbyeIterPID* Config_marsland_TIdentityPID(Bool_t getFromAlien, In
       task->SetCentralityBinning(tmpCentbins,tmpfxCentBins);
     }
     break;
-    case 104:{
+    case 103:{
       std::cout << settingType << " Info::marsland: FullSimul: StandardTPCITScuts 8EtaBin_150pBins_9centBins EffMatrix " << std::endl;
       task->SetEffMatrix(kTRUE);
       task->SetIsMCtrue(kTRUE);
@@ -271,7 +281,7 @@ AliAnalysisTaskEbyeIterPID* Config_marsland_TIdentityPID(Bool_t getFromAlien, In
       task->SetCentralityBinning(tmpCentbins,tmpfxCentBins);
     }
     break;
-    case 105:{
+    case 104:{
       std::cout << settingType << " Info::marsland: FullSimul: StandardTPCITScuts 8EtaBin_150pBins_9centBins EffMatrix " << std::endl;
       task->SetEffMatrix(kTRUE);
       task->SetIsMCtrue(kTRUE);
@@ -292,7 +302,7 @@ AliAnalysisTaskEbyeIterPID* Config_marsland_TIdentityPID(Bool_t getFromAlien, In
       task->SetCentralityBinning(tmpCentbins,tmpfxCentBins);
     }
     break;
-    case 106:{
+    case 105:{
       std::cout << settingType << " Info::marsland: FastSimul: StandardTPCITScuts 8EtaBin_150pBins_9centBins (REFERENCE settings): Fill only DnchDeta " << std::endl;
       task->SetIsMCtrue(kTRUE);
       task->SetNEtabins(8);
@@ -300,7 +310,7 @@ AliAnalysisTaskEbyeIterPID* Config_marsland_TIdentityPID(Bool_t getFromAlien, In
       task->SetFillDnchDeta(kTRUE);
     }
     break;
-    case 107:{
+    case 106:{
       std::cout << settingType << " Info::marsland: THnSparse: StandardTPCITScuts 8EtaBin_150pBins_9centBins (REFERENCE settings) MC CLOSURE with TOF cut " << std::endl;
       task->SetIncludeTOF(kTRUE);
       task->SetIsMCtrue(kTRUE);
@@ -319,7 +329,7 @@ AliAnalysisTaskEbyeIterPID* Config_marsland_TIdentityPID(Bool_t getFromAlien, In
       task->SetCentralityBinning(tmpCentbins,tmpfxCentBins);
     }
     break;
-    case 108:{
+    case 107:{
       std::cout << settingType << " Info::marsland: THnSparse: StandardTPCITScuts 8EtaBin_150pBins_9centBins (REFERENCE settings) MC CLOSURE with NO ITS cut " << std::endl;
       task->SetIncludeTOF(kFALSE);
       task->SetIsMCtrue(kTRUE);
@@ -338,7 +348,7 @@ AliAnalysisTaskEbyeIterPID* Config_marsland_TIdentityPID(Bool_t getFromAlien, In
       task->SetCentralityBinning(tmpCentbins,tmpfxCentBins);
     }
     break;
-    case 109:{
+    case 108:{
       std::cout << settingType << " Info::marsland: FULL MC at GSI --> eta and mom scan + removal of resonances + EffMatrix [0.2,0.6]<p<[1.5,3.2] GeV/c  " << std::endl;
       // FULL MC settings
       task->SetIsMCtrue(kTRUE);
@@ -373,7 +383,7 @@ AliAnalysisTaskEbyeIterPID* Config_marsland_TIdentityPID(Bool_t getFromAlien, In
       //       task->SetMCResonanceArray(tmpNresonances,tmpResArr);
     }
     break;
-    case 110:{
+    case 109:{
       std::cout << settingType << " Info::marsland: Higher Moments MC closure " << std::endl;
       task->SetRunOnGrid(getFromAlien);
       std::cout << settingType << " Info::marsland: runOnGrid = " << getFromAlien << std::endl;

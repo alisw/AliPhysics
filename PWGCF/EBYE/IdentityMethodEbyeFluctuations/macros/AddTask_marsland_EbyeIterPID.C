@@ -1,4 +1,4 @@
-AliAnalysisTask *AddTask_marsland_EbyeIterPID(Bool_t getFromAlien=kFALSE, TString configFileName = "Config_marsland_EbyeIterPID.C",Int_t settingType = 0,Int_t lhcPeriod = 1, Int_t lookUpTableIndex = 1)
+AliAnalysisTask *AddTask_marsland_EbyeIterPID(Bool_t getFromAlien=kFALSE, TString configFileName = "Config_marsland_EbyeIterPID.C",Int_t settingType = 0,Int_t lhcPeriod = 1, Int_t lookUpTableIndex = 1, const char* suffix = "", Int_t containerNameMode=0)
 {
   //
   //get the current analysis manager
@@ -11,6 +11,8 @@ AliAnalysisTask *AddTask_marsland_EbyeIterPID(Bool_t getFromAlien=kFALSE, TStrin
   Parameter 3: settingType      --> an integer to decide which setting to use
   Parameter 4: lhcPeriod        --> an integer to decide which period 1,2 or 3
   Parameter 5: lookUpTableIndex --> an integer to decide which lookup table to use
+  Parameter 6: suffix           --> used for naming conflicts in lego train --> each wagon has a different suffix
+  Parameter 7: containerNameMode--> decide either dump output files in a TDirectoryFile or not. 0 without 1 and 2 with TDirectoryFile,
   =================================================================================================
   */
   std::cout << " Info::marsland: ===== In the AddTask_marsland_EbyeIterPID ===== " << std::endl;
@@ -40,16 +42,20 @@ AliAnalysisTask *AddTask_marsland_EbyeIterPID(Bool_t getFromAlien=kFALSE, TStrin
     // gSystem->AddIncludePath("-I$ALICE_PHYSICS/include");
     //
     // MC closure for higher moments
-    settingType = 53;      // 4 for Real data 100 for full MC
-    lhcPeriod = 2;
+    settingType = 50;      // 4 for Real data 100 for full MC
+    lhcPeriod = 1;
     lookUpTableIndex =0;
+    suffix = "test";
+    containerNameMode=1;
   }
   TString configFilePath(configBasePath+configFileName);
   std::cout << " Info::marsland: Configpath:  " << configFilePath << std::endl;
   //
   gROOT->LoadMacro(configFilePath.Data());
   //
-  AliAnalysisTaskEbyeIterPID* task = Config_marsland_EbyeIterPID(getFromAlien,settingType,lhcPeriod,lookUpTableIndex);
+  TString combinedName;
+  combinedName.Form("marslandEbyeIter_%s", suffix);
+  AliAnalysisTaskEbyeIterPID* task = Config_marsland_EbyeIterPID(getFromAlien,settingType,lhcPeriod,lookUpTableIndex,combinedName);
   Bool_t hasMC = (AliAnalysisManager::GetAnalysisManager()->GetMCtruthEventHandler()!=0x0);
   task->SetIsMCtrue(hasMC);
   printf(" ========================= MC info %d ========================= \n",hasMC);
@@ -60,9 +66,9 @@ AliAnalysisTask *AddTask_marsland_EbyeIterPID(Bool_t getFromAlien=kFALSE, TStrin
   //      Add task to the PID Response
   //==================================================
   //
-  //   gROOT->LoadMacro("$ALICE_ROOT/ANALYSIS/macros/AddTaskPIDResponse.C");
-  //   Bool_t isMC=kTRUE; // kTRUE in case of MC
-  //   AddTaskPIDResponse(isMC);
+  // gROOT->LoadMacro("$ALICE_ROOT/ANALYSIS/macros/AddTaskPIDResponse.C");
+  // Bool_t isMC=kTRUE; // kTRUE in case of MC
+  // AddTaskPIDResponse(isMC);
   //
   //================================================
   //              data containers
@@ -73,26 +79,44 @@ AliAnalysisTask *AddTask_marsland_EbyeIterPID(Bool_t getFromAlien=kFALSE, TStrin
   AliAnalysisDataContainer *cinput, *coutput1, *coutput2, *coutput3, *coutput4;
   AliAnalysisDataContainer *coutput5, *coutput6, *coutput7, *coutput8, *coutput9;
   AliAnalysisDataContainer *coutput10, *coutput11, *coutput12, *coutput13,*coutput14;
-
-  //  find input container // Output files --> File opening order is important
-  TString results = "AnalysisResults.root";
+  //
+  //  find and connect input container // Output files --> File opening order is important
   cinput  = mgr->GetCommonInputContainer();
-  mgr->ConnectInput(task,  0, cinput);
+  mgr->ConnectInput(task, 0, cinput);
+  //
+  // Get the output file name which is by default "AnalysisResults.root" --> Either write output into a TDirectoryFile or directly in "AnalysisResults.root"
+  char* outputFileName = AliAnalysisManager::GetCommonFileName();
+  TString dirName = "";
+  TString fileDirStructure = "";
+  TString listName = "";
+  if (containerNameMode==0){
+    fileDirStructure = Form("%s", outputFileName);  // TDirectoryFile name to put all containers; AnalysisResults.root --> trees and hists
+    listName = "cleanHists";
+  } else if (containerNameMode==1){
+    dirName = "PWGCF_marsland";                     // TDirectoryFile name to put all containers; AnalysisResults.root --> PWGCF_marsland --> trees and hists
+    fileDirStructure = Form("%s:%s", outputFileName, dirName.Data());
+    listName = combinedName+"_cleanHists";
+  } else if (containerNameMode==2){
+    dirName = Form("PWGCF_marsland_%s",suffix);     // TDirectoryFile name to put all containers; AnalysisResults.root --> PWGCF_marsland_<setting> --> trees and hists
+    fileDirStructure = Form("%s:%s", outputFileName, dirName.Data());
+    listName = combinedName+"_cleanHists";
+  }
+  //
   // Output containers
-  coutput1  = mgr->CreateContainer("cleanHists",    TList::Class(), AliAnalysisManager::kOutputContainer ,results.Data());
-  coutput2  = mgr->CreateContainer("armPodTree",    TTree::Class(), AliAnalysisManager::kOutputContainer ,results.Data());
-  coutput3  = mgr->CreateContainer("mcFull",        TTree::Class(), AliAnalysisManager::kOutputContainer ,results.Data());
-  coutput4  = mgr->CreateContainer("mcGen",         TTree::Class(), AliAnalysisManager::kOutputContainer ,results.Data());
-  coutput5  = mgr->CreateContainer("fTreeMC",       TTree::Class(), AliAnalysisManager::kOutputContainer ,results.Data());
-  coutput6  = mgr->CreateContainer("fTreedEdxCheck",TTree::Class(), AliAnalysisManager::kOutputContainer ,results.Data());
-  coutput7  = mgr->CreateContainer("tracks",        TTree::Class(), AliAnalysisManager::kOutputContainer ,results.Data());
-  coutput8  = mgr->CreateContainer("dnchdeta",      TTree::Class(), AliAnalysisManager::kOutputContainer ,results.Data());
-  coutput9  = mgr->CreateContainer("fullacc",       TTree::Class(), AliAnalysisManager::kOutputContainer ,results.Data());
-  coutput10 = mgr->CreateContainer("resonance",     TTree::Class(), AliAnalysisManager::kOutputContainer ,results.Data());
-  coutput11 = mgr->CreateContainer("mcGenMoms",     TTree::Class(), AliAnalysisManager::kOutputContainer ,results.Data());
-  coutput12 = mgr->CreateContainer("events",        TTree::Class(), AliAnalysisManager::kOutputContainer ,results.Data());
-  coutput13 = mgr->CreateContainer("dscaled",       TTree::Class(), AliAnalysisManager::kOutputContainer ,results.Data());
-  coutput14 = mgr->CreateContainer("mcMoms",        TTree::Class(), AliAnalysisManager::kOutputContainer ,results.Data());
+  coutput1  = mgr->CreateContainer(listName,                      TList::Class(), AliAnalysisManager::kOutputContainer, fileDirStructure);
+  coutput2  = mgr->CreateContainer(combinedName+"_armPodTree",    TTree::Class(), AliAnalysisManager::kOutputContainer, fileDirStructure);
+  coutput3  = mgr->CreateContainer(combinedName+"_mcFull",        TTree::Class(), AliAnalysisManager::kOutputContainer, fileDirStructure);
+  coutput4  = mgr->CreateContainer(combinedName+"_mcGen",         TTree::Class(), AliAnalysisManager::kOutputContainer, fileDirStructure);
+  coutput5  = mgr->CreateContainer(combinedName+"_fTreeMC",       TTree::Class(), AliAnalysisManager::kOutputContainer, fileDirStructure);
+  coutput6  = mgr->CreateContainer(combinedName+"_fTreedEdxCheck",TTree::Class(), AliAnalysisManager::kOutputContainer, fileDirStructure);
+  coutput7  = mgr->CreateContainer(combinedName+"_tracks",        TTree::Class(), AliAnalysisManager::kOutputContainer, fileDirStructure);
+  coutput8  = mgr->CreateContainer(combinedName+"_dnchdeta",      TTree::Class(), AliAnalysisManager::kOutputContainer, fileDirStructure);
+  coutput9  = mgr->CreateContainer(combinedName+"_fullacc",       TTree::Class(), AliAnalysisManager::kOutputContainer, fileDirStructure);
+  coutput10 = mgr->CreateContainer(combinedName+"_resonance",     TTree::Class(), AliAnalysisManager::kOutputContainer, fileDirStructure);
+  coutput11 = mgr->CreateContainer(combinedName+"_mcGenMoms",     TTree::Class(), AliAnalysisManager::kOutputContainer, fileDirStructure);
+  coutput12 = mgr->CreateContainer(combinedName+"_events",        TTree::Class(), AliAnalysisManager::kOutputContainer, fileDirStructure);
+  coutput13 = mgr->CreateContainer(combinedName+"_dscaled",       TTree::Class(), AliAnalysisManager::kOutputContainer, fileDirStructure);
+  coutput14 = mgr->CreateContainer(combinedName+"_mcMoms",        TTree::Class(), AliAnalysisManager::kOutputContainer, fileDirStructure);
   mgr->ConnectOutput (task,  1, coutput1);
   mgr->ConnectOutput (task,  2, coutput2);
   mgr->ConnectOutput (task,  3, coutput3);
