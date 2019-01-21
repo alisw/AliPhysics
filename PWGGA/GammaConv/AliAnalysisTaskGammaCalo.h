@@ -400,6 +400,12 @@ class AliAnalysisTaskGammaCalo : public AliAnalysisTaskSE {
     TH2F**                 fHistoMotherEtainJetPtY;                              // Histogram with the rapidity of the validated etas in jets
     TH2F**                 fHistoMotherPi0inJetPtPhi;                            // Histogram with the phi of the validated pi0s in jets
     TH2F**                 fHistoMotherEtainJetPtPhi;                            // Histogram with the phi of the validated etas in jets
+    TH1F**                 fNumberOfClusters;                                    // Histogram with total number of clusters
+    TH1F**                 fNumberOfClustersinJets;                              // Histogram with number of clusters in jets
+    TH1F**                 fEnergyRatio;                                         // Histogram with ratio of energy deposited in cluster
+    TH1F**                 fEnergyRatioinJets;                                   // Histogram with ratio of energy deposited in cluster in jets
+    TH1F**                 fEnergyRatioGamma1;                                   // Histogram with ratio of energy deposited in cluster when first label is a photon
+    TH1F**                 fEnergyRatioGamma1inJets;                             // Histogram with ratio of energy deposited in cluster when first label is a photon in jets
 
     vector<Double_t>      fVectorJetPt;                                         // Vector of JetPt
     vector<Double_t>      fVectorJetPx;                                         // Vector of JetPx
@@ -500,7 +506,7 @@ class AliAnalysisTaskGammaCalo : public AliAnalysisTaskSE {
     AliAnalysisTaskGammaCalo(const AliAnalysisTaskGammaCalo&);                  // Prevent copy-construction
     AliAnalysisTaskGammaCalo &operator=(const AliAnalysisTaskGammaCalo&);       // Prevent assignment
 
-    ClassDef(AliAnalysisTaskGammaCalo, 58);
+    ClassDef(AliAnalysisTaskGammaCalo, 59);
 };
 
 #endif
