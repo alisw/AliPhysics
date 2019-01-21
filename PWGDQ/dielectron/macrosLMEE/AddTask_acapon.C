@@ -14,6 +14,7 @@ AliAnalysisTask *AddTask_acapon(TString outputFileName = "AnalysisResult.root",
                                 Bool_t useTPCcorr      = kTRUE,
                                 Bool_t useTOFcorr      = kTRUE,
                                 Bool_t plots3D         = kFALSE,
+																Bool_t useRun1binning  = kFALSE,
                                 Bool_t getFromAlien    = kFALSE)
 {
   
@@ -35,6 +36,7 @@ AliAnalysisTask *AddTask_acapon(TString outputFileName = "AnalysisResult.root",
 		std::cout << "Use TPCcorr     : " << useTPCcorr     << std::endl;
 		std::cout << "Use TOFcorr     : " << useTOFcorr     << std::endl;
 		std::cout << "3D plots        : " << plots3D        << std::endl;
+		std::cout << "Using Run1 bins : " << useRun1binning << std::endl;
 
     //get the current analysis manager
     AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
@@ -102,7 +104,7 @@ AliAnalysisTask *AddTask_acapon(TString outputFileName = "AnalysisResult.root",
                                               doPairing, applyPairCuts, doMixing, 
 																							trackVarPlots, whichDetPlots, v0plots,
 																							useITScorr, useTPCcorr, useTOFcorr,
-																							plots3D);
+																							plots3D, useRun1binning);
 			if(!diel_low){
 				continue;
 			}
