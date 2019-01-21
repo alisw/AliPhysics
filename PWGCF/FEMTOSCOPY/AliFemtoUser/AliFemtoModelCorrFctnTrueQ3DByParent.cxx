@@ -62,7 +62,7 @@ AliFemtoModelCorrFctnTrueQ3DByParent::AliFemtoModelCorrFctnTrueQ3DByParent(const
     parent_min = -parent_max;
 
   Int_t inbins = nbins;
-  std::array<Int_t, 4> nbins_v = {static_cast<UInt_t>(par_nbins * 2 + 1), inbins, inbins, inbins};
+  std::array<Int_t, 4> nbins_v = {static_cast<Int_t>(par_nbins * 2 + 1), inbins, inbins, inbins};
   std::array<Double_t, 4> min_v = {parent_min, qmin, qmin, qmin};
   std::array<Double_t, 4> max_v = {parent_max, qmax, qmax, qmax};
 
