@@ -1912,17 +1912,20 @@ Double_t AliAnalysisTaskWeakDecayVertexer::GetDCAV0Dau( AliExternalTrackParam *p
             Double_t xThisPos=xPosOptPosition*csPos + yPosOptPosition*snPos;
             
             if( xThisNeg < lMaximumX && xThisPos < lMaximumX && xThisNeg > lMinimumX && xThisPos > lMinimumX){
-                Double_t lCase1NegR[3]; nt->GetXYZAt(xThisNeg,b, lCase1NegR);
-                Double_t lCase1PosR[3]; pt->GetXYZAt(xThisPos,b, lCase1PosR);
-                lPreprocessDCAxy = TMath::Sqrt(
-                                               TMath::Power(lCase1NegR[0]-lCase1PosR[0],2)+
-                                               TMath::Power(lCase1NegR[1]-lCase1PosR[1],2)+
-                                               TMath::Power(lCase1NegR[2]-lCase1PosR[2],2)
-                                               );
-                //Pass coordinates
-                if( lPreprocessDCAxy<999){
-                    lPreprocessxp = xThisPos;
-                    lPreprocessxn = xThisNeg;
+                Bool_t lPropagA = kFALSE, lPropagB = kFALSE;
+                Double_t lCase1NegR[3]; lPropagA=nt->GetXYZAt(xThisNeg,b, lCase1NegR);
+                Double_t lCase1PosR[3]; lPropagB=pt->GetXYZAt(xThisPos,b, lCase1PosR);
+                if( lPropagA && lPropagB ){
+                    lPreprocessDCAxy = TMath::Sqrt(
+                                                   TMath::Power(lCase1NegR[0]-lCase1PosR[0],2)+
+                                                   TMath::Power(lCase1NegR[1]-lCase1PosR[1],2)+
+                                                   TMath::Power(lCase1NegR[2]-lCase1PosR[2],2)
+                                                   );
+                    //Pass coordinates
+                    if( lPreprocessDCAxy<999){
+                        lPreprocessxp = xThisPos;
+                        lPreprocessxn = xThisNeg;
+                    }
                 }
             }
             //================================================================
@@ -1982,24 +1985,38 @@ Double_t AliAnalysisTaskWeakDecayVertexer::GetDCAV0Dau( AliExternalTrackParam *p
             
             //Case 2a
             if( xThisNeg[0] < lMaximumX && xThisPos[0] < lMaximumX && xThisNeg[0] > lMinimumX && xThisPos[0] > lMinimumX ){
-                Double_t lCase2aNegR[3]; nt->GetXYZAt(xThisNeg[0],b, lCase2aNegR);
-                Double_t lCase2aPosR[3]; pt->GetXYZAt(xThisPos[0],b, lCase2aPosR);
+                Bool_t lPropagA = kFALSE, lPropagB = kFALSE;
+                Double_t lCase2aNegR[3]; lPropagA=nt->GetXYZAt(xThisNeg[0],b, lCase2aNegR);
+                Double_t lCase2aPosR[3]; lPropagB=pt->GetXYZAt(xThisPos[0],b, lCase2aPosR);
+                if( lPropagA && lPropagB ){
                 lCase2aDCA = TMath::Sqrt(
                                          TMath::Power(lCase2aNegR[0]-lCase2aPosR[0],2)+
                                          TMath::Power(lCase2aNegR[1]-lCase2aPosR[1],2)+
                                          TMath::Power(lCase2aNegR[2]-lCase2aPosR[2],2)
                                          );
+                }else{
+                    for(Int_t ic=0;ic<3;ic++)lCase2aNegR[ic]=0;
+                    for(Int_t ic=0;ic<3;ic++)lCase2aPosR[ic]=0;
+                    lCase2aDCA=1e+4;
+                }
             }
             
             //Case 2b
             if( xThisNeg[1] < lMaximumX && xThisPos[1] < lMaximumX && xThisNeg[1] > lMinimumX && xThisPos[1] > lMinimumX ){
-                Double_t lCase2bNegR[3]; nt->GetXYZAt(xThisNeg[1],b, lCase2bNegR);
-                Double_t lCase2bPosR[3]; pt->GetXYZAt(xThisPos[1],b, lCase2bPosR);
-                lCase2bDCA = TMath::Sqrt(
-                                         TMath::Power(lCase2bNegR[0]-lCase2bPosR[0],2)+
-                                         TMath::Power(lCase2bNegR[1]-lCase2bPosR[1],2)+
-                                         TMath::Power(lCase2bNegR[2]-lCase2bPosR[2],2)
-                                         );
+                Bool_t lPropagA = kFALSE, lPropagB = kFALSE;
+                Double_t lCase2bNegR[3]; lPropagA=nt->GetXYZAt(xThisNeg[1],b, lCase2bNegR);
+                Double_t lCase2bPosR[3]; lPropagB=pt->GetXYZAt(xThisPos[1],b, lCase2bPosR);
+                if( lPropagA && lPropagB ){
+                    lCase2bDCA = TMath::Sqrt(
+                                             TMath::Power(lCase2bNegR[0]-lCase2bPosR[0],2)+
+                                             TMath::Power(lCase2bNegR[1]-lCase2bPosR[1],2)+
+                                             TMath::Power(lCase2bNegR[2]-lCase2bPosR[2],2)
+                                             );
+                }else{
+                    for(Int_t ic=0;ic<3;ic++)lCase2bNegR[ic]=0;
+                    for(Int_t ic=0;ic<3;ic++)lCase2bPosR[ic]=0;
+                    lCase2bDCA=1e+4;
+                }
             }
             
             //Minor detail: all things being equal, prefer closest X
