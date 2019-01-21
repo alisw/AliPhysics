@@ -52,7 +52,7 @@ Bool_t AliAodSkimTask::KeepTrack(AliAODTrack *t)
     return kFALSE;
   if (t->Pt()<fCutMinPt)
     return kFALSE;
-  if (fCutFilterBit>-1) {
+  if (fCutFilterBit!=(UInt_t)-1) {
     if (t->TestFilterBit(fCutFilterBit)==0)
       return kFALSE;
   }
