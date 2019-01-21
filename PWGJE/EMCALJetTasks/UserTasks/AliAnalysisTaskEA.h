@@ -241,6 +241,13 @@ class AliAnalysisTaskEA : public AliAnalysisTaskEmcalJet {
    TH1D* fhSignalTTJ[fkCE][fkTTbins];                 //! distributions of centrality estimators biased with ch jet TT
    TH1D* fhSignalTTCinMB[fkCE][fkTTbins];              //! distributions of centrality estimators biased with cluster TT in min bias 
    TH1D* fhSignalTTCinGA[fkCE][fkTTbins];              //! distributions of centrality estimators biased with cluster TT in Gamma trigger
+   TH2F* fhV0AvsV0C;                                   //! V0A vs V0C in MB 
+   TH2F* fhV0AvsSPD;                                   //! V0A vs SPD in MB 
+   TH2F* fhV0CvsSPD;                                   //! V0C vs SPD in MB 
+   TH2F* fhV0AvsV0CTTH[fkTTbins];                      //! V0A vs V0C biased with hadron TT
+   TH2F* fhV0AvsV0CTTJ[fkTTbins];                      //! V0A vs V0C biased with ch jet TT
+   TH2F* fhV0AvsV0CTTCinMB[fkTTbins];                  //! V0A vs V0C biased with cluster TT in min bias 
+   TH2F* fhV0AvsV0CTTCinGA[fkTTbins];                  //! V0A vs V0C biased with cluster TT in Gamma trigger
                                                       
    TH1D* fhMultTTHinMB[fkTTbins];                       //! multiplicity of hadron TT in MB event
    TH1D* fhMultTTJinMB[fkTTbins];                       //! multiplicity of charged jet TT in MB event
@@ -272,7 +279,7 @@ class AliAnalysisTaskEA : public AliAnalysisTaskEmcalJet {
    AliAnalysisTaskEA(const AliAnalysisTaskEA&);
    AliAnalysisTaskEA& operator=(const AliAnalysisTaskEA&);
 
-   ClassDef(AliAnalysisTaskEA, 4); // Charged jet analysis for pAliAnalysisTaskHJetSpectra/home/fkrizek/z501.ALIC
+   ClassDef(AliAnalysisTaskEA, 5); // Charged jet analysis for pAliAnalysisTaskHJetSpectra/home/fkrizek/z501.ALIC
 
 };
 #endif
