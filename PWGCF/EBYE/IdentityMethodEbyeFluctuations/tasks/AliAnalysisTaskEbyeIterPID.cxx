@@ -2183,7 +2183,7 @@ void AliAnalysisTaskEbyeIterPID::FillMCFull_NetParticles()
   // Acceptance scan
   for (Int_t ieta=0; ieta<fNEtaWinBinsMC; ieta++){
     for (Int_t imom=0; imom<fNMomBinsMC; imom++){
-      for (Int_t iorig=0; iorig<4; iorig++){
+      for (Int_t iorig=0; iorig<3; iorig++){
         //
         // Initialize counters
         Int_t nTracksrec=0, nTracksgen=0;
@@ -2222,9 +2222,8 @@ void AliAnalysisTaskEbyeIterPID::FillMCFull_NetParticles()
           Bool_t bWeak     = fMCStack->IsSecondaryFromWeakDecay(lab);
           Bool_t bAcceptOrigin = kFALSE;
           if (iorig==0) bAcceptOrigin = bPrim;
-          if (iorig==1) bAcceptOrigin = (bPrim || bMaterial);
-          if (iorig==2) bAcceptOrigin = (bPrim || bWeak);
-          if (iorig==3) bAcceptOrigin = (bPrim || bMaterial || bWeak);
+          if (iorig==1) bAcceptOrigin = (bPrim || bWeak);
+          if (iorig==2) bAcceptOrigin = (bPrim || bMaterial || bWeak);
           //
           // generated level cut
           if (!bAcceptOrigin) continue;
@@ -2259,7 +2258,7 @@ void AliAnalysisTaskEbyeIterPID::FillMCFull_NetParticles()
           if (iPart == -10) continue;
           //
           //
-          if (fEffMatrix && !fRunOnGrid){
+          if (fEffMatrix && !fRunOnGrid && bPrim){
             if (ieta==0 && imom==0 && etaAccMaxWindow && momAccMaxWindow){
               Double_t xxxRec[5]={Float_t(iPart-1),fCentrality,ptotMCrec,etaMCrec,phiMCRec};
               if (pdg>0) fHistPosEffMatrixRec->Fill(xxxRec);
@@ -2312,9 +2311,8 @@ void AliAnalysisTaskEbyeIterPID::FillMCFull_NetParticles()
           Bool_t bWeak     = fMCStack->IsSecondaryFromWeakDecay(iTrack);
           Bool_t bAcceptOrigin = kFALSE;
           if (iorig==0) bAcceptOrigin = bPrim;
-          if (iorig==1) bAcceptOrigin = (bPrim || bMaterial);
-          if (iorig==2) bAcceptOrigin = (bPrim || bWeak);
-          if (iorig==3) bAcceptOrigin = (bPrim || bMaterial || bWeak);
+          if (iorig==1) bAcceptOrigin = (bPrim || bWeak);
+          if (iorig==2) bAcceptOrigin = (bPrim || bMaterial || bWeak);
           //
           // generated level cut
           if (!bAcceptOrigin) continue;
@@ -2340,7 +2338,7 @@ void AliAnalysisTaskEbyeIterPID::FillMCFull_NetParticles()
           if (iPart == -10) continue;
           //
           // Fill eff Matrix
-          if (fEffMatrix && !fRunOnGrid){
+          if (fEffMatrix && !fRunOnGrid && bPrim){
             if (ieta==0 && imom==0 && etaAccMaxWindow && momAccMaxWindow){
               Double_t xxxGen[5]={Float_t(iPart-1),fCentrality,ptotMCgen,etaMCgen,phiMCGen};
               if (pdg>0) fHistPosEffMatrixGen->Fill(xxxGen);
