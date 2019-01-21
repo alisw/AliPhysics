@@ -28,9 +28,9 @@ void AliPP13EpRatioSelection::InitSelectionHistograms()
 	Int_t nM       = 50;
 	Double_t nMin  = 0.0;
 	Double_t nMax  = 2.;
-	Int_t nPt      = 400;
+	Int_t nPt      = 1000;
 	Double_t ptMin = 0;
-	Double_t ptMax = 20;
+	Double_t ptMax = 10;
 
 	for (Int_t i = 0; i < 2; ++i)
 	{
@@ -150,6 +150,8 @@ void AliPP13EpRatioSelection::FillClusterHistograms(const AliVCluster * cluster,
 		return;
 
 	Double_t cluster_energy = cluster->E();
+	cluster_energy *= fWeights->Nonlinearity(cluster_energy);
+
 	Double_t r = cluster->GetEmcCpvDistance(); 
 	fPIDCriteria[0]->Fill(r, cluster_energy);
 
@@ -215,7 +217,7 @@ void AliPP13EpRatioSelection::FillClusterHistograms(const AliVCluster * cluster,
 	Double_t nSigma = eflags.fPIDResponse->NumberOfSigmasTPC(track, AliPID::kElectron);
 	fTPCSignal[0]->Fill(EpRatio, nSigma);
 
-	Bool_t isElectron = (nsigma_min < nSigma && nSigma < nsigma_max) ;
+	Bool_t isElectron = (nsigma_min < nSigma && nSigma < nsigma_max);
 	if (isElectron)
 	{
 		fPIDCriteria[5]->Fill(EpRatio, r);
@@ -223,7 +225,7 @@ void AliPP13EpRatioSelection::FillClusterHistograms(const AliVCluster * cluster,
 		fPIDCriteria[6]->Fill(EpRatio, rr);
 
 		fEpE[0]->FillAll(sm, sm, EpRatio, cluster_energy);
-		fEpPt[0]->FillAll(sm, sm, EpRatio, trackPt);
+		fEpPt[0]->FillAll(sm, sm, EpRatio, trackPt); // correct
 		fTPCSignal[1]->Fill(trackP, dEdx);
         if(0.8 < cluster_energy / trackP && cluster_energy / trackP < 1.2) 
 			fPosition[3]->FillAll(sm, sm, local.Z(), dz, trackPt);
