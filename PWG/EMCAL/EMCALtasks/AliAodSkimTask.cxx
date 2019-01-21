@@ -45,6 +45,9 @@ AliAodSkimTask::~AliAodSkimTask()
 
 Bool_t AliAodSkimTask::KeepTrack(AliAODTrack *t)
 {
+  if (!fDoRemoveTracks) 
+    return kTRUE;
+  //cout << "Keep tracks " << endl;
   if (t->IsMuonGlobalTrack())
     return kFALSE;
   if (t->Pt()<fCutMinPt)
@@ -100,7 +103,6 @@ void AliAodSkimTask::CleanTrack(AliAODTrack *t)
 
 void AliAodSkimTask::UserCreateOutputObjects()
 {
-
   AliAnalysisManager *man = AliAnalysisManager::GetAnalysisManager();
   AliAODHandler *oh = (AliAODHandler*)man->GetOutputEventHandler();
   if (oh) {
