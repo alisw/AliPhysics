@@ -28,6 +28,7 @@ class AliAnalysisTaskGammaCocktailMC : public AliAnalysisTaskSE {
     void SetWideBinning(Bool_t doWideBinning){fWideBinning = doWideBinning;}
     void SetMaxY(Double_t maxy){fMaxY = maxy;}
     void SetMaxEta(Double_t maxeta){fMaxEta = maxeta;}
+    void SetMaxPt(Double_t maxpt){fMaxPt = maxpt;}
     void SetLightOutput(Bool_t flag) {fDoLightOutput = flag;}
     void InitializeDecayChannelHist(TH1F* hist, Int_t np);
     void FillPythiaBranchingRatio(TH1F* histo, Int_t np);
@@ -96,12 +97,13 @@ class AliAnalysisTaskGammaCocktailMC : public AliAnalysisTaskSE {
     Int_t                       fIsMC;                          // MC flag
     Double_t                    fMaxY;                          // Max y
     Double_t                    fMaxEta;                          // Max Eta
+    Double_t                    fMaxPt;                           // Max Eta
 
   private:
     AliAnalysisTaskGammaCocktailMC(const AliAnalysisTaskGammaCocktailMC&);            // Prevent copy-construction
     AliAnalysisTaskGammaCocktailMC &operator=(const AliAnalysisTaskGammaCocktailMC&); // Prevent assignment
 
-    ClassDef(AliAnalysisTaskGammaCocktailMC, 8);
+    ClassDef(AliAnalysisTaskGammaCocktailMC, 9);
 };
 
 #endif

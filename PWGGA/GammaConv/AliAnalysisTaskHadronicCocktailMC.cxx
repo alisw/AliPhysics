@@ -95,7 +95,8 @@ AliAnalysisTaskHadronicCocktailMC::AliAnalysisTaskHadronicCocktailMC(): AliAnaly
   fOutputTree(NULL),
   fIsMC(1),
   fMaxY(2),
-  fMaxEta(0)
+  fMaxEta(0),
+  fMaxPt(50)
 {
 
 }
@@ -142,7 +143,8 @@ AliAnalysisTaskHadronicCocktailMC::AliAnalysisTaskHadronicCocktailMC(const char 
   fOutputTree(NULL),
   fIsMC(1),
   fMaxY(2),
-  fMaxEta(0)
+  fMaxEta(0),
+  fMaxPt(50)
 {
   // Define output slots here
   DefineOutput(1, TList::Class());
@@ -231,9 +233,11 @@ void AliAnalysisTaskHadronicCocktailMC::UserCreateOutputObjects(){
   fHistNEvents = (TH1F*)SetHist1D(fHistNEvents,"f","NEvents","","N_{evt}",1,0,1, kTRUE);
   fOutputContainer->Add(fHistNEvents);
 
-  Int_t nBinsPt = 1000;
+  Int_t nBinsPt = fMaxPt*20;
   if(fWideBinning)
-    nBinsPt = 500;
+    nBinsPt = fMaxPt*10;
+  if(fMaxPt>100 && fWideBinning)
+    nBinsPt = fMaxPt*5;
 
   const Int_t nInputParticles         = 24;
   Int_t   fParticleList_local[]       = {221,310,130,3122,113,331,223,213,-213,333,443,2114,2214,1114,2224,321,-321,-3334,3334,-3312,3312,3224,3114,313};
@@ -253,25 +257,25 @@ void AliAnalysisTaskHadronicCocktailMC::UserCreateOutputObjects(){
   fHistPhiDaughterPhiSourceInput  = new TH2F*[nInputParticles];
   for(Int_t i=0; i<nInputParticles; i++){
     if (fHasMother[i]) {
-      fHistPtYInput[i] = (TH2F*)SetHist2D(fHistPtYInput[i],"f", Form("Pt_Y_%s",fParticleListNames[i].Data()),"#it{p}_{T}","Y", nBinsPt, 0, 50, 400, -2.0, 2.0, kTRUE);
+      fHistPtYInput[i] = (TH2F*)SetHist2D(fHistPtYInput[i],"f", Form("Pt_Y_%s",fParticleListNames[i].Data()),"#it{p}_{T}","Y", nBinsPt, 0, fMaxPt, 400, -2.0, 2.0, kTRUE);
       fOutputContainer->Add(fHistPtYInput[i]);
 
       // pi0/eta/pi+- from certain mother
       fHistPtYDaughterSource[i] = (TH2F*)SetHist2D(fHistPtYDaughterSource[i],"f", Form("Pt_Y_%s_From_%s",fAnalyzedParticle.Data(),fParticleListNames[i].Data()),"#it{p}_{T}","Y",
-                                                   nBinsPt, 0, 50, 400, -2.0, 2.0, kTRUE);
+                                                   nBinsPt, 0, fMaxPt, 400, -2.0, 2.0, kTRUE);
       fOutputContainer->Add(fHistPtYDaughterSource[i]);
 
       // phi distributions
-      fHistPtPhiInput[i] = (TH2F*)SetHist2D(fHistPtPhiInput[i],"f", Form("Pt_Phi_%s",fParticleListNames[i].Data()),"#it{p}_{T}","#phi", nBinsPt, 0, 50, 100, 0, 2*TMath::Pi(), kTRUE);
+      fHistPtPhiInput[i] = (TH2F*)SetHist2D(fHistPtPhiInput[i],"f", Form("Pt_Phi_%s",fParticleListNames[i].Data()),"#it{p}_{T}","#phi", nBinsPt, 0, fMaxPt, 100, 0, 2*TMath::Pi(), kTRUE);
       fOutputContainer->Add(fHistPtPhiInput[i]);
 
       fHistPtPhiDaughterSource[i] = (TH2F*)SetHist2D(fHistPtPhiDaughterSource[i],"f", Form("Pt_Phi_%s_From_%s",fAnalyzedParticle.Data(),fParticleListNames[i].Data()),"#it{p}_{T}","#phi",
-                                                     nBinsPt, 0, 50, 100, 0, 7, kTRUE);
+                                                     nBinsPt, 0, fMaxPt, 100, 0, 7, kTRUE);
       fOutputContainer->Add(fHistPtPhiDaughterSource[i]);
 
       // correlation gamma from certain mother to mother
       fHistPtDaughterPtSourceInput[i] = (TH2F*)SetHist2D(fHistPtDaughterPtSourceInput[i],"f", Form("Pt%s_PtMother_%s",fAnalyzedParticle.Data(),fParticleListNames[i].Data()),
-                                                         "#it{p}_{T,daughter}","#it{p}_{T,mother}", nBinsPt, 0, 50, nBinsPt, 0, 50, kTRUE);
+                                                         "#it{p}_{T,daughter}","#it{p}_{T,mother}", nBinsPt, 0, fMaxPt, nBinsPt, 0, fMaxPt, kTRUE);
       fOutputContainer->Add(fHistPtDaughterPtSourceInput[i]);
 
       fHistPhiDaughterPhiSourceInput[i] = (TH2F*)SetHist2D(fHistPhiDaughterPhiSourceInput[i],"f",
@@ -310,19 +314,19 @@ void AliAnalysisTaskHadronicCocktailMC::UserCreateOutputObjects(){
     if (fHasMother[i+1]) {
 
       fHistPtYGammaFromXFromInput[i] = (TH2F*)SetHist2D(fHistPtYGammaFromXFromInput[i],"f", Form("Pt_Y_Gamma_From_X_From_%s",fParticleListNames[i+1].Data()),"#it{p}_{T}","Y",
-                                                        nBinsPt, 0, 50, 400, -2.0, 2.0, kTRUE);
+                                                        nBinsPt, 0, fMaxPt, 400, -2.0, 2.0, kTRUE);
       fOutputContainer->Add(fHistPtYGammaFromXFromInput[i]);
 
       fHistPtYGammaFromPi0FromInput[i] = (TH2F*)SetHist2D(fHistPtYGammaFromPi0FromInput[i],"f", Form("Pt_Y_Gamma_From_Pi0_From_%s",fParticleListNames[i+1].Data()),"#it{p}_{T}","Y",
-                                                          nBinsPt, 0, 50, 400, -2.0, 2.0, kTRUE);
+                                                          nBinsPt, 0, fMaxPt, 400, -2.0, 2.0, kTRUE);
       fOutputContainer->Add(fHistPtYGammaFromPi0FromInput[i]);
 
       fHistPtPhiGammaFromXFromInput[i] = (TH2F*)SetHist2D(fHistPtPhiGammaFromXFromInput[i],"f", Form("Pt_Phi_Gamma_From_X_From_%s",fParticleListNames[i+1].Data()),"#it{p}_{T}","#phi",
-                                                          nBinsPt, 0, 50, 100, 0, 2*TMath::Pi(), kTRUE);
+                                                          nBinsPt, 0, fMaxPt, 100, 0, 2*TMath::Pi(), kTRUE);
       fOutputContainer->Add(fHistPtPhiGammaFromXFromInput[i]);
 
       fHistPtPhiGammaFromPi0FromInput[i] = (TH2F*)SetHist2D(fHistPtPhiGammaFromPi0FromInput[i],"f", Form("Pt_Phi_Gamma_From_Pi0_From_%s",fParticleListNames[i+1].Data()),"#it{p}_{T}","#phi",
-                                                            nBinsPt, 0, 50, 100, 0, 2*TMath::Pi(), kTRUE);
+                                                            nBinsPt, 0, fMaxPt, 100, 0, 2*TMath::Pi(), kTRUE);
       fOutputContainer->Add(fHistPtPhiGammaFromPi0FromInput[i]);
 
     } else {
