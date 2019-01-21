@@ -87,7 +87,7 @@ AliFemtoManager* ConfigFemtoAnalysis() {
 
   AliFemtoEventReaderAODChain *Reader = new AliFemtoEventReaderAODChain();
   Reader->SetUseMultiplicity(AliFemtoEventReaderAODChain::kCentrality);
-  Reader->SetFilterBit(8);
+  Reader->SetFilterBit(7);
   //Reader->SetDCAglobalTrack(kTRUE);
   Reader->SetpA2013(kTRUE);
   
