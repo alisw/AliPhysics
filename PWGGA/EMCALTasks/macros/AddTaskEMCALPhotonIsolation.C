@@ -7,7 +7,24 @@
   /// \author Lucile Ronflette <lucile.ronflette@cern.ch>, SUBATECH, Nantes
   /// \author Davide Francesco Lodato <davide.francesco.lodato@cern.ch>, Utrecht University
   /// \author Marco Marquard <marco.marquard@cern.ch>, University Frankfurt am Main
+  /// \author Erwann Masson <Erwann.Masson@subatech.in2p3.fr>, SUBATECH, Nantes
   ///////////////////////////////////////////////////////////////////////////
+
+#if !defined(__CINT__) || defined(__MAKECINT__)
+
+#include "TString.h"
+#include "TSystem.h"
+#include "TROOT.h"
+
+#include "AliAnalysisManager.h"
+#include "AliAnalysisTaskEMCALPhotonIsolation.h"
+
+R__ADD_INCLUDE_PATH($ALICE_PHYSICS)
+
+#include "PWGGA/EMCALTasks/macros/config_PhotonIsolation.C"
+
+#endif
+
 
 AliAnalysisTaskEMCALPhotonIsolation* AddTaskEMCALPhotonIsolation(
                                                                  const char*            periodstr                 = "LHC11c",
@@ -140,47 +157,50 @@ AliAnalysisTaskEMCALPhotonIsolation* AddTaskEMCALPhotonIsolation(
   // #### Define analysis task
   AliAnalysisTaskEMCALPhotonIsolation* task = new AliAnalysisTaskEMCALPhotonIsolation("Analysis",bHisto);
   
-  TString configFile("config_PhotonIsolation.C"); // Name of config file
-  //  if(gSystem->AccessPathName(configFile.Data())){ // Check for exsisting file and delete it
-  //    gSystem->Exec(Form("rm %s",configFile.Data()));
-  //  }
-
-  if(configBasePath.IsNull()){ // Check if a specific config should be used and copy appropriate file
-    configBasePath="$ALICE_PHYSICS/PWGGA/EMCALTasks/macros";
-    gSystem->Exec(Form("cp %s/%s .",configBasePath.Data(),configFile.Data()));
-  }
-  else if(configBasePath.Contains("alien:///")){
-    gSystem->Exec(Form("alien_cp %s/%s .",configBasePath.Data(),configFile.Data()));
-  }
-  else{
-    gSystem->Exec(Form("cp %s/%s .",configBasePath.Data(),configFile.Data()));
-  }
-
-  configBasePath=Form("%s/",gSystem->pwd());
-  ifstream configIn; // Open config file for hash calculation
-  configIn.open(configFile);
-  TString configStr;
-  configStr.ReadFile(configIn);
-  TString configMD5 = configStr.MD5();
-  configMD5.Resize(5); // Short hash value for usable extension
-  TString configFileMD5 = configFile;
-  TDatime time; // Get timestamp
-  Int_t timeStamp = time.GetTime();
-  configFileMD5.ReplaceAll(".C",Form("_%s_%i.C",configMD5.Data(),timeStamp));
-
-  if(gSystem->AccessPathName(configFileMD5.Data())){ // Add additional identifier if file exists
-    gSystem->Exec(Form("mv %s %s",configFile.Data(),configFileMD5.Data()));
-  }
-  else{
-    while(!gSystem->AccessPathName(configFileMD5.Data())){
-      configFileMD5.ReplaceAll(".C","_1.C");
-    }
-    gSystem->Exec(Form("mv %s %s",configFile.Data(),configFileMD5.Data()));
-  }
-
-  TString configFilePath(configBasePath+"/"+configFileMD5);
-  gROOT->LoadMacro(configFilePath.Data());
-  Printf("Path of config file: %s\n",configFilePath.Data());
+//  TString configFile("config_PhotonIsolation.C"); // Name of config file
+//  //  if(gSystem->AccessPathName(configFile.Data())){ // Check for exsisting file and delete it
+//  //    gSystem->Exec(Form("rm %s",configFile.Data()));
+//  //  }
+//
+//  if(configBasePath.IsNull()){ // Check if a specific config should be used and copy appropriate file
+//    configBasePath="$ALICE_PHYSICS/PWGGA/EMCALTasks/macros";
+//    gSystem->Exec(Form("cp %s/%s .",configBasePath.Data(),configFile.Data()));
+//  }
+//  else if(configBasePath.Contains("alien:///")){
+//    gSystem->Exec(Form("alien_cp %s/%s .",configBasePath.Data(),configFile.Data()));
+//  }
+//  else{
+//    gSystem->Exec(Form("cp %s/%s .",configBasePath.Data(),configFile.Data()));
+//  }
+//
+//  configBasePath=Form("%s/",gSystem->pwd());
+//  TMD5* MD5calc = new TMD5();
+//  TMD5* MD5sum = MD5calc->FileChecksum(configFile.Data());
+//  TString configMD5 = MD5sum->AsString();
+//  //configMD5.Resize(7); // Short hash value for usable extension
+//  TString configFileMD5 = configFile;
+//  //TDatime time; // Get timestamp
+//  //Int_t timeStamp = time.GetTime();
+//  configFileMD5.ReplaceAll(".C",Form("_%s.C",configMD5.Data()));
+//
+//  if(gSystem->AccessPathName(configFileMD5.Data())){ // Add additional identifier if file exists
+//    gSystem->Exec(Form("mv %s %s",configFile.Data(),configFileMD5.Data()));
+//  }
+//  else{
+//    //while(!gSystem->AccessPathName(configFileMD5.Data())){
+//    //  configFileMD5.ReplaceAll(".C","_1.C");
+//    //}
+//    //gSystem->Exec(Form("mv %s %s",configFile.Data(),configFileMD5.Data()));
+//    gSystem->Exec(Form("rm %s",configFile.Data()));
+//  }
+//
+//  TString configFilePath(configBasePath+"/"+configFileMD5);
+#if defined(__CLING__)
+  config_PhotonIsolation();
+#elif defined(__CINT__)
+  gROOT->LoadMacro("$ALICE_PHYSICS/PWGGA/EMCALTasks/macros/config_PhotonIsolation.C");
+#endif
+//  Printf("Path of config file: %s\n",configFilePath.Data());
 
   // Set histrogram bins and ranges
   task->GetHistogramRangesAndBinning()->SetHistoEtaRangeAndNBins(-0.7, 0.7, 96);                                                 // 2 SM = 96 cells in eta
