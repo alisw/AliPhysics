@@ -335,6 +335,8 @@ AliAnalysisTaskGammaCalo::AliAnalysisTaskGammaCalo(): AliAnalysisTaskSE(),
   fEnergyRatioinJets(NULL),
   fEnergyRatioGamma1(NULL),
   fEnergyRatioGamma1inJets(NULL),
+  fEnergyRatioGamma1Helped(NULL),
+  fEnergyRatioGamma1HelpedinJets(NULL),
   fVectorJetPt(0),
   fVectorJetPx(0),
   fVectorJetPy(0),
@@ -695,6 +697,8 @@ AliAnalysisTaskGammaCalo::AliAnalysisTaskGammaCalo(const char *name):
   fEnergyRatioinJets(NULL),
   fEnergyRatioGamma1(NULL),
   fEnergyRatioGamma1inJets(NULL),
+  fEnergyRatioGamma1Helped(NULL),
+  fEnergyRatioGamma1HelpedinJets(NULL),
   fVectorJetPt(0),
   fVectorJetPx(0),
   fVectorJetPy(0),
@@ -1723,6 +1727,8 @@ void AliAnalysisTaskGammaCalo::UserCreateOutputObjects(){
         fEnergyRatioinJets                             = new TH1F*[fnCuts];
         fEnergyRatioGamma1                             = new TH1F*[fnCuts];
         fEnergyRatioGamma1inJets                       = new TH1F*[fnCuts];
+        fEnergyRatioGamma1Helped                       = new TH1F*[fnCuts];
+        fEnergyRatioGamma1HelpedinJets                 = new TH1F*[fnCuts];
       }
       if(fDoJetQA){
         tTreeJetPi0Correlations                      = new TTree*[fnCuts];
@@ -2183,6 +2189,12 @@ void AliAnalysisTaskGammaCalo::UserCreateOutputObjects(){
           fEnergyRatioGamma1inJets[iCut]      = new TH1F("MC_EnergyFracGamma_inJets", "MC_EnergyFracGamma_inJets", 50, 0 ,1);
           fEnergyRatioGamma1inJets[iCut]->SetXTitle("Energy fraction if Label 1 is Gamma (NLabels > 1) in Jets");
           fTrueJetHistograms[iCut]->Add(fEnergyRatioGamma1inJets[iCut]);
+          fEnergyRatioGamma1Helped[iCut]      = new TH1F("MC_EnergyFracGamma_Helped", "MC_EnergyFracGamma_Helped", 50, 0 ,1);
+          fEnergyRatioGamma1Helped[iCut]->SetXTitle("Energy photon if NLabels > 1");
+          fTrueJetHistograms[iCut]->Add(fEnergyRatioGamma1Helped[iCut]);
+          fEnergyRatioGamma1HelpedinJets[iCut]      = new TH1F("MC_EnergyFracGamma_Helped_inJets", "MC_EnergyFracGamma_Helped_inJets", 50, 0 ,1);
+          fEnergyRatioGamma1HelpedinJets[iCut]->SetXTitle("Energy photon if NLabels > 1 in Jets");
+          fTrueJetHistograms[iCut]->Add(fEnergyRatioGamma1HelpedinJets[iCut]);
         }
 
         if(fDoJetQA){
@@ -3306,6 +3318,15 @@ void AliAnalysisTaskGammaCalo::ProcessClusters()
             fEnergyRatioGamma1[fiCut]->Fill(clus->GetClusterMCEdepFraction(k));
             if(InsideJet){
               fEnergyRatioGamma1inJets[fiCut]->Fill(clus->GetClusterMCEdepFraction(k));
+            }
+          }
+          if(pdgcode == 22){
+            Double_t energyGamma = clus->GetClusterMCEdepFraction(k)*clus->E();
+            if(energyGamma < 0.7){
+              fEnergyRatioGamma1Helped[fiCut]->Fill(energyGamma);
+              if(InsideJet){
+                fEnergyRatioGamma1HelpedinJets[fiCut]->Fill(energyGamma);
+              }
             }
           }
         }
