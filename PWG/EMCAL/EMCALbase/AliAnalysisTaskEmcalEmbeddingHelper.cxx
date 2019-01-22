@@ -116,6 +116,7 @@ AliAnalysisTaskEmcalEmbeddingHelper::AliAnalysisTaskEmcalEmbeddingHelper() :
   fMCRejectOutliers(false),
   fPtHardJetPtRejectionFactor(4),
   fZVertexCut(10),
+  fInternalZVertexCut(999),
   fMaxVertexDist(999),
   fInitializedConfiguration(false),
   fInitializedNewFile(false),
@@ -188,6 +189,7 @@ AliAnalysisTaskEmcalEmbeddingHelper::AliAnalysisTaskEmcalEmbeddingHelper(const c
   fMCRejectOutliers(false),
   fPtHardJetPtRejectionFactor(4),
   fZVertexCut(10),
+  fInternalZVertexCut(999),
   fMaxVertexDist(999),
   fInitializedConfiguration(false),
   fInitializedNewFile(false),
@@ -1581,10 +1583,23 @@ bool AliAnalysisTaskEmcalEmbeddingHelper::PythiaInfoFromCrossSectionFile(std::st
  */
 void AliAnalysisTaskEmcalEmbeddingHelper::UserExec(Option_t*)
 {
-  if (!fInitializedEmbedding) {
-    AliError("Chain not initialized before running! Setting up now.");
-    SetupEmbedding();
-  }
+	if (!fInitializedEmbedding) {
+		AliError("Chain not initialized before running! Setting up now.");
+		SetupEmbedding();
+	}
+	AliVEvent* internalevent = AliAnalysisTaskSE::InputEvent();                         
+	if (!internalevent) {                                                                             
+		Printf("ERROR: Could not retrieve event");   
+		return;                                                                                       
+	}                                                                                             
+	const AliVVertex *inputVert = internalevent -> GetPrimaryVertex();                              
+	Double_t inputVertex[3]={0,0,0};                                                               
+	inputVert->GetXYZ(inputVertex);                                                               
+	if(fInternalZVertexCut != 999 && TMath::Abs(inputVertex[2]) > fInternalZVertexCut) {           
+		AliDebug(3,Form("Event rejected due to internal Z vertex selection. Event Z vertex: %f, Z vertex cut: %f",inputVertex[2], fInternalZVertexCut));                                      
+		return ;                                                                                       
+	}                                                                                         
+
 
   // Apply internal event selection
   if (fUseInternalEventSelection) {

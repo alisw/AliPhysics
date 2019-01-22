@@ -55,7 +55,7 @@ AliBSDiJetTask * AddTaskBSDiJet(TString taskname, bool isAA, Double_t leadingPar
 		//embeddingHelper->SetFilePattern("alien:///alice/data/2015/LHC15o/000246844/pass1/AOD194/");
 		//embeddingHelper->SetFilePattern("alien:///alice/sim/2016/LHC16j5/15/246488/AOD200/");
 		//if (option.Contains("LHC15o")) gSystem->Exec(Form("alien_find /alice/sim/2016/LHC16j5/ AliAOD.root | grep AOD200 | perl -nle'print \"alien://\".$_' | sort -R | head -300 > embfile.txt"));
-		if (option.Contains("LHC15o")) gSystem->Exec(Form("alien_find /alice/sim/2016/LHC16j5/ AliAOD.root | grep AOD200 | perl -nle'print \"alien://\".$_' > embfile.txt"));
+		if (option.Contains("LHC15o")) gSystem->Exec(Form("alien_find /alice/sim/2016/LHC16j5/ AliAOD.root | grep AOD200 | perl -nle'print \"alien://\".$_' | head -1000 > embfile.txt"));
 		embeddingHelper->SetFileListFilename("./embfile.txt");
 
 		//embeddingHelper->SetFilePattern("alien:///alice/sim/2016/LHC16j5/%d/%d/AOD200/");
@@ -68,9 +68,10 @@ AliBSDiJetTask * AddTaskBSDiJet(TString taskname, bool isAA, Double_t leadingPar
 		embeddingHelper->SetRandomFileAccess(kTRUE);
 		// ... Start from a random event within each file
 		//embeddingHelper->SetRandomEventNumberAccess(kTRUE);
-		embeddingHelper->SetTriggerMask(AliVEvent::kINT7);
+		//embeddingHelper->SetTriggerMask(AliVEvent::kINT7);
 		embeddingHelper->SetZVertexCut(10);
-		//embeddingHelper->SetMaxVertexDistance(2);
+		embeddingHelper->SetInternalZVertexCut(10);
+		embeddingHelper->SetMaxVertexDistance(2);
 		//embeddingHelper->SetCentralityRange(centmin,centmax);
 		//embeddingHelper->SetUseManualInternalEventCuts(true) ;
 		// ... Set pt hard bin properties
