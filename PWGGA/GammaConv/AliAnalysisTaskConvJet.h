@@ -65,8 +65,16 @@ class AliAnalysisTaskConvJet : public AliAnalysisTaskEmcalJet {
       TString Add = "_";
       Add.Append(JetContainerName);
       Add.Append("_pT1000");
+      Bool_t ContainerAlreadyAdded = kFALSE;
+      for(Int_t i = 0; i < fJetContainersAdded; i++){
+        if(Add == fJetNameArray[i]){
+            ContainerAlreadyAdded = kTRUE;
+        }
+      }
         if(fJetContainersAdded < fNJetContainers){
-          AddJetContainer(JetContainerName, AliEmcalJet::kTPCfid, Radius);
+          if(!ContainerAlreadyAdded){
+            AddJetContainer(JetContainerName, AliEmcalJet::kTPCfid, Radius);
+          }
           fJetNameArray[fJetContainersAdded] = Add;
           fTrainconfigArray[fJetContainersAdded] = Trainconfig;
           vector<Double_t> JetPt;
@@ -97,8 +105,16 @@ class AliAnalysisTaskConvJet : public AliAnalysisTaskEmcalJet {
       TString AddTrue = "_";
       AddTrue.Append(TrueJetContainerName);
       AddTrue.Append("_pT1000");
+      Bool_t ContainerAlreadyAdded = kFALSE;
+      for(Int_t i = 0; i < fJetContainersAdded; i++){
+        if(AddRec == fJetNameArray[i]){
+            ContainerAlreadyAdded = kTRUE;
+        }
+      }
       if(fJetContainersAdded < fNJetContainers){
-        jetContRec = AddJetContainer(RecJetContainerName, AliEmcalJet::kTPCfid, Radius);
+        if(!ContainerAlreadyAdded){
+          jetContRec = AddJetContainer(RecJetContainerName, AliEmcalJet::kTPCfid, Radius);
+        }
         fJetNameArray[fJetContainersAdded] = AddRec;
         fTrainconfigArray[fJetContainersAdded] = Trainconfig;
         vector<Double_t> JetPt;
@@ -119,13 +135,15 @@ class AliAnalysisTaskConvJet : public AliAnalysisTaskEmcalJet {
         fJetContainersAdded++;
       }
       if(fTrueJetContainersAdded < fNTrueJetContainers){
-        AliParticleContainer *trackCont = AddParticleContainer("tracks");
-        AliClusterContainer *clusterCont = AddClusterContainer("caloClusters");
-        jetContRec->ConnectParticleContainer(trackCont);
-        jetContRec->ConnectClusterContainer(clusterCont);
-        jetContTrue = AddJetContainer(TrueJetContainerName, AliEmcalJet::kTPCfid, Radius);
-        jetContTrue->ConnectParticleContainer(trackCont);
-        jetContTrue->ConnectClusterContainer(clusterCont);
+        if(!ContainerAlreadyAdded){
+          AliParticleContainer *trackCont = AddParticleContainer("tracks");
+          AliClusterContainer *clusterCont = AddClusterContainer("caloClusters");
+          jetContRec->ConnectParticleContainer(trackCont);
+          jetContRec->ConnectClusterContainer(clusterCont);
+          jetContTrue = AddJetContainer(TrueJetContainerName, AliEmcalJet::kTPCfid, Radius);
+          jetContTrue->ConnectParticleContainer(trackCont);
+          jetContTrue->ConnectClusterContainer(clusterCont);
+        }
         fTrueJetNameArray[fTrueJetContainersAdded] = AddTrue;
         fTrueTrainconfigArray[fTrueJetContainersAdded] = Trainconfig;
         vector<Double_t> JetPt;
@@ -368,7 +386,7 @@ class AliAnalysisTaskConvJet : public AliAnalysisTaskEmcalJet {
   AliAnalysisTaskConvJet &operator=(const AliAnalysisTaskConvJet&);
 
   /// \cond CLASSIMP
-  ClassDef(AliAnalysisTaskConvJet, 6);
+  ClassDef(AliAnalysisTaskConvJet, 7);
   /// \endcond
 };
 #endif
