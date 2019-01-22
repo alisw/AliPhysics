@@ -316,20 +316,21 @@ class AliAnalysisTaskFlowModes : public AliAnalysisTaskSE
     TH2D*           fh2PIDProtonTPCnSigmaProton; //! TPC nSigma vs pT for selected protons (proton hypothesis)
     TH2D*           fh2PIDProtonTOFnSigmaProton; //! TOF nSigma vs pT for selected protons (proton hypothesis)
     
+    TH1F*           fhNUEWeightRefsPlus; //! containers for loading weights for given run
+    TH1F*           fhNUEWeightRefsMinus; //! container for loading weights for given run
 
-    TH1F*           fhNUEWeightRefsPlus[fNumCentralities]; //! containers for loading weights for given run
-    TH1F*           fhNUEWeightChargedPlus[fNumCentralities]; //! container for loading weights for given run
-    TH1F*           fhNUEWeightPionPlus[fNumCentralities]; //! container for loading weights for given run
-    TH1F*           fhNUEWeightKaonPlus[fNumCentralities]; //! container for loading weights for given run
-    TH1F*           fhNUEWeightProtonPlus[fNumCentralities]; //! container for loading weights for given run
+    TH1F*           fhNUEWeightChargedPlus; //! container for loading weights for given run
+    TH1F*           fhNUEWeightChargedMinus; //! container for loading weights for given run
 
-    TH1F*           fhNUEWeightRefsMinus[fNumCentralities]; //! container for loading weights for given run
-    TH1F*           fhNUEWeightChargedMinus[fNumCentralities]; //! container for loading weights for given run
-    TH1F*           fhNUEWeightPionMinus[fNumCentralities]; //! container for loading weights for given run
-    TH1F*           fhNUEWeightKaonMinus[fNumCentralities]; //! container for loading weights for given run
-    TH1F*           fhNUEWeightProtonMinus[fNumCentralities]; //! container for loading weights for given run
+    TH1F*           fhNUEWeightPionPlus; //! container for loading weights for given run
+    TH1F*           fhNUEWeightPionMinus; //! container for loading weights for given run
 
- 
+    TH1F*           fhNUEWeightKaonPlus; //! container for loading weights for given run
+    TH1F*           fhNUEWeightKaonMinus; //! container for loading weights for given run
+
+    TH1F*           fhNUEWeightProtonPlus; //! container for loading weights for given run
+    TH1F*           fhNUEWeightProtonMinus; //! container for loading weights for given run
+
     TComplex                fFlowVecQpos[fFlowNumHarmonicsMax][fFlowNumWeightPowersMax]; // flow vector array for flow calculation
     TComplex                fFlowVecQneg[fFlowNumHarmonicsMax][fFlowNumWeightPowersMax]; // flow vector array for flow calculation
     TComplex                fFlowVecPpos[fFlowNumHarmonicsMax][fFlowNumWeightPowersMax][fFlowPOIsPtNumBins]; // flow vector array for flow calculation
