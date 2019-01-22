@@ -60,6 +60,8 @@ ClassImp(AliSigma0PhotonMotherCuts)
       fHistArmenterosAfter(nullptr),
       fHistMixedInvMassPt(nullptr),
       fHistMixedInvMassBinnedMultPt(),
+	  fHistDiffPGamma(),
+	  fHistDiffPLambda(),
       fHistLambdaPtPhi(nullptr),
       fHistLambdaPtEta(nullptr),
       fHistLambdaMassPt(nullptr),
@@ -146,6 +148,8 @@ AliSigma0PhotonMotherCuts::AliSigma0PhotonMotherCuts(
       fHistArmenterosAfter(nullptr),
       fHistMixedInvMassPt(nullptr),
       fHistMixedInvMassBinnedMultPt(),
+	  fHistDiffPGamma(),
+	  fHistDiffPLambda(),
       fHistLambdaPtPhi(nullptr),
       fHistLambdaPtEta(nullptr),
       fHistLambdaMassPt(nullptr),
@@ -228,12 +232,31 @@ void AliSigma0PhotonMotherCuts::SingleV0QA(
     fHistPhotonMassPt->Fill(photon.GetPt(), photon.GetMass());
   }
 
+  for (auto photon1 = photonCandidates.begin(); photon1 < photonCandidates.end(); ++photon1) {
+    for (auto photon2 = photon1 + 1; photon2 < photonCandidates.end(); ++photon2) {
+      fHistDiffPGamma[0]->Fill(photon1->GetPx() - photon2->GetPx());
+      fHistDiffPGamma[1]->Fill(photon1->GetPy() - photon2->GetPy());
+      fHistDiffPGamma[2]->Fill(photon1->GetPz() - photon2->GetPz());
+      fHistDiffPGamma[3]->Fill(photon1->GetP() - photon2->GetP());
+    }
+  }
+
   for (const auto &lambda : lambdaCandidates) {
     // Lambda QA - keep track of kinematics
     fHistLambdaPtPhi->Fill(lambda.GetPt(), lambda.GetPhi());
     fHistLambdaPtEta->Fill(lambda.GetPt(), lambda.GetEta());
     fHistLambdaMassPt->Fill(lambda.GetPt(), lambda.GetMass());
   }
+
+  for (auto lambda1 = lambdaCandidates.begin(); lambda1 < lambdaCandidates.end(); ++lambda1) {
+    for (auto lambda2 = lambda1 + 1; lambda2 < lambdaCandidates.end(); ++lambda2) {
+      fHistDiffPLambda[0]->Fill(lambda1->GetPx() - lambda2->GetPx());
+      fHistDiffPLambda[1]->Fill(lambda1->GetPy() - lambda2->GetPy());
+      fHistDiffPLambda[2]->Fill(lambda1->GetPz() - lambda2->GetPz());
+      fHistDiffPLambda[3]->Fill(lambda1->GetP() - lambda2->GetP());
+    }
+  }
+
 }
 
 //____________________________________________________________________________________________________
@@ -869,6 +892,20 @@ void AliSigma0PhotonMotherCuts::InitCutHistograms(TString appendix) {
     fHistograms->Add(fHistPtRapidity);
     fHistograms->Add(fHistArmenterosBefore);
     fHistograms->Add(fHistArmenterosAfter);
+
+    TString coordinate[4] = {"x", "y", "z", "tot"};
+    for (int i = 0; i < 4; ++i) {
+      fHistDiffPGamma[i] = new TH1F(
+              Form("fHistDiffPGamma_%s", coordinate[i].Data()),
+              Form("; diff p_{%s,#gamma} (GeV/c); Entries", coordinate[i].Data()),
+              1001, -1, 1);
+      fHistDiffPLambda[i] = new TH1F(
+              Form("fHistDiffPLambda_%s", coordinate[i].Data()),
+              Form("; diff p_{%s,#Lambda} (GeV/c); Entries", coordinate[i].Data()),
+              1001, -1, 1);
+      fHistograms->Add(fHistDiffPGamma[i]);
+         fHistograms->Add(fHistDiffPLambda[i]);
+    }
 
     fHistLambdaPtPhi =
         new TH2F("fHistLambdaPtPhi", "; #it{p}_{T} (GeV/#it{c}); #phi (rad)",

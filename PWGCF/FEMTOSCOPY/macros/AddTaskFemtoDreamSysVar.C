@@ -54,6 +54,17 @@ AliAnalysisTaskSE* AddTaskFemtoDreamSysVar(bool isMC = false,
   }
   AliFemtoDreamEventCuts *evtCuts = AliFemtoDreamEventCuts::StandardCutsRun2();
   evtCuts->SetMinimalBooking(true);
+  if (suffix == "50") {
+    evtCuts->SetMultiplicityPercentileMax(10.);
+  } else if (suffix == "51") {
+    evtCuts->SetMultiplicityPercentileMax(1.);
+  } else if (suffix == "52") {
+    evtCuts->SetMultiplicityPercentileMax(0.1);
+  } else if (suffix == "53") {
+    evtCuts->SetMultiplicityPercentileMax(0.05);
+  } else if (suffix == "54") {
+    evtCuts->SetMultiplicityPercentileMax(0.01);
+  }
 
   //Track Cuts
   AliFemtoDreamTrackCuts *TrackCuts = AliFemtoDreamTrackCuts::PrimProtonCuts(
