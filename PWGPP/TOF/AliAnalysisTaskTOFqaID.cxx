@@ -1002,19 +1002,19 @@ void AliAnalysisTaskTOFqaID::AddPidHisto(THashList* list, Int_t charge, TString 
   CreateH(hMatchedBetaVsP, TH2F, "matched trk #beta vs. p#it{p} (GeV/#it{c});#beta", fnBinsPt, fVariableBinsPt, 150, 0., 1.5);
 
   optDraw = "";
-  CreateH(hMatchedMass, TH1F, "matched p.le MM (GeV/#it{c}^{2});entries", 500, 0., 5.);
+  CreateH(hMatchedMass, TH1F, "matched p.le M;M (GeV/#it{c}^{2});entries", 500, 0., 5.);
 
-  CreateH(hMatchedMass2, TH1F, "matched p.le M^{2}M^{2} (GeV^{2}/c^{4});entries", 500, 0., 10.);
+  CreateH(hMatchedMass2, TH1F, "matched p.le M^{2};M^{2} (GeV^{2}/c^{4});entries", 500, 0., 10.);
 
-  CreateH(hExpTimePiVsStrip, TH2F, "matched trk t_{TOF}-t_{#pi,exp} vs stripstrip (#eta);t_{TOF}-t_{#pi,exp} (ps)", 92, 0, 92, fnExpTimeSmallBins, fExpTimeSmallRangeMin, fExpTimeSmallRangeMax);
+  CreateH(hExpTimePiVsStrip, TH2F, "matched trk t_{TOF}-t_{#pi,exp} vs strip;strip (#eta);t_{TOF}-t_{#pi,exp} (ps)", 92, 0, 92, fnExpTimeSmallBins, fExpTimeSmallRangeMin, fExpTimeSmallRangeMax);
 
   optDraw = "COLZ";
-  CreateH(hExpTimePiT0Sub1GeV, TH2F, "trk (0.95#leq #it{p}_{T}#leq 1.05 GeV/#it{c}) t_{TOF}-t_{#pi,exp}-t_{0}^{TOF}n. tracks used for t_{0}^{TOF};t_{TOF}-t_{#pi,exp}-t_{0}^{TOF}", 500, 0., 500., fnExpTimeBins, fExpTimeRangeMin, fExpTimeRangeMax);
+  CreateH(hExpTimePiT0Sub1GeV, TH2F, "trk (0.95#leq #it{p}_{T}#leq 1.05 GeV/#it{c}) t_{TOF}-t_{#pi,exp}-t_{0}^{TOF};n. tracks used for t_{0}^{TOF};t_{TOF}-t_{#pi,exp}-t_{0}^{TOF}", 500, 0., 500., fnExpTimeBins, fExpTimeRangeMin, fExpTimeRangeMax);
 
   optDraw = "";
-  CreateH(hExpTimePiFillSub, TH1F, "trk t_{TOF}-t_{#pi,exp}-t_{0,fill}t_{TOF}-t_{#pi,exp} -t_{0,fill} (ps);entries", 6150, -75030., 75030.);
+  CreateH(hExpTimePiFillSub, TH1F, "trk t_{TOF}-t_{#pi,exp}-t_{0,fill};t_{TOF}-t_{#pi,exp} -t_{0,fill} (ps);entries", 6150, -75030., 75030.);
 
-  CreateH(hExpTimePi, TH1F, "matched trk t_{TOF}-t_{#pi,exp}t_{TOF}-t_{#pi,exp} (ps);tracks", 6150, -75030., 75030.);
+  CreateH(hExpTimePi, TH1F, "matched trk t_{TOF}-t_{#pi,exp};t_{TOF}-t_{#pi,exp} (ps);tracks", 6150, -75030., 75030.);
 
   CreateH(hExpTimePiVsP, TH2F, "matched trk t_{TOF}-t_{#pi,exp};#it{p} (GeV/#it{c});t_{TOF}-t_{#pi,exp} (ps)", fnBinsPt, fVariableBinsPt, fnExpTimeBins, fExpTimeRangeMin, fExpTimeRangeMax);
   HistogramMakeUp(hExpTimePiVsP, kRed + 2);
