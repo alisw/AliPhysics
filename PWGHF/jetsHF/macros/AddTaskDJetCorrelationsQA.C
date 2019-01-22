@@ -8,7 +8,7 @@
 
 
 
-AliAnalysisTaskDJetCorrelationsQA *AddTaskDFilterAndCorrelationsQA(
+AliAnalysisTaskDJetCorrelationsQA *AddTaskDJetCorrelationsQA(
   AliAnalysisTaskDJetCorrelationsQA::ECandidateType cand = AliAnalysisTaskDJetCorrelationsQA::kDstartoKpipi,
   TString filename = "DStartoKpipiCuts.root",
   Bool_t theMCon = kFALSE,
