@@ -360,10 +360,14 @@ void AliAnalysisTaskSEImpParResSparse::UserCreateOutputObjects()
 
     // mfaggin
     // more axes for SPD modules info storage 
-    Int_t nbinsImpParSparse_rphi_wSPDmod[7];
-    Double_t limitLowImpParSparse_rphi_wSPDmod[7];
-    Double_t limitUpImpParSparse_rphi_wSPDmod[7];
-    TString axTitle_rphi_wSPDmod[7];
+    //Int_t nbinsImpParSparse_rphi_wSPDmod[7];
+    //Double_t limitLowImpParSparse_rphi_wSPDmod[7];
+    //Double_t limitUpImpParSparse_rphi_wSPDmod[7];
+    //TString axTitle_rphi_wSPDmod[7];
+    Int_t nbinsImpParSparse_rphi_wSPDmod[6];
+    Double_t limitLowImpParSparse_rphi_wSPDmod[6];
+    Double_t limitUpImpParSparse_rphi_wSPDmod[6];
+    TString axTitle_rphi_wSPDmod[6];
     if (fStoreSPDmodulesInfo) {
         printf("\n--- Adding info on SPD modules\n");
         //  1) d0 
@@ -398,13 +402,15 @@ void AliAnalysisTaskSEImpParResSparse::UserCreateOutputObjects()
         limitUpImpParSparse_rphi_wSPDmod[5] = 3.5;
         axTitle_rphi_wSPDmod[5] = "module ID in SPDouter"; 
         //  7) z of primary vertex 
-        nbinsImpParSparse_rphi_wSPDmod[6] = 50;
-        limitLowImpParSparse_rphi_wSPDmod[6] = -20;
-        limitUpImpParSparse_rphi_wSPDmod[6] = 20;
-        axTitle_rphi_wSPDmod[6] = "z of primary vertex (cm)";
+        //nbinsImpParSparse_rphi_wSPDmod[6] = 50;
+        //limitLowImpParSparse_rphi_wSPDmod[6] = -20;
+        //limitUpImpParSparse_rphi_wSPDmod[6] = 20;
+        //axTitle_rphi_wSPDmod[6] = "z of primary vertex (cm)";
 
-        fImpParrphiSparsePtEtaPhi_SPDmod=new THnSparseF("fImpParrphiSparsePtEtaPhi_SPDmod","fImpParrphiSparsePtEtaPhi_SPDmod",7,nbinsImpParSparse_rphi_wSPDmod,limitLowImpParSparse_rphi_wSPDmod,limitUpImpParSparse_rphi_wSPDmod);
-        for(Int_t iax=0; iax<7; iax++) fImpParrphiSparsePtEtaPhi_SPDmod->GetAxis(iax)->SetTitle(axTitle_rphi_wSPDmod[iax].Data());
+        //fImpParrphiSparsePtEtaPhi_SPDmod=new THnSparseF("fImpParrphiSparsePtEtaPhi_SPDmod","fImpParrphiSparsePtEtaPhi_SPDmod",7,nbinsImpParSparse_rphi_wSPDmod,limitLowImpParSparse_rphi_wSPDmod,limitUpImpParSparse_rphi_wSPDmod);
+        //for(Int_t iax=0; iax<7; iax++) fImpParrphiSparsePtEtaPhi_SPDmod->GetAxis(iax)->SetTitle(axTitle_rphi_wSPDmod[iax].Data());
+        fImpParrphiSparsePtEtaPhi_SPDmod=new THnSparseF("fImpParrphiSparsePtEtaPhi_SPDmod","fImpParrphiSparsePtEtaPhi_SPDmod",6,nbinsImpParSparse_rphi_wSPDmod,limitLowImpParSparse_rphi_wSPDmod,limitUpImpParSparse_rphi_wSPDmod);
+        for(Int_t iax=0; iax<6; iax++) fImpParrphiSparsePtEtaPhi_SPDmod->GetAxis(iax)->SetTitle(axTitle_rphi_wSPDmod[iax].Data());
         BinLogAxis(fImpParrphiSparsePtEtaPhi_SPDmod, 1);
         fOutput->Add(fImpParrphiSparsePtEtaPhi_SPDmod);
     }
@@ -945,7 +951,8 @@ void AliAnalysisTaskSEImpParResSparse::UserExec(Option_t */*option*/)
         //else if(fESDtrackCuts->GetClusterRequirementITS(AliESDtrackCuts::kSPD)==AliESDtrackCuts::kBoth)spdreq=3;
 
         // store SPD modules info (mfaggin)
-        Double_t pointrphi_wSPDmod[7];
+        //Double_t pointrphi_wSPDmod[7];
+        Double_t pointrphi_wSPDmod[6];
         if (fStoreSPDmodulesInfo) {
             for(UInt_t i = 0; i < 2; i++)
             {
@@ -976,7 +983,7 @@ void AliAnalysisTaskSEImpParResSparse::UserExec(Option_t */*option*/)
                     pointrphi_wSPDmod[5] = detID;
                 }
             }
-            pointrphi_wSPDmod[6] = zvtx;
+            //pointrphi_wSPDmod[6] = zvtx;
         }
 
         if(fTrackType==0){
