@@ -88,7 +88,7 @@ AliAnalysisTaskSEDs::AliAnalysisTaskSEDs() : AliAnalysisTaskSE(),
   fFillSparse(kTRUE),
   fFillSparseDplus(kFALSE),
   fFillImpParSparse(kFALSE),
-  fFillAcceptanceLevel(kFALSE),
+  fFillAcceptanceLevel(kTRUE),
   fDoRotBkg(kFALSE),
   fDoBkgPhiSB(kFALSE),
   fDoCutV0multTPCout(kFALSE),
@@ -195,7 +195,7 @@ AliAnalysisTaskSEDs::AliAnalysisTaskSEDs(const char *name, AliRDHFCutsDstoKKpi *
   fFillSparse(kTRUE),
   fFillSparseDplus(kFALSE),
   fFillImpParSparse(kFALSE),
-  fFillAcceptanceLevel(kFALSE),
+  fFillAcceptanceLevel(kTRUE),
   fDoRotBkg(kTRUE),
   fDoBkgPhiSB(kTRUE),
   fDoCutV0multTPCout(kFALSE),
@@ -1639,26 +1639,22 @@ void AliAnalysisTaskSEDs::FillMCGenAccHistos(TClonesArray *arrayMC, AliAODMCHead
           isFidAcc = fAnalysisCuts->IsInFiducialAcceptance(pt, rapid);
           isDaugInAcc = CheckDaugAcc(arrayMC, nProng, labDau);
 
-          if (isDaugInAcc)
+          if ((fFillAcceptanceLevel && isFidAcc && isDaugInAcc) || (!fFillAcceptanceLevel && TMath::Abs(rapid)<0.5))
           {
-            if (fFillAcceptanceLevel || (!fFillAcceptanceLevel && isFidAcc))
+            Double_t var4nSparseAcc[knVarForSparseAcc] = {pt, rapid * 10, nTracklets};
+            Double_t ptWeight = 1.;
+            if (fUseWeight && fHistoPtWeight)
             {
-              Double_t var4nSparseAcc[knVarForSparseAcc] = {pt, rapid * 10, nTracklets};
-              Double_t ptWeight = 1.;
-              if (fUseWeight && fHistoPtWeight)
-              {
-                AliDebug(2, "Using Histogram as Pt weight function");
-                ptWeight = GetPtWeightFromHistogram(pt);
-              }
-              if (orig == 4)
-                fnSparseMC[0]->Fill(var4nSparseAcc, ptWeight);
-              if (orig == 5)
-                fnSparseMC[1]->Fill(var4nSparseAcc, ptWeight);
+              AliDebug(2, "Using Histogram as Pt weight function");
+              ptWeight = GetPtWeightFromHistogram(pt);
             }
+            if (orig == 4)
+              fnSparseMC[0]->Fill(var4nSparseAcc, ptWeight);
+            if (orig == 5)
+              fnSparseMC[1]->Fill(var4nSparseAcc, ptWeight);
           }
         }
       }
-
       if (fFillSparseDplus && TMath::Abs(mcPart->GetPdgCode()) == 411)
       {
         Int_t orig = AliVertexingHFUtils::CheckOrigin(arrayMC, mcPart, kTRUE); //Prompt = 4, FeedDown = 5
@@ -1683,22 +1679,19 @@ void AliAnalysisTaskSEDs::FillMCGenAccHistos(TClonesArray *arrayMC, AliAODMCHead
           isFidAcc = fAnalysisCuts->IsInFiducialAcceptance(pt, rapid);
           isDaugInAcc = CheckDaugAcc(arrayMC, nProng, labDau);
 
-          if (isDaugInAcc)
+          if ((fFillAcceptanceLevel && isFidAcc && isDaugInAcc) || (!fFillAcceptanceLevel && TMath::Abs(rapid)<0.5))
           {
-            if (fFillAcceptanceLevel || (!fFillAcceptanceLevel && isFidAcc))
+            Double_t var4nSparseAcc[knVarForSparseAcc] = {pt, rapid * 10, nTracklets};
+            Double_t ptWeight = 1.;
+            if (fUseWeight && fHistoPtWeight)
             {
-              Double_t var4nSparseAcc[knVarForSparseAcc] = {pt, rapid * 10, nTracklets};
-              Double_t ptWeight = 1.;
-              if (fUseWeight && fHistoPtWeight)
-              {
-                AliDebug(2, "Using Histogram as Pt weight function");
-                ptWeight = GetPtWeightFromHistogram(pt);
-              }
-              if (orig == 4)
-                fnSparseMCDplus[0]->Fill(var4nSparseAcc, ptWeight);
-              if (orig == 5)
-                fnSparseMCDplus[1]->Fill(var4nSparseAcc, ptWeight);
+              AliDebug(2, "Using Histogram as Pt weight function");
+              ptWeight = GetPtWeightFromHistogram(pt);
             }
+            if (orig == 4)
+              fnSparseMCDplus[0]->Fill(var4nSparseAcc, ptWeight);
+            if (orig == 5)
+              fnSparseMCDplus[1]->Fill(var4nSparseAcc, ptWeight);
           }
         }
       }
