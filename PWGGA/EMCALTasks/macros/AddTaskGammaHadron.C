@@ -13,11 +13,32 @@ AliAnalysisTaskGammaHadron* AddTaskGammaHadron(
 		const char *trackName       = "usedefault",
 		const char *clusName        = "usedefault",
 		const char *taskname        = "AliAnalysisTask",
-		const char *suffix          = ""
+		const char *suffix          = "",
+		const char *poolFilePath    = "",                 //..Path to file with pool manager. e.g. /alice/cern.ch/user/ ... /TriggerPool.root
+		const char *poolFileName    = "TriggerPool.root"
 )
-{  
-	  return AliAnalysisTaskGammaHadron::AddTaskGammaHadron(InputGammaOrPi0,InputSeMe,InputMCorData,
+{
+		AliAnalysisTaskGammaHadron * task = AliAnalysisTaskGammaHadron::AddTaskGammaHadron(InputGammaOrPi0,InputSeMe,InputMCorData,
 			  	  	  	  	  	  	  	  	  	  	  	   evtTriggerType,evtMixingType,isRun2,
 			  	  	  	  	  	  	  	  	  	  	  	   trackptcut,clusEcut,SavePool,
 			  	  	  	  	  	  	  	  	  	  	  	   trackName,clusName,taskname,suffix);
+
+		if (InputSeMe == 2) {
+			printf("AddTask: Adding mixed event pool\n");
+			// For Mixed Trigger Mode, copy alien file
+			printf("Copying file from alien:/%s/%s\n",poolFilePath,poolFileName);
+			gSystem->Exec(Form("alien_cp alien:/%s/%s .",poolFilePath,poolFileName));
+			TFile * fPoolFile = TFile::Open(poolFileName);
+			if (fPoolFile) {
+				AliEventPoolManager * fPool = 0x0; 
+				fPool = (AliEventPoolManager *) fPoolFile->Get("AliEventPoolManager");
+				if (fPool) {
+					task->SetExternalEventPoolManager(fPool);
+				} else printf("AddTask: Could not find pool manager\n");
+				fPoolFile->Close();
+			}
+		}
+
+		return task;
+//	  return AliAnalysisTaskGammaHadron::AddTaskGammaHadron(InputGammaOrPi0,InputSeMe,InputMCorData,
 }
