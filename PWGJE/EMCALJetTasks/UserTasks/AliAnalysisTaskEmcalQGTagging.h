@@ -68,6 +68,7 @@ class AliAnalysisTaskEmcalQGTagging : public AliAnalysisTaskEmcalJet {
   void SetCentralitySelectionOn(Bool_t t)                   { fCentSelectOn = t;}
   void SetOneConstSelectionOn(Bool_t t)                     { fOneConstSelectOn =t;}
    void SetCheckTracksOn(Bool_t t)                         { fTrackCheckPlots =t;}
+   void SetCheckResolution(Bool_t t)                       {fCheckResolution = t;} 
    void SetSubjetCutoff(Float_t t)                            {fSubjetCutoff = t;}
    void SetHardCutoff(Float_t t)                            {fHardCutoff = t;}
    void SetDoTwoTrack(Bool_t t)                             {fDoTwoTrack = t;} 
@@ -100,7 +101,8 @@ class AliAnalysisTaskEmcalQGTagging : public AliAnalysisTaskEmcalJet {
 
   Int_t                              SelectTrigger(Float_t minpT, Float_t maxpT);
   Double_t                           RelativePhi(Double_t mphi, Double_t vphi);
-  void                                RecursiveParents(AliEmcalJet *fJet,AliJetContainer *fJetCont, Int_t ReclusterAlgo);
+  void                                RecursiveParents(AliEmcalJet *fJet,AliJetContainer *fJetCont);
+  void                                RecursiveParentsMCAverage(AliEmcalJet *fJet,Int_t km, Double_t &aver1, Double_t &aver2);
   void                               CheckSubjetResolution(AliEmcalJet *fJet,AliJetContainer *fJetCont, AliEmcalJet *fJetM,AliJetContainer *fJetContM);
   Bool_t                              CheckClosePartner(Int_t index, AliEmcalJet *fJet,AliVParticle *fTrack, AliParticleContainer *fTrackCont);
   Int_t                               fContainer;              // jets to be analyzed 0 for Base, 1 for subtracted. 
@@ -123,6 +125,7 @@ class AliAnalysisTaskEmcalQGTagging : public AliAnalysisTaskEmcalJet {
   Float_t                             fCentMax;                     // max centrality value
   Bool_t                              fOneConstSelectOn;                // switch on/off one constituent selection
   Bool_t                              fTrackCheckPlots;              //switch on qa plots
+  Bool_t                              fCheckResolution;              //check subjet energy resolution 
   Float_t                             fSubjetCutoff;                 //angular cutoff for subjets at det/gen level
   Float_t                             fMinPtConst;                   //constituent pt cutoff   
   Float_t                             fHardCutoff;                   //hard cutoff in the iterative declustering 
