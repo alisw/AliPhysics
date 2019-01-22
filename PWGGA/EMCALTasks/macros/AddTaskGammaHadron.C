@@ -13,9 +13,9 @@ AliAnalysisTaskGammaHadron* AddTaskGammaHadron(
 		const char *trackName       = "usedefault",
 		const char *clusName        = "usedefault",
 		const char *taskname        = "AliAnalysisTask",
-		const char *suffix          = "",
 		const char *poolFilePath    = "",                 //..Path to file with pool manager. e.g. /alice/cern.ch/user/ ... /TriggerPool.root
-		const char *poolFileName    = "TriggerPool.root"
+		const char *poolFileName    = "TriggerPool.root",
+		const char *suffix          = ""
 )
 {
 		AliAnalysisTaskGammaHadron * task = AliAnalysisTaskGammaHadron::AddTaskGammaHadron(InputGammaOrPi0,InputSeMe,InputMCorData,
