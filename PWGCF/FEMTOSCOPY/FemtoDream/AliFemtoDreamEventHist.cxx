@@ -35,7 +35,7 @@ AliFemtoDreamEventHist::AliFemtoDreamEventHist(bool centVsMultPlot) {
   fEventCutList->SetName("Event Cuts");
   fEventCutList->SetOwner();
 
-  fEvtCounter = new TH1F("EventCounter", "Event Counter", 11, 0, 11);
+  fEvtCounter = new TH1F("EventCounter", "Event Counter", 12, 0, 12);
   fEvtCounter->GetXaxis()->SetBinLabel(1, "Events");
   fEvtCounter->GetXaxis()->SetBinLabel(2, "AliEventCuts");
   fEvtCounter->GetXaxis()->SetBinLabel(3, "Phys. Sel.");
@@ -47,9 +47,10 @@ AliFemtoDreamEventHist::AliFemtoDreamEventHist(bool centVsMultPlot) {
   fEvtCounter->GetXaxis()->SetBinLabel(9, "V0C Mult Cleanup");
   fEvtCounter->GetXaxis()->SetBinLabel(10, "RefMult08 Cleanup");
   fEvtCounter->GetXaxis()->SetBinLabel(11, "Sphericity");
+  fEvtCounter->GetXaxis()->SetBinLabel(12, "Mult. percentile");
   fEventCutList->Add(fEvtCounter);
 
-  fCutConfig = new TProfile("CutConfig", "Cut Config", 20, 0, 20);
+  fCutConfig = new TProfile("CutConfig", "Cut Config", 21, 0, 21);
   fCutConfig->GetXaxis()->SetBinLabel(1, "Min Contrib");
   fCutConfig->GetXaxis()->SetBinLabel(2, "CutZvtx");
   fCutConfig->GetXaxis()->SetBinLabel(3, "Min Zvtx");
@@ -63,6 +64,7 @@ AliFemtoDreamEventHist::AliFemtoDreamEventHist(bool centVsMultPlot) {
   fCutConfig->GetXaxis()->SetBinLabel(11, "AliEvtCuts");
   fCutConfig->GetXaxis()->SetBinLabel(12, "Low Spher");
   fCutConfig->GetXaxis()->SetBinLabel(13, "Up Spher");
+  fCutConfig->GetXaxis()->SetBinLabel(14, "Mult. percentile");
   fEventCutList->Add(fCutConfig);
 
   fCentVsMultPlots = centVsMultPlot;
