@@ -1288,7 +1288,7 @@ void AliAnalysisTaskSEDs::UserExec(Option_t * /*option*/)
             cosPiKPhi = d->CosPiKPhiRFrameKKpi();
             cosPiKPhi = TMath::Abs(cosPiKPhi * cosPiKPhi * cosPiKPhi);
 
-            Double_t var4nSparse[knVarForSparse] = {invMass_KKpi, ptCand, deltaMassKK * 1000, dlen * 1000, dlenxy * 1000, normdlxy, cosp * 100, cospxy * 100, sigvert * 1000, cosPiDs * 10, cosPiKPhi * 10, TMath::Abs(normIP), nTracklets, evCentr, absimpparxy * 10000};
+            Double_t var4nSparse[knVarForSparse] = {invMass_KKpi, ptCand, deltaMassKK * 1000, dlen * 1000, dlenxy * 1000, normdlxy, cosp * 100, cospxy * 100, sigvert * 1000, cosPiDs * 10, cosPiKPhi * 10, TMath::Abs(normIP), absimpparxy * 10000, nTracklets, evCentr};
 
             if (!fReadMC)
             {
@@ -1315,7 +1315,7 @@ void AliAnalysisTaskSEDs::UserExec(Option_t * /*option*/)
             cosPiKPhi = d->CosPiKPhiRFramepiKK();
             cosPiKPhi = TMath::Abs(cosPiKPhi * cosPiKPhi * cosPiKPhi);
 
-            Double_t var4nSparse[knVarForSparse] = {invMass_piKK, ptCand, deltaMassKK * 1000, dlen * 1000, dlenxy * 1000, normdlxy, cosp * 100, cospxy * 100, sigvert * 1000, cosPiDs * 10, cosPiKPhi * 10, TMath::Abs(normIP), nTracklets, evCentr, absimpparxy * 10000};
+            Double_t var4nSparse[knVarForSparse] = {invMass_piKK, ptCand, deltaMassKK * 1000, dlen * 1000, dlenxy * 1000, normdlxy, cosp * 100, cospxy * 100, sigvert * 1000, cosPiDs * 10, cosPiKPhi * 10, TMath::Abs(normIP), absimpparxy * 10000, nTracklets, evCentr};
 
             if (!fReadMC)
             {
@@ -1785,17 +1785,22 @@ void AliAnalysisTaskSEDs::CreateCutVarsAndEffSparses()
   Double_t minMass = massDs - 0.5 * nInvMassBins * fMassBinSize;
   Double_t maxMass = massDs + 0.5 * nInvMassBins * fMassBinSize;
 
-  Int_t nTrklBins = 1;
-  if (fUseTrkl)
-    nTrklBins = 300;
-  Int_t nCentrBins = 1;
-  if (fUseCentrAxis)
-    nCentrBins = 101;
+  Int_t nSparseAxes = knVarForSparse;
+  Int_t nTrklBins = 300;
+  if (!fUseTrkl) {
+    nTrklBins = 1;
+    nSparseAxes--;
+  }
+  Int_t nCentrBins = 101;
+  if (!fUseCentrAxis) {
+    nCentrBins = 1;
+    nSparseAxes--;
+  }
 
-  Int_t nBinsReco[knVarForSparse] = {nInvMassBins, (Int_t)fPtLimits[fNPtBins], 30, 14, 14, 20, 10, 10, 14, 6, 6, 12, nTrklBins, nCentrBins, 30};
-  Double_t xminReco[knVarForSparse] = {minMass, 0., 0., 0., 0., 0., 90., 90., 0., 7., 0., 0., 1., 0., 0.};
-  Double_t xmaxReco[knVarForSparse] = {maxMass, fPtLimits[fNPtBins], 15., 70., 70., 10., 100., 100., 70., 10., 3., 6., 301., 101., 300.};
-  TString axis[knVarForSparse] = {"invMassDsAllPhi", "p_{T}", "#Delta Mass(KK)", "dlen", "dlen_{xy}", "normdl_{xy}", "cosP", "cosP_{xy}", "sigVert", "cosPiDs", "|cosPiKPhi^{3}|", "normIP", "N tracklets", Form("Percentile (%s)", fCentEstName.Data()), "ImpPar_{xy}"};
+  Int_t nBinsReco[knVarForSparse] = {nInvMassBins, (Int_t)fPtLimits[fNPtBins], 30, 20, 20, 20, 20, 20, 14, 6, 6, 12, 30, nTrklBins, nCentrBins};
+  Double_t xminReco[knVarForSparse] = {minMass, 0., 0., 0., 0., 0., 90., 90., 0., 7., 0., 0., 0., 1., 0.};
+  Double_t xmaxReco[knVarForSparse] = {maxMass, fPtLimits[fNPtBins], 15., 100., 100., 10., 100., 100., 70., 10., 3., 6., 300., 301., 101.};
+  TString axis[knVarForSparse] = {"invMassDsAllPhi", "p_{T}", "#Delta Mass(KK)", "dlen", "dlen_{xy}", "normdl_{xy}", "cosP", "cosP_{xy}", "sigVert", "cosPiDs", "|cosPiKPhi^{3}|", "normIP", "ImpPar_{xy}", "N tracklets", Form("Percentile (%s)", fCentEstName.Data())};
 
   if (fSystem == 1)
   { //pPb,PbPb
@@ -1806,19 +1811,19 @@ void AliAnalysisTaskSEDs::CreateCutVarsAndEffSparses()
     xminReco[0] = minMass;
     xmaxReco[0] = maxMass;
 
-    nBinsReco[2] = 12; //#Delta Mass(KK)
-    xmaxReco[2] = 12.;
+    nBinsReco[2] = 15; //#Delta Mass(KK)
+    xmaxReco[2] = 15.;
 
-    nBinsReco[3] = 7;  //dlen
-    nBinsReco[4] = 7;  //dlenxy
+    nBinsReco[3] = 10;  //dlen
+    nBinsReco[4] = 10;  //dlenxy
     nBinsReco[5] = 10; //ndlenxy
 
-    nBinsReco[6] = 6; //cosP
-    xminReco[6] = 97.;
+    nBinsReco[6] = 10; //cosP
+    xminReco[6] = 95.;
     xmaxReco[6] = 100.;
 
-    nBinsReco[7] = 6; //cosPxy
-    xminReco[7] = 97.;
+    nBinsReco[7] = 20; //cosPxy
+    xminReco[7] = 90.;
     xmaxReco[7] = 100.;
   }
 
@@ -1851,8 +1856,8 @@ void AliAnalysisTaskSEDs::CreateCutVarsAndEffSparses()
     }
     for (Int_t i = 2; i < 4; i++)
     {
-      fnSparseMC[i] = new THnSparseF(Form("fnSparseReco_%s", label[i - 2].Data()), Form("MC nSparse (Reco Step)- %s", label[i - 2].Data()), knVarForSparse, nBinsReco, xminReco, xmaxReco);
-      for (Int_t j = 0; j < knVarForSparse; j++)
+      fnSparseMC[i] = new THnSparseF(Form("fnSparseReco_%s", label[i - 2].Data()), Form("MC nSparse (Reco Step)- %s", label[i - 2].Data()), nSparseAxes, nBinsReco, xminReco, xmaxReco);
+      for (Int_t j = 0; j < nSparseAxes; j++)
       {
         fnSparseMC[i]->GetAxis(j)->SetTitle(Form("%s", axis[j].Data()));
       }
@@ -1861,8 +1866,8 @@ void AliAnalysisTaskSEDs::CreateCutVarsAndEffSparses()
       //Dplus
       if (fFillSparseDplus)
       {
-        fnSparseMCDplus[i] = new THnSparseF(Form("fnSparseRecoDplus_%s", label[i - 2].Data()), Form("MC nSparse D^{+} (Reco Step)- %s", label[i - 2].Data()), knVarForSparse, nBinsReco, xminReco, xmaxReco);
-        for (Int_t j = 0; j < knVarForSparse; j++)
+        fnSparseMCDplus[i] = new THnSparseF(Form("fnSparseRecoDplus_%s", label[i - 2].Data()), Form("MC nSparse D^{+} (Reco Step)- %s", label[i - 2].Data()), nSparseAxes, nBinsReco, xminReco, xmaxReco);
+        for (Int_t j = 0; j < nSparseAxes; j++)
         {
           fnSparseMCDplus[i]->GetAxis(j)->SetTitle(Form("%s", axis[j].Data()));
         }
@@ -1872,8 +1877,8 @@ void AliAnalysisTaskSEDs::CreateCutVarsAndEffSparses()
   } //end MC
   else
   {
-    fnSparse = new THnSparseF("fnSparse", "nSparse", knVarForSparse, nBinsReco, xminReco, xmaxReco);
-    for (Int_t j = 0; j < knVarForSparse; j++)
+    fnSparse = new THnSparseF("fnSparse", "nSparse", nSparseAxes, nBinsReco, xminReco, xmaxReco);
+    for (Int_t j = 0; j < nSparseAxes; j++)
     {
       fnSparse->GetAxis(j)->SetTitle(Form("%s", axis[j].Data()));
     }
