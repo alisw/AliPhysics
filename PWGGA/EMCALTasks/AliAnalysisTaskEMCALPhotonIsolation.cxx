@@ -4508,13 +4508,6 @@ void AliAnalysisTaskEMCALPhotonIsolation::ComputeConeAreaInEMCal(Double_t etaCan
   }
   else // Full cone area (EMCal centre)
     coneArea = fullConeArea;
-<<<<<<< HEAD
-
-  // Scaling by the non-projectiveness factor
-  if(fAnalysispPb)
-    coneArea *= proj_factor;
-=======
->>>>>>> parent of 7cf34b5... Adding a cone/UE area scaling factor for non-projectiveness
 }
 
   //__________________________________________________________________________
@@ -4540,13 +4533,6 @@ void AliAnalysisTaskEMCALPhotonIsolation::ComputeConeAreaInTPC(Double_t etaCand,
   }
   else // Full cone area (EMCal centre, cone not going outside TPC)
     coneArea = fullConeArea;
-<<<<<<< HEAD
-
-  // Scaling by the non-projectiveness factor
-  if(fAnalysispPb)
-    coneArea *= proj_factor;
-=======
->>>>>>> parent of 7cf34b5... Adding a cone/UE area scaling factor for non-projectiveness
 }
 
   //__________________________________________________________________________
@@ -4647,13 +4633,6 @@ void AliAnalysisTaskEMCALPhotonIsolation::ComputePhiBandAreaInEMCal(Double_t eta
 
   // Whatever the case, remove the cone area (computed in ComputeConeAreaInEMCal(), called before ComputePhiBandAreaInEMCal())
   phiBandArea -= coneArea;
-<<<<<<< HEAD
-
-  // Scaling by the non-projectiveness factor
-  if(fAnalysispPb)
-    phiBandArea *= proj_factor;
-=======
->>>>>>> parent of 7cf34b5... Adding a cone/UE area scaling factor for non-projectiveness
 }
 
   //__________________________________________________________________________
@@ -4680,13 +4659,6 @@ void AliAnalysisTaskEMCALPhotonIsolation::ComputePhiBandAreaInTPC(Double_t etaCa
 
   // Whatever the case, remove the cone area (computed in ComputeConeAreaInTPC(), called before ComputePhiBandAreaInTPC())
   phiBandArea -= coneArea;
-<<<<<<< HEAD
-
-  // Scaling by the non-projectiveness factor
-  if(fAnalysispPb)
-    phiBandArea *= proj_factor;
-=======
->>>>>>> parent of 7cf34b5... Adding a cone/UE area scaling factor for non-projectiveness
 }
 
   //__________________________________________________________________________
