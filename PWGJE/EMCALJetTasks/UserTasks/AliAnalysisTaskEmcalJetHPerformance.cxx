@@ -569,11 +569,14 @@ void AliAnalysisTaskEmcalJetHPerformance::FillQAHists()
 
   // Jets
   AliJetContainer * jetCont = 0;
+  double jetPt = 0;
   TIter nextJetColl(&fJetCollArray);
   while ((jetCont = static_cast<AliJetContainer*>(nextJetColl()))) {
+    double rhoVal = jetCont->GetRhoVal();
     for (auto jet : jetCont->accepted())
     {
-      fHistManager.FillTH1(TString::Format("QA/%s/fHistJetPt", jetCont->GetName()), jet->Pt());
+      jetPt = AliAnalysisTaskEmcalJetHUtils::GetJetPt(jet, rhoVal);
+      fHistManager.FillTH1(TString::Format("QA/%s/fHistJetPt", jetCont->GetName()), jetPt);
     }
   }
 
@@ -596,6 +599,8 @@ void AliAnalysisTaskEmcalJetHPerformance::ResponseMatrix()
   AliJetContainer * jetsHybrid = GetJetContainer("hybridLevelJets");
   AliJetContainer * jetsDetLevel = GetJetContainer("detLevelJets");
   AliJetContainer * jetsPartLevel = GetJetContainer("partLevelJets");
+  // NOTE: Defaults to 0 if rho was not specified.
+  double rhoHybrid = jetsHybrid->GetRhoVal();
   if (!jetsHybrid) {
     AliErrorStream() << "Could not retrieve hybrid jet collection.\n";
     return;
@@ -663,7 +668,7 @@ void AliAnalysisTaskEmcalJetHPerformance::ResponseMatrix()
     }
 
     // Fill response
-    FillResponseMatrix(jet1, jetToPass);
+    FillResponseMatrix(jet1, jetToPass, rhoHybrid);
   }
 
 }
@@ -671,7 +676,7 @@ void AliAnalysisTaskEmcalJetHPerformance::ResponseMatrix()
 /**
  * If given multiple jet collections, handle creating a reasponse matrix
  */
-void AliAnalysisTaskEmcalJetHPerformance::FillResponseMatrix(AliEmcalJet * jet1, AliEmcalJet * jet2)
+void AliAnalysisTaskEmcalJetHPerformance::FillResponseMatrix(AliEmcalJet * jet1, AliEmcalJet * jet2, const double jet1Rho)
 {
   if (!jet1 || !jet2) {
     AliErrorStream() << "Null jet passed to fill response matrix";
@@ -682,8 +687,10 @@ void AliAnalysisTaskEmcalJetHPerformance::FillResponseMatrix(AliEmcalJet * jet1,
   AliDebugStream(4) << "jet2: " << jet2->toString() << "\n";
   // Create map from jetNumber to jet and initialize the objects
   std::map<unsigned int, ResponseMatrixFillWrapper> jetNumberToJet = {
-    std::make_pair(1, CreateResponseMatrixFillWrapper(jet1)),
-    std::make_pair(2, CreateResponseMatrixFillWrapper(jet2))
+    std::make_pair(1, CreateResponseMatrixFillWrapper(jet1, jet1Rho)),
+    // We would never want to rho subtract the second jet, regardless of whether it's external
+    // detector level or particle level.
+    std::make_pair(2, CreateResponseMatrixFillWrapper(jet2, 0))
   };
 
   // Fill histograms
@@ -715,14 +722,14 @@ void AliAnalysisTaskEmcalJetHPerformance::FillResponseMatrix(AliEmcalJet * jet1,
 /**
  *
  */
-AliAnalysisTaskEmcalJetHPerformance::ResponseMatrixFillWrapper AliAnalysisTaskEmcalJetHPerformance::CreateResponseMatrixFillWrapper(AliEmcalJet * jet) const
+AliAnalysisTaskEmcalJetHPerformance::ResponseMatrixFillWrapper AliAnalysisTaskEmcalJetHPerformance::CreateResponseMatrixFillWrapper(AliEmcalJet * jet, const double rho) const
 {
   ResponseMatrixFillWrapper wrapper;
   if (!jet) {
     AliErrorStream() << "Must pass valid jet to create object.\n";
     return wrapper;
   }
-  wrapper.fPt = jet->Pt();
+  wrapper.fPt = AliAnalysisTaskEmcalJetHUtils::GetJetPt(jet, rho);
   wrapper.fArea = jet->Area();
   wrapper.fPhi = jet->Phi();
   wrapper.fDistance = jet->ClosestJetDistance();

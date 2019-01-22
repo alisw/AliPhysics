@@ -241,11 +241,11 @@ void AliAnalysisTaskEmcalJetHCorrelations::UserCreateOutputObjects()
 
   for(Int_t centralityBin = 0; centralityBin < kMaxCentralityBins; ++centralityBin){
     name = Form("fHistJetPt_%i",centralityBin);
-    fHistJetPt[centralityBin] = new TH1F(name,name,200,0,200);
+    fHistJetPt[centralityBin] = new TH1F(name,name,240,-40,200);
     fOutput->Add(fHistJetPt[centralityBin]);
 
     name = Form("fHistJetPtBias_%i",centralityBin);
-    fHistJetPtBias[centralityBin] = new TH1F(name,name,200,0,200);
+    fHistJetPtBias[centralityBin] = new TH1F(name,name,240,-40,200);
     fOutput->Add(fHistJetPtBias[centralityBin]);
   }
 
@@ -425,6 +425,11 @@ Bool_t AliAnalysisTaskEmcalJetHCorrelations::Run()
   // Flags
   Bool_t biasedJet = kFALSE;
   Bool_t leadJet = kFALSE;
+  // Jet pt
+  Double_t jetPt = 0;
+  // Rho
+  // NOTE: Defaults to 0 if rho was not specified.
+  Double_t rhoVal = jets->GetRhoVal();
   // Relative angles and distances
   Double_t deltaPhi = 0;
   Double_t deltaEta = 0;
@@ -487,6 +492,7 @@ Bool_t AliAnalysisTaskEmcalJetHCorrelations::Run()
     }
 
     // Jet properties
+    jetPt = AliAnalysisTaskEmcalJetHUtils::GetJetPt(jet, rhoVal);
     // Determine if we have the lead jet
     leadJet = kFALSE;
     if (jet == leadingJet) leadJet = kTRUE;
@@ -495,16 +501,16 @@ Bool_t AliAnalysisTaskEmcalJetHCorrelations::Run()
 
     // Fill jet properties
     fHistJetEtaPhi->Fill(jet->Eta(), jet->Phi());
-    FillHist(fHistJetPt[fCentBin], jet->Pt());
+    FillHist(fHistJetPt[fCentBin], jetPt);
     if (biasedJet == kTRUE) {
-      FillHist(fHistJetPtBias[fCentBin], jet->Pt());
+      FillHist(fHistJetPtBias[fCentBin], jetPt);
 
-      const double triggerInfo[] = {eventActivity, jet->Pt(), epAngle};
+      const double triggerInfo[] = {eventActivity, jetPt, epAngle};
       fhnTrigger->Fill(triggerInfo);
     }
 
     // Cut on jet pt of 15 to reduce the size of the sparses
-    if (jet->Pt() > 15) {
+    if (jetPt > 15) {
 
       AliDebugStream(4) << "Passed min jet pt cut of 15. Jet: " << jet->toString().Data() << "\n";
       AliDebugStream(4) << "N accepted tracks: " << tracks->GetNAcceptedTracks() << "\n";
@@ -535,10 +541,10 @@ Bool_t AliAnalysisTaskEmcalJetHCorrelations::Run()
 
         if (biasedJet == kTRUE) {
           if(fDoLessSparseAxes) { // check if we want all dimensions
-            double triggerEntries[] = {eventActivity, jet->Pt(), track.Pt(), deltaEta, deltaPhi, static_cast<Double_t>(leadJet), epAngle};
+            double triggerEntries[] = {eventActivity, jetPt, track.Pt(), deltaEta, deltaPhi, static_cast<Double_t>(leadJet), epAngle};
             FillHist(fhnJH, triggerEntries, 1.0/efficiency);
           } else { 
-            double triggerEntries[] = {eventActivity, jet->Pt(), track.Pt(), deltaEta, deltaPhi, static_cast<Double_t>(leadJet), deltaR, epAngle};
+            double triggerEntries[] = {eventActivity, jetPt, track.Pt(), deltaEta, deltaPhi, static_cast<Double_t>(leadJet), deltaR, epAngle};
             FillHist(fhnJH, triggerEntries, 1.0/efficiency);
           }
         }
@@ -618,6 +624,7 @@ Bool_t AliAnalysisTaskEmcalJetHCorrelations::Run()
           }
 
           // Jet properties
+          jetPt = AliAnalysisTaskEmcalJetHUtils::GetJetPt(jet, rhoVal);
           // Determine if we have the lead jet
           leadJet = kFALSE;
           if (jet == leadingJet) { leadJet = kTRUE; }
@@ -625,7 +632,7 @@ Bool_t AliAnalysisTaskEmcalJetHCorrelations::Run()
           epAngle = PWGJE::EMCALJetTasks::AliAnalysisTaskEmcalJetHUtils::RelativeEPAngle(jet->Phi(), fEPV0);
 
           // Make sure event contains a biased jet above our threshold (reduce stats of sparse)
-          if (jet->Pt() < 15 || biasedJet == kFALSE) continue;
+          if (jetPt < 15 || biasedJet == kFALSE) continue;
 
           // Fill mixed-event histos here
           for (Int_t jMix=0; jMix < nMix; jMix++) {
@@ -651,10 +658,10 @@ Bool_t AliAnalysisTaskEmcalJetHCorrelations::Run()
               GetDeltaEtaDeltaPhiDeltaR(track, jet, deltaEta, deltaPhi, deltaR);
 
               if (fDoLessSparseAxes) {  // check if we want all the axis filled
-                double triggerEntries[] = {eventActivity, jet->Pt(), track.Pt(), deltaEta, deltaPhi, static_cast<Double_t>(leadJet), epAngle};
+                double triggerEntries[] = {eventActivity, jetPt, track.Pt(), deltaEta, deltaPhi, static_cast<Double_t>(leadJet), epAngle};
                 FillHist(fhnMixedEvents, triggerEntries, 1./(nMix*efficiency), fNoMixedEventJESCorrection);
               } else {
-                double triggerEntries[] = {eventActivity, jet->Pt(), track.Pt(), deltaEta, deltaPhi, static_cast<Double_t>(leadJet), deltaR, epAngle};
+                double triggerEntries[] = {eventActivity, jetPt, track.Pt(), deltaEta, deltaPhi, static_cast<Double_t>(leadJet), deltaR, epAngle};
                 FillHist(fhnMixedEvents, triggerEntries, 1./(nMix*efficiency), fNoMixedEventJESCorrection);
               }
             }
@@ -892,8 +899,8 @@ void AliAnalysisTaskEmcalJetHCorrelations::GetDimParams(Int_t iEntry, TString &l
 
     case 1:
       label = "Jet p_{T}";
-      nbins = 20;
-      xmin = 0.;
+      nbins = 22;
+      xmin = -40.;
       xmax = 200.;
       break;
 

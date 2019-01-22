@@ -5,7 +5,8 @@
  * @class AliAnalysisTaskEmcalJetHUtils
  * @brief Jet-hadron correlations utilities class
  *
- * Contains funtionality that is shared between the various classes
+ * Contains funtionality that is shared between the various classes. Could have been
+ * a namespace except it wouldn't play nice with ROOT.
  *
  * @author Raymond Ehlers <raymond.ehlers@cern.ch>, Yale University
  * @date 23 Feb 2018
@@ -38,6 +39,8 @@ class AliAnalysisTaskEmcalJetHUtils {
   static double RelativeEPAngle(double jetAngle, double epAngle);
 
   static void ConfigureEventCuts(AliEventCuts & eventCuts, PWG::Tools::AliYAMLConfiguration & yamlConfig, const UInt_t offlineTriggerMask, const std::string & baseName, const std::string & taskName);
+
+  static double GetJetPt(const AliEmcalJet * jet, const double rho);
 };
 
 } /* namespace EMCALJetTasks */

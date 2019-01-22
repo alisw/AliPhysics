@@ -89,8 +89,8 @@ class AliAnalysisTaskEmcalJetHPerformance : public AliAnalysisTaskEmcalJet {
   // Response matrix functions
   void SetupResponseMatrixHists();
   void ResponseMatrix();
-  void FillResponseMatrix(AliEmcalJet * jet1, AliEmcalJet * jet2);
-  ResponseMatrixFillWrapper CreateResponseMatrixFillWrapper(AliEmcalJet * jet) const;
+  void FillResponseMatrix(AliEmcalJet * jet1, AliEmcalJet * jet2, const double jet1Rho);
+  ResponseMatrixFillWrapper CreateResponseMatrixFillWrapper(AliEmcalJet * jet, const double rho) const;
 
   // Basic configuration
   PWG::Tools::AliYAMLConfiguration fYAMLConfig; ///< YAML configuration file.

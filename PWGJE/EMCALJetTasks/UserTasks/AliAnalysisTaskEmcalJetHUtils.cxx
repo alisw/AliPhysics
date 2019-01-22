@@ -174,5 +174,17 @@ void AliAnalysisTaskEmcalJetHUtils::ConfigureEventCuts(AliEventCuts & eventCuts,
   }
 }
 
+/**
+ * Get the background subtracted jet pt.
+ *
+ * @param[in] jet Jet to be subtracted.
+ * @param[in] rho Rho value for the jet collection.
+ */
+double AliAnalysisTaskEmcalJetHUtils::GetJetPt(const AliEmcalJet* jet, const double rho)
+{
+  double pT = jet->Pt() - rho * jet->Area();
+  return pT;
+}
+
 } /* namespace EMCALJetTasks */
 } /* namespace PWGJE */
