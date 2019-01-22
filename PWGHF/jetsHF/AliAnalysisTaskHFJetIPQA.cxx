@@ -84,6 +84,7 @@ fGeant3FlukaLambda(nullptr),
 fGeant3FlukaAntiLambda(nullptr),
 fGeant3FlukaKMinus(nullptr),
 fSetup(0),
+fOutputHist(0),
 cCuts(0),
 fMCArray(nullptr),
 fJetCutsHF(new AliRDHFJetsCuts()),
@@ -157,6 +158,7 @@ fGeant3FlukaLambda(nullptr),
 fGeant3FlukaAntiLambda(nullptr),
 fGeant3FlukaKMinus(nullptr),
 fSetup(0),
+fOutputHist(0),
 cCuts(0),
 fMCArray(nullptr),
 fJetCutsHF(new AliRDHFJetsCuts()),
@@ -1227,6 +1229,9 @@ void AliAnalysisTaskHFJetIPQA::SetFlukaFactor(TGraph* GraphOmega, TGraph* GraphX
 void AliAnalysisTaskHFJetIPQA::UserCreateOutputObjects(){
   Printf("Analysing Jets with Radius: R=%f\n",fJetRadius);
 
+  fOutputHist=new AliEmcalList();
+  fOutputHist->SetOwner(kTRUE);
+
   fIsMixSignalReady_n1=kFALSE;
   fIsMixSignalReady_n2=kFALSE;
   fIsMixSignalReady_n3=kFALSE;
@@ -1365,7 +1370,7 @@ void AliAnalysisTaskHFJetIPQA::UserCreateOutputObjects(){
     fCorrelationCrossCheck->Branch("n2",&fTREE_n2,"py/F");
     fCorrelationCrossCheck->Branch("n3",&fTREE_n3,"pz/F");
     fCorrelationCrossCheck->Branch("pt",&fTREE_pt,"pz/F");
-    fOutput->Add(fCorrelationCrossCheck);
+    fOutputHist->Add(fCorrelationCrossCheck);
   }
 
   if (fFillCorrelations && !fUseTreeForCorrelations){
@@ -1639,7 +1644,7 @@ void AliAnalysisTaskHFJetIPQA::UserCreateOutputObjects(){
     TObject* obj = 0;
     while ((obj = next())) {
       printf("Adding Object %s\n",obj->GetName());
-      fOutput->Add(obj);
+      fOutputHist->Add(obj);
     }
 
     //Documentation Canvas
@@ -1647,9 +1652,9 @@ void AliAnalysisTaskHFJetIPQA::UserCreateOutputObjects(){
     fSetup->SetOwner(kTRUE);
     Printf("Adding Cut Canvas to output file");
     cCuts=new TCanvas("Cuts","Cuts",800,800);
-    fOutput->Add(cCuts);
+    fSetup->Add(cCuts);
 
-    PostData(1, fOutput); 
+    PostData(1, fOutputHist);
     PostData(2, fSetup);
 }
 
@@ -2853,7 +2858,7 @@ void AliAnalysisTaskHFJetIPQA::IncHist(const char *name, Int_t bin){
  */
 TH1 *AliAnalysisTaskHFJetIPQA::AddHistogramm(const char *name, const char *title, Int_t x, Double_t xlow, Double_t xhigh, Int_t y, Double_t ylow, Double_t yhigh){
     TObject * res = nullptr;
-    res = fOutput->FindObject(name);
+    res = fOutputHist->FindObject(name);
     if((res)) return nullptr;
 
     TH1 * phist=nullptr;
@@ -2865,7 +2870,7 @@ TH1 *AliAnalysisTaskHFJetIPQA::AddHistogramm(const char *name, const char *title
     }
     phist->Sumw2();
 
-    fOutput->Add(phist);
+    fOutputHist->Add(phist);
     Printf("Adding %s to output list",phist->GetName());
     return (TH1*)phist;
 }
