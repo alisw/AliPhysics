@@ -61,6 +61,7 @@ set(SRCS
     AliHFJetsContainerVertex.cxx
     AliDJetRawYieldUncertainty.cxx
     AliAnalysisTaskDJetCorrelations.cxx
+    AliAnalysisTaskDJetCorrelationsQA.cxx
     AliAnalysisTaskDmesonsFilterCJ.cxx
 )
 
