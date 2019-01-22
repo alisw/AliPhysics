@@ -988,14 +988,14 @@ void AliAnalysisHFEppTPCTOFBeauty::UserCreateOutputObjects()
     Int_t nBina2[nDima2] = {32,nBinspdg2,nBinsdcaxy,nBinsg,nBinsR,nBinsITSchi2,nBinsITSsha,nBinstype,nBinspdg2,nBinsdcaxy};
     fD0 = new THnSparseF("fD0","fD0",nDima2,nBina2);
     fD0->SetBinEdges(0,ptbinning); ///pt spectra -> same binning as other histograms
-    fD0->SetBinEdges(1,binLimpdg2); /// electrons from D,charm baryons, B, beauty baryons, gamma, pi0, eta, Dcorrected, Dcorrected by weight, protons, kaons, D0_corr, D+-_corr,Ds_corr,Lc_corr, D0, D+-,Ds,Lc
+    fD0->SetBinEdges(1,binLimpdg2); /// storing particles (charm and beauty) before correction:
     fD0->SetBinEdges(2,binLimdcaxy); ///dca distribution without Manual Mean and Sigma correction
     fD0->SetBinEdges(3,binLimg);  ///From which generator (Hijing, else, pi0, eta)
     fD0->SetBinEdges(4,binLimR); ///Position where the electron is created
     fD0->SetBinEdges(5,binLimITSchi2); ///ITS chi2 
     fD0->SetBinEdges(6,binLimITSsha); ///fraction ITS shared clusters 
     fD0->SetBinEdges(7,binLimtype); ///pi0 and eta type  ///kNoMother, kNoFeedDown, kNoIsPrimary, kLightMesons, kBeauty, kCharm, kKaonFromHF, kKaonFromNonHF
-    fD0->SetBinEdges(8,binLimpdg2); /// storing particles (charm and beauty) before correction: 
+    fD0->SetBinEdges(8,binLimpdg2);  /// electrons from D,charm baryons, B, beauty baryons, gamma, pi0, eta, Dcorrected, Dcorrected by weight, protons, kaons, D0_corr, D+-_corr,Ds_corr,Lc_corr, D0, D+-,Ds,Lc
     fD0->SetBinEdges(9,binLimdcaxy); ///dca distribution with Manual Mean and Sigma correction
     fD0->Sumw2();
     fOutputList->Add(fD0);
@@ -1706,6 +1706,7 @@ void AliAnalysisHFEppTPCTOFBeauty::UserExec(Option_t *)
             ///Selecting particle
             qadca[1]=-1.; 
             
+            qadca[8]=29.5; //if noone passes the correction HFE then 30.5 is filled
             ///------------
             if(TMath::Abs(fMCparticle->GetPdgCode()) == 2212) qadca[1]=10.5; ///to check DCA of protons
             if(TMath::Abs(fMCparticle->GetPdgCode()) == 321) qadca[1]=11.5; ///to check DCA of kaons
@@ -1726,28 +1727,28 @@ void AliAnalysisHFEppTPCTOFBeauty::UserExec(Option_t *)
                     float pdg_ggmother = fMCparticleGGMother->GetPdgCode();
                     
                     if(TMath::Abs(pdg_mother)>400 && TMath::Abs(pdg_mother)<500){///charmed meson 
-						qadca[1]=0.5; 
-						if(TMath::Abs(pdg_mother) == 421) qadca[1]=12.5; ///to check DCA  prompt D0 bef corr
-						if(TMath::Abs(pdg_mother) == 411) qadca[1]=15.5; ///to check DCA D+ bef corr
+						qadca[1]=7.5;
+						if(TMath::Abs(pdg_mother) == 421) qadca[1]=20.5; ///to check DCA  prompt D0 bef corr
+						if(TMath::Abs(pdg_mother) == 411) qadca[1]=23.5; ///to check DCA D+ bef corr
 						
-						if(TMath::Abs(pdg_mother) == 431) qadca[1]=17.5; ///to check DCA Ds+ bef corr
+						if(TMath::Abs(pdg_mother) == 431) qadca[1]=25.5; ///to check DCA Ds+ bef corr
 						
-						if(TMath::Abs(pdg_gmother) == 413) qadca[1]=18.5; ///to check DCA Dstar+ bef corr
+						if(TMath::Abs(pdg_gmother) == 413) qadca[1]=26.5; ///to check DCA Dstar+ bef corr
 						if(TMath::Abs(pdg_gmother) == 413){ 
 						if(TMath::Abs(pdg_mother) == 421){ 
-						qadca[1]=13.5; ///to check DCA Dstar+ bef corr
+						qadca[1]=21.5; ///to check DCA Dstar+ bef corr
 						}
 						}
 						 
 						if(TMath::Abs(pdg_gmother) == 413){ 
 						if(TMath::Abs(pdg_mother) == 411){ 
-						qadca[1]=14.5; ///to check DCA Dstar+ bef corr
+						qadca[1]=22.5; ///to check DCA Dstar+ bef corr
 						}
 						}
 						
 						if(TMath::Abs(pdg_gmother) == 413){ 
 						if(TMath::Abs(pdg_mother) == 431){ 
-						qadca[1]=16.5; ///to check DCA Dstar+ bef corr
+						qadca[1]=24.5; ///to check DCA Dstar+ bef corr
 						}
 						}
 						 hCharmMotherPt->Fill(fMCparticleMother->Pt());
@@ -1794,28 +1795,28 @@ void AliAnalysisHFEppTPCTOFBeauty::UserExec(Option_t *)
 						 //cout<<"probAcceptD = "<<probAcceptD<<endl;
 						 //cout<<"a = "<<a<<endl;
 						if(a < probAcceptD){
-						qadca[1]=7.5;
-						if(TMath::Abs(pdg_mother) == 421) qadca[1]=20.5; ///to check DCA  prompt D0 bef corr
-						if(TMath::Abs(pdg_mother) == 411) qadca[1]=23.5; ///to check DCA D+ bef corr
+						qadca[8]=7.5;
+						if(TMath::Abs(pdg_mother) == 421) qadca[8]=20.5; ///to check DCA  prompt D0 aft corr
+						if(TMath::Abs(pdg_mother) == 411) qadca[8]=23.5; ///to check DCA D+ aft corr
 						
-						if(TMath::Abs(pdg_mother) == 431) qadca[1]=25.5; ///to check DCA Ds+ bef corr
+						if(TMath::Abs(pdg_mother) == 431) qadca[8]=25.5; ///to check DCA Ds+ aft corr
 						
-						if(TMath::Abs(pdg_gmother) == 413) qadca[1]=26.5; ///to check DCA Dstar+ bef corr
+						if(TMath::Abs(pdg_gmother) == 413) qadca[8]=26.5; ///to check DCA Dstar+ aft corr
 						if(TMath::Abs(pdg_gmother) == 413){ 
 						if(TMath::Abs(pdg_mother) == 421){ 
-						qadca[1]=21.5; ///to check DCA Dstar+ bef corr
+						qadca[8]=21.5; ///to check DCA Dstar+ aft corr
 						}
 						}
 						 
 						if(TMath::Abs(pdg_gmother) == 413){ 
 						if(TMath::Abs(pdg_mother) == 411){ 
-						qadca[1]=22.5; ///to check DCA Dstar+ bef corr
+						qadca[8]=22.5; ///to check DCA Dstar+ aft corr
 						}
 						}
 						
 						if(TMath::Abs(pdg_gmother) == 413){ 
 						if(TMath::Abs(pdg_mother) == 431){ 
-						qadca[1]=24.5; ///to check DCA Dstar+ bef corr
+						qadca[8]=24.5; ///to check DCA Dstar+ aft corr
 						}
 						}
 							hCharmMotherPt_corr->Fill(fMCparticleMother->Pt());
@@ -1909,7 +1910,7 @@ void AliAnalysisHFEppTPCTOFBeauty::UserExec(Option_t *)
 							fDCAxy_pt_beautyaft->Fill(fPt,DCAxy*track->Charge()*signB);
 							hBeautyMotherPtaft->Fill(fMCparticleMother->Pt());
 							hBeautyMotherPt2Daft->Fill(fMCparticleMother->Pt(),fPt);
-							qadca[1]=19.5;
+							qadca[8]=2.5;
 							
 						if(fIsFromMesonB){
                     					fDCAxy_pt_MesonB_beautyaft->Fill(fPt,DCAxy*track->Charge()*signB);
