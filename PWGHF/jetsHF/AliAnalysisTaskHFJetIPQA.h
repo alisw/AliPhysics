@@ -220,8 +220,8 @@ private:
     Bool_t IsJetTaggedTC(int n =0 ,double thres = 0.1);
     Bool_t IsJetTaggedJetProb(double thresProb = 0.90);
     TH1 *  AddHistogramm(const char * name,const char * title,Int_t x,Double_t xlow,Double_t xhigh, Int_t y=0,Double_t ylow=0,Double_t yhigh=0);
-    TH1D * GetHist1D(const char * name){return (TH1D*)fOutput->FindObject(name);}
-    TH2D * GetHist2D(const char * name){return (TH2D*)fOutput->FindObject(name);}
+    TH1D * GetHist1D(const char * name){return (TH1D*)fOutputHist->FindObject(name);}
+    TH2D * GetHist2D(const char * name){return (TH2D*)fOutputHist->FindObject(name);}
 
 
 private:
@@ -251,6 +251,7 @@ private:
     TGraph * fGeant3FlukaKMinus;//!
     //! \brief cCuts
     AliEmcalList *fSetup;//!
+    AliEmcalList *fOutputHist;//!
     TCanvas *cCuts; //!
     //! \brief fMCArray
     TClonesArray     *fMCArray;//!
