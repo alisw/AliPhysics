@@ -175,6 +175,8 @@ class AliSigma0PhotonMotherCuts : public TObject {
   TH2F *fHistArmenterosAfter;              //!
   TH2F *fHistMixedInvMassPt;               //!
   TH2F *fHistMixedInvMassBinnedMultPt[5];  //!
+  TH1F *fHistDiffPGamma[4];                //!
+  TH1F *fHistDiffPLambda[4];               //!
 
   TH2F *fHistLambdaPtPhi;   //!
   TH2F *fHistLambdaPtEta;   //!
@@ -213,7 +215,7 @@ class AliSigma0PhotonMotherCuts : public TObject {
   TH2F *fHistMCV0MotherCheck;  //!
 
  private:
-  ClassDef(AliSigma0PhotonMotherCuts, 17)
+  ClassDef(AliSigma0PhotonMotherCuts, 18)
 };
 
 #endif
