@@ -4426,10 +4426,8 @@ void AliAnalysisTaskEMCALPhotonIsolation::ComputeConeAreaInEMCal(Double_t etaCan
 
     // Compute the isolation cone area for neutral + charged isolation depending on the cluster position (for fiducial cuts lower than cone radius)
 
-  Double_t proj_factor = (1.+TMath::Exp(-2.*etaCand))/(2.*TMath::Exp(-etaCand)-(fIsoConeRadius/fGeom->GetIPDistance())*(1.-TMath::Exp(-2.*etaCand)));
-
-  Double_t phiMin      = 0., phiMax = 0., etaMin  = 0., etaMax  = 0.;
-  Double_t d_eta       = 0., d_phi  = 0., sqd_eta = 0., sqd_phi = 0., sqRadius = 0., fullConeArea = 0.;
+  Double_t phiMin = 0., phiMax = 0., etaMin  = 0., etaMax  = 0.;
+  Double_t d_eta  = 0., d_phi  = 0., sqd_eta = 0., sqd_phi = 0., sqRadius = 0., fullConeArea = 0.;
 
   coneArea     = 0.;
   sqRadius     = TMath::Power(fIsoConeRadius, 2.);
@@ -4510,10 +4508,6 @@ void AliAnalysisTaskEMCALPhotonIsolation::ComputeConeAreaInEMCal(Double_t etaCan
   }
   else // Full cone area (EMCal centre)
     coneArea = fullConeArea;
-
-  // Scaling by the non-projectiveness factor
-  if(fAnalysispPb)
-    coneArea *= proj_factor;
 }
 
   //__________________________________________________________________________
@@ -4521,9 +4515,7 @@ void AliAnalysisTaskEMCALPhotonIsolation::ComputeConeAreaInTPC(Double_t etaCand,
 
     // Compute the isolation cone area for charged-only isolation depending on the cluster position (for fiducial cuts lower than cone radius)
 
-  Double_t proj_factor = (1.+TMath::Exp(-2.*etaCand))/(2.*TMath::Exp(-etaCand)-(fIsoConeRadius/fGeom->GetIPDistance())*(1.-TMath::Exp(-2.*etaCand)));
-
-  Double_t etaMin      = -0.87, etaMax = 0.87, d_eta = 0., sqd_eta = 0., sqRadius = 0., fullConeArea = 0.;
+  Double_t etaMin = -0.87, etaMax = 0.87, d_eta = 0., sqd_eta = 0., sqRadius = 0., fullConeArea = 0.;
 
   coneArea     = 0.;
   sqRadius     = TMath::Power(fIsoConeRadius, 2.);
@@ -4541,10 +4533,6 @@ void AliAnalysisTaskEMCALPhotonIsolation::ComputeConeAreaInTPC(Double_t etaCand,
   }
   else // Full cone area (EMCal centre, cone not going outside TPC)
     coneArea = fullConeArea;
-
-  // Scaling by the non-projectiveness factor
-  if(fAnalysispPb)
-    coneArea *= proj_factor;
 }
 
   //__________________________________________________________________________
@@ -4608,10 +4596,8 @@ void AliAnalysisTaskEMCALPhotonIsolation::ComputePhiBandAreaInEMCal(Double_t eta
 
     // Compute the phi-band area for neutral + charged isolation depending on the cluster position (for fiducial cuts lower than cone radius)
 
-  Double_t proj_factor = (1.+TMath::Exp(-2.*etaCand))/(2.*TMath::Exp(-etaCand)-(fIsoConeRadius/fGeom->GetIPDistance())*(1.-TMath::Exp(-2.*etaCand)));
-
-  Double_t phiMin      = 0., phiMax = 0., etaMin = 0., etaMax = 0.;
-  Double_t d_eta       = 0.;
+  Double_t phiMin = 0., phiMax = 0., etaMin = 0., etaMax = 0.;
+  Double_t d_eta  = 0.;
 
   phiBandArea = 0.;
 
@@ -4647,10 +4633,6 @@ void AliAnalysisTaskEMCALPhotonIsolation::ComputePhiBandAreaInEMCal(Double_t eta
 
   // Whatever the case, remove the cone area (computed in ComputeConeAreaInEMCal(), called before ComputePhiBandAreaInEMCal())
   phiBandArea -= coneArea;
-
-  // Scaling by the non-projectiveness factor
-  if(fAnalysispPb)
-    phiBandArea *= proj_factor;
 }
 
   //__________________________________________________________________________
@@ -4658,9 +4640,7 @@ void AliAnalysisTaskEMCALPhotonIsolation::ComputePhiBandAreaInTPC(Double_t etaCa
 
     // Compute the phi-band area for charged-only isolation depending on the cluster position (for fiducial cuts lower than cone radius)
 
-  Double_t proj_factor = (1.+TMath::Exp(-2.*etaCand))/(2.*TMath::Exp(-etaCand)-(fIsoConeRadius/fGeom->GetIPDistance())*(1.-TMath::Exp(-2.*etaCand)));
-
-  Double_t phiMin      = 0., phiMax = 2.*TMath::Pi(), etaMin = -0.87, etaMax = 0.87, d_eta  = 0.;
+  Double_t phiMin = 0., phiMax = 2.*TMath::Pi(), etaMin = -0.87, etaMax = 0.87, d_eta  = 0.;
 
   phiBandArea = 0.;
 
@@ -4679,10 +4659,6 @@ void AliAnalysisTaskEMCALPhotonIsolation::ComputePhiBandAreaInTPC(Double_t etaCa
 
   // Whatever the case, remove the cone area (computed in ComputeConeAreaInTPC(), called before ComputePhiBandAreaInTPC())
   phiBandArea -= coneArea;
-
-  // Scaling by the non-projectiveness factor
-  if(fAnalysispPb)
-    phiBandArea *= proj_factor;
 }
 
   //__________________________________________________________________________
