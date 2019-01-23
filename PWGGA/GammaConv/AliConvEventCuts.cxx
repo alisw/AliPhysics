@@ -3452,7 +3452,9 @@ void AliConvEventCuts::GetXSectionAndNTrials(AliMCEvent *mcEvent, Float_t &XSect
         fPeriodEnum != kLHC13b4_fix && fPeriodEnum != kLHC13b4_plus &&                              // LHC13 pPb Jet Jet MC's
         fPeriodEnum != kLHC16c3a && fPeriodEnum != kLHC16c3b && fPeriodEnum != kLHC16c3c &&         // LHC13 pPb Jet Jet MC's
         fPeriodEnum != kLHC12P2JJ  &&                                                                 // LHC12 JetJet MC
-        fPeriodEnum != kLHC18b11c                                                                   // LHC18 GammaJet MC anchored to LHC15o
+        fPeriodEnum != kLHC18b11a  &&                                                                 // LHC18 GammaJet MC anchored to LHC15o
+        fPeriodEnum != kLHC18b11b  &&                                                                 // LHC18 GammaJet MC anchored to LHC15o
+        fPeriodEnum != kLHC18b11c                                                                  // LHC18 GammaJet MC anchored to LHC15o
      ){
     NTrials = -1;
     XSection = -1;
@@ -3508,7 +3510,7 @@ void AliConvEventCuts::GetXSectionAndNTrials(AliMCEvent *mcEvent, Float_t &XSect
             for(Int_t igen = 0; igen < nGenerators; igen++){
               AliGenEventHeader * eventHeaderGen = mch->GetCocktailHeader(igen) ;
               TString name = eventHeaderGen->GetName();
-              if (name.CompareTo("AliGenPythiaEventHeader") == 0 || name.Contains("Pythia8Jets")){
+              if (name.CompareTo("AliGenPythiaEventHeader") == 0 || name.Contains("Pythia8Jets") || name.Contains("Pythia8GammaJet")){
                 AliGenPythiaEventHeader* gPythia = dynamic_cast<AliGenPythiaEventHeader*>(eventHeaderGen);
                 NTrials = gPythia->Trials();
                 XSection = gPythia->GetXsection();
@@ -4837,11 +4839,13 @@ Int_t AliConvEventCuts::IsParticleFromBGEvent(Int_t index, AliMCEvent *mcEvent, 
     if (AODMCTrackArray){
       AliAODMCParticle *aodMCParticle = static_cast<AliAODMCParticle*>(AODMCTrackArray->At(index));
       if(!aodMCParticle) return 0; // no particle
+
       if(!aodMCParticle->IsPrimary()){
         if( aodMCParticle->GetMother() < 0) return 0;// material particle, return 0
         return IsParticleFromBGEvent(aodMCParticle->GetMother(),mcEvent,InputEvent, debug);
       }
       index = TMath::Abs(static_cast<AliAODMCParticle*>(AODMCTrackArray->At(index))->GetLabel());
+
       for(Int_t i = 0;i<fnHeaders;i++){
         if(index >= fNotRejectedStart[i] && index <= fNotRejectedEnd[i]){
           accepted = 1;
@@ -6322,6 +6326,12 @@ void AliConvEventCuts::SetPeriodEnum (TString periodName){
   } else if ( periodName.CompareTo("LHC15k5c") == 0 || periodName.CompareTo("LHC15k5c2") == 0){
     fPeriodEnum = kLHC15k5c;
     fEnergyEnum = k13TeV;
+  } else if ( periodName.CompareTo("LHC18b11a") == 0){
+    fPeriodEnum = kLHC18b11a;
+    fEnergyEnum = kPbPb5TeV;
+  } else if ( periodName.CompareTo("LHC18b11b") == 0){
+    fPeriodEnum = kLHC18b11b;
+    fEnergyEnum = kPbPb5TeV;
   } else if ( periodName.CompareTo("LHC18b11c") == 0){
     fPeriodEnum = kLHC18b11c;
     fEnergyEnum = kPbPb5TeV;

@@ -214,6 +214,8 @@ class AliConvEventCuts : public AliAnalysisCuts {
         kLHC15k5a,        //!< anchored LHC15f pass2 - HF-forced MC for D2H analyses
         kLHC15k5b,        //!< anchored LHC15f pass2 - HF-forced MC for HFE analyses
         kLHC15k5c,        //!< anchored LHC15f pass2 - HF-forced MC for HFCJ analyses
+        kLHC18b11a,       //!< anchored to LHC15o    - gamma-jets Pythia events embedded in HI MC events
+        kLHC18b11b,       //!< anchored to LHC15o    - gamma-jets Pythia events embedded in HI MC events
         kLHC18b11c,       //!< anchored to LHC15o    - gamma-jets Pythia events embedded in HI MC events
         kLHC18l8a,        //!< anchored to LHC18qr    - general purpose Pythia8
         kLHC18l8b,        //!< anchored to LHC18qr    - general purpose Pythia8

@@ -72,12 +72,15 @@ class AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson: public AliAnalysisTaskS
     // routines for photon selection from conversions
     void ProcessConversionPhotonCandidates();
     void ProcessTrueConversionPhotonCandidates(AliAODConversionPhoton*);
+    void ProcessTrueConversionPhotonCandidatesAOD(AliAODConversionPhoton*);
 
     // routines for photon selection from clusters
     void ProcessCaloPhotonCandidates();
     void ProcessTrueCaloPhotonCandidates(AliAODConversionPhoton *TruePhotonCandidate);
+    void ProcessTrueCaloPhotonCandidatesAOD(AliAODConversionPhoton *TruePhotonCandidate);
 
     void ProcessTrueMesonCandidates(AliAODConversionMother *Pi0Candidate, AliAODConversionMother *TrueNeutralPionCandidate, AliAODConversionPhoton *TrueVirtualGammaCandidate);
+    void ProcessTrueMesonCandidatesAOD(AliAODConversionMother *Pi0Candidate, AliAODConversionMother *TrueNeutralPionCandidate, AliAODConversionPhoton *TrueVirtualGammaCandidate);
     void MoveParticleAccordingToVertex(AliAODConversionMother* particle,const AliGammaConversionAODBGHandler::GammaConversionVertex *vertex);
 
     void FixPzToMatchPDGInvMassNDM(AliAODConversionMother* particle);
@@ -94,20 +97,30 @@ class AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson: public AliAnalysisTaskS
     // routines for neutral pion candidates from mixed conv + calo
     void ProcessNeutralPionCandidatesMixedConvCalo();
     void ProcessTrueNeutralPionCandidatesMixedConvCalo( AliAODConversionMother *Pi0Candidate, AliAODConversionPhoton *TrueGammaCandidate0, AliAODConversionPhoton *TrueGammaCandidate1);
+    void ProcessTrueNeutralPionCandidatesMixedConvCaloAOD( AliAODConversionMother *Pi0Candidate, AliAODConversionPhoton *TrueGammaCandidate0, AliAODConversionPhoton *TrueGammaCandidate1);
 
     void ProcessPionCandidates();
+    void ProcessPionCandidatesAOD();
     void ProcessMCParticles();
+    void ProcessAODMCParticles();
     void CalculateMesonCandidates();
     void CalculateBackground();
     void UpdateEventByEventData();
 
     Bool_t IsPiPlPiMiPiZeroDecay(TParticle *fMCMother) const;
+    Bool_t IsPiPlPiMiPiZeroDecayAOD( TClonesArray* trackArray, AliAODMCParticle *fMCMother) const;
     Bool_t IsPiPlPiMiEtaDecay(TParticle *fMCMother) const;
+    Bool_t IsPiPlPiMiEtaDecayAOD( TClonesArray* trackArray, AliAODMCParticle *fMCMother) const;
     Bool_t IsEtaPrimePiPlPiMiEtaDaughter( Int_t label ) const;
+    Bool_t IsEtaPrimePiPlPiMiEtaDaughterAOD(TClonesArray* trackArray, Int_t label ) const;
     Bool_t IsEtaPiPlPiMiPiZeroDaughter( Int_t label ) const;
+    Bool_t IsEtaPiPlPiMiPiZeroDaughterAOD(TClonesArray* trackArray, Int_t label ) const;
     Bool_t IsOmegaPiPlPiMiPiZeroDaughter( Int_t label ) const;
+    Bool_t IsOmegaPiPlPiMiPiZeroDaughterAOD(TClonesArray* trackArray, Int_t label ) const;
     Bool_t IsD0PiPlPiMiPiZeroDaughter( Int_t label ) const;
+    Bool_t IsD0PiPlPiMiPiZeroDaughterAOD(TClonesArray* trackArray, Int_t label ) const;
     Bool_t GammaIsNeutralMesonPiPlPiMiNDMDaughter( Int_t label ) const;
+    Bool_t GammaIsNeutralMesonPiPlPiMiNDMDaughterAOD(TClonesArray* trackArray, Int_t label ) const;
 
     Bool_t CheckVectorForDoubleCount(vector<Int_t> &vec, Int_t tobechecked);
 
@@ -119,7 +132,7 @@ class AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson: public AliAnalysisTaskS
     AliPrimaryPionSelector*           fPionSelector;                                      // primary charged pion selector, basic selection of pi+,pi-
     AliGammaConversionAODBGHandler**  fBGHandlerPiPl;                                     // BG handler Pos Pion
     AliGammaConversionAODBGHandler**  fBGHandlerPiMi;                                     // BG handler Neg Pion
-    AliESDEvent*                      fESDEvent;                                          // current event
+    AliVEvent*                        fInputEvent;                                          // current event
     AliMCEvent*                       fMCEvent;                                           // current MC event
     TList**                           fCutFolder;                                         // list of output folders with main cut name
     TList**                           fESDList;                                           // list with main output histograms for data
