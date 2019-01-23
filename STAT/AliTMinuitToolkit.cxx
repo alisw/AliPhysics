@@ -331,6 +331,12 @@ void AliTMinuitToolkit::Fit(Option_t *option) {
 
   // set up the fitter
   TVirtualFitter *minuit = TVirtualFitter::Fitter(nullptr, nParam);
+  if (minuit->GetNumberFreeParameters()!=nParam){
+    /// there is a bug??? in the TVirtual fitter, returned cached vaile can have differnte number of parameters
+    /// TODO - create own Minuit fitter??? - option to check
+    delete minuit;
+    minuit = TVirtualFitter::Fitter(nullptr, nParam);
+  }
   minuit->SetObjectFit(this);
   minuit->SetFCN(AliTMinuitToolkit::FitterFCN);
   if ((fVerbose& kPrintMinuit)==0){  // MAKE minuit QUIET!!
@@ -425,7 +431,7 @@ Long64_t AliTMinuitToolkit::FillFitter(TTree * inputTree, TString values, TStrin
   Int_t nVal= fValueNames->GetEntries();
   Int_t nVars= fVarNames->GetEntries();
   if (doReset == 0 && fPoints != nullptr){
-    if (fPoints->GetNrows()!=nVars){
+    if (fPoints->GetNcols()!=nVars){
       ::Error("AliTMinuitToolkit::FillFitter","Non compatible number of variables: %d instead of %d: variables:  %s",nVars, fPoints->GetNrows(), query.Data());
       return -1;
     }
