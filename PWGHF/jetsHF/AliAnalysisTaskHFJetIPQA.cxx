@@ -1226,11 +1226,15 @@ void AliAnalysisTaskHFJetIPQA::SetFlukaFactor(TGraph* GraphOmega, TGraph* GraphX
                             return;
                         }
 
+
+
 void AliAnalysisTaskHFJetIPQA::UserCreateOutputObjects(){
   Printf("Analysing Jets with Radius: R=%f\n",fJetRadius);
 
   fOutputHist=new AliEmcalList();
   fOutputHist->SetOwner(kTRUE);
+  fSetup=new AliEmcalList();
+  fSetup->SetOwner(kTRUE);
 
   fIsMixSignalReady_n1=kFALSE;
   fIsMixSignalReady_n2=kFALSE;
@@ -1647,17 +1651,77 @@ void AliAnalysisTaskHFJetIPQA::UserCreateOutputObjects(){
       fOutputHist->Add(obj);
     }
 
-    //Documentation Canvas
-    fSetup=new AliEmcalList();
-    fSetup->SetOwner(kTRUE);
-    Printf("Adding Cut Canvas to output file");
-    cCuts=new TCanvas("Cuts","Cuts",800,800);
-    fSetup->Add(cCuts);
-
+    PrintSettings();
     PostData(1, fOutputHist);
     PostData(2, fSetup);
 }
 
+void AliAnalysisTaskHFJetIPQA::PrintSettings(){
+    //Documentation Canvas
+    Printf("Adding Cut Canvas to output file");
+    cCuts=new TCanvas("Cuts","Cuts",800,800);
+    fSetup->Add(cCuts);
+
+    cCuts->cd();
+    //TPaveText* pJetCuts=new TPaveText(0.05,0.64,0.95, 0.95);
+    TPaveText* pJetCuts=new TPaveText(0.05,0.67,0.49,0.95);
+    pJetCuts->SetTextSize(0.02);
+    pJetCuts->SetTextAlign(11);
+    pJetCuts->AddBox(0.05,0.4,0.95, 0.8);
+    pJetCuts->AddText(Form("JetCuts:\n"));
+    pJetCuts->AddText(Form("MaxEtaJet: %.2f\n",fJetCutsHF->GetMaxEtaJet()));
+    pJetCuts->AddText(Form("MinPtJet: %.2f\n",fJetCutsHF->GetMinPtJet()));
+    pJetCuts->AddText(Form("MaxPtJet: %.2f\n",fJetCutsHF->GetMaxPtJet()));
+    pJetCuts->AddText(Form("MinCentrality: %.2f\n",fJetCutsHF->GetMinCentrality()));
+    pJetCuts->AddText(Form("MaxCentrality: %.2f\n",fJetCutsHF->GetMaxCentrality()));
+    pJetCuts->AddText(Form("UsePhysicsSel: %i\n",fJetCutsHF->GetUsePhysicsSelection()));
+    pJetCuts->AddText(Form("GetOptPileUp: %i\n",fJetCutsHF->GetOptPileUp()));
+    pJetCuts->Draw();
+
+    TPaveText* pTrackCuts=new TPaveText(0.05,0.37,0.49, 0.65);
+    pTrackCuts->SetTextSize(0.02);
+    pTrackCuts->SetTextAlign(11);
+    pTrackCuts->AddText(Form("Track Cuts:\n"));
+    pTrackCuts->AddText(Form("DCAJet<->Track: %.2f\n",fAnalysisCuts[bAnalysisCut_DCAJetTrack]));
+    pTrackCuts->AddText(Form("MaxDecayLength: %.2f\n",fAnalysisCuts[bAnalysisCut_MaxDecayLength]));
+    //pTrackCuts->AddText(Form("MaxDCAXY: %.2f\n",fAnalysisCuts[bAnalysisCut_MaxDCA_XY]));
+    //pTrackCuts->AddText(Form("MaxDCAZ: %.2f\n",fAnalysisCuts[bAnalysisCut_MaxDCA_Z]));
+    pTrackCuts->AddText(Form("MinTrackPt: %.2f\n",fAnalysisCuts[bAnalysisCut_MinTrackPt]));
+    pTrackCuts->AddText(Form("MinTrackPtMC: %.2f\n",fAnalysisCuts[bAnalysisCut_MinTrackPtMC]));
+    pTrackCuts->AddText(Form("MinTPCClusters: %.2f\n",fAnalysisCuts[bAnalysisCut_MinTPCClus] ));
+    pTrackCuts->AddText(Form("Kink candidates rejected."));
+    pTrackCuts->AddText(Form("Hits in SPD1 and SPD2 required"));
+    pTrackCuts->Draw();
+
+    TPaveText* pVertexCuts=new TPaveText(0.05,0.05,0.49, 0.35);
+    pVertexCuts->SetTextSize(0.02);
+    pVertexCuts->SetTextAlign(11);
+    pVertexCuts->AddText(Form("Vertex Cuts:\n"));
+    pVertexCuts->AddText(Form("MinNContr. to ZVertex: %.2f\n",fAnalysisCuts[bAnalysisCut_NContibutors]));
+    pVertexCuts->AddText(Form("Sigma Diamond: %.2f\n",fAnalysisCuts[bAnalysisCut_SigmaDiamond]));
+    pVertexCuts->AddText(Form("MaxVtxZ: %.2f\n",fAnalysisCuts[bAnalysisCut_MaxVtxZ]));
+    pVertexCuts->AddText(Form("Chi2perNDFZ: %.2f\n",fAnalysisCuts[bAnalysisCut_Z_Chi2perNDF]));
+    pVertexCuts->AddText(Form("fVertexRecalcMinPt=%.2f\n",fVertexRecalcMinPt));
+    pVertexCuts->Draw();
+
+    TPaveText* pHardCodedCuts=new TPaveText(0.51,0.67,0.95,0.95);
+    pHardCodedCuts->SetTextSize(0.02);
+    pHardCodedCuts->SetTextAlign(11);
+    pHardCodedCuts->AddText(Form("Hardcoded Cuts:\n"));
+    pHardCodedCuts->AddText(Form("JetFinder Track Efficiency: 0.97\n"));
+    pHardCodedCuts->AddText(Form("MaxTrackPtMC: 1000\n"));
+    pHardCodedCuts->Draw();
+
+    TPaveText* pCorrections=new TPaveText(0.51,0.37,0.95,0.65);
+    pCorrections->SetTextSize(0.02);
+    pCorrections->SetTextAlign(11);
+    pCorrections->SetTextAlign(11);
+    pCorrections->AddText("Corrections: \n");
+    pCorrections->AddText(Form("MC Corrections (Data/MC+Fluka):%i\n",fDoMCCorrection));
+    pCorrections->AddText(Form("Track Smearing:%i\n",fRunSmearing ));
+    pCorrections->AddText(Form("Underlying Event Subtraction:%i", fDoUnderlyingEventSub));
+    pCorrections->Draw();
+}
 
 //NotInUse
 /*void AliAnalysisTaskHFJetIPQA::GetMaxImpactParameterCutR(const AliVTrack * const track, Double_t &maximpactRcut){
@@ -3245,67 +3309,8 @@ Double_t AliAnalysisTaskHFJetIPQA::CalculatePSTrackPID(Double_t sign, Double_t s
     return retval;
 }
 
+
 void AliAnalysisTaskHFJetIPQA::Terminate(Option_t *){
-    cCuts->cd();
-    //TPaveText* pJetCuts=new TPaveText(0.05,0.64,0.95, 0.95);
-    TPaveText* pJetCuts=new TPaveText(0.05,0.67,0.49,0.95);
-    pJetCuts->SetTextSize(0.02);
-    pJetCuts->SetTextAlign(11);
-    pJetCuts->AddBox(0.05,0.4,0.95, 0.8);
-    pJetCuts->AddText(Form("JetCuts:\n"));
-    pJetCuts->AddText(Form("MaxEtaJet: %.2f\n",fJetCutsHF->GetMaxEtaJet()));
-    pJetCuts->AddText(Form("MinPtJet: %.2f\n",fJetCutsHF->GetMinPtJet()));
-    pJetCuts->AddText(Form("MaxPtJet: %.2f\n",fJetCutsHF->GetMaxPtJet()));
-    pJetCuts->AddText(Form("MinCentrality: %.2f\n",fJetCutsHF->GetMinCentrality()));
-    pJetCuts->AddText(Form("MaxCentrality: %.2f\n",fJetCutsHF->GetMaxCentrality()));
-    pJetCuts->AddText(Form("UsePhysicsSel: %i\n",fJetCutsHF->GetUsePhysicsSelection()));
-    pJetCuts->AddText(Form("GetOptPileUp: %i\n",fJetCutsHF->GetOptPileUp()));
-    pJetCuts->Draw();
-
-    TPaveText* pTrackCuts=new TPaveText(0.05,0.37,0.49, 0.65);
-    pTrackCuts->SetTextSize(0.02);
-    pTrackCuts->SetTextAlign(11);
-    pTrackCuts->AddText(Form("Track Cuts:\n"));
-    pTrackCuts->AddText(Form("DCAJet<->Track: %.2f\n",fAnalysisCuts[bAnalysisCut_DCAJetTrack]));
-    pTrackCuts->AddText(Form("MaxDecayLength: %.2f\n",fAnalysisCuts[bAnalysisCut_MaxDecayLength]));
-    //pTrackCuts->AddText(Form("MaxDCAXY: %.2f\n",fAnalysisCuts[bAnalysisCut_MaxDCA_XY]));
-    //pTrackCuts->AddText(Form("MaxDCAZ: %.2f\n",fAnalysisCuts[bAnalysisCut_MaxDCA_Z]));
-    pTrackCuts->AddText(Form("MinTrackPt: %.2f\n",fAnalysisCuts[bAnalysisCut_MinTrackPt]));
-    pTrackCuts->AddText(Form("MinTrackPtMC: %.2f\n",fAnalysisCuts[bAnalysisCut_MinTrackPtMC]));
-    pTrackCuts->AddText(Form("MinTPCClusters: %.2f\n",fAnalysisCuts[bAnalysisCut_MinTPCClus] ));
-    pTrackCuts->AddText(Form("Kink candidates rejected."));
-    pTrackCuts->AddText(Form("Hits in SPD1 and SPD2 required"));
-    pTrackCuts->Draw();
-
-    TPaveText* pVertexCuts=new TPaveText(0.05,0.05,0.49, 0.35);
-    pVertexCuts->SetTextSize(0.02);
-    pVertexCuts->SetTextAlign(11);
-    pVertexCuts->AddText(Form("Vertex Cuts:\n"));
-    pVertexCuts->AddText(Form("MinNContr. to ZVertex: %.2f\n",fAnalysisCuts[bAnalysisCut_NContibutors]));
-    pVertexCuts->AddText(Form("Sigma Diamond: %.2f\n",fAnalysisCuts[bAnalysisCut_SigmaDiamond]));
-    pVertexCuts->AddText(Form("MaxVtxZ: %.2f\n",fAnalysisCuts[bAnalysisCut_MaxVtxZ]));
-    pVertexCuts->AddText(Form("Chi2perNDFZ: %.2f\n",fAnalysisCuts[bAnalysisCut_Z_Chi2perNDF]));
-    pVertexCuts->AddText(Form("fVertexRecalcMinPt=%.2f\n",fVertexRecalcMinPt));
-    pVertexCuts->Draw();
-
-    TPaveText* pHardCodedCuts=new TPaveText(0.51,0.67,0.95,0.95);
-    pHardCodedCuts->SetTextSize(0.02);
-    pHardCodedCuts->SetTextAlign(11);
-    pHardCodedCuts->AddText(Form("Hardcoded Cuts:\n"));
-    pHardCodedCuts->AddText(Form("JetFinder Track Efficiency: 0.97\n"));
-    pHardCodedCuts->AddText(Form("MaxTrackPtMC: 1000\n"));
-    pHardCodedCuts->Draw();
-
-    TPaveText* pCorrections=new TPaveText(0.51,0.37,0.95,0.65);
-    pCorrections->SetTextSize(0.02);
-    pCorrections->SetTextAlign(11);
-    pCorrections->SetTextAlign(11);
-    pCorrections->AddText("Corrections: \n");
-    pCorrections->AddText(Form("MC Corrections (Data/MC+Fluka):%i\n",fDoMCCorrection));
-    pCorrections->AddText(Form("Track Smearing:%i\n",fRunSmearing ));
-    pCorrections->AddText(Form("Underlying Event Subtraction:%i", fDoUnderlyingEventSub));
-    pCorrections->Draw();
-
     printf("\n*********************************\n");
     printf("Corrections:\n");
     printf("    MC Corrections (Data/MC+Fluka):%i\n",fDoMCCorrection);
