@@ -235,7 +235,13 @@
 #pragma link C++ namespace PWGJE::EMCALJetTasks::Test;
 #pragma link C++ class PWGJE::EMCALJetTasks::Test::AliAnalysisTaskEmcalTriggerSelectionTest+;
 
+#ifdef WITH_ROOUNFOLD
+// Classes which need direct access only to RooUnfold objects
+#endif
+
 #ifdef HAVE_FASTJET
+// Classes which need direct access only to Fastjet objects (not
+// needed if wrapped into ALICE objects)
 #pragma link C++ class AliEmcalJetUtility+;
 #pragma link C++ class AliEmcalJetUtilityGenSubtractor+;
 #pragma link C++ class AliEmcalJetUtilityConstSubtractor+;
@@ -267,5 +273,9 @@
 #pragma link C++ class AliAnalysisTaskJetCoreEmcal+;
 #pragma link C++ class AliAnalysisTaskSVtaskMCFilter+;
 #pragma link C++ class AliAnalysisTaskEA+;
+#ifdef WITH_ROOUNFOLD
+// Classes which need direct access to both Fastjet and RooUnfold objects
+#pragma link C++ class PWGJE::EMCALJetTasks::AliAnalysisTaskEmcalSoftDropResponse+;
+#endif
 #endif
 #endif
