@@ -198,7 +198,8 @@ HyperTriton2Body miniHyper;
 double decayVtx[3];
 v0->GetXYZ(decayVtx[0], decayVtx[1], decayVtx[2]);
 double v0Radius = std::hypot(decayVtx[0], decayVtx[1]);
-auto lvector = miniHyper.GetV0LorentzVector(nTrack, pTrack, v0->AlphaV0());
+double alpha=v0->AlphaV0();
+auto lvector = miniHyper.GetV0LorentzVector(nTrack, pTrack, alpha);
 double mass = lvector.M();
 double v0Pt = lvector.Pt();
 double lV0TotalMomentum = lvector.P();
@@ -206,6 +207,16 @@ float distOverP = std::sqrt(Sq(decayVtx[0] - primaryVertex[0]) +
                             Sq(decayVtx[1] - primaryVertex[1]) +
                             Sq(decayVtx[2] - primaryVertex[2])) /
                   (lV0TotalMomentum + 1e-16); 
+double PtPos;
+double PtNeg;                  
+if(alpha<0){
+  PtPos=pTrack->Pt();
+  PtNeg=2*(nTrack->Pt());
+}  
+else{
+  PtPos=2*(pTrack->Pt());
+  PtNeg=nTrack->Pt(); 
+}  
 unsigned char posXedRows = pTrack->GetTPCClusterInfo(2, 1);
 unsigned char negXedRows = nTrack->GetTPCClusterInfo(2, 1);
 float posChi2PerCluster =
@@ -258,6 +269,8 @@ miniHyper.SetInvMass(mass);
 miniHyper.SetArmenterosVariables(v0->AlphaV0(), v0->PtArmV0());
 miniHyper.SetV0CosPA(cosPA);
 miniHyper.SetV0Chi2(v0->GetChi2V0());
+miniHyper.SetProngsPt(PtPos,PtNeg);
+miniHyper.SetProngsPhi(pTrack->Phi(),nTrack->Phi());
 miniHyper.SetProngsDCA(v0->GetDcaV0Daughters());
 miniHyper.SetProngsPvDCA(dcaPosToPrimVertex, dcaNegToPrimVertex);
 miniHyper.SetV0radiusAndLikeSign(v0Radius);
