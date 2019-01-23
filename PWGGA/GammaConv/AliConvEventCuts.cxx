@@ -3510,7 +3510,6 @@ void AliConvEventCuts::GetXSectionAndNTrials(AliMCEvent *mcEvent, Float_t &XSect
             for(Int_t igen = 0; igen < nGenerators; igen++){
               AliGenEventHeader * eventHeaderGen = mch->GetCocktailHeader(igen) ;
               TString name = eventHeaderGen->GetName();
-              printf("---------->Header Name: %s\n",name.Data());
               if (name.CompareTo("AliGenPythiaEventHeader") == 0 || name.Contains("Pythia8Jets") || name.Contains("Pythia8GammaJet")){
                 AliGenPythiaEventHeader* gPythia = dynamic_cast<AliGenPythiaEventHeader*>(eventHeaderGen);
                 NTrials = gPythia->Trials();

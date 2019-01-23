@@ -58,7 +58,7 @@ class AliPrimaryPionSelector : public AliAnalysisTaskSE {
 
 
    
-   ClassDef(AliPrimaryPionSelector,1)
+   ClassDef(AliPrimaryPionSelector,2)
       };
 
 inline void AliPrimaryPionSelector::SetPrimaryPionCuts(const TString cut){
