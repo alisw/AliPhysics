@@ -531,6 +531,15 @@ int SphericityRange = 0;  //22
     addon += SphericityRange;
     addon += "_";
   }
+
+  if (cFileName == "ConfigOtonOmega.C"){
+    std::cout << "No CONTAINERaddon from configfile " << std::endl;
+  }else{
+    addon += "_";
+    for(int ii=15;ii<=22;ii++){ addon += cFileName(ii);};
+    std::cout << "CONTAINERaddon from configfile " << cFileName(15,22).Data() << std::endl;
+  }
+
   std::cout << "CONTAINTER NAME: " << addon.Data() << std::endl;
   TString QAName = Form("%sQA", addon.Data());
   coutputQA = mgr->CreateContainer(
@@ -677,23 +686,22 @@ int SphericityRange = 0;  //22
   TString TreeCascadeName = Form("%sTreeCascade",addon.Data());
   coutputTreeCascade = mgr->CreateContainer(
     //@suppress("Invalid arguments") it works ffs
-    "TreeCascade",
+    TreeCascadeName.Data(),
     TTree::Class(),
     AliAnalysisManager::kOutputContainer,
-    "TreeCascade.root");
+    Form("%s:%s", file.Data(), TreeCascadeName.Data()));
   mgr->ConnectOutput(task, 13, coutputTreeCascade);
 
-
   //omega tree:
-    AliAnalysisDataContainer *coutputTreeOmega;
-    TString TreeOmegaName = Form("%sTreeOmega",addon.Data());
-    coutputTreeOmega = mgr->CreateContainer(
-      //@suppress("Invalid arguments") it works ffs
-      "TreeOmega",
-      TTree::Class(),
-      AliAnalysisManager::kOutputContainer,
-      "TreeOmega.root");
-    mgr->ConnectOutput(task, 14, coutputTreeOmega);
+  AliAnalysisDataContainer *coutputTreeOmega;
+  TString TreeOmegaName = Form("%sTreeOmega",addon.Data());
+  coutputTreeOmega = mgr->CreateContainer(
+    //@suppress("Invalid arguments") it works ffs
+    TreeOmegaName.Data(),
+    TTree::Class(),
+    AliAnalysisManager::kOutputContainer,
+    Form("%s:%s", file.Data(), TreeOmegaName.Data()));
+  mgr->ConnectOutput(task, 14, coutputTreeOmega);
 
   if (isMC) {
     AliAnalysisDataContainer *coutputTrkCutsMC;
