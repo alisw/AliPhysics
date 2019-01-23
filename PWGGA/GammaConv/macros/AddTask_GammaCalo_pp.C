@@ -1392,8 +1392,8 @@ void AddTask_GammaCalo_pp(
     cuts.AddCutCalo("00010113","49977060af032230000","01631031000000d0"); // INT7 - TB NL
     cuts.AddCutCalo("00010113","49977110af032230000","01631031000000d0"); // Standard EDC
   } else if (trainConfig == 2002){  // EMCAL+DCAL clusters 13 TeV std. QA
-    cuts.AddCutCalo("00010113","4997700007032220000","01631031000000d0"); // no timing cut, no NL INT7
-    cuts.AddCutCalo("00010113","4997700067032220000","01631031000000d0"); // -30ns, 35ns timing cut, no NL INT7
+    cuts.AddCutCalo("00010113","4999900007032220000","01631031000000d0"); // no timing cut, no NL INT7
+    cuts.AddCutCalo("00010113","4999900067032220000","01631031000000d0"); // -30ns, 35ns timing cut, no NL INT7
   } else if (trainConfig == 2003){ // EMCAL+DCAL clusters standard cuts - QA extra stripes
     cuts.AddCutCalo("00010113","49999110a7032230000","01631031000000d0"); // Standard EDC
 
