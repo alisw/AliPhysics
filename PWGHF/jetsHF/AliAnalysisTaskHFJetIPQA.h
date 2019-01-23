@@ -96,6 +96,8 @@ public:
     virtual Bool_t Run();
     virtual Bool_t IsSelected(AliVEvent *event, Int_t &WhyRejected,ULong_t &RejectionBits);
 
+
+
     void SetESDCuts (AliESDtrackCuts  *cuts =NULL){fESDTrackCut =  new AliESDtrackCuts(*cuts);}
     virtual AliRDHFJetsCuts* GetJetCutsHF(){return fJetCutsHF;}
     void SetUseMonteCarloWeighingLinus(TH1F *Pi0 ,TH1F *Eta,TH1F *EtaP,TH1F *Rho,TH1F *Phi,TH1F *Omega,TH1F *K0s,TH1F *Lambda,TH1F *ChargedPi,
@@ -214,6 +216,7 @@ private:
     Int_t GetRunNr(AliVEvent * event){return event->GetRunNumber();}
     Double_t GetPtCorrected(const AliEmcalJet* jet);
     Double_t GetPtCorrectedMC(const AliEmcalJet *jet);
+    void PrintSettings();
 
 
     //Functions to allow jet probability/TC System 8 efficiency estimation
@@ -344,7 +347,7 @@ private:
 
 
 
-    ClassDef(AliAnalysisTaskHFJetIPQA, 29)
+    ClassDef(AliAnalysisTaskHFJetIPQA, 30)
 };
 
 #endif
