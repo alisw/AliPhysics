@@ -2435,7 +2435,6 @@ void AliCaloPhotonCuts::FillHistogramsExtendedQA(AliVEvent *event, Int_t isMC)
     //acceptance cuts
     if (fUseEtaCut && (etaCluster < fMinEtaCut || etaCluster > fMaxEtaCut)){delete cluster; continue;}
     if (fUseEtaCut && fClusterType == 3 && etaCluster < fMaxEtaInnerEdge && etaCluster > fMinEtaInnerEdge ) {delete cluster; continue;}
-    if (fUseEtaCut && fClusterType == 4 && phiCluster > fMinPhiCutDMC && phiCluster < fMaxPhiCutDMC && etaCluster < fMaxEtaInnerEdge && etaCluster > fMinEtaInnerEdge ) {delete cluster; continue;}
     if (fClusterType == 4){
       if (fUsePhiCut && (phiCluster < fMinPhiCut || phiCluster > fMaxPhiCut) && (phiCluster < fMinPhiCutDMC || phiCluster > fMaxPhiCutDMC)){delete cluster; continue;}
     } else {
@@ -2487,7 +2486,6 @@ void AliCaloPhotonCuts::FillHistogramsExtendedQA(AliVEvent *event, Int_t isMC)
       //acceptance cuts
       if (fUseEtaCut && (etaclusterMatched < fMinEtaCut || etaclusterMatched > fMaxEtaCut)){delete clusterMatched; continue;}
       if (fUseEtaCut && fClusterType == 3 && etaclusterMatched < fMaxEtaInnerEdge && etaclusterMatched > fMinEtaInnerEdge ) {delete clusterMatched; continue;}
-      if (fUseEtaCut && fClusterType == 4 && phiclusterMatched > fMinPhiCutDMC && phiclusterMatched < fMaxPhiCutDMC && etaclusterMatched < fMaxEtaInnerEdge && etaclusterMatched > fMinEtaInnerEdge ) {delete clusterMatched; continue;}
       if (fClusterType == 4){
         if (fUsePhiCut && (phiclusterMatched < fMinPhiCut || phiclusterMatched > fMaxPhiCut) && (phiclusterMatched < fMinPhiCutDMC || phiclusterMatched > fMaxPhiCutDMC)){delete clusterMatched; continue;}
       } else {
@@ -3236,7 +3234,7 @@ Bool_t AliCaloPhotonCuts::AcceptanceCuts(AliVCluster *cluster, AliVEvent* event,
   if (fUseEtaCut){
     if(fClusterType == 4){
       // additional phi requirement needed for the DCal hole check in ClusterType 4 case (otherwise hole is also cutted in EMCal)
-      if (etaCluster < fMinEtaCut || etaCluster > fMaxEtaCut || (phiCluster > fMinPhiCutDMC && phiCluster < fMaxPhiCutDMC && etaCluster < fMaxEtaInnerEdge && etaCluster > fMinEtaInnerEdge ) ){
+      if (etaCluster < fMinEtaCut || etaCluster > fMaxEtaCut ){
         if(fHistAcceptanceCuts)fHistAcceptanceCuts->Fill(cutIndex);
         return kFALSE;
       }
@@ -4164,8 +4162,8 @@ Bool_t AliCaloPhotonCuts::SetMaxPhiCut(Int_t maxPhi)
     break;
   case 9:
     if( !fUsePhiCut ) fUsePhiCut=1;
-    fMaxPhiCut = 3.28;//EMCal acceptance Run2 w/o stripe
-    fMaxPhiCutDMC = 5.70;//DCal acceptance
+    fMaxPhiCut = 3.28;//EMCal acceptance Run2 with stripe
+    fMaxPhiCutDMC = 5.70;//DCal acceptance with stripe
     break;
 
   default:
