@@ -761,6 +761,8 @@ void AliEventCuts::SetupRun1PbPb() {
   fMaxCentrality = 90.f;
 
   fUseEstimatorsCorrelationCut = false;
+  array<double,5> vzero_tpcout_polcut{-1391.46,1.44779,4.78352e-05,-5.96914e-10,0.0};
+  std::copy(vzero_tpcout_polcut.begin(),vzero_tpcout_polcut.end(),fVZEROvsTPCoutPolCut);
 
   if (!fOverrideAutoTriggerMask) fTriggerMask = AliVEvent::kMB | AliVEvent::kCentral | AliVEvent::kSemiCentral;
 }
