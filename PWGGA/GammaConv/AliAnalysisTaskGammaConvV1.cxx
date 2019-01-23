@@ -754,24 +754,24 @@ void AliAnalysisTaskGammaConvV1::UserCreateOutputObjects(){
     }
   // Set special pt binning for PbPb 5TeV
   } else if (((AliConvEventCuts*)fV0Reader->GetEventCuts())->GetEnergyEnum() == AliConvEventCuts::kPbPb5TeV ){
-//    binWidthPt  = 0.1;
-    nBinsPt     = 60;
+
+    nBinsPt     = 38;
     minPt       = 0.0;
-    maxPt       = 20.0;
+    maxPt       = 25.0;
     for(Int_t i=0; i<=nBinsPt;i++){
-      if(i<=30)           arrPtBinning[i]  = 0.0   + 0.10*i;             // 0.1GeV bin width until 3GeV
-      else if(i<=40)      arrPtBinning[i]  = 3.0   + 0.2*(i-30);         // 0.2GeV                 5GeV
-      else if(i<=50)      arrPtBinning[i]  = 5.0   + 0.5*(i-40);         // 0.5GeV                 10GeV
-      else /*i<=nBinsPt*/ arrPtBinning[i]  = 10.0  + 1.0*(i-50);         // 1.0GeV                 20GeV
+      if(i<=20)           arrPtBinning[i]  = 0.0   + 0.2*i;             // 0.2 GeV bin width until 4 GeV
+      else if(i<=30)      arrPtBinning[i]  = 4.0   + 0.5*(i-20);        // 0.5 GeV                 9 GeV
+      else if(i<=36)      arrPtBinning[i]  = 9.0   + 1.0*(i-30);        // 1.0 GeV                 15 GeV
+      else /*i<=nBinsPt*/ arrPtBinning[i]  = 15.0  + 5.0*(i-36);        // 5.0 GeV                 25 GeV
     }
 
-    nBinsQAPt = 60;
-    maxQAPt   = 20.0;
+    nBinsQAPt = 38;
+    maxQAPt   = 25.0;
     for(Int_t i=0; i<=nBinsQAPt;i++){
-      if(i<=30)           arrQAPtBinning[i]  = 0.0   + 0.10*i;             // 0.1GeV bin width until 3GeV
-      else if(i<=40)      arrQAPtBinning[i]  = 3.0   + 0.2*(i-30);         // 0.2GeV                 5GeV
-      else if(i<=50)      arrQAPtBinning[i]  = 5.0   + 0.5*(i-40);         // 0.5GeV                 10GeV
-      else /*i<=nBinsPt*/ arrQAPtBinning[i]  = 10.0  + 1.0*(i-50);         // 1.0GeV                 20GeV
+      if(i<=20)           arrQAPtBinning[i]  = 0.0   + 0.2*i;             // 0.2 GeV bin width until 4 GeV
+      else if(i<=30)      arrQAPtBinning[i]  = 4.0   + 0.5*(i-20);        // 0.5 GeV                 9 GeV
+      else if(i<=36)      arrQAPtBinning[i]  = 9.0   + 1.0*(i-30);        // 1.0 GeV                 15 GeV
+      else /*i<=nBinsPt*/ arrQAPtBinning[i]  = 15.0  + 5.0*(i-36);        // 5.0 GeV                 25 GeV
     }
 
     nBinsClusterPt            = 148;
