@@ -499,7 +499,7 @@ AliAnalysisTaskReducedTreeNuclei::~AliAnalysisTaskReducedTreeNuclei()
   if(fPIDResponse) delete fPIDResponse;
   if(fQAList) delete fQAList;
   if(fOutputList) delete fOutputList;
-//   if(TreeEventSelection) delete TreeEventSelection;
+  //   if(TreeEventSelection) delete TreeEventSelection;
   if(reducedTree_Helium) delete reducedTree_Helium;
   if(reducedTree_Triton) delete reducedTree_Triton;
   if(reducedTree_HyperTriton) delete reducedTree_HyperTriton;
@@ -516,13 +516,13 @@ void AliAnalysisTaskReducedTreeNuclei::UserCreateOutputObjects()
 
   fAODeventCuts.AddQAplotsToList(fQAList); /// Add event selection QA plots
 
-//   TreeEventSelection = new TTree("TreeEventSelection","TreeEventSelection");
-//   TreeEventSelection -> Branch("SelectionStep",&SelectionStep,"SelectionStep/I");
-// //   TreeEventSelection -> Branch("multPercentile_V0A",&multPercentile_V0A,"multPercentile_V0A/D");
-//   TreeEventSelection -> Branch("multPercentile_V0M",&multPercentile_V0M,"multPercentile_V0M/D");
-//   TreeEventSelection -> Branch("multPercentile_SPDTracklets",&multPercentile_SPDTracklets,"multPercentile_SPDTracklets/D");  
-//   TreeEventSelection -> Branch("isTrigINT7",&isTrigINT7,"isTrigINT7/O");
-//   TreeEventSelection -> Branch("isTrigHighMult",&isTrigHighMult,"isTrigHighMult/O");
+  //   TreeEventSelection = new TTree("TreeEventSelection","TreeEventSelection");
+  //   TreeEventSelection -> Branch("SelectionStep",&SelectionStep,"SelectionStep/I");
+  // //   TreeEventSelection -> Branch("multPercentile_V0A",&multPercentile_V0A,"multPercentile_V0A/D");
+  //   TreeEventSelection -> Branch("multPercentile_V0M",&multPercentile_V0M,"multPercentile_V0M/D");
+  //   TreeEventSelection -> Branch("multPercentile_SPDTracklets",&multPercentile_SPDTracklets,"multPercentile_SPDTracklets/D");
+  //   TreeEventSelection -> Branch("isTrigINT7",&isTrigINT7,"isTrigINT7/O");
+  //   TreeEventSelection -> Branch("isTrigHighMult",&isTrigHighMult,"isTrigHighMult/O");
   
   
   histoEventSelection = new TH2D("histoEventSelection","Events after selection steps",3,0,3, 4,0,4);
@@ -539,13 +539,13 @@ void AliAnalysisTaskReducedTreeNuclei::UserCreateOutputObjects()
 
   //Reduced Tree (Helium3)
   reducedTree_Helium = new TTree("reducedTree_Helium","reducedTree_Helium");
-//   reducedTree_Helium -> Branch("triggerMask",&triggerMask,"triggerMask/l");
+  //   reducedTree_Helium -> Branch("triggerMask",&triggerMask,"triggerMask/l");
   reducedTree_Helium -> Branch("isTrigINT7",&isTrigINT7,"isTrigINT7/O");
   reducedTree_Helium -> Branch("isTrigHighMult",&isTrigHighMult,"isTrigHighMult/O");
   reducedTree_Helium -> Branch("magFieldSign",&magFieldSign,"magFieldSign/I");
   reducedTree_Helium -> Branch("multPercentile_V0M",&multPercentile_V0M,"multPercentile_V0M/D");
-//   reducedTree_Helium -> Branch("multPercentile_V0A",&multPercentile_V0A,"multPercentile_V0A/D");
-//   reducedTree_Helium -> Branch("multPercentile_V0C",&multPercentile_V0C,"multPercentile_V0C/D");
+  reducedTree_Helium -> Branch("multPercentile_V0A",&multPercentile_V0A,"multPercentile_V0A/D");
+  //   reducedTree_Helium -> Branch("multPercentile_V0C",&multPercentile_V0C,"multPercentile_V0C/D");
   //   reducedTree_Helium -> Branch("multPercentile_OnlineV0M",&multPercentile_OnlineV0M,"multPercentile_OnlineV0M/D"); //NOT FILLED FOR LHC16q (p--Pb)
   //   reducedTree_Helium -> Branch("multPercentile_OnlineV0A",&multPercentile_OnlineV0A,"multPercentile_OnlineV0A/D"); //NOT FILLED FOR LHC16q (p--Pb)
   //   reducedTree_Helium -> Branch("multPercentile_OnlineV0C",&multPercentile_OnlineV0C,"multPercentile_OnlineV0C/D"); //NOT FILLED FOR LHC16q (p--Pb)
@@ -562,8 +562,8 @@ void AliAnalysisTaskReducedTreeNuclei::UserCreateOutputObjects()
   //   reducedTree_Helium -> Branch("Ntrk_OnlineV0A",&Ntrk_OnlineV0A,"Ntrk_OnlineV0A/I"); //NOT FILLED FOR LHC16q (p--Pb)
   //   reducedTree_Helium -> Branch("Ntrk_OnlineV0C",&Ntrk_OnlineV0C,"Ntrk_OnlineV0C/I"); //NOT FILLED FOR LHC16q (p--Pb)
   reducedTree_Helium -> Branch("Ntrk_V0M",&Ntrk_V0M,"Ntrk_V0M/I");
-//   reducedTree_Helium -> Branch("Ntrk_V0A",&Ntrk_V0A,"Ntrk_V0A/I");
-//   reducedTree_Helium -> Branch("Ntrk_V0C",&Ntrk_V0C,"Ntrk_V0C/I");
+  //   reducedTree_Helium -> Branch("Ntrk_V0A",&Ntrk_V0A,"Ntrk_V0A/I");
+  //   reducedTree_Helium -> Branch("Ntrk_V0C",&Ntrk_V0C,"Ntrk_V0C/I");
   //   reducedTree_Helium -> Branch("Ntrk_ADM",&Ntrk_ADM,"Ntrk_ADM/I"); //NOT FILLED FOR LHC16q (p--Pb)
   //   reducedTree_Helium -> Branch("Ntrk_ADA",&Ntrk_ADA,"Ntrk_ADA/I"); //NOT FILLED FOR LHC16q (p--Pb)
   //   reducedTree_Helium -> Branch("Ntrk_ADC",&Ntrk_ADC,"Ntrk_ADC/I"); //NOT FILLED FOR LHC16q (p--Pb)
@@ -882,7 +882,7 @@ void AliAnalysisTaskReducedTreeNuclei::UserCreateOutputObjects()
   PostData(3, reducedTree_Helium);
   if (fFillTri)    PostData(4,reducedTree_Triton);
   if (fFillHypTri) PostData(5,reducedTree_HyperTriton);
-//   PostData(6, TreeEventSelection);
+  //   PostData(6, TreeEventSelection);
 
 }
 //_______________________________________________________________________________________________________________________________________________________
@@ -890,10 +890,10 @@ void AliAnalysisTaskReducedTreeNuclei::UserExec(Option_t *)
 {
   //Get Input Event
   if ( !GetInputEvent ()) {
-//       TreeEventSelection -> Fill(); 
-      return;
-  }   
-//   TreeEventSelection -> Fill();
+    //       TreeEventSelection -> Fill();
+    return;
+  }
+  //   TreeEventSelection -> Fill();
 
   //Load PID Response
   fPIDResponse = fInputHandler->GetPIDResponse();
@@ -1036,137 +1036,137 @@ void AliAnalysisTaskReducedTreeNuclei::UserExec(Option_t *)
   if (fFillHypTri) {
     for ( Int_t iV0=0 ; iV0<fAODevent->GetNumberOfV0s() ; iV0++ ) {
 
-        //Get V0 candidate
-        AliAODv0 *V0 = (AliAODv0*)fAODevent->GetV0(iV0);
-        if (!V0) continue;
-        if (!V0->GetOnFlyStatus()) continue; //V0-on-the-fly
-        AliAODTrack *posTrack=(AliAODTrack *)(V0->GetDaughter(0));
-        AliAODTrack *negTrack=(AliAODTrack *)(V0->GetDaughter(1));
+      //Get V0 candidate
+      AliAODv0 *V0 = (AliAODv0*)fAODevent->GetV0(iV0);
+      if (!V0) continue;
+      if (!V0->GetOnFlyStatus()) continue; //V0-on-the-fly
+      AliAODTrack *posTrack=(AliAODTrack *)(V0->GetDaughter(0));
+      AliAODTrack *negTrack=(AliAODTrack *)(V0->GetDaughter(1));
 
-        if( !posTrack || !negTrack ) continue;
+      if( !posTrack || !negTrack ) continue;
 
-        if (!PassedBasicTrackQualityCuts(posTrack)) continue;
-        if (!PassedBasicTrackQualityCuts(negTrack)) continue;
-        if (!IsHyperTritonCandidate(posTrack,negTrack) && !IsHyperTritonCandidate(negTrack,posTrack)) continue;
+      if (!PassedBasicTrackQualityCuts(posTrack)) continue;
+      if (!PassedBasicTrackQualityCuts(negTrack)) continue;
+      if (!IsHyperTritonCandidate(posTrack,negTrack) && !IsHyperTritonCandidate(negTrack,posTrack)) continue;
 
-        //Daughter1
-        px_Daughter1 = posTrack -> Px();
-        py_Daughter1 = posTrack -> Py();
-        pz_Daughter1 = posTrack -> Pz();
-        q_Daughter1  = (Int_t) posTrack -> Charge();
-        eta_Daughter1 = posTrack -> Eta();
-        phi_Daughter1 = posTrack -> Phi();
-        theta_Daughter1 = posTrack -> Theta();
-        y_Daughter1 = posTrack -> Y();
-        TPCmomentum_Daughter1 = posTrack->GetTPCmomentum();
-        trackID_Daughter1 = V0->GetPosID();
-
-
-        //DCA
-        dcaz_Daughter1  = GetDCAz  (posTrack);
-        dcaxy_Daughter1 = GetDCAxy (posTrack);
-
-        nTPC_Clusters_Daughter1 = posTrack->GetTPCNcls();
-        nTRD_Clusters_Daughter1 = posTrack->GetTRDncls();
-        nITS_Clusters_Daughter1 = posTrack->GetITSNcls();
-
-        nTPC_FindableClusters_Daughter1 = posTrack->GetTPCNclsF();
-        nTPC_CrossedRows_Daughter1 = posTrack->GetTPCNCrossedRows();
-        nTPC_Clusters_dEdx_Daughter1 = posTrack -> GetTPCsignalN();
-
-        HasPointOnITSLayer0_Daughter1 = posTrack->HasPointOnITSLayer(0);
-        HasPointOnITSLayer1_Daughter1 = posTrack->HasPointOnITSLayer(1);
-        HasPointOnITSLayer2_Daughter1 = posTrack->HasPointOnITSLayer(2);
-        HasPointOnITSLayer3_Daughter1 = posTrack->HasPointOnITSLayer(3);
-        HasPointOnITSLayer4_Daughter1 = posTrack->HasPointOnITSLayer(4);
-        HasPointOnITSLayer5_Daughter1 = posTrack->HasPointOnITSLayer(5);
-    
-        HasSharedPointOnITSLayer0_Daughter1 = posTrack->HasSharedPointOnITSLayer(0);
-        HasSharedPointOnITSLayer0_Daughter1 = posTrack->HasSharedPointOnITSLayer(1);
-        HasSharedPointOnITSLayer0_Daughter1 = posTrack->HasSharedPointOnITSLayer(2);
-        HasSharedPointOnITSLayer0_Daughter1 = posTrack->HasSharedPointOnITSLayer(3);
-        HasSharedPointOnITSLayer0_Daughter1 = posTrack->HasSharedPointOnITSLayer(4);
-        HasSharedPointOnITSLayer0_Daughter1 = posTrack->HasSharedPointOnITSLayer(5);
-
-        chi2_TPC_Daughter1 = posTrack -> GetTPCchi2();
-        chi2_ITS_Daughter1 = posTrack -> GetITSchi2();
-        chi2_NDF_Daughter1 = posTrack -> Chi2perNDF();
-
-        nSigmaITS_He3_Daughter1 = fPIDResponse -> NumberOfSigmasITS(posTrack,AliPID::kHe3);
-        nSigmaTPC_He3_Daughter1 = fPIDResponse -> NumberOfSigmasTPC(posTrack,AliPID::kHe3);
-        nSigmaTOF_He3_Daughter1 = fPIDResponse -> NumberOfSigmasTOF(posTrack,AliPID::kHe3);
-        nSigmaITS_Pion_Daughter1 = fPIDResponse -> NumberOfSigmasITS(posTrack,AliPID::kPion);
-        nSigmaTPC_Pion_Daughter1 = fPIDResponse -> NumberOfSigmasTPC(posTrack,AliPID::kPion);
-        nSigmaTOF_Pion_Daughter1 = fPIDResponse -> NumberOfSigmasTOF(posTrack,AliPID::kPion);
-        nSigmaITS_Trit_Daughter1 = fPIDResponse -> NumberOfSigmasITS(posTrack,AliPID::kTriton);
-        nSigmaTPC_Trit_Daughter1 = fPIDResponse -> NumberOfSigmasTPC(posTrack,AliPID::kTriton);
-        nSigmaTOF_Trit_Daughter1 = fPIDResponse -> NumberOfSigmasTOF(posTrack,AliPID::kTriton);
-
-        //Daughter2
-        px_Daughter2 = negTrack -> Px();
-        py_Daughter2 = negTrack -> Py();
-        pz_Daughter2 = negTrack -> Pz();
-        q_Daughter2  = (Int_t) negTrack -> Charge();
-        eta_Daughter2 = negTrack -> Eta();
-        phi_Daughter2 = negTrack -> Phi();
-        theta_Daughter2 = negTrack -> Theta();
-        y_Daughter2 = negTrack -> Y();
-        TPCmomentum_Daughter2 = negTrack->GetTPCmomentum();
-        trackID_Daughter2 = V0->GetNegID();
+      //Daughter1
+      px_Daughter1 = posTrack -> Px();
+      py_Daughter1 = posTrack -> Py();
+      pz_Daughter1 = posTrack -> Pz();
+      q_Daughter1  = (Int_t) posTrack -> Charge();
+      eta_Daughter1 = posTrack -> Eta();
+      phi_Daughter1 = posTrack -> Phi();
+      theta_Daughter1 = posTrack -> Theta();
+      y_Daughter1 = posTrack -> Y();
+      TPCmomentum_Daughter1 = posTrack->GetTPCmomentum();
+      trackID_Daughter1 = V0->GetPosID();
 
 
-        //DCA
-        dcaz_Daughter2  = GetDCAz  (negTrack);
-        dcaxy_Daughter2 = GetDCAxy (negTrack);
+      //DCA
+      dcaz_Daughter1  = GetDCAz  (posTrack);
+      dcaxy_Daughter1 = GetDCAxy (posTrack);
 
-        nTPC_Clusters_Daughter2 = negTrack->GetTPCNcls();
-        nTRD_Clusters_Daughter2 = negTrack->GetTRDncls();
-        nITS_Clusters_Daughter2 = negTrack->GetITSNcls();
+      nTPC_Clusters_Daughter1 = posTrack->GetTPCNcls();
+      nTRD_Clusters_Daughter1 = posTrack->GetTRDncls();
+      nITS_Clusters_Daughter1 = posTrack->GetITSNcls();
 
-        nTPC_FindableClusters_Daughter2 = negTrack->GetTPCNclsF();
-        nTPC_CrossedRows_Daughter2 = negTrack->GetTPCNCrossedRows();
-        nTPC_Clusters_dEdx_Daughter2 = negTrack -> GetTPCsignalN();
+      nTPC_FindableClusters_Daughter1 = posTrack->GetTPCNclsF();
+      nTPC_CrossedRows_Daughter1 = posTrack->GetTPCNCrossedRows();
+      nTPC_Clusters_dEdx_Daughter1 = posTrack -> GetTPCsignalN();
 
-        HasPointOnITSLayer0_Daughter2 = negTrack->HasPointOnITSLayer(0);
-        HasPointOnITSLayer1_Daughter2 = negTrack->HasPointOnITSLayer(1);
-        HasPointOnITSLayer2_Daughter2 = negTrack->HasPointOnITSLayer(2);
-        HasPointOnITSLayer3_Daughter2 = negTrack->HasPointOnITSLayer(3);
-        HasPointOnITSLayer4_Daughter2 = negTrack->HasPointOnITSLayer(4);
-        HasPointOnITSLayer5_Daughter2 = negTrack->HasPointOnITSLayer(5);
+      HasPointOnITSLayer0_Daughter1 = posTrack->HasPointOnITSLayer(0);
+      HasPointOnITSLayer1_Daughter1 = posTrack->HasPointOnITSLayer(1);
+      HasPointOnITSLayer2_Daughter1 = posTrack->HasPointOnITSLayer(2);
+      HasPointOnITSLayer3_Daughter1 = posTrack->HasPointOnITSLayer(3);
+      HasPointOnITSLayer4_Daughter1 = posTrack->HasPointOnITSLayer(4);
+      HasPointOnITSLayer5_Daughter1 = posTrack->HasPointOnITSLayer(5);
 
-        HasSharedPointOnITSLayer0_Daughter2 = negTrack->HasSharedPointOnITSLayer(0);
-        HasSharedPointOnITSLayer0_Daughter2 = negTrack->HasSharedPointOnITSLayer(1);
-        HasSharedPointOnITSLayer0_Daughter2 = negTrack->HasSharedPointOnITSLayer(2);
-        HasSharedPointOnITSLayer0_Daughter2 = negTrack->HasSharedPointOnITSLayer(3);
-        HasSharedPointOnITSLayer0_Daughter2 = negTrack->HasSharedPointOnITSLayer(4);
-        HasSharedPointOnITSLayer0_Daughter2 = negTrack->HasSharedPointOnITSLayer(5);
+      HasSharedPointOnITSLayer0_Daughter1 = posTrack->HasSharedPointOnITSLayer(0);
+      HasSharedPointOnITSLayer0_Daughter1 = posTrack->HasSharedPointOnITSLayer(1);
+      HasSharedPointOnITSLayer0_Daughter1 = posTrack->HasSharedPointOnITSLayer(2);
+      HasSharedPointOnITSLayer0_Daughter1 = posTrack->HasSharedPointOnITSLayer(3);
+      HasSharedPointOnITSLayer0_Daughter1 = posTrack->HasSharedPointOnITSLayer(4);
+      HasSharedPointOnITSLayer0_Daughter1 = posTrack->HasSharedPointOnITSLayer(5);
 
-        chi2_TPC_Daughter2 = negTrack -> GetTPCchi2();
-        chi2_ITS_Daughter2 = negTrack -> GetITSchi2();
-        chi2_NDF_Daughter2 = negTrack -> Chi2perNDF();
+      chi2_TPC_Daughter1 = posTrack -> GetTPCchi2();
+      chi2_ITS_Daughter1 = posTrack -> GetITSchi2();
+      chi2_NDF_Daughter1 = posTrack -> Chi2perNDF();
 
-        nSigmaITS_He3_Daughter2 = fPIDResponse -> NumberOfSigmasITS(negTrack,AliPID::kHe3);
-        nSigmaTPC_He3_Daughter2 = fPIDResponse -> NumberOfSigmasTPC(negTrack,AliPID::kHe3);
-        nSigmaTOF_He3_Daughter2 = fPIDResponse -> NumberOfSigmasTOF(negTrack,AliPID::kHe3);
-        nSigmaITS_Pion_Daughter2 = fPIDResponse -> NumberOfSigmasITS(negTrack,AliPID::kPion);
-        nSigmaTPC_Pion_Daughter2 = fPIDResponse -> NumberOfSigmasTPC(negTrack,AliPID::kPion);
-        nSigmaTOF_Pion_Daughter2 = fPIDResponse -> NumberOfSigmasTOF(negTrack,AliPID::kPion);
-        nSigmaITS_Trit_Daughter2 = fPIDResponse -> NumberOfSigmasITS(negTrack,AliPID::kTriton);
-        nSigmaTPC_Trit_Daughter2 = fPIDResponse -> NumberOfSigmasTPC(negTrack,AliPID::kTriton);
-        nSigmaTOF_Trit_Daughter2 = fPIDResponse -> NumberOfSigmasTOF(negTrack,AliPID::kTriton);
+      nSigmaITS_He3_Daughter1 = fPIDResponse -> NumberOfSigmasITS(posTrack,AliPID::kHe3);
+      nSigmaTPC_He3_Daughter1 = fPIDResponse -> NumberOfSigmasTPC(posTrack,AliPID::kHe3);
+      nSigmaTOF_He3_Daughter1 = fPIDResponse -> NumberOfSigmasTOF(posTrack,AliPID::kHe3);
+      nSigmaITS_Pion_Daughter1 = fPIDResponse -> NumberOfSigmasITS(posTrack,AliPID::kPion);
+      nSigmaTPC_Pion_Daughter1 = fPIDResponse -> NumberOfSigmasTPC(posTrack,AliPID::kPion);
+      nSigmaTOF_Pion_Daughter1 = fPIDResponse -> NumberOfSigmasTOF(posTrack,AliPID::kPion);
+      nSigmaITS_Trit_Daughter1 = fPIDResponse -> NumberOfSigmasITS(posTrack,AliPID::kTriton);
+      nSigmaTPC_Trit_Daughter1 = fPIDResponse -> NumberOfSigmasTPC(posTrack,AliPID::kTriton);
+      nSigmaTOF_Trit_Daughter1 = fPIDResponse -> NumberOfSigmasTOF(posTrack,AliPID::kTriton);
 
-        //Pair Variables
-        AliAODVertex *vtxPrimary = fAODevent->GetPrimaryVertex();
-        Double_t posVtx[3] = {0.,0.,0.};
-        vtxPrimary->GetXYZ(posVtx);
-        cosPointingAngle = V0->CosPointingAngle(posVtx);
-        dcaV0Daughters  = V0->DcaV0Daughters();
-        radius = V0->RadiusV0();
-        DecayLength = V0->DecayLengthV0(posVtx);
-        alphaV0 = V0 -> AlphaV0();
-        qtV0 = V0 -> PtArmV0();
+      //Daughter2
+      px_Daughter2 = negTrack -> Px();
+      py_Daughter2 = negTrack -> Py();
+      pz_Daughter2 = negTrack -> Pz();
+      q_Daughter2  = (Int_t) negTrack -> Charge();
+      eta_Daughter2 = negTrack -> Eta();
+      phi_Daughter2 = negTrack -> Phi();
+      theta_Daughter2 = negTrack -> Theta();
+      y_Daughter2 = negTrack -> Y();
+      TPCmomentum_Daughter2 = negTrack->GetTPCmomentum();
+      trackID_Daughter2 = V0->GetNegID();
 
-        reducedTree_HyperTriton -> Fill();
+
+      //DCA
+      dcaz_Daughter2  = GetDCAz  (negTrack);
+      dcaxy_Daughter2 = GetDCAxy (negTrack);
+
+      nTPC_Clusters_Daughter2 = negTrack->GetTPCNcls();
+      nTRD_Clusters_Daughter2 = negTrack->GetTRDncls();
+      nITS_Clusters_Daughter2 = negTrack->GetITSNcls();
+
+      nTPC_FindableClusters_Daughter2 = negTrack->GetTPCNclsF();
+      nTPC_CrossedRows_Daughter2 = negTrack->GetTPCNCrossedRows();
+      nTPC_Clusters_dEdx_Daughter2 = negTrack -> GetTPCsignalN();
+
+      HasPointOnITSLayer0_Daughter2 = negTrack->HasPointOnITSLayer(0);
+      HasPointOnITSLayer1_Daughter2 = negTrack->HasPointOnITSLayer(1);
+      HasPointOnITSLayer2_Daughter2 = negTrack->HasPointOnITSLayer(2);
+      HasPointOnITSLayer3_Daughter2 = negTrack->HasPointOnITSLayer(3);
+      HasPointOnITSLayer4_Daughter2 = negTrack->HasPointOnITSLayer(4);
+      HasPointOnITSLayer5_Daughter2 = negTrack->HasPointOnITSLayer(5);
+
+      HasSharedPointOnITSLayer0_Daughter2 = negTrack->HasSharedPointOnITSLayer(0);
+      HasSharedPointOnITSLayer0_Daughter2 = negTrack->HasSharedPointOnITSLayer(1);
+      HasSharedPointOnITSLayer0_Daughter2 = negTrack->HasSharedPointOnITSLayer(2);
+      HasSharedPointOnITSLayer0_Daughter2 = negTrack->HasSharedPointOnITSLayer(3);
+      HasSharedPointOnITSLayer0_Daughter2 = negTrack->HasSharedPointOnITSLayer(4);
+      HasSharedPointOnITSLayer0_Daughter2 = negTrack->HasSharedPointOnITSLayer(5);
+
+      chi2_TPC_Daughter2 = negTrack -> GetTPCchi2();
+      chi2_ITS_Daughter2 = negTrack -> GetITSchi2();
+      chi2_NDF_Daughter2 = negTrack -> Chi2perNDF();
+
+      nSigmaITS_He3_Daughter2 = fPIDResponse -> NumberOfSigmasITS(negTrack,AliPID::kHe3);
+      nSigmaTPC_He3_Daughter2 = fPIDResponse -> NumberOfSigmasTPC(negTrack,AliPID::kHe3);
+      nSigmaTOF_He3_Daughter2 = fPIDResponse -> NumberOfSigmasTOF(negTrack,AliPID::kHe3);
+      nSigmaITS_Pion_Daughter2 = fPIDResponse -> NumberOfSigmasITS(negTrack,AliPID::kPion);
+      nSigmaTPC_Pion_Daughter2 = fPIDResponse -> NumberOfSigmasTPC(negTrack,AliPID::kPion);
+      nSigmaTOF_Pion_Daughter2 = fPIDResponse -> NumberOfSigmasTOF(negTrack,AliPID::kPion);
+      nSigmaITS_Trit_Daughter2 = fPIDResponse -> NumberOfSigmasITS(negTrack,AliPID::kTriton);
+      nSigmaTPC_Trit_Daughter2 = fPIDResponse -> NumberOfSigmasTPC(negTrack,AliPID::kTriton);
+      nSigmaTOF_Trit_Daughter2 = fPIDResponse -> NumberOfSigmasTOF(negTrack,AliPID::kTriton);
+
+      //Pair Variables
+      AliAODVertex *vtxPrimary = fAODevent->GetPrimaryVertex();
+      Double_t posVtx[3] = {0.,0.,0.};
+      vtxPrimary->GetXYZ(posVtx);
+      cosPointingAngle = V0->CosPointingAngle(posVtx);
+      dcaV0Daughters  = V0->DcaV0Daughters();
+      radius = V0->RadiusV0();
+      DecayLength = V0->DecayLengthV0(posVtx);
+      alphaV0 = V0 -> AlphaV0();
+      qtV0 = V0 -> PtArmV0();
+
+      reducedTree_HyperTriton -> Fill();
     }
   }
 
@@ -1175,7 +1175,7 @@ void AliAnalysisTaskReducedTreeNuclei::UserExec(Option_t *)
   PostData(3,reducedTree_Helium);
   if (fFillTri)    PostData(4,reducedTree_Triton);
   if (fFillHypTri) PostData(5,reducedTree_HyperTriton);
-//   PostData(6, TreeEventSelection);
+  //   PostData(6, TreeEventSelection);
 
 }
 //_______________________________________________________________________________________________________________________________________________________
@@ -1186,7 +1186,7 @@ Bool_t AliAnalysisTaskReducedTreeNuclei::GetInputEvent ()  {
   if (!fAODevent) return false;
 
   // checking for event trigger
-  Long64_t triggerMask = ((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected();  
+  Long64_t triggerMask = ((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected();
   isTrigINT7        = (triggerMask & AliVEvent::kINT7)    ? true : false;
   isTrigHighMult    = (triggerMask & AliVEvent::kHighMult)? true : false;
 
@@ -1197,7 +1197,7 @@ Bool_t AliAnalysisTaskReducedTreeNuclei::GetInputEvent ()  {
 
   
   //Event Cut
-//   SelectionStep=0;
+  //   SelectionStep=0;
   histoEventSelection->Fill(0.5,static_cast<Double_t>(whichTrig)); // Events before QA
 
 
@@ -1209,7 +1209,7 @@ Bool_t AliAnalysisTaskReducedTreeNuclei::GetInputEvent ()  {
   AliMultSelection *MultSelection = NULL;
   MultSelection = (AliMultSelection*) fAODevent->FindListObject("MultSelection");
 
-//   SelectionStep=1;
+  //   SelectionStep=1;
   histoEventSelection->Fill(1.5,static_cast<Double_t>(whichTrig)); // Events before multiplicity
   if (!MultSelection){
     PostData(2, fOutputList);
@@ -1248,9 +1248,9 @@ Bool_t AliAnalysisTaskReducedTreeNuclei::GetInputEvent ()  {
   estimator = MultSelection->GetEstimator("V0A");          if (estimator) { Ntrk_V0A = estimator->GetValue(); }
   estimator = MultSelection->GetEstimator("V0C");          if (estimator) { Ntrk_V0C = estimator->GetValue(); }
 
-//   SelectionStep=2;
+  //   SelectionStep=2;
   histoEventSelection->Fill(2.5,static_cast<Double_t>(whichTrig)); // Selected events
-  histoEventMultiplicity->Fill(multPercentile_V0A,static_cast<Double_t>(whichTrig));  
+  histoEventMultiplicity->Fill(multPercentile_V0A,static_cast<Double_t>(whichTrig));
   return true;
 }
 //_______________________________________________________________________________________________________________________________________________________
