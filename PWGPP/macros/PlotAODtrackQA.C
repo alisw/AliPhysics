@@ -22,6 +22,7 @@ void DrawDistrib(TH1D* h1, TH1D* h2, TH1D* h3, Bool_t showStat);
 TH1D* ComputeMatchEff(TH1D* hnumer, TH1D* hdenom, TString name, Int_t iCol, Int_t iMarker, TString xtitle);
 TH1D* ComputeRatio(TH1D* hnumer, TH1D* hdenom, TString name, Int_t iCol, Int_t iMarker, TString xtitle);
 void FillMeanAndRms(TH2F* h2d, TGraphErrors* gMean, TGraphErrors* gRms);
+Double_t fp2bkgk0(Double_t *x, Double_t *par);
 
 const Int_t totTrending=36;
 Float_t vecForTrend[totTrending];
@@ -1393,11 +1394,11 @@ void PlotAODtrackQA(TString filename="AnalysisResults.root", TString suffix="QA"
   TH1D* hInvMassK0sR4=hInvMassK0s3d->ProjectionX("hInvMassK0s1dR4",0,-1,z5,z6);
 
 
-  TF1* fmassk0=new TF1("fmassk0","[0]+[1]*x+[2]/sqrt(2.*TMath::Pi())/[4]*TMath::Exp(-0.5*(x-[3])*(x-[3])/[4]/[4])",0.46,0.54);
+  TF1* fmassk0=new TF1("fmassk0","[0]+[1]*x+[2]*x*x+[3]/sqrt(2.*TMath::Pi())/[5]*TMath::Exp(-0.5*(x-[4])*(x-[4])/[5]/[5])",0.44,0.56);
   fmassk0->SetLineWidth(2);
   fmassk0->SetLineColor(kMagenta+1);
 
-  TF1* fmassL=new TF1("fmassL","[0]+[1]*x+[2]/sqrt(2.*TMath::Pi())/[4]*TMath::Exp(-0.5*(x-[3])*(x-[3])/[4]/[4])",1.10,1.13);
+  TF1* fmassL=new TF1("fmassL","[0]+[1]*x+[2]*x*x+[3]/sqrt(2.*TMath::Pi())/[5]*TMath::Exp(-0.5*(x-[4])*(x-[4])/[5]/[5])",1.10,1.13);
   fmassL->SetLineWidth(2);
   fmassL->SetLineColor(kRed+1);
 
@@ -1453,6 +1454,7 @@ void PlotAODtrackQA(TString filename="AnalysisResults.root", TString suffix="QA"
   plotFileName=Form("Lambda-MassSpectra-VsR.%s",outputForm.Data());
   clam->SaveAs(plotFileName.Data());
   if(outputForm=="pdf") pdfFileNames+=Form("%s ",plotFileName.Data());
+
 
   TCanvas* ck0=new TCanvas("ck0","K0s vs. pt",1400,900);
   ck0->Divide(2,2);
@@ -1552,14 +1554,14 @@ void PlotAODtrackQA(TString filename="AnalysisResults.root", TString suffix="QA"
     tpfine->SetTextFont(43);
     tpfine->SetTextSize(24);
     tpfine->Draw();
-    hSigmaK0R4->SetBinContent(ipt+1,fmassk0->GetParameter(4)*1000.);
-    hSigmaK0R4->SetBinError(ipt+1,fmassk0->GetParError(4)*1000.);
+    hSigmaK0R4->SetBinContent(ipt+1,fmassk0->GetParameter(5)*1000.);
+    hSigmaK0R4->SetBinError(ipt+1,fmassk0->GetParError(5)*1000.);
     ctmpk0->cd(ipt+11);
     hTmpInvMassK0sAllR->Draw();
     InitFuncAndFit(hTmpInvMassK0sAllR,fmassk0,kTRUE);
     tpfine->Draw();
-    hSigmaK0AllR->SetBinContent(ipt+1,fmassk0->GetParameter(4)*1000.);
-    hSigmaK0AllR->SetBinError(ipt+1,fmassk0->GetParError(4)*1000.);    
+    hSigmaK0AllR->SetBinContent(ipt+1,fmassk0->GetParameter(5)*1000.);
+    hSigmaK0AllR->SetBinError(ipt+1,fmassk0->GetParError(5)*1000.);    
   }
 
   TCanvas* cResolK0=new TCanvas("cresolK0","K0 width vs pt",800,600);
@@ -1605,33 +1607,48 @@ void PlotAODtrackQA(TString filename="AnalysisResults.root", TString suffix="QA"
 }
 
 void InitFuncAndFit(TH1D* hm, TF1* fmass, Bool_t isK0s){
-  fmass->SetParameter(0,hm->GetBinContent(hm->FindBin(1.10)));
-  if(isK0s)  fmass->SetParameter(0,hm->GetBinContent(hm->FindBin(0.45)));
-  fmass->SetParameter(1,0.);
-  //  fmass->SetParLimits(1,-99999999999,0.);
-  fmass->SetParameter(2,100.);
+
+  // first estimate of background
+  Double_t cntpeak,expSigma;
   if(isK0s){
-    fmass->SetParameter(3,0.5);
-    fmass->SetParLimits(3,0.49,0.51);
-    fmass->SetParameter(4,0.002);
-    fmass->SetParLimits(4,0.0006,0.02);
+    TF1* ffb = new TF1("fp2bkgk0",fp2bkgk0,0.44,0.56,3);
+    hm->Fit("fp2bkgk0","R");
+    for(Int_t k=0; k<3; k++) fmass->SetParameter(k,ffb->GetParameter(k));
+    cntpeak=hm->GetBinContent(hm->FindBin(0.498))-ffb->Integral(0.498-0.5*hm->GetBinWidth(1),0.498+hm->GetBinWidth(1));
+    delete ffb;
+    expSigma=0.004;
   }else{
-    fmass->SetParameter(3,1.116);
-    fmass->SetParLimits(3,1.11,1.12);
-    fmass->SetParameter(4,0.002);
-    fmass->SetParLimits(4,0.0006,0.003);
+    fmass->SetParameter(0,hm->GetBinContent(hm->FindBin(1.10)));
+    fmass->SetParameter(1,0.);
+    fmass->FixParameter(2,0.);
+    cntpeak=hm->GetBinContent(hm->FindBin(1.116))-hm->GetBinContent(hm->FindBin(1.14));
+    expSigma=0.0015;
+  }
+  //  fmass->SetParLimits(1,-99999999999,0.);
+  fmass->SetParameter(3,cntpeak*TMath::Sqrt(2*TMath::Pi())*expSigma);
+  //  fmass->SetParLimits(3,0.,9999999999.);
+  if(isK0s){
+    fmass->SetParameter(4,0.5);
+    fmass->SetParLimits(4,0.49,0.51);
+    fmass->SetParameter(5,0.002);
+    fmass->SetParLimits(5,0.0006,0.02);
+  }else{
+    fmass->SetParameter(4,1.116);
+    fmass->SetParLimits(4,1.11,1.12);
+    fmass->SetParameter(5,0.0015);
+    fmass->SetParLimits(5,0.0006,0.003);
   }
 
-  hm->Fit(fmass,"R");
-  TLatex* t1=new TLatex(0.14,0.8,Form("Mean = %.3f+-%.3f GeV/c^{2}",fmass->GetParameter(3),fmass->GetParError(3)));
+  hm->Fit(fmass,"RL");
+  TLatex* t1=new TLatex(0.14,0.8,Form("Mean = %.3f+-%.3f GeV/c^{2}",fmass->GetParameter(4),fmass->GetParError(4)));
   t1->SetTextSize(0.04);
   t1->SetNDC();
   t1->Draw();
-  TLatex* t2=new TLatex(0.14,0.75,Form("Sigma = %.2f+-%.2f MeV/c^{2}",fmass->GetParameter(4)*1000.,fmass->GetParError(4)*1000.));
+  TLatex* t2=new TLatex(0.14,0.75,Form("Sigma = %.2f+-%.2f MeV/c^{2}",fmass->GetParameter(5)*1000.,fmass->GetParError(5)*1000.));
   t2->SetNDC();
   t2->SetTextSize(0.04);
   t2->Draw();
-  TLatex* t3=new TLatex(0.14,0.7,Form("Yield = %.0f+-%.0f",fmass->GetParameter(2)/hm->GetBinWidth(1),fmass->GetParError(2)/hm->GetBinWidth(1)));
+  TLatex* t3=new TLatex(0.14,0.7,Form("Yield = %.0f+-%.0f",fmass->GetParameter(3)/hm->GetBinWidth(1),fmass->GetParError(3)/hm->GetBinWidth(1)));
   t3->SetNDC();
   t3->SetTextSize(0.04);
   t3->Draw();
@@ -1773,3 +1790,11 @@ void FillMeanAndRms(TH2F* h2d, TGraphErrors* gMean, TGraphErrors* gRms){
   }
 }
  
+
+Double_t fp2bkgk0(Double_t *x, Double_t *par){
+  if (x[0] > 0.47 && x[0] < 0.53) {
+    TF1::RejectPoint();
+    return 0;
+  }
+  return par[0] + par[1]*x[0] + par[2]*x[0]*x[0];
+}
