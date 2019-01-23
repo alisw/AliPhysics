@@ -1501,8 +1501,8 @@ void AddTask_GammaConvCalo_pp(
   // 13 TeV EDC (EMCal + DCal)
   //*************************************************************************************************
   } else if ( trainConfig == 2002){ // EMCAL clusters
-    cuts.AddCutPCMCalo("00010113","00200009327000008250400000","4997700007032220000","0163103100000010"); // no timing cut, no NL INT7
-    cuts.AddCutPCMCalo("00010113","00200009327000008250400000","4997700067032220000","0163103100000010"); // -50ns, 30ns timing cut, no NL INT7
+    cuts.AddCutPCMCalo("00010113","00200009327000008250400000","4997900007032220000","0163103100000010"); // no timing cut, no NL INT7
+    cuts.AddCutPCMCalo("00010113","00200009327000008250400000","4997900067032220000","0163103100000010"); // -50ns, 30ns timing cut, no NL INT7
 
   } else {
     Error(Form("GammaConvCalo_%i",trainConfig), "wrong trainConfig variable no cuts have been specified for the configuration");
