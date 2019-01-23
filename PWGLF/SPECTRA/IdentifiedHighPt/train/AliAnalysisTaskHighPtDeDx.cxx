@@ -31,6 +31,7 @@
                  fTriggerInt;         // 0 = kMB, 1 = kCent, 2 = kSemiCent
                  fV0Finder;           // 0 = oldFinder, 1 = newFinder
                  fCentFramework;      // 0 = AliCentrality, 1 = AliMultSelection
+  * 23 jan 2019: add more filter bit flags for v0 daughters, and make sure TPCrefit, nCrossedRowsTPC, and findable cuts are always there 
 
   Remiders:
   * For pp: remove pile up thing
@@ -1241,40 +1242,50 @@ void AliAnalysisTaskHighPtDeDx::ProduceArrayTrksAOD( AliAODEvent *AODevent, Anal
       
     UShort_t filterFlag = 0;
     
+    // "Global track RAA analysis QM2011 + Chi2ITS<36"; bit 1024
     if (fTrackFilterGolden) {
-      // "Global track RAA analysis QM2011 + Chi2ITS<36"; bit 1024 
       if(aodTrack->TestFilterBit(1024)) filterFlag +=1;
     }
     
+    // FILTER 128 ARE TPC ONLY TRACKS (TPC PARAMETERS) CONTRAINED TO THE SPD VERTEX
     if (fTrackFilterTPC) {
-      // TPC only cuts is bit 1 according to above macro
-      // Alex always uses 128, NOTE: FILTER 128 ARE TPC TRACKS (TPC PARAMETERS) CONTRAINED TO THE SPD VERTEX, 
-      //Bit 7 (128)	TPC only tracks,constrained to SPD vertex in the filter
       if(aodTrack->TestFilterBit(128)) filterFlag +=2;
     }
-            
+    
+    // tighter cuts on primary particles for high pT tracks
+    // take the standard cuts, which include already 
+    // ITSrefit and use only primaries...
     if (fTrackFilter) {
-      // tighter cuts on primary particles for high pT tracks
-      // take the standard cuts, which include already 
-      // ITSrefit and use only primaries...
-      // bit 32
       if(aodTrack->TestFilterBit(32)) filterFlag +=4;
     }
-
+    
+    //https://twiki.cern.ch/twiki/bin/view/ALICE/HybridTracks
+    //PbPb LHC10h	160	768	 
+    //PbPb LHC11h	145	768
     if(aodTrack->TestFilterBit(768)) filterFlag +=8; 
-      //https://twiki.cern.ch/twiki/bin/view/ALICE/HybridTracks
-      //PbPb LHC10h	160	768	 
-      //PbPb LHC11h	145	768
 
-    if(aodTrack->IsOn(AliAODTrack::kTPCrefit)){ 
-      Float_t nCrossedRowsTPC = aodTrack->GetTPCClusterInfo(2,1);
-      if (nCrossedRowsTPC >= 70) {
-	Int_t findable=aodTrack->GetTPCNclsF();
-	if (findable > 0){ 
-	  if (nCrossedRowsTPC/findable >= 0.8) filterFlag += 16;
-	}
-      }
-    }
+
+    //new method 23 Jan 2019:
+    
+    if(!aodTrack->IsOn(AliAODTrack::kTPCrefit)) continue;
+
+    Float_t nCrossedRowsTPC = aodTrack->GetTPCClusterInfo(2,1);
+    if(nCrossedRowsTPC < 70) continue;
+    Int_t findable = aodTrack->GetTPCNclsF();
+    if(findable < 0) continue;
+    if(nCrossedRowsTPC/findable < 0.8) continue;        
+      
+    //old method (before 23 Jan 2019):
+    // if(aodTrack->IsOn(AliAODTrack::kTPCrefit)){ 
+    //   Float_t nCrossedRowsTPC = aodTrack->GetTPCClusterInfo(2,1);
+    //   if (nCrossedRowsTPC >= 70) {
+    // 	Int_t findable=aodTrack->GetTPCNclsF();
+    // 	if (findable > 0){ 
+    // 	  if (nCrossedRowsTPC/findable >= 0.8) filterFlag += 16;
+    // 	}
+    //   }
+    // }
+
     
     if(filterFlag==0) continue;
       
@@ -1413,52 +1424,89 @@ void AliAnalysisTaskHighPtDeDx::ProduceArrayV0AOD( AliAODEvent *AODevent, Analys
       nTrack = helpTrack;
     } 
         
+
+    //#### see info about filters at track level in this task ####
+
     //#### check positive tracks ####
     UShort_t filterFlag_p = 0;
-
-    if(fTrackFilterGolden){ // For AOD068  
+    
+    if(fTrackFilterGolden){
       if(pTrack->TestFilterBit(1024)) filterFlag_p +=1;
     }
     
     if(fTrackFilterTPC){
-      // TPC only cuts is bit 1 according to above macro
-      // Alex always uses 128, NOTE: FILTER 128 ARE TPC TRACKS (TPC PARAMETERS) CONTRAINED TO THE SPD VERTEX, 
       if(pTrack->TestFilterBit(128)) filterFlag_p +=2;	  
     }
     
-    if(pTrack->IsOn(AliAODTrack::kTPCrefit)){ 
-      Float_t nCrossedRowsTPC = pTrack->GetTPCClusterInfo(2,1);
-      if (nCrossedRowsTPC >= 70) {
-	Int_t findable=pTrack->GetTPCNclsF();
-	if (findable > 0){ 
-	  if (nCrossedRowsTPC/findable >= 0.8) filterFlag_p += 16;
-	}
-      }
+    if (fTrackFilter){
+      if(pTrack->TestFilterBit(32)) filterFlag_p +=4;
     }
-      
+    
+    if(pTrack->TestFilterBit(768)) filterFlag_p +=8; 
+
+
+    //new method 23 Jan 2019:
+    
+    if(!pTrack->IsOn(AliAODTrack::kTPCrefit)) continue;
+    
+    Float_t nCrossedRowsTPC_p = pTrack->GetTPCClusterInfo(2,1);
+    if(nCrossedRowsTPC_p < 70) continue;
+    Int_t findable_p = pTrack->GetTPCNclsF();
+    if(findable_p < 0) continue;
+    if(nCrossedRowsTPC_p/findable_p < 0.8) continue;        
+    
+    //old method (before 23 Jan 2019):
+    // if(pTrack->IsOn(AliAODTrack::kTPCrefit)){ 
+    //   Float_t nCrossedRowsTPC_p = pTrack->GetTPCClusterInfo(2,1);
+    //   if (nCrossedRowsTPC_p >= 70) {
+    // 	Int_t findable_p=pTrack->GetTPCNclsF();
+    // 	if (findable_p > 0){ 
+    // 	  if (nCrossedRowsTPC_p/findable_p >= 0.8) filterFlag_p += 16;
+    // 	}
+    //   }
+    // }
+    
     //#### check negative tracks ####
     UShort_t filterFlag_n = 0;
-
+    
     if(fTrackFilterGolden){
       if(nTrack->TestFilterBit(1024)) filterFlag_n +=1;
     }
     
     if(fTrackFilterTPC){
-      // TPC only cuts is bit 1 according to above macro
-      // Alex always uses 128, NOTE: FILTER 128 ARE TPC TRACKS (TPC PARAMETERS) CONTRAINED TO THE SPD VERTEX, 
-      if(nTrack->TestFilterBit(128)) filterFlag_n +=2;
+      if(nTrack->TestFilterBit(128)) filterFlag_n +=2;	  
     }
     
-    if(nTrack->IsOn(AliAODTrack::kTPCrefit)){
-      Float_t nCrossedRowsTPC = pTrack->GetTPCClusterInfo(2,1);
-      if (nCrossedRowsTPC >= 70) {
-	Int_t findable=nTrack->GetTPCNclsF();
-	if (findable > 0){ 
-	  if (nCrossedRowsTPC/findable >= 0.8) filterFlag_n += 16;
-	}
-      }
+    if (fTrackFilter){
+      if(nTrack->TestFilterBit(32)) filterFlag_n +=4;
     }
-      
+    
+    if(nTrack->TestFilterBit(768)) filterFlag_n +=8; 
+
+
+    //new method 23 Jan 2019:
+    
+    if(!nTrack->IsOn(AliAODTrack::kTPCrefit)) continue;
+    
+    Float_t nCrossedRowsTPC_n = nTrack->GetTPCClusterInfo(2,1);
+    if(nCrossedRowsTPC_n < 70) continue;
+    Int_t findable_n = nTrack->GetTPCNclsF();
+    if(findable_n < 0) continue;
+    if(nCrossedRowsTPC_n/findable_n < 0.8) continue;        
+    
+    //old method (before 23 Jan 2019):
+    // if(nTrack->IsOn(AliAODTrack::kTPCrefit)){ 
+    //   Float_t nCrossedRowsTPC_n = nTrack->GetTPCClusterInfo(2,1);
+    //   if (nCrossedRowsTPC_n >= 70) {
+    // 	Int_t findable_n=nTrack->GetTPCNclsF();
+    // 	if (findable_n > 0){ 
+    // 	  if (nCrossedRowsTPC_n/findable_n >= 0.8) filterFlag_n += 16;
+    // 	}
+    //   }
+    // }
+
+
+  
     
     Double_t lV0Radius         = aodV0->RadiusV0();
     Float_t alpha              = aodV0->AlphaV0();

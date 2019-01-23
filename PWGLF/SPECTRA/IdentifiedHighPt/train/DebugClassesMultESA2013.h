@@ -23,9 +23,6 @@ class DeDxTrack : public TObject
   Short_t   pid;
   Short_t   primary;  
   Short_t   order;
-  //Bool_t    filterset1;//TPC  
-  //Bool_t    filterset2;//2010 old
-  //Bool_t    filterset3;//2010 golden
   Int_t     tpcnclS; //number of shared TPC clusters
 
   DeDxTrack();

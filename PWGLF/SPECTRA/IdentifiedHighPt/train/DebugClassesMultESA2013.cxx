@@ -26,9 +26,6 @@ TObject(),
   pid(-999),
   primary(-999),
   order(-1),
-//filterset1(0),
-// filterset2(0),
-//filterset3(0),
   tpcnclS(0)
 
 {
