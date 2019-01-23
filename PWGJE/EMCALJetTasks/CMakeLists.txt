@@ -35,8 +35,8 @@ include_directories(${ROOT_INCLUDE_DIRS}
                     ${AliPhysics_SOURCE_DIR}/PWG/CaloTrackCorrBase
                     ${AliPhysics_SOURCE_DIR}/PWGHF/jetsHF
                     ${AliPhysics_SOURCE_DIR}/PWGHF/vertexingHF
-		                     )
-
+                             )
+                             
 # Sources in alphabetical order
 set(SRCS
     AliAnalysisTaskDeltaPt.cxx
@@ -227,23 +227,30 @@ set(SRCS
     UserTasks/AliTrackContainerToyModel.cxx
     UserTasks/AliMCParticleContainerToyModel.cxx)
 
+# Tasks that need direct access to RooUnfold
+if(RooUnfold_FOUND)
+    get_target_property(ROOUNFOLD_INCLUDE_DIR RooUnfold::RooUnfold INTERFACE_INCLUDE_DIRECTORIES)
+    include_directories(${ROOUNFOLD_INCLUDE_DIR})
+endif(RooUnfold_FOUND)
+
+# Tasks that need direct access to Fastjet
 if(FASTJET_FOUND)
     set(SRCS ${SRCS}
         AliFJWrapper.cxx
         AliEmcalJetUtility.cxx
         AliEmcalJetUtilityGenSubtractor.cxx
         AliEmcalJetUtilityConstSubtractor.cxx
-	AliEmcalJetUtilityEventSubtractor.cxx
+	    AliEmcalJetUtilityEventSubtractor.cxx
         AliEmcalJetUtilitySoftDrop.cxx
         AliEmcalJetTask.cxx
         AliEmcalJetFinder.cxx
         AliJetEmbeddingFromAODTask.cxx
-	AliJetEmbeddingFromPYTHIATask.cxx
+	    AliJetEmbeddingFromPYTHIATask.cxx
         AliJetShape.cxx
-	UserTasks/AliAnalysisTaskEmcalQGTagging.cxx
+	    UserTasks/AliAnalysisTaskEmcalQGTagging.cxx
         UserTasks/AliAnalysisTaskEmcalJetShapesMC.cxx
         UserTasks/AliAnalysisTaskEmcalJetShapeExtra.cxx
-	UserTasks/AliAnalysisTaskFullpAJets.cxx
+	    UserTasks/AliAnalysisTaskFullpAJets.cxx
         UserTasks/AliAnalysisTaskFullppJet.cxx
         UserTasks/AliAnalysisTaskHJetDphi.cxx
         UserTasks/AliAnalysisTaskHJetSpectra.cxx
@@ -251,18 +258,24 @@ if(FASTJET_FOUND)
         UserTasks/AliAnalysisTaskSVtaskMCFilter.cxx
         UserTasks/AliAnalysisTaskEA.cxx
         UserTasks/AliAnalysisTaskSubJetFraction.cxx
-	UserTasks/AliAnalysisTaskRecoilJetYield.cxx
-	UserTasks/AliAnalysisTaskRecursiveSoftDrop.cxx
+	    UserTasks/AliAnalysisTaskRecoilJetYield.cxx
+	    UserTasks/AliAnalysisTaskRecursiveSoftDrop.cxx
         UserTasks/AliAnalysisTaskJetSubstructure.cxx
         UserTasks/AliAnalysisTaskSoftDrop.cxx
         UserTasks/AliAnalysisTaskSoftDropResponse.cxx
         UserTasks/AliAnalysisTaskEmcalSubjet.cxx
-				UserTasks/AliAnalysisTaskJetCoreEmcal.cxx
+	    UserTasks/AliAnalysisTaskJetCoreEmcal.cxx
         Tracks/AliAnalysisTaskPtEfficiencyJets.cxx
         Tracks/AliHighPtReconstructionEfficiency.cxx
         Tracks/AliAnalysisTaskTracksInJet.cxx
 	    Tracks/AliAnalysisTaskEmcalJetSubstructureTree.cxx
         )
+    # Tasks that need both Fastjet and RooUnfold
+    if(RooUnfold_FOUND)
+        set(SRCS ${SRCS}
+        Tracks/AliAnalysisTaskEmcalSoftDropResponse.cxx)
+        add_definitions("-DWITH_ROOUNFOLD")
+    endif(RooUnfold_FOUND)
     include_directories(${AliPhysics_SOURCE_DIR}/JETAN/JETAN)
     include_directories(SYSTEM ${FASTJET_INCLUDE_DIR})
     link_directories(${FASTJET_LIBS_DIR})
@@ -304,6 +317,12 @@ if(FASTJET_FOUND)
     fastjet
     )
 endif(FASTJET_FOUND)
+set(ROOUNFOLD_DEPENDENCIES)
+if(RooUnfold_FOUND)
+    get_target_property(ROOUNFOLD_LIBRARY RooUnfold::RooUnfold IMPORTED_LOCATION)
+    set(LIBDEPS ${LIBDEPS} ${ROOUNFOLD_LIBRARY})
+    set(ROOUNFOLD_DEPENDENCIES ${ROOUNFOLD_LIBRARY})
+endif(RooUnfold_FOUND)
 generate_rootmap("${MODULE}" "${LIBDEPS}" "${CMAKE_CURRENT_SOURCE_DIR}/${MODULE}LinkDef.h")
 
 # Generate a PARfile target for this library. Note the extra includes ("Tracks UserTasks")
@@ -314,7 +333,7 @@ add_target_parfile(${MODULE} "${SRCS}" "${HDRS}" "${MODULE}LinkDef.h" "${LIBDEPS
 add_library(${MODULE}-object OBJECT ${SRCS} G__${MODULE}.cxx)
 # Add a library to the project using the object
 add_library_tested(${MODULE} SHARED $<TARGET_OBJECTS:${MODULE}-object>)
-target_link_libraries(${MODULE} ${ALIROOT_DEPENDENCIES} ${ROOT_DEPENDENCIES})
+target_link_libraries(${MODULE} ${ALIROOT_DEPENDENCIES} ${ROOT_DEPENDENCIES} ${ROOUNFOLD_DEPENDENCIES})
 
 # Setting the correct headers for the object as gathered from the dependencies
 target_include_directories(${MODULE}-object PUBLIC $<TARGET_PROPERTY:${MODULE},INCLUDE_DIRECTORIES>)
