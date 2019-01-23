@@ -166,7 +166,7 @@ AliFemtoManager* ConfigFemtoAnalysis(const char* params) {
 
 	int gammacut = 1;	// cut na ee z gamma 
 	
-	double shqmax = 1.0; 
+	double shqmax = 2.0; 
 	int nbinssh = 100;
 
 	//AliFemtoEventReaderESDChain *Reader = new AliFemtoEventReaderESDChain();
