@@ -1061,15 +1061,15 @@ void AddTask_GammaCalo_pp(
     cuts.AddCutCalo("00085113","111111106h032220000","01631031000000d0"); // fEOverPMax = 1.25
 
   } else if (trainConfig == 480){ // INT7 EMCAL standard cut with triggers - NO TM - CALO+CALOFAST readout triggers
-    cuts.AddCutCalo("000a0113","1111111060032220000","01631031000000d0"); // std INT7
-    cuts.AddCutCalo("000a1113","1111111060032220000","01631031000000d0"); // std EMC7
-    cuts.AddCutCalo("000a2113","1111111060032220000","01631031000000d0"); // std EG2
-    cuts.AddCutCalo("000a3113","1111111060032220000","01631031000000d0"); // std EG1
+    cuts.AddCutCalo("000a0113","11111110a0032230000","01631031000000d0"); // std INT7
+    cuts.AddCutCalo("000a1113","11111110a0032230000","01631031000000d0"); // std EMC7
+    cuts.AddCutCalo("000a2113","11111110a0032230000","01631031000000d0"); // std EG2
+    cuts.AddCutCalo("000a3113","11111110a0032230000","01631031000000d0"); // std EG1
   } else if (trainConfig == 481){ // INT7 EMCAL standard cut with triggers - NO TM
-    cuts.AddCutCalo("00010113","1111111060032220000","01631031000000d0"); // std INT7
-    cuts.AddCutCalo("00052113","1111111060032220000","01631031000000d0"); // std EMC7
-    cuts.AddCutCalo("00085113","1111111060032220000","01631031000000d0"); // std EG2
-    cuts.AddCutCalo("00083113","1111111060032220000","01631031000000d0"); // std EG1
+    cuts.AddCutCalo("00010113","11111110a0032230000","01631031000000d0"); // std INT7
+    cuts.AddCutCalo("00052113","11111110a0032230000","01631031000000d0"); // std EMC7
+    cuts.AddCutCalo("00085113","11111110a0032230000","01631031000000d0"); // std EG2
+    cuts.AddCutCalo("00083113","11111110a0032230000","01631031000000d0"); // std EG1
   // *********************************************************************************************************
   // 13 TeV  pp Run2 - EMC configurations
   // *********************************************************************************************************
@@ -1394,6 +1394,8 @@ void AddTask_GammaCalo_pp(
   } else if (trainConfig == 2002){  // EMCAL+DCAL clusters 13 TeV std. QA
     cuts.AddCutCalo("00010113","4997700007032220000","01631031000000d0"); // no timing cut, no NL INT7
     cuts.AddCutCalo("00010113","4997700067032220000","01631031000000d0"); // -30ns, 35ns timing cut, no NL INT7
+  } else if (trainConfig == 2003){ // EMCAL+DCAL clusters standard cuts - QA extra stripes
+    cuts.AddCutCalo("00010113","49999110a7032230000","01631031000000d0"); // Standard EDC
 
   } else {
     Error(Form("GammaCalo_%i",trainConfig), "wrong trainConfig variable no cuts have been specified for the configuration");
