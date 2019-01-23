@@ -34,8 +34,8 @@ void ConfigWeightFactors_PbPb5TeV(AliAnalysisTaskHFE *task, Bool_t syst = kFALSE
     TFile *weightFile = TFile::Open(Form("$ALICE_PHYSICS/PWGHF/hfe/macros/%s", filename.Data()));
 
   if(weightFile){
+    TH1F *hRelErr[9][2];//errors for pion yields, which form the correlated component of the relative error for all other decaying mesons, except for eta, which are parameterized independently
     if(syst){
-      TH1F *hRelErr[9][2];//errors for pion yields, which form the correlated component of the relative error for all other decaying mesons, except for eta, which are parameterized independently
       if(collType == 1){
         hRelErr[0][0] = (TH1F*)weightFile->Get("hErrorspionLower");
         hRelErr[0][1] = (TH1F*)weightFile->Get("hErrorspionUpper");
