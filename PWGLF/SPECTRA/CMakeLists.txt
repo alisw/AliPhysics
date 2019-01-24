@@ -125,6 +125,7 @@ set(SRCS
   AntiprotonToProton/train/AliAnalysisTaskProtonQA.cxx
   AntiprotonToProton/train/AliAnalysisTaskProtonAbsorbtion.cxx
   Spherocity/AliTransverseEventShape.cxx
+  Spherocity/AliSpherocityEstimator.cxx
   Spherocity/AliSpherocityUtils.cxx
 )
 

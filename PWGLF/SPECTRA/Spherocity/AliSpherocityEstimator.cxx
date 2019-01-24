@@ -1,3 +1,10 @@
+/*
+Light-weighted spherocity estimator class ready to use.
+To run, create AliSpherocityEstimator object in the AnalysisTask and
+call AliSpherocityEstimator::GetSpherocity(AliESDEvent*). Has all the
+default cuts set.
+Written by Vytautas Vislavicius
+*/
 #include "AliSpherocityEstimator.h"
 ClassImp(AliSpherocityEstimator)
 AliSpherocityEstimator::AliSpherocityEstimator():
