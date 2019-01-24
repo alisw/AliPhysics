@@ -187,11 +187,11 @@ void AliDielectronMixingHandler::Fill(const AliVEvent *ev, AliDielectron *diele)
     DoMixing(pool,diele);
 
     // update object counter, i.e. fPIDobjectCount + number of newly referenced objects
-    if(TProcessID::GetObjectCount() < UINT_MAX){
+    if(TProcessID::GetObjectCount() < (UInt_t)0xffffffff ){
       fPIDobjectCount = TProcessID::GetObjectCount();
     }
     else{
-      AliWarning("TProcessID::GetObjectCount() >= UINT_MAX; set fPIDobjectCount = 0");
+      AliWarning("TProcessID::GetObjectCount() >= UINT_MAX [0xffffffff]; set fPIDobjectCount = 0");
       fPIDobjectCount = 0;
     }
   }
