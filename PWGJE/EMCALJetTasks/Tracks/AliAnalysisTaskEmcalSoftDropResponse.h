@@ -51,6 +51,7 @@ public:
     kKTAlgo = 1,
     kAKTAlgo = 2
   };
+
   AliAnalysisTaskEmcalSoftDropResponse();
   AliAnalysisTaskEmcalSoftDropResponse(const char *name);
   virtual ~AliAnalysisTaskEmcalSoftDropResponse();
