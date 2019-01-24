@@ -14,11 +14,12 @@
 # **************************************************************************/
 
 #Module
-set(MODULE vertexingHFTMVA)
-add_definitions(-D_MODULE_="${MODULE}")
+set(MODULETMVA vertexingHFTMVA)
+add_definitions(-D_MODULETMVA_="${MODULETMVA}")
 
 # Module include folder
-include_directories(${AliPhysics_SOURCE_DIR}/PWGHF/vertexingHF/TMVA)
+include_directories(${AliPhysics_SOURCE_DIR}/PWGHF/vertexingHF/TMVA
+                    ${AliPhysics_SOURCE_DIR}/PWGHF/vertexingHF)
 
 
 # Sources - alphabetical order
@@ -27,6 +28,8 @@ set(SRCS
 
 set(HDRS
   LHC16i2_TMVAClassification_BDT_BDT_Default_6_12.class.C
+  LHC16i2_TMVAClassification_BDT_BDT_Default_4_6.class.C
+  BDT_DefaultNode.C
   )
 
 
@@ -34,28 +37,28 @@ set(HDRS
 # Generate the dictionary
 # It will create G_ARG1.cxx and G_ARG1.h / ARG1 = function first argument
 get_directory_property(incdirs INCLUDE_DIRECTORIES)
-generate_dictionary("${MODULE}" "${MODULE}LinkDef.h" "${HDRS}" "${incdirs}")
+generate_dictionary("${MODULETMVA}" "${MODULETMVA}LinkDef.h" "${HDRS}" "${incdirs}")
 
 # Add a shared library
-add_library_tested(${MODULE} SHARED  ${SRCS} G__${MODULE}.cxx)
+add_library_tested(${MODULETMVA} SHARED  ${SRCS} G__${MODULETMVA}.cxx)
 
 # Generate the ROOT map
 # Dependecies
-generate_rootmap("${MODULE}" "" "${CMAKE_CURRENT_SOURCE_DIR}/${MODULE}LinkDef.h")
+generate_rootmap("${MODULETMVA}" "" "${CMAKE_CURRENT_SOURCE_DIR}/${MODULETMVA}LinkDef.h")
 
 # Linking the library
-target_link_libraries(${MODULE})
+target_link_libraries(${MODULETMVA})
 
 # Public include folders that will be propagated to the dependecies
-target_include_directories(${MODULE} PUBLIC ${incdirs})
+target_include_directories(${MODULETMVA} PUBLIC ${incdirs})
 
 # System dependent: Modify the way the library is build
 if(${CMAKE_SYSTEM} MATCHES Darwin)
-    set_target_properties(${MODULE} PROPERTIES LINK_FLAGS "-undefined dynamic_lookup")
+    set_target_properties(${MODULETMVA} PROPERTIES LINK_FLAGS "-undefined dynamic_lookup")
 endif(${CMAKE_SYSTEM} MATCHES Darwin)
 
 # Installation
-install(TARGETS ${MODULE}
+install(TARGETS ${MODULETMVA}
   ARCHIVE DESTINATION lib
   LIBRARY DESTINATION lib)
 
