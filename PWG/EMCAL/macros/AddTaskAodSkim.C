@@ -57,8 +57,8 @@ AliAodSkimTask *AddTaskAodSkim( const Double_t mine           = -1,
   AliAODInputHandler *input = (AliAODInputHandler*)mgr->GetInputEventHandler();
   AliAodSkimTask *task = new AliAodSkimTask(tname);
   task->SetClusMinE(mine);
-  task->SetTrackPt(minpt);
-  task->SetDoBothTrackAndClus(doBothEandPt);
+  task->SetTrackMinPt(minpt);
+  task->SetDoBothMinTrackAndClus(doBothMinEandPt);
   if (gammabr) {
     task->SetGammaBrName(gammabr);
     task->SetCopyConv(kTRUE);
