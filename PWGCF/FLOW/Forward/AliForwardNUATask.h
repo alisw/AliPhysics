@@ -87,7 +87,7 @@ public:
   virtual void UserExec(Option_t *option);
 
   static Double_t InterpolateWeight(const TH2D& forwarddNdedp,Int_t phiBin, Int_t etaBin, Double_t weight);
-  void MakeFakeHoles(TH2D& forwarddNdedp);
+  //void MakeFakeHoles(TH2D& forwarddNdedp);
 
   /**
    * End of job

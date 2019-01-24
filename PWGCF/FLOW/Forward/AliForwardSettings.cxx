@@ -26,7 +26,7 @@ AliForwardSettings::AliForwardSettings() :
   mc(false),
   esd(false),
   tracktype(kHybrid),
-  nua_mode(kFALSE),
+  nua_mode(kNormal),
   useTPC{kTRUE},
   useSPD(kFALSE),
   use_primaries(kFALSE),

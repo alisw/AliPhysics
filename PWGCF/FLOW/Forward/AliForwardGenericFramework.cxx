@@ -67,12 +67,15 @@ void AliForwardGenericFramework::CumulantsAccumulate(TH2D& dNdetadphi, TList* ou
       }
       if (fSettings.doNUA){
         // holes in the FMD
-        if (!fSettings.mc){
-          if ((phiBin == 17 || phiBin == 18 || phiBin == 14) && (weight == 0)){
-            if (detType == "forward") weight = 1.;
+        if ((fSettings.nua_mode & fSettings.kFill) && detType == "forward"){
+          if (etaBin >= 125 && etaBin <=137){
+            if (phiBin == 17 || phiBin == 18) weight = 1.;
+          }
+          if (etaBin >= 168 && etaBin <=185){
+            if (phiBin == 14) weight = 1.;
           }
         }
-        if (fSettings.nua_mode) weight = AliForwardNUATask::InterpolateWeight(dNdetadphi,phiBin,etaBin,weight);
+        if ((fSettings.nua_mode & fSettings.kInterpolate) && detType == "forward") weight = AliForwardNUATask::InterpolateWeight(dNdetadphi,phiBin,etaBin,weight);
 
         if (detType == "central") {
           Double_t nuaeta = fSettings.nuacentral->GetXaxis()->FindBin(eta);
@@ -89,7 +92,7 @@ void AliForwardGenericFramework::CumulantsAccumulate(TH2D& dNdetadphi, TList* ou
         }
       }
 
-    if (weight == 0) continue;
+    if (weight == 0 || weight > 10.0) continue;
     for (Int_t n = 0; n <= 5; n++) {
       for (Int_t p = 1; p <= 4; p++) {
         Double_t realPart = TMath::Power(weight, p)*TMath::Cos(n*phi);

@@ -19,7 +19,7 @@
  *
  * @ingroup pwglf_forward_flow
  */
-AliAnalysisTaskSE* AddTaskForwardFlowRun2( bool doNUA, bool makeFakeHoles, TString nua_file, bool nua_mode, bool doetagap, Double_t gap, bool mc,  bool esd,bool prim_cen,bool prim_fwd , UInt_t tracktype, TString centrality,TString name1)
+AliAnalysisTaskSE* AddTaskForwardFlowRun2( bool doNUA, bool makeFakeHoles, TString nua_file, UShort_t nua_mode, bool doetagap, Double_t gap, bool mc,  bool esd,bool prim_cen,bool prim_fwd , UInt_t tracktype, TString centrality,TString name1)
 {
   std::cout << "______________________________________________________________________________" << std::endl;
 
@@ -102,17 +102,20 @@ AliAnalysisTaskSE* AddTaskForwardFlowRun2( bool doNUA, bool makeFakeHoles, TStri
     // std::cerr << "   Using default value: '" << nua_filepath << "'\n";
     //}
     TFile *file;
+    file = new TFile(nua_file);
 
-    if (nua_mode) {
-      // INTERPOLATE
-      resName += "_NUA_extrapolated";
-        file = new TFile(nua_file);
-    }
-    else {
-      // FILL
-        file = new TFile(nua_file);
-        resName += "_NUA_filled";
-    }
+
+    if (nua_mode == AliForwardSettings::kInterpolate)
+      resName += "_NUA_interpolate";
+    if (nua_mode == AliForwardSettings::kFill)
+      resName += "_NUA_fill";
+    if (nua_mode == AliForwardSettings::kNormal)
+      resName += "_NUA_normal";
+
+    task->fSettings.nua_mode = nua_mode; // "V0M";// RefMult08; // "V0M" // "SPDTracklets";
+
+
+
 
     file->GetObject("nuacentral", task->fSettings.nuacentral);
     task->fSettings.nuacentral->SetDirectory(0);

@@ -64,7 +64,7 @@ class AliForwardSettings : public TObject {
   Bool_t esd;
 
   Int_t tracktype;
-  Bool_t nua_mode;
+  UShort_t nua_mode;
   Bool_t useTPC;
   Bool_t useSPD;
   Bool_t use_primaries;
@@ -92,6 +92,12 @@ class AliForwardSettings : public TObject {
     kTPC     = 0x3000, // Use TPC tracks
   };
 
+  // flags used for method of cumulant
+  enum {
+    kNormal   = 0x0001, // Standard QC{2} and QC{4} calculations
+    kFill  = 0x0002, // QC{2} w/ an eta-gap
+    kInterpolate    = 0x0004, // 3 correlator method for QC{2} w/ an eta-gap
+  };
 
   enum {
     kTPCOnly = 128, // TPC only tracks

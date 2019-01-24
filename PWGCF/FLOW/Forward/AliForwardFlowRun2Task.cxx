@@ -200,6 +200,7 @@ void AliForwardFlowRun2Task::UserExec(Option_t *)
   centralDist->SetDirectory(0);
 
   TH1F* dNdeta = static_cast<TH1F*>(fEventList->FindObject("dNdeta"));
+  dNdeta->SetDirectory(0);
   fUtil.dNdeta = dNdeta;
 
   if (!fSettings.mc) {
@@ -208,10 +209,10 @@ void AliForwardFlowRun2Task::UserExec(Option_t *)
     fUtil.fAODevent = aodevent;
     if(!aodevent) throw std::runtime_error("Not AOD as expected");
 
-    // if (!ev_val->IsValidEvent()){
+    //if (!ev_val->IsValidEvent()){
     //  PostData(1, this->fOutputList);
     //  return;
-    // }
+    //}
 
     AliAODForwardMult* aodfmult = static_cast<AliAODForwardMult*>(aodevent->FindListObject("Forward"));
     forwardDist = &aodfmult->GetHistogram();
