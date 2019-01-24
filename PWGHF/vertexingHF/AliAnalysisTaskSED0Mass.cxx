@@ -1266,14 +1266,9 @@ void AliAnalysisTaskSED0Mass::UserExec(Option_t */*option*/)
     if(d->GetIsFilled()==0)fNentries->Fill(19);//tmp check
     if(d->GetIsFilled()==1)fNentries->Fill(20);//tmp check
     TObjArray arrTracks(2);
-    Float_t xy[2],z[2];
-    Float_t px[2],py[2];
     for(Int_t ipr=0;ipr<2;ipr++){
       AliAODTrack *tr=vHF->GetProng(aod,d,ipr);
       arrTracks.AddAt(tr,ipr);
-      tr->GetImpactParameters(xy[ipr],z[ipr]);
-      px[ipr]=tr->Px();
-      py[ipr]=tr->Py();
     }
 
     if(!fCuts->PreSelect(arrTracks)){

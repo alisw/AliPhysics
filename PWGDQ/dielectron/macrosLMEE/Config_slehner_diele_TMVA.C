@@ -14,43 +14,68 @@ Bool_t randomizeDau = kTRUE;
 const Int_t nMax = 3; 
 const Int_t nPF  = 999; // use prefiltering for cuts > nPF
 
-AliDielectron* Config_slehner_diele_TMVA(
-                                        Int_t trCut=0,
-                                        Int_t PIDCut=0,
-                                        Int_t MVACut= 0,
-					Bool_t usePIDCorr=kFALSE,
-					Bool_t hasMC=kFALSE
-        )
+void Config_slehner_diele_TMVA(AliAnalysisTaskMultiDielectron *task,Bool_t usePIDCorr=kFALSE,Bool_t hasMC=kFALSE, Bool_t useAODFilterCuts,  TString TMVAweight)
 {
   // create the actual framework object
-  TString name=Form("DieleTr%d_PID%d_MVA%d",trCut,PIDCut, MVACut);
-  cout<<"Diele name: "<<name.Data()<<endl;
-  AliDielectron *die =  new AliDielectron(Form("%s",name.Data()), Form("Name: %s",name.Data()));
+  Int_t trackCut=0;
+  Int_t PIDCut=0;
+  Int_t MVACut=0;
   
-  if(kMix && !hasMC ){ // need second since there is a problem when mixing MC events (TRef?)
-    AliDielectronMixingHandler *mix = new AliDielectronMixingHandler;
+  for(int glcut = 0; glcut <=10; ++glcut){
+    ////////DEFINE THE CUTS AS FUNCTION OF GLCUT//////
+    if(glcut<11){
+      trackCut=0;
+      PIDCut=0;
+      MVACut=glcut;   
+    }
+//    else if(glcut<13){
+//      trackCut=0;
+//      PIDCut=glcut-5;
+//      MVACut=4;   
+//    }
+//    else{
+//      trackCut=0;
+//      PIDCut=0;
+//      MVACut=glcut-13;      
+//    }
+    //////////////////////////////////////////////////
+    TString name=TString::Format("DieleTr%d_PID%d_MVA%d",trackCut,PIDCut, MVACut);
+//    cout<<"Diele name: "<<name.Data()<<endl;    
+    AliDielectron * diel_low = new AliDielectron(Form("%s",name.Data()), Form("Name: %s",name.Data()));
+    if(!diel_low){
+      Printf("=======================================");
+      Printf("No AliDielectron object loaded -> EXIT ");
+      Printf("=======================================");
+      return NULL; 
+    }  
 
-    mix->AddVariable(AliDielectronVarManager::kZvPrim,"-10,-5,0,5,10");
-    mix->AddVariable(AliDielectronVarManager::kCentrality,"0,5,10,20,30,50,80");
-    mix->SetDepth(15);
-    mix->SetMixType(AliDielectronMixingHandler::kAll);
-    
-    // using TPC event plane, uncorrected. (also, the old phi range was wrong, now same effective binning.)
-    // mix->AddVariable(AliDielectronVarManager::kQnTPCrpH2, 6, TMath::Pi()/-2., TMath::Pi()/2.);
-        
-    die->SetMixingHandler(mix);
+    if(kMix && !hasMC ){ // need second since there is a problem when mixing MC events (TRef?)
+      AliDielectronMixingHandler *mix = new AliDielectronMixingHandler;
+
+      mix->AddVariable(AliDielectronVarManager::kZvPrim,"-10,-5,0,5,10");
+      mix->AddVariable(AliDielectronVarManager::kCentrality,"0,5,10,20,30,50,80");
+      mix->SetDepth(15);
+      mix->SetMixType(AliDielectronMixingHandler::kAll);
+      diel_low->SetMixingHandler(mix);
+    }
+
+   if(usePIDCorr){
+     SetITSCorr(diel_low,hasMC);
+     SetTPCCorr(diel_low,hasMC);
+     SetTOFCorr(diel_low,hasMC);
+   }
+
+   diel_low->SetUseKF(kFALSE);   //keep this one, otherwise masses are slightly wrong and R factors very wrong!
+   InitHistograms(diel_low,0);
+   
+  std::cout << "CutTr: "<<trackCut<<" CutPID: "<<PIDCut<<" MVAcut: "<<-1+MVACut*0.2<<" being added"<< std::endl;
+  diel_low->GetTrackFilter().AddCuts(SetupTrackCutsAndSettings(trackCut, PIDCut, MVACut, useAODFilterCuts,TMVAweight));   
+  task->AddDielectron(diel_low);
+  printf("successfully added AliDielectron: %s\n",diel_low->GetName());           
+
+
   }
- 
- if(usePIDCorr){
-   SetITSCorr(die,hasMC);
-   SetTPCCorr(die,hasMC);
-   SetTOFCorr(die,hasMC);
- }
-  
- die->SetUseKF(kFALSE);   //keep this one, otherwise masses are slightly wrong and R factors very wrong!
- InitHistograms(die,0);
-
- return die;
+ return;
 
 }
 
@@ -95,7 +120,7 @@ void SetTPCCorr(AliDielectron *die, Bool_t hasMC){
 
 //______________________________________________________________________________________
 void SetITSCorr(AliDielectron *die, Bool_t hasMC){
-  ::Info("Config_slehner_LMEE_TMVA","starting LMEECutLib::SetEtaCorrection for ITS\n");
+  ::Info("Config_slehner_LMEE_TMVA","starting SetITSCorr\n");
   TString path="alien:///alice/cern.ch/user/s/selehner/recal/";
   if(hasMC) TString fName= "recalib_mc_its_nsigmaele.root";
   else      TString fName= "recalib_data_its_nsigmaele.root";
@@ -117,7 +142,7 @@ void SetITSCorr(AliDielectron *die, Bool_t hasMC){
 
 //______________________________________________________________________________________
 void SetTOFCorr(AliDielectron *die, Bool_t hasMC){
-  ::Info("Config_slehner_LMEE_TMVA","starting LMEECutLib::SetEtaCorrection for TOF\n");
+  ::Info("Config_slehner_LMEE_TMVA","starting SetTOFCorr for TOF\n");
   TString path="alien:///alice/cern.ch/user/s/selehner/recal/";
   if(hasMC) TString fName= "recalib_mc_tof_nsigmaele.root";
   else      TString fName= "recalib_data_tof_nsigmaele.root";

@@ -11,14 +11,17 @@
 #include "AliFemtoCorrFctn.h"
 #include "AliFemtoPairCut.h"
 
-#include <TH3I.h>
 #include <TH3F.h>
+
+#if __cplusplus >= 201103L
+#include <tuple>
+#define USE_TUPLE
+#endif
 
 
 // preprocessor flag to enable using ONE histogram to store
 // #define USE_TPROFILE
 #define SINGLE_WQINV
-
 
 #ifdef USE_TPROFILE
   #include <TProfile3D.h>
@@ -125,27 +128,32 @@ public:
     { AddMixedPair(const_cast<const AliFemtoPair&>(*pair)); }
 
 #ifdef SINGLE_WQINV
-  void AddRealPair(const AliFemtoPair &pair)
-    { AddPair(pair, *fNumerator, *fQinvW); }
+#define fNumeratorW fQinvW
+#define fDenominatorW fQinvW
+#endif
 
-  void AddMixedPair(const AliFemtoPair &pair)
-    { AddPair(pair, *fDenominator, *fQinvW); }
-#else
   void AddRealPair(const AliFemtoPair &pair)
     { AddPair(pair, *fNumerator, *fNumeratorW); }
 
   void AddMixedPair(const AliFemtoPair &pair)
     { AddPair(pair, *fDenominator, *fDenominatorW); }
-#endif
 
   /// Remove underflow-overflow contents to improve compressed file size
   virtual void Finish()
     {
-      #if ROOT_VERSION_CODE >= ROOT_VERSION(6, 10, 8)
+    #if ROOT_VERSION_CODE >= ROOT_VERSION(6, 10, 8)
       fNumerator->ClearUnderflowAndOverflow();
       fDenominator->ClearUnderflowAndOverflow();
       fQinvW->ClearUnderflowAndOverflow();
-      #endif
+    #else
+      for (int z=0; z <= fNumerator->GetNbinsZ(); ++z)
+      for (int y=0; y <= fNumerator->GetNbinsY(); ++y)
+      for (int x=0; x <= fNumerator->GetNbinsX(); ++x) {
+        fNumerator->SetBinContent(x, y, z, 0.0);
+        fDenominator->SetBinContent(x, y, z, 0.0);
+        fQinvW->SetBinContent(x, y, z, 0.0);
+      }
+    #endif
     }
 
   /// Return denominator
@@ -187,6 +195,18 @@ public:
     return list;
   }
 
+  /// Load 3D q-vector components into variables
+  static void GetQ(const AliFemtoPair &pair, double &out, double &side, double &lon);
+
+#ifdef USE_TUPLE
+  /// Return 3D q-vector components
+  std::tuple<double, double, double> GetQ(const AliFemtoPair &pair) const {
+    double x, y, z;
+    GetQ(pair, x, y, z);
+    return std::make_tuple(x, y, z);
+  }
+#endif
+
 protected:
 
   void AddPair(const AliFemtoPair &pair, TH3& dest, TH3& qinv)
@@ -198,12 +218,16 @@ protected:
     // auto [qout, qside, qlong] = Frame_t::GetQ(pair); // maybe someday...
     double qout, qside, qlong;
     Frame_t::GetQ(pair, qout, qside, qlong);
-    dest.Fill(qout, qside, qlong);
-    qinv.Fill(qout, qside, qlong, pair.QInv());
+
+    Int_t bin = dest.GetBin(qout, qlong, qside);
+    if (!(dest.IsBinOverflow(bin) or dest.IsBinUnderflow(bin))) {
+      dest.Fill(qout, qside, qlong);
+      qinv.Fill(qout, qside, qlong, pair.QInv());
+    }
   }
 
-  TH3I* fNumerator;     ///<!< Numerator
-  TH3I* fDenominator;   ///<!< Denominator
+  TH3F* fNumerator;     ///<!< Numerator
+  TH3F* fDenominator;   ///<!< Denominator
 #ifdef SINGLE_WQINV
   TH3F* fQinvW;         ///<!< Qinv-Weighted histogram
 #elif defined(USE_TPROFILE)
@@ -214,6 +238,11 @@ protected:
   TH3F* fDenominatorW;  ///<!< Qinv-Weighted denominator
 #endif
 };
+
+#ifdef SINGLE_WQINV
+#undef fNumeratorW
+#undef fDenominatorW
+#endif
 
 template <typename T>
 AliFemtoCorrFctnQ3D<T>::AliFemtoCorrFctnQ3D(const char* title,
@@ -233,13 +262,13 @@ AliFemtoCorrFctnQ3D<T>::AliFemtoCorrFctnQ3D(const char* title,
   TString hist_title = TString::Format("%s (Frame=%s); q_{out} (GeV); q_{side} (GeV); q_{long} (GeV)", title, T::FrameName());
   TString hist_name = simple_name ? "" : title;
 
-  fNumerator = new TH3I(simple_name ? "Num" : (TString("Num") + title).Data(),
+  fNumerator = new TH3F(simple_name ? "Num" : (TString("Num") + title).Data(),
                         "Numerator " + hist_title,
                         nbins, -QHi, QHi,
                         nbins, -QHi, QHi,
                         nbins, -QHi, QHi);
 
-  fDenominator = new TH3I(simple_name ? "Den" : (TString("Den") + title).Data(),
+  fDenominator = new TH3F(simple_name ? "Den" : (TString("Den") + title).Data(),
                           "Denominator " + hist_title,
                           nbins, -QHi, QHi,
                           nbins, -QHi, QHi,
@@ -276,8 +305,8 @@ AliFemtoCorrFctnQ3D<T>::AliFemtoCorrFctnQ3D(const char* title,
 template <typename T>
 AliFemtoCorrFctnQ3D<T>::AliFemtoCorrFctnQ3D(const AliFemtoCorrFctnQ3D<T>& orig)
   : AliFemtoCorrFctn(orig)
-  , fNumerator(new TH3I(*orig.fNumerator))
-  , fDenominator(new TH3I(*orig.fDenominator))
+  , fNumerator(new TH3F(*orig.fNumerator))
+  , fDenominator(new TH3F(*orig.fDenominator))
 #ifdef SINGLE_WQINV
   , fQinvW(new TH3F(*orig.fQinvW))
 #else
@@ -324,9 +353,11 @@ AliFemtoString
 AliFemtoCorrFctnQ3D<T>::Report()
 {
   // Construct the report
-  TString report = TString::Format("Bertsch-Pratt 3D Correlation Function (Frame = %s) Report:\n", T::FrameName())
-                 + Form("Number of entries in numerator:\t%E\n", fNumerator->GetEntries())
-                 + Form("Number of entries in denominator:\t%E\n", fDenominator->GetEntries());
+  AliFemtoString report
+    = AliFemtoString("Bertsch-Pratt 3D Correlation Function")
+    + Form(" (Frame = %s) Report:\n", T::FrameName())
+    + Form("Number of entries in numerator:\t%E\n", fNumerator->GetEntries())
+    + Form("Number of entries in denominator:\t%E\n", fDenominator->GetEntries());
 
   if (fPairCut) {
     report += "Here is the PairCut specific to this CorrFctn\n";
@@ -335,11 +366,21 @@ AliFemtoCorrFctnQ3D<T>::Report()
     report += "No PairCut specific to this CorrFctn\n";
   }
 
-  return AliFemtoString(report.Data());
+  return report;
 }
 
 #undef SINGLE_WQINV
 
+/*
+#ifdef USE_TUPLE
+template <typename T>
+void
+AliFemtoCorrFctnQ3D<T>::GetQ(const AliFemtoPair &pair, double &x, double &y, double &z)
+{
+  std::tie(x, y, z) = static_cast<T*>(this)->GetQ(pair);
+}
+#endif
+*/
 
 struct AliFemtoCorrFctnQ3DLCMS : public AliFemtoCorrFctnQ3D<AliFemtoCorrFctnQ3DLCMS> {
 
@@ -364,7 +405,6 @@ struct AliFemtoCorrFctnQ3DLCMS : public AliFemtoCorrFctnQ3D<AliFemtoCorrFctnQ3DL
   static const char* FrameName()
     { return "LCMS"; }
 };
-
 
 struct AliFemtoCorrFctnQ3DPF : public AliFemtoCorrFctnQ3D<AliFemtoCorrFctnQ3DPF> {
 
@@ -413,5 +453,7 @@ struct AliFemtoCorrFctnQ3DBF : public AliFemtoCorrFctnQ3D<AliFemtoCorrFctnQ3DBF>
   static const char* FrameName()
     { return "BF"; }
 };
+
+#undef USE_TUPLE
 
 #endif

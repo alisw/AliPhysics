@@ -5,7 +5,7 @@
 
 //*************************************************************************
 // \class AliHFTreeHandlerD0toKpi
-// \brief helper class to handle a tree for D+ cut optimisation and MVA analyses
+// \brief helper class to handle a tree for D0 cut optimisation and MVA analyses
 // \authors:
 // F. Catalano, fabio.catalano@cern.ch
 // A. Festanti, andrea.festanti@cern.ch
@@ -13,6 +13,9 @@
 // G. Innocenti, gian.michele.innocenti@cern.ch
 // F. Prino, prino@to.infn.it
 // L. Vermunt, luuk.vermunt@cern.ch
+// L. van Doremalen, lennart.van.doremalen@cern.ch
+// J. Norman, jaime.norman@cern.ch
+// G. Luparello, grazia.luparello@cern.ch
 /////////////////////////////////////////////////////////////
 
 #include <TString.h>
@@ -93,7 +96,7 @@ TTree* AliHFTreeHandlerD0toKpi::BuildTree(TString name, TString title)
 }
 
 //________________________________________________________________
-bool AliHFTreeHandlerD0toKpi::SetVariables(AliAODRecoDecayHF* cand, float bfield, int masshypo, AliAODPidHF* pidHF) 
+bool AliHFTreeHandlerD0toKpi::SetVariables(AliAODRecoDecayHF* cand, float bfield, int masshypo, AliPIDResponse *pidrespo) 
 {
   fIsMCGenTree=false;
 
@@ -141,7 +144,7 @@ bool AliHFTreeHandlerD0toKpi::SetVariables(AliAODRecoDecayHF* cand, float bfield
   //pid variables
   if(fPidOpt==kNoPID) return true;
 
-  bool setpid = SetPidVars(prongtracks,pidHF,true,true,false,true,true);
+  bool setpid = SetPidVars(prongtracks,pidrespo,true,true,false,true,true);
   if(!setpid) return false;
 
   return true;

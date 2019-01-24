@@ -41,6 +41,7 @@
 #include <utility>
 #include <cassert>
 #include <typeinfo>
+#include <random>
 
 
 static const double PionMass = 0.13956995;
@@ -65,8 +66,24 @@ struct Configuration<AliFemtoAnalysisPionPion> {
     }
 };
 
+
+TString AliFemtoAnalysisPionPion::make_random_string(const TString &prefix)
+{
+  std::random_device rd;
+  std::uniform_int_distribution<char> dist('a', 'z');
+  TString result = prefix;
+
+  int N = std::uniform_int_distribution<>(6, 12)(rd);
+  for (int n = 0; n < N; ++n) {
+    result += dist(rd);
+  }
+  return result;
+}
+
+
 AliFemtoAnalysisPionPion::AnalysisParams::AnalysisParams()
-: vertex_bins(1), vertex_min(-10.0), vertex_max(10.0)
+: TNamed(AliFemtoAnalysisPionPion::make_random_string("analysis_").Data(), "Analysis Parameters")
+, vertex_bins(1), vertex_min(-10.0), vertex_max(10.0)
 , mult_bins(30), mult_min(0.0), mult_max(6480.0)
 // , pion_type_1(kNone)
 // , pion_type_2(kNone)
@@ -463,78 +480,78 @@ AliFemtoAnalysisPionPion::DefaultConfig()
 }
 
 
-AliFemtoAnalysisPionPion::CutParams
-AliFemtoAnalysisPionPion::DefaultCutConfig()
-{
-  AliFemtoAnalysisPionPion::CutParams params = {
-    // Event
-    false, // use AliFemtoBasicEventCut
-    default_event.multiplicity.first,
-    default_event.multiplicity.second,
-    default_event.centrality.first,
-    default_event.centrality.second,
-    default_event.vertex_z.first,
-    default_event.vertex_z.second,
-    default_event.EP_VZero.first,
-    default_event.EP_VZero.second,
-    default_event.trigger_selection,
-    default_event.accept_bad_vertex,
-    default_event.accept_only_physics,
+AliFemtoAnalysisPionPion::CutParams::CutParams()
+  : TNamed(AliFemtoAnalysisPionPion::make_random_string("cut_").Data(), "Cut Params")
+  , event_use_basic(false)
+  , event_MultMin(default_event.multiplicity.first)
+  , event_MultMax(default_event.multiplicity.second)
+  , event_CentralityMin(default_event.centrality.first)
+  , event_CentralityMax(default_event.centrality.second)
+  , event_VertexZMin(default_event.vertex_z.first)
+  , event_VertexZMax(default_event.vertex_z.second)
+  , event_EP_VZeroMin(default_event.EP_VZero.first)
+  , event_EP_VZeroMax(default_event.EP_VZero.second)
+  , event_TriggerSelection(default_event.trigger_selection)
+  , event_AcceptBadVertex(default_event.accept_bad_vertex)
+  , event_AcceptOnlyPhysics(default_event.accept_only_physics)
 
     // Pion 1
-    default_pion.pt.first,
-    default_pion.pt.second,
-    default_pion.eta.first,
-    default_pion.eta.second,
-    default_pion.DCA.first,
-    default_pion.DCA.second,
+  , pion_1_PtMin(default_pion.pt.first)
+  , pion_1_PtMax(default_pion.pt.second)
+  , pion_1_EtaMin(default_pion.eta.first)
+  , pion_1_EtaMax(default_pion.eta.second)
+  , pion_1_DCAMin(default_pion.DCA.first)
+  , pion_1_DCAMax(default_pion.DCA.second)
 
   // , default_pion.nSigma.first
   // , default_pion.nSigma.second
-    default_pion.sigma,
+  , pion_1_sigma(default_pion.sigma)
 
-    default_pion.max_impact_xy,
-    default_pion.max_impact_z,
-    default_pion.max_tpc_chi_ndof,
-    default_pion.max_its_chi_ndof,
+  , pion_1_max_impact_xy(default_pion.max_impact_xy)
+  , pion_1_max_impact_z(default_pion.max_impact_z)
+  , pion_1_max_tpc_chi_ndof(default_pion.max_tpc_chi_ndof)
+  , pion_1_max_its_chi_ndof(default_pion.max_its_chi_ndof)
 
-    default_pion.min_tpc_ncls,
-    default_pion.remove_kinks,
-    default_pion.set_label,
-    default_pion.use_tpctof,
+  , pion_1_min_tpc_ncls(default_pion.min_tpc_ncls)
+  , pion_1_remove_kinks(default_pion.remove_kinks)
+  , pion_1_set_label(default_pion.set_label)
+  , pion_1_use_tpctof(default_pion.use_tpctof)
 
     // Pion 2
-    default_pion.pt.first
-  , default_pion.pt.second
-  , default_pion.eta.first
-  , default_pion.eta.second
-  , default_pion.DCA.first
-  , default_pion.DCA.second
+  , pion_2_PtMin(default_pion.pt.first)
+  , pion_2_PtMax(default_pion.pt.second)
+  , pion_2_EtaMin(default_pion.eta.first)
+  , pion_2_EtaMax(default_pion.eta.second)
+  , pion_2_DCAMin(default_pion.DCA.first)
+  , pion_2_DCAMax(default_pion.DCA.second)
 
-  , default_pion.nSigma.first
-  , default_pion.nSigma.second
+  , pion_2_max_impact_xy(default_pion.max_impact_xy)
+  , pion_2_max_impact_z(default_pion.max_impact_z)
+  , pion_2_max_tpc_chi_ndof(default_pion.max_tpc_chi_ndof)
+  , pion_2_max_its_chi_ndof(default_pion.max_its_chi_ndof)
 
-  , default_pion.max_impact_xy
-  , default_pion.max_impact_z
-  , default_pion.max_tpc_chi_ndof
-  , default_pion.max_its_chi_ndof
-
-  , default_pion.min_tpc_ncls
-  , default_pion.remove_kinks
-  , default_pion.set_label
+  , pion_2_min_tpc_ncls(default_pion.min_tpc_ncls)
+  , pion_2_remove_kinks(default_pion.remove_kinks)
+  , pion_2_set_label(default_pion.set_label)
 
     // Pair
-  , default_pair.TPCOnly
+  , pair_TPCOnly(default_pair.TPCOnly)
 
-  , default_pair.min_delta_eta
-  , default_pair.min_delta_phi
-  , default_pair.phi_star_radius
+  , pair_delta_eta_min(default_pair.min_delta_eta)
+  , pair_delta_phi_min(default_pair.min_delta_phi)
+  , pair_phi_star_radius(default_pair.phi_star_radius)
 
-  , default_pair.max_share_quality
-  , default_pair.max_share_fraction
-  , default_pair.remove_same_label
-  , default_pair.algorithm_code
-  };
+  , pair_max_share_quality(default_pair.max_share_quality)
+  , pair_max_share_fraction(default_pair.max_share_fraction)
+  , pair_remove_same_label(default_pair.remove_same_label)
+  , pair_algorithm(default_pair.algorithm_code)
+{}
+
+
+AliFemtoAnalysisPionPion::CutParams
+AliFemtoAnalysisPionPion::DefaultCutConfig()
+{
+  AliFemtoAnalysisPionPion::CutParams params;
 
   // sanity checks
   assert(params.event_MultMin == default_event.multiplicity.first);

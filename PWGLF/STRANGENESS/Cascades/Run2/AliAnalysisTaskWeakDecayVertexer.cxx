@@ -144,6 +144,8 @@ fkDoXYPlanePreOptCascade( kFALSE ),
 fkDoPureGeometricMinimization( kTRUE ),
 fkDoCascadeRefit( kFALSE ) ,
 fMaxIterationsWhenMinimizing(27),
+fkPreselectX(kTRUE),
+fkSkipLargeXYDCA(kFALSE),
 fkUseOptimalTrackParams(kFALSE),
 fkUseOptimalTrackParamsBachelor(kFALSE),
 fMinPtV0(   -1 ), //pre-selection
@@ -202,6 +204,8 @@ fkDoXYPlanePreOptCascade( kFALSE ),
 fkDoPureGeometricMinimization( kTRUE ),
 fkDoCascadeRefit( kFALSE ) ,
 fMaxIterationsWhenMinimizing(27),
+fkPreselectX(kTRUE),
+fkSkipLargeXYDCA(kFALSE),
 fkUseOptimalTrackParams(kFALSE),
 fkUseOptimalTrackParamsBachelor(kFALSE),
 fMinPtV0(   -1 ), //pre-selection
@@ -740,8 +744,8 @@ Long_t AliAnalysisTaskWeakDecayVertexer::Tracks2V0vertices(AliESDEvent *event) {
             
             fHistV0Statistics->Fill(2.5); //pass dca
             
-            if ((xn+xp) > 2*fV0VertexerSels[6]) continue;
-            if ((xn+xp) < 2*fV0VertexerSels[5]) continue;
+            if ((xn+xp) > 2*fV0VertexerSels[6] && fkPreselectX) continue;
+            if ((xn+xp) < 2*fV0VertexerSels[5] && fkPreselectX) continue;
             
             fHistV0Statistics->Fill(3.5); //pass X within R2D cut
             
@@ -1879,6 +1883,13 @@ Double_t AliAnalysisTaskWeakDecayVertexer::GetDCAV0Dau( AliExternalTrackParam *p
         //  force minimization takes place in any case
         //
         //============================================================
+        
+        //______________________
+        //fast skipper: if XY plane pre-optimization says they're far, they're far! don't insist
+        if ( fkSkipLargeXYDCA ) {
+            if( lDist > NegRadius + PosRadius + 2*fV0VertexerSels[3] ) return 2000;
+            if( lDist < TMath::Abs(NegRadius - PosRadius) - 2*fV0VertexerSels[3] ) return 2000;
+        }
         
         //______________________
         //CASE 1

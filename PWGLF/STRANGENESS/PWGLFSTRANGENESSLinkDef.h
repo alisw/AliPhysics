@@ -58,11 +58,13 @@
 #pragma link C++ class std::vector<Lifetimes::MCparticle>+;
 #pragma link C++ class Lifetimes::HyperTriton2Body+;
 #pragma link C++ class std::vector<Lifetimes::HyperTriton2Body>+;
+#pragma link C++ class Lifetimes::MiniEvent+;
 #endif
 
 #ifdef __CLING__
 #pragma link C++ class AliAnalysisTaskFindableHyperTriton+;
 #pragma link C++ class Event+;
+#pragma link C++ class AliSelectorFindableHyperTriton3Body+;
 #pragma link C++ class std::vector<FindableHyperTriton>+;
 #pragma link C++ class std::vector<AliESDtrack>+;
 //#pragma link C++ class std::vector<FindableHyperTriton<2>>+;

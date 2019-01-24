@@ -24,7 +24,7 @@ public:
   TH1 *fPostPIDCntrdCorr;   // post pid correction object for electron sigma centroids in TPC
 };
 
-void LMEECutLib::SetEtaCorrection(Int_t det, Bool_t isMC, Int_t corrXdim, Int_t corrYdim, Int_t corrZdim, int sel) {
+TH3D LMEECutLib::SetEtaCorrection(Int_t det, Bool_t isMC, Int_t corrXdim, Int_t corrYdim, Int_t corrZdim, int sel) {
 //For usage with TreeMaker
 //For efficiency task postcalibration is set in AddTask_slehner_ElectronEfficiency.C
   TString detstr;
@@ -39,17 +39,18 @@ void LMEECutLib::SetEtaCorrection(Int_t det, Bool_t isMC, Int_t corrXdim, Int_t 
     case kFALSE: type="data";break;
     }
     
-  ::Info("LMEECutLib::SetCorrection",(TString("Starting Correction for ")+detstr).Data());
+  ::Info("LMEECutLib::SetEtaCorrection",(TString("Starting Correction for ")+detstr).Data());
   TString path="alien:///alice/cern.ch/user/s/selehner/recal/";
   TString fName= "recalib_"+type+"_"+detstr+"_nsigmaele.root";
   
   TFile* corrfile;
   corrfile= TFile::Open(fName.Data());
   if(!corrfile){
+    ::Info("LMEECutLib::SetEtaCorrection",(TString("Couldn't find correctiion for ")+detstr).Data()+TString(" -> get it from grid "));
     gSystem->Exec(TString::Format("alien_cp %s .",(path+fName).Data()));
     corrfile = TFile::Open(fName.Data());
     if(!corrfile) ::Error("LMEECutLib::SetEtaCorrection",(TString("Cannot get correction from Alien: ")+path+fName).Data());
-    else  ::Info("LMEECutLib::SetEtaCorrection",(TString("Copy correction from Alien: ")+path+fName).Data());
+    else  ::Info("LMEECutLib::SetEtaCorrection",(TString("Copied correction from Alien: ")+path+fName).Data());
   }    
     
   TH3D* mean = dynamic_cast<TH3D*>(corrfile->Get("sum_mean_correction"));

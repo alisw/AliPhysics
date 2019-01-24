@@ -160,6 +160,8 @@ class AliCaloPhotonCuts : public AliAnalysisCuts {
       // PbPb 5 TeV 2015
       kPbPb5T15HIJING,
       k16k3b,
+      // PbPb 5 TeV 2018
+      kPbPb5T18HIJING,
       // pp 13 TeV 2016
       kPP13T16P1Pyt8,
       kPP13T16P1Pyt8LowB,
@@ -283,7 +285,7 @@ class AliCaloPhotonCuts : public AliAnalysisCuts {
     Float_t     FunctionNL_kSDM(Float_t e, Float_t p0, Float_t p1, Float_t p2);
     Float_t     FunctionNL_DPOW(Float_t e, Float_t p0, Float_t p1, Float_t p2, Float_t p3, Float_t p4, Float_t p5);
     Float_t     FunctionNL_SPOW(Float_t e, Float_t p0, Float_t p1, Float_t p2);
-    Float_t     FunctionNL_DExp(Float_t e, Float_t p0, Float_t p1, Float_t p2, Float_t p3, Float_t p4, Float_t p5);
+    Float_t     FunctionNL_DExp(Float_t e, Float_t p0, Float_t p1, Float_t p2, Float_t p3, Float_t p4, Float_t p5, Float_t p6 = 1.0, Float_t p7 = 1.0);
     //predefined functions
     Float_t     FunctionNL_kPi0MCv1(Float_t e);
     Float_t     FunctionNL_kPi0MCv2(Float_t e);
@@ -441,6 +443,8 @@ class AliCaloPhotonCuts : public AliAnalysisCuts {
     Bool_t    fUseEtaCut;                               // flag for switching on eta cut
     Double_t  fMinPhiCut;                               // phi cut
     Double_t  fMaxPhiCut;                               // phi cut
+    Double_t  fMinPhiCutDMC;                            // phi cut
+    Double_t  fMaxPhiCutDMC;                            // phi cut
     Bool_t    fUsePhiCut;                               // flag for switching on phi cut
     Double_t  fMinDistanceToBadChannel;                 // minimum distance to bad channel
     Int_t     fUseDistanceToBadChannel;                 // flag for switching on distance to bad channel cut: 0 off, 1 on without corners, 2 on with corners included
@@ -613,7 +617,7 @@ class AliCaloPhotonCuts : public AliAnalysisCuts {
 
   private:
 
-    ClassDef(AliCaloPhotonCuts,77)
+    ClassDef(AliCaloPhotonCuts,79)
 };
 
 #endif

@@ -68,6 +68,7 @@ AliAnalysisTaskEmcalJetPerformance::AliAnalysisTaskEmcalJetPerformance() :
   AliAnalysisTaskEmcalJet(),
   fPlotJetHistograms(kFALSE),
   fPlotClusterHistograms(kFALSE),
+  fPlotCellNonlinearityHistograms(kFALSE),
   fPlotParticleCompositionHistograms(kFALSE),
   fComputeBackground(kFALSE),
   fDoTriggerSimulation(kFALSE),
@@ -125,6 +126,7 @@ AliAnalysisTaskEmcalJetPerformance::AliAnalysisTaskEmcalJetPerformance(const cha
   AliAnalysisTaskEmcalJet(name, kTRUE),
   fPlotJetHistograms(kFALSE),
   fPlotClusterHistograms(kFALSE),
+  fPlotCellNonlinearityHistograms(kFALSE),
   fPlotParticleCompositionHistograms(kFALSE),
   fComputeBackground(kFALSE),
   fDoTriggerSimulation(kFALSE),
@@ -311,6 +313,9 @@ void AliAnalysisTaskEmcalJetPerformance::UserCreateOutputObjects()
   }
   if (fPlotClusterHistograms) {
     AllocateClusterHistograms();
+  }
+  if (fPlotCellNonlinearityHistograms) {
+    AllocateCellNonlinearityHistograms();
   }
   if (fPlotParticleCompositionHistograms) {
     AllocateParticleCompositionHistograms();
@@ -705,6 +710,32 @@ void AliAnalysisTaskEmcalJetPerformance::AllocateClusterHistograms()
   histname = "ClusterHistograms/hTrackMultiplicity";
   htitle = histname + ";N_{tracks};Centrality (%)";
   fHistManager.CreateTH2(histname.Data(), htitle.Data(), 1000, 0, 10000, 20, 0, 100);
+}
+
+/*
+ * This function allocates the histograms for the cell-level non-linearity study for embedding.
+ * This should be run over MC.
+ */
+void AliAnalysisTaskEmcalJetPerformance::AllocateCellNonlinearityHistograms()
+{
+  TString histname;
+  TString htitle;
+  
+  // Plot cluster non-linearity scale factor
+  histname = "CellNonlinearityHistograms/hClusterNonlinearity";
+  htitle = histname + ";E_{cluster}; E_{NonLinCorr}/E";
+  fHistManager.CreateTH2(histname.Data(), htitle.Data(), 1500, 0, 150, 2000, 0.5, 1.5);
+  
+  // Plot cell non-linearity scale factor
+  histname = "CellNonlinearityHistograms/hCellNonlinearity";
+  htitle = histname + ";E_{cell}; E_{NonLinCorr}/E";
+  fHistManager.CreateTH2(histname.Data(), htitle.Data(), 1500, 0, 150, 2000, 0.5, 1.5);
+  
+  // Plot cell non-linearity scale factor for leading cell
+  histname = "CellNonlinearityHistograms/hLeadingCellNonlinearity";
+  htitle = histname + ";E_{leading cell}; E_{NonLinCorr}/E";
+  fHistManager.CreateTH2(histname.Data(), htitle.Data(), 1500, 0, 150, 2000, 0.5, 1.5);
+  
 }
 
 /*
@@ -1543,6 +1574,9 @@ Bool_t AliAnalysisTaskEmcalJetPerformance::FillHistograms()
   if (fPlotClusterHistograms) {
     FillClusterHistograms();
   }
+  if (fPlotCellNonlinearityHistograms) {
+    FillCellNonlinearityHistograms();
+  }
   if (fPlotParticleCompositionHistograms) {
     FillParticleCompositionHistograms();
   }
@@ -1925,6 +1959,58 @@ void AliAnalysisTaskEmcalJetPerformance::FillClusterHistograms()
   Int_t nTracks = trackCont->GetNAcceptedTracks();
   fHistManager.FillTH2(histname.Data(), nTracks, fCent);
 
+}
+
+void AliAnalysisTaskEmcalJetPerformance::FillCellNonlinearityHistograms()
+{
+  // Get cells from event
+  fCaloCells = InputEvent()->GetEMCALCells();
+  
+  // Loop through clusters
+  AliClusterContainer* clusters = GetClusterContainer(0);
+  AliTLorentzVector clusVec;
+  const AliVCluster* clus;
+  for (auto it : clusters->accepted_momentum()) {
+    
+    clusVec = it.first;
+    clus = it.second;
+    
+    // Include only EMCal clusters
+    if (!clus->IsEMCAL()) {
+      continue;
+    }
+    if (clusVec.Phi_0_2pi() > 4.) {
+      continue;
+    }
+  
+    Double_t clusEnergy = clus->E();
+    Double_t clusEnergyNonLinCorr = clus->GetNonLinCorrEnergy();
+    Double_t correctionFactor = clusEnergyNonLinCorr/clusEnergy;
+    
+    // Plot cluster non-linearity scale factor
+    TString histname = "CellNonlinearityHistograms/hClusterNonlinearity";
+    fHistManager.FillTH2(histname.Data(), clusEnergy, correctionFactor);
+    
+    // Plot cell non-linearity scale factor for all cells
+    histname = "CellNonlinearityHistograms/hCellNonlinearity";
+    Double_t leadEcell = 0;
+    for (Int_t iCell = 0; iCell < clus->GetNCells(); iCell++) {
+      
+      Int_t absId = clus->GetCellAbsId(iCell);
+      Double_t eCell = fCaloCells->GetCellAmplitude(absId);
+      if (eCell > leadEcell) {
+        leadEcell = eCell;
+      }
+
+      fHistManager.FillTH2(histname.Data(), eCell, correctionFactor);
+    }
+    
+    // Plot cell non-linearity scale factor for leading cell
+    histname = "CellNonlinearityHistograms/hLeadingCellNonlinearity";
+    fHistManager.FillTH2(histname.Data(), leadEcell, correctionFactor);
+    
+  }
+    
 }
 
 /*

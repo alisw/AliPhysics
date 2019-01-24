@@ -1,23 +1,18 @@
 //Names should contain a comma seperated list of cut settings
 //Current options: all, electrons, kCutSet1, TTreeCuts, V0_TPCcorr, V0_ITScorr
 AliAnalysisTaskElectronEfficiencyV2* AddTask_slehner_ElectronEfficiency(
-                                                                Int_t trackCut=0,
-                                                                Int_t PIDCut=0,
-                                                                Int_t evCut=0,
                                                                 Double_t centMin=0.,
                                                                 Double_t centMax=100.,
                                                                 Bool_t PIDCorr=kFALSE,
                                                                 Bool_t useAODFilterCuts=kFALSE,
                                                                 TString TMVAweight = "TMVAClassification_BDTG.weights_094.xml",
                                                                 Int_t genGroup=0,
-                                                                Int_t maxTrCuts=0,
-                                                                Int_t maxPIDCuts=0,
-                                                                Int_t maxMVACut=0
+                                                                Bool_t fromAlien,
+                                                                TString date="ddmmyy"
         ) {
 
   std::cout << "########################################\nADDTASK of ANALYSIS started\n########################################" << std::endl;
   TString configFile="Config_slehner_Efficiency.C";
-  Bool_t getFromAlien=kFALSE;
   // #########################################################
   // #########################################################
   // Configuring Analysis Manager
@@ -29,23 +24,26 @@ AliAnalysisTaskElectronEfficiencyV2* AddTask_slehner_ElectronEfficiency(
   // #########################################################
   // Loading individual config file either local or from Alien
 
-  // TString configBasePath= "$ALICE_PHYSICS/PWGDQ/dielectron/macrosLMEE/";
-  TString configBasePath= "$ALICE_PHYSICS/PWGDQ/dielectron/macrosLMEE/";
-//  //Load updated macros from private ALIEN path
   
-  if (getFromAlien //&&
-      && (!gSystem->Exec(Form("alien_cp alien:///alice/cern.ch/user/s/slehner/PWGDQ/dielectron/macrosLMEE/%s .",configFile.Data())))
-      && (!gSystem->Exec("alien_cp alien:///alice/cern.ch/user/s/slehner/PWGDQ/dielectron/macrosLMEE/LMEECutLib_slehner.C ."))
-      ) {
-    configBasePath=Form("%s/",gSystem->pwd());
-  }
+  if(fromAlien) TString configBasePath(TString("alien:///alice/cern.ch/user/s/selehner/configs/")+date+TString("/"));
+  else TString configBasePath("$ALICE_PHYSICS/PWGDQ/dielectron/macrosLMEE/");
+
+  TString configFile("Config_slehner_Efficiency.C");
   TString configFilePath(configBasePath+configFile);
+  
+  TString myConfig =TString::Format("alien_cp %s .",configFilePath.Data());
+  gSystem->Exec(myConfig);
+  
+  gSystem->Exec("alien_cp $ALICE_PHYSICS/PWGDQ/dielectron/macrosLMEE/LMEECutLib_slehner.C .");
+
+  configBasePath=Form("%s/",gSystem->pwd());
+
   TString configLMEECutLib("LMEECutLib_slehner.C");
   TString configLMEECutLibPath(configBasePath+configLMEECutLib);
 
   Bool_t err = kFALSE;
   err |= gROOT->LoadMacro(configLMEECutLibPath.Data());
-  err |= gROOT->LoadMacro(configFilePath.Data());
+  err |= gROOT->LoadMacro(configFile.Data());
   // #########################################################
   // #########################################################
   // Creating an instance of the task
@@ -164,31 +162,29 @@ AliAnalysisTaskElectronEfficiencyV2* AddTask_slehner_ElectronEfficiency(
   AddPairMCSignal(task);
   std::vector<Bool_t> DielectronsPairNotFromSameMother = AddSingleLegMCSignal(task);
   task->AddMCSignalsWhereDielectronPairNotFromSameMother(DielectronsPairNotFromSameMother);
-
-  // #########################################################
-  // Adding multiple cutsettings
-//  for(Int_t MVACut = 0; MVACut <= 0; ++MVACut){
   
-    Int_t trackCut = 0;
-    Int_t PIDCut = 0;
-    Int_t MVACut=0;
-    for(trackCut = 0; trackCut <=maxTrCuts; ++trackCut){
-        std::cout << "CutTr: "<<trackCut<<" CutPID: "<<PIDCut<<" MVA Cut: "<<-1+MVACut*0.2<<" added"<< std::endl;
-        AliAnalysisFilter* filter = SetupTrackCutsAndSettings(trackCut, PIDCut, MVACut, useAODFilterCuts,TMVAweight);
-        task->AddTrackCuts(filter);
-    }
-    trackCut = 0;
-    for(PIDCut = 0; PIDCut <=maxPIDCuts; ++PIDCut){  
-        std::cout << "CutTr: "<<trackCut<<" CutPID: "<<PIDCut<<" MVA Cut: "<<-1+MVACut*0.2<<" added"<< std::endl;
-        AliAnalysisFilter* filter = SetupTrackCutsAndSettings(trackCut, PIDCut, MVACut, useAODFilterCuts,TMVAweight);
-        task->AddTrackCuts(filter);
-    }
-    PIDCut = 0;
-    for(MVACut = 0; MVACut <=maxMVACut; ++MVACut){  
-        std::cout << "CutTr: "<<trackCut<<" CutPID: "<<PIDCut<<" MVA Cut: "<<-1+MVACut*0.2<<" added"<< std::endl;
-        AliAnalysisFilter* filter = SetupTrackCutsAndSettings(trackCut, PIDCut, MVACut, useAODFilterCuts,TMVAweight);
-        task->AddTrackCuts(filter);
-    }
+  Config_slehner_Efficiency(task, useAODFilterCuts, TMVAweight);
+  
+//    Int_t trackCut = 0;
+//    Int_t PIDCut = 0;
+//    Int_t MVACut=0;
+//    for(trackCut = 0; trackCut <=maxTrCuts; ++trackCut){
+//        std::cout << "CutTr: "<<trackCut<<" CutPID: "<<PIDCut<<" MVA Cut: "<<-1+MVACut*0.2<<" added"<< std::endl;
+//        AliAnalysisFilter* filter = SetupTrackCutsAndSettings(trackCut, PIDCut, MVACut, useAODFilterCuts,TMVAweight);
+//        task->AddTrackCuts(filter);
+//    }
+//    trackCut = 0;
+//    for(PIDCut = 0; PIDCut <=maxPIDCuts; ++PIDCut){  
+//        std::cout << "CutTr: "<<trackCut<<" CutPID: "<<PIDCut<<" MVA Cut: "<<-1+MVACut*0.2<<" added"<< std::endl;
+//        AliAnalysisFilter* filter = SetupTrackCutsAndSettings(trackCut, PIDCut, MVACut, useAODFilterCuts,TMVAweight);
+//        task->AddTrackCuts(filter);
+//    }
+//    PIDCut = 0;
+//    for(MVACut = 0; MVACut <=maxMVACut; ++MVACut){  
+//        std::cout << "CutTr: "<<trackCut<<" CutPID: "<<PIDCut<<" MVA Cut: "<<-1+MVACut*0.2<<" added"<< std::endl;
+//        AliAnalysisFilter* filter = SetupTrackCutsAndSettings(trackCut, PIDCut, MVACut, useAODFilterCuts,TMVAweight);
+//        task->AddTrackCuts(filter);
+//    }
     
   if(PIDCorr) setPIDCorrections(task);
 

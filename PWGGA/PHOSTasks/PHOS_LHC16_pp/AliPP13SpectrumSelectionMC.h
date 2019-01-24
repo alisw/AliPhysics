@@ -11,6 +11,11 @@
 class AliPP13SpectrumSelectionMC : public AliPP13SpectrumSelection
 {
 public:
+	enum Particles
+	{
+		kGamma = 22, kPi0 = 111, kEta = 221, kK0s = 310
+	};
+	
 	AliPP13SpectrumSelectionMC(): AliPP13SpectrumSelection() {}
 	AliPP13SpectrumSelectionMC(const char * name, const char * title,
 			AliPP13ClusterCuts cuts, AliPP13SelectionWeights * w):

@@ -672,6 +672,8 @@ void AddTask_GammaConvV1_pp(
   } else if (trainConfig == 301) { // low B
     cuts.AddCutPCM("00010113", "00200089297000001280000000", "0152103500000000"); // Min Bias more open cuts
     cuts.AddCutPCM("00010113", "00200089227300008250400000", "0152101500000000"); // Min Bias default cuts 2.76 TeV
+   } else if (trainConfig == 302) { //MB JL.
+      cuts.AddCutPCM("00010113", "00200009327000008250400000", "0163103100000010"); // Min Bias Same Cuts as PCMCalo for PHOS
 
     // High mult triggers
   } else if (trainConfig == 310) {

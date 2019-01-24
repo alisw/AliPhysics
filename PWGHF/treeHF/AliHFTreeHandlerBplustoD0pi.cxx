@@ -14,6 +14,8 @@
 // F. Prino, prino@to.infn.it
 // L. Vermunt, luuk.vermunt@cern.ch
 // L. van Doremalen, lennart.van.doremalen@cern.ch
+// J. Norman, jaime.norman@cern.ch
+// G. Luparello, grazia.luparello@cern.ch
 /////////////////////////////////////////////////////////////
 
 #include <TString.h>
@@ -152,7 +154,7 @@ TTree* AliHFTreeHandlerBplustoD0pi::BuildTree(TString name, TString title)
 }
 
 //________________________________________________________________
-bool AliHFTreeHandlerBplustoD0pi::SetVariables(AliAODRecoDecayHF* cand, float bfield, int /*masshypo*/, AliAODPidHF* pidHF)
+bool AliHFTreeHandlerBplustoD0pi::SetVariables(AliAODRecoDecayHF* cand, float bfield, int /*masshypo*/, AliPIDResponse* pidrespo)
 {
   fIsMCGenTree=false;
 
@@ -239,7 +241,7 @@ bool AliHFTreeHandlerBplustoD0pi::SetVariables(AliAODRecoDecayHF* cand, float bf
   //pid variables
   if(fPidOpt==kNoPID) return true;
 
-  bool setpid = SetPidVars(prongtracks,pidHF,true,true,false,true,true);
+  bool setpid = SetPidVars(prongtracks,pidrespo,true,true,false,true,true);
   if(!setpid) return false;
 
   return true;

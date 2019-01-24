@@ -1224,14 +1224,6 @@ void AliAnalysisTaskCaloHFEpp::UserExec(Option_t *)
 
 												fHistNsigEop->Fill(eop,fTPCnSigma);
 
-												// 411 : D+, 421 :  D0, 413 : D*+, 423 : D*0, 431 : D_s+, 433 : D_s*+
-												if(pid_eleD){
-																if(TMath::Abs(pidM)==411 || TMath::Abs(pidM)== 413){fDCAxy_Pt_Dpm->Fill(TrkPt,DCA[0]*Bsign*track->Charge());}
-																if(TMath::Abs(pidM)==421 || TMath::Abs(pidM)== 423){fDCAxy_Pt_D0->Fill(TrkPt,DCA[0]*Bsign*track->Charge());}
-																if(TMath::Abs(pidM)==431 || TMath::Abs(pidM)== 433){fDCAxy_Pt_Ds->Fill(TrkPt,DCA[0]*Bsign*track->Charge());}
-												}
-												if(TMath::Abs(pidM)==4122){fDCAxy_Pt_lambda->Fill(TrkPt,DCA[0]*Bsign*track->Charge());}
-												if(pid_eleB){fDCAxy_Pt_B->Fill(TrkPt,DCA[0]*Bsign*track->Charge());}
 
 												Bool_t fFlagNonHFE=kFALSE; 
 												Bool_t fFlagIsolation=kFALSE; 
@@ -1262,6 +1254,7 @@ void AliAnalysisTaskCaloHFEpp::UserExec(Option_t *)
 																								fHistPhoReco2->Fill(track->Pt()); // org pho
 																				}
 																}
+
 												}
 
 
@@ -1291,6 +1284,14 @@ void AliAnalysisTaskCaloHFEpp::UserExec(Option_t *)
 																				fEop_ele->Fill(eop);
 																				fDCAxy_Pt_ele->Fill(TrkPt,DCA[0]*Bsign*track->Charge());
 
+																				// 411 : D+, 421 :  D0, 413 : D*+, 423 : D*0, 431 : D_s+, 433 : D_s*+
+																				if(pid_eleD){
+																								if(TMath::Abs(pidM)==411 || TMath::Abs(pidM)== 413){fDCAxy_Pt_Dpm->Fill(TrkPt,DCA[0]*Bsign*track->Charge());}
+																								if(TMath::Abs(pidM)==421 || TMath::Abs(pidM)== 423){fDCAxy_Pt_D0->Fill(TrkPt,DCA[0]*Bsign*track->Charge());}
+																								if(TMath::Abs(pidM)==431 || TMath::Abs(pidM)== 433){fDCAxy_Pt_Ds->Fill(TrkPt,DCA[0]*Bsign*track->Charge());}
+																				}
+																				if(TMath::Abs(pidM)==4122){fDCAxy_Pt_lambda->Fill(TrkPt,DCA[0]*Bsign*track->Charge());}
+																				if(pid_eleB){fDCAxy_Pt_B->Fill(TrkPt,DCA[0]*Bsign*track->Charge());}
 																}
 												}
 												if(fTPCnSigma< CutEopHad && m20>CutM20[0] && m20<CutM20[1]){

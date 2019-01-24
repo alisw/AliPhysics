@@ -51,10 +51,10 @@ const Int_t    stepsThetaBin = 60;
 
 const Double_t minMassBin     = 0;
 const Double_t maxMassBin     = 5;
-const Int_t    stepsMassBin   = 250;
+const Int_t    stepsMassBin   = 500;
 const Double_t minPairPtBin   = 0;
 const Double_t maxPairPtBin   = 10;
-const Int_t    stepsPairPtBin = 20;
+const Int_t    stepsPairPtBin = 100;
 
 // Binning of resolution histograms
 const Int_t    NbinsDeltaMom   = 2000;
@@ -165,6 +165,7 @@ AliAnalysisFilter* SetupTrackCutsAndSettings(TString cutDefinition)
 // #########################################################
 // #########################################################
 std::vector<Bool_t> AddSingleLegMCSignal(AliAnalysisTaskElectronEfficiencyV2* task){
+
   AliDielectronSignalMC partFinalState("partFinalState","partFinalState");
   partFinalState.SetLegPDGs(0,1);//dummy second leg (never MCkTRUE)\n"
   // partFinalState.SetCheckBothChargesLegs(kTRUE,kTRUE);
@@ -217,12 +218,12 @@ std::vector<Bool_t> AddSingleLegMCSignal(AliAnalysisTaskElectronEfficiencyV2* ta
 
   // this is used to get electrons from charmed mesons in a environment where GEANT is doing the decay of D mesons, like in LHC18b5a
   // ordering is according to MCSignals of single legs
- std::vector<Bool_t> DielectronsPairNotFromSameMother;
- DielectronsPairNotFromSameMother.push_back(kFALSE);
- DielectronsPairNotFromSameMother.push_back(kTRUE);
- DielectronsPairNotFromSameMother.push_back(kTRUE);
- // DielectronsPairNotFromSameMother.push_back(kFALSE);
- return DielectronsPairNotFromSameMother;
+	std::vector<Bool_t> DielectronsPairNotFromSameMother;
+	DielectronsPairNotFromSameMother.push_back(kFALSE);
+	DielectronsPairNotFromSameMother.push_back(kTRUE);
+	DielectronsPairNotFromSameMother.push_back(kTRUE);
+	// DielectronsPairNotFromSameMother.push_back(kFALSE);
+	return DielectronsPairNotFromSameMother;
 }
 
 

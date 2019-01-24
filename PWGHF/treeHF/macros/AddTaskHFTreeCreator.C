@@ -8,11 +8,13 @@ AliAnalysisTaskSEHFTreeCreator *AddTaskHFTreeCreator(Bool_t readMC=kTRUE,
                                                      Int_t fillTreeD0=1,
                                                      Int_t fillTreeDs=1,
                                                      Int_t fillTreeDplus=1,
+                                                     Int_t fillTreeDstar=1,
                                                      Int_t fillTreeLctopKpi=1,
                                                      Int_t fillTreeBplus=1,
                                                      Int_t pidOptD0=AliHFTreeHandler::kRawAndNsigmaPID,
                                                      Int_t pidOptDs=AliHFTreeHandler::kRawAndNsigmaPID,
                                                      Int_t pidOptDplus=AliHFTreeHandler::kRawAndNsigmaPID,
+                                                     Int_t pidOptDstar=AliHFTreeHandler::kRawAndNsigmaPID,
                                                      Int_t pidOptLctopKpi=AliHFTreeHandler::kRawAndNsigmaPID,
                                                      Int_t pidOptBplus=AliHFTreeHandler::kRawAndNsigmaPID)
 {
@@ -40,25 +42,29 @@ AliAnalysisTaskSEHFTreeCreator *AddTaskHFTreeCreator(Bool_t readMC=kTRUE,
     }
 
     AliRDHFCutsD0toKpi*      looseCutsD0toKpi        =(AliRDHFCutsD0toKpi*)filecuts->Get("D0toKpiFilteringCuts");
-    if(!looseCutsD0toKpi)         ::Fatal("AddTaskHFTreeCreator", "looseCutsD0toKpi : check your cut file");
+    if(!looseCutsD0toKpi && fillTreeD0)         ::Fatal("AddTaskHFTreeCreator", "looseCutsD0toKpi : check your cut file");
     AliRDHFCutsDstoKKpi*     looseCutsDstoKKpi       =(AliRDHFCutsDstoKKpi*)filecuts->Get("DstoKKpiFilteringCuts");
-    if(!looseCutsDstoKKpi)        ::Fatal("AddTaskHFTreeCreator", "looseCutsDstoKKpi : check your cut file");
+    if(!looseCutsDstoKKpi && fillTreeDs)        ::Fatal("AddTaskHFTreeCreator", "looseCutsDstoKKpi : check your cut file");
     AliRDHFCutsDplustoKpipi* looseCutsDplustoKpipi   =(AliRDHFCutsDplustoKpipi*)filecuts->Get("DplustoKpipiFilteringCuts");
-    if(!looseCutsDplustoKpipi)    ::Fatal("AddTaskHFTreeCreator", "looseCutsDplustoKpipi : check your cut file");
+    if(!looseCutsDplustoKpipi && fillTreeDplus)    ::Fatal("AddTaskHFTreeCreator", "looseCutsDplustoKpipi : check your cut file");
     AliRDHFCutsLctopKpi* looseCutsLctopKpi           =(AliRDHFCutsLctopKpi*)filecuts->Get("LctopKpiFilteringCuts");
-    if(!looseCutsLctopKpi)        ::Fatal("AddTaskHFTreeCreator", "looseCutsLctopKpi : check your cut file");
+    if(!looseCutsLctopKpi && fillTreeLctopKpi)        ::Fatal("AddTaskHFTreeCreator", "looseCutsLctopKpi : check your cut file");
     AliRDHFCutsBPlustoD0Pi* looseCutsBplustoD0pi   =(AliRDHFCutsBPlustoD0Pi*)filecuts->Get("BplustoD0piFilteringCuts");
-    if(!looseCutsBplustoD0pi)    ::Fatal("AddTaskHFTreeCreator", "looseCutsBplustoD0pi : check your cut file");
+    if(!looseCutsBplustoD0pi && fillTreeBplus)    ::Fatal("AddTaskHFTreeCreator", "looseCutsBplustoD0pi : check your cut file");
+    AliRDHFCutsDStartoKpipi* looseCutsDstartoKpipi   =(AliRDHFCutsDStartoKpipi*)filecuts->Get("DstartoKpipiFilteringCuts");
+    if(!looseCutsDstartoKpipi && fillTreeDstar)    ::Fatal("AddTaskHFTreeCreator", "looseCutsDstartoKpipi : check your cut file");
     AliRDHFCutsD0toKpi*      analysisCutsD0toKpi     =(AliRDHFCutsD0toKpi*)filecuts->Get("D0toKpiAnalysisCuts");
-    if(!analysisCutsD0toKpi)      ::Fatal("AddTaskHFTreeCreator", "analysisCutsD0toKpi : check your cut file");
+    if(!analysisCutsD0toKpi && fillTreeD0)      ::Fatal("AddTaskHFTreeCreator", "analysisCutsD0toKpi : check your cut file");
     AliRDHFCutsDstoKKpi*     analysisCutsDstoKKpi    =(AliRDHFCutsDstoKKpi*)filecuts->Get("DstoKKpiAnalysisCuts");
-    if(!analysisCutsDstoKKpi)     ::Fatal("AddTaskHFTreeCreator", "analysisCutsDstoKKpi : check your cut file");
+    if(!analysisCutsDstoKKpi && fillTreeDs)     ::Fatal("AddTaskHFTreeCreator", "analysisCutsDstoKKpi : check your cut file");
     AliRDHFCutsDplustoKpipi* analysisCutsDplustoKpipi=(AliRDHFCutsDplustoKpipi*)filecuts->Get("DplustoKpipiAnalysisCuts");
-    if(!analysisCutsDplustoKpipi) ::Fatal("AddTaskHFTreeCreator", "analysisCutsDplustoKpipi : check your cut file");
+    if(!analysisCutsDplustoKpipi && fillTreeDplus) ::Fatal("AddTaskHFTreeCreator", "analysisCutsDplustoKpipi : check your cut file");
     AliRDHFCutsLctopKpi*     analysisCutsLctopKpi    =(AliRDHFCutsLctopKpi*)filecuts->Get("LctopKpiAnalysisCuts");
-    if(!analysisCutsLctopKpi) ::Fatal("AddTaskHFTreeCreator", "analysisCutsLctopKpi : check your cut file");
+    if(!analysisCutsLctopKpi && fillTreeLctopKpi) ::Fatal("AddTaskHFTreeCreator", "analysisCutsLctopKpi : check your cut file");
     AliRDHFCutsBPlustoD0Pi* analysisCutsBplustoD0pi=(AliRDHFCutsBPlustoD0Pi*)filecuts->Get("BplustoD0piAnalysisCuts");
-    if(!analysisCutsBplustoD0pi) ::Fatal("AddTaskHFTreeCreator", "analysisCutsBplustoD0pi : check your cut file");
+    if(!analysisCutsBplustoD0pi && fillTreeBplus) ::Fatal("AddTaskHFTreeCreator", "analysisCutsBplustoD0pi : check your cut file");
+    AliRDHFCutsDStartoKpipi* analysisCutsDstartoKpipi=(AliRDHFCutsDStartoKpipi*)filecuts->Get("DstartoKpipiAnalysisCuts");
+    if(!analysisCutsDstartoKpipi && fillTreeDstar) ::Fatal("AddTaskHFTreeCreator", "analysisCutsDstartoKpipi : check your cut file");
 
     TList *cutsList=new TList();
     cutsList->SetOwner(kTRUE);
@@ -68,11 +74,13 @@ AliAnalysisTaskSEHFTreeCreator *AddTaskHFTreeCreator(Bool_t readMC=kTRUE,
     cutsList->Add(looseCutsDplustoKpipi);
     cutsList->Add(looseCutsLctopKpi);
     cutsList->Add(looseCutsBplustoD0pi);
+    cutsList->Add(looseCutsDstartoKpipi);
     cutsList->Add(analysisCutsD0toKpi);
     cutsList->Add(analysisCutsDstoKKpi);
     cutsList->Add(analysisCutsDplustoKpipi);
     cutsList->Add(analysisCutsLctopKpi);
     cutsList->Add(analysisCutsBplustoD0pi);
+    cutsList->Add(analysisCutsDstartoKpipi);
 
     AliAnalysisTaskSEHFTreeCreator *task = new AliAnalysisTaskSEHFTreeCreator("TreeCreatorTask",cutsList);
 
@@ -88,11 +96,13 @@ AliAnalysisTaskSEHFTreeCreator *AddTaskHFTreeCreator(Bool_t readMC=kTRUE,
     task->SetFillDplusTree(fillTreeDplus);
     task->SetFillLctopKpiTree(fillTreeLctopKpi);
     task->SetFillBplusTree(fillTreeBplus);
+    task->SetFillDstarTree(fillTreeDstar);
     task->SetPIDoptD0Tree(pidOptD0);
     task->SetPIDoptDsTree(pidOptDs);
     task->SetPIDoptDplusTree(pidOptDplus);
     task->SetPIDoptLctopKpiTree(pidOptLctopKpi);
     task->SetPIDoptBplusTree(pidOptBplus);
+    task->SetPIDoptDstarTree(pidOptDstar);
 
     //task->SetDebugLevel(4);
 
@@ -111,12 +121,14 @@ AliAnalysisTaskSEHFTreeCreator *AddTaskHFTreeCreator(Bool_t readMC=kTRUE,
     TString treeDsname = "coutputTreeDs";
     TString treeLctopKpiname = "coutputTreeLctopKpi";
     TString treeBplusname = "coutputTreeBplus";
+    TString treeDstarname = "coutputTreeDstar";
     TString treeGenD0name = "coutputTreeGenD0";
     TString treeGenDplusname = "coutputTreeGenDplus";
     TString treeGenDsname = "coutputTreeGenDs";
     TString treeGenLctopKpiname = "coutputTreeGenLctopKpi";
     TString treeGenBplusname = "coutputTreeGenBplus";
-
+    TString treeGenDstarname = "coutputTreeGenDstar";
+ 
     inname += finDirname.Data();
     histoname += finDirname.Data();
     countername += finDirname.Data();
@@ -128,11 +140,13 @@ AliAnalysisTaskSEHFTreeCreator *AddTaskHFTreeCreator(Bool_t readMC=kTRUE,
     treeDsname += finDirname.Data();
     treeLctopKpiname += finDirname.Data();
     treeBplusname += finDirname.Data();
+    treeDstarname += finDirname.Data();
     treeGenD0name += finDirname.Data();
     treeGenDplusname += finDirname.Data();
     treeGenDsname += finDirname.Data();
     treeGenLctopKpiname += finDirname.Data();
     treeGenBplusname += finDirname.Data();
+    treeGenDstarname += finDirname.Data();
 
     AliAnalysisDataContainer *cinput = mgr->CreateContainer(inname,TChain::Class(),AliAnalysisManager::kInputContainer);
     TString outputfile = AliAnalysisManager::GetCommonFileName();
@@ -155,6 +169,8 @@ AliAnalysisTaskSEHFTreeCreator *AddTaskHFTreeCreator(Bool_t readMC=kTRUE,
     AliAnalysisDataContainer *coutputTreeGenLctopKpi = 0x0;
     AliAnalysisDataContainer *coutputTreeBplus = 0x0;
     AliAnalysisDataContainer *coutputTreeGenBplus = 0x0;
+    AliAnalysisDataContainer *coutputTreeDstar = 0x0;
+    AliAnalysisDataContainer *coutputTreeGenDstar = 0x0;
 
     if(fillTreeD0) {
       coutputTreeD0 = mgr->CreateContainer(treeD0name,TTree::Class(),AliAnalysisManager::kOutputContainer,outputfile.Data());
@@ -200,6 +216,15 @@ AliAnalysisTaskSEHFTreeCreator *AddTaskHFTreeCreator(Bool_t readMC=kTRUE,
             coutputTreeGenBplus->SetSpecialOutput();
         }
     }
+
+    if(fillTreeDstar) {
+        coutputTreeDstar = mgr->CreateContainer(treeDstarname,TTree::Class(),AliAnalysisManager::kOutputContainer,outputfile.Data());
+        coutputTreeDstar->SetSpecialOutput();
+        if(readMC && fillMGgenTrees) {
+            coutputTreeGenDstar = mgr->CreateContainer(treeGenDstarname,TTree::Class(),AliAnalysisManager::kOutputContainer,outputfile.Data());
+            coutputTreeGenDstar->SetSpecialOutput();
+        }
+    }
     
     mgr->ConnectInput(task,0,mgr->GetCommonInputContainer());
     mgr->ConnectOutput(task,1,coutputEntries);
@@ -227,6 +252,9 @@ AliAnalysisTaskSEHFTreeCreator *AddTaskHFTreeCreator(Bool_t readMC=kTRUE,
         mgr->ConnectOutput(task,14,coutputTreeBplus);
         if(readMC && fillMGgenTrees) mgr->ConnectOutput(task,15,coutputTreeGenBplus);
     }
-  
+    if(fillTreeDstar) {
+        mgr->ConnectOutput(task,16,coutputTreeDstar);
+        if(readMC && fillMGgenTrees) mgr->ConnectOutput(task,17,coutputTreeGenDstar);
+    }
     return task;
 }

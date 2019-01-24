@@ -158,6 +158,7 @@ AliConvEventCuts::AliConvEventCuts(const char *name,const char *title) :
   fTriggerSelectedManually(kFALSE),
   fSpecialTriggerName(""),
   fSpecialSubTriggerName(""),
+  fSpecialSubTriggerNameAdditional(""),
   fNSpecialSubTriggerOptions(0),
   hSPDClusterTrackletBackgroundBefore(NULL),
   hSPDClusterTrackletBackground(NULL),
@@ -281,6 +282,7 @@ AliConvEventCuts::AliConvEventCuts(const AliConvEventCuts &ref) :
   fTriggerSelectedManually(ref.fTriggerSelectedManually),
   fSpecialTriggerName(ref.fSpecialTriggerName),
   fSpecialSubTriggerName(ref.fSpecialSubTriggerName),
+  fSpecialSubTriggerNameAdditional(ref.fSpecialSubTriggerNameAdditional),
   fNSpecialSubTriggerOptions(ref.fNSpecialSubTriggerOptions),
   hSPDClusterTrackletBackgroundBefore(NULL),
   hSPDClusterTrackletBackground(NULL),
@@ -1071,7 +1073,7 @@ void AliConvEventCuts::PrintCutsWithValues() {
       }
       if (fRejectTriggerOverlap) printf("\t        reject trigger overlaps");
     } else if (fSpecialTrigger > 1){
-      printf("\t only events triggered by %s %s\n", fSpecialTriggerName.Data(), fSpecialSubTriggerName.Data());
+      printf("\t only events triggered by %s %s %s\n", fSpecialTriggerName.Data(), fSpecialSubTriggerName.Data(), fSpecialSubTriggerNameAdditional.Data());
       if (fRejectTriggerOverlap) printf("\t        reject trigger overlaps\n\n");
     }
     if ( !(fCentralityMin == 0 && fCentralityMax == 0) && !(fCentralityMax < fCentralityMin) ){
@@ -1104,9 +1106,11 @@ void AliConvEventCuts::PrintCutsWithValues() {
     if (fSpecialTrigger == 0){
       printf("\t only events triggered by kMB, kCentral, kSemiCentral will be analysed \n");
     } else if (fSpecialTrigger > 1){
-      printf("\t only events triggered by %s %s\n", fSpecialTriggerName.Data(), fSpecialSubTriggerName.Data());
+      printf("\t only events triggered by %s %s %s\n", fSpecialTriggerName.Data(), fSpecialSubTriggerName.Data(),fSpecialSubTriggerNameAdditional.Data());
       printf("\n\t        SpecialTrigger is:  %s\n", fSpecialTriggerName.Data());
       printf("\t        SpecialSubTrigger is: %s\n", fSpecialSubTriggerName.Data());
+      if(fNSpecialSubTriggerOptions==2)
+      printf("\t        SpecialSubTrigger2 is: %s\n", fSpecialSubTriggerNameAdditional.Data());
       if (fRejectTriggerOverlap) printf("\t        reject trigger overlaps\n\n");
     }
   } else if (fIsHeavyIon == 2){
@@ -1128,7 +1132,7 @@ void AliConvEventCuts::PrintCutsWithValues() {
     if (fSpecialTrigger == 0){
       printf("\t only events triggered by kINT7 will be analysed \n");
     } else if (fSpecialTrigger > 1){
-      printf("\t only events triggered by %s %s\n", fSpecialTriggerName.Data(), fSpecialSubTriggerName.Data());
+      printf("\t only events triggered by %s %s %s\n", fSpecialTriggerName.Data(), fSpecialSubTriggerName.Data(),fSpecialSubTriggerNameAdditional.Data());
       if (fRejectTriggerOverlap) printf("\t        reject trigger overlaps\n\n");
     }
   }
@@ -1431,11 +1435,11 @@ Bool_t AliConvEventCuts::SetSelectSubTriggerClass(Int_t selectSpecialSubTriggerC
     case 0://with VZERO
       fSpecialTrigger=0;
       fSpecialSubTrigger=0;
-//       AliInfo("Info: Nothing to be done");
+      // AliInfo("Info: Nothing to be done");
       break;
     case 3: //V0OR with SDD requested (will only work with LHC11a dataset)
       fSpecialSubTrigger=1;
-//       cout << "V0OR with SDD requested" << endl;
+      // cout << "V0OR with SDD requested" << endl;
       break;
     default:
       AliError("Warning: Special Subtrigger Class Not known");
@@ -1460,7 +1464,7 @@ Bool_t AliConvEventCuts::SetSelectSubTriggerClass(Int_t selectSpecialSubTriggerC
     case 2: //with VZERO (will only work with LHC11a dataset)
       fSpecialTrigger=1;
       fSpecialSubTrigger=0;
-//       AliInfo("Info: Nothing to be done");
+      // AliInfo("Info: Nothing to be done");
       break;
     case 3: //V0AND with SDD requested (will only work with LHC11a dataset)
       fSpecialTrigger=1;
@@ -1475,61 +1479,61 @@ Bool_t AliConvEventCuts::SetSelectSubTriggerClass(Int_t selectSpecialSubTriggerC
     case 0: // all together
       fSpecialSubTrigger=0;
       fSpecialSubTriggerName="";
-//       AliInfo("Info: Nothing to be done");
+      // AliInfo("Info: Nothing to be done");
       break;
     case 1: // kCentral - no vertex restriction
       fSpecialSubTrigger=1;
       fNSpecialSubTriggerOptions=1;
       fSpecialSubTriggerName="CVHN";
-//       cout << "kCentralOpen" << endl;
+      // cout << "kCentralOpen" << endl;
       break;
     case 2: // kCentral - T00 +- 10 cm
       fSpecialSubTrigger=1;
       fNSpecialSubTriggerOptions=1;
       fSpecialSubTriggerName="CCENT";
-//       cout << "kCentralVertex" << endl;
+      // cout << "kCentralVertex" << endl;
       break;
     case 3: // kCentral - both
       fSpecialSubTrigger=1;
       fNSpecialSubTriggerOptions=1;
       fSpecialSubTriggerName="CVHN|CCENT|CSEMI|CVLN";
-//       cout << "kCentral both" << endl;
+      // cout << "kCentral both" << endl;
       break;
     case 4: // kSemiCentral - no vertex restriction
       fSpecialSubTrigger=1;
       fNSpecialSubTriggerOptions=1;
       fSpecialSubTriggerName="CVLN";
-//       cout << "kSemiCentralOpen" << endl;
+      // cout << "kSemiCentralOpen" << endl;
       break;
     case 5: // kSemiCentral - T00 +- 10 cm
       fSpecialSubTrigger=1;
       fNSpecialSubTriggerOptions=1;
       fSpecialSubTriggerName="CSEMI";
-//       cout << "kSemiCentralVertex" << endl;
+      // cout << "kSemiCentralVertex" << endl;
       break;
     case 6: // kSemiCentral - both
       fSpecialSubTrigger=1;
       fNSpecialSubTriggerOptions=1;
       fSpecialSubTriggerName="CSEMI%CVLN";
-//       cout << "kSemiCentral both" << endl;
+      // cout << "kSemiCentral both" << endl;
       break;
     case 7: // kMB
       fSpecialSubTrigger=1;
       fNSpecialSubTriggerOptions=1;
       fSpecialSubTriggerName="CPBI1_|CPBI1-";
-//       cout << "kMB 1" << endl;
+      // cout << "kMB 1" << endl;
       break;
     case 8: // kMB
       fSpecialSubTrigger=1;
       fNSpecialSubTriggerOptions=1;
       fSpecialSubTriggerName="CPBI2_|CPBI2-";
-//       cout << "kMB 2" << endl;
+      // cout << "kMB 2" << endl;
       break;
     case 9: // kMB
       fSpecialSubTrigger=1;
       fNSpecialSubTriggerOptions=1;
       fSpecialSubTriggerName="CPBI2_@CPBI2-@CPBI2_@CPBI2-";
-//       cout << "kMB both" << endl;
+      // cout << "kMB both" << endl;
       break;
     case 10: // 0V0M
       fOfflineTriggerMask=AliVEvent::kINT7;
@@ -1575,7 +1579,7 @@ Bool_t AliConvEventCuts::SetSelectSubTriggerClass(Int_t selectSpecialSubTriggerC
     case 0: // all together
       fSpecialSubTrigger=0;
       fSpecialSubTriggerName="";
-//       AliInfo("Info: Nothing to be done");
+      // AliInfo("Info: Nothing to be done");
       break;
     case 1: // 7WUHSH - V0AND with single electron in TRD & EMCAL
       fSpecialSubTrigger=1;
@@ -1626,7 +1630,7 @@ Bool_t AliConvEventCuts::SetSelectSubTriggerClass(Int_t selectSpecialSubTriggerC
     case 0: // all together
       fSpecialSubTrigger=0;
       fSpecialSubTriggerName="";
-//       AliInfo("Info: Nothing to be done");
+      // AliInfo("Info: Nothing to be done");
       break;
     case 1: // CEMC1 - V0OR and EMCAL fired
       fOfflineTriggerMask=AliVEvent::kEMC1;
@@ -1670,6 +1674,22 @@ Bool_t AliConvEventCuts::SetSelectSubTriggerClass(Int_t selectSpecialSubTriggerC
       fNSpecialSubTriggerOptions=1;
       fSpecialSubTriggerName="CDMC8";
       break;
+    case 7: // MC7 - V0AND and EMCAL OR DCAL fired
+      fSpecialSubTrigger=1;
+      fOfflineTriggerMask=AliVEvent::kEMC7;
+      fSpecialTriggerName="AliVEvent::kEMC7";
+      fNSpecialSubTriggerOptions=2;
+      fSpecialSubTriggerName="CEMC7";
+      fSpecialSubTriggerNameAdditional="CDMC7";
+      break;
+    case 8: // MC8  - T0OR and EMCAL OR DCAL fired
+      fOfflineTriggerMask=AliVEvent::kEMC8;
+      fSpecialTriggerName="AliVEvent::kEMC8";
+      fSpecialSubTrigger=1;
+      fNSpecialSubTriggerOptions=2;
+      fSpecialSubTriggerName="CEMC8";
+      fSpecialSubTriggerNameAdditional="CDMC8";
+      break;
     default:
       AliError("Warning: Special Subtrigger Class Not known");
       return 0;
@@ -1679,7 +1699,7 @@ Bool_t AliConvEventCuts::SetSelectSubTriggerClass(Int_t selectSpecialSubTriggerC
     case 0: // all together
       fSpecialSubTrigger=0;
       fSpecialSubTriggerName="";
-//       AliInfo("Info: Nothing to be done");
+      // AliInfo("Info: Nothing to be done");
       break;
     case 1: // CEMC1 - V0OR and EMCAL fired
       fOfflineTriggerMask=AliVEvent::kPHI1;
@@ -1706,12 +1726,12 @@ Bool_t AliConvEventCuts::SetSelectSubTriggerClass(Int_t selectSpecialSubTriggerC
       AliError("Warning: Special Subtrigger Class Not known");
       return 0;
     }
-  } else if (fSpecialTrigger == 7){ // Subdivision of kHighMult trigger classes
+  }else if (fSpecialTrigger == 7){ // Subdivision of kHighMult trigger classes
     switch(selectSpecialSubTriggerClass){
     case 0: // all together
       fSpecialSubTrigger=0;
       fSpecialSubTriggerName="";
-//       AliInfo("Info: Nothing to be done");
+      // AliInfo("Info: Nothing to be done");
       break;
     case 1: // CSHM1 - V0OR and high mult fired
       fSpecialSubTrigger=1;
@@ -1759,7 +1779,7 @@ Bool_t AliConvEventCuts::SetSelectSubTriggerClass(Int_t selectSpecialSubTriggerC
     case 0: // all together
       fSpecialSubTrigger=0;
       fSpecialSubTriggerName="";
-//       AliInfo("Info: Nothing to be done");
+      // AliInfo("Info: Nothing to be done");
       break;
     case 1: // 7EGA - CINT7 EGA
       fSpecialSubTrigger=1;
@@ -1845,6 +1865,22 @@ Bool_t AliConvEventCuts::SetSelectSubTriggerClass(Int_t selectSpecialSubTriggerC
       fTriggersEMCALSelected= 0;
       SETBIT(fTriggersEMCALSelected, kG2);
       break;
+    case 13: // Gamma Low EMC and DMC
+      fSpecialSubTrigger=1;
+      fNSpecialSubTriggerOptions=2;
+      fSpecialSubTriggerName="7EG1";
+      fSpecialSubTriggerNameAdditional="7DG1";
+      fTriggersEMCALSelected= 0;
+      SETBIT(fTriggersEMCALSelected, kG1);
+      break;
+    case 14: // Gamma Low EMC and DMC
+      fSpecialSubTrigger=1;
+      fNSpecialSubTriggerOptions=2;
+      fSpecialSubTriggerName="7EG2";
+      fSpecialSubTriggerNameAdditional="7DG2";
+      fTriggersEMCALSelected= 0;
+      SETBIT(fTriggersEMCALSelected, kG1);
+      break;
 
     default:
       AliError("Warning: Special Subtrigger Class Not known");
@@ -1855,7 +1891,7 @@ Bool_t AliConvEventCuts::SetSelectSubTriggerClass(Int_t selectSpecialSubTriggerC
     case 0: // all together
       fSpecialSubTrigger=0;
       fSpecialSubTriggerName="";
-//       AliInfo("Info: Nothing to be done");
+      // AliInfo("Info: Nothing to be done");
       break;
     case 1: // 7EJE - CINT7 EJE
       fSpecialSubTrigger=1;
@@ -1927,7 +1963,22 @@ Bool_t AliConvEventCuts::SetSelectSubTriggerClass(Int_t selectSpecialSubTriggerC
       fTriggersEMCALSelected= 0;
       SETBIT(fTriggersEMCALSelected, kJ2);
       break;
-
+    case 11: // high Jet trigger EMC+DMC
+      fSpecialSubTrigger=1;
+      fNSpecialSubTriggerOptions=2;
+      fSpecialSubTriggerName="7EJ1";
+      fSpecialSubTriggerNameAdditional="7DJ1";
+      fTriggersEMCALSelected= 0;
+      SETBIT(fTriggersEMCALSelected, kJ1);
+      break;
+    case 12: // low Jet trigger EMC+DMC
+      fSpecialSubTrigger=1;
+      fNSpecialSubTriggerOptions=2;
+      fSpecialSubTriggerName="7EJ2";
+      fSpecialSubTriggerNameAdditional="7DJ2";
+      fTriggersEMCALSelected= 0;
+      SETBIT(fTriggersEMCALSelected, kJ2);
+      break;
     default:
       AliError("Warning: Special Subtrigger Class Not known");
       return 0;
@@ -4033,127 +4084,186 @@ Bool_t AliConvEventCuts::IsTriggerSelected(AliVEvent *event, Bool_t isMC)
 //           fTriggersEMCAL= GetTriggerList();
 //         }
         if (fSpecialSubTrigger>0 && !isMC){
-          if (!firedTrigClass.Contains(fSpecialSubTriggerName.Data())) isSelected = 0;
+          if(fNSpecialSubTriggerOptions==2){ // in case two special triggers are available
+            if (!firedTrigClass.Contains(fSpecialSubTriggerName.Data()) && !firedTrigClass.Contains(fSpecialSubTriggerNameAdditional.Data())) isSelected = 0;
+          } else { // standard case for just one trigger
+            if (!firedTrigClass.Contains(fSpecialSubTriggerName.Data())) isSelected = 0;
+          }
           if (fRejectTriggerOverlap){
             // trigger rejection EMC1,7,8
-            if (fSpecialTrigger == 5 && fSpecialSubTriggerName.CompareTo("CEMC7") == 0){
-              if (fInputHandler->IsEventSelected() & AliVEvent::kINT7) isSelected = 0;
-            } else if (fSpecialTrigger == 5 && fSpecialSubTriggerName.CompareTo("CEMC1") == 0){
-              if (fInputHandler->IsEventSelected() & AliVEvent::kMB) isSelected = 0;
-            } else if (fSpecialTrigger == 5 && fSpecialSubTriggerName.CompareTo("CEMC8") == 0){
-              if (fInputHandler->IsEventSelected() & AliVEvent::kINT8) isSelected = 0;
-            } else if (fSpecialTrigger == 5 && fSpecialSubTriggerName.CompareTo("CDMC7") == 0){
-              if (fInputHandler->IsEventSelected() & AliVEvent::kINT7) isSelected = 0;
-            } else if (fSpecialTrigger == 5 && fSpecialSubTriggerName.CompareTo("CDMC1") == 0){
-              if (fInputHandler->IsEventSelected() & AliVEvent::kMB) isSelected = 0;
-            } else if (fSpecialTrigger == 5 && fSpecialSubTriggerName.CompareTo("CDMC8") == 0){
-              if (fInputHandler->IsEventSelected() & AliVEvent::kINT8) isSelected = 0;
+            if (fSpecialTrigger == 5){
+              if(fNSpecialSubTriggerOptions==2){
+                // trigger rejection for EMC and DMC triggers together
+                if (fSpecialSubTriggerName.CompareTo("CEMC7") == 0 && fSpecialSubTriggerNameAdditional.CompareTo("CDMC7") == 0){
+                  if (fInputHandler->IsEventSelected() & AliVEvent::kINT7) isSelected = 0;
+                } else if (fSpecialSubTriggerName.CompareTo("CEMC8") == 0 && fSpecialSubTriggerName.CompareTo("CDMC8") == 0){
+                  if (fInputHandler->IsEventSelected() & AliVEvent::kINT8) isSelected = 0;
+                }
+              } else {
+                // separate rejection for EMC and DMC triggers
+                if( fSpecialSubTriggerName.CompareTo("CEMC7") == 0){
+                  if (fInputHandler->IsEventSelected() & AliVEvent::kINT7) isSelected = 0;
+                } else if (fSpecialSubTriggerName.CompareTo("CEMC1") == 0){
+                  if (fInputHandler->IsEventSelected() & AliVEvent::kMB) isSelected = 0;
+                } else if (fSpecialSubTriggerName.CompareTo("CEMC8") == 0){
+                  if (fInputHandler->IsEventSelected() & AliVEvent::kINT8) isSelected = 0;
+                } else if (fSpecialSubTriggerName.CompareTo("CDMC7") == 0){
+                  if (fInputHandler->IsEventSelected() & AliVEvent::kINT7) isSelected = 0;
+                } else if (fSpecialSubTriggerName.CompareTo("CDMC1") == 0){
+                  if (fInputHandler->IsEventSelected() & AliVEvent::kMB) isSelected = 0;
+                } else if (fSpecialSubTriggerName.CompareTo("CDMC8") == 0){
+                  if (fInputHandler->IsEventSelected() & AliVEvent::kINT8) isSelected = 0;
+                }
+              }
             }
-            // trigger rejection EGA
-            if (fSpecialTrigger == 8 && fSpecialSubTriggerName.CompareTo("7EGA") == 0){
-              if (fInputHandler->IsEventSelected() & AliVEvent::kINT7) isSelected = 0;
-              if (fInputHandler->IsEventSelected() & AliVEvent::kEMC7) isSelected = 0;
-            } else if (fSpecialTrigger == 8 && fSpecialSubTriggerName.CompareTo("8EGA") == 0){
-              if (fInputHandler->IsEventSelected() & AliVEvent::kINT8) isSelected = 0;
-              if (fInputHandler->IsEventSelected() & AliVEvent::kEMC7) isSelected = 0;
-            } else if (fSpecialTrigger == 8 && fSpecialSubTriggerName.CompareTo("7DGA") == 0){
-              if (fInputHandler->IsEventSelected() & AliVEvent::kINT7) isSelected = 0;
-              if (fInputHandler->IsEventSelected() & AliVEvent::kEMC7) isSelected = 0;
-            } else if (fSpecialTrigger == 8 && fSpecialSubTriggerName.CompareTo("8DGA") == 0){
-              if (fInputHandler->IsEventSelected() & AliVEvent::kINT8) isSelected = 0;
-              if (fInputHandler->IsEventSelected() & AliVEvent::kEMC7) isSelected = 0;
-            }
-            // trigger rejection EG1 & EG2
-            // EG1 is the trigger with the highest threshold
-            if (fSpecialTrigger == 8 && fSpecialSubTriggerName.CompareTo("7EG1") == 0){
-//                 cout << firedTrigClass.Data() << endl;
-              if (fInputHandler->IsEventSelected() & AliVEvent::kINT7) isSelected = 0;
-//                 cout << "INT7? " << isSelected << endl;
-              if (fInputHandler->IsEventSelected() & AliVEvent::kEMC7) isSelected = 0;
-//                 cout << "CEM7? " << isSelected << endl;
-              if (firedTrigClass.Contains("7EG2"))  isSelected = 0;
-//                 cout << "7EG2? " << isSelected << endl;
-            } else if (fSpecialTrigger == 8 && fSpecialSubTriggerName.CompareTo("8EG1") == 0){
-              if (fInputHandler->IsEventSelected() & AliVEvent::kINT8) isSelected = 0;
-              if (fInputHandler->IsEventSelected() & AliVEvent::kEMC7) isSelected = 0;
-              if (firedTrigClass.Contains("8EG2"))  isSelected = 0;
-            } else   if (fSpecialTrigger == 8 && fSpecialSubTriggerName.CompareTo("7EG2") == 0){
-//                 cout << firedTrigClass.Data() << endl;
-              if (fInputHandler->IsEventSelected() & AliVEvent::kINT7) isSelected = 0;
-//                 cout << "INT7? " << isSelected << endl;
-              if (fInputHandler->IsEventSelected() & AliVEvent::kEMC7) isSelected = 0;
-//                 cout << "CEM7? " << isSelected << endl;
-            } else   if (fSpecialTrigger == 8 && fSpecialSubTriggerName.CompareTo("8EG2") == 0){
-              if (fInputHandler->IsEventSelected() & AliVEvent::kINT7) isSelected = 0;
-              if (fInputHandler->IsEventSelected() & AliVEvent::kEMC7) isSelected = 0;
-            } else if (fSpecialTrigger == 8 && fSpecialSubTriggerName.CompareTo("7DG1") == 0){
-                //                 cout << firedTrigClass.Data() << endl;
+            // gamma triggers -> no overlap with L0 and MB trigger required
+            if (fSpecialTrigger == 8){
+              // trigger rejection EGA
+              if( fSpecialSubTriggerName.CompareTo("7EGA") == 0){
                 if (fInputHandler->IsEventSelected() & AliVEvent::kINT7) isSelected = 0;
-                //                 cout << "INT7? " << isSelected << endl;
                 if (fInputHandler->IsEventSelected() & AliVEvent::kEMC7) isSelected = 0;
-                //                 cout << "CEM7? " << isSelected << endl;
-                if (firedTrigClass.Contains("7DG2"))  isSelected = 0;
-                //                 cout << "7EG2? " << isSelected << endl;
-              } else if (fSpecialTrigger == 8 && fSpecialSubTriggerName.CompareTo("8DG1") == 0){
+              } else if (fSpecialSubTriggerName.CompareTo("8EGA") == 0){
                 if (fInputHandler->IsEventSelected() & AliVEvent::kINT8) isSelected = 0;
                 if (fInputHandler->IsEventSelected() & AliVEvent::kEMC7) isSelected = 0;
-                if (firedTrigClass.Contains("8DG2"))  isSelected = 0;
-              } else   if (fSpecialTrigger == 8 && fSpecialSubTriggerName.CompareTo("7DG2") == 0){
-                //                 cout << firedTrigClass.Data() << endl;
-                if (fInputHandler->IsEventSelected() & AliVEvent::kINT7) isSelected = 0;
-                //                 cout << "INT7? " << isSelected << endl;
-                if (fInputHandler->IsEventSelected() & AliVEvent::kEMC7) isSelected = 0;
-                //                 cout << "CEM7? " << isSelected << endl;
-              } else   if (fSpecialTrigger == 8 && fSpecialSubTriggerName.CompareTo("8DG2") == 0){
+              } else if (fSpecialSubTriggerName.CompareTo("7DGA") == 0){
                 if (fInputHandler->IsEventSelected() & AliVEvent::kINT7) isSelected = 0;
                 if (fInputHandler->IsEventSelected() & AliVEvent::kEMC7) isSelected = 0;
-              }
-              // jet triggers -> no overlap with gamma trigger required
-            if (fSpecialTrigger == 9 && fSpecialSubTriggerName.CompareTo("7EJ1") == 0){
-              if (fInputHandler->IsEventSelected() & AliVEvent::kINT7) isSelected = 0;
-              if (fInputHandler->IsEventSelected() & AliVEvent::kEMC7) isSelected = 0;
-              if (firedTrigClass.Contains("7EG2"))  isSelected = 0;
-              if (firedTrigClass.Contains("7EG1"))  isSelected = 0;
-              if (firedTrigClass.Contains("7EJ2"))  isSelected = 0;
-            } else if (fSpecialTrigger == 9 && fSpecialSubTriggerName.CompareTo("8EJ1") == 0){
-              if (fInputHandler->IsEventSelected() & AliVEvent::kINT8) isSelected = 0;
-              if (fInputHandler->IsEventSelected() & AliVEvent::kEMC7) isSelected = 0;
-              if (firedTrigClass.Contains("8EG2"))  isSelected = 0;
-              if (firedTrigClass.Contains("8EG1"))  isSelected = 0;
-              if (firedTrigClass.Contains("8EJ2"))  isSelected = 0;
-            } else   if (fSpecialTrigger == 9 && fSpecialSubTriggerName.CompareTo("7EJ2") == 0){
-              if (fInputHandler->IsEventSelected() & AliVEvent::kINT7) isSelected = 0;
-              if (fInputHandler->IsEventSelected() & AliVEvent::kEMC7) isSelected = 0;
-              if (firedTrigClass.Contains("7EG2"))  isSelected = 0;
-              if (firedTrigClass.Contains("7EG1"))  isSelected = 0;
-            } else   if (fSpecialTrigger == 9 && fSpecialSubTriggerName.CompareTo("8EJ2") == 0){
-              if (fInputHandler->IsEventSelected() & AliVEvent::kINT7) isSelected = 0;
-              if (fInputHandler->IsEventSelected() & AliVEvent::kEMC7) isSelected = 0;
-              if (firedTrigClass.Contains("8EG2"))  isSelected = 0;
-              if (firedTrigClass.Contains("8EG1"))  isSelected = 0;
-            } else if (fSpecialTrigger == 9 && fSpecialSubTriggerName.CompareTo("7DJ1") == 0){
-                if (fInputHandler->IsEventSelected() & AliVEvent::kINT7) isSelected = 0;
-                if (fInputHandler->IsEventSelected() & AliVEvent::kEMC7) isSelected = 0;
-                if (firedTrigClass.Contains("7DG1"))  isSelected = 0;
-                if (firedTrigClass.Contains("7DG2"))  isSelected = 0;
-                if (firedTrigClass.Contains("7DJ2"))  isSelected = 0;
-              } else if (fSpecialTrigger == 9 && fSpecialSubTriggerName.CompareTo("8DJ1") == 0){
+              } else if (fSpecialSubTriggerName.CompareTo("8DGA") == 0){
                 if (fInputHandler->IsEventSelected() & AliVEvent::kINT8) isSelected = 0;
                 if (fInputHandler->IsEventSelected() & AliVEvent::kEMC7) isSelected = 0;
-                if (firedTrigClass.Contains("8DG1"))  isSelected = 0;
-                if (firedTrigClass.Contains("8DG2"))  isSelected = 0;
-                if (firedTrigClass.Contains("8DJ2"))  isSelected = 0;
-              } else   if (fSpecialTrigger == 9 && fSpecialSubTriggerName.CompareTo("7DJ2") == 0){
-                if (fInputHandler->IsEventSelected() & AliVEvent::kINT7) isSelected = 0;
-                if (fInputHandler->IsEventSelected() & AliVEvent::kEMC7) isSelected = 0;
-                if (firedTrigClass.Contains("7DG2"))  isSelected = 0;
-                if (firedTrigClass.Contains("7DG1"))  isSelected = 0;
-              } else   if (fSpecialTrigger == 9 && fSpecialSubTriggerName.CompareTo("8DG2") == 0){
-                if (fInputHandler->IsEventSelected() & AliVEvent::kINT7) isSelected = 0;
-                if (fInputHandler->IsEventSelected() & AliVEvent::kEMC7) isSelected = 0;
-                if (firedTrigClass.Contains("8DG2"))  isSelected = 0;
-                if (firedTrigClass.Contains("8DG1"))  isSelected = 0;
               }
+              // trigger rejection EG1 & EG2
+              // EG1 is the trigger with the highest threshold
+              if(fNSpecialSubTriggerOptions==2){
+                // trigger rejection for EMC and DMC triggers together
+                if (fSpecialSubTriggerName.CompareTo("7EG1") == 0 && fSpecialSubTriggerNameAdditional.CompareTo("7DG1") == 0){
+                  if (fInputHandler->IsEventSelected() & AliVEvent::kINT7) isSelected = 0;
+                  if (fInputHandler->IsEventSelected() & AliVEvent::kEMC7) isSelected = 0;
+                  if (firedTrigClass.Contains("7EG2"))  isSelected = 0;
+                  if (firedTrigClass.Contains("7DG2"))  isSelected = 0;
+                } else if (fSpecialSubTriggerName.CompareTo("8EG1") == 0 && fSpecialSubTriggerNameAdditional.CompareTo("8DG1") == 0){
+                  if (fInputHandler->IsEventSelected() & AliVEvent::kINT8) isSelected = 0;
+                  if (fInputHandler->IsEventSelected() & AliVEvent::kEMC7) isSelected = 0;
+                  if (firedTrigClass.Contains("8EG2"))  isSelected = 0;
+                  if (firedTrigClass.Contains("8DG2"))  isSelected = 0;
+                } else if (fSpecialSubTriggerName.CompareTo("7EG2") == 0 && fSpecialSubTriggerNameAdditional.CompareTo("7DG2") == 0){
+                  if (fInputHandler->IsEventSelected() & AliVEvent::kINT7) isSelected = 0;
+                  if (fInputHandler->IsEventSelected() & AliVEvent::kEMC7) isSelected = 0;
+                } else if (fSpecialSubTriggerName.CompareTo("8EG2") == 0 && fSpecialSubTriggerNameAdditional.CompareTo("8DG2") == 0){
+                  if (fInputHandler->IsEventSelected() & AliVEvent::kINT7) isSelected = 0;
+                  if (fInputHandler->IsEventSelected() & AliVEvent::kEMC7) isSelected = 0;
+                }
+              } else {
+                // separate rejection for EMC and DMC triggers
+                if (fSpecialSubTriggerName.CompareTo("7EG1") == 0){
+                  if (fInputHandler->IsEventSelected() & AliVEvent::kINT7) isSelected = 0;
+                  if (fInputHandler->IsEventSelected() & AliVEvent::kEMC7) isSelected = 0;
+                  if (firedTrigClass.Contains("7EG2"))  isSelected = 0;
+                } else if (fSpecialSubTriggerName.CompareTo("8EG1") == 0){
+                  if (fInputHandler->IsEventSelected() & AliVEvent::kINT8) isSelected = 0;
+                  if (fInputHandler->IsEventSelected() & AliVEvent::kEMC7) isSelected = 0;
+                  if (firedTrigClass.Contains("8EG2"))  isSelected = 0;
+                } else if (fSpecialSubTriggerName.CompareTo("7EG2") == 0){
+                  if (fInputHandler->IsEventSelected() & AliVEvent::kINT7) isSelected = 0;
+                  if (fInputHandler->IsEventSelected() & AliVEvent::kEMC7) isSelected = 0;
+                } else if (fSpecialSubTriggerName.CompareTo("8EG2") == 0){
+                  if (fInputHandler->IsEventSelected() & AliVEvent::kINT7) isSelected = 0;
+                  if (fInputHandler->IsEventSelected() & AliVEvent::kEMC7) isSelected = 0;
+                } else if (fSpecialSubTriggerName.CompareTo("7DG1") == 0){
+                  if (fInputHandler->IsEventSelected() & AliVEvent::kINT7) isSelected = 0;
+                  if (fInputHandler->IsEventSelected() & AliVEvent::kEMC7) isSelected = 0;
+                  if (firedTrigClass.Contains("7DG2"))  isSelected = 0;
+                } else if (fSpecialSubTriggerName.CompareTo("8DG1") == 0){
+                  if (fInputHandler->IsEventSelected() & AliVEvent::kINT8) isSelected = 0;
+                  if (fInputHandler->IsEventSelected() & AliVEvent::kEMC7) isSelected = 0;
+                  if (firedTrigClass.Contains("8DG2"))  isSelected = 0;
+                } else if (fSpecialSubTriggerName.CompareTo("7DG2") == 0){
+                  if (fInputHandler->IsEventSelected() & AliVEvent::kINT7) isSelected = 0;
+                  if (fInputHandler->IsEventSelected() & AliVEvent::kEMC7) isSelected = 0;
+                } else if (fSpecialSubTriggerName.CompareTo("8DG2") == 0){
+                  if (fInputHandler->IsEventSelected() & AliVEvent::kINT8) isSelected = 0;
+                  if (fInputHandler->IsEventSelected() & AliVEvent::kEMC7) isSelected = 0;
+                }
+              }
+            }
+            // jet triggers -> no overlap with gamma trigger and lower triggers required
+            if (fSpecialTrigger == 9){
+              if(fNSpecialSubTriggerOptions==2){
+                // trigger rejection for EMC and DMC triggers together
+                if (fSpecialSubTriggerName.CompareTo("7EJ1") == 0 && fSpecialSubTriggerNameAdditional.CompareTo("7DJ1") == 0){
+                  if (fInputHandler->IsEventSelected() & AliVEvent::kINT7) isSelected = 0;
+                  if (fInputHandler->IsEventSelected() & AliVEvent::kEMC7) isSelected = 0;
+                  if (firedTrigClass.Contains("7EG2"))  isSelected = 0;
+                  if (firedTrigClass.Contains("7EG1"))  isSelected = 0;
+                  if (firedTrigClass.Contains("7EJ2"))  isSelected = 0;
+                  if (firedTrigClass.Contains("7DG2"))  isSelected = 0;
+                  if (firedTrigClass.Contains("7DG1"))  isSelected = 0;
+                  if (firedTrigClass.Contains("7DJ2"))  isSelected = 0;
+                } else if (fSpecialSubTriggerName.CompareTo("7EJ2") == 0 && fSpecialSubTriggerNameAdditional.CompareTo("7DJ2") == 0){
+                  if (fInputHandler->IsEventSelected() & AliVEvent::kINT7) isSelected = 0;
+                  if (fInputHandler->IsEventSelected() & AliVEvent::kEMC7) isSelected = 0;
+                  if (firedTrigClass.Contains("7EG2"))  isSelected = 0;
+                  if (firedTrigClass.Contains("7EG1"))  isSelected = 0;
+                  if (firedTrigClass.Contains("7DG2"))  isSelected = 0;
+                  if (firedTrigClass.Contains("7DG1"))  isSelected = 0;
+                }
+              } else {
+                // separate rejection for EMC and DMC triggers
+                if( fSpecialSubTriggerName.CompareTo("7EJE") == 0){
+                  if (fInputHandler->IsEventSelected() & AliVEvent::kINT7) isSelected = 0;
+                  if (fInputHandler->IsEventSelected() & AliVEvent::kEMC7) isSelected = 0;
+                  if (firedTrigClass.Contains("7EGA"))  isSelected = 0;
+                } else if (fSpecialSubTriggerName.CompareTo("8EJE") == 0){
+                  if (fInputHandler->IsEventSelected() & AliVEvent::kINT8) isSelected = 0;
+                  if (fInputHandler->IsEventSelected() & AliVEvent::kEMC7) isSelected = 0;
+                  if (firedTrigClass.Contains("8EGA"))  isSelected = 0;
+                } else if (fSpecialSubTriggerName.CompareTo("7EJ1") == 0){
+                  if (fInputHandler->IsEventSelected() & AliVEvent::kINT7) isSelected = 0;
+                  if (fInputHandler->IsEventSelected() & AliVEvent::kEMC7) isSelected = 0;
+                  if (firedTrigClass.Contains("7EG2"))  isSelected = 0;
+                  if (firedTrigClass.Contains("7EG1"))  isSelected = 0;
+                  if (firedTrigClass.Contains("7EJ2"))  isSelected = 0;
+                } else if (fSpecialSubTriggerName.CompareTo("8EJ1") == 0){
+                  if (fInputHandler->IsEventSelected() & AliVEvent::kINT8) isSelected = 0;
+                  if (fInputHandler->IsEventSelected() & AliVEvent::kEMC7) isSelected = 0;
+                  if (firedTrigClass.Contains("8EG2"))  isSelected = 0;
+                  if (firedTrigClass.Contains("8EG1"))  isSelected = 0;
+                  if (firedTrigClass.Contains("8EJ2"))  isSelected = 0;
+                } else   if (fSpecialSubTriggerName.CompareTo("7EJ2") == 0){
+                  if (fInputHandler->IsEventSelected() & AliVEvent::kINT7) isSelected = 0;
+                  if (fInputHandler->IsEventSelected() & AliVEvent::kEMC7) isSelected = 0;
+                  if (firedTrigClass.Contains("7EG2"))  isSelected = 0;
+                  if (firedTrigClass.Contains("7EG1"))  isSelected = 0;
+                } else   if (fSpecialSubTriggerName.CompareTo("8EJ2") == 0){
+                  if (fInputHandler->IsEventSelected() & AliVEvent::kINT8) isSelected = 0;
+                  if (fInputHandler->IsEventSelected() & AliVEvent::kEMC7) isSelected = 0;
+                  if (firedTrigClass.Contains("8EG2"))  isSelected = 0;
+                  if (firedTrigClass.Contains("8EG1"))  isSelected = 0;
+                } else if (fSpecialSubTriggerName.CompareTo("7DJ1") == 0){
+                  if (fInputHandler->IsEventSelected() & AliVEvent::kINT7) isSelected = 0;
+                  if (fInputHandler->IsEventSelected() & AliVEvent::kEMC7) isSelected = 0;
+                  if (firedTrigClass.Contains("7DG1"))  isSelected = 0;
+                  if (firedTrigClass.Contains("7DG2"))  isSelected = 0;
+                  if (firedTrigClass.Contains("7DJ2"))  isSelected = 0;
+                } else if (fSpecialSubTriggerName.CompareTo("8DJ1") == 0){
+                  if (fInputHandler->IsEventSelected() & AliVEvent::kINT8) isSelected = 0;
+                  if (fInputHandler->IsEventSelected() & AliVEvent::kEMC7) isSelected = 0;
+                  if (firedTrigClass.Contains("8DG1"))  isSelected = 0;
+                  if (firedTrigClass.Contains("8DG2"))  isSelected = 0;
+                  if (firedTrigClass.Contains("8DJ2"))  isSelected = 0;
+                } else if (fSpecialSubTriggerName.CompareTo("7DJ2") == 0){
+                  if (fInputHandler->IsEventSelected() & AliVEvent::kINT7) isSelected = 0;
+                  if (fInputHandler->IsEventSelected() & AliVEvent::kEMC7) isSelected = 0;
+                  if (firedTrigClass.Contains("7DG2"))  isSelected = 0;
+                  if (firedTrigClass.Contains("7DG1"))  isSelected = 0;
+                } else if (fSpecialSubTriggerName.CompareTo("8DG2") == 0){
+                  if (fInputHandler->IsEventSelected() & AliVEvent::kINT7) isSelected = 0;
+                  if (fInputHandler->IsEventSelected() & AliVEvent::kEMC7) isSelected = 0;
+                  if (firedTrigClass.Contains("8DG2"))  isSelected = 0;
+                  if (firedTrigClass.Contains("8DG1"))  isSelected = 0;
+                }
+              }
+            }
             if (fSpecialTrigger == 10 && (fInputHandler->IsEventSelected() & AliVEvent::kCaloOnly) ){
               // trigger rejection L0 triggers
               if (fSpecialSubTriggerName.CompareTo("CEMC7-") == 0){
@@ -5891,6 +6001,9 @@ void AliConvEventCuts::SetPeriodEnum (TString periodName){
   } else if ( periodName.CompareTo("LHC18c") == 0 ){
     fPeriodEnum = kLHC18LowB;
     fEnergyEnum = k13TeVLowB;
+  } else if ( periodName.CompareTo("LHC18q") == 0 || periodName.CompareTo("LHC18r") == 0 || periodName.CompareTo("LHC18qr") == 0){
+    fPeriodEnum = kLHC18qr;
+    fEnergyEnum = kPbPb5TeV;
 
   // LHC10x anchored MCs
   } else if (periodName.CompareTo("LHC10d1") == 0){
@@ -6211,6 +6324,15 @@ void AliConvEventCuts::SetPeriodEnum (TString periodName){
     fEnergyEnum = k13TeV;
   } else if ( periodName.CompareTo("LHC18b11c") == 0){
     fPeriodEnum = kLHC18b11c;
+    fEnergyEnum = kPbPb5TeV;
+  } else if ( periodName.CompareTo("LHC18l8a") == 0 ){
+    fPeriodEnum = kLHC18l8a;
+    fEnergyEnum = kPbPb5TeV;
+  } else if ( periodName.CompareTo("LHC18l8b") == 0 ){
+    fPeriodEnum = kLHC18l8b;
+    fEnergyEnum = kPbPb5TeV;
+  } else if ( periodName.CompareTo("LHC18l8c") == 0 ){
+    fPeriodEnum = kLHC18l8c;
     fEnergyEnum = kPbPb5TeV;
 
   // LHC16x anchored MCs

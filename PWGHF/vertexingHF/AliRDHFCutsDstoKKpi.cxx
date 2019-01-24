@@ -537,9 +537,10 @@ Int_t AliRDHFCutsDstoKKpi::IsSelectedPIDBayes(Double_t Pt, TObjArray aodtracks) 
   for(Int_t iDaught=0; iDaught<3; iDaught++){
     track[iDaught]=(AliAODTrack*)aodtracks.At(iDaught);
   }
-  Int_t sign = track[0]->Charge();
   
   if(!fUsePID || !track[0] || !track[1] || !track[2]) return retCode;
+  
+  Int_t sign = track[0]->Charge();
   if(!fPidHF){
     AliWarning("AliAODPidHF not created!");
     return retCode;

@@ -36,6 +36,8 @@
 #include "AliAnalysisHelperJetTasks.h"
 #include "AliParticleContainer.h"
 #include "AliInputEventHandler.h"
+#include "AliEMCALGeometry.h"
+#include "AliEMCALGeoParams.h"
 #endif
 
 #include <time.h>
@@ -89,10 +91,12 @@ fMyTrackContainerName(""),
 fMyParticleContainerName(""),
 fMyJetContainerName(""),
 fMyJetParticleContainerName(""),
+fMyClusterContainerName(""),
 fTrkContainerDetLevel(0x0),
 fParticleContainerPartLevel(0x0),
 fJetContainerDetLevel(0x0),
 fJetContainerPartLevel(0x0),
+fClusterContainerDetLevel(0x0),
 fRhoTaskName(""),
 fRhoTaskNameMC(""),
 fCentralityTree(0x0),
@@ -123,11 +127,16 @@ fHistEvtSelection(0x0),
 fhVertexZ(0x0),
 fhTrackPhiIncl(0x0), fhTrackEtaIncl(0x0), 
 fhJetPhiIncl(0x0), fhJetEtaIncl(0x0),
+fhClusterPhiInclMB(0x0), fhClusterEtaInclMB(0x0),
+fhClusterPhiInclGA(0x0), fhClusterEtaInclGA(0x0),
 fhRhoIncl(0x0),
 fZVertexCut(10.0),
 fnHadronTTBins(0),
 fnJetChTTBins(0),
-fFillTTree(0)
+fnClusterTTBins(0),
+fFillTTree(0),
+fSystem(AliAnalysisTaskEA::kpPb),
+fFiducialCellCut(0x0)
 {
    //default constructor
 
@@ -148,9 +157,12 @@ fFillTTree(0)
    for(Int_t i=0; i<fkTTbins; i++){
       fHadronTT[i] = 0;
       fJetChTT[i]  = 0;
+      fClusterTT[i]  = 0;
 
       fhMultTTHinMB[i] = 0x0;   
       fhMultTTJinMB[i] = 0x0;  
+      fhMultTTCinMB[i] = 0x0;  
+      fhMultTTCinGA[i] = 0x0;  
    }
 
    for(Int_t i=0; i<fkTTbins;i++){
@@ -158,6 +170,9 @@ fFillTTree(0)
       fHadronTTHighPt[i]=-1;
       fJetChTTLowPt[i]=-1;
       fJetChTTHighPt[i]=-1;
+      fClusterTTLowPt[i]=-1;
+      fClusterTTHighPt[i]=-1;
+ 
    }
  
    for(Int_t iv=0; iv<fkVtx;iv++){
@@ -174,12 +189,17 @@ fFillTTree(0)
       for(Int_t i=0; i<fkTTbins;i++){
          fhCentralityTTH[ic][i] = 0x0;
          fhCentralityTTJ[ic][i] = 0x0;
+         fhCentralityTTCinMB[ic][i] = 0x0;
+         fhCentralityTTCinGA[ic][i] = 0x0;
 
          fhSignalTTH[ic][i] = 0x0;
          fhSignalTTJ[ic][i] = 0x0;
+         fhSignalTTCinMB[ic][i] = 0x0;
+         fhSignalTTCinGA[ic][i] = 0x0;
       }
    }
 
+   fFiducialCellCut = new AliEMCALRecoUtils();
  
    sprintf(fTrigClass,"%s","");
 }
@@ -193,10 +213,12 @@ fMyTrackContainerName(""),
 fMyParticleContainerName(""),
 fMyJetContainerName(""),
 fMyJetParticleContainerName(""),
+fMyClusterContainerName(""),
 fTrkContainerDetLevel(0x0),
 fParticleContainerPartLevel(0x0),
 fJetContainerDetLevel(0x0),
 fJetContainerPartLevel(0x0),
+fClusterContainerDetLevel(0x0),
 fRhoTaskName(""),
 fRhoTaskNameMC(""),
 fCentralityTree(0x0),
@@ -227,11 +249,16 @@ fHistEvtSelection(0x0),
 fhVertexZ(0x0),
 fhTrackPhiIncl(0x0), fhTrackEtaIncl(0x0), 
 fhJetPhiIncl(0x0), fhJetEtaIncl(0x0), 
+fhClusterPhiInclMB(0x0), fhClusterEtaInclMB(0x0),
+fhClusterPhiInclGA(0x0), fhClusterEtaInclGA(0x0),
 fhRhoIncl(0x0),
 fZVertexCut(10.0),
 fnHadronTTBins(0),
 fnJetChTTBins(0),
-fFillTTree(0)
+fnClusterTTBins(0),
+fFillTTree(0),
+fSystem(AliAnalysisTaskEA::kpPb),
+fFiducialCellCut(0x0)
 {
    //Constructor
 
@@ -253,9 +280,12 @@ fFillTTree(0)
    for(Int_t i=0; i<fkTTbins; i++){
       fHadronTT[i] = 0;
       fJetChTT[i]  = 0;
+      fClusterTT[i]  = 0;
 
       fhMultTTHinMB[i] = 0x0;   
       fhMultTTJinMB[i] = 0x0;  
+      fhMultTTCinMB[i] = 0x0;  
+      fhMultTTCinGA[i] = 0x0;  
    }
 
    for(Int_t i=0; i<fkTTbins;i++){
@@ -263,6 +293,8 @@ fFillTTree(0)
       fHadronTTHighPt[i]=-1;
       fJetChTTLowPt[i]=-1;
       fJetChTTHighPt[i]=-1;
+      fClusterTTLowPt[i]=-1;
+      fClusterTTHighPt[i]=-1;
    }
  
    for(Int_t iv=0; iv<fkVtx;iv++){
@@ -279,9 +311,13 @@ fFillTTree(0)
       for(Int_t i=0; i<fkTTbins;i++){
          fhCentralityTTH[ic][i] = 0x0;
          fhCentralityTTJ[ic][i] = 0x0;
+         fhCentralityTTCinMB[ic][i] = 0x0;
+         fhCentralityTTCinGA[ic][i] = 0x0;
 
          fhSignalTTH[ic][i] = 0x0;
          fhSignalTTJ[ic][i] = 0x0;
+         fhSignalTTCinMB[ic][i] = 0x0;
+         fhSignalTTCinGA[ic][i] = 0x0;
       }
    }
 
@@ -289,15 +325,160 @@ fFillTTree(0)
    sprintf(fTrigClass,"%s","");
    //inclusive pT spectrum times the boost function
 
+   fFiducialCellCut = new AliEMCALRecoUtils();
+
    DefineOutput(1, TList::Class());
 }
 
+/**
+ * This function adds the task to the analysis manager. Often, this function is called
+ * by an AddTask C macro. However, by compiling the code, it ensures that we do not
+ * have to deal with difficulties caused by CINT.
+ */
+
+//_____________________________________________________________________________________
+AliAnalysisTaskEA*  AliAnalysisTaskEA::AddTaskEA(
+  Int_t       system,  
+  const char* jetarrayname, 
+  const char* jetarraynameMC, 
+  const char* trackarrayname, 
+  const char* mcpariclearrayname, 
+  const char* clusterarrayname, 
+  const char* rhoname, 
+  const char* mcrhoname, 
+  Double_t    jetRadius, 
+  UInt_t      trigger, 
+  Int_t       isMC, 
+  Double_t    trackEtaWindow,
+  Bool_t      useVertexCut,
+  Bool_t      usePileUpCut, 
+  Double_t    acut,
+  Double_t    emcaltofcut, 
+  const char* suffix 
+){
+   // Get the pointer to the existing analysis manager via the static access method.
+   //==============================================================================
+
+   Double_t jetEtaRange   = TMath::Abs(trackEtaWindow - jetRadius);
+
+
+   // #### DEFINE MANAGER AND DATA CONTAINER NAMES
+   AliAnalysisManager *manager = AliAnalysisManager::GetAnalysisManager();
+   if(!manager){
+      ::Error("AliAnalysisTaskEA.cxx", "No analysis manager to connect to.");
+      return NULL;
+   }
+
+   //__________________________________________________________________________________
+   // #### DEFINE MY ANALYSIS TASK
+
+   TString myContName("");
+   myContName = Form("JetAnalysisR%02d", TMath::Nint(jetRadius*10));
+   myContName.Append(suffix);
+
+
+   AliAnalysisTaskEA *task = new AliAnalysisTaskEA(myContName.Data());
+
+   if(isMC){  //for PYTHIA
+      task->SetIsPythia(kTRUE);  //NECESSARY IN ORDER TO FILL XSEC AND TRIALS
+      task->SetMakeGeneralHistograms(kTRUE); //NECESSARY IN ORDER TO FILL XSEC AND TRIALS
+   }
+
+   //inspired by AliAnalysisTaskEmcalQGTagging
+   //_____________________________________________
+   //TRACK/PARTICLE CONTAINTERS
+   AliTrackContainer    *trackCont      = 0x0; //detector level track container 
+   AliParticleContainer *trackContTrue  = 0x0; //mc particle container
+   AliClusterContainer  *clusterCont    = 0x0; //detector level track container 
+
+   trackCont = task->AddTrackContainer(trackarrayname);  //detector level tracks 
+   trackCont->SetMinPt(0.15);
+   trackCont->SetEtaLimits(-trackEtaWindow, trackEtaWindow);
+
+   if(isMC){
+      trackContTrue = task->AddMCParticleContainer(mcpariclearrayname); //particle level MC particles   
+      trackContTrue->SetClassName("AliAODMCParticle");
+      trackContTrue->SetMinPt(0.15);
+      trackContTrue->SetEtaLimits(-trackEtaWindow,trackEtaWindow);
+   }
+
+   clusterCont = task->AddClusterContainer(clusterarrayname);  //detector level tracks 
+   clusterCont->SetMinPt(0.3);
+   clusterCont->SetExoticCut(1);
+   clusterCont->SetClusTimeCut(0, emcaltofcut);
+
+   //   clusterCont->SetEtaLimits(-trackEtaWindow, trackEtaWindow);
+ 
+   //_____________________________________________
+   //JET CONTAINERS
+   AliJetContainer *jetContRec    = 0x0; //jet container with detector level tracks
+   AliJetContainer *jetContTrue   = 0x0; //jet container with mc particles
+
+   jetContRec   = task->AddJetContainer(jetarrayname,"TPC",jetRadius);
+
+   if(jetContRec) { //DETECTOR LEVEL JET
+      jetContRec->ConnectParticleContainer(trackCont);
+      jetContRec->SetPercAreaCut(acut);
+      jetContRec->SetMinPt(0.150);
+      jetContRec->SetMaxTrackPt(1000);
+      jetContRec->SetJetAcceptanceType(AliEmcalJet::kUser);
+      jetContRec->SetJetEtaLimits(-jetEtaRange,jetEtaRange);
+    }
+
+    if(isMC){
+      //AKT JETS PARTICLE LEVEL
+      jetContTrue = task->AddJetContainer(jetarraynameMC,"TPC",jetRadius);
+      if(jetContTrue){
+         jetContTrue->ConnectParticleContainer(trackContTrue);
+         jetContTrue->SetPercAreaCut(acut);
+         jetContTrue->SetMinPt(0.15);
+         jetContTrue->SetMaxTrackPt(1000);
+         jetContTrue->SetJetAcceptanceType(AliEmcalJet::kUser);
+         jetContTrue->SetJetEtaLimits(-jetEtaRange,jetEtaRange);
+      }
+   }
+
+   // #### Task configuration 
+   task->SetMC(isMC);
+   task->SetUsePileUpCut(usePileUpCut);
+   task->SetUseDefaultVertexCut(useVertexCut);
+   task->SetAcceptanceWindows(trackEtaWindow);
+   task->SelectCollisionCandidates(trigger);
+   task->SetExternalRhoTaskName(rhoname);
+   task->SetExternalRhoTaskNameMC(mcrhoname);
+   task->SetTrackContainerName(trackarrayname);
+   task->SetSystem(system);
+
+ 
+   task->SetMCParticleContainerName(mcpariclearrayname);
+   task->SetClusterContainerName(clusterarrayname);
+   task->SetJetContainerName(jetarrayname);
+   task->SetMCJetContainerName(jetarraynameMC);
+   if(system!=AliAnalysisTaskEA::kpp){
+     task->SetUseNewCentralityEstimation(kTRUE);  //CENTRALITY
+   }else{
+     task->SetUseNewCentralityEstimation(kFALSE);  //CENTRALITY
+   }
+
+   task->SetDebugLevel(0); //No debug messages 0
+
+   // output container
+   AliAnalysisDataContainer *contHistos = manager->CreateContainer(myContName.Data(), TList::Class(), AliAnalysisManager::kOutputContainer, Form("%s:ChJetSpectra%s", AliAnalysisManager::GetCommonFileName(), myContName.Data()));
+
+
+   // #### ADD ANALYSIS TASK
+   manager->AddTask(task);
+   manager->ConnectInput(task, 0, manager->GetCommonInputContainer());
+   manager->ConnectOutput(task, 1, contHistos);
+
+   return task;
+}
 //_____________________________________________________________________________________
 Bool_t AliAnalysisTaskEA::PassedGATrigger(){
 
   TString trigger = fInputEvent->GetFiredTriggerClasses();
   bool passedGammaTrigger = kFALSE;
-  //SELECT ALSO DCAL????PreSelection checks just EMCAL
+
   if(trigger.Contains("EG1") || trigger.Contains("EG2") || trigger.Contains("DG1") || trigger.Contains("DG2")){
      passedGammaTrigger = kTRUE;
   }
@@ -407,33 +588,39 @@ void AliAnalysisTaskEA::ExecOnceLocal(){
 }
 
 //________________________________________________________________________
-Bool_t AliAnalysisTaskEA::PreSelection(AliVCluster* cluster){
-    if(!cluster->IsEMCAL()) return kFALSE;
-    if(cluster->E()<0.7) return kFALSE;
-    return kTRUE;
+Int_t  AliAnalysisTaskEA::GetMaxDistanceFromBorder(AliVCluster* cluster){
+   //Distance o
+   Int_t max = 0;
+   
+   for(Int_t n=0; n<6; n++){
+      fFiducialCellCut->SetNumberOfCellsFromEMCALBorder(n);
+      if(fFiducialCellCut->CheckCellFiducialRegion(fGeom, cluster, fCaloCells)){
+         max = n;
+      }else{
+         break;
+      }
+   }
+
+   return max;
 }
+
 
 //________________________________________________________________________
 Bool_t AliAnalysisTaskEA::FinalClusterCuts(AliVCluster* cluster){
-/*
-  //General QA. 
-  if(!cluster->IsEMCAL()) return kFALSE;
 
-  if( cluster->GetNCells() < 2) return kFALSE;
+   //General QA. 
+   if( cluster->GetNCells() < 1) return kFALSE;
+   
+   Int_t disToBad = cluster->GetDistanceToBadChannel();
+   if(-1<disToBad && disToBad<2) return kFALSE;
+   
+   Int_t disToBorder = GetMaxDistanceFromBorder(cluster);
+   if(-1<disToBorder && disToBorder<1) return kFALSE;
 
-  Int_t disToBad = cluster->GetDistanceToBadChannel();
-  if(disToBad<2) return kFALSE;
+   Double_t lambda0 =  cluster->GetM02();  //avoid merged clusters   
+   if(lambda0 > 0.4) return kFALSE;
 
-  Int_t disToBorder = GetMaxDistanceFromBorder(cluster);
-  if(disToBorder<1) return kFALSE;
-
-  Double_t exoticity = GetExoticity(cluster);
-  if(exoticity>0.97) return kFALSE;
-
-  Double_t time = cluster->GetTOF()*1000000000; //in ns
-  if(!fMC && std::abs(time)>30) return kFALSE;
-*/
-  return kTRUE;
+   return kTRUE;
 }
 
 //________________________________________________________________________
@@ -486,19 +673,21 @@ Bool_t AliAnalysisTaskEA::FillHistograms(){
    sprintf(fTrigClass,"%s",triggerClass.Data());
 
 
-   fMultSelection = (AliMultSelection*) InputEvent()->FindListObject("MultSelection");
-   if(fMultSelection){  
-      fCentralityV0A = fMultSelection->GetMultiplicityPercentile("V0A");
-      fCentralityV0C = fMultSelection->GetMultiplicityPercentile("V0C");
-      fCentralityCL1 = fMultSelection->GetMultiplicityPercentile("CL1");
-      fCentralityZNA = fMultSelection->GetMultiplicityPercentile("ZNA");
-      fCentralityZNC = fMultSelection->GetMultiplicityPercentile("ZNC");
-   }else{
-      fCentralityV0A = -1; 
-      fCentralityV0C = -1;
-      fCentralityCL1 = -1;
-      fCentralityZNA = -1;
-      fCentralityZNC = -1;
+   if(fSystem!=AliAnalysisTaskEA::kpp){ 
+     fMultSelection = (AliMultSelection*) InputEvent()->FindListObject("MultSelection");
+     if(fMultSelection){  
+         fCentralityV0A = fMultSelection->GetMultiplicityPercentile("V0A");
+         fCentralityV0C = fMultSelection->GetMultiplicityPercentile("V0C");
+         fCentralityCL1 = fMultSelection->GetMultiplicityPercentile("CL1");
+         fCentralityZNA = fMultSelection->GetMultiplicityPercentile("ZNA");
+         fCentralityZNC = fMultSelection->GetMultiplicityPercentile("ZNC");
+      }else{
+         fCentralityV0A = -1; 
+         fCentralityV0C = -1;
+         fCentralityCL1 = -1;
+         fCentralityZNA = -1;
+         fCentralityZNC = -1;
+      }
    }
 
    const AliVVertex *vertex = InputEvent()->GetPrimaryVertexSPD();
@@ -601,6 +790,7 @@ Bool_t AliAnalysisTaskEA::FillHistograms(){
 
 
 
+   Double_t rho = GetExternalRho(kDetLevel); //estimated backround pt density
 
 
    //_________________________________________________________________
@@ -617,55 +807,122 @@ Bool_t AliAnalysisTaskEA::FillHistograms(){
    fTrkContainerDetLevel = static_cast<AliTrackContainer*> (GetTrackContainer(fMyTrackContainerName.Data())); //reconstructed particle container 
    fJetContainerDetLevel = static_cast<AliJetContainer*> (GetJetContainer(fMyJetContainerName.Data())); //AKT jet
 
+
+
    if(fMC){
       fParticleContainerPartLevel = GetParticleContainer(fMyParticleContainerName.Data()); //reconstructed particle container 
       fJetContainerPartLevel      = GetJetContainer(fMyJetParticleContainerName.Data()); //reconstructed particle container 
    }
-
-//    
-//    //EMCAL CLUSTERS
-//    AliClusterContainer* clusters  = GetClusterContainer(0);  
-//    if(!clusters) AliError(Form("Could not retrieve clusters!"));
-//
-//     //Filling cluster and pion THnSparsesx 
-//    for(auto cluster: clusters->accepted()){
-//        if(!PreSelection(cluster)) continue;
-//
-//        Bool_t passed = FinalClusterCuts(cluster);
-//
-//        //FillClusterHisto(cluster, h_Cluster);
-//        for(auto cluster2: clusters->accepted()){
-//            if(!PreSelection(cluster2)) continue;
-//            if(cluster==cluster2) continue;
-//           // FillPionHisto(cluster, cluster2, h_Pi0);
-//
-//          //  AVOID DOUBLE COUNTING !!!!!!!!!!!!!!! 
-//       }
-//    }
-//   
 
     if(fIsMinBiasTrig){ 
        fhVertex[0]->Fill(fxVertex);
        fhVertex[1]->Fill(fyVertex);
        fhVertex[2]->Fill(fzVertex);
 
+       fhRhoIncl->Fill(rho);
 
-       fhCentralityMB[0]->Fill(fCentralityV0A); 
-       fhCentralityMB[1]->Fill(fCentralityV0C); 
-       fhCentralityMB[2]->Fill(fCentralityCL1);
-       fhCentralityMB[3]->Fill(fCentralityZNA);
-       fhCentralityMB[4]->Fill(fCentralityZNC);
+       if(fSystem!=AliAnalysisTaskEA::kpp){ 
+          fhCentralityMB[fkV0A]->Fill(fCentralityV0A); 
+          fhCentralityMB[fkV0C]->Fill(fCentralityV0C); 
+          fhCentralityMB[fkSPD]->Fill(fCentralityCL1);
+          fhCentralityMB[fkZNA]->Fill(fCentralityZNA);
+          fhCentralityMB[fkZNC]->Fill(fCentralityZNC);
+       }
 
-       fhSignalMB[0]->Fill(fMultV0A);
-       fhSignalMB[1]->Fill(fMultV0C);
-       fhSignalMB[2]->Fill(fNTracklets); 
-       fhSignalMB[3]->Fill(fZNAtower[0]); 
-       fhSignalMB[4]->Fill(fZNCtower[0]); 
+       fhSignalMB[fkV0A]->Fill(fMultV0A);
+       fhSignalMB[fkV0C]->Fill(fMultV0C);
+       fhSignalMB[fkSPD]->Fill(fNTracklets); 
+       fhSignalMB[fkZNA]->Fill(fZNAtower[0]); 
+       fhSignalMB[fkZNC]->Fill(fZNCtower[0]); 
    }
 
 
 
+   //_________________________________________________________
+   //LOOP OVER EMCAL CLUSTERS
+   TLorentzVector ph;
+   for(Int_t i=0; i<fnClusterTTBins; i++){
+      fClusterTT[i] = 0;
+   }
+
+   if(fMyClusterContainerName.Data()){
+      fClusterContainerDetLevel =  static_cast<AliClusterContainer*> ( GetClusterContainer(fMyClusterContainerName.Data()));
   
+ 
+      for(auto cluster: fClusterContainerDetLevel->accepted()){
+
+         fClusterContainerDetLevel->GetMomentum(ph, cluster);
+
+         if(!FinalClusterCuts(cluster)) continue;
+
+         if(fIsMinBiasTrig){
+            //fill some histograms for detector level tracks 
+            fhClusterPhiInclMB->Fill(ph.Pt(), ph.Phi());
+            fhClusterEtaInclMB->Fill(ph.Pt(), ph.Eta());
+         }else if(fIsEmcalTrig){
+            fhClusterPhiInclGA->Fill(ph.Pt(), ph.Phi());
+            fhClusterEtaInclGA->Fill(ph.Pt(), ph.Eta());
+         }
+
+         for(Int_t igg=0; igg<fnClusterTTBins; igg++){
+            if(fClusterTTLowPt[igg] < ph.Pt() && ph.Pt() < fClusterTTHighPt[igg]){
+               fClusterTT[igg]++;   // there was a high pt 
+            } 
+         }
+      }
+ 
+      if(fIsMinBiasTrig){ 
+         for(Int_t igg=0; igg<fnClusterTTBins; igg++){
+         
+            fhMultTTCinMB[igg]->Fill(fClusterTT[igg]); 
+            
+            if(!fClusterTT[igg]) continue;
+
+            fhRhoTTCinMB[igg]->Fill(rho); 
+            
+            if(fSystem!=AliAnalysisTaskEA::kpp){ 
+               fhCentralityTTCinMB[fkV0A][igg]->Fill(fCentralityV0A); 
+               fhCentralityTTCinMB[fkV0C][igg]->Fill(fCentralityV0C); 
+               fhCentralityTTCinMB[fkSPD][igg]->Fill(fCentralityCL1);
+               fhCentralityTTCinMB[fkZNA][igg]->Fill(fCentralityZNA);
+               fhCentralityTTCinMB[fkZNC][igg]->Fill(fCentralityZNC);
+            }
+ 
+            fhSignalTTCinMB[fkV0A][igg]->Fill(fMultV0A);
+            fhSignalTTCinMB[fkV0C][igg]->Fill(fMultV0C);
+            fhSignalTTCinMB[fkSPD][igg]->Fill(fNTracklets); 
+            fhSignalTTCinMB[fkZNA][igg]->Fill(fZNAtower[0]); 
+            fhSignalTTCinMB[fkZNC][igg]->Fill(fZNCtower[0]);
+         }
+      }else if(fIsEmcalTrig){ 
+     
+         for(Int_t igg=0; igg<fnClusterTTBins; igg++){
+         
+            fhMultTTCinGA[igg]->Fill(fClusterTT[igg]); 
+            
+            if(!fClusterTT[igg]) continue;
+            
+            fhRhoTTCinGA[igg]->Fill(rho); 
+            
+            if(fSystem!=AliAnalysisTaskEA::kpp){ 
+               fhCentralityTTCinGA[fkV0A][igg]->Fill(fCentralityV0A); 
+               fhCentralityTTCinGA[fkV0C][igg]->Fill(fCentralityV0C); 
+               fhCentralityTTCinGA[fkSPD][igg]->Fill(fCentralityCL1);
+               fhCentralityTTCinGA[fkZNA][igg]->Fill(fCentralityZNA);
+               fhCentralityTTCinGA[fkZNC][igg]->Fill(fCentralityZNC);
+            }
+
+            fhSignalTTCinGA[fkV0A][igg]->Fill(fMultV0A);
+            fhSignalTTCinGA[fkV0C][igg]->Fill(fMultV0C);
+            fhSignalTTCinGA[fkSPD][igg]->Fill(fNTracklets); 
+            fhSignalTTCinGA[fkZNA][igg]->Fill(fZNAtower[0]); 
+            fhSignalTTCinGA[fkZNC][igg]->Fill(fZNCtower[0]);
+         }
+      } 
+ 
+   }   
+
+ 
 
 
 
@@ -698,31 +955,33 @@ Bool_t AliAnalysisTaskEA::FillHistograms(){
       } 
    }
 
+   if(fIsMinBiasTrig){ 
+      for(Int_t itt=0; itt<fnHadronTTBins; itt++){
+      
+         fhMultTTHinMB[itt]->Fill(fHadronTT[itt]); 
+      
+         if(!fHadronTT[itt]) continue;
+         fhVertexTTH[0][itt]->Fill(fxVertex);
+         fhVertexTTH[1][itt]->Fill(fyVertex);
+         fhVertexTTH[2][itt]->Fill(fzVertex);
+      
+         fhRhoTTH[itt]->Fill(rho); 
 
-
-
-   for(Int_t itt=0; itt<fnHadronTTBins; itt++){
-
-      fhMultTTHinMB[itt]->Fill(fHadronTT[itt]); 
-
-      if(!fHadronTT[itt]) continue;
-      fhVertexTTH[0][itt]->Fill(fxVertex);
-      fhVertexTTH[1][itt]->Fill(fyVertex);
-      fhVertexTTH[2][itt]->Fill(fzVertex);
-
-
-      fhCentralityTTH[fkV0A][itt]->Fill(fCentralityV0A); 
-      fhCentralityTTH[fkV0C][itt]->Fill(fCentralityV0C); 
-      fhCentralityTTH[fkSPD][itt]->Fill(fCentralityCL1);
-      fhCentralityTTH[fkZNA][itt]->Fill(fCentralityZNA);
-      fhCentralityTTH[fkZNC][itt]->Fill(fCentralityZNC);
-
-      fhSignalTTH[fkV0A][itt]->Fill(fMultV0A);
-      fhSignalTTH[fkV0C][itt]->Fill(fMultV0C);
-      fhSignalTTH[fkSPD][itt]->Fill(fNTracklets); 
-      fhSignalTTH[fkZNA][itt]->Fill(fZNAtower[0]); 
-      fhSignalTTH[fkZNC][itt]->Fill(fZNCtower[0]); 
+         if(fSystem!=AliAnalysisTaskEA::kpp){ 
+            fhCentralityTTH[fkV0A][itt]->Fill(fCentralityV0A); 
+            fhCentralityTTH[fkV0C][itt]->Fill(fCentralityV0C); 
+            fhCentralityTTH[fkSPD][itt]->Fill(fCentralityCL1);
+            fhCentralityTTH[fkZNA][itt]->Fill(fCentralityZNA);
+            fhCentralityTTH[fkZNC][itt]->Fill(fCentralityZNC);
+         }
  
+         fhSignalTTH[fkV0A][itt]->Fill(fMultV0A);
+         fhSignalTTH[fkV0C][itt]->Fill(fMultV0C);
+         fhSignalTTH[fkSPD][itt]->Fill(fNTracklets); 
+         fhSignalTTH[fkZNA][itt]->Fill(fZNAtower[0]); 
+         fhSignalTTH[fkZNC][itt]->Fill(fZNCtower[0]); 
+      
+      }
    }
 
    //_________________________________________________________
@@ -732,25 +991,22 @@ Bool_t AliAnalysisTaskEA::FillHistograms(){
       fJetChTT[i] = 0;
    }
 
-   Double_t rho = GetExternalRho(kDetLevel); //estimated backround pt density
 
-   if(fIsMinBiasTrig){
-      fhRhoIncl->Fill(rho);
-   }
-
+    Double_t jetPtcorr;
    for(auto jetIterator : fJetContainerDetLevel->accepted_momentum() ){
       // trackIterator is a std::map of AliTLorentzVector and AliVTrack
       jet = jetIterator.second;  // Get the pointer to jet object
       if(!jet)  continue; 
    
+      jetPtcorr = jet->Pt() - rho*jet->Area();
       if(fIsMinBiasTrig){
          //fill some histograms for detector level jets 
-         fhJetPhiIncl->Fill(jet->Pt(), jet->Phi());
-         fhJetEtaIncl->Fill(jet->Pt(), jet->Eta());
+         fhJetPhiIncl->Fill(jetPtcorr, jet->Phi());
+         fhJetEtaIncl->Fill(jetPtcorr, jet->Eta());
       }
 
       for(Int_t ijj=0; ijj<fnJetChTTBins; ijj++){
-         if(fJetChTTLowPt[ijj] < jet->Pt() && jet->Pt() < fJetChTTHighPt[ijj]){
+         if(fJetChTTLowPt[ijj] < jetPtcorr && jetPtcorr < fJetChTTHighPt[ijj]){
             fJetChTT[ijj]++;   // there was a high pt 
          } 
       }
@@ -770,27 +1026,31 @@ Bool_t AliAnalysisTaskEA::FillHistograms(){
       //}
    }
 
-   for(Int_t ijj=0; ijj<fnJetChTTBins; ijj++){
+   if(fIsMinBiasTrig){ 
+      for(Int_t ijj=0; ijj<fnJetChTTBins; ijj++){
+      
+         fhMultTTJinMB[ijj]->Fill(fJetChTT[ijj]); 
+      
+         if(!fJetChTT[ijj]) continue; 
+       
+         fhRhoTTJ[ijj]->Fill(rho);
 
-      fhMultTTJinMB[ijj]->Fill(fJetChTT[ijj]); 
-
-      if(!fJetChTT[ijj]) continue; 
-
-      fhCentralityTTJ[fkV0A][ijj]->Fill(fCentralityV0A); 
-      fhCentralityTTJ[fkV0C][ijj]->Fill(fCentralityV0C); 
-      fhCentralityTTJ[fkSPD][ijj]->Fill(fCentralityCL1);
-      fhCentralityTTJ[fkZNA][ijj]->Fill(fCentralityZNA);
-      fhCentralityTTJ[fkZNC][ijj]->Fill(fCentralityZNC);
-
-   
-      fhSignalTTJ[fkV0A][ijj]->Fill(fMultV0A);
-      fhSignalTTJ[fkV0C][ijj]->Fill(fMultV0C);
-      fhSignalTTJ[fkSPD][ijj]->Fill(fNTracklets); 
-      fhSignalTTJ[fkZNA][ijj]->Fill(fZNAtower[0]); 
-      fhSignalTTJ[fkZNC][ijj]->Fill(fZNCtower[0]); 
- 
+         if(fSystem!=AliAnalysisTaskEA::kpp){ 
+            fhCentralityTTJ[fkV0A][ijj]->Fill(fCentralityV0A); 
+            fhCentralityTTJ[fkV0C][ijj]->Fill(fCentralityV0C); 
+            fhCentralityTTJ[fkSPD][ijj]->Fill(fCentralityCL1);
+            fhCentralityTTJ[fkZNA][ijj]->Fill(fCentralityZNA);
+            fhCentralityTTJ[fkZNC][ijj]->Fill(fCentralityZNC);
+         } 
+      
+         fhSignalTTJ[fkV0A][ijj]->Fill(fMultV0A);
+         fhSignalTTJ[fkV0C][ijj]->Fill(fMultV0C);
+         fhSignalTTJ[fkSPD][ijj]->Fill(fNTracklets); 
+         fhSignalTTJ[fkZNA][ijj]->Fill(fZNAtower[0]); 
+         fhSignalTTJ[fkZNC][ijj]->Fill(fZNCtower[0]); 
+      
+      }
    }
-
 
      
    //___________________________________________________________
@@ -866,7 +1126,6 @@ AliAnalysisTaskEA::~AliAnalysisTaskEA(){
    delete fHelperClass;
  
 } 
-
 //________________________________________________________________________
 void AliAnalysisTaskEA::UserCreateOutputObjects(){
   // called once to create user defined output objects like histograms, plots etc. 
@@ -901,22 +1160,59 @@ void AliAnalysisTaskEA::UserCreateOutputObjects(){
  
    //-------------------------
 
-   fhTrackEtaIncl = new TH2F("fhTrackEtaIncl","Eta dist inclusive track vs pTjet", 50,0, 100, 40,-0.9,0.9);
+   fhTrackEtaIncl = new TH2F("fhTrackEtaIncl","Eta dist inclusive track vs pT", 50,0, 100, 40,-0.9,0.9);
    fOutput->Add((TH2F*) fhTrackEtaIncl);
 
-   fhTrackPhiIncl = new TH2F("fhTrackPhiIncl","Azim dist tracks vs pTjet", 50, 0, 100, 50,0,2*TMath::Pi());
+   fhTrackPhiIncl = new TH2F("fhTrackPhiIncl","Azim dist tracks vs pT", 50, 0, 100, 50,0,2*TMath::Pi());
    fOutput->Add((TH2F*) fhTrackPhiIncl);
 
    fhJetEtaIncl = new TH2F("fhJetEtaIncl","Eta dist inclusive jets vs pTjet", 150, -20, 130, 40,-0.9,0.9);
    fOutput->Add((TH2F*) fhJetEtaIncl);
 
-   fhJetPhiIncl = new TH2F("fhJetPhiIncl","Azim dist jets vs pTjet", 50, 0, 100, 50,0,2*TMath::Pi());
+   fhJetPhiIncl = new TH2F("fhJetPhiIncl","Azim dist jets vs pTjet", 60, -20, 100, 50,0,2*TMath::Pi());
    fOutput->Add((TH2F*) fhJetPhiIncl);
 
+   fhClusterEtaInclMB = new TH2F("fhClusterEtaInclMB","Eta dist inclusive clusters vs pT", 100, 0, 100, 40,-0.9,0.9);
+   fOutput->Add((TH2F*) fhClusterEtaInclMB);
+
+   fhClusterPhiInclMB = new TH2F("fhClusterPhiInclMB","Azim dist clusters vs pT", 50, 0, 100, 50,0,2*TMath::Pi());
+   fOutput->Add((TH2F*) fhClusterPhiInclMB);
+
+   fhClusterEtaInclGA = new TH2F("fhClusterEtaInclGA","Eta dist inclusive clusters vs pT", 100, 0, 100, 40,-0.9,0.9);
+   fOutput->Add((TH2F*) fhClusterEtaInclGA);
+
+   fhClusterPhiInclGA = new TH2F("fhClusterPhiInclGA","Azim dist clusters vs pT", 50, 0, 100, 50,0,2*TMath::Pi());
+   fOutput->Add((TH2F*) fhClusterPhiInclGA);
+
+
+   //RHO 
    fhRhoIncl = new TH1F("hRho","Rho",1000,0,100);
    fOutput->Add((TH1F*) fhRhoIncl); 
 
+   for(Int_t itt=0; itt<fnHadronTTBins;itt++){
+      name = Form("%s_TTH%d_%d", fhRhoIncl->GetName(), fHadronTTLowPt[itt],fHadronTTHighPt[itt]);
+      fhRhoTTH[itt] = (TH1F*)  fhRhoIncl->Clone(name.Data());                      //! in events MB with hadron TT
+      fOutput->Add((TH1F*) fhRhoTTH[itt]); 
+   }
+   for(Int_t ijj=0; ijj<fnJetChTTBins; ijj++){
+      name = Form("%s_TTJ%d_%d", fhRhoIncl->GetName(), fJetChTTLowPt[ijj],fJetChTTHighPt[ijj]);
+      fhRhoTTJ[ijj] = (TH1F*)  fhRhoIncl->Clone(name.Data());                      //! in events MB with hadron TT
+      fOutput->Add((TH1F*) fhRhoTTJ[ijj]); 
+   } 
+   for(Int_t igg=0; igg<fnClusterTTBins; igg++){
+      name = Form("%s_MB_TTC%d_%d", fhRhoIncl->GetName(), fClusterTTLowPt[igg],fClusterTTHighPt[igg]);
+      fhRhoTTCinMB[igg] = (TH1F*)  fhRhoIncl->Clone(name.Data());                      //! in events MB with hadron TT
+      fOutput->Add((TH1F*) fhRhoTTCinMB[igg]); 
+   } 
+   for(Int_t igg=0; igg<fnClusterTTBins; igg++){
+      name = Form("%s_GA_TTC%d_%d", fhRhoIncl->GetName(), fClusterTTLowPt[igg],fClusterTTHighPt[igg]);
+      fhRhoTTCinGA[igg] = (TH1F*)  fhRhoIncl->Clone(name.Data());                      //! in events MB with hadron TT
+      fOutput->Add((TH1F*) fhRhoTTCinGA[igg]); 
+   } 
 
+
+
+   //VERTEX
    for(Int_t iv=0; iv<fkVtx;iv++){
       if(iv==0)       fhVertex[iv] = new TH1D("hVertexX","VertexX",100,-1,1);
       else if(iv==1)  fhVertex[iv] = new TH1D("hVertexY","VertexY",100,-1,1);
@@ -932,27 +1228,48 @@ void AliAnalysisTaskEA::UserCreateOutputObjects(){
       }
    }
 
+
    TString cest[fkCE] = {"V0A", "V0C", "SPD", "ZNA", "ZNC"}; //centrality estimators
 
-   for(Int_t ic=0; ic<fkCE;ic++){
-      name = Form("hCentralityMB_%s",cest[ic].Data());
-      fhCentralityMB[ic] = new TH1D(name.Data(), name.Data(),101,0,101);
-      fOutput->Add((TH1D*) fhCentralityMB[ic]); 
-   }
-
-   for(Int_t ic=0; ic<fkCE;ic++){
-      for(Int_t itt=0; itt<fnHadronTTBins; itt++){
-         name = Form("hCentrality_%s_TTH%d_%d",cest[ic].Data(), fHadronTTLowPt[itt],fHadronTTHighPt[itt]);
-         fhCentralityTTH[ic][itt] = new TH1D(name.Data(), name.Data(),101,0,101);
+   if(fSystem!=AliAnalysisTaskEA::kpp){ //not pp
+      for(Int_t ic=0; ic<fkCE;ic++){
+         name = Form("hCentrality_MB_%s",cest[ic].Data());
+         fhCentralityMB[ic] = new TH1D(name.Data(), name.Data(),101,0,101);
+         fOutput->Add((TH1D*) fhCentralityMB[ic]); 
       }
-   }
-
-   for(Int_t ic=0; ic<fkCE;ic++){
-      for(Int_t ijj=0; ijj<fnJetChTTBins; ijj++){
-         name = Form("hCentrality_%s_TTJ%d_%d", cest[ic].Data(), fJetChTTLowPt[ijj],fJetChTTHighPt[ijj]);
-         fhCentralityTTJ[ic][ijj] = new TH1D(name.Data(), name.Data(),101,0,101);
+      
+      for(Int_t ic=0; ic<fkCE;ic++){
+         for(Int_t itt=0; itt<fnHadronTTBins; itt++){
+            name = Form("hCentrality_MB_%s_TTH%d_%d",cest[ic].Data(), fHadronTTLowPt[itt],fHadronTTHighPt[itt]);
+            fhCentralityTTH[ic][itt] = new TH1D(name.Data(), name.Data(),101,0,101);
+            fOutput->Add((TH1D*) fhCentralityTTH[ic][itt]); 
+         }
       }
-   }
+      
+      for(Int_t ic=0; ic<fkCE;ic++){
+         for(Int_t ijj=0; ijj<fnJetChTTBins; ijj++){
+            name = Form("hCentrality_MB_%s_TTJ%d_%d", cest[ic].Data(), fJetChTTLowPt[ijj],fJetChTTHighPt[ijj]);
+            fhCentralityTTJ[ic][ijj] = new TH1D(name.Data(), name.Data(),101,0,101);
+            fOutput->Add((TH1D*) fhCentralityTTJ[ic][ijj]); 
+         }
+      }
+      
+      for(Int_t ic=0; ic<fkCE;ic++){
+         for(Int_t ijj=0; ijj<fnClusterTTBins; ijj++){
+            name = Form("hCentrality_MB_%s_TTC%d_%d", cest[ic].Data(), fClusterTTLowPt[ijj],fClusterTTHighPt[ijj]);
+            fhCentralityTTCinMB[ic][ijj] = new TH1D(name.Data(), name.Data(),101,0,101);
+            fOutput->Add((TH1D*) fhCentralityTTCinMB[ic][ijj]); 
+         }
+      }
+      
+      for(Int_t ic=0; ic<fkCE;ic++){
+         for(Int_t ijj=0; ijj<fnClusterTTBins; ijj++){
+            name = Form("hCentrality_GA_%s_TTC%d_%d", cest[ic].Data(), fClusterTTLowPt[ijj],fClusterTTHighPt[ijj]);
+            fhCentralityTTCinGA[ic][ijj] = new TH1D(name.Data(), name.Data(),101,0,101);
+            fOutput->Add((TH1D*) fhCentralityTTCinGA[ic][ijj]); 
+         }
+      }
+   }//not pp
 
    TString signal[]={"multV0A", "multV0C", "nTracklets", "znatower0", "znctower0"};
    Float_t signalL[]={0,0,0,0,0};
@@ -960,7 +1277,7 @@ void AliAnalysisTaskEA::UserCreateOutputObjects(){
    Int_t signalN[]={100,100,100,100,100};
 
    for(Int_t ic=0; ic<fkCE;ic++){
-      name = Form("hSignalMB_%s", cest[ic].Data());
+      name = Form("hSignal_MB_%s", cest[ic].Data());
       fhSignalMB[ic] = new TH1D(name.Data(), name.Data(), signalN[ic], signalL[ic], signalH[ic]);
       fOutput->Add((TH1D*) fhSignalMB[ic]); 
    }
@@ -968,7 +1285,7 @@ void AliAnalysisTaskEA::UserCreateOutputObjects(){
 
    for(Int_t ic=0; ic<fkCE;ic++){
       for(Int_t itt=0; itt<fnHadronTTBins; itt++){
-         name = Form("hSignal_%s_TTH%d_%d", cest[ic].Data(), fHadronTTLowPt[itt],fHadronTTHighPt[itt]);
+         name = Form("hSignal_MB_%s_TTH%d_%d", cest[ic].Data(), fHadronTTLowPt[itt],fHadronTTHighPt[itt]);
          fhSignalTTH[ic][itt] = new TH1D(name.Data(),name.Data(),signalN[ic], signalL[ic], signalH[ic]);
          fOutput->Add((TH1D*) fhSignalTTH[ic][itt]); 
       }
@@ -976,11 +1293,29 @@ void AliAnalysisTaskEA::UserCreateOutputObjects(){
    
    for(Int_t ic=0; ic<fkCE;ic++){
       for(Int_t ijj=0; ijj<fnJetChTTBins; ijj++){
-         name = Form("hSignal_%s_TTJ%d_%d", cest[ic].Data(), fJetChTTLowPt[ijj],fJetChTTHighPt[ijj]);
+         name = Form("hSignal_MB_%s_TTJ%d_%d", cest[ic].Data(), fJetChTTLowPt[ijj],fJetChTTHighPt[ijj]);
          fhSignalTTJ[ic][ijj] = new TH1D(name.Data(),name.Data(),signalN[ic], signalL[ic], signalH[ic]);
          fOutput->Add((TH1D*) fhSignalTTJ[ic][ijj]); 
       }
    }
+
+   for(Int_t ic=0; ic<fkCE;ic++){
+      for(Int_t ijj=0; ijj<fnClusterTTBins; ijj++){
+         name = Form("hSignal_MB_%s_TTC%d_%d", cest[ic].Data(), fClusterTTLowPt[ijj],fClusterTTHighPt[ijj]);
+         fhSignalTTCinMB[ic][ijj] = new TH1D(name.Data(),name.Data(),signalN[ic], signalL[ic], signalH[ic]);
+         fOutput->Add((TH1D*) fhSignalTTCinMB[ic][ijj]); 
+      }
+   }
+
+   for(Int_t ic=0; ic<fkCE;ic++){
+      for(Int_t ijj=0; ijj<fnClusterTTBins; ijj++){
+         name = Form("hSignal_GA_%s_TTC%d_%d", cest[ic].Data(), fClusterTTLowPt[ijj],fClusterTTHighPt[ijj]);
+         fhSignalTTCinGA[ic][ijj] = new TH1D(name.Data(),name.Data(),signalN[ic], signalL[ic], signalH[ic]);
+         fOutput->Add((TH1D*) fhSignalTTCinGA[ic][ijj]); 
+      }
+   }
+
+
 
 
    for(Int_t itt=0; itt<fnHadronTTBins; itt++){
@@ -994,6 +1329,20 @@ void AliAnalysisTaskEA::UserCreateOutputObjects(){
       fhMultTTJinMB[ijj] = new TH1D(name.Data(),name.Data(),100,0,100);
       fOutput->Add((TH1D*) fhMultTTJinMB[ijj]); 
    }
+
+   for(Int_t ijj=0; ijj<fnClusterTTBins; ijj++){
+      name = Form("hMultTTCinMB_TTC%d_%d", fClusterTTLowPt[ijj],fClusterTTHighPt[ijj]);
+      fhMultTTCinMB[ijj] = new TH1D(name.Data(),name.Data(),100,0,100);
+      fOutput->Add((TH1D*) fhMultTTCinMB[ijj]); 
+   }
+
+   for(Int_t ijj=0; ijj<fnClusterTTBins; ijj++){
+      name = Form("hMultTTCinGA_TTC%d_%d", fClusterTTLowPt[ijj],fClusterTTHighPt[ijj]);
+      fhMultTTCinGA[ijj] = new TH1D(name.Data(),name.Data(),100,0,100);
+      fOutput->Add((TH1D*) fhMultTTCinGA[ijj]); 
+   }
+
+
 
    // OUTPUT TREE
    if(fFillTTree){
@@ -1025,13 +1374,15 @@ void AliAnalysisTaskEA::UserCreateOutputObjects(){
       //fCentralityTree->Branch("tdc", fTDCvalues, "tdc[32][4]/I");
       //fCentralityTree->Branch("tdcSum", &fTDCSum, "tdcSum/F");
       //fCentralityTree->Branch("tdcDiff", &fTDCDiff, "tdcDiff/F");
-      
-      fCentralityTree->Branch("centrV0Amult", &fCentralityV0A, "centrV0Amult/F");
-      fCentralityTree->Branch("centrV0Cmult", &fCentralityV0C, "centrV0Cmult/F");
-      fCentralityTree->Branch("centrSPDclu1", &fCentralityCL1, "centrSPDclu1/F");
-      fCentralityTree->Branch("centrZNA", &fCentralityZNA, "centrZNA/F");
-      fCentralityTree->Branch("centrZNC", &fCentralityZNC, "centrZNC/F");
-      
+     
+      if(fSystem!=AliAnalysisTaskEA::kpp){ 
+         fCentralityTree->Branch("centrV0Amult", &fCentralityV0A, "centrV0Amult/F");
+         fCentralityTree->Branch("centrV0Cmult", &fCentralityV0C, "centrV0Cmult/F");
+         fCentralityTree->Branch("centrSPDclu1", &fCentralityCL1, "centrSPDclu1/F");
+         fCentralityTree->Branch("centrZNA", &fCentralityZNA, "centrZNA/F");
+         fCentralityTree->Branch("centrZNC", &fCentralityZNC, "centrZNC/F");
+      }
+
       for(Int_t itt=0; itt<fnHadronTTBins; itt++){
          name    = Form("hadronTTbin_%d_%d",fHadronTTLowPt[itt],fHadronTTHighPt[itt]);
          object  = name;
@@ -1080,9 +1431,20 @@ Bool_t AliAnalysisTaskEA::RetrieveEventObjects() {
    return kTRUE;
 }
 //________________________________________________________________________
-Bool_t AliAnalysisTaskEA::Run()
-{
+Bool_t AliAnalysisTaskEA::Run(){
    // Run analysis code here, if needed. It will be executed before FillHistograms().
+
+   if(!fCaloCells){
+      if(fCaloCellsName.IsNull()){
+         fCaloCells = InputEvent()->GetEMCALCells();
+      }else{
+         fCaloCells =  dynamic_cast<AliVCaloCells*>(InputEvent()->FindListObject(fCaloCellsName));
+         if(!fCaloCells) AliError(Form("%s: Could not retrieve cells %s!", GetName(), fCaloCellsName.Data()));
+      }
+      cout<<"load calo cells"<<endl;
+   }
+
+
    
    return kTRUE;
 }

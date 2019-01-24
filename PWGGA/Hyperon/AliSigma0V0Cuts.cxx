@@ -3,6 +3,7 @@
 #include "AliAnalysisManager.h"
 #include "AliInputEventHandler.h"
 #include "AliMultSelection.h"
+#include "TMath.h"
 
 ClassImp(AliSigma0V0Cuts)
 
@@ -468,8 +469,8 @@ void AliSigma0V0Cuts::SelectV0(AliVEvent *inputEvent, AliMCEvent *mcEvent) {
     PlotMasses(v0);
 
     // V0 Selection
-    if (std::abs(fPID) == 3122 && !LambdaSelection(v0)) continue;
-    if (std::abs(fPID) == 22 && !PhotonSelection(v0)) continue;
+    if (TMath::Abs(fPID) == 3122 && !LambdaSelection(v0)) continue;
+    if (TMath::Abs(fPID) == 22 && !PhotonSelection(v0)) continue;
 
     AliSigma0ParticleV0 v0Candidate(v0, pos, neg,
                                     fInputEvent->GetPrimaryVertex(), fPID,
@@ -492,11 +493,11 @@ void AliSigma0V0Cuts::SelectV0(AliVEvent *inputEvent, AliMCEvent *mcEvent) {
       const int pdgMother = static_cast<AliMCParticle *>(
                                 fMCEvent->GetTrack(mcParticle->GetMother()))
                                 ->PdgCode();
-      fHistV0Mother->Fill(v0->Pt(), std::abs(pdgMother));
+      fHistV0Mother->Fill(v0->Pt(), TMath::Abs(pdgMother));
     }
 
     v0Candidate.SetPDGMass(fDataBasePDG.GetParticle(fPID)->Mass());
-    if (std::abs(fPID) == 22) {
+    if (TMath::Abs(fPID) == 22) {
       const float massPhoton = ComputePhotonMassRefit(v0);
       v0Candidate.SetMass(massPhoton);
       v0Candidate.SetRecMass(massPhoton);
@@ -592,7 +593,7 @@ bool AliSigma0V0Cuts::SingleParticlePID(const AliVTrack *track,
   // TPC signal must be available
   if (!(AliPIDResponse::kDetPidOk == statusPosTPC)) return false;
 
-  prob = std::abs(fPIDResponse->NumberOfSigmasTPC(track, particle));
+  prob = TMath::Abs(fPIDResponse->NumberOfSigmasTPC(track, particle));
 
   // Proton PID cut
   if (prob > fPIDnSigma) return false;
@@ -636,7 +637,7 @@ bool AliSigma0V0Cuts::SingleParticleQualityCuts(AliESDtrack *track) const {
   const float magField = fInputEvent->GetMagneticField();
   const AliVVertex *vertex = fInputEvent->GetPrimaryVertex();
   const float dcaDaughterToPV =
-      std::abs(track->GetD(vertex->GetX(), vertex->GetY(), magField));
+      TMath::Abs(track->GetD(vertex->GetX(), vertex->GetY(), magField));
 
   const int histoPrefix = (charge > 0) ? 0 : 1;
   int qaHistoCounter = 0;
@@ -659,7 +660,7 @@ bool AliSigma0V0Cuts::SingleParticleQualityCuts(AliESDtrack *track) const {
   }
 
   // Max eta cut
-  if (std::abs(eta) > fEtaMax) return false;
+  if (TMath::Abs(eta) > fEtaMax) return false;
   if (!fIsLightweight)
     fHistSingleParticleCuts[histoPrefix]->Fill(qaHistoCounter++);
 
@@ -848,13 +849,13 @@ bool AliSigma0V0Cuts::V0TopologicalSelection(const AliESDv0 *v0) const {
   }
 
   // Position of the decay vertex x, y & z
-  if (std::abs(decayVertexV0[0]) > fV0DecayVertexMax) return false;
+  if (TMath::Abs(decayVertexV0[0]) > fV0DecayVertexMax) return false;
   if (!fIsLightweight)
     if (!fIsLightweight) fHistCuts->Fill(8);
-  if (std::abs(decayVertexV0[1]) > fV0DecayVertexMax) return false;
+  if (TMath::Abs(decayVertexV0[1]) > fV0DecayVertexMax) return false;
   if (!fIsLightweight)
     if (!fIsLightweight) fHistCuts->Fill(9);
-  if (std::abs(decayVertexV0[2]) > fV0DecayVertexMax) return false;
+  if (TMath::Abs(decayVertexV0[2]) > fV0DecayVertexMax) return false;
   if (!fIsLightweight) fHistCuts->Fill(10);
 
   // Transverse decay radius min & max
@@ -949,7 +950,7 @@ bool AliSigma0V0Cuts::PhotonSelection(AliESDv0 *v0) const {
   const float psiPair = ComputePsiPair(v0);
   if (!fIsLightweight) fHistPsiPair->Fill(v0->Pt(), psiPair);
 
-  if (std::abs(psiPair) > fPsiPairMax) return false;
+  if (TMath::Abs(psiPair) > fPsiPairMax) return false;
   if (!fIsLightweight) fHistCuts->Fill(16);
 
   // K0 rejection cut
@@ -1216,7 +1217,7 @@ void AliSigma0V0Cuts::PhotonQA(AliVEvent *inputEvent,
       const float negPt = neg->Pt();
       const float magField = inputEvent->GetMagneticField();
       const float dcaDaughterToPVPos =
-          std::abs(pos->GetD(vertex->GetX(), vertex->GetY(), magField));
+          TMath::Abs(pos->GetD(vertex->GetX(), vertex->GetY(), magField));
       const short nClsTPCPos = pos->GetTPCNcls();
       const float nCrossedRowsPos = pos->GetTPCClusterInfo(2, 1);
       const short nFindablePos = pos->GetTPCNclsF();
@@ -1227,7 +1228,7 @@ void AliSigma0V0Cuts::PhotonQA(AliVEvent *inputEvent,
           (nClsTPCPos > 5) ? (pos->GetTPCchi2() / float(nClsTPCPos - 5)) : -1.;
 
       const float dcaDaughterToPVNeg =
-          std::abs(neg->GetD(vertex->GetX(), vertex->GetY(), magField));
+          TMath::Abs(neg->GetD(vertex->GetX(), vertex->GetY(), magField));
       const short nClsTPCNeg = neg->GetTPCNcls();
       const float nCrossedRowsNeg = neg->GetTPCClusterInfo(2, 1);
       const short nFindableNeg = neg->GetTPCNclsF();
@@ -1336,7 +1337,7 @@ void AliSigma0V0Cuts::CheckCutsMC() const {
     const float magField = fInputEvent->GetMagneticField();
     const AliVVertex *vertex = fInputEvent->GetPrimaryVertex();
     const float dcaDaughterToPVPos =
-        std::abs(pos->GetD(vertex->GetX(), vertex->GetY(), magField));
+        TMath::Abs(pos->GetD(vertex->GetX(), vertex->GetY(), magField));
     const short nClsTPCPos = pos->GetTPCNcls();
     const float nCrossedRowsPos = pos->GetTPCClusterInfo(2, 1);
     const short nFindablePos = pos->GetTPCNclsF();
@@ -1347,7 +1348,7 @@ void AliSigma0V0Cuts::CheckCutsMC() const {
         (nClsTPCPos > 5) ? (pos->GetTPCchi2() / float(nClsTPCPos - 5)) : -1.;
 
     const float dcaDaughterToPVNeg =
-        std::abs(neg->GetD(vertex->GetX(), vertex->GetY(), magField));
+        TMath::Abs(neg->GetD(vertex->GetX(), vertex->GetY(), magField));
     const short nClsTPCNeg = neg->GetTPCNcls();
     const float nCrossedRowsNeg = neg->GetTPCClusterInfo(2, 1);
     const short nFindableNeg = neg->GetTPCNclsF();
@@ -1434,8 +1435,8 @@ void AliSigma0V0Cuts::CheckCutsMC() const {
       const int pdgMother = static_cast<AliMCParticle *>(
                                 fMCEvent->GetTrack(mcParticle->GetMother()))
                                 ->PdgCode();
-      fHistV0MotherTrue->Fill(pt, std::abs(pdgMother));
-      if (std::abs(pdgMother) == 3212) {
+      fHistV0MotherTrue->Fill(pt, TMath::Abs(pdgMother));
+      if (TMath::Abs(pdgMother) == 3212) {
         fHistV0MassPtTrueSigma->Fill(pt, invMass);
         fHistDecayVertexXTrueSigma->Fill(pt, decayVertexV0[0]);
         fHistDecayVertexYTrueSigma->Fill(pt, decayVertexV0[1]);
@@ -1588,18 +1589,18 @@ bool AliSigma0V0Cuts::CheckDaughtersInAcceptance(
   const float rPos =
       std::sqrt(posVertex[0] * posVertex[0] + posVertex[1] * posVertex[1]);
   if (rPos > fV0RadiusMax || rPos < fV0RadiusMin) return false;
-  if (std::abs(posVertex[0]) > fV0DecayVertexMax) return false;
-  if (std::abs(posVertex[1]) > fV0DecayVertexMax) return false;
-  if (std::abs(posVertex[2]) > fV0DecayVertexMax) return false;
+  if (TMath::Abs(posVertex[0]) > fV0DecayVertexMax) return false;
+  if (TMath::Abs(posVertex[1]) > fV0DecayVertexMax) return false;
+  if (TMath::Abs(posVertex[2]) > fV0DecayVertexMax) return false;
 
   Double_t negVertex[3];
   negDaughter->XvYvZv(negVertex);
   const float rNeg =
       std::sqrt(negVertex[0] * negVertex[0] + negVertex[1] * negVertex[1]);
   if (rNeg > fV0RadiusMax || rNeg < fV0RadiusMin) return false;
-  if (std::abs(negVertex[0]) > fV0DecayVertexMax) return false;
-  if (std::abs(negVertex[1]) > fV0DecayVertexMax) return false;
-  if (std::abs(negVertex[2]) > fV0DecayVertexMax) return false;
+  if (TMath::Abs(negVertex[0]) > fV0DecayVertexMax) return false;
+  if (TMath::Abs(negVertex[1]) > fV0DecayVertexMax) return false;
+  if (TMath::Abs(negVertex[2]) > fV0DecayVertexMax) return false;
 
   return true;
 }
@@ -1742,12 +1743,12 @@ void AliSigma0V0Cuts::InitCutHistograms(TString appendix) {
   fHistCutBooking->Fill(30.f, fNegPDG);
   fHistCutBooking->Fill(31.f, fMCHighMultThreshold);
 
-  if (std::abs(fPID) == 3122) {
+  if (TMath::Abs(fPID) == 3122) {
     fHistV0MassPt =
         new TH2F("fHistV0MassPt",
                  "; #it{p}_{T} (GeV/#it{c});Invariant mass (GeV/#it{c}^{2})",
                  100, 0, 10, 200, 1., 1.2);
-  } else if (std::abs(fPID) == 22) {
+  } else if (TMath::Abs(fPID) == 22) {
     fHistV0MassPt =
         new TH2F("fHistV0MassPt",
                  "; #it{p}_{T} (GeV/#it{c});Invariant mass (GeV/#it{c}^{2})",
@@ -1773,10 +1774,10 @@ void AliSigma0V0Cuts::InitCutHistograms(TString appendix) {
     fHistCuts->GetXaxis()->SetBinLabel(14, "Daughter DCA");
     fHistCuts->GetXaxis()->SetBinLabel(15, "cos #alpha");
     fHistCuts->GetXaxis()->SetBinLabel(16, "PID");
-    if (std::abs(fPID) == 3122) {
+    if (TMath::Abs(fPID) == 3122) {
       fHistCuts->GetXaxis()->SetBinLabel(17, "K^{0} rejection");
       fHistCuts->GetXaxis()->SetBinLabel(18, "#Lambda selection");
-    } else if (std::abs(fPID) == 22) {
+    } else if (TMath::Abs(fPID) == 22) {
       fHistCuts->GetXaxis()->SetBinLabel(17, "#Psi_{pair} selection");
       fHistCuts->GetXaxis()->SetBinLabel(18, "K^{0} rejection");
       fHistCuts->GetXaxis()->SetBinLabel(19, "#Lambda rejection");
@@ -1821,11 +1822,11 @@ void AliSigma0V0Cuts::InitCutHistograms(TString appendix) {
         new TH1F("fHistV0Pt", "; #it{p}_{T} (GeV/#it{c}); Entries", 100, 0, 10);
     fHistograms->Add(fHistV0Pt);
 
-    if (std::abs(fPID) == 3122) {
+    if (TMath::Abs(fPID) == 3122) {
       fHistV0Mass =
           new TH1F("fHistV0Mass", "; Invariant mass (GeV/#it{c}^{2}); Entries",
                    200, 1., 1.2);
-    } else if (std::abs(fPID) == 22) {
+    } else if (TMath::Abs(fPID) == 22) {
       fHistV0Mass =
           new TH1F("fHistV0Mass", "; Invariant mass (GeV/#it{c}^{2}); Entries",
                    200, 0., 0.2);

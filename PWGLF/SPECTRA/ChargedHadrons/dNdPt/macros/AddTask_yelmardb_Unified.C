@@ -1,4 +1,4 @@
-AlidNdPtUnifiedAnalysisTask* AddTask_yelmardb_Unified(Int_t cutModeLow = 122, Int_t cutModeHigh = 123)
+AlidNdPtUnifiedAnalysisTask* AddTask_yelmardb_Unified(Int_t cutModeLow = 100, Int_t cutModeHigh = 105)
 {
 
     AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
@@ -27,7 +27,7 @@ AlidNdPtUnifiedAnalysisTask* AddTask_yelmardb_Unified(Int_t cutModeLow = 122, In
     AlidNdPtUnifiedAnalysisTask *task = new AlidNdPtUnifiedAnalysisTask("AlidNdPtUnifiedAnalysisTask_yelmardb");
     task->SetUseMC(hasMC);
     if(type.Contains("ESD")) task->SetUseESD();
-    else task->SetUseAOD();
+    //else task->SetUseAOD();
     task->SetUseMultiplicity(kTRUE);
     task->SelectCollisionCandidates(AliVEvent::kINT7);
     task->SetTriggerMask(AliVEvent::kINT7 ); //kINT7

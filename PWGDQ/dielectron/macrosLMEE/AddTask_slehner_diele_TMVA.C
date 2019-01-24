@@ -1,16 +1,11 @@
-AliAnalysisTask *AddTask_slehner_diele_TMVA(  Int_t trackCut=0,
-                                              Int_t PIDCut=0,
-                                              Int_t evCut=0,
-                                              Double_t centMin=0.,
+AliAnalysisTask *AddTask_slehner_diele_TMVA(  Double_t centMin=0.,
                                               Double_t centMax=100.,
                                               Bool_t SetPIDCorrection=kFALSE,
                                               Bool_t useAODFilterCuts=kFALSE,
                                               Bool_t hasMC=kFALSE,
                                               TString TMVAweight = "TMVAClassification_BDTG.weights_094.xml",
-                                              Int_t maxTrCuts=0,
-                                              Int_t maxPIDCuts=0,
-                                              Int_t maxMVACut=0       
-        
+                                              Bool_t fromAlien,
+                                              TString date="ddmmyy"        
         ){
   
   TString directoryBaseName = "slehnerLMEETMVA";
@@ -23,15 +18,23 @@ AliAnalysisTask *AddTask_slehner_diele_TMVA(  Int_t trackCut=0,
     return 0;
   }
 
-
-  TString configBasePath("$ALICE_PHYSICS/PWGDQ/dielectron/macrosLMEE/");
+  gSystem->Setenv("alien_CLOSE_SE","ALICE::CERN::EOS");
+  
+  if(fromAlien) TString configBasePath(TString("alien:///alice/cern.ch/user/s/selehner/configs/")+date+TString("/"));
+  else TString configBasePath("$ALICE_PHYSICS/PWGDQ/dielectron/macrosLMEE/");
+  
   TString configFile("Config_slehner_diele_TMVA.C");
-  TString configLMEECutLib("LMEECutLib_slehner.C");
-  TString configLMEECutLibPath(configBasePath+configLMEECutLib);
   TString configFilePath(configBasePath+configFile);
-     
+  
+  TString myConfig =TString::Format("alien_cp %s .",configFilePath.Data());
+  gSystem->Exec(myConfig);
+  
+  TString configBasePathLMEE("$ALICE_PHYSICS/PWGDQ/dielectron/macrosLMEE/");  
+  TString configLMEECutLib("LMEECutLib_slehner.C");
+  TString configLMEECutLibPath(configBasePathLMEE+configLMEECutLib);
+  
   //load dielectron configuration files
-  if (!gROOT->GetListOfGlobalFunctions()->FindObject(configFile.Data()))    gROOT->LoadMacro(configFilePath.Data());
+  if (!gROOT->GetListOfGlobalFunctions()->FindObject(configFile.Data()))    gROOT->LoadMacro(configFile.Data());
   if (!gROOT->GetListOfGlobalFunctions()->FindObject(configLMEECutLibPath.Data()))    gROOT->LoadMacro(configLMEECutLibPath.Data());
   
   //create task and add it to the manager
@@ -53,51 +56,50 @@ AliAnalysisTask *AddTask_slehner_diele_TMVA(  Int_t trackCut=0,
 
   mgr->AddTask(task);
   
-//      for(Int_t MVACut = 0; MVACut <= 0; ++MVACut){
-      Int_t trackCut = 0;
-      Int_t PIDCut = 0;
-      Int_t MVACut = 0;
-      for(trackCut = 0; trackCut <=maxTrCuts; ++trackCut){
-        AliDielectron * diel_low = Config_slehner_diele_TMVA(trackCut,PIDCut,MVACut,SetPIDCorrection,hasMC);
-        if(!diel_low){
-          Printf("=======================================");
-          Printf("No AliDielectron object loaded -> EXIT ");
-          Printf("=======================================");
-          return NULL; 
-        }  
-        std::cout << "CutTr: "<<trackCut<<" CutPID: "<<PIDCut<<" MVAcut: "<<-1+MVACut*0.2<<" being added"<< std::endl;
-        diel_low->GetTrackFilter().AddCuts(SetupTrackCutsAndSettings(trackCut, PIDCut, MVACut, useAODFilterCuts,TMVAweight));   
-        task->AddDielectron(diel_low);
-        printf("successfully added AliDielectron: %s\n",diel_low->GetName());           
-      }
-      trackCut = 0;
-      for(PIDCut = 0; PIDCut <= maxPIDCuts; ++PIDCut){
-        AliDielectron * diel_low = Config_slehner_diele_TMVA(trackCut,PIDCut,MVACut,SetPIDCorrection,hasMC);
-        if(!diel_low){
-          Printf("=======================================");
-          Printf("No AliDielectron object loaded -> EXIT ");
-          Printf("=======================================");
-          return NULL; 
-        }  
-        std::cout << "CutTr: "<<trackCut<<" CutPID: "<<PIDCut<<" MVAcut: "<<-1+MVACut*0.2<<" being added"<< std::endl;
-        diel_low->GetTrackFilter().AddCuts(SetupTrackCutsAndSettings(trackCut, PIDCut, MVACut, useAODFilterCuts,TMVAweight));   
-        task->AddDielectron(diel_low);
-        printf("successfully added AliDielectron: %s\n",diel_low->GetName());           
-      }      
-      PIDCut = 0;
-      for(MVACut = 0; MVACut <= maxMVACut; ++MVACut){
-        AliDielectron * diel_low = Config_slehner_diele_TMVA(trackCut,PIDCut,MVACut,SetPIDCorrection,hasMC);
-        if(!diel_low){
-          Printf("=======================================");
-          Printf("No AliDielectron object loaded -> EXIT ");
-          Printf("=======================================");
-          return NULL; 
-        }  
-        std::cout << "CutTr: "<<trackCut<<" CutPID: "<<PIDCut<<" MVAcut: "<<-1+MVACut*0.2<<" being added"<< std::endl;
-        diel_low->GetTrackFilter().AddCuts(SetupTrackCutsAndSettings(trackCut, PIDCut, MVACut, useAODFilterCuts,TMVAweight));   
-        task->AddDielectron(diel_low);
-        printf("successfully added AliDielectron: %s\n",diel_low->GetName());           
-      }      
+  
+  Config_slehner_diele_TMVA(task,SetPIDCorrection,hasMC, useAODFilterCuts, TMVAweight);
+
+//      for(trackCut = 0; trackCut <=maxTrCuts; ++trackCut){
+//        AliDielectron * diel_low = Config_slehner_diele_TMVA(trackCut,PIDCut,MVACut,SetPIDCorrection,hasMC);
+//        if(!diel_low){
+//          Printf("=======================================");
+//          Printf("No AliDielectron object loaded -> EXIT ");
+//          Printf("=======================================");
+//          return NULL; 
+//        }  
+//        std::cout << "CutTr: "<<trackCut<<" CutPID: "<<PIDCut<<" MVAcut: "<<-1+MVACut*0.2<<" being added"<< std::endl;
+//        diel_low->GetTrackFilter().AddCuts(SetupTrackCutsAndSettings(trackCut, PIDCut, MVACut, useAODFilterCuts,TMVAweight));   
+//        task->AddDielectron(diel_low);
+//        printf("successfully added AliDielectron: %s\n",diel_low->GetName());           
+//      }
+//      trackCut = 0;
+//      for(PIDCut = 0; PIDCut <= maxPIDCuts; ++PIDCut){
+//        AliDielectron * diel_low = Config_slehner_diele_TMVA(trackCut,PIDCut,MVACut,SetPIDCorrection,hasMC);
+//        if(!diel_low){
+//          Printf("=======================================");
+//          Printf("No AliDielectron object loaded -> EXIT ");
+//          Printf("=======================================");
+//          return NULL; 
+//        }  
+//        std::cout << "CutTr: "<<trackCut<<" CutPID: "<<PIDCut<<" MVAcut: "<<-1+MVACut*0.2<<" being added"<< std::endl;
+//        diel_low->GetTrackFilter().AddCuts(SetupTrackCutsAndSettings(trackCut, PIDCut, MVACut, useAODFilterCuts,TMVAweight));   
+//        task->AddDielectron(diel_low);
+//        printf("successfully added AliDielectron: %s\n",diel_low->GetName());           
+//      }      
+//      PIDCut = 0;
+//      for(MVACut = 0; MVACut <= maxMVACut; ++MVACut){
+//        AliDielectron * diel_low = Config_slehner_diele_TMVA(trackCut,PIDCut,MVACut,SetPIDCorrection,hasMC);
+//        if(!diel_low){
+//          Printf("=======================================");
+//          Printf("No AliDielectron object loaded -> EXIT ");
+//          Printf("=======================================");
+//          return NULL; 
+//        }  
+//        std::cout << "CutTr: "<<trackCut<<" CutPID: "<<PIDCut<<" MVAcut: "<<-1+MVACut*0.2<<" being added"<< std::endl;
+//        diel_low->GetTrackFilter().AddCuts(SetupTrackCutsAndSettings(trackCut, PIDCut, MVACut, useAODFilterCuts,TMVAweight));   
+//        task->AddDielectron(diel_low);
+//        printf("successfully added AliDielectron: %s\n",diel_low->GetName());           
+//      }      
 
   //create output container
   AliAnalysisDataContainer *coutput1 =

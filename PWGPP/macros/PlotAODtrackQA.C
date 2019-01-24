@@ -71,6 +71,10 @@ void PlotAODtrackQA(TString filename="AnalysisResults.root", TString suffix="QA"
     return;    
   }
 
+  
+  TH1F* hNEvents=(TH1F*)l->FindObject("hNEvents");
+  Int_t nSelectedEvents=hNEvents->GetBinContent(6);
+
   TH3F* hEtaPhiPtTPCsel=(TH3F*)l->FindObject("hEtaPhiPtTPCsel");
   TH3F* hEtaPhiPtTPCselITSref=(TH3F*)l->FindObject("hEtaPhiPtTPCselITSref");
   TH3F* hEtaPhiPtTPCselSPDany=(TH3F*)l->FindObject("hEtaPhiPtTPCselSPDany");
@@ -1376,6 +1380,17 @@ void PlotAODtrackQA(TString filename="AnalysisResults.root", TString suffix="QA"
   Int_t p5=hInvMassK0s3d->GetYaxis()->FindBin(9.99);
   TH1D* hInvMassK0sP4=hInvMassK0s3d->ProjectionX("hInvMassK0sP4",p4,p5,0,-1);
 
+  // K0s histos vs. radius
+  z1=hInvMassK0s3d->GetZaxis()->FindBin(2.99);
+  TH1D* hInvMassK0sR1=hInvMassK0s3d->ProjectionX("hInvMassK0s1dR1",0,-1,1,z1);
+  z2=hInvMassK0s3d->GetZaxis()->FindBin(5.99);
+  TH1D* hInvMassK0sR2=hInvMassK0s3d->ProjectionX("hInvMassK0s1dR2",0,-1,z1+1,z2);
+  z3=hInvMassK0s3d->GetZaxis()->FindBin(8.01);
+  z4=hInvMassK0s3d->GetZaxis()->FindBin(22.99);
+  TH1D* hInvMassK0sR3=hInvMassK0s3d->ProjectionX("hInvMassK0s1dR3",0,-1,z3,z4);
+  z5=hInvMassK0s3d->GetZaxis()->FindBin(28.01);
+  z6=hInvMassK0s3d->GetZaxis()->FindBin(42.99);
+  TH1D* hInvMassK0sR4=hInvMassK0s3d->ProjectionX("hInvMassK0s1dR4",0,-1,z5,z6);
 
 
   TF1* fmassk0=new TF1("fmassk0","[0]+[1]*x+[2]/sqrt(2.*TMath::Pi())/[4]*TMath::Exp(-0.5*(x-[3])*(x-[3])/[4]/[4])",0.46,0.54);
@@ -1477,7 +1492,99 @@ void PlotAODtrackQA(TString filename="AnalysisResults.root", TString suffix="QA"
   ck0->SaveAs(plotFileName.Data());
   if(outputForm=="pdf") pdfFileNames+=Form("%s ",plotFileName.Data());
 
+  TCanvas* ck0r=new TCanvas("ck0r","K0s vs R",1400,900);
+  ck0r->Divide(2,2);
+  ck0r->cd(1);
+  hInvMassK0sR1->Draw();
+  InitFuncAndFit(hInvMassK0sR1,fmassk0,kTRUE);
+  TLatex* tr1k=new TLatex(0.65,0.6,Form("%d<R<%d cm",TMath::Nint(hInvMassK0s3d->GetZaxis()->GetBinLowEdge(1)),TMath::Nint(hInvMassK0s3d->GetZaxis()->GetBinLowEdge(z1+1))));
+  tr1k->SetNDC();
+  tr1k->SetTextFont(43);
+  tr1k->SetTextSize(26);
+  tr1k->Draw();
+  ck0r->cd(2);
+  hInvMassK0sR2->Draw();
+  InitFuncAndFit(hInvMassK0sR2,fmassk0,kTRUE);
+  TLatex* tr2k=new TLatex(0.65,0.6,Form("%d<R<%d cm",TMath::Nint(hInvMassK0s3d->GetZaxis()->GetBinLowEdge(z1+1)),TMath::Nint(hInvMassK0s3d->GetZaxis()->GetBinLowEdge(z2+1))));
+  tr2k->SetNDC();
+  tr2k->SetTextFont(43);
+  tr2k->SetTextSize(26);
+  tr2k->Draw();
+  ck0r->cd(3);
+  hInvMassK0sR3->Draw();
+  InitFuncAndFit(hInvMassK0sR3,fmassk0,kTRUE);
+  TLatex* tr3k=new TLatex(0.65,0.6,Form("%d<R<%d cm",TMath::Nint(hInvMassK0s3d->GetZaxis()->GetBinLowEdge(z3)),TMath::Nint(hInvMassK0s3d->GetZaxis()->GetBinLowEdge(z4+1))));
+  tr3k->SetNDC();
+  tr3k->SetTextFont(43);
+  tr3k->SetTextSize(26);
+  tr3k->Draw();
+  ck0r->cd(4);
+  hInvMassK0sR4->Draw();
+  InitFuncAndFit(hInvMassK0sR4,fmassk0,kTRUE);
+  TLatex* tr4k=new TLatex(0.65,0.6,Form("%d<R<%d cm",TMath::Nint(hInvMassK0s3d->GetZaxis()->GetBinLowEdge(z5)),TMath::Nint(hInvMassK0s3d->GetZaxis()->GetBinLowEdge(z6+1))));
+  tr4k->SetNDC();
+  tr4k->SetTextFont(43);
+  tr4k->SetTextSize(26);
+  tr4k->Draw();
+  plotFileName=Form("K0s-MassSpectra-VsR.%s",outputForm.Data());
+  ck0r->SaveAs(plotFileName.Data());
+  if(outputForm=="pdf") pdfFileNames+=Form("%s ",plotFileName.Data());
 
+  // K0 pt resolution vs. pt
+  const Int_t nPtBinsK0=10;
+  Double_t ptbinlimsK0[nPtBinsK0+1]={0.,0.4,0.8,1.2,2.0,3.,4.,5.,6.,8.,10.};
+  TH1F* hSigmaK0AllR=new TH1F("hSigmaK0AllR"," ; p_{T} (GeV/c) ; #sigma_{K0} (MeV/c^{2})",10,ptbinlimsK0);
+  TH1F* hSigmaK0R4=new TH1F("hSigmaK0R4"," ; p_{T} (GeV/c) ; #sigma_{K0} (MeV/c^{2})",10,ptbinlimsK0);
+  TCanvas* ctmpk0=new TCanvas("ctmpk0","K0s vs. pt R<4",1600,900);
+  ctmpk0->Divide(5,4);
+  for(Int_t ipt=0; ipt<nPtBinsK0; ipt++){
+    Int_t pfine1=hInvMassK0s3d->GetYaxis()->FindBin(ptbinlimsK0[ipt]+0.001);
+    Int_t pfine2=hInvMassK0s3d->GetYaxis()->FindBin(ptbinlimsK0[ipt+1]-0.001);
+    Int_t r1=hInvMassK0s3d->GetZaxis()->FindBin(0.001);
+    Int_t r2=hInvMassK0s3d->GetZaxis()->FindBin(3.999);
+    TH1D* hTmpInvMassK0sR4=hInvMassK0s3d->ProjectionX(Form("hInvMassK0sR4PtFine%d",ipt),pfine1,pfine2,r1,r2);
+    TH1D* hTmpInvMassK0sAllR=hInvMassK0s3d->ProjectionX(Form("hInvMassK0sAllRPtFine%d",ipt),pfine1,pfine2,0,-1);
+    ctmpk0->cd(ipt+1);
+    hTmpInvMassK0sR4->Draw();
+    InitFuncAndFit(hTmpInvMassK0sR4,fmassk0,kTRUE);
+    TLatex* tpfine=new TLatex(0.6,0.6,Form("%.1f<p_{T}<%.1f GeV/c",hInvMassK0s3d->GetYaxis()->GetBinLowEdge(pfine1),hInvMassK0s3d->GetYaxis()->GetBinUpEdge(pfine2)));
+    tpfine->SetNDC();
+    tpfine->SetTextFont(43);
+    tpfine->SetTextSize(24);
+    tpfine->Draw();
+    hSigmaK0R4->SetBinContent(ipt+1,fmassk0->GetParameter(4)*1000.);
+    hSigmaK0R4->SetBinError(ipt+1,fmassk0->GetParError(4)*1000.);
+    ctmpk0->cd(ipt+11);
+    hTmpInvMassK0sAllR->Draw();
+    InitFuncAndFit(hTmpInvMassK0sAllR,fmassk0,kTRUE);
+    tpfine->Draw();
+    hSigmaK0AllR->SetBinContent(ipt+1,fmassk0->GetParameter(4)*1000.);
+    hSigmaK0AllR->SetBinError(ipt+1,fmassk0->GetParError(4)*1000.);    
+  }
+
+  TCanvas* cResolK0=new TCanvas("cresolK0","K0 width vs pt",800,600);
+  gPad->SetTickx();
+  gPad->SetTicky();
+  hSigmaK0AllR->SetMinimum(0);
+  hSigmaK0AllR->SetMaximum(10);
+  hSigmaK0AllR->SetStats(0);
+  hSigmaK0AllR->SetMarkerStyle(20);
+  hSigmaK0AllR->SetLineWidth(2);
+  hSigmaK0R4->SetMarkerStyle(25);
+  hSigmaK0R4->SetMarkerColor(kRed+1);
+  hSigmaK0R4->SetLineColor(kRed+1);
+  hSigmaK0R4->SetLineWidth(2);
+  hSigmaK0AllR->Draw();
+  hSigmaK0R4->Draw("same");
+  TLegend* lk=new TLegend(0.18,0.18,0.5,0.3);
+  lk->AddEntry(hSigmaK0AllR,"All decay radii","P")->SetTextColor(hSigmaK0AllR->GetMarkerColor());
+  lk->AddEntry(hSigmaK0R4,"R < 4 cm","P")->SetTextColor(hSigmaK0R4->GetMarkerColor());
+  lk->Draw();
+  plotFileName=Form("K0s-WidthVsPt.%s",outputForm.Data());
+  cResolK0->SaveAs(plotFileName.Data());
+  if(outputForm=="pdf") pdfFileNames+=Form("%s ",plotFileName.Data());
+
+     
   trtree->Fill();
 
   if(runNumber>0){
@@ -1491,6 +1598,9 @@ void PlotAODtrackQA(TString filename="AnalysisResults.root", TString suffix="QA"
   }
 
   if(outputForm=="pdf") gSystem->Exec(Form("gs -q -dNOPAUSE -dBATCH -sDEVICE=pdfwrite -sOutputFile=PlotsAODTrackQA.pdf %s",pdfFileNames.Data()));
+
+  printf("SUMMARY:\n");
+  printf("Number of events used in the plots = %d\n",nSelectedEvents);
 
 }
 
@@ -1571,7 +1681,7 @@ void DrawDistrib(TH1D* h1, TH1D* h2, TH1D* h3, Bool_t showStat){
   }else{
     h3->Draw("same");
   }
-    h3->Draw("histosame");
+  h3->Draw("histosame");
 }
 
 TH1D* ComputeMatchEff(TH1D* hnumer, TH1D* hdenom, TString name, Int_t iCol, Int_t iMarker, TString xtitle){

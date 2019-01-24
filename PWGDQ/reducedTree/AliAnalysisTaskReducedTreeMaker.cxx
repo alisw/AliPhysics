@@ -109,6 +109,7 @@ AliAnalysisTaskReducedTreeMaker::AliAnalysisTaskReducedTreeMaker() :
 	fEventsList(0x0),
   fEventsHistogram(0x0),
   fTRDEventsHistogram(0x0),
+  fEMCalEventsHistogram(0x0),
   fCentEventsList(0x0),
   fTracksHistogram(0x0),
   fMCSignalsHistogram(0x0),
@@ -182,6 +183,7 @@ AliAnalysisTaskReducedTreeMaker::AliAnalysisTaskReducedTreeMaker(const char *nam
 	fEventsList(0x0),
   fEventsHistogram(0x0),
   fTRDEventsHistogram(0x0),
+  fEMCalEventsHistogram(0x0),
   fCentEventsList(0x0),
   fTracksHistogram(0x0),
   fMCSignalsHistogram(0x0),
@@ -406,6 +408,16 @@ void AliAnalysisTaskReducedTreeMaker::UserCreateOutputObjects()
   for(Int_t i=1;i<=14;++i) fTRDEventsHistogram->GetXaxis()->SetBinLabel(i, selectionNames[i-1]);
 	fEventsList->Add(fTRDEventsHistogram);
 
+  // EMCal event statistics histogram
+  const Char_t* offlineEMCalTriggerNames[18] = {"Total", "No Phys Sel",
+    "EMC7orDMC7", "EMC7", "DMC7", "EMC1orDMC1", "EMC1", "DMC1",
+    "EMCEGA", "EG1", "EG2", "DG1", "DG2",
+    "EMCEJE", "EJ1", "EJ2", "DJ1", "DJ2"};
+  fEMCalEventsHistogram = new TH2I("EMCalEventStatistics", "EMCal Event statistics", 14,-0.5,13.5, 18,-2.5,15.5);
+  for(Int_t i=1;i<=18;++i) fEMCalEventsHistogram->GetYaxis()->SetBinLabel(i, offlineEMCalTriggerNames[i-1]);
+  for(Int_t i=1;i<=14;++i) fEMCalEventsHistogram->GetXaxis()->SetBinLabel(i, selectionNames[i-1]);
+  fEventsList->Add(fEMCalEventsHistogram);
+
 	// Event Centrality statistics List of histograms (for the provided trigger mask)
 	fCentEventsList = new TList();
 	fCentEventsList->SetName("EventStatVsCent");
@@ -483,7 +495,8 @@ void AliAnalysisTaskReducedTreeMaker::UserExec(Option_t *option)
   UInt_t isPhysAndTrigSel = AliVEvent::kAny;
   UInt_t trdtrgtype[5];
   memset(trdtrgtype,0,sizeof(trdtrgtype));
-
+  UInt_t emcaltrgtype[16];
+  memset(emcaltrgtype,0,sizeof(emcaltrgtype));
   if(inputHandler) {
     if((isESD && inputHandler->GetEventSelection()) || isAOD){
       isPhysSel = inputHandler->IsEventSelected();
@@ -497,6 +510,24 @@ void AliAnalysisTaskReducedTreeMaker::UserExec(Option_t *option)
       if(trgClasses.Contains("HSE")) trdtrgtype[2]=1;
       if(trgClasses.Contains("HNU")) trdtrgtype[3]=1;
       if(trgClasses.Contains("HJT")) trdtrgtype[4]=1;
+
+      // get type of EMCal triggered event
+      if(trgClasses.Contains("EMC7")||trgClasses.Contains("DMC7")) emcaltrgtype[0]=1;
+      if(trgClasses.Contains("EMC7")) emcaltrgtype[1]=1;
+      if(trgClasses.Contains("DMC7")) emcaltrgtype[2]=1;
+      if(trgClasses.Contains("EMC1")||trgClasses.Contains("DMC1")) emcaltrgtype[3]=1;
+      if(trgClasses.Contains("EMC1")) emcaltrgtype[4]=1;
+      if(trgClasses.Contains("DMC1")) emcaltrgtype[5]=1;
+      if(trgClasses.Contains("EG1")||trgClasses.Contains("EG2")||trgClasses.Contains("DG1")||trgClasses.Contains("DG2")) emcaltrgtype[6]=1;
+      if(trgClasses.Contains("EG1")) emcaltrgtype[7]=1;
+      if(trgClasses.Contains("EG2")) emcaltrgtype[8]=1;
+      if(trgClasses.Contains("DG1")) emcaltrgtype[9]=1;
+      if(trgClasses.Contains("DG2")) emcaltrgtype[10]=1;
+      if(trgClasses.Contains("EJ1")||trgClasses.Contains("EJ2")||trgClasses.Contains("DJ1")||trgClasses.Contains("DJ2")) emcaltrgtype[11]=1;
+      if(trgClasses.Contains("EJ1")) emcaltrgtype[12]=1;
+      if(trgClasses.Contains("EJ2")) emcaltrgtype[13]=1;
+      if(trgClasses.Contains("DJ1")) emcaltrgtype[14]=1;
+      if(trgClasses.Contains("DJ2")) emcaltrgtype[15]=1;
     }
   }
 
@@ -516,25 +547,31 @@ void AliAnalysisTaskReducedTreeMaker::UserExec(Option_t *option)
   // event statistics before any selection
   if(isPhysSel) {
     for(Int_t i=0;i<32;++i) 
-	if(isPhysSel & (UInt_t(1)<<i)) fEventsHistogram->Fill(0.,Double_t(i));
+      if(isPhysSel & (UInt_t(1)<<i)) fEventsHistogram->Fill(0.,Double_t(i));
     for(Int_t i=0;i<5;++i)
-        if(trdtrgtype[i]!=0) fTRDEventsHistogram->Fill(0.,i);
+      if(trdtrgtype[i]!=0) fTRDEventsHistogram->Fill(0.,i);
+    for(Int_t i=0;i<16;++i)
+      if(emcaltrgtype[i]!=0) fEMCalEventsHistogram->Fill(0.,i);
   }
   else{
       fEventsHistogram->Fill(0.,-1.);
       fTRDEventsHistogram->Fill(0.,-1.);
+      fEMCalEventsHistogram->Fill(0.,-1.);
   }
   fEventsHistogram->Fill(0.,-2.);
   fTRDEventsHistogram->Fill(0.,-2.);
+  fEMCalEventsHistogram->Fill(0.,-2.);
   for (Int_t i=0;i<nCentEstimators;++i)
 	  ((TH2I*)fCentEventsList->At(i))->Fill(0.,isOldCent?centrality->GetCentralityPercentile(Form("%s",estimatorNames[i])):multSelection->GetMultiplicityPercentile(Form("%s",estimatorNames[i])));
 
 	// rejected due to physics selection
   if(fSelectPhysics && !isPhysSel) {
-     fEventsHistogram->Fill(2., -1.);
-     fEventsHistogram->Fill(2., -2.);
-     fTRDEventsHistogram->Fill(2., -1.);
-     fTRDEventsHistogram->Fill(2., -2.);
+    fEventsHistogram->Fill(2., -1.);
+    fEventsHistogram->Fill(2., -2.);
+    fTRDEventsHistogram->Fill(2., -1.);
+    fTRDEventsHistogram->Fill(2., -2.);
+    fEMCalEventsHistogram->Fill(2., -1.);
+    fEMCalEventsHistogram->Fill(2., -2.);
 		for (Int_t i=0;i<nCentEstimators;++i)
 			((TH2I*)fCentEventsList->At(i))->Fill(2.,isOldCent?centrality->GetCentralityPercentile(Form("%s",estimatorNames[i])):multSelection->GetMultiplicityPercentile(Form("%s",estimatorNames[i])));
 		PostData(3, fEventsList);
@@ -545,44 +582,53 @@ void AliAnalysisTaskReducedTreeMaker::UserExec(Option_t *option)
   // NOTE: if physics selection was not applied (as requested by user) then we can still have events with PS not fulfilled 
   if(isPhysSel) {
      for(Int_t i=0;i<32;++i) 
-	 if(isPhysSel & (UInt_t(1)<<i)) fEventsHistogram->Fill(1.,Double_t(i));
-     		for(Int_t i=0;i<5;++i)
-	 if(trdtrgtype[i]!=0) fTRDEventsHistogram->Fill(1.,i);
-  }
-  else{
-      fEventsHistogram->Fill(1.,-1.);
-      fTRDEventsHistogram->Fill(1.,-1.);
+       if(isPhysSel & (UInt_t(1)<<i)) fEventsHistogram->Fill(1.,Double_t(i));
+    for(Int_t i=0;i<5;++i)
+      if(trdtrgtype[i]!=0) fTRDEventsHistogram->Fill(1.,i);
+    for(Int_t i=0;i<16;++i)
+      if(emcaltrgtype[i]!=0) fEMCalEventsHistogram->Fill(1.,i);
+  } else{
+    fEventsHistogram->Fill(1.,-1.);
+    fTRDEventsHistogram->Fill(1.,-1.);
+    fEMCalEventsHistogram->Fill(1.,-1.);
   }
   fEventsHistogram->Fill(1.,-2.);
   fTRDEventsHistogram->Fill(1.,-2.);
+  fEMCalEventsHistogram->Fill(1.,-2.);
 	for (Int_t i=0;i<nCentEstimators;++i)
 		((TH2I*)fCentEventsList->At(i))->Fill(1.,isOldCent?centrality->GetCentralityPercentile(Form("%s",estimatorNames[i])):multSelection->GetMultiplicityPercentile(Form("%s",estimatorNames[i])));
 
   // event statistics after physics selection and trigger selection
   if(isPhysAndTrigSel) {
      for(Int_t i=0;i<32;++i) 
-	 if(isPhysSel & (UInt_t(1)<<i)) fEventsHistogram->Fill(3.,Double_t(i));
+       if(isPhysSel & (UInt_t(1)<<i)) fEventsHistogram->Fill(3.,Double_t(i));
      for(Int_t i=0;i<5;++i)
-	 if(trdtrgtype[i]!=0) fTRDEventsHistogram->Fill(3.,i);
-     fEventsHistogram->Fill(3.,-2.);   
-     fTRDEventsHistogram->Fill(3.,-2.);
+       if(trdtrgtype[i]!=0) fTRDEventsHistogram->Fill(3.,i);
+    for(Int_t i=0;i<16;++i)
+      if(emcaltrgtype[i]!=0) fEMCalEventsHistogram->Fill(3.,i);
+    fEventsHistogram->Fill(3.,-2.);
+    fTRDEventsHistogram->Fill(3.,-2.);
+    fEMCalEventsHistogram->Fill(3.,-2.);
 		for (Int_t i=0;i<nCentEstimators;++i)
 			((TH2I*)fCentEventsList->At(i))->Fill(3.,isOldCent?centrality->GetCentralityPercentile(Form("%s",estimatorNames[i])):multSelection->GetMultiplicityPercentile(Form("%s",estimatorNames[i])));
   }
   else {
-     // reject events which do not fulfill the requested trigger mask
-     if(isPhysSel) {
-        for(Int_t i=0;i<32;++i) 
-	    if(isPhysSel & (UInt_t(1)<<i)) fEventsHistogram->Fill(4.,Double_t(i));
-	for(Int_t i=0;i<5;++i)
-	    if(trdtrgtype[i]!=0) fTRDEventsHistogram->Fill(4.,i);
-     }
-     else{
-	 fEventsHistogram->Fill(4.,-1.);
-	 fTRDEventsHistogram->Fill(4.,-1.);
-     }
-     fEventsHistogram->Fill(4.,-2.);
-     fTRDEventsHistogram->Fill(4.,-2.);
+    // reject events which do not fulfill the requested trigger mask
+    if(isPhysSel) {
+      for(Int_t i=0;i<32;++i)
+        if(isPhysSel & (UInt_t(1)<<i)) fEventsHistogram->Fill(4.,Double_t(i));
+      for(Int_t i=0;i<5;++i)
+        if(trdtrgtype[i]!=0) fTRDEventsHistogram->Fill(4.,i);
+      for(Int_t i=0;i<16;++i)
+        if(emcaltrgtype[i]!=0) fEMCalEventsHistogram->Fill(4.,i);
+    } else{
+      fEventsHistogram->Fill(4.,-1.);
+      fTRDEventsHistogram->Fill(4.,-1.);
+      fEMCalEventsHistogram->Fill(4.,-1.);
+    }
+    fEventsHistogram->Fill(4.,-2.);
+    fTRDEventsHistogram->Fill(4.,-2.);
+    fEMCalEventsHistogram->Fill(4.,-2.);
 		for (Int_t i=0;i<nCentEstimators;++i)
 			((TH2I*)fCentEventsList->At(i))->Fill(4.,isOldCent?centrality->GetCentralityPercentile(Form("%s",estimatorNames[i])):multSelection->GetMultiplicityPercentile(Form("%s",estimatorNames[i])));
 		PostData(3, fEventsList);
@@ -591,73 +637,85 @@ void AliAnalysisTaskReducedTreeMaker::UserExec(Option_t *option)
 
 	// rejected by pileup selection
   if(fRejectPileup && InputEvent()->IsPileupFromSPD(3,0.8,3.,2.,5.)){
-     if(isPhysSel) {
-        for(Int_t i=0;i<32;++i) 
-	    	if(isPhysSel & (UInt_t(1)<<i)) fEventsHistogram->Fill(6.,Double_t(i));
-	for(Int_t i=0;i<5;++i)
+    if(isPhysSel) {
+      for(Int_t i=0;i<32;++i)
+        if(isPhysSel & (UInt_t(1)<<i)) fEventsHistogram->Fill(6.,Double_t(i));
+      for(Int_t i=0;i<5;++i)
         if(trdtrgtype[i]!=0) fTRDEventsHistogram->Fill(6.,i);
-     }
-     else{
-	 fEventsHistogram->Fill(6.,-1.);
-	 fTRDEventsHistogram->Fill(6.,-1.);
-     }
-     fEventsHistogram->Fill(6.,-2.);   
-     fTRDEventsHistogram->Fill(6.,-2.);
-		for (Int_t i=0;i<nCentEstimators;++i)
-			((TH2I*)fCentEventsList->At(i))->Fill(6.,isOldCent?centrality->GetCentralityPercentile(Form("%s",estimatorNames[i])):multSelection->GetMultiplicityPercentile(Form("%s",estimatorNames[i])));
-		PostData(3, fEventsList);
-     return;
+      for(Int_t i=0;i<16;++i)
+        if(emcaltrgtype[i]!=0) fEMCalEventsHistogram->Fill(6.,i);
+    } else{
+      fEventsHistogram->Fill(6.,-1.);
+      fTRDEventsHistogram->Fill(6.,-1.);
+      fEMCalEventsHistogram->Fill(6.,-1.);
+    }
+    fEventsHistogram->Fill(6.,-2.);
+    fTRDEventsHistogram->Fill(6.,-2.);
+    fEMCalEventsHistogram->Fill(6.,-2.);
+    for (Int_t i=0;i<nCentEstimators;++i)
+      ((TH2I*)fCentEventsList->At(i))->Fill(6.,isOldCent?centrality->GetCentralityPercentile(Form("%s",estimatorNames[i])):multSelection->GetMultiplicityPercentile(Form("%s",estimatorNames[i])));
+    PostData(3, fEventsList);
+    return;
   }
 	else { 	// accepted pileup selection
-     if(isPhysSel) {
-        for(Int_t i=0;i<32;++i) 
-	    if(isPhysSel & (UInt_t(1)<<i)) fEventsHistogram->Fill(5.,Double_t(i));
-	for(Int_t i=0;i<5;++i)
-	    if(trdtrgtype[i]!=0) fTRDEventsHistogram->Fill(5.,i);
-     }
-     else{
-	 fEventsHistogram->Fill(5.,-1.);
-	 fTRDEventsHistogram->Fill(5.,-1.);
-     }
-     fEventsHistogram->Fill(5.,-2.);
-     fTRDEventsHistogram->Fill(5.,-2.);
+    if(isPhysSel) {
+      for(Int_t i=0;i<32;++i)
+        if(isPhysSel & (UInt_t(1)<<i)) fEventsHistogram->Fill(5.,Double_t(i));
+      for(Int_t i=0;i<5;++i)
+        if(trdtrgtype[i]!=0) fTRDEventsHistogram->Fill(5.,i);
+      for(Int_t i=0;i<16;++i)
+        if(emcaltrgtype[i]!=0) fEMCalEventsHistogram->Fill(5.,i);
+    } else{
+       fEventsHistogram->Fill(5.,-1.);
+       fTRDEventsHistogram->Fill(5.,-1.);
+       fEMCalEventsHistogram->Fill(5.,-1.);
+    }
+    fEventsHistogram->Fill(5.,-2.);
+    fTRDEventsHistogram->Fill(5.,-2.);
+    fEMCalEventsHistogram->Fill(5.,-2.);
 		for (Int_t i=0;i<nCentEstimators;++i)
 			((TH2I*)fCentEventsList->At(i))->Fill(5.,isOldCent?centrality->GetCentralityPercentile(Form("%s",estimatorNames[i])):multSelection->GetMultiplicityPercentile(Form("%s",estimatorNames[i])));
   }  
   
   // user defined event filter
   if(fEventFilter && !fEventFilter->IsSelected(InputEvent())) {
-     // event statistics for events failing selection cuts
-     if(isPhysSel) {
-        for(Int_t i=0;i<32;++i) 
-	    if(isPhysSel & (UInt_t(1)<<i)) fEventsHistogram->Fill(8.,Double_t(i));
-	for(Int_t i=0;i<5;++i)
+    // event statistics for events failing selection cuts
+    if(isPhysSel) {
+      for(Int_t i=0;i<32;++i)
+        if(isPhysSel & (UInt_t(1)<<i)) fEventsHistogram->Fill(8.,Double_t(i));
+      for(Int_t i=0;i<5;++i)
         if(trdtrgtype[i]!=0) fTRDEventsHistogram->Fill(8.,i);
-     }
-     else{
-	 fEventsHistogram->Fill(8.,-1.);
-	 fTRDEventsHistogram->Fill(8.,-1.);
-     }
-     fEventsHistogram->Fill(8.,-2.);
-     fTRDEventsHistogram->Fill(8.,-2.);
+      for(Int_t i=0;i<16;++i)
+        if(emcaltrgtype[i]!=0) fEMCalEventsHistogram->Fill(8.,i);
+    } else{
+      fEventsHistogram->Fill(8.,-1.);
+      fTRDEventsHistogram->Fill(8.,-1.);
+      fEMCalEventsHistogram->Fill(8.,-1.);
+    }
+    fEventsHistogram->Fill(8.,-2.);
+    fTRDEventsHistogram->Fill(8.,-2.);
+    fEMCalEventsHistogram->Fill(8.,-2.);
 		for (Int_t i=0;i<nCentEstimators;++i)
-			((TH2I*)fCentEventsList->At(i))->Fill(8.,isOldCent?centrality->GetCentralityPercentile(Form("%s",estimatorNames[i])):multSelection->GetMultiplicityPercentile(Form("%s",estimatorNames[i])));
+      ((TH2I*)fCentEventsList->At(i))->Fill(8.,isOldCent?centrality->GetCentralityPercentile(Form("%s",estimatorNames[i])):multSelection->GetMultiplicityPercentile(Form("%s",estimatorNames[i])));
 		PostData(3, fEventsList);
-     return;
+    return;
   }
   else {
-     if(isPhysSel) {
-        for(Int_t i=0;i<32;++i) 
-	    if(isPhysSel & (UInt_t(1)<<i)) fEventsHistogram->Fill(7.,Double_t(i));
-	for(Int_t i=0;i<5;++i)
+    if(isPhysSel) {
+      for(Int_t i=0;i<32;++i)
+        if(isPhysSel & (UInt_t(1)<<i)) fEventsHistogram->Fill(7.,Double_t(i));
+      for(Int_t i=0;i<5;++i)
         if(trdtrgtype[i]!=0) fTRDEventsHistogram->Fill(7.,i);
-     }
-     else{
-	 fEventsHistogram->Fill(7.,-1.);
-	 fTRDEventsHistogram->Fill(7.,-1.);
-     }
-     fEventsHistogram->Fill(7.,-2.);
-     fTRDEventsHistogram->Fill(7.,-2.);
+      for(Int_t i=0;i<16;++i)
+        if(emcaltrgtype[i]!=0) fEMCalEventsHistogram->Fill(7.,i);
+    } else{
+      fEventsHistogram->Fill(7.,-1.);
+      fTRDEventsHistogram->Fill(7.,-1.);
+      fEMCalEventsHistogram->Fill(7.,-1.);
+    }
+    fEventsHistogram->Fill(7.,-2.);
+    fTRDEventsHistogram->Fill(7.,-2.);
+    fEMCalEventsHistogram->Fill(7.,-2.);
 		for (Int_t i=0;i<nCentEstimators;++i)
 			((TH2I*)fCentEventsList->At(i))->Fill(7.,isOldCent?centrality->GetCentralityPercentile(Form("%s",estimatorNames[i])):multSelection->GetMultiplicityPercentile(Form("%s",estimatorNames[i])));
   }
@@ -692,78 +750,91 @@ void AliAnalysisTaskReducedTreeMaker::UserExec(Option_t *option)
     
     // write a random sample of events with a downscale of fScaleDownEvents
     if(gRandom->Rndm()<fScaleDownEvents) {
-       writeEvent = kTRUE;
-       fReducedEvent->fEventTag |= (ULong64_t(1)<<14);                    // mark unbiased events
+      writeEvent = kTRUE;
+      fReducedEvent->fEventTag |= (ULong64_t(1)<<14);                    // mark unbiased events
        
-       Int_t binToFill = 11;
-       if(nTracks>=fMinSelectedTracks && nTracks2>=fMinSelectedBaseTracks) binToFill = 9;
-       if(nTracks<fMinSelectedTracks && nTracks2>=fMinSelectedBaseTracks) binToFill = 10;
+      Int_t binToFill = 11;
+      if(nTracks>=fMinSelectedTracks && nTracks2>=fMinSelectedBaseTracks) binToFill = 9;
+      if(nTracks<fMinSelectedTracks && nTracks2>=fMinSelectedBaseTracks) binToFill = 10;
        
-       if(isPhysSel) {
-          for(Int_t i=0;i<32;++i) 
-	      if(isPhysSel & (UInt_t(1)<<i)) fEventsHistogram->Fill(Double_t(binToFill),Double_t(i));
-	  for(Int_t i=0;i<5;++i)
-	      if(trdtrgtype[i]!=0) fTRDEventsHistogram->Fill(Double_t(binToFill),i);
-       }
-       else{
-	   fEventsHistogram->Fill(Double_t(binToFill), -1.);
-	   fTRDEventsHistogram->Fill(Double_t(binToFill), -1.);
-       }
-       fEventsHistogram->Fill(Double_t(binToFill),-2.);
-       fTRDEventsHistogram->Fill(Double_t(binToFill),-2.);
+      if(isPhysSel) {
+        for(Int_t i=0;i<32;++i)
+          if(isPhysSel & (UInt_t(1)<<i)) fEventsHistogram->Fill(Double_t(binToFill),Double_t(i));
+        for(Int_t i=0;i<5;++i)
+          if(trdtrgtype[i]!=0) fTRDEventsHistogram->Fill(Double_t(binToFill),i);
+        for(Int_t i=0;i<16;++i)
+          if(emcaltrgtype[i]!=0) fEMCalEventsHistogram->Fill(Double_t(binToFill),i);
+      }
+      else{
+        fEventsHistogram->Fill(Double_t(binToFill), -1.);
+        fTRDEventsHistogram->Fill(Double_t(binToFill), -1.);
+        fEMCalEventsHistogram->Fill(Double_t(binToFill), -1.);
+      }
+      fEventsHistogram->Fill(Double_t(binToFill),-2.);
+      fTRDEventsHistogram->Fill(Double_t(binToFill),-2.);
+      fEMCalEventsHistogram->Fill(Double_t(binToFill),-2.);
 			for (Int_t i=0;i<nCentEstimators;++i)
 				((TH2I*)fCentEventsList->At(i))->Fill(Double_t(binToFill),isOldCent?centrality->GetCentralityPercentile(Form("%s",estimatorNames[i])):multSelection->GetMultiplicityPercentile(Form("%s",estimatorNames[i])));
     }
     
     // if the event was not already selected to be written, check that it fullfills the conditions
     if(!writeEvent && nTracks>=fMinSelectedTracks && nTracks2>=fMinSelectedBaseTracks) {
-       writeEvent = kTRUE;
-       if(isPhysSel) {
-          for(Int_t i=0;i<32;++i) 
-	      if(isPhysSel & (UInt_t(1)<<i)) fEventsHistogram->Fill(9.,Double_t(i));
-	  for(Int_t i=0;i<5;++i)
-	      if(trdtrgtype[i]!=0) fTRDEventsHistogram->Fill(9.,i);
-       }
-       else{
-	   fEventsHistogram->Fill(9., -1.);
-	   fTRDEventsHistogram->Fill(9., -1.);
-       }
-       fEventsHistogram->Fill(9.,-2.);
-       fTRDEventsHistogram->Fill(9.,-2.);
-			for (Int_t i=0;i<nCentEstimators;++i)
-				((TH2I*)fCentEventsList->At(i))->Fill(9.,isOldCent?centrality->GetCentralityPercentile(Form("%s",estimatorNames[i])):multSelection->GetMultiplicityPercentile(Form("%s",estimatorNames[i])));
+      writeEvent = kTRUE;
+      if(isPhysSel) {
+        for(Int_t i=0;i<32;++i)
+          if(isPhysSel & (UInt_t(1)<<i)) fEventsHistogram->Fill(9.,Double_t(i));
+        for(Int_t i=0;i<5;++i)
+          if(trdtrgtype[i]!=0) fTRDEventsHistogram->Fill(9.,i);
+        for(Int_t i=0;i<16;++i)
+          if(emcaltrgtype[i]!=0) fEMCalEventsHistogram->Fill(9.,i);
+      } else{
+        fEventsHistogram->Fill(9., -1.);
+        fTRDEventsHistogram->Fill(9., -1.);
+        fEMCalEventsHistogram->Fill(9., -1.);
+      }
+      fEventsHistogram->Fill(9.,-2.);
+      fTRDEventsHistogram->Fill(9.,-2.);
+      fEMCalEventsHistogram->Fill(9.,-2.);
+      for (Int_t i=0;i<nCentEstimators;++i)
+        ((TH2I*)fCentEventsList->At(i))->Fill(9.,isOldCent?centrality->GetCentralityPercentile(Form("%s",estimatorNames[i])):multSelection->GetMultiplicityPercentile(Form("%s",estimatorNames[i])));
     }
     
     // count the events not to be written
     if(!writeEvent && nTracks<fMinSelectedTracks && nTracks2>=fMinSelectedBaseTracks) {
-       if(isPhysSel) {
-          for(Int_t i=0;i<32;++i) 
-	      if(isPhysSel & (UInt_t(1)<<i)) fEventsHistogram->Fill(12.,Double_t(i));
-	  for(Int_t i=0;i<5;++i)
-	      if(trdtrgtype[i]!=0) fTRDEventsHistogram->Fill(12.,i);
-       }
-       else{
-          fEventsHistogram->Fill(12., -1.);
-	  fTRDEventsHistogram->Fill(12., -1.);
-       }
-       fEventsHistogram->Fill(12.,-2.);
-       fTRDEventsHistogram->Fill(12.,-2.);
+      if(isPhysSel) {
+        for(Int_t i=0;i<32;++i)
+          if(isPhysSel & (UInt_t(1)<<i)) fEventsHistogram->Fill(12.,Double_t(i));
+        for(Int_t i=0;i<5;++i)
+          if(trdtrgtype[i]!=0) fTRDEventsHistogram->Fill(12.,i);
+        for(Int_t i=0;i<16;++i)
+          if(emcaltrgtype[i]!=0) fEMCalEventsHistogram->Fill(12.,i);
+      } else{
+        fEventsHistogram->Fill(12., -1.);
+        fTRDEventsHistogram->Fill(12., -1.);
+        fEMCalEventsHistogram->Fill(12., -1.);
+      }
+      fEventsHistogram->Fill(12.,-2.);
+      fTRDEventsHistogram->Fill(12.,-2.);
+      fEMCalEventsHistogram->Fill(12.,-2.);
 			for (Int_t i=0;i<nCentEstimators;++i)
 				((TH2I*)fCentEventsList->At(i))->Fill(12.,isOldCent?centrality->GetCentralityPercentile(Form("%s",estimatorNames[i])):multSelection->GetMultiplicityPercentile(Form("%s",estimatorNames[i])));
     }
     if(!writeEvent && nTracks<fMinSelectedTracks && nTracks2<fMinSelectedBaseTracks) {
-       if(isPhysSel) {
-          for(Int_t i=0;i<32;++i) 
-	      if(isPhysSel & (UInt_t(1)<<i)) fEventsHistogram->Fill(13.,Double_t(i));
-	  for(Int_t i=0;i<5;++i)
-	      if(trdtrgtype[i]!=0) fTRDEventsHistogram->Fill(13.,i);
-       }
-       else{
-	   fEventsHistogram->Fill(13., -1.);
-	   fTRDEventsHistogram->Fill(13., -1.);
-       }
-       fEventsHistogram->Fill(13.,-2.);
-       fTRDEventsHistogram->Fill(13.,-2.);
+      if(isPhysSel) {
+        for(Int_t i=0;i<32;++i)
+          if(isPhysSel & (UInt_t(1)<<i)) fEventsHistogram->Fill(13.,Double_t(i));
+        for(Int_t i=0;i<5;++i)
+          if(trdtrgtype[i]!=0) fTRDEventsHistogram->Fill(13.,i);
+        for(Int_t i=0;i<16;++i)
+          if(emcaltrgtype[i]!=0) fEMCalEventsHistogram->Fill(13.,i);
+      } else{
+        fEventsHistogram->Fill(13., -1.);
+        fTRDEventsHistogram->Fill(13., -1.);
+        fEMCalEventsHistogram->Fill(13., -1.);
+      }
+      fEventsHistogram->Fill(13.,-2.);
+      fTRDEventsHistogram->Fill(13.,-2.);
+      fEMCalEventsHistogram->Fill(13.,-2.);
 			for (Int_t i=0;i<nCentEstimators;++i)
 				((TH2I*)fCentEventsList->At(i))->Fill(13.,isOldCent?centrality->GetCentralityPercentile(Form("%s",estimatorNames[i])):multSelection->GetMultiplicityPercentile(Form("%s",estimatorNames[i])));
     }
