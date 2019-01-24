@@ -66,6 +66,13 @@ set(SRCS
   AliEmcalEmbeddingQA.cxx
   )
 
+
+if(RooUnfold_FOUND)
+    get_target_property(ROOUNFOLD_INCLUDE_DIR RooUnfold::RooUnfold INTERFACE_INCLUDE_DIRECTORIES)
+    include_directories(${ROOUNFOLD_INCLUDE_DIR})
+    add_definitions("-DWITH_ROOUNFOLD")
+endif(RooUnfold_FOUND)
+
 # Headers from sources
 string(REPLACE ".cxx" ".h" HDRS "${SRCS}")
 set(HDRS
@@ -85,6 +92,10 @@ add_library_tested(${MODULE} SHARED  ${SRCS} ${HDRS} ${MODULE}LinkDef.h G__${MOD
 # Generate the ROOT map
 # Dependecies
 set(LIBDEPS ANALYSIS ANALYSISalice AOD OADB CDB EMCALrec EMCALUtils ESD PWGTools STEER STEERBase Tender)
+if(RooUnfold_FOUND)
+    get_target_property(ROOUNFOLD_LIBRARY RooUnfold::RooUnfold IMPORTED_LOCATION)
+    set(LIBDEPS ${LIBDEPS} ${ROOUNFOLD_LIBRARY})
+endif(RooUnfold_FOUND)
 generate_rootmap("${MODULE}" "${LIBDEPS}" "${CMAKE_CURRENT_SOURCE_DIR}/${MODULE}LinkDef.h")
 
 # Generate a PARfile target for this library
