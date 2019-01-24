@@ -112,4 +112,6 @@
 // spherocity analysis
 #pragma link C++ class AliTransverseEventShape+;
 #pragma link C++ class AliSpherocityUtils+;
+// lightweight class for spherocity estimation, used in 13TeV pp
+#pragma link C++ class AliSpherocityEstimator+;
 #endif
