@@ -76,6 +76,8 @@
 using std::cout;
 using std::endl;
 
+#include <dlfcn.h>
+
 /// \cond CLASSIMP
 ClassImp(AliAnalysisTaskSELc2V0bachelorTMVAApp);
 /// \endcond
@@ -910,6 +912,19 @@ void AliAnalysisTaskSELc2V0bachelorTMVAApp::UserCreateOutputObjects() {
  
   PostData(7, fListWeight);
 
+  // creating the BDT reader
+  std::vector<std::string> inputNamesVec;
+  TObjArray *tokens = fNamesTMVAVar.Tokenize(",");
+  for(Int_t i=0; i<tokens->GetEntries(); i++){
+    TString variable = ((TObjString*)(tokens->At(i)))->String();
+    std::string tmpvar = variable.Data();
+    inputNamesVec.push_back(tmpvar);
+  }
+  void* lib = dlopen(fTMVAlibName.Data(), RTLD_NOW);
+  void* p = dlsym(lib, Form("ReadBDT_Default_maker%s", fTMVAlibPtBin.Data()));
+  IClassifierReader* (*maker1)(std::vector<std::string>&) = (IClassifierReader* (*)(std::vector<std::string>&)) p;
+  fBDTReader = maker1(inputNamesVec);
+  
   return;
 }
 
