@@ -15,9 +15,14 @@
 
 #include "TList.h"
 #include "TH1.h"
+#include "TH2.h"
 #include "THnBase.h"
 #include "AliLog.h"
 #include "AliEmcalList.h"
+
+#ifdef WITH_ROOUNFOLD
+#include "RooUnfoldResponse.h"
+#endif
 
 /// \cond CLASSIMP
 ClassImp(AliEmcalList)
@@ -117,12 +122,21 @@ void AliEmcalList::ScaleAllHistograms(TCollection *hlist, Double_t scalingFactor
       // Handle TH1/TH2/TH3
       histogram->Sumw2();
       histogram->Scale(scalingFactor);
-    } else {
+    } else if(listObject->InheritsFrom(THnBase::Class())){
       // Handle THn
       THnBase *histogramND = dynamic_cast<THnBase *>(listObject);
       histogramND->Sumw2();
       histogramND->Scale(scalingFactor);
+    } 
+#ifdef WITH_ROOUNFOLD
+    else if(listObject->InheritsFrom(RooUnfoldResponse::Class())){
+      RooUnfoldResponse *response = dynamic_cast<RooUnfoldResponse *>(listObject);
+      if(auto measured = response->Hmeasured()) measured->Scale(scalingFactor);
+      if(auto fakes = response->Hfakes()) fakes->Scale(scalingFactor);
+      if(auto truth = response->Htruth()) truth->Scale(scalingFactor);
+      if(auto responseND = response->Hresponse()) responseND->Scale(scalingFactor);
     }
+#endif
     AliInfo(Form("Histogram %s (%s) was scaled...", listObject->GetName(), histogram_class.Data()));
 
   }
