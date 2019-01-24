@@ -1503,6 +1503,17 @@ void InitHistograms(AliDielectron *die, Int_t cutDefinition)
   histos->UserHistogram("Track","TOFnSigma_MomEle","TOF number of sigmas Electrons vs Momentum;Mom;TOFsigmaEle"                           ,     200,0.,10.,300,-30., 30. ,AliDielectronVarManager::kPIn,AliDielectronVarManager::kTOFnSigmaEle);
 
   //add histograms to pair classes
+
+  histos->UserHistogram("Pair", 
+			"InvMass_QnTPCrpH2","Inv.Mass:QnTPCrpH2;Inv. Mass (GeV/c^{2}); QnTPCrpH2",
+			500,0.,5.,200,-TMath::Pi(),TMath::Pi(),
+			AliDielectronVarManager::kM, AliDielectronVarManager::kQnTPCrpH2);
+  
+  histos->UserHistogram("Pair", 
+			"InvMass_PairPlaneMagInProTPC","Inv.Mass:PairPlaneMagInProTPC;Inv. Mass (GeV/c^{2}); kPairPlaneMagInProTPC",
+			500,0.,5.,200,-1,1,
+			AliDielectronVarManager::kM, AliDielectronVarManager::kPairPlaneMagInProTPC);
+  
   histos->UserHistogram("Pair", 
 			"InvMass_QnTPCDelta","Inv.Mass:QnTPC;Inv. Mass (GeV/c^{2}); kQnDeltaPhiTPCrpH2",
 			500,0.,5.,200,-TMath::Pi(),TMath::Pi(),

@@ -315,8 +315,9 @@ public:
     kRandomRP,                //Random reaction plane
     kDeltaPhiRandomRP,        //delta phi of the pair
 
-    kPairPlaneMagInPro,     // Inner Product of strong magnetic field and ee plane
-	kCos2PhiCS,              // Cosine of 2*phi in mother's rest frame in the Collins-Soper picture
+    kPairPlaneMagInPro,      // Inner Product of strong magnetic field and ee plane
+    kPairPlaneMagInProTPC,   // Inner Product of strong magnetic field and ee plane (from TPC correction framework)
+    kCos2PhiCS,              // Cosine of 2*phi in mother's rest frame in the Collins-Soper picture
     kCosTilPhiCS,            // Shifted phi depending on kThetaCS
     kCosPhiH2,               // cosine of pair phi for 2nd harmonic
     kSinPhiH2,               // sinus  of pair phi for 2nd harmonic
@@ -458,7 +459,7 @@ public:
     // kTPCsub1rpH2,             // TPC reaction plane of the Q vector for 2nd harmonic (corrected, sub event 1)
     // kTPCsub2xH2,              // TPC x-component of the Q vector for 2nd harmonic (corrected, sub event 2)
     // kTPCsub2yH2,              // TPC y-component of the Q vector for 2nd harmonic (corrected, sub event 2)
-    // kTPCsub2rpH2,             // TPC reaction plane of the Q vector for 2nd harmonic (corrected, sub event 2)
+    // kTPCsub2rpH2,             // TPC reaction plane of the Q vector for2nd harmonic (corrected, sub event 2)
     // kTPCsub12DiffH2,          // TPC reaction plane difference of sub event 1,2 for 2nd harmonic
     // kTPCsub12DiffH2Sin,       // TPC reaction plane difference of sub event 1,2 for 2nd harmonic, sinus term
     //
@@ -2379,6 +2380,9 @@ inline void AliDielectronVarManager::FillVarDielectronPair(const AliDielectronPa
     values[AliDielectronVarManager::kQnSPDrpH2FlowSPV2]    = uDielectronSP * qVec2SPD;
   }
 
+  // calculate inner Product of strong magnetic field (from TPC event plane, correction framework) and ee plane 
+  if(Req(kPairPlaneMagInProTPC)) values[AliDielectronVarManager::kPairPlaneMagInProTPC] = pair->PairPlaneMagInnerProduct(values[AliDielectronVarManager::kQnTPCrpH2]);
+  
 
 
   AliDielectronMC *mc = AliDielectronMC::Instance();
@@ -2837,9 +2841,9 @@ inline void AliDielectronVarManager::FillVarVEvent(const AliVEvent *event, Doubl
   // values[AliDielectronVarManager::kZDCACrpH1] = TMath::ATan2(ZDCqvec[2][1], ZDCqvec[2][0]);
   //
   // if(TMath::Abs(ZDCqvec[0][0] - 999.) < 1e-10 || TMath::Abs(ZDCqvec[0][1] - 999.) < 1e-10 || TMath::Abs(ZDCqvec[1][0] - 999.) < 1e-10 || TMath::Abs(ZDCqvec[1][1] - 999.) < 1e-10){
-  //   values[AliDielectronVarManager::kZDCArpH1] = 999;
-  //   values[AliDielectronVarManager::kZDCCrpH1] = 999;
-  //   values[AliDielectronVarManager::kZDCACrpH1] = 999;
+     //   values[AliDielectronVarManager::kZDCArpH1] = 999;
+     //   values[AliDielectronVarManager::kZDCCrpH1] = 999;
+     //values[AliDielectronVarManager::kZDCACrpH1] = 999;
   // }
 
 
