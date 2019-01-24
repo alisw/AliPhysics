@@ -59,6 +59,7 @@ AliAnalysisTaskSE *AddTaskFemtoDreamTrackSplit(
   }
 
   AliFemtoDreamEventCuts *evtCuts = AliFemtoDreamEventCuts::StandardCutsRun2();
+  evtCuts->SetMinimalBooking(true);
   evtCuts->CleanUpMult(false, false, false, true);
   evtCuts->SetMultVsCentPlots(MultvsCentPlot);
   if (SphericityRange != 0) {
@@ -104,6 +105,7 @@ AliAnalysisTaskSE *AddTaskFemtoDreamTrackSplit(
     TrackCuts->SetFilterBit(FilterBit);
   }
   TrackCuts->SetCutCharge(1);
+  TrackCuts->SetMinimalBooking(true);
   AliFemtoDreamTrackCuts *AntiTrackCuts =
       AliFemtoDreamTrackCuts::PrimProtonCuts(isMC, DCAPlots, CombSigma,
                                              ContributionSplitting);
@@ -115,6 +117,7 @@ AliAnalysisTaskSE *AddTaskFemtoDreamTrackSplit(
     AntiTrackCuts->SetFilterBit(FilterBit);
   }
   AntiTrackCuts->SetCutCharge(-1);
+  AntiTrackCuts->SetMinimalBooking(true);
   AliFemtoDreamv0Cuts *v0Cuts;
   AliFemtoDreamv0Cuts *Antiv0Cuts;
   AliFemtoDreamCascadeCuts *CascadeCuts;
@@ -132,6 +135,7 @@ AliAnalysisTaskSE *AddTaskFemtoDreamTrackSplit(
   v0Cuts->SetPDGCodePosDaug(2212);  // Proton
   v0Cuts->SetPDGCodeNegDaug(211);   // Pion
   v0Cuts->SetPDGCodev0(3122);       // Lambda
+  v0Cuts->SetMinimalBooking(true);
   Antiv0Cuts =
       AliFemtoDreamv0Cuts::LambdaCuts(isMC, CPAPlots, ContributionSplitting);
   AliFemtoDreamTrackCuts *PosAntiv0Daug =
@@ -145,6 +149,7 @@ AliAnalysisTaskSE *AddTaskFemtoDreamTrackSplit(
   Antiv0Cuts->SetPDGCodePosDaug(211);   // Pion
   Antiv0Cuts->SetPDGCodeNegDaug(2212);  // Proton
   Antiv0Cuts->SetPDGCodev0(-3122);      // Lambda
+  Antiv0Cuts->SetMinimalBooking(true);
 
   // Cascade Cuts
   CascadeCuts = AliFemtoDreamCascadeCuts::XiCuts(isMC, ContributionSplitting);
@@ -163,6 +168,7 @@ AliAnalysisTaskSE *AddTaskFemtoDreamTrackSplit(
   CascadeCuts->SetPDGCodePosDaug(2212);
   CascadeCuts->SetPDGCodeNegDaug(-211);
   CascadeCuts->SetPDGCodeBach(-211);
+  CascadeCuts->SetMinimalBooking(true);
 
   AntiCascadeCuts =
       AliFemtoDreamCascadeCuts::XiCuts(isMC, ContributionSplitting);
@@ -184,13 +190,7 @@ AliAnalysisTaskSE *AddTaskFemtoDreamTrackSplit(
   AntiCascadeCuts->SetPDGCodePosDaug(211);
   AntiCascadeCuts->SetPDGCodeNegDaug(-2212);
   AntiCascadeCuts->SetPDGCodeBach(-211);
-
-  if (RunNumberQA) {
-    v0Cuts->SetRunNumberQA(265309, 267167);
-    Antiv0Cuts->SetRunNumberQA(265309, 267167);
-    CascadeCuts->SetRunNumberQA(265309, 267167);
-    AntiCascadeCuts->SetRunNumberQA(265309, 267167);
-  }
+  AntiCascadeCuts->SetMinimalBooking(true);
 
   // Thanks, CINT - will not compile due to an illegal constructor
   // std::vector<int> PDGParticles ={2212,2212,3122,3122,3312,3312};
