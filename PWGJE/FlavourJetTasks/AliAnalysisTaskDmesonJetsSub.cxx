@@ -2811,7 +2811,7 @@ void AliAnalysisTaskDmesonJetsSub::AnalysisEngine::IterativeDeclustering(Int_t i
       fastjet::PseudoJet jj = output_jets[0];
       fastjet::PseudoJet j1; 
       fastjet::PseudoJet j2;  
-    
+      
       while(jj.has_parents(j1,j2)){
          nall = nall + 1;
          if(j1.perp() < j2.perp()) std::swap(j1,j2);
@@ -2837,7 +2837,9 @@ void AliAnalysisTaskDmesonJetsSub::AnalysisEngine::IterativeDeclustering(Int_t i
                 jj=j1;
       }
 
-         
+      if(nall==0){ double lundEntrieszero[10]={0,0,output_jets[0].perp(),0,type,0,0,invmass,0,TMath::Abs(output_jets[0].eta())};
+	h->Fill(lundEntrieszero);}
+      
       } catch (fastjet::Error) { /*return -1;*/ }
                        
 }
