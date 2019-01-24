@@ -24,8 +24,8 @@
 //=========================================================================//
 
 
-#ifndef AliEbyEPhiDistNewD_H
-#define AliEbyEPhiDistNewD_H
+#ifndef AliEbyEPhiDistNew_H
+#define AliEbyEPhiDistNew_H
 
 class TList;
 class TH2F;
@@ -44,11 +44,11 @@ class AliPIDCombined;
 class AliAnalysisUtils;
 
 
-class AliEbyEPhiDistNewD: public AliAnalysisTaskSE {
+class AliEbyEPhiDistNew: public AliAnalysisTaskSE {
 public:
-AliEbyEPhiDistNewD();
-AliEbyEPhiDistNewD( const char *name );
-  virtual ~AliEbyEPhiDistNewD();
+AliEbyEPhiDistNew();
+AliEbyEPhiDistNew( const char *name );
+  virtual ~AliEbyEPhiDistNew();
 
   virtual void   UserCreateOutputObjects();
   virtual void   UserExec(Option_t *option);
@@ -215,9 +215,9 @@ AliEbyEPhiDistNewD( const char *name );
   void     CreatePhiHist();
 
   //________________________________
-  AliEbyEPhiDistNewD(const AliEbyEPhiDistNewD&);
-  AliEbyEPhiDistNewD& operator = (const AliEbyEPhiDistNewD&);
-  ClassDef(AliEbyEPhiDistNewD, 2);
+  AliEbyEPhiDistNew(const AliEbyEPhiDistNew&);
+  AliEbyEPhiDistNew& operator = (const AliEbyEPhiDistNew&);
+  ClassDef(AliEbyEPhiDistNew, 2);
 };
 
 #endif

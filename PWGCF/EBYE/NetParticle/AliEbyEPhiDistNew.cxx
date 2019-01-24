@@ -58,15 +58,15 @@
 #include "AliAODEvent.h"
 #include "AliAODMCParticle.h"
 #include "AliCentrality.h"
-#include "AliEbyEPhiDistNewD.h"
+#include "AliEbyEPhiDistNew.h"
 
 using std::endl;
 using std::cout;
 
-ClassImp(AliEbyEPhiDistNewD)
+ClassImp(AliEbyEPhiDistNew)
 
 //-----------------------------------------------------------------------
-AliEbyEPhiDistNewD::AliEbyEPhiDistNewD() 
+AliEbyEPhiDistNew::AliEbyEPhiDistNew() 
 : AliAnalysisTaskSE(), 
   fThnList(NULL),
   fInputHandler(NULL),
@@ -171,7 +171,7 @@ AliEbyEPhiDistNewD::AliEbyEPhiDistNewD()
 }
 
 //-----------------------------------------------------------------------
-AliEbyEPhiDistNewD::AliEbyEPhiDistNewD( const char *name ) 
+AliEbyEPhiDistNew::AliEbyEPhiDistNew( const char *name ) 
   : AliAnalysisTaskSE(name), 
     fThnList(NULL),
     fInputHandler(NULL),
@@ -274,7 +274,7 @@ AliEbyEPhiDistNewD::AliEbyEPhiDistNewD( const char *name )
 }
 
 //---------------------------------------------------------------------------------
-AliEbyEPhiDistNewD::~AliEbyEPhiDistNewD() {
+AliEbyEPhiDistNew::~AliEbyEPhiDistNew() {
   
   if (!AliAnalysisManager::GetAnalysisManager()->IsProofMode()) {
     delete fThnList;
@@ -285,7 +285,7 @@ AliEbyEPhiDistNewD::~AliEbyEPhiDistNewD() {
 }
 
 //---------------------------------------------------------------------------------
-void AliEbyEPhiDistNewD::UserCreateOutputObjects(){
+void AliEbyEPhiDistNew::UserCreateOutputObjects(){
   
     fInputHandler = dynamic_cast<AliVEventHandler *>(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler());
     if(!fInputHandler){
@@ -356,7 +356,7 @@ void AliEbyEPhiDistNewD::UserCreateOutputObjects(){
 }
 
 //----------------------------------------------------------------------------------
-void AliEbyEPhiDistNewD::CreatePhiHist() {
+void AliEbyEPhiDistNew::CreatePhiHist() {
 
   if(fIsQA && fPidType != 0){
     
@@ -606,13 +606,13 @@ void AliEbyEPhiDistNewD::CreatePhiHist() {
 
 
 //----------------------------------------------------------------------------------
-void AliEbyEPhiDistNewD::LocalPost() {
+void AliEbyEPhiDistNew::LocalPost() {
   PostData(1, fThnList);
 
 }
 
 //----------------------------------------------------------------------------------
-void AliEbyEPhiDistNewD::UserExec( Option_t * ){
+void AliEbyEPhiDistNew::UserExec( Option_t * ){
 
   const Int_t dim = fNphiBins*2;
   Int_t phiCh[dim];
@@ -1015,7 +1015,7 @@ void AliEbyEPhiDistNewD::UserExec( Option_t * ){
 }
 
 //___________________________________________________________
-Bool_t AliEbyEPhiDistNewD::AcceptTrackL(AliVTrack *track) const {
+Bool_t AliEbyEPhiDistNew::AcceptTrackL(AliVTrack *track) const {
   
   if (!track) return kFALSE; 
   if (track->Charge() == 0) return kFALSE; 
@@ -1055,7 +1055,7 @@ Bool_t AliEbyEPhiDistNewD::AcceptTrackL(AliVTrack *track) const {
 
 
 //___________________________________________________________
-Bool_t AliEbyEPhiDistNewD::AcceptTrackLMC(AliVParticle *particle) const {
+Bool_t AliEbyEPhiDistNew::AcceptTrackLMC(AliVParticle *particle) const {
   if(!particle) return kFALSE;
   if (particle->Charge() == 0.0) return kFALSE;
     
@@ -1079,7 +1079,7 @@ Bool_t AliEbyEPhiDistNewD::AcceptTrackLMC(AliVParticle *particle) const {
   return kTRUE;
 }
 //---------------------------------------------------------------
-Int_t AliEbyEPhiDistNewD::GetPtBin(Double_t pt){
+Int_t AliEbyEPhiDistNew::GetPtBin(Double_t pt){
   
   Int_t bin = -1;
   
@@ -1126,7 +1126,7 @@ Int_t AliEbyEPhiDistNewD::GetPtBin(Double_t pt){
 }
 //-----------------------------------------GetPhiBin--------------------------------
 
-Int_t AliEbyEPhiDistNewD::GetPhiBin(Double_t Phi){
+Int_t AliEbyEPhiDistNew::GetPhiBin(Double_t Phi){
     
     Int_t phibin = -1;
     
@@ -1152,7 +1152,7 @@ Int_t AliEbyEPhiDistNewD::GetPhiBin(Double_t Phi){
 }
 
 //___________________________________________________________
-void AliEbyEPhiDistNewD::Terminate( Option_t * ){
+void AliEbyEPhiDistNew::Terminate( Option_t * ){
   //
   //
   Printf(" ------------------------------------------\n"
@@ -1162,14 +1162,14 @@ void AliEbyEPhiDistNewD::Terminate( Option_t * ){
   //
 }
 
-void AliEbyEPhiDistNewD::SetPidType(Int_t i) {
+void AliEbyEPhiDistNew::SetPidType(Int_t i) {
   fPidType = i; fMcPid = -9999;
   if (fPidType == 1) { fParticleSpecies = AliPID::kPion; fMcPid = 211; }
   if (fPidType == 2) { fParticleSpecies = AliPID::kKaon; fMcPid = 321;}
   if (fPidType == 3) { fParticleSpecies = AliPID::kProton; fMcPid = 2212;}
  }
 
-Double_t AliEbyEPhiDistNewD::TOFBetaCalc(AliVTrack *track) const{
+Double_t AliEbyEPhiDistNew::TOFBetaCalc(AliVTrack *track) const{
   //TOF beta calculation
   Double_t tofTime=track->GetTOFsignal();
   
@@ -1184,7 +1184,7 @@ Double_t AliEbyEPhiDistNewD::TOFBetaCalc(AliVTrack *track) const{
 
 //////////////////////////////////////////////////////////////////////////////////////////////////
 
-Double_t AliEbyEPhiDistNewD::GetMass(AliPID::EParticleType id) const{
+Double_t AliEbyEPhiDistNew::GetMass(AliPID::EParticleType id) const{
   //return Mass according to AliHelperParticleSpecies_t. If undefined return -999.
   Double_t mass=-999.;
   if (id == AliPID::kProton) { mass=9.38271999999999995e-01; }
@@ -1195,7 +1195,7 @@ Double_t AliEbyEPhiDistNewD::GetMass(AliPID::EParticleType id) const{
 
 
 //___________________________________________________________
-Bool_t AliEbyEPhiDistNewD::IsPidPassed(AliVTrack * track) {
+Bool_t AliEbyEPhiDistNew::IsPidPassed(AliVTrack * track) {
   //return  kTRUE; - PID strategy is from Jochen, Hans and Deepika
 
   Bool_t isAcceptedITS    = kFALSE;
