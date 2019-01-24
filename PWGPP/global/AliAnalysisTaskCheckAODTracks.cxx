@@ -409,13 +409,13 @@ void AliAnalysisTaskCheckAODTracks::UserCreateOutputObjects() {
 
   Int_t nMultBins=(Int_t)(fMaxMult+1.00001);
   if(fMaxMult>1000.) nMultBins=500;
-  fHistNtracksFb0=new TH1F("hNtracksFb0"," N_{tracks,FilBit0}",nMultBins,-0.5,fMaxMult+0.5);
-  fHistNtracksFb1=new TH1F("hNtracksFb1"," N_{tracks,FilBit1}",nMultBins,-0.5,fMaxMult+0.5);
-  fHistNtracksFb4=new TH1F("hNtracksFb4"," N_{tracks,FilBit4}",nMultBins,-0.5,fMaxMult+0.5);
-  fHistNtracksFb5=new TH1F("hNtracksFb5"," N_{tracks,FilBit5}",nMultBins,-0.5,fMaxMult+0.5);
-  fHistNtracksFb6=new TH1F("hNtracksFb6"," N_{tracks,FilBit6}",nMultBins,-0.5,fMaxMult+0.5);
-  fHistNtracksFb7=new TH1F("hNtracksFb7"," N_{tracks,FilBit0}",nMultBins,-0.5,fMaxMult+0.5);
-  fHistNtracksFb8=new TH1F("hNtracksFb8"," N_{tracks,FilBit0}",nMultBins,-0.5,fMaxMult+0.5);
+  fHistNtracksFb0=new TH1F("hNtracksFb0"," ; N_{tracks,FilBit0}",nMultBins,-0.5,fMaxMult+0.5);
+  fHistNtracksFb1=new TH1F("hNtracksFb1"," ; N_{tracks,FilBit1}",nMultBins,-0.5,fMaxMult+0.5);
+  fHistNtracksFb4=new TH1F("hNtracksFb4"," ; N_{tracks,FilBit4}",nMultBins,-0.5,fMaxMult+0.5);
+  fHistNtracksFb5=new TH1F("hNtracksFb5"," ; N_{tracks,FilBit5}",nMultBins,-0.5,fMaxMult+0.5);
+  fHistNtracksFb6=new TH1F("hNtracksFb6"," ; N_{tracks,FilBit6}",nMultBins,-0.5,fMaxMult+0.5);
+  fHistNtracksFb7=new TH1F("hNtracksFb7"," ; N_{tracks,FilBit7}",nMultBins,-0.5,fMaxMult+0.5);
+  fHistNtracksFb8=new TH1F("hNtracksFb8"," ; N_{tracks,FilBit8}",nMultBins,-0.5,fMaxMult+0.5);
   fOutput->Add(fHistNtracksFb0);
   fOutput->Add(fHistNtracksFb1);
   fOutput->Add(fHistNtracksFb4);
