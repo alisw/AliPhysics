@@ -63,6 +63,7 @@ protected:
   Int_t   EvalIsolation(TLorentzVector * ph,Bool_t isPhoton) ;
   Bool_t  TestLambda(Double_t pt,Double_t l1,Double_t l2) ;
   Bool_t  TestPID(Int_t iPID, AliCaloPhoton* part) ;
+  Bool_t  TestPID(Int_t iPID, AliCaloPhoton* p1, AliCaloPhoton* p2) ;
   Double_t PrimaryParticleWeight(AliAODMCParticle * particle) ;
   Int_t   FindPrimary(AliVCluster*, Bool_t&);
   
@@ -96,7 +97,7 @@ private:
   Double_t fCentrality;   //!
   Double_t fCentWeight ;  //! Weight to correct bias in PHOS triigeered events
   TH1F * fCentralityWeights[6]; //!Weights to correct centrality non-flatness
-  Int_t  fCentBin ;       //! 
+  Int_t  fCentBin ;       //! current centrality bin
   Int_t  fRunNumber ;     //! current run number
   Bool_t fIsMB ;          //which trigger to use
   Bool_t fIsMC ;          //Is this is MC
@@ -111,9 +112,32 @@ private:
   Float_t fMinBCDistance;       //minimal distance to bad channel
   Float_t fTimeCut ;            //Time cut
   Double_t fWeightParamPi0[7] ; //!Parameters to calculate weights in MC
+  Int_t   fNPID ;               // Number of PID cuts
   //
   TH2I * fPHOSBadMap[6] ; //! 
-    
+  TH2F * fhReMod[5];       //!
+  TH2F * fhMiMod[5];       //!
+  TH2F * fhRe[3][10][8];   //!
+  TH2F * fhMi[3][10][8];   //!  
+  TH2F * fhReSingle[3][10][8]; //!
+  TH2F * fhMiSingle[3][10][8]; //!
+  TH2F * fhReSingleIso[3][10][8]; //!
+  TH2F * fhMiSingleIso[3][10][8]; //!
+  TH1F * fhPiIsolation[20][10] ;  //!
+  
+  TH2F * fhQAAllEpartn ;    //!
+  TH2F * fhQAAllzpartn ;    //!
+  TH2F * fhQAAllxpartn ;    //!
+  TH2F * fhQAIsoEpartn ;    //!
+  TH2F * fhQAIsozpartn ;    //!
+  TH2F * fhQAIsoxpartn ;    //!
+  TH2F * fhQAAllEpartnBg ;  //!
+  TH2F * fhQAAllzpartnBg ;  //!
+  TH2F * fhQAAllxpartnBg ;  //!
+  TH2F * fhQAIsoEpartnBg ;  //!
+  TH2F * fhQAIsozpartnBg ;  //!
+  TH2F * fhQAIsoxpartnBg ;  //!
+      
   ClassDef(AliAnalysisTaskTaggedPhotons, 4);   // a PHOS photon analysis task 
 };
 #endif // ALIANALYSISTASKTAGGEDPHOTONSLOCAL_H
