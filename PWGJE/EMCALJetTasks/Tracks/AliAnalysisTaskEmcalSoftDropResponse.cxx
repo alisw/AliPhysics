@@ -94,6 +94,8 @@ AliAnalysisTaskEmcalSoftDropResponse::AliAnalysisTaskEmcalSoftDropResponse(const
   fUseChargedConstituents(true),
   fUseNeutralConstituents(true),
   fSampleSplitter(nullptr),
+  fPartLevelPtBinning(nullptr),
+  fDetLevelPtBinning(nullptr),
   fZgResponse(nullptr),
   fZgResponseClosure(nullptr),
   fZgPartLevel(nullptr),

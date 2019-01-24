@@ -231,6 +231,7 @@ set(SRCS
 if(RooUnfold_FOUND)
     get_target_property(ROOUNFOLD_INCLUDE_DIR RooUnfold::RooUnfold INTERFACE_INCLUDE_DIRECTORIES)
     include_directories(${ROOUNFOLD_INCLUDE_DIR})
+    add_definitions("-DWITH_ROOUNFOLD")
 endif(RooUnfold_FOUND)
 
 # Tasks that need direct access to Fastjet
@@ -274,7 +275,6 @@ if(FASTJET_FOUND)
     if(RooUnfold_FOUND)
         set(SRCS ${SRCS}
         Tracks/AliAnalysisTaskEmcalSoftDropResponse.cxx)
-        add_definitions("-DWITH_ROOUNFOLD")
     endif(RooUnfold_FOUND)
     include_directories(${AliPhysics_SOURCE_DIR}/JETAN/JETAN)
     include_directories(SYSTEM ${FASTJET_INCLUDE_DIR})
