@@ -5547,10 +5547,10 @@ void AliCaloPhotonCuts::ApplyNonLinearity(AliVCluster* cluster, Int_t isMC)
           if(fClusterType==1) energy /= FunctionNL_kSDM(energy, 0.969944, -4.02916, -0.366743);
 
         } else if( fCurrentMC==k16h3 ||fCurrentMC==k16k5a ||  fCurrentMC==k17e2 || fCurrentMC == k18j3) {
-          if(fClusterType==1){
+          if(fClusterType==1 || (fClusterType == 4 && !isDCal)){
             energy /= FunctionNL_kSDM(energy, 0.959714, -3.77191, -1.41648);
           }
-          if(fClusterType==3){
+          if(fClusterType==3 || (fClusterType == 4 && isDCal)){
             if(fCurrentMC==k16k5a) {
               energy /= 0.9870110951;
               energy /= FunctionNL_kSDM(energy, 0.992345, -2.33772, -6.1127);

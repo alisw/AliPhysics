@@ -1396,6 +1396,12 @@ void AddTask_GammaCalo_pp(
     cuts.AddCutCalo("00010113","4117900067032220000","01631031000000d0"); // -30ns, 35ns timing cut, no NL INT7
   } else if (trainConfig == 2003){ // EMCAL+DCAL clusters standard cuts - QA extra stripes
     cuts.AddCutCalo("00010113","41179110a7032230000","01631031000000d0"); // Standard EDC
+  } else if (trainConfig == 2004){ // EMCAL+DCAL clusters standard cuts - CALOFAST TRIGGERS
+    cuts.AddCutCalo("00010113","41177110a0032230000","01631031000000d0"); // Standard EDC
+    cuts.AddCutCalo("000a0113","41177110a0032230000","01631031000000d0"); // std INT7
+    cuts.AddCutCalo("000a1113","41177110a0032230000","01631031000000d0"); // std EMC7
+    cuts.AddCutCalo("000a2113","41177110a0032230000","01631031000000d0"); // std EG2
+    cuts.AddCutCalo("000a3113","41177110a0032230000","01631031000000d0"); // std EG1
 
 
   // includes both stripes EMCal and DCal
