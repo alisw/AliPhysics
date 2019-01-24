@@ -38,9 +38,9 @@ ClassImp(AliAnalysisTaskConvJet);
 /// \endcond
 
 
-AliAnalysisTaskConvJet::AliAnalysisTaskConvJet(Int_t IsMC) :
+AliAnalysisTaskConvJet::AliAnalysisTaskConvJet() :
   AliAnalysisTaskEmcalJet(),
-  fIsMC(IsMC),
+  fIsMC(0),
   fNJetContainers(0),
   fNTrueJetContainers(0),
   fJetContainersAdded(0),

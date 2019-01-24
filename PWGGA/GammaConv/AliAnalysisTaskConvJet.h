@@ -26,7 +26,7 @@ using namespace std;
 class AliAnalysisTaskConvJet : public AliAnalysisTaskEmcalJet {
  public:
 
-  AliAnalysisTaskConvJet(Int_t IsMC)                                     ;
+  AliAnalysisTaskConvJet()                                               ;
   AliAnalysisTaskConvJet(const char *name, Int_t IsMC)                   ;
   ~AliAnalysisTaskConvJet(){
      delete  fJetNameArray;
@@ -386,7 +386,7 @@ class AliAnalysisTaskConvJet : public AliAnalysisTaskEmcalJet {
   AliAnalysisTaskConvJet &operator=(const AliAnalysisTaskConvJet&);
 
   /// \cond CLASSIMP
-  ClassDef(AliAnalysisTaskConvJet, 7);
+  ClassDef(AliAnalysisTaskConvJet, 8);
   /// \endcond
 };
 #endif
