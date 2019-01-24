@@ -23,10 +23,6 @@ void SetupAODtrackCutsRun3_FT2_noPID_ESD(AliDielectron *die);
 
 
 Bool_t isRandomRejTask=kFALSE;//needed for InitHistograms() //dont change!!!
-Bool_t kRot = kFALSE;
-Bool_t kMix = kTRUE;
-Bool_t kNoPairing   = kFALSE;
-Bool_t randomizeDau = kTRUE;
 
 // available cut defintions
 const Int_t nPF       = 2; // use prefiltering for cuts < nPF
@@ -39,6 +35,9 @@ AliDielectron* Config_miweber_LMEE_PbPb_woCutLib(Int_t cutDefinition=1,
 						 Bool_t bCutQA = kFALSE,
 						 Bool_t isRandomRej=kFALSE,
 						 Bool_t useTPCCorr=kFALSE,
+						 Bool_t useRotation=kFALSE,
+						 Bool_t useMixing=kTRUE,
+						 Bool_t noPairing=kFALSE,
 						 Bool_t hasMC=kFALSE
 						 )
 {
@@ -79,14 +78,15 @@ AliDielectron* Config_miweber_LMEE_PbPb_woCutLib(Int_t cutDefinition=1,
     die->SetCutQA(bCutQA);
   }
   
-  if(kRot){
+  if(useRotation){
     AliDielectronTrackRotator *rot = new AliDielectronTrackRotator;
     rot->SetConeAnglePhi(TMath::Pi());
     rot->SetIterations(10);
     die->SetTrackRotator(rot);
-  }//kRot
+  }//useRotation
   
-  if(kMix && !(die->GetHasMC())){ // need second since there is a problem when mixing MC events (TRef?)
+  if(useMixing){
+    
     AliDielectronMixingHandler *mix = new AliDielectronMixingHandler;
     
     mix->AddVariable(AliDielectronVarManager::kZvPrim,"-10,-5,0,5,10");
@@ -100,7 +100,7 @@ AliDielectron* Config_miweber_LMEE_PbPb_woCutLib(Int_t cutDefinition=1,
     }
     
     die->SetMixingHandler(mix);
-  }//kMix
+  }//useMixing
 
   // set track cuts
   SetupCuts(die,cutDefinition,bESDANA);
@@ -117,7 +117,7 @@ AliDielectron* Config_miweber_LMEE_PbPb_woCutLib(Int_t cutDefinition=1,
  InitHistograms(die,cutDefinition);
  //  InitCF(die,cutDefinition);
  
- die->SetNoPairing(kNoPairing);
+ die->SetNoPairing(noPairing);
  
  return die;
 
