@@ -1,4 +1,4 @@
-AliAnalysisTask *AddTaskReducedTreeNuclei ()  {
+AliAnalysisTask *AddTaskReducedTreeNuclei_pPb5TeV (bool doTri = false, bool doHypTri=false)  {
 
   //Get the current analysis manager
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
@@ -10,11 +10,6 @@ AliAnalysisTask *AddTaskReducedTreeNuclei ()  {
   Int_t collSystem = 0;
   AliAnalysisTaskReducedTreeNuclei *task = new AliAnalysisTaskReducedTreeNuclei("TaskNuclei");
   task->SelectCollisionCandidates(AliVEvent::kINT7);
-  //  task->SelectCollisionCandidates(AliVEvent::kINT7 + AliVEvent::kHighMult);
-  //  task->SelectCollisionCandidates(AliVEvent::kHighMult);
-
-  bool doTri   =false;
-  bool doHypTri=false;
 
   task->FillTritonTree(doTri);
   task->FillHypTritonTree(doHypTri);
