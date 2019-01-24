@@ -5995,14 +5995,14 @@ void AliCaloPhotonCuts::ApplyNonLinearity(AliVCluster* cluster, Int_t isMC)
         } else if( fCurrentMC==kPPb5T16DPMJet ) {
           if(fClusterType==1 || fClusterType==3 ){
             energy /= FunctionNL_kSDM(energy, 0.950272, -3.25783, -0.48271) ; //  2019 01 23
+          } else if (fClusterType==2) {
+          energy /= FunctionNL_kSDM(energy, 0.972557, -2.84481, -1.07834, 1.);
           }
         } else if( fCurrentMC==k18f3bc || fCurrentMC==k18b9b || fCurrentMC==k18b9c ) {
           if(fClusterType==1 ){
             energy /= FunctionNL_kSDM(energy, 0.959162, -4.58126, -0.495856) ;
             energy /= 0.998 ;
             energy /= FunctionNL_DPOW(energy, 1.0670830446, -0.1052003823, -0.4999999897, 1.0561213150, -0.0918775002, -0.4999999972 ) ;
-          } else if (fClusterType==2) {
-            energy /= FunctionNL_kSDM(energy, 1.01982, 1.68291, -1.84916, -1.);
           } else if (fClusterType==3){
             energy /= FunctionNL_kSDM(energy, 0.943033, -3.96729, -0.383147) ;
             energy /= 0.99858 ;
@@ -6130,6 +6130,7 @@ void AliCaloPhotonCuts::ApplyNonLinearity(AliVCluster* cluster, Int_t isMC)
       }
       break;
 
+
     // NonLinearity LHC13 pPb Calo  - only shifting MC
     case 52:
       label_case_52:
@@ -6161,6 +6162,8 @@ void AliCaloPhotonCuts::ApplyNonLinearity(AliVCluster* cluster, Int_t isMC)
             energy /= FunctionNL_DExp(energy, 0.9706706146, 0.9781531357, -2.5633710383, 1.0355397924, 0.6750800461, -1.9817285526) ;//2018 02 20
             energy /= FunctionNL_DPOW(energy, 1.1717517490, -0.1999999942, -0.2126460833, 1.1820209963, -0.1999999999, -0.1811167881 ) ; // 2018 03 22
             energy /= 0.992867 ; // 2018 12 09
+          } else if (fClusterType==2){
+            energy /= FunctionNL_DExp(energy, 0.9905300112, 2.7065386448, -2.8710992597, 1.0120094177, 1.0727540786, -3.6489386787, -1., 1.);
           } else if(fClusterType==2) {
             energy /= (FunctionNL_DExp(energy, 1.0154938040, 0.3062978125, -3.9089772679, 1.0061692542, 513.7621552761, -3566.4426936867 ) * 0.996512);
           }
@@ -6172,8 +6175,7 @@ void AliCaloPhotonCuts::ApplyNonLinearity(AliVCluster* cluster, Int_t isMC)
           if(fClusterType==1 ){
             energy /= FunctionNL_DPOW(energy, 1.0115133381, -0.0800376623, -0.4999999999, 1.0586512028, -0.0940942550, -0.4999999982 );
             energy /= 0.9963;
-          } else if (fClusterType==2){
-            energy /= FunctionNL_DExp(energy, 1.0121312777, 1.0477570152, -3.6602909134, 0.9916789212, 3.3641052078, -2.6005663782, 1., -1.);
+            cout << "18f 1" << endl;
           } else if (fClusterType==3){
             energy /= FunctionNL_DExp(energy, 0.9615753216, 1.0083998720, -2.3788968272, 1.0114418980, 1.0697887890, -2.1228591720 );
             energy /= 0.993;
