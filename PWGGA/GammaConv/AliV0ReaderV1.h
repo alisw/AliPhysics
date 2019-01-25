@@ -135,6 +135,9 @@ class AliV0ReaderV1 : public AliAnalysisTaskSE {
     Double_t           GetPhiSecondarySphericityAxis()                  {return fSphericityAxisSecondaryPhi;}
     Bool_t             IsSphericityAxisInEMCalAcceptance()              {return fInEMCalAcceptance;}
     Int_t              GetNumberOfRecTracks()                           {return fNumberOfRecTracks;}
+    Double_t           GetHighestPt()                                   {return fHighestPt;}
+    Double_t           GetTotalPt()                                     {return fTotalPt;}
+    Double_t           GetMeanPt()                                      {return fMeanPt;}
     Double_t           GetSphericityTrue()                              {return fSphericityTrue;}
     Int_t              GetNumberOfTruePrimaryTracks()                   {return fNumberOfTruePrimaryTracks;}
     void               SetCalcSphericity(Bool_t set)                    {fCalcSphericity=set; return;}
@@ -217,6 +220,9 @@ class AliV0ReaderV1 : public AliAnalysisTaskSE {
     Double_t       fSphericityAxisSecondaryPhi;   // Phi of the secondary sphericity axis
     Bool_t         fInEMCalAcceptance;            // Flag for the sphericity axis in the EMCal acceptance
     Int_t          fNumberOfRecTracks;            // Number of reconstructed tracks used in sphericity calculation
+    Double_t       fHighestPt;                    // Highest pt in the event
+    Double_t       fTotalPt;                      // Total pt of the event
+    Double_t       fMeanPt;                       // Mean pt of the event
     Double_t       fSphericityTrue;               // True sphericity of the event
     Int_t          fNumberOfTruePrimaryTracks;    // True number of primary tracks used in sphericity calculation
     Int_t          fPtMaxSector;                  // Sector of the detector with the maximum pt particle

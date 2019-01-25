@@ -962,12 +962,7 @@ void AddTask_GammaCalo_pp(
     cuts.AddCutCalo("q0010113","11111110a7032230000","21631031000000d0"); // std
     cuts.AddCutCalo("r0010113","11111110a7032230000","21631031000000d0"); // std
   } else if (trainConfig == 447){ // EMCAL clusters pp 5 TeV True Sphericity Cuts
-    cuts.AddCutCalo("00010113","11111110a7032230000","01631031000000d0"); // std
-    cuts.AddCutCalo("h0010113","11111110a7032230000","01631031000000d0"); // std
-    cuts.AddCutCalo("i0010113","11111110a7032230000","01631031000000d0"); // std
     cuts.AddCutCalo("j0010113","11111110a7032230000","01631031000000d0"); // std
-    cuts.AddCutCalo("q0010113","11111110a7032230000","01631031000000d0"); // std
-    cuts.AddCutCalo("r0010113","11111110a7032230000","01631031000000d0"); // std
   } else if (trainConfig == 448){ // EMCAL clusters pp 5 TeV Sphericity axis cuts
     cuts.AddCutCalo("s0010113","11111110a7032230000","01631031000000d0"); // std
     cuts.AddCutCalo("t0010113","11111110a7032230000","01631031000000d0"); // std
