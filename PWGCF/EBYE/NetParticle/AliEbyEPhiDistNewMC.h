@@ -19,13 +19,13 @@
 //                   drathee@cern.ch | sjena@cern.ch                       //
 //                            Surya Prakash Pathak                         //
 //                       surya.prakash.pathak@cern.ch                      //
-//                         (Last Modified 2019/01/24)                      //
+//                         (Last Modified 2019/01/23)                      //
 //                                                                         //
 //=========================================================================//
 
 
-#ifndef AliEbyEPhiDistNew_H
-#define AliEbyEPhiDistNew_H
+#ifndef AliEbyEPhiDistNewMC_H
+#define AliEbyEPhiDistNewMC_H
 
 class TList;
 class TH2F;
@@ -44,11 +44,11 @@ class AliPIDCombined;
 class AliAnalysisUtils;
 
 
-class AliEbyEPhiDistNew: public AliAnalysisTaskSE {
+class AliEbyEPhiDistNewMC: public AliAnalysisTaskSE {
 public:
-AliEbyEPhiDistNew();
-AliEbyEPhiDistNew( const char *name );
-  virtual ~AliEbyEPhiDistNew();
+AliEbyEPhiDistNewMC();
+AliEbyEPhiDistNewMC( const char *name );
+  virtual ~AliEbyEPhiDistNewMC();
 
   virtual void   UserCreateOutputObjects();
   virtual void   UserExec(Option_t *option);
@@ -77,7 +77,7 @@ AliEbyEPhiDistNew( const char *name );
     {
         fPhiMin = phil ; fPhiMax = phih ;
     }
-    
+
     void SetNumberOfPhiBins(Int_t nPhiBins){fNphiBins = nPhiBins;}
   
   void SetTPCTrackQualityCuts( Int_t NcrossRows, Double_t Chi2NDF){
@@ -99,16 +99,14 @@ AliEbyEPhiDistNew( const char *name );
   void SetMaxPtForTPClow(Float_t f)                  {fMaxPtForTPClow      = f;}
   
  private:
-  TList           *fThnList;       //!
-  AliVEventHandler    *fInputHandler;  //! for Event handler
-  AliMCEventHandler   *fMCEventHandler;         //! for MC event handler---
-  AliVEvent 	      *fVevent;        //! V event
-  TClonesArray    *fArrayMC;       //! AOD MC stack
-  AliESDtrackCuts *fESDtrackCuts;  //! ESD Track Cuts
-  AliMCEvent      *fMCEvent;       //! Current MC Event
-  AliStack        *fMCStack;       //! Stak tree
+  TList           *fThnList;       //
+  TClonesArray    *fArrayMC;       // AOD MC stack
+  AliESDtrackCuts *fESDtrackCuts;  // ESD Track Cuts
+  AliMCEvent      *fMCEvent;       // Current MC Event
+  AliStack        *fMCStack;       // Stak tree
+  AliAnalysisUtils *fanaUtils;     //using for pileup check
     AliEventCuts        *fEventCuts;      //!using for pileup check
-  TString          fRun;           //Run  production name
+  TString          fRun;           //Run  production name 
   TString          fCentralityEstimator;   // "V0M","TRK","CL1"
  
   Int_t        fAODtrackCutBit; //
@@ -124,6 +122,7 @@ AliEbyEPhiDistNew( const char *name );
     Double_t   fPhiMin;                       //phi minimum
     Double_t   fPhiMax;                      //phi maximum
     Int_t      fNphiBins;                    //phi bin numbers
+
   Double_t   fDcaXy;                        // DCA Xy
   Double_t   fDcaZ;                         // DCA Z
   Int_t      fNcrossRows;                   //TPC nCross rows
@@ -140,8 +139,8 @@ AliEbyEPhiDistNew( const char *name );
   TH1D         *fEventCounter;  //!
   TH1F         *fHistCent;      //!
 
-  TH2F  *fHitCentRec[2];          //!
-  TH2F  *fHitCentGen[2];           //!
+  TH2F  *fHitCentRec[2];
+  TH2F  *fHitCentGen[2];
   
   TH2F  *fHistERec[2][3];         //! Reconstructed Plus
   TH2F  *fHistERecPri[2][3];      //! Reconstructed Primary Plus
@@ -152,7 +151,7 @@ AliEbyEPhiDistNew( const char *name );
   TH2F  *fHistCMisId[2][3];       //!
   
   AliPIDResponse   *fPIDResponse;              //! Ptr to PID response Object
-  AliPIDCombined   *fPIDCombined;              //!
+  AliPIDCombined   *fPIDCombined;              //
 
   Int_t            fPidType;                  // 0=charge, 1=pion, 2=kaon, 3=proton
   Int_t            fMcPid;                    // MC PDG PID
@@ -173,7 +172,7 @@ AliEbyEPhiDistNew( const char *name );
   AliPID::EParticleType fParticleSpecies;     //  Particle species on basis of AliPID
 
 
-  TH2F *fHistTPC; //!
+  TH2F *fHistTPC; //! 
   TH2F *fHistTOF; //!
   TH2F *fHistITS; //!
 
@@ -193,9 +192,9 @@ AliEbyEPhiDistNew( const char *name );
   TH2F *fHistNsTOFc; //!
   TH2F *fHistNsITSc; //!
 
-  THnSparse *fPhiBinNplusNminusCh;         //!
-  THnSparse *fPhiBinNplusNminusChTruth;    //!
-  THnSparse *fTHnCentNplusNminusCh;        //!
+  THnSparse *fPhiBinNplusNminusCh;
+  THnSparse *fPhiBinNplusNminusChTruth;
+  THnSparse *fTHnCentNplusNminusCh;
 
   enum EbyEPIDType_t { kNSigmaTPC = 0, kNSigmaTOF, kNSigmaTPCTOF, kBayes };
   enum EbyEDetectorType_t { kITS = 0, kTPC,  kTOF,  kNDetectors };
@@ -210,14 +209,14 @@ AliEbyEPhiDistNew( const char *name );
   Bool_t   AcceptTrackLMC(AliVParticle *particle) const; //
   Bool_t   AcceptTrackL(AliVTrack *track) const; //
   Int_t    GetPtBin(Double_t pt); //to get the bin number of the pt
-  Int_t    GetPhiBin(Double_t Phi);
+    Int_t    GetPhiBin(Double_t Phi);
   void     LocalPost(); //
   void     CreatePhiHist();
 
   //________________________________
-  AliEbyEPhiDistNew(const AliEbyEPhiDistNew&);
-  AliEbyEPhiDistNew& operator = (const AliEbyEPhiDistNew&);
-  ClassDef(AliEbyEPhiDistNew, 2);
+  AliEbyEPhiDistNewMC(const AliEbyEPhiDistNewMC&);
+  AliEbyEPhiDistNewMC& operator = (const AliEbyEPhiDistNewMC&);
+  ClassDef(AliEbyEPhiDistNewMC, 2);
 };
 
 #endif

@@ -11,30 +11,30 @@
 
 TString fileNameBase="AnalysisResults.root";
 
-AliAnalysisTask *AddAliEbyEPhiDistNew(
-						      TString runName = "LHC15o",
-						      Bool_t isModeAOD = 0,
-						      Int_t aodFilterBit = 768, 
-						      Bool_t IsMC  = 1,
-						      Bool_t IsQA = 0,
-						      Int_t pidtype = 1,//pidtype:charge-0, pion-1, kaon-2, proton-3
-						      Double_t DCAxy = 2.,
-						      Double_t DCAz = 2.,
-						      Double_t Vx = 0.3,
-						      Double_t Vy = 0.3,
-						      Double_t Vz = 10.,
-						      Double_t Eta = 0.8,
-						      Int_t TPCCrossRow = 80,
-						      Double_t Chi2NDF = 4.,
-						      const char* CentEstimator = "V0M",
-						      Int_t pidstrategy = 0,
-						      Float_t nSigmaITS = 2.,
-						      Float_t nSigmaTPC = 2.,
-						      Float_t nSigmaTOF = 3.,
-						      Float_t nSigmaTPClow = 2.,
-						      Float_t minPtTOF = 0.69,
-						      Float_t minPtTPClow = 0.69,
-						      TString taskname = "TestHM") {
+AliAnalysisTask *AddAliEbyEPhiDistNewMC(
+                                                          TString runName = "LHC15o",
+                                                          Bool_t isModeAOD = 0,
+                                                          Int_t aodFilterBit = 768,
+                                                          Bool_t IsMC  = 1,
+                                                          Bool_t IsQA = 0,
+                                                          Int_t pidtype = 1,//pidtype:charge-0, pion-1, kaon-2, proton-3
+                                                          Double_t DCAxy = 2.,
+                                                          Double_t DCAz = 2.,
+                                                          Double_t Vx = 0.3,
+                                                          Double_t Vy = 0.3,
+                                                          Double_t Vz = 10.,
+                                                          Double_t Eta = 0.8,
+                                                          Int_t TPCCrossRow = 80,
+                                                          Double_t Chi2NDF = 4.,
+                                                          const char* CentEstimator = "V0M",
+                                                          Int_t pidstrategy = 0,
+                                                          Float_t nSigmaITS = 2.,
+                                                          Float_t nSigmaTPC = 2.,
+                                                          Float_t nSigmaTOF = 3.,
+                                                          Float_t nSigmaTPClow = 2.,
+                                                          Float_t minPtTOF = 0.69,
+                                                          Float_t minPtTPClow = 0.69,
+                                                          TString taskname = "TestHM") {
 
   Double_t ptl, pth;
     Double_t phil, phih;
@@ -48,18 +48,18 @@ AliAnalysisTask *AddAliEbyEPhiDistNew(
     ptl = 0.35;
     pth = 1.6;
   }
+
     phil = 3.14 ; // total phi in radian
     phih = 6.28;
 
-
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
   if (!mgr) {
-    ::Error("AddAliEbyEPhiDistNew", "No analysis manager to connect to.");
+    ::Error("AddAliEbyEPhiDistNewMC", "No analysis manager to connect to.");
     return NULL;
   }
   
   if (!mgr->GetInputEventHandler()) {
-    ::Error("AddAliEbyEPhiDistNew", "This task requires an input event handler");
+    ::Error("AddAliEbyEPhiDistNewMC", "This task requires an input event handler");
     return NULL;
   }
  
@@ -67,7 +67,7 @@ AliAnalysisTask *AddAliEbyEPhiDistNew(
   
   const Char_t *ctsk = Form("%sNET%s",pidname[pidtype], taskname);
   
-  AliEbyEPhiDistNew *task = new AliEbyEPhiDistNew(ctsk);
+  AliEbyEPhiDistNewMC *task = new AliEbyEPhiDistNewMC(ctsk);
 
 
   task->SetRunPeriod(runName);

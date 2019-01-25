@@ -11,7 +11,7 @@
 
 TString fileNameBase="AnalysisResults.root";
 
-AliAnalysisTask *AddAliEbyEPhiDistNew(
+AliAnalysisTask *AddAliEbyEPhiDistNewD(
 						      TString runName = "LHC15o",
 						      Bool_t isModeAOD = 0,
 						      Int_t aodFilterBit = 768, 
@@ -54,12 +54,12 @@ AliAnalysisTask *AddAliEbyEPhiDistNew(
 
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
   if (!mgr) {
-    ::Error("AddAliEbyEPhiDistNew", "No analysis manager to connect to.");
+    ::Error("AddAliEbyEPhiDistNewD", "No analysis manager to connect to.");
     return NULL;
   }
   
   if (!mgr->GetInputEventHandler()) {
-    ::Error("AddAliEbyEPhiDistNew", "This task requires an input event handler");
+    ::Error("AddAliEbyEPhiDistNewD", "This task requires an input event handler");
     return NULL;
   }
  
@@ -67,7 +67,7 @@ AliAnalysisTask *AddAliEbyEPhiDistNew(
   
   const Char_t *ctsk = Form("%sNET%s",pidname[pidtype], taskname);
   
-  AliEbyEPhiDistNew *task = new AliEbyEPhiDistNew(ctsk);
+  AliEbyEPhiDistNewD *task = new AliEbyEPhiDistNewD(ctsk);
 
 
   task->SetRunPeriod(runName);

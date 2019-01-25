@@ -19,13 +19,13 @@
 //                   drathee@cern.ch | sjena@cern.ch                       //
 //                            Surya Prakash Pathak                         //
 //                       surya.prakash.pathak@cern.ch                      //
-//                         (Last Modified 2019/01/24)                      //
+//                         (Last Modified 2019/01/23)                      //
 //                                                                         //
 //=========================================================================//
 
 
-#ifndef AliEbyEPhiDistNew_H
-#define AliEbyEPhiDistNew_H
+#ifndef AliEbyEPhiDistNewD_H
+#define AliEbyEPhiDistNewD_H
 
 class TList;
 class TH2F;
@@ -44,11 +44,11 @@ class AliPIDCombined;
 class AliAnalysisUtils;
 
 
-class AliEbyEPhiDistNew: public AliAnalysisTaskSE {
+class AliEbyEPhiDistNewD: public AliAnalysisTaskSE {
 public:
-AliEbyEPhiDistNew();
-AliEbyEPhiDistNew( const char *name );
-  virtual ~AliEbyEPhiDistNew();
+AliEbyEPhiDistNewD();
+AliEbyEPhiDistNewD( const char *name );
+  virtual ~AliEbyEPhiDistNewD();
 
   virtual void   UserCreateOutputObjects();
   virtual void   UserExec(Option_t *option);
@@ -215,9 +215,9 @@ AliEbyEPhiDistNew( const char *name );
   void     CreatePhiHist();
 
   //________________________________
-  AliEbyEPhiDistNew(const AliEbyEPhiDistNew&);
-  AliEbyEPhiDistNew& operator = (const AliEbyEPhiDistNew&);
-  ClassDef(AliEbyEPhiDistNew, 2);
+  AliEbyEPhiDistNewD(const AliEbyEPhiDistNewD&);
+  AliEbyEPhiDistNewD& operator = (const AliEbyEPhiDistNewD&);
+  ClassDef(AliEbyEPhiDistNewD, 2);
 };
 
 #endif
