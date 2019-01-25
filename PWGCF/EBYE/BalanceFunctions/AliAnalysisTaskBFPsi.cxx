@@ -3843,10 +3843,10 @@ TObjArray* AliAnalysisTaskBFPsi::GetAcceptedTracks(AliVEvent *event, Double_t gC
 	
 	if( vPt < fPtMin || vPt > fPtMax)      
 	  continue;
-	if (!fUsePID) {
+	if (!fUseRapidity) {
 	  if( vEta < fEtaMin || vEta > fEtaMax)  continue;
 	}
-	else if (fUsePID){
+	else if (fUseRapidity){
 	  if( vY < fEtaMin || vY > fEtaMax)  continue;
 	}
 
