@@ -93,6 +93,7 @@ class AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson: public AliAnalysisTaskS
     // routines for neutral pion candidates from pure calo
     void ProcessNeutralPionCandidatesPureCalo();
     void ProcessTrueNeutralPionCandidatesPureCalo(AliAODConversionMother *Pi0Candidate, AliAODConversionPhoton *TrueGammaCandidate0, AliAODConversionPhoton *TrueGammaCandidate1);
+    void ProcessTrueNeutralPionCandidatesPureCaloAOD(AliAODConversionMother *Pi0Candidate, AliAODConversionPhoton *TrueGammaCandidate0, AliAODConversionPhoton *TrueGammaCandidate1);
 
     // routines for neutral pion candidates from mixed conv + calo
     void ProcessNeutralPionCandidatesMixedConvCalo();
@@ -125,6 +126,8 @@ class AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson: public AliAnalysisTaskS
     Bool_t CheckVectorForDoubleCount(vector<Int_t> &vec, Int_t tobechecked);
 
     Bool_t KinematicCut(AliAODConversionMother *negpion, AliAODConversionMother *pospion, AliAODConversionMother *neutpion, AliAODConversionMother *omega);
+    void RelabelAODPhotonCandidates(Bool_t mode);
+
 
 
     AliV0ReaderV1*                    fV0Reader;                                          // V0Reader for basic conversion photon selection
@@ -250,8 +253,8 @@ class AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson: public AliAnalysisTaskS
                                                                                           // with decay products in respective y, eta ranges
 
     // reconstructed particles MC validated
-    TH2F**                          fHistoTrueMotherPiPlPiMiNDMInvMassPt;              // histos with reconstructed validated eta or omega, inv mass, pT
-    TH2F**                          fHistoTrueMotherHNMPiPlPiMiNDMInvMassPt;           // histos with reconstructed validated eta, inv mass, pT
+    TH2F**                          fHistoTrueMotherPiPlPiMiNDMInvMassPt;                 // histos with reconstructed validated eta or omega, inv mass, pT
+    TH2F**                          fHistoTrueMotherHNMPiPlPiMiNDMInvMassPt;              // histos with reconstructed validated eta, inv mass, pT
     TH2F**                          fHistoTrueMotherGammaGammaInvMassPt;                  // histos with reconstructed validated pi0, inv mass, pT
     TH2F**                          fHistoTrueMotherGammaGammaFromHNMInvMassPt;           // histos with reconstructed validated pi0, inv mass, pT
     TH1F**                          fHistoTrueConvGammaPt;                                // histos with reconstructed validated conv gamma, pT
@@ -312,11 +315,16 @@ class AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson: public AliAnalysisTaskS
     Bool_t                          fDoLightOutput;                                       // Flag to turn on light output
     Int_t                           fNDMRecoMode;                                     // Flag how neutral pion is reconstructed 0=PCM-PCM, 1=PCM-Calo, 2=Calo-Calo
     Double_t                        fTolerance;                                           // tolerance in rad for angle cuts
+
+    Int_t*                            fMCEventPos;                                //[fnGammaCandidates]
+    Int_t*                            fMCEventNeg;                                //[fnGammaCandidates]
+    Int_t*                            fESDArrayPos;                               //[fnGammaCandidates]
+    Int_t*                            fESDArrayNeg;                               //[fnGammaCandidates]
 private:
     AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson( const AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson& ); // Not implemented
     AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson& operator=( const AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson& ); // Not implemented
 
-  ClassDef(AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson, 2);
+  ClassDef(AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson, 3);
 };
 
 #endif // AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson_H
