@@ -184,7 +184,7 @@ class AliHFTreeHandler : public TObject
     vector<bool> fDauInAcceptance; ///vector of flags to know if the daughter are in acceptance in case of MC gen
   
   /// \cond CLASSIMP
-  ClassDef(AliHFTreeHandler,1); /// 
+  ClassDef(AliHFTreeHandler,2); /// 
   /// \endcond
 };
 
