@@ -348,38 +348,38 @@ class AliAnalysisTaskConvJet : public AliAnalysisTaskEmcalJet {
  }
 
  protected:
-  void                        ExecOnce()                                        ;
-  Bool_t                      FillHistograms()                                  ;
-  Bool_t                      Run()                                             ;
-  void                        DoJetLoop()                                       ;
+  void                        ExecOnce();
+  Bool_t                      FillHistograms();
+  Bool_t                      Run();
+  void                        DoJetLoop();
 
-  Int_t fIsMC                                                                   ;
-  Int_t fNJetContainers                                                         ;
-  Int_t fNTrueJetContainers                                                     ;
-  Int_t fJetContainersAdded                                                     ;
-  Int_t fTrueJetContainersAdded                                                 ;
-  TString *fJetNameArray                                                        ;
-  TString *fTrueJetNameArray                                                    ;
-  Int_t *fTrainconfigArray                                                      ;
-  Int_t *fTrueTrainconfigArray                                                  ;
+  Int_t fIsMC;                                                                  // Boolean if running on MC
+  Int_t fNJetContainers;                                                        // Number of total data/rec jet containers desired to analyse
+  Int_t fNTrueJetContainers;                                                    // Number of total true jet containers desired to analyse
+  Int_t fJetContainersAdded;                                                    // Number of data/rec jet containers already added to the class
+  Int_t fTrueJetContainersAdded;                                                // Number of true jet containers alreasy added to the class
+  TString *fJetNameArray;                                                       //! Array containing all the names of the rec/data jet containers
+  TString *fTrueJetNameArray;                                                   //! Array containing all the names of the true jet containers
+  Int_t *fTrainconfigArray;                                                     //! Array of trainconfigs corresponsing to the data/rec jet containers
+  Int_t *fTrueTrainconfigArray;                                                 //! Array of trainconfigs corresponsing to the true jet containers
 
-  vector<Int_t>               fListNJets                                        ;
-  vector<vector<Double_t>>    fListJetPt                                        ;
-  vector<vector<Double_t>>    fListJetPx                                        ;
-  vector<vector<Double_t>>    fListJetPy                                        ;
-  vector<vector<Double_t>>    fListJetPz                                        ;
-  vector<vector<Double_t>>    fListJetEta                                       ;
-  vector<vector<Double_t>>    fListJetPhi                                       ;
-  vector<vector<Double_t>>    fListJetArea                                      ;
+  vector<Int_t>               fListNJets;                                       // vector of number of jets for each jet container
+  vector<vector<Double_t>>    fListJetPt;                                       // vector of vectors containg the jet pt for each jet container
+  vector<vector<Double_t>>    fListJetPx;                                       // vector of vectors containg the jet px for each jet container
+  vector<vector<Double_t>>    fListJetPy;                                       // vector of vectors containg the jet py for each jet container
+  vector<vector<Double_t>>    fListJetPz;                                       // vector of vectors containg the jet pz for each jet container
+  vector<vector<Double_t>>    fListJetEta;                                      // vector of vectors containg the jet eta for each jet container
+  vector<vector<Double_t>>    fListJetPhi;                                      // vector of vectors containg the jet phi for each jet container
+  vector<vector<Double_t>>    fListJetArea;                                     // vector of vectors containg the jet area for each jet container
 
-  vector<Int_t>               fListTrueNJets                                    ;
-  vector<vector<Double_t>>    fListTrueJetPt                                    ;
-  vector<vector<Double_t>>    fListTrueJetPx                                    ;
-  vector<vector<Double_t>>    fListTrueJetPy                                    ;
-  vector<vector<Double_t>>    fListTrueJetPz                                    ;
-  vector<vector<Double_t>>    fListTrueJetEta                                   ;
-  vector<vector<Double_t>>    fListTrueJetPhi                                   ;
-  vector<vector<Double_t>>    fListTrueJetArea                                  ;
+  vector<Int_t>               fListTrueNJets;                                   // vector of number of true jets for each true jet container
+  vector<vector<Double_t>>    fListTrueJetPt;                                   // vector of vectors containg the jet pt for each true jet container
+  vector<vector<Double_t>>    fListTrueJetPx;                                   // vector of vectors containg the jet px for each true jet container
+  vector<vector<Double_t>>    fListTrueJetPy;                                   // vector of vectors containg the jet py for each true jet container
+  vector<vector<Double_t>>    fListTrueJetPz;                                   // vector of vectors containg the jet pz for each true jet container
+  vector<vector<Double_t>>    fListTrueJetEta;                                  // vector of vectors containg the jet eta for each true jet container
+  vector<vector<Double_t>>    fListTrueJetPhi;                                  // vector of vectors containg the jet phi for each true jet container
+  vector<vector<Double_t>>    fListTrueJetArea;                                 // vector of vectors containg the jet area for each true jet container
 
  private:
   AliAnalysisTaskConvJet(const AliAnalysisTaskConvJet&)           ;
