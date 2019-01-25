@@ -50,6 +50,8 @@ class AliAnalysisTaskJetExtractor : public AliAnalysisTaskEmcalJet {
   void                        SetCalculateSecondaryVertices(Bool_t val)           { fCalculateSecondaryVertices = val; }
   void                        SetCalculateModelBackground(Bool_t val)             { fCalculateModelBackground = val; }
   void                        SetBackgroundModelFileName(const char* val)         { fBackgroundModelFileName = val; }
+  void                        SetBackgroundModelInputParameters(const char* val)  { fBackgroundModelInputParameters = val; }
+  void                        SetCustomStartupScript(const char* path)            { fCustomStartupScript = path; }
   void                        SetVertexerCuts(AliRDHFJetsCutsVertex* val)         { fVertexerCuts = val; }
   void                        SetSetEmcalJetFlavour(Bool_t val)                   { fSetEmcalJetFlavour = val; }
   void                        SetEventPercentage(Double_t val)                    { fEventPercentage  = val; }
@@ -74,6 +76,7 @@ class AliAnalysisTaskJetExtractor : public AliAnalysisTaskEmcalJet {
   Bool_t                      IsTrackInCone(AliVParticle* track, Double_t eta, Double_t phi, Double_t radius);
   Double_t                    GetTrueJetPtFraction(AliEmcalJet* jet);
   void                        GetPtAndMassFromModel(AliEmcalJet* jet, Float_t& pt_ML, Float_t& mass_ML);
+  TString                     GetBackgroundModelArrayString(AliEmcalJet* jet);
   Double_t                    GetMatchedTrueJetObservables(AliEmcalJet* jet, Double_t& matchedJetPt, Double_t& matchedJetMass);
   void                        GetJetType(AliEmcalJet* jet, Int_t& typeHM, Int_t& typePM, Int_t& typeIC);
   Bool_t                      IsStrangeJet(AliEmcalJet* jet);
@@ -95,6 +98,8 @@ class AliAnalysisTaskJetExtractor : public AliAnalysisTaskEmcalJet {
   Bool_t                      fCalculateSecondaryVertices;              ///< Calculate the secondary vertices (instead of loading)
   Bool_t                      fCalculateModelBackground;                ///< Calculate MVA model background and attach to event
   TString                     fBackgroundModelFileName;                 ///< MVA model file name
+  TString                     fBackgroundModelInputParameters;          ///< MVA model input parameters (comma-separated)
+  TString                     fCustomStartupScript;                     ///< Path to custom shell script that will be executed
   AliRDHFJetsCutsVertex*      fVertexerCuts;                            ///< Cuts used for the vertexer (given in add task macro)
   Bool_t                      fSetEmcalJetFlavour;                      ///< if set, the flavour property of the AliEmcalJets will be set
   Double_t                    fEventPercentage;                         ///< percentage (0, 1] which will be extracted
@@ -103,7 +108,6 @@ class AliAnalysisTaskJetExtractor : public AliAnalysisTaskEmcalJet {
   Bool_t                      fSaveTrackPDGCode;                        ///< save PDG code instead of code defined for AOD pid
   ULong_t                     fRandomSeed;                              ///< random seed
   ULong_t                     fRandomSeedCones;                         ///< random seed
-
   // ################## EVENT CUTS
   Double_t                    fEventCut_TriggerTrackMinPt;              ///< Event requirement, trigger track min pT
   Double_t                    fEventCut_TriggerTrackMaxPt;              ///< Event requirement, trigger track max pT
