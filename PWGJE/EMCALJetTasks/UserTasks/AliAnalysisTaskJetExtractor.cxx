@@ -443,6 +443,8 @@ AliAnalysisTaskJetExtractor::AliAnalysisTaskJetExtractor() :
   fCalculateSecondaryVertices(kTRUE),
   fCalculateModelBackground(kFALSE),
   fBackgroundModelFileName(),
+  fBackgroundModelInputParameters(),
+  fCustomStartupScript(),
   fVertexerCuts(0),
   fSetEmcalJetFlavour(0),
   fEventPercentage(1.0),
@@ -498,6 +500,8 @@ AliAnalysisTaskJetExtractor::AliAnalysisTaskJetExtractor(const char *name) :
   fCalculateSecondaryVertices(kTRUE),
   fCalculateModelBackground(kFALSE),
   fBackgroundModelFileName(),
+  fBackgroundModelInputParameters(),
+  fCustomStartupScript(),
   fVertexerCuts(0),
   fSetEmcalJetFlavour(0),
   fEventPercentage(1.0),
@@ -651,6 +655,14 @@ void AliAnalysisTaskJetExtractor::ExecOnce()
       TProfile* evweight = new TProfile("hJEWEL_EventWeight", "Event weight from JEWEL", 1, 0,1);
       fOutput->Add(evweight);
     }
+  }
+
+  // ### Execute shell script at startup
+  if(!fCustomStartupScript.IsNull())
+  {
+    TGrid::Connect("alien://");
+    TFile::Cp(fCustomStartupScript.Data(), "./myScript.sh");
+    gSystem->Exec("bash ./myScript.sh");
   }
 
   // ### Model background
@@ -834,12 +846,26 @@ Bool_t AliAnalysisTaskJetExtractor::Run()
 void AliAnalysisTaskJetExtractor::GetPtAndMassFromModel(AliEmcalJet* jet, Float_t& pt_ML, Float_t& mass_ML)
 {
   #if ROOT_VERSION_CODE >= ROOT_VERSION(6,0,0)
+  TString arrayStr = GetBackgroundModelArrayString(jet);
+  // ####### Run Python script that does inference on jet
+  fPythonCLI->Exec(Form("data_inference = numpy.array([[%s]])", arrayStr.Data()));
+  fPythonCLI->Exec("result = estimator.predict(data_inference)");
+  pt_ML   = fPythonCLI->Eval("result[0]");
+  mass_ML = 0.0; // not implemented yet
+  #endif
+}
+
+//________________________________________________________________________
+TString AliAnalysisTaskJetExtractor::GetBackgroundModelArrayString(AliEmcalJet* jet)
+{
   // ####### Calculate inference input parameters
   Double_t constPtMean = 0;
   Double_t constPtMedian = 0;
   std::vector<Int_t> index_sorted_list = jet->GetPtSortedTrackConstituentIndexes(fJetsCont->GetParticleContainer()->GetArray());
   Int_t     numConst = index_sorted_list.size();
   Double_t* constPts = new Double_t[TMath::Max(Int_t(index_sorted_list.size()), 10)];
+  for(Int_t i = 0; i < TMath::Max(Int_t(index_sorted_list.size()), 10); i++)
+    constPts[i] = 0;
 
   // Calculate mean, median of constituents
   for(Int_t i = 0; i < numConst; i++)
@@ -854,15 +880,48 @@ void AliAnalysisTaskJetExtractor::GetPtAndMassFromModel(AliEmcalJet* jet, Float_
     constPtMedian = TMath::Median(numConst, constPts);
   }
 
-  // ####### Run Python script that does inference on jet
-  fPythonCLI->Exec(Form("data_inference = numpy.array([[%E, %E, %E, %E, %E, %E, %E, %E, %E, %E, %E, %E, %E, %E, %E, %E, %E, %E]])", jet->Pt() - fJetsCont->GetRhoVal()*jet->Area(), (Double_t)numConst, jet->GetShapeProperties()->GetSecondOrderSubtracted(), fJetsCont->GetRhoVal(), jet->M()-jet->GetShapeProperties()->GetSecondOrderSubtracted(), jet->Area(), constPtMean, constPtMedian, constPts[0], constPts[1], constPts[2], constPts[3], constPts[4], constPts[5], constPts[6], constPts[7], constPts[8], constPts[9]));
-  fPythonCLI->Exec("result = estimator.predict(data_inference)");
-  pt_ML   = fPythonCLI->Eval("result[0][0]");
-  mass_ML = fPythonCLI->Eval("result[0][1]");
+  TString resultStr = "";
+  TObjArray* data_tokens = fBackgroundModelInputParameters.Tokenize(",");
+  for(Int_t iToken = 0; iToken < data_tokens->GetEntries(); iToken++)
+  {
+    TString token = ((TObjString *)(data_tokens->At(iToken)))->String();
+    if(token == "Jet_Pt")
+      resultStr += Form("%E", jet->Pt() - fJetsCont->GetRhoVal()*jet->Area());
+    else if(token == "Jet_NumConstituents")
+      resultStr += Form("%E", (Double_t)numConst);
+    else if(token == "Jet_Shape_Mass_NoCorr")
+      resultStr += Form("%E", jet->M());
+    else if(token == "Jet_Shape_Mass_DerivCorr_1")
+      resultStr += Form("%E", jet->GetShapeProperties()->GetFirstOrderSubtracted());
+    else if(token == "Jet_Shape_Mass_DerivCorr_2")
+      resultStr += Form("%E", jet->GetShapeProperties()->GetSecondOrderSubtracted());
+    else if(token == "Event_BackgroundDensity")
+      resultStr += Form("%E", fJetsCont->GetRhoVal());
+    else if(token == "Event_BackgroundDensityMass")
+      resultStr += Form("%E", fJetsCont->GetRhoMassVal());
+    else if(token == "Jet_Area")
+      resultStr += Form("%E", jet->Area());
+    else if(token == "Jet_Shape_ConstPtMean")
+      resultStr += Form("%E", constPtMean);
+    else if(token == "Jet_Shape_ConstPtMedian")
+      resultStr += Form("%E", constPtMedian);
+    else if(token.BeginsWith("Jet_Shape_ConstPt"))
+    {
+      TString num = token(17,(token.Length()-17));
+      resultStr += Form("%E", constPts[num.Atoi()]);
+    }
 
+    // Add comma after numbers
+    if((iToken < data_tokens->GetEntries()-1))
+      resultStr += ", ";
+  }
+
+  data_tokens->SetOwner();
+  delete data_tokens;
   delete[] constPts;
-  #endif
+  return resultStr;
 }
+
 
 //________________________________________________________________________
 Bool_t AliAnalysisTaskJetExtractor::IsTriggerTrackInEvent()
