@@ -76,7 +76,7 @@ class AliAnalysisTaskEmcalJetShapesMC : public AliAnalysisTaskEmcalJet {
   void SetSwitchAkT(Int_t c)                                { fSwitchAktNSub   = c   ; }
   void SetAdditionalTracks(Int_t c)                         { fAdditionalTracks =c   ;}
   void SetHardCutoff(Float_t c)                             { fHardCutoff =c   ;}
-  void SetOptionalPartonInfo(Int_t c)                       { fOptionalPartonInfo; }
+  void SetOptionalPartonInfo(Int_t c)                       { fOptionalPartonInfo = c; }
   void SetJetPtThreshold(Float_t f)                         { fPtThreshold     = f   ; }
   void SetRMatching(Float_t f)                              { fRMatching = f ;}
   void SetJetRadius(Float_t f)                              { fJetRadius = f ;}
