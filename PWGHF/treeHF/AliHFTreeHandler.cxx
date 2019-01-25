@@ -215,11 +215,16 @@ void AliHFTreeHandler::AddSingleTrackBranches() {
   if(fSingleTrackOpt==kNoSingleTrackVars) return;
 
   for(unsigned int iProng=0; iProng<fNProngs; iProng++) {
-    fTreeVar->Branch(Form("pt_prong%d",iProng),&fPtProng[iProng]);
-    fTreeVar->Branch(Form("eta_prong%d",iProng),&fEtaProng[iProng]);
-    fTreeVar->Branch(Form("phi_prong%d",iProng),&fPhiProng[iProng]);
 
-    if(fSingleTrackOpt==kAllSingleTrackVars) {
+    if(fSingleTrackOpt==kRedSingleTrackVars) {
+      fTreeVar->Branch(Form("pt_prong%d",iProng),&fPtProng[iProng]);
+      fTreeVar->Branch(Form("eta_prong%d",iProng),&fEtaProng[iProng]);
+      fTreeVar->Branch(Form("phi_prong%d",iProng),&fPhiProng[iProng]);
+    }
+    else if(fSingleTrackOpt==kAllSingleTrackVars) {
+      fTreeVar->Branch(Form("pt_prong%d",iProng),&fPtProng[iProng]);
+      fTreeVar->Branch(Form("eta_prong%d",iProng),&fEtaProng[iProng]);
+      fTreeVar->Branch(Form("phi_prong%d",iProng),&fPhiProng[iProng]);
       fTreeVar->Branch(Form("p_prong%d",iProng),&fPProng[iProng]);
       fTreeVar->Branch(Form("nTPCcls_prong%d",iProng),&fNTPCclsProng[iProng]);
       fTreeVar->Branch(Form("nTPCclspid_prong%d",iProng),&fNTPCclsPidProng[iProng]);
@@ -297,11 +302,16 @@ bool AliHFTreeHandler::SetSingleTrackVars(AliAODTrack* prongtracks[]) {
   }
 
   for(unsigned int iProng=0; iProng<fNProngs; iProng++) {
-    fPtProng[iProng].push_back(prongtracks[iProng]->Pt());
-    fEtaProng[iProng].push_back(prongtracks[iProng]->Eta());
-    fPhiProng[iProng].push_back(prongtracks[iProng]->Phi());
 
-    if(fSingleTrackOpt==kAllSingleTrackVars) {
+    if(fSingleTrackOpt==kRedSingleTrackVars) {
+      fPtProng[iProng].push_back(prongtracks[iProng]->Pt());
+      fEtaProng[iProng].push_back(prongtracks[iProng]->Eta());
+      fPhiProng[iProng].push_back(prongtracks[iProng]->Phi());
+    }
+    else if(fSingleTrackOpt==kAllSingleTrackVars) {
+      fPtProng[iProng].push_back(prongtracks[iProng]->Pt());
+      fEtaProng[iProng].push_back(prongtracks[iProng]->Eta());
+      fPhiProng[iProng].push_back(prongtracks[iProng]->Phi());
       fPProng[iProng].push_back(prongtracks[iProng]->P());
       fNTPCclsProng[iProng].push_back(prongtracks[iProng]->GetTPCNcls());
       fNTPCclsPidProng[iProng].push_back(prongtracks[iProng]->GetTPCsignalN());
@@ -505,11 +515,16 @@ void AliHFTreeHandler::ResetSingleTrackVarVectors() {
   if(fSingleTrackOpt==kNoSingleTrackVars) return;
   
   for(unsigned int iProng=0; iProng<fNProngs; iProng++) {
-    fPtProng[iProng].clear();
-    fEtaProng[iProng].clear();
-    fPhiProng[iProng].clear();
-    
-    if(fSingleTrackOpt==kAllSingleTrackVars) {
+
+    if(fSingleTrackOpt==kRedSingleTrackVars) {
+      fPtProng[iProng].clear();
+      fEtaProng[iProng].clear();
+      fPhiProng[iProng].clear();
+    }
+    else if(fSingleTrackOpt==kAllSingleTrackVars) {
+      fPtProng[iProng].clear();
+      fEtaProng[iProng].clear();
+      fPhiProng[iProng].clear();
       fPProng[iProng].clear();
       fNTPCclsProng[iProng].clear();
       fNTPCclsPidProng[iProng].clear();
