@@ -2609,37 +2609,38 @@ Bool_t AliAnalysisHFEppTPCTOFBeauty::PassCorrCuts(AliAODEvent *fAOD)
   
 }
 
+
 Float_t AliAnalysisHFEppTPCTOFBeauty::GetDCAMeanMC_phi1(Float_t x){
     
 // Return the DCA resolution of the track (in MC) accordingly to its pT
 
 float MeanGaus = 0;
 
-if (x >= 0.90 && x < 1.10) MeanGaus = 0.000086; 
-if (x >= 1.10 && x < 1.30) MeanGaus = 0.000070; 
-if (x >= 1.30 && x < 1.50) MeanGaus = 0.000090; 
-if (x >= 1.50 && x < 1.70) MeanGaus = 0.000101; 
-if (x >= 1.70 && x < 1.90) MeanGaus = 0.000118; 
-if (x >= 1.90 && x < 2.10) MeanGaus = 0.000134; 
-if (x >= 2.10 && x < 2.30) MeanGaus = 0.000142; 
-if (x >= 2.30 && x < 2.50) MeanGaus = 0.000154; 
-if (x >= 2.50 && x < 2.70) MeanGaus = 0.000172; 
-if (x >= 2.70 && x < 2.90) MeanGaus = 0.000170; 
-if (x >= 2.90 && x < 3.10) MeanGaus = 0.000180; 
-if (x >= 3.10 && x < 3.30) MeanGaus = 0.000178; 
-if (x >= 3.30 && x < 3.50) MeanGaus = 0.000183; 
-if (x >= 3.50 && x < 3.70) MeanGaus = 0.000182; 
-if (x >= 3.70 && x < 3.90) MeanGaus = 0.000173; 
-if (x >= 3.90 && x < 4.10) MeanGaus = 0.000166; 
-if (x >= 4.10 && x < 4.30) MeanGaus = 0.000178; 
-if (x >= 4.30 && x < 4.50) MeanGaus = 0.000175; 
-if (x >= 4.50 && x < 4.70) MeanGaus = 0.000166; 
-if (x >= 4.70 && x < 5.00) MeanGaus = 0.000179; 
-if (x >= 5.00 && x < 5.50) MeanGaus = 0.000155; 
-if (x >= 5.50 && x < 6.00) MeanGaus = 0.000170; 
-if (x >= 6.00 && x < 6.50) MeanGaus = 0.000148; 
-if (x >= 6.50 && x < 7.00) MeanGaus = 0.000143; 
-if (x >= 7.00 && x < 8.00) MeanGaus = 0.000137; 
+if (x >= 0.90 && x < 1.10) MeanGaus = 0.000109; 
+if (x >= 1.10 && x < 1.30) MeanGaus = 0.000086; 
+if (x >= 1.30 && x < 1.50) MeanGaus = 0.000126; 
+if (x >= 1.50 && x < 1.70) MeanGaus = 0.000155; 
+if (x >= 1.70 && x < 1.90) MeanGaus = 0.000173; 
+if (x >= 1.90 && x < 2.10) MeanGaus = 0.000231; 
+if (x >= 2.10 && x < 2.30) MeanGaus = 0.000254; 
+if (x >= 2.30 && x < 2.50) MeanGaus = 0.000261; 
+if (x >= 2.50 && x < 2.70) MeanGaus = 0.000310; 
+if (x >= 2.70 && x < 2.90) MeanGaus = 0.000329; 
+if (x >= 2.90 && x < 3.10) MeanGaus = 0.000383; 
+if (x >= 3.10 && x < 3.30) MeanGaus = 0.000344; 
+if (x >= 3.30 && x < 3.50) MeanGaus = 0.000367; 
+if (x >= 3.50 && x < 3.70) MeanGaus = 0.000382; 
+if (x >= 3.70 && x < 3.90) MeanGaus = 0.000365; 
+if (x >= 3.90 && x < 4.10) MeanGaus = 0.000374; 
+if (x >= 4.10 && x < 4.30) MeanGaus = 0.000394; 
+if (x >= 4.30 && x < 4.50) MeanGaus = 0.000420; 
+if (x >= 4.50 && x < 4.70) MeanGaus = 0.000411; 
+if (x >= 4.70 && x < 5.00) MeanGaus = 0.000426; 
+if (x >= 5.00 && x < 5.50) MeanGaus = 0.000371; 
+if (x >= 5.50 && x < 6.00) MeanGaus = 0.000495; 
+if (x >= 6.00 && x < 6.50) MeanGaus = 0.000400; 
+if (x >= 6.50 && x < 7.00) MeanGaus = 0.000422; 
+if (x >= 7.00 && x < 8.00) MeanGaus = 0.000379; 
 
 return MeanGaus;   
 }
@@ -2650,31 +2651,31 @@ Float_t AliAnalysisHFEppTPCTOFBeauty::GetDCAMeanMC_phi2(Float_t x){
 
 float MeanGaus = 0;
 
-if (x >= 0.90 && x < 1.10) MeanGaus = -0.001080; 
-if (x >= 1.10 && x < 1.30) MeanGaus = -0.000994; 
-if (x >= 1.30 && x < 1.50) MeanGaus = -0.000854; 
-if (x >= 1.50 && x < 1.70) MeanGaus = -0.000714; 
-if (x >= 1.70 && x < 1.90) MeanGaus = -0.000604; 
-if (x >= 1.90 && x < 2.10) MeanGaus = -0.000551; 
-if (x >= 2.10 && x < 2.30) MeanGaus = -0.000515; 
-if (x >= 2.30 && x < 2.50) MeanGaus = -0.000482; 
-if (x >= 2.50 && x < 2.70) MeanGaus = -0.000459; 
-if (x >= 2.70 && x < 2.90) MeanGaus = -0.000401; 
-if (x >= 2.90 && x < 3.10) MeanGaus = -0.000377; 
-if (x >= 3.10 && x < 3.30) MeanGaus = -0.000347; 
-if (x >= 3.30 && x < 3.50) MeanGaus = -0.000326; 
-if (x >= 3.50 && x < 3.70) MeanGaus = -0.000284; 
-if (x >= 3.70 && x < 3.90) MeanGaus = -0.000289; 
-if (x >= 3.90 && x < 4.10) MeanGaus = -0.000258; 
-if (x >= 4.10 && x < 4.30) MeanGaus = -0.000234; 
-if (x >= 4.30 && x < 4.50) MeanGaus = -0.000224; 
-if (x >= 4.50 && x < 4.70) MeanGaus = -0.000201; 
-if (x >= 4.70 && x < 5.00) MeanGaus = -0.000170; 
-if (x >= 5.00 && x < 5.50) MeanGaus = -0.000169; 
-if (x >= 5.50 && x < 6.00) MeanGaus = -0.000141; 
-if (x >= 6.00 && x < 6.50) MeanGaus = -0.000133; 
-if (x >= 6.50 && x < 7.00) MeanGaus = -0.000111; 
-if (x >= 7.00 && x < 8.00) MeanGaus = -0.000124;  
+if (x >= 0.90 && x < 1.10) MeanGaus = -0.001688; 
+if (x >= 1.10 && x < 1.30) MeanGaus = -0.001688; 
+if (x >= 1.30 && x < 1.50) MeanGaus = -0.001554; 
+if (x >= 1.50 && x < 1.70) MeanGaus = -0.001371; 
+if (x >= 1.70 && x < 1.90) MeanGaus = -0.001220; 
+if (x >= 1.90 && x < 2.10) MeanGaus = -0.001140; 
+if (x >= 2.10 && x < 2.30) MeanGaus = -0.001087; 
+if (x >= 2.30 && x < 2.50) MeanGaus = -0.001022; 
+if (x >= 2.50 && x < 2.70) MeanGaus = -0.000985; 
+if (x >= 2.70 && x < 2.90) MeanGaus = -0.000883; 
+if (x >= 2.90 && x < 3.10) MeanGaus = -0.000879; 
+if (x >= 3.10 && x < 3.30) MeanGaus = -0.000844; 
+if (x >= 3.30 && x < 3.50) MeanGaus = -0.000769; 
+if (x >= 3.50 && x < 3.70) MeanGaus = -0.000690; 
+if (x >= 3.70 && x < 3.90) MeanGaus = -0.000732; 
+if (x >= 3.90 && x < 4.10) MeanGaus = -0.000695; 
+if (x >= 4.10 && x < 4.30) MeanGaus = -0.000652; 
+if (x >= 4.30 && x < 4.50) MeanGaus = -0.000640; 
+if (x >= 4.50 && x < 4.70) MeanGaus = -0.000600; 
+if (x >= 4.70 && x < 5.00) MeanGaus = -0.000500; 
+if (x >= 5.00 && x < 5.50) MeanGaus = -0.000483; 
+if (x >= 5.50 && x < 6.00) MeanGaus = -0.000488; 
+if (x >= 6.00 && x < 6.50) MeanGaus = -0.000383; 
+if (x >= 6.50 && x < 7.00) MeanGaus = -0.000447; 
+if (x >= 7.00 && x < 8.00) MeanGaus = -0.000396;   
 
 return MeanGaus;   
 }
@@ -2685,31 +2686,31 @@ Float_t AliAnalysisHFEppTPCTOFBeauty::GetDCAMeanMC_phi3(Float_t x){
 
 float MeanGaus = 0;
 
-if (x >= 0.90 && x < 1.10) MeanGaus = -0.000504; 
-if (x >= 1.10 && x < 1.30) MeanGaus = -0.000454; 
-if (x >= 1.30 && x < 1.50) MeanGaus = -0.000375; 
-if (x >= 1.50 && x < 1.70) MeanGaus = -0.000307; 
-if (x >= 1.70 && x < 1.90) MeanGaus = -0.000273; 
-if (x >= 1.90 && x < 2.10) MeanGaus = -0.000263; 
-if (x >= 2.10 && x < 2.30) MeanGaus = -0.000240; 
-if (x >= 2.30 && x < 2.50) MeanGaus = -0.000202; 
-if (x >= 2.50 && x < 2.70) MeanGaus = -0.000195; 
-if (x >= 2.70 && x < 2.90) MeanGaus = -0.000170; 
-if (x >= 2.90 && x < 3.10) MeanGaus = -0.000147; 
-if (x >= 3.10 && x < 3.30) MeanGaus = -0.000092; 
-if (x >= 3.30 && x < 3.50) MeanGaus = -0.000106; 
-if (x >= 3.50 && x < 3.70) MeanGaus = -0.000088; 
-if (x >= 3.70 && x < 3.90) MeanGaus = -0.000082; 
-if (x >= 3.90 && x < 4.10) MeanGaus = -0.000075; 
-if (x >= 4.10 && x < 4.30) MeanGaus = -0.000032; 
-if (x >= 4.30 && x < 4.50) MeanGaus = -0.000046; 
-if (x >= 4.50 && x < 4.70) MeanGaus = -0.000039; 
-if (x >= 4.70 && x < 5.00) MeanGaus = -0.000050; 
-if (x >= 5.00 && x < 5.50) MeanGaus = -0.000015; 
-if (x >= 5.50 && x < 6.00) MeanGaus = -0.000029; 
-if (x >= 6.00 && x < 6.50) MeanGaus = -0.000001; 
-if (x >= 6.50 && x < 7.00) MeanGaus = -0.000016; 
-if (x >= 7.00 && x < 8.00) MeanGaus = -0.000032; 
+if (x >= 0.90 && x < 1.10) MeanGaus = -0.000696; 
+if (x >= 1.10 && x < 1.30) MeanGaus = -0.000704; 
+if (x >= 1.30 && x < 1.50) MeanGaus = -0.000601; 
+if (x >= 1.50 && x < 1.70) MeanGaus = -0.000553; 
+if (x >= 1.70 && x < 1.90) MeanGaus = -0.000481; 
+if (x >= 1.90 && x < 2.10) MeanGaus = -0.000453; 
+if (x >= 2.10 && x < 2.30) MeanGaus = -0.000442; 
+if (x >= 2.30 && x < 2.50) MeanGaus = -0.000422; 
+if (x >= 2.50 && x < 2.70) MeanGaus = -0.000403; 
+if (x >= 2.70 && x < 2.90) MeanGaus = -0.000317; 
+if (x >= 2.90 && x < 3.10) MeanGaus = -0.000334; 
+if (x >= 3.10 && x < 3.30) MeanGaus = -0.000247; 
+if (x >= 3.30 && x < 3.50) MeanGaus = -0.000291; 
+if (x >= 3.50 && x < 3.70) MeanGaus = -0.000297; 
+if (x >= 3.70 && x < 3.90) MeanGaus = -0.000216; 
+if (x >= 3.90 && x < 4.10) MeanGaus = -0.000255; 
+if (x >= 4.10 && x < 4.30) MeanGaus = -0.000140; 
+if (x >= 4.30 && x < 4.50) MeanGaus = -0.000185; 
+if (x >= 4.50 && x < 4.70) MeanGaus = -0.000150; 
+if (x >= 4.70 && x < 5.00) MeanGaus = -0.000205; 
+if (x >= 5.00 && x < 5.50) MeanGaus = -0.000106; 
+if (x >= 5.50 && x < 6.00) MeanGaus = -0.000172; 
+if (x >= 6.00 && x < 6.50) MeanGaus = -0.000188; 
+if (x >= 6.50 && x < 7.00) MeanGaus = -0.000045; 
+if (x >= 7.00 && x < 8.00) MeanGaus = -0.000096; 
 return MeanGaus;   
 }
 
@@ -2719,31 +2720,31 @@ Float_t AliAnalysisHFEppTPCTOFBeauty::GetDCAMeanMC_phi4(Float_t x){
 
 float MeanGaus = 0;
 
-if (x >= 0.90 && x < 1.10) MeanGaus = -0.001437; 
-if (x >= 1.10 && x < 1.30) MeanGaus = -0.001372; 
-if (x >= 1.30 && x < 1.50) MeanGaus = -0.001207; 
-if (x >= 1.50 && x < 1.70) MeanGaus = -0.000999; 
-if (x >= 1.70 && x < 1.90) MeanGaus = -0.000844; 
-if (x >= 1.90 && x < 2.10) MeanGaus = -0.000724; 
-if (x >= 2.10 && x < 2.30) MeanGaus = -0.000658; 
-if (x >= 2.30 && x < 2.50) MeanGaus = -0.000586; 
-if (x >= 2.50 && x < 2.70) MeanGaus = -0.000513; 
-if (x >= 2.70 && x < 2.90) MeanGaus = -0.000466; 
-if (x >= 2.90 && x < 3.10) MeanGaus = -0.000410; 
-if (x >= 3.10 && x < 3.30) MeanGaus = -0.000359; 
-if (x >= 3.30 && x < 3.50) MeanGaus = -0.000338; 
-if (x >= 3.50 && x < 3.70) MeanGaus = -0.000298; 
-if (x >= 3.70 && x < 3.90) MeanGaus = -0.000259; 
-if (x >= 3.90 && x < 4.10) MeanGaus = -0.000212; 
-if (x >= 4.10 && x < 4.30) MeanGaus = -0.000206; 
-if (x >= 4.30 && x < 4.50) MeanGaus = -0.000182; 
-if (x >= 4.50 && x < 4.70) MeanGaus = -0.000171; 
-if (x >= 4.70 && x < 5.00) MeanGaus = -0.000147; 
-if (x >= 5.00 && x < 5.50) MeanGaus = -0.000115; 
-if (x >= 5.50 && x < 6.00) MeanGaus = -0.000088; 
-if (x >= 6.00 && x < 6.50) MeanGaus = -0.000064; 
-if (x >= 6.50 && x < 7.00) MeanGaus = -0.000067; 
-if (x >= 7.00 && x < 8.00) MeanGaus = -0.000058;  
+if (x >= 0.90 && x < 1.10) MeanGaus = -0.001975; 
+if (x >= 1.10 && x < 1.30) MeanGaus = -0.001952; 
+if (x >= 1.30 && x < 1.50) MeanGaus = -0.001801; 
+if (x >= 1.50 && x < 1.70) MeanGaus = -0.001590; 
+if (x >= 1.70 && x < 1.90) MeanGaus = -0.001448; 
+if (x >= 1.90 && x < 2.10) MeanGaus = -0.001278; 
+if (x >= 2.10 && x < 2.30) MeanGaus = -0.001204; 
+if (x >= 2.30 && x < 2.50) MeanGaus = -0.001104; 
+if (x >= 2.50 && x < 2.70) MeanGaus = -0.001036; 
+if (x >= 2.70 && x < 2.90) MeanGaus = -0.000929; 
+if (x >= 2.90 && x < 3.10) MeanGaus = -0.000852; 
+if (x >= 3.10 && x < 3.30) MeanGaus = -0.000819; 
+if (x >= 3.30 && x < 3.50) MeanGaus = -0.000760; 
+if (x >= 3.50 && x < 3.70) MeanGaus = -0.000689; 
+if (x >= 3.70 && x < 3.90) MeanGaus = -0.000655; 
+if (x >= 3.90 && x < 4.10) MeanGaus = -0.000534; 
+if (x >= 4.10 && x < 4.30) MeanGaus = -0.000568; 
+if (x >= 4.30 && x < 4.50) MeanGaus = -0.000500; 
+if (x >= 4.50 && x < 4.70) MeanGaus = -0.000443; 
+if (x >= 4.70 && x < 5.00) MeanGaus = -0.000412; 
+if (x >= 5.00 && x < 5.50) MeanGaus = -0.000367; 
+if (x >= 5.50 && x < 6.00) MeanGaus = -0.000361; 
+if (x >= 6.00 && x < 6.50) MeanGaus = -0.000272; 
+if (x >= 6.50 && x < 7.00) MeanGaus = -0.000374; 
+if (x >= 7.00 && x < 8.00) MeanGaus = -0.000201; 
 
 return MeanGaus;   
 }
@@ -2755,31 +2756,31 @@ Float_t AliAnalysisHFEppTPCTOFBeauty::GetDCAResolMC_phi1(Float_t x){
 
 float sigmaG = 0;
 
-if (x >= 0.90 && x < 1.10) sigmaG = 0.002169; 
-if (x >= 1.10 && x < 1.30) sigmaG = 0.000993; 
-if (x >= 1.30 && x < 1.50) sigmaG = 0.000909; 
-if (x >= 1.50 && x < 1.70) sigmaG = 0.000698; 
-if (x >= 1.70 && x < 1.90) sigmaG = 0.000479; 
-if (x >= 1.90 && x < 2.10) sigmaG = 0.000614; 
-if (x >= 2.10 && x < 2.30) sigmaG = 0.000672; 
-if (x >= 2.30 && x < 2.50) sigmaG = 0.000599; 
-if (x >= 2.50 && x < 2.70) sigmaG = 0.000521; 
-if (x >= 2.70 && x < 2.90) sigmaG = 0.000383; 
-if (x >= 2.90 && x < 3.10) sigmaG = 0.000306; 
-if (x >= 3.10 && x < 3.30) sigmaG = 0.000214; 
-if (x >= 3.30 && x < 3.50) sigmaG = 0.000330; 
-if (x >= 3.50 && x < 3.70) sigmaG = 0.000387; 
-if (x >= 3.70 && x < 3.90) sigmaG = 0.000202; 
-if (x >= 3.90 && x < 4.10) sigmaG = 0.000241; 
-if (x >= 4.10 && x < 4.30) sigmaG = 0.000062; 
-if (x >= 4.30 && x < 4.50) sigmaG = 0.000206; 
-if (x >= 4.50 && x < 4.70) sigmaG = 0.000454; 
-if (x >= 4.70 && x < 5.00) sigmaG = 0.000643; 
-if (x >= 5.00 && x < 5.50) sigmaG = 0.000320; 
-if (x >= 5.50 && x < 6.00) sigmaG = 0.000525; 
-if (x >= 6.00 && x < 6.50) sigmaG = 0.000697; 
-if (x >= 6.50 && x < 7.00) sigmaG = 0.000151; 
-if (x >= 7.00 && x < 8.00) sigmaG = 0.000526; 
+if (x >= 0.90 && x < 1.10) sigmaG = 0.003523; 
+if (x >= 1.10 && x < 1.30) sigmaG = 0.003597; 
+if (x >= 1.30 && x < 1.50) sigmaG = 0.003269; 
+if (x >= 1.50 && x < 1.70) sigmaG = 0.003005; 
+if (x >= 1.70 && x < 1.90) sigmaG = 0.002800; 
+if (x >= 1.90 && x < 2.10) sigmaG = 0.002715; 
+if (x >= 2.10 && x < 2.30) sigmaG = 0.002586; 
+if (x >= 2.30 && x < 2.50) sigmaG = 0.002534; 
+if (x >= 2.50 && x < 2.70) sigmaG = 0.002456; 
+if (x >= 2.70 && x < 2.90) sigmaG = 0.002425; 
+if (x >= 2.90 && x < 3.10) sigmaG = 0.002392; 
+if (x >= 3.10 && x < 3.30) sigmaG = 0.002368; 
+if (x >= 3.30 && x < 3.50) sigmaG = 0.002203; 
+if (x >= 3.50 && x < 3.70) sigmaG = 0.002209; 
+if (x >= 3.70 && x < 3.90) sigmaG = 0.002102; 
+if (x >= 3.90 && x < 4.10) sigmaG = 0.002033; 
+if (x >= 4.10 && x < 4.30) sigmaG = 0.002168; 
+if (x >= 4.30 && x < 4.50) sigmaG = 0.002091; 
+if (x >= 4.50 && x < 4.70) sigmaG = 0.001998; 
+if (x >= 4.70 && x < 5.00) sigmaG = 0.001942; 
+if (x >= 5.00 && x < 5.50) sigmaG = 0.001864; 
+if (x >= 5.50 && x < 6.00) sigmaG = 0.001783; 
+if (x >= 6.00 && x < 6.50) sigmaG = 0.001491; 
+if (x >= 6.50 && x < 7.00) sigmaG = 0.001569; 
+if (x >= 7.00 && x < 8.00) sigmaG = 0.001591;
 
 return sigmaG;   
 }
@@ -2790,31 +2791,31 @@ Float_t AliAnalysisHFEppTPCTOFBeauty::GetDCAResolMC_phi2(Float_t x){
 
 float sigmaG = 0;
 
-if (x >= 0.90 && x < 1.10) sigmaG = 0.001767; 
-if (x >= 1.10 && x < 1.30) sigmaG = 0.001370; 
-if (x >= 1.30 && x < 1.50) sigmaG = 0.001260; 
-if (x >= 1.50 && x < 1.70) sigmaG = 0.001041; 
-if (x >= 1.70 && x < 1.90) sigmaG = 0.000906; 
-if (x >= 1.90 && x < 2.10) sigmaG = 0.001000; 
-if (x >= 2.10 && x < 2.30) sigmaG = 0.000963; 
-if (x >= 2.30 && x < 2.50) sigmaG = 0.000955; 
-if (x >= 2.50 && x < 2.70) sigmaG = 0.000847; 
-if (x >= 2.70 && x < 2.90) sigmaG = 0.000688; 
-if (x >= 2.90 && x < 3.10) sigmaG = 0.000564; 
-if (x >= 3.10 && x < 3.30) sigmaG = 0.000448; 
-if (x >= 3.30 && x < 3.50) sigmaG = 0.000489; 
-if (x >= 3.50 && x < 3.70) sigmaG = 0.000597; 
-if (x >= 3.70 && x < 3.90) sigmaG = 0.000390; 
-if (x >= 3.90 && x < 4.10) sigmaG = 0.000454; 
-if (x >= 4.10 && x < 4.30) sigmaG = 0.000349; 
-if (x >= 4.30 && x < 4.50) sigmaG = 0.000417; 
-if (x >= 4.50 && x < 4.70) sigmaG = 0.000318; 
-if (x >= 4.70 && x < 5.00) sigmaG = 0.000365; 
-if (x >= 5.00 && x < 5.50) sigmaG = 0.000345; 
-if (x >= 5.50 && x < 6.00) sigmaG = 0.000101; 
-if (x >= 6.00 && x < 6.50) sigmaG = 0.000156; 
-if (x >= 6.50 && x < 7.00) sigmaG = 0.000423; 
-if (x >= 7.00 && x < 8.00) sigmaG = 0.000571; 
+if (x >= 0.90 && x < 1.10) sigmaG = 0.004456; 
+if (x >= 1.10 && x < 1.30) sigmaG = 0.004643; 
+if (x >= 1.30 && x < 1.50) sigmaG = 0.004339; 
+if (x >= 1.50 && x < 1.70) sigmaG = 0.004005; 
+if (x >= 1.70 && x < 1.90) sigmaG = 0.003767; 
+if (x >= 1.90 && x < 2.10) sigmaG = 0.003611; 
+if (x >= 2.10 && x < 2.30) sigmaG = 0.003501; 
+if (x >= 2.30 && x < 2.50) sigmaG = 0.003461; 
+if (x >= 2.50 && x < 2.70) sigmaG = 0.003427; 
+if (x >= 2.70 && x < 2.90) sigmaG = 0.003316; 
+if (x >= 2.90 && x < 3.10) sigmaG = 0.003208; 
+if (x >= 3.10 && x < 3.30) sigmaG = 0.003076; 
+if (x >= 3.30 && x < 3.50) sigmaG = 0.003071; 
+if (x >= 3.50 && x < 3.70) sigmaG = 0.003018; 
+if (x >= 3.70 && x < 3.90) sigmaG = 0.002872; 
+if (x >= 3.90 && x < 4.10) sigmaG = 0.002829; 
+if (x >= 4.10 && x < 4.30) sigmaG = 0.002774; 
+if (x >= 4.30 && x < 4.50) sigmaG = 0.002707; 
+if (x >= 4.50 && x < 4.70) sigmaG = 0.002721; 
+if (x >= 4.70 && x < 5.00) sigmaG = 0.002718; 
+if (x >= 5.00 && x < 5.50) sigmaG = 0.002518; 
+if (x >= 5.50 && x < 6.00) sigmaG = 0.002492; 
+if (x >= 6.00 && x < 6.50) sigmaG = 0.002546; 
+if (x >= 6.50 && x < 7.00) sigmaG = 0.002241; 
+if (x >= 7.00 && x < 8.00) sigmaG = 0.001996; 
 
 return sigmaG;   
 }
@@ -2825,31 +2826,31 @@ Float_t AliAnalysisHFEppTPCTOFBeauty::GetDCAResolMC_phi3(Float_t x){
 
 float sigmaG = 0;
 
-if (x >= 0.90 && x < 1.10) sigmaG = 0.002756; 
-if (x >= 1.10 && x < 1.30) sigmaG = 0.001274; 
-if (x >= 1.30 && x < 1.50) sigmaG = 0.001667; 
-if (x >= 1.50 && x < 1.70) sigmaG = 0.001323; 
-if (x >= 1.70 && x < 1.90) sigmaG = 0.001157; 
-if (x >= 1.90 && x < 2.10) sigmaG = 0.001088; 
-if (x >= 2.10 && x < 2.30) sigmaG = 0.001124; 
-if (x >= 2.30 && x < 2.50) sigmaG = 0.001120; 
-if (x >= 2.50 && x < 2.70) sigmaG = 0.001058; 
-if (x >= 2.70 && x < 2.90) sigmaG = 0.000790; 
-if (x >= 2.90 && x < 3.10) sigmaG = 0.000799; 
-if (x >= 3.10 && x < 3.30) sigmaG = 0.000727; 
-if (x >= 3.30 && x < 3.50) sigmaG = 0.000719; 
-if (x >= 3.50 && x < 3.70) sigmaG = 0.000575; 
-if (x >= 3.70 && x < 3.90) sigmaG = 0.000660; 
-if (x >= 3.90 && x < 4.10) sigmaG = 0.000380; 
-if (x >= 4.10 && x < 4.30) sigmaG = 0.000623; 
-if (x >= 4.30 && x < 4.50) sigmaG = 0.000462; 
-if (x >= 4.50 && x < 4.70) sigmaG = 0.000401; 
-if (x >= 4.70 && x < 5.00) sigmaG = 0.000581; 
-if (x >= 5.00 && x < 5.50) sigmaG = 0.000410; 
-if (x >= 5.50 && x < 6.00) sigmaG = 0.000476; 
-if (x >= 6.00 && x < 6.50) sigmaG = 0.000257; 
-if (x >= 6.50 && x < 7.00) sigmaG = 0.000387; 
-if (x >= 7.00 && x < 8.00) sigmaG = 0.000279;  
+if (x >= 0.90 && x < 1.10) sigmaG = 0.004687; 
+if (x >= 1.10 && x < 1.30) sigmaG = 0.004552; 
+if (x >= 1.30 && x < 1.50) sigmaG = 0.004081; 
+if (x >= 1.50 && x < 1.70) sigmaG = 0.003625; 
+if (x >= 1.70 && x < 1.90) sigmaG = 0.003370; 
+if (x >= 1.90 && x < 2.10) sigmaG = 0.003223; 
+if (x >= 2.10 && x < 2.30) sigmaG = 0.003101; 
+if (x >= 2.30 && x < 2.50) sigmaG = 0.003038; 
+if (x >= 2.50 && x < 2.70) sigmaG = 0.002978; 
+if (x >= 2.70 && x < 2.90) sigmaG = 0.002852; 
+if (x >= 2.90 && x < 3.10) sigmaG = 0.002712; 
+if (x >= 3.10 && x < 3.30) sigmaG = 0.002661; 
+if (x >= 3.30 && x < 3.50) sigmaG = 0.002737; 
+if (x >= 3.50 && x < 3.70) sigmaG = 0.002538; 
+if (x >= 3.70 && x < 3.90) sigmaG = 0.002447; 
+if (x >= 3.90 && x < 4.10) sigmaG = 0.002486; 
+if (x >= 4.10 && x < 4.30) sigmaG = 0.002483; 
+if (x >= 4.30 && x < 4.50) sigmaG = 0.002566; 
+if (x >= 4.50 && x < 4.70) sigmaG = 0.002467; 
+if (x >= 4.70 && x < 5.00) sigmaG = 0.002358; 
+if (x >= 5.00 && x < 5.50) sigmaG = 0.002283; 
+if (x >= 5.50 && x < 6.00) sigmaG = 0.002238; 
+if (x >= 6.00 && x < 6.50) sigmaG = 0.002261; 
+if (x >= 6.50 && x < 7.00) sigmaG = 0.002097; 
+if (x >= 7.00 && x < 8.00) sigmaG = 0.001937;   
 return sigmaG;   
 }
 
@@ -2859,35 +2860,34 @@ Float_t AliAnalysisHFEppTPCTOFBeauty::GetDCAResolMC_phi4(Float_t x){
 
 float sigmaG = 0;
 
-if (x >= 0.90 && x < 1.10) sigmaG = 0.002412; 
-if (x >= 1.10 && x < 1.30) sigmaG = 0.001436; 
-if (x >= 1.30 && x < 1.50) sigmaG = 0.001695; 
-if (x >= 1.50 && x < 1.70) sigmaG = 0.001356; 
-if (x >= 1.70 && x < 1.90) sigmaG = 0.001193; 
-if (x >= 1.90 && x < 2.10) sigmaG = 0.001136; 
-if (x >= 2.10 && x < 2.30) sigmaG = 0.001075; 
-if (x >= 2.30 && x < 2.50) sigmaG = 0.001062; 
-if (x >= 2.50 && x < 2.70) sigmaG = 0.000939; 
-if (x >= 2.70 && x < 2.90) sigmaG = 0.000751; 
-if (x >= 2.90 && x < 3.10) sigmaG = 0.000605; 
-if (x >= 3.10 && x < 3.30) sigmaG = 0.000590; 
-if (x >= 3.30 && x < 3.50) sigmaG = 0.000704; 
-if (x >= 3.50 && x < 3.70) sigmaG = 0.000419; 
-if (x >= 3.70 && x < 3.90) sigmaG = 0.000517; 
-if (x >= 3.90 && x < 4.10) sigmaG = 0.000598; 
-if (x >= 4.10 && x < 4.30) sigmaG = 0.000677; 
-if (x >= 4.30 && x < 4.50) sigmaG = 0.000674; 
-if (x >= 4.50 && x < 4.70) sigmaG = 0.000508; 
-if (x >= 4.70 && x < 5.00) sigmaG = 0.000537; 
-if (x >= 5.00 && x < 5.50) sigmaG = 0.000612; 
-if (x >= 5.50 && x < 6.00) sigmaG = 0.000579; 
-if (x >= 6.00 && x < 6.50) sigmaG = 0.000588; 
-if (x >= 6.50 && x < 7.00) sigmaG = 0.000406; 
-if (x >= 7.00 && x < 8.00) sigmaG = 0.000467;  
+if (x >= 0.90 && x < 1.10) sigmaG = 0.004601; 
+if (x >= 1.10 && x < 1.30) sigmaG = 0.004646; 
+if (x >= 1.30 && x < 1.50) sigmaG = 0.004214; 
+if (x >= 1.50 && x < 1.70) sigmaG = 0.003825; 
+if (x >= 1.70 && x < 1.90) sigmaG = 0.003556; 
+if (x >= 1.90 && x < 2.10) sigmaG = 0.003325; 
+if (x >= 2.10 && x < 2.30) sigmaG = 0.003158; 
+if (x >= 2.30 && x < 2.50) sigmaG = 0.003140; 
+if (x >= 2.50 && x < 2.70) sigmaG = 0.003017; 
+if (x >= 2.70 && x < 2.90) sigmaG = 0.002917; 
+if (x >= 2.90 && x < 3.10) sigmaG = 0.002934; 
+if (x >= 3.10 && x < 3.30) sigmaG = 0.002827; 
+if (x >= 3.30 && x < 3.50) sigmaG = 0.002844; 
+if (x >= 3.50 && x < 3.70) sigmaG = 0.002636; 
+if (x >= 3.70 && x < 3.90) sigmaG = 0.002595; 
+if (x >= 3.90 && x < 4.10) sigmaG = 0.002581; 
+if (x >= 4.10 && x < 4.30) sigmaG = 0.002691; 
+if (x >= 4.30 && x < 4.50) sigmaG = 0.002451; 
+if (x >= 4.50 && x < 4.70) sigmaG = 0.002302; 
+if (x >= 4.70 && x < 5.00) sigmaG = 0.002417; 
+if (x >= 5.00 && x < 5.50) sigmaG = 0.002371; 
+if (x >= 5.50 && x < 6.00) sigmaG = 0.002210; 
+if (x >= 6.00 && x < 6.50) sigmaG = 0.002085; 
+if (x >= 6.50 && x < 7.00) sigmaG = 0.002134; 
+if (x >= 7.00 && x < 8.00) sigmaG = 0.002009; 
 
 return sigmaG;   
 }
-
 
 //=======================================================================
 
