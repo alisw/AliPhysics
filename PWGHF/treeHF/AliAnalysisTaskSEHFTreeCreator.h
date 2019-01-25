@@ -87,6 +87,8 @@ public:
   
     void SetDsMassKKOption(AliHFTreeHandlerDstoKKpi::massKKopt opt) {fDsMassKKOpt=opt;}
   
+    void SetTreeSingleTrackVarsOpt(AliHFTreeHandler::optsingletrack opt) {fTreeSingleTrackVarsOpt=opt;}
+  
     Int_t  GetSystem() const {return fSys;}
     Bool_t GetWriteOnlySignalTree() const {return fWriteOnlySignal;}
     
@@ -191,9 +193,11 @@ private:
     Bool_t                  fFillMCGenTrees;                       /// flag to enable fill of the generated trees
   
     Int_t                   fDsMassKKOpt;                          /// option for Ds massKK (mass or delta mass)
-    
+  
+    Int_t                   fTreeSingleTrackVarsOpt;               /// option for single-track variables to be filled in the trees
+  
     /// \cond CLASSIMP
-    ClassDef(AliAnalysisTaskSEHFTreeCreator,5);
+    ClassDef(AliAnalysisTaskSEHFTreeCreator,6);
     /// \endcond
 };
 
