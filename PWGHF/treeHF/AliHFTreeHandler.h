@@ -40,7 +40,7 @@ class AliHFTreeHandler : public TObject
       kBkg      = BIT(2),
       kPrompt   = BIT(3),
       kFD       = BIT(4),
-      kRefl     = BIT(5),
+      kRefl     = BIT(5)
     };
   
     enum optpid {
@@ -60,6 +60,12 @@ class AliHFTreeHandler : public TObject
       kTOF
     };
 
+    enum optsingletrack {
+      kNoSingleTrackVars, // single-track vars off
+      kRedSingleTrackVars, // only pT, eta, phi
+      kAllSingleTrackVars // all single-track vars
+    };
+
     AliHFTreeHandler();
     AliHFTreeHandler(int PIDopt);
 
@@ -76,6 +82,7 @@ class AliHFTreeHandler : public TObject
     
     //common methods
     void SetOptPID(int PIDopt) {fPidOpt=PIDopt;}
+    void SetOptSingleTrackVars(int opt) {fSingleTrackOpt=opt;}
     void SetFillOnlySignal(bool fillopt=true) {fFillOnlySignal=fillopt;}
 
     void SetCandidateType(bool issignal, bool isbkg, bool isprompt, bool isFD, bool isreflected);
@@ -170,13 +177,14 @@ class AliHFTreeHandler : public TObject
     vector<int> fPIDNsigmaIntVector[knMaxProngs][knMaxDet4Pid][knMaxHypo4Pid]; ///vectors of PID nsigma variables (integers)
     vector<float> fPIDrawVector[knMaxProngs][knMaxDet4Pid]; ///vectors of raw PID variables
     int fPidOpt; /// option for PID variables
+    int fSingleTrackOpt; /// option for single-track variables
     bool fFillOnlySignal; ///flag to enable only signal filling
     bool fIsMCGenTree; ///flag to know if is a tree for MC generated particles
     bool fDauInAccFlag; ///flag to know if the daughter are in acceptance in case of MC gen
     vector<bool> fDauInAcceptance; ///vector of flags to know if the daughter are in acceptance in case of MC gen
   
   /// \cond CLASSIMP
-  ClassDef(AliHFTreeHandler,1); /// 
+  ClassDef(AliHFTreeHandler,2); /// 
   /// \endcond
 };
 
