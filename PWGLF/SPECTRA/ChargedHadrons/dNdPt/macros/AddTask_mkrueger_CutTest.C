@@ -1,10 +1,8 @@
-#include "$ALICE_PHYSICS/PWGLF/SPECTRA/ChargedHadrons/dNdPt/macros/CreatedNdPtTrackCuts.C"
-
 AliAnalysisTaskSE *AddTask_mkrueger_CutTest(Int_t cutMode = 223){
   //get the current analysis manager
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
   if (!mgr) {
-    Error("No analysis manager found.");
+    Error("AddTask_mkrueger_CutTest", "No analysis manager found.");
     return 0;
   }
 
@@ -22,15 +20,17 @@ AliAnalysisTaskSE *AddTask_mkrueger_CutTest(Int_t cutMode = 223){
   //
   // Create geom. acceptance cuts
   //
-  Float_t etaWindow = 0.8 ;
+  Float_t etaWindow = 0.8;
   Float_t ptMin = 0.0;
   AlidNdPtAcceptanceCuts *accCuts = new AlidNdPtAcceptanceCuts("AlidNdPtAcceptanceCuts","Geom. acceptance cuts");
   accCuts->SetEtaRange(-etaWindow,etaWindow);
   accCuts->SetPtRange(ptMin,1.e10);
 
-//  gROOT->LoadMacro("$ALICE_ROOT/PWGLF/SPECTRA/ChargedHadrons/dNdPt/macros/CreatedNdPtTrackCuts.C");
-//   gROOT->LoadMacro("CreatedNdPtTrackCuts.C");
-   AliESDtrackCuts* esdTrackCuts = CreatedNdPtTrackCuts(cutMode);
+  string cutModeString = std::to_string(cutMode);
+  TMacro createTrackCutsMacro(gSystem->ExpandPathName("$ALICE_PHYSICS/PWGLF/SPECTRA/ChargedHadrons/dNdPt/macros/CreatedNdPtTrackCuts.C"));
+  AliESDtrackCuts* esdTrackCuts = reinterpret_cast<AliESDtrackCuts *>(createTrackCutsMacro.Exec(cutModeString.c_str()));
+  if(!esdTrackCuts) cout << "ERROR: Could not find esdTrackCuts." << endl;
+
    esdTrackCuts->SetHistogramsOn(kFALSE);
 
     // check for mc
@@ -44,7 +44,8 @@ AliAnalysisTaskSE *AddTask_mkrueger_CutTest(Int_t cutMode = 223){
 
   task->SetUseMCInfo(hasMC);
   //task->SelectCollisionCandidates(AliVEvent::kMB & AliVEvent::kCINT5 & AliVEvent::kINT7);
-  task->SelectCollisionCandidates(AliVEvent::kMB);
+//  task->SelectCollisionCandidates(AliVEvent::kMB);
+  task->SelectCollisionCandidates(AliVEvent::kINT7);
   task->SetTrackCuts(esdTrackCuts);
   task->SetAcceptanceCuts(accCuts);
   task->SetEventCuts(evtCuts);
@@ -56,7 +57,7 @@ AliAnalysisTaskSE *AddTask_mkrueger_CutTest(Int_t cutMode = 223){
 
   AliAnalysisDataContainer *coutput1 =
   mgr->CreateContainer("mkrueger_CutTest", TObjArray::Class(),
-			     AliAnalysisManager::kOutputContainer,"mkrueger_CutTest.root");
+			     AliAnalysisManager::kOutputContainer,"AnalysisResults.root");
 
   //           connect containers
   mgr->ConnectInput  (task,  0, cinput );
