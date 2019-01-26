@@ -174,7 +174,10 @@ class AliAnalysisTaskBFPsi : public AliAnalysisTaskSE {
     fExcludeInjectedSignals = kTRUE;
   }
 
-   
+  void SetUseNUADeep() {
+    fUseNUADeep = kTRUE;
+  }
+
   //Centrality
   void SetCentralityEstimator(const char* centralityEstimator) {fCentralityEstimator = centralityEstimator;}
   const char* GetCentralityEstimator(void)  const              {return fCentralityEstimator;}
@@ -386,7 +389,6 @@ class AliAnalysisTaskBFPsi : public AliAnalysisTaskSE {
   TH2F *fHistRefTracks;//reference track multiplicities (QA histogram)
   TH2F *fHistPhivZ;//phi vs Vz (QA histos) 
   TH2F *fHistEtavZ;//eta vs Vz (QA histos)
-
   TH1F *fHistPdgMC;
   TH1F *fHistPdgMCAODrec;//pdg code of accepted tracks in MCAODrec
   TH1F *fHistSphericity; //sphericity of accepted tracks
@@ -395,7 +397,8 @@ class AliAnalysisTaskBFPsi : public AliAnalysisTaskSE {
   TH1F *fHistSphericityAfter; //sphericity of accepted tracks
   TH2F *fHistMultiplicityVsSphericityAfter; //multiplicity vs sphericity of accepted tracks
   TH2F *fHistMeanPtVsSphericityAfter; //mean pT vs sphericity of accepted tracks
-
+  TH2F *fHistPhiNUADeep;
+    
   //============PID============//
   TH2D *fHistdEdxVsPTPCbeforePID;//TPC dEdx vs momentum before PID cuts (QA histogram)
   TH2D *fHistBetavsPTOFbeforePID;//beta vs momentum before PID cuts (QA histogram)
@@ -493,7 +496,6 @@ class AliAnalysisTaskBFPsi : public AliAnalysisTaskSE {
   Bool_t fUseMCforKinematics;//Usage of MC information for filling the kinematics information of particles (only in MCAODrec mode)
   Bool_t fRebinCorrHistos;//Rebinning of corrected plots
   Bool_t fUseAdditionalVtxCuts;//usage of additional clean up cuts for primary vertex.
-
   Bool_t fUseOutOfBunchPileUpCutsLHC15o;//usage of correlation cuts to exclude out of bunche pile up. To be used for 2015 PbPb data.
 
   Bool_t fUseOutOfBunchPileUpCutsLHC15oJpsi;//
@@ -535,6 +537,7 @@ class AliAnalysisTaskBFPsi : public AliAnalysisTaskSE {
 
   TF1 *fDifferentialV2;//pt-differential v2 (from real data)
   Bool_t fUseFlowAfterBurner;//Usage of a flow after burner
+  Bool_t fUseNUADeep;//Usage of a deep in phi
 
   Bool_t fIncludeSecondariesInMCgen;//flag to include the secondaries from material and weak decays in the MC analysis (needed for fIncludeResonancePDGInMC)
   Bool_t fExcludeSecondariesInMC;//flag to exclude the secondaries from material and weak decays in the MCAODrec analysis

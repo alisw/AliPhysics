@@ -182,6 +182,8 @@ AliAnalysisTaskBFPsi::AliAnalysisTaskBFPsi(const char *name)
   fElectronRejectionMinPt(0.),
   fElectronRejectionMaxPt(1000.),
   fPIDMomCut(0.6),
+  fHistPhiNUADeep(0),
+  fUseNUADeep(kFALSE),
   fESDtrackCuts(0),
   fCentralityEstimator("V0M"),
   fUseCentrality(kFALSE),
@@ -483,7 +485,8 @@ void AliAnalysisTaskBFPsi::UserCreateOutputObjects() {
   fList->Add(fHistPdgMC);
   fHistPdgMCAODrec  = new TH1F("fHistPdgMCAODrec","Pdg code distribution;pdg code;Entries",6401,-3200.5,3200.5);
   fList->Add(fHistPdgMCAODrec);
-				     
+  fHistPhiNUADeep = new TH2F("fHistPhiNUADeep","#phi distribution;#phi (rad);Centrality percentile",200,0.0,2.*TMath::Pi(),220,-5,105);
+  fList->Add(fHistPhiNUADeep); 
   fHistEtaVzPos  = new TH3F("fHistEtaVzPos","#eta vs Vz distribution (+);#eta;V_{z} (cm);Centrality percentile",40,-1.6,1.6,140,-12.,12.,220,-5,105);
   fList->Add(fHistEtaVzPos); 
   fHistEtaVzPosCorr  = new TH3F("fHistEtaVzPosCorr","#eta vs Vz distribution (+);#eta;V_{z} (cm);Centrality percentile",40,-1.6,1.6,140,-12.,12.,220,-5,105);
@@ -4049,6 +4052,17 @@ TObjArray* AliAnalysisTaskBFPsi::GetAcceptedTracks(AliVEvent *event, Double_t gC
 	  
 	}
 	
+        if(fUseNUADeep) {
+          
+          if (vPhi > 1.5 && vPhi < 2){
+              continue;
+      
+          }
+          
+          fHistPhiNUADeep->Fill(vPhi,gCentrality);
+
+        }
+          
 	//vPhi *= TMath::RadToDeg();
 
 	//caluclation of sphericity
