@@ -16,7 +16,8 @@ AliAnalysisTaskSEHFTreeCreator *AddTaskHFTreeCreator(Bool_t readMC=kTRUE,
                                                      Int_t pidOptDplus=AliHFTreeHandler::kRawAndNsigmaPID,
                                                      Int_t pidOptDstar=AliHFTreeHandler::kRawAndNsigmaPID,
                                                      Int_t pidOptLctopKpi=AliHFTreeHandler::kRawAndNsigmaPID,
-                                                     Int_t pidOptBplus=AliHFTreeHandler::kRawAndNsigmaPID)
+                                                     Int_t pidOptBplus=AliHFTreeHandler::kRawAndNsigmaPID,
+                                                     Int_t singletrackvarsopt=AliHFTreeHandler::kRedSingleTrackVars)
 {
     //
     //
@@ -103,7 +104,8 @@ AliAnalysisTaskSEHFTreeCreator *AddTaskHFTreeCreator(Bool_t readMC=kTRUE,
     task->SetPIDoptLctopKpiTree(pidOptLctopKpi);
     task->SetPIDoptBplusTree(pidOptBplus);
     task->SetPIDoptDstarTree(pidOptDstar);
-
+    task->SetTreeSingleTrackVarsOpt(singletrackvarsopt);
+  
     //task->SetDebugLevel(4);
 
     mgr->AddTask(task);
