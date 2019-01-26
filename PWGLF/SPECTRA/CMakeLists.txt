@@ -84,7 +84,7 @@ set(SRCS
   ParticleEfficiency/AliAnalysisTaskParticleEfficiencyLF.cxx
   PiKaPr/TestAOD/AliSpectraAODTrackCuts.cxx
   PiKaPr/TestAOD/AliSpectraAODEventCuts.cxx
-  PiKaPr/TestAOD/AliSpectraAODHistoManager.cxx
+#  PiKaPr/TestAOD/AliSpectraAODHistoManager.cxx
   PiKaPr/TestAOD/AliSpectraAODPID.cxx
   PiKaPr/TestAOD/AliAnalysisTaskSpectraAOD.cxx
   PiKaPr/TestAOD/AliAnalysisTaskSpectraAllChAOD.cxx
