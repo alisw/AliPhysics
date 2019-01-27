@@ -76,7 +76,7 @@ AliAnalysisTaskSE *AddTaskSigma0Femto(bool isMC = false,
   //========= Add V0 Reader to  ANALYSIS manager if not yet existent =====
   TString V0ReaderName =
       Form("V0ReaderV1_%s_%s", cutnumberEvent.Data(), cutnumberPhoton.Data());
-  AliConvEventCuts *fEventCuts = nullptr;
+  AliConvEventCuts *fEventCuts = NULL;
 
   if (!(AliV0ReaderV1 *)mgr->GetTask(V0ReaderName.Data())) {
     AliV0ReaderV1 *fV0ReaderV1 = new AliV0ReaderV1(V0ReaderName.Data());
@@ -89,7 +89,7 @@ AliAnalysisTaskSE *AddTaskSigma0Femto(bool isMC = false,
 
     if (!mgr) {
       Error("AddTask_V0ReaderV1", "No analysis manager found.");
-      return nullptr;
+      return NULL;
     }
 
     if (cutnumberEvent != "") {
