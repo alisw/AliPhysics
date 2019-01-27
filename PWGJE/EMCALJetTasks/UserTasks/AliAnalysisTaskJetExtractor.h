@@ -51,6 +51,7 @@ class AliAnalysisTaskJetExtractor : public AliAnalysisTaskEmcalJet {
   void                        SetCalculateModelBackground(Bool_t val)             { fCalculateModelBackground = val; }
   void                        SetBackgroundModelFileName(const char* val)         { fBackgroundModelFileName = val; }
   void                        SetBackgroundModelInputParameters(const char* val)  { fBackgroundModelInputParameters = val; }
+  void                        SetBackgroundModelPtOnly(Bool_t val)                { fBackgroundModelPtOnly = val; }
   void                        SetCustomStartupScript(const char* path)            { fCustomStartupScript = path; }
   void                        SetVertexerCuts(AliRDHFJetsCutsVertex* val)         { fVertexerCuts = val; }
   void                        SetSetEmcalJetFlavour(Bool_t val)                   { fSetEmcalJetFlavour = val; }
@@ -99,6 +100,7 @@ class AliAnalysisTaskJetExtractor : public AliAnalysisTaskEmcalJet {
   Bool_t                      fCalculateModelBackground;                ///< Calculate MVA model background and attach to event
   TString                     fBackgroundModelFileName;                 ///< MVA model file name
   TString                     fBackgroundModelInputParameters;          ///< MVA model input parameters (comma-separated)
+  Bool_t                      fBackgroundModelPtOnly;                   ///< MVA model, use approximation for pT only (not for mass)
   TString                     fCustomStartupScript;                     ///< Path to custom shell script that will be executed
   AliRDHFJetsCutsVertex*      fVertexerCuts;                            ///< Cuts used for the vertexer (given in add task macro)
   Bool_t                      fSetEmcalJetFlavour;                      ///< if set, the flavour property of the AliEmcalJets will be set
@@ -311,6 +313,17 @@ class AliEmcalJetTree : public TNamed
     Float_t         fBuffer_Shape_Mass_NoCorr;            //!<! array buffer
     Float_t         fBuffer_Shape_Mass_DerivCorr_1;       //!<! array buffer
     Float_t         fBuffer_Shape_Mass_DerivCorr_2;       //!<! array buffer
+    Float_t         fBuffer_Shape_pTD_DerivCorr_1;        //!<! array buffer
+    Float_t         fBuffer_Shape_pTD_DerivCorr_2;        //!<! array buffer
+    Float_t         fBuffer_Shape_LeSub_DerivCorr;        //!<! array buffer
+    Float_t         fBuffer_Shape_Angularity_DerivCorr_1; //!<! array buffer
+    Float_t         fBuffer_Shape_Angularity_DerivCorr_2; //!<! array buffer
+    Float_t         fBuffer_Shape_Circularity_DerivCorr_1;//!<! array buffer
+    Float_t         fBuffer_Shape_Circularity_DerivCorr_2;//!<! array buffer
+    Float_t         fBuffer_Shape_Sigma2_DerivCorr_1;     //!<! array buffer
+    Float_t         fBuffer_Shape_Sigma2_DerivCorr_2;     //!<! array buffer
+    Float_t         fBuffer_Shape_NumConst_DerivCorr;     //!<! array buffer
+
 
     Int_t           fBuffer_Jet_MC_MotherParton;          //!<! array buffer
     Int_t           fBuffer_Jet_MC_MotherHadron;          //!<! array buffer
@@ -325,7 +338,7 @@ class AliEmcalJetTree : public TNamed
 
 
     /// \cond CLASSIMP
-    ClassDef(AliEmcalJetTree, 5) // Jet tree class
+    ClassDef(AliEmcalJetTree, 6) // Jet tree class
     /// \endcond
 };
 
