@@ -70,6 +70,10 @@ fCutMinEtaTracks(-0.8),
 fCutMaxEtaTracks(+0.8),
 fCutMaxChi2PerCluster(1e+5),
 fCutMinTrackLength(-1),
+fCutUseParametricLength(kFALSE),
+fCutLeastNumberOfCrossedRows(-1),
+fCutMinCrossedRowsOverLength(-1),
+
 fCutUseVariableCascCosPA(kFALSE),
 fCutVarCascCosPA_Exp0Const(0),
 fCutVarCascCosPA_Exp0Slope(0),
@@ -176,6 +180,9 @@ fCutMinEtaTracks(-0.8),
 fCutMaxEtaTracks(+0.8),
 fCutMaxChi2PerCluster(1e+5),
 fCutMinTrackLength(-1),
+fCutUseParametricLength(kFALSE),
+fCutLeastNumberOfCrossedRows(-1),
+fCutMinCrossedRowsOverLength(-1),
 fCutUseVariableCascCosPA(kFALSE),
 fCutVarCascCosPA_Exp0Const(0),
 fCutVarCascCosPA_Exp0Slope(0),
@@ -282,6 +289,9 @@ fCutMinEtaTracks(-0.8),
 fCutMaxEtaTracks(+0.8),
 fCutMaxChi2PerCluster(1e+5),
 fCutMinTrackLength(-1),
+fCutUseParametricLength(kFALSE),
+fCutLeastNumberOfCrossedRows(-1),
+fCutMinCrossedRowsOverLength(-1),
 fCutUseVariableCascCosPA(kFALSE),
 fCutVarCascCosPA_Exp0Const(0),
 fCutVarCascCosPA_Exp0Slope(0),
@@ -388,6 +398,9 @@ fCutMinEtaTracks(-0.8),
 fCutMaxEtaTracks(+0.8),
 fCutMaxChi2PerCluster(1e+5),
 fCutMinTrackLength(-1),
+fCutUseParametricLength(kFALSE),
+fCutLeastNumberOfCrossedRows(-1),
+fCutMinCrossedRowsOverLength(-1),
 fCutUseVariableCascCosPA(kFALSE),
 fCutVarCascCosPA_Exp0Const(0),
 fCutVarCascCosPA_Exp0Slope(0),
@@ -495,6 +508,9 @@ fCutMinEtaTracks(lCopyMe.fCutMinEtaTracks),
 fCutMaxEtaTracks(lCopyMe.fCutMaxEtaTracks),
 fCutMaxChi2PerCluster(lCopyMe.fCutMaxChi2PerCluster),
 fCutMinTrackLength(lCopyMe.fCutMinTrackLength),
+fCutUseParametricLength(lCopyMe.fCutUseParametricLength),
+fCutLeastNumberOfCrossedRows(lCopyMe.fCutLeastNumberOfCrossedRows),
+fCutMinCrossedRowsOverLength(lCopyMe.fCutMinCrossedRowsOverLength),
 
 fCutUseVariableCascCosPA(lCopyMe.fCutUseVariableCascCosPA),
 fCutVarCascCosPA_Exp0Const(lCopyMe.fCutVarCascCosPA_Exp0Const),
@@ -623,6 +639,9 @@ fHisto(0), fProtonProfile(0)
     fCutMaxEtaTracks = lCopyMe -> GetCutMaxEtaTracks();
     fCutMaxChi2PerCluster = lCopyMe -> GetCutMaxChi2PerCluster();
     fCutMinTrackLength = lCopyMe -> GetCutMinTrackLength();
+    fCutUseParametricLength = lCopyMe -> GetCutUseParametricLength();
+    fCutLeastNumberOfCrossedRows = lCopyMe->GetCutLeastNumberOfCrossedRows();
+    fCutMinCrossedRowsOverLength = lCopyMe->GetCutMinCrossedRowsOverLength();
     
     //Variable CascCosPA
     fCutUseVariableCascCosPA = lCopyMe -> GetCutUseVarCascCosPA();
@@ -777,6 +796,9 @@ AliCascadeResult& AliCascadeResult::operator=(const AliCascadeResult& lCopyMe)
     fCutMaxEtaTracks = lCopyMe.GetCutMaxEtaTracks();
     fCutMaxChi2PerCluster = lCopyMe.GetCutMaxChi2PerCluster();
     fCutMinTrackLength = lCopyMe.GetCutMinTrackLength();
+    fCutUseParametricLength = lCopyMe.GetCutUseParametricLength();
+    fCutLeastNumberOfCrossedRows = lCopyMe.GetCutLeastNumberOfCrossedRows();
+    fCutMinCrossedRowsOverLength = lCopyMe.GetCutMinCrossedRowsOverLength();
     
     //Variable CascCosPA
     fCutUseVariableCascCosPA = lCopyMe.GetCutUseVarCascCosPA();
@@ -952,6 +974,10 @@ Bool_t AliCascadeResult::HasSameCuts(AliVWeakResult *lCompare, Bool_t lCheckdEdx
     if( TMath::Abs( fCutMaxChi2PerCluster - lCompareCascade->GetCutMaxChi2PerCluster() ) > 1e-6 ) lReturnValue = kFALSE;
     if( TMath::Abs( fCutMinTrackLength - lCompareCascade->GetCutMinTrackLength() ) > 1e-6 ) lReturnValue = kFALSE;
     
+    if( TMath::Abs( fCutUseParametricLength - lCompareCascade->GetCutUseParametricLength() ) > 1e-6 ) lReturnValue = kFALSE;
+    if( TMath::Abs( fCutLeastNumberOfCrossedRows - lCompareCascade->GetCutLeastNumberOfCrossedRows() ) > 1e-6 ) lReturnValue = kFALSE;
+    if( TMath::Abs( fCutMinCrossedRowsOverLength - lCompareCascade->GetCutMinCrossedRowsOverLength() ) > 1e-6 ) lReturnValue = kFALSE;
+    
     //Variable CascCosPA
     if ( TMath::Abs(fCutUseVariableCascCosPA - lCompareCascade->GetCutUseVarCascCosPA()) > 1e-6 ) lReturnValue = kFALSE;
     if ( TMath::Abs(fCutVarCascCosPA_Exp0Const - lCompareCascade->GetCutVarCascCosPAExp0Const()) > 1e-6 ) lReturnValue = kFALSE;
@@ -1082,6 +1108,9 @@ void AliCascadeResult::Print()
     cout<<" Max track eta......: "<<fCutMaxEtaTracks<<endl;
     cout<<" Max chi2/cluster...: "<<fCutMaxChi2PerCluster<<endl;
     cout<<" Min Track Length...: "<<fCutMinTrackLength<<endl;
+    cout<<" Param Track Length.: "<<fCutUseParametricLength<<endl;
+    cout<<" N(crossed rows)....: "<<fCutLeastNumberOfCrossedRows<<endl;
+    cout<<" N(cr)/length.......: "<<fCutMinCrossedRowsOverLength<<endl;
     
     cout<<" MC PDG Association.: "<<fCutMCPDGCodeAssociation<<endl;
     cout<<" MC Phys Primary....: "<<fCutMCPhysicalPrimary<<endl;

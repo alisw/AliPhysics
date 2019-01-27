@@ -100,7 +100,12 @@ public:
     void SetCutMinEtaTracks ( Double_t lCut ) { fCutMinEtaTracks = lCut; }
     void SetCutMaxEtaTracks ( Double_t lCut ) { fCutMaxEtaTracks = lCut; }
     void SetCutMaxChi2PerCluster ( Double_t lCut ) { fCutMaxChi2PerCluster = lCut; }
-    void SetCutMinTrackLength    ( Double_t lCut ) { fCutMinTrackLength    = lCut; }
+    
+    //Modern Track quality cuts
+    void SetCutMinTrackLength          ( Double_t lCut )  { fCutMinTrackLength          = lCut; }
+    void SetCutUseParametricLength     ( Bool_t   lCut )  { fCutUseParametricLength     = lCut; }
+    void SetCutLeastNumberOfCrossedRows( Double_t lCut )  { fCutLeastNumberOfCrossedRows= lCut; }
+    void SetCutMinCrossedRowsOverLength( Double_t lCut )  { fCutMinCrossedRowsOverLength= lCut; }
     
     //Variable CascCosPA
     void SetCutUseVarCascCosPA      ( Bool_t lCut )   { fCutUseVariableCascCosPA     = lCut; }
@@ -236,7 +241,12 @@ public:
     Double_t GetCutMinEtaTracks () const { return fCutMinEtaTracks; }
     Double_t GetCutMaxEtaTracks () const { return fCutMaxEtaTracks; }
     Double_t GetCutMaxChi2PerCluster () const { return fCutMaxChi2PerCluster; }
-    Double_t GetCutMinTrackLength    () const { return fCutMinTrackLength; }
+    
+    //Modern track quality cuts
+    Double_t GetCutMinTrackLength              () const { return fCutMinTrackLength; }
+    Bool_t   GetCutUseParametricLength         () const { return fCutUseParametricLength; }
+    Double_t GetCutLeastNumberOfCrossedRows    () const { return fCutLeastNumberOfCrossedRows; }
+    Double_t GetCutMinCrossedRowsOverLength    () const { return fCutMinCrossedRowsOverLength; }
     
     //Variable CascCosPA
     Bool_t GetCutUseVarCascCosPA        () const { return fCutUseVariableCascCosPA;   }
@@ -378,7 +388,12 @@ private:
     Double_t fCutMinEtaTracks; //Minimum eta value for daughter tracks (usually -0.8)
     Double_t fCutMaxEtaTracks; //Maximum eta value for daughter tracks (usually +0.8)
     Double_t fCutMaxChi2PerCluster; //Max chi2/clusters
+    
+    //New track selections
     Double_t fCutMinTrackLength; //Minimum track length in the active TPC zone
+    Bool_t fCutUseParametricLength; //Relax track requirements at low pT or high R
+    Double_t fCutLeastNumberOfCrossedRows;
+    Double_t fCutMinCrossedRowsOverLength; //N(crossed rows)/L > something
     
     //Experimental: pt-variable cascade cosPA
     //Warning: if this cut is tighter than fCutCascCosPA, this gets used instead!
@@ -427,7 +442,7 @@ private:
     Int_t fCutIsCowboy; //-1: sailor, 0: don't select, 1: cowboy
     Int_t fCutIsCascadeCowboy; //-1: sailor, 0: don't select, 1: cowboy
     
-    ClassDef(AliCascadeResult, 36)
+    ClassDef(AliCascadeResult, 37)
     // 1 - original implementation
     // 2 - MC association implementation (disabled in real data analysis)
     // 3 - Variable binning constructor + re-order variables in main output for convenience
@@ -464,5 +479,6 @@ private:
     // 34 - TOF cut: at-least-one type
     // 35 - provision for prong-wise ITS refit requirement
     // 36 - cowboy/sailor check
+    // 37 - modern track selections: parametric length, crossed rows + cr/L
 };
 #endif
