@@ -114,6 +114,7 @@ AliAnalysisHFjetTagHFE::AliAnalysisHFjetTagHFE() :
   fHistEop(0),
   fHistEopHFE(0),
   fHistEopHad(0),
+  fHistEopIso(0),
   fHistEopHFjet(0),
   fHistNsigHFjet(0),
   fHistJetOrg(0),
@@ -294,6 +295,7 @@ AliAnalysisHFjetTagHFE::AliAnalysisHFjetTagHFE(const char *name) :
   fHistEop(0),
   fHistEopHFE(0),
   fHistEopHad(0),
+  fHistEopIso(0),
   fHistEopHFjet(0),
   fHistNsigHFjet(0),
   fHistJetOrg(0),
@@ -567,14 +569,18 @@ void AliAnalysisHFjetTagHFE::UserCreateOutputObjects()
   fHistEopNsig = new TH2F("fHistEopNsig","E/p vs. Nsig;Nsig;E/p",200,-5,5,200,0.,4.);
   fOutput->Add(fHistEopNsig);
 
-  fHistEop = new TH2F("fHistEop","E/p;p_{T}(GeV/c);E/p",100,0.,20.,200,0.,4.);
+  //fHistEop = new TH2F("fHistEop","E/p;p_{T}(GeV/c);E/p",100,0.,20.,200,0.,4.);
+  fHistEop = new TH2F("fHistEop","E/p;p_{T}(GeV/c);E/p",500,0.,100.,200,0.,4.);
   fOutput->Add(fHistEop);
 
-  fHistEopHFE = new TH2F("fHistEopHFE","HFE E/p;p_{T}(GeV/c);E/p",100,0.,20.,200,0.,4.);
+  fHistEopHFE = new TH2F("fHistEopHFE","HFE E/p;p_{T}(GeV/c);E/p",500,0.,100.,200,0.,4.);
   fOutput->Add(fHistEopHFE);
 
-  fHistEopHad = new TH2F("fHistEopHad","E/p hadron ;p_{T}(GeV/c);E/p",100,0.,20.,200,0.,4.);
+  fHistEopHad = new TH2F("fHistEopHad","E/p hadron ;p_{T}(GeV/c);E/p",500,0.,100.,200,0.,4.);
   fOutput->Add(fHistEopHad);
+
+  fHistEopIso = new TH2F("fHistEopIso","E/p Isolate ;p_{T}(GeV/c);E/p",500,0.,100.,200,0.,4.);
+  fOutput->Add(fHistEopIso);
 
   fHistEopHFjet = new TH2F("fHistEopHFjet","E/p HFjet ;p_{T}(GeV/c);E/p",10,0.,100.,200,0.,4.);
   fOutput->Add(fHistEopHFjet);
@@ -1550,10 +1556,17 @@ Bool_t AliAnalysisHFjetTagHFE::Run()
                   { 
                    iso = IsolationCut(itrack, track, pt, emcphi, emceta, clustMatchE);
                    fHistEle_woISO->Fill(pt);
-                   if(iso<0.05)fHistEle_wISO->Fill(pt);
                    fHistEleiso->Fill(pt,iso);  // 
-                   if(iso<0.05 && pt>30.0 && pt<70.0)HaveW = kTRUE;
-                  }
+                   //if(iso<0.05)fHistEle_wISO->Fill(pt);
+                   //if(iso<0.05 && pt>30.0 && pt<70.0)HaveW = kTRUE;
+                  
+                    if(iso<0.05)
+                       {
+                        fHistEle_wISO->Fill(pt);
+                        fHistEopIso->Fill(pt,eop);
+                        if(pt>30.0 && pt<70.0)HaveW = kTRUE;
+                       }
+                   }
 
                if(abs(MCpdg)==11)
                  {
