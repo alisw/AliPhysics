@@ -266,6 +266,16 @@ Bool_t AliEmcalJetTree::AddJetToTree(AliEmcalJet* jet, Float_t vertexX, Float_t 
   fBuffer_Shape_Mass_NoCorr = jet->M();
   fBuffer_Shape_Mass_DerivCorr_1 = jet->GetShapeProperties()->GetFirstOrderSubtracted();
   fBuffer_Shape_Mass_DerivCorr_2 = jet->GetShapeProperties()->GetSecondOrderSubtracted();
+  fBuffer_Shape_pTD_DerivCorr_1  = jet->GetShapeProperties()->GetFirstOrderSubtractedpTD();
+  fBuffer_Shape_pTD_DerivCorr_2  = jet->GetShapeProperties()->GetSecondOrderSubtractedpTD();
+  fBuffer_Shape_Angularity_DerivCorr_1  = jet->GetShapeProperties()->GetFirstOrderSubtractedAngularity();
+  fBuffer_Shape_Angularity_DerivCorr_2  = jet->GetShapeProperties()->GetSecondOrderSubtractedAngularity();
+  fBuffer_Shape_Circularity_DerivCorr_1  = jet->GetShapeProperties()->GetFirstOrderSubtractedCircularity();
+  fBuffer_Shape_Circularity_DerivCorr_2  = jet->GetShapeProperties()->GetSecondOrderSubtractedCircularity();
+  fBuffer_Shape_LeSub_DerivCorr = jet->GetShapeProperties()->GetSecondOrderSubtractedLeSub();
+  fBuffer_Shape_Sigma2_DerivCorr_1 = jet->GetShapeProperties()->GetFirstOrderSubtractedSigma2();
+  fBuffer_Shape_Sigma2_DerivCorr_2 = jet->GetShapeProperties()->GetSecondOrderSubtractedSigma2();
+  fBuffer_Shape_NumConst_DerivCorr = jet->GetShapeProperties()->GetSecondOrderSubtractedConstituent();
 
   // Set Monte Carlo information
   if(fSaveMCInformation)
@@ -389,6 +399,17 @@ void AliEmcalJetTree::InitializeTree()
     fJetTree->Branch("Jet_Shape_Mass_NoCorr",&fBuffer_Shape_Mass_NoCorr,"Jet_Shape_Mass_NoCorr/F");
     fJetTree->Branch("Jet_Shape_Mass_DerivCorr_1",&fBuffer_Shape_Mass_DerivCorr_1,"Jet_Shape_Mass_DerivCorr_1/F");
     fJetTree->Branch("Jet_Shape_Mass_DerivCorr_2",&fBuffer_Shape_Mass_DerivCorr_2,"Jet_Shape_Mass_DerivCorr_2/F");
+    fJetTree->Branch("Jet_Shape_pTD_DerivCorr_1",&fBuffer_Shape_pTD_DerivCorr_1,"Jet_Shape_pTD_DerivCorr_1/F");
+    fJetTree->Branch("Jet_Shape_pTD_DerivCorr_2",&fBuffer_Shape_pTD_DerivCorr_2,"Jet_Shape_pTD_DerivCorr_2/F");
+    fJetTree->Branch("Jet_Shape_LeSub_DerivCorr",&fBuffer_Shape_LeSub_DerivCorr,"Jet_Shape_LeSub_DerivCorr/F");
+    fJetTree->Branch("Jet_Shape_Angularity_DerivCorr_1",&fBuffer_Shape_Angularity_DerivCorr_1,"Jet_Shape_Angularity_DerivCorr_1/F");
+    fJetTree->Branch("Jet_Shape_Angularity_DerivCorr_2",&fBuffer_Shape_Angularity_DerivCorr_2,"Jet_Shape_Angularity_DerivCorr_2/F");
+    fJetTree->Branch("Jet_Shape_Circularity_DerivCorr_1",&fBuffer_Shape_Circularity_DerivCorr_1,"Jet_Shape_Circularity_DerivCorr_1/F");
+    fJetTree->Branch("Jet_Shape_Circularity_DerivCorr_2",&fBuffer_Shape_Circularity_DerivCorr_2,"Jet_Shape_Circularity_DerivCorr_2/F");
+    fJetTree->Branch("Jet_Shape_Sigma2_DerivCorr_1",&fBuffer_Shape_Sigma2_DerivCorr_1,"Jet_Shape_Sigma2_DerivCorr_1/F");
+    fJetTree->Branch("Jet_Shape_Sigma2_DerivCorr_2",&fBuffer_Shape_Sigma2_DerivCorr_2,"Jet_Shape_Sigma2_DerivCorr_2/F");
+    fJetTree->Branch("Jet_Shape_NumConst_DerivCorr",&fBuffer_Shape_NumConst_DerivCorr,"Jet_Shape_NumConst_DerivCorr/F");
+
   }
 
   if(fSaveMCInformation)
@@ -444,6 +465,7 @@ AliAnalysisTaskJetExtractor::AliAnalysisTaskJetExtractor() :
   fCalculateModelBackground(kFALSE),
   fBackgroundModelFileName(),
   fBackgroundModelInputParameters(),
+  fBackgroundModelPtOnly(kTRUE),
   fCustomStartupScript(),
   fVertexerCuts(0),
   fSetEmcalJetFlavour(0),
@@ -501,6 +523,7 @@ AliAnalysisTaskJetExtractor::AliAnalysisTaskJetExtractor(const char *name) :
   fCalculateModelBackground(kFALSE),
   fBackgroundModelFileName(),
   fBackgroundModelInputParameters(),
+  fBackgroundModelPtOnly(kTRUE),
   fCustomStartupScript(),
   fVertexerCuts(0),
   fSetEmcalJetFlavour(0),
@@ -850,8 +873,16 @@ void AliAnalysisTaskJetExtractor::GetPtAndMassFromModel(AliEmcalJet* jet, Float_
   // ####### Run Python script that does inference on jet
   fPythonCLI->Exec(Form("data_inference = numpy.array([[%s]])", arrayStr.Data()));
   fPythonCLI->Exec("result = estimator.predict(data_inference)");
-  pt_ML   = fPythonCLI->Eval("result[0]");
-  mass_ML = 0.0; // not implemented yet
+  if(!fBackgroundModelPtOnly)
+  {
+    pt_ML   = fPythonCLI->Eval("result[0][0]");
+    mass_ML = fPythonCLI->Eval("result[0][1]");
+  }
+  else
+  {
+    pt_ML   = fPythonCLI->Eval("result[0]");
+    mass_ML = 0.0;
+  }
   #endif
 }
 
@@ -895,6 +926,26 @@ TString AliAnalysisTaskJetExtractor::GetBackgroundModelArrayString(AliEmcalJet* 
       resultStr += Form("%E", jet->GetShapeProperties()->GetFirstOrderSubtracted());
     else if(token == "Jet_Shape_Mass_DerivCorr_2")
       resultStr += Form("%E", jet->GetShapeProperties()->GetSecondOrderSubtracted());
+    else if(token == "Jet_Shape_pTD_DerivCorr_1")
+      resultStr += Form("%E", jet->GetShapeProperties()->GetFirstOrderSubtractedpTD());
+    else if(token == "Jet_Shape_pTD_DerivCorr_2")
+      resultStr += Form("%E", jet->GetShapeProperties()->GetSecondOrderSubtractedpTD());
+    else if(token == "Jet_Shape_LeSub_DerivCorr")
+      resultStr += Form("%E", jet->GetShapeProperties()->GetSecondOrderSubtractedLeSub());
+    else if(token == "Jet_Shape_Sigma2_DerivCorr_1")
+      resultStr += Form("%E", jet->GetShapeProperties()->GetFirstOrderSubtractedSigma2());
+    else if(token == "Jet_Shape_Sigma2_DerivCorr_2")
+      resultStr += Form("%E", jet->GetShapeProperties()->GetSecondOrderSubtractedSigma2());
+    else if(token == "Jet_Shape_Angularity_DerivCorr_1")
+      resultStr += Form("%E", jet->GetShapeProperties()->GetFirstOrderSubtractedAngularity());
+    else if(token == "Jet_Shape_Angularity_DerivCorr_2")
+      resultStr += Form("%E", jet->GetShapeProperties()->GetSecondOrderSubtractedAngularity());
+    else if(token == "Jet_Shape_Circularity_DerivCorr_1")
+      resultStr += Form("%E", jet->GetShapeProperties()->GetFirstOrderSubtractedCircularity());
+    else if(token == "Jet_Shape_Circularity_DerivCorr_2")
+      resultStr += Form("%E", jet->GetShapeProperties()->GetSecondOrderSubtractedCircularity());
+    else if(token == "Jet_Shape_NumConst_DerivCorr")
+      resultStr += Form("%E", jet->GetShapeProperties()->GetSecondOrderSubtractedConstituent());
     else if(token == "Event_BackgroundDensity")
       resultStr += Form("%E", fJetsCont->GetRhoVal());
     else if(token == "Event_BackgroundDensityMass")
@@ -1499,7 +1550,7 @@ void AliAnalysisTaskJetExtractor::PrintConfig()
   if(fJetTree->GetSaveSecondaryVertices())
     std::cout << "* Secondary vertices" << std::endl;
   if(fJetTree->GetSaveJetShapes())
-    std::cout << "* Jet shapes (jet mass)" << std::endl;
+    std::cout << "* Jet shapes (jet mass, LeSub, pTD, ...)" << std::endl;
   if(fJetTree->GetSaveTriggerTracks())
     std::cout << "* Trigger tracks" << std::endl;
   std::cout << std::endl;
@@ -1672,22 +1723,25 @@ AliAnalysisTaskJetExtractor* AliAnalysisTaskJetExtractor::AddTaskJetExtractor(TS
     suffix = taskNameSuffix;
 
   // ###### Load configuration from YAML files
-  PWG::Tools::AliYAMLConfiguration fYAMLConfig;
-  fYAMLConfig.AddConfiguration("alien:///alice/cern.ch/user/r/rhaake/ConfigFiles/JetExtractor_BaseConfig.yaml", "baseConfig");
-  if(configFile != "")
-    fYAMLConfig.AddConfiguration(configFile.Data(), "customConfig");
-  fYAMLConfig.Initialize();
+  if(gGrid)
+  {
+    PWG::Tools::AliYAMLConfiguration fYAMLConfig;
+    fYAMLConfig.AddConfiguration("alien:///alice/cern.ch/user/r/rhaake/ConfigFiles/JetExtractor_BaseConfig.yaml", "baseConfig");
+    if(configFile != "")
+      fYAMLConfig.AddConfiguration(configFile.Data(), "customConfig");
+    fYAMLConfig.Initialize();
 
-  fYAMLConfig.GetProperty("TrackArray", trackArray, kFALSE);
-  fYAMLConfig.GetProperty("ClusterArray", clusterArray, kFALSE);
-  fYAMLConfig.GetProperty("JetArray", jetArray, kFALSE);
-  fYAMLConfig.GetProperty("RhoName", rhoObject, kFALSE);
-  fYAMLConfig.GetProperty("JetRadius", jetRadius);
-  fYAMLConfig.GetProperty("MinJetEta", minJetEta);
-  fYAMLConfig.GetProperty("MinJetPt", minJetPt);
-  fYAMLConfig.GetProperty("MinTrackPt", minTrackPt);
-  fYAMLConfig.GetProperty("MinJetAreaPerc", minJetAreaPerc);
-  fYAMLConfig.Print();
+    fYAMLConfig.GetProperty("TrackArray", trackArray, kFALSE);
+    fYAMLConfig.GetProperty("ClusterArray", clusterArray, kFALSE);
+    fYAMLConfig.GetProperty("JetArray", jetArray, kFALSE);
+    fYAMLConfig.GetProperty("RhoName", rhoObject, kFALSE);
+    fYAMLConfig.GetProperty("JetRadius", jetRadius);
+    fYAMLConfig.GetProperty("MinJetEta", minJetEta);
+    fYAMLConfig.GetProperty("MinJetPt", minJetPt);
+    fYAMLConfig.GetProperty("MinTrackPt", minTrackPt);
+    fYAMLConfig.GetProperty("MinJetAreaPerc", minJetAreaPerc);
+    fYAMLConfig.Print();
+  }
 
   // ###### Task name
   TString name("AliAnalysisTaskJetExtractor");
