@@ -2552,6 +2552,16 @@ void AliAnalysisTaskStrangenessVsMultiplicityMCRun2::UserExec(Option_t *)
         if ( lPosTrackLength  < lSmallestTrackLength ) lSmallestTrackLength = lPosTrackLength;
         if ( lNegTrackLength  < lSmallestTrackLength ) lSmallestTrackLength = lNegTrackLength;
         
+        //________________________________________________________________________
+        // Track quality cuts
+        Int_t lLeastNcrOverLength = 200;
+        Float_t lPosTrackNcrOverLength = pTrack->GetTPCClusterInfo(2,1)/(lPosTrackLength-TMath::Max(lV0Radius-85.,0.));
+        Float_t lNegTrackNcrOverLength = nTrack->GetTPCClusterInfo(2,1)/(lNegTrackLength-TMath::Max(lV0Radius-85.,0.));
+        
+        lLeastNcrOverLength = (Int_t) lPosTrackNcrOverLength;
+        if( lNegTrackNcrOverLength < lLeastNcrOverLength )
+            lLeastNcrOverLength = (Int_t) lNegTrackNcrOverLength;
+        
         fTreeVariableMinTrackLength = lSmallestTrackLength;
         
         if ( ( ( ( pTrack->GetTPCClusterInfo(2,1) ) < 70 ) || ( ( nTrack->GetTPCClusterInfo(2,1) ) < 70 ) ) && lSmallestTrackLength<80 ) continue;
@@ -3025,7 +3035,11 @@ void AliAnalysisTaskStrangenessVsMultiplicityMCRun2::UserExec(Option_t *)
                 
                 //Check 9: Min Track Length if positive
                 ( lV0Result->GetCutMinTrackLength()<0 || //this is a bit paranoid...
-                 fTreeVariableMinTrackLength > lV0Result->GetCutMinTrackLength()
+                 (fTreeVariableMinTrackLength > lV0Result->GetCutMinTrackLength()&& !lV0Result->GetCutUseParametricLength()) ||
+                 (fTreeVariableMinTrackLength > lV0Result->GetCutMinTrackLength()
+                  - (TMath::Power(1/(fTreeVariablePt+1e-6),1.5)) //rough parametrization, tune me!
+                  - TMath::Max(fTreeVariableV0Radius-85., 0.) //rough parametrization, tune me!
+                  && lV0Result->GetCutUseParametricLength())
                  )&&
                 
                 //Check 10: Special 2.76TeV-like dedx
@@ -3051,7 +3065,13 @@ void AliAnalysisTaskStrangenessVsMultiplicityMCRun2::UserExec(Option_t *)
                  lV0Result->GetCutIsCowboy()==0 ||
                  (lV0Result->GetCutIsCowboy()== 1 && fTreeVariableIsCowboy==kTRUE ) ||
                  (lV0Result->GetCutIsCowboy()==-1 && fTreeVariableIsCowboy==kFALSE)
-                 )//end cowboy/sailor
+                 )&&//end cowboy/sailor
+                
+                //Check 16: modern track quality selections
+                (
+                 lV0Result->GetCutMinCrossedRowsOverLength()<0 ||
+                 (lLeastNcrOverLength>lV0Result->GetCutMinCrossedRowsOverLength())
+                 )
                 )//end major if
             {
                 //Regular fill histogram here
@@ -3242,6 +3262,16 @@ void AliAnalysisTaskStrangenessVsMultiplicityMCRun2::UserExec(Option_t *)
         
         if ( lPosTrackLength  < lSmallestTrackLength ) lSmallestTrackLength = lPosTrackLength;
         if ( lNegTrackLength  < lSmallestTrackLength ) lSmallestTrackLength = lNegTrackLength;
+        
+        //________________________________________________________________________
+        // Track quality cuts
+        Int_t lLeastNcrOverLength = 200;
+        Float_t lPosTrackNcrOverLength = pTrack->GetTPCClusterInfo(2,1)/(lPosTrackLength-TMath::Max(lV0Radius-85.,0.));
+        Float_t lNegTrackNcrOverLength = nTrack->GetTPCClusterInfo(2,1)/(lNegTrackLength-TMath::Max(lV0Radius-85.,0.));
+        
+        lLeastNcrOverLength = (Int_t) lPosTrackNcrOverLength;
+        if( lNegTrackNcrOverLength < lLeastNcrOverLength )
+            lLeastNcrOverLength = (Int_t) lNegTrackNcrOverLength;
         
         fTreeVariableMinTrackLength = lSmallestTrackLength;
         

@@ -2236,6 +2236,7 @@ void AliAnalysisTaskStrangenessVsMultiplicityRun2::UserExec(Option_t *)
                 ( lV0Result->GetCutMaxChi2PerCluster()>1e+3 ||
                  (fTreeVariableMaxChi2PerCluster < lV0Result->GetCutMaxChi2PerCluster())
                  ) &&
+                
                 //Check 9: Min Track Length if positive
                 ( lV0Result->GetCutMinTrackLength()<0 || //this is a bit paranoid...
                  (fTreeVariableMinTrackLength > lV0Result->GetCutMinTrackLength()&& !lV0Result->GetCutUseParametricLength()) ||
@@ -2270,7 +2271,7 @@ void AliAnalysisTaskStrangenessVsMultiplicityRun2::UserExec(Option_t *)
                  (lV0Result->GetCutIsCowboy()==-1 && fTreeVariableIsCowboy==kFALSE)
                  )&&//end cowboy/sailor
                 
-                //Check 18: modern track quality selections
+                //Check 16: modern track quality selections
                 (
                  lV0Result->GetCutMinCrossedRowsOverLength()<0 ||
                  (lLeastNcrOverLength>lV0Result->GetCutMinCrossedRowsOverLength())
