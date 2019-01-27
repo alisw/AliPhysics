@@ -62,6 +62,10 @@ ClassImp(AliSigma0PhotonMotherCuts)
       fHistMixedInvMassBinnedMultPt(),
 	  fHistDiffPGamma(),
 	  fHistDiffPLambda(),
+	  fHistDiffPGammaPos(),
+	  fHistDiffPLambdaPos(),
+	  fHistDiffPGammaNeg(),
+	  fHistDiffPLambdaNeg(),
       fHistLambdaPtPhi(nullptr),
       fHistLambdaPtEta(nullptr),
       fHistLambdaMassPt(nullptr),
@@ -150,6 +154,10 @@ AliSigma0PhotonMotherCuts::AliSigma0PhotonMotherCuts(
       fHistMixedInvMassBinnedMultPt(),
 	  fHistDiffPGamma(),
 	  fHistDiffPLambda(),
+	  fHistDiffPGammaPos(),
+	  fHistDiffPLambdaPos(),
+	  fHistDiffPGammaNeg(),
+	  fHistDiffPLambdaNeg(),
       fHistLambdaPtPhi(nullptr),
       fHistLambdaPtEta(nullptr),
       fHistLambdaMassPt(nullptr),
@@ -238,6 +246,16 @@ void AliSigma0PhotonMotherCuts::SingleV0QA(
       fHistDiffPGamma[1]->Fill(photon1->GetPy() - photon2->GetPy());
       fHistDiffPGamma[2]->Fill(photon1->GetPz() - photon2->GetPz());
       fHistDiffPGamma[3]->Fill(photon1->GetP() - photon2->GetP());
+
+      fHistDiffPGammaPos[0]->Fill(photon1->GetPosDaughter().GetPx() - photon2->GetPosDaughter().GetPx());
+      fHistDiffPGammaPos[1]->Fill(photon1->GetPosDaughter().GetPy() - photon2->GetPosDaughter().GetPy());
+      fHistDiffPGammaPos[2]->Fill(photon1->GetPosDaughter().GetPz() - photon2->GetPosDaughter().GetPz());
+      fHistDiffPGammaPos[3]->Fill(photon1->GetPosDaughter().GetP() - photon2->GetPosDaughter().GetP());
+
+      fHistDiffPGammaNeg[0]->Fill(photon1->GetNegDaughter().GetPx() - photon2->GetNegDaughter().GetPx());
+      fHistDiffPGammaNeg[1]->Fill(photon1->GetNegDaughter().GetPy() - photon2->GetNegDaughter().GetPy());
+      fHistDiffPGammaNeg[2]->Fill(photon1->GetNegDaughter().GetPz() - photon2->GetNegDaughter().GetPz());
+      fHistDiffPGammaNeg[3]->Fill(photon1->GetNegDaughter().GetP() - photon2->GetNegDaughter().GetP());
     }
   }
 
@@ -254,6 +272,16 @@ void AliSigma0PhotonMotherCuts::SingleV0QA(
       fHistDiffPLambda[1]->Fill(lambda1->GetPy() - lambda2->GetPy());
       fHistDiffPLambda[2]->Fill(lambda1->GetPz() - lambda2->GetPz());
       fHistDiffPLambda[3]->Fill(lambda1->GetP() - lambda2->GetP());
+
+      fHistDiffPLambdaPos[0]->Fill(lambda1->GetPosDaughter().GetPx() - lambda2->GetPosDaughter().GetPx());
+      fHistDiffPLambdaPos[1]->Fill(lambda1->GetPosDaughter().GetPy() - lambda2->GetPosDaughter().GetPy());
+      fHistDiffPLambdaPos[2]->Fill(lambda1->GetPosDaughter().GetPz() - lambda2->GetPosDaughter().GetPz());
+      fHistDiffPLambdaPos[3]->Fill(lambda1->GetPosDaughter().GetP() - lambda2->GetPosDaughter().GetP());
+
+      fHistDiffPLambdaNeg[0]->Fill(lambda1->GetNegDaughter().GetPx() - lambda2->GetNegDaughter().GetPx());
+      fHistDiffPLambdaNeg[1]->Fill(lambda1->GetNegDaughter().GetPy() - lambda2->GetNegDaughter().GetPy());
+      fHistDiffPLambdaNeg[2]->Fill(lambda1->GetNegDaughter().GetPz() - lambda2->GetNegDaughter().GetPz());
+      fHistDiffPLambdaNeg[3]->Fill(lambda1->GetNegDaughter().GetP() - lambda2->GetNegDaughter().GetP());
     }
   }
 
@@ -904,7 +932,29 @@ void AliSigma0PhotonMotherCuts::InitCutHistograms(TString appendix) {
               Form("; diff p_{%s,#Lambda} (GeV/c); Entries", coordinate[i].Data()),
               1001, -1, 1);
       fHistograms->Add(fHistDiffPGamma[i]);
-         fHistograms->Add(fHistDiffPLambda[i]);
+      fHistograms->Add(fHistDiffPLambda[i]);
+
+      fHistDiffPGammaPos[i] = new TH1F(
+              Form("fHistDiffPGammaPos_%s", coordinate[i].Data()),
+              Form("; diff p_{%s,#gamma pos} (GeV/c); Entries", coordinate[i].Data()),
+              1001, -1, 1);
+      fHistDiffPLambdaPos[i] = new TH1F(
+              Form("fHistDiffPLambdaPos_%s", coordinate[i].Data()),
+              Form("; diff p_{%s,#Lambda pos} (GeV/c); Entries", coordinate[i].Data()),
+              1001, -1, 1);
+      fHistograms->Add(fHistDiffPGammaPos[i]);
+      fHistograms->Add(fHistDiffPLambdaPos[i]);
+
+      fHistDiffPGammaNeg[i] = new TH1F(
+              Form("fHistDiffPGammaNeg_%s", coordinate[i].Data()),
+              Form("; diff p_{%s,#gamma neg} (GeV/c); Entries", coordinate[i].Data()),
+              1001, -1, 1);
+      fHistDiffPLambdaNeg[i] = new TH1F(
+              Form("fHistDiffPLambdaNeg_%s", coordinate[i].Data()),
+              Form("; diff p_{%s,#Lambda neg} (GeV/c); Entries", coordinate[i].Data()),
+              1001, -1, 1);
+      fHistograms->Add(fHistDiffPGammaNeg[i]);
+      fHistograms->Add(fHistDiffPLambdaNeg[i]);
     }
 
     fHistLambdaPtPhi =
