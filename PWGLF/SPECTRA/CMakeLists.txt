@@ -26,6 +26,7 @@ include_directories(${ROOT_INCLUDE_DIRS}
                     ${AliPhysics_SOURCE_DIR}/OADB
                     ${AliPhysics_SOURCE_DIR}/OADB/COMMON/MULTIPLICITY
                     ${AliPhysics_SOURCE_DIR}/PWG/Tools
+                    ${AliPhysics_SOURCE_DIR}/PWGLF/SPECTRA/PiKaPr/TestAOD
                     ${AliPhysics_SOURCE_DIR}/PWGLF/SPECTRA/XtAnalysis
             	    ${AliPhysics_SOURCE_DIR}/PWGCF/Correlations/JCORRAN/Base
                     ${AliPhysics_SOURCE_DIR}/PWGUD/base
@@ -84,7 +85,7 @@ set(SRCS
   ParticleEfficiency/AliAnalysisTaskParticleEfficiencyLF.cxx
   PiKaPr/TestAOD/AliSpectraAODTrackCuts.cxx
   PiKaPr/TestAOD/AliSpectraAODEventCuts.cxx
-#  PiKaPr/TestAOD/AliSpectraAODHistoManager.cxx
+  PiKaPr/TestAOD/AliSpectraAODHistoManager.cxx
   PiKaPr/TestAOD/AliSpectraAODPID.cxx
   PiKaPr/TestAOD/AliAnalysisTaskSpectraAOD.cxx
   PiKaPr/TestAOD/AliAnalysisTaskSpectraAllChAOD.cxx
