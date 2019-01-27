@@ -2552,6 +2552,16 @@ void AliAnalysisTaskStrangenessVsMultiplicityMCRun2::UserExec(Option_t *)
         if ( lPosTrackLength  < lSmallestTrackLength ) lSmallestTrackLength = lPosTrackLength;
         if ( lNegTrackLength  < lSmallestTrackLength ) lSmallestTrackLength = lNegTrackLength;
         
+        //________________________________________________________________________
+        // Track quality cuts
+        Int_t lLeastNcrOverLength = 200;
+        Float_t lPosTrackNcrOverLength = pTrack->GetTPCClusterInfo(2,1)/(lPosTrackLength-TMath::Max(lV0Radius-85.,0.));
+        Float_t lNegTrackNcrOverLength = nTrack->GetTPCClusterInfo(2,1)/(lNegTrackLength-TMath::Max(lV0Radius-85.,0.));
+        
+        lLeastNcrOverLength = (Int_t) lPosTrackNcrOverLength;
+        if( lNegTrackNcrOverLength < lLeastNcrOverLength )
+            lLeastNcrOverLength = (Int_t) lNegTrackNcrOverLength;
+        
         fTreeVariableMinTrackLength = lSmallestTrackLength;
         
         if ( ( ( ( pTrack->GetTPCClusterInfo(2,1) ) < 70 ) || ( ( nTrack->GetTPCClusterInfo(2,1) ) < 70 ) ) && lSmallestTrackLength<80 ) continue;
@@ -3025,7 +3035,11 @@ void AliAnalysisTaskStrangenessVsMultiplicityMCRun2::UserExec(Option_t *)
                 
                 //Check 9: Min Track Length if positive
                 ( lV0Result->GetCutMinTrackLength()<0 || //this is a bit paranoid...
-                 fTreeVariableMinTrackLength > lV0Result->GetCutMinTrackLength()
+                 (fTreeVariableMinTrackLength > lV0Result->GetCutMinTrackLength()&& !lV0Result->GetCutUseParametricLength()) ||
+                 (fTreeVariableMinTrackLength > lV0Result->GetCutMinTrackLength()
+                  - (TMath::Power(1/(fTreeVariablePt+1e-6),1.5)) //rough parametrization, tune me!
+                  - TMath::Max(fTreeVariableV0Radius-85., 0.) //rough parametrization, tune me!
+                  && lV0Result->GetCutUseParametricLength())
                  )&&
                 
                 //Check 10: Special 2.76TeV-like dedx
@@ -3051,7 +3065,13 @@ void AliAnalysisTaskStrangenessVsMultiplicityMCRun2::UserExec(Option_t *)
                  lV0Result->GetCutIsCowboy()==0 ||
                  (lV0Result->GetCutIsCowboy()== 1 && fTreeVariableIsCowboy==kTRUE ) ||
                  (lV0Result->GetCutIsCowboy()==-1 && fTreeVariableIsCowboy==kFALSE)
-                 )//end cowboy/sailor
+                 )&&//end cowboy/sailor
+                
+                //Check 16: modern track quality selections
+                (
+                 lV0Result->GetCutMinCrossedRowsOverLength()<0 ||
+                 (lLeastNcrOverLength>lV0Result->GetCutMinCrossedRowsOverLength())
+                 )
                 )//end major if
             {
                 //Regular fill histogram here
@@ -3242,6 +3262,16 @@ void AliAnalysisTaskStrangenessVsMultiplicityMCRun2::UserExec(Option_t *)
         
         if ( lPosTrackLength  < lSmallestTrackLength ) lSmallestTrackLength = lPosTrackLength;
         if ( lNegTrackLength  < lSmallestTrackLength ) lSmallestTrackLength = lNegTrackLength;
+        
+        //________________________________________________________________________
+        // Track quality cuts
+        Int_t lLeastNcrOverLength = 200;
+        Float_t lPosTrackNcrOverLength = pTrack->GetTPCClusterInfo(2,1)/(lPosTrackLength-TMath::Max(lV0Radius-85.,0.));
+        Float_t lNegTrackNcrOverLength = nTrack->GetTPCClusterInfo(2,1)/(lNegTrackLength-TMath::Max(lV0Radius-85.,0.));
+        
+        lLeastNcrOverLength = (Int_t) lPosTrackNcrOverLength;
+        if( lNegTrackNcrOverLength < lLeastNcrOverLength )
+            lLeastNcrOverLength = (Int_t) lNegTrackNcrOverLength;
         
         fTreeVariableMinTrackLength = lSmallestTrackLength;
         
@@ -3851,6 +3881,18 @@ void AliAnalysisTaskStrangenessVsMultiplicityMCRun2::UserExec(Option_t *)
         if( lNegTPCClusters < leastnumberofclusters ) leastnumberofclusters = lNegTPCClusters;
         if( lBachTPCClusters < leastnumberofclusters ) leastnumberofclusters = lBachTPCClusters;
         
+        //________________________________________________________________________
+        // Track quality cuts
+        Int_t lLeastNbrCrossedRows = 200;
+        Float_t lPosTrackCrossedRows = pTrackXi->GetTPCClusterInfo(2,1);
+        Float_t lNegTrackCrossedRows = nTrackXi->GetTPCClusterInfo(2,1);
+        Float_t lBachTrackCrossedRows = bachTrackXi->GetTPCClusterInfo(2,1);
+        lLeastNbrCrossedRows = (Int_t) lPosTrackCrossedRows;
+        if( lNegTrackCrossedRows < lLeastNbrCrossedRows )
+            lLeastNbrCrossedRows = (Int_t) lNegTrackCrossedRows;
+        if( lBachTrackCrossedRows < lLeastNbrCrossedRows )
+            lLeastNbrCrossedRows = (Int_t) lBachTrackCrossedRows;
+        
         //Pick maximum
         if( lPosChi2PerCluster > lBiggestChi2PerCluster ) lBiggestChi2PerCluster = lPosChi2PerCluster;
         if( lNegChi2PerCluster > lBiggestChi2PerCluster ) lBiggestChi2PerCluster = lNegChi2PerCluster;
@@ -3918,6 +3960,19 @@ void AliAnalysisTaskStrangenessVsMultiplicityMCRun2::UserExec(Option_t *)
         fTreeCascVarPrimVertexX = lBestPrimaryVtxPos[0];
         fTreeCascVarPrimVertexY = lBestPrimaryVtxPos[1];
         fTreeCascVarPrimVertexZ = lBestPrimaryVtxPos[2];
+        
+        //________________________________________________________________________
+        // Track quality cuts
+        Int_t lLeastNcrOverLength = 200;
+        Float_t lPosTrackNcrOverLength = pTrackXi->GetTPCClusterInfo(2,1)/(lPosTrackLength-TMath::Max(lV0RadiusXi-85.,0.));
+        Float_t lNegTrackNcrOverLength = nTrackXi->GetTPCClusterInfo(2,1)/(lNegTrackLength-TMath::Max(lV0RadiusXi-85.,0.));
+        Float_t lBachTrackNcrOverLength = bachTrackXi->GetTPCClusterInfo(2,1)/(lBachTrackLength-TMath::Max(lXiRadius-85.,0.));
+        
+        lLeastNcrOverLength = (Int_t) lPosTrackNcrOverLength;
+        if( lNegTrackNcrOverLength < lLeastNcrOverLength )
+            lLeastNcrOverLength = (Int_t) lNegTrackNcrOverLength;
+        if( lBachTrackNcrOverLength < lLeastNcrOverLength )
+            lLeastNcrOverLength = (Int_t) lBachTrackNcrOverLength;
         
         //========================================================================================
         //Calculate V0 lifetime for adaptive decay radius cut
@@ -5406,11 +5461,15 @@ void AliAnalysisTaskStrangenessVsMultiplicityMCRun2::UserExec(Option_t *)
                 ( lCascadeResult->GetCutMaxChi2PerCluster()>1e+3 ||
                  fTreeCascVarMaxChi2PerCluster < lCascadeResult->GetCutMaxChi2PerCluster()
                  ) &&
-                
-                //Check 11: Min Track Length if positive
+
+                //Check 11: Min Track Length if positive, [min - (1/pt)^1.5] if parametric requested
                 ( lCascadeResult->GetCutMinTrackLength()<0 || //this is a bit paranoid...
-                 fTreeCascVarMinTrackLength > lCascadeResult->GetCutMinTrackLength()
-                 ) &&
+                 (fTreeCascVarMinTrackLength > lCascadeResult->GetCutMinTrackLength() && !lCascadeResult->GetCutUseParametricLength())||
+                 (fTreeCascVarMinTrackLength > lCascadeResult->GetCutMinTrackLength()
+                  - (TMath::Power(1/(fTreeCascVarPt+1e-6),1.5)) //rough parametrization, tune me!
+                  - TMath::Max(fTreeCascVarV0Radius-85., 0.) //rough parametrization, tune me!
+                  && lCascadeResult->GetCutUseParametricLength())
+                 )&&
                 
                 //Check 12: Explicit associate-with-bump
                 ( ! (lCascadeResult->GetCutMCSelectBump())    || (//Start bump-selection
@@ -5465,7 +5524,18 @@ void AliAnalysisTaskStrangenessVsMultiplicityMCRun2::UserExec(Option_t *)
                  lCascadeResult->GetCutIsCascadeCowboy()==0 ||
                  (lCascadeResult->GetCutIsCascadeCowboy()== 1 && fTreeCascVarIsCascadeCowboy==kTRUE ) ||
                  (lCascadeResult->GetCutIsCascadeCowboy()==-1 && fTreeCascVarIsCascadeCowboy==kFALSE)
-                 )//end cowboy/sailor
+                 )&&//end cowboy/sailor
+                
+                //Check 18: modern track quality selections
+                (
+                 lCascadeResult->GetCutMinCrossedRowsOverLength()<0 ||
+                 (lLeastNcrOverLength>lCascadeResult->GetCutMinCrossedRowsOverLength())
+                 )&&
+                //Check 19: modern track quality selections
+                (
+                 lCascadeResult->GetCutLeastNumberOfCrossedRows()<0 ||
+                 (lLeastNbrCrossedRows>lCascadeResult->GetCutLeastNumberOfCrossedRows())
+                 )
                 )//end major if
             {
                 

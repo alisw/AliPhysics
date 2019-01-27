@@ -46,6 +46,8 @@ fCutMinEtaTracks(-0.8),
 fCutMaxEtaTracks(+0.8),
 fCutMaxChi2PerCluster(1e+5),
 fCutMinTrackLength(-1),
+fCutUseParametricLength(kFALSE),
+fCutMinCrossedRowsOverLength(-1),
 fCutUseVariableV0CosPA(kFALSE),
 fCutVarV0CosPA_Exp0Const(0),
 fCutVarV0CosPA_Exp0Slope(0),
@@ -108,6 +110,8 @@ fCutMinEtaTracks(-0.8),
 fCutMaxEtaTracks(+0.8),
 fCutMaxChi2PerCluster(1e+5),
 fCutMinTrackLength(-1),
+fCutUseParametricLength(kFALSE),
+fCutMinCrossedRowsOverLength(-1),
 fCutUseVariableV0CosPA(kFALSE),
 fCutVarV0CosPA_Exp0Const(0),
 fCutVarV0CosPA_Exp0Slope(0),
@@ -170,6 +174,8 @@ fCutMinEtaTracks(-0.8),
 fCutMaxEtaTracks(+0.8),
 fCutMaxChi2PerCluster(1e+5),
 fCutMinTrackLength(-1),
+fCutUseParametricLength(kFALSE),
+fCutMinCrossedRowsOverLength(-1),
 fCutUseVariableV0CosPA(kFALSE),
 fCutVarV0CosPA_Exp0Const(0),
 fCutVarV0CosPA_Exp0Slope(0),
@@ -232,6 +238,8 @@ fCutMinEtaTracks(-0.8),
 fCutMaxEtaTracks(+0.8),
 fCutMaxChi2PerCluster(1e+5),
 fCutMinTrackLength(-1),
+fCutUseParametricLength(kFALSE),
+fCutMinCrossedRowsOverLength(-1),
 fCutUseVariableV0CosPA(kFALSE),
 fCutVarV0CosPA_Exp0Const(0),
 fCutVarV0CosPA_Exp0Slope(0),
@@ -298,6 +306,8 @@ fCutMinEtaTracks(lCopyMe.fCutMinEtaTracks),
 fCutMaxEtaTracks(lCopyMe.fCutMaxEtaTracks),
 fCutMaxChi2PerCluster(lCopyMe.fCutMaxChi2PerCluster),
 fCutMinTrackLength(lCopyMe.fCutMinTrackLength),
+fCutUseParametricLength(lCopyMe.fCutUseParametricLength),
+fCutMinCrossedRowsOverLength(lCopyMe.fCutMinCrossedRowsOverLength),
 
 fCutUseVariableV0CosPA(lCopyMe.fCutUseVariableV0CosPA),
 fCutVarV0CosPA_Exp0Const(lCopyMe.fCutVarV0CosPA_Exp0Const),
@@ -395,6 +405,8 @@ fHisto(0)
     fCutMaxEtaTracks = lCopyMe -> GetCutMaxEtaTracks();
     fCutMaxChi2PerCluster = lCopyMe -> GetCutMaxChi2PerCluster();
     fCutMinTrackLength = lCopyMe -> GetCutMinTrackLength();
+    fCutUseParametricLength = lCopyMe -> GetCutUseParametricLength();
+    fCutMinCrossedRowsOverLength = lCopyMe->GetCutMinCrossedRowsOverLength();
     
     //Variable V0CosPA
     fCutUseVariableV0CosPA = lCopyMe -> GetCutUseVarV0CosPA();
@@ -516,6 +528,8 @@ AliV0Result& AliV0Result::operator=(const AliV0Result& lCopyMe)
     fCutMaxEtaTracks = lCopyMe.GetCutMaxEtaTracks();
     fCutMaxChi2PerCluster = lCopyMe.GetCutMaxChi2PerCluster();
     fCutMinTrackLength = lCopyMe.GetCutMinTrackLength();
+    fCutUseParametricLength = lCopyMe.GetCutUseParametricLength();
+    fCutMinCrossedRowsOverLength = lCopyMe.GetCutMinCrossedRowsOverLength();
     
     //Variable V0CosPA
     fCutUseVariableV0CosPA = lCopyMe.GetCutUseVarV0CosPA();
@@ -663,6 +677,8 @@ Bool_t AliV0Result::HasSameCuts(AliVWeakResult *lCompare, Bool_t lCheckdEdx )
     if( TMath::Abs( fCutMaxEtaTracks - lCompareV0->GetCutMaxEtaTracks() ) > 1e-6 ) lReturnValue = kFALSE;
     if( TMath::Abs( fCutMaxChi2PerCluster - lCompareV0->GetCutMaxChi2PerCluster() ) > 1e-6 ) lReturnValue = kFALSE;
     if( TMath::Abs( fCutMinTrackLength - lCompareV0->GetCutMinTrackLength() ) > 1e-6 ) lReturnValue = kFALSE;
+    if( TMath::Abs( fCutUseParametricLength - lCompareV0->GetCutUseParametricLength() ) > 1e-6 ) lReturnValue = kFALSE;
+    if( TMath::Abs( fCutMinCrossedRowsOverLength - lCompareV0->GetCutMinCrossedRowsOverLength() ) > 1e-6 ) lReturnValue = kFALSE;
     
     //Variable V0CosPA
     if ( TMath::Abs(fCutUseVariableV0CosPA - lCompareV0->GetCutUseVarV0CosPA()) > 1e-6 ) lReturnValue = kFALSE;

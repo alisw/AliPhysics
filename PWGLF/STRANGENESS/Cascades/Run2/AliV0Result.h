@@ -74,7 +74,12 @@ public:
     void SetCutMinEtaTracks      ( Double_t lCut ) { fCutMinEtaTracks      = lCut; }
     void SetCutMaxEtaTracks      ( Double_t lCut ) { fCutMaxEtaTracks      = lCut; }
     void SetCutMaxChi2PerCluster ( Double_t lCut ) { fCutMaxChi2PerCluster = lCut; }
-    void SetCutMinTrackLength    ( Double_t lCut ) { fCutMinTrackLength    = lCut; }
+    
+    //Modern Track quality cuts
+    void SetCutMinTrackLength          ( Double_t lCut )  { fCutMinTrackLength    = lCut; }
+    void SetCutUseParametricLength     ( Bool_t   lCut )  { fCutUseParametricLength = lCut; }
+    void SetCutMinCrossedRowsOverLength( Double_t lCut )  { fCutMinCrossedRowsOverLength = lCut; }
+    
     
     //Variable V0CosPA
     void SetCutUseVarV0CosPA      ( Bool_t lCut )   { fCutUseVariableV0CosPA     = lCut; }
@@ -136,7 +141,11 @@ public:
     Double_t GetCutMinEtaTracks      () const { return fCutMinEtaTracks; }
     Double_t GetCutMaxEtaTracks      () const { return fCutMaxEtaTracks; }
     Double_t GetCutMaxChi2PerCluster () const { return fCutMaxChi2PerCluster; }
-    Double_t GetCutMinTrackLength    () const { return fCutMinTrackLength; }
+    
+    //Modern track quality 
+    Double_t GetCutMinTrackLength              () const { return fCutMinTrackLength; }
+    Bool_t   GetCutUseParametricLength         () const { return fCutUseParametricLength; }
+    Double_t GetCutMinCrossedRowsOverLength    () const { return fCutMinCrossedRowsOverLength; }
     
     //Variable V0CosPA
     Bool_t GetCutUseVarV0CosPA        () const { return fCutUseVariableV0CosPA;   }
@@ -243,7 +252,10 @@ private:
     Double_t fCutMinEtaTracks; //Minimum eta value for daughter tracks (usually -0.8)
     Double_t fCutMaxEtaTracks; //Maximum eta value for daughter tracks (usually +0.8)
     Double_t fCutMaxChi2PerCluster; //Max chi2/clusters
+    
     Double_t fCutMinTrackLength; //Minimum track length in the active TPC zone
+    Bool_t fCutUseParametricLength; //Relax track requirements at low pT or high R
+    Double_t fCutMinCrossedRowsOverLength; //N(crossed rows)/L > something
     
     //Experimental: pt-variable V0 cosPA
     //Warning: if this cut is tighter than fCutV0CosPA, this gets used instead!
@@ -288,5 +300,6 @@ private:
     //19 - added 2.76TeV-like dE/dx switch
     //20 - TOF cut: at-least-one type
     //22 - cowboy/sailor check
+    //23 - modern track selections: parametric length, crossed rows + cr/L
 };
 #endif
