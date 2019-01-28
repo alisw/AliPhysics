@@ -250,14 +250,15 @@ void MakeTPCPIDResponseOADB(TString outfile="$ALICE_PHYSICS/OADB/COMMON/PID/data
   // For the moment use 16p splines (pp 13 TeV with Neon) for 18a-b and 18e-
   //                    18b for 18a-b
   //                    18c for 18c
-  //                    18d for 18d
+  //                    18d for 18d-h
+  //                    18i for 18i -
   //
   // ---| pass1 |---------------------------------------------------------------
   AddOADBObjectFromSplineFile("/u/wiechula/svn/train/PID/splines/jiyoung/LHC18b.pass1/Iteration2/splines.root",             282956, 285451, "1"); // 18a-b
   AddOADBObjectFromSplineFile("/u/wiechula/svn/train/PID/splines/jiyoung/LHC18c.pass1_CENT_woSDD/Iteration2/splines.root",  285452, 285965, "1"); 
-  AddOADBObjectFromSplineFile("/u/wiechula/svn/train/PID/splines/jiyoung/LHC18d.pass1/Iteration3/splines.root",             285966, 286358, "1");
+  AddOADBObjectFromSplineFile("/u/wiechula/svn/train/PID/splines/jiyoung/LHC18d.pass1/Iteration3/splines.root",             285966, 288842, "1");// 18d-h last run 18d: 286358, "1");
 
-  AddOADBObjectFromSplineFile("/u/wiechula/svn/train/PID/splines/martin/data/LHC16p.pass1/splines_16p.pass1.root",  286539, 999999, "1"); // temporary for 2018 (back to Ne)
+  AddOADBObjectFromSplineFile("/u/wiechula/svn/train/PID/splines/jiyoung/LHC18i.pass1/Iteration3/splines.root",             288843, 999999, "1"); // 18i- last run in 18i: 288920, "1");
 
 
 
