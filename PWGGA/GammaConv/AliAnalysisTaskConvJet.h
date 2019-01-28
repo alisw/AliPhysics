@@ -358,10 +358,10 @@ class AliAnalysisTaskConvJet : public AliAnalysisTaskEmcalJet {
   Int_t fNTrueJetContainers;                                                    // Number of total true jet containers desired to analyse
   Int_t fJetContainersAdded;                                                    // Number of data/rec jet containers already added to the class
   Int_t fTrueJetContainersAdded;                                                // Number of true jet containers alreasy added to the class
-  TString *fJetNameArray;                                                       //! Array containing all the names of the rec/data jet containers
-  TString *fTrueJetNameArray;                                                   //! Array containing all the names of the true jet containers
-  Int_t *fTrainconfigArray;                                                     //! Array of trainconfigs corresponsing to the data/rec jet containers
-  Int_t *fTrueTrainconfigArray;                                                 //! Array of trainconfigs corresponsing to the true jet containers
+  TString *fJetNameArray;                                                       // Array containing all the names of the rec/data jet containers
+  TString *fTrueJetNameArray;                                                   // Array containing all the names of the true jet containers
+  Int_t *fTrainconfigArray;                                                     // Array of trainconfigs corresponsing to the data/rec jet containers
+  Int_t *fTrueTrainconfigArray;                                                 // Array of trainconfigs corresponsing to the true jet containers
 
   vector<Int_t>               fListNJets;                                       // vector of number of jets for each jet container
   vector<vector<Double_t>>    fListJetPt;                                       // vector of vectors containg the jet pt for each jet container
