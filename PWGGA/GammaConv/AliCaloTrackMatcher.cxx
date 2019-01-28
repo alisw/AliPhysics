@@ -605,7 +605,7 @@ Bool_t AliCaloTrackMatcher::PropagateV0TrackToClusterAndGetMatchingResidual(AliV
         }
       }
     } else {
-      if ( aodt->Phi() < 60*TMath::DegToRad() || aodt->Phi() > 200*TMath::DegToRad()){
+      if ( aodt->Phi() < 230*TMath::DegToRad() || aodt->Phi() > 350*TMath::DegToRad()){
         fSecHistControlMatches->Fill(1.,inSecTrack->Pt());
         fSecMap_TrID_ClID_AlreadyTried[make_pair(inSecTrack->GetID(),cluster->GetID())] = 1.;
         return kFALSE;
