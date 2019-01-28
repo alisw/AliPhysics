@@ -206,4 +206,22 @@ void DoMakeUp(TH1* h, const TString det, const TString part, const TString partL
     h->GetYaxis()->SetTitle(title);
     ShowLimit(h);
   }
+  if (det.EqualTo("ITS")) { //Setting histogram range for TOF plots + styling
+    if (hname.Contains("meannSigma"))
+      h->GetYaxis()->SetRangeUser(-1.2, 1.2);
+    else if (hname.Contains("signSigma"))
+      h->GetYaxis()->SetRangeUser(.5, 1.5);
+    h->GetYaxis()->SetTitleSize(0.08);
+    h->GetYaxis()->SetTitleOffset(0.5);
+    h->GetYaxis()->SetLabelSize(0.07);
+    TString title = h->GetYaxis()->GetTitle();
+    title.ReplaceAll("_", " ");
+    title.ReplaceAll("meannSigma" + det, "#mu n#sigma" + det);
+    title.ReplaceAll("signSigma" + det, "#sigma n#sigma" + det);
+    title.ReplaceAll(" " + part, "_{" + partL + "}");
+    title.ReplaceAll("p300MeV", "#it{p} 0.3 GeV/#it{c}");
+    title.ReplaceAll("p1200MeV", "#it{p} 1.2 GeV/#it{c}");
+    h->GetYaxis()->SetTitle(title);
+    ShowLimit(h);
+  }
 }
