@@ -50,6 +50,7 @@ class AliAnalysisTaskGammaCalo : public AliAnalysisTaskSE {
     void ProcessTrueClusterCandidatesAOD( AliAODConversionPhoton* TruePhotonCandidate, AliVCluster* clus);
     void ProcessTrueMesonCandidates( AliAODConversionMother *Pi0Candidate, AliAODConversionPhoton *TrueGammaCandidate0, AliAODConversionPhoton *TrueGammaCandidate1);
     void ProcessTrueMesonCandidatesAOD(AliAODConversionMother *Pi0Candidate, AliAODConversionPhoton *TrueGammaCandidate0, AliAODConversionPhoton *TrueGammaCandidate1);
+    void ProcessAODSphericityParticles();
 
     // switches for additional analysis streams or outputs
     void SetLightOutput(Bool_t flag){fDoLightOutput = flag;}
@@ -149,6 +150,7 @@ class AliAnalysisTaskGammaCalo : public AliAnalysisTaskSE {
     AliAnalysisTaskConvJet*   fConvJetReader;                                   // JetReader
     Bool_t                fDoJetAnalysis;                                       // Bool to produce Jet Plots
     Bool_t                fDoJetQA;                                             // Bool to produce Jet QA Plots
+    Bool_t                fDoTrueSphericity;                                    // Bool to produce Sphericity correlations
     TList**               fJetHistograms;                                       // Jet Histograms
     TList**               fTrueJetHistograms;                                   // True Jet Histograms
     Int_t                 fJetSector;                                           // Sector of the detector with the maximum pt jet
@@ -350,7 +352,16 @@ class AliAnalysisTaskGammaCalo : public AliAnalysisTaskSE {
     TH2F**                fHistoEventSphericityvsNtracks;                       //! array of histos with event Sphericity vs Ntracks
     TH2F**                fHistoEventSphericityvsNJets;                         //! array of histos with event Sphericity vs NJets
     TH2F**                fHistoTrueSphericityvsRecSphericity;                  //! array of histos with true sphericity vs rec. sphericity
-    TH2F**                fHistoTrueMultiplicityvsRecMultiplicity;               //! array of histos with true multiplicity vs rec. multiplicity
+    TH2F**                fHistoTrueMultiplicityvsRecMultiplicity;              //! array of histos with true multiplicity vs rec. multiplicity
+    TH2F**                fHistoEventSphericityvsHighpt;                        //! array of histos with event Sphericity vs highest pt
+    TH2F**                fHistoEventSphericityvsTotalpt;                       //! array of histos with event Sphericity vs total pt
+    TH2F**                fHistoEventSphericityvsMeanpt;                        //! array of histos with event Sphericity vs mean pt
+    TH1F**                fHistoPionSpectrum;                                   //! array of histos with charged pion spectrum
+    TH1F**                fHistoProtonSpectrum;                                 //! array of histos with proton spectrum
+    TH1F**                fHistoKaonSpectrum;                                   //! array of histos with charged kaon spectrum
+    TTree**               tTreeSphericity;                                      //! array of trees with sphericity correlations
+    Float_t               fRecSph;                                              //! Reconstructed sphericity
+    Float_t               fTrueSph;                                             //! True Sphericity
 
     TH1F**                 fHistoPtJet;                                          // Histogram of Jet Pt
     TH1F**                 fHistoJetEta;                                         // Histogram of Jet Eta
@@ -508,7 +519,7 @@ class AliAnalysisTaskGammaCalo : public AliAnalysisTaskSE {
     AliAnalysisTaskGammaCalo(const AliAnalysisTaskGammaCalo&);                  // Prevent copy-construction
     AliAnalysisTaskGammaCalo &operator=(const AliAnalysisTaskGammaCalo&);       // Prevent assignment
 
-    ClassDef(AliAnalysisTaskGammaCalo, 60);
+    ClassDef(AliAnalysisTaskGammaCalo, 61);
 };
 
 #endif

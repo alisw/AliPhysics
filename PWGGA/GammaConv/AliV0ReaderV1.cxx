@@ -104,6 +104,9 @@ AliV0ReaderV1::AliV0ReaderV1(const char *name) : AliAnalysisTaskSE(name),
   fSphericityAxisSecondaryPhi(0),
   fInEMCalAcceptance(kFALSE),
   fNumberOfRecTracks(0),
+  fHighestPt(0),
+  fTotalPt(0),
+  fMeanPt(0),
   fSphericityTrue(0),
   fNumberOfTruePrimaryTracks(0),
   fPtMaxSector(0),
@@ -1481,6 +1484,9 @@ void AliV0ReaderV1::CalculateSphericity(){
   Double_t MirroredMainSphericityAxis = 0;
   fSphericityAxisSecondaryPhi = 0;
   fInEMCalAcceptance = kFALSE;
+  fHighestPt = 0;
+  fTotalPt = 0;
+  fMeanPt = 0;
   if(fInputEvent->IsA()==AliESDEvent::Class()){
     static AliESDtrackCuts *EsdTrackCuts = 0x0;
     static int prevRun = -1;
@@ -1541,6 +1547,7 @@ void AliV0ReaderV1::CalculateSphericity(){
       Si(1,1)=pow(curTrack->Py(),2);
       S += (1/curTrack->Pt())*Si;
       P += curTrack->Pt();
+      if(curTrack->Pt()>fHighestPt) fHighestPt = curTrack->Pt();
     }
     if(P==0 || fNumberOfRecTracks<3){
       fSphericity = -1;
@@ -1560,6 +1567,8 @@ void AliV0ReaderV1::CalculateSphericity(){
       }else if((MirroredMainSphericityAxis > 1.396263) && (MirroredMainSphericityAxis < 3.263766)){
           fInEMCalAcceptance = kTRUE;
       }
+      fTotalPt = P;
+      fMeanPt = P/fNumberOfRecTracks;
     }
   }
   else if(fInputEvent->IsA()==AliAODEvent::Class()){
@@ -1579,6 +1588,7 @@ void AliV0ReaderV1::CalculateSphericity(){
       Si(1,1)=pow(curTrack->Py(),2);
       S += (1/curTrack->Pt())*Si;
       P += curTrack->Pt();
+      if(curTrack->Pt()>fHighestPt) fHighestPt = curTrack->Pt();
     }
     if(P==0 || fNumberOfRecTracks<3){
       fSphericity = -1;
@@ -1598,6 +1608,8 @@ void AliV0ReaderV1::CalculateSphericity(){
       }else if((MirroredMainSphericityAxis > 1.396263) && (MirroredMainSphericityAxis < 3.263766)){
           fInEMCalAcceptance = kTRUE;
       }
+      fTotalPt = P;
+      fMeanPt = P/fNumberOfRecTracks;
     }
   }
   return;
