@@ -126,11 +126,15 @@ class AliAnalysisTaskDiHadCorrelHighPt : public AliAnalysisTaskSE
         TH3F*                   fHistPtResolution;//!
         Int_t                   fNumberOfPtBinsTrigger; //
         Int_t                   fNumberOfPtBinsAssoc;//
+        TH1F *                  fHistV0MultiplicityK0; //!
+        TH1F *                  fHistV0Lam;//!
+        TH1F *                  fHistMultiplicityALam;//!
+        TH2F *                  fHitsNTracks;//!
 
         AliAnalysisTaskDiHadCorrelHighPt(const AliAnalysisTaskDiHadCorrelHighPt&); // not implemented
         AliAnalysisTaskDiHadCorrelHighPt& operator=(const AliAnalysisTaskDiHadCorrelHighPt&); // not implemented
 
-        ClassDef(AliAnalysisTaskDiHadCorrelHighPt, 9);
+        ClassDef(AliAnalysisTaskDiHadCorrelHighPt, 10);
 };
 
 class AliV0ChParticle : public AliVParticle

@@ -102,7 +102,11 @@ AliAnalysisTaskDiHadCorrelHighPt::AliAnalysisTaskDiHadCorrelHighPt() : AliAnalys
     fHistNumberOfTriggersPur(0),
     fHistPtResolution(0),
     fNumberOfPtBinsTrigger(12),
-    fNumberOfPtBinsAssoc(14)
+    fNumberOfPtBinsAssoc(14),
+    fHistV0MultiplicityK0(0),
+    fHistV0Lam(0),
+    fHistMultiplicityALam(0),
+    fHitsNTracks(0)
 {
     // default constructor, don't allocate memory here!
     // this is used by root for IO purposes, it needs to remain empty
@@ -158,7 +162,11 @@ AliAnalysisTaskDiHadCorrelHighPt::AliAnalysisTaskDiHadCorrelHighPt(const char* n
     fHistNumberOfTriggersPur(0),
     fHistPtResolution(0),
     fNumberOfPtBinsTrigger(12),
-    fNumberOfPtBinsAssoc(14)
+    fNumberOfPtBinsAssoc(14),
+    fHistV0MultiplicityK0(0),
+    fHistV0Lam(0),
+    fHistMultiplicityALam(0),
+    fHitsNTracks(0)
 {
     // constructor
     DefineInput(0, TChain::Class());    // define the input of the analysis: in this case we take a 'chain' of events
@@ -331,8 +339,17 @@ void AliAnalysisTaskDiHadCorrelHighPt::UserCreateOutputObjects()
     fHistKorelacieMCrec->GetAxis(8)->Set(602,binsMass);
     fHistKorelacieMCrec->GetAxis(4)->Set(9,ZBins);
 
-	fHistV0Multiplicity = new TH1D ("fHistV0Multiplicity", "fHistV0Multiplicity", 60, 0, 60);
-	fOutputList->Add(fHistV0Multiplicity); 
+	fHistV0Multiplicity = new TH1D ("fHistV0Multiplicity", "fHistV0Multiplicity", 100, 0, 100);
+	fOutputList->Add(fHistV0Multiplicity);
+    
+    fHistV0MultiplicityK0 = new TH1F ("fHistV0MultiplicityK0", "fHistV0MultiplicityK0", 100, 0, 100);
+    fOutputList->Add(fHistV0MultiplicityK0);
+    
+    fHistV0Lam = new TH1F ("fHistV0Lam", "fHistV0Lam", 100, 0, 100);
+    fOutputList->Add(fHistV0Lam);
+   
+    fHistMultiplicityALam = new TH1F ("fHistMultiplicityALam","fHistMultiplicityALam",100,0,100);
+    fOutputList->Add(fHistMultiplicityALam);
 
 	fHistMultVtxz = new TH2D ("fHistMultVtxz","fHistMultVtxz",NofCentBins,MBins,NofZVrtxBins,ZBins);
 	fOutputList->Add(fHistMultVtxz);
@@ -355,14 +372,14 @@ void AliAnalysisTaskDiHadCorrelHighPt::UserCreateOutputObjects()
     fHistRCPtTrigg->Sumw2();
     fHistRCPtTrigg->GetYaxis()->Set(9,ZBins);
     
-    Int_t binsTrig[4]={12,9,3,40};
+    Int_t binsTrig[4]={fNumberOfPtBinsTrigger,9,3,40};
     Double_t mintrig[4]={fPtTrigMin,-10,0,-0.8};
     Double_t maxtrig[4]={15,10,3,0.8};
     fHistGenV0 = new THnSparseF("fHistGenV0","fHistGenV0",4,binsTrig,mintrig,maxtrig);
     fOutputList->Add(fHistGenV0);
     fHistGenV0->Sumw2();
     fHistGenV0->GetAxis(1)->Set(9,ZBins);
-    Int_t binsTrigRec[5]={12,9,3,40,602};
+    Int_t binsTrigRec[5]={fNumberOfPtBinsTrigger,9,3,40,602};
     Double_t mintrigRec[6]={fPtTrigMin,-10,0,-0.8,0.44};
     Double_t maxtrigRec[6]={15,10,3,0.8,1.15};
     fHistRecV0 = new THnSparseF("fHistRecV0","fHistRecV0",5,binsTrigRec,mintrigRec,maxtrigRec);
@@ -502,6 +519,9 @@ void AliAnalysisTaskDiHadCorrelHighPt::UserCreateOutputObjects()
     
     fHistPtResolution = new TH3F("fHistPtResol","fHistPtResol",144,0,18,144,0,18,4,0,4);
     fOutputList->Add(fHistPtResolution);
+    
+    fHitsNTracks = new TH2F("fHitsNTracks","fHitsNTracks",100,0,100,2,0,2);
+    fOutputList->Add(fHitsNTracks);
     
     PostData(1, fOutputList);           // postdata will notify the analysis manager of changes / updates to the 
                                         // fOutputList object. the manager will in the end take care of writing your output to file
@@ -768,18 +788,24 @@ void AliAnalysisTaskDiHadCorrelHighPt::UserExec(Option_t *)
 	selectedAssociatedTracks->SetOwner(kTRUE);
 	TObjArray * selectedTriggerTracks = new TObjArray;
 	selectedTriggerTracks->SetOwner(kTRUE);
+    Int_t nTrak = 0;
+    Int_t nTrakBefore = 0;
     
     for(Int_t i=0; i < iTracks; i++) {                 // loop over all these tracks
         AliAODTrack* track = static_cast<AliAODTrack*>(fAOD->GetTrack(i));         // get a track (type AliAODTrack) from the event
         if(!track) continue;                            // if we failed, skip this track
         
         if(!IsMyGoodPrimaryTrack(track)) continue; // hybrid track selection
-	   
+        nTrakBefore+=1;
+        if(!(track->HasPointOnITSLayer(0) &&track->GetTOFBunchCrossing()==0 )) continue;
+        nTrak+=1;
+        
 		selectedTracks->Add(track);
         if(track->Pt()>fPtAsocMin&&!fAnalysisMC) selectedAssociatedTracks-> Add(new AliV0ChParticle(track->Eta(), track->Phi(), track->Pt(), 4, 0,track->GetID(),kFALSE));
         if(track->Pt()>fPtTrigMin&&!fAnalysisMC) selectedTriggerTracks-> Add(new AliV0ChParticle(track->Eta(), track->Phi(), track->Pt(), 4,0,track->GetID(),kFALSE));
 	}
-
+    fHitsNTracks->Fill(nTrakBefore,0.5);
+    fHitsNTracks->Fill(nTrak,1.5);
     TObjArray * selectedV0 = new TObjArray;
 	selectedV0->SetOwner(kTRUE); 
 	TObjArray * selectedV0Triggers = new TObjArray;
@@ -789,7 +815,9 @@ void AliAnalysisTaskDiHadCorrelHighPt::UserExec(Option_t *)
 
     AliAODTrack *myTrackPos = 0x0;
     AliAODTrack *myTrackNeg = 0x0;
-    
+    Int_t nK0 =0;
+    Int_t nLam =0;
+    Int_t nALam =0;
 	for (Int_t i=0; i<nV0; i++){
         
         AliAODv0* V0 = static_cast<AliAODv0*>(fAOD->GetV0(i));
@@ -872,9 +900,22 @@ void AliAnalysisTaskDiHadCorrelHighPt::UserExec(Option_t *)
         cutLambdaPid = (bpProton && bnPion);
         cutAntiLambdaPid = (bpPion && bnProton);
         
-        if (k0) fHistK0MassPtCut->Fill(massK0,ptTrig,0.5);
-        if (Lambda) fHistLambdaMassPtCut->Fill(massLambda,ptTrig,0.5);
-        if (Antilambda) fHistAntiLambdaMassPtCut->Fill(massAntilambda,ptTrig,0.5);
+        // reject bunch-off pile-up
+        
+        if (!(((myTrackNeg->IsOn(AliAODTrack::kTPCrefit)&&myTrackNeg->IsOn(AliAODTrack::kITSrefit))||myTrackNeg->IsOn(AliAODTrack::kTOFout))||((myTrackPos->IsOn(AliAODTrack::kTPCrefit)&&myTrackPos->IsOn(AliAODTrack::kITSrefit))||myTrackPos->IsOn(AliAODTrack::kTOFout)))) continue;
+        
+        if (k0) {
+            fHistK0MassPtCut->Fill(massK0,ptTrig,0.5);
+            nK0+=1;
+        }
+        if (Lambda) {
+            fHistLambdaMassPtCut->Fill(massLambda,ptTrig,0.5);
+            nLam+=1;
+        }
+        if (Antilambda) {
+            fHistAntiLambdaMassPtCut->Fill(massAntilambda,ptTrig,0.5);
+            nALam+=1;
+        }
         
         if (k0&&cutK0Pid) fHistK0MassPtCut->Fill(massK0,ptTrig,1.5);
         if (Lambda&&cutLambdaPid) fHistLambdaMassPtCut->Fill(massLambda,ptTrig,1.5);
@@ -905,6 +946,8 @@ void AliAnalysisTaskDiHadCorrelHighPt::UserExec(Option_t *)
         
             Double_t lenght = V0->DecayLengthV0(tParentVertexPosition);
             Double_t momentum = TMath::Sqrt(TMath::Power(V0->Px(),2)+TMath::Power(V0->Py(),2)+TMath::Power(V0->Pz(),2));
+            
+            delete[] tParentVertexPosition;
 
             Double_t lifetimeK0 = (massK0*lenght)/momentum;
             Double_t lifetimeLam = (massLambda*lenght)/momentum;
@@ -1047,6 +1090,9 @@ void AliAnalysisTaskDiHadCorrelHighPt::UserExec(Option_t *)
         }
     }
 
+    fHistV0MultiplicityK0->Fill(nK0);
+    fHistV0Lam->Fill(nLam);
+    fHistMultiplicityALam->Fill(nALam);
 	// Corelation ==========================================
 
     
@@ -1213,6 +1259,7 @@ Bool_t AliAnalysisTaskDiHadCorrelHighPt::IsMyGoodLifeTimeK0(Double_t x,Double_t 
 		Double_t mass = V0->MassK0Short();
 		Double_t lifetime = (mass*lenght)/momentum;
 		
+        delete[] tParentVertexPosition;
 		if(lifetime>=20) return kFALSE;
 		
 		return kTRUE;
@@ -1232,6 +1279,7 @@ Bool_t AliAnalysisTaskDiHadCorrelHighPt::IsMyGoodLifeTimeLambda(Double_t x,Doubl
 		Double_t mass = V0->MassLambda();
 		Double_t lifetime = (mass*lenght)/momentum;
 		
+        delete[] tParentVertexPosition;
 		if(lifetime>=30) return kFALSE;
 		
 		return kTRUE;
@@ -1251,6 +1299,7 @@ Bool_t AliAnalysisTaskDiHadCorrelHighPt::IsMyGoodLifeTimeAntiLambda(Double_t x,D
     Double_t mass = V0->MassAntiLambda();
     Double_t lifetime = (mass*lenght)/momentum;
     
+    delete[] tParentVertexPosition;
     if(lifetime>=30) return kFALSE;
     
     return kTRUE;
