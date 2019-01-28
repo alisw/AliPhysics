@@ -42,11 +42,11 @@ AliAnalysisTask *AddTask_marsland_EbyeIterPID(Bool_t getFromAlien=kFALSE, TStrin
     // gSystem->AddIncludePath("-I$ALICE_PHYSICS/include");
     //
     // MC closure for higher moments
-    settingType = 50;      // 4 for Real data 100 for full MC
-    lhcPeriod = 1;
+    settingType = 52;      // 4 for Real data 100 for full MC
+    lhcPeriod = 2;
     lookUpTableIndex =0;
     suffix = "test";
-    containerNameMode=1;
+    containerNameMode=0;
   }
   TString configFilePath(configBasePath+configFileName);
   std::cout << " Info::marsland: Configpath:  " << configFilePath << std::endl;
