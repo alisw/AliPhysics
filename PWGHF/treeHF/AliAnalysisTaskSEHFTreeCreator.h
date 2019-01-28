@@ -87,7 +87,7 @@ public:
   
     void SetDsMassKKOption(AliHFTreeHandlerDstoKKpi::massKKopt opt) {fDsMassKKOpt=opt;}
   
-    void SetTreeSingleTrackVarsOpt(AliHFTreeHandler::optsingletrack opt) {fTreeSingleTrackVarsOpt=opt;}
+    void SetTreeSingleTrackVarsOpt(Int_t opt) {fTreeSingleTrackVarsOpt=opt;}
   
     Int_t  GetSystem() const {return fSys;}
     Bool_t GetWriteOnlySignalTree() const {return fWriteOnlySignal;}
