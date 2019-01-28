@@ -5,6 +5,7 @@
 #pragma link off all functions;
 
 #pragma link C++ class AliAnalysisTaskChargedFlow+;
+#pragma link C++ class AliAnalysisTaskGFWFlow+;
 #pragma link C++ class AliGFWCuts+;
 #pragma link C++ class AliGFWCumulant+;
 #pragma link C++ class AliGFW+;

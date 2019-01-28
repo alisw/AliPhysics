@@ -29,6 +29,7 @@ include_directories(${ROOT_INCLUDE_DIRS}
 # Sources - alphabetical order
 set(SRCS
   AliAnalysisTaskChargedFlow.cxx
+  AliAnalysisTaskGFWFlow.cxx
   AliGFW.cxx
   AliGFWCumulant.cxx
   AliGFWCuts.cxx
