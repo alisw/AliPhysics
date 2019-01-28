@@ -186,6 +186,8 @@ class AliAnalysisTaskEbyeIterPID : public AliAnalysisTaskSE {
   void   SetRunFastSimulation(const Bool_t ifFastSimul = kFALSE)      {fRunFastSimulation   = ifFastSimul;}
   void   SetRunFastHighMomentCal(const Bool_t ifFastHighMom = kFALSE) {fRunFastHighMomentCal= ifFastHighMom;}
   void   SetFillGenDistributions(const Bool_t ifGenDistributions = kFALSE) {fFillGenDistributions= ifGenDistributions;}
+  void   SetFillTreeMC(const Bool_t ifTreeMC = kFALSE)                {fFillTreeMC= ifTreeMC;}
+  void   SetFillNudynFastGen(const Bool_t ifNudynFastGen = kFALSE)    {fFillNudynFastGen= ifNudynFastGen;}
   void   SetUsePtCut(const Int_t ifUsePtCut = 1)                      {fUsePtCut            = ifUsePtCut;}
   void   SetFillDnchDeta(const Bool_t ifDnchDetaCal = kFALSE)         {fFillDnchDeta        = ifDnchDetaCal;}
   void   SetIncludeTOF(const Bool_t ifIncludeTOF = kFALSE)            {fIncludeTOF          = ifIncludeTOF;}
@@ -443,6 +445,7 @@ private:
   void FillTPCdEdxReal();                   // Main function to fill all info + TIden
   void FillTPCdEdxCheck();                  // Quick check for the TPC dEdx
   void FillMCFull();                     // Fill all info + TIdenMC from MC to do MC closure test
+  void FillTreeMC();
   void FillMCFull_NetParticles();
   void FastGen();                           // Run over galice.root for Fastgen
   void FastGenHigherMoments();     // Run over galice.root for Fastgen and calculate higher moments
@@ -464,7 +467,8 @@ private:
   Int_t CountEmptyEvents(Int_t counterBin);  // Just count if there is empty events
   Int_t CacheTPCEventInformation();
   Bool_t CheckIfFromResonance(Int_t mcType, AliMCParticle *trackMCgen, Int_t trackIndex, Bool_t parInterest, Double_t ptot, Double_t eta, Double_t cent, Bool_t fillTree);
-
+  Bool_t CheckIfFromAnyResonance(AliMCParticle *trackMCgen);
+  void FillGenDistributions();
 
   // ---------------------------------------------------------------------------------
   //                                   Members
@@ -538,6 +542,8 @@ private:
   Bool_t            fRunFastSimulation;      // when running over galice.root do not fill other objects
   Bool_t            fRunFastHighMomentCal;   // when running over galice.root do not fill other objects
   Bool_t            fFillGenDistributions;   // when running over galice.root do not fill other objects
+  Bool_t            fFillTreeMC;
+  Bool_t            fFillNudynFastGen;
   Int_t             fUsePtCut;
 
   Bool_t            fFillDnchDeta;           // switch on calculation of the dncdeta for fastgens
