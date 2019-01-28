@@ -37,7 +37,7 @@ AliAnalysisTaskSELc2V0bachelorTMVAApp* AddTaskLc2V0bachelor_TMVAApp(TString ptBi
   } else {
     filecuts=TFile::Open(finname.Data());
     if(!filecuts ||(filecuts&& !filecuts->IsOpen())){
-      AliFatal("Input file not found : check your cut object");
+      Printf("Input file not found : check your cut object"); return NULL;
     }
   }
 
@@ -54,7 +54,7 @@ AliAnalysisTaskSELc2V0bachelorTMVAApp* AddTaskLc2V0bachelor_TMVAApp(TString ptBi
   // mm let's see if everything is ok
   if (!RDHFCutsLctoV0anal) {
     cout << "Specific AliRDHFCutsLctoV0 not found\n";
-    return;
+    return NULL;
   }
   
   TString namesTMVAvars = "massK0S,tImpParBach,tImpParV0,bachelorPt,combinedProtonProb,DecayLengthK0S*0.497/v0P,cosPAK0S,CosThetaStar,signd0";
