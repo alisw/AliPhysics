@@ -32,6 +32,8 @@ set(SRCS
   AliGFW.cxx
   AliGFWCumulant.cxx
   AliGFWCuts.cxx
+  AliGFWFlowContainer.cxx
+  AliProfileSubset.cxx
   AliGFWWeights.cxx
   )
 
