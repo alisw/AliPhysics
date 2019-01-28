@@ -256,10 +256,10 @@ Long64_t AliGFWWeights::Merge(TCollection *collist) {
   };
   AliGFWWeights *l_w = 0;
   TIter all_w(collist);
-  while (l_w = (AliGFWWeights*) all_w()) {
+  while (l_w = ((AliGFWWeights*) all_w())) {
     AddArray(fW_data,l_w->GetDataArray());
-    AddArray(fW_mcrec,tw->GetRecArray());
-    AddArray(fW_mcgen,tw->GetGenArray());
+    AddArray(fW_mcrec,l_w->GetRecArray());
+    AddArray(fW_mcgen,l_w->GetGenArray());
     nmerged++;
   };
   return nmerged;
