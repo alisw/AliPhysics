@@ -614,6 +614,8 @@ void AliAnalysisTaskJetExtractor::UserCreateOutputObjects()
   AddHistogram2D<TH2D>("hJetPhiEta", "Jet angular distribution #phi/#eta", "COLZ", 180, 0., 2*TMath::Pi(), 100, -2.5, 2.5, "#phi", "#eta", "dN^{Jets}/d#phi d#eta");
   AddHistogram2D<TH2D>("hJetArea", "Jet area", "COLZ", 200, 0., 2., 100, 0, 100, "Jet A", "Centrality", "dN^{Jets}/dA");
 
+  AddHistogram2D<TH2D>("hJetPtModel", "Jet p_{T} distribution (model background)", "COLZ", 400, -100., 300., 100, 0, 100, "p_{T, jet} (GeV/c)", "Centrality", "dN^{Jets}/dp_{T}");
+  AddHistogram2D<TH2D>("hJetMassModel", "Jet mass distribution (model background)", "COLZ", 400, -100., 300., 100, 0, 100, "p_{T, jet} (GeV/c)", "Centrality", "dN^{Jets}/dp_{T}");
   AddHistogram2D<TH2D>("hDeltaPt", "#delta p_{T} distribution", "", 400, -100., 300., 100, 0, 100, "p_{T, cone} (GeV/c)", "Centrality", "dN^{Tracks}/dp_{T}");
 
   AddHistogram2D<TH2D>("hConstituentPt", "Jet constituent p_{T} distribution", "COLZ", 400, 0., 300., 100, 0, 100, "p_{T, const} (GeV/c)", "Centrality", "dN^{Const}/dp_{T}");
@@ -842,6 +844,10 @@ Bool_t AliAnalysisTaskJetExtractor::Run()
       AliEmcalJet *outJet = new ((*fJetOutputArray)[jetCount]) AliEmcalJet(pt_ML, jet->Eta(), jet->Phi(), mass_ML);
       outJet->SetLabel(jet->Label());
       outJet->SetArea(jet->Area());
+      outJet->SetJetAcceptanceType(jet->GetJetAcceptanceType());
+      FillHistogram("hJetPtModel", pt_ML, fCent);
+      FillHistogram("hJetMassModel", mass_ML, fCent);
+
     }
 
     // Fill jet to tree
