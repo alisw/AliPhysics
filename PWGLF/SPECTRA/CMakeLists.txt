@@ -67,6 +67,7 @@ set(SRCS
   PiKaPr/ITSsa/AliAnalysisTaskSEITSsaSpectraMultiplicity.cxx
   PiKaPr/TPC/rTPC/AliAnalysisTaskQAHighPtDeDxTest.cxx
   PiKaPr/TPC/rTPC/AliAnalysisTaskPPvsMult.cxx
+  PiKaPr/TPC/rTPC/AliAnalysisTaskSpherocity.cxx
   PiKaPr/TPCTOF/AliAnalysisCombinedHadronSpectra.cxx
   PiKaPr/TPCTOFpA/AliAnalysisTPCTOFpA.cxx
   PiKaPr/TPCTOFfits/AliAnalysisPIDEvent.cxx
