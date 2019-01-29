@@ -640,7 +640,7 @@ void AliAnalysisTaskSpherocity::UserCreateOutputObjects()
 	for(Int_t i=0; i<nCent; ++i ){
 	fListOfObjects->Add(hSo[i]);
 	
-	/*for(Int_t so=0; so<3; ++so){
+	for(Int_t so=0; so<3; ++so){
 	if(i > 2)continue;
 	fListOfObjects->Add(hMIPVsEta[i][so]);
 	fListOfObjects->Add(pMIPVsEta[i][so]);
@@ -649,7 +649,7 @@ void AliAnalysisTaskSpherocity::UserCreateOutputObjects()
 	fListOfObjects->Add(hMIPVsEtaV0s[i][so]);
 	fListOfObjects->Add(pMIPVsEtaV0s[i][so]);
 	}
-	*/
+	
 
 //	fListOfObjects->Add(hPhi[i]);
 
@@ -870,11 +870,11 @@ void AliAnalysisTaskSpherocity::UserExec(Option_t *)
 	fcent->Fill(fCent+1);
 	fcent->Fill(11);
 
-	printf("COMPIlesd asdddddddddddddddd !!!!!!!!!!!!!!!!!!!!!!!!!!!111\n");
 
-//	if(fCent > 2)return;
-//	ProduceArrayTrksESD(fESD,fCent,fSpherocity);
-//	ProduceArrayV0ESD(fESD,fCent,fSpherocity);
+	if(fCent > 2){return;}
+
+	ProduceArrayTrksESD(fESD,fCent,fSpherocity);
+	ProduceArrayV0ESD(fESD,fCent,fSpherocity);
 
 	if(fAnalysisMC) ProcessMCTruthESD(fCent);
 	}
@@ -2126,3 +2126,4 @@ Double_t AliAnalysisTaskSpherocity::EtaCalibrationPosEl(const Int_t Cent, const 
 	return felededxfitPos->Eval(eta);
 
 }
+
