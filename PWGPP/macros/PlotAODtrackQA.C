@@ -1188,7 +1188,60 @@ void PlotAODtrackQA(TString filename="AnalysisResults.root", TString suffix="QA"
   TDirectory* curDir=gDirectory;
   TFile* outfb=new TFile("FiltBitsHistos.root","recreate");
   curDir->cd();
+  Int_t colors[12]={kRed+1,kRed-7,kOrange+1,kYellow+1,kGreen+1,kGreen,kCyan,kBlue+1,kMagenta,kMagenta+1,kGray+1,1};
+  Int_t lstyl[12]={1,9,1,3,1,8,2,5,7,1,1,9};
+  Int_t lwid[12]={2,2,2,3,2,2,3,3,3,2,2,2};
 
+  TH1F* hNtracksFB0=(TH1F*)l->FindObject("hNtracksFb0");
+  if(hNtracksFB0){
+    TH1F* hMean=new TH1F("hMeanMultVsBF"," ; Filter bit ; <N_{Tracks}> (kINT7 events)",9,-0.5,8.5);
+    TH1F* hRMS=new TH1F("hRMS"," ; Filter bit ; r.m.s.(N_{Tracks})",9,-0.5,8.5);
+    TLegend* legmfb=new TLegend(0.6,0.45,0.89,0.89);
+    TH1F* hNtracksFB[9];
+    TLatex* tmeanmult[9];
+    Double_t maxYaxis=1;
+    for(Int_t kb=0; kb<9; kb++){
+      hNtracksFB[kb]=(TH1F*)l->FindObject(Form("hNtracksFb%d",kb));
+      tmeanmult[kb]=0x0;
+      if(hNtracksFB[kb]){
+	hNtracksFB[kb]->SetLineColor(colors[kb]);
+	hNtracksFB[kb]->SetLineStyle(lstyl[kb]);
+	hNtracksFB[kb]->SetLineWidth(lwid[kb]);
+	if(hNtracksFB[kb]->GetMaximum()>maxYaxis) maxYaxis=1.5*hNtracksFB[kb]->GetMaximum();
+	legmfb->AddEntry(hNtracksFB[kb],Form("FiltBit %d",kb),"L")->SetTextColor(colors[kb]);
+	hMean->SetBinContent(hMean->FindBin(kb),hNtracksFB[kb]->GetMean());
+	hMean->SetBinError(hMean->FindBin(kb),hNtracksFB[kb]->GetMeanError());	
+	hNtracksFB[kb]->SetStats(0);
+	hNtracksFB[kb]->GetXaxis()->SetTitle("N_{tracks}");
+	hNtracksFB[kb]->GetYaxis()->SetTitle("kINT7 Events");
+	hNtracksFB[kb]->SetTitle("");
+	tmeanmult[kb]=new TLatex(kb-0.4,hNtracksFB[kb]->GetMean()+0.02*hNtracksFB0->GetMean(),Form("%.2f",hNtracksFB[kb]->GetMean()));
+	tmeanmult[kb]->SetTextFont(43);
+	tmeanmult[kb]->SetTextSize(20);
+	tmeanmult[kb]->SetTextColor(colors[kb]);
+      }
+    }
+    TCanvas* cmult=new TCanvas("cmult","Track Multipl",1200,500);
+    cmult->Divide(2,1);
+    cmult->cd(1);
+    gPad->SetLogy();
+    hNtracksFB[0]->SetMaximum(maxYaxis);
+    hNtracksFB[0]->GetYaxis()->SetTitleOffset(1.2);
+    hNtracksFB[0]->Draw();
+    for(Int_t kb=1; kb<9; kb++){
+      if(hNtracksFB[kb]) hNtracksFB[kb]->Draw("same");
+    }
+    legmfb->Draw();
+    cmult->cd(2);
+    gStyle->SetPaintTextFormat(".2f");
+    hMean->SetStats(0);
+    hMean->SetMarkerStyle(20);
+    hMean->GetYaxis()->SetTitleOffset(1.2);
+    hMean->Draw();
+    for(Int_t kb=0; kb<9; kb++){
+      if(tmeanmult[kb]){tmeanmult[kb]->Draw();}
+    }
+  }
   TCanvas* cip=new TCanvas("cip","FiltBits",1100,900);
   cip->Divide(2,2);
   cip->cd(1);
@@ -1196,9 +1249,6 @@ void PlotAODtrackQA(TString filename="AnalysisResults.root", TString suffix="QA"
   hFilterBits->Draw("colz");
   cip->cd(2);
   gPad->SetLogy();
-  Int_t colors[12]={kRed+1,kRed-7,kOrange+1,kYellow+1,kGreen+1,kGreen,kCyan,kBlue+1,kMagenta,kMagenta+1,kGray+1,1};
-  Int_t lstyl[12]={1,9,1,3,1,8,2,5,7,1,1,9};
-  Int_t lwid[12]={2,2,2,3,2,2,3,3,3,2,2,2};
   TLegend* leg2=new TLegend(0.4,0.5,0.89,0.89);
   leg2->SetMargin(0.3);
   leg2->SetNColumns(2);
