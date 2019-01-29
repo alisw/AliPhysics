@@ -128,14 +128,8 @@ class AliFemtoDreamCorrHists {
       }
     }
   }
-  void FilldPhidEtaSE(int iHist, float dPhi, float dEta) {
-    if (fdPhidEtaPlots)
-      fdEtadPhiSE[iHist]->Fill(dEta, dPhi);
-  }
-  void FilldPhidEtaME(int iHist, float dPhi, float dEta) {
-    if (fdPhidEtaPlots)
-      fdEtadPhiME[iHist]->Fill(dEta, dPhi);
-  }
+  void FilldPhidEtaSE(int iHist, float dPhi, float dEta, float mT);
+  void FilldPhidEtaME(int iHist, float dPhi, float dEta, float mT);
   void FillEffectiveMixingDepth(int iHist, int iDepth) {
     if (!fMinimalBooking)
       fEffMixingDepth[iHist]->Fill(iDepth);
@@ -182,6 +176,8 @@ class AliFemtoDreamCorrHists {
   TH2F ****fRadiiEtaPhiMEsmallK;
   TH2F **fdEtadPhiSE;
   TH2F **fdEtadPhiME;
+  TH2F ***fdEtadPhiSEmT;
+  TH2F ***fdEtadPhiMEmT;
   TH1F **fEffMixingDepth;
   bool fDoMultBinning;
   bool fDoCentBinning;
@@ -189,6 +185,8 @@ class AliFemtoDreamCorrHists {
   bool fDomTBinning;
   bool fDokTCentralityBins;
   bool fdPhidEtaPlots;
+  bool fmTDetaDPhi;
+  std::vector<unsigned int> fWhichPairs;
   std::vector<float> fCentBins;ClassDef(AliFemtoDreamCorrHists,4)
   ;
 };
