@@ -2202,7 +2202,10 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::ProcessConversionPhotonC
       }
 
       if(fMCEvent){
-        ProcessTrueConversionPhotonCandidates(PhotonCandidate);
+        if(fInputEvent->IsA()==AliESDEvent::Class())
+          ProcessTrueConversionPhotonCandidates(PhotonCandidate);
+        if(fInputEvent->IsA()==AliAODEvent::Class())
+          ProcessTrueConversionPhotonCandidatesAOD(PhotonCandidate);
       }
     }
   }
