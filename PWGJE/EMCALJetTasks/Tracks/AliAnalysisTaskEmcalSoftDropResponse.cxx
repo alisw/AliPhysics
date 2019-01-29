@@ -38,6 +38,12 @@
 #include <fastjet/ClusterSequence.hh>
 #include <fastjet/PseudoJet.hh>
 #include <fastjet/contrib/SoftDrop.hh>
+#include <fastjet/config.h>
+#if FASJET_VERSION_NUMBER >= 30302
+#include <fastjet/tools/Recluster.hh>
+#else 
+#include <fastjet/contrib/Recluster.hh>
+#endif
 
 #include <RooUnfoldResponse.h>
 
@@ -253,8 +259,12 @@ std::vector<double> AliAnalysisTaskEmcalSoftDropResponse::MakeSoftdrop(const Ali
     case kKTAlgo: reclusterizingAlgorithm = fastjet::kt_algorithm; break;
     case kAKTAlgo: reclusterizingAlgorithm = fastjet::antikt_algorithm; break;
   };
-  std::unique_ptr<fastjet::contrib::Recluster> reclusterizer(new fastjet::contrib::Recluster(reclusterizingAlgorithm, 1, true));
-  softdropAlgorithm.set_reclustering(kTRUE, reclusterizer.get());
+#if FASTJET_VERSION_NUMBER >= 30302
+  fastjet::Recluster reclusterizer(reclusterizingAlgorithm, 1, fastjet::Recluster::keep_only_hardest);
+#else
+  fastjet::contrib::Recluster reclusterizer(reclusterizingAlgorithm, 1, true);
+#endif
+  softdropAlgorithm.set_reclustering(kTRUE, &reclusterizer);
   AliDebugStream(4) << "Jet has " << sdjet.constituents().size() << " constituents" << std::endl;
   auto groomed = softdropAlgorithm(sdjet);
   auto softdropstruct = groomed.structure_of<fastjet::contrib::SoftDrop>();

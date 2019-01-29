@@ -33,6 +33,12 @@
 
 #include "AliAnalysisTaskConvJet.h"
 
+#include <vector>
+#include <map>
+#include <utility>
+
+class iostream;
+
 /// \cond CLASSIMP
 ClassImp(AliAnalysisTaskConvJet);
 /// \endcond
@@ -129,8 +135,8 @@ Bool_t AliAnalysisTaskConvJet::FillHistograms()
 void AliAnalysisTaskConvJet::DoJetLoop()
 {
   AliJetContainer* jetCont = 0;
-  vector<Int_t> MatchRec;
-  vector<Int_t> MatchTrue;
+  std::vector<Int_t> MatchRec;
+  std::vector<Int_t> MatchTrue;
   TIter next(&fJetCollArray);
   while ((jetCont = static_cast<AliJetContainer*>(next()))) {
     MatchRec.clear();

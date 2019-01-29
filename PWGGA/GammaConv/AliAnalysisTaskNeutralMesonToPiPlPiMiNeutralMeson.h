@@ -241,16 +241,65 @@ class AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson: public AliAnalysisTaskS
     TH2F**                            fHistoMotherLikeSignBackInvMassFixedPzNDMPt;        // array of histos of pi+pi+pi0 likesign mixed event, invMass, pT_{pi+pi+pi0}, the Pz of the pi0 was fixed such that
                                                                                           // its invMass matches the PDG value
     // pure MC properties
-    TH1F**                            fHistoMCAllGammaPt;                                 // array of histos of all produced gammas in the specified y range
-    TH1F**                            fHistoMCConvGammaPt;                                // array of histos of all converted gammas in the specified y range
-    TH1F**                            fHistoMCAllPosPionsPt;                              // array of histos with all produced primary positive pions in the specified y range
-    TH1F**                            fHistoMCAllNegPionsPt;                              // array of histos with all produced primary negative pions in the specified y range
-    TH1F**                            fHistoMCGammaFromNeutralMesonPt;                    // array of histos of all produced gammas from omega or eta via pi+pi-pi0 in the specified y range/
-    TH1F**                            fHistoMCPosPionsFromNeutralMesonPt;                 // array of histos of all produced positive pions from omega or eta via pi+pi-pi0 in the specified y range/
-    TH1F**                            fHistoMCNegPionsFromNeutralMesonPt;                 // array of histos of all produced negative pions from omega or eta via pi+pi-pi0 in the specified y range/
-    TH1F**                            fHistoMCHNMPiPlPiMiNDMPt;                        // array of histos of produced etas via pi+pi-pi0 in the specified y range
-    TH1F**                            fHistoMCHNMPiPlPiMiNDMInAccPt;                   // array of histos of produced etas via pi+pi-pi0 in the specified y range,
+    TH1F**                            fHistoMCAllGammaPt;                                 ///< array of histos of all produced gammas in the specified y range
+    TH1F**                            fHistoMCConvGammaPt;                                ///< array of histos of all converted gammas in the specified y range
+    TH1F**                            fHistoMCAllMesonPt;                                 ///< array of histos of pt of all neutral decay mesons in the specified y range
+    TH1F**                            fHistoMCAllMesonEta;                                ///< array of histos of eta of all neutral decay mesons in the specified y range
+    TH1F**                            fHistoMCAllMesonPhi;                                ///< array of histos of phi of all neutral decay mesons in the specified y range
+    TH1F**                            fHistoMCMesonFromNeutralMesonPt;                    ///< array of histos of pt of neutral decay mesons from heavy meson in the specified y range
+    TH1F**                            fHistoMCMesonFromNeutralMesonEta;                   ///< array of histos of eta of neutral decay mesons from heavy meson in the specified y range
+    TH1F**                            fHistoMCMesonFromNeutralMesonPhi;                   ///< array of histos of phi of neutral decay mesons from heavy meson in the specified y range
+    TH1F**                            fHistoMCAllPosPionsPt;                              ///< array of histos with all produced primary positive pions in the specified y range
+    TH1F**                            fHistoMCAllPosPionsEta;                             ///< array of histos with all produced primary positive pions in the specified y range
+    TH1F**                            fHistoMCAllPosPionsPhi;                             ///< array of histos with all produced primary positive pions in the specified y range
+    TH1F**                            fHistoMCAllNegPionsPt;                              ///< array of histos with all produced primary negative pions in the specified y range
+    TH1F**                            fHistoMCAllNegPionsEta;                             ///< array of histos with all produced primary negative pions in the specified y range
+    TH1F**                            fHistoMCAllNegPionsPhi;                             ///< array of histos with all produced primary negative pions in the specified y range
+    TH1F**                            fHistoMCGammaFromNeutralMesonPt;                    ///< array of histos of all produced gammas from omega or eta via pi+pi-pi0 in the specified y range/
+    TH1F**                            fHistoMCPosPionsFromNeutralMesonPt;                 ///< array of histos of all produced positive pions from omega or eta via pi+pi-pi0 in the specified y range/
+    TH1F**                            fHistoMCPosPionsFromNeutralMesonEta;                ///< array of histos of all produced positive pions from omega or eta via pi+pi-pi0 in the specified y range/
+    TH1F**                            fHistoMCPosPionsFromNeutralMesonPhi;                ///< array of histos of all produced positive pions from omega or eta via pi+pi-pi0 in the specified y range/
+    TH1F**                            fHistoMCNegPionsFromNeutralMesonPt;                 ///< array of histos of all produced negative pions from omega or eta via pi+pi-pi0 in the specified y range/
+    TH1F**                            fHistoMCNegPionsFromNeutralMesonEta;                ///< array of histos of all produced negative pions from omega or eta via pi+pi-pi0 in the specified y range/
+    TH1F**                            fHistoMCNegPionsFromNeutralMesonPhi;                ///< array of histos of all produced negative pions from omega or eta via pi+pi-pi0 in the specified y range/
+    TH1F**                            fHistoMCHNMPiPlPiMiNDMPt;                           ///< array of histos of produced etas via pi+pi-pi0 in the specified y range
+    TH1F**                            fHistoMCHNMPiPlPiMiNDMInAccPt;                      ///< array of histos of produced etas via pi+pi-pi0 in the specified y range,
                                                                                           // with decay products in respective y, eta ranges
+    
+    // MC truth properties for heavy meson (and decay products)
+    TH1F**                            fHistoMCHeavyAllPt;                                 ///< array of histos with pt of all heavy mesons
+    TH1F**                            fHistoMCHeavyAllEta;                                ///< array of histos with eta of all heavy mesons
+    TH1F**                            fHistoMCHeavyAllPhi;                                ///< array of histos with phi of all heavy mesons
+    TH1F**                            fHistoMCHeavyChannelPt;                             ///< array of histos with pt of heavy mesons in the decay channel
+    TH1F**                            fHistoMCHeavyChannelEta;                            ///< array of histos with eta of heavy mesons in the decay channel
+    TH1F**                            fHistoMCHeavyChannelPhi;                            ///< array of histos with phi of heavy mesons in the decay channel
+    TH1F**                            fHistMCChannelNDMFromHeavyPt;                       ///< array if histos with pt of the ndm of the heavy meson
+    TH1F**                            fHistMCChannelNDMFromHeavyEta;                      ///< array if histos with eta of the ndm of the heavy meson
+    TH1F**                            fHistMCChannelNDMFromHeavyPhi;                      ///< array if histos with phi of the ndm of the heavy meson
+    TH1F**                            fHistMCChannelPiPlusFromHeavyPt;                    ///< array if histos with pt of the piplus of the heavy meson
+    TH1F**                            fHistMCChannelPiPlusFromHeavyEta;                   ///< array if histos with eta of the piplus of the heavy meson
+    TH1F**                            fHistMCChannelPiPlusFromHeavyPhi;                   ///< array if histos with phi of the piplus of the heavy meson
+    TH1F**                            fHistMCChannelPiMinusFromHeavyPt;                   ///< array if histos with pt of the piminus of the heavy meson
+    TH1F**                            fHistMCChannelPiMinusFromHeavyEta;                  ///< array if histos with eta of the piminus of the heavy meson
+    TH1F**                            fHistMCChannelPiPMinusFromHeavyPhi;                 ///< array if histos with phi of the piminus of the heavy meson
+    TH2F**                            fHistMCChannelNDMPtHeavyPt;                         ///< array of histos of pt correlation ndm - heavy meson
+    TH2F**                            fHistMCChannelPiPlusPtHeavyPt;                      ///< array of histos of pt correlation piplus - heavy meson
+    TH2F**                            fHistMCChannelPiMinusPtHeavyPt;                     ///< array of histos of pt correlation piminus - heavy meson
+    TH1F**                            fHistoMCHeavyReconstructiblePt;                     ///< array of histos with pt of reconstructible heavy mesons 
+    TH1F**                            fHistoMCHeavyReconstructibleEta;                    ///< array of histos with eta of reconstructible heavy mesons
+    TH1F**                            fHistoMCHeavyReconstructiblePhi;                    ///< array of histos with phi of reconstructible heavy mesons
+    TH1F**                            fHistMCReconstructibleNDMFromHeavyPt;               ///< array if histos with pt of the ndm of the reconstructible heavy meson
+    TH1F**                            fHistMCReconstructibleNDMFromHeavyEta;              ///< array if histos with eta of the ndm of the reconstructible heavy meson
+    TH1F**                            fHistMCReconstructibleNDMFromHeavyPhi;              ///< array if histos with phi of the ndm of the reconstructible heavy meson
+    TH1F**                            fHistMCReconstructiblePiPlusFromHeavyPt;            ///< array if histos with pt of the piplus of the reconstructible heavy meson
+    TH1F**                            fHistMCReconstructiblePiPlusFromHeavyEta;           ///< array if histos with eta of the piplus of the reconstructible heavy meson
+    TH1F**                            fHistMCReconstructiblePiPlusFromHeavyPhi;           ///< array if histos with phi of the piplus of the reconstructible heavy meson
+    TH1F**                            fHistMCReconstructiblePiMinusFromHeavyPt;           ///< array if histos with pt of the piminus of the reconstructible heavy meson
+    TH1F**                            fHistMCReconstructiblePiMinusFromHeavyEta;          ///< array if histos with eta of the piminus of the reconstructible heavy meson
+    TH1F**                            fHistMCReconstructiblePiPMinusFromHeavyPhi;         ///< array if histos with phi of the piminus of the reconstructible heavy meson
+    TH2F**                            fHistMCReconstructibleNDMPtHeavyPt;                 ///< array of histos of pt correlation ndm - reconstructible heavy meson
+    TH2F**                            fHistMCReconstructiblePiPlusPtHeavyPt;              ///< array of histos of pt correlation piplus - reconstructible heavy meson
+    TH2F**                            fHistMCReconstructiblePiMinusPtHeavyPt;             ///< array of histos of pt correlation piminus - reconstructible heavy meson
 
     // reconstructed particles MC validated
     TH2F**                          fHistoTrueMotherPiPlPiMiNDMInvMassPt;                 // histos with reconstructed validated eta or omega, inv mass, pT

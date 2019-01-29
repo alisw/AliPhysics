@@ -112,6 +112,9 @@ class AliAnalysisTaskEA : public AliAnalysisTaskEmcalJet {
   void        SetFillTTree(Bool_t b){ fFillTTree = b; } //fill output TTree
   void        SetSystem(Int_t sys){ fSystem = sys;}     // Collision system pp or pP pp or pPb 
 
+  void        SetMeanV0A(Double_t mva){ fMeanV0A = mva; }
+  void        SetMeanV0C(Double_t mvc){ fMeanV0C = mvc; }
+
   Bool_t      PassedGATrigger();
   Bool_t      PassedMinBiasTrigger();
   Int_t       GetMaxDistanceFromBorder(AliVCluster* cluster);
@@ -183,6 +186,9 @@ class AliAnalysisTaskEA : public AliAnalysisTaskEmcalJet {
   Int_t    fIsV0CTriggered;                           //!  V0C decision
   Float_t  fMultV0A;                                  //!  mult. V0A
   Float_t  fMultV0C;                                  //!  mult. V0C
+  Float_t  fMultV0Anorm;                              //!  mult. V0A normalized by mean V0A
+  Float_t  fMultV0Cnorm;                              //!  mult. V0C normalized by mean V0C
+  Float_t  fMultV0AV0Cnorm;                           //!  mult. V0A+V0C normalized by means 
   Float_t  fRingMultV0[8];                            //!  V0 ring mult.
   //                                                  
   Float_t  fZEM1Energy;                               //!  ZEM1 Energy
@@ -237,10 +243,16 @@ class AliAnalysisTaskEA : public AliAnalysisTaskEmcalJet {
    TH1D* fhCentralityTTCinGA[fkCE][fkTTbins];         //! estimated centrality in GA events biased with cluster TT
                                                       
    TH1D* fhSignalMB[fkCE];                            //! distributions of centrality estimators:  mult V0, mult VC, tracklets, znatower0, znctower0
+   TH1D* fhNormSumV0AV0CMB;                           //! distributions of (mult V0/mean V0A) + (mult VC/mean V0C)  in MB
    TH1D* fhSignalTTH[fkCE][fkTTbins];                 //! distributions of centrality estimators biased with hadron TT
    TH1D* fhSignalTTJ[fkCE][fkTTbins];                 //! distributions of centrality estimators biased with ch jet TT
-   TH1D* fhSignalTTCinMB[fkCE][fkTTbins];              //! distributions of centrality estimators biased with cluster TT in min bias 
-   TH1D* fhSignalTTCinGA[fkCE][fkTTbins];              //! distributions of centrality estimators biased with cluster TT in Gamma trigger
+   TH1D* fhSignalTTCinMB[fkCE][fkTTbins];             //! distributions of centrality estimators biased with cluster TT in min bias 
+   TH1D* fhSignalTTCinGA[fkCE][fkTTbins];             //! distributions of centrality estimators biased with cluster TT in Gamma trigger
+   TH1D* fhNormSumV0AV0CTTH[fkTTbins];          //! distributions of (mult V0/mean V0A) + (mult VC/mean V0C) with hadron TT
+   TH1D* fhNormSumV0AV0CTTJ[fkTTbins];          //! distributions of (mult V0/mean V0A) + (mult VC/mean V0C) with ch jet TT
+   TH1D* fhNormSumV0AV0CTTCinMB[fkTTbins];      //! distributions of (mult V0/mean V0A) + (mult VC/mean V0C) with cluster TT in min bias 
+   TH1D* fhNormSumV0AV0CTTCinGA[fkTTbins];      //! distributions of (mult V0/mean V0A) + (mult VC/mean V0C) with cluster TT in Gamma trigger
+
    TH2F* fhV0AvsV0C;                                   //! V0A vs V0C in MB 
    TH2F* fhV0AvsSPD;                                   //! V0A vs SPD in MB 
    TH2F* fhV0CvsSPD;                                   //! V0C vs SPD in MB 
@@ -276,10 +288,14 @@ class AliAnalysisTaskEA : public AliAnalysisTaskEmcalJet {
    Int_t    fSystem;                                  // Collision system 
    AliEMCALRecoUtils          *fFiducialCellCut;      //!<!
 
+   Double_t fMeanV0A;                                 // mean V0A signal in incl. MB 
+   Double_t fMeanV0C;                                 // mean V0C signal in incl. MB 
+
+
    AliAnalysisTaskEA(const AliAnalysisTaskEA&);
    AliAnalysisTaskEA& operator=(const AliAnalysisTaskEA&);
 
-   ClassDef(AliAnalysisTaskEA, 5); // Charged jet analysis for pAliAnalysisTaskHJetSpectra/home/fkrizek/z501.ALIC
+   ClassDef(AliAnalysisTaskEA, 6); // Charged jet analysis for pAliAnalysisTaskHJetSpectra/home/fkrizek/z501.ALIC
 
 };
 #endif

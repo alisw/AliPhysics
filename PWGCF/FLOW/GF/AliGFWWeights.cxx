@@ -237,3 +237,30 @@ void AliGFWWeights::AddArray(TObjArray *targ, TObjArray *sour) {
       targh->Add(sourh);
   };
 };
+Long64_t AliGFWWeights::Merge(TCollection *collist) {
+  Long64_t nmerged=0;
+  if(!fW_data) {
+    fW_data = new TObjArray();
+    fW_data->SetName("Weights_Data");
+    fW_data->SetOwner(kTRUE);
+  };
+  if(!fW_mcrec) {
+    fW_mcrec = new TObjArray();
+    fW_mcrec->SetName("Weights_MCRec");
+    fW_mcrec->SetOwner(kTRUE);
+  };
+  if(!fW_mcgen) {
+    fW_mcgen = new TObjArray();
+    fW_mcgen->SetName("Weights_MCGen");
+    fW_mcgen->SetOwner(kTRUE);
+  };
+  AliGFWWeights *l_w = 0;
+  TIter all_w(collist);
+  while (l_w = ((AliGFWWeights*) all_w())) {
+    AddArray(fW_data,l_w->GetDataArray());
+    AddArray(fW_mcrec,l_w->GetRecArray());
+    AddArray(fW_mcgen,l_w->GetGenArray());
+    nmerged++;
+  };
+  return nmerged;
+};

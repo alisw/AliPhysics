@@ -11,9 +11,14 @@
 /* Copyright(c) 1998-2016, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
 
-using namespace std;
 #include "AliAnalysisTaskEmcalJet.h"
 #include "THistManager.h"
+
+#include <vector>
+#include <map>
+#include <utility>
+
+class iostream;
 
 /**
  * \class AliAnalysisTaskConvJet
@@ -77,19 +82,19 @@ class AliAnalysisTaskConvJet : public AliAnalysisTaskEmcalJet {
           }
           fJetNameArray[fJetContainersAdded] = Add;
           fTrainconfigArray[fJetContainersAdded] = Trainconfig;
-          vector<Double_t> JetPt;
+          std::vector<Double_t> JetPt;
           fListJetPt.push_back(JetPt);
-          vector<Double_t> JetPx;
+          std::vector<Double_t> JetPx;
           fListJetPx.push_back(JetPx);
-          vector<Double_t> JetPy;
+          std::vector<Double_t> JetPy;
           fListJetPy.push_back(JetPy);
-          vector<Double_t> JetPz;
+          std::vector<Double_t> JetPz;
           fListJetPz.push_back(JetPz);
-          vector<Double_t> JetEta;
+          std::vector<Double_t> JetEta;
           fListJetEta.push_back(JetEta);
-          vector<Double_t> JetPhi;
+          std::vector<Double_t> JetPhi;
           fListJetPhi.push_back(JetPhi);
-          vector<Double_t> JetArea;
+          std::vector<Double_t> JetArea;
           fListJetArea.push_back(JetArea);
           fListNJets.push_back(0);
           fJetContainersAdded++;
@@ -117,19 +122,19 @@ class AliAnalysisTaskConvJet : public AliAnalysisTaskEmcalJet {
         }
         fJetNameArray[fJetContainersAdded] = AddRec;
         fTrainconfigArray[fJetContainersAdded] = Trainconfig;
-        vector<Double_t> JetPt;
+        std::vector<Double_t> JetPt;
         fListJetPt.push_back(JetPt);
-        vector<Double_t> JetPx;
+        std::vector<Double_t> JetPx;
         fListJetPx.push_back(JetPx);
-        vector<Double_t> JetPy;
+        std::vector<Double_t> JetPy;
         fListJetPy.push_back(JetPy);
-        vector<Double_t> JetPz;
+        std::vector<Double_t> JetPz;
         fListJetPz.push_back(JetPz);
-        vector<Double_t> JetEta;
+        std::vector<Double_t> JetEta;
         fListJetEta.push_back(JetEta);
-        vector<Double_t> JetPhi;
+        std::vector<Double_t> JetPhi;
         fListJetPhi.push_back(JetPhi);
-        vector<Double_t> JetArea;
+        std::vector<Double_t> JetArea;
         fListJetArea.push_back(JetArea);
         fListNJets.push_back(0);
         fJetContainersAdded++;
@@ -146,19 +151,19 @@ class AliAnalysisTaskConvJet : public AliAnalysisTaskEmcalJet {
         }
         fTrueJetNameArray[fTrueJetContainersAdded] = AddTrue;
         fTrueTrainconfigArray[fTrueJetContainersAdded] = Trainconfig;
-        vector<Double_t> JetPt;
+        std::vector<Double_t> JetPt;
         fListTrueJetPt.push_back(JetPt);
-        vector<Double_t> JetPx;
+        std::vector<Double_t> JetPx;
         fListTrueJetPx.push_back(JetPx);
-        vector<Double_t> JetPy;
+        std::vector<Double_t> JetPy;
         fListTrueJetPy.push_back(JetPy);
-        vector<Double_t> JetPz;
+        std::vector<Double_t> JetPz;
         fListTrueJetPz.push_back(JetPz);
-        vector<Double_t> JetEta;
+        std::vector<Double_t> JetEta;
         fListTrueJetEta.push_back(JetEta);
-        vector<Double_t> JetPhi;
+        std::vector<Double_t> JetPhi;
         fListTrueJetPhi.push_back(JetPhi);
-        vector<Double_t> JetArea;
+        std::vector<Double_t> JetArea;
         fListTrueJetArea.push_back(JetArea);
         fListTrueNJets.push_back(0);
         fTrueJetContainersAdded++;
@@ -175,8 +180,8 @@ class AliAnalysisTaskConvJet : public AliAnalysisTaskEmcalJet {
       }
       return NJets;
 }
-  vector<Double_t> GetVectorJetPt(Int_t Trainconfig){
-      vector<Double_t> VectorJetPt;
+  std::vector<Double_t> GetVectorJetPt(Int_t Trainconfig){
+      std::vector<Double_t> VectorJetPt;
       for(Int_t i = 0; i < fNJetContainers; i++){
         if(Trainconfig == fTrainconfigArray[i]){
           VectorJetPt = fListJetPt.at(i);
@@ -185,8 +190,8 @@ class AliAnalysisTaskConvJet : public AliAnalysisTaskEmcalJet {
       }
       return VectorJetPt;
 }
-  vector<Double_t> GetVectorJetPx(Int_t Trainconfig){
-      vector<Double_t> VectorJetPx;
+  std::vector<Double_t> GetVectorJetPx(Int_t Trainconfig){
+      std::vector<Double_t> VectorJetPx;
       for(Int_t i = 0; i < fNJetContainers; i++){
         if(Trainconfig == fTrainconfigArray[i]){
           VectorJetPx = fListJetPx.at(i);
@@ -195,8 +200,8 @@ class AliAnalysisTaskConvJet : public AliAnalysisTaskEmcalJet {
       }
       return VectorJetPx;
 }
-  vector<Double_t> GetVectorJetPy(Int_t Trainconfig){
-      vector<Double_t> VectorJetPy;
+  std::vector<Double_t> GetVectorJetPy(Int_t Trainconfig){
+      std::vector<Double_t> VectorJetPy;
       for(Int_t i = 0; i < fNJetContainers; i++){
         if(Trainconfig == fTrainconfigArray[i]){
           VectorJetPy = fListJetPy.at(i);
@@ -205,8 +210,8 @@ class AliAnalysisTaskConvJet : public AliAnalysisTaskEmcalJet {
       }
       return VectorJetPy;
 }
-  vector<Double_t> GetVectorJetPz(Int_t Trainconfig){
-      vector<Double_t> VectorJetPz;
+  std::vector<Double_t> GetVectorJetPz(Int_t Trainconfig){
+      std::vector<Double_t> VectorJetPz;
       for(Int_t i = 0; i < fNJetContainers; i++){
         if(Trainconfig == fTrainconfigArray[i]){
           VectorJetPz = fListJetPz.at(i);
@@ -215,8 +220,8 @@ class AliAnalysisTaskConvJet : public AliAnalysisTaskEmcalJet {
       }
       return VectorJetPz;
 }
-  vector<Double_t> GetVectorJetEta(Int_t Trainconfig){
-      vector<Double_t> VectorJetEta;
+  std::vector<Double_t> GetVectorJetEta(Int_t Trainconfig){
+      std::vector<Double_t> VectorJetEta;
       for(Int_t i = 0; i < fNJetContainers; i++){
         if(Trainconfig == fTrainconfigArray[i]){
           VectorJetEta = fListJetEta.at(i);
@@ -225,8 +230,8 @@ class AliAnalysisTaskConvJet : public AliAnalysisTaskEmcalJet {
       }
       return VectorJetEta;
 }
-  vector<Double_t> GetVectorJetPhi(Int_t Trainconfig){
-      vector<Double_t> VectorJetPhi;
+  std::vector<Double_t> GetVectorJetPhi(Int_t Trainconfig){
+      std::vector<Double_t> VectorJetPhi;
       for(Int_t i = 0; i < fNJetContainers; i++){
         if(Trainconfig == fTrainconfigArray[i]){
           VectorJetPhi = fListJetPhi.at(i);
@@ -235,8 +240,8 @@ class AliAnalysisTaskConvJet : public AliAnalysisTaskEmcalJet {
       }
       return VectorJetPhi;
 }
-  vector<Double_t> GetVectorJetArea(Int_t Trainconfig){
-      vector<Double_t> VectorJetArea;
+  std::vector<Double_t> GetVectorJetArea(Int_t Trainconfig){
+      std::vector<Double_t> VectorJetArea;
       for(Int_t i = 0; i < fNJetContainers; i++){
         if(Trainconfig == fTrainconfigArray[i]){
           VectorJetArea = fListJetArea.at(i);
@@ -256,8 +261,8 @@ class AliAnalysisTaskConvJet : public AliAnalysisTaskEmcalJet {
       }
       return NJets;
 }
-  vector<Double_t> GetTrueVectorJetPt(Int_t Trainconfig){
-      vector<Double_t> VectorJetPt;
+  std::vector<Double_t> GetTrueVectorJetPt(Int_t Trainconfig){
+      std::vector<Double_t> VectorJetPt;
       for(Int_t i = 0; i < fNTrueJetContainers; i++){
         if(Trainconfig == fTrueTrainconfigArray[i]){
           VectorJetPt = fListTrueJetPt.at(i);
@@ -266,8 +271,8 @@ class AliAnalysisTaskConvJet : public AliAnalysisTaskEmcalJet {
       }
       return VectorJetPt;
 }
-  vector<Double_t> GetTrueVectorJetPx(Int_t Trainconfig){
-      vector<Double_t> VectorJetPx;
+  std::vector<Double_t> GetTrueVectorJetPx(Int_t Trainconfig){
+      std::vector<Double_t> VectorJetPx;
       for(Int_t i = 0; i < fNTrueJetContainers; i++){
         if(Trainconfig == fTrueTrainconfigArray[i]){
           VectorJetPx = fListTrueJetPx.at(i);
@@ -276,8 +281,8 @@ class AliAnalysisTaskConvJet : public AliAnalysisTaskEmcalJet {
       }
       return VectorJetPx;
 }
-  vector<Double_t> GetTrueVectorJetPy(Int_t Trainconfig){
-      vector<Double_t> VectorJetPy;
+  std::vector<Double_t> GetTrueVectorJetPy(Int_t Trainconfig){
+      std::vector<Double_t> VectorJetPy;
       for(Int_t i = 0; i < fNTrueJetContainers; i++){
         if(Trainconfig == fTrueTrainconfigArray[i]){
           VectorJetPy = fListTrueJetPy.at(i);
@@ -286,8 +291,8 @@ class AliAnalysisTaskConvJet : public AliAnalysisTaskEmcalJet {
       }
       return VectorJetPy;
 }
-  vector<Double_t> GetTrueVectorJetPz(Int_t Trainconfig){
-      vector<Double_t> VectorJetPz;
+  std::vector<Double_t> GetTrueVectorJetPz(Int_t Trainconfig){
+      std::vector<Double_t> VectorJetPz;
       for(Int_t i = 0; i < fNTrueJetContainers; i++){
         if(Trainconfig == fTrueTrainconfigArray[i]){
           VectorJetPz = fListTrueJetPz.at(i);
@@ -296,8 +301,8 @@ class AliAnalysisTaskConvJet : public AliAnalysisTaskEmcalJet {
       }
       return VectorJetPz;
 }
-  vector<Double_t> GetTrueVectorJetEta(Int_t Trainconfig){
-      vector<Double_t> VectorJetEta;
+  std::vector<Double_t> GetTrueVectorJetEta(Int_t Trainconfig){
+      std::vector<Double_t> VectorJetEta;
       for(Int_t i = 0; i < fNTrueJetContainers; i++){
         if(Trainconfig == fTrueTrainconfigArray[i]){
           VectorJetEta = fListTrueJetEta.at(i);
@@ -306,8 +311,8 @@ class AliAnalysisTaskConvJet : public AliAnalysisTaskEmcalJet {
       }
       return VectorJetEta;
 }
-  vector<Double_t> GetTrueVectorJetPhi(Int_t Trainconfig){
-      vector<Double_t> VectorJetPhi;
+  std::vector<Double_t> GetTrueVectorJetPhi(Int_t Trainconfig){
+      std::vector<Double_t> VectorJetPhi;
       for(Int_t i = 0; i < fNTrueJetContainers; i++){
         if(Trainconfig == fTrueTrainconfigArray[i]){
           VectorJetPhi = fListTrueJetPhi.at(i);
@@ -316,8 +321,8 @@ class AliAnalysisTaskConvJet : public AliAnalysisTaskEmcalJet {
       }
       return VectorJetPhi;
 }
-  vector<Double_t> GetTrueVectorJetArea(Int_t Trainconfig){
-      vector<Double_t> VectorJetArea;
+  std::vector<Double_t> GetTrueVectorJetArea(Int_t Trainconfig){
+      std::vector<Double_t> VectorJetArea;
       for(Int_t i = 0; i < fNTrueJetContainers; i++){
         if(Trainconfig == fTrueTrainconfigArray[i]){
           VectorJetArea = fListTrueJetArea.at(i);
@@ -363,23 +368,23 @@ class AliAnalysisTaskConvJet : public AliAnalysisTaskEmcalJet {
   Int_t *fTrainconfigArray;                                                     //! Array of trainconfigs corresponsing to the data/rec jet containers
   Int_t *fTrueTrainconfigArray;                                                 //! Array of trainconfigs corresponsing to the true jet containers
 
-  vector<Int_t>               fListNJets;                                       // vector of number of jets for each jet container
-  vector<vector<Double_t>>    fListJetPt;                                       // vector of vectors containg the jet pt for each jet container
-  vector<vector<Double_t>>    fListJetPx;                                       // vector of vectors containg the jet px for each jet container
-  vector<vector<Double_t>>    fListJetPy;                                       // vector of vectors containg the jet py for each jet container
-  vector<vector<Double_t>>    fListJetPz;                                       // vector of vectors containg the jet pz for each jet container
-  vector<vector<Double_t>>    fListJetEta;                                      // vector of vectors containg the jet eta for each jet container
-  vector<vector<Double_t>>    fListJetPhi;                                      // vector of vectors containg the jet phi for each jet container
-  vector<vector<Double_t>>    fListJetArea;                                     // vector of vectors containg the jet area for each jet container
+  std::vector<Int_t>               fListNJets;                                  // vector of number of jets for each jet container
+  std::vector<std::vector<Double_t>>    fListJetPt;                             // vector of vectors containg the jet pt for each jet container
+  std::vector<std::vector<Double_t>>    fListJetPx;                             // vector of vectors containg the jet px for each jet container
+  std::vector<std::vector<Double_t>>    fListJetPy;                             // vector of vectors containg the jet py for each jet container
+  std::vector<std::vector<Double_t>>    fListJetPz;                             // vector of vectors containg the jet pz for each jet container
+  std::vector<std::vector<Double_t>>    fListJetEta;                            // vector of vectors containg the jet eta for each jet container
+  std::vector<std::vector<Double_t>>    fListJetPhi;                            // vector of vectors containg the jet phi for each jet container
+  std::vector<std::vector<Double_t>>    fListJetArea;                           // vector of vectors containg the jet area for each jet container
 
-  vector<Int_t>               fListTrueNJets;                                   // vector of number of true jets for each true jet container
-  vector<vector<Double_t>>    fListTrueJetPt;                                   // vector of vectors containg the jet pt for each true jet container
-  vector<vector<Double_t>>    fListTrueJetPx;                                   // vector of vectors containg the jet px for each true jet container
-  vector<vector<Double_t>>    fListTrueJetPy;                                   // vector of vectors containg the jet py for each true jet container
-  vector<vector<Double_t>>    fListTrueJetPz;                                   // vector of vectors containg the jet pz for each true jet container
-  vector<vector<Double_t>>    fListTrueJetEta;                                  // vector of vectors containg the jet eta for each true jet container
-  vector<vector<Double_t>>    fListTrueJetPhi;                                  // vector of vectors containg the jet phi for each true jet container
-  vector<vector<Double_t>>    fListTrueJetArea;                                 // vector of vectors containg the jet area for each true jet container
+  std::vector<Int_t>               fListTrueNJets;                              // vector of number of true jets for each true jet container
+  std::vector<std::vector<Double_t>>    fListTrueJetPt;                         // vector of vectors containg the jet pt for each true jet container
+  std::vector<std::vector<Double_t>>    fListTrueJetPx;                         // vector of vectors containg the jet px for each true jet container
+  std::vector<std::vector<Double_t>>    fListTrueJetPy;                         // vector of vectors containg the jet py for each true jet container
+  std::vector<std::vector<Double_t>>    fListTrueJetPz;                         // vector of vectors containg the jet pz for each true jet container
+  std::vector<std::vector<Double_t>>    fListTrueJetEta;                        // vector of vectors containg the jet eta for each true jet container
+  std::vector<std::vector<Double_t>>    fListTrueJetPhi;                        // vector of vectors containg the jet phi for each true jet container
+  std::vector<std::vector<Double_t>>    fListTrueJetArea;                       // vector of vectors containg the jet area for each true jet container
 
  private:
   AliAnalysisTaskConvJet(const AliAnalysisTaskConvJet&)           ;

@@ -47,6 +47,12 @@
 
 //Globals
 
+#include <fastjet/config.h>
+#if FASJET_VERSION_NUMBER >= 30302
+#include <fastjet/tools/Recluster.hh>
+#else 
+#include <fastjet/contrib/Recluster.hh>
+#endif
 
 
 Double_t Eta_Upper=1.00;
@@ -1044,10 +1050,17 @@ void AliAnalysisTaskRecoilJetYield::SoftDrop(AliEmcalJet *fJet,AliJetContainer *
   softdrop.set_verbose_structure(kTRUE);
   //fastjet::JetDefinition jet_def_akt(fastjet::antikt_algorithm, 0.4);
   // fastjet::contrib::Recluster *antiKT_Recluster(jet_def_akt);
-  fastjet::contrib::Recluster recluster(0);
-  if(fReclusterAlgo == 2) recluster = fastjet::contrib::Recluster(fastjet::kt_algorithm,1,true);
-  if(fReclusterAlgo == 1) recluster = fastjet::contrib::Recluster(fastjet::antikt_algorithm,1,true);
-  if(fReclusterAlgo == 0) recluster = fastjet::contrib::Recluster(fastjet::cambridge_algorithm,1,true);
+  fastjet::JetAlgorithm algo;
+  switch(fReclusterAlgo){
+    case 0: algo = fastjet::cambridge_aachen_algorithm; break;
+    case 1: algo = fastjet::antikt_algorithm; break;
+    case 2: algo = fastjet::kt_algorithm; break; 
+  };
+#if FASTJET_VERSION_NUMBER >= 30302
+  fastjet::Recluster recluster(algo, 1, fastjet::Recluster::keep_only_hardest);
+#else
+  fastjet::contrib::Recluster recluster(algo, 1, true);
+#endif
   softdrop.set_reclustering(true,&recluster);
   fastjet::PseudoJet finaljet = softdrop(fOutputJets[0]);
   // fastjet::PseudoJet finaljet_antikt = softdrop_antikt(fOutputJets[0]);
