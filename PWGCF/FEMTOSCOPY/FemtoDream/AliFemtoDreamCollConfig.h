@@ -142,6 +142,9 @@ class AliFemtoDreamCollConfig : public TNamed {
     return fdPhidEtaPlots;
   }
   ;
+  bool GetdPhidEtamTPlots() {
+    return (fdPhidEtaPlots&&fmTdEtadPhi);
+  }
   bool GetInvMassPairs() {
     return fInvMassPairs;
   }
@@ -237,7 +240,6 @@ class AliFemtoDreamCollConfig : public TNamed {
   bool fkTCentrality;           //
   bool fmTdEtadPhi;             //
   AliFemtoDreamEvent::MultEstimator fEst;  //
-
   float fDeltaEtaMax;
   float fDeltaPhiMax;
   bool fDoDeltaEtaDeltaPhiCut;
