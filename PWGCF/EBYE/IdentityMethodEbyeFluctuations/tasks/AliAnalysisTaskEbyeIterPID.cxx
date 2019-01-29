@@ -40,6 +40,7 @@
 #include "TRandom.h"
 #include "TFile.h"
 #include "TDatabasePDG.h"
+#include "AliPDG.h"
 #include "AliMathBase.h"
 #include "AliESDFMD.h"
 #include "AliFMDFloatMap.h"
@@ -164,7 +165,8 @@ fRunFastHighMomentCal(kFALSE),
 fFillGenDistributions(kFALSE),
 fFillTreeMC(kFALSE),
 fFillNudynFastGen(kFALSE),
-fUsePtCut(kFALSE),
+fUsePtCut(1),
+fTrackOriginType(0),
 fFillDnchDeta(kFALSE),
 fIncludeTOF(kFALSE),
 fUseThnSparse(kFALSE),
@@ -422,7 +424,8 @@ fRunFastHighMomentCal(kFALSE),
 fFillGenDistributions(kFALSE),
 fFillTreeMC(kFALSE),
 fFillNudynFastGen(kFALSE),
-fUsePtCut(kFALSE),
+fUsePtCut(1),
+fTrackOriginType(0),
 fFillDnchDeta(kFALSE),
 fIncludeTOF(kFALSE),
 fUseThnSparse(kFALSE),
@@ -982,9 +985,9 @@ void AliAnalysisTaskEbyeIterPID::UserCreateOutputObjects()
   if(fEffMatrix && !fRunOnGrid)
   {
     const Int_t ndim=5;
-    Int_t nbins0[ndim]  ={3,8, 40      ,20      ,50  };
+    Int_t nbins0[ndim]  ={4,8, 40      ,20      ,50  };
     Double_t xmin0[ndim]={0,0,  fMomDown,fEtaDown,0.  };
-    Double_t xmax0[ndim]={3,80,fMomUp  ,fEtaUp  ,6.25};
+    Double_t xmax0[ndim]={4,80,fMomUp  ,fEtaUp  ,6.25};
     fHistPosEffMatrixRec  =new THnF("fHistPosEffMatrixRec","fHistPosEffMatrixRec",ndim, nbins0,xmin0,xmax0);
     fHistNegEffMatrixRec  =new THnF("fHistNegEffMatrixRec","fHistNegEffMatrixRec",ndim, nbins0,xmin0,xmax0);
     fHistPosEffMatrixGen  =new THnF("fHistPosEffMatrixGen","fHistPosEffMatrixGen",ndim, nbins0,xmin0,xmax0);
@@ -1204,6 +1207,9 @@ void AliAnalysisTaskEbyeIterPID::UserExec(Option_t *)
   //
   if(fMCtrue)
   {
+    //
+    // Add different generator particles to PDG Data Base to avoid problems when reading MC generator particles
+    AliPDG::AddParticlesToPdgDataBase();
     //
     // ========================== MC =========================
     //
@@ -2059,14 +2065,15 @@ void AliAnalysisTaskEbyeIterPID::FillMCFull_NetParticles()
   TVectorF fMomNetPrRec(nMoments);   TVectorF fNRMomNetPrRec(nMoments);
   //
   // Protection for full acceptance case
-  Int_t nOriginType = 3;
-  Bool_t bOnlyPrim = (TMath::Abs(fetaUpArr[0]-0.5)<0.001);
-  if (bOnlyPrim) nOriginType = 1; // if full scan do not look weak and material
+  Int_t nOriginType = 4;
   //
   // Acceptance scan
   for (Int_t ieta=0; ieta<fNEtaWinBinsMC; ieta++){
     for (Int_t imom=0; imom<fNMomBinsMC; imom++){
       for (Int_t iorig=0; iorig<nOriginType; iorig++){
+        //
+        // select origin type to process
+        if (fTrackOriginType<nOriginType && fTrackOriginType!=iorig ) continue;
         //
         // Initialize counters
         Int_t nTracksrec=0, nTracksgen=0;
@@ -2093,7 +2100,7 @@ void AliAnalysisTaskEbyeIterPID::FillMCFull_NetParticles()
         { // track loop
           //
           // initialize the dummy particle id
-          fPiMC =-100.; fKaMC =-100.; fPrMC =-100.;
+          fElMC =-100.; fPiMC =-100.; fKaMC =-100.; fPrMC =-100.;
           // Esd track
           AliESDtrack *trackReal = fESD->GetTrack(i);
           if (trackReal==NULL) continue;
@@ -2106,7 +2113,8 @@ void AliAnalysisTaskEbyeIterPID::FillMCFull_NetParticles()
           Bool_t bAcceptOrigin = kFALSE;
           if (iorig==0) bAcceptOrigin = bPrim;
           if (iorig==1) bAcceptOrigin = (bPrim || bWeak);
-          if (iorig==2) bAcceptOrigin = (bPrim || bMaterial || bWeak);
+          if (iorig==2) bAcceptOrigin = (bPrim || bMaterial);
+          if (iorig==3) bAcceptOrigin = (bPrim || bMaterial || bWeak);
           //
           // generated level cut
           if (!bAcceptOrigin) continue;
@@ -2125,6 +2133,7 @@ void AliAnalysisTaskEbyeIterPID::FillMCFull_NetParticles()
           if (TMath::Abs(pdg) == kPDGpi) { iPart = 1; fPiMC = trackReal->GetTPCsignal(); } // select pi+
           if (TMath::Abs(pdg) == kPDGka) { iPart = 2; fKaMC = trackReal->GetTPCsignal(); } // select ka+
           if (TMath::Abs(pdg) == kPDGpr) { iPart = 3; fPrMC = trackReal->GetTPCsignal(); } // select pr+
+          if (TMath::Abs(pdg) == kPDGel) { iPart = 4; fElMC = trackReal->GetTPCsignal(); } // select el+
           if (iPart == -10) continue; // perfect PID cut
           //
           // acceptance cuts
@@ -2185,7 +2194,7 @@ void AliAnalysisTaskEbyeIterPID::FillMCFull_NetParticles()
         { // track loop
           //
           // initialize the dummy particle id
-          fPiMCgen =-100.; fKaMCgen =-100.; fPrMCgen =-100.;
+          fElMCgen =-100.; fPiMCgen =-100.; fKaMCgen =-100.; fPrMCgen =-100.;
           trackMCgen = (AliMCParticle *)fMCEvent->GetTrack(iTrack);
           if (!trackMCgen) continue;
           //
@@ -2196,7 +2205,8 @@ void AliAnalysisTaskEbyeIterPID::FillMCFull_NetParticles()
           Bool_t bAcceptOrigin = kFALSE;
           if (iorig==0) bAcceptOrigin = bPrim;
           if (iorig==1) bAcceptOrigin = (bPrim || bWeak);
-          if (iorig==2) bAcceptOrigin = (bPrim || bMaterial || bWeak);
+          if (iorig==2) bAcceptOrigin = (bPrim || bMaterial);
+          if (iorig==3) bAcceptOrigin = (bPrim || bMaterial || bWeak);
           //
           // generated level cut
           if (!bAcceptOrigin) continue;
@@ -2207,6 +2217,7 @@ void AliAnalysisTaskEbyeIterPID::FillMCFull_NetParticles()
           if (TMath::Abs(pdg) == kPDGpi) {iPart = 1; fPiMCgen = iPart;} // select pi+
           if (TMath::Abs(pdg) == kPDGka) {iPart = 2; fKaMCgen = iPart;} // select ka+
           if (TMath::Abs(pdg) == kPDGpr) {iPart = 3; fPrMCgen = iPart;} // select pr+
+          if (TMath::Abs(pdg) == kPDGel) {iPart = 4; fElMCgen = iPart;} // select el+
           if (iPart == -10) continue; // perfect PID cut
           //
           Double_t ptotMCgen = 0.;
@@ -2553,15 +2564,16 @@ void AliAnalysisTaskEbyeIterPID::FastGen()
   TVectorF nRgenMomentsCross(nMoments);
   //
   // Protection for full acceptance case
-  Int_t nOriginType = 3;
-  Bool_t bOnlyPrim = (TMath::Abs(fetaUpArr[0]-0.5)<0.001);
-  if (bOnlyPrim) nOriginType = 1; // if full scan do not look weak and material
+  Int_t nOriginType = 4;
   //
   // Acceptance scan
   for (Int_t ieta=0; ieta<fNEtaWinBinsMC; ieta++){
     for (Int_t imom=0; imom<fNMomBinsMC; imom++){
       for (Int_t iorig=0; iorig<nOriginType; iorig++){
-
+        //
+        // select origin type to process
+        if (fTrackOriginType<nOriginType && fTrackOriginType!=iorig ) continue;
+        //
         // initialize counters
         for(Int_t i=0;i<nMoments; i++){
           genMoments[i]=0.;       nRgenMoments[i]=0.;
@@ -2587,7 +2599,8 @@ void AliAnalysisTaskEbyeIterPID::FastGen()
           Bool_t bAcceptOrigin = kFALSE;
           if (iorig==0) bAcceptOrigin = bPrim;
           if (iorig==1) bAcceptOrigin = (bPrim || bWeak);
-          if (iorig==2) bAcceptOrigin = (bPrim || bMaterial || bWeak);
+          if (iorig==2) bAcceptOrigin = (bPrim || bMaterial);
+          if (iorig==3) bAcceptOrigin = (bPrim || bMaterial || bWeak);
           //
           // generated level cut
           if (!bAcceptOrigin) continue; // origin cut
