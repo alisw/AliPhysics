@@ -49,6 +49,10 @@ class AliFemtoDreamCorrHists {
     return fdPhidEtaPlots;
   }
   ;
+  bool GetDodPhidEtamTPlots() {
+    return fmTDetaDPhi;
+  }
+  ;
   void FillSameEventDist(int i, float RelK) {
     fSameEventDist[i]->Fill(RelK);
   }

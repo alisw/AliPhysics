@@ -97,20 +97,16 @@ void AliFemtoDreamZVtxMultContainer::PairParticlesSE(
           if (fillHists && ResultsHist->GetDodPhidEtaPlots()) {
             float deta = itPart1->GetEta().at(0) - itPart2->GetEta().at(0);
             float dphi = itPart1->GetPhi().at(0) - itPart2->GetPhi().at(0);
+            float mT =
+                ResultsHist->GetDodPhidEtamTPlots() ?
+                    RelativePairmT(itPart1->GetMomentum(), *itPDGPar1,
+                                   itPart2->GetMomentum(), *itPDGPar2) :
+                    0;
             if (dphi < 0) {
-              ResultsHist->FilldPhidEtaSE(
-                  HistCounter,
-                  dphi + 2 * TMath::Pi(),
-                  deta,
-                  RelativePairmT(itPart1->GetMomentum(), *itPDGPar1,
-                                 itPart2->GetMomentum(), *itPDGPar2));
+              ResultsHist->FilldPhidEtaSE(HistCounter, dphi + 2 * TMath::Pi(),
+                                          deta, mT);
             } else {
-              ResultsHist->FilldPhidEtaSE(
-                  HistCounter,
-                  dphi,
-                  deta,
-                  RelativePairmT(itPart1->GetMomentum(), *itPDGPar1,
-                                 itPart2->GetMomentum(), *itPDGPar2));
+              ResultsHist->FilldPhidEtaSE(HistCounter, dphi, deta, mT);
             }
           }
 
@@ -201,20 +197,16 @@ void AliFemtoDreamZVtxMultContainer::PairParticlesME(
             if (fillHists && ResultsHist->GetDodPhidEtaPlots()) {
               float deta = itPart1->GetEta().at(0) - itPart2->GetEta().at(0);
               float dphi = itPart1->GetPhi().at(0) - itPart2->GetPhi().at(0);
+              float mT =
+                  ResultsHist->GetDodPhidEtamTPlots() ?
+                      RelativePairmT(itPart1->GetMomentum(), *itPDGPar1,
+                                     itPart2->GetMomentum(), *itPDGPar2) :
+                      0;
               if (dphi < 0) {
-                ResultsHist->FilldPhidEtaME(
-                    HistCounter,
-                    dphi + 2 * TMath::Pi(),
-                    deta,
-                    RelativePairmT(itPart1->GetMomentum(), *itPDGPar1,
-                                   itPart2->GetMomentum(), *itPDGPar2));
+                ResultsHist->FilldPhidEtaME(HistCounter, dphi + 2 * TMath::Pi(),
+                                            deta, mT);
               } else {
-                ResultsHist->FilldPhidEtaME(
-                    HistCounter,
-                    dphi,
-                    deta,
-                    RelativePairmT(itPart1->GetMomentum(), *itPDGPar1,
-                                   itPart2->GetMomentum(), *itPDGPar2));
+                ResultsHist->FilldPhidEtaME(HistCounter, dphi, deta, mT);
               }
             }
 
