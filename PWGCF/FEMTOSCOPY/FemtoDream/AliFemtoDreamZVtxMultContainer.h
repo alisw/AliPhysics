@@ -23,9 +23,6 @@ class AliFemtoDreamZVtxMultContainer {
   void PairParticlesSE(
       std::vector<std::vector<AliFemtoDreamBasePart>> &Particles,
       AliFemtoDreamCorrHists *ResultsHist, int iMult, float cent);
-  void PairMCParticlesSE(
-      std::vector<std::vector<AliFemtoDreamBasePart>> &Particles,
-      AliFemtoDreamCorrHists *ResultsHist, int iMult);
   void PairParticlesME(
       std::vector<std::vector<AliFemtoDreamBasePart>> &Particles,
       AliFemtoDreamCorrHists *ResultsHist, int iMult, float cent);
@@ -50,7 +47,7 @@ class AliFemtoDreamZVtxMultContainer {
                        TVector3 Part2Momentum, int PDGPart2);
   std::vector<AliFemtoDreamPartContainer> fPartContainer;
   std::vector<int> fPDGParticleSpecies;
-
+  std::vector<unsigned int> fWhichPairs;
   float fDeltaEtaMax;
   float fDeltaPhiMax;
   bool fDoDeltaEtaDeltaPhiCut;

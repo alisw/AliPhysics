@@ -30,10 +30,12 @@ AliFemtoDreamCollConfig::AliFemtoDreamCollConfig()
       fMinK_rel(0),
       fMaxK_rel(0),
       fCentBins(0),
+      fmTBins(0),
+      fWhichPairs(0),
       fMixingDepth(0),
       fSpinningDepth(0),
       fkTCentrality(false),
-      fMCCommonAncestor(false),
+      fmTdEtadPhi(false),
       fEst(AliFemtoDreamEvent::kSPD),
       fDeltaEtaMax(0.f),
       fDeltaPhiMax(0.f),
@@ -65,10 +67,12 @@ AliFemtoDreamCollConfig::AliFemtoDreamCollConfig(
       fMinK_rel(config.fMinK_rel),
       fMaxK_rel(config.fMaxK_rel),
       fCentBins(config.fCentBins),
+      fmTBins(config.fmTBins),
+      fWhichPairs(config.fWhichPairs),
       fMixingDepth(config.fMixingDepth),
       fSpinningDepth(config.fSpinningDepth),
       fkTCentrality(config.fkTCentrality),
-      fMCCommonAncestor(config.fMCCommonAncestor),
+      fmTdEtadPhi(config.fmTdEtadPhi),
       fEst(config.fEst),
       fDeltaEtaMax(config.fDeltaEtaMax),
       fDeltaPhiMax(config.fDeltaPhiMax),
@@ -102,7 +106,7 @@ AliFemtoDreamCollConfig::AliFemtoDreamCollConfig(const char *name,
       fMixingDepth(0),
       fSpinningDepth(0),
       fkTCentrality(false),
-      fMCCommonAncestor(false),
+      fmTdEtadPhi(false),
       fEst(AliFemtoDreamEvent::kSPD),
       fDeltaEtaMax(0.f),
       fDeltaPhiMax(0.f),
@@ -114,6 +118,8 @@ AliFemtoDreamCollConfig::AliFemtoDreamCollConfig(const char *name,
   fMinK_rel = new TNtuple("MinK_rel", "MinK_rel", "minkRel");
   fMaxK_rel = new TNtuple("MaxK_rel", "MaxK_rel", "maxkRel");
   fCentBins = new TNtuple("CentBins", "CentBins", "centBin");
+  fmTBins = new TNtuple("mTBins", "mTBins", "mTBin");
+  fWhichPairs = new TNtuple("DoPairs", "DoPairs", "DoPair");
 }
 AliFemtoDreamCollConfig& AliFemtoDreamCollConfig::operator=(
     const AliFemtoDreamCollConfig& config) {
@@ -139,10 +145,12 @@ AliFemtoDreamCollConfig& AliFemtoDreamCollConfig::operator=(
     this->fMinK_rel = config.fMinK_rel;
     this->fMaxK_rel = config.fMaxK_rel;
     this->fCentBins = config.fCentBins;
+    this->fmTBins = config.fmTBins;
+    this->fWhichPairs = config.fWhichPairs;
     this->fMixingDepth = config.fMixingDepth;
     this->fSpinningDepth = config.fSpinningDepth;
     this->fkTCentrality = config.fkTCentrality;
-    this->fMCCommonAncestor = config.fMCCommonAncestor;
+    this->fmTdEtadPhi = config.fmTdEtadPhi;
     this->fEst = config.fEst;
     this->fDeltaEtaMax = config.fDeltaEtaMax;
     this->fDeltaPhiMax = config.fDeltaPhiMax;
@@ -158,6 +166,9 @@ AliFemtoDreamCollConfig::~AliFemtoDreamCollConfig() {
   delete fNBinsHists;
   delete fMinK_rel;
   delete fMaxK_rel;
+  delete fCentBins;
+  delete fmTBins;
+  delete fWhichPairs;
 
 }
 
@@ -305,4 +316,46 @@ std::vector<float> AliFemtoDreamCollConfig::GetCentBins() {
     CentBins.push_back(out);
   }
   return CentBins;
+}
+void AliFemtoDreamCollConfig::SetmTdEtadPhiBins(std::vector<float> mTBins) {
+  //Set Bins for the deta dphi mT Binning
+  fmTdEtadPhi = true;
+  for (std::vector<float>::iterator it = mTBins.begin(); it != mTBins.end();
+      ++it) {
+    fmTBins->Fill(*it);
+  }
+}
+std::vector<float> AliFemtoDreamCollConfig::GetmTBins() {
+  std::vector<float> mTBins;
+  float out = 0;
+  fmTBins->SetBranchAddress("mTBin", &out);
+  for (int iBins = 0; iBins < fmTBins->GetEntries(); ++iBins) {
+    fmTBins->GetEntry(iBins);
+    mTBins.push_back(out);
+  }
+  return mTBins;
+}
+void AliFemtoDreamCollConfig::SetExtendedQAPairs(std::vector<int> whichPairs) {
+  // Decider for if one wants plots like mT, kT, TrackSplitting etc. for a pair
+  // 0 means no, > 0 means yes. In particular for track splitting one can steer
+  // which combinations to check:
+  // 12 for example means: take only the first track from particle 1 of the pair
+  // and check it against the 2 tracks of particle 2 ( if it is for example a v0
+  // Lambda candidate).
+  // Indices follow the scheme explained in SetNBinsHist.
+  for (auto it : whichPairs) {
+    fWhichPairs->Fill(it);
+  }
+  //how to select which pairs?
+}
+
+std::vector<unsigned int> AliFemtoDreamCollConfig::GetWhichPairs() {
+  std::vector<unsigned int> Pairs;
+  float out = 0;
+  fWhichPairs->SetBranchAddress("DoPair", &out);
+  for (int iBins = 0; iBins < fWhichPairs->GetEntries(); ++iBins) {
+    fWhichPairs->GetEntry(iBins);
+    Pairs.push_back(TMath::Abs(out));
+  }
+  return Pairs;
 }
