@@ -26,7 +26,6 @@ include_directories(${ROOT_INCLUDE_DIRS}
                     ${AliPhysics_SOURCE_DIR}/OADB
                     ${AliPhysics_SOURCE_DIR}/OADB/COMMON/MULTIPLICITY
                     ${AliPhysics_SOURCE_DIR}/PWG/Tools
-                    ${AliPhysics_SOURCE_DIR}/PWGLF/SPECTRA/PiKaPr/TestAOD
                     ${AliPhysics_SOURCE_DIR}/PWGLF/SPECTRA/XtAnalysis
             	    ${AliPhysics_SOURCE_DIR}/PWGCF/Correlations/JCORRAN/Base
                     ${AliPhysics_SOURCE_DIR}/PWGUD/base
@@ -36,6 +35,7 @@ include_directories(${ROOT_INCLUDE_DIRS}
 
 # Sources - alphabetical order
 set(SRCS
+  ChargedHadrons/MultDepSpec/AliMultDepSpecAnalysisTask.cxx
   ChargedHadrons/dNdPt/AlidNdPtHelper.cxx
   ChargedHadrons/dNdPt/AliMeanPtAnalysisTask.cxx
   ChargedHadrons/dNdPt/AliAnalysisTaskCutTest.cxx
@@ -199,6 +199,7 @@ install(TARGETS ${MODULE}
 install(FILES ${HDRS} DESTINATION include)
 
 # install macros
+install(DIRECTORY ChargedHadrons/MultDepSpec/macros DESTINATION  PWGLF/SPECTRA/ChargedHadrons/MultDepSpec)
 install(DIRECTORY ChargedHadrons/dNdPt/macros DESTINATION  PWGLF/SPECTRA/ChargedHadrons/dNdPt)
 install(DIRECTORY ChargedHadrons/dNdPt/MeanPtRaw/macros DESTINATION
   PWGLF/SPECTRA/ChargedHadrons/dNdPt/MeanPtRaw)
