@@ -74,11 +74,11 @@ AliAnalysisTaskEmcalJetEnergyScale::~AliAnalysisTaskEmcalJetEnergyScale() {
 void AliAnalysisTaskEmcalJetEnergyScale::UserCreateOutputObjects(){
   AliAnalysisTaskEmcal::UserCreateOutputObjects();
 
-  TLinearBinning jetPtBinning(300, 0., 300.), nefbinning(100, 0., 1.), ptdiffbinning(200, -1., 1.), jetEtaBinning(100, -0.9, 0.9), jetPhiBinning(100, 0., TMath::TwoPi());
+  TLinearBinning jetPtBinningDet(300, 0., 300.), jetPtBinningPart(500, 0., 500), nefbinning(100, 0., 1.), ptdiffbinning(200, -1., 1.), jetEtaBinning(100, -0.9, 0.9), jetPhiBinning(100, 0., TMath::TwoPi());
 
-  const TBinning *diffbinning[3] = {&jetPtBinning, &nefbinning, &ptdiffbinning},
-                 *corrbinning[3] = {&jetPtBinning, &jetPtBinning, &nefbinning},
-                 *effbinning[3] = {&jetPtBinning, &jetEtaBinning, &jetPhiBinning};
+  const TBinning *diffbinning[3] = {&jetPtBinningPart, &nefbinning, &ptdiffbinning},
+                 *corrbinning[3] = {&jetPtBinningPart, &jetPtBinningDet, &nefbinning},
+                 *effbinning[3] = {&jetPtBinningPart, &jetEtaBinning, &jetPhiBinning};
 
   fHistos = new THistManager("energyScaleHistos");
   fHistos->CreateTH1("hEventCounter", "Event counter", 1, 0.5, 1.5);
