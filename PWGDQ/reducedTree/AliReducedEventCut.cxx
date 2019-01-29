@@ -10,6 +10,7 @@
 #include "AliReducedEventCut.h"
 #endif
 
+#include <vector>
 #include "AliReducedBaseEvent.h"
 #include "AliReducedEventInfo.h"
 #include "AliReducedVarManager.h"
@@ -25,7 +26,8 @@ AliReducedEventCut::AliReducedEventCut() :
   fEventTriggerMaskEnabled(kFALSE), 
   fEventTriggerMask(0),
   fEventTriggerClassEnabled(kFALSE),
-  fEventTriggerClass(""),
+  fEventTriggerClassLogicalOr(kFALSE),
+  fEventTriggerClass(),
   fEventL1MaskEnabled(kFALSE),
   fEventL1Mask(0),
   fEventL0MaskEnabled(kFALSE),
@@ -45,7 +47,8 @@ AliReducedEventCut::AliReducedEventCut(const Char_t* name, const Char_t* title) 
   fEventTriggerMaskEnabled(kFALSE), 
   fEventTriggerMask(0),
   fEventTriggerClassEnabled(kFALSE),
-  fEventTriggerClass(""),
+  fEventTriggerClassLogicalOr(kFALSE),
+  fEventTriggerClass(),
   fEventL1MaskEnabled(kFALSE),
   fEventL1Mask(0),
   fEventL0MaskEnabled(kFALSE),
@@ -99,7 +102,12 @@ Bool_t AliReducedEventCut::IsSelected(TObject* obj, Float_t* values) {
     if(!obj->InheritsFrom(AliReducedEventInfo::Class())) return kFALSE;
     AliReducedEventInfo* eventInfo = (AliReducedEventInfo*)obj;
     TString trgClasses = eventInfo->TriggerClass();
-    if (!(trgClasses.Contains(fEventTriggerClass.Data()))) return kFALSE;
+    Int_t counter = 0;
+    for (Int_t i=0; i<fEventTriggerClass.size(); ++i) {
+      if (trgClasses.Contains(fEventTriggerClass[i].Data())) counter++;
+    }
+    if (fEventTriggerClassLogicalOr && !counter) return kFALSE;
+    if (!fEventTriggerClassLogicalOr && counter!=fEventTriggerClass.size()) return kFALSE;
   }
 
    if(fEventL1MaskEnabled) {
