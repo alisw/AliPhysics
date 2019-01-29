@@ -45,24 +45,12 @@ class AliFemtoDreamCorrHists {
     return fPhiEtaPlots;
   }
   ;
-  bool GetDoMCCommonAncest() {
-    return fDoMCCommonAncest;
-  }
-  ;
   bool GetDodPhidEtaPlots() {
     return fdPhidEtaPlots;
   }
   ;
   void FillSameEventDist(int i, float RelK) {
     fSameEventDist[i]->Fill(RelK);
-  }
-  ;
-  void FillSameEventCommonAncestDist(int i, float RelK) {
-    fSameEventCommonAncestDist[i]->Fill(RelK);
-  }
-  ;
-  void FillSameEventNonCommonAncestDist(int i, float RelK) {
-    fSameEventNonCommonAncestDist[i]->Fill(RelK);
   }
   ;
   void FillSameEventMultDist(int i, int iMult, float RelK) {
@@ -173,8 +161,6 @@ class AliFemtoDreamCorrHists {
   bool fPhiEtaPlots;
   float fRelKThreshold;
   TH1F **fSameEventDist;
-  TH1F **fSameEventCommonAncestDist;
-  TH1F **fSameEventNonCommonAncestDist;
   TH2F **fSameEventMultDist;
   TH2F **fSameEventCentDist;
   TH2F **fSameEventmTDist;
@@ -202,7 +188,6 @@ class AliFemtoDreamCorrHists {
   bool fDokTBinning;
   bool fDomTBinning;
   bool fDokTCentralityBins;
-  bool fDoMCCommonAncest;
   bool fdPhidEtaPlots;
   std::vector<float> fCentBins;ClassDef(AliFemtoDreamCorrHists,4)
   ;
