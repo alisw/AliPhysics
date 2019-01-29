@@ -6241,9 +6241,23 @@ void AliAnalysisTaskStrangenessVsMultiplicityMCRun2::AddTopologicalQACascade(Int
     }
     
     //________________________________________________________
-    // Variable 17: Minimum Track Length
+    // Variable 17: TPC dE/dx
+    Float_t lMinTPCnSigma = 2.5;
+    Float_t lMaxTPCnSigma = 5.0;
+    for(Int_t i = 0 ; i < 4 ; i ++){
+        for(Int_t icut = 0; icut<lNumberOfSteps; icut++){
+            lCascadeResult[lN] = new AliCascadeResult( lCascadeResult[i], Form("%s_%s_%i",lParticleName[i].Data(),"TPCnSigma",icut) );
+            Float_t lThisCut = lMinTPCnSigma + (lMaxTPCnSigma-lMinTPCnSigma)*(((Float_t)icut)+1)/((Float_t)lNumberOfSteps);
+            //Add result to pool
+            lCascadeResult[lN] -> SetCutTPCdEdx ( lThisCut );
+            lN++;
+        }
+    }
+
+    //________________________________________________________
+    // Variable 18: Minimum Track Length
     Float_t lMinTrackLength = 60;
-    Float_t lMaxTrackLength = 120;
+    Float_t lMaxTrackLength = 140;
     for(Int_t i = 0 ; i < 4 ; i ++){
         for(Int_t icut = 0; icut<lNumberOfSteps; icut++){
             lCascadeResult[lN] = new AliCascadeResult( lCascadeResult[i], Form("%s_%s_%i",lParticleName[i].Data(),"MinimumTrackLength",icut) );
@@ -6253,17 +6267,31 @@ void AliAnalysisTaskStrangenessVsMultiplicityMCRun2::AddTopologicalQACascade(Int
             lN++;
         }
     }
-    
+
     //________________________________________________________
-    // Variable 18: TPC dE/dx
-    Float_t lMinTPCnSigma = 2.5;
-    Float_t lMaxTPCnSigma = 5.0;
+    // Variable 19: Least Number of Crossed Rows
+    Float_t lMinNbrCrssRows = 60;
+    Float_t lMaxNbrCrssRows = 120;
     for(Int_t i = 0 ; i < 4 ; i ++){
         for(Int_t icut = 0; icut<lNumberOfSteps; icut++){
-            lCascadeResult[lN] = new AliCascadeResult( lCascadeResult[i], Form("%s_%s_%i",lParticleName[i].Data(),"TPCnSigma",icut) );
-            Float_t lThisCut = lMinTPCnSigma + (lMaxTPCnSigma-lMinTPCnSigma)*(((Float_t)icut)+1)/((Float_t)lNumberOfSteps);
+            lCascadeResult[lN] = new AliCascadeResult( lCascadeResult[i], Form("%s_%s_%i",lParticleName[i].Data(),"LeastNumberOfCrossedRows",icut) );
+            Float_t lThisCut = lMinNbrCrssRows + (lMaxNbrCrssRows-lMinNbrCrssRows)*(((Float_t)icut)+1)/((Float_t)lNumberOfSteps);
             //Add result to pool
-            lCascadeResult[lN] -> SetCutTPCdEdx ( lThisCut );
+            lCascadeResult[lN] -> SetCutLeastNumberOfCrossedRows ( lThisCut );
+            lN++;
+        }
+    }
+    
+    //________________________________________________________
+    // Variable 20: Minimum Crossed Rows Over Length
+    Float_t lMinCrssRowsOvLen = .6;
+    Float_t lMaxCrssRowsOvLen = 1.2;
+    for(Int_t i = 0 ; i < 4 ; i ++){
+        for(Int_t icut = 0; icut<lNumberOfSteps; icut++){
+            lCascadeResult[lN] = new AliCascadeResult( lCascadeResult[i], Form("%s_%s_%i",lParticleName[i].Data(),"MinCrossedRowsOverLength",icut) );
+            Float_t lThisCut = lMinCrssRowsOvLen + (lMaxCrssRowsOvLen-lMinCrssRowsOvLen)*(((Float_t)icut)+1)/((Float_t)lNumberOfSteps);
+            //Add result to pool
+            lCascadeResult[lN] -> SetCutMinCrossedRowsOverLength ( lThisCut );
             lN++;
         }
     }
@@ -7247,7 +7275,9 @@ void AliAnalysisTaskStrangenessVsMultiplicityMCRun2::AddStandardCascadeConfigura
         "MinLength", //12
         "TPCdEdx", //13
         "Competing", //14
-        "DCA3DCascToPV" //15
+        "DCA3DCascToPV", //15
+        "LeastNbrCrossedRow", //16
+        "MinCrossedRowOvLength" //17
     };
     
     // STEP 2: Decide on a set of selections
@@ -7255,7 +7285,7 @@ void AliAnalysisTaskStrangenessVsMultiplicityMCRun2::AddStandardCascadeConfigura
     //1st index: Particle Species
     //2nd index: Loose / Central / Tight
     //3rd index: Number of selection (as ordered above)
-    Double_t lcuts[4][3][15];
+    Double_t lcuts[4][3][17];
     
     //N.B.: These are mostly symmetric, except for the proper lifetime, which is different
     //      for the two particle species. Another potential improvement could be asymmetric
@@ -7284,6 +7314,8 @@ void AliAnalysisTaskStrangenessVsMultiplicityMCRun2::AddStandardCascadeConfigura
     lcuts[lIdx][0][12] =    4;    lcuts[lIdx][1][12] =     3; lcuts[lIdx][2][12] =   2.5; //TPCdEdx 13
     lcuts[lIdx][0][13] =  0.0;    lcuts[lIdx][1][13] = 0.008; lcuts[lIdx][2][13] = 0.010; //Competing 14
     lcuts[lIdx][0][14] =  1.2;    lcuts[lIdx][1][14] =   0.8; lcuts[lIdx][2][14] =   0.6; //3D DCA Cascade To PV
+    lcuts[lIdx][0][15] =   70;    lcuts[lIdx][1][15] =    80; lcuts[lIdx][2][15] =    90; //Least Number of Crossed Rows
+    lcuts[lIdx][0][16] =  0.7;    lcuts[lIdx][1][16] =   0.8; lcuts[lIdx][2][16] =   0.9; //Minimum Crossed Rows Over Findable
     //================================================================================
     
     //================================================================================
@@ -7306,6 +7338,8 @@ void AliAnalysisTaskStrangenessVsMultiplicityMCRun2::AddStandardCascadeConfigura
     lcuts[lIdx][0][12] =    4;    lcuts[lIdx][1][12] =     3; lcuts[lIdx][2][12] =   2.5; //TPCdEdx 13
     lcuts[lIdx][0][13] =  0.0;    lcuts[lIdx][1][13] = 0.008; lcuts[lIdx][2][13] = 0.010; //Competing 14
     lcuts[lIdx][0][14] =  1.2;    lcuts[lIdx][1][14] =   0.8; lcuts[lIdx][2][14] =   0.6; //3D DCA Cascade To PV
+    lcuts[lIdx][0][15] =   70;    lcuts[lIdx][1][15] =    80; lcuts[lIdx][2][15] =    90; //Least Number of Crossed Rows
+    lcuts[lIdx][0][16] =  0.7;    lcuts[lIdx][1][16] =   0.8; lcuts[lIdx][2][16] =   0.9; //Minimum Crossed Rows Over Findable
     //================================================================================
     
     //================================================================================
@@ -7328,6 +7362,8 @@ void AliAnalysisTaskStrangenessVsMultiplicityMCRun2::AddStandardCascadeConfigura
     lcuts[lIdx][0][12] =    4;    lcuts[lIdx][1][12] =     3; lcuts[lIdx][2][12] =   2.5; //TPCdEdx 13
     lcuts[lIdx][0][13] =  0.0;    lcuts[lIdx][1][13] = 0.008; lcuts[lIdx][2][13] = 0.010; //Competing 14
     lcuts[lIdx][0][14] =  0.8;    lcuts[lIdx][1][14] =   0.6; lcuts[lIdx][2][14] =   0.5; //3D DCA Cascade To PV
+    lcuts[lIdx][0][15] =   70;    lcuts[lIdx][1][15] =    80; lcuts[lIdx][2][15] =    90; //Least Number of Crossed Rows
+    lcuts[lIdx][0][16] =  0.7;    lcuts[lIdx][1][16] =   0.8; lcuts[lIdx][2][16] =   0.9; //Minimum Crossed Rows Over Findable
     //================================================================================
     
     //================================================================================
@@ -7350,6 +7386,8 @@ void AliAnalysisTaskStrangenessVsMultiplicityMCRun2::AddStandardCascadeConfigura
     lcuts[lIdx][0][12] =    4;    lcuts[lIdx][1][12] =     3; lcuts[lIdx][2][12] =   2.5; //TPCdEdx 13
     lcuts[lIdx][0][13] =  0.0;    lcuts[lIdx][1][13] = 0.008; lcuts[lIdx][2][13] = 0.010; //Competing 14
     lcuts[lIdx][0][14] =  0.8;    lcuts[lIdx][1][14] =   0.6; lcuts[lIdx][2][14] =   0.5; //3D DCA Cascade To PV
+    lcuts[lIdx][0][15] =   70;    lcuts[lIdx][1][15] =    80; lcuts[lIdx][2][15] =    90; //Least Number of Crossed Rows
+    lcuts[lIdx][0][16] =  0.7;    lcuts[lIdx][1][16] =   0.8; lcuts[lIdx][2][16] =   0.9; //Minimum Crossed Rows Over Findable
     //================================================================================
     
     //STEP 3: Creation of output objects
@@ -7389,11 +7427,14 @@ void AliAnalysisTaskStrangenessVsMultiplicityMCRun2::AddStandardCascadeConfigura
         //Miscellaneous
         lCascadeResult[lN]->SetCutProperLifetime        ( lcuts[i][1][ 9] ) ;
         lCascadeResult[lN]->SetCutMaxV0Lifetime         ( lcuts[i][1][10] ) ;
-        lCascadeResult[lN]->SetCutMinTrackLength        ( lcuts[i][1][11] ) ;
-        lCascadeResult[lN]->SetCutLeastNumberOfClusters( -1 );
         lCascadeResult[lN]->SetCutTPCdEdx               ( lcuts[i][1][12] ) ;
         lCascadeResult[lN]->SetCutXiRejection           ( lcuts[i][1][13] ) ;
         lCascadeResult[lN]->SetCutDCACascadeToPV        ( lcuts[i][1][14] ) ;
+        //Track Quality
+        lCascadeResult[lN]->SetCutMinTrackLength        ( lcuts[i][1][11] ) ;
+        lCascadeResult[lN]->SetCutLeastNumberOfClusters( -1 );
+        lCascadeResult[lN]->SetCutLeastNumberOfCrossedRows( lcuts[i][1][15] );
+        lCascadeResult[lN]->SetCutMinCrossedRowsOverLength( lcuts[i][1][16] );
         
         //Parametric angle cut initializations
         //V0 cosine of pointing angle
@@ -7455,11 +7496,14 @@ void AliAnalysisTaskStrangenessVsMultiplicityMCRun2::AddStandardCascadeConfigura
             //Miscellaneous
             lCascadeResult[lN]->SetCutProperLifetime        ( lcuts[i][1][ 9] ) ;
             lCascadeResult[lN]->SetCutMaxV0Lifetime         ( lcuts[i][1][10] ) ;
-            lCascadeResult[lN]->SetCutMinTrackLength        ( lcuts[i][1][11] ) ;
-            lCascadeResult[lN]->SetCutLeastNumberOfClusters( -1 );
             lCascadeResult[lN]->SetCutTPCdEdx               ( lcuts[i][1][12] ) ;
             lCascadeResult[lN]->SetCutXiRejection           ( lcuts[i][1][13] ) ;
             lCascadeResult[lN]->SetCutDCACascadeToPV        ( lcuts[i][1][14] ) ;
+            //Track Quality
+            lCascadeResult[lN]->SetCutMinTrackLength        ( lcuts[i][1][11] ) ;
+            lCascadeResult[lN]->SetCutLeastNumberOfClusters( -1 );
+            lCascadeResult[lN]->SetCutLeastNumberOfCrossedRows( lcuts[i][1][15] );
+            lCascadeResult[lN]->SetCutMinCrossedRowsOverLength( lcuts[i][1][16] );
             
             //Parametric angle cut initializations
             //V0 cosine of pointing angle
@@ -7666,7 +7710,7 @@ void AliAnalysisTaskStrangenessVsMultiplicityMCRun2::AddStandardCascadeConfigura
         // STEP 4: Creation of objects to be used in systematics
         // Optimized via use of copy constructors
         for(Int_t i = 0 ; i < 4 ; i ++){
-            for(Int_t iCut = 0 ; iCut < 15 ; iCut ++){
+            for(Int_t iCut = 0 ; iCut < 17 ; iCut ++){
                 
                 //LOOSE VARIATIONS
                 //Create a new object from default
@@ -7694,6 +7738,8 @@ void AliAnalysisTaskStrangenessVsMultiplicityMCRun2::AddStandardCascadeConfigura
                 if(iCut == 12 ) lCascadeResult[lN]->SetCutTPCdEdx               ( lcuts[i][0][iCut] ) ;
                 if(iCut == 13 ) lCascadeResult[lN]->SetCutXiRejection           ( lcuts[i][0][iCut] ) ;
                 if(iCut == 14 ) lCascadeResult[lN]->SetCutDCACascadeToPV        ( lcuts[i][0][iCut] ) ;
+                if(iCut == 15 ) lCascadeResult[lN]->SetCutLeastNumberOfCrossedRows( lcuts[i][0][iCut] );
+                if(iCut == 16)  lCascadeResult[lN]->SetCutMinCrossedRowsOverLength( lcuts[i][0][iCut] );
                 
                 //Print this variation, add to pool
                 //lCascadeResult[lN]->Print();
@@ -7725,6 +7771,8 @@ void AliAnalysisTaskStrangenessVsMultiplicityMCRun2::AddStandardCascadeConfigura
                 if(iCut == 12 ) lCascadeResult[lN]->SetCutTPCdEdx               ( lcuts[i][2][iCut] ) ;
                 if(iCut == 13 ) lCascadeResult[lN]->SetCutXiRejection           ( lcuts[i][2][iCut] ) ;
                 if(iCut == 14 ) lCascadeResult[lN]->SetCutDCACascadeToPV        ( lcuts[i][2][iCut] ) ;
+                if(iCut == 15 ) lCascadeResult[lN]->SetCutLeastNumberOfCrossedRows( lcuts[i][2][iCut] );
+                if(iCut == 16)  lCascadeResult[lN]->SetCutMinCrossedRowsOverLength( lcuts[i][2][iCut] );
                 
                 //Print this variation, add to pool
                 //lCascadeResult[lN]->Print();
