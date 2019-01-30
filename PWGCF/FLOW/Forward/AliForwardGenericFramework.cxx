@@ -211,7 +211,9 @@ void AliForwardGenericFramework::saveEvent(TList* outputList, double cent, doubl
         // two-particle cumulant
         double twodiff = TwoDiff(n, -n, refEtaBinB, etaBin).Re();
         double dn2diff = TwoDiff(0,0, refEtaBinB, etaBin).Re();
-
+        if (dn2diff < 0){
+          std::cout << "WTF -----------" << std::endl;
+        }
         Double_t y[5] = {noSamples, zvertex, eta, cent, fSettings.kW2Two};
         cumuDiff->Fill(y, twodiff);
         y[4] = fSettings.kW2;
@@ -286,6 +288,11 @@ TComplex AliForwardGenericFramework::TwoDiff(int n1, int n2, int refetabin, int 
   TComplex formula =0;
 
   formula = p(n1,1, diffetabin)*Q(n2,1, refetabin) - q(n1+n2,1, diffetabin);
+  if (n1 == 0 && formula.Re()<0){
+    std::cout << "p(0,1, diffetabin) "<<p(0,1, diffetabin) << std::endl;
+    std::cout << "Q(0,1, refetabin) " << Q(0,1, refetabin) << std::endl;
+    std::cout << "q(0,1, diffetabin) " <<q(0,1, diffetabin) << std::endl;
+  }
   return formula;
 }
 

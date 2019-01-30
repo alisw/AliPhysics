@@ -22,7 +22,7 @@
 #include "AliAnalysisDataSlot.h"
 #include "AliInputEventHandler.h"
 
-#include "AliAnalysisC2Utils.h"
+#include "AliForwardSecondariesTask.h"
 #include "AliAnalysisTaskValidation.h"
 
 using std::cout;
@@ -69,6 +69,7 @@ AliAnalysisTaskValidation::AliAnalysisTaskValidation(const char *name, bool is_r
   fEventValidators.push_back(EventValidation::kNoEventCut);
   if (is_reconstructed) {
     fEventValidators.push_back(EventValidation::kIsAODEvent);
+    fEventValidators.push_back(EventValidation::kTrigger);
     fEventValidators.push_back(EventValidation::kPassesAliEventCuts);
     fEventValidators.push_back(EventValidation::kHasFMD);
     fEventValidators.push_back(EventValidation::kHasEntriesFMD);
@@ -95,6 +96,12 @@ AliAnalysisTaskValidation::AliAnalysisTaskValidation(const char *name, bool is_r
   // Enable mulivertex pileup cuts
   fEventCuts.fPileUpCutMV = true;
 }
+
+Bool_t AliAnalysisTaskValidation::AcceptTrigger(AliVEvent::EOfflineTriggerTypes TriggerType) {
+  UInt_t fSelMask = ((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected();
+  return fSelMask&TriggerType;
+};
+
 
 AliAnalysisTaskValidation* AliAnalysisTaskValidation::ConnectTask(const char *suffix,
 								  bool is_reconstructed) {
@@ -153,6 +160,8 @@ void AliAnalysisTaskValidation::CreateQAHistograms(TList* outlist) {
       discardedEvtsAx->SetBinLabel(idx + 1, "No cuts"); break;
     case EventValidation::kIsAODEvent:
       discardedEvtsAx->SetBinLabel(idx + 1, "AOD event"); break;
+    case EventValidation::kTrigger:
+      discardedEvtsAx->SetBinLabel(idx + 1, "Trigger"); break;
     case EventValidation::kHasFMD:
       discardedEvtsAx->SetBinLabel(idx + 1, "Has FMD"); break;
     case EventValidation::kHasEntriesFMD:
@@ -254,6 +263,8 @@ void AliAnalysisTaskValidation::UserExec(Option_t *)
       this->fIsValidEvent = this->NoCut(); break;
     case EventValidation::kIsAODEvent:
       this->fIsValidEvent = this->IsAODEvent(); break;
+    case EventValidation::kTrigger:
+      this->fIsValidEvent = this->AcceptTrigger(AliVEvent::kINT7); break;
     case EventValidation::kHasFMD:
       this->fIsValidEvent = this->HasFMD(); break;
     case EventValidation::kHasEntriesFMD:
@@ -444,7 +455,7 @@ AliAnalysisTaskValidation::Tracks AliAnalysisTaskValidation::GetV0hits() const {
       Float_t eta = 0.5 * (vzero->GetVZEROEtaMin(ich) + vzero->GetVZEROEtaMax(ich));
       Float_t phi = vzero->GetVZEROAvgPhi(ich);
       ret_vector.push_back(
-	AliAnalysisTaskValidation::Track(eta, AliAnalysisC2Utils::Wrap02pi(phi), pt, amp));
+	AliAnalysisTaskValidation::Track(eta, AliForwardSecondariesTask::Wrap02pi(phi), pt, amp));
     }
   }
   return ret_vector;
@@ -478,7 +489,7 @@ AliAnalysisTaskValidation::Tracks AliAnalysisTaskValidation::GetTracks() {
       Double_t weight = 1.0;
       out_tracks
 	.push_back(AliAnalysisTaskValidation::Track(tr->Eta(),
-						    AliAnalysisC2Utils::Wrap02pi(tr->Phi()),
+						    AliForwardSecondariesTask::Wrap02pi(tr->Phi()),
 						    tr->Pt(),
 						    weight));
     }

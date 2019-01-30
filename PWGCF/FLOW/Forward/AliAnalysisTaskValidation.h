@@ -18,7 +18,7 @@ class AliAnalysisTaskValidation : public AliAnalysisTaskSE {
   AliAnalysisTaskValidation(const char *name, bool is_reconstructed);
 
   /// Set up this task. This function acts as the AddTask macro
-  /// `is_reconstructed` is passed on to the constructor of this task 
+  /// `is_reconstructed` is passed on to the constructor of this task
   static AliAnalysisTaskValidation* ConnectTask(const char *suffix, bool is_reconstructed);
   /// The Exchange container which is to be accessed by other classes
   AliAnalysisDataContainer* GetExchangeContainter();
@@ -29,6 +29,7 @@ class AliAnalysisTaskValidation : public AliAnalysisTaskSE {
   enum EventValidation {
       kNoEventCut,
       kIsAODEvent,
+      kTrigger,
       kHasFMD,
       kHasEntriesFMD,
       kHasEntriesV0,
@@ -64,7 +65,7 @@ class AliAnalysisTaskValidation : public AliAnalysisTaskSE {
       :eta(_eta), phi(_phi), pt(_pt), weight(_weight) {};
   };
   typedef std::vector<AliAnalysisTaskValidation::Track> Tracks;
-  
+
   /// Check if the given event is Valid. Return true if so
   Bool_t IsValidEvent() {return fIsValidEvent;};
 
@@ -132,6 +133,7 @@ class AliAnalysisTaskValidation : public AliAnalysisTaskSE {
   Bool_t NoCut() {return true;};
   // Check if the given event is an aod event
   Bool_t IsAODEvent();
+  Bool_t AcceptTrigger(AliVEvent::EOfflineTriggerTypes TriggerType);
   /// Check if the current event has a FMD object
   Bool_t HasFMD();
   /// Check if the current event has any counts in the FMD
@@ -148,7 +150,7 @@ class AliAnalysisTaskValidation : public AliAnalysisTaskSE {
   Bool_t HasMultSelection();
   /// Is not out of bunch pileup
   Bool_t NotOutOfBunchPU() {return !fUtils.IsOutOfBunchPileUp(this->InputEvent());};
-  /// Is not multi-vertex pileup 
+  /// Is not multi-vertex pileup
   Bool_t NotMultiVertexPU() {return !fUtils.IsPileUpMV(this->InputEvent());};
   /// Is not SPD pile-up
   Bool_t NotSPDPU() {return !fUtils.IsPileUpSPD(this->InputEvent());};
@@ -166,5 +168,3 @@ class AliAnalysisTaskValidation : public AliAnalysisTaskSE {
   ClassDef(AliAnalysisTaskValidation, 1);
 };
 #endif
-
-

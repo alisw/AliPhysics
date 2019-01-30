@@ -95,7 +95,7 @@ AliForwardFlowRun2Task::AliForwardFlowRun2Task(const char* name) : AliAnalysisTa
   //
 
   // Rely on validation task for event and track selection
-  //DefineInput(1, AliAnalysisTaskValidation::Class());
+  DefineInput(1, AliAnalysisTaskValidation::Class());
   DefineOutput(1, TList::Class());
 }
 
@@ -183,7 +183,11 @@ void AliForwardFlowRun2Task::UserExec(Option_t *)
   //   option: Not used
   //
   // Get the event validation object
-  //AliAnalysisTaskValidation* ev_val = dynamic_cast<AliAnalysisTaskValidation*>(this->GetInputData(1));
+  AliAnalysisTaskValidation* ev_val = dynamic_cast<AliAnalysisTaskValidation*>(this->GetInputData(1));
+
+
+
+
 
   fUtil.fevent = fInputEvent;
 
@@ -209,10 +213,10 @@ void AliForwardFlowRun2Task::UserExec(Option_t *)
     fUtil.fAODevent = aodevent;
     if(!aodevent) throw std::runtime_error("Not AOD as expected");
 
-    //if (!ev_val->IsValidEvent()){
-    //  PostData(1, this->fOutputList);
-    //  return;
-    //}
+    if (!ev_val->IsValidEvent()){
+      PostData(1, this->fOutputList);
+      return;
+    }
 
     AliAODForwardMult* aodfmult = static_cast<AliAODForwardMult*>(aodevent->FindListObject("Forward"));
     forwardDist = &aodfmult->GetHistogram();
