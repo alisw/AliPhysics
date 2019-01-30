@@ -149,7 +149,7 @@ AliAnalysisTaskLMeeCocktailMC::AliAnalysisTaskLMeeCocktailMC(): AliAnalysisTaskS
   fFileEff(0),
   fFileNameVPH(0),
   fFileVPH(0),
-	fpPbDataSetName(0),
+  fResolDataSetName(""),
   teeTTree(NULL),
   fParticleList(NULL),
   fParticleListNames(NULL),
@@ -263,7 +263,7 @@ AliAnalysisTaskLMeeCocktailMC::AliAnalysisTaskLMeeCocktailMC(const char *name):
   fFileEff(0),
   fFileNameVPH(0),
   fFileVPH(0),
-	fpPbDataSetName(0),
+  fResolDataSetName(""),
   teeTTree(NULL),
   fParticleList(NULL),
   fParticleListNames(NULL),
@@ -375,15 +375,21 @@ void AliAnalysisTaskLMeeCocktailMC::UserCreateOutputObjects(){
   }
   //RUN2
   if(fResolType == 2) {
-   if(fcollisionSystem==200){ //pp 13TeV
-    fFileName = "$ALICE_PHYSICS/PWGDQ/dielectron/files/LMeeCocktailInputs_Respp13TeV.root";
-	 }else if(fcollisionSystem == 300){
-    fFileName = "$ALICE_PHYSICS/PWGDQ/dielectron/files/"+ fpPbDataSetName;
-	 }
-    fFile = TFile::Open(fFileName.Data());
-    if(!fFile->IsOpen()){
-     AliError(Form("Could not open file %s",fFileName.Data() ));
+    if(fResolDataSetName.Contains("alien")){
+      fFileName = fResolDataSetName;
     }
+    else{
+      if(fcollisionSystem==200){ //pp 13TeV
+	fFileName = "$ALICE_PHYSICS/PWGDQ/dielectron/files/LMeeCocktailInputs_Respp13TeV.root";
+      }
+      else{
+	fFileName = "$ALICE_PHYSICS/PWGDQ/dielectron/files/"+ fResolDataSetName;
+      }
+    }
+   fFile = TFile::Open(fFileName.Data());
+   if(!fFile->IsOpen()){
+     AliError(Form("Could not open file %s",fFileName.Data() ));
+   }
     TObjArray* ArrResoPt=0x0;
     ArrResoPt = (TObjArray*) fFile->Get("RelPtResArrCocktail");
     TObjArray* ArrResoEta=0x0;
