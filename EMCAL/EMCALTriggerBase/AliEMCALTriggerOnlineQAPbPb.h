@@ -15,6 +15,7 @@
 #include "AliEMCALTriggerQA.h"
 
 class AliEMCALTriggerPatchInfo;
+class TArrayD;
 class THashList;
 class TObjArray;
 class AliEMCALTriggerFastOR;
@@ -69,6 +70,7 @@ protected:
 
 private:
   void CreateTProfile(const char *name, const char *title, int nbins, double xmin, double xmax);
+  void CreateTHnSparse(const char *name, const char *title, int ndim, const TArrayD *binnings);
   void CreateTH1(const char *name, const char *title, int nbins, double xmin, double xmax);
   void CreateTH2(const char *name, const char *title, int nbinsx, double xmin, double xmax, int nbinsy, double ymin, double ymax);
   void CreateTH3(const char *name, const char *title, int nbinsx, double xmin, double xmax, int nbinsy, double ymin, double ymax, int nbinsz, double zmin, double zmax);
@@ -76,6 +78,7 @@ private:
   void FillTH1(const char *hname, double x, double weight = 1.);
   void FillTH2(const char *hname, double x, double y, double weight = 1.);
   void FillTH3(const char *hname, double x, double y, double z, double weight = 1.);
+  void FillTHnSparse(const char *hname, double *point, double weight = 1.);
 
   TObject *FindObject(const char *name) const;
   virtual TObject *FindObject(const TObject *obj) const;
