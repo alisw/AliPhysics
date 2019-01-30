@@ -86,7 +86,7 @@ AliEbyEPhiDistNew::AliEbyEPhiDistNew()
   fVzMax(10.), 
   fPtMin(0.15),   
   fPtMax(3.15),
-  fPhiMin(3.14),
+  fPhiMin(0.0),
   fPhiMax(6.28),
   fEtaMin(-1.), 
   fEtaMax(1.),
@@ -191,7 +191,7 @@ AliEbyEPhiDistNew::AliEbyEPhiDistNew( const char *name )
     fVzMax(10.), 
     fPtMin(0.15),   
     fPtMax(3.15),
-    fPhiMin(3.14),
+    fPhiMin(0.0),
     fPhiMax(6.28),
     fEtaMin(-1.), 
     fEtaMax(1.),
@@ -409,7 +409,7 @@ void AliEbyEPhiDistNew::CreatePhiHist() {
   const Char_t *fgkHistCharge[2] = {"Minus", "Plus"};
   
   Int_t ybins[3] = {30, 32, 18};
-  Double_t yaxis[2][3] = {{0.15,-0.8,3.14}, {3.15,0.8,6.28}};
+  Double_t yaxis[2][3] = {{0.15,-0.8,0.0}, {3.15,0.8,6.28}};
   
   const Int_t xNbins = 100;
   Double_t xBinEdge[xNbins+1];
@@ -422,7 +422,7 @@ void AliEbyEPhiDistNew::CreatePhiHist() {
     
     //fphiarray
     
-    Double_t pidPhiBins[19] = {3.14,3.31444,3.48889,3.66333,3.83778,4.01222,4.18667,4.36111,4.53556,4.71,4.88444,5.05889,5.23333,5.40778,5.58222,5.75667,5.93111,6.10556,6.28};
+    Double_t pidPhiBins[19] = {0.0, 0.348, 0.697, 1.04, 1.39, 1.74, 2.09, 2.44, 2.79, 3.14, 3.48, 3.83, 4.18, 4.53, 4.88, 5.23, 5.58, 5.93,  6.28};
   
   const Char_t *gstName[3] = {"Pt","Eta","Phi"};
   const Char_t *gstLat[3]  = {"p_{T}","#eta","#phi"};
@@ -1130,7 +1130,7 @@ Int_t AliEbyEPhiDistNew::GetPhiBin(Double_t Phi){
     
     Int_t phibin = -1;
     
-    Double_t pidPhiBins[19] = {3.14,3.31444,3.48889,3.66333,3.83778,4.01222,4.18667,4.36111,4.53556,4.71,4.88444,5.05889,5.23333,5.40778,5.58222,5.75667,5.93111,6.10556,6.28};
+    Double_t pidPhiBins[19] = {0.0, 0.348, 0.697, 1.04, 1.39, 1.74, 2.09, 2.44, 2.79, 3.14, 3.48, 3.83, 4.18, 4.53, 4.88, 5.23, 5.58, 5.93,  6.28};
     
     for (Int_t pBin = 0; pBin < fNphiBins; pBin++){
         
