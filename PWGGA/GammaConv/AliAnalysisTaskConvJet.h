@@ -34,10 +34,10 @@ class AliAnalysisTaskConvJet : public AliAnalysisTaskEmcalJet {
   AliAnalysisTaskConvJet()                                               ;
   AliAnalysisTaskConvJet(const char *name, Int_t IsMC)                   ;
   ~AliAnalysisTaskConvJet(){
-     delete  fJetNameArray;
-     delete  fTrueJetNameArray;
-     delete  fTrainconfigArray;
-     delete  fTrueTrainconfigArray;
+     delete[]  fJetNameArray;
+     delete[]  fTrueJetNameArray;
+     delete[]  fTrainconfigArray;
+     delete[]  fTrueTrainconfigArray;
   }
 
   void                        UserCreateOutputObjects()                         ;
@@ -368,23 +368,23 @@ class AliAnalysisTaskConvJet : public AliAnalysisTaskEmcalJet {
   Int_t *fTrainconfigArray;                                                     //! Array of trainconfigs corresponsing to the data/rec jet containers
   Int_t *fTrueTrainconfigArray;                                                 //! Array of trainconfigs corresponsing to the true jet containers
 
-  std::vector<Int_t>               fListNJets;                                  // vector of number of jets for each jet container
-  std::vector<std::vector<Double_t>>    fListJetPt;                             // vector of vectors containg the jet pt for each jet container
-  std::vector<std::vector<Double_t>>    fListJetPx;                             // vector of vectors containg the jet px for each jet container
-  std::vector<std::vector<Double_t>>    fListJetPy;                             // vector of vectors containg the jet py for each jet container
-  std::vector<std::vector<Double_t>>    fListJetPz;                             // vector of vectors containg the jet pz for each jet container
-  std::vector<std::vector<Double_t>>    fListJetEta;                            // vector of vectors containg the jet eta for each jet container
-  std::vector<std::vector<Double_t>>    fListJetPhi;                            // vector of vectors containg the jet phi for each jet container
-  std::vector<std::vector<Double_t>>    fListJetArea;                           // vector of vectors containg the jet area for each jet container
+  std::vector<Int_t>               fListNJets;                                  //! vector of number of jets for each jet container
+  std::vector<std::vector<Double_t>>    fListJetPt;                             //! vector of vectors containg the jet pt for each jet container
+  std::vector<std::vector<Double_t>>    fListJetPx;                             //! vector of vectors containg the jet px for each jet container
+  std::vector<std::vector<Double_t>>    fListJetPy;                             //! vector of vectors containg the jet py for each jet container
+  std::vector<std::vector<Double_t>>    fListJetPz;                             //! vector of vectors containg the jet pz for each jet container
+  std::vector<std::vector<Double_t>>    fListJetEta;                            //! vector of vectors containg the jet eta for each jet container
+  std::vector<std::vector<Double_t>>    fListJetPhi;                            //! vector of vectors containg the jet phi for each jet container
+  std::vector<std::vector<Double_t>>    fListJetArea;                           //! vector of vectors containg the jet area for each jet container
 
-  std::vector<Int_t>               fListTrueNJets;                              // vector of number of true jets for each true jet container
-  std::vector<std::vector<Double_t>>    fListTrueJetPt;                         // vector of vectors containg the jet pt for each true jet container
-  std::vector<std::vector<Double_t>>    fListTrueJetPx;                         // vector of vectors containg the jet px for each true jet container
-  std::vector<std::vector<Double_t>>    fListTrueJetPy;                         // vector of vectors containg the jet py for each true jet container
-  std::vector<std::vector<Double_t>>    fListTrueJetPz;                         // vector of vectors containg the jet pz for each true jet container
-  std::vector<std::vector<Double_t>>    fListTrueJetEta;                        // vector of vectors containg the jet eta for each true jet container
-  std::vector<std::vector<Double_t>>    fListTrueJetPhi;                        // vector of vectors containg the jet phi for each true jet container
-  std::vector<std::vector<Double_t>>    fListTrueJetArea;                       // vector of vectors containg the jet area for each true jet container
+  std::vector<Int_t>               fListTrueNJets;                              //! vector of number of true jets for each true jet container
+  std::vector<std::vector<Double_t>>    fListTrueJetPt;                         //! vector of vectors containg the jet pt for each true jet container
+  std::vector<std::vector<Double_t>>    fListTrueJetPx;                         //! vector of vectors containg the jet px for each true jet container
+  std::vector<std::vector<Double_t>>    fListTrueJetPy;                         //! vector of vectors containg the jet py for each true jet container
+  std::vector<std::vector<Double_t>>    fListTrueJetPz;                         //! vector of vectors containg the jet pz for each true jet container
+  std::vector<std::vector<Double_t>>    fListTrueJetEta;                        //! vector of vectors containg the jet eta for each true jet container
+  std::vector<std::vector<Double_t>>    fListTrueJetPhi;                        //! vector of vectors containg the jet phi for each true jet container
+  std::vector<std::vector<Double_t>>    fListTrueJetArea;                       //! vector of vectors containg the jet area for each true jet container
 
  private:
   AliAnalysisTaskConvJet(const AliAnalysisTaskConvJet&)           ;
