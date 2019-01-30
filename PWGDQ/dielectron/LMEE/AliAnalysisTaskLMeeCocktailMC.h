@@ -152,7 +152,7 @@ class AliAnalysisTaskLMeeCocktailMC : public AliAnalysisTaskSE {
     TFile*      fFileEff;        //! Pointer to input file
     TString     fFileNameVPH;    // Name of the input file (VPH)
     TFile*      fFileVPH;        //! Pointer to input file
-		TString     fpPbDataSetName; //Specify multiplicity class and data set for Run 2 pPb data
+    TString     fResolDataSetName; //Specify multiplicity class and data set for Run 2 data
 
     //tree
     TTree*               teeTTree; 
