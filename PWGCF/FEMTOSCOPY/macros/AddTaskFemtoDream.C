@@ -371,12 +371,12 @@ AliAnalysisTaskSE* AddTaskFemtoDream(bool isMC = false,
     }
   }
   if (etaPhiPlotsAtTPCRadii) {
-    if (isMC) {
+//    if (isMC) {
       config->SetPhiEtaBinnign(true);
-    } else {
-      std::cout
-          << "You are trying to request the Eta Phi Plots without MC Info; fix it wont work! \n";
-    }
+//    } else {
+//      std::cout
+//          << "You are trying to request the Eta Phi Plots without MC Info; fix it wont work! \n";
+//    }
   }
   if (DeltaEtaDeltaPhiCut) {
     config->SetDeltaEtaMax(0.01);
