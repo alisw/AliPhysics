@@ -199,6 +199,7 @@ install(TARGETS ${MODULE}
         LIBRARY DESTINATION lib)
 
 install(FILES ${HDRS} DESTINATION include)
+install(FILES PiKaPr/TestAOD/HistogramsBoth.h PiKaPr/TestAOD/Histograms.h DESTINATION include)
 
 # install macros
 install(DIRECTORY ChargedHadrons/MultDepSpec/macros DESTINATION  PWGLF/SPECTRA/ChargedHadrons/MultDepSpec)
