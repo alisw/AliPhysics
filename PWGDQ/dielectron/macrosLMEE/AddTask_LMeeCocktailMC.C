@@ -45,9 +45,9 @@ void AddTask_LMeeCocktailMC(Int_t CollisionSystem = 200, Float_t MaxEta = 0.8, F
   task->SetWriteTTree(WriteTTree);
   task->SetResolType(ResolType);
   task->SetALTweight(ALTweightType);
-	if(resFileName != ""){
-		task->SetpPbResFileName(resFileName);
-	}
+  if(resFileName != ""){
+    task->SetResFileName(resFileName);
+  }
   
   //connect containers
   AliAnalysisDataContainer *coutput =
