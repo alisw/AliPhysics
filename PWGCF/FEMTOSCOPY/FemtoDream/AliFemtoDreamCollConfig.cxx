@@ -377,10 +377,10 @@ std::vector<unsigned int> AliFemtoDreamCollConfig::GetWhichPairs() {
 
 std::vector<float> AliFemtoDreamCollConfig::GetStandardmTBins() {
   std::vector<float> mTBins;
-  mTBins.push_back(0.8);
   mTBins.push_back(1.2);
   mTBins.push_back(2.0);
   mTBins.push_back(4.5);
+  mTBins.push_back(999.);
   return mTBins;
 }
 
