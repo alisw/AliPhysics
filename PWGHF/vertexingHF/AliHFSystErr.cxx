@@ -3432,7 +3432,7 @@ void AliHFSystErr::InitDplustoKpipi2016pPb010ZNA() {
 
   // MC dN/dpt
   fMCPtShape = new TH1F("fMCPtShape","fMCPtShape",24,0,24);
-  for(Int_t i=1;i<=7;i++) fMCPtShape->SetBinContent(i,0.01);
+  for(Int_t i=1;i<=10;i++) fMCPtShape->SetBinContent(i,0.01);
 
   return;
 }
@@ -3441,7 +3441,7 @@ void AliHFSystErr::InitDplustoKpipi2016pPb010ZNA() {
 void AliHFSystErr::InitDplustoKpipi2016pPb1020ZNA() {
   //
   // D+->Kpipi syst errors. Responsible: F. Grosa
-  //  2016 pPb sample, 0-10% ZNA
+  //  2016 pPb sample, 10-20% ZNA
   //
   AliInfo(" Settings for D+ --> K pi pi, p-Pb collisions at 5.023 TeV 10-20% ZNA - 2016 run");
   SetNameTitle("AliHFSystErr","SystErrDplustoKpipi2016pPb010ZNA");
@@ -3479,7 +3479,7 @@ void AliHFSystErr::InitDplustoKpipi2016pPb1020ZNA() {
 
   // MC dN/dpt
   fMCPtShape = new TH1F("fMCPtShape","fMCPtShape",24,0,24);
-  for(Int_t i=1;i<=7;i++) fMCPtShape->SetBinContent(i,0.01);
+  for(Int_t i=1;i<=10;i++) fMCPtShape->SetBinContent(i,0.01);
   
   return;
 }
@@ -3488,7 +3488,7 @@ void AliHFSystErr::InitDplustoKpipi2016pPb1020ZNA() {
 void AliHFSystErr::InitDplustoKpipi2016pPb2040ZNA() {
   //
   // D+->Kpipi syst errors. Responsible: F. Grosa
-  //  2016 pPb sample, 0-10% ZNA
+  //  2016 pPb sample, 20-40% ZNA
   //
   AliInfo(" Settings for D+ --> K pi pi, p-Pb collisions at 5.023 TeV 20-40% ZNA - 2016 run");
   SetNameTitle("AliHFSystErr","SystErrDplustoKpipi2016pPb010ZNA");
@@ -3525,7 +3525,7 @@ void AliHFSystErr::InitDplustoKpipi2016pPb2040ZNA() {
 
   // MC dN/dpt
   fMCPtShape = new TH1F("fMCPtShape","fMCPtShape",24,0,24);
-  for(Int_t i=1;i<=7;i++) fMCPtShape->SetBinContent(i,0.01);
+  for(Int_t i=1;i<=10;i++) fMCPtShape->SetBinContent(i,0.01);
   
   return;
 }
@@ -3534,7 +3534,7 @@ void AliHFSystErr::InitDplustoKpipi2016pPb2040ZNA() {
 void AliHFSystErr::InitDplustoKpipi2016pPb4060ZNA() {
   //
   // D+->Kpipi syst errors. Responsible: F. Grosa
-  //  2016 pPb sample, 0-10% ZNA
+  //  2016 pPb sample, 40-60% ZNA
   //
   AliInfo(" Settings for D+ --> K pi pi, p-Pb collisions at 5.023 TeV 40-60% ZNA - 2016 run");
   SetNameTitle("AliHFSystErr","SystErrDplustoKpipi2016pPb010ZNA");
@@ -3571,8 +3571,9 @@ void AliHFSystErr::InitDplustoKpipi2016pPb4060ZNA() {
 
   // MC dN/dpt
   fMCPtShape = new TH1F("fMCPtShape","fMCPtShape",24,0,24);
-  for(Int_t i=1;i<=7;i++) fMCPtShape->SetBinContent(i,0.01);
-  
+  fMCPtShape->SetBinContent(2,0.02);
+  for(Int_t i=3;i<=10;i++) fMCPtShape->SetBinContent(i,0.01);
+
   return;
 }
 
@@ -3617,9 +3618,8 @@ void AliHFSystErr::InitDplustoKpipi2016pPb60100ZNA() {
 
   // MC dN/dpt
   fMCPtShape = new TH1F("fMCPtShape","fMCPtShape",24,0,24);
-  fMCPtShape->SetBinContent(2,0.03);
-  fMCPtShape->SetBinContent(3,0.02);
-  for(Int_t i=4;i<=24;i++) fMCPtShape->SetBinContent(i,0.01);
+  fMCPtShape->SetBinContent(2,0.02);
+  for(Int_t i=3;i<=10;i++) fMCPtShape->SetBinContent(i,0.01);
 
   return;
 }
