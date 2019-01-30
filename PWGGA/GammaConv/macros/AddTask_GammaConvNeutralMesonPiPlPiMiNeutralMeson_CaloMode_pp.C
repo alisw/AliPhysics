@@ -40,20 +40,20 @@ void AddTask_GammaConvNeutralMesonPiPlPiMiNeutralMeson_CaloMode_pp(
 
   //parse additionalTrainConfig flag
   TObjArray *rAddConfigArr = additionalTrainConfig.Tokenize("_");
-  if(rAddConfigArr->GetEntries()<1){cout << "ERROR during parsing of additionalTrainConfig String '" << additionalTrainConfig.Data() << "'" << endl; return;}
+  if(rAddConfigArr->GetEntries()<1){std::cout << "ERROR during parsing of additionalTrainConfig String '" << additionalTrainConfig.Data() << "'" << std::endl; return;}
   TObjString* rAdditionalTrainConfig;
   for(Int_t i = 0; i<rAddConfigArr->GetEntries() ; i++){
     if(i==0) rAdditionalTrainConfig = (TObjString*)rAddConfigArr->At(i);
     else{
       TObjString* temp = (TObjString*) rAddConfigArr->At(i);
       TString tempStr = temp->GetString();
-      cout << "INFO: nothing to do, no definition available!" << endl;
+      std::cout << "INFO: nothing to do, no definition available!" << std::endl;
     }
   }
   TString sAdditionalTrainConfig = rAdditionalTrainConfig->GetString();
   if (sAdditionalTrainConfig.Atoi() > 0){
     trainConfig = trainConfig + sAdditionalTrainConfig.Atoi();
-    cout << "INFO: AddTask_GammaConvNeutralMesonPiPlPiMiNeutralMeson_CaloMode_pp running additionalTrainConfig '" << sAdditionalTrainConfig.Atoi() << "', train config: '" << trainConfig << "'" << endl;
+    std::cout << "INFO: AddTask_GammaConvNeutralMesonPiPlPiMiNeutralMeson_CaloMode_pp running additionalTrainConfig '" << sAdditionalTrainConfig.Atoi() << "', train config: '" << trainConfig << "'" << std::endl;
   }
 
   Int_t isHeavyIon = 0;
@@ -79,10 +79,10 @@ void AddTask_GammaConvNeutralMesonPiPlPiMiNeutralMeson_CaloMode_pp(
   TString V0ReaderName        = Form("V0ReaderV1_%s_%s",cutnumberEvent.Data(),cutnumberPhoton.Data());
   AliV0ReaderV1 *fV0ReaderV1  =  NULL;
   if( !(AliV0ReaderV1*)mgr->GetTask(V0ReaderName.Data()) ){
-    cout << "V0Reader: " << V0ReaderName.Data() << " not found!!"<< endl;
+    std::cout << "V0Reader: " << V0ReaderName.Data() << " not found!!"<< std::endl;
     return;
   } else {
-    cout << "V0Reader: " << V0ReaderName.Data() << " found!!"<< endl;
+    std::cout << "V0Reader: " << V0ReaderName.Data() << " found!!"<< std::endl;
   }
 
   TString PionCuts      = "000000200";
@@ -399,9 +399,9 @@ void AddTask_GammaConvNeutralMesonPiPlPiMiNeutralMeson_CaloMode_pp(
   }
 
   if(!cuts.AreValid()){
-    cout << "\n\n****************************************************" << endl;
-    cout << "ERROR: No valid cuts stored in CutHandlerNeutralCalo! Returning..." << endl;
-    cout << "****************************************************\n\n" << endl;
+    std::cout << "\n\n****************************************************" << std::endl;
+    std::cout << "ERROR: No valid cuts stored in CutHandlerNeutralCalo! Returning..." << std::endl;
+    std::cout << "****************************************************\n\n" << std::endl;
     return;
   }
 
@@ -455,7 +455,7 @@ void AddTask_GammaConvNeutralMesonPiPlPiMiNeutralMeson_CaloMode_pp(
     if(runLightOutput>0) analysisClusterCuts[i]->SetLightOutput(kTRUE);
     analysisClusterCuts[i]->SetCaloTrackMatcherName(TrackMatcherName);
     if( ! analysisClusterCuts[i]->InitializeCutsFromCutString((cuts.GetClusterCut(i)).Data()) ) {
-      cout<<"ERROR: analysisClusterCuts [" <<i<<"]"<<endl;
+      std::cout<<"ERROR: analysisClusterCuts [" <<i<<"]"<<std::endl;
       return 0;
     } else {
       analysisClusterCuts[i]->InitializeCutsFromCutString((cuts.GetClusterCut(i)).Data());
@@ -466,7 +466,7 @@ void AddTask_GammaConvNeutralMesonPiPlPiMiNeutralMeson_CaloMode_pp(
     analysisNeutralPionCuts[i] = new AliConversionMesonCuts();
     if(runLightOutput>0) analysisNeutralPionCuts[i]->SetLightOutput(kTRUE);
     if( ! analysisNeutralPionCuts[i]->InitializeCutsFromCutString((cuts.GetNDMCut(i)).Data()) ) {
-      cout<<"ERROR: analysisMesonCuts [ " <<i<<" ] "<<endl;
+      std::cout<<"ERROR: analysisMesonCuts [ " <<i<<" ] "<<std::endl;
       return 0;
     } else {
       NeutralPionCutList->Add(analysisNeutralPionCuts[i]);
@@ -476,7 +476,7 @@ void AddTask_GammaConvNeutralMesonPiPlPiMiNeutralMeson_CaloMode_pp(
     analysisMesonCuts[i] = new AliConversionMesonCuts();
     if(runLightOutput>0) analysisMesonCuts[i]->SetLightOutput(kTRUE);
     if( ! analysisMesonCuts[i]->InitializeCutsFromCutString((cuts.GetMesonCut(i)).Data()) ) {
-      cout<<"ERROR: analysisMesonCuts [ " <<i<<" ] "<<endl;
+      std::cout<<"ERROR: analysisMesonCuts [ " <<i<<" ] "<<std::endl;
       return 0;
     } else {
       MesonCutList->Add(analysisMesonCuts[i]);
@@ -489,7 +489,7 @@ void AddTask_GammaConvNeutralMesonPiPlPiMiNeutralMeson_CaloMode_pp(
     if(runLightOutput>0) analysisPionCuts[i]->SetLightOutput(kTRUE);
 
         if( !analysisPionCuts[i]->InitializeCutsFromCutString((cuts.GetPionCut(i)).Data())) {
-      cout<< "ERROR:  analysisPionCuts [ " <<i<<" ] "<<endl;
+      std::cout<< "ERROR:  analysisPionCuts [ " <<i<<" ] "<<std::endl;
       return 0;
     } else {
       PionCutList->Add(analysisPionCuts[i]);
