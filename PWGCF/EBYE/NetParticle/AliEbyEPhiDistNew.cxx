@@ -20,7 +20,7 @@
 //                   drathee@cern.ch | sjena@cern.ch                       //
 //                            Surya Prakash Pathak                         //
 //                       surya.prakash.pathak@cern.ch                      //
-//                         (Last Modified 2019/01/24)                      //
+//                         (Last Modified 2019/01/30)                      //
 //                 Dealing with Wide pT Window Modified to ESDs            //
 //Some parts of the code are taken from J. Thaeder/ M. Weber NetParticle analysis code//
 //=========================================================================//
@@ -1214,17 +1214,17 @@ Bool_t AliEbyEPhiDistNew::IsPidPassed(AliVTrack * track) {
   
   //---------------------------| el, mu,  pi,  k,    p   | Pt cut offs from spectra
   //ITS--------------
-  Double_t ptLowITS[5]       = { 0., 0., 0.2,  0.2,  0.3  };
-  Double_t ptHighITS[5]      = { 0., 0., 0.2,  0.2,  1.1  };
+  Double_t ptLowITS[5]       = { 0., 0., 0.2,  0.2,  0.2  };
+  Double_t ptHighITS[5]      = { 0., 0., 0.2,  0.2,  0.2  };
   //TPC---------------
   Double_t ptLowTPC[5]       = { 0., 0., 0.3,  0.3, 0.3  };
-  Double_t ptHighTPC[5]      = { 0., 0., 1.55,  1.55,   2.0  };
+  Double_t ptHighTPC[5]      = { 0., 0., 1.55,  1.55,   1.55  };
   //TOF----
-  Double_t ptLowTOF[5]       = { 0., 0., 0.2,  0.2,  1.1  };
-  Double_t ptHighTOF[5]      = { 0., 0., 0.2,  0.2,    2.0  };
+  Double_t ptLowTOF[5]       = { 0., 0., 0.2,  0.2,  0.2  };
+  Double_t ptHighTOF[5]      = { 0., 0., 0.2,  0.2,    0.2  };
   //TPCTOF----------
-  Double_t ptLowTPCTOF[5]    = { 0., 0., 0.65, 0.69,   0.8  };
-  Double_t ptHighTPCTOF[5]   = { 0., 0., 0.65,  0.69,   2.0  };
+  Double_t ptLowTPCTOF[5]    = { 0., 0., 0.65, 0.69,   0.69  };
+  Double_t ptHighTPCTOF[5]   = { 0., 0., 0.65,  0.69,   0.69  };
   
 
   //--------------------------TPC PID----------------
@@ -1326,23 +1326,7 @@ Bool_t AliEbyEPhiDistNew::IsPidPassed(AliVTrack * track) {
   }
   
   if( fParticleSpecies == 4){//for proton
-    
-    if(fPidStrategy == 0){
-      //ITS+TPC and TPC+TOF
-      if( pt >= ptLowITS[fParticleSpecies] && pt <= ptHighITS[fParticleSpecies] ) isAccepted = isAcceptedITS && isAcceptedTPC;
-      else isAccepted = isAcceptedTPC && isAcceptedTOF;
-    }
-    else if( fPidStrategy == 1){
-      //ITS+TPC, TPC , TPC+TOF
-      if( pt >= 0.3 && pt <= 0.575 ) isAccepted = isAcceptedITS && isAcceptedTPC;
-      else if( pt >= 0.825 && pt <= 2.0 ) isAccepted = isAcceptedTPC && isAcceptedTOF;
-      else isAccepted =  isAcceptedTPC;
-    }
-    else if( fPidStrategy == 2){
-      //ITS+TPC
-      isAccepted = isAcceptedITS && isAcceptedTPC;
-    }
-    
+      isAccepted =  isAcceptedTPC;
   }//for proton
   
   
