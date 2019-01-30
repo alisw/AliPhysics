@@ -190,6 +190,7 @@ class AliFemtoDreamCorrHists {
   bool fDokTCentralityBins;
   bool fdPhidEtaPlots;
   bool fmTDetaDPhi;
+  std::vector<float> fmTdEtadPhiBins;
   std::vector<unsigned int> fWhichPairs;
   std::vector<float> fCentBins;ClassDef(AliFemtoDreamCorrHists,4)
   ;
