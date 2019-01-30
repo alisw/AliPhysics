@@ -307,7 +307,7 @@ AliAnalysisTaskFlowModes::AliAnalysisTaskFlowModes(const char* name) : AliAnalys
   fCutFlowRFPsPtMin(0),
   fCutFlowRFPsPtMax(0),
   fFlowPOIsPtMin(0),
-  fFlowPOIsPtMax(20.),
+  fFlowPOIsPtMax(10.),
   fFlowCentMin(0),
   fFlowCentMax(150),
   fFlowCentNumBins(150),
