@@ -22,7 +22,7 @@
 #include <TF1.h>
 #include "AliAODVertex.h"
 #include "AliForwardFlowUtil.h"
-#include "AliAnalysisTaskValidation.h"
+#include "AliForwardTaskValidation.h"
 
 
 class AliAODForwardMult;

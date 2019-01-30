@@ -95,7 +95,7 @@ AliForwardFlowRun2Task::AliForwardFlowRun2Task(const char* name) : AliAnalysisTa
   //
 
   // Rely on validation task for event and track selection
-  DefineInput(1, AliAnalysisTaskValidation::Class());
+  DefineInput(1, AliForwardTaskValidation::Class());
   DefineOutput(1, TList::Class());
 }
 
@@ -183,7 +183,7 @@ void AliForwardFlowRun2Task::UserExec(Option_t *)
   //   option: Not used
   //
   // Get the event validation object
-  AliAnalysisTaskValidation* ev_val = dynamic_cast<AliAnalysisTaskValidation*>(this->GetInputData(1));
+  AliForwardTaskValidation* ev_val = dynamic_cast<AliForwardTaskValidation*>(this->GetInputData(1));
 
 
 

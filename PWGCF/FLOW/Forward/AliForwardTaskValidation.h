@@ -1,5 +1,5 @@
-#ifndef AliAnalysisTaskValidation_cxx
-#define AliAnalysisTaskValidation_cxx
+#ifndef AliForwardTaskValidation_cxx
+#define AliForwardTaskValidation_cxx
 
 #include <string>
 #include <vector>
@@ -11,25 +11,25 @@
 
 class TH2;
 
-class AliAnalysisTaskValidation : public AliAnalysisTaskSE {
+class AliForwardTaskValidation : public AliAnalysisTaskSE {
  public:
-  AliAnalysisTaskValidation();
+  AliForwardTaskValidation();
   /// `is_reconstructed` is used to toggle some event selections
-  AliAnalysisTaskValidation(const char *name, bool is_reconstructed);
-
+  AliForwardTaskValidation(const char *name, bool is_reconstructed);
 
   /// Set up this task. This function acts as the AddTask macro
   /// `is_reconstructed` is passed on to the constructor of this task
-  static AliAnalysisTaskValidation* ConnectTask(const char *suffix, bool is_reconstructed);
+  static AliForwardTaskValidation* ConnectTask(const char *suffix, bool is_reconstructed);
   /// The Exchange container which is to be accessed by other classes
   AliAnalysisDataContainer* GetExchangeContainter();
-  virtual ~AliAnalysisTaskValidation() {};
+  virtual ~AliForwardTaskValidation() {};
 
   // Enums describing each event validator. These can be pushed into
   // fEventValidators by the user when configuring their task
   enum EventValidation {
       kNoEventCut,
       kIsAODEvent,
+      kTrigger,
       kHasFMD,
       kHasEntriesFMD,
       kHasEntriesV0,
@@ -64,45 +64,43 @@ class AliAnalysisTaskValidation : public AliAnalysisTaskSE {
     Track(Float_t _eta, Float_t _phi, Float_t _pt, Float_t _weight)
       :eta(_eta), phi(_phi), pt(_pt), weight(_weight) {};
   };
-  typedef std::vector<AliAnalysisTaskValidation::Track> Tracks;
+  typedef std::vector<AliForwardTaskValidation::Track> Tracks;
 
   /// Check if the given event is Valid. Return true if so
   Bool_t IsValidEvent() {return fIsValidEvent;};
 
-  Bool_t AcceptTrigger(AliVEvent::EOfflineTriggerTypes TriggerType) {
-
   // Get FMD hits. The eta values are calculated with respect to the
   // primary vertex of the collision
-  AliAnalysisTaskValidation::Tracks GetFMDhits() const;
+  AliForwardTaskValidation::Tracks GetFMDhits() const;
 
   // Get V0 hits. The eta values are calculated with respect to the
   // primary vertex of the collision(?)
-  AliAnalysisTaskValidation::Tracks GetV0hits() const;
+  AliForwardTaskValidation::Tracks GetV0hits() const;
 
   // Get SPD tracklets. Note that tracklets have no pt resolution; pt is set to 0!
-  AliAnalysisTaskValidation::Tracks GetTracklets() const;
+  AliForwardTaskValidation::Tracks GetTracklets() const;
 
   // Get SPD clusters. Note that closters have no pt resolution; pt is set to 0!
-  AliAnalysisTaskValidation::Tracks GetSPDclusters() const;
+  AliForwardTaskValidation::Tracks GetSPDclusters() const;
 
   // Get central barrel tracks
-  AliAnalysisTaskValidation::Tracks GetTracks();
+  AliForwardTaskValidation::Tracks GetTracks();
 
   // Get all MC truth track associated with this event. The filtering
   // of these tracks is done in this function.
   // This function is `Fatal` if no MC tracks are found
-  AliAnalysisTaskValidation::Tracks GetMCTruthTracks();
+  AliForwardTaskValidation::Tracks GetMCTruthTracks();
 
  protected:
   /// The Holy Grail: Is this a valid event? To be read be following tasks
   Bool_t fIsValidEvent;
   /// Vector with all the event validators as enums. Can be set by the
   /// user when setting up the task
-  std::vector<AliAnalysisTaskValidation::EventValidation> fEventValidators;
+  std::vector<AliForwardTaskValidation::EventValidation> fEventValidators;
 
   /// Vector with all the _track_ validators as enums. Can be set by the
   /// user when setting up the task
-  std::vector<AliAnalysisTaskValidation::TrackValidation> fTrackValidators;
+  std::vector<AliForwardTaskValidation::TrackValidation> fTrackValidators;
 
   void UserCreateOutputObjects();
   TList *fOutputList;  //!
@@ -135,6 +133,7 @@ class AliAnalysisTaskValidation : public AliAnalysisTaskSE {
   Bool_t NoCut() {return true;};
   // Check if the given event is an aod event
   Bool_t IsAODEvent();
+  Bool_t AcceptTrigger(AliVEvent::EOfflineTriggerTypes TriggerType);
   /// Check if the current event has a FMD object
   Bool_t HasFMD();
   /// Check if the current event has any counts in the FMD
@@ -166,6 +165,6 @@ class AliAnalysisTaskValidation : public AliAnalysisTaskSE {
   TH2 *fFMDV0C; //!
   TH2 *fFMDV0C_post; //!
 
-  ClassDef(AliAnalysisTaskValidation, 1);
+  ClassDef(AliForwardTaskValidation, 1);
 };
 #endif

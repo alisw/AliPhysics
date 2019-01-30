@@ -84,7 +84,7 @@ AliForwardNUATask::AliForwardNUATask() : AliAnalysisTaskSE(),
   //  Parameters:
   //   name: Name of task
   //
-  DefineInput(1, AliAnalysisTaskValidation::Class());
+  DefineInput(1, AliForwardTaskValidation::Class());
 
     DefineOutput(1, TList::Class());
   }
@@ -136,7 +136,7 @@ void AliForwardNUATask::UserExec(Option_t *)
   //   option: Not used
   //
   // Get the event validation object
-  AliAnalysisTaskValidation* ev_val = dynamic_cast<AliAnalysisTaskValidation*>(this->GetInputData(1));
+  AliForwardTaskValidation* ev_val = dynamic_cast<AliForwardTaskValidation*>(this->GetInputData(1));
 
   fUtil.fevent = fInputEvent;
 

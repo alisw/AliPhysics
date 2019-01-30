@@ -41,7 +41,7 @@ include_directories(${ROOT_INCLUDE_DIRS}
 # Sources - alphabetical order
 set(SRCS
   AliForwardSettings.cxx
-  AliAnalysisTaskValidation.cxx
+  AliForwardTaskValidation.cxx
   AliForwardFlowUtil.cxx
   AliForwardNUATask.cxx
   AliForwardNUETask.cxx

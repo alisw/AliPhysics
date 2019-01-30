@@ -23,13 +23,13 @@
 #include "AliInputEventHandler.h"
 
 #include "AliForwardSecondariesTask.h"
-#include "AliAnalysisTaskValidation.h"
+#include "AliForwardTaskValidation.h"
 
 using std::cout;
 using std::endl;
 
 
-AliAnalysisTaskValidation::AliAnalysisTaskValidation()
+AliForwardTaskValidation::AliForwardTaskValidation()
   : AliAnalysisTaskSE(),
     fIsValidEvent(false),
     fEventValidators(),
@@ -48,7 +48,7 @@ AliAnalysisTaskValidation::AliAnalysisTaskValidation()
 {
 }
 
-AliAnalysisTaskValidation::AliAnalysisTaskValidation(const char *name, bool is_reconstructed)
+AliForwardTaskValidation::AliForwardTaskValidation(const char *name, bool is_reconstructed)
   : AliAnalysisTaskSE(name),
     fIsValidEvent(false),
     fEventValidators(),
@@ -97,13 +97,13 @@ AliAnalysisTaskValidation::AliAnalysisTaskValidation(const char *name, bool is_r
   fEventCuts.fPileUpCutMV = true;
 }
 
-Bool_t AliAnalysisTaskValidation::AcceptTrigger(AliVEvent::EOfflineTriggerTypes TriggerType) {
+Bool_t AliForwardTaskValidation::AcceptTrigger(AliVEvent::EOfflineTriggerTypes TriggerType) {
   UInt_t fSelMask = ((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected();
   return fSelMask&TriggerType;
 };
 
 
-AliAnalysisTaskValidation* AliAnalysisTaskValidation::ConnectTask(const char *suffix,
+AliForwardTaskValidation* AliForwardTaskValidation::ConnectTask(const char *suffix,
 								  bool is_reconstructed) {
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
   if (!mgr) {
@@ -119,11 +119,11 @@ AliAnalysisTaskValidation* AliAnalysisTaskValidation::ConnectTask(const char *su
 
   AliAnalysisDataContainer *cExchange =
     mgr->CreateContainer("event_selection_xchange",
-			 AliAnalysisTaskValidation::Class(),
+			 AliForwardTaskValidation::Class(),
 			 AliAnalysisManager::kExchangeContainer,
 			 Form("%s", mgr->GetCommonFileName()));
 
-  auto *taskValidation = new AliAnalysisTaskValidation("TaskValidation", is_reconstructed);
+  auto *taskValidation = new AliForwardTaskValidation("TaskValidation", is_reconstructed);
   if (!taskValidation) {
     ::Error("CreateTasks", "Failed to add task!");
     return NULL;
@@ -140,12 +140,12 @@ AliAnalysisTaskValidation* AliAnalysisTaskValidation::ConnectTask(const char *su
   return taskValidation;
 }
 
-AliAnalysisDataContainer* AliAnalysisTaskValidation::GetExchangeContainter() {
+AliAnalysisDataContainer* AliForwardTaskValidation::GetExchangeContainter() {
   // This is the container defined in the ConnectTask function
   return this->GetOutputSlot(2)->GetContainer();
 }
 
-void AliAnalysisTaskValidation::CreateQAHistograms(TList* outlist) {
+void AliForwardTaskValidation::CreateQAHistograms(TList* outlist) {
   /// Event discard flow histogram
   this->fQA_event_discard_flow = new TH1F("qa_discard_flow",
 					  "QA event discard flow",
@@ -211,7 +211,7 @@ void AliAnalysisTaskValidation::CreateQAHistograms(TList* outlist) {
   outlist->Add(this->fQA_track_discard_flow);
 }
 
-void AliAnalysisTaskValidation::UserCreateOutputObjects() {
+void AliForwardTaskValidation::UserCreateOutputObjects() {
   // Stop right here if there are no Validators to work with
   if (this->fEventValidators.size() == 0) {
     AliFatal("No event validators specified!");
@@ -254,7 +254,7 @@ void AliAnalysisTaskValidation::UserCreateOutputObjects() {
   // I.E.: Not PostData(2, this);
 }
 
-void AliAnalysisTaskValidation::UserExec(Option_t *)
+void AliForwardTaskValidation::UserExec(Option_t *)
 {
   this->fIsValidEvent = true;
   for (UInt_t idx = 0; idx < this->fEventValidators.size(); idx++) {
@@ -300,11 +300,11 @@ void AliAnalysisTaskValidation::UserExec(Option_t *)
   PostData(2, this);
 }
 
-Bool_t AliAnalysisTaskValidation::IsAODEvent() {
+Bool_t AliForwardTaskValidation::IsAODEvent() {
   return dynamic_cast<AliAODEvent*>(this->InputEvent()) ? true : false;
 }
 
-Bool_t AliAnalysisTaskValidation::HasFMD() {
+Bool_t AliForwardTaskValidation::HasFMD() {
   AliAODEvent* aod = dynamic_cast<AliAODEvent*>(this->InputEvent());
   AliAODForwardMult* aodForward =
     dynamic_cast<AliAODForwardMult*>(aod->FindListObject("Forward"));
@@ -314,25 +314,25 @@ Bool_t AliAnalysisTaskValidation::HasFMD() {
   return true;
 }
 
-Bool_t AliAnalysisTaskValidation::HasEntriesFMD() {
+Bool_t AliForwardTaskValidation::HasEntriesFMD() {
   if (this->HasFMD() && this->GetFMDhits().size() > 0) {
     return true;
   }
   return false;
 }
 
-Bool_t AliAnalysisTaskValidation::HasEntriesV0() {
+Bool_t AliForwardTaskValidation::HasEntriesV0() {
   if (this->GetV0hits().size() > 0) {
     return true;
   }
   return false;
 }
 
-Bool_t AliAnalysisTaskValidation::PassesAliEventCuts() {
+Bool_t AliForwardTaskValidation::PassesAliEventCuts() {
   return this->fEventCuts.AcceptEvent(this->InputEvent());
 }
 
-Bool_t AliAnalysisTaskValidation::PassesFMDV0CorrelatioCut(Bool_t fill_qa) {
+Bool_t AliForwardTaskValidation::PassesFMDV0CorrelatioCut(Bool_t fill_qa) {
   // Overlap regions between the two detectors
   // Float_t fmd_v0a_overlap[2] = {2.8, 5.03};
   // Float_t fmd_v0c_overlap[2] = {-3.4, -2.01};
@@ -342,22 +342,22 @@ Bool_t AliAnalysisTaskValidation::PassesFMDV0CorrelatioCut(Bool_t fill_qa) {
   // Calculate hits on each detector in overlap region
   Float_t nV0A_hits =
     std::accumulate(v0hits.begin(), v0hits.end(), 0,
-		    [](Float_t a, AliAnalysisTaskValidation::Track t) {
+		    [](Float_t a, AliForwardTaskValidation::Track t) {
 		      return a + ((2.8 < t.eta && t.eta < 5.03) ? t.weight : 0.0f);
 		    });
   Float_t nFMD_fwd_hits =
     std::accumulate(fmdhits.begin(), fmdhits.end(), 0,
-		    [](Float_t a, AliAnalysisTaskValidation::Track t) {
+		    [](Float_t a, AliForwardTaskValidation::Track t) {
 		      return a + ((2.8 < t.eta && t.eta < 5.03) ? t.weight : 0.0f);
 		    });
   Float_t nV0C_hits =
     std::accumulate(v0hits.begin(), v0hits.end(), 0,
-		    [](Float_t a, AliAnalysisTaskValidation::Track t) {
+		    [](Float_t a, AliForwardTaskValidation::Track t) {
 		      return a + ((-3.4 < t.eta && t.eta < 2.01) ? t.weight : 0.0f);
 		    });
   Float_t nFMD_bwd_hits =
     std::accumulate(fmdhits.begin(), fmdhits.end(), 0,
-		    [](Float_t a, AliAnalysisTaskValidation::Track t) {
+		    [](Float_t a, AliForwardTaskValidation::Track t) {
 		      return a + ((-3.4 < t.eta && t.eta < 2.01) ? t.weight : 0.0f);
 		    });
   if (fill_qa) {
@@ -380,13 +380,13 @@ Bool_t AliAnalysisTaskValidation::PassesFMDV0CorrelatioCut(Bool_t fill_qa) {
   return true;
 }
 
-Bool_t AliAnalysisTaskValidation::HasMultSelection() {
+Bool_t AliForwardTaskValidation::HasMultSelection() {
   return
     dynamic_cast< AliMultSelection* >(InputEvent()->FindListObject("MultSelection")) ?
     true : false;
 }
 
-Bool_t AliAnalysisTaskValidation::HasValidVertex() {
+Bool_t AliForwardTaskValidation::HasValidVertex() {
   if (!this->InputEvent()->GetPrimaryVertex()
       || !this->InputEvent()->GetPrimaryVertex()->GetZ()) {
     return false;
@@ -395,7 +395,7 @@ Bool_t AliAnalysisTaskValidation::HasValidVertex() {
   }
 }
 
-AliAnalysisTaskValidation::Tracks AliAnalysisTaskValidation::GetFMDhits() const {
+AliForwardTaskValidation::Tracks AliForwardTaskValidation::GetFMDhits() const {
     // Relies on the event being vaild (no extra checks if object exists done here)
   AliAODForwardMult* aodForward =
     static_cast<AliAODForwardMult*>(fInputEvent->FindListObject("Forward"));
@@ -418,7 +418,7 @@ AliAnalysisTaskValidation::Tracks AliAnalysisTaskValidation::GetFMDhits() const 
       Float_t mostProbableN = d2Ndetadphi.GetBinContent(iEta, iPhi);
       if (mostProbableN > 0) {
 	Float_t phi = d2Ndetadphi.GetYaxis()->GetBinCenter(iPhi);
-	ret_vector.push_back(AliAnalysisTaskValidation::Track(eta, phi, pt, mostProbableN));
+	ret_vector.push_back(AliForwardTaskValidation::Track(eta, phi, pt, mostProbableN));
       }
     }
   }
@@ -441,7 +441,7 @@ AliAnalysisTaskValidation::Tracks AliAnalysisTaskValidation::GetFMDhits() const 
   return ret_vector;
 }
 
-AliAnalysisTaskValidation::Tracks AliAnalysisTaskValidation::GetV0hits() const {
+AliForwardTaskValidation::Tracks AliForwardTaskValidation::GetV0hits() const {
   // Relies on the event being vaild (no extra checks if object exists done here)
   Tracks ret_vector;
   AliVVZERO* vzero = this->InputEvent()->GetVZEROData();
@@ -455,13 +455,13 @@ AliAnalysisTaskValidation::Tracks AliAnalysisTaskValidation::GetV0hits() const {
       Float_t eta = 0.5 * (vzero->GetVZEROEtaMin(ich) + vzero->GetVZEROEtaMax(ich));
       Float_t phi = vzero->GetVZEROAvgPhi(ich);
       ret_vector.push_back(
-	AliAnalysisTaskValidation::Track(eta, AliForwardSecondariesTask::Wrap02pi(phi), pt, amp));
+	AliForwardTaskValidation::Track(eta, AliForwardSecondariesTask::Wrap02pi(phi), pt, amp));
     }
   }
   return ret_vector;
 }
 
-AliAnalysisTaskValidation::Tracks AliAnalysisTaskValidation::GetTracks() {
+AliForwardTaskValidation::Tracks AliForwardTaskValidation::GetTracks() {
   auto in_tracks = this->GetAllCentralBarrelTracks();
   Tracks out_tracks;
   for (auto obj: *in_tracks) {
@@ -488,7 +488,7 @@ AliAnalysisTaskValidation::Tracks AliAnalysisTaskValidation::GetTracks() {
     if (track_valid) {
       Double_t weight = 1.0;
       out_tracks
-	.push_back(AliAnalysisTaskValidation::Track(tr->Eta(),
+	.push_back(AliForwardTaskValidation::Track(tr->Eta(),
 						    AliForwardSecondariesTask::Wrap02pi(tr->Phi()),
 						    tr->Pt(),
 						    weight));
@@ -498,9 +498,9 @@ AliAnalysisTaskValidation::Tracks AliAnalysisTaskValidation::GetTracks() {
   return out_tracks;
 }
 
-AliAnalysisTaskValidation::Tracks AliAnalysisTaskValidation::GetTracklets() const {
+AliForwardTaskValidation::Tracks AliForwardTaskValidation::GetTracklets() const {
   const Double_t dummy_pt = 0;
-  AliAnalysisTaskValidation::Tracks ret_vector;
+  AliForwardTaskValidation::Tracks ret_vector;
 
   // Using the aptly named parent class AliVMultiplicity
   AliVMultiplicity* mult = this->fInputEvent->GetMultiplicity();
@@ -518,12 +518,12 @@ AliAnalysisTaskValidation::Tracks AliAnalysisTaskValidation::GetTracklets() cons
       continue;
     }
     auto phi   = mult->GetPhi(i);
-    ret_vector.push_back(AliAnalysisTaskValidation::Track(eta, phi, dummy_pt, 1));
+    ret_vector.push_back(AliForwardTaskValidation::Track(eta, phi, dummy_pt, 1));
   }
   return ret_vector;
 }
 
-AliAnalysisTaskValidation::Tracks AliAnalysisTaskValidation::GetSPDclusters() const {
+AliForwardTaskValidation::Tracks AliForwardTaskValidation::GetSPDclusters() const {
   // Relies on the event being vaild (no extra checks if object exists done here)
   AliAODCentralMult* aodcmult = static_cast<AliAODCentralMult*>
     (fInputEvent->FindListObject("CentralClusters")); // Shape of d2Ndetadphi: 200, -4, 6, 20, 0, 2pi
@@ -531,7 +531,7 @@ AliAnalysisTaskValidation::Tracks AliAnalysisTaskValidation::GetSPDclusters() co
   const Int_t nEta = d2Ndetadphi.GetXaxis()->GetNbins();
   const Int_t nPhi = d2Ndetadphi.GetYaxis()->GetNbins();
   const Double_t pt = 0;
-  AliAnalysisTaskValidation::Tracks ret_vector;
+  AliForwardTaskValidation::Tracks ret_vector;
 
   for (Int_t iEta = 1; iEta <= nEta; iEta++) {
     Int_t valid = Int_t(d2Ndetadphi.GetBinContent(iEta, 0));
@@ -549,7 +549,7 @@ AliAnalysisTaskValidation::Tracks AliAnalysisTaskValidation::GetSPDclusters() co
       Float_t mostProbableN = d2Ndetadphi.GetBinContent(iEta, iPhi);
       if (mostProbableN > 0) {
 	Float_t phi = d2Ndetadphi.GetYaxis()->GetBinCenter(iPhi);
-	ret_vector.push_back(AliAnalysisTaskValidation::Track(eta, phi, pt, mostProbableN));
+	ret_vector.push_back(AliForwardTaskValidation::Track(eta, phi, pt, mostProbableN));
       }
     }
   }
@@ -560,14 +560,14 @@ AliAnalysisTaskValidation::Tracks AliAnalysisTaskValidation::GetSPDclusters() co
   return ret_vector;
 }
 
-TClonesArray* AliAnalysisTaskValidation::GetAllCentralBarrelTracks() {
+TClonesArray* AliForwardTaskValidation::GetAllCentralBarrelTracks() {
   // If we are dealing with an ESD event, we have to have an AOD handler as well!
   // We get all the particles/tracks from this AOD handler.
   AliAODEvent* aodEvent = dynamic_cast< AliAODEvent* >(this->InputEvent());
   return aodEvent->GetTracks();
 }
 
-TClonesArray* AliAnalysisTaskValidation::GetAllMCTruthTracksAsTClonesArray() {
+TClonesArray* AliForwardTaskValidation::GetAllMCTruthTracksAsTClonesArray() {
   // If we are dealing with an ESD event, we have to have an AOD handler as well!
   // We get all the particles/tracks from this AOD handler.
   auto aodEvent = dynamic_cast< AliAODEvent* >(this->InputEvent());
@@ -582,8 +582,8 @@ TClonesArray* AliAnalysisTaskValidation::GetAllMCTruthTracksAsTClonesArray() {
   return tr_arr;
 }
 
-AliAnalysisTaskValidation::Tracks AliAnalysisTaskValidation::GetMCTruthTracks() {
-  AliAnalysisTaskValidation::Tracks ret_vector;
+AliForwardTaskValidation::Tracks AliForwardTaskValidation::GetMCTruthTracks() {
+  AliForwardTaskValidation::Tracks ret_vector;
   if (this->IsAODEvent()) {
     auto mc_tracks = this->GetAllMCTruthTracksAsTClonesArray();
     // Avoid reallocation of the vector in the loop
@@ -594,7 +594,7 @@ AliAnalysisTaskValidation::Tracks AliAnalysisTaskValidation::GetMCTruthTracks() 
     while ((mc_tr = static_cast<AliAODMCParticle*>(next_tr()))) {
       if (!mc_tr->IsPrimary()) continue;
       if (mc_tr->Charge() == 0) continue;
-      auto tr = AliAnalysisTaskValidation::Track(mc_tr->Eta(), mc_tr->Phi(), mc_tr->Pt(), weight);
+      auto tr = AliForwardTaskValidation::Track(mc_tr->Eta(), mc_tr->Phi(), mc_tr->Pt(), weight);
       ret_vector.push_back(tr);
     }
   } else { // ESD event
@@ -610,7 +610,7 @@ AliAnalysisTaskValidation::Tracks AliAnalysisTaskValidation::GetMCTruthTracks() 
       if (!mcEvent->Stack()->IsPhysicalPrimary(mc_p->GetLabel())) continue;
       if (mc_p->Charge() == 0) continue;
       auto weight = 1;
-      auto tr = AliAnalysisTaskValidation::Track(mc_p->Eta(), mc_p->Phi(), mc_p->Pt(), weight);
+      auto tr = AliForwardTaskValidation::Track(mc_p->Eta(), mc_p->Phi(), mc_p->Pt(), weight);
       ret_vector.push_back(tr);
       valid++;
     }
@@ -619,7 +619,7 @@ AliAnalysisTaskValidation::Tracks AliAnalysisTaskValidation::GetMCTruthTracks() 
   return ret_vector;
 }
 
-Bool_t AliAnalysisTaskValidation::UserNotify() {
+Bool_t AliForwardTaskValidation::UserNotify() {
   // If this is MC we have to read all the branches
   // Also, we should check for other tasks here!
   if (!this->MCEvent()) {
