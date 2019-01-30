@@ -75,7 +75,9 @@
 #pragma link C++ class AliAnalysisPIDParticle+;
 #pragma link C++ class AliAnalysisPIDTrack+;
 #pragma link C++ class AliAnalysisPIDV0+;
+#pragma link C++ class AliAnalysisPIDCascade+;
 #pragma link C++ class AliAnalysisTaskTPCTOFPID+;
+#pragma link C++ class AliAnalysisTaskTPCTOFCascade+;
 
 #pragma link C++ class AliAnalysisTaskSEITSsaSpectraMultiplicity+;
 
