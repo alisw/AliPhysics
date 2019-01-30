@@ -504,8 +504,8 @@ void AliReducedVarManager::FillEventInfo(BASEEVENT* baseEvent, Float_t* values, 
   values[kTimeStamp]            = event->TimeStamp();
   Int_t timeSOR = 0; Int_t timeEOR = 0;
   if(fgUsedVars[kTimeRelativeSOR] || fgUsedVars[kTimeRelativeSORfraction]) {
-     timeSOR = fgRunTimeStart->GetBinContent(fgRunTimeStart->GetXaxis()->FindBin(Form("%d",fgCurrentRunNumber)));
-     timeEOR = fgRunTimeEnd->GetBinContent(fgRunTimeEnd->GetXaxis()->FindBin(Form("%d",fgCurrentRunNumber)));
+     timeSOR = (fgRunTimeStart ? fgRunTimeStart->GetBinContent(fgRunTimeStart->GetXaxis()->FindBin(Form("%d",fgCurrentRunNumber))) : 0);
+     timeEOR = (fgRunTimeEnd ? fgRunTimeEnd->GetBinContent(fgRunTimeEnd->GetXaxis()->FindBin(Form("%d",fgCurrentRunNumber))) : 0);
   }
   if(fgUsedVars[kTimeRelativeSOR]) {
      values[kTimeRelativeSOR] = Double_t(event->TimeStamp() - timeSOR) / 60.;     // in minutes
@@ -513,7 +513,7 @@ void AliReducedVarManager::FillEventInfo(BASEEVENT* baseEvent, Float_t* values, 
   if(fgUsedVars[kTimeRelativeSORfraction] && 
      (values[kRunTimeEnd]-values[kRunTimeStart])>1.)   // the run should be longer than 1 second ... 
      values[kTimeRelativeSORfraction] = (event->TimeStamp() - timeSOR) / (timeEOR - timeSOR);
-  if(fgRunInstLumi) {
+  if(fgRunInstLumi && fgRunInstLumi) {
      values[kInstLumi]          = fgRunInstLumi->Eval(event->TimeStamp()); 
   }
   values[kEventType]            = event->EventType();
@@ -548,6 +548,7 @@ void AliReducedVarManager::FillEventInfo(BASEEVENT* baseEvent, Float_t* values, 
   
   for(Int_t iflag=0;iflag<32;++iflag) 
     values[kNTracksPerTrackingStatus+iflag] = event->TracksPerTrackingFlag(iflag);
+  values[kNTracksPerTrackingStatus+kTPCout] = event->TracksWithTPCout();
   
   // set the fgUsedVars to true as these might have been set to false in the previous event
   fgUsedVars[kNTracksTPCoutVsITSout] = kTRUE;
@@ -583,7 +584,15 @@ void AliReducedVarManager::FillEventInfo(BASEEVENT* baseEvent, Float_t* values, 
 
   values[ kVZEROATotalMult ] = event->MultVZEROA();
   values[ kVZEROCTotalMult ] = event->MultVZEROC();
-  values[ kVZEROTotalMult  ]  = event->MultVZERO();
+  values[ kVZEROTotalMult  ] = event->MultVZERO();
+  
+  values[ kVZEROATotalMultFromChannels ] = event->MultVZEROA(kTRUE);
+  values[ kVZEROCTotalMultFromChannels ] = event->MultVZEROC(kTRUE);
+  values[ kVZEROTotalMultFromChannels  ] = event->MultVZERO(kTRUE);
+  if(TMath::Abs(values[kVZEROTotalMultFromChannels])>1.0e-6) 
+     values[kVZEROTPCoutDiff] = (values[kVZEROTotalMultFromChannels]-values[kNTracksPerTrackingStatus+kTPCout]) / (values[kVZEROTotalMultFromChannels]);
+  else
+     values[kVZEROTPCoutDiff] = 0.0;
   
   values[ kVZEROACTotalMult ] = event->MultVZEROA() + event->MultVZEROC();
 
@@ -754,7 +763,7 @@ void AliReducedVarManager::FillEventInfo(BASEEVENT* baseEvent, Float_t* values, 
      values[kNTracksTPCoutFromPileup] = values[kNTracksPerTrackingStatus+kTPCout] - (-2.55+TMath::Sqrt(2.55*2.55+4.0e-5*values[kVZEROTotalMult])) / 2.0e-5;
   else fgUsedVars[kNTracksTPCoutFromPileup] = kFALSE;
   
-  if(!eventF && (fgUsedVars[kVZEROQvecX+0*6+1] || fgUsedVars[kVZEROQvecY+0*6+1] || fgUsedVars[kVZERORP+0*6+1])) {
+  if(fgUsedVars[kVZEROQvecX+0*6+1] || fgUsedVars[kVZEROQvecY+0*6+1] || fgUsedVars[kVZERORP+0*6+1]) {
     Double_t qvecVZEROA[EVENTPLANE::fgkNMaxHarmonics][2] = {{0.0}};
     Double_t qvecVZEROC[EVENTPLANE::fgkNMaxHarmonics][2] = {{0.0}};
     if(fgOptionCalibrateVZEROqVec && fgAvgVZEROChannelMult[0]) {
@@ -762,7 +771,12 @@ void AliReducedVarManager::FillEventInfo(BASEEVENT* baseEvent, Float_t* values, 
       for(Int_t iCh=0; iCh<64; ++iCh) {
          if(event->MultChannelVZERO(iCh)>=fgkVZEROminMult) {
             Float_t avMult = fgAvgVZEROChannelMult[iCh]->GetBinContent(fgAvgVZEROChannelMult[iCh]->FindBin(event->Vertex(2), event->CentralitySPD()));
-            calibVZEROMult[iCh] = event->MultChannelVZERO(iCh) / (avMult>1.0e-6 ? avMult : 1.0);
+            Int_t refCh = iCh-(iCh%8);
+            Float_t refMult=0;
+            if(iCh==refCh)
+                refMult=avMult;
+            calibVZEROMult[iCh] = event->MultChannelVZERO(iCh) / (avMult>1.0e-6 ? avMult : 1.0)*refMult;
+            values[kVZEROChannelMult+iCh]=calibVZEROMult[iCh];
          }
       }
       event->GetVZEROQvector(qvecVZEROA, EVENTPLANE::kVZEROA, calibVZEROMult);
@@ -856,16 +870,16 @@ void AliReducedVarManager::FillEventInfo(BASEEVENT* baseEvent, Float_t* values, 
   }   // end loop over harmonics
   
   if(eventF) {
-    for(Int_t ih=0; ih<6; ++ih) {
-      // VZERO event plane variables
-      values[kVZEROQvecX+2*6+ih] = 0.0;
-      values[kVZEROQvecY+2*6+ih] = 0.0;
-      values[kVZERORP   +2*6+ih] = 0.0;
-      for(Int_t iVZEROside=0; iVZEROside<2; ++iVZEROside) {
-        values[kVZEROQvecX+iVZEROside*6+ih] = eventF->Qx(EVENTPLANE::kVZEROA+iVZEROside, ih+1);
-        values[kVZEROQvecY+iVZEROside*6+ih] = eventF->Qy(EVENTPLANE::kVZEROA+iVZEROside, ih+1);
-        if(fgUsedVars[kVZERORP+iVZEROside*6+ih]) 
-	  values[kVZERORP+iVZEROside*6+ih] = eventF->EventPlane(EVENTPLANE::kVZEROA+iVZEROside, ih+1);
+   for(Int_t ih=0; ih<6; ++ih) {
+     // VZERO event plane variables
+     values[kVZEROQvecX+2*6+ih] = 0.0;
+     values[kVZEROQvecY+2*6+ih] = 0.0;
+     values[kVZERORP   +2*6+ih] = 0.0;
+     for(Int_t iVZEROside=0; iVZEROside<2; ++iVZEROside) {
+       values[kVZEROQvecX+iVZEROside*6+ih] = eventF->Qx(EVENTPLANE::kVZEROA+iVZEROside, ih+1);
+       values[kVZEROQvecY+iVZEROside*6+ih] = eventF->Qy(EVENTPLANE::kVZEROA+iVZEROside, ih+1);
+       if(fgUsedVars[kVZERORP+iVZEROside*6+ih]) 
+        values[kVZERORP+iVZEROside*6+ih] = eventF->EventPlane(EVENTPLANE::kVZEROA+iVZEROside, ih+1);
 	if(fgUsedVars[kVZEROQvecX+2*6+ih])
 	  values[kVZEROQvecX+2*6+ih] += values[kVZEROQvecX+iVZEROside*6+ih];
 	if(fgUsedVars[kVZEROQvecY+2*6+ih])
@@ -962,7 +976,7 @@ void AliReducedVarManager::FillEventInfo(BASEEVENT* baseEvent, Float_t* values, 
 	values[kVZEROflowV2TPC+ich] = values[kVZEROChannelMult+ich]*
                                       TMath::Cos(2.0*DeltaPhi(vzeroChannelPhi[ich%8],values[kTPCRP+1]));
     } 
-  }  // end if (eventF)
+  }  // end if(eventF)
     
   for(Int_t izdc=0;izdc<10;++izdc) values[kZDCnEnergyCh+izdc] = event->EnergyZDCnTree(izdc);
   for(Int_t izdc=0;izdc<10;++izdc) values[kZDCpEnergyCh+izdc] = event->EnergyZDCpTree(izdc);
@@ -2480,7 +2494,9 @@ void AliReducedVarManager::SetDefaultVarNames() {
     }
   }
 
-  
+  fgVariableNames[kVZEROATotalMultFromChannels] = "VZERO-A total multiplicity"; fgVariableUnits[kVZEROATotalMultFromChannels] = "";
+  fgVariableNames[kVZEROCTotalMultFromChannels] = "VZERO-C total multiplicity"; fgVariableUnits[kVZEROCTotalMultFromChannels] = "";
+  fgVariableNames[kVZEROTotalMultFromChannels] = "VZERO total multiplicity"; fgVariableUnits[kVZEROTotalMultFromChannels] = "";
 
   for(Int_t il=0;il<2;++il) {
     fgVariableNames[kSPDFiredChips+il] = Form("Fired chips in SPD layer %d", il+1); 
