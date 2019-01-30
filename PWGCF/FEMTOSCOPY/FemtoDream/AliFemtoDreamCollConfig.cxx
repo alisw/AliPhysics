@@ -103,6 +103,8 @@ AliFemtoDreamCollConfig::AliFemtoDreamCollConfig(const char *name,
       fMinK_rel(nullptr),
       fMaxK_rel(nullptr),
       fCentBins(nullptr),
+      fmTBins(nullptr),
+      fWhichPairs(nullptr),
       fMixingDepth(0),
       fSpinningDepth(0),
       fkTCentrality(false),
@@ -352,10 +354,58 @@ void AliFemtoDreamCollConfig::SetExtendedQAPairs(std::vector<int> whichPairs) {
 std::vector<unsigned int> AliFemtoDreamCollConfig::GetWhichPairs() {
   std::vector<unsigned int> Pairs;
   float out = 0;
-  fWhichPairs->SetBranchAddress("DoPair", &out);
-  for (int iBins = 0; iBins < fWhichPairs->GetEntries(); ++iBins) {
-    fWhichPairs->GetEntry(iBins);
-    Pairs.push_back(TMath::Abs(out));
+  if (fWhichPairs->GetEntries() == 0) {
+    AliWarning("==========================================");
+    AliWarning("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
+    AliWarning("No Pair QA Specified, setting all to true ");
+    AliWarning("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
+    AliWarning("==========================================");
+    for (int iQA = 0; iQA < this->GetNParticleCombinations(); ++iQA) {
+      Pairs.push_back(33);
+    }
+  } else if (fWhichPairs->GetEntries() != this->GetNParticleCombinations()) {
+    AliFatal("Not all Pairs have a specified QA Behaviour, terminating \n");
+  } else {
+    fWhichPairs->SetBranchAddress("DoPair", &out);
+    for (int iBins = 0; iBins < fWhichPairs->GetEntries(); ++iBins) {
+      fWhichPairs->GetEntry(iBins);
+      Pairs.push_back(TMath::Abs(out));
+    }
   }
   return Pairs;
+}
+
+std::vector<float> AliFemtoDreamCollConfig::GetStandardmTBins() {
+  std::vector<float> mTBins;
+  mTBins.push_back(0.8);
+  mTBins.push_back(1.2);
+  mTBins.push_back(2.0);
+  mTBins.push_back(4.5);
+  return mTBins;
+}
+
+std::vector<int> AliFemtoDreamCollConfig::GetStandardPairs() {
+  std::vector<int> pairs;
+  pairs.push_back(11);        // p p
+  pairs.push_back(0);         // p barp
+  pairs.push_back(12);        // p Lambda
+  pairs.push_back(0);         // p barLambda
+  pairs.push_back(0);         // p Xi
+  pairs.push_back(0);         // p barXi
+  pairs.push_back(11);        // barp barp
+  pairs.push_back(0);         // barp Lambda
+  pairs.push_back(12);        // barp barLambda
+  pairs.push_back(0);         // barp Xi
+  pairs.push_back(0);         // barp barXi
+  pairs.push_back(0);         // Lambda Lambda
+  pairs.push_back(0);         // Lambda barLambda
+  pairs.push_back(0);         // Lambda Xi
+  pairs.push_back(0);         // Lambda barXi
+  pairs.push_back(0);         // barLambda barLamb
+  pairs.push_back(0);         // barLambda Xi
+  pairs.push_back(0);         // barLambda barXi
+  pairs.push_back(0);         // Xi Xi
+  pairs.push_back(0);         // Xi barXi
+  pairs.push_back(0);         // barXi barXi
+  return pairs;
 }

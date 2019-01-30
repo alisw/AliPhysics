@@ -180,13 +180,14 @@ class AliFemtoDreamCollConfig : public TNamed {
   }
   ;
   int GetNParticleCombinations();
-
   std::vector<int> GetNBinsHist();
   std::vector<float> GetMinKRel();
   std::vector<float> GetMaxKRel();
   std::vector<float> GetCentBins();
   std::vector<float> GetmTBins();
   std::vector<unsigned int> GetWhichPairs();
+  std::vector<float> GetStandardmTBins();
+  std::vector<int> GetStandardPairs();
   int GetMixingDepth() {
     return fMixingDepth;
   }
@@ -240,9 +241,9 @@ class AliFemtoDreamCollConfig : public TNamed {
   bool fkTCentrality;           //
   bool fmTdEtadPhi;             //
   AliFemtoDreamEvent::MultEstimator fEst;  //
-  float fDeltaEtaMax;
-  float fDeltaPhiMax;
-  bool fDoDeltaEtaDeltaPhiCut;
+  float fDeltaEtaMax;           //
+  float fDeltaPhiMax;           //
+  bool fDoDeltaEtaDeltaPhiCut;  //
 
 ClassDef(AliFemtoDreamCollConfig,9)
   ;

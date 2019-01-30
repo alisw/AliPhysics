@@ -77,7 +77,6 @@ void AliFemtoDreamZVtxMultContainer::PairParticlesSE(
       bool fillHists = DoThisPair > 0 ? true : false;
       for (auto itPart1 = itSpec1->begin(); itPart1 != itSpec1->end();
           ++itPart1) {
-
         AliFemtoDreamBasePart part1 = *itPart1;
         std::vector<AliFemtoDreamBasePart>::iterator itPart2;
         if (itSpec1 == itSpec2) {
@@ -89,7 +88,6 @@ void AliFemtoDreamZVtxMultContainer::PairParticlesSE(
           AliFemtoDreamBasePart part2 = *itPart2;
           RelativeK = RelativePairMomentum(itPart1->GetMomentum(), *itPDGPar1,
                                            itPart2->GetMomentum(), *itPDGPar2);
-
           if (fillHists && ResultsHist->GetEtaPhiPlots()) {
             DeltaEtaDeltaPhi(HistCounter, part1, part2, true, ResultsHist,
                              RelativeK);
@@ -121,7 +119,6 @@ void AliFemtoDreamZVtxMultContainer::PairParticlesSE(
               continue;
             }
           }
-
           ResultsHist->FillSameEventDist(HistCounter, RelativeK);
           if (ResultsHist->GetDoMultBinning()) {
             ResultsHist->FillSameEventMultDist(HistCounter, iMult + 1,
@@ -408,7 +405,7 @@ float AliFemtoDreamZVtxMultContainer::ComputeDeltaPhi(
   std::vector<float> Phirad2 = part2.GetPhiAtRaidius().at(0);
   std::vector<float> radVector;
   float dphi = 999.f;
-  for (int iRad = 0; iRad < Phirad1.size(); ++iRad) {
+  for (unsigned int iRad = 0; iRad < Phirad1.size(); ++iRad) {
     float currentdphi = std::abs(Phirad1.at(iRad) - Phirad2.at(iRad));
     if (currentdphi < dphi)
       dphi = currentdphi;
