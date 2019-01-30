@@ -584,16 +584,16 @@ AliFemtoDreamCorrHists::AliFemtoDreamCorrHists(AliFemtoDreamCollConfig *conf,
                     "MERad_%i_Particle%d_Particle%d_DaugMix%d", iRad, iPar1,
                     iPar2, DaugIndex);
                 fRadiiEtaPhiSE[Counter][DaugIndex][iRad] = new TH2F(
-                    RadNameSE.Data(), RadNameSE.Data(), 200, 0, 0.4, 200, 0,
-                    0.4);
+                    RadNameSE.Data(), RadNameSE.Data(), 300, -0.15, 0.15, 400,
+                    -0.2, 0.2);
                 fRadiiEtaPhiSE[Counter][DaugIndex][iRad]->GetXaxis()->SetTitle(
                     "#Delta#eta");
                 fRadiiEtaPhiSE[Counter][DaugIndex][iRad]->GetYaxis()->SetTitle(
                     "#Delta#phi");
                 fPairQA[Counter]->Add(fRadiiEtaPhiSE[Counter][DaugIndex][iRad]);
                 fRadiiEtaPhiME[Counter][DaugIndex][iRad] = new TH2F(
-                    RadNameME.Data(), RadNameME.Data(), 200, 0, 0.4, 200, 0,
-                    0.4);
+                    RadNameME.Data(), RadNameME.Data(), 300, -0.15, 0.15, 400,
+                    -0.2, 0.2);
                 fRadiiEtaPhiME[Counter][DaugIndex][iRad]->GetXaxis()->SetTitle(
                     "#Delta#eta");
                 fRadiiEtaPhiME[Counter][DaugIndex][iRad]->GetYaxis()->SetTitle(
@@ -604,8 +604,8 @@ AliFemtoDreamCorrHists::AliFemtoDreamCorrHists(AliFemtoDreamCollConfig *conf,
                 RadNameME += "_smallK";
 
                 fRadiiEtaPhiSEsmallK[Counter][DaugIndex][iRad] = new TH2F(
-                    RadNameSE.Data(), RadNameSE.Data(), 200, 0, 0.4, 200, 0,
-                    0.4);
+                    RadNameSE.Data(), RadNameSE.Data(), 300, -0.15, 0.15, 400,
+                    -0.2, 0.2);
                 fRadiiEtaPhiSEsmallK[Counter][DaugIndex][iRad]->GetXaxis()
                     ->SetTitle("#Delta#eta");
                 fRadiiEtaPhiSEsmallK[Counter][DaugIndex][iRad]->GetYaxis()
@@ -613,8 +613,8 @@ AliFemtoDreamCorrHists::AliFemtoDreamCorrHists(AliFemtoDreamCollConfig *conf,
                 fPairQA[Counter]->Add(
                     fRadiiEtaPhiSEsmallK[Counter][DaugIndex][iRad]);
                 fRadiiEtaPhiMEsmallK[Counter][DaugIndex][iRad] = new TH2F(
-                    RadNameME.Data(), RadNameME.Data(), 200, 0, 0.4, 200, 0,
-                    0.4);
+                    RadNameME.Data(), RadNameME.Data(), 300, -0.15, 0.15, 400,
+                    -0.2, 0.2);
                 fRadiiEtaPhiMEsmallK[Counter][DaugIndex][iRad]->GetXaxis()
                     ->SetTitle("#Delta#eta");
                 fRadiiEtaPhiMEsmallK[Counter][DaugIndex][iRad]->GetYaxis()
