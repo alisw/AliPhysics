@@ -10,6 +10,7 @@
 #include "TLorentzVector.h"
 #include "TDatabasePDG.h"
 ClassImp(AliFemtoDreamPartContainer)
+static const float piHi = TMath::Pi();
 AliFemtoDreamZVtxMultContainer::AliFemtoDreamZVtxMultContainer()
     : fPartContainer(0),
       fPDGParticleSpecies(0),
@@ -348,6 +349,7 @@ void AliFemtoDreamZVtxMultContainer::DeltaEtaDeltaPhi(
   //this function only produces meaningful results for track with x Daughter
   //looking at this quantity makes only sense anyways for Track - Track not
   //for v0 - v0 ...
+
   unsigned int DoThisPair = fWhichPairs.at(Hist);
   unsigned int nDaug1 = (unsigned int) DoThisPair / 10;
   if (nDaug1 > 9) {
@@ -373,12 +375,17 @@ void AliFemtoDreamZVtxMultContainer::DeltaEtaDeltaPhi(
       } else {
         etaPar2 = eta2.at(iDaug2 + 1);
       }
-      float deta = TMath::Abs(etaPar1 - etaPar2);
+      float deta = etaPar1 - etaPar2;
       const int size =
           (PhiAtRad1.size() > phiAtRad2.size()) ?
               phiAtRad2.size() : PhiAtRad1.size();
       for (int iRad = 0; iRad < size; ++iRad) {
-        float dphi = TMath::Abs(PhiAtRad1.at(iRad) - phiAtRad2.at(iRad));
+        float dphi = PhiAtRad1.at(iRad) - phiAtRad2.at(iRad);
+        if (dphi > piHi ) {
+          dphi+=-piHi*2;
+        } else if (dphi < -piHi) {
+          dphi+=piHi*2;
+        }
         if (SEorME) {
           ResultsHist->FillEtaPhiAtRadiiSE(Hist, 3 * iDaug1 + iDaug2, iRad,
                                            dphi, deta, relk);
