@@ -1,120 +1,146 @@
 /**
  * @file   FTAddMyTask.C
  * @author Freja Thoresen <freja.thoresen@cern.ch>
- * 
- * @brief  Add Q-cummulant forward task to train 
- * 
- * 
+ *
+ * @brief  Add Q-cummulant forward task to train
+ *
+ *
  * @ingroup pwglf_forward_scripts_tasks
  */
-/** 
- * @defgroup pwglf_forward_flow Flow 
+/**
+ * @defgroup pwglf_forward_flow Flow
  *
- * Code to deal with flow 
+ * Code to deal with flow
  *
  * @ingroup pwglf_forward_topical
  */
-/** 
- * Add Flow task to train 
- * 
+/**
+ * Add Flow task to train
+ *
  * @ingroup pwglf_forward_flow
  */
-AliAnalysisTaskSE* AddTaskForwardFlowRun2()
+AliAnalysisTaskSE* AddTaskForwardFlowRun2( bool doNUA, bool makeFakeHoles, TString nua_file, UShort_t nua_mode, bool doetagap, Double_t gap, bool mc,  bool esd,bool prim_cen,bool prim_fwd , UInt_t tracktype, TString centrality,TString name1)
 {
-  Bool_t etagap = true;
-  Int_t mode = kRECON;
-  bool doNUA = true;
-
-
+  std::cout << "______________________________________________________________________________" << std::endl;
 
   std::cout << "AddTaskForwardFlowRun2" << std::endl;
 
   // --- Get analysis manager ----------------------------------------
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
-  if (!mgr) 
+  if (!mgr)
     Fatal("","No analysis manager to connect to.");
 
-  const char* name = Form("ForwardFlowQC");
+  TString name = name1;
+
   AliForwardFlowRun2Task* task = new AliForwardFlowRun2Task(name);
-  
-  TString resName = "awesome";
+  TString resName = "ForwardFlow";
 
-  task->fSettings.doNUA = doNUA;
-
-  if (task->fSettings.doNUA){
-
-    TString nua_filepath = std::getenv("NUA_FILE");
-    if (!nua_filepath) {
-      nua_filepath = "/home/thoresen/Documents/PhD/Analysis/nua.root"
-      std::cerr << "Environment variable 'NUA_FILE' not found (this should be a path to nua.root).\n";
-      std::cerr << "   Using default value: '" << nua_filepath << "'\n";
-    }
-    TFile *file = new TFile(nua_filepath);
-
-    file->GetObject("nuacentral", task->fSettings.nuacentral);   
-    task->fSettings.nuacentral->SetDirectory(0);
-    file->GetObject("nuaforward", task->fSettings.nuaforward);   
-    task->fSettings.nuaforward->SetDirectory(0);
-    file->Close(); 
-  }
-
-
-  if (etagap){
+  if (doetagap){
     // if etagap otherwise comment out, and it will be standard
     task->fSettings.fFlowFlags = task->fSettings.kEtaGap;
     task->fSettings.fNRefEtaBins = 1;
-    task->fSettings.gap = 0.5;
+    task->fSettings.gap = gap;
+    resName += "_etagap";
+    //resName += std::to_string(gap);
   }
   else {
     task->fSettings.fNRefEtaBins = 1; // eller skal det være et andet antal?
-  }
-  task->fSettings.fUseFMD = true;
-  // task->fSettings.fUseV0 = true;
-  // V0 has only 8 segments in phi
-  if (task->fSettings.fUseFMD) {
-    task->fSettings.fNPhiBins = 20;
-  } else if (task->fSettings.fUseV0) {
-    task->fSettings.fNPhiBins = 8;
-  }
-  
-  task->fSettings.fUseSPDtracklets = true;
-
-  task->fSettings.fZVtxAcceptanceLowEdge = -10;
-  task->fSettings.fZVtxAcceptanceUpEdge = 10;
-  task->fSettings.fNZvtxBins = 20;
-
-  // Remember to disable multselection framework if necessary!
-  task->fSettings.fMultEstimator = "V0M";// RefMult08; // "V0M" // "SPDTracklets";
-  // task->fSettings.fMultEstimator = task->fSettings.fMultEstimatorValidTracks;
-
-
-  if (mode == kRECON) {
-    AliAnalysisDataContainer *coutput_recon =
-    mgr->CreateContainer(resName,
-     TList::Class(),
-     AliAnalysisManager::kOutputContainer,
-     mgr->GetCommonFileName());
-    task->fSettings.fDataType = task->fSettings.kRECON;
-    mgr->AddTask(task);
-    mgr->ConnectInput(task, 0, mgr->GetCommonInputContainer());
-    mgr->ConnectOutput(task, 1, coutput_recon);
-  }
-  else if (mode == kTRUTH) {
-    AliAnalysisDataContainer *coutput_truth =
-    mgr->CreateContainer(resName,
-     TList::Class(),
-     AliAnalysisManager::kOutputContainer,
-     mgr->GetCommonFileName());
-
-    task->fSettings.fDataType = task->fSettings.kMCTRUTH;
-    mgr->AddTask(task);
-    mgr->ConnectInput(task, 0, mgr->GetCommonInputContainer());
-    mgr->ConnectOutput(task, 1, coutput_truth);
-  }
-  else {
-    ::Error("AddTaskForwardFlowRun2", "Invalid mode specified");
+    task->fSettings.gap = 0.0;
   }
 
+    if (makeFakeHoles){
+      task->fSettings.makeFakeHoles = kTRUE;
+      resName += "_fakeholes";
+    }
+
+  task->fSettings.use_primaries_cen = prim_cen;
+  if (mc) resName += (prim_cen ? "_primcen" : "_trcen");
+
+  task->fSettings.use_primaries_fwd = prim_fwd;
+  if (mc) resName += (prim_fwd ? "_primfwd" : "_trfwd");
+
+  task->fSettings.mc = mc;
+  task->fSettings.esd = esd;
+  std::cout << "Using tracktype = " << tracktype << std::endl;
+  if (tracktype == 0){
+    task->fSettings.fFlowFlags = task->fSettings.kSPD;
+    resName += "_SPD";
+  }
+  else{
+    task->fSettings.fFlowFlags = task->fSettings.kTPC;
+    if (tracktype == 768){
+      task->fSettings.tracktype = AliForwardSettings::kHybrid;
+      resName += "_hybrid";
+    }
+    else if (tracktype == 128){
+      task->fSettings.tracktype = AliForwardSettings::kTPCOnly;
+      resName += "_TPConly";
+    }
+    else if (tracktype == 32){
+      task->fSettings.tracktype = AliForwardSettings::kGlobal;
+      resName += "_global";
+    }
+    else if (tracktype == 64){
+      task->fSettings.tracktype = AliForwardSettings::kGlobalLoose;
+      resName += "_globalLoose";
+    }
+    else if (tracktype == 96){
+      task->fSettings.tracktype = AliForwardSettings::kGlobalComb;
+      resName += "_globalComb";
+    }
+    else{
+      std::cout << "INVALID TRACK TYPE FOR TPC" << std::endl;
+    }
+  }
+
+  task->fSettings.doNUA = doNUA;
+  if (task->fSettings.doNUA){
+      //TString nua_filepath = std::getenv("NUA_FILE");
+      //if (!nua_filepath) {
+    TString nua_filepath = "/home/thoresen/Documents/PhD/Analysis/nua.root";
+    // std::cerr << "Environment variable 'NUA_FILE' not found (this should be a path to nua.root).\n";
+    // std::cerr << "   Using default value: '" << nua_filepath << "'\n";
+    //}
+    TFile *file;
+    file = new TFile(nua_file);
+
+
+    if (nua_mode == AliForwardSettings::kInterpolate)
+      resName += "_NUA_interpolate";
+    if (nua_mode == AliForwardSettings::kFill)
+      resName += "_NUA_fill";
+    if (nua_mode == AliForwardSettings::kNormal)
+      resName += "_NUA_normal";
+
+    task->fSettings.nua_mode = nua_mode; // "V0M";// RefMult08; // "V0M" // "SPDTracklets";
+
+
+
+
+    file->GetObject("nuacentral", task->fSettings.nuacentral);
+    task->fSettings.nuacentral->SetDirectory(0);
+    file->GetObject("nuaforward", task->fSettings.nuaforward);
+    task->fSettings.nuaforward->SetDirectory(0);
+    file->Close();
+  }
+
+  resName += "_" + centrality;
+  if (mc) resName += "_mc";
+
+  task->fSettings.centrality_estimator = centrality; // "V0M";// RefMult08; // "V0M" // "SPDTracklets";
+  std::cout << "Container name: " << resName << std::endl;
+  //resName = "hej";
+  std::cout << "______________________________________________________________________________" << std::endl;
+
+  AliAnalysisDataContainer *coutput_recon =
+  mgr->CreateContainer(resName,
+   TList::Class(),
+   AliAnalysisManager::kOutputContainer,
+   mgr->GetCommonFileName());
+
+  mgr->AddTask(task);
+  mgr->ConnectInput(task, 0, mgr->GetCommonInputContainer());
+  mgr->ConnectOutput(task, 1, coutput_recon);
 
   return task;
 }
