@@ -17,4 +17,6 @@
 #pragma link C++ class AliVMERawStream+;
 #pragma link C++ class AliRawHLTManager+;
 #pragma link C++ class AliAltroRawStreamV3+;
+#pragma link C++ class AliReshuffleRawTreeHelper+;
+
 #endif
