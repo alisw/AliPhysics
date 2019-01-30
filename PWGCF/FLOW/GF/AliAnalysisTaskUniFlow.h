@@ -46,7 +46,7 @@ class AliAnalysisTaskUniFlow : public AliAnalysisTaskSE
       {
         public:
                       CorrTask(); // default ctor
-                      CorrTask(Bool_t doRFPs, Bool_t doPOIs, std::vector<Int_t> harms, std::vector<Double_t> gaps = {}); // actual ctor
+                      CorrTask(Bool_t doRFPs, Bool_t doPOIs, std::vector<Int_t> harms, std::vector<Double_t> gaps = std::vector<Double_t>()); // actual ctor
                       ~CorrTask() { fiHarm.clear(); fdGaps.clear(); }
 
           Bool_t      HasGap() const { return (Bool_t) fiNumGaps; }; // check if Gap
@@ -86,7 +86,7 @@ class AliAnalysisTaskUniFlow : public AliAnalysisTaskSE
       void                    SetProcessV0s(Bool_t use = kTRUE) { fProcessSpec[kK0s] = use; fProcessSpec[kLambda] = use; }
       void                    SetProcessPhi(Bool_t use = kTRUE) { fProcessSpec[kPhi] = use; }
       // flow related setters
-      void                    AddCorr(std::vector<Int_t> harms, std::vector<Double_t> gaps = {}, Bool_t doRFPs = kTRUE, Bool_t doPOIs = kTRUE) { fVecCorrTask.push_back(new CorrTask(doRFPs, doPOIs, harms, gaps)); }
+      void                    AddCorr(std::vector<Int_t> harms, std::vector<Double_t> gaps = std::vector<Double_t>(), Bool_t doRFPs = kTRUE, Bool_t doPOIs = kTRUE) { fVecCorrTask.push_back(new CorrTask(doRFPs, doPOIs, harms, gaps)); }
       void                    AddTwo(Int_t n1, Int_t n2, Bool_t refs = kTRUE, Bool_t pois = kTRUE) { AddCorr({n1,n2},{},refs,pois); }
       void                    AddTwoGap(Int_t n1, Int_t n2, Double_t gap, Bool_t refs = kTRUE, Bool_t pois = kTRUE) { AddCorr({n1,n2},{gap},refs,pois); }
       void                    AddThree(Int_t n1, Int_t n2, Int_t n3, Bool_t refs = kTRUE, Bool_t pois = kTRUE) { AddCorr({n1,n2,n3},{},refs,pois); }
