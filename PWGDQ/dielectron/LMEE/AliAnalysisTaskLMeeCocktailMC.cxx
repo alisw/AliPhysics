@@ -375,12 +375,17 @@ void AliAnalysisTaskLMeeCocktailMC::UserCreateOutputObjects(){
   }
   //RUN2
   if(fResolType == 2) {
-   if(fcollisionSystem==200){ //pp 13TeV
-     fFileName = "$ALICE_PHYSICS/PWGDQ/dielectron/files/LMeeCocktailInputs_Respp13TeV.root";
-   }
-   else{
-     fFileName = "$ALICE_PHYSICS/PWGDQ/dielectron/files/"+ fResolDataSetName;
-   }
+    if(fResolDataSetName.Contains("alien")){
+      fFileName = fResolDataSetName;
+    }
+    else{
+      if(fcollisionSystem==200){ //pp 13TeV
+	fFileName = "$ALICE_PHYSICS/PWGDQ/dielectron/files/LMeeCocktailInputs_Respp13TeV.root";
+      }
+      else{
+	fFileName = "$ALICE_PHYSICS/PWGDQ/dielectron/files/"+ fResolDataSetName;
+      }
+    }
    fFile = TFile::Open(fFileName.Data());
    if(!fFile->IsOpen()){
      AliError(Form("Could not open file %s",fFileName.Data() ));
