@@ -404,6 +404,7 @@ void AliFemtoDreamAnalysis::Make(AliAODEvent *evt) {
 }
 
 void AliFemtoDreamAnalysis::Make(AliESDEvent *evt, AliMCEvent *mcEvent) {
+  std::cout << "New Event \n";
   if (!evt) {
     AliFatal("No Input Event");
   }

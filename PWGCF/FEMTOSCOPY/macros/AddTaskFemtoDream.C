@@ -24,7 +24,8 @@ AliAnalysisTaskSE* AddTaskFemtoDream(bool isMC = false,
                                      int FilterBit = 128,  //19
                                      bool InvMassPairs = false,  //20
                                      bool DeltaEtaDeltaPhiCut = false,  //21
-                                     int SphericityRange = 0)  //22
+                                     int SphericityRange = 0,
+                                     bool excludeUnwantedPairs = false  )  //22
                                      {
   // 1    2     3     4     5     6     7    8    9      10   11     12   13    14    15    16   17
   //true,true,false,false,false,false,false,true,false,false,true,false,true,false,false,false,true
@@ -342,6 +343,10 @@ AliAnalysisTaskSE* AddTaskFemtoDream(bool isMC = false,
     MultBins.push_back(80);
     config->SetMultBins(MultBins);
   }
+  if (excludeUnwantedPairs) {
+    config->SetExtendedQAPairs(config->GetStandardPairs());
+  }
+
   config->SetMultBinning(true);
   if (notpp)
     config->SetCentBinning(true);
@@ -366,18 +371,19 @@ AliAnalysisTaskSE* AddTaskFemtoDream(bool isMC = false,
     }
   }
   if (etaPhiPlotsAtTPCRadii) {
-    if (isMC) {
+//    if (isMC) {
       config->SetPhiEtaBinnign(true);
-    } else {
-      std::cout
-          << "You are trying to request the Eta Phi Plots without MC Info; fix it wont work! \n";
-    }
+//    } else {
+//      std::cout
+//          << "You are trying to request the Eta Phi Plots without MC Info; fix it wont work! \n";
+//    }
   }
   if (DeltaEtaDeltaPhiCut) {
     config->SetDeltaEtaMax(0.01);
     config->SetDeltaPhiMax(0.01);
   }
   config->SetdPhidEtaPlots(dPhidEtaPlots);
+  if (dPhidEtaPlots) config->SetmTdEtadPhiBins(config->GetStandardmTBins());
   config->SetPDGCodes(PDGParticles);
   config->SetNBinsHist(NBins);
   config->SetMinKRel(kMin);

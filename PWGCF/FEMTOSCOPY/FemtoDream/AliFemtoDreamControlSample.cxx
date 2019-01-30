@@ -213,7 +213,7 @@ float AliFemtoDreamControlSample::ComputeDeltaPhi(
   std::vector<float> Phirad2 = part2.GetPhiAtRaidius().at(0);
   std::vector<float> radVector;
   float dphi = 999.f;
-  for (int iRad = 0; iRad < Phirad1.size(); ++iRad) {
+  for (unsigned int iRad = 0; iRad < Phirad1.size(); ++iRad) {
     float currentdphi = std::abs(Phirad1.at(iRad) - Phirad2.at(iRad));
     if(currentdphi < dphi) dphi = currentdphi;
   }
