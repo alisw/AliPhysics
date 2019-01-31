@@ -1,7 +1,9 @@
+#if defined(__CLING__)
 #include "AliMultDepSpecAnalysisTask.h"
-AliMultDepSpecAnalysisTask* AddTask_mkrueger_MultDepSpec(TString controlstring, Int_t cutModeLow = 100, Int_t cutModeHigh = 101)
+#endif
+
+AliMultDepSpecAnalysisTask* AddTask_mkrueger_MultDepSpec(TString controlstring, Int_t cutModeLow = 100, Int_t cutModeHigh = 121)
 {
-  // INFO: for MC use 4 different trains (cutModeLow, cutModeHigh) = (100,105), (105,109), (109,113), (113,116), (116,120)
 
   // settings:
   Bool_t includeCrosscheckHistos = kFALSE;
@@ -17,8 +19,6 @@ AliMultDepSpecAnalysisTask* AddTask_mkrueger_MultDepSpec(TString controlstring, 
   Float_t lowerPtCut = 0.15;
   Float_t upperPtCut = 10.;
 
-
-  Bool_t includeSigmas = kTRUE;
   string colsys = "pp";
 
   const Int_t nMultSteps = 3;
@@ -63,7 +63,6 @@ AliMultDepSpecAnalysisTask* AddTask_mkrueger_MultDepSpec(TString controlstring, 
     centBinEdges = centBinEdgesUsed;
     if(controlstring.Contains("2TeV")){offlineTriggerMask = AliVEvent::kMB; is2015Data = kFALSE;}
   }
-  if(controlstring.Contains("excludeSigmas")) includeSigmas = kFALSE;
   if(controlstring.Contains("oldTrigger")){offlineTriggerMask = AliVEvent::kMB;}
 
   // Binning in Multiplicity
@@ -104,7 +103,7 @@ AliMultDepSpecAnalysisTask* AddTask_mkrueger_MultDepSpec(TString controlstring, 
   char taskName[100] = "";
 
 
-  for(Int_t cutMode = cutModeLow; cutMode < cutModeHigh; cutMode++){
+  for(Int_t cutMode = cutModeLow; cutMode <= cutModeHigh; cutMode++){
     sprintf(taskName, "mkrueger_%s_eta_%.2f_cutMode_%d", colsys.c_str(), etaCut, cutMode);
 
     AliMultDepSpecAnalysisTask* task = new AliMultDepSpecAnalysisTask(taskName);
