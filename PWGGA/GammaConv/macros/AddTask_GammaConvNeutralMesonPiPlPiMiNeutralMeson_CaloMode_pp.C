@@ -187,9 +187,19 @@ void AddTask_GammaConvNeutralMesonPiPlPiMiNeutralMeson_CaloMode_pp(
   } else if( trainConfig == 110)  { // Standard EMCal
     cuts.AddCutHeavyMesonCalo("00000113","1111111047032230000","302010708","0103603700000000","0153503000000000");
     cuts.AddCutHeavyMesonCalo("00000113","1111111047032230000","322010708","0103603700000000","0153503000000000"); // with ITS requirement
-  } else if( trainConfig == 111)  { // Test for EMCal (5 TeV)
-    cuts.AddCutHeavyMesonCalo("00010113","1111111047032230000","302010708","0103603700000000","0153503000000000");
-    cuts.AddCutHeavyMesonCalo("00010113","1111111047032230000","322010708","0103603700000000","0153503000000000"); // with ITS requirement
+
+    // EMCal pp 5 TeV
+  } else if( trainConfig == 111)  { // Test for EMCal (5 TeV) with TPC refit + ITS requirement
+    cuts.AddCutHeavyMesonCalo("00010113","1111111047032230000","32c010708","0103603700000000","0153503000000000"); // INT7
+    cuts.AddCutHeavyMesonCalo("00052113","1111111047032230000","32c010708","0103603700000000","0153503000000000"); // EMC7
+    cuts.AddCutHeavyMesonCalo("00085113","1111111047032230000","32c010708","0103603700000000","0153503000000000"); // EG2
+    cuts.AddCutHeavyMesonCalo("00083113","1111111047032230000","32c010708","0103603700000000","0153503000000000"); // EG1
+    // EMCal pp 13 TeV
+  } else if( trainConfig == 112)  { // Test for EMCal (13 TeV) with TPC refit + ITS requirement
+    cuts.AddCutHeavyMesonCalo("00010113","1111111047032230000","32c010708","0103603700000000","0153503000000000"); // INT7
+    cuts.AddCutHeavyMesonCalo("00052113","1111111047032230000","32c010708","0103603700000000","0153503000000000"); // EMC7
+    cuts.AddCutHeavyMesonCalo("00085113","1111111047032230000","32c010708","0103603700000000","0153503000000000"); // EG2
+    cuts.AddCutHeavyMesonCalo("00083113","1111111047032230000","32c010708","0103603700000000","0153503000000000"); // EG1
 
     // ---------------------------------
     // systematic studies 7 TeV (EMCal)
@@ -331,7 +341,14 @@ void AddTask_GammaConvNeutralMesonPiPlPiMiNeutralMeson_CaloMode_pp(
     cuts.AddCutHeavyMesonCalo("00000113","2444411043012300000","302010708","0103603n00000000","0153507000000000"); // 0-0.85
     cuts.AddCutHeavyMesonCalo("00000113","2444411043012300000","302010708","0103603n00000000","0153505000000000"); // 0-0.75
     cuts.AddCutHeavyMesonCalo("00000113","2444411043012300000","302010708","0103603n00000000","0153500000000000"); // 0-0.7
-
+    // PHOS pp 5 TeV
+  } else if(trainConfig == 170)  { // Standard PHOS  with TPC refit + ITS requirement
+    cuts.AddCutHeavyMesonCalo("00010113","2444411043012300000","32c010708","0103603n00000000","0153503000000000"); // INT7
+    cuts.AddCutHeavyMesonCalo("00062113","2444411043012300000","32c010708","0103603n00000000","0153503000000000"); // PHI7
+    // PHOS pp 13 TeV
+  } else if(trainConfig == 180)  { // Standard PHOS  with TPC refit + ITS requirement
+    cuts.AddCutHeavyMesonCalo("00010113","2444411043012300000","32c010708","0103603n00000000","0153503000000000"); // INT7
+    cuts.AddCutHeavyMesonCalo("00062113","2444411043012300000","32c010708","0103603n00000000","0153503000000000"); // PHI7
   // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
   // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
   //                                          ETA PRIME MESON
