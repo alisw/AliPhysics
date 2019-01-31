@@ -139,8 +139,8 @@ void AliFemtoDreamTrack::ApplyESDtoAODFilter(const bool TPCOnlyTrack) {
     fPassFiltering = false;
   }
   if (TPCOnlyTrack) {
-    fESDTPCOnlyTrack = AliESDtrackCuts::GetTPCOnlyTrack(fESDTrack->GetESDEvent(),
-                                                      fESDTrack->GetID());
+    fESDTPCOnlyTrack = AliESDtrackCuts::GetTPCOnlyTrack(
+        fESDTrack->GetESDEvent(), fESDTrack->GetID());
   } else {
     fESDTPCOnlyTrack = fESDTrack;
   }
@@ -393,6 +393,23 @@ void AliFemtoDreamTrack::SetPhiAtRadii(const float bfield) {
   fPhiAtRadius.push_back(phiatRadius);
   return;
 }
+
+void AliFemtoDreamTrack::SetGlobalCoordAtRadii(const float bfield) {
+  float TPCradii[9] = { 85., 105., 125., 145., 165., 185., 205., 225., 245. };
+  AliExternalTrackParam etp;
+  etp.CopyFromVTrack(fAODGlobalTrack);
+  for (int iRad = 0; iRad < 9; ++iRad) {
+    double posBuffer[3] = { 0., 0., 0. };
+    bool good = etp.GetXYZatR(TPCradii[iRad], bfield, posBuffer, nullptr);
+    if (good) {
+      fXYZAtRadius.push_back(TVector3(posBuffer));
+    } else {
+      fXYZAtRadius.push_back(TVector3(999,999,999));
+    }
+  }
+
+}
+
 void AliFemtoDreamTrack::SetAODPIDInformation() {
   AliPID::EParticleType particleID[5] = { AliPID::kElectron, AliPID::kMuon,
       AliPID::kPion, AliPID::kKaon, AliPID::kProton };
@@ -619,6 +636,7 @@ void AliFemtoDreamTrack::Reset() {
     fMCTheta.clear();
     fPhi.clear();
     fPhiAtRadius.clear();
+    fXYZAtRadius.clear();
     fMCPhi.clear();
     fIDTracks.clear();
     fCharge.clear();

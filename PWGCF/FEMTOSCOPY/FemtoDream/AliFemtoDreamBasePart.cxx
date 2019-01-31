@@ -23,7 +23,8 @@ ClassImp(AliFemtoDreamBasePart) AliFemtoDreamBasePart::AliFemtoDreamBasePart()
       fTheta(0),
       fMCTheta(0),
       fPhi(0),
-      fPhiAtRadius(0),
+      fPhiAtRadius(),
+      fXYZAtRadius(),
       fMCPhi(0),
       fIDTracks(0),
       fCharge(0),
@@ -54,6 +55,7 @@ AliFemtoDreamBasePart::AliFemtoDreamBasePart(const AliFemtoDreamBasePart &part)
       fMCTheta(part.fMCTheta),
       fPhi(part.fPhi),
       fPhiAtRadius(part.fPhiAtRadius),
+      fXYZAtRadius(part.fXYZAtRadius),
       fMCPhi(part.fMCPhi),
       fIDTracks(part.fIDTracks),
       fCharge(part.fCharge),
@@ -86,6 +88,7 @@ AliFemtoDreamBasePart &AliFemtoDreamBasePart::operator=(
   fMCTheta = obj.fMCTheta;
   fPhi = obj.fPhi;
   fPhiAtRadius = obj.fPhiAtRadius;
+  fXYZAtRadius = obj.fXYZAtRadius;
   fMCPhi = obj.fMCPhi;
   fIDTracks = obj.fIDTracks;
   fCharge = obj.fCharge;
@@ -119,16 +122,17 @@ AliFemtoDreamBasePart::AliFemtoDreamBasePart(
       fMCTheta(),
       fPhi(),
       fPhiAtRadius(0),
+      fXYZAtRadius(0),
       fMCPhi(),
       fIDTracks(),
       fCharge(0),
       fCPA(0),
       fOrigin(kUnknown),
       fPDGCode(mother.GetPDGCode()),
-      fMotherPDG(0),
       fMCPDGCode(mother.GetPDGCode()),
       fPDGMotherWeak(0),
       fMotherID(),
+      fMotherPDG(0),
       fEvtNumber(0),
       fIsMC((mother.GetMCLabel() > 0)),
       fUse(true),
@@ -211,16 +215,17 @@ AliFemtoDreamBasePart::AliFemtoDreamBasePart(
       fMCTheta(),
       fPhi(),
       fPhiAtRadius(0),
+      fXYZAtRadius(0),
       fMCPhi(),
       fIDTracks(),
       fCharge(0),
       fCPA(0),
       fOrigin(kUnknown),
       fPDGCode(daughter.GetPDGcode()),
-      fMotherPDG(0),
       fMCPDGCode(daughter.GetPDGcode()),
       fPDGMotherWeak(0),
       fMotherID(-1),
+      fMotherPDG(0),
       fEvtNumber(0),
       fIsMC(-1),
       fUse(true),

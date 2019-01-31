@@ -378,6 +378,7 @@ void AliFemtoDreamv0::Reset() {
     fMCTheta.clear();
     fPhi.clear();
     fPhiAtRadius.clear();
+    fXYZAtRadius.clear();
     fMCPhi.clear();
     fIDTracks.clear();
     fCharge.clear();
