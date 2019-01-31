@@ -148,6 +148,7 @@ AliAnalysisHFjetTagHFE::AliAnalysisHFjetTagHFE() :
   fHistIncjetBG(0),
   fHistHFjet(0), 
   fHistHFdijet(0), 
+  fHistHFdijetCorr(0), 
   fHistULSjet(0), 
   fHistLSjet(0), 
   fHistHadjet(0), 
@@ -329,6 +330,7 @@ AliAnalysisHFjetTagHFE::AliAnalysisHFjetTagHFE(const char *name) :
   fHistIncjetBG(0),
   fHistHFjet(0),
   fHistHFdijet(0),
+  fHistHFdijetCorr(0),
   fHistULSjet(0),
   fHistLSjet(0),
   fHistHadjet(0),
@@ -685,6 +687,9 @@ void AliAnalysisHFjetTagHFE::UserCreateOutputObjects()
 
   fHistHFdijet = new TH1F("fHistHFdijet","HF Dijet;p_{T}",300,-100.,200.);
   fOutput->Add(fHistHFdijet);
+
+  fHistHFdijetCorr = new TH2F("fHistHFdijetCorr","HF Dijet Corr;p_{T}",300,-100.,200.,300,-100,200);
+  fOutput->Add(fHistHFdijetCorr);
 
   fHistULSjet = new TH2F("fHistULSjet","ULS jet;p_{T}",20,0,20,300,-100.,200.);
   fOutput->Add(fHistULSjet);
@@ -1764,6 +1769,7 @@ Bool_t AliAnalysisHFjetTagHFE::Run()
                                    MomBalance = (ExJetPt[0]-corrPt)/(ExJetPt[0]+corrPt);
                                   }
                               fHistDiJetMomBalance->Fill(corrPt,MomBalance);
+                              fHistHFdijetCorr->Fill(ExJetPt[0],ExJetPt[1]);
                              }
                          }
 
