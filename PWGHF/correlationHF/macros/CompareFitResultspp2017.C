@@ -33,6 +33,22 @@ Double_t maxRangePP[6][5]={   //used in L1403. MODIFY THESE!!!
          {3.1,0.52,0.85,4.3,1.1},
          {3.1,0.52,0.85,4.3,1.1}};
 
+Double_t maxRangePP_Ratio[6][5]={   //used in ratios [quantity][binass]
+         {2,1.8,1.75,2.7,1.75},
+         {2,1.8,1.75,2.7,1.75},
+         {2,1.8,1.75,2.7,1.75},
+         {2,1.9,1.75,2.7,1.75},
+         {2,1.9,1.75,2.7,1.75},
+         {2,1.9,1.75,2.7,1.75}};
+
+Double_t minRangePP_Ratio[6][5]={   //used in ratios [quantity][binass]
+         {0.2,0.4,0.5,0.5,0.5},
+         {0.2,0.4,0.5,0.5,0.5},
+         {0.2,0.4,0.5,0.5,0.5},
+         {0.2,0.4,0.5,0.5,0.5},
+         {0.2,0.4,0.5,0.5,0.5},
+         {0.2,0.4,0.5,0.5,0.5}};
+
 Double_t maxRangePPb[6][5]={
          {3.3,0.64,13,4.3,1.28},
          {3.3,0.64,13,4.3,1.28},
@@ -115,12 +131,14 @@ Double_t rightMarginCanvas=0.055;
 Double_t bottomMarginCanvas=0.13;
 Double_t topMarginCanvas=0.07;
 const Int_t nmodels=8;
-Bool_t includemodel[nmodels]={kTRUE,kTRUE,kTRUE,kTRUE,kFALSE,kTRUE,kFALSE,kFALSE};
-TString strModelDir[nmodels]={"Perugia0","Perugia2010","Perugia2011","PYTHIA8","HERWIG","POWHEG","POWHEG","EPOS3"};
+Bool_t includemodel[nmodels]={kTRUE,kTRUE,kTRUE,kTRUE,kTRUE,kTRUE,kFALSE,kFALSE};
+TString strModelDir[nmodels]={"Perugia0","Perugia2010","Perugia2011","PYTHIA8","HERWIG","POWHEG","POWHEG2","EPOS3"};
 TString strModelDirLeg[nmodels]={"PYTHIA6, Perugia 0","PYTHIA6, Perugia 2010","PYTHIA6, Perugia 2011","PYTHIA8, Tune 4C","HERWIG","POWHEG+PYTHIA6","POWHEG+PYTHIA6 EPS09","EPOS 3.117"};
-Color_t modelColors[nmodels]={kRed+2,kCyan,kGreen+2,kMagenta+1,kViolet,kBlue,kBlue,kOrange+1};
-Bool_t includeinlegend[nmodels]={kTRUE,kTRUE,kTRUE,kTRUE,kFALSE,kFALSE,kFALSE,kFALSE};// this is also used to split the legend in 2!!
+Color_t modelColors[nmodels]={kRed+2,kCyan,kGreen+2,kMagenta+1,kOrange+1,kBlue,kViolet,kYellow+1};
+Bool_t includeinlegend[nmodels]={kTRUE,kTRUE,kTRUE,kTRUE,kTRUE,kFALSE,kFALSE,kFALSE};// this is also used to split the legend in 2!!
 Int_t modelMarkerStyle[nmodels]={kOpenSquare,kOpenCircle,kOpenDiamond,28,26,3,3,33};
+Int_t modelMarkerStyleRatio[nmodels]={kFullSquare,kFullCircle,kFullDiamond,34,22,47,43,45};
+TString strRefForRatios="POWHEG"; //**model for which doing the division of data and other theaory curves**
 
 TH1D **hMC;
 TGraphAsymmErrors **grMC;
@@ -1558,7 +1576,7 @@ TCanvas* CompareDatatoModels(Int_t collsystem,Int_t binass,Int_t quantity,TPad *
     // NOW LOOP OVER MODELS
     for(Int_t kmc=0;kmc<nmodels;kmc++){
       if(!includemodel[kmc])continue;
-      if(quantity==2&&strModelDir[kmc].Contains("POWHEG"))continue;
+      //if(quantity==2&&strModelDir[kmc].Contains("POWHEG"))continue;
       f=TFile::Open(Form("%s/Trends_%s/%s/CanvasFinalTrend%s_pthad%s.root",strFitResultMC[system].Data(),strSystem[system].Data(),strModelDir[kmc].Data(),strquantityFile[quantity].Data(),strPtAss[binass].Data()),"READ");
       c=(TCanvas*)f->Get(Form("CanvasFinalTrend%s",strquantityFile[quantity].Data()));
       grMC[kmc]=(TGraphAsymmErrors*)c->FindObject(Form("fFullSystematics%s",strquantityFile[quantity].Data()));
@@ -2367,7 +2385,7 @@ void CompareFitResultsPPtoMCUniqueCanvas(){
     cFinalPaperStyle->SaveAs("ComparePPtoMCFitResults.pdf");
   }
   else{
-  cFinalPaperStyle->SaveAs("ComparePPtoMCnoSystFitResults.root");
+    cFinalPaperStyle->SaveAs("ComparePPtoMCnoSystFitResults.root");
     cFinalPaperStyle->SaveAs("ComparePPtoMCnoSystFitResults.eps");
     cFinalPaperStyle->SaveAs("ComparePPtoMCnoSystFitResults.png");
     cFinalPaperStyle->SaveAs("ComparePPtoMCnoSystFitResults.pdf");
@@ -2376,6 +2394,519 @@ void CompareFitResultsPPtoMCUniqueCanvas(){
 
 }
 
+void CompareFitResults_Ratios_NS_1() {
+        
+        TFile fIn("ComparePPtoMCFitResults.root");
+        TCanvas *cRat = (TCanvas*)fIn.Get("cPPvsMCFitResultsFinalPaperStyle");
+        cRat->Draw();
+
+        Int_t nmodelsOn = CountNmodels();
+        Int_t modRef=0;
+        printf("nmodels on = %d\n",nmodelsOn);
+        for(int k=0;k<nmodelsOn;k++) {
+          while(includemodel[modRef]==kFALSE) modRef++; //because k index don't have to be updated is model is excluded, but name index yes!!                  
+          printf("k = %d, modRef = %d, included? %d\n",k,modRef,includemodel[modRef]);
+          if(!strModelDir[modRef].CompareTo(strRefForRatios)) {
+            modRef=k; //reconcile with k index!!!
+            break;
+          }
+          modRef++;
+        }
+        printf("at the end, modRef=%d\n",modRef);
+
+        for(int i=0;i<9;i++) {
+
+                TPad *pad = (TPad*)cRat->FindObject(Form("cPPvsMCFitResultsFinalPaperStyle_%d",i+1));
+                TList *l = (TList*)pad->GetListOfPrimitives();
+                printf("i = %d\n",i);
+                l->ls();
+
+                TH1D *hModRat[20];
+                TGraphAsymmErrors *grModRat[20];
+
+                TH1D *hData = (TH1D*)pad->GetListOfPrimitives()->At(2);
+                hData->GetYaxis()->SetRangeUser(-5,5);
+                TGraphAsymmErrors *grData = (TGraphAsymmErrors*)l->At(3);
+                Double_t *xvalDa = grData->GetX();
+                Double_t *yvalDa = grData->GetY();
+                Double_t *eyvalDa = grData->GetEYlow();           
+
+                TH1D *hMod = (TH1D*)pad->GetListOfPrimitives()->At(4+modRef*2);
+                hModRat[modRef] = (TH1D*)hMod->Clone(Form("%s_Ratio",hMod->GetName()));
+                TGraphAsymmErrors *grModRef = (TGraphAsymmErrors*)l->At(5+modRef*2);
+                Double_t *xval = grModRef->GetX();
+                Double_t *exval = grModRef->GetEXlow();
+                Double_t *yvalMCref = grModRef->GetY();
+                Double_t *eyvalMCref = grModRef->GetEYlow();
+
+                for(int k=0;k<nmodelsOn;k++) {
+                        if(k==modRef) continue;
+                        TH1D *hMod = (TH1D*)pad->GetListOfPrimitives()->At(4+k*2);
+                        hModRat[k] = (TH1D*)hMod->Clone(Form("%s_Ratio",hMod->GetName()));
+                        hModRat[k]->Divide(hModRat[modRef]);
+
+                        TGraphAsymmErrors *grMod = (TGraphAsymmErrors*)l->At(5+k*2);
+                        grModRat[k] = (TGraphAsymmErrors*)grMod->Clone(Form("%s_Ratio",grMod->GetName()));
+                        Double_t *yvalMC = grMod->GetY();
+                        Double_t *eyvalMC = grMod->GetEYlow();
+                        for(int ip=0;ip<grModRef->GetN();ip++) {
+                          Double_t err = yvalMC[ip]/yvalMCref[ip]*(TMath::Sqrt((eyvalMC[ip]/yvalMC[ip])*(eyvalMC[ip]/yvalMC[ip])+(eyvalMCref[ip]/yvalMCref[ip])*(eyvalMCref[ip]/yvalMCref[ip])));
+                          grModRat[k]->SetPoint(ip,xval[ip],yvalMC[ip]/yvalMCref[ip]);
+                          grModRat[k]->SetPointError(ip,exval[ip],exval[ip],err,err);
+                        }
+                }
+
+                TH1D* hDataRat = (TH1D*)hData->Clone(Form("%s_Ratio",hData->GetName()));
+                hDataRat->Divide(hModRat[modRef]);
+                grDataRat = (TGraphAsymmErrors*)grData->Clone(Form("%s_Ratio",grData->GetName()));
+                for(int ip=0;ip<grModRef->GetN();ip++) {
+                    Double_t err = yvalDa[ip]/yvalMCref[ip]*(TMath::Sqrt((eyvalDa[ip]/yvalDa[ip])*(eyvalDa[ip]/yvalDa[ip])+(eyvalMCref[ip]/yvalMCref[ip])*(eyvalMCref[ip]/yvalMCref[ip])));
+                    grDataRat->SetPoint(ip,xval[ip],yvalDa[ip]/yvalMCref[ip]);
+                    grDataRat->SetPointError(ip,exval[ip],exval[ip],err,err);
+                }
+
+                pad->cd();
+                TH2D *hframe = (TH2D*)l->At(1);
+                if(i==0) hframe->GetYaxis()->SetRangeUser(minRangePP_Ratio[0][0],maxRangePP_Ratio[0][0]);
+                if(i==3) hframe->GetYaxis()->SetRangeUser(minRangePP_Ratio[0][1],maxRangePP_Ratio[0][1]);
+                if(i==6) hframe->GetYaxis()->SetRangeUser(minRangePP_Ratio[0][2],maxRangePP_Ratio[0][2]);
+                if(i==1) hframe->GetYaxis()->SetRangeUser(minRangePP_Ratio[1][0],maxRangePP_Ratio[1][0]);
+                if(i==4) hframe->GetYaxis()->SetRangeUser(minRangePP_Ratio[1][1],maxRangePP_Ratio[1][1]);
+                if(i==7) hframe->GetYaxis()->SetRangeUser(minRangePP_Ratio[1][2],maxRangePP_Ratio[1][2]);
+                if(i==2) hframe->GetYaxis()->SetRangeUser(minRangePP_Ratio[2][0],maxRangePP_Ratio[2][0]);
+                if(i==5) hframe->GetYaxis()->SetRangeUser(minRangePP_Ratio[2][1],maxRangePP_Ratio[2][1]);
+                if(i==8) hframe->GetYaxis()->SetRangeUser(minRangePP_Ratio[2][2],maxRangePP_Ratio[2][2]);
+                
+                Int_t num = l->GetEntries()-1;
+                while(num>1) {
+                  TObject *obj=l->At(num);
+                  TString strName=obj->ClassName();
+                  if(strName.Contains("TH1D")||strName.Contains("TGraphAsymmErrors")) l->Remove(l->At(num));
+                  if(strName.Contains("TLegend")) l->Remove(l->At(num));
+                  num--;
+                }
+
+                for(int k=0;k<nmodelsOn;k++) {
+                  if(k==modRef) continue;
+                  hModRat[k]->SetBinContent(1,-99);
+                  hModRat[k]->SetBinError(1,-99);
+                  hModRat[k]->SetBinContent(2,-99);
+                  hModRat[k]->SetBinError(2,-99);
+                  hModRat[k]->SetBinContent(7,-99);
+                  hModRat[k]->SetBinError(7,-99);
+                  hModRat[k]->DrawCopy("same");
+                  grModRat[k]->SetFillStyle(1);
+                  grModRat[k]->SetMarkerStyle(modelMarkerStyleRatio[k]);
+                  grModRat[k]->Draw("E2");
+                }
+                hDataRat->SetBinContent(1,-99);
+                hDataRat->SetBinError(1,-99);
+                hDataRat->SetBinContent(2,-99);
+                hDataRat->SetBinError(2,-99);
+                hDataRat->SetBinContent(7,-99);
+                hDataRat->SetBinError(7,-99);
+                hDataRat->Draw("same");
+                grDataRat->Draw("E2");
+
+                pad->Update();
+        }
+
+        cRat->SaveAs("ComparePPtoMCFitResults_Ratio.root");
+        cRat->SaveAs("ComparePPtoMCFitResults_Ratio.eps");
+        cRat->SaveAs("ComparePPtoMCFitResults_Ratio.png");
+        cRat->SaveAs("ComparePPtoMCFitResults_Ratio.pdf");    
+}
+
+void CompareFitResults_Ratios_NS_2() {
+        
+        TFile fIn("ComparePPtoMCFitResults_2.root");
+        TCanvas *cRat = (TCanvas*)fIn.Get("cPPvsMCFitResultsFinalPaperStyle");
+        cRat->Draw();
+
+        Int_t nmodelsOn = CountNmodels();
+        Int_t modRef=0;
+        printf("nmodels on = %d\n",nmodelsOn);
+        for(int k=0;k<nmodelsOn;k++) {
+          while(includemodel[modRef]==kFALSE) modRef++; //because k index don't have to be updated is model is excluded, but name index yes!!                  
+          printf("k = %d, modRef = %d, included? %d\n",k,modRef,includemodel[modRef]);
+          if(!strModelDir[modRef].CompareTo(strRefForRatios)) {
+            modRef=k; //reconcile with k index!!!
+            break;
+          }
+          modRef++;
+        }
+        printf("at the end, modRef=%d\n",modRef);
+
+        for(int i=0;i<9;i++) {
+
+                TPad *pad = (TPad*)cRat->FindObject(Form("cPPvsMCFitResultsFinalPaperStyle_%d",i+1));
+                TList *l = (TList*)pad->GetListOfPrimitives();
+                printf("i = %d\n",i);
+                l->ls();
+
+                Int_t nmodelsOn = CountNmodels();
+                TH1D *hModRat[20];
+                TGraphAsymmErrors *grModRat[20];
+
+                TH1D *hData = (TH1D*)pad->GetListOfPrimitives()->At(2);
+                hData->GetYaxis()->SetRangeUser(-5,5);
+                TGraphAsymmErrors *grData = (TGraphAsymmErrors*)l->At(3);
+                Double_t *xvalDa = grData->GetX();
+                Double_t *yvalDa = grData->GetY();
+                Double_t *eyvalDa = grData->GetEYlow();           
+
+                TH1D *hMod = (TH1D*)pad->GetListOfPrimitives()->At(4+modRef*2);
+                hModRat[modRef] = (TH1D*)hMod->Clone(Form("%s_Ratio",hMod->GetName()));
+                TGraphAsymmErrors *grModRef = (TGraphAsymmErrors*)l->At(5+modRef*2);
+                Double_t *xval = grModRef->GetX();
+                Double_t *exval = grModRef->GetEXlow();
+                Double_t *yvalMCref = grModRef->GetY();
+                Double_t *eyvalMCref = grModRef->GetEYlow();
+
+                for(int k=0;k<nmodelsOn;k++) {
+                        if(k==modRef) continue;
+                        TH1D *hMod = (TH1D*)pad->GetListOfPrimitives()->At(4+k*2);
+                        hModRat[k] = (TH1D*)hMod->Clone(Form("%s_Ratio",hMod->GetName()));
+                        hModRat[k]->Divide(hModRat[modRef]);
+
+                        TGraphAsymmErrors *grMod = (TGraphAsymmErrors*)l->At(5+k*2);
+                        grModRat[k] = (TGraphAsymmErrors*)grMod->Clone(Form("%s_Ratio",grMod->GetName()));
+                        Double_t *yvalMC = grMod->GetY();
+                        Double_t *eyvalMC = grMod->GetEYlow();
+                        for(int ip=0;ip<grModRef->GetN();ip++) {
+                          Double_t err = yvalMC[ip]/yvalMCref[ip]*(TMath::Sqrt((eyvalMC[ip]/yvalMC[ip])*(eyvalMC[ip]/yvalMC[ip])+(eyvalMCref[ip]/yvalMCref[ip])*(eyvalMCref[ip]/yvalMCref[ip])));
+                          grModRat[k]->SetPoint(ip,xval[ip],yvalMC[ip]/yvalMCref[ip]);
+                          grModRat[k]->SetPointError(ip,exval[ip],exval[ip],err,err);
+                        }
+                }
+
+                TH1D* hDataRat = (TH1D*)hData->Clone(Form("%s_Ratio",hData->GetName()));
+                hDataRat->Divide(hModRat[modRef]);
+                grDataRat = (TGraphAsymmErrors*)grData->Clone(Form("%s_Ratio",grData->GetName()));
+                for(int ip=0;ip<grModRef->GetN();ip++) {
+                    Double_t err = yvalDa[ip]/yvalMCref[ip]*(TMath::Sqrt((eyvalDa[ip]/yvalDa[ip])*(eyvalDa[ip]/yvalDa[ip])+(eyvalMCref[ip]/yvalMCref[ip])*(eyvalMCref[ip]/yvalMCref[ip])));
+                    grDataRat->SetPoint(ip,xval[ip],yvalDa[ip]/yvalMCref[ip]);
+                    grDataRat->SetPointError(ip,exval[ip],exval[ip],err,err);
+                }
+
+                pad->cd();
+                TH2D *hframe = (TH2D*)l->At(1);
+                if(i==0) hframe->GetYaxis()->SetRangeUser(minRangePP_Ratio[3][0],maxRangePP_Ratio[3][0]);
+                if(i==3) hframe->GetYaxis()->SetRangeUser(minRangePP_Ratio[3][1],maxRangePP_Ratio[3][1]);
+                if(i==6) hframe->GetYaxis()->SetRangeUser(minRangePP_Ratio[3][2],maxRangePP_Ratio[3][2]);
+                if(i==1) hframe->GetYaxis()->SetRangeUser(minRangePP_Ratio[4][0],maxRangePP_Ratio[4][0]);
+                if(i==4) hframe->GetYaxis()->SetRangeUser(minRangePP_Ratio[4][1],maxRangePP_Ratio[4][1]);
+                if(i==7) hframe->GetYaxis()->SetRangeUser(minRangePP_Ratio[4][2],maxRangePP_Ratio[4][2]);
+                if(i==2) hframe->GetYaxis()->SetRangeUser(minRangePP_Ratio[5][0],maxRangePP_Ratio[5][0]);
+                if(i==5) hframe->GetYaxis()->SetRangeUser(minRangePP_Ratio[5][1],maxRangePP_Ratio[5][1]);
+                if(i==8) hframe->GetYaxis()->SetRangeUser(minRangePP_Ratio[5][2],maxRangePP_Ratio[5][2]);
+                
+                Int_t num = l->GetEntries()-1;
+                while(num>1) {
+                  TObject *obj=l->At(num);
+                  TString strName=obj->ClassName();
+                  if(strName.Contains("TH1D")||strName.Contains("TGraphAsymmErrors")) l->Remove(l->At(num));
+                  if(strName.Contains("TLegend")) l->Remove(l->At(num));
+                  num--;
+                }
+
+                for(int k=0;k<nmodelsOn;k++) {
+                  if(k==modRef) continue;
+                  hModRat[k]->SetBinContent(1,-99);
+                  hModRat[k]->SetBinError(1,-99);
+                  hModRat[k]->SetBinContent(2,-99);
+                  hModRat[k]->SetBinError(2,-99);
+                  hModRat[k]->SetBinContent(7,-99);
+                  hModRat[k]->SetBinError(7,-99);
+                  hModRat[k]->DrawCopy("same");
+                  grModRat[k]->SetFillStyle(1);
+                  grModRat[k]->SetMarkerStyle(modelMarkerStyleRatio[k]);
+                  grModRat[k]->Draw("E2");
+                }
+                hDataRat->SetBinContent(1,-99);
+                hDataRat->SetBinError(1,-99);
+                hDataRat->SetBinContent(2,-99);
+                hDataRat->SetBinError(2,-99);
+                hDataRat->SetBinContent(7,-99);
+                hDataRat->SetBinError(7,-99);
+                hDataRat->Draw("same");
+                grDataRat->Draw("E2");
+
+                pad->Update();
+        }
+
+        cRat->SaveAs("ComparePPtoMCFitResults_2_Ratio.root");
+        cRat->SaveAs("ComparePPtoMCFitResults_2_Ratio.eps");
+        cRat->SaveAs("ComparePPtoMCFitResults_2_Ratio.png");
+        cRat->SaveAs("ComparePPtoMCFitResults_2_Ratio.pdf");    
+}
+
+void CompareFitResults_Ratios_AS_1() {
+        TFile fIn("ComparePPtoMCFitResultsAS.root");
+        TCanvas *cRat = (TCanvas*)fIn.Get("cPPvsMCFitResultsFinalPaperStyleAS");
+        cRat->Draw();
+
+        Int_t nmodelsOn = CountNmodels();
+        Int_t modRef=0;
+        printf("nmodels on = %d\n",nmodelsOn);
+        for(int k=0;k<nmodelsOn;k++) {
+          while(includemodel[modRef]==kFALSE) modRef++; //because k index don't have to be updated is model is excluded, but name index yes!!                  
+          printf("k = %d, modRef = %d, included? %d\n",k,modRef,includemodel[modRef]);
+          if(!strModelDir[modRef].CompareTo(strRefForRatios)) {
+            modRef=k; //reconcile with k index!!!
+            break;
+          }
+          modRef++;
+        }
+        printf("at the end, modRef=%d\n",modRef);
+
+        for(int i=0;i<9;i++) {
+
+                TPad *pad = (TPad*)cRat->FindObject(Form("cPPvsMCFitResultsFinalPaperStyleAS_%d",i+1));
+                TList *l = (TList*)pad->GetListOfPrimitives();
+                printf("i = %d\n",i);
+                l->ls();
+
+                Int_t nmodelsOn = CountNmodels();
+                TH1D *hModRat[20];
+                TGraphAsymmErrors *grModRat[20];
+
+                TH1D *hData = (TH1D*)pad->GetListOfPrimitives()->At(2);
+                hData->GetYaxis()->SetRangeUser(-5,5);
+                TGraphAsymmErrors *grData = (TGraphAsymmErrors*)l->At(3);
+                Double_t *xvalDa = grData->GetX();
+                Double_t *yvalDa = grData->GetY();
+                Double_t *eyvalDa = grData->GetEYlow();           
+
+                TH1D *hMod = (TH1D*)pad->GetListOfPrimitives()->At(4+modRef*2);
+                hModRat[modRef] = (TH1D*)hMod->Clone(Form("%s_Ratio",hMod->GetName()));
+                TGraphAsymmErrors *grModRef = (TGraphAsymmErrors*)l->At(5+modRef*2);
+                Double_t *xval = grModRef->GetX();
+                Double_t *exval = grModRef->GetEXlow();
+                Double_t *yvalMCref = grModRef->GetY();
+                Double_t *eyvalMCref = grModRef->GetEYlow();
+
+                for(int k=0;k<nmodelsOn;k++) {
+                        if(k==modRef) continue;
+                        TH1D *hMod = (TH1D*)pad->GetListOfPrimitives()->At(4+k*2);
+                        hModRat[k] = (TH1D*)hMod->Clone(Form("%s_Ratio",hMod->GetName()));
+                        hModRat[k]->Divide(hModRat[modRef]);
+
+                        TGraphAsymmErrors *grMod = (TGraphAsymmErrors*)l->At(5+k*2);
+                        grModRat[k] = (TGraphAsymmErrors*)grMod->Clone(Form("%s_Ratio",grMod->GetName()));
+                        Double_t *yvalMC = grMod->GetY();
+                        Double_t *eyvalMC = grMod->GetEYlow();
+                        for(int ip=0;ip<grModRef->GetN();ip++) {
+                          Double_t err = yvalMC[ip]/yvalMCref[ip]*(TMath::Sqrt((eyvalMC[ip]/yvalMC[ip])*(eyvalMC[ip]/yvalMC[ip])+(eyvalMCref[ip]/yvalMCref[ip])*(eyvalMCref[ip]/yvalMCref[ip])));
+                          grModRat[k]->SetPoint(ip,xval[ip],yvalMC[ip]/yvalMCref[ip]);
+                          grModRat[k]->SetPointError(ip,exval[ip],exval[ip],err,err);
+                        }
+                }
+
+                TH1D* hDataRat = (TH1D*)hData->Clone(Form("%s_Ratio",hData->GetName()));
+                hDataRat->Divide(hModRat[modRef]);
+                grDataRat = (TGraphAsymmErrors*)grData->Clone(Form("%s_Ratio",grData->GetName()));
+                if(xvalDa[0]==4) {
+                    for(int ip=0;ip<grModRef->GetN();ip++) {
+                        Double_t err = yvalDa[ip]/yvalMCref[ip]*(TMath::Sqrt((eyvalDa[ip]/yvalDa[ip])*(eyvalDa[ip]/yvalDa[ip])+(eyvalMCref[ip]/yvalMCref[ip])*(eyvalMCref[ip]/yvalMCref[ip])));
+                        grDataRat->SetPoint(ip,xval[ip],yvalDa[ip]/yvalMCref[ip]);
+                        grDataRat->SetPointError(ip,exval[ip],exval[ip],err,err);
+                    }                
+                }
+                else {
+                    for(int ip=0;ip<grModRef->GetN();ip++) {                  
+                        Double_t err = yvalDa[ip]/yvalMCref[ip+1]*(TMath::Sqrt((eyvalDa[ip]/yvalDa[ip])*(eyvalDa[ip]/yvalDa[ip])+(eyvalMCref[ip+1]/yvalMCref[ip+1])*(eyvalMCref[ip+1]/yvalMCref[ip+1])));
+                        grDataRat->SetPoint(ip,xval[ip+1],yvalDa[ip]/yvalMCref[ip+1]);
+                        grDataRat->SetPointError(ip,exval[ip+1],exval[ip+1],err,err);
+                    }
+                }
+
+                pad->cd();
+                TH2D *hframe = (TH2D*)l->At(1);
+                if(i==0) hframe->GetYaxis()->SetRangeUser(minRangePP_Ratio[0][3],maxRangePP_Ratio[3][3]);
+                if(i==3) hframe->GetYaxis()->SetRangeUser(minRangePP_Ratio[0][4],maxRangePP_Ratio[3][4]);
+                if(i==6) hframe->GetYaxis()->SetRangeUser(minRangePP_Ratio[0][2],maxRangePP_Ratio[3][2]);
+                if(i==1) hframe->GetYaxis()->SetRangeUser(minRangePP_Ratio[1][3],maxRangePP_Ratio[4][3]);
+                if(i==4) hframe->GetYaxis()->SetRangeUser(minRangePP_Ratio[1][4],maxRangePP_Ratio[4][4]);
+                if(i==7) hframe->GetYaxis()->SetRangeUser(minRangePP_Ratio[1][2],maxRangePP_Ratio[4][2]);
+                if(i==2) hframe->GetYaxis()->SetRangeUser(minRangePP_Ratio[2][3],maxRangePP_Ratio[5][3]);
+                if(i==5) hframe->GetYaxis()->SetRangeUser(minRangePP_Ratio[2][4],maxRangePP_Ratio[5][4]);
+                if(i==8) hframe->GetYaxis()->SetRangeUser(minRangePP_Ratio[2][2],maxRangePP_Ratio[5][2]);
+                
+                Int_t num = l->GetEntries()-1;
+                while(num>1) {
+                  TObject *obj=l->At(num);
+                  TString strName=obj->ClassName();
+                  if(strName.Contains("TH1D")||strName.Contains("TGraphAsymmErrors")) l->Remove(l->At(num));
+                  if(strName.Contains("TLegend")) l->Remove(l->At(num));
+                  num--;
+                }
+
+                for(int k=0;k<nmodelsOn;k++) {
+                  if(k==modRef) continue;
+                  hModRat[k]->SetBinContent(1,-99);
+                  hModRat[k]->SetBinError(1,-99);
+                  hModRat[k]->SetBinContent(2,-99);
+                  hModRat[k]->SetBinError(2,-99);
+                  hModRat[k]->SetBinContent(7,-99);
+                  hModRat[k]->SetBinError(7,-99);
+                  hModRat[k]->DrawCopy("same");
+                  grModRat[k]->SetFillStyle(1);
+                  grModRat[k]->SetMarkerStyle(modelMarkerStyleRatio[k]);
+                  grModRat[k]->Draw("E2");
+                }
+                hDataRat->SetBinContent(1,-99);
+                hDataRat->SetBinError(1,-99);
+                hDataRat->SetBinContent(2,-99);
+                hDataRat->SetBinError(2,-99);
+                hDataRat->SetBinContent(7,-99);
+                hDataRat->SetBinError(7,-99);
+                hDataRat->Draw("same");
+                grDataRat->Draw("E2");
+
+                pad->Update();
+                printf("List of primitives in pad %d after update\n",i);
+                l->ls();
+        }
+
+        cRat->SaveAs("ComparePPtoMCFitResultsAS_Ratio.root");
+        cRat->SaveAs("ComparePPtoMCFitResultsAS_Ratio.eps");
+        cRat->SaveAs("ComparePPtoMCFitResultsAS_Ratio.png");
+        cRat->SaveAs("ComparePPtoMCFitResultsAS_Ratio.pdf");    
+}
+
+void CompareFitResults_Ratios_AS_2() {
+        
+        TFile fIn("ComparePPtoMCFitResultsAS_2.root");
+        TCanvas *cRat = (TCanvas*)fIn.Get("cPPvsMCFitResultsFinalPaperStyleAS");
+        cRat->Draw();
+
+        Int_t nmodelsOn = CountNmodels();
+        Int_t modRef=0;
+        printf("nmodels on = %d\n",nmodelsOn);
+        for(int k=0;k<nmodelsOn;k++) {
+          while(includemodel[modRef]==kFALSE) modRef++; //because k index don't have to be updated is model is excluded, but name index yes!!                  
+          printf("k = %d, modRef = %d, included? %d\n",k,modRef,includemodel[modRef]);
+          if(!strModelDir[modRef].CompareTo(strRefForRatios)) {
+            modRef=k; //reconcile with k index!!!
+            break;
+          }
+          modRef++;
+        }
+        printf("at the end, modRef=%d\n",modRef);
+
+        for(int i=0;i<9;i++) {
+
+                TPad *pad = (TPad*)cRat->FindObject(Form("cPPvsMCFitResultsFinalPaperStyleAS_%d",i+1));
+                TList *l = (TList*)pad->GetListOfPrimitives();
+                printf("i = %d\n",i);
+                l->ls();
+
+                Int_t nmodelsOn = CountNmodels();
+                TH1D *hModRat[20];
+                TGraphAsymmErrors *grModRat[20];   
+
+                TH1D *hData = (TH1D*)pad->GetListOfPrimitives()->At(2);
+                hData->GetYaxis()->SetRangeUser(-5,5);
+                TGraphAsymmErrors *grData = (TGraphAsymmErrors*)l->At(3);
+                Double_t *xvalDa = grData->GetX();
+                Double_t *yvalDa = grData->GetY();
+                Double_t *eyvalDa = grData->GetEYlow();           
+
+                TH1D *hMod = (TH1D*)pad->GetListOfPrimitives()->At(4+modRef*2);
+                hModRat[modRef] = (TH1D*)hMod->Clone(Form("%s_Ratio",hMod->GetName()));
+                TGraphAsymmErrors *grModRef = (TGraphAsymmErrors*)l->At(5+modRef*2);
+                Double_t *xval = grModRef->GetX();
+                Double_t *exval = grModRef->GetEXlow();
+                Double_t *yvalMCref = grModRef->GetY();
+                Double_t *eyvalMCref = grModRef->GetEYlow();
+
+                for(int k=0;k<nmodelsOn;k++) {
+                        if(k==modRef) continue;
+                        TH1D *hMod = (TH1D*)pad->GetListOfPrimitives()->At(4+k*2);
+                        hModRat[k] = (TH1D*)hMod->Clone(Form("%s_Ratio",hMod->GetName()));
+                        hModRat[k]->Divide(hModRat[modRef]);
+
+                        TGraphAsymmErrors *grMod = (TGraphAsymmErrors*)l->At(5+k*2);
+                        grModRat[k] = (TGraphAsymmErrors*)grMod->Clone(Form("%s_Ratio",grMod->GetName()));
+                        Double_t *yvalMC = grMod->GetY();
+                        Double_t *eyvalMC = grMod->GetEYlow();
+                        for(int ip=0;ip<grModRef->GetN();ip++) {
+                          Double_t err = yvalMC[ip]/yvalMCref[ip]*(TMath::Sqrt((eyvalMC[ip]/yvalMC[ip])*(eyvalMC[ip]/yvalMC[ip])+(eyvalMCref[ip]/yvalMCref[ip])*(eyvalMCref[ip]/yvalMCref[ip])));
+                          grModRat[k]->SetPoint(ip,xval[ip],yvalMC[ip]/yvalMCref[ip]);
+                          grModRat[k]->SetPointError(ip,exval[ip],exval[ip],err,err);
+                        }
+                }
+
+                TH1D* hDataRat = (TH1D*)hData->Clone(Form("%s_Ratio",hData->GetName()));
+                hDataRat->Divide(hModRat[modRef]);
+                grDataRat = (TGraphAsymmErrors*)grData->Clone(Form("%s_Ratio",grData->GetName()));
+                if(xvalDa[0]==4) {
+                    for(int ip=0;ip<grModRef->GetN();ip++) {
+                        Double_t err = yvalDa[ip]/yvalMCref[ip]*(TMath::Sqrt((eyvalDa[ip]/yvalDa[ip])*(eyvalDa[ip]/yvalDa[ip])+(eyvalMCref[ip]/yvalMCref[ip])*(eyvalMCref[ip]/yvalMCref[ip])));
+                        grDataRat->SetPoint(ip,xval[ip],yvalDa[ip]/yvalMCref[ip]);
+                        grDataRat->SetPointError(ip,exval[ip],exval[ip],err,err);
+                    }                
+                }
+                else {
+                    for(int ip=0;ip<grModRef->GetN();ip++) {
+                        Double_t err = yvalDa[ip]/yvalMCref[ip+1]*(TMath::Sqrt((eyvalDa[ip]/yvalDa[ip])*(eyvalDa[ip]/yvalDa[ip])+(eyvalMCref[ip+1]/yvalMCref[ip+1])*(eyvalMCref[ip+1]/yvalMCref[ip+1])));
+                        grDataRat->SetPoint(ip,xval[ip+1],yvalDa[ip]/yvalMCref[ip+1]);
+                        grDataRat->SetPointError(ip,exval[ip+1],exval[ip+1],err,err);
+                    }
+                }
+
+                pad->cd();
+                TH2D *hframe = (TH2D*)l->At(1);
+                if(i==0) hframe->GetYaxis()->SetRangeUser(minRangePP_Ratio[3][3],maxRangePP_Ratio[3][3]);
+                if(i==3) hframe->GetYaxis()->SetRangeUser(minRangePP_Ratio[3][4],maxRangePP_Ratio[3][4]);
+                if(i==6) hframe->GetYaxis()->SetRangeUser(minRangePP_Ratio[3][2],maxRangePP_Ratio[3][2]);
+                if(i==1) hframe->GetYaxis()->SetRangeUser(minRangePP_Ratio[4][3],maxRangePP_Ratio[4][3]);
+                if(i==4) hframe->GetYaxis()->SetRangeUser(minRangePP_Ratio[4][4],maxRangePP_Ratio[4][4]);
+                if(i==7) hframe->GetYaxis()->SetRangeUser(minRangePP_Ratio[4][2],maxRangePP_Ratio[4][2]);
+                if(i==2) hframe->GetYaxis()->SetRangeUser(minRangePP_Ratio[5][3],maxRangePP_Ratio[5][3]);
+                if(i==5) hframe->GetYaxis()->SetRangeUser(minRangePP_Ratio[5][4],maxRangePP_Ratio[5][4]);
+                if(i==8) hframe->GetYaxis()->SetRangeUser(minRangePP_Ratio[5][2],maxRangePP_Ratio[5][2]);
+                
+                Int_t num = l->GetEntries()-1;
+                while(num>1) {
+                  TObject *obj=l->At(num);
+                  TString strName=obj->ClassName();
+                  if(strName.Contains("TH1D")||strName.Contains("TGraphAsymmErrors")) l->Remove(l->At(num));
+                  if(strName.Contains("TLegend")) l->Remove(l->At(num));
+                  num--;
+                }
+
+                for(int k=0;k<nmodelsOn;k++) {
+                  if(k==modRef) continue;
+                  hModRat[k]->SetBinContent(1,-99);
+                  hModRat[k]->SetBinError(1,-99);
+                  hModRat[k]->SetBinContent(2,-99);
+                  hModRat[k]->SetBinError(2,-99);
+                  hModRat[k]->SetBinContent(7,-99);
+                  hModRat[k]->SetBinError(7,-99);
+                  hModRat[k]->DrawCopy("same");
+                  grModRat[k]->SetFillStyle(1);
+                  grModRat[k]->SetMarkerStyle(modelMarkerStyleRatio[k]);
+                  grModRat[k]->Draw("E2");
+                }
+                hDataRat->SetBinContent(1,-99);
+                hDataRat->SetBinError(1,-99);
+                hDataRat->SetBinContent(2,-99);
+                hDataRat->SetBinError(2,-99);
+                hDataRat->SetBinContent(7,-99);
+                hDataRat->SetBinError(7,-99);
+                hDataRat->Draw("same");
+                grDataRat->Draw("E2");
+
+                pad->Update();
+        }
+
+        cRat->SaveAs("ComparePPtoMCFitResultsAS_2_Ratio.root");
+        cRat->SaveAs("ComparePPtoMCFitResultsAS_2_Ratio.eps");
+        cRat->SaveAs("ComparePPtoMCFitResultsAS_2_Ratio.png");
+        cRat->SaveAs("ComparePPtoMCFitResultsAS_2_Ratio.pdf");    
+}
 
 void CompareFitResultsPPtoPpbAndMCUniqueCanvas(){
   gStyle->SetOptStat(0000);
@@ -3074,7 +3605,6 @@ void CompareFitResultsPPtoMCUniqueCanvasAwaySide_2(){
 }
 
 void CompareFitResultsPPbtoMCUniqueCanvasAwaySide(){
-  printf("AAA\n");
   gStyle->SetOptStat(0000);
   TCanvas *cFinalPaperStyle;
   xtitleoffset=2.5;
@@ -3205,7 +3735,6 @@ void CompareFitResultsPPbtoMCUniqueCanvasAwaySide(){
 }
 
 void CompareFitResultsPPbtoMCUniqueCanvasAwaySide_2(){
-  printf("AAA\n");
   gStyle->SetOptStat(0000);
   TCanvas *cFinalPaperStyle;
   xtitleoffset=2.5;

@@ -38,8 +38,8 @@ declare betaTemplDirPPb="/home/colamaria/Scrivania/Codici_Ausiliari_Dh/Dhadron_F
 declare -a betaTemplDir=( "$betaTemplDirPP" "$betaTemplDirPPb" "$betaTemplDirPPb"  "$betaTemplDirPP")
 
 ### the following is needed for hte comparison to MC (as well as MC fitting)
-declare -a Nmccase=( 6 6 6 6 )
-declare -a mccasePP=( 1 1 1 1 0 1 0 0 ) # according to CompareFitResults array: Perugia0, Perugia2010, Perugia2011, PYTHIA8, HERWIG, POHWEG+Perugia2011, POWHEG+Perugia2011 with EPS09, EPOS 3
+declare -a Nmccase=( 6 6 6 6 ) #warning! If you change this, the number of fitted MC models will change (and also their order!) I suggest not changing it but only the array below...
+declare -a mccasePP=( 0 0 1 1 1 1 0 0 ) # according to CompareFitResults array: Perugia0, Perugia2010, Perugia2011, PYTHIA8, HERWIG, POHWEG+Perugia2011, POWHEG+Perugia2011 with EPS09, EPOS 3
 declare -a mccasePPb=( 1 1 1 1 0 0 1 0 )
 declare -a isreflectedMC=( 0 0 0 0 0 0 0 1 ) # used only to determine the fit range and the transverse region range, it does not however change the results. Only EPOS is already reflected
 declare -a templRootNamepp=( "CorrelationPlotsPerugia0PtAveragefromC" "CorrelationPlotsPerugia2010PtAveragefromC" "CorrelationPlotsPerugia2011PtAveragefromC" "CorrelationPlotsPYTHIA8PtAveragefromC" "CorrelationPlotsHERWIGPtAveragefromC" "CorrelationPlotsPOWHEGPtAveragefromC"  "CorrelationPlotsEPOS3PtAveragefromC")
@@ -108,10 +108,10 @@ declare -i doFeedDownGlob=0
 declare -ia doFeedDownMes=( 1 1 1 ) ## Dzero, Dstar, Dplus values
 declare doInitAndReflStep=0 ## NOTE THAT THIS STEP IS NECESSARY ALSO IN CASE THE PLOTS DO NOT HAVE TO BE REFLECTED. THE "reflect" PARAMETER ABOVE IS WHAT DETERMINED WHETHER OR NOT THE PLOTS WILL BE REFLECTED INSIDE THIS STEP. THIS PARAMETER IS JUST A SWITCH: YOU CAN SET IT TO 0 IN CASE YOU ALREADY DID IT AND YOU DO NOT WANT TO REPEAT IT
 declare doAverage=0
-declare dofit=1
+declare dofit=0
 declare doDrawFitFigure=0
 declare dofitMC=0
-declare dofitawayside=1
+declare dofitawayside=0
 #Paper 2010&2013
 declare doNicePlot=0
 declare doCompareMesons=0 #
@@ -132,8 +132,8 @@ declare doComparepppPb2016=0 #For pPb 2016
 declare doFitResultComparisonPPpPb2016=0 #For pPb 2016
 declare doProduceSQMplots=0 #For pPb 2016
 #pp 2017 5 TeV preliminaries
-declare doNiceStyleSinglePanelAverages=1 #For pp 2017 @ 5 TeV prels
-declare doCompareWithOtherSystems=1 #For pp 2017 @ 5 TeV prels
+declare doNiceStyleSinglePanelAverages=0 #For pp 2017 @ 5 TeV prels
+declare doCompareWithOtherSystems=0 #For pp 2017 @ 5 TeV prels
 declare doCompareWithMCPP2017=1 #For pp 2017 @ 5 TeV prels
 declare doFitResultComparisonPPtoMC2017=1 #For pp 2017 @ 5 TeV prels
 declare doFitResultComparisonPPtoMC2017awayside=1 #For pp 2017 @ 5 TeV prels
@@ -1200,8 +1200,14 @@ SetIsDataReflected($reflect)
 SetBaselineDirectory("${baseDir}/AllPlots/Averages/FitResults")
 SetAverageMode($averageOpt)
 SetSplitMClegendInTwoPanels(kTRUE)
-//SetIncludeAllMCmodels(kFALSE)
-//SetIncludeEPOS(kFALSE)
+IncludeModel(0,${mccasePP[0]})
+IncludeModel(1,${mccasePP[1]})
+IncludeModel(2,${mccasePP[2]})
+IncludeModel(3,${mccasePP[3]})
+IncludeModel(4,${mccasePP[4]})
+IncludeModel(5,${mccasePP[5]})
+IncludeModel(6,${mccasePP[6]}) 
+IncludeModel(7,${mccasePP[7]})
 DoComparison_pp2017VsMCallPanels()
 DoComparison_pp2017VsMCSinglePanel()
 EOF
@@ -1215,7 +1221,7 @@ if [ ${doFitResultComparisonPPtoMC2017} = 1 ];then
     cd ${baseDir}/AllPlots/Averages/ComparisonToModels
     echo "Running CompareFitResultspp2017.C"
 
-    root -b <<EOF &> CompareFitResultspp2017toMC.log
+    root -b <<EOF &> CompareFitResultspp2017toMC_uniquecanvas.log
 .L ${HFCJlocalCodeDir}/CompareFitResultspp2017.C
 SetDirectoryFitResultPP("${baseDir}/AllPlots/Averages/FitResults/")
 SetDirectoryFitResultsMCPP("${templateDir[${collsyst}]}/FitResults/")
@@ -1230,23 +1236,8 @@ IncludeModel(7,${mccasePP[7]})
 CompareFitResultsPPDataToMC()
 CompareFitResultsPPtoMCUniqueCanvas()
 CompareFitResultsPPtoMCUniqueCanvas_2()
-EOF
-
-    root -b <<EOF &> CompareFitResultspp2017toMC_uniquecanvas.log
-.L ${HFCJlocalCodeDir}/CompareFitResultspp2017.C
-SetDirectoryFitResultPP("${baseDir}/AllPlots/Averages/FitResults/")
-SetDirectoryFitResultsMCPP("${templateDir[${collsyst}]}/FitResults/")
-IncludeModel(0,${mccasePP[0]})
-IncludeModel(1,${mccasePP[1]})
-IncludeModel(2,${mccasePP[2]})
-IncludeModel(3,${mccasePP[3]})
-IncludeModel(4,${mccasePP[4]})
-IncludeModel(5,${mccasePP[5]})
-IncludeModel(6,${mccasePP[6]}) 
-IncludeModel(7,${mccasePP[7]})
-SetDrawSystMC(kTRUE)
-CompareFitResultsPPtoMCUniqueCanvasAwaySide()
-CompareFitResultsPPtoMCUniqueCanvasAwaySide_2()
+CompareFitResults_Ratios_NS_1()
+CompareFitResults_Ratios_NS_2()
 EOF
 
 #ADDED...!!!
@@ -1265,7 +1256,7 @@ IncludeModel(6,${mccasePP[6]})
 IncludeModel(7,${mccasePP[7]})
 SetDrawSystMC(kTRUE)
 CompareFitResultsPPtoMCUniqueCanvas_vsPtAss()
-CompareFitResultsPPtoMCUniqueCanvasAwaySide_vsPtAss()
+CompareFitResults_Ratios_NS_vsPtAss()
 EOF
 #...ADDED!!!
 
@@ -1275,8 +1266,8 @@ fi
 
 if [ ${doFitResultComparisonPPtoMC2017awayside} = 1 ];then
     collsyst=3
-    mkdir -p ${baseDir}/AllPlots/Averages/FitResults/ComparisonpptoMC
-    cd ${baseDir}/AllPlots/Averages/FitResults/ComparisonpptoMC
+    mkdir -p ${baseDir}/AllPlots/Averages/ComparisonToModels
+    cd ${baseDir}/AllPlots/Averages/ComparisonToModels
     echo "Running CompareFitResultspp2017.C for away side"
 
     root -b <<EOF &> CompareFitResultspp2017toMC_AS_uniquecanvas.log
@@ -1291,9 +1282,32 @@ IncludeModel(4,${mccasePP[4]})
 IncludeModel(5,${mccasePP[5]})
 IncludeModel(6,${mccasePP[6]}) 
 IncludeModel(7,${mccasePP[7]})
-SetDrawSystMC(kFALSE)
+SetDrawSystMC(kTRUE)
 CompareFitResultsPPtoMCUniqueCanvasAwaySide()
+CompareFitResultsPPtoMCUniqueCanvasAwaySide_2()
+CompareFitResults_Ratios_AS_1()
+CompareFitResults_Ratios_AS_2()
 EOF
+
+#ADDED...!!!
+  echo "Running CompareFitResultspp2017toMC vs AssocPt track.C"
+    root -b <<EOF &> CompareFitResultspp2017_AS_vsPtAss.log
+.L ${HFCJlocalCodeDir}/CompareFitResultspp2017_vsPtAss.C
+SetDirectoryFitResultPP("${baseDir}/AllPlots/Averages/FitResults/")
+SetDirectoryFitResultsMCPP("${templateDir[${collsyst}]}/FitResults/")
+IncludeModel(0,${mccasePP[0]})
+IncludeModel(1,${mccasePP[1]})
+IncludeModel(2,${mccasePP[2]})
+IncludeModel(3,${mccasePP[3]})
+IncludeModel(4,${mccasePP[4]})
+IncludeModel(5,${mccasePP[5]})
+IncludeModel(6,${mccasePP[6]}) 
+IncludeModel(7,${mccasePP[7]})
+SetDrawSystMC(kTRUE)
+CompareFitResultsPPtoMCUniqueCanvasAwaySide_vsPtAss()
+CompareFitResults_Ratios_AS_vsPtAss()
+EOF
+#...ADDED!!!
 fi
 
 rm ${ALICE_PHYSICS}/../src #was needed by §AliBuild
