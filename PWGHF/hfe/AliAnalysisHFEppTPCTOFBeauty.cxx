@@ -277,6 +277,7 @@ AliAnalysisHFEppTPCTOFBeauty::AliAnalysisHFEppTPCTOFBeauty(const char *name)
 ,fPtMCeta(0)
 ,fD0(0)
 ,fD0Data(0)
+,fD0HC(0)
 ,fNpureMC(0)
 ,fNembMCpi0(0)
 ,fNembMCeta(0)
@@ -304,7 +305,7 @@ AliAnalysisHFEppTPCTOFBeauty::AliAnalysisHFEppTPCTOFBeauty(const char *name)
 ,fDcorr20(0)
 ,fDcorr21(0)
 ,fDcorr22(0)
-
+,fHC(0)
 {
     //Named constructor
     // Define input and output slots here
@@ -495,6 +496,7 @@ AliAnalysisHFEppTPCTOFBeauty::AliAnalysisHFEppTPCTOFBeauty()
 ,fPtMCeta(0)
 ,fD0(0)
 ,fD0Data(0)
+,fD0HC(0)
 ,fNpureMC(0)
 ,fNembMCpi0(0)
 ,fNembMCeta(0)
@@ -522,7 +524,7 @@ AliAnalysisHFEppTPCTOFBeauty::AliAnalysisHFEppTPCTOFBeauty()
 ,fDcorr20(0)
 ,fDcorr21(0)
 ,fDcorr22(0)
-
+,fHC(0)
 
 {
     // Constructor
@@ -1014,6 +1016,18 @@ void AliAnalysisHFEppTPCTOFBeauty::UserCreateOutputObjects()
     fOutputList->Add(fD0Data);
     
     
+    const Int_t nDima4=5;
+    Int_t nBina4[nDima4] = {32,nBinsdcaxy,nBinsITSchi2,nBinsITSsha,nBinspdg2};
+    fD0HC = new THnSparseF("fD0HC","fD0HC",nDima4,nBina4);
+    fD0HC->SetBinEdges(0,ptbinning); ///pt spectra -> same binning as other histograms
+    fD0HC->SetBinEdges(1,binLimdcaxy); ///dca distribution
+    fD0HC->SetBinEdges(2,binLimITSchi2); ///ITS chi2 
+    fD0HC->SetBinEdges(3,binLimITSsha); ///fraction ITS shared clusters 
+    fD0HC->SetBinEdges(4,binLimpdg2); /// electrons and pions
+    fD0HC->Sumw2();
+    fOutputList->Add(fD0HC);
+    
+    
     PostData(1, fOutputList);
     
     
@@ -1047,9 +1061,11 @@ void AliAnalysisHFEppTPCTOFBeauty::UserExec(Option_t *)
     Int_t fTPCnClus = 99999;
     Double_t qadca[10];
 	Double_t qadcaData[10];
+	Double_t qadcaHC[10];
     for(int j=0;j<10;j++){
 		qadca[j] = 0;
 		qadcaData[j] = 0;
+		qadcaHC[j] = 0;
 	}
     
     ///Check Event
@@ -1592,6 +1608,56 @@ void AliAnalysisHFEppTPCTOFBeauty::UserExec(Option_t *)
 			if(qadcaData[4]>0.) fD0Data->Fill(qadcaData);
         //}
         
+       
+       
+       
+        ///////////////////////////////////////////////////
+		//THnSparse to store the DCA information of Hadron Contamination///
+		///////////////////////////////////////////////////
+         //if(!fIsMC){
+			 qadcaHC[0] = fPt;
+         
+			 qadcaHC[1] = DCAxy*track->Charge()*signB;
+			
+			 qadcaHC[4] = -1.;
+			
+			 ///Charged pions
+			 if(fTPCnSigma >= -5 && fTPCnSigma <= -3){
+				  qadcaHC[4] = 0.5;
+			 }
+			 ///Electron candidates
+			 if(fTPCnSigma >= ftpcPIDmincut && fTPCnSigma <= ftpcPIDmaxcut){
+				if(fTOFnSigma >= ftofPIDmincut && fTOFnSigma <= ftofPIDmaxcut){
+					qadcaHC[4] = 1.5;					
+				}
+			 }
+        
+			Double_t ITSNcls2 = atrack->GetITSNcls();
+			//cout<<"atrack->GetITSNcls() = "<<atrack->GetITSNcls()<<endl;
+            
+			///ITS Chi2            
+			qadcaHC[2] = atrack->GetITSchi2()/ITSNcls2; 
+			//cout<<"track->GetITSchi2() = "<<track->GetITSchi2()<<endl;
+            
+			///Fraction of shared clusters in the ITS
+			Bool_t HasSharedCls2 = kFALSE;
+			Double_t ITSNSharedcls2 = 0;
+			for(int itsL = 0; itsL < 6; itsL++){
+				HasSharedCls2 = atrack->HasSharedPointOnITSLayer(itsL);
+				if(HasSharedCls2) ITSNSharedcls2++;
+			}
+			//cout<<"ITSNSharedcls = "<<ITSNSharedcls<<endl;
+         
+			Double_t fsharedclsITS2 = ITSNSharedcls2/ITSNcls2;
+			//cout<<"fsharedclsITS = "<<fsharedclsITS<<endl;
+            
+			qadcaHC[3] = fsharedclsITS2; 
+         		Double_t WeightHC = fHC->Eval(fP);
+         		//cout<<WeightHC<<endl;
+			if(qadcaHC[4]>0.) fD0HC->Fill(qadcaHC, WeightHC);
+        //}
+        
+       
         
                
 		///Checking PID cuts separately (for the efficiency)	
