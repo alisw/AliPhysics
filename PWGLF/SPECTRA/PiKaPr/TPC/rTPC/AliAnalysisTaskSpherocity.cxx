@@ -141,7 +141,7 @@ ClassImp(AliAnalysisTaskSpherocity)
         fNcl(70),
 	fEtaCut(0.9),
 	fCent(3),
-	fSpherocity(3),
+	fSpherocity(2),
 	fMinCent(0.0),
 	fMaxCent(100.0),
         fDeDxMIPMin(40),
@@ -276,7 +276,7 @@ AliAnalysisTaskSpherocity::AliAnalysisTaskSpherocity(const char *name):
         fNcl(70),
 	fEtaCut(0.9),
 	fCent(3),
-	fSpherocity(3),
+	fSpherocity(2),
 	fMinCent(0.0),
 	fMaxCent(100.0),
         fDeDxMIPMin(40),
@@ -860,24 +860,31 @@ void AliAnalysisTaskSpherocity::UserExec(Option_t *)
 	hSo[fCent]->Fill(SOm);
 	hSo[10]->Fill(SOm);
 
+	if(fCent > 2){return;}
+//	fSpherocity = 2;
 	if( 0 < SOm && SOm < 0.481250 )// Jetty
-	fSpherocity = 0;
+	{
+	ProduceArrayTrksESD(fESD,fCent,0);
+	ProduceArrayV0ESD(fESD,fCent,0);
+//	fSpherocity = 0;
+	}
 	
 	if( SOm > 0.761250 && SOm < 1.0 )// Isotropic
-	fSpherocity = 1;
+	{
+	ProduceArrayTrksESD(fESD,fCent,1);
+	ProduceArrayV0ESD(fESD,fCent,1);
+//	fSpherocity = 1;
+	}
 	
-	if (fAnalysisType == "ESD"){
 	fcent->Fill(fCent+1);
 	fcent->Fill(11);
 
+//	if(fCent > 2){return;}
 
-	if(fCent > 2){return;}
-
-	ProduceArrayTrksESD(fESD,fCent,fSpherocity);
-	ProduceArrayV0ESD(fESD,fCent,fSpherocity);
+//	ProduceArrayTrksESD(fESD,fCent,fSpherocity);
+//	ProduceArrayV0ESD(fESD,fCent,fSpherocity);
 
 	if(fAnalysisMC) ProcessMCTruthESD(fCent);
-	}
 			}
 
 	return;
