@@ -1241,6 +1241,7 @@ void PlotAODtrackQA(TString filename="AnalysisResults.root", TString suffix="QA"
     for(Int_t kb=0; kb<9; kb++){
       if(tmeanmult[kb]){tmeanmult[kb]->Draw();}
     }
+    cmult->SaveAs("TrackMultDistPerFilterBit.png");
   }
   TCanvas* cip=new TCanvas("cip","FiltBits",1100,900);
   cip->Divide(2,2);
