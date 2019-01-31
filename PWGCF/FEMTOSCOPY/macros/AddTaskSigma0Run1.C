@@ -162,10 +162,10 @@ AliAnalysisTaskSE *AddTaskSigma0Run1(
     v0Cuts->SetPileUpRejectionMode(AliSigma0V0Cuts::None);
     v0Cuts->SetV0OnFlyStatus(true);
     v0Cuts->SetDaughterDCAtoPV(0.06);
-    v0Cuts->SetDaughterDCAMax(2.5);
+    v0Cuts->SetDaughterDCAMax(1.5);
     v0Cuts->SetDaughterDCAtoPV(0.06);
     v0Cuts->SetV0CosPAMin(0.993);
-    v0Cuts->SetV0RadiusMax(180.f);
+    v0Cuts->SetV0RadiusMax(220.f);
     v0Cuts->SetV0RadiusMin(0.5);
     v0Cuts->SetArmenterosCut(0.01, 0.17, 0.2, 0.9);
     v0Cuts->SetPIDnSigma(100.f);
@@ -173,16 +173,16 @@ AliAnalysisTaskSE *AddTaskSigma0Run1(
     v0Cuts->SetV0DecayVertexMax(180.f);
     v0Cuts->SetK0Rejection(0., 0.);
     v0Cuts->SetLambdaSelection(1.110, 1.120);
-    v0Cuts->SetTPCclusterMin(70.f);
+    v0Cuts->SetTPCclusterMin(0.f);
     v0Cuts->SetEtaMax(0.9);
 
     antiv0Cuts->SetPileUpRejectionMode(AliSigma0V0Cuts::None);
     antiv0Cuts->SetV0OnFlyStatus(true);
     antiv0Cuts->SetDaughterDCAtoPV(0.06);
-    antiv0Cuts->SetDaughterDCAMax(2.5);
+    antiv0Cuts->SetDaughterDCAMax(1.5);
     antiv0Cuts->SetDaughterDCAtoPV(0.06);
     antiv0Cuts->SetV0CosPAMin(0.993);
-    antiv0Cuts->SetV0RadiusMax(180.f);
+    antiv0Cuts->SetV0RadiusMax(220.f);
     antiv0Cuts->SetV0RadiusMin(0.5);
     antiv0Cuts->SetArmenterosCut(0.01, 0.17, 0.2, 0.9);
     antiv0Cuts->SetPIDnSigma(100.f);
@@ -190,7 +190,7 @@ AliAnalysisTaskSE *AddTaskSigma0Run1(
     antiv0Cuts->SetV0DecayVertexMax(180.f);
     antiv0Cuts->SetK0Rejection(0., 0.);
     antiv0Cuts->SetLambdaSelection(1.110, 1.120);
-    antiv0Cuts->SetTPCclusterMin(70.f);
+    antiv0Cuts->SetTPCclusterMin(0.f);
     antiv0Cuts->SetEtaMax(0.9);
   }
 
