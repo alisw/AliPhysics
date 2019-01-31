@@ -231,6 +231,136 @@ AliDielectron* Config_acapon(TString cutDefinition,
 			die->GetPairFilter().AddCuts(LMcutlib->GetPairCuts(LMEECutLib::kCutSet1));
 		}
 	}
+	// ######## Track+ePID Cut variation settings #################
+	// These variations all use the same PhiV cut
+	else if(cutDefinition == "kCutVar1"){
+		die->GetTrackFilter().AddCuts(LMcutlib->GetTrackCuts(LMEECutLib::kCutVar1, LMEECutLib::kCutVar1));
+		if(applyPairCuts){
+			die->GetPairFilter().AddCuts(LMcutlib->GetPairCuts(LMEECutLib::kCutSet1));
+		}
+	}
+	else if(cutDefinition == "kCutVar2"){
+		die->GetTrackFilter().AddCuts(LMcutlib->GetTrackCuts(LMEECutLib::kCutVar2, LMEECutLib::kCutVar2));
+		if(applyPairCuts){
+			die->GetPairFilter().AddCuts(LMcutlib->GetPairCuts(LMEECutLib::kCutSet1));
+		}
+	}
+	else if(cutDefinition == "kCutVar3"){
+		die->GetTrackFilter().AddCuts(LMcutlib->GetTrackCuts(LMEECutLib::kCutVar3, LMEECutLib::kCutVar3));
+		if(applyPairCuts){
+			die->GetPairFilter().AddCuts(LMcutlib->GetPairCuts(LMEECutLib::kCutSet1));
+		}
+	}
+	else if(cutDefinition == "kCutVar4"){
+		die->GetTrackFilter().AddCuts(LMcutlib->GetTrackCuts(LMEECutLib::kCutVar4, LMEECutLib::kCutVar4));
+		if(applyPairCuts){
+			die->GetPairFilter().AddCuts(LMcutlib->GetPairCuts(LMEECutLib::kCutSet1));
+		}
+	}
+	else if(cutDefinition == "kCutVar5"){
+		die->GetTrackFilter().AddCuts(LMcutlib->GetTrackCuts(LMEECutLib::kCutVar5, LMEECutLib::kCutVar5));
+		if(applyPairCuts){
+			die->GetPairFilter().AddCuts(LMcutlib->GetPairCuts(LMEECutLib::kCutSet1));
+		}
+	}
+	else if(cutDefinition == "kCutVar6"){
+		die->GetTrackFilter().AddCuts(LMcutlib->GetTrackCuts(LMEECutLib::kCutVar6, LMEECutLib::kCutVar6));
+		if(applyPairCuts){
+			die->GetPairFilter().AddCuts(LMcutlib->GetPairCuts(LMEECutLib::kCutSet1));
+		}
+	}
+	else if(cutDefinition == "kCutVar7"){
+		die->GetTrackFilter().AddCuts(LMcutlib->GetTrackCuts(LMEECutLib::kCutVar7, LMEECutLib::kCutVar7));
+		if(applyPairCuts){
+			die->GetPairFilter().AddCuts(LMcutlib->GetPairCuts(LMEECutLib::kCutSet1));
+		}
+	}
+	else if(cutDefinition == "kCutVar8"){
+		die->GetTrackFilter().AddCuts(LMcutlib->GetTrackCuts(LMEECutLib::kCutVar8, LMEECutLib::kCutVar8));
+		if(applyPairCuts){
+			die->GetPairFilter().AddCuts(LMcutlib->GetPairCuts(LMEECutLib::kCutSet1));
+		}
+	}
+	else if(cutDefinition == "kCutVar9"){
+		die->GetTrackFilter().AddCuts(LMcutlib->GetTrackCuts(LMEECutLib::kCutVar9, LMEECutLib::kCutVar9));
+		if(applyPairCuts){
+			die->GetPairFilter().AddCuts(LMcutlib->GetPairCuts(LMEECutLib::kCutSet1));
+		}
+	}
+	else if(cutDefinition == "kCutVar10"){
+		die->GetTrackFilter().AddCuts(LMcutlib->GetTrackCuts(LMEECutLib::kCutVar10, LMEECutLib::kCutVar10));
+		if(applyPairCuts){
+			die->GetPairFilter().AddCuts(LMcutlib->GetPairCuts(LMEECutLib::kCutSet1));
+		}
+	}
+	else if(cutDefinition == "kCutVar11"){
+		die->GetTrackFilter().AddCuts(LMcutlib->GetTrackCuts(LMEECutLib::kCutVar11, LMEECutLib::kCutVar11));
+		if(applyPairCuts){
+			die->GetPairFilter().AddCuts(LMcutlib->GetPairCuts(LMEECutLib::kCutSet1));
+		}
+	}
+	else if(cutDefinition == "kCutVar12"){
+		die->GetTrackFilter().AddCuts(LMcutlib->GetTrackCuts(LMEECutLib::kCutVar12, LMEECutLib::kCutVar12));
+		if(applyPairCuts){
+			die->GetPairFilter().AddCuts(LMcutlib->GetPairCuts(LMEECutLib::kCutSet1));
+		}
+	}
+	else if(cutDefinition == "kCutVar13"){
+		die->GetTrackFilter().AddCuts(LMcutlib->GetTrackCuts(LMEECutLib::kCutVar13, LMEECutLib::kCutVar13));
+		if(applyPairCuts){
+			die->GetPairFilter().AddCuts(LMcutlib->GetPairCuts(LMEECutLib::kCutSet1));
+		}
+	}
+	else if(cutDefinition == "kCutVar14"){
+		die->GetTrackFilter().AddCuts(LMcutlib->GetTrackCuts(LMEECutLib::kCutVar14, LMEECutLib::kCutVar14));
+		if(applyPairCuts){
+			die->GetPairFilter().AddCuts(LMcutlib->GetPairCuts(LMEECutLib::kCutSet1));
+		}
+	}
+	else if(cutDefinition == "kCutVar15"){
+		die->GetTrackFilter().AddCuts(LMcutlib->GetTrackCuts(LMEECutLib::kCutVar15, LMEECutLib::kCutVar15));
+		if(applyPairCuts){
+			die->GetPairFilter().AddCuts(LMcutlib->GetPairCuts(LMEECutLib::kCutSet1));
+		}
+	}
+	else if(cutDefinition == "kCutVar16"){
+		die->GetTrackFilter().AddCuts(LMcutlib->GetTrackCuts(LMEECutLib::kCutVar16, LMEECutLib::kCutVar16));
+		if(applyPairCuts){
+			die->GetPairFilter().AddCuts(LMcutlib->GetPairCuts(LMEECutLib::kCutSet1));
+		}
+	}
+	else if(cutDefinition == "kCutVar17"){
+		die->GetTrackFilter().AddCuts(LMcutlib->GetTrackCuts(LMEECutLib::kCutVar17, LMEECutLib::kCutVar17));
+		if(applyPairCuts){
+			die->GetPairFilter().AddCuts(LMcutlib->GetPairCuts(LMEECutLib::kCutSet1));
+		}
+	}
+	else if(cutDefinition == "kCutVar18"){
+		die->GetTrackFilter().AddCuts(LMcutlib->GetTrackCuts(LMEECutLib::kCutVar18, LMEECutLib::kCutVar18));
+		if(applyPairCuts){
+			die->GetPairFilter().AddCuts(LMcutlib->GetPairCuts(LMEECutLib::kCutSet1));
+		}
+	}
+	else if(cutDefinition == "kCutVar19"){
+		die->GetTrackFilter().AddCuts(LMcutlib->GetTrackCuts(LMEECutLib::kCutVar19, LMEECutLib::kCutVar19));
+		if(applyPairCuts){
+			die->GetPairFilter().AddCuts(LMcutlib->GetPairCuts(LMEECutLib::kCutSet1));
+		}
+	}
+	else if(cutDefinition == "kCutVar20"){
+		die->GetTrackFilter().AddCuts(LMcutlib->GetTrackCuts(LMEECutLib::kCutVar20, LMEECutLib::kCutVar20));
+		if(applyPairCuts){
+			die->GetPairFilter().AddCuts(LMcutlib->GetPairCuts(LMEECutLib::kCutSet1));
+		}
+	}
+	// ######## Traditional Cut Set #################
+  // Standard PID cut set taken from a Run 1 analysis
+	else if(cutDefinition == "kTheoPID"){ 
+		die->GetTrackFilter().AddCuts(LMcutlib->GetTrackCuts(LMEECutLib::kCutSet1, LMEECutLib::kTheoPID));
+		if(applyPairCuts){
+			die->GetPairFilter().AddCuts(LMcutlib->GetPairCuts(LMEECutLib::kCutSet1));
+		}
+	}
 	else{
 		cout << " =============================== " << endl;
 		cout << " ==== INVALID CONFIGURATION ==== " << endl;
