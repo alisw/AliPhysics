@@ -107,6 +107,7 @@ public:
     void SetDcorrFunction21(TF1* DcorrF21) {fDcorr21 = DcorrF21;};
     void SetDcorrFunction22(TF1* DcorrF22) {fDcorr22 = DcorrF22;};
     
+    void SetHCFunction(TF1* HC) {fHC = HC;};
     
     //Getters
     AliHFEpid *GetPID() const {return fPID;};
@@ -344,7 +345,7 @@ private:
     TF1					*fDcorr20;
     TF1					*fDcorr21;
     TF1					*fDcorr22;
-    
+    TF1					*fHC;
     //For the HFE package
     AliHFEcuts 			*fCuts;            		// Cut Collection for HFE
     AliCFManager 		*fCFM;                  // Correction Framework Manager
@@ -383,6 +384,7 @@ private:
  
     THnSparseF           *fD0;//! DCA
     THnSparseF           *fD0Data;//! DCA data
+    THnSparseF           *fD0HC;//! DCA HC
     //______________________________________________________________________
     
     AliAnalysisHFEppTPCTOFBeauty(const AliAnalysisHFEppTPCTOFBeauty&); 			// not implemented
