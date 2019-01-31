@@ -160,9 +160,11 @@ bool AliHFTreeHandlerBplustoD0pi::SetVariables(AliAODRecoDecayHF* cand, float bf
 
   if(!cand) return false;
   if(fFillOnlySignal) { //if fill only signal and not signal candidate, do not store
-    if(!(fCandTypeMap&kSignal || fCandTypeMap&kRefl)) return true;
+    if(!(fCandTypeMap&kSignal)) return true;
   }
   fNCandidates++;
+
+  fCandTypeMap &= ~kRefl; //protection --> Bplus -> D0pi cannot be reflected
 
   AliAODTrack* cand_pr0 = (AliAODTrack*)cand->GetDaughter(0); //Bplus pion
   AliAODRecoDecayHF2Prong* candD0 = (AliAODRecoDecayHF2Prong*)cand->GetDaughter(1); //D0
