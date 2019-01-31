@@ -1,18 +1,11 @@
 /// \class AliMultDepSpecAnalysisTask
-/// \brief Task to perform Mean Pt analysis
-///
-/// The Task is designed to run on AOD's and ESD's both for Data and Monte-Carlo.
-/// Also the task is supposed to work for all collision systems.
-///
-///
+/// \brief Task to for pT spectra vs. multiplicity analysis
 
 
 #ifndef AliMultDepSpecAnalysisTask_cxx
 #define AliMultDepSpecAnalysisTask_cxx
 
-// class THnF;
 class TParticle;
-
 class AliESDEvent;
 class AliVEvent;
 class AliESDtrackCuts;
@@ -34,8 +27,6 @@ class AliMultDepSpecAnalysisTask : public AliAnalysisTaskSE {
     virtual void   Terminate(Option_t*);
 
     // Getters
-
-    // Binning
     TArrayD* GetBinsPt()    {return fBinsPt;}
     TArrayD* GetBinsEta()   {return fBinsEta;}
     TArrayD* GetBinsMult()  {return fBinsMult;}
@@ -47,35 +38,25 @@ class AliMultDepSpecAnalysisTask : public AliAnalysisTaskSE {
     UInt_t GetTriggerMask()  {return fTriggerMask;}
 
     // Setters
-    /// Set the flag for the use of MC.
     void SetUseMC(Bool_t useMC = kTRUE){fIsMC = useMC;}
-    /// Set the flag for the use of ESD \c (fIsESD=kTRUE)
     void SetUseESD(){fIsESD = kTRUE;}
-    /// Set the flag for the use of AOD \c (fIsESD=kFALSE)
     void SetUseAOD(){fIsESD = kFALSE;}
-    /// Set the flag for additional Histograms
     void SetIncludeCrosscheckHistos(Bool_t includeHistos = kTRUE){fIncludeCrosscheckHistos = includeHistos;}
 
     // Binning
-    /// Set bins in Pt using a TArrayD
     void SetBinsPt(TArrayD* bins){if(fBinsPt) delete fBinsPt; fBinsPt = new TArrayD(*bins);}
-    /// Set bins in Pt using number of bins and array of bin edges
     void SetBinsPt(Int_t nBins, Double_t* binEdges){if(fBinsPt) delete fBinsPt; fBinsPt = new TArrayD(nBins+1,binEdges);}
-    /// Set bins in Eta using a TArrayD
+
     void SetBinsEta(TArrayD* bins){if(fBinsEta) delete fBinsEta; fBinsEta = new TArrayD(*bins);}
-    /// Set bins in Eta using number of bins and array of bin edges
     void SetBinsEta(Int_t nBins, Double_t* binEdges){if(fBinsEta) delete fBinsEta; fBinsEta = new TArrayD(nBins+1,binEdges);}
-    /// Set bins in Multiplicity using a TArrayD
+
     void SetBinsMult(TArrayD* bins){if(fBinsMult) delete fBinsMult; fBinsMult = new TArrayD(*bins);}
-    /// Set bins in Multiplicity number of bins and array of bin edges
     void SetBinsMult(Int_t nBins, Double_t* binEdges){if(fBinsMult) delete fBinsMult; fBinsMult = new TArrayD(nBins+1,binEdges);}
-    /// Set bins in Centrality using a TArrayD
+
     void SetBinsCent(TArrayD* bins){if(fBinsCent) delete fBinsCent; fBinsCent = new TArrayD(*bins);}
-    /// Set bins in Centrality number of bins and array of bin edges
     void SetBinsCent(Int_t nBins, Double_t* binEdges){if(fBinsCent) delete fBinsCent; fBinsCent = new TArrayD(nBins+1,binEdges);}
-    /// Set bins in Zv using a TArrayD
+
     void SetBinsZv(TArrayD* bins){if(fBinsZv) delete fBinsZv; fBinsZv = new TArrayD(*bins);}
-    /// Set bins in Zv using number of bins and array of bin edges
     void SetBinsZv(Int_t nBins, Double_t* binEdges){if(fBinsZv) delete fBinsZv; fBinsZv = new TArrayD(nBins+1,binEdges);}
 
     void SetBinsPtReso(Int_t nBins, Double_t* binEdges){if(fBinsPtReso) delete fBinsPtReso; fBinsPtReso = new TArrayD(nBins+1,binEdges);}
@@ -83,13 +64,9 @@ class AliMultDepSpecAnalysisTask : public AliAnalysisTaskSE {
     void SetBinsSigma1Pt(Int_t nBins, Double_t* binEdges){if(fBinsSigma1Pt) delete fBinsSigma1Pt; fBinsSigma1Pt = new TArrayD(nBins+1,binEdges);}
 
     // Acceptance cuts
-    /// Set the minimum Eta cut
     void SetMinEta(Double_t minEta){fMinEta = minEta;}
-    /// Set the maximum Eta cut
     void SetMaxEta(Double_t maxEta){fMaxEta = maxEta;}
-    /// Set the minimum Pt cut
     void SetMinPt(Double_t minPt){fMinPt = minPt;}
-    /// Set the maximum Pt cut
     void SetMaxPt(Double_t maxPt){fMaxPt = maxPt;}
 
     void SetSigmaMeanXYZv(Float_t sigmaXv, Float_t sigmaYv, Float_t sigmaZv){fSigmaMeanXYZv[0] = sigmaXv; fSigmaMeanXYZv[1] = sigmaYv; fSigmaMeanXYZv[2] = sigmaZv;}
@@ -120,15 +97,15 @@ class AliMultDepSpecAnalysisTask : public AliAnalysisTaskSE {
     Bool_t IsTrackInKinematicRange(AliVTrack* track);
     Bool_t IsParticleInKinematicRange(AliMCParticle* mcParticle);
 
+    Bool_t IsEventVertexAccepted(AliVEvent* event);
+    Bool_t IsVertexOK(AliVEvent* event);
     Bool_t IsTrackAcceptedQuality(AliVTrack* track);
-    Bool_t IsEventVertexOK(AliVEvent* event);
 
     Bool_t IsEventAccepted2013pA(AliVEvent* event);
     Bool_t IsEventAccepted2015data(AliVEvent* event);
 
     Double_t GetCentrality(AliVEvent* event);
 
-    Bool_t IsVertexOK(AliVEvent* event);
     Bool_t IsChargedPrimary(Int_t mcLabel);
 
     void InitESDTrackCuts();
@@ -146,56 +123,56 @@ class AliMultDepSpecAnalysisTask : public AliAnalysisTaskSE {
 
     AliAnalysisUtils*   fUtils;
     Bool_t              fIsESD;			    ///< Flag for ESD usage
-    Bool_t      	      fIsMC;			    ///< Flag for MC usage
-    Bool_t	 			      fIs2013pA;
-    Bool_t 				      fIs2015data;
+    Bool_t              fIsMC;			    ///< Flag for MC usage
+    Bool_t              fIs2013pA;
+    Bool_t              fIs2015data;
 
-    Bool_t      	fTPCRefit;		     ///< TPC refit
-    Bool_t      	fITSRefit;		     ///< TPC refit
-    Bool_t      	fAcceptKinks; 		 ///< Accept Kink Daughters
-    Bool_t        fRequiresClusterITS;
-    Bool_t      	fDCAToVertex2D;
-    Bool_t      	fSigmaToVertex;
-    Bool_t      	fUseGeomCut;
+    Bool_t              fTPCRefit;		     ///< TPC refit
+    Bool_t              fITSRefit;		     ///< TPC refit
+    Bool_t              fAcceptKinks; 		 ///< Accept Kink Daughters
+    Bool_t              fRequiresClusterITS;
+    Bool_t              fDCAToVertex2D;
+    Bool_t              fSigmaToVertex;
+    Bool_t              fUseGeomCut;
 
-    Bool_t      	fIncludeCrosscheckHistos;
+    Bool_t              fIncludeCrosscheckHistos;
 
 
     // Acceptance cuts for tracks
-    UInt_t        fTriggerMask;   // trigger mask
-    Double_t     	fMinEta;			///< Minimum eta cut
-    Double_t     	fMaxEta;			///< Maximum eta cut
-    Double_t     	fMinPt;			  ///< Minimum pT cut
-    Double_t     	fMaxPt;			  ///< Maximum pT cut
+    UInt_t                fTriggerMask;   // trigger mask
+    Double_t              fMinEta;			///< Minimum eta cut
+    Double_t              fMaxEta;			///< Maximum eta cut
+    Double_t              fMinPt;			  ///< Minimum pT cut
+    Double_t              fMaxPt;			  ///< Maximum pT cut
 
-    Float_t     	fSigmaMeanXYZv[3];	///<[3]
-    Float_t     	fMeanXYZv[3];		///<[3]
-    Float_t     	fZvtx;
+    Float_t              fSigmaMeanXYZv[3];	///<[3]
+    Float_t              fMeanXYZv[3];		///<[3]
+    Float_t              fZvtx;
 
-    Int_t       	fMinNCrossedRowsTPC;	///< Minimum number of crossed Rows in the TPC
-    Float_t     	fMinRatioCrossedRowsOverFindableClustersTPC;
-    Float_t     	fMaxFractionSharedClustersTPC;
-    Float_t     	fMaxChi2PerTPCCluster;
-    Float_t     	fMaxChi2PerITSCluster;
-    Float_t     	fMaxDCAzITSTPC;
-    TString      	fDCAToVertexXYPtDep;
-    Float_t       fDCAToVertexXY;
-    Float_t     	fMaxChi2TPCConstrained;
-    Int_t       	fMinActiveLength;
-    Float_t       fDeadZoneWidth;
-    Float_t       fCutGeoNcrNclLenght;
-    Float_t       fCutGeoNcrNclGeom1Pt;
-    Float_t       fCutGeoNcrNclFractionNcr;
-    Float_t       fCutGeoNcrNclFractionNcl;
+    Int_t                fMinNCrossedRowsTPC;	///< Minimum number of crossed Rows in the TPC
+    Float_t              fMinRatioCrossedRowsOverFindableClustersTPC;
+    Float_t              fMaxFractionSharedClustersTPC;
+    Float_t              fMaxChi2PerTPCCluster;
+    Float_t              fMaxChi2PerITSCluster;
+    Float_t              fMaxDCAzITSTPC;
+    TString              fDCAToVertexXYPtDep;
+    Float_t              fDCAToVertexXY;
+    Float_t              fMaxChi2TPCConstrained;
+    Int_t                fMinActiveLength;
+    Float_t              fDeadZoneWidth;
+    Float_t              fCutGeoNcrNclLenght;
+    Float_t              fCutGeoNcrNclGeom1Pt;
+    Float_t              fCutGeoNcrNclFractionNcr;
+    Float_t              fCutGeoNcrNclFractionNcl;
 
-    TArrayD*      fBinsMult;		///< Array of bins in multiplicity
-    TArrayD*      fBinsCent;		///< Array of bins in centrality
-    TArrayD*      fBinsPt;			///< Array of bins in pt
-    TArrayD*      fBinsEta;		///< Array of bins in eta
-    TArrayD*      fBinsZv;			///< Array of bins in Zv (Z-position of primary vtx)
-    TArrayD*      fBinsPtReso;			   ///< Array of bins for relative pt resoulution
-    TArrayD*      fBins1Pt;			       ///< Array of bins for 1/pt
-    TArrayD*      fBinsSigma1Pt;			///< Array of bins for 1/pt resoulution
+    TArrayD*             fBinsMult;		///< Array of bins in multiplicity
+    TArrayD*             fBinsCent;		///< Array of bins in centrality
+    TArrayD*             fBinsPt;			///< Array of bins in pt
+    TArrayD*             fBinsEta;		///< Array of bins in eta
+    TArrayD*             fBinsZv;			///< Array of bins in Zv (Z-position of primary vtx)
+    TArrayD*             fBinsPtReso;			   ///< Array of bins for relative pt resoulution
+    TArrayD*             fBins1Pt;			       ///< Array of bins for 1/pt
+    TArrayD*             fBinsSigma1Pt;			///< Array of bins for 1/pt resoulution
 
 
     // Output Histograms

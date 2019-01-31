@@ -156,12 +156,13 @@ void AliMultDepSpecAnalysisTask::UserCreateOutputObjects(){
 
 
   // Control histogram to check the effect of event cuts
-  fEventCount = new TH1F("fEventCount","Number of events after cuts",4,0.5,4.5);
+  fEventCount = new TH1F("fEventCount","Number of events after cuts",5,0.5,5.5);
   fEventCount->GetYaxis()->SetTitle("#it{N}_{events}");
-  fEventCount->GetXaxis()->SetBinLabel(1, "all");
-  fEventCount->GetXaxis()->SetBinLabel(2, "triggered");
-  fEventCount->GetXaxis()->SetBinLabel(3, "Vertex ok, no Pileup");
-  fEventCount->GetXaxis()->SetBinLabel(4, "without #it{N}_{ch} overflow");
+  fEventCount->GetXaxis()->SetBinLabel(1, "triggered");
+  fEventCount->GetXaxis()->SetBinLabel(2, "in accepted z-vertex range");
+  fEventCount->GetXaxis()->SetBinLabel(3, "vertex resolution ok");
+  fEventCount->GetXaxis()->SetBinLabel(4, "no Pileup");
+  fEventCount->GetXaxis()->SetBinLabel(5, "MC: without #it{N}_{ch} overflow");
 
   /// Event histogram Nacc:cent
   Int_t nBinsEvent[2]={fBinsMult->GetSize()-1, fBinsCent->GetSize()-1};
@@ -445,17 +446,15 @@ void AliMultDepSpecAnalysisTask::UserExec(Option_t *){ // Main loop (called for 
 
   /// ==================== Fill Histogramms ======================================
 
-  fEventCount->Fill(1); // Generated Events
-
-  if(!isEventTriggered) return;
-
-  fEventCount->Fill(2); // Triggered Events
-
-  if(!IsEventVertexOK(fEvent)) return;
+  if(!isEventTriggered) return; // Should not be necessary if SetCollisionCandidates was called
+  fEventCount->Fill(1); // Events triggered
+  if(!IsEventVertexAccepted(fEvent)) return;
+  fEventCount->Fill(2); // Events in accepted z-vertex range
+  if(!IsVertexOK(fEvent)) return;
+  fEventCount->Fill(3); // Events with good vertex
   if (fIs2013pA){	if(!IsEventAccepted2013pA(fEvent)) return;	}
   if (fIs2015data){	if(!IsEventAccepted2015data(fEvent)) return;	}  // Requiring IncompleteDAQ, SPD background and Pileup cuts
-
-  fEventCount->Fill(3); // Events after Vertex Cut and Pileup rejection
+  fEventCount->Fill(4); // Events after dataset specific pileup rejection cuts
 
   Double_t centrality = 50;
   if((fBinsCent->GetSize()-1) > 1) centrality = GetCentrality(fEvent);
@@ -487,8 +486,10 @@ void AliMultDepSpecAnalysisTask::UserExec(Option_t *){ // Main loop (called for 
     Double_t responseMatrixTuple[2] = {multAccTracks, multGenPart};
     fHistMCResponseMat->Fill(responseMatrixTuple);
 
+    // Do not allow events in MC that exceed max true multiplicity in histograms
+    // This way closure test will not be biased. Cut should not affect too many events, otherwise histograms must be larger!
     if(multGenPart >= fBinsMult->GetAt(fBinsMult->GetSize()-1)) return;
-    fEventCount->Fill(4); // Events after excluding Nch overflow
+    fEventCount->Fill(5); // Events in MC which exceed histogram mult limit
   }
 
   /// ------------------ Event Histogram ---------------------------------------
@@ -674,11 +675,10 @@ Bool_t AliMultDepSpecAnalysisTask::IsEventAccepted2015data(AliVEvent* event)
 }
 
 /// Function for Event Acceptance cuts.
-Bool_t AliMultDepSpecAnalysisTask::IsEventVertexOK(AliVEvent* event)
+Bool_t AliMultDepSpecAnalysisTask::IsEventVertexAccepted(AliVEvent* event)
 {
   if(!event) return kFALSE;
   if(TMath::Abs(event->GetPrimaryVertex()->GetZ()) > fZvtx) return kFALSE;
-  if(!IsVertexOK(event)) return kFALSE;
   return kTRUE;
 }
 
