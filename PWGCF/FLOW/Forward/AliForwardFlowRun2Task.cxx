@@ -196,7 +196,7 @@ void AliForwardFlowRun2Task::UserExec(Option_t *)
   centralDist_tmp.SetDirectory(0);
 
   TH2D forwardTrRef  ("ft","",200,-4,6,20,0,TMath::TwoPi());
-  TH2D forwardPrim  ("fp","",200,-4,6,20,0,TMath::TwoPi());
+  TH2D forwardPrim  ("fp","",400,-4,6,400,0,TMath::TwoPi());
   forwardTrRef.SetDirectory(0);
   forwardPrim.SetDirectory(0);
 
