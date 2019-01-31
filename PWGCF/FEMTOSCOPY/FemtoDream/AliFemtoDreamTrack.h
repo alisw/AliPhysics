@@ -136,6 +136,7 @@ class AliFemtoDreamTrack : public AliFemtoDreamBasePart {
   void ApplyESDtoAODFilter(const bool TPCOnlyTrack=true);
   void SetESDTrackingInformation(const bool TPCOnlyTrack=true);
   void SetPhiAtRadii(const float bfield);
+  void SetGlobalCoordAtRadii(const float bfield);
   void SetAODPIDInformation();
   void SetESDPIDInformation();
   void SetMCInformation();
