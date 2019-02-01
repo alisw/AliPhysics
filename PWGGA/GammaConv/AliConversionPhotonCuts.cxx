@@ -3549,6 +3549,7 @@ Bool_t AliConversionPhotonCuts::SetSharedElectronCut(Int_t sharedElec) {
       break;
     case 5://Cat1 rejection
       fDoSharedElecCut = kFALSE;
+      fDoPhotonQualitySelectionCut = kFALSE;
       fDoPhotonQualityRejectionCut = kTRUE;
       fPhotonQualityCut = 1;
       break;
