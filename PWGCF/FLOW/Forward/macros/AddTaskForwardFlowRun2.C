@@ -114,9 +114,6 @@ AliAnalysisTaskSE* AddTaskForwardFlowRun2( bool doNUA, bool makeFakeHoles, TStri
 
     task->fSettings.nua_mode = nua_mode; // "V0M";// RefMult08; // "V0M" // "SPDTracklets";
 
-
-
-
     file->GetObject("nuacentral", task->fSettings.nuacentral);
     task->fSettings.nuacentral->SetDirectory(0);
     file->GetObject("nuaforward", task->fSettings.nuaforward);

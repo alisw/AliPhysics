@@ -73,6 +73,7 @@ AliForwardTaskValidation::AliForwardTaskValidation(const char *name, bool is_rec
     fEventValidators.push_back(EventValidation::kPassesAliEventCuts);
     fEventValidators.push_back(EventValidation::kHasFMD);
     fEventValidators.push_back(EventValidation::kHasEntriesFMD);
+    fEventValidators.push_back(EventValidation::kHasValidFMD);
     fEventValidators.push_back(EventValidation::kHasEntriesV0);
     fEventValidators.push_back(EventValidation::kHasValidVertex);
     fEventValidators.push_back(EventValidation::kHasMultSelection);
@@ -83,6 +84,8 @@ AliForwardTaskValidation::AliForwardTaskValidation(const char *name, bool is_rec
     fEventValidators.push_back(EventValidation::kNotSPDClusterVsTrackletBG);
     fEventValidators.push_back(EventValidation::kPassesFMD_V0CorrelatioCut);
   }
+  if (!is_reconstructed) this->isMC = kTRUE;
+
   // Default track cuts
   fTrackValidators.push_back(TrackValidation::kNoTrackCut);
   fTrackValidators.push_back(TrackValidation::kTPCOnly);
@@ -166,6 +169,8 @@ void AliForwardTaskValidation::CreateQAHistograms(TList* outlist) {
       discardedEvtsAx->SetBinLabel(idx + 1, "Has FMD"); break;
     case EventValidation::kHasEntriesFMD:
       discardedEvtsAx->SetBinLabel(idx + 1, "Has entries FMD"); break;
+    case EventValidation::kHasValidFMD:
+        discardedEvtsAx->SetBinLabel(idx + 1, "Has valid FMD"); break;
     case EventValidation::kHasEntriesV0:
       discardedEvtsAx->SetBinLabel(idx + 1, "Has entries V0"); break;
     case EventValidation::kPassesAliEventCuts:
@@ -221,6 +226,10 @@ void AliForwardTaskValidation::UserCreateOutputObjects() {
   this->fOutputList = new TList();
   this->fOutputList->SetOwner();
 
+  this->fOutliers = new TH2D("fOutliers","Maximum #sigma from mean N_{ch} pr. bin",
+     20, 0., 100., 500, 0., 5.); //((fFlags & kMC) ? 15. : 5. // Sigma <M> histogram
+  this->fOutputList->Add(this->fOutliers);
+
   // Create QA histograms in Event selection
   fEventCuts.AddQAplotsToList(this->fOutputList);
   this->CreateQAHistograms(this->fOutputList);
@@ -269,6 +278,8 @@ void AliForwardTaskValidation::UserExec(Option_t *)
       this->fIsValidEvent = this->HasFMD(); break;
     case EventValidation::kHasEntriesFMD:
       this->fIsValidEvent = this->HasEntriesFMD(); break;
+      case EventValidation::kHasValidFMD:
+        this->fIsValidEvent = this->HasValidFMD(); break;
     case EventValidation::kHasEntriesV0:
       this->fIsValidEvent = this->HasEntriesV0(); break;
     case EventValidation::kPassesAliEventCuts:
@@ -617,6 +628,73 @@ AliForwardTaskValidation::Tracks AliForwardTaskValidation::GetMCTruthTracks() {
     std::cout << "processed " << valid << std::endl;
   }
   return ret_vector;
+}
+
+
+Bool_t AliForwardTaskValidation::HasValidFMD(){
+  AliAODForwardMult* aodForward =
+    static_cast<AliAODForwardMult*>(fInputEvent->FindListObject("Forward"));
+  const TH2D& forwarddNdedp = aodForward->GetHistogram();
+
+  AliMultSelection *MultSelection = (AliMultSelection*)fInputEvent->FindListObject("MultSelection");
+
+  Double_t cent = MultSelection->GetMultiplicityPercentile("V0M");
+
+  //if (useEvent) return useEvent;
+  Int_t nBadBins = 0;
+  Int_t phibins = forwarddNdedp.GetNbinsY();
+  Double_t totalFMDpar = 0;
+  bool useEvent = true;
+
+  for (Int_t etaBin = 1; etaBin <= forwarddNdedp.GetNbinsX(); etaBin++) {
+    Double_t eta = forwarddNdedp.GetXaxis()->GetBinCenter(etaBin);
+    Double_t runAvg = 0;
+    Double_t avgSqr = 0;
+    Double_t max = 0;
+    Int_t nInAvg = 0;
+
+    for (Int_t phiBin = 0; phiBin <= phibins; phiBin++) {
+       if (!this->isMC){
+         if ( fabs(eta) > 1.7) {
+           if (phiBin == 0 && forwarddNdedp.GetBinContent(etaBin, 0) == 0) break;
+         }
+       }
+      Double_t weight = forwarddNdedp.GetBinContent(etaBin, phiBin);
+      if (!weight){
+        weight = 0;
+      }
+      totalFMDpar += weight;
+
+      // We calculate the average Nch per. bin
+      avgSqr += weight*weight;
+      runAvg += weight;
+      nInAvg++;
+      if (weight == 0) continue;
+      if (weight > max) {
+        max = weight;
+      }
+    } // End of phi loop
+
+    // Outlier cut calculations
+    double fSigmaCut = 4.0;
+    if (nInAvg > 0) {
+      runAvg /= nInAvg;
+      avgSqr /= nInAvg;
+      Double_t stdev = (nInAvg > 1 ? TMath::Sqrt(nInAvg/(nInAvg-1))*TMath::Sqrt(avgSqr - runAvg*runAvg) : 0);
+      Double_t nSigma = (stdev == 0 ? 0 : (max-runAvg)/stdev);
+      fOutliers->Fill(cent,nSigma);
+      std::cout << "sigma = " << nSigma << std::endl;
+      if (fSigmaCut > 0. && nSigma >= fSigmaCut && cent < 60) nBadBins++;
+      else nBadBins = 0;
+      // We still finish the loop, for fOutliers to make sense,
+      // but we do no keep the event for analysis
+      if (nBadBins > 3) useEvent = false;
+     //if (nBadBins > 3) std::cout << "NUMBER OF BAD BINS > 3" << std::endl;
+    }
+  } // End of eta bin
+  if (totalFMDpar < 10) useEvent = false;
+
+  return useEvent;
 }
 
 Bool_t AliForwardTaskValidation::UserNotify() {

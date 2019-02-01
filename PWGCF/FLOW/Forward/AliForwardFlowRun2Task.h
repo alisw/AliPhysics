@@ -102,12 +102,10 @@ public:
    */
   virtual void Terminate(Option_t *option);
 
-
   //private:
-  AliVEvent*            fAOD;           //! input event
-  //AliMCEvent*            fAODMC;           //! input event
-  TList*                  fOutputList;    //! output list
-  TList*    fAnalysisList; //!
+  AliVEvent* fAOD;           //! input event
+  TList* fOutputList;    //! output list
+  TList* fAnalysisList; //!
 
   TList* fEventList; //!
   TRandom fRandom; //!
@@ -115,15 +113,11 @@ public:
   TH2D*   centralDist;//!
   TH2D*   forwardDist;//!
 
-  //AliForwardGenericFramework calculator; //!
-
   // A class combining all the settings for this analysis
   AliForwardSettings fSettings;
   AliForwardFlowUtil fUtil;
 
   Bool_t useEvent;
-
-
 
   ClassDef(AliForwardFlowRun2Task, 1); // Analysis task for flow analysis
 };

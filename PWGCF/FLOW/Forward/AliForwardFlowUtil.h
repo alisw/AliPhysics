@@ -26,7 +26,7 @@ class AliForwardFlowUtil : public TObject {
    AliForwardFlowUtil();
 
 
-  Bool_t ExtraEventCutFMD(TH2D& forwarddNdedp, double cent, Bool_t mc);
+  Bool_t ExtraEventCutFMD(TH2D& forwarddNdedp, double cent, Bool_t mc,TH2D* hOutliers);
 
   void FillFromTrackrefs(TH2D*& cen, TH2D*& fwd) const;
   void FillFromTrackrefs(TH2D*& fwd) const;

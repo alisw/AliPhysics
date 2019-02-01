@@ -63,7 +63,6 @@ AliForwardFlowRun2Task::AliForwardFlowRun2Task() : AliAnalysisTaskSE(),
   fRandom(0),
   centralDist(),
   forwardDist(),
-  //calculator(),
   fSettings(),
   fUtil(),
   useEvent(true)
@@ -82,7 +81,6 @@ AliForwardFlowRun2Task::AliForwardFlowRun2Task(const char* name) : AliAnalysisTa
   fRandom(0),
   centralDist(),
   forwardDist(),
-  //calculator(),
   fSettings(),
   fUtil(),
   useEvent(true)
@@ -112,7 +110,7 @@ void AliForwardFlowRun2Task::UserCreateOutputObjects()
     fOutputList->SetOwner(kTRUE);       // memory stuff: the list is owner of all objects it contains and will delete them if requested
 
     TRandom r = TRandom();              // random integer to use for creation of samples (used for error bars).
-                                          // Needs to be created here, otherwise it will draw the same random number.
+                                        // Needs to be created here, otherwise it will draw the same random number.
 
     fAnalysisList    = new TList();
     fEventList       = new TList();
@@ -121,7 +119,7 @@ void AliForwardFlowRun2Task::UserCreateOutputObjects()
 
     fEventList->Add(new TH1D("Centrality","Centrality",fSettings.fCentBins,0,100));
     fEventList->Add(new TH1D("Vertex","Vertex",fSettings.fNZvtxBins,fSettings.fZVtxAcceptanceLowEdge,fSettings.fZVtxAcceptanceUpEdge));
-    fEventList->Add(new TH2F("hOutliers","Maximum #sigma from mean N_{ch} pr. bin",
+    fEventList->Add(new TH2D("hOutliers","Maximum #sigma from mean N_{ch} pr. bin",
        20, 0., 100., 500, 0., 5.)); //((fFlags & kMC) ? 15. : 5. // Sigma <M> histogram
     fEventList->Add(new TH1D("FMDHits","FMDHits",100,0,10));
     fEventList->Add(new TH1D("EventCuts_FMD","EventCuts_FMD",3,0,3));
@@ -185,10 +183,6 @@ void AliForwardFlowRun2Task::UserExec(Option_t *)
   // Get the event validation object
   AliForwardTaskValidation* ev_val = dynamic_cast<AliForwardTaskValidation*>(this->GetInputData(1));
 
-
-
-
-
   fUtil.fevent = fInputEvent;
 
   Double_t centralEta = (fSettings.useSPD ? 2.5 : 1.5);
@@ -207,16 +201,17 @@ void AliForwardFlowRun2Task::UserExec(Option_t *)
   dNdeta->SetDirectory(0);
   fUtil.dNdeta = dNdeta;
 
+
   if (!fSettings.mc) {
+
+      if (!ev_val->IsValidEvent()){
+        PostData(1, this->fOutputList);
+        return;
+      }
 
     AliAODEvent* aodevent = dynamic_cast<AliAODEvent*>(InputEvent());
     fUtil.fAODevent = aodevent;
     if(!aodevent) throw std::runtime_error("Not AOD as expected");
-
-    if (!ev_val->IsValidEvent()){
-      PostData(1, this->fOutputList);
-      return;
-    }
 
     AliAODForwardMult* aodfmult = static_cast<AliAODForwardMult*>(aodevent->FindListObject("Forward"));
     forwardDist = &aodfmult->GetHistogram();
@@ -296,18 +291,20 @@ void AliForwardFlowRun2Task::UserExec(Option_t *)
   Double_t zvertex = fUtil.GetZ();
   Double_t cent = fUtil.GetCentrality(fSettings.centrality_estimator);
 
-  if (!fSettings.use_primaries_fwd && !fSettings.esd){
-    if (!fUtil.ExtraEventCutFMD(*forwardDist, cent, fSettings.mc)) {
+  if (!fSettings.use_primaries_fwd && !fSettings.mc){
+    TH2D* hOutliers = static_cast<TH2D*>(fEventList->FindObject("hOutliers"));
+
+/*
+    if (!fUtil.ExtraEventCutFMD(*forwardDist, cent, fSettings.mc, hOutliers)) {
       useEvent = false;
       static_cast<TH1D*>(fEventList->FindObject("EventCuts_FMD"))->Fill(1.0);
       PostData(1, fOutputList);
       return;
-    }
+    }*/
   }
 
   if (fSettings.makeFakeHoles) fUtil.MakeFakeHoles(*forwardDist);
 
-  if (useEvent){
     UInt_t randomInt = fRandom.Integer(fSettings.fnoSamples);
 
     static_cast<TH1D*>(fEventList->FindObject("Centrality"))->Fill(cent);
@@ -321,8 +318,6 @@ void AliForwardFlowRun2Task::UserExec(Option_t *)
     calculator.saveEvent(fOutputList, cent, zvertex,  randomInt);
     calculator.reset();
     PostData(1, fOutputList);
-  }
-
   return;
 }
 

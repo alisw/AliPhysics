@@ -105,7 +105,8 @@ AliForwardNUATask::AliForwardNUATask() : AliAnalysisTaskSE(),
     fEventList->Add(new TH1D("Centrality","Centrality",100,0,100));
     fEventList->Add(new TH1D("Vertex","Vertex",fSettings.fNZvtxBins,fSettings.fZVtxAcceptanceLowEdge,fSettings.fZVtxAcceptanceUpEdge));
     fEventList->Add(new TH1D("EventCuts_FMD","EventCuts_FMD",3,0,3));
-
+    fEventList->Add(new TH2D("hOutliers","Maximum #sigma from mean N_{ch} pr. bin",
+       20, 0., 100., 500, 0., 5.)); //((fFlags & kMC) ? 15. : 5. // Sigma <M> histogram
     fEventList->SetName("EventInfo");
 
     fEventList->Add(new TH1F("dNdeta","dNdeta",100 /*fSettings.fNDiffEtaBins*/,fSettings.fEtaLowEdge,fSettings.fEtaUpEdge));
@@ -259,7 +260,9 @@ void AliForwardNUATask::UserExec(Option_t *)
   Double_t cent = fUtil.GetCentrality(fSettings.centrality_estimator);
 
   if (!fSettings.use_primaries_fwd && !fSettings.esd){
-    if (!fUtil.ExtraEventCutFMD(*forwardDist, cent, fSettings.mc)) {
+    TH2D* hOutliers = static_cast<TH2D*>(fEventList->FindObject("hOutliers"));
+
+    if (!fUtil.ExtraEventCutFMD(*forwardDist, cent, fSettings.mc,hOutliers)) {
       useEvent = false;
       static_cast<TH1D*>(fEventList->FindObject("EventCuts_FMD"))->Fill(1.0);
       PostData(1, fOutputList);

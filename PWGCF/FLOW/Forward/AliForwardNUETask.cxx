@@ -183,7 +183,7 @@ void AliForwardNUETask::UserExec(Option_t *)
   if (iTracks < 10) useEvent = kFALSE;
 
   // extra cut on the FMD
-  if (!fUtil.ExtraEventCutFMD(forwarddNdedp, cent, true)) useEvent = false;
+  //if (!fUtil.ExtraEventCutFMD(forwarddNdedp, cent, true)) useEvent = false;
   if (useEvent) {
 
     // loop for the SPD
