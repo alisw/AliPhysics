@@ -2498,6 +2498,29 @@ void AddTask_GammaConvV1_PbPb(
     cuts.AddCutPCM("16810a23", "00200009257602008250404000", "0152501500000000"); // 60-80%
     cuts.AddCutPCM("31210a23", "00200009257602008250404000", "0152501500000000"); // 5-10%
 
+    // Chi2 varied in small steps for 0-10% centrality class
+  } else if (trainConfig == 564){ //-------------_-----------------------------------------
+    cuts.AddCutPCM("10110a13", "00200009247602008a50404000", "0152501500000000"); // 25
+    cuts.AddCutPCM("10110a13", "00200009247602008950404000", "0152501500000000"); // 15
+    cuts.AddCutPCM("10110a13", "00200009247602008750404000", "0152501500000000"); // 10
+    cuts.AddCutPCM("10110a13", "00200009247602008650404000", "0152501500000000"); // 5
+  } else if (trainConfig == 565){
+    cuts.AddCutPCM("10110a13", "00200009247602008b50404000", "0152501500000000"); // 35
+    cuts.AddCutPCM("10110a13", "00200009247602008c50404000", "0152501500000000"); // 40
+    cuts.AddCutPCM("10110a13", "00200009247602008d50404000", "0152501500000000"); // 45
+    cuts.AddCutPCM("10110a13", "00200009247602008e50404000", "0152501500000000"); // 55
+  } else if (trainConfig == 566){ // with added particles
+    cuts.AddCutPCM("10110a23", "00200009247602008a50404000", "0152501500000000"); // 25
+    cuts.AddCutPCM("10110a23", "00200009247602008950404000", "0152501500000000"); // 15
+    cuts.AddCutPCM("10110a23", "00200009247602008750404000", "0152501500000000"); // 10
+    cuts.AddCutPCM("10110a23", "00200009247602008650404000", "0152501500000000"); // 5
+  } else if (trainConfig == 567){ // with added particles
+    cuts.AddCutPCM("10110a23", "00200009247602008b50404000", "0152501500000000"); // 35
+    cuts.AddCutPCM("10110a23", "00200009247602008c50404000", "0152501500000000"); // 40
+    cuts.AddCutPCM("10110a23", "00200009247602008d50404000", "0152501500000000"); // 45
+    cuts.AddCutPCM("10110a23", "00200009247602008e50404000", "0152501500000000"); // 55
+
+
   } else if (trainConfig == 1001){
     cuts.AddCutPCM("60100013", "04200009297002003220000000", "0152204500900000");
   } else if (trainConfig == 1002) {
@@ -2773,7 +2796,7 @@ void AddTask_GammaConvV1_PbPb(
       TObjString *Header1 = new TObjString("PARAM_PHOS");
       HeaderList->Add(Header1);
     }
-  } else if (generatorName.CompareTo("LHC16h4")==0){
+  } else if (periodNameV0Reader.CompareTo("LHC16h4")==0){
     if (doWeightingPart == 1){
       TObjString *Header1 = new TObjString("Injector (pi0)_1");
       HeaderList->Add(Header1);
