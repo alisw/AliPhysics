@@ -535,6 +535,7 @@ void AliAnalysisTaskSEHFTreeCreator::UserCreateOutputObjects()
     // Output slot 4-17 : trees of the candidate and event-characterization variables
     //
   
+    OpenFile(5);
     fTreeEvChar = new TTree("tree_event_char","tree_event_char");
     //set variables
     TString varnames[7] = {"centrality", "z_vtx_reco", "n_vtx_contributors", "n_tracks", "is_ev_rej", "run_number", "z_vtx_gen"};
