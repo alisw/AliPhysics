@@ -6114,9 +6114,13 @@ void AliCaloPhotonCuts::ApplyNonLinearity(AliVCluster* cluster, Int_t isMC)
           } else if(fClusterType==2){
             energy /= ( 0.997*0.9965200155 ); // additional factors
           }
+        } else if(fCurrentMC==k17e2 || fCurrentMC == k18j3) {
+          if(fClusterType==2){
+            energy /= FunctionNL_kSDM(energy, 0.995159, -2.50247, -0.799579);
+          }
         } else if(fCurrentMC==k17l3b || fCurrentMC==k18j2 || fCurrentMC==k17l4b) {
           if(fClusterType==2){
-            energy /= FunctionNL_kSDM(energy, 1.00146, -2.47632, -1.02472);
+            energy /= FunctionNL_kSDM(energy, 0.994652, -2.4232, -0.947968);
           }
         } else if( fCurrentMC==k18f3bc || fCurrentMC==k18b9b || fCurrentMC==k18b9c ) {
           if(fClusterType==1 ){
