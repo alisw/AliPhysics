@@ -466,6 +466,34 @@ void PlotAODtrackQA(TString filename="AnalysisResults.root", TString suffix="QA"
   cme2->SaveAs(plotFileName.Data());
   if(outputForm=="pdf") pdfFileNames+=Form("%s ",plotFileName.Data());
 
+  TFile* outME=new TFile("MatchingEff.root","recreate");
+  hMatchEffVsPtNegEta->Write();
+  hMatchEffVsPtPosEta->Write();
+  hMatchEffVsPtNegEtaSPDany->Write();
+  hMatchEffVsPtPosEtaSPDany->Write();
+  hMatchEffVsPtNegEtaTOFbc->Write();
+  hMatchEffVsPtPosEtaTOFbc->Write();
+  hMatchEffVsPtNegEtaSPDanyTOFbc->Write();
+  hMatchEffVsPtPosEtaSPDanyTOFbc->Write();
+  hMatchEffVsPhiNegEtaLowPt->Write();
+  hMatchEffVsPhiNegEtaSPDanyLowPt->Write();
+  hMatchEffVsPhiNegEtaLowPtTOFbc->Write();
+  hMatchEffVsPhiNegEtaSPDanyLowPtTOFbc->Write();
+  hMatchEffVsPhiPosEtaLowPt->Write();
+  hMatchEffVsPhiPosEtaSPDanyLowPt->Write();
+  hMatchEffVsPhiPosEtaLowPtTOFbc->Write();
+  hMatchEffVsPhiPosEtaSPDanyLowPtTOFbc->Write();
+  hMatchEffVsPhiNegEtaHighPt->Write();
+  hMatchEffVsPhiNegEtaSPDanyHighPt->Write();
+  hMatchEffVsPhiNegEtaHighPtTOFbc->Write();
+  hMatchEffVsPhiNegEtaSPDanyHighPtTOFbc->Write();
+  hMatchEffVsPhiPosEtaHighPt->Write();
+  hMatchEffVsPhiPosEtaSPDanyHighPt->Write();
+  hMatchEffVsPhiPosEtaHighPtTOFbc->Write();
+  hMatchEffVsPhiPosEtaSPDanyHighPtTOFbc->Write();
+  outME->Close();
+  delete outME;
+
   TH3F* hEtaPhiPtTPCselITSrefGood=(TH3F*)l->FindObject("hEtaPhiPtTPCselITSrefGood");
   TH3F* hEtaPhiPtTPCselITSrefFake=(TH3F*)l->FindObject("hEtaPhiPtTPCselITSrefFake");
   TH1D* hPtGood=hEtaPhiPtTPCselITSrefGood->ProjectionZ("hPtGood",etamin,eta0m);
