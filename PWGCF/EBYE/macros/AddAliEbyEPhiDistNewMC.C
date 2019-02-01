@@ -4,7 +4,7 @@
 //                   drathee@cern.ch | sjena@cern.ch                       //
 //                            Surya Prakash Pathak                         //
 //                       surya.prakash.pathak@cern.ch                      //
-//                         (Last Modified 2019/01/23)                      //
+//                         (Last Modified 2019/02/01)                      //
 //                                                                         //
 //Some parts of the code are taken from J. Thaeder/ M. Weber NetParticle analysis code//
 //=========================================================================//
@@ -49,7 +49,7 @@ AliAnalysisTask *AddAliEbyEPhiDistNewMC(
     pth = 1.6;
   }
 
-    phil = 3.14 ; // total phi in radian
+    phil = 0.0 ; // total phi in radian
     phih = 6.28;
 
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
