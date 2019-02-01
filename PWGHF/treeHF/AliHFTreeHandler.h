@@ -40,7 +40,9 @@ class AliHFTreeHandler : public TObject
       kBkg      = BIT(2),
       kPrompt   = BIT(3),
       kFD       = BIT(4),
-      kRefl     = BIT(5)
+      kRefl     = BIT(5),
+      kSelectedTopo    = BIT(6),
+      kSelectedPID     = BIT(7) //up to BIT(10) included for general flags, following BITS particle-specific
     };
   
     enum optpid {
@@ -86,9 +88,13 @@ class AliHFTreeHandler : public TObject
     void SetFillOnlySignal(bool fillopt=true) {fFillOnlySignal=fillopt;}
 
     void SetCandidateType(bool issignal, bool isbkg, bool isprompt, bool isFD, bool isreflected);
-    void SetIsSelectedStd(bool isselected) {
+    void SetIsSelectedStd(bool isselected, bool isselectedTopo, bool isselectedPID) {
       if(isselected) fCandTypeMap |= kSelected;
       else fCandTypeMap &= ~kSelected;
+      if(isselectedTopo) fCandTypeMap |= kSelectedTopo;
+      else fCandTypeMap &= kSelectedTopo;
+      if(isselectedPID) fCandTypeMap |= kSelectedPID;
+      else fCandTypeMap &= kSelectedPID;
     }
 
     void SetDauInAcceptance(bool dauinacc = true) {fDauInAccFlag=dauinacc;}
@@ -116,6 +122,14 @@ class AliHFTreeHandler : public TObject
     static bool IsRefl(int candtype) {
       if(candtype>>5&1) return true;
       return false;
+    }
+    static bool IsSelectedStdTopo(int candtype) {
+        if(candtype&6) return true;
+        return false;
+    }
+    static bool IsSelectedStdPID(int candtype) {
+        if(candtype&7) return true;
+        return false;
     }
 
   protected:  
