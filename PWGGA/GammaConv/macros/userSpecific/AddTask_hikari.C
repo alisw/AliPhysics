@@ -129,75 +129,83 @@ AliAnalysisTaskGammaConvV1* AddTask_hikari(
       cuts.AddCutPCM("00010113", "0d200009a27300008250904000", "0152103500000000"); // pa 0.99
       cuts.AddCutPCM("00010113", "0d200009a27300008250a04000", "0152103500000000"); // pa 0.995        //E
     } else if (trainConfig == 6){
+      cuts.AddCutPCM("00010113", "0d200009a27300008250a04000", "0152103500000000"); // AllCat          //E
+      cuts.AddCutPCM("00010113", "0d200009a27300008250a24000", "0152103500000000"); // Cat1   TPC
+      cuts.AddCutPCM("00010113", "0d200009a27300008250a54000", "0152103500000000"); // Cat2,3 ITS
+    } else if (trainConfig == 7){
+      cuts.AddCutPCM("00010113", "0d200009a27300008250a04000", "0152103500000000"); // AllCat          //E
+      cuts.AddCutPCM("00010113", "0d200009a27300008250a24000", "0152103500000000"); // Cat1   TPC
+      cuts.AddCutPCM("00010113", "0d200009a27300008250a54000", "0152103500000000"); // Cat2,3 ITS
+    } else if (trainConfig == 8){
     //cuts.AddCutPCM("00010113", "0d200009227300008250a04000", "0152103500000000"); // standard cut for pp 5 TeV analysis VAND //E
       cuts.AddCutPCM("00010113", "0d200008227300008250a04000", "0152103500000000"); // TPC cluster 35%
       cuts.AddCutPCM("00010113", "0d200006227300008250a04000", "0152103500000000"); // TPC cluster 70%
-    } else if (trainConfig == 7){
+    } else if (trainConfig == 9){
       cuts.AddCutPCM("00010113", "0d200079227300008250a04000", "0152103500000000"); // min pT no cut
       cuts.AddCutPCM("00010113", "0d200069227300008250a04000", "0152103500000000"); // min pT 40 MeV
       cuts.AddCutPCM("00010113", "0d200049227300008250a04000", "0152103500000000"); // min pT 75 MeV
-    } else if (trainConfig == 8){
+    } else if (trainConfig == 10){
       cuts.AddCutPCM("00010113", "0d200009a27300008250a04000", "0152103500000000"); // standard cut for pp 5 TeV analysis VAND
       cuts.AddCutPCM("00010113", "0d200008a27300008250a04000", "0152103500000000"); // TPC cluster 35%
       cuts.AddCutPCM("00010113", "0d200006a27300008250a04000", "0152103500000000"); // TPC cluster 70%
-    } else if (trainConfig == 9){
+    } else if (trainConfig == 11){
       cuts.AddCutPCM("00010113", "0d200079a27300008250a04000", "0152103500000000"); // min pT no cut
       cuts.AddCutPCM("00010113", "0d200069a27300008250a04000", "0152103500000000"); // min pT 40 MeV
       cuts.AddCutPCM("00010113", "0d200049a27300008250a04000", "0152103500000000"); // min pT 75 MeV    
-    } else if (trainConfig == 10){
-      cuts.AddCutPCM("00010113", "0d200009a27300008250a04000", "0152103500000000"); // edEdx -3,3
-      cuts.AddCutPCM("00010113", "0d200009b27300008250a04000", "0152103500000000"); // edEdx -3,2,3.2
-      cuts.AddCutPCM("00010113", "0d200009c27300008250a04000", "0152103500000000"); // edEdx -2.8,2.8
-      cuts.AddCutPCM("00010113", "0d200009a57300008250a04000", "0152103500000000"); // pidEdx 2,-10
-      cuts.AddCutPCM("00010113", "0d200009a17300008250a04000", "0152103500000000"); // pidEdx 0,-10
-    } else if (trainConfig == 11){
-      cuts.AddCutPCM("00010113", "0d200009a27300008250a04000", "0152103500000000"); // edEdx -3,3
-      cuts.AddCutPCM("00010113", "0d200009b27300008250a04000", "0152103500000000"); // edEdx -3,2,3.2
-      cuts.AddCutPCM("00010113", "0d200009c27300008250a04000", "0152103500000000"); // edEdx -2.8,2.8
-      cuts.AddCutPCM("00010113", "0d200009a57300008250a04000", "0152103500000000"); // pidEdx 2,-10
-      cuts.AddCutPCM("00010113", "0d200009a17300008250a04000", "0152103500000000"); // pidEdx 0,-10
     } else if (trainConfig == 12){
+      cuts.AddCutPCM("00010113", "0d200009a27300008250a04000", "0152103500000000"); // edEdx -3,3
+      cuts.AddCutPCM("00010113", "0d200009b27300008250a04000", "0152103500000000"); // edEdx -3,2,3.2
+      cuts.AddCutPCM("00010113", "0d200009c27300008250a04000", "0152103500000000"); // edEdx -2.8,2.8
+      cuts.AddCutPCM("00010113", "0d200009a57300008250a04000", "0152103500000000"); // pidEdx 2,-10
+      cuts.AddCutPCM("00010113", "0d200009a17300008250a04000", "0152103500000000"); // pidEdx 0,-10
+    } else if (trainConfig == 13){
+      cuts.AddCutPCM("00010113", "0d200009a27300008250a04000", "0152103500000000"); // edEdx -3,3
+      cuts.AddCutPCM("00010113", "0d200009b27300008250a04000", "0152103500000000"); // edEdx -3,2,3.2
+      cuts.AddCutPCM("00010113", "0d200009c27300008250a04000", "0152103500000000"); // edEdx -2.8,2.8
+      cuts.AddCutPCM("00010113", "0d200009a57300008250a04000", "0152103500000000"); // pidEdx 2,-10
+      cuts.AddCutPCM("00010113", "0d200009a17300008250a04000", "0152103500000000"); // pidEdx 0,-10
+    } else if (trainConfig == 14){
       cuts.AddCutPCM("00010113", "0d200009220300008250a04000", "0152103500000000"); // pion nsig min mom 0.50 GeV/c
       cuts.AddCutPCM("00010113", "0d200009226300008250a04000", "0152103500000000"); // pion nsig min mom 0.25 GeV/c
       cuts.AddCutPCM("00010113", "0d200009227600008250a04000", "0152103500000000"); // pion nsig max mom 2.00 GeV/c
       cuts.AddCutPCM("00010113", "0d200009227100008250a04000", "0152103500000000"); // pion nsig max mom 5.00 GeV/c
-    } else if (trainConfig == 13){
+    } else if (trainConfig == 15){
       cuts.AddCutPCM("00010113", "0d200009a20300008250a04000", "0152103500000000"); // pion nsig min mom 0.50 GeV/c
       cuts.AddCutPCM("00010113", "0d200009a26300008250a04000", "0152103500000000"); // pion nsig min mom 0.25 GeV/c
       cuts.AddCutPCM("00010113", "0d200009a27600008250a04000", "0152103500000000"); // pion nsig max mom 2.00 GeV/c
       cuts.AddCutPCM("00010113", "0d200009a27100008250a04000", "0152103500000000"); // pion nsig max mom 5.00 GeV/c
-    } else if (trainConfig == 14){
+    } else if (trainConfig == 16){
       cuts.AddCutPCM("00010113", "0d200009227300003250a04000", "0152103500000000"); // qT max 0.05 1D
       cuts.AddCutPCM("00010113", "0d200009227300002250a04000", "0152103500000000"); // qT max 0.06 2D
       cuts.AddCutPCM("00010113", "0d200009227300008210a04000", "0152103500000000"); // Psi pair 0.1  1D
       cuts.AddCutPCM("00010113", "0d200009227300008260a04000", "0152103500000000"); // Psi pair 0.05 2D
       cuts.AddCutPCM("00010113", "0d020009227300008280a04000", "0152103500000000"); // Psi pair 0.2  2D
-    } else if (trainConfig == 15){
+    } else if (trainConfig == 17){
       cuts.AddCutPCM("00010113", "0d200009a27300003250a04000", "0152103500000000"); // qT max 0.05 1D
       cuts.AddCutPCM("00010113", "0d200009a27300002250a04000", "0152103500000000"); // qT max 0.06 2D
       cuts.AddCutPCM("00010113", "0d200009a27300008210a04000", "0152103500000000"); // Psi pair 0.1  1D
       cuts.AddCutPCM("00010113", "0d200009a27300008260a04000", "0152103500000000"); // Psi pair 0.05 2D
       cuts.AddCutPCM("00010113", "0d020009a27300008280a04000", "0152103500000000"); // Psi pair 0.2  2D
-    } else if (trainConfig == 16){
+    } else if (trainConfig == 18){
       cuts.AddCutPCM("00010113", "0d200009227300008210a04000", "0152103500000000"); // variation chi2 30 psi pair 0.1 1D
       cuts.AddCutPCM("00010113", "0d200009227300008860a04000", "0152103500000000"); // variation chi2 20 psi pair 0.05 2D
       cuts.AddCutPCM("00010113", "0d200009227300008180a04000", "0152103500000000"); // variation chi2 50 psi pair 0.2 2D
       cuts.AddCutPCM("00010113", "0d200009227300008254a04000", "0152103500000000"); // Photon Asymmetry Cut
-    } else if (trainConfig == 17){
+    } else if (trainConfig == 19){
       cuts.AddCutPCM("00010113", "0d200009a27300008210a04000", "0152103500000000"); // variation chi2 30 psi pair 0.1 1D
       cuts.AddCutPCM("00010113", "0d200009a27300008860a04000", "0152103500000000"); // variation chi2 20 psi pair 0.05 2D
       cuts.AddCutPCM("00010113", "0d200009a27300008180a04000", "0152103500000000"); // variation chi2 50 psi pair 0.2 2D
       cuts.AddCutPCM("00010113", "0d200009a27300008254a04000", "0152103500000000"); // Photon Asymmetry Cut
-    } else if (trainConfig == 18){
+    } else if (trainConfig == 20){
       cuts.AddCutPCM("00010113", "0d200009a27300008250a00000", "0152103500000000"); // no double counting
       cuts.AddCutPCM("00010113", "0d200009a27300008250a04000", "0152105500000000"); // meson alpha < 0.75
       cuts.AddCutPCM("00010113", "0d200009a27300008250a04000", "0152107500000000"); // meson alpha < 0.85
-    } else if (trainConfig == 19){
+    } else if (trainConfig == 21){
       cuts.AddCutPCM("00010113", "0d200009227300008250a04030", "0152103500000000"); // dcaz 4cm
       cuts.AddCutPCM("00010113", "0d200009227300008250a04040", "0152103500000000"); // dcaz 3cm
       cuts.AddCutPCM("00010113", "0d200009227300008250a04200", "0152103500000000"); // dcar 5cm
       cuts.AddCutPCM("00010113", "0d200009227300008250a04300", "0152105500000000"); // dcar 4cm
-    } else if (trainConfig == 20){
+    } else if (trainConfig == 22){
       cuts.AddCutPCM("00010113", "0d200009a27300008250a04030", "0152103500000000"); // dcaz 4cm
       cuts.AddCutPCM("00010113", "0d200009a27300008250a04040", "0152103500000000"); // dcaz 3cm
       cuts.AddCutPCM("00010113", "0d200009a27300008250a04200", "0152103500000000"); // dcar 5cm
@@ -288,16 +296,24 @@ AliAnalysisTaskGammaConvV1* AddTask_hikari(
       cuts.AddCutPCM("80010113", "0d200009327300008250b04000", "0162103500000000"); // pa 0.985
       cuts.AddCutPCM("80010113", "0d200009327300008250904000", "0162103500000000"); // pa 0.99
     } else if (trainConfig == 5){      
+      cuts.AddCutPCM("80010113", "0d200009327300008250a04000", "0162103500000000"); // All
+      cuts.AddCutPCM("80010113", "0d200009327300008250a24000", "0162103500000000"); // Cat1
+      cuts.AddCutPCM("80010113", "0d200009327300008250a54000", "0162103500000000"); // Cat23
+    } else if (trainConfig == 6){
+      cuts.AddCutPCM("80010113", "0d200009327300008250a04000", "0162103500000000"); // All
+      cuts.AddCutPCM("80010113", "0d200009327300008250a24000", "0162103500000000"); // Cat1
+      cuts.AddCutPCM("80010113", "0d200009327300008250a54000", "0162103500000000"); // Cat23
+    } else if (trainConfig == 7){
       cuts.AddCutPCM("80010113", "0d200079a27000008250a04000", "0162103500000000"); // min pT no cut
       cuts.AddCutPCM("80010113", "0d200069a27000008250a04000", "0162103500000000"); // min pT 40 cut
       cuts.AddCutPCM("80010113", "0d200049a27000008250a04000", "0162103500000000"); // min pT 75 cut
-    } else if (trainConfig == 6){
+    } else if (trainConfig == 8){
       cuts.AddCutPCM("80010113", "0d200008a27000008250a04000", "0162103500000000"); // TPC cluster 35%
       cuts.AddCutPCM("80010113", "0d200007a27000008250a04000", "0162103500000000"); // TPC cluster 70%
-    } else if (trainConfig == 7){
+    } else if (trainConfig == 9){
       cuts.AddCutPCM("80010113", "00200009b27000008250a04000", "0162103500000000"); // edEdx -3.2,3.2
       cuts.AddCutPCM("80010113", "00200009c27000008250a04000", "0162103500000000"); // edEdx -2.8,2.8
-    } else if (trainConfig == 8){
+    } else if (trainConfig == 10){
       cuts.AddCutPCM("80010113", "00200009a57000008250a04000", "0162103500000000"); // pidEdx 2,-10
       cuts.AddCutPCM("80010113", "00200009a17000008250a04000", "0162103500000000"); // pidEdx 0,-10
       cuts.AddCutPCM("80010113", "00200009a27000003250a04000", "0162103500000000"); // qT max 0.05 1D
