@@ -262,7 +262,11 @@ AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::AliAnalysisTaskNeutralMesonTo
   fSelectedHeavyNeutralMeson(kFALSE),
   fDoLightOutput(kFALSE),
   fNDMRecoMode(0),
-  fTolerance(-1)
+  fTolerance(-1),
+  fMCEventPos(),
+  fMCEventNeg(),
+  fESDArrayPos(),
+  fESDArrayNeg()
 {
 
 }
@@ -476,7 +480,11 @@ AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::AliAnalysisTaskNeutralMesonTo
   fSelectedHeavyNeutralMeson(kFALSE),
   fDoLightOutput(kFALSE),
   fNDMRecoMode(0),
-  fTolerance(-1)
+  fTolerance(-1),
+  fMCEventPos(),
+  fMCEventNeg(),
+  fESDArrayPos(),
+  fESDArrayNeg()
 {
   DefineOutput(1, TList::Class());
 }
@@ -5499,10 +5507,10 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::RelabelAODPhotonCandidat
   // MCLabel -> AODMCLabel
 
   if(mode){
-    fMCEventPos = new Int_t[fReaderGammas->GetEntries()];
-    fMCEventNeg = new Int_t[fReaderGammas->GetEntries()];
-    fESDArrayPos = new Int_t[fReaderGammas->GetEntries()];
-    fESDArrayNeg = new Int_t[fReaderGammas->GetEntries()];
+    fMCEventPos.Set(fReaderGammas->GetEntries());
+    fMCEventNeg.Set(fReaderGammas->GetEntries());
+    fESDArrayPos.Set(fReaderGammas->GetEntries());
+    fESDArrayNeg.Set(fReaderGammas->GetEntries());
   }
 
   for(Int_t iGamma = 0;iGamma<fReaderGammas->GetEntries();iGamma++){
@@ -5554,14 +5562,6 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::RelabelAODPhotonCandidat
         PhotonCandidate->SetLabelPositive(-999999);
       }
     }
-  }
-
-
-  if(!mode){
-    delete[] fMCEventPos;
-    delete[] fMCEventNeg;
-    delete[] fESDArrayPos;
-    delete[] fESDArrayNeg;
   }
 }
 

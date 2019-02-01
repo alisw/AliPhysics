@@ -15,6 +15,7 @@
 #include "AliCaloPhotonCuts.h"
 #include "AliGammaConversionAODBGHandler.h"
 #include "TProfile2D.h"
+#include "TArrayI.h"
 #include <vector>
 
 class AliESDInputHandler;
@@ -360,15 +361,15 @@ class AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson: public AliAnalysisTaskS
     Int_t                           fDoMesonQA;                                           // Switching for meson QA 0: no QA 1: small QA 2: big QA
     Bool_t                          fIsFromMBHeader;                                      // Flag for particle whether it belongs to accepted header
     Bool_t                          fIsMC;                                                // Flag for MC
-    Int_t                           fSelectedHeavyNeutralMeson;                                          // Flag for running eta prime
+    Int_t                           fSelectedHeavyNeutralMeson;                           // Flag for running eta prime
     Bool_t                          fDoLightOutput;                                       // Flag to turn on light output
-    Int_t                           fNDMRecoMode;                                     // Flag how neutral pion is reconstructed 0=PCM-PCM, 1=PCM-Calo, 2=Calo-Calo
+    Int_t                           fNDMRecoMode;                                         // Flag how neutral pion is reconstructed 0=PCM-PCM, 1=PCM-Calo, 2=Calo-Calo
     Double_t                        fTolerance;                                           // tolerance in rad for angle cuts
 
-    Int_t*                            fMCEventPos;                                //[fnGammaCandidates]
-    Int_t*                            fMCEventNeg;                                //[fnGammaCandidates]
-    Int_t*                            fESDArrayPos;                               //[fnGammaCandidates]
-    Int_t*                            fESDArrayNeg;                               //[fnGammaCandidates]
+    TArrayI                         fMCEventPos;                                          //!<! Pos. in MC event pos. leg of the photon (for relabelling) 
+    TArrayI                         fMCEventNeg;                                          //!<! Pos. in MC event neg. leg of the photon (for relabelling)
+    TArrayI                         fESDArrayPos;                                         //!<! Pos. in MC AOD array pos. leg of the photon (for relabelling)
+    TArrayI                         fESDArrayNeg;                                         //!<! Pos. in MC AOD array pos. leg of the photon (for relabelling)
 private:
     AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson( const AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson& ); // Not implemented
     AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson& operator=( const AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson& ); // Not implemented
