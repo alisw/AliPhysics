@@ -156,7 +156,11 @@ AliAnalysisTaskElectronEfficiencyV2* AddTask_acapon_Efficiency(TString names    
 	task->SetMassBins(massBins);
 
 
-	Double_t pairPtBinsArr[] = {0.0, 0.1, 0.3, 0.5, 1, 1.5, 2.5, 2.5, 4, 6, 10};
+	Double_t pairPtBinsArr[] = {2.00, 0.05, 0.10, 0.15, 0.20, 0.25, 0.30, 0.35, 0.40, 0.45,
+                              0.50, 0.55, 0.60, 0.65, 0.70, 0.75, 0.80, 0.85, 0.90, 0.95,
+                              1.00, 1.20, 1.40, 1.60, 1.80, 2.00, 2.20, 2.40, 2.60, 2.80,
+                              3.00, 3.20, 3.40, 3.60, 3.80, 4.00, 4.20, 4.40, 4.60, 4.80,
+                              5.00, 6.00, 7.00, 8.00};
 	std::vector<Double_t> pairPtBins;
 	for(Int_t k = 0; k < sizeof(pairPtBinsArr)/sizeof(pairPtBinsArr[0]); k++){
 		pairPtBins.push_back(pairPtBinsArr[k]);

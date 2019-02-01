@@ -735,7 +735,12 @@ TVectorD* GetVector(Int_t var, Bool_t useRun1binning)
 			return AliDielectronHelper::MakeArbitraryBinning("0.0, 0.01, 0.02, 0.03, 0.04, 0.05, 0.06, 0.07, 0.08, 0.09, 0.10, 0.14, 0.18, 0.22, 0.26, 0.30, 0.34, 0.38, 0.42, 0.46, 0.50 ");
 		//case kPtee: return AliDielectronHelper::MakeLinBinning(100, 0., 10.);
 		case kPtee:
-			return AliDielectronHelper::MakeArbitraryBinning("0.0, 0.1, 0.3, 0.5, 1, 1.5, 2.5, 2.5, 4, 6, 10");
+			return AliDielectronHelper::MakeArbitraryBinning("1.00, 0.05, 0.10, 0.15, 0.20, 0.25, 0.30, 0.35, 0.40, 0.45,
+                                                                   0.50, 0.55, 0.60, 0.65, 0.70, 0.75, 0.80, 0.85, 0.90, 0.95,
+                                                                   1.00, 1.20, 1.40, 1.60, 1.80, 2.00, 2.20, 2.40, 2.60, 2.80,
+                                                                   3.00, 3.20, 3.40, 3.60, 3.80, 4.00, 4.20, 4.40, 4.60, 4.80,
+                                                                   5.00, 6.00, 7.00, 8.00
+);
     case kP2D:    return AliDielectronHelper::MakeArbitraryBinning("0.0, 0.05, 0.10, 0.15, 0.20, 0.25, 0.30, 0.35, 0.40, 0.45," 
                                                                   " 0.50, 0.55, 0.60, 0.65, 0.70, 0.75, 0.80, 0.85, 0.90, 0.95," 
                                                                   " 1.00, 1.05, 1.10, 1.15, 1.20, 1.25, 1.30, 1.35, 1.40, 1.45," 
