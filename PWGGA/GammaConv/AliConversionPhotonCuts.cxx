@@ -3525,26 +3525,31 @@ Bool_t AliConversionPhotonCuts::SetSharedElectronCut(Int_t sharedElec) {
     case 0:
       fDoSharedElecCut = kFALSE;
       fDoPhotonQualitySelectionCut = kFALSE;
+      fDoPhotonQualityRejectionCut = kFALSE;
       fPhotonQualityCut = 0;
       break;
     case 1:
       fDoSharedElecCut = kTRUE;
       fDoPhotonQualitySelectionCut = kFALSE;
+      fDoPhotonQualityRejectionCut = kFALSE;
       fPhotonQualityCut = 0;
       break;
     case 2:
       fDoSharedElecCut = kFALSE;
       fDoPhotonQualitySelectionCut = kTRUE;
+      fDoPhotonQualityRejectionCut = kFALSE;
       fPhotonQualityCut = 1;
       break;
     case 3:
       fDoSharedElecCut = kFALSE;
       fDoPhotonQualitySelectionCut = kTRUE;
+      fDoPhotonQualityRejectionCut = kFALSE;
       fPhotonQualityCut = 2;
       break;
     case 4:
       fDoSharedElecCut = kFALSE;
       fDoPhotonQualitySelectionCut = kTRUE;
+      fDoPhotonQualityRejectionCut = kFALSE;
       fPhotonQualityCut = 3;
       break;
     case 5://Cat1 rejection
