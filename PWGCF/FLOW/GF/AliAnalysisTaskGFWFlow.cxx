@@ -493,8 +493,9 @@ Bool_t AliAnalysisTaskGFWFlow::LoadWeights(Int_t runno) {
     printf("Could not open %s!\n",fWeightPath.Data());
     return kFALSE;
   };
+  TList *l_List = (TList*)tfWeights->FindObject("OutputList");
   TString l_weightname(fSelections[fSelections[fCurrSystFlag]->NeedsExtraWeight()?fCurrSystFlag:0]->GetSystPF());
-  fWeights = (AliGFWWeights*)tfWeights->Get(Form("weights%s",l_weightname.Data()));
+  fWeights = (AliGFWWeights*)l_List->FindObject(Form("weights%s",l_weightname.Data()));
   if(!fWeights) {
     printf("Could not fetch weights%s from %s!\n",fSelections[fCurrSystFlag]->GetSystPF(),fWeightPath.Data());
     return kFALSE;

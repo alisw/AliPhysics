@@ -1,6 +1,6 @@
 class AliAnalysisDataContainer;
 class TNamed;
-AliAnalysisTaskGFWFlow* AddTaskGFWFlow(TString name = "name", Bool_t ProduceWeights=kTRUE, Bool_t IsMC=kFALSE, TString subfx="", Bool_t AddQA=kFALSE)
+AliAnalysisTaskGFWFlow* AddTaskGFWFlow(TString name = "name", Bool_t ProduceWeights=kTRUE, Bool_t IsMC=kFALSE, Bool_t AddQA=kFALSE, TString subfx="")
 {
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
   if (!mgr) return 0x0;
