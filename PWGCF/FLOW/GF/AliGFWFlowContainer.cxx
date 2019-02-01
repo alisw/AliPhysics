@@ -77,6 +77,38 @@ Int_t AliGFWFlowContainer::FillProfile(const char *hname, Double_t multi, Double
   };
   return 0;
 };
+Long64_t AliGFWFlowContainer::Merge(TCollection *collist) {
+  Long64_t nmerged=0;
+  AliGFWFlowContainer *l_FC = 0;
+  TIter all_FC(collist);
+  //TProfile2D *spro = lfc->GetProfile();
+  while (l_FC = ((AliGFWFlowContainer*) all_FC())) {
+    TProfile2D *tpro = GetProfile();
+    TProfile2D *spro = l_FC->GetProfile();
+    if(!tpro) {
+      fProf = (TProfile2D*)spro->Clone(spro->GetName());
+      fProf->SetDirectory(0);
+    } else 
+      tpro->Add(spro);
+    nmerged++;
+    TObjArray *tarr = l_FC->GetSubProfiles();
+    if(!tarr)
+      continue;
+    if(!fProfRand) {
+      fProfRand = new TObjArray();
+      fProfRand->SetOwner(kTRUE);
+    };
+    for(Int_t i=0;i<tarr->GetEntries();i++) {
+      if(!(fProfRand->FindObject(tarr->At(i)->GetName()))) {
+	fProfRand->Add((TProfile2D*)tarr->At(i)->Clone(tarr->At(i)->GetName()));
+	((TProfile2D*)fProfRand->At(fProfRand->GetEntries()-1))->SetDirectory(0);
+      } else {
+	((TProfile2D*)fProfRand->FindObject(tarr->At(i)->GetName()))->Add((TProfile2D*)tarr->At(i));
+      };
+    };
+  };
+  return nmerged;
+};
 void AliGFWFlowContainer::ReadAndMerge(const char *filelist) {
   FILE *flist = fopen(filelist,"r");
   char str[150];
