@@ -638,8 +638,7 @@ fHistGeneratedPtVsYVsCentralityAntiHypTrit(0)
     DefineOutput(3, TList::Class()); // Cascade Histogram Output
     
     //Optional output
-    if (fkSaveEventTree)
-        DefineOutput(4, TTree::Class()); // Event Tree output
+    DefineOutput(4, TTree::Class()); // Event Tree output
     DefineOutput(5, TTree::Class()); // V0 Tree output
     DefineOutput(6, TTree::Class()); // Cascade Tree output
     

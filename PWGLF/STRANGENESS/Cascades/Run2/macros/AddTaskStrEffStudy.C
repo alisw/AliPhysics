@@ -33,20 +33,20 @@ AliAnalysisTaskStrEffStudy *AddTaskStrEffStudy( Bool_t lSaveEventTree = kTRUE, B
                                                                  outputFileName );
     AliAnalysisDataContainer *coutputListV0 = mgr->CreateContainer("cListV0",
                                                                  TList::Class(),
-                                                                 AliAnalysisManager::kOutputContainer,
-                                                                 outputFileName );
+                                                                   AliAnalysisManager::kOutputContainer,
+                                                                   outputFileName );
     AliAnalysisDataContainer *coutputListCascade = mgr->CreateContainer("cListCascade",
-                                                                 TList::Class(),
-                                                                 AliAnalysisManager::kOutputContainer,
-                                                                 outputFileName );
+                                                                        TList::Class(),
+                                                                        AliAnalysisManager::kOutputContainer,
+                                                                        outputFileName );
     AliAnalysisDataContainer *coutputTree = 0x0;
-    if( lSaveEventTree ){
-        coutputTree = mgr->CreateContainer("cTreeEvent",
-                                                                     TTree::Class(),
-                                                                     AliAnalysisManager::kOutputContainer,
-                                                                     outputFileName );
-        coutputTree->SetSpecialOutput();
-    }
+    
+    coutputTree = mgr->CreateContainer("cTreeEvent",
+                                       TTree::Class(),
+                                       AliAnalysisManager::kOutputContainer,
+                                       outputFileName );
+    coutputTree->SetSpecialOutput();
+    
     AliAnalysisDataContainer *coutputTreeV0 = 0x0;
     if( lSaveV0 ){
         coutputTreeV0 = mgr->CreateContainer("cTreeV0",

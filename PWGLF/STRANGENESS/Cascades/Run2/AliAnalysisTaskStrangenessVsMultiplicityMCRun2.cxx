@@ -5991,8 +5991,6 @@ void AliAnalysisTaskStrangenessVsMultiplicityMCRun2::AddTopologicalQACascade(Int
         //Miscellaneous
         lCascadeResult[lN]->SetCutProperLifetime        ( lLifetimeCut[i] ) ;
         lCascadeResult[lN]->SetCutMaxV0Lifetime         ( 30.0  );
-        lCascadeResult[lN]->SetCutMinTrackLength        ( 90.0  );
-        lCascadeResult[lN]->SetCutLeastNumberOfClusters( -1 );
         lCascadeResult[lN]->SetCutTPCdEdx               ( 3.0 ) ;
         lCascadeResult[lN]->SetCutXiRejection           ( 0.008 ) ;
         lCascadeResult[lN]->SetCutBachBaryonCosPA       ( TMath::Cos(0.04) ) ; //+variable
@@ -6001,6 +5999,11 @@ void AliAnalysisTaskStrangenessVsMultiplicityMCRun2::AddTopologicalQACascade(Int
                                                          TMath::Exp(-2.9581),
                                                          -0.649153,
                                                          0.00526455);
+        //Track Quality
+        lCascadeResult[lN]->SetCutMinTrackLength        ( 90.0  );
+        lCascadeResult[lN]->SetCutLeastNumberOfClusters( -1 );
+        lCascadeResult[lN]->SetCutLeastNumberOfCrossedRows( 80 );
+        lCascadeResult[lN]->SetCutMinCrossedRowsOverLength( 0.8 );
         //Add result to pool
         lN++;
     }
@@ -8163,6 +8166,7 @@ void AliAnalysisTaskStrangenessVsMultiplicityMCRun2::AddCascadeConfigurationPrel
         lCascadeResult[lN]->SetCutProperLifetime        ( 15.0 ) ;
         lCascadeResult[lN]->SetCutMaxV0Lifetime         ( 30 ) ;
         lCascadeResult[lN]->SetCutMinTrackLength        ( 90 ) ;
+        lCascadeResult[lN]->SetCutLeastNumberOfClusters( -1 );
         lCascadeResult[lN]->SetCutTPCdEdx               ( 3 ) ;
         lCascadeResult[lN]->SetCutXiRejection           ( 0.008 ) ;
         lCascadeResult[lN]->SetCutDCACascadeToPV        ( 0.8 ) ;
