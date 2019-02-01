@@ -94,6 +94,7 @@ class AliConversionPhotonBase {
   Double_t GetConversionZ() const {return fConversionPoint[2];}
   void GetDistanceOfClossetApproachToPrimVtx(const AliVVertex* primVertex, Float_t * dca);
   void DeterminePhotonQuality(AliVTrack* negTrack, AliVTrack* posTrack);
+  Int_t GetPhotonQualityIndex(AliVTrack* negTrack, AliVTrack* posTrack);
   UChar_t GetPhotonQuality() const {return fQuality;}
   // Armenteros Qt Alpha
   void GetArmenterosQtAlpha(Double_t qtalpha[2]){qtalpha[0]=fArmenteros[0];qtalpha[1]=fArmenteros[1];}
@@ -136,7 +137,7 @@ class AliConversionPhotonBase {
                                   // 2: 1 track TPC only
                                   // 3: both tracks more than 1 ITS cluster
     Bool_t fTagged;               // Is it tagged as decay pion (only for gammas)
-  ClassDef(AliConversionPhotonBase,6);
+  ClassDef(AliConversionPhotonBase,7);
 };
 
 

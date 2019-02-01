@@ -228,7 +228,8 @@ AliConversionPhotonCuts::AliConversionPhotonCuts(const char *name,const char *ti
   fHistoEleMapMean(NULL),
   fHistoEleMapWidth(NULL),
   fHistoPosMapMean(NULL),
-  fHistoPosMapWidth(NULL)
+  fHistoPosMapWidth(NULL),
+  fhasITShits(kFALSE)
 {
   InitPIDResponse();
   for(Int_t jj=0;jj<kNCuts;jj++){fCuts[jj]=0;}
@@ -384,7 +385,8 @@ AliConversionPhotonCuts::AliConversionPhotonCuts(const AliConversionPhotonCuts &
   fHistoEleMapMean(ref.fHistoEleMapMean),
   fHistoEleMapWidth(ref.fHistoEleMapWidth),
   fHistoPosMapMean(ref.fHistoPosMapMean),
-  fHistoPosMapWidth(ref.fHistoPosMapWidth)
+  fHistoPosMapWidth(ref.fHistoPosMapWidth),
+  fhasITShits(ref.fhasITShits)
 {
   // Copy Constructor
   for(Int_t jj=0;jj<kNCuts;jj++){fCuts[jj]=ref.fCuts[jj];}
@@ -1223,6 +1225,12 @@ Bool_t AliConversionPhotonCuts::PhotonIsSelected(AliConversionPhotonBase *photon
   }
 
   photon->DeterminePhotonQuality(negTrack,posTrack);
+  if(fhasITShits){
+    if(photon->GetPhotonQualityIndex(negTrack,posTrack)<2){
+      return kFALSE;
+    }
+  }
+
   // Track Cuts
   if(!TracksAreSelected(negTrack, posTrack)){
     FillPhotonCutIndex(kTrackCuts);

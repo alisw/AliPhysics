@@ -247,7 +247,7 @@ class AliConversionPhotonCuts : public AliAnalysisCuts {
     void SetDodEdxSigmaCut(Bool_t k=kTRUE)  {fDodEdxSigmaCut=k;}
     void SetSwitchToKappaInsteadOfNSigdEdxTPC(Bool_t k=kTRUE) {fSwitchToKappa=k;}
     void SetDoElecDeDxPostCalibration(Bool_t k=kTRUE)  {fDoElecDeDxPostCalibration=k;}
-
+    void SetITShits(Bool_t k=kTRUE){fhasITShits=k;}
     Bool_t GetMaterialBudgetWeightsInitialized() {return fMaterialBudgetWeightsInitialized;}
     Bool_t InitializeMaterialBudgetWeights(Int_t flag, TString filename);
     Float_t GetMaterialBudgetCorrectingWeightForTrueGamma(AliAODConversionPhoton* gamma);
@@ -256,6 +256,7 @@ class AliConversionPhotonCuts : public AliAnalysisCuts {
     Bool_t GetElecDeDxPostCalibrationInitialized() {return fElecDeDxPostCalibrationInitialized;}
     Bool_t  InitializeElecDeDxPostCalibration(TString filename);
     Double_t GetCorrectedElectronTPCResponse(Short_t charge,Double_t nsig,Double_t P,Double_t Eta,Double_t R);
+
 
   protected:
     TList*            fHistograms;                          ///< List of QA histograms
@@ -395,10 +396,11 @@ class AliConversionPhotonCuts : public AliAnalysisCuts {
     TH2F**            fHistoEleMapWidth; //[fnRBins] 
     TH2F**            fHistoPosMapMean;  //[fnRBins] 
     TH2F**            fHistoPosMapWidth; //[fnRBins] 
- 
-  private:
+    Bool_t            fhasITShits;       ///< require ITS hits
+
+ private:
     /// \cond CLASSIMP
-    ClassDef(AliConversionPhotonCuts,19)
+    ClassDef(AliConversionPhotonCuts,20)
     /// \endcond
 };
 

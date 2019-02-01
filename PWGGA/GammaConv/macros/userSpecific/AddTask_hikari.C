@@ -25,6 +25,7 @@ AliAnalysisTaskGammaConvV1* AddTask_hikari(
    TString periodNameAnchor       = "",       
    Bool_t  doMultWeight           = kFALSE,   
    Bool_t  doPostCalibration      = kFALSE,  
+   Bool_t  hasITShits             = kFALSE,
    Int_t   isHeavyIon             = 0,
    TString additionalTrainConfig  = "0"// additional counter for trainconfig + special settings
    ) {
@@ -376,7 +377,7 @@ AliAnalysisTaskGammaConvV1* AddTask_hikari(
         analysisCuts[i]->SetDoElecDeDxPostCalibration(doPostCalibration);
       }
     }
-
+    analysisCuts[i]->SetITShits(hasITShits);
     analysisCuts[i]->SetV0ReaderName(V0ReaderName);
     analysisCuts[i]->SetLightOutput(enableLightOutput);
     analysisCuts[i]->InitializeCutsFromCutString((cuts.GetPhotonCut(i)).Data());

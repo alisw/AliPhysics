@@ -142,3 +142,23 @@ void AliConversionPhotonBase::DeterminePhotonQuality(AliVTrack* negTrack, AliVTr
   }
   return;
 }
+///________________________________________________________________________
+Int_t AliConversionPhotonBase::GetPhotonQualityIndex(AliVTrack* negTrack, AliVTrack* posTrack){
+  if(!negTrack || !posTrack) {
+    return 0;
+  }
+  if(negTrack->Charge() == posTrack->Charge()){
+    return 0;
+  }
+  Int_t nClusterITSneg = negTrack->GetNcls(0);
+  Int_t nClusterITSpos = posTrack->GetNcls(0);
+
+  if (nClusterITSneg > 1 && nClusterITSpos > 1){
+    return 3;
+  } else if (nClusterITSneg > 1 || nClusterITSpos > 1){
+    return 2;
+  } else {
+    return 1;
+  }
+  return 0;
+}
