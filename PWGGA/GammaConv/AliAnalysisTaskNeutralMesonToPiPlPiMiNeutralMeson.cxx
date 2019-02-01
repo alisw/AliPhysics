@@ -1271,16 +1271,8 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::UserCreateOutputObjects(
         fHistoMCPosPionsFromNeutralMesonPt[iCut]  = new TH1F("MC_PosPionsFromNeutralMeson_Pt","MC_PosPionsFromNeutralMeson_Pt",HistoNPtBins,HistoPtRange[0],HistoPtRange[1]);
         fHistoMCPosPionsFromNeutralMesonPt[iCut]->GetXaxis()->SetTitle("p_{T} (GeV/c)");
         fHistoMCPosPionsFromNeutralMesonPt[iCut]->GetYaxis()->SetTitle("N_{#pi^{+}}");
-        fMCList[iCut]->Add(fHistoMCNegPionsFromNeutralMesonPt[iCut]);
+        fMCList[iCut]->Add(fHistoMCPosPionsFromNeutralMesonPt[iCut]);
         if (fDoMesonQA>0){
-          fHistoMCPosPionsFromNeutralMesonEta[iCut]  = new TH1F("MC_PosPionsFromNeutralMeson_Eta","MC_PosPionsFromNeutralMeson_Eta", 200, -2,2);
-          fHistoMCPosPionsFromNeutralMesonEta[iCut]->GetXaxis()->SetTitle("N_{#pi^{+}}");
-          fHistoMCPosPionsFromNeutralMesonEta[iCut]->GetYaxis()->SetTitle("#eta");
-          fMCList[iCut]->Add(fHistoMCPosPionsFromNeutralMesonEta[iCut]);
-          fHistoMCPosPionsFromNeutralMesonPhi[iCut]  = new TH1F("MC_PosPionsFromNeutralMeson_Phi","MC_PosPionsFromNeutralMeson_Phi", 200, 0., TMath::TwoPi());
-          fHistoMCPosPionsFromNeutralMesonPhi[iCut]->GetXaxis()->SetTitle("#phi");
-          fHistoMCPosPionsFromNeutralMesonPhi[iCut]->GetYaxis()->SetTitle("N_{#pi^{+}}");
-          fMCList[iCut]->Add(fHistoMCPosPionsFromNeutralMesonPhi[iCut]);
           fHistoMCAllMesonPt[iCut]                  = new TH1F("MC_AllNDM_Pt", "MC_AllNDM_Pt", HistoNPtBins, HistoPtRange[0], HistoPtRange[1]);
           fHistoMCAllMesonPt[iCut]->GetXaxis()->SetTitle("p_{T} (GeV/c)");
           fHistoMCAllMesonPt[iCut]->GetYaxis()->SetTitle(Form("N_{%s}}", NameNDMLatex.Data()));
@@ -1326,7 +1318,7 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::UserCreateOutputObjects(
           fHistoMCPosPionsFromNeutralMesonEta[iCut]->GetYaxis()->SetTitle("N_{#pi^{+}}");
           fMCList[iCut]->Add(fHistoMCPosPionsFromNeutralMesonEta[iCut]);
           fHistoMCPosPionsFromNeutralMesonPhi[iCut]  = new TH1F("MC_PosPionsFromNeutralMeson_Phi","MC_PosPionsFromNeutralMeson_Phi", 200, 0., TMath::TwoPi());
-          fHistoMCPosPionsFromNeutralMesonPhi[iCut]->GetXaxis()->SetTitle("#eta");
+          fHistoMCPosPionsFromNeutralMesonPhi[iCut]->GetXaxis()->SetTitle("#phi");
           fHistoMCPosPionsFromNeutralMesonPhi[iCut]->GetYaxis()->SetTitle("N_{#pi^{+}}");
           fMCList[iCut]->Add(fHistoMCPosPionsFromNeutralMesonPhi[iCut]);
           fHistoMCNegPionsFromNeutralMesonEta[iCut]  = new TH1F("MC_NegPionsFromNeutralMeson_Eta","MC_NegPionsFromNeutralMeson_Eta", 200, -2., 2.);
@@ -1334,7 +1326,7 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::UserCreateOutputObjects(
           fHistoMCNegPionsFromNeutralMesonEta[iCut]->GetYaxis()->SetTitle("N_{#pi^{-}}");
           fMCList[iCut]->Add(fHistoMCNegPionsFromNeutralMesonEta[iCut]);
           fHistoMCNegPionsFromNeutralMesonPhi[iCut]  = new TH1F("MC_NegPionsFromNeutralMeson_Phi","MC_NegPionsFromNeutralMeson_Phi", 200, 0., TMath::TwoPi());
-          fHistoMCNegPionsFromNeutralMesonPhi[iCut]->GetXaxis()->SetTitle("#eta");
+          fHistoMCNegPionsFromNeutralMesonPhi[iCut]->GetXaxis()->SetTitle("#phi");
           fHistoMCNegPionsFromNeutralMesonPhi[iCut]->GetYaxis()->SetTitle("N_{#pi^{-}}");
 
           fMCList[iCut]->Add(fHistoMCNegPionsFromNeutralMesonPhi[iCut]);
@@ -3802,58 +3794,59 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::ProcessMCParticles(){
                 fHistMCChannelNDMPtHeavyPt[fiCut]->Fill(particle->Pt(), neutralMeson->Pt());
                 fHistMCChannelPiPlusPtHeavyPt[fiCut]->Fill(particle->Pt(), piplus->Pt());
                 fHistMCChannelPiMinusPtHeavyPt[fiCut]->Fill(particle->Pt(), piminus->Pt());
-              } 
-              // check if particle is reconstructible
-              bool reconstructible(true);
-              if(!((AliPrimaryPionCuts*)fPionCutArray->At(fiCut))->PionIsSelectedMC(indexpiminus,fMCEvent)) reconstructible = false;
-              if(!((AliPrimaryPionCuts*)fPionCutArray->At(fiCut))->PionIsSelectedMC(indexpiplus,fMCEvent)) reconstructible = false;
-              if(neutralMeson->GetNDaughters() != 3) {
-                // exclude Dalitz-decays
-                reconstructible = false;
-              } else {
-                AliVParticle *photon1 = fMCEvent->GetTrack(neutralMeson->GetFirstDaughter()), *photon2 = fMCEvent->GetTrack(neutralMeson->GetLastDaughter());
-                if(!(photon1 && photon2)) reconstructible = false;
-                else {
-                  switch(fNDMRecoMode) {
-                    case 0 : {
-                      if(!((AliConversionPhotonCuts*)fGammaCutArray->At(fiCut))->PhotonIsSelectedMC(photon1->Particle(),fMCEvent,kFALSE)) reconstructible = false;
-                      if(!((AliConversionPhotonCuts*)fGammaCutArray->At(fiCut))->PhotonIsSelectedMC(photon2->Particle(),fMCEvent,kFALSE)) reconstructible = false;
-                      break;
-                    }
-                    case 1: {
-                      if(!(((AliConversionPhotonCuts*)fGammaCutArray->At(fiCut))->PhotonIsSelectedMC(photon1->Particle(),fMCEvent,kFALSE)  &&
-                           ((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->ClusterIsSelectedMC(photon1->Particle(),fMCEvent)) ||
-                         !(((AliConversionPhotonCuts*)fGammaCutArray->At(fiCut))->PhotonIsSelectedMC(photon2->Particle(),fMCEvent,kFALSE)  &&
-                           ((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->ClusterIsSelectedMC(photon1->Particle(),fMCEvent))                  
-                      ) reconstructible = false;
-                      break;
-                    }
-                    case 2: {
-                      if(!((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->ClusterIsSelectedMC(photon1->Particle(),fMCEvent)) reconstructible = false;
-                      if(!((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->ClusterIsSelectedMC(photon1->Particle(),fMCEvent)) reconstructible = false;
-                      break;
-                    }
-                  };
+
+                // check if particle is reconstructible
+                bool reconstructible(true);
+                if(!((AliPrimaryPionCuts*)fPionCutArray->At(fiCut))->PionIsSelectedMC(indexpiminus,fMCEvent)) reconstructible = false;
+                if(!((AliPrimaryPionCuts*)fPionCutArray->At(fiCut))->PionIsSelectedMC(indexpiplus,fMCEvent)) reconstructible = false;
+                if(neutralMeson->GetNDaughters() != 3) {
+                  // exclude Dalitz-decays
+                  reconstructible = false;
+                } else {
+                  AliVParticle *photon1 = fMCEvent->GetTrack(neutralMeson->GetFirstDaughter()), *photon2 = fMCEvent->GetTrack(neutralMeson->GetLastDaughter());
+                  if(!(photon1 && photon2)) reconstructible = false;
+                  else {
+                    switch(fNDMRecoMode) {
+                      case 0 : {
+                        if(!((AliConversionPhotonCuts*)fGammaCutArray->At(fiCut))->PhotonIsSelectedMC(photon1->Particle(),fMCEvent,kFALSE)) reconstructible = false;
+                        if(!((AliConversionPhotonCuts*)fGammaCutArray->At(fiCut))->PhotonIsSelectedMC(photon2->Particle(),fMCEvent,kFALSE)) reconstructible = false;
+                        break;
+                      }
+                      case 1: {
+                        if(!(((AliConversionPhotonCuts*)fGammaCutArray->At(fiCut))->PhotonIsSelectedMC(photon1->Particle(),fMCEvent,kFALSE)  &&
+                             ((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->ClusterIsSelectedMC(photon1->Particle(),fMCEvent)) ||
+                           !(((AliConversionPhotonCuts*)fGammaCutArray->At(fiCut))->PhotonIsSelectedMC(photon2->Particle(),fMCEvent,kFALSE)  &&
+                             ((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->ClusterIsSelectedMC(photon1->Particle(),fMCEvent))                  
+                        ) reconstructible = false;
+                        break;
+                      }
+                      case 2: {
+                        if(!((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->ClusterIsSelectedMC(photon1->Particle(),fMCEvent)) reconstructible = false;
+                        if(!((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->ClusterIsSelectedMC(photon1->Particle(),fMCEvent)) reconstructible = false;
+                        break;
+                      }
+                    };
+                  }
                 }
-              }
-              if(reconstructible) {
-                fHistoMCHeavyReconstructiblePt[fiCut]->Fill(particle->Pt());
-                fHistoMCHeavyReconstructibleEta[fiCut]->Fill(particle->Eta());
-                fHistoMCHeavyReconstructiblePhi[fiCut]->Fill(TVector2::Phi_0_2pi(particle->Phi()));
-                // Fill kinematics for daughter particles
-                fHistMCReconstructibleNDMFromHeavyPt[fiCut]->Fill(neutralMeson->Pt());
-                fHistMCReconstructibleNDMFromHeavyEta[fiCut]->Fill(neutralMeson->Eta());
-                fHistMCReconstructibleNDMFromHeavyPhi[fiCut]->Fill(TVector2::Phi_0_2pi(neutralMeson->Phi()));
-                fHistMCReconstructiblePiPlusFromHeavyPt[fiCut]->Fill(piplus->Pt());
-                fHistMCReconstructiblePiPlusFromHeavyEta[fiCut]->Fill(piplus->Eta());
-                fHistMCReconstructiblePiPlusFromHeavyPhi[fiCut]->Fill(TVector2::Phi_0_2pi(piplus->Phi()));
-                fHistMCReconstructiblePiMinusFromHeavyPt[fiCut]->Fill(piminus->Pt());
-                fHistMCReconstructiblePiMinusFromHeavyEta[fiCut]->Fill(piminus->Eta());
-                fHistMCReconstructiblePiPMinusFromHeavyPhi[fiCut]->Fill(TVector2::Phi_0_2pi(piminus->Phi()));
-                fHistMCReconstructibleNDMPtHeavyPt[fiCut]->Fill(particle->Pt(), neutralMeson->Pt());
-                fHistMCReconstructiblePiPlusPtHeavyPt[fiCut]->Fill(particle->Pt(), piplus->Pt());
-                fHistMCReconstructiblePiMinusPtHeavyPt[fiCut]->Fill(particle->Pt(), piminus->Pt());
-              }
+                if(reconstructible) {
+                  fHistoMCHeavyReconstructiblePt[fiCut]->Fill(particle->Pt());
+                  fHistoMCHeavyReconstructibleEta[fiCut]->Fill(particle->Eta());
+                  fHistoMCHeavyReconstructiblePhi[fiCut]->Fill(TVector2::Phi_0_2pi(particle->Phi()));
+                  // Fill kinematics for daughter particles
+                  fHistMCReconstructibleNDMFromHeavyPt[fiCut]->Fill(neutralMeson->Pt());
+                  fHistMCReconstructibleNDMFromHeavyEta[fiCut]->Fill(neutralMeson->Eta());
+                  fHistMCReconstructibleNDMFromHeavyPhi[fiCut]->Fill(TVector2::Phi_0_2pi(neutralMeson->Phi()));
+                  fHistMCReconstructiblePiPlusFromHeavyPt[fiCut]->Fill(piplus->Pt());
+                  fHistMCReconstructiblePiPlusFromHeavyEta[fiCut]->Fill(piplus->Eta());
+                  fHistMCReconstructiblePiPlusFromHeavyPhi[fiCut]->Fill(TVector2::Phi_0_2pi(piplus->Phi()));
+                  fHistMCReconstructiblePiMinusFromHeavyPt[fiCut]->Fill(piminus->Pt());
+                  fHistMCReconstructiblePiMinusFromHeavyEta[fiCut]->Fill(piminus->Eta());
+                  fHistMCReconstructiblePiPMinusFromHeavyPhi[fiCut]->Fill(TVector2::Phi_0_2pi(piminus->Phi()));
+                  fHistMCReconstructibleNDMPtHeavyPt[fiCut]->Fill(particle->Pt(), neutralMeson->Pt());
+                  fHistMCReconstructiblePiPlusPtHeavyPt[fiCut]->Fill(particle->Pt(), piplus->Pt());
+                  fHistMCReconstructiblePiMinusPtHeavyPt[fiCut]->Fill(particle->Pt(), piminus->Pt());
+                }
+              } 
             }
           }
         }
@@ -4069,6 +4062,7 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::ProcessAODMCParticles(){
                   }
                 }
                 if(neutralMeson && piplus && piminus) {
+                  // Meson is in the expected channel
                   fHistoMCHeavyChannelPt[fiCut]->Fill(particle->Pt());
                   fHistoMCHeavyChannelEta[fiCut]->Fill(particle->Eta());
                   fHistoMCHeavyChannelPhi[fiCut]->Fill(TVector2::Phi_0_2pi(particle->Phi()));
@@ -4085,59 +4079,61 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::ProcessAODMCParticles(){
                   fHistMCChannelNDMPtHeavyPt[fiCut]->Fill(particle->Pt(), neutralMeson->Pt());
                   fHistMCChannelPiPlusPtHeavyPt[fiCut]->Fill(particle->Pt(), piplus->Pt());
                   fHistMCChannelPiMinusPtHeavyPt[fiCut]->Fill(particle->Pt(), piminus->Pt());
-                } 
-                // check if particle is reconstructible
-                bool reconstructible(true);
-                if(!((AliPrimaryPionCuts*)fPionCutArray->At(fiCut))->PionIsSelectedAODMC(indexpiminus,AODMCTrackArray)) reconstructible = false;
-                if(!((AliPrimaryPionCuts*)fPionCutArray->At(fiCut))->PionIsSelectedAODMC(indexpiplus,AODMCTrackArray)) reconstructible = false;
-                if(neutralMeson->GetNDaughters() != 3) {
-                  // exclude Dalitz-decays
-                  reconstructible = false;
-                } else {
-                  AliAODMCParticle *photon1 = static_cast<AliAODMCParticle *>(AODMCTrackArray->At(neutralMeson->GetFirstDaughter())), 
-                                   *photon2 = static_cast<AliAODMCParticle *>(AODMCTrackArray->At(neutralMeson->GetLastDaughter()));
-                  if(!(photon1 && photon2)) reconstructible = false;
-                  else {
-                    switch(fNDMRecoMode) {
-                      case 0 : {
-                        if(!((AliConversionPhotonCuts*)fGammaCutArray->At(fiCut))->PhotonIsSelectedAODMC(photon1, AODMCTrackArray, kFALSE)) reconstructible = false;
-                        if(!((AliConversionPhotonCuts*)fGammaCutArray->At(fiCut))->PhotonIsSelectedAODMC(photon2, AODMCTrackArray, kFALSE)) reconstructible = false;
-                        break;
-                      }
-                      case 1: {
-                        if(!(((AliConversionPhotonCuts*)fGammaCutArray->At(fiCut))->PhotonIsSelectedAODMC(photon1, AODMCTrackArray, kFALSE)  &&
-                            ((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->ClusterIsSelectedAODMC(photon1, AODMCTrackArray)) ||
-                           !(((AliConversionPhotonCuts*)fGammaCutArray->At(fiCut))->PhotonIsSelectedAODMC(photon2, AODMCTrackArray, kFALSE)  &&
-                            ((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->ClusterIsSelectedAODMC(photon1, AODMCTrackArray))                  
-                        ) reconstructible = false;
-                        break;
-                      }
-                      case 2: {
-                        if(!((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->ClusterIsSelectedAODMC(photon1, AODMCTrackArray)) reconstructible = false;
-                        if(!((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->ClusterIsSelectedAODMC(photon1, AODMCTrackArray)) reconstructible = false;
-                        break;
-                      }
-                    };
+
+                  // check if particle is reconstructible
+                  bool reconstructible(true);
+                  if(!((AliPrimaryPionCuts*)fPionCutArray->At(fiCut))->PionIsSelectedAODMC(indexpiminus,AODMCTrackArray)) reconstructible = false;
+                  if(!((AliPrimaryPionCuts*)fPionCutArray->At(fiCut))->PionIsSelectedAODMC(indexpiplus,AODMCTrackArray)) reconstructible = false;
+                  if(neutralMeson->GetNDaughters() != 3) {
+                    // exclude Dalitz-decays
+                    reconstructible = false;
+                  } else {
+                    AliAODMCParticle *photon1 = static_cast<AliAODMCParticle *>(AODMCTrackArray->At(neutralMeson->GetFirstDaughter())), 
+                                     *photon2 = static_cast<AliAODMCParticle *>(AODMCTrackArray->At(neutralMeson->GetLastDaughter()));
+                    if(!(photon1 && photon2)) reconstructible = false;
+                    else {
+                      switch(fNDMRecoMode) {
+                        case 0 : {
+                          if(!((AliConversionPhotonCuts*)fGammaCutArray->At(fiCut))->PhotonIsSelectedAODMC(photon1, AODMCTrackArray, kFALSE)) reconstructible = false;
+                          if(!((AliConversionPhotonCuts*)fGammaCutArray->At(fiCut))->PhotonIsSelectedAODMC(photon2, AODMCTrackArray, kFALSE)) reconstructible = false;
+                          break;
+                        }
+                        case 1: {
+                          if(!(((AliConversionPhotonCuts*)fGammaCutArray->At(fiCut))->PhotonIsSelectedAODMC(photon1, AODMCTrackArray, kFALSE)  &&
+                              ((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->ClusterIsSelectedAODMC(photon1, AODMCTrackArray)) ||
+                             !(((AliConversionPhotonCuts*)fGammaCutArray->At(fiCut))->PhotonIsSelectedAODMC(photon2, AODMCTrackArray, kFALSE)  &&
+                              ((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->ClusterIsSelectedAODMC(photon1, AODMCTrackArray))                  
+                          ) reconstructible = false;
+                          break;
+                        }
+                        case 2: {
+                          if(!((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->ClusterIsSelectedAODMC(photon1, AODMCTrackArray)) reconstructible = false;
+                          if(!((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->ClusterIsSelectedAODMC(photon1, AODMCTrackArray)) reconstructible = false;
+                          break;
+                        }
+                      };
+                    }
                   }
-                }
-                if(reconstructible) {
-                  fHistoMCHeavyReconstructiblePt[fiCut]->Fill(particle->Pt());
-                  fHistoMCHeavyReconstructibleEta[fiCut]->Fill(particle->Eta());
-                  fHistoMCHeavyReconstructiblePhi[fiCut]->Fill(TVector2::Phi_0_2pi(particle->Phi()));
-                  // Fill kinematics for daughter particles
-                  fHistMCReconstructibleNDMFromHeavyPt[fiCut]->Fill(neutralMeson->Pt());
-                  fHistMCReconstructibleNDMFromHeavyEta[fiCut]->Fill(neutralMeson->Eta());
-                  fHistMCReconstructibleNDMFromHeavyPhi[fiCut]->Fill(TVector2::Phi_0_2pi(neutralMeson->Phi()));
-                  fHistMCReconstructiblePiPlusFromHeavyPt[fiCut]->Fill(piplus->Pt());
-                  fHistMCReconstructiblePiPlusFromHeavyEta[fiCut]->Fill(piplus->Eta());
-                  fHistMCReconstructiblePiPlusFromHeavyPhi[fiCut]->Fill(TVector2::Phi_0_2pi(piplus->Phi()));
-                  fHistMCReconstructiblePiMinusFromHeavyPt[fiCut]->Fill(piminus->Pt());
-                  fHistMCReconstructiblePiMinusFromHeavyEta[fiCut]->Fill(piminus->Eta());
-                  fHistMCReconstructiblePiPMinusFromHeavyPhi[fiCut]->Fill(TVector2::Phi_0_2pi(piminus->Phi()));
-                  fHistMCReconstructibleNDMPtHeavyPt[fiCut]->Fill(particle->Pt(), neutralMeson->Pt());
-                  fHistMCReconstructiblePiPlusPtHeavyPt[fiCut]->Fill(particle->Pt(), piplus->Pt());
-                  fHistMCReconstructiblePiMinusPtHeavyPt[fiCut]->Fill(particle->Pt(), piminus->Pt());
-                }
+
+                  if(reconstructible) {
+                    fHistoMCHeavyReconstructiblePt[fiCut]->Fill(particle->Pt());
+                    fHistoMCHeavyReconstructibleEta[fiCut]->Fill(particle->Eta());
+                    fHistoMCHeavyReconstructiblePhi[fiCut]->Fill(TVector2::Phi_0_2pi(particle->Phi()));
+                    // Fill kinematics for daughter particles
+                    fHistMCReconstructibleNDMFromHeavyPt[fiCut]->Fill(neutralMeson->Pt());
+                    fHistMCReconstructibleNDMFromHeavyEta[fiCut]->Fill(neutralMeson->Eta());
+                    fHistMCReconstructibleNDMFromHeavyPhi[fiCut]->Fill(TVector2::Phi_0_2pi(neutralMeson->Phi()));
+                    fHistMCReconstructiblePiPlusFromHeavyPt[fiCut]->Fill(piplus->Pt());
+                    fHistMCReconstructiblePiPlusFromHeavyEta[fiCut]->Fill(piplus->Eta());
+                    fHistMCReconstructiblePiPlusFromHeavyPhi[fiCut]->Fill(TVector2::Phi_0_2pi(piplus->Phi()));
+                    fHistMCReconstructiblePiMinusFromHeavyPt[fiCut]->Fill(piminus->Pt());
+                    fHistMCReconstructiblePiMinusFromHeavyEta[fiCut]->Fill(piminus->Eta());
+                    fHistMCReconstructiblePiPMinusFromHeavyPhi[fiCut]->Fill(TVector2::Phi_0_2pi(piminus->Phi()));
+                    fHistMCReconstructibleNDMPtHeavyPt[fiCut]->Fill(particle->Pt(), neutralMeson->Pt());
+                    fHistMCReconstructiblePiPlusPtHeavyPt[fiCut]->Fill(particle->Pt(), piplus->Pt());
+                    fHistMCReconstructiblePiMinusPtHeavyPt[fiCut]->Fill(particle->Pt(), piminus->Pt());
+                  }
+                } 
               }
             }
           }
@@ -4222,7 +4218,7 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::ProcessAODMCParticles(){
                 if(particle->GetMother() >-1){
                   if ((static_cast<AliAODMCParticle*>(AODMCTrackArray->At(particle->GetMother())))->GetPdgCode() ==fPDGCodeAnalyzedMeson) {
                     fHistoMCNegPionsFromNeutralMesonPt[fiCut]->Fill(particle->Pt()); // All pos from neutral heavy meson (omega, eta OR eta prime)
-                    if(fDoMesonQA) {
+                    if(fDoMesonQA > 0) {
                       fHistoMCNegPionsFromNeutralMesonEta[fiCut]->Fill(particle->Eta()); // All pos from neutral heavy meson (omega, eta OR eta prime)
                       fHistoMCNegPionsFromNeutralMesonPhi[fiCut]->Fill(TVector2::Phi_0_2pi(particle->Phi())); // All pos from neutral heavy meson (omega, eta OR eta prime)
                     }
