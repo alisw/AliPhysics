@@ -48,7 +48,7 @@ AliAnalysisTask *AddAliEbyEPhiDistNew(
     ptl = 0.35;
     pth = 1.6;
   }
-    phil = 3.14 ; // total phi in radian
+    phil = 0.0 ; // total phi in radian
     phih = 6.28;
 
 
