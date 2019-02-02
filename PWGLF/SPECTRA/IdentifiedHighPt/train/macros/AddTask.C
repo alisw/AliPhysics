@@ -1,9 +1,3 @@
-/*
-  Last update: 
-  * 05 jul 2018: change type to AOD for heavy ion
-  * 10 jul 2018: clean-up
-
-  */
 
 AliAnalysisTask* AddTask(Bool_t AnalysisMC, const Char_t* taskname, Int_t typerun, UInt_t kTriggerInt, Float_t minc, Float_t maxc, Bool_t CentFrameworkAliCen)
 {
