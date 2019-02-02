@@ -29,7 +29,7 @@ class AliHFTreeHandlerDstoKKpi : public AliHFTreeHandler
 
     enum massKKopt {kMassKK,kDeltaMassKKPhi};
 
-    static const int kDplustoKKpi = BIT(6);
+    static const int kDplustoKKpi = BIT(11);
 
     AliHFTreeHandlerDstoKKpi();
     AliHFTreeHandlerDstoKKpi(int PIDopt);
