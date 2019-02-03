@@ -1245,7 +1245,7 @@ Double_t AliRsnMiniAnalysisTask::ComputeSpherocity()
   Float_t Spherocity = 2;
   Float_t pt[10000],phi[1000];
 
-  if (ntracksLoop>2)
+  if (ntracksLoop>9)
     {
   //computing total pt
   Float_t sumapt = 0;
