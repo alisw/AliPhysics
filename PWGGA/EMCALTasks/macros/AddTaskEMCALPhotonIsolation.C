@@ -62,7 +62,8 @@ AliAnalysisTaskEMCALPhotonIsolation* AddTaskEMCALPhotonIsolation(
                                                                  const Bool_t           RejectPileUpEvent         = kFALSE,
                                                                  const Int_t            NContrToPileUp            = 3,
                                                                  const Float_t          iFiducialCut              = 0.4,
-                                                                 const Bool_t           bANwithNoSameTcard        = kFALSE
+                                                                 const Bool_t           bANwithNoSameTcard        = kFALSE,
+								 const Bool_t		SetListNameOutput = kFALSE //add the output type to the EmcalList name
                                                                  )
 {
   Printf("Preparing neutral cluster analysis\n");
@@ -115,6 +116,10 @@ AliAnalysisTaskEMCALPhotonIsolation* AddTaskEMCALPhotonIsolation(
   }
   else{
     myContName = Form("Analysis_Neutrals%s",clusInfix.Data());
+  }
+
+  if(SetListNameOutput){
+	  myContName.Append(Form("_output%d",iOutput));
   }
   
   // For the 2012 EGA/L1 analysis, only events with EGA/L1 recalc patches are considered
