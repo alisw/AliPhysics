@@ -2554,13 +2554,13 @@ void AliAnalysisTaskStrangenessVsMultiplicityMCRun2::UserExec(Option_t *)
         
         //________________________________________________________________________
         // Track quality cuts
-        Int_t lLeastNcrOverLength = 200;
+        Float_t lLeastNcrOverLength = 200;
         Float_t lPosTrackNcrOverLength = pTrack->GetTPCClusterInfo(2,1)/(lPosTrackLength-TMath::Max(lV0Radius-85.,0.));
         Float_t lNegTrackNcrOverLength = nTrack->GetTPCClusterInfo(2,1)/(lNegTrackLength-TMath::Max(lV0Radius-85.,0.));
         
-        lLeastNcrOverLength = (Int_t) lPosTrackNcrOverLength;
+        lLeastNcrOverLength = (Float_t) lPosTrackNcrOverLength;
         if( lNegTrackNcrOverLength < lLeastNcrOverLength )
-            lLeastNcrOverLength = (Int_t) lNegTrackNcrOverLength;
+            lLeastNcrOverLength = (Float_t) lNegTrackNcrOverLength;
         
         fTreeVariableMinTrackLength = lSmallestTrackLength;
         
@@ -3265,13 +3265,13 @@ void AliAnalysisTaskStrangenessVsMultiplicityMCRun2::UserExec(Option_t *)
         
         //________________________________________________________________________
         // Track quality cuts
-        Int_t lLeastNcrOverLength = 200;
+        Float_t lLeastNcrOverLength = 200;
         Float_t lPosTrackNcrOverLength = pTrack->GetTPCClusterInfo(2,1)/(lPosTrackLength-TMath::Max(lV0Radius-85.,0.));
         Float_t lNegTrackNcrOverLength = nTrack->GetTPCClusterInfo(2,1)/(lNegTrackLength-TMath::Max(lV0Radius-85.,0.));
         
-        lLeastNcrOverLength = (Int_t) lPosTrackNcrOverLength;
+        lLeastNcrOverLength = (Float_t) lPosTrackNcrOverLength;
         if( lNegTrackNcrOverLength < lLeastNcrOverLength )
-            lLeastNcrOverLength = (Int_t) lNegTrackNcrOverLength;
+            lLeastNcrOverLength = (Float_t) lNegTrackNcrOverLength;
         
         fTreeVariableMinTrackLength = lSmallestTrackLength;
         
@@ -3963,16 +3963,16 @@ void AliAnalysisTaskStrangenessVsMultiplicityMCRun2::UserExec(Option_t *)
         
         //________________________________________________________________________
         // Track quality cuts
-        Int_t lLeastNcrOverLength = 200;
+        Float_t lLeastNcrOverLength = 200;
         Float_t lPosTrackNcrOverLength = pTrackXi->GetTPCClusterInfo(2,1)/(lPosTrackLength-TMath::Max(lV0RadiusXi-85.,0.));
         Float_t lNegTrackNcrOverLength = nTrackXi->GetTPCClusterInfo(2,1)/(lNegTrackLength-TMath::Max(lV0RadiusXi-85.,0.));
         Float_t lBachTrackNcrOverLength = bachTrackXi->GetTPCClusterInfo(2,1)/(lBachTrackLength-TMath::Max(lXiRadius-85.,0.));
         
-        lLeastNcrOverLength = (Int_t) lPosTrackNcrOverLength;
+        lLeastNcrOverLength = (Float_t) lPosTrackNcrOverLength;
         if( lNegTrackNcrOverLength < lLeastNcrOverLength )
-            lLeastNcrOverLength = (Int_t) lNegTrackNcrOverLength;
+            lLeastNcrOverLength = (Float_t) lNegTrackNcrOverLength;
         if( lBachTrackNcrOverLength < lLeastNcrOverLength )
-            lLeastNcrOverLength = (Int_t) lBachTrackNcrOverLength;
+            lLeastNcrOverLength = (Float_t) lBachTrackNcrOverLength;
         
         //========================================================================================
         //Calculate V0 lifetime for adaptive decay radius cut
