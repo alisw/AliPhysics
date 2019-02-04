@@ -138,26 +138,36 @@ AliFemtoDreamBasePart::AliFemtoDreamBasePart(
       fUse(true),
       fIsSet(true),
       fEvtMultiplicity(-1) {
+  fEta.push_back(mother.GetEta());
   fEta.push_back(mother.GetV0().GetPosDaughter().GetEta());
   fEta.push_back(mother.GetPhoton().GetPosDaughter().GetEta());
   fEta.push_back(mother.GetV0().GetNegDaughter().GetEta());
   fEta.push_back(mother.GetPhoton().GetNegDaughter().GetEta());
 
+  fTheta.push_back(mother.GetTheta());
   fTheta.push_back(mother.GetV0().GetPosDaughter().GetTheta());
   fTheta.push_back(mother.GetPhoton().GetPosDaughter().GetTheta());
   fTheta.push_back(mother.GetV0().GetNegDaughter().GetTheta());
   fTheta.push_back(mother.GetPhoton().GetNegDaughter().GetTheta());
 
+  fMCTheta.push_back(mother.GetThetaMC());
   fMCTheta.push_back(mother.GetV0().GetPosDaughter().GetThetaMC());
   fMCTheta.push_back(mother.GetPhoton().GetPosDaughter().GetThetaMC());
   fMCTheta.push_back(mother.GetV0().GetNegDaughter().GetThetaMC());
   fMCTheta.push_back(mother.GetPhoton().GetNegDaughter().GetThetaMC());
 
+  fPhiAtRadius.push_back(mother.GetV0().GetPosDaughter().GetPhiStar());
+  fPhiAtRadius.push_back(mother.GetPhoton().GetPosDaughter().GetPhiStar());
+  fPhiAtRadius.push_back(mother.GetV0().GetNegDaughter().GetPhiStar());
+  fPhiAtRadius.push_back(mother.GetPhoton().GetNegDaughter().GetPhiStar());
+
+  fPhi.push_back(mother.GetPhi());
   fPhi.push_back(mother.GetV0().GetPosDaughter().GetPhi());
   fPhi.push_back(mother.GetPhoton().GetPosDaughter().GetPhi());
   fPhi.push_back(mother.GetV0().GetNegDaughter().GetPhi());
   fPhi.push_back(mother.GetPhoton().GetNegDaughter().GetPhi());
 
+  fMCPhi.push_back(mother.GetPhiMC());
   fMCPhi.push_back(mother.GetV0().GetPosDaughter().GetPhiMC());
   fMCPhi.push_back(mother.GetPhoton().GetPosDaughter().GetPhiMC());
   fMCPhi.push_back(mother.GetV0().GetNegDaughter().GetPhiMC());
@@ -239,6 +249,9 @@ AliFemtoDreamBasePart::AliFemtoDreamBasePart(
 
   fMCTheta.push_back(daughter.GetPosDaughter().GetThetaMC());
   fMCTheta.push_back(daughter.GetNegDaughter().GetThetaMC());
+
+  fPhiAtRadius.push_back(daughter.GetPosDaughter().GetPhiStar());
+  fPhiAtRadius.push_back(daughter.GetNegDaughter().GetPhiStar());
 
   fPhi.push_back(daughter.GetPosDaughter().GetPhi());
   fPhi.push_back(daughter.GetNegDaughter().GetPhi());
