@@ -760,6 +760,21 @@ void AliAnalysisTaskSEHFTreeCreator::UserExec(Option_t */*option*/)
     else if(fWriteVariableTreeBplus) evCuts = (AliRDHFCuts*)fFiltCutsBplustoD0pi->Clone();
     else if(fWriteVariableTreeLctopKpi) evCuts = (AliRDHFCuts*)fFiltCutsLctopKpi->Clone();
 
+    if(!evCuts){
+      //Setting one of the filtering cuts as event selection cuts if evCuts is still empty
+      //(which is the case if all meson TTrees are disabled).
+      //In this way, the task doesn't crash and fTreeEvChar is still filled.
+      if(fFiltCutsD0toKpi) evCuts = (AliRDHFCuts*)fFiltCutsD0toKpi->Clone();
+      else if(fFiltCutsDplustoKpipi) evCuts = (AliRDHFCuts*)fFiltCutsDplustoKpipi->Clone();
+      else if(fFiltCutsDstartoKpipi) evCuts = (AliRDHFCuts*)fFiltCutsDstartoKpipi->Clone();
+      else if(fFiltCutsBplustoD0pi) evCuts = (AliRDHFCuts*)fFiltCutsBplustoD0pi->Clone();
+      else if(fFiltCutsLctopKpi) evCuts = (AliRDHFCuts*)fFiltCutsLctopKpi->Clone();
+      else{
+        printf("AliAnalysisTaskSEHFTreeCreator::UserExec: No event selection cuts found!\n");
+        return;
+      }
+    }
+
     if(evCuts->IsEventRejectedDueToTrigger())fNentries->Fill(5);
     if(evCuts->IsEventRejectedDueToNotRecoVertex())fNentries->Fill(6);
     if(evCuts->IsEventRejectedDueToVertexContributors())fNentries->Fill(7);
@@ -796,15 +811,15 @@ void AliAnalysisTaskSEHFTreeCreator::UserExec(Option_t */*option*/)
 
     if(fWriteVariableTreeD0)
       isSameEvSelD0=!((fFiltCutsD0toKpi->IsEventSelected(aod) && !fCutsD0toKpi->IsEventSelected(aod))||(!fFiltCutsD0toKpi->IsEventSelected(aod) && fCutsD0toKpi->IsEventSelected(aod)));
-    if(fWriteVariableTreeD0)
+    if(fWriteVariableTreeDs)
       isSameEvSelDs=!((fFiltCutsDstoKKpi->IsEventSelected(aod) && !fCutsDstoKKpi->IsEventSelected(aod))||(!fFiltCutsDstoKKpi->IsEventSelected(aod) && fCutsDstoKKpi->IsEventSelected(aod)));
-    if(fWriteVariableTreeD0)
+    if(fWriteVariableTreeDplus)
       isSameEvSelDplus=!((fFiltCutsDplustoKpipi->IsEventSelected(aod) && !fCutsDplustoKpipi->IsEventSelected(aod))||(!fFiltCutsDplustoKpipi->IsEventSelected(aod) && fCutsDplustoKpipi->IsEventSelected(aod)));
-    if(fWriteVariableTreeD0)
+    if(fWriteVariableTreeLctopKpi)
       isSameEvSelLctopKpi=!((fFiltCutsLctopKpi->IsEventSelected(aod) && !fCutsLctopKpi->IsEventSelected(aod))||(!fFiltCutsLctopKpi->IsEventSelected(aod) && fCutsLctopKpi->IsEventSelected(aod)));
-    if(fWriteVariableTreeD0)
+    if(fWriteVariableTreeBplus)
       isSameEvSelBplus = !((fFiltCutsBplustoD0pi->IsEventSelected(aod) && !fCutsBplustoD0pi->IsEventSelected(aod)) || (!fFiltCutsBplustoD0pi->IsEventSelected(aod) && fCutsBplustoD0pi->IsEventSelected(aod)));
-    if(fWriteVariableTreeD0)
+    if(fWriteVariableTreeDstar)
       isSameEvSelDstar=!((fFiltCutsDstartoKpipi->IsEventSelected(aod) && !fCutsDstartoKpipi->IsEventSelected(aod))||(!fFiltCutsDstartoKpipi->IsEventSelected(aod) && fCutsDstartoKpipi->IsEventSelected(aod)));
 
     Bool_t isSameEvSel = isSameEvSelD0 && isSameEvSelDs && isSameEvSelDplus && isSameEvSelLctopKpi && isSameEvSelBplus && isSameEvSelDstar;
