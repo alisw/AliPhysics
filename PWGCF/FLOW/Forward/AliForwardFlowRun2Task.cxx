@@ -230,7 +230,7 @@ void AliForwardFlowRun2Task::UserExec(Option_t *)
 
     if (fSettings.use_primaries_fwd || fSettings.use_primaries_cen){
       if (mcevent->GetNumberOfPrimaries() <= 0) {
-        std::cout << "No primaries" << std::endl;
+        //std::cout << "No primaries" << std::endl;
         return;
       }
     }
@@ -248,7 +248,7 @@ void AliForwardFlowRun2Task::UserExec(Option_t *)
       throw std::runtime_error("Not MC as expected");
 
     forwardDist = (fSettings.use_primaries_fwd ? &forwardPrim : &forwardTrRef);
-
+    std::cout << fSettings.use_primaries_fwd << std::endl;
     if (fSettings.esd){
       if (fSettings.use_primaries_cen && fSettings.use_primaries_fwd){
         fUtil.FillFromPrimaries(centralDist, forwardDist);
@@ -291,8 +291,8 @@ void AliForwardFlowRun2Task::UserExec(Option_t *)
   Double_t zvertex = fUtil.GetZ();
   Double_t cent = fUtil.GetCentrality(fSettings.centrality_estimator);
 
-  if (!fSettings.use_primaries_fwd && !fSettings.mc){
-    TH2D* hOutliers = static_cast<TH2D*>(fEventList->FindObject("hOutliers"));
+  //if (!fSettings.use_primaries_fwd && !fSettings.mc){
+    //TH2D* hOutliers = static_cast<TH2D*>(fEventList->FindObject("hOutliers"));
 
 /*
     if (!fUtil.ExtraEventCutFMD(*forwardDist, cent, fSettings.mc, hOutliers)) {
@@ -301,7 +301,7 @@ void AliForwardFlowRun2Task::UserExec(Option_t *)
       PostData(1, fOutputList);
       return;
     }*/
-  }
+  //}
 
   if (fSettings.makeFakeHoles) fUtil.MakeFakeHoles(*forwardDist);
 
