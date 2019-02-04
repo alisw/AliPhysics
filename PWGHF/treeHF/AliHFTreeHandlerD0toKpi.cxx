@@ -176,16 +176,16 @@ void AliHFTreeHandlerD0toKpi::SetIsDzeroDzeroBar(int isSel, int isSelTopo, int i
     //analysis cuts
     //combined selection PID topo
     if(isSel==0){
-        fCandTypeMap &= kDzeroComb;
-        fCandTypeMap &= kDzeroBarComb;
+        fCandTypeMap &= ~kDzeroComb;
+        fCandTypeMap &= ~kDzeroBarComb;
     }
     else if(isSel==1){
         fCandTypeMap |= kDzeroComb;
-        fCandTypeMap &= kDzeroBarComb;
+        fCandTypeMap &= ~kDzeroBarComb;
     }
     else if(isSel==2){
         fCandTypeMap |= kDzeroBarComb;
-        fCandTypeMap &= kDzeroComb;
+        fCandTypeMap &= ~kDzeroComb;
     }
     else if(isSel==3){
         fCandTypeMap |= kDzeroComb;
@@ -193,16 +193,16 @@ void AliHFTreeHandlerD0toKpi::SetIsDzeroDzeroBar(int isSel, int isSelTopo, int i
     }
     //topol selection
     if(isSelTopo==0){
-        fCandTypeMap &= kDzeroTopo;
-        fCandTypeMap &= kDzeroBarTopo;
+        fCandTypeMap &= ~kDzeroTopo;
+        fCandTypeMap &= ~kDzeroBarTopo;
     }
     else if(isSelTopo==1){
         fCandTypeMap |= kDzeroTopo;
-        fCandTypeMap &= kDzeroBarTopo;
+        fCandTypeMap &= ~kDzeroBarTopo;
     }
     else if(isSelTopo==2){
         fCandTypeMap |= kDzeroBarTopo;
-        fCandTypeMap &= kDzeroTopo;
+        fCandTypeMap &= ~kDzeroTopo;
     }
     else if(isSelTopo==3){
         fCandTypeMap |= kDzeroTopo;
@@ -210,16 +210,16 @@ void AliHFTreeHandlerD0toKpi::SetIsDzeroDzeroBar(int isSel, int isSelTopo, int i
     }
     //PID selection
     if(isSelPID==0){
-        fCandTypeMap &= kDzeroPID;
-        fCandTypeMap &= kDzeroBarPID;
+        fCandTypeMap &= ~kDzeroPID;
+        fCandTypeMap &= ~kDzeroBarPID;
     }
     else if(isSelPID==1){
         fCandTypeMap |= kDzeroPID;
-        fCandTypeMap &= kDzeroBarPID;
+        fCandTypeMap &= ~kDzeroBarPID;
     }
     else if(isSelPID==2){
         fCandTypeMap |= kDzeroBarPID;
-        fCandTypeMap &= kDzeroPID;
+        fCandTypeMap &= ~kDzeroPID;
     }
     else if(isSelPID==3){
         fCandTypeMap |= kDzeroPID;
@@ -229,16 +229,16 @@ void AliHFTreeHandlerD0toKpi::SetIsDzeroDzeroBar(int isSel, int isSelTopo, int i
     //filtering cuts
     //combined selection PID topo
     if(isSelFilt==0){
-        fCandTypeMap &= kDzeroCombFilt;
-        fCandTypeMap &= kDzeroBarCombFilt;
+        fCandTypeMap &= ~kDzeroCombFilt;
+        fCandTypeMap &= ~kDzeroBarCombFilt;
     }
     else if(isSelFilt==1){
         fCandTypeMap |= kDzeroCombFilt;
-        fCandTypeMap &= kDzeroBarCombFilt;
+        fCandTypeMap &= ~kDzeroBarCombFilt;
     }
     else if(isSelFilt==2){
         fCandTypeMap |= kDzeroBarCombFilt;
-        fCandTypeMap &= kDzeroCombFilt;
+        fCandTypeMap &= ~kDzeroCombFilt;
     }
     else if(isSelFilt==3){
         fCandTypeMap |= kDzeroCombFilt;
@@ -246,16 +246,16 @@ void AliHFTreeHandlerD0toKpi::SetIsDzeroDzeroBar(int isSel, int isSelTopo, int i
     }
     //topol selection
     if(isSelTopoFilt==0){
-        fCandTypeMap &= kDzeroTopoFilt;
-        fCandTypeMap &= kDzeroBarTopoFilt;
+        fCandTypeMap &= ~kDzeroTopoFilt;
+        fCandTypeMap &= ~kDzeroBarTopoFilt;
     }
     else if(isSelTopoFilt==1){
         fCandTypeMap |= kDzeroTopoFilt;
-        fCandTypeMap &= kDzeroBarTopoFilt;
+        fCandTypeMap &= ~kDzeroBarTopoFilt;
     }
     else if(isSelTopoFilt==2){
         fCandTypeMap |= kDzeroBarTopoFilt;
-        fCandTypeMap &= kDzeroTopoFilt;
+        fCandTypeMap &= ~kDzeroTopoFilt;
     }
     else if(isSelTopoFilt==3){
         fCandTypeMap |= kDzeroTopoFilt;
@@ -263,16 +263,16 @@ void AliHFTreeHandlerD0toKpi::SetIsDzeroDzeroBar(int isSel, int isSelTopo, int i
     }
     //PID selection
     if(isSelPIDFilt==0){
-        fCandTypeMap &= kDzeroPIDFilt;
-        fCandTypeMap &= kDzeroBarPIDFilt;
+        fCandTypeMap &= ~kDzeroPIDFilt;
+        fCandTypeMap &= ~kDzeroBarPIDFilt;
     }
     else if(isSelPIDFilt==1){
         fCandTypeMap |= kDzeroPIDFilt;
-        fCandTypeMap &= kDzeroBarPIDFilt;
+        fCandTypeMap &= ~kDzeroBarPIDFilt;
     }
     else if(isSelPIDFilt==2){
         fCandTypeMap |= kDzeroBarPIDFilt;
-        fCandTypeMap &= kDzeroPIDFilt;
+        fCandTypeMap &= ~kDzeroPIDFilt;
     }
     else if(isSelPIDFilt==3){
         fCandTypeMap |= kDzeroPIDFilt;
