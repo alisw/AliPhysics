@@ -66,6 +66,16 @@ class AliFemtoDreamTrackHist {
       fDCAz[i]->Fill(pT, dcaz);
   }
   ;
+  void FillDCAxyPropCut(int i, float pT, float dcaxy) {
+    if (!fMinimalBooking)
+      fDCAxyProp[i]->Fill(pT, dcaxy);
+  }
+  ;
+  void FillDCAzPropCut(int i, float pT, float dcaz) {
+    if (!fMinimalBooking)
+      fDCAzProp[i]->Fill(pT, dcaz);
+  }
+  ;
   void FillTPCCrossedRowCut(int i, float Crossed) {
     if (!fMinimalBooking)
       fTPCCrossedRows[i]->Fill(Crossed);
@@ -177,12 +187,14 @@ class AliFemtoDreamTrackHist {
   TH2F *fShrdClsITS[2];     //!
   TH2F *fDCAxy[2];          //!
   TH2F *fDCAz[2];           //!
+  TH2F *fDCAxyProp[2];      //!
+  TH2F *fDCAzProp[2];       //!
   TH2F *fDCAXYPtBins;       //!
-  TH2F *fDCAXYPtBinsMult[3];  //!
-  TH1F *fTPCCrossedRows[2];  //!
+  TH2F *fDCAXYPtBinsMult[3];//!
+  TH1F *fTPCCrossedRows[2]; //!
   TH1F *fTPCRatio[2];       //!
   TH1F *fTPCClsS[2];        //!
-  TH2F *fTrackChi2[2];        //!
+  TH2F *fTrackChi2[2];      //!
   TH2F *fTPCdedx[2];        //!
   TH2F *fTOFbeta[2];        //!
   TH2F *fNSigTPC[2];        //!
