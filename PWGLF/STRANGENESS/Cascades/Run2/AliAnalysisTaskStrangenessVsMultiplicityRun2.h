@@ -447,6 +447,8 @@ private:
     Float_t fTreeCascVarDCABachToBaryon;                     //!
     Float_t fTreeCascVarWrongCosPA;                   //!
     Int_t   fTreeCascVarLeastNbrClusters;             //!
+    Int_t fTreeCascVarLeastNbrCrossedRows;
+    Float_t fTreeCascVarNbrCrossedRowsOverLength;
     Float_t fTreeCascVarDistOverTotMom;               //!
     Float_t fTreeCascVarMaxChi2PerCluster; //!
     Float_t fTreeCascVarMinTrackLength; //!

@@ -301,6 +301,8 @@ fTreeCascVarV0Radius(0),
 fTreeCascVarDCABachToBaryon(0),
 fTreeCascVarWrongCosPA(0),
 fTreeCascVarLeastNbrClusters(0),
+fTreeCascVarLeastNbrCrossedRows(0),
+fTreeCascVarNbrCrossedRowsOverLength(-1),
 fTreeCascVarDistOverTotMom(0),
 fTreeCascVarMaxChi2PerCluster(0),
 fTreeCascVarMinTrackLength(0),
@@ -648,6 +650,8 @@ fTreeCascVarV0Radius(0),
 fTreeCascVarDCABachToBaryon(0),
 fTreeCascVarWrongCosPA(0),
 fTreeCascVarLeastNbrClusters(0),
+fTreeCascVarLeastNbrCrossedRows(0),
+fTreeCascVarNbrCrossedRowsOverLength(-1),
 fTreeCascVarDistOverTotMom(0),
 fTreeCascVarMaxChi2PerCluster(0),
 fTreeCascVarMinTrackLength(0),
@@ -1103,8 +1107,11 @@ void AliAnalysisTaskStrangenessVsMultiplicityRun2::UserCreateOutputObjects()
         fTreeCascade->Branch("fTreeCascVarDCABachToBaryon",&fTreeCascVarDCABachToBaryon,"fTreeCascVarDCABachToBaryon/F");
         fTreeCascade->Branch("fTreeCascVarWrongCosPA",&fTreeCascVarWrongCosPA,"fTreeCascVarWrongCosPA/F");
         fTreeCascade->Branch("fTreeCascVarLeastNbrClusters",&fTreeCascVarLeastNbrClusters,"fTreeCascVarLeastNbrClusters/I");
+        fTreeCascade->Branch("fTreeCascVarLeastNbrCrossedRows",&fTreeCascVarLeastNbrCrossedRows,"fTreeCascVarLeastNbrCrossedRows/I");
+        fTreeCascade->Branch("fTreeCascVarNbrCrossedRowsOverLength",&fTreeCascVarNbrCrossedRowsOverLength,"fTreeCascVarNbrCrossedRowsOverLength/F");
         fTreeCascade->Branch("fTreeCascVarMaxChi2PerCluster",&fTreeCascVarMaxChi2PerCluster,"fTreeCascVarMaxChi2PerCluster/F");
         fTreeCascade->Branch("fTreeCascVarMinTrackLength",&fTreeCascVarMinTrackLength,"fTreeCascVarMinTrackLength/F");
+        
         //-----------MULTIPLICITY-INFO--------------------
         fTreeCascade->Branch("fTreeCascVarCentrality",&fTreeCascVarCentrality,"fTreeCascVarCentrality/F");
         fTreeCascade->Branch("fTreeCascVarMVPileupFlag",&fTreeCascVarMVPileupFlag,"fTreeCascVarMVPileupFlag/O");
@@ -1966,13 +1973,13 @@ void AliAnalysisTaskStrangenessVsMultiplicityRun2::UserExec(Option_t *)
         
         //________________________________________________________________________
         // Track quality cuts
-        Int_t lLeastNcrOverLength = 200;
+        Float_t lLeastNcrOverLength = 200;
         Float_t lPosTrackNcrOverLength = pTrack->GetTPCClusterInfo(2,1)/(lPosTrackLength-TMath::Max(lV0Radius-85.,0.));
         Float_t lNegTrackNcrOverLength = nTrack->GetTPCClusterInfo(2,1)/(lNegTrackLength-TMath::Max(lV0Radius-85.,0.));
         
-        lLeastNcrOverLength = (Int_t) lPosTrackNcrOverLength;
+        lLeastNcrOverLength = (Float_t) lPosTrackNcrOverLength;
         if( lNegTrackNcrOverLength < lLeastNcrOverLength )
-            lLeastNcrOverLength = (Int_t) lNegTrackNcrOverLength;
+            lLeastNcrOverLength = (Float_t) lNegTrackNcrOverLength;
         
         fTreeVariableMinTrackLength = lSmallestTrackLength;
         
@@ -2764,16 +2771,16 @@ void AliAnalysisTaskStrangenessVsMultiplicityRun2::UserExec(Option_t *)
         
         //________________________________________________________________________
         // Track quality cuts
-        Int_t lLeastNcrOverLength = 200;
+        Float_t lLeastNcrOverLength = 200;
         Float_t lPosTrackNcrOverLength = pTrackXi->GetTPCClusterInfo(2,1)/(lPosTrackLength-TMath::Max(lV0RadiusXi-85.,0.));
         Float_t lNegTrackNcrOverLength = nTrackXi->GetTPCClusterInfo(2,1)/(lNegTrackLength-TMath::Max(lV0RadiusXi-85.,0.));
         Float_t lBachTrackNcrOverLength = bachTrackXi->GetTPCClusterInfo(2,1)/(lBachTrackLength-TMath::Max(lXiRadius-85.,0.));
         
-        lLeastNcrOverLength = (Int_t) lPosTrackNcrOverLength;
+        lLeastNcrOverLength = (Float_t) lPosTrackNcrOverLength;
         if( lNegTrackNcrOverLength < lLeastNcrOverLength )
-            lLeastNcrOverLength = (Int_t) lNegTrackNcrOverLength;
+            lLeastNcrOverLength = (Float_t) lNegTrackNcrOverLength;
         if( lBachTrackNcrOverLength < lLeastNcrOverLength )
-            lLeastNcrOverLength = (Int_t) lBachTrackNcrOverLength;
+            lLeastNcrOverLength = (Float_t) lBachTrackNcrOverLength;
         
         //========================================================================================
         //Calculate V0 lifetime for adaptive decay radius cut
@@ -3015,6 +3022,8 @@ void AliAnalysisTaskStrangenessVsMultiplicityRun2::UserExec(Option_t *)
         fTreeCascVarV0CosPointingAngleSpecial = lV0CosineOfPointingAngleXiSpecial;
         fTreeCascVarV0Radius = lV0RadiusXi;
         fTreeCascVarLeastNbrClusters = leastnumberofclusters;
+        fTreeCascVarLeastNbrCrossedRows = lLeastNbrCrossedRows;
+        fTreeCascVarNbrCrossedRowsOverLength = lLeastNcrOverLength;
         fTreeCascVarMaxChi2PerCluster = lBiggestChi2PerCluster;
         
         //Copy Multiplicity information
