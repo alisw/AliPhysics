@@ -68,8 +68,9 @@ public:
 //		virtual void AnalyzeESD(AliESDEvent* esd); 
 		virtual void ProduceArrayTrksESD(AliESDEvent* event, const Int_t cent, const Int_t sperocity);
 		virtual void ProduceArrayV0ESD(AliESDEvent* event, const Int_t cent, const Int_t sperocity );
-		Short_t   GetPidCode(Int_t pdgCode) const;
-		void      ProcessMCTruthESD( const Int_t cent );
+ 		Int_t   GetMultiplicityIndex(Int_t Mult);
+		Short_t GetPidCode(Int_t pdgCode) const;
+		void    ProcessMCTruthESD( const Int_t cent );
 
 		Short_t   GetPythiaEventProcessType(Int_t pythiaType);
 		Short_t   GetDPMjetEventProcessType(Int_t dpmJetType);
@@ -157,7 +158,8 @@ public:
 
 		TH1D *hphiso;
 		TH1D *hetaso;
-		TH1D *hSo[11];
+		TH1D *hSoV0M[11];
+		TH1D *hSoTrks[11];
 
 		// Histograms for PreCalibration
 
@@ -174,21 +176,19 @@ public:
 		TH2D *hMIPVsNch[4];
 		TProfile *pMIPVsNch[4];
 
-		TH2D     *hMIPVsPhi[11][4];
-		TProfile *pMIPVsPhi[11][4];
-		TH2D     *hPlateauVsPhi[11][4];
-		TProfile *pPlateauVsPhi[11][4];
+		TH2D     *hMIPVsPhi[11][4][3];
+		TProfile *pMIPVsPhi[11][4][3];
+		TH2D     *hPlateauVsPhi[11][4][3];
+		TProfile *pPlateauVsPhi[11][4][3];
 
 
 		// Histograms for PostCalibration
 
 
 		TH1D *hPtAll[11][3];
-		TH1D *hPtAllPos[11];
-		TH1D *hPtAllNeg[11];
-		TH2D *hPtVsP[11][4];
+		TH2D *hPtVsP[11][4][3];
 
-		TH2D *hDeDxVsP[11][4];
+		TH2D *hDeDxVsP[11][4][3];
 
 		TH2D *hnSigmaPiPos[11][4];
 		TH2D *hnSigmaKPos[11][4];
@@ -198,16 +198,10 @@ public:
 		TH2D *hnSigmaKNeg[11][4];
 		TH2D *hnSigmaPNeg[11][4];
 
-		TH2D* histPiV0[11][4];
-		TH1D* histpPiV0[11][4];
-
-		TH2D* histPV0[11][4];
-		TH1D* histpPV0[11][4];
-
-		TH2D* histPiTof[11][4];
-		TH1D* histpPiTof[11][4];
-
-		TH2D* histEV0[11][4];
+		TH2D* histPiV0[11][4][3];
+		TH2D* histPV0[11][4][3];
+		TH2D* histPiTof[11][4][3];
+		TH2D* histEV0[11][4][3];
 
 		TH1D* hMcIn[11][7];
 		TH1D* hMcOut[11][7];
