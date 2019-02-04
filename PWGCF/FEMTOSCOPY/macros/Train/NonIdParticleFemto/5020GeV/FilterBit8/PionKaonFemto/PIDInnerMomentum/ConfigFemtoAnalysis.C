@@ -113,12 +113,12 @@ AliFemtoManager* ConfigFemtoAnalysis(int runcentrality0, int runcentrality1, int
   AliFemtoKKTrackCutFull            *dtc2etaphitpc[size];
   AliFemtoCutMonitorParticleYPt *cutPass1YPtetaphitpc[size];
   AliFemtoCutMonitorParticleYPt *cutFail1YPtetaphitpc[size];
-  AliFemtoCutMonitorParticlePID *cutPass1PIDetaphitpc[size];
-  AliFemtoCutMonitorParticlePID *cutFail1PIDetaphitpc[size];
+  AliFemtoCutMonitorParticlePIDInnerMomentum *cutPass1PIDetaphitpc[size];
+  AliFemtoCutMonitorParticlePIDInnerMomentum *cutFail1PIDetaphitpc[size];
   AliFemtoCutMonitorParticleYPt *cutPass2YPtetaphitpc[size];
   AliFemtoCutMonitorParticleYPt *cutFail2YPtetaphitpc[size];
-  AliFemtoCutMonitorParticlePID *cutPass2PIDetaphitpc[size];
-  AliFemtoCutMonitorParticlePID *cutFail2PIDetaphitpc[size];
+  AliFemtoCutMonitorParticlePIDInnerMomentum *cutPass2PIDetaphitpc[size];
+  AliFemtoCutMonitorParticlePIDInnerMomentum *cutFail2PIDetaphitpc[size];
   AliFemtoPairCutAntiGamma      *sqpcetaphitpc[size];
   //AliFemtoShareQualityTPCEntranceSepPairCut      *sqpcetaphitpc[20];
   //AliFemtoPairCutRadialDistance      *sqpcetaphitpc[size];
@@ -257,8 +257,8 @@ AliFemtoManager* ConfigFemtoAnalysis(int runcentrality0, int runcentrality1, int
 	  }
 	  //The cut monitor for particles to study various aspects of the PID determination:
 	  if(turnOnMonitors == 1) {
-	    cutPass1PIDetaphitpc[aniter] = new AliFemtoCutMonitorParticlePID(Form("cutPass1%stpcM%i", chrgs[ichg], imult),0);//0-pion,1-kaon,2-proton
-	    cutFail1PIDetaphitpc[aniter] = new AliFemtoCutMonitorParticlePID(Form("cutFail1%stpcM%i", chrgs[ichg], imult),0);
+	    cutPass1PIDetaphitpc[aniter] = new AliFemtoCutMonitorParticlePIDInnerMomentum(Form("cutPass1%stpcM%i", chrgs[ichg], imult),0);//0-pion,1-kaon,2-proton
+	    cutFail1PIDetaphitpc[aniter] = new AliFemtoCutMonitorParticlePIDInnerMomentum(Form("cutFail1%stpcM%i", chrgs[ichg], imult),0);
 	    dtc1etaphitpc[aniter]->AddCutMonitor(cutPass1PIDetaphitpc[aniter], cutFail1PIDetaphitpc[aniter]);
 	  }
 	  
