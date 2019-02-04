@@ -24,7 +24,7 @@ AliDielectron* Config_acapon(TString cutDefinition,
                              Bool_t plots3D,
                              Bool_t useRun1binning)
 {
-  //Setup the instance of AliDielectron
+  // Setup the instance of AliDielectron
   LMEECutLib*  LMcutlib = new LMEECutLib(SDDstatus);
 
   // Init AliDielectron
@@ -48,7 +48,7 @@ AliDielectron* Config_acapon(TString cutDefinition,
 
   }
 
-  // deactivate pairing to check track cuts or run with loose pid cuts:
+  // Deactivate pairing to check track cuts or run with loose pid cuts:
   if(!doPairing){
     die->SetNoPairing();
   }

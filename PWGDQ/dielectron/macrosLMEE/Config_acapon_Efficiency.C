@@ -1,4 +1,4 @@
-Bool_t SetGeneratedSmearingHistos = kTRUE;
+Bool_t SetGeneratedSmearingHistos = kFALSE;
 
 
 Bool_t GetCentralityFromAlien = kFALSE;
@@ -139,234 +139,234 @@ AliAnalysisFilter* SetupTrackCutsAndSettings(TString cutDefinition)
   std::cout << "SetupTrackCutsAndSettings( cutInstance = " << cutDefinition << " )" <<std::endl;
   AliAnalysisFilter *anaFilter = new AliAnalysisFilter("anaFilter","anaFilter"); // named constructor seems mandatory!
 
-	Bool_t SDDstatus = kTRUE;
+  Bool_t SDDstatus = kTRUE;
 
   LMEECutLib* LMcutlib = new LMEECutLib(SDDstatus);
   if(cutDefinition == "kResolutionCuts"){
-		std::cout << "Resolution Track Cuts being set" << std::endl;
-		anaFilter->AddCuts(LMcutlib->GetTrackCuts(LMEECutLib::kResolutionTrackCuts, LMEECutLib::kResolutionTrackCuts));
-		anaFilter->SetName(cutDefinition);
-		anaFilter->Print();
+    std::cout << "Resolution Track Cuts being set" << std::endl;
+    anaFilter->AddCuts(LMcutlib->GetTrackCuts(LMEECutLib::kResolutionTrackCuts, LMEECutLib::kResolutionTrackCuts));
+    anaFilter->SetName(cutDefinition);
+    anaFilter->Print();
   }
-	else if(cutDefinition == "kCutSet1"){ //TMVA
-		std::cout << "Setting up cut set 1" << std::endl;
-		anaFilter->AddCuts(LMcutlib->GetTrackCuts(LMEECutLib::kCutSet1, LMEECutLib::kCutSet1));
-		anaFilter->SetName(cutDefinition);
-		anaFilter->Print();
-	}
-	else if(cutDefinition == "kTheoPID"){ // PID cut set from a Run 1 pPb analysis. Standard track cuts
-		std::cout << "Setting up Theo PID. Standard track cuts." << std::endl;
-		anaFilter->AddCuts(LMcutlib->GetTrackCuts(LMEECutLib::kCutSet1, LMEECutLib::kTheoPID));
-		anaFilter->SetName(cutDefinition);
-		anaFilter->Print();
-	}
-	// ######## PID Cut variation settings #################
-	// These variations use the kCutSet1 track cuts and only vary PID
-	else if(cutDefinition == "kPIDcut1"){ 
-		anaFilter->AddCuts(LMcutlib->GetTrackCuts(LMEECutLib::kCutSet1, LMEECutLib::kPIDcut1));
-		anaFilter->SetName(cutDefinition);
-		anaFilter->Print();
-	}
-	else if(cutDefinition == "kPIDcut2"){ 
-		anaFilter->AddCuts(LMcutlib->GetTrackCuts(LMEECutLib::kCutSet1, LMEECutLib::kPIDcut2));
-		anaFilter->SetName(cutDefinition);
-		anaFilter->Print();
-	}
-	else if(cutDefinition == "kPIDcut3"){ 
-		anaFilter->AddCuts(LMcutlib->GetTrackCuts(LMEECutLib::kCutSet1, LMEECutLib::kPIDcut3));
-		anaFilter->SetName(cutDefinition);
-		anaFilter->Print();
-	}
-	else if(cutDefinition == "kPIDcut4"){ 
-		anaFilter->AddCuts(LMcutlib->GetTrackCuts(LMEECutLib::kCutSet1, LMEECutLib::kPIDcut4));
-		anaFilter->SetName(cutDefinition);
-		anaFilter->Print();
-	}
-	else if(cutDefinition == "kPIDcut5"){ 
-		anaFilter->AddCuts(LMcutlib->GetTrackCuts(LMEECutLib::kCutSet1, LMEECutLib::kPIDcut5));
-		anaFilter->SetName(cutDefinition);
-		anaFilter->Print();
-	}
-	else if(cutDefinition == "kPIDcut6"){ 
-		anaFilter->AddCuts(LMcutlib->GetTrackCuts(LMEECutLib::kCutSet1, LMEECutLib::kPIDcut6));
-		anaFilter->SetName(cutDefinition);
-		anaFilter->Print();
-	}
-	else if(cutDefinition == "kPIDcut7"){ 
-		anaFilter->AddCuts(LMcutlib->GetTrackCuts(LMEECutLib::kCutSet1, LMEECutLib::kPIDcut7));
-		anaFilter->SetName(cutDefinition);
-		anaFilter->Print();
-	}
-	else if(cutDefinition == "kPIDcut8"){ 
-		anaFilter->AddCuts(LMcutlib->GetTrackCuts(LMEECutLib::kCutSet1, LMEECutLib::kPIDcut8));
-		anaFilter->SetName(cutDefinition);
-		anaFilter->Print();
-	}
-	else if(cutDefinition == "kPIDcut9"){ 
-		anaFilter->AddCuts(LMcutlib->GetTrackCuts(LMEECutLib::kCutSet1, LMEECutLib::kPIDcut9));
-		anaFilter->SetName(cutDefinition);
-		anaFilter->Print();
-	}
-	else if(cutDefinition == "kPIDcut10"){ 
-		anaFilter->AddCuts(LMcutlib->GetTrackCuts(LMEECutLib::kCutSet1, LMEECutLib::kPIDcut10));
-		anaFilter->SetName(cutDefinition);
-		anaFilter->Print();
-	}
-	else if(cutDefinition == "kPIDcut11"){ 
-		anaFilter->AddCuts(LMcutlib->GetTrackCuts(LMEECutLib::kCutSet1, LMEECutLib::kPIDcut11));
-		anaFilter->SetName(cutDefinition);
-		anaFilter->Print();
-	}
-	else if(cutDefinition == "kPIDcut12"){ 
-		anaFilter->AddCuts(LMcutlib->GetTrackCuts(LMEECutLib::kCutSet1, LMEECutLib::kPIDcut12));
-		anaFilter->SetName(cutDefinition);
-		anaFilter->Print();
-	}
-	else if(cutDefinition == "kPIDcut13"){ 
-		anaFilter->AddCuts(LMcutlib->GetTrackCuts(LMEECutLib::kCutSet1, LMEECutLib::kPIDcut13));
-		anaFilter->SetName(cutDefinition);
-		anaFilter->Print();
-	}
-	else if(cutDefinition == "kPIDcut14"){ 
-		anaFilter->AddCuts(LMcutlib->GetTrackCuts(LMEECutLib::kCutSet1, LMEECutLib::kPIDcut14));
-		anaFilter->SetName(cutDefinition);
-		anaFilter->Print();
-	}
-	else if(cutDefinition == "kPIDcut15"){ 
-		anaFilter->AddCuts(LMcutlib->GetTrackCuts(LMEECutLib::kCutSet1, LMEECutLib::kPIDcut15));
-		anaFilter->SetName(cutDefinition);
-		anaFilter->Print();
-	}
-	else if(cutDefinition == "kPIDcut16"){ 
-		anaFilter->AddCuts(LMcutlib->GetTrackCuts(LMEECutLib::kCutSet1, LMEECutLib::kPIDcut16));
-		anaFilter->SetName(cutDefinition);
-		anaFilter->Print();
-	}
-	else if(cutDefinition == "kPIDcut17"){ 
-		anaFilter->AddCuts(LMcutlib->GetTrackCuts(LMEECutLib::kCutSet1, LMEECutLib::kPIDcut17));
-		anaFilter->SetName(cutDefinition);
-		anaFilter->Print();
-	}
-	else if(cutDefinition == "kPIDcut18"){ 
-		anaFilter->AddCuts(LMcutlib->GetTrackCuts(LMEECutLib::kCutSet1, LMEECutLib::kPIDcut18));
-		anaFilter->SetName(cutDefinition);
-		anaFilter->Print();
-	}
-	else if(cutDefinition == "kPIDcut19"){ 
-		anaFilter->AddCuts(LMcutlib->GetTrackCuts(LMEECutLib::kCutSet1, LMEECutLib::kPIDcut19));
-		anaFilter->SetName(cutDefinition);
-		anaFilter->Print();
-	}
-	else if(cutDefinition == "kPIDcut20"){ 
-		anaFilter->AddCuts(LMcutlib->GetTrackCuts(LMEECutLib::kCutSet1, LMEECutLib::kPIDcut20));
-		anaFilter->SetName(cutDefinition);
-		anaFilter->Print();
-	}
-	// ######## Track+ePID Cut variation settings #################
-	else if(cutDefinition == "kCutVar1"){ 
-		anaFilter->AddCuts(LMcutlib->GetTrackCuts(LMEECutLib::kCutVar1, LMEECutLib::kCutVar1));
-		anaFilter->SetName(cutDefinition);
-		anaFilter->Print();
-	}
-	else if(cutDefinition == "kCutVar2"){ 
-		anaFilter->AddCuts(LMcutlib->GetTrackCuts(LMEECutLib::kCutVar2, LMEECutLib::kCutVar2));
-		anaFilter->SetName(cutDefinition);
-		anaFilter->Print();
-	}
-	else if(cutDefinition == "kCutVar3"){ 
-		anaFilter->AddCuts(LMcutlib->GetTrackCuts(LMEECutLib::kCutVar3, LMEECutLib::kCutVar3));
-		anaFilter->SetName(cutDefinition);
-		anaFilter->Print();
-	}
-	else if(cutDefinition == "kCutVar4"){ 
-		anaFilter->AddCuts(LMcutlib->GetTrackCuts(LMEECutLib::kCutVar4, LMEECutLib::kCutVar4));
-		anaFilter->SetName(cutDefinition);
-		anaFilter->Print();
-	}
-	else if(cutDefinition == "kCutVar5"){ 
-		anaFilter->AddCuts(LMcutlib->GetTrackCuts(LMEECutLib::kCutVar5, LMEECutLib::kCutVar5));
-		anaFilter->SetName(cutDefinition);
-		anaFilter->Print();
-	}
-	else if(cutDefinition == "kCutVar6"){ 
-		anaFilter->AddCuts(LMcutlib->GetTrackCuts(LMEECutLib::kCutVar6, LMEECutLib::kCutVar6));
-		anaFilter->SetName(cutDefinition);
-		anaFilter->Print();
-	}
-	else if(cutDefinition == "kCutVar7"){ 
-		anaFilter->AddCuts(LMcutlib->GetTrackCuts(LMEECutLib::kCutVar7, LMEECutLib::kCutVar7));
-		anaFilter->SetName(cutDefinition);
-		anaFilter->Print();
-	}
-	else if(cutDefinition == "kCutVar8"){ 
-		anaFilter->AddCuts(LMcutlib->GetTrackCuts(LMEECutLib::kCutVar8, LMEECutLib::kCutVar8));
-		anaFilter->SetName(cutDefinition);
-		anaFilter->Print();
-	}
-	else if(cutDefinition == "kCutVar9"){ 
-		anaFilter->AddCuts(LMcutlib->GetTrackCuts(LMEECutLib::kCutVar9, LMEECutLib::kCutVar9));
-		anaFilter->SetName(cutDefinition);
-		anaFilter->Print();
-	}
-	else if(cutDefinition == "kCutVar10"){ 
-		anaFilter->AddCuts(LMcutlib->GetTrackCuts(LMEECutLib::kCutVar10, LMEECutLib::kCutVar10));
-		anaFilter->SetName(cutDefinition);
-		anaFilter->Print();
-	}
-	else if(cutDefinition == "kCutVar11"){ 
-		anaFilter->AddCuts(LMcutlib->GetTrackCuts(LMEECutLib::kCutVar11, LMEECutLib::kCutVar11));
-		anaFilter->SetName(cutDefinition);
-		anaFilter->Print();
-	}
-	else if(cutDefinition == "kCutVar12"){ 
-		anaFilter->AddCuts(LMcutlib->GetTrackCuts(LMEECutLib::kCutVar12, LMEECutLib::kCutVar12));
-		anaFilter->SetName(cutDefinition);
-		anaFilter->Print();
-	}
-	else if(cutDefinition == "kCutVar13"){ 
-		anaFilter->AddCuts(LMcutlib->GetTrackCuts(LMEECutLib::kCutVar13, LMEECutLib::kCutVar13));
-		anaFilter->SetName(cutDefinition);
-		anaFilter->Print();
-	}
-	else if(cutDefinition == "kCutVar14"){ 
-		anaFilter->AddCuts(LMcutlib->GetTrackCuts(LMEECutLib::kCutVar14, LMEECutLib::kCutVar14));
-		anaFilter->SetName(cutDefinition);
-		anaFilter->Print();
-	}
-	else if(cutDefinition == "kCutVar15"){ 
-		anaFilter->AddCuts(LMcutlib->GetTrackCuts(LMEECutLib::kCutVar15, LMEECutLib::kCutVar15));
-		anaFilter->SetName(cutDefinition);
-		anaFilter->Print();
-	}
-	else if(cutDefinition == "kCutVar16"){ 
-		anaFilter->AddCuts(LMcutlib->GetTrackCuts(LMEECutLib::kCutVar16, LMEECutLib::kCutVar16));
-		anaFilter->SetName(cutDefinition);
-		anaFilter->Print();
-	}
-	else if(cutDefinition == "kCutVar17"){ 
-		anaFilter->AddCuts(LMcutlib->GetTrackCuts(LMEECutLib::kCutVar17, LMEECutLib::kCutVar17));
-		anaFilter->SetName(cutDefinition);
-		anaFilter->Print();
-	}
-	else if(cutDefinition == "kCutVar18"){ 
-		anaFilter->AddCuts(LMcutlib->GetTrackCuts(LMEECutLib::kCutVar18, LMEECutLib::kCutVar18));
-		anaFilter->SetName(cutDefinition);
-		anaFilter->Print();
-	}
-	else if(cutDefinition == "kCutVar19"){ 
-		anaFilter->AddCuts(LMcutlib->GetTrackCuts(LMEECutLib::kCutVar19, LMEECutLib::kCutVar19));
-		anaFilter->SetName(cutDefinition);
-		anaFilter->Print();
-	}
-	else if(cutDefinition == "kCutVar20"){ 
-		anaFilter->AddCuts(LMcutlib->GetTrackCuts(LMEECutLib::kCutVar20, LMEECutLib::kCutVar20));
-		anaFilter->SetName(cutDefinition);
-		anaFilter->Print();
-	}
-	else{
-		std::cout << "Undefined cut definition...." << std::endl;
-		return 0x0;
-	}
+  else if(cutDefinition == "kCutSet1"){ //TMVA
+    std::cout << "Setting up cut set 1" << std::endl;
+    anaFilter->AddCuts(LMcutlib->GetTrackCuts(LMEECutLib::kCutSet1, LMEECutLib::kCutSet1));
+    anaFilter->SetName(cutDefinition);
+    anaFilter->Print();
+  }
+  else if(cutDefinition == "kTheoPID"){ // PID cut set from a Run 1 pPb analysis. Standard track cuts
+    std::cout << "Setting up Theo PID. Standard track cuts." << std::endl;
+    anaFilter->AddCuts(LMcutlib->GetTrackCuts(LMEECutLib::kCutSet1, LMEECutLib::kTheoPID));
+    anaFilter->SetName(cutDefinition);
+    anaFilter->Print();
+  }
+  // ######## PID Cut variation settings #################
+  // These variations use the kCutSet1 track cuts and only vary PID
+  else if(cutDefinition == "kPIDcut1"){ 
+    anaFilter->AddCuts(LMcutlib->GetTrackCuts(LMEECutLib::kCutSet1, LMEECutLib::kPIDcut1));
+    anaFilter->SetName(cutDefinition);
+    anaFilter->Print();
+  }
+  else if(cutDefinition == "kPIDcut2"){ 
+    anaFilter->AddCuts(LMcutlib->GetTrackCuts(LMEECutLib::kCutSet1, LMEECutLib::kPIDcut2));
+    anaFilter->SetName(cutDefinition);
+    anaFilter->Print();
+  }
+  else if(cutDefinition == "kPIDcut3"){ 
+    anaFilter->AddCuts(LMcutlib->GetTrackCuts(LMEECutLib::kCutSet1, LMEECutLib::kPIDcut3));
+    anaFilter->SetName(cutDefinition);
+    anaFilter->Print();
+  }
+  else if(cutDefinition == "kPIDcut4"){ 
+    anaFilter->AddCuts(LMcutlib->GetTrackCuts(LMEECutLib::kCutSet1, LMEECutLib::kPIDcut4));
+    anaFilter->SetName(cutDefinition);
+    anaFilter->Print();
+  }
+  else if(cutDefinition == "kPIDcut5"){ 
+    anaFilter->AddCuts(LMcutlib->GetTrackCuts(LMEECutLib::kCutSet1, LMEECutLib::kPIDcut5));
+    anaFilter->SetName(cutDefinition);
+    anaFilter->Print();
+  }
+  else if(cutDefinition == "kPIDcut6"){ 
+    anaFilter->AddCuts(LMcutlib->GetTrackCuts(LMEECutLib::kCutSet1, LMEECutLib::kPIDcut6));
+    anaFilter->SetName(cutDefinition);
+    anaFilter->Print();
+  }
+  else if(cutDefinition == "kPIDcut7"){ 
+    anaFilter->AddCuts(LMcutlib->GetTrackCuts(LMEECutLib::kCutSet1, LMEECutLib::kPIDcut7));
+    anaFilter->SetName(cutDefinition);
+    anaFilter->Print();
+  }
+  else if(cutDefinition == "kPIDcut8"){ 
+    anaFilter->AddCuts(LMcutlib->GetTrackCuts(LMEECutLib::kCutSet1, LMEECutLib::kPIDcut8));
+    anaFilter->SetName(cutDefinition);
+    anaFilter->Print();
+  }
+  else if(cutDefinition == "kPIDcut9"){ 
+    anaFilter->AddCuts(LMcutlib->GetTrackCuts(LMEECutLib::kCutSet1, LMEECutLib::kPIDcut9));
+    anaFilter->SetName(cutDefinition);
+    anaFilter->Print();
+  }
+  else if(cutDefinition == "kPIDcut10"){ 
+    anaFilter->AddCuts(LMcutlib->GetTrackCuts(LMEECutLib::kCutSet1, LMEECutLib::kPIDcut10));
+    anaFilter->SetName(cutDefinition);
+    anaFilter->Print();
+  }
+  else if(cutDefinition == "kPIDcut11"){ 
+    anaFilter->AddCuts(LMcutlib->GetTrackCuts(LMEECutLib::kCutSet1, LMEECutLib::kPIDcut11));
+    anaFilter->SetName(cutDefinition);
+    anaFilter->Print();
+  }
+  else if(cutDefinition == "kPIDcut12"){ 
+    anaFilter->AddCuts(LMcutlib->GetTrackCuts(LMEECutLib::kCutSet1, LMEECutLib::kPIDcut12));
+    anaFilter->SetName(cutDefinition);
+    anaFilter->Print();
+  }
+  else if(cutDefinition == "kPIDcut13"){ 
+    anaFilter->AddCuts(LMcutlib->GetTrackCuts(LMEECutLib::kCutSet1, LMEECutLib::kPIDcut13));
+    anaFilter->SetName(cutDefinition);
+    anaFilter->Print();
+  }
+  else if(cutDefinition == "kPIDcut14"){ 
+    anaFilter->AddCuts(LMcutlib->GetTrackCuts(LMEECutLib::kCutSet1, LMEECutLib::kPIDcut14));
+    anaFilter->SetName(cutDefinition);
+    anaFilter->Print();
+  }
+  else if(cutDefinition == "kPIDcut15"){ 
+    anaFilter->AddCuts(LMcutlib->GetTrackCuts(LMEECutLib::kCutSet1, LMEECutLib::kPIDcut15));
+    anaFilter->SetName(cutDefinition);
+    anaFilter->Print();
+  }
+  else if(cutDefinition == "kPIDcut16"){ 
+    anaFilter->AddCuts(LMcutlib->GetTrackCuts(LMEECutLib::kCutSet1, LMEECutLib::kPIDcut16));
+    anaFilter->SetName(cutDefinition);
+    anaFilter->Print();
+  }
+  else if(cutDefinition == "kPIDcut17"){ 
+    anaFilter->AddCuts(LMcutlib->GetTrackCuts(LMEECutLib::kCutSet1, LMEECutLib::kPIDcut17));
+    anaFilter->SetName(cutDefinition);
+    anaFilter->Print();
+  }
+  else if(cutDefinition == "kPIDcut18"){ 
+    anaFilter->AddCuts(LMcutlib->GetTrackCuts(LMEECutLib::kCutSet1, LMEECutLib::kPIDcut18));
+    anaFilter->SetName(cutDefinition);
+    anaFilter->Print();
+  }
+  else if(cutDefinition == "kPIDcut19"){ 
+    anaFilter->AddCuts(LMcutlib->GetTrackCuts(LMEECutLib::kCutSet1, LMEECutLib::kPIDcut19));
+    anaFilter->SetName(cutDefinition);
+    anaFilter->Print();
+  }
+  else if(cutDefinition == "kPIDcut20"){ 
+    anaFilter->AddCuts(LMcutlib->GetTrackCuts(LMEECutLib::kCutSet1, LMEECutLib::kPIDcut20));
+    anaFilter->SetName(cutDefinition);
+    anaFilter->Print();
+  }
+  // ######## Track+ePID Cut variation settings #################
+  else if(cutDefinition == "kCutVar1"){ 
+    anaFilter->AddCuts(LMcutlib->GetTrackCuts(LMEECutLib::kCutVar1, LMEECutLib::kCutVar1));
+    anaFilter->SetName(cutDefinition);
+    anaFilter->Print();
+  }
+  else if(cutDefinition == "kCutVar2"){ 
+    anaFilter->AddCuts(LMcutlib->GetTrackCuts(LMEECutLib::kCutVar2, LMEECutLib::kCutVar2));
+    anaFilter->SetName(cutDefinition);
+    anaFilter->Print();
+  }
+  else if(cutDefinition == "kCutVar3"){ 
+    anaFilter->AddCuts(LMcutlib->GetTrackCuts(LMEECutLib::kCutVar3, LMEECutLib::kCutVar3));
+    anaFilter->SetName(cutDefinition);
+    anaFilter->Print();
+  }
+  else if(cutDefinition == "kCutVar4"){ 
+    anaFilter->AddCuts(LMcutlib->GetTrackCuts(LMEECutLib::kCutVar4, LMEECutLib::kCutVar4));
+    anaFilter->SetName(cutDefinition);
+    anaFilter->Print();
+  }
+  else if(cutDefinition == "kCutVar5"){ 
+    anaFilter->AddCuts(LMcutlib->GetTrackCuts(LMEECutLib::kCutVar5, LMEECutLib::kCutVar5));
+    anaFilter->SetName(cutDefinition);
+    anaFilter->Print();
+  }
+  else if(cutDefinition == "kCutVar6"){ 
+    anaFilter->AddCuts(LMcutlib->GetTrackCuts(LMEECutLib::kCutVar6, LMEECutLib::kCutVar6));
+    anaFilter->SetName(cutDefinition);
+    anaFilter->Print();
+  }
+  else if(cutDefinition == "kCutVar7"){ 
+    anaFilter->AddCuts(LMcutlib->GetTrackCuts(LMEECutLib::kCutVar7, LMEECutLib::kCutVar7));
+    anaFilter->SetName(cutDefinition);
+    anaFilter->Print();
+  }
+  else if(cutDefinition == "kCutVar8"){ 
+    anaFilter->AddCuts(LMcutlib->GetTrackCuts(LMEECutLib::kCutVar8, LMEECutLib::kCutVar8));
+    anaFilter->SetName(cutDefinition);
+    anaFilter->Print();
+  }
+  else if(cutDefinition == "kCutVar9"){ 
+    anaFilter->AddCuts(LMcutlib->GetTrackCuts(LMEECutLib::kCutVar9, LMEECutLib::kCutVar9));
+    anaFilter->SetName(cutDefinition);
+    anaFilter->Print();
+  }
+  else if(cutDefinition == "kCutVar10"){ 
+    anaFilter->AddCuts(LMcutlib->GetTrackCuts(LMEECutLib::kCutVar10, LMEECutLib::kCutVar10));
+    anaFilter->SetName(cutDefinition);
+    anaFilter->Print();
+  }
+  else if(cutDefinition == "kCutVar11"){ 
+    anaFilter->AddCuts(LMcutlib->GetTrackCuts(LMEECutLib::kCutVar11, LMEECutLib::kCutVar11));
+    anaFilter->SetName(cutDefinition);
+    anaFilter->Print();
+  }
+  else if(cutDefinition == "kCutVar12"){ 
+    anaFilter->AddCuts(LMcutlib->GetTrackCuts(LMEECutLib::kCutVar12, LMEECutLib::kCutVar12));
+    anaFilter->SetName(cutDefinition);
+    anaFilter->Print();
+  }
+  else if(cutDefinition == "kCutVar13"){ 
+    anaFilter->AddCuts(LMcutlib->GetTrackCuts(LMEECutLib::kCutVar13, LMEECutLib::kCutVar13));
+    anaFilter->SetName(cutDefinition);
+    anaFilter->Print();
+  }
+  else if(cutDefinition == "kCutVar14"){ 
+    anaFilter->AddCuts(LMcutlib->GetTrackCuts(LMEECutLib::kCutVar14, LMEECutLib::kCutVar14));
+    anaFilter->SetName(cutDefinition);
+    anaFilter->Print();
+  }
+  else if(cutDefinition == "kCutVar15"){ 
+    anaFilter->AddCuts(LMcutlib->GetTrackCuts(LMEECutLib::kCutVar15, LMEECutLib::kCutVar15));
+    anaFilter->SetName(cutDefinition);
+    anaFilter->Print();
+  }
+  else if(cutDefinition == "kCutVar16"){ 
+    anaFilter->AddCuts(LMcutlib->GetTrackCuts(LMEECutLib::kCutVar16, LMEECutLib::kCutVar16));
+    anaFilter->SetName(cutDefinition);
+    anaFilter->Print();
+  }
+  else if(cutDefinition == "kCutVar17"){ 
+    anaFilter->AddCuts(LMcutlib->GetTrackCuts(LMEECutLib::kCutVar17, LMEECutLib::kCutVar17));
+    anaFilter->SetName(cutDefinition);
+    anaFilter->Print();
+  }
+  else if(cutDefinition == "kCutVar18"){ 
+    anaFilter->AddCuts(LMcutlib->GetTrackCuts(LMEECutLib::kCutVar18, LMEECutLib::kCutVar18));
+    anaFilter->SetName(cutDefinition);
+    anaFilter->Print();
+  }
+  else if(cutDefinition == "kCutVar19"){ 
+    anaFilter->AddCuts(LMcutlib->GetTrackCuts(LMEECutLib::kCutVar19, LMEECutLib::kCutVar19));
+    anaFilter->SetName(cutDefinition);
+    anaFilter->Print();
+  }
+  else if(cutDefinition == "kCutVar20"){ 
+    anaFilter->AddCuts(LMcutlib->GetTrackCuts(LMEECutLib::kCutVar20, LMEECutLib::kCutVar20));
+    anaFilter->SetName(cutDefinition);
+    anaFilter->Print();
+  }
+  else{
+    std::cout << "Undefined cut definition...." << std::endl;
+    return 0x0;
+  }
 
   return anaFilter;
 }
@@ -384,7 +384,7 @@ std::vector<Bool_t> AddSingleLegMCSignal(AliAnalysisTaskElectronEfficiencyV2* ta
   eleFinalState.SetLegPDGs(11,1);//dummy second leg (never MCkTRUE)\n"
   eleFinalState.SetCheckBothChargesLegs(kTRUE,kTRUE);
   //eleFinalState.SetLegSources(AliDielectronSignalMC::kFinalState, AliDielectronSignalMC::kFinalState);
-	eleFinalState.SetMotherPDGs(22, 22, kTRUE, kTRUE);
+  eleFinalState.SetMotherPDGs(22, 22, kTRUE, kTRUE);
 
   AliDielectronSignalMC eleFinalStateFromSameMotherMeson("eleFinalStateFromSameMotherMeson","eleFinalStateFromSameMotherMeson");
   eleFinalStateFromSameMotherMeson.SetLegPDGs(11,1);//dummy second leg (never MCkTRUE)\n"
@@ -427,12 +427,12 @@ std::vector<Bool_t> AddSingleLegMCSignal(AliAnalysisTaskElectronEfficiencyV2* ta
 
   // this is used to get electrons from charmed mesons in a environment where GEANT is doing the decay of D mesons, like in LHC18b5a
   // ordering is according to MCSignals of single legs
-	std::vector<Bool_t> DielectronsPairNotFromSameMother;
-	DielectronsPairNotFromSameMother.push_back(kFALSE);
-	DielectronsPairNotFromSameMother.push_back(kTRUE);
-	DielectronsPairNotFromSameMother.push_back(kTRUE);
-	// DielectronsPairNotFromSameMother.push_back(kFALSE);
-	return DielectronsPairNotFromSameMother;
+  std::vector<Bool_t> DielectronsPairNotFromSameMother;
+  DielectronsPairNotFromSameMother.push_back(kFALSE);
+  DielectronsPairNotFromSameMother.push_back(kTRUE);
+  DielectronsPairNotFromSameMother.push_back(kTRUE);
+  // DielectronsPairNotFromSameMother.push_back(kFALSE);
+  return DielectronsPairNotFromSameMother;
 }
 
 
