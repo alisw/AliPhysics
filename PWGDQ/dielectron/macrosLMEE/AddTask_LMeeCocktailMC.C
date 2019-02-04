@@ -47,6 +47,9 @@ void AddTask_LMeeCocktailMC(Int_t CollisionSystem = 200, Float_t MaxEta = 0.8, F
   task->SetALTweight(ALTweightType);
   if(resFileName != ""){
     task->SetResFileName(resFileName);
+    if(resFileName.Contains("alien")){
+      gSystem->Exec(Form("alien_cp %s .",resFileName.Data()));
+    }
   }
   
   //connect containers
