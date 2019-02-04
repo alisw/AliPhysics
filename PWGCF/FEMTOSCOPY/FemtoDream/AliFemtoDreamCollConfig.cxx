@@ -355,13 +355,13 @@ std::vector<unsigned int> AliFemtoDreamCollConfig::GetWhichPairs() {
   std::vector<unsigned int> Pairs;
   float out = 0;
   if (fWhichPairs->GetEntries() == 0) {
-    AliWarning("==========================================");
-    AliWarning("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
-    AliWarning("No Pair QA Specified, setting all to true ");
-    AliWarning("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
-    AliWarning("==========================================");
+    AliWarning("===========================================");
+    AliWarning("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
+    AliWarning("No Pair QA Specified, setting all to false ");
+    AliWarning("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
+    AliWarning("===========================================");
     for (int iQA = 0; iQA < this->GetNParticleCombinations(); ++iQA) {
-      Pairs.push_back(33);
+      Pairs.push_back(0);
     }
   } else if (fWhichPairs->GetEntries() != this->GetNParticleCombinations()) {
     AliFatal("Not all Pairs have a specified QA Behaviour, terminating \n");
