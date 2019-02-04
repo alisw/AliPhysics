@@ -130,7 +130,7 @@ AliSigma0ParticleV0::AliSigma0ParticleV0(const AliAODConversionPhoton *gamma,
   double cosinePointingAngle =
       (momV02 * PosV02 > 0.0)
           ? (PosV0[0] * momV0[0] + PosV0[1] * momV0[1] + PosV0[2] * momV0[2]) /
-                std::sqrt(momV02 * PosV02)
+                TMath::Sqrt(momV02 * PosV02)
           : -999.f;
   fCosAlpha = cosinePointingAngle;
 
@@ -142,7 +142,7 @@ AliSigma0ParticleV0::AliSigma0ParticleV0(const AliAODConversionPhoton *gamma,
   fTrackPos = fCandidatePos;
   fTrackNeg = fCandidateNeg;
 
-  fUse = true;
+  AliSigma0ParticleBase::SetUse(true);
 }
 
 //____________________________________________________________________________________________________
