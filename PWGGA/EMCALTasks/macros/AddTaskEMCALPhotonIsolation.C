@@ -51,7 +51,7 @@ AliAnalysisTaskEMCALPhotonIsolation* AddTaskEMCALPhotonIsolation(
                                                                  const Float_t          iWidthSSsmear             = 0.,
                                                                  const Float_t          iMean_SSsmear             = 0.,
                                                                  const Bool_t           iExtraIsoCuts             = kFALSE,
-                                                                 const Bool_t           isQA                      = kFALSE,
+								 const Bool_t		SetListNameOutput 	  = kFALSE, //add the output type to the EmcalList name
                                                                  TString                configBasePath            = "",
                                                                  const Int_t            bWhichToSmear             = 0,
                                                                  const Int_t            minNLM                    = 1,
@@ -62,8 +62,7 @@ AliAnalysisTaskEMCALPhotonIsolation* AddTaskEMCALPhotonIsolation(
                                                                  const Bool_t           RejectPileUpEvent         = kFALSE,
                                                                  const Int_t            NContrToPileUp            = 3,
                                                                  const Float_t          iFiducialCut              = 0.4,
-                                                                 const Bool_t           bANwithNoSameTcard        = kFALSE,
-								 const Bool_t		SetListNameOutput = kFALSE //add the output type to the EmcalList name
+                                                                 const Bool_t           bANwithNoSameTcard        = kFALSE
                                                                  )
 {
   Printf("Preparing neutral cluster analysis\n");
@@ -231,7 +230,6 @@ AliAnalysisTaskEMCALPhotonIsolation* AddTaskEMCALPhotonIsolation(
   task->SetCTMdeltaPhi(TMdphi);
   task->SetCTMdeltaEtaIso(TMdetaIso);
   task->SetCTMdeltaPhiIso(TMdphiIso);
-  task->SetQA(isQA);
   task->SetIsoMethod(iIsoMethod);
   task->SetEtIsoMethod(iEtIsoMethod);
   task->SetUEMethod(iUEMethod);
