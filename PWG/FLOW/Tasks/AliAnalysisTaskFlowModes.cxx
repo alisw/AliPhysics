@@ -1701,6 +1701,25 @@ void AliAnalysisTaskFlowModes::FillEventsQA(const Short_t iQAindex)
   Double_t centrV0M = fMultSelection->GetMultiplicityPercentile("V0M");
   Double_t centrCL1 = fMultSelection->GetMultiplicityPercentile("CL1");
     
+  if(iQAindex==1){
+    // cut on consistency between centrality estimators: VOM vs CL1
+    double fEstimatorsCorrelationCoef[2];
+    double fEstimatorsSigmaPars[4];
+    double fDeltaEstimatorNsigma[2];
+    
+    fEstimatorsCorrelationCoef[0] = 0.0157497;
+    fEstimatorsCorrelationCoef[1] = 0.973488;
+    fEstimatorsSigmaPars[0] = 0.673612;
+    fEstimatorsSigmaPars[1] = 0.0290718;
+    fEstimatorsSigmaPars[2] = -0.000546728;
+    fEstimatorsSigmaPars[3] = 5.82749e-06;
+    fDeltaEstimatorNsigma[0] = 5.;
+    fDeltaEstimatorNsigma[1] = 5.5;
+    
+    const double center = centrCL1 * fEstimatorsCorrelationCoef[1] + fEstimatorsCorrelationCoef[0];
+    const double sigma = fEstimatorsSigmaPars[0] + fEstimatorsSigmaPars[1] * centrCL1 + fEstimatorsSigmaPars[2] * centrCL1 * centrCL1 + fEstimatorsSigmaPars[3] * centrCL1 * centrCL1 * centrCL1;
+    if (centrV0M < center - fDeltaEstimatorNsigma[0] * sigma && centrV0M > center + fDeltaEstimatorNsigma[1] * sigma) return;
+  }
   fhQAEventsCentralityOutliers[iQAindex]->Fill(centrV0M,centrCL1);
     
   const Int_t nTracks = fEventAOD->GetNumberOfTracks();
