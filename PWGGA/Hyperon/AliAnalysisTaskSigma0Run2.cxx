@@ -70,7 +70,7 @@ AliAnalysisTaskSigma0Run2::AliAnalysisTaskSigma0Run2(const char *name)
       fHistCentralityProfileAfter(nullptr),
       fHistCentralityProfileCoarseAfter(nullptr),
       fHistTriggerBefore(nullptr),
-      fHistTriggerAfter(nullptr){
+      fHistTriggerAfter(nullptr) {
   DefineInput(0, TChain::Class());
   DefineOutput(1, TList::Class());
 }
@@ -200,8 +200,15 @@ void AliAnalysisTaskSigma0Run2::CastToVector(
     auto *PhotonCandidate =
         dynamic_cast<AliAODConversionPhoton *>(fGammaArray->At(iGamma));
     if (!PhotonCandidate) continue;
-    AliSigma0ParticleV0 phot(PhotonCandidate, inputEvent);
-    if(fIsMC) {
+
+    auto pos =
+        (AliESDtrack *)inputEvent->GetTrack(PhotonCandidate->GetLabel1());
+    auto neg =
+        (AliESDtrack *)inputEvent->GetTrack(PhotonCandidate->GetLabel2());
+    if (!pos || !neg) continue;
+
+    AliSigma0ParticleV0 phot(PhotonCandidate, pos, neg, inputEvent);
+    if (fIsMC) {
       const int label = phot.MatchToMC(fMCEvent, 22, {{11, -11}});
     }
     container.push_back(phot);

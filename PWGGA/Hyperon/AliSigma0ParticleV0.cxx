@@ -73,11 +73,13 @@ AliSigma0ParticleV0::AliSigma0ParticleV0(AliESDv0 *v0, const AliESDtrack *pos,
   fTrackPos = fCandidatePos;
   fTrackNeg = fCandidateNeg;
 
-  fUse = true;
+  AliSigma0ParticleBase::SetUse(true);
 }
 
 //____________________________________________________________________________________________________
 AliSigma0ParticleV0::AliSigma0ParticleV0(const AliAODConversionPhoton *gamma,
+                                         const AliESDtrack *pos,
+                                         const AliESDtrack *neg,
                                          const AliVEvent *inputEvent)
     : AliSigma0ParticleBase(),
       fTrackLabelPos(-1),
@@ -90,6 +92,8 @@ AliSigma0ParticleV0::AliSigma0ParticleV0(const AliAODConversionPhoton *gamma,
       fCosAlpha(0),
       fRecMass(0),
       fPDGMass(0) {
+  AliSigma0ParticleBase::SetUse(true);
+
   fP[0] = gamma->GetPx();
   fP[1] = gamma->GetPy();
   fP[2] = gamma->GetPz();
@@ -132,6 +136,11 @@ AliSigma0ParticleV0::AliSigma0ParticleV0(const AliAODConversionPhoton *gamma,
 
   fMCLabelPos = gamma->GetMCLabelPositive();
   fMCLabelNeg = gamma->GetMCLabelNegative();
+
+  AliSigma0ParticleBase fCandidatePos(pos, 0, inputEvent->GetMagneticField());
+  AliSigma0ParticleBase fCandidateNeg(neg, 0, inputEvent->GetMagneticField());
+  fTrackPos = fCandidatePos;
+  fTrackNeg = fCandidateNeg;
 
   fUse = true;
 }

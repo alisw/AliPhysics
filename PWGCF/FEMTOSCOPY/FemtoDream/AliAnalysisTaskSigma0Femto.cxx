@@ -425,14 +425,14 @@ void AliAnalysisTaskSigma0Femto::CastToVector(
         dynamic_cast<AliAODConversionPhoton *>(fGammaArray->At(iGamma));
     if (!PhotonCandidate) continue;
 
+    auto pos =
+        (AliESDtrack *)inputEvent->GetTrack(PhotonCandidate->GetLabel1());
+    auto neg =
+        (AliESDtrack *)inputEvent->GetTrack(PhotonCandidate->GetLabel2());
+    if (!pos || !neg) continue;
+
     // pile up check
     if (fPhotonLegPileUpCut) {
-      auto pos =
-          (AliESDtrack *)inputEvent->GetTrack(PhotonCandidate->GetLabel1());
-      auto neg =
-          (AliESDtrack *)inputEvent->GetTrack(PhotonCandidate->GetLabel2());
-      if (!pos || !neg) continue;
-
       bool posTrackITS =
           (pos->HasPointOnITSLayer(0) || pos->HasPointOnITSLayer(1) ||
            pos->HasPointOnITSLayer(4) || pos->HasPointOnITSLayer(5));
@@ -448,7 +448,7 @@ void AliAnalysisTaskSigma0Femto::CastToVector(
       if (!posTrackCombined || !negTrackCombined) continue;
     }
 
-    AliSigma0ParticleV0 phot(PhotonCandidate, inputEvent);
+    AliSigma0ParticleV0 phot(PhotonCandidate, pos, neg, inputEvent);
     if (fIsMC) {
       const int label = phot.MatchToMC(fMCEvent, 22, {{11, -11}});
     }
