@@ -1586,8 +1586,11 @@ void AliAnalysisTaskSEHFTreeCreator::Process3Prong(TClonesArray *array3Prong, Al
                   Bool_t ispKpi=kFALSE;
                   Bool_t ispiKp=kFALSE;
                   Int_t isSelectedAnalysis= fCutsLctopKpi->IsSelected(lctopkpi,AliRDHFCuts::kAll,aod);
+                  Int_t isSelectedPidAnalysis = fCutsLctopKpi->IsSelected(lctopkpi,AliRDHFCuts::kPID,aod);
+                  Bool_t isUsePidAn = fCutsLctopKpi->GetIsUsePID();
+                  if(isUsePidAn) fCutsLctopKpi->SetUsePID(kFALSE);
                   Int_t isSelectedTopoAnalysis = fCutsLctopKpi->IsSelected(lctopkpi,AliRDHFCuts::kAll,aod);
-                  Int_t isSelectedPidAnalysis = fCutsLctopKpi->IsSelectedPID(lctopkpi);
+                  fCutsLctopKpi->SetUsePID(isUsePidAn);
                   if(isSelectedAnalysis) isSelAnCuts=kTRUE;
                   if(isSelectedTopoAnalysis) isSelTopo=kTRUE;
                   if(isSelectedPidAnalysis) isSelPID=kTRUE;
