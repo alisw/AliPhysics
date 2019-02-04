@@ -62,6 +62,7 @@ AliHFTreeHandlerLctopKpi::AliHFTreeHandlerLctopKpi(int PIDopt):
 //________________________________________________________________
 AliHFTreeHandlerLctopKpi::~AliHFTreeHandlerLctopKpi()
 {
+  delete fRandom;
   //
   // Default Destructor
   //
