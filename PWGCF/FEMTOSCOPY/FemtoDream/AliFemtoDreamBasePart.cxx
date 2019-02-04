@@ -153,6 +153,11 @@ AliFemtoDreamBasePart::AliFemtoDreamBasePart(
   fMCTheta.push_back(mother.GetV0().GetNegDaughter().GetThetaMC());
   fMCTheta.push_back(mother.GetPhoton().GetNegDaughter().GetThetaMC());
 
+  fPhiAtRadius.push_back(mother.GetV0().GetPosDaughter().GetPhiStar());
+  fPhiAtRadius.push_back(mother.GetPhoton().GetPosDaughter().GetPhiStar());
+  fPhiAtRadius.push_back(mother.GetV0().GetNegDaughter().GetPhiStar());
+  fPhiAtRadius.push_back(mother.GetPhoton().GetNegDaughter().GetPhiStar());
+
   fPhi.push_back(mother.GetV0().GetPosDaughter().GetPhi());
   fPhi.push_back(mother.GetPhoton().GetPosDaughter().GetPhi());
   fPhi.push_back(mother.GetV0().GetNegDaughter().GetPhi());

@@ -74,6 +74,11 @@ AliSigma0ParticleBase::AliSigma0ParticleBase(const AliESDtrack *track, int pdg,
   fEta = track->Eta();
   fTheta = track->Theta();
   fUse = true;
+
+  float TPCradii[9] = {85., 105., 125., 145., 165., 185., 205., 225., 245.};
+  for (int radius = 0; radius < 9; radius++) {
+    fPhistar.push_back(ComputePhiStar(track, magneticField, TPCradii[radius]));
+  }
 }
 
 //____________________________________________________________________________________________________
@@ -162,12 +167,12 @@ double AliSigma0ParticleBase::ComputeRelKMC(
 }
 
 //____________________________________________________________________________________________________
-double AliSigma0ParticleBase::ComputePhiStar(const AliVTrack &track,
-                                             const float magneticField,
-                                             const float radius) const {
-  const float phi0 = track.Phi();  // angle at primary vertex
-  const float pt = track.Pt();
-  const float charge = track.Charge();
+float AliSigma0ParticleBase::ComputePhiStar(const AliESDtrack *track,
+                                            const float magneticField,
+                                            const float radius) const {
+  const float phi0 = track->Phi();  // angle at primary vertex
+  const float pt = track->Pt();
+  const float charge = track->Charge();
 
   // To use the following equation:
   // pt must be given in GeV/c
@@ -178,10 +183,8 @@ double AliSigma0ParticleBase::ComputePhiStar(const AliVTrack &track,
   // 0.3 is a conversion factor for pt and bfield can be plugged in in terms of
   // GeV/c and electric charge, 0.1 converts the magnetic field to Tesla, 0.01
   // transforms the radius from cm to m
-  Float_t phis = phi0 + std::asin(0.1 * charge * magneticField * 0.3 * radius *
-                                  0.01 / (2. * pt));
-
-  return phis;
+  return phi0 + TMath::ASin(0.1 * charge * magneticField * 0.3 * radius * 0.01 /
+                            (2. * pt));
 }
 
 //____________________________________________________________________________________________________
