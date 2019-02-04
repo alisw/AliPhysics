@@ -25,10 +25,10 @@ void AliPP13EpRatioSelection::FillHistograms(TObjArray * clusArray, TList * pool
 void AliPP13EpRatioSelection::InitSelectionHistograms()
 {
 	// pi0 mass spectrum
-	Int_t nM       = 50;
+	Int_t nM       = 500;
 	Double_t nMin  = 0.0;
 	Double_t nMax  = 2.;
-	Int_t nPt      = 1000;
+	Int_t nPt      = 100;
 	Double_t ptMin = 0;
 	Double_t ptMax = 10;
 
