@@ -307,11 +307,14 @@ void AliFemtoDreamTrack::SetAODTrackingInformation() {
   this->fdcaZ = fAODTrack->ZAtDCA();
   this->fChi2 = fAODTrack->Chi2perNDF();
   double dcaVals[2] = { -99., -99. };
+  double pos[3] = { 0., 0., 0. };
   double covar[3] = { 0., 0., 0. };
   AliAODTrack copy(*fAODGlobalTrack);
-  if (copy.PropagateToDCA(copy.GetAODEvent()->GetPrimaryVertex(),
-                          copy.GetAODEvent()->GetMagneticField(), 10, dcaVals,
-                          covar)) {
+  fAODGlobalTrack->GetPosition(pos);
+  if (pos[0] * pos[0] + pos[1] * pos[1] <= 3. * 3.
+      && copy.PropagateToDCA(copy.GetAODEvent()->GetPrimaryVertex(),
+                             copy.GetAODEvent()->GetMagneticField(), 10,
+                             dcaVals, covar)) {
     this->fdcaXYProp = dcaVals[0];
     this->fdcaZProp = dcaVals[1];
   } else {
@@ -404,7 +407,7 @@ void AliFemtoDreamTrack::SetGlobalCoordAtRadii(const float bfield) {
     if (good) {
       fXYZAtRadius.push_back(TVector3(posBuffer));
     } else {
-      fXYZAtRadius.push_back(TVector3(999,999,999));
+      fXYZAtRadius.push_back(TVector3(999, 999, 999));
     }
   }
 
@@ -489,13 +492,15 @@ void AliFemtoDreamTrack::SetMCInformation() {
       }
       int motherID = mcPart->GetMother();
       int lastMother = motherID;
-      AliAODMCParticle *mcMother;
+      AliAODMCParticle *mcMother = nullptr;
       while (motherID != -1) {
         lastMother = motherID;
         mcMother = (AliAODMCParticle *) mcarray->At(motherID);
         motherID = mcMother->GetMother();
       }
-      mcMother = (AliAODMCParticle *) mcarray->At(lastMother);
+      if (lastMother != -1) {
+        mcMother = (AliAODMCParticle *) mcarray->At(lastMother);
+      }
       if (mcMother) {
         this->SetMotherPDG(mcMother->GetPdgCode());
       }

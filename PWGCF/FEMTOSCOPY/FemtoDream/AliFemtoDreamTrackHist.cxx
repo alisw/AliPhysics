@@ -29,6 +29,8 @@ AliFemtoDreamTrackHist::AliFemtoDreamTrackHist()
     fShrdClsITS[i] = nullptr;
     fDCAxy[i] = nullptr;
     fDCAz[i] = nullptr;
+    fDCAxyProp[i] = nullptr;
+    fDCAzProp[i] = nullptr;
     fTPCCrossedRows[i] = nullptr;
     fTPCRatio[i] = nullptr;
     fTPCdedx[i] = nullptr;
@@ -162,6 +164,21 @@ AliFemtoDreamTrackHist::AliFemtoDreamTrackHist(bool DCADist, bool CombSig)
     fDCAz[i]->GetYaxis()->SetTitle("DCA_{z}");
     fTrackCutQA[i]->Add(fDCAz[i]);
 
+    TString DCAXYPropName = Form("DCAXYProp_%s", sName[i].Data());
+    fDCAxyProp[i] = new TH2F(DCAXYPropName.Data(), DCAXYPropName.Data(), ptBins,
+                             ptmin, ptmax, 2.5 * twoDBins, -5., 5.);
+    fDCAxyProp[i]->GetXaxis()->SetTitle("p_{T}");
+    fDCAxyProp[i]->GetYaxis()->SetTitle("DCA_{xy,Prop}");
+
+    fTrackCutQA[i]->Add(fDCAxyProp[i]);
+
+    TString DCAZPropName = Form("DCAZProp_%s", sName[i].Data());
+    fDCAzProp[i] = new TH2F(DCAZPropName.Data(), DCAZPropName.Data(), ptBins,
+                            ptmin, ptmax, 2.5 * twoDBins, -5., 5.);
+    fDCAzProp[i]->GetXaxis()->SetTitle("p_{T}");
+    fDCAzProp[i]->GetYaxis()->SetTitle("DCA_{z,Prop}");
+    fTrackCutQA[i]->Add(fDCAzProp[i]);
+
     TString TPCCRName = Form("CrossedRows_%s", sName[i].Data());
     fTPCCrossedRows[i] = new TH1F(TPCCRName.Data(), TPCCRName.Data(), 100, 0,
                                   200.);
@@ -219,13 +236,12 @@ AliFemtoDreamTrackHist::AliFemtoDreamTrackHist(bool DCADist, bool CombSig)
     fTrackCutQA[i]->Add(fNSigTPC[i]);
 
     TString NSigTPCModName = Form("NSigTPCMod_%s", sName[i].Data());
-    fNSigTPCMod[i] = new TH2F(NSigTPCModName.Data(), NSigTPCModName.Data(), ptBins,
-                           ptmin, 1., 3. * twoDBins, -1., 5.);
+    fNSigTPCMod[i] = new TH2F(NSigTPCModName.Data(), NSigTPCModName.Data(),
+                              ptBins, ptmin, 1., 3. * twoDBins, -1., 5.);
     fNSigTPCMod[i]->GetXaxis()->SetTitle("p_{TPC}[GeV/c]");
     fNSigTPCMod[i]->GetYaxis()->SetTitle("|n#sigma_{TPC}|");
 
     fTrackCutQA[i]->Add(fNSigTPCMod[i]);
-
 
     TString NSigTOFName = Form("NSigTOF_%s", sName[i].Data());
     fNSigTOF[i] = new TH2F(NSigTOFName.Data(), NSigTOFName.Data(), ptBins,
@@ -256,14 +272,14 @@ AliFemtoDreamTrackHist::AliFemtoDreamTrackHist(bool DCADist, bool CombSig)
     fTrackCutQA[i]->Add(fTOFStatus[i]);
 
     TString NSigComTPCTOFName = Form("NSigComTPCTOF_%s", sName[i].Data());
-    fNSigComTPCTOF[i] = new TH2F(NSigComTPCTOFName.Data(), NSigComTPCTOFName.Data(), ptBins,
-                           ptmin, 7, 3. * twoDBins, -1., 7.);
+    fNSigComTPCTOF[i] = new TH2F(NSigComTPCTOFName.Data(),
+                                 NSigComTPCTOFName.Data(), ptBins, ptmin, 7,
+                                 3. * twoDBins, -1., 7.);
     fNSigComTPCTOF[i]->GetXaxis()->SetTitle("p_{TPC}[GeV/c]");
-    fNSigComTPCTOF[i]->GetYaxis()->SetTitle("n#sigma_{comb}=#sqrt{n#sigma_{TPC}^{2}+n#sigma_{TOF}^{2}}");
+    fNSigComTPCTOF[i]->GetYaxis()->SetTitle(
+        "n#sigma_{comb}=#sqrt{n#sigma_{TPC}^{2}+n#sigma_{TOF}^{2}}");
 
     fTrackCutQA[i]->Add(fNSigComTPCTOF[i]);
-
-
 
     TString TPCClsCPileUpName = Form("TPCClsCPileUp_%s", sName[i].Data());
     fTPCClsCPiluUp[i] = new TH2F(TPCClsCPileUpName.Data(),
@@ -379,6 +395,8 @@ AliFemtoDreamTrackHist::AliFemtoDreamTrackHist(TString MinimalBooking)
     fShrdClsITS[i] = nullptr;
     fDCAxy[i] = nullptr;
     fDCAz[i] = nullptr;
+    fDCAxyProp[i] = nullptr;
+    fDCAzProp[i] = nullptr;
     fTPCCrossedRows[i] = nullptr;
     fTPCRatio[i] = nullptr;
     fTPCdedx[i] = nullptr;
