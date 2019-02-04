@@ -211,7 +211,7 @@ AliEbyEPhiDistNewMC( const char *name );
   Int_t    GetPtBin(Double_t pt); //to get the bin number of the pt
     Int_t    GetPhiBin(Double_t Phi);
   void     LocalPost(); //
-  void     CreatePhiHist();
+  void     CreatePhiHistMC();
 
   //________________________________
   AliEbyEPhiDistNewMC(const AliEbyEPhiDistNewMC&);
