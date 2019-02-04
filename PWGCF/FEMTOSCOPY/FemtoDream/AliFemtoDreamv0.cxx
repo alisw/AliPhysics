@@ -339,13 +339,15 @@ void AliFemtoDreamv0::SetMCMotherInfo(AliAODEvent *evt, AliAODv0 *v0) {
       }
       int motherID = mcPart->GetMother();
       int lastMother = motherID;
-      AliAODMCParticle *mcMother;
+      AliAODMCParticle *mcMother = nullptr;
       while (motherID != -1) {
         lastMother = motherID;
         mcMother = (AliAODMCParticle *) mcarray->At(motherID);
         motherID = mcMother->GetMother();
       }
-      mcMother = (AliAODMCParticle *) mcarray->At(lastMother);
+      if (lastMother!=-1) {
+        mcMother = (AliAODMCParticle *) mcarray->At(lastMother);
+      }
       if (mcMother) {
         this->SetMotherPDG(mcMother->GetPdgCode());
       }

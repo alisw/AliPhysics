@@ -300,102 +300,102 @@ void AliFemtoDreamAnalysis::Make(AliAODEvent *evt) {
       AntiParticles.push_back(*fFemtoTrack);
     }
   }
-//  std::vector<AliFemtoDreamBasePart> Decays;
-//  std::vector<AliFemtoDreamBasePart> AntiDecays;
-//  //  Look for the lambda, store it in an event
-//  //  Get a V0 from the event:
-//  TClonesArray *v01 = static_cast<TClonesArray*>(evt->GetV0s());
-//  //number of V0s:
-//
-//  fFemtov0->SetGlobalTrackInfo(fGTI, fTrackBufferSize);
-//  int entriesV0 = v01->GetEntriesFast();
-//  for (int iv0 = 0; iv0 < entriesV0; iv0++) {
-//    AliAODv0 *v0 = evt->GetV0(iv0);
-//    fFemtov0->Setv0(evt, v0, fEvent->GetMultiplicity());
-//    if (fv0Cuts->isSelected(fFemtov0)) {
-//      Decays.push_back(*fFemtov0);
-//    }
-//    if (fAntiv0Cuts->isSelected(fFemtov0)) {
-//      AntiDecays.push_back(*fFemtov0);
-//    }
-//  }
-//
-//  std::vector<AliFemtoDreamBasePart> XiDecays;
-//  std::vector<AliFemtoDreamBasePart> AntiXiDecays;
-//  int numcascades = evt->GetNumberOfCascades();
-//  for (int iXi = 0; iXi < numcascades; ++iXi) {
-//    AliAODcascade *xi = evt->GetCascade(iXi);
-//    if (!xi)
-//      continue;
-//    fFemtoCasc->SetCascade(evt, xi);
-//    if (fCascCuts->isSelected(fFemtoCasc)) {
-//      XiDecays.push_back(*fFemtoCasc);
-//    }
-//    if (fAntiCascCuts->isSelected(fFemtoCasc)) {
-//      AntiXiDecays.push_back(*fFemtoCasc);
-//    }
-//  }
-//  //loop once over the MC stack to calculate Efficiency/Purity
-//  if (fIsMC) {
-//    AliAODInputHandler *eventHandler =
-//        dynamic_cast<AliAODInputHandler*>(AliAnalysisManager::GetAnalysisManager()
-//            ->GetInputEventHandler());
-//    AliMCEvent* fMC = eventHandler->MCEvent();
-//
-//    for (int iPart = 0; iPart < (fMC->GetNumberOfTracks()); iPart++) {
-//      AliAODMCParticle *mcPart = (AliAODMCParticle*) fMC->GetTrack(iPart);
-//      if (TMath::Abs(mcPart->Eta()) < 0.8 && mcPart->IsPhysicalPrimary()) {
-//        if (mcPart->GetPdgCode() == fTrackCuts->GetPDGCode()) {
-//          fTrackCuts->FillGenerated(mcPart->Pt());
-//        } else if (mcPart->GetPdgCode() == fAntiTrackCuts->GetPDGCode()) {
-//          fAntiTrackCuts->FillGenerated(mcPart->Pt());
-//        } else if (mcPart->GetPdgCode() == fv0Cuts->GetPDGv0()) {
-//          fv0Cuts->FillGenerated(mcPart->Pt());
-//        } else if (mcPart->GetPdgCode() == fAntiv0Cuts->GetPDGv0()) {
-//          fAntiv0Cuts->FillGenerated(mcPart->Pt());
-//        } else if (mcPart->GetPdgCode() == fCascCuts->GetPDGCodeCasc()) {
-//          fCascCuts->FillGenerated(mcPart->Pt());
-//        } else if (mcPart->GetPdgCode() == fAntiCascCuts->GetPDGCodeCasc()) {
-//          fAntiCascCuts->FillGenerated(mcPart->Pt());
-//        }
-//      }
-//    }
-//  }
-//  fPairCleaner->ResetArray();
-//  fPairCleaner->CleanTrackAndDecay(&Particles, &Decays, 0);
-//  fPairCleaner->CleanTrackAndDecay(&Particles, &XiDecays, 2);
-//  fPairCleaner->CleanTrackAndDecay(&AntiParticles, &AntiDecays, 1);
-//  fPairCleaner->CleanTrackAndDecay(&AntiParticles, &AntiXiDecays, 3);
-//
-//  fPairCleaner->CleanDecay(&Decays, 0);
-//  fPairCleaner->CleanDecay(&AntiDecays, 1);
-//  fPairCleaner->CleanDecay(&XiDecays, 2);
-//  fPairCleaner->CleanDecay(&AntiXiDecays, 3);
-//
-//  fPairCleaner->StoreParticle(Particles);
-//  fPairCleaner->StoreParticle(AntiParticles);
-//  fPairCleaner->StoreParticle(Decays);
-//  fPairCleaner->StoreParticle(AntiDecays);
-//  fPairCleaner->StoreParticle(XiDecays);
-//  fPairCleaner->StoreParticle(AntiXiDecays);
-//  if (fConfig->GetInvMassPairs()) {
-//    fPairCleaner->FillInvMassPair((fPairCleaner->GetCleanParticles().at(0)),
-//                                  2212,
-//                                  (fPairCleaner->GetCleanParticles().at(4)),
-//                                  3312, 0);
-//    fPairCleaner->FillInvMassPair((fPairCleaner->GetCleanParticles().at(1)),
-//                                  2212,
-//                                  (fPairCleaner->GetCleanParticles().at(5)),
-//                                  3312, 1);
-//  }
-//  if (fConfig->GetUseEventMixing()) {
-//    fPartColl->SetEvent(fPairCleaner->GetCleanParticles(), fEvent->GetZVertex(),
-//                        fEvent->GetMultiplicity(), fEvent->GetV0MCentrality());
-//  }
-//  if (fConfig->GetUsePhiSpinning()) {
-//    fControlSample->SetEvent(fPairCleaner->GetCleanParticles(),
-//                             fEvent->GetMultiplicity());
-//  }
+  std::vector<AliFemtoDreamBasePart> Decays;
+  std::vector<AliFemtoDreamBasePart> AntiDecays;
+  //  Look for the lambda, store it in an event
+  //  Get a V0 from the event:
+  TClonesArray *v01 = static_cast<TClonesArray*>(evt->GetV0s());
+  //number of V0s:
+
+  fFemtov0->SetGlobalTrackInfo(fGTI, fTrackBufferSize);
+  int entriesV0 = v01->GetEntriesFast();
+  for (int iv0 = 0; iv0 < entriesV0; iv0++) {
+    AliAODv0 *v0 = evt->GetV0(iv0);
+    fFemtov0->Setv0(evt, v0, fEvent->GetMultiplicity());
+    if (fv0Cuts->isSelected(fFemtov0)) {
+      Decays.push_back(*fFemtov0);
+    }
+    if (fAntiv0Cuts->isSelected(fFemtov0)) {
+      AntiDecays.push_back(*fFemtov0);
+    }
+  }
+
+  std::vector<AliFemtoDreamBasePart> XiDecays;
+  std::vector<AliFemtoDreamBasePart> AntiXiDecays;
+  int numcascades = evt->GetNumberOfCascades();
+  for (int iXi = 0; iXi < numcascades; ++iXi) {
+    AliAODcascade *xi = evt->GetCascade(iXi);
+    if (!xi)
+      continue;
+    fFemtoCasc->SetCascade(evt, xi);
+    if (fCascCuts->isSelected(fFemtoCasc)) {
+      XiDecays.push_back(*fFemtoCasc);
+    }
+    if (fAntiCascCuts->isSelected(fFemtoCasc)) {
+      AntiXiDecays.push_back(*fFemtoCasc);
+    }
+  }
+  //loop once over the MC stack to calculate Efficiency/Purity
+  if (fIsMC) {
+    AliAODInputHandler *eventHandler =
+        dynamic_cast<AliAODInputHandler*>(AliAnalysisManager::GetAnalysisManager()
+            ->GetInputEventHandler());
+    AliMCEvent* fMC = eventHandler->MCEvent();
+
+    for (int iPart = 0; iPart < (fMC->GetNumberOfTracks()); iPart++) {
+      AliAODMCParticle *mcPart = (AliAODMCParticle*) fMC->GetTrack(iPart);
+      if (TMath::Abs(mcPart->Eta()) < 0.8 && mcPart->IsPhysicalPrimary()) {
+        if (mcPart->GetPdgCode() == fTrackCuts->GetPDGCode()) {
+          fTrackCuts->FillGenerated(mcPart->Pt());
+        } else if (mcPart->GetPdgCode() == fAntiTrackCuts->GetPDGCode()) {
+          fAntiTrackCuts->FillGenerated(mcPart->Pt());
+        } else if (mcPart->GetPdgCode() == fv0Cuts->GetPDGv0()) {
+          fv0Cuts->FillGenerated(mcPart->Pt());
+        } else if (mcPart->GetPdgCode() == fAntiv0Cuts->GetPDGv0()) {
+          fAntiv0Cuts->FillGenerated(mcPart->Pt());
+        } else if (mcPart->GetPdgCode() == fCascCuts->GetPDGCodeCasc()) {
+          fCascCuts->FillGenerated(mcPart->Pt());
+        } else if (mcPart->GetPdgCode() == fAntiCascCuts->GetPDGCodeCasc()) {
+          fAntiCascCuts->FillGenerated(mcPart->Pt());
+        }
+      }
+    }
+  }
+  fPairCleaner->ResetArray();
+  fPairCleaner->CleanTrackAndDecay(&Particles, &Decays, 0);
+  fPairCleaner->CleanTrackAndDecay(&Particles, &XiDecays, 2);
+  fPairCleaner->CleanTrackAndDecay(&AntiParticles, &AntiDecays, 1);
+  fPairCleaner->CleanTrackAndDecay(&AntiParticles, &AntiXiDecays, 3);
+
+  fPairCleaner->CleanDecay(&Decays, 0);
+  fPairCleaner->CleanDecay(&AntiDecays, 1);
+  fPairCleaner->CleanDecay(&XiDecays, 2);
+  fPairCleaner->CleanDecay(&AntiXiDecays, 3);
+
+  fPairCleaner->StoreParticle(Particles);
+  fPairCleaner->StoreParticle(AntiParticles);
+  fPairCleaner->StoreParticle(Decays);
+  fPairCleaner->StoreParticle(AntiDecays);
+  fPairCleaner->StoreParticle(XiDecays);
+  fPairCleaner->StoreParticle(AntiXiDecays);
+  if (fConfig->GetInvMassPairs()) {
+    fPairCleaner->FillInvMassPair((fPairCleaner->GetCleanParticles().at(0)),
+                                  2212,
+                                  (fPairCleaner->GetCleanParticles().at(4)),
+                                  3312, 0);
+    fPairCleaner->FillInvMassPair((fPairCleaner->GetCleanParticles().at(1)),
+                                  2212,
+                                  (fPairCleaner->GetCleanParticles().at(5)),
+                                  3312, 1);
+  }
+  if (fConfig->GetUseEventMixing()) {
+    fPartColl->SetEvent(fPairCleaner->GetCleanParticles(), fEvent->GetZVertex(),
+                        fEvent->GetMultiplicity(), fEvent->GetV0MCentrality());
+  }
+  if (fConfig->GetUsePhiSpinning()) {
+    fControlSample->SetEvent(fPairCleaner->GetCleanParticles(),
+                             fEvent->GetMultiplicity());
+  }
 }
 
 void AliFemtoDreamAnalysis::Make(AliESDEvent *evt, AliMCEvent *mcEvent) {
