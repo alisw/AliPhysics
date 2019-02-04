@@ -1637,11 +1637,12 @@ Bool_t AliAnalysisTaskEMCALPhotonIsolation::Run()
     TLorentzVector vecCOI;
     coi->GetMomentum(vecCOI, fVertex, AliVCluster::kNonLinCorr);
 
-    if(fIsMC && fNonLinRecoEnergyScaling)
-      fPTbeforeNonLinScaling->Fill(vecCOI.Pt());
-
-    if(fIsMC && fNonLinRecoEnergyScaling)
-      NonLinRecoEnergyScaling(vecCOI);
+    if(fIsMC && fNonLinRecoEnergyScaling){
+        if(fWho==2){
+	    fPTbeforeNonLinScaling->Fill(vecCOI.Pt());
+	}
+        NonLinRecoEnergyScaling(vecCOI);
+    }
 
     fPT->Fill(vecCOI.Pt());
 
@@ -1695,11 +1696,13 @@ Bool_t AliAnalysisTaskEMCALPhotonIsolation::Run()
       TLorentzVector vecCOI;
       coi->GetMomentum(vecCOI, fVertex, AliVCluster::kNonLinCorr);
 
-      if(fIsMC && fNonLinRecoEnergyScaling)
-	fPTbeforeNonLinScaling->Fill(vecCOI.Pt());
+      if(fIsMC && fNonLinRecoEnergyScaling){
+          if(fWho==2){
+	  fPTbeforeNonLinScaling->Fill(vecCOI.Pt());
+	  }
 
-      if(fIsMC && fNonLinRecoEnergyScaling)
-	NonLinRecoEnergyScaling(vecCOI);
+	  NonLinRecoEnergyScaling(vecCOI);
+      }
 
       fPT->Fill(vecCOI.Pt());
 
@@ -3784,11 +3787,9 @@ void AliAnalysisTaskEMCALPhotonIsolation::LookforParticle(Int_t clusterlabel, Do
             else
               clusterFromPromptPhoton=7; // Contribution from one daughter
           }
-	  if(fWho != 2){
 	    fpi0VSclusterVSIsolation->Fill(grandma->E()*TMath::Sin(grandma->Theta()), energyCLS, isolation);
 	    fpi0VSclusterVSM02->Fill(grandma->E()*TMath::Sin(momP2Check->Theta()), energyCLS, ss);
 	    fpi0VSM02VSIsolation->Fill(grandma->E()*TMath::Sin(grandma->Theta()), ss, isolation);
-	  }
         }
         else
           clusterFromPromptPhoton=8; // Undefined
@@ -4942,12 +4943,16 @@ void AliAnalysisTaskEMCALPhotonIsolation::AnalyzeMC(){
 
     mcpart = static_cast<AliAODMCParticle*>(fAODMCParticles->At(iTr));
 
+    if(fWho==2){
     fGenPromptPhotonSel->Fill(0.5);
+    }
 
     if(mcpart->GetStatus()>10)
       continue;
 
+    if(fWho==2){
     fGenPromptPhotonSel->Fill(1.5);
+    }
 
     if(!mcpart->IsPrimary())
       continue;
@@ -4955,13 +4960,17 @@ void AliAnalysisTaskEMCALPhotonIsolation::AnalyzeMC(){
     if(!mcpart->IsPhysicalPrimary())
       continue;
 
+    if(fWho==2){
     fGenPromptPhotonSel->Fill(2.5);
+    }
 
     pdg = mcpart->GetPdgCode();
     if(pdg != 22 /*|| mcpart->GetLabel()!=8*/)
       continue;
 
+    if(fWho==2){
     fGenPromptPhotonSel->Fill(3.5);
+    }
 
     momidx = mcpart->GetMother();
     if(momidx > 0 && momidx < nTracks){
@@ -4973,13 +4982,17 @@ void AliAnalysisTaskEMCALPhotonIsolation::AnalyzeMC(){
 
     if(mompdg != 22) continue;              // Discard particles whose mother is not a photon
 
+    if(fWho==2){
     fGenPromptPhotonSel->Fill(4.5);
+    }
 
     // if(fPythiaHeader->ProcessType() != 201 && fPythiaHeader->ProcessType() != 202) continue; // Discard particles which do not come from prompt photon processes
     // OR
     if(fmcHeader->GetEventType() != 14 && fmcHeader->GetEventType() != 29) continue; // Discard particles which do not come from prompt photon processes
 
+    if(fWho==2){
     fGenPromptPhotonSel->Fill(5.5);
+    }
 
     eta = mcpart->Eta();
     phi = mcpart->Phi();
@@ -5021,7 +5034,9 @@ void AliAnalysisTaskEMCALPhotonIsolation::AnalyzeMC(){
 	continue;
     }
 
+    if(fWho==2){
     fGenPromptPhotonSel->Fill(6.5);
+    }
 
     photonlabel = iTr;
     eT = mcpart->E()*(TMath::Sin(mcpart->Theta())); // Transform to transverse Energy
