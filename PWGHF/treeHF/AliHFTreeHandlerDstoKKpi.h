@@ -47,7 +47,7 @@ class AliHFTreeHandlerDstoKKpi : public AliHFTreeHandler
     }
   
     static bool IsDplustoKKpi(int candtype) {
-      if(candtype>>6&1) return true;
+      if(candtype>>11&1) return true;
       return false;
     }
 

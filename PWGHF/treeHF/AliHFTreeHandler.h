@@ -92,9 +92,9 @@ class AliHFTreeHandler : public TObject
       if(isselected) fCandTypeMap |= kSelected;
       else fCandTypeMap &= ~kSelected;
       if(isselectedTopo) fCandTypeMap |= kSelectedTopo;
-      else fCandTypeMap &= kSelectedTopo;
+      else fCandTypeMap &= ~kSelectedTopo;
       if(isselectedPID) fCandTypeMap |= kSelectedPID;
-      else fCandTypeMap &= kSelectedPID;
+      else fCandTypeMap &= ~kSelectedPID;
     }
 
     void SetDauInAcceptance(bool dauinacc = true) {fDauInAccFlag=dauinacc;}
@@ -124,11 +124,11 @@ class AliHFTreeHandler : public TObject
       return false;
     }
     static bool IsSelectedStdTopo(int candtype) {
-        if(candtype&6) return true;
+        if(candtype>>6&1) return true;
         return false;
     }
     static bool IsSelectedStdPID(int candtype) {
-        if(candtype&7) return true;
+        if(candtype>>7&1) return true;
         return false;
     }
 
