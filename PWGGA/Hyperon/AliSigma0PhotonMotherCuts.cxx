@@ -52,6 +52,10 @@ ClassImp(AliSigma0PhotonMotherCuts)
       fHistNPhotonAfter(nullptr),
       fHistNLambdaBefore(nullptr),
       fHistNLambdaAfter(nullptr),
+      fHistNPhotonClone(nullptr),
+      fHistNPhotonLabel(nullptr),
+      fHistNLambdaClone(nullptr),
+      fHistNLambdaLabel(nullptr),
       fHistMassCutPt(nullptr),
       fHistInvMass(nullptr),
       fHistInvMassRecPhoton(nullptr),
@@ -155,6 +159,10 @@ AliSigma0PhotonMotherCuts::AliSigma0PhotonMotherCuts(
       fHistNPhotonAfter(nullptr),
       fHistNLambdaBefore(nullptr),
       fHistNLambdaAfter(nullptr),
+      fHistNPhotonClone(nullptr),
+      fHistNPhotonLabel(nullptr),
+      fHistNLambdaClone(nullptr),
+      fHistNLambdaLabel(nullptr),
       fHistMassCutPt(nullptr),
       fHistInvMass(nullptr),
       fHistInvMassRecPhoton(nullptr),
@@ -255,51 +263,6 @@ void AliSigma0PhotonMotherCuts::SelectPhotonMother(
 }
 
 //____________________________________________________________________________________________________
-void AliSigma0PhotonMotherCuts::CompareAndElimininate(
-    AliSigma0ParticleV0 *part1, AliSigma0ParticleV0 *part2) {
-  const float cpa1 = part1->GetCosineAlpha();
-  const float cpa2 = part2->GetCosineAlpha();
-  if (cpa1 > cpa2) {
-    part2->SetUse(false);
-  } else {
-    part1->SetUse(false);
-  }
-}
-
-//____________________________________________________________________________________________________
-void AliSigma0PhotonMotherCuts::CompareLabels(AliSigma0ParticleV0 *part1,
-                                              AliSigma0ParticleV0 *part2) {
-  if (part1->GetTrackLabelPos() == part2->GetTrackLabelPos() ||
-      part1->GetTrackLabelNeg() == part2->GetTrackLabelNeg()) {
-    CompareAndElimininate(part1, part2);
-  }
-}
-
-//____________________________________________________________________________________________________
-void AliSigma0PhotonMotherCuts::CompareMomenta(AliSigma0ParticleV0 *part1,
-                                               AliSigma0ParticleV0 *part2) {
-  const auto pos1 = part1->GetPosDaughter();
-  const auto neg1 = part1->GetNegDaughter();
-  const auto pos2 = part2->GetPosDaughter();
-  const auto neg2 = part2->GetNegDaughter();
-
-  const float deltaPxPos = TMath::Abs(pos1.GetPx() - pos2.GetPx());
-  const float deltaPyPos = TMath::Abs(pos1.GetPy() - pos2.GetPy());
-  const float deltaPzPos = TMath::Abs(pos1.GetPz() - pos2.GetPz());
-
-  const float deltaPxNeg = TMath::Abs(neg1.GetPx() - neg2.GetPx());
-  const float deltaPyNeg = TMath::Abs(neg1.GetPy() - neg2.GetPy());
-  const float deltaPzNeg = TMath::Abs(neg1.GetPz() - neg2.GetPz());
-
-  if ((deltaPxPos < fMomCloneKiller && deltaPyPos < fMomCloneKiller &&
-       deltaPzPos < fMomCloneKiller) ||
-      (deltaPxNeg < fMomCloneKiller && deltaPyNeg < fMomCloneKiller &&
-       deltaPzNeg < fMomCloneKiller)) {
-    CompareAndElimininate(part1, part2);
-  }
-}
-
-//____________________________________________________________________________________________________
 void AliSigma0PhotonMotherCuts::CleanUpClones(
     std::vector<AliSigma0ParticleV0> &photonCandidates,
     std::vector<AliSigma0ParticleV0> &lambdaCandidates) {
@@ -309,6 +272,9 @@ void AliSigma0PhotonMotherCuts::CleanUpClones(
     fHistNPhotonBefore->Fill(photonCandidates.size());
     fHistNLambdaBefore->Fill(lambdaCandidates.size());
   }
+
+  int nPhotonKilledClone = 0;
+  int nPhotonKilledLabel = 0;
 
   // Do the checks for the photons
   for (auto photon1 = photonCandidates.begin();
@@ -362,13 +328,26 @@ void AliSigma0PhotonMotherCuts::CleanUpClones(
         fHistDiffPGammaNegBefore[3]->Fill(deltaPNeg);
       }
 
-      // do the check for both daughters
-      if ((photon1->GetTrackLabelPos() == photon2->GetTrackLabelPos() ||
-           photon1->GetTrackLabelNeg() == photon2->GetTrackLabelNeg()) ||
+      bool hasSameLabels =
+          (photon1->GetTrackLabelPos() == photon2->GetTrackLabelPos() ||
+           photon1->GetTrackLabelNeg() == photon2->GetTrackLabelNeg());
+
+      bool hasSameMomenta =
           ((deltaPxPos < fMomCloneKiller && deltaPyPos < fMomCloneKiller &&
             deltaPzPos < fMomCloneKiller) ||
            (deltaPxNeg < fMomCloneKiller && deltaPyNeg < fMomCloneKiller &&
-            deltaPzNeg < fMomCloneKiller))) {
+            deltaPzNeg < fMomCloneKiller));
+
+      if (hasSameLabels) {
+        ++nPhotonKilledLabel;
+      }
+
+      if (hasSameMomenta && !hasSameLabels) {
+        ++nPhotonKilledClone;
+      }
+
+      // do the check for both daughters
+      if (hasSameLabels || hasSameMomenta) {
         const float cpa1 = photon1->GetCosineAlpha();
         const float cpa2 = photon2->GetCosineAlpha();
         if (cpa1 > cpa2) {
@@ -381,6 +360,8 @@ void AliSigma0PhotonMotherCuts::CleanUpClones(
     }
   }
 
+  int nLambdaKilledClone = 0;
+  int nLambdaKilledLabel = 0;
   // Do the checks for the Lambdas
   for (auto lambda1 = lambdaCandidates.begin();
        lambda1 < lambdaCandidates.end(); ++lambda1) {
@@ -435,13 +416,26 @@ void AliSigma0PhotonMotherCuts::CleanUpClones(
         fHistDiffPLambdaNegBefore[3]->Fill(deltaPNeg);
       }
 
-      // do the check for both daughters
-      if ((lambda1->GetTrackLabelPos() == lambda2->GetTrackLabelPos() ||
-           lambda1->GetTrackLabelNeg() == lambda2->GetTrackLabelNeg()) ||
+      bool hasSameLabels =
+          (lambda1->GetTrackLabelPos() == lambda2->GetTrackLabelPos() ||
+           lambda1->GetTrackLabelNeg() == lambda2->GetTrackLabelNeg());
+
+      bool hasSameMomenta =
           ((deltaPxPos < fMomCloneKiller && deltaPyPos < fMomCloneKiller &&
             deltaPzPos < fMomCloneKiller) ||
            (deltaPxNeg < fMomCloneKiller && deltaPyNeg < fMomCloneKiller &&
-            deltaPzNeg < fMomCloneKiller))) {
+            deltaPzNeg < fMomCloneKiller));
+
+      if (hasSameLabels) {
+        ++nLambdaKilledLabel;
+      }
+
+      if (hasSameMomenta && !hasSameLabels) {
+        ++nLambdaKilledClone;
+      }
+
+      // do the check for both daughters
+      if (hasSameLabels || hasSameMomenta) {
         const float cpa1 = lambda1->GetCosineAlpha();
         const float cpa2 = lambda2->GetCosineAlpha();
         if (cpa1 > cpa2) {
@@ -573,6 +567,10 @@ void AliSigma0PhotonMotherCuts::CleanUpClones(
   if (!fIsLightweight) {
     fHistNPhotonAfter->Fill(nPhotonAfter);
     fHistNLambdaAfter->Fill(nLambdaAfter);
+    fHistNPhotonClone->Fill(nPhotonKilledClone);
+    fHistNPhotonLabel->Fill(nPhotonKilledLabel);
+    fHistNLambdaClone->Fill(nLambdaKilledClone);
+    fHistNLambdaLabel->Fill(nLambdaKilledLabel);
   }
 }
 
@@ -1332,6 +1330,25 @@ void AliSigma0PhotonMotherCuts::InitCutHistograms(TString appendix) {
       fHistograms->Add(fHistDiffPGammaNegAfter[i]);
       fHistograms->Add(fHistDiffPLambdaNegAfter[i]);
     }
+
+    fHistNPhotonClone = new TH1F(
+        "fHistNPhotonClone",
+        ";# #gamma candidates eliminated due to clones; Entries", 15, 0, 15);
+    fHistNPhotonLabel = new TH1F(
+        "fHistNPhotonLabel",
+        ";# #gamma candidates eliminated due label duplicates; Entries", 15, 0,
+        15);
+    fHistNLambdaClone = new TH1F(
+        "fHistNLambdaClone",
+        ";# #Lambda candidates eliminated due to clones; Entries", 15, 0, 15);
+    fHistNLambdaLabel = new TH1F(
+        "fHistNLambdaLabel",
+        ";# #Lambda candidates eliminated due label duplicates; Entries", 15, 0,
+        15);
+    fHistograms->Add(fHistNPhotonClone);
+    fHistograms->Add(fHistNPhotonLabel);
+    fHistograms->Add(fHistNLambdaClone);
+    fHistograms->Add(fHistNLambdaLabel);
 
     fHistLambdaPtPhi =
         new TH2F("fHistLambdaPtPhi", "; #it{p}_{T} (GeV/#it{c}); #phi (rad)",

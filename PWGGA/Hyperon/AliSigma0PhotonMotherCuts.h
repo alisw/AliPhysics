@@ -27,13 +27,9 @@ class AliSigma0PhotonMotherCuts : public TObject {
 
   static AliSigma0PhotonMotherCuts *DefaultCuts();
 
-  void SelectPhotonMother(
-      AliVEvent *inputEvent, AliMCEvent *mcEvent,
-      std::vector<AliSigma0ParticleV0> &photonCandidates,
-      std::vector<AliSigma0ParticleV0> &lambdaCandidates);
-  void CompareAndElimininate(AliSigma0ParticleV0 *part1, AliSigma0ParticleV0 *part2);
-  void CompareLabels(AliSigma0ParticleV0 *part1, AliSigma0ParticleV0 *part2);
-  void CompareMomenta(AliSigma0ParticleV0 *part1, AliSigma0ParticleV0 *part2);
+  void SelectPhotonMother(AliVEvent *inputEvent, AliMCEvent *mcEvent,
+                          std::vector<AliSigma0ParticleV0> &photonCandidates,
+                          std::vector<AliSigma0ParticleV0> &lambdaCandidates);
   void CleanUpClones(std::vector<AliSigma0ParticleV0> &photonCandidates,
                      std::vector<AliSigma0ParticleV0> &lambdaCandidates);
   void SingleV0QA(const std::vector<AliSigma0ParticleV0> &photonCandidates,
@@ -173,6 +169,10 @@ class AliSigma0PhotonMotherCuts : public TObject {
   TH1F *fHistNPhotonAfter;                 //!
   TH1F *fHistNLambdaBefore;                //!
   TH1F *fHistNLambdaAfter;                 //!
+  TH1F *fHistNPhotonClone;                 //!
+  TH1F *fHistNPhotonLabel;                 //!
+  TH1F *fHistNLambdaClone;                 //!
+  TH1F *fHistNLambdaLabel;                 //!
   TH1F *fHistMassCutPt;                    //!
   TH1F *fHistInvMass;                      //!
   TH2F *fHistInvMassRecPhoton;             //!
@@ -236,7 +236,7 @@ class AliSigma0PhotonMotherCuts : public TObject {
   TH2F *fHistMCV0MotherCheck;  //!
 
  private:
-  ClassDef(AliSigma0PhotonMotherCuts, 20)
+  ClassDef(AliSigma0PhotonMotherCuts, 21)
 };
 
 #endif
