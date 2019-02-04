@@ -32,6 +32,7 @@ class AliForwardTaskValidation : public AliAnalysisTaskSE {
       kTrigger,
       kHasFMD,
       kHasEntriesFMD,
+      kHasValidFMD,
       kHasEntriesV0,
       kPassesAliEventCuts,
       kPassesFMD_V0CorrelatioCut,
@@ -91,6 +92,7 @@ class AliForwardTaskValidation : public AliAnalysisTaskSE {
   // This function is `Fatal` if no MC tracks are found
   AliForwardTaskValidation::Tracks GetMCTruthTracks();
 
+
  protected:
   /// The Holy Grail: Is this a valid event? To be read be following tasks
   Bool_t fIsValidEvent;
@@ -126,6 +128,12 @@ class AliForwardTaskValidation : public AliAnalysisTaskSE {
   /// Get __ALL MC TRUTH TRACKS__.
   /// No checks are done on these tracks and they could be anywhere in the detector!
   TClonesArray* GetAllMCTruthTracksAsTClonesArray();
+
+  /// true if the event is from MC
+  Bool_t isMC;
+
+  /// Extra cut on the FMD, rejects events with hot spots in FMD
+  Bool_t HasValidFMD();
 
   /// Utils class used by some of the cuts
   AliAnalysisUtils fUtils;
@@ -164,6 +172,7 @@ class AliForwardTaskValidation : public AliAnalysisTaskSE {
   TH2 *fFMDV0A_post; //!
   TH2 *fFMDV0C; //!
   TH2 *fFMDV0C_post; //!
+  TH2 *fOutliers; //!
 
   ClassDef(AliForwardTaskValidation, 1);
 };

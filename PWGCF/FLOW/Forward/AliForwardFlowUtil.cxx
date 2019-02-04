@@ -53,9 +53,9 @@ dNdeta()
 {
 }
 
-Bool_t AliForwardFlowUtil::ExtraEventCutFMD(TH2D& forwarddNdedp, double cent, Bool_t mc){
+Bool_t AliForwardFlowUtil::ExtraEventCutFMD(TH2D& forwarddNdedp, double cent, Bool_t mc, TH2D* hOutliers){
   Bool_t useEvent = true;
-  if (useEvent) return useEvent;
+  //if (useEvent) return useEvent;
   Int_t nBadBins = 0;
   Int_t phibins = forwarddNdedp.GetNbinsY();
   Double_t totalFMDpar = 0;
@@ -97,6 +97,8 @@ Bool_t AliForwardFlowUtil::ExtraEventCutFMD(TH2D& forwarddNdedp, double cent, Bo
       avgSqr /= nInAvg;
       Double_t stdev = (nInAvg > 1 ? TMath::Sqrt(nInAvg/(nInAvg-1))*TMath::Sqrt(avgSqr - runAvg*runAvg) : 0);
       Double_t nSigma = (stdev == 0 ? 0 : (max-runAvg)/stdev);
+      hOutliers->Fill(cent,nSigma);
+      //std::cout << "sigma = " << nSigma << std::endl;
       if (fSigmaCut > 0. && nSigma >= fSigmaCut && cent < 60) nBadBins++;
       else nBadBins = 0;
       // We still finish the loop, for fOutliers to make sense,

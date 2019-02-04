@@ -49,20 +49,17 @@ void AliForwardGenericFramework::CumulantsAccumulate(TH2D& dNdetadphi, TList* ou
   for (Int_t etaBin = 1; etaBin <= dNdetadphi.GetNbinsX(); etaBin++) {
 
     Double_t eta = dNdetadphi.GetXaxis()->GetBinCenter(etaBin);
-    //std::cout << "eta = " << eta << std::endl;
     Double_t difEtaBin = fpvector->GetAxis(3)->FindBin(eta);
     Double_t difEta = fpvector->GetAxis(3)->GetBinCenter(difEtaBin);
-    //std::cout << "difEta = " << difEta << std::endl;
 
     Double_t refEtaBin = fQvector->GetAxis(3)->FindBin(eta);
     Double_t refEta = fQvector->GetAxis(3)->GetBinCenter(refEtaBin);
-    //std::cout << "refEta = " << refEta << std::endl;
 
     for (Int_t phiBin = 1; phiBin <= dNdetadphi.GetNbinsY(); phiBin++) {
       Double_t phi = dNdetadphi.GetYaxis()->GetBinCenter(phiBin);
       Double_t weight = dNdetadphi.GetBinContent(etaBin, phiBin);
 
-      if (!fSettings.use_primaries && !fSettings.mc){
+      if (!fSettings.use_primaries_fwd && !fSettings.esd){
         if (dNdetadphi.GetBinContent(etaBin, 0) == 0 && detType == "forward") break;
       }
       if (fSettings.doNUA){
@@ -75,24 +72,29 @@ void AliForwardGenericFramework::CumulantsAccumulate(TH2D& dNdetadphi, TList* ou
             if (phiBin == 14) weight = 1.;
           }
         }
+
         if ((fSettings.nua_mode & fSettings.kInterpolate) && detType == "forward") weight = AliForwardNUATask::InterpolateWeight(dNdetadphi,phiBin,etaBin,weight);
 
-        if (detType == "central") {
+        if (detType == "central" && !fSettings.use_primaries_cen) {
           Double_t nuaeta = fSettings.nuacentral->GetXaxis()->FindBin(eta);
           Double_t nuaphi = fSettings.nuacentral->GetYaxis()->FindBin(phi);
           Double_t nuavtz = fSettings.nuacentral->GetZaxis()->FindBin(zvertex);
+          //if (fSettings.nuacentral->GetBinContent(nuaeta,nuaphi,nuavtz) > 10) weight = 0;
+          //else
           weight = weight*fSettings.nuacentral->GetBinContent(nuaeta,nuaphi,nuavtz);
         }
 
-        if (detType == "forward") {
+        if (detType == "forward" && !fSettings.use_primaries_fwd) {
           Double_t nuaeta = fSettings.nuaforward->GetXaxis()->FindBin(eta);
           Double_t nuaphi = fSettings.nuaforward->GetYaxis()->FindBin(phi);
           Double_t nuavtz = fSettings.nuaforward->GetZaxis()->FindBin(zvertex);
+          //if (fSettings.nuaforward->GetBinContent(nuaeta,nuaphi,nuavtz) > 10) weight = 0;
+          //else
           weight = weight*fSettings.nuaforward->GetBinContent(nuaeta,nuaphi,nuavtz);
         }
       }
 
-    if (weight == 0 || weight > 10.0) continue;
+    if (weight == 0) continue; // || weight > 10.0
     for (Int_t n = 0; n <= 5; n++) {
       for (Int_t p = 1; p <= 4; p++) {
         Double_t realPart = TMath::Power(weight, p)*TMath::Cos(n*phi);
@@ -162,9 +164,7 @@ void AliForwardGenericFramework::saveEvent(TList* outputList, double cent, doubl
       Double_t refEtaBinB = refEtaBinA;
 
       if ((fSettings.etagap)) {
-      //  if (eta > 3.75) refEtaBinB = fQvector->GetAxis(3)->FindBin(-3.75); // code for if FMD is reference
         refEtaBinB = fQvector->GetAxis(3)->FindBin(-eta);
-        //std::cout << "etabinA " << refEtaBinA << ", etabinB " << refEtaBinB << std::endl;
       }
 
       Double_t refEtaA = fQvector->GetAxis(3)->GetBinCenter(refEtaBinA);
@@ -173,7 +173,6 @@ void AliForwardGenericFramework::saveEvent(TList* outputList, double cent, doubl
       Int_t p_1 = 1;
       // index to get sum of weights
       Int_t index1[4] = {fQvector->GetAxis(0)->FindBin(0.5), fQvector->GetAxis(1)->FindBin(n_0), fQvector->GetAxis(2)->FindBin(p_1), static_cast<Int_t>(refEtaBinB)};
-      //std::cout << "fQvector->GetBinContent(index1)" << fQvector->GetBinContent(index1) << std::endl;
       if (fQvector->GetBinContent(index1) > 0){
         // REFERENCE FLOW --------------------------------------------------------------------------------
         if (prevRefEtaBin){ // only used once
@@ -211,9 +210,7 @@ void AliForwardGenericFramework::saveEvent(TList* outputList, double cent, doubl
         // two-particle cumulant
         double twodiff = TwoDiff(n, -n, refEtaBinB, etaBin).Re();
         double dn2diff = TwoDiff(0,0, refEtaBinB, etaBin).Re();
-        if (dn2diff < 0){
-          std::cout << "WTF -----------" << std::endl;
-        }
+
         Double_t y[5] = {noSamples, zvertex, eta, cent, fSettings.kW2Two};
         cumuDiff->Fill(y, twodiff);
         y[4] = fSettings.kW2;
