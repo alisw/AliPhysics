@@ -46,7 +46,7 @@
 #include "AliStack.h"
 #include "AliMCEvent.h"
 #include "AliMCParticle.h"
-//#include "AliForwardSecondariesTask.h"
+
 using namespace std;
 ClassImp(AliForwardFlowRun2Task)
 #if 0
@@ -247,7 +247,7 @@ void AliForwardFlowRun2Task::UserExec(Option_t *)
     if(!mcevent)
       throw std::runtime_error("Not MC as expected");
 
-    forwardDist = (fSettings.use_primaries ? &forwardPrim : &forwardTrRef);
+    forwardDist = (fSettings.use_primaries_fwd ? &forwardPrim : &forwardTrRef);
 
     if (fSettings.esd){
       if (fSettings.use_primaries_cen && fSettings.use_primaries_fwd){
