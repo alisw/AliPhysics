@@ -332,7 +332,7 @@ void AliEbyEPhiDistNewMC::UserCreateOutputObjects(){
     
 }
   
-  CreatePhiHist();
+  CreatePhiHistMC();
   
   fHistCent = new TH1F("fHistCentPid","Centrality", 100, -0.5, 99.5);			 
   fThnList->Add(fHistCent);
@@ -345,7 +345,7 @@ void AliEbyEPhiDistNewMC::UserCreateOutputObjects(){
 }
 
 //----------------------------------------------------------------------------------
-void AliEbyEPhiDistNewMC::CreatePhiHist() {
+void AliEbyEPhiDistNewMC::CreatePhiHistMC() {
 
   if(fIsQA && fPidType != 0){
     
