@@ -95,6 +95,7 @@ AliAnalysisTaskTOFTrigger::AliAnalysisTaskTOFTrigger()
 	hTrackPt(0),
 	hNMaxiPadIn(0),
 	hNCrossTracks(0),
+	hBadMaxiPadMask(0),
 	fGeomLoaded(kFALSE),
 	fMaxPt(0),
 	fMinPt(0),
@@ -153,6 +154,7 @@ AliAnalysisTaskTOFTrigger::AliAnalysisTaskTOFTrigger(const char *name,Float_t lo
 	hTrackPt(0),
 	hNMaxiPadIn(0),
 	hNCrossTracks(0),
+	hBadMaxiPadMask(0),
 	fGeomLoaded(kFALSE),
 	fMaxPt(highpt),
 	fMinPt(lowpt),
@@ -287,6 +289,8 @@ void AliAnalysisTaskTOFTrigger::UserCreateOutputObjects()
   fOutputList->Add(hNMaxiPadIn);
   hNCrossTracks = new TH1I("hNCrossTracks","hNCrossTracks",100,0.5,100.5);
   fOutputList->Add(hNCrossTracks);
+  hBadMaxiPadMask = new TH2I("hBadMaxiPadMask","hBadMaxiPadMask",72,0,72,23,0,23);
+  fOutputList->Add(hBadMaxiPadMask);
   
   if(fUseEventSelection){
   	fEventCuts.AddQAplotsToList(fOutputList);
@@ -322,6 +326,8 @@ void AliAnalysisTaskTOFTrigger::UserExec(Option_t *)
 			fBadMaxiPadMask[channelCTTM][indexLTM] = !fOCDBmask->IsON(fgFromTriggertoDCS[indexLTM],channelCTTM);
 			//for(Int_t j = 0; j<11; j++)if(indexLTM == BadLTMs[j])fBadMaxiPadMask[channelCTTM][indexLTM] = 1;
 			//for(Int_t j = 0; j<5; j++)if(indexLTM == BadMaxiPads[j][0] && channelCTTM == BadMaxiPads[j][1])fBadMaxiPadMask[channelCTTM][indexLTM] = 1;
+			if(fBadMaxiPadMask[channelCTTM][indexLTM])hBadMaxiPadMask->SetBinContent(indexLTM+1,channelCTTM+1,1);
+			else hBadMaxiPadMask->SetBinContent(indexLTM+1,channelCTTM+1,0);
 			}
 		}
 	Int_t nAliveChannels = 0;

@@ -38,21 +38,13 @@ include_directories(${ROOT_INCLUDE_DIRS}
 set(SRCS
 
   AliAnalysisTaskSEHFTreeCreator.cxx
-  AliAnalysisTaskSEHFTreeCreator.h
   AliHFTreeHandler.cxx
-  AliHFTreeHandler.h
-  AliHFTreeHandlerD0toKpi.cxx 
-  AliHFTreeHandlerD0toKpi.h
+  AliHFTreeHandlerD0toKpi.cxx
   AliHFTreeHandlerDplustoKpipi.cxx
-  AliHFTreeHandlerDplustoKpipi.h
   AliHFTreeHandlerDstoKKpi.cxx
-  AliHFTreeHandlerDstoKKpi.h
   AliHFTreeHandlerLctopKpi.cxx
-  AliHFTreeHandlerLctopKpi.h
   AliHFTreeHandlerBplustoD0pi.cxx
-  AliHFTreeHandlerBplustoD0pi.h
   AliHFTreeHandlerDstartoKpipi.cxx
-  AliHFTreeHandlerDstartoKpipi.h
 
   )
 

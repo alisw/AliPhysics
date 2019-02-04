@@ -13,6 +13,7 @@
 #include "AliProfileSubset.h"
 #include "TRandom.h"
 #include "TString.h"
+#include "TCollection.h"
 
 class AliGFWFlowContainer:public TNamed {
  public:
@@ -30,6 +31,7 @@ class AliGFWFlowContainer:public TNamed {
   void PickAndMerge(TFile *tfi);
   Bool_t OverrideMainWithSub(Int_t subind, Bool_t ExcludeChosen);
   TObjArray *GetSubProfiles() { return fProfRand; };
+  Long64_t Merge(TCollection *collist);
   void SetIDName(TString newname) { fIDName = newname; }; //! do not store
   TProfile *GetCorrXXVsMulti(const char *order, Int_t l_pti=0);//pti = 0 for pt-integrated
   TProfile *GetCorrXXVsPt(const char *order, Double_t lminmulti=-1, Double_t lmaxmulti=-1); //0 for multi. integrated
