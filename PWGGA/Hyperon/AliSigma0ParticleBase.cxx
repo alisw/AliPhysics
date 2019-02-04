@@ -107,6 +107,8 @@ AliSigma0ParticleBase &AliSigma0ParticleBase::operator=(
 
   fUse = obj.GetIsUse();
 
+  fPhistar = obj.GetPhiStar();
+
   return (*this);
 }
 

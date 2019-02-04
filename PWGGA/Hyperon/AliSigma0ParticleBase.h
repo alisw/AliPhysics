@@ -65,7 +65,7 @@ class AliSigma0ParticleBase {
   double GetDCAr() { return fDCAr; }
   double GetDCAz() { return fDCAz; }
   double GetPhiStar(int iRadius) const { return fPhistar[iRadius]; }
-  std::vector<float> GetPhiStar() const { return fPhistar; }
+  const std::vector<float> &GetPhiStar() const { return fPhistar; }
   int GetMCLabel() const { return fMClabel; }
 
  protected:
