@@ -1238,6 +1238,7 @@ Bool_t AliAnalysisHFjetTagHFE::Run()
      int Njet = 0;
      int Njet_g = 0; // jet pT > 10 GeV/c
      int Njet_q = 0; // jet pT > 10 GeV/c
+     Double_t jetRadius = 0.0;
 
      Double_t ExJetPt[5], ExJetEta[5], ExJetPhi[5];
      for(int i=0; i<5; i++)
@@ -1254,6 +1255,7 @@ Bool_t AliAnalysisHFjetTagHFE::Run()
          fJetsCont->ResetCurrentID();
          AliEmcalJet *jet = fJetsCont->GetNextAcceptJet();
          if(!ippcoll)rho = fJetsCont->GetRhoVal();
+         jetRadius = fJetsCont->GetJetRadius();
          //if(idbHFEj)cout << "rho = " << rho << endl; 
          //cout << "rho = " << rho << endl; 
          
@@ -1336,7 +1338,8 @@ Bool_t AliAnalysisHFjetTagHFE::Run()
 
 
 
-            Double_t BGfracAll = CalRandomCone(ExJetPhi,ExJetEta,0.3) - fJetsCont->GetRhoVal()*acos(-1.0)*pow(0.3,2);
+            //Double_t BGfracAll = CalRandomCone(ExJetPhi,ExJetEta,0.3) - fJetsCont->GetRhoVal()*acos(-1.0)*pow(0.3,2);
+            Double_t BGfracAll = CalRandomCone(ExJetPhi,ExJetEta,jetRadius) - fJetsCont->GetRhoVal()*acos(-1.0)*pow(jetRadius,2);
             fHistBGfrac->Fill(BGfracAll);
 
 
@@ -1358,6 +1361,8 @@ Bool_t AliAnalysisHFjetTagHFE::Run()
         numberofmotherkink++;
     }
   } //+++
+
+         cout << "radius = " << jetRadius << endl; 
 
     // ----- track loop
 
@@ -1775,7 +1780,8 @@ Bool_t AliAnalysisHFjetTagHFE::Run()
 
                               ExJetPhi[2] = Phi_eJet;
                               ExJetEta[2] = Eta_eJet;
-                              Double_t BGfracHFE = CalRandomCone(ExJetPhi,ExJetEta,0.3) - fJetsCont->GetRhoVal()*acos(-1.0)*pow(0.3,2);
+                              //Double_t BGfracHFE = CalRandomCone(ExJetPhi,ExJetEta,0.3) - fJetsCont->GetRhoVal()*acos(-1.0)*pow(0.3,2);
+                              Double_t BGfracHFE = CalRandomCone(ExJetPhi,ExJetEta,jetRadius) - fJetsCont->GetRhoVal()*acos(-1.0)*pow(jetRadius,2);
                               fHistBGfracHFEev->Fill(BGfracHFE);
 
                       } // end of HF selections
