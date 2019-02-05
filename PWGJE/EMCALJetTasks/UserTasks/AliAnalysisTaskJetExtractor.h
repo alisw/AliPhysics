@@ -70,6 +70,7 @@ class AliAnalysisTaskJetExtractor : public AliAnalysisTaskEmcalJet {
   void                        ExecOnce();
   Bool_t                      Run();
   Bool_t                      IsTriggerTrackInEvent();
+  void                        CalculateJetShapes(AliEmcalJet* jet, Double_t& leSub_noCorr, Double_t& radialMoment, Double_t& momentumDispersion, Double_t& constPtMean, Double_t& constPtMedian);
   void                        FillTrackControlHistograms(AliVTrack* track);
   void                        FillEventControlHistograms();
   void                        FillJetControlHistograms(AliEmcalJet* jet);
@@ -206,6 +207,7 @@ class AliEmcalJetTree : public TNamed
     void            SetRandomGenerator(TRandom3* gen) {fRandomGenerator = gen;}
 
     void            InitializeTree();
+    void            SetJetShapesInBuffer(Double_t leSub_noCorr, Double_t radialMoment, Double_t momentumDispersion, Double_t constPtMean, Double_t constPtMedian);
 
     // ############ GETTERS
     Bool_t          GetSaveEventProperties() {return fSaveEventProperties;}
@@ -315,6 +317,7 @@ class AliEmcalJetTree : public TNamed
     Float_t         fBuffer_Shape_Mass_DerivCorr_2;       //!<! array buffer
     Float_t         fBuffer_Shape_pTD_DerivCorr_1;        //!<! array buffer
     Float_t         fBuffer_Shape_pTD_DerivCorr_2;        //!<! array buffer
+    Float_t         fBuffer_Shape_LeSub_NoCorr;           //!<! array buffer
     Float_t         fBuffer_Shape_LeSub_DerivCorr;        //!<! array buffer
     Float_t         fBuffer_Shape_Angularity_DerivCorr_1; //!<! array buffer
     Float_t         fBuffer_Shape_Angularity_DerivCorr_2; //!<! array buffer
@@ -323,6 +326,10 @@ class AliEmcalJetTree : public TNamed
     Float_t         fBuffer_Shape_Sigma2_DerivCorr_1;     //!<! array buffer
     Float_t         fBuffer_Shape_Sigma2_DerivCorr_2;     //!<! array buffer
     Float_t         fBuffer_Shape_NumConst_DerivCorr;     //!<! array buffer
+    Float_t         fBuffer_Shape_RadialMoment;           //!<! array buffer
+    Float_t         fBuffer_Shape_MomentumDispersion;     //!<! array buffer
+    Float_t         fBuffer_Shape_ConstPtMean;            //!<! array buffer
+    Float_t         fBuffer_Shape_ConstPtMedian;          //!<! array buffer
 
 
     Int_t           fBuffer_Jet_MC_MotherParton;          //!<! array buffer
