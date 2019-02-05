@@ -25,9 +25,9 @@
 //***************************************************************************************
 void AddTask_GammaConvNeutralMesonPiPlPiMiNeutralMeson_CaloMode_pp(
     Int_t trainConfig                 = 1,
-    Bool_t isMC                       = kFALSE,                             //run MC
+    Int_t isMC                        = 0,                                  //run MC
     TString   photonCutNumberV0Reader       = "",       // 00000008400000000100000000 nom. B, 00000088400000000100000000 low B
-    Int_t selectHeavyNeutralMeson                  = 0,                          //run eta prime instead of omega
+    Int_t selectHeavyNeutralMeson     = 0,                                  //run eta prime instead of omega
     Int_t enableQAMesonTask           = 1,                                  //enable QA in AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson
     TString fileNameInputForWeighting = "MCSpectraInput.root",              // path to file for weigting input
     Bool_t doWeighting                = kFALSE,                             //enable Weighting
