@@ -771,17 +771,12 @@ void AliAnalysisTaskSEHFTreeCreator::UserExec(Option_t */*option*/)
       else if(fFiltCutsLctopKpi) evCuts = (AliRDHFCuts*)fFiltCutsLctopKpi->Clone();
       else{
         printf("AliAnalysisTaskSEHFTreeCreator::UserExec: No event selection cuts found!\n");
+        delete evCuts;
+        evCuts = 0x0;
         return;
       }
     }
 
-    if(evCuts->IsEventRejectedDueToTrigger())fNentries->Fill(5);
-    if(evCuts->IsEventRejectedDueToNotRecoVertex())fNentries->Fill(6);
-    if(evCuts->IsEventRejectedDueToVertexContributors())fNentries->Fill(7);
-    if(evCuts->IsEventRejectedDueToZVertexOutsideFiducialRegion())fNentries->Fill(8);
-    if(evCuts->IsEventRejectedDueToPileup())fNentries->Fill(9);
-    if(evCuts->IsEventRejectedDueToCentrality())fNentries->Fill(10);
-    
     TClonesArray *mcArray = 0;
     AliAODMCHeader *mcHeader = 0;
     
@@ -790,6 +785,8 @@ void AliAnalysisTaskSEHFTreeCreator::UserExec(Option_t */*option*/)
         mcArray = (TClonesArray*)aod->GetList()->FindObject(AliAODMCParticle::StdBranchName());
         if(!mcArray) {
             printf("AliAnalysisTaskSEHFTreeCreator::UserExec: MC particles branch not found!\n");
+            delete evCuts;
+            evCuts = 0x0;
             return;
         }
         
@@ -797,6 +794,8 @@ void AliAnalysisTaskSEHFTreeCreator::UserExec(Option_t */*option*/)
         mcHeader = (AliAODMCHeader*)aod->GetList()->FindObject(AliAODMCHeader::StdBranchName());
         if(!mcHeader) {
             printf("AliAnalysisTaskSEHFTreeCreator::UserExec: MC header branch not found!\n");
+            delete evCuts;
+            evCuts = 0x0;
             return;
         }
       fzVtxGen = mcHeader->GetVtxZ();
@@ -825,6 +824,8 @@ void AliAnalysisTaskSEHFTreeCreator::UserExec(Option_t */*option*/)
     Bool_t isSameEvSel = isSameEvSelD0 && isSameEvSelDs && isSameEvSelDplus && isSameEvSelLctopKpi && isSameEvSelBplus && isSameEvSelDstar;
     if(!isSameEvSel) {
       Printf("AliAnalysisTaskSEHFTreeCreator::UserExec: differences in the event selection cuts same meson");
+      delete evCuts;
+      evCuts = 0x0;
       return;
     }
     if((fWriteVariableTreeD0 && fWriteVariableTreeDs && (fFiltCutsD0toKpi->IsEventSelected(aod)!=fFiltCutsDstoKKpi->IsEventSelected(aod))) ||
@@ -844,11 +845,21 @@ void AliAnalysisTaskSEHFTreeCreator::UserExec(Option_t */*option*/)
        (fWriteVariableTreeBplus && fWriteVariableTreeDstar && (fFiltCutsBplustoD0pi->IsEventSelected(aod)!=fFiltCutsDstartoKpipi->IsEventSelected(aod)))
         ){
       Printf("AliAnalysisTaskSEHFTreeCreator::UserExec: differences in the event selection cuts different meson");
+      delete evCuts;
+      evCuts = 0x0;
       return;
     }
     
     fCounter->StoreEvent(aod,evCuts,fReadMC);
     Bool_t isEvSel=evCuts->IsEventSelected(aod);
+
+    if(evCuts->IsEventRejectedDueToTrigger())fNentries->Fill(5);
+    if(evCuts->IsEventRejectedDueToNotRecoVertex())fNentries->Fill(6);
+    if(evCuts->IsEventRejectedDueToVertexContributors())fNentries->Fill(7);
+    if(evCuts->IsEventRejectedDueToZVertexOutsideFiducialRegion())fNentries->Fill(8);
+    if(evCuts->IsEventRejectedDueToPileup())fNentries->Fill(9);
+    if(evCuts->IsEventRejectedDueToCentrality())fNentries->Fill(10);
+
     fCentrality = evCuts->GetCentrality(aod);
     if(fCentrality<0) fCentrality=-1.;
     //normalisation counter
@@ -882,7 +893,11 @@ void AliAnalysisTaskSEHFTreeCreator::UserExec(Option_t */*option*/)
     
     Bool_t isEvRejCent  = evCuts->IsEventRejectedDueToCentrality();
 
-    if(!isEvSel && isEvRejCent) return; //cut only centrality, else tag only
+    if(!isEvSel && isEvRejCent){
+      delete evCuts;
+      evCuts = 0x0;
+      return; //cut only centrality, else tag only
+    }
     if(isEvSel) fNentries->Fill(4);
     // AOD primary vertex
     AliAODVertex *vtx = (AliAODVertex*)aod->GetPrimaryVertex();
