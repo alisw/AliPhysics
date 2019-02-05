@@ -97,6 +97,7 @@ fCutsDplustoKpipi(0x0),
 fCutsLctopKpi(0x0),
 fCutsBplustoD0pi(0x0),
 fCutsDstartoKpipi(0x0),
+fEvSelectionCuts(0x0),
 fReadMC(0),
 fListCounter(0x0),
 fCounter(0x0),
@@ -175,6 +176,7 @@ fCutsDplustoKpipi(0x0),
 fCutsLctopKpi(0x0),
 fCutsBplustoD0pi(0x0),
 fCutsDstartoKpipi(0x0),
+fEvSelectionCuts(0x0),
 fReadMC(0),
 fListCounter(0x0),
 fCounter(0x0),
@@ -270,6 +272,9 @@ fTreeSingleTrackVarsOpt(AliHFTreeHandler::kRedSingleTrackVars)
     if(fCutsDstartoKpipi){
       delete fCutsDstartoKpipi;fCutsDstartoKpipi=NULL;
     }
+    if(fEvSelectionCuts){
+      delete fEvSelectionCuts;fEvSelectionCuts=NULL;
+    }
     fListCuts=cutsList;
     
     fFiltCutsD0toKpi     =(AliRDHFCutsD0toKpi*)fListCuts->FindObject("D0toKpiFilteringCuts");
@@ -284,6 +289,21 @@ fTreeSingleTrackVarsOpt(AliHFTreeHandler::kRedSingleTrackVars)
     fCutsLctopKpi        =(AliRDHFCutsLctopKpi*)fListCuts->FindObject("LctopKpiAnalysisCuts");
     fCutsBplustoD0pi     =(AliRDHFCutsBPlustoD0Pi*)fListCuts->FindObject("BplustoD0piAnalysisCuts");
     fCutsDstartoKpipi    =(AliRDHFCutsDStartoKpipi*)fListCuts->FindObject("DstartoKpipiAnalysisCuts");
+
+    if(fWriteVariableTreeD0) fEvSelectionCuts = (AliRDHFCuts*)fFiltCutsD0toKpi->Clone();
+    else if(fWriteVariableTreeDplus) fEvSelectionCuts = (AliRDHFCuts*)fFiltCutsDplustoKpipi->Clone();
+    else if(fWriteVariableTreeDs) fEvSelectionCuts = (AliRDHFCuts*)fFiltCutsDstoKKpi->Clone();
+    else if(fWriteVariableTreeDstar) fEvSelectionCuts = (AliRDHFCuts*)fFiltCutsDstartoKpipi->Clone();
+    else if(fWriteVariableTreeBplus) fEvSelectionCuts = (AliRDHFCuts*)fFiltCutsBplustoD0pi->Clone();
+    else if(fWriteVariableTreeLctopKpi) fEvSelectionCuts = (AliRDHFCuts*)fFiltCutsLctopKpi->Clone();
+    else {
+      if(fFiltCutsD0toKpi) fEvSelectionCuts = (AliRDHFCuts*)fFiltCutsD0toKpi->Clone();
+      else if(fFiltCutsDstoKKpi) fEvSelectionCuts = (AliRDHFCuts*)fFiltCutsDstoKKpi->Clone();
+      else if(fFiltCutsDplustoKpipi) fEvSelectionCuts = (AliRDHFCuts*)fFiltCutsDplustoKpipi->Clone();
+      else if(fFiltCutsDstartoKpipi) fEvSelectionCuts = (AliRDHFCuts*)fFiltCutsDstartoKpipi->Clone();
+      else if(fFiltCutsBplustoD0pi) fEvSelectionCuts = (AliRDHFCuts*)fFiltCutsBplustoD0pi->Clone();
+      else if(fFiltCutsLctopKpi) fEvSelectionCuts = (AliRDHFCuts*)fFiltCutsLctopKpi->Clone();
+    }
 
     DefineInput(0, TChain::Class());
     // Output slot #1 writes into a TH1F container (number of events)
@@ -376,6 +396,10 @@ AliAnalysisTaskSEHFTreeCreator::~AliAnalysisTaskSEHFTreeCreator()
     if (fCutsDstartoKpipi) {
       delete fCutsDstartoKpipi;
       fCutsDstartoKpipi = 0x0;
+    }
+    if (fEvSelectionCuts) {
+      delete fEvSelectionCuts;
+      fEvSelectionCuts = 0x0;
     }
     if (fNentries){
         delete fNentries;
@@ -751,31 +775,6 @@ void AliAnalysisTaskSEHFTreeCreator::UserExec(Option_t */*option*/)
     if(!aod->GetPrimaryVertex() || TMath::Abs(aod->GetMagneticField())<0.001) return;
     
     fNentries->Fill(3); // count events
-    
-    AliRDHFCuts* evCuts = 0x0;
-    if(fWriteVariableTreeD0) evCuts = (AliRDHFCuts*)fFiltCutsD0toKpi->Clone();
-    else if(fWriteVariableTreeDplus) evCuts = (AliRDHFCuts*)fFiltCutsDplustoKpipi->Clone();
-    else if(fWriteVariableTreeDs) evCuts = (AliRDHFCuts*)fFiltCutsDstoKKpi->Clone();
-    else if(fWriteVariableTreeDstar) evCuts = (AliRDHFCuts*)fFiltCutsDstartoKpipi->Clone();
-    else if(fWriteVariableTreeBplus) evCuts = (AliRDHFCuts*)fFiltCutsBplustoD0pi->Clone();
-    else if(fWriteVariableTreeLctopKpi) evCuts = (AliRDHFCuts*)fFiltCutsLctopKpi->Clone();
-
-    if(!evCuts){
-      //Setting one of the filtering cuts as event selection cuts if evCuts is still empty
-      //(which is the case if all meson TTrees are disabled).
-      //In this way, the task doesn't crash and fTreeEvChar is still filled.
-      if(fFiltCutsD0toKpi) evCuts = (AliRDHFCuts*)fFiltCutsD0toKpi->Clone();
-      else if(fFiltCutsDplustoKpipi) evCuts = (AliRDHFCuts*)fFiltCutsDplustoKpipi->Clone();
-      else if(fFiltCutsDstartoKpipi) evCuts = (AliRDHFCuts*)fFiltCutsDstartoKpipi->Clone();
-      else if(fFiltCutsBplustoD0pi) evCuts = (AliRDHFCuts*)fFiltCutsBplustoD0pi->Clone();
-      else if(fFiltCutsLctopKpi) evCuts = (AliRDHFCuts*)fFiltCutsLctopKpi->Clone();
-      else{
-        printf("AliAnalysisTaskSEHFTreeCreator::UserExec: No event selection cuts found!\n");
-        delete evCuts;
-        evCuts = 0x0;
-        return;
-      }
-    }
 
     TClonesArray *mcArray = 0;
     AliAODMCHeader *mcHeader = 0;
@@ -785,8 +784,6 @@ void AliAnalysisTaskSEHFTreeCreator::UserExec(Option_t */*option*/)
         mcArray = (TClonesArray*)aod->GetList()->FindObject(AliAODMCParticle::StdBranchName());
         if(!mcArray) {
             printf("AliAnalysisTaskSEHFTreeCreator::UserExec: MC particles branch not found!\n");
-            delete evCuts;
-            evCuts = 0x0;
             return;
         }
         
@@ -794,8 +791,6 @@ void AliAnalysisTaskSEHFTreeCreator::UserExec(Option_t */*option*/)
         mcHeader = (AliAODMCHeader*)aod->GetList()->FindObject(AliAODMCHeader::StdBranchName());
         if(!mcHeader) {
             printf("AliAnalysisTaskSEHFTreeCreator::UserExec: MC header branch not found!\n");
-            delete evCuts;
-            evCuts = 0x0;
             return;
         }
       fzVtxGen = mcHeader->GetVtxZ();
@@ -824,8 +819,6 @@ void AliAnalysisTaskSEHFTreeCreator::UserExec(Option_t */*option*/)
     Bool_t isSameEvSel = isSameEvSelD0 && isSameEvSelDs && isSameEvSelDplus && isSameEvSelLctopKpi && isSameEvSelBplus && isSameEvSelDstar;
     if(!isSameEvSel) {
       Printf("AliAnalysisTaskSEHFTreeCreator::UserExec: differences in the event selection cuts same meson");
-      delete evCuts;
-      evCuts = 0x0;
       return;
     }
     if((fWriteVariableTreeD0 && fWriteVariableTreeDs && (fFiltCutsD0toKpi->IsEventSelected(aod)!=fFiltCutsDstoKKpi->IsEventSelected(aod))) ||
@@ -845,57 +838,53 @@ void AliAnalysisTaskSEHFTreeCreator::UserExec(Option_t */*option*/)
        (fWriteVariableTreeBplus && fWriteVariableTreeDstar && (fFiltCutsBplustoD0pi->IsEventSelected(aod)!=fFiltCutsDstartoKpipi->IsEventSelected(aod)))
         ){
       Printf("AliAnalysisTaskSEHFTreeCreator::UserExec: differences in the event selection cuts different meson");
-      delete evCuts;
-      evCuts = 0x0;
       return;
     }
     
-    fCounter->StoreEvent(aod,evCuts,fReadMC);
-    Bool_t isEvSel=evCuts->IsEventSelected(aod);
+    fCounter->StoreEvent(aod,fEvSelectionCuts,fReadMC);
+    Bool_t isEvSel=fEvSelectionCuts->IsEventSelected(aod);
 
-    if(evCuts->IsEventRejectedDueToTrigger())fNentries->Fill(5);
-    if(evCuts->IsEventRejectedDueToNotRecoVertex())fNentries->Fill(6);
-    if(evCuts->IsEventRejectedDueToVertexContributors())fNentries->Fill(7);
-    if(evCuts->IsEventRejectedDueToZVertexOutsideFiducialRegion())fNentries->Fill(8);
-    if(evCuts->IsEventRejectedDueToPileup())fNentries->Fill(9);
-    if(evCuts->IsEventRejectedDueToCentrality())fNentries->Fill(10);
+    if(fEvSelectionCuts->IsEventRejectedDueToTrigger())fNentries->Fill(5);
+    if(fEvSelectionCuts->IsEventRejectedDueToNotRecoVertex())fNentries->Fill(6);
+    if(fEvSelectionCuts->IsEventRejectedDueToVertexContributors())fNentries->Fill(7);
+    if(fEvSelectionCuts->IsEventRejectedDueToZVertexOutsideFiducialRegion())fNentries->Fill(8);
+    if(fEvSelectionCuts->IsEventRejectedDueToPileup())fNentries->Fill(9);
+    if(fEvSelectionCuts->IsEventRejectedDueToCentrality())fNentries->Fill(10);
 
-    fCentrality = evCuts->GetCentrality(aod);
+    fCentrality = fEvSelectionCuts->GetCentrality(aod);
     if(fCentrality<0) fCentrality=-1.;
     //normalisation counter
-    if(!evCuts->IsEventRejectedDuePhysicsSelection()){
+    if(!fEvSelectionCuts->IsEventRejectedDuePhysicsSelection()){
       if(isEvSel){
       //selected events with primary vertex
       fHistoNormCounter->Fill(0.,fCentrality);
       }
       else{
-      	if(evCuts->GetWhyRejection()==0){
+        if(fEvSelectionCuts->GetWhyRejection()==0){
       	//rejected events bc no primary vertex
       	fHistoNormCounter->Fill(1.,fCentrality);
       	}
       	//rejected events bc good primary vertex but >10cm
-        if(evCuts->GetWhyRejection()==6){
+        if(fEvSelectionCuts->GetWhyRejection()==6){
         //nPrimaryV++;
         fHistoNormCounter->Fill(0.,fCentrality);
         //nzVtxGT10++;
         fHistoNormCounter->Fill(2.,fCentrality);
         }
-        if(evCuts->GetWhyRejection()==1){
+        if(fEvSelectionCuts->GetWhyRejection()==1){
         //nPileup++;
         fHistoNormCounter->Fill(4.,fCentrality);
         }
       }
-      if(evCuts->CountEventForNormalization()){
+      if(fEvSelectionCuts->CountEventForNormalization()){
         //nCountForNorm++;
         fHistoNormCounter->Fill(3.,fCentrality);
       }
     }
     
-    Bool_t isEvRejCent  = evCuts->IsEventRejectedDueToCentrality();
+    Bool_t isEvRejCent  = fEvSelectionCuts->IsEventRejectedDueToCentrality();
 
     if(!isEvSel && isEvRejCent){
-      delete evCuts;
-      evCuts = 0x0;
       return; //cut only centrality, else tag only
     }
     if(isEvSel) fNentries->Fill(4);
@@ -904,7 +893,7 @@ void AliAnalysisTaskSEHFTreeCreator::UserExec(Option_t */*option*/)
     fNcontributors = vtx->GetNContributors();
     fzVtxReco = vtx->GetZ();
     fNtracks = aod->GetNumberOfTracks();
-    fIsEvRej = evCuts->GetEventRejectionBitMap();
+    fIsEvRej = fEvSelectionCuts->GetEventRejectionBitMap();
     fRunNumber=aod->GetRunNumber();
     fTreeEvChar->Fill();
     
@@ -945,9 +934,6 @@ void AliAnalysisTaskSEHFTreeCreator::UserExec(Option_t */*option*/)
         PostData(16,fVariablesTreeDstar);
         if(fFillMCGenTrees && fReadMC) PostData(17,fGenTreeDstar);
     }
-
-    delete evCuts;
-    evCuts = 0x0;
 
     return;
 }
@@ -1807,9 +1793,9 @@ void AliAnalysisTaskSEHFTreeCreator::ProcessCasc(TClonesArray *arrayCasc, AliAOD
                     Int_t labDstar = -1;
                     Int_t pdgDstar = -99;
                     Int_t origin= -1;
-                    AliAODMCParticle *partDstar=0x0;
 
                     if(fReadMC) {
+                        AliAODMCParticle *partDstar=0x0;
                         labDstar = d->MatchToMC(413,421,pdgDgDStartoD0pi, pdgDgD0toKpi, arrMC);
                         if(labDstar>=0){
                             partDstar = (AliAODMCParticle*)arrMC->At(labDstar);
