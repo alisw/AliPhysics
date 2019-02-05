@@ -48,7 +48,9 @@ void AddTask_LMeeCocktailMC(Int_t CollisionSystem = 200, Float_t MaxEta = 0.8, F
   if(resFileName != ""){
     task->SetResFileName(resFileName);
     if(resFileName.Contains("alien")){
+      Printf("alien_cp %s .",resFileName.Data());
       gSystem->Exec(Form("alien_cp %s .",resFileName.Data()));
+      gSystem->Exec("ls");
     }
   }
   
