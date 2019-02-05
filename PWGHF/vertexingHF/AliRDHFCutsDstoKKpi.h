@@ -19,7 +19,7 @@ class AliRDHFCutsDstoKKpi : public AliRDHFCuts
 
   AliRDHFCutsDstoKKpi(const char* name="CutsDstoKKpi");
   
-  virtual ~AliRDHFCutsDstoKKpi(){}
+  virtual ~AliRDHFCutsDstoKKpi();
 
   AliRDHFCutsDstoKKpi(const AliRDHFCutsDstoKKpi& source);
   AliRDHFCutsDstoKKpi& operator=(const AliRDHFCutsDstoKKpi& source); 

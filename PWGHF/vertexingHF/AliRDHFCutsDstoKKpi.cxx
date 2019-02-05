@@ -200,7 +200,14 @@ AliRDHFCutsDstoKKpi &AliRDHFCutsDstoKKpi::operator=(const AliRDHFCutsDstoKKpi &s
 
   return *this;
 }
-
+//---------------------------------------------------------------------------
+AliRDHFCutsDstoKKpi::~AliRDHFCutsDstoKKpi(){
+  //
+  // Destructor
+  //
+  if(fMaxd0MeasMinusExp) delete [] fMaxd0MeasMinusExp;
+  if(fMaxd0) delete [] fMaxd0;
+}
 //---------------------------------------------------------------------------
 void AliRDHFCutsDstoKKpi::Setd0MeasMinusExpCut(Int_t nPtBins, Float_t *cutval) {
   //
