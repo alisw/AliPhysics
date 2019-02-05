@@ -122,6 +122,7 @@ private:
     AliRDHFCutsLctopKpi     *fCutsLctopKpi;                        //      LctopKpi analysis cuts
     AliRDHFCutsBPlustoD0Pi  *fCutsBplustoD0pi;                     //      BplustoD0pi analysis cuts
     AliRDHFCutsDStartoKpipi *fCutsDstartoKpipi;                    //      DstartoKpipi analysis cuts
+    AliRDHFCuts             *fEvSelectionCuts;                     //      Event selection cuts
     Bool_t                  fReadMC;                               //     flag for MC array: kTRUE = read it, kFALSE = do not read it
     TList                   *fListCounter;                         //!<!   list for normalization counter on output slot 3
     AliNormalizationCounter *fCounter;                             //!<!   AliNormalizationCounter
@@ -197,7 +198,7 @@ private:
     Int_t                   fTreeSingleTrackVarsOpt;               /// option for single-track variables to be filled in the trees
   
     /// \cond CLASSIMP
-    ClassDef(AliAnalysisTaskSEHFTreeCreator,6);
+    ClassDef(AliAnalysisTaskSEHFTreeCreator,7);
     /// \endcond
 };
 
