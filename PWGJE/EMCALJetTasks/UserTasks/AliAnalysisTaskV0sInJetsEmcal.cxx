@@ -39,6 +39,7 @@
 #include "AliAODMCParticle.h"
 #include "AliMCEvent.h"
 #include "AliMultSelection.h"
+#include "AliEventCuts.h"
 
 #include "AliEmcalJet.h"
 #include "AliJetContainer.h"
@@ -106,6 +107,7 @@ AliAnalysisTaskV0sInJetsEmcal::AliAnalysisTaskV0sInJetsEmcal():
   fdCutDeltaZMax(0),
   fdCentrality(0),
   fbUseMultiplicity(0),
+  fbUseIonutCut(0),
 
   fbCorrelations(0),
   fiSizePool(0),
@@ -394,6 +396,7 @@ AliAnalysisTaskV0sInJetsEmcal::AliAnalysisTaskV0sInJetsEmcal(const char* name):
   fdCutDeltaZMax(0),
   fdCentrality(0),
   fbUseMultiplicity(0),
+  fbUseIonutCut(0),
 
   fbCorrelations(0),
   fiSizePool(0),
@@ -1387,6 +1390,13 @@ void AliAnalysisTaskV0sInJetsEmcal::ExecOnce()
     }
   }
 
+  //Event Cuts with strong anti-pilep cuts
+  if(fbUseIonutCut)
+  {
+    fEventCutsStrictAntipileup.fUseStrongVarCorrelationCut = true;
+    fEventCutsStrictAntipileup.fUseVariablesCorrelationCuts = true;
+  }
+
   printf("=======================================================\n");
   printf("%s: Configuration summary:\n", ClassName());
   printf("task name: %s\n", GetName());
@@ -1403,6 +1413,7 @@ void AliAnalysisTaskV0sInJetsEmcal::ExecOnce()
   if(fdCutVertexZ > 0.) printf("max |z| of the prim vtx [cm]: %g\n", fdCutVertexZ);
   if(fdCutVertexR2 > 0.) printf("max r^2 of the prim vtx [cm^2]: %g\n", fdCutVertexR2);
   if(fdCutDeltaZMax > 0.) printf("max |Delta z| between nominal prim vtx and SPD vtx [cm]: %g\n", fdCutDeltaZMax);
+  if(fbUseIonutCut) printf("Ionut's cut\n");
   printf("-------------------------------------------------------\n");
   if(fbTPCRefit) printf("TPC refit for daughter tracks\n");
   if(fbRejectKinks) printf("reject kink-like production vertices of daughter tracks\n");
@@ -3444,6 +3455,11 @@ Bool_t AliAnalysisTaskV0sInJetsEmcal::IsSelectedForJets(AliAODEvent* fAOD, Doubl
   if(vertex->GetNContributors() < iNContribMin)
   {
     if(fDebug > 0) printf("%s %s::%s: %s\n", GetName(), ClassName(), __func__, Form("Not enough contributors, %d", vertex->GetNContributors()));
+    return kFALSE;
+  }
+  if(fbUseIonutCut && !fEventCutsStrictAntipileup.AcceptEvent(fAOD))
+  {
+    if(fDebug > 0) printf("%s %s::%s: %s\n", GetName(), ClassName(), __func__, "Ionut's cut");
     return kFALSE;
   }
   fh1EventCounterCut->Fill(3); // enough contributors
