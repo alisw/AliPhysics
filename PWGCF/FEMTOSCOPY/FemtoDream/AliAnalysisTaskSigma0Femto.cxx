@@ -158,6 +158,9 @@ void AliAnalysisTaskSigma0Femto::UserExec(Option_t * /*option*/) {
   if (!fEvtCuts->isSelected(fEvent)) return;
 
   // PROTON SELECTION
+  UInt_t filterBitProton = fTrackCutsPartProton->GetFilterBit();
+  bool useTPConlyTrack = (filterBitProton == 128);
+
   static std::vector<AliFemtoDreamBasePart> particles;
   particles.clear();
   static std::vector<AliFemtoDreamBasePart> antiParticles;
@@ -165,7 +168,7 @@ void AliAnalysisTaskSigma0Femto::UserExec(Option_t * /*option*/) {
   const AliESDEvent *evt = static_cast<AliESDEvent *>(fInputEvent);
   for (int iTrack = 0; iTrack < evt->GetNumberOfTracks(); ++iTrack) {
     fProtonTrack->SetTrack(static_cast<AliESDtrack *>(evt->GetTrack(iTrack)),
-                           fMCEvent, fEvent->GetMultiplicity(), false);
+                           fMCEvent, fEvent->GetMultiplicity(), useTPConlyTrack);
     if (fTrackCutsPartProton->isSelected(fProtonTrack)) {
       particles.push_back(*fProtonTrack);
     }

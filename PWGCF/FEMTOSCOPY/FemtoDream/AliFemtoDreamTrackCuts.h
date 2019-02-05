@@ -212,6 +212,8 @@ class AliFemtoDreamTrackCuts {
     return fHists->GetHistList();
   }
   ;
+  UInt_t GetFilterBit() const { return fFilterBit; }
+
   TList *GetMCQAHists() {
     return fMCHists?fMCHists->GetHistList():nullptr;
   }
