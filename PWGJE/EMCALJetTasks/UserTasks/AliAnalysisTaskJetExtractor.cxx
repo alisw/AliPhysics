@@ -1083,13 +1083,7 @@ void AliAnalysisTaskJetExtractor::CalculateJetShapes(AliEmcalJet* jet, Double_t&
   }
 
   if(jetCorrectedPt)
-  {
     radialMoment /= jetCorrectedPt;
-    if (radialMoment < 0)
-      radialMoment = 0;
-    if (radialMoment > 1)
-      radialMoment = 1;
-  }
   if(numConst)
   {
     constPtMean   /= numConst;
