@@ -1432,8 +1432,17 @@ void AliAnalysisHFETPCTOFBeauty::UserExec(Option_t *)
 		}
 		///Electron candidates
 		if(fTPCnSigma >= ftpcPIDmincut && fTPCnSigma <= ftpcPIDmaxcut){
-			if(fTOFnSigma >= ftofPIDmincut && fTOFnSigma <= ftofPIDmaxcut){
-				qadcaData[2] = 1.5;					
+			if(fP <= 2){
+				if(fTOFnSigma >= -4 && fTOFnSigma <= 2){
+					if(fITSnSigma >= -3 && fITSnSigma <= 3){
+						qadcaData[2] = 1.5;	
+					}
+				}
+			}
+			if(fP > 2){
+				if(fTOFnSigma >= ftofPIDmincut && fTOFnSigma <= ftofPIDmaxcut){
+					qadcaData[2] = 1.5;					
+				}
 			}
 		}
 
