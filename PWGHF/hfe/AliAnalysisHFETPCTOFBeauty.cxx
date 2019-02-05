@@ -15,7 +15,7 @@
 
 ////////////////////////////////////////////////////////////////////////
 //                                                                    //
-//      Task for Beauty analysis in Pb-Pb collisions   				  //
+//      Task for Beauty analysis in Pb-Pb central collisions   				  //
 //      															  //
 //																	  //
 //		v1.0														  //
