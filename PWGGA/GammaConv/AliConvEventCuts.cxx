@@ -1886,7 +1886,7 @@ Bool_t AliConvEventCuts::SetSelectSubTriggerClass(Int_t selectSpecialSubTriggerC
       AliError("Warning: Special Subtrigger Class Not known");
       return 0;
     }
-  } else if (fSpecialTrigger == 9){ // Subdivision of kEMCEGA trigger classes
+  } else if (fSpecialTrigger == 9){ // Subdivision of kEMCEJE trigger classes
     switch(selectSpecialSubTriggerClass){
     case 0: // all together
       fSpecialSubTrigger=0;
@@ -2110,6 +2110,34 @@ Bool_t AliConvEventCuts::SetSelectSubTriggerClass(Int_t selectSpecialSubTriggerC
       fNSpecialSubTriggerOptions=1;
       fSpecialSubTriggerName="8DJ1";
       fSpecialTriggerName="AliVEvent::kCaloOnly/8DJ1";
+      break;
+    case 21: // Gamma Low EMC and DMC
+      fSpecialSubTrigger=1;
+      fNSpecialSubTriggerOptions=2;
+      fSpecialTriggerName="AliVEvent::kCaloOnly/7EG1";
+      fSpecialSubTriggerName="7EG1";
+      fSpecialSubTriggerNameAdditional="7DG1";
+      break;
+    case 22: // Gamma Low EMC and DMC
+      fSpecialSubTrigger=1;
+      fNSpecialSubTriggerOptions=2;
+      fSpecialTriggerName="AliVEvent::kCaloOnly/7EG2";
+      fSpecialSubTriggerName="7EG2";
+      fSpecialSubTriggerNameAdditional="7DG2";
+      break;
+    case 23: // high Jet trigger EMC+DMC
+      fSpecialSubTrigger=1;
+      fNSpecialSubTriggerOptions=2;
+      fSpecialTriggerName="AliVEvent::kCaloOnly/7EJ1";
+      fSpecialSubTriggerName="7EJ1";
+      fSpecialSubTriggerNameAdditional="7DJ1";
+      break;
+    case 24: // low Jet trigger EMC+DMC
+      fSpecialSubTrigger=1;
+      fNSpecialSubTriggerOptions=2;
+      fSpecialTriggerName="AliVEvent::kCaloOnly/7EJ2";
+      fSpecialSubTriggerName="7EJ2";
+      fSpecialSubTriggerNameAdditional="7DJ2";
       break;
     default:
       AliError("Warning: Special Subtrigger Class Not known");
@@ -3877,7 +3905,7 @@ Bool_t AliConvEventCuts::MimicTrigger(AliVEvent *event, Bool_t isMC ){
   } else if (fSpecialTrigger == 6 ) {
 
     return kTRUE;
-  } else if (fSpecialTrigger == 8 ) {
+  } else if (fSpecialTrigger == 8 || fSpecialTrigger == 10 ) {
     if (fSpecialSubTriggerName.CompareTo("7EGA")==0 || fSpecialSubTriggerName.CompareTo("8EGA")==0 || fSpecialSubTriggerName.CompareTo("7EG1")==0 ||fSpecialSubTriggerName.CompareTo("8EG1")==0 ){
       if (runnumber < runRangesEMCalL1[0]) return kTRUE;
       Int_t binRun = 0;
@@ -4267,63 +4295,108 @@ Bool_t AliConvEventCuts::IsTriggerSelected(AliVEvent *event, Bool_t isMC)
               }
             }
             if (fSpecialTrigger == 10 && (fInputHandler->IsEventSelected() & AliVEvent::kCaloOnly) ){
-              // trigger rejection L0 triggers
-              if (fSpecialSubTriggerName.CompareTo("CEMC7-") == 0){
-                if (firedTrigClass.Contains("INT7-")) isSelected = 0;
-              } else if (fSpecialSubTriggerName.CompareTo("CEMC1-") == 0){
-                if (firedTrigClass.Contains("INT1-")) isSelected = 0;
-              } else if (fSpecialSubTriggerName.CompareTo("CEMC8-") == 0){
-                if (firedTrigClass.Contains("INT8-")) isSelected = 0;
-              } else if (fSpecialSubTriggerName.CompareTo("CDMC7-") == 0){
-                if (firedTrigClass.Contains("INT7-")) isSelected = 0;
-              } else if (fSpecialSubTriggerName.CompareTo("CDMC1-") == 0){
-                if (firedTrigClass.Contains("INT1-")) isSelected = 0;
-              } else if (fSpecialSubTriggerName.CompareTo("CDMC8-") == 0){
-                if (firedTrigClass.Contains("INT8-")) isSelected = 0;
-              }
-              // trigger rejection EGA
-              if (fSpecialSubTriggerName.CompareTo("7EGA") == 0){
-                if (firedTrigClass.Contains("INT7-")) isSelected = 0;
-                if (firedTrigClass.Contains("EMC7-")) isSelected = 0;
-              } else if (fSpecialSubTriggerName.CompareTo("8EGA") == 0){
-                if (firedTrigClass.Contains("INT8-")) isSelected = 0;
-                if (firedTrigClass.Contains("EMC8-")) isSelected = 0;
-              } else if (fSpecialSubTriggerName.CompareTo("7DGA") == 0){
-                if (firedTrigClass.Contains("INT7-")) isSelected = 0;
-                if (firedTrigClass.Contains("EMC7-")) isSelected = 0;
-              } else if (fSpecialSubTriggerName.CompareTo("8DGA") == 0){
-                if (firedTrigClass.Contains("INT8-")) isSelected = 0;
-                if (firedTrigClass.Contains("EMC8-")) isSelected = 0;
-              }
-              // trigger rejection L1 triggers
-              if(fSpecialSubTriggerName.CompareTo("7EG1") == 0){
-                if (firedTrigClass.Contains("INT7-")) isSelected = 0;
-                if (firedTrigClass.Contains("EMC7-")) isSelected = 0;
-                if (firedTrigClass.Contains("7EG2"))  isSelected = 0;
-              } else if (fSpecialSubTriggerName.CompareTo("8EG1") == 0){
-                if (firedTrigClass.Contains("INT8-")) isSelected = 0;
-                if (firedTrigClass.Contains("EMC8-")) isSelected = 0;
-                if (firedTrigClass.Contains("8EG2"))  isSelected = 0;
-              } else if (fSpecialSubTriggerName.CompareTo("7EG2") == 0){
-                if (firedTrigClass.Contains("INT7-")) isSelected = 0;
-                if (firedTrigClass.Contains("EMC7-")) isSelected = 0;
-              } else if (fSpecialSubTriggerName.CompareTo("8EG2") == 0){
-                if (firedTrigClass.Contains("INT8-")) isSelected = 0;
-                if (firedTrigClass.Contains("EMC8-")) isSelected = 0;
-              } else if (fSpecialSubTriggerName.CompareTo("7DG1") == 0){
-                if (firedTrigClass.Contains("INT7-")) isSelected = 0;
-                if (firedTrigClass.Contains("DMC7-")) isSelected = 0;
-                if (firedTrigClass.Contains("7DG2"))  isSelected = 0;
-              } else if (fSpecialSubTriggerName.CompareTo("8DG1") == 0){
-                if (firedTrigClass.Contains("INT8-")) isSelected = 0;
-                if (firedTrigClass.Contains("DMC8-")) isSelected = 0;
-                if (firedTrigClass.Contains("8DG2"))  isSelected = 0;
-              } else if (fSpecialSubTriggerName.CompareTo("7DG2") == 0){
-                if (firedTrigClass.Contains("INT7-")) isSelected = 0;
-                if (firedTrigClass.Contains("DMC7-")) isSelected = 0;
-              } else if (fSpecialSubTriggerName.CompareTo("8DG2") == 0){
-                if (firedTrigClass.Contains("INT7-")) isSelected = 0;
-                if (firedTrigClass.Contains("DMC8-")) isSelected = 0;
+              if(fNSpecialSubTriggerOptions==2){
+                // trigger rejection for EMC and DMC triggers together
+                if (fSpecialSubTriggerName.CompareTo("7EJ1") == 0 && fSpecialSubTriggerNameAdditional.CompareTo("7DJ1") == 0){
+                  if (firedTrigClass.Contains("INT7-")) isSelected = 0;
+                  if (firedTrigClass.Contains("EMC7-")) isSelected = 0;
+                  if (firedTrigClass.Contains("DMC7-")) isSelected = 0;
+                  if (firedTrigClass.Contains("7EG2"))  isSelected = 0;
+                  if (firedTrigClass.Contains("7EG1"))  isSelected = 0;
+                  if (firedTrigClass.Contains("7EJ2"))  isSelected = 0;
+                  if (firedTrigClass.Contains("7DG2"))  isSelected = 0;
+                  if (firedTrigClass.Contains("7DG1"))  isSelected = 0;
+                  if (firedTrigClass.Contains("7DJ2"))  isSelected = 0;
+                } else if (fSpecialSubTriggerName.CompareTo("7EJ2") == 0 && fSpecialSubTriggerNameAdditional.CompareTo("7DJ2") == 0){
+                  if (firedTrigClass.Contains("INT7-")) isSelected = 0;
+                  if (firedTrigClass.Contains("EMC7-")) isSelected = 0;
+                  if (firedTrigClass.Contains("DMC7-")) isSelected = 0;
+                  if (firedTrigClass.Contains("7EG2"))  isSelected = 0;
+                  if (firedTrigClass.Contains("7EG1"))  isSelected = 0;
+                  if (firedTrigClass.Contains("7DG2"))  isSelected = 0;
+                  if (firedTrigClass.Contains("7DG1"))  isSelected = 0;
+                }
+                // trigger rejection for EMC and DMC triggers together
+                if (fSpecialSubTriggerName.CompareTo("7EG1") == 0 && fSpecialSubTriggerNameAdditional.CompareTo("7DG1") == 0){
+                  if (firedTrigClass.Contains("INT7-")) isSelected = 0;
+                  if (firedTrigClass.Contains("EMC7-")) isSelected = 0;
+                  if (firedTrigClass.Contains("DMC7-")) isSelected = 0;
+                  if (firedTrigClass.Contains("7EG2"))  isSelected = 0;
+                  if (firedTrigClass.Contains("7DG2"))  isSelected = 0;
+                } else if (fSpecialSubTriggerName.CompareTo("8EG1") == 0 && fSpecialSubTriggerNameAdditional.CompareTo("8DG1") == 0){
+                  if (firedTrigClass.Contains("INT8-")) isSelected = 0;
+                  if (firedTrigClass.Contains("EMC8-")) isSelected = 0;
+                  if (firedTrigClass.Contains("DMC8-")) isSelected = 0;
+                  if (firedTrigClass.Contains("8EG2"))  isSelected = 0;
+                  if (firedTrigClass.Contains("8DG2"))  isSelected = 0;
+                } else if (fSpecialSubTriggerName.CompareTo("7EG2") == 0 && fSpecialSubTriggerNameAdditional.CompareTo("7DG2") == 0){
+                  if (firedTrigClass.Contains("INT7-")) isSelected = 0;
+                  if (firedTrigClass.Contains("EMC7-")) isSelected = 0;
+                  if (firedTrigClass.Contains("DMC7-")) isSelected = 0;
+                } else if (fSpecialSubTriggerName.CompareTo("8EG2") == 0 && fSpecialSubTriggerNameAdditional.CompareTo("8DG2") == 0){
+                  if (firedTrigClass.Contains("INT8-")) isSelected = 0;
+                  if (firedTrigClass.Contains("EMC8-")) isSelected = 0;
+                  if (firedTrigClass.Contains("DMC8-")) isSelected = 0;
+                }
+              } else {
+                // trigger rejection L0 triggers
+                if (fSpecialSubTriggerName.CompareTo("CEMC7-") == 0){
+                  if (firedTrigClass.Contains("INT7-")) isSelected = 0;
+                } else if (fSpecialSubTriggerName.CompareTo("CEMC1-") == 0){
+                  if (firedTrigClass.Contains("INT1-")) isSelected = 0;
+                } else if (fSpecialSubTriggerName.CompareTo("CEMC8-") == 0){
+                  if (firedTrigClass.Contains("INT8-")) isSelected = 0;
+                } else if (fSpecialSubTriggerName.CompareTo("CDMC7-") == 0){
+                  if (firedTrigClass.Contains("INT7-")) isSelected = 0;
+                } else if (fSpecialSubTriggerName.CompareTo("CDMC1-") == 0){
+                  if (firedTrigClass.Contains("INT1-")) isSelected = 0;
+                } else if (fSpecialSubTriggerName.CompareTo("CDMC8-") == 0){
+                  if (firedTrigClass.Contains("INT8-")) isSelected = 0;
+                }
+                // trigger rejection EGA
+                if (fSpecialSubTriggerName.CompareTo("7EGA") == 0){
+                  if (firedTrigClass.Contains("INT7-")) isSelected = 0;
+                  if (firedTrigClass.Contains("EMC7-")) isSelected = 0;
+                } else if (fSpecialSubTriggerName.CompareTo("8EGA") == 0){
+                  if (firedTrigClass.Contains("INT8-")) isSelected = 0;
+                  if (firedTrigClass.Contains("EMC8-")) isSelected = 0;
+                } else if (fSpecialSubTriggerName.CompareTo("7DGA") == 0){
+                  if (firedTrigClass.Contains("INT7-")) isSelected = 0;
+                  if (firedTrigClass.Contains("EMC7-")) isSelected = 0;
+                } else if (fSpecialSubTriggerName.CompareTo("8DGA") == 0){
+                  if (firedTrigClass.Contains("INT8-")) isSelected = 0;
+                  if (firedTrigClass.Contains("EMC8-")) isSelected = 0;
+                }
+                // trigger rejection L1 triggers
+                if(fSpecialSubTriggerName.CompareTo("7EG1") == 0){
+                  if (firedTrigClass.Contains("INT7-")) isSelected = 0;
+                  if (firedTrigClass.Contains("EMC7-")) isSelected = 0;
+                  if (firedTrigClass.Contains("7EG2"))  isSelected = 0;
+                } else if (fSpecialSubTriggerName.CompareTo("8EG1") == 0){
+                  if (firedTrigClass.Contains("INT8-")) isSelected = 0;
+                  if (firedTrigClass.Contains("EMC8-")) isSelected = 0;
+                  if (firedTrigClass.Contains("8EG2"))  isSelected = 0;
+                } else if (fSpecialSubTriggerName.CompareTo("7EG2") == 0){
+                  if (firedTrigClass.Contains("INT7-")) isSelected = 0;
+                  if (firedTrigClass.Contains("EMC7-")) isSelected = 0;
+                } else if (fSpecialSubTriggerName.CompareTo("8EG2") == 0){
+                  if (firedTrigClass.Contains("INT8-")) isSelected = 0;
+                  if (firedTrigClass.Contains("EMC8-")) isSelected = 0;
+                } else if (fSpecialSubTriggerName.CompareTo("7DG1") == 0){
+                  if (firedTrigClass.Contains("INT7-")) isSelected = 0;
+                  if (firedTrigClass.Contains("DMC7-")) isSelected = 0;
+                  if (firedTrigClass.Contains("7DG2"))  isSelected = 0;
+                } else if (fSpecialSubTriggerName.CompareTo("8DG1") == 0){
+                  if (firedTrigClass.Contains("INT8-")) isSelected = 0;
+                  if (firedTrigClass.Contains("DMC8-")) isSelected = 0;
+                  if (firedTrigClass.Contains("8DG2"))  isSelected = 0;
+                } else if (fSpecialSubTriggerName.CompareTo("7DG2") == 0){
+                  if (firedTrigClass.Contains("INT7-")) isSelected = 0;
+                  if (firedTrigClass.Contains("DMC7-")) isSelected = 0;
+                } else if (fSpecialSubTriggerName.CompareTo("8DG2") == 0){
+                  if (firedTrigClass.Contains("INT7-")) isSelected = 0;
+                  if (firedTrigClass.Contains("DMC8-")) isSelected = 0;
+                }
               }
             }
           }
