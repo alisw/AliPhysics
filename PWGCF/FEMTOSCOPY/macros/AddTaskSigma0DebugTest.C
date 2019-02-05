@@ -24,9 +24,11 @@ AliAnalysisTaskSE *AddTaskSigma0DebugTest(bool isMC = false,
   TString cutnumberEvent = "00000000";
   TString periodNameV0Reader = "";
   Bool_t enableV0findingEffi = kFALSE;
+  Bool_t fillHistos = kTRUE;
   Bool_t runLightOutput = kFALSE;
   if (suffix != "0" && suffix != "999") {
     runLightOutput = kTRUE;
+    fillHistos = kFALSE;
   }
 
   //========= Add V0 Reader to  ANALYSIS manager if not yet existent =====
@@ -137,15 +139,17 @@ AliAnalysisTaskSE *AddTaskSigma0DebugTest(bool isMC = false,
   }
 
   if (suffix == "1") {
-    v0Cuts->SetPileUpRejectionMode(AliSigma0V0Cuts::OneDaughterCombined);
-    antiv0Cuts->SetPileUpRejectionMode(AliSigma0V0Cuts::OneDaughterCombined);
+    v0Cuts->SetV0OnFlyStatus(true);
+    antiv0Cuts->SetV0OnFlyStatus(true);
   } else if (suffix == "2") {
-    v0Cuts->SetLambdaSelection(1.115683 - 0.01, 1.115683 + 0.01);
-    antiv0Cuts->SetLambdaSelection(1.115683 - 0.01, 1.115683 + 0.01);
+    v0Cuts->SetTPCclusterMin(0.f);
+    antiv0Cuts->SetTPCclusterMin(0.f);
+    v0Cuts->SetTPCRatioFindable(0.6f);
+    antiv0Cuts->SetTPCRatioFindable(0.6f);
+  } else if (suffix == "3") {
+    v0Cuts->SetLambdaSelection(1.115683 - 0.008, 1.115683 + 0.008);
+    antiv0Cuts->SetLambdaSelection(1.115683 - 0.008, 1.115683 + 0.008);
   } else if (suffix == "4") {
-    v0Cuts->SetLambdaSelection(1.115683 - 0.01, 1.115683 + 0.01);
-    antiv0Cuts->SetLambdaSelection(1.115683 - 0.01, 1.115683 + 0.01);
-  } else if (suffix == "6") {
     v0Cuts->SetLambdaSelection(1.115683 - 0.01, 1.115683 + 0.01);
     antiv0Cuts->SetLambdaSelection(1.115683 - 0.01, 1.115683 + 0.01);
   }
@@ -170,10 +174,10 @@ AliAnalysisTaskSE *AddTaskSigma0DebugTest(bool isMC = false,
     antiSigmaCuts->SetLightweight(true);
   }
 
-  if (suffix == "3" || suffix == "4") {
+  if (suffix == "5") {
     sigmaCuts->SetSigmaMassCut(0.0015);
     antiSigmaCuts->SetSigmaMassCut(0.0015);
-  } else if (suffix == "5" || suffix == "6") {
+  } else if (suffix == "6") {
     sigmaCuts->SetSigmaMassCut(0.003);
     antiSigmaCuts->SetSigmaMassCut(0.003);
   }
