@@ -51,7 +51,7 @@ AliAnalysisTaskEMCALPhotonIsolation* AddTaskEMCALPhotonIsolation(
                                                                  const Float_t          iWidthSSsmear             = 0.,
                                                                  const Float_t          iMean_SSsmear             = 0.,
                                                                  const Bool_t           iExtraIsoCuts             = kFALSE,
-                                                                 const Bool_t           isQA                      = kFALSE,
+								 const Bool_t		SetListNameOutput 	  = kFALSE, //add the output type to the EmcalList name
                                                                  TString                configBasePath            = "",
                                                                  const Int_t            bWhichToSmear             = 0,
                                                                  const Int_t            minNLM                    = 1,
@@ -115,6 +115,10 @@ AliAnalysisTaskEMCALPhotonIsolation* AddTaskEMCALPhotonIsolation(
   }
   else{
     myContName = Form("Analysis_Neutrals%s",clusInfix.Data());
+  }
+
+  if(SetListNameOutput){
+	  myContName.Append(Form("_output%d",iOutput));
   }
   
   // For the 2012 EGA/L1 analysis, only events with EGA/L1 recalc patches are considered
@@ -226,7 +230,6 @@ AliAnalysisTaskEMCALPhotonIsolation* AddTaskEMCALPhotonIsolation(
   task->SetCTMdeltaPhi(TMdphi);
   task->SetCTMdeltaEtaIso(TMdetaIso);
   task->SetCTMdeltaPhiIso(TMdphiIso);
-  task->SetQA(isQA);
   task->SetIsoMethod(iIsoMethod);
   task->SetEtIsoMethod(iEtIsoMethod);
   task->SetUEMethod(iUEMethod);
