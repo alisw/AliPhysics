@@ -5,6 +5,7 @@
 #include "AliConvEventCuts.h"
 #include "AliEventCuts.h"
 #include "AliFemtoDreamCollConfig.h"
+#include "AliFemtoDreamEventCuts.h"
 #include "AliFemtoDreamPairCleaner.h"
 #include "AliFemtoDreamPartCollection.h"
 #include "AliFemtoDreamTrack.h"
@@ -36,6 +37,7 @@ class AliAnalysisTaskSigma0Femto : public AliAnalysisTaskSE {
   void SetV0Percentile(float v0perc) { fV0PercentileMax = v0perc; }
   void SetTrigger(UInt_t trigger) { fTrigger = trigger; }
   void SetMultiplicityMode(UInt_t trigger) { fMultMode = trigger; }
+  void SetEventCuts(AliFemtoDreamEventCuts *cuts) { fEvtCuts = cuts; }
   void SetProtonCuts(AliFemtoDreamTrackCuts *cuts) {
     fTrackCutsPartProton = cuts;
   }
@@ -73,8 +75,6 @@ class AliAnalysisTaskSigma0Femto : public AliAnalysisTaskSE {
   float ComputeRelk(const TVector3 &Part1Momentum, const int PDGPart1,
                     const TVector3 &Part2Momentum, const int PDGPart2) const;
 
-  AliEventCuts fAliEventCuts;
-
  private:
   AliAnalysisTaskSigma0Femto(const AliAnalysisTaskSigma0Femto &task);
   AliAnalysisTaskSigma0Femto &operator=(const AliAnalysisTaskSigma0Femto &task);
@@ -89,6 +89,8 @@ class AliAnalysisTaskSigma0Femto : public AliAnalysisTaskSE {
   AliSigma0PhotonMotherCuts *fSigmaCuts;      //
   AliSigma0PhotonMotherCuts *fAntiSigmaCuts;  //
 
+  AliFemtoDreamEvent *fEvent;                        //!
+  AliFemtoDreamEventCuts *fEvtCuts;                  //
   AliFemtoDreamTrack *fProtonTrack;                  //!
   AliFemtoDreamTrackCuts *fTrackCutsPartProton;      //
   AliFemtoDreamTrackCuts *fTrackCutsPartAntiProton;  //
@@ -113,16 +115,6 @@ class AliAnalysisTaskSigma0Femto : public AliAnalysisTaskSE {
   TList *fOutputContainer;                                 //!
   TList *fQA;                                              //!
   TList *fOutputFemto;                                     //!
-  TH1F *fHistCutQA;                                        //!
-  TProfile *fHistRunNumber;                                //!
-  TProfile *fHistCutBooking;                               //!
-  TH1F *fHistCentralityProfileBefore;                      //!
-  TH1F *fHistCentralityProfileAfter;                       //!
-  TH1F *fHistCentralityProfileCoarseAfter;                 //!
-  TH1F* fHistMultiplicityRef08;                            //!
-  TH1F *fHistTriggerBefore;                                //!
-  TH1F *fHistTriggerAfter;                                 //!
-  TH1I *fHistMultiplicity;                                 //!
   TH2F *fHistCorrelationPSigmaPLambda[3];                  //!
   TH2F *fHistCorrelationPSigmaPGamma[3];                   //!
   TH2F *fHistCorrelationPLambdaPGamma[3];                  //!
@@ -136,6 +128,6 @@ class AliAnalysisTaskSigma0Femto : public AliAnalysisTaskSE {
   TH1F *fHistDiffPAntiGamma[3];                            //!
   TH1F *fHistDiffPAntiLambda[3];                           //!
 
-  ClassDef(AliAnalysisTaskSigma0Femto, 10)
+  ClassDef(AliAnalysisTaskSigma0Femto, 11)
 };
 #endif

@@ -85,6 +85,10 @@ AliAnalysisTaskSE *AddTaskSigma0DebugTest(bool isMC = false,
   }
 
   //========= Init subtasks and start analyis ============================
+  // Event Cuts
+  AliFemtoDreamEventCuts *evtCuts = AliFemtoDreamEventCuts::StandardCutsRun2();
+  evtCuts->CleanUpMult(false, false, false, true);
+
   // Track Cuts
   AliFemtoDreamTrackCuts *TrackCuts =
       AliFemtoDreamTrackCuts::PrimProtonCuts(isMC, true, false, false);
@@ -340,6 +344,7 @@ AliAnalysisTaskSE *AddTaskSigma0DebugTest(bool isMC = false,
     task->SelectCollisionCandidates(AliVEvent::kMB);
     task->SetMultiplicityMode(AliVEvent::kINT7);
   }
+  task->SetEventCuts(evtCuts);
   task->SetV0ReaderName(V0ReaderName.Data());
   task->SetIsHeavyIon(isHeavyIon);
   task->SetIsMC(isMC);
