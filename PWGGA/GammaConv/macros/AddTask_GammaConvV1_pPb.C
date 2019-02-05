@@ -1097,10 +1097,12 @@ void AddTask_GammaConvV1_pPb(
   if (periodNameV0Reader.Contains("LHC18b9")||periodNameV0Reader.Contains("LHC17g8")){
     TObjString *HeaderPMB = new TObjString("EPOSLHC_0");
     TObjString *HeaderP8J = new TObjString("Pythia8Jets_1");
-    if (doWeightingPart==4) {
+    if (doWeightingPart==4) { // all headers
       HeaderList->Add(HeaderPMB);
       HeaderList->Add(HeaderP8J);
-    } else {
+    } else if (doWeightingPart==5) { // only MB header
+      HeaderList->Add(HeaderPMB);
+    } else { // only JJ header
       HeaderList->Add(HeaderP8J);
     }
   }
