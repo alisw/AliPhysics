@@ -253,7 +253,6 @@ private:
     TGraph * fGeant3FlukaAntiLambda;//!
     TGraph * fGeant3FlukaKMinus;//!
     //! \brief cCuts
-    AliEmcalList *fSetup;//
     AliEmcalList *fOutputHist;//
     TCanvas *cCuts; //
     //! \brief fMCArray
