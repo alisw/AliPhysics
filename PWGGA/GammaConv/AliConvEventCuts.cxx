@@ -5208,12 +5208,12 @@ Float_t AliConvEventCuts::GetWeightForMeson(Int_t index, AliMCEvent *mcEvent, Al
 
   // check if MC production should be weighted. If it is with added particles check that particle is not rejected
   Int_t kCaseGen = 0;
-  if (fPeriodEnum == kLHC13d2   || fPeriodEnum == kLHC13d2b       ||                                            // LHC10h MCs
-      fPeriodEnum == kLHC14a1a  || fPeriodEnum == kLHC14a1b       || fPeriodEnum == kLHC14a1c   ||              // LHC11h MCs
-      fPeriodEnum == kLHC13e7   || fPeriodEnum == kLHC13b2_efix   || fPeriodEnum == kLHC14b2    ||              // LHC13bc MCs
-      fPeriodEnum == kLHC14e2b  ||                                                                              // LHC12[a-i] pass 1 MCs
-      fPeriodEnum == kLHC12f1a  || fPeriodEnum == kLHC12f1b       || fPeriodEnum == kLHC12i3    ||              // LHC11a MCs
-      fPeriodEnum == kLHC16h4   )                                                                               // LHC15o MC
+  if (fPeriodEnum == kLHC13d2   || fPeriodEnum == kLHC13d2b       ||                                                                      // LHC10h MCs
+      fPeriodEnum == kLHC14a1a  || fPeriodEnum == kLHC14a1b       || fPeriodEnum == kLHC14a1c   ||                                        // LHC11h MCs
+      fPeriodEnum == kLHC13e7   || fPeriodEnum == kLHC13b2_efix   || fPeriodEnum == kLHC14b2    ||  fPeriodEnum == kLHC18j5  ||           // LHC13bc MCs
+      fPeriodEnum == kLHC14e2b  ||                                                                                                        // LHC12[a-i] pass 1 MCs
+      fPeriodEnum == kLHC12f1a  || fPeriodEnum == kLHC12f1b       || fPeriodEnum == kLHC12i3    ||                                        // LHC11a MCs
+      fPeriodEnum == kLHC16h4   )                                                                                                         // LHC15o MC
     kCaseGen = 1;  // added particles MC
   if( fPeriodEnum == kLHC16g1 || fPeriodEnum == kLHC16g1a || fPeriodEnum == kLHC16g1b || fPeriodEnum == kLHC16g1c || fPeriodEnum == kLHC16i1a || fPeriodEnum == kLHC16i1b || fPeriodEnum == kLHC16i1c || fPeriodEnum == kLHC16i2a || fPeriodEnum == kLHC16i2b || fPeriodEnum == kLHC16i2c || fPeriodEnum == kLHC16i3a || fPeriodEnum == kLHC16i3b || fPeriodEnum == kLHC16i3c)     // LHC15o MCs
     kCaseGen = 2;  // regular MC
@@ -5369,7 +5369,8 @@ void AliConvEventCuts::GetCorrectEtaShiftFromPeriod(){
       fPeriodEnum == kLHC13b4_fix || fPeriodEnum == kLHC13b4_plus ||  // MC Pythia 6 (Jet-Jet), anchor LHC13b-e
       fPeriodEnum == kLHC13b2_efix ||                                 //MC DPMJET, anchr LHC13b+c
       fPeriodEnum == kLHC13e7 ||                                      //MC HIJING, anchr LHC13b+c
-      fPeriodEnum == kLHC14b2                                         //MC HIJING, anchr LHC13b+c
+      fPeriodEnum == kLHC14b2 ||                                      //MC HIJING, anchr LHC13b+c
+      fPeriodEnum == kLHC18j5                                         //MC HIJING, anchr LHC13b+c
     ){
       printf(" Gamma Conversion Cuts %s :: pPb Run doing Eta Shift of %f \n\n",(GetCutNumber()).Data(),-0.465);
       SetEtaShift(-0.465);
@@ -6141,6 +6142,9 @@ void AliConvEventCuts::SetPeriodEnum (TString periodName){
     fEnergyEnum = kpPb5TeV;
   } else if (periodName.CompareTo("LHC14b2") == 0){
     fPeriodEnum = kLHC14b2;
+    fEnergyEnum = kpPb5TeV;
+  } else if (periodName.CompareTo("LHC18j5") == 0){
+    fPeriodEnum = kLHC18j5;
     fEnergyEnum = kpPb5TeV;
   } else if (periodName.CompareTo("LHC13b4_fix") == 0){
     fPeriodEnum = kLHC13b4_fix;
