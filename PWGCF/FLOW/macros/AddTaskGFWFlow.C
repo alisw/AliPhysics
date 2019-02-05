@@ -23,13 +23,13 @@ AliAnalysisTaskGFWFlow* AddTaskGFWFlow(TString name = "name", Bool_t ProduceWeig
   AliAnalysisDataContainer* cInput0 = mgr->GetCommonInputContainer();
   AliAnalysisDataContainer* cOutput1;
   if(ProduceWeights) 
-    cOutput1 = mgr->CreateContainer("OutputList", TList::Class(), AliAnalysisManager::kOutputContainer, "OutputResults.root");
-  else cOutput1 = mgr->CreateContainer(Form("OutCont%s",subfx.Data()), AliGFWFlowContainer::Class(), AliAnalysisManager::kOutputContainer, Form("OutputResults%s.root",subfx.Data()));
+    cOutput1 = mgr->CreateContainer("OutputList", TList::Class(), AliAnalysisManager::kOutputContainer, mgr->GetCommonFileName());
+  else cOutput1 = mgr->CreateContainer(Form("OutCont%s",subfx.Data()), AliGFWFlowContainer::Class(), AliAnalysisManager::kOutputContainer, mgr->GetCommonFileName());
   // Connecting containers to task
   mgr->ConnectInput(task,0,cInput0); // your task needs input: here we connect the manager to your task
   mgr->ConnectOutput(task,1,cOutput1);
   if(AddQA) {
-    AliAnalysisDataContainer *qaOutput = mgr->CreateContainer(Form("OutContQA%s",subfx.Data()), TList::Class(), AliAnalysisManager::kOutputContainer, Form("QAResults%s.root",subfx.Data()));
+    AliAnalysisDataContainer *qaOutput = mgr->CreateContainer(Form("OutContQA%s",subfx.Data()), TList::Class(), AliAnalysisManager::kOutputContainer, mgr->GetCommonFileName());
     mgr->ConnectOutput(task,2,qaOutput);
   };
   return task;
