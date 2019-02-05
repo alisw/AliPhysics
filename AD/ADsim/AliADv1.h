@@ -62,7 +62,7 @@ public:
 private:
   Bool_t fEnabledPmtShldADA; //!
   Bool_t fEnabledOldADA    ; //!
-public :
+public:
   virtual    void  EnablePmtShieldingADA(const Bool_t flag) { fEnabledPmtShldADA = flag; }
   virtual    void  EnableOldADA         (const Bool_t flag) { fEnabledOldADA     = flag; }
   //
