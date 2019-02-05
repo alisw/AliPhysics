@@ -206,7 +206,7 @@ public:
     void SetupLooseVertexing();
     // 2- Standard Topological Selection QA Sweeps
     void AddTopologicalQAV0(Int_t lRecNumberOfSteps = 100);
-    void AddTopologicalQACascade(Int_t lRecNumberOfSteps = 100);
+    void AddTopologicalQACascade(Int_t lRecNumberOfSteps = 100, TString lSweepOptions="");
     // 3 - Standard analysis configurations + systematics
     void AddStandardV0Configuration(Bool_t lUseFull = kFALSE, Bool_t lDoSweepLooseTight = kFALSE, Int_t lSweepFullNumb = 0);
     void AddStandardV0RadiusSweep();
