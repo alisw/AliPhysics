@@ -176,6 +176,14 @@ AliRDHFCutsDplustoKpipi &AliRDHFCutsDplustoKpipi::operator=(const AliRDHFCutsDpl
 }
 
 //---------------------------------------------------------------------------
+AliRDHFCutsDplustoKpipi::~AliRDHFCutsDplustoKpipi(){
+  //
+  // Destructor
+  //
+  if(fMaxd0MeasMinusExp) delete [] fMaxd0MeasMinusExp;
+  if(fMaxd0) delete [] fMaxd0;
+}
+//---------------------------------------------------------------------------
 void AliRDHFCutsDplustoKpipi::Setd0MeasMinusExpCut(Int_t nPtBins, Float_t *cutval) {
   //
   // store the cuts
