@@ -105,6 +105,7 @@ AliAnalysisTaskV0sInJetsEmcal::AliAnalysisTaskV0sInJetsEmcal():
   fdCutCentLow(0),
   fdCutCentHigh(0),
   fdCutDeltaZMax(0),
+  fiNContribMin(0),
   fdCentrality(0),
   fbUseMultiplicity(0),
   fbUseIonutCut(0),
@@ -394,6 +395,7 @@ AliAnalysisTaskV0sInJetsEmcal::AliAnalysisTaskV0sInJetsEmcal(const char* name):
   fdCutCentLow(0),
   fdCutCentHigh(0),
   fdCutDeltaZMax(0),
+  fiNContribMin(0),
   fdCentrality(0),
   fbUseMultiplicity(0),
   fbUseIonutCut(0),
@@ -1400,7 +1402,7 @@ void AliAnalysisTaskV0sInJetsEmcal::ExecOnce()
   printf("=======================================================\n");
   printf("%s: Configuration summary:\n", ClassName());
   printf("task name: %s\n", GetName());
-  printf("-------------------------------------------------------\n");
+  printf("-------------------------------------------------------\nEvent selection:\n");
   printf("collision system: %s\n", fbIsPbPb ? "Pb+Pb" : "p+p");
   printf("data type: %s\n", fbMCAnalysis ? "MC" : "real");
   if(fbMCAnalysis)
@@ -1412,9 +1414,10 @@ void AliAnalysisTaskV0sInJetsEmcal::ExecOnce()
   }
   if(fdCutVertexZ > 0.) printf("max |z| of the prim vtx [cm]: %g\n", fdCutVertexZ);
   if(fdCutVertexR2 > 0.) printf("max r^2 of the prim vtx [cm^2]: %g\n", fdCutVertexR2);
+  if(fiNContribMin > 0) printf("min number of prim vtx contributors: %d\n", fiNContribMin);
   if(fdCutDeltaZMax > 0.) printf("max |Delta z| between nominal prim vtx and SPD vtx [cm]: %g\n", fdCutDeltaZMax);
   if(fbUseIonutCut) printf("Ionut's cut\n");
-  printf("-------------------------------------------------------\n");
+  printf("-------------------------------------------------------\nV0 selection:\n");
   if(fbTPCRefit) printf("TPC refit for daughter tracks\n");
   if(fbRejectKinks) printf("reject kink-like production vertices of daughter tracks\n");
   if(fbFindableClusters) printf("require positive number of findable clusters\n");
@@ -1437,7 +1440,7 @@ void AliAnalysisTaskV0sInJetsEmcal::ExecOnce()
   if(fdCutNTauLMax > 0.) printf("max proper lifetime, (A)Lambda [tau]: %g\n", fdCutNTauLMax);
   if(fbCutArmPod) printf("Armenteros-Podolanski cut for K0S\n");
   if(fbCutCross) printf("cross-contamination cut\n");
-  printf("-------------------------------------------------------\n");
+  printf("-------------------------------------------------------\nJet analysis:\n");
   printf("analysis of V0s in jets: %s\n", fbJetSelection ? "yes" : "no");
   if(fbJetSelection)
   {
@@ -3451,13 +3454,15 @@ Bool_t AliAnalysisTaskV0sInJetsEmcal::IsSelectedForAnalysis()
     if(fDebug > 0) printf("%s %s::%s: %s\n", GetName(), ClassName(), __func__, "No vertex");
     return kFALSE;
   }
-  Int_t iNContribMin = 1;
-  if(vertex->GetNContributors() < iNContribMin)
+  if(fiNContribMin > 0)
   {
-    if(fDebug > 0) printf("%s %s::%s: %s\n", GetName(), ClassName(), __func__, Form("Not enough contributors, %d", vertex->GetNContributors()));
-    return kFALSE;
+    if(vertex->GetNContributors() < fiNContribMin)
+    {
+      if(fDebug > 0) printf("%s %s::%s: %s\n", GetName(), ClassName(), __func__, Form("Not enough contributors, %d", vertex->GetNContributors()));
+      return kFALSE;
+    }
+    fh1EventCounterCut->Fill(3); // enough contributors
   }
-  fh1EventCounterCut->Fill(3); // enough contributors
   if(fbUseIonutCut)
   {
     if(!fEventCutsStrictAntipileup.AcceptEvent(fAODIn))
