@@ -56,7 +56,7 @@ fHistManager(name)
   SetMakeGeneralHistograms(kTRUE);
 
   // Initializing array in CINT-compatible way
-  EventEMCALTriggerType_t fTriggerTypesValues[kNTriggerTypes] = {kNTr, kEL0, kEG1, kEG2, kEJ1, kEJ2};
+  EventEMCALTriggerType_t fTriggerTypesValues[kNTriggerTypes] = {kMB, kEL0, kEG1, kEG2, kEJ1, kEJ2};
   memcpy (fTriggerTypes,fTriggerTypesValues,sizeof(fTriggerTypes));
 }
 
@@ -94,6 +94,13 @@ void AliEmcalTriggerSimQATask::UserCreateOutputObjects() {
   Int_t nEtaBins = 96;
   Int_t nPhiBins = 208;
 
+  Double_t fMinCol = 0;
+  Double_t fMaxCol = 48;
+  Double_t fMinRow = 0;
+  Double_t fMaxRow = 104;
+  Int_t nCol = 48;
+  Int_t nRow = 104;
+
   Double_t fMaxADCValue = 1024;
   Double_t nADCBins = 512;
 
@@ -125,6 +132,18 @@ void AliEmcalTriggerSimQATask::UserCreateOutputObjects() {
     histname = TString::Format("fHistPatchOnlineADCAmp_Trig_%s",fTriggerNames[i].Data());
     title = histname + ";#it{E}_{patch} (ADC); counts";
     fHistManager.CreateTH1(histname.Data(),title.Data(),nADCBins,0,fMaxADCValue);
+  }
+
+  for (Int_t i = 1; i < kNTriggerTypes; i++) {
+    histname = TString::Format("fHistPatchColRow_Trig_%s",fTriggerNames[i].Data());
+    title = histname + ";Col;Row;counts";
+    fHistManager.CreateTH2(histname.Data(),title.Data(),nCol,fMinCol,fMaxCol,nRow,fMinRow,fMaxRow);
+  }
+  // Patch Geometric Centers
+  for (Int_t i = 1; i < kNTriggerTypes; i++) {
+    histname = TString::Format("fHistPatchEtaPhiGeo_Trig_%s",fTriggerNames[i].Data());
+    title = histname + ";#eta_{patch};#phi_{patch};counts";
+    fHistManager.CreateTH2(histname.Data(),title.Data(),nEtaBins,fMinEta,fMaxEta,nPhiBins,fMinPhi,fMaxPhi);
   }
 
   fOutput->Add(fHistManager.GetListOfHistograms());
@@ -209,31 +228,34 @@ void AliEmcalTriggerSimQATask::DoPatchLoop() {
     if (patch->GetADCAmp() < fMinAmplitude) continue;
     if (patch->IsLevel0()) {
       fEventTriggerBits |= 0x1 << kL0;
-      fHistManager.FillTH1("fHistPatchEnergy_Trig_L0",patch->GetPatchE());
-      fHistManager.FillTH1("fHistPatchOnlineADCAmp_Trig_L0",patch->GetADCAmp());
+      FillPatchHistograms(patch,1);
     }
     if (patch->IsGammaLow()) {
       fEventTriggerBits |= 0x1 << kEG1;
-      fHistManager.FillTH1("fHistPatchEnergy_Trig_EG1",patch->GetPatchE());
-      fHistManager.FillTH1("fHistPatchOnlineADCAmp_Trig_EG1",patch->GetADCAmp());
+      FillPatchHistograms(patch,2);
     }
     if (patch->IsGammaHigh()) {
       fEventTriggerBits |= 0x1 << kEG2;
-      fHistManager.FillTH1("fHistPatchEnergy_Trig_EG2",patch->GetPatchE());
-      fHistManager.FillTH1("fHistPatchOnlineADCAmp_Trig_EG2",patch->GetADCAmp());
+      FillPatchHistograms(patch,3);
     }
     if (patch->IsJetLow()) {
       fEventTriggerBits |= 0x1 << kEJ1;
-      fHistManager.FillTH1("fHistPatchEnergy_Trig_EJ1",patch->GetPatchE());
-      fHistManager.FillTH1("fHistPatchOnlineADCAmp_Trig_EJ1",patch->GetADCAmp());
+      FillPatchHistograms(patch,4);
     }
     if (patch->IsJetHigh()) {
       fEventTriggerBits |= 0x1 << kEJ2;
-      fHistManager.FillTH1("fHistPatchEnergy_Trig_EJ2",patch->GetPatchE());
-      fHistManager.FillTH1("fHistPatchOnlineADCAmp_Trig_EJ2",patch->GetADCAmp());
+      FillPatchHistograms(patch,5);
     }
   }
 }
+
+void AliEmcalTriggerSimQATask::FillPatchHistograms(AliEMCALTriggerPatchInfo * patch, Int_t i) {
+  fHistManager.FillTH1(Form("fHistPatchEnergy_Trig_%s",fTriggerNames[i].Data()),patch->GetPatchE());
+  fHistManager.FillTH1(Form("fHistPatchOnlineADCAmp_Trig_%s",fTriggerNames[i].Data()),patch->GetADCAmp());
+  fHistManager.FillTH2(Form("fHistPatchColRow_Trig_%s",fTriggerNames[i].Data()),patch->GetColStart(),patch->GetRowStart());
+  fHistManager.FillTH2(Form("fHistPatchEtaPhiGeo_Trig_%s",fTriggerNames[i].Data()),patch->GetEtaGeo(),patch->GetPhiGeo());
+}
+
 
 void AliEmcalTriggerSimQATask::DoClusterLoop() {
   TString histname;
@@ -253,7 +275,7 @@ void AliEmcalTriggerSimQATask::DoClusterLoop() {
     for (Int_t j = 0; j < kNTriggerTypes; j++) {
       // Check if this event had this trigger
       if (fTriggerTypes[j] < 0) {
-        if (fEventTriggerBits != 0) continue; // Classify no trigger as mininum bias
+        // This is Minimum Bias, so accept all events
       }
       else if (!(fEventTriggerBits & (0x1 << fTriggerTypes[j]))) {
         continue;
