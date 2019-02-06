@@ -50,7 +50,7 @@ class AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson: public AliAnalysisTaskS
       }
     }
 
-    void SetIsMC(Bool_t isMC){fIsMC=isMC;}
+    void SetIsMC(Int_t isMC){fIsMC=isMC;}
     void SetLightOutput(Bool_t flag){fDoLightOutput = flag;}
     void SetEventCutList(Int_t nCuts, TList *CutArray){
       fnCuts= nCuts;
@@ -348,6 +348,8 @@ class AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson: public AliAnalysisTaskS
     vector<Int_t>                   fVectorDoubleCountTrueConvGammas;                     //!<! vector containing labels of validated photons
     // Event properties
     TH1I**                          fHistoNEvents;                                        //!<! histo for event counting
+    TProfile**                      fProfileJetJetXSection;                               //!<! histo for cross section for jet-jet Monte-Carlo
+    TH1F**                          fHistoJetJetNTrials;                                  //!<! histo for number of trials for jet-jet Monte-Carlo
     TH1I**                          fHistoNGoodESDTracks;                                 //!<! histo number of reconstructed primary tracks
     TProfile**                      fProfileEtaShift;                                     //!<! profile for eta shift bookkeeping
     TH2F**                          fHistoSPDClusterTrackletBackground;                   //!<! array of histos with SPD tracklets vs SPD clusters for background rejection
@@ -362,11 +364,12 @@ class AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson: public AliAnalysisTaskS
     Bool_t                          fDoMesonAnalysis;                                     ///< Flag for switching on meson analysis
     Int_t                           fDoMesonQA;                                           ///< Switching for meson QA 0: no QA 1: small QA 2: big QA
     Bool_t                          fIsFromMBHeader;                                      ///< Flag for particle whether it belongs to accepted header
-    Bool_t                          fIsMC;                                                ///< Flag for MC
+    Int_t                           fIsMC;                                                ///< Flag for MC
     Int_t                           fSelectedHeavyNeutralMeson;                           ///< Flag for running eta prime
     Bool_t                          fDoLightOutput;                                       ///< Flag to turn on light output
     Int_t                           fNDMRecoMode;                                         ///< Flag how neutral pion is reconstructed 0=PCM-PCM, 1=PCM-Calo, 2=Calo-Calo
     Double_t                        fTolerance;                                           ///< tolerance in rad for angle cuts
+    Double_t                        fWeightJetJetMC;                                      //!<! Weight for hte jet-jet Monte-Carlo
 
     TArrayI                         fMCEventPos;                                          //!<! Pos. in MC event pos. leg of the photon (for relabelling) 
     TArrayI                         fMCEventNeg;                                          //!<! Pos. in MC event neg. leg of the photon (for relabelling)
