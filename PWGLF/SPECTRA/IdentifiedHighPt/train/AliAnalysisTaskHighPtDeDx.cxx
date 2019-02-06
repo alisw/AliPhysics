@@ -33,6 +33,7 @@
                  fCentFramework;      // 0 = AliCentrality, 1 = AliMultSelection
   * 23 jan 2019: add more filter bit flags for v0 daughters, and make sure TPCrefit, nCrossedRowsTPC, and findable cuts are always there 
   * 30 jan 2019: setting functions for: SetContributorsVtxCut, SetContributorsVtxSPDCut, SetPileupCut, SetVtxR2Cut, SetCrossedRowsCut, SetCrossedOverFindableCut, and removing the eta cut limit of 0.8 on V0s (but keeping it on tracks & daughter tracks)
+  * 06 feb 2019: implement reject kink daughters option
 
   Remiders:
   * For pp: remove pile up thing
@@ -134,9 +135,10 @@ AliAnalysisTaskHighPtDeDx::AliAnalysisTaskHighPtDeDx():
   fVtxR2Cut(10.0),           
   fCrossedRowsCut(70.0),     
   fCrossedOverFindableCut(0.8),
+  fRejectKinks(kTRUE),
   fSigmaDedxCut(kFALSE),       
   fLowPtFraction(0.01),
-  fMassCut(0.1),//
+  fMassCut(0.1),
   fMinCent(0.0),
   fMaxCent(100.0),
   fMcProcessType(-999),
@@ -201,9 +203,10 @@ AliAnalysisTaskHighPtDeDx::AliAnalysisTaskHighPtDeDx(const char *name):
   fVtxR2Cut(10.0),           
   fCrossedRowsCut(70.0),     
   fCrossedOverFindableCut(0.8),
+  fRejectKinks(kTRUE),
   fSigmaDedxCut(kFALSE),       
   fLowPtFraction(0.01),
-  fMassCut(0.1),//
+  fMassCut(0.1),
   fMinCent(0.0),
   fMaxCent(100.0),
   fMcProcessType(-999),
@@ -1432,18 +1435,29 @@ void AliAnalysisTaskHighPtDeDx::ProduceArrayV0AOD( AliAODEvent *AODevent, Analys
       Printf("ERROR: Could not retrieve one of the daughter track");
       continue;
     }
-
+    
     // Remove like-sign daughters
-    if (pTrack->Charge() == nTrack->Charge()) continue; 
-      
+    if(pTrack->Charge() == nTrack->Charge()) continue; 
+    
     // Make sure charge ordering is ok
-    if (pTrack->Charge() < 0) {
+    if(pTrack->Charge() < 0) {
       AliAODTrack* helpTrack = pTrack;
       pTrack = nTrack;
       nTrack = helpTrack;
     } 
         
+    //reject kink daughters //06 Feb 2019:
+    AliAODVertex* prodVtxDaughterNeg = (AliAODVertex*)(nTrack->GetProdVertex());
+    Char_t cTypeVtxProdNeg = prodVtxDaughterNeg->GetType(); 
+    AliAODVertex* prodVtxDaughterPos = (AliAODVertex*)(pTrack->GetProdVertex());
+    Char_t cTypeVtxProdPos = prodVtxDaughterPos->GetType(); 
+    
+    if(fRejectKinks){
+      if(cTypeVtxProdNeg == AliAODVertex::kKink) continue;
+      if(cTypeVtxProdPos == AliAODVertex::kKink) continue;
+    }
 
+    
     //#### see info about filters at track level in this task ####
 
     //#### check positive tracks ####
@@ -1525,7 +1539,6 @@ void AliAnalysisTaskHighPtDeDx::ProduceArrayV0AOD( AliAODEvent *AODevent, Analys
     // }
 
 
-  
     
     Double_t lV0Radius         = aodV0->RadiusV0();
     Float_t alpha              = aodV0->AlphaV0();
