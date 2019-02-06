@@ -32,7 +32,8 @@ AliFemtoDreamZVtxMultContainer::AliFemtoDreamZVtxMultContainer(
       fWhichPairs(conf->GetWhichPairs()),
       fDeltaEtaMax(conf->GetDeltaEtaMax()),
       fDeltaPhiMax(conf->GetDeltaPhiMax()),
-      fDeltaPhiEtaMax(fDeltaPhiMax*fDeltaPhiMax+fDeltaEtaMax*fDeltaEtaMax),
+      fDeltaPhiEtaMax(
+          fDeltaPhiMax * fDeltaPhiMax + fDeltaEtaMax * fDeltaEtaMax),
       fDoDeltaEtaDeltaPhiCut(conf->GetDoDeltaEtaDeltaPhiCut()) {
 }
 
@@ -91,6 +92,13 @@ void AliFemtoDreamZVtxMultContainer::PairParticlesSE(
         }
         while (itPart2 != itSpec2->end()) {
           AliFemtoDreamBasePart part2 = *itPart2;
+          // Delta eta - Delta phi* cut
+          if (fDoDeltaEtaDeltaPhiCut) {
+            if (!RejectClosePairs(part1, part2)) {
+              ++itPart2;
+              continue;
+            }
+          }
           RelativeK = RelativePairMomentum(itPart1->GetMomentum(), *itPDGPar1,
                                            itPart2->GetMomentum(), *itPDGPar2);
           if (fillHists && ResultsHist->GetEtaPhiPlots()) {
@@ -113,21 +121,6 @@ void AliFemtoDreamZVtxMultContainer::PairParticlesSE(
             }
           }
 
-          // Delta eta - Delta phi* cut
-          if (fDoDeltaEtaDeltaPhiCut) {
-            if (!RejectClosePairs(part1,part2)) {
-              ++itPart2;
-              continue;
-            }
-//            if (ComputeDeltaEta(part1, part2) < fDeltaEtaMax) {
-//              ++itPart2;
-//              continue;
-//            }
-//            if (ComputeDeltaPhi(part1, part2) < fDeltaPhiMax) {
-//              ++itPart2;
-//              continue;
-//            }
-          }
           ResultsHist->FillSameEventDist(HistCounter, RelativeK);
           if (ResultsHist->GetDoMultBinning()) {
             ResultsHist->FillSameEventMultDist(HistCounter, iMult + 1,
@@ -192,10 +185,16 @@ void AliFemtoDreamZVtxMultContainer::PairParticlesME(
           for (auto itPart2 = ParticlesOfEvent.begin();
               itPart2 != ParticlesOfEvent.end(); ++itPart2) {
             AliFemtoDreamBasePart part2 = *itPart2;
+            // Delta eta - Delta phi* cut
+            if (fDoDeltaEtaDeltaPhiCut) {
+              if (!RejectClosePairs(part1, part2)) {
+                ++itPart2;
+                continue;
+              }
+            }
             RelativeK = RelativePairMomentum(itPart1->GetMomentum(), *itPDGPar1,
                                              itPart2->GetMomentum(),
                                              *itPDGPar2);
-
             if (fillHists && ResultsHist->GetEtaPhiPlots()) {
               DeltaEtaDeltaPhi(HistCounter, part1, part2, false, ResultsHist,
                                RelativeK);
@@ -213,16 +212,6 @@ void AliFemtoDreamZVtxMultContainer::PairParticlesME(
                                             deta, mT);
               } else {
                 ResultsHist->FilldPhidEtaME(HistCounter, dphi, deta, mT);
-              }
-            }
-
-            // Delta eta - Delta phi* cut
-            if (fDoDeltaEtaDeltaPhiCut) {
-              if (ComputeDeltaEta(part1, part2) < fDeltaEtaMax) {
-                continue;
-              }
-              if (ComputeDeltaPhi(part1, part2) < fDeltaPhiMax) {
-                continue;
               }
             }
 
