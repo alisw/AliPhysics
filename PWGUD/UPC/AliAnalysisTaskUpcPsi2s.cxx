@@ -920,10 +920,10 @@ void AliAnalysisTaskUpcPsi2s::RunAODtree()
 	fTrigger[13]  = trigger.Contains("CCUP29-U-SPD2-CENTNOTRD");//*0VBA *0VBC *0UBA *0UBC 0STG
 	fTrigger[14]  = trigger.Contains("CCUP29-B-SPD2-CENTNOTRD");//*0VBA *0VBC *0UBA *0UBC 0STG
 	fTrigger[15]  = trigger.Contains("CCUP29-B-NOPF-CENTNOTRD");//*0VBA *0VBC *0UBA *0UBC 0STG
-	fTrigger[14]  = trigger.Contains("CCUP30-B-NOPF-CENTNOTRD");//*0VBA *0VBC *0UBA *0UBC 0STG 0OM2
-	fTrigger[15]  = trigger.Contains("CCUP30-B-SPD2-CENTNOTRD");//*0VBA *0VBC *0UBA *0UBC 0STG 0OM2
-	fTrigger[16]  = trigger.Contains("CCUP31-B-NOPF-CENTNOTRD");// *0VBA *0VBC *0UBA *0UBC 0STG 0OMU
-	fTrigger[17]  = trigger.Contains("CCUP31-B-SPD2-CENTNOTRD");// *0VBA *0VBC *0UBA *0UBC 0STG 0OMU
+	fTrigger[16]  = trigger.Contains("CCUP30-B-NOPF-CENTNOTRD");//*0VBA *0VBC *0UBA *0UBC 0STG 0OM2
+	fTrigger[17]  = trigger.Contains("CCUP30-B-SPD2-CENTNOTRD");//*0VBA *0VBC *0UBA *0UBC 0STG 0OM2
+	fTrigger[18]  = trigger.Contains("CCUP31-B-NOPF-CENTNOTRD");// *0VBA *0VBC *0UBA *0UBC 0STG 0OMU
+	fTrigger[19]  = trigger.Contains("CCUP31-B-SPD2-CENTNOTRD");// *0VBA *0VBC *0UBA *0UBC 0STG 0OMU
 	}
   if(fTracking == 1){ 
   	fTrigger[0] = trigger.Contains("CCUP14-B"); 
