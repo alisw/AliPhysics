@@ -6659,6 +6659,8 @@ AliCaloPhotonCuts::MCSet AliCaloPhotonCuts::FindEnumForMCSet(TString namePeriod)
 
   // pp 7 TeV LHC11 anch MC pass 1
   else if(  namePeriod.CompareTo("LHC14b7")==0)        return k14b7;
+  else if(  namePeriod.CompareTo("LHC14k1a")==0)        return k14k1ab;
+  else if(  namePeriod.CompareTo("LHC14k1b")==0)        return k14k1ab;
   // pp 2.76 TeV LHC11a anch MC's pass 4
   else if(  namePeriod.CompareTo("LHC12f1a")==0)        return k12f1a;
   else if(  namePeriod.CompareTo("LHC12f1b")==0)        return k12f1b;
