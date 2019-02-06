@@ -96,7 +96,7 @@ public:
   void SetCutArmPod(Bool_t val = kTRUE) {fbCutArmPod = val;}
   void SetCutCross(Bool_t val = kTRUE) {fbCutCross = val;}
 
-  Bool_t IsSelectedForJets(AliAODEvent* fAOD, Double_t dVtxZCut, Double_t dVtxR2Cut, Double_t dCentCutLo, Double_t dCentCutUp, Double_t dDeltaZMax = -1);
+  Bool_t IsSelectedForAnalysis();
   Int_t GetCentralityBinIndex(Double_t centrality);
   Int_t GetCentralityBinEdge(Int_t index);
   TString GetCentBinLabel(Int_t index);
@@ -475,7 +475,7 @@ private:
   AliAnalysisTaskV0sInJetsEmcal(const AliAnalysisTaskV0sInJetsEmcal&); // not implemented
   AliAnalysisTaskV0sInJetsEmcal& operator=(const AliAnalysisTaskV0sInJetsEmcal&); // not implemented
 
-  ClassDef(AliAnalysisTaskV0sInJetsEmcal, 21) // task for analysis of V0s (K0S, (anti-)Lambda) in charged jets
+  ClassDef(AliAnalysisTaskV0sInJetsEmcal, 22) // task for analysis of V0s (K0S, (anti-)Lambda) in charged jets
 };
 
 #endif

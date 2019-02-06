@@ -1550,7 +1550,7 @@ Bool_t AliAnalysisTaskV0sInJetsEmcal::FillHistograms()
   fh1EventCounterCut->Fill(1);
 
   // Event selection
-  if(!IsSelectedForJets(fAODIn, fdCutVertexZ, fdCutVertexR2, fdCutCentLow, fdCutCentHigh, fdCutDeltaZMax))
+  if(!IsSelectedForAnalysis())
   {
     if(fDebug > 0) printf("%s %s::%s: %s\n", GetName(), ClassName(), __func__, "Event rejected");
     return kFALSE;
@@ -3433,19 +3433,19 @@ Double_t AliAnalysisTaskV0sInJetsEmcal::GetD(const AliVParticle* part1, const Al
   return dR;
 }
 
-Bool_t AliAnalysisTaskV0sInJetsEmcal::IsSelectedForJets(AliAODEvent* fAOD, Double_t dVtxZCut, Double_t dVtxR2Cut, Double_t dCentCutLo, Double_t dCentCutUp, Double_t dDeltaZMax)
+Bool_t AliAnalysisTaskV0sInJetsEmcal::IsSelectedForAnalysis()
 {
 // event selection
   if(!fbIsPbPb)
   {
-    if(fAOD->IsPileupFromSPD())
+    if(fAODIn->IsPileupFromSPD())
     {
       if(fDebug > 0) printf("%s %s::%s: %s\n", GetName(), ClassName(), __func__, "SPD pile-up");
       return kFALSE;
     }
     fh1EventCounterCut->Fill(2); // not pile-up from SPD
   }
-  AliAODVertex* vertex = fAOD->GetPrimaryVertex();
+  AliAODVertex* vertex = fAODIn->GetPrimaryVertex();
   if(!vertex)
   {
     if(fDebug > 0) printf("%s %s::%s: %s\n", GetName(), ClassName(), __func__, "No vertex");
@@ -3460,7 +3460,7 @@ Bool_t AliAnalysisTaskV0sInJetsEmcal::IsSelectedForJets(AliAODEvent* fAOD, Doubl
   fh1EventCounterCut->Fill(3); // enough contributors
   if(fbUseIonutCut)
   {
-    if(!fEventCutsStrictAntipileup.AcceptEvent(fAOD))
+    if(!fEventCutsStrictAntipileup.AcceptEvent(fAODIn))
     {
       if(fDebug > 0) printf("%s %s::%s: %s\n", GetName(), ClassName(), __func__, "Ionut's cut");
       return kFALSE;
@@ -3468,37 +3468,37 @@ Bool_t AliAnalysisTaskV0sInJetsEmcal::IsSelectedForJets(AliAODEvent* fAOD, Doubl
     fh1EventCounterCut->Fill(4); // Ionut's cut
   }
   Double_t zVertex = vertex->GetZ();
-  if(dVtxZCut > 0.)
+  if(fdCutVertexZ > 0.)
   {
-    if(TMath::Abs(zVertex) > dVtxZCut)
+    if(TMath::Abs(zVertex) > fdCutVertexZ)
     {
       if(fDebug > 0) printf("%s %s::%s: %s\n", GetName(), ClassName(), __func__, Form("Cut on z, %g", zVertex));
       return kFALSE;
     }
     fh1EventCounterCut->Fill(5); // PV z coordinate within range
   }
-  if(dDeltaZMax > 0.) // cut on |delta z| between SPD vertex and nominal primary vertex
+  if(fdCutDeltaZMax > 0.) // cut on |delta z| between SPD vertex and nominal primary vertex
   {
-    AliAODVertex* vertexSPD = fAOD->GetPrimaryVertexSPD();
+    AliAODVertex* vertexSPD = fAODIn->GetPrimaryVertexSPD();
     if(!vertexSPD)
     {
       if(fDebug > 0) printf("%s %s::%s: %s\n", GetName(), ClassName(), __func__, "No SPD vertex");
       return kFALSE;
     }
     Double_t zVertexSPD = vertexSPD->GetZ();
-    if(TMath::Abs(zVertex - zVertexSPD) > dDeltaZMax)
+    if(TMath::Abs(zVertex - zVertexSPD) > fdCutDeltaZMax)
     {
       if(fDebug > 0) printf("%s %s::%s: %s\n", GetName(), ClassName(), __func__, Form("Cut on Delta z = %g - %g = %g", zVertex, zVertexSPD, zVertex - zVertexSPD));
       return kFALSE;
     }
     fh1EventCounterCut->Fill(6); // delta z within range
   }
-  if(dVtxR2Cut > 0.)
+  if(fdCutVertexR2 > 0.)
   {
     Double_t xVertex = vertex->GetX();
     Double_t yVertex = vertex->GetY();
     Double_t radiusSq = yVertex * yVertex + xVertex * xVertex;
-    if(radiusSq > dVtxR2Cut)
+    if(radiusSq > fdCutVertexR2)
     {
       if(fDebug > 0) printf("%s %s::%s: %s\n", GetName(), ClassName(), __func__, Form("Cut on r, %g", radiusSq));
       return kFALSE;
@@ -3510,7 +3510,7 @@ Bool_t AliAnalysisTaskV0sInJetsEmcal::IsSelectedForJets(AliAODEvent* fAOD, Doubl
     if(fbUseMultiplicity) // from https://twiki.cern.ch/twiki/bin/viewauth/ALICE/CentralityCodeSnippets
     {
       AliMultSelection* MultSelection = 0x0;
-      MultSelection = (AliMultSelection*)fAOD->FindListObject("MultSelection");
+      MultSelection = (AliMultSelection*)fAODIn->FindListObject("MultSelection");
       if(!MultSelection)
       {
         AliWarning("AliMultSelection object not found!");
@@ -3519,18 +3519,18 @@ Bool_t AliAnalysisTaskV0sInJetsEmcal::IsSelectedForJets(AliAODEvent* fAOD, Doubl
       fdCentrality = MultSelection->GetMultiplicityPercentile("V0M");
     }
     else
-      fdCentrality = ((AliVAODHeader*)fAOD->GetHeader())->GetCentralityP()->GetCentralityPercentile("V0M");
+      fdCentrality = ((AliVAODHeader*)fAODIn->GetHeader())->GetCentralityP()->GetCentralityPercentile("V0M");
     if(fdCentrality < 0)
     {
       if(fDebug > 0) printf("%s %s::%s: %s\n", GetName(), ClassName(), __func__, "Negative centrality");
       return kFALSE;
     }
-    if((dCentCutUp < 0) || (dCentCutLo < 0) || (dCentCutUp > 100) || (dCentCutLo > 100) || (dCentCutLo > dCentCutUp))
+    if((fdCutCentHigh < 0) || (fdCutCentLow < 0) || (fdCutCentHigh > 100) || (fdCutCentLow > 100) || (fdCutCentLow > fdCutCentHigh))
     {
       if(fDebug > 0) printf("%s %s::%s: %s\n", GetName(), ClassName(), __func__, "Wrong centrality limits");
       return kFALSE;
     }
-    if((fdCentrality < dCentCutLo) || (fdCentrality > dCentCutUp))
+    if((fdCentrality < fdCutCentLow) || (fdCentrality > fdCutCentHigh))
     {
       if(fDebug > 0) printf("%s %s::%s: %s\n", GetName(), ClassName(), __func__, Form("Centrality cut, %g", fdCentrality));
       return kFALSE;
