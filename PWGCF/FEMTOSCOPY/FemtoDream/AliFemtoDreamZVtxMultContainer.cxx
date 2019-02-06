@@ -9,6 +9,8 @@
 #include "AliFemtoDreamZVtxMultContainer.h"
 #include "TLorentzVector.h"
 #include "TDatabasePDG.h"
+#include "TVector2.h"
+
 ClassImp(AliFemtoDreamPartContainer)
 static const float piHi = TMath::Pi();
 AliFemtoDreamZVtxMultContainer::AliFemtoDreamZVtxMultContainer()
@@ -17,6 +19,7 @@ AliFemtoDreamZVtxMultContainer::AliFemtoDreamZVtxMultContainer()
       fWhichPairs(),
       fDeltaEtaMax(0.f),
       fDeltaPhiMax(0.f),
+      fDeltaPhiEtaMax(0.f),
       fDoDeltaEtaDeltaPhiCut(false) {
 
 }
@@ -29,6 +32,7 @@ AliFemtoDreamZVtxMultContainer::AliFemtoDreamZVtxMultContainer(
       fWhichPairs(conf->GetWhichPairs()),
       fDeltaEtaMax(conf->GetDeltaEtaMax()),
       fDeltaPhiMax(conf->GetDeltaPhiMax()),
+      fDeltaPhiEtaMax(fDeltaPhiMax*fDeltaPhiMax+fDeltaEtaMax*fDeltaEtaMax),
       fDoDeltaEtaDeltaPhiCut(conf->GetDoDeltaEtaDeltaPhiCut()) {
 }
 
@@ -111,14 +115,18 @@ void AliFemtoDreamZVtxMultContainer::PairParticlesSE(
 
           // Delta eta - Delta phi* cut
           if (fDoDeltaEtaDeltaPhiCut) {
-            if (ComputeDeltaEta(part1, part2) < fDeltaEtaMax) {
+            if (!RejectClosePairs(part1,part2)) {
               ++itPart2;
               continue;
             }
-            if (ComputeDeltaPhi(part1, part2) < fDeltaPhiMax) {
-              ++itPart2;
-              continue;
-            }
+//            if (ComputeDeltaEta(part1, part2) < fDeltaEtaMax) {
+//              ++itPart2;
+//              continue;
+//            }
+//            if (ComputeDeltaPhi(part1, part2) < fDeltaPhiMax) {
+//              ++itPart2;
+//              continue;
+//            }
           }
           ResultsHist->FillSameEventDist(HistCounter, RelativeK);
           if (ResultsHist->GetDoMultBinning()) {
@@ -357,6 +365,7 @@ void AliFemtoDreamZVtxMultContainer::DeltaEtaDeltaPhi(
   }
   unsigned int nDaug2 = (unsigned int) DoThisPair % 10;
   std::vector<float> eta1 = part1.GetEta();
+  std::vector<float> eta2 = part2.GetEta();
   for (unsigned int iDaug1 = 0; iDaug1 < nDaug1; ++iDaug1) {
     std::vector<float> PhiAtRad1 = part1.GetPhiAtRaidius().at(iDaug1);
     float etaPar1;
@@ -365,7 +374,6 @@ void AliFemtoDreamZVtxMultContainer::DeltaEtaDeltaPhi(
     } else {
       etaPar1 = eta1.at(iDaug1 + 1);
     }
-    std::vector<float> eta2 = part2.GetEta();
     for (unsigned int iDaug2 = 0; iDaug2 < part2.GetPhiAtRaidius().size();
         ++iDaug2) {
       std::vector<float> phiAtRad2 = part2.GetPhiAtRaidius().at(iDaug2);
@@ -422,11 +430,50 @@ float AliFemtoDreamZVtxMultContainer::ComputeDeltaPhi(
 
 bool AliFemtoDreamZVtxMultContainer::RejectClosePairs(
     AliFemtoDreamBasePart& part1, AliFemtoDreamBasePart& part2) {
+  bool outBool = true;
   //Method calculates the average separation between two tracks
   //at different radii within the TPC and rejects pairs which a
   //too low separation
-  int nDaug1 = part1.GetPhiAtRaidius().size();
-  int nDaug2 = part2.GetPhiAtRaidius().size();
+  unsigned int nDaug1 = part1.GetPhiAtRaidius().size();
+  unsigned int nDaug2 = part2.GetPhiAtRaidius().size();
   // if nDaug == 1 => Single Track, else decay
-
+  std::vector<float> eta1 = part1.GetEta();
+  std::vector<float> eta2 = part2.GetEta();
+  for (unsigned int iDaug1 = 0; iDaug1 < nDaug1 && outBool; ++iDaug1) {
+    std::vector<float> PhiAtRad1 = part1.GetPhiAtRaidius().at(iDaug1);
+    float etaPar1;
+    if (nDaug1 == 1) {
+      etaPar1 = eta1.at(0);
+    } else {
+      etaPar1 = eta1.at(iDaug1 + 1);
+    }
+    for (unsigned int iDaug2 = 0;
+        iDaug2 < part2.GetPhiAtRaidius().size() && outBool; ++iDaug2) {
+      std::vector<float> phiAtRad2 = part2.GetPhiAtRaidius().at(iDaug2);
+      float etaPar2;
+      if (nDaug2 == 1) {
+        etaPar2 = eta2.at(0);
+      } else {
+        etaPar2 = eta2.at(iDaug2 + 1);
+      }
+      float deta = etaPar1 - etaPar2;
+      const int size =
+          (PhiAtRad1.size() > phiAtRad2.size()) ?
+              phiAtRad2.size() : PhiAtRad1.size();
+      for (int iRad = 0; iRad < size; ++iRad) {
+        float dphi = PhiAtRad1.at(iRad) - phiAtRad2.at(iRad);
+        if (dphi > piHi) {
+          dphi += -piHi * 2;
+        } else if (dphi < -piHi) {
+          dphi += piHi * 2;
+        }
+        dphi = TVector2::Phi_mpi_pi(dphi);
+        if (dphi * dphi + deta * deta < fDeltaPhiEtaMax * fDeltaPhiEtaMax) {
+          outBool = false;
+          break;
+        }
+      }
+    }
+  }
+  return outBool;
 }

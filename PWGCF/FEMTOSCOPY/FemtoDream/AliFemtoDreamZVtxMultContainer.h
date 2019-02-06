@@ -52,6 +52,7 @@ class AliFemtoDreamZVtxMultContainer {
   std::vector<unsigned int> fWhichPairs;
   float fDeltaEtaMax;
   float fDeltaPhiMax;
+  float fDeltaPhiEtaMax;
   bool fDoDeltaEtaDeltaPhiCut;
 
 ClassDef(AliFemtoDreamZVtxMultContainer, 4)
