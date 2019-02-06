@@ -23,8 +23,9 @@ AliAnalysisTaskSE* AddTaskFemtoDream(
     int FilterBit = 128,  //19
     bool InvMassPairs = false,  //20
     bool DeltaEtaDeltaPhiCut = false,  //21
-    int SphericityRange = 0, bool excludeUnwantedPairs = false,
-    bool stricterPileUpRej = false)  //22
+    int SphericityRange = 0, // 22
+    bool excludeUnwantedPairs = false, //23
+    bool stricterPileUpRej = false)  //24
     {
   // 1    2     3     4     5     6     7    8    9      10   11     12   13    14    15    16   17
   //true,true,false,false,false,false,false,true,false,false,true,false,true,false,false,false,true
