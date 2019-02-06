@@ -121,6 +121,7 @@ AliAnalysisTaskNucleiYield::AliAnalysisTaskNucleiYield(TString taskname)
    ,fPtShapeMaximum{0.f}
    ,fITSelectronRejectionSigma{-1.}
    ,fBeamRapidity{0.f}
+   ,fEstimator{0}
    ,fEnableFlattening{false}
    ,fSaveTrees{false}
    ,fRecNucleus{}
@@ -320,7 +321,7 @@ void AliAnalysisTaskNucleiYield::UserExec(Option_t *){
   bool EventAccepted = fEventCut.AcceptEvent(ev);
 
   /// The centrality selection in PbPb uses the percentile determined with V0.
-  float centrality = fEventCut.GetCentrality();
+  float centrality = fEventCut.GetCentrality(fEstimator);
 
   std::array <AliEventCuts::NormMask,4> norm_masks {
     AliEventCuts::kAnyEvent,
