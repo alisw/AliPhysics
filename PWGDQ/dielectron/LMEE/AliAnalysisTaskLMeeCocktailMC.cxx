@@ -379,7 +379,7 @@ void AliAnalysisTaskLMeeCocktailMC::UserCreateOutputObjects(){
       // file is copied from alien path to tmp directory in AddTask
       // -> need to obtain ROOT file name only
       TObjArray* Strings = fResolDataSetName.Tokenize("/");
-      fFileName = Strings->At(Strings->GetEntriesFast()-1)->GetName();
+      fFileName = Form("resolutionFiles/%s",Strings->At(Strings->GetEntriesFast()-1)->GetName());
       AliInfo(Form("Use file = %s (copied from %s)",fFileName.Data(),fResolDataSetName.Data()));
     }
     else{
