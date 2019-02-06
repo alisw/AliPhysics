@@ -718,14 +718,14 @@ void AliAnalysisTaskV0sInJetsEmcal::UserCreateOutputObjects()
   TString categEvent[iNCategEvent] = {
     "coll. candid.",
     "AOD OK",
-    "no SPD pile-up",
-    "PV contrib.",
-    "not TPC PV",
+    "pp SPD pile-up",
+    "PV contributors",
+    "Ionut's cut",
     "|z| PV",
     "|#Deltaz| SPD PV",
     "r PV",
-    "cent.", //2
-    "with V0",
+    "centrality", //2
+    "with V^{0}",
     "with jets",
     "jet selection"
   };
@@ -1390,7 +1390,7 @@ void AliAnalysisTaskV0sInJetsEmcal::ExecOnce()
     }
   }
 
-  //Event Cuts with strong anti-pilep cuts
+  // Event cuts with strong anti-pile-up cuts
   if(fbUseIonutCut)
   {
     fEventCutsStrictAntipileup.fUseStrongVarCorrelationCut = true;
@@ -3451,32 +3451,32 @@ Bool_t AliAnalysisTaskV0sInJetsEmcal::IsSelectedForJets(AliAODEvent* fAOD, Doubl
     if(fDebug > 0) printf("%s %s::%s: %s\n", GetName(), ClassName(), __func__, "No vertex");
     return kFALSE;
   }
-  Int_t iNContribMin = 3;
+  Int_t iNContribMin = 1;
   if(vertex->GetNContributors() < iNContribMin)
   {
     if(fDebug > 0) printf("%s %s::%s: %s\n", GetName(), ClassName(), __func__, Form("Not enough contributors, %d", vertex->GetNContributors()));
     return kFALSE;
   }
-  if(fbUseIonutCut && !fEventCutsStrictAntipileup.AcceptEvent(fAOD))
-  {
-    if(fDebug > 0) printf("%s %s::%s: %s\n", GetName(), ClassName(), __func__, "Ionut's cut");
-    return kFALSE;
-  }
   fh1EventCounterCut->Fill(3); // enough contributors
-  TString vtxTitle(vertex->GetTitle());
-  if(vtxTitle.Contains("TPCVertex"))
+  if(fbUseIonutCut)
   {
-    if(fDebug > 0) printf("%s %s::%s: %s\n", GetName(), ClassName(), __func__, "TPC vertex");
-    return kFALSE;
+    if(!fEventCutsStrictAntipileup.AcceptEvent(fAOD))
+    {
+      if(fDebug > 0) printf("%s %s::%s: %s\n", GetName(), ClassName(), __func__, "Ionut's cut");
+      return kFALSE;
+    }
+    fh1EventCounterCut->Fill(4); // Ionut's cut
   }
-  fh1EventCounterCut->Fill(4); // not TPC vertex only
   Double_t zVertex = vertex->GetZ();
-  if(TMath::Abs(zVertex) > dVtxZCut)
+  if(dVtxZCut > 0.)
   {
-    if(fDebug > 0) printf("%s %s::%s: %s\n", GetName(), ClassName(), __func__, Form("Cut on z, %g", zVertex));
-    return kFALSE;
+    if(TMath::Abs(zVertex) > dVtxZCut)
+    {
+      if(fDebug > 0) printf("%s %s::%s: %s\n", GetName(), ClassName(), __func__, Form("Cut on z, %g", zVertex));
+      return kFALSE;
+    }
+    fh1EventCounterCut->Fill(5); // PV z coordinate within range
   }
-  fh1EventCounterCut->Fill(5); // PV z coordinate within range
   if(dDeltaZMax > 0.) // cut on |delta z| between SPD vertex and nominal primary vertex
   {
     AliAODVertex* vertexSPD = fAOD->GetPrimaryVertexSPD();
@@ -3493,15 +3493,18 @@ Bool_t AliAnalysisTaskV0sInJetsEmcal::IsSelectedForJets(AliAODEvent* fAOD, Doubl
     }
     fh1EventCounterCut->Fill(6); // delta z within range
   }
-  Double_t xVertex = vertex->GetX();
-  Double_t yVertex = vertex->GetY();
-  Double_t radiusSq = yVertex * yVertex + xVertex * xVertex;
-  if(radiusSq > dVtxR2Cut)
+  if(dVtxR2Cut > 0.)
   {
-    if(fDebug > 0) printf("%s %s::%s: %s\n", GetName(), ClassName(), __func__, Form("Cut on r, %g", radiusSq));
-    return kFALSE;
+    Double_t xVertex = vertex->GetX();
+    Double_t yVertex = vertex->GetY();
+    Double_t radiusSq = yVertex * yVertex + xVertex * xVertex;
+    if(radiusSq > dVtxR2Cut)
+    {
+      if(fDebug > 0) printf("%s %s::%s: %s\n", GetName(), ClassName(), __func__, Form("Cut on r, %g", radiusSq));
+      return kFALSE;
+    }
+    fh1EventCounterCut->Fill(7); // radius within range
   }
-  fh1EventCounterCut->Fill(7); // radius within range
   if(fbIsPbPb)
   {
     if(fbUseMultiplicity) // from https://twiki.cern.ch/twiki/bin/viewauth/ALICE/CentralityCodeSnippets
