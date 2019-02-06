@@ -381,10 +381,10 @@ void AliFemtoDreamZVtxMultContainer::DeltaEtaDeltaPhi(
               phiAtRad2.size() : PhiAtRad1.size();
       for (int iRad = 0; iRad < size; ++iRad) {
         float dphi = PhiAtRad1.at(iRad) - phiAtRad2.at(iRad);
-        if (dphi > piHi ) {
-          dphi+=-piHi*2;
+        if (dphi > piHi) {
+          dphi += -piHi * 2;
         } else if (dphi < -piHi) {
-          dphi+=piHi*2;
+          dphi += piHi * 2;
         }
         if (SEorME) {
           ResultsHist->FillEtaPhiAtRadiiSE(Hist, 3 * iDaug1 + iDaug2, iRad,
@@ -418,4 +418,15 @@ float AliFemtoDreamZVtxMultContainer::ComputeDeltaPhi(
       dphi = currentdphi;
   }
   return dphi;
+}
+
+bool AliFemtoDreamZVtxMultContainer::RejectClosePairs(
+    AliFemtoDreamBasePart& part1, AliFemtoDreamBasePart& part2) {
+  //Method calculates the average separation between two tracks
+  //at different radii within the TPC and rejects pairs which a
+  //too low separation
+  int nDaug1 = part1.GetPhiAtRaidius().size();
+  int nDaug2 = part2.GetPhiAtRaidius().size();
+  // if nDaug == 1 => Single Track, else decay
+
 }
