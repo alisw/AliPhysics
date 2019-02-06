@@ -51,15 +51,19 @@ ClassImp(AliAnalysisTaskNanoAODFilter)
 //________________________________________________________________________
 AliAnalysisTaskNanoAODFilter::AliAnalysisTaskNanoAODFilter() // All data members should be initialised here
 :AliAnalysisTaskSE(),
+  fMCMode(0),
   fTrkrep(0),
   fVarList(""),
   fVarListHead(""),
+  fVarListHeader_fTC(""),
   fEvtCuts(0),
   fTrkCuts(0),
   fSetter(0),
   fSaveCutsFlag(0),
-  fSaveAODZDC(0),
-  fSaveVzero(0)
+  fSaveAODZDC(kFALSE),
+  fSaveVzero(kFALSE),
+  fInputArrayName(""),
+  fOutputArrayName("")
 {
   // Dummy constructor ALWAYS needed for I/O.
 }
@@ -67,15 +71,19 @@ AliAnalysisTaskNanoAODFilter::AliAnalysisTaskNanoAODFilter() // All data members
 //________________________________________________________________________
 AliAnalysisTaskNanoAODFilter::AliAnalysisTaskNanoAODFilter(const char *name, Bool_t saveCutsFlag) // All data members should be initialised here
   :AliAnalysisTaskSE(name),
+   fMCMode(0),
    fTrkrep(0),
    fVarList(""),
    fVarListHead(""),
+   fVarListHeader_fTC(""),
    fEvtCuts(0),
    fTrkCuts(0),
    fSetter(0),
    fSaveCutsFlag(saveCutsFlag),
-   fSaveAODZDC(0),
-   fSaveVzero(0)
+   fSaveAODZDC(kFALSE),
+   fSaveVzero(kFALSE),
+   fInputArrayName(""),
+   fOutputArrayName("")
 
 {
   // Constructor
@@ -120,21 +128,24 @@ void AliAnalysisTaskNanoAODFilter::AddFilteredAOD(const char* aodfilename, const
   
 
   AliNanoAODReplicator * rep = new AliNanoAODReplicator("NanoAODReplicator",
-							      "remove non interesting tracks, "
-							      "writes special tracks array tracks",
-							      fVarList,
-                                  fVarListHead,
-							      fTrkCuts,
-							      fMCMode);
+							"remove non interesting tracks, "
+							"writes special tracks array tracks",
+							fVarList,
+							fVarListHead,
+							fTrkCuts,
+							fMCMode);
 
      
   cout<<"rep: "<<rep<<endl;
   rep->SetCustomSetter(fSetter);
   if (fSaveVzero) rep->SetVzero(1);
   if (fSaveAODZDC) rep->SetAODZDC(1);
-    
+  if (fVarListHeader_fTC) rep->SetVarListHeaderStringVariable(fVarListHeader_fTC);
+  if (!fInputArrayName.IsNull()) rep->SetInputArrayName(fInputArrayName);
+  if (!fOutputArrayName.IsNull()) rep->SetOutputArrayName(fOutputArrayName);
+
   std::cout << "SETTER: " << fSetter << " " << rep->GetCustomSetter() << std::endl;
-  
+
   ext->DropUnspecifiedBranches(); // all branches not part of a FilterBranch call (below) will be dropped
       
   ext->FilterBranch("tracks",rep);

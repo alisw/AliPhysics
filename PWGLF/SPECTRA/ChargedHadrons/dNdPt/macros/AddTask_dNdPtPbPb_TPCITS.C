@@ -32,7 +32,7 @@ void AddTask_dNdPtPbPb_TPCITS(Int_t cutMode =222 , char *controlString ="default
 
   // Create standard esd track cuts
   gROOT->LoadMacro("$ALICE_PHYSICS/PWGLF/SPECTRA/ChargedHadrons/dNdPt/macros/CreatedNdPtTrackCuts.C");
-  AliESDtrackCuts* esdTrackCuts = CreatedNdPtTrackCuts(cutMode);
+  AliESDtrackCuts* esdTrackCuts = CreatedNdPtTrackCuts(cutMode,stControlString);
   if (!esdTrackCuts) { printf("ERROR: esdTrackCuts could not be created\n"); return; }
   esdTrackCuts->SetHistogramsOn(kTRUE);
 
@@ -52,36 +52,33 @@ void AddTask_dNdPtPbPb_TPCITS(Int_t cutMode =222 , char *controlString ="default
   fdNdPtAnalysisPbPb->SetAcceptanceCuts(accCuts);
   fdNdPtAnalysisPbPb->SetTrackCuts(esdTrackCuts);
   fdNdPtAnalysisPbPb->SetAnalysisMode(AlidNdPtHelper::kTPCITS);
-  if(stControlString.Contains("V0Mminus05")) {fdNdPtAnalysisPbPb->SetCentralityEstimator("V0Mminus05");}
-  else if(stControlString.Contains("V0Mplus05")) {fdNdPtAnalysisPbPb->SetCentralityEstimator("V0Mplus05");}
-  else if(stControlString.Contains("CL1")) {fdNdPtAnalysisPbPb->SetCentralityEstimator("CL1");}
-  else if(stControlString.Contains("CL0")) {fdNdPtAnalysisPbPb->SetCentralityEstimator("CL0");}
-  else {fdNdPtAnalysisPbPb->SetCentralityEstimator("V0M");}
-  if(stEventTrigger.Contains("kINT7")) fdNdPtAnalysisPbPb->SetTriggerMask(AliVEvent::kINT7);
-  else if(stEventTrigger.Contains("kMB")) fdNdPtAnalysisPbPb->SetTriggerMask(AliVEvent::kMB);
-
-  if(stControlString.Contains("TOFBunchCrossing")){fdNdPtAnalysisPbPb->SetUseTOFBunchCrossing(kTRUE);}
-  if(stControlString.Contains("TOFExpectedTimeDiff")){fdNdPtAnalysisPbPb->SetUseTOFExpectedTimeDiff(kTRUE);}
-
+  if(stControlString.Contains("V0Mminus05"))           {fdNdPtAnalysisPbPb->SetCentralityEstimator("V0Mminus05");}
+  else if(stControlString.Contains("V0Mplus05"))       {fdNdPtAnalysisPbPb->SetCentralityEstimator("V0Mplus05");}
+  else if(stControlString.Contains("CL1"))             {fdNdPtAnalysisPbPb->SetCentralityEstimator("CL1");}
+  else if(stControlString.Contains("CL0"))             {fdNdPtAnalysisPbPb->SetCentralityEstimator("CL0");}
+  else                                                 {fdNdPtAnalysisPbPb->SetCentralityEstimator("V0M");}
+  if(stEventTrigger.Contains("kINT7"))                 {fdNdPtAnalysisPbPb->SetTriggerMask(AliVEvent::kINT7);}
+  else if(stEventTrigger.Contains("kMB"))              {fdNdPtAnalysisPbPb->SetTriggerMask(AliVEvent::kMB);}
+  if(stControlString.Contains("TOFBunchCrossing"))     {fdNdPtAnalysisPbPb->SetUseTOFBunchCrossing(kTRUE);}
+  if(stControlString.Contains("TOFExpectedTimeDiff"))  {fdNdPtAnalysisPbPb->SetUseTOFExpectedTimeDiff(kTRUE);}
   if(stControlString.Contains("SPDClusterVsTracklets")){fdNdPtAnalysisPbPb->SetUseSPDClusterVsTrackletRejection(kTRUE);}
-
   // SetParticleMode
-  if(stControlString.Contains("Pion")){fdNdPtAnalysisPbPb->SetParticleMode(AlidNdPtHelper::kMCPion);}
-  else if (stControlString.Contains("Proton")){fdNdPtAnalysisPbPb->SetParticleMode(AlidNdPtHelper::kMCProton);}
-  else if (stControlString.Contains("Kaon")){fdNdPtAnalysisPbPb->SetParticleMode(AlidNdPtHelper::kMCKaon);}
-  else if (stControlString.Contains("RemainingRest")){fdNdPtAnalysisPbPb->SetParticleMode(AlidNdPtHelper::kMCRemainingRest);}
-  else if (stControlString.Contains("Rest")){fdNdPtAnalysisPbPb->SetParticleMode(AlidNdPtHelper::kMCRest);}
-  else if (stControlString.Contains("Lambda")){fdNdPtAnalysisPbPb->SetParticleMode(AlidNdPtHelper::kMCLambda);}
-  else if (stControlString.Contains("SigmaPlus")){fdNdPtAnalysisPbPb->SetParticleMode(AlidNdPtHelper::kMCSigmaPlus);}
-  else if (stControlString.Contains("SigmaMinus")){fdNdPtAnalysisPbPb->SetParticleMode(AlidNdPtHelper::kMCSigmaMinus);}
-  else if (stControlString.Contains("XiMinus")){fdNdPtAnalysisPbPb->SetParticleMode(AlidNdPtHelper::kMCXiMinus);}
-  else if (stControlString.Contains("OmegaMinus")){fdNdPtAnalysisPbPb->SetParticleMode(AlidNdPtHelper::kMCOmegaMinus);}
-  else if (stControlString.Contains("Plus")){fdNdPtAnalysisPbPb->SetParticleMode(AlidNdPtHelper::kPlus);}
-  else if (stControlString.Contains("Minus")){fdNdPtAnalysisPbPb->SetParticleMode(AlidNdPtHelper::kMinus);}
-  else if (stControlString.Contains("Electron")){fdNdPtAnalysisPbPb->SetParticleMode(AlidNdPtHelper::kMCElectron);}
-  else if (stControlString.Contains("Muon")){fdNdPtAnalysisPbPb->SetParticleMode(AlidNdPtHelper::kMCMuon);}
-  else if (stControlString.Contains("InclWoSigma")) {fdNdPtAnalysisPbPb->SetParticleMode(AlidNdPtHelper::kInclWoSimga);}
-  else{fdNdPtAnalysisPbPb->SetParticleMode(AlidNdPtHelper::kAllPart);}
+  if(stControlString.Contains("Pion"))                 {fdNdPtAnalysisPbPb->SetParticleMode(AlidNdPtHelper::kMCPion);}
+  else if (stControlString.Contains("Proton"))         {fdNdPtAnalysisPbPb->SetParticleMode(AlidNdPtHelper::kMCProton);}
+  else if (stControlString.Contains("Kaon"))           {fdNdPtAnalysisPbPb->SetParticleMode(AlidNdPtHelper::kMCKaon);}
+  else if (stControlString.Contains("RemainingRest"))  {fdNdPtAnalysisPbPb->SetParticleMode(AlidNdPtHelper::kMCRemainingRest);}
+  else if (stControlString.Contains("Rest"))           {fdNdPtAnalysisPbPb->SetParticleMode(AlidNdPtHelper::kMCRest);}
+  else if (stControlString.Contains("Lambda"))         {fdNdPtAnalysisPbPb->SetParticleMode(AlidNdPtHelper::kMCLambda);}
+  else if (stControlString.Contains("SigmaPlus"))      {fdNdPtAnalysisPbPb->SetParticleMode(AlidNdPtHelper::kMCSigmaPlus);}
+  else if (stControlString.Contains("SigmaMinus"))     {fdNdPtAnalysisPbPb->SetParticleMode(AlidNdPtHelper::kMCSigmaMinus);}
+  else if (stControlString.Contains("XiMinus"))        {fdNdPtAnalysisPbPb->SetParticleMode(AlidNdPtHelper::kMCXiMinus);}
+  else if (stControlString.Contains("OmegaMinus"))     {fdNdPtAnalysisPbPb->SetParticleMode(AlidNdPtHelper::kMCOmegaMinus);}
+  else if (stControlString.Contains("Plus"))           {fdNdPtAnalysisPbPb->SetParticleMode(AlidNdPtHelper::kPlus);}
+  else if (stControlString.Contains("Minus"))          {fdNdPtAnalysisPbPb->SetParticleMode(AlidNdPtHelper::kMinus);}
+  else if (stControlString.Contains("Electron"))       {fdNdPtAnalysisPbPb->SetParticleMode(AlidNdPtHelper::kMCElectron);}
+  else if (stControlString.Contains("Muon"))           {fdNdPtAnalysisPbPb->SetParticleMode(AlidNdPtHelper::kMCMuon);}
+  else if (stControlString.Contains("InclWoSigma"))    {fdNdPtAnalysisPbPb->SetParticleMode(AlidNdPtHelper::kInclWoSimga);}
+  else                                                 {fdNdPtAnalysisPbPb->SetParticleMode(AlidNdPtHelper::kAllPart);}
 
 
   // Change binning
@@ -95,6 +92,17 @@ void AddTask_dNdPtPbPb_TPCITS(Int_t cutMode =222 , char *controlString ="default
   if(stControlString.Contains("FineCentBins")){
     const Int_t centNbins = 19;
     Double_t binsCent [centNbins+1] = {0,1,2,3,4,5,6,7,8,9,10,20,30,40,50,60,70,80,90,100};
+    fdNdPtAnalysisPbPb->SetBinsCentrality(centNbins, binsCent);
+  }else if(stControlString.Contains("ExtremeCentBins")){
+    const Int_t centNbins = 190;
+    Double_t binsCent [centNbins+1];
+    for (Int_t ii = 0; ii<100; ii++){   binsCent[ii]= ii*0.1; }
+    for (Int_t ii = 10; ii<=100; ii++){ binsCent[90+ii]= ii; }
+    fdNdPtAnalysisPbPb->SetBinsCentrality(centNbins, binsCent);
+  }else if(stControlString.Contains("HalfPercentBins")){ 
+    const Int_t centNbins = 190;
+    Double_t binsCent [centNbins+1];
+    for(Int_t ii = 0; ii<=centNbins; ii++){binsCent[ii]=ii*0.5;}
     fdNdPtAnalysisPbPb->SetBinsCentrality(centNbins, binsCent);
   }
 

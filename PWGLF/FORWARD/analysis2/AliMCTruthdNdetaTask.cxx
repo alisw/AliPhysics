@@ -179,7 +179,7 @@ AliMCTruthdNdetaTask::CentralityBin::ProcessEvent(const AliAODForwardMult*
 }
 
 //________________________________________________________________________
-void
+bool
 AliMCTruthdNdetaTask::CentralityBin::End(TList*      sums, 
 					 TList*      results,
 					 UShort_t    scheme,
@@ -203,10 +203,12 @@ AliMCTruthdNdetaTask::CentralityBin::End(TList*      sums,
 	       GetMarkerStyle(kStar)));
 #endif
 
-  AliBasedNdetaTask::CentralityBin::End(sums, results, scheme, trigEff, 
-					trigEff0, rootProj, corrEmpty,
-					triggerMask, marker, color, mclist, 
-					truthlist);
+  if (!AliBasedNdetaTask::CentralityBin::End(sums, results, scheme, trigEff, 
+					     trigEff0, rootProj, corrEmpty,
+					     triggerMask,
+					     marker, color, mclist, 
+					     truthlist))
+    return false;
 
   fSumTruth     = static_cast<TH2D*>(fSums->FindObject("truth"));
   
@@ -232,6 +234,7 @@ AliMCTruthdNdetaTask::CentralityBin::End(TList*      sums,
   TH1* dndeta          =                       GetResult("");
   if (dndeta)    
     dndeta->SetTitle("Monte-Carlo truth (selected)");
+  return true;
 }
 
 //________________________________________________________________________

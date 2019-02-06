@@ -36,6 +36,7 @@ class TArrayI ;
 class AliVCaloCells;
 class AliHeader; 
 class AliGenEventHeader; 
+class AliGenPythiaEventHeader; 
 class AliAODEvent;
 class AliMCEvent;
 class AliMixedEvent;
@@ -52,6 +53,7 @@ class AliVCluster;
 #include "AliFiducialCut.h"
 class AliCalorimeterUtils;
 #include "AliAnaWeights.h"
+#include "AliMCAnalysisUtils.h"
 
 // Jets
 class AliAODJetEventBackground;
@@ -102,7 +104,7 @@ public:
   // Delta AODs
   
   virtual TList * GetAODBranchList()                 const { return fAODBranchList         ; }
-  void            SetDeltaAODFileName(TString name )       { fDeltaAODFileName = name      ; }
+  void            SetDeltaAODFileName(TString name)        { fDeltaAODFileName = name      ; }
   TString         GetDeltaAODFileName()              const { return fDeltaAODFileName      ; }
   void            SwitchOnWriteDeltaAOD()                  { fWriteOutputDeltaAOD = kTRUE  ; }
   void            SwitchOffWriteDeltaAOD()                 { fWriteOutputDeltaAOD = kFALSE ; }
@@ -258,6 +260,11 @@ public:
   void             SwitchOnClusterELinearityCorrection()   { fCorrectELinearity = kTRUE    ; }
   void             SwitchOffClusterELinearityCorrection()  { fCorrectELinearity = kFALSE   ; }
 
+  void             SwitchOnClusterEScalePerSMCorrection()  { fScaleEPerSM = kTRUE          ; }
+  void             SwitchOffClusterEScalePerSMCorrection() { fScaleEPerSM = kFALSE         ; }
+  void             SetScaleFactorPerSM(Int_t ism, Float_t factor)          
+                                                           { if ( ism < 22 && ism >= 0 ) fScaleFactorPerSM[ism] = factor ; }
+   
   Bool_t           IsEmbeddedClusterSelectionOn()    const { return fSelectEmbeddedClusters   ; }
   void             SwitchOnEmbeddedClustersSelection()     { fSelectEmbeddedClusters = kTRUE  ; }
   void             SwitchOffEmbeddedClustersSelection()    { fSelectEmbeddedClusters = kFALSE ; }
@@ -289,9 +296,12 @@ public:
   Int_t            GetV0Signal(Int_t i)              const { return fV0ADC[i]               ; }
   Int_t            GetV0Multiplicity(Int_t i)        const { return fV0Mul[i]               ; }
   
-  void             SetEMCALClusterListName(TString &name)  { fEMCALClustersListName = name  ; }
+  void             SetEMCALClusterListName(TString name)   { fEMCALClustersListName = name  ; }
   TString          GetEMCALClusterListName()         const { return fEMCALClustersListName  ; }
 
+  void             SetEMCALCellsListName(TString name)     { fEMCALCellsListName = name     ; }
+  TString          GetEMCALCellsListName()           const { return fEMCALCellsListName     ; }
+  
   // Arrays with clusters/track/cells access method
   
   virtual TObjArray*     GetCTSTracks()              const { return fCTSTracks              ; }
@@ -325,7 +335,7 @@ public:
   Bool_t           IsLEDEventRemoved()               const { return fRemoveLEDEvents         ; }   
   Bool_t           RejectLEDEvents();
   
-  void             SetFiredTriggerClassName(TString name ) { fFiredTriggerClassName = name   ; }
+  void             SetFiredTriggerClassName(TString name)  { fFiredTriggerClassName = name   ; }
   TString          GetFiredTriggerClassName()        const { return fFiredTriggerClassName   ; }
   TString          GetFiredTriggerClasses()          const { return GetInputEvent()->GetFiredTriggerClasses() ; }
   
@@ -442,6 +452,21 @@ public:
   void             SwitchOffSelectEventTimeStamp()         { fTimeStampEventSelect = kFALSE  ; }
   
   Bool_t           IsSelectEventTimeStampOn()              { return  fTimeStampEventSelect   ; }
+
+  // Time Stamp CTP corrected
+    
+  Double_t         GetTimeStampEventCTPBCCorrMin()   const { return fTimeStampEventCTPBCCorrMin ; }
+  Double_t         GetTimeStampEventCTPBCCorrMax()   const { return fTimeStampEventCTPBCCorrMax ; }
+  
+  void             SetTimeStampEventCTPBCCorrRange(Double_t a, Double_t b) { 
+                                                             fTimeStampEventCTPBCCorrMin = a    ;
+                                                             fTimeStampEventCTPBCCorrMax = b    ; } // seconds
+  
+  void             SwitchOnExcludeEventTimeCTPBCCorrStamp() { fTimeStampEventCTPBCCorrExclude = kTRUE   ; }
+  void             SwitchOffExcludeEventTimeCTPBCCorrStamp(){ fTimeStampEventCTPBCCorrExclude = kFALSE  ; }
+  
+  Bool_t           IsExcludeEventTimeStampCTPBCCorrOn()     { return  fTimeStampEventCTPBCCorrExclude ; }
+
   
   // Event tagging as pile-up
   
@@ -629,15 +654,21 @@ public:
   
   Float_t               RadToDeg(Float_t rad)        const { rad *= TMath::RadToDeg(); return rad ; }
 
-  
+  virtual AliMCAnalysisUtils * GetMCAnalysisUtils()        { return           fMCUtils ; } 
+  virtual void                 SetMCAnalysisUtils(AliMCAnalysisUtils * mcutils) { 
+                                                             if (  fMCUtils ) delete fMCUtils; 
+                                                             fMCUtils = mcutils ; }
+
   //------------------------------------------------
   // MC analysis specific methods
   //-------------------------------------------------
   
   // Kinematics and galice.root available
   
-  virtual AliHeader*         GetHeader()             const ;
-  virtual AliGenEventHeader* GetGenEventHeader()     const { return 0x0                    ; }
+  virtual AliHeader*         GetHeader()            const ;
+  virtual AliGenEventHeader* GetGenEventHeader()    const { return fGenEventHeader       ; }
+  virtual AliGenPythiaEventHeader* GetGenPythiaEventHeader() 
+                                                    const { return fGenPythiaEventHeader ; }
   // See implementation in AOD and ESD readers
   
   // Filtered kinematics in AOD
@@ -661,13 +692,13 @@ public:
   
   // Select generated events, depending on comparison of pT hard and jets
     
-  virtual Bool_t   ComparePtHardAndJetPt() ;
+  virtual Bool_t   ComparePtHardAndJetPt(Int_t process, TString processName) ;
   virtual Bool_t   IsPtHardAndJetPtComparisonSet()       const { return  fComparePtHardAndJetPt   ; }
   virtual void     SetPtHardAndJetPtComparison(Bool_t compare) { fComparePtHardAndJetPt = compare ; }	
   virtual Float_t  GetPtHardAndJetFactor()               const { return  fPtHardAndJetPtFactor    ; }
   virtual void     SetPtHardAndJetPtFactor(Float_t factor)     { fPtHardAndJetPtFactor = factor   ; }		
   
-  virtual Bool_t   ComparePtHardAndClusterPt() ;
+  virtual Bool_t   ComparePtHardAndClusterPt(Int_t process, TString processName) ;
   virtual Bool_t   IsPtHardAndClusterPtComparisonSet()       const { return  fComparePtHardAndClusterPt   ; }
   virtual void     SetPtHardAndClusterPtComparison(Bool_t compare) { fComparePtHardAndClusterPt = compare ; }	
   virtual Float_t  GetPtHardAndClusterFactor()               const { return  fPtHardAndClusterPtFactor    ; }
@@ -681,9 +712,9 @@ public:
   virtual Int_t    GetNumberOfMCGeneratorsToAccept()         const { return fNMCGenerToAccept ; } 
   
   virtual void     SetNameOfMCGeneratorsToAccept(Int_t ig, TString name) 
-  { if ( ig < 5 || ig >= 0 ) fMCGenerToAccept[ig] = name ; }  
+  { if ( ig < 5 && ig >= 0 ) fMCGenerToAccept[ig] = name ; }  
   virtual void     SetIndexOfMCGeneratorsToAccept(Int_t ig, Int_t index) 
-  { if ( ig < 5 || ig >= 0 ) fMCGenerIndexToAccept[ig] = index ; }  
+  { if ( ig < 5 && ig >= 0 ) fMCGenerIndexToAccept[ig] = index ; }  
   virtual TString GetNameOfMCGeneratorsToAccept(Int_t ig)   const { return fMCGenerToAccept[ig] ; }
   virtual Int_t   GetIndexOfMCGeneratorsToAccept(Int_t ig)  const { return fMCGenerIndexToAccept[ig] ; }
   
@@ -693,6 +724,8 @@ public:
 
   virtual void     SetNameOfMCEventHederGeneratorToAccept(TString name) { fMCGenerEventHeaderToAccept = name ; }
   virtual TString  GetNameOfMCEventHederGeneratorToAccept()       const { return fMCGenerEventHeaderToAccept ; }
+  
+  
   
   // MC reader methods, declared there to allow compilation, they are only used in the MC reader
   
@@ -783,7 +816,7 @@ public:
   
   /// Temporal array with EMCAL CaloClusters.
   TObjArray      * fEMCALClusters ;                //-> 
-  
+
   /// Temporal array with DCAL CaloClusters, not needed in the normal case, use just EMCal array with DCal limits.
   TObjArray      * fDCALClusters ;                 //-> 
   
@@ -806,6 +839,9 @@ public:
   Bool_t           fRecalculateClusters;           ///<  Correct clusters, recalculate them if recalibration parameters is given.
   Bool_t           fCorrectELinearity;             ///<  Correct cluster linearity, always on.
   Bool_t           fSelectEmbeddedClusters;        ///<  Use only simulated clusters that come from embedding.
+  
+  Bool_t           fScaleEPerSM ;                  ///<  Scale cluster energy by a constant factor, depending on SM 
+  Float_t          fScaleFactorPerSM[22];          ///<  Scale factor depending on SM number to be applied to cluster energy
   
   Bool_t           fSmearShowerShape;              ///<  Smear shower shape (use in MC).
   Float_t          fSmearShowerShapeWidth;         ///<  Smear shower shape landau function "width" (use in MC).
@@ -849,6 +885,7 @@ public:
   TString          fTaskName;                      ///<  Name of task that executes the analysis.
 	
   AliCalorimeterUtils * fCaloUtils ;               ///<  Pointer to AliCalorimeterUtils.
+  AliMCAnalysisUtils  * fMCUtils;                  ///<  MonteCarlo Analysis utils. Initialized in SetMC()
 
   AliAnaWeights  * fWeightUtils ;                  ///<  Pointer to AliAnaWeights.
   Double_t         fEventWeight ;                  ///<  Weight assigned to the event when filling histograms.
@@ -868,6 +905,7 @@ public:
   Int_t            fV0Mul[2]    ;                  ///<  Integrated V0 Multiplicity.
 
   TString          fEMCALClustersListName;         ///<  Alternative list of clusters produced elsewhere and not from InputEvent.
+  TString          fEMCALCellsListName;            ///<  Alternative list of cells produced elsewhere and not from InputEvent.
   
   //  Event selection
   
@@ -907,6 +945,10 @@ public:
   Float_t          fTimeStampEventFracMax;         ///<  Maximum value of time stamp fraction event.
   Double_t         fTimeStampRunMin;               ///<  Minimum value of time stamp in run.
   Double_t         fTimeStampRunMax;               ///<  Maximum value of time stamp in run.
+  
+  Bool_t           fTimeStampEventCTPBCCorrExclude; ///<  Activate event selection within a range of data taking time CTP corrected. ESD only.
+  Double_t         fTimeStampEventCTPBCCorrMin;    ///<  Minimum value of time stamp corrected by CTP in run.
+  Double_t         fTimeStampEventCTPBCCorrMax;    ///<  Maximum value of time stamp corrected by CTP in run.
   
   ///< Parameters to pass to method IsPileupFromSPD:
   ///< Int_t minContributors, Double_t minZdist, Double_t nSigmaZdist,Double_t nSigmaDiamXY,Double_t nSigmaDiamZ
@@ -950,6 +992,7 @@ public:
   
   TList *          fOutputContainer;               //!<! Output container with cut control histograms.
   TH2F  *          fhEMCALClusterEtaPhi;           //!<! Control histogram on EMCAL clusters acceptance, before fiducial cuts
+  TH2F  *          fhEMCALClusterEtaPhiFidCut;     //!<! Control histogram on EMCAL clusters acceptance, after fiducial cuts
   TH2F  *          fhEMCALClusterTimeE;            //!<! Control histogram on EMCAL timing
   TH1F  *          fhEMCALClusterCutsE[8];         //!<! Control histogram on the different EMCal cluster selection cuts, E
   TH1F  *          fhPHOSClusterCutsE [7];         //!<! Control histogram on the different PHOS cluster selection cuts, E
@@ -967,6 +1010,10 @@ public:
 
   TString          fMCGenerEventHeaderToAccept;    ///<  Accept events that contain at least this event header name
   
+  
+  AliGenEventHeader       * fGenEventHeader;       //!<! Event header
+  AliGenPythiaEventHeader * fGenPythiaEventHeader; //!<! Event header casted to pythia
+  
   /// Copy constructor not implemented.
   AliCaloTrackReader(              const AliCaloTrackReader & r) ; 
   
@@ -974,7 +1021,7 @@ public:
   AliCaloTrackReader & operator = (const AliCaloTrackReader & r) ; 
   
   /// \cond CLASSIMP
-  ClassDef(AliCaloTrackReader,77) ;
+  ClassDef(AliCaloTrackReader,81) ;
   /// \endcond
 
 } ;

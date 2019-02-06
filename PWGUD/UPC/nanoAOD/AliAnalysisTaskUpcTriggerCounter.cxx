@@ -18,7 +18,9 @@
 #include <string.h>
 
 // root headers
+#include "TList.h"
 #include "TH1I.h"
+#include "TH2I.h"
 #include "TString.h"
 
 // aliroot headers
@@ -31,6 +33,8 @@
 
 ClassImp(AliAnalysisTaskUpcTriggerCounter);
 
+TString gTriggerName[ntrig] = {"CCUP4-B","CCUP2-B","CCUP7-B","CINT1-B","CTEST58-B", "CTEST59-B", "CTEST60-B", "CTEST61-B", "CCUP8-B", "CCUP9-B", "CCUP10-B", "CCUP11-B", "CCUP12-B"};
+
 using std::cout;
 using std::endl;
 
@@ -39,7 +43,7 @@ using std::endl;
 
 //_____________________________________________________________________________
 AliAnalysisTaskUpcTriggerCounter::AliAnalysisTaskUpcTriggerCounter() 
-  : AliAnalysisTaskSE(),fHistTriggerCounter(0)
+  : AliAnalysisTaskSE(),fListHist(0),fHistTriggerCounter(0),fHistTriggerCounterIR1(0),fHistTriggerCounterIR2(0)
 
 {
 
@@ -50,11 +54,11 @@ AliAnalysisTaskUpcTriggerCounter::AliAnalysisTaskUpcTriggerCounter()
 
 //_____________________________________________________________________________
 AliAnalysisTaskUpcTriggerCounter::AliAnalysisTaskUpcTriggerCounter(const char *name) 
-  : AliAnalysisTaskSE(name),fHistTriggerCounter(0)
+  : AliAnalysisTaskSE(name),fListHist(0),fHistTriggerCounter(0),fHistTriggerCounterIR1(0),fHistTriggerCounterIR2(0)
 
 {
 
-  DefineOutput(1, TH1I::Class());
+  DefineOutput(1, TList::Class());
 
 }//AliAnalysisTaskUpcTriggerCounter
 
@@ -64,9 +68,9 @@ AliAnalysisTaskUpcTriggerCounter::AliAnalysisTaskUpcTriggerCounter(const char *n
 AliAnalysisTaskUpcTriggerCounter::~AliAnalysisTaskUpcTriggerCounter() 
 {
   // Destructor
-  if(fHistTriggerCounter){
-     delete fHistTriggerCounter;
-     fHistTriggerCounter = 0x0;
+  if(fListHist){
+     delete fListHist;
+     fListHist = 0x0;
   }
 
 }//~AliAnalysisTaskUpcTriggerCounter
@@ -76,11 +80,24 @@ AliAnalysisTaskUpcTriggerCounter::~AliAnalysisTaskUpcTriggerCounter()
 void AliAnalysisTaskUpcTriggerCounter::UserCreateOutputObjects()
 {
   
-  fHistTriggerCounter = new TH1I("fHistTriggerCounter","Number of recored UPC triggers",13,0.5,13.5);
-  TString gTriggerName[13] = {"CCUP4-B","CCUP2-B","CCUP7-B","CINT1-B","CTEST58-B", "CTEST59-B", "CTEST60-B", "CTEST61-B", "CCUP8-B", "CCUP9-B", "CCUP10-B", "CCUP11-B", "CCUP12-B"};
-  for (Int_t i = 0; i<13; i++) fHistTriggerCounter->GetXaxis()->SetBinLabel(i+1,gTriggerName[i].Data());
+  fListHist = new TList();
+  fListHist ->SetOwner();
   
-  PostData(1, fHistTriggerCounter);
+  fHistTriggerCounter = new TH1I("fHistTriggerCounter","Number of recored UPC triggers",ntrig,0,ntrig);
+  fHistTriggerCounterIR1 = new TH2I("fHistTriggerCounterIR1","Number of recored UPC triggers",ntrig,0,ntrig,91,-0.5,90.5);
+  fHistTriggerCounterIR2 = new TH2I("fHistTriggerCounterIR2","Number of recored UPC triggers",ntrig,0,ntrig,91,-0.5,90.5);
+
+  for (Int_t i = 0; i<ntrig; i++){ 
+  	fHistTriggerCounter->GetXaxis()->SetBinLabel(i+1,gTriggerName[i].Data());
+	fHistTriggerCounterIR1->GetXaxis()->SetBinLabel(i+1,gTriggerName[i].Data());
+	fHistTriggerCounterIR2->GetXaxis()->SetBinLabel(i+1,gTriggerName[i].Data());
+	}
+  
+  fListHist->Add(fHistTriggerCounter); 
+  fListHist->Add(fHistTriggerCounterIR1);
+  fListHist->Add(fHistTriggerCounterIR2);
+  
+  PostData(1, fListHist);
 
 }//UserCreateOutputObjects
 
@@ -92,24 +109,40 @@ void AliAnalysisTaskUpcTriggerCounter::UserExec(Option_t *)
   
   AliAODEvent *aod = (AliAODEvent*) InputEvent();
   if(!aod) return;
+  
+  TBits fIR1Map = aod->GetHeader()->GetIRInt1InteractionMap();
+  TBits fIR2Map = aod->GetHeader()->GetIRInt2InteractionMap();
+  Int_t fClosestIR1 = 100;
+  Int_t fClosestIR2 = 100;
+  for(Int_t item=-1; item>=-90; item--) {
+    Int_t bin = 90+item;
+    Bool_t isFired = fIR1Map.TestBitNumber(bin);
+    if(isFired) {
+      fClosestIR1 = TMath::Abs(item);
+      break;
+    }
+  if(fClosestIR1 == 100)fClosestIR1 = 0;
+  }
+  for(Int_t item=-1; item>=-90; item--) {
+    Int_t bin = 90+item;
+    Bool_t isFired = fIR2Map.TestBitNumber(bin);
+    if(isFired) {
+      fClosestIR2 = TMath::Abs(item);
+      break;
+    }
+  }
+  if(fClosestIR2 == 100)fClosestIR2 = 0;
 	
   TString trigger = aod->GetFiredTriggerClasses();
-
-  if(trigger.Contains("CCUP4-B")) 	fHistTriggerCounter->Fill(1);
-  if(trigger.Contains("CCUP2-B")) 	fHistTriggerCounter->Fill(2);
-  if(trigger.Contains("CCUP7-B")) 	fHistTriggerCounter->Fill(3);
-  if(trigger.Contains("CINT1-B")) 	fHistTriggerCounter->Fill(4);
-  if(trigger.Contains("CTEST58-B")) 	fHistTriggerCounter->Fill(5);
-  if(trigger.Contains("CTEST59-B")) 	fHistTriggerCounter->Fill(6);
-  if(trigger.Contains("CTEST60-B")) 	fHistTriggerCounter->Fill(7);
-  if(trigger.Contains("CTEST61-B")) 	fHistTriggerCounter->Fill(8);
-  if(trigger.Contains("CCUP8-B")) 	fHistTriggerCounter->Fill(9);
-  if(trigger.Contains("CCUP9-B")) 	fHistTriggerCounter->Fill(10);
-  if(trigger.Contains("CCUP10-B")) 	fHistTriggerCounter->Fill(11);
-  if(trigger.Contains("CCUP11-B")) 	fHistTriggerCounter->Fill(12);
-  if(trigger.Contains("CCUP12-B")) 	fHistTriggerCounter->Fill(13);
-  
-  PostData(1, fHistTriggerCounter);
+  for (Int_t i = 0; i<ntrig; i++){
+  	if(trigger.Contains(gTriggerName[i].Data())){
+		fHistTriggerCounter->Fill(i);
+		fHistTriggerCounterIR1->Fill(i,fClosestIR1);
+		fHistTriggerCounterIR2->Fill(i,fClosestIR2);
+		}
+	}
+	
+  PostData(1, fListHist);
 
 }//UserExec
 

@@ -16,18 +16,18 @@
 #endif
 
 //____________________________
-AliFemtoQinvCorrFctnWithWeights::AliFemtoQinvCorrFctnWithWeights(char* title, const int& nbins, const float& QinvLo, const float& QinvHi, TH2D *filter1, TH2D *filter2):
+AliFemtoQinvCorrFctnWithWeights::AliFemtoQinvCorrFctnWithWeights(const char* title, const int& nbins, const float& QinvLo, const float& QinvHi, TH2D *filter1, TH2D *filter2):
   fNumerator(0),
   fDenominator(0),
   fRatio(0),
   fkTMonitor(0),
+  fYPtWeightsParticle1(filter1),
+  fYPtWeightsParticle2(filter2),
   fDetaDphiscal(kFALSE),
   fPairKinematics(kFALSE),
   fRaddedps(1.2),
   fNumDEtaDPhiS(0),
   fDenDEtaDPhiS(0),
-  fYPtWeightsParticle1(filter1),
-  fYPtWeightsParticle2(filter2),
   PairReader(0)// ,
   // fTrack1(NULL),
   // fTrack2(NULL)
@@ -90,13 +90,13 @@ AliFemtoQinvCorrFctnWithWeights::AliFemtoQinvCorrFctnWithWeights(const AliFemtoQ
   fDenominator(0),
   fRatio(0),
   fkTMonitor(0),
+  fYPtWeightsParticle1(0),
+  fYPtWeightsParticle2(0),
   fDetaDphiscal(kFALSE),
   fPairKinematics(kFALSE),
   fRaddedps(1.2),
   fNumDEtaDPhiS(0),
   fDenDEtaDPhiS(0),
-  fYPtWeightsParticle1(0),
-  fYPtWeightsParticle2(0),
   PairReader(0)// ,
   // fTrack1(NULL),
   // fTrack2(NULL)
@@ -115,16 +115,16 @@ AliFemtoQinvCorrFctnWithWeights::AliFemtoQinvCorrFctnWithWeights(const AliFemtoQ
   fRaddedps = aCorrFctn.fRaddedps;
 
   fPairKinematics = aCorrFctn.fPairKinematics;
-  
+
   if (aCorrFctn.fYPtWeightsParticle1)
     fYPtWeightsParticle1 = new TH2D(*aCorrFctn.fYPtWeightsParticle1);
-  else 
+  else
     fYPtWeightsParticle1 = 0;
-   
+
   if (aCorrFctn.fYPtWeightsParticle2)
     fYPtWeightsParticle2 = new TH2D(*aCorrFctn.fYPtWeightsParticle2);
-  else 
-    fYPtWeightsParticle2 = 0; 
+  else
+    fYPtWeightsParticle2 = 0;
 
   if (aCorrFctn.PairReader)
     PairReader = (TNtuple*)aCorrFctn.PairReader;
@@ -169,10 +169,10 @@ AliFemtoQinvCorrFctnWithWeights& AliFemtoQinvCorrFctnWithWeights::operator=(cons
   fRaddedps = aCorrFctn.fRaddedps;
 
   fPairKinematics = aCorrFctn.fPairKinematics;
-  
+
    if(fYPtWeightsParticle1) delete fYPtWeightsParticle1;
-   fYPtWeightsParticle1 = new TH2D(*aCorrFctn.fYPtWeightsParticle1); 
-   
+   fYPtWeightsParticle1 = new TH2D(*aCorrFctn.fYPtWeightsParticle1);
+
    if(fYPtWeightsParticle2) delete fYPtWeightsParticle2;
    fYPtWeightsParticle2 = new TH2D(*aCorrFctn.fYPtWeightsParticle2);
 
@@ -213,8 +213,9 @@ AliFemtoString AliFemtoQinvCorrFctnWithWeights::Report(){
 //____________________________
 void AliFemtoQinvCorrFctnWithWeights::AddRealPair(AliFemtoPair* pair){
   // add true pair
-  if (fPairCut)
-    if (!fPairCut->Pass(pair)) return;
+  if (fPairCut && !fPairCut->Pass(pair)) {
+    return;
+  }
 
   double tQinv = fabs(pair->QInv());   // note - qInv() will be negative for identical pairs...
 
@@ -222,7 +223,7 @@ void AliFemtoQinvCorrFctnWithWeights::AddRealPair(AliFemtoPair* pair){
     double ptv2 = pair->Track2()->Track()->Pt();
     double y1 = pair->Track1()->FourMomentum().Rapidity();
     double y2 = pair->Track2()->FourMomentum().Rapidity();
-    
+
     double weight1 = fYPtWeightsParticle1->GetBinContent(fYPtWeightsParticle1->FindBin(y1, ptv1));
 	double weight2 = fYPtWeightsParticle2->GetBinContent(fYPtWeightsParticle2->FindBin(y2, ptv2));
 
@@ -282,18 +283,20 @@ void AliFemtoQinvCorrFctnWithWeights::AddRealPair(AliFemtoPair* pair){
 }
 
 //____________________________
-void AliFemtoQinvCorrFctnWithWeights::AddMixedPair(AliFemtoPair* pair){
+void AliFemtoQinvCorrFctnWithWeights::AddMixedPair(AliFemtoPair* pair)
+{
   // add mixed (background) pair
-  if (fPairCut)
-    if (!fPairCut->Pass(pair)) return;
+  if (fPairCut && !fPairCut->Pass(pair)) {
+    return;
+  }
 
-  double weight = 1.0;
+  // double weight = 1.0;
   double tQinv = fabs(pair->QInv());   // note - qInv() will be negative for identical pairs...
   double ptv1 = pair->Track1()->Track()->Pt();
   double ptv2 = pair->Track2()->Track()->Pt();
   double y1 = pair->Track1()->FourMomentum().Rapidity();
   double y2 = pair->Track2()->FourMomentum().Rapidity();
-    
+
   double weight1 = fYPtWeightsParticle1->GetBinContent(fYPtWeightsParticle1->FindBin(y1, ptv1));
   double weight2 = fYPtWeightsParticle2->GetBinContent(fYPtWeightsParticle2->FindBin(y2, ptv2));
   fDenominator->Fill(tQinv,weight1 * weight2);

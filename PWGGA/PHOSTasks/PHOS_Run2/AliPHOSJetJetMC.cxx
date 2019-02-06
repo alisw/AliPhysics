@@ -36,8 +36,8 @@ AliPHOSJetJetMC::AliPHOSJetJetMC():
   fPtHard(0),
   fXsection(0),
   fNTrials(0),
-  fPtHardAndJetPtFactor(3),
-  fPtHardAndSinglePtFactor(1.5),
+  fPtHardAndJetPtFactor(2.5),
+  fPtHardAndSinglePtFactor(1.25),
   fFirstJetIndex(-1),
   fLastJetIndex(-1),
   fGenJetID(-1),
@@ -55,8 +55,8 @@ AliPHOSJetJetMC::AliPHOSJetJetMC(Int_t pThardbin):
   fPtHard(0),
   fXsection(0),
   fNTrials(0),
-  fPtHardAndJetPtFactor(3),
-  fPtHardAndSinglePtFactor(1.5),
+  fPtHardAndJetPtFactor(2.5),
+  fPtHardAndSinglePtFactor(1.25),
   fFirstJetIndex(-1),
   fLastJetIndex(-1),
   fGenJetID(-1),
@@ -97,8 +97,6 @@ void AliPHOSJetJetMC::ConfigureJetJetMC(AliVEvent *event)
   }
   else if(aod) pythiaGenHeader = GetPythiaEventHeader(aod);
 
-  Int_t pdg=0;
-  Double_t pT=0;
   Int_t firstindexJet = 0;
   Int_t lastindexJet = -1;
   Int_t genIDJet = -1;
@@ -123,8 +121,10 @@ void AliPHOSJetJetMC::ConfigureJetJetMC(AliVEvent *event)
       AliInfo(Form("GeneratorName = %s , NProduced = %d.",GeneratorName.Data(),gh->NProduced()));
       lastindexJet += gh->NProduced();
 
-      if((prodname.Contains("LHC16h3") && GeneratorName.Contains("Pythia",TString::kIgnoreCase)) //PYTHIA8 jet-jet
+      if(
+         (prodname.Contains("LHC16h3") && GeneratorName.Contains("Pythia",TString::kIgnoreCase)) //PYTHIA8 jet-jet
       || (prodname.Contains("LHC16h2") && GeneratorName.Contains("Jets",TString::kIgnoreCase))//HIJING + PYTHIA8 jet-jet
+      || (prodname.Contains("LHC18b8") && GeneratorName.Contains("Pythia",TString::kIgnoreCase))//PYTHIA8 jet-jet
       ){
         //this string supports LHC16h3, LHC16h2abc.
         genIDJet = igen;
@@ -139,8 +139,10 @@ void AliPHOSJetJetMC::ConfigureJetJetMC(AliVEvent *event)
       TString GeneratorName = gh->GetName();
       lastindexUE += gh->NProduced();
 
-      if((prodname.Contains("LHC16h3") && GeneratorName.Contains("Pythia",TString::kIgnoreCase)) //PYTHIA8 jet-jet anchord to LHC15n
+      if(
+         (prodname.Contains("LHC16h3") && GeneratorName.Contains("NoUE",TString::kIgnoreCase)) //PYTHIA8 jet-jet anchord to LHC15n no UE
       || (prodname.Contains("LHC16h2") && GeneratorName.Contains("HIJING",TString::kIgnoreCase))//HIJING + PYTHIA8 jet-jet anchord to LHC15o
+      || (prodname.Contains("LHC18b8") && GeneratorName.Contains("NoUE",TString::kIgnoreCase))//PYTHIA8 jet-jet anchord to LHC17pq no UE
       ){
         //this string supports LHC16h3, LHC16h2abc.
         genIDUE = igen;
@@ -180,8 +182,10 @@ void AliPHOSJetJetMC::ConfigureJetJetMC(AliVEvent *event)
       AliInfo(Form("GeneratorName = %s , NProduced = %d.",GeneratorName.Data(),gh->NProduced()));
       lastindexJet += gh->NProduced();
 
-      if((prodname.Contains("LHC16h3") && GeneratorName.Contains("Pythia",TString::kIgnoreCase)) //PYTHIA8 jet-jet
+      if(
+         (prodname.Contains("LHC16h3") && GeneratorName.Contains("Pythia",TString::kIgnoreCase)) //PYTHIA8 jet-jet
       || (prodname.Contains("LHC16h2") && GeneratorName.Contains("Jets",TString::kIgnoreCase))//HIJING + PYTHIA8 jet-jet
+      || (prodname.Contains("LHC18b8") && GeneratorName.Contains("Pythia",TString::kIgnoreCase))//PYTHIA8 jet-jet
       ){
         //this string supports LHC16h3, LHC16h2abc.
         genIDJet = igen;
@@ -196,8 +200,10 @@ void AliPHOSJetJetMC::ConfigureJetJetMC(AliVEvent *event)
       TString GeneratorName = gh->GetName();
       lastindexUE += gh->NProduced();
 
-      if((prodname.Contains("LHC16h3") && GeneratorName.Contains("Pythia",TString::kIgnoreCase)) //PYTHIA8 jet-jet anchord to LHC15n
+      if(
+         (prodname.Contains("LHC16h3") && GeneratorName.Contains("NoUE",TString::kIgnoreCase)) //PYTHIA8 jet-jet anchord to LHC15n no UE
       || (prodname.Contains("LHC16h2") && GeneratorName.Contains("HIJING",TString::kIgnoreCase))//HIJING + PYTHIA8 jet-jet anchord to LHC15o
+      || (prodname.Contains("LHC18b8") && GeneratorName.Contains("NoUE",TString::kIgnoreCase))//PYTHIA8 jet-jet anchord to LHC17pq no UE
       ){
         //this string supports LHC16h3, LHC16h2abc.
         genIDUE = igen;
@@ -226,8 +232,6 @@ void AliPHOSJetJetMC::ConfigureJetJetMC(AliVEvent *event)
 //________________________________________________________________________
 AliGenPythiaEventHeader* AliPHOSJetJetMC::GetPythiaEventHeader(AliVEvent *MCEvent)
 {
-  Int_t NTrials = -1;
-  Float_t XSection = -1;
 
   AliGenCocktailEventHeader* cHeader = 0;
   AliAODMCHeader *cHeaderAOD = 0;
@@ -259,16 +263,12 @@ AliGenPythiaEventHeader* AliPHOSJetJetMC::GetPythiaEventHeader(AliVEvent *MCEven
       if(gPythia){
         //if dynamic_cast is successfully done, gPythia should not by 0x0.
         //this is a property of dynamic_cast.
-        NTrials = gPythia->Trials();
-        XSection = gPythia->GetXsection();
 
         return gPythia;
       }
     }
 
     //AliGenPythiaEventHeader are not found.
-    NTrials = -1;
-    XSection = -1;
     AliWarningGeneral(Form(" %s:%d",(char*)__FILE__,__LINE__),"Pythia event header not found");
     return 0;
 
@@ -278,13 +278,9 @@ AliGenPythiaEventHeader* AliPHOSJetJetMC::GetPythiaEventHeader(AliVEvent *MCEven
     TString eventHeaderName  = eventHeader->ClassName();
     if (eventHeaderName.CompareTo("AliGenPythiaEventHeader") == 0){
       AliGenPythiaEventHeader* gPythia = dynamic_cast<AliGenPythiaEventHeader*>(eventHeader);
-      NTrials = gPythia->Trials();
-      XSection = gPythia->GetXsection();
       return gPythia;
     }
     else{
-      NTrials = -1;
-      XSection = -1;
       AliWarningGeneral(Form(" %s:%d",(char*)__FILE__,__LINE__),"Pythia event header not found");
       return 0;
     }
@@ -314,7 +310,6 @@ Bool_t AliPHOSJetJetMC::ComparePtHardBin(AliVEvent *event)
   }
   else if(aod) pythiaGenHeader = GetPythiaEventHeader(aod);
 
-  Float_t xsection = pythiaGenHeader->GetXsection();
   Float_t pThard   = pythiaGenHeader->GetPtHard();
 
   if(pThard < pthardbin_loweredges[fPtHardBin-1]){
@@ -347,7 +342,6 @@ Bool_t AliPHOSJetJetMC::ComparePtHardWithJet(AliVEvent *event)
   }
   else if(aod) pythiaGenHeader = GetPythiaEventHeader(aod);
 
-  Float_t xsection = pythiaGenHeader->GetXsection();
   Float_t pThard   = pythiaGenHeader->GetPtHard();
 
   TParticle * jet = 0;
@@ -385,9 +379,6 @@ Bool_t AliPHOSJetJetMC::ComparePtHardWithSingleParticle(AliVEvent *event)
 
   Int_t pdg=0;
   Double_t pT=0;
-  Int_t firstindexJet = 0;
-  Int_t lastindexJet = -1;
-  Int_t genIDJet = -1;
   AliGenPythiaEventHeader* pythiaGenHeader = 0x0;
 
   if(esd){
@@ -400,7 +391,6 @@ Bool_t AliPHOSJetJetMC::ComparePtHardWithSingleParticle(AliVEvent *event)
     }
 
     pythiaGenHeader = GetPythiaEventHeader(mcevent);
-    Float_t xsection = pythiaGenHeader->GetXsection();
     Float_t pThard   = pythiaGenHeader->GetPtHard();
 
     AliStack *stack = (AliStack*)mcevent->Stack();
@@ -429,7 +419,6 @@ Bool_t AliPHOSJetJetMC::ComparePtHardWithSingleParticle(AliVEvent *event)
   }//end of ESD
   else if(aod){
     pythiaGenHeader = GetPythiaEventHeader(aod);
-    Float_t xsection = pythiaGenHeader->GetXsection();
     Float_t pThard   = pythiaGenHeader->GetPtHard();
 
     TClonesArray *MCArray = dynamic_cast<TClonesArray*>(aod->FindListObject(AliAODMCParticle::StdBranchName()));

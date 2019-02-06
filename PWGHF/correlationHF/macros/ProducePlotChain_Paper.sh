@@ -92,6 +92,7 @@ declare subtrMCclos=1
 ############ YOU CAN CHOOSE TO DO ONLY SOME STEPS           ###################
 ############  IN CASE SOME WERE ALREADY DONE WITH THIS VERY SAME SCRIPT #######
 declare -i cpCode=0 # THIS WILL MAKE THE COMMITTED MACRO TO BE COPIED AND USED IN THE HFCJlocalCodeDir DIRECTORY, WHICH IS EXPORTED. IF YOU WANT TO MODIFY CODE YOU CAN RUN WITH THIS SET TO 1 THE FIRST TIME AND THEN SET IT TO 0. 
+declare useoldFilenames=0 #USE 0 IF YOU TAKE USE COMMON EXTRACTION FRAMEWORK - USE 1 ONLY TO REPRODUCE pp2012/pPb2013 PAPER RESULTS! 
 declare -ai useScriptFDpaths=( 1 1 1 ) #DO NOT CHANGE IT, UNLESS YOU KNOW!!  THIS IS USEFUL IN CASE YOU DO NOT WANT TO RECOMPUTE THE FD BUT USE THE PATHS SET BY THE SCRIPT FOR THE FILES COMING FROM THE FD SUBTRACTION
 declare -i doFeedDownGlob=1
 declare -ia doFeedDownMes=( 1 1 1 ) ## Dzero, Dstar, Dplus values
@@ -286,11 +287,11 @@ if [ $doFeedDownGlob = 1 ]; then
 	    mkdir -p ${baseDirFD}/${collsystdir[${collsyst}]}/${meson[${imeson}]}
 	    cd ${baseDirFD}/${collsystdir[${collsyst}]}/${meson[${imeson}]}
 	    if [ ${imeson} = 0 ]; then
-		$HFCJlocalCodeDir/DoSubtractFD.sh ${collsyst} ${imeson} ${dirDzeroNotFDsubt[${collsyst}]}/${fpromptfileDzero[${collsyst}]} ${templateDir[${collsyst}]} ${dirDzeroNotFDsubt[${collsyst}]} ${filerootDzero[${collsyst}]} 3 ${templateDirSystemSuffix[${collsyst}]} ${subtrMCclos}
+		$HFCJlocalCodeDir/DoSubtractFD.sh ${collsyst} ${imeson} ${dirDzeroNotFDsubt[${collsyst}]}/${fpromptfileDzero[${collsyst}]} ${templateDir[${collsyst}]} ${dirDzeroNotFDsubt[${collsyst}]} ${filerootDzero[${collsyst}]} 3 ${templateDirSystemSuffix[${collsyst}]} ${subtrMCclos} ${useoldFilenames}
 	    elif [ ${imeson} = 1 ]; then
-		$HFCJlocalCodeDir/DoSubtractFD.sh ${collsyst} ${imeson} ${dirDstarNotFDsubt[${collsyst}]}/${fpromptfileDstar[${collsyst}]} ${templateDir[${collsyst}]} ${dirDstarNotFDsubt[${collsyst}]} ${filerootDstar[${collsyst}]} 3 ${templateDirSystemSuffix[${collsyst}]} ${subtrMCclos}
+		$HFCJlocalCodeDir/DoSubtractFD.sh ${collsyst} ${imeson} ${dirDstarNotFDsubt[${collsyst}]}/${fpromptfileDstar[${collsyst}]} ${templateDir[${collsyst}]} ${dirDstarNotFDsubt[${collsyst}]} ${filerootDstar[${collsyst}]} 3 ${templateDirSystemSuffix[${collsyst}]} ${subtrMCclos} ${useoldFilenames}
 	    elif [ ${imeson} = 2 ]; then
-		$HFCJlocalCodeDir/DoSubtractFD.sh ${collsyst} ${imeson} ${dirDplusNotFDsubt[${collsyst}]}/${fpromptfileDplus[${collsyst}]} ${templateDir[${collsyst}]} ${dirDplusNotFDsubt[${collsyst}]} ${filerootDplus[${collsyst}]} 3 ${templateDirSystemSuffix[${collsyst}]} ${subtrMCclos}
+		$HFCJlocalCodeDir/DoSubtractFD.sh ${collsyst} ${imeson} ${dirDplusNotFDsubt[${collsyst}]}/${fpromptfileDplus[${collsyst}]} ${templateDir[${collsyst}]} ${dirDplusNotFDsubt[${collsyst}]} ${filerootDplus[${collsyst}]} 3 ${templateDirSystemSuffix[${collsyst}]} ${subtrMCclos} ${useoldFilenames}
 	    fi
 	    imeson=${imeson}+1
 	done

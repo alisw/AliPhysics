@@ -101,7 +101,7 @@ AliPicoHeaderV0::~AliPicoHeaderV0()
 }
 
 //_____________________________________________________________________________
-void AliPicoHeaderV0::SetEventInfo(AliInputEventHandler* const pH)
+void AliPicoHeaderV0::SetEventInfo(AliVEventHandler* const pH)
 {
 //
 // AliPicoHeaderV0::SetEventInfo

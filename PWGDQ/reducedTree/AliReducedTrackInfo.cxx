@@ -56,6 +56,11 @@ AliReducedTrackInfo::AliReducedTrackInfo() :
   fTRDntracklets(),
   fTRDpid(),
   fTRDpidLQ2D(),
+  fTRDGTUtracklets(0),
+  fTRDGTUlayermask(0),
+  fTRDGTUpt(0.),
+  fTRDGTUsagitta(2.0),
+  fTRDGTUPID(0.),
   fCaloClusterId(-999),
   fTrackParam(),
   fCovMatrix(),
@@ -116,6 +121,11 @@ AliReducedTrackInfo::AliReducedTrackInfo(const AliReducedTrackInfo &c) :
   fTOFmismatchProbab(c.fTOFmismatchProbab),
   fTOFchi2(c.fTOFchi2),
   fTOFdeltaBC(c.fTOFdeltaBC),
+  fTRDGTUtracklets(c.fTRDGTUtracklets),
+  fTRDGTUlayermask(c.fTRDGTUlayermask),
+  fTRDGTUpt(c.fTRDGTUpt),
+  fTRDGTUsagitta(c.fTRDGTUsagitta),
+  fTRDGTUPID(c.fTRDGTUPID),
   fCaloClusterId(c.fCaloClusterId),
   fMCGeneratorIndex(c.fMCGeneratorIndex)
 {

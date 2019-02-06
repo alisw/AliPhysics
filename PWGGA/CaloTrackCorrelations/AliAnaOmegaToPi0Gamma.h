@@ -47,7 +47,7 @@ class AliAnaOmegaToPi0Gamma : public AliAnaCaloTrackCorrBaseClass {
 
   TString  GetInputAODPhotonName()  const         { return fInputAODGammaName   ; }
     
-  void     SetInputAODPhotonName(TString & name)  { fInputAODGammaName   = name ; }
+  void     SetInputAODPhotonName(TString name)    { fInputAODGammaName   = name ; }
 
   ///Tests if this run bad according to private list
   Bool_t   IsBadRun(Int_t /*iRun*/)         const { return kFALSE;}

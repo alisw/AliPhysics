@@ -58,7 +58,7 @@ class AliAnalysisTaskCaloTrackCorrelationM : public AliAnalysisTaskME
   
   // Setters/Getters
   
-  void           SetConfigFileName(TString & name ) { fConfigName = name ; }
+  void           SetConfigFileName(TString name )   { fConfigName = name ; }
   TString        GetConfigFileName()          const { return fConfigName ; }
 	
   AliAnaCaloTrackCorrMaker* GetAnalysisMaker()      { return fAna        ; }

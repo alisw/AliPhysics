@@ -187,13 +187,10 @@ void AliAnalysisTaskSEDStarCharmFraction::UserCreateOutputObjects()
   fNEvents->GetXaxis()->SetBinLabel(5, "Candidates");
   fNEvents->GetXaxis()->SetBinLabel(6, "Passed track cuts");
   fNEvents->GetXaxis()->SetBinLabel(7, "Passed fiducial acc cuts");
-  fNEvents->GetXaxis()->SetBinLabel(8, "Passed cand cuts");
-  fNEvents->GetXaxis()->SetBinLabel(9, "Recalc prim vtx");
-  fNEvents->GetXaxis()->SetBinLabel(10, "Calc D* vtx");
-  fNEvents->GetXaxis()->SetBinLabel(11, "Pass daught imppar cut");
-  fNEvents->GetXaxis()->SetBinLabel(12, "Real D* (MC)");
-  fNEvents->GetXaxis()->SetBinLabel(13, "Skip from Hijing (MC)");
-
+  fNEvents->GetXaxis()->SetBinLabel(8, "Calc D* vtx");
+  fNEvents->GetXaxis()->SetBinLabel(9, "Pass daught imppar cut");
+  fNEvents->GetXaxis()->SetBinLabel(10, "Real D* (MC)");
+  fNEvents->GetXaxis()->SetBinLabel(11, "Skip from Hijing (MC)");
   fListCandidate = new TList();
   fListCandidate->SetOwner();
   fListCandidate->SetName("listCandidate");
@@ -272,14 +269,7 @@ void AliAnalysisTaskSEDStarCharmFraction::SetUpList(TList *list)
   hDeltaInvMass->SetMarkerSize(0.6);
   list->Add(hDeltaInvMass);
 
-  // DeltaInvMassPre
-  TH1D* hDeltaInvMassPre = new TH1D("DeltaInvMassPre", Form("D*-D^{0} invariant mass pre vtx, %s; #DeltaM [GeV/c^{2}]; Entries", listName.Data()), 700, 0.13, 0.2);
-  hDeltaInvMassPre->Sumw2();
-  hDeltaInvMassPre->SetLineColor(4);
-  hDeltaInvMassPre->SetMarkerColor(4);
-  hDeltaInvMassPre->SetMarkerStyle(20);
-  hDeltaInvMassPre->SetMarkerSize(0.6);
-  list->Add(hDeltaInvMassPre);
+
 
   // InvMassD0
   TH1D* hInvMassD0 = new TH1D("InvMassD0", Form("D^{0} invariant mass, %s; M [GeV/c^{2}]; Entries", listName.Data()), 600, 1.6, 2.2);
@@ -376,13 +366,7 @@ void AliAnalysisTaskSEDStarCharmFraction::SetUpList(TList *list)
     hDeltaInvMassLoop->SetMarkerSize(0.6);
     list->Add(hDeltaInvMassLoop);
 
-    TH1D* hDeltaInvMassPreLoop = new TH1D(Form("DeltaInvMassPre_%d", i), Form("D*-D^{0} invariant mass pre vtx, %s, %.1f < p_{T} < %.1f GeV/c; #DeltaM [GeV/c^{2}]; Entries", listName.Data(), ptLow, ptHigh), 700, 0.13, 0.2);
-    hDeltaInvMassPreLoop->Sumw2();
-    hDeltaInvMassPreLoop->SetLineColor(4);
-    hDeltaInvMassPreLoop->SetMarkerColor(4);
-    hDeltaInvMassPreLoop->SetMarkerStyle(20);
-    hDeltaInvMassPreLoop->SetMarkerSize(0.6);
-    list->Add(hDeltaInvMassPreLoop);
+  
 
     TH1D* hInvMassD0Loop = new TH1D(Form("InvMassD0_%d", i), Form("D^{0} invariant mass, %s, %.1f < p_{T} < %.1f GeV/c; M [GeV/c^{2}]; Entries", listName.Data(), ptLow, ptHigh), 600, 1.6, 2.2);
     hInvMassD0Loop->Sumw2();
@@ -659,12 +643,12 @@ void AliAnalysisTaskSEDStarCharmFraction::UserExec(Option_t */*option*/)
       if (mcLabel >= 0) {
         fIsSignal = kTRUE;
 
-        fNEvents->Fill(11);
+        fNEvents->Fill(10);
 
         partDSt = (AliAODMCParticle*) mcArray->At(mcLabel);
 
         if (fSkipHijing && IsFromHijing(mcArray, partDSt)) {
-          fNEvents->Fill(12);
+          fNEvents->Fill(11);
           continue;
         }
 
@@ -710,25 +694,13 @@ void AliAnalysisTaskSEDStarCharmFraction::UserExec(Option_t */*option*/)
       continue;
     }
     fNEvents->Fill(7);
-
-    //Fill invariant mass pre vtx calculations
-    FillHistogram("DeltaInvMassPre", deltaInvMass);
-    FillHistogram(Form("DeltaInvMassPre_%d", ptBin), deltaInvMass);
-
-    // Calculate new primary vertex without D* daughters
-    fNewPrimVtx = RemoveDaughtersFromPrimaryVtx(aodEvent, cand);
-    if (!fNewPrimVtx) {
+    
+    if(!aodEvent->GetPrimaryVertex()){
       delete fNewPrimVtx; fNewPrimVtx = 0;
       continue;
     }
-
-    /*if (cand->GetOwnPrimaryVtx()) {
-      origVtx = new AliAODVertex(*cand->GetOwnPrimaryVtx());
-    }
-    cand->SetOwnPrimaryVtx(fNewPrimVtx);*/
-
-    fNEvents->Fill(8);
-
+    fNewPrimVtx = new AliAODVertex(*aodEvent->GetPrimaryVertex());
+    
     //D* vertexing
     fDStarVtx = ReconstructDStarVtx(cand);
     if (!fDStarVtx) {
@@ -736,7 +708,7 @@ void AliAnalysisTaskSEDStarCharmFraction::UserExec(Option_t */*option*/)
       continue;
     }
 
-    fNEvents->Fill(9);
+    fNEvents->Fill(8);
 
     Double_t d0, d0Err;
     if (CalculateImpactParameter(candSoftPi, d0, d0Err)) {
@@ -764,7 +736,7 @@ void AliAnalysisTaskSEDStarCharmFraction::UserExec(Option_t */*option*/)
       }
     }
 
-    fNEvents->Fill(10);
+    fNEvents->Fill(9);
 
     fTrueImpParForTree = fReadMC && fIsSignal ? CalculateTrueImpactParameterDStar(mcHeader, mcArray, cand) : -9998.;
 

@@ -1,6 +1,6 @@
 #ifdef __CINT__
 
-#pragma link off all glols;
+#pragma link off all globals;
 #pragma link off all classes;
 #pragma link off all functions;
 
@@ -23,6 +23,9 @@
 #pragma link C++ class AliAnalysisTaskParticleStudies+;
 #pragma link C++ class AliAnalysisTaskPIDBF+;
 #pragma link C++ class AliPidBFBase+;
+#pragma link C++ class AliAnalysisTaskAccCont+;
+#pragma link C++ class AliAnalysisTaskPIDMCEffCont+;
+#pragma link C++ class AliAnalysisTaskPIDPerformCombIDPtDep+;
 
 #pragma link C++ class AliAnalysisTaskLRC+;
 #pragma link C++ class AliLRCAnalysis+;
@@ -75,5 +78,20 @@
 #pragma link C++ class AliAnalysisTempFluc+;
 
 #pragma link C++ class AliAnalysisFBMultFluct+;
+
+#pragma link C++ class AliAnalysisTaskNetLambdaIdent+;
+#pragma link C++ class AliLightV0+;
+#pragma link C++ class AliLightGenV0+;
+#pragma link C++ class AliLightV0track+;
+
+#pragma link C++ class AliAnalysisTaskEbyeCharge+;
+
+#pragma link C++ class AliAnalysisTaskNetLambdaMCTrad+;
+#pragma link C++ class AliAnalysisTaskNetLambdaTrad+;
+
+#pragma link C++ class AliAnalysisTaskEbyeNetChargeFluctuations+;
+
+#pragma link C++ class AliEbyEPhiDistNew+;
+
 
 #endif

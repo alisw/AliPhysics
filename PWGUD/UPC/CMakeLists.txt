@@ -24,6 +24,8 @@ include_directories(${AliPhysics_SOURCE_DIR}/PWGUD/UPC
 
 # Additional include folders in alphabetical order except ROOT
 include_directories(${ROOT_INCLUDE_DIRS}
+		    ${AliPhysics_SOURCE_DIR}/PWGUD/base
+		    ${AliPhysics_SOURCE_DIR}/OADB
                     ${AliPhysics_SOURCE_DIR}/PWG/muon
                    )
 
@@ -34,15 +36,18 @@ set(SRCS
     AliAnalysisTaskUpcK0sK0s.cxx
     AliAnalysisTaskUpcPhi.cxx
     AliAnalysisTaskUpcPsi2s.cxx
+    AliAnalysisTaskUpcRho0.cxx
     AliAnalysisTaskUpcTree.cxx
     AliUPCEvent.cxx
     AliUPCMuonTrack.cxx
-    AliUpcParticle.cxx
     AliUPCTrack.cxx
     nanoAOD/AliAnalysisTaskFilterUPCNanoAOD.cxx
     nanoAOD/AliAODUPCReplicator.cxx
     nanoAOD/AliAnalysisTaskUpcTriggerCounter.cxx
     nanoAOD/AliAnalysisTaskUpcNano_MB.cxx
+    AliAnalysisTaskTransTask.cxx
+    AliAnalysisTaskTOFTrigger.cxx
+    AliAnalysisTaskZDCTree.cxx
    )
 
 # Headers from sources
@@ -54,7 +59,7 @@ get_directory_property(incdirs INCLUDE_DIRECTORIES)
 generate_dictionary("${MODULE}" "${MODULE}LinkDef.h" "${HDRS}" "${incdirs}")
 
 set(ROOT_DEPENDENCIES Core EG Hist Physics RIO Tree)
-set(ALIROOT_DEPENDENCIES ANALYSIS ANALYSISalice AOD ESD STEERBase PWGmuon)
+set(ALIROOT_DEPENDENCIES ANALYSIS ANALYSISalice AOD ESD STEERBase PWGmuon TOFbase PWGUDbase)
 
 # Generate the ROOT map
 # Dependecies

@@ -109,9 +109,9 @@ AliQnCorrectionsQnVectorTwistAndRescale::~AliQnCorrectionsQnVectorTwistAndRescal
 /// \param nameB the name of the B detector configuration
 /// \param nameC the name of the C detector configuration
 void AliQnCorrectionsQnVectorTwistAndRescale::SetReferenceConfigurationsForTwistAndRescale(const char *nameB, const char *nameC) {
-  AliInfo(Form("Detector configurations: %s and %s, attached?: %s",
+  AliInfo(TString::Format("Detector configurations: %s and %s, attached?: %s",
       nameB, nameC,
-      ((fDetectorConfiguration != NULL) ? "yes" : "no")));
+      ((fDetectorConfiguration != NULL) ? "yes" : "no")).Data());
 
   fBDetectorConfigurationName = nameB;
   fCDetectorConfigurationName = nameC;
@@ -127,9 +127,9 @@ void AliQnCorrectionsQnVectorTwistAndRescale::AttachedToFrameworkManager() {
   case TWRESCALE_doubleHarmonic:
     break;
   case TWRESCALE_correlations:
-    AliInfo(Form("Attached! B and C detector configurations for twist and rescaling: %s and %s",
+    AliInfo(TString::Format("Attached! B and C detector configurations for twist and rescaling: %s and %s",
         fBDetectorConfigurationName.Data(),
-        fCDetectorConfigurationName.Data()));
+        fCDetectorConfigurationName.Data()).Data());
     break;
   default:
     AliFatal(Form("Wrong stored twist and rescale method: %d. FIX IT, PLEASE", fTwistAndRescaleMethod));
@@ -192,9 +192,9 @@ void AliQnCorrectionsQnVectorTwistAndRescale::CreateSupportDataStructures() {
       AliFatal(Form("Missing C detector configuration for %s twist and rescaling correction step",
           fDetectorConfiguration->GetName()));
     }
-    AliInfo(Form("Attached! B and C detector configurations for twist and rescaling: %s and %s",
+    AliInfo(TString::Format("Attached! B and C detector configurations for twist and rescaling: %s and %s",
         fBDetectorConfigurationName.Data(),
-        fCDetectorConfigurationName.Data()));
+        fCDetectorConfigurationName.Data()).Data());
     break;
   default:
     AliFatal(Form("Wrong stored twist and rescale method: %d. FIX IT, PLEASE", fTwistAndRescaleMethod));
@@ -212,11 +212,11 @@ void AliQnCorrectionsQnVectorTwistAndRescale::CreateSupportDataStructures() {
 /// \return kTRUE if everything went OK
 Bool_t AliQnCorrectionsQnVectorTwistAndRescale::CreateSupportHistograms(TList *list) {
 
-  TString histoDoubleHarmonicNameAndTitle = Form("%s %s ",
+  TString histoDoubleHarmonicNameAndTitle = TString::Format("%s %s ",
       szDoubleHarmonicSupportHistogramName,
       fDetectorConfiguration->GetName());
 
-  TString histoCorrelationsNameandTitle = Form("%s %s ",
+  TString histoCorrelationsNameandTitle = TString::Format("%s %s ",
       szCorrelationsSupportHistogramName,
       fDetectorConfiguration->GetName());
 
@@ -276,14 +276,14 @@ Bool_t AliQnCorrectionsQnVectorTwistAndRescale::AttachInput(TList *list) {
   case TWRESCALE_doubleHarmonic:
     /* TODO: basically we are re producing half of the information already produce for recentering correction. Re use it! */
     if (fDoubleHarmonicInputHistograms->AttachHistograms(list)) {
-      AliInfo(Form("Twist and rescale by the double harmonic method on %s going to be applied", fDetectorConfiguration->GetName()));
+      AliInfo(TString::Format("Twist and rescale by the double harmonic method on %s going to be applied", fDetectorConfiguration->GetName()).Data());
       fState = QCORRSTEP_applyCollect;
       return kTRUE;
     }
     break;
   case TWRESCALE_correlations:
     if (fCorrelationsInputHistograms->AttachHistograms(list)) {
-      AliInfo(Form("Twist and rescale by the correlations method on %s going to be applied", fDetectorConfiguration->GetName()));
+      AliInfo(TString::Format("Twist and rescale by the correlations method on %s going to be applied", fDetectorConfiguration->GetName()).Data());
       fState = QCORRSTEP_applyCollect;
       return kTRUE;
     }
@@ -311,8 +311,8 @@ void AliQnCorrectionsQnVectorTwistAndRescale::AfterInputsAttachActions() {
   case TWRESCALE_correlations:
     /* require B be applying twist corrections */
     if (!fBDetectorConfiguration->IsCorrectionStepBeingApplied(szTwistCorrectionName)) {
-      AliWarning(Form("Twist and rescale on %s requires %s be twist corrected which is not the case. CORRECTION STEP PASSIVE!!!",
-          fDetectorConfiguration->GetName(), fBDetectorConfiguration->GetName()));
+      AliWarning(TString::Format("Twist and rescale on %s requires %s be twist corrected which is not the case. CORRECTION STEP PASSIVE!!!",
+          fDetectorConfiguration->GetName(), fBDetectorConfiguration->GetName()).Data());
       fState = QCORRSTEP_passive;
     }
     break;
@@ -331,14 +331,14 @@ Bool_t AliQnCorrectionsQnVectorTwistAndRescale::CreateQAHistograms(TList *list) 
 
   if (fApplyTwist) {
     fQATwistQnAverageHistogram = new AliQnCorrectionsProfileComponents(
-        Form("%s %s", szQATwistQnAverageHistogramName, fDetectorConfiguration->GetName()),
-        Form("%s %s", szQATwistQnAverageHistogramName, fDetectorConfiguration->GetName()),
+        TString::Format("%s %s", szQATwistQnAverageHistogramName, fDetectorConfiguration->GetName()).Data(),
+        TString::Format("%s %s", szQATwistQnAverageHistogramName, fDetectorConfiguration->GetName()).Data(),
         fDetectorConfiguration->GetEventClassVariablesSet());
   }
   if (fApplyRescale) {
     fQARescaleQnAverageHistogram = new AliQnCorrectionsProfileComponents(
-        Form("%s %s", szQARescaleQnAverageHistogramName, fDetectorConfiguration->GetName()),
-        Form("%s %s", szQARescaleQnAverageHistogramName, fDetectorConfiguration->GetName()),
+        TString::Format("%s %s", szQARescaleQnAverageHistogramName, fDetectorConfiguration->GetName()).Data(),
+        TString::Format("%s %s", szQARescaleQnAverageHistogramName, fDetectorConfiguration->GetName()).Data(),
         fDetectorConfiguration->GetEventClassVariablesSet());
   }
 
@@ -366,15 +366,15 @@ Bool_t AliQnCorrectionsQnVectorTwistAndRescale::CreateNveQAHistograms(TList *lis
   switch (fTwistAndRescaleMethod) {
   case TWRESCALE_doubleHarmonic:
     fQANotValidatedBin = new AliQnCorrectionsHistogramSparse(
-        Form("%s%s %s", szQANotValidatedHistogramName, "DH", fDetectorConfiguration->GetName()),
-        Form("%s%s %s", szQANotValidatedHistogramName, "DH", fDetectorConfiguration->GetName()),
+        TString::Format("%s%s %s", szQANotValidatedHistogramName, "DH", fDetectorConfiguration->GetName()).Data(),
+        TString::Format("%s%s %s", szQANotValidatedHistogramName, "DH", fDetectorConfiguration->GetName()).Data(),
         fDetectorConfiguration->GetEventClassVariablesSet());
     fQANotValidatedBin->CreateHistogram(list);
     break;
   case TWRESCALE_correlations:
     fQANotValidatedBin = new AliQnCorrectionsHistogramSparse(
-        Form("%s%s %s", szQANotValidatedHistogramName, "CORR", fDetectorConfiguration->GetName()),
-        Form("%s%s %s", szQANotValidatedHistogramName, "CORR", fDetectorConfiguration->GetName()),
+        TString::Format("%s%s %s", szQANotValidatedHistogramName, "CORR", fDetectorConfiguration->GetName()).Data(),
+        TString::Format("%s%s %s", szQANotValidatedHistogramName, "CORR", fDetectorConfiguration->GetName()).Data(),
         fDetectorConfiguration->GetEventClassVariablesSet());
     fQANotValidatedBin->CreateHistogram(list);
     break;
@@ -406,8 +406,8 @@ Bool_t AliQnCorrectionsQnVectorTwistAndRescale::ProcessCorrections(const Float_t
     switch (fTwistAndRescaleMethod) {
     case TWRESCALE_doubleHarmonic: {
       /* TODO: basically we are re producing half of the information already produce for recentering correction. Re use it! */
-      AliInfo(Form("Twist and rescale in detector %s with double harmonic method.",
-          fDetectorConfiguration->GetName()));
+      AliInfo(TString::Format("Twist and rescale in detector %s with double harmonic method.",
+          fDetectorConfiguration->GetName()).Data());
       if (fDetectorConfiguration->GetCurrentQnVector()->IsGoodQuality()) {
         fCorrectedQnVector->Set(fDetectorConfiguration->GetCurrentQnVector(),kFALSE);
         fTwistCorrectedQnVector->Set(fCorrectedQnVector, kFALSE);
@@ -472,10 +472,10 @@ Bool_t AliQnCorrectionsQnVectorTwistAndRescale::ProcessCorrections(const Float_t
     break;
 
     case TWRESCALE_correlations: {
-      AliInfo(Form("Twist and rescale in detector %s with correlations with %s and %s method.",
+      AliInfo(TString::Format("Twist and rescale in detector %s with correlations with %s and %s method.",
           fDetectorConfiguration->GetName(),
           fBDetectorConfiguration->GetName(),
-          fCDetectorConfiguration->GetName()));
+          fCDetectorConfiguration->GetName()).Data());
       if (fDetectorConfiguration->GetCurrentQnVector()->IsGoodQuality()) {
         fCorrectedQnVector->Set(fDetectorConfiguration->GetCurrentQnVector(),kFALSE);
         fTwistCorrectedQnVector->Set(fCorrectedQnVector, kFALSE);
@@ -573,8 +573,8 @@ Bool_t AliQnCorrectionsQnVectorTwistAndRescale::ProcessDataCollection(const Floa
     /* logging */
     switch (fTwistAndRescaleMethod) {
     case TWRESCALE_doubleHarmonic: {
-      AliInfo(Form("Twist and rescale in detector %s with double harmonic method. Collecting data",
-          fDetectorConfiguration->GetName()));
+      AliInfo(TString::Format("Twist and rescale in detector %s with double harmonic method. Collecting data",
+          fDetectorConfiguration->GetName()).Data());
       /* remember, we store in the profiles the double harmonic while the Q2n vector stores them single */
       AliQnCorrectionsQnVector *plainQ2nVector = fDetectorConfiguration->GetPlainQ2nVector();
       Int_t harmonic = fCorrectedQnVector->GetFirstHarmonic();
@@ -589,10 +589,10 @@ Bool_t AliQnCorrectionsQnVectorTwistAndRescale::ProcessDataCollection(const Floa
     break;
 
     case TWRESCALE_correlations: {
-      AliInfo(Form("Twist and rescale in detector %s with correlations with %s and %s method. Collecting data",
+      AliInfo(TString::Format("Twist and rescale in detector %s with correlations with %s and %s method. Collecting data",
           fDetectorConfiguration->GetName(),
           fBDetectorConfiguration->GetName(),
-          fCDetectorConfiguration->GetName()));
+          fCDetectorConfiguration->GetName()).Data());
       /* collect the data needed to further produce correction parameters if both current Qn vectors are good enough */
       if ((fInputQnVector->IsGoodQuality()) &&
           (fBDetectorConfiguration->GetCurrentQnVector()->IsGoodQuality()) &&
@@ -617,8 +617,8 @@ Bool_t AliQnCorrectionsQnVectorTwistAndRescale::ProcessDataCollection(const Floa
     /* logging */
     switch (fTwistAndRescaleMethod) {
     case TWRESCALE_doubleHarmonic: {
-      AliInfo(Form("Twist and rescale in detector %s with double harmonic method. Collecting data",
-          fDetectorConfiguration->GetName()));
+      AliInfo(TString::Format("Twist and rescale in detector %s with double harmonic method. Collecting data",
+          fDetectorConfiguration->GetName()).Data());
       /* remember, we store in the profiles the double harmonic while the Q2n vector stores them single */
       AliQnCorrectionsQnVector *plainQ2nVector = fDetectorConfiguration->GetPlainQ2nVector();
       Int_t harmonic = fCorrectedQnVector->GetFirstHarmonic();
@@ -633,10 +633,10 @@ Bool_t AliQnCorrectionsQnVectorTwistAndRescale::ProcessDataCollection(const Floa
     break;
 
     case TWRESCALE_correlations: {
-      AliInfo(Form("Twist and rescale in detector %s with correlations with %s and %s method. Collecting data",
+      AliInfo(TString::Format("Twist and rescale in detector %s with correlations with %s and %s method. Collecting data",
           fDetectorConfiguration->GetName(),
           fBDetectorConfiguration->GetName(),
-          fCDetectorConfiguration->GetName()));
+          fCDetectorConfiguration->GetName()).Data());
       /* collect the data needed to further produce correction parameters if both current Qn vectors are good enough */
       if ((fInputQnVector->IsGoodQuality()) &&
           (fBDetectorConfiguration->GetCurrentQnVector()->IsGoodQuality()) &&

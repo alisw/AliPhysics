@@ -13,9 +13,9 @@
 #include "AliFemtoModelGausLCMSFreezeOutGenerator.h"
 #include "AliFemtoModelHiddenInfo.h"
 #include "AliFemtoModelCorrFctnDirectYlm.h"
-    
+
 //_______________________
-AliFemtoModelCorrFctnDirectYlm::AliFemtoModelCorrFctnDirectYlm(): 
+AliFemtoModelCorrFctnDirectYlm::AliFemtoModelCorrFctnDirectYlm():
   AliFemtoModelCorrFctn(),
   fCYlmTrue(0),
   fCYlmFake(0),
@@ -72,29 +72,29 @@ AliFemtoModelCorrFctnDirectYlm& AliFemtoModelCorrFctnDirectYlm::operator=(const 
   if (this != &aCorrFctn) {
 
     fUseLCMS = aCorrFctn.fUseLCMS;
-    
+
     if (fCYlmTrue) delete fCYlmTrue;
     if (aCorrFctn.fCYlmTrue)
       fCYlmTrue = new AliFemtoCorrFctnDirectYlm(*aCorrFctn.fCYlmTrue);
     else fCYlmTrue = 0;
-    
+
     if (fCYlmFake) delete fCYlmFake;
     if (aCorrFctn.fCYlmFake)
       fCYlmFake = new AliFemtoCorrFctnDirectYlm(*aCorrFctn.fCYlmFake);
     else fCYlmFake = 0;
-    
+
     if (fNumeratorTrue) delete fNumeratorTrue;
     if (aCorrFctn.fNumeratorTrue)
       fNumeratorTrue = new TH1D(*aCorrFctn.fNumeratorTrue);
     else
       fNumeratorTrue = 0;
-    
+
     if (fNumeratorFake) delete fNumeratorFake;
     if (aCorrFctn.fNumeratorFake)
       fNumeratorFake = new TH1D(*aCorrFctn.fNumeratorFake);
     else
       fNumeratorFake = 0;
-    
+
     if (fDenominator) delete fDenominator;
     if (aCorrFctn.fDenominator)
       fDenominator = new TH1D(*aCorrFctn.fDenominator);
@@ -117,11 +117,12 @@ AliFemtoString AliFemtoModelCorrFctnDirectYlm::Report()
 void AliFemtoModelCorrFctnDirectYlm::AddRealPair(AliFemtoPair* aPair)
 {
   // add real (effect) pair
-  if (fPairCut)
-    if (!(fPairCut->Pass(aPair))) return;
+  if (fPairCut && !fPairCut->Pass(aPair)) {
+    return;
+  }
 
   Double_t weight = fManager->GetWeight(aPair);
-  
+
   if (fUseLCMS)
     fCYlmTrue->AddRealPair(aPair->QOutCMS(), aPair->QSideCMS(), aPair->QLongCMS(), weight);
   else
@@ -131,8 +132,9 @@ void AliFemtoModelCorrFctnDirectYlm::AddRealPair(AliFemtoPair* aPair)
 void AliFemtoModelCorrFctnDirectYlm::AddMixedPair(AliFemtoPair* aPair)
 {
   // add mixed (background) pair
-  if (fPairCut)
-    if (!(fPairCut->Pass(aPair))) return;
+  if (fPairCut && !fPairCut->Pass(aPair)) {
+    return;
+  }
 
   Double_t weight = fManager->GetWeight(aPair);
 
@@ -151,7 +153,7 @@ void AliFemtoModelCorrFctnDirectYlm::AddMixedPair(AliFemtoPair* aPair)
 void AliFemtoModelCorrFctnDirectYlm::Write()
 {
   // write out all the histograms
-  
+
   fCYlmTrue->Write();
   fCYlmFake->Write();
 }
@@ -163,14 +165,14 @@ TList* AliFemtoModelCorrFctnDirectYlm::GetOutputList()
   tOutputList->Clear();
 
   TList *tListCfTrue = fCYlmTrue->GetOutputList();
-    
+
   TIter nextListCfTrue(tListCfTrue);
   while (TObject *obj = nextListCfTrue()) {
     tOutputList->Add(obj);
   }
 
   TList *tListCfFake = fCYlmFake->GetOutputList();
-    
+
   TIter nextListCfFake(tListCfFake);
   while (TObject *obj = nextListCfFake()) {
     tOutputList->Add(obj);
@@ -181,11 +183,11 @@ TList* AliFemtoModelCorrFctnDirectYlm::GetOutputList()
   return tOutputList;
 }
 //_______________________
-AliFemtoModelCorrFctn* AliFemtoModelCorrFctnDirectYlm::Clone()
+AliFemtoModelCorrFctn* AliFemtoModelCorrFctnDirectYlm::Clone() const
 {
   // Clone the correlation function
   AliFemtoModelCorrFctnDirectYlm *tCopy = new AliFemtoModelCorrFctnDirectYlm(*this);
-  
+
   return tCopy;
 }
 //_______________________

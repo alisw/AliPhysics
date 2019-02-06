@@ -1,98 +1,92 @@
-/**************************************************************************
- * Copyright(c) 1998-2007, ALICE Experiment at CERN, All rights reserved. *
- *                                                                        *
- * Author: The ALICE Off-line Project.                                    *
- * Contributors are mentioned in the code where appropriate.              *
- *                                                                        *
- * Permission to use, copy, modify and distribute this software and its   *
- * documentation strictly for non-commercial purposes is hereby granted   *
- * without fee, provided that the above copyright notice appears in all   *
- * copies and that both the copyright notice and this permission notice   *
- * appear in the supporting documentation. The authors make no claims     *
- * about the suitability of this software for any purpose. It is          *
- * provided "as is" without express or implied warranty.                  *
- **************************************************************************/
-/*
- * Class for the selection of trigger patches in the EMCAL triggered event selection
- *
- * Author: Markus Fasel
- */
+/************************************************************************************
+ * Copyright (C) 2017, Copyright Holders of the ALICE Collaboration                 *
+ * All rights reserved.                                                             *
+ *                                                                                  *
+ * Redistribution and use in source and binary forms, with or without               *
+ * modification, are permitted provided that the following conditions are met:      *
+ *     * Redistributions of source code must retain the above copyright             *
+ *       notice, this list of conditions and the following disclaimer.              *
+ *     * Redistributions in binary form must reproduce the above copyright          *
+ *       notice, this list of conditions and the following disclaimer in the        *
+ *       documentation and/or other materials provided with the distribution.       *
+ *     * Neither the name of the <organization> nor the                             *
+ *       names of its contributors may be used to endorse or promote products       *
+ *       derived from this software without specific prior written permission.      *
+ *                                                                                  *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND  *
+ * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED    *
+ * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE           *
+ * DISCLAIMED. IN NO EVENT SHALL ALICE COLLABORATION BE LIABLE FOR ANY              *
+ * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES       *
+ * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;     *
+ * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND      *
+ * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT       *
+ * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS    *
+ * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.                     *
+ ************************************************************************************/
+#include <iostream>
+#include <string>
+#include <map>
 #include "AliEmcalTriggerSelectionCuts.h"
 #include "AliEMCALTriggerPatchInfo.h"
 
-ClassImp(AliEmcalTriggerSelectionCuts)
+ClassImp(PWG::EMCAL::AliEmcalTriggerSelectionCuts)
 
-//______________________________________________________________________________
+namespace PWG {
+namespace EMCAL {
+
+
 AliEmcalTriggerSelectionCuts::AliEmcalTriggerSelectionCuts() :
   TObject(),
   fSelectionMethod(kADC),
   fPatchType(kAnyPatch),
+  fAcceptanceType(kEMCALDCALAcceptance),
   fThreshold(0),
-  fUseSimpleOffline(kFALSE)
+  fUseSimpleOffline(kFALSE),
+  fUseRecalc(kFALSE)
 {
-  /*
-   * Dummy constructor
-   */
 }
 
-//______________________________________________________________________________
 Bool_t AliEmcalTriggerSelectionCuts::IsSelected(const AliEMCALTriggerPatchInfo * const patch) const {
-  /*
-   * Apply selection of the given trigger patch according to the selections described in the object
-   *
-   * @param patch: the trigger patch to check
-   * @return" the decision (true if selected, false otherwise)
-   */
-  if(fUseSimpleOffline && !patch->IsOfflineSimple()) return kFALSE;
-  else if(!fUseSimpleOffline && patch->IsOfflineSimple()) return kFALSE;
+  //if(fUseSimpleOffline && !patch->IsOfflineSimple()) return kFALSE;
+  //else if(!fUseSimpleOffline && patch->IsOfflineSimple()) return kFALSE;
+  if(!SelectAcceptance(patch)) return kFALSE;
   if(!SelectPatchType(patch)) return kFALSE;
-  if(GetCutPrimitive(patch) <= fThreshold) return kFALSE;
+  if(GetCutPrimitive(patch) < fThreshold) return kFALSE;
   return kTRUE;
 }
 
-//______________________________________________________________________________
 Int_t AliEmcalTriggerSelectionCuts::CompareTriggerPatches(const AliEMCALTriggerPatchInfo *first, const AliEMCALTriggerPatchInfo *second) const {
-  /*
-   * Compare two patches according to the energy measure specified in the cut object
-   *
-   * @param first: the first patch
-   * @param second: the second patch
-   * @return: the result of the comparison (0 if equal, 1 if the first patch has a larger primitive,
-   *          -1 if the second patch has a larger primitive)
-   */
   Double_t valfirst = GetCutPrimitive(first), valsecond = GetCutPrimitive(second);
   if(valfirst == valsecond) return 0;
   if(valfirst > valsecond) return 1;
   return -1;
 }
 
-//______________________________________________________________________________
 Double_t AliEmcalTriggerSelectionCuts::GetCutPrimitive(const AliEMCALTriggerPatchInfo * const patch) const{
-  /*
-   * Return (energy) measure we cut on, depending on the selection method specified
-   *
-   * @param patch: The patch from which to obtain the value
-   * @return: The energy measure of the patch
-   */
-  if(fSelectionMethod == kADC) return static_cast<Double_t>(patch->GetADCAmp());
-  else if(fSelectionMethod == kEnergyRough) return patch->GetADCAmpGeVRough();
-  return patch->GetPatchE();
+  double energy(0);
+  switch(fSelectionMethod){
+  case kADC: energy = static_cast<Double_t>(patch->GetADCAmp()); break;
+  case kEnergyRough: energy = patch->GetADCAmpGeVRough(); break;
+  case kEnergyOfflineSmeared: energy = patch->GetSmearedEnergy(); break;
+  case kEnergyOffline: energy = patch->GetPatchE(); break;
+  default: energy = -1.;
+  };
+  return energy;
 }
 
-//______________________________________________________________________________
 Bool_t AliEmcalTriggerSelectionCuts::SelectPatchType(const AliEMCALTriggerPatchInfo * const patch) const{
-  /*
-   * Select type of the patch according the definitions in the header file
-   *
-   * @param patch: the patch to be checked
-   * @return: selection result (true ig the patch is selected)
-   */
   if(fPatchType == kAnyPatch) return kTRUE;
   if(fUseSimpleOffline){
     if(patch->IsJetLowSimple() && ((fPatchType == kL1JetPatch) || (fPatchType == kL1JetLowPatch))) return kTRUE;
     if(patch->IsJetHighSimple() && ((fPatchType == kL1JetPatch) || (fPatchType == kL1JetHighPatch))) return kTRUE;
     if(patch->IsGammaLowSimple() && ((fPatchType == kL1GammaPatch) || (fPatchType == kL1GammaLowPatch))) return kTRUE;
     if(patch->IsGammaHighSimple() && ((fPatchType == kL1GammaPatch) || (fPatchType == kL1GammaHighPatch))) return kTRUE;
+  } else if(fUseRecalc) {
+    if(patch->IsJetLowRecalc() && ((fPatchType == kL1JetPatch) || (fPatchType == kL1JetLowPatch))) return kTRUE;
+    if(patch->IsJetHighRecalc() && ((fPatchType == kL1JetPatch) || (fPatchType == kL1JetHighPatch))) return kTRUE;
+    if(patch->IsGammaLowRecalc() && ((fPatchType == kL1GammaPatch) || (fPatchType == kL1GammaLowPatch))) return kTRUE;
+    if(patch->IsGammaHighRecalc() && ((fPatchType == kL1GammaPatch) || (fPatchType == kL1GammaHighPatch))) return kTRUE;
   } else {
     if(patch->IsJetLow() && ((fPatchType == kL1JetPatch) || (fPatchType == kL1JetLowPatch))) return kTRUE;
     if(patch->IsJetHigh() && ((fPatchType == kL1JetPatch) || (fPatchType == kL1JetHighPatch))) return kTRUE;
@@ -101,4 +95,47 @@ Bool_t AliEmcalTriggerSelectionCuts::SelectPatchType(const AliEMCALTriggerPatchI
     if(patch->IsLevel0() && fPatchType == kL0Patch) return kTRUE;
   }
   return kFALSE;
+}
+
+Bool_t AliEmcalTriggerSelectionCuts::SelectAcceptance(const AliEMCALTriggerPatchInfo * const patch) const {
+  Bool_t selected(false);
+  switch(fAcceptanceType){
+  case kEMCALAcceptance: selected = patch->IsEMCal(); break;
+  case kDCALAcceptance: selected = patch->IsDCalPHOS(); break;
+  case kEMCALDCALAcceptance: selected = patch->IsEMCal() || patch->IsDCalPHOS(); break;
+  default: selected = false;
+  };
+  return selected;
+}
+
+void AliEmcalTriggerSelectionCuts::PrintStream(std::ostream &stream) const {
+  std::map<AcceptanceType_t, std::string> acceptancetext = {{kEMCALAcceptance, "EMCAL"},
+                                                                      {kDCALAcceptance, "DCAL"},
+                                                                      {kEMCALDCALAcceptance, "EMCAL-DCAL"}};
+  std::map<PatchType_t, std::string> patchtypetext = {{kL0Patch, "Level0"},
+                                                                {kL1GammaPatch, "L1-gamma"},
+                                                                {kL1GammaHighPatch, "L1-gamma, high threshold"},
+                                                                {kL1GammaLowPatch, "L1-gamma, low threshold"},
+                                                                {kL1JetPatch, "L1-jet"},
+                                                                {kL1JetHighPatch, "L1-jet, high threshold"},
+                                                                {kL1JetLowPatch, "L1-jet, low threshold"}};
+  std::map<SelectionMethod_t, std::string> selmodetext = {{kADC, "FastOR ADC"},
+                                                                    {kEnergyRough, "FastOR Energy"},
+                                                                    {kEnergyOffline, "FEE Energy"},
+                                                                    {kEnergyOfflineSmeared, "FEE Energy, decalibrated"}};
+  stream << "  Cut settings:" << std::endl;
+  stream << "    acceptance:      " << acceptancetext.find(fAcceptanceType)->second << std::endl;
+  stream << "    patchtype:       " << patchtypetext.find(fPatchType)->second << std::endl;
+  stream << "    sel mode:        " << selmodetext.find(fSelectionMethod)->second << std::endl;
+  stream << "    Offline Patches: " << (fUseSimpleOffline ? "yes" : "no") << std::endl;
+  stream << "    Recalc Patches:  " << (fUseRecalc ? "yes" : "no") << std::endl;
+  stream << "    Threshold:       " << fThreshold << std::endl;
+}
+
+}
+}
+
+std::ostream &operator<<(std::ostream &stream, const PWG::EMCAL::AliEmcalTriggerSelectionCuts &cuts){
+  cuts.PrintStream(stream);
+  return stream;
 }

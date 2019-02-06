@@ -382,17 +382,6 @@ AliAnalysisPIDTrack::Update(AliESDtrack *track, AliMCEvent *mcevent, AliPIDRespo
   fTOFDeltaZ = track->GetTOFsignalDz();
   track->GetTOFLabel(fTOFLabel);
   fTrackCutFlag = TrackCutFlag;
-  //fHMPIDmomentum = track->GetOuterHmpParam() ? track->GetOuterHmpParam()->P() : 0.;
-  /* HMPID signal with cuts */
-  /*Float_t xPc=0., yPc=0., xMip=0., yMip=0., thetaTrk=0., phiTrk=0.;
-  Int_t nPhot=0, qMip=0;
-  track->GetHMPIDtrk(xPc,yPc,thetaTrk,phiTrk);
-  track->GetHMPIDmip(xMip,yMip,qMip,nPhot);
-  Float_t dist = TMath::Sqrt((xPc-xMip)*(xPc-xMip) + (yPc-yMip)*(yPc-yMip));    
-  if (dist < 0.7 && nPhot < 30 && qMip > 100)
-    fHMPIDsignal = track->GetHMPIDsignal();
-  else
-    fHMPIDsignal = 0.;*/
   /* info from track references */
   fMCTOFTime = 0.;
   fMCTOFLength = 0.;
@@ -401,17 +390,15 @@ AliAnalysisPIDTrack::Update(AliESDtrack *track, AliMCEvent *mcevent, AliPIDRespo
     TClonesArray *arrayTR;
     AliTrackReference *trackRef;
     mcevent->GetParticleAndTR(fTOFLabel[0], particle, arrayTR);
-    if(!arrayTR) {
-      AliFatal("AddAnalysisTaskTPCTOFPID needs AliTrackReference!");
-      return;
-    };
-    for (Int_t itr = 0; itr < arrayTR->GetEntries(); itr++) {
-      trackRef = (AliTrackReference *)arrayTR->At(itr);
-      if (!trackRef || trackRef->DetectorId() != AliTrackReference::kTOF) continue;
-      fMCTOFTime = trackRef->GetTime() * 1.e12; /* s -> ps */
-      fMCTOFLength = trackRef->GetLength();
-      /* break as soon as we get it */
-      break;
+    if(arrayTR) {
+      for (Int_t itr = 0; itr < arrayTR->GetEntries(); itr++) {
+	trackRef = (AliTrackReference *)arrayTR->At(itr);
+	if (!trackRef || trackRef->DetectorId() != AliTrackReference::kTOF) continue;
+	fMCTOFTime = trackRef->GetTime() * 1.e12; /* s -> ps */
+	fMCTOFLength = trackRef->GetLength();
+	/* break as soon as we get it */
+	break;
+      }
     }
   }
   /* info from stack */
@@ -998,6 +985,6 @@ Bool_t AliAnalysisPIDTrack::CheckExtraCuts(Float_t minTPCNcr, Float_t maxChi2Per
   if(fTPCNcr<minTPCNcr) return kFALSE;
   if(fTPCNclsF<=0) return kFALSE;
   if(fTPCchi2/fTPCNclsF > maxChi2PerFindableCluster) return kFALSE;
-  if(TMath::Abs(fImpactParameter[0])>maxDCAz) return kFALSE;
+  if(TMath::Abs(fImpactParameter[1])>maxDCAz) return kFALSE;
   return kTRUE;
 };

@@ -784,7 +784,140 @@ TList * AliAnalysisMuMuSpectraProcessorPbPb::RAAasGraphic(Double_t MUL) const
   return l ;
 }
 
+//_____________________________________________________________________________
+TList* AliAnalysisMuMuSpectraProcessorPbPb::V2asGraphic(const char* what) const
+{
+  /// Print whar number for each results on terminal.
 
+
+  //Check point
+  if(!GetSpectra() || strcmp(what,"")==1 )
+    {
+      AliError("No Spectra or no arguments given !");
+      return 0x0 ;
+    }
+
+  //Graphs with values
+  TGraphErrors* graph(0x0);
+  TGraphErrors* graph_sysUncorr(0x0);
+
+  // Pointers to handle results and subresults and binning
+  AliAnalysisMuMuResult    * result;
+  AliAnalysisMuMuJpsiResult* subresult;
+  AliAnalysisMuMuResult    * sr;
+  AliAnalysisMuMuBinning   ::Range* r;
+  TString swhat(what);
+  // Array to store bins for the while loop
+  TObjArray * bins=GetSpectra()->Binning()->CreateBinObjArray();// (intrinseque 'new')
+  if (!bins)
+  {
+    AliError(Form("Cannot find bins"));
+    return 0x0;
+  }
+
+  //Counters and Iterator for bin
+  Int_t nofResult = 0;
+  TIter nextBin(bins);
+  nextBin.Reset();
+  if(!fSpectraName.Contains("-PT")) AliError(Form("This method is implemented for pt spectra only (%s)",fSpectraName.Data()));
+
+  Double_t * binArray = GetSpectra()->Binning()->CreateBinArray();
+  Int_t      binsX    = GetSpectra()->Binning()->GetNBinsX();
+
+    if (!binArray){// Protection
+      AliError(Form("Cannot set binArray"));
+      return 0x0;
+    }
+    if (binsX==0){// Protection
+      AliError(Form("Cannot set binsX"));
+      return 0x0;
+    }
+    graph           = new TGraphErrors(binsX);
+    graph_sysUncorr = new TGraphErrors(binsX);
+    graph->SetTitle(fSpectraName.Data());
+    graph->SetMinimum(-0.1);
+    graph->SetMaximum(0.25);
+    graph_sysUncorr->SetFillColorAlpha(5,0.05);
+  // Loop on bins
+  //==============================================================================
+  while ((r = static_cast<AliAnalysisMuMuBinning::Range*>(nextBin())))
+  {
+    // Make bin a MuMuResult
+    result = GetSpectra()->GetResultForBin(*r);
+    if (!result)
+    {
+      AliError(Form("Cannot find result "));
+      return 0x0;
+    }
+    AliDebug(1, Form("result(%s) = %p ",result->GetName(),result));
+
+    Int_t nofSubResult = 0; // Counter for subresult
+    TIter nextSubResult(result->SubResults());// Iterator for subresults
+    nextSubResult.Reset();
+
+    //Some variables
+    TString binAsString(r->AsString());// Usefull for the coming loop
+    TString srToExclude("");
+
+    cout << Form(" -_-_-_-_- %s_%s -_-_-_-_- ",binAsString.Data(),GetSpectraName().Data()) << endl;
+
+
+    // Loop on subresults
+    //==============================================================================
+    while ((sr = static_cast<AliAnalysisMuMuResult*>(nextSubResult())))
+    {
+      // Get our final result
+      subresult = static_cast<AliAnalysisMuMuJpsiResult*>(result->SubResult(Form("%s",sr->GetName())));
+      if (!subresult)
+      {
+        AliError(Form("Cannot find subresult "));
+        return 0x0;
+      }
+      AliDebug(1,Form("subresult(%s) = %p",sr->GetName(),subresult));
+      if(sr->GetValue("FitStatus")!=0){
+        srToExclude += Form("%s,",sr->GetName());
+        continue;
+      }
+      //Get quantities
+      Double_t NofJPsiSub      = subresult->GetValue(what);
+      Double_t NofJPsiErrorStat = subresult->GetErrorStat(what);
+
+      //Output messages
+      AliDebug(0,Form(" -------- "));
+
+      if(swhat.Contains("v2"))AliDebug(1,Form(" -- subresult %s :  %.4f +/- %.4f, FitStatus :%.0f",sr->GetName(),NofJPsiSub,NofJPsiErrorStat,sr->GetValue("FitStatus")));
+      else AliDebug(1,Form(" -- subresult %s :  %.0f +/- %.0f, FitStatus :%.0f ",sr->GetName(),NofJPsiSub,NofJPsiErrorStat,sr->GetValue("FitStatus")));
+      nofSubResult++;
+    }
+    AliInfo(Form("Excluded fits : %s",srToExclude.Data()));
+
+    result->Exclude(srToExclude);
+    AliInfo(Form(" -------- "));
+    if(swhat.Contains("v2")) AliInfo(Form(" ------ Mean :  %.4f +/- %.4f (%.1f %%) +/- %.4f (%.1f %%) ------ \n",
+      result->GetValue(what),result->GetErrorStat(what),100*result->GetErrorStat(what)/result->GetValue(what),result->GetRMS(what),100*result->GetRMS(what)/result->GetValue(what)));
+    else AliInfo(Form(" ------ Mean :  %.1f +/- %.1f (%.1f %%) +/- %.1f (%.1f %%) ------ \n",
+      result->GetValue(what),result->GetErrorStat(what),100*result->GetErrorStat(what)/result->GetValue(what),result->GetRMS(what),100*result->GetRMS(what)/result->GetValue(what)));
+    // AliDebug(0,"");
+    nofResult++;
+
+      //Fill graph
+    Double_t binCenter = (binArray[nofResult]-binArray[nofResult-1])/2 + binArray[nofResult-1] ;
+    graph->SetPoint(nofResult-1,binCenter,result->GetValue(what));
+    graph->SetPointError(nofResult-1,r->WidthX()/5,result->GetErrorStat(what));
+    graph_sysUncorr->SetPoint(nofResult-1,binCenter,result->GetValue(what));
+    graph_sysUncorr->SetPointError(nofResult-1,r->WidthX()/5,result->GetRMS(what));
+  }
+
+  TList* l = new TList();
+  l->SetOwner(kTRUE);
+  l->Add(graph);
+  l->Add(graph_sysUncorr);
+
+  delete bins;
+  delete binArray;
+
+  return l ;
+}
 //_____________________________________________________________________________
 Bool_t AliAnalysisMuMuSpectraProcessorPbPb::ComputeRAA(TString sbin, Double_t numArray[], Double_t MUL, Double_t binwidth) const
 {
@@ -925,6 +1058,223 @@ Bool_t AliAnalysisMuMuSpectraProcessorPbPb::ComputeRAA(TString sbin, Double_t nu
     return kFALSE;
   }
  return kTRUE;
+}
+//_____________________________________________________________________________
+void AliAnalysisMuMuSpectraProcessorPbPb::FitDistvsDphi(Double_t ptMin, Double_t ptMax, const char* particle,const char* subresults, Bool_t draw) const
+{
+
+  //
+  // Loops over eachsubresults : gets all the subresults for a given fit function and pt and plots the dphi distribution
+  //  to extract the v2 value
+  //
+
+  //Check point
+  if(!GetSpectra()) return ;
+  AliDebug(2,Form("%s :%p",GetSpectra()->GetName(),GetSpectra()));
+
+  AliAnalysisMuMuBinning   ::Range* r;
+  AliAnalysisMuMuResult    * result;
+  AliAnalysisMuMuJpsiResult* subresult;
+
+  TObjArray* subresArray;
+
+  //
+  TGraphErrors* g =0x0;
+  TF1* fitV2= new TF1("v2","[0]*(1+2*[1]*cos(2*x))",TMath::Pi()/12.,TMath::Pi()*11./12.);
+  fitV2->SetParName(0,"N0");
+  fitV2->SetParName(1,"v2obs");
+  fitV2->SetParameter(1,0.05);
+  Bool_t firstResult =kTRUE;
+
+  //Store values
+  Int_t nFits=0;
+  std::vector<double> v2;
+  std::vector<double> v2Err;
+  std::vector<double> chi2;
+  //
+
+  TObjArray* bins=GetSpectra()->Binning()->CreateBinObjArray();// Array to store bins
+  if (!bins){
+    AliError(Form("Cannot find bins"));
+    return;
+  }
+  //Iterator for bin
+  TIter nextBin(bins);
+  // loop over all the results to find one with the correctPtRange and extract the subresults functions
+  while ((r = static_cast<AliAnalysisMuMuBinning::Range*>(nextBin())))
+  {
+    //check if the ptRange is the requested one
+    AliDebug(2,Form("Binning pt :[%f - %f]",r->Xmin(),r->Xmax()));
+    if(r->Xmin()==ptMin && r->Xmax()==ptMax)
+    {
+      // Make bin a MuMuResult
+      result = GetSpectra()->GetResultForBin(*r);
+      if (!result)
+        {
+          AliError(Form("Cannot find result "));
+          return;
+        }
+
+      AliDebug(2, Form("result(%s) = %p ",result->GetName(),result));
+      subresArray = result->SubResults();
+      TIter nextSr(subresArray);
+
+      //loop over the subresults of one result with the correct ptRange
+      if( firstResult)
+      {
+        AliDebug(2,"First result of the ptBin");
+        while ( ( subresult = static_cast<AliAnalysisMuMuJpsiResult*>(nextSr()) ) )
+        {
+          AliDebug(2, Form("result(%s) = %p ",subresult->GetName(),subresult));
+          AliDebug(1,Form("Calling PlotFlow for fitfunction %s",subresult->GetName()));
+          nFits++;
+          g = PlotFlow(subresult->GetName(),"NofJPsi",ptMin, ptMax);
+          //NofJpsi distribution fit
+          fitV2->SetParameter(0,g->GetMean(2)); //Initialiation with mean value of Y TODO
+          g->Fit("v2","SERI");
+
+          v2.push_back( fitV2->GetParameter(1) );// FitV2ForSubresult() );
+          v2Err.push_back( fitV2->GetParError(1) );// FitV2ForSubresult() );
+          chi2.push_back(fitV2->GetNDF());
+          if(draw) DrawDnDphi(g, fitV2, subresult->GetName(),ptMin,ptMax, v2.back(),v2Err.back());
+          subresult->Set("v2",fitV2->GetParameter(1),fitV2->GetParError(1),fitV2->GetNDF());
+        }
+        firstResult = kFALSE;
+      }
+    }
+  }
+
+  AliInfo(Form("---- Total number of fit functions : %d",nFits));
+  delete fitV2;
+  delete g;
+  return;
+}
+//______________________________________________________________________________
+void AliAnalysisMuMuSpectraProcessorPbPb::DrawDnDphi(TGraphErrors* distribution, TF1* fit, const char* subresName, Double_t ptMin, Double_t ptMax, Double_t v2, Double_t v2Err) const
+{
+  distribution->SetTitle(Form("dN^{J/#Psi} vs #Delta#varphi for fit :%s",subresName));
+  distribution->GetYaxis()->SetTitle("dN^{J/#Psi}/#Delta#varphi");
+  distribution->GetXaxis()->SetTitle("#Delta#varphi = #phi_{dimuon} - #Phi_{EP,2} (rad)");
+  distribution->GetXaxis()->SetRangeUser(0.,TMath::Pi());
+  distribution->GetYaxis()->SetRangeUser(TMath::MaxElement(distribution->GetN(),distribution->GetY()),TMath::MinElement(distribution->GetN(),distribution->GetY()));
+  // fitV2->GetParameter(1) );// FitV2ForSubresult() );
+  // fitV2->GetParError(1) );// FitV2ForSubresult() );
+  // fitV2->GetNDF());
+  TPaveText *pt = new TPaveText(0.1,0.15,0.4,0.28,"nbNDC");
+  pt->SetBorderSize(0);
+  pt->SetFillStyle(0);
+  pt->SetTextColor(kRed);
+  pt->SetTextFont(42);
+
+  if(fSpectraName.Contains("V0M_")){
+    TString cent [2]= {"20.","40."};
+    TText *ptR = pt->AddText(Form("Centrality : %s - %s %%, %.1f < pt < %.1f GeV/c",cent[0].Data(),cent[1].Data(),ptMin,ptMax));
+  }
+
+  TText *col = pt->AddText("PbPb #sqrt{s_{NN}} = 5.02 TeV, 2.5 < y < 4");
+  TCanvas *c = new TCanvas;
+  gStyle->SetOptFit(1111);
+  gStyle->SetStatX(0.89);
+  gStyle->SetStatY(0.89);
+  gStyle->SetStatW(0.1);
+  gStyle->SetStatH(0.1);
+  gStyle->SetStatBorderSize(0);
+  distribution->Draw("ap");
+  fit->Draw("same");
+  pt->Draw();
+  return;
+}
+//______________________________________________________________________________
+TGraphErrors* AliAnalysisMuMuSpectraProcessorPbPb::PlotFlow(const char* fitResultName, const char* what, Double_t ptBinMin, Double_t ptBinMax, Bool_t divideByBinWidth ) const
+{
+  //Create a spectra of what vs DeltaPhi for a given [ptmin,ptmax] bin
+  AliDebug(1,Form("------ creating flow spectra for fit function %s",fitResultName));
+
+  AliAnalysisMuMuBinning* spectraBinning = GetSpectra()->Binning();
+  TObjArray* bins=spectraBinning->CreateBinObjArray();// Array to store bins
+  if (!bins){
+    AliError(Form("Cannot find bins"));
+    return 0x0;
+  }
+
+  AliAnalysisMuMuBinning   ::Range* r;
+  AliAnalysisMuMuResult    * result;
+  AliAnalysisMuMuJpsiResult* subresult;
+
+  //Initializing the graph
+  TGraphErrors* graph(0x0);
+  Int_t nbinsX = spectraBinning->GetNBinsY();//2nd bin of 2Dbin (Y) is the abscissa of our graph
+  AliDebug(1,Form("number of deltaphiBins : %d",nbinsX));
+  Double_t  dphival[nbinsX];
+  Double_t  dphierr[nbinsX];
+  Double_t  njpsi[nbinsX];
+  Double_t  errors[nbinsX];
+  Double_t z;
+  Double_t zerr;
+
+  Int_t nFoundResultWithFit=0;//for safety check at the end
+
+ //Iterator for bin
+  TIter nextBin(bins);
+  // loop over all the results to find one with the correctPtRange and extract the subresults functions
+  while ((r = static_cast<AliAnalysisMuMuBinning::Range*>(nextBin())))
+  {
+    result = GetSpectra()->GetResultForBin(*r);
+    // AliAnalysisMuMuJpsiResult* r = static_cast<AliAnalysisMuMuJpsiResult*>(GetSpectra()->BinContentArray()->At(j));
+    AliDebug(2, Form("result(%s) = %p ",result->GetName(),result));
+
+    if ( strlen(fitResultName) > 0 && result->SubResults() && r->Xmin()==ptBinMin && r->Xmax()==ptBinMax)
+    {
+      // TString sub(subresult);
+      //The subresult that we want
+      subresult = static_cast<AliAnalysisMuMuJpsiResult*>(result->SubResult(fitResultName));
+      if (!subresult){
+        AliError(Form("Cannot find subresult %s for result %s",fitResultName,result->GetName()));
+        return 0x0;
+      }
+      AliDebug(2, Form("Fitfunction %s found : result = %p ",fitResultName, subresult));
+
+      if(subresult)//checking fit status before adding it
+      {
+        //Getting the values for the graph
+        z = subresult->GetValue(what);
+        zerr = subresult->GetErrorStat(what);
+        // if ( what.Contains("AccEff",TString::kIgnoreCase) )
+        // {
+        //   if ( z < 0. || z > 5.)
+        //   {
+        //     z = -1.;
+        //     zerr = 0.;
+        //   }
+        // }
+
+        if ( divideByBinWidth && r->WidthX()>0 )
+        {
+          z /= (r->WidthX()*r->WidthY());
+          zerr /= (r->WidthX()*r->WidthY());
+        }
+
+        // std::cout << r->AsString();
+        // AliDebug(1,Form("Values : %f +/- %f",z,zerr));
+        std::cout << Form("Values : %f +/- %f",z,zerr) <<endl;
+
+        dphival[nFoundResultWithFit] = (r->Ymin() + r->Ymax())/2.;
+        dphierr[nFoundResultWithFit]=(r->Ymax() - r->Ymin())/2.;;
+        njpsi[nFoundResultWithFit]=z;
+        errors[nFoundResultWithFit]=zerr;
+        nFoundResultWithFit++;
+      }
+    }
+  }
+
+  if(nFoundResultWithFit!=nbinsX){
+    AliError(Form("%d subresults are missing, check your fit status",TMath::Abs(nFoundResultWithFit - nbinsX)));
+    return 0x0;
+  }
+
+  if(!graph) graph= new TGraphErrors(nbinsX,dphival,njpsi,dphierr,errors);
+
+  return graph;
 }
 
 //_____________________________________________________________________________

@@ -67,7 +67,7 @@ BuildConfiguration(
   AFALK::PairCutParams &aPairCutParams,
   MacroParams &aMac,
   CutVariations &aCutVariationsMin,
-  CutVariations &aCutVariationsMax,
+  CutVariations &aCutVariationsMax
 );
 
 void

@@ -71,38 +71,73 @@ public:
     kPbPb2015_pure_kaon_pt400_wTPCcut,
     kPbPb2015_pure_proton_pt400_wTPCcut,
     kPbPb2015_pure_electron_pt400,
+    kPbPb2015_pure_electron_pt200,
     kPbPb2015_pure_electron_pt400_woTOF,
     kPbPb2015_pure_pion_pt400,
     kPbPb2015_pure_kaon_pt400,
     kPbPb2015_pure_proton_pt400,
+
+    kPbPb2015_Pt200_cut5_woTPCelecut,
+    kPbPb2015_Pt200_cut5_woPionRej,
+    kPbPb2015_pure_electron_pt200_woTPCelecut,
+    kPbPb2015_pure_kaon_pt200_woTPCelecut,
+    kPbPb2015_pure_proton_pt200_woTPCelecut,
+    kPbPb2015_pure_pion_pt200_wTPCelecut,
+
     // no PID
     kITSTPCTOFif_trkSPDfirst_kINT7_pt400_woPID,
     // Analysis cuts
     kPbPb2015_Pt400_PID_cutoff_pion_kaon_proton,
+    kPbPb2015_Pt200_PID_cutoff_pion_kaon_proton,
     kPbPb2015_Pt400_tightTOFreq,
     kPbPb2015_Pt400_symTOFreq,
     kPbPb2015_Pt400_tightTOFif,
     kPbPb2015_Pt400_looseTOFif,
+    kPbPb2015_Pt400_noTOF,
+    kPDGelectron,
+    kPDGelectronMotherPhoton,
     kPIDcut_0,
-    kPIDcut_1,
-    kPIDcut_2,
-    kPIDcut_3,
-    kPIDcut_4,
-    kPIDcut_5,
-    kPIDcut_6,
-    kPIDcut_7,
-    kPIDcut_8,
-    kPIDcut_9,
-    kPIDcut_10,
-    kPIDcut_11,
-    kPIDcut_12,
-    kPIDcut_13,
-    kPIDcut_14,
-    kPIDcut_15,
-    kPIDcut_16,
-    kPIDcut_17,
-    kPIDcut_18,
-    kPIDcut_19,
+    kPIDcut_1_pt400,
+    kPIDcut_2_pt400,
+    kPIDcut_3_pt400,
+    kPIDcut_4_pt400,
+    kPIDcut_5_pt400,
+    kPIDcut_6_pt400,
+    kPIDcut_7_pt400,
+    kPIDcut_8_pt400,
+    kPIDcut_9_pt400,
+    kPIDcut_10_pt400,
+    kPIDcut_11_pt400,
+    kPIDcut_12_pt400,
+    kPIDcut_13_pt400,
+    kPIDcut_14_pt400,
+    kPIDcut_15_pt400,
+    kPIDcut_16_pt400,
+    kPIDcut_17_pt400,
+    kPIDcut_18_pt400,
+    kPIDcut_19_pt400,
+    kPIDcut_20_pt400,
+    kPIDcut_1_pt200,
+    kPIDcut_2_pt200,
+    kPIDcut_3_pt200,
+    kPIDcut_4_pt200,
+    kPIDcut_5_pt200,
+    kPIDcut_6_pt200,
+    kPIDcut_7_pt200,
+    kPIDcut_8_pt200,
+    kPIDcut_9_pt200,
+    kPIDcut_10_pt200,
+    kPIDcut_11_pt200,
+    kPIDcut_12_pt200,
+    kPIDcut_13_pt200,
+    kPIDcut_14_pt200,
+    kPIDcut_15_pt200,
+    kPIDcut_16_pt200,
+    kPIDcut_17_pt200,
+    kPIDcut_18_pt200,
+    kPIDcut_19_pt200,
+    kPIDcut_20_pt200,
+    kPIDcut_11_Version1,
     // Contamination Study
     kPbPb2015_Pt400_TPCele_AsymITS_tightTOFif_noTPCcut,
     kPbPb2015_Pt400_TPCele_AsymITS_tightTOFif_noITScut,
@@ -111,10 +146,23 @@ public:
     kPbPb2015_Pt400_TPCele_AsymITS_tightTOFreq_noITScut,
     kPbPb2015_Pt400_TPCele_AsymITS_tightTOFreq_noPionRej,
     // MISC
+    kPbPb2015_pure_electron_pt200_woTOF,
+    kPbPb2015_pure_electron_pt200_wTOFhit,
+    kPbPb2015_pure_electron_pt200_wTOFif,
+    kPbPb2015_pure_electron_pt200_wTOFreq,
+    kPbPb2015_PDG_pure_electron_pt200_woTOF,
+    kPbPb2015_PDG_pure_electron_pt200_wTOFhit,
+    kPbPb2015_PDG_pure_electron_pt200_wTOFif,
+    kPbPb2015_PDG_pure_electron_pt200_wTOFreq,
+
     knanoAODTOFeffCut,
     knanoAODTOFeffCut_wTOF,
     kPionTOFeff_wTOF,
     kPionTOFeff_woTOF,
+    kPionTOFeff_wTOF,
+    kPionTOFeff_woTOF,
+    kPionTOFeff_wTOF3Sreq,
+    kPionTOFeff_wTOF3Sif,
     kPbPb2015_Pt100_ResolutionCuts
   };
   enum LMEEPIDPre{
@@ -123,11 +171,26 @@ public:
   // Possible Track Selections
   enum LMEETrackSelectionAna{
     kV0,
+    kResolutionTrackCuts,
     kSPDfirst,
+    kSPDfirst_0SITSCl,
+    kSPDfirst_ITSMAP,
+    kSPDfirst_InverseSharedCluster,
+    kITSdEdxConvRej,
+    kSPDfirst_PDGCodePion,
+    kSPDfirst_PDGCodeElectron,
+    kSPDfirst_noConversion,
+    kSPDfirst_Charm,
     kITSSA,
     kNone,
     kTRACKcut_0,
     kTRACKcut_1,
+    kTRACKcut_1_onlySC,
+    kTRACKcut_1_onlySC_V0Finder,
+    kTRACKcut_1_noSC,
+    kTRACKcut_1_1SITSCl,
+    kTRACKcut_1_2SITSCl,
+    kTRACKcut_1_3SITSCl,
     kTRACKcut_2,
     kTRACKcut_3,
     kTRACKcut_4,
@@ -145,7 +208,12 @@ public:
     kTRACKcut_16,
     kTRACKcut_17,
     kTRACKcut_18,
-    kTRACKcut_19
+    kTRACKcut_19,
+    kTRACKcut_20,
+    kTRACKcut_11_0SITSCl_Version1,
+    kTRACKcut_11_1SITSCl_Version1,
+    kTRACKcut_11_3SITSCl_Version1,
+    kTRACKcut_11_Version1
   };
   enum LMEETrackSelectionPre{
     kPrefilter_cut1
@@ -171,10 +239,17 @@ public:
   };
   // Possible Centralty Selections
   enum LMEECentSel{
-    kPbPbCentral,     // 0%-10%
-    kPbPbSemiCentral, //10%-50%
-    kPbPbPeripheral,  //50%-90%
-    kPbPb_00to80,     //0%-80%
+    kPbPb0010,     // 0%-10%
+    kPbPb1050, //10%-50%
+    kPbPb5080,  //50%-80%
+    kPbPb0080,     //0%-80%
+    kPbPb0020,
+    kPbPb2080,
+    kPbPb1020,
+    kPbPb2040,
+    kPbPb4050,
+    kPbPb5060,
+    kPbPb6080
   };
   enum LMEEEventMixing{
     kEventMixing_1  // 5 classes Z-Vertex, 7 classes centrality
@@ -203,7 +278,7 @@ public:
   AliAnalysisCuts* GetTrackSelectionPre(AnalysisCut AnaCut);
   AliDielectronCutGroup* GetTrackCuts(Int_t cutSet);
   AliAnalysisCuts* GetESDTrackCutsAna(AnalysisCut AnaCut);
-  AliDielectronCutGroup* LMEECutLib::SetKinematics(AliDielectronVarCuts *etaRange, AliDielectronVarCuts *ptRange, AliDielectronPID* PID, AnalysisCut AnaCut) {
+  AliDielectronCutGroup* LMEECutLib::SetKinematics(AliDielectronVarCuts *etaRange, AliDielectronVarCuts *ptRange, AliAnalysisCuts* PID, AnalysisCut AnaCut) {
     AliDielectronCutGroup* cgPIDCutsAna = new AliDielectronCutGroup("cgPIDCutsAna","cgPIDCutsAna",AliDielectronCutGroup::kCompAND);
     cgPIDCutsAna->AddCut(etaRange);
     cgPIDCutsAna->AddCut(ptRange);
@@ -213,15 +288,15 @@ public:
   }
 
 
-  void SetEtaCorrection(AliDielectron *die, Int_t corrZdim, Int_t corrYdim); //giving default value fails: /* = AliDielectronVarManager::kEta*/
+  void SetEtaCorrectionTPC(AliDielectron *die, Int_t corrZdim, Int_t corrYdim); //giving default value fails: /* = AliDielectronVarManager::kEta*/
 
 };
 
-void LMEECutLib::SetEtaCorrection(AliDielectron *die, Int_t corrXdim, Int_t corrYdim, Int_t corrZdim, Bool_t runwise) {
+void LMEECutLib::SetEtaCorrectionTPC(AliDielectron *die, Int_t corrXdim, Int_t corrYdim, Int_t corrZdim, Bool_t runwise) {
   //
   // eta correction for the centroid and width of electron sigmas in the TPC, can be one/two/three-dimensional
   //
-  std::cout << "starting LMEECutLib::SetEtaCorrection()\n";
+  std::cout << "starting LMEECutLib::SetEtaCorrectionTPC()\n";
   std::string file_name = "/home/cklein/LMeeAnaFW/005_TPC_Recalibration/summary/output.root";
 
   TFile* _file = TFile::Open(file_name.c_str());
@@ -295,22 +370,43 @@ AliDielectronEventCuts* LMEECutLib::GetEventCuts(Int_t cutSet) {
 AliAnalysisCuts* LMEECutLib::GetCentralityCuts(AnalysisCut AnaCut) {
   AliDielectronVarCuts* centCuts = 0x0;
   switch (AnaCut.GetCentrality()) {
-    case kPbPbCentral:
-      centCuts = new AliDielectronVarCuts("centCuts","CentralityPbPbCentral");
-      centCuts->AddCut(AliDielectronVarManager::kCentralityNew,0.,10.);
+    case kPbPb0010:
+      centCuts = new AliDielectronVarCuts("centCuts","kPbPb0010");
+      centCuts->AddCut(AliDielectronVarManager::kCentralityNew, 0.001, 10.);
       break;
-    case kPbPbSemiCentral:
-      centCuts = new AliDielectronVarCuts("centCuts","CentralityPbPbSemiCentral");
-      centCuts->AddCut(AliDielectronVarManager::kCentralityNew,10.,50.);
+    case kPbPb1050:
+      centCuts = new AliDielectronVarCuts("centCuts","kPbPb1050");
+      centCuts->AddCut(AliDielectronVarManager::kCentralityNew, 10., 50.);
       break;
-    case kPbPbPeripheral:
-      centCuts = new AliDielectronVarCuts("centCuts","CentralityPbPbPeripheral");
-      centCuts->AddCut(AliDielectronVarManager::kCentralityNew,50.,80.);
+    case kPbPb5080:
+      centCuts = new AliDielectronVarCuts("centCuts","kPbPb5080");
+      centCuts->AddCut(AliDielectronVarManager::kCentralityNew, 50., 80.);
       break;
-    case kPbPb_00to80:
-      centCuts = new AliDielectronVarCuts("centCuts","CentralityPbPb_00to80");
-      centCuts->AddCut(AliDielectronVarManager::kCentralityNew,0.01,80.);
+    case kPbPb0080:
+      centCuts = new AliDielectronVarCuts("centCuts","kPbPb0080");
+      centCuts->AddCut(AliDielectronVarManager::kCentralityNew, 0.001, 80.);
       break;
+    case kPbPb1020:
+      centCuts = new AliDielectronVarCuts("centCuts","kPbPb1020");
+      centCuts->AddCut(AliDielectronVarManager::kCentralityNew, 10., 20.);
+      break;
+    case kPbPb2040:
+      centCuts = new AliDielectronVarCuts("centCuts","kPbPb0020");
+      centCuts->AddCut(AliDielectronVarManager::kCentralityNew, 20., 40.);
+      break;
+    case kPbPb4050:
+      centCuts = new AliDielectronVarCuts("centCuts","kPbPb4050");
+      centCuts->AddCut(AliDielectronVarManager::kCentralityNew, 40., 50.);
+      break;
+    case kPbPb5060:
+      centCuts = new AliDielectronVarCuts("centCuts","kPbPb5060");
+      centCuts->AddCut(AliDielectronVarManager::kCentralityNew, 50., 60.);
+      break;
+    case kPbPb6080:
+      centCuts = new AliDielectronVarCuts("centCuts","kPbPb6080");
+      centCuts->AddCut(AliDielectronVarManager::kCentralityNew, 60., 80.);
+      break;
+
     default: cout << "No Centrality selected" << endl;
   }
   return centCuts;
@@ -335,7 +431,7 @@ AliDielectronMixingHandler* LMEECutLib::GetMixingHandler(AnalysisCut AnaCut) {
       mixingHandler->AddVariable(AliDielectronVarManager::kZvPrim,"-10,-5,0,5,10");
       mixingHandler->AddVariable(AliDielectronVarManager::kCentralityNew,"0,5,10,20,30,50,80");
       mixingHandler->AddVariable(AliDielectronVarManager::kQnTPCrpH2, 6, TMath::Pi()/-2., TMath::Pi()/2.);
-      mixingHandler->SetDepth(40);
+      mixingHandler->SetDepth(60);
       mixingHandler->SetMixType(AliDielectronMixingHandler::kAll);
       break;
     default: cout << "No Mixer defined" << endl;
@@ -391,12 +487,33 @@ AliAnalysisCuts* LMEECutLib::GetPIDCutsAna(AnalysisCut AnaCut) {
   // eta range:
   AliDielectronVarCuts *etaRange080 = new AliDielectronVarCuts("etaRange080","etaRange080");
   etaRange080->AddCut(AliDielectronVarManager::kEta, -0.80, 0.80);
+  AliDielectronVarCuts *etaRange120 = new AliDielectronVarCuts("etaRange120","etaRange120");
+  etaRange120->AddCut(AliDielectronVarManager::kEta, -1.20, 1.20);
   // pt range:
   AliDielectronVarCuts *ptRange400to8000 = new AliDielectronVarCuts("ptRange400to8000","ptRange400to8000");
   ptRange400to8000->AddCut(AliDielectronVarManager::kPt, 0.4, 8.0);
   AliDielectronVarCuts *ptRange100to8000 = new AliDielectronVarCuts("ptRange100to8000","ptRange100to8000");
   ptRange100to8000->AddCut(AliDielectronVarManager::kPt, 0.1, 8.0);
+  AliDielectronVarCuts *ptRange200to8000 = new AliDielectronVarCuts("ptRange200to8000","ptRange200to8000");
+  ptRange200to8000->AddCut(AliDielectronVarManager::kPt, 0.2, 8.0);
 
+  // PDG Code PID
+  AliDielectronVarCuts *PDGelectron = new AliDielectronVarCuts("PDGelectron","PDGelectron");
+  PDGelectron->AddCut(AliDielectronVarManager::kPdgCode, 11.);
+  AliDielectronVarCuts *PDGpositron = new AliDielectronVarCuts("PDGelectron","PDGelectron");
+  PDGpositron->AddCut(AliDielectronVarManager::kPdgCode, -11.);
+  AliDielectronCutGroup* PDGlepton = new AliDielectronCutGroup("PDGlepton","PDGlepton",AliDielectronCutGroup::kCompOR);
+  PDGlepton->AddCut(PDGelectron);
+  PDGlepton->AddCut(PDGpositron);
+
+  // PDG Code PID
+  AliDielectronVarCuts *MotherIsPhoton = new AliDielectronVarCuts("MotherIsPhoton","MotherIsPhoton");
+  MotherIsPhoton->AddCut(AliDielectronVarManager::kPdgCodeMother, 22.);
+
+  AliDielectronCutGroup* PDGleptonMotherPhoton = new AliDielectronCutGroup("PDGleptonMotherPhoton","PDGleptonMotherPhoton",AliDielectronCutGroup::kCompOR);
+  PDGleptonMotherPhoton->AddCut(PDGelectron);
+  PDGleptonMotherPhoton->AddCut(PDGpositron);
+  PDGleptonMotherPhoton->AddCut(MotherIsPhoton);
 
   // Normal Analysis Cuts
   AliDielectronPID *pid_TPCele_AsymITS_tightTOFif = new AliDielectronPID("pid_TPCele_AsymITS_tightTOFif","pid_TPCele_AsymITS_tightTOFif");
@@ -407,14 +524,19 @@ AliAnalysisCuts* LMEECutLib::GetPIDCutsAna(AnalysisCut AnaCut) {
 
   AliDielectronPID *pid_TPCele_AsymITS_looseTOFif = new AliDielectronPID("pid_TPCele_AsymITS_looseTOFif","pid_TPCele_AsymITS_looseTOFif");
   pid_TPCele_AsymITS_looseTOFif->AddCut(AliDielectronPID::kTPC,AliPID::kElectron, -2.0, 3. , 0. ,100., kFALSE);
-  pid_TPCele_AsymITS_looseTOFif->AddCut(AliDielectronPID::kTPC,AliPID::kPion,     -99., 5. , 0. ,100., kTRUE);
+  pid_TPCele_AsymITS_looseTOFif->AddCut(AliDielectronPID::kTPC,AliPID::kPion,     -99., 4. , 0. ,100., kTRUE);
   pid_TPCele_AsymITS_looseTOFif->AddCut(AliDielectronPID::kITS,AliPID::kElectron, -3. , 1. , 0. ,100., kFALSE);
   pid_TPCele_AsymITS_looseTOFif->AddCut(AliDielectronPID::kTOF,AliPID::kElectron, -3. , 3. , 0. ,100., kFALSE, AliDielectronPID::kIfAvailable);
 
+  AliDielectronPID *pid_TPCele_AsymITS_noTOF = new AliDielectronPID("pid_TPCele_AsymITS_noTOF","pid_TPCele_AsymITS_noTOF");
+  pid_TPCele_AsymITS_noTOF->AddCut(AliDielectronPID::kTPC,AliPID::kElectron, -2.0, 3. , 0. ,100., kFALSE);
+  pid_TPCele_AsymITS_noTOF->AddCut(AliDielectronPID::kTPC,AliPID::kPion,     -99., 5. , 0. ,100., kTRUE);
+  pid_TPCele_AsymITS_noTOF->AddCut(AliDielectronPID::kITS,AliPID::kElectron, -3. , 1. , 0. ,100., kFALSE);
+
   AliDielectronPID *pid_TPCele_AsymITS_tightTOFreq = new AliDielectronPID("pid_TPCele_AsymITS_tightTOFreq","pid_TPCele_AsymITS_tightTOFreq");
   pid_TPCele_AsymITS_tightTOFreq->AddCut(AliDielectronPID::kTPC,AliPID::kElectron, -2.0, 3. , 0. ,100., kFALSE);
-  pid_TPCele_AsymITS_tightTOFreq->AddCut(AliDielectronPID::kTPC,AliPID::kPion,     -99., 5. , 0. ,100., kTRUE);
-  pid_TPCele_AsymITS_tightTOFreq->AddCut(AliDielectronPID::kITS,AliPID::kElectron, -3. , 3. , 0. ,100., kFALSE);
+  pid_TPCele_AsymITS_tightTOFreq->AddCut(AliDielectronPID::kTPC,AliPID::kPion,     -99., 4. , 0. ,100., kTRUE);
+  pid_TPCele_AsymITS_tightTOFreq->AddCut(AliDielectronPID::kITS,AliPID::kElectron, -3. , 1. , 0. ,100., kFALSE);
   pid_TPCele_AsymITS_tightTOFreq->AddCut(AliDielectronPID::kTOF,AliPID::kElectron, -3. , 3. , 0. ,100., kFALSE, AliDielectronPID::kRequire);
 
   AliDielectronPID *pid_TPCele_AsymITS_symTOFreq = new AliDielectronPID("pid_TPCele_AsymITS_symTOFreq","pid_TPCele_AsymITS_symTOFreq");
@@ -429,137 +551,140 @@ AliAnalysisCuts* LMEECutLib::GetPIDCutsAna(AnalysisCut AnaCut) {
   PID_cutoff_pion_kaon_proton->AddCut(AliDielectronPID::kTPC,AliPID::kKaon,     -2.0, 2. , 0. ,100., kTRUE);
   PID_cutoff_pion_kaon_proton->AddCut(AliDielectronPID::kTPC,AliPID::kProton,   -2.0, 2. , 0. ,100., kTRUE);
   PID_cutoff_pion_kaon_proton->AddCut(AliDielectronPID::kTOF,AliPID::kElectron, -3. , 3. , 0. ,100., kFALSE, AliDielectronPID::kIfAvailable);
-  PID_cutoff_pion_kaon_proton->AddCut(AliDielectronPID::kITS,AliPID::kElectron, -3. , 3. , 0. ,100., kFALSE, AliDielectronPID::kIfAvailable);
+  // PID_cutoff_pion_kaon_proton->AddCut(AliDielectronPID::kITS,AliPID::kElectron, -3. , 3. , 0. ,100., kFALSE, AliDielectronPID::kIfAvailable);
 
   AliDielectronPID *PID_cutoff_pion_kaon_proton_EleIncl = new AliDielectronPID("PID_cutoff_pion_kaon_proton_EleIncl","PID_cutoff_pion_kaon_proton_EleIncl");
   PID_cutoff_pion_kaon_proton_EleIncl->AddCut(AliDielectronPID::kTPC,AliPID::kPion,    -99.0, 4. , 0. ,100., kTRUE);
   PID_cutoff_pion_kaon_proton_EleIncl->AddCut(AliDielectronPID::kTPC,AliPID::kElectron, -2.5, 3. , 0. ,100., kFALSE);
   PID_cutoff_pion_kaon_proton_EleIncl->AddCut(AliDielectronPID::kTOF,AliPID::kElectron, -3. , 3. , 0. ,100., kFALSE, AliDielectronPID::kRequire);
-  PID_cutoff_pion_kaon_proton_EleIncl->AddCut(AliDielectronPID::kITS,AliPID::kElectron, -3. , 3. , 0. ,100., kFALSE, AliDielectronPID::kIfAvailable);
+  // PID_cutoff_pion_kaon_proton_EleIncl->AddCut(AliDielectronPID::kITS,AliPID::kElectron, -3. , 3. , 0. ,100., kFALSE, AliDielectronPID::kIfAvailable);
 
   AliDielectronCutGroup* PID_cutoff_pion_kaon_proton_cg = new AliDielectronCutGroup("PID_cutoff_pion_kaon_proton_cg","PID_cutoff_pion_kaon_proton_cg",AliDielectronCutGroup::kCompOR);
   PID_cutoff_pion_kaon_proton_cg->AddCut(PID_cutoff_pion_kaon_proton);
   PID_cutoff_pion_kaon_proton_cg->AddCut(PID_cutoff_pion_kaon_proton_EleIncl);
 
-  AliDielectronPID *PIDcut_0 = new AliDielectronPID("PIDcut_0","PIDcut_0");
-  PIDcut_0->AddCut(AliDielectronPID::kTPC,AliPID::kElectron, -1.5, 3.5 , 0. ,100., kFALSE);
-  PIDcut_0->AddCut(AliDielectronPID::kTPC,AliPID::kPion, -99, 5.0 , 0. ,100., kTRUE);
-  PIDcut_0->AddCut(AliDielectronPID::kITS,AliPID::kElectron, -3.5, 0.5 , 0. ,100., kFALSE);
-  PIDcut_0->AddCut(AliDielectronPID::kTOF,AliPID::kElectron, -3.0. , 3.0 , 0. ,100., kFALSE, AliDielectronPID::kIfAvailable);
+
 
   AliDielectronPID *PIDcut_1 = new AliDielectronPID("PIDcut_1","PIDcut_1");
   PIDcut_1->AddCut(AliDielectronPID::kTPC,AliPID::kElectron, -2.0, 3.5 , 0. ,100., kFALSE);
-  PIDcut_1->AddCut(AliDielectronPID::kTPC,AliPID::kPion, -99, 5.0 , 0. ,100., kTRUE);
-  PIDcut_1->AddCut(AliDielectronPID::kITS,AliPID::kElectron, -3.5, 1.0 , 0. ,100., kFALSE);
-  PIDcut_1->AddCut(AliDielectronPID::kTOF,AliPID::kElectron, -3.5. , 3.5 , 0. ,100., kFALSE, AliDielectronPID::kRequire);
+  PIDcut_1->AddCut(AliDielectronPID::kTPC,AliPID::kPion, -99, 3.5 , 0. ,100., kTRUE);
+  PIDcut_1->AddCut(AliDielectronPID::kITS,AliPID::kElectron, -3.5, 0.5 , 0. ,100., kFALSE);
+  PIDcut_1->AddCut(AliDielectronPID::kTOF,AliPID::kElectron, -2.5 , 3.0 , 0. ,100., kFALSE, AliDielectronPID::kIfAvailable);
 
   AliDielectronPID *PIDcut_2 = new AliDielectronPID("PIDcut_2","PIDcut_2");
-  PIDcut_2->AddCut(AliDielectronPID::kTPC,AliPID::kElectron, -1.0, 3.0 , 0. ,100., kFALSE);
-  PIDcut_2->AddCut(AliDielectronPID::kTPC,AliPID::kPion, -99, 5.0 , 0. ,100., kTRUE);
+  PIDcut_2->AddCut(AliDielectronPID::kTPC,AliPID::kElectron, -1.5, 3.5 , 0. ,100., kFALSE);
+  PIDcut_2->AddCut(AliDielectronPID::kTPC,AliPID::kPion, -99, 4.5 , 0. ,100., kTRUE);
   PIDcut_2->AddCut(AliDielectronPID::kITS,AliPID::kElectron, -3.5, 1.0 , 0. ,100., kFALSE);
-  PIDcut_2->AddCut(AliDielectronPID::kTOF,AliPID::kElectron, -2.5. , 3.0 , 0. ,100., kFALSE, AliDielectronPID::kRequire);
+  PIDcut_2->AddCut(AliDielectronPID::kTOF,AliPID::kElectron, -2.5 , 2.5 , 0. ,100., kFALSE, AliDielectronPID::kIfAvailable);
 
   AliDielectronPID *PIDcut_3 = new AliDielectronPID("PIDcut_3","PIDcut_3");
   PIDcut_3->AddCut(AliDielectronPID::kTPC,AliPID::kElectron, -2.0, 3.0 , 0. ,100., kFALSE);
-  PIDcut_3->AddCut(AliDielectronPID::kTPC,AliPID::kPion, -99, 4.0 , 0. ,100., kTRUE);
-  PIDcut_3->AddCut(AliDielectronPID::kITS,AliPID::kElectron, -2.5, 1.5 , 0. ,100., kFALSE);
-  PIDcut_3->AddCut(AliDielectronPID::kTOF,AliPID::kElectron, -3.5. , 3.5 , 0. ,100., kFALSE, AliDielectronPID::kRequire);
+  PIDcut_3->AddCut(AliDielectronPID::kTPC,AliPID::kPion, -99, 3.5 , 0. ,100., kTRUE);
+  PIDcut_3->AddCut(AliDielectronPID::kITS,AliPID::kElectron, -3.0, 1.0 , 0. ,100., kFALSE);
+  PIDcut_3->AddCut(AliDielectronPID::kTOF,AliPID::kElectron, -3.0 , 2.5 , 0. ,100., kFALSE, AliDielectronPID::kIfAvailable);
 
   AliDielectronPID *PIDcut_4 = new AliDielectronPID("PIDcut_4","PIDcut_4");
-  PIDcut_4->AddCut(AliDielectronPID::kTPC,AliPID::kElectron, -2.0, 3.5 , 0. ,100., kFALSE);
-  PIDcut_4->AddCut(AliDielectronPID::kTPC,AliPID::kPion, -99, 5.0 , 0. ,100., kTRUE);
-  PIDcut_4->AddCut(AliDielectronPID::kITS,AliPID::kElectron, -3.5, 1.0 , 0. ,100., kFALSE);
-  PIDcut_4->AddCut(AliDielectronPID::kTOF,AliPID::kElectron, -2.5. , 2.5 , 0. ,100., kFALSE, AliDielectronPID::kIfAvailable);
+  PIDcut_4->AddCut(AliDielectronPID::kTPC,AliPID::kElectron, -1.5, 3.0 , 0. ,100., kFALSE);
+  PIDcut_4->AddCut(AliDielectronPID::kTPC,AliPID::kPion, -99, 4.5 , 0. ,100., kTRUE);
+  PIDcut_4->AddCut(AliDielectronPID::kITS,AliPID::kElectron, -3.0, 1.0 , 0. ,100., kFALSE);
+  PIDcut_4->AddCut(AliDielectronPID::kTOF,AliPID::kElectron, -2.5 , 3.0 , 0. ,100., kFALSE, AliDielectronPID::kIfAvailable);
 
   AliDielectronPID *PIDcut_5 = new AliDielectronPID("PIDcut_5","PIDcut_5");
-  PIDcut_5->AddCut(AliDielectronPID::kTPC,AliPID::kElectron, -2.0, 3.5 , 0. ,100., kFALSE);
-  PIDcut_5->AddCut(AliDielectronPID::kTPC,AliPID::kPion, -99, 4.0 , 0. ,100., kTRUE);
-  PIDcut_5->AddCut(AliDielectronPID::kITS,AliPID::kElectron, -2.5, 1.5 , 0. ,100., kFALSE);
-  PIDcut_5->AddCut(AliDielectronPID::kTOF,AliPID::kElectron, -3.0. , 2.5 , 0. ,100., kFALSE, AliDielectronPID::kIfAvailable);
+  PIDcut_5->AddCut(AliDielectronPID::kTPC,AliPID::kElectron, -2.0, 3.0 , 0. ,100., kFALSE);
+  PIDcut_5->AddCut(AliDielectronPID::kTPC,AliPID::kPion, -99, 4.5 , 0. ,100., kTRUE);
+  PIDcut_5->AddCut(AliDielectronPID::kITS,AliPID::kElectron, -3.5, 0.5 , 0. ,100., kFALSE);
+  PIDcut_5->AddCut(AliDielectronPID::kTOF,AliPID::kElectron, -3.0 , 3.0 , 0. ,100., kFALSE, AliDielectronPID::kIfAvailable);
 
   AliDielectronPID *PIDcut_6 = new AliDielectronPID("PIDcut_6","PIDcut_6");
-  PIDcut_6->AddCut(AliDielectronPID::kTPC,AliPID::kElectron, -1.0, 3.5 , 0. ,100., kFALSE);
-  PIDcut_6->AddCut(AliDielectronPID::kTPC,AliPID::kPion, -99, 5.0 , 0. ,100., kTRUE);
-  PIDcut_6->AddCut(AliDielectronPID::kITS,AliPID::kElectron, -3.0, 1.0 , 0. ,100., kFALSE);
-  PIDcut_6->AddCut(AliDielectronPID::kTOF,AliPID::kElectron, -2.5. , 3.5 , 0. ,100., kFALSE, AliDielectronPID::kIfAvailable);
+  PIDcut_6->AddCut(AliDielectronPID::kTPC,AliPID::kElectron, -2.0, 3.0 , 0. ,100., kFALSE);
+  PIDcut_6->AddCut(AliDielectronPID::kTPC,AliPID::kPion, -99, 4.5 , 0. ,100., kTRUE);
+  PIDcut_6->AddCut(AliDielectronPID::kITS,AliPID::kElectron, -3.5, 0.5 , 0. ,100., kFALSE);
+  PIDcut_6->AddCut(AliDielectronPID::kTOF,AliPID::kElectron, -3.0 , 3.0 , 0. ,100., kFALSE, AliDielectronPID::kIfAvailable);
 
   AliDielectronPID *PIDcut_7 = new AliDielectronPID("PIDcut_7","PIDcut_7");
-  PIDcut_7->AddCut(AliDielectronPID::kTPC,AliPID::kElectron, -1.0, 3.5 , 0. ,100., kFALSE);
-  PIDcut_7->AddCut(AliDielectronPID::kTPC,AliPID::kPion, -99, 4.0 , 0. ,100., kTRUE);
-  PIDcut_7->AddCut(AliDielectronPID::kITS,AliPID::kElectron, -3.0, 1.5 , 0. ,100., kFALSE);
-  PIDcut_7->AddCut(AliDielectronPID::kTOF,AliPID::kElectron, -2.5. , 2.5 , 0. ,100., kFALSE, AliDielectronPID::kIfAvailable);
+  PIDcut_7->AddCut(AliDielectronPID::kTPC,AliPID::kElectron, -2.0, 3.0 , 0. ,100., kFALSE);
+  PIDcut_7->AddCut(AliDielectronPID::kTPC,AliPID::kPion, -99, 3.5 , 0. ,100., kTRUE);
+  PIDcut_7->AddCut(AliDielectronPID::kITS,AliPID::kElectron, -3.5, 0.5 , 0. ,100., kFALSE);
+  PIDcut_7->AddCut(AliDielectronPID::kTOF,AliPID::kElectron, -2.5 , 3.0 , 0. ,100., kFALSE, AliDielectronPID::kIfAvailable);
 
   AliDielectronPID *PIDcut_8 = new AliDielectronPID("PIDcut_8","PIDcut_8");
-  PIDcut_8->AddCut(AliDielectronPID::kTPC,AliPID::kElectron, -1.0, 3.5 , 0. ,100., kFALSE);
-  PIDcut_8->AddCut(AliDielectronPID::kTPC,AliPID::kPion, -99, 4.0 , 0. ,100., kTRUE);
+  PIDcut_8->AddCut(AliDielectronPID::kTPC,AliPID::kElectron, -2.0, 3.5 , 0. ,100., kFALSE);
+  PIDcut_8->AddCut(AliDielectronPID::kTPC,AliPID::kPion, -99, 3.5 , 0. ,100., kTRUE);
   PIDcut_8->AddCut(AliDielectronPID::kITS,AliPID::kElectron, -3.5, 0.5 , 0. ,100., kFALSE);
-  PIDcut_8->AddCut(AliDielectronPID::kTOF,AliPID::kElectron, -2.5. , 2.5 , 0. ,100., kFALSE, AliDielectronPID::kIfAvailable);
+  PIDcut_8->AddCut(AliDielectronPID::kTOF,AliPID::kElectron, -3.0 , 3.0 , 0. ,100., kFALSE, AliDielectronPID::kIfAvailable);
 
   AliDielectronPID *PIDcut_9 = new AliDielectronPID("PIDcut_9","PIDcut_9");
-  PIDcut_9->AddCut(AliDielectronPID::kTPC,AliPID::kElectron, -1.0, 3.0 , 0. ,100., kFALSE);
-  PIDcut_9->AddCut(AliDielectronPID::kTPC,AliPID::kPion, -99, 5.0 , 0. ,100., kTRUE);
+  PIDcut_9->AddCut(AliDielectronPID::kTPC,AliPID::kElectron, -2.0, 3.0 , 0. ,100., kFALSE);
+  PIDcut_9->AddCut(AliDielectronPID::kTPC,AliPID::kPion, -99, 4.5 , 0. ,100., kTRUE);
   PIDcut_9->AddCut(AliDielectronPID::kITS,AliPID::kElectron, -3.5, 1.0 , 0. ,100., kFALSE);
-  PIDcut_9->AddCut(AliDielectronPID::kTOF,AliPID::kElectron, -3.0. , 3.5 , 0. ,100., kFALSE, AliDielectronPID::kIfAvailable);
+  PIDcut_9->AddCut(AliDielectronPID::kTOF,AliPID::kElectron, -2.5 , 3.0 , 0. ,100., kFALSE, AliDielectronPID::kIfAvailable);
 
   AliDielectronPID *PIDcut_10 = new AliDielectronPID("PIDcut_10","PIDcut_10");
-  PIDcut_10->AddCut(AliDielectronPID::kTPC,AliPID::kElectron, -2.0, 3.5 , 0. ,100., kFALSE);
-  PIDcut_10->AddCut(AliDielectronPID::kTPC,AliPID::kPion, -99, 4.0 , 0. ,100., kTRUE);
-  PIDcut_10->AddCut(AliDielectronPID::kITS,AliPID::kElectron, -3.0, 1.5 , 0. ,100., kFALSE);
-  PIDcut_10->AddCut(AliDielectronPID::kTOF,AliPID::kElectron, -3.5. , 3.5 , 0. ,100., kFALSE, AliDielectronPID::kRequire);
+  PIDcut_10->AddCut(AliDielectronPID::kTPC,AliPID::kElectron, -2.0, 3.0 , 0. ,100., kFALSE);
+  PIDcut_10->AddCut(AliDielectronPID::kTPC,AliPID::kPion, -99, 4.5 , 0. ,100., kTRUE);
+  PIDcut_10->AddCut(AliDielectronPID::kITS,AliPID::kElectron, -3.0, 1.0 , 0. ,100., kFALSE);
+  PIDcut_10->AddCut(AliDielectronPID::kTOF,AliPID::kElectron, -3.0 , 2.5 , 0. ,100., kFALSE, AliDielectronPID::kIfAvailable);
 
   AliDielectronPID *PIDcut_11 = new AliDielectronPID("PIDcut_11","PIDcut_11");
-  PIDcut_11->AddCut(AliDielectronPID::kTPC,AliPID::kElectron, -1.0, 3.5 , 0. ,100., kFALSE);
-  PIDcut_11->AddCut(AliDielectronPID::kTPC,AliPID::kPion, -99, 5.0 , 0. ,100., kTRUE);
-  PIDcut_11->AddCut(AliDielectronPID::kITS,AliPID::kElectron, -2.5, 1.0 , 0. ,100., kFALSE);
-  PIDcut_11->AddCut(AliDielectronPID::kTOF,AliPID::kElectron, -3.5. , 2.5 , 0. ,100., kFALSE, AliDielectronPID::kIfAvailable);
+  PIDcut_11->AddCut(AliDielectronPID::kTPC,AliPID::kElectron, -2.0, 3.5 , 0. ,100., kFALSE);
+  PIDcut_11->AddCut(AliDielectronPID::kTPC,AliPID::kPion, -99, 3.5 , 0. ,100., kTRUE);
+  PIDcut_11->AddCut(AliDielectronPID::kITS,AliPID::kElectron, -3.5, 0.5 , 0. ,100., kFALSE);
+  PIDcut_11->AddCut(AliDielectronPID::kTOF,AliPID::kElectron, -2.5 , 2.5 , 0. ,100., kFALSE, AliDielectronPID::kIfAvailable);
 
   AliDielectronPID *PIDcut_12 = new AliDielectronPID("PIDcut_12","PIDcut_12");
-  PIDcut_12->AddCut(AliDielectronPID::kTPC,AliPID::kElectron, -2.0, 3.5 , 0. ,100., kFALSE);
-  PIDcut_12->AddCut(AliDielectronPID::kTPC,AliPID::kPion, -99, 4.0 , 0. ,100., kTRUE);
-  PIDcut_12->AddCut(AliDielectronPID::kITS,AliPID::kElectron, -3.5, 1.5 , 0. ,100., kFALSE);
-  PIDcut_12->AddCut(AliDielectronPID::kTOF,AliPID::kElectron, -3.5. , 3.5 , 0. ,100., kFALSE, AliDielectronPID::kRequire);
+  PIDcut_12->AddCut(AliDielectronPID::kTPC,AliPID::kElectron, -1.5, 3.0 , 0. ,100., kFALSE);
+  PIDcut_12->AddCut(AliDielectronPID::kTPC,AliPID::kPion, -99, 3.5 , 0. ,100., kTRUE);
+  PIDcut_12->AddCut(AliDielectronPID::kITS,AliPID::kElectron, -3.5, 1.0 , 0. ,100., kFALSE);
+  PIDcut_12->AddCut(AliDielectronPID::kTOF,AliPID::kElectron, -3.0 , 2.5 , 0. ,100., kFALSE, AliDielectronPID::kIfAvailable);
 
   AliDielectronPID *PIDcut_13 = new AliDielectronPID("PIDcut_13","PIDcut_13");
-  PIDcut_13->AddCut(AliDielectronPID::kTPC,AliPID::kElectron, -1.5, 3.5 , 0. ,100., kFALSE);
-  PIDcut_13->AddCut(AliDielectronPID::kTPC,AliPID::kPion, -99, 5.0 , 0. ,100., kTRUE);
-  PIDcut_13->AddCut(AliDielectronPID::kITS,AliPID::kElectron, -3.5, 1.5 , 0. ,100., kFALSE);
-  PIDcut_13->AddCut(AliDielectronPID::kTOF,AliPID::kElectron, -2.5. , 3.5 , 0. ,100., kFALSE, AliDielectronPID::kIfAvailable);
+  PIDcut_13->AddCut(AliDielectronPID::kTPC,AliPID::kElectron, -2.0, 3.0 , 0. ,100., kFALSE);
+  PIDcut_13->AddCut(AliDielectronPID::kTPC,AliPID::kPion, -99, 4.5 , 0. ,100., kTRUE);
+  PIDcut_13->AddCut(AliDielectronPID::kITS,AliPID::kElectron, -3.5, 0.5 , 0. ,100., kFALSE);
+  PIDcut_13->AddCut(AliDielectronPID::kTOF,AliPID::kElectron, -2.5 , 3.0 , 0. ,100., kFALSE, AliDielectronPID::kIfAvailable);
 
   AliDielectronPID *PIDcut_14 = new AliDielectronPID("PIDcut_14","PIDcut_14");
-  PIDcut_14->AddCut(AliDielectronPID::kTPC,AliPID::kElectron, -2.0, 3.0 , 0. ,100., kFALSE);
-  PIDcut_14->AddCut(AliDielectronPID::kTPC,AliPID::kPion, -99, 4.0 , 0. ,100., kTRUE);
+  PIDcut_14->AddCut(AliDielectronPID::kTPC,AliPID::kElectron, -2.0, 3.5 , 0. ,100., kFALSE);
+  PIDcut_14->AddCut(AliDielectronPID::kTPC,AliPID::kPion, -99, 4.5 , 0. ,100., kTRUE);
   PIDcut_14->AddCut(AliDielectronPID::kITS,AliPID::kElectron, -3.0, 0.5 , 0. ,100., kFALSE);
-  PIDcut_14->AddCut(AliDielectronPID::kTOF,AliPID::kElectron, -3.0. , 3.5 , 0. ,100., kFALSE, AliDielectronPID::kIfAvailable);
+  PIDcut_14->AddCut(AliDielectronPID::kTOF,AliPID::kElectron, -2.5 , 3.0 , 0. ,100., kFALSE, AliDielectronPID::kIfAvailable);
 
   AliDielectronPID *PIDcut_15 = new AliDielectronPID("PIDcut_15","PIDcut_15");
-  PIDcut_15->AddCut(AliDielectronPID::kTPC,AliPID::kElectron, -2.0, 3.0 , 0. ,100., kFALSE);
-  PIDcut_15->AddCut(AliDielectronPID::kTPC,AliPID::kPion, -99, 5.0 , 0. ,100., kTRUE);
-  PIDcut_15->AddCut(AliDielectronPID::kITS,AliPID::kElectron, -3.5, 1.0 , 0. ,100., kFALSE);
-  PIDcut_15->AddCut(AliDielectronPID::kTOF,AliPID::kElectron, -2.5. , 3.5 , 0. ,100., kFALSE, AliDielectronPID::kRequire);
+  PIDcut_15->AddCut(AliDielectronPID::kTPC,AliPID::kElectron, -2.0, 3.5 , 0. ,100., kFALSE);
+  PIDcut_15->AddCut(AliDielectronPID::kTPC,AliPID::kPion, -99, 3.5 , 0. ,100., kTRUE);
+  PIDcut_15->AddCut(AliDielectronPID::kITS,AliPID::kElectron, -3.0, 1.0 , 0. ,100., kFALSE);
+  PIDcut_15->AddCut(AliDielectronPID::kTOF,AliPID::kElectron, -2.5 , 2.5 , 0. ,100., kFALSE, AliDielectronPID::kIfAvailable);
 
   AliDielectronPID *PIDcut_16 = new AliDielectronPID("PIDcut_16","PIDcut_16");
-  PIDcut_16->AddCut(AliDielectronPID::kTPC,AliPID::kElectron, -1.5, 3.0 , 0. ,100., kFALSE);
-  PIDcut_16->AddCut(AliDielectronPID::kTPC,AliPID::kPion, -99, 4.0 , 0. ,100., kTRUE);
-  PIDcut_16->AddCut(AliDielectronPID::kITS,AliPID::kElectron, -2.5, 1.0 , 0. ,100., kFALSE);
-  PIDcut_16->AddCut(AliDielectronPID::kTOF,AliPID::kElectron, -3.0. , 3.5 , 0. ,100., kFALSE, AliDielectronPID::kRequire);
+  PIDcut_16->AddCut(AliDielectronPID::kTPC,AliPID::kElectron, -1.5, 3.5 , 0. ,100., kFALSE);
+  PIDcut_16->AddCut(AliDielectronPID::kTPC,AliPID::kPion, -99, 4.5 , 0. ,100., kTRUE);
+  PIDcut_16->AddCut(AliDielectronPID::kITS,AliPID::kElectron, -3.0, 0.5 , 0. ,100., kFALSE);
+  PIDcut_16->AddCut(AliDielectronPID::kTOF,AliPID::kElectron, -3.0 , 2.5 , 0. ,100., kFALSE, AliDielectronPID::kIfAvailable);
 
   AliDielectronPID *PIDcut_17 = new AliDielectronPID("PIDcut_17","PIDcut_17");
-  PIDcut_17->AddCut(AliDielectronPID::kTPC,AliPID::kElectron, -1.5, 3.0 , 0. ,100., kFALSE);
-  PIDcut_17->AddCut(AliDielectronPID::kTPC,AliPID::kPion, -99, 5.0 , 0. ,100., kTRUE);
-  PIDcut_17->AddCut(AliDielectronPID::kITS,AliPID::kElectron, -3.0, 1.0 , 0. ,100., kFALSE);
-  PIDcut_17->AddCut(AliDielectronPID::kTOF,AliPID::kElectron, -3.0. , 2.5 , 0. ,100., kFALSE, AliDielectronPID::kRequire);
+  PIDcut_17->AddCut(AliDielectronPID::kTPC,AliPID::kElectron, -2.0, 3.5 , 0. ,100., kFALSE);
+  PIDcut_17->AddCut(AliDielectronPID::kTPC,AliPID::kPion, -99, 3.5 , 0. ,100., kTRUE);
+  PIDcut_17->AddCut(AliDielectronPID::kITS,AliPID::kElectron, -3.5, 0.5 , 0. ,100., kFALSE);
+  PIDcut_17->AddCut(AliDielectronPID::kTOF,AliPID::kElectron, -2.5 , 3.0 , 0. ,100., kFALSE, AliDielectronPID::kIfAvailable);
 
   AliDielectronPID *PIDcut_18 = new AliDielectronPID("PIDcut_18","PIDcut_18");
-  PIDcut_18->AddCut(AliDielectronPID::kTPC,AliPID::kElectron, -2.0, 3.0 , 0. ,100., kFALSE);
-  PIDcut_18->AddCut(AliDielectronPID::kTPC,AliPID::kPion, -99, 5.0 , 0. ,100., kTRUE);
-  PIDcut_18->AddCut(AliDielectronPID::kITS,AliPID::kElectron, -3.5, 1.5 , 0. ,100., kFALSE);
-  PIDcut_18->AddCut(AliDielectronPID::kTOF,AliPID::kElectron, -2.5. , 3.0 , 0. ,100., kFALSE, AliDielectronPID::kRequire);
+  PIDcut_18->AddCut(AliDielectronPID::kTPC,AliPID::kElectron, -1.5, 3.0 , 0. ,100., kFALSE);
+  PIDcut_18->AddCut(AliDielectronPID::kTPC,AliPID::kPion, -99, 4.5 , 0. ,100., kTRUE);
+  PIDcut_18->AddCut(AliDielectronPID::kITS,AliPID::kElectron, -3.5, 1.0 , 0. ,100., kFALSE);
+  PIDcut_18->AddCut(AliDielectronPID::kTOF,AliPID::kElectron, -3.0 , 2.5 , 0. ,100., kFALSE, AliDielectronPID::kIfAvailable);
 
   AliDielectronPID *PIDcut_19 = new AliDielectronPID("PIDcut_19","PIDcut_19");
-  PIDcut_19->AddCut(AliDielectronPID::kTPC,AliPID::kElectron, -2.0, 3.0 , 0. ,100., kFALSE);
-  PIDcut_19->AddCut(AliDielectronPID::kTPC,AliPID::kPion, -99, 4.0 , 0. ,100., kTRUE);
-  PIDcut_19->AddCut(AliDielectronPID::kITS,AliPID::kElectron, -2.5, 1.0 , 0. ,100., kFALSE);
-  PIDcut_19->AddCut(AliDielectronPID::kTOF,AliPID::kElectron, -2.5. , 3.5 , 0. ,100., kFALSE, AliDielectronPID::kRequire);
+  PIDcut_19->AddCut(AliDielectronPID::kTPC,AliPID::kElectron, -1.5, 3.0 , 0. ,100., kFALSE);
+  PIDcut_19->AddCut(AliDielectronPID::kTPC,AliPID::kPion, -99, 3.5 , 0. ,100., kTRUE);
+  PIDcut_19->AddCut(AliDielectronPID::kITS,AliPID::kElectron, -3.0, 0.5 , 0. ,100., kFALSE);
+  PIDcut_19->AddCut(AliDielectronPID::kTOF,AliPID::kElectron, -3.0 , 3.0 , 0. ,100., kFALSE, AliDielectronPID::kIfAvailable);
+
+  AliDielectronPID *PIDcut_20 = new AliDielectronPID("PIDcut_20","PIDcut_20");
+  PIDcut_20->AddCut(AliDielectronPID::kTPC,AliPID::kElectron, -2.0, 3.5 , 0. ,100., kFALSE);
+  PIDcut_20->AddCut(AliDielectronPID::kTPC,AliPID::kPion, -99, 3.5 , 0. ,100., kTRUE);
+  PIDcut_20->AddCut(AliDielectronPID::kITS,AliPID::kElectron, -3.5, 1.0 , 0. ,100., kFALSE);
+  PIDcut_20->AddCut(AliDielectronPID::kTOF,AliPID::kElectron, -2.5 , 2.5 , 0. ,100., kFALSE, AliDielectronPID::kIfAvailable);
+
 
 
 
@@ -595,6 +720,36 @@ AliAnalysisCuts* LMEECutLib::GetPIDCutsAna(AnalysisCut AnaCut) {
   pid_TPCele_AsymITS_tightTOFreq_noPionRej->AddCut(AliDielectronPID::kTOF,AliPID::kElectron, -3. , 3. , 0. ,100., kFALSE, AliDielectronPID::kRequire);
 
   // ################## PID for Clean Samples
+  AliDielectronPID *pid_Pt200_cut5_woTPCelecut = new AliDielectronPID("pid_Pt200_cut5_woTPCelecut","pid_Pt200_cut5_woTPCelecut");
+  pid_Pt200_cut5_woTPCelecut->AddCut(AliDielectronPID::kITS,AliPID::kElectron, -3.5, 0.5, 0. ,100., kFALSE);
+  pid_Pt200_cut5_woTPCelecut->AddCut(AliDielectronPID::kTPC,AliPID::kPion,     -99. , 4.5 , 0. ,100., kTRUE);
+  pid_Pt200_cut5_woTPCelecut->AddCut(AliDielectronPID::kTOF,AliPID::kElectron, -3, 3, 0. ,100., kFALSE, AliDielectronPID::kIfAvailable);
+
+  AliDielectronPID *pid_Pt200_cut5_woPionRej = new AliDielectronPID("pid_Pt200_cut5_woPionRej","pid_Pt200_cut5_woPionRej");
+  pid_Pt200_cut5_woPionRej->AddCut(AliDielectronPID::kITS,AliPID::kElectron, -3.5, 0.5, 0. ,100., kFALSE);
+  pid_Pt200_cut5_woPionRej->AddCut(AliDielectronPID::kTPC,AliPID::kElectron, -2., 3.0, 0. ,100., kFALSE);
+  pid_Pt200_cut5_woPionRej->AddCut(AliDielectronPID::kTOF,AliPID::kElectron, -3, 3, 0. ,100., kFALSE, AliDielectronPID::kIfAvailable);
+
+  AliDielectronPID *electron_pt200_cut5_woTPCelecut = new AliDielectronPID("electron_pt200_cut5_woTPCelecut","electron_pt200_cut5_woTPCelecut");
+  electron_pt200_cut5_woTPCelecut->AddCut(AliDielectronPID::kTOF,AliPID::kElectron, -3, 3, 0. ,100., kFALSE, AliDielectronPID::kRequire);
+  electron_pt200_cut5_woTPCelecut->AddCut(AliDielectronPID::kTPC,AliPID::kPion,     -99. , 4.5 , 0. ,100., kTRUE);
+
+  AliDielectronPID *kaon_pt200_cut5_woTPCelecut = new AliDielectronPID("kaon_pt200_cut5_woTPCelecut","kaon_pt200_cut5_woTPCelecut");
+  kaon_pt200_cut5_woTPCelecut->AddCut(AliDielectronPID::kTOF,AliPID::kKaon, -3, 3, 0. ,100., kFALSE, AliDielectronPID::kRequire);
+  kaon_pt200_cut5_woTPCelecut->AddCut(AliDielectronPID::kTPC,AliPID::kPion, -99. , 4.5 , 0. ,100., kTRUE);
+
+  AliDielectronPID *proton_pt200_cut5_woTPCelecut = new AliDielectronPID("proton_pt200_cut5_woTPCelecut","proton_pt200_cut5_woTPCelecut");
+  proton_pt200_cut5_woTPCelecut->AddCut(AliDielectronPID::kTOF,AliPID::kProton, -3, 3, 0. ,100., kFALSE, AliDielectronPID::kRequire);
+  proton_pt200_cut5_woTPCelecut->AddCut(AliDielectronPID::kTPC,AliPID::kPion, -99. , 4.5 , 0. ,100., kTRUE);
+
+  AliDielectronPID *pion_pt200_cut5_wTPCelecut = new AliDielectronPID("pion_pt200_cut5_wTPCelecut","pion_pt200_cut5_wTPCelecut");
+  pion_pt200_cut5_wTPCelecut->AddCut(AliDielectronPID::kTOF,AliPID::kPion, -3, 3., 0. ,100., kFALSE, AliDielectronPID::kRequire);
+  pion_pt200_cut5_wTPCelecut->AddCut(AliDielectronPID::kITS,AliPID::kPion, -3., 3., 0. ,100., kFALSE);
+  pion_pt200_cut5_wTPCelecut->AddCut(AliDielectronPID::kTPC,AliPID::kElectron, -2., 3., 0. ,100., kFALSE);
+
+
+
+
   AliDielectronPID *pid_electron_woPionRej = new AliDielectronPID("pid_electron_woPionRej","pid_electron_woPionRej");
   pid_electron_woPionRej->AddCut(AliDielectronPID::kTOF,AliPID::kElectron, -3, 3, 0. ,100., kFALSE, AliDielectronPID::kRequire);
   pid_electron_woPionRej->AddCut(AliDielectronPID::kITS,AliPID::kElectron, -3., 1., 0. ,100., kFALSE); // ITS Cut is asymmetric to compare to TOFif Cuts for Contamination studies
@@ -640,15 +795,48 @@ AliAnalysisCuts* LMEECutLib::GetPIDCutsAna(AnalysisCut AnaCut) {
   pid_proton_wTPCcut->AddCut(AliDielectronPID::kTPC,AliPID::kPion,     -99. , 5. , 0. ,100., kTRUE);
 
   AliDielectronPID *pid_electron = new AliDielectronPID("pid_electron","pid_electron");
-  pid_electron->AddCut(AliDielectronPID::kTOF,AliPID::kElectron, -3.0, 3. , 0. ,100., kFALSE, AliDielectronPID::kRequire);
+  pid_electron->AddCut(AliDielectronPID::kTOF,AliPID::kElectron, -3.0, 3. , 0.4 ,100., kFALSE, AliDielectronPID::kRequire);
   pid_electron->AddCut(AliDielectronPID::kITS,AliPID::kElectron, -3.0, 3. , 0. ,100., kFALSE, AliDielectronPID::kIfAvailable);
   pid_electron->AddCut(AliDielectronPID::kTPC,AliPID::kElectron, -3.0, 3. , 0. ,100., kFALSE);
-  // pid_electron->AddCut(AliDielectronPID::kTPC,AliPID::kPion,     -99., 4. , 0. ,100., kTRUE);
+  pid_electron->AddCut(AliDielectronPID::kTPC,AliPID::kPion,     -99.0,-5., 0. ,100., kTRUE);
 
   AliDielectronPID *pid_electron_woTOF = new AliDielectronPID("pid_electron_woTOF","pid_electron_woTOF");
-  pid_electron_woTOF->AddCut(AliDielectronPID::kITS,AliPID::kElectron, -3.0, 3. , 0. ,100., kFALSE, AliDielectronPID::kIfAvailable);
-  pid_electron_woTOF->AddCut(AliDielectronPID::kTPC,AliPID::kElectron, -3.0, 3. , 0. ,100., kFALSE);
-  // pid_electron_woTOF->AddCut(AliDielectronPID::kTPC,AliPID::kPion,     -99., 4. , 0. ,100., kTRUE);
+  pid_electron_woTOF->AddCut(AliDielectronPID::kITS,AliPID::kElectron, -3.0, 1. , 0. ,100., kFALSE, AliDielectronPID::kIfAvailable);
+  pid_electron_woTOF->AddCut(AliDielectronPID::kTPC,AliPID::kElectron, -3.0, 2. , 0. ,100., kFALSE);
+  pid_electron_woTOF->AddCut(AliDielectronPID::kTPC,AliPID::kPion,     -99. , 5. , 0. ,100., kTRUE);
+
+  AliDielectronPID *pid_electron_wTOFreq = new AliDielectronPID("pid_electron_wTOFreq","pid_electron_wTOFreq");
+  pid_electron_wTOFreq->AddCut(AliDielectronPID::kITS,AliPID::kElectron, -3.0, 1. , 0. ,100., kFALSE, AliDielectronPID::kIfAvailable);
+  pid_electron_wTOFreq->AddCut(AliDielectronPID::kTPC,AliPID::kElectron, -3.0, 2. , 0. ,100., kFALSE);
+  pid_electron_wTOFreq->AddCut(AliDielectronPID::kTOF,AliPID::kElectron, -3.0, 3. , 0. ,100., kFALSE, AliDielectronPID::kRequire);
+  pid_electron_wTOFreq->AddCut(AliDielectronPID::kTPC,AliPID::kPion,     -99. , 5. , 0. ,100., kTRUE);
+
+  AliDielectronPID *pid_electron_wTOFif = new AliDielectronPID("pid_electron_wTOFif","pid_electron_wTOFif");
+  pid_electron_wTOFif->AddCut(AliDielectronPID::kITS,AliPID::kElectron, -3.0, 1. , 0. ,100., kFALSE, AliDielectronPID::kIfAvailable);
+  pid_electron_wTOFif->AddCut(AliDielectronPID::kTPC,AliPID::kElectron, -3.0, 2. , 0. ,100., kFALSE);
+  pid_electron_wTOFif->AddCut(AliDielectronPID::kTOF,AliPID::kElectron, -3.0, 3. , 0. ,100., kFALSE, AliDielectronPID::kIfAvailable);
+  pid_electron_wTOFif->AddCut(AliDielectronPID::kTPC,AliPID::kPion,     -99. , 5. , 0. ,100., kTRUE);
+
+  AliDielectronPID *pid_electron_wTOFhit = new AliDielectronPID("pid_electron_wTOFhit","pid_electron_wTOFhit");
+  pid_electron_wTOFhit->AddCut(AliDielectronPID::kITS,AliPID::kElectron, -3.0, 1. , 0. ,100., kFALSE, AliDielectronPID::kIfAvailable);
+  pid_electron_wTOFhit->AddCut(AliDielectronPID::kTPC,AliPID::kElectron, -3.0, 2. , 0. ,100., kFALSE);
+  pid_electron_wTOFhit->AddCut(AliDielectronPID::kTOF,AliPID::kElectron, -99.0, 99. , 0. ,100., kFALSE, AliDielectronPID::kRequire);
+  pid_electron_wTOFhit->AddCut(AliDielectronPID::kTPC,AliPID::kPion,     -99. , 5. , 0. ,100., kTRUE);
+
+  // AliDielectronCutGroup* PDGlepton = new AliDielectronCutGroup("PDGlepton","PDGlepton",AliDielectronCutGroup::kCompOR);
+  AliDielectronCutGroup* pid_PDG_electron_woTOF = new AliDielectronCutGroup("pid_PDG_electron_woTOF","pid_PDG_electron_woTOF",AliDielectronCutGroup::kCompAND);
+  pid_PDG_electron_woTOF->AddCut(PDGlepton);
+  pid_PDG_electron_woTOF->AddCut(pid_electron_woTOF);
+  AliDielectronCutGroup* pid_PDG_electron_wTOFreq = new AliDielectronCutGroup("pid_PDG_electron_wTOFreq","pid_PDG_electron_wTOFreq",AliDielectronCutGroup::kCompAND);
+  pid_PDG_electron_wTOFreq->AddCut(PDGlepton);
+  pid_PDG_electron_wTOFreq->AddCut(pid_electron_wTOFreq);
+  AliDielectronCutGroup* pid_PDG_electron_wTOFif = new AliDielectronCutGroup("pid_PDG_electron_wTOFif","pid_PDG_electron_wTOFif",AliDielectronCutGroup::kCompAND);
+  pid_PDG_electron_wTOFif->AddCut(PDGlepton);
+  pid_PDG_electron_wTOFif->AddCut(pid_electron_wTOFif);
+  AliDielectronCutGroup* pid_PDG_electron_wTOFhit = new AliDielectronCutGroup("pid_PDG_electron_wTOFhit","pid_PDG_electron_wTOFhit",AliDielectronCutGroup::kCompAND);
+  pid_PDG_electron_wTOFhit->AddCut(PDGlepton);
+  pid_PDG_electron_wTOFhit->AddCut(pid_electron_wTOFhit);
+
 
   AliDielectronPID *pid_pion = new AliDielectronPID("pid_pion","pid_pion");
   pid_pion->AddCut(AliDielectronPID::kTOF,AliPID::kPion, -3., 3., 0. ,100., kFALSE, AliDielectronPID::kRequire);
@@ -672,11 +860,21 @@ AliAnalysisCuts* LMEECutLib::GetPIDCutsAna(AnalysisCut AnaCut) {
   nanoAODTOFeffCut_wTOF->AddCut(AliDielectronPID::kTPC,AliPID::kElectron, -3.0, 3. , 0. ,100., kFALSE);
   nanoAODTOFeffCut_wTOF->AddCut(AliDielectronPID::kITS,AliPID::kElectron, -3.0, 3. , 0. ,100., kFALSE);
   nanoAODTOFeffCut_wTOF->AddCut(AliDielectronPID::kTOF,AliPID::kElectron, -99.0, 99. , 0. ,100., kFALSE, AliDielectronPID::kRequire);
+
   AliDielectronPID *pid_pion_wTOF = new AliDielectronPID("pid_pion_wTOF","pid_pion_wTOF");
   pid_pion_wTOF->AddCut(AliDielectronPID::kTOF,AliPID::kPion, -99., 99., 0. ,100., kFALSE, AliDielectronPID::kRequire);
-  pid_pion_wTOF->AddCut(AliDielectronPID::kTPC,AliPID::kPion, -3.0, 3. , 0. ,100., kFALSE);
+  // pid_pion_wTOF->AddCut(AliDielectronPID::kTPC,AliPID::kPion, -3.0, 3. , 0. ,100., kFALSE);
+
   AliDielectronPID *pid_pion_woTOF = new AliDielectronPID("pid_pion_woTOF","pid_pion_woTOF");
-  pid_pion_woTOF->AddCut(AliDielectronPID::kTPC,AliPID::kPion, -3.0, 3. , 0. ,100., kFALSE);
+  // pid_pion_woTOF->AddCut(AliDielectronPID::kTPC,AliPID::kPion, -3.0, 3. , 0. ,100., kFALSE);
+
+  AliDielectronPID *pid_pion_wTOF3Sreq = new AliDielectronPID("pid_pion_wTOF3Sreq","pid_pion_wTOF3Sreq");
+  pid_pion_wTOF3Sreq->AddCut(AliDielectronPID::kTOF,AliPID::kPion, -3., 3., 0. ,100., kFALSE, AliDielectronPID::kRequire);
+  // pid_pion_wTOF3Sreq->AddCut(AliDielectronPID::kTPC,AliPID::kPion, -3.0, 3. , 0. ,100., kFALSE);
+
+  AliDielectronPID *pid_pion_wTOF3Sif = new AliDielectronPID("pid_pion_wTOF3Sif","pid_pion_wTOF3Sif");
+  pid_pion_wTOF3Sif->AddCut(AliDielectronPID::kTOF,AliPID::kPion, -3., 3., 0. ,100., kFALSE, AliDielectronPID::kIfAvailable);
+  // pid_pion_wTOF3Sif->AddCut(AliDielectronPID::kTPC,AliPID::kPion, -3.0, 3. , 0. ,100., kFALSE);
 
 
 
@@ -697,6 +895,10 @@ AliAnalysisCuts* LMEECutLib::GetPIDCutsAna(AnalysisCut AnaCut) {
     // Cut out pion/kaon/proton band LHC15o but refilled when particle in TOF electron band
       pidCuts = LMEECutLib::SetKinematics(etaRange080, ptRange400to8000, PID_cutoff_pion_kaon_proton_cg, AnaCut);;
       break;
+    case kPbPb2015_Pt200_PID_cutoff_pion_kaon_proton:
+    // Cut out pion/kaon/proton band LHC15o but refilled when particle in TOF electron band
+      pidCuts = LMEECutLib::SetKinematics(etaRange080, ptRange200to8000, PID_cutoff_pion_kaon_proton_cg, AnaCut);;
+      break;
 
     case kPbPb2015_Pt400_tightTOFif:
     // ITS & TOFifavailable & TPC sigma cut for LHC15o
@@ -707,6 +909,12 @@ AliAnalysisCuts* LMEECutLib::GetPIDCutsAna(AnalysisCut AnaCut) {
     // ITS & TOFifavailable & TPC sigma cut for LHC15o
       pidCuts = LMEECutLib::SetKinematics(etaRange080, ptRange400to8000, pid_TPCele_AsymITS_looseTOFif, AnaCut);;
       break;
+
+    case kPbPb2015_Pt400_noTOF:
+    // ITS & TOFifavailable & TPC sigma cut for LHC15o
+      pidCuts = LMEECutLib::SetKinematics(etaRange080, ptRange400to8000, pid_TPCele_AsymITS_noTOF, AnaCut);;
+      break;
+
     case kPbPb2015_Pt400_tightTOFreq:
     // ITS & TOFrequired & TPC sigma cut for LHC15o
       pidCuts = LMEECutLib::SetKinematics(etaRange080, ptRange400to8000, pid_TPCele_AsymITS_tightTOFreq, AnaCut);;
@@ -716,85 +924,136 @@ AliAnalysisCuts* LMEECutLib::GetPIDCutsAna(AnalysisCut AnaCut) {
     // ITS & TOFrequired & TPC sigma cut for LHC15o
       pidCuts = LMEECutLib::SetKinematics(etaRange080, ptRange400to8000, pid_TPCele_AsymITS_symTOFreq, AnaCut);;
       break;
+    case kPDGelectron:
+      pidCuts = LMEECutLib::SetKinematics(etaRange080, ptRange400to8000, PDGlepton, AnaCut);;
+      break;
+    case kPDGelectronMotherPhoton:
+      pidCuts = LMEECutLib::SetKinematics(etaRange080, ptRange400to8000, PDGleptonMotherPhoton, AnaCut);;
+      break;
     case kPIDcut_0:
-    // ITS & TOFrequired & TPC sigma cut for LHC15o
       pidCuts = LMEECutLib::SetKinematics(etaRange080, ptRange400to8000, PIDcut_0, AnaCut);;
       break;
-    case kPIDcut_1:
-    // ITS & TOFrequired & TPC sigma cut for LHC15o
+
+    case kPIDcut_1_pt400:
       pidCuts = LMEECutLib::SetKinematics(etaRange080, ptRange400to8000, PIDcut_1, AnaCut);;
       break;
-    case kPIDcut_2:
-    // ITS & TOFrequired & TPC sigma cut for LHC15o
+    case kPIDcut_2_pt400:
       pidCuts = LMEECutLib::SetKinematics(etaRange080, ptRange400to8000, PIDcut_2, AnaCut);;
       break;
-    case kPIDcut_3:
-    // ITS & TOFrequired & TPC sigma cut for LHC15o
+    case kPIDcut_3_pt400:
       pidCuts = LMEECutLib::SetKinematics(etaRange080, ptRange400to8000, PIDcut_3, AnaCut);;
       break;
-    case kPIDcut_4:
-    // ITS & TOFrequired & TPC sigma cut for LHC15o
+    case kPIDcut_4_pt400:
       pidCuts = LMEECutLib::SetKinematics(etaRange080, ptRange400to8000, PIDcut_4, AnaCut);;
       break;
-    case kPIDcut_5:
-    // ITS & TOFrequired & TPC sigma cut for LHC15o
+    case kPIDcut_5_pt400:
       pidCuts = LMEECutLib::SetKinematics(etaRange080, ptRange400to8000, PIDcut_5, AnaCut);;
       break;
-    case kPIDcut_6:
-    // ITS & TOFrequired & TPC sigma cut for LHC15o
+    case kPIDcut_6_pt400:
       pidCuts = LMEECutLib::SetKinematics(etaRange080, ptRange400to8000, PIDcut_6, AnaCut);;
       break;
-    case kPIDcut_7:
-    // ITS & TOFrequired & TPC sigma cut for LHC15o
+    case kPIDcut_7_pt400:
       pidCuts = LMEECutLib::SetKinematics(etaRange080, ptRange400to8000, PIDcut_7, AnaCut);;
       break;
-    case kPIDcut_8:
-    // ITS & TOFrequired & TPC sigma cut for LHC15o
+    case kPIDcut_8_pt400:
       pidCuts = LMEECutLib::SetKinematics(etaRange080, ptRange400to8000, PIDcut_8, AnaCut);;
       break;
-    case kPIDcut_9:
-    // ITS & TOFrequired & TPC sigma cut for LHC15o
+    case kPIDcut_9_pt400:
       pidCuts = LMEECutLib::SetKinematics(etaRange080, ptRange400to8000, PIDcut_9, AnaCut);;
       break;
-    case kPIDcut_10:
-    // ITS & TOFrequired & TPC sigma cut for LHC15o
+    case kPIDcut_10_pt400:
       pidCuts = LMEECutLib::SetKinematics(etaRange080, ptRange400to8000, PIDcut_10, AnaCut);;
       break;
-    case kPIDcut_11:
-    // ITS & TOFrequired & TPC sigma cut for LHC15o
+    case kPIDcut_11_pt400:
       pidCuts = LMEECutLib::SetKinematics(etaRange080, ptRange400to8000, PIDcut_11, AnaCut);;
       break;
-    case kPIDcut_12:
-    // ITS & TOFrequired & TPC sigma cut for LHC15o
+    case kPIDcut_12_pt400:
       pidCuts = LMEECutLib::SetKinematics(etaRange080, ptRange400to8000, PIDcut_12, AnaCut);;
       break;
-    case kPIDcut_13:
-    // ITS & TOFrequired & TPC sigma cut for LHC15o
+    case kPIDcut_13_pt400:
       pidCuts = LMEECutLib::SetKinematics(etaRange080, ptRange400to8000, PIDcut_13, AnaCut);;
       break;
-    case kPIDcut_14:
-    // ITS & TOFrequired & TPC sigma cut for LHC15o
+    case kPIDcut_14_pt400:
       pidCuts = LMEECutLib::SetKinematics(etaRange080, ptRange400to8000, PIDcut_14, AnaCut);;
       break;
-    case kPIDcut_15:
-    // ITS & TOFrequired & TPC sigma cut for LHC15o
+    case kPIDcut_15_pt400:
       pidCuts = LMEECutLib::SetKinematics(etaRange080, ptRange400to8000, PIDcut_15, AnaCut);;
       break;
-    case kPIDcut_16:
-    // ITS & TOFrequired & TPC sigma cut for LHC15o
+    case kPIDcut_16_pt400:
       pidCuts = LMEECutLib::SetKinematics(etaRange080, ptRange400to8000, PIDcut_16, AnaCut);;
       break;
-    case kPIDcut_17:
-    // ITS & TOFrequired & TPC sigma cut for LHC15o
+    case kPIDcut_17_pt400:
       pidCuts = LMEECutLib::SetKinematics(etaRange080, ptRange400to8000, PIDcut_17, AnaCut);;
       break;
-    case kPIDcut_18:
-    // ITS & TOFrequired & TPC sigma cut for LHC15o
+    case kPIDcut_18_pt400:
       pidCuts = LMEECutLib::SetKinematics(etaRange080, ptRange400to8000, PIDcut_18, AnaCut);;
       break;
-    case kPIDcut_19:
-    // ITS & TOFrequired & TPC sigma cut for LHC15o
+    case kPIDcut_19_pt400:
       pidCuts = LMEECutLib::SetKinematics(etaRange080, ptRange400to8000, PIDcut_19, AnaCut);;
+      break;
+    case kPIDcut_20_pt400:
+      pidCuts = LMEECutLib::SetKinematics(etaRange080, ptRange400to8000, PIDcut_20, AnaCut);;
+      break;
+
+    case kPIDcut_1_pt200:
+      pidCuts = LMEECutLib::SetKinematics(etaRange080, ptRange200to8000, PIDcut_1, AnaCut);;
+      break;
+    case kPIDcut_2_pt200:
+      pidCuts = LMEECutLib::SetKinematics(etaRange080, ptRange200to8000, PIDcut_2, AnaCut);;
+      break;
+    case kPIDcut_3_pt200:
+      pidCuts = LMEECutLib::SetKinematics(etaRange080, ptRange200to8000, PIDcut_3, AnaCut);;
+      break;
+    case kPIDcut_4_pt200:
+      pidCuts = LMEECutLib::SetKinematics(etaRange080, ptRange200to8000, PIDcut_4, AnaCut);;
+      break;
+    case kPIDcut_5_pt200:
+      pidCuts = LMEECutLib::SetKinematics(etaRange080, ptRange200to8000, PIDcut_5, AnaCut);;
+      break;
+    case kPIDcut_6_pt200:
+      pidCuts = LMEECutLib::SetKinematics(etaRange080, ptRange200to8000, PIDcut_6, AnaCut);;
+      break;
+    case kPIDcut_7_pt200:
+      pidCuts = LMEECutLib::SetKinematics(etaRange080, ptRange200to8000, PIDcut_7, AnaCut);;
+      break;
+    case kPIDcut_8_pt200:
+      pidCuts = LMEECutLib::SetKinematics(etaRange080, ptRange200to8000, PIDcut_8, AnaCut);;
+      break;
+    case kPIDcut_9_pt200:
+      pidCuts = LMEECutLib::SetKinematics(etaRange080, ptRange200to8000, PIDcut_9, AnaCut);;
+      break;
+    case kPIDcut_10_pt200:
+      pidCuts = LMEECutLib::SetKinematics(etaRange080, ptRange200to8000, PIDcut_10, AnaCut);;
+      break;
+    case kPIDcut_11_pt200:
+      pidCuts = LMEECutLib::SetKinematics(etaRange080, ptRange200to8000, PIDcut_11, AnaCut);;
+      break;
+    case kPIDcut_12_pt200:
+      pidCuts = LMEECutLib::SetKinematics(etaRange080, ptRange200to8000, PIDcut_12, AnaCut);;
+      break;
+    case kPIDcut_13_pt200:
+      pidCuts = LMEECutLib::SetKinematics(etaRange080, ptRange200to8000, PIDcut_13, AnaCut);;
+      break;
+    case kPIDcut_14_pt200:
+      pidCuts = LMEECutLib::SetKinematics(etaRange080, ptRange200to8000, PIDcut_14, AnaCut);;
+      break;
+    case kPIDcut_15_pt200:
+      pidCuts = LMEECutLib::SetKinematics(etaRange080, ptRange200to8000, PIDcut_15, AnaCut);;
+      break;
+    case kPIDcut_16_pt200:
+      pidCuts = LMEECutLib::SetKinematics(etaRange080, ptRange200to8000, PIDcut_16, AnaCut);;
+      break;
+    case kPIDcut_17_pt200:
+      pidCuts = LMEECutLib::SetKinematics(etaRange080, ptRange200to8000, PIDcut_17, AnaCut);;
+      break;
+    case kPIDcut_18_pt200:
+      pidCuts = LMEECutLib::SetKinematics(etaRange080, ptRange200to8000, PIDcut_18, AnaCut);;
+      break;
+    case kPIDcut_19_pt200:
+      pidCuts = LMEECutLib::SetKinematics(etaRange080, ptRange200to8000, PIDcut_19, AnaCut);;
+      break;
+    case kPIDcut_20_pt200:
+      pidCuts = LMEECutLib::SetKinematics(etaRange080, ptRange200to8000, PIDcut_20, AnaCut);;
       break;
 
     // ################## CONTAMINATION STUDY STUFF
@@ -818,14 +1077,37 @@ AliAnalysisCuts* LMEECutLib::GetPIDCutsAna(AnalysisCut AnaCut) {
       pidCuts = LMEECutLib::SetKinematics(etaRange080, ptRange400to8000, pid_TPCele_AsymITS_tightTOFreq_noITScut, AnaCut);;
       break;
 
-    case kPbPb2015_Pt400_TPCele_AsymITS_tightTOFreq_noPionRej:
-      pidCuts = LMEECutLib::SetKinematics(etaRange080, ptRange400to8000, pid_TPCele_AsymITS_tightTOFreq_noPionRej, AnaCut);;
+      // ###################### CONTAMINATION FOR CUT 5 ##########################################
+
+    case kPbPb2015_Pt200_cut5_woTPCelecut:
+      pidCuts = LMEECutLib::SetKinematics(etaRange080, ptRange400to8000, pid_Pt200_cut5_woTPCelecut, AnaCut);;
       break;
+    case kPbPb2015_Pt200_cut5_woPionRej:
+      pidCuts = LMEECutLib::SetKinematics(etaRange080, ptRange400to8000, pid_Pt200_cut5_woPionRej, AnaCut);;
+      break;
+    case kPbPb2015_pure_electron_pt200_woTPCelecut:
+      pidCuts = LMEECutLib::SetKinematics(etaRange080, ptRange200to8000, electron_pt200_cut5_woTPCelecut, AnaCut);;
+      break;
+    case kPbPb2015_pure_kaon_pt200_woTPCelecut:
+      pidCuts = LMEECutLib::SetKinematics(etaRange080, ptRange200to8000, kaon_pt200_cut5_woTPCelecut, AnaCut);;
+      break;
+    case kPbPb2015_pure_proton_pt200_woTPCelecut:
+      pidCuts = LMEECutLib::SetKinematics(etaRange080, ptRange200to8000, proton_pt200_cut5_woTPCelecut, AnaCut);;
+      break;
+    case kPbPb2015_pure_pion_pt200_wTPCelecut:
+      pidCuts = LMEECutLib::SetKinematics(etaRange080, ptRange200to8000, pion_pt200_cut5_wTPCelecut, AnaCut);;
+      break;
+
+
       // ################# CLEAN SAMPLES ##################
+
     case kPbPb2015_pidV0_electron_pt400_woPionRej:
       pidCuts = LMEECutLib::SetKinematics(etaRange080, ptRange400to8000, pid_electron_woPionRej, AnaCut);;
       break;
 
+      case kPbPb2015_pure_electron_pt200:
+      pidCuts = LMEECutLib::SetKinematics(etaRange080, ptRange200to8000, pid_electron, AnaCut);;
+      break;
     case kPbPb2015_pure_electron_pt400:
       pidCuts = LMEECutLib::SetKinematics(etaRange080, ptRange400to8000, pid_electron, AnaCut);;
       break;
@@ -865,6 +1147,32 @@ AliAnalysisCuts* LMEECutLib::GetPIDCutsAna(AnalysisCut AnaCut) {
       pidCuts = LMEECutLib::SetKinematics(etaRange080, ptRange400to8000, pid_proton, AnaCut);;
       break;
 
+      // TOF Efficiency Study with V0 Electrons:
+      case kPbPb2015_pure_electron_pt200_woTOF:
+        pidCuts = LMEECutLib::SetKinematics(etaRange080, ptRange200to8000, pid_electron_woTOF, AnaCut);;
+        break;
+      case kPbPb2015_pure_electron_pt200_wTOFhit:
+        pidCuts = LMEECutLib::SetKinematics(etaRange080, ptRange200to8000, pid_electron_wTOFhit, AnaCut);;
+        break;
+      case kPbPb2015_pure_electron_pt200_wTOFreq:
+        pidCuts = LMEECutLib::SetKinematics(etaRange080, ptRange200to8000, pid_electron_wTOFreq, AnaCut);;
+        break;
+      case kPbPb2015_pure_electron_pt200_wTOFif:
+        pidCuts = LMEECutLib::SetKinematics(etaRange080, ptRange200to8000, pid_electron_wTOFif, AnaCut);;
+        break;
+      case kPbPb2015_PDG_pure_electron_pt200_woTOF:
+        pidCuts = LMEECutLib::SetKinematics(etaRange080, ptRange200to8000, pid_PDG_electron_woTOF, AnaCut);;
+        break;
+      case kPbPb2015_PDG_pure_electron_pt200_wTOFhit:
+        pidCuts = LMEECutLib::SetKinematics(etaRange080, ptRange200to8000, pid_PDG_electron_wTOFhit, AnaCut);;
+        break;
+      case kPbPb2015_PDG_pure_electron_pt200_wTOFreq:
+        pidCuts = LMEECutLib::SetKinematics(etaRange080, ptRange200to8000, pid_PDG_electron_wTOFreq, AnaCut);;
+        break;
+      case kPbPb2015_PDG_pure_electron_pt200_wTOFif:
+        pidCuts = LMEECutLib::SetKinematics(etaRange080, ptRange200to8000, pid_PDG_electron_wTOFif, AnaCut);;
+        break;
+
     // MISC Cut settings
     case knanoAODTOFeffCut:
       pidCuts = LMEECutLib::SetKinematics(etaRange080, ptRange400to8000, nanoAODTOFeffCut, AnaCut);;
@@ -877,6 +1185,12 @@ AliAnalysisCuts* LMEECutLib::GetPIDCutsAna(AnalysisCut AnaCut) {
       break;
     case kPionTOFeff_woTOF:
       pidCuts = LMEECutLib::SetKinematics(etaRange080, ptRange400to8000, pid_pion_woTOF, AnaCut);;
+      break;
+      case kPionTOFeff_wTOF3Sreq:
+      pidCuts = LMEECutLib::SetKinematics(etaRange080, ptRange400to8000, pid_pion_wTOF3Sreq, AnaCut);;
+      break;
+      case kPionTOFeff_wTOF3Sif:
+      pidCuts = LMEECutLib::SetKinematics(etaRange080, ptRange400to8000, pid_pion_wTOF3Sif, AnaCut);;
       break;
     case kPbPb2015_Pt100_ResolutionCuts:
       AliDielectronCutGroup* cgPIDCutsAna = new AliDielectronCutGroup("cgPIDCutsAna","cgPIDCutsAna",AliDielectronCutGroup::kCompAND);
@@ -897,8 +1211,330 @@ AliAnalysisCuts* LMEECutLib::GetTrackSelectionAna(AnalysisCut AnaCut) {
     case kV0:
       trackCuts = GetTrackCuts(kPbPb2015_V0_tight);
       break;
+    case kResolutionTrackCuts:
+      std::cout << "kResolutionTrackCuts" << std::endl;
+      AliDielectronVarCuts* trackCutsAOD =new AliDielectronVarCuts("trackCutsAOD","trackCutsAOD");
+      trackCutsAOD->AddCut(AliDielectronVarManager::kImpactParXY, -1.0,   1.0);
+      trackCutsAOD->AddCut(AliDielectronVarManager::kImpactParZ,  -3.0,   3.0);
+
+      trackCutsAOD->AddCut(AliDielectronVarManager::kNclsITS,      3.0, 100.0); // means at least 2 with PID
+      trackCutsAOD->AddCut(AliDielectronVarManager::kITSchi2Cl,    0.0,  15.0);
+      trackCutsAOD->AddCut(AliDielectronVarManager::kNclsSITS,     0.0,   4.1); // means 0 and 1 shared Cluster
+
+      trackCutsAOD->AddCut(AliDielectronVarManager::kTPCchi2Cl,    0.0,   5.0);
+      trackCutsAOD->AddCut(AliDielectronVarManager::kNFclsTPCr,    80.0, 160.0);
+      trackCutsAOD->AddCut(AliDielectronVarManager::kNFclsTPCfCross,     0.8, 1.1); // lower limit 0.8 in most filterbits! // 1.1 since 26.02.2014
+
+      AliDielectronTrackCuts *trackCutsDiel = new AliDielectronTrackCuts("trackCutsDiel","trackCutsDiel");
+      trackCutsDiel->SetAODFilterBit(1<<4); // (=16) filterbit 4! //GetStandardITSTPCTrackCuts2011(kFALSE); loose DCA, 2D cut
+      trackCutsDiel->SetClusterRequirementITS(AliESDtrackCuts::kSPD,AliESDtrackCuts::kFirst);
+
+      cgTrackCutsAnaSPDfirst = new AliDielectronCutGroup("cgTrackCutsAnaSPDfirst","cgTrackCutsAnaSPDfirst",AliDielectronCutGroup::kCompAND);
+      cgTrackCutsAnaSPDfirst->AddCut(trackCutsDiel);
+      cgTrackCutsAnaSPDfirst->AddCut(trackCutsAOD);
+      trackCuts = cgTrackCutsAnaSPDfirst;
+      break;
     case kSPDfirst:
       std::cout << "SPDfirst" << std::endl;
+      AliDielectronVarCuts* trackCutsAOD =new AliDielectronVarCuts("trackCutsAOD","trackCutsAOD");
+      trackCutsAOD->AddCut(AliDielectronVarManager::kImpactParXY, -1.0,   1.0);
+      trackCutsAOD->AddCut(AliDielectronVarManager::kImpactParZ,  -3.0,   3.0);
+
+      trackCutsAOD->AddCut(AliDielectronVarManager::kNclsITS,      4.0, 100.0); // means at least 2 with PID
+      trackCutsAOD->AddCut(AliDielectronVarManager::kITSchi2Cl,    0.0,   5.0);
+      trackCutsAOD->AddCut(AliDielectronVarManager::kNclsSITS,     0.0,   3.1); // means 0 and 1 shared Cluster
+      trackCutsAOD->AddCut(AliDielectronVarManager::kTPCchi2Cl,    0.0,   3.0);
+      trackCutsAOD->AddCut(AliDielectronVarManager::kNFclsTPCr,    80.0, 160.0);
+      trackCutsAOD->AddCut(AliDielectronVarManager::kNFclsTPCfCross,     0.8, 1.1); // lower limit 0.8 in most filterbits! // 1.1 since 26.02.2014
+
+      AliDielectronTrackCuts *trackCutsDiel = new AliDielectronTrackCuts("trackCutsDiel","trackCutsDiel");
+      trackCutsDiel->SetAODFilterBit(1<<4); // (=16) filterbit 4! //GetStandardITSTPCTrackCuts2011(kFALSE); loose DCA, 2D cut
+      trackCutsDiel->SetClusterRequirementITS(AliESDtrackCuts::kSPD,AliESDtrackCuts::kFirst);
+
+      cgTrackCutsAnaSPDfirst = new AliDielectronCutGroup("cgTrackCutsAnaSPDfirst","cgTrackCutsAnaSPDfirst",AliDielectronCutGroup::kCompAND);
+      cgTrackCutsAnaSPDfirst->AddCut(trackCutsDiel);
+      cgTrackCutsAnaSPDfirst->AddCut(trackCutsAOD);
+      // cgTrackCutsAnaSPDfirst->AddCut(SharedClusterCut);
+      trackCuts = cgTrackCutsAnaSPDfirst;
+      break;
+    case kSPDfirst_0SITSCl:
+      std::cout << "SPDfirst" << std::endl;
+      AliDielectronVarCuts* trackCutsAOD =new AliDielectronVarCuts("trackCutsAOD","trackCutsAOD");
+      trackCutsAOD->AddCut(AliDielectronVarManager::kImpactParXY, -1.0,   1.0);
+      trackCutsAOD->AddCut(AliDielectronVarManager::kImpactParZ,  -3.0,   3.0);
+
+      trackCutsAOD->AddCut(AliDielectronVarManager::kNclsITS,      4.0, 100.0); // means at least 2 with PID
+      trackCutsAOD->AddCut(AliDielectronVarManager::kITSchi2Cl,    0.0,   5.0);
+      trackCutsAOD->AddCut(AliDielectronVarManager::kNclsSITS,     0.0,   0.1); // means 0 and 1 shared Cluster
+      trackCutsAOD->AddCut(AliDielectronVarManager::kTPCchi2Cl,    0.0,   3.0);
+      trackCutsAOD->AddCut(AliDielectronVarManager::kNFclsTPCr,    80.0, 160.0);
+      trackCutsAOD->AddCut(AliDielectronVarManager::kNFclsTPCfCross,     0.8, 1.1); // lower limit 0.8 in most filterbits! // 1.1 since 26.02.2014
+
+      AliDielectronTrackCuts *trackCutsDiel = new AliDielectronTrackCuts("trackCutsDiel","trackCutsDiel");
+      trackCutsDiel->SetAODFilterBit(1<<4); // (=16) filterbit 4! //GetStandardITSTPCTrackCuts2011(kFALSE); loose DCA, 2D cut
+      trackCutsDiel->SetClusterRequirementITS(AliESDtrackCuts::kSPD,AliESDtrackCuts::kFirst);
+
+      cgTrackCutsAnaSPDfirst = new AliDielectronCutGroup("cgTrackCutsAnaSPDfirst","cgTrackCutsAnaSPDfirst",AliDielectronCutGroup::kCompAND);
+      cgTrackCutsAnaSPDfirst->AddCut(trackCutsDiel);
+      cgTrackCutsAnaSPDfirst->AddCut(trackCutsAOD);
+      // cgTrackCutsAnaSPDfirst->AddCut(SharedClusterCut);
+      trackCuts = cgTrackCutsAnaSPDfirst;
+      break;
+    case kSPDfirst_ITSMAP:
+      std::cout << "SPDfirst" << std::endl;
+      AliDielectronVarCuts* trackCutsAOD =new AliDielectronVarCuts("trackCutsAOD","trackCutsAOD");
+      trackCutsAOD->AddCut(AliDielectronVarManager::kImpactParXY, -1.0,   1.0);
+      trackCutsAOD->AddCut(AliDielectronVarManager::kImpactParZ,  -3.0,   3.0);
+
+      trackCutsAOD->AddCut(AliDielectronVarManager::kNclsITS,      4.0, 100.0); // means at least 2 with PID
+      trackCutsAOD->AddCut(AliDielectronVarManager::kITSchi2Cl,    0.0,   5.0);
+      // trackCutsAOD->AddCut(AliDielectronVarManager::kNclsSITS,     0.0,   0.1); // means 0 and 1 shared Cluster
+      trackCutsAOD->AddCut(AliDielectronVarManager::kTPCchi2Cl,    0.0,   3.0);
+      trackCutsAOD->AddCut(AliDielectronVarManager::kNFclsTPCr,    80.0, 160.0);
+      trackCutsAOD->AddCut(AliDielectronVarManager::kNFclsTPCfCross,     0.8, 1.1); // lower limit 0.8 in most filterbits! // 1.1 since 26.02.2014
+
+      AliDielectronTrackCuts *trackCutsDiel = new AliDielectronTrackCuts("trackCutsDiel","trackCutsDiel");
+      trackCutsDiel->SetAODFilterBit(1<<4); // (=16) filterbit 4! //GetStandardITSTPCTrackCuts2011(kFALSE); loose DCA, 2D cut
+      trackCutsDiel->SetClusterRequirementITS(AliESDtrackCuts::kSPD,AliESDtrackCuts::kFirst);
+
+      AliDielectronCutGroup* SharedClusterCut = new AliDielectronCutGroup("SharedClusterCut","SharedClusterCut",AliDielectronCutGroup::kCompOR);
+      double delta = 0.00001;
+      AliDielectronVarCuts* trackCutsSharedCluster0 = new AliDielectronVarCuts("trackCutsSharedCluster0", "trackCutsSharedCluster0");
+      trackCutsSharedCluster0->AddCut(AliDielectronVarManager::kNclsSMapITS, 0-delta, 0+delta);
+      AliDielectronVarCuts* trackCutsSharedCluster2 = new AliDielectronVarCuts("trackCutsSharedCluster2", "trackCutsSharedCluster2");
+      trackCutsSharedCluster2->AddCut(AliDielectronVarManager::kNclsSMapITS, 2-delta, 2+delta);
+      AliDielectronVarCuts* trackCutsSharedCluster4 = new AliDielectronVarCuts("trackCutsSharedCluster4", "trackCutsSharedCluster4");
+      trackCutsSharedCluster4->AddCut(AliDielectronVarManager::kNclsSMapITS, 4-delta, 4+delta);
+      AliDielectronVarCuts* trackCutsSharedCluster8 = new AliDielectronVarCuts("trackCutsSharedCluster8", "trackCutsSharedCluster8");
+      trackCutsSharedCluster8->AddCut(AliDielectronVarManager::kNclsSMapITS, 8-delta, 8+delta);
+      AliDielectronVarCuts* trackCutsSharedCluster16 = new AliDielectronVarCuts("trackCutsSharedCluster16", "trackCutsSharedCluster16");
+      trackCutsSharedCluster16->AddCut(AliDielectronVarManager::kNclsSMapITS, 16-delta, 16+delta);
+      AliDielectronVarCuts* trackCutsSharedCluster32 = new AliDielectronVarCuts("trackCutsSharedCluster32", "trackCutsSharedCluster32");
+      trackCutsSharedCluster32->AddCut(AliDielectronVarManager::kNclsSMapITS, 32-delta, 32+delta);
+      SharedClusterCut->AddCut(trackCutsSharedCluster0);
+      SharedClusterCut->AddCut(trackCutsSharedCluster2);
+      SharedClusterCut->AddCut(trackCutsSharedCluster4);
+      SharedClusterCut->AddCut(trackCutsSharedCluster8);
+      SharedClusterCut->AddCut(trackCutsSharedCluster16);
+      SharedClusterCut->AddCut(trackCutsSharedCluster32);
+      cgTrackCutsAnaSPDfirst = new AliDielectronCutGroup("cgTrackCutsAnaSPDfirst","cgTrackCutsAnaSPDfirst",AliDielectronCutGroup::kCompAND);
+      cgTrackCutsAnaSPDfirst->AddCut(trackCutsDiel);
+      cgTrackCutsAnaSPDfirst->AddCut(trackCutsAOD);
+      cgTrackCutsAnaSPDfirst->AddCut(SharedClusterCut);
+      trackCuts = cgTrackCutsAnaSPDfirst;
+      break;
+    case kSPDfirst_InverseSharedCluster:
+      std::cout << "SPDfirst" << std::endl;
+      AliDielectronVarCuts* trackCutsAOD =new AliDielectronVarCuts("trackCutsAOD","trackCutsAOD");
+      trackCutsAOD->AddCut(AliDielectronVarManager::kImpactParXY, -1.0,   1.0);
+      trackCutsAOD->AddCut(AliDielectronVarManager::kImpactParZ,  -3.0,   3.0);
+
+      trackCutsAOD->AddCut(AliDielectronVarManager::kNclsITS,      4.0, 100.0); // means at least 2 with PID
+      trackCutsAOD->AddCut(AliDielectronVarManager::kITSchi2Cl,    0.0,   5.0);
+      trackCutsAOD->AddCut(AliDielectronVarManager::kNclsSITS,     1.1,   6.1); // means 0 and 1 shared Cluster
+      trackCutsAOD->AddCut(AliDielectronVarManager::kTPCchi2Cl,    0.0,   3.0);
+      trackCutsAOD->AddCut(AliDielectronVarManager::kNFclsTPCr,    80.0, 160.0);
+      trackCutsAOD->AddCut(AliDielectronVarManager::kNFclsTPCfCross,     0.8, 1.1); // lower limit 0.8 in most filterbits! // 1.1 since 26.02.2014
+
+      AliDielectronTrackCuts *trackCutsDiel = new AliDielectronTrackCuts("trackCutsDiel","trackCutsDiel");
+      trackCutsDiel->SetAODFilterBit(1<<4); // (=16) filterbit 4! //GetStandardITSTPCTrackCuts2011(kFALSE); loose DCA, 2D cut
+      trackCutsDiel->SetClusterRequirementITS(AliESDtrackCuts::kSPD,AliESDtrackCuts::kFirst);
+
+      cgTrackCutsAnaSPDfirst = new AliDielectronCutGroup("cgTrackCutsAnaSPDfirst","cgTrackCutsAnaSPDfirst",AliDielectronCutGroup::kCompAND);
+      cgTrackCutsAnaSPDfirst->AddCut(trackCutsDiel);
+      cgTrackCutsAnaSPDfirst->AddCut(trackCutsAOD);
+      // cgTrackCutsAnaSPDfirst->AddCut(SharedClusterCut);
+      trackCuts = cgTrackCutsAnaSPDfirst;
+      break;
+    case kSPDfirst_PDGCodeElectron:
+      std::cout << "SPDfirst_PDGCodeElectron" << std::endl;
+      AliDielectronVarCuts* pdgCodeEleP = new AliDielectronVarCuts("PDGEleP","PDGEleP");
+      pdgCodeEleP->AddCut(AliDielectronVarManager::kPdgCode,  10.5,   11.5);
+
+      AliDielectronVarCuts* pdgCodeEleN = new AliDielectronVarCuts("PDGEleN","PDGEleN");
+      pdgCodeEleN->AddCut(AliDielectronVarManager::kPdgCode, -10.5,  -11.5);
+      AliDielectronCutGroup* pdgCodeEle = new AliDielectronCutGroup("pdgCodeEle","pdgCodeEle",AliDielectronCutGroup::kCompOR);
+      pdgCodeEle->AddCut(pdgCodeEleP);
+      pdgCodeEle->AddCut(pdgCodeEleN);
+
+      AliDielectronVarCuts* trackCutsAOD =new AliDielectronVarCuts("trackCutsAOD","trackCutsAOD");
+      trackCutsAOD->AddCut(AliDielectronVarManager::kImpactParXY, -1.0,   1.0);
+      trackCutsAOD->AddCut(AliDielectronVarManager::kImpactParZ,  -3.0,   3.0);
+
+      trackCutsAOD->AddCut(AliDielectronVarManager::kNclsITS,      4.0, 100.0); // means at least 2 with PID
+      trackCutsAOD->AddCut(AliDielectronVarManager::kITSchi2Cl,    0.0,   5.0);
+      trackCutsAOD->AddCut(AliDielectronVarManager::kNclsSITS,     0.0,   3.1); // means 0 and 1 shared Cluster
+      trackCutsAOD->AddCut(AliDielectronVarManager::kTPCchi2Cl,    0.0,   3.0);
+      trackCutsAOD->AddCut(AliDielectronVarManager::kNFclsTPCr,    80.0, 160.0);
+      trackCutsAOD->AddCut(AliDielectronVarManager::kNFclsTPCfCross,     0.8, 1.1); // lower limit 0.8 in most filterbits! // 1.1 since 26.02.2014
+
+      AliDielectronTrackCuts *trackCutsDiel = new AliDielectronTrackCuts("trackCutsDiel","trackCutsDiel");
+      trackCutsDiel->SetAODFilterBit(1<<4); // (=16) filterbit 4! //GetStandardITSTPCTrackCuts2011(kFALSE); loose DCA, 2D cut
+      trackCutsDiel->SetClusterRequirementITS(AliESDtrackCuts::kSPD,AliESDtrackCuts::kFirst);
+
+      cgTrackCutsAnaSPDfirst = new AliDielectronCutGroup("cgTrackCutsAnaSPDfirst","cgTrackCutsAnaSPDfirst",AliDielectronCutGroup::kCompAND);
+      cgTrackCutsAnaSPDfirst->AddCut(trackCutsDiel);
+      cgTrackCutsAnaSPDfirst->AddCut(trackCutsAOD);
+      cgTrackCutsAnaSPDfirst->AddCut(pdgCodeEle);
+      // cgTrackCutsAnaSPDfirst->AddCut(SharedClusterCut);
+      trackCuts = cgTrackCutsAnaSPDfirst;
+      break;
+    case kSPDfirst_noConversion:
+      std::cout << "kSPDfirst_noConversion" << std::endl;
+
+      // #####################################
+      AliDielectronVarCuts* pdgCodeMPhoton0 = new AliDielectronVarCuts("pdgCodeMPhoton0","pdgCodeMPhoton0");
+      pdgCodeMPhoton0->AddCut(AliDielectronVarManager::kPdgCodeMother,  -999999.,   21.5);
+
+      AliDielectronVarCuts* pdgCodeMPhoton1 = new AliDielectronVarCuts("pdgCodeMPhoton1","pdgCodeMPhoton1");
+      pdgCodeMPhoton1->AddCut(AliDielectronVarManager::kPdgCodeMother, 22.5,  9999999.);
+      AliDielectronCutGroup* pdgCodeMPhoton = new AliDielectronCutGroup("pdgCodeMPhoton","pdgCodeMPhoton",AliDielectronCutGroup::kCompOR);
+      pdgCodeMPhoton->AddCut(pdgCodeMPhoton0);
+      pdgCodeMPhoton->AddCut(pdgCodeMPhoton1);
+
+      // #####################################
+      AliDielectronVarCuts* NotFromCharm = new AliDielectronVarCuts("NotFromCharm","NotFromCharm");
+      NotFromCharm->AddCut(AliDielectronVarManager::kPdgCodeMother, -399.,  399.);
+
+
+
+      // #####################################
+      AliDielectronVarCuts* pdgCodeEleP = new AliDielectronVarCuts("PDGEleP","PDGEleP");
+      pdgCodeEleP->AddCut(AliDielectronVarManager::kPdgCode,  10.5,   11.5);
+
+      AliDielectronVarCuts* pdgCodeEleN = new AliDielectronVarCuts("PDGEleN","PDGEleN");
+      pdgCodeEleN->AddCut(AliDielectronVarManager::kPdgCode, -10.5,  -11.5);
+      AliDielectronCutGroup* pdgCodeEle = new AliDielectronCutGroup("pdgCodeEle","pdgCodeEle",AliDielectronCutGroup::kCompOR);
+      pdgCodeEle->AddCut(pdgCodeEleP);
+      pdgCodeEle->AddCut(pdgCodeEleN);
+
+      // #####################################
+      AliDielectronVarCuts* finalstate = new AliDielectronVarCuts("finalstate","finalstate");
+      finalstate->AddCut(AliDielectronVarManager::kMCLegSource, AliDielectronSignalMC::kFinalState);
+
+      // #####################################
+      AliDielectronVarCuts* trackCutsAOD =new AliDielectronVarCuts("trackCutsAOD","trackCutsAOD");
+      trackCutsAOD->AddCut(AliDielectronVarManager::kImpactParXY, -1.0,   1.0);
+      trackCutsAOD->AddCut(AliDielectronVarManager::kImpactParZ,  -3.0,   3.0);
+
+      trackCutsAOD->AddCut(AliDielectronVarManager::kNclsITS,      4.0, 100.0); // means at least 2 with PID
+      trackCutsAOD->AddCut(AliDielectronVarManager::kITSchi2Cl,    0.0,   5.0);
+      trackCutsAOD->AddCut(AliDielectronVarManager::kNclsSITS,     0.0,   3.1); // means 0 and 1 shared Cluster
+      trackCutsAOD->AddCut(AliDielectronVarManager::kTPCchi2Cl,    0.0,   3.0);
+      trackCutsAOD->AddCut(AliDielectronVarManager::kNFclsTPCr,    80.0, 160.0);
+      trackCutsAOD->AddCut(AliDielectronVarManager::kNFclsTPCfCross,     0.8, 1.1); // lower limit 0.8 in most filterbits! // 1.1 since 26.02.2014
+
+      AliDielectronTrackCuts *trackCutsDiel = new AliDielectronTrackCuts("trackCutsDiel","trackCutsDiel");
+      trackCutsDiel->SetAODFilterBit(1<<4); // (=16) filterbit 4! //GetStandardITSTPCTrackCuts2011(kFALSE); loose DCA, 2D cut
+      trackCutsDiel->SetClusterRequirementITS(AliESDtrackCuts::kSPD,AliESDtrackCuts::kFirst);
+
+      cgTrackCutsAnaSPDfirst = new AliDielectronCutGroup("cgTrackCutsAnaSPDfirst","cgTrackCutsAnaSPDfirst",AliDielectronCutGroup::kCompAND);
+      cgTrackCutsAnaSPDfirst->AddCut(trackCutsDiel);
+      cgTrackCutsAnaSPDfirst->AddCut(trackCutsAOD);
+      cgTrackCutsAnaSPDfirst->AddCut(pdgCodeEle);
+      cgTrackCutsAnaSPDfirst->AddCut(pdgCodeMPhoton);
+      // cgTrackCutsAnaSPDfirst->AddCut(finalstate);
+      cgTrackCutsAnaSPDfirst->AddCut(NotFromCharm);
+      trackCuts = cgTrackCutsAnaSPDfirst;
+      break;
+    case kSPDfirst_Charm:
+      std::cout << "kSPDfirst_Charm" << std::endl;
+
+      // #####################################
+      // AliDielectronVarCuts* pdgCodeMPhoton0 = new AliDielectronVarCuts("pdgCodeMPhoton0","pdgCodeMPhoton0");
+      // pdgCodeMPhoton0->AddCut(AliDielectronVarManager::kPdgCodeMother,  -999999.,   21.5);
+      //
+      // AliDielectronVarCuts* pdgCodeMPhoton1 = new AliDielectronVarCuts("pdgCodeMPhoton1","pdgCodeMPhoton1");
+      // pdgCodeMPhoton1->AddCut(AliDielectronVarManager::kPdgCodeMother, 22.5,  9999999.);
+      // AliDielectronCutGroup* pdgCodeMPhoton = new AliDielectronCutGroup("pdgCodeMPhoton","pdgCodeMPhoton",AliDielectronCutGroup::kCompOR);
+      // pdgCodeMPhoton->AddCut(pdgCodeMPhoton0);
+      // pdgCodeMPhoton->AddCut(pdgCodeMPhoton1);
+
+
+      // #####################################
+      AliDielectronVarCuts* FromCharm1 = new AliDielectronVarCuts("FromCharm1","FromCharm1");
+      FromCharm1->AddCut(AliDielectronVarManager::kPdgCodeMother, -600.,  -399.);
+      AliDielectronVarCuts* FromCharm2 = new AliDielectronVarCuts("FromCharm2","FromCharm2");
+      FromCharm2->AddCut(AliDielectronVarManager::kPdgCodeMother, 399.,  600.);
+      AliDielectronCutGroup* FromCharm = new AliDielectronCutGroup("FromCharm","FromCharm",AliDielectronCutGroup::kCompOR);
+      FromCharm->AddCut(FromCharm1);
+      FromCharm->AddCut(FromCharm2);
+
+
+      // #####################################
+      AliDielectronVarCuts* pdgCodeEleP = new AliDielectronVarCuts("PDGEleP","PDGEleP");
+      pdgCodeEleP->AddCut(AliDielectronVarManager::kPdgCode,  10.5,   11.5);
+
+      AliDielectronVarCuts* pdgCodeEleN = new AliDielectronVarCuts("PDGEleN","PDGEleN");
+      pdgCodeEleN->AddCut(AliDielectronVarManager::kPdgCode, -10.5,  -11.5);
+      AliDielectronCutGroup* pdgCodeEle = new AliDielectronCutGroup("pdgCodeEle","pdgCodeEle",AliDielectronCutGroup::kCompOR);
+      pdgCodeEle->AddCut(pdgCodeEleP);
+      pdgCodeEle->AddCut(pdgCodeEleN);
+
+      // #####################################
+      AliDielectronVarCuts* finalstate = new AliDielectronVarCuts("finalstate","finalstate");
+      finalstate->AddCut(AliDielectronVarManager::kMCLegSource, AliDielectronSignalMC::kFinalState);
+
+      // #####################################
+      AliDielectronVarCuts* trackCutsAOD =new AliDielectronVarCuts("trackCutsAOD","trackCutsAOD");
+      trackCutsAOD->AddCut(AliDielectronVarManager::kImpactParXY, -1.0,   1.0);
+      trackCutsAOD->AddCut(AliDielectronVarManager::kImpactParZ,  -3.0,   3.0);
+
+      trackCutsAOD->AddCut(AliDielectronVarManager::kNclsITS,      4.0, 100.0); // means at least 2 with PID
+      trackCutsAOD->AddCut(AliDielectronVarManager::kITSchi2Cl,    0.0,   5.0);
+      trackCutsAOD->AddCut(AliDielectronVarManager::kNclsSITS,     0.0,   3.1); // means 0 and 1 shared Cluster
+      trackCutsAOD->AddCut(AliDielectronVarManager::kTPCchi2Cl,    0.0,   3.0);
+      trackCutsAOD->AddCut(AliDielectronVarManager::kNFclsTPCr,    80.0, 160.0);
+      trackCutsAOD->AddCut(AliDielectronVarManager::kNFclsTPCfCross,     0.8, 1.1); // lower limit 0.8 in most filterbits! // 1.1 since 26.02.2014
+
+      AliDielectronTrackCuts *trackCutsDiel = new AliDielectronTrackCuts("trackCutsDiel","trackCutsDiel");
+      trackCutsDiel->SetAODFilterBit(1<<4); // (=16) filterbit 4! //GetStandardITSTPCTrackCuts2011(kFALSE); loose DCA, 2D cut
+      trackCutsDiel->SetClusterRequirementITS(AliESDtrackCuts::kSPD,AliESDtrackCuts::kFirst);
+
+      cgTrackCutsAnaSPDfirst = new AliDielectronCutGroup("cgTrackCutsAnaSPDfirst","cgTrackCutsAnaSPDfirst",AliDielectronCutGroup::kCompAND);
+      cgTrackCutsAnaSPDfirst->AddCut(trackCutsDiel);
+      cgTrackCutsAnaSPDfirst->AddCut(trackCutsAOD);
+      cgTrackCutsAnaSPDfirst->AddCut(pdgCodeEle);
+      // cgTrackCutsAnaSPDfirst->AddCut(pdgCodeMPhoton);
+      cgTrackCutsAnaSPDfirst->AddCut(finalstate);
+      cgTrackCutsAnaSPDfirst->AddCut(FromCharm);
+      trackCuts = cgTrackCutsAnaSPDfirst;
+      break;
+
+    case kITSdEdxConvRej:
+      std::cout << "kITSdEdxConvRej" << std::endl;
+      AliDielectronVarCuts* trackCutsAOD =new AliDielectronVarCuts("trackCutsAOD","trackCutsAOD");
+      // trackCutsAOD->AddCut(AliDielectronVarManager::kImpactParXY, -1.0,   1.0);
+      // trackCutsAOD->AddCut(AliDielectronVarManager::kImpactParZ,  -3.0,   3.0);
+
+      // trackCutsAOD->AddCut(AliDielectronVarManager::kNclsITS,      4.0, 100.0); // means at least 2 with PID
+      // trackCutsAOD->AddCut(AliDielectronVarManager::kITSchi2Cl,    0.0,   5.0);
+      trackCutsAOD->AddCut(AliDielectronVarManager::kNclsSITS,     0.9,   6.1); //
+
+      // trackCutsAOD->AddCut(AliDielectronVarManager::kTPCchi2Cl,    0.0,   3.0);
+      trackCutsAOD->AddCut(AliDielectronVarManager::kNFclsTPCr,    80.0, 160.0);
+      // trackCutsAOD->AddCut(AliDielectronVarManager::kNFclsTPCfCross,     0.8, 1.1); // lower limit 0.8 in most filterbits! // 1.1 since 26.02.2014
+
+      AliDielectronTrackCuts *trackCutsDiel = new AliDielectronTrackCuts("trackCutsDiel","trackCutsDiel");
+      // trackCutsDiel->SetAODFilterBit(1<<4); // (=16) filterbit 4! //GetStandardITSTPCTrackCuts2011(kFALSE); loose DCA, 2D cut
+      // trackCutsDiel->SetClusterRequirementITS(AliESDtrackCuts::kSPD,AliESDtrackCuts::kFirst);
+
+      cgTrackCutsAnaSPDfirst = new AliDielectronCutGroup("cgTrackCutsAnaSPDfirst","cgTrackCutsAnaSPDfirst",AliDielectronCutGroup::kCompAND);
+      cgTrackCutsAnaSPDfirst->AddCut(trackCutsDiel);
+      cgTrackCutsAnaSPDfirst->AddCut(trackCutsAOD);
+      trackCuts = cgTrackCutsAnaSPDfirst;
+      break;
+    case kSPDfirst_PDGCodePion:
+      std::cout << "SPDfirstPion" << std::endl;
+      AliDielectronVarCuts* pdgCodepionP = new AliDielectronVarCuts("PDGPionP","PDGPionP");
+      pdgCodepionP->AddCut(AliDielectronVarManager::kPdgCode,  210.5,   211.5);
+
+      AliDielectronVarCuts* pdgCodepionN = new AliDielectronVarCuts("PDGPionN","PDGPionN");
+      pdgCodepionN->AddCut(AliDielectronVarManager::kPdgCode, -210.5,  -211.5);
+      AliDielectronCutGroup* pdgCodepion = new AliDielectronCutGroup("pdgCodepion","pdgCodepion",AliDielectronCutGroup::kCompOR);
+      pdgCodepion->AddCut(pdgCodepionP);
+      pdgCodepion->AddCut(pdgCodepionN);
+
       AliDielectronVarCuts* trackCutsAOD =new AliDielectronVarCuts("trackCutsAOD","trackCutsAOD");
       trackCutsAOD->AddCut(AliDielectronVarManager::kImpactParXY, -1.0,   1.0);
       trackCutsAOD->AddCut(AliDielectronVarManager::kImpactParZ,  -3.0,   3.0);
@@ -918,6 +1554,7 @@ AliAnalysisCuts* LMEECutLib::GetTrackSelectionAna(AnalysisCut AnaCut) {
       cgTrackCutsAnaSPDfirst = new AliDielectronCutGroup("cgTrackCutsAnaSPDfirst","cgTrackCutsAnaSPDfirst",AliDielectronCutGroup::kCompAND);
       cgTrackCutsAnaSPDfirst->AddCut(trackCutsDiel);
       cgTrackCutsAnaSPDfirst->AddCut(trackCutsAOD);
+      cgTrackCutsAnaSPDfirst->AddCut(pdgCodepion);
       trackCuts = cgTrackCutsAnaSPDfirst;
       break;
       // trackCuts = GetTrackCuts(kSPD_bit4);
@@ -925,367 +1562,935 @@ AliAnalysisCuts* LMEECutLib::GetTrackSelectionAna(AnalysisCut AnaCut) {
     case kITSSA:
       trackCuts = GetTrackCuts(kITSSA_bit1);
       break;
-      case kTRACKcut_0:
+      case kTRACKcut_1_noSC:
         AliDielectronVarCuts* trackCutsAOD =new AliDielectronVarCuts("trackCutsAOD","trackCutsAOD");
         trackCutsAOD->AddCut(AliDielectronVarManager::kImpactParXY, -1.0,   1.0);
         trackCutsAOD->AddCut(AliDielectronVarManager::kImpactParZ,  -3.0,   3.0);
         trackCutsAOD->AddCut(AliDielectronVarManager::kNclsITS,      5.0, 100.0);
-        trackCutsAOD->AddCut(AliDielectronVarManager::kITSchi2Cl,    0.0,   2.0);
-        trackCutsAOD->AddCut(AliDielectronVarManager::kNclsSITS,     0.0,   1.1);
-        trackCutsAOD->AddCut(AliDielectronVarManager::kTPCchi2Cl,    0.0,   3.0);
-        trackCutsAOD->AddCut(AliDielectronVarManager::kNFclsTPCr,    80.0, 160.0);
-        trackCutsAOD->AddCut(AliDielectronVarManager::kNFclsTPCfCross,     0.8, 1.1);
+        trackCutsAOD->AddCut(AliDielectronVarManager::kITSchi2Cl,    0.0,   3.0);
+        trackCutsAOD->AddCut(AliDielectronVarManager::kTPCchi2Cl,    0.0,   4.0);
+        trackCutsAOD->AddCut(AliDielectronVarManager::kNFclsTPCr,    100.0, 161.0);
+        trackCutsAOD->AddCut(AliDielectronVarManager::kNFclsTPCfCross,     0.95, 1.05);
+
         AliDielectronTrackCuts *trackCutsDiel = new AliDielectronTrackCuts("trackCutsDiel","trackCutsDiel");
         trackCutsDiel->SetAODFilterBit(1<<4);
         trackCutsDiel->SetClusterRequirementITS(AliESDtrackCuts::kSPD,AliESDtrackCuts::kFirst);
         cgTrackCutsAnaSPDfirst = new AliDielectronCutGroup("cgTrackCutsAnaSPDfirst","cgTrackCutsAnaSPDfirst",AliDielectronCutGroup::kCompAND);
         cgTrackCutsAnaSPDfirst->AddCut(trackCutsDiel);
         cgTrackCutsAnaSPDfirst->AddCut(trackCutsAOD);
+        trackCuts = cgTrackCutsAnaSPDfirst;
+      break;
+      case kTRACKcut_1_onlySC:
+        AliDielectronVarCuts* trackCutsAOD =new AliDielectronVarCuts("trackCutsAOD","trackCutsAOD");
+        trackCutsAOD->AddCut(AliDielectronVarManager::kImpactParXY, -1.0,   1.0);
+        trackCutsAOD->AddCut(AliDielectronVarManager::kImpactParZ,  -3.0,   3.0);
+        trackCutsAOD->AddCut(AliDielectronVarManager::kNclsITS,      5.0, 100.0);
+        trackCutsAOD->AddCut(AliDielectronVarManager::kITSchi2Cl,    0.0,   3.0);
+        trackCutsAOD->AddCut(AliDielectronVarManager::kTPCchi2Cl,    0.0,   4.0);
+        trackCutsAOD->AddCut(AliDielectronVarManager::kNFclsTPCr,    100.0, 161.0);
+        trackCutsAOD->AddCut(AliDielectronVarManager::kNFclsTPCfCross,     0.95, 1.05);
+        trackCutsAOD->AddCut(AliDielectronVarManager::kNclsSITS,     0.0,   0.1); // means 0 and 1 shared Cluster
+
+        AliDielectronTrackCuts *trackCutsDiel = new AliDielectronTrackCuts("trackCutsDiel","trackCutsDiel");
+        trackCutsDiel->SetAODFilterBit(1<<4);
+        trackCutsDiel->SetClusterRequirementITS(AliESDtrackCuts::kSPD,AliESDtrackCuts::kFirst);
+        cgTrackCutsAnaSPDfirst = new AliDielectronCutGroup("cgTrackCutsAnaSPDfirst","cgTrackCutsAnaSPDfirst",AliDielectronCutGroup::kCompAND);
+        cgTrackCutsAnaSPDfirst->AddCut(trackCutsDiel);
+        cgTrackCutsAnaSPDfirst->AddCut(trackCutsAOD);
+        trackCuts = cgTrackCutsAnaSPDfirst;
+      break;
+      case kTRACKcut_1_onlySC_V0Finder:
+        AliDielectronVarCuts* trackCutsAOD =new AliDielectronVarCuts("trackCutsAOD","trackCutsAOD");
+        trackCutsAOD->AddCut(AliDielectronVarManager::kImpactParXY, -1.0,   1.0);
+        trackCutsAOD->AddCut(AliDielectronVarManager::kImpactParZ,  -3.0,   3.0);
+        trackCutsAOD->AddCut(AliDielectronVarManager::kNclsITS,      5.0, 100.0);
+        trackCutsAOD->AddCut(AliDielectronVarManager::kITSchi2Cl,    0.0,   3.0);
+        trackCutsAOD->AddCut(AliDielectronVarManager::kTPCchi2Cl,    0.0,   4.0);
+        trackCutsAOD->AddCut(AliDielectronVarManager::kNFclsTPCr,    100.0, 161.0);
+        trackCutsAOD->AddCut(AliDielectronVarManager::kNFclsTPCfCross,     0.95, 1.05);
+        trackCutsAOD->AddCut(AliDielectronVarManager::kNclsSITS,     0.0,   0.1); // means 0 and 1 shared Cluster
+        AliDielectronV0Cuts *gammaV0Cuts = new AliDielectronV0Cuts("IsGamma","IsGamma");
+        // which V0 finder you want to use
+        gammaV0Cuts->SetV0finder(AliDielectronV0Cuts::kOnTheFly);  // kAll(default), kOffline or kOnTheFly
+        // add some pdg codes (they are used then by the KF package and important for gamma conversions)
+        gammaV0Cuts->SetPdgCodes(22,11,11); // mother, daughter1 and 2
+        // add default PID cuts (defined in AliDielectronPID)
+        // requirement can be set to at least one(kAny) of the tracks or to both(kBoth)
+        gammaV0Cuts->SetDefaultPID(16, AliDielectronV0Cuts::kAny);
+        // add the pair cuts for V0 candidates
+        gammaV0Cuts->AddCut(AliDielectronVarManager::kCosPointingAngle, TMath::Cos(0.02), 1.0, kFALSE);  // cosine of the pointing angle
+        gammaV0Cuts->AddCut(AliDielectronVarManager::kChi2NDF,                       0.0,10.0, kFALSE);  // Chi^2/NDF
+        gammaV0Cuts->AddCut(AliDielectronVarManager::kLegDist,                       0.0,0.25, kFALSE); // distance of the legs
+        gammaV0Cuts->AddCut(AliDielectronVarManager::kR,                             3.0,90.0, kFALSE);  // distance to the origin
+        gammaV0Cuts->AddCut(AliDielectronVarManager::kPsiPair,                       0.0, 0.05, kFALSE); // phi in mother's rest frame in Collins-Soper picture
+        gammaV0Cuts->AddCut(AliDielectronVarManager::kM,                             0.0, 0.05, kFALSE); // mass
+        gammaV0Cuts->AddCut(AliDielectronVarManager::kArmPt,                         0.0, 0.05, kFALSE); // Armenteros-Podolanski pt
+        // selection or rejection of V0 tracks
+        gammaV0Cuts->SetExcludeTracks(kTRUE);
+
+        AliDielectronTrackCuts *trackCutsDiel = new AliDielectronTrackCuts("trackCutsDiel","trackCutsDiel");
+        trackCutsDiel->SetAODFilterBit(1<<4);
+        trackCutsDiel->SetClusterRequirementITS(AliESDtrackCuts::kSPD,AliESDtrackCuts::kFirst);
+        cgTrackCutsAnaSPDfirst = new AliDielectronCutGroup("cgTrackCutsAnaSPDfirst","cgTrackCutsAnaSPDfirst",AliDielectronCutGroup::kCompAND);
+        cgTrackCutsAnaSPDfirst->AddCut(trackCutsDiel);
+        cgTrackCutsAnaSPDfirst->AddCut(trackCutsAOD);
+        cgTrackCutsAnaSPDfirst->AddCut(gammaV0Cuts);
         trackCuts = cgTrackCutsAnaSPDfirst;
       break;
       case kTRACKcut_1:
         AliDielectronVarCuts* trackCutsAOD =new AliDielectronVarCuts("trackCutsAOD","trackCutsAOD");
         trackCutsAOD->AddCut(AliDielectronVarManager::kImpactParXY, -1.0,   1.0);
         trackCutsAOD->AddCut(AliDielectronVarManager::kImpactParZ,  -3.0,   3.0);
-        trackCutsAOD->AddCut(AliDielectronVarManager::kNclsITS,      5.0, 100.0);
-        trackCutsAOD->AddCut(AliDielectronVarManager::kITSchi2Cl,    0.0,   3.0);
-        trackCutsAOD->AddCut(AliDielectronVarManager::kNclsSITS,     0.0,   1.1);
+        trackCutsAOD->AddCut(AliDielectronVarManager::kNclsITS,      4.0, 100.0);
+        trackCutsAOD->AddCut(AliDielectronVarManager::kNclsTPC,      80.0, 160.0);
+        trackCutsAOD->AddCut(AliDielectronVarManager::kITSchi2Cl,    0.0,   4.0);
         trackCutsAOD->AddCut(AliDielectronVarManager::kTPCchi2Cl,    0.0,   3.0);
-        trackCutsAOD->AddCut(AliDielectronVarManager::kNFclsTPCr,    100.0, 160.0);
-        trackCutsAOD->AddCut(AliDielectronVarManager::kNFclsTPCfCross,     0.8, 1.1);
+        trackCutsAOD->AddCut(AliDielectronVarManager::kNFclsTPCr,    80.0, 161.0);
+        trackCutsAOD->AddCut(AliDielectronVarManager::kNFclsTPCfCross,     0.95, 1.05);
+      AliDielectronCutGroup* SharedClusterCut = new AliDielectronCutGroup("SharedClusterCut","SharedClusterCut",AliDielectronCutGroup::kCompOR);
+      double delta = 0.00001;
+      AliDielectronVarCuts* trackCutsSharedCluster0 = new AliDielectronVarCuts("trackCutsSharedCluster0", "trackCutsSharedCluster0");
+      trackCutsSharedCluster0->AddCut(AliDielectronVarManager::kNclsSMapITS, 0-delta, 0+delta);
+      AliDielectronVarCuts* trackCutsSharedCluster2 = new AliDielectronVarCuts("trackCutsSharedCluster2", "trackCutsSharedCluster2");
+      trackCutsSharedCluster2->AddCut(AliDielectronVarManager::kNclsSMapITS, 2-delta, 2+delta);
+      AliDielectronVarCuts* trackCutsSharedCluster4 = new AliDielectronVarCuts("trackCutsSharedCluster4", "trackCutsSharedCluster4");
+      trackCutsSharedCluster4->AddCut(AliDielectronVarManager::kNclsSMapITS, 4-delta, 4+delta);
+      AliDielectronVarCuts* trackCutsSharedCluster8 = new AliDielectronVarCuts("trackCutsSharedCluster8", "trackCutsSharedCluster8");
+      trackCutsSharedCluster8->AddCut(AliDielectronVarManager::kNclsSMapITS, 8-delta, 8+delta);
+      AliDielectronVarCuts* trackCutsSharedCluster16 = new AliDielectronVarCuts("trackCutsSharedCluster16", "trackCutsSharedCluster16");
+      trackCutsSharedCluster16->AddCut(AliDielectronVarManager::kNclsSMapITS, 16-delta, 16+delta);
+      AliDielectronVarCuts* trackCutsSharedCluster32 = new AliDielectronVarCuts("trackCutsSharedCluster32", "trackCutsSharedCluster32");
+      trackCutsSharedCluster32->AddCut(AliDielectronVarManager::kNclsSMapITS, 32-delta, 32+delta);
+      SharedClusterCut->AddCut(trackCutsSharedCluster0);
+      SharedClusterCut->AddCut(trackCutsSharedCluster2);
+      SharedClusterCut->AddCut(trackCutsSharedCluster4);
+      SharedClusterCut->AddCut(trackCutsSharedCluster8);
+      SharedClusterCut->AddCut(trackCutsSharedCluster16);
+      SharedClusterCut->AddCut(trackCutsSharedCluster32);
         AliDielectronTrackCuts *trackCutsDiel = new AliDielectronTrackCuts("trackCutsDiel","trackCutsDiel");
         trackCutsDiel->SetAODFilterBit(1<<4);
-        trackCutsDiel->SetClusterRequirementITS(AliESDtrackCuts::kSPD,AliESDtrackCuts::kFirst);
+        trackCutsDiel->SetClusterRequirementITS(AliESDtrackCuts::kSPD, AliESDtrackCuts::kFirst);
         cgTrackCutsAnaSPDfirst = new AliDielectronCutGroup("cgTrackCutsAnaSPDfirst","cgTrackCutsAnaSPDfirst",AliDielectronCutGroup::kCompAND);
         cgTrackCutsAnaSPDfirst->AddCut(trackCutsDiel);
         cgTrackCutsAnaSPDfirst->AddCut(trackCutsAOD);
+        cgTrackCutsAnaSPDfirst->AddCut(SharedClusterCut);
         trackCuts = cgTrackCutsAnaSPDfirst;
       break;
       case kTRACKcut_2:
         AliDielectronVarCuts* trackCutsAOD =new AliDielectronVarCuts("trackCutsAOD","trackCutsAOD");
         trackCutsAOD->AddCut(AliDielectronVarManager::kImpactParXY, -1.0,   1.0);
         trackCutsAOD->AddCut(AliDielectronVarManager::kImpactParZ,  -3.0,   3.0);
-        trackCutsAOD->AddCut(AliDielectronVarManager::kNclsITS,      5.0, 100.0);
+        trackCutsAOD->AddCut(AliDielectronVarManager::kNclsITS,      4.0, 100.0);
+        trackCutsAOD->AddCut(AliDielectronVarManager::kNclsTPC,      80.0, 160.0);
         trackCutsAOD->AddCut(AliDielectronVarManager::kITSchi2Cl,    0.0,   4.0);
-        trackCutsAOD->AddCut(AliDielectronVarManager::kNclsSITS,     0.0,   2.1);
-        trackCutsAOD->AddCut(AliDielectronVarManager::kTPCchi2Cl,    0.0,   3.0);
-        trackCutsAOD->AddCut(AliDielectronVarManager::kNFclsTPCr,    80.0, 160.0);
-        trackCutsAOD->AddCut(AliDielectronVarManager::kNFclsTPCfCross,     0.8, 1.1);
+        trackCutsAOD->AddCut(AliDielectronVarManager::kTPCchi2Cl,    0.0,   4.0);
+        trackCutsAOD->AddCut(AliDielectronVarManager::kNFclsTPCr,    80.0, 161.0);
+        trackCutsAOD->AddCut(AliDielectronVarManager::kNFclsTPCfCross,     0.95, 1.05);
+      AliDielectronCutGroup* SharedClusterCut = new AliDielectronCutGroup("SharedClusterCut","SharedClusterCut",AliDielectronCutGroup::kCompOR);
+      double delta = 0.00001;
+      AliDielectronVarCuts* trackCutsSharedCluster0 = new AliDielectronVarCuts("trackCutsSharedCluster0", "trackCutsSharedCluster0");
+      trackCutsSharedCluster0->AddCut(AliDielectronVarManager::kNclsSMapITS, 0-delta, 0+delta);
+      AliDielectronVarCuts* trackCutsSharedCluster2 = new AliDielectronVarCuts("trackCutsSharedCluster2", "trackCutsSharedCluster2");
+      trackCutsSharedCluster2->AddCut(AliDielectronVarManager::kNclsSMapITS, 2-delta, 2+delta);
+      AliDielectronVarCuts* trackCutsSharedCluster4 = new AliDielectronVarCuts("trackCutsSharedCluster4", "trackCutsSharedCluster4");
+      trackCutsSharedCluster4->AddCut(AliDielectronVarManager::kNclsSMapITS, 4-delta, 4+delta);
+      AliDielectronVarCuts* trackCutsSharedCluster8 = new AliDielectronVarCuts("trackCutsSharedCluster8", "trackCutsSharedCluster8");
+      trackCutsSharedCluster8->AddCut(AliDielectronVarManager::kNclsSMapITS, 8-delta, 8+delta);
+      AliDielectronVarCuts* trackCutsSharedCluster16 = new AliDielectronVarCuts("trackCutsSharedCluster16", "trackCutsSharedCluster16");
+      trackCutsSharedCluster16->AddCut(AliDielectronVarManager::kNclsSMapITS, 16-delta, 16+delta);
+      AliDielectronVarCuts* trackCutsSharedCluster32 = new AliDielectronVarCuts("trackCutsSharedCluster32", "trackCutsSharedCluster32");
+      trackCutsSharedCluster32->AddCut(AliDielectronVarManager::kNclsSMapITS, 32-delta, 32+delta);
+      SharedClusterCut->AddCut(trackCutsSharedCluster0);
+      SharedClusterCut->AddCut(trackCutsSharedCluster2);
+      SharedClusterCut->AddCut(trackCutsSharedCluster4);
+      SharedClusterCut->AddCut(trackCutsSharedCluster8);
+      SharedClusterCut->AddCut(trackCutsSharedCluster16);
+      SharedClusterCut->AddCut(trackCutsSharedCluster32);
         AliDielectronTrackCuts *trackCutsDiel = new AliDielectronTrackCuts("trackCutsDiel","trackCutsDiel");
         trackCutsDiel->SetAODFilterBit(1<<4);
-        trackCutsDiel->SetClusterRequirementITS(AliESDtrackCuts::kSPD,AliESDtrackCuts::kFirst);
+        trackCutsDiel->SetClusterRequirementITS(AliESDtrackCuts::kSPD, AliESDtrackCuts::kFirst);
         cgTrackCutsAnaSPDfirst = new AliDielectronCutGroup("cgTrackCutsAnaSPDfirst","cgTrackCutsAnaSPDfirst",AliDielectronCutGroup::kCompAND);
         cgTrackCutsAnaSPDfirst->AddCut(trackCutsDiel);
         cgTrackCutsAnaSPDfirst->AddCut(trackCutsAOD);
+        cgTrackCutsAnaSPDfirst->AddCut(SharedClusterCut);
         trackCuts = cgTrackCutsAnaSPDfirst;
       break;
       case kTRACKcut_3:
         AliDielectronVarCuts* trackCutsAOD =new AliDielectronVarCuts("trackCutsAOD","trackCutsAOD");
         trackCutsAOD->AddCut(AliDielectronVarManager::kImpactParXY, -1.0,   1.0);
         trackCutsAOD->AddCut(AliDielectronVarManager::kImpactParZ,  -3.0,   3.0);
-        trackCutsAOD->AddCut(AliDielectronVarManager::kNclsITS,      5.0, 100.0);
-        trackCutsAOD->AddCut(AliDielectronVarManager::kITSchi2Cl,    0.0,   3.0);
-        trackCutsAOD->AddCut(AliDielectronVarManager::kNclsSITS,     0.0,   2.1);
+        trackCutsAOD->AddCut(AliDielectronVarManager::kNclsITS,      4.0, 100.0);
+        trackCutsAOD->AddCut(AliDielectronVarManager::kNclsTPC,      100.0, 160.0);
+        trackCutsAOD->AddCut(AliDielectronVarManager::kITSchi2Cl,    0.0,   4.0);
         trackCutsAOD->AddCut(AliDielectronVarManager::kTPCchi2Cl,    0.0,   3.0);
-        trackCutsAOD->AddCut(AliDielectronVarManager::kNFclsTPCr,    100.0, 160.0);
-        trackCutsAOD->AddCut(AliDielectronVarManager::kNFclsTPCfCross,     0.8, 1.1);
+        trackCutsAOD->AddCut(AliDielectronVarManager::kNFclsTPCr,    100.0, 161.0);
+        trackCutsAOD->AddCut(AliDielectronVarManager::kNFclsTPCfCross,     0.95, 1.05);
+      AliDielectronCutGroup* SharedClusterCut = new AliDielectronCutGroup("SharedClusterCut","SharedClusterCut",AliDielectronCutGroup::kCompOR);
+      double delta = 0.00001;
+      AliDielectronVarCuts* trackCutsSharedCluster0 = new AliDielectronVarCuts("trackCutsSharedCluster0", "trackCutsSharedCluster0");
+      trackCutsSharedCluster0->AddCut(AliDielectronVarManager::kNclsSMapITS, 0-delta, 0+delta);
+      AliDielectronVarCuts* trackCutsSharedCluster2 = new AliDielectronVarCuts("trackCutsSharedCluster2", "trackCutsSharedCluster2");
+      trackCutsSharedCluster2->AddCut(AliDielectronVarManager::kNclsSMapITS, 2-delta, 2+delta);
+      AliDielectronVarCuts* trackCutsSharedCluster4 = new AliDielectronVarCuts("trackCutsSharedCluster4", "trackCutsSharedCluster4");
+      trackCutsSharedCluster4->AddCut(AliDielectronVarManager::kNclsSMapITS, 4-delta, 4+delta);
+      AliDielectronVarCuts* trackCutsSharedCluster8 = new AliDielectronVarCuts("trackCutsSharedCluster8", "trackCutsSharedCluster8");
+      trackCutsSharedCluster8->AddCut(AliDielectronVarManager::kNclsSMapITS, 8-delta, 8+delta);
+      AliDielectronVarCuts* trackCutsSharedCluster16 = new AliDielectronVarCuts("trackCutsSharedCluster16", "trackCutsSharedCluster16");
+      trackCutsSharedCluster16->AddCut(AliDielectronVarManager::kNclsSMapITS, 16-delta, 16+delta);
+      AliDielectronVarCuts* trackCutsSharedCluster32 = new AliDielectronVarCuts("trackCutsSharedCluster32", "trackCutsSharedCluster32");
+      trackCutsSharedCluster32->AddCut(AliDielectronVarManager::kNclsSMapITS, 32-delta, 32+delta);
+      SharedClusterCut->AddCut(trackCutsSharedCluster0);
+      SharedClusterCut->AddCut(trackCutsSharedCluster2);
+      SharedClusterCut->AddCut(trackCutsSharedCluster4);
+      SharedClusterCut->AddCut(trackCutsSharedCluster8);
+      SharedClusterCut->AddCut(trackCutsSharedCluster16);
+      SharedClusterCut->AddCut(trackCutsSharedCluster32);
         AliDielectronTrackCuts *trackCutsDiel = new AliDielectronTrackCuts("trackCutsDiel","trackCutsDiel");
         trackCutsDiel->SetAODFilterBit(1<<4);
-        trackCutsDiel->SetClusterRequirementITS(AliESDtrackCuts::kSPD,AliESDtrackCuts::kFirst);
+        trackCutsDiel->SetClusterRequirementITS(AliESDtrackCuts::kSPD, AliESDtrackCuts::kFirst);
         cgTrackCutsAnaSPDfirst = new AliDielectronCutGroup("cgTrackCutsAnaSPDfirst","cgTrackCutsAnaSPDfirst",AliDielectronCutGroup::kCompAND);
         cgTrackCutsAnaSPDfirst->AddCut(trackCutsDiel);
         cgTrackCutsAnaSPDfirst->AddCut(trackCutsAOD);
+        cgTrackCutsAnaSPDfirst->AddCut(SharedClusterCut);
         trackCuts = cgTrackCutsAnaSPDfirst;
       break;
       case kTRACKcut_4:
         AliDielectronVarCuts* trackCutsAOD =new AliDielectronVarCuts("trackCutsAOD","trackCutsAOD");
         trackCutsAOD->AddCut(AliDielectronVarManager::kImpactParXY, -1.0,   1.0);
         trackCutsAOD->AddCut(AliDielectronVarManager::kImpactParZ,  -3.0,   3.0);
-        trackCutsAOD->AddCut(AliDielectronVarManager::kNclsITS,      5.0, 100.0);
-        trackCutsAOD->AddCut(AliDielectronVarManager::kITSchi2Cl,    0.0,   3.0);
-        trackCutsAOD->AddCut(AliDielectronVarManager::kNclsSITS,     0.0,   0.1);
-        trackCutsAOD->AddCut(AliDielectronVarManager::kTPCchi2Cl,    0.0,   3.5);
-        trackCutsAOD->AddCut(AliDielectronVarManager::kNFclsTPCr,    100.0, 160.0);
-        trackCutsAOD->AddCut(AliDielectronVarManager::kNFclsTPCfCross,     0.8, 1.1);
+        trackCutsAOD->AddCut(AliDielectronVarManager::kNclsITS,      4.0, 100.0);
+        trackCutsAOD->AddCut(AliDielectronVarManager::kNclsTPC,      80.0, 160.0);
+        trackCutsAOD->AddCut(AliDielectronVarManager::kITSchi2Cl,    0.0,   5.0);
+        trackCutsAOD->AddCut(AliDielectronVarManager::kTPCchi2Cl,    0.0,   4.0);
+        trackCutsAOD->AddCut(AliDielectronVarManager::kNFclsTPCr,    80.0, 161.0);
+        trackCutsAOD->AddCut(AliDielectronVarManager::kNFclsTPCfCross,     0.95, 1.05);
+      AliDielectronCutGroup* SharedClusterCut = new AliDielectronCutGroup("SharedClusterCut","SharedClusterCut",AliDielectronCutGroup::kCompOR);
+      double delta = 0.00001;
+      AliDielectronVarCuts* trackCutsSharedCluster0 = new AliDielectronVarCuts("trackCutsSharedCluster0", "trackCutsSharedCluster0");
+      trackCutsSharedCluster0->AddCut(AliDielectronVarManager::kNclsSMapITS, 0-delta, 0+delta);
+      AliDielectronVarCuts* trackCutsSharedCluster2 = new AliDielectronVarCuts("trackCutsSharedCluster2", "trackCutsSharedCluster2");
+      trackCutsSharedCluster2->AddCut(AliDielectronVarManager::kNclsSMapITS, 2-delta, 2+delta);
+      AliDielectronVarCuts* trackCutsSharedCluster4 = new AliDielectronVarCuts("trackCutsSharedCluster4", "trackCutsSharedCluster4");
+      trackCutsSharedCluster4->AddCut(AliDielectronVarManager::kNclsSMapITS, 4-delta, 4+delta);
+      AliDielectronVarCuts* trackCutsSharedCluster8 = new AliDielectronVarCuts("trackCutsSharedCluster8", "trackCutsSharedCluster8");
+      trackCutsSharedCluster8->AddCut(AliDielectronVarManager::kNclsSMapITS, 8-delta, 8+delta);
+      AliDielectronVarCuts* trackCutsSharedCluster16 = new AliDielectronVarCuts("trackCutsSharedCluster16", "trackCutsSharedCluster16");
+      trackCutsSharedCluster16->AddCut(AliDielectronVarManager::kNclsSMapITS, 16-delta, 16+delta);
+      AliDielectronVarCuts* trackCutsSharedCluster32 = new AliDielectronVarCuts("trackCutsSharedCluster32", "trackCutsSharedCluster32");
+      trackCutsSharedCluster32->AddCut(AliDielectronVarManager::kNclsSMapITS, 32-delta, 32+delta);
+      SharedClusterCut->AddCut(trackCutsSharedCluster0);
+      SharedClusterCut->AddCut(trackCutsSharedCluster2);
+      SharedClusterCut->AddCut(trackCutsSharedCluster4);
+      SharedClusterCut->AddCut(trackCutsSharedCluster8);
+      SharedClusterCut->AddCut(trackCutsSharedCluster16);
+      SharedClusterCut->AddCut(trackCutsSharedCluster32);
         AliDielectronTrackCuts *trackCutsDiel = new AliDielectronTrackCuts("trackCutsDiel","trackCutsDiel");
         trackCutsDiel->SetAODFilterBit(1<<4);
-        trackCutsDiel->SetClusterRequirementITS(AliESDtrackCuts::kSPD,AliESDtrackCuts::kFirst);
+        trackCutsDiel->SetClusterRequirementITS(AliESDtrackCuts::kSPD, AliESDtrackCuts::kFirst);
         cgTrackCutsAnaSPDfirst = new AliDielectronCutGroup("cgTrackCutsAnaSPDfirst","cgTrackCutsAnaSPDfirst",AliDielectronCutGroup::kCompAND);
         cgTrackCutsAnaSPDfirst->AddCut(trackCutsDiel);
         cgTrackCutsAnaSPDfirst->AddCut(trackCutsAOD);
+        cgTrackCutsAnaSPDfirst->AddCut(SharedClusterCut);
         trackCuts = cgTrackCutsAnaSPDfirst;
       break;
       case kTRACKcut_5:
         AliDielectronVarCuts* trackCutsAOD =new AliDielectronVarCuts("trackCutsAOD","trackCutsAOD");
         trackCutsAOD->AddCut(AliDielectronVarManager::kImpactParXY, -1.0,   1.0);
         trackCutsAOD->AddCut(AliDielectronVarManager::kImpactParZ,  -3.0,   3.0);
-        trackCutsAOD->AddCut(AliDielectronVarManager::kNclsITS,      5.0, 100.0);
-        trackCutsAOD->AddCut(AliDielectronVarManager::kITSchi2Cl,    0.0,   2.0);
-        trackCutsAOD->AddCut(AliDielectronVarManager::kNclsSITS,     0.0,   2.1);
-        trackCutsAOD->AddCut(AliDielectronVarManager::kTPCchi2Cl,    0.0,   3.5);
-        trackCutsAOD->AddCut(AliDielectronVarManager::kNFclsTPCr,    80.0, 160.0);
-        trackCutsAOD->AddCut(AliDielectronVarManager::kNFclsTPCfCross,     0.8, 1.1);
+        trackCutsAOD->AddCut(AliDielectronVarManager::kNclsITS,      4.0, 100.0);
+        trackCutsAOD->AddCut(AliDielectronVarManager::kNclsTPC,      80.0, 160.0);
+        trackCutsAOD->AddCut(AliDielectronVarManager::kITSchi2Cl,    0.0,   4.0);
+        trackCutsAOD->AddCut(AliDielectronVarManager::kTPCchi2Cl,    0.0,   4.0);
+        trackCutsAOD->AddCut(AliDielectronVarManager::kNFclsTPCr,    100.0, 161.0);
+        trackCutsAOD->AddCut(AliDielectronVarManager::kNFclsTPCfCross,     0.95, 1.05);
+      AliDielectronCutGroup* SharedClusterCut = new AliDielectronCutGroup("SharedClusterCut","SharedClusterCut",AliDielectronCutGroup::kCompOR);
+      double delta = 0.00001;
+      AliDielectronVarCuts* trackCutsSharedCluster0 = new AliDielectronVarCuts("trackCutsSharedCluster0", "trackCutsSharedCluster0");
+      trackCutsSharedCluster0->AddCut(AliDielectronVarManager::kNclsSMapITS, 0-delta, 0+delta);
+      AliDielectronVarCuts* trackCutsSharedCluster2 = new AliDielectronVarCuts("trackCutsSharedCluster2", "trackCutsSharedCluster2");
+      trackCutsSharedCluster2->AddCut(AliDielectronVarManager::kNclsSMapITS, 2-delta, 2+delta);
+      AliDielectronVarCuts* trackCutsSharedCluster4 = new AliDielectronVarCuts("trackCutsSharedCluster4", "trackCutsSharedCluster4");
+      trackCutsSharedCluster4->AddCut(AliDielectronVarManager::kNclsSMapITS, 4-delta, 4+delta);
+      AliDielectronVarCuts* trackCutsSharedCluster8 = new AliDielectronVarCuts("trackCutsSharedCluster8", "trackCutsSharedCluster8");
+      trackCutsSharedCluster8->AddCut(AliDielectronVarManager::kNclsSMapITS, 8-delta, 8+delta);
+      AliDielectronVarCuts* trackCutsSharedCluster16 = new AliDielectronVarCuts("trackCutsSharedCluster16", "trackCutsSharedCluster16");
+      trackCutsSharedCluster16->AddCut(AliDielectronVarManager::kNclsSMapITS, 16-delta, 16+delta);
+      AliDielectronVarCuts* trackCutsSharedCluster32 = new AliDielectronVarCuts("trackCutsSharedCluster32", "trackCutsSharedCluster32");
+      trackCutsSharedCluster32->AddCut(AliDielectronVarManager::kNclsSMapITS, 32-delta, 32+delta);
+      SharedClusterCut->AddCut(trackCutsSharedCluster0);
+      SharedClusterCut->AddCut(trackCutsSharedCluster2);
+      SharedClusterCut->AddCut(trackCutsSharedCluster4);
+      SharedClusterCut->AddCut(trackCutsSharedCluster8);
+      SharedClusterCut->AddCut(trackCutsSharedCluster16);
+      SharedClusterCut->AddCut(trackCutsSharedCluster32);
         AliDielectronTrackCuts *trackCutsDiel = new AliDielectronTrackCuts("trackCutsDiel","trackCutsDiel");
         trackCutsDiel->SetAODFilterBit(1<<4);
-        trackCutsDiel->SetClusterRequirementITS(AliESDtrackCuts::kSPD,AliESDtrackCuts::kFirst);
+        trackCutsDiel->SetClusterRequirementITS(AliESDtrackCuts::kSPD, AliESDtrackCuts::kFirst);
         cgTrackCutsAnaSPDfirst = new AliDielectronCutGroup("cgTrackCutsAnaSPDfirst","cgTrackCutsAnaSPDfirst",AliDielectronCutGroup::kCompAND);
         cgTrackCutsAnaSPDfirst->AddCut(trackCutsDiel);
         cgTrackCutsAnaSPDfirst->AddCut(trackCutsAOD);
+        cgTrackCutsAnaSPDfirst->AddCut(SharedClusterCut);
         trackCuts = cgTrackCutsAnaSPDfirst;
       break;
       case kTRACKcut_6:
         AliDielectronVarCuts* trackCutsAOD =new AliDielectronVarCuts("trackCutsAOD","trackCutsAOD");
         trackCutsAOD->AddCut(AliDielectronVarManager::kImpactParXY, -1.0,   1.0);
         trackCutsAOD->AddCut(AliDielectronVarManager::kImpactParZ,  -3.0,   3.0);
-        trackCutsAOD->AddCut(AliDielectronVarManager::kNclsITS,      5.0, 100.0);
-        trackCutsAOD->AddCut(AliDielectronVarManager::kITSchi2Cl,    0.0,   2.0);
-        trackCutsAOD->AddCut(AliDielectronVarManager::kNclsSITS,     0.0,   2.1);
-        trackCutsAOD->AddCut(AliDielectronVarManager::kTPCchi2Cl,    0.0,   2.5);
-        trackCutsAOD->AddCut(AliDielectronVarManager::kNFclsTPCr,    80.0, 160.0);
-        trackCutsAOD->AddCut(AliDielectronVarManager::kNFclsTPCfCross,     0.8, 1.1);
+        trackCutsAOD->AddCut(AliDielectronVarManager::kNclsITS,      4.0, 100.0);
+        trackCutsAOD->AddCut(AliDielectronVarManager::kNclsTPC,      100.0, 160.0);
+        trackCutsAOD->AddCut(AliDielectronVarManager::kITSchi2Cl,    0.0,   4.0);
+        trackCutsAOD->AddCut(AliDielectronVarManager::kTPCchi2Cl,    0.0,   3.0);
+        trackCutsAOD->AddCut(AliDielectronVarManager::kNFclsTPCr,    100.0, 161.0);
+        trackCutsAOD->AddCut(AliDielectronVarManager::kNFclsTPCfCross,     0.95, 1.05);
+      AliDielectronCutGroup* SharedClusterCut = new AliDielectronCutGroup("SharedClusterCut","SharedClusterCut",AliDielectronCutGroup::kCompOR);
+      double delta = 0.00001;
+      AliDielectronVarCuts* trackCutsSharedCluster0 = new AliDielectronVarCuts("trackCutsSharedCluster0", "trackCutsSharedCluster0");
+      trackCutsSharedCluster0->AddCut(AliDielectronVarManager::kNclsSMapITS, 0-delta, 0+delta);
+      AliDielectronVarCuts* trackCutsSharedCluster2 = new AliDielectronVarCuts("trackCutsSharedCluster2", "trackCutsSharedCluster2");
+      trackCutsSharedCluster2->AddCut(AliDielectronVarManager::kNclsSMapITS, 2-delta, 2+delta);
+      AliDielectronVarCuts* trackCutsSharedCluster4 = new AliDielectronVarCuts("trackCutsSharedCluster4", "trackCutsSharedCluster4");
+      trackCutsSharedCluster4->AddCut(AliDielectronVarManager::kNclsSMapITS, 4-delta, 4+delta);
+      AliDielectronVarCuts* trackCutsSharedCluster8 = new AliDielectronVarCuts("trackCutsSharedCluster8", "trackCutsSharedCluster8");
+      trackCutsSharedCluster8->AddCut(AliDielectronVarManager::kNclsSMapITS, 8-delta, 8+delta);
+      AliDielectronVarCuts* trackCutsSharedCluster16 = new AliDielectronVarCuts("trackCutsSharedCluster16", "trackCutsSharedCluster16");
+      trackCutsSharedCluster16->AddCut(AliDielectronVarManager::kNclsSMapITS, 16-delta, 16+delta);
+      AliDielectronVarCuts* trackCutsSharedCluster32 = new AliDielectronVarCuts("trackCutsSharedCluster32", "trackCutsSharedCluster32");
+      trackCutsSharedCluster32->AddCut(AliDielectronVarManager::kNclsSMapITS, 32-delta, 32+delta);
+      SharedClusterCut->AddCut(trackCutsSharedCluster0);
+      SharedClusterCut->AddCut(trackCutsSharedCluster2);
+      SharedClusterCut->AddCut(trackCutsSharedCluster4);
+      SharedClusterCut->AddCut(trackCutsSharedCluster8);
+      SharedClusterCut->AddCut(trackCutsSharedCluster16);
+      SharedClusterCut->AddCut(trackCutsSharedCluster32);
         AliDielectronTrackCuts *trackCutsDiel = new AliDielectronTrackCuts("trackCutsDiel","trackCutsDiel");
         trackCutsDiel->SetAODFilterBit(1<<4);
-        trackCutsDiel->SetClusterRequirementITS(AliESDtrackCuts::kSPD,AliESDtrackCuts::kFirst);
+        trackCutsDiel->SetClusterRequirementITS(AliESDtrackCuts::kSPD, AliESDtrackCuts::kFirst);
         cgTrackCutsAnaSPDfirst = new AliDielectronCutGroup("cgTrackCutsAnaSPDfirst","cgTrackCutsAnaSPDfirst",AliDielectronCutGroup::kCompAND);
         cgTrackCutsAnaSPDfirst->AddCut(trackCutsDiel);
         cgTrackCutsAnaSPDfirst->AddCut(trackCutsAOD);
+        cgTrackCutsAnaSPDfirst->AddCut(SharedClusterCut);
         trackCuts = cgTrackCutsAnaSPDfirst;
       break;
       case kTRACKcut_7:
         AliDielectronVarCuts* trackCutsAOD =new AliDielectronVarCuts("trackCutsAOD","trackCutsAOD");
         trackCutsAOD->AddCut(AliDielectronVarManager::kImpactParXY, -1.0,   1.0);
         trackCutsAOD->AddCut(AliDielectronVarManager::kImpactParZ,  -3.0,   3.0);
-        trackCutsAOD->AddCut(AliDielectronVarManager::kNclsITS,      5.0, 100.0);
+        trackCutsAOD->AddCut(AliDielectronVarManager::kNclsITS,      4.0, 100.0);
+        trackCutsAOD->AddCut(AliDielectronVarManager::kNclsTPC,      80.0, 160.0);
         trackCutsAOD->AddCut(AliDielectronVarManager::kITSchi2Cl,    0.0,   4.0);
-        trackCutsAOD->AddCut(AliDielectronVarManager::kNclsSITS,     0.0,   1.1);
-        trackCutsAOD->AddCut(AliDielectronVarManager::kTPCchi2Cl,    0.0,   2.5);
-        trackCutsAOD->AddCut(AliDielectronVarManager::kNFclsTPCr,    80.0, 160.0);
-        trackCutsAOD->AddCut(AliDielectronVarManager::kNFclsTPCfCross,     0.8, 1.1);
+        trackCutsAOD->AddCut(AliDielectronVarManager::kTPCchi2Cl,    0.0,   3.0);
+        trackCutsAOD->AddCut(AliDielectronVarManager::kNFclsTPCr,    100.0, 161.0);
+        trackCutsAOD->AddCut(AliDielectronVarManager::kNFclsTPCfCross,     0.95, 1.05);
+      AliDielectronCutGroup* SharedClusterCut = new AliDielectronCutGroup("SharedClusterCut","SharedClusterCut",AliDielectronCutGroup::kCompOR);
+      double delta = 0.00001;
+      AliDielectronVarCuts* trackCutsSharedCluster0 = new AliDielectronVarCuts("trackCutsSharedCluster0", "trackCutsSharedCluster0");
+      trackCutsSharedCluster0->AddCut(AliDielectronVarManager::kNclsSMapITS, 0-delta, 0+delta);
+      AliDielectronVarCuts* trackCutsSharedCluster2 = new AliDielectronVarCuts("trackCutsSharedCluster2", "trackCutsSharedCluster2");
+      trackCutsSharedCluster2->AddCut(AliDielectronVarManager::kNclsSMapITS, 2-delta, 2+delta);
+      AliDielectronVarCuts* trackCutsSharedCluster4 = new AliDielectronVarCuts("trackCutsSharedCluster4", "trackCutsSharedCluster4");
+      trackCutsSharedCluster4->AddCut(AliDielectronVarManager::kNclsSMapITS, 4-delta, 4+delta);
+      AliDielectronVarCuts* trackCutsSharedCluster8 = new AliDielectronVarCuts("trackCutsSharedCluster8", "trackCutsSharedCluster8");
+      trackCutsSharedCluster8->AddCut(AliDielectronVarManager::kNclsSMapITS, 8-delta, 8+delta);
+      AliDielectronVarCuts* trackCutsSharedCluster16 = new AliDielectronVarCuts("trackCutsSharedCluster16", "trackCutsSharedCluster16");
+      trackCutsSharedCluster16->AddCut(AliDielectronVarManager::kNclsSMapITS, 16-delta, 16+delta);
+      AliDielectronVarCuts* trackCutsSharedCluster32 = new AliDielectronVarCuts("trackCutsSharedCluster32", "trackCutsSharedCluster32");
+      trackCutsSharedCluster32->AddCut(AliDielectronVarManager::kNclsSMapITS, 32-delta, 32+delta);
+      SharedClusterCut->AddCut(trackCutsSharedCluster0);
+      SharedClusterCut->AddCut(trackCutsSharedCluster2);
+      SharedClusterCut->AddCut(trackCutsSharedCluster4);
+      SharedClusterCut->AddCut(trackCutsSharedCluster8);
+      SharedClusterCut->AddCut(trackCutsSharedCluster16);
+      SharedClusterCut->AddCut(trackCutsSharedCluster32);
         AliDielectronTrackCuts *trackCutsDiel = new AliDielectronTrackCuts("trackCutsDiel","trackCutsDiel");
         trackCutsDiel->SetAODFilterBit(1<<4);
-        trackCutsDiel->SetClusterRequirementITS(AliESDtrackCuts::kSPD,AliESDtrackCuts::kFirst);
+        trackCutsDiel->SetClusterRequirementITS(AliESDtrackCuts::kSPD, AliESDtrackCuts::kFirst);
         cgTrackCutsAnaSPDfirst = new AliDielectronCutGroup("cgTrackCutsAnaSPDfirst","cgTrackCutsAnaSPDfirst",AliDielectronCutGroup::kCompAND);
         cgTrackCutsAnaSPDfirst->AddCut(trackCutsDiel);
         cgTrackCutsAnaSPDfirst->AddCut(trackCutsAOD);
+        cgTrackCutsAnaSPDfirst->AddCut(SharedClusterCut);
         trackCuts = cgTrackCutsAnaSPDfirst;
       break;
       case kTRACKcut_8:
         AliDielectronVarCuts* trackCutsAOD =new AliDielectronVarCuts("trackCutsAOD","trackCutsAOD");
         trackCutsAOD->AddCut(AliDielectronVarManager::kImpactParXY, -1.0,   1.0);
         trackCutsAOD->AddCut(AliDielectronVarManager::kImpactParZ,  -3.0,   3.0);
-        trackCutsAOD->AddCut(AliDielectronVarManager::kNclsITS,      5.0, 100.0);
-        trackCutsAOD->AddCut(AliDielectronVarManager::kITSchi2Cl,    0.0,   2.0);
-        trackCutsAOD->AddCut(AliDielectronVarManager::kNclsSITS,     0.0,   1.1);
-        trackCutsAOD->AddCut(AliDielectronVarManager::kTPCchi2Cl,    0.0,   3.5);
-        trackCutsAOD->AddCut(AliDielectronVarManager::kNFclsTPCr,    100.0, 160.0);
-        trackCutsAOD->AddCut(AliDielectronVarManager::kNFclsTPCfCross,     0.8, 1.1);
+        trackCutsAOD->AddCut(AliDielectronVarManager::kNclsITS,      4.0, 100.0);
+        trackCutsAOD->AddCut(AliDielectronVarManager::kNclsTPC,      80.0, 160.0);
+        trackCutsAOD->AddCut(AliDielectronVarManager::kITSchi2Cl,    0.0,   5.0);
+        trackCutsAOD->AddCut(AliDielectronVarManager::kTPCchi2Cl,    0.0,   3.0);
+        trackCutsAOD->AddCut(AliDielectronVarManager::kNFclsTPCr,    100.0, 161.0);
+        trackCutsAOD->AddCut(AliDielectronVarManager::kNFclsTPCfCross,     0.95, 1.05);
+      AliDielectronCutGroup* SharedClusterCut = new AliDielectronCutGroup("SharedClusterCut","SharedClusterCut",AliDielectronCutGroup::kCompOR);
+      double delta = 0.00001;
+      AliDielectronVarCuts* trackCutsSharedCluster0 = new AliDielectronVarCuts("trackCutsSharedCluster0", "trackCutsSharedCluster0");
+      trackCutsSharedCluster0->AddCut(AliDielectronVarManager::kNclsSMapITS, 0-delta, 0+delta);
+      AliDielectronVarCuts* trackCutsSharedCluster2 = new AliDielectronVarCuts("trackCutsSharedCluster2", "trackCutsSharedCluster2");
+      trackCutsSharedCluster2->AddCut(AliDielectronVarManager::kNclsSMapITS, 2-delta, 2+delta);
+      AliDielectronVarCuts* trackCutsSharedCluster4 = new AliDielectronVarCuts("trackCutsSharedCluster4", "trackCutsSharedCluster4");
+      trackCutsSharedCluster4->AddCut(AliDielectronVarManager::kNclsSMapITS, 4-delta, 4+delta);
+      AliDielectronVarCuts* trackCutsSharedCluster8 = new AliDielectronVarCuts("trackCutsSharedCluster8", "trackCutsSharedCluster8");
+      trackCutsSharedCluster8->AddCut(AliDielectronVarManager::kNclsSMapITS, 8-delta, 8+delta);
+      AliDielectronVarCuts* trackCutsSharedCluster16 = new AliDielectronVarCuts("trackCutsSharedCluster16", "trackCutsSharedCluster16");
+      trackCutsSharedCluster16->AddCut(AliDielectronVarManager::kNclsSMapITS, 16-delta, 16+delta);
+      AliDielectronVarCuts* trackCutsSharedCluster32 = new AliDielectronVarCuts("trackCutsSharedCluster32", "trackCutsSharedCluster32");
+      trackCutsSharedCluster32->AddCut(AliDielectronVarManager::kNclsSMapITS, 32-delta, 32+delta);
+      SharedClusterCut->AddCut(trackCutsSharedCluster0);
+      SharedClusterCut->AddCut(trackCutsSharedCluster2);
+      SharedClusterCut->AddCut(trackCutsSharedCluster4);
+      SharedClusterCut->AddCut(trackCutsSharedCluster8);
+      SharedClusterCut->AddCut(trackCutsSharedCluster16);
+      SharedClusterCut->AddCut(trackCutsSharedCluster32);
         AliDielectronTrackCuts *trackCutsDiel = new AliDielectronTrackCuts("trackCutsDiel","trackCutsDiel");
         trackCutsDiel->SetAODFilterBit(1<<4);
-        trackCutsDiel->SetClusterRequirementITS(AliESDtrackCuts::kSPD,AliESDtrackCuts::kFirst);
+        trackCutsDiel->SetClusterRequirementITS(AliESDtrackCuts::kSPD, AliESDtrackCuts::kFirst);
         cgTrackCutsAnaSPDfirst = new AliDielectronCutGroup("cgTrackCutsAnaSPDfirst","cgTrackCutsAnaSPDfirst",AliDielectronCutGroup::kCompAND);
         cgTrackCutsAnaSPDfirst->AddCut(trackCutsDiel);
         cgTrackCutsAnaSPDfirst->AddCut(trackCutsAOD);
+        cgTrackCutsAnaSPDfirst->AddCut(SharedClusterCut);
         trackCuts = cgTrackCutsAnaSPDfirst;
       break;
       case kTRACKcut_9:
         AliDielectronVarCuts* trackCutsAOD =new AliDielectronVarCuts("trackCutsAOD","trackCutsAOD");
         trackCutsAOD->AddCut(AliDielectronVarManager::kImpactParXY, -1.0,   1.0);
         trackCutsAOD->AddCut(AliDielectronVarManager::kImpactParZ,  -3.0,   3.0);
-        trackCutsAOD->AddCut(AliDielectronVarManager::kNclsITS,      5.0, 100.0);
-        trackCutsAOD->AddCut(AliDielectronVarManager::kITSchi2Cl,    0.0,   2.0);
-        trackCutsAOD->AddCut(AliDielectronVarManager::kNclsSITS,     0.0,   1.1);
+        trackCutsAOD->AddCut(AliDielectronVarManager::kNclsITS,      4.0, 100.0);
+        trackCutsAOD->AddCut(AliDielectronVarManager::kNclsTPC,      100.0, 160.0);
+        trackCutsAOD->AddCut(AliDielectronVarManager::kITSchi2Cl,    0.0,   5.0);
         trackCutsAOD->AddCut(AliDielectronVarManager::kTPCchi2Cl,    0.0,   3.0);
-        trackCutsAOD->AddCut(AliDielectronVarManager::kNFclsTPCr,    120.0, 160.0);
-        trackCutsAOD->AddCut(AliDielectronVarManager::kNFclsTPCfCross,     0.8, 1.1);
+        trackCutsAOD->AddCut(AliDielectronVarManager::kNFclsTPCr,    100.0, 161.0);
+        trackCutsAOD->AddCut(AliDielectronVarManager::kNFclsTPCfCross,     0.95, 1.05);
+      AliDielectronCutGroup* SharedClusterCut = new AliDielectronCutGroup("SharedClusterCut","SharedClusterCut",AliDielectronCutGroup::kCompOR);
+      double delta = 0.00001;
+      AliDielectronVarCuts* trackCutsSharedCluster0 = new AliDielectronVarCuts("trackCutsSharedCluster0", "trackCutsSharedCluster0");
+      trackCutsSharedCluster0->AddCut(AliDielectronVarManager::kNclsSMapITS, 0-delta, 0+delta);
+      AliDielectronVarCuts* trackCutsSharedCluster2 = new AliDielectronVarCuts("trackCutsSharedCluster2", "trackCutsSharedCluster2");
+      trackCutsSharedCluster2->AddCut(AliDielectronVarManager::kNclsSMapITS, 2-delta, 2+delta);
+      AliDielectronVarCuts* trackCutsSharedCluster4 = new AliDielectronVarCuts("trackCutsSharedCluster4", "trackCutsSharedCluster4");
+      trackCutsSharedCluster4->AddCut(AliDielectronVarManager::kNclsSMapITS, 4-delta, 4+delta);
+      AliDielectronVarCuts* trackCutsSharedCluster8 = new AliDielectronVarCuts("trackCutsSharedCluster8", "trackCutsSharedCluster8");
+      trackCutsSharedCluster8->AddCut(AliDielectronVarManager::kNclsSMapITS, 8-delta, 8+delta);
+      AliDielectronVarCuts* trackCutsSharedCluster16 = new AliDielectronVarCuts("trackCutsSharedCluster16", "trackCutsSharedCluster16");
+      trackCutsSharedCluster16->AddCut(AliDielectronVarManager::kNclsSMapITS, 16-delta, 16+delta);
+      AliDielectronVarCuts* trackCutsSharedCluster32 = new AliDielectronVarCuts("trackCutsSharedCluster32", "trackCutsSharedCluster32");
+      trackCutsSharedCluster32->AddCut(AliDielectronVarManager::kNclsSMapITS, 32-delta, 32+delta);
+      SharedClusterCut->AddCut(trackCutsSharedCluster0);
+      SharedClusterCut->AddCut(trackCutsSharedCluster2);
+      SharedClusterCut->AddCut(trackCutsSharedCluster4);
+      SharedClusterCut->AddCut(trackCutsSharedCluster8);
+      SharedClusterCut->AddCut(trackCutsSharedCluster16);
+      SharedClusterCut->AddCut(trackCutsSharedCluster32);
         AliDielectronTrackCuts *trackCutsDiel = new AliDielectronTrackCuts("trackCutsDiel","trackCutsDiel");
         trackCutsDiel->SetAODFilterBit(1<<4);
-        trackCutsDiel->SetClusterRequirementITS(AliESDtrackCuts::kSPD,AliESDtrackCuts::kFirst);
+        trackCutsDiel->SetClusterRequirementITS(AliESDtrackCuts::kSPD, AliESDtrackCuts::kFirst);
         cgTrackCutsAnaSPDfirst = new AliDielectronCutGroup("cgTrackCutsAnaSPDfirst","cgTrackCutsAnaSPDfirst",AliDielectronCutGroup::kCompAND);
         cgTrackCutsAnaSPDfirst->AddCut(trackCutsDiel);
         cgTrackCutsAnaSPDfirst->AddCut(trackCutsAOD);
+        cgTrackCutsAnaSPDfirst->AddCut(SharedClusterCut);
         trackCuts = cgTrackCutsAnaSPDfirst;
       break;
       case kTRACKcut_10:
         AliDielectronVarCuts* trackCutsAOD =new AliDielectronVarCuts("trackCutsAOD","trackCutsAOD");
         trackCutsAOD->AddCut(AliDielectronVarManager::kImpactParXY, -1.0,   1.0);
         trackCutsAOD->AddCut(AliDielectronVarManager::kImpactParZ,  -3.0,   3.0);
-        trackCutsAOD->AddCut(AliDielectronVarManager::kNclsITS,      5.0, 100.0);
-        trackCutsAOD->AddCut(AliDielectronVarManager::kITSchi2Cl,    0.0,   2.0);
-        trackCutsAOD->AddCut(AliDielectronVarManager::kNclsSITS,     0.0,   1.1);
-        trackCutsAOD->AddCut(AliDielectronVarManager::kTPCchi2Cl,    0.0,   3.5);
-        trackCutsAOD->AddCut(AliDielectronVarManager::kNFclsTPCr,    120.0, 160.0);
-        trackCutsAOD->AddCut(AliDielectronVarManager::kNFclsTPCfCross,     0.8, 1.1);
+        trackCutsAOD->AddCut(AliDielectronVarManager::kNclsITS,      4.0, 100.0);
+        trackCutsAOD->AddCut(AliDielectronVarManager::kNclsTPC,      100.0, 160.0);
+        trackCutsAOD->AddCut(AliDielectronVarManager::kITSchi2Cl,    0.0,   4.0);
+        trackCutsAOD->AddCut(AliDielectronVarManager::kTPCchi2Cl,    0.0,   3.0);
+        trackCutsAOD->AddCut(AliDielectronVarManager::kNFclsTPCr,    100.0, 161.0);
+        trackCutsAOD->AddCut(AliDielectronVarManager::kNFclsTPCfCross,     0.95, 1.05);
+      AliDielectronCutGroup* SharedClusterCut = new AliDielectronCutGroup("SharedClusterCut","SharedClusterCut",AliDielectronCutGroup::kCompOR);
+      double delta = 0.00001;
+      AliDielectronVarCuts* trackCutsSharedCluster0 = new AliDielectronVarCuts("trackCutsSharedCluster0", "trackCutsSharedCluster0");
+      trackCutsSharedCluster0->AddCut(AliDielectronVarManager::kNclsSMapITS, 0-delta, 0+delta);
+      AliDielectronVarCuts* trackCutsSharedCluster2 = new AliDielectronVarCuts("trackCutsSharedCluster2", "trackCutsSharedCluster2");
+      trackCutsSharedCluster2->AddCut(AliDielectronVarManager::kNclsSMapITS, 2-delta, 2+delta);
+      AliDielectronVarCuts* trackCutsSharedCluster4 = new AliDielectronVarCuts("trackCutsSharedCluster4", "trackCutsSharedCluster4");
+      trackCutsSharedCluster4->AddCut(AliDielectronVarManager::kNclsSMapITS, 4-delta, 4+delta);
+      AliDielectronVarCuts* trackCutsSharedCluster8 = new AliDielectronVarCuts("trackCutsSharedCluster8", "trackCutsSharedCluster8");
+      trackCutsSharedCluster8->AddCut(AliDielectronVarManager::kNclsSMapITS, 8-delta, 8+delta);
+      AliDielectronVarCuts* trackCutsSharedCluster16 = new AliDielectronVarCuts("trackCutsSharedCluster16", "trackCutsSharedCluster16");
+      trackCutsSharedCluster16->AddCut(AliDielectronVarManager::kNclsSMapITS, 16-delta, 16+delta);
+      AliDielectronVarCuts* trackCutsSharedCluster32 = new AliDielectronVarCuts("trackCutsSharedCluster32", "trackCutsSharedCluster32");
+      trackCutsSharedCluster32->AddCut(AliDielectronVarManager::kNclsSMapITS, 32-delta, 32+delta);
+      SharedClusterCut->AddCut(trackCutsSharedCluster0);
+      SharedClusterCut->AddCut(trackCutsSharedCluster2);
+      SharedClusterCut->AddCut(trackCutsSharedCluster4);
+      SharedClusterCut->AddCut(trackCutsSharedCluster8);
+      SharedClusterCut->AddCut(trackCutsSharedCluster16);
+      SharedClusterCut->AddCut(trackCutsSharedCluster32);
         AliDielectronTrackCuts *trackCutsDiel = new AliDielectronTrackCuts("trackCutsDiel","trackCutsDiel");
         trackCutsDiel->SetAODFilterBit(1<<4);
-        trackCutsDiel->SetClusterRequirementITS(AliESDtrackCuts::kSPD,AliESDtrackCuts::kFirst);
+        trackCutsDiel->SetClusterRequirementITS(AliESDtrackCuts::kSPD, AliESDtrackCuts::kFirst);
         cgTrackCutsAnaSPDfirst = new AliDielectronCutGroup("cgTrackCutsAnaSPDfirst","cgTrackCutsAnaSPDfirst",AliDielectronCutGroup::kCompAND);
         cgTrackCutsAnaSPDfirst->AddCut(trackCutsDiel);
         cgTrackCutsAnaSPDfirst->AddCut(trackCutsAOD);
+        cgTrackCutsAnaSPDfirst->AddCut(SharedClusterCut);
         trackCuts = cgTrackCutsAnaSPDfirst;
       break;
       case kTRACKcut_11:
         AliDielectronVarCuts* trackCutsAOD =new AliDielectronVarCuts("trackCutsAOD","trackCutsAOD");
         trackCutsAOD->AddCut(AliDielectronVarManager::kImpactParXY, -1.0,   1.0);
         trackCutsAOD->AddCut(AliDielectronVarManager::kImpactParZ,  -3.0,   3.0);
-        trackCutsAOD->AddCut(AliDielectronVarManager::kNclsITS,      5.0, 100.0);
-        trackCutsAOD->AddCut(AliDielectronVarManager::kITSchi2Cl,    0.0,   4.0);
-        trackCutsAOD->AddCut(AliDielectronVarManager::kNclsSITS,     0.0,   1.1);
+        trackCutsAOD->AddCut(AliDielectronVarManager::kNclsITS,      4.0, 100.0);
+        trackCutsAOD->AddCut(AliDielectronVarManager::kNclsTPC,      80.0, 160.0);
+        trackCutsAOD->AddCut(AliDielectronVarManager::kITSchi2Cl,    0.0,   5.0);
         trackCutsAOD->AddCut(AliDielectronVarManager::kTPCchi2Cl,    0.0,   3.0);
-        trackCutsAOD->AddCut(AliDielectronVarManager::kNFclsTPCr,    80.0, 160.0);
-        trackCutsAOD->AddCut(AliDielectronVarManager::kNFclsTPCfCross,     0.8, 1.1);
+        trackCutsAOD->AddCut(AliDielectronVarManager::kNFclsTPCr,    80.0, 161.0);
+        trackCutsAOD->AddCut(AliDielectronVarManager::kNFclsTPCfCross,     0.95, 1.05);
+      AliDielectronCutGroup* SharedClusterCut = new AliDielectronCutGroup("SharedClusterCut","SharedClusterCut",AliDielectronCutGroup::kCompOR);
+      double delta = 0.00001;
+      AliDielectronVarCuts* trackCutsSharedCluster0 = new AliDielectronVarCuts("trackCutsSharedCluster0", "trackCutsSharedCluster0");
+      trackCutsSharedCluster0->AddCut(AliDielectronVarManager::kNclsSMapITS, 0-delta, 0+delta);
+      AliDielectronVarCuts* trackCutsSharedCluster2 = new AliDielectronVarCuts("trackCutsSharedCluster2", "trackCutsSharedCluster2");
+      trackCutsSharedCluster2->AddCut(AliDielectronVarManager::kNclsSMapITS, 2-delta, 2+delta);
+      AliDielectronVarCuts* trackCutsSharedCluster4 = new AliDielectronVarCuts("trackCutsSharedCluster4", "trackCutsSharedCluster4");
+      trackCutsSharedCluster4->AddCut(AliDielectronVarManager::kNclsSMapITS, 4-delta, 4+delta);
+      AliDielectronVarCuts* trackCutsSharedCluster8 = new AliDielectronVarCuts("trackCutsSharedCluster8", "trackCutsSharedCluster8");
+      trackCutsSharedCluster8->AddCut(AliDielectronVarManager::kNclsSMapITS, 8-delta, 8+delta);
+      AliDielectronVarCuts* trackCutsSharedCluster16 = new AliDielectronVarCuts("trackCutsSharedCluster16", "trackCutsSharedCluster16");
+      trackCutsSharedCluster16->AddCut(AliDielectronVarManager::kNclsSMapITS, 16-delta, 16+delta);
+      AliDielectronVarCuts* trackCutsSharedCluster32 = new AliDielectronVarCuts("trackCutsSharedCluster32", "trackCutsSharedCluster32");
+      trackCutsSharedCluster32->AddCut(AliDielectronVarManager::kNclsSMapITS, 32-delta, 32+delta);
+      SharedClusterCut->AddCut(trackCutsSharedCluster0);
+      SharedClusterCut->AddCut(trackCutsSharedCluster2);
+      SharedClusterCut->AddCut(trackCutsSharedCluster4);
+      SharedClusterCut->AddCut(trackCutsSharedCluster8);
+      SharedClusterCut->AddCut(trackCutsSharedCluster16);
+      SharedClusterCut->AddCut(trackCutsSharedCluster32);
         AliDielectronTrackCuts *trackCutsDiel = new AliDielectronTrackCuts("trackCutsDiel","trackCutsDiel");
         trackCutsDiel->SetAODFilterBit(1<<4);
-        trackCutsDiel->SetClusterRequirementITS(AliESDtrackCuts::kSPD,AliESDtrackCuts::kFirst);
+        trackCutsDiel->SetClusterRequirementITS(AliESDtrackCuts::kSPD, AliESDtrackCuts::kFirst);
         cgTrackCutsAnaSPDfirst = new AliDielectronCutGroup("cgTrackCutsAnaSPDfirst","cgTrackCutsAnaSPDfirst",AliDielectronCutGroup::kCompAND);
         cgTrackCutsAnaSPDfirst->AddCut(trackCutsDiel);
         cgTrackCutsAnaSPDfirst->AddCut(trackCutsAOD);
+        cgTrackCutsAnaSPDfirst->AddCut(SharedClusterCut);
         trackCuts = cgTrackCutsAnaSPDfirst;
       break;
       case kTRACKcut_12:
         AliDielectronVarCuts* trackCutsAOD =new AliDielectronVarCuts("trackCutsAOD","trackCutsAOD");
         trackCutsAOD->AddCut(AliDielectronVarManager::kImpactParXY, -1.0,   1.0);
         trackCutsAOD->AddCut(AliDielectronVarManager::kImpactParZ,  -3.0,   3.0);
-        trackCutsAOD->AddCut(AliDielectronVarManager::kNclsITS,      5.0, 100.0);
-        trackCutsAOD->AddCut(AliDielectronVarManager::kITSchi2Cl,    0.0,   2.0);
-        trackCutsAOD->AddCut(AliDielectronVarManager::kNclsSITS,     0.0,   0.1);
-        trackCutsAOD->AddCut(AliDielectronVarManager::kTPCchi2Cl,    0.0,   2.5);
-        trackCutsAOD->AddCut(AliDielectronVarManager::kNFclsTPCr,    80.0, 160.0);
-        trackCutsAOD->AddCut(AliDielectronVarManager::kNFclsTPCfCross,     0.8, 1.1);
+        trackCutsAOD->AddCut(AliDielectronVarManager::kNclsITS,      4.0, 100.0);
+        trackCutsAOD->AddCut(AliDielectronVarManager::kNclsTPC,      100.0, 160.0);
+        trackCutsAOD->AddCut(AliDielectronVarManager::kITSchi2Cl,    0.0,   4.0);
+        trackCutsAOD->AddCut(AliDielectronVarManager::kTPCchi2Cl,    0.0,   3.0);
+        trackCutsAOD->AddCut(AliDielectronVarManager::kNFclsTPCr,    80.0, 161.0);
+        trackCutsAOD->AddCut(AliDielectronVarManager::kNFclsTPCfCross,     0.95, 1.05);
+      AliDielectronCutGroup* SharedClusterCut = new AliDielectronCutGroup("SharedClusterCut","SharedClusterCut",AliDielectronCutGroup::kCompOR);
+      double delta = 0.00001;
+      AliDielectronVarCuts* trackCutsSharedCluster0 = new AliDielectronVarCuts("trackCutsSharedCluster0", "trackCutsSharedCluster0");
+      trackCutsSharedCluster0->AddCut(AliDielectronVarManager::kNclsSMapITS, 0-delta, 0+delta);
+      AliDielectronVarCuts* trackCutsSharedCluster2 = new AliDielectronVarCuts("trackCutsSharedCluster2", "trackCutsSharedCluster2");
+      trackCutsSharedCluster2->AddCut(AliDielectronVarManager::kNclsSMapITS, 2-delta, 2+delta);
+      AliDielectronVarCuts* trackCutsSharedCluster4 = new AliDielectronVarCuts("trackCutsSharedCluster4", "trackCutsSharedCluster4");
+      trackCutsSharedCluster4->AddCut(AliDielectronVarManager::kNclsSMapITS, 4-delta, 4+delta);
+      AliDielectronVarCuts* trackCutsSharedCluster8 = new AliDielectronVarCuts("trackCutsSharedCluster8", "trackCutsSharedCluster8");
+      trackCutsSharedCluster8->AddCut(AliDielectronVarManager::kNclsSMapITS, 8-delta, 8+delta);
+      AliDielectronVarCuts* trackCutsSharedCluster16 = new AliDielectronVarCuts("trackCutsSharedCluster16", "trackCutsSharedCluster16");
+      trackCutsSharedCluster16->AddCut(AliDielectronVarManager::kNclsSMapITS, 16-delta, 16+delta);
+      AliDielectronVarCuts* trackCutsSharedCluster32 = new AliDielectronVarCuts("trackCutsSharedCluster32", "trackCutsSharedCluster32");
+      trackCutsSharedCluster32->AddCut(AliDielectronVarManager::kNclsSMapITS, 32-delta, 32+delta);
+      SharedClusterCut->AddCut(trackCutsSharedCluster0);
+      SharedClusterCut->AddCut(trackCutsSharedCluster2);
+      SharedClusterCut->AddCut(trackCutsSharedCluster4);
+      SharedClusterCut->AddCut(trackCutsSharedCluster8);
+      SharedClusterCut->AddCut(trackCutsSharedCluster16);
+      SharedClusterCut->AddCut(trackCutsSharedCluster32);
         AliDielectronTrackCuts *trackCutsDiel = new AliDielectronTrackCuts("trackCutsDiel","trackCutsDiel");
         trackCutsDiel->SetAODFilterBit(1<<4);
-        trackCutsDiel->SetClusterRequirementITS(AliESDtrackCuts::kSPD,AliESDtrackCuts::kFirst);
+        trackCutsDiel->SetClusterRequirementITS(AliESDtrackCuts::kSPD, AliESDtrackCuts::kFirst);
         cgTrackCutsAnaSPDfirst = new AliDielectronCutGroup("cgTrackCutsAnaSPDfirst","cgTrackCutsAnaSPDfirst",AliDielectronCutGroup::kCompAND);
         cgTrackCutsAnaSPDfirst->AddCut(trackCutsDiel);
         cgTrackCutsAnaSPDfirst->AddCut(trackCutsAOD);
+        cgTrackCutsAnaSPDfirst->AddCut(SharedClusterCut);
         trackCuts = cgTrackCutsAnaSPDfirst;
       break;
       case kTRACKcut_13:
         AliDielectronVarCuts* trackCutsAOD =new AliDielectronVarCuts("trackCutsAOD","trackCutsAOD");
         trackCutsAOD->AddCut(AliDielectronVarManager::kImpactParXY, -1.0,   1.0);
         trackCutsAOD->AddCut(AliDielectronVarManager::kImpactParZ,  -3.0,   3.0);
-        trackCutsAOD->AddCut(AliDielectronVarManager::kNclsITS,      5.0, 100.0);
-        trackCutsAOD->AddCut(AliDielectronVarManager::kITSchi2Cl,    0.0,   4.0);
-        trackCutsAOD->AddCut(AliDielectronVarManager::kNclsSITS,     0.0,   1.1);
-        trackCutsAOD->AddCut(AliDielectronVarManager::kTPCchi2Cl,    0.0,   3.0);
-        trackCutsAOD->AddCut(AliDielectronVarManager::kNFclsTPCr,    100.0, 160.0);
-        trackCutsAOD->AddCut(AliDielectronVarManager::kNFclsTPCfCross,     0.8, 1.1);
+        trackCutsAOD->AddCut(AliDielectronVarManager::kNclsITS,      4.0, 100.0);
+        trackCutsAOD->AddCut(AliDielectronVarManager::kNclsTPC,      100.0, 160.0);
+        trackCutsAOD->AddCut(AliDielectronVarManager::kITSchi2Cl,    0.0,   5.0);
+        trackCutsAOD->AddCut(AliDielectronVarManager::kTPCchi2Cl,    0.0,   4.0);
+        trackCutsAOD->AddCut(AliDielectronVarManager::kNFclsTPCr,    80.0, 161.0);
+        trackCutsAOD->AddCut(AliDielectronVarManager::kNFclsTPCfCross,     0.95, 1.05);
+      AliDielectronCutGroup* SharedClusterCut = new AliDielectronCutGroup("SharedClusterCut","SharedClusterCut",AliDielectronCutGroup::kCompOR);
+      double delta = 0.00001;
+      AliDielectronVarCuts* trackCutsSharedCluster0 = new AliDielectronVarCuts("trackCutsSharedCluster0", "trackCutsSharedCluster0");
+      trackCutsSharedCluster0->AddCut(AliDielectronVarManager::kNclsSMapITS, 0-delta, 0+delta);
+      AliDielectronVarCuts* trackCutsSharedCluster2 = new AliDielectronVarCuts("trackCutsSharedCluster2", "trackCutsSharedCluster2");
+      trackCutsSharedCluster2->AddCut(AliDielectronVarManager::kNclsSMapITS, 2-delta, 2+delta);
+      AliDielectronVarCuts* trackCutsSharedCluster4 = new AliDielectronVarCuts("trackCutsSharedCluster4", "trackCutsSharedCluster4");
+      trackCutsSharedCluster4->AddCut(AliDielectronVarManager::kNclsSMapITS, 4-delta, 4+delta);
+      AliDielectronVarCuts* trackCutsSharedCluster8 = new AliDielectronVarCuts("trackCutsSharedCluster8", "trackCutsSharedCluster8");
+      trackCutsSharedCluster8->AddCut(AliDielectronVarManager::kNclsSMapITS, 8-delta, 8+delta);
+      AliDielectronVarCuts* trackCutsSharedCluster16 = new AliDielectronVarCuts("trackCutsSharedCluster16", "trackCutsSharedCluster16");
+      trackCutsSharedCluster16->AddCut(AliDielectronVarManager::kNclsSMapITS, 16-delta, 16+delta);
+      AliDielectronVarCuts* trackCutsSharedCluster32 = new AliDielectronVarCuts("trackCutsSharedCluster32", "trackCutsSharedCluster32");
+      trackCutsSharedCluster32->AddCut(AliDielectronVarManager::kNclsSMapITS, 32-delta, 32+delta);
+      SharedClusterCut->AddCut(trackCutsSharedCluster0);
+      SharedClusterCut->AddCut(trackCutsSharedCluster2);
+      SharedClusterCut->AddCut(trackCutsSharedCluster4);
+      SharedClusterCut->AddCut(trackCutsSharedCluster8);
+      SharedClusterCut->AddCut(trackCutsSharedCluster16);
+      SharedClusterCut->AddCut(trackCutsSharedCluster32);
         AliDielectronTrackCuts *trackCutsDiel = new AliDielectronTrackCuts("trackCutsDiel","trackCutsDiel");
         trackCutsDiel->SetAODFilterBit(1<<4);
-        trackCutsDiel->SetClusterRequirementITS(AliESDtrackCuts::kSPD,AliESDtrackCuts::kFirst);
+        trackCutsDiel->SetClusterRequirementITS(AliESDtrackCuts::kSPD, AliESDtrackCuts::kFirst);
         cgTrackCutsAnaSPDfirst = new AliDielectronCutGroup("cgTrackCutsAnaSPDfirst","cgTrackCutsAnaSPDfirst",AliDielectronCutGroup::kCompAND);
         cgTrackCutsAnaSPDfirst->AddCut(trackCutsDiel);
         cgTrackCutsAnaSPDfirst->AddCut(trackCutsAOD);
+        cgTrackCutsAnaSPDfirst->AddCut(SharedClusterCut);
         trackCuts = cgTrackCutsAnaSPDfirst;
       break;
       case kTRACKcut_14:
         AliDielectronVarCuts* trackCutsAOD =new AliDielectronVarCuts("trackCutsAOD","trackCutsAOD");
         trackCutsAOD->AddCut(AliDielectronVarManager::kImpactParXY, -1.0,   1.0);
         trackCutsAOD->AddCut(AliDielectronVarManager::kImpactParZ,  -3.0,   3.0);
-        trackCutsAOD->AddCut(AliDielectronVarManager::kNclsITS,      5.0, 100.0);
+        trackCutsAOD->AddCut(AliDielectronVarManager::kNclsITS,      4.0, 100.0);
+        trackCutsAOD->AddCut(AliDielectronVarManager::kNclsTPC,      80.0, 160.0);
         trackCutsAOD->AddCut(AliDielectronVarManager::kITSchi2Cl,    0.0,   4.0);
-        trackCutsAOD->AddCut(AliDielectronVarManager::kNclsSITS,     0.0,   2.1);
-        trackCutsAOD->AddCut(AliDielectronVarManager::kTPCchi2Cl,    0.0,   3.5);
-        trackCutsAOD->AddCut(AliDielectronVarManager::kNFclsTPCr,    120.0, 160.0);
-        trackCutsAOD->AddCut(AliDielectronVarManager::kNFclsTPCfCross,     0.8, 1.1);
+        trackCutsAOD->AddCut(AliDielectronVarManager::kTPCchi2Cl,    0.0,   4.0);
+        trackCutsAOD->AddCut(AliDielectronVarManager::kNFclsTPCr,    100.0, 161.0);
+        trackCutsAOD->AddCut(AliDielectronVarManager::kNFclsTPCfCross,     0.95, 1.05);
+      AliDielectronCutGroup* SharedClusterCut = new AliDielectronCutGroup("SharedClusterCut","SharedClusterCut",AliDielectronCutGroup::kCompOR);
+      double delta = 0.00001;
+      AliDielectronVarCuts* trackCutsSharedCluster0 = new AliDielectronVarCuts("trackCutsSharedCluster0", "trackCutsSharedCluster0");
+      trackCutsSharedCluster0->AddCut(AliDielectronVarManager::kNclsSMapITS, 0-delta, 0+delta);
+      AliDielectronVarCuts* trackCutsSharedCluster2 = new AliDielectronVarCuts("trackCutsSharedCluster2", "trackCutsSharedCluster2");
+      trackCutsSharedCluster2->AddCut(AliDielectronVarManager::kNclsSMapITS, 2-delta, 2+delta);
+      AliDielectronVarCuts* trackCutsSharedCluster4 = new AliDielectronVarCuts("trackCutsSharedCluster4", "trackCutsSharedCluster4");
+      trackCutsSharedCluster4->AddCut(AliDielectronVarManager::kNclsSMapITS, 4-delta, 4+delta);
+      AliDielectronVarCuts* trackCutsSharedCluster8 = new AliDielectronVarCuts("trackCutsSharedCluster8", "trackCutsSharedCluster8");
+      trackCutsSharedCluster8->AddCut(AliDielectronVarManager::kNclsSMapITS, 8-delta, 8+delta);
+      AliDielectronVarCuts* trackCutsSharedCluster16 = new AliDielectronVarCuts("trackCutsSharedCluster16", "trackCutsSharedCluster16");
+      trackCutsSharedCluster16->AddCut(AliDielectronVarManager::kNclsSMapITS, 16-delta, 16+delta);
+      AliDielectronVarCuts* trackCutsSharedCluster32 = new AliDielectronVarCuts("trackCutsSharedCluster32", "trackCutsSharedCluster32");
+      trackCutsSharedCluster32->AddCut(AliDielectronVarManager::kNclsSMapITS, 32-delta, 32+delta);
+      SharedClusterCut->AddCut(trackCutsSharedCluster0);
+      SharedClusterCut->AddCut(trackCutsSharedCluster2);
+      SharedClusterCut->AddCut(trackCutsSharedCluster4);
+      SharedClusterCut->AddCut(trackCutsSharedCluster8);
+      SharedClusterCut->AddCut(trackCutsSharedCluster16);
+      SharedClusterCut->AddCut(trackCutsSharedCluster32);
         AliDielectronTrackCuts *trackCutsDiel = new AliDielectronTrackCuts("trackCutsDiel","trackCutsDiel");
         trackCutsDiel->SetAODFilterBit(1<<4);
-        trackCutsDiel->SetClusterRequirementITS(AliESDtrackCuts::kSPD,AliESDtrackCuts::kFirst);
+        trackCutsDiel->SetClusterRequirementITS(AliESDtrackCuts::kSPD, AliESDtrackCuts::kFirst);
         cgTrackCutsAnaSPDfirst = new AliDielectronCutGroup("cgTrackCutsAnaSPDfirst","cgTrackCutsAnaSPDfirst",AliDielectronCutGroup::kCompAND);
         cgTrackCutsAnaSPDfirst->AddCut(trackCutsDiel);
         cgTrackCutsAnaSPDfirst->AddCut(trackCutsAOD);
+        cgTrackCutsAnaSPDfirst->AddCut(SharedClusterCut);
         trackCuts = cgTrackCutsAnaSPDfirst;
       break;
       case kTRACKcut_15:
         AliDielectronVarCuts* trackCutsAOD =new AliDielectronVarCuts("trackCutsAOD","trackCutsAOD");
         trackCutsAOD->AddCut(AliDielectronVarManager::kImpactParXY, -1.0,   1.0);
         trackCutsAOD->AddCut(AliDielectronVarManager::kImpactParZ,  -3.0,   3.0);
-        trackCutsAOD->AddCut(AliDielectronVarManager::kNclsITS,      5.0, 100.0);
-        trackCutsAOD->AddCut(AliDielectronVarManager::kITSchi2Cl,    0.0,   3.0);
-        trackCutsAOD->AddCut(AliDielectronVarManager::kNclsSITS,     0.0,   2.1);
-        trackCutsAOD->AddCut(AliDielectronVarManager::kTPCchi2Cl,    0.0,   3.0);
-        trackCutsAOD->AddCut(AliDielectronVarManager::kNFclsTPCr,    80.0, 160.0);
-        trackCutsAOD->AddCut(AliDielectronVarManager::kNFclsTPCfCross,     0.8, 1.1);
+        trackCutsAOD->AddCut(AliDielectronVarManager::kNclsITS,      4.0, 100.0);
+        trackCutsAOD->AddCut(AliDielectronVarManager::kNclsTPC,      80.0, 160.0);
+        trackCutsAOD->AddCut(AliDielectronVarManager::kITSchi2Cl,    0.0,   5.0);
+        trackCutsAOD->AddCut(AliDielectronVarManager::kTPCchi2Cl,    0.0,   4.0);
+        trackCutsAOD->AddCut(AliDielectronVarManager::kNFclsTPCr,    100.0, 161.0);
+        trackCutsAOD->AddCut(AliDielectronVarManager::kNFclsTPCfCross,     0.95, 1.05);
+      AliDielectronCutGroup* SharedClusterCut = new AliDielectronCutGroup("SharedClusterCut","SharedClusterCut",AliDielectronCutGroup::kCompOR);
+      double delta = 0.00001;
+      AliDielectronVarCuts* trackCutsSharedCluster0 = new AliDielectronVarCuts("trackCutsSharedCluster0", "trackCutsSharedCluster0");
+      trackCutsSharedCluster0->AddCut(AliDielectronVarManager::kNclsSMapITS, 0-delta, 0+delta);
+      AliDielectronVarCuts* trackCutsSharedCluster2 = new AliDielectronVarCuts("trackCutsSharedCluster2", "trackCutsSharedCluster2");
+      trackCutsSharedCluster2->AddCut(AliDielectronVarManager::kNclsSMapITS, 2-delta, 2+delta);
+      AliDielectronVarCuts* trackCutsSharedCluster4 = new AliDielectronVarCuts("trackCutsSharedCluster4", "trackCutsSharedCluster4");
+      trackCutsSharedCluster4->AddCut(AliDielectronVarManager::kNclsSMapITS, 4-delta, 4+delta);
+      AliDielectronVarCuts* trackCutsSharedCluster8 = new AliDielectronVarCuts("trackCutsSharedCluster8", "trackCutsSharedCluster8");
+      trackCutsSharedCluster8->AddCut(AliDielectronVarManager::kNclsSMapITS, 8-delta, 8+delta);
+      AliDielectronVarCuts* trackCutsSharedCluster16 = new AliDielectronVarCuts("trackCutsSharedCluster16", "trackCutsSharedCluster16");
+      trackCutsSharedCluster16->AddCut(AliDielectronVarManager::kNclsSMapITS, 16-delta, 16+delta);
+      AliDielectronVarCuts* trackCutsSharedCluster32 = new AliDielectronVarCuts("trackCutsSharedCluster32", "trackCutsSharedCluster32");
+      trackCutsSharedCluster32->AddCut(AliDielectronVarManager::kNclsSMapITS, 32-delta, 32+delta);
+      SharedClusterCut->AddCut(trackCutsSharedCluster0);
+      SharedClusterCut->AddCut(trackCutsSharedCluster2);
+      SharedClusterCut->AddCut(trackCutsSharedCluster4);
+      SharedClusterCut->AddCut(trackCutsSharedCluster8);
+      SharedClusterCut->AddCut(trackCutsSharedCluster16);
+      SharedClusterCut->AddCut(trackCutsSharedCluster32);
         AliDielectronTrackCuts *trackCutsDiel = new AliDielectronTrackCuts("trackCutsDiel","trackCutsDiel");
         trackCutsDiel->SetAODFilterBit(1<<4);
-        trackCutsDiel->SetClusterRequirementITS(AliESDtrackCuts::kSPD,AliESDtrackCuts::kFirst);
+        trackCutsDiel->SetClusterRequirementITS(AliESDtrackCuts::kSPD, AliESDtrackCuts::kFirst);
         cgTrackCutsAnaSPDfirst = new AliDielectronCutGroup("cgTrackCutsAnaSPDfirst","cgTrackCutsAnaSPDfirst",AliDielectronCutGroup::kCompAND);
         cgTrackCutsAnaSPDfirst->AddCut(trackCutsDiel);
         cgTrackCutsAnaSPDfirst->AddCut(trackCutsAOD);
+        cgTrackCutsAnaSPDfirst->AddCut(SharedClusterCut);
         trackCuts = cgTrackCutsAnaSPDfirst;
       break;
       case kTRACKcut_16:
         AliDielectronVarCuts* trackCutsAOD =new AliDielectronVarCuts("trackCutsAOD","trackCutsAOD");
         trackCutsAOD->AddCut(AliDielectronVarManager::kImpactParXY, -1.0,   1.0);
         trackCutsAOD->AddCut(AliDielectronVarManager::kImpactParZ,  -3.0,   3.0);
-        trackCutsAOD->AddCut(AliDielectronVarManager::kNclsITS,      5.0, 100.0);
-        trackCutsAOD->AddCut(AliDielectronVarManager::kITSchi2Cl,    0.0,   4.0);
-        trackCutsAOD->AddCut(AliDielectronVarManager::kNclsSITS,     0.0,   1.1);
-        trackCutsAOD->AddCut(AliDielectronVarManager::kTPCchi2Cl,    0.0,   3.0);
-        trackCutsAOD->AddCut(AliDielectronVarManager::kNFclsTPCr,    80.0, 160.0);
-        trackCutsAOD->AddCut(AliDielectronVarManager::kNFclsTPCfCross,     0.8, 1.1);
+        trackCutsAOD->AddCut(AliDielectronVarManager::kNclsITS,      4.0, 100.0);
+        trackCutsAOD->AddCut(AliDielectronVarManager::kNclsTPC,      100.0, 160.0);
+        trackCutsAOD->AddCut(AliDielectronVarManager::kITSchi2Cl,    0.0,   5.0);
+        trackCutsAOD->AddCut(AliDielectronVarManager::kTPCchi2Cl,    0.0,   4.0);
+        trackCutsAOD->AddCut(AliDielectronVarManager::kNFclsTPCr,    80.0, 161.0);
+        trackCutsAOD->AddCut(AliDielectronVarManager::kNFclsTPCfCross,     0.95, 1.05);
+      AliDielectronCutGroup* SharedClusterCut = new AliDielectronCutGroup("SharedClusterCut","SharedClusterCut",AliDielectronCutGroup::kCompOR);
+      double delta = 0.00001;
+      AliDielectronVarCuts* trackCutsSharedCluster0 = new AliDielectronVarCuts("trackCutsSharedCluster0", "trackCutsSharedCluster0");
+      trackCutsSharedCluster0->AddCut(AliDielectronVarManager::kNclsSMapITS, 0-delta, 0+delta);
+      AliDielectronVarCuts* trackCutsSharedCluster2 = new AliDielectronVarCuts("trackCutsSharedCluster2", "trackCutsSharedCluster2");
+      trackCutsSharedCluster2->AddCut(AliDielectronVarManager::kNclsSMapITS, 2-delta, 2+delta);
+      AliDielectronVarCuts* trackCutsSharedCluster4 = new AliDielectronVarCuts("trackCutsSharedCluster4", "trackCutsSharedCluster4");
+      trackCutsSharedCluster4->AddCut(AliDielectronVarManager::kNclsSMapITS, 4-delta, 4+delta);
+      AliDielectronVarCuts* trackCutsSharedCluster8 = new AliDielectronVarCuts("trackCutsSharedCluster8", "trackCutsSharedCluster8");
+      trackCutsSharedCluster8->AddCut(AliDielectronVarManager::kNclsSMapITS, 8-delta, 8+delta);
+      AliDielectronVarCuts* trackCutsSharedCluster16 = new AliDielectronVarCuts("trackCutsSharedCluster16", "trackCutsSharedCluster16");
+      trackCutsSharedCluster16->AddCut(AliDielectronVarManager::kNclsSMapITS, 16-delta, 16+delta);
+      AliDielectronVarCuts* trackCutsSharedCluster32 = new AliDielectronVarCuts("trackCutsSharedCluster32", "trackCutsSharedCluster32");
+      trackCutsSharedCluster32->AddCut(AliDielectronVarManager::kNclsSMapITS, 32-delta, 32+delta);
+      SharedClusterCut->AddCut(trackCutsSharedCluster0);
+      SharedClusterCut->AddCut(trackCutsSharedCluster2);
+      SharedClusterCut->AddCut(trackCutsSharedCluster4);
+      SharedClusterCut->AddCut(trackCutsSharedCluster8);
+      SharedClusterCut->AddCut(trackCutsSharedCluster16);
+      SharedClusterCut->AddCut(trackCutsSharedCluster32);
         AliDielectronTrackCuts *trackCutsDiel = new AliDielectronTrackCuts("trackCutsDiel","trackCutsDiel");
         trackCutsDiel->SetAODFilterBit(1<<4);
-        trackCutsDiel->SetClusterRequirementITS(AliESDtrackCuts::kSPD,AliESDtrackCuts::kFirst);
+        trackCutsDiel->SetClusterRequirementITS(AliESDtrackCuts::kSPD, AliESDtrackCuts::kFirst);
         cgTrackCutsAnaSPDfirst = new AliDielectronCutGroup("cgTrackCutsAnaSPDfirst","cgTrackCutsAnaSPDfirst",AliDielectronCutGroup::kCompAND);
         cgTrackCutsAnaSPDfirst->AddCut(trackCutsDiel);
         cgTrackCutsAnaSPDfirst->AddCut(trackCutsAOD);
+        cgTrackCutsAnaSPDfirst->AddCut(SharedClusterCut);
         trackCuts = cgTrackCutsAnaSPDfirst;
       break;
       case kTRACKcut_17:
         AliDielectronVarCuts* trackCutsAOD =new AliDielectronVarCuts("trackCutsAOD","trackCutsAOD");
         trackCutsAOD->AddCut(AliDielectronVarManager::kImpactParXY, -1.0,   1.0);
         trackCutsAOD->AddCut(AliDielectronVarManager::kImpactParZ,  -3.0,   3.0);
-        trackCutsAOD->AddCut(AliDielectronVarManager::kNclsITS,      5.0, 100.0);
-        trackCutsAOD->AddCut(AliDielectronVarManager::kITSchi2Cl,    0.0,   4.0);
-        trackCutsAOD->AddCut(AliDielectronVarManager::kNclsSITS,     0.0,   2.1);
-        trackCutsAOD->AddCut(AliDielectronVarManager::kTPCchi2Cl,    0.0,   2.5);
-        trackCutsAOD->AddCut(AliDielectronVarManager::kNFclsTPCr,    120.0, 160.0);
-        trackCutsAOD->AddCut(AliDielectronVarManager::kNFclsTPCfCross,     0.8, 1.1);
+        trackCutsAOD->AddCut(AliDielectronVarManager::kNclsITS,      4.0, 100.0);
+        trackCutsAOD->AddCut(AliDielectronVarManager::kNclsTPC,      80.0, 160.0);
+        trackCutsAOD->AddCut(AliDielectronVarManager::kITSchi2Cl,    0.0,   5.0);
+        trackCutsAOD->AddCut(AliDielectronVarManager::kTPCchi2Cl,    0.0,   4.0);
+        trackCutsAOD->AddCut(AliDielectronVarManager::kNFclsTPCr,    100.0, 161.0);
+        trackCutsAOD->AddCut(AliDielectronVarManager::kNFclsTPCfCross,     0.95, 1.05);
+      AliDielectronCutGroup* SharedClusterCut = new AliDielectronCutGroup("SharedClusterCut","SharedClusterCut",AliDielectronCutGroup::kCompOR);
+      double delta = 0.00001;
+      AliDielectronVarCuts* trackCutsSharedCluster0 = new AliDielectronVarCuts("trackCutsSharedCluster0", "trackCutsSharedCluster0");
+      trackCutsSharedCluster0->AddCut(AliDielectronVarManager::kNclsSMapITS, 0-delta, 0+delta);
+      AliDielectronVarCuts* trackCutsSharedCluster2 = new AliDielectronVarCuts("trackCutsSharedCluster2", "trackCutsSharedCluster2");
+      trackCutsSharedCluster2->AddCut(AliDielectronVarManager::kNclsSMapITS, 2-delta, 2+delta);
+      AliDielectronVarCuts* trackCutsSharedCluster4 = new AliDielectronVarCuts("trackCutsSharedCluster4", "trackCutsSharedCluster4");
+      trackCutsSharedCluster4->AddCut(AliDielectronVarManager::kNclsSMapITS, 4-delta, 4+delta);
+      AliDielectronVarCuts* trackCutsSharedCluster8 = new AliDielectronVarCuts("trackCutsSharedCluster8", "trackCutsSharedCluster8");
+      trackCutsSharedCluster8->AddCut(AliDielectronVarManager::kNclsSMapITS, 8-delta, 8+delta);
+      AliDielectronVarCuts* trackCutsSharedCluster16 = new AliDielectronVarCuts("trackCutsSharedCluster16", "trackCutsSharedCluster16");
+      trackCutsSharedCluster16->AddCut(AliDielectronVarManager::kNclsSMapITS, 16-delta, 16+delta);
+      AliDielectronVarCuts* trackCutsSharedCluster32 = new AliDielectronVarCuts("trackCutsSharedCluster32", "trackCutsSharedCluster32");
+      trackCutsSharedCluster32->AddCut(AliDielectronVarManager::kNclsSMapITS, 32-delta, 32+delta);
+      SharedClusterCut->AddCut(trackCutsSharedCluster0);
+      SharedClusterCut->AddCut(trackCutsSharedCluster2);
+      SharedClusterCut->AddCut(trackCutsSharedCluster4);
+      SharedClusterCut->AddCut(trackCutsSharedCluster8);
+      SharedClusterCut->AddCut(trackCutsSharedCluster16);
+      SharedClusterCut->AddCut(trackCutsSharedCluster32);
         AliDielectronTrackCuts *trackCutsDiel = new AliDielectronTrackCuts("trackCutsDiel","trackCutsDiel");
         trackCutsDiel->SetAODFilterBit(1<<4);
-        trackCutsDiel->SetClusterRequirementITS(AliESDtrackCuts::kSPD,AliESDtrackCuts::kFirst);
+        trackCutsDiel->SetClusterRequirementITS(AliESDtrackCuts::kSPD, AliESDtrackCuts::kFirst);
         cgTrackCutsAnaSPDfirst = new AliDielectronCutGroup("cgTrackCutsAnaSPDfirst","cgTrackCutsAnaSPDfirst",AliDielectronCutGroup::kCompAND);
         cgTrackCutsAnaSPDfirst->AddCut(trackCutsDiel);
         cgTrackCutsAnaSPDfirst->AddCut(trackCutsAOD);
+        cgTrackCutsAnaSPDfirst->AddCut(SharedClusterCut);
         trackCuts = cgTrackCutsAnaSPDfirst;
       break;
       case kTRACKcut_18:
         AliDielectronVarCuts* trackCutsAOD =new AliDielectronVarCuts("trackCutsAOD","trackCutsAOD");
         trackCutsAOD->AddCut(AliDielectronVarManager::kImpactParXY, -1.0,   1.0);
         trackCutsAOD->AddCut(AliDielectronVarManager::kImpactParZ,  -3.0,   3.0);
-        trackCutsAOD->AddCut(AliDielectronVarManager::kNclsITS,      5.0, 100.0);
-        trackCutsAOD->AddCut(AliDielectronVarManager::kITSchi2Cl,    0.0,   3.0);
-        trackCutsAOD->AddCut(AliDielectronVarManager::kNclsSITS,     0.0,   0.1);
-        trackCutsAOD->AddCut(AliDielectronVarManager::kTPCchi2Cl,    0.0,   3.5);
-        trackCutsAOD->AddCut(AliDielectronVarManager::kNFclsTPCr,    120.0, 160.0);
-        trackCutsAOD->AddCut(AliDielectronVarManager::kNFclsTPCfCross,     0.8, 1.1);
+        trackCutsAOD->AddCut(AliDielectronVarManager::kNclsITS,      4.0, 100.0);
+        trackCutsAOD->AddCut(AliDielectronVarManager::kNclsTPC,      100.0, 160.0);
+        trackCutsAOD->AddCut(AliDielectronVarManager::kITSchi2Cl,    0.0,   5.0);
+        trackCutsAOD->AddCut(AliDielectronVarManager::kTPCchi2Cl,    0.0,   3.0);
+        trackCutsAOD->AddCut(AliDielectronVarManager::kNFclsTPCr,    80.0, 161.0);
+        trackCutsAOD->AddCut(AliDielectronVarManager::kNFclsTPCfCross,     0.95, 1.05);
+      AliDielectronCutGroup* SharedClusterCut = new AliDielectronCutGroup("SharedClusterCut","SharedClusterCut",AliDielectronCutGroup::kCompOR);
+      double delta = 0.00001;
+      AliDielectronVarCuts* trackCutsSharedCluster0 = new AliDielectronVarCuts("trackCutsSharedCluster0", "trackCutsSharedCluster0");
+      trackCutsSharedCluster0->AddCut(AliDielectronVarManager::kNclsSMapITS, 0-delta, 0+delta);
+      AliDielectronVarCuts* trackCutsSharedCluster2 = new AliDielectronVarCuts("trackCutsSharedCluster2", "trackCutsSharedCluster2");
+      trackCutsSharedCluster2->AddCut(AliDielectronVarManager::kNclsSMapITS, 2-delta, 2+delta);
+      AliDielectronVarCuts* trackCutsSharedCluster4 = new AliDielectronVarCuts("trackCutsSharedCluster4", "trackCutsSharedCluster4");
+      trackCutsSharedCluster4->AddCut(AliDielectronVarManager::kNclsSMapITS, 4-delta, 4+delta);
+      AliDielectronVarCuts* trackCutsSharedCluster8 = new AliDielectronVarCuts("trackCutsSharedCluster8", "trackCutsSharedCluster8");
+      trackCutsSharedCluster8->AddCut(AliDielectronVarManager::kNclsSMapITS, 8-delta, 8+delta);
+      AliDielectronVarCuts* trackCutsSharedCluster16 = new AliDielectronVarCuts("trackCutsSharedCluster16", "trackCutsSharedCluster16");
+      trackCutsSharedCluster16->AddCut(AliDielectronVarManager::kNclsSMapITS, 16-delta, 16+delta);
+      AliDielectronVarCuts* trackCutsSharedCluster32 = new AliDielectronVarCuts("trackCutsSharedCluster32", "trackCutsSharedCluster32");
+      trackCutsSharedCluster32->AddCut(AliDielectronVarManager::kNclsSMapITS, 32-delta, 32+delta);
+      SharedClusterCut->AddCut(trackCutsSharedCluster0);
+      SharedClusterCut->AddCut(trackCutsSharedCluster2);
+      SharedClusterCut->AddCut(trackCutsSharedCluster4);
+      SharedClusterCut->AddCut(trackCutsSharedCluster8);
+      SharedClusterCut->AddCut(trackCutsSharedCluster16);
+      SharedClusterCut->AddCut(trackCutsSharedCluster32);
         AliDielectronTrackCuts *trackCutsDiel = new AliDielectronTrackCuts("trackCutsDiel","trackCutsDiel");
         trackCutsDiel->SetAODFilterBit(1<<4);
-        trackCutsDiel->SetClusterRequirementITS(AliESDtrackCuts::kSPD,AliESDtrackCuts::kFirst);
+        trackCutsDiel->SetClusterRequirementITS(AliESDtrackCuts::kSPD, AliESDtrackCuts::kFirst);
         cgTrackCutsAnaSPDfirst = new AliDielectronCutGroup("cgTrackCutsAnaSPDfirst","cgTrackCutsAnaSPDfirst",AliDielectronCutGroup::kCompAND);
         cgTrackCutsAnaSPDfirst->AddCut(trackCutsDiel);
         cgTrackCutsAnaSPDfirst->AddCut(trackCutsAOD);
+        cgTrackCutsAnaSPDfirst->AddCut(SharedClusterCut);
         trackCuts = cgTrackCutsAnaSPDfirst;
       break;
       case kTRACKcut_19:
         AliDielectronVarCuts* trackCutsAOD =new AliDielectronVarCuts("trackCutsAOD","trackCutsAOD");
         trackCutsAOD->AddCut(AliDielectronVarManager::kImpactParXY, -1.0,   1.0);
         trackCutsAOD->AddCut(AliDielectronVarManager::kImpactParZ,  -3.0,   3.0);
-        trackCutsAOD->AddCut(AliDielectronVarManager::kNclsITS,      5.0, 100.0);
-        trackCutsAOD->AddCut(AliDielectronVarManager::kITSchi2Cl,    0.0,   3.0);
-        trackCutsAOD->AddCut(AliDielectronVarManager::kNclsSITS,     0.0,   1.1);
-        trackCutsAOD->AddCut(AliDielectronVarManager::kTPCchi2Cl,    0.0,   2.5);
-        trackCutsAOD->AddCut(AliDielectronVarManager::kNFclsTPCr,    100.0, 160.0);
-        trackCutsAOD->AddCut(AliDielectronVarManager::kNFclsTPCfCross,     0.8, 1.1);
+        trackCutsAOD->AddCut(AliDielectronVarManager::kNclsITS,      4.0, 100.0);
+        trackCutsAOD->AddCut(AliDielectronVarManager::kNclsTPC,      100.0, 160.0);
+        trackCutsAOD->AddCut(AliDielectronVarManager::kITSchi2Cl,    0.0,   5.0);
+        trackCutsAOD->AddCut(AliDielectronVarManager::kTPCchi2Cl,    0.0,   3.0);
+        trackCutsAOD->AddCut(AliDielectronVarManager::kNFclsTPCr,    80.0, 161.0);
+        trackCutsAOD->AddCut(AliDielectronVarManager::kNFclsTPCfCross,     0.95, 1.05);
+      AliDielectronCutGroup* SharedClusterCut = new AliDielectronCutGroup("SharedClusterCut","SharedClusterCut",AliDielectronCutGroup::kCompOR);
+      double delta = 0.00001;
+      AliDielectronVarCuts* trackCutsSharedCluster0 = new AliDielectronVarCuts("trackCutsSharedCluster0", "trackCutsSharedCluster0");
+      trackCutsSharedCluster0->AddCut(AliDielectronVarManager::kNclsSMapITS, 0-delta, 0+delta);
+      AliDielectronVarCuts* trackCutsSharedCluster2 = new AliDielectronVarCuts("trackCutsSharedCluster2", "trackCutsSharedCluster2");
+      trackCutsSharedCluster2->AddCut(AliDielectronVarManager::kNclsSMapITS, 2-delta, 2+delta);
+      AliDielectronVarCuts* trackCutsSharedCluster4 = new AliDielectronVarCuts("trackCutsSharedCluster4", "trackCutsSharedCluster4");
+      trackCutsSharedCluster4->AddCut(AliDielectronVarManager::kNclsSMapITS, 4-delta, 4+delta);
+      AliDielectronVarCuts* trackCutsSharedCluster8 = new AliDielectronVarCuts("trackCutsSharedCluster8", "trackCutsSharedCluster8");
+      trackCutsSharedCluster8->AddCut(AliDielectronVarManager::kNclsSMapITS, 8-delta, 8+delta);
+      AliDielectronVarCuts* trackCutsSharedCluster16 = new AliDielectronVarCuts("trackCutsSharedCluster16", "trackCutsSharedCluster16");
+      trackCutsSharedCluster16->AddCut(AliDielectronVarManager::kNclsSMapITS, 16-delta, 16+delta);
+      AliDielectronVarCuts* trackCutsSharedCluster32 = new AliDielectronVarCuts("trackCutsSharedCluster32", "trackCutsSharedCluster32");
+      trackCutsSharedCluster32->AddCut(AliDielectronVarManager::kNclsSMapITS, 32-delta, 32+delta);
+      SharedClusterCut->AddCut(trackCutsSharedCluster0);
+      SharedClusterCut->AddCut(trackCutsSharedCluster2);
+      SharedClusterCut->AddCut(trackCutsSharedCluster4);
+      SharedClusterCut->AddCut(trackCutsSharedCluster8);
+      SharedClusterCut->AddCut(trackCutsSharedCluster16);
+      SharedClusterCut->AddCut(trackCutsSharedCluster32);
         AliDielectronTrackCuts *trackCutsDiel = new AliDielectronTrackCuts("trackCutsDiel","trackCutsDiel");
         trackCutsDiel->SetAODFilterBit(1<<4);
-        trackCutsDiel->SetClusterRequirementITS(AliESDtrackCuts::kSPD,AliESDtrackCuts::kFirst);
+        trackCutsDiel->SetClusterRequirementITS(AliESDtrackCuts::kSPD, AliESDtrackCuts::kFirst);
         cgTrackCutsAnaSPDfirst = new AliDielectronCutGroup("cgTrackCutsAnaSPDfirst","cgTrackCutsAnaSPDfirst",AliDielectronCutGroup::kCompAND);
         cgTrackCutsAnaSPDfirst->AddCut(trackCutsDiel);
         cgTrackCutsAnaSPDfirst->AddCut(trackCutsAOD);
+        cgTrackCutsAnaSPDfirst->AddCut(SharedClusterCut);
+        trackCuts = cgTrackCutsAnaSPDfirst;
+      break;
+      case kTRACKcut_20:
+        AliDielectronVarCuts* trackCutsAOD =new AliDielectronVarCuts("trackCutsAOD","trackCutsAOD");
+        trackCutsAOD->AddCut(AliDielectronVarManager::kImpactParXY, -1.0,   1.0);
+        trackCutsAOD->AddCut(AliDielectronVarManager::kImpactParZ,  -3.0,   3.0);
+        trackCutsAOD->AddCut(AliDielectronVarManager::kNclsITS,      4.0, 100.0);
+        trackCutsAOD->AddCut(AliDielectronVarManager::kNclsTPC,      80.0, 160.0);
+        trackCutsAOD->AddCut(AliDielectronVarManager::kITSchi2Cl,    0.0,   5.0);
+        trackCutsAOD->AddCut(AliDielectronVarManager::kTPCchi2Cl,    0.0,   4.0);
+        trackCutsAOD->AddCut(AliDielectronVarManager::kNFclsTPCr,    80.0, 161.0);
+        trackCutsAOD->AddCut(AliDielectronVarManager::kNFclsTPCfCross,     0.95, 1.05);
+      AliDielectronCutGroup* SharedClusterCut = new AliDielectronCutGroup("SharedClusterCut","SharedClusterCut",AliDielectronCutGroup::kCompOR);
+      double delta = 0.00001;
+      AliDielectronVarCuts* trackCutsSharedCluster0 = new AliDielectronVarCuts("trackCutsSharedCluster0", "trackCutsSharedCluster0");
+      trackCutsSharedCluster0->AddCut(AliDielectronVarManager::kNclsSMapITS, 0-delta, 0+delta);
+      AliDielectronVarCuts* trackCutsSharedCluster2 = new AliDielectronVarCuts("trackCutsSharedCluster2", "trackCutsSharedCluster2");
+      trackCutsSharedCluster2->AddCut(AliDielectronVarManager::kNclsSMapITS, 2-delta, 2+delta);
+      AliDielectronVarCuts* trackCutsSharedCluster4 = new AliDielectronVarCuts("trackCutsSharedCluster4", "trackCutsSharedCluster4");
+      trackCutsSharedCluster4->AddCut(AliDielectronVarManager::kNclsSMapITS, 4-delta, 4+delta);
+      AliDielectronVarCuts* trackCutsSharedCluster8 = new AliDielectronVarCuts("trackCutsSharedCluster8", "trackCutsSharedCluster8");
+      trackCutsSharedCluster8->AddCut(AliDielectronVarManager::kNclsSMapITS, 8-delta, 8+delta);
+      AliDielectronVarCuts* trackCutsSharedCluster16 = new AliDielectronVarCuts("trackCutsSharedCluster16", "trackCutsSharedCluster16");
+      trackCutsSharedCluster16->AddCut(AliDielectronVarManager::kNclsSMapITS, 16-delta, 16+delta);
+      AliDielectronVarCuts* trackCutsSharedCluster32 = new AliDielectronVarCuts("trackCutsSharedCluster32", "trackCutsSharedCluster32");
+      trackCutsSharedCluster32->AddCut(AliDielectronVarManager::kNclsSMapITS, 32-delta, 32+delta);
+      SharedClusterCut->AddCut(trackCutsSharedCluster0);
+      SharedClusterCut->AddCut(trackCutsSharedCluster2);
+      SharedClusterCut->AddCut(trackCutsSharedCluster4);
+      SharedClusterCut->AddCut(trackCutsSharedCluster8);
+      SharedClusterCut->AddCut(trackCutsSharedCluster16);
+      SharedClusterCut->AddCut(trackCutsSharedCluster32);
+        AliDielectronTrackCuts *trackCutsDiel = new AliDielectronTrackCuts("trackCutsDiel","trackCutsDiel");
+        trackCutsDiel->SetAODFilterBit(1<<4);
+        trackCutsDiel->SetClusterRequirementITS(AliESDtrackCuts::kSPD, AliESDtrackCuts::kFirst);
+        cgTrackCutsAnaSPDfirst = new AliDielectronCutGroup("cgTrackCutsAnaSPDfirst","cgTrackCutsAnaSPDfirst",AliDielectronCutGroup::kCompAND);
+        cgTrackCutsAnaSPDfirst->AddCut(trackCutsDiel);
+        cgTrackCutsAnaSPDfirst->AddCut(trackCutsAOD);
+        cgTrackCutsAnaSPDfirst->AddCut(SharedClusterCut);
         trackCuts = cgTrackCutsAnaSPDfirst;
       break;
 
+
+    case kTRACKcut_11_Version1:
+      AliDielectronVarCuts* trackCutsAOD =new AliDielectronVarCuts("trackCutsAOD","trackCutsAOD");
+      trackCutsAOD->AddCut(AliDielectronVarManager::kImpactParXY, -1.0,   1.0);
+      trackCutsAOD->AddCut(AliDielectronVarManager::kImpactParZ,  -3.0,   3.0);
+      trackCutsAOD->AddCut(AliDielectronVarManager::kNclsITS,      5.0, 100.0);
+      trackCutsAOD->AddCut(AliDielectronVarManager::kITSchi2Cl,    0.0,   3.0);
+      trackCutsAOD->AddCut(AliDielectronVarManager::kNclsSITS,     0.0,   2.1);
+      trackCutsAOD->AddCut(AliDielectronVarManager::kTPCchi2Cl,    0.0,   3.0);
+      trackCutsAOD->AddCut(AliDielectronVarManager::kNFclsTPCr,    80.0, 160.0);
+      trackCutsAOD->AddCut(AliDielectronVarManager::kNFclsTPCfCross,     0.8, 1.1);
+      AliDielectronTrackCuts *trackCutsDiel = new AliDielectronTrackCuts("trackCutsDiel","trackCutsDiel");
+      trackCutsDiel->SetAODFilterBit(1<<4);
+      trackCutsDiel->SetClusterRequirementITS(AliESDtrackCuts::kSPD,AliESDtrackCuts::kFirst);
+      cgTrackCutsAnaSPDfirst = new AliDielectronCutGroup("cgTrackCutsAnaSPDfirst","cgTrackCutsAnaSPDfirst",AliDielectronCutGroup::kCompAND);
+      cgTrackCutsAnaSPDfirst->AddCut(trackCutsDiel);
+      cgTrackCutsAnaSPDfirst->AddCut(trackCutsAOD);
+      trackCuts = cgTrackCutsAnaSPDfirst;
+    break;
+    case kTRACKcut_11_0SITSCl_Version1:
+      AliDielectronVarCuts* trackCutsAOD =new AliDielectronVarCuts("trackCutsAOD","trackCutsAOD");
+      trackCutsAOD->AddCut(AliDielectronVarManager::kImpactParXY, -1.0,   1.0);
+      trackCutsAOD->AddCut(AliDielectronVarManager::kImpactParZ,  -3.0,   3.0);
+      trackCutsAOD->AddCut(AliDielectronVarManager::kNclsITS,      5.0, 100.0);
+      trackCutsAOD->AddCut(AliDielectronVarManager::kITSchi2Cl,    0.0,   3.0);
+      trackCutsAOD->AddCut(AliDielectronVarManager::kNclsSITS,     0.0,   0.1);
+      trackCutsAOD->AddCut(AliDielectronVarManager::kTPCchi2Cl,    0.0,   3.0);
+      trackCutsAOD->AddCut(AliDielectronVarManager::kNFclsTPCr,    80.0, 160.0);
+      trackCutsAOD->AddCut(AliDielectronVarManager::kNFclsTPCfCross,     0.8, 1.1);
+      AliDielectronTrackCuts *trackCutsDiel = new AliDielectronTrackCuts("trackCutsDiel","trackCutsDiel");
+      trackCutsDiel->SetAODFilterBit(1<<4);
+      trackCutsDiel->SetClusterRequirementITS(AliESDtrackCuts::kSPD,AliESDtrackCuts::kFirst);
+      cgTrackCutsAnaSPDfirst = new AliDielectronCutGroup("cgTrackCutsAnaSPDfirst","cgTrackCutsAnaSPDfirst",AliDielectronCutGroup::kCompAND);
+      cgTrackCutsAnaSPDfirst->AddCut(trackCutsDiel);
+      cgTrackCutsAnaSPDfirst->AddCut(trackCutsAOD);
+      trackCuts = cgTrackCutsAnaSPDfirst;
+    break;
+    case kTRACKcut_11_1SITSCl_Version1:
+      AliDielectronVarCuts* trackCutsAOD =new AliDielectronVarCuts("trackCutsAOD","trackCutsAOD");
+      trackCutsAOD->AddCut(AliDielectronVarManager::kImpactParXY, -1.0,   1.0);
+      trackCutsAOD->AddCut(AliDielectronVarManager::kImpactParZ,  -3.0,   3.0);
+      trackCutsAOD->AddCut(AliDielectronVarManager::kNclsITS,      5.0, 100.0);
+      trackCutsAOD->AddCut(AliDielectronVarManager::kITSchi2Cl,    0.0,   3.0);
+      trackCutsAOD->AddCut(AliDielectronVarManager::kNclsSITS,     0.0,   1.1);
+      trackCutsAOD->AddCut(AliDielectronVarManager::kTPCchi2Cl,    0.0,   3.0);
+      trackCutsAOD->AddCut(AliDielectronVarManager::kNFclsTPCr,    80.0, 160.0);
+      trackCutsAOD->AddCut(AliDielectronVarManager::kNFclsTPCfCross,     0.8, 1.1);
+      AliDielectronTrackCuts *trackCutsDiel = new AliDielectronTrackCuts("trackCutsDiel","trackCutsDiel");
+      trackCutsDiel->SetAODFilterBit(1<<4);
+      trackCutsDiel->SetClusterRequirementITS(AliESDtrackCuts::kSPD,AliESDtrackCuts::kFirst);
+      cgTrackCutsAnaSPDfirst = new AliDielectronCutGroup("cgTrackCutsAnaSPDfirst","cgTrackCutsAnaSPDfirst",AliDielectronCutGroup::kCompAND);
+      cgTrackCutsAnaSPDfirst->AddCut(trackCutsDiel);
+      cgTrackCutsAnaSPDfirst->AddCut(trackCutsAOD);
+      trackCuts = cgTrackCutsAnaSPDfirst;
+    break;
+    case kTRACKcut_11_3SITSCl_Version1:
+      AliDielectronVarCuts* trackCutsAOD =new AliDielectronVarCuts("trackCutsAOD","trackCutsAOD");
+      trackCutsAOD->AddCut(AliDielectronVarManager::kImpactParXY, -1.0,   1.0);
+      trackCutsAOD->AddCut(AliDielectronVarManager::kImpactParZ,  -3.0,   3.0);
+      trackCutsAOD->AddCut(AliDielectronVarManager::kNclsITS,      5.0, 100.0);
+      trackCutsAOD->AddCut(AliDielectronVarManager::kITSchi2Cl,    0.0,   3.0);
+      trackCutsAOD->AddCut(AliDielectronVarManager::kNclsSITS,     0.0,   3.1);
+      trackCutsAOD->AddCut(AliDielectronVarManager::kTPCchi2Cl,    0.0,   3.0);
+      trackCutsAOD->AddCut(AliDielectronVarManager::kNFclsTPCr,    80.0, 160.0);
+      trackCutsAOD->AddCut(AliDielectronVarManager::kNFclsTPCfCross,     0.8, 1.1);
+      AliDielectronTrackCuts *trackCutsDiel = new AliDielectronTrackCuts("trackCutsDiel","trackCutsDiel");
+      trackCutsDiel->SetAODFilterBit(1<<4);
+      trackCutsDiel->SetClusterRequirementITS(AliESDtrackCuts::kSPD,AliESDtrackCuts::kFirst);
+      cgTrackCutsAnaSPDfirst = new AliDielectronCutGroup("cgTrackCutsAnaSPDfirst","cgTrackCutsAnaSPDfirst",AliDielectronCutGroup::kCompAND);
+      cgTrackCutsAnaSPDfirst->AddCut(trackCutsDiel);
+      cgTrackCutsAnaSPDfirst->AddCut(trackCutsAOD);
+      trackCuts = cgTrackCutsAnaSPDfirst;
+    break;
     case kNone:
       trackCuts = GetTrackCuts(kNoTrackCuts);
       break;
@@ -1303,7 +2508,7 @@ AliDielectronCutGroup* LMEECutLib::GetTrackCuts(Int_t cutSet) {
       // primarily meant for inclusion, for quite pure sample...
       AliDielectronV0Cuts *gammaV0Cuts = new AliDielectronV0Cuts("gammaV0Cuts","gammaV0Cuts");
       gammaV0Cuts->SetV0finder(AliDielectronV0Cuts::kOnTheFly);  // kAll(default), kOffline or kOnTheFly
-      gammaV0Cuts->SetPdgCodes(22,11,11); // mother, daughter1 and 2
+      // gammaV0Cuts->SetPdgCodes(22,11,11); // mother, daughter1 and 2
       gammaV0Cuts->AddCut(AliDielectronVarManager::kCosPointingAngle, TMath::Cos(0.02),   1.0,  kFALSE);
       gammaV0Cuts->AddCut(AliDielectronVarManager::kChi2NDF,                       0.0,  10.0,  kFALSE);
       gammaV0Cuts->AddCut(AliDielectronVarManager::kLegDist,                       0.0,   0.25, kFALSE);
@@ -1492,8 +2697,8 @@ AliAnalysisCuts* LMEECutLib::GetESDTrackCutsAna(AnalysisCut AnaCut) {
   AliESDtrackCuts* esdTrackCutsH = 0x0;
   switch (AnaCut.GetESDTrackSelection()) {
     default:
-      // standard cuts with very loose DCA: Bit4 (Int: 16), AOD095&115
-      esdTrackCutsH = AliESDtrackCuts::GetStandardITSTPCTrackCuts2011();
+      cout << "Bit 4" << endl;
+      esdTrackCutsH = AliESDtrackCuts::GetStandardITSTPCTrackCuts2011(kFALSE);
       esdTrackCutsH->SetMaxDCAToVertexXY(2.4);
       esdTrackCutsH->SetMaxDCAToVertexZ(3.2);
       esdTrackCutsH->SetDCAToVertex2D(kTRUE);

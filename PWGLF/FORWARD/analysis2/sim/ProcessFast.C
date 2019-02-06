@@ -33,6 +33,7 @@ ProcessFast(const char* url,
   gROOT->LoadMacro(Form("FastCentHelper.C+%s",opt));
   gROOT->LoadMacro(Form("dNdetaAnalysis.C+%s",opt));
   gROOT->LoadMacro(Form("dNdyAnalysis.C+%s",opt));
+  gROOT->LoadMacro(Form("MidNchAnalysis.C+%s",opt));
   gDebug = 0;
   gROOT->LoadMacro(Form("spectraAnalysis.C+%s",opt));
   if (extra && extra[0] != '\0') gROOT->LoadMacro(Form("%s+%s",extra, opt));

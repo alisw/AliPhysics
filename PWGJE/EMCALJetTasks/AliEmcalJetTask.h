@@ -9,6 +9,9 @@ class TObjArray;
 class AliVEvent;
 class AliEmcalJetUtility;
 
+#include "TF1.h"
+#include "TRandom3.h"
+
 #include <AliLog.h>
 
 #include "AliAnalysisTaskEmcal.h"
@@ -76,6 +79,7 @@ class AliEmcalJetTask : public AliAnalysisTaskEmcal {
   void                   SetRecombScheme(ERecoScheme_t scheme)      { if (IsLocked()) return; fRecombScheme     = scheme; }
   void                   SetTrackEfficiency(Double_t t)             { if (IsLocked()) return; fTrackEfficiency  = t     ; }
   void                   SetTrackEfficiencyOnlyForEmbedding(Bool_t b) { if (IsLocked()) return; fTrackEfficiencyOnlyForEmbedding = b     ; }
+  void                   SetEnableAliBasicParticleCompatibility(Bool_t b) { if (IsLocked()) return; fEnableAliBasicParticleCompatibility = b; }
   void                   SetLegacyMode(Bool_t mode)                 { if (IsLocked()) return; fLegacyMode       = mode  ; }
   void                   SetFillGhost(Bool_t b=kTRUE)               { if (IsLocked()) return; fFillGhost        = b     ; }
   void                   SetRadius(Double_t r)                      { if (IsLocked()) return; fRadius           = r     ; }
@@ -114,10 +118,20 @@ class AliEmcalJetTask : public AliAnalysisTaskEmcal {
 
   UInt_t                 FindJetAcceptanceType(Double_t eta, Double_t phi, Double_t r);
   
+  void                   LoadTrackEfficiencyFunction(const std::string & path, const std::string & name);
 
   Bool_t                 IsLocked() const;
   void                   SelectCollisionCandidates(UInt_t offlineTriggerMask = AliVEvent::kMB);
   void                   SetType(Int_t t);
+
+  /**
+   * @brief Switch for whether to fill the AliEmcalJetConstituent objects (clusters and particles/tracks)
+   *
+   * By default jet constituent object will be filled to the jet.
+   *
+   * @param doFill Switch for filling jet consituent object
+   */
+  void                   SetFillJetConsituents(Bool_t doFill) { fFillConstituents = doFill; }
 
   static AliEmcalJetTask* AddTaskEmcalJet(
       const TString nTracks                      = "usedefault",
@@ -156,35 +170,40 @@ class AliEmcalJetTask : public AliAnalysisTaskEmcal {
   Bool_t                 IsJetInDcalOnly(Double_t eta, Double_t phi, Double_t r);
   Bool_t                 IsJetInPhos(Double_t eta, Double_t phi, Double_t r);
 
-  TString                fJetsTag;                // tag of jet collection (usually = "Jets")
+  TString                fJetsTag;                ///< tag of jet collection (usually = "Jets")
 
-  EJetType_t             fJetType;                // jet type (full, charged, neutral)
-  EJetAlgo_t             fJetAlgo;                // jet algorithm (kt, akt, etc)
-  ERecoScheme_t          fRecombScheme;           // recombination scheme used by fastjet
-  Double_t               fRadius;                 // jet radius
-  Double_t               fMinJetArea;             // min area to keep jet in output
-  Double_t               fMinJetPt;               // min jet pt to keep jet in output
-  Double_t               fJetPhiMin;              // minimum phi to keep jet in output
-  Double_t               fJetPhiMax;              // maximum phi to keep jet in output
-  Double_t               fJetEtaMin;              // minimum eta to keep jet in output
-  Double_t               fJetEtaMax;              // maximum eta to keep jet in output
-  Double_t               fGhostArea;              // ghost area
-  Double_t               fTrackEfficiency;        // artificial tracking inefficiency (0...1)
-  TObjArray             *fUtilities;              // jet utilities (gen subtractor, constituent subtractor etc.)
-  Bool_t                 fTrackEfficiencyOnlyForEmbedding; // Apply aritificial tracking inefficiency only for embedded tracks
-  Bool_t                 fLocked;                 // true if lock is set
+  EJetType_t             fJetType;                ///< jet type (full, charged, neutral)
+  EJetAlgo_t             fJetAlgo;                ///< jet algorithm (kt, akt, etc)
+  ERecoScheme_t          fRecombScheme;           ///< recombination scheme used by fastjet
+  Double_t               fRadius;                 ///< jet radius
+  Double_t               fMinJetArea;             ///< min area to keep jet in output
+  Double_t               fMinJetPt;               ///< min jet pt to keep jet in output
+  Double_t               fJetPhiMin;              ///< minimum phi to keep jet in output
+  Double_t               fJetPhiMax;              ///< maximum phi to keep jet in output
+  Double_t               fJetEtaMin;              ///< minimum eta to keep jet in output
+  Double_t               fJetEtaMax;              ///< maximum eta to keep jet in output
+  Double_t               fGhostArea;              ///< ghost area
+  Double_t               fTrackEfficiency;        ///< artificial tracking inefficiency (0...1)
+  TObjArray             *fUtilities;              ///< jet utilities (gen subtractor, constituent subtractor etc.)
+  Bool_t                 fTrackEfficiencyOnlyForEmbedding; ///< Apply aritificial tracking inefficiency only for embedded tracks
+  TF1                   *fTrackEfficiencyFunction;///< Function that describes the artificial tracking efficiency to be applied on top of the nominal tracking efficiency, as a function of track pT
+  Bool_t                 fApplyArtificialTrackingEfficiency; ///< Flag to apply artificial tracking efficiency
+  TRandom3               fRandom;                 //!<! Random number generator for artificial tracking efficiency
+  Bool_t                 fLocked;                 ///< true if lock is set
+  Bool_t	          fFillConstituents;		 ///< If true jet consituents will be filled to the AliEmcalJet
 
-  TString                fJetsName;               //!name of jet collection
-  Bool_t                 fIsInit;                 //!=true if already initialized
-  Bool_t                 fIsPSelSet;              //!=true if physics selection was set
-  Bool_t                 fIsEmcPart;              //!=true if emcal particles are given as input (for clusters)
-  Bool_t                 fLegacyMode;             //!=true to enable FJ 2.x behavior
-  Bool_t                 fFillGhost;              //!=true ghost particles will be filled in AliEmcalJet obj
+  TString                fJetsName;               //!<!name of jet collection
+  Bool_t                 fIsInit;                 //!<!=true if already initialized
+  Bool_t                 fIsPSelSet;              //!<!=true if physics selection was set
+  Bool_t                 fIsEmcPart;              //!<!=true if emcal particles are given as input (for clusters)
+  Bool_t                 fEnableAliBasicParticleCompatibility; ///< Flag to allow compatibility with AliBasicParticle constituents
+  Bool_t                 fLegacyMode;             //!<!=true to enable FJ 2.x behavior
+  Bool_t                 fFillGhost;              ///< =true ghost particles will be filled in AliEmcalJet obj
 
-  TClonesArray          *fJets;                   //!jet collection
-  AliFJWrapper           fFastJetWrapper;         //!fastjet wrapper
+  TClonesArray          *fJets;                   //!<!jet collection
+  AliFJWrapper           fFastJetWrapper;         //!<!fastjet wrapper
 
-  static const Int_t     fgkConstIndexShift;      //!contituent index shift
+  static const Int_t     fgkConstIndexShift;      //!<!contituent index shift
 
 #if !(defined(__CINT__) || defined(__MAKECINT__))
   // Handle mapping between index and containers
@@ -197,7 +216,7 @@ class AliEmcalJetTask : public AliAnalysisTaskEmcal {
   AliEmcalJetTask &operator=(const AliEmcalJetTask&); // not implemented
 
   /// \cond CLASSIMP
-  ClassDef(AliEmcalJetTask, 24);
+  ClassDef(AliEmcalJetTask, 29);
   /// \endcond
 };
 #endif

@@ -190,10 +190,7 @@ AliAnalysisTaskHFE* ConfigHFEnpepp5(Bool_t useMC, Bool_t isAOD, TString appendix
       }
     }
 
-
     //error function
-
-
     task->SetBackGroundFactorsFunction(hBackground);
 
   }

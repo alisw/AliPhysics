@@ -54,7 +54,7 @@ AliRsnPairDef::AliRsnPairDef() :
 
 //_____________________________________________________________________________
 AliRsnPairDef::AliRsnPairDef
-(EPARTYPE type1, Char_t ch1, EPARTYPE type2, Char_t ch2, Int_t pdg, Double_t mass) :
+(EPARTYPE type1, Char_t ch1, EPARTYPE type2, Char_t ch2, Long_t pdg, Double_t mass) :
    fMotherMass(mass),
    fMotherPDG(pdg),
    fDef1(type1, ch1),
@@ -68,7 +68,7 @@ AliRsnPairDef::AliRsnPairDef
 
 //_____________________________________________________________________________
 AliRsnPairDef::AliRsnPairDef
-(AliRsnDaughter::ESpecies type1, Char_t ch1, AliRsnDaughter::ESpecies type2, Char_t ch2, Int_t pdg, Double_t mass) :
+(AliRsnDaughter::ESpecies type1, Char_t ch1, AliRsnDaughter::ESpecies type2, Char_t ch2, Long_t pdg, Double_t mass) :
    fMotherMass(mass),
    fMotherPDG(pdg),
    fDef1(type1, ch1),

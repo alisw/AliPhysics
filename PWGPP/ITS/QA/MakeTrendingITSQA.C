@@ -155,7 +155,7 @@ Int_t MakeTrendingITSQA(TString qafilename,       // full path of the QA output;
     }
 
 //    char defaultQAoutput[30]="QAresults.root";
-    char * treePostFileName="trending.root";
+    const char *treePostFileName = "trending.root";
 
     if (IsOnGrid) TGrid::Connect("alien://");
     TFile * fin = TFile::Open(qafilename,"r");
@@ -888,7 +888,7 @@ void FillVertexBranches(TList * VertxList){
     }
     
     if(zVtxTRK){
-        TF1 *fzTRK = new TF1("gausz", "gaus", -1, 1);
+        TF1 *fzTRK = new TF1("gausz", "gaus", -10., 10.);
         if(zVtxTRK->GetEntries()>0){
             zVtxTRK->Fit("gausz","NQRL");
             meanVtxTRKz=(Float_t)fzTRK->GetParameter(1);
@@ -933,7 +933,7 @@ void FillVertexBranches(TList * VertxList){
     }
     
     if(zVtxSPD){
-        TF1 *fzSPD = new TF1("gauszSPD", "gaus", -1, 1);
+        TF1 *fzSPD = new TF1("gauszSPD", "gaus", -10., 10.);
         if(zVtxSPD->GetEntries()>0){
             zVtxSPD->Fit("gauszSPD","NQRL");
             meanVtxSPDz=(Float_t)fzSPD->GetParameter(1);
@@ -971,7 +971,7 @@ void FillVertexBranches(TList * VertxList){
     gStyle->SetOptFit(111);
     
     TRK_SPD3D_Vtx->cd(1);
-    if(xVtxSPD->GetEntries()>0){
+    if(xVtxTRK->GetEntries()>0 || xVtxSPD->GetEntries()>0){
         xVtxSPD->SetMarkerStyle(20);
         xVtxSPD->SetLineWidth(3);
         xVtxSPD->SetMarkerColor(kBlue+2);
@@ -979,11 +979,18 @@ void FillVertexBranches(TList * VertxList){
         xVtxTRK->SetMarkerStyle(20);
         xVtxTRK->SetLineWidth(4);
         xVtxTRK->SetLineColor(2);
-        xVtxTRK->Draw("PE");
-        xVtxTRK->Fit("gaus", "QM");
-        xVtxSPD->Draw("PE SAME");
-        xVtxTRK->GetXaxis()->SetRangeUser(-0.05, 0.15);
-        xVtxSPD->GetXaxis()->SetRangeUser(-0.05, 0.15);
+	xVtxTRK->SetMarkerColor(2);
+	fx->SetLineColor(2);
+	if(xVtxTRK->GetEntries()>0){
+	  if(xVtxSPD->GetEntries()>0) xVtxTRK->GetXaxis()->SetRangeUser(xVtxSPD->GetMean()-3.*xVtxSPD->GetRMS(),xVtxSPD->GetMean()+3.*xVtxSPD->GetRMS());
+	  else xVtxTRK->GetXaxis()->SetRangeUser(xVtxTRK->GetMean()-10.*xVtxTRK->GetRMS(),xVtxTRK->GetMean()+10.*xVtxTRK->GetRMS());
+	  xVtxTRK->Draw("PE");
+	  xVtxTRK->Fit("gaus", "QM");
+	  if(xVtxSPD->GetEntries()>0) xVtxSPD->Draw("PE SAME");
+	}else{
+	  xVtxSPD->GetXaxis()->SetRangeUser(xVtxSPD->GetMean()-10.*xVtxSPD->GetRMS(),xVtxSPD->GetMean()+10.*xVtxSPD->GetRMS());
+	  xVtxSPD->Draw("PE");
+	}
         delete fx;
         TLatex* tVTX1=new TLatex(0.15,0.85,"VertexSPD - DATA");
         tVTX1->SetNDC();
@@ -1014,19 +1021,26 @@ void FillVertexBranches(TList * VertxList){
     }
     
     TRK_SPD3D_Vtx->cd(2);
-    if(yVtxSPD->GetEntries()>0){
+    if(yVtxTRK->GetEntries()>0 || yVtxSPD->GetEntries()>0){
         yVtxSPD->SetMarkerStyle(20);
         yVtxSPD->SetLineWidth(3);
         yVtxSPD->SetMarkerColor(kBlue+2);
         TF1 *fy = new TF1("gaus", "gaus", -1, 1);
         yVtxTRK->SetMarkerStyle(20);
         yVtxTRK->SetLineWidth(3);
-        yVtxTRK->SetLineColor(2);
-        yVtxTRK->Draw("PE");
-        yVtxTRK->Fit("gaus", "QM");
-        yVtxSPD->Draw("PE SAME");
-        yVtxTRK->GetXaxis()->SetRangeUser(-0.2, 0.6);
-        yVtxSPD->GetXaxis()->SetRangeUser(-0.2, 0.6);
+	yVtxTRK->SetLineColor(2);
+	yVtxTRK->SetMarkerColor(2);
+	fy->SetLineColor(2);
+	if(yVtxTRK->GetEntries()>0){
+	  if(yVtxSPD->GetEntries()>0) yVtxTRK->GetXaxis()->SetRangeUser(yVtxSPD->GetMean()-3.*yVtxSPD->GetRMS(),yVtxSPD->GetMean()+3.*yVtxSPD->GetRMS());
+	  else yVtxTRK->GetXaxis()->SetRangeUser(yVtxTRK->GetMean()-10.*yVtxTRK->GetRMS(),yVtxTRK->GetMean()+10.*yVtxTRK->GetRMS());
+	  yVtxTRK->Draw("PE");
+	  yVtxTRK->Fit("gaus", "QM");
+	  if(yVtxSPD->GetEntries()>0) yVtxSPD->Draw("PE SAME");
+	}else{
+	  yVtxSPD->GetXaxis()->SetRangeUser(yVtxSPD->GetMean()-10.*yVtxSPD->GetRMS(),yVtxSPD->GetMean()+10.*yVtxSPD->GetRMS());
+	  yVtxSPD->Draw("PE");
+	}
         delete fy;
         TLatex* tVTX3=new TLatex(0.15,0.85,"VertexSPD - DATA");
         tVTX3->SetNDC();
@@ -1071,6 +1085,7 @@ void FillVertexBranches(TList * VertxList){
         zVtxSPD->SetMarkerColor(kBlue+2);
         zVtxSPD->SetMarkerSize(0.8);
         zVtxSPD->Draw("PE SAME");
+	if(zVtxSPD->GetMaximum()>zVtxTRK->GetMaximum()) zVtxTRK->SetMaximum(1.1*zVtxSPD->GetMaximum());
         delete fz;
         TLatex* tVTX5=new TLatex(0.15,0.85,"VertexSPD - DATA");
         tVTX5->SetNDC();
@@ -1456,14 +1471,15 @@ void FillSDDBranches(TList * SDDList){
     if(hgamod){
         if(hgamod->GetEntries()>0){
             Int_t bestMod=0;
-            Int_t deadMod3=0, deadMod4=0;
+//            Int_t deadMod3=0, deadMod4=0;
+            Int_t chOK3=0, chOK4=0;
             for(Int_t iMod=0; iMod<260;iMod++){
                 Int_t gda=(Int_t)hgamod->GetBinContent(iMod+1);
                 if(gda>bestMod) bestMod=gda;
-                if(gda == 0) {
-                    if(iMod<84) deadMod3+=1;
-                    else deadMod4+=1;
-                }
+//                if(gda == 0) {
+//                    if(iMod<84) deadMod3+=1;
+//                    else deadMod4+=1;
+//                }
             }
     
             Int_t nChunks=1;
@@ -1471,12 +1487,18 @@ void FillSDDBranches(TList * SDDList){
                 nChunks=(Int_t)(bestMod/512.+0.5);
             }
             hgamod->Scale(1./nChunks);
+            for(Int_t iMod=0; iMod<84;iMod++) chOK3 += (Int_t)hgamod->GetBinContent(iMod+1);
+            for(Int_t iMod=84; iMod<260;iMod++) chOK4 += (Int_t)hgamod->GetBinContent(iMod+1);
 
-            fracDead3 = 1.-(Float_t)deadMod3/84;
-            fracDead4 = 1.-(Float_t)deadMod4/176;
-            errfracDead3 = TMath::Sqrt(fracDead3*(1-fracDead3)/84);         //
-            errfracDead4 = TMath::Sqrt(fracDead4*(1-fracDead4)/176);
-            
+//            fracDead3 = 1.-(Float_t)deadMod3/84;
+//            fracDead4 = 1.-(Float_t)deadMod4/176;
+//            errfracDead3 = TMath::Sqrt(fracDead3*(1-fracDead3)/84);         //
+//            errfracDead4 = TMath::Sqrt(fracDead4*(1-fracDead4)/176);
+            fracDead3 = (Float_t)chOK3/(84*512); // fraction of good anodes for layer 3
+            fracDead4 = (Float_t)chOK4/(176*512); // fraction of good anodes for layer 4
+            errfracDead3 = TMath::Sqrt(fracDead3*(1-fracDead3)/(84*512));         //
+            errfracDead4 = TMath::Sqrt(fracDead4*(1-fracDead4)/(176*512));
+
             if(fracDead3 > 0.8)FlagSDD1=1.; else FlagSDD1=0.;
             if(fracDead4 > 0.75)FlagSDD2=1.; else FlagSDD2=0.;
         }

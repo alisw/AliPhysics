@@ -4,13 +4,16 @@
 
 #pragma once
 
-#ifndef AliFemtoCorrFctn_hh
-#define AliFemtoCorrFctn_hh
+#ifndef ALIFEMTOCORRFCTN_H
+#define ALIFEMTOCORRFCTN_H
 
 #include "AliFemtoAnalysis.h"
 #include "AliFemtoEvent.h"
 #include "AliFemtoPair.h"
 #include "AliFemtoPairCut.h"
+
+#include <TCollection.h>
+
 
 /// \class AliFemtoCorrFctn
 /// \brief The pure-virtual base class for correlation functions
@@ -50,9 +53,22 @@ public:
   virtual void EventEnd(const AliFemtoEvent* aEvent);
   virtual void Finish() = 0;
 
+  /// Create a TList of the histograms and other TObjects
+  /// within this correlation function
+  ///
+  /// The list is owned by the caller, but the items within
+  /// are still owned by this object, and should NOT be deleted.
+  ///
   virtual TList* GetOutputList() = 0;
 
-  virtual AliFemtoCorrFctn* Clone() { return 0;}
+  /// Append output items to given container
+  ///
+  /// Ownership of these items stays with this object and should
+  /// not be deleted by the caller.
+  ///
+  virtual void AddOutputObjectsTo(TCollection &);
+
+  virtual AliFemtoCorrFctn* Clone() const = 0;
 
   AliFemtoAnalysis* HbtAnalysis(){return fyAnalysis;};
   void SetAnalysis(AliFemtoAnalysis* aAnalysis);
@@ -71,9 +87,9 @@ protected:
 #endif
 };
 
-inline void AliFemtoCorrFctn::SetAnalysis(AliFemtoAnalysis* analysis)
+inline void AliFemtoCorrFctn::SetAnalysis(AliFemtoAnalysis* aAnalysis)
 {
-  fyAnalysis = analysis;
+  fyAnalysis = aAnalysis;
 }
 
 inline void AliFemtoCorrFctn::SetPairSelectionCut(AliFemtoPairCut* cut)
@@ -89,7 +105,12 @@ inline void AliFemtoCorrFctn::EventEnd(const AliFemtoEvent* /* event */)
 {  // no-op
 }
 
+inline void AliFemtoCorrFctn::AddOutputObjectsTo(TCollection &dest)
+{
+  TList *output_list = GetOutputList();
+  dest.AddAll(output_list);
+  delete output_list;
+}
 
 
-
-#endif
+#endif  // ALIFEMTOCORRFCTN_H

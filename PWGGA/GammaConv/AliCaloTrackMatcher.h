@@ -15,7 +15,7 @@ using namespace std;
 class AliCaloTrackMatcher : public AliAnalysisTaskSE {
 
   public:
-    AliCaloTrackMatcher(const char *name="CaloTrackMatcher_0", Int_t clusterType=0);
+    AliCaloTrackMatcher(const char *name="CaloTrackMatcher_0_0", Int_t clusterType = 0, Int_t runningMode = 0);
     //Uncopyable & operator=(const Uncopyable&);
 
     virtual ~AliCaloTrackMatcher();                            //virtual destructor
@@ -27,6 +27,7 @@ class AliCaloTrackMatcher : public AliAnalysisTaskSE {
     TList* GetCaloTrackMatcherHistograms() {return fListHistos;}
 
     void SetV0ReaderName(TString name)    {fV0ReaderName = name; return;}
+    void SetCorrectionTaskSetting(TString setting) {fCorrTaskSetting = setting;}
     void SetAnalysisTrainMode(TString mode){fAnalysisTrainMode = mode; return;}
     void SetMatchingResidual(Float_t res) {fMatchingResidual = res; return;}
     void SetMatchingWindow(Float_t win) {fMatchingWindow = win; return;}
@@ -94,7 +95,14 @@ class AliCaloTrackMatcher : public AliAnalysisTaskSE {
 
     // basic variables/objects
     Int_t                 fClusterType;            // EMCal(1), PHOS(2) or not running (0)
+    Int_t                 fRunningMode;            // running mode of track matcher
+                                                   // (0) matching of primary tracks (dedicated for run 2), active since Feb 15, 2018
+                                                   // (1) matching of all tracks (dedicated for run 1), was standard until Feb 15, 2018
+                                                   // (2) ITS matching mode
+                                                   // (5) testing mode, (1) + some more restrictions
+                                                   // (6) testing mode, (5) + TrackCuts (primary+secondary)
     TString               fV0ReaderName;           // Name of V0Reader
+    TString               fCorrTaskSetting;        // Name of Corr Task Setting
     TString               fAnalysisTrainMode;      // AnalysisTrainMode: Grid or GSI //Grid by default
     Double_t              fMatchingWindow;         // matching window to prevent unnecessary propagations
     Float_t               fMatchingResidual;       // matching residual below which track <-> cluster associations should be stored
@@ -124,7 +132,7 @@ class AliCaloTrackMatcher : public AliAnalysisTaskSE {
     TH2F*                 fHistControlMatches;     // bookkeeping for processed tracks/clusters and succesful matches
     TH2F*                 fSecHistControlMatches;  // bookkeeping for processed V0-tracks/clusters and succesful matches
 
-    ClassDef(AliCaloTrackMatcher,3)
+    ClassDef(AliCaloTrackMatcher,5)
 };
 
 #endif

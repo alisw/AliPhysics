@@ -1,6 +1,6 @@
 #ifdef __CINT__
 
-#pragma link off all glols;
+#pragma link off all globals;
 #pragma link off all classes;
 #pragma link off all functions;
 
@@ -9,14 +9,27 @@
 #pragma link C++ class AliAnalysisTaskHdibaryonLPpi+;
 /// * LambdaN
 #pragma link C++ class AliAnalysisTaskLambdaNAOD+;
+/// * LambdaNN
+#pragma link C++ class AliAnalysisTaskLNNntuple+;
 /// * NOmega
 #pragma link C++ class AliAnalysisTaskNOmegaLPK+;
 #pragma link C++ class AliAnalysisTaskOmegaOmegaOX+;
 #pragma link C++ class AliAnalysisTaskNOmegaLX+;
 /// * Ps
 #pragma link C++ class AliAnalysisTaskPsEfficiency+;
+/// * dStar
+#pragma link C++ class AliAnalysisTaskdStar+;
+#if defined __CINT__ && !defined __CLING__
+#pragma link C++ class ROOT::Math::PtEtaPhiM4D<float>+;
+#pragma link C++ class ROOT::Math::LorentzVector<ROOT::Math::PtEtaPhiM4D<float>>+;
+#endif
+#pragma link C++ class daughter_struct+;
+#pragma link C++ class std::vector<daughter_struct>+;
+#pragma link C++ typedef FourVector_t;
 
 /// Nuclei
+/// * Absorption
+#pragma link C++ class AliAnalysisTaskDeuteronAbsorption+;
 /// * DeltaMasses
 #pragma link C++ class AliAnalysisNucleiMass+;
 #pragma link C++ class AliAnalysisNuclMult+;
@@ -25,14 +38,17 @@
 #pragma link C++ class AliAnalysisDeuteronTree+;
 /// * He4
 #pragma link C++ class AliAnalysisTaskAntiHe4+;
+/// * He4pp
+#pragma link C++ class AliAnalysisHe4+;
 /// * NucleiPbPb
 #pragma link C++ class AliAnalysisTaskNucleiYield+;
 #pragma link C++ class AliAnalysisTaskNucleiYieldESD+;
 #pragma link C++ class AliAnalysisTaskNucleiPIDqa+;
-/// * EventCuts
-#pragma link C++ class AliNuclexEventCuts+;
-#pragma link C++ class AliNuclexEventCutsContainer+;
-
+#pragma link C++ class AliAnalysisTaskSignalLoss+;
+#pragma link C++ class RLightNucleus+;
+#pragma link C++ class SLightNucleus+;
+/// * ReducedTreeNuclei
+#pragma link C++ class AliAnalysisTaskReducedTreeNuclei+;
 /// * Nucleipp
 #pragma link C++ class AliLnID+;
 #pragma link C++ class AliLnHistoMap+;
@@ -46,6 +62,7 @@
 #pragma link C++ class AliAnalysisTaskAllPtcv2+;
 /// * NucleiKine
 #pragma link C++ class AliAnalysisTaskNucleiKine+;
+#pragma link C++ class AliAnalysisTaskNucleiKineCor+;
 
 /// Hypernuclei
 /// * Hyp2body
@@ -78,5 +95,6 @@
 #pragma link C++ class AliAnalysisCODEX::Track+;
 #pragma link C++ class std::vector<AliAnalysisCODEX::Track>+;
 #pragma link C++ class AliAnalysisCODEXtask+;
+/// * NucleiSkimAOD
+#pragma link C++ class AliAnalysisTaskNucleiSkimAOD+;
 #endif
-

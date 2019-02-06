@@ -64,7 +64,13 @@ class AliTRDPIDTree : public AliAnalysisTaskSE {
       kpp = 0,
       kpPb = 1,
       kPbPb = 2
-    } ECollisionSystem_t;
+  } ECollisionSystem_t;
+
+  typedef enum{
+      kNoPileUpCut=0,
+      kLHC15o = 1,
+      kLHC18q = 2
+  } Period;
 
   AliTRDPIDTree(const char *name = "trd_pid_tree");
   virtual ~AliTRDPIDTree();
@@ -98,6 +104,10 @@ class AliTRDPIDTree : public AliAnalysisTaskSE {
       fCollisionSystem.SetBitNumber(kpp, kFALSE);
       fCollisionSystem.SetBitNumber(kpPb, kFALSE);
       fCollisionSystem.SetBitNumber(kPbPb, kTRUE);
+  };
+
+  void SetUseExtraPileupCut(Int_t UseExtraPileupCut=0){
+      fUseExtraPileupCut=UseExtraPileupCut;
   };
 
   protected:
@@ -137,6 +147,8 @@ class AliTRDPIDTree : public AliAnalysisTaskSE {
 
   Float_t fpdg;                        //! particle type (pdg value)
   Int_t frun;                          //! run number
+
+  Int_t fUseExtraPileupCut;           // cut on correlation of VZERO multiplicity & TPCout tracks 
   
   // TTree stuff for PID References
   Int_t frunnumber;                  //! Tree: Run number
@@ -169,10 +181,12 @@ class AliTRDPIDTree : public AliAnalysisTaskSE {
   TH1F *fhtrackCuts;                 //! Track and Event Cuts - QA
   TH1F *fhEventCount;                //! count number of events analysed 
   TH2F *fhArmenteros;                //! 2D V0 QA Hist
+  TH2F *fHistV0MvsTPCoutBeforePileUpCuts; //! histos to monitor pile up cuts
+  TH2F *fHistV0MvsTPCoutAfterPileUpCuts;  //!
 
   AliTRDPIDTree(const AliTRDPIDTree&); // not implemented
   AliTRDPIDTree& operator=(const AliTRDPIDTree&); // not implemented
   
-  ClassDef(AliTRDPIDTree, 3);
+  ClassDef(AliTRDPIDTree, 5);
 };
 #endif

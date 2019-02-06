@@ -19,6 +19,9 @@
 #include "AliAnalysisVertexingHF.h"
 #include "AliHFAfterBurner.h"
 #include "AliQnCorrectionsQnVector.h"
+#include "AliEventCuts.h"
+#include "AliAODTrack.h"
+#include "AliESDtrackCuts.h"
 
 class TH1F;
 class TH2F;
@@ -32,7 +35,7 @@ class AliAnalysisTaskSEHFvn : public AliAnalysisTaskSE
 
  public:
 
-  enum DecChannel{kDplustoKpipi,kD0toKpi,kDstartoKpipi,kDstoKKpi}; //more particles can be added
+  enum DecChannel{kDplustoKpipi,kD0toKpi,kDstartoKpipi,kDstoKKpi,kD0toKpiFromDstar}; //more particles can be added
   enum EventPlaneMeth{kTPC,kTPCVZERO,kVZERO,kVZEROA,kVZEROC,kPosTPCVZERO,kNegTPCVZERO}; //Event plane to be calculated in the task
   enum FlowMethod{kEP,kSP,kEvShape}; // Event Plane, Scalar Product or Event Shape Engeneering methods
   enum q2Method{kq2TPC,kq2PosTPC,kq2NegTPC,kq2VZERO,kq2VZEROA,kq2VZEROC}; // q2 for Event Shape to be calculated in the task
@@ -79,16 +82,25 @@ class AliAnalysisTaskSEHFvn : public AliAnalysisTaskSE
     fUsePtWeights=usePtWei;
     fEtaGapInTPCHalves=etagap;
   }
-  void SetRecomputeTPCq2(Bool_t opt, Double_t fracKeep=1.1, Bool_t removeDau=kFALSE, Bool_t removeNdaurandtracks=kFALSE){
+  void SetRecomputeTPCq2(Bool_t opt, Double_t fracKeep=1.1, Int_t removeDau=0, Bool_t removeNdaurandtracks=kFALSE, Bool_t requiremass=kFALSE, Double_t deltaeta=0., Bool_t removesoftpionfromq2=kFALSE){
     fOnTheFlyTPCq2=opt;
     fFractionOfTracksForTPCq2=fracKeep;
     fRemoveDauFromq2=removeDau;
+    fRequireMassForDauRemFromq2=requiremass;
+    fRemoverSoftPionFromq2=removesoftpionfromq2;
     if(fracKeep<1. && removeNdaurandtracks) {
       AliWarning("AliAnalysisTaskSEHFvn::Impossible to set fFractionOfTracksForTPCq2<1 and fRemoveNdauRandomTracks at the same time! fRemoveNdauRandomTracks setted kFALSE.\n");
       fRemoveNdauRandomTracks=kFALSE;
     }
     else {
       fRemoveNdauRandomTracks=removeNdaurandtracks;
+    }
+    if((fracKeep<1. || fRemoveNdauRandomTracks || removeDau==2) && deltaeta>0.) {
+      AliWarning("AliAnalysisTaskSEHFvn::Impossible to set fDeltaEtaDmesonq2>0 and fRemoveNdauRandomTracks or fFractionOfTracksForTPCq2<1 or fRemoveDauFromq2=2 at the same time! fDeltaEtaDmesonq2 setted to 0.\n");
+      fDeltaEtaDmesonq2=0.;
+    }
+    else {
+      fDeltaEtaDmesonq2=deltaeta;
     }
   }
   Float_t GetEventPlanesCompatibility()const {return fEventPlanesComp;}
@@ -114,8 +126,37 @@ class AliAnalysisTaskSEHFvn : public AliAnalysisTaskSE
     fTPCEtaMin=etamin;
     fTPCEtaMax=etamax;
   }
-  void SetRemoveDaughtersFromq2(Bool_t removeDau) {fRemoveDauFromq2=removeDau;}
+  void SetRemoveDaughtersFromq2(Int_t removeDau, Bool_t requiremass) {fRemoveDauFromq2=removeDau; fRequireMassForDauRemFromq2=requiremass;}
   void SetEnableQnFrameworkCorrForq2(Bool_t usecorr) {fUseQnFrameworkCorrq2=usecorr;}
+  void SetEnableEPVsq2VsCentHistos(Bool_t enablehistos=kTRUE) {fEPVsq2VsCent=enablehistos;}
+  void SetEnableNtrklVsq2VsCentHistos(Bool_t enablehistos=kTRUE) {fEnableNtrklHistos=enablehistos;}
+
+  void Setq2PercentileSelection(TString splinesfilepath);
+  
+  //additional event cuts for Pb-Pb 2015 
+  void SetUseCentralityMultiplicityCorrelationCut(Bool_t strongcuts=kFALSE) {
+    
+    fEnableCentralityCorrCuts=kTRUE;
+    fEnableCentralityMultiplicityCorrStrongCuts=strongcuts;
+    
+    fEventCuts.SetupLHC15o();
+    fEventCuts.SetManualMode();
+    if(strongcuts) {
+      fEventCuts.fUseVariablesCorrelationCuts=true;
+      fEventCuts.fUseStrongVarCorrelationCut=true;
+    }
+  }
+  
+  AliEventCuts& GetAliEventCut() {
+    return fEventCuts;
+  }
+  
+  //options for kD0toKpiFromDstar
+  void SetOptD0FromDstar(Int_t option=0, Bool_t useFilterBit4softPion=kFALSE) {
+    fOptD0FromDstar=option;
+    fUseFiltBit4SoftPion=useFilterBit4softPion;
+  }
+  Bool_t IsSoftPionSelected(AliAODTrack* track);
 
   // Implementation of interface methods
   virtual void UserCreateOutputObjects();
@@ -134,16 +175,18 @@ class AliAnalysisTaskSEHFvn : public AliAnalysisTaskSE
   void FillD02p(AliAODRecoDecayHF* d,TClonesArray *arrayMC,Int_t ptbin, Float_t dphi, const Float_t* masses, Int_t isSel,Int_t icentr, Double_t phiD, Double_t etaD, Double_t QA[2], Double_t QB[2]);
   void FillDstar(AliAODRecoDecayHF* d,TClonesArray *arrayMC,Int_t ptbin, Float_t dphi, const Float_t* masses,Int_t isSel,Int_t icentr, Double_t phiD, Double_t etaD, Double_t QA[2], Double_t QB[2]);
   void FillDs(AliAODRecoDecayHF* d,TClonesArray *arrayMC,Int_t ptbin, Float_t dphi, const Float_t* masses,Int_t isSel,Int_t icentr, Double_t phiD, Double_t etaD, Double_t QA[2], Double_t QB[2]);
-  Float_t GetEventPlane(AliAODEvent* aod, AliEventplane *pl, Double_t eventplaneqncorrTPC[3], Double_t eventplaneqncorrVZERO[3], Double_t q2);
+  Float_t GetEventPlane(AliAODEvent* aod, AliEventplane *pl, Double_t eventplaneqncorrTPC[3], Double_t eventplaneqncorrVZERO[3], Float_t &planereso, Float_t &deltaSubAC, Float_t &deltaSubBC, Int_t &nSubEvents);
   Float_t GetEventPlaneForCandidate(AliAODRecoDecayHF* d, AliEventplane *pl);
   Float_t GetEventPlaneForCandidateNewQnFw(AliAODRecoDecayHF* d, const TList *list);
   //  Float_t GetEventPlaneFromV0(AliAODEvent *aodEvent);
   void ComputeTPCEventPlane(AliAODEvent* aod, Double_t &rpangleTPC, Double_t &rpangleTPCpos,Double_t &rpangleTPCneg) const;
-  Double_t ComputeTPCq2(AliAODEvent* aod, Double_t &q2TPCfull, Double_t &q2TPCpos,Double_t &q2TPCneg, Double_t qVecDefault[2], Double_t &multQvecDefault, Double_t multQvecTPC[3]) const;
+  Double_t ComputeTPCq2(AliAODEvent* aod, Double_t &q2TPCfull, Double_t &q2TPCpos, Double_t &q2TPCneg, Double_t q2VecFullTPC[2], Double_t q2VecPosTPC[2], Double_t q2VecNegTPC[2], Double_t multQvecTPC[3], std::vector<Int_t>& labrejtracks) const;
   void CreateSparseForEvShapeAnalysis();
   Double_t Getq2(TList* qnlist, Int_t q2meth, Double_t &mult);
   Bool_t isInMassRange(Double_t massCand, Double_t pt);
-
+  Double_t GetTPCq2DauSubQnFramework(Double_t qVectWOcorr[2], Double_t multQvec, Int_t nDauRemoved, Double_t qVecDau[2], Double_t corrRec[2], Double_t LbTwist[2], Bool_t isTwistApplied);
+  void RemoveTracksInDeltaEtaFromOnTheFlyTPCq2(AliAODEvent* aod, Double_t etaD, Double_t etaLims[2], Double_t qVec[2], Double_t &M, std::vector<Int_t> daulab);
+  
   TH1F* fHistEvPlaneQncorrTPC[3];   //! histogram for EP
   TH1F* fHistEvPlaneQncorrVZERO[3]; //! histogram for EP
   TH1F* fhEventsInfo;           //! histogram send on output slot 1
@@ -188,15 +231,28 @@ class AliAnalysisTaskSEHFvn : public AliAnalysisTaskSE
   Bool_t fq2Smearing;           // flag to activate q2 smearing
   Int_t fq2SmearingAxis;        // axis of the smearing histogram corresponding to the q2 used for the analysis
   Double_t fScalProdLimit;      // max value for the scalar product histograms
-  Bool_t fRemoveDauFromq2;      // flag to activate removal of daughter tracks from q2 computation
+  Int_t fRemoveDauFromq2;      // flag to activate removal of daughter tracks from q2 computation (0->not removed, 1->remove single cand, 2->remove all candidates)
   Double_t fTPCEtaMin;          // min eta for the Q-vector computed on the fly with TPC tracks (both EP and q2)
   Double_t fTPCEtaMax;          // max eta for the Q-vector computed on the fly with TPC tracks (both EP and q2)
   Bool_t fRemoveNdauRandomTracks; // flag to activate the removal of nDau random tracks in the q2TPC computed on the fly
   Bool_t fUseQnFrameworkCorrq2; // flag to activate the Qn-framework corrections for the q2
-
+  Bool_t fRequireMassForDauRemFromq2; // flag to activate mass range when removing daughter tracks from q2
+  Double_t fDeltaEtaDmesonq2; //eta gap between q2 and D mesons
+  Bool_t fEPVsq2VsCent; //flag to enable EP vs. q2 vs. centrality TH3F in case of kEvShape
+  Bool_t fEnableNtrklHistos; //flag to enable Ntrklts vs. q2 vs. centrality TH3F in case of kEvShape
+  Bool_t fRemoverSoftPionFromq2; //flag to enable also the removal of the soft pions from q2 for D*
+  Bool_t fPercentileq2; //flag to replace q2 with its percentile in the histograms
+  TList* fq2SplinesList[6]; //lists of splines used to compute the q2 percentile
+  Bool_t fEnableCentralityCorrCuts; //enable V0M - CL0 centrality correlation cuts
+  Bool_t fEnableCentralityMultiplicityCorrStrongCuts; //enable centrality vs. multiplicity correlation cuts
+  AliEventCuts fEventCuts; //Event cut object for centrality correlation event cuts
+  Int_t fOptD0FromDstar; //option for D0 from Dstar analysis (0: starting from Dstar, 1: strarting from Dzero)
+  Bool_t fUseFiltBit4SoftPion; //flag to enable filterbit 4 for soft pion in D0 from Dstar analysis
+  AliESDtrackCuts *fCutsSoftPion; //track cuts for soft pions used in case of D0 from Dstar analysis (option 1)
+  
   AliAnalysisTaskSEHFvn::FlowMethod fFlowMethod;
 
-  ClassDef(AliAnalysisTaskSEHFvn,9); // AliAnalysisTaskSE for the HF v2 analysis
+  ClassDef(AliAnalysisTaskSEHFvn,18); // AliAnalysisTaskSE for the HF v2 analysis
 };
 
 #endif

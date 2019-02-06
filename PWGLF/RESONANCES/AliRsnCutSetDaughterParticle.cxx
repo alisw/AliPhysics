@@ -960,8 +960,27 @@ void AliRsnCutSetDaughterParticle::Init()
 	SetCutScheme( Form("%s&((%s&%s)|((!%s)&((%s&(!%s))|(%s&%s))))",fCutQuality->GetName(), iCutTPCTOFNSigma->GetName(), iCutTOFNSigma->GetName(), iCutTPCTOFNSigma->GetName(), iCutTPCNSigma->GetName(), iCutTOFMatch->GetName(),iCutTOFNSigma->GetName(), iCutTPCNSigma->GetName()) ) ;
       }
 
-       break;
+      break;
 
+    case AliRsnCutSetDaughterParticle::kTPCTOFpidphikstarpPb2016:
+      
+      iCutTPCNSigma->AddPIDRange(6.,0.0,0.3);
+      iCutTPCNSigma->AddPIDRange(3.,0.3,0.5);
+      iCutTPCNSigma->AddPIDRange(fNsigmaTPC,0.5,1.e20);
+      AddCut(fCutQuality);
+      iCutTOFNSigma->SinglePIDRange(fNsigmaTOF);
+      
+      AddCut(iCutTPCNSigma);
+      AddCut(iCutTOFMatch);
+      AddCut(iCutTOFNSigma);
+      
+      // scheme:
+      // quality & [ (TPCsigma & !TOFmatch) | (TPCsigma & TOFsigma) ]
+      SetCutScheme( Form("%s&((%s&(!%s))|(%s&%s))",fCutQuality->GetName(), iCutTPCNSigma->GetName(), iCutTOFMatch->GetName(),iCutTOFNSigma->GetName(), iCutTPCNSigma->GetName()) ) ;
+      
+      break;
+
+      
     case AliRsnCutSetDaughterParticle::kTPCpidphipp2015:
 
       iCutTPCNSigma->AddPIDRange(6.,0.0,0.3);
@@ -1108,6 +1127,33 @@ void AliRsnCutSetDaughterParticle::Init()
 			 iCutTPCNSigma->GetName()) ) ;
       break;
 
+      // PID cuts for Kstar analysis:
+      case    AliRsnCutSetDaughterParticle::kTOFTPCpidKstar :      
+	if (fPID==AliPID::kKaon) {
+	  iCutTPCNSigma->AddPIDRange(fNsigmaTPC, 0.0, 0.6);
+	}
+	if (fPID==AliPID::kPion) {
+	  iCutTPCNSigma->AddPIDRange(fNsigmaTPC,0.0,1.E20);
+	}
+	
+	AddCut(fCutQuality);
+	AddCut(iCutTOFMatch);
+	AddCut(iCutTPCNSigma);
+	
+	// set TPC+TOF PID
+
+	iCutTPCTOFNSigma->SinglePIDRange(5.0);
+	iCutTOFNSigma->AddPIDRange(fNsigmaTOF, 0.0, 1.E20);
+
+
+	AddCut(iCutTPCTOFNSigma);
+	AddCut(iCutTOFNSigma);
+      
+	// scheme:
+	// quality & [ (TOF & TPCTOF) || (!TOFmatch & TPConly) ]
+	SetCutScheme( Form("%s&((%s&%s)|((!%s)&%s))",fCutQuality->GetName(), iCutTPCTOFNSigma->GetName(), iCutTOFNSigma->GetName(), iCutTOFMatch->GetName(), iCutTPCNSigma->GetName()) ) ;
+	break;
+
       // PID cuts for Delta analysis:
       case    AliRsnCutSetDaughterParticle::kTOFTPCpidDelta :      
 	if (fPID==AliPID::kProton) {
@@ -1135,6 +1181,119 @@ void AliRsnCutSetDaughterParticle::Init()
 	SetCutScheme( Form("%s&((%s&%s)|((!%s)&%s))",fCutQuality->GetName(), iCutTPCTOFNSigma->GetName(), iCutTOFNSigma->GetName(), iCutTOFMatch->GetName(), iCutTPCNSigma->GetName()) ) ;
 	break;
 
+
+    case AliRsnCutSetDaughterParticle::kTPCTOFvetoPhiXeXe:
+
+      /* PID for Kaon selection for Xe-Xe 2017
+	 if TOF, 
+	 - Nsigma cut on TOF
+	 - 5sigma mismatch rejection with TPC
+
+	 otherwise TPC only:
+	 - 6 sigma, p < 0.3 GeV/c
+	 - 4 sigma, 0.3 < p < 0.4 GeV/c
+	 - nsigma, p > 0.4 GeV/c
+      */
+      iCutTPCTOFNSigma->SinglePIDRange(5.0);
+      
+      /*set pt-independent TOF cut*/
+      iCutTOFNSigma->SinglePIDRange(fNsigmaTOF);
+
+      /*set pt-dependent tpc cut*/
+      iCutTPCNSigma->AddPIDRange(6.,0.0,0.3);
+      iCutTPCNSigma->AddPIDRange(4.,0.3,0.4);
+      iCutTPCNSigma->AddPIDRange(fNsigmaTPC,0.4,1.e20);
+      
+	
+      AddCut(fCutQuality);
+      AddCut(iCutTPCNSigma);
+      AddCut(iCutTOFMatch);
+      AddCut(iCutTOFNSigma);
+      AddCut(iCutTPCTOFNSigma);
+	
+      // scheme:
+      // quality & [ ( TPConly & !TOFmatch) || ( TOF & TPCTOF ) ]
+      SetCutScheme( Form("%s&((%s&(!%s))|(%s&%s))", fCutQuality->GetName(), iCutTPCNSigma->GetName(), iCutTOFMatch->GetName(), iCutTOFNSigma->GetName(), iCutTPCTOFNSigma->GetName()) ) ;
+      
+      break;
+
+    case AliRsnCutSetDaughterParticle::kTPCTOFPhiXeXe:
+
+      /* PID for Kaon selection for Xe-Xe 2017
+	 if TOF, use TOF & TPC
+	 else use TPC only
+	 
+	 TOF cut
+	 - Nsigma cut on TOF
+	 
+	 TPC only:
+	 - 6 sigma, p < 0.3 GeV/c
+	 - 4 sigma, 0.3 < p < 0.4 GeV/c
+	 - nsigma, p > 0.4 GeV/c
+      */
+      
+      /*set pt-independent TOF cut*/
+      iCutTOFNSigma->SinglePIDRange(fNsigmaTOF);
+      
+      /*set pt-dependent tpc cut*/
+      iCutTPCNSigma->AddPIDRange(6.,0.0,0.3);
+      iCutTPCNSigma->AddPIDRange(4.,0.3,0.4);
+      iCutTPCNSigma->AddPIDRange(fNsigmaTPC, 0.4, 1.e20);
+	
+      AddCut(fCutQuality);
+      AddCut(iCutTPCNSigma);
+      AddCut(iCutTOFMatch);
+      AddCut(iCutTOFNSigma);
+      
+      // scheme:
+      // quality & [ ( TPConly & !TOFmatch) || (TOF & TPConly ) ]
+      SetCutScheme( Form("%s&((%s&(!%s))|(%s&%s))", fCutQuality->GetName(), iCutTPCNSigma->GetName(), iCutTOFMatch->GetName(), iCutTOFNSigma->GetName(), iCutTPCNSigma->GetName()) ) ;
+      
+      break;
+
+    case AliRsnCutSetDaughterParticle::kTPCTOFvetoElRejPhiXeXe:
+
+      /* PID for Kaon selection for Xe-Xe 2017
+	 if TOF, 
+	 - Nsigma cut on TOF
+	 - 5sigma mismatch rejection with TPC
+
+	 otherwise TPC only:
+	 - 6 sigma, p < 0.3 GeV/c
+	 - 4 sigma, 0.3 < p < 0.4 GeV/c
+	 - nsigma, p > 0.4 GeV/c
+
+	 Electron rejection cut
+	 
+      */
+
+      // Set electron rejection cut - 3sigma TPC
+      iCutTPCNSigmaElectronRejection->SinglePIDRange(3.0);
+      
+      // Set mismatch rejection cut - 5sigma TPC
+      iCutTPCTOFNSigma->SinglePIDRange(5.0);
+      
+      /*set pt-independent TOF cut*/
+      iCutTOFNSigma->SinglePIDRange(fNsigmaTOF);
+      
+      /*set pt-dependent tpc cut*/
+      iCutTPCNSigma->AddPIDRange(6.,0.0,0.3);
+      iCutTPCNSigma->AddPIDRange(4.,0.3,0.4);
+      iCutTPCNSigma->AddPIDRange(fNsigmaTPC,0.4,1.e20);
+      
+	
+      AddCut(fCutQuality);
+      AddCut(iCutTPCNSigma);
+      AddCut(iCutTPCNSigmaElectronRejection);
+      AddCut(iCutTOFMatch);
+      AddCut(iCutTOFNSigma);
+      AddCut(iCutTPCTOFNSigma);
+	
+      // scheme:
+      // quality & electronRejection & [ ( TPConly & !TOFmatch ) || (TOF & TPCTOF ) ]
+      SetCutScheme( Form("(%s)&(!%s)&((%s&(!%s))|(%s&%s))", fCutQuality->GetName(), iCutTPCNSigmaElectronRejection->GetName(), iCutTPCNSigma->GetName(), iCutTOFMatch->GetName(), iCutTOFNSigma->GetName(), iCutTPCTOFNSigma->GetName()) ) ;
+      
+      break;
       
     default :
       break;

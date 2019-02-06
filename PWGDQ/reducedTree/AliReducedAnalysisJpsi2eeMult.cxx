@@ -10,6 +10,7 @@ using std::endl;
 
 #include <TClonesArray.h>
 #include <TIterator.h>
+#include <TList.h>
 
 #include "AliReducedVarManager.h"
 #include "AliReducedEventInfo.h"
@@ -18,6 +19,7 @@ using std::endl;
 #include "AliReducedTrackInfo.h"
 #include "AliReducedPairInfo.h"
 #include "AliHistogramManager.h"
+#include <TRandom3.h>
 
 ClassImp(AliReducedAnalysisJpsi2eeMult);
 
@@ -28,6 +30,8 @@ AliReducedAnalysisJpsi2eeMult::AliReducedAnalysisJpsi2eeMult() :
   fHistosManager(new AliHistogramManager("Histogram Manager", AliReducedVarManager::kNVars)),
   fMixingHandler(new AliMixingHandler()),
   fOptionRunMixing(kTRUE),
+  fOptionRunRotation(kFALSE),
+  fNRotations(1),
   fOptionRunPairing(kTRUE),
   fOptionRunOverMC(kFALSE),
   fOptionRunLikeSignPairing(kTRUE),
@@ -55,6 +59,8 @@ AliReducedAnalysisJpsi2eeMult::AliReducedAnalysisJpsi2eeMult(const Char_t* name,
   fHistosManager(new AliHistogramManager("Histogram Manager", AliReducedVarManager::kNVars)),
   fMixingHandler(new AliMixingHandler()),
   fOptionRunMixing(kTRUE),
+  fOptionRunRotation(kFALSE),
+  fNRotations(1),
   fOptionRunPairing(kTRUE),
   fOptionRunOverMC(kFALSE),
   fOptionRunLikeSignPairing(kTRUE),
@@ -207,9 +213,7 @@ void AliReducedAnalysisJpsi2eeMult::Process() {
   // process the current event
   //  
   if(!fEvent) return;
-  AliReducedEventInfo* eventInfo = NULL;
-  if(fEvent->IsA()==AliReducedEventInfo::Class()) eventInfo = (AliReducedEventInfo*)fEvent;
-  else {
+  if( ! (fEvent->IsA()==AliReducedEventInfo::Class()) ){
      cout << "ERROR: AliReducedAnalysisJpsi2eeMult::Process() needs AliReducedEventInfo events" << endl;
      return;
   }
@@ -380,7 +384,6 @@ void AliReducedAnalysisJpsi2eeMult::RunTrackSelection() {
    AliReducedTrackInfo* track = 0x0;
    TClonesArray* trackList = fEvent->GetTracks();
    TIter nextTrack(trackList);
-   Float_t nsigma = 0.;
    for(Int_t it=0; it<fEvent->NTracks(); ++it) {
       track = (AliReducedTrackInfo*)nextTrack();
       if(fOptionRunOverMC && track->IsMCTruth()) continue;
@@ -436,6 +439,13 @@ void AliReducedAnalysisJpsi2eeMult::RunSameEventPairing(TString pairClass /*="Pa
          
          // verify that the two current tracks have at least 1 common bit
          if(!(pTrack->GetFlags() & nTrack->GetFlags())) continue;
+         if(fOptionRunRotation){
+            AliReducedTrackInfo pTrackCopy((*pTrack));
+            AliReducedTrackInfo nTrackCopy((*nTrack));
+            for(int i=0; i<fNRotations; ++i){
+               RunTrackRotation(pTrackCopy, nTrackCopy, 1);
+             }
+         }
          AliReducedVarManager::FillPairInfo(pTrack, nTrack, AliReducedPairInfo::kJpsiToEE, fValues);
          if(IsPairSelected(fValues)) {
             FillPairHistograms(pTrack->GetFlags() & nTrack->GetFlags(), 1, pairClass, fOptionRunOverMC && IsMCTruth(pTrack, nTrack));    // 1 is for +- pairs 
@@ -449,6 +459,13 @@ void AliReducedAnalysisJpsi2eeMult::RunSameEventPairing(TString pairClass /*="Pa
          
             // verify that the two current tracks have at least 1 common bit
             if(!(pTrack->GetFlags() & pTrack2->GetFlags())) continue;
+            if(fOptionRunRotation){
+              AliReducedTrackInfo pTrackCopy((*pTrack));
+              AliReducedTrackInfo pTrack2Copy((*pTrack2));
+              for(int i=0; i<fNRotations; ++i){
+                RunTrackRotation(pTrackCopy, pTrack2Copy, 0);
+              }
+            }
             AliReducedVarManager::FillPairInfo(pTrack, pTrack2, AliReducedPairInfo::kJpsiToEE, fValues);
             if(IsPairSelected(fValues)) {
                FillPairHistograms(pTrack->GetFlags() & pTrack2->GetFlags(), 0, pairClass);       // 0 is for ++ pairs 
@@ -468,6 +485,13 @@ void AliReducedAnalysisJpsi2eeMult::RunSameEventPairing(TString pairClass /*="Pa
          
             // verify that the two current tracks have at least 1 common bit
             if(!(nTrack->GetFlags() & nTrack2->GetFlags())) continue;
+            if(fOptionRunRotation){
+              AliReducedTrackInfo nTrack2Copy((*nTrack2));
+              AliReducedTrackInfo nTrackCopy((*nTrack));
+              for(int i=0; i<fNRotations; ++i){
+                RunTrackRotation(nTrack2Copy, nTrackCopy, 2);
+              }
+            }
             AliReducedVarManager::FillPairInfo(nTrack, nTrack2, AliReducedPairInfo::kJpsiToEE, fValues);
             if(IsPairSelected(fValues)) {
                FillPairHistograms(nTrack->GetFlags() & nTrack2->GetFlags(), 2, pairClass);      // 2 is for -- pairs
@@ -609,7 +633,6 @@ void AliReducedAnalysisJpsi2eeMult::FillMCTruthHistograms() {
   AliReducedTrackInfo* leg2=0x0;
   TClonesArray* trackList = fEvent->GetTracks();
   TIter nextTrack(trackList);
-  Float_t nsigma = 0.;
   for(Int_t it=0; it<fEvent->NTracks(); ++it) {
      track = (AliReducedTrackInfo*)nextTrack();
      if(!track->IsMCTruth()) continue;
@@ -657,3 +680,33 @@ void AliReducedAnalysisJpsi2eeMult::FindJpsiTruthLegs(AliReducedTrackInfo* mothe
    return;
 }
 
+void AliReducedAnalysisJpsi2eeMult::RunTrackRotation(AliReducedTrackInfo &pTrack, AliReducedTrackInfo &nTrack, Int_t pairType){
+
+  TString pairClass = "PairTR";
+  Double_t phi1 = TMath::TwoPi() * gRandom->Rndm();
+  Double_t phi2 = TMath::TwoPi() * gRandom->Rndm();
+
+  if(pTrack.IsCartesian()){
+    pTrack.Px( pTrack.Pt() * TMath::Cos(phi1)  );
+    pTrack.Py( pTrack.Pt() * TMath::Sin(phi1)  );
+    nTrack.Px( nTrack.Pt() * TMath::Cos(phi2)  );
+    nTrack.Py( nTrack.Pt() * TMath::Sin(phi2)  );
+  }
+  else{
+    pTrack.Phi( phi1 );
+    nTrack.Phi( phi2 );
+  }
+
+  AliReducedVarManager::FillPairInfo( (&pTrack), (&nTrack), AliReducedPairInfo::kJpsiToEE, fValues);
+  if(IsPairSelected(fValues)) {
+    FillPairHistograms(pTrack.GetFlags() & nTrack.GetFlags(), pairType, pairClass, fOptionRunOverMC && IsMCTruth((&pTrack), (&nTrack) ));
+  }
+}
+
+
+void AliReducedAnalysisJpsi2eeMult::SetRunTrackRotation( Bool_t option){
+  fOptionRunRotation = option;
+
+  if(fOptionRunRotation) gRandom->SetSeed();
+
+}

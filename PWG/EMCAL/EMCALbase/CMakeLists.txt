@@ -27,23 +27,33 @@ include_directories(${ROOT_INCLUDE_DIRS}
                     ${AliPhysics_SOURCE_DIR}/OADB
                     ${AliPhysics_SOURCE_DIR}/OADB/COMMON/MULTIPLICITY
                     ${AliPhysics_SOURCE_DIR}/PWG/Tools
+                    ${AliPhysics_SOURCE_DIR}/PWG/Tools/yaml-cpp/include
   )
 
 # Sources - alphabetical order
 set(SRCS
+  AliEMCALRecoUtils.cxx
   AliAnalysisTaskEmcal.cxx
   AliAnalysisTaskEmcalLight.cxx
   AliClusterContainer.cxx
   AliEmcalContainer.cxx
   AliEmcalContainerUtils.cxx
   AliEmcalDownscaleFactorsOCDB.cxx
+  AliEmcalCutBase.cxx
+  AliEmcalVCutsWrapper.cxx
   AliEmcalAODFilterBitCuts.cxx
+  AliEmcalAODHybridTrackCuts.cxx
+  AliEmcalAODTPCOnlyTrackCuts.cxx
   AliEmcalContainerUtils.cxx
   AliEmcalESDTrackCutsGenerator.cxx
+  AliEmcalESDHybridTrackCuts.cxx
+  AliEmcalESDtrackCutsWrapper.cxx
   AliEmcalParticle.cxx
   AliEmcalPhysicsSelection.cxx
   AliEmcalPythiaInfo.cxx
   AliEmcalTrackSelResultPtr.cxx
+  AliEmcalTrackSelResultCombined.cxx
+  AliEmcalTrackSelResultHybrid.cxx
   AliEmcalTrackSelection.cxx
   AliEmcalTrackSelectionESD.cxx
   AliEmcalTrackSelectionAOD.cxx
@@ -55,6 +65,13 @@ set(SRCS
   AliAnalysisTaskEmcalEmbeddingHelper.cxx
   AliEmcalEmbeddingQA.cxx
   )
+
+
+if(RooUnfold_FOUND)
+    get_target_property(ROOUNFOLD_INCLUDE_DIR RooUnfold::RooUnfold INTERFACE_INCLUDE_DIRECTORIES)
+    include_directories(${ROOUNFOLD_INCLUDE_DIR})
+    add_definitions("-DWITH_ROOUNFOLD")
+endif(RooUnfold_FOUND)
 
 # Headers from sources
 string(REPLACE ".cxx" ".h" HDRS "${SRCS}")
@@ -75,6 +92,10 @@ add_library_tested(${MODULE} SHARED  ${SRCS} ${HDRS} ${MODULE}LinkDef.h G__${MOD
 # Generate the ROOT map
 # Dependecies
 set(LIBDEPS ANALYSIS ANALYSISalice AOD OADB CDB EMCALrec EMCALUtils ESD PWGTools STEER STEERBase Tender)
+if(RooUnfold_FOUND)
+    get_target_property(ROOUNFOLD_LIBRARY RooUnfold::RooUnfold IMPORTED_LOCATION)
+    set(LIBDEPS ${LIBDEPS} ${ROOUNFOLD_LIBRARY})
+endif(RooUnfold_FOUND)
 generate_rootmap("${MODULE}" "${LIBDEPS}" "${CMAKE_CURRENT_SOURCE_DIR}/${MODULE}LinkDef.h")
 
 # Generate a PARfile target for this library
@@ -96,3 +117,27 @@ install(TARGETS ${MODULE}
   ARCHIVE DESTINATION lib
   LIBRARY DESTINATION lib)
 install(FILES ${HDRS} DESTINATION include)
+
+# Unit tests
+
+add_test(func_PWGEMCALbase_AliEmcalTrackSelResultPtr
+    env
+    LD_LIBRARY_PATH=${CMAKE_INSTALL_PREFIX}/lib:$ENV{LD_LIBRARY_PATH}
+    DYLD_LIBRARY_PATH=${CMAKE_INSTALL_PREFIX}/lib:$ENV{DYLD_LIBRARY_PATH}
+    ROOT_HIST=0
+    root -n -l -b -q "${CMAKE_INSTALL_PREFIX}/PWG/EMCAL/macros/TestAliEmcalTrackSelResultPtr.C)")
+
+add_test(func_PWGEMCALbase_AliEmcalAODHybridTrackCuts
+    env
+    LD_LIBRARY_PATH=${CMAKE_INSTALL_PREFIX}/lib:$ENV{LD_LIBRARY_PATH}
+    DYLD_LIBRARY_PATH=${CMAKE_INSTALL_PREFIX}/lib:$ENV{DYLD_LIBRARY_PATH}
+    ROOT_HIST=0
+    root -n -l -b -q "${CMAKE_INSTALL_PREFIX}/PWG/EMCAL/macros/TestAliEmcalAODHybridTrackCuts.C)")
+
+add_test(func_PWGEMCALbase_AliEmcalTrackSelectionAOD
+    env
+    LD_LIBRARY_PATH=${CMAKE_INSTALL_PREFIX}/lib:$ENV{LD_LIBRARY_PATH}
+    DYLD_LIBRARY_PATH=${CMAKE_INSTALL_PREFIX}/lib:$ENV{DYLD_LIBRARY_PATH}
+    ROOT_HIST=0
+    root -n -l -b -q "${CMAKE_INSTALL_PREFIX}/PWG/EMCAL/macros/TestAliEmcalTrackSelectionAOD.C)")
+    

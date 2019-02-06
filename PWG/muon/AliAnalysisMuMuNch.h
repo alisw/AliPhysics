@@ -20,6 +20,7 @@ class TAxis;
 class TF1;
 class AliAODVertex;
 class TObjArray;
+class AliVEventHandler;
 
 class AliAnalysisMuMuNch : public AliAnalysisMuMuBase
 {
@@ -53,9 +54,9 @@ public:
                                             Double_t& etaMin, Double_t& etaMax) const;
 
   virtual void SetEvent(AliVEvent* event, AliMCEvent* mcEvent=0x0);
-
-  void SetRun(const AliInputEventHandler* eventHandler);
-
+  
+  void SetRun(const AliVEventHandler* eventHandler);
+  
   virtual void Terminate(Option_t *);
 
 protected:

@@ -45,6 +45,7 @@ public:
   virtual void AddMixedPair(AliFemtoPair* aPair);
 
   virtual TList* GetOutputList();
+  virtual AliFemtoModelCorrFctn* Clone() const { return new AliFemtoModelCorrFctnKStarFull(*this); }
   virtual void Write();
 
   /// Sets the PDG particle codes that this correlation function will check

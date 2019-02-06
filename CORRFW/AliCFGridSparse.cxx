@@ -715,7 +715,7 @@ void AliCFGridSparse::SetRangeUser(Int_t iVar, Double_t varMin, Double_t varMax,
   SetAxisRange(fData->GetAxis(iVar),varMin,varMax,useBins);
 	//AliInfo(Form("AliCFGridSparse axis %d range has been modified",iVar));
 	TAxis* currAxis = fData->GetAxis(iVar);
-  TString outString = Form("%s new range: %.1f < %s < %.1f", GetName(), currAxis->GetBinLowEdge(currAxis->GetFirst()), currAxis->GetTitle(), currAxis->GetBinUpEdge(currAxis->GetLast()));
+  TString outString = Form("%s new range: %.5f < %s < %.5f", GetName(), currAxis->GetBinLowEdge(currAxis->GetFirst()), currAxis->GetTitle(), currAxis->GetBinUpEdge(currAxis->GetLast()));
   TString binLabel = currAxis->GetBinLabel(currAxis->GetFirst());
   if ( ! binLabel.IsNull() ) {
     outString += " ( ";

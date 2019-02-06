@@ -51,6 +51,9 @@ void ProcessOutputMultSelTask(TString filename="AnalysisResults.root", TString c
     if(htit.Contains("Event type: PbPb")){
       collsyst="Pb-Pb";
       readFromHisto=kTRUE;
+    }else if(htit.Contains("Event type: XeXe")){
+      collsyst="Xe-Xe";
+      readFromHisto=kTRUE;
     }else if(htit.Contains("Event type: pA")){
       collsyst="p-Pb";
       readFromHisto=kTRUE;
@@ -93,12 +96,15 @@ void ProcessOutputMultSelTask(TString filename="AnalysisResults.root", TString c
       if(estimNames[je]=="V0M" || estimNames[je]=="V0A" || estimNames[je]=="V0C" || 
 	 estimNames[je]=="ZNApp" ||  estimNames[je]=="ZNCpp" || 
 	 estimNames[je]=="SPDClusters" || estimNames[je]=="SPDTracklets") shouldBeFilled=kTRUE;
+    }else if(collsyst=="Pb-Pb" || collsyst=="Xe-Xe"){
+      if(estimNames[je]=="V0M" || estimNames[je]=="SPDTracklets" ||
+	 estimNames[je]=="CL0" || estimNames[je]=="CL1") shouldBeFilled=kTRUE;
+      maxCent=90.;
     }else{
-      // enables the estimators which are calibrated for Pb-Pb and p-Pb
+      // enables the estimators which are calibrated for p-Pb 
       if(estimNames[je]=="V0M" || estimNames[je]=="V0A" || estimNames[je]=="V0C" || 
 	 estimNames[je]=="ZNA" ||  estimNames[je]=="ZNC" || 
 	 estimNames[je]=="CL0" || estimNames[je]=="CL1") shouldBeFilled=kTRUE;
-      if(collsyst=="Pb-Pb") maxCent=90.;
       if(collsyst=="p-Pb" && (estimNames[je]=="ZNA" ||  estimNames[je]=="ZNC")) maxCent=95.;
     }
     TString histoname=Form("fHistQASelected_%s",estimNames[je].Data());

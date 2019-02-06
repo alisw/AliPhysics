@@ -26,11 +26,11 @@
 //---------------------------------------------
 ////////////////////////////////////////////////
 
-// The AliAODConversionPhotons will return the Position (== ESDTrack->GetID())of the positive (negative) ESDTrack 
+// The AliAODConversionPhotons will return the Position (== ESDTrack->GetID())of the positive (negative) ESDTrack
 // in the Array of ESDTracks stored in the ESDEvent via GetTrackLabelPositive() (GetTrackLabelNagative()).
 // Since it is the Position in the Array it is always positive.
 // After the conversion ESD --> AOD each AOD track will give you the former Position in the ESDArray via the
-// Function AODTrack->GetID(). AODTracks are stored for different TrackParameter (e.g. HybridTracks, TPC only ...). No Standard 
+// Function AODTrack->GetID(). AODTracks are stored for different TrackParameter (e.g. HybridTracks, TPC only ...). No Standard
 // AODTracks (not copies of AliExternalTrackParam) will be stored with negative values of AODTrack->GetID() (Formula: (ESDTrack->GetID()+1)*-1)
 // This leads to the possibility of more than one AOD track with the same negative ID. For that reason all AOD tracks are additionally flaged.
 // In this analysis we should therefore only use AODTracks with positive values of AODTrack->GetID().
@@ -65,10 +65,13 @@
 #include "AliAnalysisManager.h"
 #include "AliInputEventHandler.h"
 #include "AliAODHandler.h"
+#include "AliAODMCParticle.h"
 #include "AliPIDResponse.h"
 #include "TChain.h"
 #include "TFile.h"
 #include "TString.h"
+#include "TMatrixD.h"
+#include "TMatrixDEigen.h"
 #include "TObjArray.h"
 
 class iostream;
@@ -96,6 +99,19 @@ AliV0ReaderV1::AliV0ReaderV1(const char *name) : AliAnalysisTaskSE(name),
   fEventIsSelected(kFALSE),
   fNumberOfPrimaryTracks(0),
   fNumberOfTPCoutTracks(0),
+  fSphericity(0),
+  fSphericityAxisMainPhi(0),
+  fSphericityAxisSecondaryPhi(0),
+  fInEMCalAcceptance(kFALSE),
+  fNumberOfRecTracks(0),
+  fHighestPt(0),
+  fTotalPt(0),
+  fMeanPt(0),
+  fSphericityTrue(0),
+  fNumberOfTruePrimaryTracks(0),
+  fPtMaxSector(0),
+  fCalcSphericity(kFALSE),
+  fCalcSector(kFALSE),
   fPeriodName(""),
   fPtHardBin(0),
   fUseMassToZero(kTRUE),
@@ -265,7 +281,7 @@ void AliV0ReaderV1::UserCreateOutputObjects()
 
   if(fCreateAOD){
     fPCMv0BitField = new TBits();
-    
+
     if (fEventCuts){
       fDeltaAODBranchName.Append("_");
       fDeltaAODBranchName.Append(fEventCuts->GetCutNumber());
@@ -324,7 +340,7 @@ void AliV0ReaderV1::UserCreateOutputObjects()
     fHistoPosTrackImpactParamYvsPt->SetYTitle("Y (cm)");
     fHistoPosTrackImpactParamYvsPt->SetXTitle("Pt (GeV)");
     fImpactParamHistograms->Add(fHistoPosTrackImpactParamYvsPt);
- 
+
     fHistoPosTrackImpactParamXvsPt = new TH2F("fHistoPosTrackImpactParamXvsPt","",100,0,10,30,-3,5);
     fHistoPosTrackImpactParamXvsPt->SetYTitle("X (cm)");
     fHistoPosTrackImpactParamXvsPt->SetXTitle("Pt (GeV)");
@@ -500,11 +516,11 @@ void AliV0ReaderV1::UserCreateOutputObjects()
 }
 //________________________________________________________________________
 Bool_t AliV0ReaderV1::Notify(){
-  
+
   // set file name to empty & reset check flag
   fCurrentFileName = "";
   fMCFileChecked   = kFALSE;
-  
+
   // obtain file name from analysis manager
   AliAnalysisManager *man=AliAnalysisManager::GetAnalysisManager();
   if(man) {
@@ -515,7 +531,7 @@ Bool_t AliV0ReaderV1::Notify(){
       fCurrentFileName = file->GetName();
     }
   }
-  
+
   // try to extract period name from file name if not given
   if (fPeriodName.CompareTo("") == 0){
     TObjArray *arr = fCurrentFileName.Tokenize("/");
@@ -537,29 +553,33 @@ Bool_t AliV0ReaderV1::Notify(){
         }
       }
     }
-    if (fPeriodName.CompareTo("") != 0 && fEventCuts->GetPeriodEnum() == AliConvEventCuts::kNoPeriod ){ 
+    if (fPeriodName.CompareTo("") != 0 && fEventCuts->GetPeriodEnum() == AliConvEventCuts::kNoPeriod ){
       fEventCuts->SetPeriodEnum (fPeriodName);
-    }  
+    }
   } else {
     if(fEventCuts->GetPeriodEnum() == AliConvEventCuts::kNoPeriod ){
       fEventCuts->SetPeriodEnum (fPeriodName);
-    }  
+    }
   }
   // set pt hard bin from file name
-  if (  fEventCuts->GetPeriodEnum() == AliConvEventCuts::kLHC15a3a  || fEventCuts->GetPeriodEnum() == AliConvEventCuts::kLHC15a3a_plus || 
+  if (  fEventCuts->GetPeriodEnum() == AliConvEventCuts::kLHC15a3a  || fEventCuts->GetPeriodEnum() == AliConvEventCuts::kLHC15a3a_plus ||
         fEventCuts->GetPeriodEnum() == AliConvEventCuts::kLHC15a3b  ||
-        fEventCuts->GetPeriodEnum() == AliConvEventCuts::kLHC15g1a  || fEventCuts->GetPeriodEnum() == AliConvEventCuts::kLHC15g1b || 
-        fEventCuts->GetPeriodEnum() == AliConvEventCuts::kLHC16c2  || fEventCuts->GetPeriodEnum() == AliConvEventCuts::kLHC16c2_plus  ||
-        fEventCuts->GetPeriodEnum() == AliConvEventCuts::kLHC16c3a  || fEventCuts->GetPeriodEnum() == AliConvEventCuts::kLHC16c3b || 
-        fEventCuts->GetPeriodEnum() == AliConvEventCuts::kLHC16c3c){
-    TObjArray *arr = fCurrentFileName.Tokenize("/");
-    fPtHardBin = -1;
-    for (Int_t i = 0; i < arr->GetEntriesFast();i++ ){
-      TObjString* testObjString = (TObjString*)arr->At(i);
-      if (testObjString->GetString().BeginsWith("LHC")){
-        TObjString* testObjString2 = (TObjString*)arr->At(i+1);
-        fPtHardBin = testObjString2->GetString().Atoi();
-        i = arr->GetEntriesFast();
+        fEventCuts->GetPeriodEnum() == AliConvEventCuts::kLHC15g1a  || fEventCuts->GetPeriodEnum() == AliConvEventCuts::kLHC15g1b ||
+        fEventCuts->GetPeriodEnum() == AliConvEventCuts::kLHC12P2JJ ||
+        fEventCuts->GetPeriodEnum() == AliConvEventCuts::kLHC16c3a  || fEventCuts->GetPeriodEnum() == AliConvEventCuts::kLHC16c3b ||
+        fEventCuts->GetPeriodEnum() == AliConvEventCuts::kLHC16c3c  ||
+        fEventCuts->GetPeriodEnum() == AliConvEventCuts::kLHC16rP1JJ  || fEventCuts->GetPeriodEnum() == AliConvEventCuts::kLHC16sP1JJ  ||
+        fEventCuts->GetPeriodEnum() == AliConvEventCuts::kLHC16P1JJ || fEventCuts->GetPeriodEnum() == AliConvEventCuts::kLHC16P1JJLowB ||
+        fEventCuts->GetPeriodEnum() == AliConvEventCuts::kLHC18b8
+     ){
+        TObjArray *arr = fCurrentFileName.Tokenize("/");
+        fPtHardBin = -1;
+        for (Int_t i = 0; i < arr->GetEntriesFast();i++ ){
+          TObjString* testObjString = (TObjString*)arr->At(i);
+          if (testObjString->GetString().BeginsWith("LHC")){
+            TObjString* testObjString2 = (TObjString*)arr->At(i+1);
+            fPtHardBin = testObjString2->GetString().Atoi();
+            i = arr->GetEntriesFast();
       }
     }
   }
@@ -579,6 +599,7 @@ Bool_t AliV0ReaderV1::Notify(){
 }
 //________________________________________________________________________
 void AliV0ReaderV1::UserExec(Option_t *option){
+  if (!fConversionCuts->GetPIDResponse()) fConversionCuts->InitPIDResponse();
 
   AliESDEvent * esdEvent = dynamic_cast<AliESDEvent*>(fInputEvent);
   if(esdEvent) {
@@ -599,7 +620,7 @@ void AliV0ReaderV1::UserExec(Option_t *option){
 //________________________________________________________________________
 Bool_t AliV0ReaderV1::ProcessEvent(AliVEvent *inputEvent,AliMCEvent *mcEvent)
 {
-
+  if (!fConversionCuts->GetPIDResponse()) fConversionCuts->InitPIDResponse();
   //Reset the TClonesArray
   fConversionGammas->Delete();
 
@@ -618,20 +639,24 @@ Bool_t AliV0ReaderV1::ProcessEvent(AliVEvent *inputEvent,AliMCEvent *mcEvent)
 
 
   // Count Primary Tracks Event
-  CountTracks();  
+  CountTracks();
 
-  //Count Tracks with TPCout flag 
+  //Count Tracks with TPCout flag
   CountTPCoutTracks();
 
+  // Calculate the Sphericity and true sphericity
+  if(fCalcSphericity) CalculateSphericity();
+  if(fCalcSphericity && fMCEvent) CalculateSphericityMCTrue(fInputEvent);
+  if(fCalcSector) CalculatePtMaxSector();
 
   // Event Cuts
   if(!fEventCuts->EventIsSelected(fInputEvent,fMCEvent)){
     if (fEventCuts->GetEventQuality() == 2 && !fMCFileChecked ){
       cout << "ERROR with MC reading for: "<<  fCurrentFileName.Data() << endl;
       fMCFileChecked                  = kTRUE;
-    }  
+    }
     return kFALSE;
-  }  
+  }
   // Set Magnetic Field
   AliKFParticle::SetField(fInputEvent->GetMagneticField());
 
@@ -802,16 +827,7 @@ AliKFConversionPhoton *AliV0ReaderV1::ReconstructV0(AliESDv0 *fCurrentV0,Int_t c
   }
 
   fConversionCuts->FillV0EtaBeforedEdxCuts(fCurrentV0->Eta());
-  if (!fConversionCuts->dEdxCuts(posTrack)) {
-    fConversionCuts->FillPhotonCutIndex(AliConversionPhotonCuts::kdEdxCuts);
-    return 0x0;
-  }
-  // PID Cuts
-  if(!fConversionCuts->dEdxCuts(negTrack)) {
-    fConversionCuts->FillPhotonCutIndex(AliConversionPhotonCuts::kdEdxCuts);
-    return 0x0;
-  }
-  fConversionCuts->FillV0EtaAfterdEdxCuts(fCurrentV0->Eta());
+
   // Reconstruct Photon
   AliKFConversionPhoton *fCurrentMotherKF=NULL;
   //    fUseConstructGamma = kFALSE;
@@ -831,6 +847,19 @@ AliKFConversionPhoton *AliV0ReaderV1::ReconstructV0(AliESDv0 *fCurrentV0,Int_t c
     fCurrentMotherKF = new AliKFConversionPhoton(fCurrentNegativeKFParticle,fCurrentPositiveKFParticle);
     fCurrentMotherKF->SetMassConstraint(0,0.0001);
   }
+
+  // PID Cuts- positive track
+  if (!fConversionCuts->dEdxCuts(posTrack,fCurrentMotherKF)) {
+    fConversionCuts->FillPhotonCutIndex(AliConversionPhotonCuts::kdEdxCuts);
+    return 0x0;
+  }
+  // PID Cuts - negative track
+  if(!fConversionCuts->dEdxCuts(negTrack,fCurrentMotherKF)) {
+    fConversionCuts->FillPhotonCutIndex(AliConversionPhotonCuts::kdEdxCuts);
+    return 0x0;
+  }
+  fConversionCuts->FillV0EtaAfterdEdxCuts(fCurrentV0->Eta());
+
 
   // Set Track Labels
 
@@ -920,7 +949,7 @@ AliKFConversionPhoton *AliV0ReaderV1::ReconstructV0(AliESDv0 *fCurrentV0,Int_t c
     fCurrentMotherKF=NULL;
     return 0x0;
   }
-  
+
   // Apply Photon Cuts
   if(!fConversionCuts->PhotonCuts(fCurrentMotherKF,fInputEvent)){
     fConversionCuts->FillPhotonCutIndex(AliConversionPhotonCuts::kPhotonCuts);
@@ -956,7 +985,7 @@ Double_t AliV0ReaderV1::GetPsiPair(const AliESDv0* v0, const AliExternalTrackPar
     xyz[1]= convpos[1];
     xyz[2]= convpos[2];
   }
- 
+
 
   // Double_t pPlus[3]  = {pt.Px(),pt.Py(),pt.Pz()};
   // Double_t pMinus[3] = {nt.Px(),nt.Py(),nt.Pz()};
@@ -1333,11 +1362,11 @@ void AliV0ReaderV1::RelabelAODPhotonCandidates(AliAODConversionPhoton *PhotonCan
 }
 
 //************************************************************************
-// This function counts the number of primary tracks in the event, the 
+// This function counts the number of primary tracks in the event, the
 // implementation for ESD and AOD had to be different due to the different
-// filters which are already applied on AOD level the so-called filter 
-// bits, we tried to replicate the conditions in both but an exact match 
-// could not be reached. The cuts are similar to the ones used by the 
+// filters which are already applied on AOD level the so-called filter
+// bits, we tried to replicate the conditions in both but an exact match
+// could not be reached. The cuts are similar to the ones used by the
 // jet-group
 //************************************************************************
 //________________________________________________________________________
@@ -1365,33 +1394,33 @@ void AliV0ReaderV1::CountTracks(){
     if (!EsdTrackCuts) {
       // if LHC11a or earlier or if LHC13g or if LHC12a-i -> use 2010 cuts
       if( (runNumber<=146860) || (runNumber>=197470 && runNumber<=197692) || (runNumber>=172440 && runNumber<=193766) ){
-	EsdTrackCuts = AliESDtrackCuts::GetStandardITSTPCTrackCuts2010();
-	// else if run2 data use 2015 PbPb cuts
-      }else if (runNumber>=209122){
-	//EsdTrackCuts = AliESDtrackCuts::GetStandardITSTPCTrackCuts2015PbPb();
-	// hard coded track cuts for the moment, because AliESDtrackCuts::GetStandardITSTPCTrackCuts2015PbPb() gives spams warnings
-	EsdTrackCuts = new AliESDtrackCuts();
-	// TPC; clusterCut = 1, cutAcceptanceEdges = kTRUE, removeDistortedRegions = kFALSE
-	EsdTrackCuts->AliESDtrackCuts::SetMinNCrossedRowsTPC(70);
-	EsdTrackCuts->AliESDtrackCuts::SetMinRatioCrossedRowsOverFindableClustersTPC(0.8); 
-	EsdTrackCuts->SetCutGeoNcrNcl(2., 130., 1.5, 0.0, 0.0);  // only dead zone and not clusters per length
-	//EsdTrackCuts->AliESDtrackCuts::SetCutOutDistortedRegionsTPC(kTRUE);
-	EsdTrackCuts->AliESDtrackCuts::SetMaxChi2PerClusterTPC(4);
-	EsdTrackCuts->AliESDtrackCuts::SetAcceptKinkDaughters(kFALSE);
-	EsdTrackCuts->AliESDtrackCuts::SetRequireTPCRefit(kTRUE);
-	// ITS; selPrimaries = 1
-	EsdTrackCuts->AliESDtrackCuts::SetRequireITSRefit(kTRUE);
-	EsdTrackCuts->AliESDtrackCuts::SetClusterRequirementITS(AliESDtrackCuts::kSPD,
-								AliESDtrackCuts::kAny);
-	EsdTrackCuts->AliESDtrackCuts::SetMaxDCAToVertexXYPtDep("0.0105+0.0350/pt^1.1");
-	EsdTrackCuts->AliESDtrackCuts::SetMaxChi2TPCConstrainedGlobal(36);
-	EsdTrackCuts->AliESDtrackCuts::SetMaxDCAToVertexZ(2);
-	EsdTrackCuts->AliESDtrackCuts::SetDCAToVertex2D(kFALSE);
-	EsdTrackCuts->AliESDtrackCuts::SetRequireSigmaToVertex(kFALSE);
-	EsdTrackCuts->AliESDtrackCuts::SetMaxChi2PerClusterITS(36);
-	// else use 2011 version of track cuts
+        EsdTrackCuts = AliESDtrackCuts::GetStandardITSTPCTrackCuts2010();
+        // else if run2 data use 2015 PbPb cuts
+      } else if (runNumber>=209122){
+        //EsdTrackCuts = AliESDtrackCuts::GetStandardITSTPCTrackCuts2015PbPb();
+        // hard coded track cuts for the moment, because AliESDtrackCuts::GetStandardITSTPCTrackCuts2015PbPb() gives spams warnings
+        EsdTrackCuts = new AliESDtrackCuts();
+        // TPC; clusterCut = 1, cutAcceptanceEdges = kTRUE, removeDistortedRegions = kFALSE
+        EsdTrackCuts->AliESDtrackCuts::SetMinNCrossedRowsTPC(70);
+        EsdTrackCuts->AliESDtrackCuts::SetMinRatioCrossedRowsOverFindableClustersTPC(0.8);
+        EsdTrackCuts->SetCutGeoNcrNcl(2., 130., 1.5, 0.0, 0.0);  // only dead zone and not clusters per length
+        //EsdTrackCuts->AliESDtrackCuts::SetCutOutDistortedRegionsTPC(kTRUE);
+        EsdTrackCuts->AliESDtrackCuts::SetMaxChi2PerClusterTPC(4);
+        EsdTrackCuts->AliESDtrackCuts::SetAcceptKinkDaughters(kFALSE);
+        EsdTrackCuts->AliESDtrackCuts::SetRequireTPCRefit(kTRUE);
+        // ITS; selPrimaries = 1
+        EsdTrackCuts->AliESDtrackCuts::SetRequireITSRefit(kTRUE);
+        EsdTrackCuts->AliESDtrackCuts::SetClusterRequirementITS(AliESDtrackCuts::kSPD,
+                      AliESDtrackCuts::kAny);
+        EsdTrackCuts->AliESDtrackCuts::SetMaxDCAToVertexXYPtDep("0.0105+0.0350/pt^1.1");
+        EsdTrackCuts->AliESDtrackCuts::SetMaxChi2TPCConstrainedGlobal(36);
+        EsdTrackCuts->AliESDtrackCuts::SetMaxDCAToVertexZ(2);
+        EsdTrackCuts->AliESDtrackCuts::SetDCAToVertex2D(kFALSE);
+        EsdTrackCuts->AliESDtrackCuts::SetRequireSigmaToVertex(kFALSE);
+        EsdTrackCuts->AliESDtrackCuts::SetMaxChi2PerClusterITS(36);
+      // else use 2011 version of track cuts
       }else{
-	EsdTrackCuts = AliESDtrackCuts::GetStandardITSTPCTrackCuts2011();
+        EsdTrackCuts = AliESDtrackCuts::GetStandardITSTPCTrackCuts2011();
       }
       EsdTrackCuts->SetMaxDCAToVertexZ(2);
       EsdTrackCuts->SetEtaRange(-0.8, 0.8);
@@ -1439,11 +1468,298 @@ void AliV0ReaderV1::CountTPCoutTracks(){
       }
     }
   }
-
-
   return;
 }
+///________________________________________________________________________
+void AliV0ReaderV1::CalculateSphericity(){
+  TMatrixD Si(2,2);
+  TMatrixD S(2,2);
+  TMatrixD St(2,2);
+  double_t P(0);
+  fNumberOfRecTracks = 0;
+  fSphericity = -1;
+  TMatrixD EigenV(2,2);
+  TVector2* EigenVector;
+  fSphericityAxisMainPhi = 0;
+  Double_t MirroredMainSphericityAxis = 0;
+  fSphericityAxisSecondaryPhi = 0;
+  fInEMCalAcceptance = kFALSE;
+  fHighestPt = 0;
+  fTotalPt = 0;
+  fMeanPt = 0;
+  if(fInputEvent->IsA()==AliESDEvent::Class()){
+    static AliESDtrackCuts *EsdTrackCuts = 0x0;
+    static int prevRun = -1;
+    // Using standard function for setting Cuts
+    Int_t runNumber = fInputEvent->GetRunNumber();
 
+    if (prevRun!=runNumber) {
+      delete EsdTrackCuts;
+      EsdTrackCuts = 0;
+      prevRun = runNumber;
+    }
+    if (!EsdTrackCuts) {
+      // if LHC11a or earlier or if LHC13g or if LHC12a-i -> use 2010 cuts
+      if( (runNumber<=146860) || (runNumber>=197470 && runNumber<=197692) || (runNumber>=172440 && runNumber<=193766) ){
+        EsdTrackCuts = AliESDtrackCuts::GetStandardITSTPCTrackCuts2010();
+        // else if run2 data use 2015 PbPb cuts
+      } else if (runNumber>=209122){
+        //EsdTrackCuts = AliESDtrackCuts::GetStandardITSTPCTrackCuts2015PbPb();
+        // hard coded track cuts for the moment, because AliESDtrackCuts::GetStandardITSTPCTrackCuts2015PbPb() gives spams warnings
+        EsdTrackCuts = new AliESDtrackCuts();
+        // TPC; clusterCut = 1, cutAcceptanceEdges = kTRUE, removeDistortedRegions = kFALSE
+        EsdTrackCuts->AliESDtrackCuts::SetMinNCrossedRowsTPC(70);
+        EsdTrackCuts->AliESDtrackCuts::SetMinRatioCrossedRowsOverFindableClustersTPC(0.8);
+        EsdTrackCuts->SetCutGeoNcrNcl(2., 130., 1.5, 0.0, 0.0);  // only dead zone and not clusters per length
+        //EsdTrackCuts->AliESDtrackCuts::SetCutOutDistortedRegionsTPC(kTRUE);
+        EsdTrackCuts->AliESDtrackCuts::SetMaxChi2PerClusterTPC(4);
+        EsdTrackCuts->AliESDtrackCuts::SetAcceptKinkDaughters(kFALSE);
+        EsdTrackCuts->AliESDtrackCuts::SetRequireTPCRefit(kTRUE);
+        // ITS; selPrimaries = 1
+        EsdTrackCuts->AliESDtrackCuts::SetRequireITSRefit(kTRUE);
+        EsdTrackCuts->AliESDtrackCuts::SetClusterRequirementITS(AliESDtrackCuts::kSPD,
+                      AliESDtrackCuts::kAny);
+        EsdTrackCuts->AliESDtrackCuts::SetMaxDCAToVertexXYPtDep("0.0105+0.0350/pt^1.1");
+        EsdTrackCuts->AliESDtrackCuts::SetMaxChi2TPCConstrainedGlobal(36);
+        EsdTrackCuts->AliESDtrackCuts::SetMaxDCAToVertexZ(2);
+        EsdTrackCuts->AliESDtrackCuts::SetDCAToVertex2D(kFALSE);
+        EsdTrackCuts->AliESDtrackCuts::SetRequireSigmaToVertex(kFALSE);
+        EsdTrackCuts->AliESDtrackCuts::SetMaxChi2PerClusterITS(36);
+      // else use 2011 version of track cuts
+      }else{
+        EsdTrackCuts = AliESDtrackCuts::GetStandardITSTPCTrackCuts2011();
+      }
+      EsdTrackCuts->SetMaxDCAToVertexZ(2);
+      EsdTrackCuts->SetEtaRange(-0.8, 0.8);
+      EsdTrackCuts->SetPtRange(0.5);
+    }
+    fSphericity = -1;
+    fNumberOfRecTracks = 0;
+    for(Int_t iTracks = 0; iTracks < fInputEvent->GetNumberOfTracks(); iTracks++){
+      AliESDtrack* curTrack = (AliESDtrack*) fInputEvent->GetTrack(iTracks);
+      if(!curTrack) continue;
+      if(!EsdTrackCuts->AcceptTrack(curTrack)) continue;
+      fNumberOfRecTracks++;
+      Si.Zero();
+      Si(0,0)=pow(curTrack->Px(),2);
+      Si(0,1)=curTrack->Px()*curTrack->Py();
+      Si(1,0)=curTrack->Py()*curTrack->Px();
+      Si(1,1)=pow(curTrack->Py(),2);
+      S += (1/curTrack->Pt())*Si;
+      P += curTrack->Pt();
+      if(curTrack->Pt()>fHighestPt) fHighestPt = curTrack->Pt();
+    }
+    if(P==0 || fNumberOfRecTracks<3){
+      fSphericity = -1;
+    }else{
+      St = (1/P)*S;
+      fSphericity = (2*TMatrixDEigen(St).GetEigenValues()(1,1))/(TMatrixDEigen(St).GetEigenValues()(0,0)+TMatrixDEigen(St).GetEigenValues()(1,1));
+      EigenV.Zero();
+      EigenV = TMatrixDEigen(St).GetEigenVectors();
+      EigenVector = new TVector2(EigenV(0,0), EigenV(1,0));
+      fSphericityAxisMainPhi = EigenVector->Phi();
+      MirroredMainSphericityAxis = fSphericityAxisMainPhi + TMath::Pi();
+      if(MirroredMainSphericityAxis > 2*TMath::Pi()) MirroredMainSphericityAxis -= 2*TMath::Pi();
+      EigenVector = new TVector2(EigenV(0,1), EigenV(1,1));
+      fSphericityAxisSecondaryPhi = EigenVector->Phi();
+      if(fSphericityAxisMainPhi > 1.396263 && fSphericityAxisMainPhi < 3.263766){
+          fInEMCalAcceptance = kTRUE;
+      }else if((MirroredMainSphericityAxis > 1.396263) && (MirroredMainSphericityAxis < 3.263766)){
+          fInEMCalAcceptance = kTRUE;
+      }
+      fTotalPt = P;
+      fMeanPt = P/fNumberOfRecTracks;
+    }
+  }
+  else if(fInputEvent->IsA()==AliAODEvent::Class()){
+    fSphericity = -1;
+    fNumberOfRecTracks = 0;
+    for(Int_t iTracks = 0; iTracks<fInputEvent->GetNumberOfTracks(); iTracks++){
+      AliAODTrack* curTrack = (AliAODTrack*) fInputEvent->GetTrack(iTracks);
+      if(curTrack->GetID()<0) continue; // Avoid double counting of tracks
+      if(!curTrack->IsHybridGlobalConstrainedGlobal()) continue;
+      if(TMath::Abs(curTrack->Eta())>0.8) continue;
+      if(curTrack->Pt()<0.5) continue;
+      fNumberOfRecTracks++;
+      Si.Zero();
+      Si(0,0)=pow(curTrack->Px(),2);
+      Si(0,1)=curTrack->Px()*curTrack->Py();
+      Si(1,0)=curTrack->Py()*curTrack->Px();
+      Si(1,1)=pow(curTrack->Py(),2);
+      S += (1/curTrack->Pt())*Si;
+      P += curTrack->Pt();
+      if(curTrack->Pt()>fHighestPt) fHighestPt = curTrack->Pt();
+    }
+    if(P==0 || fNumberOfRecTracks<3){
+      fSphericity = -1;
+    }else{
+      St = (1/P)*S;
+      fSphericity = (2*TMatrixDEigen(St).GetEigenValues()(1,1))/(TMatrixDEigen(St).GetEigenValues()(0,0)+TMatrixDEigen(St).GetEigenValues()(1,1));
+      EigenV.Zero();
+      EigenV = TMatrixDEigen(St).GetEigenVectors();
+      EigenVector = new TVector2(EigenV(0,0), EigenV(1,0));
+      fSphericityAxisMainPhi = EigenVector->Phi();
+      MirroredMainSphericityAxis = fSphericityAxisMainPhi + TMath::Pi();
+      if(MirroredMainSphericityAxis > 2*TMath::Pi()) MirroredMainSphericityAxis -= 2*TMath::Pi();
+      EigenVector = new TVector2(EigenV(0,1), EigenV(1,1));
+      fSphericityAxisSecondaryPhi = EigenVector->Phi();
+      if(fSphericityAxisMainPhi > 1.396263 && fSphericityAxisMainPhi < 3.263766){
+          fInEMCalAcceptance = kTRUE;
+      }else if((MirroredMainSphericityAxis > 1.396263) && (MirroredMainSphericityAxis < 3.263766)){
+          fInEMCalAcceptance = kTRUE;
+      }
+      fTotalPt = P;
+      fMeanPt = P/fNumberOfRecTracks;
+    }
+  }
+  return;
+}
+///________________________________________________________________________
+void AliV0ReaderV1::CalculateSphericityMCTrue(AliVEvent *inputEvent){
+  TMatrixD Si(2,2);
+  TMatrixD S(2,2);
+  TMatrixD St(2,2);
+  double_t P(0);
+  fNumberOfTruePrimaryTracks = 0;
+  fSphericityTrue = -1;
+  if(inputEvent->IsA()==AliAODEvent::Class()){
+      TClonesArray *AODMCTrackArray = dynamic_cast<TClonesArray*>(inputEvent->FindListObject(AliAODMCParticle::StdBranchName()));
+      if (AODMCTrackArray == NULL) return;
+      for(Long_t i = 0; i < AODMCTrackArray->GetEntriesFast(); i++) {
+        AliAODMCParticle* particle = static_cast<AliAODMCParticle*>(AODMCTrackArray->At(i));
+            if (!particle) continue;
+            if (!particle->IsPhysicalPrimary()) continue;
+            if (!particle->Pt()) continue;
+            if(particle->Pt()<0.5) continue;
+            if(TMath::Abs(particle->Eta())>0.8) continue;
+            fNumberOfTruePrimaryTracks++;
+            Si.Zero();
+            Si(0,0)=pow(particle->Px(),2);
+            Si(0,1)=particle->Px()*particle->Py();
+            Si(1,0)=particle->Py()*particle->Px();
+            Si(1,1)=pow(particle->Py(),2);
+            S += (1/particle->Pt())*Si;
+            P += particle->Pt();
+      }
+  }else if(inputEvent->IsA()==AliESDEvent::Class()){
+        fSphericityTrue = -1;
+  }
+  if(P==0 || fNumberOfTruePrimaryTracks<3){
+      fSphericityTrue = -1;
+  }else{
+      St = (1/P)*S;
+      fSphericityTrue = (2*TMatrixDEigen(St).GetEigenValues()(1,1))/(TMatrixDEigen(St).GetEigenValues()(0,0)+TMatrixDEigen(St).GetEigenValues()(1,1));
+  }
+  return;
+}
+///________________________________________________________________________
+void AliV0ReaderV1::CalculatePtMaxSector(){
+
+
+  if(fInputEvent->IsA()==AliESDEvent::Class()){
+    static AliESDtrackCuts *EsdTrackCuts = 0x0;
+    static int prevRun = -1;
+    // Using standard function for setting Cuts
+    Int_t runNumber = fInputEvent->GetRunNumber();
+
+    if (prevRun!=runNumber) {
+      delete EsdTrackCuts;
+      EsdTrackCuts = 0;
+      prevRun = runNumber;
+    }
+    if (!EsdTrackCuts) {
+      // if LHC11a or earlier or if LHC13g or if LHC12a-i -> use 2010 cuts
+      if( (runNumber<=146860) || (runNumber>=197470 && runNumber<=197692) || (runNumber>=172440 && runNumber<=193766) ){
+        EsdTrackCuts = AliESDtrackCuts::GetStandardITSTPCTrackCuts2010();
+        // else if run2 data use 2015 PbPb cuts
+      } else if (runNumber>=209122){
+        //EsdTrackCuts = AliESDtrackCuts::GetStandardITSTPCTrackCuts2015PbPb();
+        // hard coded track cuts for the moment, because AliESDtrackCuts::GetStandardITSTPCTrackCuts2015PbPb() gives spams warnings
+        EsdTrackCuts = new AliESDtrackCuts();
+        // TPC; clusterCut = 1, cutAcceptanceEdges = kTRUE, removeDistortedRegions = kFALSE
+        EsdTrackCuts->AliESDtrackCuts::SetMinNCrossedRowsTPC(70);
+        EsdTrackCuts->AliESDtrackCuts::SetMinRatioCrossedRowsOverFindableClustersTPC(0.8);
+        EsdTrackCuts->SetCutGeoNcrNcl(2., 130., 1.5, 0.0, 0.0);  // only dead zone and not clusters per length
+        //EsdTrackCuts->AliESDtrackCuts::SetCutOutDistortedRegionsTPC(kTRUE);
+        EsdTrackCuts->AliESDtrackCuts::SetMaxChi2PerClusterTPC(4);
+        EsdTrackCuts->AliESDtrackCuts::SetAcceptKinkDaughters(kFALSE);
+        EsdTrackCuts->AliESDtrackCuts::SetRequireTPCRefit(kTRUE);
+        // ITS; selPrimaries = 1
+        EsdTrackCuts->AliESDtrackCuts::SetRequireITSRefit(kTRUE);
+        EsdTrackCuts->AliESDtrackCuts::SetClusterRequirementITS(AliESDtrackCuts::kSPD,
+                      AliESDtrackCuts::kAny);
+        EsdTrackCuts->AliESDtrackCuts::SetMaxDCAToVertexXYPtDep("0.0105+0.0350/pt^1.1");
+        EsdTrackCuts->AliESDtrackCuts::SetMaxChi2TPCConstrainedGlobal(36);
+        EsdTrackCuts->AliESDtrackCuts::SetMaxDCAToVertexZ(2);
+        EsdTrackCuts->AliESDtrackCuts::SetDCAToVertex2D(kFALSE);
+        EsdTrackCuts->AliESDtrackCuts::SetRequireSigmaToVertex(kFALSE);
+        EsdTrackCuts->AliESDtrackCuts::SetMaxChi2PerClusterITS(36);
+      // else use 2011 version of track cuts
+      }else{
+        EsdTrackCuts = AliESDtrackCuts::GetStandardITSTPCTrackCuts2011();
+      }
+      EsdTrackCuts->SetMaxDCAToVertexZ(2);
+      EsdTrackCuts->SetEtaRange(-0.8, 0.8);
+      EsdTrackCuts->SetPtRange(0.15);
+    }
+    fPtMaxSector = 0;
+    Double_t PtMaxID = 0;
+    Double_t tempPt = 0;
+    for(Int_t iTracks = 0; iTracks < fInputEvent->GetNumberOfTracks(); iTracks++){
+      AliESDtrack* curTrack = (AliESDtrack*) fInputEvent->GetTrack(iTracks);
+      if(!curTrack) continue;
+      if(!EsdTrackCuts->AcceptTrack(curTrack)) continue;
+      if(PtMaxID == 0){
+        PtMaxID = iTracks;
+        tempPt = curTrack->Pt();
+      }
+      if(curTrack->Pt() > tempPt){
+        PtMaxID = iTracks;
+        tempPt = curTrack->Pt();
+      }
+    }
+    AliESDtrack* PtMaxTrack = (AliESDtrack*) fInputEvent->GetTrack(PtMaxID);
+    if(tempPt!=0 && PtMaxTrack){
+      Double_t PtMaxPhi = PtMaxTrack->Phi();
+      fPtMaxSector = 0;
+      if((PtMaxPhi > (TMath::Pi()/4.)) && (PtMaxPhi < (3*TMath::Pi()/4.))) fPtMaxSector = 1;
+      if((PtMaxPhi > (3*TMath::Pi()/4.)) && (PtMaxPhi < (5*TMath::Pi()/4.))) fPtMaxSector = 2;
+      if((PtMaxPhi > (5*TMath::Pi()/4.)) && (PtMaxPhi < (7*TMath::Pi()/4.))) fPtMaxSector = 3;
+      if((PtMaxPhi > (7*TMath::Pi()/4.)) && (PtMaxPhi < (TMath::Pi()/4.))) fPtMaxSector = 4;
+      if(PtMaxTrack->Eta()>0) fPtMaxSector += 4;
+    }
+  } else if(fInputEvent->IsA()==AliAODEvent::Class()){
+    fPtMaxSector = 0;
+    Double_t PtMaxID = 0;
+    Double_t tempPt = 0;
+    for(Int_t iTracks = 0; iTracks<fInputEvent->GetNumberOfTracks(); iTracks++){
+      AliAODTrack* curTrack = (AliAODTrack*) fInputEvent->GetTrack(iTracks);
+      if(curTrack->GetID()<0) continue; // Avoid double counting of tracks
+      if(!curTrack->IsHybridGlobalConstrainedGlobal()) continue;
+      if(TMath::Abs(curTrack->Eta())>0.8) continue;
+      if(curTrack->Pt()<0.15) continue;
+      if(PtMaxID == 0){
+        PtMaxID = iTracks;
+        tempPt = curTrack->Pt();
+      }
+      if(curTrack->Pt() > tempPt){
+        PtMaxID = iTracks;
+        tempPt = curTrack->Pt();
+      }
+    }
+    AliAODTrack* PtMaxTrack = (AliAODTrack*) fInputEvent->GetTrack(PtMaxID);
+    if(tempPt!=0 && PtMaxTrack){
+      Double_t PtMaxPhi = PtMaxTrack->Phi();
+      fPtMaxSector = 0;
+      if((PtMaxPhi > (TMath::Pi()/4.)) && (PtMaxPhi < (3*TMath::Pi()/4.))) fPtMaxSector = 1;
+      if((PtMaxPhi > (3*TMath::Pi()/4.)) && (PtMaxPhi < (5*TMath::Pi()/4.))) fPtMaxSector = 2;
+      if((PtMaxPhi > (5*TMath::Pi()/4.)) && (PtMaxPhi < (7*TMath::Pi()/4.))) fPtMaxSector = 3;
+      if((PtMaxPhi > (7*TMath::Pi()/4.)) && (PtMaxPhi < (TMath::Pi()/4.))) fPtMaxSector = 4;
+      if(PtMaxTrack->Eta()>0) fPtMaxSector += 4;
+    }
+  }
+  return;
+}
 ///________________________________________________________________________
 Bool_t AliV0ReaderV1::ParticleIsConvertedPhoton(AliMCEvent *mcEvent, TParticle *particle, Double_t etaMax, Double_t rMax, Double_t zMax){
   // MonteCarlo Photon Selection
@@ -1499,9 +1815,6 @@ Bool_t AliV0ReaderV1::ParticleIsConvertedPhoton(AliMCEvent *mcEvent, TParticle *
     }
     if( eNeg->R() <= ((TMath::Abs(eNeg->Vz()) * lineCutZRSlope) - lineCutZValue)){
       return kFALSE; // line cut to exclude regions where we do not reconstruct
-    }
-    if (ePos->Pt() < 0.05 || eNeg->Pt() < 0.05){
-      return kFALSE;
     }
 
     return kTRUE;
@@ -1619,9 +1932,9 @@ void AliV0ReaderV1::FillImpactParamHistograms( AliVTrack* pTrack, AliVTrack* nTr
   fCurrentV0->GetXYZ(convX,convY,convZ);
   Double_t convR = TMath::Sqrt(convX*convX+convY*convY);
   //recalculated conversion point
-  Double_t convXrecalc=fCurrentMotherKF->GetConversionX(); 
-  Double_t convYrecalc=fCurrentMotherKF->GetConversionY(); 
-  Double_t convZrecalc=fCurrentMotherKF->GetConversionZ(); 
+  Double_t convXrecalc=fCurrentMotherKF->GetConversionX();
+  Double_t convYrecalc=fCurrentMotherKF->GetConversionY();
+  Double_t convZrecalc=fCurrentMotherKF->GetConversionZ();
   Double_t convRrecalc = fCurrentMotherKF->GetConversionRadius();
 
   //count V0s
@@ -1641,16 +1954,16 @@ void AliV0ReaderV1::FillImpactParamHistograms( AliVTrack* pTrack, AliVTrack* nTr
 
   //count V0s which have...
   if(TPConly){
-    //not passed z cut:    pos.tr.     or           neg.tr. 
+    //not passed z cut:    pos.tr.     or           neg.tr.
     if(((TMath::Abs(positiveTrack->GetZ()))>fZmax) || ((TMath::Abs(negativeTrack->GetZ()))>fZmax)){
       fHistoImpactParameterStudy->Fill(2);
-      RemovedByZcut=kTRUE;  
+      RemovedByZcut=kTRUE;
     }
 
-    //not passed y cut:     pos.tr.     or           neg.tr.  
+    //not passed y cut:     pos.tr.     or           neg.tr.
     if(((TMath::Abs(positiveTrack->GetY()))>fYmax) || ((TMath::Abs(negativeTrack->GetY()))>fYmax)){
       fHistoImpactParameterStudy->Fill(3);
-      RemovedByYcut=kTRUE;  
+      RemovedByYcut=kTRUE;
     }
   }
 
@@ -1673,21 +1986,21 @@ void AliV0ReaderV1::FillImpactParamHistograms( AliVTrack* pTrack, AliVTrack* nTr
   // fill conversion radius histograms
     fHistoR->Fill(convR);
     fHistoRrecalc->Fill(convRrecalc);
-    Double_t alpha = TMath::ATan2(convY,convX);  
+    Double_t alpha = TMath::ATan2(convY,convX);
     if (alpha<0) alpha += TMath::Pi()*2;
     Int_t sec = alpha/(TMath::Pi()/9);
     alpha = (10.+sec*20.)*TMath::DegToRad();
     Double_t cs = TMath::Cos(alpha);
     Double_t sn = TMath::Sin(alpha);
-    Double_t xsV0 = convX*cs - convY*sn; 
+    Double_t xsV0 = convX*cs - convY*sn;
     fHistoRviaAlpha->Fill(xsV0);
-    Double_t alpha_r = TMath::ATan2(convYrecalc,convXrecalc);  
+    Double_t alpha_r = TMath::ATan2(convYrecalc,convXrecalc);
     if (alpha_r<0) alpha_r += TMath::Pi()*2;
     Int_t sec_r = alpha_r/(TMath::Pi()/9);
     alpha_r = (10.+sec_r*20.)*TMath::DegToRad();
     Double_t cs_r = TMath::Cos(alpha_r);
     Double_t sn_r = TMath::Sin(alpha_r);
-    Double_t xsV0_r = convXrecalc*cs_r - convYrecalc*sn_r;     
+    Double_t xsV0_r = convXrecalc*cs_r - convYrecalc*sn_r;
     fHistoRviaAlphaRecalc->Fill(xsV0_r);
 
   if (convR > 80) {  // conversion within TPC <-> TPC-only tracks
@@ -1699,7 +2012,7 @@ void AliV0ReaderV1::FillImpactParamHistograms( AliVTrack* pTrack, AliVTrack* nTr
       const TBits& bits = tr->GetTPCClusterMap();
       Int_t nConflict = 0;
       for (Int_t ic=0;ic<159;ic++) {
-        if (rTPC[ic]>(xsV0-kTPCMargin)) break;  
+        if (rTPC[ic]>(xsV0-kTPCMargin)) break;
         if (bits.TestBitNumber(ic)){
           nConflict++;
           fHistoRdiff->Fill(xsV0-rTPC[ic]);
@@ -1745,22 +2058,22 @@ void AliV0ReaderV1::FillImpactParamHistograms( AliVTrack* pTrack, AliVTrack* nTr
   fImpactParamTree->Fill();
 
   // fill impact parameter histograms
-  fHistoPosTrackImpactParamZ->Fill(posZ); 
+  fHistoPosTrackImpactParamZ->Fill(posZ);
   fHistoPosTrackImpactParamY->Fill(posY);
   fHistoPosTrackImpactParamX->Fill(posX);
-  fHistoPosTrackImpactParamZvsPt->Fill(posPt, posZ); 
+  fHistoPosTrackImpactParamZvsPt->Fill(posPt, posZ);
   fHistoPosTrackImpactParamYvsPt->Fill(posPt, posY);
-  fHistoPosTrackImpactParamXvsPt->Fill(posPt, posX); 
-  fHistoNegTrackImpactParamZ->Fill(negZ);  
+  fHistoPosTrackImpactParamXvsPt->Fill(posPt, posX);
+  fHistoNegTrackImpactParamZ->Fill(negZ);
   fHistoNegTrackImpactParamY->Fill(negY);
   fHistoNegTrackImpactParamX->Fill(negX);
-  fHistoNegTrackImpactParamZvsPt->Fill(negPt, negZ);  
+  fHistoNegTrackImpactParamZvsPt->Fill(negPt, negZ);
   fHistoNegTrackImpactParamYvsPt->Fill(negPt, negY);
   fHistoNegTrackImpactParamXvsPt->Fill(negPt, negX);
 
   // fill comparison histos before / after new cuts
   fHistoPt->Fill(positiveTrack->Pt());
-  fHistoImpactParamZvsR->Fill(convZrecalc,convRrecalc); 
+  fHistoImpactParamZvsR->Fill(convZrecalc,convRrecalc);
   //Float_t *DCAzPhoton;
   Float_t DCAzPhoton;
   //const AliVVertex *PrimVertex = fInputEvent->GetPrimaryVertex();
@@ -1771,7 +2084,7 @@ void AliV0ReaderV1::FillImpactParamHistograms( AliVTrack* pTrack, AliVTrack* nTr
   fHistoDCAzPhoton->Fill(DCAzPhoton);
   if(!RemovedByAnyCut) {
     fHistoPt2->Fill(positiveTrack->Pt());
-    fHistoImpactParamZvsR2->Fill(convZrecalc,convRrecalc);  
+    fHistoImpactParamZvsR2->Fill(convZrecalc,convRrecalc);
     fHistoDCAzPhoton2->Fill(DCAzPhoton);
   }
 

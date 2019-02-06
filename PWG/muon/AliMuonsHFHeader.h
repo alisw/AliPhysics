@@ -18,7 +18,7 @@
 
 class TList;
 class AliMCEvent;
-class AliInputEventHandler;
+class AliVEventHandler;
 
 class AliMuonInfoStoreRD;
 class AliDimuInfoStoreRD;
@@ -48,7 +48,7 @@ class AliMuonsHFHeader : public TNamed {
   Double32_t EventPlane()          const { return fEventPlane; }
   Bool_t     IsSelected();
 
-  void SetEventInfo(AliInputEventHandler* const handler);
+  void SetEventInfo(AliVEventHandler* const handler);
 
   void CreateHistograms(TList *list);
   void FillHistosEvnH(TList *list);

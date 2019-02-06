@@ -68,6 +68,9 @@ fMinVtxContr(1),
 fMaxVtxRedChi2(1e6),
 fMaxVtxZ(10.),
 fMinSPDMultiplicity(0),
+fMaxVtxChi2PileupMV(5.),
+fMinWDzPileupMV(15.),
+fRejectPlpFromDiffBCMV(kFALSE),
 fTriggerMask(AliVEvent::kAnyINT),
 fUseOnlyOneTrigger(kFALSE),
 fTrackCuts(0),
@@ -110,7 +113,7 @@ fApplySPDDeadPbPb2011(kFALSE),
 fApplySPDMisalignedPP2012(kFALSE),
 fMaxDiffTRKV0Centr(-1.),
 fRemoveTrackletOutliers(kFALSE),
-fCutOnzVertexSPD(0),
+fCutOnzVertexSPD(3),
 fKinkReject(kFALSE),
 fUseTrackSelectionWithFilterBits(kTRUE),
 fUseCentrFlatteningInMC(kFALSE),
@@ -125,7 +128,10 @@ fCutGeoNcrNclLength(130.),
 fCutGeoNcrNclGeom1Pt(1.5),
 fCutGeoNcrNclFractionNcr(0.85),
 fCutGeoNcrNclFractionNcl(0.7),
-fUseV0ANDSelectionOffline(kFALSE)
+fUseV0ANDSelectionOffline(kFALSE),
+fUseTPCtrackCutsOnThisDaughter(kTRUE),
+fApplyZcutOnSPDvtx(kFALSE),
+fUsePreselect(0)
 {
   //
   // Default Constructor
@@ -140,6 +146,9 @@ AliRDHFCuts::AliRDHFCuts(const AliRDHFCuts &source) :
   fMaxVtxRedChi2(source.fMaxVtxRedChi2),
   fMaxVtxZ(source.fMaxVtxZ),
   fMinSPDMultiplicity(source.fMinSPDMultiplicity),
+  fMaxVtxChi2PileupMV(source.fMaxVtxChi2PileupMV),
+  fMinWDzPileupMV(source.fMinWDzPileupMV),
+  fRejectPlpFromDiffBCMV(source.fRejectPlpFromDiffBCMV),
   fTriggerMask(source.fTriggerMask),
   fUseOnlyOneTrigger(source.fUseOnlyOneTrigger),
   fTriggerClass(),
@@ -198,7 +207,10 @@ AliRDHFCuts::AliRDHFCuts(const AliRDHFCuts &source) :
   fCutGeoNcrNclGeom1Pt(source.fCutGeoNcrNclGeom1Pt),
   fCutGeoNcrNclFractionNcr(source.fCutGeoNcrNclFractionNcr),
   fCutGeoNcrNclFractionNcl(source.fCutGeoNcrNclFractionNcl),
-  fUseV0ANDSelectionOffline(source.fUseV0ANDSelectionOffline)
+  fUseV0ANDSelectionOffline(source.fUseV0ANDSelectionOffline),
+  fUseTPCtrackCutsOnThisDaughter(source.fUseTPCtrackCutsOnThisDaughter),
+  fApplyZcutOnSPDvtx(source.fApplyZcutOnSPDvtx),
+  fUsePreselect(source.fUsePreselect)
 {
   //
   // Copy constructor
@@ -233,6 +245,9 @@ AliRDHFCuts &AliRDHFCuts::operator=(const AliRDHFCuts &source)
   fMaxVtxRedChi2=source.fMaxVtxRedChi2;
   fMaxVtxZ=source.fMaxVtxZ;
   fMinSPDMultiplicity=source.fMinSPDMultiplicity;
+  fMaxVtxChi2PileupMV=source.fMaxVtxChi2PileupMV;
+  fMinWDzPileupMV=source.fMinWDzPileupMV;
+  fRejectPlpFromDiffBCMV=source.fRejectPlpFromDiffBCMV;
   fTriggerMask=source.fTriggerMask;
   fUseOnlyOneTrigger=source.fUseOnlyOneTrigger;
   fTriggerClass[0]=source.fTriggerClass[0];
@@ -298,6 +313,8 @@ AliRDHFCuts &AliRDHFCuts::operator=(const AliRDHFCuts &source)
   fCutGeoNcrNclFractionNcr=source.fCutGeoNcrNclFractionNcr;
   fCutGeoNcrNclFractionNcl=source.fCutGeoNcrNclFractionNcl;
   fUseV0ANDSelectionOffline=source.fUseV0ANDSelectionOffline;
+  fUseTPCtrackCutsOnThisDaughter=source.fUseTPCtrackCutsOnThisDaughter;
+  fUsePreselect=source.fUsePreselect;
 
   PrintAll();
 
@@ -620,52 +637,63 @@ Bool_t AliRDHFCuts::IsEventSelected(AliVEvent *event) {
       accept=kFALSE;
       fEvRejectionBits+=1<<kTooFewVtxContrib;
     }
-    if(TMath::Abs(vertex->GetZ())>fMaxVtxZ) {
-      fEvRejectionBits+=1<<kZVtxOutFid;
-      if(accept) fWhyRejection=6;
-      accept=kFALSE;
-    } 
   }
 
+  const AliVVertex *vSPD = ((AliAODEvent*)event)->GetPrimaryVertexSPD();
   if(fCutOnzVertexSPD>0){
-    const AliVVertex *vSPD = ((AliAODEvent*)event)->GetPrimaryVertexSPD();
     if(!vSPD || (vSPD && vSPD->GetNContributors()<fMinVtxContr)){
       accept=kFALSE;
       fEvRejectionBits+=1<<kBadSPDVertex;
     }else{
       if(fCutOnzVertexSPD==1 && TMath::Abs(vSPD->GetZ())>12.) {
-	// protection for events with bad reconstructed track vertex (introduced for 2011 Pb-Pb)
-	fEvRejectionBits+=1<<kZVtxSPDOutFid;
-	if(accept) fWhyRejection=6;
-	accept=kFALSE;
-      } 
+        // protection for events with bad reconstructed track vertex (introduced for 2011 Pb-Pb)
+        fEvRejectionBits+=1<<kZVtxSPDOutFid;
+        if(accept) fWhyRejection=6;
+        accept=kFALSE;
+      }
       if(fCutOnzVertexSPD>=2 && vertex){
-	Double_t dz = vSPD->GetZ()-vertex->GetZ();
-	// cut on absolute distance between track and SPD vertex (introduced for 2011 Pb-Pb)
-	if(TMath::Abs(dz)>0.5) {
-	  fEvRejectionBits+=1<<kBadTrackVertex;
-	  if(accept) fWhyRejection=0;
-	  accept=kFALSE;
-	}
-	if(accept && fCutOnzVertexSPD==3){
-	  // cut on nsigma distance between track and SPD vertex (for 2015 Pb-Pb)
-	  double covTrc[6],covSPD[6];
-	  vertex->GetCovarianceMatrix(covTrc);
-	  vSPD->GetCovarianceMatrix(covSPD);
-	  double errTot = TMath::Sqrt(covTrc[5]+covSPD[5]);
-	  double errTrc = TMath::Sqrt(covTrc[5]);
-	  double nsigTot = TMath::Abs(dz)/errTot, nsigTrc = TMath::Abs(dz)/errTrc;
-	  if (TMath::Abs(dz)>0.2 || nsigTot>10 || nsigTrc>20){
-	    // reject, bad reconstructed track vertex
-	    fEvRejectionBits+=1<<kBadTrackVertex;
-	    if(accept) fWhyRejection=0;
-	    accept=kFALSE;
-	  }
-	}
+        Double_t dz = vSPD->GetZ()-vertex->GetZ();
+        // cut on absolute distance between track and SPD vertex (introduced for 2011 Pb-Pb)
+        if(TMath::Abs(dz)>0.5) {
+          fEvRejectionBits+=1<<kBadTrackVertex;
+          if(accept) fWhyRejection=0;
+          accept=kFALSE;
+        }
+        if(accept && fCutOnzVertexSPD==3){
+          // cut on nsigma distance between track and SPD vertex (for 2015 Pb-Pb)
+          double covTrc[6],covSPD[6];
+          vertex->GetCovarianceMatrix(covTrc);
+          vSPD->GetCovarianceMatrix(covSPD);
+          double errTot = TMath::Sqrt(covTrc[5]+covSPD[5]);
+          double errTrc = TMath::Sqrt(covTrc[5]);
+          double nsigTot = TMath::Abs(dz)/errTot, nsigTrc = TMath::Abs(dz)/errTrc;
+          if (TMath::Abs(dz)>0.2 || nsigTot>10 || nsigTrc>20){
+            // reject, bad reconstructed track vertex
+            fEvRejectionBits+=1<<kBadTrackVertex;
+            if(accept) fWhyRejection=0;
+            accept=kFALSE;
+          }
+        }
       }
     }
   }
 
+  Double_t zvert = -999;
+  if(!fApplyZcutOnSPDvtx && vertex) zvert=vertex->GetZ();
+  else if(fApplyZcutOnSPDvtx) {
+    if(!vSPD || (vSPD && vSPD->GetNContributors()<1)){
+      accept=kFALSE;
+      fEvRejectionBits+=1<<kBadSPDVertex;
+    }
+    else zvert = vSPD->GetZ();
+  }
+  
+  if(TMath::Abs(zvert)>fMaxVtxZ) {
+    fEvRejectionBits+=1<<kZVtxOutFid;
+    if(accept) fWhyRejection=6;
+    accept=kFALSE;
+  }
+  
   // pile-up rejection
   if(fOptPileup==kRejectPileupEvent){
     Bool_t isPileup=kFALSE;
@@ -684,6 +712,10 @@ Bool_t AliRDHFCuts::IsEventSelected(AliVEvent *event) {
   }
   else if(fOptPileup==kRejectMVPileupEvent){
     AliAnalysisUtils utils;
+    utils.SetMinPlpContribMV(fMinContrPileup);  // min. multiplicity of the pile-up vertex to consider
+    utils.SetMaxPlpChi2MV(fMaxVtxChi2PileupMV); // max chi2 per contributor of the pile-up vertex to consider.
+    utils.SetMinWDistMV(fMinWDzPileupMV);       // minimum weighted distance in Z between 2 vertices (i.e. (zv1-zv2)/sqrt(sigZv1^2+sigZv2^2) )
+    utils.SetCheckPlpFromDifferentBCMV(fRejectPlpFromDiffBCMV); // vertex with |BCID|>2 will trigger pile-up (based on TOF)
     Bool_t isPUMV = utils.IsPileUpMV(event);
     if(isPUMV) {
       if(accept) fWhyRejection=1;
@@ -848,13 +880,13 @@ Bool_t AliRDHFCuts::IsDaughterSelected(AliAODTrack *track,const AliESDVertex *pr
   }
 
   //appliyng TPC crossed rows pT dependent cut
-  if(f1CutMinNCrossedRowsTPCPtDep){
+  if(f1CutMinNCrossedRowsTPCPtDep && fUseTPCtrackCutsOnThisDaughter){
     Float_t nCrossedRowsTPC = esdTrack.GetTPCCrossedRows();
     if(nCrossedRowsTPC<f1CutMinNCrossedRowsTPCPtDep->Eval(esdTrack.Pt())) return kFALSE;
   }
   
   //appliyng NTPCcls/NTPCcrossedRows cut
-  if(fCutRatioClsOverCrossRowsTPC){
+  if(fCutRatioClsOverCrossRowsTPC && fUseTPCtrackCutsOnThisDaughter){
     Float_t nCrossedRowsTPC = esdTrack.GetTPCCrossedRows();
     Float_t nClustersTPC = esdTrack.GetTPCNcls();
     if(nCrossedRowsTPC!=0){ 
@@ -865,7 +897,7 @@ Bool_t AliRDHFCuts::IsDaughterSelected(AliAODTrack *track,const AliESDVertex *pr
   }
 
   //appliyng TPCsignalN/NTPCcrossedRows cut
-  if(fCutRatioSignalNOverCrossRowsTPC){
+  if(fCutRatioSignalNOverCrossRowsTPC && fUseTPCtrackCutsOnThisDaughter){
     Float_t nCrossedRowsTPC = esdTrack.GetTPCCrossedRows();
     Float_t nTPCsignal = esdTrack.GetTPCsignalN();
     if(nCrossedRowsTPC!=0){
@@ -876,7 +908,7 @@ Bool_t AliRDHFCuts::IsDaughterSelected(AliAODTrack *track,const AliESDVertex *pr
   }
 
   // geometrical cut (note uses track at vertex instead of at TPC inner wall)
-  if(fUseCutGeoNcrNcl && aod){
+  if(fUseCutGeoNcrNcl && aod && fUseTPCtrackCutsOnThisDaughter){
     Float_t nCrossedRowsTPC = esdTrack.GetTPCCrossedRows();
     Float_t lengthInActiveZoneTPC=esdTrack.GetLengthInActiveZone(0,fDeadZoneWidth,220.,aod->GetMagneticField());
     Double_t cutGeoNcrNclLength=fCutGeoNcrNclLength-TMath::Power(TMath::Abs(esdTrack.GetSigned1Pt()),fCutGeoNcrNclGeom1Pt);
@@ -968,8 +1000,8 @@ Bool_t AliRDHFCuts::IsDaughterSelected(AliAODTrack *track,const AliESDVertex *pr
     Double_t phi2=TMath::ATan2(xyz2[1],xyz2[0]);
     if(phi2<0) phi2+=2*TMath::Pi();
     Int_t lad2=(Int_t)(phi2/(2.*TMath::Pi()/40.));
-    Int_t mod1=(Int_t)((xyz1[2]+14)/7.);
-    Int_t mod2=(Int_t)((xyz2[2]+14)/7.);
+    Int_t mod1=TMath::Floor((xyz1[2]+14)/7.);
+    Int_t mod2=TMath::Floor((xyz2[2]+14)/7.);
     Bool_t lay1ok=kFALSE;
     if(mod1>=0 && mod1<4 && lad1<20){
       lay1ok=deadSPDLay1PbPb2011[lad1][mod1];
@@ -1149,13 +1181,14 @@ void AliRDHFCuts::PrintAll() const {
   if(fOptPileup==2) printf(" -- Reject tracks from pileup vtx");
   if(fUseCentrality>0) {
     TString estimator="";
-    if(fUseCentrality==1) estimator = "V0";
-    if(fUseCentrality==2) estimator = "Tracks";
-    if(fUseCentrality==3) estimator = "Tracklets";
-    if(fUseCentrality==4) estimator = "SPD clusters outer"; 
-    if(fUseCentrality==5) estimator = "ZNA"; 
-    if(fUseCentrality==6) estimator = "ZPA"; 
-    if(fUseCentrality==7) estimator = "V0A"; 
+    if(fUseCentrality==kCentV0M) estimator = "V0";
+    if(fUseCentrality==kCentTRK) estimator = "Tracks";
+    if(fUseCentrality==kCentTKL) estimator = "Tracklets";
+    if(fUseCentrality==kCentCL1) estimator = "SPD clusters outer";
+    if(fUseCentrality==kCentZNA) estimator = "ZNA"; 
+    if(fUseCentrality==kCentZPA) estimator = "ZPA"; 
+    if(fUseCentrality==kCentV0A) estimator = "V0A";
+    if(fUseCentrality==kCentCL0) estimator = "SPD clusters inner";
     printf("Centrality class considered: %.1f-%.1f, estimated with %s\n",fMinCentrality,fMaxCentrality,estimator.Data());
   }
   if(fIsCandTrackSPDFirst) printf("Check for candidates with pt < %2.2f, that daughters fullfill kFirst criteria\n",fMaxPtCandTrackSPDFirst);
@@ -1202,6 +1235,7 @@ void AliRDHFCuts::PrintAll() const {
    }
    cout<<endl;
   }
+  printf("fUsePreselect=%d \n",fUsePreselect);
   if(fPidHF) fPidHF->PrintAll();
   return;
 }
@@ -1334,6 +1368,8 @@ Float_t AliRDHFCuts::GetCentrality(AliAODEvent* aodEvent,AliRDHFCuts::ECentralit
     cent=multSelection->GetMultiplicityPercentile("ZNA");
   }else if(estimator==kCentCL1){
     cent=multSelection->GetMultiplicityPercentile("CL1");
+  }else if(estimator==kCentCL0){
+    cent=multSelection->GetMultiplicityPercentile("CL0");
   }else {
     AliWarning(Form("CENTRALITY ESTIMATE WITH ESTIMATOR %d NOT YET IMPLEMENTED FOR NEW FRAMEWORK",(Int_t)estimator));
     return cent;
@@ -1545,6 +1581,8 @@ Bool_t AliRDHFCuts::CompareCuts(const AliRDHFCuts *obj) const {
 
     if(fTrackCuts->GetClusterRequirementITS(AliESDtrackCuts::kSPD)!=obj->fTrackCuts->GetClusterRequirementITS(AliESDtrackCuts::kSPD)) {printf("ClusterReq SPD %d  %d\n",fTrackCuts->GetClusterRequirementITS(AliESDtrackCuts::kSPD),obj->fTrackCuts->GetClusterRequirementITS(AliESDtrackCuts::kSPD)); areEqual=kFALSE;}
   }
+  
+  if(fUsePreselect!=obj->fUsePreselect){printf("fUsePreselect: %d %d\n",fUsePreselect,obj->fUsePreselect);areEqual=kFALSE;}
 
   if(fCutsRD) {
    for(Int_t iv=0;iv<fnVars;iv++) {

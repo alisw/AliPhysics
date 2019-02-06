@@ -53,7 +53,7 @@
 
 #include "AliHeader.h"  
 #include "AliGenEventHeader.h"  
-#include "AliInputEventHandler.h"  
+#include "AliVEventHandler.h"  
 #include "AliStack.h"  
 #include "AliTrackReference.h"  
 #include "AliTrackPointArray.h"
@@ -309,7 +309,7 @@ void AliAnalysisTaskFilteredTree::UserExec(Option_t *)
   //
 
   // ESD event
-  fESD = (AliESDEvent*) (InputEvent());
+  fESD = dynamic_cast<AliESDEvent*>(InputEvent());
   if (!fESD) {
     Printf("ERROR: ESD event not available");
     return;
@@ -328,12 +328,12 @@ void AliAnalysisTaskFilteredTree::UserExec(Option_t *)
 
   if(fUseESDfriends) {
     //fESDfriend = dynamic_cast<AliESDfriend*>(fESD->FindListObject("AliESDfriend"));
-    fESDfriend = ESDfriend();
+    fESDfriend = dynamic_cast<AliESDfriend*>(ESDfriend());
     if(!fESDfriend) {
       Printf("ERROR: ESD friends not available");
     }
   }
-  AliInputEventHandler* inputHandler = (AliInputEventHandler*) AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler();
+  AliVEventHandler* inputHandler = AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler();
   if (!inputHandler){
     return;
   }
@@ -416,10 +416,10 @@ void AliAnalysisTaskFilteredTree::ProcessCosmics(AliESDEvent *const event, AliES
     //if (TMath::Abs(dcaTPC[0])<kMaxDelta[0]) continue;
     //if (TMath::Abs(dcaTPC[1])<kMaxDelta[0]*2) continue;
     //    const AliExternalTrackParam * trackIn0 = track0->GetInnerParam();
-    AliESDfriendTrack* friendTrack0=NULL;
+    const AliESDfriendTrack* friendTrack0=NULL;
     if (esdFriend &&!esdFriend->TestSkipBit()){
       if (itrack0<ntracksFriend){
-	friendTrack0 = esdFriend->GetTrack(itrack0);
+	friendTrack0 = track0->GetFriendTrack();
       } //this guy can be NULL
     }
 
@@ -475,16 +475,16 @@ void AliAnalysisTaskFilteredTree::ProcessCosmics(AliESDEvent *const event, AliES
       ULong64_t gid          = ((periodID << 36) | (orbitID << 12) | bunchCrossID); 
       
 
-      AliESDfriendTrack* friendTrack1=NULL;
+      const AliESDfriendTrack* friendTrack1=NULL;
       if (esdFriend &&!esdFriend->TestSkipBit()){
 	if (itrack1<ntracksFriend){
-	  friendTrack1 = esdFriend->GetTrack(itrack1);
+	  friendTrack1 = track1->GetFriendTrack();
 	} //this guy can be NULL
       }
 
       //
-      AliESDfriendTrack *friendTrackStore0=friendTrack0;    // store friend track0 for later processing
-      AliESDfriendTrack *friendTrackStore1=friendTrack1;    // store friend track1 for later processing
+      AliESDfriendTrack *friendTrackStore0=(AliESDfriendTrack*)friendTrack0;    // store friend track0 for later processing
+      AliESDfriendTrack *friendTrackStore1=(AliESDfriendTrack*)friendTrack1;    // store friend track1 for later processing
       if (fFriendDownscaling>=1){  // downscaling number of friend tracks
 	if (gRandom->Rndm()>1./fFriendDownscaling){
 	  friendTrackStore0 = 0;
@@ -556,7 +556,7 @@ void AliAnalysisTaskFilteredTree::Process(AliESDEvent *const esdEvent, AliMCEven
   AliTriggerAnalysis* triggerAnalysis = NULL;
 
   // 
-  AliInputEventHandler* inputHandler = (AliInputEventHandler*) AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler();
+  AliVEventHandler* inputHandler = AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler();
   // trigger
   if(evtCuts->IsTriggerRequired())  
   {
@@ -766,7 +766,7 @@ void AliAnalysisTaskFilteredTree::ProcessLaser(AliESDEvent *const esdEvent, AliM
       if (track->GetInnerParam()->Pt()<kMinPt) continue;
       Bool_t skipTrack=gRandom->Rndm()>1/(1+TMath::Abs(fFriendDownscaling));
       if (skipTrack) continue;
-      if (esdFriend) {if (!esdFriend->TestSkipBit()) friendTrack = esdFriend->GetTrack(iTrack);} //this guy can be NULL      
+      if (esdFriend) {if (!esdFriend->TestSkipBit()) friendTrack = (AliESDfriendTrack*)track->GetFriendTrack();} //this guy can be NULL      
       (*fTreeSRedirector)<<"Laser"<<
         "gid="<<gid<<                          // global identifier of event
         "fileName.="<<&fCurrentFileName<<              //
@@ -817,7 +817,7 @@ void AliAnalysisTaskFilteredTree::ProcessAll(AliESDEvent *const esdEvent, AliMCE
   AliTriggerAnalysis* triggerAnalysis = NULL;
 
   // 
-  AliInputEventHandler* inputHandler = (AliInputEventHandler*) AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler();
+  AliVEventHandler* inputHandler = AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler();
   AliPIDResponse *pidResponse = inputHandler->GetPIDResponse();
 
 
@@ -978,7 +978,9 @@ void AliAnalysisTaskFilteredTree::ProcessAll(AliESDEvent *const esdEvent, AliMCE
       AliESDfriendTrack* friendTrack=NULL;
       Int_t numberOfFriendTracks=0;
       if (esdFriend) numberOfFriendTracks=esdFriend->GetNumberOfTracks();
-      if (esdFriend && iTrack<numberOfFriendTracks) {if (!esdFriend->TestSkipBit()) friendTrack = esdFriend->GetTrack(iTrack);} //this guy can be NULL
+      if (esdFriend && iTrack<numberOfFriendTracks) {
+	if (!esdFriend->TestSkipBit()) friendTrack = (AliESDfriendTrack*)track->GetFriendTrack();
+      } //this guy can be NULL
       if(!track) continue;
       if(track->Charge()==0) continue;
       if(!esdTrackCuts->AcceptTrack(track)) continue;
@@ -1572,7 +1574,7 @@ void AliAnalysisTaskFilteredTree::ProcessMCEff(AliESDEvent *const esdEvent, AliM
   AliTriggerAnalysis* triggerAnalysis = NULL;
 
   // 
-  AliInputEventHandler* inputHandler = (AliInputEventHandler*) AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler();
+  AliVEventHandler* inputHandler = AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler();
 
 
   // trigger
@@ -1868,7 +1870,7 @@ void AliAnalysisTaskFilteredTree::ProcessV0(AliESDEvent *const esdEvent, AliMCEv
   AliTriggerAnalysis* triggerAnalysis = NULL;
 
   // 
-  AliInputEventHandler* inputHandler = (AliInputEventHandler*) AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler();
+  AliVEventHandler* inputHandler = AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler();
   AliPIDResponse *pidResponse = inputHandler->GetPIDResponse();
 
   // trigger
@@ -1967,10 +1969,10 @@ void AliAnalysisTaskFilteredTree::ProcessV0(AliESDEvent *const esdEvent, AliMCEv
         if (!esdFriend->TestSkipBit()){
 	  Int_t ntracksFriend = esdFriend->GetNumberOfTracks();
 	  if (v0->GetIndex(0)<ntracksFriend){
-	    friendTrack0 = esdFriend->GetTrack(v0->GetIndex(0)); //this guy can be NULL
+	    friendTrack0 = (AliESDfriendTrack*)track0->GetFriendTrack(); //this guy can be NULL
 	  }
 	  if (v0->GetIndex(1)<ntracksFriend){
-	    friendTrack1 = esdFriend->GetTrack(v0->GetIndex(1)); //this guy can be NULL
+	    friendTrack1 =  (AliESDfriendTrack*)track1->GetFriendTrack(); //this guy can be NULL
 	  }
         }
       }
@@ -2104,7 +2106,7 @@ void AliAnalysisTaskFilteredTree::ProcessdEdx(AliESDEvent *const esdEvent, AliMC
   AliTriggerAnalysis* triggerAnalysis = NULL;
 
   // 
-  AliInputEventHandler* inputHandler = (AliInputEventHandler*) AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler();
+  AliVEventHandler* inputHandler = AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler();
   AliPIDResponse *pidResponse = inputHandler->GetPIDResponse();
 
   if(evtCuts->IsTriggerRequired())  
@@ -2169,7 +2171,7 @@ void AliAnalysisTaskFilteredTree::ProcessdEdx(AliESDEvent *const esdEvent, AliMC
       if (esdFriend && !esdFriend->TestSkipBit()) {
 	Int_t ntracksFriend = esdFriend->GetNumberOfTracks();
 	if (iTrack<ntracksFriend){
-	  friendTrack = esdFriend->GetTrack(iTrack);
+	  friendTrack = (AliESDfriendTrack*)track->GetFriendTrack();
 	} //this guy can be NULL	
       }
       
@@ -2748,7 +2750,7 @@ void AliAnalysisTaskFilteredTree::ProcessITSTPCmatchOut(AliESDEvent *const esdEv
       vecMomR1(iTrack,4)= trackTPC->GetSigned1Pt();;    
       vecMomR1(iTrack,5)= trackTPC->GetTgl();;    
     }
-    AliESDfriendTrack* friendTrack=esdFriend->GetTrack(iTrack);
+    const AliESDfriendTrack* friendTrack = track->GetFriendTrack();
     if(!friendTrack) continue;
     if (friendTrack->GetITSOut()){
       const AliExternalTrackParam *trackITS=friendTrack->GetITSOut();
@@ -2780,7 +2782,7 @@ void AliAnalysisTaskFilteredTree::ProcessITSTPCmatchOut(AliESDEvent *const esdEv
     AliESDtrack *track0 = esdEvent->GetTrack(iTrack0);   
     if(!track0) continue;
     if (track0->IsOn(AliVTrack::kTPCin)) continue;
-    AliESDfriendTrack* friendTrack0=esdFriend->GetTrack(iTrack0); 
+    const AliESDfriendTrack* friendTrack0 = track0->GetFriendTrack();
     if (!friendTrack0) continue;
     //if (!track0->IsOn(AliVTrack::kITSpureSA)) continue;
     //if (!friendTrack0->GetITSOut()) continue;  // is there flag for ITS standalone?

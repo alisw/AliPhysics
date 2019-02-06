@@ -50,7 +50,7 @@ AliFemtoEventCutEstimators::~AliFemtoEventCutEstimators(){
   // Default destructor
 }
 //------------------------------
-AliFemtoEventCutEstimators& AliFemtoEventCutEstimators::operator=(AliFemtoEventCutEstimators& c)
+AliFemtoEventCutEstimators& AliFemtoEventCutEstimators::operator=(const AliFemtoEventCutEstimators& c)
 {
   if (this != &c) {
     AliFemtoEventCut::operator=(c);

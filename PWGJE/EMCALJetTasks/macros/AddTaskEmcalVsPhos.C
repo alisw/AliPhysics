@@ -103,14 +103,14 @@ AliAnalysisTaskEmcalVsPhos* AddTaskEmcalVsPhos(
   if (partCont) partCont->SetParticlePtCut(minTrPt);
   if (partCont) task->AdoptParticleContainer(partCont);
   
+  // Add the cluster container
   AliClusterContainer* clusCont = 0;
   if (!clusName.IsNull()) {
     clusCont = new AliClusterContainer(clusName);
     clusCont->SetClusECut(0.);
     clusCont->SetClusPtCut(0.);
-    clusCont->SetClusNonLinCorrEnergyCut(0.);
-    clusCont->SetClusHadCorrEnergyCut(minClPt);
-    clusCont->SetDefaultClusterEnergy(AliVCluster::kHadCorr);
+    clusCont->SetClusNonLinCorrEnergyCut(minClPt);
+    clusCont->SetClusHadCorrEnergyCut(0.);
     clusCont->SetIncludePHOS(kTRUE);
     clusCont->SetPhosMinNcells(3);
     clusCont->SetPhosMinM02(0.2);

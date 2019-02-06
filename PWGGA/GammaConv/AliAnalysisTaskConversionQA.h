@@ -44,7 +44,7 @@ class AliAnalysisTaskConversionQA : public AliAnalysisTaskSE{
                                                                                             fIsHeavyIon = IsHeavyIon            ;
                                                                                           }
 
-    void FillType                           ( Bool_t fillTree, 
+    void FillType                           ( Double_t fillTree,
                                               Bool_t fillHistorams)                       {
                                                                                             ffillTree = fillTree                ;
                                                                                             ffillHistograms = fillHistorams     ;
@@ -80,10 +80,9 @@ class AliAnalysisTaskConversionQA : public AliAnalysisTaskSE{
     AliMCEvent*                 fMCEvent;                   //
     TTree*                      fTreeQA;                    //
     Bool_t                      fIsHeavyIon;                //
-    Bool_t                      ffillTree;                  //
+    Double_t                    ffillTree;                  //
     Bool_t                      ffillHistograms;            //
     TList*                      fOutputList;                //
-    TList*                      fTreeList;                  //
     TList*                      fESDList;                   //
     TH1F*                       hVertexZ;                   //
     TH1I*                       hNGoodESDTracks;            //
@@ -136,7 +135,7 @@ class AliAnalysisTaskConversionQA : public AliAnalysisTaskSE{
     Int_t*                      fMCStackPos;                //[fnGammaCandidates]
     Int_t*                      fMCStackNeg;                //[fnGammaCandidates]
     
-    ClassDef(AliAnalysisTaskConversionQA, 7);
+    ClassDef(AliAnalysisTaskConversionQA, 9);
 };
 
 #endif

@@ -101,7 +101,7 @@ void AliQnCorrectionsQnVectorRecentering::CreateSupportDataStructures() {
 /// \return kTRUE if everything went OK
 Bool_t AliQnCorrectionsQnVectorRecentering::CreateSupportHistograms(TList *list) {
 
-  TString histoNameAndTitle = Form("%s %s ",
+  TString histoNameAndTitle = TString::Format("%s %s ",
       szSupportHistogramName,
       fDetectorConfiguration->GetName());
 
@@ -127,7 +127,7 @@ Bool_t AliQnCorrectionsQnVectorRecentering::CreateSupportHistograms(TList *list)
 Bool_t AliQnCorrectionsQnVectorRecentering::AttachInput(TList *list) {
 
   if (fInputHistograms->AttachHistograms(list)) {
-    AliInfo(Form("Recentering on %s going to be applied", fDetectorConfiguration->GetName()));
+    AliInfo(TString::Format("Recentering on %s going to be applied", fDetectorConfiguration->GetName()).Data());
     fState = QCORRSTEP_applyCollect;
     return kTRUE;
   }
@@ -142,8 +142,8 @@ Bool_t AliQnCorrectionsQnVectorRecentering::AttachInput(TList *list) {
 Bool_t AliQnCorrectionsQnVectorRecentering::CreateQAHistograms(TList *list) {
 
   fQAQnAverageHistogram = new AliQnCorrectionsProfileComponents(
-      Form("%s %s", szQAQnAverageHistogramName, fDetectorConfiguration->GetName()),
-      Form("%s %s", szQAQnAverageHistogramName, fDetectorConfiguration->GetName()),
+      TString::Format("%s %s", szQAQnAverageHistogramName, fDetectorConfiguration->GetName()).Data(),
+      TString::Format("%s %s", szQAQnAverageHistogramName, fDetectorConfiguration->GetName()).Data(),
       fDetectorConfiguration->GetEventClassVariablesSet());
 
   /* get information about the configured harmonics to pass it for histogram creation */
@@ -163,8 +163,8 @@ Bool_t AliQnCorrectionsQnVectorRecentering::CreateQAHistograms(TList *list) {
 Bool_t AliQnCorrectionsQnVectorRecentering::CreateNveQAHistograms(TList *list) {
 
   fQANotValidatedBin = new AliQnCorrectionsHistogramSparse(
-      Form("%s %s", szQANotValidatedHistogramName, fDetectorConfiguration->GetName()),
-      Form("%s %s", szQANotValidatedHistogramName, fDetectorConfiguration->GetName()),
+      TString::Format("%s %s", szQANotValidatedHistogramName, fDetectorConfiguration->GetName()).Data(),
+      TString::Format("%s %s", szQANotValidatedHistogramName, fDetectorConfiguration->GetName()).Data(),
       fDetectorConfiguration->GetEventClassVariablesSet());
   fQANotValidatedBin->CreateHistogram(list);
   return kTRUE;
@@ -186,7 +186,7 @@ Bool_t AliQnCorrectionsQnVectorRecentering::ProcessCorrections(const Float_t *va
     /* collect the data needed to further produce correction parameters if the current Qn vector is good enough */
     /* and proceed to ... */
   case QCORRSTEP_apply: /* apply the correction if the current Qn vector is good enough */
-    AliInfo(Form("Recentering process in detector %s: applying correction.", fDetectorConfiguration->GetName()));
+    AliInfo(TString::Format("Recentering process in detector %s: applying correction.", fDetectorConfiguration->GetName()).Data());
     if (fDetectorConfiguration->GetCurrentQnVector()->IsGoodQuality()) {
       /* we get the properties of the current Qn vector but its name */
       fCorrectedQnVector->Set(fDetectorConfiguration->GetCurrentQnVector(),kFALSE);
@@ -239,7 +239,7 @@ Bool_t AliQnCorrectionsQnVectorRecentering::ProcessDataCollection(const Float_t 
   Int_t harmonic;
   switch (fState) {
   case QCORRSTEP_calibration:
-    AliInfo(Form("Recentering process in detector %s: collecting data.", fDetectorConfiguration->GetName()));
+    AliInfo(TString::Format("Recentering process in detector %s: collecting data.", fDetectorConfiguration->GetName()).Data());
     /* collect the data needed to further produce correction parameters if the current Qn vector is good enough */
     if (fInputQnVector->IsGoodQuality()) {
       harmonic = fInputQnVector->GetFirstHarmonic();
@@ -253,7 +253,7 @@ Bool_t AliQnCorrectionsQnVectorRecentering::ProcessDataCollection(const Float_t 
     return kFALSE;
     break;
   case QCORRSTEP_applyCollect:
-    AliInfo(Form("Recentering process in detector %s: collecting data.", fDetectorConfiguration->GetName()));
+    AliInfo(TString::Format("Recentering process in detector %s: collecting data.", fDetectorConfiguration->GetName()).Data());
     /* collect the data needed to further produce correction parameters if the current Qn vector is good enough */
     if (fInputQnVector->IsGoodQuality()) {
       harmonic = fInputQnVector->GetFirstHarmonic();

@@ -58,6 +58,9 @@ AliDielectronEventCuts::AliDielectronEventCuts() :
   fRequire13sel(kFALSE),
   f2015IsIncompleteDAQ(kFALSE),
   fVtxDiff(-999.),
+  fVtxResolution(-999.),
+  fVtxDispersion(-999.),
+  fVtxDisplacement(-999.),
   fUtils(),
   fRequireV0and(0),
   fTriggerAnalysis(0x0),
@@ -95,6 +98,9 @@ AliDielectronEventCuts::AliDielectronEventCuts(const char* name, const char* tit
   fRequire13sel(kFALSE),
   f2015IsIncompleteDAQ(kFALSE),
   fVtxDiff(-999.),
+  fVtxResolution(-999.),
+  fVtxDispersion(-999.),
+  fVtxDisplacement(-999.),
   fUtils(),
   fRequireV0and(0),
   fTriggerAnalysis(0x0),
@@ -261,6 +267,28 @@ Bool_t AliDielectronEventCuts::IsSelectedESD(TObject* event)
     for(Int_t irun=0; irun<fRun.GetNrows(); irun++) {
       if(fRun(irun)==run) return kFALSE;
     }
+  }
+
+  // spd vertex resolution & dispersion
+  if (fVtxResolution > -990. || fVtxDispersion > -990.){
+      const AliESDVertex* vtxSPD = ev->GetPrimaryVertexSPD();
+      Double_t cov[6]={0};
+      vtxSPD->GetCovarianceMatrix(cov);
+      Double_t zRes = TMath::Sqrt(cov[5]);
+      if ((fVtxResolution > -990.) && (vtxSPD->IsFromVertexerZ()) && (zRes>fVtxResolution)) return kFALSE;
+      if ((fVtxDispersion > -990.) && (vtxSPD->IsFromVertexerZ()) && (vtxSPD->GetDispersion()>fVtxDispersion)) return kFALSE;
+  }
+
+  // inconsistency between SPD and track vertices
+  if (fVtxDisplacement > -990.){
+
+      const AliESDVertex* lPrimaryVtxSPD    = ev->GetPrimaryVertexSPD   ();
+      const AliESDVertex* lPrimaryVtxTracks = ev->GetPrimaryVertexTracks();
+
+      if( lPrimaryVtxTracks->GetStatus() && lPrimaryVtxSPD->GetStatus() ) {
+          Double_t displacement = TMath::Abs(lPrimaryVtxSPD->GetZ() - lPrimaryVtxTracks->GetZ());
+          if (displacement > fVtxDisplacement) return kFALSE;
+      }
   }
 
   return kTRUE;

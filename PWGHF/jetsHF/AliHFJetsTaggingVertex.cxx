@@ -216,7 +216,7 @@ Int_t AliHFJetsTaggingVertex::FindVertices(const AliEmcalJet* jet,
             if (mapV0gTrks != NULL) {
               nVtxContributorsBelongToV0 =  (* mapV0gTrks)[aodTrk_1->GetID()] +
                                             (* mapV0gTrks)[aodTrk_2->GetID()] +
-                                            (* mapV0gTrks)[aodTrk_2->GetID()];
+                                            (* mapV0gTrks)[aodTrk_3->GetID()];
             }
             new ((* arrayVtxHF)[nSecndVxtHF]) AliAODVertex(* secAODVertex);
             vecVtxDisp.push_back(make_pair(vtxRes, nVtxContributorsBelongToV0));

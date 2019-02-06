@@ -262,13 +262,14 @@ AliBaseAODTask::SetCentralityAxis(const char* bins)
     SetAxis(fCentAxis,11,tmp);
     return;
   }
-  else if (spec.EqualTo("ppb", TString::kIgnoreCase) ||
-	   spec.EqualTo("pbp", TString::kIgnoreCase)) {
+  if (spec.EqualTo("ppb", TString::kIgnoreCase) ||
+      spec.EqualTo("pbp", TString::kIgnoreCase)) {
     //                 1  2  3   4   5   6   7   8
     Double_t tmp[] = { 0, 5, 10, 20, 40, 60, 80, 100 };
     SetAxis(fCentAxis,7, tmp);
     return;
   }
+
   SetAxis(fCentAxis,bins);
 }
 
@@ -283,7 +284,7 @@ AliBaseAODTask::SetCentralityAxis(UShort_t n, Double_t* bins)
 void
 AliBaseAODTask::SetCentralityAxis(Short_t low, Short_t high)
 {
-  Short_t a[] = { low, high };
+  // Short_t a[] = { low, high };
   SetAxis(fCentAxis, (high-low), low, high);
 }
 

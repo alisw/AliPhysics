@@ -40,7 +40,7 @@ Float_t AliAnalysisPIDEvent::fgTimeZeroSpread = 196.7;
 Float_t AliAnalysisPIDEvent::fgTimeZeroT0_AND_sigma = 3.87264325235363032e+01;
 Float_t AliAnalysisPIDEvent::fgTimeZeroT0_A_sigma = 8.27180042372880706e+01;
 Float_t AliAnalysisPIDEvent::fgTimeZeroT0_C_sigma = 9.73209262235003933e+01;
-Int_t AliAnalysisPIDEvent::fgFlagToCheck = 29;
+Int_t AliAnalysisPIDEvent::fgFlagToCheck = 205;
 
 //___________________________________________________________
 
@@ -535,4 +535,5 @@ void AliAnalysisPIDEvent::PrintEventSelection() {
   printf("No assym. in V0:     %s\n",(fgFlagToCheck&kNoV0Asym)?"Yes":"No");
   printf("2015 pp vertex cut:  %s\n",(fgFlagToCheck&kVertexSelected2015pp)?"Yes":"No");
   printf("Req. SPD & TRK vtx.: %s\n",(fgFlagToCheck&kSPDandTrkVtxExists)?"Yes":"No");
+  printf("Check proximity cut: %s\n",(fgFlagToCheck&kPassProximityCut)?"Yes":"No");
 };

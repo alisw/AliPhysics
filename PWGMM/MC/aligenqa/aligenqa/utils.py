@@ -216,7 +216,6 @@ def get_generator_name_from_train(alien_path):
             if "PERIOD_NAME" in line:
                 gen_name = re.match(".*'(.+)'", line).groups()[-1]
                 break
-    os.remove(".env.sh")
     return gen_name
 
 

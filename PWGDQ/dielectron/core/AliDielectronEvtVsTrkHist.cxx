@@ -4,7 +4,7 @@
  * @Email:  pdillens@cern.ch
  * @Filename: AliDielectronEvtVsTrkHist.cxx
  * @Last modified by:   pascaldillenseger
- * @Last modified time: 2017-09-18, 15:27:33
+ * @Last modified time: 2017-10-02, 11:21:56
  */
 
 
@@ -43,6 +43,7 @@ fNtracksITS(0),
 fNtracksTPC(0),
 fHistoList(0x0),
 fSparseObjs{0x0},
+fPIDResponse(0x0),
 fMatchEffITS(0x0),
 fMatchEffTPC(0x0)
 {

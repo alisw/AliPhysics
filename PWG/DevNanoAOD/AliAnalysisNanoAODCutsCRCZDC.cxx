@@ -122,7 +122,7 @@ void AliNanoAODSimpleSetterCRCZDC::SetNanoAODHeader(const AliAODEvent * event   
 
     static const char * validatorString[] = {"Centr","MagField","CentrTRK","CentrCL0", "CentrCL1", "RunNumber", 0};
   TObjArray * vars = varListHeader.Tokenize(",");
-  Int_t size = vars->GetSize();
+  //Int_t size = vars->GetSize();
   TIter it(vars);
   TObjString *token  = 0;
   Int_t index=0;
@@ -154,7 +154,7 @@ void AliNanoAODSimpleSetterCRCZDC::SetNanoAODHeader(const AliAODEvent * event   
 
     index++;
   }
-  size = index;
+  //size = index;
   if(vars) vars->Delete();
   head->SetMapCstVar(cstMap);
  
@@ -334,9 +334,9 @@ Bool_t AliNanoAODSimpleSetterCRCZDC::SelectPileup(AliAODEvent *aod)
     const Int_t nTracks = aod->GetNumberOfTracks();
     Int_t multEsd = ((AliAODHeader*)aod->GetHeader())->GetNumberOfESDTracks();
     
-    Int_t multTrk = 0;
-    Int_t multTrkBefC = 0;
-    Int_t multTrkTOFBefC = 0;
+    //Int_t multTrk = 0;
+    //Int_t multTrkBefC = 0;
+    //Int_t multTrkTOFBefC = 0;
     Int_t multTPC = 0;
     
     for (Int_t it = 0; it < nTracks; it++) {

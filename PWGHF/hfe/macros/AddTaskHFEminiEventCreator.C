@@ -1,21 +1,24 @@
-AliAnalysisTask *AddTaskHFEminiEventCreator(  Double_t TPCchi2 = 4.,
-					      Int_t MinTPCNcluster = 100,
-					      Int_t MinTPCclusterPID = 80,
-					      Double_t TPCclusterRatio = 0.6,
-					      Int_t MinNclusterITS = 3,
-					      Bool_t checkITSLayerstatus = kFALSE,
-					      Double_t eta = 0.8,
-					      Double_t ptMin = 0.5,
-					      Double_t ptMax = 100.,
-					      Double_t Vz = 10.,
-					      Double_t dcaxy = 1.,
-					      Double_t dcaz = 2.,
-					      Double_t prodVz = 0.5,
-					      Double_t spdResolution = 0.25,
-					      Double_t nsigmaTPClow = -1.,
-					      Double_t nsigmaTPChigh = 3.,
-					      Double_t nsigmaTOF = 3.,
-					      TString collisionSystem = "pp" ){
+AliAnalysisTask *AddTaskHFEminiEventCreator(
+					    Bool_t IsMCevent = kTRUE,
+					    Double_t TPCchi2 = 4.,
+					    Int_t MinTPCNcluster = 100,
+					    Int_t MinTPCclusterPID = 80,
+					    Double_t TPCclusterRatio = 0.6,
+					    Int_t MinNclusterITS = 3,
+					    Bool_t checkITSLayerstatus = kFALSE,
+					    Double_t eta = 0.8,
+					    Double_t ptMin = 0.5,
+					    Double_t ptMax = 100.,
+					    Double_t Vz = 10.,
+					    Double_t dcaxy = 1.,
+					    Double_t dcaz = 2.,
+					    Double_t prodVz = 0.5,
+					    Double_t spdResolution = 0.25,
+					    Double_t nsigmaTPClow = -1.,
+					    Double_t nsigmaTPChigh = 3.,
+					    Double_t nsigmaTOF = 3.,
+					    TString collisionSystem = "pp",
+					    TString taskName = "Test" ){
   
   printf("Adding mini event creator\n");
   
@@ -35,10 +38,13 @@ AliAnalysisTask *AddTaskHFEminiEventCreator(  Double_t TPCchi2 = 4.,
   
   Bool_t isInt7 = kTRUE;
   Bool_t isRemoveFirstEvent = kTRUE;
-  
-  
-  AliHFEminiEventCreator *miniEventCreator = new AliHFEminiEventCreator("HFEminiEventCreator");
 
+  TString commontaskName = "MiniTree";
+  commontaskName        += taskName;
+  
+  AliHFEminiEventCreator *miniEventCreator = new AliHFEminiEventCreator(commontaskName);
+
+  miniEventCreator->SetIsMCEvent(IsMCevent);
   miniEventCreator->SetChi2TPCCut( TPCchi2 );
   miniEventCreator->SetMinClusterTPC( MinTPCNcluster );
   miniEventCreator->SetMinClusterTPCPID( MinTPCclusterPID );
@@ -61,13 +67,10 @@ AliAnalysisTask *AddTaskHFEminiEventCreator(  Double_t TPCchi2 = 4.,
   AliHFEpidTPC *tpcpid = miniEventCreator->GetTPCResponse();
   
   mgr->AddTask(miniEventCreator);
+  
+  AliAnalysisDataContainer *coutput = mgr->CreateContainer(commontaskName.Data(), TList::Class(), AliAnalysisManager::kOutputContainer,"AnalysisResults.root");
   mgr->ConnectInput(miniEventCreator, 0, cinput);
-  AliAnalysisDataContainer *coutput = mgr->CreateContainer("HFEtree", TTree::Class(), AliAnalysisManager::kOutputContainer,"AnalysisResults.root");
-  AliAnalysisDataContainer *coutput2 = mgr->CreateContainer("Number of Events", TH1D::Class(), AliAnalysisManager::kOutputContainer,"AnalysisResults.root");
-  AliAnalysisDataContainer *coutput3 = mgr->CreateContainer("Number of Tracks", TH1D::Class(), AliAnalysisManager::kOutputContainer,"AnalysisResults.root");
   mgr->ConnectOutput(miniEventCreator, 1, coutput);
-  mgr->ConnectOutput(miniEventCreator, 2, coutput2);
-  mgr->ConnectOutput(miniEventCreator, 3, coutput3);
   
   return miniEventCreator;
 }

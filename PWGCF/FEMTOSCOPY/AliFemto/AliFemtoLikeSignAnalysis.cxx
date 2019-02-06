@@ -18,10 +18,10 @@
 //  it is called from AliFemtoSimpleAnalysis::ProcessEvent()
 
 
-void FillHbtParticleCollection(AliFemtoParticleCut*         partCut,
-			       AliFemtoEvent*               hbtEvent,
-			       AliFemtoParticleCollection*  partCollection,
-			       bool performSharedDaughterCut=kFALSE);
+extern void FillHbtParticleCollection(AliFemtoParticleCut* partCut,
+                                      const AliFemtoEvent* hbtEvent,
+                                      AliFemtoParticleCollection* partCollection,
+                                      bool performSharedDaughterCut=kFALSE);
 
 //____________________________
 AliFemtoLikeSignAnalysis::AliFemtoLikeSignAnalysis(unsigned int bins, double min, double max) :
@@ -127,9 +127,9 @@ void AliFemtoLikeSignAnalysis::ProcessEvent(const AliFemtoEvent* hbtEvent) {
       cout << " #track=" << hbtEvent->TrackCollection()->size();
       // OK, analysis likes the event-- build a pico event from it, using tracks the analysis likes...
       AliFemtoPicoEvent* picoEvent = new AliFemtoPicoEvent;       // this is what we will make pairs from and put in Mixing Buffer
-      FillHbtParticleCollection(fFirstParticleCut,(AliFemtoEvent*)hbtEvent,picoEvent->FirstParticleCollection());
+      FillHbtParticleCollection(fFirstParticleCut,hbtEvent,picoEvent->FirstParticleCollection());
       if ( !(AnalyzeIdenticalParticles()) )
-	FillHbtParticleCollection(fSecondParticleCut,(AliFemtoEvent*)hbtEvent,picoEvent->SecondParticleCollection());
+	FillHbtParticleCollection(fSecondParticleCut, hbtEvent,picoEvent->SecondParticleCollection());
       cout <<"   #particles in First, Second Collections: " <<
 	picoEvent->FirstParticleCollection()->size() << " " <<
 	picoEvent->SecondParticleCollection()->size() << endl;

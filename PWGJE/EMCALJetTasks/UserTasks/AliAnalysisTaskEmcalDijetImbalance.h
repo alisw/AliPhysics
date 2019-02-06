@@ -64,6 +64,18 @@ class AliAnalysisTaskEmcalDijetImbalance : public AliAnalysisTaskEmcalJet {
   AliAnalysisTaskEmcalDijetImbalance()                                          ;
   AliAnalysisTaskEmcalDijetImbalance(const char *name)                          ;
   virtual ~AliAnalysisTaskEmcalDijetImbalance()                                 ;
+  
+  static AliAnalysisTaskEmcalDijetImbalance* AddTaskEmcalDijetImbalance(const char *ntracks = "usedefault",
+                                                                        const char *nclusters = "usedefault",
+                                                                        const Double_t deltaPhiMin = 2*TMath::Pi()/3,
+                                                                        const Bool_t doGeomMatching = kFALSE,
+                                                                        const Double_t minTrPtHardCore = 3.0,
+                                                                        const Double_t minClPtHardCore = 3.0,
+                                                                        const Double_t jetR = 0.2,
+                                                                        const Bool_t includePHOS = kTRUE,
+                                                                        const Double_t minTrPt = 0.15,
+                                                                        const Double_t minClPt = 0.30,
+                                                                        const char *suffix = "");
 
   void UserCreateOutputObjects()                                                ;
   void LoadBackgroundScalingHistogram(const char* path = "alien:///alice/cern.ch/user/j/jmulliga/scaleFactorEMCalLHC15o.root", const char* name1 = "hEtaPhiSFCorrection", const char* name2 = "hEtaPhiJetPtCorrection");
@@ -71,7 +83,6 @@ class AliAnalysisTaskEmcalDijetImbalance : public AliAnalysisTaskEmcalJet {
   // Setters
   void SetDeltaPhiCut(Double_t d)                           { fDeltaPhiMin = d; }
   void SetMaxPt(Double_t d)                                 { fMaxPt = d; }
-  void SetPlotJetHistograms(Bool_t b)                       { fPlotJetHistograms = b; }
   void SetPlotDijetCandHistograms(Bool_t b)                 { fPlotDijetCandHistograms = b; }
   void SetPlotDijetImbalanceHistograms(Bool_t b)            { fPlotDijetImbalanceHistograms = b; }
   void SetComputeBackground(Bool_t b)                       { fComputeBackground = b; }
@@ -98,7 +109,6 @@ class AliAnalysisTaskEmcalDijetImbalance : public AliAnalysisTaskEmcalJet {
 
   // Analysis and plotting functions
   void                        GenerateHistoBins()                               ;
-  void                        AllocateJetHistograms()                           ;
   void                        AllocateBackgroundHistograms()                    ;
   void                        AllocateDijetCandHistograms()                     ;
   void                        AllocateDijetImbalanceHistograms()                ;
@@ -111,7 +121,6 @@ class AliAnalysisTaskEmcalDijetImbalance : public AliAnalysisTaskEmcalJet {
   void                        DoGeometricalMatching()                           ;
   void                        DoTriggerSimulation()                             ;
   void                        FindMatchingDijet(AliJetContainer* jetCont)       ;
-  void                        FillJetHistograms()                               ;
   void                        FillDijetCandHistograms(AliJetContainer* jets)    ;
   void                        FillDijetImbalanceHistograms(AliJetContainer* jets);
   void                        FillMomentumBalanceHistograms(TString histname, Double_t deltaPhi, Double_t trackPt, Double_t balancePt);
@@ -141,7 +150,6 @@ class AliAnalysisTaskEmcalDijetImbalance : public AliAnalysisTaskEmcalJet {
   TH2D*                       fGapJetScalingWeights;                ///< Histogram storing eta-phi weights scaling jets near the gap region
 
   // Analysis configuration and plotting options
-  Bool_t                      fPlotJetHistograms;                   ///< Set whether to enable inclusive jet histograms
   Bool_t                      fPlotDijetCandHistograms;             ///< Set whether to enable dijet pair histograms
   Bool_t                      fPlotDijetImbalanceHistograms;        ///< Set whether to enable dijet imbalance histograms
   Bool_t                      fComputeBackground;                   ///< Set whether to enable study of background

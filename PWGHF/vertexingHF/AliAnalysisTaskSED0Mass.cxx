@@ -28,6 +28,7 @@
 
 #include <Riostream.h>
 #include <TClonesArray.h>
+#include <TObjArray.h>
 #include <TCanvas.h>
 #include <TNtuple.h>
 #include <TTree.h>
@@ -90,6 +91,8 @@ AliAnalysisTaskSED0Mass::AliAnalysisTaskSED0Mass():
   fFillPtHist(kTRUE),
   fFillYHist(kFALSE),
   fFillImpParHist(kFALSE),
+  fFillSubSampleHist(kFALSE),
+  fEventCounter(0),
   fUseSelectionBit(kTRUE),
   fAODProtection(1),
   fWriteVariableTree(kFALSE),
@@ -140,6 +143,8 @@ AliAnalysisTaskSED0Mass::AliAnalysisTaskSED0Mass(const char *name,AliRDHFCutsD0t
   fFillPtHist(kTRUE),
   fFillYHist(kFALSE),
   fFillImpParHist(kFALSE),
+  fFillSubSampleHist(kFALSE),
+  fEventCounter(0),
   fUseSelectionBit(kTRUE),
   fAODProtection(1),
   fWriteVariableTree(kFALSE),
@@ -293,6 +298,7 @@ void AliAnalysisTaskSED0Mass::UserCreateOutputObjects()
   TString nameMass=" ",nameSgn27=" ",nameSgn=" ", nameBkg=" ", nameRfl=" ",nameMassNocutsS =" ",nameMassNocutsB =" ", namedistr=" ";
   TString nameMassPt="", nameSgnPt="", nameBkgPt="", nameRflPt="";
   TString nameMassY="", nameSgnY="", nameBkgY="", nameRflY="";
+  TString nameMassSubSample="";
   Int_t nbins2dPt=60; Float_t binInPt=0., binFinPt=30.;
   Int_t nbins2dY=60; Float_t binInY=-1.5, binFinY=1.5;
 
@@ -709,6 +715,15 @@ void AliAnalysisTaskSED0Mass::UserCreateOutputObjects()
 
     fOutputMass->Add(tmpMt);
 
+    //sub sample
+    if(fFillSubSampleHist){
+      nameMassSubSample="histMassvsSubSample_";
+      nameMassSubSample+=i;
+      TH2F* tmpMtSub = new TH2F(nameMassSubSample.Data(),"D^{0} invariant mass; M [GeV]; Sample ID; Entries",600,1.6248,2.2248,25,-0.5,24.5);
+      tmpMtSub->Sumw2();
+      fOutputMass->Add(tmpMtSub);
+    }
+
     if(fSys==0){ //histograms filled only in pp to save time in PbPb
       if(fFillVarHists){
 
@@ -959,7 +974,7 @@ void AliAnalysisTaskSED0Mass::UserCreateOutputObjects()
 
   const char* nameoutput=GetOutputSlot(3)->GetContainer()->GetName();
 
-  fNentries=new TH1F(nameoutput, "Integral(1,2) = number of AODs *** Integral(2,3) = number of candidates selected with cuts *** Integral(3,4) = number of D0 selected with cuts *** Integral(4,5) = events with good vertex ***  Integral(5,6) = pt out of bounds", 23,-0.5,22.5);
+  fNentries=new TH1F(nameoutput, "Integral(1,2) = number of AODs *** Integral(2,3) = number of candidates selected with cuts *** Integral(3,4) = number of D0 selected with cuts *** Integral(4,5) = events with good vertex ***  Integral(5,6) = pt out of bounds", 24,-0.5,23.5);
 
   fNentries->GetXaxis()->SetBinLabel(1,"nEventsAnal");
   fNentries->GetXaxis()->SetBinLabel(2,"nCandSel(Cuts)");
@@ -989,6 +1004,7 @@ void AliAnalysisTaskSED0Mass::UserCreateOutputObjects()
   fNentries->GetXaxis()->SetBinLabel(21,"fisFilled is 1");
   fNentries->GetXaxis()->SetBinLabel(22,"AOD/dAOD mismatch");
   fNentries->GetXaxis()->SetBinLabel(23,"AOD/dAOD #events ok");
+  fNentries->GetXaxis()->SetBinLabel(24,"PreSelect rejection");
   fNentries->GetXaxis()->SetNdivisions(1,kFALSE);
 
   fCounter = new AliNormalizationCounter(Form("%s",GetOutputSlot(5)->GetContainer()->GetName()));
@@ -1225,6 +1241,8 @@ void AliAnalysisTaskSED0Mass::UserExec(Option_t */*option*/)
     fNentries->Fill(3);
   }
 
+  fEventCounter++;
+
   // loop over candidates
   Int_t nInD0toKpi = inputArray->GetEntriesFast();
   if(fDebug>2) printf("Number of D0->Kpi: %d\n",nInD0toKpi);
@@ -1247,6 +1265,16 @@ void AliAnalysisTaskSED0Mass::UserExec(Option_t */*option*/)
       }
     if(d->GetIsFilled()==0)fNentries->Fill(19);//tmp check
     if(d->GetIsFilled()==1)fNentries->Fill(20);//tmp check
+    TObjArray arrTracks(2);
+    for(Int_t ipr=0;ipr<2;ipr++){
+      AliAODTrack *tr=vHF->GetProng(aod,d,ipr);
+      arrTracks.AddAt(tr,ipr);
+    }
+
+    if(!fCuts->PreSelect(arrTracks)){
+      fNentries->Fill(23);
+      continue;
+    }
     if(!(vHF->FillRecoCand(aod,d))) {//Fill the data members of the candidate only if they are empty.   
       fNentries->Fill(18); //monitor how often this fails 
       continue;
@@ -2175,7 +2203,7 @@ void AliAnalysisTaskSED0Mass::FillMassHists(AliAODRecoDecayHF2Prong *part, TClon
   //   }
   // }
  
-  TString fillthis="", fillthispt="", fillthismasspt="", fillthismassy="";
+  TString fillthis="", fillthispt="", fillthismasspt="", fillthismassy="", fillthissub="";
   Int_t pdgDgD0toKpi[2]={321,211};
   Int_t labD0=-1;
   Bool_t isPrimary=kTRUE;
@@ -2293,7 +2321,12 @@ void AliAnalysisTaskSED0Mass::FillMassHists(AliAODRecoDecayHF2Prong *part, TClon
 
       //      printf("Fill mass with D0");
       ((TH1F*)(listout->FindObject(fillthis)))->Fill(invmassD0,weigD0);
-      
+
+      if(fFillSubSampleHist){
+        fillthissub="histMassvsSubSample_";
+        fillthissub+=ptbin;
+        ((TH2F*)(listout->FindObject(fillthissub)))->Fill(invmassD0,(Double_t)(fEventCounter%24),weigD0);
+      }
 
       if(fFillPtHist){ 
 	fillthismasspt="histMassPt";
@@ -2404,6 +2437,11 @@ void AliAnalysisTaskSED0Mass::FillMassHists(AliAODRecoDecayHF2Prong *part, TClon
 
       ((TH1F*)listout->FindObject(fillthis))->Fill(invmassD0bar,weigD0bar);
       
+      if(fFillSubSampleHist){
+        fillthissub="histMassvsSubSample_";
+        fillthissub+=ptbin;
+        ((TH2F*)(listout->FindObject(fillthissub)))->Fill(invmassD0bar,(Double_t)(fEventCounter%24),weigD0);
+      }
 
       if(fFillPtHist){ 
 	fillthismasspt="histMassPt";

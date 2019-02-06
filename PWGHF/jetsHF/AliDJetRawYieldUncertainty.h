@@ -88,12 +88,15 @@ public:
   void SetMCSigFilename(TString fname)                             { fSigMCFilenameInput     = fname ; }
   void SetReflHistoname(TString hname)                             { fReflHistoName          = hname ; }
   void SetMCSigHistoname(TString hname)                            { fSigMCHistoName         = hname ; }
+
   void SetUseCoherentChoice(Bool_t c)                              { fCoherentChoice         = c     ; }
   void SetUseBkgInBinEdges(Bool_t b)                               { fUseBkgInBinEdges       = b     ; }
+  void SetEfficiencyWeightSB(Bool_t b)                             { fEfficiencyWeightSB     = b     ; }
 
   void SetValueOfReflOverSignal(Double_t ratio, Double_t minrange=1.7, Double_t maxrange=2.1) { fFixRiflOverS = ratio; fReflRangeL = minrange; fReflRangeR = maxrange; }
 
   void SetDmesonPtBins(Int_t nbins=0, Double_t* ptedges=0x0);
+  void SetDmesonPtBinsForEff(Int_t nbins=0, Double_t* ptedges=0x0);
   void SetJetPtBins(Int_t nbins=0, Double_t* ptedges=0x0);
   void SetJetzBins(Int_t nbins=0, Double_t* zedges=0x0);
   void SetDmesonEfficiency(Double_t* effvalues=0x0);
@@ -111,15 +114,17 @@ public:
 
   static void FitReflDistr(Int_t nPtBins, TString inputfile, TString fitType = "DoubleGaus");
 
-  AliHFMultiTrials* RunMultiTrial();
-  Bool_t CombineMultiTrialOutcomes();
+  AliHFMultiTrials* RunMultiTrial(TString spectrum_name);
+  Bool_t CombineMultiTrialOutcomes(TString spectrum_name);
 
   Bool_t ExtractInputMassPlot();
 
-  Bool_t EvaluateUncertainty();
-  Bool_t EvaluateUncertaintyEffScale();
-  SBResults EvaluateUncertaintySideband(TString obs, Int_t nJetBins, Double_t* jetBinEdges);
-  Bool_t EvaluateUncertaintySideband();
+  Bool_t EvaluateUncertainty(TString spectrum_name);
+  Bool_t EvaluateUncertaintyEffScale(TString spectrum_name);
+  SBResults EvaluateUncertaintySideband(TString spectrum_name, TString obs, Int_t nJetBins, Double_t* jetBinEdges);
+  Bool_t EvaluateUncertaintySideband(TString spectrum_name);
+
+  Bool_t IsHistogramWeighted() const;
 
   Bool_t Success() const { return fSuccess; }
 
@@ -142,8 +147,10 @@ protected:
   Double_t           fpTmax                      ; ///< pT upper edge of mass plot to evaluate variations of yields
   Double_t           fzmin                       ; ///< z minimum value to extract jet pT spectrum
   Double_t           fzmax                       ; ///< z maximum value to extract jet pT spectrum
-  Int_t              fnDbins                     ; ///< Number of D-meson pT bins (for eff scaling)
+  Int_t              fnDbins                     ; ///< Number of D-meson pT bins
   Double_t          *fDbinpTedges                ; ///< D-meson pt bin edges values
+  Int_t              fnDbinsForEff               ; ///< Number of D-meson pT bins (for efficiency)
+  Double_t          *fDbinpTedgesForEff          ; ///< D-meson pt bin edges values (for efficiency)
   Int_t              fnJetPtbins                 ; ///< Number of jet pT bins to be used for spectrum
   Double_t          *fJetPtBinEdges              ; ///< Jet pT bin edges to be used for spectrum
   Int_t              fnJetzbins                  ; ///< Number of jet z bins to be used for spectrum
@@ -185,6 +192,7 @@ protected:
   Bool_t             fCoherentChoice             ; ///< Use coherent choice for the SB method
 
   Bool_t             fUseBkgInBinEdges           ; ///< Whether the background should be computed between bin edges rather than exact limits (must be false if the binning of the histogram used for the projections in the SB method is different compared to the histogram used for the invariant mass fit)
+  Bool_t             fEfficiencyWeightSB         ; ///< If true the efficiency is applied as a weight in the inv mass distribution also in the side-band method (this is always the case for the inv.mass fit method in jet pt bins)
 
   Int_t              fDebug                      ; ///< Debug level
 

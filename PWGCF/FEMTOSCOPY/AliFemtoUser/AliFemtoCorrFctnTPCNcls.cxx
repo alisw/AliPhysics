@@ -11,12 +11,12 @@
 //#include "AliFemtoHisto.hh"
 #include <cstdio>
 
-#ifdef __ROOT__ 
+#ifdef __ROOT__
 ClassImp(AliFemtoCorrFctnTPCNcls)
 #endif
 
 //____________________________
-AliFemtoCorrFctnTPCNcls::AliFemtoCorrFctnTPCNcls(char* title, const int& nbins, const float& QinvLo, const float& QinvHi):
+AliFemtoCorrFctnTPCNcls::AliFemtoCorrFctnTPCNcls(const char* title, const int& nbins, const float& QinvLo, const float& QinvHi):
   AliFemtoCorrFctn(),
   fNclsTPCMinNumerator(0),
   fNclsTPCMinDenominator(0)
@@ -132,7 +132,7 @@ TList* AliFemtoCorrFctnTPCNcls::GetOutputList()
 
   tOutputList->Add(fNclsTPCMinNumerator);
   tOutputList->Add(fNclsTPCMinDenominator);
-  
+
   return tOutputList;
 
 }

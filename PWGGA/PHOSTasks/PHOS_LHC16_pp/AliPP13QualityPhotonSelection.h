@@ -3,7 +3,8 @@
 
 // --- Custom header files ---
 #include "AliPP13DetectorHistogram.h"
-#include "AliPP13PhotonSelection.h"
+#include "AliPP13PhysicsSelection.h"
+#include "AliPP13SelectionWeights.h"
 
 // --- ROOT system ---
 #include <TH1F.h>
@@ -17,35 +18,39 @@
 #include <AliVCluster.h>
 #include <AliLog.h>
 
-class AliPP13QualityPhotonSelection : public AliPP13PhotonSelection
+class AliPP13QualityPhotonSelection : public AliPP13PhysicsSelection
 {
 public:
 	AliPP13QualityPhotonSelection():
-		AliPP13PhotonSelection(),
+		AliPP13PhysicsSelection(),
 		fClusterNXZ(),
 		fClusterEXZ(),
 		fClusterTime(0),
+		fClusterTimeWide(0),
 		fClusterEvsT(0),
+		fClusterEvsTWide(0),
 		fClusterTimeMap(0),
 		fClusterIdN(),
 		fClusterIdE(),
-		fMassPtA(),
+		fAsymmetry(0),
 		fZvertex(0),
 		fNcellsE(0),
 		fShapeE(0)
 	{
 	}
 
-	AliPP13QualityPhotonSelection(const char * name, const char * title, AliPP13ClusterCuts cuts):
-		AliPP13PhotonSelection(name, title, cuts),
+	AliPP13QualityPhotonSelection(const char * name, const char * title, AliPP13ClusterCuts cuts, AliPP13SelectionWeights * w):
+		AliPP13PhysicsSelection(name, title, cuts, w),
 		fClusterNXZ(),
 		fClusterEXZ(),
 		fClusterTime(0),
+		fClusterTimeWide(0),
 		fClusterEvsT(0),
+		fClusterEvsTWide(0),
 		fClusterTimeMap(0),
 		fClusterIdN(),
 		fClusterIdE(),
-		fMassPtA(),
+		fAsymmetry(0),
 		fZvertex(0),
 		fNcellsE(0),
 		fShapeE(0)
@@ -64,7 +69,9 @@ public:
 		}
 
 		if (fClusterTime)    delete fClusterTime;
+		if (fClusterTimeWide)    delete fClusterTime;
 		if (fClusterEvsT)    delete fClusterEvsT;
+		if (fClusterEvsT)    delete fClusterEvsTWide;
 		if (fClusterTimeMap) delete fClusterTimeMap;
 	}
 
@@ -84,12 +91,14 @@ private:
 	AliPP13DetectorHistogram * fClusterNXZ[2]; //!
 	AliPP13DetectorHistogram * fClusterEXZ[2]; //!
 	AliPP13DetectorHistogram * fClusterTime; //!
+	AliPP13DetectorHistogram * fClusterTimeWide; //!
 	AliPP13DetectorHistogram * fClusterEvsT; //!
+	AliPP13DetectorHistogram * fClusterEvsTWide; //!
 	AliPP13DetectorHistogram * fClusterTimeMap; //!
 	TH1F * fClusterIdN[2]; //!
 	TH1F * fClusterIdE[2]; //!
 
-	TH3F * fMassPtA[2]; //!
+	TH1F * fAsymmetry; //!
 	TH1F * fZvertex; //!
 	TH2F * fNcellsE; //!
 	TH2F * fShapeE;  //!

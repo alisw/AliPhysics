@@ -1,3 +1,15 @@
+/// \file runEMCalSampleTask.C
+/// \brief Example macro to run a EMCal-Framework-based analysis
+///
+/// \ingroup EMCALFWTASKS
+/// This macros illustrates how to run an EMCal analysis using the EMCal analysis
+/// framework. It can run locally or on grid (test/full/terminate modes).
+/// The script runEMCalSampleTask.sh in the same folder allows to easily set
+/// the input values
+///
+/// \author Salvatore Aiola <salvatore.aiola@cern.ch>, Yale University
+/// \date Mar 09, 2016
+
 class AliESDInputHandler;
 class AliAODInputHandler;
 class AliVEvent;
@@ -5,7 +17,21 @@ class AliAnalysisManager;
 class AliPhysicsSelectionTask;
 class AliCentralitySelectionTask;
 class AliEmcalCorrectionTask;
+class AliAnalysisTaskEmcalSample;
 class AliAnalysisGrid;
+class AliAnalysisAlien;
+
+// Include AddTask macros for ROOT 6 compatibility
+#ifdef __CLING__
+// Tell ROOT where to find AliRoot headers
+R__ADD_INCLUDE_PATH($ALICE_ROOT)
+// Tell ROOT where to find AliPhysics headers
+R__ADD_INCLUDE_PATH($ALICE_PHYSICS)
+#include "OADB/macros/AddTaskPhysicsSelection.C"
+#include "OADB/macros/AddTaskCentrality.C"
+#include "PWGPP/PilotTrain/AddTaskCDBconnect.C"
+#include "PWG/EMCAL/macros/AddTaskEmcalSample.C"
+#endif
 
 void LoadMacros();
 void StartGridAnalysis(AliAnalysisManager* pMgr, const char* uniqueName, const char* cGridMode);
@@ -86,7 +112,9 @@ AliAnalysisManager* runEMCalSampleTask(
     Printf("Setting local analysis for %d files from list %s, max events = %d", iNumFiles, sLocalFiles.Data(), iNumEvents);
   }
 
+  #ifndef __CLING__
   LoadMacros();
+  #endif
 
   // Analysis manager
   AliAnalysisManager* pMgr = new AliAnalysisManager(cTaskName);
@@ -119,7 +147,7 @@ AliAnalysisManager* runEMCalSampleTask(
     //       The AddTask macro still exists for use on the LEGO train
     AliEmcalCorrectionTask * correctionTask = AliEmcalCorrectionTask::AddTaskEmcalCorrectionTask();
     correctionTask->SelectCollisionCandidates(kPhysSel);
-    correctionTask->SetForceBeamType(iBeamType);
+    correctionTask->SetForceBeamType(static_cast<AliEmcalCorrectionTask::BeamType>(iBeamType));
 
     // Configure and initialize
     correctionTask->SetUserConfigurationFilename("$ALICE_PHYSICS/PWG/EMCAL/config/EMCalSampleConfig.yaml");
@@ -168,12 +196,32 @@ AliAnalysisManager* runEMCalSampleTask(
   if (iStartAnalysis == 1) { // start local analysis
     TChain* pChain = 0;
     if (iDataType == kAod) {
+      #ifdef __CLING__
+      std::stringstream aodChain;
+      aodChain << ".x " << gSystem->Getenv("ALICE_PHYSICS") <<  "/PWG/EMCAL/macros/CreateAODChain.C(";
+      aodChain << "\"" << sLocalFiles.Data() << "\", ";
+      aodChain << iNumEvents << ", ";
+      aodChain << 0 << ", ";
+      aodChain << std::boolalpha << kFALSE << ");";
+      pChain = reinterpret_cast<TChain *>(gROOT->ProcessLine(aodChain.str().c_str()));
+      #else
       gROOT->LoadMacro("$ALICE_PHYSICS/PWG/EMCAL/macros/CreateAODChain.C");
       pChain = CreateAODChain(sLocalFiles.Data(), iNumFiles, 0, kFALSE);
+      #endif
     }
     else {
+      #ifdef __CLING__
+      std::stringstream esdChain;
+      esdChain << ".x " << gSystem->Getenv("ALICE_PHYSICS") <<  "/PWG/EMCAL/macros/CreateESDChain.C(";
+      esdChain << "\"" << sLocalFiles.Data() << "\", ";
+      esdChain << iNumEvents << ", ";
+      esdChain << 0 << ", ";
+      esdChain << std::boolalpha << kFALSE << ");";
+      pChain = reinterpret_cast<TChain *>(gROOT->ProcessLine(esdChain.str().c_str()));
+      #else
       gROOT->LoadMacro("$ALICE_PHYSICS/PWG/EMCAL/macros/CreateESDChain.C");
       pChain = CreateESDChain(sLocalFiles.Data(), iNumFiles, 0, kFALSE);
+      #endif
     }
 
     // start analysis

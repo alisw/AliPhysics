@@ -1,13 +1,13 @@
 #define NPMTs 24
 
-int MakeTrendT0( char *infile, int run, char* ocdbStorage="raw://") {
-
+int MakeTrendT0( char *infile, int run, char* ocdbStorage="raw://"){
+  /*
   gSystem->Load("libANALYSIS");
   gSystem->Load("libANALYSISalice");
   gSystem->Load("libCORRFW");
   gSystem->Load("libTender");
   gSystem->Load("libPWGPP");
-
+  */
   char *outfile = "trending.root";
  
   if(!infile) return -1;
@@ -18,15 +18,20 @@ int MakeTrendT0( char *infile, int run, char* ocdbStorage="raw://") {
     printf("File %s not available\n", infile);
     return -1;
   }
-
+  TH1I* fTriggerCounter=0;
   //            LOAD HISTOGRAMS FROM QAresults.root   
-  TObjArray   *fTzeroObject = (TObjArray*) f->Get("T0_Performance/QAT0chists"); 
-
+  TObjArray   *fTzeroObject = (TObjArray*) f->Get("T0_Performance/QAT0chists");
+  TObjArray   *fSPDObject   = (TObjArray*) f->Get("SPD_Performance/coutput1");
+  
   TH1F* fTzeroORAplusORC =(TH1F*) ((TH1F*) fTzeroObject->FindObject("fTzeroORAplusORC"))->Clone("A"); 
   TH1F* fResolution      =(TH1F*) ((TH1F*) fTzeroObject->FindObject("fResolution"))->Clone("B");
   TH1F* fTzeroORA        =(TH1F*) ((TH1F*) fTzeroObject->FindObject("fTzeroORA"))->Clone("C");
   TH1F* fTzeroORC        =(TH1F*) ((TH1F*) fTzeroObject->FindObject("fTzeroORC"))->Clone("D");
 
+  TH1F* fSPDVertexZ      =(TH1F*) ((TH1F*) fSPDObject->FindObject("hVertexZ"))->Clone("E");
+  TH1F* f0TVX            =(TH1F*) ((TH1F*) fTzeroObject->FindObject("f0TVX"))->Clone("F");
+  if( fTzeroObject->FindObject("fTriggerCounter") )
+    fTriggerCounter  =(TH1I*) ((TH1I*) fTzeroObject->FindObject("fTriggerCounter"))->Clone("F");
   TH2F *fTimeVSAmplitude[NPMTs];//counting PMTs from 0
   TH1D *fAmplitude[NPMTs];
   TH1D *fTime[NPMTs];
@@ -42,6 +47,9 @@ int MakeTrendT0( char *infile, int run, char* ocdbStorage="raw://") {
   double meanAmplitude[NPMTs]; //dummy init
   double meanTime[NPMTs]; //dummy init
   double timeDelayOCDB[NPMTs]; //dummy init
+  double efficiency0TVX_SPD      = -9999.; //dummy init
+  double efficiency0TVX_CINT7 = -9999.;//dummy init
+  double efficiency0TVX_CADAND = -9999.;//dummy init
  
   //.................................................................................
 
@@ -93,6 +101,21 @@ int MakeTrendT0( char *infile, int run, char* ocdbStorage="raw://") {
   }else if(fTzeroORC->GetEntries()>0){
     tzeroOrC = fTzeroORC->GetMean(); //gaussian mean 
   }
+  
+  if((fSPDVertexZ->GetEntries()-fSPDVertexZ->GetBinContent(0)-fSPDVertexZ->GetBinContent(fSPDVertexZ->GetNbinsX()+1))>0)
+  efficiency0TVX_SPD = (f0TVX->GetEntries()-f0TVX->GetBinContent(0)-f0TVX->GetBinContent(f0TVX->GetNbinsX()+1)) /
+  (fSPDVertexZ->GetEntries()-fSPDVertexZ->GetBinContent(0)-fSPDVertexZ->GetBinContent(fSPDVertexZ->GetNbinsX()+1));
+  //efficiency of triggers
+  double nspd   = double(fSPDVertexZ->GetEntries()-fSPDVertexZ->GetBinContent(0)-fSPDVertexZ->GetBinContent(fSPDVertexZ->GetNbinsX()+1));
+  if (fTriggerCounter) {
+    double otvx   = double(fTriggerCounter->GetBinContent(fTriggerCounter->GetXaxis()->FindBin("C0TVX-B")));cout << "0TVX: " << otvx << "\t";
+    double cint7  = double(fTriggerCounter->GetBinContent(fTriggerCounter->GetXaxis()->FindBin("CINT7-B")));cout << "CINT7: " << cint7 << "\t";
+    double cadand = double(fTriggerCounter->GetBinContent(fTriggerCounter->GetXaxis()->FindBin("CADAND-B")));cout << "CADAND: " << cadand << "\n";
+    
+    efficiency0TVX_SPD    = (nspd>0?otvx/nspd:-1.);    cout << "efficiency0TVX_SPD: " << efficiency0TVX_SPD << "\t";
+    efficiency0TVX_CINT7  = (cint7>0?otvx/cint7:-1.);  cout << "efficiency0TVX_CINT7: " << efficiency0TVX_CINT7 << "\t";
+    efficiency0TVX_CADAND = (cadand>0?otvx/cadand:-1); cout << "efficiency0TVX_CADAND: " << efficiency0TVX_CADAND << "\n";
+  }
 
   //-----> analyze the new histogram here and set mean/sigma
 
@@ -101,7 +124,7 @@ int MakeTrendT0( char *infile, int run, char* ocdbStorage="raw://") {
 
   //-------------------- READ OCDB TIME DELAYS ---------------------------
   // Arguments:
-  AliCDBManager* man = AliCDBManager::Instance();
+  /*  AliCDBManager* man = AliCDBManager::Instance();
   if (gSystem->Getenv("eocdbStorage")!=NULL){
     man->SetDefaultStorage(ocdbStorage);
   }else{
@@ -109,11 +132,11 @@ int MakeTrendT0( char *infile, int run, char* ocdbStorage="raw://") {
   }
   man->SetRun(run);
   AliCDBEntry *entry = AliCDBManager::Instance()->Get("T0/Calib/TimeDelay");
-  AliT0CalibTimeEq *clb = (AliT0CalibTimeEq*)entry->GetObject(); 
+  AliT0CalibTimeEq *clb = (AliT0CalibTimeEq*)entry->GetObject(); */
   for (Int_t i=0; i<NPMTs; i++){
     timeDelayOCDB[i] = 0;
-    if(clb)
-      timeDelayOCDB[i] = clb->GetCFDvalue(i,0);
+    //   if(clb)
+    //    timeDelayOCDB[i] = 0;//clb->GetCFDvalue(i,0);
   }
 
 
@@ -223,6 +246,10 @@ int MakeTrendT0( char *infile, int run, char* ocdbStorage="raw://") {
       "timeDelayPMT22="<<timeDelayOCDB[21]<<
       "timeDelayPMT23="<<timeDelayOCDB[22]<<
       "timeDelayPMT24="<<timeDelayOCDB[23];
+    (*pcstream)<<"trending"<<
+      "efficiency0TVX_SPD="<<efficiency0TVX_SPD<<
+      "efficiency0TVX_CINT7="<<efficiency0TVX_CINT7<<
+      "efficiency0TVX_CADAND="<<efficiency0TVX_CADAND;
     
     //-----> add the mean/sigma of the new histogram here      
  
@@ -262,3 +289,10 @@ double GetParameterGaus(TH1F *histo, int whichParameter){
 }
 
 
+double GetParameterNotGaus(TH1F *histo, int whichParameter){
+
+    if(whichParameter==1) return double(histo->GetMean());
+    if(whichParameter==2) return double(0.57735027 * histo->GetRMS());
+    if(whichParameter!=1 && whichParameter!=2)return -99999.;
+}
+    

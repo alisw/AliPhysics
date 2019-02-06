@@ -104,6 +104,10 @@ AliAnalysisTaskPIDBFDptDpt::AliAnalysisTaskPIDBFDptDpt()
   useCircularCutPID( 0),
   fHelperPID(0),
   NoContamination   ( 0),
+  NoContaminationWeak   ( 0),
+  NoContaminationWeakMaterial   ( 0),
+  NoWeak   ( 0),
+  NoMaterial   ( 0),
   _useWeights    ( 0),
   _useRapidity   ( 0),
   _useEventPlane   ( 0),
@@ -217,10 +221,20 @@ AliAnalysisTaskPIDBFDptDpt::AliAnalysisTaskPIDBFDptDpt()
   __s2NPtNw_12(0),
   __s2PtNNw_12(0),
   __n1_1_vsPt(0),
+  __n1_1_vsPt_pdg(0),
+  __n1_1_vsPt_pdg_Weak(0),
+  __n1_1_vsPt_pdg_Weak_Material(0),
+  __n1_1_vsPt_Weak(0),
+  __n1_1_vsPt_Material(0),
   __n1_1_vsEtaPhi(0),
   __s1pt_1_vsEtaPhi(0),
   __n1_1_vsZEtaPhiPt(0),
   __n1_2_vsPt(0),
+  __n1_2_vsPt_pdg(0),
+  __n1_2_vsPt_pdg_Weak(0),
+  __n1_2_vsPt_pdg_Weak_Material(0),
+  __n1_2_vsPt_Weak(0),
+  __n1_2_vsPt_Material(0),
   __n1_2_vsEtaPhi(0),
   __s1pt_2_vsEtaPhi(0),
   __n1_2_vsZEtaPhiPt(0),
@@ -301,6 +315,11 @@ AliAnalysisTaskPIDBFDptDpt::AliAnalysisTaskPIDBFDptDpt()
   _dcaz   ( 0),
   _dcaxy  ( 0),
   _n1_1_vsPt         ( 0),
+  _n1_1_vsPt_pdg(0),
+  _n1_1_vsPt_pdg_Weak(0),
+  _n1_1_vsPt_pdg_Weak_Material(0),
+  _n1_1_vsPt_Weak(0),
+  _n1_1_vsPt_Material(0),
   _n1_1_vsEtaVsPhi   ( 0),
   _s1pt_1_vsEtaVsPhi ( 0),
   _n1_1_vsZVsEtaVsPhiVsPt ( 0),
@@ -312,6 +331,11 @@ AliAnalysisTaskPIDBFDptDpt::AliAnalysisTaskPIDBFDptDpt()
   _corrDedxVsP_1     ( 0),
   _betaVsP_1         ( 0),
   _n1_2_vsPt         ( 0),
+  _n1_2_vsPt_pdg(0),
+  _n1_2_vsPt_pdg_Weak(0),
+  _n1_2_vsPt_pdg_Weak_Material(0),
+  _n1_2_vsPt_Weak(0),
+  _n1_2_vsPt_Material(0),
   _n1_2_vsEtaVsPhi   ( 0),
   _s1pt_2_vsEtaVsPhi ( 0),
   _n1_2_vsZVsEtaVsPhiVsPt ( 0),
@@ -335,7 +359,8 @@ AliAnalysisTaskPIDBFDptDpt::AliAnalysisTaskPIDBFDptDpt()
   _s2PtPtNw_12_vsM   ( 0),
   _s2PtNNw_12_vsM    ( 0),
   _s2NPtNw_12_vsM    ( 0),
-  _invMass           ( 0),
+  _invMassKaon       ( 0),
+  _invMassKaonSq     ( 0),
   _invMassElec       ( 0),
   n1Name("NA"),
   n1NwName("NA"),
@@ -440,6 +465,9 @@ AliAnalysisTaskPIDBFDptDpt::AliAnalysisTaskPIDBFDptDpt()
   vsEta("NA"),
   vsEtaPhi("NA"),
   vsPtVsPt("NA"),
+  pdg("NA"),
+  Weak("NA"),
+  Material("NA"),
   fUtils(0),
   f2015V0MtoTrkTPCout(NULL),
   f2015V0MtoTrkTPCout_Upper(NULL),
@@ -480,6 +508,10 @@ AliAnalysisTaskPIDBFDptDpt::AliAnalysisTaskPIDBFDptDpt(const TString & name)
   useCircularCutPID( 0),
   fHelperPID(0),
   NoContamination   ( 0),
+  NoContaminationWeak   ( 0),
+  NoContaminationWeakMaterial   ( 0),
+  NoWeak   ( 0),
+  NoMaterial   ( 0),
   _useWeights    ( 0),
   _useRapidity   ( 0),
   _useEventPlane   ( 0),
@@ -593,10 +625,20 @@ AliAnalysisTaskPIDBFDptDpt::AliAnalysisTaskPIDBFDptDpt(const TString & name)
   __s2NPtNw_12(0),
   __s2PtNNw_12(0),
   __n1_1_vsPt(0),
+  __n1_1_vsPt_pdg(0),
+  __n1_1_vsPt_pdg_Weak(0),
+  __n1_1_vsPt_pdg_Weak_Material(0),
+  __n1_1_vsPt_Weak(0),
+  __n1_1_vsPt_Material(0),
   __n1_1_vsEtaPhi(0),
   __s1pt_1_vsEtaPhi(0),
   __n1_1_vsZEtaPhiPt(0),
   __n1_2_vsPt(0),
+  __n1_2_vsPt_pdg(0),
+  __n1_2_vsPt_pdg_Weak(0),
+  __n1_2_vsPt_pdg_Weak_Material(0),
+  __n1_2_vsPt_Weak(0),
+  __n1_2_vsPt_Material(0),
   __n1_2_vsEtaPhi(0),
   __s1pt_2_vsEtaPhi(0),
   __n1_2_vsZEtaPhiPt(0),
@@ -676,6 +718,11 @@ AliAnalysisTaskPIDBFDptDpt::AliAnalysisTaskPIDBFDptDpt(const TString & name)
   _dcaz ( 0),
   _dcaxy ( 0),
   _n1_1_vsPt         ( 0),
+  _n1_1_vsPt_pdg(0),
+  _n1_1_vsPt_pdg_Weak(0),
+  _n1_1_vsPt_pdg_Weak_Material(0),
+  _n1_1_vsPt_Weak(0),
+  _n1_1_vsPt_Material(0),
   _n1_1_vsEtaVsPhi   ( 0),
   _s1pt_1_vsEtaVsPhi ( 0),
   _n1_1_vsZVsEtaVsPhiVsPt ( 0),
@@ -687,6 +734,11 @@ AliAnalysisTaskPIDBFDptDpt::AliAnalysisTaskPIDBFDptDpt(const TString & name)
   _corrDedxVsP_1     ( 0),
   _betaVsP_1         ( 0),
   _n1_2_vsPt         ( 0),
+  _n1_2_vsPt_pdg(0),
+  _n1_2_vsPt_pdg_Weak(0),
+  _n1_2_vsPt_pdg_Weak_Material(0),
+  _n1_2_vsPt_Weak(0),
+  _n1_2_vsPt_Material(0),
   _n1_2_vsEtaVsPhi   ( 0),
   _s1pt_2_vsEtaVsPhi ( 0),
   _n1_2_vsZVsEtaVsPhiVsPt ( 0),
@@ -710,7 +762,8 @@ AliAnalysisTaskPIDBFDptDpt::AliAnalysisTaskPIDBFDptDpt(const TString & name)
   _s2PtPtNw_12_vsM   ( 0),
   _s2PtNNw_12_vsM    ( 0),
   _s2NPtNw_12_vsM    ( 0),
-  _invMass           ( 0),
+  _invMassKaon       ( 0),
+  _invMassKaonSq     ( 0),
   _invMassElec       ( 0),
   n1Name("NA"),
   n1NwName("NA"),
@@ -815,6 +868,9 @@ AliAnalysisTaskPIDBFDptDpt::AliAnalysisTaskPIDBFDptDpt(const TString & name)
   vsEta("NA"),
   vsEtaPhi("NA"),
   vsPtVsPt("NA"),
+  pdg("NA"),
+  Weak("NA"),
+  Material("NA"),
   fUtils(0),
   f2015V0MtoTrkTPCout(NULL),
   f2015V0MtoTrkTPCout_Upper(NULL),
@@ -897,7 +953,12 @@ void AliAnalysisTaskPIDBFDptDpt::UserCreateOutputObjects()
   _pz_1       = new float[arraySize];
   _correction_1 = new float[arraySize];
   _dedx_1     = new float[arraySize];
-  __n1_1_vsPt              = getDoubleArray(_nBins_pt_1,        0.);
+  __n1_1_vsPt                   = getDoubleArray(_nBins_pt_1, 0.);
+  __n1_1_vsPt_pdg               = getDoubleArray(_nBins_pt_1, 0.);
+  __n1_1_vsPt_pdg_Weak          = getDoubleArray(_nBins_pt_1, 0.);
+  __n1_1_vsPt_pdg_Weak_Material = getDoubleArray(_nBins_pt_1, 0.);
+  __n1_1_vsPt_Weak              = getDoubleArray(_nBins_pt_1, 0.);
+  __n1_1_vsPt_Material          = getDoubleArray(_nBins_pt_1, 0.);
   __n1_1_vsEtaPhi          = getDoubleArray(_nBins_etaPhi_1,    0.);
   __s1pt_1_vsEtaPhi        = getDoubleArray(_nBins_etaPhi_1,    0.);
   __n1_1_vsZEtaPhiPt       = getFloatArray(_nBins_zEtaPhiPt_1,  0.);
@@ -918,10 +979,14 @@ void AliAnalysisTaskPIDBFDptDpt::UserCreateOutputObjects()
       _correction_2 = new float[arraySize];
       _dedx_2       = new float[arraySize];
       __n1_2_vsPt              = getDoubleArray(_nBins_pt_2,        0.);
+      __n1_2_vsPt_pdg               = getDoubleArray(_nBins_pt_2, 0.);
+      __n1_2_vsPt_pdg_Weak          = getDoubleArray(_nBins_pt_2, 0.);
+      __n1_2_vsPt_pdg_Weak_Material = getDoubleArray(_nBins_pt_2, 0.);
+      __n1_2_vsPt_Weak              = getDoubleArray(_nBins_pt_2, 0.);
+      __n1_2_vsPt_Material          = getDoubleArray(_nBins_pt_2, 0.);
       __n1_2_vsEtaPhi          = getDoubleArray(_nBins_etaPhi_2,    0.);
       __s1pt_2_vsEtaPhi        = getDoubleArray(_nBins_etaPhi_2,    0.);
-      __n1_2_vsZEtaPhiPt       = getFloatArray(_nBins_zEtaPhiPt_2, 0.);
-        
+      __n1_2_vsZEtaPhiPt       = getFloatArray(_nBins_zEtaPhiPt_2, 0.);        
     }
     
   __n2_12_vsPtPt           = getDoubleArray(_nBins_pt_1*_nBins_pt_2,0.);
@@ -1019,12 +1084,14 @@ void AliAnalysisTaskPIDBFDptDpt::UserCreateOutputObjects()
     
   vsZ         = "_vsZ";
   vsM         = "_vsM";
-  vsPt         = "_vsPt";
-  vsPhi        = "_vsPhi";
-  vsEta        = "_vsEta";
-  vsEtaPhi     = "_vsEtaPhi";
-  vsPtVsPt     = "_vsPtVsPt";
-    
+  vsPt        = "_vsPt";
+  vsPhi       = "_vsPhi";
+  vsEta       = "_vsEta";
+  vsEtaPhi    = "_vsEtaPhi";
+  vsPtVsPt    = "_vsPtVsPt";
+  pdg         = "_pdg";
+  Weak        = "_Weak";
+  Material    = "_Material";
     
   if (_useWeights)
     {
@@ -1160,12 +1227,24 @@ void  AliAnalysisTaskPIDBFDptDpt::createHistograms()
       name = "y_Pt_AllCh_MCAODTruth";       _y_Pt_AllCh_MCAODTruth = createHisto2F( name, name, _nBins_eta_1, _min_eta_1, _max_eta_1, _nBins_pt_1, _min_pt_1, _max_pt_1, "y", "p_{T}", "counts" );
       name = "y_Pt_POI_MCAODTruth";        _y_Pt_POI_MCAODTruth = createHisto2F( name, name, _nBins_eta_1, _min_eta_1, _max_eta_1, _nBins_pt_1, _min_pt_1, _max_pt_1, "y", "p_{T}", "counts" );      
       name = n1Name + part_1_Name + vsPt;                         _n1_1_vsPt = createHisto1F( name, name, _nBins_pt_1, _min_pt_1, _max_pt_1, _title_pt_1, _title_AvgN_1 );
+      name = n1Name + part_1_Name + vsPt + pdg;                   _n1_1_vsPt_pdg = createHisto1F( name, name, _nBins_pt_1, _min_pt_1, _max_pt_1, _title_pt_1, _title_AvgN_1 );
+      name = n1Name + part_1_Name + vsPt + pdg + Weak;            _n1_1_vsPt_pdg_Weak = createHisto1F( name, name, _nBins_pt_1, _min_pt_1, _max_pt_1, _title_pt_1, _title_AvgN_1 );
+      name = n1Name + part_1_Name + vsPt + pdg + Weak + Material; _n1_1_vsPt_pdg_Weak_Material = createHisto1F( name, name, _nBins_pt_1, _min_pt_1, _max_pt_1, _title_pt_1, _title_AvgN_1 );
+      name = n1Name + part_1_Name + vsPt + Weak;                  _n1_1_vsPt_Weak = createHisto1F( name, name, _nBins_pt_1, _min_pt_1, _max_pt_1, _title_pt_1, _title_AvgN_1 );
+      name = n1Name + part_1_Name + vsPt + Material;              _n1_1_vsPt_Material = createHisto1F( name, name, _nBins_pt_1, _min_pt_1, _max_pt_1, _title_pt_1, _title_AvgN_1 );
       name = n1Name + part_1_Name + vsZ + vsEtaPhi + vsPt;        _n1_1_vsZVsEtaVsPhiVsPt = createHisto3F( name, name, _nBins_vertexZ, _min_vertexZ, _max_vertexZ, _nBins_etaPhi_1, 0., double(_nBins_etaPhi_1), _nBins_pt_1, _min_pt_1, _max_pt_1, "zVertex", _title_etaPhi_1,  _title_pt_1);        
       name = n1Name + part_2_Name + vsPt;                         _n1_2_vsPt = createHisto1F( name, name, _nBins_pt_2, _min_pt_2, _max_pt_2, _title_pt_2, _title_AvgN_2 );
+      name = n1Name + part_2_Name + vsPt + pdg;                   _n1_2_vsPt_pdg = createHisto1F( name, name, _nBins_pt_2, _min_pt_2, _max_pt_2, _title_pt_2, _title_AvgN_2 );
+      name = n1Name + part_2_Name + vsPt + pdg + Weak;            _n1_2_vsPt_pdg_Weak = createHisto1F( name, name, _nBins_pt_2, _min_pt_2, _max_pt_2, _title_pt_2, _title_AvgN_2 );
+      name = n1Name + part_2_Name + vsPt + pdg + Weak + Material; _n1_2_vsPt_pdg_Weak_Material = createHisto1F( name, name, _nBins_pt_2, _min_pt_2, _max_pt_2, _title_pt_2, _title_AvgN_2 );
+      name = n1Name + part_2_Name + vsPt + Weak;                  _n1_2_vsPt_Weak = createHisto1F( name, name, _nBins_pt_2, _min_pt_2, _max_pt_2, _title_pt_2, _title_AvgN_2 );
+      name = n1Name + part_2_Name + vsPt + Material;              _n1_2_vsPt_Material = createHisto1F( name, name, _nBins_pt_2, _min_pt_2, _max_pt_2, _title_pt_2, _title_AvgN_2 );
       name = n1Name + part_2_Name + vsZ + vsEtaPhi + vsPt;        _n1_2_vsZVsEtaVsPhiVsPt = createHisto3F( name, name, _nBins_vertexZ, _min_vertexZ, _max_vertexZ, _nBins_etaPhi_2, 0., double(_nBins_etaPhi_2), _nBins_pt_2, _min_pt_2, _max_pt_2, "zVertex", _title_etaPhi_2,  _title_pt_2);	
     }
   else
     {
+      name = n1Name + part_1_Name + vsPt;                         _n1_1_vsPt = createHisto1F( name, name, _nBins_pt_1, _min_pt_1, _max_pt_1, _title_pt_1, _title_AvgN_1 );
+      name = n1Name + part_2_Name + vsPt;                         _n1_2_vsPt = createHisto1F( name, name, _nBins_pt_2, _min_pt_2, _max_pt_2, _title_pt_2, _title_AvgN_2 );
       name = n1Name+part_1_Name+vsEtaPhi;       _n1_1_vsEtaVsPhi      = createHisto2F(name,name, _nBins_eta_1, _min_eta_1, _max_eta_1,  _nBins_phi_1, _min_phi_1, _max_phi_1,  _title_eta_1,  _title_phi_1,  _title_AvgN_1);
       name = s1ptName+part_1_Name+vsEtaPhi;     _s1pt_1_vsEtaVsPhi    = createHisto2F(name,name, _nBins_eta_1, _min_eta_1, _max_eta_1,  _nBins_phi_1, _min_phi_1, _max_phi_1,  _title_eta_1,  _title_phi_1,  _title_AvgSumPt_1);
       name = n1Name+part_1_Name+vsM;            _n1_1_vsM             = createProfile(name,name, _nBins_M4, _min_M4, _max_M4, _title_m4, _title_AvgN_1);
@@ -1191,7 +1270,8 @@ void  AliAnalysisTaskPIDBFDptDpt::createHistograms()
       name = s2PtPtNwName+pair_12_Name + vsM;   _s2PtPtNw_12_vsM      = createProfile(name,name, _nBins_M4, _min_M4, _max_M4, _title_m4, _title_AvgSumPtPt_12);
       name = s2PtNNwName+pair_12_Name + vsM;    _s2PtNNw_12_vsM       = createProfile(name,name, _nBins_M4, _min_M4, _max_M4, _title_m4, _title_AvgSumPtN_12);
       name = s2NPtNwName+pair_12_Name + vsM;    _s2NPtNw_12_vsM       = createProfile(name,name, _nBins_M4, _min_M4, _max_M4, _title_m4, _title_AvgNSumPt_12);        
-      name = "mInv";     _invMass     = createHisto1F(name,name, 50, 0.41, 0.55, "M_{inv}","counts");
+      name = "mInvKaon";   _invMassKaon   = createHisto1F(name,name, 80, 0.98, 1.06, "M_{KK}","counts");
+      name = "mInvKaonSq"; _invMassKaonSq = createHisto1F(name,name, 120, 0.98, 1.10, "M_{KK}^2","counts");
       name = "mInvElec"; _invMassElec = createHisto1F(name,name, 500, 0., 1.000, "M_{inv}","counts");
     }
     
@@ -1209,15 +1289,35 @@ void  AliAnalysisTaskPIDBFDptDpt::finalizeHistograms()
       if (_sameFilter)
         {
 	  fillHistoWithArray(_n1_1_vsPt,              __n1_1_vsPt,        _nBins_pt_1);
+	  fillHistoWithArray(_n1_1_vsPt_pdg,          __n1_1_vsPt_pdg,    _nBins_pt_1);
+          fillHistoWithArray(_n1_1_vsPt_pdg_Weak,            __n1_1_vsPt_pdg_Weak,            _nBins_pt_1);
+          fillHistoWithArray(_n1_1_vsPt_pdg_Weak_Material,   __n1_1_vsPt_pdg_Weak_Material,   _nBins_pt_1);
+          fillHistoWithArray(_n1_1_vsPt_Weak,                __n1_1_vsPt_Weak,                _nBins_pt_1);
+          fillHistoWithArray(_n1_1_vsPt_Material,            __n1_1_vsPt_Material,            _nBins_pt_1);
 	  fillHistoWithArray(_n1_1_vsZVsEtaVsPhiVsPt, __n1_1_vsZEtaPhiPt, _nBins_vertexZ, _nBins_etaPhi_1, _nBins_pt_1);
 	  fillHistoWithArray(_n1_2_vsPt,              __n1_1_vsPt,        _nBins_pt_1);
+	  fillHistoWithArray(_n1_2_vsPt_pdg,          __n1_1_vsPt_pdg,    _nBins_pt_1);
+          fillHistoWithArray(_n1_2_vsPt_pdg_Weak,            __n1_1_vsPt_pdg_Weak,            _nBins_pt_1);
+          fillHistoWithArray(_n1_2_vsPt_pdg_Weak_Material,   __n1_1_vsPt_pdg_Weak_Material,   _nBins_pt_1);
+          fillHistoWithArray(_n1_2_vsPt_Weak,                __n1_1_vsPt_Weak,                _nBins_pt_1);
+          fillHistoWithArray(_n1_2_vsPt_Material,            __n1_1_vsPt_Material,            _nBins_pt_1);
 	  fillHistoWithArray(_n1_2_vsZVsEtaVsPhiVsPt, __n1_1_vsZEtaPhiPt, _nBins_vertexZ, _nBins_etaPhi_1, _nBins_pt_1);
         }
       else
         {
 	  fillHistoWithArray(_n1_1_vsPt,              __n1_1_vsPt,        _nBins_pt_1);
+	  fillHistoWithArray(_n1_1_vsPt_pdg,          __n1_1_vsPt_pdg,    _nBins_pt_1);
+          fillHistoWithArray(_n1_1_vsPt_pdg_Weak,            __n1_1_vsPt_pdg_Weak,            _nBins_pt_1);
+          fillHistoWithArray(_n1_1_vsPt_pdg_Weak_Material,   __n1_1_vsPt_pdg_Weak_Material,   _nBins_pt_1);
+          fillHistoWithArray(_n1_1_vsPt_Weak,                __n1_1_vsPt_Weak,                _nBins_pt_1);
+          fillHistoWithArray(_n1_1_vsPt_Material,            __n1_1_vsPt_Material,            _nBins_pt_1);
 	  fillHistoWithArray(_n1_1_vsZVsEtaVsPhiVsPt, __n1_1_vsZEtaPhiPt, _nBins_vertexZ, _nBins_etaPhi_1, _nBins_pt_1);
 	  fillHistoWithArray(_n1_2_vsPt,              __n1_2_vsPt,        _nBins_pt_2);
+	  fillHistoWithArray(_n1_2_vsPt_pdg,          __n1_2_vsPt_pdg,    _nBins_pt_2);
+          fillHistoWithArray(_n1_2_vsPt_pdg_Weak,            __n1_2_vsPt_pdg_Weak,            _nBins_pt_2);
+          fillHistoWithArray(_n1_2_vsPt_pdg_Weak_Material,   __n1_2_vsPt_pdg_Weak_Material,   _nBins_pt_2);
+          fillHistoWithArray(_n1_2_vsPt_Weak,                __n1_2_vsPt_Weak,                _nBins_pt_2);
+          fillHistoWithArray(_n1_2_vsPt_Material,            __n1_2_vsPt_Material,            _nBins_pt_2);
 	  fillHistoWithArray(_n1_2_vsZVsEtaVsPhiVsPt, __n1_2_vsZEtaPhiPt, _nBins_vertexZ, _nBins_etaPhi_2, _nBins_pt_2);
         }
     }
@@ -1225,6 +1325,8 @@ void  AliAnalysisTaskPIDBFDptDpt::finalizeHistograms()
     {
       if (_sameFilter)
         {
+    fillHistoWithArray(_n1_1_vsPt,              __n1_1_vsPt,        _nBins_pt_1);
+    fillHistoWithArray(_n1_2_vsPt,              __n1_1_vsPt,        _nBins_pt_1);
 	  fillHistoWithArray(_n1_1_vsEtaVsPhi,        __n1_1_vsEtaPhi,    _nBins_eta_1,   _nBins_phi_1);
 	  fillHistoWithArray(_s1pt_1_vsEtaVsPhi,      __s1pt_1_vsEtaPhi,  _nBins_eta_1,   _nBins_phi_1);
 	  fillHistoWithArray(_n1_2_vsEtaVsPhi,        __n1_1_vsEtaPhi,    _nBins_eta_1,   _nBins_phi_1);
@@ -1232,6 +1334,8 @@ void  AliAnalysisTaskPIDBFDptDpt::finalizeHistograms()
         }
       else
         {
+    fillHistoWithArray(_n1_1_vsPt,              __n1_1_vsPt,        _nBins_pt_1);
+    fillHistoWithArray(_n1_2_vsPt,              __n1_2_vsPt,        _nBins_pt_2);
 	  fillHistoWithArray(_n1_1_vsEtaVsPhi,        __n1_1_vsEtaPhi,    _nBins_eta_1,   _nBins_phi_1);
 	  fillHistoWithArray(_s1pt_1_vsEtaVsPhi,      __s1pt_1_vsEtaPhi,  _nBins_eta_1,   _nBins_phi_1);
 	  fillHistoWithArray(_n1_2_vsEtaVsPhi,        __n1_2_vsEtaPhi,    _nBins_eta_2,   _nBins_phi_2);
@@ -1263,7 +1367,7 @@ void  AliAnalysisTaskPIDBFDptDpt::UserExec(Option_t */*option*/)
   float  ptpt;
   int    iVertex, iVertexP1, iVertexP2;
   int    iZEtaPhiPt;
-  float  massElecSq = 1.94797849000000016e-02;
+  float  massElecSq = 1.94797849000000016e-02;  
   //double b[2];
   //double bCov[3];
   const  AliAODVertex*	vertex;
@@ -1271,6 +1375,7 @@ void  AliAnalysisTaskPIDBFDptDpt::UserExec(Option_t */*option*/)
   bool   bitOK;
   const float mpion   = 0.139570; // GeV/c2
   const float mkaon   = 0.493677; // GeV/c2
+  const float massKaonSq = 0.2437169803; // GeV/c2
   const float mproton = 0.938272; // GeV/c2
   Double_t c = TMath::C() * 1.E-9;// m/ns
   double EP = 0;
@@ -1611,20 +1716,7 @@ void  AliAnalysisTaskPIDBFDptDpt::UserExec(Option_t */*option*/)
 		
 		  if ( IDrec != particleSpecies ) continue; // select POI
 		
-		  // This block of code used to get PdgCode for MC reco tracks
-		  if ( fAnalysisType == "MCAODreco" && NoContamination == 1 )
-		    {
-		      Int_t lab =  t -> GetLabel();
-		      //cout << "step 1 Au-Au: particle Label: " << lab << endl;
-		      TClonesArray * arr = dynamic_cast<TClonesArray*>( fAODEvent -> FindListObject( "mcparticles" ) );
-		      if( !arr ) continue;
-		      //cout << "step 2 Au-Au: arr: " << arr->GetEntriesFast() << endl;
-		      AliAODMCParticle * particle = ( AliAODMCParticle * ) arr -> At( TMath::Abs(lab) );
-		      //cout << "step 3 Au-Au: particle ID: " << particle -> GetPdgCode() << endl;
-		      if ( TMath::Abs(particle->GetPdgCode()) != 211 ) continue;
-		      //cout << "step 4 Au-Au: pion ID: " << particle -> GetPdgCode() << endl;
-		    }
-		
+		      
 		  if ( particleSpecies == 0 )  mass = mpion;
 		  if ( particleSpecies == 1 )  mass = mkaon;
 		  if ( particleSpecies == 2 )  mass = mproton;
@@ -1740,10 +1832,56 @@ void  AliAnalysisTaskPIDBFDptDpt::UserExec(Option_t */*option*/)
 		  if ( _singlesOnly )
 		    {
 		      __n1_1_vsPt[iPt]               += corr;          //cout << "step 15" << endl;
-		      __n1_1_vsZEtaPhiPt[iZEtaPhiPt] += corr;       //cout << "step 12" << endl;       
+		      __n1_1_vsZEtaPhiPt[iZEtaPhiPt] += corr;       //cout << "step 12" << endl; 
+			  
+		      // This block of code used to get PdgCode for MC reco tracks
+                      if ( fAnalysisType == "MCAODreco" )
+                        {
+                          Int_t lab =  t -> GetLabel();
+                          TClonesArray * arr = dynamic_cast<TClonesArray*>( fAODEvent -> FindListObject( "mcparticles" ) );
+                          if( !arr ) continue;
+                          AliAODMCParticle * particle = ( AliAODMCParticle * ) arr -> At( TMath::Abs(lab) );
+              
+                          if ( NoContamination )
+                            {
+                              if( particleSpecies == 0 )
+                                { if( TMath::Abs( particle -> GetPdgCode() ) != 211  )  continue; }
+                              else if( particleSpecies == 1 )
+                                { if( TMath::Abs( particle -> GetPdgCode() ) != 321  )  continue; }
+                              else if( particleSpecies == 2 )
+                                { if( TMath::Abs( particle -> GetPdgCode() ) != 2212 )  continue; }
+
+                               __n1_1_vsPt_pdg[iPt]   += corr;
+                
+                              if ( NoContaminationWeak )
+                                {
+                                  if( particle -> IsSecondaryFromWeakDecay() )  continue;
+                                  __n1_1_vsPt_pdg_Weak[iPt]   += corr;
+                
+                                  if ( NoContaminationWeakMaterial )
+                                    {
+                                     if( particle -> IsSecondaryFromMaterial() )  continue;
+                                     __n1_1_vsPt_pdg_Weak_Material[iPt]  += corr;
+                                    }
+                                 }
+                              }
+              
+                          if ( NoWeak )
+                            {
+                              if( particle -> IsSecondaryFromWeakDecay() )  continue;
+                              __n1_1_vsPt_Weak[iPt]   += corr;
+                            }
+              
+                          if ( NoMaterial )
+                            {
+                              if( particle -> IsSecondaryFromMaterial() )  continue;
+                              __n1_1_vsPt_Material[iPt]   += corr;
+                            }
+                         }
 		    }
 		  else
 		    {
+                      __n1_1_vsPt[iPt]            += corr;
 		      corrPt                      = corr*pt;
 		      _id_1[k1]                   = iTrack;
 		      _charge_1[k1]               = charge;
@@ -1808,9 +1946,55 @@ void  AliAnalysisTaskPIDBFDptDpt::UserExec(Option_t */*option*/)
 		    {
 		      __n1_2_vsPt[iPt]               += corr;          //cout << "step 15" << endl;
 		      __n1_2_vsZEtaPhiPt[iZEtaPhiPt] += corr;       //cout << "step 12" << endl;
+			  
+	          // This block of code used to get PdgCode for MC reco tracks
+                      if ( fAnalysisType == "MCAODreco" )
+                        {
+                          Int_t lab =  t -> GetLabel();
+                          TClonesArray * arr = dynamic_cast<TClonesArray*>( fAODEvent -> FindListObject( "mcparticles" ) );
+                          if( !arr ) continue;
+                          AliAODMCParticle * particle = ( AliAODMCParticle * ) arr -> At( TMath::Abs(lab) );
+              
+                          if ( NoContamination )
+                            {
+                              if( particleSpecies == 0 )
+                                { if( TMath::Abs( particle -> GetPdgCode() ) != 211  )  continue; }
+                              else if( particleSpecies == 1 )
+                                { if( TMath::Abs( particle -> GetPdgCode() ) != 321  )  continue; }
+                              else if( particleSpecies == 2 )
+                                { if( TMath::Abs( particle -> GetPdgCode() ) != 2212 )  continue; }
+                
+                              __n1_2_vsPt_pdg[iPt]   += corr;
+                
+                              if ( NoContaminationWeak )
+                                {
+                                 if( particle -> IsSecondaryFromWeakDecay() )  continue;
+                                 __n1_2_vsPt_pdg_Weak[iPt]   += corr;
+                  
+                                 if ( NoContaminationWeakMaterial )
+                                   {
+                                    if( particle -> IsSecondaryFromMaterial() )  continue;
+                                    __n1_2_vsPt_pdg_Weak_Material[iPt]  += corr;
+                                   }
+                                }
+                            }
+              
+                          if ( NoWeak )
+                            {
+                             if( particle -> IsSecondaryFromWeakDecay() )  continue;
+                             __n1_2_vsPt_Weak[iPt]   += corr;
+			    }
+              
+                          if ( NoMaterial )
+                            {
+                             if( particle -> IsSecondaryFromMaterial() )  continue;
+                             __n1_2_vsPt_Material[iPt]   += corr;
+                            }
+                        }	  
 		    }
 		  else
 		    {
+          __n1_2_vsPt[iPt]            += corr;
 		      corrPt                      = corr*pt;
 		      _id_2[k2]                   = iTrack;         //cout << "step 1" << endl;
 		      _charge_2[k2]               = charge;         //cout << "step 2" << endl;
@@ -1857,6 +2041,8 @@ void  AliAnalysisTaskPIDBFDptDpt::UserExec(Option_t */*option*/)
 	      }
 
 	      if( !t -> IsPhysicalPrimary() ) continue;
+	      if( t -> IsSecondaryFromWeakDecay() )  continue;
+              if( t -> IsSecondaryFromMaterial() )  continue;
 	    
 	      q      = t -> Charge();
 
@@ -1944,10 +2130,18 @@ void  AliAnalysisTaskPIDBFDptDpt::UserExec(Option_t */*option*/)
 		      Int_t pdgCodeOfMother = motherTrack -> GetPdgCode();
                        
 		      if( pdgCodeOfMother == 311 || pdgCodeOfMother == -311 // K0
-			  || pdgCodeOfMother == 310
+			  || pdgCodeOfMother == 310 // K_Short
+			  || pdgCodeOfMother == 130 // K_Long
+			  || pdgCodeOfMother == 313 // K_Star_0
+                          || pdgCodeOfMother == 323 // K_Star_+
+			  || pdgCodeOfMother == 333 // phi
 			  || pdgCodeOfMother == 3122 || pdgCodeOfMother == -3122 // Lambda
 			  || pdgCodeOfMother == 111 // pi0
 			  || pdgCodeOfMother == 22 // photon
+			  || pdgCodeOfMother == 2224 // Delta_++
+                          || pdgCodeOfMother == 2214 // Delta_+
+                          || pdgCodeOfMother == 2114 // Delta_0
+                          || pdgCodeOfMother == 1114 // Delta_-
 			  ) continue;
 		    }
 		  }
@@ -2016,6 +2210,7 @@ void  AliAnalysisTaskPIDBFDptDpt::UserExec(Option_t */*option*/)
 		    }
 		  else
 		    {
+          __n1_1_vsPt[iPt]            += corr;
 		      corrPt                      = corr*pt;
 		      _id_1[k1]                   = iTrack;
 		      _charge_1[k1]               = charge;
@@ -2083,6 +2278,7 @@ void  AliAnalysisTaskPIDBFDptDpt::UserExec(Option_t */*option*/)
 		    }
 		  else
 		    {
+          __n1_2_vsPt[iPt]            += corr;
 		      corrPt                      = corr*pt;
 		      _id_2[k2]                   = iTrack;         //cout << "step 1" << endl;
 		      _charge_2[k2]               = charge;         //cout << "step 2" << endl;
@@ -2129,7 +2325,7 @@ void  AliAnalysisTaskPIDBFDptDpt::UserExec(Option_t */*option*/)
     }
   else
     {
-      if (_sameFilter)
+      if (_sameFilter) // for like-sign pairs
         {
 	  _n1_1_vsM->Fill(centrality,      __n1_1);
 	  _s1pt_1_vsM->Fill(centrality,    __s1pt_1);
@@ -2154,6 +2350,10 @@ void  AliAnalysisTaskPIDBFDptDpt::UserExec(Option_t */*option*/)
 		  corr_1    = _correction_1[i1];   ////cout << "     corr_1:" << corr_1 << endl;
 		  pt_1      = _pt_1[i1];           ////cout << "       pt_1:" << pt_1 << endl;
 		  dedx_1    = _dedx_1[i1];         ////cout << "     dedx_1:" << dedx_1 << endl;
+		  px_1      = _px_1[i1];          ////cout << "      px_1:" << px_1 << endl;
+		  py_1      = _py_1[i1];          ////cout << "      py_1:" << py_1 << endl;
+		  pz_1      = _pz_1[i1];          ////cout << "      pz_1:" << pz_1 << endl;
+		  
 		  //1 and 2
 		  for (int i2=i1+1; i2<k1; i2++)
                     {
@@ -2167,6 +2367,20 @@ void  AliAnalysisTaskPIDBFDptDpt::UserExec(Option_t */*option*/)
 			  corr_2    = _correction_1[i2]; ////cout << "     corr_1:" << corr_1 << endl;
 			  pt_2      = _pt_1[i2];         ////cout << "       pt_1:" << pt_1 << endl;
 			  dedx_2    = _dedx_1[i2];       ////cout << "     dedx_2:" << dedx_2 << endl;
+			  px_2      = _px_1[i2];          //
+			  py_2      = _py_1[i2];          //SAME with particle 1 because this is for like-sign pairs
+			  pz_2      = _pz_1[i2];          //
+			  
+			  if ( particleSpecies == 1 )  // invariant mass for kaon-kaon pairs
+			    {
+			      float EngyKaon1Sq = massKaonSq + pt_1*pt_1 + pz_1*pz_1;
+			      float EngyKaon2Sq = massKaonSq + pt_2*pt_2 + pz_2*pz_2;
+			      float mInvKaonSq = 2*(massKaonSq + sqrt(EngyKaon1Sq*EngyKaon2Sq) - px_1*px_2 - py_1*py_2 - pz_1*pz_2 );
+			      float mInvKaon = sqrt(mInvKaonSq);
+			      _invMassKaonSq->Fill(mInvKaonSq);
+			      _invMassKaon->Fill(mInvKaon);
+			    }
+
 			  corr      = corr_1*corr_2;
 			  if (q_2>q_1 || (q_1>0 && q_2>0 && pt_2<=pt_1) || (q_1<0 && q_2<0 && pt_2>=pt_1))
                             {
@@ -2209,6 +2423,10 @@ void  AliAnalysisTaskPIDBFDptDpt::UserExec(Option_t */*option*/)
 		  corr_1    = _correction_1[i1];   ////cout << "     corr_1:" << corr_1 << endl;
 		  pt_1      = _pt_1[i1];           ////cout << "       pt_1:" << pt_1 << endl;
 		  dedx_1    = _dedx_1[i1];         ////cout << "     dedx_1:" << dedx_1 << endl;
+		  px_1      = _px_1[i1];          ////cout << "      px_1:" << px_1 << endl;
+		  py_1      = _py_1[i1];          ////cout << "      py_1:" << py_1 << endl;
+		  pz_1      = _pz_1[i1];          ////cout << "      pz_1:" << pz_1 << endl;
+
 		  //1 and 2
 		  for (int i2=i1+1; i2<k1; i2++)
                     {
@@ -2222,6 +2440,20 @@ void  AliAnalysisTaskPIDBFDptDpt::UserExec(Option_t */*option*/)
 			  corr_2    = _correction_1[i2]; ////cout << "     corr_2:" << corr_2 << endl;
 			  pt_2      = _pt_1[i2];         ////cout << "       pt_2:" << pt_2 << endl;
 			  dedx_2    = _dedx_1[i2];       ////cout << "     dedx_2:" << dedx_2 << endl;
+			  px_2      = _px_1[i2];          //
+			  py_2      = _py_1[i2];          //SAME with particle 1 because this is for like-sign pairs
+			  pz_2      = _pz_1[i2];          //
+			      
+			  if ( particleSpecies == 1 )  // invariant mass for kaon-kaon pairs
+			    {
+			      float EngyKaon1Sq = massKaonSq + pt_1*pt_1 + pz_1*pz_1;
+			      float EngyKaon2Sq = massKaonSq + pt_2*pt_2 + pz_2*pz_2;
+			      float mInvKaonSq = 2*(massKaonSq + sqrt(EngyKaon1Sq*EngyKaon2Sq) - px_1*px_2 - py_1*py_2 - pz_1*pz_2 );
+			      float mInvKaon = sqrt(mInvKaonSq);
+			      _invMassKaonSq->Fill(mInvKaonSq);
+			      _invMassKaon->Fill(mInvKaon);
+			    }
+			  
 			  corr      = corr_1*corr_2;
 			  if ( q_2<q_1 || (q_1>0 && q_2>0 && pt_2>=pt_1) || (q_1<0 && q_2<0 && pt_2<=pt_1))
                             {
@@ -2253,7 +2485,7 @@ void  AliAnalysisTaskPIDBFDptDpt::UserExec(Option_t */*option*/)
                 } //i1
             }
         }
-      else  // filter 1 and 2 are different -- must do all particle pairs...
+      else  // for like-sign pairs // filter 1 and 2 are different -- must do all particle pairs...
         {
 	  _n1_1_vsM->Fill(centrality,      __n1_1);
 	  _s1pt_1_vsM->Fill(centrality,    __s1pt_1);
@@ -2297,6 +2529,16 @@ void  AliAnalysisTaskPIDBFDptDpt::UserExec(Option_t */*option*/)
 		      pz_2      = _pz_2[i2];          ////cout << "      pz_2:" << pz_2 << endl;
 		      dedx_2    = _dedx_2[i2];        ////cout << "     dedx_2:" << dedx_2 << endl;                   
 
+		      if ( particleSpecies == 1 ) // invariant mass for kaon-kaon pairs
+			{
+			  float EngyKaon1Sq = massKaonSq + pt_1*pt_1 + pz_1*pz_1;
+			  float EngyKaon2Sq = massKaonSq + pt_2*pt_2 + pz_2*pz_2;
+			  float mInvKaonSq = 2*(massKaonSq + sqrt(EngyKaon1Sq*EngyKaon2Sq) - px_1*px_2 - py_1*py_2 - pz_1*pz_2 );
+			  float mInvKaon = sqrt(mInvKaonSq);
+			  _invMassKaonSq->Fill(mInvKaonSq);
+			  _invMassKaon->Fill(mInvKaon);
+			}		
+		      
 		      corr      = corr_1*corr_2;
 		      ij        = iEtaPhi_1*_nBins_etaPhi_1 + iEtaPhi_2;   ////cout << " ij:" << ij<< endl;
 		      __n2_12                  += corr;

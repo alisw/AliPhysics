@@ -29,9 +29,9 @@
 class AliTwoTrackRes : public AliAnalysisTask {
 
 public:
-  
-  AliTwoTrackRes() : AliAnalysisTask("",""), fChain(0), fESDEvent(0), fOutContainer(0), 
-    fTrackCuts(0), fNTuple1(0), fNTuple2(0), fP1(), fP2(), fPb1(), fPb2(), fP(), 
+
+  AliTwoTrackRes() : AliAnalysisTask("",""), fChain(0), fESDEvent(0), fOutContainer(0),
+    fTrackCuts(0), fNTuple1(0), fNTuple2(0), fP1(), fP2(), fPb1(), fPb2(), fP(),
     fQ(), fTpcEnt1(), fTpcEnt2(), fTpcDist(), fOutFilename() {}
   AliTwoTrackRes(const char *name);
   AliTwoTrackRes(const AliTwoTrackRes& aTwoTrackRes);
@@ -61,11 +61,11 @@ public:
   double DPhi()    const {return TVector2::Phi_mpi_pi(fP2.Phi()-fP1.Phi());}
   void   NoSwap()        {fPb1 = fP1; fPb2 = fP2;}
   void   Swap()          {fPb1 = fP2; fPb2 = fP1;}
-  void   FillNTuple1(double minsep, double sep, double corr, double qf, 
+  void   FillNTuple1(double minsep, double sep, double corr, double qf,
 		     int ns1, int ns2);
-  void   FillNTuple2(double minsep, double sep, double corr, double qf, 
+  void   FillNTuple2(double minsep, double sep, double corr, double qf,
 		     int ns1, int ns2);
-  void   SetOutfile(char *outfil) {fOutFilename = outfil;}
+  void   SetOutfile(const char *outfil) {fOutFilename = outfil;}
 
 private:
 
@@ -83,7 +83,7 @@ private:
   TLorentzVector  fQ;             // Four-momentum difference (lab)
   TVector3        fTpcEnt1;       // Nominal TPC entrance point track 1
   TVector3        fTpcEnt2;       // Nominal TPC entrance point track 2
-  TVector3        fTpcDist;       // Nominal TPC entrance separation 
+  TVector3        fTpcDist;       // Nominal TPC entrance separation
   TString         fOutFilename;   // Output filename
 
   ClassDef(AliTwoTrackRes, 0);

@@ -211,6 +211,9 @@ AliAnalysisTaskMultiparticleFemtoscopy::AliAnalysisTaskMultiparticleFemtoscopy(c
  fnQ3bins(100),
  fnQ3min(0.),
  fnQ3max(10.),
+ fnQ4bins(100),
+ fnQ4min(0.),
+ fnQ4max(10.),
  // *.) Testing new ways to calculate background:
  fBackgroundTESTList(NULL),
  fBackgroundTESTFlagsPro(NULL),
@@ -218,6 +221,14 @@ AliAnalysisTaskMultiparticleFemtoscopy::AliAnalysisTaskMultiparticleFemtoscopy(c
  fHybridApproachList(NULL),
  fHybridApproachFlagsPro(NULL),
  fDoHybridApproach(kFALSE),
+ // *.) m.p.d.f.'s:
+ fMPDFList(NULL),
+ fMPDFFlagsPro(NULL),
+ fDoMPDF(kFALSE),
+ fCalculateMPDF2p(kFALSE),
+ fCalculateMPDF3p(kFALSE),
+ fProjectMPDF2p(kFALSE),
+ fProjectMPDF3p(kFALSE),
  // *.) Online monitoring:
  fOnlineMonitoring(kFALSE),
  fUpdateOutputFile(kFALSE),
@@ -252,6 +263,8 @@ AliAnalysisTaskMultiparticleFemtoscopy::AliAnalysisTaskMultiparticleFemtoscopy(c
   this->InitializeArraysForGlobalTrackCuts();
   this->InitializeArraysForCorrelationFunctionsTEST();
   this->InitializeArraysForBackgroundTEST();
+  this->InitializeArraysForHybridApproach();
+  this->InitializeArraysForMPDF();
 
   // Define input and output slots here
   // Input slot #0 works with an AliFlowEventSimple
@@ -443,6 +456,9 @@ AliAnalysisTaskMultiparticleFemtoscopy::AliAnalysisTaskMultiparticleFemtoscopy()
  fnQ3bins(-44),
  fnQ3min(-44.),
  fnQ3max(-44.),
+ fnQ4bins(-44.),
+ fnQ4min(-44.),
+ fnQ4max(-44.),
  // *.) Testing new ways to calculate background:
  fBackgroundTESTList(NULL),
  fBackgroundTESTFlagsPro(NULL),
@@ -450,6 +466,14 @@ AliAnalysisTaskMultiparticleFemtoscopy::AliAnalysisTaskMultiparticleFemtoscopy()
  fHybridApproachList(NULL),
  fHybridApproachFlagsPro(NULL),
  fDoHybridApproach(kFALSE),
+ // *.) m.p.d.f.'s:
+ fMPDFList(NULL),
+ fMPDFFlagsPro(NULL),
+ fDoMPDF(kFALSE),
+ fCalculateMPDF2p(kFALSE),
+ fCalculateMPDF3p(kFALSE),
+ fProjectMPDF2p(kFALSE),
+ fProjectMPDF3p(kFALSE),
  // *.) Online monitoring:
  fOnlineMonitoring(kFALSE),
  fUpdateOutputFile(kFALSE),
@@ -525,6 +549,7 @@ void AliAnalysisTaskMultiparticleFemtoscopy::UserCreateOutputObjects()
  this->BookEverythingForCorrelationFunctionsTEST();
  this->BookEverythingForBackgroundTEST();
  this->BookEverythingForHybridApproach();
+ this->BookEverythingForMPDF();
 
  // f) Trick to avoid name clashes, part 2:
  TH1::AddDirectory(oldHistAddStatus);
@@ -635,7 +660,8 @@ void AliAnalysisTaskMultiparticleFemtoscopy::Terminate(Option_t *)
  // a) Get pointer to the grandmother of all lists "fHistList";
  // b) Get pointers to all objects in "fHistList";
  // c) Normalize correlation functions;
- // d) Dump the results.
+ // d) Projections (for m.p.d.f.'s);
+ // e) Dump the results.
 
  // a) Get pointer to the grandmother of all lists:
  fHistList = (TList*)GetOutputData(1); // TBI doesn't work locally :'(
@@ -647,7 +673,14 @@ void AliAnalysisTaskMultiparticleFemtoscopy::Terminate(Option_t *)
  // c) Normalize correlation functions:
  if(fNormalizeCorrelationFunctions){this->NormalizeCorrelationFunctions();}
 
- // d) Dump the results:
+ // d) Projections (for m.p.d.f.'s):
+ if(fDoMPDF)
+ {
+  if(fProjectMPDF2p){this->ProjectMPDF2p();}
+  if(fProjectMPDF3p){this->ProjectMPDF3p();}
+ }
+
+ // e) Dump the results:
  //TDirectoryFile *df = new TDirectoryFile("outputMPFanalysis","");
  //df->Add(fHistList);
  TFile *f = new TFile("AnalysisResults.root","RECREATE");
@@ -1613,6 +1646,38 @@ void AliAnalysisTaskMultiparticleFemtoscopy::DoHybridApproach(AliVEvent *ave)
 
 //================================================================================================================
 
+void AliAnalysisTaskMultiparticleFemtoscopy::DoMPDF(AliVEvent *ave)
+{
+ // Do all thingies for an approach with m.p.d.f.'s.
+
+ TString sMethodName = "void AliAnalysisTaskMultiparticleFemtoscopy::DoMPDF(AliVEvent *ave)";
+
+ // a) Determine Ali{MC,ESD,AOD}Event;
+ // b) ...
+
+ // a) Determine Ali{MC,ESD,AOD}Event:
+ AliMCEvent *aMC = dynamic_cast<AliMCEvent*>(ave);
+ AliESDEvent *aESD = dynamic_cast<AliESDEvent*>(ave);
+ AliAODEvent *aAOD = dynamic_cast<AliAODEvent*>(ave);
+
+ if(aMC)
+ {
+  // TBI
+ } // if(aMC)
+ else if(aESD)
+ {
+  // TBI
+ } // else if(aESD)
+ else if(aAOD)
+ {
+  if(fCalculateMPDF2p){this->CalculateMPDF2p(aAOD);}
+  if(fCalculateMPDF3p){this->CalculateMPDF3p(aAOD);}
+ }
+
+} // void AliAnalysisTaskMultiparticleFemtoscopy::DoMPDF(AliVEvent *ave)
+
+//================================================================================================================
+
 void AliAnalysisTaskMultiparticleFemtoscopy::DoSomeDebugging(AliVEvent *ave)
 {
  // Do all debugging in this function.
@@ -1892,7 +1957,8 @@ void AliAnalysisTaskMultiparticleFemtoscopy::AOD(AliAODEvent *aAOD)
  // g) Calculate background;
  // h) Calculate test correlation functions;
  // i) Calculate test background;
- // j) 'Hybrid appriach';
+ // j) 'Hybrid approach';
+ // k) m.p.d.f.'s;
  // *) V0s.
 
  // a) Debugging:
@@ -1942,6 +2008,10 @@ void AliAnalysisTaskMultiparticleFemtoscopy::AOD(AliAODEvent *aAOD)
 
  // j) 'Hybrid appriach':
  if(fDoHybridApproach){this->DoHybridApproach(aAOD);}
+
+ // k) m.p.d.f.'s:
+ if(fDoMPDF){this->DoMPDF(aAOD);}
+
 
  return;
 
@@ -2693,6 +2763,44 @@ void AliAnalysisTaskMultiparticleFemtoscopy::InitializeArraysForHybridApproach()
 
 //=======================================================================================================================
 
+void AliAnalysisTaskMultiparticleFemtoscopy::InitializeArraysForMPDF()
+{
+ // Initialize all arrays for m.p.d.f.
+
+ fhs2p[0] = NULL; // [0] = p.d.f. for both particles
+ fhs2p[1] = NULL; // [1] = m.p.d.f. for 1st particle
+ fhs2p[2] = NULL; // [2] = m.p.d.f. for 2nd particle
+
+ fProjectionQ2[0] = NULL; // [0] = projection on Q2 from p.d.f. for both particles
+ fProjectionQ2[1] = NULL; // [1] = projection on Q2 from the product of m.p.d.f.'s of 1st and 2nd particle
+ fProjectionQ2[2] = NULL; // [2] = normalized, i.e. [0]/[1]
+
+ for(Int_t d=0;d<9;d++)
+ {
+  fDistMPDF[d] = NULL;
+ }
+
+ // Some default values...
+ // 2p:
+ for(Int_t d=0;d<6;d++)
+ {
+  fnBinsPxPyPzE2p[d] = 20; 
+  fmin2p[d] = -2.;  
+  fmax2p[d] = 2.;
+ }
+
+ // 1p:
+ for(Int_t d=0;d<3;d++)
+ {
+  fnBinsPxPyPzE1p[d] = 20;
+  fmin1p[d] = -2.; 
+  fmax1p[d] = 2.;
+ }
+
+} // void AliAnalysisTaskMultiparticleFemtoscopy::InitializeArraysForMPDF()
+
+//=======================================================================================================================
+
 void AliAnalysisTaskMultiparticleFemtoscopy::BookEverythingForCorrelationFunctionsTEST()
 {
  // Book everything for test correlation functions.
@@ -3020,6 +3128,97 @@ void AliAnalysisTaskMultiparticleFemtoscopy::BookEverythingForHybridApproach()
 
 //=======================================================================================================================
 
+void AliAnalysisTaskMultiparticleFemtoscopy::BookEverythingForMPDF()
+{
+ // Book everything for m.p.d.f.
+
+ // a) Book the profile holding all the flags;
+ // b) Book THnSparse for 2p correlations;
+ // c) Book THnSparse for 3p correlations;
+ // d) ...
+
+ // a) Book the profile holding all the flags:
+ fMPDFFlagsPro = new TProfile("fMPDFFlagsPro","Flags and settings for m.p.d.f.",5,0,5);
+ fMPDFFlagsPro->SetTickLength(-0.01,"Y");
+ fMPDFFlagsPro->SetMarkerStyle(25);
+ fMPDFFlagsPro->SetLabelSize(0.04);
+ fMPDFFlagsPro->SetLabelOffset(0.02,"Y");
+ fMPDFFlagsPro->SetStats(kFALSE);
+ fMPDFFlagsPro->SetFillColor(kGray);
+ fMPDFFlagsPro->SetLineColor(kBlack);
+ fMPDFFlagsPro->GetXaxis()->SetBinLabel(1,"fDoMPDF"); fMPDFFlagsPro->Fill(0.5,fDoMPDF);
+ fMPDFFlagsPro->GetXaxis()->SetBinLabel(2,"fCalculateMPDF2p"); fMPDFFlagsPro->Fill(1.5,fCalculateMPDF2p);
+ fMPDFFlagsPro->GetXaxis()->SetBinLabel(3,"fCalculateMPDF3p"); fMPDFFlagsPro->Fill(2.5,fCalculateMPDF3p);
+ fMPDFFlagsPro->GetXaxis()->SetBinLabel(4,"fProjectMPDF2p"); fMPDFFlagsPro->Fill(3.5,fProjectMPDF2p);
+ fMPDFFlagsPro->GetXaxis()->SetBinLabel(5,"fProjectMPDF3p"); fMPDFFlagsPro->Fill(4.5,fProjectMPDF3p);
+ fMPDFList->Add(fMPDFFlagsPro);
+
+ if(!fDoMPDF){return;}
+
+ // b) Book THnSparse for 2p correlations:
+ if(fCalculateMPDF2p)
+ {
+  // 2D:
+  fhs2p[0] = new THnSparseD("fhs2p[0]","fhs2p[0]",6,fnBinsPxPyPzE2p,fmin2p,fmax2p); // joint p.d.f.
+  fMPDFList->Add(fhs2p[0]);
+  // 1D:
+  fhs2p[1] = new THnSparseD("fhs2p[1]","fhs2p[1]",3,fnBinsPxPyPzE1p,fmin1p,fmax1p); // m.p.d.f. for 1st particle
+  fMPDFList->Add(fhs2p[1]);
+  fhs2p[2] = new THnSparseD("fhs2p[2]","fhs2p[2]",3,fnBinsPxPyPzE1p,fmin1p,fmax1p); // m.p.d.f. for 2nd particle
+  fMPDFList->Add(fhs2p[2]);
+
+  // Q2 dependence:
+  // TBI comment
+  fProjectionQ2[0] = new TH1D("fProjectionQ2[0]","from 6D 2-p p.d.f.",fnQ2bins,fnQ2min,fnQ2max); 
+  fProjectionQ2[0]->SetStats(kFALSE);
+  fProjectionQ2[0]->SetLineColor(kBlue);
+  fProjectionQ2[0]->SetFillColor(kBlue-10);
+  fProjectionQ2[0]->GetXaxis()->SetTitle("Q_{2}");
+  fProjectionQ2[0]->GetYaxis()->SetTitle("counts");
+  fMPDFList->Add(fProjectionQ2[0]);
+  // TBI comment
+  fProjectionQ2[1] = new TH1D("fProjectionQ2[1]","from product of two 3D 1-p m.p.d.f.",fnQ2bins,fnQ2min,fnQ2max); 
+  fProjectionQ2[1]->SetStats(kFALSE);
+  fProjectionQ2[1]->SetLineColor(kRed);
+  fProjectionQ2[1]->SetFillColor(kRed-10);
+  fProjectionQ2[1]->GetXaxis()->SetTitle("Q_{2}");
+  fProjectionQ2[1]->GetYaxis()->SetTitle("counts");
+  fMPDFList->Add(fProjectionQ2[1]);
+  // TBI comment
+  fProjectionQ2[2] = new TH1D("fProjectionQ2[2]","normalized",fnQ2bins,fnQ2min,fnQ2max); // fProjectionQ2[0]/fProjectionQ2[1]
+  fProjectionQ2[2]->SetStats(kFALSE);
+  fProjectionQ2[2]->SetLineColor(kGreen+2);
+  fProjectionQ2[2]->SetFillColor(kGreen-10);
+  fProjectionQ2[2]->GetXaxis()->SetTitle("Q_{2}");
+  fProjectionQ2[2]->GetYaxis()->SetTitle("counts");
+  fMPDFList->Add(fProjectionQ2[2]);
+
+  // Various distributions: TBI classify
+  fDistMPDF[0] =  new TH1D("fDistMPDF[0]","distribution of bin content of the 6D ratio f/f_xf_y  ",10000,0.,1000.);
+  fDistMPDF[0]->SetStats(kFALSE);
+  fDistMPDF[0]->SetLineColor(kGreen+2);
+  fDistMPDF[0]->SetFillColor(kGreen-10);
+  //fDistMPDF[0]->GetXaxis()->SetTitle("");
+  //fDistMPDF[0]->GetYaxis()->SetTitle("");
+  fMPDFList->Add(fDistMPDF[0]);
+
+ } // if(fCalculateMPDF2p) 
+
+ // c) Book THnSparse for 3p correlations:
+ if(fCalculateMPDF3p)
+ {
+  // 3D:
+  // ...
+  // 2D:
+  // ...
+  // 1D:
+  // ...
+ } // if(fCalculateMPDF3p) 
+
+} // void AliAnalysisTaskMultiparticleFemtoscopy::BookEverythingForMPDF()
+
+//=======================================================================================================================
+
 void AliAnalysisTaskMultiparticleFemtoscopy::BookAndNestAllLists()
 {
  // Book and nest all lists nested in the base list fHistList.
@@ -3033,7 +3232,8 @@ void AliAnalysisTaskMultiparticleFemtoscopy::BookAndNestAllLists()
  // g) Book and nest lists for common global track cuts;
  // h) Book and nest lists for test correlation functions;
  // i) Book and nest lists for test background;
- // j) Book and nest lists for 'hybrid approach'.
+ // j) Book and nest lists for 'hybrid approach';
+ // k) Book and nest lists for m.p.d.f.'s
 
  TString sMethodName = "void AliAnalysisTaskMultiparticleFemtoscopy::BookAndNestAllLists()";
  if(!fHistList){Fatal(sMethodName.Data(),"fHistList is NULL");}
@@ -3164,6 +3364,12 @@ void AliAnalysisTaskMultiparticleFemtoscopy::BookAndNestAllLists()
  fHybridApproachList->SetName("HybridApproach");
  fHybridApproachList->SetOwner(kTRUE);
  fHistList->Add(fHybridApproachList);
+
+ // k) Book and nest lists for m.p.d.f.'s:
+ fMPDFList = new TList();
+ fMPDFList->SetName("MPDF");
+ fMPDFList->SetOwner(kTRUE);
+ fHistList->Add(fMPDFList);
 
 } // void AliAnalysisTaskMultiparticleFemtoscopy::BookAndNestAllLists()
 
@@ -3807,7 +4013,7 @@ void AliAnalysisTaskMultiparticleFemtoscopy::BookEverythingForCorrelationFunctio
   for(Int_t pid2=pid1;pid2<2*nParticleSpecies;pid2++) // [particle(+q): 0=e,1=mu,2=pi,3=K,4=p, anti-particle(-q): 0=e,1=mu,2=pi,3=K,4=p]
   {
    // Correlation functions:
-   fCorrelationFunctions[pid1][pid2] = new TH1F(Form("fCorrelationFunctions[%d][%d]",pid1,pid2),Form("fCorrelationFunctions[%d][%d] = (%s,%s)",pid1,pid2,sParticles[pid1].Data(),sParticles[pid2].Data()),10000,0.,10.); // TBI rethink the boundaries and nbins
+   fCorrelationFunctions[pid1][pid2] = new TH1F(Form("fCorrelationFunctions[%d][%d]",pid1,pid2),Form("fCorrelationFunctions[%d][%d] = (%s,%s)",pid1,pid2,sParticles[pid1].Data(),sParticles[pid2].Data()),fnQ2bins,fnQ2min,fnQ2max);
    fCorrelationFunctions[pid1][pid2]->SetStats(kTRUE);
    fCorrelationFunctions[pid1][pid2]->SetFillColor(kBlue-10);
    fCorrelationFunctions[pid1][pid2]->SetXTitle("Q_{2}");
@@ -3840,7 +4046,7 @@ void AliAnalysisTaskMultiparticleFemtoscopy::BookEverythingForCorrelationFunctio
     for(Int_t pid3=0;pid3<2*nParticleSpecies;pid3++) // [particle(+q): 0=e,1=mu,2=pi,3=K,4=p, anti-particle(-q): 0=e,1=mu,2=pi,3=K,4=p]
     {
      // 3-p correlation functions:
-     f3pCorrelationFunctions[pid1][pid2][pid3] = new TH1F(Form("f3pCorrelationFunctions[%d][%d][%d]",pid1,pid2,pid3),Form("f3pCorrelationFunctions[%d][%d][%d] = (%s,%s,%s)",pid1,pid2,pid3,sParticles[pid1].Data(),sParticles[pid2].Data(),sParticles[pid3].Data()),10000,0.,10.); // TBI rethink the boundaries and nbins
+     f3pCorrelationFunctions[pid1][pid2][pid3] = new TH1F(Form("f3pCorrelationFunctions[%d][%d][%d]",pid1,pid2,pid3),Form("f3pCorrelationFunctions[%d][%d][%d] = (%s,%s,%s)",pid1,pid2,pid3,sParticles[pid1].Data(),sParticles[pid2].Data(),sParticles[pid3].Data()),fnQ3bins,fnQ3min,fnQ3max);
      f3pCorrelationFunctions[pid1][pid2][pid3]->SetStats(kTRUE);
      f3pCorrelationFunctions[pid1][pid2][pid3]->SetFillColor(kBlue-10);
      f3pCorrelationFunctions[pid1][pid2][pid3]->SetXTitle("Q_{3}");
@@ -3863,7 +4069,7 @@ void AliAnalysisTaskMultiparticleFemtoscopy::BookEverythingForCorrelationFunctio
      for(Int_t pid4=0;pid4<2*nParticleSpecies;pid4++) // [particle(+q): 0=e,1=mu,2=pi,3=K,4=p, anti-particle(-q): 0=e,1=mu,2=pi,3=K,4=p]
      {
       // 4-p correlation functions:
-      f4pCorrelationFunctions[pid1][pid2][pid3][pid4] = new TH1F(Form("f4pCorrelationFunctions[%d][%d][%d][%d]",pid1,pid2,pid3,pid4),Form("f4pCorrelationFunctions[%d][%d][%d][%d] = (%s,%s,%s,%s)",pid1,pid2,pid3,pid4,sParticles[pid1].Data(),sParticles[pid2].Data(),sParticles[pid3].Data(),sParticles[pid4].Data()),10000,0.,10.); // TBI rethink the boundaries and nbins
+      f4pCorrelationFunctions[pid1][pid2][pid3][pid4] = new TH1F(Form("f4pCorrelationFunctions[%d][%d][%d][%d]",pid1,pid2,pid3,pid4),Form("f4pCorrelationFunctions[%d][%d][%d][%d] = (%s,%s,%s,%s)",pid1,pid2,pid3,pid4,sParticles[pid1].Data(),sParticles[pid2].Data(),sParticles[pid3].Data(),sParticles[pid4].Data()),fnQ4bins,fnQ4min,fnQ4max); // TBI rethink the boundaries and nbins
       f4pCorrelationFunctions[pid1][pid2][pid3][pid4]->SetStats(kTRUE);
       f4pCorrelationFunctions[pid1][pid2][pid3][pid4]->SetFillColor(kBlue-10);
       f4pCorrelationFunctions[pid1][pid2][pid3][pid4]->SetXTitle("Q_{4}");
@@ -3952,12 +4158,12 @@ void AliAnalysisTaskMultiparticleFemtoscopy::BookEverythingForBackground()
    for(Int_t pid2=pid1;pid2<2*nParticleSpecies;pid2++) // [particle(+q): 0=e,1=mu,2=pi,3=K,4=p, anti-particle(-q): 0=e,1=mu,2=pi,3=K,4=p]
    {
     // Background:
-    f2pBackground[pid1][pid2] = new TH1F(Form("f2pBackground[%d][%d]",pid1,pid2),Form("f2pBackground[%d][%d] = (%s,%s)",pid1,pid2,sParticles[pid1].Data(),sParticles[pid2].Data()),10000,0.,10.); // TBI rethink the boundaries and nbins
+    f2pBackground[pid1][pid2] = new TH1F(Form("f2pBackground[%d][%d]",pid1,pid2),Form("f2pBackground[%d][%d] = (%s,%s)",pid1,pid2,sParticles[pid1].Data(),sParticles[pid2].Data()),fnQ2bins,fnQ2min,fnQ2max);
     f2pBackground[pid1][pid2]->SetStats(kTRUE);
     f2pBackground[pid1][pid2]->SetFillColor(kRed-10);
     f2pBackground[pid1][pid2]->SetLineColor(kRed);
-    f2pBackground[pid1][pid2]->SetXTitle("k");
-    f2pBackground[pid1][pid2]->SetYTitle("B(k)");
+    f2pBackground[pid1][pid2]->SetXTitle("Q_{2}");
+    f2pBackground[pid1][pid2]->SetYTitle("B(Q_{2})");
     fBackgroundSublist[0]->Add(f2pBackground[pid1][pid2]);
    } // for(Int_t pid2=0;pid2<5;pid2++) // anti-particle [0=e,1=mu,2=pi,3=K,4=p]
   } // for(Int_t pid=0;pid<5;pid++) // particle [0=e,1=mu,2=pi,3=K,4=p]
@@ -3973,7 +4179,7 @@ void AliAnalysisTaskMultiparticleFemtoscopy::BookEverythingForBackground()
     for(Int_t pid3=0;pid3<2*nParticleSpecies;pid3++) // [particle(+q): 0=e,1=mu,2=pi,3=K,4=p, anti-particle(-q): 0=e,1=mu,2=pi,3=K,4=p]
     {
      // Background:
-     f3pBackground[pid1][pid2][pid3] = new TH1F(Form("f3pBackground[%d][%d][%d]",pid1,pid2,pid3),Form("f3pBackground[%d][%d][%d] = (%s,%s,%s)",pid1,pid2,pid3,sParticles[pid1].Data(),sParticles[pid2].Data(),sParticles[pid3].Data()),10000,0.,10.); // TBI rethink the boundaries and nbins
+     f3pBackground[pid1][pid2][pid3] = new TH1F(Form("f3pBackground[%d][%d][%d]",pid1,pid2,pid3),Form("f3pBackground[%d][%d][%d] = (%s,%s,%s)",pid1,pid2,pid3,sParticles[pid1].Data(),sParticles[pid2].Data(),sParticles[pid3].Data()),fnQ3bins,fnQ3min,fnQ3max);
      f3pBackground[pid1][pid2][pid3]->SetStats(kTRUE);
      f3pBackground[pid1][pid2][pid3]->SetFillColor(kRed-10);
      f3pBackground[pid1][pid2][pid3]->SetLineColor(kRed);
@@ -3997,7 +4203,7 @@ void AliAnalysisTaskMultiparticleFemtoscopy::BookEverythingForBackground()
      for(Int_t pid4=0;pid4<2*nParticleSpecies;pid4++) // [particle(+q): 0=e,1=mu,2=pi,3=K,4=p, anti-particle(-q): 0=e,1=mu,2=pi,3=K,4=p]
      {
       // Background:
-      f4pBackground[pid1][pid2][pid3][pid4] = new TH1F(Form("f4pBackground[%d][%d][%d][%d]",pid1,pid2,pid3,pid4),Form("f4pBackground[%d][%d][%d][%d] = (%s,%s,%s,%s)",pid1,pid2,pid3,pid4,sParticles[pid1].Data(),sParticles[pid2].Data(),sParticles[pid3].Data(),sParticles[pid4].Data()),10000,0.,10.); // TBI rethink the boundaries and nbins
+      f4pBackground[pid1][pid2][pid3][pid4] = new TH1F(Form("f4pBackground[%d][%d][%d][%d]",pid1,pid2,pid3,pid4),Form("f4pBackground[%d][%d][%d][%d] = (%s,%s,%s,%s)",pid1,pid2,pid3,pid4,sParticles[pid1].Data(),sParticles[pid2].Data(),sParticles[pid3].Data(),sParticles[pid4].Data()),fnQ4bins,fnQ4min,fnQ4max);
       f4pBackground[pid1][pid2][pid3][pid4]->SetStats(kTRUE);
       f4pBackground[pid1][pid2][pid3][pid4]->SetFillColor(kRed-10);
       f4pBackground[pid1][pid2][pid3][pid4]->SetLineColor(kRed);
@@ -6382,6 +6588,31 @@ Double_t AliAnalysisTaskMultiparticleFemtoscopy::Q2(AliAODTrack *agtrack1, AliAO
 
 //=======================================================================================================================
 
+Double_t AliAnalysisTaskMultiparticleFemtoscopy::Q2(TLorentzVector lv1, TLorentzVector lv2)
+{
+ // Lorentz invariant Q2. Credits: Sir Oliver.
+ 
+ // Standard gym. to get k*:
+ TLorentzVector trackSum = lv1 + lv2;
+ Double_t beta = trackSum.Beta();
+ Double_t beta_x = beta*cos(trackSum.Phi())*sin(trackSum.Theta());
+ Double_t beta_y = beta*sin(trackSum.Phi())*sin(trackSum.Theta());
+ Double_t beta_z = beta*cos(trackSum.Theta());
+ TLorentzVector lv1_cms = lv1;
+ TLorentzVector lv2_cms = lv2;
+ lv1_cms.Boost(-beta_x,-beta_y,-beta_z);
+ lv2_cms.Boost(-beta_x,-beta_y,-beta_z);
+
+ TLorentzVector track_relK = lv1_cms - lv2_cms;
+ Double_t Q2 = track_relK.P();
+
+ return Q2;
+
+} // Double_t AliAnalysisTaskMultiparticleFemtoscopy::Q2(TLorentzVector lv1, TLorentzVector lv2)
+
+//=======================================================================================================================
+
+
 Double_t AliAnalysisTaskMultiparticleFemtoscopy::Q3(AliAODTrack *agtrack1, AliAODTrack *agtrack2, AliAODTrack *agtrack3)
 {
  // The Lorentz invariant Q3. TBI validate with some explicit calculation
@@ -8327,7 +8558,8 @@ void AliAnalysisTaskMultiparticleFemtoscopy::GetOutputHistograms(TList *histList
  // *) TBI ...
  // *) Get pointers for correlation functions;
  // *) Get pointers for background;
- // *) Get pointers for buffers.
+ // *) Get pointers for buffers;
+ // *) Get pointers for m.p.d.f.'s.
 
  TString sMethodName = "void AliAnalysisTaskMultiparticleFemtoscopy::GetOutputHistograms(TList *histList)";
 
@@ -8350,6 +8582,9 @@ void AliAnalysisTaskMultiparticleFemtoscopy::GetOutputHistograms(TList *histList
 
  // *) Get pointers for buffers:
  this->GetPointersForBuffers();
+
+ // *) Get pointers for m.p.d.f.'s:
+ this->GetPointersForMPDF();
 
 } // void AliAnalysisTaskMultiparticleFemtoscopy::GetOutputHistograms(TList *histList)
 
@@ -8543,6 +8778,56 @@ void AliAnalysisTaskMultiparticleFemtoscopy::GetPointersForBuffers()
  fMaxBuffer = fBuffersFlagsPro->GetBinContent(2);
 
 } // void AliAnalysisTaskMultiparticleFemtoscopy::GetPointersForBuffers()
+
+//=======================================================================================================================
+
+void AliAnalysisTaskMultiparticleFemtoscopy::GetPointersForMPDF()
+{
+ // Get pointers for m.p.d.f.'s
+
+ // a) Get pointer for fMPDFList;
+ // b) Get pointer for fBuffersFlagsPro;
+ // c) Set again all flags;
+ // d) Fetch pointers.
+
+ TString sMethodName = "void AliAnalysisTaskMultiparticleFemtoscopy::GetPointersForMPDF()";
+
+ // a) Get pointer for fMPDFList:
+ fMPDFList = dynamic_cast<TList*>(fHistList->FindObject("MPDF"));
+ if(!fMPDFList){Fatal(sMethodName.Data(),"fMPDFList");}
+
+ // b) Get pointer for fBuffersFlagsPro:
+ fMPDFFlagsPro = dynamic_cast<TProfile*>(fMPDFList->FindObject("fMPDFFlagsPro"));
+ if(!fMPDFFlagsPro){Fatal(sMethodName.Data(),"fMPDFFlagsPro");}
+
+ // c) Set again all flags:
+ fDoMPDF = (Bool_t) fMPDFFlagsPro->GetBinContent(1);
+ fCalculateMPDF2p = (Bool_t) fMPDFFlagsPro->GetBinContent(2);
+ fCalculateMPDF3p = (Bool_t) fMPDFFlagsPro->GetBinContent(3);
+ fProjectMPDF2p = (Bool_t) fMPDFFlagsPro->GetBinContent(4);
+ fProjectMPDF3p = (Bool_t) fMPDFFlagsPro->GetBinContent(5);
+
+ if(!fDoMPDF){return;}
+
+ // d) Fetch pointers: // TBI do via loop eventually, if this is the final version
+ fhs2p[0] = dynamic_cast<THnSparseD*>(fMPDFList->FindObject("fhs2p[0]"));
+ if(!fhs2p[0]){Fatal(sMethodName.Data(),"fhs2p[0]");}
+ fhs2p[1] = dynamic_cast<THnSparseD*>(fMPDFList->FindObject("fhs2p[1]"));
+ if(!fhs2p[1]){Fatal(sMethodName.Data(),"fhs2p[1]");}
+ fhs2p[2] = dynamic_cast<THnSparseD*>(fMPDFList->FindObject("fhs2p[2]"));
+ if(!fhs2p[2]){Fatal(sMethodName.Data(),"fhs2p[2]");}
+
+ fProjectionQ2[0] = dynamic_cast<TH1D*>(fMPDFList->FindObject("fProjectionQ2[0]"));
+ if(!fProjectionQ2[0]){Fatal(sMethodName.Data(),"fProjectionQ2[0]");}
+ fProjectionQ2[1] = dynamic_cast<TH1D*>(fMPDFList->FindObject("fProjectionQ2[1]"));
+ if(!fProjectionQ2[1]){Fatal(sMethodName.Data(),"fProjectionQ2[1]");}
+ fProjectionQ2[2] = dynamic_cast<TH1D*>(fMPDFList->FindObject("fProjectionQ2[2]"));
+ if(!fProjectionQ2[2]){Fatal(sMethodName.Data(),"fProjectionQ2[2]");}
+
+ fDistMPDF[0] = dynamic_cast<TH1D*>(fMPDFList->FindObject("fDistMPDF[0]"));
+ if(!fDistMPDF[0]){Fatal(sMethodName.Data(),"fDistMPDF[0]");}
+
+} // void AliAnalysisTaskMultiparticleFemtoscopy::GetPointersForMPDF()
 
 //=======================================================================================================================
 
@@ -8952,6 +9237,253 @@ void AliAnalysisTaskMultiparticleFemtoscopy::HybridApproach5thTerm(TClonesArray 
 } // void AliAnalysisTaskMultiparticleFemtoscopy::HybridApproach5thTerm(TClonesArray *ca1, TClonesArray *ca2, TClonesArray *ca3, TExMap *em1, TExMap *em2, TExMap *em3)
 
 //=======================================================================================================================
+
+void AliAnalysisTaskMultiparticleFemtoscopy::CalculateMPDF2p(AliAODEvent *aAOD)
+{
+ // Calculate 2p correlation functions via THnSparse.
+
+ // a) Insanity checks;
+
+ // a) Insanity checks:
+ TString sMethodName = "void AliAnalysisTaskMultiparticleFemtoscopy::CalculateMPDF2p(AliAODEvent *aAOD)";
+ if(!aAOD){Fatal(sMethodName.Data(),"!aAOD");}
+ if(0 == fGlobalTracksAOD[0]->GetSize()){Fatal(sMethodName.Data(),"0 == fGlobalTracksAOD[0]->GetSize()");} // this case shall be already treated in UserExec
+
+ // b) Two nested loops to get particle pairs:
+ Int_t nTracks = aAOD->GetNumberOfTracks();
+ for(Int_t iTrack1=0;iTrack1<nTracks;iTrack1++)
+ {
+  AliAODTrack *atrack1 = dynamic_cast<AliAODTrack*>(aAOD->GetTrack(iTrack1));
+  // TBI Temporary track insanity checks:
+  if(!atrack1){Fatal(sMethodName.Data(),"!atrack1");} // TBI keep this for some time, eventually just continue
+  if(atrack1->GetID()>=0 && atrack1->IsGlobalConstrained()){Fatal(sMethodName.Data(),"atrack1->GetID()>=0 && atrack1->IsGlobalConstrained()");} // TBI keep this for some time, eventually just continue
+  if(atrack1->TestFilterBit(128) && atrack1->IsGlobalConstrained()){Fatal(sMethodName.Data(),"atrack1->TestFiletrBit(128) && atrack1->IsGlobalConstrained()");} // TBI keep this for some time, eventually just continue
+  if(!PassesCommonTrackCuts(atrack1)){continue;} // TBI re-think
+  // Corresponding AOD global track:
+  Int_t id1 = atrack1->GetID();
+  AliAODTrack *gtrack1 = dynamic_cast<AliAODTrack*>(id1>=0 ? aAOD->GetTrack(fGlobalTracksAOD[0]->GetValue(id1)) : aAOD->GetTrack(fGlobalTracksAOD[0]->GetValue(-(id1+1))));
+  if(!gtrack1){Fatal(sMethodName.Data(),"!gtrack1");} // TBI keep this for some time, eventually just continue
+  Int_t gid1 = (id1>=0 ? id1 : -(id1+1)); // ID of corresponding global track
+  // Common track selection criteria for all "normal" global tracks:
+  if(!PassesGlobalTrackCuts(gtrack1)){continue;}
+
+  // Loop over the 2nd particle:
+  for(Int_t iTrack2=iTrack1+1;iTrack2<nTracks;iTrack2++)
+  {
+   AliAODTrack *atrack2 = dynamic_cast<AliAODTrack*>(aAOD->GetTrack(iTrack2));
+   // TBI Temporary track insanity checks:
+   if(!atrack2){Fatal(sMethodName.Data(),"!atrack2");} // TBI keep this for some time, eventually just continue
+   if(atrack2->GetID()>=0 && atrack2->IsGlobalConstrained()){Fatal(sMethodName.Data(),"atrack2->GetID()>=0 && atrack2->IsGlobalConstrained()");} // TBI keep this for some time, eventually just continue
+   if(atrack2->TestFilterBit(128) && atrack2->IsGlobalConstrained()){Fatal(sMethodName.Data(),"atrack2->TestFiletrBit(128) && atrack2->IsGlobalConstrained()");} // TBI keep this for some time, eventually just continue
+   if(!PassesCommonTrackCuts(atrack2)){continue;} // TBI re-think
+   // Corresponding AOD global track:
+   Int_t id2 = atrack2->GetID();
+   AliAODTrack *gtrack2 = dynamic_cast<AliAODTrack*>(id2>=0 ? aAOD->GetTrack(fGlobalTracksAOD[0]->GetValue(id2)) : aAOD->GetTrack(fGlobalTracksAOD[0]->GetValue(-(id2+1))));
+   if(!gtrack2){Fatal(sMethodName.Data(),"!gtrack2");} // TBI keep this for some time, eventually just continue
+   Int_t gid2 = (id2>=0 ? id2 : -(id2+1)); // ID of corresponding global track
+   if(gid1==gid2){continue;} // Eliminate self-correlations:
+
+   // Common track selection criteria for all "normal" global tracks:
+   if(!PassesGlobalTrackCuts(gtrack2)){continue;}
+
+   // Okay, so we have two tracks, let's decide whether kinemetics from 'atrack' or 'gtrack' is taken, let's check PID, and fill the correlation functions:
+   AliAODTrack *agtrack1 = NULL; // either 'atrack' or 'gtrack', depending on the flag fFillControlHistogramsWithGlobalTrackInfo. By default, agtrack = 'atrack'
+   AliAODTrack *agtrack2 = NULL; // either 'atrack' or 'gtrack', depending on the flag fFillControlHistogramsWithGlobalTrackInfo. By default, agtrack = 'atrack'
+   if(fFillControlHistogramsWithGlobalTrackInfo)
+   {
+    agtrack1 = gtrack1;
+    agtrack2 = gtrack2;
+   }
+   else
+   {
+    agtrack1 = atrack1;
+    agtrack2 = atrack2;
+   } // if(fFillControlHistogramsWithGlobalTrackInfo)
+   if(!agtrack1){Fatal(sMethodName.Data(),"!agtrack1");}
+   if(!agtrack2){Fatal(sMethodName.Data(),"!agtrack2");}
+
+   // Do your thing...
+   if(Pion(gtrack1,1,kTRUE) && Pion(gtrack2,1,kTRUE))
+   {
+    // p_1:
+    Double_t p1x = agtrack1->Px();
+    Double_t p1y = agtrack1->Py();
+    Double_t p1z = agtrack1->Pz();
+    //Double_t e1  = agtrack1->E();
+
+    // p_2:
+    Double_t p2x = agtrack2->Px();
+    Double_t p2y = agtrack2->Py();
+    Double_t p2z = agtrack2->Pz();
+    //Double_t e2  = agtrack2->E();
+
+    // Fill:
+    Double_t vector[6] = {p1x,p1y,p1z,p2x,p2y,p2z};
+    fhs2p[0]->Fill(vector);
+   } // if(Pion(agtrack1,1,kTRUE) && Pion(agtrack2,1,kTRUE))
+
+  } // for(Int_t iTrack2=iTrack1+1;iTrack2<nTracks;iTrack2++)
+ } // for(Int_t iTrack1=0;iTrack1<nTracks;iTrack1++)
+
+} // void AliAnalysisTaskMultiparticleFemtoscopy::CalculateMPDF2p(AliAODEvent *aAOD)
+
+//=======================================================================================================================
+
+void AliAnalysisTaskMultiparticleFemtoscopy::CalculateMPDF3p(AliAODEvent *aAOD)
+{
+ // Calculate 3p correlation functions via THnSparse.
+
+ // a) Insanity checks;
+
+ // ...
+
+} // void AliAnalysisTaskMultiparticleFemtoscopy::CalculateMPDF3p(AliAODEvent *aAOD)
+
+//=======================================================================================================================
+
+void AliAnalysisTaskMultiparticleFemtoscopy::ProjectMPDF2p()
+{
+ // Project measured 2D correlation functions into m.p.d.f's, as well as onto Q2.
+
+ // a) TBI document this function a bit
+
+ cout<<"=> Starting ProjectMPDF2p() ..."<<endl;
+ gSystem->Exec("date"); // TBI_TODAY
+
+ const Int_t nWhichDimensions = 3;
+ Int_t nDimensions1st[nWhichDimensions] = {0,1,2}; // project out d.o.f. for the 2nd particle (the degrees which are specified, are kept)
+ Int_t nDimensions2nd[nWhichDimensions] = {3,4,5}; // project out d.o.f. for the 1st particle (the degrees which are specified, are kept)
+
+ // Normalizing 6D (then, m.p.d.f.'s are automatically normalized):
+ Double_t entries = fhs2p[0]->GetEntries();
+ if(entries>0.)
+ {
+  fhs2p[0]->Scale(1./entries);
+ }
+ // TBI shall I store normalized distribution separately?
+
+ // TBI the lines below are bit shaky, I think...
+ fMPDFList->Remove(fhs2p[1]);
+ fhs2p[1] = fhs2p[0]->Projection(nWhichDimensions,nDimensions1st); // this is then m.p.d.f. for 1st particle
+ fhs2p[1]->SetName("fhs2p[1]");
+ fMPDFList->Add(fhs2p[1]);
+
+ // TBI the lines below are bit shaky, I think...
+ fMPDFList->Remove(fhs2p[2]);
+ fhs2p[2] = fhs2p[0]->Projection(nWhichDimensions,nDimensions2nd); // this is then m.p.d.f. for 2nd particle
+ fhs2p[2]->SetName("fhs2p[2]");
+ fMPDFList->Add(fhs2p[2]);
+
+ // Projections on Q2:
+
+ const Int_t nDim = 6;
+ Int_t nBins[nDim] = {0}; // TBI most likely, this shall go to data members
+
+ TAxis *axis = NULL; 
+ for(Int_t dim=0;dim<nDim;dim++)
+ {
+  axis = fhs2p[0]->GetAxis(dim);
+  if(!axis){exit(0);} 
+  nBins[dim] = axis->GetNbins();
+ }
+
+ Double_t dQ2 = 0.;
+ for(Int_t p1x=1;p1x<=nBins[0];p1x++)
+ {
+  Double_t dp1xBinCenter = BinCenterSparse(fhs2p[0],0,p1x);       
+  for(Int_t p1y=1;p1y<=nBins[1];p1y++)
+  {
+   Double_t dp1yBinCenter = BinCenterSparse(fhs2p[0],1,p1y);       
+   for(Int_t p1z=1;p1z<=nBins[2];p1z++)
+   {
+    Double_t dp1zBinCenter = BinCenterSparse(fhs2p[0],2,p1z);       
+    for(Int_t p2x=1;p2x<=nBins[3];p2x++)
+    {
+     Double_t dp2xBinCenter = BinCenterSparse(fhs2p[0],3,p2x);       
+     for(Int_t p2y=1;p2y<=nBins[4];p2y++)
+     {
+      Double_t dp2yBinCenter = BinCenterSparse(fhs2p[0],4,p2y);       
+      for(Int_t p2z=1;p2z<=nBins[5];p2z++)
+      {
+       Double_t dp2zBinCenter = BinCenterSparse(fhs2p[0],5,p2z);       
+       Int_t bin[6] = {p1x,p1y,p1z,p2x,p2y,p2z};
+       if(0==fhs2p[0]->GetBinContent(bin)){continue;}
+
+       Double_t de1BinCenter = pow(pow(dp1xBinCenter,2.) + pow(dp1yBinCenter,2.) + pow(dp1zBinCenter,2.) + pow(0.13957,2.),0.5); // TBI hardwired mass of a pion
+       Double_t de2BinCenter = pow(pow(dp2xBinCenter,2.) + pow(dp2yBinCenter,2.) + pow(dp2zBinCenter,2.) + pow(0.13957,2.),0.5); // TBI hardwired mass of a pion
+
+       TLorentzVector lv1(dp1xBinCenter,dp1yBinCenter,dp1zBinCenter,de1BinCenter);
+       TLorentzVector lv2(dp2xBinCenter,dp2yBinCenter,dp2zBinCenter,de2BinCenter);
+
+       TLorentzVector diff = lv1 - lv2;
+       dQ2 = diff.P();
+          
+       fProjectionQ2[0]->Fill(dQ2,fhs2p[0]->GetBinContent(bin));
+  
+       Int_t bin1[3] = {p1x,p1y,p1z};
+       Int_t bin2[3] = {p2x,p2y,p2z};
+
+       fProjectionQ2[1]->Fill(dQ2,fhs2p[1]->GetBinContent(bin1)*fhs2p[2]->GetBinContent(bin2));
+
+       // Distributions (just for easier visualisation):
+       if(fhs2p[1]->GetBinContent(bin1)>0. && fhs2p[2]->GetBinContent(bin2)>0.)
+       {
+        fDistMPDF[0]->Fill(fhs2p[0]->GetBinContent(bin)/(fhs2p[1]->GetBinContent(bin1)*fhs2p[2]->GetBinContent(bin2)));
+       }
+
+      } // for(Int_t p2z=1;p2z<=nBins[5];p2z++)
+     }
+    }
+   }
+  }
+ } // for(Int_t p1x=1;p1x<=nBins[0];p1x++)
+
+ // TBI the lines below are bit shaky, I think...
+ fMPDFList->Remove(fProjectionQ2[2]);
+ fProjectionQ2[2] = (TH1D*)fProjectionQ2[0]->Clone("fProjectionQ2[2]");
+ fProjectionQ2[2]->SetTitle("fProjectionQ2[0]/fProjectionQ2[1]");
+ fProjectionQ2[2]->Divide(fProjectionQ2[1]);
+ fMPDFList->Add(fProjectionQ2[2]);
+
+ cout<<"=> Leaving ProjectMPDF2p() ..."<<endl;
+ gSystem->Exec("date"); // TBI_TODAY
+
+} // void AliAnalysisTaskMultiparticleFemtoscopy::ProjectMPDF2p()
+
+//=======================================================================================================================
+
+void AliAnalysisTaskMultiparticleFemtoscopy::ProjectMPDF3p()
+{
+ // Project measured 3D correlation functions into m.p.d.f's, as well as onto Q3.
+
+ // a) Insanity checks;
+
+ // ...
+
+} // void AliAnalysisTaskMultiparticleFemtoscopy::ProjectMPDF3p()
+
+//=======================================================================================================================
+
+Double_t AliAnalysisTaskMultiparticleFemtoscopy::BinCenterSparse(THnSparse *hs, Int_t dim, Int_t binNo)
+{
+ // For the sparse histogram, its dimension and bin number, determine the bin center.
+
+ // Insanity checks:
+ if(!hs){exit(0);} 
+ if(dim<0){exit(0);} 
+ if(binNo<=0){exit(0);} 
+
+ // Fetch the axis for specified dimension:
+ TAxis *axis = hs->GetAxis(dim);
+ if(!axis){exit(0);}
+
+ // Fetch # of bins for the specified axis:
+ Int_t nBins = axis->GetNbins();
+ if(binNo>nBins){exit(0);}
+
+ return axis->GetBinCenter(binNo);
+
+} // Double_t BinCenter(Int_t dim, Int_t binNo)
 
 
 

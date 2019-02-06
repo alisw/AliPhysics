@@ -133,7 +133,7 @@ AliFemtoModelCorrFctnQinv::AliFemtoModelCorrFctnQinv(const AliFemtoModelCorrFctn
 {
 }
 
-AliFemtoModelCorrFctnQinv*
+AliFemtoModelCorrFctn*
 AliFemtoModelCorrFctnQinv::Clone() const
 {
   AliFemtoModelCorrFctnQinv *result = new AliFemtoModelCorrFctnQinv(*this);
@@ -144,6 +144,26 @@ AliFemtoModelCorrFctnQinv::Clone() const
   return result;
 };
 
+
+AliFemtoModelCorrFctnQinv&
+AliFemtoModelCorrFctnQinv::operator=(const AliFemtoModelCorrFctnQinv &rhs)
+{
+  if (this == &rhs) {
+    return *this;
+  }
+
+  fPairType = rhs.fPairType;
+
+  fExpectedTrack1Code = rhs.fExpectedTrack1Code;
+  fExpectedTrack2Code = rhs.fExpectedTrack2Code;
+
+  *fRecNum = *rhs.fRecNum;
+  *fTrueNum = *rhs.fTrueNum;
+  *fRecDen = *rhs.fRecDen;
+  *fTrueDen = *rhs.fTrueDen;
+
+  return *this;
+}
 
 AliFemtoModelCorrFctnQinv::~AliFemtoModelCorrFctnQinv()
 {

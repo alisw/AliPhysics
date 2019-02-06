@@ -15,12 +15,12 @@
  *        2)   E1 * E2
  *        3)   Pt1*Pt2
  *        4)   Pz1*Pz2
- *  
+ *
  * The class is derived from AliFemtoBPLCMS3DCorrFctn, therefore it produces
- * also the histograms in that class. 
- * 
- * NOTE: The EMCIC histograms are not averaged in this class, to obtain 
- * the average, the user needs to divide the real pair histograms by 
+ * also the histograms in that class.
+ *
+ * NOTE: The EMCIC histograms are not averaged in this class, to obtain
+ * the average, the user needs to divide the real pair histograms by
  * the numerator, and the mixed pair histograms by the denominator
  *
  ***************************************************************************
@@ -37,11 +37,11 @@
 
 class AliFemtoBPLCMS3DCorrFctnEMCIC : public AliFemtoCorrFctn{
 public:
-  AliFemtoBPLCMS3DCorrFctnEMCIC(char* title, const int& nbins, const float& QLo, const float& QHi);
+  AliFemtoBPLCMS3DCorrFctnEMCIC(const char* title, const int& nbins, const float& QLo, const float& QHi);
   // Variable bin size constructor :
   //qBins array of low-edges for each bin. This is an array of size nbins+1
-  AliFemtoBPLCMS3DCorrFctnEMCIC(char* title, const int& nbins, const float* qBins);
-  
+  AliFemtoBPLCMS3DCorrFctnEMCIC(const char* title, const int& nbins, const float* qBins);
+
   AliFemtoBPLCMS3DCorrFctnEMCIC(const AliFemtoBPLCMS3DCorrFctnEMCIC& aCorrFctn);
   virtual ~AliFemtoBPLCMS3DCorrFctnEMCIC();
 
@@ -57,9 +57,10 @@ public:
 
   void WriteOutHistos();
   virtual TList* GetOutputList();
+  virtual AliFemtoCorrFctn* Clone() const { return new AliFemtoBPLCMS3DCorrFctnEMCIC(*this); }
 
  private:
-  
+
   TH3D* fNumerator;         // numerator
   TH3D* fDenominator;       // denominator
   //EMCIC histograms
@@ -71,11 +72,11 @@ public:
   TH3D* fEnergyMultMix;        // E1*E2
   TH3D* fPzMultMix;            // Pz1*Pz2
   TH3D* fPtMultMix;            // Pt1*Pt2
-   
+
  protected:
   unsigned short fUseRPSelection;  // The pair cut uses RP selection
-  
-  
+
+
 
 #ifdef __ROOT__
   ClassDef(AliFemtoBPLCMS3DCorrFctnEMCIC, 1)

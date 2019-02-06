@@ -267,21 +267,6 @@ Bool_t AliMultSelectionCalibratorMC::Calibrate() {
         }
     }
 
-    TFile *fOutputMC = new TFile (fBufferFileNameMC.Data(), "RECREATE");
-    TTree *sTreeMC[lMaxQuantiles];
-    cout<<"Creating Trees..."<<endl;
-    for(Int_t iRun=0; iRun<lMax; iRun++) {
-        sTreeMC[iRun] = new TTree(Form("sTreeMC%i",iRun),Form("sTreeMC%i",iRun));
-        for( Int_t iQvar = 0; iQvar<fInput->GetNVariables(); iQvar++) {
-            if( !fInput->GetVariable(iQvar)->IsInteger() ) {
-                sTreeMC[iRun]->Branch(Form("%s", fInput->GetVariable(iQvar)->GetName()  ),
-                                      &fInput->GetVariable(iQvar)->GetRValue(),Form("%s/F",fInput->GetVariable(iQvar)->GetName()));
-            } else {
-                sTreeMC[iRun]->Branch(Form("%s", fInput->GetVariable(iQvar)->GetName()  ),
-                                      &fInput->GetVariable(iQvar)->GetRValueInteger(),Form("%s/I",fInput->GetVariable(iQvar)->GetName()));
-            }
-        }
-    }
 
     const int lNEstimators = fSelection->GetNEstimators();
     //For computing average values of estimators
@@ -314,6 +299,7 @@ Bool_t AliMultSelectionCalibratorMC::Calibrate() {
     // Data Loop for Run Number determination + Filtering
     //==============================================================================
 
+    fOutput->cd();
     for(Long64_t iEv = 0; iEv<fTree->GetEntries(); iEv++) {
 
         if ( iEv % 100000 == 0 ) {
@@ -388,6 +374,22 @@ Bool_t AliMultSelectionCalibratorMC::Calibrate() {
     timer->Stop();
     timer->Start(kTRUE);
 
+    TFile *fOutputMC = new TFile (fBufferFileNameMC.Data(), "RECREATE");
+    TTree *sTreeMC[lMaxQuantiles];
+    cout<<"Creating Trees..."<<endl;
+    for(Int_t iRun=0; iRun<lMax; iRun++) {
+        sTreeMC[iRun] = new TTree(Form("sTreeMC%i",iRun),Form("sTreeMC%i",iRun));
+        for( Int_t iQvar = 0; iQvar<fInput->GetNVariables(); iQvar++) {
+            if( !fInput->GetVariable(iQvar)->IsInteger() ) {
+                sTreeMC[iRun]->Branch(Form("%s", fInput->GetVariable(iQvar)->GetName()  ),
+                                      &fInput->GetVariable(iQvar)->GetRValue(),Form("%s/F",fInput->GetVariable(iQvar)->GetName()));
+            } else {
+                sTreeMC[iRun]->Branch(Form("%s", fInput->GetVariable(iQvar)->GetName()  ),
+                                      &fInput->GetVariable(iQvar)->GetRValueInteger(),Form("%s/I",fInput->GetVariable(iQvar)->GetName()));
+            }
+        }
+    }
+    
     for(Long64_t iEv = 0; iEv<fTreeMC->GetEntries(); iEv++) {
 
         if ( iEv % 100000 == 0 ) {
@@ -886,8 +888,16 @@ void AliMultSelectionCalibratorMC::SetupStandardInput() {
     
     //Create input variables in AliMultInput Class
     //V0 related
-    AliMultVariable *fAmplitude_V0A        = new AliMultVariable("fAmplitude_V0A");
-    AliMultVariable *fAmplitude_V0C        = new AliMultVariable("fAmplitude_V0C");
+    AliMultVariable *fAmplitude_V0A         = new AliMultVariable("fAmplitude_V0A");
+    AliMultVariable *fAmplitude_V0A1        = new AliMultVariable("fAmplitude_V0A1");
+    AliMultVariable *fAmplitude_V0A2        = new AliMultVariable("fAmplitude_V0A2");
+    AliMultVariable *fAmplitude_V0A3        = new AliMultVariable("fAmplitude_V0A3");
+    AliMultVariable *fAmplitude_V0A4        = new AliMultVariable("fAmplitude_V0A4");
+    AliMultVariable *fAmplitude_V0C         = new AliMultVariable("fAmplitude_V0C");
+    AliMultVariable *fAmplitude_V0C1        = new AliMultVariable("fAmplitude_V0C1");
+    AliMultVariable *fAmplitude_V0C2        = new AliMultVariable("fAmplitude_V0C2");
+    AliMultVariable *fAmplitude_V0C3        = new AliMultVariable("fAmplitude_V0C3");
+    AliMultVariable *fAmplitude_V0C4        = new AliMultVariable("fAmplitude_V0C4");
     AliMultVariable *fAmplitude_V0Apartial = new AliMultVariable("fAmplitude_V0Apartial");
     AliMultVariable *fAmplitude_V0Cpartial = new AliMultVariable("fAmplitude_V0Cpartial");
     AliMultVariable *fAmplitude_V0AEq      = new AliMultVariable("fAmplitude_V0AEq");
@@ -940,7 +950,15 @@ void AliMultSelectionCalibratorMC::SetupStandardInput() {
     
     //Add to AliMultInput Object
     fInput->AddVariable( fAmplitude_V0A );
+    fInput->AddVariable( fAmplitude_V0A1 );
+    fInput->AddVariable( fAmplitude_V0A2 );
+    fInput->AddVariable( fAmplitude_V0A3 );
+    fInput->AddVariable( fAmplitude_V0A4 );
     fInput->AddVariable( fAmplitude_V0C );
+    fInput->AddVariable( fAmplitude_V0C1 );
+    fInput->AddVariable( fAmplitude_V0C2 );
+    fInput->AddVariable( fAmplitude_V0C3 );
+    fInput->AddVariable( fAmplitude_V0C4 );
     fInput->AddVariable( fAmplitude_V0Apartial );
     fInput->AddVariable( fAmplitude_V0Cpartial );
     fInput->AddVariable( fAmplitude_V0AEq );

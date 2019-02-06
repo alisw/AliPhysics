@@ -15,9 +15,9 @@
 class TArrayD;
 class THistManager;
 
-class AliEmcalTrackSelection;
 class AliVParticle;
 class AliVTrack;
+class AliEmcalTrackSelection;
 
 class AliAnalysisTaskParticleInJet: public AliAnalysisTaskEmcalJet {
 public:

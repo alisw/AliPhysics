@@ -102,7 +102,8 @@ fhClusterMaxCellDiff(0),               fhClusterMaxCellDiffNoCut(0),
 //fhClusterMaxCellDiffAverageTime(0),    fhClusterMaxCellDiffWeightedTime(0),    
 fhClusterMaxCellECross(0),
 // fhDispersion(0),
-fhLambda0(0),                          fhLambda1(0),                           fhNLocMax(0),  
+fhLambda0(0),                          fhLambda1(0),                           
+fhNLocMax(0),                          fhNLocMaxStd(0),  
 
 // bad clusters
 fhBadClusterEnergy(0),                 fhBadClusterTimeEnergy(0),              fhBadClusterEtaPhi(0),            
@@ -149,7 +150,7 @@ fhCaloV0MCorrNCells(0),                fhCaloV0MCorrECells(0),
 fhCaloTrackMCorrNClusters(0),          fhCaloTrackMCorrEClusters(0), 
 fhCaloTrackMCorrNCells(0),             fhCaloTrackMCorrECells(0),
 fhCaloCenNClusters(0),                 fhCaloCenEClusters(0),
-fhCaloCenNCells(0),                    fhCaloCenECells(0),
+fhCaloCenNCells(0),                    fhCaloCenECells(0),                    fhCaloCenECellsMod(0),
 fhCaloEvPNClusters(0),                 fhCaloEvPEClusters(0),
 fhCaloEvPNCells(0),                    fhCaloEvPECells(0),
 
@@ -431,7 +432,7 @@ void AliAnaCalorimeterQA::CellHistograms(AliVCaloCells *cells)
   Bool_t   highG  = kFALSE;
   Float_t  recalF = 1.;  
   Int_t    bc     = GetReader()->GetInputEvent()->GetBunchCrossNumber();
-  
+  Int_t    status = 0;
   for (Int_t iCell = 0; iCell < cells->GetNumberOfCells(); iCell++)
   {
     if ( cells->GetCellNumber(iCell) < 0 ) continue; // CPV 
@@ -455,7 +456,7 @@ void AliAnaCalorimeterQA::CellHistograms(AliVCaloCells *cells)
     {
       if(GetCalorimeter()==kEMCAL)
       {
-        if(GetCaloUtils()->GetEMCALChannelStatus(nModule,icol,irow)) continue;
+        if(GetCaloUtils()->GetEMCALChannelStatus(nModule,icol,irow,status)) continue;
       }
       else 
       {
@@ -636,6 +637,8 @@ void AliAnaCalorimeterQA::CellHistograms(AliVCaloCells *cells)
   if( ncellsCut > 0 ) fhNCellsCutAmpMin->Fill(ncellsCut, GetEventWeight()) ;
   
   // Number of cells per module
+  Float_t cen = -1;
+  if ( fCorrelate ) cen = GetEventCentrality();
   for(Int_t imod = 0; imod < fNModules; imod++ )
   {
     if ( imod < fFirstModule || imod > fLastModule ) continue ;
@@ -647,6 +650,11 @@ void AliAnaCalorimeterQA::CellHistograms(AliVCaloCells *cells)
     
     if(fFillAllCellAbsIdHistograms)
       fhNCellsSumAmpPerMod[imod]->Fill(eCellsInModule[imod], nCellsInModule[imod], GetEventWeight());
+    
+    if ( fCorrelate )
+    {
+      fhCaloCenECellsMod[imod]->Fill(cen, eCellsInModule[imod], GetEventWeight());
+    }
   }
     
   delete [] nCellsInModule;
@@ -745,6 +753,7 @@ void AliAnaCalorimeterQA::ClusterHistograms(AliVCluster* clus, const TObjArray *
   fhLambda1             ->Fill(clus->E(), clus->GetM20()       , GetEventWeight());
 //fhDispersion          ->Fill(clus->E(), clus->GetDispersion(), GetEventWeight());
   fhNLocMax             ->Fill(clus->E(), GetCaloUtils()->GetNumberOfLocalMaxima(clus,cells), GetEventWeight());
+  fhNLocMaxStd          ->Fill(clus->E(), clus->GetNExMax()    , GetEventWeight());
 
   if(fFillClusterMaxCellHisto)
   {
@@ -1051,7 +1060,9 @@ void AliAnaCalorimeterQA::ClusterLoopHistograms(const TObjArray *caloClusters,
     Int_t  mcOK = kFALSE;
     Int_t  pdg  = -1;
     if(IsDataMC() && nLabel > 0 && labels) 
-      mcOK = ClusterMCHistograms(matched, labels, nLabel, pdg);
+      mcOK = ClusterMCHistograms(matched, labels, 
+                                 clus->GetClusterMCEdepFraction(),
+                                 nLabel, pdg);
 
     // Matched clusters with tracks, also do some MC comparison, needs input from ClusterMCHistograms
     if( matched &&  fFillAllTMHisto)
@@ -1104,7 +1115,9 @@ void AliAnaCalorimeterQA::ClusterLoopHistograms(const TObjArray *caloClusters,
 /// \param nLabels: number of mc labels 
 /// \param pdg: id of primary particle originating the cluster
 //__________________________________________________________________________________
-Bool_t AliAnaCalorimeterQA::ClusterMCHistograms(Bool_t matched,const Int_t * labels,
+Bool_t AliAnaCalorimeterQA::ClusterMCHistograms(Bool_t matched,
+                                                const Int_t * labels,
+                                                const UShort_t * edepFrac,
                                                 Int_t nLabels, Int_t & pdg )
 {
   if(!labels || nLabels<=0)
@@ -1144,7 +1157,8 @@ Bool_t AliAnaCalorimeterQA::ClusterMCHistograms(Bool_t matched,const Int_t * lab
   Int_t charge  = 0;
   
   // Check the origin.
-  Int_t tag = GetMCAnalysisUtils()->CheckOrigin(labels, nLabels, GetMC());
+  Int_t tag = GetMCAnalysisUtils()->CheckOrigin(labels, edepFrac,nLabels, GetMC(),
+                                                GetReader()->GetNameOfMCEventHederGeneratorToAccept(),e);
   
   if ( !GetMCAnalysisUtils()->CheckTagBit(tag, AliMCAnalysisUtils::kMCUnknown) )
   { 
@@ -1696,7 +1710,7 @@ TList * AliAnaCalorimeterQA::GetCreateOutputObjects()
   Int_t netabins    = GetHistogramRanges()->GetHistoEtaBins();          Float_t etamax    = GetHistogramRanges()->GetHistoEtaMax();          Float_t etamin    = GetHistogramRanges()->GetHistoEtaMin();	
   Int_t nmassbins   = GetHistogramRanges()->GetHistoMassBins();         Float_t massmax   = GetHistogramRanges()->GetHistoMassMax(); 	       Float_t massmin   = GetHistogramRanges()->GetHistoMassMin();
   Int_t nasymbins   = GetHistogramRanges()->GetHistoAsymmetryBins();    Float_t asymmax   = GetHistogramRanges()->GetHistoAsymmetryMax();    Float_t asymmin   = GetHistogramRanges()->GetHistoAsymmetryMin();
-  Int_t nPoverEbins = GetHistogramRanges()->GetHistoPOverEBins();       Float_t eOverPmax = GetHistogramRanges()->GetHistoPOverEMax();       Float_t eOverPmin = GetHistogramRanges()->GetHistoPOverEMin();
+  Int_t nPoverEbins = GetHistogramRanges()->GetHistoEOverPBins();       Float_t eOverPmax = GetHistogramRanges()->GetHistoEOverPMax();       Float_t eOverPmin = GetHistogramRanges()->GetHistoEOverPMin();
   Int_t ndedxbins   = GetHistogramRanges()->GetHistodEdxBins();         Float_t dedxmax   = GetHistogramRanges()->GetHistodEdxMax();         Float_t dedxmin   = GetHistogramRanges()->GetHistodEdxMin();
   Int_t ndRbins     = GetHistogramRanges()->GetHistodRBins();           Float_t dRmax     = GetHistogramRanges()->GetHistodRMax();           Float_t dRmin     = GetHistogramRanges()->GetHistodRMin();
   Int_t ntimebins   = GetHistogramRanges()->GetHistoTimeBins();         Float_t timemax   = GetHistogramRanges()->GetHistoTimeMax();         Float_t timemin   = GetHistogramRanges()->GetHistoTimeMin();       
@@ -1868,12 +1882,18 @@ TList * AliAnaCalorimeterQA::GetCreateOutputObjects()
     fhLambda1->SetYTitle("#lambda^{2}_{1}");
     outputContainer->Add(fhLambda1); 
     
-    fhNLocMax  = new TH2F ("hNLocMax","#it{n}_{LM}vs E",
+    fhNLocMax  = new TH2F ("hNLocMax","#it{n}_{LM} vs E",
                            nptbins,ptmin,ptmax,10,0,10); 
     fhNLocMax->SetXTitle("#it{E}_{cluster} (GeV)");
     fhNLocMax->SetYTitle("#it{n}_{LM}");
     outputContainer->Add(fhNLocMax); 
-    
+
+    fhNLocMaxStd  = new TH2F ("hNLocMaxStd","#it{n}_{LM} vs E",
+                           nptbins,ptmin,ptmax,10,0,10); 
+    fhNLocMaxStd->SetXTitle("#it{E}_{cluster} (GeV)");
+    fhNLocMaxStd->SetYTitle("#it{n}_{LM}");
+    outputContainer->Add(fhNLocMaxStd); 
+
     if(fFillClusterMaxCellHisto)
     {
       fhClusterMaxCellCloseCellRatio  = new TH2F ("hClusterMaxCellCloseCellRatio","energy vs ratio of max cell / neighbour cell, reconstructed clusters",
@@ -2907,6 +2927,21 @@ TList * AliAnaCalorimeterQA::GetCreateOutputObjects()
     fhCaloCenECells->SetYTitle("#Sigma #it{E} of Cells in calorimeter (GeV)");
     fhCaloCenECells->SetXTitle("Centrality");
     outputContainer->Add(fhCaloCenECells);
+  
+    fhCaloCenECellsMod = new TH2F*[fNModules];
+
+    for(Int_t imod = 0; imod < fNModules; imod++)
+    {
+      if ( imod < fFirstModule || imod > fLastModule ) continue;
+      
+      fhCaloCenECellsMod[imod]  = new TH2F 
+      (Form("hCaloCenECells_Mod%d",imod),
+       Form("summed energy of Cells in calorimeter vs centrality in SM %d",imod),
+       50,0,100,nptbins/2,ptmin,ptmax);
+      fhCaloCenECellsMod[imod]->SetYTitle("#Sigma #it{E} of Cells in calorimeter (GeV)");
+      fhCaloCenECellsMod[imod]->SetXTitle("Centrality");
+      outputContainer->Add(fhCaloCenECellsMod[imod]);
+    }
     
     fhCaloEvPNClusters  = new TH2F ("hCaloEvPNClusters","# clusters in calorimeter vs event plane angle",100,0,TMath::Pi(),nclbins,nclmin,nclmax);
     fhCaloEvPNClusters->SetYTitle("number of clusters in calorimeter");
@@ -3574,8 +3609,8 @@ void  AliAnaCalorimeterQA::MakeAnalysisFillHistograms()
   
   if( !caloClusters || !cells )
   {
-    AliFatal(Form("AliAnaCalorimeterQA::MakeAnalysisFillHistograms() - No CaloClusters or CaloCells available"));
-    return; // trick coverity
+    AliWarning(Form("AliAnaCalorimeterQA::MakeAnalysisFillHistograms() - No CaloClusters or CaloCells available"));
+    return; 
   }
   
   if(caloClusters->GetEntriesFast() == 0) return ;

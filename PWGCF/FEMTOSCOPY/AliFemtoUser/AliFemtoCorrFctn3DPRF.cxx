@@ -12,11 +12,11 @@
 
 #include <cstdio>
 
-#ifdef __ROOT__ 
+#ifdef __ROOT__
 ClassImp(AliFemtoCorrFctn3DPRF)
 #endif
 //____________________________
-AliFemtoCorrFctn3DPRF::AliFemtoCorrFctn3DPRF(char* title, const int& nbins, const float& QHi)
+AliFemtoCorrFctn3DPRF::AliFemtoCorrFctn3DPRF(const char* title, const int& nbins, const float& QHi)
   :
   AliFemtoCorrFctn(),
   fNumerator(0),
@@ -104,10 +104,10 @@ TList* AliFemtoCorrFctn3DPRF::GetOutputList()
   // Prepare the list of objects to be written to the output
   TList *tOutputList = new TList();
 
-  tOutputList->Add(fNumerator); 
-  tOutputList->Add(fDenominator);  
-  //tOutputList->Add(fNumeratorW); 
-  //tOutputList->Add(fDenominatorW);  
+  tOutputList->Add(fNumerator);
+  tOutputList->Add(fDenominator);
+  //tOutputList->Add(fNumeratorW);
+  //tOutputList->Add(fDenominatorW);
 
   return tOutputList;
 }
@@ -138,15 +138,15 @@ AliFemtoString AliFemtoCorrFctn3DPRF::Report(){
     stemp += ctemp;
   }
 
-  //  
+  //
   AliFemtoString returnThis = stemp;
   return returnThis;
 }
 //____________________________
 void AliFemtoCorrFctn3DPRF::AddRealPair( AliFemtoPair* pair){
   // perform operations on real pairs
-  if (fPairCut){
-    if (!(fPairCut->Pass(pair))) return;
+  if (fPairCut && !fPairCut->Pass(pair)) {
+    return;
   }
 
   double kOut = (pair->KOut());
@@ -158,13 +158,13 @@ void AliFemtoCorrFctn3DPRF::AddRealPair( AliFemtoPair* pair){
     //fNumeratorW->Fill(qOut,qSide,qLong,qqinv);
 
 
-   
+
 }
 //____________________________
 void AliFemtoCorrFctn3DPRF::AddMixedPair( AliFemtoPair* pair){
   // perform operations on mixed pairs
-  if (fPairCut){
-    if (!(fPairCut->Pass(pair))) return;
+  if (fPairCut && !fPairCut->Pass(pair)) {
+    return;
   }
 
   double kOut = (pair->KOut());
@@ -175,9 +175,6 @@ void AliFemtoCorrFctn3DPRF::AddMixedPair( AliFemtoPair* pair){
 
     fDenominator->Fill(kOut,kSide,kLong,1.0);
     //fDenominatorW->Fill(qOut,qSide,qLong,qqqinv);
-
-
- 
 }
 
 

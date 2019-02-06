@@ -37,10 +37,10 @@ void AliMESeventInfo::Clear(Option_t *)
   fVertexZ = 0.;
 //   memset(fMultiplicity, 0, kNmult*sizeof(Int_t));
   memset(fMultiplicity, 0, kNmult*sizeof(Double_t));
-  fEvShape.fSphericity = 0.;
+  fEvShape.fSphericity = -2.;
   fEvShape.fThrust[0] = 0.; fEvShape.fThrust[1] = 0.;
   fEvShape.fRecoil=0.;
-  fEvShape.fDir[0] = 0.; fEvShape.fDir[1] = 0.;
+  fEvShape.fDir[0] = -2.; fEvShape.fDir[1] = -2.;
   memset(fEvShape.fFW, 0, FW_MAX_ORDER*sizeof(Double_t));
   fEvShape.fPxyLead[0] = 0.; fEvShape.fPxyLead[1] = 0.;
 }
@@ -89,7 +89,7 @@ Bool_t AliMESeventInfo::MakeThrust(TObjArray* tracks){
 // sphericity
 void AliMESeventInfo::MakeSphericity(TObjArray* tracks){
 
-    Double_t rv = -1.;
+    Double_t rv = -2.;
 
     if(!tracks->GetEntries()){
       AliDebug(2, "Failed event shape estimation. No tracks in event.");
@@ -189,8 +189,8 @@ Bool_t AliMESeventInfo::LeadingParticleDirection(TObjArray* tracks, Double_t pxy
   if(!(ntracks=tracks->GetEntries())) return kFALSE;
 
   Double_t ptmax(0.);
-  Double_t etamax(0.);
-  Double_t phimax(0.);
+  // Double_t etamax(0.);
+  // Double_t phimax(0.);
   // AliVParticle *track(NULL);
   AliMEStrackInfo *track(NULL);
   for (Int_t iTracks = 0; iTracks < ntracks; iTracks++) {
@@ -202,8 +202,8 @@ Bool_t AliMESeventInfo::LeadingParticleDirection(TObjArray* tracks, Double_t pxy
     pxy[0] = track->Px();
     pxy[1] = track->Py();
     ptmax  = track->Pt();
-    etamax = track->Eta();
-    phimax = track->Phi();
+    // etamax = track->Eta();
+    // phimax = track->Phi();
   }
 
   return kTRUE;

@@ -117,6 +117,8 @@ AliAnalysisTask *AddTask_caklein_ElectronEfficiency(TString configFile="Config_c
   // pair efficiency
   task->SetDoPairing(doPairing);
   if(doPairing){
+    task->SetPtCut(PtMinCut, PtMaxCut);
+    task->SetEtaCut(EtaMinCut, EtaMaxCut);
     task->SetKineTrackCuts(SetupTrackCutsAndSettings(0));
     //task->SetPairCuts(SetupTrackCutsAndSettings(101));
     // SetupTrackCutsAndSettings(101); // this fills the pair cuts into rejCutMee,rejCutTheta,rejCutPhiV

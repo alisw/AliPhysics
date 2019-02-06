@@ -119,6 +119,8 @@ private:
   Double_t                              fMinimum;   ///< Minimum of the binning
   Double_t                              fMaximum;   ///< Maximum of the binning
   Bool_t                                fLimitsSet; ///< Switch indicating that the binning is initialized
+
+  ClassDef(TLinearBinning, 1);
 };
 
 void TLinearBinning::Set(Int_t nbins, Double_t min, Double_t max){

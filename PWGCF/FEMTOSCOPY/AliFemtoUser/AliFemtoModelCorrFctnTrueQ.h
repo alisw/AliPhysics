@@ -31,8 +31,7 @@ public:
 
   virtual void Write();
   virtual TList* GetOutputList();
-
-  virtual AliFemtoModelCorrFctn* Clone();
+  virtual AliFemtoModelCorrFctn* Clone() const;
 
 protected:
 

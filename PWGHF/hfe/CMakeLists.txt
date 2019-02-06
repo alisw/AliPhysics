@@ -108,11 +108,17 @@ set(SRCS
   AliHFEreducedEvent.cxx
   AliHFEreducedTrack.cxx
   AliHFEreducedMCParticle.cxx
+  AliHFEminiTrack.cxx
+  AliHFEminiEvent.cxx
+  AliHFEminiEventCreator.cxx
   AliAnalysisTaskHFEQA.cxx
   AliAnalysisTaskHFEemcQA.cxx
   AliAnalysisTaskBeautyCal.cxx
   AliAnalysisTaskTPCCalBeauty.cxx
   AliAnalysisTaskFlowITSTPCTOFQCSP.cxx
+  AliAnalysisTaskHFEIPDistribution.cxx
+  AliAnalysisTaskHFEBeautyMCTemplates.cxx
+  AliAnalysisTaskHFEIPCorrection.cxx
   AliAnalysisTaskHFEMulti.cxx
   AliAnalysisTaskHFEMultiplicity.cxx
   AliAnalysisTaskHFEtemplate.cxx
@@ -121,6 +127,11 @@ set(SRCS
   AliAnalysisTaskHFEEfficiency.cxx
   AliAnalysisTaskHaHFECorrel.cxx
   AliAnalysisHFETPCTOFNew.cxx
+  AliAnalysisHFETPCTOFBeauty.cxx
+  AliAnalysisHFEppTPCTOFBeauty.cxx	
+  AliAnalysisTaskCaloHFEpPbRun2.cxx
+  AliAnalysisTaskHFEmultTPCTOF.cxx
+  AliAnalysisTaskCaloHFEpp.cxx
   )
 
 # Headers from sources

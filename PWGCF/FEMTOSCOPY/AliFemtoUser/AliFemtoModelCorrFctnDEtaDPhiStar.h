@@ -105,13 +105,17 @@ public:
   void WriteHistos();
   virtual TList* GetOutputList();
   virtual TList* AppendOutputList(TList &);
-
+  virtual AliFemtoModelCorrFctn* Clone() const { return new AliFemtoModelCorrFctnDEtaDPhiStar(*this); }
   static Builder Build() { return Builder(); };
 
   virtual void EventBegin(const AliFemtoEvent *);
 
   /// Return struct containing the values of interest from a pair of particles.
   virtual EtaPhiStar GetDeltaEtaDeltaPhiStar(const AliFemtoTrack&, const AliFemtoTrack&);
+
+private:
+  AliFemtoModelCorrFctnDEtaDPhiStar(const AliFemtoModelCorrFctnDEtaDPhiStar&);
+  AliFemtoModelCorrFctnDEtaDPhiStar& operator=(const AliFemtoModelCorrFctnDEtaDPhiStar&);
 
 protected:
 

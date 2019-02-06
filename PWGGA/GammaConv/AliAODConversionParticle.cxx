@@ -40,7 +40,7 @@ AliAODConversionParticle & AliAODConversionParticle::operator = (const AliAODCon
 
 Double_t AliAODConversionParticle::Phi() const {
   //Override Phi()
-   Double_t phi = TLorentzVector::Phi();
-    if (phi < 0.) phi += 2. * TMath::Pi();
-    return phi;
+  Double_t phi = TLorentzVector::Phi();
+  if (phi < 0.) phi += 2. * TMath::Pi();
+  return phi;
 }

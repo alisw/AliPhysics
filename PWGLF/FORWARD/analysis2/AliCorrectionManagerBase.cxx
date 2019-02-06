@@ -1,6 +1,7 @@
 #include "AliCorrectionManagerBase.h"
 #include "AliOADBForward.h"
 #include "AliForwardUtil.h"
+#include <AliDataFile.h>
 #include <AliLog.h>
 #include <TMath.h>
 #include <iostream>
@@ -192,9 +193,13 @@ AliCorrectionManagerBase::Append(const TString& addition,
     AliWarning("No addition specified");
     return false;
   }
-  if (destination.IsNull()) { 
-    AliWarning("No destination storage specified");
-    return false;
+  TString dest = destination;
+  if (dest.IsNull()) {
+    TString bn = Form("OADB/PWGLF/FORWARD/CORRECTIONS/data/%s",
+		      gSystem->BaseName(addition));
+    dest = AliDataFile::GetFileNameOADB(bn.Data()).c_str();
+    AliWarningF("No destination storage specified, assuming default: %s",
+		dest.Data());
   }
   TFileMerger merger;
   merger.SetPrintLevel(1);
@@ -296,7 +301,10 @@ AliCorrectionManagerBase::RegisterCorrection(Int_t id,
 					     UShort_t       fields,
 					     Bool_t         enabled)
 {
-  RegisterCorrection(id,new Correction(tableName,fileName,cls,fields,enabled));
+  TString d = Form("PWGLF/FORWARD/CORRECTIONS/data/%s", fileName.Data());
+  if (!d.EndsWith(".root")) d.Append(".root");
+  TString p = AliDataFile::GetFileNameOADB(d.Data()).c_str();
+  RegisterCorrection(id,new Correction(tableName,p,cls,fields,enabled));
 }
 
 //____________________________________________________________________

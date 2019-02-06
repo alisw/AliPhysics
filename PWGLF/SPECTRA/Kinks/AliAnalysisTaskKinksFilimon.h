@@ -175,7 +175,7 @@ class AliAnalysisTaskKinksFilimon : public AliAnalysisTaskSE {
 	
   TClass* fOutputContClass;
 	TCollection* fOutputCont; //! Output list
-	AliInputEventHandler* fMainInputHandler;
+	AliVEventHandler* fMainInputHandler;
   Bool_t fIsAOD;
   Bool_t fUseMC;
 	const Bool_t fFillCutHist;

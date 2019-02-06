@@ -60,8 +60,9 @@ AliRsnMiniOutput::AliRsnMiniOutput() :
 //
 
    fCutID[0] = fCutID[1] = -1;
-   fDaughter[0] = fDaughter[1] = AliRsnDaughter::kUnknown;
+   fDaughter[0] = fDaughter[1] = fDaughterTrue[0] = fDaughterTrue[1] = AliRsnDaughter::kUnknown;
    fCharge[0] = fCharge[1] = 0;
+   fUseStoredMass[0] = fUseStoredMass[1] = kFALSE;
 }
 
 //__________________________________________________________________________________________________
@@ -93,8 +94,9 @@ AliRsnMiniOutput::AliRsnMiniOutput(const char *name, EOutputType type, EComputat
 //
 
    fCutID[0] = fCutID[1] = -1;
-   fDaughter[0] = fDaughter[1] = AliRsnDaughter::kUnknown;
+   fDaughter[0] = fDaughter[1] = fDaughterTrue[0] = fDaughterTrue[1] = AliRsnDaughter::kUnknown;
    fCharge[0] = fCharge[1] = 0;
+   fUseStoredMass[0] = fUseStoredMass[1] = kFALSE;
 }
 
 //__________________________________________________________________________________________________
@@ -170,13 +172,14 @@ AliRsnMiniOutput::AliRsnMiniOutput(const char *name, const char *outType, const 
    else if (!input.CompareTo("MOTHER"))
       fComputation = kMother;
     else if (!input.CompareTo("MOTHER_IN_ACC"))
-      fComputation = kMotherInAcc;   
+      fComputation = kMotherInAcc;
    else
       AliWarning(Form("String '%s' does not define a meaningful computation type", compType));
 
    fCutID[0] = fCutID[1] = -1;
-   fDaughter[0] = fDaughter[1] = AliRsnDaughter::kUnknown;
+   fDaughter[0] = fDaughter[1] = fDaughterTrue[0] = fDaughterTrue[1] = AliRsnDaughter::kUnknown;
    fCharge[0] = fCharge[1] = 0;
+   fUseStoredMass[0] = fUseStoredMass[1] = kFALSE;
 }
 
 //__________________________________________________________________________________________________
@@ -211,7 +214,9 @@ AliRsnMiniOutput::AliRsnMiniOutput(const AliRsnMiniOutput &copy) :
    for (i = 0; i < 2; i++) {
       fCutID[i] = copy.fCutID[i];
       fDaughter[i] = copy.fDaughter[i];
+      fDaughterTrue[i] = copy.fDaughterTrue[i];
       fCharge[i] = copy.fCharge[i];
+      fUseStoredMass[i] = copy.fUseStoredMass[i];
    }
 }
 
@@ -237,7 +242,9 @@ AliRsnMiniOutput &AliRsnMiniOutput::operator=(const AliRsnMiniOutput &copy)
    for (i = 0; i < 2; i++) {
       fCutID[i] = copy.fCutID[i];
       fDaughter[i] = copy.fDaughter[i];
+      fDaughterTrue[i] = copy.fDaughterTrue[i];
       fCharge[i] = copy.fCharge[i];
+      fUseStoredMass[i] = copy.fUseStoredMass[i];
    }
 
    fSel1.Set(0);
@@ -254,6 +261,31 @@ AliRsnMiniOutput &AliRsnMiniOutput::operator=(const AliRsnMiniOutput &copy)
    return (*this);
 }
 
+//__________________________________________________________________________________________________
+void AliRsnMiniOutput::SetDaughter(Int_t i, RSNPID value)
+{
+  if (i <= 0){
+    fDaughter[0] = value;
+    if(fDaughterTrue[0] == AliRsnDaughter::kUnknown) fDaughterTrue[0] = value;
+  }else{
+    fDaughter[1] = value;
+    if(fDaughterTrue[1] == AliRsnDaughter::kUnknown) fDaughterTrue[1] = value;
+  }
+  return;
+}
+
+//__________________________________________________________________________________________________
+void AliRsnMiniOutput::SetDaughterTrue(Int_t i, RSNPID value)
+{
+  if (i <= 0){
+    fDaughterTrue[0] = value;
+    if(fDaughter[0] == AliRsnDaughter::kUnknown) fDaughter[0] = value;
+  }else{
+    fDaughterTrue[1] = value;
+    if(fDaughter[1] == AliRsnDaughter::kUnknown) fDaughter[1] = value;
+  }
+  return;
+}
 
 //__________________________________________________________________________________________________
 void AliRsnMiniOutput::AddAxis(Int_t i, Int_t nbins, Double_t min, Double_t max)
@@ -498,6 +530,7 @@ Int_t AliRsnMiniOutput::FillPair(AliRsnMiniEvent *event1, AliRsnMiniEvent *event
    // loop variables
    Int_t i1, i2, start, nadded = 0;
    AliRsnMiniParticle *p1, *p2;
+   Double_t mass1, mass2;
 
    // it is necessary to know if criteria for the two daughters are the same
    // and if the two events are the same or not (mixing)
@@ -538,12 +571,18 @@ Int_t AliRsnMiniOutput::FillPair(AliRsnMiniEvent *event1, AliRsnMiniEvent *event
          //if (p2->Charge() != fCharge[1]) continue;
          //if (!p2->HasCutBit(fCutID[1])) continue;
          // avoid to mix a particle with itself
-         if (sameEvent && (p1->Index() == p2->Index())) {
+         if (sameEvent && (p1->Index() == p2->Index()) && (!p1->IsResonance())) {
             AliDebugClass(2, "Skipping same index");
             continue;
          }
          // sum momenta
-         fPair.Fill(p1, p2, GetMass(0), GetMass(1), fMotherMass);
+          
+         mass1 = p1->StoredMass(kFALSE);
+         if(!fUseStoredMass[0] || mass1 < 0.0) mass1 = GetMass(0);
+         mass2 = p2->StoredMass(kFALSE);
+         if(!fUseStoredMass[1] || mass2 < 0.0) mass2 = GetMass(1);
+         fPair.Fill(p1, p2, mass1, mass2, fMotherMass);
+	 
          // do rotation if needed
          if (fComputation == kTrackPairRotated1) fPair.InvertP(kTRUE);
          if (fComputation == kTrackPairRotated2) fPair.InvertP(kFALSE);
@@ -555,13 +594,15 @@ Int_t AliRsnMiniOutput::FillPair(AliRsnMiniEvent *event1, AliRsnMiniEvent *event
                continue;
             }
             Bool_t decayMatch = kFALSE;
-            if (p1->PDGAbs() == AliRsnDaughter::SpeciesPDG(fDaughter[0]) && p2->PDGAbs() == AliRsnDaughter::SpeciesPDG(fDaughter[1]))
+            if (AliRsnDaughter::IsEquivalentPDGCode(p1->PDGAbs() , GetPDG(0))
+		&& AliRsnDaughter::IsEquivalentPDGCode(p2->PDGAbs() , GetPDG(1)))
                decayMatch = kTRUE;
-            if (p2->PDGAbs() == AliRsnDaughter::SpeciesPDG(fDaughter[0]) && p1->PDGAbs() == AliRsnDaughter::SpeciesPDG(fDaughter[1]))
+            if (AliRsnDaughter::IsEquivalentPDGCode(p2->PDGAbs() , GetPDG(0))
+		&& AliRsnDaughter::IsEquivalentPDGCode(p1->PDGAbs() , GetPDG(1)))
                decayMatch = kTRUE;
             if (!decayMatch) continue;
 	    if ( (fMaxNSisters>0) && (p1->NTotSisters()==p2->NTotSisters()) && (p1->NTotSisters()>fMaxNSisters)) continue;
-	    if ( fCheckP &&(TMath::Abs(fPair.PmotherX()-(p1->Px(1)+p2->Px(1)))/(TMath::Abs(fPair.PmotherX())+1.e-13)) > 0.00001 && 	  
+	    if ( fCheckP &&(TMath::Abs(fPair.PmotherX()-(p1->Px(1)+p2->Px(1)))/(TMath::Abs(fPair.PmotherX())+1.e-13)) > 0.00001 &&
 		          (TMath::Abs(fPair.PmotherY()-(p1->Py(1)+p2->Py(1)))/(TMath::Abs(fPair.PmotherY())+1.e-13)) > 0.00001 &&
      			  (TMath::Abs(fPair.PmotherZ()-(p1->Pz(1)+p2->Pz(1)))/(TMath::Abs(fPair.PmotherZ())+1.e-13)) > 0.00001 ) continue;
 	    if ( fCheckFeedDown ){
@@ -575,22 +616,22 @@ Int_t AliRsnMiniOutput::FillPair(AliRsnMiniEvent *event1, AliRsnMiniEvent *event
 	  		if(isFromB){
 	  		  if (!fKeepDfromB) pdgGranma = -9999; //skip particle if come from a B meson.
 	  		}
-	  		else{ 
+	  		else{
 	  		  if (fKeepDfromBOnly) pdgGranma = -999;
-			  } 
+			  }
 	  		if (pdgGranma == -99999){
 	  			AliDebug(2,"This particle does not have a quark in his genealogy\n");
 	  			continue;
 	  		}
 	  		if (pdgGranma == -9999){
-	  			AliDebug(2,"This particle come from a B decay channel but according to the settings of the task, we keep only the prompt charm particles\n");	
+	  			AliDebug(2,"This particle come from a B decay channel but according to the settings of the task, we keep only the prompt charm particles\n");
 	  			continue;
-	  		}	
+	  		}
 	 
 	  		if (pdgGranma == -999){
-	  			AliDebug(2,"This particle come from a prompt charm particles but according to the settings of the task, we want only the ones coming from B\n");  
+	  			AliDebug(2,"This particle come from a prompt charm particles but according to the settings of the task, we want only the ones coming from B\n");
 	  			continue;
-	  		}	
+	  		}
 		    }
          }
          // check pair against cuts
@@ -632,7 +673,7 @@ void AliRsnMiniOutput::SetDselection(UShort_t originDselection)
 		fKeepDfromBOnly = kFALSE;
 	}
 	
-	return;	
+	return;
 }
 //________________________________________________________________________________________
 void AliRsnMiniOutput::ComputeValues(AliRsnMiniEvent *event, TClonesArray *valueList)
@@ -704,3 +745,4 @@ void AliRsnMiniOutput::FillHistogram()
       AliError("No output initialized");
    }
 }
+

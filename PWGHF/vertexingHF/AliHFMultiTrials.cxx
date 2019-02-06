@@ -258,7 +258,18 @@ Bool_t AliHFMultiTrials::DoMultiTrials(TH1D* hInvMassHisto, TPad* thePad){
                 }
                 fitter->SetReflectionSigmaFactor(0);
               }
-              if(fFitOption==1) fitter->SetUseChi2Fit();
+              if(fFitOption==0) {
+                fitter->SetUseLikelihoodFit();
+                Printf("Using likelihood fit");
+              }
+              else if(fFitOption==1) {
+                fitter->SetUseChi2Fit();
+                Printf("Using chi2 fit");
+              }
+              else if (fFitOption==2) {
+                fitter->SetUseLikelihoodWithWeightsFit();
+                Printf("Using likelihood fit with weights");
+              }
               fitter->SetInitialGaussianMean(fMassD);
               fitter->SetInitialGaussianSigma(fSigmaGausMC);
               xnt[0]=rebin;

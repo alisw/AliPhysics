@@ -129,7 +129,7 @@ TList* AliFemtoModelCorrFctnTrueQ::GetOutputList()
   return tOutputList;
 }
 //_______________________
-AliFemtoModelCorrFctn* AliFemtoModelCorrFctnTrueQ::Clone()
+AliFemtoModelCorrFctn* AliFemtoModelCorrFctnTrueQ::Clone() const
 {
   // Clone the correlation function
   AliFemtoModelCorrFctnTrueQ *tCopy = new AliFemtoModelCorrFctnTrueQ(*this);

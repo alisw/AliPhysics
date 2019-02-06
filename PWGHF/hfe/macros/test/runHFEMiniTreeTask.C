@@ -28,7 +28,7 @@ const char *RunMode = "test"; //"full", "terminate"
 Bool_t mergeOption = 1;// mergeViaJDL = 1; 0 for no
 
 //7) Optional task name--
-const char *TaskName = "Test1"; //user choice
+const char *TaskName = "Test"; //user choice
 
 //==================================================
 //Task specific cuts----change with care-------
@@ -187,7 +187,9 @@ void runHFEMiniTreeTask(  const char *runtype     = RunType,
   */
   
   gROOT->LoadMacro("AddTaskHFEminiEventCreator.C");
-  AddTaskHFEminiEventCreator(TPCchi2, MinTPCNcluster, MinTPCclusterPID, TPCclusterRatio, MinNclusterITS, checkITSLayerstatus, eta, ptMin, ptMax, Vz, dcaxy, dcaz, prodVz, spdResolution, nsigmaTPClow, nsigmaTPChigh, nsigmaTOF, collisionSystem);
+  AddTaskHFEminiEventCreator(isMC, TPCchi2, MinTPCNcluster, MinTPCclusterPID, TPCclusterRatio, MinNclusterITS, checkITSLayerstatus, eta, ptMin, ptMax, Vz, dcaxy, dcaz, prodVz, spdResolution, nsigmaTPClow, nsigmaTPChigh, nsigmaTOF, collisionSystem, TaskName);
+
+  //AddTaskHFEminiEventCreator(4., 100, 80, 0.6, 3, kFALSE, 0.8, 0.5, 100., 10., 1., 2., 0.5, 0.25, -1, 3., 3., "pp", "TestRun");
   
   // mgr->Dump();
   mgr->SetDebugLevel(1);
@@ -220,7 +222,7 @@ AliAnalysisGrid* CreateAlienHandler(const char *taskname, const char *gridmode, 
   if(isAOD){//---------AOD data set---------------------------------------------------------->>>
     if(isMC){
       //AOD MC-----
-      if(collisionSystem ="pp"){
+      if(collisionSystem =="pp"){
 	//for pp MC
 	plugin->SetGridDataDir("/alice/sim/2017/LHC17c3b2/");
 	plugin->SetDataPattern("/AOD/*/AliAOD.root");
@@ -236,7 +238,7 @@ AliAnalysisGrid* CreateAlienHandler(const char *taskname, const char *gridmode, 
     }
     else {
       //AOD Data-----------
-      if(collisionSystem ="pp"){
+      if(collisionSystem =="pp"){
 	//for AOD pp data
 	plugin->SetGridDataDir("/alice/data/2016/LHC16l/");
 	plugin->SetDataPattern("/pass1/AOD/*/AliAOD.root");
@@ -257,7 +259,7 @@ AliAnalysisGrid* CreateAlienHandler(const char *taskname, const char *gridmode, 
   else{//--------Set the ESD dataset------------------------------------------------------------->>>>
     
     if(isMC){
-      if(collisionSystem ="pp"){//ESD MC pp--
+      if(collisionSystem =="pp"){//ESD MC pp--
 	plugin->SetGridDataDir("/alice/sim/2017/LHC17c3b2/");
 	plugin->SetDataPattern("*AliESDs.root");
 	Int_t runNum[1] = { 259888 };
@@ -271,7 +273,7 @@ AliAnalysisGrid* CreateAlienHandler(const char *taskname, const char *gridmode, 
       }
     }
     else{//ESD Data-------
-      if(collisionSystem ="pp"){
+      if(collisionSystem =="pp"){
 	//for ESD pp data
 	plugin->SetGridDataDir("/alice/data/2016/LHC16l/");
 	plugin->SetDataPattern("/pass1/*AliESDs.root");

@@ -1,4 +1,4 @@
-AliAnalysisTaskSE* AddTaskVZEROPbPb(Int_t runNumber)
+AliAnaVZEROPbPb* AddTaskVZEROPbPb(Int_t runNumber)
 {
   // Creates a PbPb QA task for VZERO
   

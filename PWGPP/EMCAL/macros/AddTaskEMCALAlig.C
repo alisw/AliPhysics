@@ -7,7 +7,7 @@
 /// \author Henrique Zanoli <Henrique.Zanoli@cern.ch>, University of Sao Paulo and Utrecht University
 ///
 
-AliAnalysisTaskEMCALAlig* AddTaskEmcalAlig(
+AliAnalysisTaskEMCALAlig* AddTaskEMCALAlig(
                                            const char *ntracks            = "usedefault",
                                            const char *nclusters          = "usedefault",
                                            const char* ncells             = "usedefault",
@@ -169,6 +169,10 @@ AliAnalysisTaskEMCALAlig* AddTaskEmcalAlig(
     sampleTask->SetHistoBins(600, 0, 300);
     sampleTask->SelectCollisionCandidates(Selection);
     
+    TString SuffixForTree(suffix);
+    SuffixForTree +="_";
+    sampleTask->SetSuffix(SuffixForTree);
+    
     
     //-------------------------------------------------------
     // Final settings, pass to manager and set the containers
@@ -180,11 +184,17 @@ AliAnalysisTaskEMCALAlig* AddTaskEmcalAlig(
     AliAnalysisDataContainer *cinput1  = mgr->GetCommonInputContainer()  ;
     TString contname(name);
     contname += "_histos";
-    AliAnalysisDataContainer *coutput1 = mgr->CreateContainer(contname.Data(),
-                                                              TList::Class(),AliAnalysisManager::kOutputContainer,
-                                                              Form("%s", AliAnalysisManager::GetCommonFileName()));
+    
+    AliAnalysisDataContainer *coutput1 = mgr->CreateContainer(contname.Data(),TList::Class(),AliAnalysisManager::kOutputContainer,AliAnalysisManager::GetCommonFileName());
+    TString contnameTree(name);
+    contnameTree += "_tree";
+    
+    AliAnalysisDataContainer *coutput2 = mgr->CreateContainer(contnameTree.Data(),TTree::Class(),AliAnalysisManager::kOutputContainer,AliAnalysisManager::GetCommonFileName());
+    
     mgr->ConnectInput  (sampleTask, 0,  cinput1 );
     mgr->ConnectOutput (sampleTask, 1, coutput1 );
+    mgr->ConnectOutput (sampleTask, 2, coutput2 );
+
     
     return sampleTask;
 }

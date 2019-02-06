@@ -18,7 +18,7 @@ class TStopwatch;
  *
  * The clusterizer type and the time cuts are to be chosen appropriately for each dataset. Usually the v1 clusterizer is used for pp and the v2 clusterizer is used for PbPb. Sometimes for pp reference runs with the same collision energy as PbPb the v2 clusterizer is employed, but this is analysis dependent. EMCal detector experts are to be contacted for the time cuts.
  *
- * The clusterizer will use as input the cell branch specified in the YAML config, and as output will rewrite the cluster branch specified in the YAML config.
+ * The clusterizer will use as input the cell branch specified in the %YAML config, and as output will rewrite the cluster branch specified in the %YAML config.
  *
  * At this point the energy of the cluster will be available through `cluster->E()` where cluster is the pointer to the AliAODCaloCluster or AliESDCaloCluster object.
  *
@@ -33,7 +33,7 @@ class TStopwatch;
 
 class AliEmcalCorrectionClusterizer : public AliEmcalCorrectionComponent {
  public:
-  /// Relates string to the clusterizer type enumeration for YAML configuration
+  /// Relates string to the clusterizer type enumeration for %YAML configuration
   static const std::map <std::string, AliEMCALRecParam::AliEMCALClusterizerFlag> fgkClusterizerTypeMap; //!<!
 
   AliEmcalCorrectionClusterizer();
@@ -67,6 +67,8 @@ protected:
   AliEMCALClusterizer   *fClusterizer;                    //!<!clusterizer
   AliEMCALAfterBurnerUF *fUnfolder;                       //!<!unfolding procedure
   Bool_t                 fJustUnfold;                     ///< just unfold, do not recluster
+  Float_t                fUnfoldCellMinE;                 ///< min energy cell threshold, after unfolding
+  Float_t                fUnfoldCellMinEFrac;             ///< min fraction of cell energy after unfolding  
   TString                fGeomName;                       ///< name of geometry to use.
   Bool_t                 fGeomMatrixSet;                  ///< set geometry matrices only once, for the first event.
   Bool_t                 fLoadGeomMatrices;               ///< matrices from configuration, not geometry.root nor ESDs/AODs
@@ -114,7 +116,7 @@ protected:
   static RegisterCorrectionComponent<AliEmcalCorrectionClusterizer> reg;
 
   /// \cond CLASSIMP
-  ClassDef(AliEmcalCorrectionClusterizer, 4); // EMCal correction clusterizer component
+  ClassDef(AliEmcalCorrectionClusterizer, 5); // EMCal correction clusterizer component
   /// \endcond
 };
 

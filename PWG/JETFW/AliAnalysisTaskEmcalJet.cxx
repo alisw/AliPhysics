@@ -13,6 +13,8 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
+#include <sstream>
+#include <string>
 #include "AliAnalysisTaskEmcalJet.h"
 
 #include <TClonesArray.h>
@@ -174,7 +176,21 @@ void AliAnalysisTaskEmcalJet::ExecOnce()
   if (!cont->GetArrayName().IsNull()) {
     fJets = cont->GetArray();
     if(!fJets && fJetCollArray.GetEntriesFast()>0) {
-      AliError(Form("%s: Could not retrieve first jet branch!", GetName()));
+      AliErrorStream() << GetName() << ": Could not retrieve first jet branch!\n";
+      std::stringstream foundbranches;
+      bool first(true);
+      for(auto e : *(fInputEvent->GetList())){
+        if(first){
+          // Skip printing a comma on the first time through
+          first = false;
+        }
+        else {
+          foundbranches << ", ";
+        }
+        foundbranches << e->GetName();
+      }
+      std::string fbstring = foundbranches.str();
+      AliErrorStream() << "Found branches: " << fbstring << std::endl;
       fLocalInitialized = kFALSE;
       return;
     }
@@ -406,6 +422,23 @@ void AliAnalysisTaskEmcalJet::SetJetAcceptanceType(TString cutType, Int_t c)
       AliWarning(Form("%s: default cut type %s not recognized. Not setting cuts.",GetName(),cutType.Data()));
   } else
     cont->SetJetAcceptanceType(AliEmcalJet::kUser);
+}
+/**
+ * Set the jet type (Full, Charged, Neutral) of the \f$ i^{th} \f$
+ * jet container attached to this task
+ */
+void AliAnalysisTaskEmcalJet::SetJetType(EJetType_t type, Int_t c)
+{
+  AliJetContainer *cont = GetJetContainer(c);
+  if (cont)
+  {
+    cont->SetJetType(type);
+  }
+  else
+  {
+    AliError(Form("%s in SetJetType(...): container %d not found",GetName(),c));
+    return;
+  }
 }
 
 void AliAnalysisTaskEmcalJet::SetRhoName(const char *n, Int_t c)

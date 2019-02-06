@@ -38,9 +38,41 @@ class AliAODTrack;
 class AliVVertex;
 class AliPIDResponse;
 class TList;
+class TTree;
+class AliPWGFunc;
+
+struct SLightNucleus {
+  float pt;
+  float eta;
+  float phi;
+  int   pdg;
+  int   flag;
+};
+
+struct RLightNucleus {
+  float pt;
+  float eta;
+  float phi;
+  Double32_t m2;             //[1.1,21.58,13]
+  Double32_t dcaxy;          //[-2,2,10]
+  Double32_t dcaz;           //[-2,2,10]
+  Double32_t tpcNsigmaD;     //[-6.4,6.4,8]
+  Double32_t tpcNsigmaT;     //[-6.4,6.4,8]
+  Double32_t tpcNsigmaHe3;   //[-6.4,6.4,8]
+  Double32_t centrality;     //[0,128,8]
+  Double32_t deltapt;        //[-1.28,1.28,7]
+  unsigned char itsCls;
+  unsigned char tpcPIDcls;
+};
 
 class AliAnalysisTaskNucleiYield : public AliAnalysisTaskSE {
 public:
+  enum {
+    kNoPtShape,
+    kBlastWaveShape,
+    kTsallisShape
+  };
+
   AliAnalysisTaskNucleiYield(TString taskname = "NucleiYieldTask");
   virtual ~AliAnalysisTaskNucleiYield();
 
@@ -53,8 +85,10 @@ public:
   void SetRequireTPCrefit (bool refit = true) { fRequireTPCrefit = refit; }
   void SetRequireNoKinks (bool nokinks = true) { fRequireNoKinks = nokinks; }
   void SetRequireITSrecPoints (int rec = 4) { fRequireITSrecPoints = rec; }
+  void SetRequireTPCrecPoints (int rec = 70) { fRequireTPCrecPoints = rec; }
+  void SetRequireTPCfoundFraction (float rec = 0.8) { fRequireTPCfoundFraction = rec; }
   void SetRequireITSsignal (int sig = 3) { fRequireITSsignal = sig; }
-  void SetRequireTPCsignal (int sig = 70) { fRequireITSsignal = sig; }
+  void SetRequireTPCsignal (int sig = 70) { fRequireTPCsignal = sig; }
   void SetRequireSDDrecPoints (int rec = 1) { fRequireSDDrecPoints = rec; }
   void SetRequireSPDrecPoints (int rec = 1) { fRequireSPDrecPoints = rec; }
   void SetEtaRange (float emin, float emax) { fRequireEtaMin = emin; fRequireEtaMax = emax; }
@@ -73,6 +107,7 @@ public:
   void SetDisableTPCpidAtHighPt (float pt) { fDisableTPCpidAtHighPt = pt; }
   void SetFixForLHC14a6 (bool fix) { fFixForLHC14a6 = fix; }
   void SetForceMassAndZ(float mass, float z = 1) { fPDGMass = mass; fPDGMassOverZ = mass / z; }
+  void SetITSelectronRejection(float nsigma = 2.) { fITSelectronRejectionSigma = nsigma; }
 
   void SetCentBins (Int_t nbins, Float_t *bins);
   void SetDCABins (Int_t nbins, Float_t min, Float_t max);
@@ -83,8 +118,14 @@ public:
   void SetDCAzBins (Int_t nbins, Float_t limit);
   void SetFlatteningProbabilities (Int_t n, Float_t *probs) { fFlatteningProbs.Set(n,probs); }
   void SetUseFlattening (bool useIt) { fEnableFlattening = useIt; }
+  void SetPtWeightingFunction (int functionID, int nPars, float* pars) {
+    fPtShapeFunction = functionID;
+    fPtShapeParams.Set(nPars,pars);
+  }
 
-  static int    GetNumberOfITSclustersPerLayer(AliVTrack *track, unsigned int &nSPD, unsigned int &nSDD, unsigned int &nSSD);
+  void SaveTrees(bool save=true) { fSaveTrees = save; }
+
+  static int    GetNumberOfITSclustersPerLayer(AliVTrack *track, int &nSPD, int &nSDD, int &nSSD);
   static float  HasTOF(AliAODTrack *t, AliPIDResponse* pid);
 
   virtual void   UserCreateOutputObjects();
@@ -103,7 +144,7 @@ private:
   AliAnalysisTaskNucleiYield &operator=(const AliAnalysisTaskNucleiYield &source);
 
   bool   AcceptTrack(AliAODTrack *t, Double_t dca[2]);
-  bool   PassesPIDSelection(AliAODTrack *t);
+  int   PassesPIDSelection(AliAODTrack *t);
   float  GetTPCsigmas(AliVTrack *t);
 
   Bool_t Flatten(float cent);
@@ -112,6 +153,8 @@ private:
   TF1                  *fTOFfunction;           //!<! TOF signal function
 
   TList                *fList;                  ///<  Output list
+  TTree                *fRTree;                 ///<  Output reconstructed ttree
+  TTree                *fSTree;                 ///<  Output simulated ttree
   TLorentzVector        fCutVec;                ///<  Vector used to perform some cuts
   Int_t                 fPDG;                   ///<  PDG code of the particle of interest
   Float_t               fPDGMass;               ///<  PDG mass
@@ -136,6 +179,7 @@ private:
   Bool_t                fRequireTPCrefit;       ///<  Cut on tracks: set true to require TPC refit
   Bool_t                fRequireNoKinks;        ///<  Cut on tracks: set true to exclude tracks from kink vertices
   UShort_t              fRequireITSrecPoints;   ///<  Cut on tracks: minimum number of required ITS recpoints
+  UShort_t              fRequireTPCrecPoints;   ///<  Cut on tracks: minimum number of required ITS recpoints
   UShort_t              fRequireITSsignal;      ///<  Cut on tracks: minimum number of required ITS PID recpoints
   UShort_t              fRequireSDDrecPoints;   ///<  Cut on tracks: minimum number of required SDD recpoints
   UShort_t              fRequireSPDrecPoints;   ///<  Cut on tracks: minimum number of required SPD recpoints
@@ -154,8 +198,17 @@ private:
   Bool_t                fRequireVetoSPD;        ///<  Cut away all the tracks with at least 1 SPD cluster
   Float_t               fRequireMaxMomentum;    ///<  Cut in momentum for TPC only spectrum
   Bool_t                fFixForLHC14a6;         ///<  Switch on/off the fix for the MC centrality distribution
+  Float_t               fRequireTPCfoundFraction; ///< Found over findable clusters
+  Int_t                 fPtShapeFunction;       ///<  Id of the function used to weight the MC input pt shape (see the enum)
+  Float_t               fPtShapeMaximum;        ///<  Maximum of the pt shape used
+  Float_t               fITSelectronRejectionSigma; ///< nSigma rejection band in ITS response around the electron band for TPC only analysis
 
   Bool_t                fEnableFlattening;      ///<  Switch on/off the flattening
+
+  Bool_t                fSaveTrees;             ///<  Switch on/off the output TTrees
+  RLightNucleus         fRecNucleus;            ///<  Reconstructed nucleus
+  SLightNucleus         fSimNucleus;            ///<  Simulated nucleus
+
 
   AliPID::EParticleType fParticle;              ///<  Particle specie
   TArrayF               fCentBins;              ///<  Centrality bins
@@ -163,6 +216,10 @@ private:
   TArrayF               fPtBins;                ///<  Transverse momentum bins
   TArrayF               fCustomTPCpid;          ///<  Custom parametrisation of the Bethe-Bloch
   TArrayF               fFlatteningProbs;       ///<  Flattening probabilities
+  TArrayF               fPtShapeParams;         ///<  Params used by the pt shape function
+
+  AliPWGFunc*           fFunctCollection;       //!<! Collection of functions
+  TF1*                  fPtShape;               //!<! Function used to model the pt shape in MC
 
   // Event related histograms
   TH2F                 *fNormalisationHist;     //!<! Normalisation per centrality classes
@@ -179,6 +236,8 @@ private:
   // Data histograms
   TH3F                 *fTOFsignal[2];           //!<! *(Data only)* TOF signal for (anti-)matter
   TH3F                 *fTPCcounts[2];           //!<! *(Data only)* TPC counts for (anti-)matter
+  TH3F                 *fTPCsignalTpl[2];        //!<! *(Data only)* TPC counts for (anti-)matter
+  TH3F                 *fTPCbackgroundTpl[2];    //!<! *(Data only)* TPC counts for (anti-)matter
   TH3F                 *fDCAxy[2][2];            //!<! *(Data only)* \f$DCA_{xy}\f$ distribution for ITS+TPC tracks
   TH3F                 *fDCAz[2][2];             //!<! *(Data only)* \f$DCA_{z}\f$ distribution for ITS+TPC tracks
 

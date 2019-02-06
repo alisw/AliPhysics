@@ -60,15 +60,14 @@ class AliAnalysisTaskNucleiv2pPb : public AliAnalysisTaskSE {
     TH1D*        fQynmV0C;            // <Qy2> V0C
     TH1D*        fQxnsV0C;            // sigma Qx2 V0C
     TH1D*        fQynsV0C;            // sigma Qy2 V0C
-    
-    Double_t     fNHarm;              // harmonic number: 2, 3
+
     Short_t      fRecPass;            // flag for reconstruction pass: 0->Fast, 1->NoSDD, 2->SDD
     Short_t      fCenCalV0;           // flag for centrality estimators used for V0 recentering: 0->V0A, 1->V0, 2->V0AEq, 3-> CL1
+
     Short_t      fFilterBit;          // flag for AOD filterbit
-
-    Int_t fptc ;
-    Float_t fVzmax;
-
+    Int_t        fptc ;
+    Float_t      fVzmax;
+    Double_t     fNHarm;              // harmonic number: 2, 3
     
     //output hist
     TList	*fListHist;	           // List of  histograms

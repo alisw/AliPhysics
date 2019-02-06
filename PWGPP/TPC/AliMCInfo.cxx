@@ -49,7 +49,7 @@ IMPORTANT FOR PROOF FAST PROTOTYPING ANALYSIS
 //ALIROOT includes
 #include "AliTrackReference.h"
 #include "AliMCInfo.h" 
-#include "AliMathBase.h" 
+#include "AliExternalTrackParam.h" 
 #endif
 
 //
@@ -230,7 +230,7 @@ void AliMCInfo::Update()
 			      fTrackRef.Pz()*fTrackRef.Pz());    
       if (p>0.001){
 	Float_t betagama = p /fMass;
-	fPrim = AliMathBase::BetheBlochAleph(betagama);
+	fPrim = AliExternalTrackParam::BetheBlochAleph(betagama);
       }else fPrim=0;
     }
   }else{

@@ -5,20 +5,20 @@
 //this analsyis class provides event selection.
 //e.g., reject pileup event, Incomplete event, |zvtx|>10cm.
 
-class TH2;
-class AliPHOSGeometry;
-//class AliPHOSTriggerHelper;
-//class AliPHOSClusterCuts;
-
-//#include "AliPHOSTriggerHelper.h"
 #include "AliAnalysisCuts.h"
-//#include "AliPHOSClusterCuts.h"
 
 class AliPHOSEventCuts : public AliAnalysisCuts {
 
   public:
     AliPHOSEventCuts(const char *name = "AliPHOSEventCuts");
     virtual ~AliPHOSEventCuts(); 
+
+    enum PileupFinder {
+      kNone = -1,
+      kSPD = 0,
+      kSPDInMultBins = 1,
+      kMultiVertexer = 2
+    };
 
     virtual Bool_t IsSelected(TObject* obj) {return AcceptEvent((AliVEvent*)obj);}
     virtual Bool_t IsSelected(TList* /*list*/) {return kTRUE;}
@@ -28,23 +28,22 @@ class AliPHOSEventCuts : public AliAnalysisCuts {
     void SetMaxAbsZvtx(Double_t maxZ) {fMaxAbsZvtx = maxZ;}
     void SetRejectPileup(Bool_t reject) {fRejectPileup = reject;}
     void SetRejectDAQIncompleteEvent(Bool_t reject) {fRejectDAQIncomplete = reject;}
-
+    void SetPileupFinder(AliPHOSEventCuts::PileupFinder pf) {fPF = pf;}
 
     Bool_t IsMC() {return fIsMC;}
 
   private:
     Bool_t fIsMC;
-    Bool_t fUsePHOSTender;
     Double_t fMaxAbsZvtx;
     Bool_t fRejectPileup;
     Bool_t fRejectDAQIncomplete;
-    AliPHOSGeometry *fPHOSGeo;
+    PileupFinder fPF;
 
   private:
     AliPHOSEventCuts(const AliPHOSEventCuts&);
     AliPHOSEventCuts& operator=(const AliPHOSEventCuts&);
 
-    ClassDef(AliPHOSEventCuts, 7);
+    ClassDef(AliPHOSEventCuts, 9);
 };
 
 #endif

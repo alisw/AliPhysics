@@ -45,7 +45,8 @@ ClassImp(AliAODUPCReplicator)
 //_____________________________________________________________________________
 AliAODUPCReplicator::AliAODUPCReplicator(const char* name, const char* title,
                                            Bool_t replicateHeader,
-                                           Bool_t replicateTracklets)
+                                           Bool_t replicateTracklets,
+					   Bool_t replicateMuonTracks)
 :AliAODBranchReplicator(name,title), 
 fTracks(0x0), 
 fVertices(0x0), 
@@ -57,7 +58,8 @@ fZDC(0x0),
 fList(0x0),
 fTOFHeader(0x0),
 fReplicateHeader(replicateHeader),
-fReplicateTracklets(replicateTracklets)
+fReplicateTracklets(replicateTracklets),
+fReplicateMuonTracks(replicateMuonTracks)
 {
 
 }
@@ -90,7 +92,7 @@ TList* AliAODUPCReplicator::GetList() const
     fTracks = new TClonesArray("AliAODTrack",30);
     fTracks->SetName("tracks");
     
-    fVertices = new TClonesArray("AliAODVertex",2);
+    fVertices = new TClonesArray("AliAODVertex",3);
     fVertices->SetName("vertices");     
       
     fVZERO = new AliAODVZERO;
@@ -169,7 +171,7 @@ void AliAODUPCReplicator::ReplicateAndFilter(const AliAODEvent& source)
   Int_t nvertices(0);
   
   while ( ( v = static_cast<AliAODVertex*>(nextV()) ) ) {
-    if (v->GetType() == AliAODVertex::kPrimary) {
+    if (v->GetType() == AliAODVertex::kPrimary || v->GetType() == AliAODVertex::kMainSPD) {
       AliAODVertex* tmp = v->CloneWithoutRefs();
       AliAODVertex* copiedVertex = new((*fVertices)[nvertices++]) AliAODVertex(*tmp);
       // to insure the main vertex retains the ncontributors information
@@ -205,6 +207,7 @@ Bool_t AliAODUPCReplicator::IsGoodITSsaTrack(const AliAODTrack *trk)
 Bool_t AliAODUPCReplicator::IsGoodMuonTrack(const AliAODTrack *trk)
 {
 
+  if(!fReplicateMuonTracks)return kFALSE;
   if(!trk->IsMuonTrack())return kFALSE;
   if( trk->GetRAtAbsorberEnd() < 17.5 || trk->GetRAtAbsorberEnd() > 89.5 ) return kFALSE;
   if( trk->Eta() < -4.0 || trk->Eta() > -2.5 ) return kFALSE;

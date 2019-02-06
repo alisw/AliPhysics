@@ -283,6 +283,11 @@ namespace dNdeta {
       fHelper.CreateHistos(fOutput, Base::CreateOutput);
       fOutput->ls();
     }
+    /** 
+     * Set-up centrality estimator
+     *
+     * @return true on success 
+     */
     virtual Bool_t SetupEstimator()
     {
       if (!Base::SetupEstimator()) return false;
@@ -502,7 +507,7 @@ struct dNdetaMaker : public FastAnalysis::Maker
       if( tp) ret->SetTrigger(tp->Value()->GetName());
     }
     else 
-      Printf("Error: dNdetaMaker::Run: Invalid spec: %s", t.Data());
+      Printf("Error: dNdetaMaker::Make: Invalid spec: %s", t.Data());
     return ret;
   }
   /** 

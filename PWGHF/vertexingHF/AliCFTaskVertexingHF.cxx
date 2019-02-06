@@ -138,6 +138,7 @@ AliCFTaskVertexingHF::AliCFTaskVertexingHF() :
   fUseAdditionalCuts(kFALSE),
   fUseCutsForTMVA(kFALSE),
   fUseCascadeTaskForLctoV0bachelor(kFALSE),
+  fFillMinimumSteps(kFALSE),
   fCutOnMomConservation(0.00001)
 {
   //
@@ -204,6 +205,7 @@ AliCFTaskVertexingHF::AliCFTaskVertexingHF(const Char_t* name, AliRDHFCuts* cuts
   fUseAdditionalCuts(kFALSE),
   fUseCutsForTMVA(kFALSE),
   fUseCascadeTaskForLctoV0bachelor(kFALSE),
+  fFillMinimumSteps(kFALSE),
   fCutOnMomConservation(0.00001)
 {
   //
@@ -302,6 +304,7 @@ AliCFTaskVertexingHF::AliCFTaskVertexingHF(const AliCFTaskVertexingHF& c) :
   fUseAdditionalCuts(c.fUseAdditionalCuts),
   fUseCutsForTMVA(c.fUseCutsForTMVA),
   fUseCascadeTaskForLctoV0bachelor(c.fUseCascadeTaskForLctoV0bachelor),
+  fFillMinimumSteps(c.fFillMinimumSteps),
   fCutOnMomConservation(c.fCutOnMomConservation)
 {
   //
@@ -358,6 +361,12 @@ void AliCFTaskVertexingHF::Init()
     case kCheetah:// fast configuration: only pt_candidate, y, phi, ct, fake, z_vtx, centrality, multiplicity will be filled
       fNvar = 8;
       break;
+    case kFalcon:// super fast configuration: only pt_candidate, y, centrality
+      fNvar = 4;
+      break;
+    case kESE:// configuration with variables for ESE analysis (pt,y,centrality,mult,q2)
+      fNvar = 6;
+      break;
     }
     fPartName="D0";
     fDauNames="K+pi";
@@ -372,6 +381,12 @@ void AliCFTaskVertexingHF::Init()
       break;
     case kCheetah:// fast configuration: only pt_candidate, y, phi, ct, fake, z_vtx, centrality, multiplicity will be filled
       fNvar = 8;
+      break;
+    case kFalcon:// super fast configuration: only pt_candidate, y, centrality
+      fNvar = 4;
+      break;
+    case kESE:// configuration with variables for ESE analysis (pt,y,centrality,mult,q2)
+      fNvar = 6;
       break;
     }
     fPartName="Dstar";
@@ -388,6 +403,9 @@ void AliCFTaskVertexingHF::Init()
     case kCheetah:// fast configuration: only pt_candidate, y, phi, ct, fake, z_vtx, centrality, multiplicity will be filled
       fNvar = 8;
       break;
+    case kFalcon:// super fast configuration: only pt_candidate, y, centrality
+      fNvar = 4;
+      break;
     }
     fPartName="Lambdac";
     fDauNames="V0+bachelor";
@@ -402,6 +420,12 @@ void AliCFTaskVertexingHF::Init()
       break;
     case kCheetah:// fast configuration: only pt_candidate, y, phi, ct, fake, z_vtx, centrality, multiplicity will be filled
       fNvar = 8;
+      break;
+    case kFalcon:// super fast configuration: only pt_candidate, y, centrality
+      fNvar = 4;
+      break;
+    case kESE:// configuration with variables for ESE analysis (pt,y,centrality,mult,q2)
+      fNvar = 6;
       break;
     }
     fPartName="Dplus";
@@ -418,6 +442,9 @@ void AliCFTaskVertexingHF::Init()
     case kCheetah:// fast configuration: only pt_candidate, y, phi, ct, fake, z_vtx, centrality, multiplicity will be filled
       fNvar = 8;
       break;
+    case kFalcon:// super fast configuration: only pt_candidate, y, centrality
+      fNvar = 4;
+      break;
     }
     fPartName="Lambdac";
     fDauNames="p+K+pi";
@@ -433,6 +460,9 @@ void AliCFTaskVertexingHF::Init()
     case kCheetah:// fast configuration: only pt_candidate, y, phi, ct, fake, z_vtx, centrality, multiplicity will be filled
       fNvar = 8;
       break;
+    case kFalcon:// super fast configuration: only pt_candidate, y, centrality
+      fNvar = 4;
+      break;
     }
     fPartName="Ds";
     fDauNames="K+K+pi";
@@ -447,6 +477,9 @@ void AliCFTaskVertexingHF::Init()
       break;
     case kCheetah:// fast configuration: only pt_candidate, y, phi, ct, fake, z_vtx, centrality, multiplicity will be filled
       fNvar = 8;
+      break;
+    case kFalcon:// super fast configuration: only pt_candidate, y, centrality
+      fNvar = 4;
       break;
     }
     fPartName="D0";
@@ -718,7 +751,7 @@ void AliCFTaskVertexingHF::UserExec(Option_t *)
   Int_t nTrackletsEta16 = static_cast<Int_t>(AliVertexingHFUtils::GetNumberOfTrackletsInEtaRange(aodEvent,-1.6,1.6));
   nTracklets = (Double_t)nTrackletsEta10;
   if(fMultiplicityEstimator==kNtrk10to16) { nTracklets = (Double_t)(nTrackletsEta16 - nTrackletsEta10); }
-
+  
   // Apply the Ntracklets z-vtx data driven correction
   if(fZvtxCorrectedNtrkEstimator) {
     TProfile* estimatorAvg = GetEstimatorHistogram(aodEvent);
@@ -820,6 +853,16 @@ void AliCFTaskVertexingHF::UserExec(Option_t *)
   if(fMultiplicityEstimator==kVZERO) { multiplicity = vzeroMult; }
 
   cfVtxHF->SetMultiplicity(multiplicity);
+  
+  Double_t q2=0;
+  if(fConfiguration==kESE) {
+    //set q2 in case of kESE configuration
+    q2=ComputeTPCq2(aodEvent,mcHeader,-0.8,0.8,0.2,5.);
+    cfVtxHF->Setq2Value(q2);
+
+    //set track array in case of kESE configuration
+    cfVtxHF->SetTrackArray(aodEvent->GetTracks());
+  }
 
   //  printf("Multiplicity estimator %d, value %2.2f\n",fMultiplicityEstimator,multiplicity);
 
@@ -892,7 +935,8 @@ void AliCFTaskVertexingHF::UserExec(Option_t *)
 	AliDebug(3,"MC Lim Acc container filled\n");
 	if (fCFManager->GetParticleContainer()->GetNStep() == kStepGenLimAccNoAcc+1) {
 	  if (!(cfVtxHF-> MCAcceptanceStep())) {
-	    fCFManager->GetParticleContainer()->Fill(containerInputMC,kStepGenLimAccNoAcc, fWeight);
+      if(!fFillMinimumSteps)
+        fCFManager->GetParticleContainer()->Fill(containerInputMC,kStepGenLimAccNoAcc, fWeight);
 	    icountGenLimAccNoAcc++;
 	    AliDebug(3,"MC Lim Acc No Acc container filled\n");
 	  }
@@ -900,7 +944,8 @@ void AliCFTaskVertexingHF::UserExec(Option_t *)
       }
 
       //MC
-      fCFManager->GetParticleContainer()->Fill(containerInputMC, kStepGenerated, fWeight);
+      if(!fFillMinimumSteps)
+        fCFManager->GetParticleContainer()->Fill(containerInputMC, kStepGenerated, fWeight);
       icountMC++;
       AliDebug(3,"MC container filled \n");
 
@@ -916,14 +961,16 @@ void AliCFTaskVertexingHF::UserExec(Option_t *)
         //MC Vertex step
         if (fCuts->IsEventSelected(aodEvent)){
           // filling the container if the vertex is ok
-          fCFManager->GetParticleContainer()->Fill(containerInputMC,kStepVertex, fWeight) ;
+          if(!fFillMinimumSteps)
+            fCFManager->GetParticleContainer()->Fill(containerInputMC,kStepVertex, fWeight) ;
           AliDebug(3,"Vertex cut passed and container filled\n");
           icountVertex++;
 
           //mc Refit requirement
           Bool_t mcRefitStep = cfVtxHF->MCRefitStep(aodEvent, &trackCuts[0]);
           if (mcRefitStep){
-            fCFManager->GetParticleContainer()->Fill(containerInputMC,kStepRefit, fWeight);
+            if(!fFillMinimumSteps)
+              fCFManager->GetParticleContainer()->Fill(containerInputMC,kStepRefit, fWeight);
             AliDebug(3,"MC Refit cut passed and container filled\n");
             icountRefit++;
           }
@@ -1093,14 +1140,16 @@ void AliCFTaskVertexingHF::UserExec(Option_t *)
 
 
       if (recoStep && recoContFilled && vtxCheck){
-        fCFManager->GetParticleContainer()->Fill(containerInput,kStepReconstructed, fWeight) ;
+        if(!fFillMinimumSteps)
+          fCFManager->GetParticleContainer()->Fill(containerInput,kStepReconstructed, fWeight) ;
         icountReco++;
         AliDebug(3,"Reco step  passed and container filled\n");
 
         //Reco in the acceptance -- take care of UNFOLDING!!!!
         Bool_t recoAcceptanceStep = cfVtxHF->RecoAcceptStep(&trackCuts[0]);
         if (recoAcceptanceStep) {
-          fCFManager->GetParticleContainer()->Fill(containerInput,kStepRecoAcceptance, fWeight) ;
+          if(!fFillMinimumSteps)
+            fCFManager->GetParticleContainer()->Fill(containerInput,kStepRecoAcceptance, fWeight) ;
           icountRecoAcc++;
           AliDebug(3,"Reco acceptance cut passed and container filled\n");
 
@@ -1113,7 +1162,8 @@ void AliCFTaskVertexingHF::UserExec(Option_t *)
           //Number of ITS cluster requirements
           Int_t recoITSnCluster = fCuts->IsSelected(charmCandidate, AliRDHFCuts::kTracks, aodEvent);
           if (recoITSnCluster){
-            fCFManager->GetParticleContainer()->Fill(containerInput,kStepRecoITSClusters, fWeight) ;
+            if(!fFillMinimumSteps)
+              fCFManager->GetParticleContainer()->Fill(containerInput,kStepRecoITSClusters, fWeight) ;
             icountRecoITSClusters++;
             AliDebug(3,"Reco n ITS cluster cut passed and container filled\n");
 
@@ -1306,9 +1356,39 @@ void AliCFTaskVertexingHF::Terminate(Option_t*)
       h[2][iC] =   *(cont->ShowProjection(iC,4));
     }
   }
-  else {
+  else if(fConfiguration == kCheetah){
     //h = new TH1D[3][12];
     nvarToPlot = 8;
+    for (Int_t ih = 0; ih<3; ih++){
+      h[ih] = new TH1D[nvarToPlot];
+    }
+    for(Int_t iC=0;iC<nvarToPlot; iC++){
+      // MC-level
+      h[0][iC] =   *(cont->ShowProjection(iC,0));
+      // MC-Acceptance level
+      h[1][iC] =   *(cont->ShowProjection(iC,1));
+      // Reco-level
+      h[2][iC] =   *(cont->ShowProjection(iC,4));
+    }
+  }
+  else if(fConfiguration == kFalcon){
+    //h = new TH1D[3][12];
+    nvarToPlot = 4;
+    for (Int_t ih = 0; ih<3; ih++){
+      h[ih] = new TH1D[nvarToPlot];
+    }
+    for(Int_t iC=0;iC<nvarToPlot; iC++){
+      // MC-level
+      h[0][iC] =   *(cont->ShowProjection(iC,0));
+      // MC-Acceptance level
+      h[1][iC] =   *(cont->ShowProjection(iC,1));
+      // Reco-level
+      h[2][iC] =   *(cont->ShowProjection(iC,4));
+    }
+  }
+  else if(fConfiguration == kESE){
+    //h = new TH1D[3][12];
+    nvarToPlot = 6;
     for (Int_t ih = 0; ih<3; ih++){
       h[ih] = new TH1D[nvarToPlot];
     }
@@ -1378,7 +1458,7 @@ void AliCFTaskVertexingHF::Terminate(Option_t*)
       titles[11]="phi (rad)";
     }
   }
-  else {
+  else if(fConfiguration == kCheetah){
     //nvarToPlot = 8;
     titles = new TString[nvarToPlot];
     if (fDecayChannel==22) {
@@ -1400,6 +1480,31 @@ void AliCFTaskVertexingHF::Terminate(Option_t*)
       titles[6]="fake";
       titles[7]="multiplicity";
     }
+  }
+  else if(fConfiguration == kFalcon){
+    //nvarToPlot = 4;
+    titles = new TString[nvarToPlot];
+    if (fDecayChannel==22) {
+      titles[0]="p_{T}(#Lambda_{c}) [GeV/c]";
+      titles[1]="y(#Lambda_{c})";
+      titles[2]="centrality";
+      titles[3]="multiplicity";
+    } else {
+      titles[0]="pT_candidate (GeV/c)";
+      titles[1]="rapidity";
+      titles[2]="centrality";
+      titles[3]="multiplicity";
+    }
+  }
+  else if(fConfiguration == kESE){
+    //nvarToPlot = 4;
+    titles = new TString[nvarToPlot];
+    titles[0]="pT_candidate (GeV/c)";
+    titles[1]="rapidity";
+    titles[2]="centrality";
+    titles[3]="multiplicity";
+    titles[4]="N_{tracks} (R<0.4)";
+    titles[5]="q_{2}";
   }
 
   Int_t markers[16]={20,24,21,25,27,28,
@@ -1427,6 +1532,7 @@ void AliCFTaskVertexingHF::Terminate(Option_t*)
   c1->Divide(3,4);
   Int_t iPad=1;
   for(Int_t iVar=0; iVar<4; iVar++){
+    if(iVar>=fNvar) continue;
     c1->cd(iPad++);
     h[0][iVar].DrawCopy("p");
     c1->cd(iPad++);
@@ -1435,16 +1541,18 @@ void AliCFTaskVertexingHF::Terminate(Option_t*)
     h[2][iVar].DrawCopy("p");
   }
 
-  TCanvas * c2 =new TCanvas(Form("c2New_%d",fDecayChannel),"Vars 4, 5, 6, 7",1100,1200);
-  c2->Divide(3,4);
-  iPad=1;
-  for(Int_t iVar=4; iVar<8; iVar++){
-    c2->cd(iPad++);
-    h[0][iVar].DrawCopy("p");
-    c2->cd(iPad++);
-    h[1][iVar].DrawCopy("p");
-    c2->cd(iPad++);
-    h[2][iVar].DrawCopy("p");
+  if (fConfiguration == kSnail || fConfiguration == kCheetah){
+    TCanvas * c2 =new TCanvas(Form("c2New_%d",fDecayChannel),"Vars 4, 5, 6, 7",1100,1200);
+    c2->Divide(3,4);
+    iPad=1;
+    for(Int_t iVar=4; iVar<8; iVar++){
+      c2->cd(iPad++);
+      h[0][iVar].DrawCopy("p");
+      c2->cd(iPad++);
+      h[1][iVar].DrawCopy("p");
+      c2->cd(iPad++);
+      h[2][iVar].DrawCopy("p");
+    }
   }
 
   if (fConfiguration == kSnail){
@@ -1704,6 +1812,44 @@ void AliCFTaskVertexingHF::SetPtWeightsFromFONLL5andDplusdataoverLHC16i2a(){
 }
 
 //_________________________________________________________________________
+void AliCFTaskVertexingHF::SetPtWeightsFromD0Cent080dataoverLHC16i2abc(){
+  //
+  // weight function from the ratio of the D0 0-80% over lhc16i2abc
+  // This is for Lc/D0 analysis, so the functional form is derived using only 3-16 GeV/c
+  //
+  if(fFuncWeight) delete fFuncWeight;
+  fFuncWeight=new TF1("funcWeight","([0]*x)/TMath::Power([2],(1+TMath::Power([3],x/[1])))+[4]*TMath::Exp([5]*x+[6])",3.,16.);
+  fFuncWeight->SetParameters(-93.179,2.15711,6.45459,1.33679,0.373436,-0.070921,2.52372);
+  fUseWeight=kTRUE;
+}
+
+//_________________________________________________________________________
+void AliCFTaskVertexingHF::SetPtWeightsFromD0Cent080dataModOhoverLHC16i2abc(){
+  //
+  // weight function from the ratio of the D0 0-80% over lhc16i2abc
+  // Modified taking into account Lc/D0 ratio given in PRC 79, 044905 (2009)
+  // This is for Lc/D0 analysis, so the functional form is derived using only 3-16 GeV/c
+  //
+  if(fFuncWeight) delete fFuncWeight;
+  fFuncWeight=new TF1("funcWeight","(([0]*x)/TMath::Power([2],(1+TMath::Power([3],x/[1])))+[4]*TMath::Exp([5]*x+[6]))*[7]*TMath::Gaus(x,[8],[9])",3.,16.);
+  fFuncWeight->SetParameters(-93.179,2.15711,6.45459,1.33679,0.373436,-0.070921,2.52372,1.02369,1.41492,3.09519);
+  fUseWeight=kTRUE;
+}
+
+//_________________________________________________________________________
+void AliCFTaskVertexingHF::SetPtWeightsFromD0Cent080dataModMartinezoverLHC16i2abc(){
+  //
+  // weight function from the ratio of the D0 0-80% over lhc16i2abc
+  // Modified taking into account Lc/D0 ratio given in PLB 663, 55-60 (2008)
+  // This is for Lc/D0 analysis, so the functional form is derived using only 3-16 GeV/c
+  //
+  if(fFuncWeight) delete fFuncWeight;
+  fFuncWeight=new TF1("funcWeight","(([0]*x)/TMath::Power([2],(1+TMath::Power([3],x/[1])))+[4]*TMath::Exp([5]*x+[6]))*[7]*TMath::Gaus(x,[8],[9])",3.,16.);
+  fFuncWeight->SetParameters(-93.179,2.15711,6.45459,1.33679,0.373436,-0.070921,2.52372,0.9,5.0,2.9);
+  fUseWeight=kTRUE;
+}
+
+//_________________________________________________________________________
 void AliCFTaskVertexingHF::SetPtWeightsFromFONLL5overLHC13d3(){
   // weight function from the ratio of the LHC13d3 MC
   // and FONLL calculations for pp data
@@ -1840,6 +1986,20 @@ void AliCFTaskVertexingHF::SetPtWeightsFromFONLL13overLHC17c3a12(){
 	fUseWeight=kTRUE;
 }
 
+//_________________________________________________________________________
+void AliCFTaskVertexingHF::SetPtWeightsFromFONLL5overLHC18a4a2() {
+  // Weight function from the ratio of the D0 spectrum in LHC18a4a2 (fast+cent) MC
+  // and FONLL calculations for pp data at 5 TeV
+
+  if(fHistoPtWeight) delete fHistoPtWeight;
+  fHistoPtWeight = new TH1F("histoWeight","histoWeight",500,0.,50.);
+  fHistoPtWeight->Sumw2();
+  Float_t binc[500]={0.7836, 0.7203, 0.6840, 0.6749, 0.6840, 0.7038, 0.7337, 0.7691, 0.8098, 0.8520, 0.8917, 0.9331, 0.9673, 0.9985, 1.0297, 1.0569, 1.0781, 1.0993, 1.1166, 1.1285, 1.1425, 1.1520, 1.1598, 1.1685, 1.1762, 1.1791, 1.1858, 1.1899, 1.1944, 1.1986, 1.1968, 1.2041, 1.2072, 1.2031, 1.2068, 1.2090, 1.2079, 1.2089, 1.2081, 1.2047, 1.2088, 1.2093, 1.2085, 1.2105, 1.2099, 1.2125, 1.2108, 1.2090, 1.2071, 1.2066, 1.2122, 1.2126, 1.2131, 1.2136, 1.2141, 1.2145, 1.2150, 1.2155, 1.2160, 1.2165, 1.2169, 1.2174, 1.2179, 1.2184, 1.2188, 1.2193, 1.2198, 1.2203, 1.2207, 1.2212, 1.2217, 1.2222, 1.2227, 1.2231, 1.2236, 1.2241, 1.2246, 1.2250, 1.2255, 1.2260, 1.2265, 1.2269, 1.2274, 1.2279, 1.2284, 1.2289, 1.2293, 1.2298, 1.2303, 1.2308, 1.2312, 1.2317, 1.2322, 1.2327, 1.2331, 1.2336, 1.2341, 1.2346, 1.2351, 1.2355, 1.2360, 1.2365, 1.2370, 1.2374, 1.2379, 1.2384, 1.2389, 1.2393, 1.2398, 1.2403, 1.2408, 1.2413, 1.2417, 1.2422, 1.2427, 1.2432, 1.2436, 1.2441, 1.2446, 1.2451, 1.2455, 1.2460, 1.2465, 1.2470, 1.2475, 1.2479, 1.2484, 1.2489, 1.2494, 1.2498, 1.2503, 1.2508, 1.2513, 1.2517, 1.2522, 1.2527, 1.2532, 1.2537, 1.2541, 1.2546, 1.2551, 1.2556, 1.2560, 1.2565, 1.2570, 1.2575, 1.2579, 1.2584, 1.2589, 1.2594, 1.2599, 1.2603, 1.2608, 1.2613, 1.2618, 1.2622, 1.2627, 1.2632, 1.2637, 1.2641, 1.2646, 1.2651, 1.2656, 1.2661, 1.2665, 1.2670, 1.2675, 1.2680, 1.2684, 1.2689, 1.2694, 1.2699, 1.2703, 1.2708, 1.2713, 1.2718, 1.2723, 1.2727, 1.2732, 1.2737, 1.2742, 1.2746, 1.2751, 1.2756, 1.2761, 1.2765, 1.2770, 1.2775, 1.2780, 1.2785, 1.2789, 1.2794, 1.2799, 1.2804, 1.2808, 1.2813, 1.2818, 1.2823, 1.2827, 1.2832, 1.2837, 1.2842, 1.2847, 1.2851, 1.2856, 1.2861, 1.2866, 1.2870, 1.2875, 1.2880, 1.2885, 1.2889, 1.2894, 1.2899, 1.2904, 1.2909, 1.2913, 1.2918, 1.2923, 1.2928, 1.2932, 1.2937, 1.2942, 1.2947, 1.2951, 1.2956, 1.2961, 1.2966, 1.2971, 1.2975, 1.2980, 1.2985, 1.2990, 1.2994, 1.2999, 1.3004, 1.3009, 1.3013, 1.3018, 1.3023, 1.3028, 1.3033, 1.3037, 1.3042, 1.3047, 1.3052, 1.3056, 1.3061, 1.3066, 1.3071, 1.3075, 1.3080, 1.3085, 1.3090, 1.3095, 1.3099, 1.3104, 1.3109, 1.3114, 1.3118, 1.3123, 1.3128, 1.3133, 1.3137, 1.3142, 1.3147, 1.3152, 1.3157, 1.3161, 1.3166, 1.3171, 1.3176, 1.3180, 1.3185, 1.3190, 1.3195, 1.3199, 1.3204, 1.3209, 1.3214, 1.3219, 1.3223, 1.3228, 1.3233, 1.3238, 1.3242, 1.3247, 1.3252, 1.3257, 1.3262, 1.3266, 1.3271, 1.3276, 1.3281, 1.3285, 1.3290, 1.3295, 1.3300, 1.3304, 1.3309, 1.3314, 1.3319, 1.3324, 1.3328, 1.3333, 1.3338, 1.3343, 1.3347, 1.3352, 1.3357, 1.3362, 1.3366, 1.3371, 1.3376, 1.3381, 1.3386, 1.3390, 1.3395, 1.3400, 1.3405, 1.3409, 1.3414, 1.3419, 1.3424, 1.3428, 1.3433, 1.3438, 1.3443, 1.3448, 1.3452, 1.3457, 1.3462, 1.3467, 1.3471, 1.3476, 1.3481, 1.3486, 1.3490, 1.3495, 1.3500, 1.3505, 1.3510, 1.3514, 1.3519, 1.3524, 1.3529, 1.3533, 1.3538, 1.3543, 1.3548, 1.3552, 1.3557, 1.3562, 1.3567, 1.3572, 1.3576, 1.3581, 1.3586, 1.3591, 1.3595, 1.3600, 1.3605, 1.3610, 1.3614, 1.3619, 1.3624, 1.3629, 1.3634, 1.3638, 1.3643, 1.3648, 1.3653, 1.3657, 1.3662, 1.3667, 1.3672, 1.3676, 1.3681, 1.3686, 1.3691, 1.3696, 1.3700, 1.3705, 1.3710, 1.3715, 1.3719, 1.3724, 1.3729, 1.3734, 1.3738, 1.3743, 1.3748, 1.3753, 1.3758, 1.3762, 1.3767, 1.3772, 1.3777, 1.3781, 1.3786, 1.3791, 1.3796, 1.3800, 1.3805, 1.3810, 1.3815, 1.3820, 1.3824, 1.3829, 1.3834, 1.3839, 1.3843, 1.3848, 1.3853, 1.3858, 1.3862, 1.3867, 1.3872, 1.3877, 1.3882, 1.3886, 1.3891, 1.3896, 1.3901, 1.3905, 1.3910, 1.3915, 1.3920, 1.3924, 1.3929, 1.3934, 1.3939, 1.3944, 1.3948, 1.3953, 1.3958, 1.3963, 1.3967, 1.3972, 1.3977, 1.3982, 1.3986, 1.3991, 1.3996, 1.4001, 1.4006, 1.4010, 1.4015, 1.4020, 1.4025, 1.4029, 1.4034, 1.4039, 1.4044, 1.4048, 1.4053, 1.4058, 1.4063, 1.4068, 1.4072, 1.4077, 1.4082, 1.4087, 1.4091, 1.4096, 1.4101, 1.4106, 1.4110, 1.4115, 1.4120, 1.4125, 1.4130, 1.4134, 1.4139, 1.4144, 1.4149, 1.4153, 1.4158, 1.4163, 1.4168, 1.4172, 1.4177, 1.4182, 1.4187, 1.4192, 1.4196, 1.4201, 1.4206, 1.4211, 1.4215, 1.4220, 1.4225, 1.4230, 1.4234, 1.4239, 1.4244, 1.4249, 1.4254, 1.4258, 1.4263};
+  for(Int_t i=0; i<500; i++){
+    fHistoPtWeight->SetBinContent(i+1,binc[i]);
+  }
+  fUseWeight=kTRUE;
+}
 
 //_________________________________________________________________________
 Double_t AliCFTaskVertexingHF::GetWeight(Float_t pt)
@@ -2067,3 +2227,39 @@ TProfile* AliCFTaskVertexingHF::GetEstimatorHistogram(const AliVEvent* event){
 
   return fMultEstimatorAvg[period];
 }
+
+//________________________________________________________________________
+Double_t AliCFTaskVertexingHF::ComputeTPCq2(AliAODEvent* aod, AliAODMCHeader* mcHeader, Double_t etamin, Double_t etamax, Double_t ptmin, Double_t ptmax) const {
+  /// Compute the q2 for ESE starting from TPC tracks
+  
+  Int_t nTracks=aod->GetNumberOfTracks();
+  Double_t nHarmonic=2.;
+  Double_t q2Vec[2] = {0.,0.};
+  Int_t multQvec=0;
+  
+  for(Int_t it=0; it<nTracks; it++){
+    AliAODTrack* track=(AliAODTrack*)aod->GetTrack(it);
+    if(!track) continue;
+    TString genname = AliVertexingHFUtils::GetGenerator(track->GetLabel(),mcHeader);
+    if(genname.Contains("Hijing")) {
+      if(track->TestFilterBit(BIT(8))||track->TestFilterBit(BIT(9))) {
+        Double_t pt=track->Pt();
+        Double_t eta=track->Eta();
+        Double_t phi=track->Phi();
+        Double_t qx=TMath::Cos(nHarmonic*phi);
+        Double_t qy=TMath::Sin(nHarmonic*phi);
+        if(eta<etamax && eta>etamin && pt>ptmin && pt<ptmax) {
+          q2Vec[0]+=qx;
+          q2Vec[1]+=qy;
+          multQvec++;
+        }
+      }
+    }
+  }
+  
+  Double_t q2 = 0.;
+  if(multQvec>0) q2 = TMath::Sqrt(q2Vec[0]*q2Vec[0]+q2Vec[1]*q2Vec[1])/TMath::Sqrt(multQvec);
+
+  return q2;
+}
+

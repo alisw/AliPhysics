@@ -6,6 +6,7 @@
 #include "AliFemtoShareQualityPairCut.h"
 #include <string>
 #include <cstdio>
+#include <bitset>
 
 #ifdef __ROOT__
 ClassImp(AliFemtoShareQualityPairCut)
@@ -18,6 +19,7 @@ AliFemtoShareQualityPairCut::AliFemtoShareQualityPairCut():
   fShareQualityMax(1.0),
   fShareFractionMax(1.0),
   fRemoveSameLabel(false)
+  , fAlternativeAlgorithm(0)
 {
   // Default constructor
   // Nothing to do
@@ -65,11 +67,51 @@ bool AliFemtoShareQualityPairCut::Pass(const AliFemtoPair* pair)
 
     const unsigned int n_bits = track1->TPCclusters().GetNbits();
 
-    const auto tpc_clusters_1 = track1->TPCclusters(),
-               tpc_clusters_2 = track2->TPCclusters();
+    const auto &tpc_clusters_1 = track1->TPCclusters(),
+               &tpc_clusters_2 = track2->TPCclusters();
 
-    const auto tpc_sharing_1 = track1->TPCsharing(),
-               tpc_sharing_2 = track2->TPCsharing();
+    const auto &tpc_sharing_1 = track1->TPCsharing(),
+               &tpc_sharing_2 = track2->TPCsharing();
+
+    // equivalent methods of determining the share quality and fraction
+    if (fAlternativeAlgorithm == 1) {
+
+      const auto cls1_and_cls2 = tpc_clusters_1 & tpc_clusters_2,
+                 cls1_xor_cls2 = tpc_clusters_1 ^ tpc_clusters_2,
+                 shr1_and_shr2 = tpc_sharing_1 & tpc_sharing_2,
+                 not_sharing = ~*const_cast<TBits*>(&shr1_and_shr2);
+                              // ^ weird const-cast to get around bug in ROOT5
+
+      int cls1_xor_cls2_bits = cls1_xor_cls2.CountBits();
+
+      nh = cls1_xor_cls2_bits + 2 * cls1_and_cls2.CountBits();
+      ns = 2 * (cls1_and_cls2 & shr1_and_shr2).CountBits();
+      an = cls1_xor_cls2_bits + ns / 2 - (cls1_and_cls2 & not_sharing).CountBits();
+
+    } else if (fAlternativeAlgorithm == 2) {
+      if (n_bits != 159) {
+        std::cerr << "n_bits: " << n_bits << " != 159\n";
+      }
+
+      std::bitset<159> a, b, c, d;
+      tpc_clusters_1.Get(reinterpret_cast<ULong64_t*>(&a));
+      tpc_clusters_2.Get(reinterpret_cast<ULong64_t*>(&b));
+      tpc_sharing_1.Get(reinterpret_cast<ULong64_t*>(&c));
+      tpc_sharing_2.Get(reinterpret_cast<ULong64_t*>(&d));
+
+      const auto cls1_and_cls2 = a & b,
+                 cls1_xor_cls2 = a ^ b,
+                 sharing = c & d,
+                 not_sharing = ~sharing;
+
+      const int cls1_xor_cls2_bits = cls1_xor_cls2.count();
+
+      nh = cls1_xor_cls2_bits + 2 * cls1_and_cls2.count();
+      ns = 2 * (cls1_and_cls2 & sharing).count();
+      an = cls1_xor_cls2_bits + ns / 2 - (cls1_and_cls2 & not_sharing).count();
+
+    } else {
+      // Below is the original algorithm
 
     for (unsigned int imap = 0; imap < n_bits; imap++) {
         const bool cluster_bit_1 = tpc_clusters_1.TestBitNumber(imap),
@@ -99,6 +141,7 @@ bool AliFemtoShareQualityPairCut::Pass(const AliFemtoPair* pair)
            nh++;
         }
      }
+    }
 
      Float_t hsmval = 0.0;
      Float_t hsfval = 0.0;

@@ -13,10 +13,11 @@ class TClonesArray;
 class THistManager;
 
 class AliAnalysisUtils;
-class AliEmcalTrackSelection;
 class AliGenPythiaEventHeader;
 class AliMCEvent;
 class AliVParticle;
+
+class AliEmcalTrackSelection;
 
 namespace EMCalTriggerPtAnalysis {
 
@@ -115,7 +116,7 @@ private:
   AliAnalysisTaskChargedParticlesMCTriggerMimic &operator=(const AliAnalysisTaskChargedParticlesMCTriggerMimic &);
 
 
-  AliEmcalTrackSelection                *fTrackCuts;                ///< Standard track selection
+  AliEmcalTrackSelection    *fTrackCuts;                ///< Standard track selection
   THistManager                          *fHistos;                   ///< Histogram manager
   const AliEMCalTriggerWeightHandler    *fWeightHandler;            ///< Weight handler (optional)
 

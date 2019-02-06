@@ -25,6 +25,8 @@ public:
 
    void           SetESDtrackCuts(AliESDtrackCuts *cuts)   {fESDtrackCuts = cuts;}
    void           SetHypothesis(Int_t code);
+   void           SetMassTolSigma(Double_t value)          {fMassTolSigma = value;}     
+   void           SetpT_Tolerance(Int_t value)          	  {fpT_Tolerance = value;} 
    void           SetTolerance(Double_t value)             {fTolerance = value;}
    void           SetToleranceVeto(Double_t value)         {fToleranceVeto = value;}
    void           SetSwitch(Bool_t value)                  {fSwitch = value;}
@@ -55,6 +57,8 @@ protected:
 
    
    Int_t            fHypothesis;       // PDG code corresponding to expected V0 hypothesis
+   Int_t            fpT_Tolerance=0;     // Switch to set pT dependent Mass Tolerance
+   Double_t         fMassTolSigma;      //Sigma cut for pt Dependent Mass Tol Cut    
    Double_t         fMass;             // mass corresponding to hypothesis
    Double_t         fTolerance;        // tolerance in the difference between computed and expected mass
    Double_t         fToleranceVeto;    // Competing V0 Rejection. Read the note in AliRsnCutV0.cxx for more info.

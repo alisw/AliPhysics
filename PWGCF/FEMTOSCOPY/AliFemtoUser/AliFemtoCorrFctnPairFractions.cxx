@@ -24,7 +24,7 @@
 #define PIT 6.28318530717958623
 
 //____________________________
-AliFemtoCorrFctnPairFractions::AliFemtoCorrFctnPairFractions(char* title):
+AliFemtoCorrFctnPairFractions::AliFemtoCorrFctnPairFractions(const char* title):
 AliFemtoCorrFctn(),
   fPairFractions(0),
   fPairFractionsDen(0),
@@ -190,9 +190,9 @@ void AliFemtoCorrFctnPairFractions::AddRealPair(AliFemtoPair* pair)
   // add real (effect) pair
 
   //Applying pair cuts
-  if (fPairCut)
-    if (!fPairCut->Pass(pair)) return;
-
+  if (fPairCut && !fPairCut->Pass(pair)) {
+    return;
+  }
 
 
   Int_t pdg1=0;
@@ -273,10 +273,9 @@ void AliFemtoCorrFctnPairFractions::AddRealPair(AliFemtoPair* pair)
 void AliFemtoCorrFctnPairFractions::AddMixedPair(AliFemtoPair* pair)
 {
   // add mixed (background) pair
-  if (fPairCut)
-    if (!fPairCut->Pass(pair)) return;
-
-
+  if (fPairCut && !fPairCut->Pass(pair)) {
+    return;
+  }
 
   Int_t pdg1=0;
   AliFemtoModelHiddenInfo *info1 = ( AliFemtoModelHiddenInfo *) pair->Track1()->GetHiddenInfo();

@@ -84,7 +84,9 @@ public:
   
   void         ClusterLoopHistograms(const TObjArray * clusters, AliVCaloCells * cells);
   
-  Bool_t       ClusterMCHistograms(Bool_t matched, const Int_t * labels, Int_t nLabels, Int_t & pdg );
+  Bool_t       ClusterMCHistograms(Bool_t matched, 
+                                   const Int_t * labels, const UShort_t * edepFrac, 
+                                   Int_t nLabels, Int_t & pdg );
 
   void         ClusterMatchedWithTrackHistograms(AliVCluster* clus, Bool_t mcOK, Int_t pdg);
 
@@ -306,7 +308,8 @@ public:
 //TH2F *   fhDispersion;                        //!<! Cluster Dispersion vs Energy
   TH2F *   fhLambda0;                           //!<! Cluster Lambda0 vs Energy
   TH2F *   fhLambda1;                           //!<! Cluster Lambda1 vs Energy  
-  TH2F *   fhNLocMax;                           //!<! Cluster Number of local Maxima
+  TH2F *   fhNLocMax;                           //!<! Cluster Number of local Maxima, from CaloUtils
+  TH2F *   fhNLocMaxStd;                        //!<! Cluster Number of local Maxima, stored
   
   // Bad clusters histograms
   
@@ -419,6 +422,8 @@ public:
   TH2F *   fhCaloCenEClusters;                  //!<! Calo vs centrality, total measured cluster energy
   TH2F *   fhCaloCenNCells;                     //!<! Calo vs centrality, number of cells
   TH2F *   fhCaloCenECells;                     //!<! Calo vs centrality,  total measured cell energy
+
+  TH2F **   fhCaloCenECellsMod;                 //!<! Calo vs centrality,  total measured cell energy per SM
 
   // Event plane
   
@@ -540,7 +545,7 @@ public:
   AliAnaCalorimeterQA(              const AliAnaCalorimeterQA & qa) ;
   
   /// \cond CLASSIMP
-  ClassDef(AliAnaCalorimeterQA,38) ;
+  ClassDef(AliAnaCalorimeterQA,39) ;
   /// \endcond
 
 } ;

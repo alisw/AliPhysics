@@ -69,9 +69,9 @@ public AliAnalysisTaskSE
   void FillHist(Double_t myflag);
   Bool_t IsGoodSPDvertexRes(const AliESDVertex * spdVertex = NULL);
   Bool_t SelectVertex2015pp(AliESDEvent *esd,
-			    Bool_t *SPDandTrkExists = NULL, //ask for both trk and SPD vertex
 			    Bool_t checkSPDres = kTRUE, //enable check on vtx resolution 
-			    Bool_t checkProximity = kTRUE); //apply cut on relative position of spd and trk verteces
+			    Bool_t *SPDandTrkExists = NULL, //ask for both trk and SPD vertex
+			    Bool_t *checkProximity = NULL); //apply cut on relative position of spd and trk verteces
 
  protected:
 

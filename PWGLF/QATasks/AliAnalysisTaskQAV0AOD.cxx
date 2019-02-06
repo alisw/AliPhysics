@@ -319,12 +319,18 @@ void AliAnalysisTaskQAV0AOD::UserExec(Option_t *)
 
    // Appropriate for ESD analysis! 
 		
-   lAODevent = dynamic_cast<AliAODEvent*>( InputEvent() );
-   if (!lAODevent) {
-      AliWarning("ERROR: lAODevent not available \n");
-      return;
-   }
-   fHistEvent->Fill(0.5);
+    lAODevent = dynamic_cast<AliAODEvent*>( InputEvent() );
+    if (!lAODevent) {
+        AliWarning("ERROR: lAODevent not available from InputEvent() trying with AODEvent()");
+        
+        //  assume that the AOD is in the general output...
+        lAODevent  = AODEvent();
+        if(!lAODevent){
+            AliWarning("ERROR: lAODevent not available from AODEvent() Aborting event!");
+            return;
+        }
+    }
+    fHistEvent->Fill(0.5);
 
 //------------------------------------------------
 // Physics Selection

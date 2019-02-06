@@ -68,7 +68,7 @@ public:
     
     //Do analysis based on a specific configuration
     //Return corrected result right away
-    TH1D* DoAnalysis( TString lConfiguration, TString lOutputFile = "" );
+    void DoAnalysis( TString lConfiguration, TString lOutputFile = "" );
     
     //Helper functions
     Bool_t CheckCompatibleMultiplicity( TH3F *lHisto );

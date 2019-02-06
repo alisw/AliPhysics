@@ -14,10 +14,12 @@ class TH2;
 class AliAnalysisTaskValidation : public AliAnalysisTaskSE {
  public:
   AliAnalysisTaskValidation();
-  AliAnalysisTaskValidation(const char *name);
+  /// `is_reconstructed` is used to toggle some event selections
+  AliAnalysisTaskValidation(const char *name, bool is_reconstructed);
 
   /// Set up this task. This function acts as the AddTask macro
-  static AliAnalysisTaskValidation* ConnectTask(const char *suffix);
+  /// `is_reconstructed` is passed on to the constructor of this task 
+  static AliAnalysisTaskValidation* ConnectTask(const char *suffix, bool is_reconstructed);
   /// The Exchange container which is to be accessed by other classes
   AliAnalysisDataContainer* GetExchangeContainter();
   virtual ~AliAnalysisTaskValidation() {};
@@ -83,6 +85,11 @@ class AliAnalysisTaskValidation : public AliAnalysisTaskSE {
   // Get central barrel tracks
   AliAnalysisTaskValidation::Tracks GetTracks();
 
+  // Get all MC truth track associated with this event. The filtering
+  // of these tracks is done in this function.
+  // This function is `Fatal` if no MC tracks are found
+  AliAnalysisTaskValidation::Tracks GetMCTruthTracks();
+
  protected:
   /// The Holy Grail: Is this a valid event? To be read be following tasks
   Bool_t fIsValidEvent;
@@ -98,7 +105,7 @@ class AliAnalysisTaskValidation : public AliAnalysisTaskSE {
   TList *fOutputList;  //!
 
   void UserExec(Option_t *);
-
+  Bool_t UserNotify();
   /// Create QA histograms based on the set validators
   void CreateQAHistograms(TList* outlist);
   /// Histogram showing why an even got discarded to be read from left to right
@@ -117,7 +124,7 @@ class AliAnalysisTaskValidation : public AliAnalysisTaskSE {
 
   /// Get __ALL MC TRUTH TRACKS__.
   /// No checks are done on these tracks and they could be anywhere in the detector!
-  TClonesArray* GetAllMCTruthTracks();
+  TClonesArray* GetAllMCTruthTracksAsTClonesArray();
 
   /// Utils class used by some of the cuts
   AliAnalysisUtils fUtils;

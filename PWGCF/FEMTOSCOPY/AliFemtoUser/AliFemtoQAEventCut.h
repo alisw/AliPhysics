@@ -1,28 +1,24 @@
-////////////////////////////////////////////////////////////////////////////////
-//                                                                            //
-// AliFemtoQAEventCut - the basic cut to check QA for event cuts.             //
-// Only cuts on event multiplicity and z-vertex position                      //
-//                                                                            //
-////////////////////////////////////////////////////////////////////////////////
+///
+/// \file AliFemtoUser/AliFemtoQAEventCut.h
+///
 
 #ifndef ALIFEMTOQAEVENTCUT_H
 #define ALIFEMTOQAEVENTCUT_H
 
-// do I need these lines ?
-//#ifndef StMaker_H
-//#include "StMaker.h"
-//#endif
-
 #include "AliFemtoEventCut.h"
 
+/// \class AliFemtoQAEventCut
+/// \brief The basic cut to check QA for event cuts
+///
+/// Only cuts on event multiplicity and z-vertex position
+///
 class AliFemtoQAEventCut : public AliFemtoEventCut {
-
 public:
 
   AliFemtoQAEventCut();
-  AliFemtoQAEventCut(AliFemtoQAEventCut& c);
+  AliFemtoQAEventCut(const AliFemtoQAEventCut& c);
   virtual ~AliFemtoQAEventCut();
-  AliFemtoQAEventCut& operator=(AliFemtoQAEventCut& c);
+  AliFemtoQAEventCut& operator=(const AliFemtoQAEventCut& c);
 
 
   void SetEventMult(const int& lo,const int& hi);
@@ -39,7 +35,7 @@ public:
   virtual AliFemtoString Report();
   virtual bool Pass(const AliFemtoEvent* event);
 
-  AliFemtoQAEventCut* Clone();
+  virtual AliFemtoEventCut* Clone() const;
 
 private:   // here are the quantities I want to cut on...
 
@@ -69,16 +65,21 @@ inline void AliFemtoQAEventCut::SetEventZPosQASwitch(const bool Switch) { fEvent
 inline void AliFemtoQAEventCut::SetEventZPosQAExclusionZone(const float& lo, const float& hi)  { fEventZPosQAExclusionZone[0]=lo; fEventZPosQAExclusionZone[1]=hi; }
 inline int  AliFemtoQAEventCut::NEventsPassed() const {return fNEventsPassed;}
 inline int  AliFemtoQAEventCut::NEventsFailed() const {return fNEventsFailed;}
-inline AliFemtoQAEventCut* AliFemtoQAEventCut::Clone() { AliFemtoQAEventCut* c = new AliFemtoQAEventCut(*this); return c;}
-inline AliFemtoQAEventCut::AliFemtoQAEventCut(AliFemtoQAEventCut& c) : AliFemtoEventCut(c), fAcceptBadVertex(kFALSE), fNEventsPassed(0), fNEventsFailed(0), fHighOrLowSwitch(0), fEventMultQASwitch(kFALSE), fEventZPosQASwitch(kFALSE) {
+inline AliFemtoEventCut* AliFemtoQAEventCut::Clone() const { AliFemtoQAEventCut* c = new AliFemtoQAEventCut(*this); return c;}
+inline AliFemtoQAEventCut::AliFemtoQAEventCut(const AliFemtoQAEventCut& c) :
+  AliFemtoEventCut(c),
+  fAcceptBadVertex(c.fAcceptBadVertex),
+  fNEventsPassed(0),
+  fNEventsFailed(0),
+  fHighOrLowSwitch(c.fHighOrLowSwitch),
+  fEventMultQASwitch(c.fEventMultQASwitch),
+  fEventZPosQASwitch(c.fEventZPosQASwitch)
+{
   fEventMult[0] = c.fEventMult[0];
   fEventMult[1] = c.fEventMult[1];
   fVertZPos[0] = c.fVertZPos[0];
   fVertZPos[1] = c.fVertZPos[1];
   
-  fHighOrLowSwitch = c.fHighOrLowSwitch;
-  fEventMultQASwitch = c.fEventMultQASwitch;
-  fEventZPosQASwitch = c.fEventZPosQASwitch;
   fEventMultQAExclusionZone[0] = c.fEventMultQAExclusionZone[0];
   fEventMultQAExclusionZone[1] = c.fEventMultQAExclusionZone[1];
   fEventZPosQAExclusionZone[0] = c.fEventZPosQAExclusionZone[0];

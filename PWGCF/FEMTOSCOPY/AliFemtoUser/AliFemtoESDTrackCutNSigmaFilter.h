@@ -50,6 +50,7 @@ public:
 
   void SetPionRejection(bool aReject);
   void SetUseCustomElectronRejection(bool aReject);
+  void SetUseIsProbableElectronMethod(bool aUse);
 
 private:
   //Used in IsKaonNSigma, IsPionNSigma, and IsProtonNSigma methods
@@ -57,6 +58,7 @@ private:
   bool fUseCustomKaonNSigmaFilter;
   bool fUseCustomProtonNSigmaFilter;
   bool fUseCustomElectronNSigmaFilter;
+  bool fUseIsProbableElectronMethod;
 
   AliFemtoNSigmaFilter *fPionNSigmaFilter;
   AliFemtoNSigmaFilter *fKaonNSigmaFilter;
@@ -81,5 +83,6 @@ private:
 
 inline void AliFemtoESDTrackCutNSigmaFilter::SetPionRejection(bool aReject) {fPionRejection = aReject;}
 inline void AliFemtoESDTrackCutNSigmaFilter::SetUseCustomElectronRejection(bool aReject) {fUseCustomElectronNSigmaFilter = aReject;}
+inline void AliFemtoESDTrackCutNSigmaFilter::SetUseIsProbableElectronMethod(bool aUse) {fUseIsProbableElectronMethod = aUse;}
 
 #endif

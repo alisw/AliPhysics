@@ -1,4 +1,4 @@
-AliAnalysisTask *AddTaskTRDPIDTree(Int_t trigger=0, Int_t system=0){
+AliAnalysisTask *AddTaskTRDPIDTree(Int_t trigger=0, Int_t system=0, Int_t UseExtraPileupCut=0){
   //get the current analysis manager
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
   if (!mgr) {
@@ -16,6 +16,8 @@ AliAnalysisTask *AddTaskTRDPIDTree(Int_t trigger=0, Int_t system=0){
   if(system==1) task->SetppAnalysis();
   if(system==2) task->SetpPbAnalysis();
   if(system==3) task->SetPbPbAnalysis();
+  task->SetUseExtraPileupCut(UseExtraPileupCut);
+
 //  task->SetPbPbAnalysis();
   mgr->AddTask(task);
 

@@ -1,74 +1,40 @@
-// #include <Riostream.h>
-// #include <TChain.h>
-// #include <TVectorT.h> 
-// #include <TVector3.h> 
-// #include <TFile.h>
-// #include <TH1.h> 
-// #include <TClonesArray.h>
-// #include <TObjArray.h>
-// #include <TObjString.h>
-// #include <TFormula.h>
-// #include <TString.h>
-// #include <TRefArray.h>
-// #include <TNtuple.h>
-// #include <TArrayF.h>
-
-
 #include "AliJFilter.h" 
 #include "AliAnalysisManager.h"
 #include "AliAnalysisTaskSE.h"
-#include "AliESDEvent.h" 
 #include "AliMCEvent.h" 
 #include "AliStack.h" 
 #include "AliGenEventHeader.h"
 #include "AliGenCocktailEventHeader.h"
 #include "AliGenPythiaEventHeader.h"
 #include "AliInputEventHandler.h"
-#include "AliESDCaloCluster.h" 
 #include "AliAODEvent.h"
 #include "AliAODHeader.h"
 #include "AliAODHandler.h"
 #include "AliLog.h"
-#include "AliESDVertex.h"
-#include "AliESDtrack.h"
 #include "AliAODTrack.h"
 #include "AliAnalysisFilter.h"
-#include "AliESDtrackCuts.h"
 #include "AliAODVertex.h" 
 #include "AliAODTracklets.h" 
 #include "AliAODPid.h" 
 #include "AliAODMCHeader.h"
 #include "AliAODMCParticle.h"
-#include "AliESDUtils.h"
-//#include "AliESDVZERO.h" 
 #include "AliCentrality.h" 
+#include "AliMultSelection.h"
 #include "AliAODTracklets.h"
 #include "AliMultiplicity.h"
 #include "AliJConst.h"
-#include "AliESDRun.h"
 #include "AliDAQ.h"
-#include "AliESDVZERO.h"
 #include "AliExternalTrackParam.h"
 #include "AliHeader.h" 
-//== EMCAL
-#include "AliESDCaloCluster.h"
-#include "AliEMCALGeometry.h"
-#include "AliVCluster.h"
-#include "AliVCaloCells.h"
-#include "AliEMCALRecoUtils.h"
-#include "AliEMCALPIDUtils.h"
-
 #include "AliJTrack.h"
 #include "AliJMCTrack.h"
-#include "AliJPhoton.h"
-//#include "AliJCaloCell.h"
 #include "AliJEventHeader.h"
 #include "AliJRunHeader.h"
 
 #include "AliPIDResponse.h"
 #include "AliPIDCombined.h"
-#include "AliPHOSGeoUtils.h"
 #include "AliAnalysisUtils.h"
+#include "AliJRunTable.h"
 
 
 ClassImp(AliJFilter);
@@ -76,36 +42,25 @@ ClassImp(AliJFilter);
 //______________________________________________________________________________
 AliJFilter::AliJFilter() :   
 	TNamed(),
-	fEsdTrackCuts(0x0), 
-	fESDFilter(0x0), 
 	fIsRealOrMC(0),
 	fStoreEventPlaneSource(0),
 	fOADBPath(),
-	fCaloClustersArr(0),
-	fClusterThreshold(0),
 	fTrackThreshold(0),
 	fEventSuccess(0),
 	fMcMap(0),
 	fTrackList(0),
 	fMCTrackList(0x0),
-	fPhotonList(0x0),
-	fCaloCellList(0x0),
 	fHeaderList(0x0),
 	fRunInfoList(0x0),
 	fPIDResponse(0x0),
 	fPIDCombined(0x0),
-	fVZEROData(0x0), 
-	fTZEROData(0x0), 
-	//fFMDData(0x0), 
-	fZDCData(0x0), 
-	fEMCLabels(0),
-	fEMCTreeLabels(0),
 	fAliJRunHeader(0x0),
-	fEMCALGeometry(0x0),    
-	fEMCALRecoUtils(0x0),    
-	fPHOSGeom(0x0),
 	fAnaUtils(0x0),
-	fMyTask(0x0)
+	fMyTask(0x0),
+	pfOutlierLowCut(0x0),
+	pfOutlierHighCut(0x0),
+	fFirstEvent(kTRUE),
+	fRunTable(0)
 {
 	//Default constructor
 }
@@ -113,75 +68,56 @@ AliJFilter::AliJFilter() :
 //______________________________________________________________________________
 AliJFilter::AliJFilter(const char *name,AliAnalysisTaskSE *task):
 	TNamed(name,name), 
-	fEsdTrackCuts(0x0), 
-	fESDFilter(0x0), 
 	fIsRealOrMC(0),
 	fStoreEventPlaneSource(0),
 	fOADBPath(),
-	fCaloClustersArr(0),
-	fClusterThreshold(0),
 	fTrackThreshold(0),
 	fEventSuccess(0),
 	fMcMap(0),
 	fTrackList(0),
 	fMCTrackList(0x0),
-	fPhotonList(0x0),
-	fCaloCellList(0x0),
 	fHeaderList(0x0),
 	fRunInfoList(0x0),
 	fPIDResponse(0x0),
 	fPIDCombined(0x0),
-	fVZEROData(0x0), 
-	fTZEROData(0x0), 
-	//fFMDData(0x0), 
-	fZDCData(0x0), 
-	fEMCLabels(0),
-	fEMCTreeLabels(0),
 	fAliJRunHeader(0x0),
-	fEMCALGeometry(0x0),    
-	fEMCALRecoUtils(0x0),    
-	fPHOSGeom(0x0),
 	fAnaUtils(0x0),
-	fMyTask(0x0)
+	fMyTask(0x0),
+	fFirstEvent(kTRUE),
+	fRunTable(0)
 {
 	// Constructor
 	if(task->DebugLevel() > 5) cout << "---- AliJFilter Constructor ----"<<endl;
+	// Cut for 15o period
+	pfOutlierLowCut = new TF1("fLowCut","[0]+[1]*x - 5.*([2]+[3]*x+[4]*x*x+[5]*x*x*x)",0,100);
+	pfOutlierHighCut = new TF1("fHighCut","[0]+[1]*x + 5.5*([2]+[3]*x+[4]*x*x+[5]*x*x*x)",0,100);
+
+	pfOutlierLowCut->SetParameters(0.0157497, 0.973488, 0.673612, 0.0290718, -0.000546728, 5.82749e-06);
+	pfOutlierHighCut->SetParameters(0.0157497, 0.973488, 0.673612, 0.0290718, -0.000546728, 5.82749e-06);
 
 }
 
 //____________________________________________________________________________
 AliJFilter::AliJFilter(const AliJFilter& ap) :
 	TNamed(ap.GetName(), ap.GetTitle()),
-	fEsdTrackCuts(ap.fEsdTrackCuts), 
-	fESDFilter(ap.fESDFilter), 
 	fIsRealOrMC(ap.fIsRealOrMC),
 	fStoreEventPlaneSource(ap.fStoreEventPlaneSource),
 	fOADBPath(ap.fOADBPath),
-	fCaloClustersArr(ap.fCaloClustersArr),
-	fClusterThreshold(ap.fClusterThreshold),
 	fTrackThreshold(ap.fTrackThreshold),
 	fEventSuccess(ap.fEventSuccess),
 	fMcMap(ap.fMcMap),
 	fTrackList(ap.fTrackList),
 	fMCTrackList(ap.fMCTrackList),
-	fPhotonList(ap.fPhotonList),
-	fCaloCellList(ap.fCaloCellList),
 	fHeaderList(ap.fHeaderList),
 	fRunInfoList(ap.fRunInfoList),
 	fPIDResponse(ap.fPIDResponse),
 	fPIDCombined(ap.fPIDCombined),
-	fVZEROData(ap.fVZEROData), 
-	fTZEROData(ap.fTZEROData), 
-	//fFMDData(ap.fFMDData), 
-	fZDCData(ap.fZDCData), 
-	fEMCLabels(ap.fEMCLabels),
-	fEMCTreeLabels(ap.fEMCTreeLabels),
 	fAliJRunHeader(ap.fAliJRunHeader),
-	fEMCALGeometry(ap.fEMCALGeometry),    
-	fEMCALRecoUtils(ap.fEMCALRecoUtils),    
-	fPHOSGeom(ap.fPHOSGeom),
 	fAnaUtils(ap.fAnaUtils),
-	fMyTask(ap.fMyTask)
+	fMyTask(ap.fMyTask),
+	fFirstEvent(kTRUE),
+	fRunTable(ap.fRunTable)
+
 { 
 	// cpy ctor
 }
@@ -203,21 +139,12 @@ AliJFilter::~AliJFilter()
 	delete fMcMap;
 	delete fTrackList;
 	delete fMCTrackList;
-	delete fPhotonList;
-	delete fCaloCellList;
 	delete fHeaderList;
 	delete fAliJRunHeader;
 	delete fRunInfoList;
 	delete fPIDResponse;
 	delete fPIDCombined;
-	delete fEMCALRecoUtils;
-	delete fEMCALGeometry;
-	delete fPHOSGeom;
 	delete fAnaUtils;
-	delete fVZEROData;
-	delete fTZEROData;
-	delete fZDCData;
-	//  delete fFMDData;
 
 
 }
@@ -229,50 +156,35 @@ void AliJFilter::UserCreateOutputObjects()
 	//=== create the jcorran outputs objects
 	if(fMyTask->DebugLevel() > 1) printf("AliJFilter::UserCreateOutPutData() \n");
 
+        pfOutlierLowCut = new TF1("fLowCut","[0]+[1]*x - 5.*([2]+[3]*x+[4]*x*x+[5]*x*x*x)",0,100);
+        pfOutlierHighCut = new TF1("fHighCut","[0]+[1]*x + 5.5*([2]+[3]*x+[4]*x*x+[5]*x*x*x)",0,100);
+
+        pfOutlierLowCut->SetParameters(0.0157497, 0.973488, 0.673612, 0.0290718, -0.000546728, 5.82749e-06);
+        pfOutlierHighCut->SetParameters(0.0157497, 0.973488, 0.673612, 0.0290718, -0.000546728, 5.82749e-06);
+
 	//== RUN HEADER
 	cout<<"TEST2 "<<fAliJRunHeader<<endl;
 	if(!fAliJRunHeader) fAliJRunHeader = new AliJRunHeader();
 	fRunInfoList  = new TList();
 	fRunInfoList->SetName("RunInfoList");
-	fRunInfoList->SetOwner();
+	//fRunInfoList->SetOwner();
 	fRunInfoList->Clear();
 	fRunInfoList->Add(fAliJRunHeader);
 
-	//=== Other Objects
-	fCaloClustersArr = new TRefArray();
-	fEMCALGeometry = AliEMCALGeometry::GetInstance("EMCAL_COMPLETEV1");
-	fEMCALRecoUtils = new AliEMCALRecoUtils();
-	fPHOSGeom = new AliPHOSGeoUtils();
 	fAnaUtils = new AliAnalysisUtils();
 	fAnaUtils->SetUseOutOfBunchPileUp( kTRUE );
 	fMcMap = new TArrayI();
 
+	DEBUG( 5, 0, Form("IsMC() = %d",IsMC())  );
 	//=== Set Tree and TClonesArray
 	//== TRACKS
 	AddList("AliJTrackList", "AliJTrack", &fTrackList, 1000);
-	if( fAliJRunHeader->GetStoreEMCalInfo() ){
-		AddList("AliJPhotonList", "AliJPhoton", &fPhotonList, 1000);
-		//BS AddList("AliJCaloCell", "AliJCaloCell", &fCaloCellList, 1000);
-	}
 	if( IsMC() ) 
 		AddList("AliJMCTrackList", "AliJMCTrack", &fMCTrackList, 1000);
 	//== Event Header
 	AddList("AliJEventHeaderList", "AliJEventHeader", &fHeaderList, 1000);
 
 	//== EventPlane SRC
-	if( fAliJRunHeader->GetStoreEventPlaneSource() ){
-		fVZEROData = new AliESDVZERO;
-		fTZEROData = new AliESDTZERO;
-		fZDCData   = new AliESDZDC;
-	}
-	//== PID
-	//   fPIDCombined = new AliPIDCombined;
-	//   fPIDCombined->SetDefaultTPCPriors();
-	//   fPIDCombined->SetDetectorMask(AliPIDResponse::kDetTPC+AliPIDResponse::kDetTOF);
-	//   fPIDResponse = ((AliInputEventHandler*) (man->GetInputEventHandler()))->GetPIDResponse();
-	//   fPIDResponse->SetOADBPath(AliAnalysisManager::GetOADBPath());
-	//   if (!fOADBPath.IsNull()) fPIDResponse->SetOADBPath(fOADBPath.Data());
-
 	cout << "Add(fAliJRunHeader) in UserCreateObject() ======= " << endl;
 
 }
@@ -282,7 +194,7 @@ void AliJFilter::UserExec(Option_t* /*option*/)
 {
 	// user loop
 	AliJRunHeader *runh = fAliJRunHeader;
-	Bool_t hasGoodTrack, hasGoodCluster;
+	Bool_t hasGoodTrack;
 
 	fEventSuccess = kFALSE;
 
@@ -294,135 +206,73 @@ void AliJFilter::UserExec(Option_t* /*option*/)
 	fTrackList->Clear();
 	if( IsMC() ){
 		fMCTrackList->Clear();
-		fEMCLabels.clear();
-		fEMCTreeLabels.clear();
 	}
 
-	if( fAliJRunHeader->GetStoreEMCalInfo() ){
-		fPhotonList->Clear("C");
-		fCaloCellList->Clear();
-	}
 	fHeaderList->Clear();
 
-	hasGoodCluster = kTRUE;
 	hasGoodTrack = kTRUE;
 
 	//=== CHECK ESD, AOD, MC event
 	if( !Event() ) return;
-
-	if( FromESD() ) {   //Reading ESD  
-		DEBUG( 5, 1, "\t------- Start ESD " );
-		if( !ESDEvent() ) return;
-		if( runh->GetWithoutSDD() && !(ESDEvent()->GetTriggerMask()  & (1<<13)) ) return;
-
-		if( IsMC() ){
-			if( ! MCEvent() ) return;
-		}
-	}
-
-	if( FromAOD() ) {
-		DEBUG( 5, 1, "\t------- Start AOD " );
-		if( !AODEvent() ) return; 
-	}
+	if( !AODEvent() ) return; 
 
 
 	// pileup rejection
 	if( runh->IsPP() && fAnaUtils->IsPileUpEvent( Event() )) // Only APPLY for P+P
 		return;
 
+	if( fFirstEvent ) {
+		fRunTable = & AliJRunTable::GetSpecialInstance();
+		fRunTable->SetRunNumber( Event()->GetRunNumber() );
+		fFirstEvent = kFALSE;
+	}
+	if(!IsGoodEvent( AODEvent() )) // check now for 15o data event selection
+		return; 
+
 	//--------------------------------------------------------------- 
 	// RUN Header
 	//--------------------------------------------------------------- 
 	if(!runh->GetRunNumber()){ //new run has started : I suppose no change of run in process
 		runh->SetRunNumber( Event()->GetRunNumber() );
-		if( FromESD() ){
-			//==== General ====//
-			runh->SetBeamEnergy( ESDEvent()->GetBeamEnergy() );
-			runh->SetBeamType( ESDEvent()->GetBeamType() );
-			//==== Detector status ==//
-			if( ESDEvent()->GetCurrentL3() > 0 ) runh->SetL3MagnetFieldPolarity(1);
-			if( ESDEvent()->GetCurrentL3() < 0 ) runh->SetL3MagnetFieldPolarity(-1);
-			runh->SetL3MagnetFieldIntensity( ESDEvent()->GetMagneticField() );
-			runh->SetCurrentL3( ESDEvent()->GetCurrentL3() );
-			runh->SetCurrentDip( ESDEvent()->GetCurrentDip() );
-			runh->SetUniformBMap( ESDEvent()->IsUniformBMap() );
-			//==== Triggers ====//
-			const AliESDRun* esdRun = ESDEvent()->GetESDRun();
-			for(Int_t triggerBit=0; triggerBit<kRangeTriggerTableAlice; triggerBit++){
-				runh->SetActiveTriggersAlice( triggerBit, esdRun->GetTriggerClass(triggerBit) );
-			}
+		if( fFirstEvent ) {
+			fRunTable = & AliJRunTable::GetSpecialInstance();
+			fRunTable->SetRunNumber( Event()->GetRunNumber() );
+			fFirstEvent = kFALSE;
 		}
-		else if( FromAOD() ){
-			//==== General ====//
-			cout << "Run # = "<< AODEvent()->GetRunNumber() << endl;
-			runh->SetRunNumber( AODEvent()->GetRunNumber() );
-			//TODO runh->SetBeamEnergy( ESDEvent()->GetBeamEnergy() );
-			//TODO runh->SetBeamType( ESDEvent()->GetBeamType() );
-			//==== Detector status ==//
-			//TODO runh->Setl3MgFieldPolarity(1);
-			runh->SetL3MagnetFieldIntensity( AODEvent()->GetMagneticField() );
-			runh->SetCurrentL3( AODEvent()->GetMagneticField()*30000.0/5.00668 );
-			runh->SetCurrentDip( AODEvent()->GetMuonMagFieldScale()*6000.0 );
-			runh->SetUniformBMap( kFALSE ); // TODO is this?
-		}
+		//==== General ====//
+		cout << "Run # = "<< AODEvent()->GetRunNumber() << endl;
+		runh->SetRunNumber( AODEvent()->GetRunNumber() );
+		runh->SetL3MagnetFieldIntensity( AODEvent()->GetMagneticField() );
+		runh->SetCurrentL3( AODEvent()->GetMagneticField()*30000.0/5.00668 );
+		runh->SetCurrentDip( AODEvent()->GetMuonMagFieldScale()*6000.0 );
+		runh->SetUniformBMap( kFALSE ); // TODO is this?
 		cout << "Add(fAliJRunHeader) is done =============" << endl;
 	}
 
 	//--------------------------------------------------------------- 
 	// EventHeader and read Others
 	//--------------------------------------------------------------- 
-	if( FromESD() ){   //Reading ESD  
-		DEBUG( 5, 1, "\t------- Start READ ESD " );
-
-		ReadESDHeader( ESDEvent() );
-		ReadESDTracks( ESDEvent() );
-
-		if( fAliJRunHeader->GetStoreEMCalInfo() ){
-			ReadESDCaloClusters( ESDEvent() );
-			ReadESDCaloCells( ESDEvent() );
-		}
-		if( IsMC() ){
-			ReadMCTracksFromESD();
-			//RemapMCLabels();
-		}
-	}else if( FromAOD() ){ 
-		DEBUG( 5, 1, "\t------- Start READ AOD " );
-		ReadAODHeader( AODEvent() );
-		ReadAODTracks( AODEvent() );
-		if( fAliJRunHeader->GetStoreEMCalInfo() ){
-			ReadAODCaloClusters( AODEvent() );
-			ReadAODCaloCells( AODEvent() );
-		}
-		if( IsMC() ){
-			ReadMCTracksFromAOD();
-			//RemapMCLabels();
-		}
-
-	}else{
-		cout << "Error: Not correct InputDataFormat especified " << endl;
-		return;
+	DEBUG( 5, 1, "\t------- Start READ AOD " );
+	ReadAODHeader( AODEvent() );
+	ReadAODTracks( AODEvent() );
+	if( IsMC() ){
+		ReadMCTracksFromAOD();
+		//RemapMCLabels();
 	}
 
-	if( hasGoodCluster || hasGoodTrack ){
+	if( hasGoodTrack ){
 		//=== TODO : need this?
-		AliAODHandler* outputHandler = 
-			(AliAODHandler*) ((AliAnalysisManager::GetAnalysisManager())->GetOutputEventHandler());
-		outputHandler->SetFillAOD(kTRUE);
-		outputHandler->SetFillExtension(kTRUE);
+		//AliAODHandler* outputHandler = 
+		//		(AliAODHandler*) ((AliAnalysisManager::GetAnalysisManager())->GetOutputEventHandler());
+		//	outputHandler->SetFillAOD(kTRUE);
+		//	outputHandler->SetFillExtension(kTRUE);
 		fEventSuccess = kTRUE;
-	}
-	else{
+	} else {
 		fTrackList->Clear();
 		if( IsMC() ){
 			fMCTrackList->Clear();
-			fEMCLabels.clear();
-			fEMCTreeLabels.clear();
 		}
 
-		if( fAliJRunHeader->GetStoreEMCalInfo() ){
-			fPhotonList->Clear("C");
-			fCaloCellList->Clear();
-		}
 		fHeaderList->Clear();
 	}
 
@@ -435,7 +285,6 @@ void AliJFilter::Init()
 	// Intialisation of parameters
 	AliInfo("Doing initialization") ; 
 
-	//   TString formula(fEsdTrackCuts->GetMaxDCAToVertexXYPtDep());
 	//   if(formula.Length()>0){ // momentum dep DCA cut for AOD
 	//     formula.ReplaceAll("pt","x");
 	//   }
@@ -447,207 +296,11 @@ void AliJFilter::Terminate(Option_t *)
 	// termination
 	fTrackList->Clear();
 	if( IsMC() ) fMCTrackList->Clear();
-	if( fAliJRunHeader->GetStoreEMCalInfo() ){
-		fPhotonList->Clear();
-		fCaloCellList->Clear();
-	}
 	fHeaderList->Clear();
 
 	// Processing when the event loop is ended
 	cout<<"PWG4JCORRAN Analysis DONE !!"<<endl; 
 
-}
-
-//______________________________________________________________________________
-void AliJFilter::ReadESDTracks(AliESDEvent * esd)
-	//void AliJFilter::ReadESDTracks(const AliESDEvent * esd)
-{
-	// Read the AliESDtrack and fill the list of AliJTrack containers
-	Int_t nt = esd->GetNumberOfTracks();
-	DEBUG( 5, 1 , Form("ESD::NumberOfTracks = %d",nt), "AliJFilter::ReadESDTracks" ); 
-
-	//==== Prepare TPC, GCG track ====//
-	Float_t ptMaxTPC = 0;
-	Float_t ptMinTPC = 1E10;
-	Float_t ptMaxGCG = 0;
-	Float_t ptMinGCG = 1E10;
-	for(int i = 0;i<32;i++){
-		AliESDtrackCuts* cuts = (AliESDtrackCuts*)fESDFilter->GetCuts()->At(i);
-		if(!cuts) continue;
-		Float_t tmp1= 0,tmp2 = 0;
-		cuts->GetPtRange(tmp1,tmp2);
-		if( TESTBIT ( fAliJRunHeader->GetStoreTPCTrackBitMask(), i ) ){
-			if(tmp1<ptMinTPC)ptMinTPC=tmp1;
-			if(tmp2>ptMaxTPC)ptMaxTPC=tmp2;
-		}
-		if( TESTBIT(fAliJRunHeader->GetStoreGCGTrackBitMask() , i ) ){
-			if(tmp1<ptMinGCG)ptMinGCG=tmp1;
-			if(tmp2>ptMaxGCG)ptMaxGCG=tmp2;
-		}
-	} 
-
-	//==== loop over tracks ====//
-	for(Int_t it = 0; it < nt; it++) { 
-
-		AliESDtrack *track = esd->GetTrack(it);
-		if( !track ) continue;
-		UInt_t filterMap = fESDFilter->IsSelected( track );
-		if(! filterMap ) continue; // apply track selection criteria
-
-		//====create a new AliJTrack and fill the track info
-		AliJTrack * ctrack = new( (*fTrackList)[fTrackList->GetEntriesFast()] ) AliJTrack;
-		ctrack->SetPxPyPzE(track->Px(), track->Py(), track->Pz(), 0 );
-		Double32_t pos[3];
-		track->GetXYZ(pos);
-		ctrack->SetTrackPos( pos );
-		ctrack->SetTPCdEdx( track->GetTPCsignal()  );
-		ctrack->SetParticleType(kJNone);
-		ctrack->SetCharge(track->Charge());
-		ctrack->SetFilterMap( filterMap );
-		ctrack->SetLabel( track->GetLabel() );
-
-		ReadESDPID( track, ctrack );
-		//==== TPC Tracks ====//
-		if( filterMap & fAliJRunHeader->GetStoreTPCTrackBitMask() ) {
-			ConvertESDTPCOnlyTracks( esd, it, ctrack, ptMinTPC, ptMaxTPC );
-		}
-		//==== GCG Tracks ====//
-		if( filterMap & fAliJRunHeader->GetStoreGCGTrackBitMask() ) {
-			ConvertESDGCGTracks( esd, it, ctrack, ptMinGCG, ptMaxGCG );
-		}
-
-		Float_t b[2];
-		Float_t bCov[3];
-		track->GetImpactParameters(b,bCov);
-		//         ctrack->SetDCAtoVertexXY( b[0] );
-		//         ctrack->SetDCAtoVertexZ( b[1] );
-
-		//if( track->P()>1 ) DEBUG( 5, 1, Form("P = %f", track->P() ) ) ;
-
-	} // end tracks loop
-}
-
-//______________________________________________________________________________
-void AliJFilter::ConvertESDTPCOnlyTracks(AliESDEvent* esd, int iTrack, AliJTrack * ctrack, double ptmin, double ptmax)
-{
-
-	const AliESDVertex *vtxSPD = esd->GetPrimaryVertexSPD();
-
-	Double_t pos[3] = { 0. };      
-	Double_t covTr[21]={0.};
-	//Double_t pid[10]={0.};  
-
-	Double_t p[3] = { 0. };
-
-	Double_t pDCA[3] = { 0. }; // momentum at DCA
-	Double_t rDCA[3] = { 0. }; // position at DCA
-	Float_t  dDCA[2] = {0.};    // DCA to the vertex d and z
-	Float_t  cDCA[3] = {0.};    // covariance of impact parameters
-
-
-	AliESDtrack* esdTrack = esd->GetTrack(iTrack); //carefull do not modify it othwise  need to work with a copy 
-
-	// Track selection
-
-	AliESDtrack *track = AliESDtrackCuts::GetTPCOnlyTrack(const_cast<AliESDEvent*>(esd),esdTrack->GetID());
-	if(!track) return;
-
-	if(track->Pt()>0.)
-	{
-		// only constrain tracks above threshold
-		AliExternalTrackParam exParam;
-		// take the B-field from the ESD, no 3D fieldMap available at this point
-		Bool_t relate = false;
-		relate = track->RelateToVertexTPC(vtxSPD,esd->GetMagneticField(),kVeryBig,&exParam);
-		if(!relate){
-			delete track;
-			return;
-		}
-		// fetch the track parameters at the DCA (unconstraint)
-		if(track->GetTPCInnerParam()){
-			track->GetTPCInnerParam()->GetPxPyPz(pDCA);
-			track->GetTPCInnerParam()->GetXYZ(rDCA);
-		}
-		// get the DCA to the vertex:
-		track->GetImpactParametersTPC(dDCA,cDCA);
-		// set the constrained parameters to the track
-		track->Set(exParam.GetX(),exParam.GetAlpha(),exParam.GetParameter(),exParam.GetCovariance());
-	}
-
-	track->GetPxPyPz(p);
-
-	double p2[3];
-	esdTrack->GetInnerPxPyPz(p2);
-
-	Float_t pT = track->Pt();
-	if(pT<ptmin||pT>ptmax){
-		delete track;
-		return;
-	}
-
-	track->GetXYZ(pos);
-	track->GetCovarianceXYZPxPyPz(covTr);
-
-	ctrack->SetTPCTrack(p[0], p[1], p[2]);
-
-	delete track;
-}
-
-
-void AliJFilter::ConvertESDGCGTracks(AliESDEvent *esd, int iTrack, AliJTrack *ctrack, double ptMin, double ptMax)
-{
-
-	Double_t pos[3] = { 0. };      
-	Double_t covTr[21]={0.};
-	Double_t p[3] = { 0. };
-
-	Double_t pDCA[3] = { 0. }; // momentum at DCA
-	Double_t rDCA[3] = { 0. }; // position at DCA
-	Float_t  dDCA[2] = {0.};    // DCA to the vertex d and z
-	Float_t  cDCA[3] = {0.};    // covariance of impact parameters
-
-
-	AliESDtrack* esdTrack = esd->GetTrack(iTrack); //carefull do not modify it othwise  need to work with a copy 
-	const AliExternalTrackParam * exParamGC = esdTrack->GetConstrainedParam();
-	if(!exParamGC) return;
-
-	// fetch the track parameters at the DCA (unconstrained)
-	esdTrack->GetPxPyPz(pDCA);
-	esdTrack->GetXYZ(rDCA);
-	// get the DCA to the vertex:
-	esdTrack->GetImpactParameters(dDCA,cDCA);
-
-	if (!esdTrack->GetConstrainedPxPyPz(p)) return;
-
-
-	Float_t pT = exParamGC->Pt();
-	if(pT<ptMin||pT>ptMax){
-		return;
-	}
-
-	esdTrack->GetConstrainedXYZ(pos);
-	exParamGC->GetCovarianceXYZPxPyPz(covTr);
-
-	ctrack->SetGCGTrack(p[0], p[1], p[2]);
-}
-
-
-
-//_________________________________________________________________________________-
-void AliJFilter::ReadESDPID(AliESDtrack *track, AliJTrack *ctrack)
-{
-	// To reduce the size of output, the variables which cannot be calculated later are only kept
-	// expected TOF signal, TPC momentum for expected TPC signal. Measured values are stored in ReadESDTrack()
-	// 1. expected TOF signal
-	Double_t times[AliPID::kSPECIES];
-	track->GetIntegratedTimes(times);
-	for(int ip=0; ip < (AliJTrack::kNAliJTrkPID); ip++) {
-		ctrack->SetExpectedTOFsignal(AliJTrack::AliJTrkPID(ip), times[ip]);
-
-	}
-	// 2. TPC momentum
-	Double_t momTPC = track->GetTPCmomentum();
-	ctrack->SetTPCmomentum(momTPC);
 }
 
 //______________________________________________________________________________
@@ -666,14 +319,13 @@ Bool_t AliJFilter::ReadAODTracks(const AliAODEvent * aod)
 	//==== loop over tracks ====//
 	for(Int_t it = 0; it < nt; it++) { 
 
-        AliAODTrack *track = dynamic_cast<AliAODTrack*>(aod->GetTrack(it));
-        if(!track) {
-            AliFatal("Not a standard AOD track");
-            continue;
-        }
+		AliAODTrack *track = dynamic_cast<AliAODTrack*>(aod->GetTrack(it));
+		if(!track) {
+			AliFatal("Not a standard AOD track");
+			continue;
+		}
 		//if(track->GetFilterMap() & (1 << 7) ) continue;
 		//if(!AcceptAODTrack(track)) continue; 
-		//if(! fEsdTrackCuts->IsSelected(track)) continue; //apply loose selection criteria
 		//FK//if(track->GetType() != AliAODTrack::kPrimary) continue; // only primaries 
 		//
 
@@ -699,7 +351,7 @@ Bool_t AliJFilter::ReadAODTracks(const AliAODEvent * aod)
 		ctrack->SetFilterMap( track->GetFilterMap() );
 
 		//PID TODO
-		double const * pid = track->PID();
+		//double const * pid = track->PID();
 		//ctrack->SetPID(AliJTrack::kElectronAliJ,pid[AliAODTrack::kElectron],AliJTrack::kTOF);
 		//ctrack->SetPID(AliJTrack::kMuonAliJ,    pid[AliAODTrack::kMuon],    AliJTrack::kTOF);
 		//ctrack->SetPID(AliJTrack::kPionAliJ,    pid[AliAODTrack::kPion],    AliJTrack::kTOF);
@@ -726,28 +378,22 @@ Bool_t AliJFilter::ReadAODTracks(const AliAODEvent * aod)
 
 
 //______________________________________________________________________________
-AliJEventHeader* AliJFilter::ReadCommonHeader(AliVEvent *event){
+AliJEventHeader* AliJFilter::ReadCommonHeader(AliAODEvent *event){
 	//Read the AliVEvent and fill the list of AliJEventHeader containers
 	//create a header and fill it
 	AliJEventHeader *hdr = new( (*fHeaderList)[fHeaderList->GetEntriesFast()] ) AliJEventHeader;
 
-
-	// Get Centrality as a percent from 0% to 100%
-	AliCentrality *cent = event->GetCentrality();
-	if( cent ){
-		hdr->SetCentrality( cent->GetCentralityPercentile("V0M"));
-		hdr->SetCentralityArray(AliJEventHeader::kcV0M, cent->GetCentralityPercentile("V0M"));
-		hdr->SetCentralityArray(AliJEventHeader::kcFMD, cent->GetCentralityPercentile("FMD"));
-		hdr->SetCentralityArray(AliJEventHeader::kcTRK, cent->GetCentralityPercentile("TRK"));
-		hdr->SetCentralityArray(AliJEventHeader::kcTKL, cent->GetCentralityPercentile("TKL"));
-		hdr->SetCentralityArray(AliJEventHeader::kcCL0, cent->GetCentralityPercentile("CL0"));
-		hdr->SetCentralityArray(AliJEventHeader::kcCL1, cent->GetCentralityPercentile("CL1"));
-		hdr->SetCentralityArray(AliJEventHeader::kcV0MvsFMD, cent->GetCentralityPercentile("V0MvsFMD"));
-		hdr->SetCentralityArray(AliJEventHeader::kcTKLvsV0, cent->GetCentralityPercentile("TKLvsV0"));
-		hdr->SetCentralityArray(AliJEventHeader::kcZEMvsZDC, cent->GetCentralityPercentile("ZEMvsZDC"));
-		hdr->SetCentralityArray(AliJEventHeader::kcV0A, cent->GetCentralityPercentile("V0A"));
-		hdr->SetCentralityArray(AliJEventHeader::kcV0C, cent->GetCentralityPercentile("V0C"));
+	float fcent = -999;
+	// centrality
+	if(fRunTable->IsHeavyIon() || fRunTable->IsPA()){
+		AliMultSelection *pms = (AliMultSelection*)event->FindListObject("MultSelection");
+		fcent = pms->GetMultiplicityPercentile("V0M");
+	} else {
+		fcent = -1;
+		//cout<<"warning: centrality unavailable";
 	}
+
+	hdr->SetCentrality( fcent );
 	hdr->SetTriggerMaskAlice(event->GetTriggerMask()); //ULong64_t
 	hdr->SetTriggerMaskJCorran(ConvertTriggerMask()); //UInt_t
 	hdr->SetEventType(event->GetEventType());
@@ -773,60 +419,6 @@ AliJEventHeader* AliJFilter::ReadCommonHeader(AliVEvent *event){
 	return hdr;
 }
 //______________________________________________________________________________
-void AliJFilter::ReadESDHeader(AliESDEvent *esd)
-{
-	// Read the AliESDEvent and fill the list of AliJEventHeader containers
-	if(!esd) return;
-	if( fAliJRunHeader->GetRefitESDVertexTracks() )
-		AliESDUtils::RefitESDVertexTracks( esd ); // TODO only for LHC11a right?
-	AliJEventHeader *hdr = ReadCommonHeader( esd );
-	//   AliMultiplicity *fSPDMult =(AliMultiplicity *) esd->GetMultiplicity();
-	//   if(fSPDMult) hdr->SetSPDTrackletMult(fSPDMult->GetNumberOfTracklets());
-	// This is moved from ReadCommonHeader. AOD should have same.TODO!!
-	AliESDVZERO *v0 = esd->GetVZEROData();
-
-	if( v0 ) hdr->SetV0Mult(v0->GetMTotV0A() + v0->GetMTotV0C());
-	if( v0 ) hdr->SetV0AMult(v0->GetMTotV0A());
-	if( v0 ) hdr->SetV0CMult(v0->GetMTotV0C());
-
-	const AliESDRun* esdRun = esd->GetESDRun();
-	//cout <<"========================"<<endl;
-	//cout << (esdRun->GetDetectorsInReco() & AliDAQ::kSPD) << endl;
-	//cout << (esdRun->GetDetectorsInReco() & AliDAQ::kSSD) << endl;
-	//cout << (esdRun->GetDetectorsInReco() & AliDAQ::kSDD) << endl;
-	//cout << (esdRun->GetDetectorsInReco() & AliDAQ::kTPC) << endl;
-	if(esdRun->GetDetectorsInReco() & AliDAQ::kSPD) hdr->SetSPDTrackletMult(AliESDtrackCuts::GetReferenceMultiplicity( esd, AliESDtrackCuts::kTracklets, 1.0 ));
-	if((esdRun->GetDetectorsInReco() & AliDAQ::kSSD) || (esdRun->GetDetectorsInReco() & AliDAQ::kSDD)) hdr->SetITSSATrackletMult(AliESDtrackCuts::GetReferenceMultiplicity( esd, AliESDtrackCuts::kTrackletsITSSA, 1.0 ));
-	if(esdRun->GetDetectorsInReco() & AliDAQ::kTPC) hdr->SetITSTPCTrackletMult(AliESDtrackCuts::GetReferenceMultiplicity( esd, AliESDtrackCuts::kTrackletsITSTPC, 1.0 ));
-
-
-	//TODO  Store Detector data
-	if( fAliJRunHeader->GetStoreEventPlaneSource() ){
-		*fVZEROData = *esd->GetVZEROData();
-		*fTZEROData = AliESDTZERO(*esd->GetESDTZERO());
-		*fZDCData  = *esd->GetESDZDC();
-	}
-	hdr->SetEventID( esd->GetEventNumberInFile());
-	//const AliESDVertex * vtxESD = esd->GetPrimaryVertex();
-	//if( vtxESD->GetStatus() == 0 ) hdr->SetVtxMult( 0 );
-	// if fNcontributes > 0 then status is always true. do we need this?
-
-	//==== MC ====/
-	if( IsMC() ){
-		const AliVVertex * primaryMCVertex = MCEvent()->GetPrimaryVertex();
-		//cout<<"AliMCEvent = "<<MCEvent()<<endl;
-		//cout<<"AliVVertex = "<<primaryMCVertex<<endl;
-		if( primaryMCVertex ){
-			hdr->SetXVertexMC( primaryMCVertex->GetX() );
-			hdr->SetYVertexMC( primaryMCVertex->GetY() );
-			hdr->SetZVertexMC( primaryMCVertex->GetZ() );
-		}
-		AliESDHeader * esdHeader = esd->GetHeader();
-		hdr->SetL0TriggerInputs( esdHeader->GetL0TriggerInputs() );
-	}
-}
-
-//______________________________________________________________________________
 void AliJFilter::ReadAODHeader(AliAODEvent *aod)
 {  
 	//Read the AliAODEvent and fill the list of AliJEventHeader containers
@@ -848,70 +440,13 @@ void AliJFilter::ReadAODHeader(AliAODEvent *aod)
 	}
 
 	AliAODHeader * ah = dynamic_cast<AliAODHeader*>(aod->GetHeader());
-    
-    if(!ah) {
-            AliFatal("Not a standard AOD");
-            return;
-    }
+
+	if(!ah) {
+		AliFatal("Not a standard AOD");
+		return;
+	}
 	hdr->SetESDFileName( ah->GetESDFileName() );
 	hdr->SetEventNumberESDFile( ah->GetEventNumberESDFile() );
-}
-
-//______________________________________________________________________________
-Int_t AliJFilter::GetSuperModuleNumber(bool isemcal, AliVCluster *cluster, AliVCaloCells *cells, Int_t absId)
-{
-	//get super module number 
-	if(isemcal){
-		Int_t absIdMax  = -1, iSM =-1, ieta = -1, iphi = -1;
-		Bool_t shared = kFALSE;
-		fEMCALRecoUtils->GetMaxEnergyCell(fEMCALGeometry, cells, cluster, absIdMax,  iSM, ieta, iphi, shared);
-
-		if(iSM < 0 || iphi < 0 || ieta < 0 ) 
-		{
-			AliFatal(Form("Negative value for super module: %d, or cell ieta: %d, or cell iphi: %d, check EMCAL geometry name\n",
-						iSM,ieta,iphi));
-		}
-
-		return iSM ;
-
-	} else {
-		Int_t    relId[4];
-		if ( absId >= 0) {
-			fPHOSGeom->AbsToRelNumbering(absId,relId);
-			fPHOSGeom->AbsToRelNumbering(absId,relId);
-			return relId[0]-1; 
-		} else return -1;
-	}//PHOS
-
-	return -1;
-}
-
-//______________________________________________________________________________
-Double_t * AliJFilter::GetCellsAmplitude( bool isemcal, AliVCluster *cluster, AliVCaloCells *emCells, AliVCaloCells *phoCells )
-{
-	// cell amplitude reader
-	Int_t iCell, nCell;
-	UShort_t *cellAddrs;
-	Double_t *amps;
-
-	// get cluster cells
-	nCell = cluster->GetNCells();
-
-	amps = new Double_t[nCell];
-
-	// get the cell addresses
-	cellAddrs = cluster->GetCellsAbsId();
-
-	// get the cell amplitudes
-	for( iCell = 0; iCell < nCell; iCell++ ){
-		if( isemcal )
-			amps[iCell] = emCells->GetCellAmplitude( cellAddrs[iCell] );
-		else
-			amps[iCell] = phoCells->GetCellAmplitude( cellAddrs[iCell] );
-
-	}
-
-	return amps;
 }
 
 //_____________________________________________________________________________
@@ -989,57 +524,14 @@ UInt_t AliJFilter::ConvertTriggerMask(){
 }
 
 
-//______________________________________________________________________________
-void AliJFilter::ReadMCTracksFromESD(){ 
-	//store MC information from AliStack
-	if(!MCEvent()) return;
-	AliStack *stack = MCEvent()->Stack();
-	if(!stack) return;
-	Int_t np    = MCEvent()->GetNumberOfTracks();
-
-	//  AliGenEventHeader* genHeader = fMC->GenEventHeader();
-	//  AliGenPythiaEventHeader* pythiaGenHeader = dynamic_cast<AliGenPythiaEventHeader*>(genHeader);
-	//  Double_t ptHard = 0;
-	//  Double_t nTrials = 1; // Trials for MC trigger weigth for real data
-	//  nTrials = pythiaGenHeader->Trials();
-	//  ptHard  = pythiaGenHeader->GetPtHard();
-	//  Int_t nprim = stack->GetNtrack();
-
-	Long64_t ntrack = 0;
-
-	for(Long64_t iTrack = 0; iTrack < np; iTrack++){
-		AliMCParticle *track = (AliMCParticle*) MCEvent()->GetTrack(iTrack);
-		if(!track){
-			Printf("ERROR: Could not receive track %d",(int) iTrack);
-			continue;
-		}
-		Bool_t isPrimary = stack->IsPhysicalPrimary(iTrack);
-		if(isPrimary){
-			//create a new JMCTrack and fill the track info
-			AliJMCTrack *ctrack = new( (*fMCTrackList)[ntrack++] ) AliJMCTrack;
-
-			TParticle *partStack = stack->Particle(iTrack);
-			Int_t   pdg  = partStack->GetPdgCode();
-
-			Char_t ch     = (Char_t) partStack->GetPDG()->Charge();
-			Int_t label    = track->GetLabel();
-
-			ctrack->SetLabel(label);
-			ctrack->SetPdgCode(pdg);
-			ctrack->SetPxPyPzE( partStack->Px(), partStack->Py(), partStack->Pz(), partStack->Energy());
-			ctrack->SetCharge(ch); 
-			ctrack->SetFlag(AliJMCTrack::kPrimary, isPrimary);
-
-			ctrack->SetProductionVertex(partStack->Vx(),partStack->Vy(),partStack->Vz());
-		}// loop for al primary tracks
-	} 
-}
-
 //--------------------------------------------------------------------
 void AliJFilter::ReadMCTracksFromAOD(){
 	//retreive MC particles from event //FKEFF// 
-	if(!AODEvent()) return;  TClonesArray *mcArray = (TClonesArray*) AODEvent()->
-		FindListObject(AliAODMCParticle::StdBranchName());
+	if(!AODEvent()) { 
+		DEBUG(5, 0, "No AODEvent"); 
+		return;  
+	}
+	TClonesArray *mcArray = (TClonesArray*) AODEvent()->FindListObject(AliAODMCParticle::StdBranchName());
 	if(!mcArray){
 		Printf("No MC particle branch found");
 		return;
@@ -1047,10 +539,12 @@ void AliJFilter::ReadMCTracksFromAOD(){
 
 	Long64_t ntrack = 0;
 	Long64_t np = mcArray->GetEntriesFast();
+	DEBUG(5, 1, Form("MC all::NumberOfTracks = %d",(int) np) );
 
 	for(Long64_t it = 0; it < np; it++) {
 		AliAODMCParticle *track = (AliAODMCParticle*) mcArray->At(it);
 		if(!track){
+			DEBUG(5, 0, Form("eadEventAODMC Could not receive particle %d",(int) it) );
 			Error("ReadEventAODMC", "Could not receive particle %d",(int) it);
 			continue;
 		}
@@ -1071,14 +565,15 @@ void AliJFilter::ReadMCTracksFromAOD(){
 			ctrack->SetFlag(AliJMCTrack::kPrimary, isPrimary);
 
 			ctrack->SetProductionVertex(track->Xv(),track->Yv(),track->Zv());
-      
-      // If the particle has no daughters, it must be still alive when hitting the detector
-      Int_t nDaughters = track->GetNDaughters();
-      Bool_t isFinal = kFALSE;
-      if(nDaughters == 0) isFinal = kTRUE;
-      ctrack->SetIsFinal(isFinal);
+
+			// If the particle has no daughters, it must be still alive when hitting the detector
+			Int_t nDaughters = track->GetNDaughters();
+			Bool_t isFinal = kFALSE;
+			if(nDaughters == 0) isFinal = kTRUE;
+			ctrack->SetIsFinal(isFinal);
 		}
 	}
+	DEBUG(5, 1, Form("MC primary::NumberOfTracks = %d",fMCTrackList->GetEntriesFast()) );
 
 }
 
@@ -1087,9 +582,8 @@ void AliJFilter::ReadMCTracksFromAOD(){
 void AliJFilter::RemapMCLabels(){
 	// remaps all MC labels to the new arrays
 
-	Int_t i, j, label, mother0, mother1;
+	Int_t i, mother0, mother1;
 	AliJTrack *track;
-	AliJPhoton *cluster;
 	// BS AliJCaloCell *cell;
 	AliJMCTrack *mctrack;
 
@@ -1100,48 +594,54 @@ void AliJFilter::RemapMCLabels(){
 		track->SetLabel( fMcMap->At( track->GetLabel() ));
 	}
 
-	// clusters
-	if( fAliJRunHeader->GetStoreEMCalInfo() ){
-		for( i = 0; i < fPhotonList->GetEntries(); i++ ){
-			cluster = (AliJPhoton*)fPhotonList->At( i );
-			for( j = 0; j < cluster->GetNEMCLabel(); j++ ){
-				label = cluster->GetEMCLabel( j );
-				// no label clusters protection
-				if( label >= 0 )
-					cluster->SetEMCLabel( j, fMcMap->At( label ));
-			}
-		}
+	// MC particles
+	for( i = 0; i < fMCTrackList->GetEntries(); i++ ){
+		mctrack = (AliJMCTrack*)fMCTrackList->At( i );
 
-		/*  BS
-		// cells
-		for( i = 0; i < fCaloCellList->GetEntries(); i++ ){
-		cell = (AliJCaloCell*)fCaloCellList->At( i );
-		label = cell->GetMcLabel();
-// no label cells protection
-if( label >= 0 )
-cell->SetMcLabel( fMcMap->At( cell->GetMcLabel() ));
-}
-*/
-}
+		mother0 = mctrack->GetMother( 0 );
+		mother1 = mctrack->GetMother( 1 );
 
-// MC particles
-for( i = 0; i < fMCTrackList->GetEntries(); i++ ){
-	mctrack = (AliJMCTrack*)fMCTrackList->At( i );
+		if( mother0 >= 0 )
+			mother0 = fMcMap->At( mother0 );
+		if( mother1 >= 0 )
+			mother1 = fMcMap->At( mother1 );
 
-	mother0 = mctrack->GetMother( 0 );
-	mother1 = mctrack->GetMother( 1 );
-
-	if( mother0 >= 0 )
-		mother0 = fMcMap->At( mother0 );
-	if( mother1 >= 0 )
-		mother1 = fMcMap->At( mother1 );
-
-	mctrack->SetMother( mother0, mother1 );
-}
+		mctrack->SetMother( mother0, mother1 );
+	}
 }
 
 //--------------------------------------------------------------------
+// Perodic specific event selection before fill the events
+//________________________________________________________________________
+Bool_t AliJFilter::IsGoodEvent(AliAODEvent *event) {
+	// RunTable to sepecify the run conditions
+	// Taken from AliJFFlucTask for basic event selection cuts need to add few more
+	if(fRunTable->GetRunNumberToPeriod(fRunTable->GetRunNumber()) == AliJRunTable::kLHC15o){
+		const AliVVertex* vtTrc = event->GetPrimaryVertex();
+		const AliVVertex* vtSPD = event->GetPrimaryVertexSPD();
+		double covTrc[6],covSPD[6];
+		vtTrc->GetCovarianceMatrix(covTrc);
+		vtSPD->GetCovarianceMatrix(covSPD);
+		double dz = vtTrc->GetZ()-vtSPD->GetZ();
+		double errTot = TMath::Sqrt(covTrc[5]+covSPD[5]);
+		double errTrc = TMath::Sqrt(covTrc[5]);
+		double nsigTot = TMath::Abs(dz)/errTot, nsigTrc = TMath::Abs(dz)/errTrc;
+		if(TMath::Abs(dz) > 0.2 || nsigTot > 10 || nsigTrc > 20)
+			return kFALSE;
+		AliMultSelection *pms = (AliMultSelection*)event->FindListObject("MultSelection");
+		if(!pms){
+			AliError("MultSelection unavailable.");
+			return kFALSE;
+		}
 
+		Float_t v0mcent = pms->GetMultiplicityPercentile("V0M");
+		Float_t cl0cent = pms->GetMultiplicityPercentile("CL0");
+		return kTRUE;
+		if(cl0cent < pfOutlierLowCut->Eval(v0mcent) || cl0cent > pfOutlierHighCut->Eval(v0mcent))
+			return kFALSE;
+	}
+	return kTRUE;
+}
 
 void AliJFilter::PrintOut() const {
 	//AliJRunHeader * RunInfo = fAliJRunHeader;

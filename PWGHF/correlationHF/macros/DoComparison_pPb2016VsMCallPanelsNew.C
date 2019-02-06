@@ -40,6 +40,9 @@ void SetIncludePOWHEG(Bool_t incl){
 void SetIncludeEPOS(Bool_t incl){
   includeset[6]=incl;
 }
+void IncludeModel(Int_t imod,Bool_t incl){
+  includeset[imod+1]=incl;
+}
 void SetIncludeAllMCmodels(Bool_t incl=kTRUE){
   for(Int_t j=1;j<nSets;j++){
     includeset[j]=incl;

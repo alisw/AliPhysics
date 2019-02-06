@@ -96,9 +96,9 @@ void AliPtResolAnalysisPbPb::Init(){
   // Generic histograms to be corrected
   //
   //1/pT:#sigma(1/pT):centrality
-  Int_t binsTrackParamHist[3]={400,300,11};
+  Int_t binsTrackParamHist[3]={600,1000,11};
   Double_t minTrackParamHist[3]={0,0,0}; 
-  Double_t maxTrackParamHist[3]={1,0.015,100};
+  Double_t maxTrackParamHist[3]={1.5,0.05,100};
 
   Double_t centrBins[12] = {0.0,5.,10.,20.,30.,40.,50.,60.,70.,80.,90.,100}; 
 
@@ -114,9 +114,9 @@ void AliPtResolAnalysisPbPb::Init(){
   const Int_t ptNbins = 73;
   Double_t bins[74] = {0.0, 0.05, 0.1, 0.15, 0.2, 0.25, 0.3, 0.35, 0.4, 0.45, 0.5, 0.55, 0.6, 0.65, 0.7, 0.75, 0.8, 0.85, 0.9, 0.95, 1.0, 1.1, 1.2, 1.3, 1.4, 1.5, 1.6, 1.7, 1.8, 1.9, 2.0, 2.2, 2.4, 2.6, 2.8, 3.0, 3.2, 3.4, 3.6, 3.8, 4.0, 4.5, 5.0, 5.5, 6.0, 6.5, 7.0, 8.0, 9.0, 10.0, 11.0, 12.0, 13.0, 14.0, 15.0, 16.0, 18.0, 20.0, 22.0, 24.0, 26.0, 28.0, 30.0, 32.0, 34.0, 36.0, 40.0, 45.0, 50.0, 60.0, 70.0, 80.0, 90.0, 100.0 };
 
-  Int_t binsTrackParamHist2[3]={ptNbins,200,11};
+  Int_t binsTrackParamHist2[3]={ptNbins,300,11};
   Double_t minTrackParamHist2[3]={0,0,0}; 
-  Double_t maxTrackParamHist2[3]={100,0.2,100};
+  Double_t maxTrackParamHist2[3]={100,0.3,100};
 
   fTrackParamHist2 = new THnSparseF("fTrackParamHist2","pT:#sigma(1/pT)*pT:centrality",3,binsTrackParamHist2,minTrackParamHist2,maxTrackParamHist2);
   fTrackParamHist2->SetBinEdges(0,bins);

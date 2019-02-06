@@ -40,7 +40,7 @@
 #include "TH3D.h"
 #include "TF1.h"
 #include "THnSparse.h"
-#include "AliHFMassFitter.h"
+#include "AliHFInvMassFitter.h"
 #include "AliHFCorrelationUtils.h"
 
 class AliDhCorrelationExtraction : public TObject
@@ -87,6 +87,7 @@ public:
     void SetSubtractSoftPiInMEdistr(Bool_t subtractSoftPiME) {fSubtractSoftPiME=subtractSoftPiME;}
     void SetUseMassVsCentPlots(Bool_t mass2D) {fUseMassVsCentPlots=mass2D;}
     void SetCentralitySelection(Double_t min, Double_t max) {fMinCent=min; fMaxCent=max;} //activated only if both values are != 0
+    void SetUseOneMEPool(Bool_t onepool) {fUseOneMEPool=onepool;}
     
     void SetRebinMassPlots(Int_t rebinMassPlots) {fRebinMassPlots=rebinMassPlots;}
     void SetNpTbins(Int_t npt) {fNpTbins=npt;}
@@ -99,12 +100,17 @@ public:
     void SetUseMC(Bool_t useMC) {fUseMC=useMC;}
     void SetUseElSource(Int_t elSource) {fElSource=elSource;}
     void SetUseD0Source(Int_t D0Source) {fD0Source=D0Source;}
+    void SetUseReflections(Bool_t useRefl) {fUseRefl=useRefl;}
+    void SetReflFilename(TString filenameRefl) {fReflFilename=filenameRefl;}
+    void SetHistNameRefl(TString histnameRefl) {fHistnameRefl=histnameRefl;}
+    void SetHistNameSignal(TString histnameSign) {fHistnameSign=histnameSign;}
 
     void SetFitRanges(Double_t left, Double_t right) {fLeftFitRange=left; fRightFitRange=right;}
     void SetBkgFitFunction(Int_t func=0) {fBkgFitFunction=func;}
     void SetSignalSigmas(Double_t nsigma=2) {fSignalSigmas=nsigma;}
     void SetAutoSBRange(Bool_t autoSB=kFALSE, Double_t inSigma=0., Double_t outSigma=0.) {fAutoSBRange=autoSB; fSBOuterSigmas=outSigma; fSBInnerSigmas=inSigma;}
     void SetAutoSignRange(Bool_t autoSign=kFALSE) {fAutoSignRange=autoSign;}
+    void SetSignSingleBin(Bool_t singleSignbin=kFALSE) {fSignSingleBin=singleSignbin;}
     void SetSBSingleBin(Bool_t singleSBbin=kFALSE) {fSBSingleBin=singleSBbin;}
     void SetSBRanges(Double_t* rangesSB1L=0x0, Double_t* rangesSB1R=0x0, Double_t* rangesSB2L=0x0, Double_t* rangesSB2R=0x0);
     void SetSignRanges(Double_t* rangesSignL=0x0, Double_t* rangesSignR=0x0);
@@ -112,6 +118,8 @@ public:
     void PrintSandBForNormal();
     void GetSignalAndBackgroundForNorm(Int_t i, TH1F* &histo);  //evaluates signal and background in 'fSignalSigmas', for trigger normalization and SB correlation rescaling
     void GetSBScalingFactor(Int_t i, TH1F* &histo); //estract sideband scaling factor
+    void GetSignalAndBackgroundForNorm_WithRefl(Int_t i, TH1F* &histo);  //evaluates signal and background in 'fSignalSigmas', for trigger normalization and SB correlation rescaling
+    void GetSBScalingFactor_WithRefl(Int_t i, TH1F* &histo); //estract sideband scaling factor
     TH2D* GetCorrelHisto(Int_t SEorME, Int_t SorSB, Int_t pool, Int_t pTbin, Double_t thrMin, Double_t thrMax, Int_t softPiME=1);
     TH2D* GetCorrelHistoDzero(Int_t SEorME, Int_t SorSB, Int_t pool, Int_t pTbin, Double_t thrMin, Double_t thrMax, Int_t softPiME=1);
     TH2D* GetCorrelHistoDplus(Int_t SEorME, Int_t SorSB, Int_t pool, Int_t pTbin, Double_t thrMin, Double_t thrMax);
@@ -127,6 +135,7 @@ public:
     TH2D* GetCorrelHistoDxHFE_MC(Int_t SEorME, Int_t pool, Int_t pTbin, Double_t thrMin, Double_t thrMax, Int_t orig);
     void NormalizeMEplot(TH2D* &histoME, TH2D* &histoMEsoftPi); //normalize ME plots to the average value of the 4 'central' bins
     void RescaleSidebandsInMassBinEdges(Int_t i); //readjust SB scaling factor if single bin is used & ranges passed from outside & ranges don't match bin edges
+    Bool_t CheckSignRegionInMassBinEdges(Int_t i); //check whether the signal region passed from outside matches with the bin edges
     void MergeMassPlotsVsPt(); //merge spectra from mass-pT bins in larger correlation-pT bins (as if you have a single pT bin)
     void MergeMassPlotsVsPt_MC(); //merge spectra from mass-pT bins in larger correlation-pT bins (as if you have a single pT bin)
     void MergeCorrelPlotsVsPt(THnSparse* &hsparse, Int_t SEorME, Int_t SorSB=0, Int_t pool=0); //merge THnSparse from mass-pT bins in correlation-pT bins (as if you have 1 pT bin)
@@ -145,16 +154,17 @@ public:
 
     void AddOriginType(TString suffix, MCOrigin orig) {fMCOriginSuffix.push_back(suffix); fMCOriginType.push_back(orig);} //for MC case
     void SetRecoMode(MCmode mode) {fMCmode=mode;}
-
+    
     Bool_t ReadInputs(); //reads input files and loads lists of plots
-    Bool_t FitInvariantMass(); //method to perform invariant mass fit via AliHFMassFitter
+    Bool_t FitInvariantMass(); //method to perform invariant mass fit via AliHFInvMassFitter
     Bool_t ExtractCorrelations(Double_t thrMin, Double_t thrMax); //method to retrieve the bkg subtracted and ME corrected correlation distributions
     Bool_t ExtractCorrelations_MC(Double_t thrMin, Double_t thrMax); //method to retrieve the ME corrected correlation distributions in MC
     Bool_t ExtractCorrelations_MC_Orig(Double_t thrMin, Double_t thrMax, Int_t orig); //method to retrieve the ME corrected correlation distributions in MC
     Bool_t ExtractNumberOfTriggers_MC();
     Bool_t DoSingleCanvasMCPlot(Double_t thrMin, Double_t thrMax);
+    Bool_t SetReflectionInfo(AliHFInvMassFitter* &fitter, Int_t iBin);
     void DrawMCClosure(Int_t nOrig, Int_t binMin, Int_t binMax, Double_t thrMin, Double_t thrMax, Bool_t reflect=kTRUE);
-    
+
 private:
     
     TFile *fFileMass; //file containing the mass histograms
@@ -187,6 +197,9 @@ private:
     TString fSECorrelHistoName;
     TString fSECorrelHistoName_DstarBkg;
     TString fMEsuffix;
+    TString fReflFilename;
+    TString fHistnameRefl;
+    TString fHistnameSign;
 
     Int_t fRebinMassPlots;    
     Int_t fNpTbins;
@@ -201,6 +214,7 @@ private:
     Bool_t fUseMassVsCentPlots;		//don't use histMass plots, but project histMass2D plots (for offline)
     Double_t fMinCent;
     Double_t fMaxCent;
+    Bool_t fUseOneMEPool;  			//in analysios with ME pools, sum up the pools and use the integral to divide each ME pool (for cases of low-stat crashes)
 
     Double_t *fDmesonFitterSignal;
     Double_t *fDmesonFitterSignalError;
@@ -224,12 +238,14 @@ private:
     Bool_t fAutoSignRange;
     Double_t fSBOuterSigmas;
     Double_t fSBInnerSigmas;
+    Bool_t fSignSingleBin;    
     Bool_t fSBSingleBin;
     Double_t fDeltaEtaMin;
     Double_t fDeltaEtaMax;
     Bool_t fUseMC;
     Int_t fElSource;
     Int_t fD0Source;
+    Bool_t fUseRefl;
 
     Double_t *fSignalCorrel;
     Double_t *fBackgrCorrel;
@@ -242,6 +258,9 @@ private:
     Double_t *fScaleFactor;
     Double_t *fSignalCorrelMC_c;
     Double_t *fSignalCorrelMC_b;    
+    Double_t *fReflUnderSCorrel;
+    Double_t *fReflUnderSBCorrel;
+    Double_t *fRoverSinFitRange;
 
     Bool_t fIntegratePtBins;
 
@@ -249,6 +268,7 @@ private:
 
     TF1 **fMassFit;
     TF1 **fBkgFit;
+    TF1 **fBkRFit;
 
     TH1F **fMassHisto;
 
@@ -256,7 +276,7 @@ private:
     std::vector<Int_t>    fMCOriginType;      //container of specificators of origins
     MCmode		  fMCmode;	      //kine or reco analysis (changes just the filenames for output, for now)
 
-    ClassDef(AliDhCorrelationExtraction,4); // class for plotting HF correlations
+    ClassDef(AliDhCorrelationExtraction,7); // class for plotting HF correlations
 
 };
 

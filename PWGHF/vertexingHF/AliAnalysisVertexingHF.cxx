@@ -1694,6 +1694,13 @@ void AliAnalysisVertexingHF::FixReferences(AliAODEvent *aod)
 
   return;
 }
+
+//----------------------------------------------------------------------------
+AliAODTrack* AliAnalysisVertexingHF::GetProng(AliVEvent *event,AliAODRecoDecayHF *rd,Int_t iprong){
+  if(!fAODMap)MapAODtracks(event);
+  return (AliAODTrack*)event->GetTrack(fAODMap[rd->GetProngID(iprong)]);
+}
+
 //----------------------------------------------------------------------------
 Bool_t AliAnalysisVertexingHF::FillRecoCand(AliVEvent *event,AliAODRecoDecayHF3Prong *rd){
   // method to retrieve daughters from trackID and reconstruct secondary vertex
@@ -3570,6 +3577,8 @@ Bool_t AliAnalysisVertexingHF::SingleTrkCuts(AliESDtrack *trk,
 
   // this is needed to store the impact parameters
   //AliCodeTimerAuto("",0);
+
+  if (!trk->PropagateToDCA(fV1,fBzkG,kVeryBig)) return kFALSE;
 
   trk->RelateToVertex(fV1,fBzkG,kVeryBig);
 

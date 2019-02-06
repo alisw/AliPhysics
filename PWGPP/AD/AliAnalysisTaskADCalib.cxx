@@ -49,6 +49,7 @@ AliAnalysisTaskADCalib::AliAnalysisTaskADCalib(const char *name)
   : AliAnalysisTaskSE(name)
   , fADESDFriendUtils(NULL)
   , fList(NULL)
+  , fDoChargeEqualization(kFALSE)
   , fStatus(kOk) {
   fBCRangeTail[0] = 14;
   fBCRangeTail[1] = 20;
@@ -385,12 +386,17 @@ void AliAnalysisTaskADCalib::ProcessOutput(const Char_t  *fileName,
   AliCDBId idGain("AD/Calib/PMGains",    runNumber, runNumber);
 
   // (7c) put the objects into the OCDB storage
-  fStatus = (cdbStorage->Put(tSat, idSat, md) &&
-	     cdbStorage->Put(gainOCDBObject->GetObject(),
-			     idGain,
-			     gainOCDBObject->GetMetaData())
+  fStatus = (cdbStorage->Put(tSat, idSat, md)
 	     ? kOk
 	     : kStoreError);
+
+  if (fStatus == kOk && fDoChargeEqualization) {
+    fStatus = (cdbStorage->Put(gainOCDBObject->GetObject(),
+                               idGain,
+                               gainOCDBObject->GetMetaData())
+               ? kOk
+               : kStoreError);
+  }
 }
 
 TGraph* AliAnalysisTaskADCalib::MakeGraphSlope(TH2 *h, Double_t &s, const TString& name) const {
@@ -633,7 +639,8 @@ TTree* AliAnalysisTaskADCalib::MakeSaturationCalibObject(AliADCalibData* calibDa
     chOffline = ch;
     chOnline  = gOffline2Online[ch];
 
-    chargeEqualizationFactor = (chargeQuantiles[ch] && meanQuantiles[ch/8] ? meanQuantiles[ch/8]/chargeQuantiles[ch] : 1.0 );
+    if (fDoChargeEqualization)
+      chargeEqualizationFactor = (chargeQuantiles[ch] && meanQuantiles[ch/8] ? meanQuantiles[ch/8]/chargeQuantiles[ch] : 1.0 );
     AliInfo(Form("quantile[%2d] = %f f=%f", ch, chargeQuantiles[ch], chargeEqualizationFactor));
 
     const Double_t largeThr = 1e5;

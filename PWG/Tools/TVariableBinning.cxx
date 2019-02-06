@@ -14,6 +14,8 @@
  **************************************************************************/
 #include <TVariableBinning.h>
 
+ClassImp(TVariableBinning)
+
 TVariableBinning::TVariableBinning():
   TBinning(),
   fBinEdges()

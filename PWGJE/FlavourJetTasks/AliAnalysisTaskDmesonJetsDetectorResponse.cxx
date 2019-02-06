@@ -373,7 +373,7 @@ AliAnalysisTaskDmesonJetsDetectorResponse::AliAnalysisTaskDmesonJetsDetectorResp
   fHistManagerResponse(),
   fResponseEngines()
 {
-  fOutputType = kNoOutput;
+  fOutputType = kOnlyQAOutput;
 }
 
 /// This is the standard named constructor.
@@ -384,7 +384,7 @@ AliAnalysisTaskDmesonJetsDetectorResponse::AliAnalysisTaskDmesonJetsDetectorResp
   fHistManagerResponse(TString::Format("%s_QA", name)),
   fResponseEngines()
 {
-  fOutputType = kNoOutput;
+  fOutputType = kOnlyQAOutput;
 }
 
 /// Creates the output containers.
@@ -495,7 +495,7 @@ Bool_t AliAnalysisTaskDmesonJetsDetectorResponse::FillHistograms()
   for (auto &ana : fAnalysisEngines) {
     if (ana.IsInhibit()) continue;
 
-    ana.FillQA(fApplyKinematicCuts);
+    ana.GetOutputHandler()->FillOutput(fApplyKinematicCuts);
   }
 
   if (fMCContainer) FillPartonLevelHistograms();
@@ -508,12 +508,12 @@ Bool_t AliAnalysisTaskDmesonJetsDetectorResponse::FillHistograms()
 /// \param b Output type (none, tree, thn)
 void AliAnalysisTaskDmesonJetsDetectorResponse::SetOutputTypeInternal(EOutputType_t b)
 {
-  if (fOutputType != kNoOutput && fOutputType != kTreeOutput) {
+  if (fOutputType != kOnlyQAOutput && fOutputType != kNoOutput && fOutputType != kTreeOutput) {
     AliWarning("This class only provides a tree output.");
   }
 
-  // Always set it to kNoOutput: base class does not generate any output (other than QA histograms), all the output comes from the derived class
-  fOutputType = kNoOutput;
+  // Always set it to kOnlyQAOutput: base class does not generate any output (other than QA histograms), all the output comes from the derived class
+  fOutputType = kOnlyQAOutput;
 }
 
 /// Post the tree of an response engine in the data slot (if the tree exists and the data slot has been assigned)

@@ -1,0 +1,116 @@
+/**
+ * @file   FTAddMyTask.C
+ * @author Freja Thoresen <freja.thoresen@cern.ch>
+ *
+ * @brief  Add Q-cummulant forward task to train
+ *
+ *
+ * @ingroup pwglf_forward_scripts_tasks
+ */
+/**
+ * @defgroup pwglf_forward_flow Flow
+ *
+ * Code to deal with flow
+ *
+ * @ingroup pwglf_forward_topical
+ */
+/**
+ * Add Flow task to train
+ *
+ * @ingroup pwglf_forward_flow
+ */
+AliAnalysisTaskSE* AddTaskForwardNUA(UShort_t nua_mode, bool makeFakeHoles, bool mc,  bool esd,bool prim_cen,bool prim_fwd , Int_t tracktype, TString centrality,TString name1)
+{
+  std::cout << "______________________________________________________________________________" << std::endl;
+
+  std::cout << "AddTaskForwardNUA" << std::endl;
+
+  // --- Get analysis manager ----------------------------------------
+  AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
+  if (!mgr)
+    Fatal("","No analysis manager to connect to.");
+
+  TString name = name1;
+
+  AliForwardNUATask* task = new AliForwardNUATask(name);
+  TString resName = "ForwardNUA";
+
+    task->fSettings.use_primaries_cen = prim_cen;
+    if (mc) resName += (prim_cen ? "_primcen" : "_trcen");
+
+    task->fSettings.use_primaries_fwd = prim_fwd;
+    if (mc) resName += (prim_fwd ? "_primfwd" : "_trfwd");
+
+  task->fSettings.mc = mc;
+  task->fSettings.esd = esd;
+  std::cout << "Using tracktype = " << tracktype << std::endl;
+  if (tracktype == 0){
+    task->fSettings.fFlowFlags = task->fSettings.kSPD;
+    resName += "_SPD";
+  }
+  else{
+    task->fSettings.fFlowFlags = task->fSettings.kTPC;
+    if (tracktype == 768){
+      task->fSettings.tracktype = AliForwardSettings::kHybrid;
+      resName += "_hybrid";
+    }
+    else if (tracktype == 128){
+      task->fSettings.tracktype = AliForwardSettings::kTPCOnly;
+      resName += "_TPConly";
+    }
+    else if (tracktype == 32){
+      task->fSettings.tracktype = AliForwardSettings::kGlobal;
+      resName += "_global";
+    }
+    else if (tracktype == 64){
+      task->fSettings.tracktype = AliForwardSettings::kGlobalLoose;
+      resName += "_globalLoose";
+    }
+    else if (tracktype == 96){
+      task->fSettings.tracktype = AliForwardSettings::kGlobalComb;
+      resName += "_globalComb";
+    }
+    else{
+      std::cout << "INVALID TRACK TYPE FOR TPC" << std::endl;
+    }
+  }
+
+  resName += "_" + centrality;
+  if (mc) resName += "_mc";
+
+  if (makeFakeHoles){
+    task->fSettings.makeFakeHoles = kTRUE;
+    resName += "_fakeholes";
+  }
+
+  task->fSettings.centrality_estimator = centrality; // "V0M";// RefMult08; // "V0M" // "SPDTracklets";
+
+  if (nua_mode == AliForwardSettings::kInterpolate)
+    resName += "_NUA_interpolate";
+  if (nua_mode == AliForwardSettings::kFill)
+    resName += "_NUA_fill";
+  if (nua_mode == AliForwardSettings::kNormal)
+    resName += "_NUA_normal";
+
+  task->fSettings.nua_mode = nua_mode; // "V0M";// RefMult08; // "V0M" // "SPDTracklets";
+
+  std::cout << "Container name: " << resName << std::endl;
+  //resName = "hej";
+  std::cout << "______________________________________________________________________________" << std::endl;
+
+  AliAnalysisDataContainer *coutput_recon =
+  mgr->CreateContainer(resName,
+   TList::Class(),
+   AliAnalysisManager::kOutputContainer,
+   mgr->GetCommonFileName());
+
+  mgr->AddTask(task);
+  mgr->ConnectInput(task, 0, mgr->GetCommonInputContainer());
+  mgr->ConnectOutput(task, 1, coutput_recon);
+
+  return task;
+}
+/*
+ * EOF
+ *
+ */

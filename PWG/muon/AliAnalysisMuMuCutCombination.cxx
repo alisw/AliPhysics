@@ -18,7 +18,7 @@
 #include "AliAnalysisMuMuCutElement.h"
 #include "TList.h"
 #include "Riostream.h"
-#include "AliInputEventHandler.h"
+#include "AliVEventHandler.h"
 #include "AliLog.h"
 
 ClassImp(AliAnalysisMuMuCutCombination)
@@ -191,7 +191,7 @@ Bool_t AliAnalysisMuMuCutCombination::IsEqual(const TObject* obj) const
 }
 
 //_____________________________________________________________________________
-Bool_t AliAnalysisMuMuCutCombination::Pass(const AliInputEventHandler& eventHandler) const
+Bool_t AliAnalysisMuMuCutCombination::Pass(const AliVEventHandler& eventHandler) const
 {
   /// Whether or not the event handler is passing the cut
 

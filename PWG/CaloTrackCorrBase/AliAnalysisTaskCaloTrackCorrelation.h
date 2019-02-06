@@ -61,7 +61,7 @@ class AliAnalysisTaskCaloTrackCorrelation : public AliAnalysisTaskSE
   void         SetAnalysisMaker(AliAnaCaloTrackCorrMaker * const maker) 
                                                   { fAna = maker         ; } 
   
-  void         SetConfigFileName(TString & name ) { fConfigName = name   ; }
+  void         SetConfigFileName(TString name )   { fConfigName = name   ; }
   TString      GetConfigFileName()          const { return fConfigName   ; }
 
   void         SetFirstEvent(Int_t event )        { fFirstEvent = event  ; }

@@ -22,7 +22,7 @@
 
 #include "AliLog.h"
 #include "AliVParticle.h"
-#include "AliInputEventHandler.h"
+#include "AliVEventHandler.h"
 
 /// \cond CLASSIMP
 ClassImp(AliMuonPairCuts) // Class implementation in ROOT context
@@ -84,7 +84,7 @@ AliMuonPairCuts::~AliMuonPairCuts()
 }
 
 //________________________________________________________________________
-Bool_t AliMuonPairCuts::SetRun ( const AliInputEventHandler* eventHandler )
+Bool_t AliMuonPairCuts::SetRun ( const AliVEventHandler* eventHandler )
 {
   /// Get parameters from OADB for runNumber
   return fMuonTrackCuts.SetRun(eventHandler);

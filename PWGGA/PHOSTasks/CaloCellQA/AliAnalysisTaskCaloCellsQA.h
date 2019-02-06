@@ -27,7 +27,7 @@ public:
   };
 
   AliAnalysisTaskCaloCellsQA();
-  AliAnalysisTaskCaloCellsQA(const char *name, Int_t nmods = 10, Int_t det = kEMCAL, char *outfile = NULL);
+  AliAnalysisTaskCaloCellsQA(const char *name, Int_t nmods = 10, Int_t det = kEMCAL, const char *outfile = NULL);
   virtual ~AliAnalysisTaskCaloCellsQA();
 
   void   UserCreateOutputObjects();
@@ -50,7 +50,7 @@ private:
   AliAnalysisTaskCaloCellsQA(const AliAnalysisTaskCaloCellsQA &);
   AliAnalysisTaskCaloCellsQA & operator = (const AliAnalysisTaskCaloCellsQA &);
 
-private:
+protected:
   Bool_t           fkAvoidPileup;     // flag not to process pileup events
   AliCaloCellsQA*  fCellsQA;          // analysis instance
   TString          fOutfile;          // output file name

@@ -64,14 +64,16 @@
 #include "AliHFEextraCuts.h"
 #include "AliHFEmcQA.h"
 #include "AliHFEpidTPC.h"
-#include "AliHFEminiEvent.h"
-#include "AliHFEminiTrack.h"
-#include "AliHFEreducedMCParticle.h"
 #include "AliHFEsignalCuts.h"
 #include "AliHFEV0taginfo.h"
+#include "AliHFEminiEvent.h"
+#include "AliHFEminiTrack.h"
 
 
 #include "AliHFEminiEventCreator.h"
+
+using std::cout;
+using std::endl;
 
 ClassImp(AliHFEminiEventCreator)
 
@@ -100,8 +102,8 @@ AliHFEminiEventCreator::AliHFEminiEventCreator():
   fRemoveFirstEvent(kFALSE),
   fSelectSignalOnly(kFALSE),
   fCollisionSystem("pp"),
+  fList(NULL),
   fHFEtree(NULL),
-  fQA(NULL),
   fNevents(NULL),
   fNtracks(NULL),
   fESD(NULL),
@@ -153,8 +155,8 @@ AliHFEminiEventCreator::AliHFEminiEventCreator(const char *name):
   fRemoveFirstEvent(kFALSE),
   fSelectSignalOnly(kFALSE),
   fCollisionSystem("pp"),
+  fList(NULL),
   fHFEtree(NULL),
-  fQA(NULL),
   fNevents(NULL),
   fNtracks(NULL),
   fESD(NULL),
@@ -181,16 +183,15 @@ AliHFEminiEventCreator::AliHFEminiEventCreator(const char *name):
   fTPCpid = new AliHFEpidTPC("QAtpcPID");
   fAnalysisUtils = new AliAnalysisUtils;
   fV0Tagger = new AliHFEV0taginfo("Tagger");
-  DefineOutput(1, TTree::Class());
-  DefineOutput(2, TH1D::Class());
-  DefineOutput(3, TH1D::Class());
+  DefineOutput(1, TList::Class());
+  
 }
 
 AliHFEminiEventCreator::~AliHFEminiEventCreator(){
 
   // Default destructor
   
-  if(fQA) delete fQA;
+  if(fList) delete fList;
   if(fTPCpid) delete fTPCpid;
   if(fAnalysisUtils) delete fAnalysisUtils;
   if(fV0Tagger) delete fV0Tagger;
@@ -201,8 +202,10 @@ AliHFEminiEventCreator::~AliHFEminiEventCreator(){
 }
 
 void AliHFEminiEventCreator::UserCreateOutputObjects(){
-  // Create debug tree, signal cuts and track cuts
-
+  // Create tree, signal cuts and track cuts
+  fList = new TList();
+  fList->SetOwner(kTRUE);
+  
   fInputHandler = dynamic_cast<AliVEventHandler *>(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler());
   
   fPIDResponse = dynamic_cast<AliInputEventHandler *>(fInputHandler)->GetPIDResponse();
@@ -210,8 +213,8 @@ void AliHFEminiEventCreator::UserCreateOutputObjects(){
     AliError("No PID response task found !!");
   }
 
-  if(AliAnalysisManager::GetAnalysisManager()->GetMCtruthEventHandler()) fHasMCdata = kTRUE;
-  else fHasMCdata = kFALSE;
+  //if(AliAnalysisManager::GetAnalysisManager()->GetMCtruthEventHandler()) fHasMCdata = kTRUE;
+  //else fHasMCdata = kFALSE;
 
   //Set the analysis type: AOD or ESD
   if(!TString(fInputHandler->IsA()->GetName()).CompareTo("AliAODInputHandler")) fAODanalysis = kTRUE;
@@ -245,19 +248,20 @@ void AliHFEminiEventCreator::UserCreateOutputObjects(){
   fTrackCuts->Initialize();
 
   fExtraCuts = new AliHFEextraCuts("hfeExtraCuts","HFE Extra Cuts");
-  
+
   fHFEevent = new AliHFEminiEvent;
-  OpenFile(1);
+  //OpenFile(1);
   fHFEtree = new TTree("HFEtree", "HFE event tree");
-  fHFEtree->Branch("HFEevent", "AliHFEminiEvent", fHFEevent, 128000, 0);
+  fHFEtree->Branch("HFEevent", "AliHFEminiEvent", fHFEevent, 256000, 0);
+  fHFEtree->SetAutoSave(100000000);
+  fList->Add(fHFEtree);
   
   fNevents = new TH1D("Nevents","Number of events", 4, 0., 4.);
+  fList->Add(fNevents);
   fNtracks = new TH1D("Ntracks","Number of tracks", 7, 0., 7.);
-
-  PostData(1, fHFEtree);
-  PostData(2, fNevents);
-  PostData(3, fNtracks);
-
+  fList->Add(fNtracks);
+  
+  PostData(1, fList);
   
 }
 
@@ -560,9 +564,7 @@ void AliHFEminiEventCreator::ExecAODEvent(){
   fHFEtree->Fill();
   fNevents->Fill(2);
   
-  PostData(1, fHFEtree);
-  PostData(2, fNtracks); 
-  PostData(3, fNevents); 
+  PostData(1, fList);
   
 }
 
@@ -702,11 +704,8 @@ void AliHFEminiEventCreator::ExecESDEvent(){
   fHFEtree->Fill();
   fNevents->Fill(2);
   
-  PostData(1, fHFEtree);
-  PostData(2, fNtracks); 
-  PostData(3, fNevents); 
-  
-  
+  PostData(1, fList);
+ 
 }
 //-------------------------------------------------------------------
 //===================================================================

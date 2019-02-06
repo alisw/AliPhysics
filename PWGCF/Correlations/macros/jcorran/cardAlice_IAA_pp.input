@@ -1,6 +1,7 @@
 TriggerMask             -1 # 62 masking on see bottom 0011:1110   -1 no check
-Helicity		        0 # +1 same, -1 opposite, and 0 no helicity check
+Helicity		        0
 EfficiencyMode          1 # 0:NoEff 1:Period 2:RunbyRun 3:Auto
+RequireLikeSign         0 # +1 same, -1 opposite, and 0 no pair sign check
 
 #events=========
 CentBinBorders          0 100 
@@ -31,7 +32,7 @@ PairInvariantMassBins   20 30
 UpperPairPtCut          1.5 15
 EtaRange                0.8
 PhiGapThresholds        0 0.15708 0.314159 0.471239 0.628319 0.785398 0.942478 1.09956 1.25664 1.41372 1.5708 
-EtaGapThresholds        0 0.1 0.2 0.3 0.4 0.5 1.0 1.6
+EtaGapThresholds        0 0.1 0.2 0.3 0.4 0.5 1.0 1.6 # note the this has to be smaller/equal to EtaRange
 RGapThresholds          0 0.8 1.0 1.2 1.4 1.6 2.3
 EtaGapSignalBin         1  #signal histos to R<0.6
 EtaBoost                -0.465 0
@@ -44,7 +45,7 @@ CutOnBkgActivity        0.10 #cut on activity around leading particle   sum of a
 LowerPtCut              1.0 #for isolation
 
 #======= ALICE JYFL Track selection =============
-HadronSelectionCut      0 # enum { kJTPCOnly, kJRaa, kJGlobalTightDCA, kJGlobalDCA, kJGlobalSDD , kJHybrid, kJNTrackCuts };
+HadronSelectionCut      0 # kJTPCOnly, kJRaa, kJGlobalTightDCA, kJGlobalDCA, kJGlobalSDD , kJHybrid, kJHybridAOD86, kJHybridStep1, kJNTrackCuts
 
 TriggerFiducialEtaCut 0.4 #
 
@@ -73,6 +74,7 @@ TrackMergeSystematics 0 # 0 = regular run, 1 = do systematic error estimate for 
 
 UseTrackMergingCorr     1
 TrackMergeCut           0.02 # If track merging is taken into account, remove tracks if deltaEta and deltaPhi* are smaller than this value at any point of their track
+AnalyseMCTruth          0  # 0 = Regular analysis, 1 = Use MC truth particles in the analysis
 
 #======= Level of used quality control histograms =======
 QualityControlLevel     0 # 0 = no additional quality control histograms, 1 = quality control for acceptance correction, 2 = lots of 2D quality control histograms added

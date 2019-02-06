@@ -404,6 +404,8 @@ public:
   Bool_t GetUseZDCESEMulWeights() const {return this->fUseZDCESEMulWeights;};
   void SetUseZDCESESpecWeights(Bool_t const uPhiEtaW) {this->fUseZDCESESpecWeights = uPhiEtaW;};
   Bool_t GetUseZDCESESpecWeights() const {return this->fUseZDCESESpecWeights;};
+  void SetCutMultiplicityOutliers(Bool_t const uPhiEtaW) {this->fCutMultiplicityOutliers = uPhiEtaW;};
+  Bool_t GetCutMultiplicityOutliers() const {return this->fCutMultiplicityOutliers;};
   void SetUseParticleWeights(TProfile* const uPW) {this->fUseParticleWeights = uPW;};
   TProfile* GetUseParticleWeights() const {return this->fUseParticleWeights;};
   void SetPhiWeights(TH1F* const histPhiWeights) {this->fPhiWeightsRPs = histPhiWeights;};
@@ -1231,6 +1233,7 @@ private:
   Bool_t fUsePhiEtaCuts; // use phi,eta cuts (for NUA)
   Bool_t fUseZDCESEMulWeights;       // use ZDC-ESE mult. weights
   Bool_t fUseZDCESESpecWeights;       // use ZDC-ESE spec. weights
+  Bool_t fCutMultiplicityOutliers;  // cut on reference multiplicity
   TProfile *fUseParticleWeights; //! profile with three bins to hold values of fUsePhiWeights, fUsePtWeights and fUseEtaWeights
   // TH1F *fPhiWeightsPOIs[2]; //! histogram holding phi weights
   // TH1D *fPtWeightsPOIs[2]; //! histogram holding pt weights
@@ -1283,7 +1286,7 @@ private:
   TMatrixD *fSpk; //! fSM[p][k] = (sum_{i=1}^{M} w_{i}^{k})^{p+1}
   TMatrixD *fReQGF; //! fReQ[m][k] = sum_{i=1}^{M} w_{i}^{k} cos(m*phi_{i})
   TMatrixD *fImQGF; //! fImQ[m][k] = sum_{i=1}^{M} w_{i}^{k} sin(m*phi_{i})
-  const static Int_t fkGFPtB = 3;
+  const static Int_t fkGFPtB = 8;
   TMatrixD *fReQGFPt[fkGFPtB]; //! fReQ[m][k] = sum_{i=1}^{M} w_{i}^{k} cos(m*phi_{i})
   TMatrixD *fImQGFPt[fkGFPtB]; //! fImQ[m][k] = sum_{i=1}^{M} w_{i}^{k} sin(m*phi_{i})
   TH1D *fIntFlowCorrelationsEBE; //! 1st bin: <2>, 2nd bin: <4>, 3rd bin: <6>, 4th bin: <8>
@@ -1886,6 +1889,8 @@ private:
   TProfile2D *fTPCQVecProTemp[2][4]; //!
   const static Int_t fkNv1evenCor = 6;
   TProfile2D *fFlowSPZDCv1evenCorPro[fkNv1evenCor]; //!
+  const static Int_t fkNZDCDistPro = 6;
+  TProfile2D *fFlowSPZDCDistPro[fkNv1evenCor]; //!
 
   // Flow QC
   TList *fFlowQCList;    //! QC List
@@ -2102,7 +2107,7 @@ private:
   Bool_t fbFlagIsBadRunForC34;
   Bool_t fStoreExtraHistoForSubSampling;
 
-  ClassDef(AliFlowAnalysisCRC,73);
+  ClassDef(AliFlowAnalysisCRC,74);
 
 };
 

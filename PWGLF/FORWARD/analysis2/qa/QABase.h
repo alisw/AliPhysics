@@ -189,6 +189,7 @@ struct QABase
     TString texTitle(title);
     texTitle.ReplaceAll("_", "-");
 
+    const char* can = "http://aliqafmd.web.cern.ch/aliqafmd/";
     *fTeX << "\\documentclass[landscape,a4paper,12pt]{article}\n"
 	  << "\\nonstopmode\n"
 	  << "\\usepackage[margin=2cm,a4paper]{geometry}\n"
@@ -204,7 +205,10 @@ struct QABase
 	   << "<html>\n"
 	   << " <head>\n"
 	   << "  <title>QA information - "  << title << "</title>\n"
+	   << "  <link rel='stylesheet' href='" << can << "style.css'>\n" 
 	   << "  <link rel='stylesheet' href='style.css'>\n" 
+	   << "  <link rel='shortcut icon' href='" << can
+	   << "fmd_favicon.png' type='image/x-png'>\n"
 	   << "  <link rel='shortcut icon' href='fmd_favicon.png' "
 	   << "type='image/x-png'>\n"
 	   << "  <script>\n"

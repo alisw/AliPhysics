@@ -20,7 +20,7 @@ void AliRsnMiniPair::Fill
    p2->Set4Vector(fP2[1], m2, kTRUE );
    
    fDCA1 = p1->DCA();
-   fDCA2 = p2->DCA();  
+   fDCA2 = p2->DCA();
 
    fMother = -1;
    fIsFromB = kFALSE;
@@ -50,15 +50,26 @@ void AliRsnMiniPair::Fill
    fContainsV0Daughter = kFALSE;
    if (p1->IndexV0Pos() == p2->Index()) fContainsV0Daughter = kTRUE;
    if (p1->IndexV0Neg() == p2->Index()) fContainsV0Daughter = kTRUE;
+   if (p1->IndexBachelor() == p2->Index()) fContainsV0Daughter = kTRUE;
    if (p2->IndexV0Pos() == p1->Index()) fContainsV0Daughter = kTRUE;
    if (p2->IndexV0Neg() == p1->Index()) fContainsV0Daughter = kTRUE;
-    
-    
-   if ((p1->IndexV0Pos() == p2->IndexV0Pos()) && (p1->IndexV0Pos() != -1) && (p2->IndexV0Pos() != -1)) fContainsV0Daughter = kTRUE;
-   if ((p1->IndexV0Pos() == p2->IndexV0Neg()) && (p1->IndexV0Pos() != -1) && (p2->IndexV0Neg() != -1)) fContainsV0Daughter = kTRUE;
-   if ((p1->IndexV0Neg() == p2->IndexV0Pos()) && (p1->IndexV0Neg() != -1) && (p2->IndexV0Pos() != -1)) fContainsV0Daughter = kTRUE;
-   if ((p1->IndexV0Neg() == p2->IndexV0Neg()) && (p1->IndexV0Neg() != -1) && (p2->IndexV0Neg() != -1)) fContainsV0Daughter = kTRUE;
-    
+   if (p2->IndexBachelor() == p1->Index()) fContainsV0Daughter = kTRUE;
+
+   if (p1->IndexV0Pos() != -1){
+      if (p1->IndexV0Pos() == p2->IndexV0Pos()) fContainsV0Daughter = kTRUE;
+      if (p1->IndexV0Pos() == p2->IndexV0Neg()) fContainsV0Daughter = kTRUE;
+      if (p1->IndexV0Pos() == p2->IndexBachelor()) fContainsV0Daughter = kTRUE;
+   }
+   if (p1->IndexV0Neg() != -1){
+      if (p1->IndexV0Neg() == p2->IndexV0Pos()) fContainsV0Daughter = kTRUE;
+      if (p1->IndexV0Neg() == p2->IndexV0Neg()) fContainsV0Daughter = kTRUE;
+      if (p1->IndexV0Neg() == p2->IndexBachelor()) fContainsV0Daughter = kTRUE;
+   }
+   if (p1->IndexBachelor() != -1){
+      if (p1->IndexBachelor() == p2->IndexV0Pos()) fContainsV0Daughter = kTRUE;
+      if (p1->IndexBachelor() == p2->IndexV0Neg()) fContainsV0Daughter = kTRUE;
+      if (p1->IndexBachelor() == p2->IndexBachelor()) fContainsV0Daughter = kTRUE;
+   }
 }
 
 //__________________________________________________________________________________________________
@@ -302,15 +313,15 @@ Double_t AliRsnMiniPair::PhiV(Bool_t mc)
   //    if (r > 0.5) { P1.SetXYZ (track2->Px(),track2->Py(),track2->Pz()); P2.SetXYZ (track1->Px(),track1->Py(),track1->Pz()); }
   
   
-  if (r < 0.5) { 
-    P1.SetXYZ (fP1[ID(mc)].Px(), fP1[ID(mc)].Py(), fP1[ID(mc)].Pz()); 
+  if (r < 0.5) {
+    P1.SetXYZ (fP1[ID(mc)].Px(), fP1[ID(mc)].Py(), fP1[ID(mc)].Pz());
      P2.SetXYZ (fP2[ID(mc)].Px(), fP2[ID(mc)].Py(), fP2[ID(mc)].Pz());
   }
   
   
-  if (r > 0.5) { 
+  if (r > 0.5) {
     P1.SetXYZ (fP2[ID(mc)].Px(), fP2[ID(mc)].Py(), fP2[ID(mc)].Pz());
-    P2.SetXYZ (fP1[ID(mc)].Px(), fP1[ID(mc)].Py(), fP1[ID(mc)].Pz()); 
+    P2.SetXYZ (fP1[ID(mc)].Px(), fP1[ID(mc)].Py(), fP1[ID(mc)].Pz());
   }
   
   
@@ -333,24 +344,24 @@ Double_t AliRsnMiniPair::PhiV(Bool_t mc)
 //__________________________________________________________________________________________________
 Double_t AliRsnMiniPair::DaughterPt(Int_t daughterId, Bool_t mc)
 {
-  //returns pt of the <id> daughter 
+  //returns pt of the <id> daughter
   // if MC returns generated momenta
   if (daughterId==0)
     return fP1[ID(mc)].Pt();
-  else 
+  else
     return fP2[ID(mc)].Pt();
 }
 
 //__________________________________________________________________________________________________
 Double_t AliRsnMiniPair::DaughterDCA(Int_t daughterId)
-{   
+{
   //
-  //returns dca to Primary Vertex of the <id> daughter 
+  //returns dca to Primary Vertex of the <id> daughter
   //
 
   if (daughterId==0)
     return fDCA1;
-  else 
+  else
     return fDCA2;
 }
 

@@ -61,6 +61,7 @@ AliJJetTask::AliJJetTask() :
   AliAnalysisTaskEmcalJet("AliJJetTask", kTRUE),
   fJetsCont(),
   fTrackOrMCParticle(),
+  fConeSizes(),
   fJTracks("AliJBaseTrack",1000),
   fJClusters("AliJBaseTrack",1000),
   fJMCTracks("AliJMCTrack",1000),
@@ -70,7 +71,10 @@ AliJJetTask::AliJJetTask() :
   fTrackArrayName("nonejk"),
   fNJetFinder(0),
   debug(0),
-  fIsMC(0)
+  fIsMC(0),
+  fnR(0),
+  fACside(0),
+  fnkt(0)
 
 {
   // Default constructor.
@@ -84,6 +88,7 @@ AliJJetTask::AliJJetTask(const char *name, const int nJetFinder) :
   AliAnalysisTaskEmcalJet(name, kTRUE),
   fJetsCont(nJetFinder),
   fTrackOrMCParticle(nJetFinder,kJUndefined),
+  fConeSizes(nJetFinder,0.0),
   fJTracks("AliJBaseTrack",1000),
   fJClusters("AliJBaseTrack",1000),
   fJMCTracks("AliJMCTrack",1000),
@@ -93,7 +98,10 @@ AliJJetTask::AliJJetTask(const char *name, const int nJetFinder) :
   fTrackArrayName("nonejk"),
   fNJetFinder(nJetFinder),
   debug(0),
-  fIsMC(0)
+  fIsMC(0),
+  fnR(0),
+  fACside(0),
+  fnkt(0)
 {
   SetMakeGeneralHistograms(kTRUE);
 }
@@ -103,6 +111,7 @@ AliJJetTask::AliJJetTask(const AliJJetTask& ap) :
   fJetsCont(ap.fJetsCont),
   //fCaloClustersCont(ap.fCaloClustersCont),
   fTrackOrMCParticle(ap.fTrackOrMCParticle),
+  fConeSizes(ap.fConeSizes),
   fJTracks(ap.fJTracks),
   fJMCTracks(ap.fJMCTracks),
   fJClusters(ap.fJClusters),
@@ -112,7 +121,10 @@ AliJJetTask::AliJJetTask(const AliJJetTask& ap) :
   fTrackArrayName(ap.fTrackArrayName),
   fNJetFinder(ap.fNJetFinder),
   debug(ap.debug),
-  fIsMC(ap.fIsMC)
+  fIsMC(ap.fIsMC),
+  fnR(ap.fnR),
+  fACside(ap.fACside),
+  fnkt(ap.fnkt)
 {
 
 }
@@ -206,7 +218,7 @@ Bool_t AliJJetTask::FillHistograms()
         particle->SetPdgCode(track->GetPdgCode());
         particle->SetLabel(track->GetLabel());
         particle->SetMother(track->GetMother(),track->GetMother());
-      }     
+      }
       if(debug > 0){
         cout << "Number of accepted tracks: " << tracks << endl;
       }
@@ -222,7 +234,7 @@ Bool_t AliJJetTask::FillHistograms()
       track->GetMomentum(momentum,vertex); //FIXME Find the right way of getting the momentum
       new (fJClusters[itrack]) AliJBaseTrack(momentum.Px(),momentum.Py(), momentum.Pz(), track->E(), itrack,0,0); //No charge in AliAODCaloCluster //FIXME Particle type?
       // FIXME: AliJPhoton instead of JBaseTrack?
-    }     
+    }
   }
 
   for (int i=0; i<fNJetFinder; i++){
@@ -233,13 +245,19 @@ Bool_t AliJJetTask::FillHistograms()
 
     fJetsCont[i]->ResetCurrentID(); //Needed to reset internal iterator
     AliEmcalJet *jet = fJetsCont[i]->GetNextAcceptJet();
-    int iJet =0; 
+    int iJet =0;
 
-    //fills fJJets[icontainer][ijet] and histograms        
+    //fills fJJets[icontainer][ijet] and histograms
     while(jet){
       TClonesArray & jets = fJJets[i]; // just alias for AliJJet array
+      if((fACside == 1 && jet->Eta() < 0) || (fACside == 2 && jet->Eta() > 0)){ 
+        //IF ACside == 1, remove jets with negative eta (C side removed)
+        //IF ACside == 2, remove jets with positive eta (A side removed)
+        jet = fJetsCont[i]->GetNextAcceptJet();
+        continue;
+      }
       new (jets[iJet]) AliJJet(jet->Px(),jet->Py(), jet->Pz(), jet->E(), jet->GetLabel(),0,0);
-      AliJJet * j = (AliJJet*) fJJets[i][iJet];   
+      AliJJet * j = (AliJJet*) fJJets[i][iJet];
       j->SetArea( jet->Area() );
 
       //== TRACK or Particle

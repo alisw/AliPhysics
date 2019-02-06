@@ -49,7 +49,7 @@ public:
   virtual void MakePairs(const char* typeIn, AliFemtoPicoEventRP *coll1, AliFemtoPicoEventRP *coll2=0);
   virtual TList* GetOutputList();
   virtual void Finish() {;}
-	
+
  // Get the particle cuts
   virtual AliFemtoParticleCut*   FirstParticleCut() {return fFirstParticleCut;}
   virtual AliFemtoParticleCut*   SecondParticleCut() {return fSecondParticleCut;}
@@ -59,16 +59,16 @@ public:
   void SetEventCut(AliFemtoEventCut* x) {fEventCut = x; x->SetAnalysis((AliFemtoAnalysis*)this);}
   void SetPairCut(AliFemtoPairCut* x) {fPairCut = x; x->SetAnalysis((AliFemtoAnalysis*)this);}
   void SetPairCutRD(AliFemtoPairCutRadialDistanceKK* x) {fPairCutRD = x; x->SetAnalysis((AliFemtoAnalysis*)this);}
-  void SetEPhistname(char* histname);
+  void SetEPhistname(const char* histname);
 
 protected:
 
-  AliFemtoParticleCut*         	fFirstParticleCut;    //  select particles of type #1 
-  AliFemtoParticleCut*  	fSecondParticleCut;   //  select particles of type #2 
+  AliFemtoParticleCut*         	fFirstParticleCut;    //  select particles of type #1
+  AliFemtoParticleCut*  	fSecondParticleCut;   //  select particles of type #2
   AliFemtoPairCutRadialDistanceKK* fPairCutRD;
   AliFemtoPicoEventRP*		fPicoEventRP;
 
-	
+
 
   double fVertexZ[2];                 /* min/max z-vertex position allowed to be processed */
   unsigned int fVertexZBins;          /* number of VERTEX mixing bins in z-vertex in EventMixing Buffer */
@@ -90,7 +90,7 @@ protected:
 #ifdef __ROOT__
   ClassDef(AliFemtoAnalysisAzimuthalPbPbThird, 0)
 #endif
-    
+
 };
 
 #endif

@@ -140,6 +140,8 @@ public:
 
 private:
   TArrayD                         fBinEdges;
+
+  ClassDef(TVariableBinning, 1);
 };
 
 void TVariableBinning::Set(Int_t nbins, const Double_t *binedges){

@@ -31,28 +31,29 @@ class AliFemtoProtonParticle  // Proton parameters are stored in this class
   
   AliFemtoProtonParticle();
   virtual ~AliFemtoProtonParticle();
-  //AliFemtoProtonParticle(const AliFemtoProtonParticle &obj);
+//  AliFemtoProtonParticle(const AliFemtoProtonParticle &obj);
   AliFemtoProtonParticle &operator=(const AliFemtoProtonParticle &obj);
  
   TVector3 fMomentum;  //proton momentum
   TVector3 fMomentumMC;  //proton monte carlo momentum
   TVector3 fMomentumMCMother;  //momentum of mother particle of proton
   TVector3 fMomentumMCMotherParton;
-  
+  TVector3 fPositionTPC[9];
+
   int fPDGCode;
   int fPDGCodeMother; // PDG code of the weakly decaying mother resonance in the case of feed-down
   int fPDGCodePartonMother; //PDG code of the parton that created the proton
   int fPartonMotherLabel; //Label of the particle of the corresponding mother parton defined a line above
-  double fPt;           //proton transverse momentum
+  float fPt;           //proton transverse momentum
   short fID;   //Daughter (pion) AODtrack ID
-  double fPhi;
-  double fPhistar[9];
-  double fEta;
-  double fPrimPosTPC[9][3];
+  float fPhi;
+  float fPhistar[9];
+  float fEta;
+  //double fPrimPosTPC[9][3];
   Bool_t fReal;
-#ifdef __ROOT__
-  ClassDef(AliFemtoProtonParticle, 1);
-#endif
+  Bool_t fProtonTag;
+
+  ClassDef(AliFemtoProtonParticle, 3)
 };
 
 

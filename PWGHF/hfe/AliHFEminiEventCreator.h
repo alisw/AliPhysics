@@ -41,8 +41,9 @@ class AliHFEcuts;
 class AliHFEextraCuts;
 class AliHFEpidTPC;
 class AliHFEsignalCuts;
-class AliHFEminiEvent;
 class AliHFEV0taginfo;
+class AliHFEminiEvent;
+class AliHFEminiTrack;
 
 class AliHFEminiEventCreator : public AliAnalysisTaskSE{
   public:
@@ -55,6 +56,7 @@ class AliHFEminiEventCreator : public AliAnalysisTaskSE{
     virtual void Terminate(Option_t *);
 
     // Setters for cuts
+    void SetIsMCEvent(Bool_t IsMCevent){ fHasMCdata = IsMCevent; }
     void SetChi2TPCCut( Double_t chi2TPC ){ fTPCChiSquare = chi2TPC; }
     void SetMinClusterTPC( Int_t TPCCluster ) { fNclustersTPC = TPCCluster; }
     void SetMinClusterTPCPID( Int_t MinTPCclusterPID ){ fNclustersTPCPID = MinTPCclusterPID; }
@@ -118,9 +120,8 @@ class AliHFEminiEventCreator : public AliAnalysisTaskSE{
     Bool_t               fSelectSignalOnly;          // Select signal-only tracks
     TString              fCollisionSystem;           //pp or AA (pPb, PbPb)
    
-    
+    TList                *fList;                     //List
     TTree                *fHFEtree;                  // HFE tree 
-    TList                *fQA;
     TH1D                 *fNevents;
     TH1D                 *fNtracks;
     

@@ -34,8 +34,8 @@ AliJetEmbeddingFromPYTHIATask::AliJetEmbeddingFromPYTHIATask() :
   fCurrentPtHardBin(-1),
   fPtHardBinParam(0),
   fPtHardBinCount(0),
-  fHistPtHardBins(0),
-  fDebugEmbedding(kFALSE)
+  fDebugEmbedding(kFALSE),
+  fHistPtHardBins(0)
 {
   // Default constructor.
   SetSuffix("PYTHIAEmbedding");
@@ -57,8 +57,8 @@ AliJetEmbeddingFromPYTHIATask::AliJetEmbeddingFromPYTHIATask(const char *name, B
   fCurrentPtHardBin(-1),
   fPtHardBinParam(0),
   fPtHardBinCount(0),
-  fHistPtHardBins(0),
-  fDebugEmbedding(kFALSE)
+  fDebugEmbedding(kFALSE),
+  fHistPtHardBins(0)
 {
   // Standard constructor.
   SetSuffix("PYTHIAEmbedding");

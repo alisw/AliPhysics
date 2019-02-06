@@ -108,7 +108,7 @@ void RunPerformanceTaskMC(TChain *chain, Bool_t bUseMCInfo=kTRUE, Bool_t bUseESD
   //
 
   // Create ESD track reconstruction cuts
-  AliRecInfoCuts *pRecInfoCuts = new AliRecInfoCuts(); 
+  AliRecInfoCuts *pRecInfoCuts = new AliRecInfoCuts("pRecInfoCuts"); 
   if(pRecInfoCuts) {
     pRecInfoCuts->SetMaxDCAToVertexXY(3.0);
     pRecInfoCuts->SetMaxDCAToVertexZ(3.0);
@@ -121,7 +121,7 @@ void RunPerformanceTaskMC(TChain *chain, Bool_t bUseMCInfo=kTRUE, Bool_t bUseESD
   }
 
   // Create MC track reconstruction cuts
-  AliMCInfoCuts  *pMCInfoCuts = new AliMCInfoCuts();
+  AliMCInfoCuts  *pMCInfoCuts = new AliMCInfoCuts("pMCInfoCuts");
   if(pMCInfoCuts) {
     pMCInfoCuts->SetMinTrackLength(70);
   } else {

@@ -213,6 +213,8 @@ class AliBalancePsi : public TObject {
   TH2D *GetQAHistHBTafter() {return fHistHBTafter;}
   TH2D *GetQAHistPhiStarHBTbefore() {return fHistPhiStarHBTbefore;}
   TH2D *GetQAHistPhiStarHBTafter() {return fHistPhiStarHBTafter;}
+  TH2D *GetQAHistSameLabelMCCutBefore() {return fHistSameLabelMCCutBefore;}
+  TH2D *GetQAHistSameLabelMCCutAfter() {return fHistSameLabelMCCutAfter;}
   TH3D *GetQAHistConversionbefore() {return fHistConversionbefore;}
   TH3D *GetQAHistConversionafter() {return fHistConversionafter;}
   TH2D *GetQAHistPsiMinusPhi() {return fHistPsiMinusPhi;}
@@ -227,6 +229,7 @@ class AliBalancePsi : public TObject {
   void UseResonancesCut() {fResonancesCut = kTRUE;}
   void UseHBTCut(Double_t setHBTCutValue = 0.02) {
     fHBTCut = kTRUE; fHBTCutValue = setHBTCutValue;}
+  void UseSameLabelMCCut() {fSameLabelMCCut = kTRUE;}
   void UseConversionCut(Double_t setInvMassCutConversion = 0.04) {
     fConversionCut = kTRUE; fInvMassCutConversion = setInvMassCutConversion; }
   void UseMomentumDifferenceCut(Double_t gDeltaPtCutMin) {
@@ -261,6 +264,8 @@ class AliBalancePsi : public TObject {
   TH2D *fHistHBTafter; // Delta Eta vs. Delta Phi after HBT inspired cuts  
   TH2D *fHistPhiStarHBTbefore; // Delta Eta vs. Delta Phi* before HBT inspired cuts
   TH2D *fHistPhiStarHBTafter; // Delta Eta vs. Delta Phi* after HBT inspired cuts
+  TH2D *fHistSameLabelMCCutBefore; // Delta Eta vs. Delta Phi before MC label cut 
+  TH2D *fHistSameLabelMCCutAfter; // Delta Eta vs. Delta Phi after MC label cut
   TH3D *fHistConversionbefore; // 3D histogram (Deta,Dphi,Invmass) before Conversion cuts
   TH3D *fHistConversionafter; // 3D histogram (Deta,Dphi,Invmass) before Conversion cuts
   TH2D *fHistPsiMinusPhi;// psi - phi QA histogram
@@ -278,6 +283,7 @@ class AliBalancePsi : public TObject {
   Bool_t fResonancesCut;//resonances cut
   Bool_t fHBTCut;//cut for two-track efficiency (like HBT group)
   Double_t fHBTCutValue;// value for two-track efficiency cut (default = 0.02 from dphicorrelations)
+  Bool_t fSameLabelMCCut; //apply cut to exclude particles reconstructed as two but with same MC label kFALSE as default
   Bool_t fConversionCut;//conversion cut
   Double_t fInvMassCutConversion;//invariant mass for conversion cut
   Bool_t fQCut;//cut on momentum difference to suppress femtoscopic effect correlations
@@ -290,7 +296,7 @@ class AliBalancePsi : public TObject {
 
   AliBalancePsi & operator=(const AliBalancePsi & ) {return *this;}
 
-  ClassDef(AliBalancePsi, 2)
+  ClassDef(AliBalancePsi, 3)
 };
 
 #endif

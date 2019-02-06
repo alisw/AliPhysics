@@ -11,6 +11,44 @@
 /// \author Gustavo Conesa Balbastre <Gustavo.Conesa.Balbastre@cern.ch>, (LPSC-CNRS)
 ///
 
+#if !defined(__CINT__) || defined(__MAKECINT__)
+
+#include "Riostream.h"
+#include "TString.h"
+#include "TFile.h"
+#include "TChain.h"
+#include "TROOT.h"
+#include "TSystem.h"
+#include "TApplication.h"
+
+#include "TGrid.h"
+#include "TGridCollection.h"
+#include "TAlienCollection.h"
+#include "TGridResult.h"
+#include "AliLog.h"
+
+#include "AliAnalysisGrid.h"
+#include "AliAnalysisManager.h"
+#include "AliMCEventHandler.h"
+#include "AliAnalysisTaskSE.h"
+#include "AliESDEvent.h"
+#include "AliAODEvent.h"
+#include "AliESDInputHandler.h"
+#include "AliAODInputHandler.h"
+#include "AliAODHandler.h"
+#include "AliPhysicsSelection.h"
+#include "AliPhysicsSelectionTask.h"
+#include "AliMultiInputEventHandler.h"
+#include "AliAnalysisTaskCaloTrackCorrelation.h"
+#include "AliAnalysisTaskCounter.h"
+#include "AliAnalysisDataContainer.h"
+#include "TSystemDirectory.h"
+#include "CreateESDChain.C"
+#include "AddTaskPhysicsSelection.C"
+#include "AddTaskCalorimeterQA.C"
+
+#endif
+
 //---------------------------------------------------------------------------
 /// Different analysis modes
 enum anaModes
@@ -18,7 +56,8 @@ enum anaModes
     mLocal  = 0, /// Analyze locally files in your computer.
     mPROOF  = 1, /// Analyze files on GRID with Plugin
     mPlugin = 2, /// Analyze files on GRID with Plugin
-    mGRID   = 3  /// Analyze files on GRID, jobs launched from aliensh
+    mGRID   = 3, /// Analyze files on GRID, jobs launched from aliensh
+    mLocalCAF= 4 /// Analyze CAF local?
 };
 
 //---------------------------------------------------------------------------
@@ -26,18 +65,25 @@ enum anaModes
 // The different values are default, they can be set with environmental
 // variables: INDIR, PATTERN, NFILES, respectivelly
 
-char * kInDir   = "/user/data/files/";  /// Global,  path to data files
-char * kPattern = ""; /// Data are in files kInDir/kPattern+i
+char * kInDir   = (char*)"/user/data/files/";  /// Global,  path to data files
+char * kPattern = (char*)""; /// Data are in files kInDir/kPattern+i
 Int_t  kFile    = 2;  /// Number of files to analyze in local mode.
 
 //---------------------------------------------------------------------------
 // Collection file for grid analysis
 
-char * kXML = "collection.xml"; /// Global name for the xml collection file with data on grid
+char * kXML = (char*)"collection.xml"; /// Global name for the xml collection file with data on grid
 
 const Bool_t kMC = kFALSE; /// With real data kMC = kFALSE
 const TString kInputData = "ESD"; /// ESD, AOD, MC
 TString kTreeName = "esdTree";
+
+
+//---------------------------------------------------------------------------
+// Declare methods written after main
+void LoadLibraries();
+void SetupPar(char* pararchivename);
+void CreateChain(const Int_t mode, TChain * chain);
 
 //___________________________
 /// Main execution method. It:
@@ -70,7 +116,7 @@ void anaQA(Int_t mode=mLocal)
   else
   {
     cout<<"Wrong  data type "<<kInputData<<endl;
-    break;
+    return;
   }
 
   TChain *chain       = new TChain(kTreeName) ;
@@ -162,6 +208,9 @@ void anaQA(Int_t mode=mLocal)
     }
     else
     {
+      AliAnalysisTaskCounter * counter = new AliAnalysisTaskCounter("CounterAny");
+      counter->SelectCollisionCandidates(AliVEvent::kAny);
+      
       AliAnalysisDataContainer *coutput =
       mgr->CreateContainer("counter", TList::Class(), AliAnalysisManager::kOutputContainer,  outputFile.Data());
       mgr->AddTask(counter);
@@ -260,7 +309,7 @@ void SetupPar(char* pararchivename)
     if (gSystem->Exec("PROOF-INF/BUILD.sh"))
     {
       Error("runProcess","Cannot Build the PAR Archive! - Abort!");
-      return -1;
+      return ;
     }
   }
   // check for SETUP.C and execute
@@ -280,7 +329,7 @@ void SetupPar(char* pararchivename)
 //_____________________________________________________________________
 /// Fills chain with data files paths.
 //_____________________________________________________________________
-void CreateChain(const anaModes mode, TChain * chain)
+void CreateChain(const Int_t mode, TChain * chain)
 {
   TString ocwd = gSystem->WorkingDirectory();
   
@@ -305,11 +354,11 @@ void CreateChain(const anaModes mode, TChain * chain)
     //to analyze (NFILES) and the pattern name of the directories with files (PATTERN)
 
     if(gSystem->Getenv("INDIR"))  
-      kInDir = gSystem->Getenv("INDIR") ; 
+      kInDir = (char*)gSystem->Getenv("INDIR") ; 
     else cout<<"INDIR not set, use default: "<<kInDir<<endl;	
     
     if(gSystem->Getenv("PATTERN"))   
-      kPattern = gSystem->Getenv("PATTERN") ; 
+      kPattern = (char*)gSystem->Getenv("PATTERN") ; 
     else  cout<<"PATTERN not set, use default: "<<kPattern<<endl;
     
     if(gSystem->Getenv("NFILES"))
@@ -339,9 +388,9 @@ void CreateChain(const anaModes mode, TChain * chain)
       
       for (event = 0 ; event < kFile ; event++) {
 	sprintf(file, "%s/%s%d/%s", kInDir,kPattern,event,datafile.Data()) ; 
-	TFile * fESD = 0 ; 
+	TFile * fESD = TFile::Open(file) ; 
 	//Check if file exists and add it, if not skip it
-	if ( fESD = TFile::Open(file)) {
+	if ( fESD ) {
 	  if ( fESD->Get(kTreeName) ) { 
 	    printf("++++ Adding %s\n", file) ;
 	    chain->AddFile(file);
@@ -370,7 +419,7 @@ void CreateChain(const anaModes mode, TChain * chain)
     //variable XML
 
     if(gSystem->Getenv("XML") )
-      kXML = gSystem->Getenv("XML");
+      kXML = (char*) gSystem->Getenv("XML");
     else
       sprintf(kXML, "collection.xml") ; 
     
@@ -388,8 +437,8 @@ void CreateChain(const anaModes mode, TChain * chain)
     //Feed Grid with collection file
     TGridCollection * collection = (TGridCollection*) TAlienCollection::Open(kXML);
     if (! collection) {
-      AliError(Form("%s not found", kXML)) ; 
-      return kFALSE ; 
+      printf("%s not found\n", kXML) ; 
+      return  ; 
     }
     TGridResult* result = collection->GetGridResult("",0 ,0);
    

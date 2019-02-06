@@ -68,7 +68,14 @@ class AliFemtoCorrFctnDPhiStarDEtaStar : public AliFemtoCorrFctn {
   /**
    * Construct with histogram parameters
    */
-  AliFemtoCorrFctnDPhiStarDEtaStar(char* title, double radius, const int& aEtaBins, double aEtaRangeLow, double aEtaRangeUp, const int& aPhiStarBins, double aPhiStarRangeLow, double aPhiStarRangeUp);
+  AliFemtoCorrFctnDPhiStarDEtaStar(const char* title,
+                                   double radius,
+                                   const int& aEtaBins,
+                                   double aEtaRangeLow,
+                                   double aEtaRangeUp,
+                                   const int& aPhiStarBins,
+                                   double aPhiStarRangeLow,
+                                   double aPhiStarRangeUp);
 
   /// Copy Constructor
   AliFemtoCorrFctnDPhiStarDEtaStar(const AliFemtoCorrFctnDPhiStarDEtaStar& aCorrFctn);
@@ -86,6 +93,7 @@ class AliFemtoCorrFctnDPhiStarDEtaStar : public AliFemtoCorrFctn {
   virtual void Finish();
   void WriteHistos();
   virtual TList* GetOutputList();
+  virtual AliFemtoCorrFctn* Clone() const { return new AliFemtoCorrFctnDPhiStarDEtaStar(*this); }
 
   void SetRadius(double minrad);
   void SetPairType(AliFemtoPairType pairtype);

@@ -2,8 +2,9 @@
 #define ALIPP13TAGANDPROBESELECTION_H
 
 // --- Custom header files ---
-#include "AliPP13PhotonSelection.h"
+#include "AliPP13PhysicsSelection.h"
 #include "AliPP13DetectorHistogram.h"
+#include "AliPP13SelectionWeights.h"
 
 // --- ROOT system ---
 #include <TObjArray.h>
@@ -14,19 +15,19 @@
 #include <AliVCluster.h>
 #include <AliLog.h>
 
-class AliPP13TagAndProbeSelection: public AliPP13PhotonSelection
+class AliPP13TagAndProbeSelection: public AliPP13PhysicsSelection
 {
 public:
 	AliPP13TagAndProbeSelection():
-		AliPP13PhotonSelection(),
+		AliPP13PhysicsSelection(),
 		fTimingCut(999999),
 		fMassEnergyAll(),
 		fMassEnergyTOF()
 	{
 	}
 
-	AliPP13TagAndProbeSelection(const char * name, const char * title, AliPP13ClusterCuts cuts):
-		AliPP13PhotonSelection(name, title, cuts),
+	AliPP13TagAndProbeSelection(const char * name, const char * title, AliPP13ClusterCuts cuts, AliPP13SelectionWeights * w):
+		AliPP13PhysicsSelection(name, title, cuts, w),
 		fTimingCut(cuts.fTimingCut),  // Copy timing cut information
 		fMassEnergyAll(),
 		fMassEnergyTOF()
@@ -37,8 +38,8 @@ public:
 	virtual void InitSelectionHistograms();
 	
 protected:
+	virtual void SelectTwoParticleCombinations(const TObjArray & photonCandidates, const EventFlags & eflags);
 	virtual void ConsiderPair(const AliVCluster * c1, const AliVCluster * c2, const EventFlags & eflags);
-	virtual void FillPi0Mass(TObjArray * clusArray, TList * pool, const EventFlags & eflags);
 
 	AliPP13TagAndProbeSelection(const AliPP13TagAndProbeSelection &);
 	AliPP13TagAndProbeSelection & operator = (const AliPP13TagAndProbeSelection &);

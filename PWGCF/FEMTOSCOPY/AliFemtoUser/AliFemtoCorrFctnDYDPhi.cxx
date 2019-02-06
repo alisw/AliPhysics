@@ -15,15 +15,15 @@
 #include <cstdio>
 #include <TMath.h>
 
-#ifdef __ROOT__ 
+#ifdef __ROOT__
 ClassImp(AliFemtoCorrFctnDYDPhi)
 #endif
-  
+
 #define PIH 1.57079632679489656
 #define PIT 6.28318530717958623
 
 //____________________________
-AliFemtoCorrFctnDYDPhi::AliFemtoCorrFctnDYDPhi(char* title, const int& aPhiBins=20, const int& aYBins=20, const double& mass=0):
+AliFemtoCorrFctnDYDPhi::AliFemtoCorrFctnDYDPhi(const char* title, const int& aPhiBins=20, const int& aYBins=20, const double& mass=0):
   AliFemtoCorrFctn(),
   fDPhiDYNumerator(0),
   fDPhiDYDenominator(0),
@@ -94,7 +94,7 @@ AliFemtoCorrFctnDYDPhi::AliFemtoCorrFctnDYDPhi(char* title, const int& aPhiBins=
   char tTitY[101] = "Y";
   strncat(tTitY,title, 100);
   fY = new TH1D(tTitY,title,90,-1.2,1.2);
-  
+
   // set up numerator
   char tTitYtNum[101] = "NumYtYt";
   strncat(tTitYtNum,title, 100);
@@ -237,12 +237,12 @@ AliFemtoCorrFctnDYDPhi::AliFemtoCorrFctnDYDPhi(const AliFemtoCorrFctnDYDPhi& aCo
 
  if (aCorrFctn.fYtYtNumerator)
    fYtYtNumerator = new TH2D(*aCorrFctn.fDPhiDYDenominator);
- else 
+ else
    fYtYtNumerator = 0;
 
  if (aCorrFctn.fYtYtDenominator)
    fYtYtDenominator = new TH2D(*aCorrFctn.fDPhiDYDenominator);
- else 
+ else
    fYtYtDenominator = 0;
 
   fphiL = aCorrFctn.fphiL;
@@ -251,12 +251,12 @@ AliFemtoCorrFctnDYDPhi::AliFemtoCorrFctnDYDPhi(const AliFemtoCorrFctnDYDPhi& aCo
 
 //  if (aCorrFctn.fPtCorrectionsNum)
 //    fPtCorrectionsNum = new THnSparseF(*aCorrFctn.fPtCorrectionsNum);
-//    else 
+//    else
 //    fPtCorrectionsNum = 0;
 
 // if (aCorrFctn.fPtCorrectionsDen)
 //    fPtCorrectionsDen = new THnSparseF(*aCorrFctn.fPtCorrectionsDen);
-//  else 
+//  else
 //    fPtCorrectionsDen = 0;
 
 
@@ -358,12 +358,12 @@ AliFemtoCorrFctnDYDPhi& AliFemtoCorrFctnDYDPhi::operator=(const AliFemtoCorrFctn
 
  if (aCorrFctn.fYtYtNumerator)
    fYtYtNumerator = new TH2D(*aCorrFctn.fDPhiDYDenominator);
- else 
+ else
    fYtYtNumerator = 0;
 
  if (aCorrFctn.fYtYtDenominator)
    fYtYtDenominator = new TH2D(*aCorrFctn.fDPhiDYDenominator);
- else 
+ else
    fYtYtDenominator = 0;
 
  fIfCorrectionHist = kNone;
@@ -374,12 +374,12 @@ AliFemtoCorrFctnDYDPhi& AliFemtoCorrFctnDYDPhi::operator=(const AliFemtoCorrFctn
 
 // if (aCorrFctn.fPtCorrectionsNum)
 //    fPtCorrectionsNum = new THnSparseF(*aCorrFctn.fPtCorrectionsNum);
-//  else 
+//  else
 //    fPtCorrectionsNum = 0;
 
 // if (aCorrFctn.fPtCorrectionsDen)
 //    fPtCorrectionsDen = new THnSparseF(*aCorrFctn.fPtCorrectionsDen);
-//  else 
+//  else
 //    fPtCorrectionsDen = 0;
 
 
@@ -414,8 +414,9 @@ AliFemtoString AliFemtoCorrFctnDYDPhi::Report(){
 //____________________________
 void AliFemtoCorrFctnDYDPhi::AddRealPair( AliFemtoPair* pair){
   // add real (effect) pair
-  if (fPairCut)
-    if (!fPairCut->Pass(pair)) return;
+  if (fPairCut && !fPairCut->Pass(pair)) {
+    return;
+  }
 
   double px1 = pair->Track1()->Track()->P().x();
   double py1 = pair->Track1()->Track()->P().y();
@@ -488,8 +489,9 @@ void AliFemtoCorrFctnDYDPhi::AddRealPair( AliFemtoPair* pair){
 //____________________________
 void AliFemtoCorrFctnDYDPhi::AddMixedPair( AliFemtoPair* pair){
   // add mixed (background) pair
-  if (fPairCut)
-    if (!fPairCut->Pass(pair)) return;
+  if (fPairCut && !fPairCut->Pass(pair)) {
+    return;
+  }
 
   double px1 = pair->Track1()->Track()->P().x();
   double py1 = pair->Track1()->Track()->P().y();
@@ -573,7 +575,7 @@ void AliFemtoCorrFctnDYDPhi::WriteHistos()
   }
   fPhi->Write();
   fY->Write();
-  
+
   if(fIfCorrectionHist){
     if(fIfCorrectionHist==kPt){
     fPtCorrectionsNum->Write();
@@ -624,7 +626,7 @@ TList* AliFemtoCorrFctnDYDPhi::GetOutputList()
 void AliFemtoCorrFctnDYDPhi::SetDoPtAnalysis(int do2d)
 {
   fDoPtAnalysis = do2d;
-  
+
   int aPhiBins = fDPhiDYNumerator->GetNbinsX();
   const char *title = fDPhiDYNumerator->GetTitle();
 
@@ -650,7 +652,7 @@ void AliFemtoCorrFctnDYDPhi::SetDoPtAnalysis(int do2d)
   fDPhiPtDenominator->Sumw2();
   fDCosPtNumerator->Sumw2();
   fDCosPtDenominator->Sumw2();
-  
+
 }
 
 void AliFemtoCorrFctnDYDPhi::SetDo4DCorrectionHist(CorrectionType doCorr)

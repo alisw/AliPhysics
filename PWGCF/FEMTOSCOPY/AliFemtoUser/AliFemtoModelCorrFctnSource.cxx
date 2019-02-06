@@ -271,14 +271,6 @@ TList* AliFemtoModelCorrFctnSource::GetOutputList()
   return tOutputList;
 }
 //_______________________
-AliFemtoModelCorrFctn* AliFemtoModelCorrFctnSource::Clone()
-{
-  // Clone the correlation function
-  AliFemtoModelCorrFctnSource *tCopy = new AliFemtoModelCorrFctnSource(*this);
-  
-  return tCopy;
-}
-
 void AliFemtoModelCorrFctnSource::SetUseRPSelection(unsigned short aRPSel)
 {
   fUseRPSelection = aRPSel;

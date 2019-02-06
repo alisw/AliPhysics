@@ -43,7 +43,7 @@
 #include "AliESDEvent.h"
 #include "AliESDMuonTrack.h"
 #include "AliESDTZERO.h"
-#include "AliInputEventHandler.h"
+#include "AliVEventHandler.h"
 #include "AliLog.h"
 #include "AliMCEvent.h"
 #include "AliMCParticle.h"
@@ -362,7 +362,7 @@ UInt_t AliAnalysisMuonUtility::GetStatusCode ( const AliVParticle* mcParticle )
 
 
 //________________________________________________________________________
-TString AliAnalysisMuonUtility::GetPassName ( const AliInputEventHandler* eventHandler )
+TString AliAnalysisMuonUtility::GetPassName ( const AliVEventHandler* eventHandler )
 {
   /// Get pass name from event
   
@@ -396,7 +396,7 @@ TString AliAnalysisMuonUtility::GetPassName ( const AliInputEventHandler* eventH
 
 
 //________________________________________________________________________
-Int_t AliAnalysisMuonUtility::GetPassNumber ( const AliInputEventHandler* eventHandler )
+Int_t AliAnalysisMuonUtility::GetPassNumber ( const AliVEventHandler* eventHandler )
 {
   /// Get pass number from event
 

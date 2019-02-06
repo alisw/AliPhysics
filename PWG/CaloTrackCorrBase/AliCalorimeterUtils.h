@@ -153,8 +153,8 @@ class AliCalorimeterUtils : public TObject {
   
   void          InitPHOSBadChannelStatusMap () ;
 
-  Int_t         GetEMCALChannelStatus(Int_t iSM , Int_t iCol, Int_t iRow) const { 
-                  return fEMCALRecoUtils->GetEMCALChannelStatus(iSM,iCol,iRow); }//Channel is ok by default
+  Int_t         GetEMCALChannelStatus(Int_t iSM , Int_t iCol, Int_t iRow, Int_t status) const { 
+                  return fEMCALRecoUtils->GetEMCALChannelStatus(iSM, iCol, iRow, status); }//Channel is ok by default
 
   Int_t         GetPHOSChannelStatus (Int_t imod, Int_t iCol, Int_t iRow) const { 
                   if(fPHOSBadChannelMap) return (Int_t) ((TH2I*)fPHOSBadChannelMap->At(imod))->GetBinContent(iCol,iRow); 
@@ -301,6 +301,9 @@ class AliCalorimeterUtils : public TObject {
 
   void          SetEMCALRecoUtils(AliEMCALRecoUtils * ru)  { fEMCALRecoUtils = ru          ; }
   AliEMCALRecoUtils* GetEMCALRecoUtils()             const { return fEMCALRecoUtils        ; }
+  
+  void          ConfigureEMCALRecoUtils(Bool_t  bMC    = kFALSE, Bool_t  bExotic= kTRUE, Bool_t  bNonLin= kFALSE,  
+                                        Bool_t  bRecalE= kTRUE , Bool_t  bBad   = kTRUE, Bool_t  bRecalT= kTRUE, Int_t   debug  = -1);
   
   Bool_t        IsCorrectionOfClusterEnergyOn()      const { return fCorrectELinearity     ; }
   void          SwitchOnCorrectClusterLinearity()          { fCorrectELinearity = kTRUE    ; } 

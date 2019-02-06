@@ -20,6 +20,7 @@ class AliVCaloCells;
 class AliVCaloTrigger;
 class AliVEvent;
 class AliVVZERO;
+class AliEMCALTriggerBitConfig;
 template<class T> class AliEMCALTriggerDataGrid;
 template<class T> class AliEMCALTriggerAlgorithm;
 template<class T> class AliEMCALTriggerPatchFinder;
@@ -113,6 +114,19 @@ public:
   void SetTriggerThresholdGammaHigh( Int_t a, Int_t b, Int_t c ) { fThresholdConstants[1][0] = a; fThresholdConstants[1][1] = b; fThresholdConstants[1][2] = c; }
   void SetBackgroundThreshold(Int_t t)                           { fBkgThreshold             = t; }
   void SetL0Threshold(Int_t t)                                   { fL0Threshold              = t; }
+
+  /**
+   * @brief Switch on median subtraction of the online ADC value
+   */
+  void SetOnlineBackgroundSubtraction(Bool_t doSubtraction) { fDoBackgroundSubtraction = doSubtraction; }
+
+  /**
+   * @brief Get L0 amplitude of a given trigger channel (in col-row space)
+   * @param[in] col Column of the trigger channel
+   * @param[in] row Row of the trigger channel
+   * @return L0 amplitude of the given trigger channel (0 for invalid channel IDs)
+   */
+  double GetL0TriggerChannelAmplitude(Int_t col, Int_t row) const;
 
   /**
    * @brief Get ADC value of a given trigger channel (in col-row space)
@@ -380,6 +394,12 @@ public:
   void SetSmearThreshold(Double_t threshold) { fSmearThreshold = threshold; }
 
   /**
+   * @brief Simulate constant shift of the EMCAL Energy scale
+   * @param scaleshift Constant scale shift applied to each cell. In GeV
+   */
+  void SetScaleShift(Double_t scaleshift) { fScaleShift = scaleshift; }
+
+  /**
    * Check whether the trigger maker has been specially configured. Status has to
    * be set in the functions ConfigureForXX.
    * @return True if the trigger maker kernel is configured, false otherwise
@@ -395,6 +415,11 @@ public:
    * @brief Configure the class for 2015 pp
    */
   void ConfigureForPP2015();
+
+  /**
+   * @brief Configure the class for 2015 pp
+   */
+  void ConfigureForPP20158x8();
 
   /**
    * @brief Configure the class for 2013 pPb
@@ -419,6 +444,11 @@ public:
 protected:
   enum{
     kColsEta = 48
+  };
+  enum {
+    kIndRhoEMCAL = 0,
+    kIndRhoDCAL = 1,
+    kNIndRho = 2
   };
 
   /**
@@ -484,6 +514,8 @@ protected:
   TF1                                       *fSmearModelMean;             ///< Smearing parameterization for the mean
   TF1                                       *fSmearModelSigma;            ///< Smearing parameterization for the width
   Double_t                                  fSmearThreshold;              ///< Smear threshold: Only cell energies above threshold are smeared
+  Double_t                                  fScaleShift;                  ///< Scale shift simulation
+  Bool_t                                    fDoBackgroundSubtraction;     ///< Swtich for background subtraction (only online ADC)
 
   const AliEMCALGeometry                    *fGeometry;                   //!<! Underlying EMCAL geometry
   AliEMCALTriggerDataGrid<double>           *fPatchAmplitudes;            //!<! TRU Amplitudes (for L0)
@@ -492,6 +524,7 @@ protected:
   AliEMCALTriggerDataGrid<double>           *fPatchEnergySimpleSmeared;   //!<! Data grid for smeared energy values from cell energies
   AliEMCALTriggerDataGrid<char>             *fLevel0TimeMap;              //!<! Map needed to store the level0 times
   AliEMCALTriggerDataGrid<int>              *fTriggerBitMap;              //!<! Map of trigger bits
+  Double_t                                  fRhoValues[kNIndRho];         //!<! Rho values for background subtraction (only online ADC)
 
   Double_t                                  fADCtoGeV;                    //!<! Conversion factor from ADC to GeV
 

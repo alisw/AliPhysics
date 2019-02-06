@@ -24,6 +24,7 @@ class AliRsnCut : public AliRsnTarget {
 public:
 
    AliRsnCut(const char *name = "dummy", RSNTARGET target = AliRsnTarget::kTargetTypes);
+   AliRsnCut(const char *name, RSNTARGET target, Long_t    imin, Long_t    imax = 0 , Double_t dmin = 0., Double_t dmax = 0.);
    AliRsnCut(const char *name, RSNTARGET target, Int_t    imin, Int_t    imax = 0 , Double_t dmin = 0., Double_t dmax = 0.);
    AliRsnCut(const char *name, RSNTARGET target, Double_t dmin, Double_t dmax = 0., Int_t    imin = 0 , Int_t    imax = 0);
    AliRsnCut(const AliRsnCut &copy);

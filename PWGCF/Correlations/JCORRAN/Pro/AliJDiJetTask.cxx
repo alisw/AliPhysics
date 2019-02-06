@@ -33,6 +33,7 @@
 #include "AliJCard.h"
 #include "AliJRunTable.h"
 #include "AliAnalysisUtils.h"
+#include "AliInputEventHandler.h"
 
 //______________________________________________________________________________
 AliJDiJetTask::AliJDiJetTask() :   

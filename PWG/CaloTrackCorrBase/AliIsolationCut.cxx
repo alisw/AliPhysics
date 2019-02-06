@@ -67,7 +67,8 @@ void AliIsolationCut::CalculateUEBandClusterNormalization(AliCaloTrackReader * /
                                                            Float_t & phiUEptsumClusterNorm, Float_t & etaUEptsumClusterNorm,
                                                            Float_t & excessFracEta,         Float_t & excessFracPhi         ) const
 {
-  Float_t coneA     = fConeSize*fConeSize*TMath::Pi(); // A = pi R^2, isolation cone area
+  Float_t coneA = fConeSize*fConeSize*TMath::Pi(); // A = pi R^2, isolation cone area
+  if ( fDistMinToTrigger > 0 ) coneA -= fDistMinToTrigger*fDistMinToTrigger*TMath::Pi();
 
   //Careful here if EMCal limits changed .. 2010 (4 SM) to 2011-12 (10 SM), for the moment consider 100 deg in phi
   Float_t emcEtaSize = 0.7*2; // TO FIX
@@ -107,8 +108,9 @@ void AliIsolationCut::CalculateUEBandTrackNormalization  (AliCaloTrackReader * r
                                                           Float_t & phiUEptsumTrackNorm,  Float_t & etaUEptsumTrackNorm,
                                                           Float_t & excessFracEta,        Float_t & excessFracPhi          ) const
 {
-  Float_t coneA     = fConeSize*fConeSize*TMath::Pi(); // A = pi R^2, isolation cone area
-
+  Float_t coneA = fConeSize*fConeSize*TMath::Pi(); // A = pi R^2, isolation cone area
+  if ( fDistMinToTrigger > 0 ) coneA -= fDistMinToTrigger*fDistMinToTrigger*TMath::Pi();
+  
   // Get the cut used for the TPC tracks in the reader, +-0.8, +-0.9 ...
   // Only valid in simple fidutial cut case and if the cut is applied, careful!
   Float_t tpcEtaSize = reader->GetFiducialCut()->GetCTSFidCutMaxEtaArray()->At(0) -
@@ -186,7 +188,7 @@ Float_t AliIsolationCut::GetCellDensity(AliCaloTrackParticleCorrelation * pCandi
     Int_t absId = -999;
     if (eGeom->GetAbsCellIdFromEtaPhi(etaC,phiC,absId))
     {
-      //Get absolute (col,row) of candidate
+      // Get absolute (col,row) of candidate
       Int_t iEta=-1, iPhi=-1, iRCU = -1;
       Int_t nSupMod = cu->GetModuleNumberCellIndexes(absId, pCandidate->GetDetectorTag(), iEta, iPhi, iRCU);
 
@@ -195,7 +197,8 @@ Float_t AliIsolationCut::GetCellDensity(AliCaloTrackParticleCorrelation * pCandi
       Int_t rowC = iPhi + AliEMCALGeoParams::fgkEMCALRows*int(nSupMod/2);
 
       Int_t sqrSize = int(fConeSize/0.0143) ; // Size of cell in radians
-      //loop on cells in a square of side fConeSize to check cells in cone
+      Int_t status = 0;
+      // Loop on cells in a square of side fConeSize to check cells in cone
       for(Int_t icol = colC-sqrSize; icol < colC+sqrSize;icol++)
       {
         for(Int_t irow = rowC-sqrSize; irow < rowC+sqrSize; irow++)
@@ -226,8 +229,8 @@ Float_t AliIsolationCut::GetCellDensity(AliCaloTrackParticleCorrelation * pCandi
             {
               coneCellsBad += 1.;
             }
-            //Count as bad "cells" marked as bad in the DataBase
-            else if (cu->GetEMCALChannelStatus(cellSM,cellEta,cellPhi)==1)
+            // Count as bad "cells" marked as bad in the DataBase
+            else if (cu->GetEMCALChannelStatus(cellSM,cellEta,cellPhi,status)==1)
             {
               coneCellsBad += 1. ;
             }
@@ -282,6 +285,7 @@ void AliIsolationCut::GetCoeffNormBadCell(AliCaloTrackParticleCorrelation * pCan
       Int_t rowC = iPhi + AliEMCALGeoParams::fgkEMCALRows*int(nSupMod/2);
 
       Int_t sqrSize = int(fConeSize/0.0143) ; // Size of cell in radians
+      Int_t status  = 0;
       for(Int_t icol = 0; icol < 2*AliEMCALGeoParams::fgkEMCALCols-1;icol++)
       {
         for(Int_t irow = 0; irow < 5*AliEMCALGeoParams::fgkEMCALRows -1; irow++)
@@ -309,7 +313,7 @@ void AliIsolationCut::GetCoeffNormBadCell(AliCaloTrackParticleCorrelation * pCan
 
           if( (icol < 0 || icol > AliEMCALGeoParams::fgkEMCALCols*2-1 ||
                irow < 0 || irow > AliEMCALGeoParams::fgkEMCALRows*5 - 1) //5*nRows+1/3*nRows //Count as bad "cells" out of EMCAL acceptance
-             || (cu->GetEMCALChannelStatus(cellSM,cellEta,cellPhi)==1))  //Count as bad "cells" marked as bad in the DataBase
+             || (cu->GetEMCALChannelStatus(cellSM,cellEta,cellPhi,status)==1))  //Count as bad "cells" marked as bad in the DataBase
           {
             if     ( Radius(colC, rowC, icol, irow) < sqrSize ) coneBadCellsCoeff    += 1.;
             else if( icol>colC-sqrSize  &&  icol<colC+sqrSize ) phiBandBadCellsCoeff += 1 ;

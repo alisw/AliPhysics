@@ -52,7 +52,7 @@ ClassImp(AliAnaPi0) ;
 //______________________________________________________
 AliAnaPi0::AliAnaPi0() : AliAnaCaloTrackCorrBaseClass(),
 fEventsList(0x0),
-fUseAngleCut(kFALSE),        fUseAngleEDepCut(kFALSE),     fAngleCut(0),                 fAngleMaxCut(0.),
+fUseAngleCut(kFALSE),        fUseAngleEDepCut(kFALSE),     fAngleCut(0),                 fAngleMaxCut(0.),   fUseOneCellSeparation(kFALSE),
 fMultiCutAna(kFALSE),        fMultiCutAnaSim(kFALSE),      fMultiCutAnaAcc(kFALSE),
 fNPtCuts(0),                 fNAsymCuts(0),                fNCellNCuts(0),               fNPIDBits(0), fNAngleCutBins(0),
 fMakeInvPtPlots(kFALSE),     fSameSM(kFALSE),
@@ -101,8 +101,9 @@ fhPrimEtaOpeningAngle(0x0),  fhPrimEtaOpeningAnglePhotonCuts(0x0),
 fhPrimEtaOpeningAngleAsym(0x0),fhPrimEtaCosOpeningAngle(0x0),
 fhPrimEtaPtCentrality(0),    fhPrimEtaPtEventPlane(0),
 fhPrimEtaAccPtCentrality(0), fhPrimEtaAccPtEventPlane(0),
+fhPrimChHadronPt(0),
 fhPrimPi0PtOrigin(0x0),      fhPrimEtaPtOrigin(0x0),
-			 fhPrimNotResonancePi0PtOrigin(0x0),      fhPrimPi0PtStatus(0x0),
+fhPrimNotResonancePi0PtOrigin(0x0),      fhPrimPi0PtStatus(0x0),
 fhMCPi0MassPtRec(0x0),       fhMCPi0MassPtTrue(0x0),
 fhMCPi0PtTruePtRec(0x0),     fhMCPi0PtTruePtRecMassCut(0x0),
 fhMCEtaMassPtRec(0x0),       fhMCEtaMassPtTrue(0x0),
@@ -272,6 +273,7 @@ void AliAnaPi0::InitParameters()
   fUseAngleCut = kTRUE;
   fAngleCut    = 0.;
   fAngleMaxCut = DegToRad(80.);  // 80 degrees cut, avoid EMCal/DCal combinations
+  fUseOneCellSeparation = kFALSE;
   
   fMultiCutAna    = kFALSE;
   fMultiCutAnaAcc = kFALSE;
@@ -328,7 +330,7 @@ TObjString * AliAnaPi0::GetAnalysisCuts()
   parList+=onePar ;
   snprintf(onePar,buffersize,"Depth of event buffer: %d;",GetNMaxEvMix()) ;
   parList+=onePar ;
-  snprintf(onePar,buffersize,"Select pairs with their angle: %d, edep %d, min angle %2.3f, max angle %2.3f;",fUseAngleCut, fUseAngleEDepCut,fAngleCut,fAngleMaxCut) ;
+  snprintf(onePar,buffersize,"Select pairs with their angle: %d, edep %d, min angle %2.3f, max angle %2.3f, 1cell separation %d;",fUseAngleCut, fUseAngleEDepCut,fAngleCut,fAngleMaxCut,fUseOneCellSeparation) ;
   parList+=onePar ;
   snprintf(onePar,buffersize," Asymmetry cuts: n = %d, asymmetry < ",fNAsymCuts) ;
   for(Int_t i = 0; i < fNAsymCuts; i++) snprintf(onePar,buffersize,"%s %2.2f;",onePar,fAsymCuts[i]);
@@ -514,7 +516,7 @@ TList * AliAnaPi0::GetCreateOutputObjects()
     fhPrimEtaE     = new TH1F("hPrimEtaE","Primary eta E",
                               nptbins,ptmin,ptmax) ;
     fhPrimEtaE   ->SetXTitle("#it{E} (GeV)");
-    outputContainer->Add(fhPrimEtaAccE) ;
+    outputContainer->Add(fhPrimEtaE) ;
 
     fhPrimEtaPt     = new TH1F("hPrimEtaPt","Primary #eta #it{p}_{T}",
                                nptbins,ptmin,ptmax) ;
@@ -555,7 +557,7 @@ TList * AliAnaPi0::GetCreateOutputObjects()
       fhPrimEtaAccE  = new TH1F("hPrimEtaAccE","Primary #eta #it{E} with both photons in acceptance",
                                 nptbins,ptmin,ptmax) ;
       fhPrimEtaAccE->SetXTitle("#it{E} (GeV)");
-      outputContainer->Add(fhPrimEtaE) ;
+      outputContainer->Add(fhPrimEtaAccE) ;
       
       fhPrimEtaAccPt  = new TH1F("hPrimEtaAccPt","Primary eta #it{p}_{T} with both photons in acceptance",
                                  nptbins,ptmin,ptmax) ;
@@ -705,8 +707,16 @@ TList * AliAnaPi0::GetCreateOutputObjects()
     // Primary origin
     if(fFillOriginHisto)
     {
+      //K+- & pi+-
+      fhPrimChHadronPt=new TH2F("hPrimChHadronPt","Primary K+- #pi+-",nptbins,ptmin,ptmax,2,0,2) ;
+      fhPrimChHadronPt->SetXTitle("#it{p}_{T} (GeV/#it{c})");
+      fhPrimChHadronPt->SetYTitle("Origin");
+      fhPrimChHadronPt->GetYaxis()->SetBinLabel(1 ,"K+-");
+      fhPrimChHadronPt->GetYaxis()->SetBinLabel(2 ,"pi+-");
+      outputContainer->Add(fhPrimChHadronPt) ;
+      
       // Pi0
-      fhPrimPi0PtOrigin     = new TH2F("hPrimPi0PtOrigin","Primary #pi^{0} #it{p}_{T} vs origin",nptbins,ptmin,ptmax,11,0,11) ;
+      fhPrimPi0PtOrigin     = new TH2F("hPrimPi0PtOrigin","Primary #pi^{0} #it{p}_{T} vs origin",nptbins,ptmin,ptmax,20,0,20) ;
       fhPrimPi0PtOrigin->SetXTitle("#it{p}_{T} (GeV/#it{c})");
       fhPrimPi0PtOrigin->SetYTitle("Origin");
       fhPrimPi0PtOrigin->GetYaxis()->SetBinLabel(1 ,"Status 21");
@@ -715,10 +725,20 @@ TList * AliAnaPi0::GetCreateOutputObjects()
       fhPrimPi0PtOrigin->GetYaxis()->SetBinLabel(4 ,"Resonances");
       fhPrimPi0PtOrigin->GetYaxis()->SetBinLabel(5 ,"#rho");
       fhPrimPi0PtOrigin->GetYaxis()->SetBinLabel(6 ,"#omega");
-      fhPrimPi0PtOrigin->GetYaxis()->SetBinLabel(7 ,"K");
+      fhPrimPi0PtOrigin->GetYaxis()->SetBinLabel(7 ,"K0S");
       fhPrimPi0PtOrigin->GetYaxis()->SetBinLabel(8 ,"Other");
       fhPrimPi0PtOrigin->GetYaxis()->SetBinLabel(9 ,"#eta");
       fhPrimPi0PtOrigin->GetYaxis()->SetBinLabel(10 ,"#eta prime");
+      fhPrimPi0PtOrigin->GetYaxis()->SetBinLabel(11 ,"K0L");
+      fhPrimPi0PtOrigin->GetYaxis()->SetBinLabel(12 ,"K+-");
+      fhPrimPi0PtOrigin->GetYaxis()->SetBinLabel(13 ,"K*");
+      fhPrimPi0PtOrigin->GetYaxis()->SetBinLabel(14 ,"#Lambda");
+      fhPrimPi0PtOrigin->GetYaxis()->SetBinLabel(15 ,"hadron int.");
+      fhPrimPi0PtOrigin->GetYaxis()->SetBinLabel(16 ,"radius");
+      fhPrimPi0PtOrigin->GetYaxis()->SetBinLabel(17 ,"#pi+-");
+      fhPrimPi0PtOrigin->GetYaxis()->SetBinLabel(18 ,"e+-");
+      fhPrimPi0PtOrigin->GetYaxis()->SetBinLabel(19 ,"#mu+-");
+      fhPrimPi0PtOrigin->GetYaxis()->SetBinLabel(20 ,"p, n");
       outputContainer->Add(fhPrimPi0PtOrigin) ;
       
       fhPrimNotResonancePi0PtOrigin     = new TH2F("hPrimNotResonancePi0PtOrigin","Primary #pi^{0} #it{p}_{T} vs origin",nptbins,ptmin,ptmax,11,0,11) ;
@@ -1380,7 +1400,7 @@ TList * AliAnaPi0::GetCreateOutputObjects()
     
     if(fFillOriginHisto)
     {
-      fhMCPi0PtOrigin     = new TH2F("hMCPi0PtOrigin","Reconstructed pair from generated #pi^{0} #it{p}_{T} vs origin",nptbins,ptmin,ptmax,18,0,18) ;
+      fhMCPi0PtOrigin     = new TH2F("hMCPi0PtOrigin","Reconstructed pair from generated #pi^{0} #it{p}_{T} vs origin",nptbins,ptmin,ptmax,20,0,20) ;
       fhMCPi0PtOrigin->SetXTitle("#it{p}_{T} (GeV/#it{c})");
       fhMCPi0PtOrigin->SetYTitle("Origin");
       fhMCPi0PtOrigin->GetYaxis()->SetBinLabel(1 ,"Status 21");
@@ -1400,6 +1420,8 @@ TList * AliAnaPi0::GetCreateOutputObjects()
       fhMCPi0PtOrigin->GetYaxis()->SetBinLabel(15 ,"hadron int.");
       fhMCPi0PtOrigin->GetYaxis()->SetBinLabel(16 ,"radius");
       fhMCPi0PtOrigin->GetYaxis()->SetBinLabel(17 ,"p, n, #pi+-");
+      fhMCPi0PtOrigin->GetYaxis()->SetBinLabel(18 ,"e+-");
+      fhMCPi0PtOrigin->GetYaxis()->SetBinLabel(19 ,"#mu+-");
       outputContainer->Add(fhMCPi0PtOrigin) ;
       
       fhMCNotResonancePi0PtOrigin     = new TH2F("hMCNotResonancePi0PtOrigin","Reconstructed pair from generated #pi^{0} #it{p}_{T} vs origin",nptbins,ptmin,ptmax,11,0,11) ;
@@ -2603,7 +2625,7 @@ void AliAnaPi0::Print(const Option_t * /*opt*/) const
   printf("Cuts: \n") ;
   // printf("Z vertex position: -%2.3f < z < %2.3f \n",GetZvertexCut(),GetZvertexCut()) ; //It crashes here, why?
   printf("Number of modules:             %d \n",fNModules) ;
-  printf("Select pairs with their angle: %d, edep %d, min angle %2.3f, max angle %2.3f \n",fUseAngleCut, fUseAngleEDepCut, fAngleCut, fAngleMaxCut) ;
+  printf("Select pairs with their angle: %d, edep %d, min angle %2.3f, max angle %2.3f, 1cell %d \n",fUseAngleCut, fUseAngleEDepCut, fAngleCut, fAngleMaxCut, fUseOneCellSeparation) ;
   printf("Asymmetry cuts: n = %d, \n",fNAsymCuts) ;
   printf("\tasymmetry < ");
   for(Int_t i = 0; i < fNAsymCuts; i++) printf("%2.2f ",fAsymCuts[i]);
@@ -2675,7 +2697,7 @@ void AliAnaPi0::FillAcceptanceHistograms()
     
     pdg       = primary->PdgCode();
     // Select only pi0 or eta
-    if( pdg != 111 && pdg != 221) continue ;
+    if( pdg != 111 && pdg != 221 && pdg != 321 && pdg != 211) continue ;
     
     nDaught   = primary->GetNDaughters();
     iphot1    = primary->GetDaughterLabel(0) ;
@@ -2730,8 +2752,18 @@ void AliAnaPi0::FillAcceptanceHistograms()
       }
     }
     
-    ///
-    if(pdg == 111)
+    //
+    if(pdg == 321){//k+-
+      if(TMath::Abs(mesonY) < 1.0 && fFillOriginHisto){
+    	fhPrimChHadronPt->Fill(mesonPt, 0.5, GetEventWeight()*weightPt);
+      }
+    }
+    else if(pdg == 211){//pi+-
+      if(TMath::Abs(mesonY) < 1.0 && fFillOriginHisto){
+    	fhPrimChHadronPt->Fill(mesonPt, 1.5, GetEventWeight()*weightPt);
+      }
+    }
+    else if(pdg == 111)
     {
       if(TMath::Abs(mesonY) < 1.0)
       {
@@ -2806,8 +2838,12 @@ void AliAnaPi0::FillAcceptanceHistograms()
       Int_t momindex = primary->GetMother();
       Int_t mompdg    = -1;
       Int_t momstatus = -1;
+      Int_t uniqueID  = primary->GetUniqueID();
       Int_t status    = -1;
       Float_t momR    =  0;
+      Float_t momRcorr=  0;
+      Double_t vertex[3]={0.,0.,0.};
+      GetVertex(vertex);
       
       if(momindex >= 0 && momindex < nprim)
       {
@@ -2817,24 +2853,63 @@ void AliAnaPi0::FillAcceptanceHistograms()
         momstatus = mother->MCStatusCode();
         //momR      = mother->R();
         momR      = TMath::Sqrt(mother->Xv()*mother->Xv()+mother->Yv()*mother->Yv());
-        
+	momRcorr  = TMath::Sqrt((mother->Xv()-vertex[0])*(mother->Xv()-vertex[0]) +
+				(mother->Yv()-vertex[1])*(mother->Yv()-vertex[1]));
+	   
         if(pdg == 111)
         {
           fhPrimPi0ProdVertex->Fill(mesonPt, momR  , GetEventWeight()*weightPt);
           fhPrimPi0PtStatus  ->Fill(mesonPt, status, GetEventWeight()*weightPt);
 
-          
-          if     (momstatus  == 21) fhPrimPi0PtOrigin->Fill(mesonPt, 0.5, GetEventWeight()*weightPt);//parton
-          else if(mompdg     < 22 ) fhPrimPi0PtOrigin->Fill(mesonPt, 1.5, GetEventWeight()*weightPt);//quark
+	  if((uniqueID==13 && mompdg!=130 && mompdg!=310 && mompdg!=3122 && mompdg!=321 && mompdg!=211)
+	     || mompdg==3212 || mompdg==3222 || mompdg==3112 || mompdg==3322 || mompdg==3212) {
+	    //310 - K0S
+	    //130 - K0L
+	    //3133 - Lambda
+	    //321 - K+-
+	    //3212 - sigma0
+	    //3222,3112 - sigma+-
+	    //3322,3312 - cascades
+	    fhPrimPi0PtOrigin->Fill(mesonPt, 14.5, GetEventWeight()*weightPt);//hadronic interaction
+	  }
+          else if(mompdg==310) {
+	    fhPrimPi0PtOrigin->Fill(mesonPt, 6.5, GetEventWeight()*weightPt);//k0S
+	  }
+	  else if(mompdg    == 130) {
+	    fhPrimPi0PtOrigin->Fill(mesonPt, 10.5, GetEventWeight()*weightPt);//k0L
+	  }
+	  else if(mompdg==321) {
+	    fhPrimPi0PtOrigin->Fill(mesonPt, 11.5, GetEventWeight()*weightPt);//k+-
+	  }
+	  else if(mompdg==3122) {
+	    fhPrimPi0PtOrigin->Fill(mesonPt, 13.5, GetEventWeight()*weightPt);//lambda 
+	  }
+	  else if(momRcorr>0.1) {//in cm
+	    fhPrimPi0PtOrigin->Fill(mesonPt, 15.5, GetEventWeight()*weightPt);//radius too large
+	  }
+	  else if(mompdg==211) {
+	    fhPrimPi0PtOrigin->Fill(mesonPt, 16.5, GetEventWeight()*weightPt);//pi+-
+	  }
+	  else if(mompdg==11) {
+	    fhPrimPi0PtOrigin->Fill(mesonPt, 17.5, GetEventWeight()*weightPt);//e+-
+	  }
+	  else if(mompdg==13) {
+	    fhPrimPi0PtOrigin->Fill(mesonPt, 18.5, GetEventWeight()*weightPt);//mu+-
+	  }
+	  else if(mompdg==2212 || mompdg==2112) {
+	    fhPrimPi0PtOrigin->Fill(mesonPt, 19.5, GetEventWeight()*weightPt);//p,n
+	  }
+	  
+          else if(momstatus  == 21) fhPrimPi0PtOrigin->Fill(mesonPt, 0.5, GetEventWeight()*weightPt);//parton
+          else if(mompdg     < 22  && mompdg!=11 && mompdg!=13) fhPrimPi0PtOrigin->Fill(mesonPt, 1.5, GetEventWeight()*weightPt);//quark
           else if(mompdg     > 2100  && mompdg < 2210)
                                     fhPrimPi0PtOrigin->Fill(mesonPt, 2.5, GetEventWeight()*weightPt);// resonances
           else if(mompdg    == 221) fhPrimPi0PtOrigin->Fill(mesonPt, 8.5, GetEventWeight()*weightPt);//eta
           else if(mompdg    == 331) fhPrimPi0PtOrigin->Fill(mesonPt, 9.5, GetEventWeight()*weightPt);//eta prime
           else if(mompdg    == 213) fhPrimPi0PtOrigin->Fill(mesonPt, 4.5, GetEventWeight()*weightPt);//rho
           else if(mompdg    == 223) fhPrimPi0PtOrigin->Fill(mesonPt, 5.5, GetEventWeight()*weightPt);//omega
-          else if(mompdg    >= 310   && mompdg <= 323)
-	                            fhPrimPi0PtOrigin->Fill(mesonPt, 6.5, GetEventWeight()*weightPt);//k0S, k+-,k*
-          else if(mompdg    == 130) fhPrimPi0PtOrigin->Fill(mesonPt, 6.5, GetEventWeight()*weightPt);//k0L
+          else if(mompdg    >  310   && mompdg <= 323)
+	                            fhPrimPi0PtOrigin->Fill(mesonPt, 12.5, GetEventWeight()*weightPt);//k*
           else if(momstatus == 11 || momstatus == 12 )
                                     fhPrimPi0PtOrigin->Fill(mesonPt, 3.5, GetEventWeight()*weightPt);//resonances
           else                      fhPrimPi0PtOrigin->Fill(mesonPt, 7.5, GetEventWeight()*weightPt);//other?
@@ -2920,11 +2995,11 @@ void AliAnaPi0::FillAcceptanceHistograms()
     
     if(fFillArmenterosThetaStar) FillArmenterosThetaStar(pdg);
     
+    Int_t absID1=-1;
+    Int_t absID2=-1;
+
     if(GetCalorimeter()==kEMCAL && inacceptance1 && inacceptance2 && fCheckAccInSector)
     {
-      Int_t absID1=0;
-      Int_t absID2=0;
-      
       Float_t photonPhi1 = fPhotonMom1.Phi();
       Float_t photonPhi2 = fPhotonMom2.Phi();
       
@@ -2969,6 +3044,12 @@ void AliAnaPi0::FillAcceptanceHistograms()
       
       Bool_t cutAngle = kFALSE;
       if(fUseAngleCut && (angle < fAngleCut || angle > fAngleMaxCut)) cutAngle = kTRUE;
+
+      Bool_t cutSeparation = kFALSE;
+      if(fUseOneCellSeparation)
+      {
+	if(CheckSeparation(absID1,absID2)) cutSeparation = kTRUE;
+      }
       
       AliDebug(2,Form("\t ACCEPTED pdg %d: pt %2.2f, phi %2.2f, eta %2.2f",pdg,mesonPt,mesonPhi,mesonYeta));
       
@@ -2996,7 +3077,7 @@ void AliAnaPi0::FillAcceptanceHistograms()
           fhPrimPi0CosOpeningAngle ->Fill(mesonPt, TMath::Cos(angle), GetEventWeight()*weightPt);
         }
         
-        if(fPhotonMom1.Pt() > GetMinPt() && fPhotonMom2.Pt() > GetMinPt() && !cutAngle)
+        if(fPhotonMom1.Pt() > GetMinPt() && fPhotonMom2.Pt() > GetMinPt() && !cutAngle && !cutSeparation)
         {
           fhPrimPi0AccPtPhotonCuts->Fill(mesonPt, GetEventWeight()*weightPt) ;
           
@@ -3044,7 +3125,7 @@ void AliAnaPi0::FillAcceptanceHistograms()
           fhPrimEtaCosOpeningAngle ->Fill(mesonPt, TMath::Cos(angle), GetEventWeight()*weightPt);
         }  
         
-        if(fPhotonMom1.Pt() > GetMinPt() && fPhotonMom2.Pt() > GetMinPt() && !cutAngle)
+        if(fPhotonMom1.Pt() > GetMinPt() && fPhotonMom2.Pt() > GetMinPt() && !cutAngle && !cutSeparation)
         {
           fhPrimEtaAccPtPhotonCuts->Fill(mesonPt, GetEventWeight()*weightPt) ;
           
@@ -3308,11 +3389,17 @@ void AliAnaPi0::FillMCVersusRecDataHistograms(Int_t ancLabel , Int_t ancPDG,
 	      else if(mompdg==2212 || mompdg==2112 || mompdg==211) {
 		fhMCPi0PtOrigin->Fill(pt, 16.5, GetEventWeight()*weightPt);//p,n,pi
 	      }
+	      else if(mompdg==11) {
+		fhMCPi0PtOrigin->Fill(pt, 17.5, GetEventWeight()*weightPt);//e+-
+	      }
+	      else if(mompdg==13) {
+		fhMCPi0PtOrigin->Fill(pt, 18.5, GetEventWeight()*weightPt);//mu+-
+	      }
 	      else if     (momstatus  == 21) {
                 fhMCPi0PtOrigin->Fill(pt, 0.5, GetEventWeight()*weightPt);//parton (empty for py8)
               }
-              else if(mompdg     < 22 ) {
-                fhMCPi0PtOrigin->Fill(pt, 1.5, GetEventWeight()*weightPt);//quark
+              else if(mompdg     < 22 && mompdg!=11 && mompdg!=13) {
+                fhMCPi0PtOrigin->Fill(pt, 1.5, GetEventWeight()*weightPt);//quark (no e nor mu)
               }
               else if(mompdg     > 2100  && mompdg   < 2210) {
                 fhMCPi0PtOrigin->Fill(pt, 2.5, GetEventWeight()*weightPt);// resonances
@@ -4130,6 +4217,16 @@ void AliAnaPi0::MakeAnalysisFillHistograms()
         AliDebug(2,Form("Real pair cut %f < angle %f < cut %f (deg)",RadToDeg(fAngleCut), RadToDeg(angle), RadToDeg(fAngleMaxCut)));
         continue;
       }
+
+      if(fUseOneCellSeparation)
+      {
+	Bool_t separation = CheckSeparation(p1->GetCellAbsIdMax() ,p2->GetCellAbsIdMax());
+	if(!separation)
+	{
+	  AliDebug(2,Form("Real pair one cell separation required and Yes/No %d", separation));
+	  continue;
+	}
+      }
       
       //-----------------------------------
       // In case of MC, get the ancestry and 
@@ -4564,6 +4661,16 @@ void AliAnaPi0::MakeAnalysisFillHistograms()
             AliDebug(2,Form("Mix pair cut %f < angle %f < cut %f (deg)",RadToDeg(fAngleCut),RadToDeg(angle),RadToDeg(fAngleMaxCut)));
             continue;
           }
+
+	  if(fUseOneCellSeparation)
+	  {
+	    Bool_t separation = CheckSeparation(p1->GetCellAbsIdMax() ,p2->GetCellAbsIdMax());
+	    if(!separation)
+	    {
+	      AliDebug(2,Form("Mix pair one cell separation required and Yes/No %d", separation));
+	      continue;
+	    }
+	  }
           
           AliDebug(2,Form("Mixed Event: pT: fPhotonMom1 %2.2f, fPhotonMom2 %2.2f; Pair: pT %2.2f, mass %2.3f, a %2.3f",p1->Pt(), p2->Pt(), pt,m,a));
           
@@ -4944,3 +5051,16 @@ Int_t AliAnaPi0::GetEventIndex(AliCaloTrackParticle * part, Double_t * vert)
   return evtIndex ; 
 }
 
+//________________________________________________________________________
+/// Checks whether two photon cluster maxima have at least one cell separation
+/// TRUE - clusters are separated
+/// FALSE - are NOT separated
+//________________________________________________________________________
+Bool_t AliAnaPi0::CheckSeparation(Int_t absID1,Int_t absID2)
+{
+  if(absID1<0 || absID2<0) return kFALSE;
+  Bool_t neighbours = GetCaloUtils()->AreNeighbours(AliFiducialCut::kEMCAL, absID1, absID2);
+  //neighbours = kTRUE -> no separation
+  
+  return (!neighbours);
+}

@@ -231,8 +231,9 @@ AliFMDEnergyFitter::SetupForData(const TAxis& eAxis, UShort_t sys)
   switch (sys) {
   case 1: fNParticles = 3; break; // pp 
   case 2: // Fall through
-  case 3: // Fall through    
-  case 4: fNParticles = 5; break; // pA, Ap, AA
+  case 3: // Fall through
+  case 4: // Fall through
+  case 5: fNParticles = 5; break; // pA, Ap, PbPb, XeXe
   default: break; // Do nothing. 
   }
   

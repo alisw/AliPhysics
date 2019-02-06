@@ -119,6 +119,7 @@ fUsePhiEtaWeightsVtxDep(kFALSE),
 fUsePhiEtaWeightsChPtDep(kFALSE),
 fUseZDCESEMulWeights(kFALSE),
 fUseZDCESESpecWeights(kFALSE),
+fCutMultiplicityOutliers(kFALSE),
 fUseParticleWeights(NULL),
 // 2b.) event weights:
 fMultiplicityWeight(NULL),
@@ -556,7 +557,9 @@ void AliFlowAnalysisCRC::Make(AliFlowEventSimple* anEvent)
   if(!fCentralityEBE){return;}
   if(!fNumberOfRPsEBE || !fNumberOfPOIsEBE){return;}
   fhCenvsMul[0]->Fill(fCentralityEBE,fReferenceMultiplicityEBE);
-  if((fDataSet==k2015 || fDataSet==k2015v6 || fDataSet==k2015pidfix) && !MultCut2015o()){return;}
+  if(fCutMultiplicityOutliers) {
+    if((fDataSet==k2015 || fDataSet==k2015v6 || fDataSet==k2015pidfix) && !MultCut2015o()){return;}
+  }
 
   if(!fRefMultRbRPro) {
     fReferenceMultiplicityRecEBE = fReferenceMultiplicityEBE-fMultCutAv->GetBinContent(fMultCutAv->FindBin(fCentralityEBE));
@@ -915,7 +918,6 @@ void AliFlowAnalysisCRC::Make(AliFlowEventSimple* anEvent)
 
         if(fSelectCharge==kPosCh && dCharge<0.) continue;
         if(fSelectCharge==kNegCh && dCharge>0.) continue;
-        if(fMinMulZN==0 && dEta>-0.2 && dEta<0.) continue;
 
         Bool_t IsSplitMergedTracks = kFALSE;
         if(fRemoveSplitMergedTracks) {
@@ -934,6 +936,11 @@ void AliFlowAnalysisCRC::Make(AliFlowEventSimple* anEvent)
         wEta = 1.;
         wTrack = 1.;
         wPhiEta = 1.;
+
+        if(fMinMulZN==0 && dPhi>3.141593e-01 && dPhi<1.256637e+00) {
+          if(dEta>0.) continue;
+          if(dEta<0.) wPhiEta *= 2.;
+        }
 
         // pT weights
         if(fUsePtWeights && fPtWeightsHist[fCenBin]) {
@@ -985,7 +992,9 @@ void AliFlowAnalysisCRC::Make(AliFlowEventSimple* anEvent)
         }
 
         // Generic Framework: Calculate Re[Q_{m*n,k}] and Im[Q_{m*n,k}] for this event (m = 1,2,...,12, k = 0,1,...,8):
-        if(dPt<3.) {
+        Double_t MaxPtCut = 3.;
+        if(fMinMulZN==99) MaxPtCut = 1.;
+        if(dPt<MaxPtCut) {
           for(Int_t m=0;m<21;m++) // to be improved - hardwired 6
           {
             for(Int_t k=0;k<9;k++) // to be improved - hardwired 9
@@ -995,13 +1004,23 @@ void AliFlowAnalysisCRC::Make(AliFlowEventSimple* anEvent)
             }
           }
         }
-        Int_t ptb = (dPt<0.5?0:(dPt<1.?1:2));
-        for(Int_t m=0;m<21;m++) // to be improved - hardwired 6
-        {
-          for(Int_t k=0;k<9;k++) // to be improved - hardwired 9
+
+        for(Int_t ptb=0; ptb<fkGFPtB; ptb++) {
+          if(ptb==0 && dPt>0.5) continue;
+          if(ptb==1 && (dPt<0.5 || dPt>1.)) continue;
+          if(ptb==2 && (dPt<1. || dPt>2.)) continue;
+          if(ptb==3 && dPt<2.) continue;
+          if(ptb==4 && (dPt<1. || dPt>2.5)) continue;
+          if(ptb==5 && dPt<2.5) continue;
+          if(ptb==6 && (dPt<1. || dPt>3.)) continue;
+          if(ptb==7 && dPt<3.) continue;
+          for(Int_t m=0;m<21;m++) // to be improved - hardwired 6
           {
-            (*fReQGFPt[ptb])(m,k) += pow(wPhiEta*wPhi*wPt*wEta*wTrack,k)*TMath::Cos(m*dPhi);
-            (*fImQGFPt[ptb])(m,k) += pow(wPhiEta*wPhi*wPt*wEta*wTrack,k)*TMath::Sin(m*dPhi);
+            for(Int_t k=0;k<9;k++) // to be improved - hardwired 9
+            {
+              (*fReQGFPt[ptb])(m,k) += pow(wPhiEta*wPhi*wPt*wEta*wTrack,k)*TMath::Cos(m*dPhi);
+              (*fImQGFPt[ptb])(m,k) += pow(wPhiEta*wPhi*wPt*wEta*wTrack,k)*TMath::Sin(m*dPhi);
+            }
           }
         }
 
@@ -5441,6 +5460,9 @@ void AliFlowAnalysisCRC::InitializeArraysForFlowSPZDC()
   for(Int_t j=0; j<fkNv1evenCor; j++) {
     fFlowSPZDCv1evenCorPro[j] = NULL;
   }
+  for(Int_t j=0; j<fkNZDCDistPro; j++) {
+    fFlowSPZDCDistPro[j] = NULL;
+  }
 //  for(Int_t j=0; j<fkNHistv1eta; j++) {
 //    fFlowSPZDCv1etaProPhi[j] = NULL;
 //    fFlowSPZDCv1etaProITS[j] = NULL;
@@ -9118,6 +9140,21 @@ void AliFlowAnalysisCRC::CalculateFlowSPZDC(Double_t ZCRe, Double_t ZCIm, Double
     }
   }
 
+  if(dCnt==0) {
+    Double_t DistCen = sqrt(pow(ZARe-ZCRe,2.)+pow(ZAIm-ZCIm,2.)); //ZARe*ZCRe+ZAIm*ZCIm
+    Double_t EvPlZDCC = TMath::ATan2(ZCIm,ZCRe);
+    Double_t EvPlZDCA = TMath::ATan2(ZAIm,ZARe);
+    if(fbFlagIsPosMagField) {
+      fFlowSPZDCDistPro[0]->Fill(fCentralityEBE,DistCen,ZARe*ZCRe);
+      fFlowSPZDCDistPro[1]->Fill(fCentralityEBE,DistCen,ZAIm*ZCIm);
+      fFlowSPZDCDistPro[4]->Fill(fCentralityEBE,DistCen,TMath::Cos(EvPlZDCC-EvPlZDCA));
+    } else {
+      fFlowSPZDCDistPro[2]->Fill(fCentralityEBE,DistCen,ZARe*ZCRe);
+      fFlowSPZDCDistPro[3]->Fill(fCentralityEBE,DistCen,ZAIm*ZCIm);
+      fFlowSPZDCDistPro[5]->Fill(fCentralityEBE,DistCen,TMath::Cos(EvPlZDCC-EvPlZDCA));
+    }
+  }
+
   // sine terms: sin(\phi - \Psi_{A,C})
   fFlowSPZDCv1etaProImag[fCenBin][0]->Fill(dEta,QIm*ZARe,wPhiEta*fCenWeightEbE);
   fFlowSPZDCv1etaProImag[fCenBin][1]->Fill(dEta,QRe*ZAIm,wPhiEta*fCenWeightEbE);
@@ -9267,6 +9304,7 @@ void AliFlowAnalysisCRC::CalculateFlowQC()
 
     for(Int_t ptr=0; ptr<fkFlowQCnPtRanges; ptr++) {
       Double_t ptmax = (ptr==0?3.:(ptr==1?5.:50.));
+      if(fMinMulZN==99 && ptr==0) ptmax=1.;
 
       // pT-integrated, 2- and 4-particle cumulants *************************
       QRe=0.; QIm=0.; Q2Re2=0.; Q2Im2=0.; QRe3=0.;
@@ -18374,6 +18412,12 @@ void AliFlowAnalysisCRC::BookEverythingForFlowSPZDC()
     fFlowSPZDCv1evenCorPro[j] = new TProfile2D(Form("fFlowSPZDCv1evenCorPro[%d]",j),Form("fFlowSPZDCv1evenCorPro[%d]",j),10,cenbinsforphihist,fPtDiffNBins,fCRCPtBins);
     fFlowSPZDCv1evenCorPro[j]->Sumw2();
     fFlowSPZDCList->Add(fFlowSPZDCv1evenCorPro[j]);
+  }
+  for(Int_t j=0; j<fkNZDCDistPro; j++) {
+    Double_t cenbinsforphihist[] = {0.,5.,10.,20.,30.,40.,50.,60.,70.,80.,90.};
+    fFlowSPZDCDistPro[j] = new TProfile2D(Form("fFlowSPZDCDistPro[%d]",j),Form("fFlowSPZDCDistPro[%d]",j),10,0.,100.,100,-1.,1.);
+    fFlowSPZDCDistPro[j]->Sumw2();
+    fFlowSPZDCList->Add(fFlowSPZDCDistPro[j]);
   }
 
   for (Int_t h=0; h<fCRCnCen; h++) {

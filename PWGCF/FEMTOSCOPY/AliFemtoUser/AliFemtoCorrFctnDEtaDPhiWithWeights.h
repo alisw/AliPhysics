@@ -21,7 +21,7 @@ public:
   enum CorrectionType {kNone=0, kPt=1, kEta=2};
   typedef enum CorrectionType ReadCorrectionType;
 
-  AliFemtoCorrFctnDEtaDPhiWithWeights(char* title, TH2D *filter1, TH2D *filter2, const int& aPhiBins, const int& aEtaBins);
+  AliFemtoCorrFctnDEtaDPhiWithWeights(const char* title, TH2D *filter1, TH2D *filter2, const int& aPhiBins, const int& aEtaBins);
   AliFemtoCorrFctnDEtaDPhiWithWeights(const AliFemtoCorrFctnDEtaDPhiWithWeights& aCorrFctn);
   virtual ~AliFemtoCorrFctnDEtaDPhiWithWeights();
 
@@ -37,8 +37,10 @@ public:
 
   void WriteHistos();
   virtual TList* GetOutputList();
+  virtual AliFemtoCorrFctn* Clone() const { return new AliFemtoCorrFctnDEtaDPhiWithWeights(*this); }
+
 private:
-  
+
   TH2D *fDPhiDEtaNumerator;          // Numerator of dEta dPhi function
   TH2D *fDPhiDEtaDenominator;        // Denominator of dEta dPhi function
 
@@ -61,12 +63,12 @@ private:
   TH1D *fPtSumDist;
 
   TH2D *fYtYtNumerator;
-  TH2D *fYtYtDenominator; 
-  
+  TH2D *fYtYtDenominator;
+
   TH2D *fYPtWeightsParticle1;
   TH2D *fYPtWeightsParticle2;
-  
-  
+
+
   CorrectionType fIfCorrectionHist;
   THnSparseF *fPtCorrectionsNum;
   THnSparseF *fPtCorrectionsDen;

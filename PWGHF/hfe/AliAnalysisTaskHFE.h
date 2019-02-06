@@ -193,6 +193,11 @@ class AliAnalysisTaskHFE : public AliAnalysisTaskSE{
     Bool_t IsNewFramework() { return fNewFrame; };
     // --------------------------------
 
+    // --- Pile-up rejection using correlation kTPCout-VZEROmult ---
+    Bool_t RejectPileUpMultiplicitySelection();
+    void SetApplyPileUpMultiplicitySelection(Bool_t select) {fIsPileUpMultRejApplied = select;};
+    // -------------------------------------------------------------
+
   private:
     enum{
       kHasMCdata = BIT(19),
@@ -291,7 +296,6 @@ class AliAnalysisTaskHFE : public AliAnalysisTaskSE{
 
     AliPIDResponse *fPIDResponse;         //! PID response object
 
-
     //-----------QA and output---------------
     TList *fQA;                           //! QA histos for the cuts
     TList *fOutput;                       //! Container for Task Output
@@ -300,6 +304,12 @@ class AliAnalysisTaskHFE : public AliAnalysisTaskSE{
     TList *fHistELECBACKGROUND;           //! Output container for electron background analysis
     AliHFEcollection *fQACollection;      //! Tasks own QA collection
     //---------------------------------------
+
+    // --- Pile-up rejection using correlation kTPCout-VZEROmult ---
+    Bool_t fIsPileUpMultRejApplied;       // switch on/off this selection
+    TH2D*  fEvBeforePileUpMultRej;        //! correlation kTPCout tracks - VZERO multiplicity before the selection
+    TH2D*  fEvAfterPileUpMultRej;         //! correlation kTPCout tracks - VZERO multiplicity after the selection
+    // -------------------------------------------------------------
 
     ClassDef(AliAnalysisTaskHFE, 4)       // The electron Analysis Task
 };

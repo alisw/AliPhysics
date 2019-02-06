@@ -25,6 +25,7 @@ AliAnalysisTask *AddTask_rbailhac_lowmass(Bool_t getFromAlien=kFALSE,
 
   //Do we have an MC handler?
   Bool_t hasMC = (AliAnalysisManager::GetAnalysisManager()->GetMCtruthEventHandler()!=0x0);
+  if(hasMC) kMix = 0;
 
   //if (!gROOT->GetListOfGlobalFunctions()->FindObject(cFileName.Data()))
   gROOT->LoadMacro(configFilePath.Data());
@@ -36,7 +37,7 @@ AliAnalysisTask *AddTask_rbailhac_lowmass(Bool_t getFromAlien=kFALSE,
   if (!hasMC) task->UsePhysicsSelection();
   task->SetTriggerMask(triggerMask);
   if(pileupon) task->SetRejectPileup();
-  //task->SetRandomizeDaughters(randomizeDau); //default kFALSE
+  task->SetRandomizeDaughters(randomizeDau); //default kFALSE
 
   //Add event filter
   task->SetEventFilter( GetEventCuts() );

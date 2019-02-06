@@ -2,11 +2,6 @@
 
 //by default the task is anyway computing 1, 2 and 3 sigmas
 
-const Bool_t theRareOn = kTRUE;
-
-const Bool_t anaType   = 1;//0 HD; 1 UU;
-
-const Bool_t doImp   = kFALSE;// imp par studies
 
 //----------------------------------------------------
 
@@ -23,12 +18,17 @@ AliAnalysisTaskSEB0toDminuspi *AddTaskB0Dminuspi(Int_t system=0/*0=pp,1=PbPb*/,
 {
 
 
+const Bool_t theRareOn = kTRUE;
+
+const Bool_t anaType   = 1;//0 HD; 1 UU;
+
+const Bool_t doImp   = kFALSE;// imp par studies
 
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
 
   if (!mgr) {
 
-    ::Error("AddTaskB0Dminuspi", "No analysis manager to connect to.");
+    Printf("ERROR: No analysis manager to connect to.");
 
     return NULL;
 
@@ -50,18 +50,19 @@ AliAnalysisTaskSEB0toDminuspi *AddTaskB0Dminuspi(Int_t system=0/*0=pp,1=PbPb*/,
       filecuts=TFile::Open(cutsfile.Data());
       if(!filecuts ||(filecuts&& !filecuts->IsOpen())){
 	//AliFatal("Input file not found : check your cut object");
-	Error("Input file not found : check your cut object");
+	Printf("ERROR: Input file not found : check your cut object");
+	return NULL;
       }
   }
   
 
 
-  AliRDHFCutsDplustoKpipi* RDHFB0toDminuspi=new AliRDHFCutsDplustoKpipi();
+  AliRDHFCutsDplustoKpipi* RDHFB0toDminuspi;
 
   
 
   if(stdcuts) {
-
+    RDHFB0toDminuspi=new AliRDHFCutsDplustoKpipi();
     if(system==0){ 
       RDHFB0toDminuspi->SetStandardCutsPP2010();
       //      RDHFB0toDminuspi->SetUseCentrality(kFALSE);
@@ -105,7 +106,7 @@ AliAnalysisTaskSEB0toDminuspi *AddTaskB0Dminuspi(Int_t system=0/*0=pp,1=PbPb*/,
 
     cout<<"Specific AliRDHFCuts not found"<<endl;
 
-    return;
+    return NULL;
 
   }
 

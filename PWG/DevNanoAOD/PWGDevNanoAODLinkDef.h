@@ -13,5 +13,6 @@
 #pragma link C++ class AliAnalysisNanoAODTrackCutsCRCZDC+;
 #pragma link C++ class AliAnalysisNanoAODEventCutsCRCZDC+;
 #pragma link C++ class AliNanoAODSimpleSetterCRCZDC+;
+#pragma link C++ class AliNanoAODSimpleSetterJet+;
 
 #endif

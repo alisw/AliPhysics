@@ -31,7 +31,9 @@ AliAnalysisTaskHFEpACorrelation *AddTaskHFEpACorrelation(
                                                          TString Sufix = "",
                                                          Float_t ZvtxMin  = -10.,
                                                          Float_t ZvtxMax = 10.,
-                                                         Int_t ZvtxBinConfig = 0
+                                                         Int_t ZvtxBinConfig = 0,
+                                                         Bool_t UseTOF = kTRUE,
+                                                         Int_t NBinsCentrality = 4
                                                          )
 {
     AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
@@ -54,7 +56,7 @@ AliAnalysisTaskHFEpACorrelation *AddTaskHFEpACorrelation(
     taskName.Append(Form("%d_%d_%d_%d_%1.2f_%1.2f_%1.2f_%1.2f_%1.2f_%1.2f_%1.2f_%1.2f_%1.2f_%1.2f_%1.2f_%1.2f_%1.2f_%1.2f_%1.2f_%d_%d_%d_%d_%d_%d_%d",pTBin, Correlation, ispp, isMC,   ElectronDCAxy,ElectronDCAz,HadronDCAxy,HadronDCAz,TPCPIDLow,TPCPIDUp,InvariantMassCut,pTCutPartner, MultiplicityLow, MultiplicityUp, HadronPtCutLow, HadronPtCutUp, EtaCutLow, EtaCutUp, NonHFEangleCut, NHitsITS, SPDLayers, TPCNCluster, TPCNClusterPartner, TPCNClusterPID,UseGlobalTracksForHadrons,CentralityEstimator));
     taskName += Sufix;
     
-    AliAnalysisTaskHFEpACorrelation *task = ConfigHFEpACorrelation(taskName, Correlation, ispp, isMC,   ElectronDCAxy,ElectronDCAz,HadronDCAxy,HadronDCAz,TPCPIDLow,TPCPIDUp,InvariantMassCut,pTCutPartner, MultiplicityLow, MultiplicityUp, HadronPtCutLow, HadronPtCutUp, EtaCutLow, EtaCutUp, NonHFEangleCut, NHitsITS, SPDLayers, TPCNCluster, TPCNClusterPartner, TPCNClusterPID,UseGlobalTracksForHadrons,CentralityEstimator);
+    AliAnalysisTaskHFEpACorrelation *task = ConfigHFEpACorrelation(taskName, Correlation, ispp, isMC,   ElectronDCAxy,ElectronDCAz,HadronDCAxy,HadronDCAz,TPCPIDLow,TPCPIDUp,InvariantMassCut,pTCutPartner, MultiplicityLow, MultiplicityUp, HadronPtCutLow, HadronPtCutUp, EtaCutLow, EtaCutUp, NonHFEangleCut, NHitsITS, SPDLayers, TPCNCluster, TPCNClusterPartner, TPCNClusterPID,UseGlobalTracksForHadrons,CentralityEstimator,UseTOF);
     
     
     Double_t vertexBins0[] = {-10, -5.3, -2.6, -0.5, 1.5, 3.5, 5.7,10.01};
@@ -81,6 +83,15 @@ AliAnalysisTaskHFEpACorrelation *AddTaskHFEpACorrelation(
             task->SetZvtxBins(8,vertexBins0);
             break;
     }
+    
+    TArrayD CentralityArray(NBinsCentrality+1);
+    
+    for (Int_t i = 0; i <= NBinsCentrality; i++)
+    {
+        CentralityArray.SetAt(MultiplicityLow + (Double_t)i*(MultiplicityUp-MultiplicityLow)/NBinsCentrality, i);
+    }
+    
+    task->SetCentralityBins(NBinsCentrality+1,CentralityArray.GetArray());
 
     
     //_______________________

@@ -1,7 +1,31 @@
+/************************************************************************************
+ * Copyright (C) 2017, Copyright Holders of the ALICE Collaboration                 *
+ * All rights reserved.                                                             *
+ *                                                                                  *
+ * Redistribution and use in source and binary forms, with or without               *
+ * modification, are permitted provided that the following conditions are met:      *
+ *     * Redistributions of source code must retain the above copyright             *
+ *       notice, this list of conditions and the following disclaimer.              *
+ *     * Redistributions in binary form must reproduce the above copyright          *
+ *       notice, this list of conditions and the following disclaimer in the        *
+ *       documentation and/or other materials provided with the distribution.       *
+ *     * Neither the name of the <organization> nor the                             *
+ *       names of its contributors may be used to endorse or promote products       *
+ *       derived from this software without specific prior written permission.      *
+ *                                                                                  *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND  *
+ * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED    *
+ * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE           *
+ * DISCLAIMED. IN NO EVENT SHALL ALICE COLLABORATION BE LIABLE FOR ANY              *
+ * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES       *
+ * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;     *
+ * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND      *
+ * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT       *
+ * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS    *
+ * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.                     *
+ ************************************************************************************/
 #ifndef ALIANALYSISTASKEMCAL_H
 #define ALIANALYSISTASKEMCAL_H
-/* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
- * See cxx source for full Copyright notice                               */
 
 class TClonesArray;
 class TString;
@@ -31,6 +55,7 @@ class AliESDInputHandler;
 #include "AliTrackContainer.h"
 #include "AliClusterContainer.h"
 #include "AliEmcalList.h"
+#include "AliEventCuts.h"
 
 #include "AliAnalysisTaskSE.h"
 /**
@@ -222,6 +247,7 @@ class AliAnalysisTaskEmcal : public AliAnalysisTaskSE {
   AliMCParticleContainer     *GetMCParticleContainer(const char* name)        const { return dynamic_cast<AliMCParticleContainer*>(GetParticleContainer(name)); }
   AliTrackContainer          *GetTrackContainer(Int_t i=0)                    const { return dynamic_cast<AliTrackContainer*>(GetParticleContainer(i))        ; }
   AliTrackContainer          *GetTrackContainer(const char* name)             const { return dynamic_cast<AliTrackContainer*>(GetParticleContainer(name))     ; }
+  AliEventCuts               &GetEventCuts()                                        { return fAliEventCuts; }
   void                        RemoveParticleContainer(Int_t i=0)                    { fParticleCollArray.RemoveAt(i)                      ; } 
   void                        RemoveClusterContainer(Int_t i=0)                     { fClusterCollArray.RemoveAt(i)                       ; } 
   void                        SetCaloCellsName(const char *n)                       { fCaloCellsName     = n                              ; }
@@ -250,10 +276,22 @@ class AliAnalysisTaskEmcal : public AliAnalysisTaskSE {
   void                        SetEventPlaneVsEmcal(Double_t ep)                     { fEventPlaneVsEmcal = ep                             ; }
   void                        SetForceBeamType(BeamType f)                          { fForceBeamType     = f                              ; }
   void                        SetHistoBins(Int_t nbins, Double_t min, Double_t max) { fNbins = nbins; fMinBinPt = min; fMaxBinPt = max    ; }
+  void                        SetRecycleUnusedEmbeddedEventsMode(Bool_t b)          { fRecycleUnusedEmbeddedEventsMode = b                ; }
   void                        SetIsEmbedded(Bool_t i)                               { fIsEmbedded        = i                              ; }
   void                        SetIsPythia(Bool_t i)                                 { fIsPythia          = i                              ; }
   void                        SetIsHerwig(Bool_t i)                                 { fIsHerwig          = i                              ; }
   void                        SetMakeGeneralHistograms(Bool_t g)                    { fGeneralHistograms = g                              ; }
+
+  /**
+   * @brief Switch on/off getting \f$ p_{t,hard}\f$ bin from the file path.
+   *
+   * By default the \f$ p_{t,hard}\f$ bin is obtained from the file path in case the
+   * task is defined to run on a \f$ p_{t,hard}\f$ production. New samples decode
+   * the \f$ p_{t,hard}\f$ bin number in the file path. However this is not supported
+   * for
+   * @param[in] docheck
+   */
+  void                        SetGetPtHardBinFromPath(Bool_t docheck)               { fGetPtHardBinFromName = docheck; }
 
   /**
    * @brief Set the number of \f$ p_{t}\f$-hard bins
@@ -312,7 +350,33 @@ class AliAnalysisTaskEmcal : public AliAnalysisTaskSE {
   void                        SetMinBiasTriggerClassName(const char *n)             { fMinBiasRefTrigger = n                              ; }
   void                        SetTriggerTypeSel(TriggerType t)                      { fTriggerTypeSel    = t                              ; } 
   void                        SetUseAliAnaUtils(Bool_t b, Bool_t bRejPilup = kTRUE) { fUseAliAnaUtils    = b ; fRejectPileup = bRejPilup  ; }
+
+  /**
+   * @brief Use internal (old) event selection
+   * @param[in] doUse It true use the old internal event selection instead of AliEventCuts
+   * @deprecated: Will be removed soon due to a naming clash with AliAnalysisTaskEmbeddingHelper, 
+   * please use SetUseBuiltinEventSelection instead
+   */
+  void                        SetUseInternalEventSelection(Bool_t doUse)            { fUseBuiltinEventSelection = doUse                  ; }
+
+  /**
+   * @brief Use internal (old) event selection
+   * @param[in] doUse It true use the old internal event selection instead of AliEventCuts
+   */
+  void                        SetUseBuiltinEventSelection(Bool_t doUse)            { fUseBuiltinEventSelection = doUse                  ; }
+  
+  /**
+   * @brief Set pre-configured event cut object
+   * 
+   * In order to allow custon configuration set a pre-configured AliEventCuts object. 
+   * Attention: The object must be constructed with argument false in order to have the 
+   * histograms stored correctly. This sets the usage of the interal event selection to
+   * false automatically.
+   * 
+   * @param[in] cuts Cut object to be used
+   */
   void                        SetVzRange(Double_t min, Double_t max)                { fMinVz             = min  ; fMaxVz   = max          ; }
+  void                        SetMinVertexContrib(Int_t min)                        { fMinVertexContrib = min                             ; }
   void                        SetUseSPDTrackletVsClusterBG(Bool_t b)                { fTklVsClusSPDCut   = b                              ; }
   void                        SetEMCalTriggerMode(EMCalTriggerMode_t m)             { fEMCalTriggerMode  = m                              ; }
   void                        SetUseNewCentralityEstimation(Bool_t b)               { fUseNewCentralityEstimation = b                     ; }
@@ -657,23 +721,9 @@ class AliAnalysisTaskEmcal : public AliAnalysisTaskSE {
   /**
    * @brief Performing event selection.
    *
-   * This contains
-   * - Selection of the trigger class
-   * - Selection according to the centrality class
-   * - Selection of event with good vertex quality
-   * - Selection of the event plane orientation
-   * - Selection of the multiplicity (including
-   *   above minimum \f$ p_{t} \f$ and tracks in the
-   *   EMCAL acceptance
-   *
-   * Note that for the vertex selection both the usage
-   * of the analysis util and the range of the z-position
-   * of the primary vertex need to be specified.
-   *
-   * In case the event is rejected, a histogram
-   * monitoring the rejection reason is filled with
-   * the bin corresponding to the source of the rejection
-   * of the current event.
+   * By default the event selection is delegated to the 
+   * AliEventCuts. Users can specify to use a builtin 
+   * event select (old method) by calling SetUseInternalEventSelection.
    *
    * The Run function is only called in case the event
    * is selected by this function, providing a default
@@ -684,6 +734,19 @@ class AliAnalysisTaskEmcal : public AliAnalysisTaskSE {
    * @return True if the event is selected.
    */
   virtual Bool_t              IsEventSelected();
+
+  /**
+   * @brief Selection of a hardware trigger
+   * 
+   * The function is used in the default implementation of 
+   * IsEventSelected in order to perform the trigger selection.
+   * Users can reimplement the function in order to perform the
+   * trigger selection of their choise. The default implementation
+   * checks for the trigger bits specified in the task configuration.
+   * 
+   * @return True if the event is selected as triggered event, false otherwise 
+   */
+  virtual Bool_t              IsTriggerSelected();
 
   /**
    * @brief Retrieve common objects from event.
@@ -790,6 +853,31 @@ class AliAnalysisTaskEmcal : public AliAnalysisTaskSE {
   static void                 GenerateFixedBinArray(Int_t n, Double_t min, Double_t max, Double_t* array);
 
   /**
+   * @brief Perform event selection (old method)
+   * 
+   * This contains
+   * - Selection of the trigger class
+   * - Selection according to the centrality class
+   * - Selection of event with good vertex quality
+   * - Selection of the event plane orientation
+   * - Selection of the multiplicity (including
+   *   above minimum \f$ p_{t} \f$ and tracks in the
+   *   EMCAL acceptance
+   *
+   * Note that for the vertex selection both the usage
+   * of the analysis util and the range of the z-position
+   * of the primary vertex need to be specified.
+   *
+   * In case the event is rejected, a histogram
+   * monitoring the rejection reason is filled with
+   * the bin corresponding to the source of the rejection
+   * of the current event.
+   * 
+   * @return True if the event is selected, false if it is rejected
+   */
+  Bool_t                      IsEventSelectedInternal();
+
+  /**
    * @brief Calculates the fraction of momentum z of part 1 w.r.t. part 2 in the direction of part 2.
    * @param[in] part1 Momentum vector for which the relative fraction is calculated
    * @param[in] part2 Reference momentum vector for the calculation
@@ -812,7 +900,7 @@ class AliAnalysisTaskEmcal : public AliAnalysisTaskSE {
   BeamType                    fForceBeamType;              ///< forced beam type
   Bool_t                      fGeneralHistograms;          ///< whether or not it should fill some general histograms
   Bool_t                      fLocalInitialized;           ///< whether or not the task has been already initialized
-  Bool_t					            fFileChanged;				   //!<! Signal triggered when the file has changed
+  Bool_t					            fFileChanged;				         //!<! Signal triggered when the file has changed
   Bool_t                      fCreateHisto;                ///< whether or not create histograms
   TString                     fCaloCellsName;              ///< name of calo cell collection
   TString                     fCaloTriggersName;           ///< name of calo triggers collection
@@ -821,6 +909,7 @@ class AliAnalysisTaskEmcal : public AliAnalysisTaskSE {
   Double_t                    fMaxCent;                    ///< max centrality for event selection
   Double_t                    fMinVz;                      ///< min vertex for event selection
   Double_t                    fMaxVz;                      ///< max vertex for event selection
+  Int_t                       fMinVertexContrib;           ///< Min. number of vertex contributors
   Double_t                    fTrackPtCut;                 ///< cut on track pt in event selection
   Int_t                       fMinNTrack;                  ///< minimum nr of tracks in event with pT>fTrackPtCut
   Double_t                    fZvertexDiff;                ///< upper limit for distance between primary and SPD vertex
@@ -839,9 +928,11 @@ class AliAnalysisTaskEmcal : public AliAnalysisTaskSE {
   Double_t                    fMinEventPlane;              ///< minimum event plane value
   Double_t                    fMaxEventPlane;              ///< maximum event plane value
   TString                     fCentEst;                    ///< name of V0 centrality estimator
+  Bool_t                      fRecycleUnusedEmbeddedEventsMode; ///< Allows the recycling of embedded events which fail internal event selection. See the embedding helper.
   Bool_t                      fIsEmbedded;                 ///< trigger, embedded signal
   Bool_t                      fIsPythia;                   ///< trigger, if it is a PYTHIA production
   Bool_t                      fIsHerwig;                   ///< trigger, if it is a HERWIG production
+  Bool_t                      fGetPtHardBinFromName;       ///< Obtain pt-hard bin from file path
   Int_t                       fSelectPtHardBin;            ///< select one pt hard bin for analysis
   Int_t                       fMinMCLabel;                 ///< minimum MC label value for the tracks/clusters being considered MC particles
   Int_t                       fMCLabelShift;               ///< if MC label > fMCLabelShift, MC label -= fMCLabelShift
@@ -857,12 +948,14 @@ class AliAnalysisTaskEmcal : public AliAnalysisTaskSE {
   Bool_t                      fUseXsecFromHeader;          //!<! Use cross section from header instead of pyxsec.root (purely transient)
   Bool_t                      fMCRejectFilter;             ///< enable the filtering of events by tail rejection
   Bool_t                      fCountDownscaleCorrectedEvents; ///< Count event number corrected for downscaling
+  Bool_t                      fUseBuiltinEventSelection;   ///< Use builtin event selection of the AliAnalysisTaskEmcal instead of AliEventCuts
   Float_t                     fPtHardAndJetPtFactor;       ///< Factor between ptHard and jet pT to reject/accept event.
   Float_t                     fPtHardAndClusterPtFactor;   ///< Factor between ptHard and cluster pT to reject/accept event.
   Float_t                     fPtHardAndTrackPtFactor;     ///< Factor between ptHard and track pT to reject/accept event.
 
   // Service fields
-  Int_t                       fRunNumber;                  //!<!run number (triggering RunChanged()
+  Int_t                       fRunNumber;                  //!<!run number (triggering RunChanged())
+  AliEventCuts                fAliEventCuts;               ///< Event cuts (run2 defaults)
   AliAnalysisUtils           *fAliAnalysisUtils;           //!<!vertex selection (optional)
   Bool_t                      fIsEsd;                      //!<!whether it's an ESD analysis
   AliEMCALGeometry           *fGeom;                       //!<!emcal geometry
@@ -886,6 +979,7 @@ class AliAnalysisTaskEmcal : public AliAnalysisTaskSE {
   Float_t                     fPtHard;                     //!<!event \f$ p_{t}\f$-hard
   Int_t                       fPtHardBin;                  //!<!event \f$ p_{t}\f$-hard bin
   Int_t                       fPtHardBinGlobal;            //!<!event \f$ p_{t}\f$-hard bin, detected from filename
+  Bool_t                      fPtHardInitialized;          //!<!flag whether the \f$ p_{t}\f$-hard bin was initialized, purely for internal processing
   Int_t                       fNPtHardBins;                ///< Number of \f$ p_{t}\f$-hard bins in the dataset
   TArrayI                     fPtHardBinning;              ///< \f$ p_{t}\f$-hard binning
   Int_t                       fNTrials;                    //!<!event trials
@@ -917,7 +1011,7 @@ class AliAnalysisTaskEmcal : public AliAnalysisTaskSE {
   AliAnalysisTaskEmcal &operator=(const AliAnalysisTaskEmcal&); // not implemented
 
   /// \cond CLASSIMP
-  ClassDef(AliAnalysisTaskEmcal, 16) // EMCAL base analysis task
+  ClassDef(AliAnalysisTaskEmcal, 19) // EMCAL base analysis task
   /// \endcond
 };
 

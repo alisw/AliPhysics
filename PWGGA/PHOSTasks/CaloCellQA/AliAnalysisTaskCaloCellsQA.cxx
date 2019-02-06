@@ -63,7 +63,7 @@ AliAnalysisTaskCaloCellsQA::AliAnalysisTaskCaloCellsQA() : AliAnalysisTaskSE(),
 }
 
 //________________________________________________________________
-AliAnalysisTaskCaloCellsQA::AliAnalysisTaskCaloCellsQA(const char *name, Int_t nmods, Int_t det, char *outfile) :
+AliAnalysisTaskCaloCellsQA::AliAnalysisTaskCaloCellsQA(const char *name, Int_t nmods, Int_t det, const char *outfile) :
   AliAnalysisTaskSE(name),
   fkAvoidPileup(kTRUE),
   fCellsQA(0),

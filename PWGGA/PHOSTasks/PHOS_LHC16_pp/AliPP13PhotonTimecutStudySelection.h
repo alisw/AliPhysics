@@ -2,19 +2,20 @@
 #define ALIPP13PHOTONTIMECUTSELECTION_H
 
 // --- Custom header files ---
-#include "AliPP13PhotonSelection.h"
+#include "AliPP13PhysicsSelection.h"
 #include "AliPP13DetectorHistogram.h"
+#include "AliPP13SelectionWeights.h"
 
 // --- ROOT header files ---
 #include "TH2F.h"
 
 
-class AliPP13PhotonTimecutStudySelection : public AliPP13PhotonSelection
+class AliPP13PhotonTimecutStudySelection : public AliPP13PhysicsSelection
 {
 public:
 
 	AliPP13PhotonTimecutStudySelection():
-		AliPP13PhotonSelection(),
+		AliPP13PhysicsSelection(),
 		fTimingCutPair(999999),
 		fMassPt(),
 		fMassPtMainMain(),
@@ -22,8 +23,9 @@ public:
 		fMassPtPileupPileup()
 	{}
 
-	AliPP13PhotonTimecutStudySelection(const char * name, const char * title, AliPP13ClusterCuts cuts):
-		AliPP13PhotonSelection(name, title, cuts), 
+	AliPP13PhotonTimecutStudySelection(const char * name, const char * title, 
+			AliPP13ClusterCuts cuts, AliPP13SelectionWeights * w):
+		AliPP13PhysicsSelection(name, title, cuts, w), 
 		fTimingCutPair(cuts.fTimingCut), // Use timing cut for pair of clusters
 		fMassPt(),
 		fMassPtMainMain(),

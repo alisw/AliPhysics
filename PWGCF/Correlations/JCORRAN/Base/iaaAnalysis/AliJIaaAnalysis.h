@@ -8,7 +8,7 @@
 #include "../AliJConst.h"
 #include <TH1D.h>
 
-// jtAnalysis main class
+// iaaAnalysis main class
 // used in local and grid execution
 
 class AliJCard;
@@ -47,21 +47,19 @@ public:
 	AliJCard *GetCard() { return fcard; } // Getter for JCard
 
 	void SetCard( AliJCard *c ) { fcard = c; } // Setter for JCrad
-	void SetTrigger( char* p ) { fjtrigg = GetParticleType(p); } // Setter for trigger particle type
-	void SetAssoc( char* p ) { fjassoc = GetParticleType(p); } // Setter for associated particle type
+	void SetTrigger( const char* p ) { fjtrigg = GetParticleType(p); } // Setter for trigger particle type
+	void SetAssoc( const char* p ) { fjassoc = GetParticleType(p); } // Setter for associated particle type
 	void SetInclusiveFile( const char *f ){ fInclusiveFile = f; } // Setter for inclusive histogram file
-	void SetInputFile( char *f ) { finputFile = f; } // Setter for Data Manager configuration file
+	void SetInputFile( const char *f ) { finputFile = f; } // Setter for Data Manager configuration file
 
 	void SetTrackList( TClonesArray *a ) { fdmg->SetTrackList( a ); } // Setter for Data Manager track list
-	void SetPhotonList( TClonesArray *a ) { fdmg->SetPhotonList( a ); } // Setter for Data Manager photon list
-	void SetCaloCellList( TClonesArray *a ) { fdmg->SetCaloCellList( a ); } // Setter for Calo Cell track list
 	void SetMCTrackList( TClonesArray *a ) { fdmg->SetMCTrackList( a ); } // Setter for Data Manager MC track list
 	void SetHeaderList( TClonesArray *a ) { fdmg->SetHeaderList( a ); } // Setter for Data Manager header list
 	void SetRunHeader( AliJRunHeader *a ) { frunHeader = a; } // Setter for run header
 	void SetRunInfoList( TList *a ) { fdmg->SetRunInfoList( a ); } // Setter for Data Manager run info list
 
 	double DeltaPhi(double phi1, double phi2); // Calculate deltaPhi from two phi values
-	particleType  GetParticleType(char *inchar); // Get particleType from string
+	particleType  GetParticleType(const char *inchar); // Get particleType from string
 
 private:
 
@@ -72,7 +70,7 @@ private:
 	particleType fjassoc; // Trigger particle type
 
 	AliJCard *fcard; // JCard containing the binning information etc.
-	char *finputFile; //! Name of the Data Manager initialization file for local analysis
+	const char *finputFile; //! Name of the Data Manager initialization file for local analysis
 	TString fInclusiveFile; // File for inclusive distributions
 
 	Int_t fevt; // Event counter
@@ -80,9 +78,7 @@ private:
 	AliJIaaCorrelations *fcorrelations; //! Correlation analysis details
 	AliJAcceptanceCorrection *fAcceptanceCorrection; //! Class for acceptance correction
 	AliJEventPool *fassocPool; //! Pool of associated particles for event mixing
-	TClonesArray *fphotonList; //! List of photons for photon analysis
 	TClonesArray *fchargedHadronList; //! List of charged particles for correlation analysis
-	TClonesArray *fpizeroList; //! List of pi zeros for pi zero analysis
 	TClonesArray *ftriggList; //! List of trigger particles
 	TClonesArray *fassocList; //! List of associated particles
 	TClonesArray *finputList; //! List of particles currently used as input
@@ -95,7 +91,7 @@ private:
 	bool fbTriggCorrel; //! Flag for triggered correlation
 	bool fbLPCorrel; //! Flag for leading particle correlation
 	double fMinimumPt; //!  Minimum pT value for a particle to be still accepted to analysis
-
+    bool fMCTruthRun; //! false = regular run, true = read particles from MC particle list
 	Int_t fEventBC; //! Selector for some BC%4
 
 	AliJEfficiency *fEfficiency; // Efficience class

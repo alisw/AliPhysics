@@ -26,7 +26,7 @@ class AliHFDmesonCorrAverage : public TNamed {
   ~AliHFDmesonCorrAverage();
   
   
-  Bool_t InitSystematicUncertainty(Int_t system=-1,Int_t year=-1);
+  Bool_t InitSystematicUncertainty(Int_t system=-1,Int_t year=-1,Int_t centbin=0);
   void SetIncludeDzero(Bool_t inclDzero){fincludeDzero=inclDzero;}
   void SetIncludeDstar(Bool_t inclDstar){fincludeDstar=inclDstar;}
   void SetIncludeDplus(Bool_t inclDplus){fincludeDplus=inclDplus;}
@@ -37,6 +37,7 @@ class AliHFDmesonCorrAverage : public TNamed {
   void SetArithmeticAverage(Bool_t averType){fArithmeticAverage=averType;}  
   void SetMethod(Int_t method){fmethod=method;}
   void SetSystem(Int_t sys,Int_t year){fsys=sys;fyear=year;}
+  void SetCentBin(Int_t centbin){fCentBin=centbin;}
   void SetMomentumRanges(Double_t minptD,Double_t maxptD,Double_t minptAsso,Double_t maxptAsso){fptminD=minptD;fptmaxD=maxptD;fptminAsso=minptAsso;fptmaxAsso=maxptAsso;}
   void CalculateAverage();  
   TH1D *GetAverageHisto(){return fhDaverage;}
@@ -92,6 +93,7 @@ class AliHFDmesonCorrAverage : public TNamed {
   Int_t   fnbinsphi;                        // nbins phi
   Int_t	  fsys;					//system (0=pp, 1=pPb)
   Int_t	  fyear;				// year  (2010 for pp@7 TeV, 2013 for pPb@5.02 TeV)
+  Int_t   fCentBin;                             // centrality bin
   Bool_t fSystAlreadySet;                       // Set it to kTRUE when systematic uncertainties from external files are set
   Bool_t fArithmeticAverage;                   // flag to perform arithmetic average
   TH1D *fhUsedWeightsDzero;                    // histogram with final weights used for Dzero

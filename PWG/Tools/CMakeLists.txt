@@ -23,6 +23,7 @@ include_directories(${AliPhysics_SOURCE_DIR}/PWG/Tools)
 # Additional includes - alphabetical order except ROOT
 include_directories(${ROOT_INCLUDE_DIRS}
                     ${AliPhysics_SOURCE_DIR}/CORRFW
+                    ${AliPhysics_SOURCE_DIR}/PWG/Tools/yaml-cpp/include
   )
 
 # Sources - alphabetical order
@@ -42,6 +43,7 @@ set(SRCS
   TLinearBinning.cxx
   TVariableBinning.cxx
   THistManager.cxx
+  AliYAMLConfiguration.cxx
   AliJSONReader.cxx
   AliJSONData.cxx
   AliAnalysisTaskDummy.cxx
@@ -56,7 +58,8 @@ set(HDRS
   )
 
 # Statically build YAML
-set(YAML_CPP_BUILD_TOOLS OFF CACHE BOOL "Disable additional yaml tests and tools")
+set(YAML_CPP_BUILD_TOOLS OFF CACHE BOOL "Disable additional yaml tools (which are not used)")
+set(YAML_CPP_BUILD_TESTS OFF CACHE BOOL "Disable yaml-cpp tests (which we are not running)")
 add_subdirectory(yaml-cpp)
 
 # Generate the dictionary
@@ -71,6 +74,9 @@ add_library_tested(${MODULE} SHARED  ${SRCS} G__${MODULE}.cxx)
 # Dependecies
 set(LIBDEPS ANALYSIS AOD CORRFW ESD STEERBase ASImage)
 generate_rootmap("${MODULE}" "${LIBDEPS}" "${CMAKE_CURRENT_SOURCE_DIR}/${MODULE}LinkDef.h")
+
+# Link against yaml-cpp. It must be included _after_ the ROOT map because it is static rather than shared!
+set(LIBDEPS ${LIBDEPS} yaml-cpp)
 
 # Generate a PARfile target for this library
 add_target_parfile(${MODULE} "${SRCS}" "${HDRS}" "${MODULE}LinkDef.h" "${LIBDEPS}")

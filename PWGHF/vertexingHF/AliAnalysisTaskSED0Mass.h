@@ -71,6 +71,7 @@ class AliAnalysisTaskSED0Mass : public AliAnalysisTaskSE
   void SetUseQuarkLevelTag(Bool_t opt){fUseQuarkTagInKine=opt;}
   void SetAODMismatchProtection(Int_t opt=1) {fAODProtection=opt;}
   void SetPileupRejectionVZEROTPCout(Bool_t flag) {fEnablePileupRejVZEROTPCout=flag;}
+  void SetFillSubSampleHist(Bool_t flag) {fFillSubSampleHist=flag;}
 
 
   Bool_t GetCutOnDistr() const {return fCutOnDistr;}
@@ -86,6 +87,7 @@ class AliAnalysisTaskSED0Mass : public AliAnalysisTaskSE
   Bool_t GetWriteVariableTree() const {return fWriteVariableTree;}
   Bool_t GetDrawDetSignal() const {return fDrawDetSignal;}
   Bool_t GetPIDCheck() const {return fPIDCheck;}
+  Bool_t GetFillSubSampleHist() const {return fFillSubSampleHist;}
 
  private:
 
@@ -126,6 +128,8 @@ class AliAnalysisTaskSED0Mass : public AliAnalysisTaskSE
   Bool_t    fFillPtHist;          /// flag to fill Pt and Impact Parameter Histograms
   Bool_t    fFillYHist;          /// flag to fill Y Histograms
   Bool_t    fFillImpParHist;      /// flag to fill Pt and Impact Parameter Histograms
+  Bool_t    fFillSubSampleHist;    /// flag to fill SubSample histogram
+  Int_t     fEventCounter; /// event counter used for sub sample test
   Bool_t    fUseSelectionBit;     /// flag to check or not the selection bit
   Int_t     fAODProtection;       /// flag to activate protection against AOD-dAOD mismatch.
                                   /// -1: no protection,  0: check AOD/dAOD nEvents only,  1: check AOD/dAOD nEvents + TProcessID names
@@ -146,7 +150,7 @@ class AliAnalysisTaskSED0Mass : public AliAnalysisTaskSE
   Bool_t    fEnablePileupRejVZEROTPCout;
 
   /// \cond CLASSIMP
-  ClassDef(AliAnalysisTaskSED0Mass,23); /// AliAnalysisTaskSE for D0->Kpi
+  ClassDef(AliAnalysisTaskSED0Mass,24); /// AliAnalysisTaskSE for D0->Kpi
   /// \endcond
 };
 

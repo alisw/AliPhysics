@@ -14,7 +14,7 @@
 
 class AliVEvent;
 class AliVVertex;
-class AliInputEventHandler;
+class AliVEventHandler;
 class THashList;
 class TList;
 class TAxis;
@@ -68,7 +68,7 @@ class AliMuonEventCuts : public AliAnalysisCuts
   const TObjArray* GetSelectedTrigClassesInEvent ( const TString& firedTriggerClasses,
                                                   UInt_t l0Inputs, UInt_t l1Inputs, UInt_t l2Inputs );
   const TObjArray* GetSelectedTrigClassesInEvent ( const AliVEvent* event );
-  const TObjArray* GetSelectedTrigClassesInEvent ( const AliInputEventHandler* eventHandler );
+  const TObjArray* GetSelectedTrigClassesInEvent ( const AliVEventHandler* eventHandler );
 
   // Handle centrality
   void SetCentralityClasses(Int_t nCentralityBins = -1, Double_t* centralityBins = 0x0);

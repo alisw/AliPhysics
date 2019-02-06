@@ -85,19 +85,6 @@ void AliPP13MesonSelectionMC::ConsiderPair(const AliVCluster * c1, const AliVClu
 		return;
 
 	Int_t hcode = hadron->GetPdgCode();
-
-	if (primary)
-	{
-		fPrimaryPi0[kReconstructed]->Fill(hcode, ma12, pt12);
-		return;
-	}
-
-	if (!IsPrimary(hadron))
-	{
-		fSecondaryPi0[kReconstructed]->Fill(hcode, ma12, pt12);
-		return;
-	}
-
 	fFeedDownPi0[kReconstructed]->FillAll(hcode, ma12, pt12);
 }
 
@@ -123,7 +110,7 @@ void AliPP13MesonSelectionMC::InitSelectionHistograms()
 	Int_t ptsize = sizeof(ptbins) / sizeof(Float_t);
 
 	// Sources of neutral pions, as a histogram
-	for (int i = 0; i < 2; ++i)
+	for (Int_t i = 0; i < 2; ++i)
 	{
 		Int_t sstart = -10000;
 		Int_t sstop = 10000 + 1;
@@ -150,7 +137,7 @@ void AliPP13MesonSelectionMC::InitSelectionHistograms()
 	fSecondaryPi0[kReconstructed] = new AliPP13ParticlesHistogram(hist5, fListOfHistos, fPi0SourcesNames);
 	fFeedDownPi0[kReconstructed]  = new AliPP13ParticlesHistogram(hist6, fListOfHistos, fPi0SourcesNames);
 
-
+	
 	for (EnumNames::iterator i = fPartNames.begin(); i != fPartNames.end(); ++i)
 	{
 		const char * n = (const char *) i->second.Data();
@@ -181,8 +168,9 @@ void AliPP13MesonSelectionMC::ConsiderGeneratedParticles(const EventFlags & flag
 		if (code != kGamma && code != kPi0 && code != kEta)
 			continue;
 
+
 		Double_t pt = particle->Pt();
-		fSpectrums[code]->fPtAllRange->Fill(pt);
+
 
 		// Use this to remove forward photons that can modify our true efficiency
 		if (TMath::Abs(particle->Y()) > 0.5) // NB: Use rapidity instead of pseudo rapidity!
@@ -194,12 +182,22 @@ void AliPP13MesonSelectionMC::ConsiderGeneratedParticles(const EventFlags & flag
 		fSpectrums[code]->fPtRadius->Fill(pt, r);
 
 		Bool_t primary = IsPrimary(particle);
+
+
+		if (primary && particle->E() > 0.3)
+		{
+			fSpectrums[code]->fPtLong->Fill(pt);
+			fSpectrums[code]->fPtAllRange->Fill(pt);
+			fSpectrums[code]->fEtaPhi->Fill(particle->Phi(), particle->Y());
+		}
+
 		if (code != kPi0)
 		{
 			fSpectrums[code]->fPtPrimaries[Int_t(primary)]->Fill(pt);
 			continue;
 		}
 
+		// TODO: Scale input distribution
 		ConsiderGeneratedPi0(i, pt, primary, flags);
 	}
 }
@@ -261,13 +259,4 @@ AliAODMCParticle * AliPP13MesonSelectionMC::GetParent(Int_t label, Int_t & plabe
 
 	AliAODMCParticle * parent = dynamic_cast<AliAODMCParticle * >(particles->At(plabel));
 	return parent;
-}
-
-//________________________________________________________________
-Bool_t AliPP13MesonSelectionMC::IsPrimary(const AliAODMCParticle * particle) const
-{
-	// Look what particle left vertex (e.g. with vertex with radius <1 cm)
-	Double_t rcut = 1.;
-	Double_t r2 = particle->Xv() * particle->Xv() + particle->Yv() * particle->Yv()	;
-	return r2 < rcut * rcut;
 }

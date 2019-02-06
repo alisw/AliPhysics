@@ -32,7 +32,7 @@
 
 #endif
 
-//methods for the analysis of AliAnalysisTaskSEHFv2 output in case of kEvShape method
+//methods for the analysis of AliAnalysisTaskSEHFv2/vn output in case of kEvShape method
 //Author: Fabrizio Grosa, INFN Turin grosa@to.infn.it
 
 //*******************************************************//
@@ -48,6 +48,8 @@
 const TString infilename = "$HOME/cernbox/ALICE_WORK/Files/Trains/Run2/LHC15o/AnalysisResults_v2_3050_step2_EvShape_VZERO_CentAxis.root";
 const TString suffix = "_Topod0Cut_QoverM_VZERO_EvShape";
 const TString partname="Dplus";
+
+const Int_t ncentbins=20;
 const Int_t minCent=30;
 const Int_t maxCent=50;
 
@@ -56,10 +58,10 @@ const TString reffilename="Cent3050/v2/EvShape/CutCentDep/v2Output_30_50_InOut_T
 const TString outputdir="Cent3050/v2/EvShape/CutCentDep/RawYieldSyst";
 
 //ptbins of the analysis
-const Int_t nPtBins=5;
+const Int_t nPtBins=4;
 const Int_t nPtLims=nPtBins+1;
 //const Double_t PtLims[nPtLims] = {2.,3.,4.,5.,6.,8.,12.,16.,24.};
-const Double_t PtLims[nPtLims] = {3.,4.,6.,8.,12.,16.};
+const Double_t PtLims[nPtLims] = {3.,4.,6.,8.,12.};
 
 //phi bins
 const Int_t nPhiBins=4;
@@ -81,9 +83,9 @@ const Bool_t useAliHandlerForRes=kFALSE;
 
 // mass fit configuration
 const Int_t nReb=5;
-const Int_t rebin[nPtBins]={2,3,4,5,6};
-const Int_t nBkgFcn=2;
-const Int_t typeb[nBkgFcn]={AliHFMassFitter::kExpo,AliHFMassFitter::kLin};
+const Int_t rebin[nReb]={2,3,4,5,6};
+const Int_t nBkgFcn=3;
+const Int_t typeb[nBkgFcn]={AliHFMassFitter::kExpo,AliHFMassFitter::kLin,AliHFMassFitter::kPol2};
 enum {kGaus=0, kDoubleGaus, kReflTempl};
 const Bool_t useTemplD0Refl=kFALSE;
 const TString rflFitType="DoubleGaus";
@@ -101,17 +103,17 @@ const Double_t maxchi=2;
 const Double_t effInOverEffOut=1.03;
 
 //not to be set
+enum CutMethod{kAbsCut,kPercCut,kPercCutVsCent,kPercentileCut}; //kAbsCut->absolute cut values, kPercCut->cut according to the % of events with smaller/larger q2, kPercCutVsCent->cut according to the % of events with smaller/larger q2 in finer centrality bins, kPercentileCut->cut on percentile (if enabled in the task)
 enum SmallOrLarge{kSmall,kLarge,kIntegrated};
 enum AnalysisMethod{kEventPlane,kEventPlaneInOut,kScalarProd};
-enum CutMethod{kAbsCut,kPercCut,kPercCutVsCent}; //kAbsCut->absolute cut values, kPercCut->cut according to the % of events with smaller/larger q2, kPercCutVsCent->cut according to the % of events with smaller/larger q2 in finer centrality bins
 
 Int_t colors[]={kRed+1,kBlack,kBlue+2,kGreen+2,kMagenta+3,kOrange+7,kCyan+2,kViolet+5,kYellow+2,kBlue-7,kGreen,kMagenta,kAzure,kRed+2};
 Int_t markers[]={kFullCircle,kFullSquare,kFullDiamond,kFullTriangleUp,kFullTriangleDown,kOpenCircle,kOpenSquare,kOpenDiamond,kOpenTriangleUp,kOpenTriangleDown};
 
 //_____________________________________________________________________________________________
 //FUNCTION PROTOTYPES
-Int_t DmesonsFlowEvShapeYieldSyst(Int_t cutmeth=kPercCutVsCent, Int_t analysismeth=kEventPlaneInOut);
-TList* LoadTList(Int_t &ncentbins);
+Int_t DmesonsFlowEvShapeYieldSyst(Int_t cutmeth=kPercentileCut, Int_t analysismeth=kEventPlaneInOut);
+TList* LoadTList();
 THnSparseF* LoadSparseFromList(TList* inputlist);
 TH2F* GetHistoq2VsCentr(TList* inputlist);
 TList* LoadMassHistos(THnSparseF* sparse, vector<Double_t> smallcutvalues, vector<Double_t> largecutvalues, Int_t smallorlarge, Int_t analysismeth);
@@ -138,8 +140,7 @@ Int_t DmesonsFlowEvShapeYieldSyst(Int_t cutmeth, Int_t analysismeth) {
   if(!gSystem->cd(outputdir.Data())) {gSystem->mkdir(outputdir.Data());}
   else {gSystem->cd(workdir.Data());}
   
-  Int_t ncentbins=0;
-  TList* datalist=(TList*)LoadTList(ncentbins);
+  TList* datalist=(TList*)LoadTList();
   if(!datalist){return 1;}
   THnSparseF* hMassPtPhiq2Centr=(THnSparseF*)LoadSparseFromList(datalist);
   if(!hMassPtPhiq2Centr) {return 2;}
@@ -179,14 +180,14 @@ Int_t DmesonsFlowEvShapeYieldSyst(Int_t cutmeth, Int_t analysismeth) {
     masslist[0]=(TList*)LoadMassHistos(hMassPtPhiq2Centr,smallcutvalues,largecutvalues,q2region[0],analysismeth);
     masslist[1]=(TList*)LoadMassHistos(hMassPtPhiq2Centr,smallcutvalues,largecutvalues,q2region[1],analysismeth);
     masslist[2]=(TList*)LoadMassHistos(hMassPtPhiq2Centr,smallcutvalues,largecutvalues,q2region[2],analysismeth);
-
+    
     Int_t nPhi=nPhiBins;
     if(analysismeth==kEventPlaneInOut)nPhi=2;
-  
+    
     //Average pt
     Float_t averagePt[3][nPtBins];
     Float_t errorPt[3][nPtBins];
-
+    
     for(Int_t iq2=kSmall; iq2<=kIntegrated; iq2++) {
       //average pt for pt bin
       AliVertexingHFUtils *utils=new AliVertexingHFUtils();
@@ -213,6 +214,10 @@ Int_t DmesonsFlowEvShapeYieldSyst(Int_t cutmeth, Int_t analysismeth) {
         Int_t nMassBins=histtofit->GetNbinsX();
         Double_t hmin=histtofit->GetBinLowEdge(2); // need wide range for <pt>
         Double_t hmax=histtofit->GetBinLowEdge(nMassBins-2); // need wide range for <pt>
+        if (partname.Contains("Dstar")) {
+          if (hmin < 0.140) hmin=0.140;
+          if (hmax > 0.165) hmax=0.165;
+        }
         AliHFMassFitterVAR* fitter=new AliHFMassFitterVAR(histtofit,hmin,hmax,1,0,types);
         if(useTemplD0Refl){
           Printf("USE TEMPLATE FOR AVERAGE Pt");
@@ -224,6 +229,10 @@ Int_t DmesonsFlowEvShapeYieldSyst(Int_t cutmeth, Int_t analysismeth) {
           Float_t sOverRef=(hrflTempl->Integral(hrflTempl->FindBin(hmin*1.0001),hrflTempl->FindBin(hmax*0.999)))/(hsigMC->Integral(hsigMC->FindBin(hmin*1.0001),hsigMC->FindBin(hmax*0.999)));
           Printf("R OVER S = %f",sOverRef);
           fitter->SetFixReflOverS(sOverRef,kTRUE);
+        }
+        if(partname.Contains("Dstar")) {
+          fitter->SetInitialGaussianMean(0.145);
+          fitter->SetInitialGaussianSigma(0.0004);
         }
         fitter->SetUseLikelihoodFit();
         fitter->MassFitter(kFALSE);
@@ -253,10 +262,10 @@ Int_t DmesonsFlowEvShapeYieldSyst(Int_t cutmeth, Int_t analysismeth) {
         gSignalfs[iq2][iPt]=new TGraphAsymmErrors(nPhi);
         gSignalBC1[iq2][iPt]=new TGraphAsymmErrors(nPhi);
         gSignalBC2[iq2][iPt]=new TGraphAsymmErrors(nPhi);
-      
+        
         gSigmaFree[iq2][iPt]=new TGraphAsymmErrors(nPhi);
         gSigmaFixed[iq2][iPt]=new TGraphAsymmErrors(nPhi);
-    
+        
         gChiSquareFree[iq2][iPt]=new TGraphAsymmErrors(nPhi);
         gChiSquareFixed[iq2][iPt]=new TGraphAsymmErrors(nPhi);
       }
@@ -265,7 +274,7 @@ Int_t DmesonsFlowEvShapeYieldSyst(Int_t cutmeth, Int_t analysismeth) {
     //EP resolution
     Double_t resol[3] = {-1.,-1.,-1.};
     Double_t errorres[3] = {-1.,-1.,-1.};
-  
+    
     if(useAliHandlerForRes) {
       cerr << "Error: AliHandler for resolution not yet implemented. Exit" << endl;
       return 6;
@@ -311,7 +320,7 @@ Int_t DmesonsFlowEvShapeYieldSyst(Int_t cutmeth, Int_t analysismeth) {
       Int_t loadref=LoadRefGraphs(reffilename, hRawYieldRef[iq2], hRawYieldfsRef[iq2], hRawYieldBC1Ref[iq2], hRawYieldBC2Ref[iq2], gv2Ref[iq2], gv2fsRef[iq2], gv2BC1Ref[iq2], gv2BC2Ref[iq2], q2region[iq2], analysismeth);
       if(loadref>0) {return 7;}
     }
- 
+    
     TTree* treeMultiTrial = new TTree("treeMultiTrial","Multi-trial tree");
     //variables for the TTree branches
     const Int_t constnphi = nPhi;
@@ -328,7 +337,7 @@ Int_t DmesonsFlowEvShapeYieldSyst(Int_t cutmeth, Int_t analysismeth) {
     treeMultiTrial->Branch("ptbin",&ptbin);
     treeMultiTrial->Branch("extrmethod",&extractionmethod);
     treeMultiTrial->Branch("TrialNum",&iTrial);
-
+    
     for(Int_t iq2=kSmall; iq2<=kIntegrated; iq2++) {
       treeMultiTrial->Branch(Form("v2_%s",q2regionname[iq2].Data()),&v2[iq2]);
       treeMultiTrial->Branch(Form("v2err_%s",q2regionname[iq2].Data()),&v2staterr[iq2]);
@@ -350,7 +359,8 @@ Int_t DmesonsFlowEvShapeYieldSyst(Int_t cutmeth, Int_t analysismeth) {
       for(Int_t iReb=0; iReb<nReb; iReb++) {
         for(Int_t iMin=0; iMin<nMins; iMin++) {
           for(Int_t iMax=0; iMax<nMaxs; iMax++) {
-          
+            
+            Bool_t ok=kTRUE;
             for(Int_t iq2=kSmall; iq2<=kIntegrated; iq2++) {
               FillSignalGraph(masslist[iq2],gSignal[iq2],gSignalfs[iq2],gSignalBC1[iq2],gSignalBC2[iq2],gSigmaFree[iq2],gSigmaFixed[iq2],gChiSquareFree[iq2],gChiSquareFixed[iq2],analysismeth,typeb[iBkgFcn],minMassForFit[iMin],maxMassForFit[iMax],rebin[iReb]);
               
@@ -358,7 +368,9 @@ Int_t DmesonsFlowEvShapeYieldSyst(Int_t cutmeth, Int_t analysismeth) {
               gv2fs[iq2]=Computev2(gSignalfs[iq2],resol[iq2],averagePt[iq2],analysismeth,0x0);
               gv2BC1[iq2]=Computev2(gSignalBC1[iq2],resol[iq2],averagePt[iq2],analysismeth,0x0);
               gv2BC2[iq2]=Computev2(gSignalBC2[iq2],resol[iq2],averagePt[iq2],analysismeth,0x0);
+              if(!gv2[iq2] || !gv2fs[iq2] || !gv2BC1[iq2] || !gv2BC2[iq2]) {ok=kFALSE;}
             }
+            if(!ok) {continue;}
             
             //fill tree for sigma free entries
             extractionmethod=0;
@@ -379,7 +391,7 @@ Int_t DmesonsFlowEvShapeYieldSyst(Int_t cutmeth, Int_t analysismeth) {
                 if(iq2==kIntegrated) {treeMultiTrial->Fill();}
               }
             }
-          
+            
             //fill tree for sigma fixed entries
             extractionmethod=1;
             for(Int_t iPt=0; iPt<nPtBins; iPt++) {
@@ -399,7 +411,7 @@ Int_t DmesonsFlowEvShapeYieldSyst(Int_t cutmeth, Int_t analysismeth) {
                 if(iq2==kIntegrated) {treeMultiTrial->Fill();}
               }
             }
-
+            
             //fill tree for BC1 entries
             extractionmethod=2;
             for(Int_t iPt=0; iPt<nPtBins; iPt++) {
@@ -439,7 +451,7 @@ Int_t DmesonsFlowEvShapeYieldSyst(Int_t cutmeth, Int_t analysismeth) {
                 if(iq2==kIntegrated) {treeMultiTrial->Fill();}
               }
             }
-
+            
             for(Int_t iq2=kSmall; iq2<=kIntegrated; iq2++) {
               delete gv2[iq2];
               delete gv2fs[iq2];
@@ -466,13 +478,19 @@ Int_t DmesonsFlowEvShapeYieldSyst(Int_t cutmeth, Int_t analysismeth) {
     TPaveStats *pv2fs[3][nPtBins];
     TPaveStats *pv2BC1[3][nPtBins];
     TPaveStats *pv2BC2[3][nPtBins];
-
+    
     TH1F* hv2VsTrial[3][nPtBins];
     TH1F* hv2fsVsTrial[3][nPtBins];
     TH1F* hv2BC1VsTrial[3][nPtBins];
     TH1F* hv2BC2VsTrial[3][nPtBins];
-
-    TH1F* hv2fsRatioVsTrial[nPtBins];
+    
+    TH1F* hv2fsRatioLargeSmallVsTrial[nPtBins];
+    TH1F* hv2fsRatioLargeUnbiasedVsTrial[nPtBins];
+    TH1F* hv2fsRatioSmallUnbiasedVsTrial[nPtBins];
+    
+    TH1F* hv2fsRatioLargeSmall[nPtBins];
+    TH1F* hv2fsRatioLargeUnbiased[nPtBins];
+    TH1F* hv2fsRatioSmallUnbiased[nPtBins];
     
     TH2F* hResv2CorrLargeSmall[nPtBins];
     TH2F* hResv2CorrLargeUnbiased[nPtBins];
@@ -494,9 +512,24 @@ Int_t DmesonsFlowEvShapeYieldSyst(Int_t cutmeth, Int_t analysismeth) {
     
     TCanvas* cResv2CorrSmallUnbiased = new TCanvas("cResv2CorrSmallUnbiased","",1920,1080);
     DivideCanvas(cResv2CorrSmallUnbiased,nPtBins);
-
-    TCanvas* cv2fsRatioVsTrial = new TCanvas("cv2fsRatioVsTrial","",1920,1080);
-    DivideCanvas(cv2fsRatioVsTrial,nPtBins);
+    
+    TCanvas* cv2fsRatioLargeSmallVsTrial = new TCanvas("cv2fsRatioLargeSmallVsTrial","",1920,1080);
+    DivideCanvas(cv2fsRatioLargeSmallVsTrial,nPtBins);
+    
+    TCanvas* cv2fsRatioLargeUnbiasedVsTrial = new TCanvas("cv2fsRatioLargeUnbiasedVsTrial","",1920,1080);
+    DivideCanvas(cv2fsRatioLargeUnbiasedVsTrial,nPtBins);
+    
+    TCanvas* cv2fsRatioSmallUnbiasedVsTrial = new TCanvas("cv2fsRatioSmallUnbiasedVsTrial","",1920,1080);
+    DivideCanvas(cv2fsRatioSmallUnbiasedVsTrial,nPtBins);
+    
+    TCanvas* cv2fsRatioLargeSmall = new TCanvas("cv2fsRatioLargeSmall","",1920,1080);
+    DivideCanvas(cv2fsRatioLargeSmall,nPtBins);
+    
+    TCanvas* cv2fsRatioLargeUnbiased = new TCanvas("cv2fsRatioLargeUnbiased","",1920,1080);
+    DivideCanvas(cv2fsRatioLargeUnbiased,nPtBins);
+    
+    TCanvas* cv2fsRatioSmallUnbiased = new TCanvas("cv2fsRatioSmallUnbiased","",1920,1080);
+    DivideCanvas(cv2fsRatioSmallUnbiased,nPtBins);
     
     TCanvas *cv2[3];
     TCanvas *cv2VsTrial[3];
@@ -514,7 +547,7 @@ Int_t DmesonsFlowEvShapeYieldSyst(Int_t cutmeth, Int_t analysismeth) {
     
     for(Int_t iPt=0; iPt<nPtBins; iPt++) {
       for(Int_t iq2=kSmall; iq2<=kIntegrated; iq2++) {
-
+        
         Double_t v2refstaterr = gv2Ref[iq2]->GetErrorYhigh(iPt);
         hResv2[iq2][iPt] = new TH1F(Form("hResv2_%s_pt%d",q2regionname[iq2].Data(),iPt),"",nbins,-3*v2refstaterr,3*v2refstaterr);
         hResv2fs[iq2][iPt] = new TH1F(Form("hResv2fs_%s_pt%d",q2regionname[iq2].Data(),iPt),"",nbins,-3*v2refstaterr,3*v2refstaterr);
@@ -561,7 +594,7 @@ Int_t DmesonsFlowEvShapeYieldSyst(Int_t cutmeth, Int_t analysismeth) {
         hv2fsVsTrial[iq2][iPt]->SetLineWidth(1);
         hv2BC1VsTrial[iq2][iPt]->SetLineWidth(1);
         hv2BC2VsTrial[iq2][iPt]->SetLineWidth(1);
-
+        
         selection = Form("ptbin>%f && ptbin<%f && extrmethod>-0.5 && extrmethod<0.5",iPt-0.01,iPt+0.01);
         for(Int_t iPhi=0; iPhi<nPhi; iPhi++) {
           selection+=Form(" && chisquare_%d_%s<%f",iPhi,q2regionname[iq2].Data(),maxchi);
@@ -577,7 +610,7 @@ Int_t DmesonsFlowEvShapeYieldSyst(Int_t cutmeth, Int_t analysismeth) {
         treeMultiTrial->Project(Form("hResv2BC1_%s_pt%d",q2regionname[iq2].Data(),iPt),Form("deltav2_%s",q2regionname[iq2].Data()),selectionBC1.Data());
         treeMultiTrial->Project(Form("hResv2BC2_%s_pt%d",q2regionname[iq2].Data(),iPt),Form("deltav2_%s",q2regionname[iq2].Data()),selectionBC2.Data());
       }
-
+      
       hResv2CorrLargeSmall[iPt] = new TH2F(Form("hResv2CorrLargeSmall_pt%d",iPt),"",nbins,-hResv2[0][iPt]->GetRMS()*5,hResv2[0][iPt]->GetRMS()*5,nbins,-hResv2[0][iPt]->GetRMS()*5,hResv2[0][iPt]->GetRMS()*5);
       hResv2CorrLargeSmall[iPt]->SetStats(kFALSE);
       hResv2CorrLargeSmall[iPt]->GetYaxis()->SetTitle("v_{2} - v_{2}^{ref} (Large-q_{2}) (sigma fix)");
@@ -586,7 +619,7 @@ Int_t DmesonsFlowEvShapeYieldSyst(Int_t cutmeth, Int_t analysismeth) {
       hResv2CorrLargeSmall[iPt]->GetXaxis()->SetNdivisions(505);
       hResv2CorrLargeSmall[iPt]->GetYaxis()->SetNdivisions(505);
       hResv2CorrLargeSmall[iPt]->GetXaxis()->SetTitleOffset(1.3);
-
+      
       hResv2CorrLargeUnbiased[iPt] = new TH2F(Form("hResv2CorrLargeUnbiased_pt%d",iPt),"",nbins,-hResv2[1][iPt]->GetRMS()*5,hResv2[1][iPt]->GetRMS()*5,nbins,-hResv2[1][iPt]->GetRMS()*5,hResv2[1][iPt]->GetRMS()*5);
       hResv2CorrLargeUnbiased[iPt]->SetStats(kFALSE);
       hResv2CorrLargeUnbiased[iPt]->GetYaxis()->SetTitle("v_{2} - v_{2}^{ref} (Large-q_{2}) (sigma fix)");
@@ -595,7 +628,7 @@ Int_t DmesonsFlowEvShapeYieldSyst(Int_t cutmeth, Int_t analysismeth) {
       hResv2CorrLargeUnbiased[iPt]->GetXaxis()->SetNdivisions(505);
       hResv2CorrLargeUnbiased[iPt]->GetYaxis()->SetNdivisions(505);
       hResv2CorrLargeUnbiased[iPt]->GetXaxis()->SetTitleOffset(1.3);
-
+      
       hResv2CorrSmallUnbiased[iPt] = new TH2F(Form("hResv2CorrSmallUnbiased_pt%d",iPt),"",nbins,-hResv2[0][iPt]->GetRMS()*5,hResv2[0][iPt]->GetRMS()*5,nbins,-hResv2[0][iPt]->GetRMS()*5,hResv2[0][iPt]->GetRMS()*5);
       hResv2CorrSmallUnbiased[iPt]->SetStats(kFALSE);
       hResv2CorrSmallUnbiased[iPt]->GetYaxis()->SetTitle("v_{2} - v_{2}^{ref} (Small-q_{2}) (sigma fix)");
@@ -665,16 +698,36 @@ Int_t DmesonsFlowEvShapeYieldSyst(Int_t cutmeth, Int_t analysismeth) {
     for(Int_t iPt=0; iPt<nPtBins; iPt++) {
       hv2fsVsTrial[0][iPt]->Sumw2();
       hv2fsVsTrial[1][iPt]->Sumw2();
-      hv2fsRatioVsTrial[iPt] = (TH1F*)hv2fsVsTrial[0][iPt]->Clone();
-      hv2fsRatioVsTrial[iPt]->SetName(Form("v2fsRatioVsTrial_pt%d",iPt));
-      hv2fsRatioVsTrial[iPt]->Divide(hv2fsVsTrial[0][iPt],hv2fsVsTrial[1][iPt],1.,1.);
-      hv2fsRatioVsTrial[iPt]->GetYaxis()->SetTitle("v_{2} (Small-q_{2}) / v_{2} (Large-q_{2}) (sigma fix)");
-      hv2fsRatioVsTrial[iPt]->SetStats(0);
-      hv2fsRatioVsTrial[iPt]->SetLineWidth(1);
-      hv2fsRatioVsTrial[iPt]->SetMarkerColor(kRed);
-      hv2fsRatioVsTrial[iPt]->SetMarkerSize(0.5);
-      hv2fsRatioVsTrial[iPt]->SetMarkerStyle(20);
-      hv2fsRatioVsTrial[iPt]->GetYaxis()->SetRangeUser(hv2fsRatioVsTrial[iPt]->GetMinimum()-3*TMath::Abs(hv2fsRatioVsTrial[iPt]->GetBinError(1)),hv2fsRatioVsTrial[iPt]->GetMaximum()+3*TMath::Abs(hv2fsRatioVsTrial[iPt]->GetBinError(1)));
+      hv2fsVsTrial[2][iPt]->Sumw2();
+      hv2fsRatioLargeSmallVsTrial[iPt] = (TH1F*)hv2fsVsTrial[1][iPt]->Clone(Form("v2fsRatioLargeSmallVsTrialpt%d",iPt));
+      hv2fsRatioLargeSmallVsTrial[iPt]->Divide(hv2fsVsTrial[1][iPt],hv2fsVsTrial[0][iPt],1.,1.);
+      hv2fsRatioLargeSmallVsTrial[iPt]->GetYaxis()->SetTitle("v_{2} (Large-q_{2}) / v_{2} (Small-q_{2}) (sigma fix)");
+      hv2fsRatioLargeSmallVsTrial[iPt]->SetStats(0);
+      hv2fsRatioLargeSmallVsTrial[iPt]->SetLineWidth(1);
+      hv2fsRatioLargeSmallVsTrial[iPt]->SetMarkerColor(kRed);
+      hv2fsRatioLargeSmallVsTrial[iPt]->SetMarkerSize(0.5);
+      hv2fsRatioLargeSmallVsTrial[iPt]->SetMarkerStyle(20);
+      hv2fsRatioLargeSmallVsTrial[iPt]->GetYaxis()->SetRangeUser(hv2fsRatioLargeSmallVsTrial[iPt]->GetMinimum()-3*TMath::Abs(hv2fsRatioLargeSmallVsTrial[iPt]->GetBinError(1)),hv2fsRatioLargeSmallVsTrial[iPt]->GetMaximum()+3*TMath::Abs(hv2fsRatioLargeSmallVsTrial[iPt]->GetBinError(1)));
+      
+      hv2fsRatioLargeUnbiasedVsTrial[iPt] = (TH1F*)hv2fsVsTrial[1][iPt]->Clone(Form("v2fsRatioLargeUnbiasedVsTrial_pt%d",iPt));
+      hv2fsRatioLargeUnbiasedVsTrial[iPt]->Divide(hv2fsVsTrial[1][iPt],hv2fsVsTrial[2][iPt],1.,1.);
+      hv2fsRatioLargeUnbiasedVsTrial[iPt]->GetYaxis()->SetTitle("v_{2} (Large-q_{2}) / v_{2} (q_{2}-Integrated) (sigma fix)");
+      hv2fsRatioLargeUnbiasedVsTrial[iPt]->SetStats(0);
+      hv2fsRatioLargeUnbiasedVsTrial[iPt]->SetLineWidth(1);
+      hv2fsRatioLargeUnbiasedVsTrial[iPt]->SetMarkerColor(kRed);
+      hv2fsRatioLargeUnbiasedVsTrial[iPt]->SetMarkerSize(0.5);
+      hv2fsRatioLargeUnbiasedVsTrial[iPt]->SetMarkerStyle(20);
+      hv2fsRatioLargeUnbiasedVsTrial[iPt]->GetYaxis()->SetRangeUser(hv2fsRatioLargeUnbiasedVsTrial[iPt]->GetMinimum()-3*TMath::Abs(hv2fsRatioLargeUnbiasedVsTrial[iPt]->GetBinError(1)),hv2fsRatioLargeUnbiasedVsTrial[iPt]->GetMaximum()+3*TMath::Abs(hv2fsRatioLargeUnbiasedVsTrial[iPt]->GetBinError(1)));
+      
+      hv2fsRatioSmallUnbiasedVsTrial[iPt] = (TH1F*)hv2fsVsTrial[0][iPt]->Clone(Form("v2fsRatioSmallUnbiasedVsTrial_pt%d",iPt));
+      hv2fsRatioSmallUnbiasedVsTrial[iPt]->Divide(hv2fsVsTrial[0][iPt],hv2fsVsTrial[2][iPt],1.,1.);
+      hv2fsRatioSmallUnbiasedVsTrial[iPt]->GetYaxis()->SetTitle("v_{2} (Small-q_{2}) / v_{2} (q_{2}-Integrated) (sigma fix)");
+      hv2fsRatioSmallUnbiasedVsTrial[iPt]->SetStats(0);
+      hv2fsRatioSmallUnbiasedVsTrial[iPt]->SetLineWidth(1);
+      hv2fsRatioSmallUnbiasedVsTrial[iPt]->SetMarkerColor(kRed);
+      hv2fsRatioSmallUnbiasedVsTrial[iPt]->SetMarkerSize(0.5);
+      hv2fsRatioSmallUnbiasedVsTrial[iPt]->SetMarkerStyle(20);
+      hv2fsRatioSmallUnbiasedVsTrial[iPt]->GetYaxis()->SetRangeUser(hv2fsRatioSmallUnbiasedVsTrial[iPt]->GetMinimum()-3*TMath::Abs(hv2fsRatioSmallUnbiasedVsTrial[iPt]->GetBinError(1)),hv2fsRatioSmallUnbiasedVsTrial[iPt]->GetMaximum()+3*TMath::Abs(hv2fsRatioSmallUnbiasedVsTrial[iPt]->GetBinError(1)));
     }
     
     TH1F* hv2Syst[3][nPtBins];
@@ -694,7 +747,7 @@ Int_t DmesonsFlowEvShapeYieldSyst(Int_t cutmeth, Int_t analysismeth) {
       hShiftRMS[iq2]->GetYaxis()->SetTitle("#sqrt{RMS^{2}+shift^{2}} (sigma fix)");
       hShiftRMS[iq2]->GetXaxis()->SetTitle("#it{p}_{T} (GeV/c)");
       hShiftRMS[iq2]->SetStats(kFALSE);
-      hShiftRMS[iq2]->GetYaxis()->SetRangeUser(0.,0.08);
+      hShiftRMS[iq2]->GetYaxis()->SetRangeUser(0.,0.05);
     }
     
     for(Int_t iPt=0; iPt<nPtBins; iPt++) {
@@ -708,7 +761,7 @@ Int_t DmesonsFlowEvShapeYieldSyst(Int_t cutmeth, Int_t analysismeth) {
         hv2Syst[iq2][iPt]->GetYaxis()->SetTitle("MEAN v_{2}-v_{2}^{ref}");
         hv2Syst[iq2][iPt]->GetYaxis()->SetTitleOffset(1.5);
         hv2Syst[iq2][iPt]->SetTitle(Form("%.1f < #it{p}_{T} < %.1f GeV/c",PtLims[iPt],PtLims[iPt+1]));
-
+        
         hv2Syst2[iq2][iPt] = new TH1F(Form("hv2Syst2_%s_pt%d",q2regionname[iq2].Data(),iPt),"",4,-0.4,3.6);
         hv2Syst2[iq2][iPt]->SetStats(kFALSE);
         
@@ -779,7 +832,7 @@ Int_t DmesonsFlowEvShapeYieldSyst(Int_t cutmeth, Int_t analysismeth) {
     TLatex* latex = new TLatex();
     latex->SetTextSize(0.05);
     latex->SetTextFont(42);
-
+    
     TLine* v2refline[3][nPtBins];
     TLine* v2reflinelow[3][nPtBins];
     TLine* v2reflinehigh[3][nPtBins];
@@ -813,7 +866,7 @@ Int_t DmesonsFlowEvShapeYieldSyst(Int_t cutmeth, Int_t analysismeth) {
         pv2BC2[iq2][iPt]->SetY1NDC(0.29);
         pv2BC2[iq2][iPt]->SetY2NDC(0.44);
         cv2[iq2]->cd(iPt+1)->Modified();
-
+        
         cv2VsTrial[iq2]->cd(iPt+1);
         hv2VsTrial[iq2][iPt]->GetYaxis()->SetRangeUser(-0.4,0.6);
         hv2VsTrial[iq2][iPt]->SetStats(kFALSE);
@@ -879,23 +932,57 @@ Int_t DmesonsFlowEvShapeYieldSyst(Int_t cutmeth, Int_t analysismeth) {
       hResv2CorrLargeSmall[iPt]->Draw("colz");
       latex->SetTextColor(kBlack);
       latex->DrawLatex(-4*hResv2[0][iPt]->GetRMS(),hResv2[0][iPt]->GetRMS()*4,Form("Correlation coefficient = %0.3f",hResv2CorrLargeSmall[iPt]->GetCorrelationFactor()));
-
+      
       cResv2CorrLargeUnbiased->cd(iPt+1);
       hResv2CorrLargeUnbiased[iPt]->Draw("colz");
       latex->SetTextColor(kBlack);
       latex->DrawLatex(-4*hResv2[1][iPt]->GetRMS(),hResv2[1][iPt]->GetRMS()*4,Form("Correlation coefficient = %0.3f",hResv2CorrLargeUnbiased[iPt]->GetCorrelationFactor()));
-
+      
       cResv2CorrSmallUnbiased->cd(iPt+1);
       hResv2CorrSmallUnbiased[iPt]->Draw("colz");
       latex->SetTextColor(kBlack);
       latex->DrawLatex(-4*hResv2[0][iPt]->GetRMS(),hResv2[0][iPt]->GetRMS()*4,Form("Correlation coefficient = %0.3f",hResv2CorrSmallUnbiased[iPt]->GetCorrelationFactor()));
       
-      TF1* fLine = new TF1("fLine","pol1",0,nTrials);
-      cv2fsRatioVsTrial->cd(iPt+1);
-      hv2fsRatioVsTrial[iPt]->Fit("fLine");
-      hv2fsRatioVsTrial[iPt]->Draw("E1");
+      TF1* fLineLargeSmall = new TF1("fLineLargeSmall","pol1",0,nTrials);
+      cv2fsRatioLargeSmallVsTrial->cd(iPt+1);
+      hv2fsRatioLargeSmallVsTrial[iPt]->Fit("fLineLargeSmall");
+      hv2fsRatioLargeSmallVsTrial[iPt]->Draw("E1");
       latex->SetTextColor(kRed);
-      latex->DrawLatex(hv2fsRatioVsTrial[iPt]->GetNbinsX()/10,hv2fsRatioVsTrial[iPt]->GetMaximum()*0.9,Form("slope = %f #pm %f",fLine->GetParameter(1),fLine->GetParError(1)));
+      latex->DrawLatex(hv2fsRatioLargeSmallVsTrial[iPt]->GetNbinsX()/10,hv2fsRatioLargeSmallVsTrial[iPt]->GetMaximum()*0.9,Form("slope = %f #pm %f",fLineLargeSmall->GetParameter(1),fLineLargeSmall->GetParError(1)));
+      
+      TF1* fLineLargeUnbiased = new TF1("fLineLargeUnbiased","pol1",0,nTrials);
+      cv2fsRatioLargeUnbiasedVsTrial->cd(iPt+1);
+      hv2fsRatioLargeUnbiasedVsTrial[iPt]->Fit("fLineLargeUnbiased");
+      hv2fsRatioLargeUnbiasedVsTrial[iPt]->Draw("E1");
+      latex->DrawLatex(hv2fsRatioLargeUnbiasedVsTrial[iPt]->GetNbinsX()/10,hv2fsRatioLargeUnbiasedVsTrial[iPt]->GetMaximum()*0.9,Form("slope = %f #pm %f",fLineLargeUnbiased->GetParameter(1),fLineLargeUnbiased->GetParError(1)));
+      
+      TF1* fLineSmallUnbiased = new TF1("fLineSmallUnbiased","pol1",0,nTrials);
+      cv2fsRatioSmallUnbiasedVsTrial->cd(iPt+1);
+      hv2fsRatioSmallUnbiasedVsTrial[iPt]->Fit("fLineSmallUnbiased");
+      hv2fsRatioSmallUnbiasedVsTrial[iPt]->Draw("E1");
+      latex->DrawLatex(hv2fsRatioSmallUnbiasedVsTrial[iPt]->GetNbinsX()/10,hv2fsRatioSmallUnbiasedVsTrial[iPt]->GetMaximum()*0.9,Form("slope = %f #pm %f",fLineSmallUnbiased->GetParameter(1),fLineSmallUnbiased->GetParError(1)));
+      
+      hv2fsRatioLargeSmall[iPt] = new TH1F(Form("v2fsRatioLargeSmall_pt%d",iPt),";v_{2} (Large-q_{2}) / v_{2} (Small-q_{2}) (sigma fix);Entries",100,-1,-1);
+      for(Int_t iTrial=0; iTrial<hv2fsRatioLargeSmallVsTrial[iPt]->GetNbinsX(); iTrial++) {
+        if(hv2fsRatioLargeSmallVsTrial[iPt]->GetBinContent(iTrial+1)!=0) hv2fsRatioLargeSmall[iPt]->Fill(hv2fsRatioLargeSmallVsTrial[iPt]->GetBinContent(iTrial+1));
+      }
+      cv2fsRatioLargeSmall->cd(iPt+1);
+      hv2fsRatioLargeSmall[iPt]->Draw();
+      
+      hv2fsRatioLargeUnbiased[iPt] = new TH1F(Form("v2fsRatioLargeUnbiased_pt%d",iPt),";v_{2} (Large-q_{2}) / v_{2} (q_{2}-Integrated) (sigma fix);Entries",100,-1,-1);
+      for(Int_t iTrial=0; iTrial<hv2fsRatioLargeUnbiasedVsTrial[iPt]->GetNbinsX(); iTrial++) {
+        if(hv2fsRatioLargeUnbiasedVsTrial[iPt]->GetBinContent(iTrial+1)!=0) hv2fsRatioLargeUnbiased[iPt]->Fill(hv2fsRatioLargeUnbiasedVsTrial[iPt]->GetBinContent(iTrial+1));
+      }
+      cv2fsRatioLargeUnbiased->cd(iPt+1);
+      hv2fsRatioLargeUnbiased[iPt]->Draw();
+      
+      hv2fsRatioSmallUnbiased[iPt] = new TH1F(Form("v2fsRatioSmallUnbiased_pt%d",iPt),";v_{2} (Small-q_{2}) / v_{2} (q_{2}-Integrated) (sigma fix);Entries",100,-1,-1);
+      for(Int_t iTrial=0; iTrial<hv2fsRatioSmallUnbiasedVsTrial[iPt]->GetNbinsX(); iTrial++) {
+        if(hv2fsRatioSmallUnbiasedVsTrial[iPt]->GetBinContent(iTrial+1)!=0) hv2fsRatioSmallUnbiased[iPt]->Fill(hv2fsRatioSmallUnbiasedVsTrial[iPt]->GetBinContent(iTrial+1));
+      }
+      cv2fsRatioSmallUnbiased->cd(iPt+1);
+      hv2fsRatioSmallUnbiased[iPt]->Draw();
+      
     }
     
     TLegend* q2leg = new TLegend(0.6,0.6,0.89,0.89);
@@ -916,7 +1003,8 @@ Int_t DmesonsFlowEvShapeYieldSyst(Int_t cutmeth, Int_t analysismeth) {
     TString outname=Form("%s/v2RawYieldSyst_%d_%d_%s%s_%s%0.2f_%s%0.2f.root",outputdir.Data(),minCent,maxCent,analysismethname.Data(),suffix.Data(),q2regionname[0].Data(),q2smalllimit,q2regionname[1].Data(),q2largelimit);
     TString percsuffix="perc";
     if(cutmeth==kPercCutVsCent) percsuffix="percVsCent";
-    if(cutmeth==kPercCut || cutmeth==kPercCutVsCent) {outname=Form("%s/v2RawYieldSyst_%d_%d_%s%s_%s%0.f%s_%s%0.f%s.root",outputdir.Data(),minCent,maxCent,analysismethname.Data(),suffix.Data(),q2regionname[0].Data(),q2smallpercevents*100,percsuffix.Data(),q2regionname[1].Data(),q2largepercevents*100,percsuffix.Data());}
+    else if(cutmeth==kPercentileCut) percsuffix="percentile";
+    if(cutmeth==kPercCut || cutmeth==kPercCutVsCent || cutmeth==kPercentileCut) {outname=Form("%s/v2RawYieldSyst_%d_%d_%s%s_%s%0.f%s_%s%0.f%s.root",outputdir.Data(),minCent,maxCent,analysismethname.Data(),suffix.Data(),q2regionname[0].Data(),q2smallpercevents*100,percsuffix.Data(),q2regionname[1].Data(),q2largepercevents*100,percsuffix.Data());}
     TFile *fout=new TFile(outname.Data(),"RECREATE"); //outputfile
     for(Int_t iPt=0; iPt<nPtBins; iPt++) {
       for(Int_t iq2=kSmall; iq2<=kIntegrated; iq2++) {
@@ -932,7 +1020,12 @@ Int_t DmesonsFlowEvShapeYieldSyst(Int_t cutmeth, Int_t analysismeth) {
       hResv2CorrLargeSmall[iPt]->Write();
       hResv2CorrLargeUnbiased[iPt]->Write();
       hResv2CorrSmallUnbiased[iPt]->Write();
-      hv2fsRatioVsTrial[iPt]->Write();
+      hv2fsRatioLargeSmallVsTrial[iPt]->Write();
+      hv2fsRatioLargeUnbiasedVsTrial[iPt]->Write();
+      hv2fsRatioSmallUnbiasedVsTrial[iPt]->Write();
+      hv2fsRatioLargeSmall[iPt]->Write();
+      hv2fsRatioLargeUnbiased[iPt]->Write();
+      hv2fsRatioSmallUnbiased[iPt]->Write();
     }
     for(Int_t iq2=kSmall; iq2<=kIntegrated; iq2++) {
       hShiftRMS[iq2]->Write();
@@ -941,8 +1034,14 @@ Int_t DmesonsFlowEvShapeYieldSyst(Int_t cutmeth, Int_t analysismeth) {
       cv2VsTrial[iq2]->Write();
     }
     cResv2CorrLargeSmall->Write();
-    cv2fsRatioVsTrial->Write();
+    cv2fsRatioLargeSmallVsTrial->Write();
     cShiftRMS->Write();
+    cv2fsRatioLargeSmallVsTrial->Write();
+    cv2fsRatioLargeUnbiasedVsTrial->Write();
+    cv2fsRatioSmallUnbiasedVsTrial->Write();
+    cv2fsRatioLargeSmall->Write();
+    cv2fsRatioLargeUnbiased->Write();
+    cv2fsRatioSmallUnbiased->Write();
     treeMultiTrial->Write();
     fout->Close();
     
@@ -956,10 +1055,10 @@ Int_t DmesonsFlowEvShapeYieldSyst(Int_t cutmeth, Int_t analysismeth) {
     outname.ReplaceAll("v2CorrLargeUnbiased","v2CorrSmallUnbiased");
     cResv2CorrSmallUnbiased->SaveAs(outname.Data());
     outname.ReplaceAll("v2CorrSmallUnbiased","v2Ratioq2Regions");
-    cv2fsRatioVsTrial->SaveAs(outname.Data());
+    cv2fsRatioLargeSmallVsTrial->SaveAs(outname.Data());
     
     TString plotappendix[3] = {Form("%s%0.2f",q2regionname[0].Data(),q2smalllimit),Form("%s%0.2f",q2regionname[1].Data(),q2largelimit),Form("%s",q2regionname[2].Data())};
-    if(cutmeth==kPercCut || cutmeth==kPercCutVsCent) {
+    if(cutmeth==kPercCut || cutmeth==kPercCutVsCent || cutmeth==kPercentileCut) {
       plotappendix[0] = Form("%s%0.f%s",q2regionname[0].Data(),q2smallpercevents*100,percsuffix.Data());
       plotappendix[1] = Form("%s%0.f%s",q2regionname[1].Data(),q2largepercevents*100,percsuffix.Data());
     }
@@ -975,7 +1074,7 @@ Int_t DmesonsFlowEvShapeYieldSyst(Int_t cutmeth, Int_t analysismeth) {
 
 //_____________________________________________________________________________________________
 //LOAD DATA LIST
-TList* LoadTList(Int_t &ncentbins) {
+TList* LoadTList() {
   
   cout << "Opening input file " << infilename << "..." <<endl;
   TFile* infile = TFile::Open(infilename.Data(),"READ");
@@ -988,16 +1087,13 @@ TList* LoadTList(Int_t &ncentbins) {
   if(infile) {dir=(TDirectoryFile*)infile->Get(dirname.Data()); cout << "File opened!" << endl;}
   else {cerr << "Error: File " << infilename << " not found. Exit." << endl; return 0x0;}
   if(dir) list=(TList*)dir->Get(listname.Data());
-  else {cerr << "Error: Wrong TDirectoryFile name " << dirname << ". Exit." << endl; return 0x0;}
-  if(!list) {cerr << "Error: Wrong TList name " << listname << ". Exit." << endl; return 0x0;}
-  
-  TH2F* hTest = (TH2F*)list->FindObject("hq2TPCFullEtaVsPosEta");
-  if(hTest) {
-    ncentbins=(list->GetEntries()-10)/3; //-10: 6 EP distributions, 3 Events vs. centrality, 1 THnSparse, /3: 3 resolution histos for each centrality bin
-  }
   else {
-    ncentbins=(list->GetEntries()-10)/6;
+    dirname.ReplaceAll("HFv2","HFvn");
+    dir=(TDirectoryFile*)infile->Get(dirname.Data()); cout << "File opened!" << endl;
+    list=(TList*)dir->Get(listname.Data());
   }
+  if(!dir) {cerr << "Error: Wrong TDirectoryFile name " << dirname << ". Exit." << endl; return 0x0;}
+  if(!list) {cerr << "Error: Wrong TList name " << listname << ". Exit." << endl; return 0x0;}
   
   infile->Close();
   cout<<"Input file closed."<< endl;
@@ -1012,7 +1108,7 @@ THnSparseF* LoadSparseFromList(TList* inputlist) {
   THnSparseF* sparse=(THnSparseF*)inputlist->FindObject("hMassPtPhiq2Centr");
   if(!sparse) {cerr << "Error: No THnSparse found. Check if the name hMassPtPhiq2Centr is right!" << endl; return 0x0;}
   else {cout << "THnSparse got!" << endl;}
-
+  
   return sparse;
 }
 
@@ -1020,14 +1116,6 @@ THnSparseF* LoadSparseFromList(TList* inputlist) {
 //GET q2 VS. CENTRALITY HISTO
 TH2F* GetHistoq2VsCentr(TList* inputlist) {
   
-  Int_t ncentbins=0;
-  TH2F* hTest = (TH2F*)inputlist->FindObject("hq2TPCFullEtaVsPosEta");
-  if(hTest) {
-    ncentbins=(inputlist->GetEntries()-10)/3; //-10: 6 EP distributions, 3 Events vs. centrality, 1 THnSparse, /3: 3 resolution histos for each centrality bin
-  }
-  else {
-    ncentbins=(inputlist->GetEntries()-10)/6;
-  }
   Double_t centwidth = (Double_t)(maxCent-minCent)/ncentbins;
   Double_t mincentpermil=minCent*10;
   Double_t maxcentpermil=(minCent+centwidth)*10;
@@ -1074,8 +1162,6 @@ TList* LoadMassHistos(THnSparseF* sparse, vector<Double_t> smallcutvalues, vecto
   Int_t q2axis=3;
   Int_t centaxis=4;
   
-  const Int_t ncentbins = (const Int_t)smallcutvalues.size();
-  if(ncentbins!=(const Int_t)largecutvalues.size()) {return 0x0;}
   Double_t centwidth = (Double_t)(maxCent-minCent)/ncentbins;
   
   TList *outlist = new TList();
@@ -1235,14 +1321,6 @@ TList* LoadResolutionHistos(TList *inputlist, vector<Double_t> smallcutvalues, v
     ,451.409,392.853,340.493,294.426,252.385,215.484,183.284
     ,155.101,130.963};
   
-  Int_t ncentbins=0;
-  TH2F* hTest = (TH2F*)inputlist->FindObject("hq2TPCFullEtaVsPosEta");
-  if(hTest) {
-    ncentbins=(inputlist->GetEntries()-10)/3; //-10: 6 EP distributions, 3 Events vs. centrality, 1 THnSparse, /3: 3 resolution histos for each centrality bin
-  }
-  else {
-    ncentbins=(inputlist->GetEntries()-10)/6;
-  }
   Double_t centwidth = (Double_t)(maxCent-minCent)/ncentbins;
   
   Double_t minCentTimesTen=minCent*10;
@@ -1397,6 +1475,10 @@ void FillSignalGraph(TList *masslist,TGraphAsymmErrors **gSignal,TGraphAsymmErro
   TString dirname=Form("PWGHF_D2H_HFv2_%s%s",partname.Data(),suffix.Data());
   
   if(infile) {dir=(TDirectoryFile*)infile->Get(dirname.Data());}
+  if(!dir) {
+    dirname.ReplaceAll("HFv2","HFvn");
+    dir=(TDirectoryFile*)infile->Get(dirname.Data());
+  }
   if(dir) {
     if(partname.Contains("Dzero")) {
       massD=TDatabasePDG::Instance()->GetParticle(421)->Mass();
@@ -1407,7 +1489,7 @@ void FillSignalGraph(TList *masslist,TGraphAsymmErrors **gSignal,TGraphAsymmErro
     if(partname.Contains("Dstar")) {
       massD=(TDatabasePDG::Instance()->GetParticle(413)->Mass() - TDatabasePDG::Instance()->GetParticle(421)->Mass());
     }
-    if(partname.Contains("Ds")) {
+    if(partname.Contains("Ds") && !partname.Contains("Dstar")) {
       massD=(TDatabasePDG::Instance()->GetParticle(431)->Mass());
     }
   }
@@ -1419,7 +1501,7 @@ void FillSignalGraph(TList *masslist,TGraphAsymmErrors **gSignal,TGraphAsymmErro
   TH1F *hrflTempl=0x0;
   TH1F *hsigMC=0x0;
   Float_t sOverRef=0.;
-
+  
   Int_t nMassBins;
   Double_t hmin,hmax;
   for(Int_t iPt=0;iPt<nPtBins;iPt++){
@@ -1451,6 +1533,9 @@ void FillSignalGraph(TList *masslist,TGraphAsymmErrors **gSignal,TGraphAsymmErro
       }
       fitter->SetInitialGaussianMean(massD);
       fitter->SetInitialGaussianSigma(0.012);
+      if(partname.Contains("Dstar")) {
+        fitter->SetInitialGaussianSigma(0.0004);
+      }
       fitter->SetUseLikelihoodFit();
       Bool_t ok=fitter->MassFitter(kFALSE);
       Double_t sigmaforcounting=0;
@@ -1504,6 +1589,10 @@ void FillSignalGraph(TList *masslist,TGraphAsymmErrors **gSignal,TGraphAsymmErro
     }
     fitter->SetInitialGaussianMean(massD);
     fitter->SetUseLikelihoodFit();
+    fitter->SetInitialGaussianSigma(0.012);
+    if(partname.Contains("Dstar")) {
+      fitter->SetInitialGaussianSigma(0.0004);
+    }
     Bool_t ok=fitter->MassFitter(kFALSE);
     Double_t sigmatot=fitter->GetSigma();
     Double_t massFromFit=fitter->GetMean();
@@ -1688,7 +1777,6 @@ void ApplyCut(THnSparseF* sparse, Double_t min, Double_t max, UInt_t axnum) {
 //DEFINE q2 CUTS
 Bool_t Defineq2Cuts(TH2F* hq2VsCentr, vector<Double_t> &smallcutvalues, vector<Double_t> &largecutvalues, Int_t cutmeth, Int_t fSparseVers) {
   
-  const Int_t ncentbins=hq2VsCentr->GetXaxis()->GetNbins();
   Double_t cutvalues[2] = {-1.,-1.};
   for(Int_t iCent=0; iCent<ncentbins; iCent++) {
     if(cutmeth==kAbsCut) {smallcutvalues.push_back(q2smalllimit); largecutvalues.push_back(q2largelimit);}
@@ -1710,15 +1798,21 @@ Bool_t Defineq2Cuts(TH2F* hq2VsCentr, vector<Double_t> &smallcutvalues, vector<D
       }
       else {return kFALSE;}
     }
+    else if(cutmeth==kPercentileCut) {
+      smallcutvalues.push_back(q2smallpercevents*100);
+      largecutvalues.push_back(100-q2largepercevents*100);
+    }
   }
   
+  TString q2name = "q2";
+  if(cutmeth==kPercentileCut) {q2name = "q2 percentile";}
   cout << "Cut values for the small-q2 region:"<<endl;
   for(Int_t iCent=0; iCent<ncentbins; iCent++) {
-    cout << "Centrality bin "<< iCent << " q2 < " << smallcutvalues[iCent] <<endl;
+    cout << "Centrality bin "<< iCent << Form(" %s < ",q2name.Data()) << smallcutvalues[iCent] <<endl;
   }
   cout << "\nCut values for the large-q2 region:"<<endl;
   for(Int_t iCent=0; iCent<ncentbins; iCent++) {
-    cout << "Centrality bin "<< iCent << " q2 > " << largecutvalues[iCent] <<endl;
+    cout << "Centrality bin "<< iCent << Form(" %s > ",q2name.Data()) << largecutvalues[iCent] <<endl;
   }
   cout << endl;
   

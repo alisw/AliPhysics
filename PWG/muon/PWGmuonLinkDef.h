@@ -43,6 +43,7 @@
 #pragma link C++ class AliAnalysisTaskFlowSingleMu+;
 #pragma link C++ class AliAnalysisMuonUtility+;
 #pragma link C++ class AliUtilityMuonAncestor+;
+#pragma link C++ class AliUtilityDimuonSource+;
 #pragma link C++ class AliOADBMuonTrackCutsParam+;
 #pragma link C++ class AliAnalysisTaskAOD2MuonAOD+;
 #pragma link C++ class AliAnalysisNonMuonTrackCuts+;
@@ -60,15 +61,16 @@
 #pragma link C++ class AliAnalysisMuMuCutCombination+;
 #pragma link C++ class AliAnalysisMuMuEventCutter+;
 #pragma link C++ class AliAnalysisMuMuSingle+;
+#pragma link C++ class AliAnalysisMuMuTriggerResponse+;
 #pragma link C++ class AliAnalysisMuMuMinv+;
-#pragma link C++ class AliAnalysisMuMuFlowEP+;
-#pragma link C++ class AliAnalysisMuMuFlowSP+;
+#pragma link C++ class AliAnalysisMuMuFlow+;
 #pragma link C++ class AliAnalysisMuMuNch+;
 #pragma link C++ class AliAnalysisTaskNorm+;
 //#pragma link C++ class AliAnalysisMuMuMeanPt+;
 
 #pragma link C++ class AliAnalysisTaskMTRResponse+;
 #pragma link C++ class AliMTRParameterizedResponse+;
+#pragma link C++ class AliAnalysisTaskWeightMTRResponse+;
 
 #pragma link C++ class AliAnalysisMuMuMCGene+;
 
@@ -82,5 +84,5 @@
 
 #pragma link C++ class AliMuonTrackSmearing+;
 #pragma link C++ class AliTaskMuonTrackSmearing+;
+#pragma link C++ class AliTaskMuonTrackSmearingQA+;
 #endif
-

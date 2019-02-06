@@ -30,11 +30,19 @@ class AliAnalysisTaskDmesonMCPerform : public AliAnalysisTaskSE
   void SetUseCentrality(Int_t flag){
     fRDHFCuts->SetUseCentrality(flag);
   }
+  void SetPtBinning(Int_t nbins, Double_t minpt, Double_t maxpt){
+    fNPtBins=nbins; fMinPt=minpt; fMaxPt=maxpt;
+  }
+  void SetFillExtraHistos(Bool_t opt){
+    fEnableExtraHistos=opt;
+  }
   virtual void UserCreateOutputObjects();
   virtual void Init(){};
   virtual void LocalInit() {Init();}
   virtual void UserExec(Option_t *option);
   virtual void Terminate(Option_t *option);
+
+  AliRDHFCuts* GetCutObject(){return fRDHFCuts;}
 
  private:
 
@@ -47,7 +55,7 @@ class AliAnalysisTaskDmesonMCPerform : public AliAnalysisTaskSE
 
   AliAnalysisTaskDmesonMCPerform(const AliAnalysisTaskDmesonMCPerform &source);
   AliAnalysisTaskDmesonMCPerform& operator=(const AliAnalysisTaskDmesonMCPerform &source);
-  enum {kDecays=5, kMaxLabel=1000000};
+  enum {kDecays=6, kMaxLabel=1000000};
 
   TList* fOutput;                   //!<! list send on output slot 0
   TH1F* fHistNEvents;               //!<! hist. for N. of events
@@ -62,10 +70,23 @@ class AliAnalysisTaskDmesonMCPerform : public AliAnalysisTaskSE
   TH2F* fHistXvtxResVsPt[2*kDecays];    //!<! hist. for sec vert x resol
   TH2F* fHistYvtxResVsPt[2*kDecays];    //!<! hist. for sec vert x resol
   TH2F* fHistZvtxResVsPt[2*kDecays];    //!<! hist. for sec vert x resol
+  TH2F* fHistXvtxResRotVsPt[2*kDecays]; //!<! hist. for sec vert x resol
+  TH2F* fHistYvtxResRotVsPt[2*kDecays]; //!<! hist. for sec vert x resol
+  TH2F* fHistXvtxResVsPhi[2*kDecays];   //!<! hist. for sec vert x resol
+  TH2F* fHistYvtxResVsPhi[2*kDecays];   //!<! hist. for sec vert x resol
+  TH2F* fHistZvtxResVsPhi[2*kDecays];   //!<! hist. for sec vert x resol
+  TH3F* fHistXvtxResVsDecLenVsPt[2*kDecays];   //!<! hist. for sec vert x resol
+  TH3F* fHistYvtxResVsDecLenVsPt[2*kDecays];   //!<! hist. for sec vert x resol
+  TH3F* fHistZvtxResVsDecLenVsPt[2*kDecays];   //!<! hist. for sec vert x resol
   TH2F* fHistInvMassVsPt[2*kDecays];    //!<! hist. of inv mass (meas)
   TH2F* fHistDecLenVsPt[2*kDecays];     //!<! hist. of decay length (meas)
   TH2F* fHistNormDLxyVsPt[2*kDecays];     //!<! hist. of decay length (meas)
   TH2F* fHistCosPointVsPt[2*kDecays];   //!<! hist. of cos(theta_p) (meas)
+
+  Int_t fNPtBins;               /// number of pt bins in histos
+  Double_t fMinPt;              /// lower limit for pt
+  Double_t fMaxPt;              /// upper limit for pt
+  Bool_t   fEnableExtraHistos;  /// flag to control the additional info
 
   Int_t fAODProtection;         /// flag to activate protection against AOD-dAOD mismatch.
 
@@ -75,7 +96,7 @@ class AliAnalysisTaskDmesonMCPerform : public AliAnalysisTaskSE
   Int_t fMapTrLabel[kMaxLabel];              /// map of track labels
 
   /// \cond CLASSIMP
-  ClassDef(AliAnalysisTaskDmesonMCPerform,1); 
+  ClassDef(AliAnalysisTaskDmesonMCPerform,4);
   /// \endcond
 };
 #endif

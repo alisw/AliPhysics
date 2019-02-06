@@ -18,17 +18,15 @@ const Double_t thetamax = TMath::Pi();
 const Double_t zvtxmin = -10.0;
 const Double_t zvtxmax =  10.0;
 //
-// The following cuts are used on a specific container step, not used in standard efficiency evaluation for D-h analyses (and are active only for ESD analysis)
+// The following cuts are used on MC particles in step 3 (we don't use it) to check that they're reconstructable, so no influence on D-h effs
 const Int_t mintrackrefsTPC = 5;
 const Int_t mintrackrefsITS = 4;
 const Int_t mintrackrefsTOF = 0;
 const Int_t mintrackrefsMUON = 0;
-const Int_t minclustersTPC = 70;
-const Int_t minclustersITS = 2;
 const Bool_t TPCRefit = kTRUE;
 const Bool_t ITSRefit = kFALSE;
 const Bool_t ischarged = kTRUE;
-const Int_t  fBit = 0;
+//const Int_t fBit = 0;
 //const TString centralityEstimator = "ZNA";
 
 //
@@ -72,7 +70,8 @@ AliCFSingleTrackEfficiencyTask *AddSingleTrackEfficiencyTaskDhCorrelations(const
                                                                            TString effName="",
                                                                            TString cutObjName="",
 									   TString centralityEstimator="ZNA",
-                                                                           Double_t maxRadiusForPrimaries=999.
+                                                                           Double_t maxRadiusForPrimaries=999.,
+                                                                           Int_t fBit=0, //set this!! It's the filterbit to be checked!
 									   )
 {
     
@@ -100,7 +99,7 @@ AliCFSingleTrackEfficiencyTask *AddSingleTrackEfficiencyTaskDhCorrelations(const
     const Int_t nbinpt_8_16 = 3;  //bins in pt from 8 to 16 GeV
     const Int_t nbinpt_16_24 = 1; //bins in pt from 16 to 24 GeV
     //   A2. Bins variation by hand for other variables
-    const Int_t nbin2 = 18; //bins in eta
+    const Int_t nbin2 = 16; //bins in eta
     const Int_t nbin3 = configuration==AliCFSingleTrackEfficiencyTask::kSlow ? 9 : 1; //bins in phi
     const Int_t nbin4 = configuration==AliCFSingleTrackEfficiencyTask::kSlow ? 9 : 1; //bins in theta
     const Int_t nbin5 = 20; //bins in zvtx

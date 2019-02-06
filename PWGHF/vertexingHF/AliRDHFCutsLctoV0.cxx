@@ -57,7 +57,12 @@ fV0Type(0),
 fHighPtCut(2.5),
 fLowPtCut(1.0),
 fExcludedCut(-1),
-fMinCombinedProbability(0)
+fMinCombProbVsLcPt(0x0),
+fBzkG(0),
+fNBachelorPBins(1),
+fMinCombProb(0x0),
+fBachelorPLimitsForPID(0x0),
+fNTPCSigmaCutForPreselection(999.)
 {
   //
   // Default Constructor
@@ -138,6 +143,12 @@ fMinCombinedProbability(0)
   Float_t limits[2]={0,999999999.};
   SetPtBins(2,limits);
 
+  Float_t minProb[1]={0.};
+  SetMinCombinedProbability(1,minProb);
+
+  Float_t bachelorPlimits[1]={0};
+  SetBachelorPLimitsForPID(1,bachelorPlimits);
+
   /*
     switch (v0channel) {
     case 0:
@@ -162,7 +173,9 @@ AliRDHFCutsLctoV0::AliRDHFCutsLctoV0(const AliRDHFCutsLctoV0 &source) :
   fHighPtCut(source.fHighPtCut),
   fLowPtCut(source.fLowPtCut),
   fExcludedCut(source.fExcludedCut),
-  fMinCombinedProbability(0)
+  fBzkG(source.fBzkG),
+  fNBachelorPBins(source.fNBachelorPBins),
+  fNTPCSigmaCutForPreselection(source.fNTPCSigmaCutForPreselection)
 {
   //
   // Copy constructor
@@ -171,7 +184,17 @@ AliRDHFCutsLctoV0::AliRDHFCutsLctoV0(const AliRDHFCutsLctoV0 &source) :
   if (source.fV0daughtersCuts) AddTrackCutsV0daughters(source.fV0daughtersCuts);
   else fV0daughtersCuts = new AliESDtrackCuts();
 
-  if(source.fMinCombinedProbability) SetMinCombinedProbability(source.fnPtBins,source.fMinCombinedProbability);
+  if (fnPtBins>0) {
+    fMinCombProbVsLcPt=new Float_t[fnPtBins];
+  }    
+  if(fNBachelorPBins > 0){
+    fMinCombProb=new Float_t[fNBachelorPBins];
+    fBachelorPLimitsForPID=new Float_t[fNBachelorPBins];
+    SetMinCombinedProbability(source.fNBachelorPBins,source.fMinCombProb);
+    SetBachelorPLimitsForPID(source.fNBachelorPBins,source.fBachelorPLimitsForPID);
+    //memcpy(fMinCombProb,source.fMinCombProb,source.fNBachelorPBins*sizeof(Float_t));
+    //memcpy(fBachelorPLimitsForPID,source.fBachelorPLimitsForPID,(source.fNBachelorPBins)*sizeof(Float_t));
+  }
 
 }
 //--------------------------------------------------------------------------
@@ -181,22 +204,45 @@ AliRDHFCutsLctoV0 &AliRDHFCutsLctoV0::operator=(const AliRDHFCutsLctoV0 &source)
   // assignment operator
   //
 
-  if (this != &source) {
+  if(&source == this) return *this;
 
-    AliRDHFCuts::operator=(source);
-    fPidSelectionFlag = source.fPidSelectionFlag;
+  AliRDHFCuts::operator=(source);
+  fPidSelectionFlag = source.fPidSelectionFlag;
 
-    delete fV0daughtersCuts;
-    fV0daughtersCuts = new AliESDtrackCuts(*(source.fV0daughtersCuts));
+  delete fV0daughtersCuts;
+  fV0daughtersCuts = new AliESDtrackCuts(*(source.fV0daughtersCuts));
 
-    fV0Type  = source.fV0Type;
+  fV0Type  = source.fV0Type;
 
-    fHighPtCut = source.fHighPtCut;
-    fLowPtCut = source.fLowPtCut;
+  fHighPtCut = source.fHighPtCut;
+  fLowPtCut = source.fLowPtCut;
 
-    if(source.fMinCombinedProbability) SetMinCombinedProbability(source.fnPtBins,source.fMinCombinedProbability);
+  delete [] fMinCombProbVsLcPt;
+  fMinCombProbVsLcPt=new Float_t[fnPtBins];
+  //for (Int_t ii=0; ii<fnPtBins; ii++)
+  //fMinCombProbVsLcPt[ii]=source.fMinCombProbVsLcPt[ii];
 
-  }
+  fBzkG = source.fBzkG;
+
+  fNBachelorPBins = source.fNBachelorPBins;
+
+  delete [] fMinCombProb;
+  delete [] fBachelorPLimitsForPID;
+
+  fMinCombProb=new Float_t[fNBachelorPBins];
+  //for (Int_t ii=0; ii<fNBachelorPBins; ii++)
+  //fMinCombProb[ii]=source.fMinCombProb[ii];
+
+  fBachelorPLimitsForPID=new Float_t[fNBachelorPBins];
+  //for (Int_t ii=0; ii<fNBachelorPBins; ii++)
+  //fBachelorPLimitsForPID=source.fBachelorPLimitsForPID[ii];
+
+  SetMinCombinedProbability(source.fNBachelorPBins,source.fMinCombProb);
+  SetBachelorPLimitsForPID(source.fNBachelorPBins,source.fBachelorPLimitsForPID);
+  //memcpy(fMinCombProb,source.fMinCombProb,source.fNBachelorPBins*sizeof(Float_t));
+  //memcpy(fBachelorPLimitsForPID,source.fBachelorPLimitsForPID,source.fNBachelorPBins*sizeof(Float_t));
+
+  fNTPCSigmaCutForPreselection=source.fNTPCSigmaCutForPreselection;
 
   return *this;
 }
@@ -213,10 +259,14 @@ AliRDHFCutsLctoV0::~AliRDHFCutsLctoV0() {
     fV0daughtersCuts=0;
   }
 
-  if(fMinCombinedProbability) {
-    delete [] fMinCombinedProbability;
-    fMinCombinedProbability=0;
-  }
+  if (fMinCombProbVsLcPt)
+    delete [] fMinCombProbVsLcPt;
+
+  if (fMinCombProb)
+    delete [] fMinCombProb;
+
+  if (fBachelorPLimitsForPID)
+    delete [] fBachelorPLimitsForPID;
 
 }
 
@@ -782,16 +832,14 @@ Int_t AliRDHFCutsLctoV0::IsSelectedPID(AliAODRecoDecayHF* obj) {
   Bool_t okLcLambdaBarPi = kTRUE; // LambdaBar case
   Bool_t okLcLambdaPi = kTRUE; // Lambda case
 
-  Double_t ptCand = objD->Pt();
-  Int_t candPtBin = PtBin(ptCand);
-  CheckPID(candPtBin,bachelor,v0Neg,v0Pos,okLcK0Sp,okLcLambdaBarPi,okLcLambdaPi);
+  CheckPID(bachelor,v0Neg,v0Pos,okLcK0Sp,okLcLambdaBarPi,okLcLambdaPi);
 
   Int_t returnvalue = okLcK0Sp+2*okLcLambdaBarPi+4*okLcLambdaPi;
 
   return returnvalue;
 }
 //-----------------------
-void AliRDHFCutsLctoV0::CheckPID(Int_t candPtBin, AliAODTrack *bachelor,
+void AliRDHFCutsLctoV0::CheckPID(AliAODTrack *bachelor,
 				 AliAODTrack * /*v0Neg*/, AliAODTrack * /*v0Pos*/,
 				 Bool_t &isBachelorID1, Bool_t &isBachelorID2, Bool_t &isBachelorID4) {
   // identification strategy
@@ -1049,10 +1097,23 @@ void AliRDHFCutsLctoV0::CheckPID(Int_t candPtBin, AliAODTrack *bachelor,
 	fPidHF->GetPidCombined()->SetDetectorMask(AliPIDResponse::kDetTPC+AliPIDResponse::kDetTOF);
       }
       
-      isBachelorID1=(probProton>fMinCombinedProbability[candPtBin]); // K0S case
-      
-      isBachelorID2=(probPion>fMinCombinedProbability[candPtBin]); // LambdaBar case
-      
+      Double_t pBachelor = bachelor->P();
+      Int_t bachelorPBin = GetBachelorPBin(pBachelor);
+      if (bachelorPBin==-1) {
+	nTPCsigmas = -999;
+	tpcID = fPidHF->GetnSigmaTPC(bachelor,4,nTPCsigmas);
+	isBachelorID1=TMath::Abs(nTPCsigmas)<fNTPCSigmaCutForPreselection; // K0S case
+	nTPCsigmas = -999;
+	tpcID = fPidHF->GetnSigmaTPC(bachelor,2,nTPCsigmas);
+	isBachelorID2=TMath::Abs(nTPCsigmas)<fNTPCSigmaCutForPreselection; // LambdaBar case
+      } else {
+	nTPCsigmas = -999;
+	tpcID = fPidHF->GetnSigmaTPC(bachelor,4,nTPCsigmas);
+	isBachelorID1=(TMath::Abs(nTPCsigmas)<fNTPCSigmaCutForPreselection && probProton>fMinCombProb[bachelorPBin]); // K0S case
+	nTPCsigmas = -999;
+	tpcID = fPidHF->GetnSigmaTPC(bachelor,2,nTPCsigmas);
+	isBachelorID2=(TMath::Abs(nTPCsigmas)<fNTPCSigmaCutForPreselection && probPion>fMinCombProb[bachelorPBin]); // LambdaBar case
+      }
       isBachelorID4 = isBachelorID2; // Lambda case
     }
     break;
@@ -1066,7 +1127,7 @@ void AliRDHFCutsLctoV0::CheckPID(Int_t candPtBin, AliAODTrack *bachelor,
     tpcID = fPidHF->GetnSigmaTPC(bachelor,4,nTPCsigmas);
 
     isBachelorID1 = kFALSE;
-    if(TMath::Abs(nTPCsigmas)<3. && TMath::Abs(nTOFsigmas)<3.){
+    if((tpcID==1)&&(tofID==1)&&(TMath::Abs(nTPCsigmas)<3.)&&(TMath::Abs(nTOFsigmas)<3.)){
       isBachelorID1 = !(bachelor->Pt()>fLowPtCut&& nTOFsigmas<-2.) && !(bachelor->Pt()>fLowPtCut&& nTPCsigmas>2.);
     }
 
@@ -1075,7 +1136,7 @@ void AliRDHFCutsLctoV0::CheckPID(Int_t candPtBin, AliAODTrack *bachelor,
     nTPCsigmas = -999;
     tpcID = fPidHF->GetnSigmaTPC(bachelor,2,nTPCsigmas);
 
-    isBachelorID2 = TMath::Abs(nTPCsigmas)<3. && TMath::Abs(nTOFsigmas)<3.;
+    isBachelorID2 = TMath::Abs(nTPCsigmas)<3. && TMath::Abs(nTOFsigmas)<3. && (tpcID==1)&&(tofID==1);
     isBachelorID4 = isBachelorID2;
 
     break;
@@ -1574,12 +1635,20 @@ void AliRDHFCutsLctoV0::PrintAll() const {
   }
 
   if (fPidSelectionFlag==9) {
-      for(Int_t ib=0;ib<fnPtBins;ib++){
-	cout<<"fMinCombinedProbability["<<ib<<"] = "<<fMinCombinedProbability[ib]<<"\t";
-      } 
-      cout<<endl;
-      cout << " GetCombDetectors() = " << GetPidHF()->GetCombDetectors() << endl;
+
+    cout << " fNBachelorPBins = " << fNBachelorPBins << endl;
+
+    for(Int_t ib=0;ib<fNBachelorPBins-1;ib++){
+      cout<<"fMinCombProb["<<ib<<"] = "<<fMinCombProb[ib]<<"\t"
+	  <<"(" << fBachelorPLimitsForPID[ib] << "<= p < "<< fBachelorPLimitsForPID[ib+1]<< ")\n";
+    }
+    cout<<"fMinCombProb["<<fNBachelorPBins-1<<"] = "<<fMinCombProb[fNBachelorPBins-1]<<"\t"
+	  <<"(p>= " << fBachelorPLimitsForPID[fNBachelorPBins-1] << ")\n";
+    cout<<endl;
+    cout << " GetCombDetectors() = " << GetPidHF()->GetCombDetectors() << endl;
   }
+
+  cout << " fNTPCSigmaCutForPreselection = " << fNTPCSigmaCutForPreselection << endl;
 
   if (fTrackCuts) {
     Float_t eta1=0, eta2=0; fTrackCuts->GetEtaRange(eta1,eta2);
@@ -1735,19 +1804,37 @@ Bool_t AliRDHFCutsLctoV0::AreLctoV0DaughtersSelected(AliAODRecoDecayHF *dd, AliA
 }
 
 //---------------------------------------------------------------------------
-void AliRDHFCutsLctoV0::SetMinCombinedProbability(Int_t nPtBins,Float_t *minProb) {
+void AliRDHFCutsLctoV0::SetMinCombinedProbability(Int_t nPBins,Float_t *minProb) {
   //
   // store the combined probability cuts
   //
-  if(nPtBins!=fnPtBins) {
-    printf("Wrong number of pt bins: it has to be %d\n",fnPtBins);
-    AliFatal("exiting");
+
+  //if (fNBachelorPBins<=0)
+  fNBachelorPBins=nPBins;
+
+  if (fMinCombProb) delete [] fMinCombProb;
+  fMinCombProb = new Float_t[fNBachelorPBins];
+
+  for(Int_t ib=0; ib<fNBachelorPBins; ib++) {
+    fMinCombProb[ib] = minProb[ib];
   }
+  return;
+}
 
-  if(!fMinCombinedProbability) fMinCombinedProbability = new Float_t[fnPtBins];
+//---------------------------------------------------------------------------
+void AliRDHFCutsLctoV0::SetBachelorPLimitsForPID(Int_t nPBins,Float_t *pLimits) {
+  //
+  // store the bachelor p bin limits for combined probability cuts
+  //
 
-  for(Int_t ib=0; ib<fnPtBins; ib++) {
-    fMinCombinedProbability[ib] = minProb[ib];
+  //if (fNBachelorPBins<=0) 
+  fNBachelorPBins=nPBins;
+
+  if (fBachelorPLimitsForPID) delete [] fBachelorPLimitsForPID;
+  fBachelorPLimitsForPID = new Float_t[fNBachelorPBins];
+
+  for(Int_t ib=0; ib<fNBachelorPBins; ib++) {
+    fBachelorPLimitsForPID[ib] = pLimits[ib];
   }
   return;
 }
@@ -1808,4 +1895,378 @@ Double_t AliRDHFCutsLctoV0::GetReSignedd0(AliAODRecoDecayHF *dd) {
   if(innerpro<0.) signd0 = -1.;
 
   return signd0*TMath::Abs(d0z0bach[0]);
+}
+
+//---------------------------------------------------------------------------
+Bool_t AliRDHFCutsLctoV0::ApplySingleK0Cuts(AliAODv0 *v0, AliAODEvent* aod) {
+  //
+  // V0 selection
+  //
+
+  if(!v0){
+    AliFatal("V0 object is NULL");
+    return kFALSE;
+  }
+
+  if (!fV0daughtersCuts) {
+    AliFatal("Cut object is not defined for V0daughters. Candidate accepted.");
+    return kFALSE;
+  }
+
+  if ( v0 && ((v0->GetOnFlyStatus() == kTRUE  && GetV0Type() == AliRDHFCuts::kOnlyOfflineV0s) ||
+        (v0->GetOnFlyStatus() == kFALSE && GetV0Type() == AliRDHFCuts::kOnlyOnTheFlyV0s)) ) return kFALSE;
+
+  if (!v0->GetSecondaryVtx()) {
+    AliDebug(2,"No secondary vertex for V0 by cascade");
+    return kFALSE;
+  }
+  if (v0->GetNDaughters()!=2) {
+    AliDebug(2,Form("No 2 daughters for V0 of current cascade (onTheFly=%d, nDaughters=%d)",v0->GetOnFlyStatus(),v0->GetNDaughters()));
+    return kFALSE;
+  }
+
+  // cuts on the V0 mass: K0S case
+  Double_t mk0s    = v0->MassK0Short();
+  Double_t mk0sPDG =  TDatabasePDG::Instance()->GetParticle(310)->Mass();
+  Double_t maxcut_m = -9999;
+  for(Int_t ip=0;ip<fnPtBins;ip++){
+    if(fCutsRD[GetGlobalIndex(2,ip)]>maxcut_m) maxcut_m = fCutsRD[GetGlobalIndex(2,ip)];
+  }
+  if (TMath::Abs(mk0s-mk0sPDG) > maxcut_m) {
+    return kFALSE;
+  }
+
+  // cut on V0 pT min
+  Double_t mincut_p = 9999;
+  for(Int_t ip=0;ip<fnPtBins;ip++){
+    if(fCutsRD[GetGlobalIndex(15,ip)]<mincut_p) mincut_p = fCutsRD[GetGlobalIndex(15,ip)];
+  }
+  if (v0->Pt() < mincut_p) { // V0 pT min
+    return kFALSE;
+  }
+
+  AliAODTrack *v0positiveTrack = dynamic_cast<AliAODTrack*>(v0->GetDaughter(0));
+  if (!v0positiveTrack) return kFALSE;
+  AliAODTrack *v0negativeTrack = dynamic_cast<AliAODTrack*>(v0->GetDaughter(1));
+  if (!v0negativeTrack) return kFALSE;
+
+
+  Float_t etaMin=0, etaMax=0; fV0daughtersCuts->GetEtaRange(etaMin,etaMax);
+  if ( (v0positiveTrack->Eta()<=etaMin || v0positiveTrack->Eta()>=etaMax) ||
+       (v0negativeTrack->Eta()<=etaMin || v0negativeTrack->Eta()>=etaMax) ) return kFALSE;
+  Float_t ptMin=0, ptMax=0; fV0daughtersCuts->GetPtRange(ptMin,ptMax);
+  if ( (v0positiveTrack->Pt()<=ptMin || v0positiveTrack->Pt()>=ptMax) ||
+       (v0negativeTrack->Pt()<=ptMin || v0negativeTrack->Pt()>=ptMax) ) return kFALSE;
+
+  // Condition on nTPCclusters
+  if (fV0daughtersCuts->GetMinNClusterTPC()>0) {
+    if ( ( ( v0positiveTrack->GetTPCClusterInfo(2,1) ) < fV0daughtersCuts->GetMinNClusterTPC() ) || 
+	 ( ( v0negativeTrack->GetTPCClusterInfo(2,1) ) < fV0daughtersCuts->GetMinNClusterTPC() ) ) return kFALSE;
+  }
+
+  if (fV0daughtersCuts->GetMinRatioCrossedRowsOverFindableClustersTPC()>0.5) {
+    Float_t  ratioCrossedRowsOverFindableClustersTPCPos = 1.0;
+    Float_t  ratioCrossedRowsOverFindableClustersTPCNeg = 1.0;
+    if (v0positiveTrack->GetTPCNclsF()>0) {
+      ratioCrossedRowsOverFindableClustersTPCPos = v0positiveTrack->GetTPCClusterInfo(2,1) / v0positiveTrack->GetTPCNclsF();
+    }
+    if (v0negativeTrack->GetTPCNclsF()>0) {
+      ratioCrossedRowsOverFindableClustersTPCNeg = v0negativeTrack->GetTPCClusterInfo(2,1) / v0negativeTrack->GetTPCNclsF();
+    }
+    if ( ( ( ratioCrossedRowsOverFindableClustersTPCPos ) < fV0daughtersCuts->GetMinRatioCrossedRowsOverFindableClustersTPC() ) || 
+        ( ( ratioCrossedRowsOverFindableClustersTPCNeg ) < fV0daughtersCuts->GetMinRatioCrossedRowsOverFindableClustersTPC() ) ) return kFALSE;
+  }
+
+  // kTPCrefit status
+  if (v0->GetOnFlyStatus()==kFALSE) { // only for offline V0s
+    if (fV0daughtersCuts->GetRequireTPCRefit()) {
+      if( !(v0positiveTrack->GetStatus() & AliESDtrack::kTPCrefit)) return kFALSE;
+      if( !(v0negativeTrack->GetStatus() & AliESDtrack::kTPCrefit)) return kFALSE;
+    }
+  }
+  // kink condition
+  if (!fV0daughtersCuts->GetAcceptKinkDaughters()) {
+    AliAODVertex *maybeKinkPos = (AliAODVertex*)v0positiveTrack->GetProdVertex();
+    AliAODVertex *maybeKinkNeg = (AliAODVertex*)v0negativeTrack->GetProdVertex();
+    if (maybeKinkPos->GetType()==AliAODVertex::kKink ||
+	maybeKinkNeg->GetType()==AliAODVertex::kKink) return kFALSE;
+  }
+
+  return kTRUE;
+
+}
+
+//---------------------------------------------------------------------------
+Bool_t AliRDHFCutsLctoV0::ApplySingleProtonCuts(AliAODTrack *bachelorTrack, AliAODEvent* aod) {
+  //
+  // Daughter tracks selection
+  //
+
+  if (!fTrackCuts) {
+    AliFatal("Cut object is not defined for bachelor. Candidate accepted.");
+    return kFALSE;
+  }
+
+  if (!bachelorTrack) {
+    AliFatal("Track object is NULL.");
+    return kFALSE;
+  }
+
+  if ( fUseTrackSelectionWithFilterBits && !(bachelorTrack->TestFilterMask(BIT(4))) ) {
+    AliDebug(2,"Check on the bachelor FilterBit: no BIT(4). Candidate rejected.");
+    return kFALSE;
+  }
+
+  Float_t ptmin, ptmax;
+  fTrackCuts->GetPtRange(ptmin,ptmax);
+  if(bachelorTrack->Pt()<ptmin) return kFALSE;
+  if(bachelorTrack->Pt()>ptmax) return kFALSE;
+
+  // cut on bachelor pT min
+  Double_t mincut_p = 9999;
+  for(Int_t ip=0;ip<fnPtBins;ip++){
+    if(fCutsRD[GetGlobalIndex(4,ip)]<mincut_p) mincut_p = fCutsRD[GetGlobalIndex(4,ip)];
+  }
+  if (bachelorTrack->Pt() < mincut_p) { 
+    return kFALSE;
+  }
+
+  if (fKinkReject != (!(fTrackCuts->GetAcceptKinkDaughters())) ) {
+    AliError(Form("Not compatible setting: fKinkReject=%1d - fTrackCuts->GetAcceptKinkDaughters()=%1d",fKinkReject, fTrackCuts->GetAcceptKinkDaughters()));
+    return kFALSE;
+  }
+
+
+  AliAODVertex *vAOD = (AliAODVertex*)aod->GetPrimaryVertex();
+  Double_t pos[3]; vAOD->GetXYZ(pos);
+  Double_t cov[6]; vAOD->GetCovarianceMatrix(cov);
+  const AliESDVertex vESD(pos,cov,100.,100);
+
+  if (!IsDaughterSelected(bachelorTrack,&vESD,fTrackCuts,aod)) return kFALSE;
+
+  Bool_t okLcK0Sp = kTRUE; // K0S case
+  Bool_t dummy1 = kTRUE;
+  Bool_t dummy2 = kTRUE;
+  CheckPID(bachelorTrack,0,0,okLcK0Sp,dummy1,dummy2);//use the PID for the first bin. only option 9 is the candidate pT depedent, so probably OK, need to update if needed
+
+  return okLcK0Sp;
+}
+
+//---------------------------------------------------------------------------
+Bool_t AliRDHFCutsLctoV0::ApplyCandidateCuts(AliAODRecoDecayHF *obj, AliAODEvent* aod, Bool_t spdfirstflag) {
+  //
+  // Apply selection
+  //
+
+  if (!fCutsRD) {
+    AliFatal("Cut matrice not inizialized. Exit...");
+    return kFALSE;
+  }
+
+
+  AliAODRecoCascadeHF* d = (AliAODRecoCascadeHF*)obj;
+  if (!d) {
+    AliDebug(2,"AliAODRecoCascadeHF null");
+    return kFALSE;
+  }
+
+  Double_t pt=d->Pt();
+  if(pt<fMinPtCand) return kFALSE;
+  if(pt>fMaxPtCand) return kFALSE;
+  Int_t ptbin = PtBin(pt);
+
+  AliVTrack *bachelorTrack = (AliVTrack*)d->GetBachelor();
+  AliAODv0 *v0 = (AliAODv0*)d->Getv0();
+
+  if (fIsCandTrackSPDFirst && d->Pt()<fMaxPtCandTrackSPDFirst) {
+    if(!spdfirstflag) return kFALSE;
+  }
+
+  // Get the V0 daughter tracks
+  AliAODTrack *v0positiveTrack = (AliAODTrack*)v0->GetDaughter(0);
+  AliAODTrack *v0negativeTrack = (AliAODTrack*)v0->GetDaughter(1);
+  if (!v0positiveTrack || !v0negativeTrack ) {
+    AliDebug(2,"No V0 daughters' objects");
+    return kFALSE;
+  }
+
+  if (v0positiveTrack->GetID()<0 || v0negativeTrack->GetID()<0) {
+    AliDebug(2,Form("At least one of V0 daughters has negative ID %d %d",v0positiveTrack->GetID(),v0negativeTrack->GetID()));
+    return kFALSE;
+  }
+
+  AliAODVertex *vAOD = (AliAODVertex*)aod->GetPrimaryVertex();
+  Double_t posVtx[3]; vAOD->GetXYZ(posVtx);
+
+  Double_t mLcPDG  = TDatabasePDG::Instance()->GetParticle(4122)->Mass();
+  Double_t mk0sPDG = TDatabasePDG::Instance()->GetParticle(310)->Mass();
+  Double_t mLPDG   = TDatabasePDG::Instance()->GetParticle(3122)->Mass();
+
+  // K0S + p
+  Double_t mk0s    = v0->MassK0Short();
+  Double_t mLck0sp = d->InvMassLctoK0sP();
+
+  // Lambda + pi
+  Double_t mlambda  = v0->MassLambda();
+  Double_t malambda = v0->MassAntiLambda();
+  Double_t mLcLpi   = d->InvMassLctoLambdaPi();
+
+  Bool_t okK0spipi=kTRUE, okLppi=kTRUE, okLBarpip=kTRUE;
+  Bool_t isNotK0S = kTRUE, isNotLambda = kTRUE, isNotLambdaBar = kTRUE, isNotGamma = kTRUE;
+
+  Bool_t okLck0sp=kTRUE, okLcLpi=kTRUE, okLcLBarpi=kTRUE;
+
+  // cut on Lc mass with K0S+p hypothesis
+  if (TMath::Abs(mLck0sp-mLcPDG) > fCutsRD[GetGlobalIndex(0,ptbin)] && fExcludedCut!=0) {
+    okLck0sp = kFALSE;
+    AliDebug(4,Form(" cascade mass is %2.2e and does not correspond to Lambda_c into K0S+p cut",mLck0sp));
+  }
+
+  // cuts on the V0 mass: K0S case
+  if (TMath::Abs(mk0s-mk0sPDG) > fCutsRD[GetGlobalIndex(2,ptbin)] && fExcludedCut!=2) {
+    okK0spipi = kFALSE;
+    AliDebug(4,Form(" V0 mass is %2.2e and does not correspond to K0S cut",mk0s));
+  }
+
+  // cut on Lc mass with Lambda+pi hypothesis
+  if (TMath::Abs(mLcLpi-mLcPDG) > fCutsRD[GetGlobalIndex(1,ptbin)] && fExcludedCut!=1) {
+    okLcLpi = kFALSE;
+    okLcLBarpi = kFALSE;
+    AliDebug(4,Form(" cascade mass is %2.2e and does not correspond to Lambda_c into Lambda+pi cut",mLcLpi));
+  }
+
+  // cuts on the V0 mass: Lambda/LambdaBar case
+  if ( TMath::Abs(mlambda-mLPDG) > fCutsRD[GetGlobalIndex(3,ptbin)]  && fExcludedCut!=3) {
+    okLppi = kFALSE;
+    AliDebug(4,Form(" V0 mass is %2.2e and does not correspond to LambdaBar cut",mlambda));
+  }
+
+  if ( TMath::Abs(malambda-mLPDG) > fCutsRD[GetGlobalIndex(3,ptbin)]  && fExcludedCut!=3) {
+    okLBarpip = kFALSE;
+    AliDebug(4,Form(" V0 mass is %2.2e and does not correspond to LambdaBar cut",malambda));
+  }
+
+  // cut on K0S invariant mass veto
+  if (TMath::Abs(v0->MassK0Short()-mk0sPDG) < fCutsRD[GetGlobalIndex(12,ptbin)] && fExcludedCut!=12) { // K0S invariant mass veto
+    AliDebug(4,Form(" veto on K0S invariant mass doesn't pass the cut"));
+    isNotK0S=kFALSE;
+  }
+
+  // cut on Lambda/LambdaBar invariant mass veto
+  if (TMath::Abs(v0->MassLambda()-mLPDG) < fCutsRD[GetGlobalIndex(13,ptbin)] && fExcludedCut!=13) { // Lambda invariant mass veto
+    AliDebug(4,Form(" veto on Lambda invariant mass doesn't pass the cut"));
+    isNotLambda=kFALSE;
+  }
+  if (TMath::Abs(v0->MassAntiLambda()-mLPDG) < fCutsRD[GetGlobalIndex(13,ptbin)] && fExcludedCut!=13) { // LambdaBar invariant mass veto
+    AliDebug(4,Form(" veto on LambdaBar invariant mass doesn't pass the cut"));
+    isNotLambdaBar=kFALSE;
+  }
+
+  // cut on gamma invariant mass veto
+  if (v0->InvMass2Prongs(0,1,11,11) < fCutsRD[GetGlobalIndex(14,ptbin)] && fExcludedCut!=14) { // K0S invariant mass veto
+    AliDebug(4,Form(" veto on gamma invariant mass doesn't pass the cut"));
+    isNotGamma=kFALSE;
+  }
+
+  okLck0sp   = okLck0sp   && okK0spipi && isNotLambda && isNotLambdaBar && isNotGamma;
+  okLcLpi    = okLcLpi    && okLppi    && isNotK0S    && isNotLambdaBar && isNotGamma;
+  okLcLBarpi = okLcLBarpi && okLBarpip && isNotK0S    && isNotLambda    && isNotGamma;
+
+  if (!okLck0sp) return kFALSE;
+
+  // cuts on the minimum pt of the tracks
+  if (TMath::Abs(bachelorTrack->Pt()) < fCutsRD[GetGlobalIndex(4,ptbin)] && fExcludedCut!=4) {
+    AliDebug(4,Form(" bachelor track Pt=%2.2e > %2.2e",bachelorTrack->Pt(),fCutsRD[GetGlobalIndex(4,ptbin)]));
+    return kFALSE;
+  }
+  if (TMath::Abs(v0positiveTrack->Pt()) < fCutsRD[GetGlobalIndex(5,ptbin)] && fExcludedCut!=5) {
+    AliDebug(4,Form(" V0-positive track Pt=%2.2e > %2.2e",v0positiveTrack->Pt(),fCutsRD[GetGlobalIndex(5,ptbin)]));
+    return kFALSE;
+  }
+  if (TMath::Abs(v0negativeTrack->Pt()) < fCutsRD[GetGlobalIndex(6,ptbin)] && fExcludedCut!=6) {
+    AliDebug(4,Form(" V0-negative track Pt=%2.2e > %2.2e",v0negativeTrack->Pt(),fCutsRD[GetGlobalIndex(6,ptbin)]));
+    return kFALSE;
+  }
+  // cut on cascade dca (prong-to-prong)
+  if ( TMath::Abs(d->GetDCA()) > fCutsRD[GetGlobalIndex(7,ptbin)] && fExcludedCut!=7) { // prong-to-prong cascade DCA
+    AliDebug(4,Form(" cascade tracks DCA don't pass the cut"));
+    return kFALSE;
+  }
+
+  // cut on V0 dca (prong-to-prong)
+  if ( TMath::Abs(v0->GetDCA()) > fCutsRD[GetGlobalIndex(8,ptbin)] && fExcludedCut!=8) { // prong-to-prong V0 DCA
+    AliDebug(4,Form(" V0 DCA don't pass the cut"));
+    return kFALSE;
+  }
+
+  // cut on V0 cosine of pointing angle wrt PV
+  if (v0->CosPointingAngle(posVtx) < fCutsRD[GetGlobalIndex(9,ptbin)] && fExcludedCut!=9) { // cosine of V0 pointing angle wrt primary vertex
+    AliDebug(4,Form(" V0 cosine of pointing angle doesn't pass the cut"));
+    return kFALSE;
+  }
+
+  // cut on bachelor transverse impact parameter wrt PV
+  if (TMath::Abs(d->Getd0Prong(0)) > fCutsRD[GetGlobalIndex(10,ptbin)] && fExcludedCut!=10) { // bachelor transverse impact parameter wrt PV
+    AliDebug(4,Form(" bachelor transverse impact parameter doesn't pass the cut"));
+    return kFALSE;
+  }
+
+  // cut on V0 transverse impact parameter wrt PV
+  if (TMath::Abs(d->Getd0Prong(1)) > fCutsRD[GetGlobalIndex(11,ptbin)] && fExcludedCut!=11) { // V0 transverse impact parameter wrt PV
+    AliDebug(4,Form(" V0 transverse impact parameter doesn't pass the cut"));
+    return kFALSE;
+  }
+
+  // cut on V0 pT min
+  if (v0->Pt() < fCutsRD[GetGlobalIndex(15,ptbin)] && fExcludedCut!=15) { // V0 pT min
+    AliDebug(4,Form(" V0 track Pt=%2.2e > %2.2e",v0->Pt(),fCutsRD[GetGlobalIndex(15,ptbin)]));
+    return kFALSE;
+  }
+
+  // cut on Proton emission angle
+  if(TMath::Abs(fCutsRD[GetGlobalIndex(16,ptbin)])<1.1 || TMath::Abs(fCutsRD[GetGlobalIndex(17,ptbin)])<1.1){
+    Double_t cutvar = GetProtonEmissionAngleCMS(d);
+    if (cutvar > fCutsRD[GetGlobalIndex(16,ptbin)] && fExcludedCut!=16 && fExcludedCut!=17) { // Proton emission angle
+      AliDebug(4,Form(" Cos proton emission=%2.2e < %2.2e",cutvar,fCutsRD[GetGlobalIndex(16,ptbin)]));
+      return kFALSE;
+    }
+    if (cutvar < fCutsRD[GetGlobalIndex(17,ptbin)] && fExcludedCut!=16 && fExcludedCut!=17) { // Proton emission angle
+      AliDebug(4,Form(" Cos proton emission=%2.2e > %2.2e",cutvar,fCutsRD[GetGlobalIndex(17,ptbin)]));
+      return kFALSE;
+    }
+  }
+
+  // cut on  proton re-signed d0
+  if(TMath::Abs(fCutsRD[GetGlobalIndex(18,ptbin)])<0.2){
+    Double_t cutvar = GetReSignedd0(d) ;
+    if (cutvar< fCutsRD[GetGlobalIndex(18,ptbin)] && fExcludedCut!=18) { // proton d0
+      AliDebug(4,Form(" Proton d0 (re-signed)=%2.2e > %2.2e",cutvar,fCutsRD[GetGlobalIndex(18,ptbin)]));
+      return kFALSE;
+    }
+  }
+
+  // cut on Armenteros qT/|alpha|
+  if(TMath::Abs(fCutsRD[GetGlobalIndex(19,ptbin)])<0.3){
+    Double_t cutvar = v0->PtArmV0()/TMath::Abs(v0->AlphaV0());
+    if (cutvar < fCutsRD[GetGlobalIndex(19,ptbin)] && fExcludedCut!=19) { // v0 armenteros variable
+      AliDebug(4,Form(" qT/|alpha|=%2.2e > %2.2e",cutvar,fCutsRD[GetGlobalIndex(19,ptbin)]));
+      return kFALSE;
+    }
+  }
+
+  return kTRUE;
+}
+//---------------------------------------------------------------------------
+Int_t AliRDHFCutsLctoV0::GetBachelorPBin(Double_t bachelorP) const {
+  //
+  //give the bachelor p bin.
+  //
+  Int_t pBin=-1;
+  for (Int_t i=0;i<fNBachelorPBins+1;i++){
+    if(bachelorP<fBachelorPLimitsForPID[i+1]) {
+      pBin=i;
+      break;
+    }
+  }
+  return pBin;
 }

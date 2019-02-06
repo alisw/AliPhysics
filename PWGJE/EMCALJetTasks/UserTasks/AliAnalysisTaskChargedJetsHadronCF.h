@@ -138,6 +138,9 @@ class AliAnalysisTaskChargedJetsHadronCF : public AliAnalysisTaskEmcalJet {
 
   void                        SetUseConstituents(Bool_t data, Bool_t mc)   { fUseDataConstituents = data; fUseMCConstituents = mc;}
 
+  void                        SetRemoveEventOutliers(Bool_t val)   { fRemoveEventOutliers = val; }
+
+
  protected:
   void                        ExecOnce();
   Bool_t                      Run();
@@ -189,6 +192,7 @@ class AliAnalysisTaskChargedJetsHadronCF : public AliAnalysisTaskEmcalJet {
 
   Bool_t                      fUseDataConstituents;                     ///< If true, tracks with labels <  10000 will be processed
   Bool_t                      fUseMCConstituents;                       ///< If true, tracks with labels >= 10000 will be processed
+  Bool_t                      fRemoveEventOutliers;                     ///< Remove outliers
 
   // Criteria for the selection of jets that are passed to the correlation task
   Int_t                       fJetOutputMode;                           ///< mode which jets are written to array (0: all accepted, 1: leading,  2: subleading, 3: leading+subleading)

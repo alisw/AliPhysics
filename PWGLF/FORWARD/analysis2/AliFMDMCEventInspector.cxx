@@ -462,7 +462,7 @@ AliFMDMCEventInspector::ProcessMC(AliMCEvent*       event,
 #endif
   }
   if(dpmHeader) { // Also an AliCollisionGeometry 
-    Int_t processType = dpmHeader->ProcessType();
+    // Int_t processType = dpmHeader->ProcessType();
     egSD = true; // We have SD flag in EG
     // 1 & 4 are ND 
     // 5 & 6 are SD 

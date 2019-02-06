@@ -27,7 +27,7 @@ public:
   enum ParticleType {kNoCorrection=0, kPion=1, kKaon=2, kProton=3, kAll=4, kPionMinus=5, kKaonMinus=6, kProtonMinus=7};
   typedef enum CorrectionType ReadCorrectionType;
 
-  AliFemtoCorrFctnDEtaDPhiCorrections(char* title, const int& aPhiBins, const int& aEtaBins);
+  AliFemtoCorrFctnDEtaDPhiCorrections(const char* title, const int& aPhiBins, const int& aEtaBins);
   AliFemtoCorrFctnDEtaDPhiCorrections(const AliFemtoCorrFctnDEtaDPhiCorrections& aCorrFctn);
   virtual ~AliFemtoCorrFctnDEtaDPhiCorrections();
 
@@ -51,8 +51,10 @@ public:
 
   void WriteHistos();
   virtual TList* GetOutputList();
+  virtual AliFemtoCorrFctn* Clone() const { return new AliFemtoCorrFctnDEtaDPhiCorrections(*this); }
+
 private:
-  
+
   TH2D *fDPhiDEtaNumerator;          // Numerator of dEta dPhi function
   TH2D *fDPhiDEtaDenominator;        // Denominator of dEta dPhi function
 
@@ -70,7 +72,7 @@ private:
   TH1D *fPtSumDist;
 
   TH2D *fYtYtNumerator;
-  TH2D *fYtYtDenominator; 
+  TH2D *fYtYtDenominator;
 
   TH2F *fPairPurity;
   TH2F *fDPhiDEtaNumeratorNoCorr;

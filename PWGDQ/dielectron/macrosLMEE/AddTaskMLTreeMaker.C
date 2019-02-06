@@ -1,5 +1,5 @@
 
-AliAnalysisTaskMLTreeMaker *AddTaskMLTreeMaker(TString taskname = "ESDExample", 
+AliAnalysisTaskMLTreeMakerwoCutlib *AddTaskMLTreeMaker(TString taskname = "ESDExample", 
                                              Double_t etaMin = -0.8,
                                              Double_t etaMax = 0.8,
                                              Double_t ptMin = 0.2,
@@ -26,7 +26,7 @@ TString analysisType = mgr->GetInputEventHandler()->GetDataType(); // can be "ES
  }
       
 
-AliAnalysisTaskMLTreeMaker *taskESD = new AliAnalysisTaskMLTreeMaker(taskname);
+AliAnalysisTaskMLTreeMakerwoCutlib *taskESD = new AliAnalysisTaskMLTreeMakerwoCutlib(taskname);
 
    // ==========================================================================
   // user customization part

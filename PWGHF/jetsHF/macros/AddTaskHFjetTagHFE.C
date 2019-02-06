@@ -99,17 +99,20 @@ AliAnalysisHFjetTagHFE* AddTaskHFjetTagHFE(
   jetTask->SetVzRange(-10,10);
   jetTask->SetNeedEmcalGeom(kFALSE);
 
-  /*
-  AliParticleContainer *trackCont = jetTask->AddTrackContainer(trackName);
-  AliClusterContainer *clusterCont = jetTask->AddClusterContainer(clusName);
-  */
+  Double_t JetEta = 0.9-jetradius;
+  cout << "<----------- JetEta =  " << JetEta << endl;
+  jetTask->SetJetEtaCut(JetEta);
+
+  AliTrackContainer* trackCont = 0;
 
   //if (trackName == "mcparticles") {
     //AliMCParticleContainer* mcpartCont = jetTask->AddMCParticleContainer(trackName);
     //mcpartCont->SelectPhysicalPrimaries(kTRUE);
   //}
-  else if (trackName == "tracks" || trackName == "Tracks") {
-    AliTrackContainer* trackCont = jetTask->AddTrackContainer(trackName);
+  //else if (trackName == "tracks" || trackName == "Tracks") {
+  if (trackName == "tracks" || trackName == "Tracks") {
+    //AliTrackContainer* trackCont = jetTask->AddTrackContainer(trackName);
+    trackCont = jetTask->AddTrackContainer(trackName);
     trackCont->SetFilterHybridTracks(kTRUE);
   }
   else if (!trackName.IsNull()) {
@@ -127,7 +130,6 @@ AliAnalysisHFjetTagHFE* AddTaskHFjetTagHFE(
   if (clusterCont) {
     clusterCont->SetClusECut(0.);
     clusterCont->SetClusPtCut(0.);
-    clusterCont->SetClusHadCorrEnergyCut(clusECut);
     clusterCont->SetDefaultClusterEnergy(AliVCluster::kHadCorr);
   }
 
@@ -137,7 +139,8 @@ AliAnalysisHFjetTagHFE* AddTaskHFjetTagHFE(
     //jetCont->SetRhoName(nrho);
     jetCont->SetRhoName("Rho");
     cout << "Name of Rho " << jetCont->GetRhoName() << endl;
-    if(jetradius==0.3)jetareacut=0.2;
+    //if(jetradius==0.3)jetareacut=0.2;
+    jetareacut = jetradius*jetradius*TMath::Pi()*0.6;
     cout << "jetradius = " << jetradius << " ; jetareacut = " << jetareacut << endl;  
     //+++ jetCont->SetPercAreaCut(jetareacut);
     jetCont->SetJetAreaCut(jetareacut);
@@ -153,8 +156,15 @@ AliAnalysisHFjetTagHFE* AddTaskHFjetTagHFE(
      {
      //AliTrackContainer* trackContMC = jetTask->AddTrackContainer("mcparticles");
       AliMCParticleContainer* trackContMC = jetTask->AddMCParticleContainer("mcparticles");
-      AliJetContainer* jetContMC = jetTask->AddJetContainer(AliJetContainer::kChargedJet, AliJetContainer::antikt_algorithm, AliJetContainer::pt_scheme, jetradius, AliJetContainer::kTPCfid, "JetMC");
-     if (jetContMC) {
+      //AliJetContainer* jetContMC = jetTask->AddJetContainer(AliJetContainer::kChargedJet, AliJetContainer::antikt_algorithm, AliJetContainer::pt_scheme, jetradius, AliJetContainer::kTPCfid, "JetMC");
+      //AliJetContainer* jetContMC = jetTask->AddJetContainer("JetMC_AKTChargedR030_mcparticles_pT0150_pt_scheme");
+      AliJetContainer* jetContMC;
+      if(jetradius==0.3)jetContMC = jetTask->AddJetContainer("JetMC_AKTChargedR030_mcparticles_pT0150_pt_scheme");
+      if(jetradius==0.2)jetContMC = jetTask->AddJetContainer("JetMC_AKTChargedR020_mcparticles_pT0150_pt_scheme");
+      if(jetradius==0.4)jetContMC = jetTask->AddJetContainer("JetMC_AKTChargedR040_mcparticles_pT0150_pt_scheme");
+      if(jetradius==0.6)jetContMC = jetTask->AddJetContainer("JetMC_AKTChargedR060_mcparticles_pT0150_pt_scheme");
+     
+      if (jetContMC) {
       //jetCont->SetRhoName(nrho);
       //if(jetradius==0.3)jetareacut=0.2;
       jetContMC->SetJetAreaCut(jetareacut);

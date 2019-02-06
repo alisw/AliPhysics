@@ -16,7 +16,7 @@
 
 class AliFemtoCorrFctnMinvMonitor : public AliFemtoCorrFctn {
 public:
-  AliFemtoCorrFctnMinvMonitor(char* title);
+  AliFemtoCorrFctnMinvMonitor(const char* title);
   AliFemtoCorrFctnMinvMonitor(const AliFemtoCorrFctnMinvMonitor& aCorrFctn);
   virtual ~AliFemtoCorrFctnMinvMonitor();
 
@@ -29,8 +29,10 @@ public:
 
   void WriteHistos();
   virtual TList* GetOutputList();
+  virtual AliFemtoCorrFctn* Clone() const { return new AliFemtoCorrFctnMinvMonitor(*this); }
+
 private:
-  
+
   TH1D *fMinveeFail;   // ee mass assumption - failed pairs
   TH1D *fMinvee;   // ee mass assumption - passed pairs
   TH1D *fMinv2piFail;   // 2 pi mass assumption - failed pairs

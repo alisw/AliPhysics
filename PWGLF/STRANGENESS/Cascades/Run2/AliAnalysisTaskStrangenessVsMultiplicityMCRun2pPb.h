@@ -32,7 +32,7 @@ class TH3F;
 class TVector3;
 class THnSparse;
 class TRandom3;
-class TProfile; 
+class TProfile;
 
 class AliESDpid;
 class AliESDtrackCuts;
@@ -43,7 +43,7 @@ class AliESDFMD;
 class AliCFContainer;
 class AliV0Result;
 class AliCascadeResult;
-class AliExternalTrackParam; 
+class AliExternalTrackParam;
 
 //#include "TString.h"
 //#include "AliESDtrackCuts.h"
@@ -55,15 +55,15 @@ public:
     AliAnalysisTaskStrangenessVsMultiplicityMCRun2pPb();
     AliAnalysisTaskStrangenessVsMultiplicityMCRun2pPb(Bool_t lSaveEventTree, Bool_t lSaveV0Tree, Bool_t lSaveCascadeTree, const char *name, TString lExtraOptions = "");
     virtual ~AliAnalysisTaskStrangenessVsMultiplicityMCRun2pPb();
-
+    
     virtual void   UserCreateOutputObjects();
     virtual void   UserExec(Option_t *option);
     virtual void   Terminate(Option_t *);
     Double_t MyRapidity(Double_t rE, Double_t rPz) const;
-
+    
     //Fix on-the-fly v0s
     void CheckChargeV0(AliESDv0 *v0);
-
+    
     void SetSaveV0s                (Bool_t lSaveV0s        = kTRUE ) {
         fkSaveV0Tree        = lSaveV0s;
     }
@@ -92,11 +92,11 @@ public:
         //Highly experimental, use with care!
         fkIfImprovedExtraPrecisionFactor = lOpt;
     }
-
-//---------------------------------------------------------------------------------------
+    
+    //---------------------------------------------------------------------------------------
     //Task Configuration: trigger selection
     void SetSelectedTriggerClass(AliVEvent::EOfflineTriggerTypes trigType) { fTrigType = trigType;}
-//---------------------------------------------------------------------------------------
+    //---------------------------------------------------------------------------------------
     //Task Configuration: Meant to enable quick re-execution of vertexer if needed
     void SetRunVertexers ( Bool_t lRunVertexers = kTRUE) {
         fkRunVertexers = lRunVertexers;
@@ -110,11 +110,11 @@ public:
     void SetExtraCleanup ( Bool_t lExtraCleanup = kTRUE) {
         fkExtraCleanup = lExtraCleanup;
     }
-//---------------------------------------------------------------------------------------
+    //---------------------------------------------------------------------------------------
     void SetUseExtraEvSels ( Bool_t lUseExtraEvSels = kTRUE) {
         fkDoExtraEvSels = lUseExtraEvSels;
     }
-//---------------------------------------------------------------------------------------
+    //---------------------------------------------------------------------------------------
     //Task Configuration: Skip Event Selections after trigger (VZERO test)
     void SetDownScaleV0 ( Bool_t lOpt = kTRUE, Float_t lVal = 0.001) {
         fkDownScaleV0 = lOpt;
@@ -124,8 +124,8 @@ public:
         fkDownScaleCascade = lOpt;
         fDownScaleFactorCascade = lVal;
     }
-//---------------------------------------------------------------------------------------
-//Setters for the V0 Vertexer Parameters
+    //---------------------------------------------------------------------------------------
+    //Setters for the V0 Vertexer Parameters
     void SetV0VertexerMaxChisquare   ( Double_t lParameter ) {
         fV0VertexerSels[0] = lParameter;
     }
@@ -147,8 +147,8 @@ public:
     void SetV0VertexerMaxRadius      ( Double_t lParameter ) {
         fV0VertexerSels[6] = lParameter;
     }
-//---------------------------------------------------------------------------------------
-//Setters for the Cascade Vertexer Parameters
+    //---------------------------------------------------------------------------------------
+    //Setters for the Cascade Vertexer Parameters
     void SetCascVertexerMaxChisquare         ( Double_t lParameter ) {
         fCascadeVertexerSels[0] = lParameter;
     }
@@ -215,8 +215,8 @@ public:
     Float_t GetDCAz(AliESDtrack *lTrack);
     Float_t GetCosPA(AliESDtrack *lPosTrack, AliESDtrack *lNegTrack, AliESDEvent *lEvent);
     //---------------------------------------------------------------------------------------
-
-//---------------------------------------------------------------------------------------
+    
+    //---------------------------------------------------------------------------------------
     // A simple struct to handle FMD hits information
     // Nothe: this struct is based on what is implemented in AliAnalysisTaskValidation
     //        defined as 'Track' (thanks to C. Bourjau). It was slightly changed here and
@@ -227,12 +227,12 @@ public:
         Float_t weight;
         //Constructor
         FMDhit(Float_t _eta, Float_t _phi, Float_t _weight)
-            :eta(_eta), phi(_phi), weight(_weight) {};
+        :eta(_eta), phi(_phi), weight(_weight) {};
     };
     typedef std::vector<AliAnalysisTaskStrangenessVsMultiplicityMCRun2pPb::FMDhit> FMDhits;
-//---------------------------------------------------------------------------------------
+    //---------------------------------------------------------------------------------------
     AliAnalysisTaskStrangenessVsMultiplicityMCRun2pPb::FMDhits GetFMDhits(AliAODEvent* aodEvent) const;
-//---------------------------------------------------------------------------------------
+    //---------------------------------------------------------------------------------------
     Double_t PropagateToDCA(AliESDv0 *v, AliExternalTrackParam *t, AliESDEvent *event, Double_t b);
     //Helper functions
     Double_t Det(Double_t a00, Double_t a01, Double_t a10, Double_t a11) const;
@@ -244,8 +244,8 @@ public:
                   Double_t g[3],  //first defivatives
                   Double_t gg[3]); //second derivatives
     Double_t GetErrorInPosition(AliExternalTrackParam *t1) const;
-//---------------------------------------------------------------------------------------
-
+    //---------------------------------------------------------------------------------------
+    
 private:
     // Note : In ROOT, "//!" means "do not stream the data from Master node to Worker node" ...
     // your data member object is created on the worker nodes and streaming is not needed.
@@ -256,18 +256,18 @@ private:
     TTree  *fTreeEvent;              //! Output Tree, Events
     TTree  *fTreeV0;              //! Output Tree, V0s
     TTree  *fTreeCascade;              //! Output Tree, Cascades
-
+    
     AliPIDResponse *fPIDResponse;     // PID response object
     AliESDtrackCuts *fESDtrackCuts;   // ESD track cuts used for primary track definition
     AliESDtrackCuts *fESDtrackCutsITSsa2010;  // ESD track cuts used for ITSsa track definition
     AliESDtrackCuts *fESDtrackCutsGlobal2015; // ESD track cuts used for global track definition
     AliAnalysisUtils *fUtils;         // analysis utils (for MV pileup selection)
-
+    
     //Implementation of event selection utility
     AliEventCuts fEventCuts; /// Event cuts class
-
+    
     TRandom3 *fRand;
-
+    
     //Objects Controlling Task Behaviour
     Bool_t fkSaveEventTree;           //if true, save Event TTree
     Bool_t fkSaveV0Tree;              //if true, save TTree
@@ -283,58 +283,61 @@ private:
     Bool_t fkDebugBump; //if true, add extra information to TTrees for debugging
     Bool_t fkDebugOOBPileup; // if true, add extra information to TTrees for pileup study
     Bool_t fkDoExtraEvSels; //use AliEventCuts for event selection
-
+    
     Bool_t fkSaveCascadeTree;         //if true, save TTree
     Bool_t fkDownScaleCascade;
     Double_t fDownScaleFactorCascade;
-
+    
     Float_t fMinPtToSave; //minimum pt above which we keep candidates in TTree output
     Float_t fMaxPtToSave; //maximum pt below which we keep candidates in TTree output
-
+    
     //Objects Controlling Task Behaviour: has to be streamed!
     Bool_t    fkRunVertexers;           // if true, re-run vertexer with loose cuts *** only for CASCADES! ***
     Bool_t    fkUseLightVertexer;       // if true, use AliLightVertexers instead of regular ones
     Bool_t    fkDoV0Refit;              // if true, will invoke AliESDv0::Refit() to improve precision
     Bool_t    fkExtraCleanup;           //if true, perform pre-rejection of useless candidates before going through configs
-
+    
     AliVEvent::EOfflineTriggerTypes fTrigType; // trigger type
-
+    
     Double_t  fV0VertexerSels[7];        // Array to store the 7 values for the different selections V0 related
     Double_t  fCascadeVertexerSels[8];   // Array to store the 8 values for the different selections Casc. related
-
+    
     Double_t fLambdaMassMean[5]; //Array to store the lambda mass mean parametrization
     //[0]+[1]*TMath::Exp([2]*x)+[3]*TMath::Exp([4]*x)
-
+    
     Double_t fLambdaMassSigma[4]; //Array to store the lambda mass sigma parametrization
     //[0]+[1]*x+[2]*TMath::Exp([3]*x)
-
-//===========================================================================================
-//   Variables for Event Tree
-//===========================================================================================
-    Float_t fCentrality; //!
+    
+    //===========================================================================================
+    //   Variables for Event Tree
+    //===========================================================================================
+    Float_t fCentrality_V0A; //!
+    Float_t fCentrality_V0C; //!
+    Float_t fCentrality_V0M; //!
+    
     Bool_t fMVPileupFlag; //!
     Bool_t fOOBPileupFlag; //!
-
+    
     //TOF info for OOB pileuo study
     Int_t  fNTOFClusters;  //!
     Int_t  fNTOFMatches;   //!
     Int_t  fNTracksITSsa2010; //!
     Int_t  fNTracksGlobal2015; //!
     Int_t  fNTracksGlobal2015TriggerPP; //!
-
+    
     //V0 info for OOB pileup study
     Float_t fAmplitudeV0A; //!
     Float_t fAmplitudeV0C; //!
-
+    
     //FMD info for OOB pileup study
     Float_t fNHitsFMDA; //!
     Float_t fNHitsFMDC; //!
-
-
-
-//===========================================================================================
-//   Variables for V0 Tree
-//===========================================================================================
+    
+    
+    
+    //===========================================================================================
+    //   Variables for V0 Tree
+    //===========================================================================================
     Float_t fTreeVariableChi2V0;         //!
     Float_t fTreeVariableDcaV0Daughters; //!
     Float_t fTreeVariableDcaV0ToPrimVertex; //!
@@ -354,18 +357,18 @@ private:
     Float_t fTreeVariablePtArmV0;//!
     Float_t fTreeVariableNegEta; //!
     Float_t fTreeVariablePosEta; //!
-
+    
     Float_t fTreeVariableNSigmasPosProton; //!
     Float_t fTreeVariableNSigmasPosPion; //!
     Float_t fTreeVariableNSigmasNegProton; //!
     Float_t fTreeVariableNSigmasNegPion; //!
-
+    
     Float_t fTreeVariableDistOverTotMom;//!
     Int_t   fTreeVariableLeastNbrCrossedRows;//!
     Float_t fTreeVariableLeastRatioCrossedRowsOverFindable;//!
     Float_t fTreeVariableMaxChi2PerCluster; //!
     Float_t fTreeVariableMinTrackLength; //!
-
+    
     //Variables for debugging Wrong PID hypothesis in tracking bug
     // more info at: https://alice.its.cern.ch/jira/browse/PWGPP-218
     Int_t fTreeVariablePosPIDForTracking; //! uses AliPID EParticleType code (0=electron, 1=muon, 2=pion, etc)
@@ -379,7 +382,7 @@ private:
     ULong64_t fTreeVariablePosTrackStatus; //!
     Float_t fTreeVariableNegDCAz; //!
     Float_t fTreeVariablePosDCAz; //!
-
+    
     //Variables for OOB pileup study (high-multiplicity triggers pp 13 TeV - 2016 data)
     Float_t fTreeVariableNegTOFExpTDiff;      //!
     Float_t fTreeVariablePosTOFExpTDiff;      //!
@@ -388,12 +391,14 @@ private:
     Float_t fTreeVariableAmplitudeV0C; //!
     Float_t fTreeVariableNHitsFMDA; //!
     Float_t fTreeVariableNHitsFMDC; //!
-
+    
     //Event Multiplicity Variables
-    Float_t fTreeVariableCentrality; //!
+    Float_t fTreeVariableCentrality_V0A; //!
+    Float_t fTreeVariableCentrality_V0C; //!
+    Float_t fTreeVariableCentrality_V0M; //!
     Bool_t fTreeVariableMVPileupFlag; //!
     Bool_t fTreeVariableOOBPileupFlag; //!
-
+    
     //MC exclusive Characteristics: 7, also required for feeddown tests
     Float_t fTreeVariablePtMother; //!
     Float_t fTreeVariableRapMother; //!
@@ -403,10 +408,10 @@ private:
     Int_t fTreeVariablePIDMother; //!
     Int_t fTreeVariablePrimaryStatus; //!
     Int_t fTreeVariablePrimaryStatusMother; //!
-
-//===========================================================================================
-//   Variables for Cascade Candidate Tree
-//===========================================================================================
+    
+    //===========================================================================================
+    //   Variables for Cascade Candidate Tree
+    //===========================================================================================
     Int_t fTreeCascVarCharge;         //!
     Float_t fTreeCascVarMassAsXi;     //!
     Float_t fTreeCascVarMassAsOmega;  //!
@@ -436,7 +441,7 @@ private:
     Float_t fTreeCascVarDistOverTotMom;               //!
     Float_t fTreeCascVarMaxChi2PerCluster; //!
     Float_t fTreeCascVarMinTrackLength; //!
-
+    
     //TPC dEdx
     Float_t fTreeCascVarNegNSigmaPion;   //!
     Float_t fTreeCascVarNegNSigmaProton; //!
@@ -444,7 +449,7 @@ private:
     Float_t fTreeCascVarPosNSigmaProton; //!
     Float_t fTreeCascVarBachNSigmaPion;  //!
     Float_t fTreeCascVarBachNSigmaKaon;  //!
-
+    
     //Variables for debugging Wrong PID hypothesis in tracking bug
     // more info at: https://alice.its.cern.ch/jira/browse/PWGPP-218
     Int_t fTreeCascVarPosPIDForTracking; //! uses AliPID EParticleType code (0=electron, 1=muon, 2=pion, etc)
@@ -456,7 +461,7 @@ private:
     Float_t fTreeCascVarNegdEdx; //!
     Float_t fTreeCascVarPosdEdx; //!
     Float_t fTreeCascVarBachdEdx; //!
-
+    
     //Decay Length issue debugging: ULong_t with track status
     ULong64_t fTreeCascVarNegTrackStatus; //!
     ULong64_t fTreeCascVarPosTrackStatus; //!
@@ -464,7 +469,7 @@ private:
     Float_t fTreeCascVarNegDCAz; //!
     Float_t fTreeCascVarPosDCAz; //!
     Float_t fTreeCascVarBachDCAz; //!
-
+    
     //Variables for debugging the invariant mass bump
     //Full momentum information
     Float_t fTreeCascVarNegPx; //!
@@ -476,7 +481,7 @@ private:
     Float_t fTreeCascVarBachPx; //!
     Float_t fTreeCascVarBachPy; //!
     Float_t fTreeCascVarBachPz; //!
-
+    
     Float_t fTreeCascVarNegPxMC; //!
     Float_t fTreeCascVarNegPyMC; //!
     Float_t fTreeCascVarNegPzMC; //!
@@ -486,21 +491,21 @@ private:
     Float_t fTreeCascVarBachPxMC; //!
     Float_t fTreeCascVarBachPyMC; //!
     Float_t fTreeCascVarBachPzMC; //!
-
+    
     Float_t fTreeCascVarV0DecayX; //!
     Float_t fTreeCascVarV0DecayY; //!
     Float_t fTreeCascVarV0DecayZ; //!
     Float_t fTreeCascVarCascadeDecayX; //!
     Float_t fTreeCascVarCascadeDecayY; //!
     Float_t fTreeCascVarCascadeDecayZ; //!
-
+    
     Float_t fTreeCascVarV0DecayXMC; //!
     Float_t fTreeCascVarV0DecayYMC; //!
     Float_t fTreeCascVarV0DecayZMC; //!
     Float_t fTreeCascVarCascadeDecayXMC; //!
     Float_t fTreeCascVarCascadeDecayYMC; //!
     Float_t fTreeCascVarCascadeDecayZMC; //!
-
+    
     //Vars for studying cascade decay point calculations
     Float_t fTreeCascVarBachelorDCAptX; //!
     Float_t fTreeCascVarBachelorDCAptY; //!
@@ -526,7 +531,7 @@ private:
     Float_t fTreeCascVarV0DCAptNegSigmaZ2; //
     Float_t fTreeCascVarV0DCAptNegSigmaSnp2; //
     Float_t fTreeCascVarV0DCAptNegSigmaTgl2; //
-
+    
     Float_t fTreeCascVarPrimVertexX;
     Float_t fTreeCascVarPrimVertexY;
     Float_t fTreeCascVarPrimVertexZ;
@@ -549,7 +554,7 @@ private:
     Int_t fTreeCascVarBachLabelGrandMother; //!
     //Event Number (check same-event index mixups)
     ULong64_t fTreeCascVarEventNumber; //!
-
+    
     //Variables for OOB pileup study (high-multiplicity triggers pp 13 TeV - 2016 data)
     Float_t fTreeCascVarNegTOFExpTDiff; //!
     Float_t fTreeCascVarPosTOFExpTDiff; //!
@@ -559,12 +564,14 @@ private:
     Float_t fTreeCascVarAmplitudeV0C; //!
     Float_t fTreeCascVarNHitsFMDA; //!
     Float_t fTreeCascVarNHitsFMDC; //!
-
+    
     //Event Multiplicity Variables
-    Float_t fTreeCascVarCentrality; //!
+    Float_t fTreeCascVarCentrality_V0A; //!
+    Float_t fTreeCascVarCentrality_V0C; //!
+    Float_t fTreeCascVarCentrality_V0M; //!
     Bool_t fTreeCascVarMVPileupFlag; //!
     Bool_t fTreeCascVarOOBPileupFlag; //!
-
+    
     //MC-only Variabless
     Int_t   fTreeCascVarIsPhysicalPrimary; //!
     Int_t   fTreeCascVarPID;         //!
@@ -577,7 +584,7 @@ private:
     Int_t   fTreeCascVarPIDNegativeGrandMother;         //!
     Int_t   fTreeCascVarPIDPositiveGrandMother;         //!
     Int_t   fTreeCascVarPIDBachelorGrandMother;         //!
-
+    
     Bool_t fTreeCascVarIsPhysicalPrimaryNegative;
     Bool_t fTreeCascVarIsPhysicalPrimaryPositive;
     Bool_t fTreeCascVarIsPhysicalPrimaryBachelor;
@@ -587,33 +594,56 @@ private:
     Bool_t fTreeCascVarIsPhysicalPrimaryNegativeGrandMother;
     Bool_t fTreeCascVarIsPhysicalPrimaryPositiveGrandMother;
     Bool_t fTreeCascVarIsPhysicalPrimaryBachelorGrandMother;
-
+    
     //Well, why not? Let's give it a shot
     Int_t   fTreeCascVarSwappedPID;         //!
-
-//===========================================================================================
-//   Histograms
-//===========================================================================================
-
+    
+    //===========================================================================================
+    //   Histograms
+    //===========================================================================================
+    
     TH1D *fHistEventCounter; //!
-    TH1D *fHistCentrality; //!
-
+    TH1D *fHistCentrality_V0A; //!
+    TH1D *fHistCentrality_V0C; //!
+    TH1D *fHistCentrality_V0M; //!
+    
     //Histograms for efficiency denominators (at final analysis level selections)
     //V0s
-    TH3D *fHistGeneratedPtVsYVsCentralityK0Short;
-    TH3D *fHistGeneratedPtVsYVsCentralityLambda;
-    TH3D *fHistGeneratedPtVsYVsCentralityAntiLambda;
-
+    TH3D *fHistGeneratedPtVsYVsCentrality_V0AK0Short;
+    TH3D *fHistGeneratedPtVsYVsCentrality_V0CK0Short;
+    TH3D *fHistGeneratedPtVsYVsCentrality_V0MK0Short;
+    
+    TH3D *fHistGeneratedPtVsYVsCentrality_V0ALambda;
+    TH3D *fHistGeneratedPtVsYVsCentrality_V0CLambda;
+    TH3D *fHistGeneratedPtVsYVsCentrality_V0MLambda;
+    
+    TH3D *fHistGeneratedPtVsYVsCentrality_V0AAntiLambda;
+    TH3D *fHistGeneratedPtVsYVsCentrality_V0CAntiLambda;
+    TH3D *fHistGeneratedPtVsYVsCentrality_V0MAntiLambda;
+    
+    
     //Cascades
-    TH3D *fHistGeneratedPtVsYVsCentralityXiMinus;
-    TH3D *fHistGeneratedPtVsYVsCentralityXiPlus;
-    TH3D *fHistGeneratedPtVsYVsCentralityOmegaMinus;
-    TH3D *fHistGeneratedPtVsYVsCentralityOmegaPlus;
-
+    TH3D *fHistGeneratedPtVsYVsCentrality_V0AXiMinus;
+    TH3D *fHistGeneratedPtVsYVsCentrality_V0CXiMinus;
+    TH3D *fHistGeneratedPtVsYVsCentrality_V0MXiMinus;
+    
+    TH3D *fHistGeneratedPtVsYVsCentrality_V0AXiPlus;
+    TH3D *fHistGeneratedPtVsYVsCentrality_V0CXiPlus;
+    TH3D *fHistGeneratedPtVsYVsCentrality_V0MXiPlus;
+    
+    TH3D *fHistGeneratedPtVsYVsCentrality_V0AOmegaMinus;
+    TH3D *fHistGeneratedPtVsYVsCentrality_V0COmegaMinus;
+    TH3D *fHistGeneratedPtVsYVsCentrality_V0MOmegaMinus;
+    
+    TH3D *fHistGeneratedPtVsYVsCentrality_V0AOmegaPlus;
+    TH3D *fHistGeneratedPtVsYVsCentrality_V0COmegaPlus;
+    TH3D *fHistGeneratedPtVsYVsCentrality_V0MOmegaPlus;
+    
+    
     AliAnalysisTaskStrangenessVsMultiplicityMCRun2pPb(const AliAnalysisTaskStrangenessVsMultiplicityMCRun2pPb&);            // not implemented
     AliAnalysisTaskStrangenessVsMultiplicityMCRun2pPb& operator=(const AliAnalysisTaskStrangenessVsMultiplicityMCRun2pPb&); // not implemented
-
-    ClassDef(AliAnalysisTaskStrangenessVsMultiplicityMCRun2pPb, 1);
+    
+    ClassDef(AliAnalysisTaskStrangenessVsMultiplicityMCRun2pPb, 2);
     //1: first implementation
 };
 

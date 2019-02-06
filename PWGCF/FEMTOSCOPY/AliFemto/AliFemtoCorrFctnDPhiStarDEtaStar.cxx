@@ -15,7 +15,7 @@
 #endif
 
 //____________________________
-AliFemtoCorrFctnDPhiStarDEtaStar::AliFemtoCorrFctnDPhiStarDEtaStar(char* title,
+AliFemtoCorrFctnDPhiStarDEtaStar::AliFemtoCorrFctnDPhiStarDEtaStar(const char* title,
 								   double radius=1.2,
 								   const int& aEtaBins=50,
 								   double aEtaRangeLow=0.0,
@@ -477,8 +477,9 @@ static void StoreDPhiStarDEtaStarBetweenV0s(const AliFemtoV0 *V0_1,
 void AliFemtoCorrFctnDPhiStarDEtaStar::AddRealPair( AliFemtoPair* pair){
 
   // Add real (effect) pair
-  if (fPairCut)
-    if (!fPairCut->Pass(pair)) return;
+  if (fPairCut && !fPairCut->Pass(pair)) {
+    return;
+  }
 
   const AliFemtoParticle *track_1 = pair->Track1();
   const AliFemtoParticle *track_2 = pair->Track2();
@@ -518,8 +519,9 @@ void AliFemtoCorrFctnDPhiStarDEtaStar::AddRealPair( AliFemtoPair* pair){
 //____________________________
 void AliFemtoCorrFctnDPhiStarDEtaStar::AddMixedPair( AliFemtoPair* pair){
   // Add mixed (background) pair
-  if (fPairCut)
-    if (!fPairCut->Pass(pair)) return;
+  if (fPairCut && !fPairCut->Pass(pair)) {
+    return;
+  }
 
   const AliFemtoParticle *track_1 = pair->Track1();
   const AliFemtoParticle *track_2 = pair->Track2();
