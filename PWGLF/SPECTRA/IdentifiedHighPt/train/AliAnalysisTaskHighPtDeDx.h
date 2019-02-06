@@ -50,6 +50,7 @@ class AliAnalysisTaskHighPtDeDx : public AliAnalysisTaskSE {
   Double_t GetVtxR2Cut() { return fVtxR2Cut; }
   Double_t GetCrossedRowsCut() { return fCrossedRowsCut; }
   Double_t GetCrossedOverFindableCut() { return fCrossedOverFindableCut; }
+  Bool_t   GetRejectKinks() { return fRejectKinks; }
   Bool_t   GetSigmaDedxCut() { return fSigmaDedxCut; }
   
   virtual void  SetTrigger1(UInt_t ktriggerInt1) {ftrigBit1 = ktriggerInt1;}
@@ -79,6 +80,7 @@ class AliAnalysisTaskHighPtDeDx : public AliAnalysisTaskSE {
   virtual void  SetVtxR2Cut(Double_t value) { fVtxR2Cut = value;}
   virtual void  SetCrossedRowsCut(Double_t value) {fCrossedRowsCut = value;}
   virtual void  SetCrossedOverFindableCut(Double_t value) {fCrossedOverFindableCut = value;}
+  virtual void  SetRejectKinks(Bool_t isRejectKinks) {fRejectKinks = isRejectKinks;}
   virtual void  SetSigmaDedxCut(Bool_t isSigmaDedxCut) {fSigmaDedxCut = isSigmaDedxCut;}
 
   //Task Configuration: trigger selection
@@ -166,6 +168,7 @@ class AliAnalysisTaskHighPtDeDx : public AliAnalysisTaskSE {
   Double_t     fVtxR2Cut;           // r = sqrt(x^2+y^2) which is the distance between PV and the z axis
   Double_t     fCrossedRowsCut;     // CrossedRowsTOC
   Double_t     fCrossedOverFindableCut; // CrossedRowsTPC / findable 
+  Bool_t       fRejectKinks;        // reject kink daughters
   Bool_t       fSigmaDedxCut;       // dE/dx cut < 3 sigma on proton daughter candidates with momentum < 1 GeV/c:
 
   //
