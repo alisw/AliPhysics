@@ -182,6 +182,7 @@ public:
 
   void SwitchOnCorrelation()                    { fCorrelate        = kTRUE  ; }
   void SwitchOffCorrelation()                   { fCorrelate        = kFALSE ; }
+  void SwitchCorrelationPerSM(Int_t opt=1)      { fCorrelatePerSM   = opt    ; }
 
   void SwitchOnStudyBadClusters()               { fStudyBadClusters = kTRUE  ; }
   void SwitchOffStudyBadClusters()              { fStudyBadClusters = kFALSE ; }
@@ -216,7 +217,9 @@ public:
   Bool_t   fFillAllCellHistograms;              ///<  Fill all cell related histograms
   Bool_t   fFillAllCellAbsIdHistograms;         ///<  Fill all cell related histograms where one axis is the cell absId
   
-  Bool_t   fCorrelate   ;                       ///<  Correlate PHOS/EMCAL cells/clusters, also with V0 and track multiplicity
+  Bool_t   fCorrelate;                          ///<  Correlate PHOS/EMCAL cells/clusters, also with V0 and track multiplicity
+  Int_t    fCorrelatePerSM;                     ///<  Correlate EMCAL sum E cells per SM with centrality, V0 signal and track multiplicity, options: 0-none, 1- only centrality, 2-all                 
+  
   Bool_t   fStudyBadClusters;                   ///<  Study bad clusters not passing selection criteria (exotic, shower shape, n cells). 
   
   // Cuts
@@ -400,22 +403,27 @@ public:
   
   // V0 Correlation
   
-  TH2F *   fhCaloV0SCorrNClusters;              //!<! Calo vs V0 signal , number of clusters
+  TH2F *   fhCaloV0SCorrNClusters;              //!<! Calo vs V0 signal, number of clusters
   TH2F *   fhCaloV0SCorrEClusters;              //!<! Calo vs V0 signal, total measured cluster energy
   TH2F *   fhCaloV0SCorrNCells;                 //!<! Calo vs V0 signal, number of cells
-  TH2F *   fhCaloV0SCorrECells;                 //!<! Calo vs V0 signal,  total measured cell energy
-  TH2F *   fhCaloV0MCorrNClusters;              //!<! Calo vs V0 multiplicity , number of clusters
+  TH2F *   fhCaloV0SCorrECells;                 //!<! Calo vs V0 signal, total measured cell energy
+  
+  TH2F **  fhCaloV0SCorrECellsMod;              //!<! Calo vs V0 signal,  total measured cell energy per SM
+
+  TH2F *   fhCaloV0MCorrNClusters;              //!<! Calo vs V0 multiplicity, number of clusters
   TH2F *   fhCaloV0MCorrEClusters;              //!<! Calo vs V0 multiplicity, total measured cluster energy
   TH2F *   fhCaloV0MCorrNCells;                 //!<! Calo vs V0 multiplicity, number of cells
-  TH2F *   fhCaloV0MCorrECells;                 //!<! Calo vs V0 multiplicity,  total measured cell energy
-  
+  TH2F *   fhCaloV0MCorrECells;                 //!<! Calo vs V0 multiplicity, total measured cell energy
+
   // Track Correlation
   
   TH2F *   fhCaloTrackMCorrNClusters;           //!<! Calo vs Track Multiplicity, number of clusters
   TH2F *   fhCaloTrackMCorrEClusters;           //!<! Calo vs Track Multiplicity, total measured cluster energy
-  TH2F *   fhCaloTrackMCorrNCells;              //!<! Calo vs V0 Track Multiplicity, number of cells
-  TH2F *   fhCaloTrackMCorrECells;              //!<! Calo vs V0 Track Multipliticy,  total measured cell energy
+  TH2F *   fhCaloTrackMCorrNCells;              //!<! Calo vs Track Multiplicity, number of cells
+  TH2F *   fhCaloTrackMCorrECells;              //!<! Calo vs Track Multipliticy,  total measured cell energy
   
+  TH2F **  fhCaloTrackMCorrECellsMod;           //!<! Calo vs Track Multiplicity,  total measured cell energy per SM
+
   // Centrality
   
   TH2F *   fhCaloCenNClusters;                  //!<! Calo vs centrality, number of clusters
@@ -423,7 +431,7 @@ public:
   TH2F *   fhCaloCenNCells;                     //!<! Calo vs centrality, number of cells
   TH2F *   fhCaloCenECells;                     //!<! Calo vs centrality,  total measured cell energy
 
-  TH2F **   fhCaloCenECellsMod;                 //!<! Calo vs centrality,  total measured cell energy per SM
+  TH2F **  fhCaloCenECellsMod;                  //!<! Calo vs centrality,  total measured cell energy per SM
 
   // Event plane
   
@@ -545,7 +553,7 @@ public:
   AliAnaCalorimeterQA(              const AliAnaCalorimeterQA & qa) ;
   
   /// \cond CLASSIMP
-  ClassDef(AliAnaCalorimeterQA,39) ;
+  ClassDef(AliAnaCalorimeterQA,40) ;
   /// \endcond
 
 } ;
