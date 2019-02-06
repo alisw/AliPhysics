@@ -408,7 +408,7 @@ AliAnalysisTaskSE *AddTaskSigma0Femto(bool isMC = false,
   config->SetMaxKRel(kMax);
   config->SetMixingDepth(10);
   config->SetUseEventMixing(true);
-  config->SetMultiplicityEstimator(AliFemtoDreamEvent::kSPD);
+  config->SetMultiplicityEstimator(AliFemtoDreamEvent::kRef08);
   if (suffix != "0") {
     config->SetMinimalBookingME(true);
   }
