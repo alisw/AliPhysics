@@ -3002,7 +3002,8 @@ Bool_t AliConvEventCuts::IsJetJetMCEventAccepted(AliMCEvent *mcEvent, Double_t& 
         fPeriodEnum != kLHC15g1a && fPeriodEnum != kLHC15g1b &&                                     // LHC11a Jet Jet MC's
         fPeriodEnum != kLHC13b4_fix && fPeriodEnum != kLHC13b4_plus &&                              // LHC13 pPb Jet Jet MC's
         fPeriodEnum != kLHC16c3a && fPeriodEnum != kLHC16c3b && fPeriodEnum != kLHC16c3c &&         // LHC13 pPb Jet Jet MC's
-        fPeriodEnum != kLHC12P2JJ                                                                   // LHC12 JetJet MC
+        fPeriodEnum != kLHC12P2JJ &&                                                                // LHC12 JetJet MC
+        fPeriodEnum != kLHC14k1a  &&  fPeriodEnum != kLHC14k1b                                      // LHC11 JetJet MC
      ){
 
     weight = 1;
@@ -3098,6 +3099,20 @@ Bool_t AliConvEventCuts::IsJetJetMCEventAccepted(AliMCEvent *mcEvent, Double_t& 
           if (bin < 20) weight = weightsBins[bin];
 
 
+        } else if ( fPeriodEnum == kLHC14k1a ){
+          Double_t ptHardBinRanges[7]  = { 5,  7,  9, 12, 16,
+                                            21, 1000000};
+          Double_t weightsBins[6]      = { 2.327372e-02, 1.783327e-02, 1.678043e-02, 1.167544e-02, 7.066289e-03, 8.714857e-03};
+          Int_t bin = 0;
+          while (!((ptHard< ptHardBinRanges[bin+1] && ptHard > ptHardBinRanges[bin]) || (ptHard == ptHardBinRanges[bin]) ) )bin++;
+          if (bin < 6) weight = weightsBins[bin];
+        } else if ( fPeriodEnum == kLHC14k1b ){
+          Double_t ptHardBinRanges[8]  = { 10,  14,  19, 26, 35,
+                                            48, 66, 1000000};
+          Double_t weightsBins[7]      = {  6.174824e-04 ,  6.557521e-04 ,  6.472503e-04 ,  4.857432e-04 ,  3.402152e-04 ,  1.873434e-04 ,  1.376054e-04 };
+          Int_t bin = 0;
+          while (!((ptHard< ptHardBinRanges[bin+1] && ptHard > ptHardBinRanges[bin]) || (ptHard == ptHardBinRanges[bin]) ) )bin++;
+          if (bin < 7) weight = weightsBins[bin];
         } else if ( fPeriodEnum == kLHC15a3b || fPeriodEnum == kLHC15g1b ){
           Double_t ptHardBinRanges[13]  = { 5,  7,  9, 12, 16,
                                             21, 28, 36, 45, 57,
@@ -3401,7 +3416,20 @@ Bool_t AliConvEventCuts::IsJetJetMCEventAccepted(AliMCEvent *mcEvent, Double_t& 
         Int_t bin = 0;
         while (!((ptHard< ptHardBinRanges[bin+1] && ptHard > ptHardBinRanges[bin]) || (ptHard == ptHardBinRanges[bin]) ) )bin++;
         if (bin < 7) weight = weightsBins[bin];
-
+      } else if ( fPeriodEnum == kLHC14k1a ){
+        Double_t ptHardBinRanges[7]  = { 5,  7,  9, 12, 16,
+                                          21, 1000000};
+        Double_t weightsBins[6]      = { 2.327372e-02, 1.783327e-02, 1.678043e-02, 1.167544e-02, 7.066289e-03, 8.714857e-03};
+        Int_t bin = 0;
+        while (!((ptHard< ptHardBinRanges[bin+1] && ptHard > ptHardBinRanges[bin]) || (ptHard == ptHardBinRanges[bin]) ) )bin++;
+        if (bin < 6) weight = weightsBins[bin];
+      } else if ( fPeriodEnum == kLHC14k1b ){
+        Double_t ptHardBinRanges[8]  = { 10,  14,  19, 26, 35,
+                                          48, 66, 1000000};
+        Double_t weightsBins[7]      = {  6.174824e-04 ,  6.557521e-04 ,  6.472503e-04 ,  4.857432e-04 ,  3.402152e-04 ,  1.873434e-04 ,  1.376054e-04 };
+        Int_t bin = 0;
+        while (!((ptHard< ptHardBinRanges[bin+1] && ptHard > ptHardBinRanges[bin]) || (ptHard == ptHardBinRanges[bin]) ) )bin++;
+        if (bin < 7) weight = weightsBins[bin];
       } else if ( fPeriodEnum == kLHC13b4_fix || fPeriodEnum == kLHC13b4_plus ){
         Double_t ptHardBinRanges[11]  = { 5,     11,   21,   36,   57,
                                           84,    117,   152,  191,    234,
@@ -3482,7 +3510,8 @@ void AliConvEventCuts::GetXSectionAndNTrials(AliMCEvent *mcEvent, Float_t &XSect
         fPeriodEnum != kLHC12P2JJ  &&                                                                 // LHC12 JetJet MC
         fPeriodEnum != kLHC18b11a  &&                                                                 // LHC18 GammaJet MC anchored to LHC15o
         fPeriodEnum != kLHC18b11b  &&                                                                 // LHC18 GammaJet MC anchored to LHC15o
-        fPeriodEnum != kLHC18b11c                                                                  // LHC18 GammaJet MC anchored to LHC15o
+        fPeriodEnum != kLHC18b11c  &&                                                               // LHC18 GammaJet MC anchored to LHC15o
+        fPeriodEnum != kLHC14k1a  &&  fPeriodEnum != kLHC14k1b                                      // LHC11 JetJet MC
      ){
     NTrials = -1;
     XSection = -1;
@@ -3574,7 +3603,8 @@ Float_t AliConvEventCuts::GetPtHard(AliMCEvent *mcEvent, AliVEvent* event){
         fPeriodEnum != kLHC15g1a && fPeriodEnum != kLHC15g1b &&                                     // LHC11a Jet Jet MC's
         fPeriodEnum != kLHC13b4_fix && fPeriodEnum != kLHC13b4_plus &&                              // LHC13 pPb Jet Jet MC's
         fPeriodEnum != kLHC16c3a && fPeriodEnum != kLHC16c3b && fPeriodEnum != kLHC16c3c &&         // LHC13 pPb Jet Jet MC's
-        fPeriodEnum != kLHC12P2JJ                                                                   // LHC12 JetJet MC
+        fPeriodEnum != kLHC12P2JJ  &&                                                               // LHC12 JetJet MC
+        fPeriodEnum != kLHC14k1a  &&  fPeriodEnum != kLHC14k1b                                      // LHC11 JetJet MC
     ) return -1;
 
   if(mcEvent){
