@@ -19,7 +19,7 @@
  *
  * @ingroup pwglf_forward_flow
  */
-AliAnalysisTaskSE* AddTaskForwardFlowRun2( bool doNUA, bool makeFakeHoles, TString nua_file, UShort_t nua_mode, bool doetagap, Double_t gap, bool mc,  bool esd,bool prim_cen,bool prim_fwd , UInt_t tracktype, TString centrality,TString name1)
+AliAnalysisTaskSE* AddTaskForwardFlowRun2( bool doNUA, bool makeFakeHoles, TString nua_file, UShort_t nua_mode, bool doetagap, Double_t gap, bool mc,  bool esd,bool prim_cen,bool prim_fwd , UInt_t tracktype, TString centrality,Double_t maxpt,TString name1)
 {
   std::cout << "______________________________________________________________________________" << std::endl;
 
@@ -41,6 +41,8 @@ AliAnalysisTaskSE* AddTaskForwardFlowRun2( bool doNUA, bool makeFakeHoles, TStri
     task->fSettings.fNRefEtaBins = 1;
     task->fSettings.gap = gap;
     resName += "_etagap";
+    resName += std::to_string((int)(10*gap));
+
     //resName += std::to_string(gap);
   }
   else {
@@ -64,6 +66,7 @@ AliAnalysisTaskSE* AddTaskForwardFlowRun2( bool doNUA, bool makeFakeHoles, TStri
   std::cout << "Using tracktype = " << tracktype << std::endl;
   if (tracktype == 0){
     task->fSettings.fFlowFlags = task->fSettings.kSPD;
+    task->fSettings.useSPD = kTRUE;
     resName += "_SPD";
   }
   else{
@@ -92,6 +95,9 @@ AliAnalysisTaskSE* AddTaskForwardFlowRun2( bool doNUA, bool makeFakeHoles, TStri
       std::cout << "INVALID TRACK TYPE FOR TPC" << std::endl;
     }
   }
+
+  task->fSettings.maxpt = maxpt;
+  resName += std::to_string((int)(maxpt*10));
 
   task->fSettings.doNUA = doNUA;
   if (task->fSettings.doNUA){

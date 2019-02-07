@@ -19,10 +19,13 @@
  *
  * @ingroup pwglf_forward_flow
  */
+#include "AliForwardTaskValidation.h"
+
 AliAnalysisTaskSE* AddTaskForwardNUA(UShort_t nua_mode, bool makeFakeHoles, bool mc,  bool esd,bool prim_cen,bool prim_fwd , Int_t tracktype, TString centrality,TString name1)
 {
   std::cout << "______________________________________________________________________________" << std::endl;
 
+  AliForwardTaskValidation* validation_task = AliForwardTaskValidation::ConnectTask("", true) ;
   std::cout << "AddTaskForwardNUA" << std::endl;
 
   // --- Get analysis manager ----------------------------------------
@@ -97,6 +100,7 @@ AliAnalysisTaskSE* AddTaskForwardNUA(UShort_t nua_mode, bool makeFakeHoles, bool
   std::cout << "Container name: " << resName << std::endl;
   //resName = "hej";
   std::cout << "______________________________________________________________________________" << std::endl;
+  task->ConnectInput(1,validation_task->GetOutputSlot(2)->GetContainer());
 
   AliAnalysisDataContainer *coutput_recon =
   mgr->CreateContainer(resName,
@@ -104,7 +108,9 @@ AliAnalysisTaskSE* AddTaskForwardNUA(UShort_t nua_mode, bool makeFakeHoles, bool
    AliAnalysisManager::kOutputContainer,
    mgr->GetCommonFileName());
 
+
   mgr->AddTask(task);
+
   mgr->ConnectInput(task, 0, mgr->GetCommonInputContainer());
   mgr->ConnectOutput(task, 1, coutput_recon);
 

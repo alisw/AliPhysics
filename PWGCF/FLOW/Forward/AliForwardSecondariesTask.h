@@ -198,9 +198,9 @@ TF1 *fMultCentLowCut; //!
     kHybrid = 768, // TPC only tracks
     kphiAcceptanceBin = 21 // phi acceptance bin in the FMD histogram (dNdetadphi)
   };
-  static Double_t Mod(Double_t x, Double_t y);
 
   static Double_t Wrap02pi(Double_t angle);
+  static Double_t Mod(Double_t x, Double_t y);
 
 protected:
   // Find the primary particle of a decay chain. If `p` is alreay the primary return p.

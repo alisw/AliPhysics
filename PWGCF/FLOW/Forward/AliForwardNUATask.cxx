@@ -84,6 +84,8 @@ AliForwardNUATask::AliForwardNUATask() : AliAnalysisTaskSE(),
   //  Parameters:
   //   name: Name of task
   //
+
+
   DefineInput(1, AliForwardTaskValidation::Class());
 
     DefineOutput(1, TList::Class());
