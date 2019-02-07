@@ -718,6 +718,8 @@ void AliAnalysisTaskJetExtractor::ExecOnce()
       TFile::Cp(fBackgroundModelFileName.Data(), "./Model.pkl");
 
       fPythonCLI = new TPython();
+      fPythonCLI->Exec("import sys");
+      fPythonCLI->Exec("sys.path.insert(0, './my-local-python/lib/python2.7/site-packages/')");
       fPythonCLI->Exec("import sklearn, numpy");
       fPythonCLI->Exec("estimator = sklearn.externals.joblib.load(\"./Model.pkl\")");
     #endif
@@ -981,6 +983,15 @@ TString AliAnalysisTaskJetExtractor::GetBackgroundModelArrayString(AliEmcalJet* 
       resultStr += Form("%E", jet->GetShapeProperties()->GetSecondOrderSubtractedConstituent());
     else if(token == "Jet_Shape_RadialMoment")
       resultStr += Form("%E", radialMoment);
+    else if(token == "Jet_Shape_RadialMoment_Shrinked")
+    {
+      if (radialMoment < 0)
+        resultStr += Form("%E", 0.0);
+      else if (radialMoment > 1)
+        resultStr += Form("%E", 1.0);
+      else
+        resultStr += Form("%E", radialMoment);
+    }
     else if(token == "Jet_Shape_MomentumDispersion")
       resultStr += Form("%E", momentumDispersion);
     else if(token == "Jet_Shape_ConstPtMean")
