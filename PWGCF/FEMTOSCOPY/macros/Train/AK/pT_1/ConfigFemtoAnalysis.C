@@ -118,7 +118,7 @@ AliFemtoManager* ConfigFemtoAnalysis(const char* params) {
 	    parameter[20] = strtok(NULL, ",");
 	    cout<<"Parameter [20]: (nSigma2)"<<parameter[20]<<" "<<endl;
 	  }
-	int filterbit = atoi(parameter[0]); //768  (768 / 128) 
+	int filterbit = atoi(parameter[0]); //128  (768 / 128) 
 	int runktdep = atoi(parameter[1]); //0
 	int runmultdep = atoi(parameter[2]); //0
 	int minPlpContribSPD = atoi(parameter[3]); //3
@@ -132,7 +132,7 @@ AliFemtoManager* ConfigFemtoAnalysis(const char* params) {
 	double nEtaMin = atof(parameter[11]); //-0.8
 	double nEtaMax = atof(parameter[12]);  //0.8
 	bool ifIsPileUp = atoi(parameter[13]); //true
-	double maxPt = atof(parameter[14]);  //0.7
+	double maxPt = atof(parameter[14]);  //4.0
 
 	int setMostProb1 = atoi(parameter[15]);
 	int setMostProb2 = atoi(parameter[16]);
@@ -146,7 +146,7 @@ AliFemtoManager* ConfigFemtoAnalysis(const char* params) {
 	TGrid::Connect("alien://");
 
 	int runmults[numOfMultBins] = {1};
-	int multbins[numOfMultBins+1] = {0, 20000}; //liczba czastek (zakres multiplicity) (wczesniej bylo 3000)
+	int multbins[numOfMultBins+1] = {0, 3000};
 	
 	int runch[numOfChTypes] = {0, 0, 0, 0, 0, 0, 1, 1, 1, 0, 0, 0, 1, 1, 1, 1}; // 1 - wlacza czastki do analizy
 	const char *chrgs[numOfChTypes] = { "PP", "aPaP", "PaP", "KpKp", "KmKm", "KpKm", "PIpPIp", "PImPIm", "PIpPIm", "V0LL", "V0ALAL", "V0LAL", "all", "plus", "minus", "mixed"};
@@ -291,13 +291,13 @@ AliFemtoManager* ConfigFemtoAnalysis(const char* params) {
 						}
 					if (ichg == 6 ||ichg == 7 ||ichg == 8)//pions 6-8
 						{
-					    dtc1etaphitpc[aniter]->SetPt(0.4,maxPt);
+					    dtc1etaphitpc[aniter]->SetPt(1.0,maxPt);
 					    dtc1etaphitpc[aniter]->SetMass(PionMass);		
 					    dtc1etaphitpc[aniter]->SetMostProbable(setMostProb3);//cut on Nsigma in pT not p - PID - rodzaj metody		   
 						}
 					if (ichg == 13 ||ichg == 14 ||ichg == 15)//plus,minus,mixed
 						{
-					    dtc1etaphitpc[aniter]->SetPt(0.4,maxPt);
+					    dtc1etaphitpc[aniter]->SetPt(1.0,maxPt);
 						}
 	      
 					dtc2etaphitpc[aniter] = new AliFemtoMJTrackCut();
@@ -322,13 +322,13 @@ AliFemtoManager* ConfigFemtoAnalysis(const char* params) {
 					  }
 					if (ichg == 6 ||ichg == 7 ||ichg == 8)//pions 6-8
 					  {
-					    dtc2etaphitpc[aniter]->SetPt(0.4,maxPt);
+					    dtc2etaphitpc[aniter]->SetPt(1.0,maxPt);
 					    dtc2etaphitpc[aniter]->SetMass(PionMass);		
 					    dtc2etaphitpc[aniter]->SetMostProbable(setMostProb3);//cut on Nsigma in pT not p			   
 					  }
 					if (ichg == 13 ||ichg == 14 ||ichg == 15)//plus,minus,mixed
 					{
-					    dtc2etaphitpc[aniter]->SetPt(0.4,maxPt);
+					    dtc2etaphitpc[aniter]->SetPt(1.0,maxPt);
 					}
 
 					if (ichg == 12)//all
@@ -338,7 +338,7 @@ AliFemtoManager* ConfigFemtoAnalysis(const char* params) {
 					    dtc3etaphitpc[aniter]->SetNsigmaTPCTOF(kTRUE);
 					    dtc3etaphitpc[aniter]->SetEta(nEtaMin,nEtaMax);
 					    dtc3etaphitpc[aniter]->SetElectronRejection(ifElectronRejection); 
-						dtc3etaphitpc[aniter]->SetPt(0.4,maxPt);
+						dtc3etaphitpc[aniter]->SetPt(1.0,maxPt);
 					}
 
 					//*********V0 cuts********************
