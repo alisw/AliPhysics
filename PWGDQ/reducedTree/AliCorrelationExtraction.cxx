@@ -1766,13 +1766,20 @@ Bool_t AliCorrelationExtraction::EfficiencyCorrection() {
 
   // calculate weighted average of efficiency:
   // 1/eff_{tot} = sum_{i=1}^{n} N_{bin i}/N_{tot}*1/eff_{bin i}
-  Double_t normTotErr = 0.;
-  Double_t normTot    = normHistTmp->IntegralAndError(1, normHistTmp->GetNbinsX(), normTotErr);
-  Double_t oneOverEff = 0.;
-  for (Int_t i=1; i<effHistTmp->GetNbinsX()+1; ++i) oneOverEff += normHistTmp->GetBinContent(i)/normTot/effHistTmp->GetBinContent(i);
+  Double_t normTot        = normHistTmp->Integral(1, normHistTmp->GetNbinsX());
+  Double_t oneOverEff     = 0.;
+  Double_t oneOverEffErr  = 0.;
+  for (Int_t i=1; i<effHistTmp->GetNbinsX()+1; ++i) {
+    Double_t normBin    = normHistTmp->GetBinContent(i);
+    Double_t effBin     = effHistTmp->GetBinContent(i);
+    Double_t effBinErr  = effHistTmp->GetBinError(i);
+
+    oneOverEff    += normBin/normTot/effBin;
+    oneOverEffErr += TMath::Power(normBin/normTot*effBinErr/TMath::Power(effBin, 2), 2);
+  }
+  oneOverEffErr   = TMath::Sqrt(oneOverEffErr);
   Double_t eff    = 1./oneOverEff;
-  Double_t effErr = 0.;
-  fHadronEff->IntegralAndError(fHadronEff->GetXaxis()->FindBin(commonBins.front()+1e-6), fHadronEff->GetXaxis()->FindBin(commonBins.back()-1e-6), effErr);
+  Double_t effErr = oneOverEffErr/TMath::Power(oneOverEff, 2);
   if (!eff || !effErr) {
     cout << "AliCorrelationExtraction::EfficiencyCorrection() Fatal: There was an issue with the efficiency calculation! Efficiency correction can't be applied!" << endl;
     return kFALSE;
@@ -1870,7 +1877,7 @@ Bool_t AliCorrelationExtraction::Process() {
   }
 
   // correct for hadron efficiency
-  if (fHadronEff) fProcessDone = EfficiencyCorrection();
+  if (fHadronEff && fProcessDone) fProcessDone = EfficiencyCorrection();
 
   return fProcessDone;
 }
