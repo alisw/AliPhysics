@@ -126,13 +126,13 @@ Double_t rightMarginCanvas=0.055;
 Double_t bottomMarginCanvas=0.13;
 Double_t topMarginCanvas=0.07;
 const Int_t nmodels=8;
-Bool_t includemodel[nmodels]={kTRUE,kTRUE,kTRUE,kTRUE,kFALSE,kFALSE,kTRUE,kFALSE};
+Bool_t includemodel[nmodels]={kFALSE,kFALSE,kTRUE,kTRUE,kFALSE,kFALSE,kTRUE,kFALSE};
 TString strModelDir[nmodels]={"Perugia0","Perugia2010","Perugia2011","PYTHIA8","HERWIG","POWHEGpp","POWHEG","EPOS3"};
 TString strModelDirLeg[nmodels]={"PYTHIA6, Perugia 0","PYTHIA6, Perugia 2010","PYTHIA6, Perugia 2011","PYTHIA8, Tune 4C","HERWIG","POWHEG+PYTHIA6","POWHEG+PYTHIA6 EPS09","EPOS 3.117"};
-Color_t modelColors[nmodels]={kRed+2,kCyan,kGreen+2,kMagenta+1,kOrange+1,kBlue,kViolet+2,kYellow+1};
-Bool_t includeinlegend[nmodels]={kTRUE,kTRUE,kTRUE,kTRUE,kFALSE,kFALSE,kTRUE,kFALSE};// this is also used to split the legend in 2!!
-Int_t modelMarkerStyle[nmodels]={kOpenSquare,kOpenCircle,kOpenDiamond,28,26,3,3,33};
-Int_t modelMarkerStyleRatio[nmodels]={kFullSquare,kFullCircle,kFullDiamond,34,22,47,43,45};
+Color_t modelColors[nmodels]={kCyan,kYellow+1,kGreen+2,kViolet,kOrange+1,kRed,kBlue,kMagenta+1};
+Bool_t includeinlegend[nmodels]={kFALSE,kFALSE,kTRUE,kTRUE,kFALSE,kFALSE,kTRUE,kFALSE};// this is also used to split the legend in 2!!
+Int_t modelMarkerStyle[nmodels]={4,33,kFullSquare,kOpenDiamond,kFullDiamond,kOpenCircle,kOpenSquare,3};
+Int_t modelMarkerStyleRatio[nmodels]={4,33,kFullSquare,kOpenDiamond,kFullDiamond,kOpenCircle,kOpenSquare,3};
 TString strRefForRatios="POWHEG"; //**model for which doing the division of data and other theaory curves**
 
 TH1D **hMC;
@@ -3478,7 +3478,7 @@ void CompareFitResults_Ratios_AS_1() {
         cRat->SaveAs("ComparePPbtoMCFitResultsAS_Ratio.pdf");    
 }
 
-void CompareFitResults_Ratios_AS_1() {
+void CompareFitResults_Ratios_AS_2() {
         
         TFile fIn("ComparePPbtoMCFitResultsAS_2.root");
         TCanvas *cRat = (TCanvas*)fIn.Get("cPPbvsMCFitResultsFinalPaperStyleAS");
