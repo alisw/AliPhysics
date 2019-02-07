@@ -1,7 +1,7 @@
 
 // For: Net Lambda fluctuation analysis via traditional method
 // By: Ejiro Naomi Umaka Apr 2018
-// Updated Jan 28
+// Updated Feb 6
 
 
 #include "AliAnalysisManager.h"
@@ -227,9 +227,7 @@ void AliAnalysisTaskNetLambdaTrad::UserExec(Option_t *)
     const AliESDVertex *lPrimaryBestESDVtx     = fESD->GetPrimaryVertex();
     Double_t lBestPrimaryVtxPos[3]          = {-100.0, -100.0, -100.0};
     lPrimaryBestESDVtx->GetXYZ( lBestPrimaryVtxPos );
-    
-    
-    
+
     Int_t nV0 = 0;
     Double_t fMinV0Pt = 0.0;
     Double_t fMaxV0Pt = 5.0;
@@ -271,7 +269,7 @@ void AliAnalysisTaskNetLambdaTrad::UserExec(Option_t *)
         V0pt = esdv0->Pt();
         if ((V0pt<fMinV0Pt)||(fMaxV0Pt<V0pt)) continue;
         if(TMath::Abs(lRapLambda)> 0.5 ) continue;
-
+        
         
         ///////////////////////////////////////////////////////////////////////
         
@@ -352,7 +350,7 @@ void AliAnalysisTaskNetLambdaTrad::UserExec(Option_t *)
         if( ontheflystat == 0 )
         {
             
-            if(dcaV0ToVertex < 0.25 && dcaNegToVertex > 0.1 && dcaPosToVertex >  0.05 && TMath::Abs(posprnsg)  <= 3.)
+            if(dcaV0ToVertex < 0.25 && dcaNegToVertex > 0.1 && dcaPosToVertex >  0.05 && TMath::Abs(posprnsg)  <= 2.)
             {
                 f2fHistInvMassVsPtLambda->Fill(invMassLambda,V0pt);
                 f2fHistRecCentVsPtLambda->Fill(fCentrality,V0pt);
@@ -370,7 +368,7 @@ void AliAnalysisTaskNetLambdaTrad::UserExec(Option_t *)
                 }
                 
             }
-            if(dcaV0ToVertex < 0.25 && dcaNegToVertex > 0.05 && dcaPosToVertex >  0.1 && TMath::Abs(negprnsg)  <= 3.)
+            if(dcaV0ToVertex < 0.25 && dcaNegToVertex > 0.05 && dcaPosToVertex >  0.1 && TMath::Abs(negprnsg)  <= 2.)
             {
                 f2fHistInvMassVsPtAntiLambda->Fill(invMassAntiLambda,V0pt);
                 f2fHistRecCentVsPtAntiLambda->Fill(fCentrality,V0pt);
