@@ -375,12 +375,11 @@ void AliAnalysisTaskLMeeCocktailMC::UserCreateOutputObjects(){
   }
   //RUN2
   if(fResolType == 2) {
-    if(fResolDataSetName.Contains("alien")){
-      // file is copied from alien path to tmp directory in AddTask
-      // -> need to obtain ROOT file name only
-      TObjArray* Strings = fResolDataSetName.Tokenize("/");
-      fFileName = Form("resolutionFiles/%s",Strings->At(Strings->GetEntriesFast()-1)->GetName());
-      AliInfo(Form("Use file = %s (copied from %s)",fFileName.Data(),fResolDataSetName.Data()));
+    if(fResolDataSetName.Contains("alien:")){
+      // file is copied from alien path to config directory in AddTask
+      // "alien:" is added for identification, to be removed first
+      fResolDataSetName.ReplaceAll("alien:","");
+      fFileName = fResolDataSetName;
     }
     else{
       if(fcollisionSystem==200){ //pp 13TeV
