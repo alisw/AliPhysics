@@ -243,66 +243,71 @@ struct Configuration<AliFemtoBasicEventCut> : AbstractConfiguration<AliFemtoEven
   using RangeF_t = AliFemtoConfigObject::RangeValue_t;
 
   std::pair<int, int> multiplicity = {0, 1000000};
-  RangeF_t centrality = {0, 90},
-           vertex_z = {-10.0f, 10.0f},
-           EP_VZero = {-1000.0, 1000.0};
+  RangeF_t vertex_z = {-10.0f, 10.0f},
+           ep_psi = {-1000.0, 1000.0};
 
+  Bool_t accept_bad_vertex = false;
   Int_t trigger_selection = 0;
-    Bool_t accept_bad_vertex = false;
-    Bool_t accept_only_physics = true;
 
-    UInt_t min_coll_size = 10;
+  /// default constructor required to use default initialized members
+  Configuration()
+    {};
 
-    /// default constructor required to use default initialized members
-    Configuration(){};
+  Configuration(const AliFemtoBasicEventCut &cut)
+    : multiplicity(cut.GetEventMult())
+    , vertex_z(cut.GetVertZPos())
+    , ep_psip(cut.GetPsiEP())
+    , trigger_selection(cut.GetTriggerSelection())
+    , accept_bad_vertex(cut.GetAcceptBadVertex())
+    {};
 
-    /// Templated member for constructing AliFemtoEventCut objects from
-    /// these parameters.
-    operator AliFemtoEventCut*() const
+  /// Templated member for constructing AliFemtoEventCut objects from
+  /// these parameters.
+  operator AliFemtoEventCut*() const
     {
       auto ptr = new AliFemtoBasicEventCut();
       Configure(*ptr);
       return ptr;
     }
 
-    void Configure(AliFemtoBasicEventCut &cut) const {
+  void Configure(AliFemtoBasicEventCut &cut) const
+    {
+      cut.SetEventMult(multiplicity.first, multiplicity.second);
+      cut.SetVertZPos(vertex_z.first, vertex_z.second);
+      cut.SetEPVZERO(ep_psi.first, ep_psi.second);
+      cut.SetAcceptBadVertex(accept_bad_vertex);
       cut.SetTriggerSelection(trigger_selection);
     }
 
-    /// Build from config object
-    Configuration(AliFemtoConfigObject obj) {
-
+  /// Build from config object
+  Configuration(AliFemtoConfigObject obj)
+    {
       obj.pop_all()
         ("multiplicity", multiplicity)
-        ("centrality", centrality)
         ("vertex_z", vertex_z)
-        ("ep_v0", EP_VZero)
+        ("ep_psi", ep_psi)
         ("trigger", trigger_selection)
         ("accept_bad_vertex", accept_bad_vertex)
-        ("accept_only_physics", accept_only_physics)
-        ("min_collection_size", min_coll_size)
         .WarnOfRemainingItems();
     }
 
-    /// Construct a config object with this object's properties
-    operator AliFemtoConfigObject() const {
-        return AliFemtoConfigObject::BuildMap()
-          ("class", "AliFemtoBasicEventCut")
-          ("multiplicity", multiplicity)
-          ("centrality", centrality)
-          ("vertex_z", vertex_z)
-          ("ep_v0", EP_VZero)
-          ("trigger", trigger_selection)
-          ("accept_bad_vertex", accept_bad_vertex)
-          ("accept_only_physics", accept_only_physics)
-          ("min_collection_size", min_coll_size);
-    }
-
-    static AliFemtoConfigObject GetConfigurationOf(const AliFemtoBasicEventCut &cut)
+  /// Construct a config object with this object's properties
+  operator AliFemtoConfigObject() const
     {
       return AliFemtoConfigObject::BuildMap()
-          ("class", "AliFemtoBasicEventCut");
-        //("multiplicity", cut.GetMultiplicity());
+          ("class", "AliFemtoBasicEventCut")
+          ("multiplicity", multiplicity)
+          ("vertex_z", vertex_z)
+          ("ep_psi", ep_psi)
+          ("accept_bad_vertex", accept_bad_vertex)
+          ("trigger", trigger_selection);
+    }
+
+  /// shorthand static method for creating configuration of cut
+  static AliFemtoConfigObject GetConfigurationOf(const AliFemtoBasicEventCut &cut)
+    {
+      Configuration cfg(cut);
+      return cfg;
     }
 };
 #endif
