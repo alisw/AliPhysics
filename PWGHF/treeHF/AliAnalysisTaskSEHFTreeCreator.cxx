@@ -569,7 +569,7 @@ void AliAnalysisTaskSEHFTreeCreator::UserCreateOutputObjects()
     fTreeEvChar->Branch(varnames[4].Data(),&fIsEvRej,Form("%s/I",varnames[4].Data()));
     fTreeEvChar->Branch(varnames[5].Data(),&fRunNumber,Form("%s/I",varnames[5].Data()));
     if(fReadMC) fTreeEvChar->Branch(varnames[6].Data(),&fzVtxGen,Form("%s/F",varnames[6].Data()));
-    //fTreeEvChar->SetMaxVirtualSize(1.e+8/nEnabledTrees);
+    fTreeEvChar->SetMaxVirtualSize(1.e+8/nEnabledTrees);
 
     if(fWriteVariableTreeD0){
         OpenFile(6);
@@ -578,7 +578,7 @@ void AliAnalysisTaskSEHFTreeCreator::UserCreateOutputObjects()
         fTreeHandlerD0->SetOptSingleTrackVars(fTreeSingleTrackVarsOpt);
         if(fReadMC && fWriteOnlySignal) fTreeHandlerD0->SetFillOnlySignal(fWriteOnlySignal);
         fVariablesTreeD0 = (TTree*)fTreeHandlerD0->BuildTree(nameoutput,nameoutput);
-        //fVariablesTreeD0->SetMaxVirtualSize(1.e+8/nEnabledTrees);
+        fVariablesTreeD0->SetMaxVirtualSize(1.e+8/nEnabledTrees);
         fTreeEvChar->AddFriend(fVariablesTreeD0);
       
         if(fFillMCGenTrees && fReadMC) {
@@ -586,7 +586,7 @@ void AliAnalysisTaskSEHFTreeCreator::UserCreateOutputObjects()
           TString nameoutput = "tree_D0_gen";
           fTreeHandlerGenD0 = new AliHFTreeHandlerD0toKpi(0);
           fGenTreeD0 = (TTree*)fTreeHandlerGenD0->BuildTreeMCGen(nameoutput,nameoutput);
-          //fGenTreeD0->SetMaxVirtualSize(1.e+8/nEnabledTrees);
+          fGenTreeD0->SetMaxVirtualSize(1.e+8/nEnabledTrees);
           fTreeEvChar->AddFriend(fGenTreeD0);
         }
     }
@@ -598,7 +598,7 @@ void AliAnalysisTaskSEHFTreeCreator::UserCreateOutputObjects()
         if(fReadMC && fWriteOnlySignal) fTreeHandlerDs->SetFillOnlySignal(fWriteOnlySignal);
         fTreeHandlerDs->SetMassKKOption(fDsMassKKOpt);
         fVariablesTreeDs = (TTree*)fTreeHandlerDs->BuildTree(nameoutput,nameoutput);
-        //fVariablesTreeDs->SetMaxVirtualSize(1.e+8/nEnabledTrees);
+        fVariablesTreeDs->SetMaxVirtualSize(1.e+8/nEnabledTrees);
         fTreeEvChar->AddFriend(fVariablesTreeDs);
       
       if(fFillMCGenTrees && fReadMC) {
@@ -606,7 +606,7 @@ void AliAnalysisTaskSEHFTreeCreator::UserCreateOutputObjects()
         TString nameoutput = "tree_Ds_gen";
         fTreeHandlerGenDs = new AliHFTreeHandlerDstoKKpi(0);
         fGenTreeDs = (TTree*)fTreeHandlerGenDs->BuildTreeMCGen(nameoutput,nameoutput);
-        //fGenTreeDs->SetMaxVirtualSize(1.e+8/nEnabledTrees);
+        fGenTreeDs->SetMaxVirtualSize(1.e+8/nEnabledTrees);
         fTreeEvChar->AddFriend(fGenTreeDs);
       }
     }
@@ -617,14 +617,14 @@ void AliAnalysisTaskSEHFTreeCreator::UserCreateOutputObjects()
         fTreeHandlerDplus->SetOptSingleTrackVars(fTreeSingleTrackVarsOpt);
         if(fReadMC && fWriteOnlySignal) fTreeHandlerDplus->SetFillOnlySignal(fWriteOnlySignal);
         fVariablesTreeDplus = (TTree*)fTreeHandlerDplus->BuildTree(nameoutput,nameoutput);
-        //fVariablesTreeDplus->SetMaxVirtualSize(1.e+8/nEnabledTrees);
+        fVariablesTreeDplus->SetMaxVirtualSize(1.e+8/nEnabledTrees);
         fTreeEvChar->AddFriend(fVariablesTreeDplus);
       if(fFillMCGenTrees && fReadMC) {
         OpenFile(11);
         TString nameoutput = "tree_Dplus_gen";
         fTreeHandlerGenDplus = new AliHFTreeHandlerDplustoKpipi(0);
         fGenTreeDplus = (TTree*)fTreeHandlerGenDplus->BuildTreeMCGen(nameoutput,nameoutput);
-        //fGenTreeDplus->SetMaxVirtualSize(1.e+8/nEnabledTrees);
+        fGenTreeDplus->SetMaxVirtualSize(1.e+8/nEnabledTrees);
         fTreeEvChar->AddFriend(fGenTreeDplus);
       }
     }
@@ -635,14 +635,14 @@ void AliAnalysisTaskSEHFTreeCreator::UserCreateOutputObjects()
         fTreeHandlerLctopKpi->SetOptSingleTrackVars(fTreeSingleTrackVarsOpt);
         if(fReadMC && fWriteOnlySignal) fTreeHandlerLctopKpi->SetFillOnlySignal(fWriteOnlySignal);
         fVariablesTreeLctopKpi = (TTree*)fTreeHandlerLctopKpi->BuildTree(nameoutput,nameoutput);
-        //fVariablesTreeLctopKpi->SetMaxVirtualSize(1.e+8/nEnabledTrees);
+        fVariablesTreeLctopKpi->SetMaxVirtualSize(1.e+8/nEnabledTrees);
         fTreeEvChar->AddFriend(fVariablesTreeLctopKpi);
       if(fFillMCGenTrees && fReadMC) {
         OpenFile(13);
         TString nameoutput = "tree_LctopKpi_gen";
         fTreeHandlerGenLctopKpi = new AliHFTreeHandlerLctopKpi(0);
         fGenTreeLctopKpi = (TTree*)fTreeHandlerGenLctopKpi->BuildTreeMCGen(nameoutput,nameoutput);
-        //fGenTreeLctopKpi->SetMaxVirtualSize(1.e+8/nEnabledTrees);
+        fGenTreeLctopKpi->SetMaxVirtualSize(1.e+8/nEnabledTrees);
         fTreeEvChar->AddFriend(fGenTreeLctopKpi);
       }
     }
@@ -653,14 +653,14 @@ void AliAnalysisTaskSEHFTreeCreator::UserCreateOutputObjects()
         fTreeHandlerBplus->SetOptSingleTrackVars(fTreeSingleTrackVarsOpt);
         if(fReadMC && fWriteOnlySignal) fTreeHandlerBplus->SetFillOnlySignal(fWriteOnlySignal);
         fVariablesTreeBplus = (TTree*)fTreeHandlerBplus->BuildTree(nameoutput,nameoutput);
-        //fVariablesTreeBplus->SetMaxVirtualSize(1.e+8/nEnabledTrees);
+        fVariablesTreeBplus->SetMaxVirtualSize(1.e+8/nEnabledTrees);
         fTreeEvChar->AddFriend(fVariablesTreeBplus);
         if(fFillMCGenTrees && fReadMC) {
             OpenFile(15);
             TString nameoutput = "tree_Bplus_gen";
             fTreeHandlerGenBplus = new AliHFTreeHandlerBplustoD0pi(0);
             fGenTreeBplus = (TTree*)fTreeHandlerGenBplus->BuildTreeMCGen(nameoutput,nameoutput);
-            //fGenTreeBplus->SetMaxVirtualSize(1.e+8/nEnabledTrees);
+            fGenTreeBplus->SetMaxVirtualSize(1.e+8/nEnabledTrees);
             fTreeEvChar->AddFriend(fGenTreeBplus);
         }
     }
@@ -671,14 +671,14 @@ void AliAnalysisTaskSEHFTreeCreator::UserCreateOutputObjects()
         fTreeHandlerDstar->SetOptSingleTrackVars(fTreeSingleTrackVarsOpt);
         if(fReadMC && fWriteOnlySignal) fTreeHandlerDstar->SetFillOnlySignal(fWriteOnlySignal);
         fVariablesTreeDstar = (TTree*)fTreeHandlerDstar->BuildTree(nameoutput,nameoutput);
-        //fVariablesTreeDstar->SetMaxVirtualSize(1.e+8/nEnabledTrees);
+        fVariablesTreeDstar->SetMaxVirtualSize(1.e+8/nEnabledTrees);
         fTreeEvChar->AddFriend(fVariablesTreeDstar);
         if(fFillMCGenTrees && fReadMC) {
             OpenFile(17);
             TString nameoutput = "tree_Dstar_gen";
             fTreeHandlerGenDstar = new AliHFTreeHandlerDstartoKpipi(0);
             fGenTreeDstar = (TTree*)fTreeHandlerGenDstar->BuildTreeMCGen(nameoutput,nameoutput);
-            //fGenTreeDstar->SetMaxVirtualSize(1.e+8/nEnabledTrees);
+            fGenTreeDstar->SetMaxVirtualSize(1.e+8/nEnabledTrees);
             fTreeEvChar->AddFriend(fGenTreeDstar);
         }
     }
