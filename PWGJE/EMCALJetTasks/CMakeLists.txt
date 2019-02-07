@@ -170,6 +170,7 @@ set(SRCS
     UserTasks/AliAnalysisTaskEmcalHJetMass.cxx
     UserTasks/AliAnalysisTaskIDFragmentationFunction.cxx
     UserTasks/AliAnalysisTaskEmcalJetCDF.cxx
+    UserTasks/AliAnalysisTaskEmcalJetCorrection.cxx
     UserTasks/AliAnalysisTaskEmcalJetHadCorQA.cxx
     UserTasks/AliAnalysisTaskEmcalJetHadEPpid.cxx
     UserTasks/AliAnalysisTaskEmcalJetHUtils.cxx
