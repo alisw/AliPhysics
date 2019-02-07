@@ -56,7 +56,7 @@ public:
   AliAnalysisTaskEmcalSoftDropResponse(const char *name);
   virtual ~AliAnalysisTaskEmcalSoftDropResponse();
 
-  void SetBinningMode(EBinningMode_t binmode) {}
+  void SetBinningMode(EBinningMode_t binmode) { fBinningMode = binmode; }
   void SetCustomPartLevelPtBinning(TBinning *binning) { fPartLevelPtBinning = binning; }
   void SetCustomDetLevelPtBinning(TBinning *binning) { fDetLevelPtBinning = binning; }
   void SetFractionResponseClosure(Double_t fracClosure) { fFractionResponseClosure = fracClosure; }
