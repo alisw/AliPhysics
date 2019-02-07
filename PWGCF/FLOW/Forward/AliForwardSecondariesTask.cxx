@@ -146,12 +146,12 @@ AliForwardSecondariesTask::AliForwardSecondariesTask() : AliAnalysisTaskSE(),
     fDeltaList = new TList();
     fDeltaList->SetName("Delta");
 
-    Int_t bins_phi_eta[5] = {fSettings.fnoSamples, fSettings.fNZvtxBins, 21, fSettings.fCentBins, 200} ;
-    Double_t xmin_phi_eta[5] = {0,fSettings.fZVtxAcceptanceLowEdge, -TMath::Pi(), 0, -4};
-    Double_t xmax_phi_eta[5] = {10,fSettings.fZVtxAcceptanceUpEdge, TMath::Pi(), 100, 6}; //
+    Int_t bins_phi_eta[5] = {fSettings.fnoSamples, fSettings.fNZvtxBins, 101, fSettings.fCentBins, 50} ;
+    Double_t xmin_phi_eta[5] = {0,fSettings.fZVtxAcceptanceLowEdge, -1.5, 0, -4};
+    Double_t xmax_phi_eta[5] = {10,fSettings.fZVtxAcceptanceUpEdge, 1.5, 100, 6}; //
     Int_t dimensions = 5;
 
-    Int_t bins_eta_phi[5] = {fSettings.fnoSamples, fSettings.fNZvtxBins, 201, fSettings.fCentBins, 20} ;
+    Int_t bins_eta_phi[5] = {fSettings.fnoSamples, fSettings.fNZvtxBins, 51, fSettings.fCentBins, 20} ;
     Double_t xmin_eta_phi[5] = {0,fSettings.fZVtxAcceptanceLowEdge, -4, 0, 0.0};
     Double_t xmax_eta_phi[5] = {10,fSettings.fZVtxAcceptanceUpEdge, 6, 100, 2*TMath::Pi()}; //
 
@@ -159,7 +159,7 @@ AliForwardSecondariesTask::AliForwardSecondariesTask() : AliAnalysisTaskSE(),
     Double_t xmin_phi[5] = {0,fSettings.fZVtxAcceptanceLowEdge, -TMath::Pi(), 0.0, 0.0};
     Double_t xmax_phi[5] = {10,fSettings.fZVtxAcceptanceUpEdge, TMath::Pi(), 100, 2*TMath::Pi()}; //
 
-    Int_t bins_eta[5] = {fSettings.fnoSamples, fSettings.fNZvtxBins, 201, fSettings.fCentBins, 200} ;
+    Int_t bins_eta[5] = {fSettings.fnoSamples, fSettings.fNZvtxBins, 51, fSettings.fCentBins, 50} ;
     Double_t xmin_eta[5] = {0,fSettings.fZVtxAcceptanceLowEdge, -4, 0, -4};
     Double_t xmax_eta[5] = {10,fSettings.fZVtxAcceptanceUpEdge, 6, 100, 6}; //
 
@@ -203,7 +203,7 @@ AliForwardSecondariesTask::AliForwardSecondariesTask() : AliAnalysisTaskSE(),
     fEventList->Add(new TH1D("FMDHits","FMDHits",100,0,10));
     fEventList->SetName("EventInfo");
 
-    Int_t bins_prim[4] = {fSettings.fnoSamples, fSettings.fNZvtxBins, fSettings.fCentBins, 200} ;
+    Int_t bins_prim[4] = {fSettings.fnoSamples, fSettings.fNZvtxBins, fSettings.fCentBins, 50} ;
     Double_t xmin_prim[4] = {0,fSettings.fZVtxAcceptanceLowEdge, 0, -4};
     Double_t xmax_prim[4] = {10,fSettings.fZVtxAcceptanceUpEdge, 100, 6}; //
     Int_t dimensions_prim = 4;
@@ -277,16 +277,16 @@ void AliForwardSecondariesTask::UserExec(Option_t *)
       if (!mother) mother = p;
 
       Double_t eta_mother = mother->Eta();
-      Double_t phi_mother = mother->Phi();
+      Double_t phi_mother = Wrap02pi(mother->Phi());
 
       Double_t *etaPhi = new Double_t[2];
       this->GetTrackRefEtaPhi(p, etaPhi);
 
-      Double_t phi_tr = etaPhi[1];
+      Double_t phi_tr = Wrap02pi(etaPhi[1]);
       Double_t eta_tr = etaPhi[0];
 
       // (samples, vertex,phi_mother - phi_tr ,centrality,eta_mother,eta_tr)
-      Double_t phi[5] = {randomInt,event_vtx_z, WrapPi(phi_mother - phi_tr), v0cent, eta_tr};
+      Double_t phi[5] = {randomInt,event_vtx_z, Wrap02pi(phi_mother - phi_tr), v0cent, eta_tr};
       Double_t eta[5] = {randomInt,event_vtx_z, (eta_mother - eta_tr), v0cent, phi_tr};
 
       //if (!(fabs(eta_tr - eta_mother) < 0.1)) continue;
@@ -313,15 +313,38 @@ void AliForwardSecondariesTask::UserExec(Option_t *)
   return;
 }
 
-Double_t AliForwardSecondariesTask::WrapPi(Double_t phi){
-  if (phi >= TMath::Pi()){
-    phi = phi - 2*TMath::TwoPi();
-  }
-  if (phi < -TMath::Pi()){
-    phi = phi + 2*TMath::TwoPi();
-  }
-  return phi;
+/// Modulo for float numbers
+///
+/// \param x nominator
+/// \param y denominator
+///
+/// \return Rest of the rounded down division
+Double_t AliForwardSecondariesTask::Mod(Double_t x, Double_t y) {
+  if (0 == y)
+    return x;
+  return x - y * floor(x/y);
 }
+
+/// Wrap angle around 0 and 2pi
+Double_t AliForwardSecondariesTask::Wrap02pi(Double_t angle) {
+  const Double_t two_pi = 6.283185307179586;
+  Double_t lower_edge = 0;
+  Double_t interval = two_pi;
+  if (lower_edge <= angle && angle < two_pi) {
+    return angle;
+  }
+  return Mod(angle - lower_edge, interval) + lower_edge;
+}
+//
+ Double_t AliForwardSecondariesTask::WrapPi(Double_t phi){
+   if (phi >= TMath::Pi()){
+     phi = phi - 2*TMath::TwoPi();
+   }
+   if (phi < -TMath::Pi()){
+     phi = phi + 2*TMath::TwoPi();
+   }
+   return phi;
+ }
 
 Double_t AliForwardSecondariesTask::GetTrackReferenceEta(AliTrackReference* tr) {
   return -1.*TMath::Log(TMath::Tan(tr->Theta()/2));
@@ -352,22 +375,22 @@ Bool_t AliForwardSecondariesTask::AddMotherIfFirstTimeSeen(AliMCParticle* p, std
 /// \param y denominator
 ///
 /// \return Rest of the rounded down division
-Double_t AliForwardSecondariesTask::Mod(Double_t x, Double_t y) {
-  if (0 == y)
-    return x;
-  return x - y * floor(x/y);
-}
+// Double_t AliForwardSecondariesTask::Mod(Double_t x, Double_t y) {
+//   if (0 == y)
+//     return x;
+//   return x - y * floor(x/y);
+// }
 
-/// Wrap angle around 0 and 2pi
-Double_t AliForwardSecondariesTask::Wrap02pi(Double_t angle) {
-  const Double_t two_pi = TMath::Pi();
-  Double_t lower_edge = -TMath::Pi();
-  Double_t interval = two_pi;
-  if (lower_edge <= angle && angle < two_pi) {
-    return angle;
-  }
-  return Mod(angle - lower_edge, interval) + lower_edge;
-}
+// /// Wrap angle around 0 and 2pi
+// Double_t AliForwardSecondariesTask::Wrap02pi(Double_t angle) {
+//   const Double_t two_pi = TMath::Pi();
+//   Double_t lower_edge = -TMath::Pi();
+//   Double_t interval = two_pi;
+//   if (lower_edge <= angle && angle < two_pi) {
+//     return angle;
+//   }
+//   return Mod(angle - lower_edge, interval) + lower_edge;
+// }
 
 
 AliMCParticle* AliForwardSecondariesTask::GetMother(AliMCParticle* p) {

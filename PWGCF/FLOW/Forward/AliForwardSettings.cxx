@@ -23,6 +23,7 @@ AliForwardSettings::AliForwardSettings() :
   nuaforward(),
   doNUA(false),
   gap(0.0),
+  maxpt(5),
   mc(false),
   esd(false),
   tracktype(kHybrid),

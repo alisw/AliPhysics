@@ -62,6 +62,7 @@ AliForwardFlowRun2Task::AliForwardFlowRun2Task() : AliAnalysisTaskSE(),
   fEventList(0),
   fRandom(0),
   centralDist(),
+  refDist(),
   forwardDist(),
   fSettings(),
   fUtil(),
@@ -80,6 +81,7 @@ AliForwardFlowRun2Task::AliForwardFlowRun2Task(const char* name) : AliAnalysisTa
   fEventList(0),
   fRandom(0),
   centralDist(),
+  refDist(),
   forwardDist(),
   fSettings(),
   fUtil(),
@@ -123,6 +125,7 @@ void AliForwardFlowRun2Task::UserCreateOutputObjects()
        20, 0., 100., 500, 0., 5.)); //((fFlags & kMC) ? 15. : 5. // Sigma <M> histogram
     fEventList->Add(new TH1D("FMDHits","FMDHits",100,0,10));
     fEventList->Add(new TH1D("EventCuts_FMD","EventCuts_FMD",3,0,3));
+    fEventList->Add(new TH1D("No Primaries","No Primaries",3,0,3));
     fEventList->Add(new TH1F("dNdeta","dNdeta",100 /*fSettings.fNDiffEtaBins*/,fSettings.fEtaLowEdge,fSettings.fEtaUpEdge));
 
     fAnalysisList->Add(new TList());
@@ -184,10 +187,13 @@ void AliForwardFlowRun2Task::UserExec(Option_t *)
   AliForwardTaskValidation* ev_val = dynamic_cast<AliForwardTaskValidation*>(this->GetInputData(1));
 
   fUtil.fevent = fInputEvent;
+  fUtil.fSettings = fSettings;
 
   Double_t centralEta = (fSettings.useSPD ? 2.5 : 1.5);
   TH2D centralDist_tmp = TH2D("c","",400,-centralEta,centralEta,400,0,2*TMath::Pi());
   centralDist_tmp.SetDirectory(0);
+  TH2D refDist_tmp = TH2D("c","",400,-centralEta,centralEta,400,0,2*TMath::Pi());
+  refDist_tmp.SetDirectory(0);
 
   TH2D forwardTrRef  ("ft","",200,-4,6,20,0,TMath::TwoPi());
   TH2D forwardPrim  ("fp","",400,-4,6,400,0,TMath::TwoPi());
@@ -196,6 +202,8 @@ void AliForwardFlowRun2Task::UserExec(Option_t *)
 
   centralDist = &centralDist_tmp;
   centralDist->SetDirectory(0);
+  refDist = &refDist_tmp;
+  refDist->SetDirectory(0);
 
   TH1F* dNdeta = static_cast<TH1F*>(fEventList->FindObject("dNdeta"));
   dNdeta->SetDirectory(0);
@@ -221,6 +229,12 @@ void AliForwardFlowRun2Task::UserExec(Option_t *)
       }
     }
 
+    if (fSettings.maxpt < 5) {
+      fUtil.maxpt = 5;
+      if (fSettings.useSPD) fUtil.FillFromTracklets(refDist);
+      else                  fUtil.FillFromTracks(refDist, fSettings.tracktype);
+    }
+    fUtil.maxpt = fSettings.maxpt;
     if (fSettings.useSPD) fUtil.FillFromTracklets(centralDist);
     else                  fUtil.FillFromTracks(centralDist, fSettings.tracktype);
   }
@@ -230,15 +244,14 @@ void AliForwardFlowRun2Task::UserExec(Option_t *)
 
     if (fSettings.use_primaries_fwd || fSettings.use_primaries_cen){
       if (mcevent->GetNumberOfPrimaries() <= 0) {
-        //std::cout << "No primaries" << std::endl;
+        static_cast<TH1D*>(fEventList->FindObject("No Primaries"))->Fill(1.0);
+        PostData(1, this->fOutputList);
         return;
       }
     }
 
     Float_t zvertex = mcevent->GetPrimaryVertex()->GetZ();
-    if (!(TMath::Abs(zvertex) > 0)) {
-      return;
-    }
+
 
     fUtil.mc = kTRUE;
     TH1F* dNdeta = static_cast<TH1F*>(fEventList->FindObject("dNdeta"));
@@ -248,7 +261,7 @@ void AliForwardFlowRun2Task::UserExec(Option_t *)
       throw std::runtime_error("Not MC as expected");
 
     forwardDist = (fSettings.use_primaries_fwd ? &forwardPrim : &forwardTrRef);
-    std::cout << fSettings.use_primaries_fwd << std::endl;
+
     if (fSettings.esd){
       if (fSettings.use_primaries_cen && fSettings.use_primaries_fwd){
         fUtil.FillFromPrimaries(centralDist, forwardDist);
@@ -266,10 +279,25 @@ void AliForwardFlowRun2Task::UserExec(Option_t *)
       }
     }
     else{ // AOD
+      // if (!ev_val->IsValidEvent()){
+      //   PostData(1, this->fOutputList);
+      //   return;
+      // }
       if (fSettings.use_primaries_cen && fSettings.use_primaries_fwd){ //prim central and forward
+        if (fSettings.maxpt < 5.0) {
+          fUtil.maxpt = 5.0;
+          fUtil.FillFromPrimariesAOD(refDist);
+          fUtil.maxpt = fSettings.maxpt;
+        }
+
         fUtil.FillFromPrimariesAOD(centralDist, forwardDist);
       }
       else if (fSettings.use_primaries_cen && !fSettings.use_primaries_fwd){ //prim central, AOD forward
+        if (fSettings.maxpt < 5.0) {
+          fUtil.maxpt = 5.0;
+          fUtil.FillFromPrimariesAOD(refDist);
+          fUtil.maxpt = fSettings.maxpt;
+        }
 
         fUtil.FillFromPrimariesAOD(centralDist);
         AliAODEvent* aodevent = dynamic_cast<AliAODEvent*>(InputEvent());
@@ -291,17 +319,6 @@ void AliForwardFlowRun2Task::UserExec(Option_t *)
   Double_t zvertex = fUtil.GetZ();
   Double_t cent = fUtil.GetCentrality(fSettings.centrality_estimator);
 
-  //if (!fSettings.use_primaries_fwd && !fSettings.mc){
-    //TH2D* hOutliers = static_cast<TH2D*>(fEventList->FindObject("hOutliers"));
-
-/*
-    if (!fUtil.ExtraEventCutFMD(*forwardDist, cent, fSettings.mc, hOutliers)) {
-      useEvent = false;
-      static_cast<TH1D*>(fEventList->FindObject("EventCuts_FMD"))->Fill(1.0);
-      PostData(1, fOutputList);
-      return;
-    }*/
-  //}
 
   if (fSettings.makeFakeHoles) fUtil.MakeFakeHoles(*forwardDist);
 
@@ -313,7 +330,14 @@ void AliForwardFlowRun2Task::UserExec(Option_t *)
     AliForwardGenericFramework calculator = AliForwardGenericFramework();
     calculator.fSettings = fSettings;
 
-    calculator.CumulantsAccumulate(*centralDist, fOutputList, cent, zvertex,"central",true,true);
+    if (fSettings.maxpt < 5){
+      calculator.CumulantsAccumulate(*refDist, fOutputList, cent, zvertex,"central",true,false);
+      calculator.CumulantsAccumulate(*centralDist, fOutputList, cent, zvertex,"central",false,true);
+    }
+    else{
+      calculator.CumulantsAccumulate(*centralDist, fOutputList, cent, zvertex,"central",true,true);
+    }
+
     calculator.CumulantsAccumulate(*forwardDist, fOutputList, cent, zvertex,"forward",false,true);
     calculator.saveEvent(fOutputList, cent, zvertex,  randomInt);
     calculator.reset();
