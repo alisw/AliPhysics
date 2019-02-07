@@ -45,24 +45,16 @@ class AliFemtoDreamCorrHists {
     return fPhiEtaPlots;
   }
   ;
-  bool GetDoMCCommonAncest() {
-    return fDoMCCommonAncest;
-  }
-  ;
   bool GetDodPhidEtaPlots() {
     return fdPhidEtaPlots;
   }
   ;
+  bool GetDodPhidEtamTPlots() {
+    return fmTDetaDPhi;
+  }
+  ;
   void FillSameEventDist(int i, float RelK) {
     fSameEventDist[i]->Fill(RelK);
-  }
-  ;
-  void FillSameEventCommonAncestDist(int i, float RelK) {
-    fSameEventCommonAncestDist[i]->Fill(RelK);
-  }
-  ;
-  void FillSameEventNonCommonAncestDist(int i, float RelK) {
-    fSameEventNonCommonAncestDist[i]->Fill(RelK);
   }
   ;
   void FillSameEventMultDist(int i, int iMult, float RelK) {
@@ -140,14 +132,8 @@ class AliFemtoDreamCorrHists {
       }
     }
   }
-  void FilldPhidEtaSE(int iHist, float dPhi, float dEta) {
-    if (fdPhidEtaPlots)
-      fdEtadPhiSE[iHist]->Fill(dEta, dPhi);
-  }
-  void FilldPhidEtaME(int iHist, float dPhi, float dEta) {
-    if (fdPhidEtaPlots)
-      fdEtadPhiME[iHist]->Fill(dEta, dPhi);
-  }
+  void FilldPhidEtaSE(int iHist, float dPhi, float dEta, float mT);
+  void FilldPhidEtaME(int iHist, float dPhi, float dEta, float mT);
   void FillEffectiveMixingDepth(int iHist, int iDepth) {
     if (!fMinimalBooking)
       fEffMixingDepth[iHist]->Fill(iDepth);
@@ -173,8 +159,6 @@ class AliFemtoDreamCorrHists {
   bool fPhiEtaPlots;
   float fRelKThreshold;
   TH1F **fSameEventDist;
-  TH1F **fSameEventCommonAncestDist;
-  TH1F **fSameEventNonCommonAncestDist;
   TH2F **fSameEventMultDist;
   TH2F **fSameEventCentDist;
   TH2F **fSameEventmTDist;
@@ -196,14 +180,18 @@ class AliFemtoDreamCorrHists {
   TH2F ****fRadiiEtaPhiMEsmallK;
   TH2F **fdEtadPhiSE;
   TH2F **fdEtadPhiME;
+  TH2F ***fdEtadPhiSEmT;
+  TH2F ***fdEtadPhiMEmT;
   TH1F **fEffMixingDepth;
   bool fDoMultBinning;
   bool fDoCentBinning;
   bool fDokTBinning;
   bool fDomTBinning;
   bool fDokTCentralityBins;
-  bool fDoMCCommonAncest;
   bool fdPhidEtaPlots;
+  bool fmTDetaDPhi;
+  std::vector<float> fmTdEtadPhiBins;
+  std::vector<unsigned int> fWhichPairs;
   std::vector<float> fCentBins;ClassDef(AliFemtoDreamCorrHists,4)
   ;
 };

@@ -698,26 +698,11 @@ void AddTask_GammaCalo_pp(
   } else if (trainConfig == 222){ // EMCAL clusters pp 7 TeV
     cuts.AddCutCalo("00000113","11111110b70322l0000","01631031000000d0"); // std
   // LHC11cd configs V0OR and V0AND
-  } else if (trainConfig == 250){  // EMCAL clusters 7 TeV LHC11 TM on
-    cuts.AddCutCalo("00010113","11111000670322l0000","01631031000000d0"); // VOAND
-    cuts.AddCutCalo("00052113","11111000670322l0000","01631031000000d0"); // EMC7
-    cuts.AddCutCalo("00000113","11111000670322l0000","01631031000000d0"); // V0OR
-    cuts.AddCutCalo("00051113","11111000670322l0000","01631031000000d0"); // EMC1
-  } else if (trainConfig == 251){  // EMCAL clusters 7 TeV LHC11 TM off
-    cuts.AddCutCalo("00010113","11111000600322l0000","01631031000000d0"); // VOAND
-    cuts.AddCutCalo("00052113","11111000600322l0000","01631031000000d0"); // EMC7
-    cuts.AddCutCalo("00000113","11111000600322l0000","01631031000000d0"); // V0OR
-    cuts.AddCutCalo("00051113","11111000600322l0000","01631031000000d0"); // EMC1
-  } else if (trainConfig == 252){  // EMCAL clusters 7 TeV LHC11 TM on + TB NonLin
-    cuts.AddCutCalo("00010113","11111020670322l0000","01631031000000d0"); // VOAND
-    cuts.AddCutCalo("00052113","11111020670322l0000","01631031000000d0"); // EMC7
-    cuts.AddCutCalo("00000113","11111020670322l0000","01631031000000d0"); // V0OR
-    cuts.AddCutCalo("00051113","11111020670322l0000","01631031000000d0"); // EMC1
-  } else if (trainConfig == 253){  // EMCAL clusters 7 TeV LHC11 TM off + TB NonLin
-    cuts.AddCutCalo("00010113","11111020600322l0000","01631031000000d0"); // VOAND
-    cuts.AddCutCalo("00052113","11111020600322l0000","01631031000000d0"); // EMC7
-    cuts.AddCutCalo("00000113","11111020600322l0000","01631031000000d0"); // V0OR
-    cuts.AddCutCalo("00051113","11111020600322l0000","01631031000000d0"); // EMC1
+  } else if (trainConfig == 250){  // EMCAL clusters 7 TeV LHC11 TM on, +-30ns, std TM, no NL
+    cuts.AddCutCalo("00010113","1111100067032230000","01631031000000d0"); // VOAND
+    cuts.AddCutCalo("00052113","1111100067032230000","01631031000000d0"); // EMC7
+  } else if (trainConfig == 251){  // EMCAL clusters 7 TeV LHC10 MB only
+    cuts.AddCutCalo("00000113","11111000b7032230000","01631031000000d0"); // VOAND
   } else if (trainConfig == 254){  // QA for settings of omega analysis
     cuts.AddCutCalo("00000113","1111111047032230000","0163503800000000");
 
@@ -1586,7 +1571,6 @@ void AddTask_GammaCalo_pp(
   task->SetDoTHnSparse(enableTHnSparse);
   task->SetProduceTreeEOverP(doTreeEOverP);
   task->SetEnableSortingOfMCClusLabels(enableSortingMCLabels);
-  task->SetTrainConfig(trainConfig);
   if(trainConfig == 446) task->SetSoftAnalysis(kTRUE);
   if(enableExtMatchAndQA > 1){ task->SetPlotHistsExtQA(kTRUE);}
   if(trainConfig == 106 || trainConfig == 125 || trainConfig == 145){

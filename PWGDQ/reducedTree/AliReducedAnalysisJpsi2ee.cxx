@@ -253,7 +253,7 @@ void AliReducedAnalysisJpsi2ee::Process() {
         cout << "Event no. " << fEventCounter << endl;
   }
   else {
-    if(fEventCounter%100000==0) 
+    if(fEventCounter%10000==0) 
        cout << "Event no. " << fEventCounter << endl;
   }
   fEventCounter++;

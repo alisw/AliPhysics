@@ -29,7 +29,7 @@ class AliHFTreeHandlerDstoKKpi : public AliHFTreeHandler
 
     enum massKKopt {kMassKK,kDeltaMassKKPhi};
 
-    static const int kDplustoKKpi = BIT(6);
+    static const int kDplustoKKpi = BIT(11);
 
     AliHFTreeHandlerDstoKKpi();
     AliHFTreeHandlerDstoKKpi(int PIDopt);
@@ -47,7 +47,7 @@ class AliHFTreeHandlerDstoKKpi : public AliHFTreeHandler
     }
   
     static bool IsDplustoKKpi(int candtype) {
-      if(candtype>>6&1) return true;
+      if(candtype>>11&1) return true;
       return false;
     }
 

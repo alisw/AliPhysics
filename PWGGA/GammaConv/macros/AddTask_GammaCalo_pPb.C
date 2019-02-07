@@ -1040,6 +1040,14 @@ void AddTask_GammaCalo_pPb(
     cuts.AddCutCalo("88010113","1111155057032230000","01631031000000d0"); // 0-100
     cuts.AddCutCalo("88010113","1111156057032230000","01631031000000d0"); // 0-100
 
+  // EMC, DCal, EMC+DCal calibs
+  } else if (trainConfig == 260){
+    cuts.AddCutCalo("80010113","1111100057032230000","01631031000000d0"); // EMC
+    cuts.AddCutCalo("80010113","3885500057032230000","01631031000000d0"); // DCal
+    cuts.AddCutCalo("80010113","4117900057032230000","01631031000000d0"); // EDC
+  } else if (trainConfig == 261){
+    cuts.AddCutCalo("80010113","4117900057032230000","01631031000000d0"); // EDC
+
   // ===============================================================================================
   // Run 1 data PHOS clusters pPb 5TeV
   // ===============================================================================================
@@ -1782,24 +1790,24 @@ void AddTask_GammaCalo_pPb(
 
   // configurations for pPb 5 and 8 TeV Run2 with EMCAL + DCAL
   } else if (trainConfig == 2000){ // EMCAL+DCAL clusters standard cuts, triggers, NL vars
-    cuts.AddCutCalo("80010123","4117747057032230000","01631031000000d0"); // INT7
-    cuts.AddCutCalo("80010123","4117748057032230000","01631031000000d0"); // INT7
-    cuts.AddCutCalo("80010123","4117757057032230000","01631031000000d0"); // INT7
-    cuts.AddCutCalo("80010123","4117758057032230000","01631031000000d0"); // INT7
+    cuts.AddCutCalo("80010123","4117947057032230000","01631031000000d0"); // INT7
+    cuts.AddCutCalo("80010123","4117948057032230000","01631031000000d0"); // INT7
+    cuts.AddCutCalo("80010123","4117957057032230000","01631031000000d0"); // INT7
+    cuts.AddCutCalo("80010123","4117958057032230000","01631031000000d0"); // INT7
   } else if (trainConfig == 2001){ // EMCAL+DCAL clusters standard cuts, triggers, NL vars
-    cuts.AddCutCalo("8008e123","4117747057032230000","01631031000000d0"); // EG2
-    cuts.AddCutCalo("8008e123","4117748057032230000","01631031000000d0"); // EG2
-    cuts.AddCutCalo("8008e123","4117757057032230000","01631031000000d0"); // EG2
-    cuts.AddCutCalo("8008e123","4117758057032230000","01631031000000d0"); // EG2
+    cuts.AddCutCalo("8008e123","4117947057032230000","01631031000000d0"); // EG2
+    cuts.AddCutCalo("8008e123","4117948057032230000","01631031000000d0"); // EG2
+    cuts.AddCutCalo("8008e123","4117957057032230000","01631031000000d0"); // EG2
+    cuts.AddCutCalo("8008e123","4117958057032230000","01631031000000d0"); // EG2
   } else if (trainConfig == 2002){ // EMCAL+DCAL clusters standard cuts, triggers, NL vars
-    cuts.AddCutCalo("8008d123","4117747057032230000","01631031000000d0"); // EG1
-    cuts.AddCutCalo("8008d123","4117748057032230000","01631031000000d0"); // EG1
-    cuts.AddCutCalo("8008d123","4117757057032230000","01631031000000d0"); // EG1
-    cuts.AddCutCalo("8008d123","4117758057032230000","01631031000000d0"); // EG1
+    cuts.AddCutCalo("8008d123","4117947057032230000","01631031000000d0"); // EG1
+    cuts.AddCutCalo("8008d123","4117948057032230000","01631031000000d0"); // EG1
+    cuts.AddCutCalo("8008d123","4117957057032230000","01631031000000d0"); // EG1
+    cuts.AddCutCalo("8008d123","4117958057032230000","01631031000000d0"); // EG1
   } else if (trainConfig == 2003){ // EMCAL+DCAL clusters standard cuts, triggers, NL vars
-    cuts.AddCutCalo("80010123","4117758057032230000","01631031000000d0"); // INT7
-    cuts.AddCutCalo("8008e123","4117758057032230000","01631031000000d0"); // EG2+DG2
-    cuts.AddCutCalo("8008d123","4117758057032230000","01631031000000d0"); // EG1+DG1
+    cuts.AddCutCalo("80010123","4117958057032230000","01631031000000d0"); // INT7
+    cuts.AddCutCalo("8008e123","4117958057032230000","01631031000000d0"); // EG2+DG2
+    cuts.AddCutCalo("8008d123","4117958057032230000","01631031000000d0"); // EG1+DG1
   } else if (trainConfig == 2004){ // EMCAL clusters standard cuts, triggers, NL vars
     cuts.AddCutCalo("80010123","1111158057032230000","01631031000000d0"); // INT7
     cuts.AddCutCalo("80085123","1111158057032230000","01631031000000d0"); // EG2
@@ -1809,17 +1817,17 @@ void AddTask_GammaCalo_pPb(
     cuts.AddCutCalo("8008b123","3885558057032230000","01631031000000d0"); // DG2
     cuts.AddCutCalo("80089123","3885558057032230000","01631031000000d0"); // DG1
   } else if (trainConfig == 2006){ // EMCAL+DCAL clusters standard cuts, triggers, NL vars
-    cuts.AddCutCalo("80010123","4117700057032230000","01631031000000d0"); // INT7
-    cuts.AddCutCalo("80010123","4117706057032230000","01631031000000d0"); // INT7
-    cuts.AddCutCalo("80010123","4117765057032230000","01631031000000d0"); // INT7
+    cuts.AddCutCalo("80010123","4117900057032230000","01631031000000d0"); // INT7
+    cuts.AddCutCalo("80010123","4117906057032230000","01631031000000d0"); // INT7
+    cuts.AddCutCalo("80010123","4117965057032230000","01631031000000d0"); // INT7
   } else if (trainConfig == 2007){ // EMCAL+DCAL clusters standard cuts, triggers, NL vars
-    cuts.AddCutCalo("8008e123","4117700057032230000","01631031000000d0"); // EG2
-    cuts.AddCutCalo("8008e123","4117706057032230000","01631031000000d0"); // EG2
-    cuts.AddCutCalo("8008e123","4117765057032230000","01631031000000d0"); // EG2
+    cuts.AddCutCalo("8008e123","4117900057032230000","01631031000000d0"); // EG2
+    cuts.AddCutCalo("8008e123","4117906057032230000","01631031000000d0"); // EG2
+    cuts.AddCutCalo("8008e123","4117965057032230000","01631031000000d0"); // EG2
   } else if (trainConfig == 2008){ // EMCAL+DCAL clusters standard cuts, triggers, NL vars
-    cuts.AddCutCalo("8008d123","4117700057032230000","01631031000000d0"); // EG1
-    cuts.AddCutCalo("8008d123","4117706057032230000","01631031000000d0"); // EG1
-    cuts.AddCutCalo("8008d123","4117765057032230000","01631031000000d0"); // EG1
+    cuts.AddCutCalo("8008d123","4117900057032230000","01631031000000d0"); // EG1
+    cuts.AddCutCalo("8008d123","4117906057032230000","01631031000000d0"); // EG1
+    cuts.AddCutCalo("8008d123","4117965057032230000","01631031000000d0"); // EG1
   // includes both stripes EMCal and DCal
   } else if (trainConfig == 2010){ // EMCAL+DCAL clusters standard cuts, triggers, NL vars
     cuts.AddCutCalo("80010123","4117900057032230000","01631031000000d0"); // INT7
@@ -1833,47 +1841,103 @@ void AddTask_GammaCalo_pPb(
     cuts.AddCutCalo("8008d123","4117900057032230000","01631031000000d0"); // EG1
     cuts.AddCutCalo("8008d123","4117906057032230000","01631031000000d0"); // EG1
     cuts.AddCutCalo("8008d123","4117965057032230000","01631031000000d0"); // EG1
+
+  } else if (trainConfig == 2013){ // EMCAL+DCAL clusters standard cuts, triggers, NL vars
+    cuts.AddCutCalo("80010123","4117900057032230000","01631031000000d0"); // INT7
+    cuts.AddCutCalo("8008e123","4117900057032230000","01631031000000d0"); // EG2
+    cuts.AddCutCalo("8008d123","4117900057032230000","01631031000000d0"); // EG1
+  } else if (trainConfig == 2014){ // EMCAL+DCAL clusters standard cuts, triggers, NL vars
+    cuts.AddCutCalo("80010123","411790005f032230000","01631031000000d0"); // INT7
+    cuts.AddCutCalo("8008e123","411790005f032230000","01631031000000d0"); // EG2
+    cuts.AddCutCalo("8008d123","411790005f032230000","01631031000000d0"); // EG1
+  } else if (trainConfig == 2015){ // EMCAL+DCAL clusters standard cuts, triggers, NL vars
+    cuts.AddCutCalo("80010123","411796505f032230000","01631031000000d0"); // INT7
+    cuts.AddCutCalo("8008e123","411796505f032230000","01631031000000d0"); // EG2
+    cuts.AddCutCalo("8008d123","411796505f032230000","01631031000000d0"); // EG1
+  } else if (trainConfig == 2016){ // EMCAL+DCAL clusters standard cuts, triggers, NL vars
+    cuts.AddCutCalo("80010123","4117957057032230000","01631031000000d0"); // INT7
+    cuts.AddCutCalo("8008e123","4117957057032230000","01631031000000d0"); // EG2
+    cuts.AddCutCalo("8008d123","4117957057032230000","01631031000000d0"); // EG1
+  } else if (trainConfig == 2017){ // EMCAL+DCAL clusters standard cuts, triggers, NL vars
+    cuts.AddCutCalo("80010123","411795705f032230000","01631031000000d0"); // INT7
+    cuts.AddCutCalo("8008e123","411795705f032230000","01631031000000d0"); // EG2
+    cuts.AddCutCalo("8008d123","411795705f032230000","01631031000000d0"); // EG1
+
+  } else if (trainConfig == 2020){ // EMCAL+DCAL clusters standard cuts, triggers, NL vars
+    cuts.AddCutCalo("80010123","411794705f032230000","01631031000000d0"); // INT7
+    cuts.AddCutCalo("8008e123","411794705f032230000","01631031000000d0"); // EG2
+    cuts.AddCutCalo("8008d123","411794705f032230000","01631031000000d0"); // EG1
+  } else if (trainConfig == 2021){ // EMCAL+DCAL clusters standard cuts, triggers, NL vars
+    cuts.AddCutCalo("80010123","411794805f032230000","01631031000000d0"); // INT7
+    cuts.AddCutCalo("8008e123","411794805f032230000","01631031000000d0"); // EG2
+    cuts.AddCutCalo("8008d123","411794805f032230000","01631031000000d0"); // EG1
+  } else if (trainConfig == 2022){ // EMCAL+DCAL clusters standard cuts, triggers, NL vars
+    cuts.AddCutCalo("80010123","411795705f032230000","01631031000000d0"); // INT7
+    cuts.AddCutCalo("8008e123","411795705f032230000","01631031000000d0"); // EG2
+    cuts.AddCutCalo("8008d123","411795705f032230000","01631031000000d0"); // EG1
+  } else if (trainConfig == 2023){ // EMCAL+DCAL clusters standard cuts, triggers, NL vars
+    cuts.AddCutCalo("80010123","411795805f032230000","01631031000000d0"); // INT7
+    cuts.AddCutCalo("8008e123","411795805f032230000","01631031000000d0"); // EG2
+    cuts.AddCutCalo("8008d123","411795805f032230000","01631031000000d0"); // EG1
+
+  } else if (trainConfig == 2030){ // EMCAL+DCAL clusters standard cuts, triggers, NL vars
+    cuts.AddCutCalo("800a0123","411794705f032230000","01631031000000d0"); // INT7
+    cuts.AddCutCalo("800al123","411794705f032230000","01631031000000d0"); // EG2
+    cuts.AddCutCalo("800am123","411794705f032230000","01631031000000d0"); // EG1
+  } else if (trainConfig == 2031){ // EMCAL+DCAL clusters standard cuts, triggers, NL vars
+    cuts.AddCutCalo("800a0123","411794805f032230000","01631031000000d0"); // INT7
+    cuts.AddCutCalo("800al123","411794805f032230000","01631031000000d0"); // EG2
+    cuts.AddCutCalo("800am123","411794805f032230000","01631031000000d0"); // EG1
+  } else if (trainConfig == 2032){ // EMCAL+DCAL clusters standard cuts, triggers, NL vars
+    cuts.AddCutCalo("800a0123","411795705f032230000","01631031000000d0"); // INT7
+    cuts.AddCutCalo("800al123","411795705f032230000","01631031000000d0"); // EG2
+    cuts.AddCutCalo("800am123","411795705f032230000","01631031000000d0"); // EG1
+  } else if (trainConfig == 2033){ // EMCAL+DCAL clusters standard cuts, triggers, NL vars
+    cuts.AddCutCalo("800a0123","411795805f032230000","01631031000000d0"); // INT7
+    cuts.AddCutCalo("800al123","411795805f032230000","01631031000000d0"); // EG2
+    cuts.AddCutCalo("800am123","411795805f032230000","01631031000000d0"); // EG1
+
   // standard cut configs with no NL for SM-wise correction
   } else if (trainConfig == 2100){ // EMCAL+DCAL clusters standard cuts, triggers, no NL
-    cuts.AddCutCalo("80010123","4117700057032230000","01631031000000d0"); // INT7
-    cuts.AddCutCalo("8008e123","4117700057032230000","01631031000000d0"); // EG2+DG2
-    cuts.AddCutCalo("8008d123","4117700057032230000","01631031000000d0"); // EG1+DG1
+    cuts.AddCutCalo("80010123","4117900057032230000","01631031000000d0"); // INT7
+    cuts.AddCutCalo("8008e123","4117900057032230000","01631031000000d0"); // EG2+DG2
+    cuts.AddCutCalo("8008d123","4117900057032230000","01631031000000d0"); // EG1+DG1
   } else if (trainConfig == 2101){ // EMCAL+DCAL clusters standard cuts, triggers, no NL
-    cuts.AddCutCalo("80010123","4117700057032230000","01631031000000d0"); // INT7
-    cuts.AddCutCalo("8008e123","4117700057032230000","01631031000000d0"); // EG2+DG2
-    cuts.AddCutCalo("8008d123","4117700057032230000","01631031000000d0"); // EG1+DG1
+    cuts.AddCutCalo("80010123","4117900057032230000","01631031000000d0"); // INT7
+    cuts.AddCutCalo("8008e123","4117900057032230000","01631031000000d0"); // EG2+DG2
+    cuts.AddCutCalo("8008d123","4117900057032230000","01631031000000d0"); // EG1+DG1
   } else if (trainConfig == 2102){ // EMCAL+DCAL clusters standard cuts, triggers, no NL
-    cuts.AddCutCalo("80010123","4117700057032230000","01631031000000d0"); // INT7
-    cuts.AddCutCalo("8008e123","4117700057032230000","01631031000000d0"); // EG2+DG2
-    cuts.AddCutCalo("8008d123","4117700057032230000","01631031000000d0"); // EG1+DG1
+    cuts.AddCutCalo("80010123","4117900057032230000","01631031000000d0"); // INT7
+    cuts.AddCutCalo("8008e123","4117900057032230000","01631031000000d0"); // EG2+DG2
+    cuts.AddCutCalo("8008d123","4117900057032230000","01631031000000d0"); // EG1+DG1
   } else if (trainConfig == 2103){ // EMCAL+DCAL clusters standard cuts, triggers, no NL
-    cuts.AddCutCalo("80010123","4117700057032230000","01631031000000d0"); // INT7
-    cuts.AddCutCalo("8008e123","4117700057032230000","01631031000000d0"); // EG2+DG2
-    cuts.AddCutCalo("8008d123","4117700057032230000","01631031000000d0"); // EG1+DG1
+    cuts.AddCutCalo("80010123","4117900057032230000","01631031000000d0"); // INT7
+    cuts.AddCutCalo("8008e123","4117900057032230000","01631031000000d0"); // EG2+DG2
+    cuts.AddCutCalo("8008d123","4117900057032230000","01631031000000d0"); // EG1+DG1
   } else if (trainConfig == 2104){ // EMCAL+DCAL clusters standard cuts, triggers, no NL
-    cuts.AddCutCalo("80010123","4117700057032230000","01631031000000d0"); // INT7
-    cuts.AddCutCalo("8008e123","4117700057032230000","01631031000000d0"); // EG2+DG2
-    cuts.AddCutCalo("8008d123","4117700057032230000","01631031000000d0"); // EG1+DG1
+    cuts.AddCutCalo("80010123","4117900057032230000","01631031000000d0"); // INT7
+    cuts.AddCutCalo("8008e123","4117900057032230000","01631031000000d0"); // EG2+DG2
+    cuts.AddCutCalo("8008d123","4117900057032230000","01631031000000d0"); // EG1+DG1
   } else if (trainConfig == 2105){ // EMCAL+DCAL clusters standard cuts, triggers, no NL
-    cuts.AddCutCalo("80010123","4117700057032230000","01631031000000d0"); // INT7
-    cuts.AddCutCalo("8008e123","4117700057032230000","01631031000000d0"); // EG2+DG2
-    cuts.AddCutCalo("8008d123","4117700057032230000","01631031000000d0"); // EG1+DG1
+    cuts.AddCutCalo("80010123","4117900057032230000","01631031000000d0"); // INT7
+    cuts.AddCutCalo("8008e123","4117900057032230000","01631031000000d0"); // EG2+DG2
+    cuts.AddCutCalo("8008d123","4117900057032230000","01631031000000d0"); // EG1+DG1
   } else if (trainConfig == 2106){ // EMCAL+DCAL clusters standard cuts, triggers, no NL
-    cuts.AddCutCalo("80010123","4117700057032230000","01631031000000d0"); // INT7
-    cuts.AddCutCalo("8008e123","4117700057032230000","01631031000000d0"); // EG2+DG2
-    cuts.AddCutCalo("8008d123","4117700057032230000","01631031000000d0"); // EG1+DG1
+    cuts.AddCutCalo("80010123","4117900057032230000","01631031000000d0"); // INT7
+    cuts.AddCutCalo("8008e123","4117900057032230000","01631031000000d0"); // EG2+DG2
+    cuts.AddCutCalo("8008d123","4117900057032230000","01631031000000d0"); // EG1+DG1
   } else if (trainConfig == 2107){ // EMCAL+DCAL clusters standard cuts, triggers, no NL
-    cuts.AddCutCalo("80010123","4117700057032230000","01631031000000d0"); // INT7
-    cuts.AddCutCalo("8008e123","4117700057032230000","01631031000000d0"); // EG2+DG2
-    cuts.AddCutCalo("8008d123","4117700057032230000","01631031000000d0"); // EG1+DG1
+    cuts.AddCutCalo("80010123","4117900057032230000","01631031000000d0"); // INT7
+    cuts.AddCutCalo("8008e123","4117900057032230000","01631031000000d0"); // EG2+DG2
+    cuts.AddCutCalo("8008d123","4117900057032230000","01631031000000d0"); // EG1+DG1
   } else if (trainConfig == 2108){ // EMCAL+DCAL clusters standard cuts, triggers, no NL
-    cuts.AddCutCalo("80010123","4117700057032230000","01631031000000d0"); // INT7
-    cuts.AddCutCalo("8008e123","4117700057032230000","01631031000000d0"); // EG2+DG2
-    cuts.AddCutCalo("8008d123","4117700057032230000","01631031000000d0"); // EG1+DG1
+    cuts.AddCutCalo("80010123","4117900057032230000","01631031000000d0"); // INT7
+    cuts.AddCutCalo("8008e123","4117900057032230000","01631031000000d0"); // EG2+DG2
+    cuts.AddCutCalo("8008d123","4117900057032230000","01631031000000d0"); // EG1+DG1
   } else if (trainConfig == 2109){ // EMCAL+DCAL clusters standard cuts, triggers, no NL
-    cuts.AddCutCalo("80010123","4117700057032230000","01631031000000d0"); // INT7
-    cuts.AddCutCalo("8008e123","4117700057032230000","01631031000000d0"); // EG2+DG2
-    cuts.AddCutCalo("8008d123","4117700057032230000","01631031000000d0"); // EG1+DG1
+    cuts.AddCutCalo("80010123","4117900057032230000","01631031000000d0"); // INT7
+    cuts.AddCutCalo("8008e123","4117900057032230000","01631031000000d0"); // EG2+DG2
+    cuts.AddCutCalo("8008d123","4117900057032230000","01631031000000d0"); // EG1+DG1
   } else if (trainConfig == 2110){ // EMCAL+DCAL clusters standard cuts, triggers, no NL
     cuts.AddCutCalo("80010123","4117900057032230000","01631031000000d0"); // INT7
     cuts.AddCutCalo("8008e123","4117900057032230000","01631031000000d0"); // EG2+DG2
@@ -1883,29 +1947,29 @@ void AddTask_GammaCalo_pPb(
     cuts.AddCutCalo("8008e123","4117900057032230000","01631031000000d0"); // EG2+DG2
     cuts.AddCutCalo("8008d123","4117900057032230000","01631031000000d0"); // EG1+DG1
   } else if (trainConfig == 2112){ // EMCAL+DCAL clusters standard cuts, triggers, no NL
-    cuts.AddCutCalo("80010123","4117700057032230000","01631031000000d0"); // INT7
-    cuts.AddCutCalo("8008e123","4117700057032230000","01631031000000d0"); // EG2+DG2
-    cuts.AddCutCalo("8008d123","4117700057032230000","01631031000000d0"); // EG1+DG1
+    cuts.AddCutCalo("80010123","4117900057032230000","01631031000000d0"); // INT7
+    cuts.AddCutCalo("8008e123","4117900057032230000","01631031000000d0"); // EG2+DG2
+    cuts.AddCutCalo("8008d123","4117900057032230000","01631031000000d0"); // EG1+DG1
   } else if (trainConfig == 2113){ // EMCAL+DCAL clusters standard cuts, triggers, no NL
-    cuts.AddCutCalo("80010123","4117700057032230000","01631031000000d0"); // INT7
-    cuts.AddCutCalo("8008e123","4117700057032230000","01631031000000d0"); // EG2+DG2
-    cuts.AddCutCalo("8008d123","4117700057032230000","01631031000000d0"); // EG1+DG1
+    cuts.AddCutCalo("80010123","4117900057032230000","01631031000000d0"); // INT7
+    cuts.AddCutCalo("8008e123","4117900057032230000","01631031000000d0"); // EG2+DG2
+    cuts.AddCutCalo("8008d123","4117900057032230000","01631031000000d0"); // EG1+DG1
   } else if (trainConfig == 2114){ // EMCAL+DCAL clusters standard cuts, triggers, no NL
-    cuts.AddCutCalo("80010123","4117700057032230000","01631031000000d0"); // INT7
-    cuts.AddCutCalo("8008e123","4117700057032230000","01631031000000d0"); // EG2+DG2
-    cuts.AddCutCalo("8008d123","4117700057032230000","01631031000000d0"); // EG1+DG1
+    cuts.AddCutCalo("80010123","4117900057032230000","01631031000000d0"); // INT7
+    cuts.AddCutCalo("8008e123","4117900057032230000","01631031000000d0"); // EG2+DG2
+    cuts.AddCutCalo("8008d123","4117900057032230000","01631031000000d0"); // EG1+DG1
   } else if (trainConfig == 2115){ // EMCAL+DCAL clusters standard cuts, triggers, no NL
-    cuts.AddCutCalo("80010123","4117700057032230000","01631031000000d0"); // INT7
-    cuts.AddCutCalo("8008e123","4117700057032230000","01631031000000d0"); // EG2+DG2
-    cuts.AddCutCalo("8008d123","4117700057032230000","01631031000000d0"); // EG1+DG1
+    cuts.AddCutCalo("80010123","4117900057032230000","01631031000000d0"); // INT7
+    cuts.AddCutCalo("8008e123","4117900057032230000","01631031000000d0"); // EG2+DG2
+    cuts.AddCutCalo("8008d123","4117900057032230000","01631031000000d0"); // EG1+DG1
   } else if (trainConfig == 2116){ // EMCAL+DCAL clusters standard cuts, triggers, no NL
-    cuts.AddCutCalo("80010123","4117700057032230000","01631031000000d0"); // INT7
-    cuts.AddCutCalo("8008e123","4117700057032230000","01631031000000d0"); // EG2+DG2
-    cuts.AddCutCalo("8008d123","4117700057032230000","01631031000000d0"); // EG1+DG1
+    cuts.AddCutCalo("80010123","4117900057032230000","01631031000000d0"); // INT7
+    cuts.AddCutCalo("8008e123","4117900057032230000","01631031000000d0"); // EG2+DG2
+    cuts.AddCutCalo("8008d123","4117900057032230000","01631031000000d0"); // EG1+DG1
   } else if (trainConfig == 2117){ // EMCAL+DCAL clusters standard cuts, triggers, no NL
-    cuts.AddCutCalo("80010123","4117700057032230000","01631031000000d0"); // INT7
-    cuts.AddCutCalo("8008e123","4117700057032230000","01631031000000d0"); // EG2+DG2
-    cuts.AddCutCalo("8008d123","4117700057032230000","01631031000000d0"); // EG1+DG1
+    cuts.AddCutCalo("80010123","4117900057032230000","01631031000000d0"); // INT7
+    cuts.AddCutCalo("8008e123","4117900057032230000","01631031000000d0"); // EG2+DG2
+    cuts.AddCutCalo("8008d123","4117900057032230000","01631031000000d0"); // EG1+DG1
   } else if (trainConfig == 2118){ // EMCAL+DCAL clusters standard cuts, triggers, no NL
     cuts.AddCutCalo("80010123","4117900057032230000","01631031000000d0"); // INT7
     cuts.AddCutCalo("8008e123","4117900057032230000","01631031000000d0"); // EG2+DG2
@@ -1950,10 +2014,12 @@ void AddTask_GammaCalo_pPb(
   if (periodNameV0Reader.Contains("LHC18b9")||periodNameV0Reader.Contains("LHC17g8")){
     TObjString *HeaderPMB = new TObjString("EPOSLHC_0");
     TObjString *HeaderP8J = new TObjString("Pythia8Jets_1");
-    if (doWeightingPart==4) {
+    if (doWeightingPart==4) { // all headers
       HeaderList->Add(HeaderPMB);
       HeaderList->Add(HeaderP8J);
-    } else {
+    } else if (doWeightingPart==5) { // only MB header
+      HeaderList->Add(HeaderPMB);
+    } else { // only JJ header
       HeaderList->Add(HeaderP8J);
     }
   }

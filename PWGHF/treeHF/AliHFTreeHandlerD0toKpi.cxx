@@ -170,3 +170,114 @@ void AliHFTreeHandlerD0toKpi::FillTree() {
   fCandTypeMap=0;
   fNCandidates=0;
 }
+//________________________________________________________________
+void AliHFTreeHandlerD0toKpi::SetIsDzeroDzeroBar(int isSel, int isSelTopo, int isSelPID, int isSelFilt, int isSelTopoFilt, int isSelPIDFilt) {
+    
+    //analysis cuts
+    //combined selection PID topo
+    if(isSel==0){
+        fCandTypeMap &= ~kDzeroComb;
+        fCandTypeMap &= ~kDzeroBarComb;
+    }
+    else if(isSel==1){
+        fCandTypeMap |= kDzeroComb;
+        fCandTypeMap &= ~kDzeroBarComb;
+    }
+    else if(isSel==2){
+        fCandTypeMap |= kDzeroBarComb;
+        fCandTypeMap &= ~kDzeroComb;
+    }
+    else if(isSel==3){
+        fCandTypeMap |= kDzeroComb;
+        fCandTypeMap |= kDzeroBarComb;
+    }
+    //topol selection
+    if(isSelTopo==0){
+        fCandTypeMap &= ~kDzeroTopo;
+        fCandTypeMap &= ~kDzeroBarTopo;
+    }
+    else if(isSelTopo==1){
+        fCandTypeMap |= kDzeroTopo;
+        fCandTypeMap &= ~kDzeroBarTopo;
+    }
+    else if(isSelTopo==2){
+        fCandTypeMap |= kDzeroBarTopo;
+        fCandTypeMap &= ~kDzeroTopo;
+    }
+    else if(isSelTopo==3){
+        fCandTypeMap |= kDzeroTopo;
+        fCandTypeMap |= kDzeroBarTopo;
+    }
+    //PID selection
+    if(isSelPID==0){
+        fCandTypeMap &= ~kDzeroPID;
+        fCandTypeMap &= ~kDzeroBarPID;
+    }
+    else if(isSelPID==1){
+        fCandTypeMap |= kDzeroPID;
+        fCandTypeMap &= ~kDzeroBarPID;
+    }
+    else if(isSelPID==2){
+        fCandTypeMap |= kDzeroBarPID;
+        fCandTypeMap &= ~kDzeroPID;
+    }
+    else if(isSelPID==3){
+        fCandTypeMap |= kDzeroPID;
+        fCandTypeMap |= kDzeroBarPID;
+    }
+    
+    //filtering cuts
+    //combined selection PID topo
+    if(isSelFilt==0){
+        fCandTypeMap &= ~kDzeroCombFilt;
+        fCandTypeMap &= ~kDzeroBarCombFilt;
+    }
+    else if(isSelFilt==1){
+        fCandTypeMap |= kDzeroCombFilt;
+        fCandTypeMap &= ~kDzeroBarCombFilt;
+    }
+    else if(isSelFilt==2){
+        fCandTypeMap |= kDzeroBarCombFilt;
+        fCandTypeMap &= ~kDzeroCombFilt;
+    }
+    else if(isSelFilt==3){
+        fCandTypeMap |= kDzeroCombFilt;
+        fCandTypeMap |= kDzeroBarCombFilt;
+    }
+    //topol selection
+    if(isSelTopoFilt==0){
+        fCandTypeMap &= ~kDzeroTopoFilt;
+        fCandTypeMap &= ~kDzeroBarTopoFilt;
+    }
+    else if(isSelTopoFilt==1){
+        fCandTypeMap |= kDzeroTopoFilt;
+        fCandTypeMap &= ~kDzeroBarTopoFilt;
+    }
+    else if(isSelTopoFilt==2){
+        fCandTypeMap |= kDzeroBarTopoFilt;
+        fCandTypeMap &= ~kDzeroTopoFilt;
+    }
+    else if(isSelTopoFilt==3){
+        fCandTypeMap |= kDzeroTopoFilt;
+        fCandTypeMap |= kDzeroBarTopoFilt;
+    }
+    //PID selection
+    if(isSelPIDFilt==0){
+        fCandTypeMap &= ~kDzeroPIDFilt;
+        fCandTypeMap &= ~kDzeroBarPIDFilt;
+    }
+    else if(isSelPIDFilt==1){
+        fCandTypeMap |= kDzeroPIDFilt;
+        fCandTypeMap &= ~kDzeroBarPIDFilt;
+    }
+    else if(isSelPIDFilt==2){
+        fCandTypeMap |= kDzeroBarPIDFilt;
+        fCandTypeMap &= ~kDzeroPIDFilt;
+    }
+    else if(isSelPIDFilt==3){
+        fCandTypeMap |= kDzeroPIDFilt;
+        fCandTypeMap |= kDzeroBarPIDFilt;
+    }
+
+    
+}

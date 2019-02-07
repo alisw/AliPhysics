@@ -197,11 +197,11 @@ void AliFemtoDreamCascade::SetCascade(AliESDEvent *evt, AliMCEvent *mcEvent,
   int idxBachFromCascade = casc->GetBindex();
 
   AliESDtrack *esdCascadePos = evt->GetTrack(idxPosFromV0Dghter);
-  fPosDaug->SetTrack(esdCascadePos,mcEvent,-1,false);
+  fPosDaug->SetTrack(esdCascadePos, mcEvent, -1, false);
   AliESDtrack *esdCascadeNeg = evt->GetTrack(idxNegFromV0Dghter);
-  fNegDaug->SetTrack(esdCascadeNeg,mcEvent,-1,false);
+  fNegDaug->SetTrack(esdCascadeNeg, mcEvent, -1, false);
   AliESDtrack *esdCascadeBach = evt->GetTrack(idxBachFromCascade);
-  fBach->SetTrack(esdCascadeBach,mcEvent,-1,false);
+  fBach->SetTrack(esdCascadeBach, mcEvent, -1, false);
   // Identification of the V0 within the esdCascade (via both daughter track indices)
   AliESDv0 * currentV0 = 0x0;
   int idxV0FromCascade = -1;
@@ -209,7 +209,8 @@ void AliFemtoDreamCascade::SetCascade(AliESDEvent *evt, AliMCEvent *mcEvent,
     currentV0 = evt->GetV0(iV0);
     // Make sure not to use online v0 here
     // (the cascade is reconstructed with offline v0 only)
-    if (currentV0->GetOnFlyStatus() == kTRUE) continue;
+    if (currentV0->GetOnFlyStatus() == kTRUE)
+      continue;
     int posCurrentV0 = currentV0->GetPindex();
     int negCurrentV0 = currentV0->GetNindex();
     if (posCurrentV0 == idxPosFromV0Dghter
@@ -397,6 +398,7 @@ void AliFemtoDreamCascade::Reset() {
     fMCTheta.clear();
     fPhi.clear();
     fPhiAtRadius.clear();
+    fXYZAtRadius.clear();
     fMCPhi.clear();
     fIDTracks.clear();
     fCharge.clear();

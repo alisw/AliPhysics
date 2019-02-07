@@ -124,7 +124,7 @@ int CreateEMCALRunQA(const char* filename, TString RunId, TString period, TStrin
   TList* TriggersList = new TList();
 
   if(fTrigger==""){
-    TPMERegexp name_re("CaloQA_\\w+");
+    TPRegexp name_re("CaloQA_\\w+");
     TObjLink* link = f->GetListOfKeys()->FirstLink();
 
     while(link){
@@ -275,6 +275,7 @@ Int_t DrawOccupancy(Long_t  run, TString period, TString pass, TString fTrigger,
 
   hCellAmplitude = (TH2F *)outputList->FindObject("EMCAL_hAmpId");
 
+
   for(Int_t i = 0; i < geom->GetNCells() ; i++){
     Double_t Esum = 0;
     Double_t Nsum = 0;
@@ -318,7 +319,7 @@ Int_t DrawOccupancy(Long_t  run, TString period, TString pass, TString fTrigger,
 
   cout <<" Run: " << run << " trigger: " << fTrigger << " N_events: "<<Events<<endl;
 
-   TPMERegexp r("_\\w+");
+   TPRegexp r("_\\w+");
   // TString Energy;   Energy   = QAPATH + "MapEnergy"  + fTrigger(r) + ".pdf";
   // TString Energy2;  Energy2  = QAPATH + "MapEnergy"  + fTrigger(r) + ".png";
   // TString Entries;  Entries  = QAPATH + "MapEntries" + fTrigger(r) + ".pdf";
@@ -416,7 +417,7 @@ Int_t DrawRun(const Long_t  run, TString period, TString pass, TString fTrigger,
   TString outfilename;
   TString outfilename2;
   const char* legend="";
-  TPMERegexp r("_\\w+");
+  TPRegexp r("_\\w+");
 
   if(fTrigger.Contains("EMC"))
     legend = Form(" Run %d EMC ", (int)run);
@@ -965,7 +966,7 @@ Int_t TrendingEMCALTree(Long_t RunId, TString fCalorimeter, TString system, TStr
   TH2F* IM[n];
   TH1F* MggSM[n];
 
-  TPMERegexp r("_\\w+");
+  TPRegexp r("_\\w+");
   TIter next(TriggersList);
   int ret = 0;
 
@@ -1713,7 +1714,7 @@ Int_t TrendingEMCALTree(Long_t RunId, TString fCalorimeter, TString system, TStr
   //legend = "run "+RunId; 
   const char* legend="";
   legend = Form(" Run %d  ", (int)RunId);
-  // // TPMERegexp r("_\\w+");
+  // // TPRegexp r("_\\w+");
   // legend = Form(" Run %s  ", RunId);
   // legend = "run "+RunId; 
 
@@ -2217,7 +2218,7 @@ int FindNumberOfSM(TFile* f, TString fTrigger, TString period){
   else if( year == 2013 || year == 2014 ){ nSMt=12; }
   else                                   { nSMt=20; }
 
-  TList *outputList;
+  TList* outputList = 0x0;
   Bool_t dirok = f->cd(direct);
 
   // ////

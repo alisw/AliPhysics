@@ -122,6 +122,8 @@ public:
     fPtShapeFunction = functionID;
     fPtShapeParams.Set(nPars,pars);
   }
+  void SetBeamRapidity(float rap) { fBeamRapidity = rap; }
+  void SetCentralityEstimator(int est) { fEstimator = est; }
 
   void SaveTrees(bool save=true) { fSaveTrees = save; }
 
@@ -202,6 +204,8 @@ private:
   Int_t                 fPtShapeFunction;       ///<  Id of the function used to weight the MC input pt shape (see the enum)
   Float_t               fPtShapeMaximum;        ///<  Maximum of the pt shape used
   Float_t               fITSelectronRejectionSigma; ///< nSigma rejection band in ITS response around the electron band for TPC only analysis
+  Float_t               fBeamRapidity;          ///< Beam rapidity in case of asymmetric colliding systems
+  Int_t                 fEstimator;             ///< Choose the centrality estimator from AliEventCuts
 
   Bool_t                fEnableFlattening;      ///<  Switch on/off the flattening
 

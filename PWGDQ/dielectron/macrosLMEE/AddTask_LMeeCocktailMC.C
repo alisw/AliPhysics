@@ -45,9 +45,17 @@ void AddTask_LMeeCocktailMC(Int_t CollisionSystem = 200, Float_t MaxEta = 0.8, F
   task->SetWriteTTree(WriteTTree);
   task->SetResolType(ResolType);
   task->SetALTweight(ALTweightType);
-	if(resFileName != ""){
-		task->SetpPbResFileName(resFileName);
-	}
+  if(resFileName != ""){
+    task->SetResFileName(resFileName);
+    if(resFileName.Contains("alien")){
+      Printf("alien_cp %s resolutionFiles/",resFileName.Data());
+      gSystem->Exec("mkdir resolutionFiles");
+      gSystem->Exec(Form("alien_cp %s resolutionFiles/",resFileName.Data()));
+      gSystem->Exec("pwd");
+      gSystem->Exec("ls");
+      gSystem->Exec("ls resolutionFiles/");
+    }
+  }
   
   //connect containers
   AliAnalysisDataContainer *coutput =

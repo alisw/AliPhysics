@@ -61,7 +61,11 @@ class AliHFInvMassMultiTrialFit : public TNamed {
 
   void SetMass(Double_t mass){fMassD=mass;}
   void SetSigmaGaussMC(Double_t sig){fSigmaGausMC=sig;}
-  void SetSigmaMCVariation(Double_t var=0.15){fSigmaMCVariation=var;}
+  void SetSigmaMCVariation(Double_t varup, Double_t vardw=99999.){
+    fSigmaMCVariationUp=varup;
+    if(vardw<9999.) fSigmaMCVariationDw=TMath::Abs(vardw);
+    else fSigmaMCVariationDw=varup;
+  }
 
   void SetSuffixForHistoNames(const Char_t* name){
     fSuffix=name;
@@ -144,7 +148,8 @@ class AliHFInvMassMultiTrialFit : public TNamed {
   Double_t fnSigmaForBkgEval; //value of sigma in which to extract bkg value
 
   Double_t fSigmaGausMC; /// sigma of D meson peak from MC
-  Double_t fSigmaMCVariation; /// relative variation of the sigma
+  Double_t fSigmaMCVariationUp; /// relative variation of the sigma
+  Double_t fSigmaMCVariationDw; /// relative variation of the sigma
   Double_t fMassD;       /// mass of D meson
   TString fSuffix;       /// name to characterize analysis case
   Int_t fFitOption;      /// LL or chi2 fit
@@ -218,7 +223,7 @@ class AliHFInvMassMultiTrialFit : public TNamed {
   std::vector<AliHFInvMassFitter*> fMassFitters; //!<! Mass fitters
 
   /// \cond CLASSIMP
-  ClassDef(AliHFInvMassMultiTrialFit,4); /// class for multiple trials of invariant mass fit
+  ClassDef(AliHFInvMassMultiTrialFit,5); /// class for multiple trials of invariant mass fit
   /// \endcond
 };
 

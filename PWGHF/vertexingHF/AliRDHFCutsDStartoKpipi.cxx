@@ -152,7 +152,13 @@ AliRDHFCutsDStartoKpipi &AliRDHFCutsDStartoKpipi::operator=(const AliRDHFCutsDSt
 
   return *this;
 }
-
+//---------------------------------------------------------------------------
+AliRDHFCutsDStartoKpipi::~AliRDHFCutsDStartoKpipi(){
+  //
+  // Destructor
+  //
+  if (fTrackCutsSoftPi) { delete fTrackCutsSoftPi; fTrackCutsSoftPi = nullptr;}
+}
 
 //---------------------------------------------------------------------------
 void AliRDHFCutsDStartoKpipi::GetCutVarsForOpt(AliAODRecoDecayHF *d,Float_t *vars,Int_t nvars,Int_t *pdgdaughters) {

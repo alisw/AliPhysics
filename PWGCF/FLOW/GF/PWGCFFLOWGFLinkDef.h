@@ -1,5 +1,5 @@
 #ifdef __CINT__
- 
+
 #pragma link off all globals;
 #pragma link off all classes;
 #pragma link off all functions;
@@ -12,5 +12,5 @@
 #pragma link C++ class AliGFWWeights+;
 #pragma link C++ class AliProfileSubset+;
 #pragma link C++ class AliGFWFlowContainer+;
-
+#pragma link C++ class AliAnalysisTaskUniFlow+;
 #endif

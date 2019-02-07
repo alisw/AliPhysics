@@ -32,6 +32,7 @@
 #pragma link C++ class AliRDHFCutsLctopK0sfromAODtracks++;
 #pragma link C++ class AliRDHFCutsOmegactoeleOmegafromAODtracks+;
 #pragma link C++ class AliRDHFCutsXicPlustoXiPiPifromAODtracks++;
+#pragma link C++ class AliRDHFCutsXicZerotoXiPifromAODtracks++;
 #pragma link C++ class AliRDHFCutsXictoeleXifromAODtracks+;
 #pragma link C++ class AliAnalysisVertexingHF+;
 #pragma link C++ class AliAnalysisTaskSEVertexingHF+;
@@ -57,6 +58,7 @@
 #pragma link C++ class AliAnalysisTaskSELc2eleLambdafromAODtracks+;
 #pragma link C++ class AliAnalysisTaskSEOmegac2eleOmegafromAODtracks+;
 #pragma link C++ class AliAnalysisTaskSEXicPlus2XiPiPifromAODtracks++;
+#pragma link C++ class AliAnalysisTaskSEXicZero2XiPifromAODtracks++;
 #pragma link C++ class AliAnalysisTaskSEXic2eleXifromAODtracks+;
 #pragma link C++ class AliAnalysisTaskCharmBaryonsMC+;
 #pragma link C++ class AliAnalysisTaskSEDvsEventShapes+;

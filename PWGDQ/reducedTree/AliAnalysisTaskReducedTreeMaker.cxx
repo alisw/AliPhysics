@@ -1906,6 +1906,7 @@ void AliAnalysisTaskReducedTreeMaker::FillTrackInfo()
             eventInfo->fNtracksPerTrackingFlag[ibit] += 1;
          }
       }
+      if(status & (AliVTrack::kTPCout)) eventInfo->fNtracksTPCout += 1;
       
       if(fFillEventPlaneInfo) {
          if(!fFlowTrackFilter ||
@@ -2313,7 +2314,7 @@ void AliAnalysisTaskReducedTreeMaker::FillTrackInfo()
 
     fReducedEvent->fNtracks[1] += 1;
   }
-  
+    
   AliReducedEventInfo* eventInfo = NULL; 
   if(fTreeWritingOption==kFullEventsWithBaseTracks || fTreeWritingOption==kFullEventsWithFullTracks) {
      eventInfo = dynamic_cast<AliReducedEventInfo*>(fReducedEvent);
@@ -2550,9 +2551,12 @@ void AliAnalysisTaskReducedTreeMaker::FillV0PairInfoAOD()
    Int_t pdgV0=0; Int_t pdgP=0; Int_t pdgN=0;
    for(Int_t iV0=0; iV0<InputEvent()->GetNumberOfV0s(); ++iV0) {   // loop over V0s
       AliAODv0 *v0 = aod->GetV0(iV0);
+      if(!v0) continue;
       
+      if(!aod->GetTrack(v0->GetPosID())) continue;
       AliAODTrack* legPos = dynamic_cast<AliAODTrack*>(aod->GetTrack(v0->GetPosID()));
       if(!legPos) continue;
+      if(!aod->GetTrack(v0->GetNegID())) continue;
       AliAODTrack* legNeg = dynamic_cast<AliAODTrack*>(aod->GetTrack(v0->GetNegID()));
       if(!legNeg) continue;
       

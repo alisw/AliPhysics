@@ -80,6 +80,10 @@ class AliFemtoDreamTrack : public AliFemtoDreamBasePart {
     return fHasSharedClsITSLayer;
   }
   ;
+  bool GetHasSPDHit() const {
+    return (fITSHit.at(0) || fITSHit.at(1)) ? true : false;
+  }
+  ;
   bool GetHasITSHit() const {
     return fHasITSHit;
   }
@@ -133,9 +137,10 @@ class AliFemtoDreamTrack : public AliFemtoDreamBasePart {
   float GetBeta(AliESDtrack *track);
   bool CheckGlobalTrack(const Int_t TrackID);
   void SetAODTrackingInformation();
-  void ApplyESDtoAODFilter(const bool TPCOnlyTrack=true);
-  void SetESDTrackingInformation(const bool TPCOnlyTrack=true);
+  void ApplyESDtoAODFilter(const bool TPCOnlyTrack = true);
+  void SetESDTrackingInformation(const bool TPCOnlyTrack = true);
   void SetPhiAtRadii(const float bfield);
+  void SetGlobalCoordAtRadii(const float bfield);
   void SetAODPIDInformation();
   void SetESDPIDInformation();
   void SetMCInformation();

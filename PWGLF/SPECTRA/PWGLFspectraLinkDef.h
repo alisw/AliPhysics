@@ -1,5 +1,6 @@
 #ifdef __CINT__
 
+#pragma link C++ class AliMultDepSpecAnalysisTask+;
 #pragma link C++ class AliMeanPtAnalysisTask+;
 #pragma link C++ class AlidNdPtHelper+;
 #pragma link C++ class AliAnalysisTaskCutTest+;
@@ -30,6 +31,7 @@
 #pragma link C++ class AliAnalysisTaskSEITSsaSpectra+;
 #pragma link C++ class AliAnalysisTaskQAHighPtDeDxTest+;
 #pragma link C++ class AliAnalysisTaskPPvsMult+;
+#pragma link C++ class AliAnalysisTaskSpherocity+;
 #pragma link C++ class AliAnalysisCombinedHadronSpectra+;
 #pragma link C++ class AliAnalysisTPCTOFpA+;
 #pragma link C++ class TOFSpectrappAnalysis+;
@@ -73,7 +75,9 @@
 #pragma link C++ class AliAnalysisPIDParticle+;
 #pragma link C++ class AliAnalysisPIDTrack+;
 #pragma link C++ class AliAnalysisPIDV0+;
+#pragma link C++ class AliAnalysisPIDCascade+;
 #pragma link C++ class AliAnalysisTaskTPCTOFPID+;
+#pragma link C++ class AliAnalysisTaskTPCTOFCascade+;
 
 #pragma link C++ class AliAnalysisTaskSEITSsaSpectraMultiplicity+;
 

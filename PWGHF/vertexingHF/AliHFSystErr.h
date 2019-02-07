@@ -190,6 +190,9 @@ class AliHFSystErr : public TNamed
   void InitD0toKpi2013pPb60100ZNA();
 
   void InitD0toKpi2016pPb010ZNA();
+  void InitD0toKpi2016pPb1020ZNA();
+  void InitD0toKpi2016pPb2040ZNA();
+  void InitD0toKpi2016pPb4060ZNA();
   void InitD0toKpi2016pPb60100ZNA();
   
   void InitD0toKpi2013pPb020CL1();
@@ -234,6 +237,9 @@ class AliHFSystErr : public TNamed
   void InitDplustoKpipi2016pPb4070trkl();
   void InitDplustoKpipi2016pPb70200trkl();
   void InitDplustoKpipi2016pPb010ZNA();
+  void InitDplustoKpipi2016pPb1020ZNA();
+  void InitDplustoKpipi2016pPb2040ZNA();
+  void InitDplustoKpipi2016pPb4060ZNA();
   void InitDplustoKpipi2016pPb60100ZNA();
 
  private:
@@ -258,6 +264,7 @@ class AliHFSystErr : public TNamed
   void InitD0toKpi2011PbPb010();
   void InitD0toKpi2013pPb0100();
   void InitD0toKpi2016pPb0100();
+  void InitD0toKpi2016pPb5TeV_finebins();
   void InitD0toKpi2013pPb0100LowPtAn();
   void InitD0toKpi2016pPb0100LowPtAn();
 
@@ -360,7 +367,7 @@ class AliHFSystErr : public TNamed
   Bool_t fIs5TeVAnalysis; /// flag for the pp5TeV analysis
   Bool_t fIsBDTAnalysis;   /// flag for the Lc BDT analysis and Ds BDT analysis
   Bool_t fIsCentScan;      /// flag fot the PbPb centrality scan
-  Bool_t fStandardBins;    /// flag for the standard bins in pp@5TeV
+  Bool_t fStandardBins;    /// flag for the standard bins in pp@5TeV and pPb@5TeV
   Bool_t fIsRapidityScan;  /// flag for the pPb vs y measurement
 
   /// \cond CLASSIMP    

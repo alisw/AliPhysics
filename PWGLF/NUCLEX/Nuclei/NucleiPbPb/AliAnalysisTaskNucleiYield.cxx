@@ -120,6 +120,8 @@ AliAnalysisTaskNucleiYield::AliAnalysisTaskNucleiYield(TString taskname)
    ,fPtShapeFunction{kNoPtShape}
    ,fPtShapeMaximum{0.f}
    ,fITSelectronRejectionSigma{-1.}
+   ,fBeamRapidity{0.f}
+   ,fEstimator{0}
    ,fEnableFlattening{false}
    ,fSaveTrees{false}
    ,fRecNucleus{}
@@ -319,7 +321,7 @@ void AliAnalysisTaskNucleiYield::UserExec(Option_t *){
   bool EventAccepted = fEventCut.AcceptEvent(ev);
 
   /// The centrality selection in PbPb uses the percentile determined with V0.
-  float centrality = fEventCut.GetCentrality();
+  float centrality = fEventCut.GetCentrality(fEstimator);
 
   std::array <AliEventCuts::NormMask,4> norm_masks {
     AliEventCuts::kAnyEvent,
@@ -526,7 +528,7 @@ bool AliAnalysisTaskNucleiYield::AcceptTrack(AliAODTrack *track, Double_t dca[2]
   fCutVec.SetPtEtaPhiM(track->Pt() * fCharge, track->Eta(), track->Phi(), fPDGMass);
   if (!(status & AliVTrack::kTPCrefit) && fRequireTPCrefit) return false;
   if (track->Eta() < fRequireEtaMin || track->Eta() > fRequireEtaMax) return false;
-  if (fCutVec.Rapidity() < fRequireYmin || fCutVec.Rapidity() > fRequireYmax) return false;
+  if (fCutVec.Rapidity() < fRequireYmin + fBeamRapidity || fCutVec.Rapidity() > fRequireYmax + fBeamRapidity) return false;
   AliAODVertex *vtx1 = (AliAODVertex*)track->GetProdVertex();
   if(Int_t(vtx1->GetType()) == AliAODVertex::kKink && fRequireNoKinks) return false;
   if (track->Chi2perNDF() > fRequireMaxChi2) return false;

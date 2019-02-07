@@ -19,9 +19,9 @@ Double_t innerPadHeight;// not touch, set internally
 Double_t innerPadWidth;// not touch, set internally
 Double_t referencePadHeight=0.44; 
 TString strsyst="pp";
-TString sets[nSets]={"pp","Perugia0","Perugia2010","Perugia2011","PYTHIA8","POWHEG","EPOS3"};
-TString setsBoost[nSets]={"pp","Perugia0","Perugia2010","Perugia2011","PYTHIA8","POWHEG","EPOS3"};
-Bool_t includeset[nSets]={kTRUE,kTRUE,kTRUE,kTRUE,kTRUE,kTRUE,kFALSE};
+TString sets[nSets]={"pp","Perugia0","Perugia2010","Perugia2011","PYTHIA8","HERWIG","POWHEG"};
+TString setsBoost[nSets]={"pp","Perugia0","Perugia2010","Perugia2011","PYTHIA8","HERWIG","POWHEG"};
+Bool_t includeset[nSets]={kTRUE,kTRUE,kTRUE,kTRUE,kTRUE,kTRUE,kTRUE};
 void SetIncludePerugia0(Bool_t incl){
   includeset[1]=incl;
 }
@@ -34,11 +34,14 @@ void SetIncludePerugia2011(Bool_t incl){
 void SetIncludePYTHIA8(Bool_t incl){
   includeset[4]=incl;
 }
-void SetIncludePOWHEG(Bool_t incl){
+void SetIncludeHERWIG(Bool_t incl){
   includeset[5]=incl;
 }
-void SetIncludeEPOS(Bool_t incl){
+void SetIncludePOWHEG(Bool_t incl){
   includeset[6]=incl;
+}
+void IncludeModel(Int_t imod,Bool_t incl){
+  includeset[imod+1]=incl;
 }
 void SetIncludeAllMCmodels(Bool_t incl=kTRUE){
   for(Int_t j=1;j<nSets;j++){
@@ -47,7 +50,7 @@ void SetIncludeAllMCmodels(Bool_t incl=kTRUE){
 }
 const Int_t nmodels=7;// does not matter that they are 6 maximum now; this is used only to define the 2 arrays modelColors and modelMarkerStyle
 Bool_t splitLegendMC=kFALSE;
-Color_t modelColors[nmodels]={kRed+2,kCyan,kGreen+2,kMagenta+1,kBlue,kOrange+1,kViolet};
+Color_t modelColors[nmodels]={kRed+2,kCyan,kGreen+2,kMagenta+1,kOrange+1,kBlue,kViolet};
 Int_t modelMarkerStyle[nmodels]={kOpenSquare,kOpenCircle,kOpenDiamond,3,28,26,33};
 TString pthadron[nbinAssocpt]={"0.3to99.0","0.3to1.0","1.0to99.0","1.0to99.0","1.0to2.0","2.0to3.0"};
 TString strmesonpt[nbinDpt]={"3to5","5to8","8to16","16to24"};
@@ -965,10 +968,10 @@ void LoadFileNamesAll(){
 	  if(iset==0){
 	    filenames[iset][kassoc][jmes]=Form("%s/%sAverage%sDzeroDstarDplus%s_assoc%s.root",inputdatadirectory.Data(),avType.Data(),sets[iset].Data(),strmesonpt[jmes].Data(),pthadron[kassoc].Data());//pp data
 	  }
-          else if(iset>=1 && iset<=4){ //add "wBoost"
+          else if(iset>=1 && iset<=5){ //add "wBoost"
             filenames[iset][kassoc][jmes]=Form("%s/%sCorrelationPlots%sPtAveragefromC%s_ptAssall%s_DeltaEta10.root",inputtemplatedirecotry.Data(),strsyst.Data(),setsBoost[iset].Data(),strmesonMCpt[jmes].Data(),pthadron[kassoc].Data());//Pythia templates
           }
-	  else if(iset==5){
+	  else if(iset==6){
 	    filenames[iset][kassoc][jmes] = Form("%s/%sCorrelationPlots%sPtAveragefromC%s_ptAssall%s_DeltaEta10.root",inputtemplatedirecotry.Data(),"",sets[iset].Data(),strmesonMCpt[jmes].Data(),pthadron[kassoc].Data());//POWHEG
 	  }
 	  else{
@@ -1208,8 +1211,8 @@ printf("in max %f %f\n",ylegMin,ylegMax);
     if(hMC2)legend->AddEntry(hMC2,"PYTHIA6, Perugia 2010","l");
     if(hMC3)legend->AddEntry(hMC3,"PYTHIA6, Perugia 2011","l");   
     if(hMC4)legend->AddEntry(hMC4,"PYTHIA8, Tune 4C","l");
-    if(hMC5)legend->AddEntry(hMC5,"POWHEG+PYTHIA6","l");
-    if(hMC6)legend->AddEntry(hMC6,"EPOS 3.117","l");
+    if(hMC5)legend->AddEntry(hMC5,"HERWIG","l");
+    if(hMC6)legend->AddEntry(hMC6,"POWHEG+PYTHIA6","l");
     
 
     //legend->AddEntry(hMC1,"PYTHIA6, Perugia0","lep");
@@ -1308,8 +1311,8 @@ printf("in max %f %f\n",ylegMin,ylegMax);
     if(hMC2)legend->AddEntry(hMC2,"PYTHIA6, Perugia 2010","l");
     if(hMC3)legend->AddEntry(hMC3,"PYTHIA6, Perugia 2011","l");   
     if(hMC4)legend->AddEntry(hMC4,"PYTHIA8, Tune 4C","l");
-    if(hMC5)legend->AddEntry(hMC5,"POWHEG+PYTHIA6","l");
-    if(hMC6)legend->AddEntry(hMC6,"EPOS 3.117","l");
+    if(hMC5)legend->AddEntry(hMC5,"HERWIG","l");
+    if(hMC6)legend->AddEntry(hMC6,"POWHEG+PYTHIA6","l");
     
 
     //legend->AddEntry(hMC1,"PYTHIA6, Perugia0","lep");

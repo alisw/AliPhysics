@@ -51,7 +51,7 @@ AliAnalysisTaskEMCALPhotonIsolation* AddTaskEMCALPhotonIsolation(
                                                                  const Float_t          iWidthSSsmear             = 0.,
                                                                  const Float_t          iMean_SSsmear             = 0.,
                                                                  const Bool_t           iExtraIsoCuts             = kFALSE,
-                                                                 const Bool_t           isQA                      = kFALSE,
+								 const Bool_t		SetListNameOutput 	  = kFALSE, //add the output type to the EmcalList name
                                                                  TString                configBasePath            = "",
                                                                  const Int_t            bWhichToSmear             = 0,
                                                                  const Int_t            minNLM                    = 1,
@@ -116,6 +116,10 @@ AliAnalysisTaskEMCALPhotonIsolation* AddTaskEMCALPhotonIsolation(
   else{
     myContName = Form("Analysis_Neutrals%s",clusInfix.Data());
   }
+
+  if(SetListNameOutput){
+	  myContName.Append(Form("_output%d",iOutput));
+  }
   
   // For the 2012 EGA/L1 analysis, only events with EGA/L1 recalc patches are considered
   // (This configuration requires a TriggerMaker wagon in the train!!!)
@@ -157,14 +161,15 @@ AliAnalysisTaskEMCALPhotonIsolation* AddTaskEMCALPhotonIsolation(
   // #### Define analysis task
   AliAnalysisTaskEMCALPhotonIsolation* task = new AliAnalysisTaskEMCALPhotonIsolation("Analysis",bHisto);
   
-//  TString configFile("config_PhotonIsolation.C"); // Name of config file
-//  //  if(gSystem->AccessPathName(configFile.Data())){ // Check for exsisting file and delete it
-//  //    gSystem->Exec(Form("rm %s",configFile.Data()));
-//  //  }
-//
+#if defined(__CINT__)
+  TString configFile("config_PhotonIsolation.C"); // Name of config file
+  //  if(gSystem->AccessPathName(configFile.Data())){ // Check for exsisting file and delete it
+  //    gSystem->Exec(Form("rm %s",configFile.Data()));
+  //  }
+
 //  if(configBasePath.IsNull()){ // Check if a specific config should be used and copy appropriate file
-//    configBasePath="$ALICE_PHYSICS/PWGGA/EMCALTasks/macros";
-//    gSystem->Exec(Form("cp %s/%s .",configBasePath.Data(),configFile.Data()));
+ configBasePath="$ALICE_PHYSICS/PWGGA/EMCALTasks/macros";
+ gSystem->Exec(Form("cp %s/%s .",configBasePath.Data(),configFile.Data()));
 //  }
 //  else if(configBasePath.Contains("alien:///")){
 //    gSystem->Exec(Form("alien_cp %s/%s .",configBasePath.Data(),configFile.Data()));
@@ -172,34 +177,35 @@ AliAnalysisTaskEMCALPhotonIsolation* AddTaskEMCALPhotonIsolation(
 //  else{
 //    gSystem->Exec(Form("cp %s/%s .",configBasePath.Data(),configFile.Data()));
 //  }
-//
-//  configBasePath=Form("%s/",gSystem->pwd());
-//  TMD5* MD5calc = new TMD5();
-//  TMD5* MD5sum = MD5calc->FileChecksum(configFile.Data());
-//  TString configMD5 = MD5sum->AsString();
-//  //configMD5.Resize(7); // Short hash value for usable extension
-//  TString configFileMD5 = configFile;
-//  //TDatime time; // Get timestamp
-//  //Int_t timeStamp = time.GetTime();
-//  configFileMD5.ReplaceAll(".C",Form("_%s.C",configMD5.Data()));
-//
-//  if(gSystem->AccessPathName(configFileMD5.Data())){ // Add additional identifier if file exists
-//    gSystem->Exec(Form("mv %s %s",configFile.Data(),configFileMD5.Data()));
-//  }
-//  else{
-//    //while(!gSystem->AccessPathName(configFileMD5.Data())){
-//    //  configFileMD5.ReplaceAll(".C","_1.C");
-//    //}
-//    //gSystem->Exec(Form("mv %s %s",configFile.Data(),configFileMD5.Data()));
-//    gSystem->Exec(Form("rm %s",configFile.Data()));
-//  }
-//
-//  TString configFilePath(configBasePath+"/"+configFileMD5);
-#if defined(__CLING__)
-  config_PhotonIsolation();
-#elif defined(__CINT__)
-  gROOT->LoadMacro("$ALICE_PHYSICS/PWGGA/EMCALTasks/macros/config_PhotonIsolation.C");
+
+  configBasePath=Form("%s/",gSystem->pwd());
+  TMD5* MD5calc = new TMD5();
+  TMD5* MD5sum = MD5calc->FileChecksum(configFile.Data());
+  TString configMD5 = MD5sum->AsString();
+  configMD5.Resize(8); // Short hash value for usable extension
+  TString configFileMD5 = configFile;
+  TDatime time; // Get timestamp
+  Int_t timeStamp = time.GetTime();
+  configFileMD5.ReplaceAll(".C",Form("_%s_%i.C",configMD5.Data(),timeStamp));
+
+  if(gSystem->AccessPathName(configFileMD5.Data())){ // Increase timeStamp by 1 if file exists
+    gSystem->Exec(Form("mv %s %s",configFile.Data(),configFileMD5.Data()));
+  }
+  else{
+    while(!gSystem->AccessPathName(configFileMD5.Data())){
+      timeStamp++;
+      configFileMD5 =configFile;
+      configFileMD5.ReplaceAll(".C",Form("_%s_%i.C",configMD5.Data(),timeStamp));
+    }
+    gSystem->Exec(Form("mv %s %s",configFile.Data(),configFileMD5.Data()));
+  }
+
+  TString configFilePath(configBasePath+"/"+configFileMD5);
+  gROOT->LoadMacro(configFilePath.Data());
+
+  //gROOT->LoadMacro("$ALICE_PHYSICS/PWGGA/EMCALTasks/macros/config_PhotonIsolation.C");
 #endif
+  config_PhotonIsolation();
 //  Printf("Path of config file: %s\n",configFilePath.Data());
 
   // Set histrogram bins and ranges
@@ -224,7 +230,6 @@ AliAnalysisTaskEMCALPhotonIsolation* AddTaskEMCALPhotonIsolation(
   task->SetCTMdeltaPhi(TMdphi);
   task->SetCTMdeltaEtaIso(TMdetaIso);
   task->SetCTMdeltaPhiIso(TMdphiIso);
-  task->SetQA(isQA);
   task->SetIsoMethod(iIsoMethod);
   task->SetEtIsoMethod(iEtIsoMethod);
   task->SetUEMethod(iUEMethod);

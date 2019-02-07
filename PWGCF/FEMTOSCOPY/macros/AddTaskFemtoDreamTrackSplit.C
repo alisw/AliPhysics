@@ -2,12 +2,12 @@
 #include "TSystem.h"
 AliAnalysisTaskSE *AddTaskFemtoDreamTrackSplit(
     bool isMC = false, bool isESD = false, TString CentEst = "kInt7",
-    bool notpp = true,                       // 1
+    bool notpp = false,                      // 1
     bool fineBinning = true,                 // 2
     bool DCAPlots = false,                   // 3
     bool CPAPlots = false,                   // 4
     bool MomReso = false,                    // 5
-    bool etaPhiPlotsAtTPCRadii = false,      // 6
+    bool etaPhiPlotsAtTPCRadii = true,       // 6
     bool CombSigma = false,                  // 7
     bool PileUpRej = true,                   // 8
     bool mTkTPlot = false,                   // 9
@@ -15,8 +15,8 @@ AliAnalysisTaskSE *AddTaskFemtoDreamTrackSplit(
     bool MultvsCentPlot = false,             // 11
     bool dPhidEtaPlots = false,              // 12
     bool eventMixing = true,                 // 13
-    bool phiSpin = true,                     // 14
-    bool stravinskyPhiSpin = true,           // 15
+    bool phiSpin = false,                    // 14
+    bool stravinskyPhiSpin = false,          // 15
     bool ContributionSplitting = false,      // 16
     bool ContributionSplittingDaug = false,  // 17
     bool RunNumberQA = false,                // 18
@@ -365,6 +365,7 @@ AliAnalysisTaskSE *AddTaskFemtoDreamTrackSplit(
     centBins.push_back(90);
     config->SetCentBins(centBins);
   }
+  config->SetExtendedQAPairs(config->GetStandardPairs());
   config->SetZBins(ZVtxBins);
   if (MomReso) {
     if (isMC) {
@@ -375,12 +376,7 @@ AliAnalysisTaskSE *AddTaskFemtoDreamTrackSplit(
     }
   }
   if (etaPhiPlotsAtTPCRadii) {
-    if (isMC) {
-      config->SetPhiEtaBinnign(true);
-    } else {
-      std::cout << "You are trying to request the Eta Phi Plots without MC "
-                   "Info; fix it wont work! \n";
-    }
+    config->SetPhiEtaBinnign(true);
   }
   if (DeltaEtaDeltaPhiCut) {
     config->SetDeltaEtaMax(0.01);

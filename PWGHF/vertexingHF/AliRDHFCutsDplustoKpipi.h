@@ -25,7 +25,7 @@ class AliRDHFCutsDplustoKpipi : public AliRDHFCuts
 
   AliRDHFCutsDplustoKpipi(const char* name="CutsDplustoKpipi");
   
-  virtual ~AliRDHFCutsDplustoKpipi(){};
+  virtual ~AliRDHFCutsDplustoKpipi();
   AliRDHFCutsDplustoKpipi(const AliRDHFCutsDplustoKpipi& source);
   AliRDHFCutsDplustoKpipi& operator=(const AliRDHFCutsDplustoKpipi& source); 
 

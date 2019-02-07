@@ -2013,7 +2013,7 @@ Bool_t AliAnalysisTaskMinijet::CheckEvent(const Bool_t recVertex)
         
         //rec
         if(recVertex==true){
-            //if(fAODEvent->IsPileupFromSPD(3,0.8)) return false;
+            if(fAODEvent->IsPileupFromSPD(3,0.8)) return false;
             
             AliAODVertex*	vertex= (AliAODVertex*)fAODEvent->GetPrimaryVertex();
             if(!vertex) return false;

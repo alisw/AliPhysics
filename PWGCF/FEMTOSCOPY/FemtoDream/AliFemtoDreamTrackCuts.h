@@ -116,6 +116,10 @@ class AliFemtoDreamTrackCuts {
     fCheckPileUpITS = check;
   }
   ;
+  void SetCheckPileUpSPDTOF(bool check) {
+    fCheckPileUpSPDTOF = check;
+  }
+  ;
   void SetCheckPileUpTOF(bool check) {
     fCheckPileUpTOF = check;
   }
@@ -208,6 +212,8 @@ class AliFemtoDreamTrackCuts {
     return fHists->GetHistList();
   }
   ;
+  UInt_t GetFilterBit() const { return fFilterBit; }
+
   TList *GetMCQAHists() {
     return fMCHists?fMCHists->GetHistList():nullptr;
   }
@@ -246,6 +252,7 @@ class AliFemtoDreamTrackCuts {
   bool fCheckFilterBit;               // This one is used for AODs
   bool fCheckESDFiltering;  // This one checks if the filtering of ESDs to AODs with FB128 passes
   bool fCheckPileUpITS;               //
+  bool fCheckPileUpSPDTOF;               //
   bool fCheckPileUpTOF;               //
   bool fCheckPileUp;                //  Should only be used for Daughters of v0s
   UInt_t fFilterBit;                  //

@@ -72,8 +72,8 @@ class AliAnalysisTaskTOFTrigger : public AliAnalysisTaskSE {
   TH1F *hTrackPt;				//!
   TH1I *hNMaxiPadIn;				//!
   TH1I *hNCrossTracks;				//!
+  TH2I *hBadMaxiPadMask;			//!
 
-  Bool_t fIsPass1;
   Bool_t fGeomLoaded;
   TGeoHMatrix matOrig[18]; 
   TGeoHMatrix matCurr[18];
@@ -92,7 +92,7 @@ class AliAnalysisTaskTOFTrigger : public AliAnalysisTaskSE {
   AliAnalysisTaskTOFTrigger(const AliAnalysisTaskTOFTrigger&); //not implemented
   AliAnalysisTaskTOFTrigger& operator =(const AliAnalysisTaskTOFTrigger&); //not implemented
 
-  ClassDef(AliAnalysisTaskTOFTrigger, 15);
+  ClassDef(AliAnalysisTaskTOFTrigger, 17);
 };
 
 #endif

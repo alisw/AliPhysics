@@ -32,6 +32,7 @@
 #include <THistManager.h>
 #include <TCustomBinning.h>
 #include <TLinearBinning.h>
+#include <TCustomBinning.h>
 
 #include "AliAODInputHandler.h"
 #include "AliAnalysisManager.h"
@@ -74,14 +75,30 @@ AliAnalysisTaskEmcalJetEnergyScale::~AliAnalysisTaskEmcalJetEnergyScale() {
 void AliAnalysisTaskEmcalJetEnergyScale::UserCreateOutputObjects(){
   AliAnalysisTaskEmcal::UserCreateOutputObjects();
 
-  TLinearBinning jetPtBinning(300, 0., 300.), nefbinning(100, 0., 1.), ptdiffbinning(200, -1., 1.), jetEtaBinning(100, -0.9, 0.9), jetPhiBinning(100, 0., TMath::TwoPi());
+  TLinearBinning jetPtBinningDet(300, 0., 300.), jetPtBinningPart(500, 0., 500), nefbinning(100, 0., 1.), ptdiffbinning(200, -1., 1.), jetEtaBinning(100, -0.9, 0.9), jetPhiBinning(100, 0., TMath::TwoPi());
 
-  const TBinning *diffbinning[3] = {&jetPtBinning, &nefbinning, &ptdiffbinning},
-                 *corrbinning[3] = {&jetPtBinning, &jetPtBinning, &nefbinning},
-                 *effbinning[3] = {&jetPtBinning, &jetEtaBinning, &jetPhiBinning};
+  const TBinning *diffbinning[3] = {&jetPtBinningPart, &nefbinning, &ptdiffbinning},
+                 *corrbinning[3] = {&jetPtBinningPart, &jetPtBinningDet, &nefbinning},
+                 *effbinning[3] = {&jetPtBinningPart, &jetEtaBinning, &jetPhiBinning};
+
+  TCustomBinning jetPtBinningCoarseDet, jetPtBinningCoarsePart;
+  jetPtBinningCoarseDet.SetMinimum(20.);
+  jetPtBinningCoarseDet.AddStep(40., 2.);
+  jetPtBinningCoarseDet.AddStep(60., 5.);
+  jetPtBinningCoarseDet.AddStep(120., 10.);
+  jetPtBinningCoarseDet.AddStep(200., 20.);
+  jetPtBinningCoarsePart.SetMinimum(0);
+  jetPtBinningCoarsePart.AddStep(20., 20.);
+  jetPtBinningCoarsePart.AddStep(80., 10.);
+  jetPtBinningCoarsePart.AddStep(200., 20.);
+  jetPtBinningCoarsePart.AddStep(280., 40.);
+  jetPtBinningCoarsePart.AddStep(220., 220.);
 
   fHistos = new THistManager("energyScaleHistos");
   fHistos->CreateTH1("hEventCounter", "Event counter", 1, 0.5, 1.5);
+  fHistos->CreateTH1("hSpectrumTrueFull", "jet pt spectrum part level, not truncated", jetPtBinningCoarsePart);
+  fHistos->CreateTH1("hSpectrumTrueTruncated", "jet pt spectrum particle level, truncated", jetPtBinningCoarsePart);
+  fHistos->CreateTH2("hJetResponseCoarse", "Response matrix, coarse binning", jetPtBinningCoarseDet, jetPtBinningCoarsePart);
   fHistos->CreateTHnSparse("hPtDiff", "pt diff det/part", 3., diffbinning, "s");
   fHistos->CreateTHnSparse("hPtCorr", "Correlation det pt / part pt", 3., corrbinning, "s");
   fHistos->CreateTHnSparse("hPartJetsAccepted", "Accepted particle level jets", 3, effbinning, "s");
@@ -127,6 +144,9 @@ Bool_t AliAnalysisTaskEmcalJetEnergyScale::Run(){
            pointDiff[3] = {partjet->Pt(), detjet->NEF(), (detjet->Pt()-partjet->Pt())/partjet->Pt()};
     fHistos->FillTHnSparse("hPtDiff", pointDiff);
     fHistos->FillTHnSparse("hPtCorr", pointCorr);
+    fHistos->FillTH2("hJetResponseCoarse", detjet->Pt(), partjet->Pt());
+    fHistos->FillTH1("hSpectrumTrueFull", partjet->Pt());
+    if(detjet->Pt() >= 20. && detjet->Pt() < 200.) fHistos->FillTH1("hSpectrumTrueTruncated", partjet->Pt());
   }
 
   // efficiency x acceptance: Add histos for all accepted and reconstucted accepted jets

@@ -1002,19 +1002,6 @@ void AliAnalysisTaskEMCALPhotonIsolation::UserCreateOutputObjects(){
 	  fOutput->Add(fGenPromptPhotonSel);
 	}
 
-	if(!fQA){
-	  fTrackMult = new TH1F ("hTrackMult","Tracks multiplicity Distribution",100,0.,100.);
-	  fTrackMult->Sumw2();
-	  fOutput->Add(fTrackMult);
-
-	  fEtaPhiClus = new TH2F ("hEtaPhiClusActivity", "", netabins, etamin, etamax, nphibins, phimin, phimax);
-	  // fEtaPhiClus->Sumw2();
-	  fOutput->Add(fEtaPhiClus);
-
-	  fEtaPhiClusAftSel = new TH2F ("hEtaPhiClusAfterSelection", "", netabins, etamin, etamax, nphibins, phimin, phimax);
-	  fOutput->Add(fEtaPhiClusAftSel);
-	}
-
 	if(fQA){
 	  fPtvsDetavsDphi = new TH3F("hPtvsDetavsDphi","Cluster-track matching vs. cluster energy", 120, 0., 60., 200, -0.05, 0.05, 200, -0.05, 0.05);
 	  fPtvsDetavsDphi->Sumw2();
@@ -1044,21 +1031,9 @@ void AliAnalysisTaskEMCALPhotonIsolation::UserCreateOutputObjects(){
     // Initialize the common QA histograms
   if(fQA){
       // Include QA plots to the OutputList
-    fTrackMult = new TH1F ("hTrackMult","Tracks multiplicity Distribution",100,0.,100.);
-    fTrackMult->Sumw2();
-    fOutput->Add(fTrackMult);
-
     fClusTime = new TH1F("hClusTime_NC","Time distribution for Clusters",800,-50.,50.);
     fClusTime->Sumw2();
     fOutput->Add(fClusTime);
-
-    fEtaPhiClus = new TH2F ("hEtaPhiClusActivity", "", netabins, etamin, etamax, nphibins, phimin, phimax);
-      // fEtaPhiClus->Sumw2();
-    fOutput->Add(fEtaPhiClus);
-
-    fEtaPhiClusAftSel = new TH2F ("hEtaPhiClusAfterSelection", "", netabins, etamin, etamax, nphibins, phimin, phimax);
-      // fEtaPhiClusAftSel->Sumw2();
-    fOutput->Add(fEtaPhiClusAftSel);
 
     if(fWho != 2){
       fDeltaETAClusTrack = new TH1F("h_Dz","Track-Cluster Dz ",1000,-0.5,0.5);
@@ -1177,6 +1152,19 @@ void AliAnalysisTaskEMCALPhotonIsolation::UserCreateOutputObjects(){
   fCutFlowClusters->GetXaxis()->SetBinLabel(9, "5 GeV lower cut");
   fCutFlowClusters->Sumw2();
   fOutput->Add(fCutFlowClusters);
+
+  fTrackMult = new TH1F ("hTrackMult","Tracks multiplicity Distribution",100,0.,100.);
+  fTrackMult->Sumw2();
+  fOutput->Add(fTrackMult);
+
+  fEtaPhiClus = new TH2F ("hEtaPhiClusActivity", "", netabins, etamin, etamax, nphibins, phimin, phimax);
+    // fEtaPhiClus->Sumw2();
+  fOutput->Add(fEtaPhiClus);
+
+  fEtaPhiClusAftSel = new TH2F ("hEtaPhiClusAfterSelection", "", netabins, etamin, etamax, nphibins, phimin, phimax);
+    // fEtaPhiClusAftSel->Sumw2();
+  fOutput->Add(fEtaPhiClusAftSel);
+
 
   if(fWho != 2){
     fSPDclustVsSPDtracklets = new TH2F("hSPDclustVsSPDtracklets","Number of SPD clusters VS number of SPD tracklets in events with |Zvtx| < 10",100,0,200,250,0,1000);
@@ -1649,25 +1637,24 @@ Bool_t AliAnalysisTaskEMCALPhotonIsolation::Run()
     TLorentzVector vecCOI;
     coi->GetMomentum(vecCOI, fVertex, AliVCluster::kNonLinCorr);
 
-    if(fIsMC && fNonLinRecoEnergyScaling)
-      fPTbeforeNonLinScaling->Fill(vecCOI.Pt());
-
-    if(fIsMC && fNonLinRecoEnergyScaling)
-      NonLinRecoEnergyScaling(vecCOI);
+    if(fIsMC && fNonLinRecoEnergyScaling){
+        if(fWho==2){
+	    fPTbeforeNonLinScaling->Fill(vecCOI.Pt());
+	}
+        NonLinRecoEnergyScaling(vecCOI);
+    }
 
     fPT->Fill(vecCOI.Pt());
 
     if(fQA)
       FillQAHistograms(coi,vecCOI);
 
-    if(fWho == 2 && !fQA)
-      fEtaPhiClus->Fill(vecCOI.Eta(),vecCOI.Phi());
+    fEtaPhiClus->Fill(vecCOI.Eta(),vecCOI.Phi());
 
     Bool_t isSelected = SelectCandidate(coi);
 
     if(isSelected){
-      if(fQA || (fWho == 2 && !fQA))
-	fEtaPhiClusAftSel->Fill(vecCOI.Eta(),vecCOI.Phi());
+      fEtaPhiClusAftSel->Fill(vecCOI.Eta(),vecCOI.Phi());
 
       for(auto it : tracksANA->accepted()){
 	AliVTrack *tr = static_cast<AliVTrack*>(it);
@@ -1709,11 +1696,13 @@ Bool_t AliAnalysisTaskEMCALPhotonIsolation::Run()
       TLorentzVector vecCOI;
       coi->GetMomentum(vecCOI, fVertex, AliVCluster::kNonLinCorr);
 
-      if(fIsMC && fNonLinRecoEnergyScaling)
-	fPTbeforeNonLinScaling->Fill(vecCOI.Pt());
+      if(fIsMC && fNonLinRecoEnergyScaling){
+          if(fWho==2){
+	  fPTbeforeNonLinScaling->Fill(vecCOI.Pt());
+	  }
 
-      if(fIsMC && fNonLinRecoEnergyScaling)
-	NonLinRecoEnergyScaling(vecCOI);
+	  NonLinRecoEnergyScaling(vecCOI);
+      }
 
       fPT->Fill(vecCOI.Pt());
 
@@ -1723,14 +1712,12 @@ Bool_t AliAnalysisTaskEMCALPhotonIsolation::Run()
       if(fQA)
 	FillQAHistograms(coi,vecCOI);
 
-      if(fWho == 2 && !fQA)
-	fEtaPhiClus->Fill(vecCOI.Eta(),vecCOI.Phi());
+      fEtaPhiClus->Fill(vecCOI.Eta(),vecCOI.Phi());
 
       Bool_t isSelected = SelectCandidate(coi);
 
       if(isSelected){
-	if(fQA || (fWho == 2 && !fQA))
-	  fEtaPhiClusAftSel->Fill(vecCOI.Eta(),vecCOI.Phi());
+	fEtaPhiClusAftSel->Fill(vecCOI.Eta(),vecCOI.Phi());
 
 	for(auto it : tracksANA->accepted()){
 	  AliVTrack *tr = static_cast<AliVTrack*>(it);
@@ -1791,7 +1778,6 @@ void AliAnalysisTaskEMCALPhotonIsolation::FillQAHistograms(AliVCluster *coi, TLo
 
   if(fWho != 2)
     fE->Fill(vecCOI.E());
-  fEtaPhiClus->Fill(vecCOI.Eta(),vecCOI.Phi());
 
   Double_t checktof = coi->GetTOF()*1e9;
   fClusTime->Fill(checktof);
@@ -2906,7 +2892,7 @@ void AliAnalysisTaskEMCALPhotonIsolation::EtIsoClusEtaBand(TLorentzVector c, Dou
     etaBandclus = sumEnergyEtaBandClus;
   }
 
-  if(!fAreasPerEvent)
+  if(fWho == 2 && !fAreasPerEvent)
     fPtVsConeVsEtaBand->Fill(c.Pt(), ptIso, etaBandclus);
 
   Double_t isoConeArea = 0.; // Cluster (eta, phi)-dependent cone area
@@ -3801,11 +3787,9 @@ void AliAnalysisTaskEMCALPhotonIsolation::LookforParticle(Int_t clusterlabel, Do
             else
               clusterFromPromptPhoton=7; // Contribution from one daughter
           }
-	  if(fWho != 2){
 	    fpi0VSclusterVSIsolation->Fill(grandma->E()*TMath::Sin(grandma->Theta()), energyCLS, isolation);
 	    fpi0VSclusterVSM02->Fill(grandma->E()*TMath::Sin(momP2Check->Theta()), energyCLS, ss);
 	    fpi0VSM02VSIsolation->Fill(grandma->E()*TMath::Sin(grandma->Theta()), ss, isolation);
-	  }
         }
         else
           clusterFromPromptPhoton=8; // Undefined
@@ -4347,8 +4331,7 @@ Bool_t AliAnalysisTaskEMCALPhotonIsolation::FillGeneralHistograms(AliVCluster *c
 
   const Int_t nTracks = tracksAna->GetNAcceptedTracks();
 
-  if(fQA || (fWho == 2 && !fQA))
-    fTrackMult->Fill(nTracks);
+  fTrackMult->Fill(nTracks);
 
     // Definition of the Array for Davide's Output
   const Int_t ndims =   fNDimensions;
@@ -4960,12 +4943,16 @@ void AliAnalysisTaskEMCALPhotonIsolation::AnalyzeMC(){
 
     mcpart = static_cast<AliAODMCParticle*>(fAODMCParticles->At(iTr));
 
+    if(fWho==2){
     fGenPromptPhotonSel->Fill(0.5);
+    }
 
     if(mcpart->GetStatus()>10)
       continue;
 
+    if(fWho==2){
     fGenPromptPhotonSel->Fill(1.5);
+    }
 
     if(!mcpart->IsPrimary())
       continue;
@@ -4973,13 +4960,17 @@ void AliAnalysisTaskEMCALPhotonIsolation::AnalyzeMC(){
     if(!mcpart->IsPhysicalPrimary())
       continue;
 
+    if(fWho==2){
     fGenPromptPhotonSel->Fill(2.5);
+    }
 
     pdg = mcpart->GetPdgCode();
     if(pdg != 22 /*|| mcpart->GetLabel()!=8*/)
       continue;
 
+    if(fWho==2){
     fGenPromptPhotonSel->Fill(3.5);
+    }
 
     momidx = mcpart->GetMother();
     if(momidx > 0 && momidx < nTracks){
@@ -4991,13 +4982,17 @@ void AliAnalysisTaskEMCALPhotonIsolation::AnalyzeMC(){
 
     if(mompdg != 22) continue;              // Discard particles whose mother is not a photon
 
+    if(fWho==2){
     fGenPromptPhotonSel->Fill(4.5);
+    }
 
     // if(fPythiaHeader->ProcessType() != 201 && fPythiaHeader->ProcessType() != 202) continue; // Discard particles which do not come from prompt photon processes
     // OR
     if(fmcHeader->GetEventType() != 14 && fmcHeader->GetEventType() != 29) continue; // Discard particles which do not come from prompt photon processes
 
+    if(fWho==2){
     fGenPromptPhotonSel->Fill(5.5);
+    }
 
     eta = mcpart->Eta();
     phi = mcpart->Phi();
@@ -5039,7 +5034,9 @@ void AliAnalysisTaskEMCALPhotonIsolation::AnalyzeMC(){
 	continue;
     }
 
+    if(fWho==2){
     fGenPromptPhotonSel->Fill(6.5);
+    }
 
     photonlabel = iTr;
     eT = mcpart->E()*(TMath::Sin(mcpart->Theta())); // Transform to transverse Energy

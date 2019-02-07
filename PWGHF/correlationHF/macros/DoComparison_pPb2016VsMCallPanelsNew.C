@@ -40,6 +40,9 @@ void SetIncludePOWHEG(Bool_t incl){
 void SetIncludeEPOS(Bool_t incl){
   includeset[6]=incl;
 }
+void IncludeModel(Int_t imod,Bool_t incl){
+  includeset[imod+1]=incl;
+}
 void SetIncludeAllMCmodels(Bool_t incl=kTRUE){
   for(Int_t j=1;j<nSets;j++){
     includeset[j]=incl;
@@ -960,13 +963,13 @@ void LoadFileNamesAll(){
 	    filenames[iset][kassoc][jmes]=Form("%s/%sAverage%sDzeroDstarDplus%s_assoc%s.root",inputdatadirectory.Data(),avType.Data(),sets[iset].Data(),strmesonpt[jmes].Data(),pthadron[kassoc].Data());//pPb data
 	  }
           else if(iset>=1 && iset<=4){ //add "wBoost"
-            filenames[iset][kassoc][jmes]=Form("%s/%sCorrelationPlots%sPtAveragefromC%s_ptAssall%s_DeltaEta10.root",inputtemplatedirecotry.Data(),strsyst.Data(),setsBoost[iset].Data(),strmesonMCpt[jmes].Data(),pthadron[kassoc].Data());//Pythia templates
+            filenames[iset][kassoc][jmes]=Form("%s/%sCorrelationPlots%sPtDzerofromC%s_ptAssall%s_DeltaEta10.root",inputtemplatedirecotry.Data(),strsyst.Data(),setsBoost[iset].Data(),strmesonMCpt[jmes].Data(),pthadron[kassoc].Data());//Pythia templates
           }
 	  else if(iset==5){
-	    filenames[iset][kassoc][jmes] = Form("%s/%sCorrelationPlots%sPtAveragefromC%s_ptAssall%s_DeltaEta10.root",inputtemplatedirecotry.Data(),"",sets[iset].Data(),strmesonMCpt[jmes].Data(),pthadron[kassoc].Data());//POWHEG
+	    filenames[iset][kassoc][jmes] = Form("%s/%sCorrelationPlots%sPtDzerofromC%s_ptAssall%s_DeltaEta10.root",inputtemplatedirecotry.Data(),"",sets[iset].Data(),strmesonMCpt[jmes].Data(),pthadron[kassoc].Data());//POWHEG
 	  }
 	  else{
-	    filenames[iset][kassoc][jmes] = Form("%s/%sCorrelationPlots%sPtAveragefromC%s_ptAssall%s_DeltaEta10.root",inputtemplatedirecotry.Data(),strsyst.Data(),sets[iset].Data(),strmesonMCpt[jmes].Data(),pthadron[kassoc].Data());//MC
+	    filenames[iset][kassoc][jmes] = Form("%s/%sCorrelationPlots%sPtDzerofromC%s_ptAssall%s_DeltaEta10.root",inputtemplatedirecotry.Data(),strsyst.Data(),sets[iset].Data(),strmesonMCpt[jmes].Data(),pthadron[kassoc].Data());//MC
 	  }
 	  cout<<iset<<"  "<<kassoc<<"  "<<jmes<<endl;
 	  cout<<filenames[iset][kassoc][jmes]<<endl;

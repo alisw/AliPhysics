@@ -1,31 +1,32 @@
 #include "TROOT.h"
 #include "TSystem.h"
-AliAnalysisTaskSE* AddTaskFemtoDream(bool isMC = false,
-                                     bool isESD = false,
-                                     TString CentEst = "kInt7",
-                                     bool notpp = true,  //1
-                                     bool fineBinning = true,  //2
-                                     bool DCAPlots = false,  //3
-                                     bool CPAPlots = false,  //4
-                                     bool MomReso = false,  //5
-                                     bool etaPhiPlotsAtTPCRadii = false,  //6
-                                     bool CombSigma = false,  //7
-                                     bool PileUpRej = true,  //8
-                                     bool mTkTPlot = false,  //9
-                                     bool kTCentPlot = false,  //10
-                                     bool MultvsCentPlot = false,  //11
-                                     bool dPhidEtaPlots = false,  //12
-                                     bool eventMixing = true,  //13
-                                     bool phiSpin = true,  //14
-                                     bool stravinskyPhiSpin = true,  //15
-                                     bool ContributionSplitting = false,  //16
-                                     bool ContributionSplittingDaug = false,  //17
-                                     bool RunNumberQA = false,  //18
-                                     int FilterBit = 128,  //19
-                                     bool InvMassPairs = false,  //20
-                                     bool DeltaEtaDeltaPhiCut = false,  //21
-                                     int SphericityRange = 0)  //22
-                                     {
+AliAnalysisTaskSE* AddTaskFemtoDream(
+    bool isMC = false, bool isESD = false, TString CentEst = "kInt7",
+    bool notpp = true,  //1
+    bool fineBinning = true,  //2
+    bool DCAPlots = false,  //3
+    bool CPAPlots = false,  //4
+    bool MomReso = false,  //5
+    bool etaPhiPlotsAtTPCRadii = false,  //6
+    bool CombSigma = false,  //7
+    bool PileUpRej = true,  //8
+    bool mTkTPlot = false,  //9
+    bool kTCentPlot = false,  //10
+    bool MultvsCentPlot = false,  //11
+    bool dPhidEtaPlots = false,  //12
+    bool eventMixing = true,  //13
+    bool phiSpin = true,  //14
+    bool stravinskyPhiSpin = true,  //15
+    bool ContributionSplitting = false,  //16
+    bool ContributionSplittingDaug = false,  //17
+    bool RunNumberQA = false,  //18
+    int FilterBit = 128,  //19
+    bool InvMassPairs = false,  //20
+    bool DeltaEtaDeltaPhiCut = false,  //21
+    int SphericityRange = 0, // 22
+    bool excludeUnwantedPairs = false, //23
+    bool stricterPileUpRej = false)  //24
+    {
   // 1    2     3     4     5     6     7    8    9      10   11     12   13    14    15    16   17
   //true,true,false,false,false,false,false,true,false,false,true,false,true,false,false,false,true
   // the manager is static, so get the existing manager via the static method
@@ -92,19 +93,27 @@ AliAnalysisTaskSE* AddTaskFemtoDream(bool isMC = false,
     TrackCuts->SetDCAReCalculation(false);
   } else {
     TrackCuts->SetFilterBit(FilterBit);
+    if (stricterPileUpRej) {
+      TrackCuts->SetCheckPileUp(false);
+      TrackCuts->SetCheckPileUpSPDTOF(true);
+    }
   }
   TrackCuts->SetCutCharge(1);
   AliFemtoDreamTrackCuts *AntiTrackCuts =
       AliFemtoDreamTrackCuts::PrimProtonCuts(isMC, DCAPlots, CombSigma,
                                              ContributionSplitting);
+  AntiTrackCuts->SetCutCharge(-1);
   if (isESD) {
     AntiTrackCuts->SetCheckFilterBit(false);
     AntiTrackCuts->SetCheckESDFiltering(true);
     AntiTrackCuts->SetDCAReCalculation(false);
   } else {
     AntiTrackCuts->SetFilterBit(FilterBit);
+    if (stricterPileUpRej) {
+      AntiTrackCuts->SetCheckPileUp(false);
+      AntiTrackCuts->SetCheckPileUpSPDTOF(true);
+    }
   }
-  AntiTrackCuts->SetCutCharge(-1);
   AliFemtoDreamv0Cuts *v0Cuts;
   AliFemtoDreamv0Cuts *Antiv0Cuts;
   AliFemtoDreamCascadeCuts *CascadeCuts;
@@ -115,8 +124,16 @@ AliAnalysisTaskSE* AddTaskFemtoDream(bool isMC = false,
                                            ContributionSplitting);
   AliFemtoDreamTrackCuts *Posv0Daug = AliFemtoDreamTrackCuts::DecayProtonCuts(
       isMC, PileUpRej, false);
+  if (stricterPileUpRej) {
+    Posv0Daug->SetCheckPileUp(false);
+    Posv0Daug->SetCheckPileUpSPDTOF(true);
+  }
   AliFemtoDreamTrackCuts *Negv0Daug = AliFemtoDreamTrackCuts::DecayPionCuts(
       isMC, PileUpRej, false);
+  if (stricterPileUpRej) {
+    Negv0Daug->SetCheckPileUp(false);
+    Negv0Daug->SetCheckPileUpSPDTOF(true);
+  }
   v0Cuts->SetPosDaugterTrackCuts(Posv0Daug);
   v0Cuts->SetNegDaugterTrackCuts(Negv0Daug);
   v0Cuts->SetPDGCodePosDaug(2212);  //Proton
@@ -127,9 +144,19 @@ AliAnalysisTaskSE* AddTaskFemtoDream(bool isMC = false,
   AliFemtoDreamTrackCuts *PosAntiv0Daug = AliFemtoDreamTrackCuts::DecayPionCuts(
       isMC, PileUpRej, false);
   PosAntiv0Daug->SetCutCharge(1);
+  if (stricterPileUpRej) {
+    PosAntiv0Daug->SetCheckPileUp(false);
+    PosAntiv0Daug->SetCheckPileUpSPDTOF(true);
+  }
+
   AliFemtoDreamTrackCuts *NegAntiv0Daug =
       AliFemtoDreamTrackCuts::DecayProtonCuts(isMC, PileUpRej, false);
   NegAntiv0Daug->SetCutCharge(-1);
+  if (stricterPileUpRej) {
+    NegAntiv0Daug->SetCheckPileUp(false);
+    NegAntiv0Daug->SetCheckPileUpSPDTOF(true);
+  }
+
   Antiv0Cuts->SetPosDaugterTrackCuts(PosAntiv0Daug);
   Antiv0Cuts->SetNegDaugterTrackCuts(NegAntiv0Daug);
   Antiv0Cuts->SetPDGCodePosDaug(211);  //Pion
@@ -145,6 +172,18 @@ AliAnalysisTaskSE* AddTaskFemtoDream(bool isMC = false,
       isMC, PileUpRej, false);
   AliFemtoDreamTrackCuts *XiBachCuts = AliFemtoDreamTrackCuts::XiBachPionCuts(
       isMC, PileUpRej, false);
+  if (stricterPileUpRej) {
+    XiNegCuts->SetCheckPileUp(false);
+    XiNegCuts->SetCheckPileUpSPDTOF(true);
+  }
+  if (stricterPileUpRej) {
+    XiPosCuts->SetCheckPileUp(false);
+    XiPosCuts->SetCheckPileUpSPDTOF(true);
+  }
+  if (stricterPileUpRej) {
+    XiBachCuts->SetCheckPileUp(false);
+    XiBachCuts->SetCheckPileUpSPDTOF(true);
+  }
   CascadeCuts->Setv0Negcuts(XiNegCuts);
   CascadeCuts->Setv0PosCuts(XiPosCuts);
   CascadeCuts->SetBachCuts(XiBachCuts);
@@ -166,6 +205,18 @@ AliAnalysisTaskSE* AddTaskFemtoDream(bool isMC = false,
   AliFemtoDreamTrackCuts *AntiXiBachCuts =
       AliFemtoDreamTrackCuts::XiBachPionCuts(isMC, PileUpRej, false);
   AntiXiBachCuts->SetCutCharge(1);
+  if (stricterPileUpRej) {
+    AntiXiNegCuts->SetCheckPileUp(false);
+    AntiXiNegCuts->SetCheckPileUpSPDTOF(true);
+  }
+  if (stricterPileUpRej) {
+    AntiXiPosCuts->SetCheckPileUp(false);
+    AntiXiPosCuts->SetCheckPileUpSPDTOF(true);
+  }
+  if (stricterPileUpRej) {
+    AntiXiBachCuts->SetCheckPileUp(false);
+    AntiXiBachCuts->SetCheckPileUpSPDTOF(true);
+  }
   AntiCascadeCuts->Setv0Negcuts(AntiXiNegCuts);
   AntiCascadeCuts->Setv0PosCuts(AntiXiPosCuts);
   AntiCascadeCuts->SetBachCuts(AntiXiBachCuts);
@@ -342,6 +393,10 @@ AliAnalysisTaskSE* AddTaskFemtoDream(bool isMC = false,
     MultBins.push_back(80);
     config->SetMultBins(MultBins);
   }
+  if (excludeUnwantedPairs) {
+    config->SetExtendedQAPairs(config->GetStandardPairs());
+  }
+
   config->SetMultBinning(true);
   if (notpp)
     config->SetCentBinning(true);
@@ -366,18 +421,20 @@ AliAnalysisTaskSE* AddTaskFemtoDream(bool isMC = false,
     }
   }
   if (etaPhiPlotsAtTPCRadii) {
-    if (isMC) {
-      config->SetPhiEtaBinnign(true);
-    } else {
-      std::cout
-          << "You are trying to request the Eta Phi Plots without MC Info; fix it wont work! \n";
-    }
+//    if (isMC) {
+    config->SetPhiEtaBinnign(true);
+//    } else {
+//      std::cout
+//          << "You are trying to request the Eta Phi Plots without MC Info; fix it wont work! \n";
+//    }
   }
   if (DeltaEtaDeltaPhiCut) {
     config->SetDeltaEtaMax(0.01);
     config->SetDeltaPhiMax(0.01);
   }
   config->SetdPhidEtaPlots(dPhidEtaPlots);
+  if (dPhidEtaPlots)
+    config->SetmTdEtadPhiBins(config->GetStandardmTBins());
   config->SetPDGCodes(PDGParticles);
   config->SetNBinsHist(NBins);
   config->SetMinKRel(kMin);
@@ -445,13 +502,13 @@ AliAnalysisTaskSE* AddTaskFemtoDream(bool isMC = false,
   mgr->ConnectInput(task, 0, cinput);
 
   AliAnalysisDataContainer *coutputQA;
-  TString addon = "";    
+  TString addon = "";
   if (CentEst == "kInt7") {
     addon += "MB";
   } else if (CentEst == "kHM") {
     addon += "HM";
   }
-  if (SphericityRange != 0 ) {
+  if (SphericityRange != 0) {
     addon += "_Sphericity_";
     addon += SphericityRange;
     addon += "_";
