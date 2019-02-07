@@ -1,12 +1,15 @@
 ///
 /// \file AliFemtoUser/AliFemtoAnalysisPionPionObjectConstructor.h
 ///
-/// This header file depends on C++11, and thus can be depended on at compile-time,
-/// but not runtime (i.e. .cxx files may #include it, but not .h files)
+/// This header file depends on C++11, and thus can be depended on at
+/// compile-time, but not runtime (i.e. .cxx files may #include it,
+/// but not header files)
 ///
-/// This is a strange template header file that checks for include-guards already defined by other files
-/// to avoid importing EVERY CLASS DEFINITION for every cxx file that includes it. This means that this
-/// must be the last header included.
+/// This is a strange template header file that checks for include-guards
+/// already defined by other files to avoid importing EVERY CLASS
+/// DEFINITION for every cxx file that includes it.
+///
+/// This means that this must be the last *header* included.
 ///
 
 
@@ -18,6 +21,7 @@
 #endif
 
 #include <TInterpreter.h>
+#include <TROOT.h>
 
 #include "AliFemtoConfigObject.h"
 
@@ -55,6 +59,33 @@ struct Configuration;
 template <typename T>
 struct AbstractConfiguration {
   virtual operator T*() const = 0;
+
+protected:
+
+  static AliFemtoConfigObject
+  cast_and_configure(const void *ptr,
+                     const char* cls,
+                     const std::vector<const char *> &classnames)
+    {
+      for (auto classname : classnames) {
+        auto cmd = Form("dynamic_cast<%s*>(reinterpret_cast<%s*>(%p))", classname, cls, ptr);
+
+        if (auto addr = gROOT->ProcessLine(cmd)) {
+          auto cast_to_ptr = Form("reinterpret_cast<%s*>(%ld)", classname, addr);
+          auto get_cfg = Form("Configuration<%s>::GetConfigurationOf(*%s)", classname, cast_to_ptr);
+          auto make_new_cfg = Form("new AliFemtoConfigObject(%s)", get_cfg);
+          long cfg_address = gROOT->ProcessLine(make_new_cfg);
+
+          auto cfg_ptr = reinterpret_cast<AliFemtoConfigObject*>(cfg_address);
+          AliFemtoConfigObject result(std::move(*cfg_ptr));
+          delete cfg_ptr;
+          return result;
+        }
+      }
+
+      return AliFemtoConfigObject::BuildMap()
+            ("class", cls);
+  }
 };
 
 #endif
@@ -226,6 +257,27 @@ struct Configuration<AliFemtoEventReaderAODMultSelection> : Configuration<AliFem
 #endif
 
 
+#if defined(ALIFEMTOEVENTREADER_H) && !defined(ALIFEMTOCONSTRUCTOR_ALIFEMTOEVENTREADER_H)
+#define ALIFEMTOCONSTRUCTOR_ALIFEMTOEVENTREADER_H
+
+template <>
+struct Configuration<AliFemtoEventReader> : AbstractConfiguration<AliFemtoEventReader> {
+
+  AliFemtoConfigObject GetConfigurationOf(const AliFemtoEventReader &rdr)
+    {
+      const std::vector<const char*> CLASSNAMES = {
+        "AliFemtoEventReaderAODMultSelection",
+        "AliFemtoEventReaderAODChain",
+        "AliFemtoEventReaderAOD",
+        "AliFemtoEventReaderESDChain",
+        "AliFemtoEventReaderESD",
+      };
+
+      return cast_and_configure(&rdr, "AliFemtoEventReader", CLASSNAMES);
+    }
+};
+
+#endif
 
 
 //------------------------
@@ -256,8 +308,8 @@ struct Configuration<AliFemtoBasicEventCut> : AbstractConfiguration<AliFemtoEven
   Configuration(const AliFemtoBasicEventCut &cut)
     : multiplicity(cut.GetEventMult())
     , vertex_z(cut.GetVertZPos())
-    , ep_psip(cut.GetPsiEP())
-    , trigger_selection(cut.GetTriggerSelection())
+    , ep_psi(cut.GetPsiEP())
+    , trigger_selection(cut.GetSelectTrigger())
     , accept_bad_vertex(cut.GetAcceptBadVertex())
     {};
 
@@ -306,21 +358,10 @@ struct Configuration<AliFemtoBasicEventCut> : AbstractConfiguration<AliFemtoEven
   /// shorthand static method for creating configuration of cut
   static AliFemtoConfigObject GetConfigurationOf(const AliFemtoBasicEventCut &cut)
     {
-      Configuration cfg(cut);
-      return cfg;
+      return Configuration(cut);
     }
 };
 #endif
-
-/*
-#if defined(AliFemtoEventCut_hh) && !defined(ALIFEMTOCONFSTRUCTOR_AliFemtoEventCut_hh)
-#define ALIFEMTOCONFSTRUCTOR_AliFemtoEventCut_hh
-template <>
-struct AbstractConfiguration<AliFemtoEventCut> {
-  operator AliFemtoe
-};
-#endif
-*/
 
 #if defined(ALIFEMTOEVENTCUTCENTRALITY_H) && !defined(ALIFEMTOCONSTRUCTOR_ALIFEMTOEVENTCUTCENTRALITY_H)
 #define ALIFEMTOCONSTRUCTOR_ALIFEMTOEVENTCUTCENTRALITY_H
@@ -352,6 +393,26 @@ struct Configuration<AliFemtoEventCutCentrality> : AbstractConfiguration<AliFemt
 };
 #endif
 
+
+#if defined(AliFemtoEventCut_hh) && !defined(ALIFEMTOCONSTRUCTOR_AliFemtoEventCut_hh)
+#define ALIFEMTOCONSTRUCTOR_AliFemtoEventCut_hh
+
+template<>
+struct Configuration<AliFemtoEventCut> : AbstractConfiguration<AliFemtoEventCut> {
+
+  static AliFemtoConfigObject
+  GetConfigurationOf(const AliFemtoEventCut &cut)
+  {
+    const std::vector<const char*> CLASSNAMES = {
+      "AliFemtoBasicEventCut",
+      "AliFemtoEventCutCentrality",
+    };
+
+    return cast_and_configure(&cut, "AliFemtoEventCut", CLASSNAMES);
+  }
+};
+
+#endif
 
 
 //------------------------
@@ -594,6 +655,140 @@ struct Configuration<AliFemtoAODTrackCut> : AbstractConfiguration<AliFemtoPartic
   }
 };
 #endif
+
+#if defined(ALIFEMTOV0TRACKCUT_H) && !defined(ALIFEMTOCONSTRUCTOR_ALIFEMTOV0TRACKCUT_H)
+#define ALIFEMTOCONSTRUCTOR_ALIFEMTOV0TRACKCUT_H
+template<>
+struct Configuration<AliFemtoV0TrackCut> : AbstractConfiguration<AliFemtoParticleCut>
+{
+  using Super = AbstractConfiguration<AliFemtoParticleCut>;
+  using RangeF_t = std::pair<float, float>;
+
+  float max_chi_ndof = 0.3;
+  float max_sigma_to_vertex = 0.0;
+
+  double
+    invmass_lambdamin { 0.0 },
+    invmass_lambdamax { 99.0 },
+    invmass_K0smin { 0.0 },
+    invmass_K0smax { 99.0 },
+    minDcaDaughterPos { 0.0 },
+    minDcaDaughterNeg { 0.0 },
+    maxDcaV0Daughters { 99.0 },
+    minDcaV0 { 9999.0 },
+    eta { 0.8 },
+    ptmin { 0.0 },
+    ptmax { 100.0 },
+    onflystatus { false },
+    maxetadaughters { 9999.0 },
+    tpcnclsdaughters { 0 },
+    ptmaxnegdaughter { 0 };
+
+  std::pair<double, double>
+    mass_range_k0s { 0.0, 0.0 },
+    mass_range_lam { 0, 0 },
+    mass_range_alam { 0, 0 },
+    looseInvMassMax { 0, 0 };
+
+  void Configure(AliFemtoV0TrackCut &cut) const
+    {
+      cut.SetPt(ptmin, ptmax);
+      cut.SetEta(eta);
+      cut.SetMinDcaV0(minDcaV0);
+    }
+
+  operator AliFemtoParticleCut*() const
+    {
+      auto *cut = new AliFemtoV0TrackCut();
+      Configure(*cut);
+      return cut;
+    }
+
+  static AliFemtoConfigObject GetConfigurationOf(const AliFemtoV0TrackCut &cut)
+    {
+      return AliFemtoConfigObject::BuildMap()
+        ("class", "AliFemtoV0TrackCut");
+    }
+};
+#endif
+
+
+#if defined(ALIFEMTOPARTICLECUT_H) && !defined(ALIFEMTOCONSTRUCTOR_ALIFEMTOPARTICLECUT_H)
+#define ALIFEMTOCONSTRUCTOR_ALIFEMTOPARTICLECUT_H
+template<>
+struct Configuration<AliFemtoTrackCut> : AbstractConfiguration<AliFemtoParticleCut>
+{
+
+  static AliFemtoConfigObject GetConfigurationOf(const AliFemtoTrackCut &cut)
+  {
+    const std::vector<const char *> CLASSNAMES {
+      "AliFemtoAODTrackCut",
+      "AliFemtoBasicTrackCut",
+      "AliFemtoESDTrackCutNSigmaFilter",
+      "AliFemtoESDTrackCut",
+      "AliFemtoKKTrackCut",
+      "AliFemtoKKTrackCutFull",
+      "AliFemtoKKTrackCutTest",
+      "AliFemtoKpm45TrackCut",
+      "AliFemtoKpmTrackCut",
+      "AliFemtoMCTrackCut",
+      "AliFemtoMJTrackCut",
+      "AliFemtoQATrackCut",
+    };
+
+    return cast_and_configure(&cut, "AliFemtoTrackCut", CLASSNAMES);
+  }
+};
+#endif
+
+
+#if defined(ALIFEMTOPARTICLECUT_H) && !defined(ALIFEMTOCONSTRUCTOR_ALIFEMTOPARTICLECUT_H)
+#define ALIFEMTOCONSTRUCTOR_ALIFEMTOPARTICLECUT_H
+template<>
+struct Configuration<AliFemtoParticleCut> : AbstractConfiguration<AliFemtoParticleCut>
+{
+
+  static AliFemtoConfigObject GetConfigurationOf(const AliFemtoParticleCut &cut)
+  {
+    const std::vector<const char *> CLASSNAMES {
+      "AliFemtoAODTrackCut",
+      "AliFemtoESDTrackCut",
+      "AliFemtoTrackCut",
+      "AliFemtoV0Cut",
+      "AliFemtoXiCut",
+      "AliFemtoKinkCut",
+      "AliFemtoV0TrackCut",
+    };
+
+    return cast_and_configure(&cut, "AliFemtoParticleCut", CLASSNAMES);
+  }
+};
+#endif
+
+
+#if defined(ALIFEMTOPARTICLECUT_H) && !defined(ALIFEMTOCONSTRUCTOR_ALIFEMTOPARTICLECUT_H)
+#define ALIFEMTOCONSTRUCTOR_ALIFEMTOPARTICLECUT_H
+template<>
+struct Configuration<AliFemtoParticleCut> : AbstractConfiguration<AliFemtoParticleCut>
+{
+
+  static AliFemtoConfigObject GetConfigurationOf(const AliFemtoParticleCut &cut)
+  {
+    const std::vector<const char *> CLASSNAMES {
+      "AliFemtoAODTrackCut",
+      "AliFemtoESDTrackCut",
+      "AliFemtoTrackCut",
+      "AliFemtoV0Cut",
+      "AliFemtoXiCut",
+      "AliFemtoKinkCut",
+      "AliFemtoV0TrackCut",
+    };
+
+    return cast_and_configure(&cut, "AliFemtoParticleCut", CLASSNAMES);
+  }
+};
+#endif
+
 
 //------------------------
 //
