@@ -53,8 +53,12 @@
 #pragma link C++ class AliAnalysisTaskStrEffStudy+;
 #pragma link C++ class AliAnalysisTaskMCPredictions+;
 #pragma link C++ class Lifetimes::MiniV0+;
+#pragma link C++ class std::vector<Lifetimes::MiniV0>+;
 #pragma link C++ class Lifetimes::MCparticle+;
+#pragma link C++ class std::vector<Lifetimes::MCparticle>+;
 #pragma link C++ class Lifetimes::HyperTriton2Body+;
+#pragma link C++ class std::vector<Lifetimes::HyperTriton2Body>+;
+#pragma link C++ class Lifetimes::MiniEvent+;
 #endif
 
 #ifdef __CLING__
