@@ -1870,7 +1870,7 @@ Bool_t AliCorrelationExtraction::Process() {
   }
 
   // correct for hadron efficiency
-  if (fHadronEff) fProcessDone = EfficiencyCorrection();
+  if (fHadronEff && fProcessDone) fProcessDone = EfficiencyCorrection();
 
   return fProcessDone;
 }
