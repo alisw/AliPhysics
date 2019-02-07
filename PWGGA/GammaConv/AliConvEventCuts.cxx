@@ -22,6 +22,7 @@
 
 #include "AliConvEventCuts.h"
 
+#include <memory>
 #include "AliAODTrack.h"
 #include "AliESDtrack.h"
 #include "AliAnalysisManager.h"
@@ -3034,14 +3035,13 @@ Bool_t AliConvEventCuts::IsJetJetMCEventAccepted(AliMCEvent *mcEvent, Double_t& 
         Float_t tmpjet[]={0,0,0,0};
         for(Int_t ijet = 0; ijet< nTriggerJets; ijet++){
           dynamic_cast<AliGenPythiaEventHeader*>(gh)->TriggerJet(ijet, tmpjet);
-          jet = new TParticle(94, 21, -1, -1, -1, -1, tmpjet[0],tmpjet[1],tmpjet[2],tmpjet[3], 0,0,0,0);
+          TParticle jet(94, 21, -1, -1, -1, -1, tmpjet[0],tmpjet[1],tmpjet[2],tmpjet[3], 0,0,0,0);
           //Compare jet pT and pt Hard
-          if(jet->Pt() > fMaxFacPtHard * ptHard){
+          if(jet.Pt() > fMaxFacPtHard * ptHard){
             eventAccepted= kFALSE;
           }
-          if (jet->Pt() > fMaxPtJetMC) fMaxPtJetMC = jet->Pt();
+          if (jet.Pt() > fMaxPtJetMC) fMaxPtJetMC = jet.Pt();
         }
-        if (jet) delete jet;
         if (mcEvent){
           for(Long_t i = 0; i < mcEvent->GetNumberOfPrimaries(); i++) {
             TParticle* particle = (TParticle *)mcEvent->Particle(i);
@@ -3275,12 +3275,12 @@ Bool_t AliConvEventCuts::IsJetJetMCEventAccepted(AliMCEvent *mcEvent, Double_t& 
       Float_t tmpjet[]={0,0,0,0};
       for(Int_t ijet = 0; ijet< nTriggerJets; ijet++){
         dynamic_cast<AliGenPythiaEventHeader*>(eventHeader)->TriggerJet(ijet, tmpjet);
-        jet = new TParticle(94, 21, -1, -1, -1, -1, tmpjet[0],tmpjet[1],tmpjet[2],tmpjet[3], 0,0,0,0);
+        TParticle jet(94, 21, -1, -1, -1, -1, tmpjet[0],tmpjet[1],tmpjet[2],tmpjet[3], 0,0,0,0);
         //Compare jet pT and pt Hard
-        if(jet->Pt() > fMaxFacPtHard * ptHard){
+        if(jet.Pt() > fMaxFacPtHard * ptHard){
           eventAccepted= kFALSE;
         }
-        if (jet->Pt() > fMaxPtJetMC) fMaxPtJetMC = jet->Pt();
+        if (jet.Pt() > fMaxPtJetMC) fMaxPtJetMC = jet.Pt();
       }
       if (mcEvent){
         for(Long_t i = 0; i < mcEvent->GetNumberOfPrimaries(); i++) {
@@ -3947,12 +3947,11 @@ Bool_t AliConvEventCuts::MimicTrigger(AliVEvent *event, Bool_t isMC ){
       Double_t threshold = thresholdEMCalL1[binRun];
 
       if (isMC && spreadEMCalL1[binRun] != 0.){
-        TF1* triggerSmearing =  new TF1("triggerSmearing","[0]*exp(-0.5*((x-[1])/[2])**2)",0,15);
-        triggerSmearing->SetParameter(0, 1/(spreadEMCalL1[binRun]*TMath::Sqrt(TMath::Pi()*2)));
-        triggerSmearing->SetParameter(1, thresholdEMCalL1[binRun]);
-        triggerSmearing->SetParameter(2, spreadEMCalL1[binRun]);
-        threshold = triggerSmearing->GetRandom();
-        delete triggerSmearing;
+        TF1 triggerSmearing("triggerSmearing","[0]*exp(-0.5*((x-[1])/[2])**2)",0,15);
+        triggerSmearing.SetParameter(0, 1/(spreadEMCalL1[binRun]*TMath::Sqrt(TMath::Pi()*2)));
+        triggerSmearing.SetParameter(1, thresholdEMCalL1[binRun]);
+        triggerSmearing.SetParameter(2, spreadEMCalL1[binRun]);
+        threshold = triggerSmearing.GetRandom();
       }
 
 //       cout << runnumber << "\t"<< binRun << "\t L1 \t"<< threshold << endl;
@@ -3975,39 +3974,37 @@ Bool_t AliConvEventCuts::MimicTrigger(AliVEvent *event, Bool_t isMC ){
       for(Int_t i = 0; i < nclus; i++){
         if (eventIsAccepted) continue;
         AliVCluster* clus = NULL;
+        std::unique_ptr<AliVCluster> tmpcluster;  // takes care about deleting clusters constructed with new
         if(event->IsA()==AliESDEvent::Class()){
-          if(arrClustersMimic)
-            clus = new AliESDCaloCluster(*(AliESDCaloCluster*)arrClustersMimic->At(i));
-          else
+          if(arrClustersMimic){
+            tmpcluster = std::unique_ptr<AliVCluster>(new AliESDCaloCluster(*(AliESDCaloCluster*)arrClustersMimic->At(i)));
+            clus = tmpcluster.get();
+          } else
             clus = event->GetCaloCluster(i);
         } else if(event->IsA()==AliAODEvent::Class()){
-          if(arrClustersMimic)
-            clus = new AliAODCaloCluster(*(AliAODCaloCluster*)arrClustersMimic->At(i));
+          if(arrClustersMimic) {
+            tmpcluster = std::unique_ptr<AliVCluster>(new AliAODCaloCluster(*(AliAODCaloCluster*)arrClustersMimic->At(i)));
+            clus = tmpcluster.get();
+          }
           else
             clus = event->GetCaloCluster(i);
         }
         if (!clus) {
-          if(arrClustersMimic) delete clus;
           continue;
         }
         if (!clus->IsEMCAL()) {
-          if(arrClustersMimic) delete clus;
           continue;
         }
         if (clus->GetM02()<0.1) {
-          if(arrClustersMimic) delete clus;
           continue;
         }
         if (clus->GetNCells()<2) {
-          if(arrClustersMimic) delete clus;
           continue;
         }
         if (clus->E() > threshold ){
 //           cout << "found L1G1\t" << clus->E() << endl;
           eventIsAccepted = kTRUE;
         }
-        if(arrClustersMimic)
-          delete clus;
       }
       return eventIsAccepted;
     } else if ( fSpecialSubTriggerName.CompareTo("7EG2")==0 ||fSpecialSubTriggerName.CompareTo("8EG2")==0 ){
@@ -4021,12 +4018,11 @@ Bool_t AliConvEventCuts::MimicTrigger(AliVEvent *event, Bool_t isMC ){
       if (binRun==19) return kFALSE;
       Double_t threshold = thresholdEMCalL1G2[binRun];
       if (isMC && spreadEMCalL1G2[binRun] != 0.){
-        TF1* triggerSmearing =  new TF1("triggerSmearing","[0]*exp(-0.5*((x-[1])/[2])**2)",0,15);
-        triggerSmearing->SetParameter(0, 1/(spreadEMCalL1G2[binRun]*TMath::Sqrt(TMath::Pi()*2)));
-        triggerSmearing->SetParameter(1, thresholdEMCalL1G2[binRun]);
-        triggerSmearing->SetParameter(2, spreadEMCalL1G2[binRun]);
-        threshold = triggerSmearing->GetRandom();
-        delete triggerSmearing;
+        TF1 triggerSmearing("triggerSmearing","[0]*exp(-0.5*((x-[1])/[2])**2)",0,15);
+        triggerSmearing.SetParameter(0, 1/(spreadEMCalL1G2[binRun]*TMath::Sqrt(TMath::Pi()*2)));
+        triggerSmearing.SetParameter(1, thresholdEMCalL1G2[binRun]);
+        triggerSmearing.SetParameter(2, spreadEMCalL1G2[binRun]);
+        threshold = triggerSmearing.GetRandom();
       }
 //       cout << "\t L2 mod\t"<< threshold << endl;
 
@@ -4048,39 +4044,38 @@ Bool_t AliConvEventCuts::MimicTrigger(AliVEvent *event, Bool_t isMC ){
       for(Int_t i = 0; i < nclus; i++){
         if (eventIsAccepted) continue;
         AliVCluster* clus = NULL;
+        std::unique_ptr<AliVCluster> tmpcluster; // takes care about deleting clusters constructed with new
         if(event->IsA()==AliESDEvent::Class()){
-          if(arrClustersMimic)
-            clus = new AliESDCaloCluster(*(AliESDCaloCluster*)arrClustersMimic->At(i));
+          if(arrClustersMimic){
+            tmpcluster = std::unique_ptr<AliVCluster>(new AliESDCaloCluster(*(AliESDCaloCluster*)arrClustersMimic->At(i)));
+            clus = tmpcluster.get();
+          }
           else
             clus = event->GetCaloCluster(i);
         } else if(event->IsA()==AliAODEvent::Class()){
-          if(arrClustersMimic)
-            clus = new AliAODCaloCluster(*(AliAODCaloCluster*)arrClustersMimic->At(i));
+          if(arrClustersMimic) {
+            tmpcluster = std::unique_ptr<AliVCluster>(new AliAODCaloCluster(*(AliAODCaloCluster*)arrClustersMimic->At(i)));
+            clus = tmpcluster.get();
+          }
           else
             clus = event->GetCaloCluster(i);
         }
         if (!clus) {
-          if(arrClustersMimic) delete clus;
           continue;
         }
         if (!clus->IsEMCAL()) {
-          if(arrClustersMimic) delete clus;
           continue;
         }
         if (clus->GetM02()<0.1) {
-          if(arrClustersMimic) delete clus;
           continue;
         }
         if (clus->GetNCells()<2) {
-          if(arrClustersMimic) delete clus;
           continue;
         }
         if (clus->E() > threshold ){
 //           cout << "found L1G2" << endl;
           eventIsAccepted = kTRUE;
         }
-        if(arrClustersMimic)
-          delete clus;
       }
       return eventIsAccepted;
     }

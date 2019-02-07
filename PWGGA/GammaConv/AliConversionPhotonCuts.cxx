@@ -1799,8 +1799,8 @@ Bool_t AliConversionPhotonCuts::PIDProbabilityCut(AliConversionPhotonBase *photo
 
     Bool_t iResult=kFALSE;
 
-    Double_t *posProbArray = new Double_t[AliPID::kSPECIES];
-    Double_t *negProbArray = new Double_t[AliPID::kSPECIES];
+    Double_t posProbArray[AliPID::kSPECIES];
+    Double_t negProbArray[AliPID::kSPECIES];
 
     AliESDtrack* negTrack   = esdEvent->GetTrack(photon->GetTrackLabelNegative());
     AliESDtrack* posTrack   = esdEvent->GetTrack(photon->GetTrackLabelPositive());
@@ -1815,8 +1815,6 @@ Bool_t AliConversionPhotonCuts::PIDProbabilityCut(AliConversionPhotonBase *photo
       }
     }
 
-    delete [] posProbArray;
-    delete [] negProbArray;
     return iResult;
 
   } else {
