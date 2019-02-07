@@ -60,7 +60,6 @@ struct RLightNucleus {
   Double32_t tpcNsigmaT;     //[-6.4,6.4,8]
   Double32_t tpcNsigmaHe3;   //[-6.4,6.4,8]
   Double32_t centrality;     //[0,128,8]
-  Double32_t deltapt;        //[-1.28,1.28,7]
   unsigned char itsCls;
   unsigned char tpcPIDcls;
 };
