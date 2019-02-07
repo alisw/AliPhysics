@@ -1,5 +1,5 @@
 #ifndef ALIHFTREEHANDLERLC2V0BACHELOR_H
-#define ALIHFTREEHANDLERLC2V0BACHELO_H
+#define ALIHFTREEHANDLERLC2V0BACHELOR_H
 
 /* Copyright(c) 1998-2008, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
@@ -14,10 +14,6 @@
 /////////////////////////////////////////////////////////////
 
 #include "AliHFTreeHandler.h"
-#include <TRandom3.h>
-
-class AliAODRecoCascadeHF;
-class AliAODPidHF;
 
 using std::vector;
 
@@ -30,7 +26,7 @@ class AliHFTreeHandlerLc2V0bachelor : public AliHFTreeHandler
     virtual ~AliHFTreeHandlerLc2V0bachelor();
 
     virtual TTree* BuildTree(TString name = "tree", TString title = "tree");
-    virtual bool SetVariables(AliAODRecoCascadeHF* cand, float bfield, int masshypo = 0, AliPIDResponse* pidrespo = 0x0);
+    virtual bool SetVariables(AliAODRecoDecayHF* cand, float bfield, int masshypo = 0, AliPIDResponse* pidrespo = 0x0);
     virtual void FillTree();
 
   private:

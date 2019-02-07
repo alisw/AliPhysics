@@ -95,7 +95,7 @@ TTree* AliHFTreeHandlerLc2V0bachelor::BuildTree(TString name, TString title)
 }
 
 //________________________________________________________________
-bool AliHFTreeHandlerLc2V0bachelor::SetVariables(AliAODRecoCascadeHF* cand, float bfield, int masshypo, AliPIDResponse* pidrespo) 
+bool AliHFTreeHandlerLc2V0bachelor::SetVariables(AliAODRecoDecayHF* cand, float bfield, int masshypo, AliPIDResponse* pidrespo) 
 {
   if(!cand) return false;
   if(fFillOnlySignal) { //if fill only signal and not signal candidate, do not store
@@ -143,7 +143,7 @@ bool AliHFTreeHandlerLc2V0bachelor::SetVariables(AliAODRecoCascadeHF* cand, floa
   Double_t cts = TMath::Cos(vpr.Angle(vlc.Vect()));
   fCosThetaStar.push_back(cts);
 
-  AliAODTrack *bachelor = (AliAODTrack*)cand->GetBachelor();
+  AliAODTrack *bachelor = (AliAODTrack*)((AliAODRecoCascadeHF*)cand)->GetBachelor();
   AliAODVertex *primvert = dynamic_cast<AliAODVertex*>(cand->GetPrimaryVtx());
   Double_t d0z0bach[2], covd0z0bach[3];
   bachelor->PropagateToDCA(primvert, bfield, kVeryBig, d0z0bach, covd0z0bach); // HOW DO WE SET THE B FIELD?; kVeryBig should come from AliExternalTrackParam
@@ -167,7 +167,7 @@ bool AliHFTreeHandlerLc2V0bachelor::SetVariables(AliAODRecoCascadeHF* cand, floa
   //pid variables
   if(fPidOpt == kNoPID) return true;
 
-  bool setpid = SetPidVars(prongtracks, pidrespo, true, true, true, true, true);
+  bool setpid = SetPidVars(prongtracks, pidrespo, false, false, true, true, true);
   if(!setpid) return false;
 
   return true;
