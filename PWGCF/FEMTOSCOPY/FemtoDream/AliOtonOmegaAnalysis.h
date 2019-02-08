@@ -190,6 +190,7 @@ class AliOtonOmegaAnalysis {
   void InitializeTreeBooking();
   Bool_t FillTreeCascade(AliESDEvent *evt, AliESDcascade *casc);
   Bool_t FillTreeTrack(Int_t jj, Int_t idtrack, Int_t V0index, AliESDEvent *evt, AliESDcascade *casc);
+  Bool_t FillProtonTrack( AliESDEvent *evt, Int_t idtrack);
 
 
   TString ClassName() {
@@ -228,17 +229,43 @@ class AliOtonOmegaAnalysis {
 
   
   //more tree stuff:
-  Bool_t FillOmegaTree_tracks;
-  Bool_t FillOmegaTree_lambda;
+  //Bool_t FillOmegaTree_tracks;
+  //Bool_t FillOmegaTree_lambda;
   Bool_t FillOmegaTree_omega;
-  Bool_t FillOmegaTree;
+  Bool_t FillOmegaTree_aomega;
   TTree* fomegaTTree;
   TTree* foTTree;
   Int_t fTRunNumber;
-  Float_t fTV[3];
+  Float_t fTVz;
+
+
+  const Int_t MAXPROTONS = 150;
+  Int_t fTnProton;
+  //protons:
+  Float_t fTProtonPx[150];
+  Float_t fTProtonPy[150];
+  Float_t fTProtonPz[150];
+  Float_t fTProtonTPCmom[150];
+  Short_t fTProtonCharge[150];
+  Float_t fTProtonDCA[150];
+  Int_t fTProtonNcl[150];
+  Float_t fTProtonCrF[150];
+  Int_t fTProtonShared[150];
+  Float_t fTProtonTPCchi2[150];
+  Bool_t fTProtonITStime[150];
+  Bool_t fTProtonTOFtime[150];
+  Bool_t fTProtonTPConly[150];
+  Bool_t fTProtonITScomplementary[150];
+  Bool_t fTProtonITSpure[150];
+  Bool_t fTProtonGLOBAL[150];
+
+
   const Int_t MAXCASCADES = 150;
   Int_t fTnCascade;
   //cascades:
+  Bool_t fTCascadeFlag0[150];
+  Bool_t fTCascadeFlag1[150];
+  Bool_t fTCascadeFlag2[150];
   Float_t fTCascadePx[150];
   Float_t fTCascadePy[150];
   Float_t fTCascadePz[150];
