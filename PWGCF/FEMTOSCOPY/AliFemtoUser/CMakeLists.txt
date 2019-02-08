@@ -103,6 +103,7 @@ set(SRCS
   AliFemtoAnalysisAzimuthalPbPb2Order.cxx
   AliFemtoAnalysisPionLambda.cxx
   AliFemtoAnalysisPionPion.cxx
+  AliFemtoAnalysisPionPionObjectConstructor.cxx
   AliFemtoPairCutRadialDistanceLM.cxx
   AliFemtoPicoEventRP.cxx
   AliFemtoPairCutRadialDistanceKK.cxx
@@ -139,7 +140,7 @@ set(SRCS
   AliFemtoV0PurityBgdEstimator.cxx
   AliFemtoPairCutRadialDistanceKKdist.cxx
   AliFemtoSphericityEventCutKK.cxx #  Sphericity for KK analysis in pp13TeV
-  AliFemtoCutMonitorEventSphericity.cxx # Sphericity monitor 
+  AliFemtoCutMonitorEventSphericity.cxx # Sphericity monitor
   AliFemtoKKTrackCutTest.cxx # new class
   AliFemtoCorrFctnInvMass.cxx
   AliFemtoCutMonitorV0CosPointingAngle.cxx

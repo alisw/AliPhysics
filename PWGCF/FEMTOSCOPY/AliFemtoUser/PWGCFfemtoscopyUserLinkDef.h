@@ -113,6 +113,16 @@
 #pragma link C++ class AliFemtoCutMonitorPionPion::Pion+;
 #pragma link C++ class AliFemtoCutMonitorPionPion::Pair+;
 
+#pragma link C++ function AliFemtoConfigObject::From(const AliFemtoEventReader &);
+#pragma link C++ function AliFemtoConfigObject::From(const AliFemtoEventCut &);
+#pragma link C++ function AliFemtoConfigObject::From(const AliFemtoTrackCut &);
+#pragma link C++ function AliFemtoConfigObject::From(const AliFemtoPairCut &);
+
+#pragma link C++ function AliFemtoConfigObject::Into<AliFemtoEventReader>(bool);
+#pragma link C++ function AliFemtoConfigObject::Into<AliFemtoEventCut>(bool);
+#pragma link C++ function AliFemtoConfigObject::Into<AliFemtoTrackCut>(bool);
+#pragma link C++ function AliFemtoConfigObject::Into<AliFemtoPairCut>(bool);
+
 #pragma link C++ class AliFemtoModelCorrFctnDEtaDPhiStar+;
 #pragma link C++ class AliFemtoModelCorrFctnDEtaDPhiStar::Parameters+;
 #pragma link C++ class AliFemtoModelCorrFctnDEtaDPhiStar::Builder+;
@@ -153,7 +163,7 @@
 #pragma link C++ class AliFemtoKKTrackCutTest;
 // Sphericity for KK analysis in pp13TeV
 #pragma link C++ class AliFemtoSphericityEventCutKK;
-// Sphericity monitor 
+// Sphericity monitor
 #pragma link C++ class AliFemtoCutMonitorEventSphericity;
 
 #pragma link C++ class AliFemtoCorrFctnInvMass;
