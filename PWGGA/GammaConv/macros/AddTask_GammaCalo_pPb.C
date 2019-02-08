@@ -1898,6 +1898,14 @@ void AddTask_GammaCalo_pPb(
     cuts.AddCutCalo("80010123","4117958050032230000","01631031000000d0"); // INT7
     cuts.AddCutCalo("8008e123","4117958050032230000","01631031000000d0"); // EG2
     cuts.AddCutCalo("8008d123","4117958050032230000","01631031000000d0"); // EG1
+  } else if (trainConfig == 2034){ // EMCAL+DCAL clusters standard cuts, triggers, NL vars
+    cuts.AddCutCalo("80010123","4117965050032230000","01631031000000d0"); // INT7
+    cuts.AddCutCalo("8008e123","4117965050032230000","01631031000000d0"); // EG2
+    cuts.AddCutCalo("8008d123","4117965050032230000","01631031000000d0"); // EG1
+  } else if (trainConfig == 2035){ // EMCAL+DCAL clusters standard cuts, triggers, NL vars
+    cuts.AddCutCalo("80010123","4117900050032230000","01631031000000d0"); // INT7
+    cuts.AddCutCalo("8008e123","4117900050032230000","01631031000000d0"); // EG2
+    cuts.AddCutCalo("8008d123","4117900050032230000","01631031000000d0"); // EG1
 
   // standard cut configs with no NL for SM-wise correction
   } else if (trainConfig == 2100){ // EMCAL+DCAL clusters standard cuts, triggers, no NL
