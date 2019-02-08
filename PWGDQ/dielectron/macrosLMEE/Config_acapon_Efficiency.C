@@ -85,46 +85,58 @@ void GetCentrality(const Int_t centrality, Double_t& CentMin, Double_t& CentMax)
   return;
 }
 
-void ApplyPIDpostCalibration(AliAnalysisTaskElectronEfficiencyV2* task, Int_t whichDet){
+void ApplyPIDpostCalibration(AliAnalysisTaskElectronEfficiencyV2* task, Int_t whichDet, Bool_t wSDD){
   std::cout << task << std::endl;
 
   std::cout << "starting ApplyPIDpostCalibration()\n";
   if(whichDet == 0){// ITS
     std::cout << "Loading ITS correction" << std::endl;
-    std::string file_name = "outputITS_MC.root";
-    TFile* _file = TFile::Open(file_name.c_str());
+    TString localPath = "/home/aaron/Data/diElec_framework_output/PIDcalibration/";
+    TString fileName = "outputITS";
+    if(wSDD == kTRUE){
+      fileName.Append("_MC.root");
+    }else{
+      fileName.Append("_woSDD_MC.root");
+    }
 
-    if(!_file){
-      gSystem->Exec(("alien_cp alien:///alice/cern.ch/user/a/acapon/PIDcalibration/" + file_name + " .").c_str());
+    TFile* inFile = TFile::Open(localPath+fileName);
+    if(!inFile){
+      gSystem->Exec("alien_cp alien:///alice/cern.ch/user/a/acapon/PIDcalibration/"+fileName+" .");
       std::cout << "Copy ITS correction from Alien" << std::endl;
-      _file = TFile::Open(file_name.c_str());
+      inFile = TFile::Open(fileName);
     }
     else {
       std::cout << "Correction loaded" << std::endl;
     }
 
-    TH3D* mean = dynamic_cast<TH3D*>(_file->Get("sum_mean_correction"));
-    TH3D* width= dynamic_cast<TH3D*>(_file->Get("sum_width_correction"));
+    TH3D* mean = dynamic_cast<TH3D*>(inFile->Get("sum_mean_correction"));
+    TH3D* width= dynamic_cast<TH3D*>(inFile->Get("sum_width_correction"));
 
     task->SetCentroidCorrFunction(AliAnalysisTaskElectronEfficiencyV2::kITS, mean,  AliDielectronVarManager::kP, AliDielectronVarManager::kEta, AliDielectronVarManager::kRefMultTPConly);
     task->SetWidthCorrFunction   (AliAnalysisTaskElectronEfficiencyV2::kITS, width, AliDielectronVarManager::kP, AliDielectronVarManager::kEta, AliDielectronVarManager::kRefMultTPConly);
   }
   if(whichDet == 1){// TOF
     std::cout << "Loading TOF correction" << std::endl;
-    std::string file_name = "outputTOF_MC.root";
-    TFile* _file = TFile::Open(file_name.c_str());
+    TString localPath = "/home/aaron/Data/diElec_framework_output/PIDcalibration/";
+    TString fileName = "outputTOF";
+    if(wSDD == kTRUE){
+      fileName.Append("_MC.root");
+    }else{
+      fileName.Append("_woSDD_MC.root");
+    }
 
-    if(!_file){
-      gSystem->Exec(("alien_cp alien:///alice/cern.ch/user/a/acapon/PIDcalibration/" + file_name + " .").c_str());
+    TFile* inFile = TFile::Open(localPath+fileName);
+    if(!inFile){
+      gSystem->Exec("alien_cp alien:///alice/cern.ch/user/a/acapon/PIDcalibration/"+fileName+" .");
       std::cout << "Copy TOF correction from Alien" << std::endl;
-      _file = TFile::Open(file_name.c_str());
+      inFile = TFile::Open(fileName);
     }
     else {
       std::cout << "Correction loaded" << std::endl;
     }
 
-    TH3D* mean = dynamic_cast<TH3D*>(_file->Get("sum_mean_correction"));
-    TH3D* width= dynamic_cast<TH3D*>(_file->Get("sum_width_correction"));
+    TH3D* mean = dynamic_cast<TH3D*>(inFile->Get("sum_mean_correction"));
+    TH3D* width= dynamic_cast<TH3D*>(inFile->Get("sum_width_correction"));
 
     task->SetCentroidCorrFunction(AliAnalysisTaskElectronEfficiencyV2::kTOF, mean,  AliDielectronVarManager::kP, AliDielectronVarManager::kEta, AliDielectronVarManager::kRefMultTPConly);
     task->SetWidthCorrFunction   (AliAnalysisTaskElectronEfficiencyV2::kTOF, width, AliDielectronVarManager::kP, AliDielectronVarManager::kEta, AliDielectronVarManager::kRefMultTPConly);
