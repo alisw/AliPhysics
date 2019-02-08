@@ -876,6 +876,10 @@ Int_t AliESDtools::SetDefaultAliases(TTree* tree) {
   tree->SetAlias("tgl", "(Tracks[].fP[3]+0)");
   ///dEdx ratios
   tree->SetAlias("mdEdx", "50./Tracks[].fTPCsignal");
+  for (Int_t i=0; i<4; i++){
+    tree->SetAlias(Form("ratioTotMax%d",i) , Form("fTPCdEdxInfo.GetSignalTot(%d)/fTPCdEdxInfo.GetSignalMax(%d)",i,i));
+    tree->SetAlias(Form("logTotMax%d",i) , Form("log(fTPCdEdxInfo.GetSignalTot(%d)/fTPCdEdxInfo.GetSignalMax(%d))",i,i));
+  }
   tree->SetAlias("ratioTotMax0", "fTPCdEdxInfo.GetSignalTot(0)/fTPCdEdxInfo.GetSignalMax(0)");
   tree->SetAlias("ratioTotMax1", "fTPCdEdxInfo.GetSignalTot(1)/fTPCdEdxInfo.GetSignalMax(1)");
   tree->SetAlias("ratioTotMax2", "fTPCdEdxInfo.GetSignalTot(2)/fTPCdEdxInfo.GetSignalMax(2)");
@@ -897,6 +901,7 @@ Int_t AliESDtools::SetDefaultAliases(TTree* tree) {
   tree->SetAlias("nclFractionROC0", "(Tracks[].GetTPCClusterInfo(3,0,0,63)+0)");
   tree->SetAlias("nclFractionROC1", "(Tracks[].GetTPCClusterInfo(3,0,64,128)+0)");
   tree->SetAlias("nclFractionROC2", "(Tracks[].GetTPCClusterInfo(3,0,129,159)+0)");
+  tree->SetAlias("nclFractionROC3", "(Tracks[].GetTPCClusterInfo(3,0)+0)");
   tree->SetAlias("nCross0", "esdTrack.fTPCdEdxInfo.GetNumberOfCrossedRows(0)");
   tree->SetAlias("nCross1", "esdTrack.fTPCdEdxInfo.GetNumberOfCrossedRows(1)");
   tree->SetAlias("nCross2", "esdTrack.fTPCdEdxInfo.GetNumberOfCrossedRows(2)");
@@ -915,8 +920,12 @@ Int_t AliESDtools::SetDefaultAliases(TTree* tree) {
     TStatToolkit::AddMetadata(tree, Form("nFraction%d.AxisTitle", i), Form("p_{cl1}(ROC%d)", i));
     TStatToolkit::AddMetadata(tree, Form("n3Fraction%d.AxisTitle", i), Form("p_{cl3}(ROC%d)", i));
   }
-  for (Int_t i = 0; i < 4; i++)
-    TStatToolkit::AddMetadata(tree, Form("ratioTotMax%d.AxisTitle", i), Form("Q_{max%d}/Q_{tot%d}", i,i));
+  for (Int_t i = 0; i < 4; i++) {
+    TStatToolkit::AddMetadata(tree, Form("ratioTotMax%d.AxisTitle", i), Form("Q_{max%d}/Q_{tot%d}", i, i));
+    TStatToolkit::AddMetadata(tree, Form("logTotMax%d.AxisTitle", i), Form("log(Q_{max%d}/Q_{tot%d})", i, i));
+    TStatToolkit::AddMetadata(tree, Form("ratioTotMax%d.Title", i), Form("Q_{max%d}/Q_{tot%d}", i, i));
+    TStatToolkit::AddMetadata(tree, Form("logTotMax%d.Title", i), Form("log(Q_{max%d}/Q_{tot%d})", i, i));
+  }
   for (Int_t i = 0; i < 3; i++) {
     for (Int_t j = i + 1; j < 4; j++) {
       TStatToolkit::AddMetadata(tree, Form("logRatioMax%d%d.AxisTitle", i, j), Form("log(Q_{MaxRPC%d}/Q_{MaxROC%d})", i, j));

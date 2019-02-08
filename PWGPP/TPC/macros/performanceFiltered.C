@@ -256,6 +256,7 @@ Bool_t  InitAnalysis(){
   (*pcstream)<<"perf"<<
     "luminosityGraph.="<<luminosityGraph<<
     "lumiBin.="<<grLumiBin;
+  return kTRUE;
 }
 
 /// Fill performance histograms
