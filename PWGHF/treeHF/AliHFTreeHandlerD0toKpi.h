@@ -65,7 +65,7 @@ class AliHFTreeHandlerD0toKpi : public AliHFTreeHandler
     vector<float> fNormDecayLength; ///vector of candidate normalised decay length
 
     /// \cond CLASSIMP
-    ClassDef(AliHFTreeHandlerD0toKpi,1); /// 
+    ClassDef(AliHFTreeHandlerD0toKpi,2); /// 
     /// \endcond
 };
 #endif
