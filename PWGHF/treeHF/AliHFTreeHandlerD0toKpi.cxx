@@ -32,7 +32,10 @@ AliHFTreeHandlerD0toKpi::AliHFTreeHandlerD0toKpi():
   fImpParProng(),
   fCosThetaStar(),
   fImpParProd(),
-  fNormd0MeasMinusExp()
+  fNormd0MeasMinusExp(),
+  fImpParErrProng(),
+  fNormDecayLength()
+
 {
   //
   // Default constructor
@@ -47,7 +50,9 @@ AliHFTreeHandlerD0toKpi::AliHFTreeHandlerD0toKpi(int PIDopt):
   fImpParProng(),
   fCosThetaStar(),
   fImpParProd(),
-  fNormd0MeasMinusExp()
+  fNormd0MeasMinusExp(),
+  fImpParErrProng(),
+  fNormDecayLength()
 {
   //
   // Standard constructor
@@ -82,8 +87,10 @@ TTree* AliHFTreeHandlerD0toKpi::BuildTree(TString name, TString title)
   fTreeVar->Branch("cos_t_star",&fCosThetaStar);
   fTreeVar->Branch("imp_par_prod",&fImpParProd);
   fTreeVar->Branch("max_norm_d0d0exp",&fNormd0MeasMinusExp);
+  fTreeVar->Branch("norm_dl",&fNormDecayLength);
   for(unsigned int iProng=0; iProng<fNProngs; iProng++){
     fTreeVar->Branch(Form("imp_par_prong%d",iProng),&fImpParProng[iProng]);
+    fTreeVar->Branch(Form("imp_par_err_prong%d",iProng),&fImpParErrProng[iProng]);
   }
 
   //set single-track variables
@@ -120,6 +127,7 @@ bool AliHFTreeHandlerD0toKpi::SetVariables(AliAODRecoDecayHF* cand, float bfield
   fCosPXY.push_back(cand->CosPointingAngleXY());
   fImpParXY.push_back(cand->ImpParXY());
   fNormd0MeasMinusExp.push_back(ComputeMaxd0MeasMinusExp(cand,bfield));
+  fNormDecayLength.push_back(cand->NormalizedDecayLength());
   
   //D0 -> Kpi variables
   fImpParProd.push_back(((AliAODRecoDecayHF2Prong*)cand)->Prodd0d0());
@@ -133,6 +141,7 @@ bool AliHFTreeHandlerD0toKpi::SetVariables(AliAODRecoDecayHF* cand, float bfield
   }
   for(unsigned int iProng=0; iProng<fNProngs; iProng++) {
     fImpParProng[iProng].push_back(cand->Getd0Prong(iProng));
+    fImpParErrProng[iProng].push_back(cand->Getd0errProng(iProng));
   }
     
   //single track variables
@@ -160,7 +169,11 @@ void AliHFTreeHandlerD0toKpi::FillTree() {
     fCosThetaStar.clear();
     fImpParProd.clear();
     fNormd0MeasMinusExp.clear();
-    for(unsigned int iProng=0; iProng<fNProngs; iProng++) fImpParProng[iProng].clear();
+    fNormDecayLength.clear();
+    for(unsigned int iProng=0; iProng<fNProngs; iProng++) {
+    	fImpParProng[iProng].clear();
+    	fImpParErrProng[iProng].clear();
+    }
     ResetSingleTrackVarVectors();
     if(fPidOpt!=kNoPID) ResetPidVarVectors();
   }
