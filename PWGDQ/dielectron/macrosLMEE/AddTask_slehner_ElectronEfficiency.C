@@ -6,7 +6,8 @@ AliAnalysisTaskElectronEfficiencyV2* AddTask_slehner_ElectronEfficiency(
                                                                 TString TMVAweight = "TMVAClassification_BDTG.weights_094.xml",
                                                                 Int_t genGroup=0,
                                                                 Bool_t fromAlien,
-                                                                TString date="ddmmyy"
+                                                                TString date="ddmmyy",
+                                                                Int_t wagonnr=0
         ) {
 
   std::cout << "########################################\nADDTASK of ANALYSIS started\n########################################" << std::endl;
@@ -187,6 +188,6 @@ AliAnalysisTaskElectronEfficiencyV2* AddTask_slehner_ElectronEfficiency(
 
   mgr->AddTask(task);
   mgr->ConnectInput(task, 0, mgr->GetCommonInputContainer());
-  mgr->ConnectOutput(task, 1, mgr->CreateContainer(Form("efficiency%d", 0), TList::Class(), AliAnalysisManager::kOutputContainer, fileName.Data()));
+  mgr->ConnectOutput(task, 1, mgr->CreateContainer(Form("efficiency%d", wagonnr), TList::Class(), AliAnalysisManager::kOutputContainer, fileName.Data()));
   return task;
 }

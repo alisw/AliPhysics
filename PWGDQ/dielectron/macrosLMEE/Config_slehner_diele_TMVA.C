@@ -21,58 +21,48 @@ void Config_slehner_diele_TMVA(AliAnalysisTaskMultiDielectron *task,Bool_t usePI
   Int_t PIDCut=0;
   Int_t MVACut=0;
   
-  for(int glcut = 0; glcut <=23; ++glcut){
+  for(int glcut = 0; glcut <=20; ++glcut){
     ////////DEFINE THE CUTS AS FUNCTION OF GLCUT//////
-    if(glcut<9){
-      trackCut=0;
-      PIDCut=glcut;
-      MVACut=0;   
-    }
-    else if(glcut<13){
-      trackCut=glcut-8;
-      PIDCut=0;
-      MVACut=0;      
-    }
-    else{
-      trackCut=0;
-      PIDCut=0;
-      MVACut=glcut-13;
-    }
-    //////////////////////////////////////////////////
-    TString name=TString::Format("DieleTr%d_PID%d_MVA%d",trackCut,PIDCut, MVACut);
-//    cout<<"Diele name: "<<name.Data()<<endl;    
-    AliDielectron * diel_low = new AliDielectron(Form("%s",name.Data()), Form("Name: %s",name.Data()));
-    if(!diel_low){
-      Printf("=======================================");
-      Printf("No AliDielectron object loaded -> EXIT ");
-      Printf("=======================================");
-      return NULL; 
-    }  
+    if(glcut>0 && glcut<11) continue;
+    PIDCut=glcut;
+    trackCut=glcut;
 
-    if(kMix && !hasMC ){ // need second since there is a problem when mixing MC events (TRef?)
-      AliDielectronMixingHandler *mix = new AliDielectronMixingHandler;
+    for(MVACut = 2; MVACut<7;MVACut++){
+      
+      TString name=TString::Format("DieleTr%d_PID%d_MVA%d",trackCut,PIDCut, MVACut);
+      //    cout<<"Diele name: "<<name.Data()<<endl;    
+      AliDielectron * diel_low = new AliDielectron(Form("%s",name.Data()), Form("Name: %s",name.Data()));
+      if(!diel_low){
+        Printf("=======================================");
+        Printf("No AliDielectron object loaded -> EXIT ");
+        Printf("=======================================");
+        return NULL; 
+      }  
 
-      mix->AddVariable(AliDielectronVarManager::kZvPrim,"-10,-5,0,5,10");
-      mix->AddVariable(AliDielectronVarManager::kCentrality,"0,5,10,20,30,50,80");
-      mix->SetDepth(15);
-      mix->SetMixType(AliDielectronMixingHandler::kAll);
-      diel_low->SetMixingHandler(mix);
-    }
+      if(kMix && !hasMC ){ // need second since there is a problem when mixing MC events (TRef?)
+        AliDielectronMixingHandler *mix = new AliDielectronMixingHandler;
 
-   if(usePIDCorr){
-     SetITSCorr(diel_low,hasMC);
-     SetTPCCorr(diel_low,hasMC);
-     SetTOFCorr(diel_low,hasMC);
-   }
+        mix->AddVariable(AliDielectronVarManager::kZvPrim,"-10,-5,0,5,10");
+        mix->AddVariable(AliDielectronVarManager::kCentrality,"0,5,10,20,30,50,80");
+        mix->SetDepth(15);
+        mix->SetMixType(AliDielectronMixingHandler::kAll);
+        diel_low->SetMixingHandler(mix);
+      }
 
-   diel_low->SetUseKF(kFALSE);   //keep this one, otherwise masses are slightly wrong and R factors very wrong!
-   InitHistograms(diel_low,0);
-   
-  std::cout << "CutTr: "<<trackCut<<" CutPID: "<<PIDCut<<" MVAcut: "<<-1+MVACut*0.2<<" being added"<< std::endl;
-  diel_low->GetTrackFilter().AddCuts(SetupTrackCutsAndSettings(trackCut, PIDCut, MVACut, useAODFilterCuts,TMVAweight));   
-  task->AddDielectron(diel_low);
-  printf("successfully added AliDielectron: %s\n",diel_low->GetName());           
+      if(usePIDCorr){
+       SetITSCorr(diel_low,hasMC);
+       SetTPCCorr(diel_low,hasMC);
+       SetTOFCorr(diel_low,hasMC);
+      }
 
+      diel_low->SetUseKF(kFALSE);   //keep this one, otherwise masses are slightly wrong and R factors very wrong!
+      InitHistograms(diel_low,0);
+
+      std::cout << "CutTr: "<<trackCut<<" CutPID: "<<PIDCut<<" MVAcut: "<<-1+MVACut*0.2<<" being added"<< std::endl;
+      diel_low->GetTrackFilter().AddCuts(SetupTrackCutsAndSettings(trackCut, PIDCut, MVACut, useAODFilterCuts,TMVAweight));   
+      task->AddDielectron(diel_low);
+      printf("successfully added AliDielectron: %s\n",diel_low->GetName());           
+      }
 
   }
  return;
@@ -286,12 +276,27 @@ void InitHistograms(AliDielectron *die, Int_t cutDefinition)
 //                        AliDielectronVarManager::kM, AliDielectronVarManager::kPt);
   
 //low ptee
-  TVectorD* mbins=  AliDielectronHelper::MakeArbitraryBinning(" 0.00,0.4,0.5 ,0.6 ,0.7 ,1.0, 1.5,2.0 ,3.0 ,5.0"); // for low ptee
-  TVectorD* ptbins= AliDielectronHelper::MakeArbitraryBinning("0.0,0.025,0.05.0.075,0.1,0.15,0.2,0.3,0.4,0.5,0.6,1, 2.0,8");
-  TVectorD* centbins= AliDielectronHelper::MakeLinBinning(10,0,100);
+  TVectorD* mbins=  AliDielectronHelper::MakeArbitraryBinning(" 0.00,0.4,0.5 ,0.6 ,0.7 ,1.1, 1.5,2.0 ,2.7,3.1 ,5.0"); // for low ptee
+  TVectorD* ptbins= AliDielectronHelper::MakeArbitraryBinning("0.0, 0.025, 0.05, 0.075, 0.1, 0.15, 0.2, 0.3, 0.4, 0.5, 0.6, 1, 2.0, 8");
+  TVectorD* centbins= AliDielectronHelper::MakeLinBinning(20,0,100);
   histos->UserHistogram("Pair","InvMass_pPt_cent","Inv.Mass:PairPt:Cent;Inv. Mass (GeV/c^{2});Pair Pt (GeV/c); Centrality (V0M)",
                         mbins, ptbins, centbins,
                         AliDielectronVarManager::kM, AliDielectronVarManager::kPt, AliDielectronVarManager::kCentrality);
+////low ptee squared  
+  TVectorD* mbins=  AliDielectronHelper::MakeArbitraryBinning(" 0.00,0.4,0.5 ,0.6 ,0.7 ,1.1, 1.5,2.0 ,2.7,3.1 ,5.0"); // for low ptee
+  TVectorD* ptsqbins= AliDielectronHelper::MakeArbitraryBinning("0.0, 0.0005, 0.001, 0.0015, 0.002, 0.003, 0.004, 0.006, 0.008, 0.01,0.05,0.1,1.0,8.");
+  TVectorD* centbins= AliDielectronHelper::MakeLinBinning(20,0,100);
+  histos->UserHistogram("Pair","InvMass_pPtSq_cent","Inv.Mass:PairPtSq:Cent;Inv. Mass (GeV/c^{2});Pair Pt Squared (GeV/c)^{2}; Centrality (V0M)",
+                        mbins, ptsqbins, centbins,
+                        AliDielectronVarManager::kM, AliDielectronVarManager::kPtSq, AliDielectronVarManager::kCentrality);
+
+////angular deflection  
+  TVectorD* mbins=  AliDielectronHelper::MakeArbitraryBinning(" 0.00,0.4,0.5 ,0.6 ,0.7 ,1.1, 1.5,2.0 ,2.7,3.1 ,5.0"); // for low ptee
+  TVectorD* ptbins= AliDielectronHelper::MakeArbitraryBinning("0.0, 0.025, 0.05, 0.075, 0.1, 0.15, 0.2, 0.3, 0.4, 0.5, 0.6, 1, 2.0, 8");
+  TVectorD* magbins= AliDielectronHelper::MakeLinBinning(20,0,100);
+  histos->UserHistogram("Pair","InvMass_pPt_mag","Inv.Mass:PairPtSq:Cent;Inv. Mass (GeV/c^{2});Pair Pt (GeV/c); PairPlaneMag",
+                        mbins, ptbins, magbins,
+                        AliDielectronVarManager::kM, AliDielectronVarManager::kPt, AliDielectronVarManager::kPairPlaneMagInPro);
   
 //
 //  histos->UserHistogram("Pair","InvMass_PairPt_PhivPair","InvMass:PairPt:PhivPair;Inv. Mass [GeV];Pair Pt [GeV];PhiV",
