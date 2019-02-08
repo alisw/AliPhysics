@@ -26,6 +26,7 @@ AliHFTreeHandlerLc2V0bachelor::AliHFTreeHandlerLc2V0bachelor():
   fImpParK0s(),
   fDecayLengthK0s(),
   fInvMassK0s(),
+  fDCAK0s(),
   fPtK0s(),
   fEtaK0s(),
   fPhiK0s(),
@@ -33,6 +34,7 @@ AliHFTreeHandlerLc2V0bachelor::AliHFTreeHandlerLc2V0bachelor():
   fV0PointingAngle(),
   fCosThetaStar(),
   fsignd0(),
+  fArmqTOverAlpha(),
   fCalcSecoVtx(0)
 {
   //
@@ -49,6 +51,7 @@ AliHFTreeHandlerLc2V0bachelor::AliHFTreeHandlerLc2V0bachelor(int PIDopt):
   fImpParK0s(),
   fDecayLengthK0s(),
   fInvMassK0s(),
+  fDCAK0s(),
   fPtK0s(),
   fEtaK0s(),
   fPhiK0s(),
@@ -56,6 +59,7 @@ AliHFTreeHandlerLc2V0bachelor::AliHFTreeHandlerLc2V0bachelor(int PIDopt):
   fV0PointingAngle(),
   fCosThetaStar(),
   fsignd0(),
+  fArmqTOverAlpha(),
   fCalcSecoVtx(0)
 {
   //
@@ -91,8 +95,10 @@ TTree* AliHFTreeHandlerLc2V0bachelor::BuildTree(TString name, TString title)
   fTreeVar->Branch("cos_t_star", &fCosThetaStar);
   fTreeVar->Branch("signd0", &fsignd0);
   fTreeVar->Branch("inv_mass_K0s", &fInvMassK0s);
+  fTreeVar->Branch("dca_K0s", &fDCAK0s);
   fTreeVar->Branch("imp_par_K0s", &fImpParK0s);
   fTreeVar->Branch("d_len_K0s", &fDecayLengthK0s);
+  fTreeVar->Branch("armenteros_K0s", &fArmqTOverAlpha);
   fTreeVar->Branch("ctau_K0s", &fcTauK0s);
   fTreeVar->Branch("cos_p_K0s", &fV0PointingAngle);
   fTreeVar->Branch("pt_K0s", &fPtK0s);
@@ -134,6 +140,7 @@ bool AliHFTreeHandlerLc2V0bachelor::SetVariables(AliAODRecoDecayHF* cand, float 
     fCosP.push_back(cand->CosPointingAngle());
     fCosPXY.push_back(cand->CosPointingAngleXY());
     fImpParXY.push_back(cand->ImpParXY());
+    fDCA.push_back(cand->GetDCA());
   }
   
   //Lc -> K0sp variables  
@@ -147,6 +154,7 @@ bool AliHFTreeHandlerLc2V0bachelor::SetVariables(AliAODRecoDecayHF* cand, float 
   fImpParK0s.push_back(cand->Getd0Prong(1));
   fDecayLengthK0s.push_back(((AliAODRecoCascadeHF*)cand)->DecayLengthV0());
   fInvMassK0s.push_back(v0part->MassK0Short());
+  fDCAK0s.push_back(v0part->GetDCA());
   fPtK0s.push_back(v0part->Pt());
   fEtaK0s.push_back(v0part->Eta());
   fPhiK0s.push_back(v0part->Phi());
@@ -167,6 +175,8 @@ bool AliHFTreeHandlerLc2V0bachelor::SetVariables(AliAODRecoDecayHF* cand, float 
   Double_t cts = TMath::Cos(vpr.Angle(vlc.Vect()));
   fCosThetaStar.push_back(cts);
 
+  // Sign of d0 proton (different from regular d0)
+  // (from AliRDHFCutsLctoV0)
   AliAODTrack *bachelor = (AliAODTrack*)((AliAODRecoCascadeHF*)cand)->GetBachelor();
   AliAODVertex *primvert = dynamic_cast<AliAODVertex*>(cand->GetPrimaryVtx());
   Double_t d0z0bach[2], covd0z0bach[3];
@@ -181,7 +191,10 @@ bool AliHFTreeHandlerLc2V0bachelor::SetVariables(AliAODRecoDecayHF* cand, float 
   if(innerpro<0.) signd0 = -1.;  
   signd0 = signd0*TMath::Abs(d0z0bach[0]);
   fsignd0.push_back(signd0);
-			     
+  
+  //Armenteros qT/|alpha|
+  fArmqTOverAlpha.push_back( v0part->PtArmV0()/TMath::Abs(v0part->AlphaV0()) );
+  
   //single track variables
   AliAODTrack* prongtracks[3];
   for(unsigned int iProng = 0; iProng < fNProngs; iProng++){
@@ -210,6 +223,7 @@ void AliHFTreeHandlerLc2V0bachelor::FillTree() {
     fImpParK0s.clear();
     fDecayLengthK0s.clear();
     fInvMassK0s.clear();
+    fDCAK0s.clear();
     fPtK0s.clear();
     fEtaK0s.clear();
     fPhiK0s.clear();
@@ -217,6 +231,7 @@ void AliHFTreeHandlerLc2V0bachelor::FillTree() {
     fV0PointingAngle.clear();
     fCosThetaStar.clear();
     fsignd0.clear();
+    fArmqTOverAlpha.clear();
     for(unsigned int iProng = 0; iProng<fNProngs; iProng++) fImpParProng[iProng].clear();
     ResetSingleTrackVarVectors();
     if(fPidOpt != kNoPID) ResetPidVarVectors();

@@ -49,6 +49,7 @@ AliHFTreeHandler::AliHFTreeHandler():
   fCosP(),
   fCosPXY(),
   fImpParXY(),
+  fDCA(),
   fPProng(),
   fTPCPProng(),
   fTOFPProng(),
@@ -97,6 +98,7 @@ AliHFTreeHandler::AliHFTreeHandler(int PIDopt):
   fCosP(),
   fCosPXY(),
   fImpParXY(),
+  fDCA(),
   fPProng(),
   fTPCPProng(),
   fTOFPProng(),
@@ -207,6 +209,7 @@ void AliHFTreeHandler::AddCommonDmesonVarBranches() {
   fTreeVar->Branch("cos_p",&fCosP);
   fTreeVar->Branch("cos_p_xy",&fCosPXY);
   fTreeVar->Branch("imp_par_xy",&fImpParXY);
+  fTreeVar->Branch("dca",&fDCA);
 } 
 
 //________________________________________________________________
@@ -495,6 +498,7 @@ void AliHFTreeHandler::ResetDmesonCommonVarVectors() {
   fCosP.clear();
   fCosPXY.clear();
   fImpParXY.clear();
+  fDCA.clear();
 }
 
 //________________________________________________________________

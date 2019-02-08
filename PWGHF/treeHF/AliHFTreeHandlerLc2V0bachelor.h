@@ -37,17 +37,19 @@ class AliHFTreeHandlerLc2V0bachelor : public AliHFTreeHandler
     vector<float> fImpParK0s; /// vector of impact parameter K0s
     vector<float> fDecayLengthK0s; /// vector of decay length K0s
     vector<float> fInvMassK0s; /// invariant mass of K0s
+    vector<float> fDCAK0s; ///vector of DCA K0s prongs
     vector<float> fPtK0s; ///vector of K0s pt
     vector<float> fEtaK0s; ///vector of K0s pseudorapidity
     vector<float> fPhiK0s; ///vector of K0s azimuthal angle
     vector<float> fcTauK0s; /// vector of cTau of the K0s
     vector<float> fV0PointingAngle; ///vector of K0s pointing angle
-    vector<float> fCosThetaStar; /// cos theta star
-    vector<float> fsignd0; // signed d0
+    vector<float> fCosThetaStar; ///vector of cos theta star (proton - Lc)
+    vector<float> fsignd0; //vector of signed d0 proton (different from standard d0)
+    vector<float> fArmqTOverAlpha; ///vector of Armenteros qT/|alpha| of the K0s
     int fCalcSecoVtx; /// flag to calculate secondary vertex for Lc (if false, CommonDmesonVarBranches are not filled)
 
     /// \cond CLASSIMP
-    ClassDef(AliHFTreeHandlerLc2V0bachelor, 1); ///
+    ClassDef(AliHFTreeHandlerLc2V0bachelor, 2); ///
     /// \endcond
 };
 
