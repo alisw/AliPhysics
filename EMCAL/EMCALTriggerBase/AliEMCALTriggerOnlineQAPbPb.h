@@ -49,11 +49,13 @@ public:
   void   GetDCalMedian(Double_t median[3])  const { memcpy(median, fMedianDCal, sizeof(Double_t)*3) ; }
   void   GetEMCalBkg(Double_t bkg[3])       const { memcpy(bkg, fBkgEMCal, sizeof(Double_t)*3)      ; }
   void   GetDCalBkg(Double_t bkg[3])        const { memcpy(bkg, fBkgDCal, sizeof(Double_t)*3)       ; }
+  void   SetEnableEnergyCorrelationSM(Bool_t doEnable) { fEnableEnergyCorrelationSM = doEnable; }
 
   TCollection* GetListOfHistograms()  { return fHistos; }
 
 protected:
   Int_t                   fBkgPatchType;                ///< Background patch type
+  Bool_t                  fEnableEnergyCorrelationSM;   ///< Enable STU-FEE energy correlation plot per supermodule        
 
   TArrayI                 fBkgADCAmpEMCal[3];           //!<! ADC EMCal amplitudes (0=online, 1=offline) of background patches (will be reset each event)
   Int_t                   fNBkgPatchesEMCal[3];         //!<! Number of processed background patches (will be reset each event)
@@ -86,7 +88,7 @@ private:
   AliEMCALTriggerOnlineQAPbPb &operator=(const AliEMCALTriggerOnlineQAPbPb &);
 
   /// \cond CLASSIMP
-  ClassDef(AliEMCALTriggerOnlineQAPbPb, 1);
+  ClassDef(AliEMCALTriggerOnlineQAPbPb, 2);
   /// \endcond
 };
 
