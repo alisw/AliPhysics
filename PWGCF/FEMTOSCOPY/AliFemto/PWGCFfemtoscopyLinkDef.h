@@ -75,6 +75,7 @@
 #pragma link C++ class AliFemtoEventReaderAOD+;
 #pragma link C++ class AliFemtoEventReaderAODChain+;
 #pragma link C++ class AliFemtoEventReaderAODMultSelection+;
+#pragma link C++ class AliFemtoEventReaderAlt+;
 #pragma link C++ class AliFemtoAODTrackCut+;
 #pragma link C++ class AliTwoTrackRes+;
 #pragma link C++ class AliFemtoMCTrackCut+;
