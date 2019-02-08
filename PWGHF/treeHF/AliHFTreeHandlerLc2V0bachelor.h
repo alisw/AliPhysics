@@ -29,17 +29,25 @@ class AliHFTreeHandlerLc2V0bachelor : public AliHFTreeHandler
     virtual bool SetVariables(AliAODRecoDecayHF* cand, float bfield, int masshypo = 0, AliPIDResponse* pidrespo = 0x0);
     virtual void FillTree();
 
+    void SetCalcSecoVtx(int opt) {fCalcSecoVtx=opt;}
+
   private:
 
     vector<float> fImpParProng[knMaxProngs]; ///vectors of prong impact parameter
+    vector<float> fImpParK0s; /// vector of impact parameter K0s
+    vector<float> fDecayLengthK0s; /// vector of decay length K0s
     vector<float> fInvMassK0s; /// invariant mass of K0s
+    vector<float> fPtK0s; ///vector of K0s pt
+    vector<float> fEtaK0s; ///vector of K0s pseudorapidity
+    vector<float> fPhiK0s; ///vector of K0s azimuthal angle
     vector<float> fcTauK0s; /// vector of cTau of the K0s
     vector<float> fV0PointingAngle; ///vector of K0s pointing angle
     vector<float> fCosThetaStar; /// cos theta star
     vector<float> fsignd0; // signed d0
+    int fCalcSecoVtx; /// flag to calculate secondary vertex for Lc (if false, CommonDmesonVarBranches are not filled)
 
     /// \cond CLASSIMP
-    ClassDef(AliHFTreeHandlerLc2V0bachelor, 1); /// 
+    ClassDef(AliHFTreeHandlerLc2V0bachelor, 1); ///
     /// \endcond
 };
 

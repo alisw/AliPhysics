@@ -161,6 +161,7 @@ fIsEvRej(0),
 fRunNumber(0),
 fFillMCGenTrees(kTRUE),
 fDsMassKKOpt(1),
+fLc2V0bachelorCalcSecoVtx(0),
 fTreeSingleTrackVarsOpt(AliHFTreeHandler::kRedSingleTrackVars)
 {
 
@@ -248,6 +249,7 @@ fIsEvRej(0),
 fRunNumber(0),
 fFillMCGenTrees(kTRUE),
 fDsMassKKOpt(1),
+fLc2V0bachelorCalcSecoVtx(0),
 fTreeSingleTrackVarsOpt(AliHFTreeHandler::kRedSingleTrackVars)
 {
     /// Standard constructor
@@ -741,15 +743,16 @@ void AliAnalysisTaskSEHFTreeCreator::UserCreateOutputObjects()
         fTreeHandlerLc2V0bachelor = new AliHFTreeHandlerLc2V0bachelor(fPIDoptLc2V0bachelor);
         fTreeHandlerLc2V0bachelor->SetOptSingleTrackVars(fTreeSingleTrackVarsOpt);
         if(fReadMC && fWriteOnlySignal) fTreeHandlerLc2V0bachelor->SetFillOnlySignal(fWriteOnlySignal);
+        fTreeHandlerLc2V0bachelor->SetCalcSecoVtx(fLc2V0bachelorCalcSecoVtx);
         fVariablesTreeLc2V0bachelor = (TTree*)fTreeHandlerLc2V0bachelor->BuildTree(nameoutput,nameoutput);
-        //fVariablesTreeLc2V0bachelor->SetMaxVirtualSize(1.e+8/nEnabledTrees);
+        fVariablesTreeLc2V0bachelor->SetMaxVirtualSize(1.e+8/nEnabledTrees);
         fTreeEvChar->AddFriend(fVariablesTreeLc2V0bachelor);
         if(fFillMCGenTrees && fReadMC) {
             OpenFile(19);
             TString nameoutput = "tree_Lc2V0bachelor_gen";
             fTreeHandlerGenLc2V0bachelor = new AliHFTreeHandlerLc2V0bachelor(0);
             fGenTreeLc2V0bachelor = (TTree*)fTreeHandlerGenLc2V0bachelor->BuildTreeMCGen(nameoutput,nameoutput);
-            //fGenTreeLc2V0bachelor->SetMaxVirtualSize(1.e+8/nEnabledTrees);
+            fGenTreeLc2V0bachelor->SetMaxVirtualSize(1.e+8/nEnabledTrees);
             fTreeEvChar->AddFriend(fGenTreeLc2V0bachelor);
         }
     }
@@ -1967,7 +1970,9 @@ void AliAnalysisTaskSEHFTreeCreator::ProcessCasc(TClonesArray *arrayCasc, AliAOD
       
       fNentries->Fill(33);
       nFilteredLc2V0bachelor++;
-      if((vHF->FillRecoCasc(aod,d,kFALSE))) {//Fill the data members of the candidate only if they are empty.
+      if((vHF->FillRecoCasc(aod,d,kFALSE,fLc2V0bachelorCalcSecoVtx))) {//Fill the data members of the candidate only if they are empty.
+        
+        //TODO, add vHF->RecoSecondaryVertexForCascades() for fLc2V0bachelorCalcSecoVtx=kTRUE if so we want to save properties as d_len, cos_p for Lc also in pp/pPb
         
         Int_t isSelectedFilt = fFiltCutsLc2V0bachelor->IsSelected(d,AliRDHFCuts::kAll,aod); //selected
         if(isSelectedFilt > 0){

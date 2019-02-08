@@ -90,6 +90,7 @@ public:
     void SetFillMCGenTrees(Bool_t fillMCgen) {fFillMCGenTrees=fillMCgen;}
   
     void SetDsMassKKOption(AliHFTreeHandlerDstoKKpi::massKKopt opt) {fDsMassKKOpt=opt;}
+    void SetLc2V0bachelorCalcSecoVtx(Int_t opt=1) {fLc2V0bachelorCalcSecoVtx=opt;}
   
     void SetTreeSingleTrackVarsOpt(Int_t opt) {fTreeSingleTrackVarsOpt=opt;}
   
@@ -209,6 +210,7 @@ private:
     Bool_t                  fFillMCGenTrees;                       /// flag to enable fill of the generated trees
   
     Int_t                   fDsMassKKOpt;                          /// option for Ds massKK (mass or delta mass)
+    Int_t                   fLc2V0bachelorCalcSecoVtx;             /// option to calculate the secondary vertex for Lc2V0bachelor. False by default, has to be added to AddTask in case we want to start using it.
   
     Int_t                   fTreeSingleTrackVarsOpt;               /// option for single-track variables to be filled in the trees
   
