@@ -52,6 +52,7 @@ ClassImp(AliEMCALTriggerOnlineQAPbPb)
 AliEMCALTriggerOnlineQAPbPb::AliEMCALTriggerOnlineQAPbPb():
   AliEMCALTriggerQA(),
   fBkgPatchType(kTMEMCalBkg),
+  fEnableEnergyCorrelationSM(kFALSE),
   fHistos(0)
 {
   for (Int_t i = 0; i < 3; i++) {
@@ -92,6 +93,7 @@ AliEMCALTriggerOnlineQAPbPb::AliEMCALTriggerOnlineQAPbPb():
 AliEMCALTriggerOnlineQAPbPb::AliEMCALTriggerOnlineQAPbPb(const char* name):
   AliEMCALTriggerQA(name),
   fBkgPatchType(kTMEMCalBkg),
+  fEnableEnergyCorrelationSM(kFALSE),
   fHistos(0)
 {
   for (Int_t i = 0; i < 3; i++) {
@@ -132,6 +134,7 @@ AliEMCALTriggerOnlineQAPbPb::AliEMCALTriggerOnlineQAPbPb(const char* name):
 AliEMCALTriggerOnlineQAPbPb::AliEMCALTriggerOnlineQAPbPb(const AliEMCALTriggerOnlineQAPbPb& triggerQA) :
   AliEMCALTriggerQA(triggerQA),
   fBkgPatchType(triggerQA.fBkgPatchType),
+  fEnableEnergyCorrelationSM(triggerQA.fEnableEnergyCorrelationSM),
   fHistos(0)
 {
   for (Int_t i = 0; i < 3; i++) {
@@ -208,15 +211,17 @@ void AliEMCALTriggerOnlineQAPbPb::Init()
   htitle = "EMCTRQA_histCellAmpVsFastORL1Amp;FastOR L1 amplitude;2x2 cell sum energy (GeV)";
   CreateTH2(hname, htitle, 1024/fADCperBin, 0, 1024, 1024/fADCperBin, 0, 80);
 
-  hname = "EMCTRQA_histCellAmpVsFastORL1AmpSM";
-  htitle = "EMCTRQA_histCellAmpVsFastORL1AmpSM;SM; FastOR L1 amplitude;2x2 cell sum energy (GeV)";
-  TArrayD smbinning(22), energybinning(201);
-  int ibin(0);
-  for(double b = -0.5; b <= 19.5; b+=1) smbinning[ibin++] = b;
-  ibin = 0;
-  for(double b = 0.; b <= 20.; b += 0.1) energybinning[ibin++] = b;
-  const TArrayD histsmbinning[3] = {smbinning, energybinning, energybinning};
-  CreateTHnSparse(hname, htitle, 3, histsmbinning);
+  if(fEnableEnergyCorrelationSM){
+    hname = "EMCTRQA_histCellAmpVsFastORL1AmpSM";
+    htitle = "EMCTRQA_histCellAmpVsFastORL1AmpSM;SM; FastOR L1 amplitude;2x2 cell sum energy (GeV)";
+    TArrayD smbinning(22), energybinning(201);
+    int ibin(0);
+    for(double b = -0.5; b <= 19.5; b+=1) smbinning[ibin++] = b;
+    ibin = 0;
+    for(double b = 0.; b <= 20.; b += 0.1) energybinning[ibin++] = b;
+    const TArrayD histsmbinning[3] = {smbinning, energybinning, energybinning};
+    CreateTHnSparse(hname, htitle, 3, histsmbinning);
+  }
 
   for (Int_t itype = 0; itype < 3; itype++) {
     if (!IsPatchTypeEnabled(itype, EMCALTrigger::kTMEMCalBkg)) continue;
@@ -506,9 +511,11 @@ void AliEMCALTriggerOnlineQAPbPb::ProcessFastor(const AliEMCALTriggerFastOR* fas
     hname = "EMCTRQA_histCellAmpVsFastORL1Amp";
     FillTH2(hname, fastor->GetL1Amp(), offlineAmp);
 
-    double point[3] = {static_cast<double>(iSM), fastor->GetL1Amp() * EMCALTrigger::kEMCL1ADCtoGeV , offlineAmp};
-    hname = "EMCTRQA_histCellAmpVsFastORL1AmpSM";
-    FillTHnSparse(hname, point);
+    if(fEnableEnergyCorrelationSM){
+      double point[3] = {static_cast<double>(iSM), fastor->GetL1Amp() * EMCALTrigger::kEMCL1ADCtoGeV , offlineAmp};
+      hname = "EMCTRQA_histCellAmpVsFastORL1AmpSM";
+      FillTHnSparse(hname, point);
+    }
 
     if (fastor->GetL1Amp() > fFastorL1Th) {
       hname = Form("EMCTRQA_histLargeAmpFastORL1");
