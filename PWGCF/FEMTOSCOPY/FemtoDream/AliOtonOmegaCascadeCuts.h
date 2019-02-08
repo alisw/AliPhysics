@@ -59,10 +59,12 @@ class AliOtonOmegaCascadeCuts {
     fMinRunNumber = iMinRun;
     fMaxRunNumber = iMaxRun;
   }
-  void SetXiMassRange(float mass, float width) {
+  void SetXiMassRange(float mass, float width, float massExcl = 0., float widthExcl = 0.) {
     fcutXiMass = true;
     fXiMass = mass;
     fXiMassWidth = width;
+    fXiMassExcl = massExcl;
+    fXiMassWidthExcl = widthExcl;
   }
   ;
   void SetXiCharge(int charge) {
@@ -229,6 +231,8 @@ class AliOtonOmegaCascadeCuts {
   bool fcutXiMass;    //
   float fXiMass;    //
   float fXiMassWidth;  //
+  float fXiMassExcl;    //
+  float fXiMassWidthExcl;  //
   bool fcutXiCharge;  //
   int fXiCharge;  //
   bool fcutDCAXiDaug;  //
