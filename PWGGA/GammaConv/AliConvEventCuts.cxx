@@ -2,6 +2,7 @@
 * Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved.  *
 *                                                                         *
 * Authors: Friederike Bock, Daniel Muehlheim                              *
+* A. Marin with help of Evgeny: Addition of double Gap events (Feb2019)   *
 * Version 1.0                                                             *
 *                                                                         *
 * Permission to use, copy, modify and distribute this software and its    *
@@ -1419,6 +1420,12 @@ Bool_t AliConvEventCuts::SetSelectSpecialTrigger(Int_t selectSpecialTrigger)
     fTriggersEMCALSelected= 0;
     fSpecialTriggerName="AliVEvent::kCaloOnly";
     break;
+  case 11: // Double gap (DG) events
+    fSpecialTrigger=11; // DG events
+    fOfflineTriggerMask=0;  // kAny cannot be used for DG events
+    fTriggerSelectedManually = kTRUE;
+    fSpecialTriggerName="";
+    break;
   default:
     AliError("Warning: Special Trigger Not known");
     return 0;
@@ -2142,6 +2149,17 @@ Bool_t AliConvEventCuts::SetSelectSubTriggerClass(Int_t selectSpecialSubTriggerC
     default:
       AliError("Warning: Special Subtrigger Class Not known");
       return 0;
+    }
+  } else if (fSpecialTrigger == 11){ // selection of double gap events
+    switch(selectSpecialSubTriggerClass){
+    case 0: //CCUP25-B-SPD1-CENTNOTRD
+      fSpecialSubTrigger=1;
+      fNSpecialSubTriggerOptions=1;
+      fSpecialSubTriggerName="CCUP25-B-SPD1-CENTNOTRD";
+      break;
+    default:
+      AliError("Warning: Special Subtrigger Class Not known");
+     return 0;
     }
   }
   return 1;
@@ -4133,6 +4151,12 @@ Bool_t AliConvEventCuts::IsTriggerSelected(AliVEvent *event, Bool_t isMC)
         fOfflineTriggerMask = AliVEvent::kAny;
       }
     }
+    
+    // DG event selection; special condition
+    if ( (fSpecialTrigger == 11)  && fTriggerSelectedManually &&  fSpecialSubTriggerName.CompareTo("CCUP25-B-SPD1-CENTNOTRD") == 0 ) {
+      if (firedTrigClass.Contains(fSpecialSubTriggerName.Data())) isSelected = 1;
+    }
+
 
     if (fOfflineTriggerMask){
       isSelected = fOfflineTriggerMask & fInputHandler->IsEventSelected();
