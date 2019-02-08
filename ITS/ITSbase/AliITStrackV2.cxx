@@ -79,6 +79,7 @@ AliITStrackV2::AliITStrackV2(AliESDtrack& t,Bool_t c):
   }
 
   for(Int_t i=0; i<AliITSgeomTGeo::kNLayers; i++) {fSharedWeight[i]=0;}
+  for(Int_t i=0; i<2*AliITSgeomTGeo::kNLayers; i++) { fModule[i] = -1;}
   for(Int_t i=0; i<4; i++) fdEdxSample[i]=0;
 }
 
@@ -87,7 +88,7 @@ void AliITStrackV2::ResetClusters() {
   //------------------------------------------------------------------
   // Reset the array of attached clusters.
   //------------------------------------------------------------------
-  for (Int_t i=0; i<2*AliITSgeomTGeo::kNLayers; i++) fIndex[i]=-1;
+  for (Int_t i=0; i<2*AliITSgeomTGeo::kNLayers; i++) {fIndex[i]=-1; fModule[i] = -1;}
   for (Int_t i=0; i<AliITSgeomTGeo::kNLayers; i++) {fSharedWeight[i]=0;}
   SetChi2(0.); 
   SetNumberOfClusters(0);
