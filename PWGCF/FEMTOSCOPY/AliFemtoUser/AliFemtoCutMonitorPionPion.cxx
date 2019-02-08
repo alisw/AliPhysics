@@ -229,7 +229,7 @@ AliFemtoCutMonitorPionPion::Pion::Pion(const bool passing,
   , fPtPhi(nullptr)
   , fEtaPhi(nullptr)
   , fChi2Tpc(nullptr)
-//  , fChiTpcIts(nullptr)
+  , fChiTpcIts(nullptr)
   , fdEdX(nullptr)
   , fMC_mass(nullptr)
   , fMC_pt(nullptr)
@@ -278,13 +278,13 @@ AliFemtoCutMonitorPionPion::Pion::Pion(const bool passing,
     hist_title("#chi^{2} / N_{cls} TPC", "TPC"),
     144, 0.0, 0.1
   );
-  // fChiTpcIts = new TH2F(
-  //   "ChiTpcIts" + pf,
-  //   TString::Format(title_format,
-  //                   "#chi^{2} / N_{cls} TPC vs ITS",
-  //                   "TPC; ITS;"),
-  //   144, 0.0, 0.1,
-  //   144, 0.0, 0.1);
+  fChiTpcIts = new TH2F(
+    "ChiTpcIts" + pf,
+    TString::Format(title_format,
+                    "#chi^{2} / N_{cls} TPC vs ITS",
+                    "TPC; ITS;"),
+    144, 0.0, 6.1,
+    144, 0.0, 7.1);
 
   fdEdX = new TH2F(
     hist_name("dEdX"),
@@ -396,7 +396,7 @@ AliFemtoCutMonitorPionPion::Pion::GetOutputList()
   output->Add(fPtPhi);
   output->Add(fEtaPhi);
   output->Add(fChi2Tpc);
-  // output->Add(fChiTpcIts);
+  output->Add(fChiTpcIts);
   output->Add(fdEdX);
   output->Add(fImpact);
   if (fMC_type) {
@@ -421,7 +421,7 @@ void AliFemtoCutMonitorPionPion::Pion::Fill(const AliFemtoTrack* track)
                   eta = 0.5 * ::log((energy + pz) / (energy - pz));
 
 
-  const Int_t // ITS_ncls = track->ITSncls(),
+  const Int_t ITS_ncls = track->ITSncls(),
               TPC_ncls = track->TPCncls();
 
 
@@ -460,8 +460,9 @@ void AliFemtoCutMonitorPionPion::Pion::Fill(const AliFemtoTrack* track)
 
   fChi2Tpc->Fill((TPC_ncls > 0) ? track->TPCchi2() / TPC_ncls : 0.0);
 
-  // fChiTpcIts->Fill( (TPC_ncls > 0) ? track->TPCchi2() / TPC_ncls : 0.0,
-  //                   (ITS_ncls > 0) ? track->ITSchi2() / ITS_ncls : 0.0);
+
+  fChiTpcIts->Fill( (TPC_ncls > 0) ? track->TPCchi2() : 0.0,
+                    (ITS_ncls > 0) ? track->ITSchi2() / ITS_ncls : 0.0);
 
 
   fImpact->Fill(track->ImpactZ(), track->ImpactD());
