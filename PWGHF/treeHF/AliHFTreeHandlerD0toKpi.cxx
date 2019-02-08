@@ -119,6 +119,7 @@ bool AliHFTreeHandlerD0toKpi::SetVariables(AliAODRecoDecayHF* cand, float bfield
   fCosP.push_back(cand->CosPointingAngle());
   fCosPXY.push_back(cand->CosPointingAngleXY());
   fImpParXY.push_back(cand->ImpParXY());
+  fDCA.push_back(cand->GetDCA());
   fNormd0MeasMinusExp.push_back(ComputeMaxd0MeasMinusExp(cand,bfield));
   
   //D0 -> Kpi variables

@@ -42,7 +42,8 @@ class AliHFTreeHandler : public TObject
       kFD       = BIT(4),
       kRefl     = BIT(5),
       kSelectedTopo    = BIT(6),
-      kSelectedPID     = BIT(7) //up to BIT(10) included for general flags, following BITS particle-specific
+      kSelectedPID     = BIT(7),
+      kSelectedTracks  = BIT(8) //up to BIT(10) included for general flags, following BITS particle-specific
     };
   
     enum optpid {
@@ -88,13 +89,15 @@ class AliHFTreeHandler : public TObject
     void SetFillOnlySignal(bool fillopt=true) {fFillOnlySignal=fillopt;}
 
     void SetCandidateType(bool issignal, bool isbkg, bool isprompt, bool isFD, bool isreflected);
-    void SetIsSelectedStd(bool isselected, bool isselectedTopo, bool isselectedPID) {
+    void SetIsSelectedStd(bool isselected, bool isselectedTopo, bool isselectedPID, bool isselectedTracks) {
       if(isselected) fCandTypeMap |= kSelected;
       else fCandTypeMap &= ~kSelected;
       if(isselectedTopo) fCandTypeMap |= kSelectedTopo;
       else fCandTypeMap &= ~kSelectedTopo;
       if(isselectedPID) fCandTypeMap |= kSelectedPID;
       else fCandTypeMap &= ~kSelectedPID;
+      if(isselectedTracks) fCandTypeMap |= kSelectedTracks;
+      else fCandTypeMap &= ~kSelectedTracks;
     }
 
     void SetDauInAcceptance(bool dauinacc = true) {fDauInAccFlag=dauinacc;}
@@ -129,6 +132,10 @@ class AliHFTreeHandler : public TObject
     }
     static bool IsSelectedStdPID(int candtype) {
         if(candtype>>7&1) return true;
+        return false;
+    }
+    static bool IsSelectedStdTracks(int candtype) {
+        if(candtype>>8&1) return true;
         return false;
     }
 
@@ -173,6 +180,7 @@ class AliHFTreeHandler : public TObject
     vector<float> fCosP; ///vector of candidate cosine of pointing angle
     vector<float> fCosPXY; ///vector of candidate cosine of pointing angle in the transcverse plane
     vector<float> fImpParXY; ///vector of candidate impact parameter in the transverse plane
+    vector<float> fDCA; ///vector of DCA of candidates prongs
     vector<float> fPProng[knMaxProngs]; ///vectors of prong momentum
     vector<float> fTPCPProng[knMaxProngs]; ///vectors of prong TPC momentum
     vector<float> fTOFPProng[knMaxProngs]; ///vectors of prong TOF momentum
@@ -198,7 +206,7 @@ class AliHFTreeHandler : public TObject
     vector<bool> fDauInAcceptance; ///vector of flags to know if the daughter are in acceptance in case of MC gen
   
   /// \cond CLASSIMP
-  ClassDef(AliHFTreeHandler,2); /// 
+  ClassDef(AliHFTreeHandler,3); ///
   /// \endcond
 };
 
