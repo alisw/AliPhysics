@@ -122,6 +122,8 @@ set(SRCS
   charmFlow/AliAnalysisTaskHFv1.cxx
   charmFlow/AliHFAfterBurner.cxx
   charmFlow/AliAnalysisTaskFlowD2H.cxx
+  charmFlow/AliHFQnVectorHandler.cxx
+  charmFlow/AliAnalysisTaskSEHFTenderQnVectors.cxx
   cutVarFDsub/AliHFCutVarFDsubAnalysisManager.cxx
   cutVarFDsub/AliHFCutVarFDsubAnalysisManagerD0.cxx
   cutVarFDsub/AliHFCutVarFDsubAnalysisManagerDplus.cxx
