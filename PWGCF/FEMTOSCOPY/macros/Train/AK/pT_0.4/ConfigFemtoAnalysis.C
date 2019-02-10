@@ -146,7 +146,7 @@ AliFemtoManager* ConfigFemtoAnalysis(const char* params) {
 	TGrid::Connect("alien://");
 
 	int runmults[numOfMultBins] = {1};
-	int multbins[numOfMultBins+1] = {0, 3000};
+	int multbins[numOfMultBins+1] = {0, 20000}; //liczba czastek (zakres multiplicity) (wczesniej bylo 3000)
 	
 	int runch[numOfChTypes] = {0, 0, 0, 0, 0, 0, 1, 1, 1, 0, 0, 0, 1, 1, 1, 1}; // 1 - wlacza czastki do analizy
 	const char *chrgs[numOfChTypes] = { "PP", "aPaP", "PaP", "KpKp", "KmKm", "KpKm", "PIpPIp", "PImPIm", "PIpPIm", "V0LL", "V0ALAL", "V0LAL", "all", "plus", "minus", "mixed"};

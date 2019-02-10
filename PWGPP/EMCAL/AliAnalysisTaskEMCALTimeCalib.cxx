@@ -65,11 +65,14 @@ ClassImp(AliAnalysisTaskEMCALTimeCalib) ;
 /// Constructor
 AliAnalysisTaskEMCALTimeCalib::AliAnalysisTaskEMCALTimeCalib(const char *name)
 : AliAnalysisTaskSE(name),
+  fPARvec(),
+  fCurrentPARs(),
+  fCurrentPARIndex(0),
+  fIsPARRun(0),
   fRunNumber(-1),
-  //  fTOFmaker(0),
   fOutputList(0x0),
   fgeom(0),
-  fGeometryName(),
+  fGeometryName(0),
   fMinClusterEnergy(0),
   fMaxClusterEnergy(0),
   fMinNcells(0),
@@ -80,8 +83,8 @@ AliAnalysisTaskEMCALTimeCalib::AliAnalysisTaskEMCALTimeCalib(const char *name)
   fMaxLambda0LG(0),
   fMaxRtrack(0),
   fMinCellEnergy(0),
-  fReferenceFileName(),
-  fReferenceRunByRunFileName(),
+  fReferenceFileName(0),
+  fReferenceRunByRunFileName(0),
   fPileupFromSPD(kFALSE),
   fMinTime(0),
   fMaxTime(0),
@@ -104,10 +107,10 @@ AliAnalysisTaskEMCALTimeCalib::AliAnalysisTaskEMCALTimeCalib(const char *name)
   fL1PhaseList(0),
   fBadReco(kFALSE),
   fFillHeavyHisto(kFALSE),
-  fBadChannelMapArray(),
+  fBadChannelMapArray(0),
   fBadChannelMapSet(kFALSE),
   fSetBadChannelMapSource(0),
-  fBadChannelFileName(),
+  fBadChannelFileName(0),
   fhcalcEvtTime(0),
   fhEvtTimeHeader(0),
   fhEvtTimeDiff(0),
@@ -140,6 +143,8 @@ AliAnalysisTaskEMCALTimeCalib::AliAnalysisTaskEMCALTimeCalib(const char *name)
   fhRawTimeSumLGBC(),
   fhRawTimeEntriesLGBC(),
   fhRawTimeSumSqLGBC(),
+  fhRawTimePARs(),
+  fhRawTimeLGPARs(),
   fhRawCorrTimeVsIdBC(),
   fhRawCorrTimeVsIdLGBC(),
   fhTimeVsIdBC(),
@@ -171,7 +176,6 @@ AliAnalysisTaskEMCALTimeCalib::AliAnalysisTaskEMCALTimeCalib(const char *name)
     fhRawCorrTimeVsIdLGBC[i]=0;
     fhTimeVsIdBC[i]=0;
     fhTimeVsIdLGBC[i]=0;
-
   }
 
   //set default cuts for calibration and geometry name
@@ -1369,13 +1373,13 @@ void AliAnalysisTaskEMCALTimeCalib::ProduceCalibConsts(TString inputFile,TString
   TH1F *h2PAR[numPARs+1][4];
   //TH1F *h3PAR[numPARs+1][4];
   TH1F *hAllTimeAvBCPAR[numPARs+1][4];
-  TH1F *hAllTimeRMSBCPAR[numPARs+1][4];
+  //TH1F *hAllTimeRMSBCPAR[numPARs+1][4];
 
   TH1F *h4PAR[numPARs+1][4];
   TH1F *h5PAR[numPARs+1][4];
   //TH1F *h6PAR[numPARs+1][4];
   TH1F *hAllTimeAvLGBCPAR[numPARs+1][4];
-  TH1F *hAllTimeRMSLGBCPAR[numPARs+1][4];
+  //TH1F *hAllTimeRMSLGBCPAR[numPARs+1][4];
 
   TH2D* raw2D[4];
   TH2D* rawLG2D[4];
@@ -1501,14 +1505,19 @@ void AliAnalysisTaskEMCALTimeCalib::ProduceCalibConsts(TString inputFile,TString
     delete hAllTimeAvLGBC[i];
     delete hAllTimeRMSLGBC[i];
 
-    delete h1[i];
-    delete h2[i];
-    delete h3[i];
-    delete h4[i];
-    delete h5[i];
-    delete h6[i];
+    if(isPAR){ //set-up histograms for different PAR time regions
+      for(Int_t iPAR = 0; iPAR <= numPARs; iPAR++){
+	delete h1PAR[iPAR][i];
+	delete hAllTimeAvBCPAR[iPAR][i];
+	delete h2PAR[iPAR][i];
+	delete h4PAR[iPAR][i];
+	delete hAllTimeAvLGBCPAR[iPAR][i];
+	delete h5PAR[iPAR][i];
+      }
+    }
   }
-  
+  list->SetOwner(1);
+  delete list;
   file->Close();
   delete file;
 
@@ -1644,7 +1653,6 @@ const  Double_t upperLimit[]={
     }
   }
 
-
   TH1C *hRun=new TH1C(Form("h%d",runNumber),Form("h%d",runNumber),19,0,19);
   TH1C *hPARRun[info.numPARs+1];
   Int_t fitResult=0;
@@ -1664,7 +1672,7 @@ const  Double_t upperLimit[]={
     if(iPAR != info.numPARs){
       hPARRun[iPAR] =new TH1C(Form("h%d_%llu", runNumber, info.PARGlobalBCs[iPAR]), Form("h%d_%llu", runNumber, info.PARGlobalBCs[iPAR]),19,0,19);
     }else{
-      hPARRun[iPAR] =new TH1C(Form("h%d", runNumber), Form("h%d", runNumber),19,0,19);
+      hPARRun[iPAR] =new TH1C(Form("h%dp%d", runNumber,iPAR), Form("h%d", runNumber),19,0,19);
     }
     for(Int_t i=0;i<20;i++){
       minimumValue=10000;
@@ -1681,9 +1689,9 @@ const  Double_t upperLimit[]={
           }
         }
         if(isPAR){
-          fitResult=ccBCPAR[iPAR][j]->Fit("f1", "CQ", "", lowerLimit[i],upperLimit[i]);
+          fitResult=ccBCPAR[iPAR][j]->Fit("f1", "CQN", "", lowerLimit[i],upperLimit[i]);
         }else{
-          fitResult=ccBC[j]->Fit("f1","CQ","",lowerLimit[i],upperLimit[i]);
+          fitResult=ccBC[j]->Fit("f1","CQN","",lowerLimit[i],upperLimit[i]);
         }
         if(fitResult<0){
 	//hRun->SetBinContent(i,0);//correct it please
@@ -1772,9 +1780,11 @@ const  Double_t upperLimit[]={
   if(isPAR){
     for(Int_t iPAR = 0; iPAR <= info.numPARs; iPAR++){
       hPARRun[iPAR]->Write();
+      delete hPARRun[iPAR];
     }
   }else{
     hRun->Write();
+    delete hRun;
   }
   fileNew->Close();
   delete fileNew;
@@ -1882,7 +1892,7 @@ void AliAnalysisTaskEMCALTimeCalib::GetPARInfoForRunNumber(Int_t runnum){
   if(fRunNumber!=runnum) fRunNumber = runnum;
   fIsPARRun = kFALSE;
   fCurrentPARs.PARGlobalBCs.erase(fCurrentPARs.PARGlobalBCs.begin(), fCurrentPARs.PARGlobalBCs.end());
-  for(int iPARrun = 0; iPARrun < fPARvec.size(); iPARrun++){
+  for(unsigned int iPARrun = 0; iPARrun < fPARvec.size(); iPARrun++){
       //printf("from stored vectors: %d %d", fPARvec[iPARrun].runNumber, fPARvec[iPARrun].numPARs);
       //for(int i = 0; i < fPARvec[iPARrun].numPARs; i++){
       //  printf(" %llu", fPARvec[iPARrun].PARGlobalBCs[i]);

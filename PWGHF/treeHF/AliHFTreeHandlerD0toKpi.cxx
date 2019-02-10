@@ -32,7 +32,10 @@ AliHFTreeHandlerD0toKpi::AliHFTreeHandlerD0toKpi():
   fImpParProng(),
   fCosThetaStar(),
   fImpParProd(),
-  fNormd0MeasMinusExp()
+  fNormd0MeasMinusExp(),
+  fImpParErrProng(),
+  fNormDecayLength()
+
 {
   //
   // Default constructor
@@ -47,7 +50,9 @@ AliHFTreeHandlerD0toKpi::AliHFTreeHandlerD0toKpi(int PIDopt):
   fImpParProng(),
   fCosThetaStar(),
   fImpParProd(),
-  fNormd0MeasMinusExp()
+  fNormd0MeasMinusExp(),
+  fImpParErrProng(),
+  fNormDecayLength()
 {
   //
   // Standard constructor
@@ -82,8 +87,10 @@ TTree* AliHFTreeHandlerD0toKpi::BuildTree(TString name, TString title)
   fTreeVar->Branch("cos_t_star",&fCosThetaStar);
   fTreeVar->Branch("imp_par_prod",&fImpParProd);
   fTreeVar->Branch("max_norm_d0d0exp",&fNormd0MeasMinusExp);
+  fTreeVar->Branch("norm_dl",&fNormDecayLength);
   for(unsigned int iProng=0; iProng<fNProngs; iProng++){
     fTreeVar->Branch(Form("imp_par_prong%d",iProng),&fImpParProng[iProng]);
+    fTreeVar->Branch(Form("imp_par_err_prong%d",iProng),&fImpParErrProng[iProng]);
   }
 
   //set single-track variables
@@ -119,7 +126,9 @@ bool AliHFTreeHandlerD0toKpi::SetVariables(AliAODRecoDecayHF* cand, float bfield
   fCosP.push_back(cand->CosPointingAngle());
   fCosPXY.push_back(cand->CosPointingAngleXY());
   fImpParXY.push_back(cand->ImpParXY());
+  fDCA.push_back(cand->GetDCA());
   fNormd0MeasMinusExp.push_back(ComputeMaxd0MeasMinusExp(cand,bfield));
+  fNormDecayLength.push_back(cand->NormalizedDecayLength());
   
   //D0 -> Kpi variables
   fImpParProd.push_back(((AliAODRecoDecayHF2Prong*)cand)->Prodd0d0());
@@ -133,6 +142,7 @@ bool AliHFTreeHandlerD0toKpi::SetVariables(AliAODRecoDecayHF* cand, float bfield
   }
   for(unsigned int iProng=0; iProng<fNProngs; iProng++) {
     fImpParProng[iProng].push_back(cand->Getd0Prong(iProng));
+    fImpParErrProng[iProng].push_back(cand->Getd0errProng(iProng));
   }
     
   //single track variables
@@ -160,7 +170,11 @@ void AliHFTreeHandlerD0toKpi::FillTree() {
     fCosThetaStar.clear();
     fImpParProd.clear();
     fNormd0MeasMinusExp.clear();
-    for(unsigned int iProng=0; iProng<fNProngs; iProng++) fImpParProng[iProng].clear();
+    fNormDecayLength.clear();
+    for(unsigned int iProng=0; iProng<fNProngs; iProng++) {
+    	fImpParProng[iProng].clear();
+    	fImpParErrProng[iProng].clear();
+    }
     ResetSingleTrackVarVectors();
     if(fPidOpt!=kNoPID) ResetPidVarVectors();
   }
@@ -169,4 +183,115 @@ void AliHFTreeHandlerD0toKpi::FillTree() {
   }
   fCandTypeMap=0;
   fNCandidates=0;
+}
+//________________________________________________________________
+void AliHFTreeHandlerD0toKpi::SetIsDzeroDzeroBar(int isSel, int isSelTopo, int isSelPID, int isSelFilt, int isSelTopoFilt, int isSelPIDFilt) {
+    
+    //analysis cuts
+    //combined selection PID topo
+    if(isSel==0){
+        fCandTypeMap &= ~kDzeroComb;
+        fCandTypeMap &= ~kDzeroBarComb;
+    }
+    else if(isSel==1){
+        fCandTypeMap |= kDzeroComb;
+        fCandTypeMap &= ~kDzeroBarComb;
+    }
+    else if(isSel==2){
+        fCandTypeMap |= kDzeroBarComb;
+        fCandTypeMap &= ~kDzeroComb;
+    }
+    else if(isSel==3){
+        fCandTypeMap |= kDzeroComb;
+        fCandTypeMap |= kDzeroBarComb;
+    }
+    //topol selection
+    if(isSelTopo==0){
+        fCandTypeMap &= ~kDzeroTopo;
+        fCandTypeMap &= ~kDzeroBarTopo;
+    }
+    else if(isSelTopo==1){
+        fCandTypeMap |= kDzeroTopo;
+        fCandTypeMap &= ~kDzeroBarTopo;
+    }
+    else if(isSelTopo==2){
+        fCandTypeMap |= kDzeroBarTopo;
+        fCandTypeMap &= ~kDzeroTopo;
+    }
+    else if(isSelTopo==3){
+        fCandTypeMap |= kDzeroTopo;
+        fCandTypeMap |= kDzeroBarTopo;
+    }
+    //PID selection
+    if(isSelPID==0){
+        fCandTypeMap &= ~kDzeroPID;
+        fCandTypeMap &= ~kDzeroBarPID;
+    }
+    else if(isSelPID==1){
+        fCandTypeMap |= kDzeroPID;
+        fCandTypeMap &= ~kDzeroBarPID;
+    }
+    else if(isSelPID==2){
+        fCandTypeMap |= kDzeroBarPID;
+        fCandTypeMap &= ~kDzeroPID;
+    }
+    else if(isSelPID==3){
+        fCandTypeMap |= kDzeroPID;
+        fCandTypeMap |= kDzeroBarPID;
+    }
+    
+    //filtering cuts
+    //combined selection PID topo
+    if(isSelFilt==0){
+        fCandTypeMap &= ~kDzeroCombFilt;
+        fCandTypeMap &= ~kDzeroBarCombFilt;
+    }
+    else if(isSelFilt==1){
+        fCandTypeMap |= kDzeroCombFilt;
+        fCandTypeMap &= ~kDzeroBarCombFilt;
+    }
+    else if(isSelFilt==2){
+        fCandTypeMap |= kDzeroBarCombFilt;
+        fCandTypeMap &= ~kDzeroCombFilt;
+    }
+    else if(isSelFilt==3){
+        fCandTypeMap |= kDzeroCombFilt;
+        fCandTypeMap |= kDzeroBarCombFilt;
+    }
+    //topol selection
+    if(isSelTopoFilt==0){
+        fCandTypeMap &= ~kDzeroTopoFilt;
+        fCandTypeMap &= ~kDzeroBarTopoFilt;
+    }
+    else if(isSelTopoFilt==1){
+        fCandTypeMap |= kDzeroTopoFilt;
+        fCandTypeMap &= ~kDzeroBarTopoFilt;
+    }
+    else if(isSelTopoFilt==2){
+        fCandTypeMap |= kDzeroBarTopoFilt;
+        fCandTypeMap &= ~kDzeroTopoFilt;
+    }
+    else if(isSelTopoFilt==3){
+        fCandTypeMap |= kDzeroTopoFilt;
+        fCandTypeMap |= kDzeroBarTopoFilt;
+    }
+    //PID selection
+    if(isSelPIDFilt==0){
+        fCandTypeMap &= ~kDzeroPIDFilt;
+        fCandTypeMap &= ~kDzeroBarPIDFilt;
+    }
+    else if(isSelPIDFilt==1){
+        fCandTypeMap |= kDzeroPIDFilt;
+        fCandTypeMap &= ~kDzeroBarPIDFilt;
+    }
+    else if(isSelPIDFilt==2){
+        fCandTypeMap |= kDzeroBarPIDFilt;
+        fCandTypeMap &= ~kDzeroPIDFilt;
+    }
+    else if(isSelPIDFilt==3){
+        fCandTypeMap |= kDzeroPIDFilt;
+        fCandTypeMap |= kDzeroBarPIDFilt;
+    }
+
+    
 }

@@ -199,11 +199,13 @@ AliFemtoAnalysisLambdaKaon::AliFemtoAnalysisLambdaKaon(AnalysisParams &aAnParams
   if(fWritePairKinematics)
   {
     KStarCf = CreateCorrFctnKStar(fAnalysisTags[fAnalysisType],62,0.,0.31); //TNtuple is huge, and I don't need data out to 1 GeV
+    KStarCf->SetBuildIndmTBinned(fAnalysisParams.buildIndmTBinnedCfs);
     fCollectionOfCfs->push_back((AliFemtoCorrFctn*)KStarCf);
   }
   else
   {
     KStarCf = CreateCorrFctnKStar(fAnalysisTags[fAnalysisType],tNbinsKStar,tKStarMin,tKStarMax);
+    KStarCf->SetBuildIndmTBinned(fAnalysisParams.buildIndmTBinnedCfs);
     AvgSepCf = CreateAvgSepCorrFctn(fAnalysisTags[fAnalysisType],200,0.,20.);
     fCollectionOfCfs->push_back((AliFemtoCorrFctn*)KStarCf);
     fCollectionOfCfs->push_back((AliFemtoCorrFctn*)AvgSepCf);
@@ -1853,6 +1855,8 @@ AliFemtoAnalysisLambdaKaon::DefaultAnalysisParams()
 
   tReturnParams.buildSphericalHarmonics = false;
   tReturnParams.useLCMSforSH = false;
+
+  tReturnParams.buildIndmTBinnedCfs = false;
 
   return tReturnParams;
 }

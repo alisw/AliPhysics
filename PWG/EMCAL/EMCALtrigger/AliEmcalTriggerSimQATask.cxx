@@ -56,7 +56,7 @@ fHistManager(name)
   SetMakeGeneralHistograms(kTRUE);
 
   // Initializing array in CINT-compatible way
-  EventEMCALTriggerType_t fTriggerTypesValues[kNTriggerTypes] = {kNTr, kEL0, kEG1, kEG2, kEJ1, kEJ2};
+  EventEMCALTriggerType_t fTriggerTypesValues[kNTriggerTypes] = {kMB, kEL0, kEG1, kEG2, kEJ1, kEJ2};
   memcpy (fTriggerTypes,fTriggerTypesValues,sizeof(fTriggerTypes));
 }
 
@@ -87,6 +87,24 @@ void AliEmcalTriggerSimQATask::UserCreateOutputObjects() {
 
   Int_t nPtBins = TMath::CeilNint(fMaxPt/fPtBinWidth);
 
+  Double_t fMinEta = -0.7;
+  Double_t fMaxEta = 0.7;
+  Double_t fMinPhi = 0;
+  Double_t fMaxPhi = 2*TMath::Pi();
+  Int_t nEtaBins = 96;
+  Int_t nPhiBins = 208;
+
+  Double_t fMinCol = 0;
+  Double_t fMaxCol = 48;
+  Double_t fMinRow = 0;
+  Double_t fMaxRow = 104;
+  Int_t nCol = 48;
+  Int_t nRow = 104;
+
+  Double_t fMaxADCValue = 1024;
+  Double_t nADCBins = 512;
+
+
   // Hist for counting clusters
   fHistManager.CreateTH1("NClusters","NClusters;N_{cluster}; counts",300,0,300);
 
@@ -95,6 +113,37 @@ void AliEmcalTriggerSimQATask::UserCreateOutputObjects() {
     histname = TString::Format("fHistClusEnergy_Trig_%s",fTriggerNames[i].Data());
     title = histname + ";#it{E}_{cluster} (GeV); counts";
     fHistManager.CreateTH1(histname.Data(),title.Data(),nPtBins,0,fMaxPt);
+  }
+
+  for (Int_t i = 0; i < kNTriggerTypes; i++) {
+    histname = TString::Format("fHistClusEtaPhi_Trig_%s",fTriggerNames[i].Data());
+    title = histname + ";#eta_{cluster};#phi_{cluster};counts";
+    fHistManager.CreateTH2(histname.Data(),title.Data(),nEtaBins,fMinEta,fMaxEta,nPhiBins,fMinPhi,fMaxPhi);
+  }
+
+  // Only make patch histgrams for L1 patches:
+  for (Int_t i = 1; i < kNTriggerTypes; i++) {
+    histname = TString::Format("fHistPatchEnergy_Trig_%s",fTriggerNames[i].Data());
+    title = histname + ";#it{E}_{patch} (GeV); counts";
+    fHistManager.CreateTH1(histname.Data(),title.Data(),nPtBins,0,fMaxPt);
+  }
+
+  for (Int_t i = 1; i < kNTriggerTypes; i++) {
+    histname = TString::Format("fHistPatchOnlineADCAmp_Trig_%s",fTriggerNames[i].Data());
+    title = histname + ";#it{E}_{patch} (ADC); counts";
+    fHistManager.CreateTH1(histname.Data(),title.Data(),nADCBins,0,fMaxADCValue);
+  }
+
+  for (Int_t i = 1; i < kNTriggerTypes; i++) {
+    histname = TString::Format("fHistPatchColRow_Trig_%s",fTriggerNames[i].Data());
+    title = histname + ";Col;Row;counts";
+    fHistManager.CreateTH2(histname.Data(),title.Data(),nCol,fMinCol,fMaxCol,nRow,fMinRow,fMaxRow);
+  }
+  // Patch Geometric Centers
+  for (Int_t i = 1; i < kNTriggerTypes; i++) {
+    histname = TString::Format("fHistPatchEtaPhiGeo_Trig_%s",fTriggerNames[i].Data());
+    title = histname + ";#eta_{patch};#phi_{patch};counts";
+    fHistManager.CreateTH2(histname.Data(),title.Data(),nEtaBins,fMinEta,fMaxEta,nPhiBins,fMinPhi,fMaxPhi);
   }
 
   fOutput->Add(fHistManager.GetListOfHistograms());
@@ -177,13 +226,36 @@ void AliEmcalTriggerSimQATask::DoPatchLoop() {
     AliEMCALTriggerPatchInfo* patch = static_cast<AliEMCALTriggerPatchInfo*>(fTriggerPatches->At(i));
     if (!patch) continue;
     if (patch->GetADCAmp() < fMinAmplitude) continue;
-    if (patch->IsLevel0()) fEventTriggerBits |= 0x1 << kL0;
-    if (patch->IsGammaLow()) fEventTriggerBits |= 0x1 << kEG1;
-    if (patch->IsGammaHigh()) fEventTriggerBits |= 0x1 << kEG2;
-    if (patch->IsJetLow()) fEventTriggerBits |= 0x1 << kEJ1;
-    if (patch->IsJetHigh()) fEventTriggerBits |= 0x1 << kEJ2;
+    if (patch->IsLevel0()) {
+      fEventTriggerBits |= 0x1 << kL0;
+      FillPatchHistograms(patch,1);
+    }
+    if (patch->IsGammaLow()) {
+      fEventTriggerBits |= 0x1 << kEG1;
+      FillPatchHistograms(patch,2);
+    }
+    if (patch->IsGammaHigh()) {
+      fEventTriggerBits |= 0x1 << kEG2;
+      FillPatchHistograms(patch,3);
+    }
+    if (patch->IsJetLow()) {
+      fEventTriggerBits |= 0x1 << kEJ1;
+      FillPatchHistograms(patch,4);
+    }
+    if (patch->IsJetHigh()) {
+      fEventTriggerBits |= 0x1 << kEJ2;
+      FillPatchHistograms(patch,5);
+    }
   }
 }
+
+void AliEmcalTriggerSimQATask::FillPatchHistograms(AliEMCALTriggerPatchInfo * patch, Int_t i) {
+  fHistManager.FillTH1(Form("fHistPatchEnergy_Trig_%s",fTriggerNames[i].Data()),patch->GetPatchE());
+  fHistManager.FillTH1(Form("fHistPatchOnlineADCAmp_Trig_%s",fTriggerNames[i].Data()),patch->GetADCAmp());
+  fHistManager.FillTH2(Form("fHistPatchColRow_Trig_%s",fTriggerNames[i].Data()),patch->GetColStart(),patch->GetRowStart());
+  fHistManager.FillTH2(Form("fHistPatchEtaPhiGeo_Trig_%s",fTriggerNames[i].Data()),patch->GetEtaGeo(),patch->GetPhiGeo());
+}
+
 
 void AliEmcalTriggerSimQATask::DoClusterLoop() {
   TString histname;
@@ -203,14 +275,22 @@ void AliEmcalTriggerSimQATask::DoClusterLoop() {
     for (Int_t j = 0; j < kNTriggerTypes; j++) {
       // Check if this event had this trigger
       if (fTriggerTypes[j] < 0) {
-        if (fEventTriggerBits != 0) continue; // Classify no trigger as mininum bias
+        // This is Minimum Bias, so accept all events
       }
       else if (!(fEventTriggerBits & (0x1 << fTriggerTypes[j]))) {
         continue;
       }
 
+      // Get Cluster vector
+      TLorentzVector vCluster;
+      clusters->GetMomentum(vCluster,cluster);
+      Double_t fPhi = vCluster.Phi();
+      if (fPhi < 0) fPhi+=2*TMath::Pi();
+
       histname = TString::Format("fHistClusEnergy_Trig_%s",fTriggerNames[j].Data());
       fHistManager.FillTH1(histname,cluster->E());
+      histname = TString::Format("fHistClusEtaPhi_Trig_%s",fTriggerNames[j].Data());
+      fHistManager.FillTH1(histname,vCluster.Eta(),fPhi);
     }
   }
 }

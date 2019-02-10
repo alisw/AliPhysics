@@ -112,6 +112,9 @@ class AliRDHFCutsD0toKpi : public AliRDHFCuts
   Bool_t GetCombPID() const {return fCombPID;}
   void SetBayesProbThreshold(Double_t thresh){fProbThreshold=thresh;}
   Double_t GetBayesProbThreshold() const {return fProbThreshold;}
+  
+  const Float_t *Getd0MeasMinusExpCut() const {return fMaxd0MeasMinusExp;} 
+  const Float_t *GetImpParDCut() const {return fMaxImpParD;} 
 
   virtual void PrintAll()const;  
 

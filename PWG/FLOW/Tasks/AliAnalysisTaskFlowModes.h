@@ -192,12 +192,12 @@ class AliAnalysisTaskFlowModes : public AliAnalysisTaskSE
     Float_t                 fCurrCentr; // current centrality used for set the priors
     Double_t                fParticleProbability; // Minimum Bayesian probability
     
-    static const Int_t      fNumCentralities = 5; // number of centrality ranges for NUE maps (for now...)
+    static const Int_t      fNumCentralities = 7; // number of centrality ranges for NUE maps (for now...)
     static const Int_t      fgkPIDptBin = 32; // pT bins for priors
     Float_t                 fC[fgkPIDptBin][5],fBinLimitPID[fgkPIDptBin]; // pt bin limit and priors
     static const Short_t    fFlowNumHarmonicsMax = 10; // maximum harmonics length of flow vector array
     static const Short_t    fFlowNumWeightPowersMax = 10; // maximum weight power length of flow vector array
-    static const Short_t    fFlowPOIsPtNumBins = 200; // number of pT bins for POIs
+    static const Short_t    fFlowPOIsPtNumBins = 100; // number of pT bins for POIs
     
     static const Short_t    fiNumIndexQA = 2; // QA indexes: 0: before cuts // 1: after cuts
    
@@ -316,20 +316,21 @@ class AliAnalysisTaskFlowModes : public AliAnalysisTaskSE
     TH2D*           fh2PIDProtonTPCnSigmaProton; //! TPC nSigma vs pT for selected protons (proton hypothesis)
     TH2D*           fh2PIDProtonTOFnSigmaProton; //! TOF nSigma vs pT for selected protons (proton hypothesis)
     
+    TH1F*           fhNUEWeightRefsPlus; //! containers for loading weights for given run
+    TH1F*           fhNUEWeightRefsMinus; //! container for loading weights for given run
 
-    TH1F*           fhNUEWeightRefsPlus[fNumCentralities]; //! containers for loading weights for given run
-    TH1F*           fhNUEWeightChargedPlus[fNumCentralities]; //! container for loading weights for given run
-    TH1F*           fhNUEWeightPionPlus[fNumCentralities]; //! container for loading weights for given run
-    TH1F*           fhNUEWeightKaonPlus[fNumCentralities]; //! container for loading weights for given run
-    TH1F*           fhNUEWeightProtonPlus[fNumCentralities]; //! container for loading weights for given run
+    TH1F*           fhNUEWeightChargedPlus; //! container for loading weights for given run
+    TH1F*           fhNUEWeightChargedMinus; //! container for loading weights for given run
 
-    TH1F*           fhNUEWeightRefsMinus[fNumCentralities]; //! container for loading weights for given run
-    TH1F*           fhNUEWeightChargedMinus[fNumCentralities]; //! container for loading weights for given run
-    TH1F*           fhNUEWeightPionMinus[fNumCentralities]; //! container for loading weights for given run
-    TH1F*           fhNUEWeightKaonMinus[fNumCentralities]; //! container for loading weights for given run
-    TH1F*           fhNUEWeightProtonMinus[fNumCentralities]; //! container for loading weights for given run
+    TH1F*           fhNUEWeightPionPlus; //! container for loading weights for given run
+    TH1F*           fhNUEWeightPionMinus; //! container for loading weights for given run
 
- 
+    TH1F*           fhNUEWeightKaonPlus; //! container for loading weights for given run
+    TH1F*           fhNUEWeightKaonMinus; //! container for loading weights for given run
+
+    TH1F*           fhNUEWeightProtonPlus; //! container for loading weights for given run
+    TH1F*           fhNUEWeightProtonMinus; //! container for loading weights for given run
+
     TComplex                fFlowVecQpos[fFlowNumHarmonicsMax][fFlowNumWeightPowersMax]; // flow vector array for flow calculation
     TComplex                fFlowVecQneg[fFlowNumHarmonicsMax][fFlowNumWeightPowersMax]; // flow vector array for flow calculation
     TComplex                fFlowVecPpos[fFlowNumHarmonicsMax][fFlowNumWeightPowersMax][fFlowPOIsPtNumBins]; // flow vector array for flow calculation

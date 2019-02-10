@@ -64,6 +64,7 @@ class AliReducedEventInfo : public AliReducedBaseEvent {
   UInt_t    ITSClusters(Int_t layer)          const {return (layer>=1 && layer<=6 ? fITSClusters[layer-1] : 0);}
   Int_t     SPDnSingleClusters()              const {return fSPDnSingle;}
   Int_t     TracksPerTrackingFlag(Int_t flag) const {return (flag>=0 && flag<32 ? fNtracksPerTrackingFlag[flag] : -999);}
+  Int_t     TracksWithTPCout()                const {return fNtracksTPCout;}
   Int_t     Nch16 (Bool_t exclJpsiDau = kFALSE )  const {return (exclJpsiDau? fNch[0] : fNch[1] );}
   Int_t     Nch10 (Bool_t exclJpsiDau = kFALSE )  const {return (exclJpsiDau? fNch[2] : fNch[3] );}
   Int_t     NchV0A(Bool_t exclJpsiDau = kFALSE ) const {return (exclJpsiDau? fNch[4] : fNch[5] );}
@@ -98,9 +99,9 @@ class AliReducedEventInfo : public AliReducedBaseEvent {
   Float_t   MultEstimatorPercentileV0C()   const {return fMultiplicityEstimatorPercentiles[12];}
   
   Float_t   MultChannelVZERO(Int_t channel)   const {return (channel>=0 && channel<=63 ? fVZEROMult[channel] : -999.);}
-  Float_t   MultVZEROA()                      const;
-  Float_t   MultVZEROC()                      const;
-  Float_t   MultVZERO()                       const;
+  Float_t   MultVZEROA(Bool_t fromChannels=kFALSE)                      const;
+  Float_t   MultVZEROC(Bool_t fromChannels=kFALSE)                      const;
+  Float_t   MultVZERO(Bool_t fromChannels=kFALSE)                       const;
   Float_t   MultRingVZEROA(Int_t ring)        const;
   Float_t   MultRingVZEROC(Int_t ring)        const;
   
@@ -144,17 +145,12 @@ class AliReducedEventInfo : public AliReducedBaseEvent {
 	 			    Bool_t (*IsTrackSelected)(AliReducedTrackInfo*)=NULL);
   
   // Event plane information handling for the case when event plane information is written directly in the trees
-  //void SetEventPlane(const AliReducedEventPlaneInfo* ep) 
-  //    {if(ep) {fEventPlane=new AliReducedEventPlaneInfo(); fEventPlane->CopyEvent(ep);}};
-  //AliReducedEventPlaneInfo* GetEventPlane() const {return fEventPlane;};
   void SetEventPlane(const AliReducedEventPlaneInfo* ep) {if(ep) fEventPlane.CopyEvent(ep);}
+  Double_t GetEventPlane(Int_t detector, Int_t harmonic) const {return fEventPlane.EventPlane(detector, harmonic);};    
+  Double_t GetQx(Int_t detector, Int_t harmonic) const {return fEventPlane.Qx(detector, harmonic);}
+  Double_t GetQy(Int_t detector, Int_t harmonic) const {return fEventPlane.Qy(detector, harmonic);}
+  Double_t GetEventPlaneStatus(Int_t detector, Int_t harmonic) const {return fEventPlane.GetEventPlaneStatus(detector, harmonic);}
   
-  //Double_t GetEventPlane(Int_t detector, Int_t harmonic) const 
-   //   {if(fEventPlane) return fEventPlane->EventPlane(detector, harmonic); return 0.0;};
-  Double_t GetEventPlane(Int_t detector, Int_t harmonic) const 
-      {return fEventPlane.EventPlane(detector, harmonic); return 0.0;};    
-      
-
   virtual void ClearEvent();
   
   static const Float_t fgkZdcNalpha;
@@ -196,6 +192,7 @@ class AliReducedEventInfo : public AliReducedBaseEvent {
   UInt_t    fITSClusters[6];        // number of ITS clusters per layer
   Int_t     fSPDnSingle;            // number of clusters in SPD layer 1, not associated to a tracklet on SPD layer 2
   Int_t     fNtracksPerTrackingFlag[32];  // number of tracks for each tracking status bit                
+  Int_t     fNtracksTPCout;          // number of kTPCout tracks in ESDs
   Int_t     fNch[8];                // number of MCtruth charged particles in different eta regions
   Float_t   fVZEROMult[64];         // VZERO multiplicity in all 64 channels
   Float_t   fVZEROTotalMult[2];    // Total VZERO multiplicity
@@ -223,7 +220,7 @@ class AliReducedEventInfo : public AliReducedBaseEvent {
   AliReducedEventInfo& operator= (const AliReducedEventInfo &c);
   AliReducedEventInfo(const AliReducedEventInfo &c);
 
-  ClassDef(AliReducedEventInfo, 11);
+  ClassDef(AliReducedEventInfo, 12);
 };
 
 #endif

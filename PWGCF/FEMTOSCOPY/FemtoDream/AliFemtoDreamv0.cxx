@@ -189,8 +189,8 @@ void AliFemtoDreamv0::SetDaughterInfo(AliAODv0 *v0) {
   if (fnDaug->IsSet()) {
     this->SetPhiAtRadius(fnDaug->GetPhiAtRaidius().at(0));
   }
-  if (fnDaug->IsSet()) {
-    this->SetPhiAtRadius(fnDaug->GetPhiAtRaidius().at(0));
+  if (fpDaug->IsSet()) {
+    this->SetPhiAtRadius(fpDaug->GetPhiAtRaidius().at(0));
   }
 
   if (fIsMC) {
@@ -339,13 +339,15 @@ void AliFemtoDreamv0::SetMCMotherInfo(AliAODEvent *evt, AliAODv0 *v0) {
       }
       int motherID = mcPart->GetMother();
       int lastMother = motherID;
-      AliAODMCParticle *mcMother;
+      AliAODMCParticle *mcMother = nullptr;
       while (motherID != -1) {
         lastMother = motherID;
         mcMother = (AliAODMCParticle *) mcarray->At(motherID);
         motherID = mcMother->GetMother();
       }
-      mcMother = (AliAODMCParticle *) mcarray->At(lastMother);
+      if (lastMother!=-1) {
+        mcMother = (AliAODMCParticle *) mcarray->At(lastMother);
+      }
       if (mcMother) {
         this->SetMotherPDG(mcMother->GetPdgCode());
       }
@@ -378,6 +380,7 @@ void AliFemtoDreamv0::Reset() {
     fMCTheta.clear();
     fPhi.clear();
     fPhiAtRadius.clear();
+    fXYZAtRadius.clear();
     fMCPhi.clear();
     fIDTracks.clear();
     fCharge.clear();

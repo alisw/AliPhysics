@@ -169,8 +169,8 @@ float AliSigma0ParticlePhotonMother::GetArmenterosQt() const {
 //____________________________________________________________________________________________________
 double AliSigma0ParticlePhotonMother::GetRapidity() const {
   double energy =
-      std::sqrt(GetPt() * GetPt() + GetPz() * GetPz() + GetMass() * GetMass());
-  if (energy != std::fabs(GetPz()))
-    return 0.5 * std::log((energy + GetPz()) / (energy - GetPz()));
+      TMath::Sqrt(GetPt() * GetPt() + GetPz() * GetPz() + GetMass() * GetMass());
+  if (energy != TMath::Abs(GetPz()))
+    return 0.5 * TMath::Log((energy + GetPz()) / (energy - GetPz()));
   return (GetPz() >= 0) ? 1.e30 : -1.e30;
 }

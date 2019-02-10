@@ -287,7 +287,12 @@ void AliAnalysisTaskSEDStarSpectra::UserExec(Option_t *)
 
     // D* candidates and D0 from D*
     AliAODRecoCascadeHF* dstarD0pi = (AliAODRecoCascadeHF*)arrayDStartoD0pi->At(iDStartoD0pi);
-    AliAODRecoDecayHF2Prong *trackD0=(AliAODRecoDecayHF2Prong*)arrayD0toKpi->At(dstarD0pi->GetProngID(1));
+    AliAODRecoDecayHF2Prong *trackD0;
+    if(dstarD0pi->GetIsFilled()<1){
+      trackD0 = (AliAODRecoDecayHF2Prong*)arrayD0toKpi->At(dstarD0pi->GetProngID(1));
+    } else {
+      trackD0 = (AliAODRecoDecayHF2Prong*)dstarD0pi->Get2Prong();
+    }
 
     fCEvents->Fill(10);
     TObjArray arrTracks(3);

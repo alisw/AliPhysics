@@ -153,6 +153,7 @@ class AliConvEventCuts : public AliAnalysisCuts {
         kLHC16c3a,        //!< anchored LHC13[d-e] pass 2 - JJ
         kLHC16c3b,        //!< anchored LHC13[d-e] pass 2 - JJ
         kLHC16c3c,        //!< anchored LHC13[d-e] pass 2 - GJ
+        kLHC18j5,         //!< anchored LHC13[b-c] pass 4 - General Purpose
         kLHC15g2,         //!< anchored LHC13g pass 1
         kLHC15a3a,        //!< anchored LHC13g pass 1 - JJ
         kLHC15a3a_plus,   //!< anchored LHC13g pass 1 - JJ
@@ -214,6 +215,8 @@ class AliConvEventCuts : public AliAnalysisCuts {
         kLHC15k5a,        //!< anchored LHC15f pass2 - HF-forced MC for D2H analyses
         kLHC15k5b,        //!< anchored LHC15f pass2 - HF-forced MC for HFE analyses
         kLHC15k5c,        //!< anchored LHC15f pass2 - HF-forced MC for HFCJ analyses
+        kLHC18b11a,       //!< anchored to LHC15o    - gamma-jets Pythia events embedded in HI MC events
+        kLHC18b11b,       //!< anchored to LHC15o    - gamma-jets Pythia events embedded in HI MC events
         kLHC18b11c,       //!< anchored to LHC15o    - gamma-jets Pythia events embedded in HI MC events
         kLHC18l8a,        //!< anchored to LHC18qr    - general purpose Pythia8
         kLHC18l8b,        //!< anchored to LHC18qr    - general purpose Pythia8
@@ -695,7 +698,7 @@ class AliConvEventCuts : public AliAnalysisCuts {
   private:
 
       /// \cond CLASSIMP
-      ClassDef(AliConvEventCuts,61)
+      ClassDef(AliConvEventCuts,62)
       /// \endcond
 };
 

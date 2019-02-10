@@ -42,7 +42,7 @@ class HyperTriton2Body {
   Double32_t GetNegProngPt() const { return fPtNeg;}
   Double32_t GetPosProngPt() const { return fPtPos;}
   Double32_t GetNegProngPhi() const { return fPhiNeg;}
-  Double32_t GetPosProngPhi() const { return fPhiPos;}  
+  Double32_t GetPosProngPhi() const { return fPhiPos;} 
   bool IsCowboy() const { return fFlags & kCowboySailor; }
   bool IsLikeSign() const { return fV0radius < 0.; } //TODO: switch to signbit with ROOT6
   bool IsFake() const { return fV0pt < 0.; }         //TODO: switch to signbit with ROOT6
@@ -87,7 +87,7 @@ class HyperTriton2Body {
     kPositiveTOF = 1 << 2,
     kOptimalParams = 1 << 3
   };
-
+  
   float fV0radius;                      // V0 decay vertex radius (negarive -> LikeSign V0)
   float fV0pt;                          // V0 transverse momentum (in MC if negative -> fake V0)
   float fV0eta;                         // V0 pseudorapidity
@@ -112,7 +112,7 @@ class HyperTriton2Body {
   Double32_t fPhiPos;
   Double32_t fPhiNeg;
   Double32_t fEtaPos;                   //[-1.0,1.0,7] Pseudorapidity of the positive prong. MSB is the TOF bit.
-  Double32_t fEtaNeg;                   //[-1.0,1.0,7] Pseudorapidity of the negative prong. MSB is the TOF bit.
+  Double32_t fEtaNeg;                   //[-1.0,1.0,7] Pseudorapidity of the negative prong. MSB is the TOF bit.     
   unsigned char fITSInfo;               // Starting from the MSB: kITSrefit for neg and pos, kSPDany for neg and pos, least number of ITS clusters (last 4 bits)
   unsigned char fFlags;                 // Cowboy&Saylor, TOF bits for neg and pos, optimal tracking parameters
 };
@@ -195,7 +195,8 @@ HyperTriton2Body miniHyper;
 double decayVtx[3];
 v0->GetXYZ(decayVtx[0], decayVtx[1], decayVtx[2]);
 double v0Radius = std::hypot(decayVtx[0], decayVtx[1]);
-auto lvector = miniHyper.GetV0LorentzVector(nTrack, pTrack, v0->AlphaV0());
+double alpha=v0->AlphaV0();
+auto lvector = miniHyper.GetV0LorentzVector(nTrack, pTrack, alpha);
 double mass = lvector.M();
 double v0Pt = lvector.Pt();
 double lV0TotalMomentum = lvector.P();
@@ -203,6 +204,16 @@ float distOverP = std::sqrt(Sq(decayVtx[0] - primaryVertex[0]) +
                             Sq(decayVtx[1] - primaryVertex[1]) +
                             Sq(decayVtx[2] - primaryVertex[2])) /
                   (lV0TotalMomentum + 1e-16); 
+double PtPos;
+double PtNeg;                  
+if(alpha<0){
+  PtPos=pTrack->Pt();
+  PtNeg=2*(nTrack->Pt());
+}  
+else{
+  PtPos=2*(pTrack->Pt());
+  PtNeg=nTrack->Pt(); 
+}  
 unsigned char posXedRows = pTrack->GetTPCClusterInfo(2, 1);
 unsigned char negXedRows = nTrack->GetTPCClusterInfo(2, 1);
 float posChi2PerCluster =
@@ -255,6 +266,8 @@ miniHyper.SetInvMass(mass);
 miniHyper.SetArmenterosVariables(v0->AlphaV0(), v0->PtArmV0());
 miniHyper.SetV0CosPA(cosPA);
 miniHyper.SetV0Chi2(v0->GetChi2V0());
+miniHyper.SetProngsPt(PtPos,PtNeg);
+miniHyper.SetProngsPhi(pTrack->Phi(),nTrack->Phi());
 miniHyper.SetProngsDCA(v0->GetDcaV0Daughters());
 miniHyper.SetProngsPvDCA(dcaPosToPrimVertex, dcaNegToPrimVertex);
 miniHyper.SetV0radiusAndLikeSign(v0Radius);

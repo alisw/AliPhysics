@@ -206,6 +206,12 @@ fTreeVariableDecayZ(0),
 fTreeVariableDecayXMC(0),
 fTreeVariableDecayYMC(0),
 fTreeVariableDecayZMC(0),
+fTreeVariableNegPxMC(0),
+fTreeVariableNegPyMC(0),
+fTreeVariableNegPzMC(0),
+fTreeVariablePosPxMC(0),
+fTreeVariablePosPyMC(0),
+fTreeVariablePosPzMC(0),
 fTreeVariableInvMassK0s(0),
 fTreeVariableInvMassLambda(0),
 fTreeVariableInvMassAntiLambda(0),
@@ -476,6 +482,12 @@ fTreeVariableDecayZ(0),
 fTreeVariableDecayXMC(0),
 fTreeVariableDecayYMC(0),
 fTreeVariableDecayZMC(0),
+fTreeVariableNegPxMC(0),
+fTreeVariableNegPyMC(0),
+fTreeVariableNegPzMC(0),
+fTreeVariablePosPxMC(0),
+fTreeVariablePosPyMC(0),
+fTreeVariablePosPzMC(0),
 fTreeVariableInvMassK0s(0),
 fTreeVariableInvMassLambda(0),
 fTreeVariableInvMassAntiLambda(0),
@@ -696,8 +708,7 @@ fHistGeneratedPtVsYVsCentralityAntiHypTrit(0)
     DefineOutput(3, TList::Class()); // Cascade Histogram Output
     
     //Optional output
-    if (fkSaveEventTree)
-        DefineOutput(4, TTree::Class()); // Event Tree output
+    DefineOutput(4, TTree::Class()); // Event Tree output
     DefineOutput(5, TTree::Class()); // V0 Tree output
     DefineOutput(6, TTree::Class()); // Cascade Tree output
     DefineOutput(7, TTree::Class()); // HyperTriton Tree output
@@ -811,6 +822,14 @@ void AliAnalysisTaskStrEffStudy::UserCreateOutputObjects()
     fTreeV0->Branch("fTreeVariableDecayXMC",&fTreeVariableDecayXMC,"fTreeVariableDecayXMC/F");
     fTreeV0->Branch("fTreeVariableDecayYMC",&fTreeVariableDecayYMC,"fTreeVariableDecayYMC/F");
     fTreeV0->Branch("fTreeVariableDecayZMC",&fTreeVariableDecayZMC,"fTreeVariableDecayZMC/F");
+    
+    fTreeV0->Branch("fTreeVariableNegPxMC",&fTreeVariableNegPxMC,"fTreeVariableNegPxMC/F");
+    fTreeV0->Branch("fTreeVariableNegPyMC",&fTreeVariableNegPyMC,"fTreeVariableNegPyMC/F");
+    fTreeV0->Branch("fTreeVariableNegPzMC",&fTreeVariableNegPzMC,"fTreeVariableNegPzMC/F");
+    fTreeV0->Branch("fTreeVariablePosPxMC",&fTreeVariablePosPxMC,"fTreeVariablePosPxMC/F");
+    fTreeV0->Branch("fTreeVariablePosPyMC",&fTreeVariablePosPyMC,"fTreeVariablePosPyMC/F");
+    fTreeV0->Branch("fTreeVariablePosPzMC",&fTreeVariablePosPzMC,"fTreeVariablePosPzMC/F");
+    
     fTreeV0->Branch("fTreeVariableInvMassK0s",       &fTreeVariableInvMassK0s,       "fTreeVariableInvMassK0s/F");
     fTreeV0->Branch("fTreeVariableInvMassLambda",    &fTreeVariableInvMassLambda,    "fTreeVariableInvMassLambda/F");
     fTreeV0->Branch("fTreeVariableInvMassAntiLambda",&fTreeVariableInvMassAntiLambda,"fTreeVariableInvMassAntiLambda/F");
@@ -1645,7 +1664,14 @@ void AliAnalysisTaskStrEffStudy::UserExec(Option_t *)
         fTreeVariableDecayXMC = mcPosV0Dghter->Vx();
         fTreeVariableDecayYMC = mcPosV0Dghter->Vy();
         fTreeVariableDecayZMC = mcPosV0Dghter->Vz();
-        
+
+        fTreeVariableNegPxMC = mcNegV0Dghter->Px();
+        fTreeVariableNegPyMC = mcNegV0Dghter->Py();
+        fTreeVariableNegPzMC = mcNegV0Dghter->Pz();
+        fTreeVariablePosPxMC = mcPosV0Dghter->Px();
+        fTreeVariablePosPyMC = mcPosV0Dghter->Py();
+        fTreeVariablePosPzMC = mcPosV0Dghter->Pz();
+
         fTreeVariablePIDPositive = mcPosV0Dghter -> GetPdgCode();
         fTreeVariablePIDNegative = mcNegV0Dghter -> GetPdgCode();
         

@@ -212,19 +212,19 @@ void AddTask_GammaCaloIso_pp(
 
     //standart Meson EmCal Cuts + Isolation
     } else if (trainConfig == 35){ // without Timing Cut for V2Clusterizer
-    cuts.AddCutCalo("00083113","12211000000322l0000","0163103100000050");
-    cuts.AddCutCalo("00083113","b2211000000322l0000","0163103100000050"); // R=0.1
-    cuts.AddCutCalo("00083113","c2211000000322l0000","0163103100000050"); // R=0.2
-    cuts.AddCutCalo("00083113","d2211000000322l0000","0163103100000050"); // R=0.3
-    cuts.AddCutCalo("00083113","e2211000000322l0000","0163103100000050"); // R=0.4
+    cuts.AddCutCalo("00083113","12211000a00322l0000","0163103100000050");
+    cuts.AddCutCalo("00083113","b2211000a00322l0000","0163103100000050"); // R=0.1
+    cuts.AddCutCalo("00083113","c2211000a00322l0000","0163103100000050"); // R=0.2
+    cuts.AddCutCalo("00083113","d2211000a00322l0000","0163103100000050"); // R=0.3
+    cuts.AddCutCalo("00083113","e2211000a00322l0000","0163103100000050"); // R=0.4
 
     //adopted to Isolated Photon Analysis 13TeV
-    } else if (trainConfig == 36){ // without TrackMatching
-    cuts.AddCutCalo("00083113","e2211000000322l0000","0163103100000050"); //Standard Meson EmCal Cuts
-    cuts.AddCutCalo("00083113","e221100300512260000","0163103100000050"); //Isolation Analysis Cuts
-    cuts.AddCutCalo("00083113","e221100000512260000","0163103100000050"); //test distance to bad channel
-    cuts.AddCutCalo("00083113","e221100300012260000","0163103100000050"); //test exotic cluster rejection
-    cuts.AddCutCalo("00083113","e2211003005122l0000","0163103100000050"); //test shape cut
+    } else if (trainConfig == 36){ // without Timing Cut
+    cuts.AddCutCalo("00083113","e2211000100322l0000","0163103100000050"); //Standard Meson EmCal Cuts
+    cuts.AddCutCalo("00083113","e221100310512260000","0163103100000050"); //Isolation Analysis Cuts
+    cuts.AddCutCalo("00083113","e221100010512260000","0163103100000050"); //test distance to bad channel
+    cuts.AddCutCalo("00083113","e221100310012260000","0163103100000050"); //test exotic cluster rejection
+    cuts.AddCutCalo("00083113","e2211003105122l0000","0163103100000050"); //test shape cut
 
   } else {
     Error(Form("GammaCaloIso_%i",trainConfig), "wrong trainConfig variable no cuts have been specified for the configuration");
@@ -379,7 +379,6 @@ void AddTask_GammaCaloIso_pp(
   task->SetDoTHnSparse(enableTHnSparse);
   task->SetProduceTreeEOverP(doTreeEOverP);
   task->SetEnableSortingOfMCClusLabels(enableSortingMCLabels);
-  task->SetTrainConfig(trainConfig);
   if(trainConfig == 446) task->SetSoftAnalysis(kTRUE);
   if(enableExtMatchAndQA > 1){ task->SetPlotHistsExtQA(kTRUE);}
   if(trainConfig == 106 || trainConfig == 125 || trainConfig == 145){

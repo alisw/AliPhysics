@@ -63,6 +63,7 @@ set(SRCS
   AliRDHFCutsLctopK0sfromAODtracks.cxx
   AliRDHFCutsOmegactoeleOmegafromAODtracks.cxx
   AliRDHFCutsXicPlustoXiPiPifromAODtracks.cxx
+  AliRDHFCutsXicZerotoXiPifromAODtracks.cxx
   AliRDHFCutsXictoeleXifromAODtracks.cxx
   AliAnalysisVertexingHF.cxx
   AliAnalysisTaskSEB0toDStarPi.cxx
@@ -87,6 +88,7 @@ set(SRCS
   AliAnalysisTaskDmesonMCPerform.cxx
   AliAnalysisTaskSELc2pK0sfromAODtracks.cxx
   AliAnalysisTaskSEXicPlus2XiPiPifromAODtracks.cxx
+  AliAnalysisTaskSEXicZero2XiPifromAODtracks.cxx
   AliCFVertexingHF.cxx
   AliCFVertexingHF2Prong.cxx
   AliCFVertexingHF3Prong.cxx
@@ -120,6 +122,8 @@ set(SRCS
   charmFlow/AliAnalysisTaskHFv1.cxx
   charmFlow/AliHFAfterBurner.cxx
   charmFlow/AliAnalysisTaskFlowD2H.cxx
+  charmFlow/AliHFQnVectorHandler.cxx
+  charmFlow/AliAnalysisTaskSEHFTenderQnVectors.cxx
   cutVarFDsub/AliHFCutVarFDsubAnalysisManager.cxx
   cutVarFDsub/AliHFCutVarFDsubAnalysisManagerD0.cxx
   cutVarFDsub/AliHFCutVarFDsubAnalysisManagerDplus.cxx

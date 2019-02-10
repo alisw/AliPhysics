@@ -46,7 +46,7 @@ class AliEmcalTriggerSimQATask : public AliAnalysisTaskEmcal {
  public:
 
   enum EventEMCALTriggerType_t { // Which bit is set for the event type
-    kNTr = -1, // No Trigger
+    kMB = -1, // Minimum Bias
     kEL0 = 0,
     kEG1 = 1,
     kEG2 = 2,
@@ -60,6 +60,9 @@ class AliEmcalTriggerSimQATask : public AliAnalysisTaskEmcal {
 
   static AliEmcalTriggerSimQATask * AddTaskEmcalTriggerSimQA();
 
+  void SetMinAmplitude(Int_t m)             { fMinAmplitude = m; }
+
+
  protected:
   void                                      UserCreateOutputObjects();
   void                                      ExecOnce();
@@ -67,9 +70,9 @@ class AliEmcalTriggerSimQATask : public AliAnalysisTaskEmcal {
   Bool_t                                    FillHistograms();
   void                                      FillEventQA();
 
-  static const Int_t                        kNTriggerTypes = 6; // No Trigger,L0,EG1,EG2,EJ1,EJ2
-  const TString                             fTriggerNames[kNTriggerTypes] = {"NTr","L0","EG1","EG2","EJ1","EJ2"};
-  EventEMCALTriggerType_t                   fTriggerTypes[kNTriggerTypes]; //!<! Trigger type array
+  static const Int_t                        kNTriggerTypes = 6; // MB,L0,EG1,EG2,EJ1,EJ2
+  const TString                             fTriggerNames[kNTriggerTypes] = {"MB","L0","EG1","EG2","EJ1","EJ2"};
+  EventEMCALTriggerType_t                   fTriggerTypes[kNTriggerTypes]; ///< Trigger type array
   TString                                   fTriggerPatchesName;         ///< name of input trigger array
   TClonesArray                             *fTriggerPatches;             //!<! trigger array in
 
@@ -83,6 +86,7 @@ class AliEmcalTriggerSimQATask : public AliAnalysisTaskEmcal {
   THistManager                              fHistManager;                ///< Histogram Manager
 
   void                                      DoPatchLoop();               // Loop over patches, determine trigger condition
+  void                                      FillPatchHistograms(AliEMCALTriggerPatchInfo * patch,Int_t i);               // Fill histograms with patch information
   void                                      DoClusterLoop();             // Loop over clusters, fill histograms
 
  private:

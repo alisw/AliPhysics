@@ -140,15 +140,13 @@ AlidNdPtUnifiedAnalysisTask::AlidNdPtUnifiedAnalysisTask(const char *name) : Ali
   fBins1Pt(0),
   fBinsPt(0),
   fBinsSigma1Pt(0),
-  fBinsCent(0),
   fHistMCMultPt(0),
   fUseCentralityCut(kFALSE),
   fLowerCentralityBound(0.),
   fUpperCentralityBound(0.),
   fIncludeSigmas(kTRUE),
   fHistMCTrackMult(0),
-  fHistMCTrackMultGen(0),
-  fHistResPt(0)
+  fHistMCTrackMultGen(0)
 {
   // Set default binning
   Double_t binsMultCentDefault[2] = {0,10000};
@@ -217,14 +215,14 @@ void AlidNdPtUnifiedAnalysisTask::UserCreateOutputObjects(){
   Double_t maxTrack[4]={fBinsPt->GetAt(fBinsPt->GetSize()-1),fBinsEta->GetAt(fBinsEta->GetSize()-1),fBinsZv->GetAt(fBinsZv->GetSize()-1),fBinsMultCent->GetAt(fBinsMultCent->GetSize()-1)};
 
   /// relative pT resolution from covariance matrix (global tracks) as a function of pt and centrality
-  Int_t nBinsRelPtReso[3]  = {fBinsPtReso->GetSize()-1,fBinsPt->GetSize()-1, fBinsCent->GetSize()-1};
-  Double_t minRelPtReso[3] = {fBinsPtReso->GetAt(0),fBinsPt->GetAt(0), fBinsCent->GetAt(0)};
-  Double_t maxRelPtReso[3] = {fBinsPtReso->GetAt(fBinsPtReso->GetSize()-1), fBinsPt->GetAt(fBinsPt->GetSize()-1), fBinsCent->GetAt(fBinsCent->GetSize()-1)};
+  Int_t nBinsRelPtReso[3]  = {fBinsPtReso->GetSize()-1,fBinsPt->GetSize()-1, fBinsMultCent->GetSize()-1};
+  Double_t minRelPtReso[3] = {fBinsPtReso->GetAt(0),fBinsPt->GetAt(0), fBinsMultCent->GetAt(0)};
+  Double_t maxRelPtReso[3] = {fBinsPtReso->GetAt(fBinsPtReso->GetSize()-1), fBinsPt->GetAt(fBinsPt->GetSize()-1), fBinsMultCent->GetAt(fBinsMultCent->GetSize()-1)};
 
   fHistRelPtResoFromCov = new THnF("fHistRelPtResoFromCov", "Relative pT resolution from covariance matrix", 3, nBinsRelPtReso, minRelPtReso, maxRelPtReso);
   fHistRelPtResoFromCov->SetBinEdges(0,fBinsPtReso->GetArray());
   fHistRelPtResoFromCov->SetBinEdges(1,fBinsPt->GetArray());
-  fHistRelPtResoFromCov->SetBinEdges(2,fBinsCent->GetArray());
+  fHistRelPtResoFromCov->SetBinEdges(2,fBinsMultCent->GetArray());
   fHistRelPtResoFromCov->GetAxis(0)->SetTitle("#sigma(#it{p}_{T}) / #it{p}_{T}");
   fHistRelPtResoFromCov->GetAxis(1)->SetTitle("#it{p}_{T} (GeV/#it{c})");
   fHistRelPtResoFromCov->GetAxis(2)->SetTitle("Centrality (%)");
@@ -232,11 +230,6 @@ void AlidNdPtUnifiedAnalysisTask::UserCreateOutputObjects(){
 
   ///Secondary scaling
   fDCAyEtaPt = new TH3D("fDCAyEtaPt","DCAy:eta:pt;DCAy (cm); eta; pt (GeV/c)", DCAybins, DCAyMin, DCAyMax,20,-1,1,ptNbins,ptMin,ptMax);
-  fDCAyEtaPtMCPrim = new TH3D("fDCAyEtaPtMCPrim","DCAy:eta:pt primary;DCAy (cm); eta; pt (GeV/c)", DCAybins, DCAyMin, DCAyMax,20,-1,1,ptNbins,ptMin,ptMax);
-  fDCAyEtaPtMCSecDecays = new TH3D("fDCAyEtaPtMCSecDecays","DCAy:eta:pt secondary decays;DCAy (cm); eta; pt (GeV/c)", DCAybins, DCAyMin, DCAyMax,20,-1,1,ptNbins,ptMin,ptMax);
-  fDCAyEtaPtMCSecMaterial = new TH3D("fDCAyEtaPtMCSecMaterial","DCAy:eta:pt secondary material;DCAy (cm); eta; pt (GeV/c)", DCAybins, DCAyMin, DCAyMax,20,-1,1,ptNbins,ptMin,ptMax);
-  fDCAyEtaPtMCSecDecaysK0s = new TH3D("fDCAyEtaPtMCSecDecaysK0s","DCAy:eta:pt secondary decays from K0s;DCAy (cm); eta; pt (GeV/c)", DCAybins, DCAyMin, DCAyMax,20,-1,1,ptNbins,ptMin,ptMax);
-  fDCAyEtaPtMCSecDecaysLambda = new TH3D("fDCAyEtaPtMCSecDecaysLambda","DCAy:eta:pt secondary decays from Lambda;DCAy (cm); eta; pt (GeV/c)", DCAybins, DCAyMin, DCAyMax,20,-1,1,ptNbins,ptMin,ptMax);
 
   /// Control histogram charged patricles pt:eta:multcent:charge
   Int_t nBinsTrackCharge[4]={fBinsPt->GetSize()-1,fBinsEta->GetSize()-1,fBinsMultCent->GetSize()-1,2};
@@ -416,6 +409,14 @@ void AlidNdPtUnifiedAnalysisTask::UserCreateOutputObjects(){
     fHistMCRecSecTrackParticle->GetAxis(3)->SetTitle("Particle type");
     fHistMCRecSecTrackParticle -> Sumw2();
 
+      ///Secondary scaling MC
+    fDCAyEtaPtMCPrim = new TH3D("fDCAyEtaPtMCPrim","DCAy:eta:pt primary;DCAy (cm); eta; pt (GeV/c)", DCAybins, DCAyMin, DCAyMax,20,-1,1,ptNbins,ptMin,ptMax);
+    fDCAyEtaPtMCSecDecays = new TH3D("fDCAyEtaPtMCSecDecays","DCAy:eta:pt secondary decays;DCAy (cm); eta; pt (GeV/c)", DCAybins, DCAyMin, DCAyMax,20,-1,1,ptNbins,ptMin,ptMax);
+    fDCAyEtaPtMCSecMaterial = new TH3D("fDCAyEtaPtMCSecMaterial","DCAy:eta:pt secondary material;DCAy (cm); eta; pt (GeV/c)", DCAybins, DCAyMin, DCAyMax,20,-1,1,ptNbins,ptMin,ptMax);
+    fDCAyEtaPtMCSecDecaysK0s = new TH3D("fDCAyEtaPtMCSecDecaysK0s","DCAy:eta:pt secondary decays from K0s;DCAy (cm); eta; pt (GeV/c)", DCAybins, DCAyMin, DCAyMax,20,-1,1,ptNbins,ptMin,ptMax);
+    fDCAyEtaPtMCSecDecaysLambda = new TH3D("fDCAyEtaPtMCSecDecaysLambda","DCAy:eta:pt secondary decays from Lambda;DCAy (cm); eta; pt (GeV/c)", DCAybins, DCAyMin, DCAyMax,20,-1,1,ptNbins,ptMin,ptMax);
+
+
     for( Int_t ii  = 1; ii<= fHistMCRecSecTrackParticle->GetAxis(3)->GetNbins(); ii++){
       fHistMCGenPrimTrackParticle->GetAxis(3)->SetBinLabel(ii,binNameTrackParticle[ii-1].Data());
       fHistMCRecTrackParticle->GetAxis(3)->SetBinLabel(ii,binNameTrackParticle[ii-1].Data());
@@ -528,16 +529,6 @@ void AlidNdPtUnifiedAnalysisTask::UserCreateOutputObjects(){
     fHistMCTrackMultGen -> Sumw2();
 
 
-    fHistResPt = new THnF("fHistResPt","Histogram for MC Closure test #it{p}_{T}^{gen.} vs. #it{p}_{T}^{rec.}", 4, nBinsMCPtPt,minBinsMCPtPt,maxBinsMCPtPt);
-    fHistResPt -> SetBinEdges(0,fBinsPt->GetArray());
-    fHistResPt -> SetBinEdges(1,fBinsPt->GetArray());
-    fHistResPt -> SetBinEdges(2,fBinsEta->GetArray());
-    fHistResPt -> SetBinEdges(3,fBinsZv->GetArray());
-    fHistResPt->GetAxis(0)->SetTitle("p_{T}^{gen.} (GeV/c)");
-    fHistResPt->GetAxis(1)->SetTitle("p_{T}^{rec.} (GeV/c)");
-    fHistResPt->GetAxis(2)->SetTitle("#eta");
-    fHistResPt->GetAxis(3)->SetTitle("Zv (cm)");
-    fHistResPt -> Sumw2();
 
     /*
        fHistMCGenTrackINEL0 = new THnF("fHistMCGenTrackINEL0","Histogram for generated tracks for INEL>0 MC Events",4,nBinsTrack,minTrack,maxTrack);
@@ -588,7 +579,6 @@ void AlidNdPtUnifiedAnalysisTask::UserCreateOutputObjects(){
     fOutputList->Add(fHistMCRecINEL0Event);
     fOutputList->Add(fHistMCResponseMat);
     fOutputList->Add(fHistMCMultPt);
-    fOutputList->Add(fHistResPt);
 
     fOutputList->Add(fHistMCTrackMult);
     fOutputList->Add(fHistMCTrackMultGen);
@@ -703,7 +693,7 @@ void AlidNdPtUnifiedAnalysisTask::UserExec(Option_t *){ // Main loop (called for
   if (fIs2015data){	if(!IsEventAccepted2015data(fEvent)) return;	}  // Requiring IncompleteDAQ, SPD background and Pileup cuts
 
   Double_t centrality = 50;
-  if((fBinsCent->GetSize()-1) > 1) centrality = GetCentrality(fEvent);
+  if((fBinsMultCent->GetSize()-1) > 1) centrality = GetCentrality(fEvent);
 
   /// ------------------ Reconstructed Events --------------------------------------
 
@@ -814,11 +804,6 @@ void AlidNdPtUnifiedAnalysisTask::UserExec(Option_t *){ // Main loop (called for
       TParticle *mcParticle = fMCStack->Particle(mcLabel);
       if(!mcParticle) {printf("ERROR: mcParticle not available\n"); continue;}
 
-      //_______________________________________________________
-      Double_t trackResolutionPt[4]= {mcParticle->Pt(), track->Pt(), mcParticle->Eta(), zVertEvent};
-//    Double_t trackResolutionPt[2]= {mcParticle->Pt(), track->Pt()};
-      fHistResPt->Fill(trackResolutionPt);
-      //______________________________________________________
 
       //is original particle also fulfilling the required conditions (not only its reconstructed track)?
       if(!IsTrackAcceptedKinematics(mcParticle)) continue;

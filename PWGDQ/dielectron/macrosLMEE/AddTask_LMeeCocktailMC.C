@@ -45,9 +45,24 @@ void AddTask_LMeeCocktailMC(Int_t CollisionSystem = 200, Float_t MaxEta = 0.8, F
   task->SetWriteTTree(WriteTTree);
   task->SetResolType(ResolType);
   task->SetALTweight(ALTweightType);
-	if(resFileName != ""){
-		task->SetpPbResFileName(resFileName);
-	}
+  if(resFileName != ""){
+    if(resFileName.Contains("alien")){
+      
+      // copy ROOT file to config directory
+      gSystem->Exec(Form("alien_cp %s .",resFileName.Data()));
+      
+      // obtain ROOT file name only, add "alien:" as identifier, and config directory
+      TObjArray* Strings = resFileName.Tokenize("/");
+      TString modResFileName = Form("alien:%s/%s",gSystem->pwd(),Strings->At(Strings->GetEntriesFast()-1)->GetName());
+      
+      Printf("Set resolution file name to %s (copied from %s)",modResFileName.Data(),resFileName.Data());
+      task->SetResFileName(modResFileName);
+    }
+    else{
+      Printf("Set resolution file name to %s",resFileName.Data());
+      task->SetResFileName(resFileName);
+    }
+  }
   
   //connect containers
   AliAnalysisDataContainer *coutput =

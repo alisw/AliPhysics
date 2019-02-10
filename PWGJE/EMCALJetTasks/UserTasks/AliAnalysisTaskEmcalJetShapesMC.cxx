@@ -43,6 +43,13 @@
 #include "AliAODEvent.h"
 #include "AliAnalysisTaskEmcalJetShapesMC.h"
 
+#include <fastjet/config.h>
+#if FASJET_VERSION_NUMBER >= 30302
+#include <fastjet/tools/Recluster.hh>
+#else 
+#include <fastjet/contrib/Recluster.hh>
+#endif
+
 using std::cout;
 using std::endl;
 
@@ -1239,40 +1246,43 @@ void AliAnalysisTaskEmcalJetShapesMC::SoftDrop(AliEmcalJet *fJet,AliJetContainer
 
 
   fastjet::JetDefinition fJetDef(fastjet::antikt_algorithm, fJetRadius*2, static_cast<fastjet::RecombinationScheme>(0), fastjet::BestFJ30 );
-  fastjet::contrib::Recluster *recluster;
   try {
     fastjet::ClusterSequence fClustSeqSA(fInputVectors, fJetDef);
-  std::vector<fastjet::PseudoJet>       fOutputJets;
-  fOutputJets.clear();
-  fOutputJets=fClustSeqSA.inclusive_jets(0);
+    std::vector<fastjet::PseudoJet>       fOutputJets;
+    fOutputJets.clear();
+    fOutputJets=fClustSeqSA.inclusive_jets(0);
 
-  //cout<<fOutputJets[0].perp()<<" "<<fJet->Pt()<<endl;
+    //cout<<fOutputJets[0].perp()<<" "<<fJet->Pt()<<endl;
 
-  fastjet::contrib::SoftDrop softdrop(beta, zcut);
+    fastjet::contrib::SoftDrop softdrop(beta, zcut);
 
-  softdrop.set_verbose_structure(kTRUE);
-  fastjet::JetAlgorithm jetalgo(fastjet::cambridge_algorithm);
-  if(ReclusterAlgo==2) jetalgo=fastjet::antikt_algorithm;
+    softdrop.set_verbose_structure(kTRUE);
+    fastjet::JetAlgorithm jetalgo(fastjet::cambridge_algorithm);
+    if(ReclusterAlgo==2) jetalgo=fastjet::antikt_algorithm;
   if(ReclusterAlgo==1) jetalgo=fastjet::kt_algorithm;
-  if(ReclusterAlgo==0) jetalgo=fastjet::cambridge_algorithm;
+    if(ReclusterAlgo==0) jetalgo=fastjet::cambridge_algorithm;
 
-   recluster = new fastjet::contrib::Recluster(jetalgo,1,true);
-   softdrop.set_reclustering(true,recluster);
-  fastjet::PseudoJet finaljet = softdrop(fOutputJets[0]);
-   Int_t NDroppedTracks = fJet->GetNumberOfTracks()-finaljet.constituents().size();
+#if FASTJET_VERSION_NUMBER >= 30302
+    fastjet::Recluster recluster(jetalgo,1,fastjet::Recluster::keep_only_hardest);
+#else
+    fastjet::contrib::Recluster recluster(jetalgo,1,true);
+#endif
+    softdrop.set_reclustering(true, &recluster);
+    fastjet::PseudoJet finaljet = softdrop(fOutputJets[0]);
+    Int_t NDroppedTracks = fJet->GetNumberOfTracks()-finaljet.constituents().size();
 
-  Double_t SymParam, Mu, DeltaR, GroomedPt,GroomedMass;
-  Int_t NGroomedBranches;
-  SymParam=(finaljet.structure_of<fastjet::contrib::SoftDrop>().symmetry());
-  Mu=(finaljet.structure_of<fastjet::contrib::SoftDrop>().mu());
-  DeltaR=(finaljet.structure_of<fastjet::contrib::SoftDrop>().delta_R());
-  NGroomedBranches=finaljet.structure_of<fastjet::contrib::SoftDrop>().dropped_count();
-  GroomedPt=finaljet.perp();
-  GroomedMass=finaljet.m();
+    Double_t SymParam, Mu, DeltaR, GroomedPt,GroomedMass;
+    Int_t NGroomedBranches;
+    SymParam=(finaljet.structure_of<fastjet::contrib::SoftDrop>().symmetry());
+    Mu=(finaljet.structure_of<fastjet::contrib::SoftDrop>().mu());
+    DeltaR=(finaljet.structure_of<fastjet::contrib::SoftDrop>().delta_R());
+    NGroomedBranches=finaljet.structure_of<fastjet::contrib::SoftDrop>().dropped_count();
+    GroomedPt=finaljet.perp();
+    GroomedMass=finaljet.m();
 
 
-   fShapesVar[11]=SymParam;
-   fShapesVar[12]=DeltaR;
+    fShapesVar[11]=SymParam;
+    fShapesVar[12]=DeltaR;
   // fShapesVar[14]=zeta;
   // fShapesVar[15]=angle;
   // fShapesVar[16]=GroomedMass;}
@@ -1331,20 +1341,8 @@ void AliAnalysisTaskEmcalJetShapesMC::SoftDrop(AliEmcalJet *fJet,AliJetContainer
     AliError(" [w] FJ Exception caught.");
     //return -1;
   }
-
-
-
-
-   if(recluster) { delete recluster; recluster = NULL; }
-
-   if(fTf1Kt){ delete fTf1Kt;}
-   if(fTf1Omega){ delete fTf1Omega;}
-
-
-
-  return;
-
-
+  if(fTf1Kt){ delete fTf1Kt;}
+  if(fTf1Omega){ delete fTf1Omega;}
 }
 
 

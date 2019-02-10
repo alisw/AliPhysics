@@ -15,7 +15,6 @@ AliAnalysisTaskSE *AddTaskSigma0Femto(bool isMC = false,
 
   // ================== GetInputEventHandler =============================
   AliVEventHandler *inputHandler = mgr->GetInputEventHandler();
-
   AliAnalysisDataContainer *cinput = mgr->GetCommonInputContainer();
 
   //=========  Set Cutnumber for V0Reader ================================
@@ -24,9 +23,11 @@ AliAnalysisTaskSE *AddTaskSigma0Femto(bool isMC = false,
   TString cutnumberEvent = "00000000";
   TString periodNameV0Reader = "";
   Bool_t enableV0findingEffi = kFALSE;
+  Bool_t fillHistos = kTRUE;
   Bool_t runLightOutput = kFALSE;
   if (suffix != "0" && suffix != "999") {
     runLightOutput = kTRUE;
+    fillHistos = kFALSE;
   }
   if (suffix == "23") {
     // eta < 0.8
@@ -88,7 +89,7 @@ AliAnalysisTaskSE *AddTaskSigma0Femto(bool isMC = false,
 
     if (!mgr) {
       Error("AddTask_V0ReaderV1", "No analysis manager found.");
-      return nullptr;
+      return NULL;
     }
 
     if (cutnumberEvent != "") {
@@ -97,10 +98,10 @@ AliAnalysisTaskSE *AddTaskSigma0Femto(bool isMC = false,
       fEventCuts->SetPreSelectionCutFlag(kTRUE);
       fEventCuts->SetV0ReaderName(V0ReaderName);
       fEventCuts->SetLightOutput(runLightOutput);
+      fEventCuts->SetFillCutHistograms("", fillHistos);
       if (periodNameV0Reader.CompareTo("") != 0)
         fEventCuts->SetPeriodEnum(periodNameV0Reader);
       fV0ReaderV1->SetEventCuts(fEventCuts);
-      fEventCuts->SetFillCutHistograms("", kTRUE);
     }
 
     // Set AnalysisCut Number
@@ -112,14 +113,12 @@ AliAnalysisTaskSE *AddTaskSigma0Femto(bool isMC = false,
       fCuts->SetIsHeavyIon(isHeavyIon);
       fCuts->SetV0ReaderName(V0ReaderName);
       fCuts->SetLightOutput(runLightOutput);
+      fCuts->SetFillCutHistograms("", fillHistos);
       if (fCuts->InitializeCutsFromCutString(cutnumberPhoton.Data())) {
         fV0ReaderV1->SetConversionCuts(fCuts);
-        fCuts->SetFillCutHistograms("", kTRUE);
       }
     }
-
     fV0ReaderV1->Init();
-
     AliLog::SetGlobalLogLevel(AliLog::kFatal);
 
     // connect input V0Reader
@@ -128,6 +127,10 @@ AliAnalysisTaskSE *AddTaskSigma0Femto(bool isMC = false,
   }
 
   //========= Init subtasks and start analyis ============================
+  // Event Cuts
+  AliFemtoDreamEventCuts *evtCuts = AliFemtoDreamEventCuts::StandardCutsRun2();
+  evtCuts->CleanUpMult(false, false, false, true);
+
   // Track Cuts
   AliFemtoDreamTrackCuts *TrackCuts =
       AliFemtoDreamTrackCuts::PrimProtonCuts(isMC, true, false, false);
@@ -308,8 +311,10 @@ AliAnalysisTaskSE *AddTaskSigma0Femto(bool isMC = false,
   std::vector<int> NBins;
   std::vector<float> kMin;
   std::vector<float> kMax;
+  std::vector<int> pairQA;
   const int nPairs = (suffix == "0") ? 78 : 36;
   for (int i = 0; i < nPairs; ++i) {
+    pairQA.push_back(0);
     if (suffix == "0") {
       NBins.push_back(750);
       kMin.push_back(0.);
@@ -319,6 +324,16 @@ AliAnalysisTaskSE *AddTaskSigma0Femto(bool isMC = false,
       kMin.push_back(0.);
       kMax.push_back(1.);
     }
+  }
+
+  // do extended QA for the pairs in default mode
+  if (suffix == "0") {
+    pairQA[0] = 11;   // pp
+    pairQA[2] = 14;   // pSigma
+    pairQA[12] = 11;  // barp barp
+    pairQA[14] = 14;  // barp barp
+    pairQA[23] = 44;  // Sigma Sigma
+    pairQA[33] = 44;  // barSigma barSigma
   }
 
   AliFemtoDreamCollConfig *config =
@@ -372,6 +387,7 @@ AliAnalysisTaskSE *AddTaskSigma0Femto(bool isMC = false,
   }
   config->SetMultBinning(true);
 
+  config->SetExtendedQAPairs(pairQA);
   config->SetZBins(ZVtxBins);
   if (MomRes) {
     if (isMC) {
@@ -381,13 +397,9 @@ AliAnalysisTaskSE *AddTaskSigma0Femto(bool isMC = false,
                    "MC Info; fix it wont work! \n";
     }
   }
-  if (etaPhiPlotsAtTPCRadii) {
-    if (isMC) {
-      config->SetPhiEtaBinnign(true);
-    } else {
-      std::cout << "You are trying to request the Eta Phi Plots without MC "
-                   "Info; fix it wont work! \n";
-    }
+
+  if (suffix == "0") {
+    config->SetPhiEtaBinnign(true);
   }
   config->SetdPhidEtaPlots(false);
   config->SetPDGCodes(PDGParticles);
@@ -396,7 +408,7 @@ AliAnalysisTaskSE *AddTaskSigma0Femto(bool isMC = false,
   config->SetMaxKRel(kMax);
   config->SetMixingDepth(10);
   config->SetUseEventMixing(true);
-  config->SetMultiplicityEstimator(AliFemtoDreamEvent::kSPD);
+  config->SetMultiplicityEstimator(AliFemtoDreamEvent::kRef08);
   if (suffix != "0") {
     config->SetMinimalBookingME(true);
   }
@@ -418,6 +430,7 @@ AliAnalysisTaskSE *AddTaskSigma0Femto(bool isMC = false,
       task->SetMultiplicityMode(AliVEvent::kHighMultV0);
     }
   }
+  task->SetEventCuts(evtCuts);
   task->SetV0ReaderName(V0ReaderName.Data());
   task->SetIsHeavyIon(isHeavyIon);
   task->SetIsMC(isMC);

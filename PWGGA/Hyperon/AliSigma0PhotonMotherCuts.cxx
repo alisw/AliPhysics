@@ -39,6 +39,7 @@ ClassImp(AliSigma0PhotonMotherCuts)
       fPhotonPtMin(0),
       fPhotonPtMax(999.f),
       fRapidityMax(0.5),
+      fMomCloneKiller(0.f),
       fArmenterosCut(false),
       fArmenterosQtLow(0.f),
       fArmenterosQtUp(0.f),
@@ -47,6 +48,14 @@ ClassImp(AliSigma0PhotonMotherCuts)
       fMCHighMultThreshold(5.f),
       fHistCutBooking(nullptr),
       fHistNSigma(nullptr),
+      fHistNPhotonBefore(nullptr),
+      fHistNPhotonAfter(nullptr),
+      fHistNLambdaBefore(nullptr),
+      fHistNLambdaAfter(nullptr),
+      fHistNPhotonClone(nullptr),
+      fHistNPhotonLabel(nullptr),
+      fHistNLambdaClone(nullptr),
+      fHistNLambdaLabel(nullptr),
       fHistMassCutPt(nullptr),
       fHistInvMass(nullptr),
       fHistInvMassRecPhoton(nullptr),
@@ -60,6 +69,18 @@ ClassImp(AliSigma0PhotonMotherCuts)
       fHistArmenterosAfter(nullptr),
       fHistMixedInvMassPt(nullptr),
       fHistMixedInvMassBinnedMultPt(),
+      fHistDiffPGammaBefore(),
+      fHistDiffPLambdaBefore(),
+      fHistDiffPGammaPosBefore(),
+      fHistDiffPLambdaPosBefore(),
+      fHistDiffPGammaNegBefore(),
+      fHistDiffPLambdaNegBefore(),
+      fHistDiffPGammaAfter(),
+      fHistDiffPLambdaAfter(),
+      fHistDiffPGammaPosAfter(),
+      fHistDiffPLambdaPosAfter(),
+      fHistDiffPGammaNegAfter(),
+      fHistDiffPLambdaNegAfter(),
       fHistLambdaPtPhi(nullptr),
       fHistLambdaPtEta(nullptr),
       fHistLambdaMassPt(nullptr),
@@ -125,6 +146,7 @@ AliSigma0PhotonMotherCuts::AliSigma0PhotonMotherCuts(
       fPhotonPtMin(0),
       fPhotonPtMax(999.f),
       fRapidityMax(0.5),
+      fMomCloneKiller(0.f),
       fArmenterosCut(false),
       fArmenterosQtLow(0.f),
       fArmenterosQtUp(0.f),
@@ -133,6 +155,14 @@ AliSigma0PhotonMotherCuts::AliSigma0PhotonMotherCuts(
       fMCHighMultThreshold(5.f),
       fHistCutBooking(nullptr),
       fHistNSigma(nullptr),
+      fHistNPhotonBefore(nullptr),
+      fHistNPhotonAfter(nullptr),
+      fHistNLambdaBefore(nullptr),
+      fHistNLambdaAfter(nullptr),
+      fHistNPhotonClone(nullptr),
+      fHistNPhotonLabel(nullptr),
+      fHistNLambdaClone(nullptr),
+      fHistNLambdaLabel(nullptr),
       fHistMassCutPt(nullptr),
       fHistInvMass(nullptr),
       fHistInvMassRecPhoton(nullptr),
@@ -146,6 +176,18 @@ AliSigma0PhotonMotherCuts::AliSigma0PhotonMotherCuts(
       fHistArmenterosAfter(nullptr),
       fHistMixedInvMassPt(nullptr),
       fHistMixedInvMassBinnedMultPt(),
+      fHistDiffPGammaBefore(),
+      fHistDiffPLambdaBefore(),
+      fHistDiffPGammaPosBefore(),
+      fHistDiffPLambdaPosBefore(),
+      fHistDiffPGammaNegBefore(),
+      fHistDiffPLambdaNegBefore(),
+      fHistDiffPGammaAfter(),
+      fHistDiffPLambdaAfter(),
+      fHistDiffPGammaPosAfter(),
+      fHistDiffPLambdaPosAfter(),
+      fHistDiffPGammaNegAfter(),
+      fHistDiffPLambdaNegAfter(),
       fHistLambdaPtPhi(nullptr),
       fHistLambdaPtEta(nullptr),
       fHistLambdaMassPt(nullptr),
@@ -197,8 +239,8 @@ AliSigma0PhotonMotherCuts *AliSigma0PhotonMotherCuts::DefaultCuts() {
 //____________________________________________________________________________________________________
 void AliSigma0PhotonMotherCuts::SelectPhotonMother(
     AliVEvent *inputEvent, AliMCEvent *mcEvent,
-    const std::vector<AliSigma0ParticleV0> &photonCandidates,
-    const std::vector<AliSigma0ParticleV0> &lambdaCandidates) {
+    std::vector<AliSigma0ParticleV0> &photonCandidates,
+    std::vector<AliSigma0ParticleV0> &lambdaCandidates) {
   fInputEvent = inputEvent;
   fMCEvent = mcEvent;
 
@@ -208,6 +250,9 @@ void AliSigma0PhotonMotherCuts::SelectPhotonMother(
         (AliV0ReaderV1 *)AliAnalysisManager::GetAnalysisManager()->GetTask(
             fV0ReaderName.Data());
   }
+
+  CleanUpClones(photonCandidates, lambdaCandidates);
+
   if (!fIsLightweight) SingleV0QA(photonCandidates, lambdaCandidates);
 
   // Particle pairing
@@ -215,6 +260,318 @@ void AliSigma0PhotonMotherCuts::SelectPhotonMother(
   SigmaToLambdaGammaMixedEvent(photonCandidates, lambdaCandidates);
   SigmaToLambdaGammaMixedEventBinned(photonCandidates, lambdaCandidates);
   FillEventBuffer(photonCandidates, lambdaCandidates);
+}
+
+//____________________________________________________________________________________________________
+void AliSigma0PhotonMotherCuts::CleanUpClones(
+    std::vector<AliSigma0ParticleV0> &photonCandidates,
+    std::vector<AliSigma0ParticleV0> &lambdaCandidates) {
+  // Keep track of the fantastic situation before applying the cuts
+
+  if (!fIsLightweight) {
+    fHistNPhotonBefore->Fill(photonCandidates.size());
+    fHistNLambdaBefore->Fill(lambdaCandidates.size());
+  }
+
+  int nPhotonKilledClone = 0;
+  int nPhotonKilledLabel = 0;
+
+  // Do the checks for the photons
+  for (auto photon1 = photonCandidates.begin();
+       photon1 < photonCandidates.end(); ++photon1) {
+    if (!photon1->GetIsUse()) continue;
+    const auto posDaughter1 = photon1->GetPosDaughter();
+    const auto negDaughter1 = photon1->GetNegDaughter();
+
+    for (auto photon2 = photon1 + 1; photon2 < photonCandidates.end();
+         ++photon2) {
+      if (!photon1->GetIsUse() || !photon2->GetIsUse()) continue;
+      const auto posDaughter2 = photon2->GetPosDaughter();
+      const auto negDaughter2 = photon2->GetNegDaughter();
+
+      const float deltaPxPos =
+          TMath::Abs(posDaughter1.GetPx() - posDaughter2.GetPx());
+      const float deltaPyPos =
+          TMath::Abs(posDaughter1.GetPy() - posDaughter2.GetPy());
+      const float deltaPzPos =
+          TMath::Abs(posDaughter1.GetPz() - posDaughter2.GetPz());
+      const float deltaPPos =
+          TMath::Abs(posDaughter1.GetP() - posDaughter2.GetP());
+
+      const float deltaPxNeg =
+          TMath::Abs(negDaughter1.GetPx() - negDaughter2.GetPx());
+      const float deltaPyNeg =
+          TMath::Abs(negDaughter1.GetPy() - negDaughter2.GetPy());
+      const float deltaPzNeg =
+          TMath::Abs(negDaughter1.GetPz() - negDaughter2.GetPz());
+      const float deltaPNeg =
+          TMath::Abs(negDaughter1.GetP() - negDaughter2.GetP());
+
+      if (!fIsLightweight) {
+        fHistDiffPGammaBefore[0]->Fill(
+            TMath::Abs(photon1->GetPx() - photon2->GetPx()));
+        fHistDiffPGammaBefore[1]->Fill(
+            TMath::Abs(photon1->GetPy() - photon2->GetPy()));
+        fHistDiffPGammaBefore[2]->Fill(
+            TMath::Abs(photon1->GetPz() - photon2->GetPz()));
+        fHistDiffPGammaBefore[3]->Fill(
+            TMath::Abs(photon1->GetP() - photon2->GetP()));
+
+        fHistDiffPGammaPosBefore[0]->Fill(deltaPxPos);
+        fHistDiffPGammaPosBefore[1]->Fill(deltaPyPos);
+        fHistDiffPGammaPosBefore[2]->Fill(deltaPzPos);
+        fHistDiffPGammaPosBefore[3]->Fill(deltaPPos);
+
+        fHistDiffPGammaNegBefore[0]->Fill(deltaPxNeg);
+        fHistDiffPGammaNegBefore[1]->Fill(deltaPyNeg);
+        fHistDiffPGammaNegBefore[2]->Fill(deltaPzNeg);
+        fHistDiffPGammaNegBefore[3]->Fill(deltaPNeg);
+      }
+
+      bool hasSameLabels =
+          (photon1->GetTrackLabelPos() == photon2->GetTrackLabelPos() ||
+           photon1->GetTrackLabelNeg() == photon2->GetTrackLabelNeg());
+
+      bool hasSameMomenta =
+          ((deltaPxPos < fMomCloneKiller && deltaPyPos < fMomCloneKiller &&
+            deltaPzPos < fMomCloneKiller) ||
+           (deltaPxNeg < fMomCloneKiller && deltaPyNeg < fMomCloneKiller &&
+            deltaPzNeg < fMomCloneKiller));
+
+      if (hasSameLabels) {
+        ++nPhotonKilledLabel;
+      }
+
+      if (hasSameMomenta && !hasSameLabels) {
+        ++nPhotonKilledClone;
+      }
+
+      // do the check for both daughters
+      if (hasSameLabels || hasSameMomenta) {
+        const float cpa1 = photon1->GetCosineAlpha();
+        const float cpa2 = photon2->GetCosineAlpha();
+        if (cpa1 > cpa2) {
+          photon2->SetUse(false);
+        } else {
+          photon1->SetUse(false);
+        }
+      }
+      if (!photon2->GetIsUse()) break;
+    }
+  }
+
+  int nLambdaKilledClone = 0;
+  int nLambdaKilledLabel = 0;
+  // Do the checks for the Lambdas
+  for (auto lambda1 = lambdaCandidates.begin();
+       lambda1 < lambdaCandidates.end(); ++lambda1) {
+    if (!lambda1->GetIsUse()) continue;
+
+    const auto posDaughter1 = lambda1->GetPosDaughter();
+    const auto negDaughter1 = lambda1->GetNegDaughter();
+
+    for (auto lambda2 = lambda1 + 1; lambda2 < lambdaCandidates.end();
+         ++lambda2) {
+      if (!lambda1->GetIsUse() || !lambda2->GetIsUse()) continue;
+
+      const auto posDaughter2 = lambda2->GetPosDaughter();
+      const auto negDaughter2 = lambda2->GetNegDaughter();
+
+      const float deltaPxPos =
+          TMath::Abs(posDaughter1.GetPx() - posDaughter2.GetPx());
+      const float deltaPyPos =
+          TMath::Abs(posDaughter1.GetPy() - posDaughter2.GetPy());
+      const float deltaPzPos =
+          TMath::Abs(posDaughter1.GetPz() - posDaughter2.GetPz());
+      const float deltaPPos =
+          TMath::Abs(posDaughter1.GetP() - posDaughter2.GetP());
+
+      const float deltaPxNeg =
+          TMath::Abs(negDaughter1.GetPx() - negDaughter2.GetPx());
+      const float deltaPyNeg =
+          TMath::Abs(negDaughter1.GetPy() - negDaughter2.GetPy());
+      const float deltaPzNeg =
+          TMath::Abs(negDaughter1.GetPz() - negDaughter2.GetPz());
+      const float deltaPNeg =
+          TMath::Abs(negDaughter1.GetP() - negDaughter2.GetP());
+
+      if (!fIsLightweight) {
+        fHistDiffPLambdaBefore[0]->Fill(
+            TMath::Abs(lambda1->GetPx() - lambda2->GetPx()));
+        fHistDiffPLambdaBefore[1]->Fill(
+            TMath::Abs(lambda1->GetPy() - lambda2->GetPy()));
+        fHistDiffPLambdaBefore[2]->Fill(
+            TMath::Abs(lambda1->GetPz() - lambda2->GetPz()));
+        fHistDiffPLambdaBefore[3]->Fill(
+            TMath::Abs(lambda1->GetP() - lambda2->GetP()));
+
+        fHistDiffPLambdaPosBefore[0]->Fill(deltaPxPos);
+        fHistDiffPLambdaPosBefore[1]->Fill(deltaPyPos);
+        fHistDiffPLambdaPosBefore[2]->Fill(deltaPzPos);
+        fHistDiffPLambdaPosBefore[3]->Fill(deltaPPos);
+
+        fHistDiffPLambdaNegBefore[0]->Fill(deltaPxNeg);
+        fHistDiffPLambdaNegBefore[1]->Fill(deltaPyNeg);
+        fHistDiffPLambdaNegBefore[2]->Fill(deltaPzNeg);
+        fHistDiffPLambdaNegBefore[3]->Fill(deltaPNeg);
+      }
+
+      bool hasSameLabels =
+          (lambda1->GetTrackLabelPos() == lambda2->GetTrackLabelPos() ||
+           lambda1->GetTrackLabelNeg() == lambda2->GetTrackLabelNeg());
+
+      bool hasSameMomenta =
+          ((deltaPxPos < fMomCloneKiller && deltaPyPos < fMomCloneKiller &&
+            deltaPzPos < fMomCloneKiller) ||
+           (deltaPxNeg < fMomCloneKiller && deltaPyNeg < fMomCloneKiller &&
+            deltaPzNeg < fMomCloneKiller));
+
+      if (hasSameLabels) {
+        ++nLambdaKilledLabel;
+      }
+
+      if (hasSameMomenta && !hasSameLabels) {
+        ++nLambdaKilledClone;
+      }
+
+      // do the check for both daughters
+      if (hasSameLabels || hasSameMomenta) {
+        const float cpa1 = lambda1->GetCosineAlpha();
+        const float cpa2 = lambda2->GetCosineAlpha();
+        if (cpa1 > cpa2) {
+          lambda2->SetUse(false);
+        } else {
+          lambda1->SetUse(false);
+        }
+      }
+      if (!lambda2->GetIsUse()) break;
+    }
+  }
+
+  // We're done here, now comes the QA
+
+  // Now take a look what changed for the Photons
+  int nPhotonAfter = 0;
+  for (auto photon1 = photonCandidates.begin();
+       photon1 < photonCandidates.end(); ++photon1) {
+    if (!photon1->GetIsUse()) continue;
+    const auto posDaughter1 = photon1->GetPosDaughter();
+    const auto negDaughter1 = photon1->GetNegDaughter();
+    ++nPhotonAfter;
+
+    for (auto photon2 = photon1 + 1; photon2 < photonCandidates.end();
+         ++photon2) {
+      if (!photon2->GetIsUse()) continue;
+      const auto posDaughter2 = photon2->GetPosDaughter();
+      const auto negDaughter2 = photon2->GetNegDaughter();
+
+      const float deltaPxPos =
+          TMath::Abs(posDaughter1.GetPx() - posDaughter2.GetPx());
+      const float deltaPyPos =
+          TMath::Abs(posDaughter1.GetPy() - posDaughter2.GetPy());
+      const float deltaPzPos =
+          TMath::Abs(posDaughter1.GetPz() - posDaughter2.GetPz());
+      const float deltaPPos =
+          TMath::Abs(posDaughter1.GetP() - posDaughter2.GetP());
+
+      const float deltaPxNeg =
+          TMath::Abs(negDaughter1.GetPx() - negDaughter2.GetPx());
+      const float deltaPyNeg =
+          TMath::Abs(negDaughter1.GetPy() - negDaughter2.GetPy());
+      const float deltaPzNeg =
+          TMath::Abs(negDaughter1.GetPz() - negDaughter2.GetPz());
+      const float deltaPNeg =
+          TMath::Abs(negDaughter1.GetP() - negDaughter2.GetP());
+
+      if (!fIsLightweight) {
+        fHistDiffPGammaAfter[0]->Fill(
+            TMath::Abs(photon1->GetPx() - photon2->GetPx()));
+        fHistDiffPGammaAfter[1]->Fill(
+            TMath::Abs(photon1->GetPy() - photon2->GetPy()));
+        fHistDiffPGammaAfter[2]->Fill(
+            TMath::Abs(photon1->GetPz() - photon2->GetPz()));
+        fHistDiffPGammaAfter[3]->Fill(
+            TMath::Abs(photon1->GetP() - photon2->GetP()));
+
+        fHistDiffPGammaPosAfter[0]->Fill(deltaPxPos);
+        fHistDiffPGammaPosAfter[1]->Fill(deltaPyPos);
+        fHistDiffPGammaPosAfter[2]->Fill(deltaPzPos);
+        fHistDiffPGammaPosAfter[3]->Fill(deltaPPos);
+
+        fHistDiffPGammaNegAfter[0]->Fill(deltaPxNeg);
+        fHistDiffPGammaNegAfter[1]->Fill(deltaPyNeg);
+        fHistDiffPGammaNegAfter[2]->Fill(deltaPzNeg);
+        fHistDiffPGammaNegAfter[3]->Fill(deltaPNeg);
+      }
+    }
+  }
+
+  // Now take a look what changed for the Lambdas
+  int nLambdaAfter = 0;
+  for (auto lambda1 = lambdaCandidates.begin();
+       lambda1 < lambdaCandidates.end(); ++lambda1) {
+    if (!lambda1->GetIsUse()) continue;
+    ++nLambdaAfter;
+
+    const auto posDaughter1 = lambda1->GetPosDaughter();
+    const auto negDaughter1 = lambda1->GetNegDaughter();
+
+    for (auto lambda2 = lambda1 + 1; lambda2 < lambdaCandidates.end();
+         ++lambda2) {
+      if (!lambda2->GetIsUse()) continue;
+
+      const auto posDaughter2 = lambda2->GetPosDaughter();
+      const auto negDaughter2 = lambda2->GetNegDaughter();
+
+      const float deltaPxPos =
+          TMath::Abs(posDaughter1.GetPx() - posDaughter2.GetPx());
+      const float deltaPyPos =
+          TMath::Abs(posDaughter1.GetPy() - posDaughter2.GetPy());
+      const float deltaPzPos =
+          TMath::Abs(posDaughter1.GetPz() - posDaughter2.GetPz());
+      const float deltaPPos =
+          TMath::Abs(posDaughter1.GetP() - posDaughter2.GetP());
+
+      const float deltaPxNeg =
+          TMath::Abs(negDaughter1.GetPx() - negDaughter2.GetPx());
+      const float deltaPyNeg =
+          TMath::Abs(negDaughter1.GetPy() - negDaughter2.GetPy());
+      const float deltaPzNeg =
+          TMath::Abs(negDaughter1.GetPz() - negDaughter2.GetPz());
+      const float deltaPNeg =
+          TMath::Abs(negDaughter1.GetP() - negDaughter2.GetP());
+
+      if (!fIsLightweight) {
+        fHistDiffPLambdaAfter[0]->Fill(
+            TMath::Abs(lambda1->GetPx() - lambda2->GetPx()));
+        fHistDiffPLambdaAfter[1]->Fill(
+            TMath::Abs(lambda1->GetPy() - lambda2->GetPy()));
+        fHistDiffPLambdaAfter[2]->Fill(
+            TMath::Abs(lambda1->GetPz() - lambda2->GetPz()));
+        fHistDiffPLambdaAfter[3]->Fill(
+            TMath::Abs(lambda1->GetP() - lambda2->GetP()));
+
+        fHistDiffPLambdaPosAfter[0]->Fill(deltaPxPos);
+        fHistDiffPLambdaPosAfter[1]->Fill(deltaPyPos);
+        fHistDiffPLambdaPosAfter[2]->Fill(deltaPzPos);
+        fHistDiffPLambdaPosAfter[3]->Fill(deltaPPos);
+
+        fHistDiffPLambdaNegAfter[0]->Fill(deltaPxNeg);
+        fHistDiffPLambdaNegAfter[1]->Fill(deltaPyNeg);
+        fHistDiffPLambdaNegAfter[2]->Fill(deltaPzNeg);
+        fHistDiffPLambdaNegAfter[3]->Fill(deltaPNeg);
+      }
+    }
+  }
+
+  if (!fIsLightweight) {
+    fHistNPhotonAfter->Fill(nPhotonAfter);
+    fHistNLambdaAfter->Fill(nLambdaAfter);
+    fHistNPhotonClone->Fill(nPhotonKilledClone);
+    fHistNPhotonLabel->Fill(nPhotonKilledLabel);
+    fHistNLambdaClone->Fill(nLambdaKilledClone);
+    fHistNLambdaLabel->Fill(nLambdaKilledLabel);
+  }
 }
 
 //____________________________________________________________________________________________________
@@ -258,8 +615,10 @@ void AliSigma0PhotonMotherCuts::SigmaToLambdaGamma(
   for (const auto &photon : photonCandidates) {
     if (photon.GetPt() > fPhotonPtMax || photon.GetPt() < fPhotonPtMin)
       continue;
+    if (!photon.GetIsUse()) continue;
 
     for (const auto &lambda : lambdaCandidates) {
+      if (!lambda.GetIsUse()) continue;
       AliSigma0ParticlePhotonMother sigma(lambda, photon, fInputEvent);
       const float invMass = sigma.GetMass();
       const float armAlpha = sigma.GetArmenterosAlpha();
@@ -342,7 +701,8 @@ void AliSigma0PhotonMotherCuts::SigmaToLambdaGamma(
           fHistMCV0Mass->Fill(invMass);
         }
         if (!fIsLightweight) {
-          // let's where the other particle comes from if one of them stems from
+          // let's where the other particle comes from if one of them stems
+          // from
           // a Sigma0
           if (TMath::Abs(pdgLambdaMother) == 3212 &&
               TMath::Abs(pdgLambdaMother) != 3212) {
@@ -832,6 +1192,18 @@ void AliSigma0PhotonMotherCuts::InitCutHistograms(TString appendix) {
   if (!fIsLightweight) {
     fHistNSigma =
         new TH1F("fHistNSigma", ";# #Sigma candidates; Entries", 10, 0, 10);
+    fHistNPhotonBefore =
+        new TH1F("fHistNPhotonBefore",
+                 ";# #gamma candidates before clean-up; Entries", 15, 0, 15);
+    fHistNPhotonAfter = new TH1F(
+        "fHistNPhotonAfter",
+        ";# #gamma candidates after clean-up candidates; Entries", 15, 0, 15);
+    fHistNLambdaBefore =
+        new TH1F("fHistNLambdaBefore",
+                 ";# #Lambda candidates before clean-up; Entries", 15, 0, 15);
+    fHistNLambdaAfter =
+        new TH1F("fHistNLambdaAfter",
+                 ";# #Lambda candidates after clean-up; Entries", 15, 0, 15);
     fHistMassCutPt = new TH1F(
         "fHistMassCutPt", "; #it{p}_{T} #Lambda#gamma (GeV/#it{c}); Entries",
         100, 0, 10);
@@ -861,6 +1233,10 @@ void AliSigma0PhotonMotherCuts::InitCutHistograms(TString appendix) {
                  50, -5, 5);
 
     fHistograms->Add(fHistNSigma);
+    fHistograms->Add(fHistNPhotonBefore);
+    fHistograms->Add(fHistNPhotonAfter);
+    fHistograms->Add(fHistNLambdaBefore);
+    fHistograms->Add(fHistNLambdaAfter);
     fHistograms->Add(fHistMassCutPt);
     fHistograms->Add(fHistInvMassRecPhoton);
     fHistograms->Add(fHistInvMassRecLambda);
@@ -869,6 +1245,110 @@ void AliSigma0PhotonMotherCuts::InitCutHistograms(TString appendix) {
     fHistograms->Add(fHistPtRapidity);
     fHistograms->Add(fHistArmenterosBefore);
     fHistograms->Add(fHistArmenterosAfter);
+
+    TString coordinate[4] = {"x", "y", "z", "tot"};
+    for (int i = 0; i < 4; ++i) {
+      fHistDiffPGammaBefore[i] =
+          new TH1F(Form("fHistDiffPGammaBefore_%s", coordinate[i].Data()),
+                   Form("; diff p_{%s,#gamma} before cleanup (GeV/c); Entries ",
+                        coordinate[i].Data()),
+                   1001, 0, 0.5);
+      fHistDiffPLambdaBefore[i] = new TH1F(
+          Form("fHistDiffPLambdaBefore_%s", coordinate[i].Data()),
+          Form("; diff p_{%s,#Lambda} before cleanup (GeV/c); Entries ",
+               coordinate[i].Data()),
+          1001, 0, 0.5);
+      fHistograms->Add(fHistDiffPGammaBefore[i]);
+      fHistograms->Add(fHistDiffPLambdaBefore[i]);
+
+      fHistDiffPGammaPosBefore[i] = new TH1F(
+          Form("fHistDiffPGammaPosBefore_%s", coordinate[i].Data()),
+          Form("; diff p_{%s,#gamma pos} before cleanup (GeV/c); Entries ",
+               coordinate[i].Data()),
+          1001, 0, 0.5);
+      fHistDiffPLambdaPosBefore[i] =
+          new TH1F(Form("fHistDiffPLambdaPosBefore_%s", coordinate[i].Data()),
+                   Form("; diff p_{%s,#Lambda pos} before cleanup (GeV/c);     "
+                        "                    Entries ",
+                        coordinate[i].Data()),
+                   1001, 0, 0.5);
+      fHistograms->Add(fHistDiffPGammaPosBefore[i]);
+      fHistograms->Add(fHistDiffPLambdaPosBefore[i]);
+
+      fHistDiffPGammaNegBefore[i] =
+          new TH1F(Form("fHistDiffPGammaNegBefore_%s", coordinate[i].Data()),
+                   Form("; diff p_{%s,#gamma neg} before cleanup (GeV/c);      "
+                        "                   Entries ",
+                        coordinate[i].Data()),
+                   1001, 0, 0.5);
+      fHistDiffPLambdaNegBefore[i] =
+          new TH1F(Form("fHistDiffPLambdaNegBefore_%s", coordinate[i].Data()),
+                   Form("; diff p_{%s,#Lambda neg} before cleanup (GeV/c);     "
+                        "                    Entries ",
+                        coordinate[i].Data()),
+                   1001, 0, 0.5);
+      fHistograms->Add(fHistDiffPGammaNegBefore[i]);
+      fHistograms->Add(fHistDiffPLambdaNegBefore[i]);
+
+      fHistDiffPGammaAfter[i] =
+          new TH1F(Form("fHistDiffPGammaAfter_%s", coordinate[i].Data()),
+                   Form("; diff p_{%s,#gamma} after cleanup (GeV/c); Entries ",
+                        coordinate[i].Data()),
+                   1001, 0, 0.5);
+      fHistDiffPLambdaAfter[i] =
+          new TH1F(Form("fHistDiffPLambdaAfter_%s", coordinate[i].Data()),
+                   Form("; diff p_{%s,#Lambda} after cleanup (GeV/c); Entries ",
+                        coordinate[i].Data()),
+                   1001, 0, 0.5);
+      fHistograms->Add(fHistDiffPGammaAfter[i]);
+      fHistograms->Add(fHistDiffPLambdaAfter[i]);
+
+      fHistDiffPGammaPosAfter[i] = new TH1F(
+          Form("fHistDiffPGammaPosAfter_%s", coordinate[i].Data()),
+          Form("; diff p_{%s,#gamma pos} after cleanup (GeV/c); Entries ",
+               coordinate[i].Data()),
+          1001, 0, 0.5);
+      fHistDiffPLambdaPosAfter[i] =
+          new TH1F(Form("fHistDiffPLambdaPosAfter_%s", coordinate[i].Data()),
+                   Form("; diff p_{%s,#Lambda pos} after cleanup (GeV/c);      "
+                        "                   Entries ",
+                        coordinate[i].Data()),
+                   1001, 0, 0.5);
+      fHistograms->Add(fHistDiffPGammaPosAfter[i]);
+      fHistograms->Add(fHistDiffPLambdaPosAfter[i]);
+
+      fHistDiffPGammaNegAfter[i] = new TH1F(
+          Form("fHistDiffPGammaNegAfter_%s", coordinate[i].Data()),
+          Form("; diff p_{%s,#gamma neg} after cleanup (GeV/c); Entries ",
+               coordinate[i].Data()),
+          1001, 0, 0.5);
+      fHistDiffPLambdaNegAfter[i] = new TH1F(
+          Form("fHistDiffPLambdaNegAfter_%s", coordinate[i].Data()),
+          Form("; diff p_{%s,#Lambda neg} after cleanup (GeV/c); Entries ",
+               coordinate[i].Data()),
+          1001, 0, 0.5);
+      fHistograms->Add(fHistDiffPGammaNegAfter[i]);
+      fHistograms->Add(fHistDiffPLambdaNegAfter[i]);
+    }
+
+    fHistNPhotonClone = new TH1F(
+        "fHistNPhotonClone",
+        ";# #gamma candidates eliminated due to clones; Entries", 15, 0, 15);
+    fHistNPhotonLabel = new TH1F(
+        "fHistNPhotonLabel",
+        ";# #gamma candidates eliminated due label duplicates; Entries", 15, 0,
+        15);
+    fHistNLambdaClone = new TH1F(
+        "fHistNLambdaClone",
+        ";# #Lambda candidates eliminated due to clones; Entries", 15, 0, 15);
+    fHistNLambdaLabel = new TH1F(
+        "fHistNLambdaLabel",
+        ";# #Lambda candidates eliminated due label duplicates; Entries", 15, 0,
+        15);
+    fHistograms->Add(fHistNPhotonClone);
+    fHistograms->Add(fHistNPhotonLabel);
+    fHistograms->Add(fHistNLambdaClone);
+    fHistograms->Add(fHistNLambdaLabel);
 
     fHistLambdaPtPhi =
         new TH2F("fHistLambdaPtPhi", "; #it{p}_{T} (GeV/#it{c}); #phi (rad)",

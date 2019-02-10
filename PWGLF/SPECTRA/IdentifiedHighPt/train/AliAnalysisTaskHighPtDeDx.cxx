@@ -27,11 +27,16 @@
   * 13 aug 2018: fill tree with AliAODEvent::GetNumberOfTracks() so I can plot is vs centrality
                  and: switch to use AliMultSelection instead of AliCentrality: CentFramework(CentFrameworkAliCen) kTRUE: use AliCentrality, kFALSE: use AliMultSelection
   * 31 oct 2018: fill tree with fEvent->refMult
+  * 17 jan 2019: add x-check histos to get quick overview of which: finder, calib, trig
+                 fTriggerInt;         // 0 = kMB, 1 = kCent, 2 = kSemiCent
+                 fV0Finder;           // 0 = oldFinder, 1 = newFinder
+                 fCentFramework;      // 0 = AliCentrality, 1 = AliMultSelection
+  * 23 jan 2019: add more filter bit flags for v0 daughters, and make sure TPCrefit, nCrossedRowsTPC, and findable cuts are always there 
+  * 30 jan 2019: setting functions for: SetContributorsVtxCut, SetContributorsVtxSPDCut, SetPileupCut, SetVtxR2Cut, SetCrossedRowsCut, SetCrossedOverFindableCut, and removing the eta cut limit of 0.8 on V0s (but keeping it on tracks & daughter tracks)
+  * 06 feb 2019: implement reject kink daughters option
 
   Remiders:
   * For pp: remove pile up thing
-  * For 2011 MC or 2010 DT: remove hardcoded trigger conditions!
-  * For 2011 DT: add hardcoded trigger conditions!
 
   */
 
@@ -109,7 +114,7 @@ AliAnalysisTaskHighPtDeDx::AliAnalysisTaskHighPtDeDx():
   fRandom(0x0),
   fEvent(0x0),
   fTrackArrayGlobalPar(0x0),
-  fV0ArrayGlobalPar(0x0), //
+  fV0ArrayGlobalPar(0x0), 
   fTrackArrayMC(0x0),
   fVZEROArray(0x0),
   ftrigBit1(0x0),
@@ -124,8 +129,16 @@ AliAnalysisTaskHighPtDeDx::AliAnalysisTaskHighPtDeDx():
   fMinPtV0(0.1),
   fCosPACut(0.95),
   fDecayRCut(0.2),
+  fContributorsVtxCut(2),
+  fContributorsVtxSPDCut(2),
+  fPileupCut(0.5),          
+  fVtxR2Cut(10.0),           
+  fCrossedRowsCut(70.0),     
+  fCrossedOverFindableCut(0.8),
+  fRejectKinks(kTRUE),
+  fSigmaDedxCut(kFALSE),       
   fLowPtFraction(0.01),
-  fMassCut(0.1),//
+  fMassCut(0.1),
   fMinCent(0.0),
   fMaxCent(100.0),
   fMcProcessType(-999),
@@ -135,6 +148,9 @@ AliAnalysisTaskHighPtDeDx::AliAnalysisTaskHighPtDeDx():
   fZvtxMC(-999),
   fRun(-999),
   fEventId(-999),
+  fTriggerInt(-999),
+  fV0Finder(-999),
+  fCentFramework(-999),
   fListOfObjects(0), 
   fEvents(0x0), fVtx(0x0), fVtxMC(0x0), fVtxBeforeCuts(0x0), fVtxAfterCuts(0x0),
   fn1(0),
@@ -181,8 +197,16 @@ AliAnalysisTaskHighPtDeDx::AliAnalysisTaskHighPtDeDx(const char *name):
   fMinPtV0(0.1),
   fCosPACut(0.95),
   fDecayRCut(0.2),
+  fContributorsVtxCut(2),
+  fContributorsVtxSPDCut(2),
+  fPileupCut(0.5),          
+  fVtxR2Cut(10.0),           
+  fCrossedRowsCut(70.0),     
+  fCrossedOverFindableCut(0.8),
+  fRejectKinks(kTRUE),
+  fSigmaDedxCut(kFALSE),       
   fLowPtFraction(0.01),
-  fMassCut(0.1),//
+  fMassCut(0.1),
   fMinCent(0.0),
   fMaxCent(100.0),
   fMcProcessType(-999),
@@ -192,6 +216,9 @@ AliAnalysisTaskHighPtDeDx::AliAnalysisTaskHighPtDeDx(const char *name):
   fZvtxMC(-999),
   fRun(-999),
   fEventId(-999),
+  fTriggerInt(-999),
+  fV0Finder(-999),
+  fCentFramework(-999),
   fListOfObjects(0), 
   fEvents(0x0), fVtx(0x0), fVtxMC(0x0), fVtxBeforeCuts(0x0), fVtxAfterCuts(0x0),
   fn1(0),
@@ -400,6 +427,22 @@ void AliAnalysisTaskHighPtDeDx::UserExec(Option_t *)
     fTriggeredEventMB += 2;  
     fn2->Fill(1);
   }
+  
+  //Addition to trigger x-check: fTriggerInt; // 0 = kMB, 1 = kCent, 2 = kSemiCent
+  if(((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))
+     ->IsEventSelected() & AliVEvent::kMB){
+    fTriggerInt = 0; 
+  }
+  if(((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))
+     ->IsEventSelected() & AliVEvent::kCentral){
+    fTriggerInt = 1; 
+  }
+  if(((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))
+     ->IsEventSelected() & AliVEvent::kSemiCentral){
+    fTriggerInt = 2; 
+  }
+
+  
   //  //_____________ end nominal _______________________
   
 
@@ -512,22 +555,32 @@ void AliAnalysisTaskHighPtDeDx::UserExec(Option_t *)
     
   }
   else{ // AOD
-
-    fZvtx  = -1599;
+    
     // Global primary vertex
     const AliAODVertex *vtx = fAOD->GetPrimaryVertex();
-    if (vtx->GetNContributors() > 2) {
-      
-      // SPD primary vertex
-      const AliAODVertex *vtxSPD = fAOD->GetPrimaryVertexSPD();
-      if (vtxSPD->GetNContributors() > 2) {
-	// Correlation between global Zvtx and SPD Zvtx
+    Double_t xVertex = vtx->GetX();
+    Double_t yVertex = vtx->GetY();
+    Double_t radiusSq = yVertex * yVertex + xVertex * xVertex;
+
+    // SPD primary vertex
+    const AliAODVertex *vtxSPD = fAOD->GetPrimaryVertexSPD();
+    Float_t zvSPD = vtxSPD->GetZ();
+    
+    fZvtx  = -1599; //assumption is it's a bad vtx until proven differently
+    
+    if(vtx->GetNContributors() > fContributorsVtxCut){ 
+      if(radiusSq < fVtxR2Cut){
+	if(vtxSPD->GetNContributors() > fContributorsVtxSPDCut){//... vtx is good -> see what z value it has: 
+	  
 	fZvtx = vtx->GetZ();
-	Float_t zvSPD = vtxSPD->GetZ();
-	if( TMath::Abs( fZvtx - zvSPD ) > 0.5) // vtx is bad 
-	  fZvtx  = -1599;
-      }
-    }
+
+	// Correlation between global Zvtx and SPD Zvtx
+	if(TMath::Abs( fZvtx - zvSPD ) > fPileupCut) fZvtx  = -1599; // vtx is bad -> assign "bad" value:
+
+	} //spd vtx
+      } //radius cut
+    } //global vtx
+    
   }//aod
 
   fVtxStatus = -999;
@@ -537,18 +590,14 @@ void AliAnalysisTaskHighPtDeDx::UserExec(Option_t *)
   } 
   else if(fZvtx<-990&&fZvtx>-1500) {
     fVtxStatus = -1;
-    if(fTriggeredEventMB)
-      fVtx->Fill(0);
-    if(fAnalysisMC)
-      fVtxMC->Fill(0);
+    if(fTriggeredEventMB) fVtx->Fill(0);
+    if(fAnalysisMC) fVtxMC->Fill(0);
   } else {
-    if(fTriggeredEventMB)
-      fVtx->Fill(1);
-    if(fAnalysisMC)
-      fVtxMC->Fill(1);
+    if(fTriggeredEventMB) fVtx->Fill(1);
+    if(fAnalysisMC) fVtxMC->Fill(1);
     fVtxBeforeCuts->Fill(fZvtx);
     fVtxStatus = 0;
-    if (TMath::Abs(fZvtx) < fVtxCut) {	
+    if(TMath::Abs(fZvtx) < fVtxCut) {	
       fVtxAfterCuts->Fill(fZvtx);
       fVtxStatus = 1;
     }
@@ -576,11 +625,13 @@ void AliAnalysisTaskHighPtDeDx::UserExec(Option_t *)
       
       if(fAnalysisPbPb){
 	if(fCentFrameworkAliCen){ // CentFramework in AliCentrality
-	  
+	  fCentFramework = 0; // x-check histo: 0 = AliCentrality, 1 = AliMultSelection
+	    
 	  AliCentrality *centObject =  fAOD->GetCentrality();
 	  if(centObject) centralityV0M = centObject->GetCentralityPercentile("V0M"); 
 	  
 	}else{ // CentFramework in AliMultSelection
+	  fCentFramework = 1; // x-check histo: 0 = AliCentrality, 1 = AliMultSelection
 	  
 	  AliMultSelection* centObject = 0x0; 
 	  centObject = (AliMultSelection*)fAOD->FindListObject("MultSelection");
@@ -607,10 +658,13 @@ void AliAnalysisTaskHighPtDeDx::UserExec(Option_t *)
     else ProcessMCTruthAOD(); // AOD
   }
   
-  fEvent->process = fMcProcessType;
-  fEvent->trig    = fTriggeredEventMB;
-  fEvent->zvtxMC  = fZvtxMC;
-  fEvent->cent    = centralityV0M;
+  fEvent->process       = fMcProcessType;
+  fEvent->trig          = fTriggeredEventMB;
+  fEvent->triggerInt    = fTriggerInt;
+  fEvent->zvtxMC        = fZvtxMC;
+  fEvent->cent          = centralityV0M;
+  fEvent->centFramework = fCentFramework;
+
   //fEvent->centV0A      = centralityV0A;
   //fEvent->centZNA      = centralityZNA;
   //fEvent->centCL1      = centralityCL1;
@@ -690,7 +744,7 @@ void AliAnalysisTaskHighPtDeDx::AnalyzeAOD(AliAODEvent* aodEvent)
     fEvents->Fill(1);
 
     if(fVZEROBranch){//change 10/07-18: esdV0->aodV0
-      AliAODVZERO *aodV0 = aodEvent->GetVZEROData();// loop sobre canales del V0 para obtener las multiplicidad
+      AliAODVZERO *aodV0 = aodEvent->GetVZEROData();
       for (Int_t iCh=0; iCh<64; ++iCh) { 
 	Float_t multv=aodV0->GetMultiplicity(iCh); 
 	Int_t intexv=iCh;
@@ -1210,40 +1264,50 @@ void AliAnalysisTaskHighPtDeDx::ProduceArrayTrksAOD( AliAODEvent *AODevent, Anal
       
     UShort_t filterFlag = 0;
     
+    // "Global track RAA analysis QM2011 + Chi2ITS<36"; bit 1024
     if (fTrackFilterGolden) {
-      // "Global track RAA analysis QM2011 + Chi2ITS<36"; bit 1024 
       if(aodTrack->TestFilterBit(1024)) filterFlag +=1;
     }
     
+    // FILTER 128 ARE TPC ONLY TRACKS (TPC PARAMETERS) CONTRAINED TO THE SPD VERTEX
     if (fTrackFilterTPC) {
-      // TPC only cuts is bit 1 according to above macro
-      // Alex always uses 128, NOTE: FILTER 128 ARE TPC TRACKS (TPC PARAMETERS) CONTRAINED TO THE SPD VERTEX, 
-      //Bit 7 (128)	TPC only tracks,constrained to SPD vertex in the filter
       if(aodTrack->TestFilterBit(128)) filterFlag +=2;
     }
-            
+    
+    // tighter cuts on primary particles for high pT tracks
+    // take the standard cuts, which include already 
+    // ITSrefit and use only primaries...
     if (fTrackFilter) {
-      // tighter cuts on primary particles for high pT tracks
-      // take the standard cuts, which include already 
-      // ITSrefit and use only primaries...
-      // bit 32
       if(aodTrack->TestFilterBit(32)) filterFlag +=4;
     }
-
+    
+    //https://twiki.cern.ch/twiki/bin/view/ALICE/HybridTracks
+    //PbPb LHC10h	160	768	 
+    //PbPb LHC11h	145	768
     if(aodTrack->TestFilterBit(768)) filterFlag +=8; 
-      //https://twiki.cern.ch/twiki/bin/view/ALICE/HybridTracks
-      //PbPb LHC10h	160	768	 
-      //PbPb LHC11h	145	768
 
-    if(aodTrack->IsOn(AliAODTrack::kTPCrefit)){ 
-      Float_t nCrossedRowsTPC = aodTrack->GetTPCClusterInfo(2,1);
-      if (nCrossedRowsTPC >= 70) {
-	Int_t findable=aodTrack->GetTPCNclsF();
-	if (findable > 0){ 
-	  if (nCrossedRowsTPC/findable >= 0.8) filterFlag += 16;
-	}
-      }
-    }
+
+    //new method 23 Jan 2019:
+    
+    if(!aodTrack->IsOn(AliAODTrack::kTPCrefit)) continue;
+
+    Float_t nCrossedRowsTPC = aodTrack->GetTPCClusterInfo(2,1);
+    Int_t findable = aodTrack->GetTPCNclsF();
+    if(nCrossedRowsTPC < fCrossedRowsCut) continue;
+    if(findable <= 0) continue;
+    if(nCrossedRowsTPC/findable < fCrossedOverFindableCut) continue;        
+      
+    //old method (before 23 Jan 2019):
+    // if(aodTrack->IsOn(AliAODTrack::kTPCrefit)){ 
+    //   Float_t nCrossedRowsTPC = aodTrack->GetTPCClusterInfo(2,1);
+    //   if (nCrossedRowsTPC >= 70) {
+    // 	Int_t findable=aodTrack->GetTPCNclsF();
+    // 	if (findable > 0){ 
+    // 	  if (nCrossedRowsTPC/findable >= 0.8) filterFlag += 16;
+    // 	}
+    //   }
+    // }
+
     
     if(filterFlag==0) continue;
       
@@ -1371,63 +1435,110 @@ void AliAnalysisTaskHighPtDeDx::ProduceArrayV0AOD( AliAODEvent *AODevent, Analys
       Printf("ERROR: Could not retrieve one of the daughter track");
       continue;
     }
-
+    
     // Remove like-sign daughters
-    if (pTrack->Charge() == nTrack->Charge()) continue; 
-      
+    if(pTrack->Charge() == nTrack->Charge()) continue; 
+    
     // Make sure charge ordering is ok
-    if (pTrack->Charge() < 0) {
+    if(pTrack->Charge() < 0) {
       AliAODTrack* helpTrack = pTrack;
       pTrack = nTrack;
       nTrack = helpTrack;
     } 
         
+    //reject kink daughters //06 Feb 2019:
+    AliAODVertex* prodVtxDaughterNeg = (AliAODVertex*)(nTrack->GetProdVertex());
+    Char_t cTypeVtxProdNeg = prodVtxDaughterNeg->GetType(); 
+    AliAODVertex* prodVtxDaughterPos = (AliAODVertex*)(pTrack->GetProdVertex());
+    Char_t cTypeVtxProdPos = prodVtxDaughterPos->GetType(); 
+    
+    if(fRejectKinks){
+      if(cTypeVtxProdNeg == AliAODVertex::kKink) continue;
+      if(cTypeVtxProdPos == AliAODVertex::kKink) continue;
+    }
+
+    
+    //#### see info about filters at track level in this task ####
+
     //#### check positive tracks ####
     UShort_t filterFlag_p = 0;
-
-    if(fTrackFilterGolden){ // For AOD068  
+    
+    if(fTrackFilterGolden){
       if(pTrack->TestFilterBit(1024)) filterFlag_p +=1;
     }
     
     if(fTrackFilterTPC){
-      // TPC only cuts is bit 1 according to above macro
-      // Alex always uses 128, NOTE: FILTER 128 ARE TPC TRACKS (TPC PARAMETERS) CONTRAINED TO THE SPD VERTEX, 
       if(pTrack->TestFilterBit(128)) filterFlag_p +=2;	  
     }
     
-    if(pTrack->IsOn(AliAODTrack::kTPCrefit)){ 
-      Float_t nCrossedRowsTPC = pTrack->GetTPCClusterInfo(2,1);
-      if (nCrossedRowsTPC >= 70) {
-	Int_t findable=pTrack->GetTPCNclsF();
-	if (findable > 0){ 
-	  if (nCrossedRowsTPC/findable >= 0.8) filterFlag_p += 16;
-	}
-      }
+    if (fTrackFilter){
+      if(pTrack->TestFilterBit(32)) filterFlag_p +=4;
     }
-      
+    
+    if(pTrack->TestFilterBit(768)) filterFlag_p +=8; 
+
+
+    //new method 23 Jan 2019:
+    
+    if(!pTrack->IsOn(AliAODTrack::kTPCrefit)) continue;
+    
+    Float_t nCrossedRowsTPC_p = pTrack->GetTPCClusterInfo(2,1);
+    Int_t findable_p = pTrack->GetTPCNclsF();
+    if(nCrossedRowsTPC_p < fCrossedRowsCut) continue;
+    if(findable_p <= 0) continue;
+    if(nCrossedRowsTPC_p/findable_p < fCrossedOverFindableCut) continue;        
+    
+    //old method (before 23 Jan 2019):
+    // if(pTrack->IsOn(AliAODTrack::kTPCrefit)){ 
+    //   Float_t nCrossedRowsTPC_p = pTrack->GetTPCClusterInfo(2,1);
+    //   if (nCrossedRowsTPC_p >= 70) {
+    // 	Int_t findable_p=pTrack->GetTPCNclsF();
+    // 	if (findable_p > 0){ 
+    // 	  if (nCrossedRowsTPC_p/findable_p >= 0.8) filterFlag_p += 16;
+    // 	}
+    //   }
+    // }
+    
     //#### check negative tracks ####
     UShort_t filterFlag_n = 0;
-
+    
     if(fTrackFilterGolden){
       if(nTrack->TestFilterBit(1024)) filterFlag_n +=1;
     }
     
     if(fTrackFilterTPC){
-      // TPC only cuts is bit 1 according to above macro
-      // Alex always uses 128, NOTE: FILTER 128 ARE TPC TRACKS (TPC PARAMETERS) CONTRAINED TO THE SPD VERTEX, 
-      if(nTrack->TestFilterBit(128)) filterFlag_n +=2;
+      if(nTrack->TestFilterBit(128)) filterFlag_n +=2;	  
     }
     
-    if(nTrack->IsOn(AliAODTrack::kTPCrefit)){
-      Float_t nCrossedRowsTPC = pTrack->GetTPCClusterInfo(2,1);
-      if (nCrossedRowsTPC >= 70) {
-	Int_t findable=nTrack->GetTPCNclsF();
-	if (findable > 0){ 
-	  if (nCrossedRowsTPC/findable >= 0.8) filterFlag_n += 16;
-	}
-      }
+    if (fTrackFilter){
+      if(nTrack->TestFilterBit(32)) filterFlag_n +=4;
     }
-      
+    
+    if(nTrack->TestFilterBit(768)) filterFlag_n +=8; 
+
+
+    //new method 23 Jan 2019:
+    
+    if(!nTrack->IsOn(AliAODTrack::kTPCrefit)) continue;
+    
+    Float_t nCrossedRowsTPC_n = nTrack->GetTPCClusterInfo(2,1);
+    Int_t findable_n = nTrack->GetTPCNclsF();
+    if(nCrossedRowsTPC_n < fCrossedRowsCut) continue;
+    if(findable_n <= 0) continue;
+    if(nCrossedRowsTPC_n/findable_n < fCrossedOverFindableCut) continue;        
+    
+    //old method (before 23 Jan 2019):
+    // if(nTrack->IsOn(AliAODTrack::kTPCrefit)){ 
+    //   Float_t nCrossedRowsTPC_n = nTrack->GetTPCClusterInfo(2,1);
+    //   if (nCrossedRowsTPC_n >= 70) {
+    // 	Int_t findable_n=nTrack->GetTPCNclsF();
+    // 	if (findable_n > 0){ 
+    // 	  if (nCrossedRowsTPC_n/findable_n >= 0.8) filterFlag_n += 16;
+    // 	}
+    //   }
+    // }
+
+
     
     Double_t lV0Radius         = aodV0->RadiusV0();
     Float_t alpha              = aodV0->AlphaV0();
@@ -1476,7 +1587,7 @@ void AliAnalysisTaskHighPtDeDx::ProduceArrayV0AOD( AliAODEvent *AODevent, Analys
     
     // ### Pre-selection to reduce output size ###
     if(TMath::Abs(peta) > fEtaCut || TMath::Abs(neta) > fEtaCut) continue;
-    if(TMath::Abs(aodV0->Eta()) > fEtaCut) continue;
+    // if(TMath::Abs(aodV0->Eta()) > fEtaCut) continue;
     if(aodV0->GetOnFlyStatus() != 0 ) continue;
     if(lV0Radius < fDecayRCut ) continue;
     if(aodV0->Pt() < fMinPtV0) continue;

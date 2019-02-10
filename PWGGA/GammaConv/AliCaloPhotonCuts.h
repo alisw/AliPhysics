@@ -115,7 +115,8 @@ class AliCaloPhotonCuts : public AliAnalysisCuts {
       k14j4,
       // pp 7 TeV 2011
       k14b7,
-      // pp 2.76 TeV 2011
+      k14k1ab,
+     // pp 2.76 TeV 2011
       k12f1a,
       k12f1b,
       k12i3,
@@ -135,6 +136,7 @@ class AliCaloPhotonCuts : public AliAnalysisCuts {
       k16c3a,
       k16c3b,
       k16c3c,
+      kPPb5T13P4DPMJet,
       // pp 2.76TeV 2013
       k15g2,
       kPP2T13P1JJ,
@@ -282,7 +284,7 @@ class AliCaloPhotonCuts : public AliAnalysisCuts {
     Float_t     FunctionNL_kPi0MC(Float_t e, Float_t p0, Float_t p1, Float_t p2, Float_t p3, Float_t p4, Float_t p5, Float_t p6);
     Float_t     FunctionNL_PHOSOnlyMC(Float_t e, Float_t p0, Float_t p1, Float_t p2);
 
-    Float_t     FunctionNL_kSDM(Float_t e, Float_t p0, Float_t p1, Float_t p2);
+    Float_t     FunctionNL_kSDM(Float_t e, Float_t p0, Float_t p1, Float_t p2, Float_t p3 = 1.0);
     Float_t     FunctionNL_DPOW(Float_t e, Float_t p0, Float_t p1, Float_t p2, Float_t p3, Float_t p4, Float_t p5);
     Float_t     FunctionNL_SPOW(Float_t e, Float_t p0, Float_t p1, Float_t p2);
     Float_t     FunctionNL_DExp(Float_t e, Float_t p0, Float_t p1, Float_t p2, Float_t p3, Float_t p4, Float_t p5, Float_t p6 = 1.0, Float_t p7 = 1.0);
@@ -617,7 +619,7 @@ class AliCaloPhotonCuts : public AliAnalysisCuts {
 
   private:
 
-    ClassDef(AliCaloPhotonCuts,79)
+    ClassDef(AliCaloPhotonCuts,81)
 };
 
 #endif

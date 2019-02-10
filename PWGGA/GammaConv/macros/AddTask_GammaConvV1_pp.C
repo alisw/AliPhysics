@@ -1230,6 +1230,8 @@ void AddTask_GammaConvV1_pp(
   } else if (trainConfig == 1090) { //Standard cut for pp 5 TeV analysis VAND
     cuts.AddCutPCM("00010113", "0d200009227300008250404000", "0152103500000000"); //
 
+  } else if (trainConfig == 2001) { // Double Gap event selection  special trigger 11
+    cuts.AddCutPCM("000b0113", "0d200009267300008250404000", "0152103500000000"); // eta < 0.8
 
 
   } else {

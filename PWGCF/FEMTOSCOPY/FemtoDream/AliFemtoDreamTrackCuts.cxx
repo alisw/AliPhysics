@@ -25,6 +25,7 @@ AliFemtoDreamTrackCuts::AliFemtoDreamTrackCuts()
       fCheckFilterBit(false),
       fCheckESDFiltering(false),
       fCheckPileUpITS(false),
+      fCheckPileUpSPDTOF(false),
       fCheckPileUpTOF(false),
       fCheckPileUp(false),
       fFilterBit(0),
@@ -76,6 +77,7 @@ AliFemtoDreamTrackCuts::AliFemtoDreamTrackCuts(
       fCheckFilterBit(cuts.fCheckFilterBit),
       fCheckESDFiltering(cuts.fCheckESDFiltering),
       fCheckPileUpITS(cuts.fCheckPileUpITS),
+      fCheckPileUpSPDTOF(cuts.fCheckPileUpSPDTOF),
       fCheckPileUpTOF(cuts.fCheckPileUpTOF),
       fCheckPileUp(cuts.fCheckPileUp),
       fFilterBit(cuts.fFilterBit),
@@ -130,6 +132,7 @@ AliFemtoDreamTrackCuts &AliFemtoDreamTrackCuts::operator =(
   this->fCheckFilterBit = cuts.fCheckFilterBit;
   this->fCheckESDFiltering = cuts.fCheckESDFiltering;
   this->fCheckPileUpITS = cuts.fCheckPileUpITS;
+  this->fCheckPileUpSPDTOF = cuts.fCheckPileUpSPDTOF;
   this->fCheckPileUpTOF = cuts.fCheckPileUpTOF;
   this->fCheckPileUp = cuts.fCheckPileUp;
   this->fFilterBit = cuts.fFilterBit;
@@ -197,7 +200,7 @@ bool AliFemtoDreamTrackCuts::isSelected(AliFemtoDreamTrack *Track) {
       pass = false;
     } else {
       if (!fMinimalBooking)
-        fHists->FillTrackCounter(21);
+        fHists->FillTrackCounter(22);
     }
   }
   if (pass) {
@@ -284,12 +287,20 @@ bool AliFemtoDreamTrackCuts::TrackingCuts(AliFemtoDreamTrack *Track) {
         fHists->FillTrackCounter(7);
     }
   }
+  if (pass && fCheckPileUpSPDTOF) {
+    if (!(Track->GetTOFTimingReuqirement() || Track->GetHasSPDHit())) {
+      pass = false;
+    } else {
+      if (!fMinimalBooking)
+        fHists->FillTrackCounter(8);
+    }
+  }
   if (pass && fcutnTPCCls) {
     if (Track->GetNClsTPC() < fnTPCCls) {
       pass = false;
     } else {
       if (!fMinimalBooking)
-        fHists->FillTrackCounter(8);
+        fHists->FillTrackCounter(9);
     }
   }
   if (pass && fCutSharedClsTPC) {
@@ -297,7 +308,7 @@ bool AliFemtoDreamTrackCuts::TrackingCuts(AliFemtoDreamTrack *Track) {
       pass = false;
     } else {
       if (!fMinimalBooking)
-        fHists->FillTrackCounter(9);
+        fHists->FillTrackCounter(10);
     }
   }
   if (pass && fCutSharedCls) {
@@ -305,7 +316,7 @@ bool AliFemtoDreamTrackCuts::TrackingCuts(AliFemtoDreamTrack *Track) {
       pass = false;
     } else {
       if (!fMinimalBooking)
-        fHists->FillTrackCounter(10);
+        fHists->FillTrackCounter(11);
     }
   }
   if (pass && fCheckTPCRefit) {
@@ -313,7 +324,7 @@ bool AliFemtoDreamTrackCuts::TrackingCuts(AliFemtoDreamTrack *Track) {
       pass = false;
     } else {
       if (!fMinimalBooking)
-        fHists->FillTrackCounter(11);
+        fHists->FillTrackCounter(12);
     }
   }
   if (pass && fCutTPCCrossedRows) {
@@ -321,14 +332,14 @@ bool AliFemtoDreamTrackCuts::TrackingCuts(AliFemtoDreamTrack *Track) {
       pass = false;
     } else {
       if (!fMinimalBooking)
-        fHists->FillTrackCounter(12);
+        fHists->FillTrackCounter(13);
     }
     if (pass) {
       if (Track->GetRatioCr() < fRatioCrossedRows) {
         pass = false;
       } else {
         if (!fMinimalBooking)
-          fHists->FillTrackCounter(13);
+          fHists->FillTrackCounter(14);
       }
     }
   }
@@ -338,7 +349,7 @@ bool AliFemtoDreamTrackCuts::TrackingCuts(AliFemtoDreamTrack *Track) {
       pass = false;
     } else {
       if (!fMinimalBooking)
-        fHists->FillTrackCounter(14);
+        fHists->FillTrackCounter(15);
     }
   }
 
@@ -369,7 +380,7 @@ bool AliFemtoDreamTrackCuts::PIDCuts(AliFemtoDreamTrack *Track) {
       pass = false;
     } else {
       if (!fMinimalBooking)
-        fHists->FillTrackCounter(15);
+        fHists->FillTrackCounter(16);
       if (fRejectPions && TOFisthere) {
         float nSigTOF = (Track->GetnSigmaTOF((int) (AliPID::kPion)));
         if (TMath::Abs(nSigTOF) < fNSigValue) {
@@ -382,7 +393,7 @@ bool AliFemtoDreamTrackCuts::PIDCuts(AliFemtoDreamTrack *Track) {
           pass = false;
         } else {
           if (!fMinimalBooking)
-            fHists->FillTrackCounter(16);
+            fHists->FillTrackCounter(17);
         }
       }
       if (pass) {
@@ -391,7 +402,7 @@ bool AliFemtoDreamTrackCuts::PIDCuts(AliFemtoDreamTrack *Track) {
           pass = false;
         } else {
           if (!fMinimalBooking)
-            fHists->FillTrackCounter(17);
+            fHists->FillTrackCounter(18);
         }
       }
     }
@@ -400,7 +411,7 @@ bool AliFemtoDreamTrackCuts::PIDCuts(AliFemtoDreamTrack *Track) {
       pass = false;
     } else {
       if (!fMinimalBooking)
-        fHists->FillTrackCounter(18);
+        fHists->FillTrackCounter(19);
       float nSigTPC = (Track->GetnSigmaTPC((int) (fParticleID)));
       float nSigTOF = (Track->GetnSigmaTOF((int) (fParticleID)));
       float nSigComb = TMath::Sqrt(nSigTPC * nSigTPC + nSigTOF * nSigTOF);
@@ -408,13 +419,13 @@ bool AliFemtoDreamTrackCuts::PIDCuts(AliFemtoDreamTrack *Track) {
         pass = false;
       } else {
         if (!fMinimalBooking)
-          fHists->FillTrackCounter(19);
+          fHists->FillTrackCounter(20);
         if (fCutHighPtSig) {
           if (!SmallestNSig(Track)) {
             pass = false;
           } else {
             if (!fMinimalBooking)
-              fHists->FillTrackCounter(20);
+              fHists->FillTrackCounter(21);
           }
         }
       }
@@ -455,14 +466,14 @@ bool AliFemtoDreamTrackCuts::DCACuts(AliFemtoDreamTrack *Track) {
         pass = false;
       } else {
         if (!fMinimalBooking)
-          fHists->FillTrackCounter(22);
+          fHists->FillTrackCounter(23);
       }
     } else {
       if (!(TMath::Abs(Track->GetDCAZ()) < fDCAToVertexZ)) {
         pass = false;
       } else {
         if (!fMinimalBooking)
-          fHists->FillTrackCounter(22);
+          fHists->FillTrackCounter(23);
       }
     }
   }
@@ -496,14 +507,14 @@ bool AliFemtoDreamTrackCuts::DCACuts(AliFemtoDreamTrack *Track) {
         pass = false;
       } else {
         if (!fMinimalBooking)
-          fHists->FillTrackCounter(23);
+          fHists->FillTrackCounter(24);
       }
     } else {
       if (!(TMath::Abs(Track->GetDCAXY()) < fDCAToVertexXY)) {
         pass = false;
       } else {
         if (!fMinimalBooking)
-          fHists->FillTrackCounter(23);
+          fHists->FillTrackCounter(24);
       }
     }
   }
@@ -537,13 +548,10 @@ void AliFemtoDreamTrackCuts::BookQA(AliFemtoDreamTrack *Track) {
         fHists->FillpTPCCut(i, p);
         fHists->FillTPCclsCut(i, Track->GetNClsTPC());
         fHists->FillTrackChiSquare(i, pT, Track->GetChiSquare());
-        if (fDCAProp) {
-          fHists->FillDCAxyCut(i, pT, Track->GetDCAXYProp());
-          fHists->FillDCAzCut(i, pT, Track->GetDCAZProp());
-        } else {
-          fHists->FillDCAxyCut(i, pT, Track->GetDCAXY());
-          fHists->FillDCAzCut(i, pT, Track->GetDCAZ());
-        }
+        fHists->FillDCAxyCut(i, pT, Track->GetDCAXY());
+        fHists->FillDCAzCut(i, pT, Track->GetDCAZ());
+        fHists->FillDCAxyPropCut(i, pT, Track->GetDCAXYProp());
+        fHists->FillDCAzPropCut(i, pT, Track->GetDCAZProp());
         fHists->FillTPCCrossedRowCut(i, Track->GetTPCCrossedRows());
         fHists->FillTPCRatioCut(i, Track->GetRatioCr());
         fHists->FillTPCClsS(i, Track->GetTPCClsC());
@@ -829,21 +837,24 @@ void AliFemtoDreamTrackCuts::BookTrackCuts() {
     if (fCheckPileUpITS) {
       fHists->FillConfig(18, 1);
     }
-    if (fCheckPileUpTOF) {
+    if (fCheckPileUpSPDTOF) {
       fHists->FillConfig(19, 1);
     }
-    if (fCheckPileUp) {
+    if (fCheckPileUpTOF) {
       fHists->FillConfig(20, 1);
     }
-    if (fCheckTPCRefit) {
+    if (fCheckPileUp) {
       fHists->FillConfig(21, 1);
     }
+    if (fCheckTPCRefit) {
+      fHists->FillConfig(22, 1);
+    }
     if (fCutChi2) {
-      fHists->FillConfig(22, fMinCutChi2);
-      fHists->FillConfig(23, fMaxCutChi2);
+      fHists->FillConfig(23, fMinCutChi2);
+      fHists->FillConfig(24, fMaxCutChi2);
     }
     if (fCheckESDFiltering) {
-      fHists->FillConfig(24, 1);
+      fHists->FillConfig(25, 1);
     }
   }
 }

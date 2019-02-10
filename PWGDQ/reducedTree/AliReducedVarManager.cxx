@@ -1,6 +1,6 @@
 /*
 ***********************************************************
-  Implementation of AliVarManager
+  Implementation of AliReducedVarManager
   Contact: iarsene@cern.ch
   2015/04/16
   *********************************************************
@@ -25,6 +25,7 @@ using std::ifstream;
 #include <TProfile.h>
 #include <TRandom.h>
 #include <TProfile2D.h>
+#include <TGraphErrors.h>
 #include <TFile.h>
 #include <THashList.h>
 
@@ -163,6 +164,8 @@ TH1I* AliReducedVarManager::fgRunDipolePolarity = 0x0;
 TH1I* AliReducedVarManager::fgRunL3Polarity = 0x0;
 TH1I* AliReducedVarManager::fgRunTimeStart = 0x0;
 TH1I* AliReducedVarManager::fgRunTimeEnd = 0x0;
+TFile* AliReducedVarManager::fgGRPfile = 0x0;
+TGraphErrors* AliReducedVarManager::fgRunInstLumi = 0x0;
 std::vector<Int_t>  AliReducedVarManager::fgRunNumbers;
 Int_t AliReducedVarManager::fgRunID = -1;
 TH1* AliReducedVarManager::fgAvgMultVsVtxGlobal      [kNMultiplicityEstimators] = {0x0};
@@ -403,6 +406,10 @@ void AliReducedVarManager::FillEventInfo(BASEEVENT* baseEvent, Float_t* values, 
     if(fgRunL3Polarity) values[kL3Polarity] = fgRunL3Polarity->GetBinContent(fgRunL3Polarity->GetXaxis()->FindBin(Form("%d",fgCurrentRunNumber)));
     if(fgRunTimeStart) values[kRunTimeStart] = fgRunTimeStart->GetBinContent(fgRunTimeStart->GetXaxis()->FindBin(Form("%d",fgCurrentRunNumber)));
     if(fgRunTimeEnd) values[kRunTimeEnd] = fgRunTimeEnd->GetBinContent(fgRunTimeEnd->GetXaxis()->FindBin(Form("%d",fgCurrentRunNumber)));
+    if(fgGRPfile) {
+       fgRunInstLumi = (TGraphErrors*)fgGRPfile->Get(Form("InstLumi_Run%d", fgCurrentRunNumber));
+       //cout << "Lumi hist loaded " << fgRunInstLumi << endl;
+    }
     
     // VZERO calibration
     if(fgVZEROCalibrationPath.Data()[0]!='\0') {
@@ -495,10 +502,20 @@ void AliReducedVarManager::FillEventInfo(BASEEVENT* baseEvent, Float_t* values, 
   values[kEventNumberInFile]    = event->EventNumberInFile();
   values[kBC]                   = event->BC();
   values[kTimeStamp]            = event->TimeStamp();
-  if(fgUsedVars[kTimeRelativeSOR]) values[kTimeRelativeSOR] = (event->TimeStamp() - values[kRunTimeStart]) / 60.;
+  Int_t timeSOR = 0; Int_t timeEOR = 0;
+  if(fgUsedVars[kTimeRelativeSOR] || fgUsedVars[kTimeRelativeSORfraction]) {
+     timeSOR = (fgRunTimeStart ? fgRunTimeStart->GetBinContent(fgRunTimeStart->GetXaxis()->FindBin(Form("%d",fgCurrentRunNumber))) : 0);
+     timeEOR = (fgRunTimeEnd ? fgRunTimeEnd->GetBinContent(fgRunTimeEnd->GetXaxis()->FindBin(Form("%d",fgCurrentRunNumber))) : 0);
+  }
+  if(fgUsedVars[kTimeRelativeSOR]) {
+     values[kTimeRelativeSOR] = Double_t(event->TimeStamp() - timeSOR) / 60.;     // in minutes
+  }
   if(fgUsedVars[kTimeRelativeSORfraction] && 
      (values[kRunTimeEnd]-values[kRunTimeStart])>1.)   // the run should be longer than 1 second ... 
-    values[kTimeRelativeSORfraction] = (event->TimeStamp() - values[kRunTimeStart]) / (values[kRunTimeEnd] - values[kRunTimeStart]);
+     values[kTimeRelativeSORfraction] = (event->TimeStamp() - timeSOR) / (timeEOR - timeSOR);
+  if(fgRunInstLumi && fgRunInstLumi) {
+     values[kInstLumi]          = fgRunInstLumi->Eval(event->TimeStamp()); 
+  }
   values[kEventType]            = event->EventType();
   values[kTriggerMask]          = event->TriggerMask();
   values[kINT7Triggered]        = event->TriggerMask() & kINT7 ?1:0;
@@ -531,6 +548,7 @@ void AliReducedVarManager::FillEventInfo(BASEEVENT* baseEvent, Float_t* values, 
   
   for(Int_t iflag=0;iflag<32;++iflag) 
     values[kNTracksPerTrackingStatus+iflag] = event->TracksPerTrackingFlag(iflag);
+  values[kNTracksPerTrackingStatus+kTPCout] = event->TracksWithTPCout();
   
   // set the fgUsedVars to true as these might have been set to false in the previous event
   fgUsedVars[kNTracksTPCoutVsITSout] = kTRUE;
@@ -566,7 +584,15 @@ void AliReducedVarManager::FillEventInfo(BASEEVENT* baseEvent, Float_t* values, 
 
   values[ kVZEROATotalMult ] = event->MultVZEROA();
   values[ kVZEROCTotalMult ] = event->MultVZEROC();
-  values[ kVZEROTotalMult  ]  = event->MultVZERO();
+  values[ kVZEROTotalMult  ] = event->MultVZERO();
+  
+  values[ kVZEROATotalMultFromChannels ] = event->MultVZEROA(kTRUE);
+  values[ kVZEROCTotalMultFromChannels ] = event->MultVZEROC(kTRUE);
+  values[ kVZEROTotalMultFromChannels  ] = event->MultVZERO(kTRUE);
+  if(TMath::Abs(values[kVZEROTotalMultFromChannels])>1.0e-6) 
+     values[kVZEROTPCoutDiff] = (values[kVZEROTotalMultFromChannels]-values[kNTracksPerTrackingStatus+kTPCout]) / (values[kVZEROTotalMultFromChannels]);
+  else
+     values[kVZEROTPCoutDiff] = 0.0;
   
   values[ kVZEROACTotalMult ] = event->MultVZEROA() + event->MultVZEROC();
 
@@ -737,7 +763,7 @@ void AliReducedVarManager::FillEventInfo(BASEEVENT* baseEvent, Float_t* values, 
      values[kNTracksTPCoutFromPileup] = values[kNTracksPerTrackingStatus+kTPCout] - (-2.55+TMath::Sqrt(2.55*2.55+4.0e-5*values[kVZEROTotalMult])) / 2.0e-5;
   else fgUsedVars[kNTracksTPCoutFromPileup] = kFALSE;
   
-  if(!eventF && (fgUsedVars[kVZEROQvecX+0*6+1] || fgUsedVars[kVZEROQvecY+0*6+1] || fgUsedVars[kVZERORP+0*6+1])) {
+  if(fgUsedVars[kVZEROQvecX+0*6+1] || fgUsedVars[kVZEROQvecY+0*6+1] || fgUsedVars[kVZERORP+0*6+1]) {
     Double_t qvecVZEROA[EVENTPLANE::fgkNMaxHarmonics][2] = {{0.0}};
     Double_t qvecVZEROC[EVENTPLANE::fgkNMaxHarmonics][2] = {{0.0}};
     if(fgOptionCalibrateVZEROqVec && fgAvgVZEROChannelMult[0]) {
@@ -745,7 +771,12 @@ void AliReducedVarManager::FillEventInfo(BASEEVENT* baseEvent, Float_t* values, 
       for(Int_t iCh=0; iCh<64; ++iCh) {
          if(event->MultChannelVZERO(iCh)>=fgkVZEROminMult) {
             Float_t avMult = fgAvgVZEROChannelMult[iCh]->GetBinContent(fgAvgVZEROChannelMult[iCh]->FindBin(event->Vertex(2), event->CentralitySPD()));
-            calibVZEROMult[iCh] = event->MultChannelVZERO(iCh) / (avMult>1.0e-6 ? avMult : 1.0);
+            Int_t refCh = iCh-(iCh%8);
+            Float_t refMult=0;
+            if(iCh==refCh)
+                refMult=avMult;
+            calibVZEROMult[iCh] = event->MultChannelVZERO(iCh) / (avMult>1.0e-6 ? avMult : 1.0)*refMult;
+            values[kVZEROChannelMult+iCh]=calibVZEROMult[iCh];
          }
       }
       event->GetVZEROQvector(qvecVZEROA, EVENTPLANE::kVZEROA, calibVZEROMult);
@@ -814,17 +845,41 @@ void AliReducedVarManager::FillEventInfo(BASEEVENT* baseEvent, Float_t* values, 
     }    // end loop over harmonics
   }
   
+  // Get the TPC event plane in case it was written in the trees 
+  for(Int_t ih=0; ih<3; ++ih) {
+     if(event->GetEventPlaneStatus(EVENTPLANE::kTPC,ih+1)!=EVENTPLANE::kUnset) {
+        values[kTPCQvecXtree+ih] = event->GetQx(EVENTPLANE::kTPC,ih+1);
+        values[kTPCQvecYtree+ih] = event->GetQy(EVENTPLANE::kTPC,ih+1);
+        values[kTPCRPtree+ih] = event->GetEventPlane(EVENTPLANE::kTPC,ih+1);
+     }
+     if(event->GetEventPlaneStatus(EVENTPLANE::kTPCptWeights,ih+1)!=EVENTPLANE::kUnset) {
+        values[kTPCQvecXptWeightsTree+ih] = event->GetQx(EVENTPLANE::kTPCptWeights,ih+1);
+        values[kTPCQvecYptWeightsTree+ih] = event->GetQy(EVENTPLANE::kTPCptWeights,ih+1);
+        values[kTPCRPptWeightsTree+ih] = event->GetEventPlane(EVENTPLANE::kTPCptWeights,ih+1);
+     }
+     if(event->GetEventPlaneStatus(EVENTPLANE::kTPCpos,ih+1)!=EVENTPLANE::kUnset) {
+        values[kTPCQvecXposTree+ih] = event->GetQx(EVENTPLANE::kTPCpos,ih+1);
+        values[kTPCQvecYposTree+ih] = event->GetQy(EVENTPLANE::kTPCpos,ih+1);
+        values[kTPCRPposTree+ih] = event->GetEventPlane(EVENTPLANE::kTPCpos,ih+1);
+     }
+     if(event->GetEventPlaneStatus(EVENTPLANE::kTPCneg,ih+1)!=EVENTPLANE::kUnset) {
+        values[kTPCQvecXnegTree+ih] = event->GetQx(EVENTPLANE::kTPCneg,ih+1);
+        values[kTPCQvecYnegTree+ih] = event->GetQy(EVENTPLANE::kTPCneg,ih+1);
+        values[kTPCRPnegTree+ih] = event->GetEventPlane(EVENTPLANE::kTPCneg,ih+1);
+     }
+  }   // end loop over harmonics
+  
   if(eventF) {
-    for(Int_t ih=0; ih<6; ++ih) {
-      // VZERO event plane variables
-      values[kVZEROQvecX+2*6+ih] = 0.0;
-      values[kVZEROQvecY+2*6+ih] = 0.0;
-      values[kVZERORP   +2*6+ih] = 0.0;
-      for(Int_t iVZEROside=0; iVZEROside<2; ++iVZEROside) {
-        values[kVZEROQvecX+iVZEROside*6+ih] = eventF->Qx(EVENTPLANE::kVZEROA+iVZEROside, ih+1);
-        values[kVZEROQvecY+iVZEROside*6+ih] = eventF->Qy(EVENTPLANE::kVZEROA+iVZEROside, ih+1);
-        if(fgUsedVars[kVZERORP+iVZEROside*6+ih]) 
-	  values[kVZERORP+iVZEROside*6+ih] = eventF->EventPlane(EVENTPLANE::kVZEROA+iVZEROside, ih+1);
+   for(Int_t ih=0; ih<6; ++ih) {
+     // VZERO event plane variables
+     values[kVZEROQvecX+2*6+ih] = 0.0;
+     values[kVZEROQvecY+2*6+ih] = 0.0;
+     values[kVZERORP   +2*6+ih] = 0.0;
+     for(Int_t iVZEROside=0; iVZEROside<2; ++iVZEROside) {
+       values[kVZEROQvecX+iVZEROside*6+ih] = eventF->Qx(EVENTPLANE::kVZEROA+iVZEROside, ih+1);
+       values[kVZEROQvecY+iVZEROside*6+ih] = eventF->Qy(EVENTPLANE::kVZEROA+iVZEROside, ih+1);
+       if(fgUsedVars[kVZERORP+iVZEROside*6+ih]) 
+        values[kVZERORP+iVZEROside*6+ih] = eventF->EventPlane(EVENTPLANE::kVZEROA+iVZEROside, ih+1);
 	if(fgUsedVars[kVZEROQvecX+2*6+ih])
 	  values[kVZEROQvecX+2*6+ih] += values[kVZEROQvecX+iVZEROside*6+ih];
 	if(fgUsedVars[kVZEROQvecY+2*6+ih])
@@ -921,7 +976,7 @@ void AliReducedVarManager::FillEventInfo(BASEEVENT* baseEvent, Float_t* values, 
 	values[kVZEROflowV2TPC+ich] = values[kVZEROChannelMult+ich]*
                                       TMath::Cos(2.0*DeltaPhi(vzeroChannelPhi[ich%8],values[kTPCRP+1]));
     } 
-  }  // end if (eventF)
+  }  // end if(eventF)
     
   for(Int_t izdc=0;izdc<10;++izdc) values[kZDCnEnergyCh+izdc] = event->EnergyZDCnTree(izdc);
   for(Int_t izdc=0;izdc<10;++izdc) values[kZDCpEnergyCh+izdc] = event->EnergyZDCpTree(izdc);
@@ -1043,27 +1098,14 @@ void AliReducedVarManager::FillTrackingStatus(TRACK* p, Float_t* values) {
     values[kTrackingStatus+i] = p->CheckTrackStatus(i)+10e-6;
 }
 
-//_________________________________________________________________
-/*void AliReducedVarManager::FillTrackingFlags(TRACK* p, Float_t* values) {
-  //
-  // Fill tracking flags
-  //
-  for(Int_t i=0; i<kNTrackingFlags; i++){
-    values[kTrackingFlags+i] = p->TestFlag(i)+10e-6;
-  }
-}*/
-
-
 
 //_________________________________________________________________
 void AliReducedVarManager::FillTrackingFlag(TRACK* track, UInt_t flag, Float_t* values) {
   //
   // fill the tracking flag
   //
-   //cout << "AliReducedVarManager::FillTrackingFlag track/flag/status :: " << track << "/" << flag << "/" << track->CheckTrackStatus(flag) << endl;
   values[kTrackingFlag] = -1;
   if(track->CheckTrackStatus(flag)) values[kTrackingFlag] = flag;
-  //cout << "AliReducedVarManager::FillTrackingFlag values[kTrackingFlag] :: " << values[kTrackingFlag] << endl;
 }
 
 //_________________________________________________________________
@@ -2261,6 +2303,7 @@ void AliReducedVarManager::SetDefaultVarNames() {
   fgVariableNames[kRunID]                = "Run number";                      fgVariableUnits[kRunID]                = "";
   fgVariableNames[kLHCFillNumber]        = "LHC fill number";                 fgVariableUnits[kLHCFillNumber]        = ""; 
   fgVariableNames[kBeamEnergy]           = "Beam energy";                     fgVariableUnits[kBeamEnergy]           = "GeV";
+  fgVariableNames[kInstLumi]             = "Instantaneous luminosity";        fgVariableUnits[kInstLumi]             = "Hz/mb";   
   fgVariableNames[kDetectorMask]         = "Detector mask";                   fgVariableUnits[kDetectorMask]         = "";
   fgVariableNames[kNumberOfDetectors]    = "Number of active detectors";      fgVariableUnits[kNumberOfDetectors]    = "";  
   fgVariableNames[kDipolePolarity]       = "Dipole magnet polarity";          fgVariableUnits[kDipolePolarity]       = "";
@@ -2451,7 +2494,9 @@ void AliReducedVarManager::SetDefaultVarNames() {
     }
   }
 
-  
+  fgVariableNames[kVZEROATotalMultFromChannels] = "VZERO-A total multiplicity"; fgVariableUnits[kVZEROATotalMultFromChannels] = "";
+  fgVariableNames[kVZEROCTotalMultFromChannels] = "VZERO-C total multiplicity"; fgVariableUnits[kVZEROCTotalMultFromChannels] = "";
+  fgVariableNames[kVZEROTotalMultFromChannels] = "VZERO total multiplicity"; fgVariableUnits[kVZEROTotalMultFromChannels] = "";
 
   for(Int_t il=0;il<2;++il) {
     fgVariableNames[kSPDFiredChips+il] = Form("Fired chips in SPD layer %d", il+1); 
@@ -2667,6 +2712,30 @@ void AliReducedVarManager::SetDefaultVarNames() {
     fgVariableUnits[kTPCuQ+iHarmonic] = "";
     fgVariableNames[kTPCuQsine+iHarmonic] = Form("sin(%d(#phi - #Psi_{%d}^{TPC})|Q^{TPC}_{%d}|", iHarmonic+1,iHarmonic+1,iHarmonic+1);
     fgVariableUnits[kTPCuQsine+iHarmonic] = "";
+    fgVariableNames[kTPCQvecXtree+iHarmonic] = Form("Q_{x,%d}^{TPC}", iHarmonic+1);
+    fgVariableUnits[kTPCQvecXtree+iHarmonic] = "";
+    fgVariableNames[kTPCQvecYtree+iHarmonic] = Form("Q_{y,%d}^{TPC}", iHarmonic+1);
+    fgVariableUnits[kTPCQvecYtree+iHarmonic] = "";
+    fgVariableNames[kTPCRPtree+iHarmonic]    = Form("#Psi_{%d}^{TPC}", iHarmonic+1);
+    fgVariableUnits[kTPCRPtree+iHarmonic]    = "rad.";
+    fgVariableNames[kTPCQvecXptWeightsTree+iHarmonic] = Form("Q_{x,%d}^{TPC}, pt weights", iHarmonic+1);
+    fgVariableUnits[kTPCQvecXptWeightsTree+iHarmonic] = "";
+    fgVariableNames[kTPCQvecYptWeightsTree+iHarmonic] = Form("Q_{y,%d}^{TPC}, pt weights", iHarmonic+1);
+    fgVariableUnits[kTPCQvecYptWeightsTree+iHarmonic] = "";
+    fgVariableNames[kTPCRPptWeightsTree+iHarmonic]    = Form("#Psi_{%d}^{TPC}, pt weights", iHarmonic+1);
+    fgVariableUnits[kTPCRPptWeightsTree+iHarmonic]    = "rad.";
+    fgVariableNames[kTPCQvecXposTree+iHarmonic] = Form("Q_{x,%d}^{TPC}, positives", iHarmonic+1);
+    fgVariableUnits[kTPCQvecXposTree+iHarmonic] = "";
+    fgVariableNames[kTPCQvecYposTree+iHarmonic] = Form("Q_{y,%d}^{TPC}, positives", iHarmonic+1);
+    fgVariableUnits[kTPCQvecYposTree+iHarmonic] = "";
+    fgVariableNames[kTPCRPposTree+iHarmonic]    = Form("#Psi_{%d}^{TPC}, positives", iHarmonic+1);
+    fgVariableUnits[kTPCRPposTree+iHarmonic]    = "rad.";
+    fgVariableNames[kTPCQvecXnegTree+iHarmonic] = Form("Q_{x,%d}^{TPC}, negatives", iHarmonic+1);
+    fgVariableUnits[kTPCQvecXnegTree+iHarmonic] = "";
+    fgVariableNames[kTPCQvecYnegTree+iHarmonic] = Form("Q_{y,%d}^{TPC}, negatives", iHarmonic+1);
+    fgVariableUnits[kTPCQvecYnegTree+iHarmonic] = "";
+    fgVariableNames[kTPCRPnegTree+iHarmonic]    = Form("#Psi_{%d}^{TPC}, negatives", iHarmonic+1);
+    fgVariableUnits[kTPCRPnegTree+iHarmonic]    = "rad.";
   }  // end loop over harmonics 
   
   fgVariableNames[kMCNch] = "N_{ch} in |#eta|<1"; fgVariableUnits[kMCNch] = ""; 
@@ -3087,6 +3156,30 @@ void AliReducedVarManager::SetGRPDataInfo(TH1I* dipolePolarity, TH1I* l3Polarity
       fgRunTimeEnd = (TH1I*)timeStop->Clone("AliReducedVarManager_TimeEnd");
       fgRunTimeEnd->SetDirectory(0x0);
    }
+}
+
+//____________________________________________________________________________________
+void AliReducedVarManager::SetupGRPinformation(const Char_t* filename) {
+   //
+   // open the root file containing GRP information and initialize needed objects
+   //
+   fgGRPfile = new TFile(filename);
+   fgRunTotalLuminosity = (TH1F*)fgGRPfile->Get("lumiTotal")->Clone("AliReducedVarManager_TotalLuminosity");
+   fgRunTotalLuminosity->SetDirectory(0x0);
+   fgRunTotalIntensity0 = (TH1F*)fgGRPfile->Get("intTotal0")->Clone("AliReducedVarManager_TotalIntensity0");
+   fgRunTotalIntensity0->SetDirectory(0x0);
+   fgRunTotalIntensity1 = (TH1F*)fgGRPfile->Get("intTotal1")->Clone("AliReducedVarManager_TotalIntensity1");
+   fgRunTotalIntensity1->SetDirectory(0x0);
+   fgRunLHCFillNumber = (TH1I*)fgGRPfile->Get("fillNumber")->Clone("AliReducedVarManager_LHCFillNumber");
+   fgRunLHCFillNumber->SetDirectory(0x0);
+   fgRunDipolePolarity = (TH1I*)fgGRPfile->Get("dipolePolarity")->Clone("AliReducedVarManager_DipolePolarity");
+   fgRunDipolePolarity->SetDirectory(0x0);
+   fgRunL3Polarity = (TH1I*)fgGRPfile->Get("l3Polarity")->Clone("AliReducedVarManager_L3Polarity");
+   fgRunL3Polarity->SetDirectory(0x0);
+   fgRunTimeStart = (TH1I*)fgGRPfile->Get("timeStart")->Clone("AliReducedVarManager_TimeStart");
+   fgRunTimeStart->SetDirectory(0x0);
+   fgRunTimeEnd = (TH1I*)fgGRPfile->Get("timeEnd")->Clone("AliReducedVarManager_TimeEnd");
+   fgRunTimeEnd->SetDirectory(0x0);
 }
 
 //____________________________________________________________________________________

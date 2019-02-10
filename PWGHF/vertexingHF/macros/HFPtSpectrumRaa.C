@@ -50,13 +50,13 @@
 //
 ///////////////////////////////////////////////////////////////////////////////
 
-enum centrality{ kpp, k07half, kpPb0100, k010, k1020, k020, k1030, k2040, k2030, k3040, k4050, k3050, k5060, k4060, k6080, k4080, k5080, k80100,kpPb010, kpPb020, kpPb2040, kpPb4060, kpPb60100 };
+enum centrality{ kpp, k07half, kpPb0100, k010, k1020, k020, k1030, k2040, k2030, k3040, k4050, k3050, k5060, k4060, k6080, k4080, k5080, k80100,kpPb010, kpPb020, kpPb1020, kpPb2040, kpPb4060, kpPb60100 };
 enum centestimator{ kV0M, kV0A, kZNA, kCL1 };
 enum energy{ k276, k5dot023, k55 };
 enum BFDSubtrMethod { kfc, kNb };
 enum RaavsEP {kPhiIntegrated, kInPlane, kOutOfPlane};
 enum rapidity{ kdefault, k08to04, k07to04, k04to01, k01to01, k01to04, k04to07, k04to08, k01to05 };
-enum particularity{ kTopological, kLowPt, kPP7TeVPass4 };
+enum particularity{ kTopological, kLowPt, kPP7TeVPass4, kBDT };
 
 
 Bool_t printout = false;
@@ -137,7 +137,7 @@ void HFPtSpectrumRaa(const char *ppfile="HFPtSpectrum_D0Kpi_method2_rebinnedth_2
     } else if ( cc == k020 ) {
       Tab = 18.93; TabSyst = 0.74;
     } else if ( cc == k1030 ) {
-      tab = 11.4; tabUnc = 0.36;
+      Tab = 11.4; TabSyst = 0.36;
     } else if ( cc == k2040 ) {
       Tab = 6.86; TabSyst = 0.28;
     } else if ( cc == k2030 ) {
@@ -163,9 +163,13 @@ void HFPtSpectrumRaa(const char *ppfile="HFPtSpectrum_D0Kpi_method2_rebinnedth_2
     }
   }
   if( (ccestimator == kV0M) && (Energy==k5dot023) ) {
-      if ( cc == k3050 ) {
-          Tab = 3.76; TabSyst = 0.13;
-      }
+    if ( cc == k010 ) {
+      Tab = 23.07; TabSyst = 0.44;
+    } else if ( cc == k3050 ) {
+      Tab = 3.897; TabSyst = 0.11;
+    } else if ( cc == k6080 ) {
+      Tab = 0.4173; TabSyst = 0.014;
+    }
   }
 
 
@@ -187,16 +191,18 @@ void HFPtSpectrumRaa(const char *ppfile="HFPtSpectrum_D0Kpi_method2_rebinnedth_2
     }
   }
   else if( ccestimator == kZNA ){
-    if ( cc== kpPb010 ){
-      Tab = 0.17; TabSyst = 0.01275;
-   else if ( cc == kpPb020 ) {
-      Tab = 0.164; TabSyst = 0.010724;
+    if ( cc == kpPb010 ) {
+      Tab = 0.1812; TabSyst = 0.01413;
+    } else if ( cc == kpPb020 ) {
+      Tab = 0.1742; TabSyst = 0.00992;
+    } else if ( cc == kpPb1020 ) {
+      Tab = 0.1672; TabSyst = 0.005852;
     } else if ( cc == kpPb2040 ) {
-      Tab = 0.137; TabSyst = 0.005099;
+      Tab = 0.1453; TabSyst = 0.002615;
     } else if ( cc == kpPb4060 ) {
-      Tab = 0.1011; TabSyst = 0.006;
+      Tab = 0.1074; TabSyst = 0.004726;
     } else if ( cc == kpPb60100 ) {
-      Tab = 0.0459; TabSyst = 0.003162;
+      Tab = 0.0486; TabSyst = 0.002430;
     }
   }
   else if( ccestimator == kCL1 ){
@@ -294,6 +300,7 @@ void HFPtSpectrumRaa(const char *ppfile="HFPtSpectrum_D0Kpi_method2_rebinnedth_2
     systematicsAB->SetCollisionType(1);
     systematicsAB->SetRunNumber(2016);// check this
     if(Energy==k276){
+      systematicsAB->SetRunNumber(11);
       if ( cc == k07half ) systematicsAB->SetCentrality("07half");
       else if ( cc == k010 ) systematicsAB->SetCentrality("010");
       else if ( cc == k1020 ) systematicsAB->SetCentrality("1020");
@@ -312,15 +319,18 @@ void HFPtSpectrumRaa(const char *ppfile="HFPtSpectrum_D0Kpi_method2_rebinnedth_2
       }
     } else if (Energy==k5dot023){
       systematicsAB->SetRunNumber(15);
-      if ( cc == k3050 ){
-	       systematicsAB->SetCentrality("3050");
-      }
-      else if ( cc == k1030 ) {
+      if ( cc == k010 ){
+        systematicsAB->SetCentrality("010");
+      } else if ( cc == k1030 ) {
         systematicsAB->SetCentrality("3050"); //no systematics available for 10--30
+      } else if ( cc == k3050 ) {
+        systematicsAB->SetCentrality("3050");
+      } else if ( cc == k6080 ) {
+        systematicsAB->SetCentrality("6080");
       }
     }
     //
-    else if ( cc == kpPb0100 || cc == kpPb010 || cc == kpPb020 || cc == kpPb2040 || cc == kpPb4060 || cc == kpPb60100 ) {
+    else if ( cc == kpPb0100 || cc == kpPb010 || cc == kpPb020 || cc == kpPb1020 || cc == kpPb2040 || cc == kpPb4060 || cc == kpPb60100 ) {
       systematicsAB->SetCollisionType(2);
       // Rapidity slices
       if(rapiditySlice!=kdefault){
@@ -345,11 +355,12 @@ void HFPtSpectrumRaa(const char *ppfile="HFPtSpectrum_D0Kpi_method2_rebinnedth_2
 	else if(cc == kpPb4060) systematicsAB->SetCentrality("4060V0A");
 	else if(cc == kpPb60100) systematicsAB->SetCentrality("60100V0A");
       } else if (ccestimator==kZNA) {
-        if(cc == kpPb010) systematicsAB->SetCentrality("010ZNA");
-	else if(cc == kpPb020) systematicsAB->SetCentrality("020ZNA");
-	else if(cc == kpPb2040) systematicsAB->SetCentrality("2040ZNA");
-	else if(cc == kpPb4060) systematicsAB->SetCentrality("4060ZNA");
-	else if(cc == kpPb60100) systematicsAB->SetCentrality("60100ZNA");
+  if(cc == kpPb010) {systematicsAB->SetRunNumber(16); systematicsAB->SetCentrality("010ZNA");}
+  else if(cc == kpPb020) systematicsAB->SetCentrality("020ZNA");
+  else if(cc == kpPb1020) {systematicsAB->SetRunNumber(16); systematicsAB->SetCentrality("1020ZNA");}
+  else if(cc == kpPb2040) {systematicsAB->SetRunNumber(16); systematicsAB->SetCentrality("2040ZNA");}
+  else if(cc == kpPb4060) {systematicsAB->SetRunNumber(16); systematicsAB->SetCentrality("4060ZNA");}
+  else if(cc == kpPb60100) {systematicsAB->SetRunNumber(16); systematicsAB->SetCentrality("60100ZNA");}
       } else if (ccestimator==kCL1) {
 	if(cc == kpPb020) systematicsAB->SetCentrality("020CL1");
 	else if(cc == kpPb2040) systematicsAB->SetCentrality("2040CL1");
@@ -362,7 +373,6 @@ void HFPtSpectrumRaa(const char *ppfile="HFPtSpectrum_D0Kpi_method2_rebinnedth_2
 	}
       }
     }
-		}
     else {
       cout << " Systematics not yet implemented " << endl;
       return;
@@ -1192,7 +1202,7 @@ void HFPtSpectrumRaa(const char *ppfile="HFPtSpectrum_D0Kpi_method2_rebinnedth_2
   legrcb->Draw();
   TLatex* tc;
   TString system = "Pb-Pb   #sqrt{s_{NN}}=2.76 TeV";
-  if( cc==kpPb0100 || cc==kpPb020 || cc==kpPb2040 || cc==kpPb4060 || cc==kpPb60100 ) system = "p-Pb   #sqrt{s_{NN}}=5.023 TeV";
+  if( cc==kpPb0100 || cc==kpPb020 || cc==kpPb1020 || cc==kpPb2040 || cc==kpPb4060 || cc==kpPb60100 ) system = "p-Pb   #sqrt{s_{NN}}=5.023 TeV";
   if(decay==1) tc =new TLatex(0.18,0.82,Form("D^{0},  %s ",system.Data()));
   else if(decay==2) tc =new TLatex(0.18,0.82,Form("D^{+},  %s ",system.Data()));
   else if(decay==3) tc =new TLatex(0.18,0.82,Form("D^{*+},  %s ",system.Data()));

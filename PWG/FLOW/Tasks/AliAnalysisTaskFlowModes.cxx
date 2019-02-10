@@ -103,7 +103,7 @@ AliAnalysisTaskFlowModes::AliAnalysisTaskFlowModes() : AliAnalysisTaskSE(),
   fCutFlowRFPsPtMin(0),
   fCutFlowRFPsPtMax(0),
   fFlowPOIsPtMin(0),
-  fFlowPOIsPtMax(20.),
+  fFlowPOIsPtMax(10.),
   fFlowCentMin(0),
   fFlowCentMax(150),
   fFlowCentNumBins(150),
@@ -249,8 +249,17 @@ AliAnalysisTaskFlowModes::AliAnalysisTaskFlowModes() : AliAnalysisTaskSE(),
   fh2PIDProtonTPCnSigmaKaon(0x0),
   fh2PIDProtonTOFnSigmaKaon(0x0),
   fh2PIDProtonTPCnSigmaProton(0x0),
-  fh2PIDProtonTOFnSigmaProton(0x0)
-
+  fh2PIDProtonTOFnSigmaProton(0x0),
+  fhNUEWeightRefsPlus(0x0),
+  fhNUEWeightRefsMinus(0x0),
+  fhNUEWeightChargedPlus(0x0),
+  fhNUEWeightChargedMinus(0x0),
+  fhNUEWeightPionPlus(0x0),
+  fhNUEWeightPionMinus(0x0),
+  fhNUEWeightKaonPlus(0x0),
+  fhNUEWeightKaonMinus(0x0),
+  fhNUEWeightProtonPlus(0x0),
+  fhNUEWeightProtonMinus(0x0)
 {
     SetPriors(); //init arrays
     // New PID procedure (Bayesian Combined PID)
@@ -298,7 +307,7 @@ AliAnalysisTaskFlowModes::AliAnalysisTaskFlowModes(const char* name) : AliAnalys
   fCutFlowRFPsPtMin(0),
   fCutFlowRFPsPtMax(0),
   fFlowPOIsPtMin(0),
-  fFlowPOIsPtMax(20.),
+  fFlowPOIsPtMax(10.),
   fFlowCentMin(0),
   fFlowCentMax(150),
   fFlowCentNumBins(150),
@@ -442,25 +451,23 @@ AliAnalysisTaskFlowModes::AliAnalysisTaskFlowModes(const char* name) : AliAnalys
   fh2PIDProtonTPCnSigmaKaon(0x0),
   fh2PIDProtonTOFnSigmaKaon(0x0),
   fh2PIDProtonTPCnSigmaProton(0x0),
-  fh2PIDProtonTOFnSigmaProton(0x0)
+  fh2PIDProtonTOFnSigmaProton(0x0),
+  fhNUEWeightRefsPlus(0x0),
+  fhNUEWeightRefsMinus(0x0),
+  fhNUEWeightChargedPlus(0x0),
+  fhNUEWeightChargedMinus(0x0),
+  fhNUEWeightPionPlus(0x0),
+  fhNUEWeightPionMinus(0x0),
+  fhNUEWeightKaonPlus(0x0),
+  fhNUEWeightKaonMinus(0x0),
+  fhNUEWeightProtonPlus(0x0),
+  fhNUEWeightProtonMinus(0x0)
 {
     
   SetPriors(); //init arrays
   // New PID procedure (Bayesian Combined PID)
   fBayesianResponse = new AliFlowBayesianPID();
   fBayesianResponse->SetNewTrackParam();
-  for(Short_t iCent(0); iCent<fNumCentralities; iCent++){
-       fhNUEWeightRefsPlus[iCent] = 0x0;
-       fhNUEWeightRefsMinus[iCent] = 0x0;
-       fhNUEWeightChargedPlus[iCent] = 0x0;
-       fhNUEWeightChargedMinus[iCent] = 0x0;
-       fhNUEWeightPionPlus[iCent] = 0x0;
-       fhNUEWeightPionMinus[iCent] = 0x0;
-       fhNUEWeightKaonPlus[iCent] = 0x0;
-       fhNUEWeightKaonMinus[iCent] = 0x0;
-       fhNUEWeightProtonPlus[iCent] = 0x0;
-       fhNUEWeightProtonMinus[iCent] = 0x0;
-  }
 
   // Flow vectors
   for(Short_t iHarm(0); iHarm < fFlowNumHarmonicsMax; iHarm++)
@@ -625,6 +632,17 @@ AliAnalysisTaskFlowModes::~AliAnalysisTaskFlowModes()
   if(fQAEvents) delete fQAEvents;
   if(fQACharged) delete fQACharged;
   if(fQAPID) delete fQAPID;
+  //deleting histograms
+  if(fhNUEWeightRefsPlus)     delete fhNUEWeightRefsPlus;
+  if(fhNUEWeightRefsMinus)    delete fhNUEWeightRefsMinus;
+  if(fhNUEWeightChargedPlus)  delete fhNUEWeightChargedPlus;
+  if(fhNUEWeightChargedMinus) delete fhNUEWeightChargedMinus;
+  if(fhNUEWeightPionPlus)     delete fhNUEWeightPionPlus;
+  if(fhNUEWeightPionMinus)    delete fhNUEWeightPionMinus;
+  if(fhNUEWeightKaonPlus)     delete fhNUEWeightKaonPlus;
+  if(fhNUEWeightKaonMinus)    delete fhNUEWeightKaonMinus;
+  if(fhNUEWeightProtonPlus)   delete fhNUEWeightProtonPlus;
+  if(fhNUEWeightProtonMinus)  delete fhNUEWeightProtonMinus;
 }
 //_____________________________________________________________________________
 void AliAnalysisTaskFlowModes::UserCreateOutputObjects()
@@ -1683,6 +1701,25 @@ void AliAnalysisTaskFlowModes::FillEventsQA(const Short_t iQAindex)
   Double_t centrV0M = fMultSelection->GetMultiplicityPercentile("V0M");
   Double_t centrCL1 = fMultSelection->GetMultiplicityPercentile("CL1");
     
+  if(iQAindex==1){
+    // cut on consistency between centrality estimators: VOM vs CL1
+    double fEstimatorsCorrelationCoef[2];
+    double fEstimatorsSigmaPars[4];
+    double fDeltaEstimatorNsigma[2];
+    
+    fEstimatorsCorrelationCoef[0] = 0.0157497;
+    fEstimatorsCorrelationCoef[1] = 0.973488;
+    fEstimatorsSigmaPars[0] = 0.673612;
+    fEstimatorsSigmaPars[1] = 0.0290718;
+    fEstimatorsSigmaPars[2] = -0.000546728;
+    fEstimatorsSigmaPars[3] = 5.82749e-06;
+    fDeltaEstimatorNsigma[0] = 5.;
+    fDeltaEstimatorNsigma[1] = 5.5;
+    
+    const double center = centrCL1 * fEstimatorsCorrelationCoef[1] + fEstimatorsCorrelationCoef[0];
+    const double sigma = fEstimatorsSigmaPars[0] + fEstimatorsSigmaPars[1] * centrCL1 + fEstimatorsSigmaPars[2] * centrCL1 * centrCL1 + fEstimatorsSigmaPars[3] * centrCL1 * centrCL1 * centrCL1;
+    if (centrV0M < center - fDeltaEstimatorNsigma[0] * sigma && centrV0M > center + fDeltaEstimatorNsigma[1] * sigma) return;
+  }
   fhQAEventsCentralityOutliers[iQAindex]->Fill(centrV0M,centrCL1);
     
   const Int_t nTracks = fEventAOD->GetNumberOfTracks();
@@ -1765,7 +1802,6 @@ Bool_t AliAnalysisTaskFlowModes::Filtering() //void
   // *************************************************************
   if(!fProcessCharged && !fProcessPID) // if neither is ON, filtering is skipped
     return kFALSE; //return;
-
   fVectorCharged->clear();
   FilterCharged();
 
@@ -1780,7 +1816,7 @@ Bool_t AliAnalysisTaskFlowModes::Filtering() //void
   
   }
   if(fColSystem == kPP){fIndexCentrality = 1;}
- 
+
   fh2EventCentralityNumSelCharged->Fill(fVectorCharged->size(),fIndexCentrality); 
 
   fhEventCentrality->Fill(fIndexCentrality);
@@ -1809,7 +1845,6 @@ void AliAnalysisTaskFlowModes::FilterCharged()
   // and pushed to relevant vector container.
   // return kFALSE if any complications occurs
   // *************************************************************
-
   const Short_t iNumTracks = fEventAOD->GetNumberOfTracks();
   if(iNumTracks < 1) return;
 
@@ -1818,27 +1853,20 @@ void AliAnalysisTaskFlowModes::FilterCharged()
   Double_t NUAweight = 0;
   Double_t NUEweight = 0;
  
-  Int_t c = -1;
-  if(fIndexCentrality>=0 && fIndexCentrality<5) c = 0;
-  if(fIndexCentrality>=5 && fIndexCentrality<10) c = 1;
-  if(fIndexCentrality>=10 && fIndexCentrality<20) c = 2;
-  if(fIndexCentrality>=20 && fIndexCentrality<30) c = 3;
-  if(fIndexCentrality>=30 && fIndexCentrality<40) c = 4;
-  if(fIndexCentrality>=40 && fIndexCentrality<50) c = 5;
-
   for(Short_t iTrack(0); iTrack < iNumTracks; iTrack++)
   {
     track = static_cast<AliAODTrack*>(fEventAOD->GetTrack(iTrack));
     if(!track) continue;
-      
+   
     if(fFillQA) FillQACharged(0,track); // QA before selection
-      
+
     if(fNegativelyChargedRef==kTRUE && track->Charge()>0) continue;
     if(fPositivelyChargedRef==kTRUE && track->Charge()<0) continue;
-    
+
     if(IsChargedSelected(track))
     {
       fVectorCharged->emplace_back( FlowPart(track->Pt(),track->Phi(),track->Eta(), track->Charge(), kCharged) );
+
       if(fRunMode == kFillWeights || fFlowFillWeights){
          fh3BeforeNUAWeightsCharged->Fill(track->Phi(),track->Eta(),fEventAOD->GetPrimaryVertex()->GetZ());
          fhBeforeNUEWeightsCharged->Fill(track->Pt());
@@ -1851,10 +1879,9 @@ void AliAnalysisTaskFlowModes::FilterCharged()
           fh3AfterNUAWeightsCharged->Fill(track->Phi(),track->Eta(),fEventAOD->GetPrimaryVertex()->GetZ(),NUAweight);
       }
       if(fFlowUseNUEWeights){
-       
-	  if(track->Charge()>0 && c>=0 && c<6){NUEweight = fhNUEWeightChargedPlus[c]->GetBinContent( fhNUEWeightChargedPlus[c]->FindBin(track->Pt()));}
-	  if(track->Charge()<0 && c>=0 && c<6){NUEweight = fhNUEWeightChargedMinus[c]->GetBinContent( fhNUEWeightChargedMinus[c]->FindBin(track->Pt()));}
-
+          if(track->Charge()>0){NUEweight = fhNUEWeightChargedPlus->GetBinContent( fhNUEWeightChargedPlus->FindBin(track->Pt()));}
+          if(track->Charge()<0){NUEweight = fhNUEWeightChargedMinus->GetBinContent( fhNUEWeightChargedMinus->FindBin(track->Pt()));}
+          
           fhAfterNUEWeightsCharged->Fill(track->Pt(),NUEweight);
       }
         
@@ -1877,9 +1904,14 @@ void AliAnalysisTaskFlowModes::FilterCharged()
         }
         if(fFlowUseNUEWeights)
         {
-            if(track->Charge()>0 && c>=0 && c<6){NUEweight = fhNUEWeightRefsPlus[c]->GetBinContent( fhNUEWeightRefsPlus[c]->FindBin(track->Pt()) );} 
-	    if(track->Charge()<0 && c>=0 && c<6){NUEweight = fhNUEWeightRefsMinus[c]->GetBinContent( fhNUEWeightRefsMinus[c]->FindBin(track->Pt()) );}
+	    if(track->Charge()>0) {NUEweight = fhNUEWeightRefsPlus->GetBinContent( fhNUEWeightRefsPlus->FindBin(track->Pt()) );}
+	    if(track->Charge()<0) {NUEweight = fhNUEWeightRefsMinus->GetBinContent( fhNUEWeightRefsMinus->FindBin(track->Pt()) );}
 
+            //if(track->Charge()>0 && fIndexCentrality<10){NUEweight = fhNUEWeightRefsPlus[fIndexCentrality/5]->GetBinContent( fhNUEWeightRefsPlus[fIndexCentrality/5]->FindBin(track->Pt()) );}
+            //if(track->Charge()>0 && fIndexCentrality>=10 && fIndexCentrality<60){NUEweight = fhNUEWeightRefsPlus[1+fIndexCentrality/10]->GetBinContent( fhNUEWeightRefsPlus[1+fIndexCentrality/10]->FindBin(track->Pt()) );}
+	    //if(track->Charge()<0 && fIndexCentrality<10){NUEweight = fhNUEWeightRefsMinus[fIndexCentrality/5]->GetBinContent( fhNUEWeightRefsMinus[fIndexCentrality/5]->FindBin(track->Pt()) );}
+            //if(track->Charge()<0 && fIndexCentrality>=10 && fIndexCentrality<60){NUEweight = fhNUEWeightRefsMinus[1+fIndexCentrality/10]->GetBinContent( fhNUEWeightRefsMinus[1+fIndexCentrality/10]->FindBin(track->Pt()) );}
+            
             fhAfterNUEWeightsRefs->Fill(track->Pt(),NUEweight);
         }
         FillQARefs(1,track);
@@ -2027,15 +2059,6 @@ void AliAnalysisTaskFlowModes::FilterPID()
   Double_t NUAweight = 0;
   Double_t NUEweight = 0;
 
-
-  Int_t c = -1;
-  if(fIndexCentrality>=0 && fIndexCentrality<5) c = 0;
-  if(fIndexCentrality>=5 && fIndexCentrality<10) c = 1;
-  if(fIndexCentrality>=10 && fIndexCentrality<20) c = 2;
-  if(fIndexCentrality>=20 && fIndexCentrality<30) c = 3;
-  if(fIndexCentrality>=30 && fIndexCentrality<40) c = 4;
-  if(fIndexCentrality>=40 && fIndexCentrality<50) c = 5;
-
   for(Short_t iTrack(0); iTrack < iNumTracks; iTrack++)
   {
     track = static_cast<AliAODTrack*>(fEventAOD->GetTrack(iTrack));
@@ -2072,10 +2095,9 @@ void AliAnalysisTaskFlowModes::FilterPID()
         }
         if(fFlowUseNUEWeights)
         {
-            
-            if(track->Charge() > 0 && c>=0 && c<6){ NUEweight = fhNUEWeightPionPlus[c]->GetBinContent( fhNUEWeightPionPlus[c]->FindBin(track->Pt()) );}
-            if(track->Charge() < 0 && c>=0 && c<6){ NUEweight = fhNUEWeightPionMinus[c]->GetBinContent( fhNUEWeightPionMinus[c]->FindBin(track->Pt()) );}
-            
+	    if(track->Charge()>0){NUEweight = fhNUEWeightPionPlus->GetBinContent( fhNUEWeightPionPlus->FindBin(track->Pt()));}
+	    if(track->Charge() < 0){ NUEweight = fhNUEWeightPionMinus->GetBinContent( fhNUEWeightPionMinus->FindBin(track->Pt()) );}
+
             fhAfterNUEWeightsPion->Fill(track->Pt(),NUEweight);
         }
         break;
@@ -2094,9 +2116,9 @@ void AliAnalysisTaskFlowModes::FilterPID()
         }
         if(fFlowUseNUEWeights)
         {
-            if(track->Charge() > 0 && c>=0 && c<6){ NUEweight = fhNUEWeightKaonPlus[c]->GetBinContent( fhNUEWeightKaonPlus[c]->FindBin(track->Pt()) );}
-            if(track->Charge() < 0 && c>=0 && c<6){ NUEweight = fhNUEWeightKaonMinus[c]->GetBinContent( fhNUEWeightKaonMinus[c]->FindBin(track->Pt()) );}
-
+	    if(track->Charge() > 0){ NUEweight = fhNUEWeightKaonPlus->GetBinContent( fhNUEWeightKaonPlus->FindBin(track->Pt()) );}
+	    if(track->Charge() < 0){ NUEweight = fhNUEWeightKaonMinus->GetBinContent( fhNUEWeightKaonMinus->FindBin(track->Pt()) );}
+   
             fhAfterNUEWeightsKaon->Fill(track->Pt(),NUEweight);
         }
         break;
@@ -2115,8 +2137,8 @@ void AliAnalysisTaskFlowModes::FilterPID()
         }
         if(fFlowUseNUEWeights)
         {
-            if(track->Charge() > 0 && c>=0 && c<6){ NUEweight = fhNUEWeightProtonPlus[c]->GetBinContent( fhNUEWeightProtonPlus[c]->FindBin(track->Pt()) );}
-            if(track->Charge() < 0 && c>=0 && c<6){ NUEweight = fhNUEWeightProtonMinus[c]->GetBinContent( fhNUEWeightProtonMinus[c]->FindBin(track->Pt()) );}
+	    if(track->Charge() > 0){ NUEweight = fhNUEWeightProtonPlus->GetBinContent( fhNUEWeightProtonPlus->FindBin(track->Pt()) );}
+	    if(track->Charge() < 0 ){ NUEweight = fhNUEWeightProtonMinus->GetBinContent( fhNUEWeightProtonMinus->FindBin(track->Pt()));}
 
             fhAfterNUEWeightsProton->Fill(track->Pt(),NUEweight);
         }
@@ -2568,33 +2590,48 @@ Bool_t AliAnalysisTaskFlowModes::ProcessEvent()
        fIndexCentrality = GetCentralityIndex();
        if(fIndexCentrality < 0) { return kFALSE;}
    }
-
    if(fFlowUseNUEWeights && fFlowNUEWeightsFile)
    {
-        TDirectory* dirFlowNUEWeights[6] = {0x0};
-
-	const char* gCentrality[] = {"0-5cc","5-10cc","10-20cc","20-30cc","30-40cc","40-50cc"};
-	for(int iCentrality = 0; iCentrality<6;iCentrality++){
-             dirFlowNUEWeights[iCentrality] = (TDirectory*) fFlowNUEWeightsFile->Get(gCentrality[iCentrality]);
-             if(!dirFlowNUEWeights[iCentrality]) {::Error("ProcessEvent","TDirectoy from NUE weights not found."); return kFALSE; }
-             fhNUEWeightRefsPlus[iCentrality] = dynamic_cast<TH1F*>( dirFlowNUEWeights[iCentrality]->FindObject("ChargedPlus")); if(!fhNUEWeightRefsPlus[iCentrality]) { ::Error("ProcessEvent","Positive Refs NUE weights not found"); return kFALSE; }
-             fhNUEWeightRefsMinus[iCentrality] = dynamic_cast<TH1F*>(dirFlowNUEWeights[iCentrality]->FindObject("ChargedMinus")); if(!fhNUEWeightRefsMinus[iCentrality]) { ::Error("ProcessEvent","Negative Refs NUE weights not found"); return kFALSE; }
-	     fhNUEWeightChargedPlus[iCentrality] = dynamic_cast<TH1F*>(dirFlowNUEWeights[iCentrality]->FindObject("ChargedPlus")); if(!fhNUEWeightChargedPlus[iCentrality]) { ::Error("ProcessEvent","Positive Charged NUE weights not found"); return kFALSE; }
-             fhNUEWeightChargedMinus[iCentrality] = dynamic_cast<TH1F*>(dirFlowNUEWeights[iCentrality]->FindObject("ChargedMinus")); if(!fhNUEWeightChargedMinus[iCentrality]) { ::Error("ProcessEvent","Negative Charged NUE weights not found"); return kFALSE; }
-	     fhNUEWeightPionPlus[iCentrality] = dynamic_cast<TH1F*>(dirFlowNUEWeights[iCentrality]->FindObject("PionPlus")); if(!fhNUEWeightPionPlus[iCentrality]) { ::Error("ProcessEvent","Positive Pion NUE weights not found"); return kFALSE; }
-             fhNUEWeightPionMinus[iCentrality] = dynamic_cast<TH1F*>(dirFlowNUEWeights[iCentrality]->FindObject("PionMinus")); if(!fhNUEWeightPionMinus[iCentrality]) { ::Error("ProcessEvent","Negative Pion NUE weights not found"); return kFALSE; }
-             fhNUEWeightKaonPlus[iCentrality] = dynamic_cast<TH1F*>(dirFlowNUEWeights[iCentrality]->FindObject("KaonPlus")); if(!fhNUEWeightKaonPlus[iCentrality]) { ::Error("ProcessEvent","Positive Kaon NUE weights not found"); return kFALSE; }
-             fhNUEWeightKaonMinus[iCentrality] = dynamic_cast<TH1F*>(dirFlowNUEWeights[iCentrality]->FindObject("KaonMinus")); if(!fhNUEWeightKaonMinus[iCentrality]) { ::Error("ProcessEvent","Negative Kaon NUE weights not found"); return kFALSE; }
-             fhNUEWeightProtonPlus[iCentrality] = dynamic_cast<TH1F*>(dirFlowNUEWeights[iCentrality]->FindObject("ProtonPlus")); if(!fhNUEWeightProtonPlus[iCentrality]) { ::Error("ProcessEvent","Positive Proton NUE weights not found"); return kFALSE; }
-             fhNUEWeightProtonMinus[iCentrality] = dynamic_cast<TH1F*>(dirFlowNUEWeights[iCentrality]->FindObject("ProtonMinus")); if(!fhNUEWeightProtonMinus[iCentrality]) { ::Error("ProcessEvent","Negative Proton NUE weights not found"); return kFALSE; }
-
-	}
-    }
+        //TDirectory* dirFlowNUEWeights = 0x0;
+	const char* gCentrality[] = {"0-5","5-10","10-20","20-30","30-40","40-50","50-60"};
+        TString indexCentrality;// = 0x0;
+        if(fIndexCentrality>=0. && fIndexCentrality<=5.){indexCentrality = "0-5";}//gCentrality[0];}
+        if(fIndexCentrality>5. && fIndexCentrality<=10.){indexCentrality = "5-10";}//gCentrality[1];}    
+        if(fIndexCentrality>10. && fIndexCentrality<=20.){indexCentrality = "10-20";}//gCentrality[2];}    
+        if(fIndexCentrality>20. && fIndexCentrality<=30.){indexCentrality = "20-30";}//gCentrality[3];}    
+        if(fIndexCentrality>30. && fIndexCentrality<=40.){indexCentrality = "30-40";}//gCentrality[4];}    
+        if(fIndexCentrality>40. && fIndexCentrality<=50.){indexCentrality = "40-50";}//gCentrality[5];} 
+        if(fIndexCentrality>50. && fIndexCentrality<=60.){indexCentrality = "50-60";}//gCentrality[6];} 
+        if(fIndexCentrality<0. || fIndexCentrality>60.){return kFALSE;}      
+        
+        TDirectory* dirFlowNUEWeights = (TDirectory*) fFlowNUEWeightsFile->Get(indexCentrality);
+        if(!dirFlowNUEWeights) { ::Error("ProcessEvent","TDirectoy from NUE weights not found."); return kFALSE; }
+        fhNUEWeightRefsPlus = dynamic_cast<TH1F*>( dirFlowNUEWeights->Get("ChargedPlus")); 
+        if(!fhNUEWeightRefsPlus) { ::Error("ProcessEvent","Positive Refs NUE weights not found"); return kFALSE; }
+        fhNUEWeightRefsMinus = dynamic_cast<TH1F*>(dirFlowNUEWeights->Get("ChargedMinus")); 
+	if(!fhNUEWeightRefsMinus) { ::Error("ProcessEvent","Negative Refs NUE weights not found"); return kFALSE; }
+        fhNUEWeightChargedPlus = dynamic_cast<TH1F*>(dirFlowNUEWeights->Get("ChargedPlus")); 
+	if(!fhNUEWeightChargedPlus) { ::Error("ProcessEvent","Positive Charged NUE weights not found"); return kFALSE; }
+        fhNUEWeightChargedMinus = dynamic_cast<TH1F*>(dirFlowNUEWeights->Get("ChargedMinus")); 
+	if(!fhNUEWeightChargedMinus) { ::Error("ProcessEvent","Negative Charged NUE weights not found"); return kFALSE; }
+        fhNUEWeightPionPlus = dynamic_cast<TH1F*>(dirFlowNUEWeights->Get("PionPlus")); 
+	if(!fhNUEWeightPionPlus) { ::Error("ProcessEvent","Positive Pion NUE weights not found"); return kFALSE; }
+        fhNUEWeightPionMinus = dynamic_cast<TH1F*>(dirFlowNUEWeights->Get("PionMinus")); 
+	if(!fhNUEWeightPionMinus) { ::Error("ProcessEvent","Negative Pion NUE weights not found"); return kFALSE; }
+        fhNUEWeightKaonPlus = dynamic_cast<TH1F*>(dirFlowNUEWeights->Get("KaonPlus")); 
+	if(!fhNUEWeightKaonPlus) { ::Error("ProcessEvent","Positive Kaon NUE weights not found"); return kFALSE; }
+        fhNUEWeightKaonMinus = dynamic_cast<TH1F*>(dirFlowNUEWeights->Get("KaonMinus")); 
+	if(!fhNUEWeightKaonMinus) { ::Error("ProcessEvent","Negative Kaon NUE weights not found"); return kFALSE; }
+        fhNUEWeightProtonPlus = dynamic_cast<TH1F*>(dirFlowNUEWeights->Get("ProtonPlus")); 
+	if(!fhNUEWeightProtonPlus) { ::Error("ProcessEvent","Positive Proton NUE weights not found"); return kFALSE; }
+        fhNUEWeightProtonMinus = dynamic_cast<TH1F*>(dirFlowNUEWeights->Get("ProtonMinus")); 
+	if(!fhNUEWeightProtonMinus) { ::Error("ProcessEvent","Negative Proton NUE weights not found"); return kFALSE; }	
+     }
 
  // filtering particles
  if(!Filtering()) return kFALSE;
  // at this point, centrality index (percentile) should be properly estimated, if not, skip event
-         
+        
   // if running in kFillWeights mode, skip the remaining part
   if(fRunMode == kFillWeights) { fEventCounter++; return kTRUE; }
 
@@ -2602,7 +2639,6 @@ Bool_t AliAnalysisTaskFlowModes::ProcessEvent()
   // if not, event is skipped: unable to compute Reference flow (and thus any differential flow)
   if(fVectorCharged->size() < 1)
     return kFALSE;
-
   // at this point, all particles fullfiling relevant POIs (and REFs) criteria are filled in TClonesArrays
 
   // >>>> flow starts here <<<<
@@ -2619,7 +2655,6 @@ Bool_t AliAnalysisTaskFlowModes::ProcessEvent()
       // charged track flow
       DoFlowCharged(iGap);
     }
-
     if(fProcessPID)
     {
       const Int_t iSizePion = fVectorPion->size();
@@ -3002,14 +3037,7 @@ void AliAnalysisTaskFlowModes::FillRefsVectors(const Short_t iEtaGapIndex)
   TH1F* hNUEWeights = 0x0;
   Double_t dNUAWeight = 1.;
   Double_t dNUEWeight = 1.;
-  
-  Int_t c = -1;
-  if(fIndexCentrality>=0 && fIndexCentrality<5) c = 0;
-  if(fIndexCentrality>=5 && fIndexCentrality<10) c = 1;
-  if(fIndexCentrality>=10 && fIndexCentrality<20) c = 2;
-  if(fIndexCentrality>=20 && fIndexCentrality<30) c = 3;
-  if(fIndexCentrality>=30 && fIndexCentrality<40) c = 4;
-  if(fIndexCentrality>=40 && fIndexCentrality<50) c = 5;
+ 
   // clearing output (global) flow vectors
   ResetRFPsVector(fFlowVecQpos);
   ResetRFPsVector(fFlowVecQneg);
@@ -3039,8 +3067,8 @@ void AliAnalysisTaskFlowModes::FillRefsVectors(const Short_t iEtaGapIndex)
       
     if(fFlowUseNUEWeights)
     {
-        if(part->charge >0 && c>=0 && c<6) hNUEWeights = fhNUEWeightRefsPlus[c];
-        if(part->charge <0 && c>=0 && c<6) hNUEWeights = fhNUEWeightRefsMinus[c];
+        if(part->charge >0) hNUEWeights = fhNUEWeightRefsPlus;
+	if(part->charge <0) hNUEWeights = fhNUEWeightRefsMinus;
 
         if(!hNUEWeights) { ::Error("FillRefsVectors","Histogram with NUE weights not found."); return; }
     }
@@ -3062,13 +3090,15 @@ void AliAnalysisTaskFlowModes::FillRefsVectors(const Short_t iEtaGapIndex)
     {
       dNUAWeight = h3NUAWeights->GetBinContent(h3NUAWeights->FindBin(part->phi,part->eta,fEventAOD->GetPrimaryVertex()->GetZ()));
       if(dNUAWeight <= 0) dNUAWeight = 1.;
-      if(iEtaGapIndex == 0) fh3AfterNUAWeightsRefs->Fill(part->phi,part->eta,fEventAOD->GetPrimaryVertex()->GetZ(), dNUAWeight);
+      //if(iEtaGapIndex == 0) 
+      fh3AfterNUAWeightsRefs->Fill(part->phi,part->eta,fEventAOD->GetPrimaryVertex()->GetZ(), dNUAWeight);
     }
     if(fFlowUseNUEWeights && hNUEWeights)
     {
         dNUEWeight = hNUEWeights->GetBinContent(hNUEWeights->FindBin(part->pt));
         if(dNUEWeight <= 0) dNUEWeight = 1.;
-        if(iEtaGapIndex == 0) fhAfterNUEWeightsRefs->Fill(part->pt, dNUEWeight);
+        //if(iEtaGapIndex == 0) 
+        fhAfterNUEWeightsRefs->Fill(part->pt, dNUEWeight);
     }
 
     // RPF candidate passing all criteria: start filling flow vectors
@@ -3133,14 +3163,6 @@ void AliAnalysisTaskFlowModes::FillPOIsVectors(const Short_t iEtaGapIndex, const
   TH3D* h3NUAWeights = 0x0;
   TH1F* hNUEWeights = 0x0;
  
-  Int_t c = -1;
-  if(fIndexCentrality>=0 && fIndexCentrality<5) c = 0;
-  if(fIndexCentrality>=5 && fIndexCentrality<10) c = 1;
-  if(fIndexCentrality>=10 && fIndexCentrality<20) c = 2;
-  if(fIndexCentrality>=20 && fIndexCentrality<30) c = 3;
-  if(fIndexCentrality>=30 && fIndexCentrality<40) c = 4;
-  if(fIndexCentrality>=40 && fIndexCentrality<50) c = 5;
-   
   // swich based on species
   switch (species)
   {
@@ -3183,8 +3205,8 @@ void AliAnalysisTaskFlowModes::FillPOIsVectors(const Short_t iEtaGapIndex, const
                   if(part->charge <0) h3NUAWeights = fh3NUAWeightChargedMinus;
               }
               if(fFlowUseNUEWeights) {
-                  if(part->charge >0 && c>=0 && c<6) hNUEWeights = fhNUEWeightChargedPlus[c];
-                  if(part->charge <0 && c>=0 && c<6) hNUEWeights = fhNUEWeightChargedMinus[c];
+		  if(part->charge >0) hNUEWeights = fhNUEWeightChargedPlus;
+		  if(part->charge <0) hNUEWeights = fhNUEWeightChargedMinus;
               }
               break;
               
@@ -3194,8 +3216,8 @@ void AliAnalysisTaskFlowModes::FillPOIsVectors(const Short_t iEtaGapIndex, const
                   if(part->charge <0) h3NUAWeights = fh3NUAWeightPionMinus;
               }
               if(fFlowUseNUEWeights) {
-                 if(part->charge >0 && c>=0 && c<6) hNUEWeights = fhNUEWeightPionPlus[c];
-                 if(part->charge <0 && c>=0 && c<6) hNUEWeights = fhNUEWeightPionMinus[c];
+                 if(part->charge >0) hNUEWeights = fhNUEWeightPionPlus;
+                 if(part->charge <0) hNUEWeights = fhNUEWeightPionMinus;
               }
               break;
               
@@ -3205,8 +3227,8 @@ void AliAnalysisTaskFlowModes::FillPOIsVectors(const Short_t iEtaGapIndex, const
                   if(part->charge <0) h3NUAWeights = fh3NUAWeightKaonMinus;
               }
               if(fFlowUseNUEWeights) {
-                 if(part->charge >0 && c>=0 && c<6) hNUEWeights = fhNUEWeightKaonPlus[c];
-                 if(part->charge <0 && c>=0 && c<6) hNUEWeights = fhNUEWeightKaonMinus[c];
+                  if(part->charge >0) hNUEWeights = fhNUEWeightKaonPlus;
+                  if(part->charge <0) hNUEWeights = fhNUEWeightKaonMinus;
               }
               break;
               
@@ -3216,8 +3238,8 @@ void AliAnalysisTaskFlowModes::FillPOIsVectors(const Short_t iEtaGapIndex, const
                   if(part->charge <0) h3NUAWeights = fh3NUAWeightProtonMinus;
               }
               if(fFlowUseNUEWeights) {
-                 if(part->charge >0 && c>=0 && c<6) hNUEWeights = fhNUEWeightProtonPlus[c];
-                 if(part->charge <0 && c>=0 && c<6) hNUEWeights = fhNUEWeightProtonMinus[c];
+                  if(part->charge >0) hNUEWeights = fhNUEWeightProtonPlus;
+                  if(part->charge <0) hNUEWeights = fhNUEWeightProtonMinus;
               }
               break;
             
@@ -3250,7 +3272,7 @@ void AliAnalysisTaskFlowModes::FillPOIsVectors(const Short_t iEtaGapIndex, const
     {
       dNUAWeight = h3NUAWeights->GetBinContent(h3NUAWeights->FindBin(part->phi,part->eta,fEventAOD->GetPrimaryVertex()->GetZ()));
       if(dNUAWeight <= 0){ dNUAWeight = 1.;}
-      if(iEtaGapIndex == 0){
+      //if(iEtaGapIndex == 0){
           switch (species)
           {
               case kCharged:
@@ -3269,14 +3291,14 @@ void AliAnalysisTaskFlowModes::FillPOIsVectors(const Short_t iEtaGapIndex, const
                   ::Error("Fill fh3AfterNUAWeights","Selected species unknown.");
                   return;
           }
-      }
+      //}
     }//endif{fFlowUseNUAWeights && h3NUAWeights}
       
     if(fFlowUseNUEWeights && hNUEWeights)
     {
         dNUEWeight = hNUEWeights->GetBinContent(hNUEWeights->FindBin(part->pt));
         if(dNUEWeight <= 0) dNUEWeight = 1.;
-        if(iEtaGapIndex == 0){
+        //if(iEtaGapIndex == 0){
             switch (species)
             {
                 case kCharged:
@@ -3295,7 +3317,7 @@ void AliAnalysisTaskFlowModes::FillPOIsVectors(const Short_t iEtaGapIndex, const
                     ::Error("Fill fhAfterNUEWeights","Selected species unknown.");
                     return;
             }
-        }
+        //}
     }//endif{fFlowUseNUEWeights && hNUEWeights}
 
     if(part->eta > dEtaGap / 2 )
@@ -3406,12 +3428,10 @@ Short_t AliAnalysisTaskFlowModes::GetCentralityIndex()
   // otherwise -1 is returned (and event is skipped)
   // *************************************************************
   fMultEstimator.ToUpper();
-  //cout<<"++++++++++++++++++GetCentralityIndex+++++++++++++++++"<<endl;
   if(
       fMultEstimator.EqualTo("V0A") || fMultEstimator.EqualTo("V0C") || fMultEstimator.EqualTo("V0M") ||
       fMultEstimator.EqualTo("CL0") || fMultEstimator.EqualTo("CL1") || fMultEstimator.EqualTo("ZNA") || 
       fMultEstimator.EqualTo("ZNC") || fMultEstimator.EqualTo("TRK") ){
-   //cout<<"++++++++++++++++++CentralityIndex+++++++++++++++++"<<endl;
 
     // some of supported AliMultSelection estimators (listed above)
     Float_t dPercentile = 300;
@@ -3422,8 +3442,6 @@ Short_t AliAnalysisTaskFlowModes::GetCentralityIndex()
     if(!multSelection) { AliError("AliMultSelection object not found! Returning -1"); return -1;}
 
     dPercentile = multSelection->GetMultiplicityPercentile(fMultEstimator.Data());
-    //cout<<"fMultEstimator.Data()"<<fMultEstimator.Data()<<endl;
-    //cout<<"dPercentile = "<<dPercentile<<endl;
     if(fFullCentralityRange){
        if(dPercentile > 100 || dPercentile < 0) { AliWarning("Centrality percentile estimated not within 0-100 range. Returning -1"); return -1;}
        else { return dPercentile;}

@@ -24,9 +24,11 @@ AliAnalysisTaskSE *AddTaskSigma0DebugTest(bool isMC = false,
   TString cutnumberEvent = "00000000";
   TString periodNameV0Reader = "";
   Bool_t enableV0findingEffi = kFALSE;
+  Bool_t fillHistos = kTRUE;
   Bool_t runLightOutput = kFALSE;
   if (suffix != "0" && suffix != "999") {
     runLightOutput = kTRUE;
+    fillHistos = kFALSE;
   }
 
   //========= Add V0 Reader to  ANALYSIS manager if not yet existent =====
@@ -85,6 +87,10 @@ AliAnalysisTaskSE *AddTaskSigma0DebugTest(bool isMC = false,
   }
 
   //========= Init subtasks and start analyis ============================
+  // Event Cuts
+  AliFemtoDreamEventCuts *evtCuts = AliFemtoDreamEventCuts::StandardCutsRun2();
+  evtCuts->CleanUpMult(false, false, false, true);
+
   // Track Cuts
   AliFemtoDreamTrackCuts *TrackCuts =
       AliFemtoDreamTrackCuts::PrimProtonCuts(isMC, true, false, false);
@@ -132,6 +138,22 @@ AliAnalysisTaskSE *AddTaskSigma0DebugTest(bool isMC = false,
     antiv0Cuts->SetLightweight(false);
   }
 
+  if (suffix == "1") {
+    v0Cuts->SetV0OnFlyStatus(true);
+    antiv0Cuts->SetV0OnFlyStatus(true);
+  } else if (suffix == "2") {
+    v0Cuts->SetTPCclusterMin(0.f);
+    antiv0Cuts->SetTPCclusterMin(0.f);
+    v0Cuts->SetTPCRatioFindable(0.6f);
+    antiv0Cuts->SetTPCRatioFindable(0.6f);
+  } else if (suffix == "3") {
+    v0Cuts->SetLambdaSelection(1.115683 - 0.008, 1.115683 + 0.008);
+    antiv0Cuts->SetLambdaSelection(1.115683 - 0.008, 1.115683 + 0.008);
+  } else if (suffix == "4") {
+    v0Cuts->SetLambdaSelection(1.115683 - 0.01, 1.115683 + 0.01);
+    antiv0Cuts->SetLambdaSelection(1.115683 - 0.01, 1.115683 + 0.01);
+  }
+
   AliSigma0PhotonMotherCuts *sigmaCuts =
       AliSigma0PhotonMotherCuts::DefaultCuts();
   sigmaCuts->SetIsMC(isMC);
@@ -150,6 +172,14 @@ AliAnalysisTaskSE *AddTaskSigma0DebugTest(bool isMC = false,
   antiSigmaCuts->SetV0ReaderName(V0ReaderName.Data());
   if (suffix != "0" && suffix != "999") {
     antiSigmaCuts->SetLightweight(true);
+  }
+
+  if (suffix == "5") {
+    sigmaCuts->SetSigmaMassCut(0.0015);
+    antiSigmaCuts->SetSigmaMassCut(0.0015);
+  } else if (suffix == "6") {
+    sigmaCuts->SetSigmaMassCut(0.003);
+    antiSigmaCuts->SetSigmaMassCut(0.003);
   }
 
   if (trigger == "kINT7") {
@@ -182,22 +212,24 @@ AliAnalysisTaskSE *AddTaskSigma0DebugTest(bool isMC = false,
 
   std::vector<float> ZVtxBins;
   ZVtxBins.push_back(-10);
-  if(suffix == "0" || suffix == "2" || suffix == "4") ZVtxBins.push_back(-8);
+  ZVtxBins.push_back(-8);
   ZVtxBins.push_back(-6);
-  if(suffix == "0" || suffix == "2" || suffix == "4") ZVtxBins.push_back(-4);
+  ZVtxBins.push_back(-4);
   ZVtxBins.push_back(-2);
-  if(suffix == "0" || suffix == "2" || suffix == "4") ZVtxBins.push_back(0);
+  ZVtxBins.push_back(0);
   ZVtxBins.push_back(2);
-  if(suffix == "0" || suffix == "2" || suffix == "4") ZVtxBins.push_back(4);
+  ZVtxBins.push_back(4);
   ZVtxBins.push_back(6);
-  if(suffix == "0" || suffix == "2" || suffix == "4") ZVtxBins.push_back(8);
+  ZVtxBins.push_back(8);
   ZVtxBins.push_back(10);
 
   std::vector<int> NBins;
   std::vector<float> kMin;
   std::vector<float> kMax;
+  std::vector<int> pairQA;
   const int nPairs = (suffix == "0") ? 78 : 36;
   for (int i = 0; i < nPairs; ++i) {
+    pairQA.push_back(0);
     if (suffix == "0") {
       NBins.push_back(750);
       kMin.push_back(0.);
@@ -209,57 +241,68 @@ AliAnalysisTaskSE *AddTaskSigma0DebugTest(bool isMC = false,
     }
   }
 
+  // do extended QA for the pairs in default mode
+  if (suffix == "0") {
+    pairQA[0] = 11;   // pp
+    pairQA[2] = 14;   // pSigma
+    pairQA[12] = 11;  // barp barp
+    pairQA[14] = 14;  // barp barp
+    pairQA[23] = 44;  // Sigma Sigma
+    pairQA[33] = 44;  // barSigma barSigma
+  }
+
   AliFemtoDreamCollConfig *config =
       new AliFemtoDreamCollConfig("Femto", "Femto");
   std::vector<int> MultBins;
   if (trigger == "kHighMultV0") {
     std::vector<int> MultBins;
     MultBins.push_back(0);
-    if(suffix == "0" || suffix == "1") MultBins.push_back(4);
-    if(suffix == "0" || suffix == "1" || suffix == "2" || suffix == "3") MultBins.push_back(8);
-    if(suffix == "0" || suffix == "1") MultBins.push_back(12);
+    MultBins.push_back(4);
+    MultBins.push_back(8);
+    MultBins.push_back(12);
     MultBins.push_back(16);
-    if(suffix == "0" || suffix == "1") MultBins.push_back(20);
-    if(suffix == "0" || suffix == "1" || suffix == "2" || suffix == "3") MultBins.push_back(24);
-    if(suffix == "0" || suffix == "1") MultBins.push_back(28);
+    MultBins.push_back(20);
+    MultBins.push_back(24);
+    MultBins.push_back(28);
     MultBins.push_back(32);
-    if(suffix == "0" || suffix == "1") MultBins.push_back(36);
-    if(suffix == "0" || suffix == "1" || suffix == "2" || suffix == "3") MultBins.push_back(40);
-    if(suffix == "0" || suffix == "1") MultBins.push_back(44);
+    MultBins.push_back(36);
+    MultBins.push_back(40);
+    MultBins.push_back(44);
     MultBins.push_back(48);
-    if(suffix == "0" || suffix == "1") MultBins.push_back(52);
-    if(suffix == "0" || suffix == "1" || suffix == "2" || suffix == "3") MultBins.push_back(56);
-    if(suffix == "0" || suffix == "1") MultBins.push_back(60);
+    MultBins.push_back(52);
+    MultBins.push_back(56);
+    MultBins.push_back(60);
     MultBins.push_back(64);
-    if(suffix == "0" || suffix == "1") MultBins.push_back(68);
-    if(suffix == "0" || suffix == "1" || suffix == "2" || suffix == "3") MultBins.push_back(72);
-    if(suffix == "0" || suffix == "1") MultBins.push_back(76);
+    MultBins.push_back(68);
+    MultBins.push_back(72);
+    MultBins.push_back(76);
     MultBins.push_back(80);
-    if(suffix == "0" || suffix == "1") MultBins.push_back(84);
-    if(suffix == "0" || suffix == "1" || suffix == "2" || suffix == "3") MultBins.push_back(88);
-    if(suffix == "0" || suffix == "1") MultBins.push_back(92);
+    MultBins.push_back(84);
+    MultBins.push_back(88);
+    MultBins.push_back(92);
     MultBins.push_back(96);
-    if(suffix == "0" || suffix == "1") MultBins.push_back(100);
+    MultBins.push_back(100);
     config->SetMultBins(MultBins);
   } else {
     std::vector<int> MultBins;
     MultBins.push_back(0);
-    if(suffix == "0" || suffix == "1") MultBins.push_back(4);
-    if(suffix == "0" || suffix == "1" || suffix == "2" || suffix == "3") MultBins.push_back(8);
-    if(suffix == "0" || suffix == "1") MultBins.push_back(12);
+    MultBins.push_back(4);
+    MultBins.push_back(8);
+    MultBins.push_back(12);
     MultBins.push_back(16);
-    if(suffix == "0" || suffix == "1") MultBins.push_back(20);
-    if(suffix == "0" || suffix == "1" || suffix == "2" || suffix == "3") MultBins.push_back(24);
-    if(suffix == "0" || suffix == "1") MultBins.push_back(28);
+    MultBins.push_back(20);
+    MultBins.push_back(24);
+    MultBins.push_back(28);
     MultBins.push_back(32);
-    if(suffix == "0" || suffix == "1") MultBins.push_back(36);
-    if(suffix == "0" || suffix == "1" || suffix == "2" || suffix == "3") MultBins.push_back(40);
-    if(suffix == "0" || suffix == "1") MultBins.push_back(60);
+    MultBins.push_back(36);
+    MultBins.push_back(40);
+    MultBins.push_back(60);
     MultBins.push_back(80);
     config->SetMultBins(MultBins);
   }
   config->SetMultBinning(true);
 
+  config->SetExtendedQAPairs(pairQA);
   config->SetZBins(ZVtxBins);
   if (MomRes) {
     if (isMC) {
@@ -269,14 +312,16 @@ AliAnalysisTaskSE *AddTaskSigma0DebugTest(bool isMC = false,
                    "MC Info; fix it wont work! \n";
     }
   }
-  if (etaPhiPlotsAtTPCRadii) {
-    if (isMC) {
-      config->SetPhiEtaBinnign(true);
-    } else {
-      std::cout << "You are trying to request the Eta Phi Plots without MC "
-                   "Info; fix it wont work! \n";
-    }
+
+  if (suffix == "0") {
+    config->SetPhiEtaBinnign(true);
   }
+
+  if (suffix == "7") {
+    config->SetDeltaEtaMax(0.01);
+    config->SetDeltaPhiMax(0.01);
+  }
+
   config->SetdPhidEtaPlots(false);
   config->SetPDGCodes(PDGParticles);
   config->SetNBinsHist(NBins);
@@ -284,7 +329,7 @@ AliAnalysisTaskSE *AddTaskSigma0DebugTest(bool isMC = false,
   config->SetMaxKRel(kMax);
   config->SetMixingDepth(10);
   config->SetUseEventMixing(true);
-  config->SetMultiplicityEstimator(AliFemtoDreamEvent::kSPD);
+  config->SetMultiplicityEstimator(AliFemtoDreamEvent::kRef08);
   if (suffix != "0") {
     config->SetMinimalBookingME(true);
   }
@@ -309,6 +354,7 @@ AliAnalysisTaskSE *AddTaskSigma0DebugTest(bool isMC = false,
     task->SelectCollisionCandidates(AliVEvent::kMB);
     task->SetMultiplicityMode(AliVEvent::kINT7);
   }
+  task->SetEventCuts(evtCuts);
   task->SetV0ReaderName(V0ReaderName.Data());
   task->SetIsHeavyIon(isHeavyIon);
   task->SetIsMC(isMC);

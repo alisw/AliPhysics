@@ -9,6 +9,9 @@
 class AliRDHFJetsCutsVertex;
 class AliEmcalJetTree;
 class AliHFJetsTaggingVertex;
+#if ROOT_VERSION_CODE >= ROOT_VERSION(6,0,0)
+  class TPython;
+#endif
 
 /**
  * \class AliAnalysisTaskJetExtractor
@@ -45,6 +48,11 @@ class AliAnalysisTaskJetExtractor : public AliAnalysisTaskEmcalJet {
   void                        SetSecondaryVertexMaxChi2(Double_t val   )          { fSecondaryVertexMaxChi2 = val; }
   void                        SetSecondaryVertexMaxDispersion(Double_t val)       { fSecondaryVertexMaxDispersion = val; }
   void                        SetCalculateSecondaryVertices(Bool_t val)           { fCalculateSecondaryVertices = val; }
+  void                        SetCalculateModelBackground(Bool_t val)             { fCalculateModelBackground = val; }
+  void                        SetBackgroundModelFileName(const char* val)         { fBackgroundModelFileName = val; }
+  void                        SetBackgroundModelInputParameters(const char* val)  { fBackgroundModelInputParameters = val; }
+  void                        SetBackgroundModelPtOnly(Bool_t val)                { fBackgroundModelPtOnly = val; }
+  void                        SetCustomStartupScript(const char* path)            { fCustomStartupScript = path; }
   void                        SetVertexerCuts(AliRDHFJetsCutsVertex* val)         { fVertexerCuts = val; }
   void                        SetSetEmcalJetFlavour(Bool_t val)                   { fSetEmcalJetFlavour = val; }
   void                        SetEventPercentage(Double_t val)                    { fEventPercentage  = val; }
@@ -62,12 +70,15 @@ class AliAnalysisTaskJetExtractor : public AliAnalysisTaskEmcalJet {
   void                        ExecOnce();
   Bool_t                      Run();
   Bool_t                      IsTriggerTrackInEvent();
+  void                        CalculateJetShapes(AliEmcalJet* jet, Double_t& leSub_noCorr, Double_t& radialMoment, Double_t& momentumDispersion, Double_t& constPtMean, Double_t& constPtMedian);
   void                        FillTrackControlHistograms(AliVTrack* track);
   void                        FillEventControlHistograms();
   void                        FillJetControlHistograms(AliEmcalJet* jet);
   void                        AddPIDInformation(AliVParticle* particle, Float_t& sigITS, Float_t& sigTPC, Float_t& sigTOF, Float_t& sigTRD, Short_t& recoPID, Int_t& truePID);
   Bool_t                      IsTrackInCone(AliVParticle* track, Double_t eta, Double_t phi, Double_t radius);
   Double_t                    GetTrueJetPtFraction(AliEmcalJet* jet);
+  void                        GetPtAndMassFromModel(AliEmcalJet* jet, Float_t& pt_ML, Float_t& mass_ML);
+  TString                     GetBackgroundModelArrayString(AliEmcalJet* jet);
   Double_t                    GetMatchedTrueJetObservables(AliEmcalJet* jet, Double_t& matchedJetPt, Double_t& matchedJetMass);
   void                        GetJetType(AliEmcalJet* jet, Int_t& typeHM, Int_t& typePM, Int_t& typeIC);
   Bool_t                      IsStrangeJet(AliEmcalJet* jet);
@@ -77,6 +88,9 @@ class AliAnalysisTaskJetExtractor : public AliAnalysisTaskEmcalJet {
   void                        ReconstructSecondaryVertices(const AliVVertex* primVtx, const AliEmcalJet* jet, std::vector<Float_t>& secVtx_X, std::vector<Float_t>& secVtx_Y, std::vector<Float_t>& secVtx_Z,
                                   std::vector<Float_t>& secVtx_Mass, std::vector<Float_t>& secVtx_Lxy, std::vector<Float_t>& secVtx_SigmaLxy, std::vector<Float_t>& secVtx_Chi2, std::vector<Float_t>& secVtx_Dispersion);
 
+  #if ROOT_VERSION_CODE >= ROOT_VERSION(6,0,0)
+  TPython*                    fPythonCLI;
+  #endif
   AliEmcalJetTree*            fJetTree;
   AliHFJetsTaggingVertex*     fVtxTagger;                               //!<! class for sec. vertexing
   Double_t                    fHadronMatchingRadius;                    ///< Matching radius to search for beauty/charm hadrons around jet
@@ -84,6 +98,11 @@ class AliAnalysisTaskJetExtractor : public AliAnalysisTaskEmcalJet {
   Double_t                    fSecondaryVertexMaxChi2;                  ///< Max chi2 of secondary vertex (others will be discarded)
   Double_t                    fSecondaryVertexMaxDispersion;            ///< Max dispersion of secondary vertex (others will be discarded)
   Bool_t                      fCalculateSecondaryVertices;              ///< Calculate the secondary vertices (instead of loading)
+  Bool_t                      fCalculateModelBackground;                ///< Calculate MVA model background and attach to event
+  TString                     fBackgroundModelFileName;                 ///< MVA model file name
+  TString                     fBackgroundModelInputParameters;          ///< MVA model input parameters (comma-separated)
+  Bool_t                      fBackgroundModelPtOnly;                   ///< MVA model, use approximation for pT only (not for mass)
+  TString                     fCustomStartupScript;                     ///< Path to custom shell script that will be executed
   AliRDHFJetsCutsVertex*      fVertexerCuts;                            ///< Cuts used for the vertexer (given in add task macro)
   Bool_t                      fSetEmcalJetFlavour;                      ///< if set, the flavour property of the AliEmcalJets will be set
   Double_t                    fEventPercentage;                         ///< percentage (0, 1] which will be extracted
@@ -92,7 +111,6 @@ class AliAnalysisTaskJetExtractor : public AliAnalysisTaskEmcalJet {
   Bool_t                      fSaveTrackPDGCode;                        ///< save PDG code instead of code defined for AOD pid
   ULong_t                     fRandomSeed;                              ///< random seed
   ULong_t                     fRandomSeedCones;                         ///< random seed
-
   // ################## EVENT CUTS
   Double_t                    fEventCut_TriggerTrackMinPt;              ///< Event requirement, trigger track min pT
   Double_t                    fEventCut_TriggerTrackMaxPt;              ///< Event requirement, trigger track max pT
@@ -103,6 +121,7 @@ class AliAnalysisTaskJetExtractor : public AliAnalysisTaskEmcalJet {
   AliJetContainer            *fJetsCont;                                //!<! Jets
   AliParticleContainer       *fTracksCont;                              //!<! Tracks
   AliClusterContainer        *fClustersCont;                            //!<! Clusters
+  TClonesArray*               fJetOutputArray;                          //!<! Array of corr. jets, attached to event
   TClonesArray*               fTruthParticleArray;                      //!<! Array of MC particles in event (mcparticles)
   TString                     fTruthJetsArrayName;                      ///< Array name for particle-level jets
   TString                     fTruthJetsRhoName;                        ///< Array name for particle-level rho
@@ -188,6 +207,7 @@ class AliEmcalJetTree : public TNamed
     void            SetRandomGenerator(TRandom3* gen) {fRandomGenerator = gen;}
 
     void            InitializeTree();
+    void            SetJetShapesInBuffer(Double_t leSub_noCorr, Double_t radialMoment, Double_t momentumDispersion, Double_t constPtMean, Double_t constPtMedian);
 
     // ############ GETTERS
     Bool_t          GetSaveEventProperties() {return fSaveEventProperties;}
@@ -292,7 +312,25 @@ class AliEmcalJetTree : public TNamed
     Float_t*        fBuffer_Cluster_Time;                 //!<! array buffer
     Int_t*          fBuffer_Cluster_Label;                //!<! array buffer
 
-    Float_t         fBuffer_Shape_Mass;                   //!<! array buffer
+    Float_t         fBuffer_Shape_Mass_NoCorr;            //!<! array buffer
+    Float_t         fBuffer_Shape_Mass_DerivCorr_1;       //!<! array buffer
+    Float_t         fBuffer_Shape_Mass_DerivCorr_2;       //!<! array buffer
+    Float_t         fBuffer_Shape_pTD_DerivCorr_1;        //!<! array buffer
+    Float_t         fBuffer_Shape_pTD_DerivCorr_2;        //!<! array buffer
+    Float_t         fBuffer_Shape_LeSub_NoCorr;           //!<! array buffer
+    Float_t         fBuffer_Shape_LeSub_DerivCorr;        //!<! array buffer
+    Float_t         fBuffer_Shape_Angularity_DerivCorr_1; //!<! array buffer
+    Float_t         fBuffer_Shape_Angularity_DerivCorr_2; //!<! array buffer
+    Float_t         fBuffer_Shape_Circularity_DerivCorr_1;//!<! array buffer
+    Float_t         fBuffer_Shape_Circularity_DerivCorr_2;//!<! array buffer
+    Float_t         fBuffer_Shape_Sigma2_DerivCorr_1;     //!<! array buffer
+    Float_t         fBuffer_Shape_Sigma2_DerivCorr_2;     //!<! array buffer
+    Float_t         fBuffer_Shape_NumConst_DerivCorr;     //!<! array buffer
+    Float_t         fBuffer_Shape_RadialMoment;           //!<! array buffer
+    Float_t         fBuffer_Shape_MomentumDispersion;     //!<! array buffer
+    Float_t         fBuffer_Shape_ConstPtMean;            //!<! array buffer
+    Float_t         fBuffer_Shape_ConstPtMedian;          //!<! array buffer
+
 
     Int_t           fBuffer_Jet_MC_MotherParton;          //!<! array buffer
     Int_t           fBuffer_Jet_MC_MotherHadron;          //!<! array buffer
@@ -307,7 +345,7 @@ class AliEmcalJetTree : public TNamed
 
 
     /// \cond CLASSIMP
-    ClassDef(AliEmcalJetTree, 4) // Jet tree class
+    ClassDef(AliEmcalJetTree, 6) // Jet tree class
     /// \endcond
 };
 

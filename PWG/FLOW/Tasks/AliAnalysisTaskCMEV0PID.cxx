@@ -2041,13 +2041,13 @@ void AliAnalysisTaskCMEV0PID::UserExec(Option_t*) {
 
   Double_t fWgtCent = 1.0;
 
-  /*
+  
   if(fHCentWeightForRun){
     fWgtCent = fHCentWeightForRun->GetBinContent(iCentBinWgt);
-  }*/
+  }
 
   //Fill Centrality for run-by-run:  in first pass over data
-  fCentDistAfter->Fill(centrality); 
+  fCentDistAfter->Fill(centrality,fWgtCent); 
   
 
 

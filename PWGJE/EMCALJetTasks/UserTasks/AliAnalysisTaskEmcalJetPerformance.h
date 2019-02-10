@@ -128,6 +128,7 @@ class AliAnalysisTaskEmcalJetPerformance : public AliAnalysisTaskEmcalJet {
   void SetJetMatchingR(Double_t r)                          { fJetMatchingR = r; }
   void SetMinimumSharedMomentumFraction(double d)           { fMinSharedMomentumFraction = d; }
   void SetMCJetMinMatchingPt(Double_t min)                  { fMCJetMinMatchingPt = min; }
+  void SetDetJetMinMatchingPt(Double_t min)                 { fDetJetMinMatchingPt = min; }
   void SetPlotJetMatchCandThresh(Double_t r)                { fPlotJetMatchCandThresh = r; };
   void SetDoTriggerResponse(Bool_t b)                       { fDoTriggerResponse = b; };
   void SetDoClosureTest(Bool_t b)                           { fDoClosureTest = b; }
@@ -220,6 +221,7 @@ class AliAnalysisTaskEmcalJetPerformance : public AliAnalysisTaskEmcalJet {
   Double_t                    fJetMatchingR;                        ///< Jet matching R threshold
   Double_t                    fMinSharedMomentumFraction;           ///< Minimum shared momentum (pp det-level track pT in combined jet) / (pp det-level track pT)
   Double_t                    fMCJetMinMatchingPt;                  ///< Min jet pT for MC jets being matched, for when container criteria is not applied
+  Double_t                    fDetJetMinMatchingPt;                 ///< Min jet pT for Det jets being matched, for when container criteria is not applied
   Double_t                    fPlotJetMatchCandThresh;              ///< Threshold for jet R to count candidates, affects plotting only
   
   // Event selection

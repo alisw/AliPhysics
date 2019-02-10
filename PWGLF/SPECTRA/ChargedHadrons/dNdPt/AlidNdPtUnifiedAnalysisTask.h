@@ -53,7 +53,6 @@ class AlidNdPtUnifiedAnalysisTask : public AliAnalysisTaskSE {
     TArrayD* GetBinsEta(){return fBinsEta;}
     TArrayD* GetBinsMultCent() {return fBinsMultCent;}
     TArrayD* GetBinsZv() {return fBinsZv;}
-    TArrayD* GetBinsCent()  {return fBinsCent;}
 
 
     void SetTriggerMask(UInt_t triggermask)  { fTriggerMask = triggermask; }
@@ -86,10 +85,6 @@ class AlidNdPtUnifiedAnalysisTask : public AliAnalysisTaskSE {
     void SetBinsMultCent(TArrayD *bins){if(fBinsMultCent) delete fBinsMultCent; fBinsMultCent = new TArrayD(*bins);}
     /// Set bins in Multiplicity/Centrality number of bins and array of bin edges
     void SetBinsMultCent(Int_t nBins, Double_t *binEdges){if(fBinsMultCent) delete fBinsMultCent; fBinsMultCent = new TArrayD(nBins+1,binEdges);}
-     /// Set bins in Centrality using a TArrayD
-    void SetBinsCent(TArrayD* bins){if(fBinsCent) delete fBinsCent; fBinsCent = new TArrayD(*bins);}
-    /// Set bins in Centrality number of bins and array of bin edges
-    void SetBinsCent(Int_t nBins, Double_t* binEdges){if(fBinsCent) delete fBinsCent; fBinsCent = new TArrayD(nBins+1,binEdges);}
     /// Set bins in Zv using a TArrayD
     void SetBinsZv(TArrayD *bins){if(fBinsZv) delete fBinsZv; fBinsZv = new TArrayD(*bins);}
     /// Set bins in Zv using number of bins and array of bin edges
@@ -276,7 +271,6 @@ class AlidNdPtUnifiedAnalysisTask : public AliAnalysisTaskSE {
     Float_t       	fCutGeoNcrNclFractionNcl;
 
     TArrayD     	*fBinsMultCent;		///< Array of bins in multiplicity or centrality
-    TArrayD*      fBinsCent;		    ///< Array of bins in centrality
     TArrayD     	*fBinsPt;		    ///< Array of bins in pt
     TArrayD     	*fBinsEta;		    ///< Array of bins in eta
     TArrayD     	*fBinsZv;		    ///< Array of bins in Zv (Z-position of primary vtx)
@@ -298,7 +292,6 @@ class AlidNdPtUnifiedAnalysisTask : public AliAnalysisTaskSE {
     THnF        	*fHistMCTrackMult;		///<  Histogram for tracks vs multiplicity (pt,Nacc,Nch)
     THnF        	*fHistMCTrackMultGen;		///<  Histogram for true tracks vs multiplicity (pt,Nacc,Nch)
 
-    THnF          *fHistResPt;                    ///<  Histogram for pT_gen vs pT_rec for resolution chrosschecks (pt,pt,eta,vz)
 
     THnF*         fHistRelPtResoFromCov;			///<  Histogram for relative pT resolution of tracks from covariance matrix
 

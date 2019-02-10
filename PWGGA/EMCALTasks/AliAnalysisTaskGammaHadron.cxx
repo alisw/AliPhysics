@@ -155,12 +155,12 @@ void AliAnalysisTaskGammaHadron::InitArrays()
 	Double_t fArray_G_BinsValue[kNoGammaBins+1] ={5,7,9,11,14,17,20,23,30,60};
 	Double_t fArray_ZT_BinsValue[kNoZtBins+1]   ={0,fZtStep,2*fZtStep,3*fZtStep,4*fZtStep,5*fZtStep,6*fZtStep,20};
 	Double_t fArray_XI_BinsValue[kNoXiBins+1]   ={-10,0,fXiStep,2*fXiStep,3*fXiStep,4*fXiStep,5*fXiStep,6*fXiStep,10};
-	Double_t fArray_HPT_BinsValue[kNoHPtBins+1]   ={0.15,0.5,1.0,1.5,2.0,3.0,4.5,7,10};
+//	Double_t fArray_HPT_BinsValue[kNoHPtBins+1]   ={0.15,0.5,1.0,1.5,2.0,3.0,4.5,7,10};
 
 	memcpy (fArray_G_Bins,  fArray_G_BinsValue,  sizeof (fArray_G_Bins));
 	memcpy (fArray_ZT_Bins, fArray_ZT_BinsValue, sizeof (fArray_ZT_Bins));
 	memcpy (fArray_XI_Bins, fArray_XI_BinsValue, sizeof (fArray_XI_Bins));
-	memcpy (fArray_HPT_Bins, fArray_HPT_BinsValue, sizeof (fArray_HPT_Bins));
+//	memcpy (fArray_HPT_Bins, fArray_HPT_BinsValue, sizeof (fArray_HPT_Bins));
 	//- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 	//   Define vertex and centrality bins for the ME background
 	//- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -537,12 +537,13 @@ void AliAnalysisTaskGammaHadron::UserCreateOutputObjects()
      	maxThn[dimThn] = centBinArray[nCentHistBins];
      	dimThn++;
     }
-		titleThn[dimThn] = "Track p_{T}";
-		nbinsThn[dimThn] = kNoHPtBins;
-		binEdgesThn[dimThn] = fArray_HPT_Bins;
-		minThn[dimThn] = fArray_HPT_Bins[0];
-		maxThn[dimThn] = fArray_HPT_Bins[kNoHPtBins];
-		dimThn++;
+    // Track p_T disabled. No longer necessary.
+		//titleThn[dimThn] = "Track p_{T}";
+		//nbinsThn[dimThn] = kNoHPtBins;
+		//binEdgesThn[dimThn] = fArray_HPT_Bins;
+		//minThn[dimThn] = fArray_HPT_Bins[0];
+		//maxThn[dimThn] = fArray_HPT_Bins[kNoHPtBins];
+		//dimThn++;
 
     if(fPlotQA==0)
     {
@@ -2461,7 +2462,7 @@ void AliAnalysisTaskGammaHadron::FillGhHistograms(Int_t identifier,AliTLorentzVe
 	valueArray[5]=zVertex;
 	valueArray[6]=evtPlaneCategory;
 	valueArray[7]=fCent;
-	valueArray[8]=TrackVec->Pt();
+	//valueArray[8]=TrackVec->Pt();
 
 	if(identifier==0 && fPlotQA==0)fCorrVsManyThings  ->Fill(valueArray,Weight);
 

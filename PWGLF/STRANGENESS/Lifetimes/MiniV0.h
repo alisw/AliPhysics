@@ -229,7 +229,6 @@ miniV0.SetProngsTPCnsigmas(nsigmapospion, nsigmaposproton,
 miniV0.SetITSinformation(negITSrefit, posITSrefit, negSPDany, posSPDany, ITSnCl);
 miniV0.SetTOFbits(posTOF, negTOF);
 miniV0.SetCowboyAndSailor(isCowboy);
-
 return miniV0;
 
 }

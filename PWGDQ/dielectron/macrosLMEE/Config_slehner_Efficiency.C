@@ -14,28 +14,15 @@ void Config_slehner_Efficiency(AliAnalysisTaskElectronEfficiencyV2 *task,  Bool_
   Int_t PIDCut=0;
   Int_t MVACut=0;
   
-  for(int glcut = 0; glcut <=10; ++glcut){
+  for(int glcut = 0; glcut <=20; ++glcut){
     ////////DEFINE THE CUTS AS FUNCTION OF GLCUT//////
-    if(glcut<11){
-      trackCut=0;
-      PIDCut=0;
-      MVACut=glcut;   
-    }
-//    else if(glcut<13){
-//      trackCut=0;
-//      PIDCut=glcut-5;
-//      MVACut=4;   
-//    }
-//    else{
-//      trackCut=0;
-//      PIDCut=0;
-//      MVACut=glcut-13;      
-//    }
-    //////////////////////////////////////////////////
-    std::cout << "Config_slehner_Efficiency: CutTr: "<<trackCut<<" CutPID: "<<PIDCut<<" MVA Cut: "<<-1+MVACut*0.2<<" added"<< std::endl;
+    if(glcut>0 && glcut<11) continue;
+    PIDCut=glcut;
+    trackCut=glcut;
+    std::cout << "Config_slehner_Efficiency: CutTr: "<<trackCut<<" CutPID: "<<PIDCut<<" MVA Cut: "<<0<<" added"<< std::endl;
     AliAnalysisFilter* filter = SetupTrackCutsAndSettings(trackCut, PIDCut, MVACut, useAODFilterCuts,TMVAweight);
-    task->AddTrackCuts(filter);    
-  }
+    task->AddTrackCuts(filter); 
+    }
 }
 
 Bool_t SetTPCCorrection = kTRUE;
@@ -109,6 +96,16 @@ const Int_t    stepsMassBin   = 200;
 const Double_t minPairPtBin   = 0;
 const Double_t maxPairPtBin   = 10;
 const Int_t    stepsPairPtBin = 20;
+
+//varying bin size
+//lmee mass spectrum
+  double mbinsarr[] = { 0.00, 0.02 ,0.04 ,0.08 ,0.14 ,0.22 ,0.38 ,0.54 ,1.1 ,1.7 ,2.5 ,2.9 ,3.0 ,3.1 ,3.3 ,3.5 ,4.0 ,5.0}; //Carsten's binning
+  double ptbinsarr[]= {0.0,0.4,0.6,1,2.5,8};
+  
+//low ptee
+//double mbinsarr[]= { 0.00,0.4,0.5 ,0.6 ,0.7 ,1.1, 1.5,2.0 ,2.7,3.1 ,5.0}; // for low ptee
+//double ptbinsarr[]= {0.0, 0.025, 0.05, 0.075, 0.1, 0.15, 0.2, 0.3, 0.4, 0.5, 0.6, 1, 2.0, 8};// for low ptee
+//  TVectorD* centbins= AliDielectronHelper::MakeLinBinning(10,0,100);
 
 // Binning of resolution histograms
 const Int_t    NbinsDeltaMom   = 2000;

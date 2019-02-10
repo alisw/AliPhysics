@@ -96,6 +96,9 @@ struct MacroParams : public TNamed {
   UInt_t q3d_bin_count { 59 };
   Float_t q3d_maxq { 0.295 };
 
+  bool trueq3d_extra_bins { false };
+  bool trueq3d_weighted_denoms { true };
+
   UInt_t ylm_max_l { 3 };
   UInt_t ylm_ibin { 30 };
   Float_t ylm_vmin { 0.0 };
@@ -450,6 +453,8 @@ ConfigFemtoAnalysis(const TString& param_str="")
                                                           .NamePrefix("")
                                                           .BinCount(macro_config.q3d_bin_count)
                                                           .QRange(macro_config.q3d_maxq)
+                                                          .EnableExtraHists(macro_config.trueq3d_extra_bins)
+                                                          .EnableWeightedDenominators(macro_config.trueq3d_weighted_denoms)
                                                           .Manager(model_manager);
 
         AliFemtoKtBinnedCorrFunc *kt_trueq3d_cfs = new AliFemtoKtBinnedCorrFunc("KT_TrueQ3D", kt_trueq3d_cf);
@@ -683,10 +688,10 @@ BuildConfiguration(const TString &text,
         cmd = macro_varname + "->pair_codes.push_back(0)";
       }
       else if (line == "+pp") {
-        cmd = macro_varname + ".pair_codes.push_back(3)";
+        cmd = macro_varname + "->pair_codes.push_back(3)";
       }
       else if (line == "+mm") {
-        cmd = macro_varname + ".pair_codes.push_back(4)";
+        cmd = macro_varname + "->pair_codes.push_back(4)";
       }
       else if (line == "+pm") {
         cmd = macro_varname + "->pair_codes.push_back(2)";

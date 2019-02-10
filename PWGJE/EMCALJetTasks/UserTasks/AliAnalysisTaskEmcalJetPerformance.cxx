@@ -106,6 +106,7 @@ AliAnalysisTaskEmcalJetPerformance::AliAnalysisTaskEmcalJetPerformance() :
   fJetMatchingR(0.),
   fMinSharedMomentumFraction(0.5),
   fMCJetMinMatchingPt(0.15),
+  fDetJetMinMatchingPt(0.15),
   fPlotJetMatchCandThresh(1.),
   fUseAliEventCuts(kTRUE),
   fEventCuts(0),
@@ -2833,15 +2834,17 @@ void AliAnalysisTaskEmcalJetPerformance::ComputeJetMatches(AliJetContainer* jetC
     jet2->ResetMatching();
   }
 
-  for (auto jet1 : jetCont1->accepted()) {
-    
+  for (auto jet1 : jetCont1->accepted()) {//detector level
+    if (jet1->Pt() < fDetJetMinMatchingPt) {
+        continue;
+    }
     if (bUseJetCont2Acceptance) {
       for (auto jet2 : jetCont2->accepted()) {
         SetJetClosestCandidate(jet1, jet2);
       }
     }
     else {
-      for (auto jet2 : jetCont2->all()) {
+      for (auto jet2 : jetCont2->all()) {//truth level
         if (jet2->Pt() < fMCJetMinMatchingPt) {
           continue;
         }

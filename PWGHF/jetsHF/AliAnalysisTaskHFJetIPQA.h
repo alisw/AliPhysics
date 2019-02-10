@@ -15,6 +15,7 @@ class AliPIDResponse;
 class AliHFEpidBayes;
 class TTree;
 class TH2D;
+class TCanvas;
 class TParticle;
 class TClonesArray;
 class AliAODMCParticle;
@@ -67,7 +68,11 @@ public:
         bAnalysisCut_DCAJetTrack=7,
         bAnalysisCut_MaxDCA_Z=8,
         bAnalysisCut_MaxDCA_XY=9,
-        bAnalysisCut_MaxDecayLength=10
+        bAnalysisCut_MaxDecayLength=10,
+        bAnalysisCut_Z_Chi2perNDF=11,
+        bAnalysisCut_MinTrackPt=12,
+        bAnalysisCut_MinTrackPtMC=13,
+        bAnalysisCut_MinTPCClus=14,
     };
 
     //UTILITY STRUCT DEFINITIONS
@@ -87,8 +92,12 @@ public:
     AliAnalysisTaskHFJetIPQA& operator=(const AliAnalysisTaskHFJetIPQA&); // not implemented
     virtual ~AliAnalysisTaskHFJetIPQA(){;}
     virtual void   UserCreateOutputObjects();
+    virtual void   Terminate(Option_t *option="");
     virtual Bool_t Run();
     virtual Bool_t IsSelected(AliVEvent *event, Int_t &WhyRejected,ULong_t &RejectionBits);
+
+
+
     void SetESDCuts (AliESDtrackCuts  *cuts =NULL){fESDTrackCut =  new AliESDtrackCuts(*cuts);}
     virtual AliRDHFJetsCuts* GetJetCutsHF(){return fJetCutsHF;}
     void SetUseMonteCarloWeighingLinus(TH1F *Pi0 ,TH1F *Eta,TH1F *EtaP,TH1F *Rho,TH1F *Phi,TH1F *Omega,TH1F *K0s,TH1F *Lambda,TH1F *ChargedPi,
@@ -123,6 +132,12 @@ public:
     Double_t CalculatePSTrack(Double_t sign, Double_t significance, Double_t trackPt, Int_t trclass);
     Double_t CalculatePSTrackPID(Double_t sign, Double_t significance, Double_t trackPt, Int_t trclass, Int_t species);
 
+    //Setter for turning Corrections off and on
+    void SmearTrack(AliAODTrack *track);
+    void setFRunSmearing(Bool_t value){fRunSmearing = value;}
+    void setFDoMCCorrection(Bool_t value){fDoMCCorrection=value;}
+    void setFDoUnderlyingEventSub(Bool_t value){fDoUnderlyingEventSub=value;}
+
     Bool_t IsTrackAcceptedJP(AliVTrack *track, Int_t n);
     bool IsFromElectron(AliAODTrack *track);
     bool IsFromProton(AliAODTrack *track);
@@ -143,11 +158,6 @@ public:
         fParam_Smear_Mean = value;
     }
 
-    void SmearTrack(AliAODTrack *track);
-    void setFRunSmearing(Bool_t value)
-    {
-        fRunSmearing = value;
-    }
     void setGlobalVertex(Bool_t value)
     {
         fGlobalVertex = value;
@@ -206,21 +216,27 @@ private:
     Int_t GetRunNr(AliVEvent * event){return event->GetRunNumber();}
     Double_t GetPtCorrected(const AliEmcalJet* jet);
     Double_t GetPtCorrectedMC(const AliEmcalJet *jet);
+    void PrintSettings();
 
 
     //Functions to allow jet probability/TC System 8 efficiency estimation
     Bool_t IsJetTaggedTC(int n =0 ,double thres = 0.1);
     Bool_t IsJetTaggedJetProb(double thresProb = 0.90);
     TH1 *  AddHistogramm(const char * name,const char * title,Int_t x,Double_t xlow,Double_t xhigh, Int_t y=0,Double_t ylow=0,Double_t yhigh=0);
-    TH1D * GetHist1D(const char * name){return (TH1D*)fOutput->FindObject(name);}
-    TH2D * GetHist2D(const char * name){return (TH2D*)fOutput->FindObject(name);}
-private:
+    TH1D * GetHist1D(const char * name){return (TH1D*)fOutputHist->FindObject(name);}
+    TH2D * GetHist2D(const char * name){return (TH2D*)fOutputHist->FindObject(name);}
 
+
+private:
+    //Booleans for different corrections
+    Bool_t   fRunSmearing;//
     Bool_t   fUsePIDJetProb;//
+    Bool_t   fDoMCCorrection;//  Bool to turn on/off MC correction. Take care: some histograms may still be influenced by weighting.
+    Bool_t   fDoUnderlyingEventSub;//
+
     Bool_t   fFillCorrelations;//
     Double_t fParam_Smear_Sigma;//
     Double_t fParam_Smear_Mean;//
-    Bool_t   fRunSmearing;//
     Bool_t   fGlobalVertex;//
     Bool_t fDoNotCheckIsPhysicalPrimary;//
     Bool_t fDoJetProb;
@@ -236,6 +252,10 @@ private:
     TGraph * fGeant3FlukaLambda;//!
     TGraph * fGeant3FlukaAntiLambda;//!
     TGraph * fGeant3FlukaKMinus;//!
+    //! \brief cCuts
+    AliEmcalList *fSetup;//
+    AliEmcalList *fOutputHist;//
+    TCanvas *cCuts; //
     //! \brief fMCArray
     TClonesArray     *fMCArray;//!
     AliRDHFJetsCuts  *fJetCutsHF;//
@@ -253,7 +273,7 @@ private:
     std::vector <Double_t > fEtaUdsgEvt;//!
     std::vector <Double_t > fPhiUdsgEvt;//!
     TGraph fResolutionFunction[200];//[200]<-
-    Double_t fAnalysisCuts[11]; ///Additional (to ESD track cut or AOD filter bits) analysis cuts.
+    Double_t fAnalysisCuts[15]; ///Additional (to ESD track cut or AOD filter bits) analysis cuts.
     AliPIDCombined *fCombined ;//!
     Float_t fXsectionWeightingFactor;//
     Int_t   fProductionNumberPtHard;//
@@ -327,7 +347,7 @@ private:
 
 
 
-    ClassDef(AliAnalysisTaskHFJetIPQA, 28)
+    ClassDef(AliAnalysisTaskHFJetIPQA, 30)
 };
 
 #endif

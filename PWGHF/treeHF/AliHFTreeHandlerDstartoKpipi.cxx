@@ -32,8 +32,8 @@ AliHFTreeHandlerDstartoKpipi::AliHFTreeHandlerDstartoKpipi():
   fImpParProng(),
   fCosThetaStar(),
   fImpParProd(),
-  fSoftPiPt(),
   fNormd0MeasMinusExp(),
+  fAngleD0dkpPisoft(),
   fInvMass_D0(),
   fPt_D0(),
   fY_D0(),
@@ -54,8 +54,8 @@ AliHFTreeHandlerDstartoKpipi::AliHFTreeHandlerDstartoKpipi(int PIDopt):
   fImpParProng(),
   fCosThetaStar(),
   fImpParProd(),
-  fSoftPiPt(),
   fNormd0MeasMinusExp(),
+  fAngleD0dkpPisoft(),
   fInvMass_D0(),
   fPt_D0(),
   fY_D0(),
@@ -95,8 +95,8 @@ TTree* AliHFTreeHandlerDstartoKpipi::BuildTree(TString name, TString title)
   //set Dstar variables
   fTreeVar->Branch("cos_t_star",&fCosThetaStar);
   fTreeVar->Branch("imp_par_prod",&fImpParProd);
-  fTreeVar->Branch("pt_soft",&fSoftPiPt);
   fTreeVar->Branch("max_norm_d0d0exp",&fNormd0MeasMinusExp);
+  fTreeVar->Branch("angle_D0dkpPisoft",&fAngleD0dkpPisoft);
   for(unsigned int iProng=0; iProng<fNProngs; iProng++){
     fTreeVar->Branch(Form("imp_par_prong%d",iProng),&fImpParProng[iProng]);
   }
@@ -146,10 +146,11 @@ bool AliHFTreeHandlerDstartoKpipi::SetVariables(AliAODRecoDecayHF* cand, float b
   fCosP.push_back(d0->CosPointingAngle());
   fCosPXY.push_back(d0->CosPointingAngleXY());
   fImpParXY.push_back(d0->ImpParXY());
+  fDCA.push_back(d0->GetDCA());
   fNormd0MeasMinusExp.push_back(ComputeMaxd0MeasMinusExp(d0,bfield));
+  fAngleD0dkpPisoft.push_back(((AliAODRecoCascadeHF*)cand)->AngleD0dkpPisoft());
 
   AliAODTrack* prongtracks[3];
-  AliAODTrack *softPion = (AliAODTrack*)((AliAODRecoCascadeHF*)cand)->GetBachelor();
   prongtracks[0] = (AliAODTrack*)((AliAODRecoCascadeHF*)cand)->GetBachelor();
   fImpParProng[0].push_back(cand->Getd0Prong(0));
     
@@ -158,7 +159,6 @@ bool AliHFTreeHandlerDstartoKpipi::SetVariables(AliAODRecoDecayHF* cand, float b
   fImpParProd.push_back(d0->Prodd0d0());
   if( (((AliAODRecoCascadeHF*)cand)->Charge()) >0)   fCosThetaStar.push_back(d0->CosThetaStarD0());
   else   fCosThetaStar.push_back(d0->CosThetaStarD0bar());
-  fSoftPiPt.push_back(softPion->Pt());
 
   //D0 -> K pi variables
   fPt_D0.push_back(d0->Pt());
@@ -203,8 +203,8 @@ void AliHFTreeHandlerDstartoKpipi::FillTree() {
     ResetDmesonCommonVarVectors();
     fCosThetaStar.clear();
     fImpParProd.clear();
-    fSoftPiPt.clear();
     fNormd0MeasMinusExp.clear();
+    fAngleD0dkpPisoft.clear();
     fInvMass_D0.clear();
     fPt_D0.clear();
     fY_D0.clear();

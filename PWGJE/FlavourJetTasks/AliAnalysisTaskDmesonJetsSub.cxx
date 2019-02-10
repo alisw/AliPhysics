@@ -2811,7 +2811,7 @@ void AliAnalysisTaskDmesonJetsSub::AnalysisEngine::IterativeDeclustering(Int_t i
       fastjet::PseudoJet jj = output_jets[0];
       fastjet::PseudoJet j1; 
       fastjet::PseudoJet j2;  
-    
+      
       while(jj.has_parents(j1,j2)){
          nall = nall + 1;
          if(j1.perp() < j2.perp()) std::swap(j1,j2);
@@ -2837,7 +2837,9 @@ void AliAnalysisTaskDmesonJetsSub::AnalysisEngine::IterativeDeclustering(Int_t i
                 jj=j1;
       }
 
-         
+      if(nall==0){ double lundEntrieszero[10]={0,0,output_jets[0].perp(),0,type,0,0,invmass,0,TMath::Abs(output_jets[0].eta())};
+	h->Fill(lundEntrieszero);}
+      
       } catch (fastjet::Error) { /*return -1;*/ }
                        
 }
@@ -3202,9 +3204,9 @@ void AliAnalysisTaskDmesonJetsSub::UserCreateOutputObjects()
   }
 
       Int_t dimx   = 10;
-      Int_t nbinsx[10]   = {50,100,10,20,2,2,20,150,100,9};
+      Int_t nbinsx[10]   = {50,100,10,20,2,2,100,150,100,9};
       Double_t minx[10] =  {0,-10,0,0,0,0,0,1.6,0,0};
-      Double_t maxx[10]  = {5,10,100,20,2,2,20,2.3,100,0.9};
+      Double_t maxx[10]  = {5,10,100,20,2,2,100,2.3,100,0.9};
       TString titlex[10]={"log(1/deltaR)","log(zteta)","jet pt","n","type","flagSubjet","ptD","invmass","frac","abs(eta)"};
 
 

@@ -70,12 +70,12 @@ AliAnalysisTaskStrangenessLifetimes::AliAnalysisTaskStrangenessLifetimes(
     bool mc, std::string name, float downscale, bool Hypertriton, bool V0s)
     : AliAnalysisTaskSE(name.data()),
       fEventCuts{},
+      fHypertriton{Hypertriton},
+      fV0s{V0s},       
       fListHist{nullptr},
       fTreeV0{nullptr},
       fPIDResponse{nullptr},
-      fDoV0Refit{true},
-      fHypertriton{Hypertriton},
-      fV0s{V0s},      
+      fDoV0Refit{true},     
       fMC{mc},
       fDownscale{downscale},
       fUseOnTheFly{false},
@@ -116,7 +116,8 @@ AliAnalysisTaskStrangenessLifetimes::AliAnalysisTaskStrangenessLifetimes(
       fMaxTPChe3Sigma{10.},
       fV0vector{},
       fMCvector{},
-      fV0Hyvector{} {
+      fV0Hyvector{},
+      fMiniEvent{} {
   // Standard output
   DefineInput(0, TChain::Class());
   DefineOutput(1, TList::Class());  // Basic Histograms
@@ -336,10 +337,10 @@ void AliAnalysisTaskStrangenessLifetimes::UserExec(Option_t *) {
           v0part.SetPDGcode(currentPDG);
           v0part.SetEta(part->Eta());
           v0part.SetPt(part->Pt());
-          v0part.SetDistOverP(dist / part->P() + 1e-16);
+          v0part.SetDistOverP(dist / (part->P() + 1.e-16));
           v0part.SetRadius(radius);
           bool isSecondary = mcEvent->IsSecondaryFromWeakDecay(ilab);
-          fHistMCct[idx]->Fill(dist * part->GetMass() / part->P());
+          fHistMCct[idx]->Fill(v0part.GetDistOverP() * part->GetMass());
           TParticle* mother = mcEvent->Particle(part->GetFirstMother());
           if (isSecondary && mother) {
             v0part.SetStatus(MCparticle::kSecondaryFromWeakDecay);
@@ -350,7 +351,7 @@ void AliAnalysisTaskStrangenessLifetimes::UserExec(Option_t *) {
             motherPart.SetPDGcode(mother->GetPdgCode());
             motherPart.SetEta(mother->Eta());
             motherPart.SetPt(mother->Pt());
-            motherPart.SetDistOverP(motherDist / mother->P() + 1e-16);
+            motherPart.SetDistOverP(motherDist / (mother->P() + 1.e-16));
             motherPart.SetRadius(motherR);
             fMCvector.push_back(motherPart);
           } else if (mcEvent->IsPhysicalPrimary(ilab)) {
@@ -472,8 +473,6 @@ void AliAnalysisTaskStrangenessLifetimes::UserExec(Option_t *) {
     }
 
     // Track quality cuts
-    unsigned char posXedRows = pTrack->GetTPCClusterInfo(2, 1);
-    unsigned char negXedRows = nTrack->GetTPCClusterInfo(2, 1);
 
     // TPC refit condition (done during reconstruction for Offline but not for
     // On-the-fly)
@@ -562,7 +561,7 @@ void AliAnalysisTaskStrangenessLifetimes::UserExec(Option_t *) {
               if (isHyperCandidate) {
                 fMCvector[mcMap[ilab]].SetRecoIndex(fV0Hyvector.size());
                 fMCvector[mcMap[ilab]].SetHyperCandidate(true);
-              }  
+              }
               else {
                 fMCvector[mcMap[ilab]].SetRecoIndex(fV0vector.size());
                 fMCvector[mcMap[ilab]].SetHyperCandidate(false);
@@ -579,9 +578,9 @@ void AliAnalysisTaskStrangenessLifetimes::UserExec(Option_t *) {
       }
       if (isHyperCandidate){
          auto miniHyper = HyperTriton2Body::FillHyperTriton2Body(v0,pTrack,nTrack,nSigmaPosHe3,
-         nSigmaNegHe3,nSigmaPosPion,nSigmaNegPion,magneticField,primaryVertex,fake); 
-                 
-         fV0Hyvector.push_back(miniHyper);         
+         nSigmaNegHe3,nSigmaPosPion,nSigmaNegPion,magneticField,primaryVertex,fake);
+
+         fV0Hyvector.push_back(miniHyper);
          fHistV0radius->Fill(miniHyper.GetV0radius());
          fHistV0pt->Fill(miniHyper.GetV0pt());
          fHistV0eta->Fill(miniHyper.GetV0eta());
@@ -602,13 +601,13 @@ void AliAnalysisTaskStrangenessLifetimes::UserExec(Option_t *) {
          fHistNsigmaNegProton->Fill(miniHyper.GetPosProngTPCnsigmaHe3());
          fHistEtaPos->Fill(pTrack->Eta());
          fHistEtaNeg->Fill(nTrack->Eta());
-         fHistArmenteros->Fill(miniHyper.GetArmenterosAlpha(),miniHyper.GetArmenterosPt());   
+         fHistArmenteros->Fill(miniHyper.GetArmenterosAlpha(),miniHyper.GetArmenterosPt());
          if (ilab>-1 && fMCvector[mcMap[ilab]].GetNBodies()==2){
           fHistCtAnalysis->Fill(-fMCvector[mcMap[ilab]].GetMass()*(fMCvector[mcMap[ilab]].GetDistOverP()-miniHyper.GetDistOverP())
           ,(fMCvector[mcMap[ilab]].GetMass())*fMCvector[mcMap[ilab]].GetDistOverP());
          }
-                 
-      }  
+
+      }
 
       else{
          auto miniV0 = MiniV0::FillMiniV0(v0,pTrack,nTrack,nSigmaPosProton,nSigmaNegProton,
@@ -636,14 +635,9 @@ void AliAnalysisTaskStrangenessLifetimes::UserExec(Option_t *) {
          fHistEtaNeg->Fill(nTrack->Eta());
          fHistArmenteros->Fill(miniV0.GetArmenterosAlpha(),miniV0.GetArmenterosPt());
          fHistInvMassK0s->Fill(miniV0.GetV0pt(), miniV0.GetKInvMass());
-         fHistInvMassLambda->Fill(miniV0.GetV0pt(), miniV0.GetLambdaInvMass());           
+         fHistInvMassLambda->Fill(miniV0.GetV0pt(), miniV0.GetLambdaInvMass());
 
       }
-
-
-
-
-
     }
   }
 

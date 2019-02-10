@@ -12,7 +12,6 @@ ClassImp(AliFemtoDreamPartCollection)
 AliFemtoDreamPartCollection::AliFemtoDreamPartCollection()
     : fResults(),
       fNSpecies(0),
-      fDoMCAncestorCheck(false),
       fZVtxMultBuffer(),
       fValuesZVtxBins(),
       fValuesMultBins() {
@@ -23,7 +22,6 @@ AliFemtoDreamPartCollection::AliFemtoDreamPartCollection(
     const AliFemtoDreamPartCollection& coll)
     : fResults(coll.fResults),
       fNSpecies(coll.fNSpecies),
-      fDoMCAncestorCheck(coll.fDoMCAncestorCheck),
       fZVtxMultBuffer(coll.fZVtxMultBuffer),
       fValuesZVtxBins(coll.fValuesZVtxBins),
       fValuesMultBins(coll.fValuesMultBins) {
@@ -33,7 +31,6 @@ AliFemtoDreamPartCollection::AliFemtoDreamPartCollection(
     AliFemtoDreamCollConfig *conf, bool MinimalBooking)
     : fResults(new AliFemtoDreamCorrHists(conf, MinimalBooking)),
       fNSpecies(conf->GetNParticles()),
-      fDoMCAncestorCheck(conf->GetDoSECommonAncestor()),
       fZVtxMultBuffer(
           conf->GetNZVtxBins(),
           std::vector<AliFemtoDreamZVtxMultContainer>(
@@ -47,7 +44,6 @@ AliFemtoDreamPartCollection& AliFemtoDreamPartCollection::operator=(
   if (this != &coll) {
     this->fResults = coll.fResults;
     this->fNSpecies = coll.fNSpecies;
-    this->fDoMCAncestorCheck = coll.fDoMCAncestorCheck;
     this->fZVtxMultBuffer = coll.fZVtxMultBuffer;
     this->fValuesZVtxBins = coll.fValuesZVtxBins;
     this->fValuesMultBins = coll.fValuesMultBins;
@@ -76,9 +72,6 @@ void AliFemtoDreamPartCollection::SetEvent(
     itMult += bins[1];
     itMult->PairParticlesSE(Particles, fResults, bins[1], cent);
     itMult->PairParticlesME(Particles, fResults, bins[1], cent);
-    if (fDoMCAncestorCheck) {
-      itMult->PairMCParticlesSE(Particles, fResults, bins[1]);
-    }
     itMult->SetEvent(Particles);
   }
   return;

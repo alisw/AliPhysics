@@ -139,7 +139,7 @@ protected:
     JetShapeType                        fJetShapeType;           // jet type to be used
     JetShapeSub                         fJetShapeSub;            // jet subtraction to be used
     JetSelectionType                    fJetSelection;           // Jet selection: inclusive/recoil jet
-    Float_t                             fShapesVar[24];          // jet shapes used for the tagging
+    Float_t                             fShapesVar[26];          // jet shapes used for the tagging
     Float_t                             fPtThreshold;
     Float_t                             fRMatching;
     Int_t                               fSelectedShapes;         //chose set of shapes
@@ -192,6 +192,7 @@ protected:
     TH2F                                *fnTOFnocutP;
     TH2F                                *fnTPCcutP;
     TH2F                                *fnTPCcutPt;
+    TH1F                                *fnTPCSigma[5][18];
     TH2F                                *fnTPCTrueParticles[5][18];
     TH2F                                *fnULSmLSpairsPerElectron;
     TH2F                                *fInvmassLS[5];
@@ -204,8 +205,10 @@ protected:
     TH1F                                *fnTrueElecPerJet;
     TH1F                                *fnTrueHFElecPerJet;
     TH1F                                *fnTruePElecPerJet;
-    TH2F                                *fPi0Pt;
-    TH2F                                *fEtaPt;
+    TH1F                                *fPi0PtGen;
+    TH1F                                *fPi0PtEnh;
+    TH1F                                *fEtaPtGen;
+    TH1F                                *fEtaPtEnh;
     TH1F                                *fGenHfePt;
     TH1F                                *fGenPePt;
     TH1F                                *fUlsLsElecPt[5];
@@ -216,19 +219,24 @@ protected:
     TH1F                                *fptJetHFE;              // pT of jets containing HFE
     TH1F                                *fptRecPE;
     TH1F                                *fptTruePE;
-    TH1F                                *fptTrueHFE[5];
+    TH1F                                *fptTrueHFEeffTPCTOF[5];
+    TH1F                                *fptTrueHFEeffEMCal[5];
     TH1F                                *fptWrongPE;
     TH1F                                *fPtTrack;
     TH2F                                *fPhiTrack;
     TH2F                                *fEtaTrack;
     TH2F                                *fEtaPhiTrack;
-    TH2F                                *fPhiRecElec;
-    TH2F                                *fEtaRecElec;
-    TH2F                                *fEtaPhiRecElec;
+    TH2F                                *fPhiRecElecTPC;
+    TH2F                                *fEtaRecElecTPC;
+    TH2F                                *fEtaPhiRecElecTPC;
+    TH2F                                *fPhiRecElecEMCal;
+    TH2F                                *fEtaRecElecEMCal;
+    TH2F                                *fEtaPhiRecElecEMCal;
     TH2F                                *fPhiTrueElec;
     TH2F                                *fEtaTrueElec;
     TH2F                                *fEtaPhiTrueElec;
-    TH2F                                *fnEovPelec;
+    TH2F                                *fnEovPelecTPCcut;
+    TH2F                                *fnEovPelecTPCEMCalcut;
     TH2F                                *fnEovPbackg;
     TH2F                                *fnClsE;
     TH2F                                *fnM20;

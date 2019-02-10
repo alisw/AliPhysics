@@ -94,6 +94,8 @@ set(SRCS
       LMEE/AliCocktailSmearing.cxx
       LMEE/AliAnalysisTaskCharm.cxx
       LMEE/AliAnalysisTaskBeauty.cxx
+      LMEE/AliAnalysisTaskJpsi.cxx
+      LMEE/AlimakeJPsiTree.cxx
   )
 
 # Headers from sources

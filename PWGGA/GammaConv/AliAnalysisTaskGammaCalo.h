@@ -50,6 +50,7 @@ class AliAnalysisTaskGammaCalo : public AliAnalysisTaskSE {
     void ProcessTrueClusterCandidatesAOD( AliAODConversionPhoton* TruePhotonCandidate, AliVCluster* clus);
     void ProcessTrueMesonCandidates( AliAODConversionMother *Pi0Candidate, AliAODConversionPhoton *TrueGammaCandidate0, AliAODConversionPhoton *TrueGammaCandidate1);
     void ProcessTrueMesonCandidatesAOD(AliAODConversionMother *Pi0Candidate, AliAODConversionPhoton *TrueGammaCandidate0, AliAODConversionPhoton *TrueGammaCandidate1);
+    void ProcessAODSphericityParticles();
 
     // switches for additional analysis streams or outputs
     void SetLightOutput(Bool_t flag){fDoLightOutput = flag;}
@@ -121,7 +122,6 @@ class AliAnalysisTaskGammaCalo : public AliAnalysisTaskSE {
     void SetTrackMatcherRunningMode(Int_t mode){fTrackMatcherRunningMode = mode;}
 
     void SetSoftAnalysis(Bool_t DoSoft)  {fDoSoftAnalysis = DoSoft;}
-    void SetTrainConfig(Int_t Config)    {fTrainConfig = Config;}
 
   protected:
     AliV0ReaderV1*        fV0Reader;                                            // basic photon Selection Task
@@ -149,10 +149,10 @@ class AliAnalysisTaskGammaCalo : public AliAnalysisTaskSE {
     AliAnalysisTaskConvJet*   fConvJetReader;                                   // JetReader
     Bool_t                fDoJetAnalysis;                                       // Bool to produce Jet Plots
     Bool_t                fDoJetQA;                                             // Bool to produce Jet QA Plots
+    Bool_t                fDoTrueSphericity;                                    // Bool to produce Sphericity correlations
     TList**               fJetHistograms;                                       // Jet Histograms
     TList**               fTrueJetHistograms;                                   // True Jet Histograms
     Int_t                 fJetSector;                                           // Sector of the detector with the maximum pt jet
-    Int_t                 fTrainConfig;                                         // TrainConfig used in AddTask_pp
 
     //histograms for mesons reconstructed quantities
     TH2F**                fHistoMotherInvMassPt;                                //! array of histogram with signal + BG for same event photon pairs, inv Mass, pt
@@ -350,7 +350,16 @@ class AliAnalysisTaskGammaCalo : public AliAnalysisTaskSE {
     TH2F**                fHistoEventSphericityvsNtracks;                       //! array of histos with event Sphericity vs Ntracks
     TH2F**                fHistoEventSphericityvsNJets;                         //! array of histos with event Sphericity vs NJets
     TH2F**                fHistoTrueSphericityvsRecSphericity;                  //! array of histos with true sphericity vs rec. sphericity
-    TH2F**                fHistoTrueMultiplicityvsRecMultiplicity;               //! array of histos with true multiplicity vs rec. multiplicity
+    TH2F**                fHistoTrueMultiplicityvsRecMultiplicity;              //! array of histos with true multiplicity vs rec. multiplicity
+    TH2F**                fHistoEventSphericityvsHighpt;                        //! array of histos with event Sphericity vs highest pt
+    TH2F**                fHistoEventSphericityvsTotalpt;                       //! array of histos with event Sphericity vs total pt
+    TH2F**                fHistoEventSphericityvsMeanpt;                        //! array of histos with event Sphericity vs mean pt
+    TH1F**                fHistoPionSpectrum;                                   //! array of histos with charged pion spectrum
+    TH1F**                fHistoProtonSpectrum;                                 //! array of histos with proton spectrum
+    TH1F**                fHistoKaonSpectrum;                                   //! array of histos with charged kaon spectrum
+    TTree**               tTreeSphericity;                                      //! array of trees with sphericity correlations
+    Float_t               fRecSph;                                              //! Reconstructed sphericity
+    Float_t               fTrueSph;                                             //! True Sphericity
 
     TH1F**                 fHistoPtJet;                                          // Histogram of Jet Pt
     TH1F**                 fHistoJetEta;                                         // Histogram of Jet Eta
@@ -400,6 +409,14 @@ class AliAnalysisTaskGammaCalo : public AliAnalysisTaskSE {
     TH2F**                 fHistoMotherEtainJetPtY;                              // Histogram with the rapidity of the validated etas in jets
     TH2F**                 fHistoMotherPi0inJetPtPhi;                            // Histogram with the phi of the validated pi0s in jets
     TH2F**                 fHistoMotherEtainJetPtPhi;                            // Histogram with the phi of the validated etas in jets
+    TH1F**                 fNumberOfClusters;                                    // Histogram with total number of clusters
+    TH1F**                 fNumberOfClustersinJets;                              // Histogram with number of clusters in jets
+    TH1F**                 fEnergyRatio;                                         // Histogram with ratio of energy deposited in cluster
+    TH1F**                 fEnergyRatioinJets;                                   // Histogram with ratio of energy deposited in cluster in jets
+    TH1F**                 fEnergyRatioGamma1;                                   // Histogram with ratio of energy deposited in cluster when first label is a photon
+    TH1F**                 fEnergyRatioGamma1inJets;                             // Histogram with ratio of energy deposited in cluster when first label is a photon in jets
+    TH1F**                 fEnergyRatioGamma1Helped;                             // Histogram with energy of photon when it is helped by other particles
+    TH1F**                 fEnergyRatioGamma1HelpedinJets;                       // Histogram with energy of photon when it is helped by other particles in jets
 
     vector<Double_t>      fVectorJetPt;                                         // Vector of JetPt
     vector<Double_t>      fVectorJetPx;                                         // Vector of JetPx
@@ -500,7 +517,7 @@ class AliAnalysisTaskGammaCalo : public AliAnalysisTaskSE {
     AliAnalysisTaskGammaCalo(const AliAnalysisTaskGammaCalo&);                  // Prevent copy-construction
     AliAnalysisTaskGammaCalo &operator=(const AliAnalysisTaskGammaCalo&);       // Prevent assignment
 
-    ClassDef(AliAnalysisTaskGammaCalo, 58);
+    ClassDef(AliAnalysisTaskGammaCalo, 62);
 };
 
 #endif

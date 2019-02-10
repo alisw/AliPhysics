@@ -115,8 +115,11 @@ fVertexer3d(1),
 fNTracklets(-1),
 fIsV0ATriggered(0),
 fIsV0CTriggered(0),
-fMultV0A(1),
-fMultV0C(1),
+fMultV0A(0.),
+fMultV0C(0.),
+fMultV0Anorm(0.),
+fMultV0Cnorm(0.),
+fMultV0AV0Cnorm(0.),
 fZEM1Energy(0),
 fZEM2Energy(0),
 fTrackEtaWindow(0.9),
@@ -130,13 +133,19 @@ fhJetPhiIncl(0x0), fhJetEtaIncl(0x0),
 fhClusterPhiInclMB(0x0), fhClusterEtaInclMB(0x0),
 fhClusterPhiInclGA(0x0), fhClusterEtaInclGA(0x0),
 fhRhoIncl(0x0),
+fhNormSumV0AV0CMB(0x0),
+fhV0AvsV0C(0x0),
+fhV0AvsSPD(0x0),
+fhV0CvsSPD(0x0),
 fZVertexCut(10.0),
 fnHadronTTBins(0),
 fnJetChTTBins(0),
 fnClusterTTBins(0),
 fFillTTree(0),
 fSystem(AliAnalysisTaskEA::kpPb),
-fFiducialCellCut(0x0)
+fFiducialCellCut(0x0),
+fMeanV0A(1.),
+fMeanV0C(1.)
 {
    //default constructor
 
@@ -173,6 +182,10 @@ fFiducialCellCut(0x0)
       fClusterTTLowPt[i]=-1;
       fClusterTTHighPt[i]=-1;
  
+      fhV0AvsV0CTTH[i] = 0x0; 
+      fhV0AvsV0CTTJ[i] = 0x0;
+      fhV0AvsV0CTTCinMB[i] = 0x0;  
+      fhV0AvsV0CTTCinGA[i] = 0x0; 
    }
  
    for(Int_t iv=0; iv<fkVtx;iv++){
@@ -197,6 +210,13 @@ fFiducialCellCut(0x0)
          fhSignalTTCinMB[ic][i] = 0x0;
          fhSignalTTCinGA[ic][i] = 0x0;
       }
+   }
+
+   for(Int_t i=0; i<fkTTbins; i++){
+      fhNormSumV0AV0CTTH[i] = 0x0; 
+      fhNormSumV0AV0CTTJ[i] = 0x0; 
+      fhNormSumV0AV0CTTCinMB[i] = 0x0; 
+      fhNormSumV0AV0CTTCinGA[i] = 0x0;  
    }
 
    fFiducialCellCut = new AliEMCALRecoUtils();
@@ -237,8 +257,11 @@ fVertexer3d(1),
 fNTracklets(-1),
 fIsV0ATriggered(0),
 fIsV0CTriggered(0),
-fMultV0A(1),
-fMultV0C(1),
+fMultV0A(0.),
+fMultV0C(0.),
+fMultV0Anorm(0.),
+fMultV0Cnorm(0.),
+fMultV0AV0Cnorm(0.),
 fZEM1Energy(0),
 fZEM2Energy(0),
 fTrackEtaWindow(0.9),
@@ -252,13 +275,19 @@ fhJetPhiIncl(0x0), fhJetEtaIncl(0x0),
 fhClusterPhiInclMB(0x0), fhClusterEtaInclMB(0x0),
 fhClusterPhiInclGA(0x0), fhClusterEtaInclGA(0x0),
 fhRhoIncl(0x0),
+fhNormSumV0AV0CMB(0x0),
+fhV0AvsV0C(0x0),
+fhV0AvsSPD(0x0),
+fhV0CvsSPD(0x0),
 fZVertexCut(10.0),
 fnHadronTTBins(0),
 fnJetChTTBins(0),
 fnClusterTTBins(0),
 fFillTTree(0),
 fSystem(AliAnalysisTaskEA::kpPb),
-fFiducialCellCut(0x0)
+fFiducialCellCut(0x0),
+fMeanV0A(1.),
+fMeanV0C(1.)
 {
    //Constructor
 
@@ -295,6 +324,12 @@ fFiducialCellCut(0x0)
       fJetChTTHighPt[i]=-1;
       fClusterTTLowPt[i]=-1;
       fClusterTTHighPt[i]=-1;
+
+      fhV0AvsV0CTTH[i] = 0x0; 
+      fhV0AvsV0CTTJ[i] = 0x0;
+      fhV0AvsV0CTTCinMB[i] = 0x0;  
+      fhV0AvsV0CTTCinGA[i] = 0x0; 
+ 
    }
  
    for(Int_t iv=0; iv<fkVtx;iv++){
@@ -319,6 +354,13 @@ fFiducialCellCut(0x0)
          fhSignalTTCinMB[ic][i] = 0x0;
          fhSignalTTCinGA[ic][i] = 0x0;
       }
+   }
+
+   for(Int_t i=0; i<fkTTbins; i++){
+      fhNormSumV0AV0CTTH[i] = 0x0; 
+      fhNormSumV0AV0CTTJ[i] = 0x0; 
+      fhNormSumV0AV0CTTCinMB[i] = 0x0; 
+      fhNormSumV0AV0CTTCinGA[i] = 0x0;  
    }
 
 
@@ -724,6 +766,10 @@ Bool_t AliAnalysisTaskEA::FillHistograms(){
    if(vzeroAOD){
       fMultV0A = vzeroAOD->GetMTotV0A();
       fMultV0C = vzeroAOD->GetMTotV0C();
+      fMultV0Anorm = fMultV0A/fMeanV0A;
+      fMultV0Cnorm = fMultV0C/fMeanV0C;
+      fMultV0AV0Cnorm = fMultV0Anorm + fMultV0Cnorm;
+
       fIsV0ATriggered = vzeroAOD->GetV0ADecision();
       fIsV0CTriggered = vzeroAOD->GetV0CDecision();
       
@@ -792,7 +838,6 @@ Bool_t AliAnalysisTaskEA::FillHistograms(){
 
    Double_t rho = GetExternalRho(kDetLevel); //estimated backround pt density
 
-
    //_________________________________________________________________
    //                    JET+TRACK CONTAINERS
 
@@ -833,7 +878,13 @@ Bool_t AliAnalysisTaskEA::FillHistograms(){
        fhSignalMB[fkV0C]->Fill(fMultV0C);
        fhSignalMB[fkSPD]->Fill(fNTracklets); 
        fhSignalMB[fkZNA]->Fill(fZNAtower[0]); 
-       fhSignalMB[fkZNC]->Fill(fZNCtower[0]); 
+       fhSignalMB[fkZNC]->Fill(fZNCtower[0]);
+
+       fhV0AvsV0C->Fill(fMultV0C, fMultV0A);
+       fhV0AvsSPD->Fill(fNTracklets, fMultV0A);
+       fhV0CvsSPD->Fill(fNTracklets,fMultV0C);
+
+       fhNormSumV0AV0CMB->Fill(fMultV0AV0Cnorm);
    }
 
 
@@ -893,6 +944,11 @@ Bool_t AliAnalysisTaskEA::FillHistograms(){
             fhSignalTTCinMB[fkSPD][igg]->Fill(fNTracklets); 
             fhSignalTTCinMB[fkZNA][igg]->Fill(fZNAtower[0]); 
             fhSignalTTCinMB[fkZNC][igg]->Fill(fZNCtower[0]);
+
+
+            fhV0AvsV0CTTCinMB[igg]->Fill(fMultV0C, fMultV0A);
+
+            fhNormSumV0AV0CTTCinMB[igg]->Fill(fMultV0AV0Cnorm);
          }
       }else if(fIsEmcalTrig){ 
      
@@ -917,6 +973,10 @@ Bool_t AliAnalysisTaskEA::FillHistograms(){
             fhSignalTTCinGA[fkSPD][igg]->Fill(fNTracklets); 
             fhSignalTTCinGA[fkZNA][igg]->Fill(fZNAtower[0]); 
             fhSignalTTCinGA[fkZNC][igg]->Fill(fZNCtower[0]);
+            
+            fhV0AvsV0CTTCinGA[igg]->Fill(fMultV0C, fMultV0A);
+            
+            fhNormSumV0AV0CTTCinGA[igg]->Fill(fMultV0AV0Cnorm);
          }
       } 
  
@@ -980,7 +1040,10 @@ Bool_t AliAnalysisTaskEA::FillHistograms(){
          fhSignalTTH[fkSPD][itt]->Fill(fNTracklets); 
          fhSignalTTH[fkZNA][itt]->Fill(fZNAtower[0]); 
          fhSignalTTH[fkZNC][itt]->Fill(fZNCtower[0]); 
-      
+
+         fhV0AvsV0CTTH[itt]->Fill(fMultV0C, fMultV0A);
+
+         fhNormSumV0AV0CTTH[itt]->Fill(fMultV0AV0Cnorm);
       }
    }
 
@@ -1049,6 +1112,9 @@ Bool_t AliAnalysisTaskEA::FillHistograms(){
          fhSignalTTJ[fkZNA][ijj]->Fill(fZNAtower[0]); 
          fhSignalTTJ[fkZNC][ijj]->Fill(fZNCtower[0]); 
       
+         fhV0AvsV0CTTJ[ijj]->Fill(fMultV0C, fMultV0A);
+
+         fhNormSumV0AV0CTTJ[ijj]->Fill(fMultV0AV0Cnorm);
       }
    }
 
@@ -1274,7 +1340,7 @@ void AliAnalysisTaskEA::UserCreateOutputObjects(){
    TString signal[]={"multV0A", "multV0C", "nTracklets", "znatower0", "znctower0"};
    Float_t signalL[]={0,0,0,0,0};
    Float_t signalH[]={1000,1000,500,30000,30000};
-   Int_t signalN[]={100,100,100,100,100};
+   Int_t signalN[]={1000,1000,500,100,100};
 
    for(Int_t ic=0; ic<fkCE;ic++){
       name = Form("hSignal_MB_%s", cest[ic].Data());
@@ -1315,7 +1381,74 @@ void AliAnalysisTaskEA::UserCreateOutputObjects(){
       }
    }
 
+   //sum of  (mult V0/mean V0A) + (mult VC/mean V0C)
+   name = Form("fhNormSumV0AV0C_MB");
+   fhNormSumV0AV0CMB = new TH1D(name.Data(),name.Data(),400, 0, 40);
+   fOutput->Add((TH1D*) fhNormSumV0AV0CMB); 
 
+   for(Int_t itt=0; itt<fnHadronTTBins; itt++){
+      name = Form("fhNormSumV0AV0C_MB_TTH%d_%d", fHadronTTLowPt[itt], fHadronTTHighPt[itt]);
+      fhNormSumV0AV0CTTH[itt] = (TH1D*) fhNormSumV0AV0CMB->Clone(name.Data());
+      fOutput->Add((TH1D*) fhNormSumV0AV0CTTH[itt]); 
+   }
+
+   for(Int_t ijj=0; ijj<fnJetChTTBins; ijj++){
+      name = Form("fhNormSumV0AV0_MB_TTJ%d_%d", fJetChTTLowPt[ijj],fJetChTTHighPt[ijj]);
+      fhNormSumV0AV0CTTJ[ijj] = (TH1D*) fhNormSumV0AV0CMB->Clone(name.Data());
+      fOutput->Add((TH1D*) fhNormSumV0AV0CTTJ[ijj]); 
+   }
+
+   for(Int_t ijj=0; ijj<fnClusterTTBins; ijj++){
+      name = Form("fhNormSumV0AV0C_MB_TTC%d_%d", fClusterTTLowPt[ijj],fClusterTTHighPt[ijj]);
+      fhNormSumV0AV0CTTCinMB[ijj] = (TH1D*) fhNormSumV0AV0CMB->Clone(name.Data());
+      fOutput->Add((TH1D*) fhNormSumV0AV0CTTCinMB[ijj]); 
+   } 
+
+   for(Int_t ijj=0; ijj<fnClusterTTBins; ijj++){
+      name = Form("fhNormSumV0AV0C_GA_TTC%d_%d", fClusterTTLowPt[ijj],fClusterTTHighPt[ijj]);
+      fhNormSumV0AV0CTTCinGA[ijj] = (TH1D*) fhNormSumV0AV0CMB->Clone(name.Data());
+      fOutput->Add((TH1D*) fhNormSumV0AV0CTTCinGA[ijj]);
+   }
+
+
+
+   name = Form("fhV0AvsV0C_MB");
+   fhV0AvsV0C = new TH2F(name.Data(),name.Data(),100,0,1000, 100,0,1000);
+   fOutput->Add((TH2F*) fhV0AvsV0C); 
+
+   name = Form("fhV0AvsSPD_MB");
+   fhV0AvsSPD = new TH2F(name.Data(),name.Data(),100,0,500, 100,0,500);
+   fOutput->Add((TH2F*) fhV0AvsSPD);
+
+   name = Form("fhV0CvsSPD_MB");
+   fhV0CvsSPD = new TH2F(name.Data(),name.Data(),100,0,500, 100,0,500);
+   fOutput->Add((TH2F*) fhV0CvsSPD);
+
+ 
+   for(Int_t itt=0; itt<fnHadronTTBins; itt++){
+      name = Form("fhV0AvsV0C_MB_TTH%d_%d", fHadronTTLowPt[itt],fHadronTTHighPt[itt]);
+      fhV0AvsV0CTTH[itt] = (TH2F*)  fhV0AvsV0C->Clone(name.Data());
+      fhV0AvsV0CTTH[itt]->SetTitle(name.Data());
+      fOutput->Add((TH2F*) fhV0AvsV0CTTH[itt]); 
+   } 
+   for(Int_t ijj=0; ijj<fnJetChTTBins; ijj++){
+      name = Form("fhV0AvsV0C_MB_TTJ%d_%d", fJetChTTLowPt[ijj],fJetChTTHighPt[ijj]);
+      fhV0AvsV0CTTJ[ijj] =  (TH2F*)  fhV0AvsV0C->Clone(name.Data());
+      fhV0AvsV0CTTJ[ijj]->SetTitle(name.Data()); 
+      fOutput->Add((TH2F*) fhV0AvsV0CTTJ[ijj]); 
+   }
+   for(Int_t ijj=0; ijj<fnClusterTTBins; ijj++){
+      name = Form("fhV0AvsV0C_MB_TTC%d_%d", fClusterTTLowPt[ijj],fClusterTTHighPt[ijj]);
+      fhV0AvsV0CTTCinMB[ijj] = (TH2F*)  fhV0AvsV0C->Clone(name.Data());
+      fhV0AvsV0CTTCinMB[ijj]->SetTitle(name.Data()); 
+      fOutput->Add((TH2F*) fhV0AvsV0CTTCinMB[ijj]); 
+   } 
+   for(Int_t ijj=0; ijj<fnClusterTTBins; ijj++){
+      name = Form("fhV0AvsV0C_GA_TTC%d_%d", fClusterTTLowPt[ijj],fClusterTTHighPt[ijj]);
+      fhV0AvsV0CTTCinGA[ijj] = (TH2F*)  fhV0AvsV0C->Clone(name.Data());
+      fhV0AvsV0CTTCinGA[ijj]->SetTitle(name.Data()); 
+      fOutput->Add((TH2F*) fhV0AvsV0CTTCinGA[ijj]); 
+   } 
 
 
    for(Int_t itt=0; itt<fnHadronTTBins; itt++){

@@ -122,7 +122,6 @@ class AliAnalysisTaskGammaCaloIso : public AliAnalysisTaskSE {
     void SetTrackMatcherRunningMode(Int_t mode){fTrackMatcherRunningMode = mode;}
 
     void SetSoftAnalysis(Bool_t DoSoft)  {fDoSoftAnalysis = DoSoft;}
-    void SetTrainConfig(Int_t Config)    {fTrainConfig = Config;}
 
   protected:
     AliV0ReaderV1*        fV0Reader;                                            // basic photon Selection Task
@@ -154,7 +153,6 @@ class AliAnalysisTaskGammaCaloIso : public AliAnalysisTaskSE {
     Bool_t                fDoJetQA;                                             // Bool to produce Jet QA Plots
     TList**               fJetHistograms;                                       // Jet Histograms
     TList**               fTrueJetHistograms;                                   // True Jet Histograms
-    Int_t                 fTrainConfig;                                         // TrainConfig specified in AddTask
 
     //histograms for mesons reconstructed quantities
     TH2F**                fHistoMotherInvMassPt;                                //! array of histogram with signal + BG for same event photon pairs, inv Mass, pt
@@ -517,7 +515,7 @@ class AliAnalysisTaskGammaCaloIso : public AliAnalysisTaskSE {
     AliAnalysisTaskGammaCaloIso(const AliAnalysisTaskGammaCaloIso&);                  // Prevent copy-construction
     AliAnalysisTaskGammaCaloIso &operator=(const AliAnalysisTaskGammaCaloIso&);       // Prevent assignment
 
-    ClassDef(AliAnalysisTaskGammaCaloIso, 56);
+    ClassDef(AliAnalysisTaskGammaCaloIso, 57);
 };
 
 #endif
