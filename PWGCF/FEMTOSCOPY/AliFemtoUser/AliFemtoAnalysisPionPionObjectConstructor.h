@@ -296,6 +296,7 @@ struct Configuration<AliFemtoBasicEventCut> : AbstractConfiguration<AliFemtoEven
 
   std::pair<int, int> multiplicity = {0, 1000000};
   RangeF_t vertex_z = {-10.0f, 10.0f},
+           centrality = {0.0, 1000.0},
            ep_psi = {-1000.0, 1000.0};
 
   Bool_t accept_bad_vertex = false;
@@ -309,8 +310,8 @@ struct Configuration<AliFemtoBasicEventCut> : AbstractConfiguration<AliFemtoEven
     : multiplicity(cut.GetEventMult())
     , vertex_z(cut.GetVertZPos())
     , ep_psi(cut.GetPsiEP())
-    , accept_bad_vertex(cut.GetAcceptBadVertex())
     , trigger_selection(cut.GetSelectTrigger())
+    , accept_bad_vertex(cut.GetAcceptBadVertex())
     {};
 
   /// Templated member for constructing AliFemtoEventCut objects from
