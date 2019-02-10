@@ -824,6 +824,10 @@ public:
   Popper pop_all() const
     { return Popper(*this); }
 
+  /// Return a new config object with values copied
+  AliFemtoConfigObject Clone() const
+    { return AliFemtoConfigObject(*this); }
+
   /// return a string of valid JSON that may be parsed by other
   /// languages into their equivalent data types.
   ///
@@ -831,12 +835,8 @@ public:
   ///
   std::string as_JSON_string() const;
 
-  /// A general template method for building objects with config object
-  ///
-  /// Default implementation simply calls the type's constructor with
-  /// a const reference to this object.
-  template <typename T>
-  T* Construct() const;
+  /// Pretty-print the value
+  TString Stringify(const bool pretty=false, int deep = 0) const;
 
   /// Consume this config object while constructing new class
   ///
@@ -848,8 +848,9 @@ public:
   template <typename T>
   T* Into(bool warn=true);
 
-  /// Pretty-print the value
-  TString Stringify(const bool pretty=false, int deep = 0) const;
+  /// Attempt to construct a configuration object from arbitrary source
+  template <typename T>
+  static AliFemtoConfigObject From(const T&);
 
   /// Perform a "deep" update of object into this map object.
   /// If either is not a map, do nothing.
@@ -1269,12 +1270,6 @@ AliFemtoConfigObject* AliFemtoConfigObject::pop(const Key_t &key, const ReturnTy
     return obj;
   }
   return new AliFemtoConfigObject(default_);
-}
-
-template <typename T>
-T* AliFemtoConfigObject::Construct() const
-{
-  return new T(*this);
 }
 
 

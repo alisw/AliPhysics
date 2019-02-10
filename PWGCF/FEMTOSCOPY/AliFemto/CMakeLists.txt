@@ -77,6 +77,7 @@ set(SRCS
   AliFemtoEventReaderAOD.cxx
   AliFemtoEventReaderAODChain.cxx
   AliFemtoEventReaderAODMultSelection.cxx
+  AliFemtoEventReaderAlt.cxx
   AliFemtoAODTrackCut.cxx
   AliFemtoCutMonitor.cxx
   AliFemtoCorrFctn.cxx
