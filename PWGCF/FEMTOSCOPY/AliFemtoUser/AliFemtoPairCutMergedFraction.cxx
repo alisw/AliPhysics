@@ -39,30 +39,24 @@ AliFemtoPairCutAntiGamma(),
 //__________________
 AliFemtoPairCutMergedFraction::AliFemtoPairCutMergedFraction(const AliFemtoPairCutMergedFraction& cPairCut) :
   AliFemtoPairCutAntiGamma(cPairCut),
-  fDistanceMax(0.03),
-  fMergedFractionLimit(0.01),
-  fDEtaMax(0.01),
-  fRadiusMin(0.8),
-  fRadiusMax(2.5),
-  fMagSign(1),
-  fMergedFractionDataType(kESD)
+  fDistanceMax(cPairCut.fDistanceMax),
+  fMergedFractionLimit(cPairCut.fMergedFractionLimit),
+  fDEtaMax(cPairCut.fDEtaMax),
+  fRadiusMin(cPairCut.fRadiusMin),
+  fRadiusMax(cPairCut.fRadiusMax),
+  fMagSign(cPairCut.fMagSign),
+  fMergedFractionDataType(cPairCut.fMergedFractionDataType)
 {
-  fDistanceMax = cPairCut.fDistanceMax;
-  fMergedFractionLimit = cPairCut.fMergedFractionLimit;
-  fDEtaMax = cPairCut.fDEtaMax;
-  fRadiusMin = cPairCut.fRadiusMin;
-  fRadiusMax = cPairCut.fRadiusMax;
-  fMagSign = cPairCut.fMagSign;
-  fMergedFractionDataType = cPairCut.fMergedFractionDataType;
 }
 
 //__________________
 AliFemtoPairCutMergedFraction::~AliFemtoPairCutMergedFraction() {
-  
+
 }
 
 AliFemtoPairCutMergedFraction& AliFemtoPairCutMergedFraction::operator=(const AliFemtoPairCutMergedFraction& cPairCut) {
   if(this != &cPairCut) {
+    AliFemtoPairCutAntiGamma::operator=(cPairCut);
     fDistanceMax = cPairCut.fDistanceMax;
     fMergedFractionLimit = cPairCut.fMergedFractionLimit;
     fDEtaMax = cPairCut.fDEtaMax;
@@ -76,10 +70,10 @@ AliFemtoPairCutMergedFraction& AliFemtoPairCutMergedFraction::operator=(const Al
 
 //__________________
 bool AliFemtoPairCutMergedFraction::Pass(const AliFemtoPair* pair) {
-  
+
   if(fMergedFractionDataType == kKine)
     return true;
-  
+
   // Prepare variables:
   double phi1 = pair->Track1()->Track()->P().Phi();
   double phi2 = pair->Track2()->Track()->P().Phi();
@@ -138,7 +132,7 @@ bool AliFemtoPairCutMergedFraction::Pass(const AliFemtoPair* pair) {
     return kTRUE;
   // Iterate through all radii in range (fRadiusMin, fRadiusMax):
   for(double irad = fRadiusMin; irad < fRadiusMax; irad += 0.01) {
-    
+
     // Calculate radius:
     Double_t rad = irad;
 
@@ -158,7 +152,7 @@ bool AliFemtoPairCutMergedFraction::Pass(const AliFemtoPair* pair) {
     }
     allpoints += 1.0;
   }
-    
+
   if(allpoints != 0.0) {
     // Calculate fraction:
     Double_t fraction = badpoints / allpoints;
@@ -179,27 +173,25 @@ bool AliFemtoPairCutMergedFraction::Pass(const AliFemtoPair* pair) {
   else {
     fNPairsFailed++;
   }
-  
+
   return pairpass;
 }
 
 //__________________
-AliFemtoString AliFemtoPairCutMergedFraction::Report() {
+AliFemtoString AliFemtoPairCutMergedFraction::Report()
+{
   // Prepare a report from the execution
-  string stemp = "AliFemtoPairCutMergedFraction Pair Cut - remove shared and split pairs and pairs with small separation at the specified radius\n";  char ctemp[100];
-  snprintf(ctemp , 100, "Accept pair with separation more than %f fraction in %f m distance", fMergedFractionLimit, fDistanceMax);
-  stemp += ctemp;
-  AliFemtoString returnThis = stemp;
-  return returnThis;
+  AliFemtoString report = "AliFemtoPairCutMergedFraction Pair Cut";
+  report += "- remove shared and split pairs and pairs with small separation at the specified radius\n";
+  report += Form("Accept pair with separation more than %f fraction in %f m distance", fMergedFractionLimit, fDistanceMax);
+  return report;
 }
 
 //__________________
 TList *AliFemtoPairCutMergedFraction::ListSettings() {
   // return a list of settings in a writable form
   TList *tListSetttings =  AliFemtoPairCut::ListSettings();
-  char buf[200];
-  snprintf(buf, 200, "AliFemtoPairCutMergedFraction.radiusrange=(%f,%f)", fRadiusMin, fRadiusMax);
-  tListSetttings->AddLast(new TObjString(buf));
+  tListSetttings->AddLast(new TObjString(Form("AliFemtoPairCutMergedFraction.radiusrange=(%f,%f)", fRadiusMin, fRadiusMax)));
 
   return tListSetttings;
 }
@@ -221,11 +213,11 @@ void AliFemtoPairCutMergedFraction::SetDEtaMax(double maxeta) {
 
 //__________________
 void AliFemtoPairCutMergedFraction::SetMagneticFieldSign(int magsign) {
-  if(magsign>1) 
+  if(magsign>1)
     fMagSign = 1;
-  else if(magsign<1) 
+  else if(magsign<1)
     fMagSign = -1;
-  else 
+  else
     fMagSign = magsign;
 }
 

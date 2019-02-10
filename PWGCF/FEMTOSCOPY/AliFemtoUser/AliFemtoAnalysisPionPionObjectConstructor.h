@@ -309,8 +309,8 @@ struct Configuration<AliFemtoBasicEventCut> : AbstractConfiguration<AliFemtoEven
     : multiplicity(cut.GetEventMult())
     , vertex_z(cut.GetVertZPos())
     , ep_psi(cut.GetPsiEP())
-    , trigger_selection(cut.GetSelectTrigger())
     , accept_bad_vertex(cut.GetAcceptBadVertex())
+    , trigger_selection(cut.GetSelectTrigger())
     {};
 
   /// Templated member for constructing AliFemtoEventCut objects from

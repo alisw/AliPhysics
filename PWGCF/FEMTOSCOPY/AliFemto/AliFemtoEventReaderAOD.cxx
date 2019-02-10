@@ -535,8 +535,9 @@ AliFemtoEvent *AliFemtoEventReaderAOD::CopyAODtoFemtoEvent()
       if (id < 0) {
         continue;
       }
+
       // Resize labels vector if "id" is larger than mapping allows
-      if (id >= labels.size()) {
+      if (static_cast<size_t>(id) >= labels.size()) {
         labels.resize(id + 1024, UNDEFINED_LABEL);
       }
       labels[id] = i;
