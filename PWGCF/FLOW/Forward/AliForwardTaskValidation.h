@@ -8,6 +8,8 @@
 
 #include "AliAnalysisTaskSE.h"
 #include "AliEventCuts.h"
+#include "AliForwardSettings.h"
+#include "AliForwardFlowUtil.h"
 
 class TH2;
 
@@ -15,11 +17,11 @@ class AliForwardTaskValidation : public AliAnalysisTaskSE {
  public:
   AliForwardTaskValidation();
   /// `is_reconstructed` is used to toggle some event selections
-  AliForwardTaskValidation(const char *name, bool is_reconstructed);
+  AliForwardTaskValidation(const char *name, bool is_reconstructed, AliForwardSettings settings);
 
   /// Set up this task. This function acts as the AddTask macro
   /// `is_reconstructed` is passed on to the constructor of this task
-  static AliForwardTaskValidation* ConnectTask(const char *suffix, bool is_reconstructed);
+  static AliForwardTaskValidation* ConnectTask(const char *suffix, bool is_reconstructed, AliForwardSettings settings);
   /// The Exchange container which is to be accessed by other classes
   AliAnalysisDataContainer* GetExchangeContainter();
   virtual ~AliForwardTaskValidation() {};
@@ -42,6 +44,14 @@ class AliForwardTaskValidation : public AliAnalysisTaskSE {
       kNotMultiVertexPU,
       kNotSPDPU,
       kNotSPDClusterVsTrackletBG
+  };
+
+  enum EventValidationMC {
+    kNoEventCutMC,
+    kHasMultSelectionMC,
+    kHasEntriesFMDMC,
+    kHasValidFMDMC,
+    kHasPrimariesMC
   };
 
   // Enums describing each event validator. These can be pushed into
@@ -92,6 +102,7 @@ class AliForwardTaskValidation : public AliAnalysisTaskSE {
   // This function is `Fatal` if no MC tracks are found
   AliForwardTaskValidation::Tracks GetMCTruthTracks();
 
+  AliForwardSettings fSettings;//!
 
  protected:
   /// The Holy Grail: Is this a valid event? To be read be following tasks
@@ -99,6 +110,7 @@ class AliForwardTaskValidation : public AliAnalysisTaskSE {
   /// Vector with all the event validators as enums. Can be set by the
   /// user when setting up the task
   std::vector<AliForwardTaskValidation::EventValidation> fEventValidators;
+  std::vector<AliForwardTaskValidation::EventValidationMC> fEventValidatorsMC;
 
   /// Vector with all the _track_ validators as enums. Can be set by the
   /// user when setting up the task
@@ -108,7 +120,7 @@ class AliForwardTaskValidation : public AliAnalysisTaskSE {
   TList *fOutputList;  //!
 
   void UserExec(Option_t *);
-  Bool_t UserNotify();
+  //Bool_t UserNotify();
   /// Create QA histograms based on the set validators
   void CreateQAHistograms(TList* outlist);
   /// Histogram showing why an even got discarded to be read from left to right
@@ -139,6 +151,8 @@ class AliForwardTaskValidation : public AliAnalysisTaskSE {
   AliAnalysisUtils fUtils;
   /// Returns alwasy true. Used to have the "all event bin" in the qa histograms
   Bool_t NoCut() {return true;};
+  Bool_t HasPrimaries();
+
   // Check if the given event is an aod event
   Bool_t IsAODEvent();
   Bool_t AcceptTrigger(AliVEvent::EOfflineTriggerTypes TriggerType);
@@ -174,6 +188,13 @@ class AliForwardTaskValidation : public AliAnalysisTaskSE {
   TH2 *fFMDV0C_post; //!
   TH2 *fOutliers; //!
 
-  ClassDef(AliForwardTaskValidation, 1);
+
+  TH2D*   centralDist;//!
+  TH2D*   refDist;//!
+  TH2D*   forwardDist;//!
+
+  AliForwardFlowUtil fUtil;//!
+
+  ClassDef(AliForwardTaskValidation, 2);
 };
 #endif

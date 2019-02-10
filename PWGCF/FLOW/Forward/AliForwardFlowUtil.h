@@ -28,6 +28,7 @@ class AliForwardFlowUtil : public TObject {
 
 
   Bool_t ExtraEventCutFMD(TH2D& forwarddNdedp, double cent, Bool_t mc,TH2D* hOutliers);
+  void FillData(TH2D*& refDist, TH2D*& centralDist, TH2D*& forwardDist);
 
   void FillFromTrackrefs(TH2D*& cen, TH2D*& fwd) const;
   void FillFromTrackrefs(TH2D*& fwd) const;
@@ -57,6 +58,7 @@ class AliForwardFlowUtil : public TObject {
   TH1F* dNdeta;
   AliForwardSettings fSettings;
   Double_t maxpt;//!
+  Bool_t dodNdeta;//!
 private:
   ClassDef(AliForwardFlowUtil, 2);
 };

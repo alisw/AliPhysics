@@ -19,9 +19,20 @@
  *
  * @ingroup pwglf_forward_flow
  */
+ #include "AliForwardSettings.h"
+ #include "AliAnalysisDataContainer.h"
+ #include "AliAnalysisDataSlot.h"
+
 AliAnalysisTaskSE* AddTaskForwardSecondaries()
 {
   std::cout << "AddTaskForwardSecondaries" << std::endl;
+
+  AliForwardSettings settings = AliForwardSettings();
+  settings.use_primaries_fwd = kTRUE;
+  settings.use_primaries_cen = kTRUE;
+  settings.mc = true;
+  settings.esd = true;
+  AliForwardTaskValidation* validation_task = AliForwardTaskValidation::ConnectTask("", false,settings);
 
   // --- Get analysis manager ----------------------------------------
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
@@ -32,6 +43,8 @@ AliAnalysisTaskSE* AddTaskForwardSecondaries()
   AliForwardSecondariesTask* task = new AliForwardSecondariesTask(name);
   TString resName = "Secondaries";
 
+
+
   AliAnalysisDataContainer *coutput_recon =
   mgr->CreateContainer(resName,
    TList::Class(),
@@ -40,6 +53,8 @@ AliAnalysisTaskSE* AddTaskForwardSecondaries()
   task->fSettings.fDataType = task->fSettings.kRECON;
   mgr->AddTask(task);
   mgr->ConnectInput(task, 0, mgr->GetCommonInputContainer());
+  mgr->ConnectInput(task,1,validation_task->GetOutputSlot(2)->GetContainer());
+
   mgr->ConnectOutput(task, 1, coutput_recon);
 
   return task;
