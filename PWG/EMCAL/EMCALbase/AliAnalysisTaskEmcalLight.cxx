@@ -1495,9 +1495,11 @@ AliAnalysisTaskEmcalLight::EBeamType_t AliAnalysisTaskEmcalLight::BeamTypeFromRu
   EBeamType_t b = kpp;
   if ((runnumber >= 136833 && runnumber <= 139517) || // LHC10h Run-1 (Pb-Pb)
       (runnumber >= 167693 && runnumber <= 170593) || // LHC11h Run-1 (Pb-Pb)
-      (runnumber >= 244824 && runnumber <= 246994) || // LHC15o Run-2 (Pb-Pb)
-      (runnumber >= 295581 && runnumber <= 297624 ))  // LHC18q+r Run-2 (Pb-Pb)
-  {     b = kAA;
+      (runnumber >= 244824 && runnumber <= 246994) //|| // LHC15o Run-2 (Pb-Pb)
+      //(runnumber >= 295581 && runnumber <= 297624)    // LHC18q+r Run-2 (Pb-Pb)
+      ) 
+  {     
+    b = kAA;
   }
   else if ((runnumber > 188356 && runnumber <= 188503) ||  // LHC12g Run-1 (p-Pb pilot)
       (runnumber >= 195164 && runnumber <= 197388) ||      // LHC13b,c,d,e,f Run-1 (p-Pb)
