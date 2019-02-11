@@ -352,47 +352,47 @@ void AliAnalysisTaskGFWFlow::UserExec(Option_t*) {
     filled = FillFCs("MidV44","poiMid refMid {4 4 -4 -4}", cent, kTRUE,rndmn);
     //V_2{n}, 2 subevents:
     filled = FillFCs("Mid2SEV22","refSENeg {2} refSEPos {-2}", cent, kFALSE,rndmn);
-    filled = FillFCs("Mid2SEV22","poiSENeg refSENeg {2} refSEPos {-2}", cent, kFALSE,rndmn);
+    filled = FillFCs("Mid2SEV22","poiSENeg refSENeg {2} refSEPos {-2}", cent, kTRUE,rndmn);
     filled = FillFCs("Mid2SEV24","refSENeg {2 2} refSEPos {-2 -2}", cent, kFALSE,rndmn);
-    filled = FillFCs("Mid2SEV24","poiSENeg refSENeg {2 2} refSEPos {-2 -2}", cent, kFALSE,rndmn);
+    filled = FillFCs("Mid2SEV24","poiSENeg refSENeg {2 2} refSEPos {-2 -2}", cent, kTRUE,rndmn);
     filled = FillFCs("Mid2SEV26","refSENeg {2 2 2} refSEPos {-2 -2 -2}", cent, kFALSE,rndmn);
-    filled = FillFCs("Mid2SEV26","poiSENeg refSENeg {2 2 2} refSEPos {-2 -2 -2}", cent, kFALSE,rndmn);
+    filled = FillFCs("Mid2SEV26","poiSENeg refSENeg {2 2 2} refSEPos {-2 -2 -2}", cent, kTRUE,rndmn);
     filled = FillFCs("Mid2SEV28","refSENeg {2 2 2 2} refSEPos {-2 -2 -2 -2}", cent, kFALSE,rndmn);
-    filled = FillFCs("Mid2SEV28","poiSENeg refSENeg {2 2 2 2} refSEPos {-2 -2 -2 -2}", cent, kFALSE,rndmn);
+    filled = FillFCs("Mid2SEV28","poiSENeg refSENeg {2 2 2 2} refSEPos {-2 -2 -2 -2}", cent, kTRUE,rndmn);
     //V_3{n}, 2 subevents:
     filled = FillFCs("Mid2SEV32","refSENeg {3} refSEPos {-3}", cent, kFALSE,rndmn);
-    filled = FillFCs("Mid2SEV32","poiSENeg refSENeg {3} refSEPos {-3}", cent, kFALSE,rndmn);
+    filled = FillFCs("Mid2SEV32","poiSENeg refSENeg {3} refSEPos {-3}", cent, kTRUE,rndmn);
     filled = FillFCs("Mid2SEV34","refSENeg {3 3} refSEPos {-3 -3}", cent, kFALSE,rndmn);
-    filled = FillFCs("Mid2SEV34","poiSENeg refSENeg {3 3} refSEPos {-3 -3}", cent, kFALSE,rndmn);
+    filled = FillFCs("Mid2SEV34","poiSENeg refSENeg {3 3} refSEPos {-3 -3}", cent, kTRUE,rndmn);
     filled = FillFCs("Mid2SEV36","refSENeg {3 3 3} refSEPos {-3 -3 -3}", cent, kFALSE,rndmn);
-    filled = FillFCs("Mid2SEV36","poiSENeg refSENeg {3 3 3} refSEPos {-3 -3 -3}", cent, kFALSE,rndmn);
+    filled = FillFCs("Mid2SEV36","poiSENeg refSENeg {3 3 3} refSEPos {-3 -3 -3}", cent, kTRUE,rndmn);
     //V_4{n}, 2 subevents:
     filled = FillFCs("Mid2SEV42","refSENeg {4} refSEPos {-4}", cent, kFALSE,rndmn);
-    filled = FillFCs("Mid2SEV42","poiSENeg refSENeg {4} refSEPos {-4}", cent, kFALSE,rndmn);
+    filled = FillFCs("Mid2SEV42","poiSENeg refSENeg {4} refSEPos {-4}", cent, kTRUE,rndmn);
     filled = FillFCs("Mid2SEV44","refSENeg {4 4} refSEPos {-4 -4}", cent, kFALSE,rndmn);
-    filled = FillFCs("Mid2SEV44","poiSENeg refSENeg {4 4} refSEPos {-4 -4}", cent, kFALSE,rndmn);
+    filled = FillFCs("Mid2SEV44","poiSENeg refSENeg {4 4} refSEPos {-4 -4}", cent, kTRUE,rndmn);
 
     //V_2{n}, eta gap 1:
     filled = FillFCs("MidGapV22","refGapNeg {2} refGapPos {-2}", cent, kFALSE,rndmn);
-    filled = FillFCs("MidGapV22","poiGapNeg refGapNeg {2} refGapPos {-2}", cent, kFALSE,rndmn);
+    filled = FillFCs("MidGapV22","poiGapNeg refGapNeg {2} refGapPos {-2}", cent, kTRUE,rndmn);
     filled = FillFCs("MidGapV24","refGapNeg {2 2} refGapPos {-2 -2}", cent, kFALSE,rndmn);
-    filled = FillFCs("MidGapV24","poiGapNeg refGapNeg {2 2} refGapPos {-2 -2}", cent, kFALSE,rndmn);
+    filled = FillFCs("MidGapV24","poiGapNeg refGapNeg {2 2} refGapPos {-2 -2}", cent, kTRUE,rndmn);
     filled = FillFCs("MidGapV26","refGapNeg {2 2 2} refGapPos {-2 -2 -2}", cent, kFALSE,rndmn);
-    filled = FillFCs("MidGapV26","poiGapNeg refGapNeg {2 2 2} refGapPos {-2 -2 -2}", cent, kFALSE,rndmn);
+    filled = FillFCs("MidGapV26","poiGapNeg refGapNeg {2 2 2} refGapPos {-2 -2 -2}", cent, kTRUE,rndmn);
     filled = FillFCs("MidGapV28","refGapNeg {2 2 2 2} refGapPos {-2 -2 -2 -2}", cent, kFALSE,rndmn);
-    filled = FillFCs("MidGapV28","poiGapNeg refGapNeg {2 2 2 2} refGapPos {-2 -2 -2 -2}", cent, kFALSE,rndmn);
+    filled = FillFCs("MidGapV28","poiGapNeg refGapNeg {2 2 2 2} refGapPos {-2 -2 -2 -2}", cent, kTRUE,rndmn);
     //V_3{n}, eta gap 1:
     filled = FillFCs("MidGapV32","refGapNeg {3} refGapPos {-3}", cent, kFALSE,rndmn);
-    filled = FillFCs("MidGapV32","poiGapNeg refGapNeg {3} refGapPos {-3}", cent, kFALSE,rndmn);
+    filled = FillFCs("MidGapV32","poiGapNeg refGapNeg {3} refGapPos {-3}", cent, kTRUE,rndmn);
     filled = FillFCs("MidGapV34","refGapNeg {3 3} refGapPos {-3 -3}", cent, kFALSE,rndmn);
-    filled = FillFCs("MidGapV34","poiGapNeg refGapNeg {3 3} refGapPos {-3 -3}", cent, kFALSE,rndmn);
+    filled = FillFCs("MidGapV34","poiGapNeg refGapNeg {3 3} refGapPos {-3 -3}", cent, kTRUE,rndmn);
     filled = FillFCs("MidGapV36","refGapNeg {3 3 3} refGapPos {-3 -3 -3}", cent, kFALSE,rndmn);
-    filled = FillFCs("MidGapV36","poiGapNeg refGapNeg {3 3 3} refGapPos {-3 -3 -3}", cent, kFALSE,rndmn);
+    filled = FillFCs("MidGapV36","poiGapNeg refGapNeg {3 3 3} refGapPos {-3 -3 -3}", cent, kTRUE,rndmn);
     //V_4{n}, eta gap 1:
     filled = FillFCs("MidGapV42","refGapNeg {4} refGapPos {-4}", cent, kFALSE,rndmn);
-    filled = FillFCs("MidGapV42","poiGapNeg refGapNeg {4} refGapPos {-4}", cent, kFALSE,rndmn);
+    filled = FillFCs("MidGapV42","poiGapNeg refGapNeg {4} refGapPos {-4}", cent, kTRUE,rndmn);
     filled = FillFCs("MidGapV44","refGapNeg {4 4} refGapPos {-4 -4}", cent, kFALSE,rndmn);
-    filled = FillFCs("MidGapV44","poiGapNeg refGapNeg {4 4} refGapPos {-4 -4}", cent, kFALSE,rndmn);
+    filled = FillFCs("MidGapV44","poiGapNeg refGapNeg {4 4} refGapPos {-4 -4}", cent, kTRUE,rndmn);
 
     PostData(1,fFC);
     if(fAddQA) PostData(2,fQAList);
