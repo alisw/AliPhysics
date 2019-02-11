@@ -600,14 +600,22 @@ void AddTask_GammaCaloMerged_pPb(
   } else if (trainConfig == 3422){
     cuts.AddCutMergedCalo("8009c123","411794805f032200000","411794805f022700001","0163300000000000"); // EJ2+DJ2
     cuts.AddCutMergedCalo("8009b123","411794805f032200000","411794805f022700001","0163300000000000"); // EJ1+DJ1
-  } else if (trainConfig == 3423){
+  } else if (trainConfig == 3423){ // standard cut
     cuts.AddCutMergedCalo("80010123","411794805f032200000","411794805f022700001","0163300000000000"); // INT7
-  } else if (trainConfig == 3424){
+  } else if (trainConfig == 3424){ // standard cut
     cuts.AddCutMergedCalo("8008e123","411794805f032200000","411794805f022700001","0163300000000000"); // EG2+DG2
     cuts.AddCutMergedCalo("8008d123","411794805f032200000","411794805f022700001","0163300000000000"); // EG1+DG1
-  } else if (trainConfig == 3425){
+  } else if (trainConfig == 3425){ // standard cut
     cuts.AddCutMergedCalo("8009c123","411794805f032200000","411794805f022700001","0163300000000000"); // EJ2+DJ2
     cuts.AddCutMergedCalo("8009b123","411794805f032200000","411794805f022700001","0163300000000000"); // EJ1+DJ1
+  } else if (trainConfig == 3426){ // open M02 for QA
+    cuts.AddCutMergedCalo("80010123","411794805f032000000","411794805f022000001","0163300000000000"); // INT7
+  } else if (trainConfig == 3427){ // open M02 for QA
+    cuts.AddCutMergedCalo("8008e123","411794805f032000000","411794805f022000001","0163300000000000"); // EG2+DG2
+    cuts.AddCutMergedCalo("8008d123","411794805f032000000","411794805f022000001","0163300000000000"); // EG1+DG1
+  } else if (trainConfig == 3428){ // open M02 for QA
+    cuts.AddCutMergedCalo("8009c123","411794805f032000000","411794805f022000001","0163300000000000"); // EJ2+DJ2
+    cuts.AddCutMergedCalo("8009b123","411794805f032000000","411794805f022000001","0163300000000000"); // EJ1+DJ1
 
   // configs for pass1 without track matching. three configs always have same NL
   } else if (trainConfig == 3430){
