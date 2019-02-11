@@ -9,7 +9,7 @@ void raw2treeGrid_collection()
   Int_t allData[220][5];
   TGrid::Connect("alien://");
   TTree *fT0OutTree=new TTree("t0tree","None here");
- TAlienCollection *collnum = TAlienCollection::Open("wn.xml");
+  TGridCollection *collnum = gGrid->OpenCollection("wn.xml");
   Int_t numrun;
   collnum->Reset();
   collnum->Next();
@@ -79,7 +79,7 @@ void raw2treeGrid_collection()
    fT0OutTree->Branch("event", &event);
    ULong64_t triggerMask;
    fT0OutTree->Branch("triggers", &triggerMask);
-    TAlienCollection *coll = TAlienCollection::Open("wn.xml");
+    TGridCollection *coll = gGrid->OpenCollection("wn.xml");
       coll->Reset();
     
    AliRawReader *reader;

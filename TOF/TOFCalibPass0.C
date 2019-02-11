@@ -31,10 +31,10 @@ SteerTask(const Char_t *inputfilename, Int_t maxFiles = kMaxInt, Int_t maxEv = k
   if (str.EndsWith(".xml")) {
     TGrid::Connect("alien://");
     Info("SteerTaskEventTime", "reading data list from collection:");
-    TAlienCollection coll(inputfilename, maxFiles);
-    coll.Reset();
-    while (coll.Next()) {
-      filename = coll.GetTURL();
+    TGridCollection *coll = gGrid->OpenCollection(inputfilename, maxFiles);
+    coll->Reset();
+    while (coll->Next()) {
+      filename = coll->GetTURL();
       Info("SteerTaskEventTime", Form("%s", filename));
       chain->Add(filename);
     }

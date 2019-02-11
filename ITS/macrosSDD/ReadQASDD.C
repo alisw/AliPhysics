@@ -1,7 +1,6 @@
 #if !defined(__CINT__) || defined(__MAKECINT__)
 #include <TFile.h>
 #include <TFileMerger.h>
-#include <TAlienFile.h>
 //#include <TExec.h>
 #include <TSystem.h>
 #include <TGrid.h>

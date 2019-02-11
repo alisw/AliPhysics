@@ -5,7 +5,6 @@
 #include <TStopwatch.h>
 #include <TChain.h>
 #include <TGrid.h>
-#include <TAlienCollection.h>
 #include <TGridCollection.h>
 #include <TNtuple.h>
 #include <TGeoManager.h>
@@ -84,7 +83,7 @@ TChain *CreateChainFromCollection(const char* xmlfile, const char *treeName,Int_
   gSystem->Load("libANALYSISalice");  
 
   
-  TAlienCollection *myCollection  = TAlienCollection::Open(xmlfile);
+  TGridCollection *myCollection  = gGrid->OpenCollection(xmlfile);
 
    
    if (!myCollection) {
