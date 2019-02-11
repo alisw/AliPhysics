@@ -51,7 +51,7 @@ AliForwardTaskValidation::AliForwardTaskValidation()
 {
 }
 
-AliForwardTaskValidation::AliForwardTaskValidation(const char *name, bool is_reconstructed, AliForwardSettings settings)
+AliForwardTaskValidation::AliForwardTaskValidation(const char *name, bool is_reconstructed)
   : AliAnalysisTaskSE(name),
     fIsValidEvent(false),
     fEventValidators(),
@@ -71,8 +71,6 @@ AliForwardTaskValidation::AliForwardTaskValidation(const char *name, bool is_rec
     fUtil(),
     fSettings()
 {
-  this->fSettings = settings;
-
   // Apply all cuts by default
   if (is_reconstructed) {
     fEventValidators.push_back(EventValidation::kNoEventCut);
@@ -123,7 +121,7 @@ Bool_t AliForwardTaskValidation::AcceptTrigger(AliVEvent::EOfflineTriggerTypes T
 
 
 AliForwardTaskValidation* AliForwardTaskValidation::ConnectTask(const char *suffix,
-								  bool is_reconstructed, AliForwardSettings settings) {
+								  bool is_reconstructed) {
   std::cout << "-------------------------------" << std::endl;
   std::cout <<  "is_reconstructed " <<std::boolalpha << is_reconstructed << std::endl;
   //std::cout << std::boolalpha << settings.use_primaries_fwd << std::endl;
@@ -146,7 +144,7 @@ AliForwardTaskValidation* AliForwardTaskValidation::ConnectTask(const char *suff
 			 AliAnalysisManager::kExchangeContainer,
 			 Form("%s", mgr->GetCommonFileName()));
 
-  auto *taskValidation = new AliForwardTaskValidation("TaskValidation", is_reconstructed, settings);
+  auto *taskValidation = new AliForwardTaskValidation("TaskValidation", is_reconstructed);
 
   if (!taskValidation) {
     ::Error("CreateTasks", "Failed to add task!");
@@ -326,7 +324,7 @@ void AliForwardTaskValidation::UserExec(Option_t *)
 
   fUtil.fevent = InputEvent();
   fUtil.fMCevent = this->MCEvent();
-  std::cout << fSettings.use_primaries_fwd << std::endl;
+  //std::cout << fSettings.use_primaries_fwd << std::endl;
   fUtil.fSettings = this->fSettings;
 
   Double_t centralEta = (fSettings.useSPD ? 2.5 : 1.5);
@@ -753,6 +751,7 @@ AliForwardTaskValidation::Tracks AliForwardTaskValidation::GetMCTruthTracks() {
 
 
 Bool_t AliForwardTaskValidation::HasValidFMD(){
+  //if (true) return kTRUE;
   AliMultSelection *MultSelection = dynamic_cast< AliMultSelection* >(InputEvent()->FindListObject("MultSelection"));
 
   //AliMultSelection *MultSelection = (AliMultSelection*)fInputEvent->FindListObject("MultSelection");

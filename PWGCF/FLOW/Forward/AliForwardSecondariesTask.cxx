@@ -154,8 +154,9 @@ AliForwardSecondariesTask::AliForwardSecondariesTask() : AliAnalysisTaskSE(),
 
     fDeltaList = new TList();
     fDeltaList->SetName("Delta");
-
-    Int_t bins_phi_eta[5] = {fSettings.fnoSamples, fSettings.fNZvtxBins, 201, 1, 50} ;
+    Int_t phibins = 71;
+    Int_t etabins = 100;
+    Int_t bins_phi_eta[5] = {fSettings.fnoSamples, fSettings.fNZvtxBins, phibins, 1, etabins} ;
     Double_t xmin_phi_eta[5] = {0,fSettings.fZVtxAcceptanceLowEdge, -TMath::Pi(), 0, -4};
     Double_t xmax_phi_eta[5] = {10,fSettings.fZVtxAcceptanceUpEdge, TMath::Pi(), 100, 6}; //
     Int_t dimensions = 5;
@@ -164,7 +165,7 @@ AliForwardSecondariesTask::AliForwardSecondariesTask() : AliAnalysisTaskSE(),
     Double_t xmin_eta_phi[5] = {0,fSettings.fZVtxAcceptanceLowEdge, -4, 0, 0.0};
     Double_t xmax_eta_phi[5] = {10,fSettings.fZVtxAcceptanceUpEdge, 6, 100, 2*TMath::Pi()}; //
 
-    Int_t bins_phi[5] = {fSettings.fnoSamples, fSettings.fNZvtxBins, 21, fSettings.fCentBins, 20} ;
+    Int_t bins_phi[5] = {fSettings.fnoSamples, fSettings.fNZvtxBins, 101, fSettings.fCentBins, 20} ;
     Double_t xmin_phi[5] = {0,fSettings.fZVtxAcceptanceLowEdge, -TMath::Pi(), 0.0, 0.0};
     Double_t xmax_phi[5] = {10,fSettings.fZVtxAcceptanceUpEdge, TMath::Pi(), 100, 2*TMath::Pi()}; //
 
@@ -212,7 +213,7 @@ AliForwardSecondariesTask::AliForwardSecondariesTask() : AliAnalysisTaskSE(),
     fEventList->Add(new TH1D("FMDHits","FMDHits",100,0,10));
     fEventList->SetName("EventInfo");
 
-    Int_t bins_prim[4] = {fSettings.fnoSamples, fSettings.fNZvtxBins, 1, 50} ;
+    Int_t bins_prim[4] = {fSettings.fnoSamples, fSettings.fNZvtxBins, 1, etabins} ;
     Double_t xmin_prim[4] = {0,fSettings.fZVtxAcceptanceLowEdge, 0, -4};
     Double_t xmax_prim[4] = {10,fSettings.fZVtxAcceptanceUpEdge, 100, 6}; //
     Int_t dimensions_prim = 4;

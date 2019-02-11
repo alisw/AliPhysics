@@ -51,6 +51,7 @@ fMCevent(),
 mc(kFALSE),
 dNdeta(),
 fSettings(),
+minpt(5),
 maxpt(5),
 dodNdeta(kTRUE)
 {
@@ -69,10 +70,12 @@ void AliForwardFlowUtil::FillData(TH2D*& refDist, TH2D*& centralDist, TH2D*& for
       }
 
       if (fSettings.maxpt < 5) {
+        this->minpt = 0.2;
         this->maxpt = 5;
         if (fSettings.useSPD) this->FillFromTracklets(refDist);
         else                  this->FillFromTracks(refDist, fSettings.tracktype);
       }
+      this->minpt = fSettings.minpt;
       this->maxpt = fSettings.maxpt;
       if (fSettings.useSPD) this->FillFromTracklets(centralDist);
       else                  this->FillFromTracks(centralDist, fSettings.tracktype);
@@ -105,8 +108,10 @@ void AliForwardFlowUtil::FillData(TH2D*& refDist, TH2D*& centralDist, TH2D*& for
 
         if (fSettings.use_primaries_cen && fSettings.use_primaries_fwd){ //prim central and forward
           if (fSettings.maxpt < 5.0) {
+            this->minpt = 0.2;
             this->maxpt = 5.0;
             this->FillFromPrimariesAOD(refDist);
+            this->minpt = fSettings.minpt;
             this->maxpt = fSettings.maxpt;
           }
 
@@ -114,8 +119,10 @@ void AliForwardFlowUtil::FillData(TH2D*& refDist, TH2D*& centralDist, TH2D*& for
         }
         else if (fSettings.use_primaries_cen && !fSettings.use_primaries_fwd){ //prim central, AOD forward
           if (fSettings.maxpt < 5.0) {
+            this->minpt = 0.2;
             this->maxpt = 5.0;
             this->FillFromPrimariesAOD(refDist);
+            this->minpt = fSettings.minpt;
             this->maxpt = fSettings.maxpt;
           }
 
@@ -315,7 +322,7 @@ void AliForwardFlowUtil::FillFromPrimariesAOD(TH2D*& cen) const
 
     Double_t eta = p->Eta();
     if (TMath::Abs(eta) < 1.1) {
-      if (p->Pt()>=0.2 && p->Pt()<=this->maxpt){
+      if (p->Pt()>=this->minpt && p->Pt()<=this->maxpt){
         cen->Fill(eta,p->Phi(),1);
         if (dodNdeta) dNdeta->Fill(eta,1);
       }
@@ -334,7 +341,7 @@ void AliForwardFlowUtil::FillFromPrimaries(TH2D*& cen) const
 
     Double_t eta = p->Eta();
     if (TMath::Abs(eta) < 1.1) {
-      if (p->Pt()>=0.2 && p->Pt()<=this->maxpt){
+      if (p->Pt()>=this->minpt && p->Pt()<=this->maxpt){
         cen->Fill(eta,p->Phi(),1);
         if (dodNdeta) dNdeta->Fill(eta,1);
       }
@@ -353,7 +360,7 @@ void AliForwardFlowUtil::FillFromPrimaries(TH2D*& cen, TH2D*& fwd) const
 
     Double_t eta = p->Eta();
     if (TMath::Abs(eta) < 1.1) {
-      if (p->Pt()>=0.2 && p->Pt()<=this->maxpt){
+      if (p->Pt()>=this->minpt && p->Pt()<=this->maxpt){
         cen->Fill(eta,p->Phi(),1);
         if (dodNdeta) dNdeta->Fill(eta,1);
       }
@@ -379,7 +386,7 @@ void AliForwardFlowUtil::FillFromPrimariesAOD(TH2D*& cen, TH2D*& fwd) const
 
     Double_t eta = p->Eta();
     if (TMath::Abs(eta) < 1.1) {
-      if (p->Pt()>=0.2 && p->Pt()<=this->maxpt){
+      if (p->Pt()>=this->minpt && p->Pt()<=this->maxpt){
         cen->Fill(eta,p->Phi(),1);
         if (dodNdeta) dNdeta->Fill(eta,1);
       }
@@ -412,7 +419,7 @@ void AliForwardFlowUtil::FillFromTracks(TH2D*& cen, UInt_t tracktype) const {
     AliAODTrack* track = static_cast<AliAODTrack *>(fAODevent->GetTrack(i));
 
     if (track->TestFilterBit(tracktype)){
-      if (track->Pt() >= 0.2 && track->Pt() <= this->maxpt){
+      if (track->Pt() >= this->minpt && track->Pt() <= this->maxpt){
         cen->Fill(track->Eta(),track->Phi(), 1);
         if (dodNdeta) dNdeta->Fill(track->Eta(),1);
       }
@@ -485,7 +492,7 @@ void AliForwardFlowUtil::FillFromPrimaries(TH3D*& cen, TH3D*& fwd, Double_t zver
 
     Double_t eta = p->Eta();
     if (TMath::Abs(eta) < 1.1) {
-      if (p->Pt()>=0.2 && p->Pt()<=this->maxpt){
+      if (p->Pt()>=this->minpt && p->Pt()<=this->maxpt){
         cen->Fill(eta,p->Phi(),zvertex,1);
         if (dodNdeta) dNdeta->Fill(eta,1);
       }
@@ -517,7 +524,7 @@ void AliForwardFlowUtil::FillFromTracks(TH3D*& cen, Int_t tracktype, Double_t zv
   // loop  over  all  the  tracks
     AliAODTrack* track = static_cast<AliAODTrack *>(fAODevent->GetTrack(i));
     if (track->TestFilterBit(tracktype)){
-      if (track->Pt() >= 0.2 && track->Pt() <= this->maxpt){
+      if (track->Pt() >= this->minpt && track->Pt() <= this->maxpt){
         cen->Fill(track->Eta(),track->Phi(), zvertex, 1);
         if (dodNdeta) dNdeta->Fill(track->Eta(),1);
       }

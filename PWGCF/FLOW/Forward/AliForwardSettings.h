@@ -60,6 +60,7 @@ class AliForwardSettings : public TObject {
 
   Double_t gap;
   Double_t maxpt;
+  Double_t minpt;
   Bool_t mc;
   Bool_t esd;
 

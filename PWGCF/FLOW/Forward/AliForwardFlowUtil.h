@@ -58,6 +58,7 @@ class AliForwardFlowUtil : public TObject {
   TH1F* dNdeta;
   AliForwardSettings fSettings;
   Double_t maxpt;//!
+  Double_t minpt;//!
   Bool_t dodNdeta;//!
 private:
   ClassDef(AliForwardFlowUtil, 2);

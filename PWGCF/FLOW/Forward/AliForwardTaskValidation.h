@@ -17,11 +17,11 @@ class AliForwardTaskValidation : public AliAnalysisTaskSE {
  public:
   AliForwardTaskValidation();
   /// `is_reconstructed` is used to toggle some event selections
-  AliForwardTaskValidation(const char *name, bool is_reconstructed, AliForwardSettings settings);
+  AliForwardTaskValidation(const char *name, bool is_reconstructed);
 
   /// Set up this task. This function acts as the AddTask macro
   /// `is_reconstructed` is passed on to the constructor of this task
-  static AliForwardTaskValidation* ConnectTask(const char *suffix, bool is_reconstructed, AliForwardSettings settings);
+  static AliForwardTaskValidation* ConnectTask(const char *suffix, bool is_reconstructed);
   /// The Exchange container which is to be accessed by other classes
   AliAnalysisDataContainer* GetExchangeContainter();
   virtual ~AliForwardTaskValidation() {};

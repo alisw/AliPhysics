@@ -95,7 +95,7 @@ AliForwardFlowRun2Task::AliForwardFlowRun2Task(const char* name) : AliAnalysisTa
   //
 
   // Rely on validation task for event and track selection
-  //DefineInput(1, AliForwardTaskValidation::Class());
+  DefineInput(1, AliForwardTaskValidation::Class());
   DefineOutput(1, TList::Class());
 }
 
@@ -184,7 +184,13 @@ void AliForwardFlowRun2Task::UserExec(Option_t *)
   //   option: Not used
   //
   // Get the event validation object
-  //AliForwardTaskValidation* ev_val = dynamic_cast<AliForwardTaskValidation*>(this->GetInputData(1));
+  AliForwardTaskValidation* ev_val = dynamic_cast<AliForwardTaskValidation*>(this->GetInputData(1));
+  if (!ev_val->IsValidEvent()){
+     PostData(1, this->fOutputList);
+    return;
+  }
+
+
   AliAODEvent* aodevent = dynamic_cast<AliAODEvent*>(InputEvent());
   fUtil.fAODevent = aodevent;
   if(!aodevent) throw std::runtime_error("Not AOD as expected");
@@ -215,14 +221,9 @@ void AliForwardFlowRun2Task::UserExec(Option_t *)
   dNdeta->SetDirectory(0);
 
   fUtil.dNdeta = dNdeta;
-
-
   fUtil.FillData(refDist,centralDist,forwardDist);
 
-  // if (!ev_val->IsValidEvent()){
-  //   PostData(1, this->fOutputList);
-  //   return;
-  // }
+
 
   Double_t zvertex = fUtil.GetZ();
   Double_t cent = fUtil.GetCentrality(fSettings.centrality_estimator);

@@ -27,12 +27,7 @@ AliAnalysisTaskSE* AddTaskForwardSecondaries()
 {
   std::cout << "AddTaskForwardSecondaries" << std::endl;
 
-  AliForwardSettings settings = AliForwardSettings();
-  settings.use_primaries_fwd = kTRUE;
-  settings.use_primaries_cen = kTRUE;
-  settings.mc = true;
-  settings.esd = true;
-  AliForwardTaskValidation* validation_task = AliForwardTaskValidation::ConnectTask("", false,settings);
+  AliForwardTaskValidation* validation_task = AliForwardTaskValidation::ConnectTask("", false);
 
   // --- Get analysis manager ----------------------------------------
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();

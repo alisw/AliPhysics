@@ -25,7 +25,6 @@ AliAnalysisTaskSE* AddTaskForwardNUA(UShort_t nua_mode, bool makeFakeHoles, bool
 {
   std::cout << "______________________________________________________________________________" << std::endl;
 
-  AliForwardTaskValidation* validation_task = AliForwardTaskValidation::ConnectTask("", true) ;
   std::cout << "AddTaskForwardNUA" << std::endl;
 
   // --- Get analysis manager ----------------------------------------
@@ -99,8 +98,9 @@ AliAnalysisTaskSE* AddTaskForwardNUA(UShort_t nua_mode, bool makeFakeHoles, bool
 
   std::cout << "Container name: " << resName << std::endl;
   //resName = "hej";
-  std::cout << "______________________________________________________________________________" << std::endl;
-  task->ConnectInput(1,validation_task->GetOutputSlot(2)->GetContainer());
+
+  AliAnalysisDataContainer* valid = (AliAnalysisDataContainer*)mgr->GetContainers()->FindObject("event_selection_xchange");
+  task->ConnectInput(1,valid);
 
   AliAnalysisDataContainer *coutput_recon =
   mgr->CreateContainer(resName,
