@@ -800,6 +800,8 @@ void AddTask_GammaCalo_PbPb(
     cuts.AddCutCalo("31210a13","111118105k032230000","016310d100000050"); //
     cuts.AddCutCalo("10110a13","111118105k032230000","016310d100000050"); //
     cuts.AddCutCalo("11210a13","111118105k032230000","016310d100000050"); //
+  } else if (trainConfig == 264){ // EMCal + DCal clusters - 0-90% centrality
+    cuts.AddCutCalo("10910a13","4117900050032230000","0163103100000050"); //
 
   //systematics for LHC15o 0-10%
   } else if (trainConfig == 270){ // EMCAL
