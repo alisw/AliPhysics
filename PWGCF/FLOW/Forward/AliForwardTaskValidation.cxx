@@ -33,6 +33,7 @@ AliForwardTaskValidation::AliForwardTaskValidation()
   : AliAnalysisTaskSE(),
     fIsValidEvent(false),
     fEventValidators(),
+    fEventValidatorsMC(),
     fTrackValidators(),
     fOutputList(0),
     fQA_event_discard_flow(0),
@@ -44,7 +45,9 @@ AliForwardTaskValidation::AliForwardTaskValidation()
     fFMDV0A(0),
     fFMDV0A_post(0),
     fFMDV0C(0),
-    fFMDV0C_post(0)
+    fFMDV0C_post(0),
+    fUtil(),
+    fSettings()
 {
 }
 
@@ -52,6 +55,7 @@ AliForwardTaskValidation::AliForwardTaskValidation(const char *name, bool is_rec
   : AliAnalysisTaskSE(name),
     fIsValidEvent(false),
     fEventValidators(),
+    fEventValidatorsMC(),
     fTrackValidators(),
     fOutputList(0),
     fQA_event_discard_flow(0),
@@ -63,11 +67,13 @@ AliForwardTaskValidation::AliForwardTaskValidation(const char *name, bool is_rec
     fFMDV0A(0),
     fFMDV0A_post(0),
     fFMDV0C(0),
-    fFMDV0C_post(0)
+    fFMDV0C_post(0),
+    fUtil(),
+    fSettings()
 {
   // Apply all cuts by default
-  fEventValidators.push_back(EventValidation::kNoEventCut);
   if (is_reconstructed) {
+    fEventValidators.push_back(EventValidation::kNoEventCut);
     fEventValidators.push_back(EventValidation::kIsAODEvent);
     fEventValidators.push_back(EventValidation::kTrigger);
     fEventValidators.push_back(EventValidation::kPassesAliEventCuts);
@@ -84,14 +90,22 @@ AliForwardTaskValidation::AliForwardTaskValidation(const char *name, bool is_rec
     fEventValidators.push_back(EventValidation::kNotSPDClusterVsTrackletBG);
     fEventValidators.push_back(EventValidation::kPassesFMD_V0CorrelatioCut);
   }
-  if (!is_reconstructed) this->isMC = kTRUE;
-
+  if (!is_reconstructed) {
+    this->isMC = kTRUE;
+    std::cout << "making vector" << std::endl;
+    fEventValidatorsMC.push_back(EventValidationMC::kNoEventCutMC);
+    fEventValidatorsMC.push_back(EventValidationMC::kHasMultSelectionMC);
+    fEventValidatorsMC.push_back(EventValidationMC::kHasEntriesFMDMC);
+    fEventValidatorsMC.push_back(EventValidationMC::kHasValidFMDMC);
+    fEventValidatorsMC.push_back(EventValidationMC::kHasPrimariesMC);
+  }
   // Default track cuts
+  if (!isMC){
   fTrackValidators.push_back(TrackValidation::kNoTrackCut);
   fTrackValidators.push_back(TrackValidation::kTPCOnly);
   fTrackValidators.push_back(TrackValidation::kEtaCut);
   fTrackValidators.push_back(TrackValidation::kPtCut);
-
+}
   // Define output slot
   DefineOutput(1, TList::Class());
   DefineOutput(2, this->Class());
@@ -108,6 +122,10 @@ Bool_t AliForwardTaskValidation::AcceptTrigger(AliVEvent::EOfflineTriggerTypes T
 
 AliForwardTaskValidation* AliForwardTaskValidation::ConnectTask(const char *suffix,
 								  bool is_reconstructed) {
+  std::cout << "-------------------------------" << std::endl;
+  std::cout <<  "is_reconstructed " <<std::boolalpha << is_reconstructed << std::endl;
+  //std::cout << std::boolalpha << settings.use_primaries_fwd << std::endl;
+
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
   if (!mgr) {
     ::Error("AddTaskValidation", "No analysis manager to connect to.");
@@ -127,6 +145,7 @@ AliForwardTaskValidation* AliForwardTaskValidation::ConnectTask(const char *suff
 			 Form("%s", mgr->GetCommonFileName()));
 
   auto *taskValidation = new AliForwardTaskValidation("TaskValidation", is_reconstructed);
+
   if (!taskValidation) {
     ::Error("CreateTasks", "Failed to add task!");
     return NULL;
@@ -149,14 +168,25 @@ AliAnalysisDataContainer* AliForwardTaskValidation::GetExchangeContainter() {
 }
 
 void AliForwardTaskValidation::CreateQAHistograms(TList* outlist) {
+
   /// Event discard flow histogram
+  if (!isMC){
   this->fQA_event_discard_flow = new TH1F("qa_discard_flow",
 					  "QA event discard flow",
 					  this->fEventValidators.size(),
 					  0,
 					  this->fEventValidators.size());
+  }
+  else{
+    this->fQA_event_discard_flow = new TH1F("qa_discard_flow",
+  					  "QA event discard flow",
+  					  this->fEventValidatorsMC.size(),
+  					  0,
+  					  this->fEventValidatorsMC.size());
+  }
   TAxis *discardedEvtsAx = this->fQA_event_discard_flow->GetXaxis();
 
+  if (!isMC){
   for (UInt_t idx = 0; idx < this->fEventValidators.size(); idx++) {
     switch (this->fEventValidators[idx]) {
     case EventValidation::kNoEventCut:
@@ -191,7 +221,26 @@ void AliForwardTaskValidation::CreateQAHistograms(TList* outlist) {
       discardedEvtsAx->SetBinLabel(idx + 1, "SPD clstrs vs BG cut"); break;
     }
   }
+}
+else{
+  for (UInt_t idx = 0; idx < this->fEventValidatorsMC.size(); idx++) {
+    switch (this->fEventValidatorsMC[idx]) {
+      case EventValidationMC::kNoEventCutMC:
+        discardedEvtsAx->SetBinLabel(idx + 1, "No cuts"); break;
+      case EventValidationMC::kHasMultSelectionMC:
+        discardedEvtsAx->SetBinLabel(idx + 1, "Has MultSelection"); break;
+      case EventValidationMC::kHasEntriesFMDMC:
+        discardedEvtsAx->SetBinLabel(idx + 1, "Has entries FMD"); break;
+      case EventValidationMC::kHasValidFMDMC:
+        discardedEvtsAx->SetBinLabel(idx + 1, "Has valid FMD"); break;
+      case EventValidationMC::kHasPrimariesMC:
+        discardedEvtsAx->SetBinLabel(idx + 1, "Has Primaries"); break;
+    }
+  }
+}
   outlist->Add(this->fQA_event_discard_flow);
+
+  if (!isMC){
 
   /// Track discard flow
   this->fQA_track_discard_flow = new TH1F("qa_tack_discard_flow",
@@ -214,11 +263,13 @@ void AliForwardTaskValidation::CreateQAHistograms(TList* outlist) {
     }
   }
   outlist->Add(this->fQA_track_discard_flow);
+  }
+
 }
 
 void AliForwardTaskValidation::UserCreateOutputObjects() {
   // Stop right here if there are no Validators to work with
-  if (this->fEventValidators.size() == 0) {
+  if (this->fEventValidators.size() == 0 && this->fEventValidatorsMC.size() == 0) {
     AliFatal("No event validators specified!");
   }
 
@@ -231,31 +282,33 @@ void AliForwardTaskValidation::UserCreateOutputObjects() {
   this->fOutputList->Add(this->fOutliers);
 
   // Create QA histograms in Event selection
-  fEventCuts.AddQAplotsToList(this->fOutputList);
+  if (!isMC) fEventCuts.AddQAplotsToList(this->fOutputList);
   this->CreateQAHistograms(this->fOutputList);
 
   // FMD V0 QA histograms
-  this->fFMDV0 = new TH2F("FMDV0", "FMD vs V0 pre cut;FMD;V0;",
-			  2000, 0, 2000, 2000, 0, 2000);
-  this->fOutputList->Add(this->fFMDV0);
+  if (!isMC){
+    this->fFMDV0 = new TH2F("FMDV0", "FMD vs V0 pre cut;FMD;V0;",
+  			  2000, 0, 2000, 2000, 0, 2000);
+    this->fOutputList->Add(this->fFMDV0);
 
-  this->fFMDV0_post = new TH2F("FMDV0_post", "FMD vs V0 post cut;FMD;V0;",
-			  2000, 0, 2000, 2000, 0, 2000);
-  this->fOutputList->Add(this->fFMDV0_post);
+    this->fFMDV0_post = new TH2F("FMDV0_post", "FMD vs V0 post cut;FMD;V0;",
+  			  2000, 0, 2000, 2000, 0, 2000);
+    this->fOutputList->Add(this->fFMDV0_post);
 
-  this->fFMDV0A = new TH2F("FMDV0A", "FMD vs V0A;FMD;V0A;",
-			   1000, 0, 1000, 1000, 0, 1000);
-  this->fOutputList->Add(this->fFMDV0A);
-  this->fFMDV0A_post = new TH2F("FMDV0A_post", "FMD vs V0A post cut;FMD;V0A;",
-				1000, 0, 1000, 1000, 0, 1000);
-  this->fOutputList->Add(this->fFMDV0A_post);
+    this->fFMDV0A = new TH2F("FMDV0A", "FMD vs V0A;FMD;V0A;",
+  			   1000, 0, 1000, 1000, 0, 1000);
+    this->fOutputList->Add(this->fFMDV0A);
+    this->fFMDV0A_post = new TH2F("FMDV0A_post", "FMD vs V0A post cut;FMD;V0A;",
+  				1000, 0, 1000, 1000, 0, 1000);
+    this->fOutputList->Add(this->fFMDV0A_post);
 
-  this->fFMDV0C = new TH2F("FMDV0C", "FMD vs V0C;FMD;V0C;",
-			   1000, 0, 1000, 1000, 0, 1000);
-  this->fOutputList->Add(this->fFMDV0C);
-  this->fFMDV0C_post = new TH2F("FMDV0C_post", "FMD vs V0C post cut;FMD;V0C;",
-				1000, 0, 1000, 1000, 0, 1000);
-  this->fOutputList->Add(this->fFMDV0C_post);
+    this->fFMDV0C = new TH2F("FMDV0C", "FMD vs V0C;FMD;V0C;",
+  			   1000, 0, 1000, 1000, 0, 1000);
+    this->fOutputList->Add(this->fFMDV0C);
+    this->fFMDV0C_post = new TH2F("FMDV0C_post", "FMD vs V0C post cut;FMD;V0C;",
+  				1000, 0, 1000, 1000, 0, 1000);
+    this->fOutputList->Add(this->fFMDV0C_post);
+  }
 
   // Slot 0 is reserved; 1 needs to be called here to get at least empty histograms
   PostData(1, fOutputList);
@@ -266,6 +319,34 @@ void AliForwardTaskValidation::UserCreateOutputObjects() {
 void AliForwardTaskValidation::UserExec(Option_t *)
 {
   this->fIsValidEvent = true;
+
+  fUtil.dodNdeta = kFALSE;
+
+  fUtil.fevent = InputEvent();
+  fUtil.fMCevent = this->MCEvent();
+  //std::cout << fSettings.use_primaries_fwd << std::endl;
+  fUtil.fSettings = this->fSettings;
+
+  Double_t centralEta = (fSettings.useSPD ? 2.5 : 1.5);
+  TH2D centralDist_tmp = TH2D("c","",400,-centralEta,centralEta,400,0,2*TMath::Pi());
+  centralDist_tmp.SetDirectory(0);
+  TH2D refDist_tmp = TH2D("c","",400,-centralEta,centralEta,400,0,2*TMath::Pi());
+  refDist_tmp.SetDirectory(0);
+
+  TH2D forwardTrRef  ("ft","",200,-4,6,20,0,TMath::TwoPi());
+  TH2D forwardPrim  ("fp","",400,-4,6,400,0,TMath::TwoPi());
+  forwardTrRef.SetDirectory(0);
+  forwardPrim.SetDirectory(0);
+  forwardDist = (fSettings.use_primaries_fwd ? &forwardPrim : &forwardTrRef);
+
+  centralDist = &centralDist_tmp;
+  centralDist->SetDirectory(0);
+  refDist = &refDist_tmp;
+  refDist->SetDirectory(0);
+
+  fUtil.FillData(refDist,centralDist,forwardDist);
+
+  if (!isMC){
   for (UInt_t idx = 0; idx < this->fEventValidators.size(); idx++) {
     switch (this->fEventValidators[idx]) {
     case EventValidation::kNoEventCut:
@@ -308,6 +389,28 @@ void AliForwardTaskValidation::UserExec(Option_t *)
       break;
     }
   }
+}
+  else{
+    for (UInt_t idx = 0; idx < this->fEventValidatorsMC.size(); idx++) {
+      switch (this->fEventValidatorsMC[idx]) {
+      case EventValidationMC::kNoEventCutMC:
+        this->fIsValidEvent = this->NoCut(); break;
+      case EventValidationMC::kHasEntriesFMDMC:
+        this->fIsValidEvent = this->HasEntriesFMD(); break;
+      case EventValidationMC::kHasValidFMDMC:
+        this->fIsValidEvent = this->HasValidFMD(); break;
+      case EventValidationMC::kHasPrimariesMC:
+        this->fIsValidEvent = this->HasPrimaries(); break;
+      }
+      if (this->fIsValidEvent) {
+        this->fQA_event_discard_flow->Fill(idx);
+      } else {
+        // Stop checking once this event has been flaged as invalid
+        break;
+      }
+    }
+  }
+
   PostData(1, fOutputList);
   // Make the current pointer to this task avaialble in the exchange container
   PostData(2, this);
@@ -315,6 +418,15 @@ void AliForwardTaskValidation::UserExec(Option_t *)
 
 Bool_t AliForwardTaskValidation::IsAODEvent() {
   return dynamic_cast<AliAODEvent*>(this->InputEvent()) ? true : false;
+}
+
+Bool_t AliForwardTaskValidation::HasPrimaries(){
+  AliMCEvent* mcevent = this->MCEvent();
+
+  if (mcevent->GetNumberOfPrimaries() <= 0) {
+    return kFALSE;
+  }
+  else return kTRUE;
 }
 
 Bool_t AliForwardTaskValidation::HasFMD() {
@@ -328,10 +440,15 @@ Bool_t AliForwardTaskValidation::HasFMD() {
 }
 
 Bool_t AliForwardTaskValidation::HasEntriesFMD() {
-  if (this->HasFMD() && this->GetFMDhits().size() > 0) {
-    return true;
+  Double_t fmdsum = 0;
+  for (Int_t etaBin = 1; etaBin <= forwardDist->GetNbinsX(); etaBin++) {
+    for (Int_t phiBin = 1; phiBin <= forwardDist->GetNbinsX(); phiBin++) {
+      fmdsum += forwardDist->GetXaxis()->GetBinCenter(etaBin),forwardDist->GetBinContent(etaBin, phiBin);
+    }
   }
-  return false;
+
+  if (fmdsum > 0) return true;
+  else return false;
 }
 
 Bool_t AliForwardTaskValidation::HasEntriesV0() {
@@ -634,22 +751,20 @@ AliForwardTaskValidation::Tracks AliForwardTaskValidation::GetMCTruthTracks() {
 
 
 Bool_t AliForwardTaskValidation::HasValidFMD(){
-  AliAODForwardMult* aodForward =
-    static_cast<AliAODForwardMult*>(fInputEvent->FindListObject("Forward"));
-  const TH2D& forwarddNdedp = aodForward->GetHistogram();
+  //if (true) return kTRUE;
+  AliMultSelection *MultSelection = dynamic_cast< AliMultSelection* >(InputEvent()->FindListObject("MultSelection"));
 
-  AliMultSelection *MultSelection = (AliMultSelection*)fInputEvent->FindListObject("MultSelection");
-
+  //AliMultSelection *MultSelection = (AliMultSelection*)fInputEvent->FindListObject("MultSelection");
   Double_t cent = MultSelection->GetMultiplicityPercentile("V0M");
 
   //if (useEvent) return useEvent;
   Int_t nBadBins = 0;
-  Int_t phibins = forwarddNdedp.GetNbinsY();
+  Int_t phibins = this->forwardDist->GetNbinsY();
   Double_t totalFMDpar = 0;
   bool useEvent = true;
 
-  for (Int_t etaBin = 1; etaBin <= forwarddNdedp.GetNbinsX(); etaBin++) {
-    Double_t eta = forwarddNdedp.GetXaxis()->GetBinCenter(etaBin);
+  for (Int_t etaBin = 1; etaBin <= this->forwardDist->GetNbinsX(); etaBin++) {
+    Double_t eta = this->forwardDist->GetXaxis()->GetBinCenter(etaBin);
     Double_t runAvg = 0;
     Double_t avgSqr = 0;
     Double_t max = 0;
@@ -658,10 +773,10 @@ Bool_t AliForwardTaskValidation::HasValidFMD(){
     for (Int_t phiBin = 0; phiBin <= phibins; phiBin++) {
        if (!this->isMC){
          if ( fabs(eta) > 1.7) {
-           if (phiBin == 0 && forwarddNdedp.GetBinContent(etaBin, 0) == 0) break;
+           if (phiBin == 0 && this->forwardDist->GetBinContent(etaBin, 0) == 0) break;
          }
        }
-      Double_t weight = forwarddNdedp.GetBinContent(etaBin, phiBin);
+      Double_t weight = this->forwardDist->GetBinContent(etaBin, phiBin);
       if (!weight){
         weight = 0;
       }
@@ -685,20 +800,20 @@ Bool_t AliForwardTaskValidation::HasValidFMD(){
       Double_t stdev = (nInAvg > 1 ? TMath::Sqrt(nInAvg/(nInAvg-1))*TMath::Sqrt(avgSqr - runAvg*runAvg) : 0);
       Double_t nSigma = (stdev == 0 ? 0 : (max-runAvg)/stdev);
       fOutliers->Fill(cent,nSigma);
-      std::cout << "sigma = " << nSigma << std::endl;
+      //std::cout << "sigma = " << nSigma << std::endl;
       if (fSigmaCut > 0. && nSigma >= fSigmaCut && cent < 60) nBadBins++;
       else nBadBins = 0;
       // We still finish the loop, for fOutliers to make sense,
       // but we do no keep the event for analysis
-      if (nBadBins > 3) useEvent = false;
+      if (nBadBins > 3) return kFALSE;
      //if (nBadBins > 3) std::cout << "NUMBER OF BAD BINS > 3" << std::endl;
     }
   } // End of eta bin
-  if (totalFMDpar < 10) useEvent = false;
+  if (totalFMDpar < 10) return kFALSE;
 
-  return useEvent;
+  return kTRUE;
 }
-
+/*
 Bool_t AliForwardTaskValidation::UserNotify() {
   // If this is MC we have to read all the branches
   // Also, we should check for other tasks here!
@@ -764,4 +879,4 @@ Bool_t AliForwardTaskValidation::UserNotify() {
     this->fInputHandler->GetTree()->SetBranchStatus("tracks.fMFTClusterPattern", true);
   }
   return true;
-}
+}*/

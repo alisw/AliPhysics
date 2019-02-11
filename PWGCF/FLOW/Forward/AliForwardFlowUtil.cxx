@@ -51,9 +51,98 @@ fMCevent(),
 mc(kFALSE),
 dNdeta(),
 fSettings(),
-maxpt(5)
+minpt(5),
+maxpt(5),
+dodNdeta(kTRUE)
 {
 }
+
+void AliForwardFlowUtil::FillData(TH2D*& refDist, TH2D*& centralDist, TH2D*& forwardDist){
+    if (!fSettings.mc) {
+      AliAODEvent* aodevent = dynamic_cast<AliAODEvent*>(fevent);
+      this->fAODevent = aodevent;
+      AliAODForwardMult* aodfmult = static_cast<AliAODForwardMult*>(aodevent->FindListObject("Forward"));
+      forwardDist = &aodfmult->GetHistogram();
+      for (Int_t etaBin = 1; etaBin <= forwardDist->GetNbinsX(); etaBin++) {
+        for (Int_t phiBin = 1; phiBin <= forwardDist->GetNbinsX(); phiBin++) {
+          if (dodNdeta) dNdeta->Fill(forwardDist->GetXaxis()->GetBinCenter(etaBin),forwardDist->GetBinContent(etaBin, phiBin));
+        }
+      }
+
+      if (fSettings.maxpt < 5) {
+        this->minpt = 0.2;
+        this->maxpt = 5;
+        if (fSettings.useSPD) this->FillFromTracklets(refDist);
+        else                  this->FillFromTracks(refDist, fSettings.tracktype);
+      }
+      this->minpt = fSettings.minpt;
+      this->maxpt = fSettings.maxpt;
+      if (fSettings.useSPD) this->FillFromTracklets(centralDist);
+      else                  this->FillFromTracks(centralDist, fSettings.tracktype);
+    }
+    else {
+      Float_t zvertex = this->GetZ();
+
+      this->mc = kTRUE;
+
+      if(!fMCevent)
+        throw std::runtime_error("Not MC as expected");
+
+      if (fSettings.esd){
+        if (fSettings.use_primaries_cen && fSettings.use_primaries_fwd){
+          this->FillFromPrimaries(centralDist, forwardDist);
+        }
+        else if (!fSettings.use_primaries_cen && !fSettings.use_primaries_fwd){
+          this->FillFromTrackrefs(centralDist, forwardDist);
+        }
+        else if (fSettings.use_primaries_cen && !fSettings.use_primaries_fwd){
+          this->FillFromPrimaries(centralDist);
+          this->FillFromTrackrefs(forwardDist);
+        }
+        else if (!fSettings.use_primaries_cen && fSettings.use_primaries_fwd){
+          this->FillFromTrackrefs(centralDist);
+          this->FillFromPrimaries(forwardDist);
+        }
+      }
+      else{ // AOD
+
+        if (fSettings.use_primaries_cen && fSettings.use_primaries_fwd){ //prim central and forward
+          if (fSettings.maxpt < 5.0) {
+            this->minpt = 0.2;
+            this->maxpt = 5.0;
+            this->FillFromPrimariesAOD(refDist);
+            this->minpt = fSettings.minpt;
+            this->maxpt = fSettings.maxpt;
+          }
+
+          this->FillFromPrimariesAOD(centralDist, forwardDist);
+        }
+        else if (fSettings.use_primaries_cen && !fSettings.use_primaries_fwd){ //prim central, AOD forward
+          if (fSettings.maxpt < 5.0) {
+            this->minpt = 0.2;
+            this->maxpt = 5.0;
+            this->FillFromPrimariesAOD(refDist);
+            this->minpt = fSettings.minpt;
+            this->maxpt = fSettings.maxpt;
+          }
+
+          this->FillFromPrimariesAOD(centralDist);
+          AliAODEvent* aodevent = dynamic_cast<AliAODEvent*>(fevent);
+
+          AliAODForwardMult* aodfmult = static_cast<AliAODForwardMult*>(aodevent->FindListObject("Forward"));
+          forwardDist = &aodfmult->GetHistogram();
+
+          for (Int_t etaBin = 1; etaBin <= forwardDist->GetNbinsX(); etaBin++) {
+            for (Int_t phiBin = 1; phiBin <= forwardDist->GetNbinsX(); phiBin++) {
+              if (dodNdeta) dNdeta->Fill(forwardDist->GetXaxis()->GetBinCenter(etaBin),forwardDist->GetBinContent(etaBin, phiBin));
+            }
+          }
+        }
+      }
+    }
+    forwardDist->SetDirectory(0);
+}
+
 
 Bool_t AliForwardFlowUtil::ExtraEventCutFMD(TH2D& forwarddNdedp, double cent, Bool_t mc, TH2D* hOutliers){
   Bool_t useEvent = true;
@@ -159,7 +248,7 @@ void AliForwardFlowUtil::FillFromTrackrefs(TH2D*& cen, TH2D*& fwd) const
           thetaR += 2*TMath::Pi();
         }
         cen->Fill(-TMath::Log(TMath::Tan(thetaR / 2)),phiR);
-        dNdeta->Fill(-TMath::Log(TMath::Tan(thetaR / 2)),1);
+        if (dodNdeta) dNdeta->Fill(-TMath::Log(TMath::Tan(thetaR / 2)),1);
 
       }
       else if (AliTrackReference::kFMD == ref->DetectorId()) {
@@ -177,7 +266,7 @@ void AliForwardFlowUtil::FillFromTrackrefs(TH2D*& cen, TH2D*& fwd) const
           thetaR += 2*TMath::Pi();
         }
         fwd->Fill(-TMath::Log(TMath::Tan(thetaR / 2)),phiR);
-        dNdeta->Fill(-TMath::Log(TMath::Tan(thetaR / 2)),1);
+        if (dodNdeta) dNdeta->Fill(-TMath::Log(TMath::Tan(thetaR / 2)),1);
 
       }
     }
@@ -215,7 +304,7 @@ void AliForwardFlowUtil::FillFromTrackrefs(TH2D*& fwd) const
           thetaR += 2*TMath::Pi();
         }
         fwd->Fill(-TMath::Log(TMath::Tan(thetaR / 2)),phiR);
-        dNdeta->Fill(-TMath::Log(TMath::Tan(thetaR / 2)),1);
+        if (dodNdeta) dNdeta->Fill(-TMath::Log(TMath::Tan(thetaR / 2)),1);
 
       }
     }
@@ -233,9 +322,9 @@ void AliForwardFlowUtil::FillFromPrimariesAOD(TH2D*& cen) const
 
     Double_t eta = p->Eta();
     if (TMath::Abs(eta) < 1.1) {
-      if (p->Pt()>=0.2 && p->Pt()<=this->maxpt){
+      if (p->Pt()>=this->minpt && p->Pt()<=this->maxpt){
         cen->Fill(eta,p->Phi(),1);
-        dNdeta->Fill(eta,1);
+        if (dodNdeta) dNdeta->Fill(eta,1);
       }
     }
   }
@@ -252,9 +341,9 @@ void AliForwardFlowUtil::FillFromPrimaries(TH2D*& cen) const
 
     Double_t eta = p->Eta();
     if (TMath::Abs(eta) < 1.1) {
-      if (p->Pt()>=0.2 && p->Pt()<=this->maxpt){
+      if (p->Pt()>=this->minpt && p->Pt()<=this->maxpt){
         cen->Fill(eta,p->Phi(),1);
-        dNdeta->Fill(eta,1);
+        if (dodNdeta) dNdeta->Fill(eta,1);
       }
     }
   }
@@ -271,15 +360,15 @@ void AliForwardFlowUtil::FillFromPrimaries(TH2D*& cen, TH2D*& fwd) const
 
     Double_t eta = p->Eta();
     if (TMath::Abs(eta) < 1.1) {
-      if (p->Pt()>=0.2 && p->Pt()<=this->maxpt){
+      if (p->Pt()>=this->minpt && p->Pt()<=this->maxpt){
         cen->Fill(eta,p->Phi(),1);
-        dNdeta->Fill(eta,1);
+        if (dodNdeta) dNdeta->Fill(eta,1);
       }
     }
     if (eta < 5 /*fwd->GetXaxis()-GetXmax()*/ && eta > -3.5 /*fwd->GetXaxis()-GetXmin()*/) {
       if (TMath::Abs(eta) >= 1.7){
         fwd->Fill(eta,p->Phi(),1);
-        dNdeta->Fill(eta,1);
+        if (dodNdeta) dNdeta->Fill(eta,1);
       }
     }
   }
@@ -297,15 +386,15 @@ void AliForwardFlowUtil::FillFromPrimariesAOD(TH2D*& cen, TH2D*& fwd) const
 
     Double_t eta = p->Eta();
     if (TMath::Abs(eta) < 1.1) {
-      if (p->Pt()>=0.2 && p->Pt()<=this->maxpt){
+      if (p->Pt()>=this->minpt && p->Pt()<=this->maxpt){
         cen->Fill(eta,p->Phi(),1);
-        dNdeta->Fill(eta,1);
+        if (dodNdeta) dNdeta->Fill(eta,1);
       }
     }
     if (eta < 5 /*fwd->GetXaxis()-GetXmax()*/ && eta > -3.5 /*fwd->GetXaxis()-GetXmin()*/) {
       if (TMath::Abs(eta) >= 1.7){
         fwd->Fill(eta,p->Phi(),1);
-        dNdeta->Fill(eta,1);
+        if (dodNdeta) dNdeta->Fill(eta,1);
       }
     }
   }
@@ -317,7 +406,7 @@ void AliForwardFlowUtil::FillFromTracklets(TH2D*& cen) const {
 
   for (Int_t i = 0; i < aodTracklets->GetNumberOfTracklets(); i++) {
     cen->Fill(aodTracklets->GetEta(i),aodTracklets->GetPhi(i), 1);
-    dNdeta->Fill(aodTracklets->GetEta(i),1);
+    if (dodNdeta) dNdeta->Fill(aodTracklets->GetEta(i),1);
   }
 }
 
@@ -330,9 +419,9 @@ void AliForwardFlowUtil::FillFromTracks(TH2D*& cen, UInt_t tracktype) const {
     AliAODTrack* track = static_cast<AliAODTrack *>(fAODevent->GetTrack(i));
 
     if (track->TestFilterBit(tracktype)){
-      if (track->Pt() >= 0.2 && track->Pt() <= this->maxpt){
+      if (track->Pt() >= this->minpt && track->Pt() <= this->maxpt){
         cen->Fill(track->Eta(),track->Phi(), 1);
-        dNdeta->Fill(track->Eta(),1);
+        if (dodNdeta) dNdeta->Fill(track->Eta(),1);
       }
     }
   }
@@ -367,7 +456,7 @@ void AliForwardFlowUtil::FillFromTrackrefs(TH3D*& cen, TH3D*& fwd, Double_t zver
           thetaR += 2*TMath::Pi();
         }
         cen->Fill(-TMath::Log(TMath::Tan(thetaR / 2)),phiR, zvertex);
-        dNdeta->Fill(-TMath::Log(TMath::Tan(thetaR / 2)),1);
+        if (dodNdeta) dNdeta->Fill(-TMath::Log(TMath::Tan(thetaR / 2)),1);
 
       }
       else if (AliTrackReference::kFMD == ref->DetectorId()) {
@@ -385,7 +474,7 @@ void AliForwardFlowUtil::FillFromTrackrefs(TH3D*& cen, TH3D*& fwd, Double_t zver
           thetaR += 2*TMath::Pi();
         }
         fwd->Fill(-TMath::Log(TMath::Tan(thetaR / 2)),phiR, zvertex);
-        dNdeta->Fill(-TMath::Log(TMath::Tan(thetaR / 2)),1);
+        if (dodNdeta) dNdeta->Fill(-TMath::Log(TMath::Tan(thetaR / 2)),1);
       }
     }
   }
@@ -403,15 +492,15 @@ void AliForwardFlowUtil::FillFromPrimaries(TH3D*& cen, TH3D*& fwd, Double_t zver
 
     Double_t eta = p->Eta();
     if (TMath::Abs(eta) < 1.1) {
-      if (p->Pt()>=0.2 && p->Pt()<=this->maxpt){
+      if (p->Pt()>=this->minpt && p->Pt()<=this->maxpt){
         cen->Fill(eta,p->Phi(),zvertex,1);
-        dNdeta->Fill(eta,1);
+        if (dodNdeta) dNdeta->Fill(eta,1);
       }
     }
     if (eta < 5 /*fwd->GetXaxis()-GetXmax()*/ && eta > -3.5 /*fwd->GetXaxis()-GetXmin()*/) {
       if (TMath::Abs(eta) >= 1.7){
         fwd->Fill(eta,p->Phi(),zvertex,1);
-        dNdeta->Fill(eta,1);
+        if (dodNdeta) dNdeta->Fill(eta,1);
       }
     }
   }
@@ -423,7 +512,7 @@ void AliForwardFlowUtil::FillFromTracklets(TH3D*& cen, Double_t zvertex) const {
 
   for (Int_t i = 0; i < aodTracklets->GetNumberOfTracklets(); i++) {
     cen->Fill(aodTracklets->GetEta(i),aodTracklets->GetPhi(i),zvertex, 1);
-    dNdeta->Fill(aodTracklets->GetEta(i),1);
+    if (dodNdeta) dNdeta->Fill(aodTracklets->GetEta(i),1);
   }
 }
 
@@ -435,9 +524,9 @@ void AliForwardFlowUtil::FillFromTracks(TH3D*& cen, Int_t tracktype, Double_t zv
   // loop  over  all  the  tracks
     AliAODTrack* track = static_cast<AliAODTrack *>(fAODevent->GetTrack(i));
     if (track->TestFilterBit(tracktype)){
-      if (track->Pt() >= 0.2 && track->Pt() <= this->maxpt){
+      if (track->Pt() >= this->minpt && track->Pt() <= this->maxpt){
         cen->Fill(track->Eta(),track->Phi(), zvertex, 1);
-        dNdeta->Fill(track->Eta(),1);
+        if (dodNdeta) dNdeta->Fill(track->Eta(),1);
       }
     }
   }

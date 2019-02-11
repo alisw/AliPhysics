@@ -185,6 +185,16 @@ void AliForwardFlowRun2Task::UserExec(Option_t *)
   //
   // Get the event validation object
   AliForwardTaskValidation* ev_val = dynamic_cast<AliForwardTaskValidation*>(this->GetInputData(1));
+  if (!ev_val->IsValidEvent()){
+     PostData(1, this->fOutputList);
+    return;
+  }
+
+
+  AliAODEvent* aodevent = dynamic_cast<AliAODEvent*>(InputEvent());
+  fUtil.fAODevent = aodevent;
+  if(!aodevent) throw std::runtime_error("Not AOD as expected");
+
 
   fUtil.fevent = fInputEvent;
   fUtil.fSettings = fSettings;
@@ -199,6 +209,7 @@ void AliForwardFlowRun2Task::UserExec(Option_t *)
   TH2D forwardPrim  ("fp","",400,-4,6,400,0,TMath::TwoPi());
   forwardTrRef.SetDirectory(0);
   forwardPrim.SetDirectory(0);
+  forwardDist = (fSettings.use_primaries_fwd ? &forwardPrim : &forwardTrRef);
 
   centralDist = &centralDist_tmp;
   centralDist->SetDirectory(0);
@@ -206,115 +217,13 @@ void AliForwardFlowRun2Task::UserExec(Option_t *)
   refDist->SetDirectory(0);
 
   TH1F* dNdeta = static_cast<TH1F*>(fEventList->FindObject("dNdeta"));
+
   dNdeta->SetDirectory(0);
+
   fUtil.dNdeta = dNdeta;
+  fUtil.FillData(refDist,centralDist,forwardDist);
 
 
-  if (!fSettings.mc) {
-
-      if (!ev_val->IsValidEvent()){
-        PostData(1, this->fOutputList);
-        return;
-      }
-
-    AliAODEvent* aodevent = dynamic_cast<AliAODEvent*>(InputEvent());
-    fUtil.fAODevent = aodevent;
-    if(!aodevent) throw std::runtime_error("Not AOD as expected");
-
-    AliAODForwardMult* aodfmult = static_cast<AliAODForwardMult*>(aodevent->FindListObject("Forward"));
-    forwardDist = &aodfmult->GetHistogram();
-    for (Int_t etaBin = 1; etaBin <= forwardDist->GetNbinsX(); etaBin++) {
-      for (Int_t phiBin = 1; phiBin <= forwardDist->GetNbinsX(); phiBin++) {
-        dNdeta->Fill(forwardDist->GetXaxis()->GetBinCenter(etaBin),forwardDist->GetBinContent(etaBin, phiBin));
-      }
-    }
-
-    if (fSettings.maxpt < 5) {
-      fUtil.maxpt = 5;
-      if (fSettings.useSPD) fUtil.FillFromTracklets(refDist);
-      else                  fUtil.FillFromTracks(refDist, fSettings.tracktype);
-    }
-    fUtil.maxpt = fSettings.maxpt;
-    if (fSettings.useSPD) fUtil.FillFromTracklets(centralDist);
-    else                  fUtil.FillFromTracks(centralDist, fSettings.tracktype);
-  }
-  else {
-    AliMCEvent* mcevent = this->MCEvent();
-    fUtil.fMCevent = mcevent;
-
-    if (fSettings.use_primaries_fwd || fSettings.use_primaries_cen){
-      if (mcevent->GetNumberOfPrimaries() <= 0) {
-        static_cast<TH1D*>(fEventList->FindObject("No Primaries"))->Fill(1.0);
-        PostData(1, this->fOutputList);
-        return;
-      }
-    }
-
-    Float_t zvertex = mcevent->GetPrimaryVertex()->GetZ();
-
-
-    fUtil.mc = kTRUE;
-    TH1F* dNdeta = static_cast<TH1F*>(fEventList->FindObject("dNdeta"));
-    fUtil.dNdeta = dNdeta;
-
-    if(!mcevent)
-      throw std::runtime_error("Not MC as expected");
-
-    forwardDist = (fSettings.use_primaries_fwd ? &forwardPrim : &forwardTrRef);
-
-    if (fSettings.esd){
-      if (fSettings.use_primaries_cen && fSettings.use_primaries_fwd){
-        fUtil.FillFromPrimaries(centralDist, forwardDist);
-      }
-      else if (!fSettings.use_primaries_cen && !fSettings.use_primaries_fwd){
-        fUtil.FillFromTrackrefs(centralDist, forwardDist);
-      }
-      else if (fSettings.use_primaries_cen && !fSettings.use_primaries_fwd){
-        fUtil.FillFromPrimaries(centralDist);
-        fUtil.FillFromTrackrefs(forwardDist);
-      }
-      else if (!fSettings.use_primaries_cen && fSettings.use_primaries_fwd){
-        fUtil.FillFromTrackrefs(centralDist);
-        fUtil.FillFromPrimaries(forwardDist);
-      }
-    }
-    else{ // AOD
-      // if (!ev_val->IsValidEvent()){
-      //   PostData(1, this->fOutputList);
-      //   return;
-      // }
-      if (fSettings.use_primaries_cen && fSettings.use_primaries_fwd){ //prim central and forward
-        if (fSettings.maxpt < 5.0) {
-          fUtil.maxpt = 5.0;
-          fUtil.FillFromPrimariesAOD(refDist);
-          fUtil.maxpt = fSettings.maxpt;
-        }
-
-        fUtil.FillFromPrimariesAOD(centralDist, forwardDist);
-      }
-      else if (fSettings.use_primaries_cen && !fSettings.use_primaries_fwd){ //prim central, AOD forward
-        if (fSettings.maxpt < 5.0) {
-          fUtil.maxpt = 5.0;
-          fUtil.FillFromPrimariesAOD(refDist);
-          fUtil.maxpt = fSettings.maxpt;
-        }
-
-        fUtil.FillFromPrimariesAOD(centralDist);
-        AliAODEvent* aodevent = dynamic_cast<AliAODEvent*>(InputEvent());
-
-        AliAODForwardMult* aodfmult = static_cast<AliAODForwardMult*>(aodevent->FindListObject("Forward"));
-        forwardDist = &aodfmult->GetHistogram();
-
-        for (Int_t etaBin = 1; etaBin <= forwardDist->GetNbinsX(); etaBin++) {
-          for (Int_t phiBin = 1; phiBin <= forwardDist->GetNbinsX(); phiBin++) {
-            dNdeta->Fill(forwardDist->GetXaxis()->GetBinCenter(etaBin),forwardDist->GetBinContent(etaBin, phiBin));
-          }
-        }
-      }
-    }
-  }
-
-  forwardDist->SetDirectory(0);
 
   Double_t zvertex = fUtil.GetZ();
   Double_t cent = fUtil.GetCentrality(fSettings.centrality_estimator);
