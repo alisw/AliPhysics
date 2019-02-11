@@ -74,8 +74,10 @@ AliForwardSecondariesTask::AliForwardSecondariesTask() : AliAnalysisTaskSE(),
     fDeltaList(0),
   fRandom(0),
   fTrackDensity(),
+  fState(),
   fMaxConsequtiveStrips(3),
   fLowCutvalue(0),
+  fTrackGammaToPi0(true),
   fSettings(),
   fUtil(),
   fMultTOFLowCut(),
@@ -105,8 +107,10 @@ AliForwardSecondariesTask::AliForwardSecondariesTask() : AliAnalysisTaskSE(),
   fEventList(0),
   fDeltaList(0),
   fTrackDensity(),
+  fState(),
   fMaxConsequtiveStrips(3),
   fLowCutvalue(0),
+  fTrackGammaToPi0(true),
   fRandom(0),
   fSettings(),
   fUtil(),
@@ -154,8 +158,8 @@ AliForwardSecondariesTask::AliForwardSecondariesTask() : AliAnalysisTaskSE(),
 
     fDeltaList = new TList();
     fDeltaList->SetName("Delta");
-    Int_t phibins = 71;
-    Int_t etabins = 100;
+    Int_t phibins = 40;
+    Int_t etabins = 200;
     Int_t bins_phi_eta[5] = {fSettings.fnoSamples, fSettings.fNZvtxBins, phibins, 1, etabins} ;
     Double_t xmin_phi_eta[5] = {0,fSettings.fZVtxAcceptanceLowEdge, -TMath::Pi(), 0, -4};
     Double_t xmax_phi_eta[5] = {10,fSettings.fZVtxAcceptanceUpEdge, TMath::Pi(), 100, 6}; //
@@ -290,7 +294,7 @@ void AliForwardSecondariesTask::UserExec(Option_t *)
     std::vector< Int_t > listOfMothers;
     Int_t nTracks   = fAOD->GetNumberOfTracks();// stack->GetNtrack();
 
-    Int_t nPrim     = stack->GetNprimary();//fAOD->GetNumberOfPrimaries();
+    Int_t nPrim     = fAOD->GetNumberOfPrimaries();//fAOD->GetNumberOfPrimaries();
     for (Int_t iTr = 0; iTr < nTracks; iTr++) {
       AliMCParticle* particle =
         static_cast<AliMCParticle*>(fAOD->GetTrack(iTr));
@@ -300,7 +304,7 @@ void AliForwardSecondariesTask::UserExec(Option_t *)
 
       Bool_t isPrimary = stack->IsPhysicalPrimary(iTr) && iTr < nPrim;
 
-      AliMCParticle* mother = isPrimary ? particle : GetMother(particle);
+      AliMCParticle* mother = isPrimary ? particle : GetMother(iTr,fAOD);
       if (!mother) mother = particle;
       // IF the track corresponds to a primary, pass that as both
       // arguments.
@@ -375,7 +379,7 @@ AliForwardSecondariesTask::StoreParticle(AliMCParticle*       particle,
   this->GetTrackRefEtaPhi(particle, etaPhi);
 
   Double_t phi_tr = etaPhi[1]; //Wrap02pi
-  if (phi_tr < 0) phi_tr += 2*TMath::Pi();
+  //if (phi_tr < 0) phi_tr += 2*TMath::Pi();
   Double_t eta_tr = etaPhi[0];
 
   // (samples, vertex,phi_mother - phi_tr ,centrality,eta_mother,eta_tr)
@@ -596,6 +600,47 @@ AliForwardSecondariesTask::GetTrackRefTheta(const AliTrackReference* ref) const
   return ang;
 }
 
+AliMCParticle*
+AliForwardSecondariesTask::GetMother(Int_t iTr, const AliMCEvent* event) const
+{
+  //
+  // Track down primary mother
+  //
+  Int_t                i         = iTr;
+  Bool_t               gammaSeen = false;
+  AliMCParticle* candidate = 0;
+  do {
+    AliMCParticle* p = static_cast<AliMCParticle*>(event->GetTrack(i));
+    if (!p) break;
+    if (gammaSeen && TMath::Abs(p->PdgCode()) == 111)
+      // If we're looking for a mother pi0 of gamma, and we find it
+      // here, we return it - irrespective of whether it's flagged as
+      // a primary or not.
+      return p;
+
+    if (event->IsPhysicalPrimary(i)) {
+      candidate = p;
+      if (fTrackGammaToPi0 && TMath::Abs(p->PdgCode()) == 22)
+	// If we want to track gammas back to a possible pi0, we flag
+	// the gamma seen, and store it as a candidate in case we do
+	// not find a pi0 in the stack
+	gammaSeen = true;
+      else
+	break;
+    }
+
+    // We get here if the current track isn't a primary, or it was a
+    // primary gamma and we want to track back to a pi0.
+    i = p->GetMother();
+  } while (i > 0);
+
+  // Return our candidate (gamma) if we find no mother pi0.  Note, we
+  // should never get here with a null pointer, so we issue a warning
+  // in that case.
+  if (!candidate)
+    AliWarningF("No mother found for track # %d", iTr);
+  return candidate;
+}
 
 AliMCParticle* AliForwardSecondariesTask::GetMother(AliMCParticle* p) {
   // Recurses until the mother IsPhysicalPrimary
