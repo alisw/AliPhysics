@@ -100,7 +100,7 @@ Int_t demoJETAN() {
   printf("*******************************\n");
   
   //grid tags
-  TAlienCollection* coll = TAlienCollection::Open("tag100.xml");
+  TGridCollection* coll = gGrid->OpenCollection("tag100.xml");
   TGridResult* TagResult = coll->GetGridResult("");
   TagAna->ChainGridTags(TagResult);
 

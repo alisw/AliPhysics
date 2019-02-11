@@ -11,7 +11,6 @@
 #include <TGrid.h>
 #include <TList.h>
 #include <TMethodCall.h>
-#include <TAlienCollection.h>
 #include <TGridCollection.h>
 #include <TGridResult.h>
 #include <TGeoGlobalMagField.h>
