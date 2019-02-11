@@ -21,7 +21,7 @@
  */
  //#include "AliForwardTaskValidation.h"
 
-AliAnalysisTaskSE* AddTaskForwardValidation()
+AliAnalysisTaskSE* AddTaskForwardValidation("name")
 {
   std::cout << "AddTaskForwardValidation" << std::endl;
 
