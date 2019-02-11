@@ -153,6 +153,7 @@ AliAnalysisTaskSE *AddTaskSigma0DebugTest(bool isMC = false,
   sigmaCuts->SetV0ReaderName(V0ReaderName.Data());
   if (suffix != "0" && suffix != "999") {
     sigmaCuts->SetLightweight(true);
+    sigmaCuts->SetIsSpectrum(false);
   }
 
   AliSigma0PhotonMotherCuts *antiSigmaCuts =
@@ -163,6 +164,7 @@ AliAnalysisTaskSE *AddTaskSigma0DebugTest(bool isMC = false,
   antiSigmaCuts->SetV0ReaderName(V0ReaderName.Data());
   if (suffix != "0" && suffix != "999") {
     antiSigmaCuts->SetLightweight(true);
+    antiSigmaCuts->SetIsSpectrum(false);
   }
 
   if (suffix == "2") {

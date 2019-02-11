@@ -273,9 +273,11 @@ void AliSigma0PhotonMotherCuts::SelectPhotonMother(
 
   // Particle pairing
   SigmaToLambdaGamma(photonCandidates, lambdaCandidates);
-  SigmaToLambdaGammaMixedEvent(photonCandidates, lambdaCandidates);
-  SigmaToLambdaGammaMixedEventBinned(photonCandidates, lambdaCandidates);
-  FillEventBuffer(photonCandidates, lambdaCandidates);
+  if (fIsSpectrumAnalysis) {
+    SigmaToLambdaGammaMixedEvent(photonCandidates, lambdaCandidates);
+    SigmaToLambdaGammaMixedEventBinned(photonCandidates, lambdaCandidates);
+    FillEventBuffer(photonCandidates, lambdaCandidates);
+  }
 }
 
 //____________________________________________________________________________________________________
@@ -811,7 +813,7 @@ void AliSigma0PhotonMotherCuts::SigmaToLambdaGamma(
       }
     }
   }
-  if (!fIsLightweight) fHistNSigma->Fill(nSigma);
+  fHistNSigma->Fill(nSigma);
 }
 
 //____________________________________________________________________________________________________
@@ -848,7 +850,7 @@ void AliSigma0PhotonMotherCuts::SigmaToLambdaGammaMixedEvent(
         const float rap = sigma.GetRapidity();
         const int multBin = GetMultiplicityBin(lPercentile, fMultMode);
         if (TMath::Abs(rap) > fRapidityMax || multBin < 0) continue;
-        fHistMixedInvMassPt->Fill(pT, invMass);
+        if (fIsSpectrumAnalysis) fHistMixedInvMassPt->Fill(pT, invMass);
       }
     }
   }
@@ -874,7 +876,7 @@ void AliSigma0PhotonMotherCuts::SigmaToLambdaGammaMixedEvent(
         const float rap = sigma.GetRapidity();
         const int multBin = GetMultiplicityBin(lPercentile, fMultMode);
         if (TMath::Abs(rap) > fRapidityMax || multBin < 0) continue;
-        fHistMixedInvMassPt->Fill(pT, invMass);
+        if (fIsSpectrumAnalysis) fHistMixedInvMassPt->Fill(pT, invMass);
       }
     }
   }
@@ -1234,11 +1236,10 @@ void AliSigma0PhotonMotherCuts::InitCutHistograms(TString appendix) {
                             "M_{#Lambda#gamma} (GeV/#it{c}^{2})",
                             100, 0, 10, 300, 1., 1.3);
   fHistograms->Add(fHistInvMassPt);
-  fHistMixedInvMassPt = new TH2F("fHistMixedInvMassPt",
-                                 "; #it{p}_{T} #Lambda#gamma (GeV/#it{c}); "
-                                 "M_{#Lambda#gamma} (GeV/#it{c}^{2})",
-                                 100, 0, 10, 300, 1., 1.3);
-  fHistograms->Add(fHistMixedInvMassPt);
+
+  fHistNSigma =
+      new TH1F("fHistNSigma", ";# #Sigma candidates; Entries", 10, 0, 10);
+  fHistograms->Add(fHistNSigma);
 
   std::vector<float> multBinsLow, multBinsUp;
   if (fMultMode == AliVEvent::kINT7) {
@@ -1250,6 +1251,12 @@ void AliSigma0PhotonMotherCuts::InitCutHistograms(TString appendix) {
   }
 
   if (fIsSpectrumAnalysis) {
+    fHistMixedInvMassPt = new TH2F("fHistMixedInvMassPt",
+                                   "; #it{p}_{T} #Lambda#gamma (GeV/#it{c}); "
+                                   "M_{#Lambda#gamma} (GeV/#it{c}^{2})",
+                                   100, 0, 10, 300, 1., 1.3);
+    fHistograms->Add(fHistMixedInvMassPt);
+
     for (int i = 0; i < static_cast<int>(multBinsUp.size()); ++i) {
       fHistPtMult[i] =
           new TH2F(Form("fHistPtMult_%i", i),
@@ -1270,8 +1277,6 @@ void AliSigma0PhotonMotherCuts::InitCutHistograms(TString appendix) {
   }
 
   if (!fIsLightweight) {
-    fHistNSigma =
-        new TH1F("fHistNSigma", ";# #Sigma candidates; Entries", 10, 0, 10);
     fHistNPhotonBefore =
         new TH1F("fHistNPhotonBefore",
                  ";# #gamma candidates before clean-up; Entries", 15, 0, 15);
@@ -1312,7 +1317,6 @@ void AliSigma0PhotonMotherCuts::InitCutHistograms(TString appendix) {
         new TH2F("fHistPtRapidity", "; #it{p}_{T} (GeV/#it{c}); y", 100, 0, 10,
                  50, -5, 5);
 
-    fHistograms->Add(fHistNSigma);
     fHistograms->Add(fHistNPhotonBefore);
     fHistograms->Add(fHistNPhotonAfter);
     fHistograms->Add(fHistNLambdaBefore);
