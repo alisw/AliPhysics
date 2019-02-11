@@ -562,21 +562,18 @@ void AliAnalysisTaskdPhi::UserExec(Option_t *) {
 	AliConversionTrackCuts * tc = dynamic_cast<AliConversionTrackCuts*>(fTrackFilter);
 	if(tc) {
 		tc->SetEvent(fInputEvent);
-		tc->DeleteTracks();
 	}
 	
 	for(Int_t i = 0; i < fTrackFilters[0].GetEntriesFast(); i++){
 		AliConversionTrackCuts * tct = dynamic_cast<AliConversionTrackCuts*>(fTrackFilters[0].At(i));
 		if(tct) {
 			tct->SetEvent(fInputEvent);
-			tct->DeleteTracks();
 		}
 	}
 	for(Int_t i = 0; i < fTrackFilters[1].GetEntriesFast(); i++){
 		AliConversionTrackCuts * tct = dynamic_cast<AliConversionTrackCuts*>(fTrackFilters[1].At(i));
 		if(tct) {
 			tct->SetEvent(fInputEvent);
-			tct->DeleteTracks();
 		}
 	}
 	
