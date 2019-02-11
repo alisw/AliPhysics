@@ -63,6 +63,7 @@ set(SRCS
     AliAnalysisTaskDJetCorrelations.cxx
     AliAnalysisTaskDJetCorrelationsQA.cxx
     AliAnalysisTaskDmesonsFilterCJ.cxx
+    AliEmbeddingEventForHFTask.cxx
 )
 
 if(FASTJET_FOUND)
