@@ -161,6 +161,8 @@ class AliAnalysisTaskEmcalLight : public AliAnalysisTaskSE {
   void                        SelectGeneratorName(TString gen)                      { fSelectGeneratorName = gen                          ; }
   void                        SetInhibit(Bool_t s)                                  { fInhibit = s                                        ; }
   void                        SetEventWeightRange(Double_t min, Double_t max)       { fMinimumEventWeight = min; fMaximumEventWeight = max; }
+  void                        SetUseAliEmcalList(Bool_t doUse)                      { fUseAliEmcalList = doUse                            ; }
+  void                        SetUsePtHardBinScaling(Bool_t b)                      { fUsePtHardBinScaling = b                            ; }
 
   Bool_t IsInhibit() const { return fInhibit; }
 
@@ -254,6 +256,8 @@ class AliAnalysisTaskEmcalLight : public AliAnalysisTaskSE {
   Float_t                     fPtHardAndTrackPtFactor;     ///< Factor between ptHard and track pT to reject/accept event.
   Bool_t                      fSwitchOffLHC15oFaultyBranches; ///< Switch off faulty tree branches in LHC15o AOD trees
   Bool_t                      fEventSelectionAfterRun;     ///< If kTRUE, the event selection is performed after Run() but before FillHistograms()
+  Bool_t                      fUseAliEmcalList;            ///< Use AliEmcalList as output object
+  Bool_t                      fUsePtHardBinScaling;        ///< Apply pt-hard bin scaling (in case AliEmcalList is used to handle the output)
   TString                     fSelectGeneratorName;        ///< Selects only events produced by a generator that has a name containing a string
   Double_t                    fMinimumEventWeight;         ///< Minimum event weight for the related bookkeping histogram
   Double_t                    fMaximumEventWeight;         ///< Minimum event weight for the related bookkeping histogram

@@ -33,6 +33,7 @@
 #include "AliAODEvent.h"
 #include "AliAnalysisManager.h"
 #include "AliCentrality.h"
+#include "AliEmcalList.h"
 #include "AliEMCALGeometry.h"
 #include "AliESDEvent.h"
 #include "AliEmcalParticle.h"
@@ -99,6 +100,8 @@ AliAnalysisTaskEmcalLight::AliAnalysisTaskEmcalLight() :
   fPtHardAndTrackPtFactor(0.),
   fSwitchOffLHC15oFaultyBranches(kFALSE),
   fEventSelectionAfterRun(kFALSE),
+  fUseAliEmcalList(kFALSE),
+  fUsePtHardBinScaling(kFALSE),
   fSelectGeneratorName(),
   fMinimumEventWeight(1e-6),
   fMaximumEventWeight(1e6),
@@ -184,6 +187,8 @@ AliAnalysisTaskEmcalLight::AliAnalysisTaskEmcalLight(const char *name, Bool_t hi
   fPtHardAndTrackPtFactor(0.),
   fSwitchOffLHC15oFaultyBranches(kFALSE),
   fEventSelectionAfterRun(kFALSE),
+  fUseAliEmcalList(kFALSE),
+  fUsePtHardBinScaling(kFALSE),
   fSelectGeneratorName(),
   fMinimumEventWeight(1e-6),
   fMaximumEventWeight(1e6),
@@ -290,7 +295,15 @@ void AliAnalysisTaskEmcalLight::UserCreateOutputObjects()
     return;
 
   OpenFile(1);
-  fOutput = new TList();
+  if(fUseAliEmcalList) {
+    auto emclist = new AliEmcalList;
+    if(fUsePtHardBinScaling) emclist->SetUseScaling(true);
+    emclist->SetNameXsec("fHistXsectionExternalFile");
+    emclist->SetNameTrials("fHistTrialsExternalFile");
+    fOutput = emclist;
+  } else {
+    fOutput = new TList();
+  }
   fOutput->SetOwner(); // @suppress("Ambiguous problem")
 
   if (fCentralityEstimation == kNoCentrality) fCentBins.clear();

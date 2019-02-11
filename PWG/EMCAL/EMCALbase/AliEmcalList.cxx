@@ -29,7 +29,10 @@ ClassImp(AliEmcalList)
 
 /// \brief constructor
 //________________________________________________________________________
-AliEmcalList::AliEmcalList() : TList(), fUseScaling(kFALSE)
+AliEmcalList::AliEmcalList() : TList(), 
+  fUseScaling(kFALSE),
+  fNameXsec("fHistXsection"),
+  fNameNTrials("fHistTrials")
 {
 }
 
@@ -46,8 +49,8 @@ Long64_t AliEmcalList::Merge(TCollection *hlist)
 
   // #### Retrieve xsection and ntrials from histograms in this list
   // NOTE: they must be directly added to the AliEmcalList, not nested in sublists!
-  TH1* xsection = static_cast<TH1*>(FindObject("fHistXsection"));
-  TH1* ntrials  = static_cast<TH1*>(FindObject("fHistTrials"));
+  TH1* xsection = static_cast<TH1*>(FindObject(fNameXsec.Data()));
+  TH1* ntrials  = static_cast<TH1*>(FindObject(fNameNTrials.Data()));
 
   // #### If xsection or ntrials are not given, go to fatal
   if(!(xsection && ntrials))
@@ -70,8 +73,8 @@ Long64_t AliEmcalList::Merge(TCollection *hlist)
     TIter listIterator(hlist);
     while (AliEmcalList* tmpList = static_cast<AliEmcalList*>(listIterator()))
     {
-      xsection = static_cast<TH1*>(tmpList->FindObject("fHistXsection"));
-      ntrials  = static_cast<TH1*>(tmpList->FindObject("fHistTrials"));
+      xsection = static_cast<TH1*>(tmpList->FindObject(fNameXsec.Data()));
+      ntrials  = static_cast<TH1*>(tmpList->FindObject(fNameNTrials.Data()));
       scalingFactor = GetScalingFactor(xsection, ntrials);
       ScaleAllHistograms(tmpList, scalingFactor);
     }
