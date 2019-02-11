@@ -46,7 +46,7 @@ private:
   TString                     fNameNTrials;                   ///< Name of the histogram with the number of trials
 
   /// \cond CLASSIMP
-  ClassDef(AliEmcalList, 1);
+  ClassDef(AliEmcalList, 2);
   /// \endcond
 };
 
