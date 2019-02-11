@@ -153,6 +153,8 @@ class AliAnalysisTaskGammaCalo : public AliAnalysisTaskSE {
     TList**               fJetHistograms;                                       // Jet Histograms
     TList**               fTrueJetHistograms;                                   // True Jet Histograms
     Int_t                 fJetSector;                                           // Sector of the detector with the maximum pt jet
+    Int_t                 fMaxPtNearEMCalPlace;                                 // Place in jet vector of highest pt jet that is near the EMCal
+    Bool_t                fJetNearEMCal;                                        // If a jet is near the EMCal in the current event
 
     //histograms for mesons reconstructed quantities
     TH2F**                fHistoMotherInvMassPt;                                //! array of histogram with signal + BG for same event photon pairs, inv Mass, pt
@@ -381,6 +383,7 @@ class AliAnalysisTaskGammaCalo : public AliAnalysisTaskSE {
     TH2F**                 fHistoTruePi0InJetMotherInvMassPt;                    // Histogram of true pi0s in a jet
     TH2F**                 fHistoTruePrimaryPi0JetInvMassPt;                     // Histogram of true primary pi0s in an event with a jet
     TH2F**                 fHistoTruePrimaryPi0inJetInvMassPt;                   // Histogram of true primary pi0s in a jet
+    TH2F**                 fHistoTruePrimaryPi0InJetInvMassTruePt;               // Histogram of true primary pi0s in a jet with their true pt
     TH1F**                 fHistoTrueDoubleCountingPi0Jet;                       // Histogram of when a true pi0 is defined to be in multiple jets
     TH2F**                 fHistoTrueEtaJetMotherInvMassPt;                      // Histogram of true etas in an event with a jet
     TH2F**                 fHistoTrueEtaInJetMotherInvMassPt;                    // Histogram of true etas in a jet
@@ -411,12 +414,21 @@ class AliAnalysisTaskGammaCalo : public AliAnalysisTaskSE {
     TH2F**                 fHistoMotherEtainJetPtPhi;                            // Histogram with the phi of the validated etas in jets
     TH1F**                 fNumberOfClusters;                                    // Histogram with total number of clusters
     TH1F**                 fNumberOfClustersinJets;                              // Histogram with number of clusters in jets
-    TH1F**                 fEnergyRatio;                                         // Histogram with ratio of energy deposited in cluster
-    TH1F**                 fEnergyRatioinJets;                                   // Histogram with ratio of energy deposited in cluster in jets
-    TH1F**                 fEnergyRatioGamma1;                                   // Histogram with ratio of energy deposited in cluster when first label is a photon
-    TH1F**                 fEnergyRatioGamma1inJets;                             // Histogram with ratio of energy deposited in cluster when first label is a photon in jets
+    TH2F**                 fEnergyRatio;                                         // Histogram with ratio of energy deposited in cluster
+    TH2F**                 fEnergyRatioinJets;                                   // Histogram with ratio of energy deposited in cluster in jets
+    TH2F**                 fEnergyRatioGamma1;                                   // Histogram with ratio of energy deposited in cluster when first label is a photon
+    TH2F**                 fEnergyRatioGamma1inJets;                             // Histogram with ratio of energy deposited in cluster when first label is a photon in jets
+    TH2F**                 fEnergyRatioGammaAnywhere;                            // Histogram with ratio of energy deposited in cluster when a label is photon
+    TH2F**                 fEnergyRatioGammaAnywhereinJets;                      // Histogram with ratio of energy deposited in cluster when a label is photon in jets
+    TH2F**                 fEnergyDeposit;                                       // Histogram with total energy deposited in cluster
+    TH2F**                 fEnergyDepositinJets;                                 // Histogram with total energy deposited in cluster in jets
+    TH2F**                 fEnergyDepGamma1;                                     // Histogram with total energy deposited when first label is photon
+    TH2F**                 fEnergyDepGamma1inJets;                               // Histogram with total energy deposited when first label is photon in jets
+    TH2F**                 fEnergyDepGammaAnywhere;                              // Histogram with total energy deposited when a label is photon
+    TH2F**                 fEnergyDepGammaAnywhereinJets;                        // Histogram with total energy deposited when a label is photon in jets
     TH1F**                 fEnergyRatioGamma1Helped;                             // Histogram with energy of photon when it is helped by other particles
     TH1F**                 fEnergyRatioGamma1HelpedinJets;                       // Histogram with energy of photon when it is helped by other particles in jets
+    TH2F**                 fClusterEtaPhiJets;                                   // Histogram of phi and eta distribution of clusters in jets
 
     vector<Double_t>      fVectorJetPt;                                         // Vector of JetPt
     vector<Double_t>      fVectorJetPx;                                         // Vector of JetPx
@@ -517,7 +529,7 @@ class AliAnalysisTaskGammaCalo : public AliAnalysisTaskSE {
     AliAnalysisTaskGammaCalo(const AliAnalysisTaskGammaCalo&);                  // Prevent copy-construction
     AliAnalysisTaskGammaCalo &operator=(const AliAnalysisTaskGammaCalo&);       // Prevent assignment
 
-    ClassDef(AliAnalysisTaskGammaCalo, 62);
+    ClassDef(AliAnalysisTaskGammaCalo, 63);
 };
 
 #endif
