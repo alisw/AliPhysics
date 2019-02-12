@@ -899,7 +899,7 @@ Int_t AliEmbeddingEventForHFTask::CheckOrigin(AliAODMCParticle* part, TClonesArr
     while (mother >= 0) {
         istep++;
         AliAODMCParticle* mcGranma = static_cast<AliAODMCParticle*>(mcArray->At(mother));
-        if (mcGranma >= 0) {
+        if (mcGranma) {
             pdgGranma = mcGranma->GetPdgCode();
             abspdgGranma = TMath::Abs(pdgGranma);
             if ((abspdgGranma > 500 && abspdgGranma < 600) || (abspdgGranma > 5000 && abspdgGranma < 6000)) {
@@ -948,7 +948,7 @@ Int_t AliEmbeddingEventForHFTask::CheckOrigin(Int_t ipart, AliStack* stack)
     while (mother >= 0) {
         istep++;
         TParticle* mcGranma = stack->Particle(mother);
-        if (mcGranma >= 0) {
+        if (mcGranma) {
             pdgGranma = mcGranma->GetPdgCode();
             abspdgGranma = TMath::Abs(pdgGranma);
             if ((abspdgGranma > 500 && abspdgGranma < 600) || (abspdgGranma > 5000 && abspdgGranma < 6000)) {
