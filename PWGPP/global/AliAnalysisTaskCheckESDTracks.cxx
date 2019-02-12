@@ -51,6 +51,8 @@ AliAnalysisTaskCheckESDTracks::AliAnalysisTaskCheckESDTracks() :
   fOutput{nullptr},
   fHistNEvents{nullptr},
   fHistNTracks{nullptr},
+  fHistNTracksBackg{nullptr},
+  fHistNTracksEmbed{nullptr},
   fHistNITSClu{nullptr},
   fHistCluInITSLay{nullptr},
   fHistNtracksTPCselVsV0befEvSel{nullptr},
@@ -201,6 +203,8 @@ AliAnalysisTaskCheckESDTracks::~AliAnalysisTaskCheckESDTracks(){
   if(fOutput && !fOutput->IsOwner()){
     delete fHistNEvents;
     delete fHistNTracks;
+    delete fHistNTracksBackg;
+    delete fHistNTracksEmbed;
     delete fHistNITSClu;
     delete fHistCluInITSLay;
     delete fHistNtracksTPCselVsV0befEvSel;
@@ -398,7 +402,11 @@ void AliAnalysisTaskCheckESDTracks::UserCreateOutputObjects() {
   fOutput->Add(fHistNEvents);
 
   fHistNTracks = new TH1F("hNTracks", "Number of tracks in ESD events ; N_{tracks}",5001,-0.5,5000.5);
+  fHistNTracksBackg = new TH1F("hNTracksBackg", "Number of tracks in BKG events ; N_{tracks}",5001,-0.5,5000.5);
+  fHistNTracksEmbed = new TH1F("hNTracksEmbed", "Number of tracks in Signal events ; N_{tracks}",5001,-0.5,5000.5);
   fOutput->Add(fHistNTracks);
+  fOutput->Add(fHistNTracksBackg);
+  fOutput->Add(fHistNTracksEmbed);
   fHistNITSClu = new TH1F("hNITSClu"," ; N_{ITS clusters}",7,-0.5,6.5);
   fOutput->Add(fHistNITSClu);
   fHistCluInITSLay = new TH1F("hCluInITSLay"," ; Layer",7,-1.5,5.5);
@@ -760,7 +768,8 @@ void AliAnalysisTaskCheckESDTracks::UserExec(Option_t *)
 
   fHistNTracks->Fill(ntracks);
 
-
+  Int_t nBGtracks=0;
+  Int_t nEmbeddedtracks=0;
   for (Int_t iTrack=0; iTrack < ntracks; iTrack++) {
     AliESDtrack * track = esd->GetTrack(iTrack);
     if (!track) continue;
@@ -877,6 +886,10 @@ void AliAnalysisTaskCheckESDTracks::UserExec(Option_t *)
     Int_t isPhysPrim=-999;
     Int_t pdgCode=0;
     if(fReadMC){
+      Bool_t isBG = mcEvent->IsFromSubsidiaryEvent(iTrack);
+      if(isBG) nBGtracks++;
+      else nEmbeddedtracks++;
+      
       TParticle* part = mcEvent->Particle(TMath::Abs(trlabel));
       if (part){
 	ptgen=part->Pt();
@@ -1088,6 +1101,9 @@ void AliAnalysisTaskCheckESDTracks::UserExec(Option_t *)
       }
     }
   }
+  fHistNTracksBackg->Fill(nBGtracks);
+  fHistNTracksEmbed->Fill(nEmbeddedtracks);
+
 
   Int_t nv0s = esd->GetNumberOfV0s();
   for (Int_t iV0 = 0; iV0 < nv0s; iV0++){
