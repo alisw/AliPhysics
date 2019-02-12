@@ -216,9 +216,9 @@ void AliEMCALTriggerOnlineQAPbPb::Init()
     htitle = "EMCTRQA_histCellAmpVsFastORL1AmpSM;SM; FastOR L1 amplitude;2x2 cell sum energy (GeV)";
     TArrayD smbinning(22), energybinning(201);
     int ibin(0);
-    for(double b = -0.5; b <= 19.5; b+=1) smbinning[ibin++] = b;
+    for(double b = -1.5; b <= 19.5; b+=1) smbinning[ibin++] = b;
     ibin = 0;
-    for(double b = 0.; b <= 20.; b += 0.1) energybinning[ibin++] = b;
+    for(double b = 0.; b < 20.1; b += 0.1) energybinning[ibin++] = b;
     const TArrayD histsmbinning[3] = {smbinning, energybinning, energybinning};
     CreateTHnSparse(hname, htitle, 3, histsmbinning);
   }
