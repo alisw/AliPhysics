@@ -351,11 +351,11 @@ void AddTask_GammaConvNeutralMesonPiPlPiMiNeutralMeson_CaloMode_pp(
     cuts.AddCutHeavyMesonCalo("00000113","2444411043012300000","302010708","0103603n00000000","0153505000000000"); // 0-0.75
     cuts.AddCutHeavyMesonCalo("00000113","2444411043012300000","302010708","0103603n00000000","0153500000000000"); // 0-0.7
     // PHOS pp 5 TeV
-  } else if(trainConfig == 170)  { // Standard PHOS  with TPC refit + ITS requirement
+  } else if(trainConfig == 190)  { // Standard PHOS  with TPC refit + ITS requirement
     cuts.AddCutHeavyMesonCalo("00010113","2444411043012300000","32c010708","0103603n00000000","0153503000000000"); // INT7
     cuts.AddCutHeavyMesonCalo("00062113","2444411043012300000","32c010708","0103603n00000000","0153503000000000"); // PHI7
     // PHOS pp 13 TeV
-  } else if(trainConfig == 180)  { // Standard PHOS  with TPC refit + ITS requirement
+  } else if(trainConfig == 191)  { // Standard PHOS  with TPC refit + ITS requirement
     cuts.AddCutHeavyMesonCalo("00010113","2444411043012300000","32c010708","0103603n00000000","0153503000000000"); // INT7
     cuts.AddCutHeavyMesonCalo("00062113","2444411043012300000","32c010708","0103603n00000000","0153503000000000"); // PHI7
   // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
