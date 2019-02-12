@@ -239,6 +239,7 @@ protected:
   } fState; //! State
   UShort_t fMaxConsequtiveStrips;
   Double_t fLowCutvalue;
+  Bool_t            fTrackGammaToPi0;
   AliTrackReference*  ProcessRef(AliMCParticle*       particle,
     AliMCParticle* mother,
     AliTrackReference*   ref,std::vector< Int_t > listOfMothers, Double_t randomInt, Float_t event_vtx_z, Double_t v0cent);
@@ -258,7 +259,7 @@ protected:
   // Find the primary particle of a decay chain. If `p` is alreay the primary return p.
   // If it was not possible to find the mother, return NULL.
   AliMCParticle* GetMother(AliMCParticle* p);
-
+  AliMCParticle* GetMother(Int_t iTr, const AliMCEvent* event) const;
   // Find the primary particle of a decay chain if it is charged.
   // If `p` is alreay the primary return p. If it was not possible
   // to find the mother or if the mother was not charged, return NULL
