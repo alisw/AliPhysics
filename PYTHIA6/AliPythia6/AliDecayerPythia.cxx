@@ -591,7 +591,9 @@ void AliDecayerPythia::ForceDecay()
      case kLcpK0S:
         ForceHadronicD(0,0,2);
         break;
-
+     case kLcpK0SBDTsig:
+        ForceHadronicD(0,0,4);
+        break;
     }
 }
 
@@ -911,12 +913,19 @@ void AliDecayerPythia::ForceHadronicD(Int_t optUse4Bodies, Int_t optUseDtoV0, In
       ForceParticleDecay(4122,prodLcpKpi,multLcpKpi,3,1);
     }
     if (optForceLcChannel == 2) { //pK0S
-      ForceParticleDecay(4122,prodLcpK0S,multLcpK0S,2,1);
+      ForceParticleDecay(4122,prodLcpK0S,multLcpK0S,2,1); //Lc to p + K0
     }
     if(optForceLcChannel == 3) { // Lambda Pi+ Pi0
       ForceParticleDecay(4122, prodLcLambdaPiPlPi0, multLcLambdaPiPlPi0, 3, 1);
     }
-      
+    
+    if(optForceLcChannel == 4) { // pK0S for BDT signal training: force all K0->K0S->pi+pi-
+      ForceParticleDecay(4122,prodLcpK0S,multLcpK0S,2,1); //Lc to p + K0
+      ForceParticleDecay(311,310,1); // K0 -> K0S
+      ForceParticleDecay(310,211,2); // K0S -> pi+ pi-
+    }
+
+  
 
 }
 
