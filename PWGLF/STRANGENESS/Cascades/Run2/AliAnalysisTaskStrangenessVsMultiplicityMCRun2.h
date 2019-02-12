@@ -135,6 +135,9 @@ public:
     void SetUseOldCentrality ( Bool_t lUseOldCent = kTRUE) {
         fkUseOldCentrality = lUseOldCent;
     }
+    void SetMaxPVR2D ( Float_t lOpt = 1e+5) {
+        fkMaxPVR2D = lOpt;
+    }
     //---------------------------------------------------------------------------------------
     //Task Configuration: Skip Event Selections after trigger (VZERO test)
     void SetDownScaleV0 ( Bool_t lOpt = kTRUE, Float_t lVal = 0.001) {
@@ -322,6 +325,7 @@ private:
     Bool_t fkDoExtraEvSels; //use AliEventCuts for event selection
     Int_t fkPileupRejectionMode; //pileup rejection mode (0=none, 1=ionut, 2=anti-ionut)
     Bool_t fkUseOldCentrality; //if true, use AliCentrality instead of AliMultSelection
+    Float_t fkMaxPVR2D; 
     
     Bool_t fkSaveCascadeTree;         //if true, save TTree
     Bool_t fkDownScaleCascade;

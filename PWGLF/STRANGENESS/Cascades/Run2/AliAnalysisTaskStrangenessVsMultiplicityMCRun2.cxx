@@ -145,6 +145,7 @@ fkDebugOOBPileup(kFALSE),
 fkDoExtraEvSels( kTRUE ),
 fkPileupRejectionMode(0),
 fkUseOldCentrality ( kFALSE ) ,
+fkMaxPVR2D(1e+5), 
 
 //---> Flags controlling Cascade TTree output
 fkSaveCascadeTree       ( kTRUE  ),
@@ -667,7 +668,8 @@ fkDebugBump( kFALSE ),
 fkDebugOOBPileup(kFALSE),
 fkDoExtraEvSels( kTRUE ),
 fkPileupRejectionMode(0), 
-fkUseOldCentrality ( kFALSE ) , 
+fkUseOldCentrality ( kFALSE ) ,
+fkMaxPVR2D(1e+5),
 
 //---> Flags controlling Cascade TTree output
 fkSaveCascadeTree       ( kTRUE  ),
@@ -2081,6 +2083,9 @@ void AliAnalysisTaskStrangenessVsMultiplicityMCRun2::UserExec(Option_t *)
     fTreeVariablePrimVertexX = lBestPrimaryVtxPos[0];
     fTreeVariablePrimVertexY = lBestPrimaryVtxPos[1];
     fTreeVariablePrimVertexZ = lBestPrimaryVtxPos[2];
+    
+    //Optional cut on the R2D of the primary vertex
+    if ( TMath::Sqrt( TMath::Power(fTreeVariablePrimVertexX,2)+TMath::Power(fTreeVariablePrimVertexY,2))>fkMaxPVR2D ) return;
     
     fTreeVariableMagneticField = lMagneticField;
     
