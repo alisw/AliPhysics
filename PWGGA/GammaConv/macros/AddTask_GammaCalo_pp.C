@@ -1090,8 +1090,6 @@ void AddTask_GammaCalo_pp(
     cuts.AddCutCalo("00085113","1111102067032220000","01631031000000d0"); // -50ns, 30ns timing cut, NLtestbeam EG2
     cuts.AddCutCalo("00083113","1111102067032220000","01631031000000d0"); // -50ns, 30ns timing cut, NLtestbeam EG1
 
-
-
   // *********************************************************************************************************
   // 13 TeV  DMC configurations
   // *********************************************************************************************************
@@ -1168,7 +1166,39 @@ void AddTask_GammaCalo_pp(
     cuts.AddCutCalo("06776113","1111122067032220000","01631031000000d0"); // -30ns, 35ns timing cut, NL2 INT7, VOHM with SPD
     cuts.AddCutCalo("07876113","1111122067032220000","01631031000000d0"); // -30ns, 35ns timing cut, NL2 INT7, VOHM with SPD
 
-
+  } else if (trainConfig == 550){  // EMCAL+DCAL clusters 13 TeV std. QA
+    cuts.AddCutCalo("00010113","4117900007032220000","01631031000000d0"); // no timing cut, no NL INT7
+    cuts.AddCutCalo("00010113","4117900067032220000","01631031000000d0"); // no timing cut, no NL INT7
+  } else if (trainConfig == 551){  // EMCAL+DCAL clusters 13 TeV std. QA
+    cuts.AddCutCalo("00010113","4117900067032220000","01631031000000d0"); // -30ns, 35ns timing cut, no NL INT7
+    cuts.AddCutCalo("00010113","41179000a7032220000","01631031000000d0"); // -12.5ns, 12.5ns timing cut, no NL INT7
+    cuts.AddCutCalo("00010113","411790006f032220000","01631031000000d0"); // -30ns, 35ns timing cut, no NL INT7
+    cuts.AddCutCalo("00010113","41179000af032220000","01631031000000d0"); // -12.5ns, 12.5ns timing cut, no NL INT7
+  } else if (trainConfig == 552){ // EMCAL+DCAL clusters standard cuts, triggers, no NL, std TM, tight timing
+    cuts.AddCutCalo("00010113","41179000a7032230000","01631031000000d0"); // INT7
+    cuts.AddCutCalo("0008e113","41179000a7032230000","01631031000000d0"); // EG2
+    cuts.AddCutCalo("0008d113","41179000a7032230000","01631031000000d0"); // EG1
+    cuts.AddCutCalo("0009b113","41179060a7032230000","01631031000000d0"); // EJ1
+  } else if (trainConfig == 553){ // EMCAL+DCAL clusters standard cuts, triggers, no NL, E/p TM, tight timing
+    cuts.AddCutCalo("00010113","41179000af032230000","01631031000000d0"); // INT7
+    cuts.AddCutCalo("0008e113","41179000af032230000","01631031000000d0"); // EG2
+    cuts.AddCutCalo("0008d113","41179000af032230000","01631031000000d0"); // EG1
+    cuts.AddCutCalo("0009b113","41179060af032230000","01631031000000d0"); // EJ1
+  } else if (trainConfig == 554){ // EMCAL+DCAL clusters standard cuts, triggers, no NL, std TM, -50ns, 30ns timing cut
+    cuts.AddCutCalo("00010113","4117900067032230000","01631031000000d0"); // INT7
+    cuts.AddCutCalo("0008e113","4117900067032230000","01631031000000d0"); // EG2
+    cuts.AddCutCalo("0008d113","4117900067032230000","01631031000000d0"); // EG1
+    cuts.AddCutCalo("0009b113","4117906067032230000","01631031000000d0"); // EJ1
+  } else if (trainConfig == 555){ // EMCAL+DCAL clusters standard cuts, triggers, no NL, E/p TM, tight timing
+    cuts.AddCutCalo("00010113","411790006f032230000","01631031000000d0"); // INT7
+    cuts.AddCutCalo("0008e113","411790006f032230000","01631031000000d0"); // EG2
+    cuts.AddCutCalo("0008d113","411790006f032230000","01631031000000d0"); // EG1
+    cuts.AddCutCalo("0009b113","411790606f032230000","01631031000000d0"); // EJ1
+  } else if (trainConfig == 556){ // EMCAL+DCAL clusters standard cuts, triggers, no NL, E/p TM, tight timing
+    cuts.AddCutCalo("00010113","41179110af032220000","01631031000000d0"); // -12.5ns, 12.5ns timing cut
+    cuts.AddCutCalo("00010113","41179120af032220000","01631031000000d0"); // -12.5ns, 12.5ns timing cut
+    cuts.AddCutCalo("00010113","41179210af032220000","01631031000000d0"); // -12.5ns, 12.5ns timing cut
+    cuts.AddCutCalo("00010113","41179220af032220000","01631031000000d0"); // -12.5ns, 12.5ns timing cut
   // *********************************************************************************************************
   // 5 TeV 2015 pp Run2 - DMC configurations
   // *********************************************************************************************************
