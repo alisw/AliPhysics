@@ -227,46 +227,8 @@ AliFemtoConfigObject AliFemtoAnalysisPionPion::GetConfigurationOf<AliFemtoPairCu
     ;
 }
 
-
-template<>
-AliFemtoEventCutCentrality*
-AliFemtoConfigObject::Into<AliFemtoEventCutCentrality>(bool)
-{
-  Configuration<AliFemtoBasicEventCut> cfg;
-  AliFemtoEventCutCentrality *cut = new AliFemtoEventCutCentrality();
-
-  cut->SetCentralityRange(cfg.centrality.first, cfg.centrality.second);
-  cut->SetZPosRange(cfg.vertex_z.first, cfg.vertex_z.second);
-  cut->SetEPVZERO(cfg.ep_psi.first, cfg.ep_psi.second);
-  cut->SetTriggerSelection(cfg.trigger_selection);
-
-  return cut;
-}
-
-template<>
-AliFemtoBasicEventCut*
-AliFemtoConfigObject::Into<AliFemtoBasicEventCut>(bool)
-{
-  Configuration<AliFemtoBasicEventCut> cfg;
-
-  // auto x = cfg.Construct<AliFemtoEventCutCentrality>("event");
-
-  // load("multiplicity", cfg.multiplicity);
-  // pop_and_load("vertex_z", cfg.vertex_z);
-  // pop_and_load("ep_v0", cfg.EP_VZero);
-  // pop_and_load("trigger_selection", cfg.trigger_selection);
-
-  AliFemtoBasicEventCut *cut = new AliFemtoBasicEventCut();
-
-  cut->SetEventMult(cfg.multiplicity.first, cfg.multiplicity.second);
-  cut->SetVertZPos(cfg.vertex_z.first, cfg.vertex_z.second);
-  cut->SetEPVZERO(cfg.ep_psi.first, cfg.ep_psi.second);
-  cut->SetTriggerSelection(cfg.trigger_selection);
-  // cut->SetAcceptBadVertex(cfg.accept_bad_vertex);
-  // cut->SetAcceptOnlyPhysics(cfg.accept_only_physics);
-
-  return cut;
-}
+extern template AliFemtoEventCutCentrality* AliFemtoConfigObject::Into<AliFemtoEventCutCentrality>(bool);
+extern template AliFemtoBasicEventCut* AliFemtoConfigObject::Into<AliFemtoBasicEventCut>(bool);
 
 
 /// Configuration for creating a particle cut specifically for usage
@@ -312,36 +274,6 @@ struct CutConfig_Pair {
 
   CutConfig_Pair(){};
 };
-
-template<>
-AliFemtoESDTrackCut*
-AliFemtoConfigObject::Into<AliFemtoESDTrackCut>(bool)
-{
-
-  CutConfig_Pion cfg;
-
-  AliFemtoESDTrackCut *cut = new AliFemtoESDTrackCut();
-  cut->SetCharge(cfg.charge);
-  cut->SetMass(PionMass);
-  cut->SetPt(cfg.pt.first, cfg.pt.second);
-  cut->SetEta(cfg.eta.first, cfg.eta.second);
-  cut->SetRapidity(cfg.eta.first, cfg.eta.second);
-  cut->SetMostProbablePion();
-//   cut->SetStatus(AliESDtrack::kTPCrefit | AliESDtrack::kITSrefit);
-
-  /// Settings for TPC-Inner Runmode
-  cut->SetStatus(AliESDtrack::kTPCin);
-  cut->SetminTPCncls(cfg.min_tpc_ncls);
-  // cut->SetRemoveKinks(cfg.remove_kinks);
-  // cut->SetLabel(cfg.set_label);
-  cut->SetMaxTPCChiNdof(cfg.max_tpc_chi_ndof);
-  cut->SetMaxITSChiNdof(cfg.max_its_chi_ndof);
-  cut->SetMaxImpactXY(cfg.max_impact_xy);
-  cut->SetMaxImpactZ(cfg.max_impact_z);
-
-  return cut;
-}
-
 
 static const Configuration<AliFemtoBasicEventCut> default_event;
 static const CutConfig_Pion default_pion;
@@ -903,6 +835,7 @@ void AliFemtoAnalysisPionPion::EventEnd(const AliFemtoEvent* ev)
     corr_fctn->EventEnd(ev);
   }
 }
+
 
 AliFemtoEventReader*
 AliFemtoAnalysisPionPion::ConstructEventReader(AliFemtoConfigObject cfg)

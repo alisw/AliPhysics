@@ -216,6 +216,17 @@ AliFemtoConfigObject::Into<AliFemtoTrackCut>(bool)
 //   return nullptr;
 // }
 
+// template<>
+// AliFemtoV0TrackCut*
+// AliFemtoConfigObject::Into<AliFemtoV0TrackCut>(bool)
+// {
+//   return nullptr;
+// }
+
+
+//
+//  PARTICLE CUTS (forwards to Track/V0)
+//
 
 
 //
@@ -239,13 +250,6 @@ AliFemtoConfigObject::From<AliFemtoParticleCut>(const AliFemtoParticleCut &obj)
 }
 
 template<>
-AliFemtoV0TrackCut*
-AliFemtoConfigObject::Into<AliFemtoV0TrackCut>(bool)
-{
-  return nullptr;
-}
-
-template<>
 AliFemtoParticleCut*
 AliFemtoConfigObject::Into<AliFemtoParticleCut>(bool)
 {
@@ -256,6 +260,7 @@ AliFemtoConfigObject::Into<AliFemtoParticleCut>(bool)
     return nullptr;
   }
 
+  FORWARD_TO_BUILDER(AliFemtoTrackCut, AliFemtoTrackCutPionPionAK);
   FORWARD_TO_BUILDER(AliFemtoTrackCut, AliFemtoESDTrackCut);
   FORWARD_TO_BUILDER(AliFemtoTrackCut, AliFemtoAODTrackCut);
   FORWARD_TO_BUILDER(AliFemtoV0TrackCut, AliFemtoV0TrackCut);
@@ -312,6 +317,22 @@ AliFemtoConfigObject::Into<AliFemtoPairCut>(bool)
 
   return nullptr;
 }
+
+
+// implement various standard AliFemtoConfigObj <-> Configuration<T> <-> Pointer
+// functions
+#define IMPL_CFG_INTO_OBJ(T) \
+  template <>                \
+  T* AliFemtoConfigObject::Into<T>(bool _debug) { \
+    Configuration<T> cfg(*this);  \
+    T *cut = new T(); cfg.Configure(*cut); return cut; }
+
+
+IMPL_CFG_INTO_OBJ(AliFemtoEventCutCentrality)
+IMPL_CFG_INTO_OBJ(AliFemtoBasicEventCut)
+IMPL_CFG_INTO_OBJ(AliFemtoESDTrackCut)
+
+#undef IMPL_CFG_INTO_OBJ
 
 
 #if __cplusplus >= 201103L

@@ -2,7 +2,6 @@
 /// \file AliFemtoUser/AliFemtoCutAttrPairV0.h
 ///
 
-
 #pragma once
 
 #ifndef ALIFEMTOCUTATTRPAIRV0_H
@@ -100,7 +99,7 @@ struct PairCutV0MinEntranceSep {
 };
 
 /// \class PairCutV0AvgSep
-/// \brief Cut with
+/// \brief Cut pairs with child-tracks likely split track
 ///
 struct PairCutV0AvgSep {
 
