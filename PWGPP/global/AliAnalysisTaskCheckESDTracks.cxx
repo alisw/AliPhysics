@@ -852,6 +852,7 @@ void AliAnalysisTaskCheckESDTracks::UserExec(Option_t *)
     fTreeVarInt[6]=tofOK;
 
     Int_t trlabel=track->GetLabel();
+    Int_t abstrlabel=TMath::Abs(track->GetLabel());
     Float_t dedx=track->GetTPCsignal();
     Int_t  pidtr=track->GetPIDForTracking();
     Int_t  pidtr0=track->GetPIDForTracking0();
@@ -886,11 +887,11 @@ void AliAnalysisTaskCheckESDTracks::UserExec(Option_t *)
     Int_t isPhysPrim=-999;
     Int_t pdgCode=0;
     if(fReadMC){
-      Bool_t isBG = mcEvent->IsFromSubsidiaryEvent(iTrack);
+      Bool_t isBG = mcEvent->IsFromSubsidiaryEvent(abstrlabel);
       if(isBG) nBGtracks++;
       else nEmbeddedtracks++;
       
-      TParticle* part = mcEvent->Particle(TMath::Abs(trlabel));
+      TParticle* part = mcEvent->Particle(abstrlabel);
       if (part){
 	ptgen=part->Pt();
 	pgen=part->P();
@@ -901,9 +902,9 @@ void AliAnalysisTaskCheckESDTracks::UserExec(Option_t *)
 	etagen=part->Eta();
 	phigen=part->Phi();
 	pdgCode=part->GetPdgCode();
-	if(mcEvent->IsPhysicalPrimary(TMath::Abs(trlabel))) isPhysPrim=1;
-	else if(mcEvent->IsSecondaryFromWeakDecay(TMath::Abs(trlabel))) isPhysPrim=0;
-	else if(mcEvent->IsSecondaryFromMaterial(TMath::Abs(trlabel))) isPhysPrim=-1;
+	if(mcEvent->IsPhysicalPrimary(abstrlabel)) isPhysPrim=1;
+	else if(mcEvent->IsSecondaryFromWeakDecay(abstrlabel)) isPhysPrim=0;
+	else if(mcEvent->IsSecondaryFromMaterial(abstrlabel)) isPhysPrim=-1;
 	if (fUseMCId) {
 	  int pdg = TMath::Abs(part->GetPdgCode());
 	  for (int iS = 0; iS < AliPID::kSPECIESC; ++iS) {
