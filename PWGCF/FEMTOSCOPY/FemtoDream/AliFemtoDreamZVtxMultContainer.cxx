@@ -188,7 +188,6 @@ void AliFemtoDreamZVtxMultContainer::PairParticlesME(
             // Delta eta - Delta phi* cut
             if (fDoDeltaEtaDeltaPhiCut) {
               if (!RejectClosePairs(part1, part2)) {
-                ++itPart2;
                 continue;
               }
             }
