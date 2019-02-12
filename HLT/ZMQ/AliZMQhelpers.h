@@ -24,11 +24,12 @@
 #include <string>
 #include <map>
 #include "TMessage.h"
-struct zmq_msg_t;
+#include "zmq.h"
 class TVirtualStreamerInfo;
 
 namespace AliZMQhelpers
 {
+using freefn = void(void* data, void* hint);
 struct DataTopic;
 
 extern void* gZMQcontext; //a global ZMQ context
@@ -46,7 +47,7 @@ typedef std::vector<TVirtualStreamerInfo*> aliZMQrootStreamerInfo;
 //  PUB@tcp://*:123123
 //  SUB>tcp://localhost:123123,@tcp://*:454545
 //  timeout is in ms, -1 is wait forever
-int alizmq_socket_init(void*& socket, void* context, std::string config, int timeout=-1, int highWaterMark=10);
+int alizmq_socket_init(void*& socket, void* context, std::string config, int timeout=-1, int highWaterMark=10, int lingerValue=10);
 int alizmq_socket_close(void*& socket, int linger=0);
 int alizmq_socket_state(void* socket);
 
@@ -112,7 +113,6 @@ int alizmq_msg_send(const DataTopic& topic, const std::string& data, void* socke
 //deallocate an object - callback for ZMQ
 void alizmq_deleteTObject(void*, void* object);
 void alizmq_deleteTopic(void*, void* object);
-
 const int kDataTypefIDsize = 8;
 const int kDataTypefOriginSize = 4;
 const int kDataTypeTopicSize = kDataTypefIDsize+kDataTypefOriginSize;
@@ -136,7 +136,7 @@ struct BaseDataTopic
   ULong64_t fHeaderDescription; // 8 bytes
   ULong64_t fHeaderSerialization; // 8 bytes
   BaseDataTopic();
-  BaseDataTopic(UInt_t size, ULong64_t desc, ULong64_t seri);
+  BaseDataTopic(UInt_t size, ULong64_t desc, ULong64_t seri, bool more=false);
   static BaseDataTopic* Get(void* buf) {
     return (*reinterpret_cast<UInt_t*>(buf)==fgkMagicNumber)?
            reinterpret_cast<BaseDataTopic*>(buf):
@@ -157,8 +157,8 @@ struct DataTopic : public BaseDataTopic
   ULong64_t fPayloadSize;       // 8 bytes
 
   //ctor
-  DataTopic()
-    : BaseDataTopic(sizeof(DataTopic), fgkDataTopicDescription, fgkTopicSerialization)
+  explicit DataTopic(bool more = false)
+    : BaseDataTopic(sizeof(DataTopic), fgkDataTopicDescription, fgkTopicSerialization, more)
     , fDataDescription()
     , fDataOrigin(0)
     , fReserved(0)
@@ -171,8 +171,8 @@ struct DataTopic : public BaseDataTopic
   }
 
   //ctor
-  DataTopic(const char* id, const char* origin, int spec, ULong64_t serialization )
-    : BaseDataTopic(sizeof(DataTopic), fgkDataTopicDescription, fgkTopicSerialization)
+  DataTopic(const char* id, const char* origin, ULong64_t spec, ULong64_t serialization, bool more = false)
+    : BaseDataTopic(sizeof(DataTopic), fgkDataTopicDescription, fgkTopicSerialization, more)
     , fDataDescription()
     , fDataOrigin(0)
     , fReserved(0)
@@ -180,8 +180,13 @@ struct DataTopic : public BaseDataTopic
     , fSpecification(spec)
     , fPayloadSize(0)
   {
+    if (strlen(id)<8) {
     fDataDescription[0] = 0;
     fDataDescription[1] = CharArr2uint64(id);
+    } else {
+      fDataDescription[0] = CharArr2uint64(id);
+      fDataDescription[1] = CharArr2uint64(id+8);
+    }
     fDataOrigin = CharArr2uint32(origin);
   }
 
@@ -235,6 +240,7 @@ extern const DataTopic kDataTypeInfo;
 extern const DataTopic kDataTypeConfig;
 extern const DataTopic kDataTypeTObject;
 extern const DataTopic kDataTypeTH1;
+extern const DataTopic kDataTypeAOD;
 
 extern const ULong64_t kSerializationHLTROOT;
 extern const ULong64_t kSerializationROOT;

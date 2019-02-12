@@ -19,7 +19,6 @@
 
 #include "AliZMQhelpers.h"
 
-#include "zmq.h"
 #include <cstring>
 #include <cassert>
 #include <unistd.h>
@@ -51,6 +50,7 @@ const AliZMQhelpers::DataTopic AliZMQhelpers::kDataTypeInfo("INFO____","***\n",0
 const AliZMQhelpers::DataTopic AliZMQhelpers::kDataTypeConfig("CONFIG__","***\n",0,AliZMQhelpers::kSerializationNONE);
 const AliZMQhelpers::DataTopic AliZMQhelpers::kDataTypeTObject("ROOTTOBJ","***\n",0,AliZMQhelpers::kSerializationROOT);
 const AliZMQhelpers::DataTopic AliZMQhelpers::kDataTypeTH1("ROOTHIST","***\n",0,AliZMQhelpers::kSerializationROOT);
+const AliZMQhelpers::DataTopic AliZMQhelpers::kDataTypeAOD("AODDATA","***\n",0,AliZMQhelpers::kSerializationNONE);
 
 //_______________________________________________________________________________________
 void* AliZMQhelpers::alizmq_context()
@@ -216,7 +216,7 @@ int AliZMQhelpers::alizmq_socket_close(void*& socket, int linger)
 }
 
 //_______________________________________________________________________________________
-int AliZMQhelpers::alizmq_socket_init(void*& socket, void* context, std::string config, int timeout, int highWaterMark)
+int AliZMQhelpers::alizmq_socket_init(void*& socket, void* context, std::string config, int timeout, int highWaterMark, int lingerValue)
 {
   int rc = 0;
   int zmqSocketMode = 0;
@@ -250,8 +250,8 @@ int AliZMQhelpers::alizmq_socket_init(void*& socket, void* context, std::string 
   if (socket)
   {
     newSocket=false;
-    int lingerValue = 10;
-    rc = zmq_setsockopt(socket, ZMQ_LINGER, &lingerValue, sizeof(lingerValue));
+    int tmplingerValue = 10;
+    rc = zmq_setsockopt(socket, ZMQ_LINGER, &tmplingerValue, sizeof(tmplingerValue));
     if (rc!=0)
     {
       //printf("cannot set linger 0 on socket before closing\n");
@@ -299,7 +299,6 @@ int AliZMQhelpers::alizmq_socket_init(void*& socket, void* context, std::string 
     return -5;
   }
 
-  int lingerValue = 0;
   rc += zmq_setsockopt(socket, ZMQ_LINGER, &lingerValue, sizeof(lingerValue));
   //printf("socket mode: %s, endpoints: %s\n",alizmq_socket_name(zmqSocketMode), zmqEndpoints.c_str());
 
@@ -315,6 +314,7 @@ int AliZMQhelpers::alizmq_msg_add(aliZMQmsg* message, const std::string& topicSt
 
   DataTopic topic;
   topic.SetID(topicString.c_str());
+  topic.SetPayloadSize(data.size());
 
   //prepare topic msg
   zmq_msg_t* topicMsg = new zmq_msg_t;
@@ -371,6 +371,8 @@ int AliZMQhelpers::alizmq_msg_add(aliZMQmsg* message, const DataTopic* topic, vo
   }
   memcpy(zmq_msg_data(dataMsg),data,size);
 
+  static_cast<DataTopic*>(zmq_msg_data(topicMsg))->SetPayloadSize(size);
+
   //add the frame to the message
   message->push_back(std::make_pair(topicMsg,dataMsg));
   return message->size();
@@ -403,6 +405,8 @@ int AliZMQhelpers::alizmq_msg_add(aliZMQmsg* message, const DataTopic* topic, co
     return -1;
   }
   memcpy(zmq_msg_data(dataMsg),data.data(),data.size());
+
+  static_cast<DataTopic*>(zmq_msg_data(topicMsg))->SetPayloadSize(data.size());
 
   //add the frame to the message
   message->push_back(std::make_pair(topicMsg,dataMsg));
@@ -749,7 +753,6 @@ void AliZMQhelpers::alizmq_deleteTopic(void*, void* object)
   delete topic;
 }
 
-
 //_______________________________________________________________________________________
 int AliZMQhelpers::alizmq_msg_close(aliZMQmsg* message)
 {
@@ -1093,10 +1096,10 @@ AliZMQhelpers::BaseDataTopic::BaseDataTopic()
 }
 
 //______________________________________________________________________________
-AliZMQhelpers::BaseDataTopic::BaseDataTopic(UInt_t size, ULong64_t desc, ULong64_t seri)
+AliZMQhelpers::BaseDataTopic::BaseDataTopic(UInt_t size, ULong64_t desc, ULong64_t seri, bool more)
   : fMagicNumber(fgkMagicNumber)
   , fHeaderSize(size)
-  , fFlags(0)
+  , fFlags(more?1:0)
   , fBaseHeaderVersion(1)
   , fHeaderDescription(desc)
   , fHeaderSerialization(seri)
