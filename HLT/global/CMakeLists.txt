@@ -108,14 +108,15 @@ set(SRCS
     physics/examples/AliAnalysisTaskExampleV.cxx
    )
 
-if(DEFINED ALITPCCOMMON_DIR)
-  add_definitions(-DHAVE_ALITPCCOMMON -DGPUCA_ALIROOT_LIB)
+if(DEFINED ALIGPU_DIR)
+  add_definitions(-DHAVE_ALIGPU -DGPUCA_ALIROOT_LIB)
   set(SRCS ${SRCS} AliHLTGlobalPromptRecoQAComponent.cxx)
-  include_directories(${ALITPCCOMMON_DIR}/sources/CAGPUTracking/SliceTracker
-    ${ALITPCCOMMON_DIR}/sources/CAGPUTracking/TRDTracking
-    ${ALITPCCOMMON_DIR}/sources/CAGPUTracking/Merger
-    ${ALITPCCOMMON_DIR}/sources/CAGPUTracking/GlobalTracker
-    ${ALITPCCOMMON_DIR}/sources/Common
+  include_directories(${ALIGPU_DIR}/sources/GPUTracking/SliceTracker
+    ${ALIGPU_DIR}/sources/GPUTracking/TRDTracking
+    ${ALIGPU_DIR}/sources/GPUTracking/Merger
+    ${ALIGPU_DIR}/sources/GPUTracking/Global
+    ${ALIGPU_DIR}/sources/GPUTracking/Base
+    ${ALIGPU_DIR}/sources/Common
   )
 endif()
 

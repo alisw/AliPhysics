@@ -43,7 +43,7 @@
 #include <iomanip>
 #include <TGeoGlobalMagField.h>
 
-#ifdef HAVE_ALITPCCOMMON
+#ifdef HAVE_ALIGPU
 #include "TPCFastTransform.h"
 #include "TPCFastTransformManager.h"
 #endif
@@ -60,7 +60,7 @@ AliHLTTPCClusterTransformation::AliHLTTPCClusterTransformation()
   fTransformKind( TransformOldFastTransform ),
   fOrigTransform(NULL),
   fFastTransform(),
-#ifdef HAVE_ALITPCCOMMON
+#ifdef HAVE_ALIGPU
   fFastTransformIRS(new ali_tpc_common::tpc_fast_transformation::TPCFastTransform),
   fFastTransformManager( new ali_tpc_common::tpc_fast_transformation::TPCFastTransformManager ),
 #else
@@ -79,7 +79,7 @@ AliHLTTPCClusterTransformation::AliHLTTPCClusterTransformation()
 AliHLTTPCClusterTransformation::~AliHLTTPCClusterTransformation()
 {
   // see header file for class documentation
-#ifdef HAVE_ALITPCCOMMON
+#ifdef HAVE_ALIGPU
   delete fFastTransformManager;
   delete fFastTransformIRS;
 #endif
@@ -189,7 +189,7 @@ int  AliHLTTPCClusterTransformation::Init( Long_t TimeStamp, bool isMC, Transfor
     return Error(-10,Form( "AliHLTTPCClusterTransformation::Init: Initialisation of Fast Transformation failed with error %d :%s",err,fFastTransform.GetLastError()) );
   }
 
-#ifdef HAVE_ALITPCCOMMON
+#ifdef HAVE_ALIGPU
   if( fTransformKind == TransformFastIRS ){
     err = fFastTransformManager->create( *fFastTransformIRS, pCalib->GetTransform(), TimeStamp );
     if( err!=0 ){
@@ -260,7 +260,7 @@ Int_t AliHLTTPCClusterTransformation::SetCurrentTimeStamp( Long_t TimeStamp )
     return Error(-4,Form( "AliHLTTPCClusterTransformation::SetCurrentTimeStamp: SetCurrentTimeStamp to the Fast Transformation failed with error %d :%s",err,fFastTransform.GetLastError()) );
   }
 
-#ifdef HAVE_ALITPCCOMMON
+#ifdef HAVE_ALIGPU
   if( fTransformKind == TransformFastIRS ){
     err = fFastTransformManager->updateCalibration( *fFastTransformIRS, TimeStamp );
     if( err!=0 ){
@@ -294,7 +294,7 @@ Int_t  AliHLTTPCClusterTransformation::Transform( int Slice, int Row, float Pad,
 {
   //static int st=0;
   //st++;
-#ifdef HAVE_ALITPCCOMMON
+#ifdef HAVE_ALIGPU
   if( fTransformKind == TransformFastIRS ){
     //if( st<100) cout<<"IRS"<<endl;
     int err = fFastTransformIRS->Transform( Slice, Row, Pad, Time, XYZ[0], XYZ[1], XYZ[2]);

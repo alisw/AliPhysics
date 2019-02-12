@@ -45,7 +45,7 @@
 #include <memory>
 #include <iostream>
 #include <iomanip>
-#ifdef HAVE_ALITPCCOMMON
+#ifdef HAVE_ALIGPU
 #include "AliGPUTPCGMTracksToTPCSeeds.h"
 #endif
 
@@ -169,7 +169,7 @@ void AliHLTTPCClusterAccessHLTOUT::Copy(TObject &object) const
     TObjArray* seeds = dynamic_cast<TObjArray*>(&object);
     if (seeds)
     {
-#ifdef HAVE_ALITPCCOMMON
+#ifdef HAVE_ALIGPU
       if (fCopySeeds == 1) AliGPUTPCGMTracksToTPCSeeds::CreateSeedsFromHLTTracks(seeds, fTPCtracker);
       else if (fCopySeeds == 2) AliGPUTPCGMTracksToTPCSeeds::UpdateParamsOuter(seeds);
       else if (fCopySeeds == 3) AliGPUTPCGMTracksToTPCSeeds::UpdateParamsInner(seeds);

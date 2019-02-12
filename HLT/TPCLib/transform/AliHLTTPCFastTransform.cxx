@@ -27,7 +27,7 @@
 #include "AliTPCcalibDB.h"
 #include "AliHLTTPCFastTransformObject.h"
 #include "AliHLTTPCDataCompressionComponent.h"
-#ifdef HAVE_ALITPCCOMMON
+#ifdef HAVE_ALIGPU
 #include "AliHLTTPCClusterStatComponent.h"
 #endif
 #include "AliHLTTPCGeometry.h"
@@ -382,7 +382,7 @@ Int_t AliHLTTPCFastTransform::SetCurrentTimeStamp( Long_t TimeStamp )
     }
   }
 
-#ifdef HAVE_ALITPCCOMMON
+#ifdef HAVE_ALIGPU
   AliHLTTPCReverseTransformInfoV1* info = fOrigTransform->GetReverseTransformInfo();
   TVectorD param(3);
 

@@ -69,7 +69,7 @@
 #include "AliHLTSAPTrackerData.h"
 #include "AliFlatESDVertex.h"
 #include "AliHLTTRDDefinitions.h"
-#ifdef HAVE_ALITPCCOMMON
+#ifdef HAVE_ALIGPU
 #include "AliGPUTRDTrack.h"
 #include "AliGPUTRDTrackData.h"
 #include "AliGPUTRDTrackPoint.h"
@@ -145,7 +145,7 @@ void AliHLTGlobalEsdConverterComponent::GetInputDataTypes(AliHLTComponentDataTyp
   list.push_back(AliHLTTPCDefinitions::ClustersXYZDataType() );
   list.push_back(kAliHLTDataTypeFlatESDVertex); // VertexTracks resonctructed using SAP ITS tracks
   list.push_back(kAliHLTDataTypeITSSAPData);    // SAP ITS tracks
-#ifdef HAVE_ALITPCCOMMON
+#ifdef HAVE_ALIGPU
   list.push_back(AliHLTTRDDefinitions::fgkTRDTrackDataType);
   list.push_back(AliHLTTRDDefinitions::fgkTRDTrackPointDataType);
 #endif
@@ -1224,7 +1224,7 @@ int AliHLTGlobalEsdConverterComponent::ProcessBlocks(TTree* pTree, AliESDEvent* 
   */
 
   // 4. convert the HLT TRD tracks to ESD tracks                        
-#ifdef HAVE_ALITPCCOMMON
+#ifdef HAVE_ALIGPU
   if (storeTracks){
 
     const AliGPUTRDTrackPointData * trackPoints = 0;

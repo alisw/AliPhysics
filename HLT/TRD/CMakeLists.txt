@@ -46,11 +46,11 @@ set(SRCS
     AliTRDonlineTrackingDataContainer.cxx
    )
 
-if(DEFINED ALITPCCOMMON_DIR)
-    add_definitions(-DHAVE_ALITPCCOMMON)
-    include_directories(${ALITPCCOMMON_DIR}/sources/CAGPUTracking/SliceTracker
-                        ${ALITPCCOMMON_DIR}/sources/CAGPUTracking/Merger
-                        ${ALITPCCOMMON_DIR}/sources/CAGPUTracking/TRDTracking
+if(DEFINED ALIGPU_DIR)
+    add_definitions(-DHAVE_ALIGPU)
+    include_directories(${ALIGPU_DIR}/sources/GPUTracking/SliceTracker
+                        ${ALIGPU_DIR}/sources/GPUTracking/Merger
+                        ${ALIGPU_DIR}/sources/GPUTracking/TRDTracking
     )
 endif()
 

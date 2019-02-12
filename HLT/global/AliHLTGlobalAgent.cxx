@@ -53,7 +53,7 @@
 #include "AliHLTRootObjectMergerComponent.h"
 #include "AliHLTAsyncCalibrationComponent.h"
 #include "AliHLTZeroComponent.h"
-#ifdef HAVE_ALITPCCOMMON
+#ifdef HAVE_ALIGPU
 #include "AliHLTGlobalPromptRecoQAComponent.h"
 #endif
 #ifdef ZMQ
@@ -117,7 +117,7 @@ int AliHLTGlobalAgent::RegisterComponents(AliHLTComponentHandler* pHandler) cons
   pHandler->AddComponent(new AliHLTZeroComponent);
   pHandler->AddComponent(new AliHLTLumiRegComponent);
   pHandler->AddComponent(new AliHLTRootObjectMergerComponent);
-#ifdef HAVE_ALITPCCOMMON
+#ifdef HAVE_ALIGPU
   pHandler->AddComponent(new AliHLTGlobalPromptRecoQAComponent);
 #endif
 #ifdef ZMQ

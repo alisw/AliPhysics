@@ -56,9 +56,9 @@ add_subdirectory(shuttle)
 add_subdirectory(sim)
 add_subdirectory(ZMQ)
 
-if(DEFINED ALITPCCOMMON_DIR)
-    set(ALITPCCOMMON_BUILD_TYPE "ALIROOT")
-    add_subdirectory(${ALITPCCOMMON_DIR}/sources/Common AliTPCCommonBase)
+if(DEFINED ALIGPU_DIR)
+    set(ALIGPU_BUILD_TYPE "ALIROOT")
+    add_subdirectory(${ALIGPU_DIR}/sources/Common AliGPUCommon)
 endif()
 
 if (DIM_FOUND)

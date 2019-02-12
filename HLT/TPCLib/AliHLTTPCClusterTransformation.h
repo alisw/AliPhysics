@@ -53,7 +53,7 @@ class AliHLTTPCClusterTransformation{
   enum  TransformationKind  {
     TransformOldFastTransform = 0,    ///< old fast transfrom with splines
     TransformOriginal         = 1,    ///< original
-    TransformFastIRS          = 2     ///< new fast transform with irregular splines from AliTPCCommon
+    TransformFastIRS          = 2     ///< new fast transform with irregular splines from AliGPU
    };
 
   /** standard constructor */
