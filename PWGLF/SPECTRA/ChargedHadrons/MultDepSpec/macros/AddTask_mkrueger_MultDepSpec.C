@@ -47,7 +47,7 @@ AliMultDepSpecAnalysisTask* AddTask_mkrueger_MultDepSpec(TString controlstring, 
   }
   if(controlstring.Contains("pPb"))  {
     colsys = "pPb";
-    multSteps[0] = 300;   multBinWidth[0] = 1;
+    multSteps[0] = 200;   multBinWidth[0] = 1;
     multSteps[1] = 0;     multBinWidth[1] = 1;
     multSteps[2] = 0;     multBinWidth[2] = 1;
     is2013pA = kTRUE;
