@@ -514,6 +514,9 @@ public:
     kQnFMDCrpH2,               // FMDA eventplane from QnCorrections framework
     kQnFMDCxH2,
     kQnFMDCyH2,
+    kQnZDCArpH2,               // ZDCA eventplane from QnCorrections framework
+    kQnZDCCrpH2,               // ZDCC eventplane from QnCorrections framework
+ 
     // Average Eventplane differences for 2nd harmonics from QnCorrections framework est. 2016 - as input for 3 sub-detector method
     // Returns cos(2(psi_DetA-psi_DetB))
     kQnDiffTPC_V0A,
@@ -3849,7 +3852,7 @@ inline void AliDielectronVarManager::FillValues(const TParticle *particle, Doubl
 
 //________________________________________________________________
 inline void AliDielectronVarManager::FillQnEventplanes(TList *qnlist, Double_t * const values){
-  Bool_t bTPCqVector(kFALSE), bTPCaSideqVector(kFALSE), bTPCcSideqVector(kFALSE), bV0AqVector(kFALSE), bV0CqVector(kFALSE), bV0qVector(kFALSE),bSPDqVector(kFALSE), bFMDAqVector(kFALSE), bFMDCqVector(kFALSE);
+  Bool_t bTPCqVector(kFALSE), bTPCaSideqVector(kFALSE), bTPCcSideqVector(kFALSE), bV0AqVector(kFALSE), bV0CqVector(kFALSE), bV0qVector(kFALSE),bSPDqVector(kFALSE), bFMDAqVector(kFALSE), bFMDCqVector(kFALSE), bZDCAqVector(kFALSE), bZDCCqVector(kFALSE);
   for (Int_t i = AliDielectronVarManager::kQnTPCrpH2; i <= AliDielectronVarManager::kQnCorrFMDAy_FMDCy; i++) {
     values[i] = -999.;
   }
@@ -3970,6 +3973,28 @@ inline void AliDielectronVarManager::FillQnEventplanes(TList *qnlist, Double_t *
     // values[AliDielectronVarManager::kQnFMDCyH2]  = qVecQnFrameworkFMDC->Qy(2);
   }
   delete qVectorFMDC;
+  
+  // ZDCA Eventplane q-Vector
+  qnListDetector = "ZDCA" + fgQnVectorNorm;
+  const AliQnCorrectionsQnVector *qVecQnFrameworkZDCA = AliDielectronQnEPcorrection::GetQnVectorFromList(qnlist,qnListDetector.Data(),"latest","latest");
+  TVector2 *qVectorZDCA = new TVector2(-200.,-200.);
+  if(qVecQnFrameworkZDCA != NULL){
+    bZDCAqVector = kTRUE;
+    qVectorZDCA->Set(qVecQnFrameworkZDCA->Qx(2),qVecQnFrameworkZDCA->Qy(2));
+    values[AliDielectronVarManager::kQnZDCArpH2] = TVector2::Phi_mpi_pi(qVectorZDCA->Phi())/2;
+  }
+  delete qVectorZDCA;
+
+  // ZDCC Eventplane q-Vector
+  qnListDetector = "ZDCC" + fgQnVectorNorm;
+  const AliQnCorrectionsQnVector *qVecQnFrameworkZDCC = AliDielectronQnEPcorrection::GetQnVectorFromList(qnlist,qnListDetector.Data(),"latest","latest");
+  TVector2 *qVectorZDCC = new TVector2(-200.,-200.);
+  if(qVecQnFrameworkZDCC != NULL){
+    bZDCCqVector = kTRUE;
+    qVectorZDCC->Set(qVecQnFrameworkZDCC->Qx(2),qVecQnFrameworkZDCC->Qy(2));
+    values[AliDielectronVarManager::kQnZDCCrpH2] = TVector2::Phi_mpi_pi(qVectorZDCC->Phi())/2;
+  }
+  delete qVectorZDCC;
 
   // TPC Diff
   if(bTPCqVector){
