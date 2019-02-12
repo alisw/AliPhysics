@@ -92,7 +92,7 @@ void AliAnalysisTaskEmcalJetEnergyScale::UserCreateOutputObjects(){
   jetPtBinningCoarsePart.AddStep(80., 10.);
   jetPtBinningCoarsePart.AddStep(200., 20.);
   jetPtBinningCoarsePart.AddStep(280., 40.);
-  jetPtBinningCoarsePart.AddStep(220., 220.);
+  jetPtBinningCoarsePart.AddStep(500., 220.);
 
   fHistos = new THistManager("energyScaleHistos");
   fHistos->CreateTH1("hEventCounter", "Event counter", 1, 0.5, 1.5);
