@@ -90,6 +90,9 @@ class AliAnalysisTaskCheckESDTracks : public AliAnalysisTaskSE {
   TH1F* fHistNTracks;                //!<!  histo with N of tracks
   TH1F* fHistNTracksBackg;           //!<!  histo with N of background tracks
   TH1F* fHistNTracksEmbed;           //!<!  histo with N of embedded tracks
+  TH1F* fHistNV0Daughters;                //!<!  histo with N of V0-tracks
+  TH1F* fHistNV0DaughtersBackg;           //!<!  histo with N of background V0-tracks
+  TH1F* fHistNV0DaughtersEmbed;           //!<!  histo with N of embedded V0-tracks
   TH1F* fHistNITSClu;             //!<!  histo with N of ITS clusters
   TH1F* fHistCluInITSLay;        //!<!  histo with cluters in ITS layers
   
@@ -227,7 +230,7 @@ class AliAnalysisTaskCheckESDTracks : public AliAnalysisTaskSE {
   Bool_t  fReadMC;             // flag read/not-read MC truth info
   Bool_t  fUseMCId;            // flag use/not-use MC identity for PID
 
-  ClassDef(AliAnalysisTaskCheckESDTracks,13);
+  ClassDef(AliAnalysisTaskCheckESDTracks,14);
 };
 
 

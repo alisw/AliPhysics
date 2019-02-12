@@ -53,6 +53,9 @@ AliAnalysisTaskCheckESDTracks::AliAnalysisTaskCheckESDTracks() :
   fHistNTracks{nullptr},
   fHistNTracksBackg{nullptr},
   fHistNTracksEmbed{nullptr},
+  fHistNV0Daughters{nullptr},
+  fHistNV0DaughtersBackg{nullptr},
+  fHistNV0DaughtersEmbed{nullptr},
   fHistNITSClu{nullptr},
   fHistCluInITSLay{nullptr},
   fHistNtracksTPCselVsV0befEvSel{nullptr},
@@ -205,6 +208,9 @@ AliAnalysisTaskCheckESDTracks::~AliAnalysisTaskCheckESDTracks(){
     delete fHistNTracks;
     delete fHistNTracksBackg;
     delete fHistNTracksEmbed;
+    delete fHistNV0Daughters;
+    delete fHistNV0DaughtersBackg;
+    delete fHistNV0DaughtersEmbed;
     delete fHistNITSClu;
     delete fHistCluInITSLay;
     delete fHistNtracksTPCselVsV0befEvSel;
@@ -407,6 +413,12 @@ void AliAnalysisTaskCheckESDTracks::UserCreateOutputObjects() {
   fOutput->Add(fHistNTracks);
   fOutput->Add(fHistNTracksBackg);
   fOutput->Add(fHistNTracksEmbed);
+  fHistNV0Daughters = new TH1F("hNV0Daughters", "Number of V0-tracks in ESD events ; N_{V0-dau}",5001,-0.5,5000.5);
+  fHistNV0DaughtersBackg = new TH1F("hNV0DaughtersBackg", "Number of V0-tracks in BKG events ; N_{V0-dau}",5001,-0.5,5000.5);
+  fHistNV0DaughtersEmbed = new TH1F("hNV0DaughtersEmbed", "Number of V0-tracks in Signal events ; N_{V0-dau}",5001,-0.5,5000.5);
+  fOutput->Add(fHistNV0Daughters);
+  fOutput->Add(fHistNV0DaughtersBackg);
+  fOutput->Add(fHistNV0DaughtersEmbed);
   fHistNITSClu = new TH1F("hNITSClu"," ; N_{ITS clusters}",7,-0.5,6.5);
   fOutput->Add(fHistNITSClu);
   fHistCluInITSLay = new TH1F("hCluInITSLay"," ; Layer",7,-1.5,5.5);
@@ -1107,6 +1119,9 @@ void AliAnalysisTaskCheckESDTracks::UserExec(Option_t *)
 
 
   Int_t nv0s = esd->GetNumberOfV0s();
+  Int_t nv0dau=0;
+  Int_t nBGv0dau=0;
+  Int_t nEmbeddedv0dau=0;
   for (Int_t iV0 = 0; iV0 < nv0s; iV0++){
     AliESDv0 *v0 = esd->GetV0(iV0);
     if (!v0) continue;
@@ -1138,6 +1153,7 @@ void AliAnalysisTaskCheckESDTracks::UserExec(Option_t *)
     Bool_t keepK0s=kTRUE;
     Bool_t keepLambda=kTRUE;
     Bool_t keepAntiLambda=kTRUE;
+    nv0dau+=2;
     if(!fReadMC){
       if(pidResp){
 	Double_t nsigmap=-999.;
@@ -1156,9 +1172,16 @@ void AliAnalysisTaskCheckESDTracks::UserExec(Option_t *)
       keepLambda=kFALSE;
       keepAntiLambda=kFALSE;
       Int_t labelPos=TMath::Abs(pTrack->GetLabel());
-      Int_t labbelNeg =TMath::Abs(nTrack->GetLabel());
+      Int_t labelNeg =TMath::Abs(nTrack->GetLabel());
+      Bool_t isBGp = mcEvent->IsFromSubsidiaryEvent(labelPos);
+      if(isBGp) nBGv0dau++;
+      else nEmbeddedv0dau++;
+      Bool_t isBGn = mcEvent->IsFromSubsidiaryEvent(labelNeg);
+      if(isBGn) nBGv0dau++;
+      else nEmbeddedv0dau++;
+      
       TParticle* partPos=mcEvent->Particle(labelPos);
-      TParticle* partNeg=mcEvent->Particle(labbelNeg);
+      TParticle* partNeg=mcEvent->Particle(labelNeg);
       if(partPos && partNeg){
         Int_t labelMotherPos=partPos->GetFirstMother() ;
         Int_t labelMotherNeg=partNeg->GetFirstMother();
@@ -1197,6 +1220,10 @@ void AliAnalysisTaskCheckESDTracks::UserExec(Option_t *)
       }
     }
   }
+  fHistNV0Daughters->Fill(nv0dau);
+  fHistNV0DaughtersBackg->Fill(nBGv0dau);
+  fHistNV0DaughtersEmbed->Fill(nEmbeddedv0dau);
+  
   PostData(1,fOutput);
   PostData(2,fTrackTree);
   
