@@ -110,6 +110,9 @@ public:
     void SetUseOldCentrality ( Bool_t lUseOldCent = kTRUE) {
         fkUseOldCentrality = lUseOldCent;
     }
+    void SetMaxPVR2D ( Float_t lOpt = 1e+5) {
+        fkMaxPVR2D = lOpt;
+    }
 //---------------------------------------------------------------------------------------
     void SetSelectCharge ( Int_t lCharge = -1) {
         fkSelectCharge = lCharge;
@@ -258,7 +261,8 @@ private:
     Bool_t fkDebugOOBPileup; // if true, add extra information to TTrees for pileup study
     Bool_t fkDoExtraEvSels; //if true, rely on AliEventCuts
     Int_t fkPileupRejectionMode; //pileup rejection mode (0=none, 1=ionut, 2=anti-ionut)
-    Bool_t fkUseOldCentrality; //if true, use AliCentrality instead of AliMultSelection 
+    Bool_t fkUseOldCentrality; //if true, use AliCentrality instead of AliMultSelection
+    Float_t fkMaxPVR2D; //cut to select on the maximum allowed R2D for the PV location
 
     Bool_t fkSaveCascadeTree;         //if true, save TTree
     Bool_t fkDownScaleCascade;
@@ -269,6 +273,8 @@ private:
     Bool_t    fkUseLightVertexer;       // if true, use AliLightVertexers instead of regular ones
     Bool_t    fkDoV0Refit;              // if true, will invoke AliESDv0::Refit in the vertexing procedure
     Bool_t    fkExtraCleanup;           //if true, perform pre-rejection of useless candidates before going through configs
+    
+    
 
     AliVEvent::EOfflineTriggerTypes fTrigType; // trigger type
 
