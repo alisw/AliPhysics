@@ -34,6 +34,7 @@
 #include "TRandom.h"
 #include "TDatabasePDG.h"
 #include "TGenPhaseSpace.h"
+#include "TSystem.h"
 #include "AliAnalysisTask.h"
 #include "AliAnalysisManager.h"
 #include "AliESDEvent.h"
@@ -286,7 +287,7 @@ AliAnalysisTaskLMeeCocktailMC::~AliAnalysisTaskLMeeCocktailMC()
 
 //________________________________________________________________________
 void AliAnalysisTaskLMeeCocktailMC::UserCreateOutputObjects(){
-  
+
   // Create histograms
   if(fOutputContainer != NULL){
     delete fOutputContainer;
@@ -375,11 +376,15 @@ void AliAnalysisTaskLMeeCocktailMC::UserCreateOutputObjects(){
   }
   //RUN2
   if(fResolType == 2) {
-    if(fResolDataSetName.Contains("alien:")){
-      // file is copied from alien path to config directory in AddTask
-      // "alien:" is added for identification, to be removed first
-      fResolDataSetName.ReplaceAll("alien:","");
-      fFileName = fResolDataSetName;
+    if(fResolDataSetName.Contains("alien")){
+      // file is copied from alien path to local directory
+      gSystem->Exec(Form("alien_cp %s .", fResolDataSetName.Data()));
+      
+      // obtain ROOT file name only and local directory
+      TObjArray* Strings = fResolDataSetName.Tokenize("/");
+      fFileName = Form("%s/%s",gSystem->pwd(),Strings->At(Strings->GetEntriesFast()-1)->GetName());
+      
+      Printf("Set resolution file name to %s (copied from %s)",fFileName.Data(),fResolDataSetName.Data());
     }
     else{
       if(fcollisionSystem==200){ //pp 13TeV
