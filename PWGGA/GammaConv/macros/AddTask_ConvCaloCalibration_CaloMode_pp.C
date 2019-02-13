@@ -48,7 +48,7 @@ void AddTask_ConvCaloCalibration_CaloMode_pp(
   TString   periodNameAnchor              = "",       //
   // special settings
   Bool_t    enableSortingMCLabels         = kTRUE,    // enable sorting for MC cluster labels
-  Int_t     isRun2                        = kTRUE,    // enables different number of SM 
+  Int_t     isRun2                        = kTRUE,    // enables different number of SM
   // subwagon config
   TString   additionalTrainConfig         = "0"       // additional counter for trainconfig
 ) {
@@ -147,6 +147,11 @@ void AddTask_ConvCaloCalibration_CaloMode_pp(
   // *********************************************************************************************************
   if (trainConfig == 1){ // pp 13 TeV EMCal + DCal
     cuts.AddCutCalo("00010113","4117900007032220000","01631031000000d0"); // MB
+  } else if (trainConfig == 2){ // pp 13 TeV EMCal + DCal
+    cuts.AddCutCalo("00010113","41179000a7032230000","01631031000000d0"); // INT7
+    cuts.AddCutCalo("0008e113","41179000a7032230000","01631031000000d0"); // EG2
+    cuts.AddCutCalo("0008d113","41179000a7032230000","01631031000000d0"); // EG1
+    cuts.AddCutCalo("0009b113","41179060a7032230000","01631031000000d0"); // EJ1
   } else {
     Error(Form("HeavyNeutralMesonToGG_%i_%i", mesonRecoMode, trainConfig), "wrong trainConfig variable no cuts have been specified for the configuration");
     return;

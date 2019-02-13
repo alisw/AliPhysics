@@ -49,8 +49,8 @@ public:
 
   // MC functions
   void SetIsMC                        ( Int_t isMC)                                       { fIsMC = isMC                              ;}
-  void ProcessMCParticles             ();
-  void ProcessAODMCParticles          ();
+  // void ProcessMCParticles             ();
+  // void ProcessAODMCParticles          ();
   void RelabelAODPhotonCandidates     ( Bool_t mode);
 
   // switches for additional analysis streams or outputs
@@ -96,8 +96,10 @@ public:
                                       }
 
 void SetNumOfCaloModules              ( Int_t nModules)                                   {
-                                        fnModules = nModules;
-                                        if(nModules < 1 || nModules > 20) fnModules = 20;
+                                        fnModules = nModules                        ;
+                                        if(nModules < 1 || nModules > 20){
+                                          fnModules = 20                            ;
+                                        }
                                       }
 
   // BG HandlerSettings
@@ -150,8 +152,6 @@ protected:
   TList**                             fESDList;                               // Array of lists with histograms with reconstructed properties
   TList**                             fBackList;                              // Array of lists with BG THnSparseF
   TList**                             fMotherList;                            // Array of lists with Signal THnSparseF
-  TList**                             fTrueList;                              // Array of lists with histograms with MC validated reconstructed properties
-  TList**                             fMCList;                                // Array of lists with histograms with pure MC information
   TList*                              fOutputContainer;                       // Output container
   TList*                              fGammaCandidates;                       //! current list of photon candidates
   TList*                              fClusterCandidates;                     //! current list of cluster candidates
@@ -180,32 +180,26 @@ protected:
   TH2F**                  fHistoMotherMesonPtAlpha;                           //! array of histograms with invariant mass cut around nominal mass, pt, alpha
   TH2F**                  fHistoMotherMesonPtOpenAngle;                       //! array of histograms with invariant mass cut around nominal mass, pt, openAngle
   TH2F**                  fHistoMotherMesonConvPhotonEtaPhi;                  //! array of histograms with invariant mass cut around nominal mass ,eta/phi of conversion photon
-  TH2F**                  fHistoMCMesonPtY;                                   //! array of histos with weighted meson, pT, Y
-  TH2F**                  fHistoMCMesonPtAlpha;                               //! array of histos with weighted meson, pT, alpha
-  TH2F**                  fHistoMCMesonPtJetPt;                               //! array of histos with weighted meson, pT, hardest jet pt
   TH2F**                  fHistoSPDClusterTrackletBackground;                 //! array of histos for SPD Cluster vs Tracklet plot for pileup monitoring
-  TH2F***                  fHistoMotherInvMassECalib;                          //! array of histos with signal + background with alpha < 0.1 for NonLin
-  TH2F***                  fHistoMotherBackInvMassECalib;                      //! array of histos with mixed event background with alpha < 0.1 for NonLin
-
+  TH2F***                 fHistoMotherInvMassECalibSM;                        //! array of histos with signal + background with alpha < 0.1 for NonLin for every Supermodule
+  TH2F***                 fHistoMotherBackInvMassECalibSM;                    //! array of histos with mixed event background with alpha < 0.1 for NonLin for every Supermodule
+  TH2F**                  fHistoMotherInvMassECalib;                          //! array of histos with signal + background with alpha < 0.1 for NonLin
+  TH2F**                  fHistoMotherBackInvMassECalib;                      //! array of histos with mixed event background with alpha < 0.1 for NonLin
 
   TProfile**              fProfileEtaShift;                                   //! array of profiles with eta shift
   TProfile**              fProfileJetJetXSection;                             //! array of profiles with xsection for jetjet
 
-  TH1I**                  fHistoMCHeaders;                                    //! array of histos for header names
+  // TH1I**                  fHistoMCHeaders;                                    //! array of histos for header names
 
   TH1F**                  fHistoConvGammaPt;                                  //! array of histogram conversion photon pT
   TH1F**                  fHistoClusGammaPt;                                  //! array of histos with cluster, pt
   TH1F**                  fHistoClusGammaE;                                   //! array of histos with cluster, E
+  TH1F***                 fHistoClusGammaPtSM;                                //! array of histos with cluster, pt
+  TH1F***                 fHistoClusGammaESM;                                 //! array of histos with cluster, E
   TH1F**                  fHistoClusOverlapHeadersGammaPt;                    //! array of histos with cluster, pt overlapping with other headers
   TH1F**                  fHistoClusAllHeadersGammaPt;                        //! array of histos with cluster, pt all headers
   TH1F**                  fHistoClusRejectedHeadersGammaPt;                   //! array of histos with cluster, pt rejected headers
   TH1F**                  fHistoMotherInvMassRejected;                        //! array of histos with invariant mass pairs which were rejected
-  TH1F**                  fHistoMCMesonPt;                                    //! array of histos with weighted meson, pT
-  TH1F**                  fHistoMCMesonWOWeightPt;                            //! array of histos with unweighted meson, pT
-  TH1F**                  fHistoMCMesonWOEvtWeightPt;                         //! array of histos without event weights meson, pT
-  TH1F**                  fHistoMCMesonInAccPt;                               //! array of histos with weighted meson in acceptance, pT
-  TH1F**                  fHistoMCMesonWOWeightInAccPt;                       //! array of histos without weight meson in acceptance, pT
-  TH1F**                  fHistoMCMesonWOEvtWeightInAccPt;                    //! array of histos without evt weight meson in acceptance, pT
   TH1F**                  fHistoNEvents;                                      //! array of histos with event information
   TH1F**                  fHistoNEventsWOWeight;                              //! array of histos with event information without event weights
   TH1F**                  fHistoNGoodESDTracks;                               //! array of histos with number of good tracks (2010 Standard track cuts)
