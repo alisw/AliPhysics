@@ -349,7 +349,6 @@ class AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson: public AliAnalysisTaskS
     vector<Int_t>                   fVectorDoubleCountTrueHNMs;                           //!<! vector containing labels of validated eta
     vector<Int_t>                   fVectorDoubleCountTrueConvGammas;                     //!<! vector containing labels of validated photons
     // Event properties
-<<<<<<< 1860bff1a419968236339fbce30c01b7f706375a
     TH1I**                          fHistoNEvents;                                        //!<! histo for event counting
     TProfile**                      fProfileJetJetXSection;                               //!<! histo for cross section for jet-jet Monte-Carlo
     TH1F**                          fHistoJetJetNTrials;                                  //!<! histo for number of trials for jet-jet Monte-Carlo
