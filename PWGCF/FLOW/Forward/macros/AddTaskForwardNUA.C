@@ -21,7 +21,7 @@
  */
 #include "AliForwardTaskValidation.h"
 
-AliAnalysisTaskSE* AddTaskForwardNUA(UShort_t nua_mode, bool makeFakeHoles, bool mc,  bool esd,bool prim_cen,bool prim_fwd , Int_t tracktype, TString centrality,TString name1)
+AliAnalysisTaskSE* AddTaskForwardNUA(UShort_t nua_mode, bool makeFakeHoles, bool mc,  bool esd,bool prim_cen,bool prim_fwd , Int_t tracktype, TString centrality,const char* suffix="")
 {
   std::cout << "______________________________________________________________________________" << std::endl;
 
@@ -32,9 +32,7 @@ AliAnalysisTaskSE* AddTaskForwardNUA(UShort_t nua_mode, bool makeFakeHoles, bool
   if (!mgr)
     Fatal("","No analysis manager to connect to.");
 
-  TString name = name1;
-
-  AliForwardNUATask* task = new AliForwardNUATask(name);
+  AliForwardNUATask* task = new AliForwardNUATask(suffix);
   TString resName = "ForwardNUA";
 
     task->fSettings.use_primaries_cen = prim_cen;
@@ -97,13 +95,15 @@ AliAnalysisTaskSE* AddTaskForwardNUA(UShort_t nua_mode, bool makeFakeHoles, bool
   task->fSettings.nua_mode = nua_mode; // "V0M";// RefMult08; // "V0M" // "SPDTracklets";
 
   std::cout << "Container name: " << resName << std::endl;
-  //resName = "hej";
+  TString combName;
 
+  //resName = "hej";
+  combinedName.Form("%s_%s", resName, suffix);
   AliAnalysisDataContainer* valid = (AliAnalysisDataContainer*)mgr->GetContainers()->FindObject("event_selection_xchange");
   task->ConnectInput(1,valid);
 
   AliAnalysisDataContainer *coutput_recon =
-  mgr->CreateContainer(resName,
+  mgr->CreateContainer(combName,
    TList::Class(),
    AliAnalysisManager::kOutputContainer,
    mgr->GetCommonFileName());

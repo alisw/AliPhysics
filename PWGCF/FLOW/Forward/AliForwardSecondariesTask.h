@@ -194,6 +194,7 @@ TF1 *fMultCentLowCut; //!
   TCutG *fFMD3;  //!
   TCutG *fPipe;  //!
   TCutG *fEarlyDecay;  //!
+  TH1D* phihist; //!
 
   enum {
     kTPCOnly = 128, // TPC only tracks
