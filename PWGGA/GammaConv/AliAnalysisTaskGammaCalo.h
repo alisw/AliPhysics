@@ -378,6 +378,7 @@ class AliAnalysisTaskGammaCalo : public AliAnalysisTaskSE {
     TH2F**                 fHistoEtaPhiJetPi0Cand;                               // Histogram of delta eta and delta phi distr between jet and NM candidates
     TH2F**                 fHistoEtaPhiJetWithPi0Cand;                           // Histogram of delta eta and delta phi distr when pi0 is inside a jet
     TH2F**                 fHistoJetFragmFunc;                                   // Histogram to determine fragmentation function
+    TH2F**                 fHistoJetFragmFuncChargPart;                          // Histogram with fragmentation function as function of charged particles
     TH2F**                 fHistoTruevsRecJetPt;                                 // Histogram of true jet pt vs reconstructed jet pt
     TH2F**                 fHistoTruePi0JetMotherInvMassPt;                      // Histogram of true pi0s in an event with a jet
     TH2F**                 fHistoTruePi0InJetMotherInvMassPt;                    // Histogram of true pi0s in a jet
@@ -392,6 +393,8 @@ class AliAnalysisTaskGammaCalo : public AliAnalysisTaskSE {
     TH1F**                 fHistoTrueDoubleCountingEtaJet;                       // Histogram of when a true eta is defined to be in multiple jets
     TH2F**                 fHistoTruePi0JetFragmFunc;                            // Histogram to determine true pi0 fragmentation function
     TH2F**                 fHistoTrueEtaJetFragmFunc;                            // Histogram to determine true eta fragmentation function
+    TH2F**                 fHistoTruePi0JetFragmFuncChargPart;                   // Histogram with fragmentation function as function of charged particles
+    TH2F**                 fHistoTrueEtaJetFragmFuncChargPart;                   // Histogram with fragmentation function as function of charged particles
     TH1F**                 fHistoMCPi0JetInAccPt;                                // Histogram with weighted pi0 in a jet event in acceptance, pT
     TH1F**                 fHistoMCPi0inJetInAccPt;                              // Histogram with weighted pi0 in a jet in acceptance, pT
     TH1F**                 fHistoMCEtaJetInAccPt;                                // Histogram with weighted eta in a jet event in acceptance, pT
@@ -437,12 +440,14 @@ class AliAnalysisTaskGammaCalo : public AliAnalysisTaskSE {
     vector<Double_t>      fVectorJetEta;                                        // Vector of JetEta
     vector<Double_t>      fVectorJetPhi;                                        // Vector of JetPhi
     vector<Double_t>      fVectorJetArea;                                       // Vector of JetArea
+    vector<Double_t>      fVectorJetNChargPart;                                 // vector of Number of charged particles in Jet
     vector<Double_t>      fTrueVectorJetPt;                                     // Vector of True JetPt
     vector<Double_t>      fTrueVectorJetPx;                                     // Vector of True JetPx
     vector<Double_t>      fTrueVectorJetPy;                                     // Vector of True JetPy
     vector<Double_t>      fTrueVectorJetPz;                                     // Vector of True JetPz
     vector<Double_t>      fTrueVectorJetEta;                                    // Vector of True JetEta
     vector<Double_t>      fTrueVectorJetPhi;                                    // Vector of True JetPhi
+    vector<Double_t>      fTrueVectorJetNChargPart;                             // Vector of number of charged particles in Jet
 
     // tree for identified particle properties
     TTree**               tTrueInvMassROpenABPtFlag;                            //! array of trees with
@@ -529,7 +534,7 @@ class AliAnalysisTaskGammaCalo : public AliAnalysisTaskSE {
     AliAnalysisTaskGammaCalo(const AliAnalysisTaskGammaCalo&);                  // Prevent copy-construction
     AliAnalysisTaskGammaCalo &operator=(const AliAnalysisTaskGammaCalo&);       // Prevent assignment
 
-    ClassDef(AliAnalysisTaskGammaCalo, 63);
+    ClassDef(AliAnalysisTaskGammaCalo, 64);
 };
 
 #endif
