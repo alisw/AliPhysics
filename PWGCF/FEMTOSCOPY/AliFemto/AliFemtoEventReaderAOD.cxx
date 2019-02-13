@@ -1248,45 +1248,19 @@ AliFemtoTrack *AliFemtoEventReaderAOD::CopyAODtoFemtoTrack(AliAODTrack *tAodTrac
   float bfield = 5 * fMagFieldSign;
 
   GetGlobalPositionAtGlobalRadiiThroughTPC(tAodTrack, bfield, globalPositionsAtRadii);
-  double tpcEntrance[3] = {globalPositionsAtRadii[0][0],
-                           globalPositionsAtRadii[0][1],
-                           globalPositionsAtRadii[0][2]};
-  double **tpcPositions;
-  tpcPositions = new double *[9];
 
-  for (int i = 0; i < 9; i++) {
-    tpcPositions[i] = new double[3];
-  }
-
-  double tpcExit[3] = {globalPositionsAtRadii[8][0],
-                       globalPositionsAtRadii[8][1],
-                       globalPositionsAtRadii[8][2]};
-
-  for (int i = 0; i < 9; i++) {
-    tpcPositions[i][0] = globalPositionsAtRadii[i][0];
-    tpcPositions[i][1] = globalPositionsAtRadii[i][1];
-    tpcPositions[i][2] = globalPositionsAtRadii[i][2];
-  }
+  AliFemtoThreeVector tpcPositions[9];
+  std::copy_n(globalPositionsAtRadii, 9, tpcPositions);
 
   if (fPrimaryVertexCorrectionTPCPoints) {
-    tpcEntrance[0] -= fV1[0];
-    tpcEntrance[1] -= fV1[1];
-    tpcEntrance[2] -= fV1[2];
-
-    tpcExit[0] -= fV1[0];
-    tpcExit[1] -= fV1[1];
-    tpcExit[2] -= fV1[2];
-
     for (int i = 0; i < 9; i++) {
-      tpcPositions[i][0] -= fV1[0];
-      tpcPositions[i][1] -= fV1[1];
-      tpcPositions[i][2] -= fV1[2];
+      tpcPositions[i] -= kOrigin;
     }
   }
 
-  tFemtoTrack->SetNominalTPCEntrancePoint(tpcEntrance);
+  tFemtoTrack->SetNominalTPCEntrancePoint(tpcPositions[0]);
   tFemtoTrack->SetNominalTPCPoints(tpcPositions);
-  tFemtoTrack->SetNominalTPCExitPoint(tpcExit);
+  tFemtoTrack->SetNominalTPCExitPoint(tpcPositions[8]);
 
   if (fShiftPosition > 0.) {
     Float_t posShifted[3];
@@ -1294,16 +1268,8 @@ AliFemtoTrack *AliFemtoEventReaderAOD::CopyAODtoFemtoTrack(AliAODTrack *tAodTrac
     tFemtoTrack->SetNominalTPCPointShifted(posShifted);
   }
 
-  for (int i = 0; i < 9; i++) {
-    delete[] tpcPositions[i];
-  }
-  delete[] tpcPositions;
-
-  int indexes[3];
-  for (int ik = 0; ik < 3; ik++) {
-    indexes[ik] = 0;
-  }
-  tFemtoTrack->SetKinkIndexes(indexes);
+  int kink_indexes[3] = { 0, 0, 0 };
+  tFemtoTrack->SetKinkIndexes(kink_indexes);
 
   for (int ii = 0; ii < 6; ii++) {
     tFemtoTrack->SetITSHitOnLayer(ii, tAodTrack->HasPointOnITSLayer(ii));
@@ -2349,8 +2315,9 @@ void AliFemtoEventReaderAOD
 
     // extracted radius
     const Float_t radius = Rwanted[radius_index];
+
     // buffer to store position
-    Double_t pos_buffer[3] = {0};
+    Double_t pos_buffer[3] = {0.0, 0.0, 0.0};
 
     // get the global position of the track at this radial location
     bool good = etp.GetXYZatR(radius, bfield, pos_buffer, nullptr);
@@ -2362,9 +2329,7 @@ void AliFemtoEventReaderAOD
     }
 
     // store the global position
-    globalPositionsAtRadii[radius_index][0] = pos_buffer[0];
-    globalPositionsAtRadii[radius_index][1] = pos_buffer[1];
-    globalPositionsAtRadii[radius_index][2] = pos_buffer[2];
+    std::copy_n(pos_buffer, 3, globalPositionsAtRadii[radius_index]);
   }
 
   // Fill any remaining positions with the default value

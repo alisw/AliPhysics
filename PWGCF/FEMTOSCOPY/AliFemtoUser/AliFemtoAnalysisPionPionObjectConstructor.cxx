@@ -27,6 +27,8 @@
 #include "AliFemtoDummyPairCut.h"
 #include "AliFemtoPairCutPt.h"
 
+#include "AliFemtoAnalysisPionPionCuts.h"
+
 #include "AliFemtoCorrFctn.h"
 
 
@@ -53,6 +55,14 @@
     if (classname == #__name) { return Into<__type>(); }
 
 #endif
+
+#define RETURN_IF_CAST_FROM(__type) \
+  if (auto *ptr = dynamic_cast<const __type*>(&obj)) { \
+    return AliFemtoConfigObject::From(*ptr); }
+
+#define TRY_CONSTRUCTING_INTO(__type) \
+    if (classname == #__type) {          \
+      return Into<__type>(true); }
 
 
 template<>
@@ -95,10 +105,15 @@ AliFemtoConfigObject::Into<AliFemtoEventReader>(bool)
 }
 
 
+//
+//  EVENT CUTS
+//
+
 template<>
 AliFemtoConfigObject
 AliFemtoConfigObject::From<AliFemtoEventCut>(const AliFemtoEventCut &obj)
 {
+  RETURN_IF_CAST_FROM(AliFemtoEventCutPionPionAK)
   RETURN_IF_CAST(AliFemtoBasicEventCut);
   RETURN_IF_CAST(AliFemtoEventCutCentrality);
 
@@ -120,6 +135,7 @@ AliFemtoConfigObject::Into<AliFemtoEventCut>(bool)
     return nullptr;
   }
 
+  TRY_CONSTRUCTING_INTO(AliFemtoEventCutPionPionAK)
   TRY_CONSTRUCTING_CLASS(AliFemtoBasicEventCut);
   TRY_CONSTRUCTING_CLASS(AliFemtoEventCutCentrality);
 
@@ -130,10 +146,15 @@ AliFemtoConfigObject::Into<AliFemtoEventCut>(bool)
 }
 
 
+//
+//  TRACK CUTS
+//
+
 template<>
 AliFemtoConfigObject
 AliFemtoConfigObject::From<AliFemtoTrackCut>(const AliFemtoTrackCut &obj)
 {
+  RETURN_IF_CAST_FROM(AliFemtoTrackCutPionPionAK);
   RETURN_IF_CAST(AliFemtoESDTrackCut);
   RETURN_IF_CAST(AliFemtoAODTrackCut);
   // RETURN_IF_CAST(AliFemtoBasicTrackCut);
@@ -165,8 +186,9 @@ AliFemtoConfigObject::Into<AliFemtoTrackCut>(bool)
     return nullptr;
   }
 
-  TRY_CONSTRUCTING_CLASS(AliFemtoAODTrackCut)
-  TRY_CONSTRUCTING_CLASS(AliFemtoESDTrackCut)
+  TRY_CONSTRUCTING_INTO(AliFemtoTrackCutPionPionAK);
+  TRY_CONSTRUCTING_CLASS(AliFemtoAODTrackCut);
+  TRY_CONSTRUCTING_CLASS(AliFemtoESDTrackCut);
 
   Warning("AliFemtoConfigObject::Into<ConstructAliFemtoTrackCut>",
           "Could not load class %s", classname.c_str());
@@ -174,6 +196,11 @@ AliFemtoConfigObject::Into<AliFemtoTrackCut>(bool)
   return nullptr;
 }
 
+
+
+//
+//  V0 CUTS
+//
 
 // template<>
 // AliFemtoConfigObject
@@ -189,6 +216,11 @@ AliFemtoConfigObject::Into<AliFemtoTrackCut>(bool)
 //   return nullptr;
 // }
 
+
+
+//
+//  PARTICLE CUTS (forwards to Track/V0)
+//
 
 template<>
 AliFemtoConfigObject
@@ -235,10 +267,17 @@ AliFemtoConfigObject::Into<AliFemtoParticleCut>(bool)
   return nullptr;
 }
 
+
+//
+// PAIR CUTS
+//
+
 template<>
 AliFemtoConfigObject
 AliFemtoConfigObject::From<AliFemtoPairCut>(const AliFemtoPairCut &obj)
 {
+  RETURN_IF_CAST_FROM(AliFemtoPairCutPionPionAKDetaDphi)
+  RETURN_IF_CAST_FROM(AliFemtoPairCutPionPionAKAvgSep)
   RETURN_IF_CAST(AliFemtoPairCutAntiGamma)
   RETURN_IF_CAST(AliFemtoPairCutDetaDphi)
   RETURN_IF_CAST(AliFemtoShareQualityPairCut)
@@ -259,6 +298,9 @@ AliFemtoConfigObject::Into<AliFemtoPairCut>(bool)
     std::cerr << "[AliFemtoAnalysisPionPion::ConstructPairCut] " << msg;
     return nullptr;
   }
+
+  TRY_CONSTRUCTING_INTO(AliFemtoPairCutPionPionAKDetaDphi)
+  TRY_CONSTRUCTING_INTO(AliFemtoPairCutPionPionAKAvgSep)
 
   TRY_CONSTRUCTING_CLASS(AliFemtoPairCutAntiGamma)
   TRY_CONSTRUCTING_CLASS(AliFemtoPairCutDetaDphi)
