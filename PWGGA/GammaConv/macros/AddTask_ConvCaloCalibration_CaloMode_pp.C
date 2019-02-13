@@ -48,7 +48,7 @@ void AddTask_ConvCaloCalibration_CaloMode_pp(
   TString   periodNameAnchor              = "",       //
   // special settings
   Bool_t    enableSortingMCLabels         = kTRUE,    // enable sorting for MC cluster labels
-  Int_t     isRun2                        = kTRUE,    // enables different number of SM 
+  Int_t     isRun2                        = kTRUE,    // enables different number of SM
   // subwagon config
   TString   additionalTrainConfig         = "0"       // additional counter for trainconfig
 ) {
@@ -146,7 +146,7 @@ void AddTask_ConvCaloCalibration_CaloMode_pp(
   // 13 TeV  pp Run2 - EDC configurations
   // *********************************************************************************************************
   if (trainConfig == 1){ // pp 13 TeV EMCal + DCal
-    cuts.AddCutCalo("00010113","4117900007032220000","01631031000000d0"); // MB
+    cuts.AddCutCalo("00010113","411790000f032220000","01631031000000d0"); // MB
   } else {
     Error(Form("HeavyNeutralMesonToGG_%i_%i", mesonRecoMode, trainConfig), "wrong trainConfig variable no cuts have been specified for the configuration");
     return;
@@ -159,10 +159,12 @@ void AddTask_ConvCaloCalibration_CaloMode_pp(
     return;
   }
 
-  TList *EventCutList   = new TList();
-  TList *ConvCutList    = new TList();
-  TList *ClusterCutList = new TList();
-  TList *MesonCutList   = new TList();
+  // if(!enableLightOutput){
+    TList *EventCutList   = new TList();
+    TList *ConvCutList    = new TList();
+    TList *MesonCutList   = new TList();
+    TList *ClusterCutList = new TList();
+  // }
 
   Int_t numberOfCuts = cuts.GetNCuts();
 
@@ -205,12 +207,14 @@ void AddTask_ConvCaloCalibration_CaloMode_pp(
     mcName = "Phojet_LHC14e2c";
   }
 
-  EventCutList->SetOwner(kTRUE);
-  AliConvEventCuts **analysisEventCuts        = new AliConvEventCuts*[numberOfCuts];
-  ConvCutList->SetOwner(kTRUE);
-  AliCaloPhotonCuts **analysisClusterCuts     = new AliCaloPhotonCuts*[numberOfCuts];
-  MesonCutList->SetOwner(kTRUE);
-  AliConversionMesonCuts **analysisMesonCuts  = new AliConversionMesonCuts*[numberOfCuts];
+
+    EventCutList->SetOwner(kTRUE);
+    AliConvEventCuts **analysisEventCuts        = new AliConvEventCuts*[numberOfCuts];
+    ConvCutList->SetOwner(kTRUE);
+    AliCaloPhotonCuts **analysisClusterCuts     = new AliCaloPhotonCuts*[numberOfCuts];
+    MesonCutList->SetOwner(kTRUE);
+    AliConversionMesonCuts **analysisMesonCuts  = new AliConversionMesonCuts*[numberOfCuts];
+
 
   for(Int_t i = 0; i<numberOfCuts; i++){
     //create AliCaloTrackMatcher instance, if there is none present
@@ -224,6 +228,7 @@ void AddTask_ConvCaloCalibration_CaloMode_pp(
       mgr->AddTask(fTrackMatcher);
       mgr->ConnectInput(fTrackMatcher,0,cinput);
     }
+
 
     analysisEventCuts[i] = new AliConvEventCuts();
 
@@ -267,10 +272,11 @@ void AddTask_ConvCaloCalibration_CaloMode_pp(
     analysisEventCuts[i]->SetV0ReaderName(V0ReaderName);
     analysisEventCuts[i]->SetCorrectionTaskSetting(corrTaskSetting);
     if (periodNameV0Reader.CompareTo("") != 0) analysisEventCuts[i]->SetPeriodEnum(periodNameV0Reader);
-    if (enableLightOutput > 0) analysisEventCuts[i]->SetLightOutput(kTRUE);
+    analysisEventCuts[i]->SetLightOutput(kTRUE);
     analysisEventCuts[i]->InitializeCutsFromCutString((cuts.GetEventCut(i)).Data());
     EventCutList->Add(analysisEventCuts[i]);
     analysisEventCuts[i]->SetFillCutHistograms("",kFALSE);
+
 
     analysisClusterCuts[i] = new AliCaloPhotonCuts(isMC);
     analysisClusterCuts[i]->SetHistoToModifyAcceptance(histoAcc);
@@ -293,6 +299,7 @@ void AddTask_ConvCaloCalibration_CaloMode_pp(
     analysisEventCuts[i]->SetAcceptedHeader(HeaderList);
   }
 
+
   task->SetEventCutList(numberOfCuts,EventCutList);
   task->SetCaloCutList(numberOfCuts,ClusterCutList);
   task->SetMesonCutList(numberOfCuts,MesonCutList);
@@ -306,7 +313,7 @@ void AddTask_ConvCaloCalibration_CaloMode_pp(
   task->SetEnableSortingOfMCClusLabels(enableSortingMCLabels);
   if(enableExtMatchAndQA > 1){ task->SetPlotHistsExtQA(kTRUE);}
   if(isRun2){ task->SetNumOfCaloModules(20); }
-  if(!isRun2){ task->SetNumOfCaloModules(8); }
+  if(!isRun2){ task->SetNumOfCaloModules(10); }
   //connect containers
   AliAnalysisDataContainer *coutput =
   mgr->CreateContainer(!(corrTaskSetting.CompareTo("")) ? Form("ConvCaloCalibration_%i_%i_%i",mesonRecoMode, selectedMeson, trainConfig)
