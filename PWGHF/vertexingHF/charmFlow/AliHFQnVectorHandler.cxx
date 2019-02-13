@@ -393,6 +393,22 @@ void AliHFQnVectorHandler::GetUnNormQnVecV0(double QnVecFullV0[2], double QnVecV
 }
 
 //________________________________________________________________
+void AliHFQnVectorHandler::GetqnTPC(double &qnFullTPC, double &qnPosTPC, double &qnNegTPC) 
+{
+    qnFullTPC = fQnVecNormFullTPC / TMath::Sqrt(fMultFullTPC);
+    qnPosTPC  = fQnVecNormPosTPC / TMath::Sqrt(fMultPosTPC);
+    qnNegTPC  = fQnVecNormNegTPC / TMath::Sqrt(fMultNegTPC);
+}
+    
+//________________________________________________________________
+void AliHFQnVectorHandler::GetqnV0(double &qnFullV0, double &qnV0A, double &qnV0C)
+{
+    qnFullV0 = fQnVecNormFullV0 / TMath::Sqrt(fMultFullV0);
+    qnV0A    = fQnVecNormV0A / TMath::Sqrt(fMultV0A);
+    qnV0C    = fQnVecNormV0C / TMath::Sqrt(fMultV0C);
+}
+
+//________________________________________________________________
 void AliHFQnVectorHandler::GetMultQnVecTPC(double &MultFullTPC, double &MultPosTPC, double &MultNegTPC)
 {
     MultFullTPC = fMultFullTPC;
