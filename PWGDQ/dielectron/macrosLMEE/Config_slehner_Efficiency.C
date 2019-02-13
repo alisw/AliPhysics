@@ -216,7 +216,7 @@ AliAnalysisFilter* SetupTrackCutsAndSettings(Int_t selTr, Int_t selPID, Int_t MV
 
   LMEECutLib* LMcutlib = new LMEECutLib();
 
-  anaFilter->AddCuts(LMcutlib->GetTrackCuts(selTr, selPID, MVACut, useAODFilterCuts));     // Setting MVA cut for efficiency to 0 - no efficiency correction for MVA cut here
+  anaFilter->AddCuts(LMcutlib->GetTrackCuts(selTr, selPID, MVACut, useAODFilterCuts,"TMVAClassification_BDTG15_400.weights.xml"));     // Setting MVA cut for efficiency to 0 - no efficiency correction for MVA cut here
   anaFilter->SetName(TString::Format("CutTr%d_PID%d_MVA%d",selTr, selPID,MVACut,TMVAweight));
   anaFilter->Print();
   return anaFilter;
