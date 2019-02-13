@@ -270,7 +270,8 @@ AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::AliAnalysisTaskNeutralMesonTo
   fMCEventPos(),
   fMCEventNeg(),
   fESDArrayPos(),
-  fESDArrayNeg()
+  fESDArrayNeg(),
+  fTrackMatcherRunningMode(0)
 {
 
 }
@@ -491,7 +492,8 @@ AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::AliAnalysisTaskNeutralMesonTo
   fMCEventPos(),
   fMCEventNeg(),
   fESDArrayPos(),
-  fESDArrayNeg()
+  fESDArrayNeg(),
+  fTrackMatcherRunningMode(0)
 {
   DefineOutput(1, TList::Class());
 }
@@ -1727,8 +1729,8 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::UserCreateOutputObjects(
   }
 
   for(Int_t iMatcherTask = 0; iMatcherTask < 3; iMatcherTask++){
-    AliCaloTrackMatcher* temp = (AliCaloTrackMatcher*) (AliAnalysisManager::GetAnalysisManager()->GetTask(Form("CaloTrackMatcher_%i",iMatcherTask)));
-    if(temp) fOutputContainer->Add(temp->GetCaloTrackMatcherHistograms());
+    AliCaloTrackMatcher* temp = (AliCaloTrackMatcher*) (AliAnalysisManager::GetAnalysisManager()->GetTask(Form("CaloTrackMatcher_%i_%i",iMatcherTask,fTrackMatcherRunningMode)));
+    if(temp && (!fDoLightOutput)) fOutputContainer->Add(temp->GetCaloTrackMatcherHistograms());
   }
 
   fPionSelector=(AliPrimaryPionSelector*)AliAnalysisManager::GetAnalysisManager()->GetTask("PionSelector");

@@ -65,6 +65,8 @@ class AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson: public AliAnalysisTaskS
     void SetNDMRecoMode(Int_t mode){fNDMRecoMode = mode; }
     void SetTolerance(Double_t tol){fTolerance=tol;}
     void SetSelectedHeavyNeutralMeson(Int_t selectMeson){fSelectedHeavyNeutralMeson=selectMeson;}
+    void SetTrackMatcherRunningMode(Int_t mode){fTrackMatcherRunningMode = mode;}
+
 
   private:
 
@@ -370,16 +372,18 @@ class AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson: public AliAnalysisTaskS
     Int_t                           fNDMRecoMode;                                         ///< Flag how neutral pion is reconstructed 0=PCM-PCM, 1=PCM-Calo, 2=Calo-Calo
     Double_t                        fTolerance;                                           ///< tolerance in rad for angle cuts
     Double_t                        fWeightJetJetMC;                                      //!<! Weight for hte jet-jet Monte-Carlo
+    Int_t                           fTrackMatcherRunningMode;                             // CaloTrackMatcher running mode
 
     TArrayI                         fMCEventPos;                                          //!<! Pos. in MC event pos. leg of the photon (for relabelling) 
     TArrayI                         fMCEventNeg;                                          //!<! Pos. in MC event neg. leg of the photon (for relabelling)
     TArrayI                         fESDArrayPos;                                         //!<! Pos. in MC AOD array pos. leg of the photon (for relabelling)
     TArrayI                         fESDArrayNeg;                                         //!<! Pos. in MC AOD array pos. leg of the photon (for relabelling)
+
 private:
     AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson( const AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson& ); // Not implemented
     AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson& operator=( const AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson& ); // Not implemented
 
-  ClassDef(AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson, 3);
+  ClassDef(AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson, 4);
 };
 
 #endif // AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson_H
