@@ -3,7 +3,7 @@ AliAnalysisTaskElectronEfficiencyV2* AddTask_slehner_ElectronEfficiency(
                                                                 Double_t centMax=100.,
                                                                 Bool_t PIDCorr=kFALSE,
                                                                 Bool_t useAODFilterCuts=kFALSE,
-                                                                TString TMVAweight = "TMVAClassification_BDTG.weights_094.xml",
+                                                                TString TMVAweight = "TMVAClassification_BDTG15_400.weights.xml",
                                                                 Int_t genGroup=0,
                                                                 Bool_t fromAlien,
                                                                 TString date="ddmmyy",
@@ -33,7 +33,7 @@ AliAnalysisTaskElectronEfficiencyV2* AddTask_slehner_ElectronEfficiency(
   TString myConfig =TString::Format("alien_cp %s .",configFilePath.Data());
   gSystem->Exec(myConfig);
   
-  gSystem->Exec("alien_cp $ALICE_PHYSICS/PWGDQ/dielectron/macrosLMEE/LMEECutLib_slehner.C .");
+  gSystem->Exec(TString("alien_cp alien:///alice/cern.ch/user/s/selehner/cutlibs/LMEECutLib_slehner.C ."));
 
   configBasePath=Form("%s/",gSystem->pwd());
 
