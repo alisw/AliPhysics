@@ -318,6 +318,7 @@ void AliAnalysisTaskGFWFlow::UserExec(Option_t*) {
       Double_t lDCA[] = {TMath::Abs(DCA[2]),dcaxy};
       if(!fSelections[fCurrSystFlag]->AcceptTrack(lTrack,lDCA) &&
 	 !fSelections[9]->AcceptTrack(lTrack,lDCA)) continue;
+      if(!fWeights) printf("Weights do not exist!\n");
       Double_t nua = fWeights->GetWeight(lTrack->Phi(),lTrack->Eta(),vz,lTrack->Pt(),cent,0);
       //Double_t nuaITS = fExtraWeights->GetWeight(lTrack->Phi(),lTrack->Eta(),vz,lTrack->Pt(),cent,0);
       Double_t nue = fPtAxis->GetNbins()>1?1:fWeights->GetWeight(lTrack->Phi(),lTrack->Eta(),vz,cent,lTrack->Pt(),1);
@@ -484,7 +485,21 @@ Int_t AliAnalysisTaskGFWFlow::CombineBits(Int_t VtxBit, Int_t TrkBit) {
   //retbit=retbit|((VtxBit&1)*(TrkBit&(1<<13)));
   return retbit;
 };
-Bool_t AliAnalysisTaskGFWFlow::LoadWeights(Int_t runno) {
+Bool_t AliAnalysisTaskGFWFlow::SetInputWeightList(TList *inlist) {
+  if(!inlist) {
+    return kFALSE;
+  };
+  fWeightList = inlist;
+  return kTRUE;
+};
+Bool_t AliAnalysisTaskGFWFlow::LoadWeights(Int_t runno) { //Cannot be used when running on the trains
+  if(fWeightList) {
+    fWeights = (AliGFWWeights*)fWeightList->FindObject(Form("%i",runno));
+    if(!fWeights) {
+      return kFALSE;
+    };
+    return kTRUE;
+  }; //If weights not set, attempting to fetch them from pre-set directory. This will definitely fail if running on train
   fWeightPath.Clear();
   fWeightPath.Append(fWeightDir.Data());
   fWeightPath.Append(Form("%i.root",runno));
@@ -549,3 +564,4 @@ Bool_t AliAnalysisTaskGFWFlow::FillFCs(TString head, TString hn, Double_t cent, 
   };
   return kTRUE;
 };
+

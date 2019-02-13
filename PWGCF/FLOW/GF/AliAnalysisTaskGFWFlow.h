@@ -46,6 +46,7 @@ class AliAnalysisTaskGFWFlow : public AliAnalysisTaskSE {
   void SetPtBins(Int_t nBins, Double_t *bins) { fPtAxis->Set(nBins,bins); };
   void SetCurrSystFlag(Int_t newval) { fCurrSystFlag = newval; };
   void SetWeightDir(const char *newval) { fWeightDir.Clear(); fWeightDir.Append(newval); };
+  Bool_t SetInputWeightList(TList *inList);
  protected:
   AliEventCuts fEventCuts, fEventCutsForPU;
  private:
