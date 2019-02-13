@@ -228,7 +228,6 @@ void AliForwardNUETask::UserExec(Option_t *)
           Double_t phi = forwarddNdedp.GetYaxis()->GetBinCenter(phiBin);
           Double_t weight = forwarddNdedp.GetBinContent(etaBin, phiBin);
 
-          //if (nua_mode) weight = AliForwardNUATask::InterpolateWeight(forwarddNdedp,phiBin,etaBin,weight);
           // If empty, do not fill hist
           if (weight == 0) continue;
           nua_fmd->Fill(eta,zvertex,weight);

@@ -71,7 +71,7 @@ ClassImp(AliForwardSecondariesTask)
 AliForwardSecondariesTask::AliForwardSecondariesTask() : AliAnalysisTaskSE(),
   fOutputList(0),    // output list
   fEventList(0),
-    fDeltaList(0),
+  fDeltaList(0),
   fRandom(0),
   fTrackDensity(),
   fState(),
@@ -83,18 +83,19 @@ AliForwardSecondariesTask::AliForwardSecondariesTask() : AliAnalysisTaskSE(),
   fMultTOFLowCut(),
   fMultTOFHighCut(),
   fMultCentLowCut(),
-      fdNdeta(0),
-    fPiCheck(0),
-    fdNdetaOrigin(0),
-    fxray(0),
-    fNsecondaries(0),
-    fNprimaries(0),
-    fITS(0),
-    fFMD1(0),
-    fFMD2(0),
-    fFMD3(0),
-    fPipe(0),
-    fEarlyDecay(0)
+  fdNdeta(0),
+  fPiCheck(0),
+  fdNdetaOrigin(0),
+  fxray(0),
+  fNsecondaries(0),
+  fNprimaries(0),
+  fITS(0),
+  fFMD1(0),
+  fFMD2(0),
+  fFMD3(0),
+  fPipe(0),
+  fEarlyDecay(0),
+  phihist()
   {
   //
   //  Default constructor
@@ -117,18 +118,19 @@ AliForwardSecondariesTask::AliForwardSecondariesTask() : AliAnalysisTaskSE(),
   fMultTOFLowCut(),
   fMultTOFHighCut(),
   fMultCentLowCut(),
-      fdNdeta(0),
-    fPiCheck(0),
-    fdNdetaOrigin(0),
-    fxray(0),
-    fNsecondaries(0),
-    fNprimaries(0),
-    fITS(0),
-    fFMD1(0),
-    fFMD2(0),
-    fFMD3(0),
-    fPipe(0),
-    fEarlyDecay(0)
+  fdNdeta(0),
+  fPiCheck(0),
+  fdNdetaOrigin(0),
+  fxray(0),
+  fNsecondaries(0),
+  fNprimaries(0),
+  fITS(0),
+  fFMD1(0),
+  fFMD2(0),
+  fFMD3(0),
+  fPipe(0),
+  fEarlyDecay(0),
+  phihist()
   {
   //
   //  Constructor
@@ -158,8 +160,10 @@ AliForwardSecondariesTask::AliForwardSecondariesTask() : AliAnalysisTaskSE(),
 
     fDeltaList = new TList();
     fDeltaList->SetName("Delta");
-    Int_t phibins = 40;
-    Int_t etabins = 200;
+    Int_t phibins = 4000;
+    Int_t etabins = 50;
+    fSettings.fnoSamples = 1;
+    fSettings.fCentBins = 1;
     Int_t bins_phi_eta[5] = {fSettings.fnoSamples, fSettings.fNZvtxBins, phibins, 1, etabins} ;
     Double_t xmin_phi_eta[5] = {0,fSettings.fZVtxAcceptanceLowEdge, -TMath::Pi(), 0, -4};
     Double_t xmax_phi_eta[5] = {10,fSettings.fZVtxAcceptanceUpEdge, TMath::Pi(), 100, 6}; //
@@ -169,7 +173,7 @@ AliForwardSecondariesTask::AliForwardSecondariesTask() : AliAnalysisTaskSE(),
     Double_t xmin_eta_phi[5] = {0,fSettings.fZVtxAcceptanceLowEdge, -4, 0, 0.0};
     Double_t xmax_eta_phi[5] = {10,fSettings.fZVtxAcceptanceUpEdge, 6, 100, 2*TMath::Pi()}; //
 
-    Int_t bins_phi[5] = {fSettings.fnoSamples, fSettings.fNZvtxBins, 101, fSettings.fCentBins, 20} ;
+    Int_t bins_phi[5] = {fSettings.fnoSamples, fSettings.fNZvtxBins, 20, fSettings.fCentBins, 20} ;
     Double_t xmin_phi[5] = {0,fSettings.fZVtxAcceptanceLowEdge, -TMath::Pi(), 0.0, 0.0};
     Double_t xmax_phi[5] = {10,fSettings.fZVtxAcceptanceUpEdge, TMath::Pi(), 100, 2*TMath::Pi()}; //
 
@@ -216,7 +220,8 @@ AliForwardSecondariesTask::AliForwardSecondariesTask() : AliAnalysisTaskSE(),
      20, 0., 100., 500, 0., 5.)); //((fFlags & kMC) ? 15. : 5. // Sigma <M> histogram
     fEventList->Add(new TH1D("FMDHits","FMDHits",100,0,10));
     fEventList->SetName("EventInfo");
-
+    phihist = new TH1D("name","name",20,0,2*TMath::Pi());
+    phihist->SetDirectory(0);
     Int_t bins_prim[4] = {fSettings.fnoSamples, fSettings.fNZvtxBins, 1, etabins} ;
     Double_t xmin_prim[4] = {0,fSettings.fZVtxAcceptanceLowEdge, 0, -4};
     Double_t xmax_prim[4] = {10,fSettings.fZVtxAcceptanceUpEdge, 100, 6}; //
@@ -378,7 +383,10 @@ AliForwardSecondariesTask::StoreParticle(AliMCParticle*       particle,
   Double_t *etaPhi = new Double_t[2];
   this->GetTrackRefEtaPhi(particle, etaPhi);
 
+
   Double_t phi_tr = etaPhi[1]; //Wrap02pi
+  //phi_tr = phihist->GetBinCenter(phihist->FindBin(phi_tr));
+
   //if (phi_tr < 0) phi_tr += 2*TMath::Pi();
   Double_t eta_tr = etaPhi[0];
 
