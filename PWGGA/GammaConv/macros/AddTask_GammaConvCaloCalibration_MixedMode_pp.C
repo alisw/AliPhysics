@@ -54,7 +54,7 @@ void AddTask_GammaConvCaloCalibration_MixedMode_pp(
   Double_t  smearPar                      = 0.,       // conv photon smearing params
   Double_t  smearParConst                 = 0.,       // conv photon smearing params
   Bool_t    doPrimaryTrackMatching        = kTRUE,    // enable basic track matching for all primary tracks to cluster
-  Int_t     isRun2                        = kTRUE,    // enables different number of SM
+  Int_t     isRun2                        = kTRUE,    // enables different number of SM 
   // subwagon config
   TString   additionalTrainConfig         = "0"       // additional counter for trainconfig
 ) {
