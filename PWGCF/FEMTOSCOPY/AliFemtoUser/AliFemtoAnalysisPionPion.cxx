@@ -952,8 +952,10 @@ AliFemtoAnalysisPionPion::ConstructEventReader(AliFemtoConfigObject cfg)
 {
   std::string classname;
   if (!cfg.pop_and_load("class", classname)) {
-    TString msg = "Could not load string-property 'class' from object:\n" + cfg.Stringify(true);
-    std::cerr << "[AliFemtoAnalysisPionPion::ConstructEventReader] " << msg;
+    std::cerr << "[AliFemtoAnalysisPionPion::ConstructEventReader] "
+	      <<  "Could not load string-property 'class' from object:\n" 
+	      << cfg.Stringify(true)
+	      << "\n";
     return nullptr;
   }
 
@@ -994,6 +996,10 @@ AliFemtoAnalysisPionPion::ConstructEventReader(AliFemtoConfigObject cfg)
 AliFemtoEventCut*
 AliFemtoAnalysisPionPion::ConstructEventCut(AliFemtoConfigObject cfg)
 {
+  auto result = cfg.Into<AliFemtoEventCut>();
+  return result;
+
+/*
   std::string classname;
   if (!cfg.pop_and_load("class", classname)) {
     TString msg = "Could not load string-property 'class' from object:\n" + cfg.Stringify(true);
@@ -1015,11 +1021,15 @@ AliFemtoAnalysisPionPion::ConstructEventCut(AliFemtoConfigObject cfg)
   }
 
   return result;
+*/
 }
 
 AliFemtoPairCut*
 AliFemtoAnalysisPionPion::ConstructPairCut(AliFemtoConfigObject cfg)
 {
+  auto result = cfg.Into<AliFemtoPairCut>();
+  return result;
+/*
   std::string classname;
   if (!cfg.pop_and_load("class", classname)) {
     TString msg = "Could not load string-property 'class' from object:\n" + cfg.Stringify(true);
@@ -1039,15 +1049,21 @@ AliFemtoAnalysisPionPion::ConstructPairCut(AliFemtoConfigObject cfg)
   #undef TRY_CONSTRUCTING_CLASS
 
   return result;
+*/
 }
 
 AliFemtoParticleCut*
 AliFemtoAnalysisPionPion::ConstructParticleCut(AliFemtoConfigObject cfg)
 {
+  auto result = cfg.Into<AliFemtoTrackCut>();
+  return result;
+/*
   std::string classname;
   if (!cfg.pop_and_load("class", classname)) {
-    TString msg = "Could not load string-property 'class' from object:\n" + cfg.Stringify(true);
-    std::cerr << "[AliFemtoAnalysisPionPion::ConstructParticleCut] " << msg;
+    std::cerr << "[AliFemtoAnalysisPionPion::ConstructParticleCut] "
+              <<  "Could not load string-property 'class' from object:\n" 
+	      << cfg.Stringify(true)
+	      << "\n";
     return nullptr;
   }
 
@@ -1059,7 +1075,7 @@ AliFemtoAnalysisPionPion::ConstructParticleCut(AliFemtoConfigObject cfg)
   #undef TRY_CONSTRUCTING_CLASS
 
   return result;
-
+*/
 }
 
 AliFemtoAnalysis*
@@ -1067,8 +1083,10 @@ AliFemtoAnalysisPionPion::BuildAnalysisFromConfiguration(AliFemtoConfigObject cf
 {
   std::string classname;
   if (!cfg.pop_and_load("class", classname)) {
-    TString msg = "Could not load string-property 'class' from object:\n" + cfg.Stringify(true);
-    std::cerr << "[AliFemtoAnalysisPionPion::BuildAnalysisFromConfiguration] " << msg;
+    std::cerr << "[AliFemtoAnalysisPionPion::BuildAnalysisFromConfiguration] "
+              << "Could not load string-property 'class' from object:\n"
+              << cfg.Stringify(true)
+	      << "\n";
     return nullptr;
   }
 
