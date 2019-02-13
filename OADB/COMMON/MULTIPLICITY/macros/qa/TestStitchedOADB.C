@@ -11,7 +11,8 @@
 // global pointer to calib histogram
 TH1D *hCalib = 0x0;
 
-void TestStitchedOADB(TString lPeriodName = "LHC18f",
+void TestStitchedOADB(const Char_t* inputDir,
+                      TString lPeriodName = "LHC18f",
                       Int_t          lRun = 287071 ) {
     // Code to test OADB in Offline Mode
     // Further developments needed!
@@ -110,12 +111,10 @@ void TestStitchedOADB(TString lPeriodName = "LHC18f",
 
     
     //Input file here!
-    TString fInputFileNameMB = "../MB/AnalysisResults.root"; 
-    TString fInputFileNameHM = "../VHM/AnalysisResults.root"; 
+    TString fInputFileName = Form("%s/AnalysisResults_%d.root", inputDir, lRun); 
     
     cout<<" Offline Calibration Test "<<endl;
-    cout<<" * Input File MB.....: "<<fInputFileNameMB.Data()<<endl;
-    cout<<" * Input File VHM....: "<<fInputFileNameHM.Data()<<endl;
+    cout<<" * Input File .....: "<<fInputFileName.Data()<<endl;
     cout<<endl;
     cout<<" Event Selection Peformed: "<<endl;
     oadbMultSelection->GetEventCuts()->Print();
@@ -127,25 +126,25 @@ void TestStitchedOADB(TString lPeriodName = "LHC18f",
     cout<<"(1) Opening File MB"<<endl;
     
     //Open File
-    TFile *fInputMB = TFile::Open( fInputFileNameMB.Data(), "READ");
-    if(!fInputMB){
-        AliWarningF("File %s not found!", fInputFileNameMB.Data() );
+    TFile *fInput = TFile::Open( fInputFileName.Data(), "READ");
+    if(!fInput){
+        AliWarningF("File %s not found!", fInputFileName.Data() );
         return kFALSE;
     }
     //Locate TTree object
-    TTree* fTreeMB = (TTree*)fInputMB->FindObjectAny("fTreeEvent");
-    if(!fTreeMB){
+    TTree* fTree = (TTree*)fInput->FindObjectAny("fTreeEvent");
+    if(!fTree){
         AliWarning("fTreeEvent object not found!" );
         return kFALSE;
     }
 
     TH1D* hTestPercentileMB = new TH1D("hTestPercentileMB", "", lNDesiredBoundaries, lDesiredBoundaries);
 
-    Long64_t lNEv = fTreeMB->GetEntries();
+    Long64_t lNEv = fTree->GetEntries();
     cout<<"(1) File opened, event count is "<<lNEv<<endl;
     
-    Long64_t lSelectedMB = fTreeMB->Draw("get_percentile(fAmplitude_V0A+fAmplitude_V0C)>>hTestPercentileMB", 
-                                         Form("fRunNumber==%d && fEvSel_Triggered && fEvSel_IsNotPileupInMultBins && fEvSel_PassesTrackletVsCluster && fEvSel_INELgtZERO && fEvSel_HasNoInconsistentVertices && TMath::Abs(fEvSel_VtxZ)<=10.0", lRun),
+    Long64_t lSelectedMB = fTree->Draw("get_percentile(fAmplitude_V0A+fAmplitude_V0C)>>hTestPercentileMB", 
+                                         Form("fRunNumber==%d && fEvSel_Triggered && fEvSel_IsNotPileupInMultBins && fEvSel_PassesTrackletVsCluster && fEvSel_INELgtZERO && fEvSel_HasNoInconsistentVertices && TMath::Abs(fEvSel_VtxZ)<=10.0 && isSelectedMB(fEvSel_TriggerMask)", lRun),
                                          "goff");
     Long64_t lAllMB = lNEv;
     
@@ -154,34 +153,21 @@ void TestStitchedOADB(TString lPeriodName = "LHC18f",
     cout<<endl;
 
     // VHM part *******************************************************
-
     // STEP 2: Basic I/O
     cout<<"(2) Opening File VHM"<<endl;
     
     //Open File
-    TFile *fInputHM = TFile::Open( fInputFileNameHM.Data(), "READ");
-    if(!fInputHM){
-        AliWarningF("File %s not found!", fInputFileNameHM.Data() );
-        return kFALSE;
-    }
-    //Locate TTree object
-    TTree* fTreeHM = (TTree*)fInputHM->FindObjectAny("fTreeEvent");
-    if(!fTreeHM){
-        AliWarning("fTreeEvent object not found!" );
-        return kFALSE;
-    }
-    
     TH1D* hTestPercentileHM = new TH1D("hTestPercentileHM", "", lNDesiredBoundaries, lDesiredBoundaries);
     TH1D* hTestPercentileHM_anchored = new TH1D("hTestPercentileHM_anchored", "", lNDesiredBoundaries, lDesiredBoundaries);
     
-    lNEv = fTreeHM->GetEntries();
+    lNEv = fTree->GetEntries();
     cout<<"(2) File opened, event count is "<<lNEv<<endl;
     
-    Long64_t lSelectedHM = fTreeHM->Draw(Form("get_percentile(fAmplitude_V0A+fAmplitude_V0C)>>hTestPercentileHM"), 
-                                         Form("fRunNumber==%d && fEvSel_Triggered && fEvSel_IsNotPileupInMultBins && fEvSel_PassesTrackletVsCluster && fEvSel_INELgtZERO && fEvSel_HasNoInconsistentVertices && TMath::Abs(fEvSel_VtxZ)<=10.0", lRun),
+    Long64_t lSelectedHM = fTree->Draw(Form("get_percentile(fAmplitude_V0A+fAmplitude_V0C)>>hTestPercentileHM"), 
+                                         Form("fRunNumber==%d && fEvSel_Triggered && fEvSel_IsNotPileupInMultBins && fEvSel_PassesTrackletVsCluster && fEvSel_INELgtZERO && fEvSel_HasNoInconsistentVertices && TMath::Abs(fEvSel_VtxZ)<=10.0 && isSelectedHM(fEvSel_TriggerMask)", lRun),
                                          "goff");
-    Long64_t lSelectedHM_anchored = fTreeHM->Draw(Form("get_percentile(fAmplitude_V0A+fAmplitude_V0C)>>hTestPercentileHM_anchored"), 
-                                                  Form("get_percentile(fAmplitude_V0A+fAmplitude_V0C)<%lf && fRunNumber==%d && fEvSel_Triggered && fEvSel_IsNotPileupInMultBins && fEvSel_PassesTrackletVsCluster && fEvSel_INELgtZERO && fEvSel_HasNoInconsistentVertices && TMath::Abs(fEvSel_VtxZ)<=10.0", anchor_percentile, lRun),
+    Long64_t lSelectedHM_anchored = fTree->Draw(Form("get_percentile(fAmplitude_V0A+fAmplitude_V0C)>>hTestPercentileHM_anchored"), 
+                                                Form("get_percentile(fAmplitude_V0A+fAmplitude_V0C)<%lf && fRunNumber==%d && fEvSel_Triggered && fEvSel_IsNotPileupInMultBins && fEvSel_PassesTrackletVsCluster && fEvSel_INELgtZERO && fEvSel_HasNoInconsistentVertices && TMath::Abs(fEvSel_VtxZ)<=10.0 && isSelectedHM(fEvSel_TriggerMask)", anchor_percentile, lRun),
                                                   "goff");
     Long64_t lAllHM = lNEv;
     
@@ -260,7 +246,7 @@ void TestStitchedOADB(TString lPeriodName = "LHC18f",
    leg->AddEntry(hTestPercentileHM_anchored, Form("%s VHM (anchored)", lPeriodName.Data()), "lp");
    leg->Draw();
     
-   c2->SaveAs(Form("checkStitching_%d.pdf", lRun)); 
+   c2->SaveAs(Form("temp/checkStitching/checkStitching_%d.png", lRun)); 
 
    TCanvas *c3 = new TCanvas("c3", "", 820, 10, 800, 600);
    c3->SetTicks(1,1); 
@@ -276,8 +262,7 @@ void TestStitchedOADB(TString lPeriodName = "LHC18f",
    TH1D* h2 = (TH1D*)hTestPercentileHM->Clone("h2_copy");
    h2->Draw("hist same");
    leg->Draw();
-
-    
+   c3->SaveAs(Form("temp/checkStitching/checkStitchingZoomOut_%d.png", lRun)); 
 }
 
 // function to get V0M percentile
@@ -290,3 +275,18 @@ Double_t get_percentile(Double_t amplitude)
 
 }
 
+Bool_t isSelectedMB(AliVEvent::EOfflineTriggerTypes trgMask) {
+   
+   Bool_t isSel = kFALSE;
+   isSel = trgMask & AliVEvent::kINT7;
+   
+   return isSel;
+}
+
+Bool_t isSelectedHM(AliVEvent::EOfflineTriggerTypes trgMask) {
+   
+   Bool_t isSel = kFALSE;
+   isSel = trgMask & AliVEvent::kHighMultV0;
+   
+   return isSel;
+}
