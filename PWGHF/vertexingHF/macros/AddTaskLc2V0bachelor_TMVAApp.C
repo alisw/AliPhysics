@@ -6,7 +6,8 @@ AliAnalysisTaskSELc2V0bachelorTMVAApp* AddTaskLc2V0bachelor_TMVAApp(TString ptBi
 								    Bool_t fillTree=kFALSE,
 								    Bool_t onTheFly=kFALSE,
 								    Bool_t keepingOnlyHIJINGbkd=kFALSE,
-								    TString suffixName=""){
+								    TString suffixName="",
+								    Bool_t debugFlag){
   
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
   if (!mgr) {
@@ -71,6 +72,7 @@ AliAnalysisTaskSELc2V0bachelorTMVAApp* AddTaskLc2V0bachelor_TMVAApp(TString ptBi
   task->SetKeepingOnlyHIJINGBkg(keepingOnlyHIJINGbkd);
   task->SetK0sAnalysis(kTRUE);
   task->SetDebugLevel(0);
+  task->SetDebugHistograms(debugFlag);
   mgr->AddTask(task);
   
   // Create and connect containers for input/output  
