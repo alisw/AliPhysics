@@ -362,11 +362,20 @@ public:
     kLeg1DCAsigXY,            //DCA in sigma for first daughter of the pair in xy-plane
     kLeg1DCAabsXY,            //DCA in cm for first daughter of the pair in xy-plane
     kLeg1DCAresXY,            //resolution from kov matrix for first daughter of the pair in xy-plane
+    kLeg1DCAsigXYZ,            //DCA in sigma for first daughter of the pair in xy-plane
+    kLeg1DCAabsXYZ,            //DCA in cm for first daughter of the pair in xy-plane
+    kLeg2DCAsigXY,            //DCA in sigma for first daughter of the pair in xy-plane
+    kLeg2DCAabsXY,            //DCA in cm for first daughter of the pair in xy-plane
+    kLeg2DCAresXY,            //resolution from kov matrix for first daughter of the pair in xy-plane
+    kLeg2DCAsigXYZ,            //DCA in sigma for first daughter of the pair in xy-plane
+    kLeg2DCAabsXYZ,           //DCA in cm for first daughter of the pair in xy-plane
     // pair dinstance of closest approach (dca) variables
     kPairDCAsigXY,             // dca in xy-plane calculated in orders of sigma calculated as sqrt(dcaD1^2 + dcaD2^2)
     kPairDCAsigZ,              // dca in z-plane calculated in orders of sigma calculated as sqrt(dcaD1^2 + dcaD2^2)
+    kPairDCAsigXYZ,
     kPairDCAabsXY,             // dca in xy-plane in absolute values (cm) calculated as sqrt(dcaD1^2 + dcaD2^2)
     kPairDCAabsZ,              // dca in z-plane in absolute values (cm) calculated as sqrt(dcaD1^2 + dcaD2^2)
+    kPairDCAabsXYZ,
     kPairLinDCAsigXY,          // dca in xy-plane calculated in orders of sigma calculated as (dcaD1 + dcaD2)/2)
     kPairLinDCAsigZ,           // dca in z-plane calculated in orders of sigma calculated as (dcaD1 + dcaD2)/2)
     kPairLinDCAabsXY,          // dca in xy-plane in absolute values (cm) calculated as (dcaD1 + dcaD2)/2)
@@ -914,7 +923,7 @@ inline void AliDielectronVarManager::FillVarESDtrack(const AliESDtrack *particle
   if (!esdTrack) return;
   esdTrack->SetTPCsignal(origdEdx/AliDielectronPID::GetEtaCorr(esdTrack)/AliDielectronPID::GetCorrValdEdx(),esdTrack->GetTPCsignalSigma(),esdTrack->GetTPCsignalN());
 
-  
+
   // Fill AliESDtrack interface specific information
   Double_t tpcNcls=particle->GetTPCNcls();
   Double_t tpcNclsS = particle->GetTPCnclsS();
@@ -2032,20 +2041,30 @@ inline void AliDielectronVarManager::FillVarDielectronPair(const AliDielectronPa
   //calculate pair dca in sigma and cm
   values[AliDielectronVarManager::kPairDCAsigXY]     = -999.;
   values[AliDielectronVarManager::kPairDCAsigZ]      = -999.;
+  values[AliDielectronVarManager::kPairDCAsigXYZ]    = -999.;
   values[AliDielectronVarManager::kPairDCAabsXY]     = -999.;
   values[AliDielectronVarManager::kPairDCAabsZ]      = -999.;
+  values[AliDielectronVarManager::kPairDCAabsXYZ]    = -999.;
   values[AliDielectronVarManager::kPairLinDCAsigXY]  = -999.;
   values[AliDielectronVarManager::kPairLinDCAsigZ]   = -999.;
   values[AliDielectronVarManager::kPairLinDCAabsXY]  = -999.;
   values[AliDielectronVarManager::kPairLinDCAabsZ]   = -999.;
   values[AliDielectronVarManager::kLeg1DCAsigXY]     = -999.;
   values[AliDielectronVarManager::kLeg1DCAabsXY]     = -999.;
+  values[AliDielectronVarManager::kLeg1DCAsigXYZ]     = -999.;
+  values[AliDielectronVarManager::kLeg1DCAabsXYZ]     = -999.;
   values[AliDielectronVarManager::kLeg1DCAresXY]     = -999.;
+  values[AliDielectronVarManager::kLeg2DCAsigXY]     = -999.;
+  values[AliDielectronVarManager::kLeg2DCAabsXY]     = -999.;
+  values[AliDielectronVarManager::kLeg2DCAsigXYZ]     = -999.;
+  values[AliDielectronVarManager::kLeg2DCAabsXYZ]     = -999.;
+  values[AliDielectronVarManager::kLeg2DCAresXY]     = -999.;
 
   // check if calculation is requested
-  if(Req(kPairDCAsigXY) || Req(kPairDCAsigZ) || Req(kPairDCAabsXY) || Req(kPairDCAabsZ) ||
-     Req(kPairLinDCAsigXY) || Req(kPairLinDCAsigZ) || Req(kPairLinDCAabsXY) || Req(kPairLinDCAabsZ)) {
-
+  if( Req(kPairDCAsigXY) || Req(kPairDCAsigZ) || Req(kPairDCAabsXY) || Req(kPairDCAabsZ) ||
+      Req(kPairLinDCAsigXY) || Req(kPairLinDCAsigZ) || Req(kPairLinDCAabsXY) || Req(kPairLinDCAabsZ) ||
+      Req(kPairDCAsigXYZ) || Req(kPairDCAabsXYZ) )
+     {
     // get track references from pair
     AliVParticle* d1 = pair-> GetFirstDaughterP();
     AliVParticle* d2 = pair->GetSecondDaughterP();
@@ -2060,17 +2079,11 @@ inline void AliDielectronVarManager::FillVarDielectronPair(const AliDielectronPa
         Double_t dca1[2]       = {-999.,-999.};      // xy,z absolute values
         Double_t dcaSig1[2]    = {-999.,-999.};      // xy,z sigma values
         Double_t dcaRes1[3]    = {-999.,-999.,-999.};// Covariance matrix
-        //Float_t dcaTPC1[2]    = {-999.,-999.};      // xy,z TPC-only absolute values
-        //Float_t dcaSigTPC1[2] = {-999.,-999.};      // xy,z TPC-only sigma values
-        //Float_t dcaResTPC1[3] = {-999.,-999.,-999.};// Covariance matrix TPC-only
 
         ////// second daughter
         Double_t dca2[2]       = {-999.,-999.};      // xy,z absolute values
         Double_t dcaSig2[2]    = {-999.,-999.};      // xy,z sigma values
         Double_t dcaRes2[3]    = {-999.,-999.,-999.};// Covariance matrix
-        //Float_t dcaTPC2[2]    = {-999.,-999.};      // xy,z TPC-only absolute values
-        //Float_t dcaSigTPC2[2] = {-999.,-999.};      // xy,z TPC-only sigma values
-        //Float_t dcaResTPC2[3] = {-999.,-999.,-999.};// Covariance matrix TPC-only
 
         if (isESD) {
           // 'Float_t' needed for 'virtual void AliESDtrack::GetImpactParameters(Float_t p[2], Float_t cov[3]) const'
@@ -2108,6 +2121,18 @@ inline void AliDielectronVarManager::FillVarDielectronPair(const AliDielectronPa
         values[AliDielectronVarManager::kLeg1DCAabsXY]   = dca1[0];
         values[AliDielectronVarManager::kLeg1DCAsigXY]   = dcaSig1[0];
         values[AliDielectronVarManager::kLeg1DCAresXY]   = dcaRes1[0];
+        Double_t tmp_leg1dcaXYZabs = TMath::Sqrt(dca1[0]*dca1[0] + dca1[1]*dca1[1]);
+        Double_t tmp_leg1dcaXYZsig = TMath::Sqrt(dcaSig1[0]*dcaSig1[0] + dcaSig1[1]*dcaSig1[1]);
+        values[AliDielectronVarManager::kLeg1DCAabsXYZ]  = tmp_leg1dcaXYZabs;
+        values[AliDielectronVarManager::kLeg1DCAsigXYZ]  = tmp_leg1dcaXYZsig;
+
+        values[AliDielectronVarManager::kLeg2DCAabsXY]   = dca2[0];
+        values[AliDielectronVarManager::kLeg2DCAsigXY]   = dcaSig2[0];
+        values[AliDielectronVarManager::kLeg2DCAresXY]   = dcaRes2[0];
+        Double_t tmp_leg2dcaXYZabs   = TMath::Sqrt(dca2[0]*dca2[0] + dca2[1]*dca2[1]);
+        Double_t tmp_leg2dcaXYZsig   = TMath::Sqrt(dcaSig2[0]*dcaSig2[0] + dcaSig2[1]*dcaSig2[1]);
+        values[AliDielectronVarManager::kLeg2DCAabsXYZ]  = tmp_leg2dcaXYZabs;
+        values[AliDielectronVarManager::kLeg2DCAsigXYZ]  = tmp_leg2dcaXYZsig;
 
         // set pair dca values
         // quadratic summation
@@ -2115,6 +2140,9 @@ inline void AliDielectronVarManager::FillVarDielectronPair(const AliDielectronPa
         values[AliDielectronVarManager::kPairDCAabsZ]        = TMath::Sqrt( (dca1[1]*dca1[1] + dca2[1]*dca2[1]) / 2 );
         values[AliDielectronVarManager::kPairDCAsigXY]       = TMath::Sqrt( (dcaSig1[0]*dcaSig1[0] + dcaSig2[0]*dcaSig2[0]) / 2 );
         values[AliDielectronVarManager::kPairDCAsigZ]        = TMath::Sqrt( (dcaSig1[1]*dcaSig1[1] + dcaSig2[1]*dcaSig2[1]) / 2 );
+        values[AliDielectronVarManager::kPairDCAabsXYZ]      = TMath::Sqrt( (tmp_leg1dcaXYZabs*tmp_leg1dcaXYZabs + tmp_leg2dcaXYZabs*tmp_leg2dcaXYZabs) / 2 );
+        values[AliDielectronVarManager::kPairDCAsigXYZ]      = TMath::Sqrt( (tmp_leg1dcaXYZsig*tmp_leg1dcaXYZsig + tmp_leg2dcaXYZsig*tmp_leg2dcaXYZsig) / 2 );
+
         // linear summation
         values[AliDielectronVarManager::kPairLinDCAabsXY]    = (TMath::Abs(dca1[0]) + TMath::Abs(dca2[0])) / 2;
         values[AliDielectronVarManager::kPairLinDCAabsZ]     = (TMath::Abs(dca1[1]) + TMath::Abs(dca2[1])) / 2;
@@ -2383,9 +2411,9 @@ inline void AliDielectronVarManager::FillVarDielectronPair(const AliDielectronPa
     values[AliDielectronVarManager::kQnSPDrpH2FlowSPV2]    = uDielectronSP * qVec2SPD;
   }
 
-  // calculate inner Product of strong magnetic field (from TPC event plane, correction framework) and ee plane 
+  // calculate inner Product of strong magnetic field (from TPC event plane, correction framework) and ee plane
   if(Req(kPairPlaneMagInProTPC)) values[AliDielectronVarManager::kPairPlaneMagInProTPC] = pair->PairPlaneMagInnerProduct(values[AliDielectronVarManager::kQnTPCrpH2]);
-  
+
 
 
   AliDielectronMC *mc = AliDielectronMC::Instance();
