@@ -1,6 +1,8 @@
 #ifndef ALIVERTEXERHYPERTRITON3BODY_H
 #define ALIVERTEXERHYPERTRITON3BODY_H
 
+class TClonesArray; /// This will be removed as soon as alisw/AliRoot#898 is merged and a new tag is available
+
 #include <AliVertexerTracks.h>
 
 class AliESDVertex;
