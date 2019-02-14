@@ -1252,7 +1252,7 @@ Double_t AliRsnMiniAnalysisTask::ComputeSpherocity()
   for(Int_t i1 = 0; i1 < ntracksLoop; ++i1){
     AliVTrack   *track = (AliVTrack *)evTypeS->GetTrack(i1);
     AliAODTrack *aodt  = dynamic_cast<AliAODTrack *>(track);
-    if (aodt) if (!aodt->TestFilterBit(7)) continue;
+    if (aodt) if (!aodt->TestFilterBit(5)) continue;
     pt[i1] = track->Pt();
     sumapt += pt[i1];
   }
@@ -1269,7 +1269,7 @@ Double_t AliRsnMiniAnalysisTask::ComputeSpherocity()
 	for(Int_t i1 = 0; i1 < ntracksLoop; ++i1){
 	  AliVTrack   *track = (AliVTrack *)evTypeS->GetTrack(i1);
 	  AliAODTrack *aodt  = dynamic_cast<AliAODTrack *>(track);
-	  if (aodt) if (!aodt->TestFilterBit(7)) continue;
+	  if (aodt) if (!aodt->TestFilterBit(5)) continue;
 	  pt[i1] = track->Pt();
 	  phi[i1] = track->Phi();
 	  Float_t pxA = pt[i1] * TMath::Cos( phi[i1] );
