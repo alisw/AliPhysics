@@ -1207,19 +1207,20 @@ void AliAnalysisTaskCheckESDTracks::UserExec(Option_t *)
       if(isBGp && isBGn) fHistCheckK0SelBackg->Fill(0);
       else if(!isBGp && !isBGn) fHistCheckK0SelEmbed->Fill(0);
       else fHistCheckK0SelMixed->Fill(0);
-      TParticle* partPos=mcEvent->Particle(labelPos);
-      TParticle* partNeg=mcEvent->Particle(labelNeg);
-      if(partPos && partNeg){
+      AliMCParticle* mctrackPos = (AliMCParticle*)mcEvent->GetTrack(labelPos);
+      AliMCParticle* mctrackNeg = (AliMCParticle*)mcEvent->GetTrack(labelNeg);
+      if(mctrackPos && mctrackNeg){
 	if(isBGp && isBGn) fHistCheckK0SelBackg->Fill(1);
 	else if(!isBGp && !isBGn) fHistCheckK0SelEmbed->Fill(1);
 	else fHistCheckK0SelMixed->Fill(1);
-        Int_t labelMotherPos=partPos->GetFirstMother();
-        Int_t labelMotherNeg=partNeg->GetFirstMother();
+	Int_t labelMotherPos = mctrackPos->GetMother();
+	Int_t labelMotherNeg = mctrackNeg->GetMother();
 	if(labelMotherPos==labelMotherNeg && labelMotherPos>-1){
 	  if(isBGp && isBGn) fHistCheckK0SelBackg->Fill(2);
 	  else if(!isBGp && !isBGn) fHistCheckK0SelEmbed->Fill(2);
 	  else fHistCheckK0SelMixed->Fill(2);
-	  TParticle* partV0=mcEvent->Particle(labelMotherPos);
+	  AliMCParticle* mctrackV0 = (AliMCParticle*)mcEvent->GetTrack(labelMotherPos);
+	  TParticle* partV0 = mctrackV0->Particle();
 	  Int_t pdgV0=partV0->GetPdgCode();
 	  if(TMath::Abs(pdgV0)==310){
 	    if(isBGp && isBGn) fHistCheckK0SelBackg->Fill(3);
