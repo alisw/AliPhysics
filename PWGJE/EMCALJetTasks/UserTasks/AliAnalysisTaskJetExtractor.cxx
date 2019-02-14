@@ -117,7 +117,7 @@ AliEmcalJetTree::AliEmcalJetTree(const char* name) : TNamed(name, name), fJetTre
 
 
 //________________________________________________________________________
-Bool_t AliEmcalJetTree::AddJetToTree(AliEmcalJet* jet, Float_t vertexX, Float_t vertexY, Float_t vertexZ, Float_t centrality, Int_t multiplicity, Long64_t eventID, Float_t magField,
+Bool_t AliEmcalJetTree::AddJetToTree(AliEmcalJet* jet, Double_t* vertex, Float_t centrality, Int_t multiplicity, Long64_t eventID, Float_t magField,
   Int_t motherParton, Int_t motherHadron, Int_t partonInitialCollision, Float_t matchDistance, Float_t matchedPt, Float_t matchedMass, Float_t truePtFraction, Float_t ptHard, Float_t eventWeight, Float_t impactParameter,
   Float_t* trackPID_ITS, Float_t* trackPID_TPC, Float_t* trackPID_TOF, Float_t* trackPID_TRD, Short_t* trackPID_Reco, Int_t* trackPID_Truth,
   Int_t numTriggerTracks, Float_t* triggerTrackPt, Float_t* triggerTrackDeltaEta, Float_t* triggerTrackDeltaPhi,
@@ -163,9 +163,9 @@ Bool_t AliEmcalJetTree::AddJetToTree(AliEmcalJet* jet, Float_t vertexX, Float_t 
   {
     fBuffer_Event_BackgroundDensity               = fJetContainer->GetRhoVal();
     fBuffer_Event_BackgroundDensityMass           = fJetContainer->GetRhoMassVal();
-    fBuffer_Event_Vertex_X                        = vertexX;
-    fBuffer_Event_Vertex_Y                        = vertexY;
-    fBuffer_Event_Vertex_Z                        = vertexZ;
+    fBuffer_Event_Vertex_X                        = vertex ? vertex[0] : 0;
+    fBuffer_Event_Vertex_Y                        = vertex ? vertex[1] : 0;
+    fBuffer_Event_Vertex_Z                        = vertex ? vertex[2] : 0;
     fBuffer_Event_Centrality                      = centrality;
     fBuffer_Event_Multiplicity                    = multiplicity;
     fBuffer_Event_ID                              = eventID;
@@ -180,7 +180,7 @@ Bool_t AliEmcalJetTree::AddJetToTree(AliEmcalJet* jet, Float_t vertexX, Float_t 
 
   // Extract basic constituent properties directly from AliEmcalJet object
   fBuffer_NumConstituents = 0;
-  if(fTrackContainer && (fSaveConstituents || fSaveConstituentsIP))
+  if(fSaveConstituents || fSaveConstituentsIP)
     for(Int_t i = 0; i < jet->GetNumberOfParticleConstituents(); i++)
     {
       const AliVParticle* particle = jet->GetParticleConstituents()[i].GetParticle();
@@ -205,16 +205,15 @@ Bool_t AliEmcalJetTree::AddJetToTree(AliEmcalJet* jet, Float_t vertexX, Float_t 
 
   // Extract basic CALOCLUSTER properties directly from AliEmcalJet object
   fBuffer_NumClusters = 0;
-  if(fClusterContainer && fSaveCaloClusters)
+  if(fSaveCaloClusters)
     for(Int_t i = 0; i < jet->GetNumberOfClusterConstituents(); i++)
     {
       const AliVCluster* cluster = jet->GetClusterConstituents()[i].GetCluster();
       if(!cluster) continue;
 
       // #### Retrieve cluster pT
-      Double_t primVtx[3] = {vertexX, vertexY, vertexZ};
       TLorentzVector clusterMomentum;
-      cluster->GetMomentum(clusterMomentum, primVtx);
+      cluster->GetMomentum(clusterMomentum, vertex);
       // ####
       fBuffer_Cluster_Pt[fBuffer_NumClusters] = clusterMomentum.Perp();
       fBuffer_Cluster_E[fBuffer_NumClusters] = cluster->E();
@@ -757,19 +756,16 @@ Bool_t AliAnalysisTaskJetExtractor::Run()
   FillEventControlHistograms();
 
   // Load vertex if possible
-  Double_t vtxX = 0;
-  Double_t vtxY = 0;
-  Double_t vtxZ = 0;
   Long64_t eventID = 0;
   const AliVVertex* myVertex = InputEvent()->GetPrimaryVertex();
   if(!myVertex && MCEvent())
     myVertex = MCEvent()->GetPrimaryVertex();
+  Double_t vtx[3] = {0, 0, 0};
   if(myVertex)
   {
-    vtxX = myVertex->GetX();
-    vtxY = myVertex->GetY();
-    vtxZ = myVertex->GetZ();
+    vtx[0] = myVertex->GetX(); vtx[1] = myVertex->GetY(); vtx[2] = myVertex->GetZ();
   }
+
   // Get event ID from header
   AliVHeader* eventIDHeader = InputEvent()->GetHeader();
   if(eventIDHeader)
@@ -884,7 +880,7 @@ Bool_t AliAnalysisTaskJetExtractor::Run()
       fJetTree->SetJetShapesInBuffer(leSub_noCorr, radialMoment, momentumDispersion, constPtMean, constPtMedian);
     }
     // Fill jet to tree
-    Bool_t accepted = fJetTree->AddJetToTree(jet, vtxX, vtxY, vtxZ, fCent, fTracksCont->GetNAcceptedParticles(), eventID, InputEvent()->GetMagneticField(),
+    Bool_t accepted = fJetTree->AddJetToTree(jet, vtx, fCent, fTracksCont->GetNAcceptedParticles(), eventID, InputEvent()->GetMagneticField(),
               currentJetType_PM,currentJetType_HM,currentJetType_IC,matchDistance,matchedJetPt,matchedJetMass,truePtFraction,fPtHard,fEventWeight,fImpactParameter,
               vecSigITS, vecSigTPC, vecSigTOF, vecSigTRD, vecRecoPID, vecTruePID,
               fTriggerTracks_Pt, triggerTracks_dEta, triggerTracks_dPhi,
@@ -1121,7 +1117,7 @@ Double_t AliAnalysisTaskJetExtractor::GetTrueJetPtFraction(AliEmcalJet* jet)
 {
   // #################################################################################
   // ##### FRACTION OF TRUE PT IN JET: Defined as "not from toy"
-  Double_t pt_nonMC = 0.;
+  Double_t pt_truth = 0.;
   Double_t pt_all   = 0.;
   Double_t truePtFraction = 0;
 
@@ -1133,12 +1129,14 @@ Double_t AliAnalysisTaskJetExtractor::GetTrueJetPtFraction(AliEmcalJet* jet)
     if(particle->Pt() < 1e-6) continue;
 
     // Particles marked w/ labels within label range are considered to be from truth
-    if (fUseEmbeddedEvent && jet->GetParticleConstituents()[iConst].IsFromEmbeddedEvent())
-      pt_nonMC += particle->Pt();
-    else if( !fUseEmbeddedEvent && ((particle->GetLabel() >= fTruthMinLabel) && (particle->GetLabel() < fTruthMaxLabel)) )
-      pt_nonMC += particle->Pt();
+    if (  (fUseEmbeddedEvent && jet->GetParticleConstituents()[iConst].IsFromEmbeddedEvent()) ||
+          (!fUseEmbeddedEvent && ((particle->GetLabel() >= fTruthMinLabel) && (particle->GetLabel() < fTruthMaxLabel)))  )
+      pt_truth += particle->Pt();
     pt_all += particle->Pt();
+
+    //std::cout << GetName() << " -- (boolean = " << jet->GetParticleConstituents()[iConst].IsFromEmbeddedEvent() << ")\n"; //TODO
   }
+
   for(Int_t iConst = 0; iConst < jet->GetNumberOfClusterConstituents(); iConst++)
   {
     const AliVCluster* cluster = jet->GetClusterConstituents()[iConst].GetCluster();
@@ -1166,15 +1164,14 @@ Double_t AliAnalysisTaskJetExtractor::GetTrueJetPtFraction(AliEmcalJet* jet)
     // ####
 
     // Particles marked w/ labels within label range are considered to be from truth
-    if (fUseEmbeddedEvent && jet->GetClusterConstituents()[iConst].IsFromEmbeddedEvent())
-      pt_nonMC += ClusterPt;
-    else if( !fUseEmbeddedEvent && ((cluster->GetLabel() >= fTruthMinLabel) && (cluster->GetLabel() < fTruthMaxLabel)) )
-      pt_nonMC += ClusterPt;
+    if (  (fUseEmbeddedEvent && jet->GetClusterConstituents()[iConst].IsFromEmbeddedEvent()) ||
+          (!fUseEmbeddedEvent && ((cluster->GetLabel() >= fTruthMinLabel) && (cluster->GetLabel() < fTruthMaxLabel)))  )
+      pt_truth += ClusterPt;
     pt_all += ClusterPt;
   }
 
   if(pt_all)
-    truePtFraction = (pt_nonMC/pt_all);
+    truePtFraction = (pt_truth/pt_all);
   return truePtFraction;
 }
 
