@@ -27,7 +27,7 @@
 #include "AliLog.h"
 #include "AliESDVertex.h"
 
-
+class TClonesArray;
 class AliExternalTrackParam;
 class AliVEvent;
 class AliESDEvent;
