@@ -285,11 +285,6 @@ TComplex AliForwardGenericFramework::TwoDiff(int n1, int n2, int refetabin, int 
   TComplex formula =0;
 
   formula = p(n1,1, diffetabin)*Q(n2,1, refetabin) - q(n1+n2,1, diffetabin);
-  if (n1 == 0 && formula.Re()<0){
-    std::cout << "p(0,1, diffetabin) "<<p(0,1, diffetabin) << std::endl;
-    std::cout << "Q(0,1, refetabin) " << Q(0,1, refetabin) << std::endl;
-    std::cout << "q(0,1, diffetabin) " <<q(0,1, diffetabin) << std::endl;
-  }
   return formula;
 }
 

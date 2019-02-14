@@ -238,6 +238,9 @@ AliAnalysisHFEppTPCTOFBeauty::AliAnalysisHFEppTPCTOFBeauty(const char *name)
 ,hCharmMotherPt_corr(0)
 ,hCharmMotherPt_corr2(0)
 ,hBeautyMotherPt(0)
+,hDCAPtProtons(0)
+,hDCAPtProtons2(0)
+,hDCAPtProtons3(0)
 ,hBeautyMotherPtbef(0)
 ,hBeautyMotherPtaft(0)
 ,hBeautyMotherPt2Daft(0)
@@ -457,6 +460,9 @@ AliAnalysisHFEppTPCTOFBeauty::AliAnalysisHFEppTPCTOFBeauty()
 ,hCharmMotherPt_corr(0)
 ,hCharmMotherPt_corr2(0)
 ,hBeautyMotherPt(0)
+,hDCAPtProtons(0)
+,hDCAPtProtons2(0)
+,hDCAPtProtons3(0)
 ,hBeautyMotherPtbef(0)
 ,hBeautyMotherPtaft(0)
 ,hBeautyMotherPt2Daft(0)
@@ -756,6 +762,15 @@ void AliAnalysisHFEppTPCTOFBeauty::UserCreateOutputObjects()
     
     hBeautyMotherPt = new TH2F("hBeautyMotherPt","; p_{T} [GeV/c]; Count",1000,0,50,1000,0,50);
     fOutputList->Add(hBeautyMotherPt);
+    
+    hDCAPtProtons = new TH2F("hDCAPtProtons","; p_{T} [GeV/c]; Count",32,ptbinning,800,-0.2,0.2);
+    fOutputList->Add(hDCAPtProtons);
+    
+    hDCAPtProtons2 = new TH2F("hDCAPtProtons2","; p_{T} [GeV/c]; Count",32,ptbinning,800,-0.2,0.2);
+    fOutputList->Add(hDCAPtProtons2);
+    
+    hDCAPtProtons3 = new TH2F("hDCAPtProtons3","; p_{T} [GeV/c]; Count",32,ptbinning,800,-0.2,0.2);
+    fOutputList->Add(hDCAPtProtons3);
     
     hBeautyMotherPt2Daft = new TH2F("hBeautyMotherPt2Daft","; p_{T} [GeV/c]; Count",1000,0,50,1000,0,50);
     fOutputList->Add(hBeautyMotherPt2Daft);
@@ -1306,6 +1321,15 @@ void AliAnalysisHFEppTPCTOFBeauty::UserExec(Option_t *)
         fPhi = track->Phi();
         fP = TMath::Sqrt((track->Pt())*(track->Pt()) + (track->Pz())*(track->Pz()));
         
+        if(fP <=2.0 ){
+        ftofPIDmincut = -2;
+        ftofPIDmaxcut = 2;
+        }
+        else{
+        ftofPIDmincut = -3;
+        ftofPIDmaxcut = 3;
+        }
+        
         fITSnClus =  track->GetNumberOfITSClusters();
         fTPCnClus =  track->GetNumberOfTPCClusters();
         
@@ -1604,7 +1628,7 @@ void AliAnalysisHFEppTPCTOFBeauty::UserExec(Option_t *)
 			//cout<<"fsharedclsITS = "<<fsharedclsITS<<endl;
             
 			qadcaData[3] = fsharedclsITS; 
-         
+         //cout<<fPt<<endl;
 			if(qadcaData[4]>0.) fD0Data->Fill(qadcaData);
         //}
         
@@ -1687,8 +1711,30 @@ void AliAnalysisHFEppTPCTOFBeauty::UserExec(Option_t *)
 			}
 			///----------------------------------------------------
 		}          
+   //     if(fTOFnSigma >= ftofPIDmincut && fTOFnSigma <= ftofPIDmaxcut){
+   if(fIsMC && fIsAOD){
+   
+   	 if(TMath::Abs(fMCparticle->GetPdgCode()) == 2212){ 
+            hDCAPtProtons2->Fill(fPt,DCAxy*track->Charge()*signB);
+           // cout<<"Hello:  "<<TMath::Abs(fMCparticle->GetPdgCode())<<endl;
+            }
+   
+         if(fTPCnSigma >= ftpcPIDmincut && fTPCnSigma <= ftpcPIDmaxcut){
+        if(TMath::Abs(fMCparticle->GetPdgCode()) == 2212){ 
+            hDCAPtProtons->Fill(fPt,DCAxy*track->Charge()*signB);
+         //   cout<<"Hello:  "<<TMath::Abs(fMCparticle->GetPdgCode())<<endl;
+            }
+
+        }
         
-               
+        if(fTPCnSigma >= -5 && fTPCnSigma <= 5){
+        if(TMath::Abs(fMCparticle->GetPdgCode()) == 2212){ 
+            hDCAPtProtons3->Fill(fPt,DCAxy*track->Charge()*signB);
+         //   cout<<"Hello:  "<<TMath::Abs(fMCparticle->GetPdgCode())<<endl;
+            }
+
+        }
+      }
         //=======================================================================
         // Here the PID cuts defined in the file "Config.C" is applied
         //=======================================================================
@@ -1708,7 +1754,7 @@ void AliAnalysisHFEppTPCTOFBeauty::UserExec(Option_t *)
         //if(fTPCnSigma >= ftpcPIDmincut && fTPCnSigma <= ftpcPIDmaxcut && fTOFnSigma >= ftofPIDmincut && fTOFnSigma <= ftofPIDmaxcut){
         // cout<<fTPCnSigma<<"       "<<fTOFnSigma<<endl;
         
-        
+       // cout<<fP<<"      "<<ftofPIDmincut<<"      "<<ftofPIDmaxcut<<endl;
                 /////////////////////////
 		//AFTER PID SELECTION////
 		/////////////////////////
@@ -1771,10 +1817,14 @@ void AliAnalysisHFEppTPCTOFBeauty::UserExec(Option_t *)
             
             ///Selecting particle
             qadca[1]=-1.; 
-            
-            qadca[8]=29.5; //if noone passes the correction HFE then 30.5 is filled
+             //cout<<"Hello:"<<endl;           
+            qadca[8]=29.5; //if noone passes the correction HFE then 29.5 is filled
             ///------------
-            if(TMath::Abs(fMCparticle->GetPdgCode()) == 2212) qadca[1]=10.5; ///to check DCA of protons
+            if(TMath::Abs(fMCparticle->GetPdgCode()) == 2212){ 
+            qadca[1]=10.5; ///to check DCA of protons
+            //hDCAPtProtons->Fill(fPt,DCAxy*track->Charge()*signB);
+            //cout<<"Hello:"<<endl;
+            }
             if(TMath::Abs(fMCparticle->GetPdgCode()) == 321) qadca[1]=11.5; ///to check DCA of kaons
             ///------------
 

@@ -3,10 +3,11 @@ AliAnalysisTaskElectronEfficiencyV2* AddTask_slehner_ElectronEfficiency(
                                                                 Double_t centMax=100.,
                                                                 Bool_t PIDCorr=kFALSE,
                                                                 Bool_t useAODFilterCuts=kFALSE,
-                                                                TString TMVAweight = "TMVAClassification_BDTG.weights_094.xml",
+                                                                TString TMVAweight = "TMVAClassification_BDTG15_400.weights.xml",
                                                                 Int_t genGroup=0,
                                                                 Bool_t fromAlien,
-                                                                TString date="ddmmyy"
+                                                                TString date="ddmmyy",
+                                                                Int_t wagonnr=0
         ) {
 
   std::cout << "########################################\nADDTASK of ANALYSIS started\n########################################" << std::endl;
@@ -32,7 +33,7 @@ AliAnalysisTaskElectronEfficiencyV2* AddTask_slehner_ElectronEfficiency(
   TString myConfig =TString::Format("alien_cp %s .",configFilePath.Data());
   gSystem->Exec(myConfig);
   
-  gSystem->Exec("alien_cp $ALICE_PHYSICS/PWGDQ/dielectron/macrosLMEE/LMEECutLib_slehner.C .");
+  gSystem->Exec(TString("alien_cp alien:///alice/cern.ch/user/s/selehner/cutlibs/LMEECutLib_slehner.C ."));
 
   configBasePath=Form("%s/",gSystem->pwd());
 
@@ -187,6 +188,6 @@ AliAnalysisTaskElectronEfficiencyV2* AddTask_slehner_ElectronEfficiency(
 
   mgr->AddTask(task);
   mgr->ConnectInput(task, 0, mgr->GetCommonInputContainer());
-  mgr->ConnectOutput(task, 1, mgr->CreateContainer(Form("efficiency%d", 0), TList::Class(), AliAnalysisManager::kOutputContainer, fileName.Data()));
+  mgr->ConnectOutput(task, 1, mgr->CreateContainer(Form("efficiency%d", wagonnr), TList::Class(), AliAnalysisManager::kOutputContainer, fileName.Data()));
   return task;
 }

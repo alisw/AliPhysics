@@ -33,6 +33,7 @@
 #include <TCustomBinning.h>
 #include <TLinearBinning.h>
 #include <TCustomBinning.h>
+#include <TRandom.h>
 
 #include "AliAODInputHandler.h"
 #include "AliAnalysisManager.h"
@@ -52,7 +53,9 @@ AliAnalysisTaskEmcalJetEnergyScale::AliAnalysisTaskEmcalJetEnergyScale():
   fNameDetectorJets(),
   fNameParticleJets(),
   fTriggerSelectionString(),
-  fNameTriggerDecisionContainer("EmcalTriggerDecision")
+  fNameTriggerDecisionContainer("EmcalTriggerDecision"),
+  fFractionResponseClosure(0.8),
+  fSampleSplitter(nullptr)
 {
 }
 
@@ -62,7 +65,9 @@ AliAnalysisTaskEmcalJetEnergyScale::AliAnalysisTaskEmcalJetEnergyScale(const cha
   fNameDetectorJets(),
   fNameParticleJets(),
   fTriggerSelectionString(),
-  fNameTriggerDecisionContainer("EmcalTriggerDecision")
+  fNameTriggerDecisionContainer("EmcalTriggerDecision"),
+  fFractionResponseClosure(0.8),
+  fSampleSplitter(nullptr)
 {
   SetUseAliAnaUtils(true);
   DefineOutput(1, TList::Class());
@@ -70,15 +75,17 @@ AliAnalysisTaskEmcalJetEnergyScale::AliAnalysisTaskEmcalJetEnergyScale(const cha
 
 AliAnalysisTaskEmcalJetEnergyScale::~AliAnalysisTaskEmcalJetEnergyScale() {
   if(fHistos) delete fHistos;
+  if(fSampleSplitter) delete fSampleSplitter;
 }
 
 void AliAnalysisTaskEmcalJetEnergyScale::UserCreateOutputObjects(){
   AliAnalysisTaskEmcal::UserCreateOutputObjects();
 
-  TLinearBinning jetPtBinningDet(300, 0., 300.), jetPtBinningPart(500, 0., 500), nefbinning(100, 0., 1.), ptdiffbinning(200, -1., 1.), jetEtaBinning(100, -0.9, 0.9), jetPhiBinning(100, 0., TMath::TwoPi());
+  TLinearBinning jetPtBinningDet(300, 0., 300.), jetPtBinningPart(500, 0., 500), nefbinning(100, 0., 1.), ptdiffbinning(200, -1., 1.), jetEtaBinning(100, -0.9, 0.9), jetPhiBinning(100, 0., TMath::TwoPi()),
+                 subsampleBinning(2, -0.5, 1.5);
 
   const TBinning *diffbinning[3] = {&jetPtBinningPart, &nefbinning, &ptdiffbinning},
-                 *corrbinning[3] = {&jetPtBinningPart, &jetPtBinningDet, &nefbinning},
+                 *corrbinning[4] = {&jetPtBinningPart, &jetPtBinningDet, &nefbinning, &subsampleBinning},
                  *effbinning[3] = {&jetPtBinningPart, &jetEtaBinning, &jetPhiBinning};
 
   TCustomBinning jetPtBinningCoarseDet, jetPtBinningCoarsePart;
@@ -92,18 +99,20 @@ void AliAnalysisTaskEmcalJetEnergyScale::UserCreateOutputObjects(){
   jetPtBinningCoarsePart.AddStep(80., 10.);
   jetPtBinningCoarsePart.AddStep(200., 20.);
   jetPtBinningCoarsePart.AddStep(280., 40.);
-  jetPtBinningCoarsePart.AddStep(220., 220.);
+  jetPtBinningCoarsePart.AddStep(500., 220.);
 
   fHistos = new THistManager("energyScaleHistos");
   fHistos->CreateTH1("hEventCounter", "Event counter", 1, 0.5, 1.5);
   fHistos->CreateTH1("hSpectrumTrueFull", "jet pt spectrum part level, not truncated", jetPtBinningCoarsePart);
   fHistos->CreateTH1("hSpectrumTrueTruncated", "jet pt spectrum particle level, truncated", jetPtBinningCoarsePart);
   fHistos->CreateTH2("hJetResponseCoarse", "Response matrix, coarse binning", jetPtBinningCoarseDet, jetPtBinningCoarsePart);
-  fHistos->CreateTHnSparse("hPtDiff", "pt diff det/part", 3., diffbinning, "s");
-  fHistos->CreateTHnSparse("hPtCorr", "Correlation det pt / part pt", 3., corrbinning, "s");
+  fHistos->CreateTHnSparse("hPtDiff", "pt diff det/part", 3, diffbinning, "s");
+  fHistos->CreateTHnSparse("hPtCorr", "Correlation det pt / part pt", 4, corrbinning, "s");
   fHistos->CreateTHnSparse("hPartJetsAccepted", "Accepted particle level jets", 3, effbinning, "s");
   fHistos->CreateTHnSparse("hPartJetsReconstructed", "Accepted and reconstructed particle level jets", 3, effbinning, "s");
   for(auto h : *(fHistos->GetListOfHistograms())) fOutput->Add(h);
+
+  fSampleSplitter = new TRandom;
 
   PostData(1, fOutput);
 }
@@ -140,7 +149,7 @@ Bool_t AliAnalysisTaskEmcalJetEnergyScale::Run(){
       continue;
     }
     taggedjets.emplace_back(partjet);
-    double pointCorr[3] = {partjet->Pt(), detjet->Pt(), detjet->NEF()},
+    double pointCorr[4] = {partjet->Pt(), detjet->Pt(), detjet->NEF(), fSampleSplitter->Uniform() < fFractionResponseClosure ? 0. : 1.},
            pointDiff[3] = {partjet->Pt(), detjet->NEF(), (detjet->Pt()-partjet->Pt())/partjet->Pt()};
     fHistos->FillTHnSparse("hPtDiff", pointDiff);
     fHistos->FillTHnSparse("hPtCorr", pointCorr);
@@ -202,6 +211,8 @@ AliAnalysisTaskEmcalJetEnergyScale *AliAnalysisTaskEmcalJetEnergyScale::AddTaskJ
         acceptance = useDCAL ? AliJetContainer::kDCALfid : AliJetContainer::kEMCALfid;
         addClusterContainer = true;
         break;
+    case AliJetContainer::kUndefinedJetType:
+        break;
   };
 
   std::stringstream taskname, tag;
@@ -226,6 +237,8 @@ AliAnalysisTaskEmcalJetEnergyScale *AliAnalysisTaskEmcalJetEnergyScale::AddTaskJ
       case AliJetContainer::kNeutralJet:
         clusters->SetDefaultClusterEnergy(AliVCluster::kNonLinCorr);
         clusters->SetClusNonLinCorrEnergyCut(0.3);
+        break;
+      case AliJetContainer::kUndefinedJetType:
         break;
     };
   }

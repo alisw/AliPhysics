@@ -221,6 +221,7 @@ public:
   void SetNominalTPCEntrancePoint(const AliFemtoThreeVector& aXTPC);
   void SetNominalTPCEntrancePoint(double *aXTPC);
 
+  void SetNominalTPCPoints(const AliFemtoThreeVector * const);
   void SetNominalTPCPoints(double **aXTPC);
 
   void SetNominalTPCExitPoint(const AliFemtoThreeVector& aXTPC);

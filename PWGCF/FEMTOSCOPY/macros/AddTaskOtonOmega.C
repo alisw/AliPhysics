@@ -4,7 +4,7 @@ AliAnalysisTaskSE* AddTaskOtonOmega(bool isMC = false,
                                      bool isESD = false,
                                      TString CentEst = "kInt7",
                                      bool CascadeTreeFlag = false,
-                                     bool OmegaTreeFlag = true,
+                                     bool OmegaTreeFlag = false,
                                      Int_t CutFlag = 0,
                                      bool GetConfigFromAlien = true,
                                      TString cFileName = "ConfigOtonOmega.C")
@@ -14,7 +14,7 @@ AliAnalysisTaskSE* AddTaskOtonOmega(bool isMC = false,
 //Start with fixed definitions from AddTaskFemtoDream:
 bool notpp = true;  //1
 bool fineBinning = true;  //2
-bool DCAPlots = false;  //3
+bool DCAPlots = true;  //3
 bool CPAPlots = false;  //4
 bool MomReso = false;  //5
 bool etaPhiPlotsAtTPCRadii = false;  //6
@@ -74,7 +74,7 @@ int SphericityRange = 0;  //22
       // IMPORTANT - SET WHEN USING DIFFERENT PASS
       AliAnalysisTaskPIDResponse *pidResponse =
           reinterpret_cast<AliAnalysisTaskPIDResponse *>(
-          */gInterpreter->ExecuteMacro("$ALICE_ROOT/ANALYSIS/macros/"
+          gInterpreter->ExecuteMacro("$ALICE_ROOT/ANALYSIS/macros/"
                                      "AddTaskPIDResponse.C (kTRUE, kTRUE, "
                                      "kTRUE, \"1\")"));
     } else {
@@ -132,15 +132,12 @@ int SphericityRange = 0;  //22
     AntiTrackCuts->SetFilterBit(FilterBit);
   }
   AntiTrackCuts->SetCutCharge(-1);
-//  AliFemtoDreamv0Cuts *v0Cuts;
-//  AliFemtoDreamv0Cuts *Antiv0Cuts;
-  AliOtonOmegaCascadeCuts *AntiCascadeCuts;
-  AliOtonOmegaCascadeCuts *CascadeOmegaCuts;
-  AliOtonOmegaCascadeCuts *AntiCascadeOmegaCuts;
 
-//skip lambda
-/*
-  //Lambda Cuts
+
+  //obsolete v0 cuts:
+  /*
+  AliFemtoDreamv0Cuts *v0Cuts;
+  AliFemtoDreamv0Cuts *Antiv0Cuts;
   v0Cuts = AliFemtoDreamv0Cuts::LambdaCuts(isMC, CPAPlots,
                                            ContributionSplitting);
   AliFemtoDreamTrackCuts *Posv0Daug = AliFemtoDreamTrackCuts::DecayProtonCuts(
@@ -165,28 +162,23 @@ int SphericityRange = 0;  //22
   Antiv0Cuts->SetPDGCodePosDaug(211);  //Pion
   Antiv0Cuts->SetPDGCodeNegDaug(2212);  //Proton
   Antiv0Cuts->SetPDGCodev0(-3122);  //Lambda
-*/
+  */
 
 
   AliOtonOmegaCascadeCuts *CascadeCuts;
-
-  //CUT TYPE = 0  // MB and pPb cuts
   CascadeCuts = AliOtonOmegaCascadeCuts::XiCuts(isMC, ContributionSplitting, CutFlag);
   CascadeCuts->SetXiCharge(-1);
-  //pdg codes:
+  AliFemtoDreamTrackCuts *XiPosCuts = AliFemtoDreamTrackCuts::Xiv0ProtonCuts(isMC, PileUpRej, false);
+  AliFemtoDreamTrackCuts *XiNegCuts = AliFemtoDreamTrackCuts::Xiv0PionCuts(isMC, PileUpRej, false);
+  AliFemtoDreamTrackCuts *XiBachCuts = AliFemtoDreamTrackCuts::XiBachPionCuts(isMC, PileUpRej, false);
   CascadeCuts->SetPDGCodeCasc(3312);
   CascadeCuts->SetPDGCodev0(3122);
   CascadeCuts->SetPDGCodePosDaug(2212);
   CascadeCuts->SetPDGCodeNegDaug(-211);
   CascadeCuts->SetPDGCodeBach(-211);
-  CascadeCuts->SetRunNumberQA(265309, 267167);
-  //proton track cuts
-  AliFemtoDreamTrackCuts *XiPosCuts = AliFemtoDreamTrackCuts::Xiv0ProtonCuts(isMC, PileUpRej, false);
-  //pion track cuts
-  AliFemtoDreamTrackCuts *XiNegCuts = AliFemtoDreamTrackCuts::Xiv0PionCuts(isMC, PileUpRej, false);
-  //bachelor pion cuts
-  AliFemtoDreamTrackCuts *XiBachCuts = AliFemtoDreamTrackCuts::XiBachPionCuts(isMC, PileUpRej, false);
 
+
+  AliOtonOmegaCascadeCuts *AntiCascadeCuts;
   AntiCascadeCuts = AliOtonOmegaCascadeCuts::XiCuts( isMC, ContributionSplitting, CutFlag);
   AntiCascadeCuts->SetXiCharge(1);
   AliFemtoDreamTrackCuts *AntiXiNegCuts = AliFemtoDreamTrackCuts::Xiv0ProtonCuts(isMC, PileUpRej, false);
@@ -200,8 +192,9 @@ int SphericityRange = 0;  //22
   AntiCascadeCuts->SetPDGCodePosDaug(211);
   AntiCascadeCuts->SetPDGCodeNegDaug(-2212);
   AntiCascadeCuts->SetPDGCodeBach(-211);
-  if(RunNumberQA) AntiCascadeCuts->SetRunNumberQA(265309, 267167);
 
+
+  AliOtonOmegaCascadeCuts *CascadeOmegaCuts;
   CascadeOmegaCuts = AliOtonOmegaCascadeCuts::OmegaCuts(isMC,ContributionSplitting, CutFlag);
   CascadeOmegaCuts->SetXiCharge(-1);
   AliFemtoDreamTrackCuts *OmegaNegCuts = AliFemtoDreamTrackCuts::Xiv0PionCuts(isMC,PileUpRej,false);
@@ -212,8 +205,9 @@ int SphericityRange = 0;  //22
   CascadeOmegaCuts->SetPDGCodePosDaug(2212);
   CascadeOmegaCuts->SetPDGCodeNegDaug(-211);
   CascadeOmegaCuts->SetPDGCodeBach(-321);
-  if(RunNumberQA) CascadeOmegaCuts->SetRunNumberQA(265309, 267167);
 
+
+  AliOtonOmegaCascadeCuts *AntiCascadeOmegaCuts;
   AntiCascadeOmegaCuts = AliOtonOmegaCascadeCuts::OmegaCuts(isMC,ContributionSplitting, CutFlag);
   AntiCascadeOmegaCuts->SetXiCharge(1);
   AliFemtoDreamTrackCuts *AntiOmegaNegCuts = AliFemtoDreamTrackCuts::Xiv0ProtonCuts(isMC,PileUpRej,false);
@@ -226,10 +220,20 @@ int SphericityRange = 0;  //22
   AntiCascadeOmegaCuts->SetPDGCodev0(-3122);
   AntiCascadeOmegaCuts->SetPDGCodePosDaug(211);
   AntiCascadeOmegaCuts->SetPDGCodeNegDaug(-2212);
-  if(RunNumberQA) AntiCascadeOmegaCuts->SetPDGCodeBach(-321);
+  AntiCascadeOmegaCuts->SetPDGCodeBach(-321);
 
-  //Pass to config file
+
+  //Pass cuts to config file (to be further setup of modified there)_
   ConfigOtonOmega(CascadeCuts,XiPosCuts,XiNegCuts,XiBachCuts,AntiCascadeCuts,AntiXiPosCuts,AntiXiNegCuts,AntiXiBachCuts,CascadeOmegaCuts,OmegaPosCuts,OmegaNegCuts,OmegaBachCuts,AntiCascadeOmegaCuts,AntiOmegaPosCuts,AntiOmegaNegCuts,AntiOmegaBachCuts);
+
+
+  //finalize cuts set:
+  if(RunNumberQA) {
+   CascadeCuts->SetRunNumberQA(265309, 267167);
+   AntiCascadeCuts->SetRunNumberQA(265309, 267167);
+   CascadeOmegaCuts->SetRunNumberQA(265309, 267167);
+   AntiCascadeOmegaCuts->SetRunNumberQA(265309, 267167);
+  }
   CascadeCuts->SetBachCuts(XiBachCuts);
   CascadeCuts->Setv0Negcuts(XiNegCuts);
   CascadeCuts->Setv0PosCuts(XiPosCuts);
@@ -242,7 +246,6 @@ int SphericityRange = 0;  //22
   AntiCascadeOmegaCuts->Setv0Negcuts(AntiOmegaNegCuts);
   AntiCascadeOmegaCuts->Setv0PosCuts(AntiOmegaPosCuts);
   AntiCascadeOmegaCuts->SetBachCuts(AntiOmegaBachCuts);
-  if(RunNumberQA) AntiCascadeOmegaCuts->SetRunNumberQA(265309, 267167);
 
   //skip v0s
   //if (RunNumberQA) {

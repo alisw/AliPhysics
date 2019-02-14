@@ -79,6 +79,7 @@ AliAnalysisTaskTaggedPhotons::AliAnalysisTaskTaggedPhotons() :
   fCentBin(0), 
   fRunNumber(0),
   fIsMB(kTRUE),
+  fUseCaloFastTr(kFALSE),
   fIsMC(0),
   fIsFastMC(0),
   fRP(0.),
@@ -128,6 +129,7 @@ AliAnalysisTaskTaggedPhotons::AliAnalysisTaskTaggedPhotons(const char *name) :
   fCentBin(0), 
   fRunNumber(0),
   fIsMB(kTRUE),
+  fUseCaloFastTr(kFALSE),
   fIsMC(0),
   fIsFastMC(0),
   fRP(0.),
@@ -174,6 +176,7 @@ AliAnalysisTaskTaggedPhotons::AliAnalysisTaskTaggedPhotons(const AliAnalysisTask
   fCentBin(0), 
   fRunNumber(0),
   fIsMB(kTRUE),
+  fUseCaloFastTr(kFALSE),
   fIsMC(0),
   fIsFastMC(0),
   fRP(0.),
@@ -632,7 +635,7 @@ void AliAnalysisTaskTaggedPhotons::UserExec(Option_t *)
   // Event selection flags
   //  FillHistogram("hSelEvents",0) ;
     
-  AliVEvent* event = (AliVEvent*)InputEvent();
+  AliAODEvent* event = (AliAODEvent*)InputEvent();
   if(!event){
     AliDebug(1,"No event") ;
     PostData(1, fOutputContainer);
@@ -654,9 +657,17 @@ void AliAnalysisTaskTaggedPhotons::UserExec(Option_t *)
   
   if((!fIsFastMC) && (!fIsMC)){
 
-    Bool_t isMB = (((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected() & AliVEvent::kINT7)  ; 
-    Bool_t isPHI7 = (((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected() & AliVEvent::kPHI7);
-
+    Bool_t isMB = (fInputHandler->IsEventSelected() & AliVEvent::kINT7)  ; 
+    Bool_t isPHI7 = (fInputHandler->IsEventSelected() & AliVEvent::kPHI7);
+    if(fUseCaloFastTr){
+      if(fInputHandler->IsEventSelected() & AliVEvent::kMuonCalo){   
+        TString trigClasses = ((AliAODHeader*)event->GetHeader())->GetFiredTriggerClasses();
+//         //MuonCalo includes EMCAL and PHOS triggers. Select only PHOS triggers  
+        Bool_t is0PH0fired = trigClasses.Contains("CPHI7-B-NOPF-CALOFAST") ;       
+        if(is0PH0fired)FillHistogram("hSelEvents",9) ;
+        isPHI7=isPHI7 || is0PH0fired;
+      }
+    }
 
     if((fIsMB && !isMB) || (!fIsMB && !isPHI7)){
       PostData(1, fOutputContainer);

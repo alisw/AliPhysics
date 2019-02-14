@@ -59,7 +59,7 @@ AliAnalysisTaskSE *AddTaskFemtoDreamTrackSplit(
   }
 
   AliFemtoDreamEventCuts *evtCuts = AliFemtoDreamEventCuts::StandardCutsRun2();
-  evtCuts->SetMinimalBooking(true);
+  evtCuts->SetMinimalBooking(false);
   evtCuts->CleanUpMult(false, false, false, true);
   evtCuts->SetMultVsCentPlots(MultvsCentPlot);
   if (SphericityRange != 0) {
@@ -84,16 +84,19 @@ AliAnalysisTaskSE *AddTaskFemtoDreamTrackSplit(
     }
   }
   if (suffix == "1") {
-    evtCuts->SetMultiplicityPercentileMax(10.);
+    evtCuts->SetMultiplicityPercentileMax(25.);
   } else if (suffix == "2") {
-    evtCuts->SetMultiplicityPercentileMax(1.);
+    evtCuts->SetMultiplicityPercentileMax(20.);
   } else if (suffix == "3") {
-    evtCuts->SetMultiplicityPercentileMax(0.1);
+    evtCuts->SetMultiplicityPercentileMax(15.);
   } else if (suffix == "4") {
-    evtCuts->SetMultiplicityPercentileMax(0.05);
+    evtCuts->SetMultiplicityPercentileMax(10.);
   } else if (suffix == "5") {
-    evtCuts->SetMultiplicityPercentileMax(0.01);
+    evtCuts->SetMultiplicityPercentileMax(5.);
+  } else if (suffix == "6") {
+    evtCuts->SetMultiplicityPercentileMax(1.);
   }
+
   // Track Cuts
   AliFemtoDreamTrackCuts *TrackCuts = AliFemtoDreamTrackCuts::PrimProtonCuts(
       isMC, DCAPlots, CombSigma, ContributionSplitting);

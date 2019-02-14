@@ -76,6 +76,7 @@ struct MacroParams : public TNamed {
   bool mcwg_strong { true };
   bool mcwg_3body { true };
 
+  bool eventreader_use_aux { false };
   int eventreader_filter_bit { 7 };
   bool eventreader_epvzero { true };
   bool eventreader_dca_globaltrack { true };
@@ -191,8 +192,11 @@ ConfigFemtoAnalysis(const TString& param_str="")
   // Begin to build the manager and analyses
   AliFemtoManager *manager = new AliFemtoManager();
 
-  AliFemtoEventReaderAOD::EstEventMult multest = static_cast<AliFemtoEventReaderAOD::EstEventMult>(macro_config.eventreader_use_multiplicity);
-  AliFemtoEventReaderAOD *rdr = new AliFemtoEventReaderAODMultSelection();
+  AliFemtoEventReaderAOD *rdr = (macro_config.eventreader_use_aux)
+                              ? new AliFemtoEventReaderAlt()
+                              : new AliFemtoEventReaderAODMultSelection();
+
+    auto multest = static_cast<AliFemtoEventReaderAOD::EstEventMult>(macro_config.eventreader_use_multiplicity);
     rdr->SetFilterBit(macro_config.eventreader_filter_bit);
     rdr->SetEPVZERO(macro_config.eventreader_epvzero);
     rdr->SetUseMultiplicity(multest);
@@ -201,7 +205,7 @@ ConfigFemtoAnalysis(const TString& param_str="")
     // rdr->SetPrimaryVertexCorrectionTPCPoints(kTRUE);
     rdr->SetDCAglobalTrack(macro_config.eventreader_dca_globaltrack);
     rdr->SetReadMC(analysis_config.is_mc_analysis);
-  manager->SetEventReader(rdr);
+    manager->SetEventReader(rdr);
 
   if (macro_config.centrality_ranges.empty()) {
     // macro_config.centrality_ranges.push_back(std::pair<int, int>(0.0, 300));

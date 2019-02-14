@@ -1245,12 +1245,14 @@ Double_t AliRsnMiniAnalysisTask::ComputeSpherocity()
   Float_t Spherocity = 2;
   Float_t pt[10000],phi[1000];
 
-  if (ntracksLoop>9)
+  if (ntracksLoop>2)
     {
   //computing total pt
   Float_t sumapt = 0;
   for(Int_t i1 = 0; i1 < ntracksLoop; ++i1){
     AliVTrack   *track = (AliVTrack *)evTypeS->GetTrack(i1);
+    AliAODTrack *aodt  = dynamic_cast<AliAODTrack *>(track);
+    if (aodt) if (!aodt->TestFilterBit(5)) continue;
     pt[i1] = track->Pt();
     sumapt += pt[i1];
   }
@@ -1266,6 +1268,8 @@ Double_t AliRsnMiniAnalysisTask::ComputeSpherocity()
 	ny = TMath::Sin(phiparam);            // y component of an unitary vector n
 	for(Int_t i1 = 0; i1 < ntracksLoop; ++i1){
 	  AliVTrack   *track = (AliVTrack *)evTypeS->GetTrack(i1);
+	  AliAODTrack *aodt  = dynamic_cast<AliAODTrack *>(track);
+	  if (aodt) if (!aodt->TestFilterBit(5)) continue;
 	  pt[i1] = track->Pt();
 	  phi[i1] = track->Phi();
 	  Float_t pxA = pt[i1] * TMath::Cos( phi[i1] );

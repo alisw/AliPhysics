@@ -33,7 +33,6 @@ AliHFTreeHandlerBplustoD0pi::AliHFTreeHandlerBplustoD0pi():
   fCosThetaStar(),
   fImpParProd(),
   fNormd0MeasMinusExp(),
-  fDCA(),
   fAngleProngs(),
   fInvMass_D0(),
   fPt_D0(),
@@ -67,7 +66,6 @@ AliHFTreeHandlerBplustoD0pi::AliHFTreeHandlerBplustoD0pi(int PIDopt):
   fCosThetaStar(),
   fImpParProd(),
   fNormd0MeasMinusExp(),
-  fDCA(),
   fAngleProngs(),
   fInvMass_D0(),
   fPt_D0(),
@@ -123,7 +121,6 @@ TTree* AliHFTreeHandlerBplustoD0pi::BuildTree(TString name, TString title)
   for(unsigned int iProng=0; iProng<fNProngs; iProng++){
     fTreeVar->Branch(Form("imp_par_prong%d",iProng),&fImpParProng[iProng]);
   }
-  fTreeVar->Branch("dca",&fDCA);
   fTreeVar->Branch("angle_prongs",&fAngleProngs);
 
   //set D0 variables
@@ -187,6 +184,7 @@ bool AliHFTreeHandlerBplustoD0pi::SetVariables(AliAODRecoDecayHF* cand, float bf
   fCosP.push_back(((AliAODRecoDecayHF2Prong*)cand)->CosPointingAngle());
   fCosPXY.push_back(((AliAODRecoDecayHF2Prong*)cand)->CosPointingAngleXY());
   fImpParXY.push_back(((AliAODRecoDecayHF2Prong*)cand)->ImpParXY());
+  fDCA.push_back(((AliAODRecoDecayHF2Prong*)cand)->GetDCA());
 
   UInt_t prongs[2];
   prongs[0] = 211; prongs[1] = 421;
@@ -195,7 +193,6 @@ bool AliHFTreeHandlerBplustoD0pi::SetVariables(AliAODRecoDecayHF* cand, float bf
   fCosThetaStar.push_back(((AliAODRecoDecayHF2Prong*)cand)->CosThetaStar(0,521,211,421));
   fImpParProd.push_back(((AliAODRecoDecayHF2Prong*)cand)->Prodd0d0());
   fNormd0MeasMinusExp.push_back(ComputeMaxd0MeasMinusExp(cand,bfield));
-  fDCA.push_back(((AliAODRecoDecayHF2Prong*)cand)->GetDCA());
   fAngleProngs.push_back(angleProngs);
 
   AliAODTrack* prongtracks[3];
@@ -259,7 +256,6 @@ void AliHFTreeHandlerBplustoD0pi::FillTree() {
     fCosThetaStar.clear();
     fImpParProd.clear();
     fNormd0MeasMinusExp.clear();
-    fDCA.clear();
     fAngleProngs.clear();
     fInvMass_D0.clear();
     fPt_D0.clear();

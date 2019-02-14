@@ -138,12 +138,18 @@ void AliFemtoDreamCascade::SetCascade(AliAODEvent *evt, AliAODcascade *casc) {
   this->SetCharge(bachTrackXi->Charge());
   if (fNegDaug->IsSet()) {
     this->SetPhiAtRadius(fNegDaug->GetPhiAtRaidius().at(0));
+  } else {
+    fIsSet = false;
   }
   if (fPosDaug->IsSet()) {
     this->SetPhiAtRadius(fPosDaug->GetPhiAtRaidius().at(0));
+  } else {
+    fIsSet = false;
   }
   if (fBach->IsSet()) {
     this->SetPhiAtRadius(fBach->GetPhiAtRaidius().at(0));
+  } else {
+    fIsSet = false;
   }
 
   //v0 business

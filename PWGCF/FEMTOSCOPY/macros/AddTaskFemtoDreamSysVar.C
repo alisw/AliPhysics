@@ -69,8 +69,8 @@ AliAnalysisTaskSE* AddTaskFemtoDreamSysVar(bool isMC = false,
     TrackCuts->SetPtRange(0.4, 4.05);
     AntiTrackCuts->SetPtRange(0.4, 4.05);
   } else if (suffix == "2") {
-    TrackCuts->SetPtRange(0.5, 4.05);
-    AntiTrackCuts->SetPtRange(0.5, 4.05);
+    TrackCuts->SetPtRange(0.6, 4.05);
+    AntiTrackCuts->SetPtRange(0.6, 4.05);
   } else if (suffix == "3") {
     TrackCuts->SetEtaRange(-0.7, 0.7);
     AntiTrackCuts->SetEtaRange(-0.7, 0.7);

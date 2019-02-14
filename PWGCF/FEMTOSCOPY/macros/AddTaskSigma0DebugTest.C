@@ -141,17 +141,8 @@ AliAnalysisTaskSE *AddTaskSigma0DebugTest(bool isMC = false,
   if (suffix == "1") {
     v0Cuts->SetV0OnFlyStatus(true);
     antiv0Cuts->SetV0OnFlyStatus(true);
-  } else if (suffix == "2") {
-    v0Cuts->SetTPCclusterMin(0.f);
-    antiv0Cuts->SetTPCclusterMin(0.f);
-    v0Cuts->SetTPCRatioFindable(0.6f);
-    antiv0Cuts->SetTPCRatioFindable(0.6f);
-  } else if (suffix == "3") {
-    v0Cuts->SetLambdaSelection(1.115683 - 0.008, 1.115683 + 0.008);
-    antiv0Cuts->SetLambdaSelection(1.115683 - 0.008, 1.115683 + 0.008);
-  } else if (suffix == "4") {
-    v0Cuts->SetLambdaSelection(1.115683 - 0.01, 1.115683 + 0.01);
-    antiv0Cuts->SetLambdaSelection(1.115683 - 0.01, 1.115683 + 0.01);
+    v0Cuts->SetLightweight(false);
+    antiv0Cuts->SetLightweight(false);
   }
 
   AliSigma0PhotonMotherCuts *sigmaCuts =
@@ -162,6 +153,7 @@ AliAnalysisTaskSE *AddTaskSigma0DebugTest(bool isMC = false,
   sigmaCuts->SetV0ReaderName(V0ReaderName.Data());
   if (suffix != "0" && suffix != "999") {
     sigmaCuts->SetLightweight(true);
+    sigmaCuts->SetIsSpectrum(false);
   }
 
   AliSigma0PhotonMotherCuts *antiSigmaCuts =
@@ -172,12 +164,25 @@ AliAnalysisTaskSE *AddTaskSigma0DebugTest(bool isMC = false,
   antiSigmaCuts->SetV0ReaderName(V0ReaderName.Data());
   if (suffix != "0" && suffix != "999") {
     antiSigmaCuts->SetLightweight(true);
+    antiSigmaCuts->SetIsSpectrum(false);
   }
 
-  if (suffix == "5") {
-    sigmaCuts->SetSigmaMassCut(0.0015);
-    antiSigmaCuts->SetSigmaMassCut(0.0015);
-  } else if (suffix == "6") {
+  if (suffix == "2") {
+    sigmaCuts->SetCloneKiller(0.001);
+    sigmaCuts->SetLightweight(false);
+    antiSigmaCuts->SetCloneKiller(0.001);
+  } else if (suffix == "3") {
+    sigmaCuts->SetCloneKiller(0.001);
+    antiSigmaCuts->SetCloneKiller(0.001);
+    sigmaCuts->SetSigmaMassCut(0.003);
+    antiSigmaCuts->SetSigmaMassCut(0.003);
+  } else if (suffix == "4") {
+    sigmaCuts->SetCloneKiller(0.005);
+    sigmaCuts->SetLightweight(false);
+    antiSigmaCuts->SetCloneKiller(0.005);
+  } else if (suffix == "5") {
+    sigmaCuts->SetCloneKiller(0.005);
+    antiSigmaCuts->SetCloneKiller(0.005);
     sigmaCuts->SetSigmaMassCut(0.003);
     antiSigmaCuts->SetSigmaMassCut(0.003);
   }
@@ -311,15 +316,6 @@ AliAnalysisTaskSE *AddTaskSigma0DebugTest(bool isMC = false,
       std::cout << "You are trying to request the Momentum Resolution without "
                    "MC Info; fix it wont work! \n";
     }
-  }
-
-  if (suffix == "0") {
-    config->SetPhiEtaBinnign(true);
-  }
-
-  if (suffix == "7") {
-    config->SetDeltaEtaMax(0.01);
-    config->SetDeltaPhiMax(0.01);
   }
 
   config->SetdPhidEtaPlots(false);

@@ -41,6 +41,7 @@ public:
   virtual void Terminate(Option_t * opt = "") ;
 
   void SetTrigger(Bool_t isPHOSTrig){fIsMB=isPHOSTrig;}   //Analyse MinBias of PHOS triggered events
+  void UseCaloFast(Bool_t use=kTRUE){fUseCaloFastTr=use ;} //Use PHOS trigger in CaloFast cluster
   void SetMC(Bool_t isMC=kTRUE){fIsMC=isMC;}              //Is is MC or real data
   void SetFastMC(void){fIsFastMC=kTRUE;fIsMC=kTRUE; }     //Only for MC, bypass event quality checks (e.g. for single pi0 MC)
   void SetPi0WeightParameters(TArrayD * ar) ;             //Introduce weight for primary pi0
@@ -100,6 +101,7 @@ private:
   Int_t  fCentBin ;       //! current centrality bin
   Int_t  fRunNumber ;     //! current run number
   Bool_t fIsMB ;          //which trigger to use
+  Bool_t fUseCaloFastTr ; //use also 
   Bool_t fIsMC ;          //Is this is MC
   Bool_t fIsFastMC;       //This is fast MC, bypass event checks
   Double_t fRP;           //! Reaction plane orientation
@@ -138,6 +140,6 @@ private:
   TH2F * fhQAIsozpartnBg ;  //!
   TH2F * fhQAIsoxpartnBg ;  //!
       
-  ClassDef(AliAnalysisTaskTaggedPhotons, 4);   // a PHOS photon analysis task 
+  ClassDef(AliAnalysisTaskTaggedPhotons, 5);   // a PHOS photon analysis task 
 };
 #endif // ALIANALYSISTASKTAGGEDPHOTONSLOCAL_H

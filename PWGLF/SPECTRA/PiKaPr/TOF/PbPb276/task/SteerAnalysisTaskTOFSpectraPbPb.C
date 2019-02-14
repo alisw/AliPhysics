@@ -20,10 +20,10 @@ SteerAnalysisTaskTOFSpectraPbPb(const Char_t *inputfilename, Bool_t mcFlag = kFA
   if (str.EndsWith(".xml")) {
     TGrid::Connect("alien://");
     Info("SteerTaskTOFSpectraPbPb", "reading data list from collection:");
-    TAlienCollection coll(inputfilename, maxFiles);
-    coll.Reset();
-    while (coll.Next()) {
-      filename = coll.GetTURL();
+    TGridCollection *coll = gGrid->OpenCollection(inputfilename, maxFiles);
+    coll->Reset();
+    while (coll->Next()) {
+      filename = coll->GetTURL();
       Info("SteerTaskTOFSpectraPbPb", Form("%s", filename));
       chain->Add(filename);
     }

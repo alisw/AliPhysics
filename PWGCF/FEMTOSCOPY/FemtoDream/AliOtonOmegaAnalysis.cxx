@@ -207,8 +207,11 @@ void AliOtonOmegaAnalysis::InitializeTreeBooking() {
  foTTree = new TTree("oTTree","a simple TTree");
  foTTree->SetDirectory(0); // This is to force a memory-resident Tree, and avoid errors. // ????? is this necessary? does it create memory problems?
  foTTree->Branch("RunNumber",&fTRunNumber,"fTRunNumber/I");
- foTTree->Branch("V",&fTV,"fTV[3]/F");
+ foTTree->Branch("Vz",&fTVz,"fTVz/F");
  foTTree->Branch("nCascade",&fTnCascade,"fTnCascade/I");
+ foTTree->Branch("CascadeFlag0",&fTCascadeFlag0,"fTCascadeFlag0[fTnCascade]/O");
+ foTTree->Branch("CascadeFlag1",&fTCascadeFlag1,"fTCascadeFlag1[fTnCascade]/O");
+ foTTree->Branch("CascadeFlag2",&fTCascadeFlag2,"fTCascadeFlag2[fTnCascade]/O");
  foTTree->Branch("CascadePx",&fTCascadePx,"fTCascadePx[fTnCascade]/F");
  foTTree->Branch("CascadePy",&fTCascadePy,"fTCascadePy[fTnCascade]/F");
  foTTree->Branch("CascadePz",&fTCascadePz,"fTCascadePz[fTnCascade]/F");
@@ -258,47 +261,69 @@ void AliOtonOmegaAnalysis::InitializeTreeBooking() {
  fomegaTTree = new TTree("omegaTTree","a simple TTree of omega leafs and life truths");
  fomegaTTree->SetDirectory(0); // This is to force a memory-resident Tree, and avoid errors. // ????? is this necessary? does it create memory problems?
  fomegaTTree->Branch("RunNumber",&fTRunNumber,"fTRunNumber/I");
- fomegaTTree->Branch("V",&fTV,"fTV[3]/F");
+ fomegaTTree->Branch("Vz",&fTVz,"fTVz/F");
+ //protons:
+ fomegaTTree->Branch("nProton",&fTnProton,"fTnProton/I");
+ fomegaTTree->Branch("ProtonPx",&fTProtonPx,"fTProtonPx[fTnProton]/F");
+ fomegaTTree->Branch("ProtonPy",&fTProtonPy,"fTProtonPy[fTnProton]/F");
+ fomegaTTree->Branch("ProtonPz",&fTProtonPz,"fTProtonPz[fTnProton]/F");
+ //fomegaTTree->Branch("ProtonTPCmom",&fTProtonTPCmom,"fTProtonTPCmom[fTnProton]/F");
+ fomegaTTree->Branch("ProtonCharge",&fTProtonCharge,"fTProtonCharge[fTnCascade]/S");
+ fomegaTTree->Branch("ProtonDCA",&fTProtonDCA,"fTProtonDCA[fTnCascade]/F");
+ fomegaTTree->Branch("ProtonNcl",&fTProtonNcl,"fTProtonNcl[fTnProton]/I");
+ fomegaTTree->Branch("ProtonCrF",&fTProtonCrF,"fTProtonCrF[fTnProton]/F");
+ fomegaTTree->Branch("ProtonShared",&fTProtonShared,"fTProtonShared[fTnProton]/I");
+ fomegaTTree->Branch("ProtonTPCchi2",&fTProtonTPCchi2,"fTProtonTPCchi2[fTnProton]/F");
+fomegaTTree->Branch("ProtonITStime",&fTProtonITStime,"fTProtonITStime[fTnProton]/O");
+fomegaTTree->Branch("ProtonTOFtime",&fTProtonTOFtime,"fTProtonTOFtime[fTnProton]/O");
+ fomegaTTree->Branch("ProtonTPConly",&fTProtonTPConly,"fTProtonTPConly[fTnProton]/O");
+ fomegaTTree->Branch("ProtonITScomplementary",&fTProtonITScomplementary,"fTProtonITScomplementary[fTnProton]/O");
+ fomegaTTree->Branch("ProtonITSpure",&fTProtonITSpure,"fTProtonITSpure[fTnProton]/O");
+ fomegaTTree->Branch("ProtonGLOBAL",&fTProtonGLOBAL,"fTProtonGLOBAL[fTnProton]/O");
+ //omegas:
  fomegaTTree->Branch("nCascade",&fTnCascade,"fTnCascade/I");
+// fomegaTTree->Branch("CascadeFlag0",&fTCascadeFlag0,"fTCascadeFlag0[fTnCascade]/O");
+// fomegaTTree->Branch("CascadeFlag1",&fTCascadeFlag1,"fTCascadeFlag1[fTnCascade]/O");
+// fomegaTTree->Branch("CascadeFlag2",&fTCascadeFlag2,"fTCascadeFlag2[fTnCascade]/O");
  fomegaTTree->Branch("CascadePx",&fTCascadePx,"fTCascadePx[fTnCascade]/F");
  fomegaTTree->Branch("CascadePy",&fTCascadePy,"fTCascadePy[fTnCascade]/F");
  fomegaTTree->Branch("CascadePz",&fTCascadePz,"fTCascadePz[fTnCascade]/F");
  fomegaTTree->Branch("CascadeCharge",&fTCascadeCharge,"fTCascadeCharge[fTnCascade]/S");
- fomegaTTree->Branch("CascadeDCA",&fTCascadeDCA,"fTCascadeDCA[fTnCascade]/F");
- fomegaTTree->Branch("CascadeDaughtersDCA",&fTCascadeDaughtersDCA,"fTCascadeDaughtersDCA[fTnCascade]/F");
- fomegaTTree->Branch("CascadeXiMass",&fTCascadeXiMass,"fTCascadeXiMass[fTnCascade]/F");
- fomegaTTree->Branch("CascadeOmegaMass",&fTCascadeOmegaMass,"fTCascadeOmegaMass[fTnCascade]/F");
- fomegaTTree->Branch("CascadeVx",&fTCascadeVx,"fTCascadeVx[fTnCascade]/F");
- fomegaTTree->Branch("CascadeVy",&fTCascadeVy,"fTCascadeVy[fTnCascade]/F");
- fomegaTTree->Branch("CascadeVz",&fTCascadeVz,"fTCascadeVz[fTnCascade]/F");
- fomegaTTree->Branch("CascadePA",&fTCascadePA,"fTCascadePA[fTnCascade]/F");
+// fomegaTTree->Branch("CascadeDCA",&fTCascadeDCA,"fTCascadeDCA[fTnCascade]/F");
+// fomegaTTree->Branch("CascadeDaughtersDCA",&fTCascadeDaughtersDCA,"fTCascadeDaughtersDCA[fTnCascade]/F");
+// fomegaTTree->Branch("CascadeXiMass",&fTCascadeXiMass,"fTCascadeXiMass[fTnCascade]/F");
+// fomegaTTree->Branch("CascadeOmegaMass",&fTCascadeOmegaMass,"fTCascadeOmegaMass[fTnCascade]/F");
+// fomegaTTree->Branch("CascadeVx",&fTCascadeVx,"fTCascadeVx[fTnCascade]/F");
+// fomegaTTree->Branch("CascadeVy",&fTCascadeVy,"fTCascadeVy[fTnCascade]/F");
+// fomegaTTree->Branch("CascadeVz",&fTCascadeVz,"fTCascadeVz[fTnCascade]/F");
+// fomegaTTree->Branch("CascadePA",&fTCascadePA,"fTCascadePA[fTnCascade]/F");
  fomegaTTree->Branch("LambdaPx",&fTLambdaPx,"fTLambdaPx[fTnCascade]/F");
  fomegaTTree->Branch("LambdaPy",&fTLambdaPy,"fTLambdaPy[fTnCascade]/F");
  fomegaTTree->Branch("LambdaPz",&fTLambdaPz,"fTLambdaPz[fTnCascade]/F");
- fomegaTTree->Branch("LambdaDCA",&fTLambdaDCA,"fTLambdaDCA[fTnCascade]/F");
- fomegaTTree->Branch("LambdaDaughtersDCA",&fTLambdaDaughtersDCA,"fTLambdaDaughtersDCA[fTnCascade]/F");
- fomegaTTree->Branch("LambdaMass",&fTLambdaMass,"fTLambdaMass[fTnCascade]/F");
- fomegaTTree->Branch("LambdaK0Mass",&fTLambdaK0Mass,"fTLambdaK0Mass[fTnCascade]/F");
- fomegaTTree->Branch("LambdaVx",&fTLambdaVx,"fTLambdaVx[fTnCascade]/F");
- fomegaTTree->Branch("LambdaVy",&fTLambdaVy,"fTLambdaVy[fTnCascade]/F");
- fomegaTTree->Branch("LambdaVz",&fTLambdaVz,"fTLambdaVz[fTnCascade]/F");
- fomegaTTree->Branch("LambdaPA",&fTLambdaPA,"fTLambdaPA[fTnCascade]/F");
+// fomegaTTree->Branch("LambdaDCA",&fTLambdaDCA,"fTLambdaDCA[fTnCascade]/F");
+// fomegaTTree->Branch("LambdaDaughtersDCA",&fTLambdaDaughtersDCA,"fTLambdaDaughtersDCA[fTnCascade]/F");
+// fomegaTTree->Branch("LambdaMass",&fTLambdaMass,"fTLambdaMass[fTnCascade]/F");
+// fomegaTTree->Branch("LambdaK0Mass",&fTLambdaK0Mass,"fTLambdaK0Mass[fTnCascade]/F");
+// fomegaTTree->Branch("LambdaVx",&fTLambdaVx,"fTLambdaVx[fTnCascade]/F");
+// fomegaTTree->Branch("LambdaVy",&fTLambdaVy,"fTLambdaVy[fTnCascade]/F");
+// fomegaTTree->Branch("LambdaVz",&fTLambdaVz,"fTLambdaVz[fTnCascade]/F");
+// fomegaTTree->Branch("LambdaPA",&fTLambdaPA,"fTLambdaPA[fTnCascade]/F");
  fomegaTTree->Branch("TrackPx",&fTTrackPx,"fTTrackPx[fTnCascade][3]/F");
  fomegaTTree->Branch("TrackPy",&fTTrackPy,"fTTrackPy[fTnCascade][3]/F");
  fomegaTTree->Branch("TrackPz",&fTTrackPz,"fTTrackPz[fTnCascade][3]/F");
- fomegaTTree->Branch("TrackTPCmom",&fTTrackTPCmom,"fTTrackTPCmom[fTnCascade][3]/F");
- fomegaTTree->Branch("TrackEta",&fTTrackEta,"fTTrackEta[fTnCascade][3]/F");
- fomegaTTree->Branch("TrackCharge",&fTTrackCharge,"fTTrackCharge[fTnCascade][3]/S");
- fomegaTTree->Branch("TrackDCA",&fTTrackDCA,"fTTrackDCA[fTnCascade][3]/F");
- fomegaTTree->Branch("TrackITSspi",&fTTrackITSspi,"fTTrackITSspi[fTnCascade][3]/F");
- fomegaTTree->Branch("TrackITSsk",&fTTrackITSsk,"fTTrackITSsk[fTnCascade][3]/F");
- fomegaTTree->Branch("TrackITSsp",&fTTrackITSsp,"fTTrackITSsp[fTnCascade][3]/F");
- fomegaTTree->Branch("TrackTPCspi",&fTTrackTPCspi,"fTTrackTPCspi[fTnCascade][3]/F");
- fomegaTTree->Branch("TrackTPCsk",&fTTrackTPCsk,"fTTrackTPCsk[fTnCascade][3]/F");
- fomegaTTree->Branch("TrackTPCsp",&fTTrackTPCsp,"fTTrackTPCsp[fTnCascade][3]/F");
- fomegaTTree->Branch("TrackTOFspi",&fTTrackTOFspi,"fTTrackTOFspi[fTnCascade][3]/F");
- fomegaTTree->Branch("TrackTOFsk",&fTTrackTOFsk,"fTTrackTOFsk[fTnCascade][3]/F");
- fomegaTTree->Branch("TrackTOFsp",&fTTrackTOFsp,"fTTrackTOFsp[fTnCascade][3]/F");
+// fomegaTTree->Branch("TrackTPCmom",&fTTrackTPCmom,"fTTrackTPCmom[fTnCascade][3]/F");
+// fomegaTTree->Branch("TrackEta",&fTTrackEta,"fTTrackEta[fTnCascade][3]/F");
+// fomegaTTree->Branch("TrackCharge",&fTTrackCharge,"fTTrackCharge[fTnCascade][3]/S");
+// fomegaTTree->Branch("TrackDCA",&fTTrackDCA,"fTTrackDCA[fTnCascade][3]/F");
+// fomegaTTree->Branch("TrackITSspi",&fTTrackITSspi,"fTTrackITSspi[fTnCascade][3]/F");
+// fomegaTTree->Branch("TrackITSsk",&fTTrackITSsk,"fTTrackITSsk[fTnCascade][3]/F");
+// fomegaTTree->Branch("TrackITSsp",&fTTrackITSsp,"fTTrackITSsp[fTnCascade][3]/F");
+// fomegaTTree->Branch("TrackTPCspi",&fTTrackTPCspi,"fTTrackTPCspi[fTnCascade][3]/F");
+// fomegaTTree->Branch("TrackTPCsk",&fTTrackTPCsk,"fTTrackTPCsk[fTnCascade][3]/F");
+// fomegaTTree->Branch("TrackTPCsp",&fTTrackTPCsp,"fTTrackTPCsp[fTnCascade][3]/F");
+// fomegaTTree->Branch("TrackTOFspi",&fTTrackTOFspi,"fTTrackTOFspi[fTnCascade][3]/F");
+// fomegaTTree->Branch("TrackTOFsk",&fTTrackTOFsk,"fTTrackTOFsk[fTnCascade][3]/F");
+// fomegaTTree->Branch("TrackTOFsp",&fTTrackTOFsp,"fTTrackTOFsp[fTnCascade][3]/F");
  fomegaTTree->Branch("TrackNcl",&fTTrackNcl,"fTTrackNcl[fTnCascade][3]/I");
  fomegaTTree->Branch("TrackCrF",&fTTrackCrF,"fTTrackCrF[fTnCascade][3]/F");
  fomegaTTree->Branch("TrackShared",&fTTrackShared,"fTTrackShared[fTnCascade][3]/I");
@@ -551,7 +576,28 @@ void AliOtonOmegaAnalysis::Make(AliESDEvent *evt, AliMCEvent *mcEvent, bool Casc
   }
 
   //Initalize Tree
+  for(int ii=0;ii<MAXPROTONS;ii++){
+   fTProtonPx[ii]=-100000.;
+   fTProtonPy[ii]=-100000.;
+   fTProtonPz[ii]=-100000.;
+   fTProtonTPCmom[ii]=-100000.;
+   fTProtonCharge[ii]=-10;
+   fTProtonDCA[ii]=-100000.;
+   fTProtonNcl[ii]=-100000;
+   fTProtonCrF[ii]=-100000.;
+   fTProtonShared[ii]=-100000;
+   fTProtonTPCchi2[ii]=-100000.;
+   fTProtonITStime[ii]=kFALSE;
+   fTProtonTOFtime[ii]=kFALSE;
+   fTProtonTPConly[ii]=kFALSE;
+   fTProtonITScomplementary[ii]=kFALSE;
+   fTProtonITSpure[ii]=kFALSE;
+   fTProtonGLOBAL[ii]=kFALSE;
+  }
   for(int ii=0;ii<MAXCASCADES;ii++){
+   fTCascadeFlag0[ii]=kFALSE;
+   fTCascadeFlag1[ii]=kFALSE;
+   fTCascadeFlag2[ii]=kFALSE;
    fTCascadePx[ii]=-100000.;
    fTCascadePy[ii]=-100000.;
    fTCascadePz[ii]=-100000.;
@@ -607,16 +653,21 @@ void AliOtonOmegaAnalysis::Make(AliESDEvent *evt, AliMCEvent *mcEvent, bool Casc
 
   }
   fTnCascade=0;
+  fTnProton=0;
 
   //start filling Tree, event properties and other things:
   fTRunNumber = evt->GetRunNumber();
   Double_t PrimVtx[3];
   evt->GetPrimaryVertex()->GetXYZ(PrimVtx);
-  fTV[0]=PrimVtx[0];
-  fTV[1]=PrimVtx[1];
-  fTV[2]=PrimVtx[2];
-  FillOmegaTree = kFALSE; // by default do not fill the omega tree
+  //fTV[0]=PrimVtx[0];
+  //fTV[1]=PrimVtx[1];
+  fTVz=PrimVtx[2];
 
+  vector< Int_t > protonvec;
+  vector< Int_t > aprotonvec;
+
+
+  //proton loop
   std::vector<AliFemtoDreamBasePart> Particles;
   std::vector<AliFemtoDreamBasePart> AntiParticles;
   for (int iTrack = 0; iTrack < evt->GetNumberOfTracks(); ++iTrack) {
@@ -624,9 +675,11 @@ void AliOtonOmegaAnalysis::Make(AliESDEvent *evt, AliMCEvent *mcEvent, bool Casc
     fFemtoTrack->SetTrack(track, mcEvent, fEvent->GetMultiplicity());
     if (fTrackCuts->isSelected(fFemtoTrack)) {
       Particles.push_back(*fFemtoTrack);
+      protonvec.push_back(iTrack); //store selected protons
     }
     if (fAntiTrackCuts->isSelected(fFemtoTrack)) {
       AntiParticles.push_back(*fFemtoTrack);
+      aprotonvec.push_back(iTrack); //store selected antiprotons
     }
   }
 
@@ -645,6 +698,7 @@ void AliOtonOmegaAnalysis::Make(AliESDEvent *evt, AliMCEvent *mcEvent, bool Casc
     }
   }
 */
+
   std::vector<AliFemtoDreamBasePart> XiOmegaDecays;
   std::vector<AliFemtoDreamBasePart> AntiXiOmegaDecays;
   std::vector<AliFemtoDreamBasePart> XiDecays;
@@ -652,46 +706,11 @@ void AliOtonOmegaAnalysis::Make(AliESDEvent *evt, AliMCEvent *mcEvent, bool Casc
   for (Int_t nCascade = 0; nCascade < evt->GetNumberOfCascades(); ++nCascade) {
     AliESDcascade *esdCascade = evt->GetCascade(nCascade);
 
-    //Tree filling:
-    //-------------
-
-    //initializations:
-    FillOmegaTree_tracks = kFALSE;
-    FillOmegaTree_lambda = kFALSE;
+    //By default Omegas are not written in the tree
     FillOmegaTree_omega = kFALSE;
+    FillOmegaTree_aomega = kFALSE;
 
-    Bool_t CascadeFilled = FillTreeCascade(evt, esdCascade);
-
-
-    //Cuts for Omega Tree filling:
-    if(
-     abs(fTTrackEta[fTnCascade][0])<.8&&abs(fTTrackEta[fTnCascade][1])<.8&&abs(fTTrackEta[fTnCascade][2])<.8
-     &&((
-      abs(fTTrackTPCsp[fTnCascade][0])<6.&&(abs(fTTrackTPCspi[fTnCascade][1])<6.||abs(fTTrackITSspi[fTnCascade][1])<6.)
-      )||(
-      abs(fTTrackTPCsp[fTnCascade][1])<6.&&(abs(fTTrackTPCspi[fTnCascade][2])<6.||abs(fTTrackITSspi[fTnCascade][2])<6.)
-      ))
-     &&(abs(fTTrackITSsk[fTnCascade][2])<6.||abs(fTTrackTPCsk[fTnCascade][2])<6.)
-    )FillOmegaTree_tracks = kTRUE;
-    if(
-     fTLambdaPA[fTnCascade]>.97
-     &&abs(fTLambdaMass[fTnCascade]-1.116)<0.006
-     &&fTLambdaDaughtersDCA[fTnCascade]<1.5
-     &&fTLambdaDCA[fTnCascade]>.05
-    )FillOmegaTree_lambda = kTRUE;
-    if(
-     fTCascadePA[fTnCascade]>.98
-     &&fTCascadeOmegaMass[fTnCascade]>1.632&&fTCascadeOmegaMass[fTnCascade]<1.712
-     &&abs(fTCascadeXiMass[fTnCascade]-1.322)>.005
-     &&fTCascadeDaughtersDCA[fTnCascade]<2.
-    )FillOmegaTree_omega = kTRUE;
-    if(CascadeFilled&&FillOmegaTree_tracks&&FillOmegaTree_lambda&&FillOmegaTree_omega) FillOmegaTree = kTRUE;
-
-
-
-    if(CascadeFilled) fTnCascade++;
-
-    //Continue with Standard Cascade filling:
+    //Start with Standard Cascade filling:
     fFemtoCasc->SetCascade(evt, mcEvent, esdCascade);
     if (fCascCuts->isSelected(fFemtoCasc)) {
       XiDecays.push_back(*fFemtoCasc);
@@ -702,17 +721,56 @@ void AliOtonOmegaAnalysis::Make(AliESDEvent *evt, AliMCEvent *mcEvent, bool Casc
     //omega:
     if (fCascOmegaCuts->isSelected(fFemtoCasc)) {
       XiOmegaDecays.push_back(*fFemtoCasc);
+      FillOmegaTree_omega = kTRUE;
     }
     if (fAntiCascOmegaCuts->isSelected(fFemtoCasc)) {
       AntiXiOmegaDecays.push_back(*fFemtoCasc);
+      FillOmegaTree_aomega = kTRUE;
     }
 
 
+    //if an omega passed histos cuts, fill the tree:
+    if(FillOmegaTree_omega||FillOmegaTree_aomega){
+     Bool_t CascadeFilled = FillTreeCascade(evt, esdCascade);
+     //pair protons with the first omega of each event and save to tree if k*<1.GeV/c
+     if(CascadeFilled&&fTnCascade==0){
+      //go through proton-OmegaMinus pairs:
+      if(FillOmegaTree_omega){
+       for(UInt_t ip =0;ip<protonvec.size();ip++){
+        //caculate k*
+        AliESDtrack *ptrack = static_cast<AliESDtrack *>(evt->GetTrack(protonvec.at(ip)));
+        Double_t kstar = .5*sqrt(pow(ptrack->Px()-fTCascadePx[fTnCascade],2)+pow(ptrack->Py()-fTCascadePy[fTnCascade],2)+pow(ptrack->Pz()-fTCascadePz[fTnCascade],2));
+        if(kstar<.5){
+         //fill the proton tree
+         Bool_t protonfilled = FillProtonTrack(evt, ip);
+         fTnProton++;
+        }
+       }
+      }
+      //go through aproton-OmegaPlus pairs:
+      if(FillOmegaTree_aomega){
+       for(UInt_t ip =0;ip<aprotonvec.size();ip++){
+        //caculate k*
+        AliESDtrack *ptrack = static_cast<AliESDtrack *>(evt->GetTrack(aprotonvec.at(ip)));
+        Double_t kstar = .5*sqrt(pow(ptrack->Px()-fTCascadePx[fTnCascade],2)+pow(ptrack->Py()-fTCascadePy[fTnCascade],2)+pow(ptrack->Pz()-fTCascadePz[fTnCascade],2));
+        if(kstar<.5){
+         //fill the proton tree
+         Bool_t protonfilled = FillProtonTrack(evt, ip);
+         fTnProton++;
+        }
+       }
+      }
+     }
+     fTnCascade++;
+    }
   }//cascades loop
 
-  if(CascadeTreeFlag) foTTree->Fill();
+//  if(CascadeTreeFlag) foTTree->Fill();
   //if(CascadeTreeFlag&&fTnCascade>0) foTTree->Fill();
-  if(OmegaTreeFlag&&FillOmegaTree) fomegaTTree->Fill();
+  //if(OmegaTreeFlag&&FillOmegaTree) fomegaTTree->Fill();
+  if(OmegaTreeFlag&&fTnCascade>0) fomegaTTree->Fill();
+  protonvec.clear();
+  aprotonvec.clear();
 
 
   fPairCleaner->ResetArray();
@@ -781,6 +839,9 @@ Bool_t AliOtonOmegaAnalysis::FillTreeCascade(AliESDEvent *evt, AliESDcascade *ca
 
  if (idxV0FromCascade >= 0) { //we got a correct Lambda
  //----------------------------------------------------
+  fTCascadeFlag0[fTnCascade] = kTRUE;
+
+
   //fill the tracks
   Bool_t tr0 = FillTreeTrack(0, casc->GetPindex() , idxV0FromCascade,  evt , casc);
   Bool_t tr1 = FillTreeTrack(1, casc->GetNindex() , idxV0FromCascade, evt , casc);
@@ -789,6 +850,7 @@ Bool_t AliOtonOmegaAnalysis::FillTreeCascade(AliESDEvent *evt, AliESDcascade *ca
   //tracks are filled
   //-----------------
   if(tr0&&tr1&&tr2) {
+   fTCascadeFlag1[fTnCascade] = kTRUE;
 
    //get the Lambda:
    AliESDv0* v0 = evt->GetV0(idxV0FromCascade);
@@ -810,6 +872,7 @@ Bool_t AliOtonOmegaAnalysis::FillTreeCascade(AliESDEvent *evt, AliESDcascade *ca
    //good Xi/Omega mass:
    //-------------------
    if((mXi>1.20&&mXi<1.45)||(mOmega>1.55&&mOmega<1.80)){
+    fTCascadeFlag2[fTnCascade] = kTRUE;
 
     //fill lambda
     fTLambdaPx[fTnCascade] = v0->Px();
@@ -851,6 +914,9 @@ Bool_t AliOtonOmegaAnalysis::FillTreeCascade(AliESDEvent *evt, AliESDcascade *ca
  } //correct lambda
  return Filled;
 }
+
+
+
 
 
 
@@ -966,6 +1032,63 @@ Bool_t AliOtonOmegaAnalysis::FillTreeTrack(Int_t jj, Int_t idtrack, Int_t V0inde
 
  }//good momentum
 }//tpcmom>50 for all 
+
+ return Filled;
+}
+
+
+
+
+
+
+//_______________________________________________________________________________________________________________________________
+Bool_t AliOtonOmegaAnalysis::FillProtonTrack(AliESDEvent *evt, Int_t idtrack) {
+//here jj=0 refers to pos, 1 neg, 2 bach
+
+ Bool_t Filled = kFALSE;
+
+ //get ESD track
+ AliESDtrack *track = evt->GetTrack(idtrack);
+
+ //fill tpc inner momentum
+ fTProtonTPCmom[fTnProton]= track->GetTPCmomentum();
+
+ fTProtonPx[fTnProton]=track->Px();
+ fTProtonPy[fTnProton]=track->Py();
+ fTProtonPz[fTnProton]=track->Pz();
+
+ //fill charge GIVEN:
+ fTProtonCharge[fTnProton]=track->Charge();
+
+ //DCA
+   Double_t PrimVtx[3];
+   evt->GetPrimaryVertex()->GetXYZ(PrimVtx);
+   fTProtonDCA[fTnProton]= track->GetD(PrimVtx[0], PrimVtx[1], evt->GetMagneticField());
+
+
+ //fill #TPCclusters
+ fTProtonNcl[fTnProton]  = track->GetTPCNcls();
+
+ //fill TPC CrF : Crossed rows / findable
+ if(track->GetTPCNclsF()>0) fTProtonCrF[fTnProton]  = track->GetTPCCrossedRows()/track->GetTPCNclsF();
+
+ //fill chi2 TPC
+ fTProtonTPCchi2[fTnProton]  = track->GetTPCchi2();
+
+ //fill #shared TPC clusters
+ fTProtonShared[fTnProton]  = track->GetTPCnclsS();
+
+ //does it have a hit in SPD, SSD or TOF?
+ if(track->HasPointOnITSLayer(0)||track->HasPointOnITSLayer(1)||track->HasPointOnITSLayer(4)||track->HasPointOnITSLayer(5)) fTProtonITStime[fTnProton] = kTRUE;
+ if(track->GetTOFBunchCrossing() == 0) fTProtonTOFtime[fTnProton] = kTRUE;
+
+ //TPCProton only?
+ if(track->GetStatus()&AliESDtrack::kTPCrefit && track->GetStatus()&AliESDtrack::kTPCin && track->GetStatus()&AliESDtrack::kITSrefit && track->GetStatus()&AliESDtrack::kITSin) fTProtonGLOBAL[fTnProton]=kTRUE;
+ if(track->GetStatus()&AliESDtrack::kTPCrefit && track->GetStatus()&AliESDtrack::kTPCin && !(track->GetStatus()&AliESDtrack::kITSrefit) && !(track->GetStatus()&AliESDtrack::kITSin)) fTProtonTPConly[fTnProton]=kTRUE;
+ if(!(track->GetStatus()&AliESDtrack::kTPCin) && track->GetStatus()&AliESDtrack::kITSrefit && track->GetStatus()&AliESDtrack::kITSin && !(track->GetStatus()&AliESDtrack::kITSpureSA)) fTProtonITScomplementary[fTnProton]=kTRUE;
+ if(track->GetStatus()&AliESDtrack::kITSrefit && track->GetStatus()&AliESDtrack::kITSpureSA) fTProtonITSpure[fTnProton]=kTRUE;
+
+ Filled = kTRUE;
 
  return Filled;
 }

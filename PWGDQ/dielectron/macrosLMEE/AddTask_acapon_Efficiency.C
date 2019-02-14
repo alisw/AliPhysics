@@ -90,7 +90,7 @@ AliAnalysisTaskElectronEfficiencyV2* AddTask_acapon_Efficiency(TString names    
   // Event selection. Is the same for all the different cutsettings
   task->SetEnablePhysicsSelection(kTRUE);
   task->SetTriggerMask(triggerNames);
-  task->SetEventFilter(cutlib->GetEventCuts(LMEECutLib::kAllSpecies)); // All cut sets have same event cuts
+  task->SetEventFilter(cutlib->GetEventCuts()); // All cut sets have same event cuts
 
   Double_t centMin = -99.;
   Double_t centMax = -90.;
@@ -224,8 +224,8 @@ AliAnalysisTaskElectronEfficiencyV2* AddTask_acapon_Efficiency(TString names    
     Printf("Successfully added task with cut set: %s\n", cutDefinition);
     // Apply PID post calibration to ITS(0) and TOF(1)
     if(applyPIDcorr){
-      ApplyPIDpostCalibration(task, 0);
-      ApplyPIDpostCalibration(task, 1);
+      ApplyPIDpostCalibration(task, 0, SDDstatus);
+      ApplyPIDpostCalibration(task, 1, SDDstatus);
     }
   }
 
