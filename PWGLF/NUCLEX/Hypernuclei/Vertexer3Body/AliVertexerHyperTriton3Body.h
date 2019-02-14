@@ -15,8 +15,9 @@ public:
   AliVertexerHyperTriton3Body();
 
   AliESDVertex* GetCurrentVertex() { return mCurrentVertex; }
+  int GetGuessCompatibility() { return mCurrentGuessCompatibility; }
 
-  bool FindDecayVertex(AliESDtrack *track1, AliESDtrack *track2, AliESDtrack* track3, float b);
+  bool FindDecayVertex(AliESDtrack *deuteronTrack, AliESDtrack *protonTrack, AliESDtrack *pionTrack, float b);
   static void Find2ProngClosestPoint(AliExternalTrackParam *track1, AliExternalTrackParam *track2, float b, float* pos);
 
   void SetMaxDinstanceInit(float maxD) { mMaxDistanceInitialGuesses = maxD; }
@@ -26,9 +27,7 @@ public:
 
 private:
   AliESDVertex* mCurrentVertex;
-
-  float mPosition[3];
-  float mCovariance[6];
+  int mCurrentGuessCompatibility;
 
   float mMaxDistanceInitialGuesses;
   int mToleranceGuessCompatibility;

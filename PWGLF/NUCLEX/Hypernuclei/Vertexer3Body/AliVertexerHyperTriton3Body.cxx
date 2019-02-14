@@ -22,8 +22,7 @@ float Point2PointDistance(float *p0, float *p1)
 
 AliVertexerHyperTriton3Body::AliVertexerHyperTriton3Body() : mVertexerTracks{},
                                                              mCurrentVertex{nullptr},
-                                                             mPosition{0.f, 0.f, 0.f},
-                                                             mCovariance{999.f, 999.f, 999.f, 999.f, 999.f, 999.f},
+                                                             mCurrentGuessCompatibility{0},
                                                              mMaxDistanceInitialGuesses{4.f},
                                                              mToleranceGuessCompatibility{1}
 {
@@ -62,50 +61,57 @@ void AliVertexerHyperTriton3Body::Find2ProngClosestPoint(AliExternalTrackParam *
   pos[2] = wz1 * z1 + wz2 * z2;
 }
 
-bool AliVertexerHyperTriton3Body::FindDecayVertex(AliESDtrack *track1, AliESDtrack *track2, AliESDtrack *track3, float b)
+bool AliVertexerHyperTriton3Body::FindDecayVertex(AliESDtrack *deuteronTrack, AliESDtrack *protonTrack, AliESDtrack *pionTrack, float b)
 {
+
+  /// Cut on the charges
+  if (deuteronTrack->Charge() * protonTrack->Charge() < 0 ||
+      protonTrack->Charge() * pionTrack->Charge() > 0)
+    return false;
+
   float initialGuesses[3][3];
   AliExternalTrackParam *tracks[3]{
-      static_cast<AliExternalTrackParam *>(track1),
-      static_cast<AliExternalTrackParam *>(track2),
-      static_cast<AliExternalTrackParam *>(track3)};
+      static_cast<AliExternalTrackParam *>(deuteronTrack),
+      static_cast<AliExternalTrackParam *>(protonTrack),
+      static_cast<AliExternalTrackParam *>(pionTrack)};
 
   TObjArray trArray(3);
-  trArray.Add(track1);
-  trArray.Add(track2);
-  trArray.Add(track3);
+  trArray.Add(deuteronTrack);
+  trArray.Add(protonTrack);
+  trArray.Add(pionTrack);
 
   for (int iTrack = 0; iTrack < 3; ++iTrack)
   {
     Find2ProngClosestPoint(tracks[iTrack], tracks[(iTrack + 1) % 3], b, initialGuesses[iTrack]);
   }
 
-  int agreement = 0;
+  mCurrentGuessCompatibility = 0;
   for (int iPoint = 0; iPoint < 3; ++iPoint)
   {
     float distance = Point2PointDistance(initialGuesses[iPoint], initialGuesses[(iPoint + 1) % 3]);
     if (distance < mMaxDistanceInitialGuesses)
     {
-      agreement++;
+      mCurrentGuessCompatibility++;
     }
   }
 
-  if (agreement < mToleranceGuessCompatibility)
+  if (mCurrentGuessCompatibility < mToleranceGuessCompatibility)
   {
     return false;
   }
 
+  float guess[3]{0.f,0.f,0.f};
   for (int iDim = 0; iDim < 3; ++iDim)
   {
     for (int iPoint = 0; iPoint < 3; ++iPoint)
     {
-      mPosition[iDim] += initialGuesses[iPoint][iDim];
+      guess[iDim] += initialGuesses[iPoint][iDim];
     }
-    mPosition[iDim] /= 3.f;
+    guess[iDim] /= 3.f;
   }
 
   mVertexerTracks.SetFieldkG(b);
-  mVertexerTracks.SetVtxStart(mPosition[0], mPosition[1], mPosition[2]);
+  mVertexerTracks.SetVtxStart(guess[0], guess[1], guess[2]);
   mCurrentVertex = mVertexerTracks.VertexForSelectedESDTracks(&trArray);
   return mCurrentVertex ? true : false;
 }
