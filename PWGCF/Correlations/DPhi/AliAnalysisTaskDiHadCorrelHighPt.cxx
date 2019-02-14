@@ -755,7 +755,7 @@ void AliAnalysisTaskDiHadCorrelHighPt::UserExec(Option_t *)
         	
             if ((tras->Charge())==0) continue;
             
-            if(fRejectTrackPileUp&&(!(tras->HasPointOnITSLayer(0) &&tras->GetTOFBunchCrossing()==0 ))) continue; // track by track pile-up rejection
+            if(fRejectTrackPileUp&&(!(tras->HasPointOnITSLayer(0) || tras->GetTOFBunchCrossing()==0 ))) continue; // track by track pile-up rejection
             
             Double_t mcPt = tras->Pt();
             Double_t mcPhi = tras->Phi();
@@ -813,7 +813,7 @@ void AliAnalysisTaskDiHadCorrelHighPt::UserExec(Option_t *)
         
         if(!IsMyGoodPrimaryTrack(track)) continue; // hybrid track selection
         nTrakBefore+=1;
-        if(fRejectTrackPileUp&&(!(track->HasPointOnITSLayer(0) &&track->GetTOFBunchCrossing()==0 ))) continue;
+        if(fRejectTrackPileUp&&(!(track->HasPointOnITSLayer(0) || track->GetTOFBunchCrossing()==0 ))) continue;
         nTrak+=1;
         
 		if(track->Pt()>fPtAsocMin) selectedTracks->Add(track);
