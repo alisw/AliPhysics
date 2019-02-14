@@ -79,6 +79,7 @@ AliAnalysisTaskGFWFlow::AliAnalysisTaskGFWFlow(const char *name, Bool_t ProduceW
   fAddQA(kFALSE),
   fQAList(0)
 {
+  if(!fProduceWeights) DefineInput(1,TList::Class()); 
   DefineOutput(1,(fProduceWeights?TList::Class():AliGFWFlowContainer::Class()));
   if(fAddQA)
     DefineOutput(2,TList::Class());
@@ -224,6 +225,10 @@ void AliAnalysisTaskGFWFlow::UserCreateOutputObjects(){
     fQAList->SetOwner(kTRUE);
     fEventCuts.AddQAplotsToList(fQAList);
     PostData(2,fQAList);
+  };
+  if(!fProduceWeights) {
+    fWeightList = (TList*) GetInputData(1);
+    if(!fWeightList) { AliFatal("Could not retrieve weight list!\n"); return; };
   };
 };
 void AliAnalysisTaskGFWFlow::UserExec(Option_t*) {
@@ -494,12 +499,22 @@ Bool_t AliAnalysisTaskGFWFlow::SetInputWeightList(TList *inlist) {
 };
 Bool_t AliAnalysisTaskGFWFlow::LoadWeights(Int_t runno) { //Cannot be used when running on the trains
   if(fWeightList) {
-    fWeights = (AliGFWWeights*)fWeightList->FindObject(Form("%i",runno));
+    fWeights = (AliGFWWeights*)fWeightList->FindObject(Form("w%i%s",runno,fSelections[fCurrSystFlag]->NeedsExtraWeight()?
+							    fSelections[fCurrSystFlag]->GetSystPF():""));
     if(!fWeights) {
+      AliFatal("Weights could not be found in the list!\n");
       return kFALSE;
     };
+    fWeights->CreateNUA();
+    fWeights->CreateNUE();
     return kTRUE;
-  }; //If weights not set, attempting to fetch them from pre-set directory. This will definitely fail if running on train
+  } else {
+    AliFatal("Weight list (for some reason) not set!\n");
+    return kFALSE; 
+  };
+  printf("You should not be here!\n");
+  return kFALSE;
+//If weights not set, attempting to fetch them from pre-set directory. This will definitely fail if running on train
   fWeightPath.Clear();
   fWeightPath.Append(fWeightDir.Data());
   fWeightPath.Append(Form("%i.root",runno));
