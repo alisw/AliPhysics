@@ -199,7 +199,7 @@ public:
   void     SwitchOffUseAutomaticTimeCalibParam()           { fUseAutomaticTimeCalib     = kFALSE ; }
   void     SwitchOffUseAutomaticRecParam()                 { fUseAutomaticRecParam      = kFALSE ; }
 
-  void     SwitchUseRunDepTempCalibRun2(Bool_t doUseTC)    { fUseRunDepTempCalibRun2    = doUseTC; }
+  void     SwitchUseNewRunDepTempCalib(Bool_t doUseTC)     { fUseNewRunDepTempCalib     = doUseTC; }
 
 private:
 
@@ -298,13 +298,13 @@ private:
   // Change to false if experts
   Bool_t                 fUseAutomaticRecalib;       // On by default the check in the OADB of the energy recalibration
   Bool_t                 fUseAutomaticRunDepRecalib; // On by default the check in the OADB of the run dependent energy recalibration
-  Bool_t                 fUseRunDepTempCalibRun2;    // Off by default the check in the OADB of the run dependent temperature calib Run2
+  Bool_t                 fUseNewRunDepTempCalib;     // Off by default the check in the OADB of the new run dependent temperature calib which covers Run1 and Run2
   Bool_t                 fUseAutomaticTimeCalib;     // On by default the check in the OADB of the time recalibration
   Bool_t                 fUseAutomaticRecParam;      // On the auto setting of the rec param
   
   AliEMCALTenderSupply(            const AliEMCALTenderSupply&c);
   AliEMCALTenderSupply& operator= (const AliEMCALTenderSupply&c);
   
-  ClassDef(AliEMCALTenderSupply, 21); // EMCAL tender task
+  ClassDef(AliEMCALTenderSupply, 22); // EMCAL tender task
 };
 #endif

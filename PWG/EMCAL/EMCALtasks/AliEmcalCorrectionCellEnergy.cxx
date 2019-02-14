@@ -27,7 +27,7 @@ AliEmcalCorrectionCellEnergy::AliEmcalCorrectionCellEnergy() :
   ,fCellEnergyDistAfter(0)
   ,fUseAutomaticRecalib(1)
   ,fUseAutomaticRunDepRecalib(1)
-  ,fUseRunDepTempCalibRun2(0)
+  ,fUseNewRunDepTempCalib(0)
   ,fCustomRecalibFilePath("")
 {
 }
@@ -52,7 +52,7 @@ Bool_t AliEmcalCorrectionCellEnergy::Initialize()
   if(fFilepass.Contains("LHC14a1a")) fUseAutomaticRecalib = kTRUE;
 
   // check the YAML configuration if the Run2 calibration is requested (default is false)
-  GetProperty("enableRun2TempCalib",fUseRunDepTempCalibRun2);
+  GetProperty("enableNewTempCalib",fUseNewRunDepTempCalib);
 
   // check the YAML configuration if a custom energy calibration is requested (default is empty string "")
   GetProperty("customRecalibFilePath",fCustomRecalibFilePath);
@@ -246,16 +246,10 @@ Int_t AliEmcalCorrectionCellEnergy::InitRunDepRecalib()
   if (!fRecoUtils->GetEMCALRecalibrationFactorsArray())
     fRecoUtils->InitEMCALRecalibrationFactors();
 
-  // Treat Run2 calibration differently. Loading of two OADB objects required for calibration
-  // Calibration can be turned on or off via: enableRun2TempCalib: true in the YAML configuration
-  if(runRC > 197692){
-
-    AliInfo("Initialising Run2 recalibration factors");
-
-    if(!fUseRunDepTempCalibRun2){
-      AliInfo("Temperature calibration for Run2 not requested");
-      return 0;
-    }
+  // Treat new temp. calibration differently. Loading of two OADB objects required for calibration
+  // Calibration can be turned on or off via: enableNewTempCalib: true in the YAML configuration
+  if(fUseNewRunDepTempCalib){
+    AliInfo("Initialising New recalibration factors");
 
     // two files and two OADB containers are needed for the correction factor
     std::unique_ptr<AliOADBContainer> contTemperature;
@@ -347,8 +341,11 @@ Int_t AliEmcalCorrectionCellEnergy::InitRunDepRecalib()
 
   // standard treatment of Run1 data
   } else {
-
-    AliInfo("Initialising recalibration factors");
+    if(runRC > 197692){
+      AliInfo("Temperature calibration could not be loaded. Please use enableNewTempCalib: true in your configuration file for Run2 data!");
+      return 0;
+    }
+    AliInfo("Initialising Run1 recalibration factors");
 
     std::unique_ptr<AliOADBContainer> contRF;
     std::unique_ptr<TFile> runDepRecalibFile;
