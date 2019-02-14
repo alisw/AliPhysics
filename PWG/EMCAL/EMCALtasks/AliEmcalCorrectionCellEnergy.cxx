@@ -248,7 +248,7 @@ Int_t AliEmcalCorrectionCellEnergy::InitRunDepRecalib()
 
   // Treat new temp. calibration differently. Loading of two OADB objects required for calibration
   // Calibration can be turned on or off via: enableNewTempCalib: true in the YAML configuration
-  if(!fUseNewRunDepTempCalib){
+  if(fUseNewRunDepTempCalib){
     AliInfo("Initialising New recalibration factors");
 
     // two files and two OADB containers are needed for the correction factor
