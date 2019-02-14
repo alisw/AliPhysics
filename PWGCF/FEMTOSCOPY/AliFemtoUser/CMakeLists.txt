@@ -66,6 +66,11 @@ set(SRCS
   AliFemtoModelCorrFctnKK.cxx
   AliFemtoModelCorrFctnKpKp.cxx
   AliFemtoNSigmaFilter.cxx
+  AliFemtoCutAttrEvent.cxx
+  AliFemtoCutAttrPairTrack.cxx
+  AliFemtoCutAttrTrack.cxx
+  AliFemtoAnalysisPionPionCuts.cxx
+  AliFemtoAnalysisPionPionObjectConstructor.cxx
   AliFemtoCutMonitorParticleEtCorr.cxx
   AliFemtoCutMonitorParticleMomRes.cxx
   AliFemtoCutMonitorParticlePtPDG.cxx

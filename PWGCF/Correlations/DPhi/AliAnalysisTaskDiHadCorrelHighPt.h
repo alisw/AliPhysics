@@ -7,6 +7,7 @@
 
 #include "AliAnalysisTaskSE.h"
 #include "AliEventPoolManager.h"
+#include "AliEventCuts.h"
 
 class AliPIDResponse;
 class AliEventPoolManager;
@@ -44,10 +45,11 @@ class AliAnalysisTaskDiHadCorrelHighPt : public AliAnalysisTaskSE
 
         void                    SetPtTrigMin(Double_t var) {fPtTrigMin=var;}
         void                    SetPtAsocMin(Double_t var) {fPtAsocMin=var;}
-        void                    Corelations(TObjArray *triggers, TObjArray *associated, THnSparse * fHistKor, Double_t lPVz,THnSparse* fHistNumOfTrig,Bool_t hh,Bool_t V0h,Float_t perc,TH3F *fHistPtHard, Double_t ptHard, Int_t purCorr);
+        void                    Corelations(TObjArray *triggers, TObjArray *associated, THnSparse * fHistKor, Double_t lPVz,THnSparse* fHistNumOfTrig,Bool_t hh,Bool_t V0h,Float_t perc,TH3F *fHistPtHard, Double_t ptHard,Bool_t hV0);
         void                    CorelationsMixing(TObjArray *triggers, TObjArray *bgTracks, THnSparse * fHistKor, Double_t lPVz,Float_t perc);
         void                    TopologCuts(THnSparse* fHist,Double_t pttrig,Double_t mass,Double_t dcaNeg, Double_t dcaPos,Double_t dcaDau, Double_t V0rad, Double_t cosPA,Double_t lifetime,Double_t massSell,Double_t triggType, Double_t status);
-    void                    FillMC(const AliAODv0 *V0,TClonesArray *mcArray,Int_t pdgV0,Int_t pdgDau1, Int_t pdgDau2,Int_t triggerType, Double_t mass, TObjArray * selectedMCV0Triggersrec,THnSparse * fHistRecV0, TH3F * fHistMassPtCut,Double_t lPVz, const AliAODTrack * myTrackPos,const AliAODTrack * myTrackNeg,Bool_t status, THnSparse * histPur, TObjArray * selectedMCV0TriggersrecGoodId, TObjArray * selectedMCV0TriggersrecGoodIdrec,TObjArray * selectedMCV0TriggersrecGen, TH3F * fHistresol);
+    void                    FillMC(const AliAODv0 *V0,TClonesArray *mcArray,Int_t pdgV0,Int_t pdgDau1, Int_t pdgDau2,Int_t triggerType, Double_t mass, TObjArray * selectedMCV0Triggersrec,THnSparse * fHistRecV0, TH3F * fHistMassPtCut,Double_t lPVz, const AliAODTrack * myTrackPos,const AliAODTrack * myTrackNeg,Bool_t status,THnSparse * histPur, TObjArray * selectedMCV0assoc,TH3F * fHistresol);
+        void                    CorelationsMixingV0h(TObjArray *bgTracks, TObjArray *assocArray, THnSparse * fHistKor, Double_t lPVz, Float_t perc);
     
         void                    SetCosPAK0(Float_t cosPAK0) { fCosPointAngleK0 = cosPAK0; }
         void                    SetCosPALam(Float_t cosPALam) { fCosPointAngleLam = cosPALam; }
@@ -61,6 +63,18 @@ class AliAnalysisTaskDiHadCorrelHighPt : public AliAnalysisTaskSE
         void                    SetMixedEvents(Int_t nmix) { fMixedEvents = nmix; }
         void                    SetNofPtBinsTrigger(Int_t nbins) { fNumberOfPtBinsTrigger = nbins; }
         void                    SetNofPtBinsAssoc(Int_t nbins) { fNumberOfPtBinsAssoc = nbins; }
+        void                    SetV0RadiusCut(Double_t rad) { fV0Radius = rad; }
+        void                    SetSigmaCut(Double_t sigma) { fSigmaCut = sigma; }
+        void                    SetEtaCut(Double_t eta) { fEtaCut = eta; }
+        void                    SetRapidityCut(Double_t rap) { fRapidityCut = rap; }
+        void                    SetLifeTimeCutLambda(Double_t lifetime) { fLifeTimeLam = lifetime; }
+        void                    SetLifeTimeCutK0(Double_t lifetime) { fLifeTimeK0 = lifetime; }
+        void                    SetMassRejectCutK0(Double_t rej) { fMassRejectCutK0 = rej; }
+        void                    SetLifeTimeCutLamda(Double_t rej) { fMassRejectCutLam = rej; }
+        void                    SetEventPileUpCut(Bool_t cut) { fRejectEventPileUp = cut; }
+        void                    SetTrackPileUpCut(Bool_t cut) { fRejectTrackPileUp = cut; }
+    
+        AliEventCuts            fAliEventCuts;
     
     private:
         AliAODEvent*            fAOD;           		//! input event
@@ -94,6 +108,16 @@ class AliAnalysisTaskDiHadCorrelHighPt : public AliAnalysisTaskSE
         Double_t                      fPtAsocMin; //
         Bool_t                        fCutsCrosscheck; //
         Int_t                         fMixedEvents; // number of minimum mixed events
+        Double_t                      fV0Radius; // V0 radius
+        Double_t                      fSigmaCut; // TPC PID
+        Double_t                      fEtaCut; // pseudorapidity cut for primary hadrons
+        Double_t                      fRapidityCut; // rapidity cut for V0
+        Double_t                      fLifeTimeLam; // LifeTime cut for Lambdas and AnitLambdas
+        Double_t                      fLifeTimeK0; // LifeTime cut for K0
+        Double_t                      fMassRejectCutK0; // V0 competing rejection for K0
+        Double_t                      fMassRejectCutLam;// V0 competing rejection for Lambdas and AntiLambdas
+        Bool_t                        fRejectEventPileUp; // enable to use Pile-up cuts
+        Bool_t                        fRejectTrackPileUp; // enable to use Bunch-Of Pile-up cuts
 
         THnSparse*              fHistKorelacieMCrec; //!  
         THnSparse*              fHistNumberOfTriggersGen;  //!
@@ -111,7 +135,6 @@ class AliAnalysisTaskDiHadCorrelHighPt : public AliAnalysisTaskSE
         THnSparse*              fHistTopolCut;             //!
         THnSparse*              fHistTopolCutMC;           //!
         THnSparse*              fHistPurityCheck;          //!
-        THnSparse*              fHistKorelPurCorr;         //!
     
         Float_t                 fCosPointAngleK0; //
         Float_t                 fCosPointAngleLam; //
@@ -122,7 +145,6 @@ class AliAnalysisTaskDiHadCorrelHighPt : public AliAnalysisTaskSE
         Bool_t                  fEfficiency; //
         Bool_t                  fPurityCheck;//
         Bool_t                  fCorrelations;//
-        THnSparse*              fHistNumberOfTriggersPur;//!
         TH3F*                   fHistPtResolution;//!
         Int_t                   fNumberOfPtBinsTrigger; //
         Int_t                   fNumberOfPtBinsAssoc;//
@@ -130,11 +152,12 @@ class AliAnalysisTaskDiHadCorrelHighPt : public AliAnalysisTaskSE
         TH1F *                  fHistV0Lam;//!
         TH1F *                  fHistMultiplicityALam;//!
         TH2F *                  fHitsNTracks;//!
+        THnSparse *             fHistPhiEta;//!
 
         AliAnalysisTaskDiHadCorrelHighPt(const AliAnalysisTaskDiHadCorrelHighPt&); // not implemented
         AliAnalysisTaskDiHadCorrelHighPt& operator=(const AliAnalysisTaskDiHadCorrelHighPt&); // not implemented
 
-        ClassDef(AliAnalysisTaskDiHadCorrelHighPt, 10);
+        ClassDef(AliAnalysisTaskDiHadCorrelHighPt, 11);
 };
 
 class AliV0ChParticle : public AliVParticle

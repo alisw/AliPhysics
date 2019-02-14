@@ -80,6 +80,20 @@ public:
   bool operator==(const AliEmcalParticleJetConstituent &rhs) const;
 
   /**
+   * @brief Comparison operator (implemented for pT)
+   * @param[in] rhs Object to be checked against
+   * @return True if constituent pT is larger, false otherwise
+   */
+  bool operator>(const AliEmcalParticleJetConstituent &rhs) const;
+
+  /**
+   * @brief Comparison operator (implemented for pT)
+   * @param[in] rhs Object to be checked against
+   * @return True if constituent pT is smaller, false otherwise
+   */
+  bool operator<(const AliEmcalParticleJetConstituent &rhs) const;
+
+  /**
    * @brief Destructor
    */
   virtual ~AliEmcalParticleJetConstituent();

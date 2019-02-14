@@ -19,8 +19,10 @@ AliAnalysisTaskCharm *AddTaskCharm(Bool_t applyeventw = kFALSE,Bool_t applyweigh
   }
   // CNM
   TFile fcnm(file_cnm.Data());
-  if (fcnm.IsOpen() && ((TGraph*)fcnm.Get(cnm.Data()))!=0x0) { // apply cnm scaling.
-    task->ScaleByCNM(kTRUE,(TGraph*)fcnm.Get(cnm.Data()));
+  if (fcnm.IsOpen()){
+    if((TGraph*)fcnm.Get(cnm.Data())!=0x0) { // apply cnm scaling.
+      task->ScaleByCNM(kTRUE,(TGraph*)fcnm.Get(cnm.Data()));
+    }
   }
   
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();

@@ -103,6 +103,10 @@
 #pragma link C++ class AliFemtoAnalysisPionPion+;
 #pragma link C++ class AliFemtoAnalysisPionPion::AnalysisParams+;
 #pragma link C++ class AliFemtoAnalysisPionPion::CutParams+;
+#pragma link C++ class AliFemtoEventCutPionPionAK;
+#pragma link C++ class AliFemtoTrackCutPionPionAK;
+#pragma link C++ class AliFemtoPairCutPionPionAKAvgSep;
+#pragma link C++ class AliFemtoPairCutPionPionAKDetaDphi;
 
 #pragma link C++ class AliFemtoPionLambdaCutMonitor::Event+;
 #pragma link C++ class AliFemtoPionLambdaCutMonitor::Pion+;

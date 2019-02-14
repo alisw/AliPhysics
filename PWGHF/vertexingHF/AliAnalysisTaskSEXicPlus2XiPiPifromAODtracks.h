@@ -52,13 +52,17 @@ class AliAnalysisTaskSEXicPlus2XiPiPifromAODtracks : public AliAnalysisTaskSE
   virtual void UserExec(Option_t *option);
   virtual void Terminate(Option_t *option);
 
-  void FillROOTObjects(AliAODRecoCascadeHF3Prong *xicobj, AliAODMCParticle *mcpart, AliAODMCParticle *mcdau1, AliAODMCParticle *mcdau2, AliAODMCParticle *mcdauxi, Int_t mcnused);
+  void FillROOTObjects(AliAODRecoCascadeHF3Prong *xicobj, AliAODMCParticle *mcpart, AliAODMCParticle *mcdau1, AliAODMCParticle *mcdau2, AliAODMCParticle *mcdauxi, Int_t mcnused, Bool_t isXiC);
   void MakeAnalysis(AliAODEvent *aod, TClonesArray *mcArray);
 
   
   /// set MC usage
   void SetMC(Bool_t theMCon) {fUseMCInfo = theMCon;}
   Bool_t GetMC() const {return fUseMCInfo;}
+  void SetFillSignalOnly(Bool_t signalOnly) {fFillSignalOnly = signalOnly;}
+  Bool_t GetFillSignalOnly() const {return fFillSignalOnly;}
+  void SetFillBkgOnly(Bool_t bkgOnly) {fFillBkgOnly = bkgOnly;}
+  Bool_t GetFillBkgOnly() const {return fFillBkgOnly;}
   
   void   SetReconstructPrimVert(Bool_t a) { fReconstructPrimVert=a; }
   void SelectCascade( const AliVEvent *event,Int_t nCascades,Int_t &nSeleCasc, Bool_t *seleCascFlags);
@@ -81,6 +85,8 @@ class AliAnalysisTaskSEXicPlus2XiPiPifromAODtracks : public AliAnalysisTaskSE
   AliAODVertex* ReconstructSecondaryVertex(TObjArray *trkArray, Double_t &dispersion,Bool_t useTRefArray=kTRUE);
   
   Bool_t fUseMCInfo;          /// Use MC info
+  Bool_t fFillSignalOnly;     /// Fill only the signal in MC
+  Bool_t fFillBkgOnly;        /// Fill only the bkg in MC
   TList *fOutput;             //!<! User output slot 1 // general histos
   TList *fOutputAll;          //!<! User output slot 3 // Analysis histos
   TList *fListCuts;           //!<! User output slot 2 // Cuts 
@@ -138,7 +144,7 @@ class AliAnalysisTaskSEXicPlus2XiPiPifromAODtracks : public AliAnalysisTaskSE
   TH1F*  fHistoPiPtRef;                      //!<! Reference pi spectra 
 
   /// \cond CLASSIMP    
-  ClassDef(AliAnalysisTaskSEXicPlus2XiPiPifromAODtracks,5); /// class for Xic->Xipipi
+  ClassDef(AliAnalysisTaskSEXicPlus2XiPiPifromAODtracks,6); /// class for Xic->Xipipi
   /// \endcond
 };
 #endif

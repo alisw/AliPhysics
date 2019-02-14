@@ -227,7 +227,7 @@ class AliCorrelationExtraction : public TObject {
     void SetMELSPairHistogram(THnF* hpp, THnF* hmm) {fMEPPPair = hpp; fMEMMPair = hmm; fProcessDone = kFALSE;}
     void SetHadronEfficiencyHistogram(TH1D* h, Int_t var) {fHadronEff = h; fEfficiencyVariable = var; fProcessDone = kFALSE;}
     void SetAliResonanceFitsObject(AliResonanceFits* resonanceFits) {fResonanceFits = (AliResonanceFits*)resonanceFits->Clone("ResonanceFits"); fProcessDone = kFALSE;}
-    void SetBackgroundMethod(Int_t method) {fOptionBkgMethod = method; fProcessDone = kFALSE;}
+    void SetBackgroundMethod(Int_t method, Bool_t integrateDeltaEta=kFALSE);
     void SetBackgroundFitFunction(TF1* fitFunc) {fBkgFitFunction = (TF1*)fitFunc->Clone("BkgFitFunction"); fProcessDone = kFALSE;}
     void SetSignalMassWindow(Double_t min, Double_t max) {fMassSignalRange[0] = min; fMassSignalRange[1] = max; fProcessDone = kFALSE;}
     void SetBackgroundMassWindows(Int_t n, Double_t* min, Double_t* max);
@@ -373,6 +373,7 @@ class AliCorrelationExtraction : public TObject {
     // user options
     Bool_t            fVerboseFlag;
     Bool_t            fUseMixingVars;
+    Bool_t            fIntegrateDeltaEta[kNBackgroundMethods];
     AliResonanceFits* fResonanceFits;
     Int_t             fOptionBkgMethod;
     TF1*              fBkgFitFunction;
@@ -409,7 +410,7 @@ class AliCorrelationExtraction : public TObject {
     Bool_t  CalculateSignalCorrelation();
     Bool_t  EfficiencyCorrection();
   
-  ClassDef(AliCorrelationExtraction, 1);
+  ClassDef(AliCorrelationExtraction, 2);
 };
 
 #endif
