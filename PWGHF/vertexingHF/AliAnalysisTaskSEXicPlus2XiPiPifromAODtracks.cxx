@@ -87,6 +87,8 @@ ClassImp(AliAnalysisTaskSEXicPlus2XiPiPifromAODtracks);
 AliAnalysisTaskSEXicPlus2XiPiPifromAODtracks::AliAnalysisTaskSEXicPlus2XiPiPifromAODtracks() : 
   AliAnalysisTaskSE(),
   fUseMCInfo(kFALSE),
+  fFillSignalOnly(kFALSE),
+  fFillBkgOnly(kFALSE),
   fOutput(0),
   fOutputAll(0),
   fListCuts(0),
@@ -148,6 +150,8 @@ AliAnalysisTaskSEXicPlus2XiPiPifromAODtracks::AliAnalysisTaskSEXicPlus2XiPiPifro
 											   Bool_t writeVariableTree) :
   AliAnalysisTaskSE(name),
   fUseMCInfo(kFALSE),
+  fFillSignalOnly(kFALSE),
+  fFillBkgOnly(kFALSE),
   fOutput(0),
   fOutputAll(0),
   fListCuts(0),
