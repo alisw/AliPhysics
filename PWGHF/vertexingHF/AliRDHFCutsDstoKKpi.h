@@ -105,6 +105,8 @@ class AliRDHFCutsDstoKKpi : public AliRDHFCuts
 
   Double_t ComputeInvMass2(AliAODTrack* track1, AliAODTrack* track2, Int_t pdg1, Int_t pdg2);
 
+  virtual void PrintAll() const;
+
  protected:
  
   Bool_t fCutOnResonances;  /// switch for the cuts on phi and K0* inv. mass
