@@ -184,15 +184,17 @@ void AliForwardFlowRun2Task::UserExec(Option_t *)
   //   option: Not used
   //
   // Get the event validation object
-  AliForwardTaskValidation* ev_val = dynamic_cast<AliForwardTaskValidation*>(this->GetInputData(1));
-  if (!ev_val->IsValidEvent()){
-     PostData(1, this->fOutputList);
-    return;
-  }
+   AliForwardTaskValidation* ev_val = dynamic_cast<AliForwardTaskValidation*>(this->GetInputData(1));
+   if (!ev_val->IsValidEvent()){
+      PostData(1, this->fOutputList);
+     return;
+   }
 
 
   AliAODEvent* aodevent = dynamic_cast<AliAODEvent*>(InputEvent());
   fUtil.fAODevent = aodevent;
+  if (fSettings.mc) fUtil.fMCevent = this->MCEvent();
+
   if(!aodevent) throw std::runtime_error("Not AOD as expected");
 
 
@@ -219,7 +221,7 @@ void AliForwardFlowRun2Task::UserExec(Option_t *)
   TH1F* dNdeta = static_cast<TH1F*>(fEventList->FindObject("dNdeta"));
 
   dNdeta->SetDirectory(0);
-
+  fUtil.dodNdeta = kTRUE;
   fUtil.dNdeta = dNdeta;
   fUtil.FillData(refDist,centralDist,forwardDist);
 
