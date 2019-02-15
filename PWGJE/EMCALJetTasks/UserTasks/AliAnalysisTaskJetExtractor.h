@@ -69,12 +69,12 @@ class AliAnalysisTaskJetExtractor : public AliAnalysisTaskEmcalJet {
   void                        FillTrackControlHistograms(AliVTrack* track);
   void                        FillEventControlHistograms();
   void                        FillJetControlHistograms(AliEmcalJet* jet);
-  void                        CalculateJetShapes(AliEmcalJet* jet, Double_t& leSub_noCorr, Double_t& radialMoment, Double_t& momentumDispersion, Double_t& trackPtMean, Double_t& trackPtMedian);
+  void                        CalculateJetShapes(AliEmcalJet* jet, Double_t& leSub_noCorr, Double_t& angularity, Double_t& momentumDispersion, Double_t& trackPtMean, Double_t& trackPtMedian);
   void                        GetTrueJetPtFraction(AliEmcalJet* jet, Double_t& truePtFraction, Double_t& truePtFraction_mcparticles);
   void                        GetMatchedJetObservables(AliEmcalJet* jet, Double_t& matchedJetPt, Double_t& matchedJetMass, Double_t& matchedJetDistance);
   void                        GetJetType(AliEmcalJet* jet, Int_t& typeHM, Int_t& typePM, Int_t& typeIC);
   Bool_t                      IsTriggerTrackInEvent();
-  Bool_t                      IsTrackInCone(AliVParticle* track, Double_t eta, Double_t phi, Double_t radius);
+  Bool_t                      IsTrackInCone(const AliVParticle* track, Double_t eta, Double_t phi, Double_t radius);
   Bool_t                      IsStrangeJet(AliEmcalJet* jet);
   void                        PrintConfig();
   void                        AddPIDInformation(const AliVParticle* particle, Float_t& sigITS, Float_t& sigTPC, Float_t& sigTOF, Float_t& sigTRD, Short_t& recoPID, Int_t& truePID);
@@ -130,7 +130,12 @@ class AliAnalysisTaskJetExtractor : public AliAnalysisTaskEmcalJet {
   AliHFJetsTaggingVertex*     fVtxTagger;                               //!<! class for sec. vertexing
   Bool_t                      fIsEmbeddedEvent;                         ///< Set to true if at least one embedding container is added to this task
 
-  // ################## HISTOGRAM HELPER FUNCTIONS
+  // ################## HELPER FUNCTIONS
+  Double_t                    GetDistance(Double_t eta1, Double_t eta2, Double_t phi1, Double_t phi2)
+  {
+    Double_t deltaPhi = TMath::Min(TMath::Abs(phi1-phi2),TMath::TwoPi() - TMath::Abs(phi1-phi2));
+    return TMath::Sqrt((eta1-eta2)*(eta1-eta2) + deltaPhi*deltaPhi);
+  }
   void                        FillHistogram(const char * key, Double_t x);
   void                        FillHistogram(const char * key, Double_t x, Double_t y);
   void                        FillHistogram(const char * key, Double_t x, Double_t y, Double_t add);
@@ -182,7 +187,7 @@ class AliEmcalJetTree : public TNamed
     // ######################################
     Bool_t          AddJetToTree(AliEmcalJet* jet, Bool_t saveConstituents, Bool_t saveConstituentsIP, Bool_t saveCaloClusters, Double_t* vertex, Float_t rho, Float_t rhoMass, Float_t centrality, Int_t multiplicity, Long64_t eventID, Float_t magField);
     void            FillBuffer_SecVertices(std::vector<Float_t>& secVtx_X, std::vector<Float_t>& secVtx_Y, std::vector<Float_t>& secVtx_Z, std::vector<Float_t>& secVtx_Mass, std::vector<Float_t>& secVtx_Lxy, std::vector<Float_t>& secVtx_SigmaLxy, std::vector<Float_t>& secVtx_Chi2, std::vector<Float_t>& secVtx_Dispersion);
-    void            FillBuffer_JetShapes(AliEmcalJet* jet, Double_t leSub_noCorr, Double_t radialMoment, Double_t momentumDispersion, Double_t trackPtMean, Double_t trackPtMedian);
+    void            FillBuffer_JetShapes(AliEmcalJet* jet, Double_t leSub_noCorr, Double_t angularity, Double_t momentumDispersion, Double_t trackPtMean, Double_t trackPtMedian);
     void            FillBuffer_PID(std::vector<Float_t>& trackPID_ITS, std::vector<Float_t>& trackPID_TPC, std::vector<Float_t>& trackPID_TOF, std::vector<Float_t>& trackPID_TRD, std::vector<Short_t>& trackPID_Reco, std::vector<Int_t>& trackPID_Truth);
     void            FillBuffer_MonteCarlo(Int_t motherParton, Int_t motherHadron, Int_t partonInitialCollision, Float_t matchJetDistance, Float_t matchedJetPt, Float_t matchedJetMass, Float_t truePtFraction, Float_t truePtFraction_mcparticles, Float_t ptHard, Float_t eventWeight, Float_t impactParameter);
     void            FillBuffer_ImpactParameters(std::vector<Float_t>& trackIP_d0, std::vector<Float_t>& trackIP_z0, std::vector<Float_t>& trackIP_d0cov, std::vector<Float_t>& trackIP_z0cov);
@@ -252,6 +257,7 @@ class AliEmcalJetTree : public TNamed
     Float_t         fBuffer_Shape_pTD_DerivCorr_2;        //!<! array buffer
     Float_t         fBuffer_Shape_LeSub_NoCorr;           //!<! array buffer
     Float_t         fBuffer_Shape_LeSub_DerivCorr;        //!<! array buffer
+    Float_t         fBuffer_Shape_Angularity_NoCorr;      //!<! array buffer
     Float_t         fBuffer_Shape_Angularity_DerivCorr_1; //!<! array buffer
     Float_t         fBuffer_Shape_Angularity_DerivCorr_2; //!<! array buffer
     Float_t         fBuffer_Shape_Circularity_DerivCorr_1;//!<! array buffer
@@ -259,7 +265,6 @@ class AliEmcalJetTree : public TNamed
     Float_t         fBuffer_Shape_Sigma2_DerivCorr_1;     //!<! array buffer
     Float_t         fBuffer_Shape_Sigma2_DerivCorr_2;     //!<! array buffer
     Float_t         fBuffer_Shape_NumTracks_DerivCorr;    //!<! array buffer
-    Float_t         fBuffer_Shape_RadialMoment;           //!<! array buffer
     Float_t         fBuffer_Shape_MomentumDispersion;     //!<! array buffer
     Float_t         fBuffer_Shape_TrackPtMean;            //!<! array buffer
     Float_t         fBuffer_Shape_TrackPtMedian;          //!<! array buffer
@@ -271,7 +276,7 @@ class AliEmcalJetTree : public TNamed
     Float_t         fBuffer_Jet_MC_MatchedJet_Pt;         //!<! array buffer
     Float_t         fBuffer_Jet_MC_MatchedJet_Mass;       //!<! array buffer
     Float_t         fBuffer_Jet_MC_TruePtFraction;        //!<! array buffer
-    Float_t         fBuffer_Jet_MC_TruePtFraction_mcparticles;//!<! array buffer //TODO: rename
+    Float_t         fBuffer_Jet_MC_TruePtFraction_mcparticles;//!<! array buffer
 
     Int_t           fBuffer_NumTriggerTracks;
     Int_t           fBuffer_NumSecVertices;

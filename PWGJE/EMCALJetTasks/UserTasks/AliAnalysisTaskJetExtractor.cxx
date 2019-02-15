@@ -55,6 +55,8 @@
 #include "AliAnalysisTaskEmcalJet.h"
 #include "AliAnalysisManager.h"
 #include "AliYAMLConfiguration.h"
+#include "AliEmcalContainerUtils.h"
+
 
 #include "AliGenHepMCEventHeader.h"
 #include "AliGenHijingEventHeader.h"
@@ -264,13 +266,14 @@ void AliEmcalJetTree::FillBuffer_PID(std::vector<Float_t>& trackPID_ITS, std::ve
 }
 
 //________________________________________________________________________
-void AliEmcalJetTree::FillBuffer_JetShapes(AliEmcalJet* jet, Double_t leSub_noCorr, Double_t radialMoment, Double_t momentumDispersion, Double_t trackPtMean, Double_t trackPtMedian)
+void AliEmcalJetTree::FillBuffer_JetShapes(AliEmcalJet* jet, Double_t leSub_noCorr, Double_t angularity, Double_t momentumDispersion, Double_t trackPtMean, Double_t trackPtMedian)
 {
   fBuffer_Shape_Mass_NoCorr = jet->M();
   fBuffer_Shape_Mass_DerivCorr_1 = jet->GetShapeProperties()->GetFirstOrderSubtracted();
   fBuffer_Shape_Mass_DerivCorr_2 = jet->GetShapeProperties()->GetSecondOrderSubtracted();
   fBuffer_Shape_pTD_DerivCorr_1  = jet->GetShapeProperties()->GetFirstOrderSubtractedpTD();
   fBuffer_Shape_pTD_DerivCorr_2  = jet->GetShapeProperties()->GetSecondOrderSubtractedpTD();
+  fBuffer_Shape_Angularity_NoCorr = angularity;
   fBuffer_Shape_Angularity_DerivCorr_1  = jet->GetShapeProperties()->GetFirstOrderSubtractedAngularity();
   fBuffer_Shape_Angularity_DerivCorr_2  = jet->GetShapeProperties()->GetSecondOrderSubtractedAngularity();
   fBuffer_Shape_Circularity_DerivCorr_1  = jet->GetShapeProperties()->GetFirstOrderSubtractedCircularity();
@@ -280,7 +283,6 @@ void AliEmcalJetTree::FillBuffer_JetShapes(AliEmcalJet* jet, Double_t leSub_noCo
   fBuffer_Shape_Sigma2_DerivCorr_2 = jet->GetShapeProperties()->GetSecondOrderSubtractedSigma2();
   fBuffer_Shape_NumTracks_DerivCorr = jet->GetShapeProperties()->GetSecondOrderSubtractedConstituent();
   fBuffer_Shape_LeSub_NoCorr = leSub_noCorr;
-  fBuffer_Shape_RadialMoment = radialMoment;
   fBuffer_Shape_MomentumDispersion = momentumDispersion;
   fBuffer_Shape_TrackPtMean = trackPtMean;
   fBuffer_Shape_TrackPtMedian = trackPtMedian;
@@ -394,6 +396,7 @@ void AliEmcalJetTree::InitializeTree(Bool_t saveCaloClusters, Bool_t saveMCInfor
     fJetTree->Branch("Jet_Shape_pTD_DerivCorr_2",&fBuffer_Shape_pTD_DerivCorr_2,"Jet_Shape_pTD_DerivCorr_2/F");
     fJetTree->Branch("Jet_Shape_LeSub_NoCorr",&fBuffer_Shape_LeSub_NoCorr,"Jet_Shape_LeSub_NoCorr/F");
     fJetTree->Branch("Jet_Shape_LeSub_DerivCorr",&fBuffer_Shape_LeSub_DerivCorr,"Jet_Shape_LeSub_DerivCorr/F");
+    fJetTree->Branch("Jet_Shape_Angularity",&fBuffer_Shape_Angularity_NoCorr,"Jet_Shape_Angularity/F");
     fJetTree->Branch("Jet_Shape_Angularity_DerivCorr_1",&fBuffer_Shape_Angularity_DerivCorr_1,"Jet_Shape_Angularity_DerivCorr_1/F");
     fJetTree->Branch("Jet_Shape_Angularity_DerivCorr_2",&fBuffer_Shape_Angularity_DerivCorr_2,"Jet_Shape_Angularity_DerivCorr_2/F");
     fJetTree->Branch("Jet_Shape_Circularity_DerivCorr_1",&fBuffer_Shape_Circularity_DerivCorr_1,"Jet_Shape_Circularity_DerivCorr_1/F");
@@ -401,7 +404,6 @@ void AliEmcalJetTree::InitializeTree(Bool_t saveCaloClusters, Bool_t saveMCInfor
     fJetTree->Branch("Jet_Shape_Sigma2_DerivCorr_1",&fBuffer_Shape_Sigma2_DerivCorr_1,"Jet_Shape_Sigma2_DerivCorr_1/F");
     fJetTree->Branch("Jet_Shape_Sigma2_DerivCorr_2",&fBuffer_Shape_Sigma2_DerivCorr_2,"Jet_Shape_Sigma2_DerivCorr_2/F");
     fJetTree->Branch("Jet_Shape_NumTracks_DerivCorr",&fBuffer_Shape_NumTracks_DerivCorr,"Jet_Shape_NumTracks_DerivCorr/F");
-    fJetTree->Branch("Jet_Shape_RadialMoment",&fBuffer_Shape_RadialMoment,"Jet_Shape_RadialMoment/F");
     fJetTree->Branch("Jet_Shape_MomentumDispersion",&fBuffer_Shape_MomentumDispersion,"Jet_Shape_MomentumDispersion/F");
     fJetTree->Branch("Jet_Shape_TrackPtMean",&fBuffer_Shape_TrackPtMean,"Jet_Shape_TrackPtMean/F");
     fJetTree->Branch("Jet_Shape_TrackPtMedian",&fBuffer_Shape_TrackPtMedian,"Jet_Shape_TrackPtMedian/F");
@@ -610,7 +612,16 @@ void AliAnalysisTaskJetExtractor::ExecOnce()
   GetJetContainer(0)->LoadRhoMass(InputEvent());
 
   if (fMCParticleArrayName != "")
-    fMCParticleArray = dynamic_cast<TClonesArray*>(InputEvent()->FindListObject(fMCParticleArrayName.Data()));
+  {
+    if(!fIsEmbeddedEvent)
+      fMCParticleArray = dynamic_cast<TClonesArray*>(InputEvent()->FindListObject(fMCParticleArrayName.Data()));
+    else
+    {
+      // In case of embedding, the MC particle array needs to be fetched differently
+      AliVEvent* event = AliEmcalContainerUtils::GetEvent(InputEvent(), kTRUE);
+      fMCParticleArray = dynamic_cast<TClonesArray*>(event->FindListObject(fMCParticleArrayName.Data()));
+    }
+  }
 
   // ### Prepare vertexer
   if(fSaveSecondaryVertices)
@@ -674,6 +685,14 @@ Bool_t AliAnalysisTaskJetExtractor::Run()
   // ################################### EVENT PROPERTIES
   FillEventControlHistograms();
 
+  // LOCAL BUFFER
+  std::vector<Float_t> vecSigITS; std::vector<Float_t> vecSigTPC; std::vector<Float_t> vecSigTRD; std::vector<Float_t> vecSigTOF; std::vector<Short_t> vecRecoPID; std::vector<Int_t> vecTruePID;
+  std::vector<Float_t> vec_d0; std::vector<Float_t> vec_d0cov; std::vector<Float_t> vec_z0; std::vector<Float_t> vec_z0cov;
+  std::vector<Float_t> secVtx_X; std::vector<Float_t> secVtx_Y; std::vector<Float_t> secVtx_Z; std::vector<Float_t> secVtx_Mass; std::vector<Float_t> secVtx_Lxy; std::vector<Float_t> secVtx_SigmaLxy; std::vector<Float_t> secVtx_Chi2; std::vector<Float_t> secVtx_Dispersion;
+  std::vector<Float_t> triggerTracks_dEta(fTriggerTracks_Eta);
+  std::vector<Float_t> triggerTracks_dPhi(fTriggerTracks_Phi);
+
+
   // Load vertex if possible
   Long64_t eventID = 0;
   const AliVVertex* myVertex = InputEvent()->GetPrimaryVertex();
@@ -735,8 +754,6 @@ Bool_t AliAnalysisTaskJetExtractor::Run()
     }
 
     // ### CONSTITUENT LOOP: Retrieve PID values + impact parameters
-    std::vector<Float_t> vecSigITS; std::vector<Float_t> vecSigTPC; std::vector<Float_t> vecSigTRD; std::vector<Float_t> vecSigTOF; std::vector<Short_t> vecRecoPID; std::vector<Int_t> vecTruePID;
-    std::vector<Float_t> vec_d0; std::vector<Float_t> vec_d0cov; std::vector<Float_t> vec_z0; std::vector<Float_t> vec_z0cov;
     if(fSaveConstituentPID || fSaveConstituentsIP)
     {
       for(Int_t i = 0; i < jet->GetNumberOfParticleConstituents(); i++)
@@ -763,7 +780,6 @@ Bool_t AliAnalysisTaskJetExtractor::Run()
     // Reconstruct secondary vertices
     if(fSaveSecondaryVertices)
     {
-      std::vector<Float_t> secVtx_X; std::vector<Float_t> secVtx_Y; std::vector<Float_t> secVtx_Z; std::vector<Float_t> secVtx_Mass; std::vector<Float_t> secVtx_Lxy; std::vector<Float_t> secVtx_SigmaLxy; std::vector<Float_t> secVtx_Chi2; std::vector<Float_t> secVtx_Dispersion;
       ReconstructSecondaryVertices(myVertex, jet, secVtx_X, secVtx_Y, secVtx_Z, secVtx_Mass, secVtx_Lxy, secVtx_SigmaLxy, secVtx_Chi2, secVtx_Dispersion);
       fJetTree->FillBuffer_SecVertices(secVtx_X, secVtx_Y, secVtx_Z, secVtx_Mass, secVtx_Lxy, secVtx_SigmaLxy, secVtx_Chi2, secVtx_Dispersion);
     }
@@ -771,8 +787,6 @@ Bool_t AliAnalysisTaskJetExtractor::Run()
     // Now change trigger tracks eta/phi to dEta/dPhi relative to jet and save them
     if(fSaveTriggerTracks)
     {
-      std::vector<Float_t> triggerTracks_dEta(fTriggerTracks_Eta);
-      std::vector<Float_t> triggerTracks_dPhi(fTriggerTracks_Phi);
       for(UInt_t i=0; i<triggerTracks_dEta.size(); i++)
       {
         triggerTracks_dEta[i] = jet->Eta() - fTriggerTracks_Eta[i];
@@ -788,12 +802,12 @@ Bool_t AliAnalysisTaskJetExtractor::Run()
     {
       // Calculate jet shapes and set them in the tree (some are retrieved in the tree itself)
       Double_t leSub_noCorr = 0;
-      Double_t radialMoment = 0;
+      Double_t angularity = 0;
       Double_t momentumDispersion = 0;
       Double_t trackPtMean = 0;
       Double_t trackPtMedian = 0;
-      CalculateJetShapes(jet, leSub_noCorr, radialMoment, momentumDispersion, trackPtMean, trackPtMedian);
-      fJetTree->FillBuffer_JetShapes(jet, leSub_noCorr, radialMoment, momentumDispersion, trackPtMean, trackPtMedian);
+      CalculateJetShapes(jet, leSub_noCorr, angularity, momentumDispersion, trackPtMean, trackPtMedian);
+      fJetTree->FillBuffer_JetShapes(jet, leSub_noCorr, angularity, momentumDispersion, trackPtMean, trackPtMedian);
     }
     // Fill jet to tree (here adding the minimum properties)
     Bool_t accepted = fJetTree->AddJetToTree(jet, fSaveConstituents, fSaveConstituentsIP, fSaveCaloClusters, vtx, GetJetContainer(0)->GetRhoVal(), GetJetContainer(0)->GetRhoMassVal(), fCent, fMultiplicity, eventID, InputEvent()->GetMagneticField());
@@ -809,6 +823,7 @@ Bool_t AliAnalysisTaskJetExtractor::Run()
     while(AliVTrack *track = static_cast<AliVTrack*>(GetParticleContainer(iCont)->GetNextAcceptParticle()))
       FillTrackControlHistograms(track);
   }
+
   return kTRUE;
 }
 
@@ -853,17 +868,16 @@ Bool_t AliAnalysisTaskJetExtractor::IsTriggerTrackInEvent()
 }
 
 //________________________________________________________________________
-void AliAnalysisTaskJetExtractor::CalculateJetShapes(AliEmcalJet* jet, Double_t& leSub_noCorr, Double_t& radialMoment, Double_t& momentumDispersion, Double_t& trackPtMean, Double_t& trackPtMedian)
+void AliAnalysisTaskJetExtractor::CalculateJetShapes(AliEmcalJet* jet, Double_t& leSub_noCorr, Double_t& angularity, Double_t& momentumDispersion, Double_t& trackPtMean, Double_t& trackPtMedian)
 {
-  // #### Calculate mean, median of constituents, radial moment, momentum dispersion, leSub (no correction)
-  Double_t jetCorrectedPt = jet->Pt() - jet->Area() * GetJetContainer(0)->GetRhoVal();
+  // #### Calculate mean, median of constituents, radial moment (angularity), momentum dispersion, leSub (no correction)
   Double_t jetLeadingHadronPt = -999.;
   Double_t jetSubleadingHadronPt = -999.;
-  Double_t jetSum = 0;
-  Double_t jetSum2 = 0;
+  Double_t jetSummedPt = 0;
+  Double_t jetSummedPt2 = 0;
   trackPtMean = 0;
   trackPtMedian = 0;
-  radialMoment = 0;
+  angularity = 0;
   momentumDispersion = 0;
   std::vector<PWG::JETFW::AliEmcalParticleJetConstituent> tracks_sorted = jet->GetParticleConstituents();
   std::sort(tracks_sorted.rbegin(), tracks_sorted.rend());
@@ -885,16 +899,12 @@ void AliAnalysisTaskJetExtractor::CalculateJetShapes(AliEmcalJet* jet, Double_t&
     else if(particle->Pt() > jetSubleadingHadronPt)
       jetSubleadingHadronPt = particle->Pt();
 
-    Double_t deltaPhi = TMath::Min(TMath::Abs(jet->Phi()-particle->Phi()),TMath::TwoPi() - TMath::Abs(jet->Phi()-particle->Phi()));
-    Double_t deltaR = TMath::Sqrt( (jet->Eta() - particle->Eta())*(jet->Eta() - particle->Eta()) + deltaPhi*deltaPhi );
-
-    jetSum += particle->Pt();
-    jetSum2 += particle->Pt()*particle->Pt();
-    radialMoment += particle->Pt() * deltaR;
+    Double_t deltaR = GetDistance(particle->Eta(), jet->Eta(), particle->Phi(), jet->Phi());
+    jetSummedPt += particle->Pt();
+    jetSummedPt2 += particle->Pt()*particle->Pt();
+    angularity += particle->Pt() * deltaR;
   }
 
-  if(jetCorrectedPt)
-    radialMoment /= jetCorrectedPt;
   if(numTracks)
   {
     trackPtMean   /= numTracks;
@@ -906,21 +916,25 @@ void AliAnalysisTaskJetExtractor::CalculateJetShapes(AliEmcalJet* jet, Double_t&
   else
     leSub_noCorr = jetLeadingHadronPt;
 
-  if(jetSum)
-    momentumDispersion = TMath::Sqrt(jetSum2)/jetSum;
+  if(jetSummedPt)
+  {
+    momentumDispersion = TMath::Sqrt(jetSummedPt2)/jetSummedPt;
+    angularity /= jetSummedPt;
+  }
 }
 
 //________________________________________________________________________
 void AliAnalysisTaskJetExtractor::GetTrueJetPtFraction(AliEmcalJet* jet, Double_t& truePtFraction, Double_t& truePtFraction_mcparticles)
 {
-  // TODO: Add calculation of truePtFraction_mcparticles
   // #################################################################################
   // ##### FRACTION OF TRUE PT IN JET: Defined as "not from toy"
   Double_t pt_truth = 0.;
+  Double_t pt_truth_mcparticles = 0.;
   Double_t pt_all   = 0.;
   truePtFraction = 0;
+  truePtFraction_mcparticles = 0;
 
-  // Loop over all jet tracks+clusters
+  // ### Loop over all tracks constituents
   for(Int_t iConst = 0; iConst < jet->GetNumberOfParticleConstituents(); iConst++)
   {
     const AliVParticle* particle = jet->GetParticleConstituents()[iConst].GetParticle();
@@ -934,6 +948,7 @@ void AliAnalysisTaskJetExtractor::GetTrueJetPtFraction(AliEmcalJet* jet, Double_
     pt_all += particle->Pt();
   }
 
+  // ### Loop over all cluster constituents
   for(Int_t iConst = 0; iConst < jet->GetNumberOfClusterConstituents(); iConst++)
   {
     const AliVCluster* cluster = jet->GetClusterConstituents()[iConst].GetCluster();
@@ -967,8 +982,28 @@ void AliAnalysisTaskJetExtractor::GetTrueJetPtFraction(AliEmcalJet* jet, Double_
     pt_all += ClusterPt;
   }
 
+  // ### Loop over all primary (charged) MC particles and check if they have a corresponding track/cluster
+  //     Correspondence is checked geometrically, sum of matched particles pT is truth
+  Bool_t fulljets = (GetJetContainer(0)->GetJetType() == AliJetContainer::kFullJet);
+  Double_t jetRadius = GetJetContainer(0)->GetJetRadius();
+  if(fMCParticleArray)
+    for(Int_t iPart=0; iPart<fMCParticleArray->GetEntries();iPart++)
+    {
+      AliAODMCParticle* part = (AliAODMCParticle*)fMCParticleArray->At(iPart);
+      if(!part) continue;
+      if(!part->IsPhysicalPrimary()) continue;
+      if(!fulljets && !part->Charge()) continue;
+      if(part->Pt() < 1e-6) continue;
+
+      if(IsTrackInCone(part, jet->Eta(), jet->Phi(), jetRadius))
+        pt_truth_mcparticles += part->Pt();
+    }
+
   if(pt_all)
+  {
     truePtFraction = (pt_truth/pt_all);
+    truePtFraction_mcparticles = (pt_truth_mcparticles/pt_all);
+  }
 }
 
 //________________________________________________________________________
@@ -987,33 +1022,31 @@ void AliAnalysisTaskJetExtractor::GetMatchedJetObservables(AliEmcalJet* jet, Dou
 
     // "True" background for mass
     AliRhoParameter* rhoMass = static_cast<AliRhoParameter*>(InputEvent()->FindListObject(fMatchedJetsRhoMassName.Data()));
-    TClonesArray* truthArray = static_cast<TClonesArray*>(InputEvent()->FindListObject(Form("%s", fMatchedJetsArrayName.Data())));
+    TClonesArray* matchedJetArray = static_cast<TClonesArray*>(InputEvent()->FindListObject(Form("%s", fMatchedJetsArrayName.Data())));
 
     // Loop over all true jets to find the best match
     matchedJetPt = 0;
     matchedJetMass = 0;
-    if(truthArray)
-      for(Int_t i=0; i<truthArray->GetEntries(); i++)
+    if(matchedJetArray)
+    {
+      for(Int_t i=0; i<matchedJetArray->GetEntries(); i++)
       {
-        AliEmcalJet* truthJet = static_cast<AliEmcalJet*>(truthArray->At(i));
-        if(truthJet->Pt() < 0.15)
+        AliEmcalJet* matchedJet = static_cast<AliEmcalJet*>(matchedJetArray->At(i));
+        if(matchedJet->Pt() < 0.15)
           continue;
-
-        Double_t deltaEta = (truthJet->Eta()-jet->Eta());
-        Double_t deltaPhi = TMath::Min(TMath::Abs(truthJet->Phi()-jet->Phi()),TMath::TwoPi() - TMath::Abs(truthJet->Phi()-jet->Phi()));
-        Double_t deltaR = TMath::Sqrt(deltaEta*deltaEta + deltaPhi*deltaPhi);
-
+        Double_t deltaR = GetDistance(matchedJet->Eta(), jet->Eta(), matchedJet->Phi(), jet->Phi());
         // Search for the best match
         if(deltaR < matchedJetDistance)
         {
           matchedJetDistance = deltaR;
-          matchedJetPt   = truthJet->Pt() - truthJet->Area()* trueRho;
+          matchedJetPt   = matchedJet->Pt() - matchedJet->Area()* trueRho;
           if(rhoMass)
-            matchedJetMass = truthJet->GetShapeProperties()->GetSecondOrderSubtracted();
+            matchedJetMass = matchedJet->GetShapeProperties()->GetSecondOrderSubtracted();
           else
-            matchedJetMass = truthJet->M();
+            matchedJetMass = matchedJet->M();
         }
       }
+    }
   }
 }
 
@@ -1054,7 +1087,6 @@ void AliAnalysisTaskJetExtractor::GetJetType(AliEmcalJet* jet, Int_t& typeHM, In
   if(fSetEmcalJetFlavour)
     jet->AddFlavourTag(static_cast<Int_t>(TMath::Power(2, typeHM)));
 
-
   const AliEmcalPythiaInfo* partonsInfo = GetPythiaInfo();
   typeIC = 0;
   if (partonsInfo)
@@ -1065,13 +1097,8 @@ void AliAnalysisTaskJetExtractor::GetJetType(AliEmcalJet* jet, Int_t& typeHM, In
     Double_t parton2phi = partonsInfo->GetPartonPhi7();
     Double_t parton2eta = partonsInfo->GetPartonEta7();
 
-
-    Double_t delta1Eta = (parton1eta-jet->Eta());
-    Double_t delta1Phi = TMath::Min(TMath::Abs(parton1phi-jet->Phi()),TMath::TwoPi() - TMath::Abs(parton1phi-jet->Phi()));
-    Double_t delta1R   = TMath::Sqrt(delta1Eta*delta1Eta + delta1Phi*delta1Phi);
-    Double_t delta2Eta = (parton2eta-jet->Eta());
-    Double_t delta2Phi = TMath::Min(TMath::Abs(parton2phi-jet->Phi()),TMath::TwoPi() - TMath::Abs(parton2phi-jet->Phi()));
-    Double_t delta2R   = TMath::Sqrt(delta2Eta*delta2Eta + delta2Phi*delta2Phi);
+    Double_t delta1R   = GetDistance(parton1eta, jet->Eta(), parton1phi, jet->Phi());
+    Double_t delta2R   = GetDistance(parton2eta, jet->Eta(), parton2phi, jet->Phi());
 
     // Check if one of the partons if closer than matching criterion
     Bool_t matched = (delta1R < GetJetContainer(0)->GetJetRadius()/2.) || (delta2R < GetJetContainer(0)->GetJetRadius()/2.);
@@ -1387,7 +1414,7 @@ void AliAnalysisTaskJetExtractor::PrintConfig()
   std::cout << std::endl;
   if(fEventCut_TriggerTrackMinPt || fEventCut_TriggerTrackMaxPt)
    std::cout << Form("* Trigger track requirement: pT=%3.1f-%3.1f GeV/c, labels=%d-%d", fEventCut_TriggerTrackMinPt, fEventCut_TriggerTrackMaxPt, fEventCut_TriggerTrackMinLabel, fEventCut_TriggerTrackMaxLabel) << std::endl;
-  if(fEventCut_TriggerTrackOrigin)
+  if(fEventCut_TriggerTrackOrigin>0)
    std::cout << Form("* Trigger track event cut: %s", (fEventCut_TriggerTrackOrigin==1)? "From embedded event" : "Not from embedded event") << std::endl;
   if(fEventPercentage < 1)
    std::cout << Form("* Artificially lowered event efficiency: %f", fEventPercentage) << std::endl;
@@ -1454,7 +1481,7 @@ void AliAnalysisTaskJetExtractor::PrintConfig()
   std::cout << std::endl;
   std::cout << "### Further settings ###" << std::endl;
   if(fIsEmbeddedEvent)
-    std::cout << Form("* EMCal embedding will be used (at least on container has IsEmbedded() true)") << std::endl;
+    std::cout << Form("* EMCal embedding framework will be used (at least on container has IsEmbedded() true)") << std::endl;
   if(fMatchedJetsArrayName != "")
     std::cout << Form("* Jet matching active, array=%s, rho=%s, rho_mass=%s", fMatchedJetsArrayName.Data(), fMatchedJetsRhoName.Data(), fMatchedJetsRhoMassName.Data()) << std::endl;
   if(fMCParticleArray)
@@ -1479,18 +1506,10 @@ void AliAnalysisTaskJetExtractor::PrintConfig()
 //########################################################################
 
 //________________________________________________________________________
-inline Bool_t AliAnalysisTaskJetExtractor::IsTrackInCone(AliVParticle* track, Double_t eta, Double_t phi, Double_t radius)
+inline Bool_t AliAnalysisTaskJetExtractor::IsTrackInCone(const AliVParticle* track, Double_t eta, Double_t phi, Double_t radius)
 {
-  // This is to use a full cone in phi even at the edges of phi (2pi -> 0) (0 -> 2pi)
-  Double_t trackPhi = 0.0;
-  if (track->Phi() > (TMath::TwoPi() - (radius-phi)))
-    trackPhi = track->Phi() - TMath::TwoPi();
-  else if (track->Phi() < (phi+radius - TMath::TwoPi()))
-    trackPhi = track->Phi() + TMath::TwoPi();
-  else
-    trackPhi = track->Phi();
-
-  if ( TMath::Abs(trackPhi-phi)*TMath::Abs(trackPhi-phi) + TMath::Abs(track->Eta()-eta)*TMath::Abs(track->Eta()-eta) <= radius*radius)
+  Double_t deltaR = GetDistance(track->Eta(), eta, track->Phi(), phi);
+  if(deltaR <= radius)
     return kTRUE;
 
   return kFALSE;

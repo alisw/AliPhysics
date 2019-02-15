@@ -41,7 +41,7 @@ class AliAnalysisTaskEmcalJetCorrection : public AliAnalysisTaskEmcalJet {
   Bool_t                      Run();
   void                        GetPtAndMassFromModel(AliEmcalJet* jet, Float_t& pt_ML, Float_t& mass_ML);
   TString                     GetBackgroundModelArrayString(AliEmcalJet* jet);
-  void                        CalculateJetShapes(AliEmcalJet* jet, Double_t& leSub_noCorr, Double_t& radialMoment, Double_t& momentumDispersion, Double_t& constPtMean, Double_t& constPtMedian);
+  void                        CalculateJetShapes(AliEmcalJet* jet, Double_t& leSub_noCorr, Double_t& angularity, Double_t& momentumDispersion, Double_t& trackPtMean, Double_t& trackPtMedian);
 
   #if ROOT_VERSION_CODE >= ROOT_VERSION(6,0,0)
   TPython*                    fPythonCLI;
@@ -55,7 +55,12 @@ class AliAnalysisTaskEmcalJetCorrection : public AliAnalysisTaskEmcalJet {
   Bool_t                      fCorrectAlsoMass;                         ///< mass is also approximated by model or not
   TString                     fModelName;                               ///< Name of model (used for jet collection suffix)
 
-  // ################## HISTOGRAM HELPER FUNCTIONS
+  // ################## HELPER FUNCTIONS
+  Double_t                    GetDistance(Double_t eta1, Double_t eta2, Double_t phi1, Double_t phi2)
+  {
+    Double_t deltaPhi = TMath::Min(TMath::Abs(phi1-phi2),TMath::TwoPi() - TMath::Abs(phi1-phi2));
+    return TMath::Sqrt((eta1-eta2)*(eta1-eta2) + deltaPhi*deltaPhi);
+  }
   void                        FillHistogram(const char * key, Double_t x);
   void                        FillHistogram(const char * key, Double_t x, Double_t y);
   void                        FillHistogram(const char * key, Double_t x, Double_t y, Double_t add);
