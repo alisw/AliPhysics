@@ -1,5 +1,5 @@
 #ifdef __CINT__
- 
+
 #pragma link off all globals;
 #pragma link off all classes;
 #pragma link off all functions;
@@ -10,6 +10,7 @@
 #pragma link C++ class AliCanvas+;
 #pragma link C++ class AliHelperPID+;
 #pragma link C++ class AliLatexTable+;
+#pragma link C++ class AliMCSpectraWeights;
 #pragma link C++ class AliNamedArrayI+;
 #pragma link C++ class AliNamedString+;
 #pragma link C++ class AliPWGFunc+;
