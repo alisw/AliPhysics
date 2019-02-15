@@ -111,6 +111,7 @@ AliAnalysisTaskStrangenessLifetimes::AliAnalysisTaskStrangenessLifetimes(
       fHistEtaNeg{nullptr},
       fHistArmenteros{nullptr},
       fHistNsigmaPosHe{nullptr},
+      fHistNsigmaNegHe{nullptr},
       fHistdEdxVsPt{nullptr},
       fHistCtAnalysis{nullptr},
       fHistNhyp{nullptr},
@@ -221,7 +222,9 @@ void AliAnalysisTaskStrangenessLifetimes::UserCreateOutputObjects()
       "fHistArmenteros", ";#alpha;#it{q}_{T}", 256, -1., 1., 256, 0., 0.254);
 
   fHistNsigmaPosHe =
-      new TH1D("fHistNsigmaPosHe", ";n_{#sigma} TPC Pos He; Counts", 60, 0, 20);
+      new TH1D("fHistNsigmaPosHe", ";n_{#sigma} TPC Pos He; Counts", 20, 0, 10);
+    fHistNsigmaNegHe =
+      new TH1D("fHistNsigmaNegHe", ";n_{#sigma} TPC Pos He; Counts", 20, 0, 10);    
   fHistdEdxVsPt =
       new TH2D("fHistdedxpt", ";pt;dedx;counts", 100, 0, 10, 100, 0, 1500);
 
@@ -252,6 +255,7 @@ void AliAnalysisTaskStrangenessLifetimes::UserCreateOutputObjects()
   fListHist->Add(fHistNhyp);
   fListHist->Add(fHistdEdxVsPt);
   fListHist->Add(fHistNsigmaPosHe);
+  fListHist->Add(fHistNsigmaNegHe);
   fListHist->Add(fHistV0radius);
   fListHist->Add(fHistV0pt);
   fListHist->Add(fHistV0eta);
@@ -453,7 +457,6 @@ void AliAnalysisTaskStrangenessLifetimes::UserExec(Option_t *)
 
       if (currentPDG == pdgCodes[2] && (part->GetLastDaughter() - part->GetFirstDaughter()) == 1)
       {
-        fHistNsigmaPosHe->Fill(std::abs(fPIDResponse->NumberOfSigmasTPC(pTrack, AliPID::kHe3)));
         fHistdEdxVsPt->Fill(pTrack->GetTPCmomentum(), pTrack->GetTPCsignal());
       }
     }
@@ -658,9 +661,9 @@ void AliAnalysisTaskStrangenessLifetimes::UserExec(Option_t *)
         fHistLeastXedOverFindable->Fill(miniHyper.GetLeastXedRowsOverFindable());
         fHistMaxChi2PerCluster->Fill(miniHyper.GetMaxChi2perCluster());
         fHistNsigmaPosPion->Fill(miniHyper.GetPosProngTPCnsigmaPion());
-        fHistNsigmaPosProton->Fill(miniHyper.GetPosProngTPCnsigmaHe3());
+        fHistNsigmaPosHe->Fill(miniHyper.GetPosProngTPCnsigmaHe3());
         fHistNsigmaNegPion->Fill(miniHyper.GetNegProngTPCnsigmaPion());
-        fHistNsigmaNegProton->Fill(miniHyper.GetPosProngTPCnsigmaHe3());
+        fHistNsigmaNegHe->Fill(miniHyper.GetNegProngTPCnsigmaHe3());
         fHistEtaPos->Fill(pTrack->Eta());
         fHistEtaNeg->Fill(nTrack->Eta());
         fHistArmenteros->Fill(miniHyper.GetArmenterosAlpha(), miniHyper.GetArmenterosPt());
