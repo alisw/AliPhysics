@@ -45,9 +45,9 @@ class AliJetContainer;
  * jets from a second source (the tag jet container). Tag jets can be
  * i.e. jets at particle level for base jets at detector level. Two methods
  * can be applied:
- *   - Pure geometric matching, requiring that matched jets have a distance
+ *   * Pure geometric matching, requiring that matched jets have a distance
  *     smaller than a maximum distance
- *   - Fractional particle matching: In addition to geometric matching the
+ *   * Fractional particle matching: In addition to geometric matching the
  *     matched jets must also share a minimum amount of particles
  * As matching result either the closest jet or all jets satisfying the matching
  * criteria get matched. 
@@ -123,7 +123,7 @@ class AliAnalysisTaskEmcalJetTagger : public AliAnalysisTaskEmcalJet {
   /**
    * @brief Set the tagging type
    * 
-   * Refer to JetTaggingType for the definition
+   * Refer to AliAnalysisTaskEmcalJetTagger::JetTaggingType for the definition
    * of the tagging types
    * @param[in] t Tagging type
    */
@@ -132,7 +132,7 @@ class AliAnalysisTaskEmcalJetTagger : public AliAnalysisTaskEmcalJet {
   /**
    * @brief Set the tagging method
    * 
-   * Refer to JetTaggingMethod for the definition
+   * Refer to AliAnalysisTaskEmcalJetTagger::JetTaggingMethod for the definition
    * of the tagging method
    * @param[in] m Tagging method
    */
@@ -157,10 +157,10 @@ class AliAnalysisTaskEmcalJetTagger : public AliAnalysisTaskEmcalJet {
    * @brief Setting the acceptance type
    * 
    * Possible acceptance types:
-   *   0 = use acceptance cuts of container  
-   *   1 = allow 0.1 one more for c2 in eta 
-   *   2 = allow 0.1 more in eta and phi for c2
-   *   3 = allow 0.1 in eta and phi for both containers
+   *   * 0 = use acceptance cuts of container  
+   *   * 1 = allow 0.1 one more for c2 in eta 
+   *   * 2 = allow 0.1 more in eta and phi for c2
+   *   * 3 = allow 0.1 in eta and phi for both containers
    * @param[in] type Acceptance type
    */
   void SetTypeAcceptance(Int_t type)                            { fTypeAcc = type; /*see Init()*/}
@@ -185,7 +185,8 @@ class AliAnalysisTaskEmcalJetTagger : public AliAnalysisTaskEmcalJet {
   /**
    * @brief Run jet tagging
    * 
-   * Refer to MatchJetsGeo for more information about the jet tagging
+   * Refer to AliAnalysisTaskEmcalJetTagger::MatchJetsGeo for more information about 
+   * the jet tagging
    * @return true
    */
   Bool_t                              Run();
@@ -199,7 +200,7 @@ class AliAnalysisTaskEmcalJetTagger : public AliAnalysisTaskEmcalJet {
    * @brief Initialize jet tagger
    * 
    * Setting the acceptance cuts for base and tag jets. Refer to 
-   * MatchJetsGeo for the definition of the acceptance types
+   * AliAnalysisTaskEmcalJetTagger::MatchJetsGeo for the definition of the acceptance types
    */
   void                                Init();
 
@@ -222,11 +223,12 @@ class AliAnalysisTaskEmcalJetTagger : public AliAnalysisTaskEmcalJet {
    * @brief Match the full jets to the corresponding charged jets
    * 
    * Translation of AliAnalysisHelperJetTasks::GetClosestJets to AliEmcalJet objects
-   * type: 
-   *         0 = use acceptance cuts of container  
-   *         1 = allow 0.1 one more for c2 in eta 
-   *         2 = allow 0.1 more in eta and phi for c2
-   *         3 = allow 0.1 in eta and phi for both containers
+   * 
+   * Type can be: 
+   *   * 0 = use acceptance cuts of container  
+   *   * 1 = allow 0.1 one more for c2 in eta 
+   *   * 2 = allow 0.1 more in eta and phi for c2
+   *   * 3 = allow 0.1 in eta and phi for both containers
    * Jets are only tagged if the closest jet has a distance smaller than the maximum distance
    * 
    * @param[in] c1 Index of the first jet container (base jets)
