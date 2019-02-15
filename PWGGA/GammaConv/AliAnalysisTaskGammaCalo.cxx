@@ -6520,11 +6520,16 @@ void AliAnalysisTaskGammaCalo::CalculateBackground(){
             }
           }
           if(JetNearEMCal){
-            Double_t zbin = fBGHandler[fiCut]->GetZBinIndex(2);
-            Double_t mbin = fBGHandler[fiCut]->GetMultiplicityBinIndex(2);
+            Double_t mbinJets = 0;
+            if(((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->DoJetPtMixing()){
+               if(fVectorJetPt.at(MaxPtPlace) > 15) mbinJets = fBGHandler[fiCut]->GetMultiplicityBinIndex(3);
+               else mbinJets = fBGHandler[fiCut]->GetMultiplicityBinIndex(2);
+            }else{
+               mbinJets = fBGHandler[fiCut]->GetMultiplicityBinIndex(2);
+            }
             for(Int_t nEventsInBG=0;nEventsInBG <fBGHandler[fiCut]->GetNBGEvents();nEventsInBG++){
-              AliGammaConversionAODVector *previousEventV0s = fBGHandler[fiCut]->GetBGGoodV0s(zbin,mbin,nEventsInBG);
-              AliGammaConversionAODBGHandler::GammaConversionVertex* BGVertex = fBGHandler[fiCut]->GetBGEventVertex(zbin,mbin,nEventsInBG);
+              AliGammaConversionAODVector *previousEventV0s = fBGHandler[fiCut]->GetBGGoodV0s(zbin,mbinJets,nEventsInBG);
+              AliGammaConversionAODBGHandler::GammaConversionVertex* BGVertex = fBGHandler[fiCut]->GetBGEventVertex(zbin,mbinJets,nEventsInBG);
               if(previousEventV0s){
                 Double_t BGJetEta = BGVertex->fX;
                 Double_t BGJetPhi = BGVertex->fY;
@@ -6655,7 +6660,12 @@ void AliAnalysisTaskGammaCalo::UpdateEventByEventData(){
           fVectorJetEta = fConvJetReader->GetVectorJetEta();
           fVectorJetPhi = fConvJetReader->GetVectorJetPhi();
           fVectorJetPt = fConvJetReader->GetVectorJetPt();
-          fBGHandler[fiCut]->AddEvent(fClusterCandidates,fVectorJetEta.at(fMaxPtNearEMCalPlace),fVectorJetPhi.at(fMaxPtNearEMCalPlace),2,2,fVectorJetPt.at(fMaxPtNearEMCalPlace));
+          Int_t mBinPt = 0;
+          if(((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->DoJetPtMixing()){
+            if(fVectorJetPt.at(fMaxPtNearEMCalPlace) > 15) mBinPt = 3;
+            else mBinPt = 2;
+          }else mBinPt = 2;
+          fBGHandler[fiCut]->AddEvent(fClusterCandidates,fVectorJetEta.at(fMaxPtNearEMCalPlace),fVectorJetPhi.at(fMaxPtNearEMCalPlace), fInputEvent->GetPrimaryVertex()->GetZ(),mBinPt,fVectorJetPt.at(fMaxPtNearEMCalPlace));
         }
     } else if(((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->UseTrackMultiplicity()){
       fBGHandler[fiCut]->AddEvent(fClusterCandidates,fInputEvent->GetPrimaryVertex()->GetX(),fInputEvent->GetPrimaryVertex()->GetY(),fInputEvent->GetPrimaryVertex()->GetZ(),fV0Reader->GetNumberOfPrimaryTracks(),fEventPlaneAngle);

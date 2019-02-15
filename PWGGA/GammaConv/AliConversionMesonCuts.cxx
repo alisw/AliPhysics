@@ -139,6 +139,7 @@ AliConversionMesonCuts::AliConversionMesonCuts(const char *name,const char *titl
   fDoSectorJetMixing(kFALSE),
   fDoJetMixing(kFALSE),
   fDoJetRotateMixing(kFALSE),
+  fDoJetPtMixing(kFALSE),
   fDoSphericityMixing(kFALSE),
   fUseTrackMultiplicityForBG(kFALSE),
   fEnableMinOpeningAngleCut(kTRUE),
@@ -236,6 +237,7 @@ AliConversionMesonCuts::AliConversionMesonCuts(const AliConversionMesonCuts &ref
   fDoSectorJetMixing(ref.fDoSectorJetMixing),
   fDoJetMixing(ref.fDoJetMixing),
   fDoJetRotateMixing(ref.fDoJetRotateMixing),
+  fDoJetPtMixing(ref.fDoJetPtMixing),
   fDoSphericityMixing(ref.fDoSphericityMixing),
   fUseTrackMultiplicityForBG(ref.fUseTrackMultiplicityForBG),
   fEnableMinOpeningAngleCut(ref.fEnableMinOpeningAngleCut),
@@ -2609,6 +2611,21 @@ Bool_t AliConversionMesonCuts::SetBackgroundScheme(Int_t BackgroundScheme){
     fDoBGProbability            = kFALSE;
     fDoJetMixing                = kTRUE;
     fDoJetRotateMixing          = kTRUE;
+    break;
+  case 22: //m mixed by jet distance and jet pt
+    fUseRotationMethodInBG      = kFALSE;
+    fUseTrackMultiplicityForBG  = kFALSE;
+    fDoBGProbability            = kFALSE;
+    fDoJetMixing                = kTRUE;
+    fDoJetPtMixing              = kTRUE;
+    break;
+  case 23: //n mixed by jet distance, rotation and jet pt
+    fUseRotationMethodInBG      = kFALSE;
+    fUseTrackMultiplicityForBG  = kFALSE;
+    fDoBGProbability            = kFALSE;
+    fDoJetMixing                = kTRUE;
+    fDoJetRotateMixing          = kTRUE;
+    fDoJetPtMixing              = kTRUE;
     break;
   default:
     cout<<"Warning: BackgroundScheme not defined "<<BackgroundScheme<<endl;
