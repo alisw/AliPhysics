@@ -4980,15 +4980,15 @@ void AliAnalysisTaskEMCALPhotonIsolation::AnalyzeMC(){
     else
       mompdg = pdg;
 
+    if(fWho==2){
     if(mompdg != 22) continue;              // Discard particles whose mother is not a photon
 
-    if(fWho==2){
     fGenPromptPhotonSel->Fill(4.5);
     }
 
     // if(fPythiaHeader->ProcessType() != 201 && fPythiaHeader->ProcessType() != 202) continue; // Discard particles which do not come from prompt photon processes
     // OR
-    if(fmcHeader->GetEventType() != 14 && fmcHeader->GetEventType() != 29) continue; // Discard particles which do not come from prompt photon processes
+    if(fmcHeader->GetEventType() != 14 && fmcHeader->GetEventType() != 29 && fWho == 2) continue; // Discard particles which do not come from prompt photon processes
 
     if(fWho==2){
     fGenPromptPhotonSel->Fill(5.5);
