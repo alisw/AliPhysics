@@ -97,6 +97,7 @@ class AliAnalysisTaskStrangenessLifetimes : public AliAnalysisTaskSE {
   TH1D* fHistEtaNeg;                //! Pseudorapidity of the negative prong
   TH2D* fHistArmenteros;            //! Pseudorapidity of the negative prong
   TH1D* fHistNsigmaPosHe;           //!
+  TH1D* fHistNsigmaNegHe;           //!
   TH2D* fHistdEdxVsPt;              //!
   TH2D* fHistCtAnalysis;            //!  
   TH1D* fHistNhyp;                  //!
