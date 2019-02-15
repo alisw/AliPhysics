@@ -431,6 +431,7 @@ AliAnalysisTaskSE* AddTaskFemtoDream(
   if (DeltaEtaDeltaPhiCut) {
     config->SetDeltaEtaMax(0.01);
     config->SetDeltaPhiMax(0.01);
+    config->SetClosePairRejection(config->GetStandardPairRejection());
   }
   config->SetdPhidEtaPlots(dPhidEtaPlots);
   if (dPhidEtaPlots)
