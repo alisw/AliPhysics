@@ -87,19 +87,19 @@ class AliAnalysisTaskHFEIPCorrection : public AliAnalysisTaskSE {
   TH1D * EventSelectionSteps;
   TH3D * fDCARegionRun;
   TH3D * fDCAPhiZHadrons;
-  TH3D * fDCAPhiZHadronsC; // Recalculated vertex
-  TH3D * fDCAPhiZHadronsC2; // correction with phi,z,pt
-  TH3D * fDCAPhiZHadrons2nd;
-  TH3D * fpTPhiZHadrons;
+  TH3D * fDCAPhiZHadronsC;
   TH3D * fDCAPhipTHadrons;
   TH3D * fDCAPhipTHadronsC;
-  TH3D * fDCAPhipTHadronsC2;
+  TH3D * fDCAPhiZKaons;
+  TH3D * fDCAPhiZKaonsC;
+  TH3D * fDCAPhipTKaons;
+  TH3D * fDCAPhipTKaonsC;
+  TH3D * fpTPhiZHadrons;
   TH3D * fDCAWErrHadrons;
   TH3D * fDCAHadronsFineBins;
   TH2D * fDCAKaons; // Should have less contamination, but have higher mass
   TH3D * fDCAWErrKaons;
   TH3D * fDCAKaonsFineBins;
-  TH2D * fDCAvsCorrected;
   
   //AliHFEcuts * hfetrackCuts;           // Track cuts
   AliHFEextraCuts * fExtraCuts;

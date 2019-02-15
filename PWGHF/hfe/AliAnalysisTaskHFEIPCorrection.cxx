@@ -46,7 +46,7 @@ ClassImp(AliAnalysisTaskHFEIPCorrection)
 
 //________________________________________________________________________
 AliAnalysisTaskHFEIPCorrection::AliAnalysisTaskHFEIPCorrection()
-  : AliAnalysisTaskSE(), fAOD(0), fOutputContainer(0), EP2040(0), EP2040Corrected(0), EP2040V0A(0), EP2040V0C(0), TPCnSigma(0), EPCent(0), EPCentCorrected(0), EPCentV0A(0), EPCentV0C(0), DeltaPhi(0), fExtraCuts(0), fIPData(0), fpTIP2040IP(0), fpTIP2040OOP(0), fpTIP3050IP(0), fpTIP3050OOP(0), EventSelectionSteps(0), fPionV0pTRNoCuts(0), fPionV0pTRWithCuts(0), fAODV0Cuts(0), fPionV0pTTPC(0), fPionV0pTTPCWithCuts(0), fDCARegionRun(0), fDCAPhiZHadrons(0), fDCAPhiZHadronsC(0), fDCAPhiZHadronsC2(0), fDCAPhiZHadrons2nd(0), fpTPhiZHadrons(0), fDCAPhipTHadrons(0), fDCAPhipTHadronsC(0), fDCAPhipTHadronsC2(0), fDCAWErrHadrons(0), fDCAHadronsFineBins(0), fDCAKaons(0), fDCAWErrKaons(0), fDCAKaonsFineBins(0), fDCAvsCorrected(0)
+  : AliAnalysisTaskSE(), fAOD(0), fOutputContainer(0), EP2040(0), EP2040Corrected(0), EP2040V0A(0), EP2040V0C(0), TPCnSigma(0), EPCent(0), EPCentCorrected(0), EPCentV0A(0), EPCentV0C(0), DeltaPhi(0), fExtraCuts(0), fIPData(0), fpTIP2040IP(0), fpTIP2040OOP(0), fpTIP3050IP(0), fpTIP3050OOP(0), EventSelectionSteps(0), fPionV0pTRNoCuts(0), fPionV0pTRWithCuts(0), fAODV0Cuts(0), fPionV0pTTPC(0), fPionV0pTTPCWithCuts(0), fDCARegionRun(0), fDCAPhiZHadrons(0), fDCAPhiZHadronsC(0), fDCAPhipTHadrons(0), fDCAPhipTHadronsC(0), fDCAPhiZKaons(0), fDCAPhiZKaonsC(0), fDCAPhipTKaons(0), fDCAPhipTKaonsC(0), fpTPhiZHadrons(0), fDCAWErrHadrons(0), fDCAHadronsFineBins(0), fDCAKaons(0), fDCAWErrKaons(0), fDCAKaonsFineBins(0)
 {
   // default Constructor
   // Define input and output slots here
@@ -75,7 +75,7 @@ AliAnalysisTaskHFEIPCorrection::AliAnalysisTaskHFEIPCorrection()
 
 //________________________________________________________________________
 AliAnalysisTaskHFEIPCorrection::AliAnalysisTaskHFEIPCorrection(const char *name)
-  : AliAnalysisTaskSE(name), fAOD(0), fOutputContainer(0), EP2040(0), EP2040Corrected(0), EP2040V0A(0), EP2040V0C(0), TPCnSigma(0), EPCent(0), EPCentCorrected(0), EPCentV0A(0), EPCentV0C(0), DeltaPhi(0), fExtraCuts(0), fIPData(0), fpTIP2040IP(0), fpTIP2040OOP(0), fpTIP3050IP(0), fpTIP3050OOP(0), EventSelectionSteps(0), fPionV0pTRNoCuts(0), fPionV0pTRWithCuts(0), fAODV0Cuts(0), fPionV0pTTPC(0), fPionV0pTTPCWithCuts(0), fDCARegionRun(0), fDCAPhiZHadrons(0), fDCAPhiZHadronsC(0), fDCAPhiZHadronsC2(0), fDCAPhiZHadrons2nd(0), fpTPhiZHadrons(0), fDCAPhipTHadrons(0), fDCAPhipTHadronsC(0), fDCAPhipTHadronsC2(0), fDCAWErrHadrons(0), fDCAHadronsFineBins(0), fDCAKaons(0), fDCAWErrKaons(0), fDCAKaonsFineBins(0), fDCAvsCorrected(0)
+  : AliAnalysisTaskSE(name), fAOD(0), fOutputContainer(0), EP2040(0), EP2040Corrected(0), EP2040V0A(0), EP2040V0C(0), TPCnSigma(0), EPCent(0), EPCentCorrected(0), EPCentV0A(0), EPCentV0C(0), DeltaPhi(0), fExtraCuts(0), fIPData(0), fpTIP2040IP(0), fpTIP2040OOP(0), fpTIP3050IP(0), fpTIP3050OOP(0), EventSelectionSteps(0), fPionV0pTRNoCuts(0), fPionV0pTRWithCuts(0), fAODV0Cuts(0), fPionV0pTTPC(0), fPionV0pTTPCWithCuts(0), fDCARegionRun(0), fDCAPhiZHadrons(0), fDCAPhiZHadronsC(0), fDCAPhipTHadrons(0), fDCAPhipTHadronsC(0), fDCAPhiZKaons(0), fDCAPhiZKaonsC(0), fDCAPhipTKaons(0), fDCAPhipTKaonsC(0), fpTPhiZHadrons(0), fDCAWErrHadrons(0), fDCAHadronsFineBins(0), fDCAKaons(0), fDCAWErrKaons(0), fDCAKaonsFineBins(0)
 {
   // HFE cuts
     /*hfetrackCuts = new AliHFEcuts("V0trackCuts", "Track Cuts for tagged track Analysis");
@@ -148,20 +148,20 @@ void AliAnalysisTaskHFEIPCorrection::UserCreateOutputObjects()
     EventSelectionSteps = new TH1D(Form("EventSelectionSteps"),Form("EventSelectionSteps"), 10, -0.5, 9.5);
 
     fDCARegionRun = new TH3D(Form("fDCARegionRun"),Form("fDCARegionRun"), 400, -0.05, 0.05, 5, 0.5, 5.5, 183, 0.5, 183.5);
+    fpTPhiZHadrons = new TH3D(Form("fpTPhiZHadrons"),Form("fpTPhiZHadrons"), 40, 0., 2.*3.14159, 40, 0., 10., 12, -12., 12.);
     fDCAPhiZHadrons = new TH3D(Form("fDCAPhiZHadrons"),Form("fDCAPhiZHadrons"), 40, 0., 2.*3.14159, 400, -0.05, 0.05, 12, -12., 12.);
     fDCAPhiZHadronsC = new TH3D(Form("fDCAPhiZHadronsC"),Form("fDCAPhiZHadronsC"), 40, 0., 2.*3.14159, 400, -0.05, 0.05, 12, -12., 12.);
-    fDCAPhiZHadronsC2 = new TH3D(Form("fDCAPhiZHadronsC2"),Form("fDCAPhiZHadronsC2"), 40, 0., 2.*3.14159, 400, -0.05, 0.05, 12, -12., 12.);
-    fDCAPhiZHadrons2nd = new TH3D(Form("fDCAPhiZHadrons2nd"),Form("fDCAPhiZHadrons2nd"), 40, 0., 2.*3.14159, 400, -0.05, 0.05, 12, -12., 12.);
-    fpTPhiZHadrons = new TH3D(Form("fpTPhiZHadrons"),Form("fpTPhiZHadrons"), 40, 0., 2.*3.14159, 40, 0., 10., 12, -12., 12.);
     fDCAPhipTHadrons = new TH3D(Form("fDCAPhipTHadrons"),Form("fDCAPhipTHadrons"), 400, -0.05, 0.05, 40, 0., 2.*3.14159, 40, 0., 10.);
     fDCAPhipTHadronsC = new TH3D(Form("fDCAPhipTHadronsC"),Form("fDCAPhipTHadronsC"), 400, -0.05, 0.05, 40, 0., 2.*3.14159, 40, 0., 10.);
-    fDCAPhipTHadronsC2 = new TH3D(Form("fDCAPhipTHadronsC2"),Form("fDCAPhipTHadronsC2"), 400, -0.05, 0.05, 40, 0., 2.*3.14159, 40, 0., 10.);
+    fDCAPhiZKaons = new TH3D(Form("fDCAPhiZKaons"),Form("fDCAPhiZKaons"), 40, 0., 2.*3.14159, 400, -0.05, 0.05, 12, -12., 12.);
+    fDCAPhiZKaonsC = new TH3D(Form("fDCAPhiZKaonsC"),Form("fDCAPhiZKaonsC"), 40, 0., 2.*3.14159, 400, -0.05, 0.05, 12, -12., 12.);
+    fDCAPhipTKaons = new TH3D(Form("fDCAPhipTKaons"),Form("fDCAPhipTKaons"), 400, -0.05, 0.05, 40, 0., 2.*3.14159, 40, 0., 10.);
+    fDCAPhipTKaonsC = new TH3D(Form("fDCAPhipTKaonsC"),Form("fDCAPhipTKaonsC"), 400, -0.05, 0.05, 40, 0., 2.*3.14159, 40, 0., 10.);
     fDCAWErrHadrons = new TH3D(Form("fDCAWErrHadrons"),Form("fDCAWErrHadrons"), 80, 0., 10., 400, -0.2, 0.2, 100, 0.0, 0.01);
     fDCAHadronsFineBins = new TH3D(Form("fDCAHadronsFineBins"),Form("fDCAHadronsFineBins"), 80, 0., 10., 400, -0.2, 0.2, 10, 0., 100.);
     fDCAKaons = new TH2D(Form("fDCAKaons"),Form("fDCAKaons"), 18, ptbinningX, 400, -0.2, 0.2);
     fDCAWErrKaons = new TH3D(Form("fDCAWErrKaons"),Form("fDCAWErrKaons"), 80, 0., 10., 400, -0.2, 0.2, 100, 0.0, 0.01);
     fDCAKaonsFineBins = new TH3D(Form("fDCAKaonsFineBins"),Form("fDCAKaonsFineBins"), 80, 0., 10., 400, -0.2, 0.2, 10, 0., 100.);
-    fDCAvsCorrected = new TH2D(Form("fDCAvsCorrected"),Form("fDCAvsCorrected"), 200, -0.03, 0.03, 200, -0.03, 0.03);
     
     fExtraCuts = new AliHFEextraCuts("hfeExtraCuts","HFE Extra Cuts");
     fAODV0Cuts = new AliAODv0KineCuts();
@@ -192,18 +192,18 @@ void AliAnalysisTaskHFEIPCorrection::UserCreateOutputObjects()
     fOutputContainer->Add(fDCARegionRun);
     fOutputContainer->Add(fDCAPhiZHadrons);
     fOutputContainer->Add(fDCAPhiZHadronsC);
-    fOutputContainer->Add(fDCAPhiZHadronsC2);
-    fOutputContainer->Add(fDCAPhiZHadrons2nd);
-    fOutputContainer->Add(fpTPhiZHadrons);
     fOutputContainer->Add(fDCAPhipTHadrons);
     fOutputContainer->Add(fDCAPhipTHadronsC);
-    fOutputContainer->Add(fDCAPhipTHadronsC2);
+    fOutputContainer->Add(fDCAPhiZKaons);
+    fOutputContainer->Add(fDCAPhiZKaonsC);
+    fOutputContainer->Add(fDCAPhipTKaons);
+    fOutputContainer->Add(fDCAPhipTKaonsC);
+    fOutputContainer->Add(fpTPhiZHadrons);
     fOutputContainer->Add(fDCAWErrHadrons);
     fOutputContainer->Add(fDCAHadronsFineBins);
     fOutputContainer->Add(fDCAKaons);
     fOutputContainer->Add(fDCAWErrKaons);
     fOutputContainer->Add(fDCAKaonsFineBins);
-    fOutputContainer->Add(fDCAvsCorrected);
 
     PostData(1, fOutputContainer);
     
@@ -623,29 +623,39 @@ if(!MultSelection){
         if((PassesPionPID(track, pid) || PassesKaonPID(track, pid)) && track->Pt() > 0.5) // To avoid calling the IP calculation for all tracks
         {
           fExtraCuts->GetHFEImpactParameters((AliVTrack *)track,dcaxyD,dcaErr);
-          GetTrackImpactParameter(aodEvent, track, correctedVertex, dcaxyC);
+          //GetTrackImpactParameter(aodEvent, track, correctedVertex, dcaxyC);
           IP = dcaxyD*track->Charge()*TMath::Sign(1.,aodEvent->GetMagneticField());
           GetCorrectedImpactParameter(track, vtx[2], IPCorrected);
           if(PassesPionPID(track, pid))
           {
             if(centrality>=0.0 && centrality<=80.0 && track->Pt()>1.)
             {
-              if(track->Pt()>3. && IsInMisalignedRegion(track, vtx[2])>0) fDCAvsCorrected->Fill(dcaxyD, dcaxyC);
               fDCAPhiZHadrons->Fill(track->Phi(), dcaxyD, vtx[2]+4.5*TMath::Tan(TMath::Pi()/2.-2.*TMath::ATan(TMath::Exp(-track->Eta()))));
-              fDCAPhiZHadronsC->Fill(track->Phi(), dcaxyC, vtx[2]+4.5*TMath::Tan(TMath::Pi()/2.-2.*TMath::ATan(TMath::Exp(-track->Eta()))));
-              fDCAPhiZHadronsC2->Fill(track->Phi(), IPCorrected, vtx[2]+4.5*TMath::Tan(TMath::Pi()/2.-2.*TMath::ATan(TMath::Exp(-track->Eta()))));
-              fDCAPhiZHadrons2nd->Fill(track->Phi(), dcaxyD, vtx[2]+7.*TMath::Tan(TMath::Pi()/2.-2.*TMath::ATan(TMath::Exp(-track->Eta()))));
+              fDCAPhiZHadronsC->Fill(track->Phi(), IPCorrected, vtx[2]+4.5*TMath::Tan(TMath::Pi()/2.-2.*TMath::ATan(TMath::Exp(-track->Eta()))));
               if(IsInMisalignedRegion(track, vtx[2])>0)fDCARegionRun->Fill(dcaxyD, IsInMisalignedRegion(track, vtx[2]) ,RunBin);
+              else fDCARegionRun->Fill(dcaxyD, 5 ,RunBin);
             }
-            if(centrality>=0.0 && centrality<=80.0 && track->Pt()>0.5) fpTPhiZHadrons->Fill(track->Phi(), track->Pt(), vtx[2]+7.*TMath::Tan(TMath::Pi()/2.-2.*TMath::ATan(TMath::Exp(-track->Eta()))));
-            if(centrality>=0.0 && centrality<=80.0 && track->Pt()>0.5) fDCAPhipTHadrons->Fill(dcaxyD, track->Phi(), track->Pt());
-            if(centrality>=0.0 && centrality<=80.0 && track->Pt()>0.5) fDCAPhipTHadronsC->Fill(dcaxyC, track->Phi(), track->Pt());
-            if(centrality>=0.0 && centrality<=80.0 && track->Pt()>0.5) fDCAPhipTHadronsC2->Fill(IPCorrected, track->Phi(), track->Pt());
+            if(centrality>=0.0 && centrality<=80.0 && track->Pt()>0.5)
+            {
+              fpTPhiZHadrons->Fill(track->Phi(), track->Pt(), vtx[2]+7.*TMath::Tan(TMath::Pi()/2.-2.*TMath::ATan(TMath::Exp(-track->Eta()))));
+              fDCAPhipTHadrons->Fill(dcaxyD, track->Phi(), track->Pt());
+              fDCAPhipTHadronsC->Fill(IPCorrected, track->Phi(), track->Pt());
+            }
             if(centrality>=20.0 && centrality<=50.0) fDCAWErrHadrons->Fill(track->Pt(), IP, dcaxyD/dcaErr);
             fDCAHadronsFineBins->Fill(track->Pt(), IP, centrality);
           }
           if(PassesKaonPID(track, pid))
           {
+            if(centrality>=0.0 && centrality<=80.0 && track->Pt()>1.)
+            {
+              fDCAPhiZKaons->Fill(track->Phi(), dcaxyD, vtx[2]+4.5*TMath::Tan(TMath::Pi()/2.-2.*TMath::ATan(TMath::Exp(-track->Eta()))));
+              fDCAPhiZKaonsC->Fill(track->Phi(), IPCorrected, vtx[2]+4.5*TMath::Tan(TMath::Pi()/2.-2.*TMath::ATan(TMath::Exp(-track->Eta()))));
+            }
+            if(centrality>=0.0 && centrality<=80.0 && track->Pt()>0.5)
+            {
+              fDCAPhipTKaons->Fill(dcaxyD, track->Phi(), track->Pt());
+              fDCAPhipTKaonsC->Fill(IPCorrected, track->Phi(), track->Pt());
+            }
             if(centrality>=20.0 && centrality<=50.0) fDCAKaons->Fill(track->Pt(), IP);
             if(centrality>=20.0 && centrality<=50.0) fDCAWErrKaons->Fill(track->Pt(), IP, dcaxyD/dcaErr);
             fDCAKaonsFineBins->Fill(track->Pt(), IP, centrality);
