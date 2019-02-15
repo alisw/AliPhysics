@@ -219,11 +219,11 @@ TString AliAnalysisTaskEmcalJetCorrection::GetBackgroundModelArrayString(AliEmca
 
   // Calculate jet shapes that could be demanded
   Double_t leSub_noCorr = 0;
-  Double_t radialMoment = 0;
+  Double_t angularity = 0;
   Double_t momentumDispersion = 0;
   Double_t constPtMean = 0;
   Double_t constPtMedian = 0;
-  CalculateJetShapes(jet, leSub_noCorr, radialMoment, momentumDispersion, constPtMean, constPtMedian);
+  CalculateJetShapes(jet, leSub_noCorr, angularity, momentumDispersion, constPtMean, constPtMedian);
 
   TString resultStr = "";
   TObjArray* data_tokens = fBackgroundModelInputParameters.Tokenize(",");
@@ -252,6 +252,8 @@ TString AliAnalysisTaskEmcalJetCorrection::GetBackgroundModelArrayString(AliEmca
       resultStr += Form("%E", jet->GetShapeProperties()->GetFirstOrderSubtractedSigma2());
     else if(token == "Jet_Shape_Sigma2_DerivCorr_2")
       resultStr += Form("%E", jet->GetShapeProperties()->GetSecondOrderSubtractedSigma2());
+    else if(token == "Jet_Shape_Angularity_NoCorr")
+      resultStr += Form("%E", angularity);
     else if(token == "Jet_Shape_Angularity_DerivCorr_1")
       resultStr += Form("%E", jet->GetShapeProperties()->GetFirstOrderSubtractedAngularity());
     else if(token == "Jet_Shape_Angularity_DerivCorr_2")
@@ -262,17 +264,6 @@ TString AliAnalysisTaskEmcalJetCorrection::GetBackgroundModelArrayString(AliEmca
       resultStr += Form("%E", jet->GetShapeProperties()->GetSecondOrderSubtractedCircularity());
     else if(token == "Jet_Shape_NumConst_DerivCorr")
       resultStr += Form("%E", jet->GetShapeProperties()->GetSecondOrderSubtractedConstituent());
-    else if(token == "Jet_Shape_RadialMoment")
-      resultStr += Form("%E", radialMoment);
-    else if(token == "Jet_Shape_RadialMoment_Shrinked")
-    {
-      if (radialMoment < 0)
-        resultStr += Form("%E", 0.0);
-      else if (radialMoment > 1)
-        resultStr += Form("%E", 1.0);
-      else
-        resultStr += Form("%E", radialMoment);
-    }
     else if(token == "Jet_Shape_MomentumDispersion")
       resultStr += Form("%E", momentumDispersion);
     else if(token == "Jet_Shape_ConstPtMean")
@@ -285,7 +276,7 @@ TString AliAnalysisTaskEmcalJetCorrection::GetBackgroundModelArrayString(AliEmca
       resultStr += Form("%E", fJetsCont->GetRhoMassVal());
     else if(token == "Jet_Area")
       resultStr += Form("%E", jet->Area());
-    else if(token.BeginsWith("Jet_Shape_ConstPt"))
+    else if(token.BeginsWith("Jet_ConstPt"))
     {
       TString num = token(17,(token.Length()-17));
       resultStr += Form("%E", constPts[num.Atoi()]);
@@ -303,29 +294,28 @@ TString AliAnalysisTaskEmcalJetCorrection::GetBackgroundModelArrayString(AliEmca
 }
 
 //________________________________________________________________________
-void AliAnalysisTaskEmcalJetCorrection::CalculateJetShapes(AliEmcalJet* jet, Double_t& leSub_noCorr, Double_t& radialMoment, Double_t& momentumDispersion, Double_t& constPtMean, Double_t& constPtMedian)
+void AliAnalysisTaskEmcalJetCorrection::CalculateJetShapes(AliEmcalJet* jet, Double_t& leSub_noCorr, Double_t& angularity, Double_t& momentumDispersion, Double_t& trackPtMean, Double_t& trackPtMedian)
 {
-  // #### Calculate mean, median of constituents, radial moment, momentum dispersion, leSub (no correction)
-  Double_t jetCorrectedPt = jet->Pt() - jet->Area() * fJetsCont->GetRhoVal();
+  // #### Calculate mean, median of constituents, radial moment (angularity), momentum dispersion, leSub (no correction)
   Double_t jetLeadingHadronPt = -999.;
   Double_t jetSubleadingHadronPt = -999.;
-  Double_t jetSum = 0;
-  Double_t jetSum2 = 0;
-  constPtMean = 0;
-  constPtMedian = 0;
-  radialMoment = 0;
+  Double_t jetSummedPt = 0;
+  Double_t jetSummedPt2 = 0;
+  trackPtMean = 0;
+  trackPtMedian = 0;
+  angularity = 0;
   momentumDispersion = 0;
-  std::vector<Int_t> index_sorted_list = jet->GetPtSortedTrackConstituentIndexes(fJetsCont->GetParticleContainer()->GetArray());
-  Int_t     numConst = index_sorted_list.size();
-  Double_t* constPts = new Double_t[TMath::Max(Int_t(index_sorted_list.size()), 10)];
-  for(Int_t i = 0; i < TMath::Max(Int_t(index_sorted_list.size()), 10); i++)
-    constPts[i] = 0;
+  std::vector<PWG::JETFW::AliEmcalParticleJetConstituent> tracks_sorted = jet->GetParticleConstituents();
+  std::sort(tracks_sorted.rbegin(), tracks_sorted.rend());
+  Int_t     numTracks = tracks_sorted.size();
+  if(!numTracks) return;
+  Double_t* constPts = new Double_t[numTracks];
 
   // Loop over all constituents and do jet shape calculations
-  for (Int_t i=0;i<numConst;i++)
+  for (Int_t i=0;i<numTracks;i++)
   {
-    AliVParticle* particle = static_cast<AliVParticle*>(jet->TrackAt(index_sorted_list.at(i), fJetsCont->GetParticleContainer()->GetArray()));
-    constPtMean += particle->Pt();
+    const AliVParticle* particle = tracks_sorted[i].GetParticle();
+    trackPtMean += particle->Pt();
     constPts[i] = particle->Pt();
     if(particle->Pt() > jetLeadingHadronPt)
     {
@@ -335,30 +325,30 @@ void AliAnalysisTaskEmcalJetCorrection::CalculateJetShapes(AliEmcalJet* jet, Dou
     else if(particle->Pt() > jetSubleadingHadronPt)
       jetSubleadingHadronPt = particle->Pt();
 
-    Double_t deltaPhi = TMath::Min(TMath::Abs(jet->Phi()-particle->Phi()),TMath::TwoPi() - TMath::Abs(jet->Phi()-particle->Phi()));
-    Double_t deltaR = TMath::Sqrt( (jet->Eta() - particle->Eta())*(jet->Eta() - particle->Eta()) + deltaPhi*deltaPhi );
-
-    jetSum += particle->Pt();
-    jetSum2 += particle->Pt()*particle->Pt();
-    radialMoment += particle->Pt() * deltaR;
+    Double_t deltaR = GetDistance(particle->Eta(), jet->Eta(), particle->Phi(), jet->Phi());
+    jetSummedPt += particle->Pt();
+    jetSummedPt2 += particle->Pt()*particle->Pt();
+    angularity += particle->Pt() * deltaR;
   }
 
-  if(jetCorrectedPt)
-    radialMoment /= jetCorrectedPt;
-  if(numConst)
+  if(numTracks)
   {
-    constPtMean   /= numConst;
-    constPtMedian = TMath::Median(numConst, constPts);
+    trackPtMean   /= numTracks;
+    trackPtMedian = TMath::Median(numTracks, constPts);
   }
 
-  if(numConst > 1)
+  if(numTracks > 1)
     leSub_noCorr = jetLeadingHadronPt - jetSubleadingHadronPt;
   else
     leSub_noCorr = jetLeadingHadronPt;
 
-  if(jetSum)
-    momentumDispersion = TMath::Sqrt(jetSum2)/jetSum;
+  if(jetSummedPt)
+  {
+    momentumDispersion = TMath::Sqrt(jetSummedPt2)/jetSummedPt;
+    angularity /= jetSummedPt;
+  }
 }
+
 
 //########################################################################
 // HELPERS
