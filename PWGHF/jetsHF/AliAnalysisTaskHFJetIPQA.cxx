@@ -83,7 +83,6 @@ fGeant3FlukaAntiProton(nullptr),
 fGeant3FlukaLambda(nullptr),
 fGeant3FlukaAntiLambda(nullptr),
 fGeant3FlukaKMinus(nullptr),
-fSetup(0),
 fOutputHist(0),
 cCuts(0),
 fMCArray(nullptr),
@@ -157,7 +156,6 @@ fGeant3FlukaAntiProton(nullptr),
 fGeant3FlukaLambda(nullptr),
 fGeant3FlukaAntiLambda(nullptr),
 fGeant3FlukaKMinus(nullptr),
-fSetup(0),
 fOutputHist(0),
 cCuts(0),
 fMCArray(nullptr),
@@ -1233,8 +1231,6 @@ void AliAnalysisTaskHFJetIPQA::UserCreateOutputObjects(){
 
   fOutputHist=new AliEmcalList();
   fOutputHist->SetOwner(kTRUE);
-  fSetup=new AliEmcalList();
-  fSetup->SetOwner(kTRUE);
 
   fIsMixSignalReady_n1=kFALSE;
   fIsMixSignalReady_n2=kFALSE;
@@ -1652,15 +1648,15 @@ void AliAnalysisTaskHFJetIPQA::UserCreateOutputObjects(){
     }
 
     PrintSettings();
-    PostData(1, fOutputHist);
-    PostData(2, fSetup);
+    PostData(1, fOutput);
+    PostData(2, fOutputHist);
 }
 
 void AliAnalysisTaskHFJetIPQA::PrintSettings(){
     //Documentation Canvas
     Printf("Adding Cut Canvas to output file");
     cCuts=new TCanvas("Cuts","Cuts",800,800);
-    fSetup->Add(cCuts);
+    fOutputHist->Add(cCuts);
 
     cCuts->cd();
     //TPaveText* pJetCuts=new TPaveText(0.05,0.64,0.95, 0.95);
