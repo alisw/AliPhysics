@@ -90,7 +90,10 @@ void AliADv1::ParseYear()
   const TString t = GetTitle();
   const Int_t nmt = re.Match(t);
 
-  if (nmt!=2) return;
+  if (nmt!=2) {
+    Printf("AliADv1::ParseYear(): year=YYYY not found in title");
+    return;
+  }
 
   const Int_t year = re[1].Atoi();
   if (year<2015) {
@@ -99,6 +102,7 @@ void AliADv1::ParseYear()
     return;
   }
 
+  Printf("AliADv1::ParseYear(): year=%d", year);
   if (year<2017) EnablePmtShieldingADA(0);
   else           EnablePmtShieldingADA(1);
 }
