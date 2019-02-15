@@ -4,7 +4,8 @@ AliAnalysisTaskXi1530* AddTaskXi1530(const char *taskname = "Xi1530"
                                      , bool hightmult=kFALSE
                                      , bool isaa=kFALSE
                                      , bool ismc=kFALSE
-                                     , bool setmixing=kTRUE)
+                                     , bool setmixing=kTRUE
+                                     , const char* suffix = "")
 {
     AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
     if (!mgr) {
@@ -14,7 +15,7 @@ AliAnalysisTaskXi1530* AddTaskXi1530(const char *taskname = "Xi1530"
         return 0x0;
     }
     
-    AliAnalysisTaskXi1530 *taskXi1530 = new AliAnalysisTaskXi1530(taskname, Form("%s_%s",taskname,option));
+    AliAnalysisTaskXi1530 *taskXi1530 = new AliAnalysisTaskXi1530(Form("%s%s", taskname,suffix), Form("%s_%s",taskname,option));
     //taskXi1530 -> SetFilterBit(768);
     taskXi1530 -> SetIsAA(isaa);
     taskXi1530 -> SetMixing(setmixing);
