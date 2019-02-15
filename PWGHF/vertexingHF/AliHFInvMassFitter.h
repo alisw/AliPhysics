@@ -151,8 +151,9 @@ class AliHFInvMassFitter : public TNamed {
   void DrawHere(TVirtualPad* c, Double_t nsigma=3,Int_t writeFitInfo=1);
   void Significance(Double_t nOfSigma, Double_t &significance,Double_t &errsignificance) const;
   void Significance(Double_t min, Double_t max, Double_t &significance,Double_t &errsignificance) const;
-  TH1F* GetResidualsAndPulls(TH1 *hPulls=0x0,TH1 *hResidualTrend=0x0,TH1 *hPullsTrend=0x0,Double_t minrange=0,Double_t maxrange=-1);
-  void PrintFunctions();
+  TH1F* GetResidualsAndPulls(TH1 *hPulls=0x0,TH1 *hResidualTrend=0x0,TH1 *hPullsTrend=0x0,Double_t minrange=0,Double_t maxrange=-1, Bool_t onlyBkg=kFALSE);
+  TH1F* GetOverBackgroundResidualsAndPulls(TH1 *hPulls=0x0,TH1 *hResidualTrend=0x0,TH1 *hPullsTrend=0x0, Double_t minrange=0,Double_t maxrange=-1);
+ void PrintFunctions();
 
  private:
   AliHFInvMassFitter(const AliHFInvMassFitter &source);
