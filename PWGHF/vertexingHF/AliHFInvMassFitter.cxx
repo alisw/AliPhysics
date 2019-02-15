@@ -1151,7 +1151,7 @@ Double_t AliHFInvMassFitter::GetRawYieldBinCounting(Double_t& errRyBC, Double_t 
 
 
 // _______________________________________________________________________
-TH1F* AliHFInvMassFitter::GetResidualsAndPulls(TH1 *hPulls,TH1 *hResidualTrend,TH1 *hPullsTrend, Double_t minrange,Double_t maxrange, Bool_t onlyBkg){
+TH1F* AliHFInvMassFitter::GetResidualsAndPulls(TH1 *hPulls,TH1 *hResidualTrend,TH1 *hPullsTrend, Double_t minrange,Double_t maxrange, Int_t option){
 
   /// fill and return the residual and pull histos
 
@@ -1189,8 +1189,11 @@ TH1F* AliHFInvMassFitter::GetResidualsAndPulls(TH1 *hPulls,TH1 *hResidualTrend,T
   TArrayD *arval=new TArrayD(binma-binmi+1);
   for(Int_t jst=1;jst<=fHistoInvMass->GetNbinsX();jst++){      
     Double_t integFit=0;
-    if(onlyBkg) integFit=fBkgFuncRefit->Integral(fHistoInvMass->GetBinLowEdge(jst),fHistoInvMass->GetBinLowEdge(jst)+fHistoInvMass->GetBinWidth(jst));
-    else integFit=fTotFunc->Integral(fHistoInvMass->GetBinLowEdge(jst),fHistoInvMass->GetBinLowEdge(jst)+fHistoInvMass->GetBinWidth(jst));
+    if(option==0) integFit=fTotFunc->Integral(fHistoInvMass->GetBinLowEdge(jst),fHistoInvMass->GetBinLowEdge(jst)+fHistoInvMass->GetBinWidth(jst));
+    else{
+      integFit=fBkgFuncRefit->Integral(fHistoInvMass->GetBinLowEdge(jst),fHistoInvMass->GetBinLowEdge(jst)+fHistoInvMass->GetBinWidth(jst));
+      if(option==2) integFit+=fRflFunc->Integral(fHistoInvMass->GetBinLowEdge(jst),fHistoInvMass->GetBinLowEdge(jst)+fHistoInvMass->GetBinWidth(jst));
+    }
     res=fHistoInvMass->GetBinContent(jst)-integFit/fHistoInvMass->GetBinWidth(jst);
     if(jst>=binmi&&jst<=binma){
       arval->AddAt(res,jst-binmi);
@@ -1235,7 +1238,12 @@ TH1F* AliHFInvMassFitter::GetResidualsAndPulls(TH1 *hPulls,TH1 *hResidualTrend,T
 // _______________________________________________________________________
 TH1F* AliHFInvMassFitter::GetOverBackgroundResidualsAndPulls(TH1 *hPulls,TH1 *hResidualTrend,TH1 *hPullsTrend, Double_t minrange,Double_t maxrange){
   ///
-  return GetResidualsAndPulls(hPulls,hResidualTrend,hPullsTrend,minrange,maxrange,kTRUE);
+  return GetResidualsAndPulls(hPulls,hResidualTrend,hPullsTrend,minrange,maxrange,1);
+}
+// _______________________________________________________________________
+TH1F* AliHFInvMassFitter::GetOverBackgroundPlusReflResidualsAndPulls(TH1 *hPulls,TH1 *hResidualTrend,TH1 *hPullsTrend, Double_t minrange,Double_t maxrange){
+  ///
+  return GetResidualsAndPulls(hPulls,hResidualTrend,hPullsTrend,minrange,maxrange,2);
 }
 
 // _______________________________________________________________________
