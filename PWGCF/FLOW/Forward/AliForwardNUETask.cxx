@@ -179,23 +179,23 @@ void AliForwardNUETask::UserExec(Option_t *)
   TH2D& forwarddNdedp = aodfmult->GetHistogram();
   Double_t zvertex = fAOD->GetPrimaryVertex()->GetZ();
 
-  bool useEvent = kTRUE;
-  if (iTracks < 10) useEvent = kFALSE;
-
   // extra cut on the FMD
   //if (!fUtil.ExtraEventCutFMD(forwarddNdedp, cent, true)) useEvent = false;
-  if (useEvent) {
 
     // loop for the SPD
     AliAODTracklets* aodTracklets = fAOD->GetTracklets();
+    std::cout << "aodTracklets->GetNumberOfTracklets()" << aodTracklets->GetNumberOfTracklets() << std::endl;
     for (Int_t i = 0; i < aodTracklets->GetNumberOfTracklets(); i++) {
+      std::cout << aodTracklets->GetEta(i)<<std::endl;
       nua_spd->Fill(aodTracklets->GetEta(i),zvertex,1);
     }
 
+              //Double_t x[5] = {noSamples, zvertex, refEtaA, cent, fSettings.kW4Four};
+              //x[4] = fSettings.kW2Two;
     // loop for the TPC
     for(Int_t i(0); i < iTracks; i++) {
       AliAODTrack* track = dynamic_cast<AliAODTrack *>(fAOD->GetTrack(i));
-      if (track->Pt() >= 0.2 && track->Pt() <= 5){
+      //if (track->Pt() >= 0.2 && track->Pt() <= 5){
         if (fabs(track->Eta()) > 1.1) continue;
         Double_t x[4] = {track->Eta(),track->Pt(),zvertex,1.0};
 
@@ -214,7 +214,7 @@ void AliForwardNUETask::UserExec(Option_t *)
           x[3] = 4.0;
           nua_tpc->Fill(x,1);
         }
-      }
+      //}
     }
 
     // loop for the FMD
@@ -233,7 +233,6 @@ void AliForwardNUETask::UserExec(Option_t *)
           nua_fmd->Fill(eta,zvertex,weight);
         } // End of phi loop
       } // End of eta bin
-    } // End of useEvent
 
     Int_t nTracksMC   = fAODMC->GetNumberOfTracks();
 
@@ -245,11 +244,11 @@ void AliForwardNUETask::UserExec(Option_t *)
       if ( (p->Eta() < -1.7 && p->Eta() > -3.4) || (p->Eta() > 1.7 && p->Eta() < 5.0) ){
         nua_fmd_prim->Fill(p->Eta(),zvertex);
       }
-      if (p->Pt()>=0.2 && p->Pt()<=5) {
+      //if (p->Pt()>=0.2 && p->Pt()<=5) {
         if (fabs(p->Eta()) < 1.1) {
           nua_tpc_prim->Fill(p->Eta(),p->Pt(),zvertex);
         }
-      }
+      //}
       if (fabs(p->Eta()) < 2.5) {
         nua_spd_prim->Fill(p->Eta(),zvertex);
       }

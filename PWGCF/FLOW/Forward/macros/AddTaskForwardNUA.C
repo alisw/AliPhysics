@@ -19,9 +19,8 @@
  *
  * @ingroup pwglf_forward_flow
  */
-#include "AliForwardTaskValidation.h"
 
-AliAnalysisTaskSE* AddTaskForwardNUA(UShort_t nua_mode, bool makeFakeHoles, bool mc,  bool esd,bool prim_cen,bool prim_fwd , Int_t tracktype, TString centrality,const char* suffix="")
+AliAnalysisTaskSE* AddTaskForwardNUA(UShort_t nua_mode, bool makeFakeHoles, bool mc,  bool esd,bool prim_cen,bool prim_fwd , Int_t tracktype, TString centrality,TString suffix="")
 {
   std::cout << "______________________________________________________________________________" << std::endl;
 
@@ -95,10 +94,9 @@ AliAnalysisTaskSE* AddTaskForwardNUA(UShort_t nua_mode, bool makeFakeHoles, bool
   task->fSettings.nua_mode = nua_mode; // "V0M";// RefMult08; // "V0M" // "SPDTracklets";
 
   std::cout << "Container name: " << resName << std::endl;
-  TString combName;
+  TString combName = resName += '_' + suffix;
 
   //resName = "hej";
-  combinedName.Form("%s_%s", resName, suffix);
   AliAnalysisDataContainer* valid = (AliAnalysisDataContainer*)mgr->GetContainers()->FindObject("event_selection_xchange");
   task->ConnectInput(1,valid);
 
