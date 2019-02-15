@@ -1,20 +1,23 @@
 #include "TROOT.h"
 #include "TSystem.h"
-AliAnalysisTaskSE* AddTaskOtonOmega(bool isMC = false,     
-                                     bool isESD = false,
-                                     TString CentEst = "kInt7",
-                                     bool CascadeTreeFlag = false,
-                                     bool OmegaTreeFlag = false,
-                                     Int_t CutFlag = 0,
-                                     bool GetConfigFromAlien = true,
-                                     TString cFileName = "ConfigOtonOmega.C")
+AliAnalysisTaskSE* AddTaskOtonOmega(	bool isMC = false,     
+                                     	bool isESD = false,
+                                     	TString CentEst = "kInt7",
+                                     	bool CascadeTreeFlag = false,
+                                     	bool OmegaTreeFlag = false,
+                                     	Int_t CutFlag = 0,
+                                     	bool GetConfigFromAlien = true,
+                                    	TString cFileName = "ConfigOtonOmega.C", 
+					bool DCAPlots = false,
+					bool DeltaEtaDeltaPhiCut = true,
+					bool RunNumberQA = false
+)
 {
 
 
 //Start with fixed definitions from AddTaskFemtoDream:
 bool notpp = true;  //1
 bool fineBinning = true;  //2
-bool DCAPlots = true;  //3
 bool CPAPlots = false;  //4
 bool MomReso = false;  //5
 bool etaPhiPlotsAtTPCRadii = false;  //6
@@ -29,10 +32,8 @@ bool phiSpin = true;  //14
 bool stravinskyPhiSpin = true;  //15
 bool ContributionSplitting = false;  //16
 bool ContributionSplittingDaug = false;  //17
-bool RunNumberQA = false;  //18
 int FilterBit = 128;  //19
 bool InvMassPairs = false;  //20
-bool DeltaEtaDeltaPhiCut = false;  //21
 int SphericityRange = 0;  //22
 
 
@@ -229,10 +230,10 @@ int SphericityRange = 0;  //22
 
   //finalize cuts set:
   if(RunNumberQA) {
-   CascadeCuts->SetRunNumberQA(265309, 267167);
-   AntiCascadeCuts->SetRunNumberQA(265309, 267167);
-   CascadeOmegaCuts->SetRunNumberQA(265309, 267167);
-   AntiCascadeOmegaCuts->SetRunNumberQA(265309, 267167);
+   CascadeCuts->SetRunNumberQA(252234, 294926);
+   AntiCascadeCuts->SetRunNumberQA(252234, 294926);
+   CascadeOmegaCuts->SetRunNumberQA(252234, 294926);
+   AntiCascadeOmegaCuts->SetRunNumberQA(252234, 294926);
   }
   CascadeCuts->SetBachCuts(XiBachCuts);
   CascadeCuts->Setv0Negcuts(XiNegCuts);
@@ -448,9 +449,33 @@ int SphericityRange = 0;  //22
           << "You are trying to request the Eta Phi Plots without MC Info; fix it wont work! \n";
     }
   }
+  //New delta eta deta phi:
   if (DeltaEtaDeltaPhiCut) {
-    config->SetDeltaEtaMax(0.01);
-    config->SetDeltaPhiMax(0.01);
+   std::vector<bool> CPR;
+   CPR.push_back(true);  // p p
+   CPR.push_back(true);  // p barp
+   CPR.push_back(true);  // p Lambda
+   CPR.push_back(true);  // p barLambda
+   CPR.push_back(true);  // p Xi
+   CPR.push_back(true);  // p barXi
+   CPR.push_back(true);  // barp barp
+   CPR.push_back(true);  // barp Lambda
+   CPR.push_back(true);  // barp barLambda
+   CPR.push_back(true);  // barp Xi
+   CPR.push_back(true);  // barp barXi
+   CPR.push_back(true);  // Lambda Lambda
+   CPR.push_back(true);  // Lambda barLambda
+   CPR.push_back(true);  // Lambda Xi
+   CPR.push_back(true);  // Lambda barXi
+   CPR.push_back(true);  // barLambda barLambda
+   CPR.push_back(true);  // barLambda Xi
+   CPR.push_back(true);  // barLambda barXi
+   CPR.push_back(true);  // Xi Xi
+   CPR.push_back(true);  // Xi barXi
+   CPR.push_back(true);  // barXi barXi
+   config->SetClosePairRejection(CPR);
+   config->SetDeltaEtaMax(0.01);
+   config->SetDeltaPhiMax(0.01);
   }
   config->SetdPhidEtaPlots(dPhidEtaPlots);
   config->SetPDGCodes(PDGParticles);
