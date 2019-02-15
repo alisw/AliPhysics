@@ -74,6 +74,7 @@ class AliFemtoDreamCollConfig : public TNamed {
   void SetCentBins(std::vector<float> CentBins);
   void SetmTdEtadPhiBins(std::vector<float> mTBins);
   void SetExtendedQAPairs(std::vector<int> whichPairs);
+  void SetClosePairRejection(std::vector<bool> whichPairs);
   void SetMixingDepth(int MixingDepth) {
     fMixingDepth = MixingDepth;
   }
@@ -186,8 +187,10 @@ class AliFemtoDreamCollConfig : public TNamed {
   std::vector<float> GetCentBins();
   std::vector<float> GetmTBins();
   std::vector<unsigned int> GetWhichPairs();
+  std::vector<bool> GetClosePairRej();
   std::vector<float> GetStandardmTBins();
   std::vector<int> GetStandardPairs();
+  std::vector<bool> GetStandardPairRejection();
   int GetMixingDepth() {
     return fMixingDepth;
   }
@@ -235,7 +238,8 @@ class AliFemtoDreamCollConfig : public TNamed {
   TNtuple *fMaxK_rel;           //
   TNtuple *fCentBins;           //
   TNtuple *fmTBins;             //
-  TNtuple *fWhichPairs;         //
+  TNtuple *fWhichQAPairs;       //
+  TNtuple *fClosePairRej;       //
   int fMixingDepth;             //
   int fSpinningDepth;			      //
   bool fkTCentrality;           //
