@@ -30,7 +30,7 @@ AliAnalysisTaskSEHFTenderQnVectors* AddTaskHFTenderQnVectors(TString taskname = 
     outputfile += ":PWGHF_D2H_QnVectorTender";
 
     //define input container
-    AliAnalysisDataContainer *cinput = mgr->CreateContainer("cinputQnVectorTender",TChain::Class(),AliAnalysisManager::kInputContainer);
+    AliAnalysisDataContainer *cinput = mgr->CreateContainer(Form("cinputQnVectorTender%s",outputSuffix.Data()),TChain::Class(),AliAnalysisManager::kInputContainer);
     //define output containers
     AliAnalysisDataContainer *coutput = mgr->CreateContainer(Form("coutputQnVectorTender%s",outputSuffix.Data()), TList::Class(),AliAnalysisManager::kOutputContainer,outputfile.Data());
 
