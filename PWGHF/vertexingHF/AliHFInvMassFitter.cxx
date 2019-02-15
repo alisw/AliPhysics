@@ -1151,7 +1151,7 @@ Double_t AliHFInvMassFitter::GetRawYieldBinCounting(Double_t& errRyBC, Double_t 
 
 
 // _______________________________________________________________________
-TH1F* AliHFInvMassFitter::GetResidualsAndPulls(TH1 *hPulls,TH1 *hResidualTrend,TH1 *hPullsTrend, Double_t minrange,Double_t maxrange){
+TH1F* AliHFInvMassFitter::GetResidualsAndPulls(TH1 *hPulls,TH1 *hResidualTrend,TH1 *hPullsTrend, Double_t minrange,Double_t maxrange, Bool_t onlyBkg){
 
   /// fill and return the residual and pull histos
 
@@ -1188,8 +1188,10 @@ TH1F* AliHFInvMassFitter::GetResidualsAndPulls(TH1 *hPulls,TH1 *hResidualTrend,T
   Double_t res=-1.e-6,min=1.e+12,max=-1.e+12;
   TArrayD *arval=new TArrayD(binma-binmi+1);
   for(Int_t jst=1;jst<=fHistoInvMass->GetNbinsX();jst++){      
-    
-    res=fHistoInvMass->GetBinContent(jst)-fTotFunc->Integral(fHistoInvMass->GetBinLowEdge(jst),fHistoInvMass->GetBinLowEdge(jst)+fHistoInvMass->GetBinWidth(jst))/fHistoInvMass->GetBinWidth(jst);
+    Double_t integFit=0;
+    if(onlyBkg) integFit=fBkgFuncRefit->Integral(fHistoInvMass->GetBinLowEdge(jst),fHistoInvMass->GetBinLowEdge(jst)+fHistoInvMass->GetBinWidth(jst));
+    else integFit=fTotFunc->Integral(fHistoInvMass->GetBinLowEdge(jst),fHistoInvMass->GetBinLowEdge(jst)+fHistoInvMass->GetBinWidth(jst));
+    res=fHistoInvMass->GetBinContent(jst)-integFit/fHistoInvMass->GetBinWidth(jst);
     if(jst>=binmi&&jst<=binma){
       arval->AddAt(res,jst-binmi);
       if(res<min)min=res;
@@ -1230,6 +1232,12 @@ TH1F* AliHFInvMassFitter::GetResidualsAndPulls(TH1 *hPulls,TH1 *hResidualTrend,T
   delete arval;
   return hout;
 }
+// _______________________________________________________________________
+TH1F* AliHFInvMassFitter::GetOverBackgroundResidualsAndPulls(TH1 *hPulls,TH1 *hResidualTrend,TH1 *hPullsTrend, Double_t minrange,Double_t maxrange){
+  ///
+  return GetResidualsAndPulls(hPulls,hResidualTrend,hPullsTrend,minrange,maxrange,kTRUE);
+}
+
 // _______________________________________________________________________
 void AliHFInvMassFitter::PrintFunctions(){
   /// dump the function parameters
