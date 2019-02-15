@@ -240,6 +240,7 @@ const char* AliDielectronVarManager::fgkParticleNames[AliDielectronVarManager::k
   {"DeltaPhiRandomRP",       "#Delta #Phi_{RanRP}",                                ""},
 
   {"PairPlaneMagInPro",      "cos(#Phi)"                                           ""},
+  {"PairPlaneMagInProTPC",      "cos(#Phi)^{TPC}"                                           ""},
 
   {"Cos2PhiCS",              "cos(2#phi_{CS})",                                    ""},
   {"CosTilPhiCS",            "cos(#phi_{CS})",                                     ""},
@@ -501,7 +502,8 @@ const char* AliDielectronVarManager::fgkParticleNames[AliDielectronVarManager::k
   {"QnFMDCrpH2",               "#Psi^{FMDC}",                               ""},
   {"QnFMDCxH2",                "Q_{x}^{FMDC}",                              ""},
   {"QnFMDCyH2",                "Q_{y}^{FMDC}",                              ""},
-
+  {"QnZDCArpH2", "", ""},
+  {"QnZDCCrpH2", "", ""},
   {"QnTPC_V0ADiffH2",          "cos(2(#Psi^{TPC}-#Psi^{V0A}))",             ""},
   {"QnTPC_V0CDiffH2",          "cos(2(#Psi^{TPC}-#Psi^{V0C}))",             ""},
   {"QnTPC_SPDDiffH2",          "cos(2(#Psi^{TPC}-#Psi^{SPD}))",             ""},
