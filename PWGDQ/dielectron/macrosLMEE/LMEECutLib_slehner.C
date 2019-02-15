@@ -16,7 +16,7 @@ public:
     
   }
   static AliDielectronPID* GetPIDCutsAna();
-  AliDielectronCutGroup* GetTrackCuts(int trsel=0, int pidsel=0, Int_t MVACut=0, Bool_t useAODFilterCuts, TString TMVAweight="TMVAClassification_BDTG15_400.weights.xml");
+  AliDielectronCutGroup* GetTrackCuts(int trsel=0, int pidsel=0, Int_t MVACut=0, Bool_t useAODFilterCuts, TString TMVAweight="NONE");
   AliDielectronEventCuts* GetEventCuts(Double_t centMin, Double_t centMax);
   void SetEtaCorrection( Int_t det, Bool_t isMC, Int_t corrXdim, Int_t corrYdim, Int_t corrZdim, int sel);
   static AliDielectronPID* pidFilterCuts;
