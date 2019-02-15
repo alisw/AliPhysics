@@ -206,24 +206,22 @@ void AliAnalysisTaskEmcalJetCorrection::GetPtAndMassFromModel(AliEmcalJet* jet, 
 TString AliAnalysisTaskEmcalJetCorrection::GetBackgroundModelArrayString(AliEmcalJet* jet)
 {
   // ####### Calculate inference input parameters
-  std::vector<Int_t> index_sorted_list = jet->GetPtSortedTrackConstituentIndexes(fJetsCont->GetParticleContainer()->GetArray());
-  Int_t     numConst = index_sorted_list.size();
-  Double_t* constPts = new Double_t[TMath::Max(Int_t(index_sorted_list.size()), 100)];
-  for(Int_t i = 0; i < TMath::Max(Int_t(index_sorted_list.size()), 100); i++)
-    constPts[i] = 0;
-  for(Int_t i = 0; i < numConst; i++)
+  std::vector<PWG::JETFW::AliEmcalParticleJetConstituent> tracks_sorted = jet->GetParticleConstituents();
+  std::sort(tracks_sorted.rbegin(), tracks_sorted.rend());
+  Double_t* trackPts = new Double_t[TMath::Max(Int_t(tracks_sorted.size()), 100)];
+  for(Int_t i = 0; i < TMath::Max(Int_t(tracks_sorted.size()), 100); i++)
   {
-    AliVParticle* particle = static_cast<AliVParticle*>(jet->TrackAt(index_sorted_list.at(i), fJetsCont->GetParticleContainer()->GetArray()));
-    constPts[i] = particle->Pt();
+    const AliVParticle* particle = tracks_sorted[i].GetParticle();
+    trackPts[i] = particle->Pt();
   }
 
   // Calculate jet shapes that could be demanded
   Double_t leSub_noCorr = 0;
   Double_t angularity = 0;
   Double_t momentumDispersion = 0;
-  Double_t constPtMean = 0;
-  Double_t constPtMedian = 0;
-  CalculateJetShapes(jet, leSub_noCorr, angularity, momentumDispersion, constPtMean, constPtMedian);
+  Double_t trackPtMean = 0;
+  Double_t trackPtMedian = 0;
+  CalculateJetShapes(jet, leSub_noCorr, angularity, momentumDispersion, trackPtMean, trackPtMedian);
 
   TString resultStr = "";
   TObjArray* data_tokens = fBackgroundModelInputParameters.Tokenize(",");
@@ -233,7 +231,7 @@ TString AliAnalysisTaskEmcalJetCorrection::GetBackgroundModelArrayString(AliEmca
     if(token == "Jet_Pt")
       resultStr += Form("%E", jet->Pt() - fJetsCont->GetRhoVal()*jet->Area());
     else if(token == "Jet_NumConstituents")
-      resultStr += Form("%E", (Double_t)numConst);
+      resultStr += Form("%E", (Double_t)tracks_sorted.size());
     else if(token == "Jet_Shape_Mass_NoCorr")
       resultStr += Form("%E", jet->M());
     else if(token == "Jet_Shape_Mass_DerivCorr_1")
@@ -266,20 +264,20 @@ TString AliAnalysisTaskEmcalJetCorrection::GetBackgroundModelArrayString(AliEmca
       resultStr += Form("%E", jet->GetShapeProperties()->GetSecondOrderSubtractedConstituent());
     else if(token == "Jet_Shape_MomentumDispersion")
       resultStr += Form("%E", momentumDispersion);
-    else if(token == "Jet_Shape_ConstPtMean")
-      resultStr += Form("%E", constPtMean);
-    else if(token == "Jet_Shape_ConstPtMedian")
-      resultStr += Form("%E", constPtMedian);
+    else if(token == "Jet_Shape_TrackPtMean")
+      resultStr += Form("%E", trackPtMean);
+    else if(token == "Jet_Shape_TrackPtMedian")
+      resultStr += Form("%E", trackPtMedian);
     else if(token == "Event_BackgroundDensity")
       resultStr += Form("%E", fJetsCont->GetRhoVal());
     else if(token == "Event_BackgroundDensityMass")
       resultStr += Form("%E", fJetsCont->GetRhoMassVal());
     else if(token == "Jet_Area")
       resultStr += Form("%E", jet->Area());
-    else if(token.BeginsWith("Jet_ConstPt"))
+    else if(token.BeginsWith("Jet_TrackPt"))
     {
       TString num = token(17,(token.Length()-17));
-      resultStr += Form("%E", constPts[num.Atoi()]);
+      resultStr += Form("%E", trackPts[num.Atoi()]);
     }
 
     // Add comma after numbers
@@ -289,7 +287,7 @@ TString AliAnalysisTaskEmcalJetCorrection::GetBackgroundModelArrayString(AliEmca
 
   data_tokens->SetOwner();
   delete data_tokens;
-  delete[] constPts;
+  delete[] trackPts;
   return resultStr;
 }
 
@@ -309,14 +307,14 @@ void AliAnalysisTaskEmcalJetCorrection::CalculateJetShapes(AliEmcalJet* jet, Dou
   std::sort(tracks_sorted.rbegin(), tracks_sorted.rend());
   Int_t     numTracks = tracks_sorted.size();
   if(!numTracks) return;
-  Double_t* constPts = new Double_t[numTracks];
+  Double_t* trackPts = new Double_t[numTracks];
 
   // Loop over all constituents and do jet shape calculations
   for (Int_t i=0;i<numTracks;i++)
   {
     const AliVParticle* particle = tracks_sorted[i].GetParticle();
     trackPtMean += particle->Pt();
-    constPts[i] = particle->Pt();
+    trackPts[i] = particle->Pt();
     if(particle->Pt() > jetLeadingHadronPt)
     {
       jetSubleadingHadronPt = jetLeadingHadronPt;
@@ -334,7 +332,7 @@ void AliAnalysisTaskEmcalJetCorrection::CalculateJetShapes(AliEmcalJet* jet, Dou
   if(numTracks)
   {
     trackPtMean   /= numTracks;
-    trackPtMedian = TMath::Median(numTracks, constPts);
+    trackPtMedian = TMath::Median(numTracks, trackPts);
   }
 
   if(numTracks > 1)
