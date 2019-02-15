@@ -57,6 +57,7 @@
 
 #include <TH2F.h>
 #include <TCanvas.h>
+#include <TPRegexp.h>
 
 // --- AliRoot header files ---
 
@@ -81,6 +82,27 @@ const Double_t AliADv1::kZbegCoil     = 1959.4 ;  // Begining of compensator coi
 const char * AliADv1::s_where[] = {
   "kCSideFiberNearWLSTop", "kCSideFiberNearWLSBot", "kCSideFiberPmtTop", "kCSideFiberPmtBot", 
   "kASideFiberShort", "kASideFiberLong" }; 
+
+//__________________________________________________________________
+void AliADv1::ParseYear()
+{
+  TPMERegexp re("year=(\\d\\d\\d\\d)", "g");
+  const TString t = GetTitle();
+  const Int_t nmt = re.Match(t);
+
+  if (nmt!=2) return;
+
+  const Int_t year = re[1].Atoi();
+  if (year<2015) {
+    Printf("AliADv1::ParseYear(): AD did not exist before 2015");
+    // exit(1);
+    return;
+  }
+
+  if (year<2017) EnablePmtShieldingADA(0);
+  else           EnablePmtShieldingADA(1);
+}
+
 //__________________________________________________________________
 AliADv1::AliADv1()
   : AliAD()
@@ -116,6 +138,11 @@ AliADv1::AliADv1(const char *name, const char *title)
   , fADAPhotoCathodeEfficiency(0.18)
   , fKeepHistory(kFALSE)
 {
+  //
+  // Parse title
+  //
+  ParseYear();
+
   // AliModule* pipe = gAlice->GetModule("PIPE");
   // if( (!pipe) ) {
   //   Error("Constructor","AD needs PIPE!!!\n");
