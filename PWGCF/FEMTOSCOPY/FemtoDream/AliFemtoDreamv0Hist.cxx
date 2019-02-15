@@ -7,7 +7,7 @@
 
 #include "AliFemtoDreamv0Hist.h"
 #include "TMath.h"
-#include "AliLog.h"
+#include <iostream>
 ClassImp(AliFemtoDreamv0Hist)
 
 AliFemtoDreamv0Hist::AliFemtoDreamv0Hist()
@@ -240,8 +240,7 @@ AliFemtoDreamv0Hist::AliFemtoDreamv0Hist(int MassNBins, float MassMin,
   if (perRunnumber) {
     int nBins = iRunMax - iRunMin;
     if (nBins > 2000) {
-      AliWarning(
-          "Grouping Run Numbers in the Run Number vs. Invariant Mass Plots");
+        std::cout << "Grouping Run Numbers in the Run Number vs. Invariant Mass Plots\n";
       nBins/=10;
     }
     TString InvMassRunNumbName = "InvMassPerRunnumber";

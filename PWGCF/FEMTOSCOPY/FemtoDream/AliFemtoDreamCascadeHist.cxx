@@ -6,7 +6,7 @@
  */
 
 #include "AliFemtoDreamCascadeHist.h"
-#include "AliLog.h"
+#include <iostream>
 ClassImp(AliFemtoDreamCascadeHist)
 
 AliFemtoDreamCascadeHist::AliFemtoDreamCascadeHist()
@@ -235,8 +235,8 @@ AliFemtoDreamCascadeHist::AliFemtoDreamCascadeHist(float mass,
   if (perRunnumber) {
     int nBins = iRunMax - iRunMin;
     if (nBins > 2000) {
-      AliWarning(
-          "Grouping Run Numbers in the Run Number vs. Invariant Mass Plots");
+      std::cout <<
+          "Grouping Run Numbers in the Run Number vs. Invariant Mass Plots\n";
       nBins /= 10;
     }
     TString InvMassRunNumbName = "InvMassPerRunnumber";
