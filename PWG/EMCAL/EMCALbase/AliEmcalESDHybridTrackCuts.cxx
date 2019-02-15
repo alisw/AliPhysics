@@ -37,9 +37,7 @@
 #include "AliEmcalTrackSelResultHybrid.h"
 #include "AliLog.h"
 
-/// \cond CLASSIMP
 ClassImp(PWG::EMCAL::AliEmcalESDHybridTrackCuts)
-/// \endcond
 
 using namespace PWG::EMCAL;
 
