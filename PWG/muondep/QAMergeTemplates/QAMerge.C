@@ -446,7 +446,7 @@ void QAMerge(const char* inputfilelist, const char* mergedFile)
   
   if (sinput.Contains(".xml"))
   {
-    TGridCollection *coll = reinterpret_cast<TGridCollection*>(gROOT->ProcessLine(Form("TAlienCollection::Open(\"%s\");", inputfilelist)));
+    TGridCollection *coll = gGrid->OpenCollection(inputfilelist);
     if (!coll)
     {
       ::Error("MergeOutput", "Input XML collection empty.");

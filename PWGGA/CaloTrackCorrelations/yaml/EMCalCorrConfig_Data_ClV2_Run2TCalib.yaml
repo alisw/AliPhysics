@@ -3,7 +3,7 @@ configurationName: "EMCal Data Correction Cluster V2, Run2 T corrections"
 CellEnergy:
     enabled: true
     createHistos: true
-    enableRun2TempCalib: true
+    enableNewTempCalib: true
 CellBadChannel:
     enabled: true
     createHistos: true

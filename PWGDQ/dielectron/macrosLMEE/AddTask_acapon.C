@@ -89,7 +89,7 @@ AliAnalysisTask *AddTask_acapon(TString outputFileName = "AnalysisResult.root",
 
     // Add event filter (the same for all cut sets)
     Int_t triggerNames = (AliVEvent::kINT7);
-    task->SetEventFilter(cutlib->GetEventCuts(LMEECutLib::kAllSpecies));
+    task->SetEventFilter(cutlib->GetEventCuts());
     task->SelectCollisionCandidates(triggerNames);
     task->SetTriggerMask(triggerNames);
     //task->SetRejectPileup(); //Rejection applied via train dependancy

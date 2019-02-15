@@ -80,6 +80,9 @@
 #pragma link C++ class AliAnalysisTaskHypertriton3Dev+;
 #pragma link C++ class AliAnalysisTaskHypertriton3AOD+;
 
+/// * VertexerHyp3Body
+#pragma link C++ class AliVertexerHyperTriton3Body+;
+
 /// Utils
 /// * RecoDecay
 #pragma link C++ class AliAODRecoDecayLF+;

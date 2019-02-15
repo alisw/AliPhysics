@@ -228,14 +228,14 @@ AliFemtoConfigObject AliFemtoAnalysisPionPion::GetConfigurationOf<AliFemtoPairCu
 
 template<>
 AliFemtoEventCutCentrality*
-AliFemtoConfigObject::Construct() const
+AliFemtoConfigObject::Into<AliFemtoEventCutCentrality>(bool)
 {
   Configuration<AliFemtoBasicEventCut> cfg;
   AliFemtoEventCutCentrality *cut = new AliFemtoEventCutCentrality();
 
   cut->SetCentralityRange(cfg.centrality.first, cfg.centrality.second);
   cut->SetZPosRange(cfg.vertex_z.first, cfg.vertex_z.second);
-  cut->SetEPVZERO(cfg.EP_VZero.first, cfg.EP_VZero.second);
+  cut->SetEPVZERO(cfg.ep_psi.first, cfg.ep_psi.second);
   cut->SetTriggerSelection(cfg.trigger_selection);
 
   return cut;
@@ -243,7 +243,7 @@ AliFemtoConfigObject::Construct() const
 
 template<>
 AliFemtoBasicEventCut*
-AliFemtoConfigObject::Construct() const
+AliFemtoConfigObject::Into<AliFemtoBasicEventCut>(bool)
 {
   Configuration<AliFemtoBasicEventCut> cfg;
 
@@ -258,7 +258,7 @@ AliFemtoConfigObject::Construct() const
 
   cut->SetEventMult(cfg.multiplicity.first, cfg.multiplicity.second);
   cut->SetVertZPos(cfg.vertex_z.first, cfg.vertex_z.second);
-  cut->SetEPVZERO(cfg.EP_VZero.first, cfg.EP_VZero.second);
+  cut->SetEPVZERO(cfg.ep_psi.first, cfg.ep_psi.second);
   cut->SetTriggerSelection(cfg.trigger_selection);
   // cut->SetAcceptBadVertex(cfg.accept_bad_vertex);
   // cut->SetAcceptOnlyPhysics(cfg.accept_only_physics);
@@ -313,7 +313,7 @@ struct CutConfig_Pair {
 
 template<>
 AliFemtoESDTrackCut*
-AliFemtoConfigObject::Construct() const
+AliFemtoConfigObject::Into<AliFemtoESDTrackCut>(bool)
 {
 
   CutConfig_Pion cfg;
@@ -489,11 +489,11 @@ AliFemtoAnalysisPionPion::CutParams::CutParams()
   , event_CentralityMax(default_event.centrality.second)
   , event_VertexZMin(default_event.vertex_z.first)
   , event_VertexZMax(default_event.vertex_z.second)
-  , event_EP_VZeroMin(default_event.EP_VZero.first)
-  , event_EP_VZeroMax(default_event.EP_VZero.second)
+  , event_EP_VZeroMin(default_event.ep_psi.first)
+  , event_EP_VZeroMax(default_event.ep_psi.second)
   , event_TriggerSelection(default_event.trigger_selection)
   , event_AcceptBadVertex(default_event.accept_bad_vertex)
-  , event_AcceptOnlyPhysics(default_event.accept_only_physics)
+  , event_AcceptOnlyPhysics(default_event.accept_bad_vertex)
 
     // Pion 1
   , pion_1_PtMin(default_pion.pt.first)
@@ -952,8 +952,10 @@ AliFemtoAnalysisPionPion::ConstructEventReader(AliFemtoConfigObject cfg)
 {
   std::string classname;
   if (!cfg.pop_and_load("class", classname)) {
-    TString msg = "Could not load string-property 'class' from object:\n" + cfg.Stringify(true);
-    std::cerr << "[AliFemtoAnalysisPionPion::ConstructEventReader] " << msg;
+    std::cerr << "[AliFemtoAnalysisPionPion::ConstructEventReader] "
+	      <<  "Could not load string-property 'class' from object:\n" 
+	      << cfg.Stringify(true)
+	      << "\n";
     return nullptr;
   }
 
@@ -994,6 +996,10 @@ AliFemtoAnalysisPionPion::ConstructEventReader(AliFemtoConfigObject cfg)
 AliFemtoEventCut*
 AliFemtoAnalysisPionPion::ConstructEventCut(AliFemtoConfigObject cfg)
 {
+  auto result = cfg.Into<AliFemtoEventCut>();
+  return result;
+
+/*
   std::string classname;
   if (!cfg.pop_and_load("class", classname)) {
     TString msg = "Could not load string-property 'class' from object:\n" + cfg.Stringify(true);
@@ -1015,11 +1021,15 @@ AliFemtoAnalysisPionPion::ConstructEventCut(AliFemtoConfigObject cfg)
   }
 
   return result;
+*/
 }
 
 AliFemtoPairCut*
 AliFemtoAnalysisPionPion::ConstructPairCut(AliFemtoConfigObject cfg)
 {
+  auto result = cfg.Into<AliFemtoPairCut>();
+  return result;
+/*
   std::string classname;
   if (!cfg.pop_and_load("class", classname)) {
     TString msg = "Could not load string-property 'class' from object:\n" + cfg.Stringify(true);
@@ -1039,15 +1049,21 @@ AliFemtoAnalysisPionPion::ConstructPairCut(AliFemtoConfigObject cfg)
   #undef TRY_CONSTRUCTING_CLASS
 
   return result;
+*/
 }
 
 AliFemtoParticleCut*
 AliFemtoAnalysisPionPion::ConstructParticleCut(AliFemtoConfigObject cfg)
 {
+  auto result = cfg.Into<AliFemtoTrackCut>();
+  return result;
+/*
   std::string classname;
   if (!cfg.pop_and_load("class", classname)) {
-    TString msg = "Could not load string-property 'class' from object:\n" + cfg.Stringify(true);
-    std::cerr << "[AliFemtoAnalysisPionPion::ConstructParticleCut] " << msg;
+    std::cerr << "[AliFemtoAnalysisPionPion::ConstructParticleCut] "
+              <<  "Could not load string-property 'class' from object:\n" 
+	      << cfg.Stringify(true)
+	      << "\n";
     return nullptr;
   }
 
@@ -1059,7 +1075,7 @@ AliFemtoAnalysisPionPion::ConstructParticleCut(AliFemtoConfigObject cfg)
   #undef TRY_CONSTRUCTING_CLASS
 
   return result;
-
+*/
 }
 
 AliFemtoAnalysis*
@@ -1067,8 +1083,10 @@ AliFemtoAnalysisPionPion::BuildAnalysisFromConfiguration(AliFemtoConfigObject cf
 {
   std::string classname;
   if (!cfg.pop_and_load("class", classname)) {
-    TString msg = "Could not load string-property 'class' from object:\n" + cfg.Stringify(true);
-    std::cerr << "[AliFemtoAnalysisPionPion::BuildAnalysisFromConfiguration] " << msg;
+    std::cerr << "[AliFemtoAnalysisPionPion::BuildAnalysisFromConfiguration] "
+              << "Could not load string-property 'class' from object:\n"
+              << cfg.Stringify(true)
+	      << "\n";
     return nullptr;
   }
 

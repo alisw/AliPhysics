@@ -144,6 +144,8 @@ class AliAnalysisTaskSELc2V0bachelorTMVAApp : public AliAnalysisTaskSE
     fHistoMCNch = new TH1F(*h);
   }
     
+  void SetDebugHistograms(Bool_t flag) {fDebugHistograms = flag;}
+  Bool_t GetDebugHistograms() const {return fDebugHistograms;}
 
  private:
   
@@ -313,7 +315,8 @@ class AliAnalysisTaskSELc2V0bachelorTMVAApp : public AliAnalysisTaskSE
   TH2D *fHistoNsigmaTPC;               //!<! 
   TH2D *fHistoNsigmaTOF;               //!<! 
 
-
+  Bool_t fDebugHistograms;             /// flag to decide whether or not to have extra histograms (useful mainly for debug)
+  
   /// \cond CLASSIMP    
   ClassDef(AliAnalysisTaskSELc2V0bachelorTMVAApp, 1); /// class for Lc->p K0
   /// \endcond    

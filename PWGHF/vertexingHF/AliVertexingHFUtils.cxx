@@ -2046,7 +2046,97 @@ Int_t AliVertexingHFUtils::CheckLcV0bachelorDecay(AliMCEvent* mcEvent, Int_t lab
   return -1;
 
 }
+//____________________________________________________________________________
+Int_t AliVertexingHFUtils::CheckLcV0bachelorDecay(TClonesArray* arrayMC, AliAODMCParticle *mcPart, Int_t* arrayDauLab){
+  /// Checks the Lc->V0+bachelor decay channel. Returns 1 for pK0s, 2 for piLambda, 3 for pK0l -1 in other cases
 
+  Int_t pdgD=mcPart->GetPdgCode();
+  if(TMath::Abs(pdgD)!=4122) return -1;
+
+  Int_t nDau=mcPart->GetNDaughters();
+  Int_t labelFirstDau = mcPart->GetDaughter(0);
+  Int_t nPions=0;
+  Int_t nProtons=0;
+  Double_t sumPxDau=0.;
+  Double_t sumPyDau=0.;
+  Double_t sumPzDau=0.;
+  Int_t nFoundppi=0;
+
+  Int_t codeV0=-1;
+  if(nDau==2){
+    for(Int_t iDau=0; iDau<nDau; iDau++){
+      Int_t indDau = labelFirstDau+iDau;
+      if(indDau<0) return -1;
+      AliAODMCParticle* dau=dynamic_cast<AliAODMCParticle*>(arrayMC->At(indDau));
+      if(!dau) return -1;
+      Int_t pdgdau=dau->GetPdgCode();
+      if(TMath::Abs(pdgdau)==211){
+	nPions++;
+	sumPxDau+=dau->Px();
+	sumPyDau+=dau->Py();
+	sumPzDau+=dau->Pz();
+	arrayDauLab[nFoundppi++]=indDau;
+	if(nFoundppi>3) return -1;
+      }else if(TMath::Abs(pdgdau)==2212){
+	nProtons++;
+	sumPxDau+=dau->Px();
+	sumPyDau+=dau->Py();
+	sumPzDau+=dau->Pz();
+	arrayDauLab[nFoundppi++]=indDau;
+	if(nFoundppi>3) return -1;
+      }else if(TMath::Abs(pdgdau)==311 ||  TMath::Abs(pdgdau)==3122){
+	codeV0=TMath::Abs(pdgdau);
+  AliAODMCParticle* v0=dau;
+	if(codeV0==311){
+	  Int_t nK0Dau=dau->GetNDaughters();
+	  if(nK0Dau!=1) return -1;
+	  Int_t indK0s=dau->GetDaughter(0);
+	  if(indK0s<0) return -1;
+	  v0=dynamic_cast<AliAODMCParticle*>(arrayMC->At(indK0s));
+	  if(!v0) return -1;
+	  Int_t pdgK0sl=v0->GetPdgCode();
+	  codeV0=TMath::Abs(pdgK0sl);
+	}
+	Int_t nV0Dau=v0->GetNDaughters();
+	if(nV0Dau!=2) return -1;
+	Int_t indFirstV0Dau=v0->GetDaughter(0);
+	for(Int_t v0Dau=0; v0Dau<2; v0Dau++){
+	  Int_t indV0Dau=indFirstV0Dau+v0Dau;
+	  if(indV0Dau<0) return -1;
+    AliAODMCParticle* v0dau=dynamic_cast<AliAODMCParticle*>(arrayMC->At(indV0Dau));
+	  if(!v0dau) return -1;
+	  Int_t pdgv0dau=v0dau->GetPdgCode();
+	  if(TMath::Abs(pdgv0dau)==211){
+	    sumPxDau+=v0dau->Px();
+	    sumPyDau+=v0dau->Py();
+	    sumPzDau+=v0dau->Pz();
+	    nPions++;
+	    arrayDauLab[nFoundppi++]=indV0Dau;
+	    if(nFoundppi>3) return -1;
+	  }else if(TMath::Abs(pdgv0dau)==2212){
+	    sumPxDau+=v0dau->Px();
+	    sumPyDau+=v0dau->Py();
+	    sumPzDau+=v0dau->Pz();
+	    nProtons++;
+	    arrayDauLab[nFoundppi++]=indV0Dau;
+	    if(nFoundppi>3) return -1;
+	  }
+	}
+      }else{
+	return -1;
+      }
+    }
+    if(nPions!=2) return -1;
+    if(nProtons!=1) return -1;
+    if(TMath::Abs(mcPart->Px()-sumPxDau)>0.001) return -2;
+    if(TMath::Abs(mcPart->Py()-sumPyDau)>0.001) return -2;
+    if(TMath::Abs(mcPart->Pz()-sumPzDau)>0.001) return -2;
+    if(codeV0==310) return 1;
+    else if(codeV0==3122) return 2;
+  }
+  return -1;
+
+}
 
 //__________________________________xic______________________________________
 Int_t AliVertexingHFUtils::CheckXicXipipiDecay(AliMCEvent* mcEvent, Int_t label, Int_t* arrayDauLab){

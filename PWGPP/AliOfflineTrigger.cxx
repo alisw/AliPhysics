@@ -81,7 +81,7 @@
 #include "AliSysInfo.h"
 #include "TTimeStamp.h"
 #ifdef WITHALIEN
-#include "TAlienCollection.h"
+#include "TGridCollection.h"
 #endif
 #include "TPRegexp.h"
 using std::cout;
@@ -642,7 +642,7 @@ void   AliOfflineTrigger::ExtractSelected(const char *rawList, const char * trig
   TObjArray* rawArray = 0;
   if (TPRegexp(".xml$").Match(rawList)){
 #ifdef WITHALIEN
-    TAlienCollection *coll = (TAlienCollection *)TAlienCollection::Open(rawList);
+    TGridCollection *coll = gGrid->OpenCollection(rawList);
     Int_t nFiles =  coll->GetNofGroups();
     rawArray=new TObjArray(nFiles);
     while( coll->Next()){

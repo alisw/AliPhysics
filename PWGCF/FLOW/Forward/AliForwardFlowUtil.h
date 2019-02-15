@@ -18,6 +18,7 @@
 #include "AliTrackReference.h"
 #include "AliMCParticle.h"
 #include "AliAODVertex.h"
+#include "AliForwardSettings.h"
 
 class AliForwardFlowUtil : public TObject {
   typedef std::vector< Double_t > edgeContainer;
@@ -27,6 +28,7 @@ class AliForwardFlowUtil : public TObject {
 
 
   Bool_t ExtraEventCutFMD(TH2D& forwarddNdedp, double cent, Bool_t mc,TH2D* hOutliers);
+  void FillData(TH2D*& refDist, TH2D*& centralDist, TH2D*& forwardDist);
 
   void FillFromTrackrefs(TH2D*& cen, TH2D*& fwd) const;
   void FillFromTrackrefs(TH2D*& fwd) const;
@@ -54,7 +56,10 @@ class AliForwardFlowUtil : public TObject {
   AliMCEvent* fMCevent; //!
   Bool_t mc; //!
   TH1F* dNdeta;
-
+  AliForwardSettings fSettings;
+  Double_t maxpt;//!
+  Double_t minpt;//!
+  Bool_t dodNdeta;//!
 private:
   ClassDef(AliForwardFlowUtil, 2);
 };

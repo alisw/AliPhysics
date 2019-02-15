@@ -59,7 +59,8 @@ class AliForwardSettings : public TObject {
   bool doNUA;
 
   Double_t gap;
-
+  Double_t maxpt;
+  Double_t minpt;
   Bool_t mc;
   Bool_t esd;
 

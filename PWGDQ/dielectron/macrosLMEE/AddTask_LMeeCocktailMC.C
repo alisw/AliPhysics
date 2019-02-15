@@ -46,15 +46,8 @@ void AddTask_LMeeCocktailMC(Int_t CollisionSystem = 200, Float_t MaxEta = 0.8, F
   task->SetResolType(ResolType);
   task->SetALTweight(ALTweightType);
   if(resFileName != ""){
+    Printf("Set resolution file name to %s",resFileName.Data());
     task->SetResFileName(resFileName);
-    if(resFileName.Contains("alien")){
-      Printf("alien_cp %s resolutionFiles/",resFileName.Data());
-      gSystem->Exec("mkdir resolutionFiles");
-      gSystem->Exec(Form("alien_cp %s resolutionFiles/",resFileName.Data()));
-      gSystem->Exec("pwd");
-      gSystem->Exec("ls");
-      gSystem->Exec("ls resolutionFiles/");
-    }
   }
   
   //connect containers

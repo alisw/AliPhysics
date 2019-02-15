@@ -33,6 +33,8 @@ AliOtonOmegaCascadeCuts::AliOtonOmegaCascadeCuts()
       fcutXiMass(false),
       fXiMass(0),
       fXiMassWidth(0),
+      fXiMassExcl(0),
+      fXiMassWidthExcl(0),
       fcutXiCharge(false),
       fXiCharge(0),
       fcutDCAXiDaug(false),
@@ -94,6 +96,8 @@ AliOtonOmegaCascadeCuts::AliOtonOmegaCascadeCuts(
       fcutXiMass(cuts.fcutXiMass),
       fXiMass(cuts.fXiMass),
       fXiMassWidth(cuts.fXiMassWidth),
+      fXiMassExcl(cuts.fXiMassExcl),
+      fXiMassWidthExcl(cuts.fXiMassWidthExcl),
       fcutXiCharge(cuts.fcutXiCharge),
       fXiCharge(cuts.fXiCharge),
       fcutDCAXiDaug(cuts.fcutDCAXiDaug),
@@ -159,6 +163,8 @@ AliOtonOmegaCascadeCuts& AliOtonOmegaCascadeCuts::operator=(
   this->fcutXiMass = cuts.fcutXiMass;
   this->fXiMass = cuts.fXiMass;
   this->fXiMassWidth = cuts.fXiMassWidth;
+  this->fXiMassExcl = cuts.fXiMassExcl;
+  this->fXiMassWidthExcl = cuts.fXiMassWidthExcl;
   this->fcutXiCharge = cuts.fcutXiCharge;
   this->fXiCharge = cuts.fXiCharge;
   this->fcutDCAXiDaug = cuts.fcutDCAXiDaug;
@@ -217,7 +223,7 @@ AliOtonOmegaCascadeCuts* AliOtonOmegaCascadeCuts::XiCuts(
   
   if(CutFlag == 1){ // Cuts with TIME info for 2 tracks: proton and bachelor (its or tof time)
                     // sigmas TPC 5 for proton, pion, and bachelor
-   XiCuts->SetXiMassRange(1.322, 0.005);	//YES
+   XiCuts->SetXiMassRange(1.322, 0.005, 0., 0.);	//YES
    XiCuts->SetCutXiDaughterDCA(.9);		//YES
    XiCuts->SetCutXiMinDistBachToPrimVtx(0.03);	//as ESD new vertexer cut
    XiCuts->SetCutXiCPA(0.991);			//YES
@@ -232,7 +238,7 @@ AliOtonOmegaCascadeCuts* AliOtonOmegaCascadeCuts::XiCuts(
    XiCuts->SetPtRangeXi(0., 999.9);   		//as ESD new vertexer cut
   }else if(CutFlag == 2){ // Cuts with TIME info for 3 tracks: proton and bachelor (its or tof time)
                     // sigmas TPC 5 for proton, pion, and bachelor
-   XiCuts->SetXiMassRange(1.322, 0.005);        //YES
+   XiCuts->SetXiMassRange(1.322, 0.005, 0., 0.);        //YES
    XiCuts->SetCutXiDaughterDCA(.9);             //YES
    XiCuts->SetCutXiMinDistBachToPrimVtx(0.03);  //as ESD new vertexer cut
    XiCuts->SetCutXiCPA(0.991);                  //YES
@@ -246,7 +252,7 @@ AliOtonOmegaCascadeCuts* AliOtonOmegaCascadeCuts::XiCuts(
    XiCuts->SetRejectMass(1.672, 0.005, 3334);   //YES
    XiCuts->SetPtRangeXi(0., 999.9);            	//as ESD new vertexer cut
   }else{ // CutFlag == 0) // Bernie&Andi cuts
-   XiCuts->SetXiMassRange(1.322, 0.005);
+   XiCuts->SetXiMassRange(1.322, 0.005, 0., 0.);
    XiCuts->SetCutXiDaughterDCA(1.6);
    XiCuts->SetCutXiMinDistBachToPrimVtx(0.05);
    XiCuts->SetCutXiCPA(0.98);
@@ -270,7 +276,7 @@ AliOtonOmegaCascadeCuts* AliOtonOmegaCascadeCuts::OmegaCuts(
   OmegaCuts->SetContributionSplitting(contribSplitting);
   if(CutFlag == 1){ // Cuts with TIME info for 2 tracks: proton and bachelor (its or tof time)
                     // sigmas TPC 5 for proton, pion, and bachelor
-   OmegaCuts->SetXiMassRange(1.672, 0.005);		//YES
+   OmegaCuts->SetXiMassRange(1.672, 0.005, 0., 0.);		//YES
    OmegaCuts->SetCutXiDaughterDCA(.8);			//YES
    OmegaCuts->SetCutXiMinDistBachToPrimVtx(0.03);	//as ESD new vertexer cut
    OmegaCuts->SetCutXiCPA(0.995);			//YES
@@ -285,7 +291,7 @@ AliOtonOmegaCascadeCuts* AliOtonOmegaCascadeCuts::OmegaCuts(
    OmegaCuts->SetPtRangeXi(0., 999.9);       		//as ESD new vertexer cut
   }else if(CutFlag == 2){ // Cuts with TIME info for 3 tracks: proton and bachelor (its or tof time)
                           // sigmas TPC 6 for proton, pion, and bachelor || SIX SIGMAS HERE!!!!
-   OmegaCuts->SetXiMassRange(1.672, 0.005);             //YES
+   OmegaCuts->SetXiMassRange(1.672, 0.005, 0., 0.);             //YES
    OmegaCuts->SetCutXiDaughterDCA(.8);                  //YES
    OmegaCuts->SetCutXiMinDistBachToPrimVtx(0.03);       //as ESD new vertexer cut
    OmegaCuts->SetCutXiCPA(0.995);                       //YES
@@ -299,7 +305,7 @@ AliOtonOmegaCascadeCuts* AliOtonOmegaCascadeCuts::OmegaCuts(
    OmegaCuts->SetRejectMass(1.322, 0.013, 3312);        //YES...but should be changed to asymmetric from 1.322+0.013
    OmegaCuts->SetPtRangeXi(0., 999.9);                 	//as ESD new vertexer cut
   }else{ // CutFlag == 0) // Bernie&Andi cuts
-   OmegaCuts->SetXiMassRange(1.672, 0.005);
+   OmegaCuts->SetXiMassRange(1.672, 0.005, 0., 0.);
    OmegaCuts->SetCutXiDaughterDCA(2.);
    OmegaCuts->SetCutXiMinDistBachToPrimVtx(0.04);
    OmegaCuts->SetCutXiCPA(0.98);
@@ -494,8 +500,10 @@ bool AliOtonOmegaCascadeCuts::isSelected(AliOtonOmegaCascade *casc) {
       }
     }
     if (pass && fcutXiMass) {
-      if ((casc->GetMass(fPDGCasc) < (fXiMass - fXiMassWidth))
-          || (casc->GetMass(fPDGCasc) > (fXiMass + fXiMassWidth))) {
+      if(
+           (casc->GetMass(fPDGCasc) < (fXiMass - fXiMassWidth))||(casc->GetMass(fPDGCasc) > (fXiMass + fXiMassWidth))
+           ||(fXiMassExcl>0.&&fXiMassWidthExcl>0.&&(  (casc->GetMass(fPDGCasc) > (fXiMassExcl - fXiMassWidthExcl))&&(casc->GetMass(fPDGCasc) < (fXiMassExcl + fXiMassWidthExcl))  ))    
+      ){
         pass = false;
       } else {
         if (!fMinimalBooking)

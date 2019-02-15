@@ -79,6 +79,7 @@ AliAnalysisTaskGFWFlow::AliAnalysisTaskGFWFlow(const char *name, Bool_t ProduceW
   fAddQA(kFALSE),
   fQAList(0)
 {
+  if(!fProduceWeights) DefineInput(1,TList::Class()); 
   DefineOutput(1,(fProduceWeights?TList::Class():AliGFWFlowContainer::Class()));
   if(fAddQA)
     DefineOutput(2,TList::Class());
@@ -225,6 +226,10 @@ void AliAnalysisTaskGFWFlow::UserCreateOutputObjects(){
     fEventCuts.AddQAplotsToList(fQAList);
     PostData(2,fQAList);
   };
+  if(!fProduceWeights) {
+    fWeightList = (TList*) GetInputData(1);
+    if(!fWeightList) { AliFatal("Could not retrieve weight list!\n"); return; };
+  };
 };
 void AliAnalysisTaskGFWFlow::UserExec(Option_t*) {
   AliAODEvent *fAOD = dynamic_cast<AliAODEvent*>(InputEvent());
@@ -318,6 +323,7 @@ void AliAnalysisTaskGFWFlow::UserExec(Option_t*) {
       Double_t lDCA[] = {TMath::Abs(DCA[2]),dcaxy};
       if(!fSelections[fCurrSystFlag]->AcceptTrack(lTrack,lDCA) &&
 	 !fSelections[9]->AcceptTrack(lTrack,lDCA)) continue;
+      if(!fWeights) printf("Weights do not exist!\n");
       Double_t nua = fWeights->GetWeight(lTrack->Phi(),lTrack->Eta(),vz,lTrack->Pt(),cent,0);
       //Double_t nuaITS = fExtraWeights->GetWeight(lTrack->Phi(),lTrack->Eta(),vz,lTrack->Pt(),cent,0);
       Double_t nue = fPtAxis->GetNbins()>1?1:fWeights->GetWeight(lTrack->Phi(),lTrack->Eta(),vz,cent,lTrack->Pt(),1);
@@ -352,47 +358,47 @@ void AliAnalysisTaskGFWFlow::UserExec(Option_t*) {
     filled = FillFCs("MidV44","poiMid refMid {4 4 -4 -4}", cent, kTRUE,rndmn);
     //V_2{n}, 2 subevents:
     filled = FillFCs("Mid2SEV22","refSENeg {2} refSEPos {-2}", cent, kFALSE,rndmn);
-    filled = FillFCs("Mid2SEV22","poiSENeg refSENeg {2} refSEPos {-2}", cent, kFALSE,rndmn);
+    filled = FillFCs("Mid2SEV22","poiSENeg refSENeg {2} refSEPos {-2}", cent, kTRUE,rndmn);
     filled = FillFCs("Mid2SEV24","refSENeg {2 2} refSEPos {-2 -2}", cent, kFALSE,rndmn);
-    filled = FillFCs("Mid2SEV24","poiSENeg refSENeg {2 2} refSEPos {-2 -2}", cent, kFALSE,rndmn);
+    filled = FillFCs("Mid2SEV24","poiSENeg refSENeg {2 2} refSEPos {-2 -2}", cent, kTRUE,rndmn);
     filled = FillFCs("Mid2SEV26","refSENeg {2 2 2} refSEPos {-2 -2 -2}", cent, kFALSE,rndmn);
-    filled = FillFCs("Mid2SEV26","poiSENeg refSENeg {2 2 2} refSEPos {-2 -2 -2}", cent, kFALSE,rndmn);
+    filled = FillFCs("Mid2SEV26","poiSENeg refSENeg {2 2 2} refSEPos {-2 -2 -2}", cent, kTRUE,rndmn);
     filled = FillFCs("Mid2SEV28","refSENeg {2 2 2 2} refSEPos {-2 -2 -2 -2}", cent, kFALSE,rndmn);
-    filled = FillFCs("Mid2SEV28","poiSENeg refSENeg {2 2 2 2} refSEPos {-2 -2 -2 -2}", cent, kFALSE,rndmn);
+    filled = FillFCs("Mid2SEV28","poiSENeg refSENeg {2 2 2 2} refSEPos {-2 -2 -2 -2}", cent, kTRUE,rndmn);
     //V_3{n}, 2 subevents:
     filled = FillFCs("Mid2SEV32","refSENeg {3} refSEPos {-3}", cent, kFALSE,rndmn);
-    filled = FillFCs("Mid2SEV32","poiSENeg refSENeg {3} refSEPos {-3}", cent, kFALSE,rndmn);
+    filled = FillFCs("Mid2SEV32","poiSENeg refSENeg {3} refSEPos {-3}", cent, kTRUE,rndmn);
     filled = FillFCs("Mid2SEV34","refSENeg {3 3} refSEPos {-3 -3}", cent, kFALSE,rndmn);
-    filled = FillFCs("Mid2SEV34","poiSENeg refSENeg {3 3} refSEPos {-3 -3}", cent, kFALSE,rndmn);
+    filled = FillFCs("Mid2SEV34","poiSENeg refSENeg {3 3} refSEPos {-3 -3}", cent, kTRUE,rndmn);
     filled = FillFCs("Mid2SEV36","refSENeg {3 3 3} refSEPos {-3 -3 -3}", cent, kFALSE,rndmn);
-    filled = FillFCs("Mid2SEV36","poiSENeg refSENeg {3 3 3} refSEPos {-3 -3 -3}", cent, kFALSE,rndmn);
+    filled = FillFCs("Mid2SEV36","poiSENeg refSENeg {3 3 3} refSEPos {-3 -3 -3}", cent, kTRUE,rndmn);
     //V_4{n}, 2 subevents:
     filled = FillFCs("Mid2SEV42","refSENeg {4} refSEPos {-4}", cent, kFALSE,rndmn);
-    filled = FillFCs("Mid2SEV42","poiSENeg refSENeg {4} refSEPos {-4}", cent, kFALSE,rndmn);
+    filled = FillFCs("Mid2SEV42","poiSENeg refSENeg {4} refSEPos {-4}", cent, kTRUE,rndmn);
     filled = FillFCs("Mid2SEV44","refSENeg {4 4} refSEPos {-4 -4}", cent, kFALSE,rndmn);
-    filled = FillFCs("Mid2SEV44","poiSENeg refSENeg {4 4} refSEPos {-4 -4}", cent, kFALSE,rndmn);
+    filled = FillFCs("Mid2SEV44","poiSENeg refSENeg {4 4} refSEPos {-4 -4}", cent, kTRUE,rndmn);
 
     //V_2{n}, eta gap 1:
     filled = FillFCs("MidGapV22","refGapNeg {2} refGapPos {-2}", cent, kFALSE,rndmn);
-    filled = FillFCs("MidGapV22","poiGapNeg refGapNeg {2} refGapPos {-2}", cent, kFALSE,rndmn);
+    filled = FillFCs("MidGapV22","poiGapNeg refGapNeg {2} refGapPos {-2}", cent, kTRUE,rndmn);
     filled = FillFCs("MidGapV24","refGapNeg {2 2} refGapPos {-2 -2}", cent, kFALSE,rndmn);
-    filled = FillFCs("MidGapV24","poiGapNeg refGapNeg {2 2} refGapPos {-2 -2}", cent, kFALSE,rndmn);
+    filled = FillFCs("MidGapV24","poiGapNeg refGapNeg {2 2} refGapPos {-2 -2}", cent, kTRUE,rndmn);
     filled = FillFCs("MidGapV26","refGapNeg {2 2 2} refGapPos {-2 -2 -2}", cent, kFALSE,rndmn);
-    filled = FillFCs("MidGapV26","poiGapNeg refGapNeg {2 2 2} refGapPos {-2 -2 -2}", cent, kFALSE,rndmn);
+    filled = FillFCs("MidGapV26","poiGapNeg refGapNeg {2 2 2} refGapPos {-2 -2 -2}", cent, kTRUE,rndmn);
     filled = FillFCs("MidGapV28","refGapNeg {2 2 2 2} refGapPos {-2 -2 -2 -2}", cent, kFALSE,rndmn);
-    filled = FillFCs("MidGapV28","poiGapNeg refGapNeg {2 2 2 2} refGapPos {-2 -2 -2 -2}", cent, kFALSE,rndmn);
+    filled = FillFCs("MidGapV28","poiGapNeg refGapNeg {2 2 2 2} refGapPos {-2 -2 -2 -2}", cent, kTRUE,rndmn);
     //V_3{n}, eta gap 1:
     filled = FillFCs("MidGapV32","refGapNeg {3} refGapPos {-3}", cent, kFALSE,rndmn);
-    filled = FillFCs("MidGapV32","poiGapNeg refGapNeg {3} refGapPos {-3}", cent, kFALSE,rndmn);
+    filled = FillFCs("MidGapV32","poiGapNeg refGapNeg {3} refGapPos {-3}", cent, kTRUE,rndmn);
     filled = FillFCs("MidGapV34","refGapNeg {3 3} refGapPos {-3 -3}", cent, kFALSE,rndmn);
-    filled = FillFCs("MidGapV34","poiGapNeg refGapNeg {3 3} refGapPos {-3 -3}", cent, kFALSE,rndmn);
+    filled = FillFCs("MidGapV34","poiGapNeg refGapNeg {3 3} refGapPos {-3 -3}", cent, kTRUE,rndmn);
     filled = FillFCs("MidGapV36","refGapNeg {3 3 3} refGapPos {-3 -3 -3}", cent, kFALSE,rndmn);
-    filled = FillFCs("MidGapV36","poiGapNeg refGapNeg {3 3 3} refGapPos {-3 -3 -3}", cent, kFALSE,rndmn);
+    filled = FillFCs("MidGapV36","poiGapNeg refGapNeg {3 3 3} refGapPos {-3 -3 -3}", cent, kTRUE,rndmn);
     //V_4{n}, eta gap 1:
     filled = FillFCs("MidGapV42","refGapNeg {4} refGapPos {-4}", cent, kFALSE,rndmn);
-    filled = FillFCs("MidGapV42","poiGapNeg refGapNeg {4} refGapPos {-4}", cent, kFALSE,rndmn);
+    filled = FillFCs("MidGapV42","poiGapNeg refGapNeg {4} refGapPos {-4}", cent, kTRUE,rndmn);
     filled = FillFCs("MidGapV44","refGapNeg {4 4} refGapPos {-4 -4}", cent, kFALSE,rndmn);
-    filled = FillFCs("MidGapV44","poiGapNeg refGapNeg {4 4} refGapPos {-4 -4}", cent, kFALSE,rndmn);
+    filled = FillFCs("MidGapV44","poiGapNeg refGapNeg {4 4} refGapPos {-4 -4}", cent, kTRUE,rndmn);
 
     PostData(1,fFC);
     if(fAddQA) PostData(2,fQAList);
@@ -484,7 +490,31 @@ Int_t AliAnalysisTaskGFWFlow::CombineBits(Int_t VtxBit, Int_t TrkBit) {
   //retbit=retbit|((VtxBit&1)*(TrkBit&(1<<13)));
   return retbit;
 };
-Bool_t AliAnalysisTaskGFWFlow::LoadWeights(Int_t runno) {
+Bool_t AliAnalysisTaskGFWFlow::SetInputWeightList(TList *inlist) {
+  if(!inlist) {
+    return kFALSE;
+  };
+  fWeightList = inlist;
+  return kTRUE;
+};
+Bool_t AliAnalysisTaskGFWFlow::LoadWeights(Int_t runno) { //Cannot be used when running on the trains
+  if(fWeightList) {
+    fWeights = (AliGFWWeights*)fWeightList->FindObject(Form("w%i%s",runno,fSelections[fCurrSystFlag]->NeedsExtraWeight()?
+							    fSelections[fCurrSystFlag]->GetSystPF():""));
+    if(!fWeights) {
+      AliFatal("Weights could not be found in the list!\n");
+      return kFALSE;
+    };
+    fWeights->CreateNUA();
+    fWeights->CreateNUE();
+    return kTRUE;
+  } else {
+    AliFatal("Weight list (for some reason) not set!\n");
+    return kFALSE; 
+  };
+  printf("You should not be here!\n");
+  return kFALSE;
+//If weights not set, attempting to fetch them from pre-set directory. This will definitely fail if running on train
   fWeightPath.Clear();
   fWeightPath.Append(fWeightDir.Data());
   fWeightPath.Append(Form("%i.root",runno));
@@ -549,3 +579,4 @@ Bool_t AliAnalysisTaskGFWFlow::FillFCs(TString head, TString hn, Double_t cent, 
   };
   return kTRUE;
 };
+

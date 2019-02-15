@@ -18,6 +18,7 @@
 #include "TRandom.h"
 #include "AliForwardSettings.h"
 #include "AliForwardFlowUtil.h"
+#include "AliFMDMCTrackDensity.h"
 //#include "AliEventCuts.h"
 #include <TF1.h>
 class AliMCParticle;
@@ -82,6 +83,7 @@ public:
    */
   virtual void UserCreateOutputObjects();
 
+
   /**
    * Process each event
    *
@@ -133,8 +135,6 @@ Double_t WrapPi(Double_t phi);
   Bool_t AddMotherIfFirstTimeSeen(AliMCParticle* p, std::vector<Int_t> v);
 
 
-
-
   // Check if a given particle itself hit the FMD. If so, return the
   // (first) track reference of such a hit
   AliTrackReference* IsHitITS(AliMCParticle* p);
@@ -159,6 +159,7 @@ Double_t WrapPi(Double_t phi);
   //TList* fDiffList; //!
   TList* fEventList; //!
   TList* fDeltaList; //!
+  AliFMDMCTrackDensity* fTrackDensity; //!
   TRandom fRandom;
 
   // A class combining all the settings for this analysis
@@ -185,6 +186,7 @@ TF1 *fMultCentLowCut; //!
   // Efficiency of various particle species to produces hits on the FMD
   THn *fNprimaries; //!
 
+
   // Cuts for various detector regions
   TCutG *fITS;  //!
   TCutG *fFMD1;  //!
@@ -192,21 +194,73 @@ TF1 *fMultCentLowCut; //!
   TCutG *fFMD3;  //!
   TCutG *fPipe;  //!
   TCutG *fEarlyDecay;  //!
+  TH1D* phihist; //!
 
   enum {
     kTPCOnly = 128, // TPC only tracks
     kHybrid = 768, // TPC only tracks
     kphiAcceptanceBin = 21 // phi acceptance bin in the FMD histogram (dNdetadphi)
   };
-  static Double_t Mod(Double_t x, Double_t y);
 
   static Double_t Wrap02pi(Double_t angle);
+  static Double_t Mod(Double_t x, Double_t y);
 
 protected:
+
+  /**
+   * Structure holding the state of the `tracker'
+   *
+  */
+  mutable struct State
+  {
+    Double_t angle;            // Angle
+    UShort_t oldDetector;      // Last detector
+    Char_t   oldRing;          // Last ring
+    UShort_t oldSector;        // Last sector
+    UShort_t oldStrip;         // Last strip
+    UShort_t startStrip;       // First strip
+    UShort_t nRefs;            // Number of references
+    UShort_t nStrips;          // Number of strips
+    UShort_t count;            // Count of hit strips
+    AliTrackReference* longest; //! Longest track through
+    /**
+     * Clear this state
+     *
+     * @param alsoCount If true, also clear count
+    */
+    void Clear(Bool_t alsoCount=false);
+    /**
+     * Assignment operator
+     *
+     * @param o Object to assign from
+     *
+     * @return Reference to this object
+     */
+    State& operator=(const State& o);
+  } fState; //! State
+  UShort_t fMaxConsequtiveStrips;
+  Double_t fLowCutvalue;
+  Bool_t            fTrackGammaToPi0;
+  AliTrackReference*  ProcessRef(AliMCParticle*       particle,
+    AliMCParticle* mother,
+    AliTrackReference*   ref,std::vector< Int_t > listOfMothers, Double_t randomInt, Float_t event_vtx_z, Double_t v0cent);
+
+  void BeginTrackRefs();
+  void EndTrackRefs();
+
+  void StoreParticle(AliMCParticle*       particle,
+	  AliMCParticle* mother,
+	  AliTrackReference*   ref,std::vector< Int_t > listOfMothers, Double_t randomInt, Float_t event_vtx_z, Double_t v0cent) ;
+
+
+  Bool_t ProcessTrack(AliMCParticle* particle, AliMCParticle* mother, std::vector< Int_t > listOfMothers, Double_t randomInt, Float_t event_vtx_z, Double_t v0cent);
+
+  Double_t GetTrackRefTheta(const AliTrackReference* ref) const;
+
   // Find the primary particle of a decay chain. If `p` is alreay the primary return p.
   // If it was not possible to find the mother, return NULL.
   AliMCParticle* GetMother(AliMCParticle* p);
-
+  AliMCParticle* GetMother(Int_t iTr, const AliMCEvent* event) const;
   // Find the primary particle of a decay chain if it is charged.
   // If `p` is alreay the primary return p. If it was not possible
   // to find the mother or if the mother was not charged, return NULL
@@ -247,6 +301,3 @@ protected:
 };
 
 #endif
-// Local Variables:
-//   mode: C++
-// End:

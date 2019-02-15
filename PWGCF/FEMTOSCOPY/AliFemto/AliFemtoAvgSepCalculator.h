@@ -40,7 +40,7 @@ public:
    * Static method used to determine if a vector was actually set or just
    * created using default values (-10000.).
    */
-  static bool vector_is_set(const AliFemtoThreeVector &v) {
+  static bool is_valid_point(const AliFemtoThreeVector &v) {
     return v.x() > -9999.0 && v.y() > -9999.0 && v.z() > -9999.0;
   }
 
@@ -114,11 +114,11 @@ protected:
   PointCollection_t t1;
   PointCollection_t t2;
 
-  static void push_vector(const AliFemtoThreeVector &v,
-                          std::vector<AliFemtoThreeVector> &storage,
-                          bool& save)
+  static void push_tpc_point(const AliFemtoThreeVector &v,
+                             std::vector<AliFemtoThreeVector> &storage,
+                             bool& save)
   {
-    if (vector_is_set(v)) {
+    if (is_valid_point(v)) {
       storage.push_back(v);
     } else {
       save = false;
@@ -138,10 +138,10 @@ AliFemtoAvgSepCalculator::AliFemtoAvgSepCalculator(const AliFemtoTrack *track_1,
 
   for (int i = 0; i < 8 && (save_1 || save_2); ++i) {
     if (save_1) {
-      push_vector(track_1->NominalTpcPoint(i), t1[0], save_1);
+      push_tpc_point(track_1->NominalTpcPoint(i), t1[0], save_1);
     }
     if (save_2) {
-      push_vector(track_2->NominalTpcPoint(i), t2[0], save_2);
+      push_tpc_point(track_2->NominalTpcPoint(i), t2[0], save_2);
     }
   }
 }
@@ -159,13 +159,13 @@ AliFemtoAvgSepCalculator::AliFemtoAvgSepCalculator(const AliFemtoTrack *track,
 
   for (int i = 0; i < 8 && (save_track || save_v0_pos || save_v0_neg); ++i) {
     if (save_track) {
-      push_vector(track->NominalTpcPoint(i), t1[0], save_track);
+      push_tpc_point(track->NominalTpcPoint(i), t1[0], save_track);
     }
     if (save_v0_pos) {
-      push_vector(v0->NominalTpcPointPos(i), t2[0], save_v0_pos);
+      push_tpc_point(v0->NominalTpcPointPos(i), t2[0], save_v0_pos);
     }
     if (save_v0_neg) {
-      push_vector(v0->NominalTpcPointNeg(i), t2[1], save_v0_pos);
+      push_tpc_point(v0->NominalTpcPointNeg(i), t2[1], save_v0_neg);
     }
   }
 }
@@ -184,16 +184,16 @@ AliFemtoAvgSepCalculator::AliFemtoAvgSepCalculator(const AliFemtoV0 *v0_1,
 
   for (int i = 0; i < 8; ++i) {
     if (save_v0_1_pos) {
-      push_vector(v0_1->NominalTpcPointPos(i), t1[0], save_v0_1_pos);
+      push_tpc_point(v0_1->NominalTpcPointPos(i), t1[0], save_v0_1_pos);
     }
     if (save_v0_1_neg) {
-      push_vector(v0_1->NominalTpcPointNeg(i), t1[1], save_v0_1_neg);
+      push_tpc_point(v0_1->NominalTpcPointNeg(i), t1[1], save_v0_1_neg);
     }
     if (save_v0_2_pos) {
-      push_vector(v0_2->NominalTpcPointPos(i), t2[0], save_v0_2_pos);
+      push_tpc_point(v0_2->NominalTpcPointPos(i), t2[0], save_v0_2_pos);
     }
     if (save_v0_2_neg) {
-      push_vector(v0_2->NominalTpcPointNeg(i), t2[1], save_v0_2_neg);
+      push_tpc_point(v0_2->NominalTpcPointNeg(i), t2[1], save_v0_2_neg);
     }
   }
 }

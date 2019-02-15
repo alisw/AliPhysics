@@ -58,6 +58,7 @@
 #include "AliESDtrackCuts.h"
 #include "AliCaloTrackMatcher.h"
 #include "AliPhotonIsolation.h"
+#include <memory>
 #include <vector>
 
 class iostream;
@@ -2304,9 +2305,6 @@ void AliCaloPhotonCuts::FillHistogramsExtendedQA(AliVEvent *event, Int_t isMC)
   AliVCaloCells* cells = 0x0;
 
   Int_t nModules = 0;
-  Int_t* nCellsBigger100MeV;
-  Int_t* nCellsBigger1500MeV;
-  Double_t* EnergyOfMod;
   if( (fClusterType == 1 || fClusterType == 3 || fClusterType == 4) && !fEMCALInitialized ) InitializeEMCAL(event);
   if( fClusterType == 2 && ( !fPHOSInitialized || (fPHOSCurrentRun != event->GetRunNumber()) ) ) InitializePHOS(event);
 
@@ -2328,9 +2326,9 @@ void AliCaloPhotonCuts::FillHistogramsExtendedQA(AliVEvent *event, Int_t isMC)
     AliError(Form("fExtendedMatchAndQA(%i):FillHistogramsExtendedMatchAndQA() not (yet) defined for cluster type (%i)",fExtendedMatchAndQA,fClusterType));
   }
 
-  nCellsBigger100MeV = new Int_t[nModules];
-  nCellsBigger1500MeV = new Int_t[nModules];
-  EnergyOfMod = new Double_t[nModules];
+  std::vector<Int_t> nCellsBigger100MeV(nModules);
+  std::vector<Int_t> nCellsBigger1500MeV(nModules);
+  std::vector<Double_t> EnergyOfMod(nModules);
 
   for(Int_t iModule=0;iModule<nModules;iModule++){nCellsBigger100MeV[iModule]=0;nCellsBigger1500MeV[iModule]=0;EnergyOfMod[iModule]=0;}
 
@@ -2391,10 +2389,6 @@ void AliCaloPhotonCuts::FillHistogramsExtendedQA(AliVEvent *event, Int_t isMC)
     if(fHistEnergyOfModvsMod) fHistEnergyOfModvsMod->Fill(EnergyOfMod[iModule],iModule+nModulesStart);
   }
 
-  delete[] nCellsBigger100MeV;nCellsBigger100MeV=0x0;
-  delete[] nCellsBigger1500MeV;nCellsBigger1500MeV=0x0;
-  delete[] EnergyOfMod;EnergyOfMod=0x0;
-
   //fill distClusterTo_withinTiming/outsideTiming
   Int_t nclus = 0;
   TClonesArray * arrClustersExtQA = NULL;
@@ -2406,23 +2400,22 @@ void AliCaloPhotonCuts::FillHistogramsExtendedQA(AliVEvent *event, Int_t isMC)
       AliFatal(Form("%sClustersBranch was not found in AliCaloPhotonCuts::FillHistogramsExtendedQA! Check the correction framework settings!",fCorrTaskSetting.Data()));
     nclus = arrClustersExtQA->GetEntries();
   }
-  AliVCluster* cluster = 0x0;
-  AliVCluster* clusterMatched = 0x0;
+  std::unique_ptr<AliVCluster> cluster, clusterMatched;
   for(Int_t iClus=0; iClus<nclus ; iClus++){
     if(event->IsA()==AliESDEvent::Class()){
       if(arrClustersExtQA)
-        cluster = new AliESDCaloCluster(*(AliESDCaloCluster*)arrClustersExtQA->At(iClus));
+        cluster = std::unique_ptr<AliVCluster>(new AliESDCaloCluster(*(AliESDCaloCluster*)arrClustersExtQA->At(iClus)));
       else
-        cluster = new AliESDCaloCluster(*(AliESDCaloCluster*)event->GetCaloCluster(iClus));
+        cluster = std::unique_ptr<AliVCluster>(new AliESDCaloCluster(*(AliESDCaloCluster*)event->GetCaloCluster(iClus)));
     } else if(event->IsA()==AliAODEvent::Class()){
       if(arrClustersExtQA)
-        cluster = new AliAODCaloCluster(*(AliAODCaloCluster*)arrClustersExtQA->At(iClus));
+        cluster = std::unique_ptr<AliVCluster>(new AliAODCaloCluster(*(AliAODCaloCluster*)arrClustersExtQA->At(iClus)));
       else
-        cluster = new AliAODCaloCluster(*(AliAODCaloCluster*)event->GetCaloCluster(iClus));
+        cluster = std::unique_ptr<AliVCluster>(new AliAODCaloCluster(*(AliAODCaloCluster*)event->GetCaloCluster(iClus)));
     }
 
-    if( (fClusterType == 1 || fClusterType == 3 || fClusterType == 4) && !cluster->IsEMCAL()){delete cluster; continue;}
-    if( fClusterType == 2 && cluster->GetType() !=AliVCluster::kPHOSNeutral){delete cluster; continue;}
+    if( (fClusterType == 1 || fClusterType == 3 || fClusterType == 4) && !cluster->IsEMCAL()){continue;}
+    if( fClusterType == 2 && cluster->GetType() !=AliVCluster::kPHOSNeutral){continue;}
 
     Float_t clusPos[3]={0,0,0};
     cluster->GetPosition(clusPos);
@@ -2430,31 +2423,31 @@ void AliCaloPhotonCuts::FillHistogramsExtendedQA(AliVEvent *event, Int_t isMC)
     Double_t etaCluster = clusterVector.Eta();
     Double_t phiCluster = clusterVector.Phi();
     if (phiCluster < 0) phiCluster += 2*TMath::Pi();
-    Int_t nLM = GetNumberOfLocalMaxima(cluster, event);
+    Int_t nLM = GetNumberOfLocalMaxima(cluster.get(), event);
 
     //acceptance cuts
-    if (fUseEtaCut && (etaCluster < fMinEtaCut || etaCluster > fMaxEtaCut)){delete cluster; continue;}
-    if (fUseEtaCut && fClusterType == 3 && etaCluster < fMaxEtaInnerEdge && etaCluster > fMinEtaInnerEdge ) {delete cluster; continue;}
+    if (fUseEtaCut && (etaCluster < fMinEtaCut || etaCluster > fMaxEtaCut)){continue;}
+    if (fUseEtaCut && fClusterType == 3 && etaCluster < fMaxEtaInnerEdge && etaCluster > fMinEtaInnerEdge ) {continue;}
     if (fClusterType == 4){
-      if (fUsePhiCut && (phiCluster < fMinPhiCut || phiCluster > fMaxPhiCut) && (phiCluster < fMinPhiCutDMC || phiCluster > fMaxPhiCutDMC)){delete cluster; continue;}
+      if (fUsePhiCut && (phiCluster < fMinPhiCut || phiCluster > fMaxPhiCut) && (phiCluster < fMinPhiCutDMC || phiCluster > fMaxPhiCutDMC)){continue;}
     } else {
-      if (fUsePhiCut && (phiCluster < fMinPhiCut || phiCluster > fMaxPhiCut)){delete cluster; continue;}
+      if (fUsePhiCut && (phiCluster < fMinPhiCut || phiCluster > fMaxPhiCut)){continue;}
     }
-    if (fUseDistanceToBadChannel>0 && CheckDistanceToBadChannel(cluster,event)){delete cluster; continue;}
+    if (fUseDistanceToBadChannel>0 && CheckDistanceToBadChannel(cluster.get(),event)){continue;}
     //cluster quality cuts
-    if (fVectorMatchedClusterIDs.size()>0 && CheckClusterForTrackMatch(cluster)){delete cluster; continue;}
-    if (fUseMinEnergy && (cluster->E() < fMinEnergy)){delete cluster; continue;}
-    if (fUseNCells && (cluster->GetNCells() < fMinNCells)){delete cluster; continue;}
-    if (fUseNLM && (nLM < fMinNLM || nLM > fMaxNLM)){delete cluster; continue;}
-    if (fUseM02 == 1 && (cluster->GetM02() < fMinM02 || cluster->GetM02() > fMaxM02)){delete cluster; continue;}
-    if (fUseM02 == 2 && (cluster->GetM02() < CalculateMinM02(fMinM02CutNr, cluster->E()) || cluster->GetM02() > CalculateMaxM02(fMaxM02CutNr, cluster->E()))){delete cluster; continue;}
-    if (fUseM20 && (cluster->GetM20() < fMinM20 || cluster->GetM20() > fMaxM20)){delete cluster; continue;}
-    if (fUseDispersion && (cluster->GetDispersion() > fMaxDispersion)){delete cluster; continue;}
+    if (fVectorMatchedClusterIDs.size()>0 && CheckClusterForTrackMatch(cluster.get())){continue;}
+    if (fUseMinEnergy && (cluster->E() < fMinEnergy)){continue;}
+    if (fUseNCells && (cluster->GetNCells() < fMinNCells)){continue;}
+    if (fUseNLM && (nLM < fMinNLM || nLM > fMaxNLM)){continue;}
+    if (fUseM02 == 1 && (cluster->GetM02() < fMinM02 || cluster->GetM02() > fMaxM02)){continue;}
+    if (fUseM02 == 2 && (cluster->GetM02() < CalculateMinM02(fMinM02CutNr, cluster->E()) || cluster->GetM02() > CalculateMaxM02(fMaxM02CutNr, cluster->E()))){continue;}
+    if (fUseM20 && (cluster->GetM20() < fMinM20 || cluster->GetM20() > fMaxM20)){continue;}
+    if (fUseDispersion && (cluster->GetDispersion() > fMaxDispersion)){continue;}
     //cluster within timing cut
-    if (!(isMC>0) && (cluster->GetTOF() < fMinTimeDiff || cluster->GetTOF() > fMaxTimeDiff)){delete cluster; continue;}
+    if (!(isMC>0) && (cluster->GetTOF() < fMinTimeDiff || cluster->GetTOF() > fMaxTimeDiff)){continue;}
 
     Int_t largestCellicol = -1, largestCellirow = -1;
-    Int_t largestCellID = FindLargestCellInCluster(cluster,event);
+    Int_t largestCellID = FindLargestCellInCluster(cluster.get(),event);
     if(largestCellID==-1) AliFatal("FillHistogramsExtendedQA: FindLargestCellInCluster found cluster with NCells<1?");
     Int_t largestCelliMod = GetModuleNumberAndCellPosition(largestCellID, largestCellicol, largestCellirow);
     if(largestCelliMod < 0) AliFatal("FillHistogramsExtendedQA: GetModuleNumberAndCellPosition found SM with ID<0?");
@@ -2462,18 +2455,18 @@ void AliCaloPhotonCuts::FillHistogramsExtendedQA(AliVEvent *event, Int_t isMC)
     for(Int_t iClus2=iClus+1; iClus2<nclus; iClus2++){
       if(event->IsA()==AliESDEvent::Class()){
         if(arrClustersExtQA)
-          clusterMatched = new AliESDCaloCluster(*(AliESDCaloCluster*)arrClustersExtQA->At(iClus2));
+          clusterMatched = std::unique_ptr<AliVCluster>(new AliESDCaloCluster(*(AliESDCaloCluster*)arrClustersExtQA->At(iClus2)));
         else
-          clusterMatched = new AliESDCaloCluster(*(AliESDCaloCluster*)event->GetCaloCluster(iClus2));
+          clusterMatched = std::unique_ptr<AliVCluster>(new AliESDCaloCluster(*(AliESDCaloCluster*)event->GetCaloCluster(iClus2)));
       } else if(event->IsA()==AliAODEvent::Class()){
         if(arrClustersExtQA)
-          clusterMatched = new AliAODCaloCluster(*(AliAODCaloCluster*)arrClustersExtQA->At(iClus2));
+          clusterMatched = std::unique_ptr<AliVCluster>(new AliAODCaloCluster(*(AliAODCaloCluster*)arrClustersExtQA->At(iClus2)));
         else
-          clusterMatched = new AliAODCaloCluster(*(AliAODCaloCluster*)event->GetCaloCluster(iClus2));
+          clusterMatched = std::unique_ptr<AliVCluster>(new AliAODCaloCluster(*(AliAODCaloCluster*)event->GetCaloCluster(iClus2)));
       }
 
-      if( (fClusterType == 1 || fClusterType == 3 || fClusterType == 4) && !clusterMatched->IsEMCAL()){delete clusterMatched; continue;}
-      if( fClusterType == 2 && clusterMatched->GetType() !=AliVCluster::kPHOSNeutral){delete clusterMatched; continue;}
+      if( (fClusterType == 1 || fClusterType == 3 || fClusterType == 4) && !clusterMatched->IsEMCAL()){continue;}
+      if( fClusterType == 2 && clusterMatched->GetType() !=AliVCluster::kPHOSNeutral){continue;}
 
       Float_t clusPos2[3]={0,0,0};
       clusterMatched->GetPosition(clusPos2);
@@ -2481,31 +2474,31 @@ void AliCaloPhotonCuts::FillHistogramsExtendedQA(AliVEvent *event, Int_t isMC)
       Double_t etaclusterMatched = clusterMatchedVector.Eta();
       Double_t phiclusterMatched = clusterMatchedVector.Phi();
       if (phiclusterMatched < 0) phiclusterMatched += 2*TMath::Pi();
-      Int_t nLMMatched = GetNumberOfLocalMaxima(clusterMatched, event);
+      Int_t nLMMatched = GetNumberOfLocalMaxima(clusterMatched.get(), event);
 
       //acceptance cuts
-      if (fUseEtaCut && (etaclusterMatched < fMinEtaCut || etaclusterMatched > fMaxEtaCut)){delete clusterMatched; continue;}
-      if (fUseEtaCut && fClusterType == 3 && etaclusterMatched < fMaxEtaInnerEdge && etaclusterMatched > fMinEtaInnerEdge ) {delete clusterMatched; continue;}
+      if (fUseEtaCut && (etaclusterMatched < fMinEtaCut || etaclusterMatched > fMaxEtaCut)){continue;}
+      if (fUseEtaCut && fClusterType == 3 && etaclusterMatched < fMaxEtaInnerEdge && etaclusterMatched > fMinEtaInnerEdge ) {continue;}
       if (fClusterType == 4){
-        if (fUsePhiCut && (phiclusterMatched < fMinPhiCut || phiclusterMatched > fMaxPhiCut) && (phiclusterMatched < fMinPhiCutDMC || phiclusterMatched > fMaxPhiCutDMC)){delete clusterMatched; continue;}
+        if (fUsePhiCut && (phiclusterMatched < fMinPhiCut || phiclusterMatched > fMaxPhiCut) && (phiclusterMatched < fMinPhiCutDMC || phiclusterMatched > fMaxPhiCutDMC)){continue;}
       } else {
-        if (fUsePhiCut && (phiclusterMatched < fMinPhiCut || phiclusterMatched > fMaxPhiCut)){delete clusterMatched; continue;}
+        if (fUsePhiCut && (phiclusterMatched < fMinPhiCut || phiclusterMatched > fMaxPhiCut)){continue;}
       }
-      if (fUseDistanceToBadChannel>0 && CheckDistanceToBadChannel(clusterMatched,event)){delete clusterMatched; continue;}
+      if (fUseDistanceToBadChannel>0 && CheckDistanceToBadChannel(clusterMatched.get(),event)){continue;}
       //cluster quality cuts
-      if (fVectorMatchedClusterIDs.size()>0 && CheckClusterForTrackMatch(clusterMatched)){delete clusterMatched; continue;}
-      if (fUseMinEnergy && (clusterMatched->E() < fMinEnergy)){delete clusterMatched; continue;}
-      if (fUseNCells && (clusterMatched->GetNCells() < fMinNCells)){delete clusterMatched; continue;}
-      if (fUseNLM && (nLMMatched < fMinNLM || nLMMatched > fMaxNLM)){delete clusterMatched; continue;}
-      if (fUseM02 == 1 && (clusterMatched->GetM02() < fMinM02 || clusterMatched->GetM02() > fMaxM02)){delete clusterMatched; continue;}
-      if (fUseM02 == 2 && (clusterMatched->GetM02() < CalculateMinM02(fMinM02CutNr, clusterMatched->E()) || cluster->GetM02() > CalculateMaxM02(fMaxM02CutNr, clusterMatched->E()))){delete clusterMatched; continue;}
-      if (fUseM20 && (clusterMatched->GetM20() < fMinM20 || clusterMatched->GetM20() > fMaxM20)){delete clusterMatched; continue;}
-      if (fUseDispersion && (clusterMatched->GetDispersion() > fMaxDispersion)){delete clusterMatched; continue;}
+      if (fVectorMatchedClusterIDs.size()>0 && CheckClusterForTrackMatch(clusterMatched.get())){continue;}
+      if (fUseMinEnergy && (clusterMatched->E() < fMinEnergy)){continue;}
+      if (fUseNCells && (clusterMatched->GetNCells() < fMinNCells)){continue;}
+      if (fUseNLM && (nLMMatched < fMinNLM || nLMMatched > fMaxNLM)){continue;}
+      if (fUseM02 == 1 && (clusterMatched->GetM02() < fMinM02 || clusterMatched->GetM02() > fMaxM02)){continue;}
+      if (fUseM02 == 2 && (clusterMatched->GetM02() < CalculateMinM02(fMinM02CutNr, clusterMatched->E()) || cluster->GetM02() > CalculateMaxM02(fMaxM02CutNr, clusterMatched->E()))){continue;}
+      if (fUseM20 && (clusterMatched->GetM20() < fMinM20 || clusterMatched->GetM20() > fMaxM20)){continue;}
+      if (fUseDispersion && (clusterMatched->GetDispersion() > fMaxDispersion)){continue;}
 
       // Get rowdiff and coldiff
 
       Int_t matched_largestCellicol = -1, matched_largestCellirow = -1;
-      Int_t matched_largestCellID = FindLargestCellInCluster(clusterMatched,event);
+      Int_t matched_largestCellID = FindLargestCellInCluster(clusterMatched.get(),event);
       if(matched_largestCellID==-1) AliFatal("FillHistogramsExtendedQA: FindLargestCellInCluster found cluster with NCells<1?");
       Int_t matched_largestCelliMod = GetModuleNumberAndCellPosition(matched_largestCellID, matched_largestCellicol, matched_largestCellirow);
       if(matched_largestCelliMod < 0) AliFatal("FillHistogramsExtendedQA: GetModuleNumberAndCellPosition found SM with ID<0?");
@@ -2557,10 +2550,7 @@ void AliCaloPhotonCuts::FillHistogramsExtendedQA(AliVEvent *event, Int_t isMC)
           fHistClusterDistance1DInTimeCut->Fill(dist1D);
         }
       }
-      delete clusterMatched;
     }
-
-    delete cluster;
   }
   return;
 }
@@ -3473,18 +3463,18 @@ void AliCaloPhotonCuts::MatchTracksToClusters(AliVEvent* event, Double_t weight,
   }
 
   // if not EMCal only reconstruction (-> hybrid PCM+EMCal), use only primary tracks for basic track matching procedure
-  AliESDtrackCuts *EsdTrackCuts = 0x0;
+  std::unique_ptr<AliESDtrackCuts> EsdTrackCuts;
   if(!isEMCalOnly && esdev){
     // Using standard function for setting Cuts
     Int_t runNumber = event->GetRunNumber();
     // if LHC11a or earlier or if LHC13g or if LHC12a-i -> use 2010 cuts
     if( (runNumber<=146860) || (runNumber>=197470 && runNumber<=197692) || (runNumber>=172440 && runNumber<=193766) ){
-      EsdTrackCuts = AliESDtrackCuts::GetStandardITSTPCTrackCuts2010();
+      EsdTrackCuts = std::unique_ptr<AliESDtrackCuts>(AliESDtrackCuts::GetStandardITSTPCTrackCuts2010());
     // else if run2 data use 2015 PbPb cuts
     }else if (runNumber>=209122){
       // EsdTrackCuts = AliESDtrackCuts::GetStandardITSTPCTrackCuts2015PbPb();
       // hard coded track cuts for the moment, because AliESDtrackCuts::GetStandardITSTPCTrackCuts2015PbPb() gives spams warnings
-      EsdTrackCuts = new AliESDtrackCuts();
+      EsdTrackCuts = std::unique_ptr<AliESDtrackCuts>(new  AliESDtrackCuts());
       EsdTrackCuts->AliESDtrackCuts::SetMinNCrossedRowsTPC(70);
       EsdTrackCuts->AliESDtrackCuts::SetMinRatioCrossedRowsOverFindableClustersTPC(0.8);
       EsdTrackCuts->AliESDtrackCuts::SetCutOutDistortedRegionsTPC(kTRUE);
@@ -3503,7 +3493,7 @@ void AliCaloPhotonCuts::MatchTracksToClusters(AliVEvent* event, Double_t weight,
       EsdTrackCuts->AliESDtrackCuts::SetMaxChi2PerClusterITS(36);
     // else use 2011 version of track cuts
     }else{
-      EsdTrackCuts = AliESDtrackCuts::GetStandardITSTPCTrackCuts2011();
+      EsdTrackCuts = std::unique_ptr<AliESDtrackCuts>(AliESDtrackCuts::GetStandardITSTPCTrackCuts2011());
     }
     EsdTrackCuts->SetMaxDCAToVertexZ(2);
     EsdTrackCuts->SetEtaRange(-0.8, 0.8);
@@ -3538,22 +3528,25 @@ void AliCaloPhotonCuts::MatchTracksToClusters(AliVEvent* event, Double_t weight,
     Float_t clsPos[3] = {0.,0.,0.};
     for(Int_t iclus=0;iclus < nClus;iclus++){
       AliVCluster * cluster = NULL;
+      std::unique_ptr<AliVCluster> tmpcluster;
       if(arrClustersMatch){
-        if(esdev)
-            cluster = new AliESDCaloCluster(*(AliESDCaloCluster*)arrClustersMatch->At(iclus));
-        else if(aodev)
-            cluster = new AliAODCaloCluster(*(AliAODCaloCluster*)arrClustersMatch->At(iclus));
+        if(esdev){
+          tmpcluster = std::unique_ptr<AliVCluster>(new AliESDCaloCluster(*(AliESDCaloCluster*)arrClustersMatch->At(iclus)));
+          cluster = tmpcluster.get();
+        }
+        else if(aodev){
+          tmpcluster = std::unique_ptr<AliVCluster>(new AliAODCaloCluster(*(AliAODCaloCluster*)arrClustersMatch->At(iclus)));
+          cluster = tmpcluster.get();
+        }
       } else {
         cluster = event->GetCaloCluster(iclus);
       }
 
       if (!cluster){
-        if(arrClustersMatch) delete cluster;
         continue;
       }
       Float_t dEta, dPhi;
       if(!fCaloTrackMatcher->GetTrackClusterMatchingResidual(inTrack->GetID(),cluster->GetID(),dEta,dPhi)){
-        if(arrClustersMatch) delete cluster;
         continue;
       }
       cluster->GetPosition(clsPos);
@@ -3638,15 +3631,8 @@ void AliCaloPhotonCuts::MatchTracksToClusters(AliVEvent* event, Double_t weight,
         }
         // cout << "no match" << endl;
       }
-      if(arrClustersMatch) delete cluster;
     }
   }
-  if(EsdTrackCuts){
-    delete EsdTrackCuts;
-    EsdTrackCuts=0x0;
-  }
-
-  return;
 }
 
 //________________________________________________________________________
@@ -5951,8 +5937,8 @@ void AliCaloPhotonCuts::ApplyNonLinearity(AliVCluster* cluster, Int_t isMC)
           if(fClusterType==1 || fClusterType==3 ){
             energy /= FunctionNL_kSDM(energy, 0.938791, -3.1117, -0.329165) ;   //  2019 01 23
           } else if (fClusterType==2){
-            energy /= FunctionNL_kSDM(energy, 0.966329, -2.60954, -0.712271) ;
-            energy /= 1.0105;
+            energy /= FunctionNL_kSDM(energy, 1.00712, -2.10075, -1.94799) ; // 2019 02 07
+            energy /= FunctionNL_kSDM(energy, 0.988456, -4.34666, -0.188688) ; // 2019 02 14
           }
         } else if( fCurrentMC==k18f3bc || fCurrentMC==k18b9b || fCurrentMC==k18b9c ) {
           if(fClusterType==1 ){
@@ -5996,7 +5982,8 @@ void AliCaloPhotonCuts::ApplyNonLinearity(AliVCluster* cluster, Int_t isMC)
           if(fClusterType==1 || fClusterType==3 ){
             energy /= FunctionNL_kSDM(energy, 0.950272, -3.25783, -0.48271) ; //  2019 01 23
           } else if (fClusterType==2) {
-          energy /= FunctionNL_kSDM(energy, 0.972557, -2.84481, -1.07834, 1.);
+            energy /= FunctionNL_kSDM(energy, 0.982663, -2.48524, -0.615548, 1.);
+            energy /= FunctionNL_DPOW(energy, 8.4639110152, -7.4514726252, -0.0004532696,  2.3679260731, -1.3567522221, -0.0044275381) ;
           }
         } else if( fCurrentMC==k18f3bc || fCurrentMC==k18b9b || fCurrentMC==k18b9c ) {
           if(fClusterType==1 ){
@@ -6167,7 +6154,8 @@ void AliCaloPhotonCuts::ApplyNonLinearity(AliVCluster* cluster, Int_t isMC)
             energy /= FunctionNL_DPOW(energy, 1.1717517490, -0.1999999942, -0.2126460833, 1.1820209963, -0.1999999999, -0.1811167881 ) ; // 2018 03 22
             energy /= 0.992867 ; // 2018 12 09
           } else if (fClusterType==2){
-            energy /= FunctionNL_DExp(energy, 0.9905300112, 2.7065386448, -2.8710992597, 1.0120094177, 1.0727540786, -3.6489386787, -1., 1.);
+            energy /= FunctionNL_DExp(energy, 1.0135811994, 0.8812760922, -2.8245351546, 1.0202921434, 0.6804648476, -4.0012344773, -1., 1.);
+            energy /= FunctionNL_DExp(energy, 1.0160625375, 0.7320554259, -4.8983050388, 1.0204802067, 0.6653009626, -3.9947369662, 1., 1.);
           } else if(fClusterType==2) {
             energy /= (FunctionNL_DExp(energy, 1.0154938040, 0.3062978125, -3.9089772679, 1.0061692542, 513.7621552761, -3566.4426936867 ) * 0.996512);
           }

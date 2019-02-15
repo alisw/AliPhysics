@@ -61,9 +61,11 @@ class AliHFTreeHandlerD0toKpi : public AliHFTreeHandler
     vector<float> fCosThetaStar; /// vector of candidate costhetastar
     vector<float> fImpParProd; /// vector of daughter impact-parameter product
     vector<float> fNormd0MeasMinusExp; ///vector of candidate topomatic variable
+    vector<float> fImpParErrProng[knMaxProngs]; ///vector of error on prongs rphi impact param [cm]
+    vector<float> fNormDecayLength; ///vector of candidate normalised decay length
 
     /// \cond CLASSIMP
-    ClassDef(AliHFTreeHandlerD0toKpi,1); /// 
+    ClassDef(AliHFTreeHandlerD0toKpi,2); /// 
     /// \endcond
 };
 #endif

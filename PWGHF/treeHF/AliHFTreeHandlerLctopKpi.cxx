@@ -32,6 +32,8 @@ AliHFTreeHandlerLctopKpi::AliHFTreeHandlerLctopKpi():
   AliHFTreeHandler(),
   fImpParProng(),
   fSigmaVertex(),
+  fDist12toPrim(),
+  fDist23toPrim(),
   fNormd0MeasMinusExp(),
   fRandom()
 {
@@ -48,6 +50,8 @@ AliHFTreeHandlerLctopKpi::AliHFTreeHandlerLctopKpi(int PIDopt):
   AliHFTreeHandler(PIDopt),
   fImpParProng(),
   fSigmaVertex(),
+  fDist12toPrim(),
+  fDist23toPrim(),
   fNormd0MeasMinusExp(),
   fRandom()
 {
@@ -84,6 +88,8 @@ TTree* AliHFTreeHandlerLctopKpi::BuildTree(TString name, TString title)
 
   //set Lc variables
   fTreeVar->Branch("sig_vert",&fSigmaVertex);
+  fTreeVar->Branch("dist_12",&fDist12toPrim);
+  fTreeVar->Branch("dist_23",&fDist23toPrim);
   fTreeVar->Branch("max_norm_d0d0exp",&fNormd0MeasMinusExp);
   for(unsigned int iProng=0; iProng<fNProngs; iProng++){
     fTreeVar->Branch(Form("imp_par_prong%d",iProng),&fImpParProng[iProng]);
@@ -120,6 +126,7 @@ bool AliHFTreeHandlerLctopKpi::SetVariables(AliAODRecoDecayHF* cand, float bfiel
   fCosP.push_back(cand->CosPointingAngle());
   fCosPXY.push_back(cand->CosPointingAngleXY());
   fImpParXY.push_back(cand->ImpParXY());
+  fDCA.push_back(cand->GetDCA());
   fNormd0MeasMinusExp.push_back(ComputeMaxd0MeasMinusExp(cand,bfield));
 
   //Lc -> pKpi variables
@@ -131,6 +138,8 @@ bool AliHFTreeHandlerLctopKpi::SetVariables(AliAODRecoDecayHF* cand, float bfiel
   }
   else return false;
   fSigmaVertex.push_back(((AliAODRecoDecayHF3Prong*)cand)->GetSigmaVert());
+  fDist12toPrim.push_back(((AliAODRecoDecayHF3Prong*)cand)->GetDist12toPrim());
+  fDist23toPrim.push_back(((AliAODRecoDecayHF3Prong*)cand)->GetDist23toPrim());
   for(unsigned int iProng=0; iProng<fNProngs; iProng++) {
     fImpParProng[iProng].push_back(cand->Getd0Prong(iProng));
   }
@@ -158,6 +167,8 @@ void AliHFTreeHandlerLctopKpi::FillTree() {
   if(!fIsMCGenTree) {
     ResetDmesonCommonVarVectors();
     fSigmaVertex.clear();
+    fDist12toPrim.clear();
+    fDist23toPrim.clear();
     fNormd0MeasMinusExp.clear();
     for(unsigned int iProng=0; iProng<fNProngs; iProng++) fImpParProng[iProng].clear();
     ResetSingleTrackVarVectors();

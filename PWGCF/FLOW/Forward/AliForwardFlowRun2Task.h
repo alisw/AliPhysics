@@ -111,6 +111,7 @@ public:
   TRandom fRandom; //!
 
   TH2D*   centralDist;//!
+  TH2D*   refDist;//!
   TH2D*   forwardDist;//!
 
   // A class combining all the settings for this analysis

@@ -49,7 +49,7 @@ AliEmcalParticleJetConstituent::AliEmcalParticleJetConstituent(const AliVParticl
 }
 
 AliEmcalParticleJetConstituent::AliEmcalParticleJetConstituent(const AliEmcalParticleJetConstituent &other) :
-    AliEmcalJetConstituent(),
+    AliEmcalJetConstituent(other),
     fkParticle(other.fkParticle)
 {
 

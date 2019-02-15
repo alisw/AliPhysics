@@ -1724,8 +1724,6 @@ void AliAnalysisTaskPHOSPi0EtaToGammaGamma::ClusterQA()
   Double_t R = 0, coreR=0;
   Double_t coreE = 0;
 
-//  AliPHOSTriggerHelper *tmp = new AliPHOSTriggerHelper();
-
   for(Int_t i1=0;i1<multClust;i1++){
     AliCaloPhoton *ph = (AliCaloPhoton*)fPHOSClusterArray->At(i1);
     if(!fPHOSClusterCuts->AcceptPhoton(ph)) continue;

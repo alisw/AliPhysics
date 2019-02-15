@@ -38,12 +38,12 @@ declare betaTemplDirPPb="/home/colamaria/Scrivania/Codici_Ausiliari_Dh/Dhadron_F
 declare -a betaTemplDir=( "$betaTemplDirPP" "$betaTemplDirPPb" "$betaTemplDirPPb"  "$betaTemplDirPP")
 
 ### the following is needed for hte comparison to MC (as well as MC fitting)
-declare -a Nmccase=( 6 6 6 6 ) #warning! If you change this, the number of fitted MC models will change (and also their order!) I suggest not changing it but only the array below...
-declare -a mccasePP=( 0 0 1 1 1 1 0 0 ) # according to CompareFitResults array: Perugia0, Perugia2010, Perugia2011, PYTHIA8, HERWIG, POHWEG+Perugia2011, POWHEG+Perugia2011 with EPS09, EPOS 3
+declare -a Nmccase=( 6 6 6 7 ) #warning! If you change this, the number of fitted MC models will change (and also their order!) I suggest not changing it but only the array below...
+declare -a mccasePP=( 0 0 1 1 1 1 1 0 ) # according to CompareFitResults array: Perugia0, Perugia2010, Perugia2011, PYTHIA8, HERWIG, POHWEG+Perugia2011, POWHEG+Perugia2011 with EPS09, EPOS 3
 declare -a mccasePPb=( 1 1 1 1 0 0 1 0 )
 declare -a isreflectedMC=( 0 0 0 0 0 0 0 1 ) # used only to determine the fit range and the transverse region range, it does not however change the results. Only EPOS is already reflected
-declare -a templRootNamepp=( "CorrelationPlotsPerugia0PtAveragefromC" "CorrelationPlotsPerugia2010PtAveragefromC" "CorrelationPlotsPerugia2011PtAveragefromC" "CorrelationPlotsPYTHIA8PtAveragefromC" "CorrelationPlotsHERWIGPtAveragefromC" "CorrelationPlotsPOWHEGPtAveragefromC"  "CorrelationPlotsEPOS3PtAveragefromC")
-declare -a templRootNamepPb=( "CorrelationPlotsPerugia0wBoostPtAveragefromC" "CorrelationPlotsPerugia2010wBoostPtAveragefromC" "CorrelationPlotsPerugia2011wBoostPtAveragefromC" "CorrelationPlotsPYTHIA8wBoostPtAveragefromC" "CorrelationPlotsHERWIGPtAveragefromC" "CorrelationPlotsPOWHEGPtAveragefromC" "CorrelationPlotsEPOS3PtAveragefromC")
+declare -a templRootNamepp=( "CorrelationPlotsPerugia0PtAveragefromC" "CorrelationPlotsPerugia2010PtAveragefromC" "CorrelationPlotsPerugia2011PtAveragefromC" "CorrelationPlotsPYTHIA8PtAveragefromC" "CorrelationPlotsHERWIGPtAveragefromC" "CorrelationPlotsPOWHEGPtAveragefromC" "CorrelationPlotsPOW_LOPtAveragefromC" "CorrelationPlotsEPOSPtAveragefromC")
+declare -a templRootNamepPb=( "CorrelationPlotsPerugia0wBoostPtAveragefromC" "CorrelationPlotsPerugia2010wBoostPtAveragefromC" "CorrelationPlotsPerugia2011wBoostPtAveragefromC" "CorrelationPlotsPYTHIA8wBoostPtAveragefromC" "CorrelationPlotsHERWIGPtAveragefromC" "CorrelationPlotsPOWHEGPtAveragefromC" "CorrelationPlotsPOW_LOPtAveragefromC" "CorrelationPlotsEPOSPtAveragefromC")
 
 declare puritytemplateDirpp="/home/colamaria/Scrivania/Codici_Ausiliari_Dh/Dhadron_Final_Output_pp2017/Inputs/PurityTemplates_pp"
 declare puritytemplateDirpPb="/home/colamaria/Scrivania/Codici_Ausiliari_Dh/Dhadron_Final_Output_pp2017/Inputs/PurityTemplates_pPb"
@@ -1200,14 +1200,12 @@ SetIsDataReflected($reflect)
 SetBaselineDirectory("${baseDir}/AllPlots/Averages/FitResults")
 SetAverageMode($averageOpt)
 SetSplitMClegendInTwoPanels(kTRUE)
-IncludeModel(0,${mccasePP[0]})
-IncludeModel(1,${mccasePP[1]})
-IncludeModel(2,${mccasePP[2]})
-IncludeModel(3,${mccasePP[3]})
-IncludeModel(4,${mccasePP[4]})
-IncludeModel(5,${mccasePP[5]})
-IncludeModel(6,${mccasePP[6]}) 
-IncludeModel(7,${mccasePP[7]})
+SetIncludePerugia2011()
+SetIncludePYTHIA8()
+SetIncludeHERWIG()
+SetIncludeHERWIG()
+SetIncludePOWHEG()
+SetIncludePOWHEG_LO()
 DoComparison_pp2017VsMCallPanels()
 DoComparison_pp2017VsMCSinglePanel()
 EOF

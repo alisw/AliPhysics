@@ -42,11 +42,13 @@ class AliHFTreeHandlerLctopKpi : public AliHFTreeHandler
 
     vector<float> fImpParProng[knMaxProngs]; ///vectors of prong impact parameter
     vector<float> fSigmaVertex; /// vector of candidate sigma vertex
+    vector<float> fDist12toPrim; /// vector of candidate distance between track 1-2 vertex to primary vertex
+    vector<float> fDist23toPrim; /// vector of candidate distance between track 2-3 vertex to primary vertex
     vector<float> fNormd0MeasMinusExp; ///vector of candidate topomatic variable
     TRandom3 *fRandom;
 
     /// \cond CLASSIMP
-    ClassDef(AliHFTreeHandlerLctopKpi,1); /// 
+    ClassDef(AliHFTreeHandlerLctopKpi,2); /// 
     /// \endcond
 };
 

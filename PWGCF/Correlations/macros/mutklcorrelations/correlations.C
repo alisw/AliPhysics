@@ -8,7 +8,6 @@
 #include "AliVEvent.h"
 #include "Pool.h"
 #include "fstream"
-#include "TAlienCollection.h"
 #include "TGrid.h"
 #include "env.h"
 
@@ -173,7 +172,7 @@ void correlations(
 //  for (Int_t i=0;i<64;i++) fTree->AddFile(Form("/data/trees/mu/lhc13f/AnalysisResults.%03i.root",i));
 
 //  if (!TGrid::Connect("alien://")) return;
-//  TAlienCollection* coll = (TAlienCollection*) TAlienCollection::Open("wn.xml");
+//  TGridCollection* coll = gGrid->OpenCollection("wn.xml");
 //  while (coll->Next()) { fTree->Add(coll->GetTURL());}
 
   
