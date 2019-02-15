@@ -802,6 +802,16 @@ void AddTask_GammaCalo_PbPb(
     cuts.AddCutCalo("11210a13","111118105k032230000","016310d100000050"); //
   } else if (trainConfig == 264){ // EMCal + DCal clusters - 0-90% centrality
     cuts.AddCutCalo("10910a13","4117900050032230000","0163103100000050"); //
+  } else if (trainConfig == 265){ // EMCAL clusters - 20190215
+    cuts.AddCutCalo("12410a13","111118305k032220000","01631031000000d0"); //
+    cuts.AddCutCalo("12510a13","111118305k032220000","01631031000000d0"); //
+    cuts.AddCutCalo("14610a13","111118305k032220000","01631031000000d0"); //
+    cuts.AddCutCalo("16810a13","111118305k032220000","01631031000000d0"); //
+  } else if (trainConfig == 266){ // EMCAL clusters - 20190215, asym cut on 0.8
+    cuts.AddCutCalo("30110a13","111118305k032220000","01631061000000d0"); //
+    cuts.AddCutCalo("31210a13","111118305k032220000","01631061000000d0"); //
+    cuts.AddCutCalo("10110a13","111118305k032220000","01631061000000d0"); //
+    cuts.AddCutCalo("11210a13","111118305k032220000","01631061000000d0"); //
 
   //systematics for LHC15o 0-10%
   } else if (trainConfig == 270){ // EMCAL
@@ -880,6 +890,11 @@ void AddTask_GammaCalo_PbPb(
     cuts.AddCutCalo("12410a13","111118104k032230000","01631031000000d0"); // cluster timing cut
     cuts.AddCutCalo("12410a13","111118107k032230000","01631031000000d0"); // cluster timing cut
     cuts.AddCutCalo("12410a13","11111810ak032230000","01631031000000d0"); // cluster timing cut
+  } else if (trainConfig == 288){ // EMCAL M02 studies
+    cuts.AddCutCalo("12410a13","111118105k032230000","01631031000000d0"); // min/max M02  0.1<M<0.5
+    cuts.AddCutCalo("12410a13","111118105k032200000","01631031000000d0"); // min/max M02  0.1<M<1000
+    cuts.AddCutCalo("12410a13","111118105k032240000","01631031000000d0"); // min/max M02  0.1<M<0.4
+    cuts.AddCutCalo("12410a13","111118105k032220000","01631031000000d0"); // min/max M02  0.1<M<0.7
 
   //systematics for LHC15o 60-80%
   } else if (trainConfig == 290){ // EMCAL
