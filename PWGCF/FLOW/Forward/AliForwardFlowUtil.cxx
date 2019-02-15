@@ -51,7 +51,7 @@ fMCevent(),
 mc(kFALSE),
 dNdeta(),
 fSettings(),
-minpt(5),
+minpt(0.2),
 maxpt(5),
 dodNdeta(kTRUE)
 {
@@ -81,9 +81,9 @@ void AliForwardFlowUtil::FillData(TH2D*& refDist, TH2D*& centralDist, TH2D*& for
       else                  this->FillFromTracks(centralDist, fSettings.tracktype);
     }
     else {
-      Float_t zvertex = this->GetZ();
 
       this->mc = kTRUE;
+      Float_t zvertex = this->GetZ();
 
       if(!fMCevent)
         throw std::runtime_error("Not MC as expected");
@@ -205,7 +205,7 @@ Bool_t AliForwardFlowUtil::ExtraEventCutFMD(TH2D& forwarddNdedp, double cent, Bo
 
 
 Double_t AliForwardFlowUtil::GetZ(){
-  if (mc) return fMCevent->GetPrimaryVertex()->GetZ();
+  if (this->fSettings.mc) return fMCevent->GetPrimaryVertex()->GetZ();
   else return fevent->GetPrimaryVertex()->GetZ();
 }
 
@@ -313,8 +313,7 @@ void AliForwardFlowUtil::FillFromTrackrefs(TH2D*& fwd) const
 
 void AliForwardFlowUtil::FillFromPrimariesAOD(TH2D*& cen) const
 {
-  Int_t nTracksMC = fMCevent->GetNumberOfTracks();
-
+    Int_t nTracksMC = fMCevent->GetNumberOfTracks();
   for (Int_t iTr = 0; iTr < nTracksMC; iTr++) {
     AliAODMCParticle* p = static_cast< AliAODMCParticle* >(fMCevent->GetTrack(iTr));
     if (!p->IsPhysicalPrimary()) continue;

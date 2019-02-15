@@ -19,7 +19,7 @@ class THnSparse;
 class TProfile;
 
 /**
- * @defgroup Histmanager
+ * @defgroup Histmanager Histogram manager
  * @brief Histogram manager and components needed to make it work.
  */
 

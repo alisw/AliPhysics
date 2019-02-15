@@ -6404,9 +6404,8 @@ void AliCaloPhotonCuts::ApplyNonLinearity(AliVCluster* cluster, Int_t isMC)
       if(isMC>0){
         if( fCurrentMC== kPbPb5T15HIJING){
           if(fClusterType==1){
-            energy /= (0.955001) ;
-            energy /= FunctionNL_DExp(energy, 1.0380275426, 0.7534354400, -2.2110408210, 1.0408879042, 0.4399353376, -2.9554918759) ;
-            energy /= FunctionNL_DExp(energy, 1.0300358811, 0.8758778788, -2.4142808809, 1.0279722682, 0.5471598153, -3.5373985248) ;
+            energy /= (FunctionNL_kSDM(energy, 0.91336, -2.57765, -0.334976) ); //updated 7 Dec 2018 - peripheral (60-80%) pcmcalo correction
+            energy /= (FunctionNL_DPOW(energy, 1.1698155939, -0.1999998275, -0.2656304851, 1.1754720500, -0.1999999998, -0.1467153129) ); //additional calo correction 20190215
           }
         } else {
           fPeriodNameAvailable = kFALSE;

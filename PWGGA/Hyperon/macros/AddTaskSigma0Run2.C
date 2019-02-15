@@ -1,4 +1,4 @@
-AliAnalysisTaskSE *AddTaskSigma0Run2(bool isMC = false, bool isHeavyIon = false,
+AliAnalysisTaskSE *AddTaskSigma0Run2(bool isRun1 = false ,bool isMC = false, bool isHeavyIon = false,
                                      TString trigger = "kINT7",
                                      const char *cutVariation = "0") {
   TString suffix;
@@ -106,7 +106,6 @@ AliAnalysisTaskSE *AddTaskSigma0Run2(bool isMC = false, bool isHeavyIon = false,
     v0Cuts->SetArmenterosCut(0.01, 0.17, 0.2, 0.9);
     v0Cuts->SetPIDnSigma(100.f);
     v0Cuts->SetV0PtMin(0.);
-    v0Cuts->SetV0DecayVertexMax(180.f);
     v0Cuts->SetK0Rejection(0., 0.);
     v0Cuts->SetLambdaSelection(1.110, 1.120);
     v0Cuts->SetTPCclusterMin(0.f);
@@ -134,7 +133,6 @@ AliAnalysisTaskSE *AddTaskSigma0Run2(bool isMC = false, bool isHeavyIon = false,
     antiv0Cuts->SetArmenterosCut(0.01, 0.17, 0.2, 0.9);
     antiv0Cuts->SetPIDnSigma(100.f);
     antiv0Cuts->SetV0PtMin(0.);
-    antiv0Cuts->SetV0DecayVertexMax(180.f);
     antiv0Cuts->SetK0Rejection(0., 0.);
     antiv0Cuts->SetLambdaSelection(1.110, 1.120);
     antiv0Cuts->SetTPCclusterMin(0.f);
@@ -160,6 +158,9 @@ AliAnalysisTaskSE *AddTaskSigma0Run2(bool isMC = false, bool isHeavyIon = false,
   sigmaCuts->SetPDG(3212, 3122, 22);
   sigmaCuts->SetLambdaCuts(v0Cuts);
   sigmaCuts->SetV0ReaderName(V0ReaderName.Data());
+  if (suffix == "1"){
+  sigmaCuts->SetArmenterosCut(0,0.12,0.6,1);
+  }
   if (suffix != "0" && suffix != "999") {
     sigmaCuts->SetLightweight(true);
     sigmaCuts->SetIsSpectrum(false);
@@ -171,6 +172,9 @@ AliAnalysisTaskSE *AddTaskSigma0Run2(bool isMC = false, bool isHeavyIon = false,
   antiSigmaCuts->SetPDG(-3212, -3122, 22);
   antiSigmaCuts->SetLambdaCuts(antiv0Cuts);
   antiSigmaCuts->SetV0ReaderName(V0ReaderName.Data());
+  if (suffix == "1"){
+  antiSigmaCuts->SetArmenterosCut(0,0.12,0.6,1);
+  }
   if (suffix != "0" && suffix != "999") {
     antiSigmaCuts->SetLightweight(true);
     antiSigmaCuts->SetIsSpectrum(false);
@@ -209,7 +213,7 @@ AliAnalysisTaskSE *AddTaskSigma0Run2(bool isMC = false, bool isHeavyIon = false,
     task->SetMultiplicityMode(AliVEvent::kINT7);
   }
   task->SetV0ReaderName(V0ReaderName.Data());
-  task->SetIsRun1(true);
+  task->SetIsRun1(isRun1);
   task->SetIsHeavyIon(isHeavyIon);
   task->SetIsMC(isMC);
   task->SetV0Cuts(v0Cuts);

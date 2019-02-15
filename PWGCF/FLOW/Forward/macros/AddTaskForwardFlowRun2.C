@@ -147,7 +147,7 @@ AliAnalysisTaskSE* AddTaskForwardFlowRun2( bool doNUA, bool makeFakeHoles, TStri
    AliAnalysisManager::kOutputContainer,
    mgr->GetCommonFileName());
 
-   
+
    AliAnalysisDataContainer* valid = (AliAnalysisDataContainer*)mgr->GetContainers()->FindObject("event_selection_xchange");
    task->ConnectInput(1,valid);
 

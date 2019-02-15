@@ -3,7 +3,7 @@ AliAnalysisTaskElectronEfficiencyV2* AddTask_slehner_ElectronEfficiency(
                                                                 Double_t centMax=100.,
                                                                 Bool_t PIDCorr=kFALSE,
                                                                 Bool_t useAODFilterCuts=kFALSE,
-                                                                TString TMVAweight = "TMVAClassification_BDTG15_400.weights.xml",
+                                                                TString TMVAweight,
                                                                 Int_t genGroup=0,
                                                                 Bool_t fromAlien,
                                                                 TString date="ddmmyy",
@@ -43,6 +43,8 @@ AliAnalysisTaskElectronEfficiencyV2* AddTask_slehner_ElectronEfficiency(
   Bool_t err = kFALSE;
   err |= gROOT->LoadMacro(configLMEECutLibPath.Data());
   err |= gROOT->LoadMacro(configFile.Data());
+//  if (err) { Error("AddTask_slehner_ElectronEfficiency","Config(s) could not be loaded!"); }
+
   // #########################################################
   // #########################################################
   // Creating an instance of the task

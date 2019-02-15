@@ -1,39 +1,17 @@
-//**************************************************************************//
-//WARNING: RUN AFTER COMPILING WITH .L++ TO AVOID SEGMENTATION FALUT CRASHES!!
-//**************************************************************************//
-
-#include <TMath.h>
-#include <TFile.h>
-#include <TCanvas.h>
-#include <TH1F.h>
-#include <TH2F.h>
-#include <TH1D.h>
-#include <TH2D.h>
-#include <TLegend.h>
-#include <TF1.h>
-#include <Riostream.h>
-#include <TBufferFile.h>
-#include <TROOT.h>
-#include <TStyle.h>
-#include <TPaveText.h>
-#include <TPaveLabel.h>
-#include <TVirtualPad.h>
-#include <TMath.h>
-#include <TLatex.h>
-#include <TColor.h>
-#include <TClass.h>
-#include <TGraph.h>
-#include <TGraphAsymmErrors.h>
-#include <sstream>
+// **************************** //
+// AT LINE 693 I ADDED A SAFETY TO REMOVE THE SHADED BOX AND ERROR BOX FOR FIRST BIN (3-5) OF 60-100%, SINCE ASY = 0 AND IT CREATED ISSUES
+// IN CASE THE LINE NUMBER CAHNGE, THE PRECISE CALL IS THE FOLLOWING:
+// if(numsyst==2) {grV2->SetPointError(0,0.65*grV2->GetErrorXlow(0),0.65*grV2->GetErrorXhigh(0),0,0); gr->SetPointError(0,0.65*gr->GetErrorXlow(0),0.65*gr->GetErrorXhigh(0),0,0);}
+// **************************** //
 
 TString strPtAss[3]={"0.3to99.0","0.3to1.0","1.0to99.0"};
 TString strPtAssCanvas[3]={"#it{p}_{T}^{assoc} > 0.3 GeV/#it{c}","0.3 < #it{p}_{T}^{assoc} < 1 GeV/#it{c}","#it{p}_{T}^{assoc} > 1 GeV/#it{c}"};
-TString strSystem[4]={"pp, 5 TeV","p-Pb, 5 TeV"};
-Color_t colSystem[4]={kBlue,kRed};
-Int_t markerStyle[4]={20,21};
+TString strSystem[3]={"0-20%","20-60%","60-100%"};
+Color_t colSystem[3]={kBlue,kRed,kGreen+2};
+Int_t markerStyle[3]={20,21,33};
 Bool_t useLegendForData=kTRUE;
-Bool_t plotv2unc=kFALSE;
-TString strFitResultPPb[2]={"./pp_5TeV/FitResults/Trends_pp","./pPb_5TeV/FitResults/Trends_pPb"}; //  "/Users/administrator/ALICE/CHARM/HFCJ/DCorrelations_Test/2015June7finalPlots/ReflectedPlots/StdRebin/AllPlots/Averages/FitResults";
+Bool_t plotv2unc=kTRUE;
+TString strFitResultPPb[3]={"./020","./2060","./60100"}; //  "/Users/administrator/ALICE/CHARM/HFCJ/DCorrelations_Test/2015June7finalPlots/ReflectedPlots/StdRebin/AllPlots/Averages/FitResults";
 Double_t canvasheight=1000;
 Double_t resizeTextFactor=1.3;//1.*canvasheight/1200.; // size was tuned for canvasheight =1800. 
 Double_t referencePadHeight=0.48; // Do not touch unless the canvas division is changed from 2x3, change canvasheight and resizeTextFactor instead
@@ -43,16 +21,15 @@ Int_t style=1;
 Double_t scaleHeightPads=1;// do not touch this, it is regulated automatically in the macro
 Double_t scaleWidthPads=1;// do not touch this, it is regulated automatically in the macro
 TString strFitResultMC[4]={"","","",""};
-TString basicdir="$PWD";
 //TString strFitResultMC[2]={"/Users/administrator/ALICE/CHARM/HFCJ/DCorrelations_Test/2015June7finalPlots/MCTemplates/Templates_pp_12May15/FitResults/",
 //			   "/Users/administrator/ALICE/CHARM/HFCJ/DCorrelations_Test/2015May19UseScriptPWGHF/MCTemplates/Templates_pPb_12May15/FitResults/"};
 
 TString strquantityFile[5]={"NSYield","NSSigma","Pedestal","ASYield","ASSigma"};
 
 Double_t maxRangePPb[6][5]={
-         {4.1,0.64,13,3.6,1.09},
-         {4.1,0.64,13,3.6,1.09},
-         {4.1,0.64,13,3.6,1.09},
+         {3.7,0.64,13,3.6,1.28},
+         {3.7,0.64,13,3.6,1.28},
+         {3.7,0.64,13,3.6,1.28},
          {1.35,0.64,13,2,1.28},
          {1.35,0.64,13,2,1.28},
          {1.35,0.64,13,2,1.28}};
@@ -66,12 +43,12 @@ Double_t maxRangePPbSinglePanel[6][5]={
          {0.6,0.8,0.3,1.0,1.48}};
 
 Double_t minptMC=0.,maxptMC=99.;
-Double_t minptData=3.5,maxptData=22.; //you have to be tighter than real limits...
+Double_t minptData=0.,maxptData=99.;
 Int_t ncolumns=3;
-Int_t nrows=3;
-Double_t ytitleoffset=2.65,xtitleoffset=2.4;
+Int_t nrows=2;
+Double_t ytitleoffset=3.25,xtitleoffset=2.75;
 Bool_t skip3to5=kFALSE;
-Double_t markersize=1.2;
+Double_t markersize[3]={1.2,1.3,2};
 Double_t markersizeMC=1.2;
 Bool_t drawSystMC=kTRUE;
 Bool_t runonpPb2016=kTRUE;
@@ -82,12 +59,10 @@ void SetMinPtDisplayMC(Double_t ptmin){minptData=ptmin;}
 void SetMaxPtDisplayMC(Double_t ptmax){maxptData=ptmax;}
 void SetRunOn2016(Bool_t run){runonpPb2016=run;}
 
-TCanvas* Compare(Int_t binass,Int_t quantity,TPad *pd=0x0,Int_t textlegendOptions=0);
-
 void AdaptRangeHist(TH1D *h,Double_t minpt,Double_t maxpt){
   for(Int_t i=1;i<=h->GetNbinsX();i++){
     if(h->GetXaxis()->GetBinUpEdge(i)<minpt*1.001 ||  h->GetXaxis()->GetBinLowEdge(i)>maxpt*0.999 ){
-      h->SetBinContent(i,-1);
+      h->SetBinContent(i,0);
       h->SetBinError(i,0);
     }
   }
@@ -119,15 +94,15 @@ void SetDrawSystMC(Bool_t drawsystmc){
 void Init3x3Settings(){
   referencePadHeight=0.35;
   resizeTextFactor=0.85;
-  ytitleoffset=4.8;
-  xtitleoffset=4;
+  ytitleoffset=5.8;
+  xtitleoffset=5;
   ncolumns=3;
   nrows=3;
   markersize=1.;
   markersizeMC=1.;
 }
 
-TString yaxisTitle[5]={"Associated yield","Peak width (rad)","Baseline (rad^{-1})","Associated yield","Peak width (rad)"};
+TString yaxisTitle[5]={"Associated yield","NS peak width (rad)","Baseline (rad^{-1})","Associated yield","#sigma_{fit,AS} (rad)"};
 Double_t leftMarginCanvas=0.17;
 Double_t rightMarginCanvas=0.055;
 Double_t bottomMarginCanvas=0.13;
@@ -199,13 +174,12 @@ Int_t CountNmodelsInLegend(){
   return ncount;
 }
 
-void SetBasicDir(TString dir){
-  basicdir=dir;
+void SetDirectoryFitResultPP(TString str){
+  strFitResultPP=str;
 }
 
-void SetDirectoryFitResult(TString str1,TString str2){
-  strFitResultPPb[0]=str1;
-  strFitResultPPb[1]=str2;
+void SetDirectoryFitResultPPb(TString str){
+  strFitResultPPb=str;
 }
 
 void SetDirectoryFitResultsMCpp(TString str){
@@ -250,22 +224,10 @@ void ConvertTH1ToTGraphAsymmError(TH1D* h,TGraphAsymmErrors *&gr, Double_t shift
 
 }
 
-void ConvertTH1ToTGraphAsymmError2016(TH1D* h,TGraphAsymmErrors *&gr, Double_t shift, Int_t system) {
- 
+void ConvertTH1ToTGraphAsymmError2016(TH1D* h,TGraphAsymmErrors *&gr, Double_t shift) {
   const Int_t nbinsxx=4;
   Double_t x[nbinsxx], y[nbinsxx], ex1[nbinsxx], ex2[nbinsxx], ey1[nbinsxx], ey2[nbinsxx];
- 
- if(system==0) {
-  for(int i=0 ; i<nbinsxx; i++) {
-    x[i] = h->GetBinCenter(i+3)+shift;
-    y[i] = h->GetBinContent(i+3);
-    ex1[i] = h->GetBinCenter(i+3)-h->GetBinLowEdge(i+3)+shift;
-    ex2[i] = ex1[i]-2*shift;
-    ey1[i] = h->GetBinError(i+3);
-    ey2[i] = h->GetBinError(i+3);
-  }
-}
-if(system==1) {
+
   for(int i=0; i<nbinsxx; i++) {
     x[i] = h->GetBinCenter(i+2)+shift;
     y[i] = h->GetBinContent(i+2);
@@ -273,8 +235,7 @@ if(system==1) {
     ex2[i] = ex1[i]-2*shift;
     ey1[i] = h->GetBinError(i+2);
     ey2[i] = h->GetBinError(i+2);
-  }  
-}  
+  }
 
   gr = new TGraphAsymmErrors(nbinsxx,x,y,ex1,ex2,ey1,ey2);
   return;
@@ -396,16 +357,16 @@ void Set2x3PadPositions(TCanvas* c){
 
 
 TCanvas* CompareNSyieldPPtoPPb(Int_t binass){
-  return Compare(binass,0);
+  return ComparePPbVsCent(binass,0);
 }
 
 TCanvas* CompareNSsigmaPPtoPPb(Int_t binass){
-  return  Compare(binass,1);
+  return  ComparePPbVsCent(binass,1);
 
 }
 
 TCanvas* ComparePedestalPPtoPPb(Int_t binass){
-  return Compare(binass,2);
+  return ComparePPbVsCent(binass,2);
 }
 
 TLatex *GetDRapForSystem(Int_t collSystem,Int_t identifier,Int_t includeDEta=0){
@@ -425,21 +386,21 @@ TLatex *GetDRapForSystem(Int_t collSystem,Int_t identifier,Int_t includeDEta=0){
     y=0.3850;// was 0.390 at round 1    
   }
   TString str;
-  if(collSystem==0)str="";//"|#it{y}^{D}_{cms}| < 0.5";
-  if(collSystem==1)str="";//"-0.96 < #it{y}^{D}_{cms} < 0.04";
+  if(collSystem==0)str="|#it{y}^{D}_{cms}| < 0.5";
+  if(collSystem==1)str="-0.96 < #it{y}^{D}_{cms} < 0.04";
   if(includeDEta==1){
-    str.Append("|#Delta#eta| < 1");
+    str.Append(", |#Delta#eta| < 1");
   }
   if(style==-1){
     if(collSystem==0)tlrap=new TLatex(0.24,0.75,"|#it{y}^{D}_{cms}| < 0.5");
     else if(collSystem==1)tlrap=new TLatex(0.24,0.75,"-0.96 < #it{y}^{D}_{cms} < 0.04");
-    else return 0x0;
+    else return;
     tlrap->SetNDC();
     tlrap->SetTextFont(42);
     tlrap->SetTextSize(0.03);
   }
   else{
-    if(collSystem==0)tlrap=new TLatex(0.018/gPad->GetWNDC()+gPad->GetLeftMargin(),0.293/gPad->GetHNDC()+gPad->GetBottomMargin(),str.Data()); 
+    if(collSystem==0)tlrap=new TLatex(x/gPad->GetWNDC()+gPad->GetLeftMargin(),y/gPad->GetHNDC()+gPad->GetBottomMargin(),str.Data()); 
     else if(collSystem==1)tlrap=new TLatex(x/gPad->GetWNDC()+gPad->GetLeftMargin(),y/gPad->GetHNDC()+gPad->GetBottomMargin(),str.Data()); 
     tlrap->SetNDC();
     tlrap->SetTextFont(43);
@@ -497,20 +458,20 @@ TLatex *GetCollSystem(Int_t collSystem,Int_t identifier){
 
   TLatex *tlsystem;
   if(style==-1){
-    if(collSystem==0)tlsystem=new TLatex(0.24,0.8,"pp, #sqrt{#it{s}} = 5.02 TeV");
+    if(collSystem==0)tlsystem=new TLatex(0.24,0.8,"pp, #sqrt{#it{s}} = 7 TeV");
     else if(collSystem==1)tlsystem=new TLatex(0.24,0.8,"p-Pb, #sqrt{#it{s}_{NN}} = 5.02 TeV");
-    else return 0x0;
+    else return;
     tlsystem->SetNDC();
     tlsystem->SetTextFont(42);
     tlsystem->SetTextSize(0.03);
     tlsystem->SetTextAlign(12);
   }
   else{
-    if(collSystem==0)tlsystem=new TLatex(x/gPad->GetWNDC()+gPad->GetLeftMargin(),y/gPad->GetHNDC()+gPad->GetBottomMargin(),"pp, #sqrt{#it{s}} = 5.02 TeV, |#it{y}^{D}_{cms}| < 0.5"); 
-    else if(collSystem==1)tlsystem=new TLatex(x/gPad->GetWNDC()+gPad->GetLeftMargin(),y/gPad->GetHNDC()+gPad->GetBottomMargin(),"p-Pb, #sqrt{#it{s}_{NN}} = 5.02 TeV, -0.96 < #it{y}^{D}_{cms} < 0.04"); 
+    if(collSystem==0)tlsystem=new TLatex(x/gPad->GetWNDC()+gPad->GetLeftMargin(),y/gPad->GetHNDC()+gPad->GetBottomMargin(),"pp, #sqrt{#it{s}} = 7 TeV"); 
+    else if(collSystem==1)tlsystem=new TLatex(x/gPad->GetWNDC()+gPad->GetLeftMargin(),y/gPad->GetHNDC()+gPad->GetBottomMargin(),"p-Pb, #sqrt{#it{s}_{NN}} = 5.02 TeV"); 
     tlsystem->SetNDC();
     tlsystem->SetTextFont(43);
-    tlsystem->SetTextSize(24*innerPadHeight/referencePadHeight*resizeTextFactor);//0.06/(gPad->GetHNDC())*scaleHeightPads*resizeTextFactor);
+    tlsystem->SetTextSize(28*innerPadHeight/referencePadHeight*resizeTextFactor);//0.06/(gPad->GetHNDC())*scaleHeightPads*resizeTextFactor);
     tlsystem->SetTextAlign(21);
   }
   
@@ -518,6 +479,77 @@ TLatex *GetCollSystem(Int_t collSystem,Int_t identifier){
   tlsystem->SetName(Form("tlSystem_%d",identifier));
   return tlsystem;
 }
+
+TLatex *GetSystemtext(Int_t identifier){
+  TLatex *system;
+Double_t x=0.21,y=0.390;
+  if(ncolumns==3){
+    x=0.21;
+  }
+  if(nrows==3){// these are hard coded number from an optimization
+    y=0.25;
+    x=0.012;// draft 2 was not present -> above value 0.21
+  }
+  if(nrows==2){// these are hard coded number from an optimization
+    y=0.385;// draft 2 was 0.39
+    x=0.015;// draft 2 was not present -> above value 0.21
+  }
+
+  if(style==-1){
+    system=new TLatex(0.681,0.85,"p-Pb, #sqrt{#it{s}_{NN}} = 5.02 TeV");
+    system->SetNDC();
+    system->SetTextFont(42);
+    system->SetTextSize(0.026);
+    system->SetTextAlign(11);
+  }
+  else{
+    system= new TLatex(x/gPad->GetWNDC()+gPad->GetLeftMargin(),y/gPad->GetHNDC()+gPad->GetBottomMargin(),"p-Pb, #sqrt{#it{s}_{NN}} = 5.02 TeV"); 
+    system->SetNDC();
+    system->SetTextFont(43);
+    system->SetTextSize(26*innerPadHeight/referencePadHeight*resizeTextFactor);//0.06/(gPad->GetHNDC())*scaleHeightPads*resizeTextFactor);// draft 2 was: 28 *...
+    system->SetTextAlign(11);
+  }
+
+  //  TPaveText *system = new TPaveText(0.012/gPad->GetWNDC()+gPad->GetLeftMargin(),0.26/gPad->GetHNDC()+gPad->GetBottomMargin(),0.3/gPad->GetWNDC()+gPad->GetLeftMargin(),0.28/gPad->GetHNDC()+gPad->GetBottomMargin(),"NDC");
+  system->SetName(Form("tlsystem_%d",identifier));
+  return system;
+}
+
+TLatex *GetRangestext(Int_t identifier){
+  TLatex *system;
+Double_t x=0.21,y=0.390;
+  if(ncolumns==3){
+    x=0.21;
+  }
+  if(nrows==3){// these are hard coded number from an optimization
+    y=0.25;
+    x=0.012;// draft 2 was not present -> above value 0.21
+  }
+  if(nrows==2){// these are hard coded number from an optimization
+    y=0.385;// draft 2 was 0.39
+    x=0.015;// draft 2 was not present -> above value 0.21
+  }
+
+  if(style==-1){
+    system=new TLatex(0.681,0.85,"-0.96 < #it{y}^{D}_{cms} < 0.04, |#Delta#eta| < 1");
+    system->SetNDC();
+    system->SetTextFont(42);
+    system->SetTextSize(0.026);
+    system->SetTextAlign(11);
+  }
+  else{
+    system= new TLatex(x/gPad->GetWNDC()+gPad->GetLeftMargin(),y/gPad->GetHNDC()+gPad->GetBottomMargin(),"-0.96 < #it{y}^{D}_{cms} < 0.04, |#Delta#eta| < 1"); 
+    system->SetNDC();
+    system->SetTextFont(43);
+    system->SetTextSize(26*innerPadHeight/referencePadHeight*resizeTextFactor);//0.06/(gPad->GetHNDC())*scaleHeightPads*resizeTextFactor);// draft 2 was: 28 *...
+    system->SetTextAlign(11);
+  }
+
+  //  TPaveText *system = new TPaveText(0.012/gPad->GetWNDC()+gPad->GetLeftMargin(),0.26/gPad->GetHNDC()+gPad->GetBottomMargin(),0.3/gPad->GetWNDC()+gPad->GetLeftMargin(),0.28/gPad->GetHNDC()+gPad->GetBottomMargin(),"NDC");
+  system->SetName(Form("tlsystem_%d",identifier));
+  return system;
+}
+
 
 TLatex *GetALICEtext(Int_t identifier){
   TLatex *alice;
@@ -527,25 +559,25 @@ Double_t x=0.21,y=0.390;
   }
   if(nrows==3){// these are hard coded number from an optimization
     y=0.25;
-    x=0.20;// draft 2 was not present -> above value 0.21
+    x=0.012;// draft 2 was not present -> above value 0.21
   }
   if(nrows==2){// these are hard coded number from an optimization
-    y=0.185;// draft 2 was 0.39
-    x=0.20;// draft 2 was not present -> above value 0.21
+    y=0.385;// draft 2 was 0.39
+    x=0.015;// draft 2 was not present -> above value 0.21
   }
 
   if(style==-1){
-    alice=new TLatex(0.75,0.85,"ALICE Preliminary");
+    alice=new TLatex(0.681,0.85,"ALICE");
     alice->SetNDC();
     alice->SetTextFont(42);
-    alice->SetTextSize(0.03);
+    alice->SetTextSize(0.026);
     alice->SetTextAlign(11);
   }
   else{
-    alice= new TLatex(0.018/gPad->GetWNDC()+gPad->GetLeftMargin(),0.384/gPad->GetHNDC()+gPad->GetBottomMargin(),"ALICE Preliminary"); 
+    alice= new TLatex(x/gPad->GetWNDC()+gPad->GetLeftMargin(),y/gPad->GetHNDC()+gPad->GetBottomMargin(),"ALICE"); 
     alice->SetNDC();
     alice->SetTextFont(43);
-    alice->SetTextSize(25*innerPadHeight/referencePadHeight*resizeTextFactor);//0.06/(gPad->GetHNDC())*scaleHeightPads*resizeTextFactor);// draft 2 was: 28 *...
+    alice->SetTextSize(27*innerPadHeight/referencePadHeight*resizeTextFactor);//0.06/(gPad->GetHNDC())*scaleHeightPads*resizeTextFactor);// draft 2 was: 28 *...
     alice->SetTextAlign(11);
   }
 
@@ -561,30 +593,33 @@ TLatex* GetAssocPtText(Int_t binassoc,Int_t identifier,Int_t addDEta=1){
   if(ncolumns==3){
     //    x=0.035;
     x=0.15;
+    if(binassoc==0) x=0.088;
   }
   if(nrows==3){// these are hard coded number from an optimization
     y=0.215;
     //    if(addDEta==0)x=0.055;
     x=0.15;
+    if(binassoc==0) x=0.088;
   }
   if(nrows==2){// these are hard coded number from an optimization
     y=0.34;// was 0.35 in draft 2
     x=0.15;
+    if(binassoc==0) x=0.088;
   }
 
   if(style==-1){
     tlasspt=new TLatex(0.25,0.78,Form("%s, |#Delta#eta| < 1",strPtAssCanvas[binassoc].Data()));
     tlasspt->SetNDC();
-    tlasspt->SetTextFont(42);
+    tlasspt->SetTextFont(37);
     tlasspt->SetTextSize(0.03);
   }
   else{
     TString strTot=strPtAssCanvas[binassoc];
     if(addDEta==1)strTot.Append(", |#Delta#eta| < 1");
-    tlasspt= new TLatex(x/gPad->GetWNDC()+gPad->GetLeftMargin(),0.345/gPad->GetHNDC()+gPad->GetBottomMargin(),strTot.Data()); 
+    tlasspt= new TLatex(x/gPad->GetWNDC()+gPad->GetLeftMargin(),y/gPad->GetHNDC()+gPad->GetBottomMargin(),strTot.Data()); 
     tlasspt->SetNDC();
     tlasspt->SetTextFont(43);
-    tlasspt->SetTextSize(28*innerPadHeight/referencePadHeight*resizeTextFactor);//  if font 42 is used try this: 0.06/(gPad->GetHNDC())*scaleHeightPads*resizeTextFactor) but see notes on top
+    tlasspt->SetTextSize(25*innerPadHeight/referencePadHeight*resizeTextFactor);//  if font 42 is used try this: 0.06/(gPad->GetHNDC())*scaleHeightPads*resizeTextFactor) but see notes on top
     Printf("Height pad: %f, scal Height = %f",gPad->GetHNDC(),scaleHeightPads);
   }
   //  TPaveText *tlasspt = new TPaveText(0.012/gPad->GetWNDC()+gPad->GetLeftMargin(),0.26/gPad->GetHNDC()+gPad->GetBottomMargin(),0.3/gPad->GetWNDC()+gPad->GetLeftMargin(),0.28/gPad->GetHNDC()+gPad->GetBottomMargin(),"NDC");
@@ -599,13 +634,13 @@ TLatex* GetTextSide(Int_t variable,Int_t identifier){
   TLatex *tlSide=new TLatex();    
   Double_t x=0.015,y=0.390;
   if(ncolumns==3){
-    x=0.015;
+    x=0.185;
   }
   if(nrows==3){// these are hard coded number from an optimization
-    y=0.250;
+    y=0.035;
   }
   if(nrows==2){// these are hard coded number from an optimization
-    y=0.385;// draft 2 was 0.39, round 1 was 0.378
+    y=0.035;// draft 2 was 0.39, round 1 was 0.378
   }
   
   if(variable==2)return 0x0;
@@ -614,16 +649,16 @@ TLatex* GetTextSide(Int_t variable,Int_t identifier){
       if(style==-1){
 	tlSide=new TLatex(0.25,0.85,"Near side");
 	tlSide->SetNDC();
-	tlSide->SetTextFont(42);
+	tlSide->SetTextFont(38);
 	tlSide->SetTextAlign(12);
 	tlSide->SetTextSize(0.03*resizeTextFactor);
       }
       else{
-	tlSide=new TLatex(0.20/gPad->GetWNDC()+gPad->GetLeftMargin(),0.384/gPad->GetHNDC()+gPad->GetBottomMargin(),"Near side");
+	tlSide=new TLatex(x/gPad->GetWNDC()+gPad->GetLeftMargin(),y/gPad->GetHNDC()+gPad->GetBottomMargin(),"Near side");
 	tlSide->SetNDC();
 	tlSide->SetTextAlign(11);
 	tlSide->SetTextFont(43);
-	tlSide->SetTextSize(25*innerPadHeight/referencePadHeight*resizeTextFactor);// draft 2 was 28*...
+	tlSide->SetTextSize(28*innerPadHeight/referencePadHeight*resizeTextFactor);// draft 2 was 28*...
       }
     }
   else {
@@ -631,15 +666,15 @@ TLatex* GetTextSide(Int_t variable,Int_t identifier){
       tlSide=new TLatex(0.25,0.85,"Away side");
       tlSide->SetNDC();
       tlSide->SetTextFont(42);
-      tlSide->SetTextAlign(12);
+	tlSide->SetTextAlign(12);
       tlSide->SetTextSize(0.03*resizeTextFactor);
     }
     else{
-      tlSide=new TLatex(0.20/gPad->GetWNDC()+gPad->GetLeftMargin(),0.384/gPad->GetHNDC()+gPad->GetBottomMargin(),"Away side");
+      tlSide=new TLatex(x/gPad->GetWNDC()+gPad->GetLeftMargin(),y/gPad->GetHNDC()+gPad->GetBottomMargin(),"Away side");
       tlSide->SetNDC();
       tlSide->SetTextFont(43);
       tlSide->SetTextAlign(11);
-      tlSide->SetTextSize(25*innerPadHeight/referencePadHeight*resizeTextFactor);
+      tlSide->SetTextSize(28*innerPadHeight/referencePadHeight*resizeTextFactor);
     }
     
 
@@ -649,19 +684,20 @@ TLatex* GetTextSide(Int_t variable,Int_t identifier){
   return tlSide;
 }
 
-TH1D *GetAndPreparePPb(Int_t binass,Int_t quantity,Int_t numsyst,TGraphAsymmErrors *&gr){
+TH1D *GetAndPreparePPb(Int_t binass,Int_t quantity,Int_t numsyst,TGraphAsymmErrors *&gr, TGraphAsymmErrors *&grV2=0){
 
 
-  TFile *f=TFile::Open(Form("%s/CanvasFinalTrend%s_pthad%s.root",strFitResultPPb[numsyst].Data(),strquantityFile[quantity].Data(),strPtAss[binass].Data()),"READ");
+  TFile *f=TFile::Open(Form("%s/Trends_pPb/CanvasFinalTrend%s_pthad%s.root",strFitResultPPb[numsyst].Data(),strquantityFile[quantity].Data(),strPtAss[binass].Data()),"READ");
   TCanvas *c=(TCanvas*)f->Get(Form("CanvasFinalTrend%s",strquantityFile[quantity].Data()));
   gr=(TGraphAsymmErrors*)c->FindObject(Form("fFullSystematics%s",strquantityFile[quantity].Data()));
   gr->SetName(Form("%sPPb",gr->GetName()));
-  for(Int_t iPoint=0;iPoint<5;iPoint++) {
-    gr->SetPointError(iPoint,0.7*gr->GetErrorXlow(iPoint),0.7*gr->GetErrorXhigh(iPoint),gr->GetErrorYlow(iPoint),gr->GetErrorYhigh(iPoint));
-    double xx,yy; gr->GetPoint(iPoint,xx,yy);
-    printf("syst %d; point %d; x = %f, y = %f\n",numsyst,iPoint,xx,yy);
+  for(Int_t iPoint=0;iPoint<4;iPoint++) gr->SetPointError(iPoint,0.7*gr->GetErrorXlow(iPoint),0.7*gr->GetErrorXhigh(iPoint),gr->GetErrorYlow(iPoint),gr->GetErrorYhigh(iPoint));
+  if(plotv2unc==kTRUE) {
+      grV2=(TGraphAsymmErrors*)c->FindObject(Form("fv2Systematics%s",strquantityFile[quantity].Data()));
+      grV2->SetName(Form("%sPPb",grV2->GetName()));
+      for(Int_t iPoint=0;iPoint<4;iPoint++) grV2->SetPointError(iPoint,0.65*grV2->GetErrorXlow(iPoint),0.65*grV2->GetErrorXhigh(iPoint),grV2->GetErrorYlow(iPoint),grV2->GetErrorYhigh(iPoint));
+    //  if(numsyst==2) {grV2->SetPointError(0,0.65*grV2->GetErrorXlow(0),0.65*grV2->GetErrorXhigh(0),0,0); gr->SetPointError(0,0.65*gr->GetErrorXlow(0),0.65*gr->GetErrorXhigh(0),0,0);}
   }
-  if(numsyst==1) gr->RemovePoint(4);
 
   TH1D *hPPb=(TH1D*)c->FindObject(Form("FinalTrend%s",strquantityFile[quantity].Data()));
   hPPb->SetName(Form("%sPPb",hPPb->GetName()));
@@ -669,12 +705,12 @@ TH1D *GetAndPreparePPb(Int_t binass,Int_t quantity,Int_t numsyst,TGraphAsymmErro
   hPPb->SetLineWidth(1);
   hPPb->SetMarkerColor(colSystem[numsyst]);
   hPPb->SetMarkerStyle(markerStyle[numsyst]);
-  hPPb->SetMarkerSize(markersize);
+  hPPb->SetMarkerSize(markersize[numsyst]);
   gr->SetMarkerColor(colSystem[numsyst]);
   gr->SetLineColor(colSystem[numsyst]);
   gr->SetLineWidth(1);
   gr->SetMarkerStyle(markerStyle[numsyst]);
-  gr->SetMarkerSize(markersize);
+  gr->SetMarkerSize(markersize[numsyst]);
 
   hPPb->SetXTitle("D meson #it{p}_{T} (GeV/#it{c})");
   hPPb->SetYTitle(yaxisTitle[quantity].Data());
@@ -688,7 +724,7 @@ TH1D *GetAndPreparePPb(Int_t binass,Int_t quantity,Int_t numsyst,TGraphAsymmErro
   else {
     hPPb->GetYaxis()->SetTitle("");      
 
-    hPPb->GetXaxis()->SetRangeUser(0,24.2);
+    hPPb->GetXaxis()->SetRangeUser(0,16.9);
     hPPb->GetYaxis()->SetTitleFont(43);
     hPPb->GetYaxis()->SetLabelFont(43);
     hPPb->GetXaxis()->SetTitleFont(43);
@@ -712,15 +748,17 @@ TH1D *GetAndPreparePPb(Int_t binass,Int_t quantity,Int_t numsyst,TGraphAsymmErro
   return hPPb;
 }
 
-TCanvas* Compare(Int_t binass,Int_t quantity,TPad *pd,Int_t textlegendOptions){
 
-  printf("Preparing pp... (%d)\n",quantity);
-  TGraphAsymmErrors *grPPb_1;
-  TH1D *hPPb_1=GetAndPreparePPb(binass,quantity,0,grPPb_1);
+TCanvas* ComparePPbVsCent(Int_t binass,Int_t quantity,TPad *pd=0x0,Int_t textlegendOptions=0,Int_t padn=0){
 
-  printf("Preparing p-Pb...(%d)\n",quantity);
-  TGraphAsymmErrors *grPPb_2;
-  TH1D *hPPb_2=GetAndPreparePPb(binass,quantity,1,grPPb_2);
+  TGraphAsymmErrors *grPPb_1, *grPPbV2_1;
+  TH1D *hPPb_1=GetAndPreparePPb(binass,quantity,0,grPPb_1,grPPbV2_1);
+
+  TGraphAsymmErrors *grPPb_2, *grPPbV2_2;
+  TH1D *hPPb_2=GetAndPreparePPb(binass,quantity,1,grPPb_2,grPPbV2_2);
+
+  TGraphAsymmErrors *grPPb_3, *grPPbV2_3;
+  TH1D *hPPb_3=GetAndPreparePPb(binass,quantity,2,grPPb_3,grPPbV2_3);
 
   TCanvas *cout=0x0;
   if(!pd){
@@ -748,7 +786,7 @@ TCanvas* Compare(Int_t binass,Int_t quantity,TPad *pd,Int_t textlegendOptions){
     hDraw->GetYaxis()->SetTitle("");      
     //    hPP->GetYaxis()->SetTitle("");      
 
-    hDraw->GetXaxis()->SetRangeUser(0,27);
+    hDraw->GetXaxis()->SetRangeUser(0,28);
     hDraw->GetYaxis()->SetTitleFont(43);
     hDraw->GetYaxis()->SetLabelFont(43);
     hDraw->GetXaxis()->SetTitleFont(43);
@@ -758,9 +796,9 @@ TCanvas* Compare(Int_t binass,Int_t quantity,TPad *pd,Int_t textlegendOptions){
     hDraw->GetYaxis()->SetTitleSize(28*innerPadHeight/referencePadHeight*resizeTextFactor);
     hDraw->GetYaxis()->SetTitleOffset(ytitleoffset*(gPad->GetHNDC())/scaleHeightPads/resizeTextFactor);
     hDraw->GetXaxis()->SetTitleOffset(xtitleoffset*(gPad->GetHNDC())/scaleHeightPads/resizeTextFactor);
-    hDraw->GetYaxis()->SetLabelSize(24*innerPadHeight/referencePadHeight*resizeTextFactor);
-    hDraw->GetXaxis()->SetTitleSize(24*innerPadHeight/referencePadHeight*resizeTextFactor);
-    hDraw->GetXaxis()->SetLabelSize(24*innerPadHeight/referencePadHeight*resizeTextFactor);
+    hDraw->GetYaxis()->SetLabelSize(28*innerPadHeight/referencePadHeight*resizeTextFactor);
+    hDraw->GetXaxis()->SetTitleSize(28*innerPadHeight/referencePadHeight*resizeTextFactor);
+    hDraw->GetXaxis()->SetLabelSize(28*innerPadHeight/referencePadHeight*resizeTextFactor);
 
     if(textlegendOptions%10==2||textlegendOptions%10==3){
       hDraw->SetYTitle(yaxisTitle[quantity].Data());
@@ -789,7 +827,7 @@ TCanvas* Compare(Int_t binass,Int_t quantity,TPad *pd,Int_t textlegendOptions){
 //     hPP->GetYaxis()->SetLabelSize(28*innerPadHeight/referencePadHeight*resizeTextFactor);
 //     hPP->GetXaxis()->SetTitleSize(28*innerPadHeight/referencePadHeight*resizeTextFactor);
 //     hPP->GetXaxis()->SetLabelSize(28*innerPadHeight/referencePadHeight*resizeTextFactor);
-
+    
     hDraw->Draw();
   //  hPPb_1->Draw("same");
   }
@@ -818,69 +856,140 @@ TCanvas* Compare(Int_t binass,Int_t quantity,TPad *pd,Int_t textlegendOptions){
     grPPb_1->SetPoint(i,x+shift*(-1),y);
     grPPb_1->SetPointError(i,ex1,ex2,ey1,ey2);
 
+    grPPbV2_1->GetPoint(i,x,y);
+    ex1=grPPbV2_1->GetErrorXlow(i); ex2=grPPbV2_1->GetErrorXhigh(i); ey1=grPPbV2_1->GetErrorYlow(i); ey2=grPPbV2_1->GetErrorYhigh(i);
+    grPPbV2_1->SetPoint(i,x+shift*(-1),y);
+    grPPbV2_1->SetPointError(i,ex1,ex2,ey1,ey2);
+
     grPPb_2->GetPoint(i,x,y);
     ex1=grPPb_2->GetErrorXlow(i); ex2=grPPb_2->GetErrorXhigh(i); ey1=grPPb_2->GetErrorYlow(i); ey2=grPPb_2->GetErrorYhigh(i);
     grPPb_2->SetPoint(i,x+shift*(0),y);
     grPPb_2->SetPointError(i,ex1,ex2,ey1,ey2);
+
+    grPPbV2_2->GetPoint(i,x,y);
+    ex1=grPPbV2_2->GetErrorXlow(i); ex2=grPPbV2_2->GetErrorXhigh(i); ey1=grPPbV2_2->GetErrorYlow(i); ey2=grPPbV2_2->GetErrorYhigh(i);
+    grPPbV2_2->SetPoint(i,x+shift*(0),y);
+    grPPbV2_2->SetPointError(i,ex1,ex2,ey1,ey2);
+
+    grPPb_3->GetPoint(i,x,y);
+    ex1=grPPb_3->GetErrorXlow(i); ex2=grPPb_3->GetErrorXhigh(i); ey1=grPPb_3->GetErrorYlow(i); ey2=grPPb_3->GetErrorYhigh(i);
+    grPPb_3->SetPoint(i,x+shift*(1),y);
+    grPPb_3->SetPointError(i,ex1,ex2,ey1,ey2);
+
+    grPPbV2_3->GetPoint(i,x,y);
+    ex1=grPPbV2_3->GetErrorXlow(i); ex2=grPPbV2_3->GetErrorXhigh(i); ey1=grPPbV2_3->GetErrorYlow(i); ey2=grPPbV2_3->GetErrorYhigh(i);
+    grPPbV2_3->SetPoint(i,x+shift*(1),y);
+    grPPbV2_3->SetPointError(i,ex1,ex2,ey1,ey2);
   }
 
-/****************************************/
-//REMOVE AD HOC POINTS WITH LARGE ERRORS!!
-/****************************************/
-  printf("binass = %d, quantity = %d\n",binass,quantity);
-  if((binass==1 && quantity==3) || (binass==1 && quantity==4)) { //remove NSy and NSw of 0.3-1 in 3-5 and 16-24
-     grPPb_1->RemovePoint(3);
-     grPPb_1->RemovePoint(0);
-     printf("Removing NSy and NSw of 0.3-1 in 3-5 and 16-24\n");
-   }
-
   grPPb_1->Draw("E2");
+  grPPbV2_1->SetLineColor(kBlue);
+  grPPbV2_1->SetFillColor(kBlue);
+  grPPbV2_1->Draw("E2");
+
   grPPb_2->Draw("E2");
+  grPPbV2_2->SetLineColor(kRed);
+  grPPbV2_2->SetFillColor(kRed);
+  grPPbV2_2->Draw("E2");
+
+  grPPb_3->Draw("E2");
+  grPPbV2_3->SetLineColor(kGreen+2);
+  grPPbV2_3->SetFillColor(kGreen+2);
+  grPPbV2_3->Draw("E2");
+
+  TLegend *legendA=GetLegendBaselinesA(grPPbV2_1,grPPbV2_2,grPPbV2_3);
+  TLegend *legendB=GetLegendBaselinesB(grPPbV2_1,grPPbV2_2,grPPbV2_3);  
+  TLegend *legendC=GetLegendBaselinesC(grPPbV2_1,grPPbV2_2,grPPbV2_3);  
+  if(padn==2) {legendA->Draw("same");legendB->Draw("same");legendC->Draw("same");}
+    
+ /*TH1D* hPPbSuperimp = hPPb->Clone();
+  hPPbSuperimp->SetMarkerStyle(25);
+  hPPbSuperimp->SetMarkerColor(kRed+1);
+//  hPPbSuperimp->Draw("same");*/
 
 //Conversion of pPb TH1F to TGraph to displace the points along x axis (Fabio)
   TGraphAsymmErrors *gr_points_PPb1, *gr_pointCount_PPb1, *gr_points_PPb2, *gr_pointCount_PPb2, *gr_points_PPb3, *gr_pointCount_PPb3, *gr_points_PPb4, *gr_pointCount_PPb4;
-    ConvertTH1ToTGraphAsymmError2016(hPPb_1,gr_points_PPb1,shift*(-1),0);
-    ConvertTH1ToTGraphAsymmError2016(hPPb_1,gr_pointCount_PPb1,shift*(-1),0);    
-    ConvertTH1ToTGraphAsymmError2016(hPPb_2,gr_points_PPb2,shift*(0),1);
-    ConvertTH1ToTGraphAsymmError2016(hPPb_2,gr_pointCount_PPb2,shift*(0),1);  
+    ConvertTH1ToTGraphAsymmError2016(hPPb_1,gr_points_PPb1,shift*(-1));
+    ConvertTH1ToTGraphAsymmError2016(hPPb_1,gr_pointCount_PPb1,shift*(-1));    
+    ConvertTH1ToTGraphAsymmError2016(hPPb_2,gr_points_PPb2,shift*(0));
+    ConvertTH1ToTGraphAsymmError2016(hPPb_2,gr_pointCount_PPb2,shift*(0));    
+    ConvertTH1ToTGraphAsymmError2016(hPPb_3,gr_points_PPb3,shift*(1));
+    ConvertTH1ToTGraphAsymmError2016(hPPb_3,gr_pointCount_PPb3,shift*(1)); 
   
-  if((binass==1 && quantity==3) || (binass==1 && quantity==4)) { //remove NSy and NSw of 0.3-1 in 3-5 and 16-24
-     gr_points_PPb1->RemovePoint(3);
-     gr_points_PPb1->RemovePoint(0);
-     gr_pointCount_PPb1->RemovePoint(3);
-     gr_pointCount_PPb1->RemovePoint(0);     
-     printf("Removing NSy and NSw of 0.3-1 in 3-5 and 16-24\n");
-   }
-
   gr_points_PPb1->SetLineColor(colSystem[0]);
   gr_points_PPb1->SetLineWidth(1);
   gr_points_PPb1->SetMarkerColor(colSystem[0]);
   gr_points_PPb1->SetMarkerStyle(markerStyle[0]);
-  gr_points_PPb1->SetMarkerSize(markersize);
+  gr_points_PPb1->SetMarkerSize(markersize[0]);
   gr_points_PPb1->Draw("samePZ");
   
   gr_pointCount_PPb1->SetLineColor(colSystem[0]);
   gr_pointCount_PPb1->SetLineWidth(1);
   gr_pointCount_PPb1->SetMarkerStyle(colSystem[0]);
   gr_pointCount_PPb1->SetMarkerColor(kBlue);
-  gr_pointCount_PPb1->SetMarkerSize(markersize);
+  gr_pointCount_PPb1->SetMarkerSize(markersize[0]);
   gr_pointCount_PPb1->Draw("samePZ");
 
   gr_points_PPb2->SetLineColor(colSystem[1]);
   gr_points_PPb2->SetLineWidth(1);
   gr_points_PPb2->SetMarkerColor(colSystem[1]);
   gr_points_PPb2->SetMarkerStyle(markerStyle[1]);
-  gr_points_PPb2->SetMarkerSize(markersize);
+  gr_points_PPb2->SetMarkerSize(markersize[1]);
   gr_points_PPb2->Draw("samePZ");
   
   gr_pointCount_PPb2->SetLineColor(colSystem[1]);
   gr_pointCount_PPb2->SetLineWidth(1);
   gr_pointCount_PPb2->SetMarkerStyle(colSystem[1]);
   gr_pointCount_PPb2->SetMarkerColor(kRed);
-  gr_pointCount_PPb2->SetMarkerSize(markersize);
+  gr_pointCount_PPb2->SetMarkerSize(markersize[1]);
   gr_pointCount_PPb2->Draw("samePZ");
 
+  gr_points_PPb3->SetLineColor(colSystem[2]);
+  gr_points_PPb3->SetLineWidth(1);
+  gr_points_PPb3->SetMarkerColor(colSystem[2]);
+  gr_points_PPb3->SetMarkerStyle(markerStyle[2]);
+  gr_points_PPb3->SetMarkerSize(markersize[2]);
+  gr_points_PPb3->Draw("samePZ");
+  
+  gr_pointCount_PPb3->SetLineColor(colSystem[2]);
+  gr_pointCount_PPb3->SetLineWidth(1);
+  gr_pointCount_PPb3->SetMarkerStyle(colSystem[2]);
+  gr_pointCount_PPb3->SetMarkerColor(kGreen+2);
+  gr_pointCount_PPb3->SetMarkerSize(markersize[2]);
+  gr_pointCount_PPb3->Draw("samePZ");  
+
+/*
+  if(quantity==1 && binass==2) {
+    TLatex *tlDispl=new TLatex(0.20,0.86,"p-Pb points and error boxes");
+    TLatex *tlDispl2=new TLatex(0.20,0.80,"shifted by #Delta#it{p}_{T} = +0.3 GeV/#it{c}");
+    tlDispl->SetNDC();
+    tlDispl->SetTextFont(42);
+    tlDispl->SetTextSize(0.048);
+    tlDispl->Draw();
+    tlDispl2->SetNDC();
+    tlDispl2->SetTextFont(42);
+    tlDispl2->SetTextSize(0.048);
+    tlDispl2->Draw();
+  }
+*/
+//   hPPb->SetLineColor(colSystem[1]);
+//   hPPb->SetLineWidth(2);
+//   hPPb->SetMarkerColor(colSystem[1]);
+//   hPPb->SetMarkerStyle(21);
+//   hPPb->SetMarkerSize(markersize);
+//   grPPb->SetMarkerColor(colSystem[1]);
+//   grPPb->SetLineColor(colSystem[1]);
+//   grPPb->SetLineWidth(2);
+//   grPPb->SetMarkerStyle(21);
+
+//   grPPb->SetMarkerSize(markersize);
+
   if(style==-1){
+    TLegend *legend=GetLegendDataPoints(hPP,hPPb,10*quantity+binass);
+    legend->Draw();
+
+  /*  TLegend *legendSuperimp=GetLegendDataPointsFake(hPP,hPPbSuperimp,10*quantity+binass);
+    legendSuperimp->Draw("same");*/
         
     TLatex *tlAssYieldPt=GetAssocPtText(binass,10*quantity+binass,0);
     tlAssYieldPt->Draw();
@@ -905,9 +1014,10 @@ TCanvas* Compare(Int_t binass,Int_t quantity,TPad *pd,Int_t textlegendOptions){
       legend->SetTextFont(43);
       legend->SetTextAlign(12);
       legend->SetLineColor(kWhite);
-      legend->SetTextSize(17*innerPadHeight/referencePadHeight*resizeTextFactor);
-      legend->AddEntry(hPPb_1,"pp, #sqrt{s} = 5.02 TeV, |#it{y}^{D}_{cms}| < 0.5","lep");
-      legend->AddEntry(hPPb_2,"p-Pb, #sqrt{s_{NN}} = 5.02 TeV, -0.96 < #it{y}^{D}_{cms} < 0.04","lep");
+      legend->SetTextSize(20*innerPadHeight/referencePadHeight*resizeTextFactor);
+      legend->AddEntry(hPPb_1,"0-20 ZNA%","lep");
+      legend->AddEntry(hPPb_2,"20-60 ZNA%","lep");
+      legend->AddEntry(hPPb_3,"60-100 ZNA%","lep");
       legend->Draw();
 
      /*TLegend *legendSuperimp=GetLegendDataPointsFake(hPP,hPPbSuperimp,10*quantity+binass);
@@ -935,7 +1045,7 @@ void InitMCobjects(){
   grMC=new TGraphAsymmErrors*[nmodels];
 }
 
-void CompareFitResults_UniqueCanvas(){
+void CompareFitResults_pPbVsCentrality_UniqueCanvas(){
   gStyle->SetOptStat(0000);
   TCanvas *cFinalPaperStyle;
     cFinalPaperStyle=new TCanvas("cPPvsPPbFitResultsFinalPaperStyle","pp vs.pPb fit results ",1800./1200.*canvasheight,canvasheight);
@@ -961,25 +1071,25 @@ void CompareFitResults_UniqueCanvas(){
     SetPadStyle(pd);
     pd->cd();    
     if(jp==1){// identifier set as: 10*quantity+binass; NS --> 0 ; binass == jp (not orderAssoc[jp])
-      Compare(orderAssoc[jp],0,pd,100+needTitle);    
+      ComparePPbVsCent(orderAssoc[jp],0,pd,100+needTitle,1);    
+      TLatex *tlsyst=GetSystemtext(orderAssoc[jp]);
+      tlsyst->Draw();
     }
     else if(jp==0){// identifier set as: 10*quantity+binass; NS:
-      Compare(orderAssoc[jp],0,pd,needTitle);    
+      ComparePPbVsCent(orderAssoc[jp],0,pd,needTitle,0);    
       TLatex *tlALICE=GetALICEtext(orderAssoc[jp]);
       tlALICE->Draw();
       TLatex *tlSide=GetTextSide(0,orderAssoc[jp]);
       tlSide->Draw();
     }
     else{
-      Compare(orderAssoc[jp],0,pd,0+needTitle);    
+      ComparePPbVsCent(orderAssoc[jp],0,pd,0+needTitle,2); //the 2 is the padnumber to draw legend boxes
+      TLatex *tlrng=GetRangestext(orderAssoc[jp]);
+      tlrng->Draw();    
     }
     TLatex *tlAssYieldPt=GetAssocPtText(orderAssoc[jp],orderAssoc[jp],0);
     tlAssYieldPt->Draw();
-    if(jp==0) {
-      TLatex *tlDeta=GetDRapForSystem(0,orderAssoc[jp],1);
-      tlDeta->Draw();
-    }
-
+ 
     gStyle->SetOptStat(0000);   
   }
 
@@ -992,7 +1102,22 @@ void CompareFitResults_UniqueCanvas(){
     SetPadStyle(pd);
     pd->cd();
     gStyle->SetOptStat(0000);
-    Compare(orderAssoc[jp],1,pd,needTitle); 
+    ComparePPbVsCent(orderAssoc[jp],1,pd,needTitle); 
+    /* NOTHING NEEDS TO BE WRITTEN IN BOTTOM ROW
+       if(jp==1){// identifier set as: 10*quantity+binass; Sigma --> 1 ; binass == orderAssoc[jp]
+      TLegend *legend=GetLegendDataPoints(hPP,hPPb,10+orderAssoc[jp]);
+      legend->Draw();
+    }
+    if(jp==0){// identifier set as: 10*quantity+binass; NS:
+      TLatex *tlALICE=GetALICEtext(10+orderAssoc[jp]);
+      tlALICE->Draw();
+      TLatex *tlSide=GetTextSide(0,10+orderAssoc[jp]);
+      tlSide->Draw();
+
+    }
+    TLatex *tlAssYieldPt=GetAssocPtText(orderAssoc[jp],10+orderAssoc[jp]);
+    tlAssYieldPt->Draw();
+    */
 
     gStyle->SetOptStat(0000);   
   }
@@ -1001,20 +1126,18 @@ void CompareFitResults_UniqueCanvas(){
     pd->Draw();
   }
 
-  TString outdir = Form("%s/ScriptOutput/ReflectedPlots/StdRebin/AllPlots/Averages/ComparisonTopPb",basicdir.Data());
-  
   cFinalPaperStyle->Modified();
   cFinalPaperStyle->Update();
-  cFinalPaperStyle->SaveAs(Form("%s/CompareFitResults_ppVspPb_5TeV_1.root",outdir.Data()));
-  cFinalPaperStyle->SaveAs(Form("%s/CompareFitResults_ppVspPb_5TeV_1.eps",outdir.Data()));
-  cFinalPaperStyle->SaveAs(Form("%s/CompareFitResults_ppVspPb_5TeV_1.png",outdir.Data()));
-  cFinalPaperStyle->SaveAs(Form("%s/CompareFitResults_ppVspPb_5TeV_1.pdf",outdir.Data()));
+  cFinalPaperStyle->SaveAs("ComparePPbVsCentFitResults_Paper.root");
+  cFinalPaperStyle->SaveAs("ComparePPbVsCentFitResults_Paper.eps");
+  cFinalPaperStyle->SaveAs("ComparePPbVsCentFitResults_Paper.png");
+  cFinalPaperStyle->SaveAs("ComparePPbVsCentFitResults_Paper.pdf");
 
   return;
 
 }
 
-void CompareFitResults_UniqueCanvas_AwaySide(){
+void CompareFitResults_pPbVsCentrality_UniqueCanvas_AwaySide(){
   gStyle->SetOptStat(0000);
   TCanvas *cFinalPaperStyle;
     cFinalPaperStyle=new TCanvas("cPPvsPPbFitResultsFinalPaperStyle_AwaySide","pp vs.pPb fit results ",1800./1200.*canvasheight,canvasheight);
@@ -1040,25 +1163,21 @@ void CompareFitResults_UniqueCanvas_AwaySide(){
     SetPadStyle(pd);
     pd->cd();    
     if(jp==1){// identifier set as: 10*quantity+binass; NS --> 0 ; binass == jp (not orderAssoc[jp])
-      Compare(orderAssoc[jp],3,pd,100+needTitle);    
+      ComparePPbVsCent(orderAssoc[jp],3,pd,100+needTitle,1);    
     }
     else if(jp==0){// identifier set as: 10*quantity+binass; NS:
-      Compare(orderAssoc[jp],3,pd,needTitle);    
+      ComparePPbVsCent(orderAssoc[jp],3,pd,needTitle,0);    
       TLatex *tlALICE=GetALICEtext(orderAssoc[jp]);
       tlALICE->Draw();
       TLatex *tlSide=GetTextSide(3,orderAssoc[jp]);
       tlSide->Draw();
     }
     else{
-      Compare(orderAssoc[jp],3,pd,0+needTitle);    
+      ComparePPbVsCent(orderAssoc[jp],3,pd,0+needTitle,2);    
     }
     TLatex *tlAssYieldPt=GetAssocPtText(orderAssoc[jp],orderAssoc[jp],0);
     tlAssYieldPt->Draw();
-    if(jp==0) {
-      TLatex *tlDeta=GetDRapForSystem(0,orderAssoc[jp],1);
-      tlDeta->Draw();
-    }
-
+ 
     gStyle->SetOptStat(0000);   
   }
 
@@ -1071,26 +1190,68 @@ void CompareFitResults_UniqueCanvas_AwaySide(){
     SetPadStyle(pd);
     pd->cd();
     gStyle->SetOptStat(0000);
-    Compare(orderAssoc[jp],4,pd,needTitle); 
+    ComparePPbVsCent(orderAssoc[jp],4,pd,needTitle); 
     gStyle->SetOptStat(0000);   
-
   }
   for(Int_t j=6;j>=1;j--){
     TPad *pd=(TPad*)cFinalPaperStyle->cd(j);
     pd->Draw();
   }
 
-  TString outdir = Form("%s/ScriptOutput/ReflectedPlots/StdRebin/AllPlots/Averages/ComparisonTopPb",basicdir.Data());
-  
   cFinalPaperStyle->Modified();
   cFinalPaperStyle->Update();
-  cFinalPaperStyle->SaveAs(Form("%s/CompareFitResults_ppVspPb_5TeV_AwaySide_1.root",outdir.Data()));
-  cFinalPaperStyle->SaveAs(Form("%s/CompareFitResults_ppVspPb_5TeV_AwaySide_1.eps",outdir.Data()));
-  cFinalPaperStyle->SaveAs(Form("%s/CompareFitResults_ppVspPb_5TeV_AwaySide_1.png",outdir.Data()));
-  cFinalPaperStyle->SaveAs(Form("%s/CompareFitResults_ppVspPb_5TeV_AwaySide_1.pdf",outdir.Data()));
+  cFinalPaperStyle->SaveAs("ComparePPbVsCentFitResults_AwaySide_Paper.root");
+  cFinalPaperStyle->SaveAs("ComparePPbVsCentFitResults_AwaySide_Paper.eps");
+  cFinalPaperStyle->SaveAs("ComparePPbVsCentFitResults_AwaySide_Paper.png");
+  cFinalPaperStyle->SaveAs("ComparePPbVsCentFitResults_AwaySide_Paper.pdf");
 
   return;
 
+}
+
+TLegend *GetLegendBaselinesA(TGraphAsymmErrors *g1,TGraphAsymmErrors *g2,TGraphAsymmErrors *g3){
+  TLegend * legend;
+  legend=new TLegend(0.01/gPad->GetWNDC()+gPad->GetLeftMargin(),0.26/gPad->GetHNDC()+gPad->GetBottomMargin(),0.1/gPad->GetWNDC()+gPad->GetLeftMargin(),0.315/gPad->GetHNDC()+gPad->GetBottomMargin());
+  legend->SetFillColor(0);
+  legend->SetFillStyle(0);
+  legend->SetBorderSize(0);
+  legend->SetTextFont(43);
+  legend->SetTextAlign(12);
+  legend->SetTextSize(22*innerPadHeight/referencePadHeight*resizeTextFactor);// old settings with font 42, 0.07/(gPad->GetHNDC())*scaleHeightPads*resizeTextFactor);
+  legend->AddEntry(g1,"","f");
+  // legend->AddEntry(box2[4],"v2 subtr p-Pb","f");
+  legend->SetName("v2UncPPandpPb");
+  return legend;
+}
+
+TLegend *GetLegendBaselinesB(TGraphAsymmErrors *g1,TGraphAsymmErrors *g2,TGraphAsymmErrors *g3){
+  TLegend * legend;
+  legend=new TLegend(0.03/gPad->GetWNDC()+gPad->GetLeftMargin(),0.26/gPad->GetHNDC()+gPad->GetBottomMargin(),0.12/gPad->GetWNDC()+gPad->GetLeftMargin(),0.315/gPad->GetHNDC()+gPad->GetBottomMargin());
+  legend->SetFillColor(0);
+  legend->SetFillStyle(0);
+  legend->SetBorderSize(0);
+  legend->SetTextFont(43);
+  legend->SetTextAlign(12);
+  legend->SetTextSize(22*innerPadHeight/referencePadHeight*resizeTextFactor);// old settings with font 42, 0.07/(gPad->GetHNDC())*scaleHeightPads*resizeTextFactor);
+  legend->AddEntry(g2,"","f");
+  // legend->AddEntry(box2[4],"v2 subtr p-Pb","f");
+  legend->SetName("v2UncPPandpPb");
+  return legend;
+}
+
+TLegend *GetLegendBaselinesC(TGraphAsymmErrors *g1,TGraphAsymmErrors *g2,TGraphAsymmErrors *g3){
+  TLegend * legend;
+  legend=new TLegend(0.05/gPad->GetWNDC()+gPad->GetLeftMargin(),0.26/gPad->GetHNDC()+gPad->GetBottomMargin(),0.14/gPad->GetWNDC()+gPad->GetLeftMargin(),0.315/gPad->GetHNDC()+gPad->GetBottomMargin());
+  legend->SetFillColor(0);
+  legend->SetFillStyle(0);
+  legend->SetBorderSize(0);
+  legend->SetTextFont(43);
+  legend->SetTextAlign(12);
+  legend->SetTextSize(22*innerPadHeight/referencePadHeight*resizeTextFactor);// old settings with font 42, 0.07/(gPad->GetHNDC())*scaleHeightPads*resizeTextFactor);
+  legend->AddEntry(g3," unc. from non-zero V_{2#Delta}","f");
+  // legend->AddEntry(box2[4],"v2 subtr p-Pb","f");
+  legend->SetName("v2UncPPandpPb");
+  return legend;
 }
 
 
@@ -1138,3 +1299,228 @@ void CompareFitResultsPPtoPPb(){
 }
 
 
+void CompareFitResultsPPDataToMC(){
+  
+  TCanvas *c=CompareDatatoModels(0,0,0);
+  c->SaveAs(Form("%s.root",c->GetName()));
+  c->SaveAs(Form("%s.eps",c->GetName()));
+  c->SaveAs(Form("%s.png",c->GetName()));
+  c=CompareDatatoModels(0,0,1);
+  c->SaveAs(Form("%s.root",c->GetName()));
+  c->SaveAs(Form("%s.eps",c->GetName()));
+  c->SaveAs(Form("%s.png",c->GetName()));
+  c=CompareDatatoModels(0,0,2);
+  c->SaveAs(Form("%s.root",c->GetName()));
+  c->SaveAs(Form("%s.eps",c->GetName()));
+  c->SaveAs(Form("%s.png",c->GetName()));
+
+
+  c=CompareDatatoModels(0,1,0);
+  c->SaveAs(Form("%s.root",c->GetName()));
+  c->SaveAs(Form("%s.eps",c->GetName()));
+  c->SaveAs(Form("%s.png",c->GetName()));
+  c=CompareDatatoModels(0,1,1);
+  c->SaveAs(Form("%s.root",c->GetName()));
+  c->SaveAs(Form("%s.eps",c->GetName()));
+  c->SaveAs(Form("%s.png",c->GetName()));
+  c=CompareDatatoModels(0,1,2);
+  c->SaveAs(Form("%s.root",c->GetName()));
+  c->SaveAs(Form("%s.eps",c->GetName()));
+  c->SaveAs(Form("%s.png",c->GetName()));
+
+
+  c=CompareDatatoModels(0,2,0);
+  c->SaveAs(Form("%s.root",c->GetName()));
+  c->SaveAs(Form("%s.eps",c->GetName()));
+  c->SaveAs(Form("%s.png",c->GetName()));
+  c=CompareDatatoModels(0,2,1);
+  c->SaveAs(Form("%s.root",c->GetName()));
+  c->SaveAs(Form("%s.eps",c->GetName()));
+  c->SaveAs(Form("%s.png",c->GetName()));
+  c=CompareDatatoModels(0,2,2);
+  c->SaveAs(Form("%s.root",c->GetName()));
+  c->SaveAs(Form("%s.eps",c->GetName()));
+  c->SaveAs(Form("%s.png",c->GetName()));
+
+}
+
+
+
+void CompareFitResultsPPbDataToMC(){
+  
+  TCanvas *c=CompareDatatoModels(1,0,0,0x0,999);
+  c->SaveAs(Form("%s.root",c->GetName()));
+  c->SaveAs(Form("%s.eps",c->GetName()));
+  c->SaveAs(Form("%s.png",c->GetName()));
+  c=CompareDatatoModels(1,0,1,0x0,999);
+  c->SaveAs(Form("%s.root",c->GetName()));
+  c->SaveAs(Form("%s.eps",c->GetName()));
+  c->SaveAs(Form("%s.png",c->GetName()));
+  c=CompareDatatoModels(1,0,2,0x0,999);
+  c->SaveAs(Form("%s.root",c->GetName()));
+  c->SaveAs(Form("%s.eps",c->GetName()));
+  c->SaveAs(Form("%s.png",c->GetName()));
+  c=CompareDatatoModels(1,0,3,0x0,999);
+  c->SaveAs(Form("%s.root",c->GetName()));
+  c->SaveAs(Form("%s.eps",c->GetName()));
+  c->SaveAs(Form("%s.png",c->GetName()));
+  c=CompareDatatoModels(1,0,4,0x0,999);
+  c->SaveAs(Form("%s.root",c->GetName()));
+  c->SaveAs(Form("%s.eps",c->GetName()));
+  c->SaveAs(Form("%s.png",c->GetName()));  
+
+
+  c=CompareDatatoModels(1,1,0,0x0,999);
+  c->SaveAs(Form("%s.root",c->GetName()));
+  c->SaveAs(Form("%s.eps",c->GetName()));
+  c->SaveAs(Form("%s.png",c->GetName()));
+  c=CompareDatatoModels(1,1,1,0x0,999);
+  c->SaveAs(Form("%s.root",c->GetName()));
+  c->SaveAs(Form("%s.eps",c->GetName()));
+  c->SaveAs(Form("%s.png",c->GetName()));
+  c=CompareDatatoModels(1,1,2,0x0,999);
+  c->SaveAs(Form("%s.root",c->GetName()));
+  c->SaveAs(Form("%s.eps",c->GetName()));
+  c->SaveAs(Form("%s.png",c->GetName()));
+  c=CompareDatatoModels(1,1,3,0x0,999);
+  c->SaveAs(Form("%s.root",c->GetName()));
+  c->SaveAs(Form("%s.eps",c->GetName()));
+  c->SaveAs(Form("%s.png",c->GetName()));
+  c=CompareDatatoModels(1,1,4,0x0,999);
+  c->SaveAs(Form("%s.root",c->GetName()));
+  c->SaveAs(Form("%s.eps",c->GetName()));
+  c->SaveAs(Form("%s.png",c->GetName()));
+
+
+  c=CompareDatatoModels(1,2,0,0x0,999);
+  c->SaveAs(Form("%s.root",c->GetName()));
+  c->SaveAs(Form("%s.eps",c->GetName()));
+  c->SaveAs(Form("%s.png",c->GetName()));
+  c=CompareDatatoModels(1,2,1,0x0,999);
+  c->SaveAs(Form("%s.root",c->GetName()));
+  c->SaveAs(Form("%s.eps",c->GetName()));
+  c->SaveAs(Form("%s.png",c->GetName()));
+  c=CompareDatatoModels(1,2,2,0x0,999);
+  c->SaveAs(Form("%s.root",c->GetName()));
+  c->SaveAs(Form("%s.eps",c->GetName()));
+  c->SaveAs(Form("%s.png",c->GetName()));
+  c=CompareDatatoModels(1,2,3,0x0,999);
+  c->SaveAs(Form("%s.root",c->GetName()));
+  c->SaveAs(Form("%s.eps",c->GetName()));
+  c->SaveAs(Form("%s.png",c->GetName()));
+  c=CompareDatatoModels(1,2,4,0x0,999);
+  c->SaveAs(Form("%s.root",c->GetName()));
+  c->SaveAs(Form("%s.eps",c->GetName()));
+  c->SaveAs(Form("%s.png",c->GetName()));
+
+  c=CompareDatatoModels(1,3,0,0x0,999);
+  c->SaveAs(Form("%s.root",c->GetName()));
+  c->SaveAs(Form("%s.eps",c->GetName()));
+  c->SaveAs(Form("%s.png",c->GetName()));
+  c=CompareDatatoModels(1,3,1,0x0,999);
+  c->SaveAs(Form("%s.root",c->GetName()));
+  c->SaveAs(Form("%s.eps",c->GetName()));
+  c->SaveAs(Form("%s.png",c->GetName()));
+  c=CompareDatatoModels(1,3,2,0x0,999);
+  c->SaveAs(Form("%s.root",c->GetName()));
+  c->SaveAs(Form("%s.eps",c->GetName()));
+  c->SaveAs(Form("%s.png",c->GetName()));
+  c=CompareDatatoModels(1,3,3,0x0,999);
+  c->SaveAs(Form("%s.root",c->GetName()));
+  c->SaveAs(Form("%s.eps",c->GetName()));
+  c->SaveAs(Form("%s.png",c->GetName()));
+  c=CompareDatatoModels(1,3,4,0x0,999);
+  c->SaveAs(Form("%s.root",c->GetName()));
+  c->SaveAs(Form("%s.eps",c->GetName()));
+  c->SaveAs(Form("%s.png",c->GetName()));
+
+  c=CompareDatatoModels(1,4,0,0x0,999);
+  c->SaveAs(Form("%s.root",c->GetName()));
+  c->SaveAs(Form("%s.eps",c->GetName()));
+  c->SaveAs(Form("%s.png",c->GetName()));
+  c=CompareDatatoModels(1,4,1,0x0,999);
+  c->SaveAs(Form("%s.root",c->GetName()));
+  c->SaveAs(Form("%s.eps",c->GetName()));
+  c->SaveAs(Form("%s.png",c->GetName()));
+  c=CompareDatatoModels(1,4,2,0x0,999);
+  c->SaveAs(Form("%s.root",c->GetName()));
+  c->SaveAs(Form("%s.eps",c->GetName()));
+  c->SaveAs(Form("%s.png",c->GetName()));
+  c=CompareDatatoModels(1,4,3,0x0,999);
+  c->SaveAs(Form("%s.root",c->GetName()));
+  c->SaveAs(Form("%s.eps",c->GetName()));
+  c->SaveAs(Form("%s.png",c->GetName()));
+  c=CompareDatatoModels(1,4,4,0x0,999);
+  c->SaveAs(Form("%s.root",c->GetName()));
+  c->SaveAs(Form("%s.eps",c->GetName()));
+  c->SaveAs(Form("%s.png",c->GetName()));
+
+  c=CompareDatatoModels(1,5,0,0x0,999);
+  c->SaveAs(Form("%s.root",c->GetName()));
+  c->SaveAs(Form("%s.eps",c->GetName()));
+  c->SaveAs(Form("%s.png",c->GetName()));
+  c=CompareDatatoModels(1,5,1,0x0,999);
+  c->SaveAs(Form("%s.root",c->GetName()));
+  c->SaveAs(Form("%s.eps",c->GetName()));
+  c->SaveAs(Form("%s.png",c->GetName()));
+  c=CompareDatatoModels(1,5,2,0x0,999);
+  c->SaveAs(Form("%s.root",c->GetName()));
+  c->SaveAs(Form("%s.eps",c->GetName()));
+  c->SaveAs(Form("%s.png",c->GetName()));
+  c=CompareDatatoModels(1,5,3,0x0,999);
+  c->SaveAs(Form("%s.root",c->GetName()));
+  c->SaveAs(Form("%s.eps",c->GetName()));
+  c->SaveAs(Form("%s.png",c->GetName()));
+  c=CompareDatatoModels(1,5,4,0x0,999);
+  c->SaveAs(Form("%s.root",c->GetName()));
+  c->SaveAs(Form("%s.eps",c->GetName()));
+  c->SaveAs(Form("%s.png",c->GetName()));
+
+}
+
+
+
+void CompareFitResultsDataBothSystemToMCPP(){
+  
+  TCanvas *c=CompareDatatoModels(-1,0,0);
+  c->SaveAs(Form("%s.root",c->GetName()));
+  c->SaveAs(Form("%s.eps",c->GetName()));
+  c->SaveAs(Form("%s.png",c->GetName()));
+  c=CompareDatatoModels(-1,0,1);
+  c->SaveAs(Form("%s.root",c->GetName()));
+  c->SaveAs(Form("%s.eps",c->GetName()));
+  c->SaveAs(Form("%s.png",c->GetName()));
+  c=CompareDatatoModels(-1,0,2);
+  c->SaveAs(Form("%s.root",c->GetName()));
+  c->SaveAs(Form("%s.eps",c->GetName()));
+  c->SaveAs(Form("%s.png",c->GetName()));
+
+
+  c=CompareDatatoModels(-1,1,0);
+  c->SaveAs(Form("%s.root",c->GetName()));
+  c->SaveAs(Form("%s.eps",c->GetName()));
+  c->SaveAs(Form("%s.png",c->GetName()));
+  c=CompareDatatoModels(-1,1,1);
+  c->SaveAs(Form("%s.root",c->GetName()));
+  c->SaveAs(Form("%s.eps",c->GetName()));
+  c->SaveAs(Form("%s.png",c->GetName()));
+  c=CompareDatatoModels(-1,1,2);
+  c->SaveAs(Form("%s.root",c->GetName()));
+  c->SaveAs(Form("%s.eps",c->GetName()));
+  c->SaveAs(Form("%s.png",c->GetName()));
+
+
+  c=CompareDatatoModels(-1,2,0);
+  c->SaveAs(Form("%s.root",c->GetName()));
+  c->SaveAs(Form("%s.eps",c->GetName()));
+  c->SaveAs(Form("%s.png",c->GetName()));
+  c=CompareDatatoModels(-1,2,1);
+  c->SaveAs(Form("%s.root",c->GetName()));
+  c->SaveAs(Form("%s.eps",c->GetName()));
+  c->SaveAs(Form("%s.png",c->GetName()));
+  c=CompareDatatoModels(-1,2,2);
+  c->SaveAs(Form("%s.root",c->GetName()));
+  c->SaveAs(Form("%s.eps",c->GetName()));
+  c->SaveAs(Form("%s.png",c->GetName()));
+
+}

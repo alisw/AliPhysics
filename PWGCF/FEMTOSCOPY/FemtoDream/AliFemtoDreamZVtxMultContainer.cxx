@@ -17,6 +17,7 @@ AliFemtoDreamZVtxMultContainer::AliFemtoDreamZVtxMultContainer()
     : fPartContainer(0),
       fPDGParticleSpecies(0),
       fWhichPairs(),
+      fRejPairs(),
       fDeltaEtaMax(0.f),
       fDeltaPhiMax(0.f),
       fDeltaPhiEtaMax(0.f),
@@ -30,6 +31,7 @@ AliFemtoDreamZVtxMultContainer::AliFemtoDreamZVtxMultContainer(
                      AliFemtoDreamPartContainer(conf->GetMixingDepth())),
       fPDGParticleSpecies(conf->GetPDGCodes()),
       fWhichPairs(conf->GetWhichPairs()),
+      fRejPairs(conf->GetClosePairRej()),
       fDeltaEtaMax(conf->GetDeltaEtaMax()),
       fDeltaPhiMax(conf->GetDeltaPhiMax()),
       fDeltaPhiEtaMax(
@@ -81,6 +83,7 @@ void AliFemtoDreamZVtxMultContainer::PairParticlesSE(
       //Now loop over the actual Particles and correlate them
       unsigned int DoThisPair = fWhichPairs.at(HistCounter);
       bool fillHists = DoThisPair > 0 ? true : false;
+      bool CPR = fRejPairs.at(HistCounter);
       for (auto itPart1 = itSpec1->begin(); itPart1 != itSpec1->end();
           ++itPart1) {
         AliFemtoDreamBasePart part1 = *itPart1;
@@ -93,7 +96,7 @@ void AliFemtoDreamZVtxMultContainer::PairParticlesSE(
         while (itPart2 != itSpec2->end()) {
           AliFemtoDreamBasePart part2 = *itPart2;
           // Delta eta - Delta phi* cut
-          if (fDoDeltaEtaDeltaPhiCut) {
+          if (fDoDeltaEtaDeltaPhiCut && CPR) {
             if (!RejectClosePairs(part1, part2)) {
               ++itPart2;
               continue;
@@ -174,6 +177,7 @@ void AliFemtoDreamZVtxMultContainer::PairParticlesME(
       }
       unsigned int DoThisPair = fWhichPairs.at(HistCounter);
       bool fillHists = DoThisPair > 0 ? true : false;
+      bool CPR = fRejPairs.at(HistCounter);
       for (int iDepth = 0; iDepth < (int) itSpec2->GetMixingDepth(); ++iDepth) {
         std::vector<AliFemtoDreamBasePart> ParticlesOfEvent = itSpec2->GetEvent(
             iDepth);
@@ -186,7 +190,7 @@ void AliFemtoDreamZVtxMultContainer::PairParticlesME(
               itPart2 != ParticlesOfEvent.end(); ++itPart2) {
             AliFemtoDreamBasePart part2 = *itPart2;
             // Delta eta - Delta phi* cut
-            if (fDoDeltaEtaDeltaPhiCut) {
+            if (fDoDeltaEtaDeltaPhiCut && CPR) {
               if (!RejectClosePairs(part1, part2)) {
                 continue;
               }

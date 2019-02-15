@@ -194,7 +194,7 @@ AliAnalysisTaskMLTreeMaker::AliAnalysisTaskMLTreeMaker():
 
 }
 
-AliAnalysisTaskMLTreeMaker::AliAnalysisTaskMLTreeMaker(const char *name,TString TMVAWeightFileName1) :
+AliAnalysisTaskMLTreeMaker::AliAnalysisTaskMLTreeMaker(const char *name,TString TMVAWeight) :
   AliAnalysisTaskSE(name),
   eventCuts(0),
   eventplaneCuts(0),
@@ -309,7 +309,7 @@ AliAnalysisTaskMLTreeMaker::AliAnalysisTaskMLTreeMaker(const char *name,TString 
   ptTMVA(0),   
   centTMVA(0),      
   MVAout(0),
-  TMVAWeightFileName(0),      
+  TMVAWeightFileName(TMVAWeight),      
   fwidthTPC(0), 
   fmeanTPC(0), 
   fwidthITS(0), 
@@ -348,42 +348,13 @@ AliAnalysisTaskMLTreeMaker::~AliAnalysisTaskMLTreeMaker(){
 
 void AliAnalysisTaskMLTreeMaker::UserCreateOutputObjects() {
 
-    if (useTMVA) SetupTMVAReader("TMVAClassification_BDTG.weights_094.xml");  
+    if (useTMVA) SetupTMVAReader(TMVAWeightFileName);  
   
     
    AliAnalysisManager *man=AliAnalysisManager::GetAnalysisManager();
    AliInputEventHandler* inputHandler = (AliInputEventHandler*) (man->GetInputEventHandler());
    inputHandler->SetNeedField();
 
-//      if(!fIsTMVAInit){
-//        TMVA::Reader* TMVAReader = new TMVA::Reader( "!Color:!Silent" );
-//
-//        TMVAReader->AddVariable( "nITS", &nITSTMVA);
-//        TMVAReader->AddVariable( "ITS1Shared", &ITS1SharedTMVA);
-//        TMVAReader->AddVariable( "ITS2Shared", &ITS2SharedTMVA);
-//        TMVAReader->AddVariable( "ITS3Shared", &ITS3SharedTMVA);
-//        TMVAReader->AddVariable( "ITS4Shared", &ITS4SharedTMVA);
-//        TMVAReader->AddVariable( "ITS5Shared", &ITS5SharedTMVA);
-//        TMVAReader->AddVariable( "ITS6Shared", &ITS6SharedTMVA);
-//        TMVAReader->AddVariable( "nITSshared_frac", &nITSshared_fracTMVA);
-//        TMVAReader->AddVariable( "NCrossedRowsTPC", &NCrossedRowsTPCTMVA);
-//        TMVAReader->AddVariable( "NClustersTPC", &NClustersTPCTMVA);
-//        TMVAReader->AddVariable( "NTPCSignal", &NTPCSignalTMVA);
-//        TMVAReader->AddVariable( "log(abs(DCAxy))", &logDCAxyTMVA );
-//        TMVAReader->AddVariable( "log(abs(DCAz))", &logDCAzTMVA );   
-//        TMVAReader->AddVariable( "chi2GlobalPerNDF", &chi2GlobalPerNDFTMVA);
-//        TMVAReader->AddVariable( "chi2ITS", &chi2ITSTMVA);
-//        TMVAReader->AddVariable( "eta", &etaTMVA);
-//        TMVAReader->AddVariable( "phi", &phiTMVA);
-//        TMVAReader->AddVariable( "pt", &ptTMVA);   
-//        TMVAReader->AddVariable( "centrality", &centTMVA);
-//
-//        gSystem->Exec(Form("alien_cp alien:///alice/cern.ch/user/s/selehner/TMVAweights/%s .","TMVAClassification_BDTG.weights_094.xml"));
-//      //  cout<<"Setting weights file: "<<weightFile.Data()<<endl;
-//
-//        TMVAReader->BookMVA( "BDTG method","TMVAClassification_BDTG.weights_094.xml" );  
-////        fIsTMVAInit = kTRUE;
-//      }
    
   fList = new TList();
   fList->SetName("output_Tlist");
@@ -496,7 +467,6 @@ void AliAnalysisTaskMLTreeMaker::UserCreateOutputObjects() {
 
 void AliAnalysisTaskMLTreeMaker::UserExec(Option_t *) {
   // Called for each event
-//  SetupTMVAReader("TMVAClassification_BDTG.weights_094.xml");
   
   fQAHist->Fill("Events_all",1);
   
@@ -1064,15 +1034,15 @@ void AliAnalysisTaskMLTreeMaker::SetupTMVAReader(TString weightFile){
   TMVAReader->AddVariable( "ITS5Shared", &ITS5SharedTMVA);
   TMVAReader->AddVariable( "ITS6Shared", &ITS6SharedTMVA);
   TMVAReader->AddVariable( "nITSshared_frac", &nITSshared_fracTMVA);
-  TMVAReader->AddVariable( "NCrossedRowsTPC", &NCrossedRowsTPCTMVA);
-  TMVAReader->AddVariable( "NClustersTPC", &NClustersTPCTMVA);
-  TMVAReader->AddVariable( "NTPCSignal", &NTPCSignalTMVA);
+//  TMVAReader->AddVariable( "NCrossedRowsTPC", &NCrossedRowsTPCTMVA);
+//  TMVAReader->AddVariable( "NClustersTPC", &NClustersTPCTMVA);
+//  TMVAReader->AddVariable( "NTPCSignal", &NTPCSignalTMVA);
   TMVAReader->AddVariable( "log(abs(DCAxy))", &logDCAxyTMVA );
   TMVAReader->AddVariable( "log(abs(DCAz))", &logDCAzTMVA );   
   TMVAReader->AddVariable( "chi2GlobalPerNDF", &chi2GlobalPerNDFTMVA);
   TMVAReader->AddVariable( "chi2ITS", &chi2ITSTMVA);
   TMVAReader->AddVariable( "eta", &etaTMVA);
-  TMVAReader->AddVariable( "phi", &phiTMVA);
+//  TMVAReader->AddVariable( "phi", &phiTMVA);
   TMVAReader->AddVariable( "pt", &ptTMVA);   
   TMVAReader->AddVariable( "centrality", &centTMVA);
 

@@ -1,9 +1,35 @@
+/************************************************************************************
+ * Copyright (C) 2016, Copyright Holders of the ALICE Collaboration                 *
+ * All rights reserved.                                                             *
+ *                                                                                  *
+ * Redistribution and use in source and binary forms, with or without               *
+ * modification, are permitted provided that the following conditions are met:      *
+ *     * Redistributions of source code must retain the above copyright             *
+ *       notice, this list of conditions and the following disclaimer.              *
+ *     * Redistributions in binary form must reproduce the above copyright          *
+ *       notice, this list of conditions and the following disclaimer in the        *
+ *       documentation and/or other materials provided with the distribution.       *
+ *     * Neither the name of the <organization> nor the                             *
+ *       names of its contributors may be used to endorse or promote products       *
+ *       derived from this software without specific prior written permission.      *
+ *                                                                                  *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND  *
+ * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED    *
+ * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE           *
+ * DISCLAIMED. IN NO EVENT SHALL ALICE COLLABORATION BE LIABLE FOR ANY              *
+ * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES       *
+ * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;     *
+ * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND      *
+ * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT       *
+ * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS    *
+ * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.                     *
+ ************************************************************************************/
+/// \cond CLASSIMP
 #include "AliEmcalIterableContainer.h"
+/// \endcond
 
 #ifndef ALIEMCALCONTAINER_H
 #define ALIEMCALCONTAINER_H
-/* Copyright(c) 1998-2016, ALICE Experiment at CERN, All rights reserved. *
- * See cxx source for full Copyright notice                               */
 
 class TLorentzVector;
 class AliTLorentzVector;
@@ -118,12 +144,51 @@ class AliEmcalContainer : public TObject {
     kOverlapTpcHole = 1<<29             ///<Cut  on the regions of acceptance with bad sectors 
   };
 
+  /**
+   * @brief Default constructor. 
+   * 
+   * This constructor is only for ROOT I/O and not to be used by users. 
+   * The container will not connect to an array in the input event.
+   */
   AliEmcalContainer();
+
+  /**
+   * @brief Standard (named) constructor. 
+   * 
+   * The name provided must match the name of the array inside the list 
+   * objects in the input event the EMCAL container connects to. The 
+   * EMCAL container can get a different name, to be specified in the 
+   * function SetEvent.
+   * @param name Name of the container in the input event.
+   */
   AliEmcalContainer(const char *name); 
+
+  /**
+   * @brief Destructor
+   */
   virtual ~AliEmcalContainer(){;}
 
+  /**
+   * @brief Index operator.
+   * 
+   * Accessing object in the container at a given index. Operates on all 
+   * objects inside the container. 
+   * @param index Index of the object to access
+   * @return Object at the given index (NULL if out of range)
+   */
   virtual TObject *operator[](int index) const = 0;
 
+  /**
+   * @brief Apply kinematical selection to the momentum vector provided. 
+   * 
+   * Selection is done in
+   * - \f$ p_{t} \f$ (E)
+   * - \f$ \eta \f$
+   * - \f$ \phi \f$
+   * @param[in] mom Momentum vector to select
+   * @param[out] rejectionReason Bitmap for reason why object is rejected
+   * @return True if the momentum vector is selected, false otherwise
+   */
   virtual Bool_t              ApplyKinematicCuts(const AliTLorentzVector& mom, UInt_t &rejectionReason) const;
   TClonesArray               *GetArray()                      const { return fClArray                   ; }
   const TString&              GetArrayName()                  const { return fClArrayName               ; }
@@ -142,7 +207,14 @@ class AliEmcalContainer : public TObject {
   Double_t                    GetAcceptance()                 const { return GetEtaSwing() * GetPhiSwing(); }
   Int_t                       GetCurrentID()                  const { return fCurrentID                 ; }
   Bool_t                      GetIsParticleLevel()            const { return fIsParticleLevel           ; }
+
+  /**
+   * @brief Get the index in the container from a given label
+   * @param lab Label to check
+   * @return Index (-1 if not found)
+   */
   Int_t                       GetIndexFromLabel(Int_t lab)    const;
+
   Int_t                       GetNEntries()                   const { return fClArray ? fClArray->GetEntriesFast() : 0 ; }
   virtual Bool_t              GetMomentum(TLorentzVector &mom, Int_t i) const = 0;
   virtual Bool_t              GetAcceptMomentum(TLorentzVector &mom, Int_t i) const = 0;
@@ -150,8 +222,29 @@ class AliEmcalContainer : public TObject {
   virtual Bool_t              GetNextAcceptMomentum(TLorentzVector &mom) = 0;
   virtual Bool_t              AcceptObject(Int_t i, UInt_t &rejectionReason) const = 0;
   virtual Bool_t              AcceptObject(const TObject* obj, UInt_t &rejectionReason) const = 0;
+
+  /**
+   * @brief Count accepted entries in the container
+   * @return Number of accepted events in the container
+   */
   Int_t                       GetNAcceptEntries() const;
+
+  /**
+   * @brief Reset the iterator to a given index
+   * 
+   * Resetting the internal iterator to a new starting position. This can be
+   * within the range of indices of the EMCAL container. To start from the beginning
+   * one needs to select -1 as iterator index.
+   * 
+   * @param[in] Index to be stated from (must be 1 lower than the desired starting point)
+   */
   void                        ResetCurrentID(Int_t i=-1)            { fCurrentID = i                    ; }
+
+  /**
+   * Connect the container to the array with content stored inside the virtual event.
+   * The object name in the event must match the name given in the constructor
+   * @param event Input event containing the array with content.
+   */
   virtual void                SetArray(const AliVEvent *event);
   void                        SetArrayName(const char *n)           { fClArrayName = n                  ; }
   void                        SetVertex(Double_t *vtx)              { memcpy(fVertex, vtx, sizeof(Double_t) * 3); }
@@ -160,6 +253,11 @@ class AliEmcalContainer : public TObject {
   void                        SortArray()                           { fClArray->Sort()                  ; }
 
   TClass*                     GetLoadedClass()                      { return fLoadedClass               ; }
+
+  /**
+   * @brief Preparation for the next event.
+   * @param[in] event The event to be processed.
+   */
   virtual void                NextEvent(const AliVEvent *event);
   void                        SetMinMCLabel(Int_t s)                            { fMinMCLabel      = s   ; }
   void                        SetMaxMCLabel(Int_t s)                            { fMaxMCLabel      = s   ; }
@@ -174,27 +272,90 @@ class AliEmcalContainer : public TObject {
   void                        SetPhiLimits(Double_t min, Double_t max)  { fMaxPhi = max ; fMinPhi = min ; }
   void                        SetMassHypothesis(Double_t m)             { fMassHypothesis         = m   ; }
   void                        SetClassName(const char *clname);
+
+  /**
+   * @brief Set embedding status
+   * 
+   * Embedding means that the container consists only of tracks from the embedded event.
+   * @param[in] b If true the container handles the embedded event
+   */
   void                        SetIsEmbedding(Bool_t b)                  { fIsEmbedding = b ; }
+
+  /**
+   * @brief Get embedding status
+   * 
+   * Embedding means that the container consists only of tracks/clusters from the embedded event.
+   * @return True if the container handles an embeded event, false otherwise
+   */
   Bool_t                      GetIsEmbedding() const                    { return fIsEmbedding; }
 
   const char*                 GetName()                       const { return fName.Data()               ; }
+
+  /**
+   * @brief Set the name of the class of the objets inside the underlying array.
+   * @param[in] clname Name of the class of the object inside the underlying array.
+   */
   void                        SetName(const char* n)                { fName = n                         ; }
 
+  /**
+   * @brief Calculates the relative phi between two angle values and returns it in [-Pi, +Pi] range.
+   * @param mphi First angle value
+   * @param vphi Second angle value
+   * @return Difference between mphi and vphi
+   */
   static Double_t             RelativePhi(Double_t ang1, Double_t ang2);
+
+  /**
+   * @brief Helper function to calculate the distance between two jets or a jet and a particle
+   * @param part1 First particle in the check
+   * @param part2 Second particle to compare to
+   * @param dist Maximum distance under which partices are considered as "same" in \f$ p_{t} \f$, \f$ \eta \f$ and \f$ \phi \f$
+   * @return True if the particles are considered as the same, false otherwise
+   */
   static Bool_t               SamePart(const AliVParticle* part1, const AliVParticle* part2, Double_t dist = 1.e-4);
+  
+  /**
+   * @brief Returns the highest bit in the rejection map as reason why the object
+   * was rejected.
+   * @return Highest bit of rejection reason
+   */
   static UShort_t             GetRejectionReasonBitPosition(UInt_t rejectionReason);
 
 #if !(defined(__CINT__) || defined(__MAKECINT__))
+  /**
+   * @brief Create an iterable container interface over all objects in the
+   * EMCAL container.
+   * @return iterable container over all objects in the EMCAL container
+   */
   const AliEmcalIterableContainer   all() const;
+
+  /**
+   * @brief Create an iterable container interface over accepted objects in the
+   * EMCAL container.
+   * @return iterable container over accepted objects in the EMCAL container
+   */
   const AliEmcalIterableContainer   accepted() const;
 
+  /**
+   * @brief Create an iterable container interface over all objects in the
+   * EMCAL container.
+   * @return iterable container over all objects in the EMCAL container
+   */
   const AliEmcalIterableMomentumContainer   all_momentum() const;
+
+  /**
+   * @brief Create an iterable container interface over accepted objects in the
+   * EMCAL container.
+   * @return iterable container over accepted objects in the EMCAL container
+   */
   const AliEmcalIterableMomentumContainer   accepted_momentum() const;
 #endif
 
  protected:
   /**
-   * Hnadling default Array names. Default names might differ
+   * @brief Handling default Array names. 
+   * 
+   * Default names might differ
    * based on the input event type. Therefore it is determined
    * for the first time and event is handled.
    *
@@ -202,6 +363,13 @@ class AliEmcalContainer : public TObject {
    * @return Default array name
    */
   virtual TString             GetDefaultArrayName(const AliVEvent * const ev) const { return ""; }
+
+  /**
+   * @brief Retrieve the vertex from the given event. 
+   * 
+   * It sets fVertex to the vertex of the current event.
+   * @param[in] event Input event containing the vertex.
+   */
   void                        GetVertexFromEvent(const AliVEvent * event);
 
   TString                     fName;                    ///< object name
@@ -233,8 +401,6 @@ class AliEmcalContainer : public TObject {
   AliEmcalContainer(const AliEmcalContainer& obj); // copy constructor
   AliEmcalContainer& operator=(const AliEmcalContainer& other); // assignment
 
-  /// \cond CLASSIMP
   ClassDef(AliEmcalContainer,9);
-  /// \endcond
 };
 #endif
