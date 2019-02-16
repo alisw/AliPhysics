@@ -169,6 +169,7 @@ AliAnalysisHFEppTPCTOFBeauty::AliAnalysisHFEppTPCTOFBeauty(const char *name)
 ,fTPCnsigma_pt2(0)
 ,fTPCnsigma_pt3(0)
 ,fTPCnsigma_p_after_tof(0)
+,fTPCnsigma_proton_p_after_tof(0)
 ,fTPCnsigma_p_after_tof_p(0)
 ,fTPCnsigma_p_after_tof_pion(0)
 ,fTPCnsigma_p_after_tof_k(0)
@@ -391,6 +392,7 @@ AliAnalysisHFEppTPCTOFBeauty::AliAnalysisHFEppTPCTOFBeauty()
 ,fTPCnsigma_pt2(0)
 ,fTPCnsigma_pt3(0)
 ,fTPCnsigma_p_after_tof(0)
+,fTPCnsigma_proton_p_after_tof(0)
 ,fTPCnsigma_p_after_tof_p(0)
 ,fTPCnsigma_p_after_tof_pion(0)
 ,fTPCnsigma_p_after_tof_k(0)
@@ -763,13 +765,13 @@ void AliAnalysisHFEppTPCTOFBeauty::UserCreateOutputObjects()
     hBeautyMotherPt = new TH2F("hBeautyMotherPt","; p_{T} [GeV/c]; Count",1000,0,50,1000,0,50);
     fOutputList->Add(hBeautyMotherPt);
     
-    hDCAPtProtons = new TH2F("hDCAPtProtons","; p_{T} [GeV/c]; Count",32,ptbinning,800,-0.2,0.2);
+    hDCAPtProtons = new TH2F("hDCAPtProtons","; p_{T} [GeV/c]; Count",32,ptbinning,3200,-0.2,0.2);
     fOutputList->Add(hDCAPtProtons);
     
-    hDCAPtProtons2 = new TH2F("hDCAPtProtons2","; p_{T} [GeV/c]; Count",32,ptbinning,800,-0.2,0.2);
+    hDCAPtProtons2 = new TH2F("hDCAPtProtons2","; p_{T} [GeV/c]; Count",32,ptbinning,3200,-0.2,0.2);
     fOutputList->Add(hDCAPtProtons2);
     
-    hDCAPtProtons3 = new TH2F("hDCAPtProtons3","; p_{T} [GeV/c]; Count",32,ptbinning,800,-0.2,0.2);
+    hDCAPtProtons3 = new TH2F("hDCAPtProtons3","; p_{T} [GeV/c]; Count",32,ptbinning,3200,-0.2,0.2);
     fOutputList->Add(hDCAPtProtons3);
     
     hBeautyMotherPt2Daft = new TH2F("hBeautyMotherPt2Daft","; p_{T} [GeV/c]; Count",1000,0,50,1000,0,50);
@@ -914,6 +916,9 @@ void AliAnalysisHFEppTPCTOFBeauty::UserCreateOutputObjects()
     fTPCnsigma_p_after_tof_p = new TH2F("fTPCnsigma_p_after_tof_p","p (GeV/c);TPC Electron N#sigma after TOF cut",300,0,15,200,-15,10);
     fOutputList->Add(fTPCnsigma_p_after_tof_p);
     
+    fTPCnsigma_proton_p_after_tof = new TH2F("fTPCnsigma_proton_p_after_tof","p (GeV/c);TPC Electron N#sigma after TOF cut",300,0,15,200,-15,10);
+    fOutputList->Add(fTPCnsigma_proton_p_after_tof);
+    
     fTPCnsigma_p_after_tof_pion = new TH2F("fTPCnsigma_p_after_tof_pion","p (GeV/c);TPC Electron N#sigma after TOF cut",300,0,15,200,-15,10);
     fOutputList->Add(fTPCnsigma_p_after_tof_pion);
     
@@ -1019,14 +1024,15 @@ void AliAnalysisHFEppTPCTOFBeauty::UserCreateOutputObjects()
     ///-----------------------------------------------------------------
     
     ///THnSparse to store DCA in Data
-    const Int_t nDima3=5;
-    Int_t nBina3[nDima3] = {32,nBinsdcaxy,nBinsITSchi2,nBinsITSsha,nBinspdg2};
+    const Int_t nDima3=6;
+    Int_t nBina3[nDima3] = {32,nBinsdcaxy,nBinsITSchi2,nBinsITSsha,nBinspdg2,nBinspdg2};
     fD0Data = new THnSparseF("fD0Data","fD0Data",nDima3,nBina3);
     fD0Data->SetBinEdges(0,ptbinning); ///pt spectra -> same binning as other histograms
     fD0Data->SetBinEdges(1,binLimdcaxy); ///dca distribution
     fD0Data->SetBinEdges(2,binLimITSchi2); ///ITS chi2 
     fD0Data->SetBinEdges(3,binLimITSsha); ///fraction ITS shared clusters 
     fD0Data->SetBinEdges(4,binLimpdg2); /// electrons and pions
+    fD0Data->SetBinEdges(5,binLimpdg2); /// electrons and pions
     fD0Data->Sumw2();
     fOutputList->Add(fD0Data);
     
@@ -1066,6 +1072,7 @@ void AliAnalysisHFEppTPCTOFBeauty::UserExec(Option_t *)
     Double_t fITSnSigma = -999;
     Double_t fTPCnSigma_pion = -999;
     Double_t fTPCnSigma_proton = -999;
+    Double_t fTOFnSigma_proton = -999;
     Double_t fTPCnSigma_kaon = -999;
     Double_t fTPCsignal = -999;
     Double_t fPt = -999;
@@ -1320,8 +1327,8 @@ void AliAnalysisHFEppTPCTOFBeauty::UserExec(Option_t *)
         fEta = track->Eta();
         fPhi = track->Phi();
         fP = TMath::Sqrt((track->Pt())*(track->Pt()) + (track->Pz())*(track->Pz()));
-        
-        if(fP <=2.0 ){
+      /*  
+        if(fP <= 2.0 ){
         ftofPIDmincut = -2;
         ftofPIDmaxcut = 2;
         }
@@ -1329,7 +1336,7 @@ void AliAnalysisHFEppTPCTOFBeauty::UserExec(Option_t *)
         ftofPIDmincut = -3;
         ftofPIDmaxcut = 3;
         }
-        
+        */
         fITSnClus =  track->GetNumberOfITSClusters();
         fTPCnClus =  track->GetNumberOfTPCClusters();
         
@@ -1339,6 +1346,7 @@ void AliAnalysisHFEppTPCTOFBeauty::UserExec(Option_t *)
         fITSnSigma = fPidResponse->NumberOfSigmasITS(track, AliPID::kElectron);
         fTPCnSigma_pion = fPidResponse->NumberOfSigmasTPC(track, AliPID::kPion);
         fTPCnSigma_proton = fPidResponse->NumberOfSigmasTPC(track, AliPID::kProton);
+        fTOFnSigma_proton = fPidResponse->NumberOfSigmasTOF(track, AliPID::kProton);
         fTPCnSigma_kaon = fPidResponse->NumberOfSigmasTPC(track, AliPID::kKaon);
         
         fTPC_p1->Fill(fP,fTPCsignal);
@@ -1470,9 +1478,13 @@ void AliAnalysisHFEppTPCTOFBeauty::UserExec(Option_t *)
         
         //cout<<"After   "<<DCAxy<<"         "<<DCAz<<endl;
   
+  	if(fTOFnSigma_proton >= -3 && fTOFnSigma_proton <= 3){
+  	fTPCnsigma_proton_p_after_tof->Fill(fP,fTPCnSigma_proton);
+  	}
         ///Checking nsigmaTPC after PID cuts in tof and its
         if(fTOFnSigma >= ftofPIDmincut && fTOFnSigma <= ftofPIDmaxcut){
             fTPCnsigma_p_after_tof->Fill(fP,fTPCnSigma);
+            
             fTPCnsigma_pt_after_tof->Fill(fPt,fTPCnSigma);
             
 			///Cheking the hadron nsigmaTPC after TOF cut
@@ -1597,6 +1609,7 @@ void AliAnalysisHFEppTPCTOFBeauty::UserExec(Option_t *)
 			
 			 qadcaData[4] = -1.;
 			
+			 qadcaData[5] = 10.;
 			 ///Charged pions
 			 if(fTPCnSigma >= -5 && fTPCnSigma <= -3){
 				  qadcaData[4] = 0.5;
@@ -1605,6 +1618,24 @@ void AliAnalysisHFEppTPCTOFBeauty::UserExec(Option_t *)
 			 if(fTPCnSigma >= ftpcPIDmincut && fTPCnSigma <= ftpcPIDmaxcut){
 				if(fTOFnSigma >= ftofPIDmincut && fTOFnSigma <= ftofPIDmaxcut){
 					qadcaData[4] = 1.5;					
+				}
+			 }
+			 
+			  ///Proton candidates
+			 if(fTPCnSigma_proton >= -3 && fTPCnSigma_proton <= 8){
+				if(fTOFnSigma_proton >= -3 && fTOFnSigma_proton <= 3){
+				hDCAPtProtons->Fill(fPt,DCAxy*track->Charge()*signB);
+					qadcaData[4] = 3.5;
+										
+				}
+			 }
+			 
+			   ///Proton candidates
+			 if(fTPCnSigma_proton >= -3 && fTPCnSigma_proton <= 3){
+				if(fTOFnSigma_proton >= -3 && fTOFnSigma_proton <= 3){
+				hDCAPtProtons3->Fill(fPt,DCAxy*track->Charge()*signB);
+					qadcaData[5] = 3.5;
+										
 				}
 			 }
         
@@ -1721,7 +1752,7 @@ void AliAnalysisHFEppTPCTOFBeauty::UserExec(Option_t *)
    
          if(fTPCnSigma >= ftpcPIDmincut && fTPCnSigma <= ftpcPIDmaxcut){
         if(TMath::Abs(fMCparticle->GetPdgCode()) == 2212){ 
-            hDCAPtProtons->Fill(fPt,DCAxy*track->Charge()*signB);
+         //   hDCAPtProtons->Fill(fPt,DCAxy*track->Charge()*signB);
          //   cout<<"Hello:  "<<TMath::Abs(fMCparticle->GetPdgCode())<<endl;
             }
 
@@ -1729,7 +1760,7 @@ void AliAnalysisHFEppTPCTOFBeauty::UserExec(Option_t *)
         
         if(fTPCnSigma >= -5 && fTPCnSigma <= 5){
         if(TMath::Abs(fMCparticle->GetPdgCode()) == 2212){ 
-            hDCAPtProtons3->Fill(fPt,DCAxy*track->Charge()*signB);
+         //   hDCAPtProtons3->Fill(fPt,DCAxy*track->Charge()*signB);
          //   cout<<"Hello:  "<<TMath::Abs(fMCparticle->GetPdgCode())<<endl;
             }
 
