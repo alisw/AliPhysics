@@ -392,6 +392,8 @@ public:
   bool load_int(IntValue_t &i) const { return is_int() ? i = fValueInt, true : false; }
   bool load_int(int &i) const { return is_int() ? i = static_cast<int>(fValueInt), true : false; }
   bool load_int(unsigned int &i) const { return is_int() ? i = static_cast<unsigned int>(fValueInt), true : false; }
+  bool load_uint(ULong_t &i) const { return is_int() ? i = static_cast<ULong_t>(fValueInt), true : false; }
+  bool load_uint(ULong64_t &i) const { return is_int() ? i = static_cast<ULong64_t>(fValueInt), true : false; }
   bool load_num(FloatValue_t &f) const { return is_int() ? f = fValueInt, true : load_float(f); }
   bool load_str(std::string &s) const { return is_str() ? s = fValueString, true : false; }
   bool load_str(TString &s) const { return is_str() ? s = fValueString, true : false; }
@@ -444,7 +446,8 @@ public:
 
     IMPL_FINDANDLOAD(pair_of_floats, load_range, kRANGE, fValueRange);
     IMPL_FINDANDLOAD(pair_of_ints, load_range, kRANGE, fValueRange);
-    IMPL_FINDANDLOAD(unsigned int, load_int, kINT, fValueInt);
+    // IMPL_FINDANDLOAD(unsigned int, load_int, kINT, fValueInt);
+    IMPL_FINDANDLOAD(ULong64_t, load_uint, kINT, fValueInt);
     // IMPL_FINDANDLOAD(int, load_int, kINT, fValueInt);
     IMPL_FINDANDLOAD(Float_t, load_float, kFLOAT, fValueFloat);
     IMPL_FINDANDLOAD(TString, load_str, kSTRING, fValueString);
@@ -463,19 +466,42 @@ public:
     return false;
   }
 
+
+  #define IMPL_GET(__type, _ignored, __ignored) \
+    __type get(const Key_t &key, const __type &defval) const \
+      { __type result(defval); find_and_load(key, result);  \
+        return result; }
+
+  FORWARD_STANDARD_TYPES(IMPL_GET);
+  IMPL_GET(pair_of_floats, kRANGE, fValueRange);
+  IMPL_GET(pair_of_ints, kRANGE, fValueRange);
+  // IMPL_GET(int, kINT, fValueInt);
+  IMPL_GET(ULong64_t, kINT, fValueInt);
+  IMPL_GET(Float_t, kFLOAT, fValueFloat);
+  IMPL_GET(TString, kSTRING, fValueString);
+
+  #undef IMPL_GET
+
   #define IMPL_INSERT(__value_type, _ignored, __ignored)       \
     void insert(const Key_t &key, const __value_type &value) { \
       if (!is_map()) { return; }                               \
       fValueMap[key] = AliFemtoConfigObject(value); }
+
+  #define IMPL_CASTED_INSERT(__value_type, __stored_type, _)     \
+    void insert(const Key_t &key, const __value_type &value) {   \
+      if (!is_map()) { return; }                                 \
+      fValueMap[key] = static_cast<__stored_type>(value); }
 
     FORWARD_STANDARD_TYPES(IMPL_INSERT);
 
     IMPL_INSERT(pair_of_floats, kRANGE, fValueRange);
     IMPL_INSERT(pair_of_ints, kRANGE, fValueRange);
     IMPL_INSERT(int, kINT, fValueInt);
-    IMPL_INSERT(unsigned int, kINT, fValueInt);
     IMPL_INSERT(Float_t, kFLOAT, fValueFloat);
     IMPL_INSERT(TString, kSTRING, fValueString);
+
+    IMPL_CASTED_INSERT(ULong_t, IntValue_t, 0);
+    IMPL_CASTED_INSERT(ULong64_t, IntValue_t, 0);
 
     void insert(const Key_t &key, const AliFemtoConfigObject &obj) {
       if (!is_map()) { return; }
@@ -483,6 +509,7 @@ public:
     }
 
   #undef IMPL_INSERT
+  #undef IMPL_CASTED_INSERT
 
   #ifdef ENABLE_MOVE_SEMANTICS
   #define IMPL_INSERT(__value_type, _i, __i)              \
@@ -555,7 +582,7 @@ public:
     IMPL_POP_ITEM(StringValue_t, pop_str);
     IMPL_POP_ITEM(TString, pop_str);
     IMPL_POP_ITEM(IntValue_t, pop_int);
-    IMPL_POP_ITEM(unsigned int, pop_int);
+    IMPL_POP_ITEM(unsigned int, pop_uint);
     IMPL_POP_ITEM(FloatValue_t, pop_float);
     IMPL_POP_ITEM(MapValue_t, pop_map);
     IMPL_POP_ITEM(ArrayValue_t, pop_array);
