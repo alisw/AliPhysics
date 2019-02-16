@@ -23,6 +23,16 @@ struct AddTrackCutAttrs : public T1, public T2 {
       return T1::Pass(track) && T2::Pass(track);
     }
 
+  AddTrackCutAttrs()
+    : T1()
+    , T2()
+    {}
+
+  AddTrackCutAttrs(AliFemtoConfigObject &cfg)
+    : T1(cfg)
+    , T2(cfg)
+    {}
+
   void FillConfiguration(AliFemtoConfigObject &cfg) const
     {
       T1::FillConfiguration(cfg);
@@ -61,38 +71,71 @@ struct TrackSelectionCut : public T1, public T2 {
       T2::FillConfiguration(cfg);
     }
 
+  TrackSelectionCut()
+    : T1()
+    , T2()
+    {}
+
+  TrackSelectionCut(AliFemtoConfigObject &cfg)
+    : T1(cfg)
+    , T2(cfg)
+    {}
+
   virtual ~TrackSelectionCut() = 0;
 };
 
 
 struct TrackCutAttrStatus {
-  ULong64_t status;
+  ULong_t status;
+
+  bool Pass(const AliFemtoTrack &trk) const
+    {
+      return (trk.Flags() & status) == status;
+    }
 
   TrackCutAttrStatus()
     : status(0)
     {}
 
-  TrackCutAttrStatus(ULong64_t st)
+  TrackCutAttrStatus(ULong_t st)
     : status(st)
     {}
 
-  bool Pass(const AliFemtoTrack &track)
+  TrackCutAttrStatus(AliFemtoConfigObject &cfg)
+    : status(cfg.pop_uint("status", 0))
+    {}
+
+  void FillConfiguration(AliFemtoConfigObject &cfg) const
     {
-      return (track.Flags() & status) == status;
+      cfg.insert("status", status);
     }
 
   virtual ~TrackCutAttrStatus() = 0;
 };
 
 struct TrackCutAttrRemoveKinks {
+
   bool remove_kinks;
 
   bool Pass(const AliFemtoTrack &track)
     {
       return !remove_kinks
-              || !(track.KinkIndex(0)
-                   || track.KinkIndex(1)
-                   || track.KinkIndex(2));
+          || !(track.KinkIndex(0)
+               || track.KinkIndex(1)
+               || track.KinkIndex(2));
+    }
+
+  TrackCutAttrRemoveKinks()
+    : remove_kinks(false)
+    {}
+
+  TrackCutAttrRemoveKinks(AliFemtoConfigObject &cfg)
+    : remove_kinks(cfg.pop_bool("remove_kinks", false))
+    {}
+
+  void FillConfiguration(AliFemtoConfigObject &cfg) const
+    {
+      cfg.insert("remove_kinks", remove_kinks);
     }
 
   virtual ~TrackCutAttrRemoveKinks() = 0;
@@ -109,29 +152,61 @@ struct TrackCutAttrRemoveFakeITS {
       return !remove_its_fake || track.ITSncls() < 0;
     }
 
+  TrackCutAttrRemoveFakeITS()
+    : remove_its_fake(false)
+    {}
+
+  TrackCutAttrRemoveFakeITS(AliFemtoConfigObject &cfg)
+    : remove_its_fake(cfg.pop_bool("remove_its_fake", false))
+    {}
+
+  void FillConfiguration(AliFemtoConfigObject &cfg) const
+    {
+      cfg.insert("remove_its_fake", remove_its_fake);
+    }
+
   virtual ~TrackCutAttrRemoveFakeITS() = 0;
 };
 
 
+/// \class TrackCutAttrImpact
+/// \brief Cut tracks outside of z and radial
+///
 struct TrackCutAttrImpact {
 
-  std::pair<double, double> xy_range;
-  double min_z;
+  double max_xy;
+  double max_z;
 
   bool Pass(const AliFemtoTrack &track)
     {
-      const double
-        impact_d = track.ImpactD(),
-        impact_z = track.ImpactZ();
+      return max_z <= std::abs(track.ImpactZ())
+          && max_xy <= track.ImpactD();
+    }
 
-      return min_z <= impact_z
-             && (xy_range.first <= impact_d) && (impact_d < xy_range.second);
+  TrackCutAttrImpact()
+    // : xy_range(0, 0.25)
+    : max_xy(0.25)
+    , max_z(0.3)
+    {}
+
+  TrackCutAttrImpact(AliFemtoConfigObject &cfg)
+    : max_xy(cfg.pop_float("max_xy", 0.25))
+    , max_z(cfg.pop_float("max_z", 0.3))
+    {}
+
+  void FillConfiguration(AliFemtoConfigObject &cfg) const
+    {
+      cfg.insert("max_z", max_z);
+      cfg.insert("max_xy", max_xy);
     }
 
   virtual ~TrackCutAttrImpact() = 0;
 };
 
 
+/// \class TrackCutAttrChi2ITS
+/// \brief Cut on reduced chi2 of results in ITS
+///
 struct TrackCutAttrChi2ITS {
 
   double max_rchi2_its;
@@ -142,9 +217,26 @@ struct TrackCutAttrChi2ITS {
               && (track.ITSchi2() / track.ITSncls()) > max_rchi2_its;
     }
 
+  TrackCutAttrChi2ITS()
+    : max_rchi2_its(3.0)
+    {}
+
+  TrackCutAttrChi2ITS(AliFemtoConfigObject &cfg)
+    : max_rchi2_its(cfg.pop_float("max_rchi2_its", 3.0))
+    {}
+
+  void FillConfiguration(AliFemtoConfigObject &cfg) const
+    {
+      cfg.insert("max_rchi2_its", max_rchi2_its);
+    }
+
   virtual ~TrackCutAttrChi2ITS() = 0;
 };
 
+
+/// \class TrackCutAttrChi2TPC
+/// \brief Cut on reduced chi2 of TPC
+///
 struct TrackCutAttrChi2TPC {
 
   double max_rchi2_tpc;
@@ -152,11 +244,25 @@ struct TrackCutAttrChi2TPC {
   bool Pass(const AliFemtoTrack &track)
     {
       return (track.TPCncls() > 0)
-              && (track.TPCchi2() / track.TPCncls()) > max_rchi2_tpc;
+              && (track.TPCchi2() / track.TPCncls()) < max_rchi2_tpc;
+    }
+
+  TrackCutAttrChi2TPC()
+    : max_rchi2_tpc(3.0)
+    {}
+
+  TrackCutAttrChi2TPC(AliFemtoConfigObject &cfg)
+    : max_rchi2_tpc(cfg.pop_float("max_rchi2_tpc", 3.0))
+    {}
+
+  void FillConfiguration(AliFemtoConfigObject &cfg) const
+    {
+      cfg.insert("max_rchi2_tpc", max_rchi2_tpc);
     }
 
   virtual ~TrackCutAttrChi2TPC() = 0;
 };
+
 
 /// Remove tracks with "negative" number of ITS clusters
 struct TrackCutAttrRemoveNonTpc {
@@ -168,6 +274,19 @@ struct TrackCutAttrRemoveNonTpc {
       return !remove_non_tpc || track.Label() < 0;
     }
 
+  void FillConfiguration(AliFemtoConfigObject &cfg) const
+    {
+      cfg.insert("remove_non_tpc", remove_non_tpc);
+    }
+
+  TrackCutAttrRemoveNonTpc()
+    : remove_non_tpc(false)
+    {}
+
+  TrackCutAttrRemoveNonTpc(AliFemtoConfigObject &cfg)
+    : remove_non_tpc(cfg.pop_bool("remove_non_tpc", false))
+    {}
+
   virtual ~TrackCutAttrRemoveNonTpc() = 0;
 };
 
@@ -175,29 +294,56 @@ struct TrackCutAttrRemoveNonTpc {
 /// Remove tracks with "negative" number of ITS clusters
 struct TrackCutAttrCharge {
 
+  static const int DEFAULT;
+
   int charge;
 
   bool Pass(const AliFemtoTrack &track)
     {
       return charge != 0 && track.Charge() == charge;
     }
+
+  TrackCutAttrCharge()
+    : charge(DEFAULT)
+    {}
+
+  TrackCutAttrCharge(AliFemtoConfigObject &cfg)
+    : charge(cfg.pop_int("charge", DEFAULT))
+    {}
+
+  void FillConfiguration(AliFemtoConfigObject &cfg) const
+    { cfg.insert("charge", charge); }
 
   virtual ~TrackCutAttrCharge() = 0;
 };
 
 /// Remove tracks with "negative" number of ITS clusters
 struct TrackCutAttrMomentum {
+  static const std::pair<double, double> DEFAULT;
 
-  int charge;
+  std::pair<double, double> momentum_range;
 
   bool Pass(const AliFemtoTrack &track)
     {
-      return charge != 0 && track.Charge() == charge;
+      double p = track.P().Mag();
+      return momentum_range.first <= p && p < momentum_range.second;
     }
+
+  TrackCutAttrMomentum()
+    : momentum_range(DEFAULT)
+    {}
+
+  TrackCutAttrMomentum(AliFemtoConfigObject &cfg)
+    : momentum_range(cfg.pop_range("momentum_range", DEFAULT))
+    {}
+
+  virtual ~TrackCutAttrMomentum() = 0;
 };
 
 /// Remove tracks with "negative" number of ITS clusters
 struct TrackCutAttrPt {
+
+  static const std::pair<double, double> DEFAULT;
 
   std::pair<double, double> pt_range;
 
@@ -207,6 +353,14 @@ struct TrackCutAttrPt {
       return pt_range.first <= pt && pt < pt_range.second;
     }
 
+  TrackCutAttrPt()
+    : pt_range(DEFAULT)
+    {}
+
+  TrackCutAttrPt(AliFemtoConfigObject &cfg)
+    : pt_range(cfg.pop_range("pt_range", DEFAULT))
+    {}
+
   virtual ~TrackCutAttrPt() = 0;
 };
 
@@ -214,6 +368,7 @@ struct TrackCutAttrPt {
 /// Remove tracks with "negative" number of ITS clusters
 struct TrackCutAttrEta {
 
+  static const std::pair<double, double> DEFAULT;
   std::pair<double, double> eta_range;
 
   bool Pass(const AliFemtoTrack &track)
@@ -221,6 +376,14 @@ struct TrackCutAttrEta {
       const double eta = track.P().PseudoRapidity();
       return eta_range.first <= eta && eta < eta_range.second;
     }
+
+  TrackCutAttrEta()
+    : eta_range(DEFAULT)
+    {}
+
+  TrackCutAttrEta(AliFemtoConfigObject &cfg)
+    : eta_range(cfg.pop_range("eta_range", DEFAULT))
+    {}
 
   virtual ~TrackCutAttrEta() = 0;
 };
@@ -321,11 +484,6 @@ struct TrackCutAttrItsCluster {
 
   AliESDtrackCuts::ITSClusterRequirement cluster_reqs[3];
 
-  TrackCutAttrItsCluster()
-    {
-      std::fill_n(cluster_reqs, 3, AliESDtrackCuts::kOff);
-    }
-
   bool Pass(const AliFemtoTrack &track)
     {
       for (int i=0; i < 3; ++i) {
@@ -336,6 +494,11 @@ struct TrackCutAttrItsCluster {
         }
       }
       return true;
+    }
+
+  TrackCutAttrItsCluster()
+    {
+      std::fill_n(cluster_reqs, 3, AliESDtrackCuts::kOff);
     }
 
   bool check_ITS_cluster(AliESDtrackCuts::ITSClusterRequirement req,
@@ -357,7 +520,6 @@ struct TrackCutAttrItsCluster {
 
       return false;
     }
-
 
   virtual ~TrackCutAttrItsCluster() = 0;
 };
@@ -421,7 +583,6 @@ struct TrackCutAttrElectronRejection {
           && TMath::Abs(nsigmaTPCK) > 3.0
           && TMath::Abs(nsigmaTPCP) > 3.0;
     }
-
 
   virtual ~TrackCutAttrElectronRejection() = 0;
 };
