@@ -17,6 +17,8 @@
 #include "AliFemtoEventReaderESDChain.h"
 #include "AliFemtoEventReaderESDChainKine.h"
 #include "AliFemtoEventReaderAODChain.h"
+#include "AliFemtoEventReaderAODMultSelection.h"
+#include "AliFemtoEventReaderAlt.h"
 
 #include "AliFemtoCutMonitorEventMult.h"
 #include "AliFemtoCutMonitorParticleYPt.h"
@@ -104,7 +106,7 @@ struct MacroParams : public TNamed {
   UInt_t ylm_ibin { 30 };
   Float_t ylm_vmin { 0.0 };
   Float_t ylm_vmax { 0.3 };
-  Bool_t ylm_useLCMS { false };
+  Bool_t ylm_useLCMS { true };
 
   bool do_deltaeta_deltaphi_cf { false };
   bool do_avg_sep_cf { false };
@@ -549,7 +551,7 @@ ConfigFemtoAnalysis(const TString& param_str="")
 
       if (macro_config.do_kt_ylm_cf) {
         AliFemtoCorrFctnDirectYlm *ylm_cf = new AliFemtoCorrFctnDirectYlm(
-            "AliFemtoCorrFctnDirectYlm",
+            "",
             macro_config.ylm_max_l,
             macro_config.ylm_ibin, // nbinssh,
             macro_config.ylm_vmin,
