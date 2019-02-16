@@ -17,9 +17,14 @@ public:
   AliFemtoEventReaderAlt();
   ~AliFemtoEventReaderAlt();
 
-  void SetEnhanceSmearing(double);
+  void SetEnhanceSmearing(double n);
+  double GetEnhanceSmearing() const
+    { return fEnhanceSmearing; }
 
 protected:
+  AliFemtoEventReaderAlt(const AliFemtoEventReaderAlt&);
+  AliFemtoEventReaderAlt operator=(const AliFemtoEventReaderAlt&);
+
   virtual AliFemtoTrack* CopyAODtoFemtoTrack(AliAODTrack *src);
 
   TRandom3 *fRng;
