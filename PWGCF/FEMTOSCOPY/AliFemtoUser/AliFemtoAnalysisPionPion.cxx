@@ -855,26 +855,18 @@ TList* AliFemtoAnalysisPionPion::ListSettings()
 {
   TList *setting_list = new TList();
 
+  TString prefix = "AliFemtoAnalysisPionPion";
+
   setting_list->AddVector(
 
-    new TObjString(
-      TString::Format("AliFemtoAnalysisPionPion.mc_analysis=%d", fMCAnalysis)
-    ),
-
-    new TObjString(
-      TString::Format("AliFemtoAnalysisPionPion.identical_analysis=%d", AnalyzeIdenticalParticles())
-    ),
-
-    new TObjString(
-      TString::Format("AliFemtoAnalysisPionPion.pion_1_type=%d", fPionType_1)
-    ),
+    new TObjString(prefix + Form(".mc_analysis=%d", fMCAnalysis)),
+    new TObjString(prefix + Form(".identical_analysis=%d", AnalyzeIdenticalParticles())),
+    new TObjString(prefix + Form(".pion_1_type=%d", fPionType_1)),
 
   nullptr);
 
   if (!AnalyzeIdenticalParticles()) {
-    setting_list->Add(
-      new TObjString(TString::Format("AliFemtoAnalysisPionPion.pion_2_type=%d", fPionType_2))
-    );
+    setting_list->Add(new TObjString(prefix + Form(".pion_2_type=%d", fPionType_2)));
   }
 
   TList *parent_list = AliFemtoVertexMultAnalysis::ListSettings();
@@ -912,100 +904,10 @@ void AliFemtoAnalysisPionPion::EventEnd(const AliFemtoEvent* ev)
   }
 }
 
-template <typename T>
-T*
-ConstructClassOfType(const std::string classname)
-{
-  static std::mutex m;
-
-  T *result = nullptr;
-
-  {
-    auto globals = gROOT->GetListOfGlobals();
-    const auto tmpname = TString::Format("___FEMTO_TMP");
-    std::lock_guard<std::mutex> guard(m);
-
-
-    TH1C h(tmpname, "", 1, 0, 1);
-    globals->Add(&h);
-
-    auto tmp_buff = h.fArray;
-
-    // const TString cmd = TString::Format("std::cout << '~' << (%s->fArray = reinterpret_cast<char*>(new %s())) << '\\n';", tmpname.Data(), classname.c_str());
-    // const TString cmd = TString::Format("dynamic_cast<TH1C*>(gROOT->GetListOfGlobals()->FindObject(\"%s\"))->fArray = reinterpret_cast<char*>(new %s());", tmpname.Data(), classname.c_str());
-    const TString cmd = TString::Format(R"( auto a = dynamic_cast<TH1C*>(gROOT->GetListOfGlobals()->FindObject("%s")); a->fArray = reinterpret_cast<char*>(new %s()); )", tmpname.Data(), classname.c_str());
-
-    Int_t err;
-    gROOT->ProcessLine(cmd, &err);
-    if (err) {
-      std::cerr << " --> Error Encountered when processing: " << err << "\n";
-    }
-    result = reinterpret_cast<T*>(h.fArray);
-
-    h.fArray = tmp_buff;
-    globals->Remove(&h);
-  }
-
-  return result;
-}
-
-// AliFemtoEventReader*
-// AliFemtoAnalysisPionPion::ConstructEventReader(AliFemtoConfigObject cfg)
-// {
-
-//   std::string classname;
-//   cfg.pop_and_load("class", classname);
-//   auto result = ConstructClassOfType<AliFemtoEventReader>(classname);
-
-//   std::cout << "\n\n\nCreated event reader at " << (void*)result << "\n\n";
-//   std::cout << "Clone.... " << result->Report() << "\n";
-//   return result;
-// }
-
 AliFemtoEventReader*
 AliFemtoAnalysisPionPion::ConstructEventReader(AliFemtoConfigObject cfg)
 {
-  std::string classname;
-  if (!cfg.pop_and_load("class", classname)) {
-    std::cerr << "[AliFemtoAnalysisPionPion::ConstructEventReader] "
-	      <<  "Could not load string-property 'class' from object:\n"
-	      << cfg.Stringify(true)
-	      << "\n";
-    return nullptr;
-  }
-
-  std::cout << "classname=`" << classname << "`\n";
-  TClass tclass(classname.c_str(), true);
-
-  // this class is registered with ROOT and is of the correct type
-  if (tclass.GetClassInfo() && tclass.InheritsFrom("AliFemtoEventReader")) {
-
-    // can be constructed from ConfigObject
-    auto ctor = tclass.GetMethodWithPrototype(classname.c_str(), "AliFemtoConfigObject");
-    if (ctor) {
-      TString cfgstr = cfg.Stringify();
-      auto obj = (AliFemtoEventReader*)gInterpreter->ProcessLine(
-        TString::Format("new %s(AliFemtoConfigObject::Parse(\"%s\");", classname.c_str(), cfgstr.Data())
-      );
-      std::cout << "obj=" << obj << "\n";
-      return obj;
-    }
-  }
-
-  #define TRY_CONSTRUCTING_CLASS(__name) (classname == #__name) ? (AliFemtoEventReader*)(Configuration<__name>(cfg))
-
-  AliFemtoEventReader *result = TRY_CONSTRUCTING_CLASS(AliFemtoEventReaderAOD)
-                              : TRY_CONSTRUCTING_CLASS(AliFemtoEventReaderAODChain)
-                              : TRY_CONSTRUCTING_CLASS(AliFemtoEventReaderAODMultSelection)
-                              : nullptr;
-
-  #undef TRY_CONSTRUCTING_CLASS
-
-  if (result == nullptr) {
-    std::cerr << "[AliFemtoAnalysisPionPion::ConstructEventReader] " << "Could not load class '" << classname << "' \n";
-  }
-
-  return result;
+  return cfg.Into<AliFemtoEventReader>();
 }
 
 AliFemtoEventCut*
@@ -1013,30 +915,6 @@ AliFemtoAnalysisPionPion::ConstructEventCut(AliFemtoConfigObject cfg)
 {
   auto result = cfg.Into<AliFemtoEventCut>();
   return result;
-
-/*
-  std::string classname;
-  if (!cfg.pop_and_load("class", classname)) {
-    TString msg = "Could not load string-property 'class' from object:\n" + cfg.Stringify(true);
-    std::cerr << "[AliFemtoAnalysisPionPion::ConstructPairCut] " << msg;
-    return nullptr;
-  }
-
-  #define TRY_CONSTRUCTING_CLASS(__name) (classname == #__name) ? (AliFemtoEventCut*)(Configuration<__name>(cfg))
-
-  auto *result = TRY_CONSTRUCTING_CLASS(AliFemtoBasicEventCut)
-              //  : TRY_CONSTRUCTING_CLASS(AliFemtoEventCutCentrality)
-               : classname == "AliFemtoEventCutCentrality" ? new AliFemtoEventCutCentrality(cfg)
-               : nullptr;
-
-  #undef TRY_CONSTRUCTING_CLASS
-
-  if (result == nullptr) {
-    std::cerr << "[AliFemtoAnalysisPionPion::ConstructEventReader] " << "Could not load class '" << classname << "' \n";
-  }
-
-  return result;
-*/
 }
 
 AliFemtoPairCut*
@@ -1044,27 +922,6 @@ AliFemtoAnalysisPionPion::ConstructPairCut(AliFemtoConfigObject cfg)
 {
   auto result = cfg.Into<AliFemtoPairCut>();
   return result;
-/*
-  std::string classname;
-  if (!cfg.pop_and_load("class", classname)) {
-    TString msg = "Could not load string-property 'class' from object:\n" + cfg.Stringify(true);
-    std::cerr << "[AliFemtoAnalysisPionPion::ConstructPairCut] " << msg;
-    return nullptr;
-  }
-  std::cout << "classname=`" << classname << "`\n";
-
-
-  #define TRY_CONSTRUCTING_CLASS(__name) (classname == #__name) ? (AliFemtoPairCut*)(Configuration<__name>(cfg))
-
-  auto *result = TRY_CONSTRUCTING_CLASS(AliFemtoPairCutAntiGamma)
-               : TRY_CONSTRUCTING_CLASS(AliFemtoPairCutDetaDphi)
-               : TRY_CONSTRUCTING_CLASS(AliFemtoShareQualityPairCut)
-               : nullptr;
-
-  #undef TRY_CONSTRUCTING_CLASS
-
-  return result;
-*/
 }
 
 AliFemtoParticleCut*
@@ -1072,25 +929,6 @@ AliFemtoAnalysisPionPion::ConstructParticleCut(AliFemtoConfigObject cfg)
 {
   auto result = cfg.Into<AliFemtoTrackCut>();
   return result;
-/*
-  std::string classname;
-  if (!cfg.pop_and_load("class", classname)) {
-    std::cerr << "[AliFemtoAnalysisPionPion::ConstructParticleCut] "
-              <<  "Could not load string-property 'class' from object:\n"
-	      << cfg.Stringify(true)
-	      << "\n";
-    return nullptr;
-  }
-
-  #define TRY_CONSTRUCTING_CLASS(__name) (classname == #__name) ? static_cast<AliFemtoParticleCut*>(Configuration<__name>(cfg))
-
-  AliFemtoParticleCut *result = TRY_CONSTRUCTING_CLASS(AliFemtoESDTrackCut)
-                          //  : TRY_CONSTRUCTING_CLASS(AliFemtoEventReaderAODMultSelection)
-                           : nullptr;
-  #undef TRY_CONSTRUCTING_CLASS
-
-  return result;
-*/
 }
 
 AliFemtoAnalysis*
