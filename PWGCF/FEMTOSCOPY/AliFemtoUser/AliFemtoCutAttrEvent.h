@@ -18,6 +18,11 @@ namespace pwgfemto {
 template <typename T1, typename T2>
 struct AddEventCutAttrs : public T1 , public T2 {
 
+  AddEventCutAttrs(AliFemtoConfigObject &cfg)
+    : T1(cfg)
+    , T2(cfg)
+    {}
+
   bool Pass(const AliFemtoEvent &ev)
     {
       return T1::Pass(ev) && T2::Pass(ev);
@@ -33,10 +38,16 @@ struct AddEventCutAttrs : public T1 , public T2 {
 };
 
 struct EventCutAttrEpPsi {
+  static const std::pair<double, double> DEFAULT;
+
   std::pair<double, double> ep_psi_range;
 
   EventCutAttrEpPsi()
     : ep_psi_range(-1000.0, 1000.0)
+    {}
+
+  EventCutAttrEpPsi(AliFemtoConfigObject &cfg)
+    : ep_psi_range(cfg.pop_range("ep_psi_range", DEFAULT))
     {}
 
   bool Pass(const AliFemtoEvent &ev)
@@ -50,10 +61,15 @@ struct EventCutAttrEpPsi {
 
 /// cut on event multiplicty
 struct EventCutAttrMultiplicty {
+  static const std::pair<int, int> DEFAULT;
   std::pair<int, int> mult_range;
 
   EventCutAttrMultiplicty()
     : mult_range(0, 100000)
+    {}
+
+  EventCutAttrMultiplicty(AliFemtoConfigObject &cfg)
+    : mult_range(cfg.pop_range("mult_range", std::make_pair(0, 100000)))
     {}
 
   bool Pass(const AliFemtoEvent &ev)
@@ -69,6 +85,14 @@ struct EventCutAttrMultiplicty {
 struct EventCutAttrCent {
   std::pair<double, double> cent_range;
 
+  EventCutAttrCent()
+    : cent_range(0.0, 100.0)
+    {}
+
+  EventCutAttrCent(AliFemtoConfigObject &cfg)
+    : cent_range(cfg.pop_range("cent_range", std::make_pair(0.0, 100.0)))
+    {}
+
   bool Pass(const AliFemtoEvent &ev)
     {
       const double cent = ev.CentralityV0();
@@ -83,6 +107,10 @@ struct EventCutAttrVertexZ {
 
   EventCutAttrVertexZ()
     : zvert_range(-100.0, 100.0)
+    {}
+
+  EventCutAttrVertexZ(AliFemtoConfigObject &cfg)
+    : zvert_range(cfg.pop_range("zvert_range", std::make_pair(-100.0, 100.0)))
     {}
 
   bool Pass(const AliFemtoEvent &ev)
@@ -104,6 +132,10 @@ struct EventCutAttrZdcParticipants {
     : min_zdc_participants(2)
     {}
 
+  EventCutAttrZdcParticipants(AliFemtoConfigObject &cfg)
+    : min_zdc_participants(cfg.pop_uint("min_zdc_participants", 2))
+    {}
+
   bool Pass(const AliFemtoEvent &ev)
     {
       return ev.ZDCParticipants() >= min_zdc_participants;
@@ -119,6 +151,10 @@ struct EventCutAttrTrigger {
 
   EventCutAttrTrigger()
     : trigger(0)
+    {}
+
+  EventCutAttrTrigger(AliFemtoConfigObject &cfg)
+    : trigger(cfg.pop_uint("trigger", 0))
     {}
 
   bool Pass(const AliFemtoEvent &ev)

@@ -31,6 +31,8 @@
 #include "AliFemtoCorrFctn3DLCMSSym.h"
 #include "AliFemtoModelCorrFctnTrueQ3D.h"
 
+#include "AliFemtoAnalysisPionPionCuts.h"
+
 #include "AliFemtoAnalysisPionPionObjectConstructor.h"
 
 #include <TROOT.h>
@@ -410,7 +412,11 @@ AliFemtoAnalysisPionPion::AliFemtoAnalysisPionPion(const char *name,
   SetMinSizePartCollection(params.min_coll_size);
 
   if (fFirstParticleCut == nullptr) {
+    if (cut_params.cuts_use_attrs) {
+    SetFirstParticleCut(new AliFemtoTrackCutPionPionAK());
+    } else {
     SetFirstParticleCut(BuildPionCut1(cut_params));
+    }
   }
 
   if (fPionType_2 != kNone && fSecondParticleCut == nullptr) {
@@ -420,11 +426,19 @@ AliFemtoAnalysisPionPion::AliFemtoAnalysisPionPion(const char *name,
   }
 
   if (fEventCut == nullptr) {
+    // if (cut_params.cuts_use_attrs) {
+    // SetFirstParticleCut(new AliFemtoEventCutPionPionAK());
+    // } else {
     SetEventCut(BuildEventCut(cut_params));
+    // }
   }
 
   if (fPairCut == nullptr) {
+    // if (cut_params.cuts_use_attrs) {
+    // SetFirstParticleCut(new AliFemtoPairCutPionPionAKAvgSep());
+    // } else {
     SetPairCut(BuildPairCut(cut_params));
+    // }
   }
 
   auto event_cut_cfg = GetConfigurationOf(*fEventCut);
@@ -482,6 +496,7 @@ AliFemtoAnalysisPionPion::DefaultConfig()
 
 AliFemtoAnalysisPionPion::CutParams::CutParams()
   : TNamed(AliFemtoAnalysisPionPion::make_random_string("cut_").Data(), "Cut Params")
+  , cuts_use_attrs(false)
   , event_use_basic(false)
   , event_MultMin(default_event.multiplicity.first)
   , event_MultMax(default_event.multiplicity.second)
@@ -953,7 +968,7 @@ AliFemtoAnalysisPionPion::ConstructEventReader(AliFemtoConfigObject cfg)
   std::string classname;
   if (!cfg.pop_and_load("class", classname)) {
     std::cerr << "[AliFemtoAnalysisPionPion::ConstructEventReader] "
-	      <<  "Could not load string-property 'class' from object:\n" 
+	      <<  "Could not load string-property 'class' from object:\n"
 	      << cfg.Stringify(true)
 	      << "\n";
     return nullptr;
@@ -1061,7 +1076,7 @@ AliFemtoAnalysisPionPion::ConstructParticleCut(AliFemtoConfigObject cfg)
   std::string classname;
   if (!cfg.pop_and_load("class", classname)) {
     std::cerr << "[AliFemtoAnalysisPionPion::ConstructParticleCut] "
-              <<  "Could not load string-property 'class' from object:\n" 
+              <<  "Could not load string-property 'class' from object:\n"
 	      << cfg.Stringify(true)
 	      << "\n";
     return nullptr;

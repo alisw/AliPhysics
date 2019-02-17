@@ -212,6 +212,8 @@ struct AliFemtoAnalysisPionPion::AnalysisParams : public TNamed {
 ///
 struct AliFemtoAnalysisPionPion::CutParams : public TNamed {
 
+  Bool_t cuts_use_attrs;
+
   Bool_t event_use_basic;
 
   // EVENT
