@@ -32,6 +32,7 @@ AliAnalysisTaskEbyeIterPID* Config_marsland_EbyeIterPID(Bool_t getFromAlien, Int
       task->SetUseCouts(kFALSE);
       task->SetFillAllCutVariables(kTRUE);
       task->SetFillArmPodTree(kTRUE);
+      task->fEventCuts.fUseVariablesCorrelationCuts = true;
       const Int_t tmpCentbins = 9;
       Float_t tmpfxCentBins[tmpCentbins] = {0,10,20,30,40,50,60,70,80};
       task->SetCentralityBinning(tmpCentbins,tmpfxCentBins);
@@ -43,6 +44,7 @@ AliAnalysisTaskEbyeIterPID* Config_marsland_EbyeIterPID(Bool_t getFromAlien, Int
       task->SetIsMCtrue(kFALSE);
       task->SetFillAllCutVariables(kTRUE);
       task->SetFillArmPodTree(kTRUE);
+      task->fEventCuts.fUseVariablesCorrelationCuts = true;
       const Int_t tmpCentbins = 17;
       Float_t tmpfxCentBins[tmpCentbins] = {0,5,10,15,20,25,30,35,40,45,50,55,60,65,70,75,80};
       task->SetCentralityBinning(tmpCentbins,tmpfxCentBins);
@@ -51,9 +53,9 @@ AliAnalysisTaskEbyeIterPID* Config_marsland_EbyeIterPID(Bool_t getFromAlien, Int
     case 3:{
       std::cout << settingType << " Info::marsland: (REFERENCE settings) + allCuts + ArmPodTree filled " << std::endl;
       // Real data settings
-      task->SetNEtabins(10);
-      task->SetEtaLowerEdge(-1.);
-      task->SetEtaUpperEdge( 1.);
+      task->SetNEtabins(16);
+      task->SetEtaLowerEdge(-0.8.);
+      task->SetEtaUpperEdge( 0.8.);
       task->SetNMomBins(600);
       task->SetMomLowerEdge(0.);
       task->SetMomUpperEdge(12.);
@@ -61,8 +63,11 @@ AliAnalysisTaskEbyeIterPID* Config_marsland_EbyeIterPID(Bool_t getFromAlien, Int
       task->SetDeDxLowerEdge(20.);
       task->SetDeDxUpperEdge(1020.);
       //
+      task->SetDefaultTrackCuts(kTRUE);
       task->SetFillAllCutVariables(kTRUE);
       task->SetFillArmPodTree(kTRUE);
+      task->SetRunOnGrid(kTRUE);
+      task->fEventCuts.fUseVariablesCorrelationCuts = true;
     }
     break;
     case 4:{
@@ -84,7 +89,7 @@ AliAnalysisTaskEbyeIterPID* Config_marsland_EbyeIterPID(Bool_t getFromAlien, Int
       task->SetFillTreeMC(kTRUE);
       task->SetFillGenDistributions(kFALSE);
       task->SetTrackOriginType(0);   // 0:prim, 1: prim+weak, 2:prim+material, 3:prim+material+weak, 4:full scan
-      task->SetUsePtCut(1); // 0: tpc momcut, 1: vertex momcut, 2: pT cut
+      task->SetUsePtCut(2); // 0: tpc momcut, 1: vertex momcut, 2: pT cut
       // acceptance
       const Int_t tmpEtaBinsMC = 8;
       const Int_t tmpMomBinsMC = 2;
@@ -107,7 +112,7 @@ AliAnalysisTaskEbyeIterPID* Config_marsland_EbyeIterPID(Bool_t getFromAlien, Int
       task->SetFillTreeMC(kTRUE);
       task->SetFillGenDistributions(kFALSE);
       task->SetTrackOriginType(0);   // 0:prim, 1: prim+weak, 2:prim+material, 3:prim+material+weak, 4:full scan
-      task->SetUsePtCut(1); // 0: tpc momcut, 1: vertex momcut, 2: pT cut
+      task->SetUsePtCut(2); // 0: tpc momcut, 1: vertex momcut, 2: pT cut
       // acceptance
       const Int_t tmpEtaBinsMC = 8;
       const Int_t tmpMomBinsMC = 1;
@@ -130,7 +135,7 @@ AliAnalysisTaskEbyeIterPID* Config_marsland_EbyeIterPID(Bool_t getFromAlien, Int
       task->SetFillTreeMC(kTRUE);
       task->SetFillGenDistributions(kFALSE);
       task->SetTrackOriginType(0);   // 0:prim, 1: prim+weak, 2:prim+material, 3:prim+material+weak, 4:full scan
-      task->SetUsePtCut(1); // 0: tpc momcut, 1: vertex momcut, 2: pT cut
+      task->SetUsePtCut(2); // 0: tpc momcut, 1: vertex momcut, 2: pT cut
       //
       // acceptance
       const Int_t tmpEtaBinsMC = 8;
@@ -154,7 +159,7 @@ AliAnalysisTaskEbyeIterPID* Config_marsland_EbyeIterPID(Bool_t getFromAlien, Int
       task->SetFillTreeMC(kTRUE);
       task->SetFillGenDistributions(kFALSE);
       task->SetTrackOriginType(0);   // 0:prim, 1: prim+weak, 2:prim+material, 3:prim+material+weak, 4:full scan
-      task->SetUsePtCut(1); // 0: tpc momcut, 1: vertex momcut, 2: pT cut
+      task->SetUsePtCut(2); // 0: tpc momcut, 1: vertex momcut, 2: pT cut
       // acceptance
       const Int_t tmpEtaBinsMC = 8;
       const Int_t tmpMomBinsMC = 1;
@@ -225,9 +230,10 @@ AliAnalysisTaskEbyeIterPID* Config_marsland_EbyeIterPID(Bool_t getFromAlien, Int
       std::cout << settingType << " Info::marsland: MC full on lego train --> full acceptance " << std::endl;
       task->SetEffMatrix(kTRUE);  task->SetIsMCtrue(kTRUE);  task->SetFillAllCutVariables(kTRUE);  // conditions to enter FillMCFull_NetParticles()
       //
-      task->SetRunOnGrid(kTRUE); // do not fill eff matrix
-      task->SetFillTreeMC(kTRUE);
+      // task->SetRunOnGrid(kTRUE); // do not fill eff matrix
+      task->SetFillTreeMC(kFALSE);
       task->SetFillGenDistributions(kFALSE);
+      task->SetDefaultTrackCuts(kTRUE);
       task->SetFillNudynFastGen(kTRUE);
       task->SetTrackOriginType(0);   // 0:prim, 1: prim+weak, 2:prim+material, 3:prim+material+weak, 4:full scan
       task->SetUsePtCut(1); // 0: tpc momcut, 1: vertex momcut, 2: pT cut
@@ -270,6 +276,33 @@ AliAnalysisTaskEbyeIterPID* Config_marsland_EbyeIterPID(Bool_t getFromAlien, Int
       task->SetMomUpperEdge(10000.);
       task->SetEtaLowerEdge(-10000.);
       task->SetEtaUpperEdge( 10000.);
+      // acceptance
+      const Int_t tmpEtaBinsMC = 1;
+      const Int_t tmpMomBinsMC = 1;
+      Float_t tmpetaDownArr[tmpEtaBinsMC] = {-0.8};
+      Float_t tmpetaUpArr[tmpEtaBinsMC]   = { 0.8};
+      Float_t tmppDownArr[tmpMomBinsMC] = { 0.6};
+      Float_t tmppUpArr[tmpMomBinsMC]   = { 1.5};
+      task->SetMCEtaScanArray(tmpEtaBinsMC, tmpetaDownArr, tmpetaUpArr);
+      task->SetMCMomScanArray(tmpMomBinsMC, tmppDownArr,   tmppUpArr);
+      // resonances to exclude
+      const Int_t tmpNresonances = 1;
+      TString tmpResArr[tmpNresonances] = {"xxx"};
+      task->SetMCResonanceArray(tmpNresonances,tmpResArr);
+    }
+    break;
+    //
+    // ====================================================================================
+    // ============================== MC Eff Matrix =======================================
+    // ====================================================================================
+    //
+    case 80:{
+      std::cout << settingType << " Info::marsland: fill only eff matrix " << std::endl;
+      task->SetEffMatrix(kTRUE);  task->SetIsMCtrue(kTRUE);  task->SetFillAllCutVariables(kTRUE);  // conditions to enter FillMCFull_NetParticles()
+      //
+      task->SetTrackOriginType(0);   // 0:prim, 1: prim+weak, 2:prim+material, 3:prim+material+weak, 4:full scan
+      task->SetUsePtCut(1); // 0: tpc momcut, 1: vertex momcut, 2: pT cut
+      //
       // acceptance
       const Int_t tmpEtaBinsMC = 1;
       const Int_t tmpMomBinsMC = 1;
@@ -818,6 +851,7 @@ void SetDefaults(AliAnalysisTaskEbyeIterPID *defaultTask)
   defaultTask->SetFillTreeMC(kFALSE);
   defaultTask->SetFillAllCutVariables(kFALSE);
   defaultTask->SetFillNudynFastGen();
+  defaultTask->SetDefaultTrackCuts(kTRUE);
 
   // Setters for the systematic uncertainty checks
   defaultTask->SetSystCentEstimator(0);
