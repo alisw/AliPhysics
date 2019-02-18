@@ -29,46 +29,46 @@ AliAnalysisTaskSE *AddTaskSigma0Femto(bool isMC = false,
     runLightOutput = kTRUE;
     fillHistos = kFALSE;
   }
-  if (suffix == "22") {
+  if (suffix == "23") {
     // eta < 0.8
     cutnumberPhoton = "0d200008400000002280920000";
-  } else if (suffix == "23") {
+  } else if (suffix == "24") {
     // single pT > 0, gammapT > 0
     cutnumberPhoton = "00200078400000002280920000";
-  } else if (suffix == "24") {
+  } else if (suffix == "25") {
     // single pT > 0.050, gammapT > 0.150
     cutnumberPhoton = "002000a8400000002280920000";
-  } else if (suffix == "25") {
+  } else if (suffix == "26") {
     // TPC cluster, findable > 0.6
     cutnumberPhoton = "00200009400000002280920000";
-  } else if (suffix == "26") {
+  } else if (suffix == "27") {
     // TPC PID -10,10
     cutnumberPhoton = "00200008000000002280920000";
-  } else if (suffix == "27") {
+  } else if (suffix == "28") {
     // TPC PID -3,3
     cutnumberPhoton = "00200008a00000002280920000";
-  } else if (suffix == "28") {
+  } else if (suffix == "29") {
     // 1-D Qt cut, qt < 0.1
     cutnumberPhoton = "00200008400000001280920000";
-  } else if (suffix == "29") {
+  } else if (suffix == "30") {
     // 2-D Qt cut, qt < 0.02
     cutnumberPhoton = "00200008400000006280920000";
-  } else if (suffix == "30") {
+  } else if (suffix == "31") {
     // psiPair < 0.2, 1-D
     cutnumberPhoton = "00200008400000002240920000";
-  } else if (suffix == "31") {
+  } else if (suffix == "32") {
     // psiPair < 0.1, 2-D
     cutnumberPhoton = "00200008400000002250920000";
-  } else if (suffix == "32") {
+  } else if (suffix == "33") {
     // cosPA < 0.98
     cutnumberPhoton = "00200008400000002280820000";
-  } else if (suffix == "33") {
+  } else if (suffix == "34") {
     // cosPA < 0.995
     cutnumberPhoton = "00200008400000002280a20000";
-  } else if (suffix == "34") {
+  } else if (suffix == "35") {
     // DCA_R < 5
     cutnumberPhoton = "00200008400000002280920200";
-  } else if (suffix == "35") {
+  } else if (suffix == "36") {
     // DCA_Z < 5
     cutnumberPhoton = "00200008400000002280920020";
   }
@@ -220,8 +220,8 @@ AliAnalysisTaskSE *AddTaskSigma0Femto(bool isMC = false,
     v0Cuts->SetPIDnSigma(6);
     antiv0Cuts->SetPIDnSigma(6);
   } else if (suffix == "16") {
-    v0Cuts->SetArmenterosCut(0, 1, -1, 1);
-    antiv0Cuts->SetArmenterosCut(0, 1, -1, 1);
+    v0Cuts->SetArmenterosCut(0., 0.15, 0.2, 1);
+    antiv0Cuts->SetArmenterosCut(0, 0.15, 0.2, 1);
   } else if (suffix == "17") {
     v0Cuts->SetTPCclusterMin(80);
     antiv0Cuts->SetTPCclusterMin(80);
@@ -237,7 +237,11 @@ AliAnalysisTaskSE *AddTaskSigma0Femto(bool isMC = false,
   } else if (suffix == "21") {
     v0Cuts->SetDaughterDCAtoPV(0.06);
     antiv0Cuts->SetDaughterDCAtoPV(0.06);
+  } else if (suffix == "22") {
+    v0Cuts->SetLambdaSelection(1.115683 - 0.008, 1.115683 + 0.008);
+    antiv0Cuts->SetLambdaSelection(1.115683 - 0.008, 1.115683 + 0.008);
   }
+
   if (suffix == "999") {
     v0Cuts->SetCheckCutsMC(true);
     antiv0Cuts->SetCheckCutsMC(true);
@@ -267,10 +271,10 @@ AliAnalysisTaskSE *AddTaskSigma0Femto(bool isMC = false,
     antiSigmaCuts->SetIsSpectrum(false);
   }
 
-  if (suffix == "36") {
-    sigmaCuts->SetSigmaMassCut(0.0045);
-    antiSigmaCuts->SetSigmaMassCut(0.0045);
-  } else if (suffix == "37") {
+  if (suffix == "37") {
+    sigmaCuts->SetSigmaMassCut(0.005);
+    antiSigmaCuts->SetSigmaMassCut(0.005);
+  } else if (suffix == "38") {
     sigmaCuts->SetSigmaSideband(0.025, 0.075);
     antiSigmaCuts->SetSigmaSideband(0.025, 0.075);
   }
