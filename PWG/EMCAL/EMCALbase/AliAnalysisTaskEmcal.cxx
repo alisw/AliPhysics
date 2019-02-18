@@ -1443,32 +1443,32 @@ Bool_t AliAnalysisTaskEmcal::RetrieveEventObjects()
   TObject * header = InputEvent()->GetHeader();
   if (fBeamType == kAA || fBeamType == kpA ) {
     if (fUseNewCentralityEstimation) {
-    if (header->InheritsFrom("AliNanoAODStorage")){
-       AliNanoAODHeader *nanoHead = (AliNanoAODHeader*)header;
-       fCent=nanoHead->GetCentr(fCentEst.Data());
-    }else{
-      AliMultSelection *MultSelection = static_cast<AliMultSelection*>(InputEvent()->FindListObject("MultSelection"));
-      if (MultSelection) {
-        fCent = MultSelection->GetMultiplicityPercentile(fCentEst.Data());
-      }
-      else {
-        AliWarning(Form("%s: Could not retrieve centrality information! Assuming 99", GetName()));
-      }
+      if (header->InheritsFrom("AliNanoAODStorage")){
+        AliNanoAODHeader *nanoHead = (AliNanoAODHeader*)header;
+        fCent=nanoHead->GetCentr(fCentEst.Data());
+      }else{
+        AliMultSelection *MultSelection = static_cast<AliMultSelection*>(InputEvent()->FindListObject("MultSelection"));
+        if (MultSelection) {
+          fCent = MultSelection->GetMultiplicityPercentile(fCentEst.Data());
+        }
+        else {
+          AliWarning(Form("%s: Could not retrieve centrality information! Assuming 99", GetName()));
+        }
       }
     }
     else { // old centrality estimation < 2015
-    if (header->InheritsFrom("AliNanoAODStorage")){
-       AliNanoAODHeader *nanoHead = (AliNanoAODHeader*)header;
-       fCent=nanoHead->GetCentr(fCentEst.Data());
-    }else{
-      AliCentrality *aliCent = InputEvent()->GetCentrality();
-      if (aliCent) {
-        fCent = aliCent->GetCentralityPercentile(fCentEst.Data());
+      if (header->InheritsFrom("AliNanoAODStorage")){
+        AliNanoAODHeader *nanoHead = (AliNanoAODHeader*)header;
+        fCent=nanoHead->GetCentr(fCentEst.Data());
+      }else{
+        AliCentrality *aliCent = InputEvent()->GetCentrality();
+        if (aliCent) {
+          fCent = aliCent->GetCentralityPercentile(fCentEst.Data());
+        }
+        else {
+          AliWarning(Form("%s: Could not retrieve centrality information! Assuming 99", GetName()));
+        }
       }
-      else {
-        AliWarning(Form("%s: Could not retrieve centrality information! Assuming 99", GetName()));
-      }
-    }
     }
 
     if (fNcentBins==4) {
