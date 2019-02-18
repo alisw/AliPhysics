@@ -809,22 +809,35 @@ void AliReducedVarManager::FillEventInfo(BASEEVENT* baseEvent, Float_t* values, 
          Float_t recenterOffset = fgVZEROqVecRecentering[0]->GetBinContent(fgVZEROqVecRecentering[0]->FindBin(event->CentralitySPD(), event->Vertex(2)));
          Float_t widthEqVZERO = fgVZEROqVecRecentering[0]->GetBinError(fgVZEROqVecRecentering[0]->FindBin(event->CentralitySPD(), event->Vertex(2)));
 
-       qvecVZEROA[1][0] -= recenterOffset;
-       qvecVZEROA[1][0] =qvecVZEROA[1][0]/(widthEqVZERO >1.0e-6 ? widthEqVZERO: 0.0001) ;
-      // cout<<recenterOffset<<" "<<widthEqVZERO<<" "<<qvecVZEROA[1][0]<<endl;
-      
-       recenterOffset = fgVZEROqVecRecentering[1]->GetBinContent(fgVZEROqVecRecentering[1]->FindBin(event->CentralitySPD(), event->Vertex(2)));
-       widthEqVZERO = fgVZEROqVecRecentering[1]->GetBinError(fgVZEROqVecRecentering[1]->FindBin(event->CentralitySPD(), event->Vertex(2)));
-       qvecVZEROA[1][1] -= recenterOffset;
-       qvecVZEROA[1][1] =qvecVZEROA[1][1]/(widthEqVZERO >1.0e-6 ? widthEqVZERO: 0.0001) ;
-       recenterOffset = fgVZEROqVecRecentering[2]->GetBinContent(fgVZEROqVecRecentering[2]->FindBin(event->CentralitySPD(), event->Vertex(2)));
-       widthEqVZERO = fgVZEROqVecRecentering[2]->GetBinError(fgVZEROqVecRecentering[2]->FindBin(event->CentralitySPD(), event->Vertex(2)));
-       qvecVZEROC[1][0] -= recenterOffset;
-       qvecVZEROC[1][0] =qvecVZEROC[1][0]/(widthEqVZERO >1.0e-6 ? widthEqVZERO: 0.0001) ;
-       recenterOffset = fgVZEROqVecRecentering[3]->GetBinContent(fgVZEROqVecRecentering[3]->FindBin(event->CentralitySPD(), event->Vertex(2)));
-       widthEqVZERO = fgVZEROqVecRecentering[3]->GetBinError(fgVZEROqVecRecentering[3]->FindBin(event->CentralitySPD(), event->Vertex(2)));
-       qvecVZEROC[1][1] -= recenterOffset;
-       qvecVZEROC[1][1] = qvecVZEROC[1][1]/(widthEqVZERO >1.0e-6 ? widthEqVZERO: 0.0001) ;
+         qvecVZEROA[1][0] -= recenterOffset;
+           if(widthEqVZERO >0.0)
+             qvecVZEROA[1][0] /=widthEqVZERO;
+           else
+             qvecVZEROA[1][0]=0;
+                
+        recenterOffset = fgVZEROqVecRecentering[1]->GetBinContent(fgVZEROqVecRecentering[1]->FindBin(event->CentralitySPD(), event->Vertex(2)));
+        widthEqVZERO = fgVZEROqVecRecentering[1]->GetBinError(fgVZEROqVecRecentering[1]->FindBin(event->CentralitySPD(), event->Vertex(2)));
+        qvecVZEROA[1][1] -= recenterOffset;
+           if(widthEqVZERO >0.0)
+              qvecVZEROA[1][1] /=widthEqVZERO;
+           else
+            qvecVZEROA[1][1]=0;
+          
+        recenterOffset = fgVZEROqVecRecentering[2]->GetBinContent(fgVZEROqVecRecentering[2]->FindBin(event->CentralitySPD(), event->Vertex(2)));
+        widthEqVZERO = fgVZEROqVecRecentering[2]->GetBinError(fgVZEROqVecRecentering[2]->FindBin(event->CentralitySPD(), event->Vertex(2)));
+        qvecVZEROC[1][0] -= recenterOffset;
+           if(widthEqVZERO >0.0)
+              qvecVZEROC[1][0] /=widthEqVZERO;
+           else
+              qvecVZEROC[1][0]=0;
+       
+        recenterOffset = fgVZEROqVecRecentering[3]->GetBinContent(fgVZEROqVecRecentering[3]->FindBin(event->CentralitySPD(), event->Vertex(2)));
+        widthEqVZERO = fgVZEROqVecRecentering[3]->GetBinError(fgVZEROqVecRecentering[3]->FindBin(event->CentralitySPD(), event->Vertex(2)));
+        qvecVZEROC[1][1] -= recenterOffset;
+           if(widthEqVZERO >0.0)
+              qvecVZEROC[1][1] /=widthEqVZERO;
+           else
+              qvecVZEROC[1][1]=0;
      
     }
     for(Int_t ih=1; ih<2; ++ih) {
@@ -886,15 +899,22 @@ void AliReducedVarManager::FillEventInfo(BASEEVENT* baseEvent, Float_t* values, 
           if(fgOptionRecenterTPCqVec && fgTPCqVecRecentering[0] && ih==1) {
                 Float_t recenterOffsetTPC = fgTPCqVecRecentering[0]->GetBinContent(fgTPCqVecRecentering[0]->FindBin(event->CentralityVZERO(), event->Vertex(2)));
                 Double_t widthEqTPC = fgTPCqVecRecentering[0]->GetBinError(fgTPCqVecRecentering[0]->FindBin(event->CentralityVZERO(), event->Vertex(2)));
-                
-                               
                 values[kTPCQvecXtree+1] -= recenterOffsetTPC;
-                values[kTPCQvecXtree+1] =values[kTPCQvecXtree+1]/(widthEqTPC >1.0e-6 ? widthEqTPC: 0.0001) ;
+
+                if(widthEqTPC >0.0)
+                   values[kTPCQvecXtree+1] /=widthEqTPC;
+                else
+                   values[kTPCQvecXtree+1]=0;
                 
                 recenterOffsetTPC = fgTPCqVecRecentering[1]->GetBinContent(fgTPCqVecRecentering[1]->FindBin(event->CentralityVZERO(), event->Vertex(2)));
                 widthEqTPC = fgTPCqVecRecentering[1]->GetBinError(fgTPCqVecRecentering[1]->FindBin(event->CentralityVZERO(), event->Vertex(2)));
                 values[kTPCQvecYtree+1] -= recenterOffsetTPC;
-                values[kTPCQvecYtree+1] =values[kTPCQvecYtree+1]/(widthEqTPC >1.0e-6 ? widthEqTPC: 0.0001);
+                
+                if(widthEqTPC >0.0)
+                   values[kTPCQvecYtree+1] /=widthEqTPC;
+                else
+                   values[kTPCQvecYtree+1]=0;
+                
         }
         
         values[kTPCRPtree+ih] = event->GetEventPlane(EVENTPLANE::kTPC,ih+1);
