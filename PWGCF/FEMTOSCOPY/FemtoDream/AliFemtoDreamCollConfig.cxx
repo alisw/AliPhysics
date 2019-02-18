@@ -483,3 +483,29 @@ std::vector<bool> AliFemtoDreamCollConfig::GetStandardPairRejection() {
   pairs.push_back(false);         // barXi barXi
   return pairs;
 }
+
+std::vector<bool> AliFemtoDreamCollConfig::GetAllPairRejection() {
+  std::vector<bool> pairs;
+  pairs.push_back(true);        // p p
+  pairs.push_back(true);         // p barp
+  pairs.push_back(true);        // p Lambda
+  pairs.push_back(true);         // p barLambda
+  pairs.push_back(true);         // p Xi
+  pairs.push_back(true);         // p barXi
+  pairs.push_back(true);        // barp barp
+  pairs.push_back(true);         // barp Lambda
+  pairs.push_back(true);        // barp barLambda
+  pairs.push_back(true);         // barp Xi
+  pairs.push_back(true);         // barp barXi
+  pairs.push_back(true);         // Lambda Lambda
+  pairs.push_back(true);         // Lambda barLambda
+  pairs.push_back(true);         // Lambda Xi
+  pairs.push_back(true);         // Lambda barXi
+  pairs.push_back(true);         // barLambda barLamb
+  pairs.push_back(true);         // barLambda Xi
+  pairs.push_back(true);         // barLambda barXi
+  pairs.push_back(true);         // Xi Xi
+  pairs.push_back(true);         // Xi barXi
+  pairs.push_back(true);         // barXi barXi
+  return pairs;
+}

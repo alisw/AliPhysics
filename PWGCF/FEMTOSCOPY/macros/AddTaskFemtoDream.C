@@ -23,6 +23,7 @@ AliAnalysisTaskSE* AddTaskFemtoDream(bool isMC = false, bool isESD = false,
                                      int FilterBit = 128,  //19
                                      bool InvMassPairs = false,  //20
                                      bool DeltaEtaDeltaPhiCut = false,  //21
+                                     bool DEtadPhiAllPairs = false,
                                      int SphericityRange = 0,  // 22
                                      bool excludeUnwantedPairs = false,  //23
                                      bool stricterPileUpRej = false)  //24
@@ -438,7 +439,11 @@ AliAnalysisTaskSE* AddTaskFemtoDream(bool isMC = false, bool isESD = false,
   if (DeltaEtaDeltaPhiCut) {
     config->SetDeltaEtaMax(0.01);
     config->SetDeltaPhiMax(0.01);
-    config->SetClosePairRejection(config->GetStandardPairRejection());
+    if (!DEtadPhiAllPairs) {
+      config->SetClosePairRejection(config->GetStandardPairRejection());
+    } else {
+      config->SetClosePairRejection(config->GetAllPairRejection());
+    }
   }
   config->SetdPhidEtaPlots(dPhidEtaPlots);
   if (dPhidEtaPlots)
