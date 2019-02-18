@@ -806,15 +806,25 @@ void AliReducedVarManager::FillEventInfo(BASEEVENT* baseEvent, Float_t* values, 
       event->GetVZEROQvector(qvecVZEROC, EVENTPLANE::kVZEROC);
     }
     if(fgOptionRecenterVZEROqVec && fgVZEROqVecRecentering[0]) {
-       Float_t recenterOffset = fgVZEROqVecRecentering[0]->GetBinContent(fgVZEROqVecRecentering[0]->FindBin(event->CentralitySPD(), event->Vertex(2)));
+         Float_t recenterOffset = fgVZEROqVecRecentering[0]->GetBinContent(fgVZEROqVecRecentering[0]->FindBin(event->CentralitySPD(), event->Vertex(2)));
+         Float_t widthEqVZERO = fgVZEROqVecRecentering[0]->GetBinError(fgVZEROqVecRecentering[0]->FindBin(event->CentralitySPD(), event->Vertex(2)));
 
        qvecVZEROA[1][0] -= recenterOffset;
+       qvecVZEROA[1][0] =qvecVZEROA[1][0]/(widthEqVZERO >1.0e-6 ? widthEqVZERO: 0.0001) ;
+      // cout<<recenterOffset<<" "<<widthEqVZERO<<" "<<qvecVZEROA[1][0]<<endl;
+      
        recenterOffset = fgVZEROqVecRecentering[1]->GetBinContent(fgVZEROqVecRecentering[1]->FindBin(event->CentralitySPD(), event->Vertex(2)));
+       widthEqVZERO = fgVZEROqVecRecentering[1]->GetBinError(fgVZEROqVecRecentering[1]->FindBin(event->CentralitySPD(), event->Vertex(2)));
        qvecVZEROA[1][1] -= recenterOffset;
+       qvecVZEROA[1][1] =qvecVZEROA[1][1]/(widthEqVZERO >1.0e-6 ? widthEqVZERO: 0.0001) ;
        recenterOffset = fgVZEROqVecRecentering[2]->GetBinContent(fgVZEROqVecRecentering[2]->FindBin(event->CentralitySPD(), event->Vertex(2)));
+       widthEqVZERO = fgVZEROqVecRecentering[2]->GetBinError(fgVZEROqVecRecentering[2]->FindBin(event->CentralitySPD(), event->Vertex(2)));
        qvecVZEROC[1][0] -= recenterOffset;
+       qvecVZEROC[1][0] =qvecVZEROC[1][0]/(widthEqVZERO >1.0e-6 ? widthEqVZERO: 0.0001) ;
        recenterOffset = fgVZEROqVecRecentering[3]->GetBinContent(fgVZEROqVecRecentering[3]->FindBin(event->CentralitySPD(), event->Vertex(2)));
+       widthEqVZERO = fgVZEROqVecRecentering[3]->GetBinError(fgVZEROqVecRecentering[3]->FindBin(event->CentralitySPD(), event->Vertex(2)));
        qvecVZEROC[1][1] -= recenterOffset;
+       qvecVZEROC[1][1] = qvecVZEROC[1][1]/(widthEqVZERO >1.0e-6 ? widthEqVZERO: 0.0001) ;
      
     }
     for(Int_t ih=1; ih<2; ++ih) {
@@ -875,9 +885,16 @@ void AliReducedVarManager::FillEventInfo(BASEEVENT* baseEvent, Float_t* values, 
 //TPC Q vector recentering       
           if(fgOptionRecenterTPCqVec && fgTPCqVecRecentering[0] && ih==1) {
                 Float_t recenterOffsetTPC = fgTPCqVecRecentering[0]->GetBinContent(fgTPCqVecRecentering[0]->FindBin(event->CentralityVZERO(), event->Vertex(2)));
+                Double_t widthEqTPC = fgTPCqVecRecentering[0]->GetBinError(fgTPCqVecRecentering[0]->FindBin(event->CentralityVZERO(), event->Vertex(2)));
+                
+                               
                 values[kTPCQvecXtree+1] -= recenterOffsetTPC;
+                values[kTPCQvecXtree+1] =values[kTPCQvecXtree+1]/(widthEqTPC >1.0e-6 ? widthEqTPC: 0.0001) ;
+                
                 recenterOffsetTPC = fgTPCqVecRecentering[1]->GetBinContent(fgTPCqVecRecentering[1]->FindBin(event->CentralityVZERO(), event->Vertex(2)));
+                widthEqTPC = fgTPCqVecRecentering[1]->GetBinError(fgTPCqVecRecentering[1]->FindBin(event->CentralityVZERO(), event->Vertex(2)));
                 values[kTPCQvecYtree+1] -= recenterOffsetTPC;
+                values[kTPCQvecYtree+1] =values[kTPCQvecYtree+1]/(widthEqTPC >1.0e-6 ? widthEqTPC: 0.0001);
         }
         
         values[kTPCRPtree+ih] = event->GetEventPlane(EVENTPLANE::kTPC,ih+1);
@@ -921,6 +938,16 @@ void AliReducedVarManager::FillEventInfo(BASEEVENT* baseEvent, Float_t* values, 
 	values[kRPdeltaVZEROAtpc+ih] = DeltaPhi(values[kVZERORP+0*6+ih], values[kTPCRPtree+ih]);
      if(fgUsedVars[kRPdeltaVZEROCtpc+ih])
         values[kRPdeltaVZEROCtpc+ih] = DeltaPhi(values[kVZERORP+1*6+ih], values[kTPCRPtree+ih]);
+     
+     
+     // cos(n(EPtpc-EPvzero A/C))
+     for(Int_t iVZEROside=0; iVZEROside<2; ++iVZEROside) {
+          if(fgUsedVars[kTPCRPres+iVZEROside*6+ih]) {
+	  values[kTPCRPres+iVZEROside*6+ih] = DeltaPhi(values[kTPCRPtree+ih], values[kVZERORP+iVZEROside*6+ih]);
+          values[kTPCRPres+iVZEROside*6+ih] = TMath::Cos(values[kTPCRPres+iVZEROside*6+ih]*(ih+1));
+	}
+      }
+     
   }// end loop over harmonics
   
  
