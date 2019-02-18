@@ -377,6 +377,12 @@ public:
   IntValue_t as_int() const { return fValueInt; }
   FloatValue_t as_float() const { return fValueFloat; }
   RangeValue_t as_range() const { return fValueRange; }
+  RangeListValue_t as_rangelist() const
+    {
+      return is_rangelist() ? fValueRangeList
+           : is_range() ? RangeListValue_t(1, fValueRange)
+           : RangeListValue_t();
+    }
 
   // template <typename BoolType> bool load_bool(BoolType &v) const { return is_bool() ? v = fValueBool, true : false; }
   // template <typename StringType> bool load_str(StringType &v) const { return is_str() ? v = fValueString, true : false; }
