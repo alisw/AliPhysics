@@ -218,6 +218,7 @@ class AliConvEventCuts : public AliAnalysisCuts {
         kLHC18b11a,       //!< anchored to LHC15o    - gamma-jets Pythia events embedded in HI MC events
         kLHC18b11b,       //!< anchored to LHC15o    - gamma-jets Pythia events embedded in HI MC events
         kLHC18b11c,       //!< anchored to LHC15o    - gamma-jets Pythia events embedded in HI MC events
+        kLHC18e1,       //!< anchored to LHC15o    - general purpose - fixed MC
         kLHC18l8a,        //!< anchored to LHC18qr    - general purpose Pythia8
         kLHC18l8b,        //!< anchored to LHC18qr    - general purpose Pythia8
         kLHC18l8c,        //!< anchored to LHC18qr    - general purpose Pythia8
@@ -698,7 +699,7 @@ class AliConvEventCuts : public AliAnalysisCuts {
   private:
 
       /// \cond CLASSIMP
-      ClassDef(AliConvEventCuts,62)
+      ClassDef(AliConvEventCuts,63)
       /// \endcond
 };
 
