@@ -18,6 +18,11 @@ namespace pwgfemto {
 template <typename T1, typename T2>
 struct AddEventCutAttrs : public T1 , public T2 {
 
+  AddEventCutAttrs()
+    : T1()
+    , T2()
+    {}
+
   AddEventCutAttrs(AliFemtoConfigObject &cfg)
     : T1(cfg)
     , T2(cfg)
@@ -82,14 +87,14 @@ struct EventCutAttrMultiplicty {
 };
 
 /// Cut on event centrality
-struct EventCutAttrCent {
+struct EventCutAttrCentrality {
   std::pair<double, double> cent_range;
 
-  EventCutAttrCent()
+  EventCutAttrCentrality()
     : cent_range(0.0, 100.0)
     {}
 
-  EventCutAttrCent(AliFemtoConfigObject &cfg)
+  EventCutAttrCentrality(AliFemtoConfigObject &cfg)
     : cent_range(cfg.pop_range("cent_range", std::make_pair(0.0, 100.0)))
     {}
 
@@ -99,7 +104,7 @@ struct EventCutAttrCent {
       return cent_range.first <= cent && cent < cent_range.second;
     }
 
-  virtual ~EventCutAttrCent() = 0;
+  virtual ~EventCutAttrCentrality() = 0;
 };
 
 struct EventCutAttrVertexZ {
