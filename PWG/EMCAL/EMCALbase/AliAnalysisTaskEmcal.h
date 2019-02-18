@@ -65,14 +65,74 @@ class AliESDInputHandler;
  * @author Marta Verweij
  * @author Salvatore Aiola
  *
- * This class is hte base class for Analysis Tasks using the
- * core EMCAL framework, and user tasks should inherit from it.
+ * # Extra features of the AliAnalysisTaskEmcal
+ * 
+ * The AliAnalysisTaskEmcal adds common steps needed in the work flow 
+ * of EMCAL-related or jet analyses. It inherits itself from AliAnalysisTaskSE,
+ * and user tasks can inherit from it in order to profit from the extra 
+ * features - the task is fully compatible with the ALICE Analysis Framework.
+ * 
+ * ## Virtual functions to be implemented in user tasks
+ * 
  * In contrast to the normal AliAnalysisTaskSE, the main event
  * loop function to be implemented by the user is called Run.
  * This function is only called in case the event was selected
  * previously.
  * 
- * # Connecting EMCAL container
+ * ~~~{.cxx}
+ * bool MyUserTask::Run() {
+ *   // User code here ...
+ * 
+ *   return kTRUE;
+ * }
+ * ~~~
+ * 
+ * The function is called after the event selection for every event passing the 
+ * event selection. AliAnalysisTaskEmcal offers a second function called for each
+ * event called FillHistograms. The functions focus is on filling histograms and
+ * is only called in case the Run returns true
+ * 
+ * ~~~{.cxx}
+ * bool MyUserTask::FillHistograms() {
+ *   // Fill user histograms
+ *   myEventCounter->Fill(1.);
+ * }
+ * ~~~
+ * 
+ * Implementation of FillHistograms is not mandatory, user histograms can also be
+ * filled in Run. 
+ * 
+ * User output objects are created in UserCreateOutputObjects. As the AliAnalysisTaskEmcal
+ * performs initalizations in this function itsel, the user tasks must call the parent
+ * UserCreateOutputObjects. AliAnalysisTaskEmcal provides a combined output container fOutput
+ * where users can add their histograms to. The main constructor of a user task should construct
+ * the AliAnalysisTaskEmcal using its named constructor with the second argument true.
+ * 
+ * ~~~{.cxx}
+ * void MyUserTask::UserCreateOutputObjects() {
+ *   AliAnalysisTaskEmcal::UserCreateOutputObjects();
+ * 
+ *   // User initialization here
+ *   fEventCounter = new TH1F("fEventCounter", "Event counter", 1, 0.5, 1.5);
+ * 
+ *   // Add histograms to the combined output container
+ *   fOutput->Add(fEventCounter);
+ *   PostData(1, fOutput);
+ * }
+ * ~~~
+ * 
+ * AliAnalysisTaskEmcal provides several optional interface functions which the user
+ * can implement. 
+ * 
+ * | Function name     | Default implementation | Purpose                                            | 
+ * |-------------------| -----------------------|----------------------------------------------------|
+ * | IsEventSelected   | Yes                    | Perform event selection (default: AliEventCuts)    |
+ * | IsTriggerSelected | Yes                    | Perform trigger selection (default: INT7)          |
+ * | RunChanged        | No                     | Initializations when a new run starts (i.e. OADB)  |
+ * | UserExecOnce      | No                     | Initializations which need knowledge about dataset |
+ * | UserFileChanged   | No                     | Tasks to be performed when an input file changes   |
+ * 
+ * ## Connecting EMCAL container
  *
  * A key feature is the handling of EMCAL containers (cluster/
  * particle/track). Users can create containers and attach it
@@ -91,7 +151,7 @@ class AliESDInputHandler;
  * provide an easy access to content created by other tasks and
  * attached to the event as a TClonesArray.
  * 
- * # Handling of jet-jet productions in pt-hard bins
+ * ## Handling of jet-jet productions in pt-hard bins
  * 
  * Productions in pt-hard bins require special treatent. User histogrmas 
  * need to be weighted by the cross section / number of trials  in order 
@@ -101,7 +161,7 @@ class AliESDInputHandler;
  * otherwise they distort the distributions. The AliAnalysisTaskEmcal
  * provides helper to handle these special cases.
  * 
- * ## Automatic weighting of user histograms 
+ * ### Automatic weighting of user histograms 
  * 
  * User results are stored in the list fOutput (of type AliEmcalList).
  * When merging the AliEmcalList users can switch on scaled merging.
@@ -144,7 +204,7 @@ class AliESDInputHandler;
  * Note that for these samples the automatic weighting by the EMCAL list does not
  * work and must be switched off. Users must weight the output manually.
  * 
- * ## Rejection of outlierts
+ * ### Rejection of outlierts
  * 
  * Outlier events can distort distributions after weighting. The reason is that single
  * entries with a pt much larger than the pt-hard get a weight which might be an order 
