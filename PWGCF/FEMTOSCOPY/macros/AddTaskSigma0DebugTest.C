@@ -138,13 +138,6 @@ AliAnalysisTaskSE *AddTaskSigma0DebugTest(bool isMC = false,
     antiv0Cuts->SetLightweight(false);
   }
 
-  if (suffix == "1") {
-    v0Cuts->SetV0OnFlyStatus(true);
-    antiv0Cuts->SetV0OnFlyStatus(true);
-    v0Cuts->SetLightweight(false);
-    antiv0Cuts->SetLightweight(false);
-  }
-
   AliSigma0PhotonMotherCuts *sigmaCuts =
       AliSigma0PhotonMotherCuts::DefaultCuts();
   sigmaCuts->SetIsMC(isMC);
@@ -167,22 +160,31 @@ AliAnalysisTaskSE *AddTaskSigma0DebugTest(bool isMC = false,
     antiSigmaCuts->SetIsSpectrum(false);
   }
 
-  if (suffix == "2") {
-    sigmaCuts->SetCloneKiller(0.001);
+  if (suffix == "1") {
+    sigmaCuts->SetDeltaEtaDeltaPhiMax(0.0005);
     sigmaCuts->SetLightweight(false);
-    antiSigmaCuts->SetCloneKiller(0.001);
-  } else if (suffix == "3") {
-    sigmaCuts->SetCloneKiller(0.001);
-    antiSigmaCuts->SetCloneKiller(0.001);
+    antiSigmaCuts->SetDeltaEtaDeltaPhiMax(0.0005);
+  } else if (suffix == "2") {
+    sigmaCuts->SetDeltaEtaDeltaPhiMax(0.0005);
+    antiSigmaCuts->SetDeltaEtaDeltaPhiMax(0.0005);
     sigmaCuts->SetSigmaMassCut(0.003);
     antiSigmaCuts->SetSigmaMassCut(0.003);
-  } else if (suffix == "4") {
-    sigmaCuts->SetCloneKiller(0.005);
+  } else if (suffix == "3") {
+    sigmaCuts->SetDeltaEtaDeltaPhiMax(0.00025);
     sigmaCuts->SetLightweight(false);
-    antiSigmaCuts->SetCloneKiller(0.005);
+    antiSigmaCuts->SetDeltaEtaDeltaPhiMax(0.00025);
+  } else if (suffix == "4") {
+    sigmaCuts->SetDeltaEtaDeltaPhiMax(0.00025);
+    antiSigmaCuts->SetDeltaEtaDeltaPhiMax(0.00025);
+    sigmaCuts->SetSigmaMassCut(0.003);
+    antiSigmaCuts->SetSigmaMassCut(0.003);
   } else if (suffix == "5") {
-    sigmaCuts->SetCloneKiller(0.005);
-    antiSigmaCuts->SetCloneKiller(0.005);
+    sigmaCuts->SetDeltaEtaDeltaPhiMax(0.0015);
+    sigmaCuts->SetLightweight(false);
+    antiSigmaCuts->SetDeltaEtaDeltaPhiMax(0.0015);
+  } else if (suffix == "6") {
+    sigmaCuts->SetDeltaEtaDeltaPhiMax(0.0015);
+    antiSigmaCuts->SetDeltaEtaDeltaPhiMax(0.0015);
     sigmaCuts->SetSigmaMassCut(0.003);
     antiSigmaCuts->SetSigmaMassCut(0.003);
   }
