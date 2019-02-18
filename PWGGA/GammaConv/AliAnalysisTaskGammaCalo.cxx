@@ -79,6 +79,8 @@ AliAnalysisTaskGammaCalo::AliAnalysisTaskGammaCalo(): AliAnalysisTaskSE(),
   fTreeList(NULL),
   fClusterTreeList(NULL),
   fOutputContainer(NULL),
+  fReaderGammas(NULL),
+  fGammaCandidates(NULL),
   fClusterCandidates(NULL),
   fEventCutArray(NULL),
   fEventCuts(NULL),
@@ -87,6 +89,7 @@ AliAnalysisTaskGammaCalo::AliAnalysisTaskGammaCalo(): AliAnalysisTaskSE(),
   fMesonCutArray(NULL),
   fMesonCuts(NULL),
   fConvJetReader(NULL),
+  fConversionCuts(NULL),
   fDoJetAnalysis(kFALSE),
   fDoJetQA(kFALSE),
   fDoTrueSphericity(kFALSE),
@@ -467,6 +470,8 @@ AliAnalysisTaskGammaCalo::AliAnalysisTaskGammaCalo(const char *name):
   fTreeList(NULL),
   fClusterTreeList(NULL),
   fOutputContainer(0),
+  fReaderGammas(NULL),
+  fGammaCandidates(NULL),
   fClusterCandidates(NULL),
   fEventCutArray(NULL),
   fEventCuts(NULL),
@@ -475,6 +480,7 @@ AliAnalysisTaskGammaCalo::AliAnalysisTaskGammaCalo(const char *name):
   fMesonCutArray(NULL),
   fMesonCuts(NULL),
   fConvJetReader(NULL),
+  fConversionCuts(NULL),
   fDoJetAnalysis(kFALSE),
   fDoJetQA(kFALSE),
   fDoTrueSphericity(kFALSE),
@@ -941,6 +947,13 @@ void AliAnalysisTaskGammaCalo::UserCreateOutputObjects(){
     fConvJetReader=(AliAnalysisTaskConvJet*)AliAnalysisManager::GetAnalysisManager()->GetTask("AliAnalysisTaskConvJet");
     if(!fConvJetReader){printf("Error: No AliAnalysisTaskConvJet");return;} // GetV0Reader
   }
+  if(((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->GetDoSecondaryTrackMatching()){
+    fConversionCuts = new AliConversionPhotonCuts();
+    fConversionCuts->SetV0ReaderName(fV0ReaderName.Data());
+    fConversionCuts->InitializeCutsFromCutString("00200009327000008250400000"); //Use standard cuts
+    fConversionCuts->SetIsHeavyIon(fIsHeavyIon);
+    fConversionCuts->SetFillCutHistograms("",kFALSE);
+  }
 
   if (fDoClusterQA == 2) fProduceCellIDPlots = kTRUE;
   if (fIsMC == 2){
@@ -1185,6 +1198,9 @@ void AliAnalysisTaskGammaCalo::UserCreateOutputObjects(){
   }
 
   // Array of current cut's gammas
+  if(((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->GetDoSecondaryTrackMatching()){
+    fGammaCandidates    = new TList();
+  }
   fClusterCandidates  = new TList();
   fClusterCandidates->SetOwner(kTRUE);
 
@@ -3117,6 +3133,8 @@ void AliAnalysisTaskGammaCalo::UserExec(Option_t *)
     return;
   }
 
+  if(((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->GetDoSecondaryTrackMatching())fReaderGammas = fV0Reader->GetReconstructedGammas(); // Gammas from default Cut
+
   // ------------------- BeginEvent ----------------------------
 
   AliEventplane *EventPlane = fInputEvent->GetEventplane();
@@ -3289,6 +3307,7 @@ void AliAnalysisTaskGammaCalo::UserExec(Option_t *)
 
     // it is in the loop to have the same conversion cut string (used also for MC stuff that should be same for V0 and Cluster)
     ProcessClusters();            // process calo clusters
+    if(((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->GetDoSecondaryTrackMatching()) ProcessConversionCandidates(); // process conversion candidates for secondary track matching
     if(fDoJetAnalysis)   ProcessJets();
 
     fHistoNGammaCandidatesBasic[iCut]->Fill(fNCurrentClusterBasic, fWeightJetJetMC);
@@ -3313,7 +3332,7 @@ void AliAnalysisTaskGammaCalo::UserExec(Option_t *)
       fVectorDoubleCountTrueClusterGammas.clear();
       FillMultipleCountHistoAndClear(fMapMultipleCountTrueClusterGammas,fHistoMultipleCountTrueClusterGamma[iCut]);
     }
-
+    if(((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->GetDoSecondaryTrackMatching()) fGammaCandidates->Clear();
     fClusterCandidates->Clear(); // delete cluster candidates
   }
   if (fCloseHighPtClusters) delete fCloseHighPtClusters;
@@ -3417,6 +3436,7 @@ void AliAnalysisTaskGammaCalo::ProcessClusters()
       delete clus;
       continue;
     }
+
     fNCurrentClusterBasic++;
 
     // TLorentzvector with cluster
@@ -3791,6 +3811,31 @@ void AliAnalysisTaskGammaCalo::ProcessClusters()
 
   return;
 }
+
+//________________________________________________________________________
+void AliAnalysisTaskGammaCalo::ProcessConversionCandidates(){
+
+  // Loop over Photon Candidates allocated by ReaderV1
+  for(Int_t i = 0; i < fReaderGammas->GetEntriesFast(); i++){
+    AliAODConversionPhoton* PhotonCandidate = (AliAODConversionPhoton*) fReaderGammas->At(i);
+    if(!PhotonCandidate) continue;
+    //fIsFromDesiredHeader = kTRUE;
+    //if(fIsMC>0 && ((AliConvEventCuts*)fEventCutArray->At(fiCut))->GetSignalRejection() != 0){
+    //  Int_t isPosFromMBHeader = ((AliConvEventCuts*)fEventCutArray->At(fiCut))->IsParticleFromBGEvent(PhotonCandidate->GetMCLabelPositive(), fMCEvent, fInputEvent);
+    //  if(isPosFromMBHeader == 0 && ((AliConvEventCuts*)fEventCutArray->At(fiCut))->GetSignalRejection() != 3) continue;
+    //  Int_t isNegFromMBHeader = ((AliConvEventCuts*)fEventCutArray->At(fiCut))->IsParticleFromBGEvent(PhotonCandidate->GetMCLabelNegative(), fMCEvent, fInputEvent);
+    //  if(isNegFromMBHeader == 0 && ((AliConvEventCuts*)fEventCutArray->At(fiCut))->GetSignalRejection() != 3) continue;
+    //  if( (isNegFromMBHeader+isPosFromMBHeader) != 4) fIsFromDesiredHeader = kFALSE;
+    //}  ???
+
+    if(!fConversionCuts->PhotonIsSelected(PhotonCandidate,fInputEvent)) continue;
+    if(!fConversionCuts->InPlaneOutOfPlaneCut(PhotonCandidate->GetPhotonPhi(),fEventPlaneAngle)) continue;
+    if(!fConversionCuts->UseElecSharingCut() && !fConversionCuts->UseToCloseV0sCut()){
+      fGammaCandidates->Add(PhotonCandidate);
+    }
+  }
+}
+
 //________________________________________________________________________
 void AliAnalysisTaskGammaCalo::ProcessJets()
 {
@@ -4848,7 +4893,6 @@ void AliAnalysisTaskGammaCalo::CalculatePi0Candidates(){
         Double_t tof = fInputEvent->GetCaloCluster(gamma0->GetCaloClusterRef())->GetTOF();
         if ( tof < fMinTimingCluster || tof > fMaxTimingCluster ) continue;
       }
-
       for(Int_t secondGammaIndex=firstGammaIndex+1;secondGammaIndex<fClusterCandidates->GetEntries();secondGammaIndex++){
         AliAODConversionPhoton *gamma1=dynamic_cast<AliAODConversionPhoton*>(fClusterCandidates->At(secondGammaIndex));
         if (gamma1==NULL) continue;
@@ -4867,6 +4911,43 @@ void AliAnalysisTaskGammaCalo::CalculatePi0Candidates(){
         AliAODConversionMother *pi0cand = new AliAODConversionMother(gamma0,gamma1);
         pi0cand->SetLabels(firstGammaIndex,secondGammaIndex);
 
+        TClonesArray * arrClustersProcess = NULL;
+        arrClustersProcess = dynamic_cast<TClonesArray*>(fInputEvent->FindListObject(Form("%sClustersBranch",fCorrTaskSetting.Data())));
+        //if(!arrClustersProcess) continue;
+        AliVCluster* Cluster0 = NULL;
+        AliVCluster* Cluster1 = NULL;
+        if (gamma0->GetIsCaloPhoton() && gamma1->GetIsCaloPhoton()){
+          if(fInputEvent->IsA()==AliESDEvent::Class()){
+            if(arrClustersProcess){
+              Cluster0 = new AliESDCaloCluster(*(AliESDCaloCluster*)arrClustersProcess->At(gamma0->GetCaloClusterRef()));
+              Cluster1 = new AliESDCaloCluster(*(AliESDCaloCluster*)arrClustersProcess->At(gamma1->GetCaloClusterRef()));
+            }else{
+              Cluster0 = fInputEvent->GetCaloCluster(gamma0->GetCaloClusterRef());
+              Cluster1 = fInputEvent->GetCaloCluster(gamma1->GetCaloClusterRef());
+            }
+          } else if(fInputEvent->IsA()==AliAODEvent::Class()){
+            if(arrClustersProcess){
+              Cluster0 = new AliAODCaloCluster(*(AliAODCaloCluster*)arrClustersProcess->At(gamma0->GetCaloClusterRef()));
+              Cluster1 = new AliAODCaloCluster(*(AliAODCaloCluster*)arrClustersProcess->At(gamma1->GetCaloClusterRef()));
+            } else{
+              Cluster0 = fInputEvent->GetCaloCluster(gamma0->GetCaloClusterRef());
+              Cluster1 = fInputEvent->GetCaloCluster(gamma1->GetCaloClusterRef());
+            }
+          }
+        }
+        if(((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->GetDoSecondaryTrackMatching()){
+          Bool_t ClusterMatched = kFALSE;
+          for(Int_t ConversionIndex=0;ConversionIndex<fGammaCandidates->GetEntries();ConversionIndex++){
+            AliAODConversionPhoton *gammaConversion=dynamic_cast<AliAODConversionPhoton*>(fGammaCandidates->At(ConversionIndex));
+            if (gammaConversion==NULL) continue;
+            Bool_t matchedGamma0 =  ((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->MatchConvPhotonToCluster(gammaConversion, Cluster0, fInputEvent, tempPi0CandWeight);
+            Bool_t matchedGamma1 =  ((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->MatchConvPhotonToCluster(gammaConversion, Cluster1, fInputEvent, tempPi0CandWeight);
+            if(matchedGamma0 || matchedGamma1) {
+              ClusterMatched = kTRUE;
+            }
+          }
+          if(ClusterMatched) continue;
+        }
         if((((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->MesonIsSelected(pi0cand,kTRUE,((AliConvEventCuts*)fEventCutArray->At(fiCut))->GetEtaShift(),gamma0->GetLeadingCellID(),gamma1->GetLeadingCellID()))){
           if(fLocalDebugFlag == 1) DebugMethodPrint1(pi0cand,gamma0,gamma1);
           if(!fDoJetAnalysis || (fDoJetAnalysis && !fDoLightOutput)) fHistoMotherInvMassPt[fiCut]->Fill(pi0cand->M(),pi0cand->Pt(), tempPi0CandWeight);

@@ -182,6 +182,7 @@ AliCaloPhotonCuts::AliCaloPhotonCuts(Int_t isMC, const char *name,const char *ti
   fUseNonLinearity(kFALSE),
   fIsPureCalo(0),
   fNactiveEmcalCells(0),
+  fDoSecondaryTrackMatching(kFALSE),
   fVectorMatchedClusterIDs(0),
   fCutString(NULL),
   fCutStringRead(""),
@@ -379,6 +380,7 @@ AliCaloPhotonCuts::AliCaloPhotonCuts(const AliCaloPhotonCuts &ref) :
   fUseNonLinearity(ref.fUseNonLinearity),
   fIsPureCalo(ref.fIsPureCalo),
   fNactiveEmcalCells(ref.fNactiveEmcalCells),
+  fDoSecondaryTrackMatching(ref.fDoSecondaryTrackMatching),
   fVectorMatchedClusterIDs(0),
   fCutString(NULL),
   fCutStringRead(""),
@@ -4458,6 +4460,15 @@ Bool_t AliCaloPhotonCuts::SetTrackMatchingCut(Int_t trackMatching)
       fFuncPtDepEta->SetParameters(0.04, 0.010, 2.5);
       fFuncPtDepPhi = new TF1("funcPhi20", "[1] + 1 / pow(x + pow(1 / ([0] - [1]), 1 / [2]), [2])");
       fFuncPtDepPhi->SetParameters(0.09, 0.015, 2.);
+      break;
+    case 21: //l Standard TM cut + secondary trackmatching
+      if (!fUseDistTrackToCluster) fUseDistTrackToCluster=kTRUE;
+      fUsePtDepTrackToCluster = 1;
+      fFuncPtDepEta = new TF1("func", "[1] + 1 / pow(x + pow(1 / ([0] - [1]), 1 / [2]), [2])");
+      fFuncPtDepEta->SetParameters(0.04, 0.010, 2.5);
+      fFuncPtDepPhi = new TF1("func", "[1] + 1 / pow(x + pow(1 / ([0] - [1]), 1 / [2]), [2])");
+      fFuncPtDepPhi->SetParameters(0.09, 0.015, 2.);
+      fDoSecondaryTrackMatching = kTRUE;
       break;
 
     default:
