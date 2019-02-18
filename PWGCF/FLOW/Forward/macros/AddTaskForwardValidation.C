@@ -21,11 +21,11 @@
  */
  //#include "AliForwardTaskValidation.h"
 
-AliAnalysisTaskSE* AddTaskForwardValidation(TString name="FTvalid",bool is_reconstructed=true, const char* suffix="")
+AliAnalysisTaskSE* AddTaskForwardValidation(TString name,bool mc,TString suffix)
 {
   std::cout << "AddTaskForwardValidation" << std::endl;
 
-  return AliForwardTaskValidation::ConnectTask(name, is_reconstructed);
+  return AliForwardTaskValidation::ConnectTask(name, mc,suffix);
   //std::cout << validation_task << std::endl;
   //return validation_task;
 }
