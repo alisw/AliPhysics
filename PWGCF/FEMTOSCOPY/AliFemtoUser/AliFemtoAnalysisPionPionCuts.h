@@ -22,11 +22,11 @@ namespace pwgfemto {
 
 // event-cut
 typedef AddEventCutAttrs<
-          EventCutAttrMultiplicty,
-          // AddEventCutAttrs<
-          //   EventCutAttrVertexZ,
+          EventCutAttrCentrality,
+          AddEventCutAttrs<
+            EventCutAttrVertexZ,
             EventCutAttrTrigger
-          // >
+          >
         > EventCutAttrsAK;
 
 // track-cut
@@ -75,7 +75,6 @@ public:
   typedef CutAttrType CutAttrs;
 
   AliFemtoEventCutAttr()
-    : AliFemtoEventCut()
     {}
 
   AliFemtoEventCutAttr(AliFemtoConfigObject &cfg)
@@ -83,7 +82,7 @@ public:
     , CutAttrType(cfg)
     {}
 
-  virtual bool Pass(AliFemtoEvent *ev)
+  virtual bool Pass(const AliFemtoEvent *ev)
     {
       return CutAttrs::Pass(*ev);
     }
@@ -114,6 +113,10 @@ public:
 
   typedef AliFemtoEventCutAttr<AliFemtoEventCutPionPionAK, pwgfemto::EventCutAttrsAK> Super;
   typedef pwgfemto::EventCutAttrsAK CutAttrs;
+
+  AliFemtoEventCutPionPionAK()
+    : Super()
+    { }
 
   AliFemtoEventCutPionPionAK(AliFemtoConfigObject &cfg)
     : Super(cfg)
@@ -271,7 +274,7 @@ public:
   virtual void AppendSettings(TCollection &) const;
 
   const char* GetName() const
-    { return "AliFemtoPairCutPionPIonAkAvgSep"; }
+    { return "AliFemtoPairCutPionPionAkAvgSep"; }
 };
 
 
