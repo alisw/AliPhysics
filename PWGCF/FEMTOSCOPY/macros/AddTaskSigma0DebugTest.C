@@ -234,9 +234,11 @@ AliAnalysisTaskSE *AddTaskSigma0DebugTest(bool isMC = false,
   std::vector<float> kMin;
   std::vector<float> kMax;
   std::vector<int> pairQA;
+  std::vector<bool> closeRejection;
   const int nPairs = (suffix == "0") ? 78 : 36;
   for (int i = 0; i < nPairs; ++i) {
     pairQA.push_back(0);
+    closeRejection.push_back(false);
     if (suffix == "0") {
       NBins.push_back(750);
       kMin.push_back(0.);
@@ -256,6 +258,12 @@ AliAnalysisTaskSE *AddTaskSigma0DebugTest(bool isMC = false,
     pairQA[14] = 14;  // barp barp
     pairQA[23] = 44;  // Sigma Sigma
     pairQA[33] = 44;  // barSigma barSigma
+
+    closeRejection[0] = true;   // pp
+    closeRejection[12] = true;  // barp barp
+  } else {
+    closeRejection[0] = true;  // pp
+    closeRejection[8] = true;  // barp barp
   }
 
   AliFemtoDreamCollConfig *config =
@@ -318,6 +326,12 @@ AliAnalysisTaskSE *AddTaskSigma0DebugTest(bool isMC = false,
       std::cout << "You are trying to request the Momentum Resolution without "
                    "MC Info; fix it wont work! \n";
     }
+  }
+
+  if (trigger == "kHighMultV0") {
+    config->SetDeltaEtaMax(0.01);
+    config->SetDeltaPhiMax(0.01);
+    config->SetClosePairRejection(closeRejection);
   }
 
   config->SetdPhidEtaPlots(false);
