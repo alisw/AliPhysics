@@ -118,12 +118,12 @@ AliForwardNUETask::AliForwardNUETask() : AliAnalysisTaskSE(),
 
     // create hist for tpc (eta, pt, z, filterbit )
     Int_t dimensions = 4;
-    Int_t bins[4] = {400, 25, fSettings.fNZvtxBins, 4} ;
+    Int_t bins[4] = {400, 100, fSettings.fNZvtxBins, 4} ;
     Double_t xmin[5] = {-1.5, 0.0, fSettings.fZVtxAcceptanceLowEdge, 0};
     Double_t xmax[5] = {1.5, 5.0, fSettings.fZVtxAcceptanceUpEdge, 5};
 
     fOutputList->Add(new THnD("NUA_tpc", "NUA_tpc", dimensions, bins, xmin, xmax)); //(eta, n)
-    fOutputList->Add(new TH3F("NUA_tpc_prim","NUA_tpc_prim", 400, -1.5, 1.5, 25, 0.0, 5.0,fSettings.fNZvtxBins,fSettings.fZVtxAcceptanceLowEdge,fSettings.fZVtxAcceptanceUpEdge));
+    fOutputList->Add(new TH3F("NUA_tpc_prim","NUA_tpc_prim", 400, -1.5, 1.5, 100, 0.0, 5.0,fSettings.fNZvtxBins,fSettings.fZVtxAcceptanceLowEdge,fSettings.fZVtxAcceptanceUpEdge));
 
     fOutputList->Add(fEventList);
 

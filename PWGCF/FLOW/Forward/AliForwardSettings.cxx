@@ -36,6 +36,9 @@ AliForwardSettings::AliForwardSettings() :
   use_primaries_fwd(kFALSE),
   centrality_estimator('SPDTracklets'),//CL0, V0M
   etagap(kTRUE),
-  makeFakeHoles(kFALSE)
+  makeFakeHoles(kFALSE),
+  fnoClusters(70),
+  fCutChargedDCAxyMax(0.),
+  fCutChargedDCAzMax(0.)
 {
 }
