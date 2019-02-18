@@ -2,7 +2,13 @@
 /// AliFemtoEventReaderAlt.h
 ///
 
+#pragma once
+
+#ifndef ALIFEMTOEVENTREADERALT_H
+#define ALIFEMTOEVENTREADERALT_H
+
 #include "AliFemtoEventReaderAODMultSelection.h"
+
 
 class TRandom3;
 
@@ -30,3 +36,6 @@ protected:
   TRandom3 *fRng;
   double fEnhanceSmearing;
 };
+
+
+#endif
