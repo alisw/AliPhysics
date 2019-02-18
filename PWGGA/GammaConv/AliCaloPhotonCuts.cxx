@@ -4534,6 +4534,17 @@ Bool_t AliCaloPhotonCuts::SetTrackMatchingCut(Int_t trackMatching)
         fUsePtDepTrackToCluster = 2;
         fMinTMDistSigma         = 3;
         break;
+      case 10: // a loose
+        if (!fUseDistTrackToCluster) fUseDistTrackToCluster=kTRUE;
+        fMaxDistTrackToClusterEta = 0.02;
+        fMinDistTrackToClusterPhi = -0.08;
+        fMaxDistTrackToClusterPhi = 0.08;
+      case 11: // b strict
+        if (!fUseDistTrackToCluster) fUseDistTrackToCluster=kTRUE;
+        fMaxDistTrackToClusterEta = 0.01;
+        fMinDistTrackToClusterPhi = -0.03;
+        fMaxDistTrackToClusterPhi = 0.03;
+        break;
       default:
         AliError(Form("Track Matching Cut not defined %d",trackMatching));
         return kFALSE;
@@ -6368,6 +6379,7 @@ void AliCaloPhotonCuts::ApplyNonLinearity(AliVCluster* cluster, Int_t isMC)
           }
           if(fClusterType==2){
             energy /= FunctionNL_kSDM(energy, 1.02357, -2.19441, -3.10045); //updated on 2019 01 18 - PCMPHOS based on centrality 20-50%
+            energy /= FunctionNL_kSDM(energy, 1.00081, -2.09128, -2.41587); //updated on 2019 02 18 - PCMPHOS based on centrality 20-50%
           }
         } else if( fCurrentMC==kXeXe5T17HIJING ){
           if (fClusterType == 1 ){
