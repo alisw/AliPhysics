@@ -8,7 +8,7 @@
 class AliAnalysisDataContainer;
 class AliAnalysisTaskUniFlow;
 
-AliAnalysisTaskUniFlow* AddTaskUniFlow(AliAnalysisTaskUniFlow::ColSystem colSys, TString sWeigthsFile = "", const char* suffix = "")
+AliAnalysisTaskUniFlow* AddTaskUniFlow(AliAnalysisTaskUniFlow::ColSystem colSys, TString sWeigthsFile = "", Bool_t bIsMC = kFALSE, const char* suffix = "")
 {
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
   if (!mgr) { return NULL; }
@@ -21,7 +21,7 @@ AliAnalysisTaskUniFlow* AddTaskUniFlow(AliAnalysisTaskUniFlow::ColSystem colSys,
   // crate a combined name for the task (required for LEGO trains)
   TString taskName = Form("UniFlow%s",suffix);
 
-  AliAnalysisTaskUniFlow* task = new AliAnalysisTaskUniFlow(taskName.Data(), colSys, bUseWeights); // now we create an instance of your task
+  AliAnalysisTaskUniFlow* task = new AliAnalysisTaskUniFlow(taskName.Data(), colSys, bUseWeights, bIsMC); // now we create an instance of your task
   if(!task) { return NULL; }
 
   // task default settings (ColSystem independent)
@@ -29,7 +29,6 @@ AliAnalysisTaskUniFlow* AddTaskUniFlow(AliAnalysisTaskUniFlow::ColSystem colSys,
   task->SetRunMode(AliAnalysisTaskUniFlow::kFull);
   task->SetNumEventsAnalyse(50);
   task->SetTrigger(AliVEvent::kINT7);
-  task->SetMC(kFALSE);
   task->SetFlowFillWeights(kTRUE);
   task->SetUseWeigthsRunByRun(kTRUE);
   task->SetUseWeights3D(kFALSE);
@@ -200,18 +199,31 @@ AliAnalysisTaskUniFlow* AddTaskUniFlow(AliAnalysisTaskUniFlow::ColSystem colSys,
   mgr->ConnectOutput(task,14,cOutput14);
 
   if(bUseWeights) {
-    // in case of non-local run, establish connection to ALiEn for loading the weights
-    if(sWeigthsFile.Contains("alien://")) { gGrid->Connect("alien://"); }
+    TObjArray* taskContainers = mgr->GetContainers();
+    if(!taskContainers) { printf("E-AddTaskUniFlow: Task containers does not exists!\n"); return NULL; }
 
-    TFile* weights_file = TFile::Open(sWeigthsFile.Data(),"READ");
-    if(!weights_file) { printf("E-AddTaskUniFlow: Input file with weights not found!\n"); return NULL; }
+    // check if the input weights are already loaded (e.g. in different subwagon)
+    AliAnalysisDataContainer* weights = (AliAnalysisDataContainer*) taskContainers->FindObject("inputWeights");
+    if(!weights) {
+      // if it does not exists create it
 
-    TList* weights_list = (TList*) weights_file->Get("weights");
-    if(!weights_list) { printf("E-AddTaskUniFlow: Input list with weights not found!\n"); weights_file->ls(); return NULL; }
+      // in case of non-local run, establish connection to ALiEn for loading the weights
+      if(sWeigthsFile.Contains("alien://")) { gGrid->Connect("alien://"); }
 
-    AliAnalysisDataContainer* cInputWeights = mgr->CreateContainer("inputWeights",TList::Class(), AliAnalysisManager::kInputContainer);
-    cInputWeights->SetData(weights_list);
-    mgr->ConnectInput(task,1,cInputWeights);
+      TFile* weights_file = TFile::Open(sWeigthsFile.Data(),"READ");
+      if(!weights_file) { printf("E-AddTaskUniFlow: Input file with weights not found!\n"); return NULL; }
+
+      TList* weights_list = (TList*) weights_file->Get("weights");
+      if(!weights_list) { printf("E-AddTaskUniFlow: Input list with weights not found!\n"); weights_file->ls(); return NULL; }
+
+      AliAnalysisDataContainer* cInputWeights = mgr->CreateContainer("inputWeights",TList::Class(), AliAnalysisManager::kInputContainer);
+      cInputWeights->SetData(weights_list);
+      mgr->ConnectInput(task,1,cInputWeights);
+    }
+    else {
+      // connect existing container
+      mgr->ConnectInput(task,1,weights);
+    }
   }
 
   return task;
