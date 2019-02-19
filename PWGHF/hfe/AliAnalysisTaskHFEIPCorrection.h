@@ -54,7 +54,7 @@ class AliAnalysisTaskHFEIPCorrection : public AliAnalysisTaskSE {
   AliAODVertex * CorrectVertex(AliAODEvent *aodEvent, double vtxz); // Vertex without using excluded regions
   void GetTrackImpactParameter(AliAODEvent *aodEvent, AliAODTrack *track, AliAODVertex * pvtx, Double_t &dcaxy); // Calculate IP from other vertex
 
-  void GetCorrectedImpactParameter(AliAODTrack *track, Double_t primVertexZ, Double_t &dcaxy); // correct for effects in phi, z, and pt
+  void GetCorrectedImpactParameter(AliAODEvent *aodEvent, AliAODTrack *track, Double_t primVertexZ, Double_t &dcaxy); // correct for effects in phi, z, and pt
   
   AliAnalysisTaskHFEIPCorrection(const AliAnalysisTaskHFEIPCorrection&); // not implemented
   AliAnalysisTaskHFEIPCorrection& operator=(const AliAnalysisTaskHFEIPCorrection&); // not implemented
@@ -87,8 +87,12 @@ class AliAnalysisTaskHFEIPCorrection : public AliAnalysisTaskSE {
   TH1D * EventSelectionSteps;
   TH3D * fDCARegionRun;
   TH3D * fDCAPhiZHadrons;
+  TH3D * fDCAPhiZHadronsEarlyRuns;
+  TH3D * fDCAPhiZHadronsLateRuns;
   TH3D * fDCAPhiZHadronsC;
   TH3D * fDCAPhipTHadrons;
+  TH3D * fDCAPhipTHadronsEarlyRuns;
+  TH3D * fDCAPhipTHadronsLateRuns;
   TH3D * fDCAPhipTHadronsC;
   TH3D * fDCAPhiZKaons;
   TH3D * fDCAPhiZKaonsC;
