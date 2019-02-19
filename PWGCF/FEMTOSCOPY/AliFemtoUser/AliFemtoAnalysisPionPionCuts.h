@@ -65,45 +65,6 @@ typedef AddPairCutAttrs<
 }  // namespace pwgfemto
 
 
-/// \class AliFemtoEventCutAttr
-/// \brief Bridge from AliFemtoPairCut to a metaclass of PairCut-Attrs
-///
-template <typename CRTP, typename CutAttrType>
-class AliFemtoEventCutAttr : public AliFemtoEventCut, public CutAttrType {
-public:
-
-  typedef CutAttrType CutAttrs;
-
-  AliFemtoEventCutAttr()
-    {}
-
-  AliFemtoEventCutAttr(AliFemtoConfigObject &cfg)
-    : AliFemtoEventCut()
-    , CutAttrType(cfg)
-    {}
-
-  virtual bool Pass(const AliFemtoEvent *ev)
-    {
-      return CutAttrs::Pass(*ev);
-    }
-
-  virtual AliFemtoString Report()
-    {
-      return "AliFemtoEventCutAttr Report\n";
-    }
-
-  virtual TList* ListSettings() const
-    {
-      TList* list = new TList();
-      AppendSettings(*list);
-      return list;
-    }
-
-  virtual void AppendSettings(TCollection &) const = 0;
-  virtual ~AliFemtoEventCutAttr() = 0;
-};
-
-
 /// \class AliFemtoEventCutPionPionAK
 /// \brief Andrew Kubera's event cut for identical-pion analysis
 ///
@@ -116,14 +77,14 @@ public:
 
   AliFemtoEventCutPionPionAK()
     : Super()
-    { }
+    {}
 
   AliFemtoEventCutPionPionAK(AliFemtoConfigObject &cfg)
     : Super(cfg)
     {}
 
   virtual ~AliFemtoEventCutPionPionAK()
-    { }
+    {}
 
   virtual void AppendSettings(TCollection &) const;
 

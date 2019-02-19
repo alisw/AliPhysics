@@ -18,6 +18,11 @@ namespace pwgfemto {
 template <typename T1, typename T2>
 struct AddEventCutAttrs : public T1 , public T2 {
 
+  bool Pass(const AliFemtoEvent &ev)
+    {
+      return T1::Pass(ev) && T2::Pass(ev);
+    }
+
   AddEventCutAttrs()
     : T1()
     , T2()
@@ -28,54 +33,50 @@ struct AddEventCutAttrs : public T1 , public T2 {
     , T2(cfg)
     {}
 
-  bool Pass(const AliFemtoEvent &ev)
-    {
-      return T1::Pass(ev) && T2::Pass(ev);
-    }
-
   void FillConfiguration(AliFemtoConfigObject &cfg) const
     {
       T1::FillConfiguration(cfg);
       T2::FillConfiguration(cfg);
     }
 
-  virtual ~AddEventCutAttrs() = 0;
+  virtual ~AddEventCutAttrs() {}
 };
 
+
+/// Cut on Reaction-Plane
+///
 struct EventCutAttrEpPsi {
   static const std::pair<double, double> DEFAULT;
 
   std::pair<double, double> ep_psi_range;
 
+  bool Pass(const AliFemtoEvent &ev)
+    {
+      const double phi = ev.ReactionPlaneAngle();
+      return ep_psi_range.first <= phi && phi < ep_psi_range.second;
+    }
+
   EventCutAttrEpPsi()
-    : ep_psi_range(-1000.0, 1000.0)
+    : ep_psi_range(DEFAULT)
     {}
 
   EventCutAttrEpPsi(AliFemtoConfigObject &cfg)
     : ep_psi_range(cfg.pop_range("ep_psi_range", DEFAULT))
     {}
 
-  bool Pass(const AliFemtoEvent &ev)
+  void FillConfiguration(AliFemtoConfigObject &cfg) const
     {
-      const double epvzero = ev.ReactionPlaneAngle();
-      return ep_psi_range.first <= epvzero && epvzero < ep_psi_range.second;
+      cfg.insert("ep_psi_range", ep_psi_range);
     }
 
-  virtual ~EventCutAttrEpPsi() = 0;
+  virtual ~EventCutAttrEpPsi() {}
 };
 
 /// cut on event multiplicty
 struct EventCutAttrMultiplicty {
   static const std::pair<int, int> DEFAULT;
+
   std::pair<int, int> mult_range;
-
-  EventCutAttrMultiplicty()
-    : mult_range(0, 100000)
-    {}
-
-  EventCutAttrMultiplicty(AliFemtoConfigObject &cfg)
-    : mult_range(cfg.pop_range("mult_range", std::make_pair(0, 100000)))
-    {}
 
   bool Pass(const AliFemtoEvent &ev)
     {
@@ -83,20 +84,26 @@ struct EventCutAttrMultiplicty {
       return mult_range.first <= mult && mult < mult_range.second;
     }
 
-  virtual ~EventCutAttrMultiplicty() = 0;
+  EventCutAttrMultiplicty()
+    : mult_range(DEFAULT)
+    {}
+
+  EventCutAttrMultiplicty(AliFemtoConfigObject &cfg)
+    : mult_range(cfg.pop_range("mult_range", DEFAULT))
+    {}
+
+  void FillConfiguration(AliFemtoConfigObject &cfg) const
+    {
+      cfg.insert("mult_range", mult_range);
+    }
+
+  virtual ~EventCutAttrMultiplicty() {}
 };
 
 /// Cut on event centrality
 struct EventCutAttrCentrality {
+  static const std::pair<double, double> DEFAULT;
   std::pair<double, double> cent_range;
-
-  EventCutAttrCentrality()
-    : cent_range(0.0, 100.0)
-    {}
-
-  EventCutAttrCentrality(AliFemtoConfigObject &cfg)
-    : cent_range(cfg.pop_range("cent_range", std::make_pair(0.0, 100.0)))
-    {}
 
   bool Pass(const AliFemtoEvent &ev)
     {
@@ -104,11 +111,33 @@ struct EventCutAttrCentrality {
       return cent_range.first <= cent && cent < cent_range.second;
     }
 
-  virtual ~EventCutAttrCentrality() = 0;
+  EventCutAttrCentrality()
+    : cent_range(DEFAULT)
+    {}
+
+  EventCutAttrCentrality(AliFemtoConfigObject &cfg)
+    : cent_range(cfg.pop_range("cent_range", DEFAULT))
+    {}
+
+  void FillConfiguration(AliFemtoConfigObject &cfg) const
+    {
+      cfg.insert("cent_range", cent_range);
+    }
+
+  virtual ~EventCutAttrCentrality() {}
 };
 
+
+/// Cut on z-position of vertex
+///
 struct EventCutAttrVertexZ {
   std::pair<double, double> zvert_range;
+
+  bool Pass(const AliFemtoEvent &ev)
+    {
+      const double vertex_z = ev.PrimVertPos().z();
+      return zvert_range.first <= vertex_z && vertex_z < zvert_range.second;
+    }
 
   EventCutAttrVertexZ()
     : zvert_range(-100.0, 100.0)
@@ -118,13 +147,12 @@ struct EventCutAttrVertexZ {
     : zvert_range(cfg.pop_range("zvert_range", std::make_pair(-100.0, 100.0)))
     {}
 
-  bool Pass(const AliFemtoEvent &ev)
+  void FillConfiguration(AliFemtoConfigObject &cfg) const
     {
-      const double vertex_z = ev.PrimVertPos().z();
-      return zvert_range.first <= vertex_z && vertex_z < zvert_range.second;
+      cfg.insert("zvert_range", zvert_range);
     }
 
-  virtual ~EventCutAttrVertexZ() = 0;
+  virtual ~EventCutAttrVertexZ() {}
 };
 
 /// Cut bad vertex based on ZDC participants
@@ -132,6 +160,11 @@ struct EventCutAttrVertexZ {
 ///
 struct EventCutAttrZdcParticipants {
   unsigned int min_zdc_participants;
+
+  bool Pass(const AliFemtoEvent &ev)
+    {
+      return ev.ZDCParticipants() >= min_zdc_participants;
+    }
 
   EventCutAttrZdcParticipants()
     : min_zdc_participants(2)
@@ -141,18 +174,23 @@ struct EventCutAttrZdcParticipants {
     : min_zdc_participants(cfg.pop_uint("min_zdc_participants", 2))
     {}
 
-  bool Pass(const AliFemtoEvent &ev)
+  void FillConfiguration(AliFemtoConfigObject &cfg) const
     {
-      return ev.ZDCParticipants() >= min_zdc_participants;
+      cfg.insert("min_zdc_participants", (Long64_t)min_zdc_participants);
     }
 
-  virtual ~EventCutAttrZdcParticipants() = 0;
+  virtual ~EventCutAttrZdcParticipants() {}
 };
 
 
 /// Trigger cut
 struct EventCutAttrTrigger {
   unsigned char trigger;
+
+  bool Pass(const AliFemtoEvent &ev)
+    {
+      return trigger == 0 || ev.TriggerCluster() == trigger;
+    }
 
   EventCutAttrTrigger()
     : trigger(0)
@@ -162,17 +200,73 @@ struct EventCutAttrTrigger {
     : trigger(cfg.pop_uint("trigger", 0))
     {}
 
-  bool Pass(const AliFemtoEvent &ev)
+  void FillConfiguration(AliFemtoConfigObject &cfg) const
     {
-      return trigger == 0 || ev.TriggerCluster() == trigger;
+      cfg.insert("trigger", trigger);
     }
 
-  virtual ~EventCutAttrTrigger() = 0;
+  virtual ~EventCutAttrTrigger() {}
+};
+
+
+} // namespace pwgfemto
+
+
+#include "AliFemtoEventCut.h"
+
+
+/// \class AliFemtoEventCutAttr
+/// \brief Bridge from AliFemtoEventCut to a metaclass of EventCut-Attrs
+///
+template <typename CRTP, typename CutAttrType>
+class AliFemtoEventCutAttr : public AliFemtoEventCut, public CutAttrType {
+public:
+
+  typedef CutAttrType CutAttrs;
+
+  AliFemtoEventCutAttr()
+    {}
+
+  AliFemtoEventCutAttr(AliFemtoConfigObject &cfg)
+    : AliFemtoEventCut()
+    , CutAttrType(cfg)
+    {}
+
+  virtual bool Pass(const AliFemtoEvent *ev)
+    {
+      return CutAttrs::Pass(*ev);
+    }
+
+  virtual AliFemtoString Report()
+    {
+      return "AliFemtoEventCutAttr Report\n";
+    }
+
+  virtual TList* ListSettings() const
+    {
+      TList* list = new TList();
+      AppendSettings(*list);
+      return list;
+    }
+
+  void FillConfig(AliFemtoConfigObject &cfg) const
+    {
+      CutAttrs::FillConfiguration(cfg);
+    }
+
+  AliFemtoConfigObject GetConfiguration() const
+    {
+      AliFemtoConfigObject cfg = AliFemtoConfigObject::BuildMap()
+                                  ("class", typeid(CRTP).name());
+      FillConfig(cfg);
+      return cfg;
+    }
+
+  virtual void AppendSettings(TCollection &) const = 0;
+  virtual ~AliFemtoEventCutAttr() = 0;
 };
 
 
 
-
-} // namespace pwgfemto
 
 #endif
