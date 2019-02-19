@@ -110,11 +110,7 @@ void AlimakeJPsiTree::UserExec(Option_t *)
   //
   //Nb event
   //
-  
-  printf("UserExec \n");
- 
-
-
+   
   if(fDebug > 1) printf("AlimakeJPsiTree::UserExec \n");
   Init();
 
@@ -131,7 +127,7 @@ void AlimakeJPsiTree::UserExec(Option_t *)
 
 
   int nparticles = fMcEvent->GetNumberOfPrimaries();
-  printf("Number of particles %d and primary %d\n",fMcEvent->GetNumberOfTracks(),fMcEvent->GetNumberOfPrimaries());
+  if(fDebug > 1) printf("Number of particles %d and primary %d\n",fMcEvent->GetNumberOfTracks(),fMcEvent->GetNumberOfPrimaries());
 
 
   //// loop over particles
@@ -158,7 +154,7 @@ void AlimakeJPsiTree::UserExec(Option_t *)
 	if(d>0){
 	  TParticle *decay = fMcEvent->Particle(d);
 	  int pdg_daughter = decay->GetPdgCode();
-	  printf("pdg of daughter %d\n",pdg_daughter);
+	  if(fDebug > 1) printf("pdg of daughter %d\n",pdg_daughter);
 	  if(pdg_daughter==11){
 	    // found positron
 	    fdaughter1 = decay;
@@ -172,7 +168,7 @@ void AlimakeJPsiTree::UserExec(Option_t *)
 	}
       }// loop over daughters
       if(found_positron && found_electron){
-	printf("Fill tree\n");
+	if(fDebug > 1) printf("Fill tree\n");
 	ftree->Fill();
       } 
     } // find JPsi    
