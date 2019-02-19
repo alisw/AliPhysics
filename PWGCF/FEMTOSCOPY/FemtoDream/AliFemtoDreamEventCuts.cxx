@@ -233,7 +233,11 @@ void AliFemtoDreamEventCuts::BookQA(AliFemtoDreamEvent *evt) {
         fHist->FillMultV0C(i, evt->GetV0CMult());
         fHist->FillMultRef08(i, evt->GetRefMult08());
         fHist->FillSPDTrackletsVsCluster(i, evt->GetSPDMult(),
-                                         evt->GetSPDCluster());
+                                         evt->GetSPDCluster(0)+evt->GetSPDCluster(1));
+        fHist->FillSPDTrackletsLyVsCluster(i, 0, evt->GetSPDMult(),
+                                         evt->GetSPDCluster(0));
+        fHist->FillSPDTrackletsLyVsCluster(i, 1, evt->GetSPDMult(),
+                                         evt->GetSPDCluster(1));
         fHist->FillEvtVtxZTrackvsSPD(i, evt->GetZVertexSPD(),
                                      evt->GetZVertexTracks());
         fHist->FillMagneticField(i, evt->GetBField());
