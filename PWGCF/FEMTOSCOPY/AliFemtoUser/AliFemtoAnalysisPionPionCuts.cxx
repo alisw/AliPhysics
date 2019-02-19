@@ -12,8 +12,13 @@ AliFemtoEventCutPionPionAK::AppendSettings(TCollection &settings) const
 }
 
 void
-AliFemtoTrackCutPionPionAK::AppendSettings(TCollection &settings) const
+AliFemtoTrackCutPionPionAK::AppendSettings(TCollection &settings, TString prefix) const
 {
+  settings.AddVector(
+    new TObjString(prefix + Form("eta_min=%f", eta_range.first)),
+    new TObjString(prefix + Form("eta_max=%f", eta_range.second)),
+    nullptr
+  );
 }
 
 void
@@ -91,15 +96,27 @@ AliFemtoPairCutPionPionAKDetaDphi::EventBegin(const AliFemtoEvent *ev)
   Super::EventBegin(ev);
 }
 
-/*
+#define IMPL_INTO_CUT(__name) \
+  template <> __name* AliFemtoConfigObject::Into<__name>(bool) { \
+    auto *cut = new __name(*this); return cut; }
 
-template <>
-AliFemtoEventCutPionPionAK*
-AliFemtoConfigObject::Into<AliFemtoEventCutPionPionAK>(bool)
-{
-  auto *cut = AliFemtoEventCutPionPionAK();
-  return cut;
-}
+#define IMPL_FROM_CUT(__name) \
+  template <> AliFemtoConfigObject AliFemtoConfigObject::From(const __name &cut) { \
+    return cut.GetConfiguration(); }
+    // AliFemtoConfigObject cfg = AliFemtoConfigObject::BuildMap(); cfg.insert("class", typeid(__name).name()); return cfg; }
+
+
+IMPL_INTO_CUT(AliFemtoEventCutPionPionAK)
+IMPL_INTO_CUT(AliFemtoTrackCutPionPionAK)
+IMPL_INTO_CUT(AliFemtoPairCutPionPionAKAvgSep)
+IMPL_INTO_CUT(AliFemtoPairCutPionPionAKDetaDphi)
+
+IMPL_FROM_CUT(AliFemtoEventCutPionPionAK)
+IMPL_FROM_CUT(AliFemtoTrackCutPionPionAK)
+// IMPL_FROM_CUT(AliFemtoEventCutPionPionAK)
+
+
+/*
 
 template <>
 AliFemtoTrackCutPionPionAK*

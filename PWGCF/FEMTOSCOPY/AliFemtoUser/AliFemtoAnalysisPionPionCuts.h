@@ -100,16 +100,20 @@ public:
   typedef pwgfemto::TrackCutAttrsAK CutAttrs;
 
   AliFemtoTrackCutPionPionAK()
+    : fNumPass(0)
+    , fNumFail(0)
     {}
 
   AliFemtoTrackCutPionPionAK(AliFemtoConfigObject &cfg)
     : Super(cfg)
+    , fNumPass(0)
+    , fNumFail(0)
     {}
 
   virtual ~AliFemtoTrackCutPionPionAK()
     { }
 
-  virtual void AppendSettings(TCollection &) const;
+  virtual void AppendSettings(TCollection &, TString prefix="") const;
 
   virtual bool Pass(const AliFemtoTrack *track)
     {
@@ -121,6 +125,9 @@ public:
       return passes;
     }
 
+  const char* GetName() const
+    { return "AliFemtoTrackCutPionPionAK"; }
+
   ULong_t fNumPass,
           fNumFail;
 };
@@ -129,7 +136,8 @@ public:
 /// \class AliFemtoPairCutPionPionAKAvgSep
 /// \brief Andrew Kubera's average separation pair cut
 ///
-class AliFemtoPairCutPionPionAKAvgSep : public AliFemtoPairCutAttrTracks<AliFemtoPairCutPionPionAKAvgSep, pwgfemto::PairCutAttrsAvgSepAK> {
+class AliFemtoPairCutPionPionAKAvgSep : public AliFemtoPairCutAttrTracks<AliFemtoPairCutPionPionAKAvgSep,
+                                                                         pwgfemto::PairCutAttrsAvgSepAK> {
 public:
 
   typedef AliFemtoPairCutAttrTracks<AliFemtoPairCutPionPionAKAvgSep, pwgfemto::PairCutAttrsAvgSepAK> Super;
@@ -147,14 +155,15 @@ public:
   virtual void AppendSettings(TCollection &) const;
 
   const char* GetName() const
-    { return "AliFemtoPairCutPionPionAkAvgSep"; }
+    { return "AliFemtoPairCutPionPionAKAvgSep"; }
 };
 
 
 /// \class AliFemtoPairCutPionPionAKDetaDphi
 /// \brief Andrew Kubera's Deta-Dphi pair cut
 ///
-class AliFemtoPairCutPionPionAKDetaDphi : public AliFemtoPairCutAttrTracks<AliFemtoPairCutPionPionAKDetaDphi, pwgfemto::PairCutAttrsDphiDetaAK> {
+class AliFemtoPairCutPionPionAKDetaDphi : public AliFemtoPairCutAttrTracks<AliFemtoPairCutPionPionAKDetaDphi,
+                                                                           pwgfemto::PairCutAttrsDphiDetaAK> {
 public:
 
   typedef AliFemtoPairCutAttrTracks<AliFemtoPairCutPionPionAKDetaDphi, pwgfemto::PairCutAttrsDphiDetaAK> Super;
