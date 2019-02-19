@@ -126,63 +126,13 @@ public:
 };
 
 
-/// \class AliFemtoPairCutAttr
-/// \brief Bridge from AliFemtoPairCut to a metaclass of PairCut-Attrs
-///
-/// Subclass and implement your method:
-///  `const char* GetName() const`
-///
-///
-template <typename CRTP, typename CutAttrType>
-class AliFemtoPairCutAttr : public AliFemtoPairCut, public CutAttrType {
-public:
-
-  typedef CutAttrType CutAttrs;
-
-  virtual ~AliFemtoPairCutAttr()
-    { }
-
-  AliFemtoPairCutAttr();
-
-  AliFemtoPairCutAttr(AliFemtoConfigObject &cfg)
-    : CutAttrType(cfg)
-    {}
-
-  /// user-written method to return string describing cuts
-  virtual AliFemtoString Report()
-    { return ""; }
-
-  /// Return a TList of settings
-  virtual TList* ListSettings()
-    {
-      TList* list = new TList();
-      AppendSettings(*list);
-      return list;
-    }
-
-  virtual void AppendSettings(TCollection &) const = 0;
-
-  virtual bool Pass(const AliFemtoPair *pair)
-    {
-      return CutAttrs::Pass(*pair->Track1()->Track(), *pair->Track2()->Track());
-    }
-
-  void StoreConfiguration(AliFemtoConfigObject &cfg) const
-    {
-      CutAttrs::FillConfiguration(cfg);
-      cfg.insert("class", static_cast<CRTP*>(this)->GetName());
-    }
-
-};
-
-
 /// \class AliFemtoPairCutPionPionAKAvgSep
 /// \brief Andrew Kubera's average separation pair cut
 ///
-class AliFemtoPairCutPionPionAKAvgSep : public AliFemtoPairCutAttr<AliFemtoPairCutPionPionAKAvgSep, pwgfemto::PairCutAttrsAvgSepAK> {
+class AliFemtoPairCutPionPionAKAvgSep : public AliFemtoPairCutAttrTracks<AliFemtoPairCutPionPionAKAvgSep, pwgfemto::PairCutAttrsAvgSepAK> {
 public:
 
-  typedef AliFemtoPairCutAttr<AliFemtoPairCutPionPionAKAvgSep, pwgfemto::PairCutAttrsAvgSepAK> Super;
+  typedef AliFemtoPairCutAttrTracks<AliFemtoPairCutPionPionAKAvgSep, pwgfemto::PairCutAttrsAvgSepAK> Super;
 
   virtual ~AliFemtoPairCutPionPionAKAvgSep();
 
@@ -204,15 +154,21 @@ public:
 /// \class AliFemtoPairCutPionPionAKDetaDphi
 /// \brief Andrew Kubera's Deta-Dphi pair cut
 ///
-class AliFemtoPairCutPionPionAKDetaDphi : public AliFemtoPairCutAttr<AliFemtoPairCutPionPionAKDetaDphi, pwgfemto::PairCutAttrsDphiDetaAK> {
+class AliFemtoPairCutPionPionAKDetaDphi : public AliFemtoPairCutAttrTracks<AliFemtoPairCutPionPionAKDetaDphi, pwgfemto::PairCutAttrsDphiDetaAK> {
 public:
 
-  typedef AliFemtoPairCutAttr<AliFemtoPairCutPionPionAKDetaDphi, pwgfemto::PairCutAttrsDphiDetaAK> Super;
+  typedef AliFemtoPairCutAttrTracks<AliFemtoPairCutPionPionAKDetaDphi, pwgfemto::PairCutAttrsDphiDetaAK> Super;
 
   virtual ~AliFemtoPairCutPionPionAKDetaDphi()
     { }
 
-  AliFemtoPairCutPionPionAKDetaDphi();
+  AliFemtoPairCutPionPionAKDetaDphi()
+    : Super()
+    { }
+
+  AliFemtoPairCutPionPionAKDetaDphi(AliFemtoConfigObject &cfg)
+    : Super(cfg)
+    { }
 
   virtual void EventBegin(const AliFemtoEvent *ev);
 
