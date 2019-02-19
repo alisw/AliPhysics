@@ -714,7 +714,7 @@ class AliBasicParticleHaHFE : public AliVParticle
     if (fWeightULSPartner) delete[] fWeightULSPartner;
   }
   AliBasicParticleHaHFE(const AliBasicParticleHaHFE &CopyClass) 
-    : fID(CopyClass.fID), fEta(CopyClass.fEta), fPhi(CopyClass.fPhi), fpT(CopyClass.fpT), fCharge(CopyClass.fCharge), fULSpartner(CopyClass.fULSpartner), fLSpartner(CopyClass.fLSpartner), fIDLSPartner(0), fIDULSPartner(0), fWeightLSPartner(0), fWeightULSPartner(0), fTrueULSPartner(CopyClass.fTrueULSPartner), fTruePartnerMCPt(CopyClass.fTruePartnerMCPt),fTruePartnerRecPt(CopyClass.fTruePartnerRecPt),fIsPhotonic(CopyClass.fIsPhotonic), fIsHadron(CopyClass.fIsHadron), fLabel(CopyClass.fLabel)
+    : fID(CopyClass.fID), fEta(CopyClass.fEta), fPhi(CopyClass.fPhi), fpT(CopyClass.fpT), fCharge(CopyClass.fCharge), fULSpartner(CopyClass.fULSpartner), fLSpartner(CopyClass.fLSpartner), fIDLSPartner(0), fIDULSPartner(0), fWeightLSPartner(0), fWeightULSPartner(0), fTrueULSPartner(CopyClass.fTrueULSPartner), fTruePartnerMCPt(CopyClass.fTruePartnerMCPt),fTruePartnerRecPt(CopyClass.fTruePartnerRecPt),fIsPhotonic(CopyClass.fIsPhotonic), fIsHadron(CopyClass.fIsHadron), fLabel(CopyClass.fLabel), fExtTrackParam(CopyClass.fExtTrackParam)
     {
       fIDLSPartner = new Int_t[CopyClass.fLSpartner];
       fIDULSPartner = new Int_t[CopyClass.fULSpartner];
@@ -724,7 +724,6 @@ class AliBasicParticleHaHFE : public AliVParticle
       fWeightULSPartner = new Float_t[CopyClass.fULSpartner];
       for (Int_t i=0; i<fLSpartner; i++) {fWeightLSPartner[i]=CopyClass.fWeightLSPartner[i];}
       for (Int_t i=0; i<fULSpartner; i++) {fWeightULSPartner[i]=CopyClass.fWeightULSPartner[i];}
-      fExtTrackParam = CopyClass.fExtTrackParam;
     }
   AliBasicParticleHaHFE& operator=(const AliBasicParticleHaHFE &CopyClass) 
     {
