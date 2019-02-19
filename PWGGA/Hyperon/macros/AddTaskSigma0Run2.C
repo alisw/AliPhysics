@@ -1,4 +1,4 @@
-AliAnalysisTaskSE *AddTaskSigma0Run2(bool isRun1 = false ,bool isMC = false, bool isHeavyIon = false,
+AliAnalysisTaskSE *AddTaskSigma0Run2(bool isRun1 = false, bool isMC = false, bool isHeavyIon = false,
                                      TString trigger = "kINT7",
                                      const char *cutVariation = "0") {
   TString suffix;
@@ -18,7 +18,7 @@ AliAnalysisTaskSE *AddTaskSigma0Run2(bool isRun1 = false ,bool isMC = false, boo
   TString cutnumberPhoton;
   cutnumberPhoton = "00200008400000002280920000";
   TString cutnumberEvent = "00000000";
-  if (suffix == "1") {
+  if (suffix == "0") {
     // Borissov cuts
     cutnumberPhoton = "00200008400020002282020000";
     cutnumberEvent = "00000003";
@@ -93,7 +93,7 @@ AliAnalysisTaskSE *AddTaskSigma0Run2(bool isRun1 = false ,bool isMC = false, boo
   v0Cuts->SetPID(3122);
   v0Cuts->SetPosPID(AliPID::kProton, 2212);
   v0Cuts->SetNegPID(AliPID::kPion, -211);
-  if (suffix == "1") {
+  if (suffix == "0") {
     // Run1 cuts
     v0Cuts->SetPileUpRejectionMode(AliSigma0V0Cuts::None);
     v0Cuts->SetV0OnFlyStatus(true);
@@ -120,7 +120,7 @@ AliAnalysisTaskSE *AddTaskSigma0Run2(bool isRun1 = false ,bool isMC = false, boo
   antiv0Cuts->SetPID(-3122);
   antiv0Cuts->SetPosPID(AliPID::kPion, 211);
   antiv0Cuts->SetNegPID(AliPID::kProton, -2212);
-  if (suffix == "1") {
+  if (suffix == "0") {
     // Run1 cuts
     antiv0Cuts->SetPileUpRejectionMode(AliSigma0V0Cuts::None);
     antiv0Cuts->SetV0OnFlyStatus(true);
@@ -158,8 +158,8 @@ AliAnalysisTaskSE *AddTaskSigma0Run2(bool isRun1 = false ,bool isMC = false, boo
   sigmaCuts->SetPDG(3212, 3122, 22);
   sigmaCuts->SetLambdaCuts(v0Cuts);
   sigmaCuts->SetV0ReaderName(V0ReaderName.Data());
-  if (suffix == "1"){
-  sigmaCuts->SetArmenterosCut(0,0.12,0.6,1);
+  if (suffix == "0"){
+  sigmaCuts->SetArmenterosCut(0,0.12,-1,-0.6);
   }
   if (suffix != "0" && suffix != "999") {
     sigmaCuts->SetLightweight(true);
@@ -172,8 +172,8 @@ AliAnalysisTaskSE *AddTaskSigma0Run2(bool isRun1 = false ,bool isMC = false, boo
   antiSigmaCuts->SetPDG(-3212, -3122, 22);
   antiSigmaCuts->SetLambdaCuts(antiv0Cuts);
   antiSigmaCuts->SetV0ReaderName(V0ReaderName.Data());
-  if (suffix == "1"){
-  antiSigmaCuts->SetArmenterosCut(0,0.12,0.6,1);
+  if (suffix == "0"){
+  antiSigmaCuts->SetArmenterosCut(0,0.12,-1,-0.6);
   }
   if (suffix != "0" && suffix != "999") {
     antiSigmaCuts->SetLightweight(true);
