@@ -48,8 +48,7 @@
       return Configuration<__type>::GetConfigurationOf(*ptr); }
 
   #define TRY_CONSTRUCTING_CLASS(__name) \
-    if (classname == #__name) {          \
-      return Configuration<__name>(*this); }
+    if (classname == #__name) { return Configuration<__name>(*this); }
 
   #define FORWARD_TO_BUILDER(__type, __name) \
     if (classname == #__name) { return Into<__type>(); }
@@ -61,8 +60,7 @@
     return AliFemtoConfigObject::From(*ptr); }
 
 #define TRY_CONSTRUCTING_INTO(__type) \
-    if (classname == #__type) {          \
-      return Into<__type>(true); }
+  if (classname == #__type) { return Into<__type>(true); }
 
 
 template<>
@@ -228,11 +226,6 @@ AliFemtoConfigObject::Into<AliFemtoTrackCut>(bool)
 //  PARTICLE CUTS (forwards to Track/V0)
 //
 
-
-//
-//  PARTICLE CUTS (forwards to Track/V0)
-//
-
 template<>
 AliFemtoConfigObject
 AliFemtoConfigObject::From<AliFemtoParticleCut>(const AliFemtoParticleCut &obj)
@@ -319,20 +312,34 @@ AliFemtoConfigObject::Into<AliFemtoPairCut>(bool)
 }
 
 
-// implement various standard AliFemtoConfigObj <-> Configuration<T> <-> Pointer
-// functions
+// Implement concreate AliFemtoConfigObj <-> Configuration<T> <-> Pointer
+// methods using Configuration<T> structs
+//
 #define IMPL_CFG_INTO_OBJ(T) \
   template <>                \
   T* AliFemtoConfigObject::Into<T>(bool _debug) { \
     Configuration<T> cfg(*this);  \
     T *cut = new T(); cfg.Configure(*cut); return cut; }
 
+#define IMPL_CFG_FROM_OBJ(T) \
+  template <>                \
+  AliFemtoConfigObject AliFemtoConfigObject::From(const T &obj) { \
+    return Configuration<T>::GetConfigurationOf(obj); }
 
-IMPL_CFG_INTO_OBJ(AliFemtoEventCutCentrality)
+
+#define IMPL_CFG_TOFROM_OBJ(T) \
+  IMPL_CFG_INTO_OBJ(T) \
+  IMPL_CFG_FROM_OBJ(T)
+
+//IMPL_CFG_INTO_OBJ(AliFemtoEventCutCentrality)
 IMPL_CFG_INTO_OBJ(AliFemtoBasicEventCut)
 IMPL_CFG_INTO_OBJ(AliFemtoESDTrackCut)
 
+IMPL_CFG_TOFROM_OBJ(AliFemtoEventCutCentrality)
+
 #undef IMPL_CFG_INTO_OBJ
+#undef IMPL_CFG_FROM_OBJ
+#undef IMPL_CFG_TOFROM_OBJ
 
 
 #if __cplusplus >= 201103L
