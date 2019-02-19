@@ -751,7 +751,7 @@ class AliAnalysisTaskEmcal : public AliAnalysisTaskSE {
    * See https://twiki.cern.ch/twiki/bin/view/ALICE/JetMCProductionsCrossSections#How_to_reject_tails_in_the_pT_ha
    * @return kTRUE if it is not a MC outlier
    */
-  Bool_t                      CheckMCOutliers();
+  virtual Bool_t              CheckMCOutliers();
 
   /**
    * @brief Main initialization function on the worker
