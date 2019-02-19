@@ -37,6 +37,7 @@ AliForwardTaskValidation::AliForwardTaskValidation()
     fTrackValidators(),
     fOutputList(0),
     fQA_event_discard_flow(0),
+    fQA_event_discard_flow_MC(0),
     fQA_track_discard_flow(0),
     fEventCuts(0),
     fUtils(),
@@ -51,7 +52,7 @@ AliForwardTaskValidation::AliForwardTaskValidation()
 {
 }
 
-AliForwardTaskValidation::AliForwardTaskValidation(const char *name, bool is_reconstructed)
+AliForwardTaskValidation::AliForwardTaskValidation(const char *name, bool mc)
   : AliAnalysisTaskSE(name),
     fIsValidEvent(false),
     fEventValidators(),
@@ -59,6 +60,7 @@ AliForwardTaskValidation::AliForwardTaskValidation(const char *name, bool is_rec
     fTrackValidators(),
     fOutputList(0),
     fQA_event_discard_flow(0),
+    fQA_event_discard_flow_MC(0),
     fQA_track_discard_flow(0),
     fEventCuts(0),
     fUtils(),
@@ -72,7 +74,7 @@ AliForwardTaskValidation::AliForwardTaskValidation(const char *name, bool is_rec
     fSettings()
 {
   // Apply all cuts by default
-  if (is_reconstructed) {
+  if (!fSettings.esd) {
     fEventValidators.push_back(EventValidation::kNoEventCut);
     fEventValidators.push_back(EventValidation::kIsAODEvent);
     fEventValidators.push_back(EventValidation::kTrigger);
@@ -90,7 +92,7 @@ AliForwardTaskValidation::AliForwardTaskValidation(const char *name, bool is_rec
     fEventValidators.push_back(EventValidation::kNotSPDClusterVsTrackletBG);
     fEventValidators.push_back(EventValidation::kPassesFMD_V0CorrelatioCut);
   }
-  if (!is_reconstructed) {
+  if (fSettings.use_primaries_fwd || fSettings.use_primaries_cen) {
     this->isMC = kTRUE;
     std::cout << "making vector" << std::endl;
     fEventValidatorsMC.push_back(EventValidationMC::kNoEventCutMC);
@@ -100,7 +102,7 @@ AliForwardTaskValidation::AliForwardTaskValidation(const char *name, bool is_rec
     fEventValidatorsMC.push_back(EventValidationMC::kHasPrimariesMC);
   }
   // Default track cuts
-  if (!isMC){
+  if (!fSettings.esd){
   fTrackValidators.push_back(TrackValidation::kNoTrackCut);
   fTrackValidators.push_back(TrackValidation::kTPCOnly);
   fTrackValidators.push_back(TrackValidation::kEtaCut);
@@ -120,11 +122,7 @@ Bool_t AliForwardTaskValidation::AcceptTrigger(AliVEvent::EOfflineTriggerTypes T
 };
 
 
-AliForwardTaskValidation* AliForwardTaskValidation::ConnectTask(const char *suffix,
-								  bool is_reconstructed) {
-  std::cout << "-------------------------------" << std::endl;
-  std::cout <<  "is_reconstructed " <<std::boolalpha << is_reconstructed << std::endl;
-  //std::cout << std::boolalpha << settings.use_primaries_fwd << std::endl;
+AliForwardTaskValidation* AliForwardTaskValidation::ConnectTask(TString name,bool mc, TString suffix) {
 
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
   if (!mgr) {
@@ -133,7 +131,7 @@ AliForwardTaskValidation* AliForwardTaskValidation::ConnectTask(const char *suff
   }
 
   AliAnalysisDataContainer *coutput1 =
-    mgr->CreateContainer(Form("event_selection_%s", suffix),
+    mgr->CreateContainer("event_selection_"+ suffix,
 			 TList::Class(),
 			 AliAnalysisManager::kOutputContainer,
 			 Form("%s", mgr->GetCommonFileName()));
@@ -144,7 +142,7 @@ AliForwardTaskValidation* AliForwardTaskValidation::ConnectTask(const char *suff
 			 AliAnalysisManager::kExchangeContainer,
 			 Form("%s", mgr->GetCommonFileName()));
 
-  auto *taskValidation = new AliForwardTaskValidation("TaskValidation", is_reconstructed);
+  auto *taskValidation = new AliForwardTaskValidation("TaskValidation", mc);
 
   if (!taskValidation) {
     ::Error("CreateTasks", "Failed to add task!");
@@ -170,23 +168,20 @@ AliAnalysisDataContainer* AliForwardTaskValidation::GetExchangeContainter() {
 void AliForwardTaskValidation::CreateQAHistograms(TList* outlist) {
 
   /// Event discard flow histogram
-  if (!isMC){
   this->fQA_event_discard_flow = new TH1F("qa_discard_flow",
 					  "QA event discard flow",
 					  this->fEventValidators.size(),
 					  0,
 					  this->fEventValidators.size());
-  }
-  else{
-    this->fQA_event_discard_flow = new TH1F("qa_discard_flow",
-  					  "QA event discard flow",
-  					  this->fEventValidatorsMC.size(),
-  					  0,
-  					  this->fEventValidatorsMC.size());
-  }
+  this->fQA_event_discard_flow_MC = new TH1F("qa_discard_flow_mc",
+					  "QA event discard flow mc",
+					  this->fEventValidatorsMC.size(),
+					  0,
+					  this->fEventValidatorsMC.size());
+
+  if (!fSettings.esd){
   TAxis *discardedEvtsAx = this->fQA_event_discard_flow->GetXaxis();
 
-  if (!isMC){
   for (UInt_t idx = 0; idx < this->fEventValidators.size(); idx++) {
     switch (this->fEventValidators[idx]) {
     case EventValidation::kNoEventCut:
@@ -222,7 +217,9 @@ void AliForwardTaskValidation::CreateQAHistograms(TList* outlist) {
     }
   }
 }
-else{
+if (fSettings.use_primaries_fwd  || fSettings.use_primaries_cen){
+  TAxis *discardedEvtsAx = this->fQA_event_discard_flow_MC->GetXaxis();
+
   for (UInt_t idx = 0; idx < this->fEventValidatorsMC.size(); idx++) {
     switch (this->fEventValidatorsMC[idx]) {
       case EventValidationMC::kNoEventCutMC:
@@ -238,9 +235,10 @@ else{
     }
   }
 }
-  outlist->Add(this->fQA_event_discard_flow);
+outlist->Add(this->fQA_event_discard_flow);
+outlist->Add(this->fQA_event_discard_flow_MC);
 
-  if (!isMC){
+  if (!fSettings.esd){
 
   /// Track discard flow
   this->fQA_track_discard_flow = new TH1F("qa_tack_discard_flow",
@@ -282,11 +280,11 @@ void AliForwardTaskValidation::UserCreateOutputObjects() {
   this->fOutputList->Add(this->fOutliers);
 
   // Create QA histograms in Event selection
-  if (!isMC) fEventCuts.AddQAplotsToList(this->fOutputList);
+  if (!fSettings.esd) fEventCuts.AddQAplotsToList(this->fOutputList);
   this->CreateQAHistograms(this->fOutputList);
 
   // FMD V0 QA histograms
-  if (!isMC){
+  if (!fSettings.esd){
     this->fFMDV0 = new TH2F("FMDV0", "FMD vs V0 pre cut;FMD;V0;",
   			  2000, 0, 2000, 2000, 0, 2000);
     this->fOutputList->Add(this->fFMDV0);
@@ -327,26 +325,24 @@ void AliForwardTaskValidation::UserExec(Option_t *)
   //std::cout << fSettings.use_primaries_fwd << std::endl;
   fUtil.fSettings = this->fSettings;
 
-  Double_t centralEta = (fSettings.useSPD ? 2.5 : 1.5);
-  TH2D centralDist_tmp = TH2D("c","",400,-centralEta,centralEta,400,0,2*TMath::Pi());
-  centralDist_tmp.SetDirectory(0);
-  TH2D refDist_tmp = TH2D("c","",400,-centralEta,centralEta,400,0,2*TMath::Pi());
-  refDist_tmp.SetDirectory(0);
 
-  TH2D forwardTrRef  ("ft","",200,-4,6,20,0,TMath::TwoPi());
-  TH2D forwardPrim  ("fp","",400,-4,6,400,0,TMath::TwoPi());
-  forwardTrRef.SetDirectory(0);
-  forwardPrim.SetDirectory(0);
-  forwardDist = (fSettings.use_primaries_fwd ? &forwardPrim : &forwardTrRef);
 
-  centralDist = &centralDist_tmp;
-  centralDist->SetDirectory(0);
-  refDist = &refDist_tmp;
-  refDist->SetDirectory(0);
+    TH2D forwardTrRef  ("ft","",200,-4,6,20,0,TMath::TwoPi());
+    forwardTrRef.SetDirectory(0);
+    forwardDist = &forwardTrRef;
 
-  fUtil.FillData(refDist,centralDist,forwardDist);
+    if (!fSettings.esd) {
+      AliAODForwardMult* aodfmult = static_cast<AliAODForwardMult*>(InputEvent()->FindListObject("Forward"));
+      forwardDist = &aodfmult->GetHistogram();
+    }
+    else {
+      fUtil.FillFromTrackrefs(forwardDist);
+    }
+    //forwardDist->SetDirectory(0);
 
-  if (!isMC){
+
+
+  if (!fSettings.esd){
   for (UInt_t idx = 0; idx < this->fEventValidators.size(); idx++) {
     switch (this->fEventValidators[idx]) {
     case EventValidation::kNoEventCut:
@@ -390,7 +386,7 @@ void AliForwardTaskValidation::UserExec(Option_t *)
     }
   }
 }
-  else{
+  if (fSettings.use_primaries_cen || fSettings.use_primaries_fwd){
     for (UInt_t idx = 0; idx < this->fEventValidatorsMC.size(); idx++) {
       switch (this->fEventValidatorsMC[idx]) {
       case EventValidationMC::kNoEventCutMC:
@@ -403,7 +399,7 @@ void AliForwardTaskValidation::UserExec(Option_t *)
         this->fIsValidEvent = this->HasPrimaries(); break;
       }
       if (this->fIsValidEvent) {
-        this->fQA_event_discard_flow->Fill(idx);
+        this->fQA_event_discard_flow_MC->Fill(idx);
       } else {
         // Stop checking once this event has been flaged as invalid
         break;
@@ -751,7 +747,9 @@ AliForwardTaskValidation::Tracks AliForwardTaskValidation::GetMCTruthTracks() {
 
 
 Bool_t AliForwardTaskValidation::HasValidFMD(){
-  //if (true) return kTRUE;
+  if (fSettings.use_primaries_fwd) return kTRUE;
+
+
   AliMultSelection *MultSelection = dynamic_cast< AliMultSelection* >(InputEvent()->FindListObject("MultSelection"));
 
   //AliMultSelection *MultSelection = (AliMultSelection*)fInputEvent->FindListObject("MultSelection");

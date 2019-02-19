@@ -14,6 +14,24 @@ AliFemtoEventReaderAlt::AliFemtoEventReaderAlt()
 {
 }
 
+AliFemtoEventReaderAlt::AliFemtoEventReaderAlt(const AliFemtoEventReaderAlt &orig)
+  : AliFemtoEventReaderAODMultSelection(orig)
+  , fRng(nullptr)
+  , fEnhanceSmearing(0.0)
+{
+  SetEnhanceSmearing(orig.GetEnhanceSmearing());
+}
+
+AliFemtoEventReaderAlt AliFemtoEventReaderAlt::operator=(const AliFemtoEventReaderAlt& rhs)
+{
+  if (&rhs != this) {
+    AliFemtoEventReaderAODMultSelection::operator=(rhs);
+    SetEnhanceSmearing(rhs.GetEnhanceSmearing());
+  }
+
+  return *this;
+}
+
 AliFemtoEventReaderAlt::~AliFemtoEventReaderAlt()
 {
 }

@@ -447,6 +447,9 @@ AliFemtoCutMonitorPionPion::Pion::GetOutputList()
   output->Add(fChi2Tpc);
   output->Add(fChiTpcIts);
   output->Add(fdEdX);
+  output->Add(fTofVsP);
+  output->Add(fNsigTof);
+  output->Add(fNsigTpc);
   output->Add(fImpact);
   if (fMC_type) {
     output->Add(fMC_mass);
@@ -464,15 +467,14 @@ void AliFemtoCutMonitorPionPion::Pion::Fill(const AliFemtoTrack* track)
   const float pz = track->P().z(),
               pt = track->Pt(),
                p = track->P().Mag(),
+             eta = track->P().PseudoRapidity(),
              phi = track->P().Phi();
 
-  const double energy = ::sqrt(track->P().Mag2() + PionMass * PionMass),
-                  eta = 0.5 * ::log((energy + pz) / (energy - pz));
-
+  const double energy = ::sqrt(p * p + PionMass * PionMass),
+             rapidity = 0.5 * ::log((energy + pz) / (energy - pz));
 
   const Int_t ITS_ncls = track->ITSncls(),
               TPC_ncls = track->TPCncls();
-
 
   if (fMC_mass) {
     const AliFemtoModelHiddenInfo *mc = dynamic_cast<const AliFemtoModelHiddenInfo*>(track->GetHiddenInfo());
@@ -502,7 +504,7 @@ void AliFemtoCutMonitorPionPion::Pion::Fill(const AliFemtoTrack* track)
 
   }
 
-  fYPt->Fill(eta, pt);
+  fYPt->Fill(rapidity, pt);
   fPtPhi->Fill(phi, pt);
   fEtaPhi->Fill(phi, eta);
   fdEdX->Fill(p, track->TPCsignal());
@@ -511,8 +513,7 @@ void AliFemtoCutMonitorPionPion::Pion::Fill(const AliFemtoTrack* track)
   fNsigTpc->Fill(p, track->NSigmaTPCPi());
   fChi2Tpc->Fill((TPC_ncls > 0) ? track->TPCchi2() / TPC_ncls : 0.0);
 
-
-  fChiTpcIts->Fill( (TPC_ncls > 0) ? track->TPCchi2() : 0.0,
+  fChiTpcIts->Fill( (TPC_ncls > 6) ? track->TPCchi2() / (TPC_ncls - 6) : 0.0,
                     (ITS_ncls > 0) ? track->ITSchi2() / ITS_ncls : 0.0);
 
 

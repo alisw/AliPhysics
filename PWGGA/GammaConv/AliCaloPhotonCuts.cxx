@@ -4534,6 +4534,17 @@ Bool_t AliCaloPhotonCuts::SetTrackMatchingCut(Int_t trackMatching)
         fUsePtDepTrackToCluster = 2;
         fMinTMDistSigma         = 3;
         break;
+      case 10: // a loose
+        if (!fUseDistTrackToCluster) fUseDistTrackToCluster=kTRUE;
+        fMaxDistTrackToClusterEta = 0.02;
+        fMinDistTrackToClusterPhi = -0.08;
+        fMaxDistTrackToClusterPhi = 0.08;
+      case 11: // b strict
+        if (!fUseDistTrackToCluster) fUseDistTrackToCluster=kTRUE;
+        fMaxDistTrackToClusterEta = 0.01;
+        fMinDistTrackToClusterPhi = -0.03;
+        fMaxDistTrackToClusterPhi = 0.03;
+        break;
       default:
         AliError(Form("Track Matching Cut not defined %d",trackMatching));
         return kFALSE;
@@ -6368,6 +6379,7 @@ void AliCaloPhotonCuts::ApplyNonLinearity(AliVCluster* cluster, Int_t isMC)
           }
           if(fClusterType==2){
             energy /= FunctionNL_kSDM(energy, 1.02357, -2.19441, -3.10045); //updated on 2019 01 18 - PCMPHOS based on centrality 20-50%
+            energy /= FunctionNL_kSDM(energy, 1.00081, -2.09128, -2.41587); //updated on 2019 02 18 - PCMPHOS based on centrality 20-50%
           }
         } else if( fCurrentMC==kXeXe5T17HIJING ){
           if (fClusterType == 1 ){
@@ -6758,7 +6770,8 @@ AliCaloPhotonCuts::MCSet AliCaloPhotonCuts::FindEnumForMCSet(TString namePeriod)
             namePeriod.CompareTo("LHC16g1a") == 0 ||
             namePeriod.CompareTo("LHC16g1b") == 0 || namePeriod.CompareTo("LHC16g1b_extra") == 0 ||
             namePeriod.CompareTo("LHC16g1c") == 0 || namePeriod.CompareTo("LHC16g1c_extra") == 0 ||
-            namePeriod.CompareTo("LHC16h4") == 0)       return kPbPb5T15HIJING;
+            namePeriod.CompareTo("LHC16h4") == 0 ||
+            namePeriod.CompareTo("LHC18e1") == 0)       return kPbPb5T15HIJING;
   else if ( namePeriod.CompareTo("LHC16k3b") == 0 ||                    // special pileup prods
             namePeriod.CompareTo("LHC16k3b2") == 0 )    return k16k3b;
   // PbPb 5TeV 2018 MB prods

@@ -28,6 +28,11 @@ AliVertexerHyperTriton3Body::AliVertexerHyperTriton3Body() : mVertexerTracks{},
 {
 }
 
+AliVertexerHyperTriton3Body::~AliVertexerHyperTriton3Body() {
+  if (mCurrentVertex)
+    delete mCurrentVertex;
+}
+
 void AliVertexerHyperTriton3Body::Find2ProngClosestPoint(AliExternalTrackParam *track1, AliExternalTrackParam *track2, float b, float *pos)
 {
   /// Extracted from the constructor of AliESDv0
@@ -112,6 +117,8 @@ bool AliVertexerHyperTriton3Body::FindDecayVertex(AliESDtrack *deuteronTrack, Al
 
   mVertexerTracks.SetFieldkG(b);
   mVertexerTracks.SetVtxStart(guess[0], guess[1], guess[2]);
+  if (mCurrentVertex)
+    delete mCurrentVertex;
   mCurrentVertex = mVertexerTracks.VertexForSelectedESDTracks(&trArray);
   return mCurrentVertex ? true : false;
 }

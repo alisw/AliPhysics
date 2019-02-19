@@ -13,6 +13,7 @@ class AliVertexerHyperTriton3Body
 {
 public:
   AliVertexerHyperTriton3Body();
+  ~AliVertexerHyperTriton3Body();
 
   AliESDVertex* GetCurrentVertex() { return mCurrentVertex; }
   int GetGuessCompatibility() { return mCurrentGuessCompatibility; }

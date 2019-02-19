@@ -191,6 +191,7 @@ class AliFemtoDreamCollConfig : public TNamed {
   std::vector<float> GetStandardmTBins();
   std::vector<int> GetStandardPairs();
   std::vector<bool> GetStandardPairRejection();
+  std::vector<bool> GetAllPairRejection();
   int GetMixingDepth() {
     return fMixingDepth;
   }

@@ -138,13 +138,6 @@ AliAnalysisTaskSE *AddTaskSigma0DebugTest(bool isMC = false,
     antiv0Cuts->SetLightweight(false);
   }
 
-  if (suffix == "1") {
-    v0Cuts->SetV0OnFlyStatus(true);
-    antiv0Cuts->SetV0OnFlyStatus(true);
-    v0Cuts->SetLightweight(false);
-    antiv0Cuts->SetLightweight(false);
-  }
-
   AliSigma0PhotonMotherCuts *sigmaCuts =
       AliSigma0PhotonMotherCuts::DefaultCuts();
   sigmaCuts->SetIsMC(isMC);
@@ -167,22 +160,31 @@ AliAnalysisTaskSE *AddTaskSigma0DebugTest(bool isMC = false,
     antiSigmaCuts->SetIsSpectrum(false);
   }
 
-  if (suffix == "2") {
-    sigmaCuts->SetCloneKiller(0.001);
+  if (suffix == "1") {
+    sigmaCuts->SetDeltaEtaDeltaPhiMax(0.0005);
     sigmaCuts->SetLightweight(false);
-    antiSigmaCuts->SetCloneKiller(0.001);
-  } else if (suffix == "3") {
-    sigmaCuts->SetCloneKiller(0.001);
-    antiSigmaCuts->SetCloneKiller(0.001);
+    antiSigmaCuts->SetDeltaEtaDeltaPhiMax(0.0005);
+  } else if (suffix == "2") {
+    sigmaCuts->SetDeltaEtaDeltaPhiMax(0.0005);
+    antiSigmaCuts->SetDeltaEtaDeltaPhiMax(0.0005);
     sigmaCuts->SetSigmaMassCut(0.003);
     antiSigmaCuts->SetSigmaMassCut(0.003);
-  } else if (suffix == "4") {
-    sigmaCuts->SetCloneKiller(0.005);
+  } else if (suffix == "3") {
+    sigmaCuts->SetDeltaEtaDeltaPhiMax(0.00025);
     sigmaCuts->SetLightweight(false);
-    antiSigmaCuts->SetCloneKiller(0.005);
+    antiSigmaCuts->SetDeltaEtaDeltaPhiMax(0.00025);
+  } else if (suffix == "4") {
+    sigmaCuts->SetDeltaEtaDeltaPhiMax(0.00025);
+    antiSigmaCuts->SetDeltaEtaDeltaPhiMax(0.00025);
+    sigmaCuts->SetSigmaMassCut(0.003);
+    antiSigmaCuts->SetSigmaMassCut(0.003);
   } else if (suffix == "5") {
-    sigmaCuts->SetCloneKiller(0.005);
-    antiSigmaCuts->SetCloneKiller(0.005);
+    sigmaCuts->SetDeltaEtaDeltaPhiMax(0.0015);
+    sigmaCuts->SetLightweight(false);
+    antiSigmaCuts->SetDeltaEtaDeltaPhiMax(0.0015);
+  } else if (suffix == "6") {
+    sigmaCuts->SetDeltaEtaDeltaPhiMax(0.0015);
+    antiSigmaCuts->SetDeltaEtaDeltaPhiMax(0.0015);
     sigmaCuts->SetSigmaMassCut(0.003);
     antiSigmaCuts->SetSigmaMassCut(0.003);
   }
@@ -232,9 +234,11 @@ AliAnalysisTaskSE *AddTaskSigma0DebugTest(bool isMC = false,
   std::vector<float> kMin;
   std::vector<float> kMax;
   std::vector<int> pairQA;
+  std::vector<bool> closeRejection;
   const int nPairs = (suffix == "0") ? 78 : 36;
   for (int i = 0; i < nPairs; ++i) {
     pairQA.push_back(0);
+    closeRejection.push_back(false);
     if (suffix == "0") {
       NBins.push_back(750);
       kMin.push_back(0.);
@@ -254,6 +258,12 @@ AliAnalysisTaskSE *AddTaskSigma0DebugTest(bool isMC = false,
     pairQA[14] = 14;  // barp barp
     pairQA[23] = 44;  // Sigma Sigma
     pairQA[33] = 44;  // barSigma barSigma
+
+    closeRejection[0] = true;   // pp
+    closeRejection[12] = true;  // barp barp
+  } else {
+    closeRejection[0] = true;  // pp
+    closeRejection[8] = true;  // barp barp
   }
 
   AliFemtoDreamCollConfig *config =
@@ -316,6 +326,12 @@ AliAnalysisTaskSE *AddTaskSigma0DebugTest(bool isMC = false,
       std::cout << "You are trying to request the Momentum Resolution without "
                    "MC Info; fix it wont work! \n";
     }
+  }
+
+  if (trigger == "kHighMultV0") {
+    config->SetDeltaEtaMax(0.01);
+    config->SetDeltaPhiMax(0.01);
+    config->SetClosePairRejection(closeRejection);
   }
 
   config->SetdPhidEtaPlots(false);

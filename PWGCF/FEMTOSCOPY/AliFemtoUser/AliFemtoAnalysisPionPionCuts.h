@@ -22,11 +22,11 @@ namespace pwgfemto {
 
 // event-cut
 typedef AddEventCutAttrs<
-          EventCutAttrMultiplicty,
-          // AddEventCutAttrs<
-          //   EventCutAttrVertexZ,
+          EventCutAttrCentrality,
+          AddEventCutAttrs<
+            EventCutAttrVertexZ,
             EventCutAttrTrigger
-          // >
+          >
         > EventCutAttrsAK;
 
 // track-cut
@@ -41,7 +41,9 @@ typedef TrackSelectionCut<
           // physics-cuts
           AddTrackCutAttrs<
             TrackCutAttrImpact,
-            TrackCutAttrCharge>
+            AddTrackCutAttrs<
+              TrackCutAttrCharge,
+              TrackCutAttrEta> >
 
         > TrackCutAttrsAK;
 
@@ -72,7 +74,15 @@ public:
 
   typedef CutAttrType CutAttrs;
 
-  virtual bool Pass(AliFemtoEvent *ev)
+  AliFemtoEventCutAttr()
+    {}
+
+  AliFemtoEventCutAttr(AliFemtoConfigObject &cfg)
+    : AliFemtoEventCut()
+    , CutAttrType(cfg)
+    {}
+
+  virtual bool Pass(const AliFemtoEvent *ev)
     {
       return CutAttrs::Pass(*ev);
     }
@@ -101,7 +111,16 @@ public:
 class AliFemtoEventCutPionPionAK : public AliFemtoEventCutAttr<AliFemtoEventCutPionPionAK, pwgfemto::EventCutAttrsAK> {
 public:
 
+  typedef AliFemtoEventCutAttr<AliFemtoEventCutPionPionAK, pwgfemto::EventCutAttrsAK> Super;
   typedef pwgfemto::EventCutAttrsAK CutAttrs;
+
+  AliFemtoEventCutPionPionAK()
+    : Super()
+    { }
+
+  AliFemtoEventCutPionPionAK(AliFemtoConfigObject &cfg)
+    : Super(cfg)
+    {}
 
   virtual ~AliFemtoEventCutPionPionAK()
     { }
@@ -119,6 +138,13 @@ class AliFemtoTrackCutAttr : public AliFemtoTrackCut, public CutAttrType {
 public:
 
   typedef CutAttrType CutAttrs;
+
+  AliFemtoTrackCutAttr()
+    {}
+
+  AliFemtoTrackCutAttr(AliFemtoConfigObject &cfg)
+    : CutAttrType(cfg)
+    {}
 
   virtual bool Pass(AliFemtoTrack *ev)
     {
@@ -147,8 +173,15 @@ public:
 ///
 class AliFemtoTrackCutPionPionAK : public AliFemtoTrackCutAttr<AliFemtoTrackCutPionPionAK, pwgfemto::TrackCutAttrsAK> {
 public:
-
+  typedef AliFemtoTrackCutAttr<AliFemtoTrackCutPionPionAK, pwgfemto::TrackCutAttrsAK> Super;
   typedef pwgfemto::TrackCutAttrsAK CutAttrs;
+
+  AliFemtoTrackCutPionPionAK()
+    {}
+
+  AliFemtoTrackCutPionPionAK(AliFemtoConfigObject &cfg)
+    : Super(cfg)
+    {}
 
   virtual ~AliFemtoTrackCutPionPionAK()
     { }
@@ -187,6 +220,10 @@ public:
     { }
 
   AliFemtoPairCutAttr();
+
+  AliFemtoPairCutAttr(AliFemtoConfigObject &cfg)
+    : CutAttrType(cfg)
+    {}
 
   /// user-written method to return string describing cuts
   virtual AliFemtoString Report()
@@ -227,6 +264,9 @@ public:
   virtual ~AliFemtoPairCutPionPionAKAvgSep();
 
   AliFemtoPairCutPionPionAKAvgSep();
+  AliFemtoPairCutPionPionAKAvgSep(AliFemtoConfigObject &cfg)
+    : Super(cfg)
+    {}
 
   /// user-written method to return string describing cuts
   virtual AliFemtoString Report();
@@ -234,7 +274,7 @@ public:
   virtual void AppendSettings(TCollection &) const;
 
   const char* GetName() const
-    { return "AliFemtoPairCutPionPIonAkAvgSep"; }
+    { return "AliFemtoPairCutPionPionAkAvgSep"; }
 };
 
 

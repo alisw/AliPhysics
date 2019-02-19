@@ -249,6 +249,7 @@ private:
     TH2F                *fTPCnsigma_TOFnsigma2;//!
     TH2F                *fTPCnsigma_TOFnsigma3;//!
     TH2F                *fTPCnsigma_p_after_tof;//!
+    TH2F                *fTPCnsigma_proton_p_after_tof;//!
     TH2F                *fTPCnsigma_p_after_tof_p;//!
     TH2F                *fTPCnsigma_p_after_tof_pion;//!
     TH2F                *fTPCnsigma_p_after_tof_k;//!

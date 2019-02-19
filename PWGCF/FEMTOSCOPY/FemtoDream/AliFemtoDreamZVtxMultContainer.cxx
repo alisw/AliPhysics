@@ -460,7 +460,7 @@ bool AliFemtoDreamZVtxMultContainer::RejectClosePairs(
           dphi += piHi * 2;
         }
         dphi = TVector2::Phi_mpi_pi(dphi);
-        if (dphi * dphi + deta * deta < fDeltaPhiEtaMax * fDeltaPhiEtaMax) {
+        if (dphi * dphi + deta * deta < fDeltaPhiEtaMax) {
           outBool = false;
           break;
         }

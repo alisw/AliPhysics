@@ -49,7 +49,7 @@ public:
   void SetTimeCut(Float_t cut=25.e-9){fTimeCut=cut;}              //Time selection, use only for data
   void SetCentralityEstimator(Int_t est=1){fCentEstimator=est;}   //Centrality estimator, pPb: 1: V0A/C, 2: V0M, 3: ZNA/C,  4: CL1
   void SetCentralityWeights(TString filename="MBCentralityWeights.root") ;  //for pp: 
-  void SetMultiplicityBins(TArrayI ar){fNCenBin=ar.GetSize() ; fCenBinEdges.Copy(ar);} //for pp: 
+  void SetMultiplicityBins(TArrayI *ar){fNCenBin=ar->GetSize() ; fCenBinEdges.Set(ar->GetSize(),ar->GetArray());} //for pp: 
 protected:
   void    FillMCHistos() ;
   void    FillTaggingHistos() ;
@@ -86,7 +86,7 @@ private:
   TClonesArray *fStack ;            //!Pointer to MC stack (AOD)
   TClonesArray * fTrackEvent ;      //!List of tracks in the event
   TClonesArray * fPHOSEvent ;       //!List of tracks in the event
-  TList   * fPHOSEvents[10][5] ;    //!Previous events for mixing
+  TList   * fPHOSEvents[20][20] ;    //!Previous events for mixing
   TList   * fCurrentMixedList;      //! list of previous evetns for given centrality
   AliTriggerAnalysis * fTriggerAnalysis ; //!
   AliAnalysisUtils * fUtils ;       //!
@@ -116,13 +116,13 @@ private:
   Double_t fWeightParamPi0[7] ; //!Parameters to calculate weights in MC
   Int_t   fNPID ;               // Number of PID cuts
   //
-  TH2I * fPHOSBadMap[6] ; //! 
-  TH2F * fhReMod[5];       //!
-  TH2F * fhMiMod[5];       //!
-  TH2F * fhRe[3][10][8];   //!
-  TH2F * fhMi[3][10][8];   //!  
-  TH2F * fhReSingle[3][10][8]; //!
-  TH2F * fhMiSingle[3][10][8]; //!
+  TH2I * fPHOSBadMap[6] ;        //! 
+  TH2F * fhReMod[5];             //! Real per module
+  TH2F * fhMiMod[5];             //! Mixed per module
+  TH2F * fhRe[3][10][8];         //! Real: (Emin cut, Centrality, PID cut)
+  TH2F * fhMi[3][10][8];         //! Mixed: (Emin cut, Centrality, PID cut) 
+  TH2F * fhReSingle[3][10][8];   //!
+  TH2F * fhMiSingle[3][10][8];    //!
   TH2F * fhReSingleIso[3][10][8]; //!
   TH2F * fhMiSingleIso[3][10][8]; //!
   TH1F * fhPiIsolation[20][10] ;  //!
