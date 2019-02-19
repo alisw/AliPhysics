@@ -73,7 +73,9 @@ class AliForwardSettings : public TObject {
   Bool_t use_primaries_fwd;
   Bool_t etagap;
   Bool_t makeFakeHoles;
-
+  Int_t fnoClusters;
+  Double_t fCutChargedDCAxyMax;
+  Double_t fCutChargedDCAzMax;
   TString centrality_estimator;
   // return true if good event
 

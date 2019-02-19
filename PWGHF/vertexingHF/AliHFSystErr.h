@@ -211,6 +211,9 @@ class AliHFSystErr : public TNamed
   void InitDstartoD0pi2013pPb60100ZNA();
 
    void InitDstartoD0pi2016pPb010ZNA();
+   void InitDstartoD0pi2016pPb1020ZNA();
+   void InitDstartoD0pi2016pPb2040ZNA();
+   void InitDstartoD0pi2016pPb4060ZNA();
    void InitDstartoD0pi2016pPb60100ZNA();
  
   void InitDstartoD0pi2013pPb020CL1();

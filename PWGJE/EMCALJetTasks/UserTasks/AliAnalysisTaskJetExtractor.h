@@ -29,7 +29,7 @@ class AliAnalysisTaskJetExtractor : public AliAnalysisTaskEmcalJet {
   AliAnalysisTaskJetExtractor();
   AliAnalysisTaskJetExtractor(const char *name);
   virtual ~AliAnalysisTaskJetExtractor();
-  static AliAnalysisTaskJetExtractor* AddTaskJetExtractor(TString trackArray, TString clusterArray, TString jetArray, TString rhoObject, Double_t jetRadius, TString configFile, AliRDHFJetsCutsVertex* vertexerCuts, const char* taskNameSuffix);
+  static AliAnalysisTaskJetExtractor* AddTaskJetExtractor(TString trackArray, TString clusterArray, TString jetArray, TString rhoObject, Double_t jetRadius, AliRDHFJetsCutsVertex* vertexerCuts, const char* taskNameSuffix);
   void                        UserCreateOutputObjects();
   void                        Terminate(Option_t *option);
   AliEmcalJetTree*            GetJetTree() {return fJetTree;}

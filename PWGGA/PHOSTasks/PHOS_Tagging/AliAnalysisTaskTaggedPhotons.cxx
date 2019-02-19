@@ -330,9 +330,9 @@ void AliAnalysisTaskTaggedPhotons::UserCreateOutputObjects()
   
   fNPID=8 ;
   
-  Int_t nPt=69;
-  Double_t ptBins[70]={0.,0.1,0.2,0.3,0.4, 0.5,0.6,0.7,0.8,0.9, 1.0,1.1,1.2,1.3,1.4, 1.5,1.6,1.7,1.8,1.9, 2.0,2.2,2.4,2.6,2.8, 
-                       3.,3.2,3.4,3.6,3.8, 4.0,4.5,4.8,5.,5.5, 5.6,6.0,6.4,6.5,7.0, 7.2,7.5,8.0,8.5,9.0, 9.5,10.,11.,12.,13., 14.,15.,16.,17.,18., 19.,20.,22.,24.,26., 28.,30.,32., 35.,40.,45., 50.,55.,60.,65.};
+  Int_t nPt=70;
+  Double_t ptBins[71]={0.,0.1,0.2,0.3,0.4, 0.5,0.6,0.7,0.8,0.9, 1.0,1.1,1.2,1.3,1.4, 1.5,1.6,1.7,1.8,1.9, 2.0,2.2,2.4,2.6,2.8, 
+                       3.,3.2,3.4,3.6,3.8, 4.0,4.5,4.8,5.,5.5, 5.6,6.0,6.4,6.5,7.0, 7.2,7.5,8.0,8.5,9.0, 9.5,10.,11.,12.,13., 14.,15.,16.,17.,18., 19.,20.,22.,24.,26., 28.,30.,32., 35.,40.,45., 50.,55.,60.,65.,70.};
 
                      
                      
@@ -610,7 +610,7 @@ void AliAnalysisTaskTaggedPhotons::UserCreateOutputObjects()
   
   
   for(Int_t i=0;i<10;i++)
-    for(Int_t j=0;j<5;j++)
+    for(Int_t j=0;j<fNCenBin;j++)
       fPHOSEvents[i][j]=0x0 ;    //Container for PHOS photons
   
 
@@ -660,7 +660,7 @@ void AliAnalysisTaskTaggedPhotons::UserExec(Option_t *)
     Bool_t isMB = (fInputHandler->IsEventSelected() & AliVEvent::kINT7)  ; 
     Bool_t isPHI7 = (fInputHandler->IsEventSelected() & AliVEvent::kPHI7);
     if(fUseCaloFastTr){
-      if(fInputHandler->IsEventSelected() & AliVEvent::kMuonCalo){   
+      if(fInputHandler->IsEventSelected() & AliVEvent::kMuonCalo){ 
         TString trigClasses = ((AliAODHeader*)event->GetHeader())->GetFiredTriggerClasses();
 //         //MuonCalo includes EMCAL and PHOS triggers. Select only PHOS triggers  
         Bool_t is0PH0fired = trigClasses.Contains("CPHI7-B-NOPF-CALOFAST") ;       
@@ -714,8 +714,7 @@ void AliAnalysisTaskTaggedPhotons::UserExec(Option_t *)
   FillHistogram("hCentrality",fCentrality,fCentWeight) ;
   FillHistogram("hCentralityRaw",fCentrality) ;
   FillHistogram("hSelEvents",6) ;
-  
-  
+    
 //   AliEventplane *eventPlane = event->GetEventplane();
 //   if( ! eventPlane ) { //Event has no event plane
 //     PostData(1, fOutputContainer);
@@ -2655,7 +2654,7 @@ Bool_t AliAnalysisTaskTaggedPhotons::SelectCentrality(AliVEvent * event){
      fCentBin=0;
      while(fCentBin<fNCenBin && fCentrality>fCenBinEdges.At(fCentBin))
         fCentBin++ ;
-     if(fCentBin>=fNCenBin) fNCenBin=fNCenBin-1; 
+     if(fCentBin>=fNCenBin) fCentBin=fNCenBin-1; 
       
      if(fIsMB)
         fCentWeight=1. ;// CentralityWeightPP(fCentrality); 

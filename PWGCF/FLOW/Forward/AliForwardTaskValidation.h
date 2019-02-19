@@ -17,11 +17,11 @@ class AliForwardTaskValidation : public AliAnalysisTaskSE {
  public:
   AliForwardTaskValidation();
   /// `is_reconstructed` is used to toggle some event selections
-  AliForwardTaskValidation(const char *name, bool is_reconstructed);
+  AliForwardTaskValidation(const char *name, bool mc);
 
   /// Set up this task. This function acts as the AddTask macro
   /// `is_reconstructed` is passed on to the constructor of this task
-  static AliForwardTaskValidation* ConnectTask(const char *suffix, bool is_reconstructed);
+  static AliForwardTaskValidation* ConnectTask(TString name,bool mc, TString suffix);
   /// The Exchange container which is to be accessed by other classes
   AliAnalysisDataContainer* GetExchangeContainter();
   virtual ~AliForwardTaskValidation() {};
@@ -125,6 +125,7 @@ class AliForwardTaskValidation : public AliAnalysisTaskSE {
   void CreateQAHistograms(TList* outlist);
   /// Histogram showing why an even got discarded to be read from left to right
   TH1F *fQA_event_discard_flow;
+  TH1F *fQA_event_discard_flow_MC;
 
   /// Histogram showing why a _Track_ was discarded to be read from left to right
   TH1F *fQA_track_discard_flow;

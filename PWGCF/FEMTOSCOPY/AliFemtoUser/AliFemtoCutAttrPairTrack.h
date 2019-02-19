@@ -30,6 +30,11 @@ struct AddPairCutAttrs : public T1, public T2 {
       return T1::Pass(track1, track2) && T2::Pass(track1, track2);
     }
 
+  AddPairCutAttrs(AliFemtoConfigObject &cfg)
+    : T1(cfg)
+    , T2(cfg)
+    { }
+
   void FillConfiguration(AliFemtoConfigObject &cfg) const
     {
       T1::FillConfiguration(cfg);
@@ -46,6 +51,21 @@ struct AddPairCutAttrs : public T1, public T2 {
 struct PairCutTrackAttrAvgSep {
 
   double min_avgsep;
+
+  bool Pass(const AliFemtoTrack &track1, const AliFemtoTrack &track2)
+    {
+      return calc_avg_sep(track1, track2) > min_avgsep;
+    }
+
+  PairCutTrackAttrAvgSep()
+    : min_avgsep(0.0)
+    {
+    }
+
+  PairCutTrackAttrAvgSep(AliFemtoConfigObject &cfg)
+    : min_avgsep(cfg.pop_float("min_avgsep", 0.0))
+    {
+    }
 
   static bool is_valid_point(const AliFemtoThreeVector &point)
     {
@@ -71,11 +91,6 @@ struct PairCutTrackAttrAvgSep {
       return sep_sum / i;
     }
 
-  bool Pass(const AliFemtoTrack &track1, const AliFemtoTrack &track2)
-    {
-      return calc_avg_sep(track1, track2) > min_avgsep;
-    }
-
   void FillConfiguration(AliFemtoConfigObject &cfg) const
     {
       cfg.Update(AliFemtoConfigObject::BuildMap()
@@ -89,12 +104,23 @@ struct PairCutTrackAttrAvgSep {
 /// Cut on the sum of the PT
 struct PairCutTrackAttrPt {
 
+  static const std::pair<double, double> DEFAULT;
   std::pair<double, double> pt_range;
 
   bool Pass(const AliFemtoTrack &track1, const AliFemtoTrack &track2)
     {
       const double pt_sum = track1.Pt() + track2.Pt();
       return pt_range.first <= pt_sum && pt_sum < pt_range.second;
+    }
+
+  PairCutTrackAttrPt()
+    : pt_range(DEFAULT)
+    {
+    }
+
+  PairCutTrackAttrPt(AliFemtoConfigObject &cfg)
+    : pt_range(cfg.pop_range("pt_range", DEFAULT))
+    {
     }
 
   void FillConfiguration(AliFemtoConfigObject &cfg) const
@@ -112,6 +138,18 @@ struct PairCutTrackAttrShareQuality {
 
   double max_share_fraction;
   double max_share_quality;
+
+  bool Pass(const AliFemtoTrack &track1, const AliFemtoTrack &track2)
+    {
+      const std::pair<double, double>
+        qual_and_frac = calc_share_quality_fraction(track1, track2);
+
+      const double
+        share_fraction = qual_and_frac.first,
+        share_quality = qual_and_frac.second;
+
+      return share_fraction < max_share_fraction && share_quality < max_share_quality;
+    }
 
   static std::pair<double, double>
   calc_share_quality_fraction(const AliFemtoTrack &track1,
@@ -140,17 +178,15 @@ struct PairCutTrackAttrShareQuality {
       return std::make_pair(share_quality, share_fraction);
     }
 
-  bool Pass(const AliFemtoTrack &track1, const AliFemtoTrack &track2)
-    {
-      const std::pair<double, double>
-        qual_and_frac = calc_share_quality_fraction(track1, track2);
+  PairCutTrackAttrShareQuality()
+    : max_share_fraction(1.0)
+    , max_share_quality(1.0)
+    {}
 
-      const double
-        share_fraction = qual_and_frac.first,
-        share_quality = qual_and_frac.second;
-
-      return share_fraction < max_share_fraction && share_quality < max_share_quality;
-    }
+  PairCutTrackAttrShareQuality(AliFemtoConfigObject &cfg)
+    : max_share_fraction(cfg.pop_float("max_share_fraction", 1.0))
+    , max_share_quality(cfg.pop_float("max_share_quality", 1.0))
+    {}
 
   void FillConfiguration(AliFemtoConfigObject &cfg) const
     {
@@ -237,6 +273,14 @@ struct PairCutTrackAttrSameLabel {
     {
       return remove_same_label ? abs(track1.Label()) == abs(track2.Label()) : true;
     }
+
+  PairCutTrackAttrSameLabel()
+    : remove_same_label(true)
+    {}
+
+  PairCutTrackAttrSameLabel(AliFemtoConfigObject &cfg)
+    : remove_same_label(cfg.pop_bool("remove_same_label", true))
+    {}
 
   void FillConfiguration(AliFemtoConfigObject &cfg) const
     {

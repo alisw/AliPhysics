@@ -54,7 +54,6 @@
 #include "AliEmcalPythiaInfo.h"
 #include "AliAnalysisTaskEmcalJet.h"
 #include "AliAnalysisManager.h"
-#include "AliYAMLConfiguration.h"
 #include "AliEmcalContainerUtils.h"
 
 
@@ -1630,7 +1629,7 @@ void AliAnalysisTaskJetExtractor::Terminate(Option_t *)
 
 // ### ADDTASK MACRO
 //________________________________________________________________________
-AliAnalysisTaskJetExtractor* AliAnalysisTaskJetExtractor::AddTaskJetExtractor(TString trackArray, TString clusterArray, TString jetArray, TString rhoObject, Double_t jetRadius, TString configFile, AliRDHFJetsCutsVertex* vertexerCuts, const char* taskNameSuffix)
+AliAnalysisTaskJetExtractor* AliAnalysisTaskJetExtractor::AddTaskJetExtractor(TString trackArray, TString clusterArray, TString jetArray, TString rhoObject, Double_t jetRadius, AliRDHFJetsCutsVertex* vertexerCuts, const char* taskNameSuffix)
 {  
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
   Double_t    minJetEta          = 0.5;
@@ -1640,27 +1639,6 @@ AliAnalysisTaskJetExtractor* AliAnalysisTaskJetExtractor::AddTaskJetExtractor(TS
   TString     suffix             = "";
   if(taskNameSuffix != 0)
     suffix = taskNameSuffix;
-
-  // ###### Load configuration from YAML files
-  if(gGrid)
-  {
-    PWG::Tools::AliYAMLConfiguration fYAMLConfig;
-    fYAMLConfig.AddConfiguration("alien:///alice/cern.ch/user/r/rhaake/ConfigFiles/JetExtractor_BaseConfig.yaml", "baseConfig");
-    if(configFile != "")
-      fYAMLConfig.AddConfiguration(configFile.Data(), "customConfig");
-    fYAMLConfig.Initialize();
-
-    fYAMLConfig.GetProperty("TrackArray", trackArray, kFALSE);
-    fYAMLConfig.GetProperty("ClusterArray", clusterArray, kFALSE);
-    fYAMLConfig.GetProperty("JetArray", jetArray, kFALSE);
-    fYAMLConfig.GetProperty("RhoName", rhoObject, kFALSE);
-    fYAMLConfig.GetProperty("JetRadius", jetRadius);
-    fYAMLConfig.GetProperty("MinJetEta", minJetEta);
-    fYAMLConfig.GetProperty("MinJetPt", minJetPt);
-    fYAMLConfig.GetProperty("MinTrackPt", minTrackPt);
-    fYAMLConfig.GetProperty("MinJetAreaPerc", minJetAreaPerc);
-    fYAMLConfig.Print();
-  }
 
   // ###### Task name
   TString name("AliAnalysisTaskJetExtractor");
