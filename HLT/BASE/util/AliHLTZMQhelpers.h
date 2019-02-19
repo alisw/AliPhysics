@@ -111,8 +111,8 @@ struct AliHLTDataTopic : public DataTopic
 };
 
 class AtomicFile {
-  TString targetFileName;
-  TFile* tempFile;
+  TString targetFileName{};
+  TFile* tempFile{nullptr};
   public:
   AtomicFile(const char* name);
   ~AtomicFile();
