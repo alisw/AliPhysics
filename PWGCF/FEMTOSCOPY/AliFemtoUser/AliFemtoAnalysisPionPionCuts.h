@@ -130,44 +130,6 @@ public:
 };
 
 
-/// \class AliFemtoEventCutAttr
-/// \brief Bridge from AliFemtoPairCut to a metaclass of PairCut-Attrs
-///
-template <typename CRTP, typename CutAttrType>
-class AliFemtoTrackCutAttr : public AliFemtoTrackCut, public CutAttrType {
-public:
-
-  typedef CutAttrType CutAttrs;
-
-  AliFemtoTrackCutAttr()
-    {}
-
-  AliFemtoTrackCutAttr(AliFemtoConfigObject &cfg)
-    : CutAttrType(cfg)
-    {}
-
-  virtual bool Pass(AliFemtoTrack *ev)
-    {
-      return CutAttrs::Pass(*ev);
-    }
-
-  virtual AliFemtoString Report()
-    {
-      return "AliFemtoTrackCutAttr Report\n";
-    }
-
-  virtual TList* ListSettings() const
-    {
-      TList* list = new TList();
-      AppendSettings(*list);
-      return list;
-    }
-
-  virtual void AppendSettings(TCollection &) const = 0;
-  virtual ~AliFemtoTrackCutAttr() = 0;
-};
-
-
 /// \class AliFemtoTrackCutPionPionAK
 /// \brief Andrew Kubera's pion-track cut
 ///
