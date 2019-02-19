@@ -24,7 +24,8 @@ AliFemtoDreamEvent::AliFemtoDreamEvent()
       fzVtxSPD(0),
       fBField(-99),
       fSPDMult(0),
-      fNSPDCluster(0),
+      fNSPDClusterLy0(0),
+      fNSPDClusterLy1(0),
       fRefMult08(0),
       fV0AMult(0),
       fV0CMult(0),
@@ -52,7 +53,8 @@ AliFemtoDreamEvent::AliFemtoDreamEvent(bool mvPileUp, bool EvtCutQA,
       fzVtxSPD(0),
       fBField(-99),
       fSPDMult(0),
-      fNSPDCluster(0),
+      fNSPDClusterLy0(0),
+      fNSPDClusterLy1(0),
       fRefMult08(0),
       fV0AMult(0),
       fV0CMult(0),
@@ -113,7 +115,8 @@ AliFemtoDreamEvent &AliFemtoDreamEvent::operator=(
   fzVtxSPD = obj.fzVtxSPD;
   fBField = obj.fBField;
   fSPDMult = obj.fSPDMult;
-  fNSPDCluster = obj.fNSPDCluster;
+  fNSPDClusterLy0 = obj.fNSPDClusterLy0;
+  fNSPDClusterLy1 = obj.fNSPDClusterLy1;
   fRefMult08 = obj.fRefMult08;
   fV0AMult = obj.fV0AMult;
   fV0CMult = obj.fV0CMult;
@@ -159,7 +162,8 @@ void AliFemtoDreamEvent::SetEvent(AliAODEvent *evt) {
     this->fPassAliEvtSelection = false;
   }
   this->fSPDMult = CalculateITSMultiplicity(evt);
-  this->fNSPDCluster = evt->GetMultiplicity()->GetNumberOfSPDClusters();
+  this->fNSPDClusterLy0 = evt->GetNumberOfITSClusters(0);
+  this->fNSPDClusterLy1 = evt->GetNumberOfITSClusters(1);
   this->fV0AMult = vZERO->GetMTotV0A();
   this->fV0CMult = vZERO->GetMTotV0C();
   this->fRefMult08 = header->GetRefMultiplicityComb08();
@@ -211,10 +215,12 @@ void AliFemtoDreamEvent::SetEvent(AliESDEvent *evt) {
   //!to do: Check event multiplicity estimation!
   if (evt->GetMultiplicity()) {
     this->fSPDMult = evt->GetMultiplicity()->GetNumberOfTracklets();
-    this->fNSPDCluster = evt->GetMultiplicity()->GetNumberOfITSClusters(0, 1);
+    this->fNSPDClusterLy0 = evt->GetMultiplicity()->GetNumberOfITSClusters(0, 0);
+    this->fNSPDClusterLy1 = evt->GetMultiplicity()->GetNumberOfITSClusters(1, 1);
   } else {
     this->fSPDMult = evt->GetNumberOfITSClusters(1);
-    this->fNSPDCluster = 0;
+    this->fNSPDClusterLy0 = 0;
+    this->fNSPDClusterLy1 = 0;
   }
   this->fRefMult08 = AliESDtrackCuts::GetReferenceMultiplicity(
       evt, AliESDtrackCuts::kTrackletsITSTPC, 0.8, 0);
