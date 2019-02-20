@@ -1410,7 +1410,8 @@ void AddTask_GammaCalo_pp(
     cuts.AddCutCalo("000a1113","41177110a0032230000","01631031000000d0"); // std EMC7
     cuts.AddCutCalo("000a2113","41177110a0032230000","01631031000000d0"); // std EG2
     cuts.AddCutCalo("000a3113","41177110a0032230000","01631031000000d0"); // std EG1
-
+  } else if (trainConfig == 2005){ // EMCAL+DCAL clusters standard cuts
+    cuts.AddCutCalo("00010113","41177180a7032230000","01631031000000d0"); // Standard EDC, new nonlin pcm-edc
 
   // includes both stripes EMCal and DCal
   } else if (trainConfig == 2010){ // EMCAL+DCAL clusters standard cuts, triggers, no NL, std TM, tight timing
