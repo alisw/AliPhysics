@@ -4911,31 +4911,30 @@ void AliAnalysisTaskGammaCalo::CalculatePi0Candidates(){
         AliAODConversionMother *pi0cand = new AliAODConversionMother(gamma0,gamma1);
         pi0cand->SetLabels(firstGammaIndex,secondGammaIndex);
 
-        TClonesArray * arrClustersProcess = NULL;
-        arrClustersProcess = dynamic_cast<TClonesArray*>(fInputEvent->FindListObject(Form("%sClustersBranch",fCorrTaskSetting.Data())));
-        //if(!arrClustersProcess) continue;
-        AliVCluster* Cluster0 = NULL;
-        AliVCluster* Cluster1 = NULL;
-        if (gamma0->GetIsCaloPhoton() && gamma1->GetIsCaloPhoton()){
-          if(fInputEvent->IsA()==AliESDEvent::Class()){
-            if(arrClustersProcess){
-              Cluster0 = new AliESDCaloCluster(*(AliESDCaloCluster*)arrClustersProcess->At(gamma0->GetCaloClusterRef()));
-              Cluster1 = new AliESDCaloCluster(*(AliESDCaloCluster*)arrClustersProcess->At(gamma1->GetCaloClusterRef()));
-            }else{
-              Cluster0 = fInputEvent->GetCaloCluster(gamma0->GetCaloClusterRef());
-              Cluster1 = fInputEvent->GetCaloCluster(gamma1->GetCaloClusterRef());
-            }
-          } else if(fInputEvent->IsA()==AliAODEvent::Class()){
-            if(arrClustersProcess){
-              Cluster0 = new AliAODCaloCluster(*(AliAODCaloCluster*)arrClustersProcess->At(gamma0->GetCaloClusterRef()));
-              Cluster1 = new AliAODCaloCluster(*(AliAODCaloCluster*)arrClustersProcess->At(gamma1->GetCaloClusterRef()));
-            } else{
-              Cluster0 = fInputEvent->GetCaloCluster(gamma0->GetCaloClusterRef());
-              Cluster1 = fInputEvent->GetCaloCluster(gamma1->GetCaloClusterRef());
+        if(((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->GetDoSecondaryTrackMatching()){
+          TClonesArray * arrClustersProcess = NULL;
+          arrClustersProcess = dynamic_cast<TClonesArray*>(fInputEvent->FindListObject(Form("%sClustersBranch",fCorrTaskSetting.Data())));
+          AliVCluster* Cluster0 = NULL;
+          AliVCluster* Cluster1 = NULL;
+          if (gamma0->GetIsCaloPhoton() && gamma1->GetIsCaloPhoton()){
+            if(fInputEvent->IsA()==AliESDEvent::Class()){
+              if(arrClustersProcess){
+                Cluster0 = new AliESDCaloCluster(*(AliESDCaloCluster*)arrClustersProcess->At(gamma0->GetCaloClusterRef()));
+                Cluster1 = new AliESDCaloCluster(*(AliESDCaloCluster*)arrClustersProcess->At(gamma1->GetCaloClusterRef()));
+              }else{
+                Cluster0 = fInputEvent->GetCaloCluster(gamma0->GetCaloClusterRef());
+                Cluster1 = fInputEvent->GetCaloCluster(gamma1->GetCaloClusterRef());
+              }
+            } else if(fInputEvent->IsA()==AliAODEvent::Class()){
+              if(arrClustersProcess){
+                Cluster0 = new AliAODCaloCluster(*(AliAODCaloCluster*)arrClustersProcess->At(gamma0->GetCaloClusterRef()));
+                Cluster1 = new AliAODCaloCluster(*(AliAODCaloCluster*)arrClustersProcess->At(gamma1->GetCaloClusterRef()));
+              } else{
+                Cluster0 = fInputEvent->GetCaloCluster(gamma0->GetCaloClusterRef());
+                Cluster1 = fInputEvent->GetCaloCluster(gamma1->GetCaloClusterRef());
+              }
             }
           }
-        }
-        if(((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->GetDoSecondaryTrackMatching()){
           Bool_t ClusterMatched = kFALSE;
           for(Int_t ConversionIndex=0;ConversionIndex<fGammaCandidates->GetEntries();ConversionIndex++){
             AliAODConversionPhoton *gammaConversion=dynamic_cast<AliAODConversionPhoton*>(fGammaCandidates->At(ConversionIndex));
