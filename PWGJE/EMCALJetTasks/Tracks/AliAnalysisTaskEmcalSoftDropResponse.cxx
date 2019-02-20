@@ -72,9 +72,11 @@ AliAnalysisTaskEmcalSoftDropResponse::AliAnalysisTaskEmcalSoftDropResponse():
   fZcut(0.1),
   fBeta(0.),
   fReclusterizer(kCAAlgo),
+  fSampleFraction(1.),
   fUseChargedConstituents(true),
   fUseNeutralConstituents(true),
   fSampleSplitter(nullptr),
+  fSampleTrimmer(nullptr),
   fPartLevelPtBinning(nullptr),
   fDetLevelPtBinning(nullptr),
   fZgResponse(nullptr),
@@ -97,9 +99,11 @@ AliAnalysisTaskEmcalSoftDropResponse::AliAnalysisTaskEmcalSoftDropResponse(const
   fZcut(0.1),
   fBeta(0.),
   fReclusterizer(kCAAlgo),
+  fSampleFraction(1.),
   fUseChargedConstituents(true),
   fUseNeutralConstituents(true),
   fSampleSplitter(nullptr),
+  fSampleTrimmer(nullptr),
   fPartLevelPtBinning(nullptr),
   fDetLevelPtBinning(nullptr),
   fZgResponse(nullptr),
@@ -119,12 +123,14 @@ AliAnalysisTaskEmcalSoftDropResponse::~AliAnalysisTaskEmcalSoftDropResponse(){
   if(fPartLevelPtBinning) delete fPartLevelPtBinning;
   if(fDetLevelPtBinning) delete fDetLevelPtBinning;
   if(fSampleSplitter) delete fSampleSplitter;
+  if(fSampleTrimmer) delete fSampleTrimmer;
 }
 
 void AliAnalysisTaskEmcalSoftDropResponse::UserCreateOutputObjects(){
   AliAnalysisTaskEmcalJet::UserCreateOutputObjects();
 
   fSampleSplitter = new TRandom;
+  if(fSampleFraction < 1.) fSampleTrimmer = new TRandom;
 
   if(!fPartLevelPtBinning) fPartLevelPtBinning = GetDefaultPartLevelPtBinning();
   if(!fDetLevelPtBinning) fDetLevelPtBinning = GetDefaultDetLevelPtBinning();
@@ -171,6 +177,10 @@ bool AliAnalysisTaskEmcalSoftDropResponse::Run(){
   if(!(partLevelJets || detLevelJets)) {
     AliErrorStream() << "Either of the jet containers not found" << std::endl;
     return kFALSE;
+  }
+
+  if(fSampleFraction < 1.) {
+    if(fSampleTrimmer->Uniform() > fSampleFraction) return false;
   }
 
   // get truncations at detector level
