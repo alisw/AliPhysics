@@ -35,15 +35,24 @@ typedef TrackSelectionCut<
           AddTrackCutAttrs<
             TrackCutAttrStatus,
             AddTrackCutAttrs<
-              TrackCutAttrRemoveKinks,
-              TrackCutAttrRemoveFakeITS> >,
+              TrackCutAttrMinNclsTPC,
+              AddTrackCutAttrs<
+               TrackCutAttrMinNclsITS,
+               TrackCutAttrCharge> > >,
 
           // physics-cuts
           AddTrackCutAttrs<
-            TrackCutAttrImpact,
-            AddTrackCutAttrs<
-              TrackCutAttrCharge,
-              TrackCutAttrEta> >
+              TrackCutAttrImpact,
+                AddTrackCutAttrs<
+                  TrackCutAttrPt,
+                  AddTrackCutAttrs<
+	                TrackCutAttrEta,
+                    AddTrackCutAttrs<
+	                  TrackCutAttrSigmaPion,
+                    AddTrackCutAttrs<
+	                  TrackCutAttrChi2TPC,
+                      TrackCutAttrChi2ITS
+          > > > > >
 
         > TrackCutAttrsAK;
 

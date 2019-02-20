@@ -179,8 +179,8 @@ struct TrackCutAttrImpact {
 
   bool Pass(const AliFemtoTrack &track)
     {
-      return max_z <= std::abs(track.ImpactZ())
-          && max_xy <= track.ImpactD();
+      return std::abs(track.ImpactZ()) <= max_z
+          && track.ImpactD() < max_xy;
     }
 
   TrackCutAttrImpact()
@@ -204,30 +204,81 @@ struct TrackCutAttrImpact {
 };
 
 
+/// Remove tracks with number of TPC clusters below some threshold
+struct TrackCutAttrMinNclsTPC {
+  int ncls_tpc_min;
+
+  bool Pass(const AliFemtoTrack &track)
+    {
+      return ncls_tpc_min <= track.TPCncls();
+    }
+
+  TrackCutAttrMinNclsTPC()
+    : ncls_tpc_min(70)
+    {}
+
+  TrackCutAttrMinNclsTPC(AliFemtoConfigObject &cfg)
+    : ncls_tpc_min(cfg.pop_int("ncls_tpc_min", 70))
+    {}
+
+  void FillConfiguration(AliFemtoConfigObject &cfg) const
+    {
+      cfg.insert("ncls_tpc_min", ncls_tpc_min);
+    }
+
+  virtual ~TrackCutAttrMinNclsTPC() {}
+};
+
+/// Remove tracks with number of ITS clusters below some threshold
+struct TrackCutAttrMinNclsITS {
+  int ncls_its_min;
+
+  bool Pass(const AliFemtoTrack &track)
+    {
+      return ncls_its_min <= track.ITSncls();
+    }
+
+  TrackCutAttrMinNclsITS()
+    : ncls_its_min(0)
+    {}
+
+  TrackCutAttrMinNclsITS(AliFemtoConfigObject &cfg)
+    : ncls_its_min(cfg.pop_int("ncls_its_min", 0))
+    {}
+
+  void FillConfiguration(AliFemtoConfigObject &cfg) const
+    {
+      cfg.insert("ncls_its_min", ncls_its_min);
+    }
+
+  virtual ~TrackCutAttrMinNclsITS() {}
+};
+
+
 /// \class TrackCutAttrChi2ITS
 /// \brief Cut on reduced chi2 of results in ITS
 ///
 struct TrackCutAttrChi2ITS {
 
-  double max_rchi2_its;
+  double rchi2_its_max;
 
   bool Pass(const AliFemtoTrack &track)
     {
       return (track.ITSncls() > 0)
-              && (track.ITSchi2() / track.ITSncls()) > max_rchi2_its;
+              && (track.ITSchi2() / track.ITSncls()) < rchi2_its_max;
     }
 
   TrackCutAttrChi2ITS()
-    : max_rchi2_its(3.0)
+    : rchi2_its_max(3.0)
     {}
 
   TrackCutAttrChi2ITS(AliFemtoConfigObject &cfg)
-    : max_rchi2_its(cfg.pop_float("max_rchi2_its", 3.0))
+    : rchi2_its_max(cfg.pop_float("rchi2_its_max", 3.0))
     {}
 
   void FillConfiguration(AliFemtoConfigObject &cfg) const
     {
-      cfg.insert("max_rchi2_its", max_rchi2_its);
+      cfg.insert("rchi2_its_max", rchi2_its_max);
     }
 
   virtual ~TrackCutAttrChi2ITS() {}
@@ -239,25 +290,25 @@ struct TrackCutAttrChi2ITS {
 ///
 struct TrackCutAttrChi2TPC {
 
-  double max_rchi2_tpc;
+  double rchi2_tpc_max;
 
   bool Pass(const AliFemtoTrack &track)
     {
-      return (track.TPCncls() > 0)
-              && (track.TPCchi2() / track.TPCncls()) < max_rchi2_tpc;
+      return (track.TPCncls() > 5)
+              && (track.TPCchi2() / (track.TPCncls() - 5)) < rchi2_tpc_max;
     }
 
   TrackCutAttrChi2TPC()
-    : max_rchi2_tpc(3.0)
+    : rchi2_tpc_max(3.0)
     {}
 
   TrackCutAttrChi2TPC(AliFemtoConfigObject &cfg)
-    : max_rchi2_tpc(cfg.pop_float("max_rchi2_tpc", 3.0))
+    : rchi2_tpc_max(cfg.pop_float("rchi2_tpc_max", 3.0))
     {}
 
   void FillConfiguration(AliFemtoConfigObject &cfg) const
     {
-      cfg.insert("max_rchi2_tpc", max_rchi2_tpc);
+      cfg.insert("rchi2_tpc_max", rchi2_tpc_max);
     }
 
   virtual ~TrackCutAttrChi2TPC() {}
@@ -477,6 +528,47 @@ struct TrackCutAttrMostProbablePion {
 };
 
 
+struct TrackCutAttrPidContourPion {
+
+  bool tpc_contour_pion;
+
+  bool Pass(const AliFemtoTrack &track)
+    {
+      const float
+        p = track.P().Mag(),
+        tpc_signal = track.TPCsignal();
+      return tpc_contour_pion && is_pion_tpc_dedx(p, tpc_signal);
+    }
+
+  bool is_pion_tpc_dedx(float mom, float dedx)
+    {
+      const double
+        a1 = -343.75,
+        b1 = 168.125,
+        a2 = 0.0,
+        b2 = 65.0;
+
+      return dedx < ((mom < 0.32) ? a1 * mom + b1 : a2 * mom + b2);
+    }
+
+
+  TrackCutAttrPidContourPion()
+    : tpc_contour_pion(true)
+    {}
+
+  TrackCutAttrPidContourPion(AliFemtoConfigObject &cfg)
+    : tpc_contour_pion(cfg.pop_bool("tpc_contour_pion", true))
+    {}
+
+  void FillConfiguration(AliFemtoConfigObject &cfg) const
+    {
+     cfg.insert("tpc_contour_pion", tpc_contour_pion);
+    }
+
+  virtual ~TrackCutAttrPidContourPion() {}
+};
+
+
 /// Cut using combination of NSigmaTPCPI && NSigmaTOFPI
 ///
 struct TrackCutAttrSigmaPion {
@@ -533,8 +625,7 @@ struct TrackCutAttrSigmaPion {
 
   void FillConfiguration(AliFemtoConfigObject &cfg) const
     {
-      cfg.insert("nsigma_pion_range", nsigma_pion_range);
-      cfg.insert("use_tpctof", usetpctof);
+      // cfg.insert("use_tpctof", usetpctof);
       cfg.insert("pion_nsigma", nsigma);
     }
 
