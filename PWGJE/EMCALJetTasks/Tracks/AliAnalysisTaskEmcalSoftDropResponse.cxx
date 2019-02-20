@@ -162,6 +162,24 @@ void AliAnalysisTaskEmcalSoftDropResponse::UserCreateOutputObjects(){
   PostData(1, fOutput);
 }
 
+Bool_t AliAnalysisTaskEmcalSoftDropResponse::CheckMCOutliers() {
+  if(!fMCRejectFilter) return true;
+  if(!(fIsPythia || fIsHerwig)) return true;    // Only relevant for pt-hard production
+  AliDebugStream(1) << "Using custom MC outlier rejection" << std::endl;
+  auto partjets = GetJetContainer("partLevel");
+  if(!partjets) return true;
+
+  // Check whether there is at least one particle level jet with pt above n * event pt-hard
+  auto jetiter = partjets->accepted();
+  auto max = std::max_element(jetiter.begin(), jetiter.end(), [](const AliEmcalJet *lhs, const AliEmcalJet *rhs ) { return lhs->Pt() < rhs->Pt(); });
+  if(max != jetiter.end())  {
+    // At least one jet found with pt > n * pt-hard
+    AliDebugStream(1) << "Found max jet with pt " << (*max)->Pt() << " GeV/c" << std::endl;
+    if((*max)->Pt() > fPtHardAndJetPtFactor * fPtHard) return true;
+  }
+  return false;
+}
+
 bool AliAnalysisTaskEmcalSoftDropResponse::Run(){
   AliJetContainer *partLevelJets = this->GetJetContainer("partLevel"),
                   *detLevelJets = GetJetContainer("detLevel");

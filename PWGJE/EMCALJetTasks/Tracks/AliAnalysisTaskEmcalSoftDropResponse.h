@@ -70,6 +70,7 @@ public:
 
 protected:
   virtual void UserCreateOutputObjects();
+  virtual Bool_t CheckMCOutliers();
   virtual bool Run();
 
   TBinning *GetDefaultPartLevelPtBinning() const;
