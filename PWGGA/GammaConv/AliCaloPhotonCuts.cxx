@@ -4323,49 +4323,49 @@ Bool_t AliCaloPhotonCuts::SetTrackMatchingCut(Int_t trackMatching)
     case 6:
       if (!fUseDistTrackToCluster) fUseDistTrackToCluster=kTRUE;
       fUsePtDepTrackToCluster = 1;
-      fFuncPtDepEta = new TF1("func", "[1] + 1 / pow(x + pow(1 / ([0] - [1]), 1 / [2]), [2])");
+      fFuncPtDepEta = new TF1("funcEta6", "[1] + 1 / pow(x + pow(1 / ([0] - [1]), 1 / [2]), [2])");
       fFuncPtDepEta->SetParameters(0.03, 0.010, 2.5);
-      fFuncPtDepPhi = new TF1("func", "[1] + 1 / pow(x + pow(1 / ([0] - [1]), 1 / [2]), [2])");
+      fFuncPtDepPhi = new TF1("funcPhi6", "[1] + 1 / pow(x + pow(1 / ([0] - [1]), 1 / [2]), [2])");
       fFuncPtDepPhi->SetParameters(0.08, 0.015, 2.);
       break;
     case 7:
       if (!fUseDistTrackToCluster) fUseDistTrackToCluster=kTRUE;
       fUsePtDepTrackToCluster = 1;
-      fFuncPtDepEta = new TF1("func", "[1] + 1 / pow(x + pow(1 / ([0] - [1]), 1 / [2]), [2])");
+      fFuncPtDepEta = new TF1("funcEta7", "[1] + 1 / pow(x + pow(1 / ([0] - [1]), 1 / [2]), [2])");
       fFuncPtDepEta->SetParameters(0.04, 0.010, 2.5);
-      fFuncPtDepPhi = new TF1("func", "[1] + 1 / pow(x + pow(1 / ([0] - [1]), 1 / [2]), [2])");
+      fFuncPtDepPhi = new TF1("funcPhi7", "[1] + 1 / pow(x + pow(1 / ([0] - [1]), 1 / [2]), [2])");
       fFuncPtDepPhi->SetParameters(0.09, 0.015, 2.);
       break;
     case 8:
       if (!fUseDistTrackToCluster) fUseDistTrackToCluster=kTRUE;
       fUsePtDepTrackToCluster = 1;
-      fFuncPtDepEta = new TF1("func", "[1] + 1 / pow(x + pow(1 / ([0] - [1]), 1 / [2]), [2])");
+      fFuncPtDepEta = new TF1("funcEta8", "[1] + 1 / pow(x + pow(1 / ([0] - [1]), 1 / [2]), [2])");
       fFuncPtDepEta->SetParameters(0.05, 0.010, 2.5);
-      fFuncPtDepPhi = new TF1("func", "[1] + 1 / pow(x + pow(1 / ([0] - [1]), 1 / [2]), [2])");
+      fFuncPtDepPhi = new TF1("funcPhi8", "[1] + 1 / pow(x + pow(1 / ([0] - [1]), 1 / [2]), [2])");
       fFuncPtDepPhi->SetParameters(0.10, 0.015, 1.75);
       break;
     case 9:
       if (!fUseDistTrackToCluster) fUseDistTrackToCluster=kTRUE;
       fUsePtDepTrackToCluster = 1;
-      fFuncPtDepEta = new TF1("func", "[1] + 1 / pow(x + pow(1 / ([0] - [1]), 1 / [2]), [2])");
+      fFuncPtDepEta = new TF1("funcEta9", "[1] + 1 / pow(x + pow(1 / ([0] - [1]), 1 / [2]), [2])");
       fFuncPtDepEta->SetParameters(0.06, 0.015, 2.5);
-      fFuncPtDepPhi = new TF1("func", "[1] + 1 / pow(x + pow(1 / ([0] - [1]), 1 / [2]), [2])");
+      fFuncPtDepPhi = new TF1("funcPhi9", "[1] + 1 / pow(x + pow(1 / ([0] - [1]), 1 / [2]), [2])");
       fFuncPtDepPhi->SetParameters(0.12, 0.020, 1.75);
       break;
     case 10:
       if (!fUseDistTrackToCluster) fUseDistTrackToCluster=kTRUE;
       fUsePtDepTrackToCluster = 1;
-      fFuncPtDepEta = new TF1("func", "[1] + 1 / pow(x + pow(1 / ([0] - [1]), 1 / [2]), [2])");
+      fFuncPtDepEta = new TF1("funcEta10", "[1] + 1 / pow(x + pow(1 / ([0] - [1]), 1 / [2]), [2])");
       fFuncPtDepEta->SetParameters(0.035, 0.010, 2.5);
-      fFuncPtDepPhi = new TF1("func", "[1] + 1 / pow(x + pow(1 / ([0] - [1]), 1 / [2]), [2])");
+      fFuncPtDepPhi = new TF1("funcPhi10", "[1] + 1 / pow(x + pow(1 / ([0] - [1]), 1 / [2]), [2])");
       fFuncPtDepPhi->SetParameters(0.085, 0.015, 2.0);
       break;
     case 11:
       if (!fUseDistTrackToCluster) fUseDistTrackToCluster=kTRUE;
       fUsePtDepTrackToCluster = 1;
-      fFuncPtDepEta = new TF1("func", "[1] + 1 / pow(x + pow(1 / ([0] - [1]), 1 / [2]), [2])");
+      fFuncPtDepEta = new TF1("funcEta11", "[1] + 1 / pow(x + pow(1 / ([0] - [1]), 1 / [2]), [2])");
       fFuncPtDepEta->SetParameters(0.045, 0.010, 2.5);
-      fFuncPtDepPhi = new TF1("func", "[1] + 1 / pow(x + pow(1 / ([0] - [1]), 1 / [2]), [2])");
+      fFuncPtDepPhi = new TF1("funcPhi11", "[1] + 1 / pow(x + pow(1 / ([0] - [1]), 1 / [2]), [2])");
       fFuncPtDepPhi->SetParameters(0.095, 0.015, 1.75);
       break;
     case 12: // here starts clusterE/trackP veto for TM, taking case 7 as usual TM cuts; cut char 'c'
@@ -4373,9 +4373,9 @@ Bool_t AliCaloPhotonCuts::SetTrackMatchingCut(Int_t trackMatching)
       if (!fUseDistTrackToCluster) fUseDistTrackToCluster=kTRUE;
       if (!fUseEOverPVetoTM) fUseEOverPVetoTM=kTRUE;
       fUsePtDepTrackToCluster = 1;
-      fFuncPtDepEta = new TF1("func", "[1] + 1 / pow(x + pow(1 / ([0] - [1]), 1 / [2]), [2])");
+      fFuncPtDepEta = new TF1("funcEta12", "[1] + 1 / pow(x + pow(1 / ([0] - [1]), 1 / [2]), [2])");
       fFuncPtDepEta->SetParameters(0.04, 0.010, 2.5);
-      fFuncPtDepPhi = new TF1("func", "[1] + 1 / pow(x + pow(1 / ([0] - [1]), 1 / [2]), [2])");
+      fFuncPtDepPhi = new TF1("funcPhi12", "[1] + 1 / pow(x + pow(1 / ([0] - [1]), 1 / [2]), [2])");
       fFuncPtDepPhi->SetParameters(0.09, 0.015, 2.);
 
       fEOverPMax = 9e9;
@@ -4384,9 +4384,9 @@ Bool_t AliCaloPhotonCuts::SetTrackMatchingCut(Int_t trackMatching)
       if (!fUseDistTrackToCluster) fUseDistTrackToCluster=kTRUE;
       if (!fUseEOverPVetoTM) fUseEOverPVetoTM=kTRUE;
       fUsePtDepTrackToCluster = 1;
-      fFuncPtDepEta = new TF1("func", "[1] + 1 / pow(x + pow(1 / ([0] - [1]), 1 / [2]), [2])");
+      fFuncPtDepEta = new TF1("funcEta13", "[1] + 1 / pow(x + pow(1 / ([0] - [1]), 1 / [2]), [2])");
       fFuncPtDepEta->SetParameters(0.04, 0.010, 2.5);
-      fFuncPtDepPhi = new TF1("func", "[1] + 1 / pow(x + pow(1 / ([0] - [1]), 1 / [2]), [2])");
+      fFuncPtDepPhi = new TF1("funcPhi13", "[1] + 1 / pow(x + pow(1 / ([0] - [1]), 1 / [2]), [2])");
       fFuncPtDepPhi->SetParameters(0.09, 0.015, 2.);
 
       fEOverPMax = 3.0;
@@ -4395,9 +4395,9 @@ Bool_t AliCaloPhotonCuts::SetTrackMatchingCut(Int_t trackMatching)
       if (!fUseDistTrackToCluster) fUseDistTrackToCluster=kTRUE;
       if (!fUseEOverPVetoTM) fUseEOverPVetoTM=kTRUE;
       fUsePtDepTrackToCluster = 1;
-      fFuncPtDepEta = new TF1("func", "[1] + 1 / pow(x + pow(1 / ([0] - [1]), 1 / [2]), [2])");
+      fFuncPtDepEta = new TF1("funcEta14", "[1] + 1 / pow(x + pow(1 / ([0] - [1]), 1 / [2]), [2])");
       fFuncPtDepEta->SetParameters(0.04, 0.010, 2.5);
-      fFuncPtDepPhi = new TF1("func", "[1] + 1 / pow(x + pow(1 / ([0] - [1]), 1 / [2]), [2])");
+      fFuncPtDepPhi = new TF1("funcPhi14", "[1] + 1 / pow(x + pow(1 / ([0] - [1]), 1 / [2]), [2])");
       fFuncPtDepPhi->SetParameters(0.09, 0.015, 2.);
 
       fEOverPMax = 2.0;
@@ -4406,9 +4406,9 @@ Bool_t AliCaloPhotonCuts::SetTrackMatchingCut(Int_t trackMatching)
       if (!fUseDistTrackToCluster) fUseDistTrackToCluster=kTRUE;
       if (!fUseEOverPVetoTM) fUseEOverPVetoTM=kTRUE;
       fUsePtDepTrackToCluster = 1;
-      fFuncPtDepEta = new TF1("func", "[1] + 1 / pow(x + pow(1 / ([0] - [1]), 1 / [2]), [2])");
+      fFuncPtDepEta = new TF1("funcEta15", "[1] + 1 / pow(x + pow(1 / ([0] - [1]), 1 / [2]), [2])");
       fFuncPtDepEta->SetParameters(0.04, 0.010, 2.5);
-      fFuncPtDepPhi = new TF1("func", "[1] + 1 / pow(x + pow(1 / ([0] - [1]), 1 / [2]), [2])");
+      fFuncPtDepPhi = new TF1("funcPhi15", "[1] + 1 / pow(x + pow(1 / ([0] - [1]), 1 / [2]), [2])");
       fFuncPtDepPhi->SetParameters(0.09, 0.015, 2.);
 
       fEOverPMax = 1.75;
@@ -4417,9 +4417,9 @@ Bool_t AliCaloPhotonCuts::SetTrackMatchingCut(Int_t trackMatching)
       if (!fUseDistTrackToCluster) fUseDistTrackToCluster=kTRUE;
       if (!fUseEOverPVetoTM) fUseEOverPVetoTM=kTRUE;
       fUsePtDepTrackToCluster = 1;
-      fFuncPtDepEta = new TF1("func", "[1] + 1 / pow(x + pow(1 / ([0] - [1]), 1 / [2]), [2])");
+      fFuncPtDepEta = new TF1("funcEta16", "[1] + 1 / pow(x + pow(1 / ([0] - [1]), 1 / [2]), [2])");
       fFuncPtDepEta->SetParameters(0.04, 0.010, 2.5);
-      fFuncPtDepPhi = new TF1("func", "[1] + 1 / pow(x + pow(1 / ([0] - [1]), 1 / [2]), [2])");
+      fFuncPtDepPhi = new TF1("funcPhi16", "[1] + 1 / pow(x + pow(1 / ([0] - [1]), 1 / [2]), [2])");
       fFuncPtDepPhi->SetParameters(0.09, 0.015, 2.);
 
       fEOverPMax = 1.5;
@@ -4429,9 +4429,9 @@ Bool_t AliCaloPhotonCuts::SetTrackMatchingCut(Int_t trackMatching)
       if (!fUseDistTrackToCluster) fUseDistTrackToCluster=kTRUE;
       if (!fUseEOverPVetoTM) fUseEOverPVetoTM=kTRUE;
       fUsePtDepTrackToCluster = 1;
-      fFuncPtDepEta = new TF1("func", "[1] + 1 / pow(x + pow(1 / ([0] - [1]), 1 / [2]), [2])");
+      fFuncPtDepEta = new TF1("funcEta17", "[1] + 1 / pow(x + pow(1 / ([0] - [1]), 1 / [2]), [2])");
       fFuncPtDepEta->SetParameters(0.04, 0.010, 2.5);
-      fFuncPtDepPhi = new TF1("func", "[1] + 1 / pow(x + pow(1 / ([0] - [1]), 1 / [2]), [2])");
+      fFuncPtDepPhi = new TF1("funcPhi17", "[1] + 1 / pow(x + pow(1 / ([0] - [1]), 1 / [2]), [2])");
       fFuncPtDepPhi->SetParameters(0.09, 0.015, 2.);
 
       fEOverPMax = 1.25;
@@ -4454,9 +4454,9 @@ Bool_t AliCaloPhotonCuts::SetTrackMatchingCut(Int_t trackMatching)
       if (!fUseDistTrackToCluster) fUseDistTrackToCluster=kTRUE;
       if (!fUseTMMIPsubtraction) fUseTMMIPsubtraction=kTRUE;
       fUsePtDepTrackToCluster = 1;
-      fFuncPtDepEta = new TF1("func", "[1] + 1 / pow(x + pow(1 / ([0] - [1]), 1 / [2]), [2])");
+      fFuncPtDepEta = new TF1("funcEta20", "[1] + 1 / pow(x + pow(1 / ([0] - [1]), 1 / [2]), [2])");
       fFuncPtDepEta->SetParameters(0.04, 0.010, 2.5);
-      fFuncPtDepPhi = new TF1("func", "[1] + 1 / pow(x + pow(1 / ([0] - [1]), 1 / [2]), [2])");
+      fFuncPtDepPhi = new TF1("funcPhi20", "[1] + 1 / pow(x + pow(1 / ([0] - [1]), 1 / [2]), [2])");
       fFuncPtDepPhi->SetParameters(0.09, 0.015, 2.);
       break;
 
@@ -4495,28 +4495,28 @@ Bool_t AliCaloPhotonCuts::SetTrackMatchingCut(Int_t trackMatching)
       case 4: //pT dependent for PCM-PHOS "default" selection
         if (!fUseDistTrackToCluster) fUseDistTrackToCluster=kTRUE;
         fUsePtDepTrackToCluster = 1;
-        fFuncPtDepEta = new TF1("func", "[1] + 1 / pow(x + pow(1 / ([0] - [1]), 1 / [2]), [2])");
+        fFuncPtDepEta = new TF1("funcEta4PHOS", "[1] + 1 / pow(x + pow(1 / ([0] - [1]), 1 / [2]), [2])");
         fFuncPtDepEta->SetParameters(0.05, 0.005, 3.0);
 
-        fFuncPtDepPhi = new TF1("func", "[1] + 1 / pow(x + pow(1 / ([0] - [1]), 1 / [2]), [2])");
+        fFuncPtDepPhi = new TF1("funcPhi4PHOS", "[1] + 1 / pow(x + pow(1 / ([0] - [1]), 1 / [2]), [2])");
         fFuncPtDepPhi->SetParameters(0.33, 0.005, 2.3);
         break;
       case 5: //pT dependent for PCM-PHOS tight selection
         if (!fUseDistTrackToCluster) fUseDistTrackToCluster=kTRUE;
         fUsePtDepTrackToCluster = 1;
-        fFuncPtDepEta = new TF1("func", "[1] + 1 / pow(x + pow(1 / ([0] - [1]), 1 / [2]), [2])");
+        fFuncPtDepEta = new TF1("funcEta5PHOS", "[1] + 1 / pow(x + pow(1 / ([0] - [1]), 1 / [2]), [2])");
         fFuncPtDepEta->SetParameters(0.025, 0.002, 3.0);
 
-        fFuncPtDepPhi = new TF1("func", "[1] + 1 / pow(x + pow(1 / ([0] - [1]), 1 / [2]), [2])");
+        fFuncPtDepPhi = new TF1("funcPhi5PHOS", "[1] + 1 / pow(x + pow(1 / ([0] - [1]), 1 / [2]), [2])");
         fFuncPtDepPhi->SetParameters(0.17, 0.005, 2.5);
         break;
       case 6: //pT dependent for PCM-PHOS loose selection
         if (!fUseDistTrackToCluster) fUseDistTrackToCluster=kTRUE;
         fUsePtDepTrackToCluster = 1;
-        fFuncPtDepEta = new TF1("func", "[1] + 1 / pow(x + pow(1 / ([0] - [1]), 1 / [2]), [2])");
+        fFuncPtDepEta = new TF1("funcEta6PHOS", "[1] + 1 / pow(x + pow(1 / ([0] - [1]), 1 / [2]), [2])");
         fFuncPtDepEta->SetParameters(0.07, 0.003, 2.5);
 
-        fFuncPtDepPhi = new TF1("func", "[1] + 1 / pow(x + pow(1 / ([0] - [1]), 1 / [2]), [2])");
+        fFuncPtDepPhi = new TF1("funcPhi6PHOS", "[1] + 1 / pow(x + pow(1 / ([0] - [1]), 1 / [2]), [2])");
         fFuncPtDepPhi->SetParameters(0.45, 0.010, 2.0);
         break;
       case 7: //
