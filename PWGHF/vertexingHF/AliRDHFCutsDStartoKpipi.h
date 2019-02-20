@@ -22,7 +22,7 @@ class AliRDHFCutsDStartoKpipi : public AliRDHFCuts
 
   AliRDHFCutsDStartoKpipi(const char* name="CutsDStartoKpipi");
   
-  virtual ~AliRDHFCutsDStartoKpipi(){}
+  virtual ~AliRDHFCutsDStartoKpipi();
 
   AliRDHFCutsDStartoKpipi(const AliRDHFCutsDStartoKpipi& source);
   AliRDHFCutsDStartoKpipi& operator=(const AliRDHFCutsDStartoKpipi& source); 
@@ -37,7 +37,9 @@ class AliRDHFCutsDStartoKpipi : public AliRDHFCuts
   Int_t IsD0FromDStarSelected(Double_t pt, TObject* obj,Int_t selectionLevel, AliAODEvent* aod) const;
   Int_t IsD0FromDStarSelected(Double_t pt, TObject* obj,Int_t selectionLevel) {return IsD0FromDStarSelected(pt,obj,selectionLevel,0);};
 
+  virtual Int_t PreSelect(TObjArray aodtracks);
   virtual Int_t IsSelectedPID(AliAODRecoDecayHF *rd);
+  Int_t IsSelectedPID(Double_t pt, TObjArray aodTracks);
   virtual Int_t SelectPID(AliAODTrack *track, Int_t type);
   virtual Bool_t IsInFiducialAcceptance(Double_t pt,Double_t y) const;
   Float_t GetMassCut(Int_t iPtBin=0) const { return (GetCuts() ? fCutsRD[GetGlobalIndex(9,iPtBin)] : 1.e6);} // for the Dstar

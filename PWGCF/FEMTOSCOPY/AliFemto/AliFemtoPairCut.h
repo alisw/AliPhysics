@@ -32,7 +32,11 @@ public:
   AliFemtoPairCut();                                 ///< default constructor. - Users should write their own
   AliFemtoPairCut(const AliFemtoPairCut& c);         ///< copy constructor
   virtual ~AliFemtoPairCut();                        ///< destructor
-  virtual AliFemtoPairCut* Clone() { return NULL; }  ///< Clones the object. The default implementation simply returns NULL
+  virtual AliFemtoPairCut* Clone() const { return NULL; }  ///< Clones the object. The default implementation simply returns NULL
+
+  /// Clones the object. The default implementation simply returns NULL
+  virtual AliFemtoPairCut* Clone()
+    { return const_cast<const AliFemtoPairCut*>(this)->Clone(); }
 
   AliFemtoPairCut& operator=(const AliFemtoPairCut &aCut);
 

@@ -80,7 +80,7 @@ using namespace std;            // std namespace: so you can do things like 'cou
 ClassImp(AliAnalysisTaskCorPIDTOFdiprot) // classimp: necessary for root
 
 AliAnalysisTaskCorPIDTOFdiprot::AliAnalysisTaskCorPIDTOFdiprot() : AliAnalysisTaskSE(), 
-fAOD(0), fOutputList(0), fPIDResponse(0),
+fAOD(0), fOutputList(0), fPIDResponse(0), fAnalysisUtils(0),
 
     fHistPt(0),                    //  1
     cent_ntracks(0),               //  2
@@ -110,21 +110,42 @@ fAOD(0), fOutputList(0), fPIDResponse(0),
     prot_phi_pt_pos(0),            // 20
     prot_phi_pt_neg(0),            // 21
     
-    prot_q2_pt_pos_pos(0),         // 22
-    prot_q2_pt_pos_neg(0),         // 23
-    prot_q2_pt_neg_neg(0),         // 24
+    prot_p0_pt_pos_pos(0),         // 22
+    prot_p0_pt_pos_neg(0),         // 23
+    prot_p0_pt_neg_neg(0),         // 24
     
     di_prot_phi_pt(0),             // 25
     trig_05_phi_pt(0),             // 26
     trig_08_phi_pt(0),             // 27
     
-    di_prot_dphi_q2_pos_pos_05(0), // 28
-    di_prot_dphi_q2_pos_neg_05(0), // 29
-    di_prot_dphi_q2_neg_neg_05(0), // 30
+    di_prot_dphi_p0_pos_pos_05(0), // 28
+    di_prot_dphi_p0_pos_neg_05(0), // 29
+    di_prot_dphi_p0_neg_neg_05(0), // 30
 
-    di_prot_dphi_q2_pos_pos_08(0), // 31
-    di_prot_dphi_q2_pos_neg_08(0), // 32
-    di_prot_dphi_q2_neg_neg_08(0)  // 33
+    di_prot_dphi_p0_pos_pos_08(0), // 31
+    di_prot_dphi_p0_pos_neg_08(0), // 32
+    di_prot_dphi_p0_neg_neg_08(0), // 33
+
+    di_prot_dphi_r02_pos_pos_05(0),// 34
+    di_prot_dphi_r02_pos_neg_05(0),// 35
+    di_prot_dphi_r02_neg_neg_05(0),// 36
+
+    di_prot_dphi_r02_pos_pos_08(0),// 37
+    di_prot_dphi_r02_pos_neg_08(0),// 38
+    di_prot_dphi_r02_neg_neg_08(0),// 39
+
+
+    di_prot_dphi_r04_pos_pos_05(0),// 40
+    di_prot_dphi_r04_pos_neg_05(0),// 41
+    di_prot_dphi_r04_neg_neg_05(0),// 42
+
+    di_prot_dphi_r04_pos_pos_08(0),// 43
+    di_prot_dphi_r04_pos_neg_08(0),// 44
+    di_prot_dphi_r04_neg_neg_08(0),// 45
+    
+    primary_vertex_z(0),           // 46
+    primary_vertex_z_cut1(0),      // 47
+    primary_vertex_z_cut2(0)       // 48
 
 //    track_cor_radius_pt(0),        // 34
 //    track_cor_radius_pt_cut(0)     // 35
@@ -134,7 +155,7 @@ fAOD(0), fOutputList(0), fPIDResponse(0),
 }
 //_____________________________________________________________________________
 AliAnalysisTaskCorPIDTOFdiprot::AliAnalysisTaskCorPIDTOFdiprot(const char* name) : AliAnalysisTaskSE(name),
-fAOD(0), fOutputList(0), fPIDResponse(0),
+fAOD(0), fOutputList(0), fPIDResponse(0), fAnalysisUtils(0),
 									   
 
     fHistPt(0),                    //  1
@@ -165,25 +186,44 @@ fAOD(0), fOutputList(0), fPIDResponse(0),
     prot_phi_pt_pos(0),            // 20
     prot_phi_pt_neg(0),            // 21
 
-    prot_q2_pt_pos_pos(0),         // 22
-    prot_q2_pt_pos_neg(0),         // 23
-    prot_q2_pt_neg_neg(0),         // 24
+    prot_p0_pt_pos_pos(0),         // 22
+    prot_p0_pt_pos_neg(0),         // 23
+    prot_p0_pt_neg_neg(0),         // 24
     
     di_prot_phi_pt(0),             // 25
     trig_05_phi_pt(0),             // 26
     trig_08_phi_pt(0),             // 27
     
-    di_prot_dphi_q2_pos_pos_05(0), // 28
-    di_prot_dphi_q2_pos_neg_05(0), // 29
-    di_prot_dphi_q2_neg_neg_05(0), // 30
+    di_prot_dphi_p0_pos_pos_05(0), // 28
+    di_prot_dphi_p0_pos_neg_05(0), // 29
+    di_prot_dphi_p0_neg_neg_05(0), // 30
 
-    di_prot_dphi_q2_pos_pos_08(0), // 31
-    di_prot_dphi_q2_pos_neg_08(0), // 32
-    di_prot_dphi_q2_neg_neg_08(0)  // 33
-									       
+    di_prot_dphi_p0_pos_pos_08(0), // 31
+    di_prot_dphi_p0_pos_neg_08(0), // 32
+    di_prot_dphi_p0_neg_neg_08(0), // 33
+
+    di_prot_dphi_r02_pos_pos_05(0),// 34
+    di_prot_dphi_r02_pos_neg_05(0),// 35
+    di_prot_dphi_r02_neg_neg_05(0),// 36
+
+    di_prot_dphi_r02_pos_pos_08(0),// 37
+    di_prot_dphi_r02_pos_neg_08(0),// 38
+    di_prot_dphi_r02_neg_neg_08(0),// 39
+
+
+    di_prot_dphi_r04_pos_pos_05(0),// 40
+    di_prot_dphi_r04_pos_neg_05(0),// 41
+    di_prot_dphi_r04_neg_neg_05(0),// 42
+
+    di_prot_dphi_r04_pos_pos_08(0),// 43
+    di_prot_dphi_r04_pos_neg_08(0),// 44
+    di_prot_dphi_r04_neg_neg_08(0),// 45										   
 //    track_cor_radius_pt(0),        // 34
 //    track_cor_radius_pt_cut(0)     // 35
-									       
+
+    primary_vertex_z(0),           // 46
+    primary_vertex_z_cut1(0),      // 47
+    primary_vertex_z_cut2(0)       // 48									       
 {
     // constructor
     DefineInput(0, TChain::Class());
@@ -193,6 +233,7 @@ fAOD(0), fOutputList(0), fPIDResponse(0),
 AliAnalysisTaskCorPIDTOFdiprot::~AliAnalysisTaskCorPIDTOFdiprot()
 {
     // destructor
+    if(fAnalysisUtils) delete fAnalysisUtils;
     if(fOutputList)
     {
         delete fOutputList;     // at the end of your task, it is deleted from memory by calling this function
@@ -222,7 +263,7 @@ void AliAnalysisTaskCorPIDTOFdiprot::UserCreateOutputObjects()
     prot_curves[1][1][3] = 0.000118412;
 
 
-
+    fAnalysisUtils = new AliAnalysisUtils;
     
     fOutputList = new TList();          // this is a list which will contain all of your histograms
                                         // at the end of the analysis, the contents of this list are written
@@ -270,22 +311,42 @@ void AliAnalysisTaskCorPIDTOFdiprot::UserCreateOutputObjects()
     prot_phi_pt_pos            = new TH2F("prot_phi_pt_pos",            "prot_phi_pt_pos",             800,       pt_binning,     300, -1.6708,  4.8124);   // 20
     prot_phi_pt_neg            = new TH2F("prot_phi_pt_neg",            "prot_phi_pt_neg",             800,       pt_binning,     300, -1.6708,  4.8124);   // 21
     
-    prot_q2_pt_pos_pos         = new TH2F("prot_q2_pt_pos_pos",         "prot_q2_pt_pos_pos",          800,       pt_binning,      76,    0.00,     3.8);   // 22
-    prot_q2_pt_pos_neg         = new TH2F("prot_q2_pt_pos_neg",         "prot_q2_pt_pos_neg",          800,       pt_binning,      76,    0.00,     3.8);   // 23
-    prot_q2_pt_neg_neg         = new TH2F("prot_q2_pt_neg_neg",         "prot_q2_pt_neg_neg",          800,       pt_binning,      76,    0.00,     3.8);   // 24
+    prot_p0_pt_pos_pos         = new TH2F("prot_p0_pt_pos_pos",         "prot_p0_pt_pos_pos",          800,       pt_binning,      76,    0.00,     3.8);   // 22
+    prot_p0_pt_pos_neg         = new TH2F("prot_p0_pt_pos_neg",         "prot_p0_pt_pos_neg",          800,       pt_binning,      76,    0.00,     3.8);   // 23
+    prot_p0_pt_neg_neg         = new TH2F("prot_p0_pt_neg_neg",         "prot_p0_pt_neg_neg",          800,       pt_binning,      76,    0.00,     3.8);   // 24
 
     di_prot_phi_pt             = new TH2F("di_prot_phi_pt",             "di_prot_phi_pt",              900,       pt_binning,     300, -1.6708,  4.8124);   // 25
     trig_05_phi_pt             = new TH2F("trig_05_phi_pt",             "trig_05_phi_pt",             1200,       pt_binning,     300, -1.6708,  4.8124);   // 26
     trig_08_phi_pt             = new TH2F("trig_08_phi_pt",             "trig_08_phi_pt",             1200,       pt_binning,     300, -1.6708,  4.8124);   // 27
     
-    di_prot_dphi_q2_pos_pos_05 = new TH2F("di_prot_dphi_q2_pos_pos_05", "di_prot_dphi_q2_pos_pos_05", 1100,       pt_binning,     300, -1.6708,  4.8124);   // 28
-    di_prot_dphi_q2_pos_neg_05 = new TH2F("di_prot_dphi_q2_pos_neg_05", "di_prot_dphi_q2_pos_neg_05", 1100,       pt_binning,     300, -1.6708,  4.8124);   // 29
-    di_prot_dphi_q2_neg_neg_05 = new TH2F("di_prot_dphi_q2_neg_neg_05", "di_prot_dphi_q2_neg_neg_05", 1100,       pt_binning,     300, -1.6708,  4.8124);   // 30
+    di_prot_dphi_p0_pos_pos_05 = new TH2F("di_prot_dphi_p0_pos_pos_05", "di_prot_dphi_p0_pos_pos_05", 1100,       pt_binning,     300, -1.6708,  4.8124);   // 28
+    di_prot_dphi_p0_pos_neg_05 = new TH2F("di_prot_dphi_p0_pos_neg_05", "di_prot_dphi_p0_pos_neg_05", 1100,       pt_binning,     300, -1.6708,  4.8124);   // 29
+    di_prot_dphi_p0_neg_neg_05 = new TH2F("di_prot_dphi_p0_neg_neg_05", "di_prot_dphi_p0_neg_neg_05", 1100,       pt_binning,     300, -1.6708,  4.8124);   // 30
     
-    di_prot_dphi_q2_pos_pos_08 = new TH2F("di_prot_dphi_q2_pos_pos_08", "di_prot_dphi_q2_pos_pos_08", 1100,       pt_binning,     300, -1.6708,  4.8124);   // 31
-    di_prot_dphi_q2_pos_neg_08 = new TH2F("di_prot_dphi_q2_pos_neg_08", "di_prot_dphi_q2_pos_neg_08", 1100,       pt_binning,     300, -1.6708,  4.8124);   // 32
-    di_prot_dphi_q2_neg_neg_08 = new TH2F("di_prot_dphi_q2_neg_neg_08", "di_prot_dphi_q2_neg_neg_08", 1100,       pt_binning,     300, -1.6708,  4.8124);   // 33
+    di_prot_dphi_p0_pos_pos_08 = new TH2F("di_prot_dphi_p0_pos_pos_08", "di_prot_dphi_p0_pos_pos_08", 1100,       pt_binning,     300, -1.6708,  4.8124);   // 31
+    di_prot_dphi_p0_pos_neg_08 = new TH2F("di_prot_dphi_p0_pos_neg_08", "di_prot_dphi_p0_pos_neg_08", 1100,       pt_binning,     300, -1.6708,  4.8124);   // 32
+    di_prot_dphi_p0_neg_neg_08 = new TH2F("di_prot_dphi_p0_neg_neg_08", "di_prot_dphi_p0_neg_neg_08", 1100,       pt_binning,     300, -1.6708,  4.8124);   // 33
     
+    di_prot_dphi_r02_pos_pos_05 = new TH1F("di_prot_dphi_r02_pos_pos_05", "di_prot_dphi_r02_pos_pos_05",       300, -1.6708,  4.8124);   // 34
+    di_prot_dphi_r02_pos_neg_05 = new TH1F("di_prot_dphi_r02_pos_neg_05", "di_prot_dphi_r02_pos_neg_05",       300, -1.6708,  4.8124);   // 35
+    di_prot_dphi_r02_neg_neg_05 = new TH1F("di_prot_dphi_r02_neg_neg_05", "di_prot_dphi_r02_neg_neg_05",       300, -1.6708,  4.8124);   // 36
+    
+    di_prot_dphi_r02_pos_pos_08 = new TH1F("di_prot_dphi_r02_pos_pos_08", "di_prot_dphi_r02_pos_pos_08",       300, -1.6708,  4.8124);   // 37
+    di_prot_dphi_r02_pos_neg_08 = new TH1F("di_prot_dphi_r02_pos_neg_08", "di_prot_dphi_r02_pos_neg_08",       300, -1.6708,  4.8124);   // 38
+    di_prot_dphi_r02_neg_neg_08 = new TH1F("di_prot_dphi_r02_neg_neg_08", "di_prot_dphi_r02_neg_neg_08",       300, -1.6708,  4.8124);   // 39
+
+    di_prot_dphi_r04_pos_pos_05 = new TH1F("di_prot_dphi_r04_pos_pos_05", "di_prot_dphi_r04_pos_pos_05",       300, -1.6708,  4.8124);   // 40
+    di_prot_dphi_r04_pos_neg_05 = new TH1F("di_prot_dphi_r04_pos_neg_05", "di_prot_dphi_r04_pos_neg_05",       300, -1.6708,  4.8124);   // 41
+    di_prot_dphi_r04_neg_neg_05 = new TH1F("di_prot_dphi_r04_neg_neg_05", "di_prot_dphi_r04_neg_neg_05",       300, -1.6708,  4.8124);   // 42
+    
+    di_prot_dphi_r04_pos_pos_08 = new TH1F("di_prot_dphi_r04_pos_pos_08", "di_prot_dphi_r04_pos_pos_08",       300, -1.6708,  4.8124);   // 43
+    di_prot_dphi_r04_pos_neg_08 = new TH1F("di_prot_dphi_r04_pos_neg_08", "di_prot_dphi_r04_pos_neg_08",       300, -1.6708,  4.8124);   // 44
+    di_prot_dphi_r04_neg_neg_08 = new TH1F("di_prot_dphi_r04_neg_neg_08", "di_prot_dphi_r04_neg_neg_08",       300, -1.6708,  4.8124);   // 45
+   
+    primary_vertex_z           = new TH1F("primary_vertex_z",           "primary_vertex_z",            400,  -20.0,   20.0);                              // 46
+    primary_vertex_z_cut1      = new TH1F("primary_vertex_z_cut1",      "primary_vertex_z_cut1",       400,  -20.0,   20.0);                              // 47
+    primary_vertex_z_cut2      = new TH1F("primary_vertex_z_cut2",      "primary_vertex_z_cut2",       400,  -20.0,   20.0);                              // 48
+
 //    track_cor_radius_pt        = new TH2F("track_cor_radius_pt",        "track_cor_radius_pt",         900,       pt_binning,     325,   -3.53,    3.53);   // 34
 //    track_cor_radius_pt_cut    = new TH2F("track_cor_radius_pt_cut",    "track_cor_radius_pt_cut",     900,       pt_binning,     325,   -3.53,    3.53);   // 35
     
@@ -319,22 +380,45 @@ void AliAnalysisTaskCorPIDTOFdiprot::UserCreateOutputObjects()
     fOutputList->Add(prot_phi_pt_pos);             // 20
     fOutputList->Add(prot_phi_pt_neg);             // 21
     
-    fOutputList->Add(prot_q2_pt_pos_pos);          // 22
-    fOutputList->Add(prot_q2_pt_pos_neg);          // 23
-    fOutputList->Add(prot_q2_pt_neg_neg);          // 24
+    fOutputList->Add(prot_p0_pt_pos_pos);          // 22
+    fOutputList->Add(prot_p0_pt_pos_neg);          // 23
+    fOutputList->Add(prot_p0_pt_neg_neg);          // 24
 
     fOutputList->Add(di_prot_phi_pt);              // 25
     fOutputList->Add(trig_05_phi_pt);              // 26
     fOutputList->Add(trig_08_phi_pt);              // 27
 
-    fOutputList->Add(di_prot_dphi_q2_pos_pos_05);  // 28
-    fOutputList->Add(di_prot_dphi_q2_pos_neg_05);  // 29
-    fOutputList->Add(di_prot_dphi_q2_neg_neg_05);  // 30
+    fOutputList->Add(di_prot_dphi_p0_pos_pos_05);  // 28
+    fOutputList->Add(di_prot_dphi_p0_pos_neg_05);  // 29
+    fOutputList->Add(di_prot_dphi_p0_neg_neg_05);  // 30
     
-    fOutputList->Add(di_prot_dphi_q2_pos_pos_08);  // 31
-    fOutputList->Add(di_prot_dphi_q2_pos_neg_08);  // 32
-    fOutputList->Add(di_prot_dphi_q2_neg_neg_08);  // 33
+    fOutputList->Add(di_prot_dphi_p0_pos_pos_08);  // 31
+    fOutputList->Add(di_prot_dphi_p0_pos_neg_08);  // 32
+    fOutputList->Add(di_prot_dphi_p0_neg_neg_08);  // 33
 
+    
+    fOutputList->Add(di_prot_dphi_r02_pos_pos_05); // 34
+    fOutputList->Add(di_prot_dphi_r02_pos_neg_05); // 35
+    fOutputList->Add(di_prot_dphi_r02_neg_neg_05); // 36
+    
+    fOutputList->Add(di_prot_dphi_r02_pos_pos_08); // 37
+    fOutputList->Add(di_prot_dphi_r02_pos_neg_08); // 38
+    fOutputList->Add(di_prot_dphi_r02_neg_neg_08); // 39
+
+    fOutputList->Add(di_prot_dphi_r04_pos_pos_05); // 40
+    fOutputList->Add(di_prot_dphi_r04_pos_neg_05); // 41
+    fOutputList->Add(di_prot_dphi_r04_neg_neg_05); // 42
+    
+    fOutputList->Add(di_prot_dphi_r04_pos_pos_08); // 43
+    fOutputList->Add(di_prot_dphi_r04_pos_neg_08); // 44
+    fOutputList->Add(di_prot_dphi_r04_neg_neg_08); // 45
+
+
+    
+    fOutputList->Add(primary_vertex_z);            // 46
+    fOutputList->Add(primary_vertex_z_cut1);       // 47
+    fOutputList->Add(primary_vertex_z_cut2);       // 48
+    
 //    fOutputList->Add(track_cor_radius_pt);         // 34
 //    fOutputList->Add(track_cor_radius_pt_cut);     // 35
        
@@ -373,7 +457,13 @@ void AliAnalysisTaskCorPIDTOFdiprot::UserExec(Option_t *)
     
     ///////////////////////////////////////////////////////////////////////////////////////////////////
 
+    const AliAODVertex *primVertex = fAOD->GetPrimaryVertex();
+    Double_t pv = primVertex->GetZ();                             primary_vertex_z->Fill(pv);
+    
+    if(!fAnalysisUtils->IsVertexSelected2013pA(fAOD)) return;     primary_vertex_z_cut1->Fill(pv);
 
+    if(fAnalysisUtils->IsPileUpSPD(fAOD)) return;                 primary_vertex_z_cut2->Fill(pv);
+    
 
     int prot_track_num[20];    
     int prot_count              = 0;
@@ -397,7 +487,7 @@ void AliAnalysisTaskCorPIDTOFdiprot::UserExec(Option_t *)
         AliAODTrack* track = static_cast<AliAODTrack*>(fAOD->GetTrack(i));
         if(!track)                                                                      {    continue;    }
 	if(!(track->IsHybridGlobalConstrainedGlobal()))                                 {    continue;    }
-	Float_t eta = track->Eta();	if(TMath::Abs(eta) > 0.8)                       {    continue;    }
+	Float_t eta = track->Eta();	if(TMath::Abs(eta) > 0.9)                       {    continue;    }
 	if(!track->IsPrimaryCandidate())                                                {    continue;    }
 	Double_t nsigmaTPC = 999.0;	Double_t nsigmaTOF = 999.0;
 	AliPIDResponse::EDetPidStatus statusTPC = fPIDResponse->NumberOfSigmas(AliPIDResponse::kTPC, track, (AliPID::EParticleType) 0, nsigmaTPC);
@@ -576,7 +666,7 @@ void AliAnalysisTaskCorPIDTOFdiprot::UserExec(Option_t *)
 		Float_t py_A        = trackA->Py();
 		Float_t pz_A        = trackA->Pz();
 		Float_t phi_A       = trackA->Phi();
-//		Float_t eta_A       = trackA->Eta();
+		Float_t eta_A       = trackA->Eta();
 		Short_t charge_A    = trackA->Charge();
 
 		for(int k=j+1; k<prot_count; k++)
@@ -589,11 +679,11 @@ void AliAnalysisTaskCorPIDTOFdiprot::UserExec(Option_t *)
 		    Float_t py_B        = trackB->Py();
 		    Float_t pz_B        = trackB->Pz();
 		    Float_t phi_B       = trackB->Phi();
-//		    Float_t eta_B       = trackB->Eta();
+		    Float_t eta_B       = trackB->Eta();
 		    Short_t charge_B    = trackB->Charge();
 //		    cout<<i<<j<<k<<" ";
 
-		    Float_t Q2 = 0.00;	    Q2 = pow(px_A - px_B,2)  +  pow(py_A - py_B,2)  +  pow(pz_A - pz_B,2);
+		    Float_t P0 = 0.00;	    P0 = pow(px_A - px_B,2)  +  pow(py_A - py_B,2)  +  pow(pz_A - pz_B,2);
 
 
 		    Float_t Sx = px_A + px_B;
@@ -612,24 +702,45 @@ void AliAnalysisTaskCorPIDTOFdiprot::UserExec(Option_t *)
 
 		    if(charge_A > 0)
 		    {
-			if     (charge_B > 0){    di_prot_dphi_q2_pos_pos_05->Fill(Q2, Sdphi);		}
-			else if(charge_B < 0){    di_prot_dphi_q2_pos_neg_05->Fill(Q2, Sdphi);		}
+			if     (charge_B > 0)
+			{
+			    di_prot_dphi_p0_pos_pos_05->Fill(P0, Sdphi);
+			    if(sqrt(pow(eta_A - eta_B,2) + pow(phi_A - phi_B,2)) < 0.2){    di_prot_dphi_r02_pos_pos_05->Fill(Sdphi);	}
+			    if(sqrt(pow(eta_A - eta_B,2) + pow(phi_A - phi_B,2)) < 0.4){    di_prot_dphi_r04_pos_pos_05->Fill(Sdphi);	}
+			}
+			else if(charge_B < 0)
+			{
+			    di_prot_dphi_p0_pos_neg_05->Fill(P0, Sdphi);
+			    if(sqrt(pow(eta_A - eta_B,2) + pow(phi_A - phi_B,2)) < 0.2){    di_prot_dphi_r02_pos_neg_05->Fill(Sdphi);	}
+			    if(sqrt(pow(eta_A - eta_B,2) + pow(phi_A - phi_B,2)) < 0.4){    di_prot_dphi_r04_pos_neg_05->Fill(Sdphi);	}			    
+			}
+
 		    }
 		    else if(charge_A < 0)
 		    {
-			if     (charge_B > 0){    di_prot_dphi_q2_pos_neg_05->Fill(Q2, Sdphi);		}
-			else if(charge_B < 0){    di_prot_dphi_q2_neg_neg_05->Fill(Q2, Sdphi);		}
+			if     (charge_B > 0)
+			{
+			    di_prot_dphi_p0_pos_neg_05->Fill(P0, Sdphi);
+			    if(sqrt(pow(eta_A - eta_B,2) + pow(phi_A - phi_B,2)) < 0.2){    di_prot_dphi_r02_pos_neg_05->Fill(Sdphi);	}
+			    if(sqrt(pow(eta_A - eta_B,2) + pow(phi_A - phi_B,2)) < 0.4){    di_prot_dphi_r04_pos_neg_05->Fill(Sdphi);	}			    
+			}
+			else if(charge_B < 0)
+			{
+			    di_prot_dphi_p0_neg_neg_05->Fill(P0, Sdphi);
+			    if(sqrt(pow(eta_A - eta_B,2) + pow(phi_A - phi_B,2)) < 0.2){    di_prot_dphi_r02_neg_neg_05->Fill(Sdphi);	}
+			    if(sqrt(pow(eta_A - eta_B,2) + pow(phi_A - phi_B,2)) < 0.4){    di_prot_dphi_r04_neg_neg_05->Fill(Sdphi);	}  
+			}
 		    }
 
 		    if(charge_A > 0  &&  i == 0)
 		    {
-			if     (charge_B > 0){    prot_q2_pt_pos_pos->Fill(PT, Q2);    	}
-			else if(charge_B < 0){    prot_q2_pt_pos_neg->Fill(PT, Q2);    	}
+			if     (charge_B > 0){    prot_p0_pt_pos_pos->Fill(PT, P0);    	}
+			else if(charge_B < 0){    prot_p0_pt_pos_neg->Fill(PT, P0);    	}
 		    }
 		    else if(charge_A < 0  &&  i == 0)
 		    {
-			if     (charge_B > 0){    prot_q2_pt_pos_neg->Fill(PT, Q2);     }
-			else if(charge_B < 0){    prot_q2_pt_neg_neg->Fill(PT, Q2);    	}
+			if     (charge_B > 0){    prot_p0_pt_pos_neg->Fill(PT, P0);     }
+			else if(charge_B < 0){    prot_p0_pt_neg_neg->Fill(PT, P0);    	}
 		    }
 		    
 		}	
@@ -677,6 +788,7 @@ void AliAnalysisTaskCorPIDTOFdiprot::UserExec(Option_t *)
 		Float_t py_A        = trackA->Py();
 		Float_t pz_A        = trackA->Pz();
 		Float_t phi_A       = trackA->Phi();
+		Float_t eta_A       = trackA->Eta();
 		Short_t charge_A    = trackA->Charge();
 
 		for(int k=j+1; k<prot_count; k++)
@@ -688,10 +800,11 @@ void AliAnalysisTaskCorPIDTOFdiprot::UserExec(Option_t *)
 		    Float_t py_B        = trackB->Py();
 		    Float_t pz_B        = trackB->Pz();
 		    Float_t phi_B       = trackB->Phi();
+		    Float_t eta_B       = trackB->Eta();
 		    Short_t charge_B    = trackB->Charge();
 //		    cout<<i<<j<<k<<" ";
 
-		    Float_t Q2 = 0.00;	    Q2 = pow(px_A - px_B,2)  +  pow(py_A - py_B,2)  +  pow(pz_A - pz_B,2);
+		    Float_t P0 = 0.00;	    P0 = pow(px_A - px_B,2)  +  pow(py_A - py_B,2)  +  pow(pz_A - pz_B,2);
 
 
 		    Float_t Sx = px_A + px_B;
@@ -710,13 +823,33 @@ void AliAnalysisTaskCorPIDTOFdiprot::UserExec(Option_t *)
 
 		    if(charge_A > 0)
 		    {
-			if     (charge_B > 0){    di_prot_dphi_q2_pos_pos_08->Fill(Q2, Sdphi);		}
-			else if(charge_B < 0){    di_prot_dphi_q2_pos_neg_08->Fill(Q2, Sdphi);		}
+			if     (charge_B > 0)
+			{
+			    di_prot_dphi_p0_pos_pos_08->Fill(P0, Sdphi);
+			    if(sqrt(pow(eta_A - eta_B,2) + pow(phi_A - phi_B,2)) < 0.2){    di_prot_dphi_r02_pos_pos_08->Fill(Sdphi);	}
+			    if(sqrt(pow(eta_A - eta_B,2) + pow(phi_A - phi_B,2)) < 0.4){    di_prot_dphi_r04_pos_pos_08->Fill(Sdphi);	}
+			}
+			else if(charge_B < 0)
+			{
+			    di_prot_dphi_p0_pos_neg_08->Fill(P0, Sdphi);
+			    if(sqrt(pow(eta_A - eta_B,2) + pow(phi_A - phi_B,2)) < 0.2){    di_prot_dphi_r02_pos_neg_08->Fill(Sdphi);	}
+			    if(sqrt(pow(eta_A - eta_B,2) + pow(phi_A - phi_B,2)) < 0.4){    di_prot_dphi_r04_pos_neg_08->Fill(Sdphi);	}
+			}
 		    }
 		    else if(charge_A < 0)
 		    {
-			if     (charge_B > 0){    di_prot_dphi_q2_pos_neg_08->Fill(Q2, Sdphi);		}
-			else if(charge_B < 0){    di_prot_dphi_q2_neg_neg_08->Fill(Q2, Sdphi);		}
+			if     (charge_B > 0)
+			{
+			    di_prot_dphi_p0_pos_neg_08->Fill(P0, Sdphi);
+			    if(sqrt(pow(eta_A - eta_B,2) + pow(phi_A - phi_B,2)) < 0.2){    di_prot_dphi_r02_pos_neg_08->Fill(Sdphi);	}
+			    if(sqrt(pow(eta_A - eta_B,2) + pow(phi_A - phi_B,2)) < 0.4){    di_prot_dphi_r04_pos_neg_08->Fill(Sdphi);	}
+			}
+			else if(charge_B < 0)
+			{
+			    di_prot_dphi_p0_neg_neg_08->Fill(P0, Sdphi);
+			    if(sqrt(pow(eta_A - eta_B,2) + pow(phi_A - phi_B,2)) < 0.2){    di_prot_dphi_r02_neg_neg_08->Fill(Sdphi);	}
+			    if(sqrt(pow(eta_A - eta_B,2) + pow(phi_A - phi_B,2)) < 0.4){    di_prot_dphi_r04_neg_neg_08->Fill(Sdphi);	}
+			}
 		    }
 
 		    
@@ -792,9 +925,9 @@ void AliAnalysisTaskCorPIDTOFdiprot::UserExec(Option_t *)
 
 
 	    
-	    Float_t Q2 = 0.00;	    Q2 = pow(prot_px_A - prot_px_B,2)  +  pow(prot_py_A - prot_py_B,2)  +  pow(prot_pz_A - prot_pz_B,2);
+	    Float_t P0 = 0.00;	    P0 = pow(prot_px_A - prot_px_B,2)  +  pow(prot_py_A - prot_py_B,2)  +  pow(prot_pz_A - prot_pz_B,2);
 
-	    Float_t Q  = 0.00;	    Q  = sqrt(Q2);
+	    Float_t Q  = 0.00;	    Q  = sqrt(P0);
 	    Float_t Sx = prot_px_A + prot_px_B;
 	    Float_t Sy = prot_py_A + prot_py_B;
 

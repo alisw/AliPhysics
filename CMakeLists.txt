@@ -238,6 +238,9 @@ else()
   # FastJet
   find_package(FASTJET)
 
+  # RooUnfold
+  find_package(RooUnfold)
+
   # ZEROMQ
   find_package(ZeroMQ)
 
@@ -277,6 +280,11 @@ else()
   add_subdirectory(PWGPP)
   add_subdirectory(PWGUD)
   add_subdirectory(PWGMM)
+
+  # Transition to Run3
+  if(ROOT_VERSION_MAJOR EQUAL 6)
+    add_subdirectory(RUN3)
+  endif()
 
   # List modules with PARfiles
   string(REPLACE ";" " " ALIPARFILES_FLAT "${ALIPARFILES}")

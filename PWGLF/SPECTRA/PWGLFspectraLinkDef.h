@@ -1,6 +1,9 @@
 #ifdef __CINT__
 
+#pragma link C++ class AliMultDepSpecAnalysisTask+;
 #pragma link C++ class AliMeanPtAnalysisTask+;
+#pragma link C++ class AlidNdPtHelper+;
+#pragma link C++ class AliAnalysisTaskCutTest+;
 #pragma link C++ class AlidNdPtUnifiedAnalysisTask+;
 #pragma link C++ class AliAnalysisTaskMeanPtRaw+;
 #pragma link C++ class AliAnalysisTaskPPvsMultINEL0+;
@@ -27,6 +30,8 @@
 #pragma link C++ class AlimPtMatrixZDC+;
 #pragma link C++ class AliAnalysisTaskSEITSsaSpectra+;
 #pragma link C++ class AliAnalysisTaskQAHighPtDeDxTest+;
+#pragma link C++ class AliAnalysisTaskPPvsMult+;
+#pragma link C++ class AliAnalysisTaskSpherocity+;
 #pragma link C++ class AliAnalysisCombinedHadronSpectra+;
 #pragma link C++ class AliAnalysisTPCTOFpA+;
 #pragma link C++ class TOFSpectrappAnalysis+;
@@ -70,7 +75,9 @@
 #pragma link C++ class AliAnalysisPIDParticle+;
 #pragma link C++ class AliAnalysisPIDTrack+;
 #pragma link C++ class AliAnalysisPIDV0+;
+#pragma link C++ class AliAnalysisPIDCascade+;
 #pragma link C++ class AliAnalysisTaskTPCTOFPID+;
+#pragma link C++ class AliAnalysisTaskTPCTOFCascade+;
 
 #pragma link C++ class AliAnalysisTaskSEITSsaSpectraMultiplicity+;
 
@@ -108,4 +115,7 @@
 #pragma link C++ class AliAnalysisTaskProtonAbsorbtion+;
 // spherocity analysis
 #pragma link C++ class AliTransverseEventShape+;
+#pragma link C++ class AliSpherocityUtils+;
+// lightweight class for spherocity estimation, used in 13TeV pp
+#pragma link C++ class AliSpherocityEstimator+;
 #endif

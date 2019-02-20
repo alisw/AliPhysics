@@ -13,25 +13,31 @@
 
 #if !defined(__CINT__) || defined(__MAKECINT__)
 
+// ROOT
 #include <TString.h>
 #include <TSystem.h>
 #include <TROOT.h>
 
-#include "AliCaloTrackESDReader.h"
-#include "AliCaloTrackAODReader.h"
-#include "AliCalorimeterUtils.h"
-#include "AliAnalysisTaskCaloTrackCorrelation.h"
-#include "AliAnaCaloTrackCorrMaker.h"
+// AliPhysics
 #include "AliAnalysisManager.h"
 #include "AliInputEventHandler.h"
 #include "AliVTrack.h"
 #include "AliAODTrack.h"
 #include "AliESDtrack.h"
-#include "ConfigureAndGetEventTriggerMaskAndCaloTriggerString.C"
 #include "AliESDtrackCuts.h"
-#include "CreateTrackCutsPWGJE.C"
-#include "GetAlienGlobalProductionVariables.C"
-#include "CheckActiveEMCalTriggerPerPeriod.C"
+
+// CaloTrackCorrelations frame
+#include "AliCaloTrackESDReader.h"
+#include "AliCaloTrackAODReader.h"
+#include "AliCalorimeterUtils.h"
+#include "AliAnalysisTaskCaloTrackCorrelation.h"
+#include "AliAnaCaloTrackCorrMaker.h"
+
+// Macros
+R__ADD_INCLUDE_PATH($ALICE_PHYSICS)
+#include "PWGGA/CaloTrackCorrelations/macros/ConfigureAndGetEventTriggerMaskAndCaloTriggerString.C"
+#include "PWGJE/macros/CreateTrackCutsPWGJE.C"
+#include "PWGGA/CaloTrackCorrelations/macros/CheckActiveEMCalTriggerPerPeriod.C"
 
 #endif
 
@@ -278,7 +284,7 @@ void ConfigureTrackCuts ( AliCaloTrackReader* reader,
   reader->SetCTSPtMin(0.2);
   reader->SetCTSPtMax(1000);
   
-  reader->GetFiducialCut()->SetSimpleCTSFiducialCut(0.8, 0, 360) ;
+  reader->GetFiducialCut()->SetSimpleCTSFiducialCut(0.9, 0, 360) ;
   
   reader->SwitchOffUseTrackTimeCut();
   reader->SetTrackTimeCut(0,50);
@@ -290,8 +296,10 @@ void ConfigureTrackCuts ( AliCaloTrackReader* reader,
   
   if ( inputDataType == "ESD" )
   {
+#if defined(__CINT__)
     gROOT->LoadMacro("$ALICE_PHYSICS/PWGJE/macros/CreateTrackCutsPWGJE.C");
-    
+#endif
+
     //AliESDtrackCuts * esdTrackCuts = CreateTrackCutsPWGJE(10041004);
     //reader->SetTrackCuts(esdTrackCuts);
     
@@ -653,7 +661,10 @@ AliAnalysisTaskCaloTrackCorrelation * AddTaskCaloTrackCorrBase
   // Do not configure the wagon for certain analysis combinations
   // But create the task so that the sub-wagon train can run
   //
+#if defined(__CINT__)
   gROOT->LoadMacro("$ALICE_PHYSICS/PWGGA/CaloTrackCorrelations/macros/CheckActiveEMCalTriggerPerPeriod.C");
+#endif
+
   Bool_t doAnalysis = CheckActiveEMCalTriggerPerPeriod(simulation,trigger,period,year);
   
   if ( doAnalysis && calorimeter == "DCAL" && year < 2015 ) doAnalysis = kFALSE;
@@ -700,14 +711,20 @@ AliAnalysisTaskCaloTrackCorrelation * AddTaskCaloTrackCorrBase
   {
     // Calculate the cross section weights, apply them to all histograms 
     // and fill xsec and trial histo. Sumw2 must be activated.
-    //maker->GetReader()->GetWeightUtils()->SwitchOnMCCrossSectionCalculation(); 
-    //maker->SwitchOnSumw2Histograms();
+    if ( cutsString.Contains("MCWeight") )
+    {
+      maker->GetReader()->GetWeightUtils()->SwitchOnMCCrossSectionCalculation(); 
+      maker->SwitchOnSumw2Histograms();
+    }
+    else
+    {
+      // Just fill cross section and trials histograms.
+      maker->GetReader()->GetWeightUtils()->SwitchOnMCCrossSectionHistoFill();
+    }
     
     // For recent productions where the cross sections and trials are not stored in separate file
-    //maker->GetReader()->GetWeightUtils()->SwitchOnMCCrossSectionFromEventHeader() ;
-    
-    // Just fill cross section and trials histograms.
-    maker->GetReader()->GetWeightUtils()->SwitchOnMCCrossSectionHistoFill(); 
+    if ( cutsString.Contains("MCEvtHeadW") )
+      maker->GetReader()->GetWeightUtils()->SwitchOnMCCrossSectionFromEventHeader() ;
     
     // For productions where the cross sections and trials are not stored in separate file
     TString prodType = gSystem->Getenv("ALIEN_JDL_LPMPRODUCTIONTYPE");
@@ -720,6 +737,9 @@ AliAnalysisTaskCaloTrackCorrelation * AddTaskCaloTrackCorrBase
     
     // Add control histogram with pT hard to control aplication of weights 
     maker->SwitchOnPtHardHistogram();
+    
+    // Apply particle pT weights
+    //maker->SwitchOnMCParticlePtWeights();
   }
   
   if ( printSettings ) maker->Print("");
@@ -732,7 +752,10 @@ AliAnalysisTaskCaloTrackCorrelation * AddTaskCaloTrackCorrBase
   maker->GetReader()->SwitchOnEventTriggerAtSE(); // on is default case
   if ( !simulation )
   {
+#if defined(__CINT__)
     gROOT->LoadMacro("$ALICE_PHYSICS/PWGGA/CaloTrackCorrelations/macros/ConfigureAndGetEventTriggerMaskAndCaloTriggerString.C");
+#endif
+
     TString caloTriggerString = "";
     UInt_t mask = ConfigureAndGetEventTriggerMaskAndCaloTriggerString(trigger, year, caloTriggerString);
 

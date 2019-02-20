@@ -7,13 +7,13 @@ TChain *MakeAODInputChain(const char* collectionfileAOD,
   // Origin: A.Rossi, andrea.rossi@ts.infn.it
   //
 
-  TAlienCollection *collectionAOD       = TAlienCollection::Open(collectionfileAOD);
+  TGridCollection *collectionAOD = gGrid->OpenCollection(dataset);
   TGridResult *tagResultAOD = collectionAOD->GetGridResult("",0,0);
   TChain *chainAOD = new TChain("aodTree");
   TChain *chainAODfriend = new TChain("aodTree");
   Int_t nmaxentr;
   if(collectionfileAODfriend!="none"){
-    TAlienCollection *collectionAODfriend = TAlienCollection::Open(collectionfileAODfriend);
+    TGridCollection *collectionAODfrined = gGrid->OpenCollection(dataset);
     TGridResult *tagResultAODFriend = collectionAODfriend->GetGridResult("",0,0);
     //  tagResultAOD->Print();
     TMap *mappa;
@@ -185,7 +185,7 @@ TFileCollection* MakeRootArchFileCollection(const char* collectionfileAOD,
   // Origin: A.Rossi, andrea.rossi@ts.infn.it
   //
   
-  TAlienCollection *collectionAOD       = TAlienCollection::Open(collectionfileAOD);
+  TGridCollection *collectionAOD = gGrid->OpenCollection(collectionfileAOD);
   TGridResult *tagResultAOD = collectionAOD->GetGridResult("",0,0);
 
   Int_t nmaxentr;

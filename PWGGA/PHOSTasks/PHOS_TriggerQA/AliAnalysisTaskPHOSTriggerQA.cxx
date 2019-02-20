@@ -35,26 +35,19 @@ ClassImp(AliAnalysisTaskPHOSTriggerQA)
 
 //________________________________________________________________________
 AliAnalysisTaskPHOSTriggerQA::AliAnalysisTaskPHOSTriggerQA() : AliAnalysisTaskSE(),
-  fOutputContainer(0),fPHOSGeo(0),fEventCounter(0),fL1Threshold(-1)
+  fOutputContainer(0),fEventCounter(0),fL1Threshold(-1)
 {
   //Default constructor.  
-  // Initialize the PHOS geometry 
-  fPHOSGeo = AliPHOSGeometry::GetInstance("IHEP") ;
-  
 }
 
 //________________________________________________________________________
 AliAnalysisTaskPHOSTriggerQA::AliAnalysisTaskPHOSTriggerQA(const char *name, Int_t L1_threshold) 
 : AliAnalysisTaskSE(name),
-  fOutputContainer(0),fPHOSGeo(0),fEventCounter(0),fL1Threshold(L1_threshold)
+  fOutputContainer(0),fEventCounter(0),fL1Threshold(L1_threshold)
 {
   
   // Output slots #0 write into a TH1 container
   DefineOutput(1,TList::Class());
-
-  // Initialize the PHOS geometry
-  fPHOSGeo = AliPHOSGeometry::GetInstance("IHEP") ;
-
 }
 
 //________________________________________________________________________
@@ -141,6 +134,17 @@ void AliAnalysisTaskPHOSTriggerQA::UserExec(Option_t *)
   // Analyze ESD/AOD  
   
   AliVEvent *event = InputEvent();
+  AliPHOSGeometry *PHOSGeo = AliPHOSGeometry::GetInstance();
+
+  if (!PHOSGeo)
+  {
+      AliInfo("PHOS geometry not initialized, initializing it for you");
+
+      if(event->GetRunNumber() < 224994)
+        PHOSGeo = AliPHOSGeometry::GetInstance("IHEP"); // Run1 geometry
+      else
+        PHOSGeo = AliPHOSGeometry::GetInstance("Run2");
+  }
   
   if (!event) {
     Printf("ERROR: Could not retrieve event");
@@ -158,8 +162,8 @@ void AliAnalysisTaskPHOSTriggerQA::UserExec(Option_t *)
     FillHistogram("hNev",1.); // triggered events
   
   TString trigClasses = event->GetFiredTriggerClasses();
-  printf("\nEvent %d: %d non-zero trigger digits %s\n",
-	 fEventCounter,trgESD->GetEntries(),trigClasses.Data());
+  // printf("\nEvent %d: %d non-zero trigger digits %s\n",
+	 // fEventCounter,trgESD->GetEntries(),trigClasses.Data());
 
   // Get PHOS rotation matrices from ESD and set them to the PHOS geometry
   char key[55] ;  
@@ -167,7 +171,7 @@ void AliAnalysisTaskPHOSTriggerQA::UserExec(Option_t *)
   if(fEventCounter == 0) {
     for(Int_t mod=0; mod<5; mod++) {
       if(!event->GetPHOSMatrix(mod)) continue;
-      fPHOSGeo->SetMisalMatrix(event->GetPHOSMatrix(mod),mod) ;
+      PHOSGeo->SetMisalMatrix(event->GetPHOSMatrix(mod),mod) ;
     }
   }
   
@@ -190,7 +194,7 @@ void AliAnalysisTaskPHOSTriggerQA::UserExec(Option_t *)
     trgESD->GetPosition(tmod,tabsId);
     
     Int_t trelid[4] ;
-    fPHOSGeo->AbsToRelNumbering(tabsId,trelid);
+    PHOSGeo->AbsToRelNumbering(tabsId,trelid);
 
     snprintf(key,55,"h4x4SM%d",trelid[0]);
     FillHistogram(key,trelid[2]-1,trelid[3]-1);
@@ -211,7 +215,7 @@ void AliAnalysisTaskPHOSTriggerQA::UserExec(Option_t *)
       Int_t maxId, relid[4];
       MaxEnergyCellPos(phsCells,c1,maxId);
       
-      fPHOSGeo->AbsToRelNumbering(maxId, relid);
+      PHOSGeo->AbsToRelNumbering(maxId, relid);
       snprintf(key,55,"hPhotAllSM%d",relid[0]);
       FillHistogram(key,c1->E());
 

@@ -77,57 +77,62 @@ class AliAnalysisTaskEMCALPhotonIsolation: public AliAnalysisTaskEmcal {
   void                         UserCreateOutputObjects();
   virtual AliHistogramRanges * GetHistogramRangesAndBinning()                                               { if(!fHistoRangeContainer) fHistoRangeContainer = new AliHistogramRanges(); return fHistoRangeContainer; }
   
-  void                         SetMinClusterEnergy         ( Float_t minE                                 ) { fMinClusterEnergy = minE ;                                }
-  void                         SetIsoConeRadius            ( Float_t r                                    ) { fIsoConeRadius = r ;                                      }
-  void                         SetEtIsoThreshold           ( Float_t r                                    ) { fEtIsoThreshold = r ;                                     }
-  void                         SetCTMdeltaEta              ( Float_t r                                    ) { fdetacut = r ;                                            }
-  void                         SetCTMdeltaPhi              ( Float_t r                                    ) { fdphicut = r ;                                            }
-  void                         SetCTMdeltaEtaIso           ( Float_t r                                    ) { fdetacutIso = r ;                                         }
-  void                         SetCTMdeltaPhiIso           ( Float_t r                                    ) { fdphicutIso = r ;                                         }
-  void                         SetIsoMethod                ( Int_t   r                                    ) { fIsoMethod = r ;                                          }
-  void                         SetEtIsoMethod              ( Int_t   r                                    ) { fEtIsoMethod = r ;                                        }
-  void                         SetUEMethod                 ( Int_t   UE                                   ) { fUEMethod = UE;                                           }
-  void                         SetOutputFormat             ( Int_t   iOut                                 ) { fWho = iOut;                                              }
-  void                         SetQA                       ( Bool_t  QA                                   ) { fQA = QA;                                                 }
-  void                         SetMC                       ( Bool_t  MC                                   ) { fIsMC = MC;                                               }
-  void                         SetUSEofTPC                 ( Bool_t  TPC                                  ) { fTPC4Iso = TPC;                                           }
-  void                         SetLCAnalysis               ( Bool_t  LC                                   ) { fisLCAnalysis = LC;                                       }
-  void                         SetNLMCut                   ( Bool_t  isNLMCut, Int_t NLMCut, Int_t NLMmin ) { fIsNLMCut = isNLMCut; fNLMCut = NLMCut; fNLMmin = NLMmin; }
-  void                         SetSmearForClusters         ( Int_t   whichNLM                             ) { fWhich = whichNLM;                                        }
-  void                         SetTMClusterRejection       ( Bool_t  tm                                   ) { fTMClusterRejected = tm;                                  }
-  void                         SetTMClusterRejectioninCone ( Bool_t  tm                                   ) { fTMClusterInConeRejected = tm;                            }
-  void                         SetRejectEventWithoutTracks ( Bool_t  revwotr                              ) { fRejectionEventWithoutTracks = revwotr;                   }
-  void                         SetAnalysispPb              ( Bool_t  ana                                  ) { fAnalysispPb = ana;                                       }
-  void                         SetTriggerLevel1            ( Int_t   L                                    ) { fTriggerLevel1 = L;                                       }
-  void                         SetM02Smearing              ( Bool_t  smear                                ) { fSSsmearing = smear;                                      }
-  void                         SetWidth4Smear              ( Float_t width                                ) { fSSsmearwidth = width;                                    }
-  void                         SetMean4Smear               ( Float_t mean                                 ) { fSSsmear_mean = mean;                                     }
-  void                         SetExtraIsoCuts             ( Bool_t  bExtraIsoCuts                        ) { fExtraIsoCuts = bExtraIsoCuts;                            }
-  void			       SetPtBinning                ( vector<Double_t> binedges                    ) { fBinsPt = binedges;                                       }
-  void			       SetM02Binning               ( vector<Double_t> binedges                    ) { fBinsM02 = binedges;                                      }
-  void			       SetEtisoBinning             ( vector<Double_t> binedges                    ) { fBinsEtiso = binedges;                                    }
-  void			       SetEtueBinning              ( vector<Double_t> binedges                    ) { fBinsEtue = binedges;                                     }
-  void			       SetEtaBinning               ( vector<Double_t> binedges                    ) { fBinsEta = binedges;                                      }
-  void			       SetPhiBinning               ( vector<Double_t> binedges                    ) { fBinsPhi = binedges;                                      }
-  void			       SetLabelBinning             ( vector<Double_t> binedges                    ) { fBinsLabel = binedges;                                    }
-  void			       SetPDGBinning               ( vector<Double_t> binedges                    ) { fBinsPDG = binedges;                                      }
-  void			       SetMomPDGBinning            ( vector<Double_t> binedges                    ) { fBinsMomPDG = binedges;                                   }
-  void			       SetClustPDGBinning          ( vector<Double_t> binedges                    ) { fBinsClustPDG = binedges;                                 }
-  void			       SetDxBinning                ( vector<Double_t> binedges                    ) { fBinsDx = binedges;                                       }
-  void			       SetDzBinning                ( vector<Double_t> binedges                    ) { fBinsDz = binedges;                                       }
-  void			       SetDecayBinning             ( vector<Double_t> binedges                    ) { fBinsDecay = binedges;                                    }
-  void                         SetMCtruth                  ( Bool_t  mctruth                              ) { fMCtruth = mctruth;                                       }
-  void                         SetPeriod                   ( const char * period                          ) { fPeriod = period;                                         }
-  void                         SetRejectPileUpEvent        ( Bool_t  rpue                                 ) { fRejectPileUpEvent = rpue;                                }
-  void                         SetNcontributorsToPileUp    ( Int_t   nCtoPU                               ) { fNContrToPileUp = nCtoPU;                                 }
-  void                         SetFiducialCut              ( Float_t fiducial                             ) { fFiducialCut = fiducial;                                  }
-  void                         SetComputeAreasPerEvent     ( Bool_t  eventAreas                           ) { fAreasPerEvent = eventAreas;                              }
-  void                         Set2012L1Analysis           ( Bool_t  is2012L1                             ) { f2012EGA = is2012L1;                                      }
-  void                         SetANWithNoSameTcard        ( Bool_t  iNoSameTCard                         ) { fANnoSameTcard = iNoSameTCard;                            }
-  void                         SetPythiaVersion            ( TString pythiaVersion                        ) { fPythiaVersion = pythiaVersion;                           }
-  void                         SetVariableCPV              ( Bool_t  variable                             ) { fVariableCPV = variable;                                  }
-  void                         SetVariableCPVInCone        ( Bool_t  variable                             ) { fVariableCPVInCone = variable;                            }
-  void                         SetNonLinRecoEnergyScaling  ( Bool_t  scaling                              ) { fNonLinRecoEnergyScaling = scaling;                       }
+  void                         SetMinClusterEnergy         ( Float_t  minE                                 ) { fMinClusterEnergy = minE ;                                }
+  void                         SetIsoConeRadius            ( Float_t  r                                    ) { fIsoConeRadius = r ;                                      }
+  void                         SetEtIsoThreshold           ( Float_t  r                                    ) { fEtIsoThreshold = r ;                                     }
+  void                         SetCTMdeltaEta              ( Float_t  r                                    ) { fdetacut = r ;                                            }
+  void                         SetCTMdeltaPhi              ( Float_t  r                                    ) { fdphicut = r ;                                            }
+  void                         SetCTMdeltaEtaIso           ( Float_t  r                                    ) { fdetacutIso = r ;                                         }
+  void                         SetCTMdeltaPhiIso           ( Float_t  r                                    ) { fdphicutIso = r ;                                         }
+  void                         SetIsoMethod                ( Int_t    r                                    ) { fIsoMethod = r ;                                          }
+  void                         SetEtIsoMethod              ( Int_t    r                                    ) { fEtIsoMethod = r ;                                        }
+  void                         SetUEMethod                 ( Int_t    UE                                   ) { fUEMethod = UE;                                           }
+
+  void                         SetOutputFormat             ( Int_t    iOut                                 ) { fWho = iOut;                                              }
+  void                         SetQA                       ( Bool_t   QA                                   ) { fQA = QA;                                                 }
+  void                         SetMC                       ( Bool_t   MC                                   ) { fIsMC = MC;                                               }
+  void                         SetUSEofTPC                 ( Bool_t   TPC                                  ) { fTPC4Iso = TPC;                                           }
+  void                         SetLCAnalysis               ( Bool_t   LC                                   ) { fisLCAnalysis = LC;                                       }
+  void                         SetNLMCut                   ( Bool_t   isNLMCut, Int_t NLMCut, Int_t NLMmin ) { fIsNLMCut = isNLMCut; fNLMCut = NLMCut; fNLMmin = NLMmin; }
+  void                         SetSmearForClusters         ( Int_t    whichNLM                             ) { fWhich = whichNLM;                                        }
+  void                         SetTMClusterRejection       ( Bool_t   tm                                   ) { fTMClusterRejected = tm;                                  }
+  void                         SetTMClusterRejectioninCone ( Bool_t   tm                                   ) { fTMClusterInConeRejected = tm;                            }
+  void                         SetRejectEventWithoutTracks ( Bool_t   revwotr                              ) { fRejectionEventWithoutTracks = revwotr;                   }
+  void                         SetAnalysispPb              ( Bool_t   ana                                  ) { fAnalysispPb = ana;                                       }
+  void                         SetTriggerLevel1            ( Int_t    L                                    ) { fTriggerLevel1 = L;                                       }
+  void                         SetM02Smearing              ( Bool_t   smear                                ) { fSSsmearing = smear;                                      }
+  void                         SetWidth4Smear              ( Float_t  width                                ) { fSSsmearwidth = width;                                    }
+  void                         SetMean4Smear               ( Float_t  mean                                 ) { fSSsmear_mean = mean;                                     }
+  void                         SetExtraIsoCuts             ( Bool_t   bExtraIsoCuts                        ) { fExtraIsoCuts = bExtraIsoCuts;                            }
+  void			       SetPtBinning                ( vector<Double_t> binedges                     ) { fBinsPt = binedges;                                       }
+  void			       SetM02Binning               ( vector<Double_t> binedges                     ) { fBinsM02 = binedges;                                      }
+  void			       SetEtisoBinning             ( vector<Double_t> binedges                     ) { fBinsEtiso = binedges;                                    }
+  void			       SetEtueBinning              ( vector<Double_t> binedges                     ) { fBinsEtue = binedges;                                     }
+  void			       SetEtaBinning               ( vector<Double_t> binedges                     ) { fBinsEta = binedges;                                      }
+  void			       SetPhiBinning               ( vector<Double_t> binedges                     ) { fBinsPhi = binedges;                                      }
+  void			       SetLabelBinning             ( vector<Double_t> binedges                     ) { fBinsLabel = binedges;                                    }
+  void			       SetPDGBinning               ( vector<Double_t> binedges                     ) { fBinsPDG = binedges;                                      }
+  void			       SetMomPDGBinning            ( vector<Double_t> binedges                     ) { fBinsMomPDG = binedges;                                   }
+  void			       SetClustPDGBinning          ( vector<Double_t> binedges                     ) { fBinsClustPDG = binedges;                                 }
+  void			       SetDxBinning                ( vector<Double_t> binedges                     ) { fBinsDx = binedges;                                       }
+  void			       SetDzBinning                ( vector<Double_t> binedges                     ) { fBinsDz = binedges;                                       }
+  void			       SetDecayBinning             ( vector<Double_t> binedges                     ) { fBinsDecay = binedges;                                    }
+  void                         SetMCtruth                  ( Bool_t   mctruth                              ) { fMCtruth = mctruth;                                       }
+  void                         SetPeriod                   ( const char * period                           ) { fPeriod = period;                                         }
+  void                         SetRejectPileUpEvent        ( Bool_t   rpue                                 ) { fRejectPileUpEvent = rpue;                                }
+  void                         SetNcontributorsToPileUp    ( Int_t    nCtoPU                               ) { fNContrToPileUp = nCtoPU;                                 }
+  void                         SetFiducialCut              ( Float_t  fiducial                             ) { fFiducialCut = fiducial;                                  }
+  void                         SetComputeAreasPerEvent     ( Bool_t   eventAreas                           ) { fAreasPerEvent = eventAreas;                              }
+  void                         Set2012L1Analysis           ( Bool_t   is2012L1                             ) { f2012EGA = is2012L1;                                      }
+  void                         SetANWithNoSameTcard        ( Bool_t   iNoSameTCard                         ) { fANnoSameTcard = iNoSameTCard;                            }
+  void                         SetPythiaVersion            ( TString  pythiaVersion                        ) { fPythiaVersion = pythiaVersion;                           }
+  void                         SetVariableCPV              ( Bool_t   variable                             ) { fVariableCPV = variable;                                  }
+  void                         SetVariableCPVInCone        ( Bool_t   variable                             ) { fVariableCPVInCone = variable;                            }
+  void                         SetVariableCPVBoth          ( Bool_t   variable                             ) { fVariableCPVBoth = variable;                              }
+  void                         SetVariableCPVSystematics   ( TString  systematics                          ) { fVariableCPVSyst = systematics;                           }
+  void                         SetEOverP                   ( Float_t  min, Float_t max                     ) { fEOverPMin = min; fEOverPMax = max;                       }
+  void                         SetNonLinRecoEnergyScaling  ( Bool_t   scaling                              ) { fNonLinRecoEnergyScaling = scaling;                       }
+  void                         SetExtraPerpConesFactor     ( Double_t factor                               ) { fExtraPerpConesFactor = factor;                           }
   
  protected:
   
@@ -190,7 +195,12 @@ class AliAnalysisTaskEMCALPhotonIsolation: public AliAnalysisTaskEmcal {
   TString		       fPythiaVersion;		     ///< May contain "6" or "8" to determine the Pythia version used
   Bool_t		       fVariableCPV;		     ///<
   Bool_t		       fVariableCPVInCone;	     ///<
+  Bool_t		       fVariableCPVBoth;             ///<
+  TString		       fVariableCPVSyst;	     ///<
+  Float_t		       fEOverPMin;		     ///< Min calo cluster E / track p
+  Float_t		       fEOverPMax;		     ///< Max calo cluster E / track p
   Bool_t		       fNonLinRecoEnergyScaling;     ///< Set a scaling factor for reconstructed energy (regarding non-linearity correction)
+  Double_t                     fExtraPerpConesFactor;        ///< Charged to neutral + charged UE extrapolation factor (perpendicular cones)
   TClonesArray		     * fTracksAna;		     ///< Hybrid track array in
   AliStack		     * fStack;			     ///<
   AliEMCALRecoUtils	     * fEMCALRecoUtils;		     ///< EMCal utils for cluster rereconstruction.
@@ -287,7 +297,11 @@ class AliAnalysisTaskEMCALPhotonIsolation: public AliAnalysisTaskEmcal {
   TH3F                       * fPtvsDetavsDphi;                 ///<  Cluster-track matching vs. cluster energy
   TH3F                       * fPtvsTrackPtvsDeta;              ///<  Cluster-track matching Deta vs. track pT vs. cluster energy
   TH3F                       * fPtvsTrackPtvsDphi;              ///<  Cluster-track matching Dphi vs. track pT vs. cluster energy
+  TH2F                       * fPtTrackClusRatiovsPt;           ///<  Track pT over Cluster pT vs. cluster energy
+  TH2F                       * fPtTrackClusRatiovsPtWithCPV;    ///<  Track pT over Cluster pT vs. cluster energy with CPV applied
   TH2F                       * fClusEvsClusT;                   //!<! Cluster Energy vs Cluster Time ---QA
+  TH2F                       * fClustEnBefAftNonLin;            //!<! Cluster Energy before/after non-linearity correction
+  TH1F                       * fPTbeforeNonLinScaling;          //!<! Pt distribution (before non-lin scaling in MC, when applied)
   TH1F                       * fPT;                             //!<! Pt distribution
   TH1F                       * fE;                              //!<! E distribution
   TH2F                       * fNLM;                            //!<! NLM distribution
@@ -347,6 +361,7 @@ class AliAnalysisTaskEMCALPhotonIsolation: public AliAnalysisTaskEmcal {
   TH3F                       * fPtVsConeVsEtaBand;              //!<! Energy cone clusters vs tracks test (not normalised)
   TH3F                       * fPtVsNormConeVsNormPhiBand;      //!<!
   TH3F                       * fPtVsNormConeVsNormEtaBand;      //!<!
+  TH3F                       * fPtVsNormConeVsNormExtraPerpCones; //!<!
   TH3F                       * fPtvsM02vsSumUE_Norm;
   TH2F                       * fTestEtaPhiCone;                 //!<! Eta vs phi test for clusters in cone
   TH3F                       * fInvMassM02iso;                  //!<!

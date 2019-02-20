@@ -42,12 +42,15 @@
 #define EPS 1.e-16
 
 using TMath::TwoPi;
+using std::string;
 
 ///\cond CLASSIMP
 ClassImp(AliAnalysisTaskNucleiYield);
 ///\endcond
 
-static double TOFsignal(double *x, double *par) {
+namespace {
+
+double TOFsignal(double *x, double *par) {
   double &norm = par[0];
   double &mean = par[1];
   double &sigma = par[2];
@@ -59,6 +62,20 @@ static double TOFsignal(double *x, double *par) {
     return norm * TMath::Gaus(tail + mean, mean, sigma) * TMath::Exp(-tail * (x[0] - tail - mean) / (sigma * sigma));
 }
 
+void SetSLightNucleus(AliAODMCParticle* part, SLightNucleus& snucl) {
+  snucl.pt = part->Pt();
+  snucl.eta = part->Eta();
+  snucl.phi = part->Phi();
+  snucl.pdg = part->GetPdgCode();
+  if (part->IsPhysicalPrimary())
+    snucl.flag = 1;
+  else if (part->IsSecondaryFromWeakDecay())
+    snucl.flag = 2;
+  else
+    snucl.flag = 4;
+}
+
+}
 /// Standard and default constructor of the class.
 ///
 /// \param taskname Name of the task
@@ -73,6 +90,8 @@ AliAnalysisTaskNucleiYield::AliAnalysisTaskNucleiYield(TString taskname)
    ,fPtCorrectionM{3}
    ,fTOFfunction{nullptr}
    ,fList{nullptr}
+   ,fRTree{nullptr}
+   ,fSTree{nullptr}
    ,fCutVec{}
    ,fPDG{0}
    ,fPDGMass{0}
@@ -117,7 +136,12 @@ AliAnalysisTaskNucleiYield::AliAnalysisTaskNucleiYield(TString taskname)
    ,fPtShapeFunction{kNoPtShape}
    ,fPtShapeMaximum{0.f}
    ,fITSelectronRejectionSigma{-1.}
+   ,fBeamRapidity{0.f}
+   ,fEstimator{0}
    ,fEnableFlattening{false}
+   ,fSaveTrees{false}
+   ,fRecNucleus{}
+   ,fSimNucleus{}
    ,fParticle{AliPID::kUnknown}
    ,fCentBins{0}
    ,fDCABins{0}
@@ -149,6 +173,8 @@ AliAnalysisTaskNucleiYield::AliAnalysisTaskNucleiYield(TString taskname)
      fPtCorrectionM.Set(3,mCorrection);
      DefineInput(0, TChain::Class());
      DefineOutput(1, TList::Class());
+     DefineOutput(2, TTree::Class());
+     DefineOutput(3, TTree::Class());
    }
 
 /// Standard destructor
@@ -156,6 +182,8 @@ AliAnalysisTaskNucleiYield::AliAnalysisTaskNucleiYield(TString taskname)
 AliAnalysisTaskNucleiYield::~AliAnalysisTaskNucleiYield(){
   if (AliAnalysisManager::GetAnalysisManager()->IsProofMode()) return;
   if (fList) delete fList;
+  if (fRTree) delete fRTree;
+  if (fSTree) delete fSTree;
   if (fTOFfunction) delete fTOFfunction;
   if (fFunctCollection) delete fFunctCollection;
 }
@@ -277,6 +305,20 @@ void AliAnalysisTaskNucleiYield::UserCreateOutputObjects() {
 
   AliPDG::AddParticlesToPdgDataBase();
   PostData(1,fList);
+
+  if (fSaveTrees) {
+    fRTree = new TTree("RTree", "Reconstructed nuclei");
+    fRTree->Branch("RLightNucleus", &fRecNucleus);
+    if (fIsMC) fRTree->Branch("SLightNucleus", &fSimNucleus);
+
+    PostData(2, fRTree);
+
+    if (fIsMC) {
+      fSTree = new TTree("STree", "Simulated nuclei");
+      fSTree->Branch("SLightNucleus", &fSimNucleus);
+      PostData(3, fSTree);
+    }
+  }
 }
 
 /// This is the function that is evaluated for each event. The analysis code stays here.
@@ -297,7 +339,7 @@ void AliAnalysisTaskNucleiYield::UserExec(Option_t *){
   bool EventAccepted = fEventCut.AcceptEvent(ev);
 
   /// The centrality selection in PbPb uses the percentile determined with V0.
-  float centrality = fEventCut.GetCentrality();
+  float centrality = fEventCut.GetCentrality(fEstimator);
 
   std::array <AliEventCuts::NormMask,4> norm_masks {
     AliEventCuts::kAnyEvent,
@@ -356,6 +398,8 @@ void AliAnalysisTaskNucleiYield::UserExec(Option_t *){
           continue;
         }
       }
+      SetSLightNucleus(part,fSimNucleus);
+      if (fSaveTrees) fSTree->Fill();
       if (fIsMC) fProduction->Fill(mult * part->P());
       if (part->Y() > fRequireYmax || part->Y() < fRequireYmin) continue;
       if (part->IsPhysicalPrimary() && fIsMC) fTotal[iC]->Fill(centrality,part->Pt());
@@ -369,8 +413,48 @@ void AliAnalysisTaskNucleiYield::UserExec(Option_t *){
     if (track->GetID() < 0) continue;
     Double_t dca[2] = {0.};
     if (!track->TestFilterBit(fFilterBit) && fFilterBit) continue;
-    if (!AcceptTrack(track,dca)) continue;
-    const float beta = HasTOF(track,fPID);
+    bool acceptedTrack = AcceptTrack(track,dca);
+    float beta = HasTOF(track,fPID);
+    if (beta > 1. - EPS) beta = -1;
+    const float m2 = track->P() * track->P() * (1.f / (beta * beta) - 1.f);
+
+    if (fSaveTrees && track->Pt() < 10.) {
+      double mcPt = 0;
+      bool good2save{true};
+      if (fIsMC) {
+        int mcId = std::abs(track->GetLabel());
+        AliAODMCParticle *part = (AliAODMCParticle*)stack->At(mcId); 
+        if (part) {
+          good2save = std::abs(part->GetPdgCode()) == fPDG;
+          SetSLightNucleus(part, fSimNucleus);
+        } else
+          good2save = false;
+      }
+      if (good2save) {
+        fRecNucleus.pt = track->Pt() * track->Charge();
+        fRecNucleus.eta = track->Eta();
+        fRecNucleus.phi = track->Phi();
+        fRecNucleus.m2 = m2;
+        fRecNucleus.dcaxy = dca[0];
+        fRecNucleus.dcaz = dca[1];
+        AliTPCPIDResponse &tpcPidResp = fPID->GetTPCResponse();
+        fRecNucleus.tpcNsigmaD = tpcPidResp.GetNumberOfSigmas(track, AliPID::kDeuteron);
+        fRecNucleus.tpcNsigmaT = tpcPidResp.GetNumberOfSigmas(track, AliPID::kTriton);
+        fRecNucleus.tpcNsigmaHe3 = tpcPidResp.GetNumberOfSigmas(track, AliPID::kHe3);
+        fRecNucleus.centrality = centrality;
+        fRecNucleus.itsCls = track->GetITSClusterMap();
+        fRecNucleus.tpcPIDcls = track->GetTPCsignalN();
+        if ((fRecNucleus.tpcNsigmaD > -5. && track->Pt() < 1.4) ||
+            (fRecNucleus.tpcNsigmaT > -5. && track->Pt() < 1.6) ||
+            (fRecNucleus.tpcNsigmaHe3 > -6.) ||
+            (m2 > 1.11 && m2 < 21.58)
+          )
+          fRTree->Fill();
+      }
+    }
+
+    if (!acceptedTrack) continue;
+
     const int iTof = beta > EPS ? 1 : 0;
     float pT = track->Pt() * fCharge;
     int pid_mask = PassesPIDSelection(track);
@@ -435,7 +519,6 @@ void AliAnalysisTaskNucleiYield::UserExec(Option_t *){
 
       if (!pid_check) continue;
       /// \f$ m = \frac{p}{\beta\gamma} \f$
-      const float m2 = track->P() * track->P() * (1.f / (beta * beta) - 1.f);
       fTOFsignal[iC]->Fill(centrality, pT, m2 - fPDGMassOverZ * fPDGMassOverZ);
 
     }
@@ -443,7 +526,11 @@ void AliAnalysisTaskNucleiYield::UserExec(Option_t *){
   } // End AOD track loop
 
   //  Post output data.
-  PostData(1,fList);
+  PostData(1, fList);
+  if (fSaveTrees) {
+    PostData(2, fRTree);
+    PostData(3, fSTree);
+  }
 }
 
 /// Merge the output. Called once at the end of the query.
@@ -466,7 +553,7 @@ bool AliAnalysisTaskNucleiYield::AcceptTrack(AliAODTrack *track, Double_t dca[2]
   fCutVec.SetPtEtaPhiM(track->Pt() * fCharge, track->Eta(), track->Phi(), fPDGMass);
   if (!(status & AliVTrack::kTPCrefit) && fRequireTPCrefit) return false;
   if (track->Eta() < fRequireEtaMin || track->Eta() > fRequireEtaMax) return false;
-  if (fCutVec.Rapidity() < fRequireYmin || fCutVec.Rapidity() > fRequireYmax) return false;
+  if (fCutVec.Rapidity() < fRequireYmin + fBeamRapidity || fCutVec.Rapidity() > fRequireYmax + fBeamRapidity) return false;
   AliAODVertex *vtx1 = (AliAODVertex*)track->GetProdVertex();
   if(Int_t(vtx1->GetType()) == AliAODVertex::kKink && fRequireNoKinks) return false;
   if (track->Chi2perNDF() > fRequireMaxChi2) return false;
@@ -510,11 +597,8 @@ float AliAnalysisTaskNucleiYield::HasTOF(AliAODTrack *track, AliPIDResponse *pid
   if (!hasTOF) return -1.;
   const float p = track->GetTPCmomentum();
   const float tim = track->GetTOFsignal() - pid->GetTOFResponse().GetStartTime(p);
-  if (tim < len / LIGHT_SPEED) return -1.;
-  else {
-    const float beta = len / (tim * LIGHT_SPEED);
-    return beta;
-  }
+  const float beta = len / (tim * LIGHT_SPEED);
+  return beta;
 }
 
 /// This functions sets the centrality bins used in the analysis

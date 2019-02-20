@@ -29,8 +29,10 @@
 
 #include "AliAnalysisTaskEmcalJet.h"
 #include <vector>
+#include <TArrayD.h>
 
 class THistManager;
+class AliEventCuts;
 
 namespace EmcalTriggerJets {
 
@@ -62,23 +64,32 @@ public:
     fTriggerSelectionString = triggerstring;
   }
   void SetUseDownscaleWeight(bool doUse) { fUseDownscaleWeight = doUse; }
+  void SetUseAliEventCuts(bool doUse) { fUseAliEventCuts = doUse; }
   void SetUseTriggerSelectionForData(bool doUse) { fUseTriggerSelectionForData = doUse; }
   void SetRequireSubsetMB(bool doRequire, ULong_t minbiastrigger = AliVEvent::kAny) { fRequireSubsetMB = doRequire; fMinBiasTrigger = minbiastrigger; }
+  void SetUserPtBinning(int nbins, double *binning) { fUserPtBinning.Set(nbins+1, binning); }
+  void SetRequestCentrality(bool doRequest) { fRequestCentrality = doRequest; }
+  void SetRequestTriggerClusters(bool doRequest) { fRequestTriggerClusters = doRequest; }
+  void SetCentralityEstimator(const char *centest) { fCentralityEstimator = centest; }
 
   static AliAnalysisTaskEmcalJetEnergySpectrum *AddTaskJetEnergySpectrum(Bool_t isMC, AliJetContainer::EJetType_t jettype, double radius, const char *trigger, const char *suffix = "");
 
 protected:
   virtual void UserCreateOutputObjects();
   virtual bool Run();
+  virtual bool IsEventSelected();
   virtual bool IsTriggerSelected();
+  virtual void RunChanged(Int_t newrun);
   std::vector<TriggerCluster_t> GetTriggerClusterIndices(const TString &triggerstring) const;
   bool IsSelectEmcalTriggers(const std::string &triggerstring) const;
+  std::string MatchTrigger(const std::string &striggerstring);
 
 private:
   AliAnalysisTaskEmcalJetEnergySpectrum(const AliAnalysisTaskEmcalJetEnergySpectrum &);
   AliAnalysisTaskEmcalJetEnergySpectrum &operator=(const AliAnalysisTaskEmcalJetEnergySpectrum &);
 
   THistManager                  *fHistos;                       ///< Histogram manager
+  AliEventCuts                  *fEventCuts;                    ///< Event cuts as implemented in AliEventCuts
   Bool_t                        fIsMC;                          ///< Running on simulated events
 	UInt_t                        fTriggerSelectionBits;          ///< Trigger selection bits
   TString                       fTriggerSelectionString;        ///< Trigger selection string
@@ -88,6 +99,11 @@ private:
   Bool_t                        fUseTriggerSelectionForData;    ///< Use trigger selection on data (require trigger patch in addition to trigger selection string)
   Bool_t                        fUseDownscaleWeight;            ///< Use 1/downscale as weight
   TString                       fNameJetContainer;              ///< Name of the jet container 
+  Bool_t                        fRequestTriggerClusters;        ///< Request distinction of trigger clusters
+  Bool_t                        fRequestCentrality;             ///< Request centrality
+  Bool_t                        fUseAliEventCuts;               ///< Flag switching on AliEventCuts;
+  TString                       fCentralityEstimator;           ///< Centrality estimator
+  TArrayD                       fUserPtBinning;                 ///< User-defined pt-binning
 
   ClassDef(AliAnalysisTaskEmcalJetEnergySpectrum, 1);
 };

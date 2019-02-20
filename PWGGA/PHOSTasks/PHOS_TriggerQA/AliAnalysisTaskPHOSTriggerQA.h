@@ -1,5 +1,5 @@
-#ifndef AliAnalysisTaskPHOSTriggerQA_cxx
-#define AliAnalysisTaskPHOSTriggerQA_cxx
+#ifndef ALIANALYSISTASKPHOSTRIGGERQA_CXX
+#define ALIANALYSISTASKPHOSTRIGGERQA_CXX
 
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice     */
@@ -42,7 +42,6 @@ private:
 private:
 
   TList * fOutputContainer;   //final histogram container
-  AliPHOSGeometry  *fPHOSGeo; //! PHOS geometry
   Int_t fEventCounter;        // number of analyzed events
   Int_t fL1Threshold;         // -1 - L0, 0 - L1 High, 1 - L1 Medium, 2 - L1 Low
 

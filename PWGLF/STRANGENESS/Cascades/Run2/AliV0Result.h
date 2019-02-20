@@ -74,7 +74,12 @@ public:
     void SetCutMinEtaTracks      ( Double_t lCut ) { fCutMinEtaTracks      = lCut; }
     void SetCutMaxEtaTracks      ( Double_t lCut ) { fCutMaxEtaTracks      = lCut; }
     void SetCutMaxChi2PerCluster ( Double_t lCut ) { fCutMaxChi2PerCluster = lCut; }
-    void SetCutMinTrackLength    ( Double_t lCut ) { fCutMinTrackLength    = lCut; }
+    
+    //Modern Track quality cuts
+    void SetCutMinTrackLength          ( Double_t lCut )  { fCutMinTrackLength    = lCut; }
+    void SetCutUseParametricLength     ( Bool_t   lCut )  { fCutUseParametricLength = lCut; }
+    void SetCutMinCrossedRowsOverLength( Double_t lCut )  { fCutMinCrossedRowsOverLength = lCut; }
+    
     
     //Variable V0CosPA
     void SetCutUseVarV0CosPA      ( Bool_t lCut )   { fCutUseVariableV0CosPA     = lCut; }
@@ -100,10 +105,7 @@ public:
     
     void SetCutAtLeastOneTOF (Bool_t lCut) { fCutAtLeastOneTOF = lCut; }
     
-    //Feeddown matrix initializer
-    void InitializeFeeddownMatrix(Long_t lNLambdaPtBins, Double_t *lLambdaPtBins,
-                                  Long_t lNXiPtPins, Double_t *lXiPtPins,
-                                  Long_t lNCentBins, Double_t *lCentBins );
+    void SetCutIsCowboy (Int_t lCut) { fCutIsCowboy = lCut; }
     
     AliV0Result::EMassHypo GetMassHypothesis () const { return fMassHypo; }
     Double_t GetMass() const;
@@ -139,7 +141,11 @@ public:
     Double_t GetCutMinEtaTracks      () const { return fCutMinEtaTracks; }
     Double_t GetCutMaxEtaTracks      () const { return fCutMaxEtaTracks; }
     Double_t GetCutMaxChi2PerCluster () const { return fCutMaxChi2PerCluster; }
-    Double_t GetCutMinTrackLength    () const { return fCutMinTrackLength; }
+    
+    //Modern track quality 
+    Double_t GetCutMinTrackLength              () const { return fCutMinTrackLength; }
+    Bool_t   GetCutUseParametricLength         () const { return fCutUseParametricLength; }
+    Double_t GetCutMinCrossedRowsOverLength    () const { return fCutMinCrossedRowsOverLength; }
     
     //Variable V0CosPA
     Bool_t GetCutUseVarV0CosPA        () const { return fCutUseVariableV0CosPA;   }
@@ -153,6 +159,8 @@ public:
     Bool_t GetUseOnTheFly() const { return fUseOnTheFly; }
     
     Bool_t GetCutAtLeastOneTOF () const { return fCutAtLeastOneTOF; }
+
+    Int_t GetCutIsCowboy () const { return fCutIsCowboy; }
     
     //Special dedx
     Bool_t GetCut276TeVLikedEdx () const { return fCut276TeVLikedEdx; }
@@ -163,18 +171,58 @@ public:
     //Proton Profile
     TProfile *GetProtonProfile       ()       { return fProtonProfile; }
     TProfile *GetProtonProfileToCopy () const { return fProtonProfile; }
-    void InitializeProtonProfile(Long_t lNPtBins, Double_t *lPtBins); //Initialize profile, otherwise not stored
-
+    
+    void InitializeHisto();         //Initialize main histogram as per request
+    void InitializeProtonProfile(); //Initialize profile, otherwise not stored
+    void InitializeProtonProfile(Long_t lNPtBins, Double_t *lPtBins); //kept for compatibility
+    //Feeddown matrix setup/initialize stuff
+    void SetupFeeddownMatrix(Long_t lNXiPtPins, Double_t *lXiPtPins);
+    void InitializeFeeddownMatrix(); //Initialize FD matrix histogram
+    
+    //Kept for compatibility (not to be used depending on implementation 
+    void InitializeFeeddownMatrix(Long_t lNLambdaPtBins, Double_t *lLambdaPtBins,
+                                  Long_t lNXiPtPins, Double_t *lXiPtPins,
+                                  Long_t lNCentBins, Double_t *lCentBins);
+    
     TH3F* GetHistogramFeeddown       ()       { return fHistoFeeddown; }
     TH3F* GetHistogramFeeddownToCopy () const { return fHistoFeeddown; }
     
     Bool_t HasSameCuts( AliVWeakResult *lCompare, Bool_t lCheckdEdx = kTRUE );
     void Print();
     
+    Long_t      GetNPtBins()   const { return fhNPtBounds-1;   }
+    Double_t*   GetPtBins()    const { return fhPtBins;        }
+    Long_t      GetNPtBinsFeeddown()   const { return fhNPtBoundsFeeddown-1;   }
+    Double_t*   GetPtBinsFeeddown()    const { return fhPtBinsFeeddown;        }
+    Long_t      GetNCentBins() const { return fhNCentBounds-1; }
+    Double_t*   GetCentBins()  const { return fhCentBins;      }
+    Long_t      GetNMassBins() const { return fhNMassBins;     }
+    Double_t    GetMinMass()   const { return fhMinMass;       }
+    Double_t    GetMaxMass()   const { return fhMaxMass;       }
+    
 private:
     //V0 Selection Criteria
     AliV0Result::EMassHypo fMassHypo; //For determining invariant mass
 
+    //------------------------------------------------------------------------
+    //Histogram-controlling stuff
+    //beware: comments here ARE IMPORTANT!!!
+    //They are interpreted as arrays for streaming!
+    Int_t fhNCentBounds;
+    Double_t *fhCentBins; //[fhNCentBounds]
+    Int_t fhNPtBounds;
+    Double_t *fhPtBins; //[fhNPtBounds]
+    Int_t fhNPtBoundsFeeddown;
+    Double_t *fhPtBinsFeeddown; //[fhNPtBoundsFeeddown]
+    Long_t fhNMassBins;
+    Double_t fhMinMass;
+    Double_t fhMaxMass;
+    //------------------------------------------------------------------------
+    TProfile *fProtonProfile; //Histogram for bookkeeping proton momenta (optional)
+    TH3F *fHisto; //Histogram for storing output with these configurations
+    TH3F *fHistoFeeddown; //Feeddown matrix (optional)
+    //------------------------------------------------------------------------
+    
     //Basic acceptance criteria
     Double_t fCutMinRapidity; //min rapidity
     Double_t fCutMaxRapidity; //max rapidity
@@ -204,7 +252,10 @@ private:
     Double_t fCutMinEtaTracks; //Minimum eta value for daughter tracks (usually -0.8)
     Double_t fCutMaxEtaTracks; //Maximum eta value for daughter tracks (usually +0.8)
     Double_t fCutMaxChi2PerCluster; //Max chi2/clusters
+    
     Double_t fCutMinTrackLength; //Minimum track length in the active TPC zone
+    Bool_t fCutUseParametricLength; //Relax track requirements at low pT or high R
+    Double_t fCutMinCrossedRowsOverLength; //N(crossed rows)/L > something
     
     //Experimental: pt-variable V0 cosPA
     //Warning: if this cut is tighter than fCutV0CosPA, this gets used instead!
@@ -222,14 +273,12 @@ private:
     Bool_t fCut276TeVLikedEdx;
     
     //At least one track has TOF signal
-    Bool_t fCutAtLeastOneTOF; 
+    Bool_t fCutAtLeastOneTOF;
     
-    TH3F *fHisto; //Histogram for storing output with these configurations
-    TH3F *fHistoFeeddown; //Feeddown matrix (optional)
+    //Cowboy/sailor
+    Int_t fCutIsCowboy; //-1: sailor, 0: don't select, 1: cowboy
     
-    TProfile *fProtonProfile; //Histogram for bookkeeping proton momenta (optional)
-    
-    ClassDef(AliV0Result, 20)
+    ClassDef(AliV0Result, 22)
     // 1 - original implementation
     // 2 - first implementation of MC association (to be adjusted)
     // 3 - Variable binning constructor + re-order variables in main output for convenience
@@ -250,5 +299,7 @@ private:
     //18 - added configurable max V0 radius
     //19 - added 2.76TeV-like dE/dx switch
     //20 - TOF cut: at-least-one type
+    //22 - cowboy/sailor check
+    //23 - modern track selections: parametric length, crossed rows + cr/L
 };
 #endif

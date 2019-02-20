@@ -55,6 +55,8 @@ TInfo *readOCDB_Temperature(Int_t runNb, Bool_t debug)
   Int_t np[kNumSens] = {0};
   Double_t min[kNumSens] = {0};
   Double_t max[kNumSens] = {0};
+  Double_t avg[kNumSens] = {0};
+  Double_t rms[kNumSens] = {0};
 
   Double_t avTime = 0;
   UInt_t fTime = -1;
@@ -80,6 +82,8 @@ TInfo *readOCDB_Temperature(Int_t runNb, Bool_t debug)
     np[isensor]  = 0;
     min[isensor] = +100;
     max[isensor] = -100;
+    avg[isensor] = 0;
+    rms[isensor] = 0;
 
     AliSplineFit *f = o->GetFit();
     if (f) {
@@ -96,7 +100,8 @@ TInfo *readOCDB_Temperature(Int_t runNb, Bool_t debug)
                 << " y0 " << y0[i]
                 << " y1 " << y1[i]
                 << endl;
-
+	avg[isensor] += y0[i];
+	rms[isensor] += y0[i]*y0[i];
         if (min[isensor]>y0[i]) min[isensor]=y0[i];
         if (max[isensor]<y0[i]) max[isensor]=y0[i];
       }
@@ -114,6 +119,8 @@ TInfo *readOCDB_Temperature(Int_t runNb, Bool_t debug)
                   << " x " << x[i]
                   << " y0 " << y0[i]
                   << endl;
+	  avg[isensor] += y0[i];
+	  rms[isensor] += y0[i]*y0[i];
           if (min[isensor]>y0[i]) min[isensor]=y0[i];
           if (max[isensor]<y0[i]) max[isensor]=y0[i];
         }
@@ -121,9 +128,16 @@ TInfo *readOCDB_Temperature(Int_t runNb, Bool_t debug)
     }
 
     if (np[isensor]>0) {
+      avg[isensor] /= np[isensor];
+      if (np[isensor]>1) {
+	rms[isensor] /= np[isensor];
+	rms[isensor] = TMath::Sqrt(rms[isensor]-avg[isensor]*avg[isensor])/(np[isensor]-1);
+      } else {
+	rms[isensor] = 0;
+      }
       if (debug)
-        cout << "Min Temp: " << min[isensor] << " Max Temp: " << max[isensor] << endl;
-      info->Set(isensor, min[isensor], max[isensor]);
+        cout << "Avg Temp: " << avg[isensor] << " RMS Temp: " << rms[isensor] << " Min Temp: " << min[isensor] << " Max Temp: " << max[isensor] << endl;
+      info->Set(isensor, avg[isensor], rms[isensor], min[isensor], max[isensor]);
       avTime += startt + stopt;
       if (startt<fTime)
         fTime=startt;
@@ -139,7 +153,9 @@ TInfo *readOCDB_Temperature(Int_t runNb, Bool_t debug)
             << " " << o->GetNum()
             << " " << o->GetStartTime()
             << " " << o->GetEndTime()
-            << " " << min[isensor]
+            << " " << avg[isensor]
+            << " " << rms[isensor]
+            << " " << max[isensor]
             << " " << max[isensor] << endl;
   }
   Int_t nv = info->Nvalid();

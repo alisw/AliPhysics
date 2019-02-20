@@ -24,27 +24,23 @@ class AliFJWrapper;
 const Int_t nBranch = 22;
 class AliAnalysisTaskRecoilJetYield : public AliAnalysisTaskEmcalJet {
  public:
-  
+
   enum JetShapeType {
-    kTrue = 0,   // generated jets only 
-    kTrueDet =1,  // detector and generated jets  
-    kData   = 2,  // raw data 
+    kTruth = 0,   // generated jets only
+    kTrueDet =1,  // detector and generated jets
+    kData   = 2,  // raw data
     kDetEmbPart = 3,  //detector embedded jets
     kSim = 4,
     kGenOnTheFly=5 //fast truth level MC
   };
   enum JetShapeSub {
-    kNoSub = 0, 
+    kNoSub = 0,
     kConstSub = 1,
     kDerivSub = 2
   };
   enum JetSelectionType {
     kInclusive = 0,
     kRecoil = 1
-  };
-  enum DerivSubtrOrder {
-    kSecondOrder = 0,
-    kFirstOrder = 1
   };
 
   AliAnalysisTaskRecoilJetYield();
@@ -78,18 +74,17 @@ class AliAnalysisTaskRecoilJetYield : public AliAnalysisTaskEmcalJet {
   void SetSubJetMinPt(Float_t SubJetMinPt)                  {fSubJetMinPt=SubJetMinPt;}
   void SetRMatched(Double_t RMatched)                       {fRMatched=RMatched;}
   void SetSharedFractionPtMin(Double_t SharedFractionPtMin) {fSharedFractionPtMin=SharedFractionPtMin;}
-  void SetDerivativeSubtractionOrder(Int_t Order)           {fDerivSubtrOrder = Order;}
   void SetFullTree(Bool_t FullTree)                         {fFullTree = FullTree;}
   void SetBetaSD(Double_t BetaSD)                           {fBeta_SD = BetaSD;}
   void SetZCut(Double_t ZCut)                               {fZCut = ZCut;}
   void SetDoSoftDrop(Bool_t SoftDrop)                       {fDoSoftDrop = SoftDrop;}
-  
+
   void SetNsubUnNormMeasure( Bool_t NsubMeasure)            {fNsubMeasure= NsubMeasure;}
   void SetRhoName(const char *r)                            {fRhoName = r;}
   void SetSoftDropRecluster(Int_t n)                        {fReclusterAlgo = n;} //0 = CA, 1 = anti-kt, 2 = kt
   void SetDoSubDetMatching(Bool_t b)                        {fSubMatching = b;}
   void SetMinSubjetPt(Bool_t b, Float_t f)                  {bMinSubjetPt = b; fMinSubjetPt = f;}
-  
+
 
  protected:
   Bool_t                              RetrieveEventObjects();
@@ -109,9 +104,9 @@ class AliAnalysisTaskRecoilJetYield : public AliAnalysisTaskEmcalJet {
   void                                RecursiveParents(AliEmcalJet *fJet,AliJetContainer *fJetCont, Int_t ReclusterAlgo, Bool_t bTrue);
 
 
-  
-  
-  Int_t                               fContainer;              // jets to be analyzed 0 for Base, 1 for subtracted. 
+
+
+  Int_t                               fContainer;              // jets to be analyzed 0 for Base, 1 for subtracted.
   Float_t                             fMinFractionShared;          // only fill histos for jets if shared fraction larger than X
   JetShapeType                        fJetShapeType;               // jet type to be used
   JetShapeSub                         fJetShapeSub;                // jet subtraction to be used
@@ -120,24 +115,23 @@ class AliAnalysisTaskRecoilJetYield : public AliAnalysisTaskEmcalJet {
   Float_t                             fPtThreshold;
   Float_t                             fRMatching;
 
-  Float_t                             fPtMinTriggerHadron;                   //min - max pT for trigger particle in case of recoil jet  
+  Float_t                             fPtMinTriggerHadron;                   //min - max pT for trigger particle in case of recoil jet
   Float_t                             fPtMaxTriggerHadron;
-  Float_t                             fRecoilAngularWindow;             //angular window for btb recoil analysis 
+  Float_t                             fRecoilAngularWindow;             //angular window for btb recoil analysis
   Int_t                               fSemigoodCorrect;             //if==1 we run over semigood runs
   Float_t                             fHolePos;                          //position in radians of the bad TPC sector
-  Float_t                             fHoleWidth;                       //width of the hole in radians 
+  Float_t                             fHoleWidth;                       //width of the hole in radians
   Bool_t                              fCentSelectOn;                // switch on/off centrality selection
   Float_t                             fCentMin;                     // min centrality value
   Float_t                             fCentMax;                     // max centrality value
   Int_t                               fSubJetAlgorithm;
   Float_t                             fSubJetRadius;
-  Float_t                             fSubJetMinPt; 
+  Float_t                             fSubJetMinPt;
   Double_t                            fJetRadius;
-  Double_t                            fRMatched; 
+  Double_t                            fRMatched;
   Double_t                            fSharedFractionPtMin;
   Double_t                            Background_Median;
   Double_t                            Background_Fluc;
-  Int_t                               fDerivSubtrOrder;
   Bool_t                              fFullTree;
   Double_t                            fBeta_SD;
   Double_t                            fZCut;
@@ -148,11 +142,11 @@ class AliAnalysisTaskRecoilJetYield : public AliAnalysisTaskEmcalJet {
   Bool_t                              fSubMatching;
   Bool_t                              bMinSubjetPt;
   Float_t                             fMinSubjetPt;
-    
+
 
   Bool_t                              fNsubMeasure;
   Int_t                               fReclusterAlgo;
-  
+
   TH1F                                *fhJetPt;
   TH1F                                *fhJetPhi;
   TH1F                                *fhJetEta;
@@ -167,6 +161,8 @@ class AliAnalysisTaskRecoilJetYield : public AliAnalysisTaskEmcalJet {
   TH1F                                *fhPhiTriggerHadronEventPlane;
   TH1F                                *fhPhiTriggerHadronEventPlaneTPC;
   TH1F                                *fhTrackPt;
+  TH1F                                *fhTrackEta;
+  TH1F                                *fhTrackPhi;
   TH2F                                *fhGroomedPtvJetPt;
   TH1F                                *fhDroppedBranches;
   TH1F                                *fhDetJetPt_Incl;
@@ -191,7 +187,7 @@ class AliAnalysisTaskRecoilJetYield : public AliAnalysisTaskEmcalJet {
   THnSparse                           *fhLundIterative;
   THnSparse                           *fhLundIterativeTrue;
 
-  
+
 
  private:
   AliAnalysisTaskRecoilJetYield(const AliAnalysisTaskRecoilJetYield&);            // not implemented
@@ -200,4 +196,3 @@ class AliAnalysisTaskRecoilJetYield : public AliAnalysisTaskEmcalJet {
   ClassDef(AliAnalysisTaskRecoilJetYield, 6)
 };
 #endif
-

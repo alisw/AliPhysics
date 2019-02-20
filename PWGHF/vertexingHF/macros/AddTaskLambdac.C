@@ -1,4 +1,4 @@
-AliAnalysisTaskSE *AddTaskLambdac(TString finname,Bool_t storeNtuple,Bool_t readMC,Bool_t MCPid,Bool_t realPid,Bool_t resPid,Bool_t useKF,
+ AliAnalysisTaskSELambdac* AddTaskLambdac(TString finname,Bool_t storeNtuple,Bool_t readMC,Bool_t MCPid,Bool_t realPid,Bool_t resPid,Bool_t useKF,
 				  Bool_t fillVarHists=kFALSE, Bool_t priorsHists=kFALSE, Bool_t multiplicityHists=kFALSE, Int_t syst=0, Int_t bit=0,  TString postname="")
 {
   //==============================================================================                                                      
@@ -16,7 +16,7 @@ AliAnalysisTaskSE *AddTaskLambdac(TString finname,Bool_t storeNtuple,Bool_t read
   } else {
       filecuts=TFile::Open(finname.Data());
       if(!filecuts ||(filecuts&& !filecuts->IsOpen())){
-	AliFatal("Input file not found : check your cut object");
+	Printf("FATAL: Input file not found : check your cut object");
       }
   }
   AliRDHFCutsLctopKpi* prodcuts=new AliRDHFCutsLctopKpi();

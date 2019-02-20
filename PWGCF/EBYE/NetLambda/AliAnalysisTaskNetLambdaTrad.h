@@ -1,6 +1,6 @@
+
 // For: Net Lambda fluctuation analysis via traditional method
 // By: Ejiro Umaka Apr 2018
-//updated Jun 27
 
 #ifndef AliAnalysisTaskNetLambdaTrad_h
 #define AliAnalysisTaskNetLambdaTrad_h
@@ -55,28 +55,53 @@ protected:
     TH2F*  f2fHistInvMassVsPtAntiLambda;
     TH2F*  f2fHistRecPrimariesCentVsPtLambda;
     TH2F*  f2fHistRecPrimariesCentVsPtAntiLambda;
-    TH2F*  f2fHistmassctLambda;
-    TH2F*  f2fHistmassctAntiLambda;
+    TH1F*  f1fHistmassctLambda;
+    TH1F*  f1fHistmassctAntiLambda;
     TH2F*  f2fHistLambdaSecFromWeakDecay;
-    TH2F*  f2fHistAntiLambdaSecFromWeakDecay;
+    TH2F* f2fHistAntiLambdaSecFromWeakDecay;
+    TH2F*  f2fHistLambdaMisId;
+    TH2F* f2fHistAntiLambdaMisId;
+    TH2F*  f2fHistAntiLambdaRecPt;
+    TH2F* f2fHistLambdaRecPt;
+    TH2F*  f2fHistInvMassVsPtLambdaRec;
+    TH2F* f2fHistInvMassVsPtAntiLambdaRec;
+    TH2F*  f2fHistPtmassctLambda;
+    TH2F* f2fHistPtmassctAntiLambda;
+    TH2F*  f2fHistLambdaMaterial;
+    TH2F* f2fHistAntiLambdaMaterial;
     TH2F*  f2fHistLRecstat;
-    TH2F*  f2fHistARecstat;
+    TH2F* f2fHistARecstat;
     TH2F*  f2fHistLGenstat;
-    TH2F*  f2fHistAGenstat;
+    TH2F* f2fHistAGenstat;
+    TH2F*  f2fHistXiPlus;
+    TH2F* f2fHistXiMinus;
+    TH3F*  f2fHistLambdafromXi;
+    TH3F* f2fHistAntiLambdafromXi;
+    
+    
     
     Float_t fCentrality;
     Int_t fTreeVariablePID;
+    Int_t fTreeVariablePIDParent;
     Int_t fTreeVariablePIDPositive;
     Int_t fTreeVariablePIDNegative;
+    Int_t fTreeVariablePrimaryStatusMother;
+    
     Int_t fTreeVariableLeastNbrCrossedRows;
     Float_t fTreeVariableLeastRatioCrossedRowsOverFindable;
     
     Float_t fTreeVariableInvMassLambda;
     Float_t fTreeVariableInvMassAntiLambda;
+    Float_t fTreeVariablePtMC;
+    Float_t fTreeVariablePtMother;
     Float_t fTreeVariableDcaV0Daughters;
     Float_t fTreeVariableDcaV0ToPrimVertex;
     Float_t fTreeVariableDcaPosToPrimVertex;
     Float_t fTreeVariableDcaNegToPrimVertex;
+    Float_t fTreeVariableNsigmaPosProton;
+    Float_t fTreeVariableNsigmaNegProton;
+    Float_t fTreeVariableCentrality;
+    
     
     Bool_t fIsMC;
     Bool_t fIsAOD;
@@ -84,9 +109,11 @@ protected:
     Int_t  fNptBins;
     
     THnSparse *fPtBinNplusNminusCh;
+    THnSparse *fPtBinNplusNminusChCut;
     THnSparse *fPtBinNplusNminusChTruth;
-    Double_t MyRapidity(Double_t rE, Double_t rPz) const;
     Int_t    GetPtBin(Double_t pt);
+    
+    
     
     
     ClassDef(AliAnalysisTaskNetLambdaTrad,5);
@@ -94,3 +121,5 @@ protected:
 
 
 #endif
+
+

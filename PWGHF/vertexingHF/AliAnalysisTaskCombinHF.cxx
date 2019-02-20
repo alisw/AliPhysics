@@ -90,6 +90,8 @@ AliAnalysisTaskCombinHF::AliAnalysisTaskCombinHF():
   fTrackCutsAll(0x0),
   fTrackCutsPion(0x0),
   fTrackCutsKaon(0x0),
+  fApplyCutCosThetaStar(kFALSE),
+  fCutCosThetaStar(999.),
   fPhiMassCut(99999.),
   fCutCos3PiKPhiRFrame(-1.1),
   fCutCosPiDsLabFrame(1.1),
@@ -186,6 +188,8 @@ AliAnalysisTaskCombinHF::AliAnalysisTaskCombinHF(Int_t meson, AliRDHFCuts* analy
   fTrackCutsAll(0x0),
   fTrackCutsPion(0x0),
   fTrackCutsKaon(0x0),
+  fApplyCutCosThetaStar(kFALSE),
+  fCutCosThetaStar(999.),
   fPhiMassCut(99999.),
   fCutCos3PiKPhiRFrame(-1),
   fCutCosPiDsLabFrame(1.1),
@@ -338,16 +342,17 @@ void AliAnalysisTaskCombinHF::UserCreateOutputObjects()
   fOutput->SetOwner();
   fOutput->SetName("OutputHistos");
   
-  fHistNEvents = new TH1F("hNEvents", "number of events ",9,-0.5,8.5);
+  fHistNEvents = new TH1F("hNEvents", "number of events ",10,-0.5,9.5);
   fHistNEvents->GetXaxis()->SetBinLabel(1,"nEventsAnal");
   fHistNEvents->GetXaxis()->SetBinLabel(2,"n. passing IsEvSelected");
   fHistNEvents->GetXaxis()->SetBinLabel(3,"n. rejected due to trigger");
   fHistNEvents->GetXaxis()->SetBinLabel(4,"n. rejected due to phys sel");
   fHistNEvents->GetXaxis()->SetBinLabel(5,"n. rejected due to not reco vertex");
   fHistNEvents->GetXaxis()->SetBinLabel(6,"n. rejected for contr vertex");
-  fHistNEvents->GetXaxis()->SetBinLabel(7,"n. rejected for vertex out of accept");
-  fHistNEvents->GetXaxis()->SetBinLabel(8,"n. rejected for pileup events");
-  fHistNEvents->GetXaxis()->SetBinLabel(9,"no. of out centrality events");
+  fHistNEvents->GetXaxis()->SetBinLabel(7,"n. rejected for zSPD-zTrack");
+  fHistNEvents->GetXaxis()->SetBinLabel(8,"n. rejected for vertex out of accept");
+  fHistNEvents->GetXaxis()->SetBinLabel(9,"n. rejected for pileup");
+  fHistNEvents->GetXaxis()->SetBinLabel(10,"no. of out centrality events");
   
   fHistNEvents->GetXaxis()->SetNdivisions(1,kFALSE);
   fHistNEvents->SetMinimum(0);
@@ -615,14 +620,15 @@ void AliAnalysisTaskCombinHF::UserExec(Option_t */*option*/){
     if(fAnalysisCuts->IsEventRejectedDuePhysicsSelection()) fHistNEvents->Fill(3);
   }else{
     if(fAnalysisCuts->IsEventRejectedDueToCentrality()){
-      fHistNEvents->Fill(8);
+      fHistNEvents->Fill(9);
     }else{
-      if(fAnalysisCuts->IsEventRejectedDueToNotRecoVertex() || fAnalysisCuts->IsEventRejectedDueToVertexContributors()){
+      if(fAnalysisCuts->IsEventRejectedDueToBadPrimaryVertex()){
 	if(fAnalysisCuts->IsEventRejectedDueToNotRecoVertex())fHistNEvents->Fill(4);
 	if(fAnalysisCuts->IsEventRejectedDueToVertexContributors())fHistNEvents->Fill(5);
+	if(fAnalysisCuts->IsEventRejectedDueToBadTrackVertex())fHistNEvents->Fill(6);
       }else{
-	if(fAnalysisCuts->IsEventRejectedDueToZVertexOutsideFiducialRegion())fHistNEvents->Fill(6);
-	else if(fAnalysisCuts->IsEventRejectedDueToPileup())fHistNEvents->Fill(7);
+	if(fAnalysisCuts->IsEventRejectedDueToZVertexOutsideFiducialRegion())fHistNEvents->Fill(7);
+	else if(fAnalysisCuts->IsEventRejectedDueToPileup())fHistNEvents->Fill(8);
       }
     }
   }
@@ -867,8 +873,15 @@ void AliAnalysisTaskCombinHF::FillLSHistos(Int_t pdgD,Int_t nProngs, AliAODRecoD
   if(minv2>fMinMass*fMinMass && minv2<fMaxMass*fMaxMass){
     Double_t rapid = tmpRD->Y(pdgD);
     if(fAnalysisCuts->IsInFiducialAcceptance(pt,rapid)){
-      if(charge>0) fMassVsPtVsYLSpp->Fill(TMath::Sqrt(minv2),pt,rapid);
-      else fMassVsPtVsYLSmm->Fill(TMath::Sqrt(minv2),pt,rapid);
+      Bool_t fillLS=kTRUE;
+      if(TMath::Abs(pdgD)==421 && fApplyCutCosThetaStar){
+	Double_t costhst=tmpRD->CosThetaStar(0,421,321,211); // kaon is the first daughter
+	if(TMath::Abs(costhst)>fCutCosThetaStar) fillLS=kFALSE;
+      }
+      if(fillLS){
+	if(charge>0) fMassVsPtVsYLSpp->Fill(TMath::Sqrt(minv2),pt,rapid);
+	else fMassVsPtVsYLSmm->Fill(TMath::Sqrt(minv2),pt,rapid);
+      }
     }
   }
   return;
@@ -952,31 +965,37 @@ Bool_t AliAnalysisTaskCombinHF::FillHistos(Int_t pdgD,Int_t nProngs, AliAODRecoD
   if(minv2>fMinMass*fMinMass && minv2<fMaxMass*fMaxMass){
     Double_t rapid = tmpRD->Y(pdgD);
     if(fAnalysisCuts->IsInFiducialAcceptance(pt,rapid)){
-      fMassVsPtVsY->Fill(mass,pt,rapid);
       accept=kTRUE;
-      if(fReadMC){
-        Int_t signPdg[3]={0,0,0};
-        for(Int_t iii=0; iii<nProngs; iii++) signPdg[iii]=pdgdau[iii];
-        Int_t labD = tmpRD->MatchToMC(pdgD,arrayMC,nProngs,signPdg);
-        if(labD>=0){
-          AliAODMCParticle* part = dynamic_cast<AliAODMCParticle*>(arrayMC->At(TMath::Abs(dgLabels[0])));
-          if(part){
-            Int_t orig=AliVertexingHFUtils::CheckOrigin(arrayMC,part,fGoUpToQuark);
-	    Int_t pdgCode = TMath::Abs( part->GetPdgCode() );
-	    if(pdgCode==321){
-	      fMassVsPtVsYSig->Fill(mass,pt,rapid);
-	      AliAODMCParticle* dmes =  dynamic_cast<AliAODMCParticle*>(arrayMC->At(labD));
-	      if(dmes){
-		if(orig==4) fPtVsYVsMultRecoPrompt->Fill(dmes->Pt(),dmes->Y(),fMultiplicity);
-		else if(orig==5) fPtVsYVsMultRecoFeeddw->Fill(dmes->Pt(),dmes->Y(),fMultiplicity);
+      if(TMath::Abs(pdgD)==421 && fApplyCutCosThetaStar){
+	Double_t costhst=tmpRD->CosThetaStar(0,421,321,211); // kaon is the first daughter
+	if(TMath::Abs(costhst)>fCutCosThetaStar) accept=kFALSE;
+      }
+      if(accept){
+	fMassVsPtVsY->Fill(mass,pt,rapid);
+	if(fReadMC){
+	  Int_t signPdg[3]={0,0,0};
+	  for(Int_t iii=0; iii<nProngs; iii++) signPdg[iii]=pdgdau[iii];
+	  Int_t labD = tmpRD->MatchToMC(pdgD,arrayMC,nProngs,signPdg);
+	  if(labD>=0){
+	    AliAODMCParticle* part = dynamic_cast<AliAODMCParticle*>(arrayMC->At(TMath::Abs(dgLabels[0])));
+	    if(part){
+	      Int_t orig=AliVertexingHFUtils::CheckOrigin(arrayMC,part,fGoUpToQuark);
+	      Int_t pdgCode = TMath::Abs( part->GetPdgCode() );
+	      if(pdgCode==321){
+		fMassVsPtVsYSig->Fill(mass,pt,rapid);
+		AliAODMCParticle* dmes =  dynamic_cast<AliAODMCParticle*>(arrayMC->At(labD));
+		if(dmes){
+		  if(orig==4) fPtVsYVsMultRecoPrompt->Fill(dmes->Pt(),dmes->Y(),fMultiplicity);
+		  else if(orig==5) fPtVsYVsMultRecoFeeddw->Fill(dmes->Pt(),dmes->Y(),fMultiplicity);
+		}
+	      }else{
+		fMassVsPtVsYRefl->Fill(mass,pt,rapid);
 	      }
-	    }else{
-	      fMassVsPtVsYRefl->Fill(mass,pt,rapid);
 	    }
+	  }else{
+	    fMassVsPtVsYBkg->Fill(mass,pt,rapid);
 	  }
-        }else{
-          fMassVsPtVsYBkg->Fill(mass,pt,rapid);
-        }
+	}
       }
     }
   }
@@ -1032,13 +1051,20 @@ Bool_t AliAnalysisTaskCombinHF::FillHistos(Int_t pdgD,Int_t nProngs, AliAODRecoD
       if(minv2>fMinMass*fMinMass && minv2<fMaxMass*fMaxMass){
 	Double_t rapid = tmpRD->Y(pdgD);
 	if(fAnalysisCuts->IsInFiducialAcceptance(pt,rapid)){
-	  massRot=TMath::Sqrt(minv2);
-	  fMassVsPtVsYRot->Fill(massRot,pt,rapid);
-	  nRotated++;
-	  fDeltaMass->Fill(massRot-mass);
-	  if(fFullAnalysis){
-	    Double_t pointRot[5]={mass,massRot-mass,ptOrig,pt-ptOrig,angleProngXY};
-	    fDeltaMassFullAnalysis->Fill(pointRot);
+	  Bool_t fillRotCase=kTRUE;
+	  if(TMath::Abs(pdgD)==421 && fApplyCutCosThetaStar){
+	    Double_t costhst=tmpRD->CosThetaStar(0,421,321,211); // kaon is the first daughter
+	    if(TMath::Abs(costhst)>fCutCosThetaStar) fillRotCase=kFALSE;
+	  }
+	  if(fillRotCase){
+	    massRot=TMath::Sqrt(minv2);
+	    fMassVsPtVsYRot->Fill(massRot,pt,rapid);
+	    nRotated++;
+	    fDeltaMass->Fill(massRot-mass);
+	    if(fFullAnalysis){
+	      Double_t pointRot[5]={mass,massRot-mass,ptOrig,pt-ptOrig,angleProngXY};
+	      fDeltaMassFullAnalysis->Fill(pointRot);
+	    }
 	  }
 	}
       }
@@ -1073,7 +1099,12 @@ void AliAnalysisTaskCombinHF::FillMEHistos(Int_t pdgD,Int_t nProngs, AliAODRecoD
   if(minv2>fMinMass*fMinMass && minv2<fMaxMass*fMaxMass){
     Double_t rapid = tmpRD->Y(pdgD);
     if(fAnalysisCuts->IsInFiducialAcceptance(pt,rapid)){
-      fMassVsPtVsYME->Fill(mass,pt,rapid);
+      Bool_t fillME=kTRUE;
+      if(TMath::Abs(pdgD)==421 && fApplyCutCosThetaStar){
+	Double_t costhst=tmpRD->CosThetaStar(0,421,321,211); // kaon is the first daughter
+	if(TMath::Abs(costhst)>fCutCosThetaStar) fillME=kFALSE;
+      }
+      if(fillME) fMassVsPtVsYME->Fill(mass,pt,rapid);
     }
   }
   return;
@@ -1090,8 +1121,15 @@ void AliAnalysisTaskCombinHF::FillMEHistosLS(Int_t pdgD,Int_t nProngs, AliAODRec
   if(minv2>fMinMass*fMinMass && minv2<fMaxMass*fMaxMass){
     Double_t rapid = tmpRD->Y(pdgD);
     if(fAnalysisCuts->IsInFiducialAcceptance(pt,rapid)){
-      if(charge>0) fMassVsPtVsYMELSpp->Fill(mass,pt,rapid);
-      if(charge<0) fMassVsPtVsYMELSmm->Fill(mass,pt,rapid);
+      Bool_t fillME=kTRUE;
+      if(TMath::Abs(pdgD)==421 && fApplyCutCosThetaStar){
+	Double_t costhst=tmpRD->CosThetaStar(0,421,321,211); // kaon is the first daughter
+	if(TMath::Abs(costhst)>fCutCosThetaStar) fillME=kFALSE;
+      }
+      if(fillME){
+	if(charge>0) fMassVsPtVsYMELSpp->Fill(mass,pt,rapid);
+	if(charge<0) fMassVsPtVsYMELSmm->Fill(mass,pt,rapid);
+      }
     }
   }
   return;

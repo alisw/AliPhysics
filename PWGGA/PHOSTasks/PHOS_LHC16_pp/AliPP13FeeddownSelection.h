@@ -3,7 +3,7 @@
 
 
 // --- Custom header files ---
-#include "AliPP13PhysPhotonSelectionMC.h"
+#include "AliPP13SpectrumSelectionMC.h"
 #include "AliPP13SelectionWeights.h"
 
 // --- ROOT system ---
@@ -20,7 +20,7 @@
 
 
 
-class AliPP13FeeddownSelection: public AliPP13PhysPhotonSelectionMC
+class AliPP13FeeddownSelection: public AliPP13SpectrumSelectionMC
 {
 public:
 	enum Particles
@@ -33,7 +33,7 @@ public:
 	};
 
 	AliPP13FeeddownSelection():
-		AliPP13PhysPhotonSelectionMC(),
+		AliPP13SpectrumSelectionMC(),
 		fInvMass(),
 		fFeedownK0s()
 	{
@@ -41,7 +41,7 @@ public:
 
 	AliPP13FeeddownSelection(const char * name, const char * title,
 	                        AliPP13ClusterCuts cuts, AliPP13SelectionWeights * w):
-		AliPP13PhysPhotonSelectionMC(name, title, cuts, w),
+		AliPP13SpectrumSelectionMC(name, title, cuts, w),
 		fInvMass(),
 		fFeedownK0s()
 	{

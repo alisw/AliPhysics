@@ -69,13 +69,14 @@ namespace AliAnalysisCODEX {
     kIsFake = BIT(12),
     kTOFmismatch = BIT(13),
     kIsKink = BIT(14),
-    kTRDout = BIT(15)
+    kTRDrefit = BIT(15)
   };
 
   enum EventMask {
     kMCevent = BIT(0),
     kNegativeB = BIT(1),
-    kInelGt0 = BIT(2)
+    kInelGt0 = BIT(2),
+    kTriggerClasses = BIT(3)
   };
 
   enum ITSbits {
@@ -190,7 +191,7 @@ namespace AliAnalysisCODEX {
       float            TOFsignal;    /// TOF time (T0 already subtracted)
       int              wildcard;     /// In the MC: index of the mother, in the data: TOF channel
       float            length;       /// Track length
-      char             TPCsigmas[8]; /// TPC sigmas. Not yet fully clear if it is possible to recompute them on the fly.
+      char             TPCsigmas[8]; /// TPC sigmas. If TPC PID is not available ITS sigms is stored.
       unsigned short   mask;         /// Mask (see ne enumerator above for the meaning)
       short            DCAxy;        /// DCAxy (binned)
       short            DCAz;         /// DCAz (binned)

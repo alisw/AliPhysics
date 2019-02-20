@@ -41,7 +41,7 @@ AliFemtoManager* ConfigFemtoAnalysis(const char* params) {
 	
 	const int numOfMultBins = 10;	
 	const int numOfChTypes = 20;
-	const int numOfkTbins = 7;
+	const int numOfkTbins = 6;
 
 	char *parameter[20];
 	if(strlen(params)!=0)
@@ -121,7 +121,7 @@ AliFemtoManager* ConfigFemtoAnalysis(const char* params) {
 	const char *chrgs[numOfChTypes] = { "PP", "aPaP", "PaP", "KpKp", "KmKm", "KpKm", "PIpPIp", "PImPIm", "PIpPIm", "all", "plus", "minus", "mixed",  "V0PL","V0PAL","V0APL","V0APAL","V0LL","V0ALAL","V0LAL" };
 	
 	//int runktdep = 1;
-	double ktrng[numOfkTbins+1] = {0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 1.0};
+	double ktrng[numOfkTbins+1] = {0.13, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7};
 	//double ktrng[numOfkTbins+1] = {0.0, 0, 0, 0, 0, 0};
 	/*double ktrngAll[numOfkTbins+1] = {0.0, 1.0, 2.0, 3.0, 4.0, 100.0};
 	double ktrngPion[numOfkTbins+1] = {0.0, 0.8, 1.2, 1.4, 2.5, 100.0};
@@ -185,7 +185,7 @@ AliFemtoManager* ConfigFemtoAnalysis(const char* params) {
 	//AliFemtoPairCutRadialDistance			*sqpcetaphitpc[numOfMultBins*numOfChTypes];
 	AliFemtoPairCutAntiGamma			*sqpcetaphitpc[numOfMultBins*numOfChTypes];
 	//	AliFemtoChi2CorrFctn					*cchiqinvetaphitpc[numOfMultBins*numOfChTypes];
-	AliFemtoPairCutPt					*ktpcuts[numOfMultBins*numOfChTypes*numOfkTbins];
+	AliFemtoKTPairCut					*ktpcuts[numOfMultBins*numOfChTypes*numOfkTbins];
 	AliFemtoQinvCorrFctn					*cqinvkttpc[numOfMultBins*numOfChTypes*numOfkTbins];
 	AliFemtoQinvCorrFctn					*cqinvtpc[numOfMultBins*numOfChTypes];
 	AliFemtoCorrFctnDEtaDPhi			*cdedpetaphi[numOfMultBins*numOfChTypes];
@@ -440,7 +440,7 @@ AliFemtoManager* ConfigFemtoAnalysis(const char* params) {
 						{
 							if(ktrng[ikt+1]==0) continue;
 							ktm = aniter * numOfkTbins + ikt;
-							ktpcuts[ktm] = new AliFemtoPairCutPt(ktrng[ikt], ktrng[ikt+1]);
+							ktpcuts[ktm] = new AliFemtoKTPairCut(ktrng[ikt], ktrng[ikt+1]);
 				
 							cqinvkttpc[ktm] = new AliFemtoQinvCorrFctn(Form("cqinv%stpcM%ikT%i", chrgs[ichg], imult, ikt),nbinssh,0.0,(imult>6)?shqmax*2.5:shqmax);
 							cqinvkttpc[ktm]->SetPairSelectionCut(ktpcuts[ktm]);

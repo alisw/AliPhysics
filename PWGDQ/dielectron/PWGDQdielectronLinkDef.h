@@ -25,6 +25,7 @@
 #pragma link C++ class AliAnalysisTaskElectronEfficiencyV2+;
 #pragma link C++ class AliDielectronVarCuts+;
 #pragma link C++ class AliDielectronV0Cuts+;
+#pragma link C++ class AliDielectronTMVACuts+;
 #pragma link C++ class AliDielectronTrackCuts+;
 #pragma link C++ class AliDielectronPairLegCuts+;
 #pragma link C++ class AliDielectronSignalBase+;
@@ -58,4 +59,9 @@
 #pragma link C++ class AliDielectronTGReducedInfo+;
 #pragma link C++ class AliAnalysisTaskTGReducedTree+;
 #pragma link C++ class AliAnalysisTaskLMeeCocktailMC+;
+#pragma link C++ class AliCocktailSmearing+;
+#pragma link C++ class AliAnalysisTaskCharm+;
+#pragma link C++ class AliAnalysisTaskBeauty+;
+#pragma link C++ class AliAnalysisTaskJpsi+;
+#pragma link C++ class AlimakeJPsiTree+;
 #endif

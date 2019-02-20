@@ -99,7 +99,10 @@ AliAnalysisTaskCorPIDTOFQA::AliAnalysisTaskCorPIDTOFQA() : AliAnalysisTaskSE(),
 
     fHistPt(0),                    //  1
     cent_ntracks(0),               //  2
-    
+
+    dEdx_p(0),
+    ndEdx_p(0),
+    dEdx_p_cut(0),
 //  m2_pt_pos(0),                  //  3
 //  m2_pt_neg(0),                  //  4
     m2_pt_pos_TPC(0),              //  5
@@ -289,7 +292,10 @@ AliAnalysisTaskCorPIDTOFQA::AliAnalysisTaskCorPIDTOFQA(const char* name) : AliAn
 
     fHistPt(0),                    //  1
     cent_ntracks(0),               //  2
-    
+
+    dEdx_p(0),
+    ndEdx_p(0),
+    dEdx_p_cut(0),    
 //  m2_pt_pos(0),                  //  3
 //  m2_pt_neg(0),                  //  4
     m2_pt_pos_TPC(0),              //  5
@@ -479,7 +485,7 @@ AliAnalysisTaskCorPIDTOFQA::AliAnalysisTaskCorPIDTOFQA(const char* name) : AliAn
 
 //    int i = 0;
     run_mode = atoi(name);
-    cout<<endl<<run_mode<<endl;
+    cout<<endl<<endl<<endl<<run_mode<<endl<<endl<<endl;
 
     if(run_mode == 1)   cut_width = 3;
 }
@@ -574,7 +580,9 @@ void AliAnalysisTaskCorPIDTOFQA::UserCreateOutputObjects()
     
     fHistPt                    = new TH1F("fHistPt",                    "Pt()",                         18, coarse_binning);                              //  1
     cent_ntracks               = new TH2F("cent_ntracks",               "cent_ntracks",                100,      0,    100,     100,       0,     800);   //  2
-    
+
+
+
 //  m2_pt_pos                  = new TH2F("m2_pt_pos",                  "m2_pt_pos",                    18, coarse_binning,    2400,    -1.0,     7.0);   //  3
 //  m2_pt_neg                  = new TH2F("m2_pt_neg",                  "m2_pt_neg",                    18, coarse_binning,    2400,    -1.0,     7.0);   //  4
     m2_pt_pos_TPC              = new TH2F("m2_pt_pos_TPC",              "m2_pt_pos_TPC",                18, coarse_binning,    2400,    -1.0,     7.0);   //  5
@@ -735,6 +743,12 @@ void AliAnalysisTaskCorPIDTOFQA::UserCreateOutputObjects()
     }
     // display plots
 
+    dEdx_p                     = new TH2F("dEdx_p",                     "dEdx_p",                        800, fine_binning,     800,       0,    1000);
+    ndEdx_p                    = new TH2F("ndEdx_p",                    "ndEdx_p",                       800, fine_binning,     800,     -10,      10);
+    dEdx_p_cut                 = new TH2F("dEdx_p_cut",                 "dEdx_p_cut",                    800, fine_binning,     800,       0,    1000);
+    
+    
+
     m2_pt_pos_fine             = new TH2F("m2_pt_pos_fine",             "m2_pt_pos_fine",              800,   fine_binning,    2400,    -1.0,     7.0);   // 72
     m2_pt_neg_fine             = new TH2F("m2_pt_neg_fine",             "m2_pt_neg_fine",              800,   fine_binning,    2400,    -1.0,     7.0);   // 73
     m2_pt_pos_TPC_fine         = new TH2F("m2_pt_pos_TPC_fine",         "m2_pt_pos_TPC_fine",          800,   fine_binning,    2400,    -1.0,     7.0);   // 74
@@ -779,6 +793,10 @@ void AliAnalysisTaskCorPIDTOFQA::UserCreateOutputObjects()
 
     fOutputList->Add(fHistPt);                      //  1
     fOutputList->Add(cent_ntracks);                 //  2
+
+    fOutputList->Add(dEdx_p);
+    fOutputList->Add(ndEdx_p);
+    fOutputList->Add(dEdx_p_cut);
     
 //  fOutputList->Add(m2_pt_pos);                    //  3
 //  fOutputList->Add(m2_pt_neg);                    //  4
@@ -794,6 +812,8 @@ void AliAnalysisTaskCorPIDTOFQA::UserCreateOutputObjects()
     fOutputList->Add(m2_pt_neg_cut_B);              // 14
 
     
+    if(run_mode == 0)
+    {
     fOutputList->Add(m2_pt_pos_cut_sb0);              //
     fOutputList->Add(m2_pt_neg_cut_sb0);              //
     fOutputList->Add(m2_pt_pos_cut_sb1);              // 15
@@ -817,7 +837,7 @@ void AliAnalysisTaskCorPIDTOFQA::UserCreateOutputObjects()
     
     fOutputList->Add(m2_pt_pos_cut_T_prot);         // 19
     fOutputList->Add(m2_pt_neg_cut_T_prot);         // 20
-    
+    }
     
     fOutputList->Add(m2_pt_pos_cut_with_trig_05);   // 21
     fOutputList->Add(m2_pt_neg_cut_with_trig_05);   // 22
@@ -825,8 +845,11 @@ void AliAnalysisTaskCorPIDTOFQA::UserCreateOutputObjects()
     fOutputList->Add(deut_phi_pt_pos_T);            // 23
     fOutputList->Add(deut_phi_pt_neg_T);            // 24
 
+    if(run_mode == 0)
+    {
     fOutputList->Add(prot_phi_pt_pos_T);            // 25
     fOutputList->Add(prot_phi_pt_neg_T);            // 26
+    }
     
     fOutputList->Add(deut_phi_pt_pos_A);            // 27
     fOutputList->Add(deut_phi_pt_neg_A);            // 28
@@ -834,7 +857,8 @@ void AliAnalysisTaskCorPIDTOFQA::UserCreateOutputObjects()
     fOutputList->Add(deut_phi_pt_neg_B);            // 30
     
     fOutputList->Add(deut_per_event);               // 35
-
+    if(run_mode == 0)
+    {
     fOutputList->Add(deut_phi_pt_pos_sb0);            //
     fOutputList->Add(deut_phi_pt_neg_sb0);            //
     fOutputList->Add(deut_phi_pt_pos_sb1);            // 31
@@ -856,7 +880,7 @@ void AliAnalysisTaskCorPIDTOFQA::UserCreateOutputObjects()
     fOutputList->Add(deut_phi_pt_pos_sb9);            //
     fOutputList->Add(deut_phi_pt_neg_sb9);            //
     fOutputList->Add(prot_per_event);               // 36
-    
+    }
     
     fOutputList->Add(trig_05_per_event);            // 37
    
@@ -880,9 +904,13 @@ void AliAnalysisTaskCorPIDTOFQA::UserCreateOutputObjects()
     fOutputList->Add(deut_dphi_pt_pos_neg_05_T);    // 51
     fOutputList->Add(deut_dphi_pt_neg_neg_05_T);    // 52
 
+
+    if(run_mode == 0)
+    {
     fOutputList->Add(prot_dphi_pt_pos_pos_05_T);    // 53
     fOutputList->Add(prot_dphi_pt_pos_neg_05_T);    // 54
     fOutputList->Add(prot_dphi_pt_neg_neg_05_T);    // 55
+    }
 
     fOutputList->Add(deut_dphi_pt_pos_pos_05_A);    // 56
     fOutputList->Add(deut_dphi_pt_pos_neg_05_A);    // 57
@@ -892,6 +920,8 @@ void AliAnalysisTaskCorPIDTOFQA::UserCreateOutputObjects()
     fOutputList->Add(deut_dphi_pt_pos_neg_05_B);    // 60
     fOutputList->Add(deut_dphi_pt_neg_neg_05_B);    // 61
     
+    if(run_mode == 0)
+    {
     fOutputList->Add(deut_dphi_pt_pos_pos_05_sb0);    //
     fOutputList->Add(deut_dphi_pt_pos_neg_05_sb0);    //
     fOutputList->Add(deut_dphi_pt_neg_neg_05_sb0);    //
@@ -922,7 +952,7 @@ void AliAnalysisTaskCorPIDTOFQA::UserCreateOutputObjects()
     fOutputList->Add(deut_dphi_pt_pos_pos_05_sb9);    //
     fOutputList->Add(deut_dphi_pt_pos_neg_05_sb9);    //
     fOutputList->Add(deut_dphi_pt_neg_neg_05_sb9);    //
-    
+    }
     
     fOutputList->Add(DCAxy_pos);                    // 68
     fOutputList->Add(DCAxy_neg);                    // 69
@@ -940,7 +970,8 @@ void AliAnalysisTaskCorPIDTOFQA::UserCreateOutputObjects()
     fOutputList->Add(m2_pt_pos_cut_B_fine);         // 80
     fOutputList->Add(m2_pt_neg_cut_B_fine);         // 81
 
-
+    if(run_mode == 0)
+    {
     fOutputList->Add(m2_pt_pos_cut_sb0_fine);       //
     fOutputList->Add(m2_pt_neg_cut_sb0_fine);       //
     fOutputList->Add(m2_pt_pos_cut_sb1_fine);       // 82
@@ -961,13 +992,16 @@ void AliAnalysisTaskCorPIDTOFQA::UserCreateOutputObjects()
     fOutputList->Add(m2_pt_neg_cut_sb8_fine);       //
     fOutputList->Add(m2_pt_pos_cut_sb9_fine);       //
     fOutputList->Add(m2_pt_neg_cut_sb9_fine);       //
-    
+    }
+
+    if(run_mode == 0)
+    {
     fOutputList->Add(m2_pt_pos_TPC_prot_fine);      // 86
     fOutputList->Add(m2_pt_neg_TPC_prot_fine);      // 87
 
     fOutputList->Add(m2_pt_pos_cut_T_prot_fine);    // 88
     fOutputList->Add(m2_pt_neg_cut_T_prot_fine);    // 89
-
+    }
     /////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
     AliAnalysisManager *man            = AliAnalysisManager::GetAnalysisManager();                  //// added by Brennan
@@ -1103,7 +1137,8 @@ void AliAnalysisTaskCorPIDTOFQA::UserExec(Option_t *)
 ////////////////////////////////////////
 	if(run_mode == 4  &&  fabs(dca[0]) > 0.1)                                       {    continue;    }      // used for systematic uncertainty calculation
 	if(run_mode == 4  &&  fabs(dca[1]) > 0.1)                                       {    continue;    }
-	
+
+
 //	Float_t deltat        = tof_minus_tpion(track);
 	float   mom           = track->P();
 
@@ -1116,8 +1151,26 @@ void AliAnalysisTaskCorPIDTOFQA::UserExec(Option_t *)
 //	beta                  = Beta(track);
 
 	Float_t TPC_PID       = 3.0;
-
+	
 	if(run_mode == 2){   TPC_PID = 2.0;   }
+
+
+	
+
+        // mark1
+	///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+	Double_t tpc_mom       = track->GetTPCmomentum();
+//	Double_t deuteron_dEdx = fPIDResponse->GetTPCResponse().GetExpectedSignal(tpc_mom,(AliPID::EParticleType)5);     // 5 = deuteron
+	Float_t dEdx           = track->GetTPCsignal();
+	Double_t nSigmaTPCDeut = fPIDResponse->NumberOfSigmasTPC(track,(AliPID::EParticleType)5);
+	
+	dEdx_p->Fill(mom, dEdx);
+	ndEdx_p->Fill(mom, nSigmaTPCDeut);
+	
+	///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+	
+	
+
 	
 	if(charge > 0)
 	{
@@ -1128,6 +1181,8 @@ void AliAnalysisTaskCorPIDTOFQA::UserExec(Option_t *)
 	    Double_t nSigmaTPCDeut = fPIDResponse->NumberOfSigmasTPC(track,(AliPID::EParticleType)5);  // 5 = deuteron
 	    if(TMath::Abs(nSigmaTPCDeut) < TPC_PID)
 	    {
+
+		dEdx_p_cut->Fill(mom, dEdx);
 		m2_pt_pos_TPC     ->Fill(pt,  m2tof);
 		m2_pt_pos_TPC_fine->Fill(pt,  m2tof);
 			
@@ -1186,11 +1241,7 @@ void AliAnalysisTaskCorPIDTOFQA::UserExec(Option_t *)
 			if(deut_phi > 3*pio2){    deut_phi = deut_phi - twopi;   }	if(deut_phi > 3*pio2){    deut_phi = deut_phi - twopi;   }
 			deut_phi_pt_pos_B->Fill(pt, deut_phi);
 		    }
-
-
-
-		    
-		    if(m2tof < deut_mean - 5.0 * deut_sigma  &&   m2tof > deut_mean - 6.0 * deut_sigma)
+		    if(run_mode == 0  &&  m2tof < deut_mean - 5.0 * deut_sigma  &&   m2tof > deut_mean - 6.0 * deut_sigma)
 		    {
 			deut_track_num_sb0[deut_count_sb0] = i;
 			deut_count_sb0++;
@@ -1201,7 +1252,7 @@ void AliAnalysisTaskCorPIDTOFQA::UserExec(Option_t *)
 			if(deut_phi > 3*pio2){    deut_phi = deut_phi - twopi;   }	if(deut_phi > 3*pio2){    deut_phi = deut_phi - twopi;   }
 			deut_phi_pt_pos_sb0->Fill(pt, deut_phi);
 		    }
-		    else if(m2tof < deut_mean - 4.0 * deut_sigma  &&   m2tof > deut_mean - 5.0 * deut_sigma)
+		    else if(run_mode == 0  &&  m2tof < deut_mean - 4.0 * deut_sigma  &&   m2tof > deut_mean - 5.0 * deut_sigma)
 		    {
 			deut_track_num_sb1[deut_count_sb1] = i;
 			deut_count_sb1++;
@@ -1212,7 +1263,7 @@ void AliAnalysisTaskCorPIDTOFQA::UserExec(Option_t *)
 			if(deut_phi > 3*pio2){    deut_phi = deut_phi - twopi;   }	if(deut_phi > 3*pio2){    deut_phi = deut_phi - twopi;   }
 			deut_phi_pt_pos_sb1->Fill(pt, deut_phi);
 		    }
-		    else if(m2tof < deut_mean - 3.0 * deut_sigma  &&   m2tof > deut_mean - 4.0 * deut_sigma)
+		    else if(run_mode == 0  &&  m2tof < deut_mean - 3.0 * deut_sigma  &&   m2tof > deut_mean - 4.0 * deut_sigma)
 		    {
 			deut_track_num_sb2[deut_count_sb2] = i;
 			deut_count_sb2++;
@@ -1223,7 +1274,7 @@ void AliAnalysisTaskCorPIDTOFQA::UserExec(Option_t *)
 			if(deut_phi > 3*pio2){    deut_phi = deut_phi - twopi;   }	if(deut_phi > 3*pio2){    deut_phi = deut_phi - twopi;   }
 			deut_phi_pt_pos_sb2->Fill(pt, deut_phi);
 		    }
-		    else if(m2tof < deut_mean - 2.0 * deut_sigma  &&   m2tof > deut_mean - 3.0 * deut_sigma)
+		    else if(run_mode == 0  &&  m2tof < deut_mean - 2.0 * deut_sigma  &&   m2tof > deut_mean - 3.0 * deut_sigma)
 		    {
 			deut_track_num_sb3[deut_count_sb3] = i;
 			deut_count_sb3++;
@@ -1234,7 +1285,7 @@ void AliAnalysisTaskCorPIDTOFQA::UserExec(Option_t *)
 			if(deut_phi > 3*pio2){    deut_phi = deut_phi - twopi;   }	if(deut_phi > 3*pio2){    deut_phi = deut_phi - twopi;   }
 			deut_phi_pt_pos_sb3->Fill(pt, deut_phi);
 		    }
-		    else if(m2tof < deut_mean + 3.0 * deut_sigma  &&   m2tof > deut_mean + 2.0 * deut_sigma)
+		    else if(run_mode == 0  &&  m2tof < deut_mean + 3.0 * deut_sigma  &&   m2tof > deut_mean + 2.0 * deut_sigma)
 		    {
 			deut_track_num_sb4[deut_count_sb4] = i;
 			deut_count_sb4++;
@@ -1245,7 +1296,7 @@ void AliAnalysisTaskCorPIDTOFQA::UserExec(Option_t *)
 			if(deut_phi > 3*pio2){    deut_phi = deut_phi - twopi;   }	if(deut_phi > 3*pio2){    deut_phi = deut_phi - twopi;   }
 			deut_phi_pt_pos_sb4->Fill(pt, deut_phi);
 		    }
-		    else if(m2tof < deut_mean + 4.0 * deut_sigma  &&   m2tof > deut_mean + 3.0 * deut_sigma)
+		    else if(run_mode == 0  &&  m2tof < deut_mean + 4.0 * deut_sigma  &&   m2tof > deut_mean + 3.0 * deut_sigma)
 		    {
 			deut_track_num_sb5[deut_count_sb5] = i;
 			deut_count_sb5++;
@@ -1256,7 +1307,7 @@ void AliAnalysisTaskCorPIDTOFQA::UserExec(Option_t *)
 			if(deut_phi > 3*pio2){    deut_phi = deut_phi - twopi;   }	if(deut_phi > 3*pio2){    deut_phi = deut_phi - twopi;   }
 			deut_phi_pt_pos_sb5->Fill(pt, deut_phi);
 		    }	    
-		    else if(m2tof < deut_mean + 5.0 * deut_sigma  &&   m2tof > deut_mean + 4.0 * deut_sigma)
+		    else if(run_mode == 0  &&  m2tof < deut_mean + 5.0 * deut_sigma  &&   m2tof > deut_mean + 4.0 * deut_sigma)
 		    {
 			deut_track_num_sb6[deut_count_sb6] = i;
 			deut_count_sb6++;
@@ -1267,7 +1318,7 @@ void AliAnalysisTaskCorPIDTOFQA::UserExec(Option_t *)
 			if(deut_phi > 3*pio2){    deut_phi = deut_phi - twopi;   }	if(deut_phi > 3*pio2){    deut_phi = deut_phi - twopi;   }
 			deut_phi_pt_pos_sb6->Fill(pt, deut_phi);
 		    }
-		    else if(m2tof < deut_mean + 6.0 * deut_sigma  &&   m2tof > deut_mean + 5.0 * deut_sigma)
+		    else if(run_mode == 0  &&  m2tof < deut_mean + 6.0 * deut_sigma  &&   m2tof > deut_mean + 5.0 * deut_sigma)
 		    {
 			deut_track_num_sb7[deut_count_sb7] = i;
 			deut_count_sb7++;
@@ -1278,7 +1329,7 @@ void AliAnalysisTaskCorPIDTOFQA::UserExec(Option_t *)
 			if(deut_phi > 3*pio2){    deut_phi = deut_phi - twopi;   }	if(deut_phi > 3*pio2){    deut_phi = deut_phi - twopi;   }
 			deut_phi_pt_pos_sb7->Fill(pt, deut_phi);
 		    }
-		    else if(m2tof < deut_mean + 7.0 * deut_sigma  &&   m2tof > deut_mean + 6.0 * deut_sigma)
+		    else if(run_mode == 0  &&  m2tof < deut_mean + 7.0 * deut_sigma  &&   m2tof > deut_mean + 6.0 * deut_sigma)
 		    {
 			deut_track_num_sb8[deut_count_sb8] = i;
 			deut_count_sb8++;
@@ -1289,7 +1340,7 @@ void AliAnalysisTaskCorPIDTOFQA::UserExec(Option_t *)
 			if(deut_phi > 3*pio2){    deut_phi = deut_phi - twopi;   }	if(deut_phi > 3*pio2){    deut_phi = deut_phi - twopi;   }
 			deut_phi_pt_pos_sb8->Fill(pt, deut_phi);
 		    }
-		    else if(m2tof < deut_mean + 8.0 * deut_sigma  &&   m2tof > deut_mean + 7.0 * deut_sigma)
+		    else if(run_mode == 0  &&  m2tof < deut_mean + 8.0 * deut_sigma  &&   m2tof > deut_mean + 7.0 * deut_sigma)
 		    {
 			deut_track_num_sb9[deut_count_sb9] = i;
 			deut_count_sb9++;
@@ -1362,6 +1413,8 @@ void AliAnalysisTaskCorPIDTOFQA::UserExec(Option_t *)
 	    
 	else if(charge < 0)
 	{
+	    dEdx_p_cut->Fill(mom, dEdx);
+			
 	    m2_pt_neg_fine->Fill(pt, m2tof);
 	    if(pt >= 1.0  &&  pt < 2.0)   tof_phi_eta_neg->Fill(phi, eta);
 
@@ -1432,7 +1485,7 @@ void AliAnalysisTaskCorPIDTOFQA::UserExec(Option_t *)
 
 
 		    
-		    if(m2tof < deut_mean - 5.0 * deut_sigma  &&   m2tof > deut_mean - 6.0 * deut_sigma)
+		    if(run_mode == 0  &&  m2tof < deut_mean - 5.0 * deut_sigma  &&   m2tof > deut_mean - 6.0 * deut_sigma)
 		    {
 			deut_track_num_sb0[deut_count_sb0] = i;
 			deut_count_sb0++;
@@ -1443,7 +1496,7 @@ void AliAnalysisTaskCorPIDTOFQA::UserExec(Option_t *)
 			if(deut_phi > 3*pio2){    deut_phi = deut_phi - twopi;   }	if(deut_phi > 3*pio2){    deut_phi = deut_phi - twopi;   }
 			deut_phi_pt_neg_sb0->Fill(pt, deut_phi);
 		    }
-		    else if(m2tof < deut_mean - 4.0 * deut_sigma  &&   m2tof > deut_mean - 5.0 * deut_sigma)
+		    else if(run_mode == 0  &&  m2tof < deut_mean - 4.0 * deut_sigma  &&   m2tof > deut_mean - 5.0 * deut_sigma)
 		    {
 			deut_track_num_sb1[deut_count_sb1] = i;
 			deut_count_sb1++;
@@ -1454,7 +1507,7 @@ void AliAnalysisTaskCorPIDTOFQA::UserExec(Option_t *)
 			if(deut_phi > 3*pio2){    deut_phi = deut_phi - twopi;   }	if(deut_phi > 3*pio2){    deut_phi = deut_phi - twopi;   }
 			deut_phi_pt_neg_sb1->Fill(pt, deut_phi);
 		    }
-		    else if(m2tof < deut_mean - 3.0 * deut_sigma  &&   m2tof > deut_mean - 4.0 * deut_sigma)
+		    else if(run_mode == 0  &&  m2tof < deut_mean - 3.0 * deut_sigma  &&   m2tof > deut_mean - 4.0 * deut_sigma)
 		    {
 			deut_track_num_sb2[deut_count_sb2] = i;
 			deut_count_sb2++;
@@ -1465,7 +1518,7 @@ void AliAnalysisTaskCorPIDTOFQA::UserExec(Option_t *)
 			if(deut_phi > 3*pio2){    deut_phi = deut_phi - twopi;   }	if(deut_phi > 3*pio2){    deut_phi = deut_phi - twopi;   }
 			deut_phi_pt_neg_sb2->Fill(pt, deut_phi);
 		    }
-		    else if(m2tof < deut_mean - 2.0 * deut_sigma  &&   m2tof > deut_mean - 3.0 * deut_sigma)
+		    else if(run_mode == 0  &&  m2tof < deut_mean - 2.0 * deut_sigma  &&   m2tof > deut_mean - 3.0 * deut_sigma)
 		    {
 			deut_track_num_sb3[deut_count_sb3] = i;
 			deut_count_sb3++;
@@ -1476,7 +1529,7 @@ void AliAnalysisTaskCorPIDTOFQA::UserExec(Option_t *)
 			if(deut_phi > 3*pio2){    deut_phi = deut_phi - twopi;   }	if(deut_phi > 3*pio2){    deut_phi = deut_phi - twopi;   }
 			deut_phi_pt_neg_sb3->Fill(pt, deut_phi);
 		    }
-		    else if(m2tof < deut_mean + 3.0 * deut_sigma  &&   m2tof > deut_mean + 2.0 * deut_sigma)
+		    else if(run_mode == 0  &&  m2tof < deut_mean + 3.0 * deut_sigma  &&   m2tof > deut_mean + 2.0 * deut_sigma)
 		    {
 			deut_track_num_sb4[deut_count_sb4] = i;
 			deut_count_sb4++;
@@ -1487,7 +1540,7 @@ void AliAnalysisTaskCorPIDTOFQA::UserExec(Option_t *)
 			if(deut_phi > 3*pio2){    deut_phi = deut_phi - twopi;   }	if(deut_phi > 3*pio2){    deut_phi = deut_phi - twopi;   }
 			deut_phi_pt_neg_sb4->Fill(pt, deut_phi);
 		    }
-		    else if(m2tof < deut_mean + 4.0 * deut_sigma  &&   m2tof > deut_mean + 3.0 * deut_sigma)
+		    else if(run_mode == 0  &&  m2tof < deut_mean + 4.0 * deut_sigma  &&   m2tof > deut_mean + 3.0 * deut_sigma)
 		    {
 			deut_track_num_sb5[deut_count_sb5] = i;
 			deut_count_sb5++;
@@ -1498,7 +1551,7 @@ void AliAnalysisTaskCorPIDTOFQA::UserExec(Option_t *)
 			if(deut_phi > 3*pio2){    deut_phi = deut_phi - twopi;   }	if(deut_phi > 3*pio2){    deut_phi = deut_phi - twopi;   }
 			deut_phi_pt_neg_sb5->Fill(pt, deut_phi);
 		    }	    
-		    else if(m2tof < deut_mean + 5.0 * deut_sigma  &&   m2tof > deut_mean + 4.0 * deut_sigma)
+		    else if(run_mode == 0  &&  m2tof < deut_mean + 5.0 * deut_sigma  &&   m2tof > deut_mean + 4.0 * deut_sigma)
 		    {
 			deut_track_num_sb6[deut_count_sb6] = i;
 			deut_count_sb6++;
@@ -1509,7 +1562,7 @@ void AliAnalysisTaskCorPIDTOFQA::UserExec(Option_t *)
 			if(deut_phi > 3*pio2){    deut_phi = deut_phi - twopi;   }	if(deut_phi > 3*pio2){    deut_phi = deut_phi - twopi;   }
 			deut_phi_pt_neg_sb6->Fill(pt, deut_phi);
 		    }
-		    else if(m2tof < deut_mean + 6.0 * deut_sigma  &&   m2tof > deut_mean + 5.0 * deut_sigma)
+		    else if(run_mode == 0  &&  m2tof < deut_mean + 6.0 * deut_sigma  &&   m2tof > deut_mean + 5.0 * deut_sigma)
 		    {
 			deut_track_num_sb7[deut_count_sb7] = i;
 			deut_count_sb7++;
@@ -1520,7 +1573,7 @@ void AliAnalysisTaskCorPIDTOFQA::UserExec(Option_t *)
 			if(deut_phi > 3*pio2){    deut_phi = deut_phi - twopi;   }	if(deut_phi > 3*pio2){    deut_phi = deut_phi - twopi;   }
 			deut_phi_pt_neg_sb7->Fill(pt, deut_phi);
 		    }
-		    else if(m2tof < deut_mean + 7.0 * deut_sigma  &&   m2tof > deut_mean + 6.0 * deut_sigma)
+		    else if(run_mode == 0  &&  m2tof < deut_mean + 7.0 * deut_sigma  &&   m2tof > deut_mean + 6.0 * deut_sigma)
 		    {
 			deut_track_num_sb8[deut_count_sb8] = i;
 			deut_count_sb8++;
@@ -1531,7 +1584,7 @@ void AliAnalysisTaskCorPIDTOFQA::UserExec(Option_t *)
 			if(deut_phi > 3*pio2){    deut_phi = deut_phi - twopi;   }	if(deut_phi > 3*pio2){    deut_phi = deut_phi - twopi;   }
 			deut_phi_pt_neg_sb8->Fill(pt, deut_phi);
 		    }
-		    else if(m2tof < deut_mean + 8.0 * deut_sigma  &&   m2tof > deut_mean + 7.0 * deut_sigma)
+		    else if(run_mode == 0  &&  m2tof < deut_mean + 8.0 * deut_sigma  &&   m2tof > deut_mean + 7.0 * deut_sigma)
 		    {
 			deut_track_num_sb9[deut_count_sb9] = i;
 			deut_count_sb9++;
@@ -2115,7 +2168,7 @@ void AliAnalysisTaskCorPIDTOFQA::UserExec(Option_t *)
 
 
 
-    if(run_mode == 0)
+    if(run_mode == 9)
     {
     
     AliAODHandler *oh = (AliAODHandler*)AliAnalysisManager::GetAnalysisManager()->GetOutputEventHandler();

@@ -34,6 +34,9 @@ ClassImp(AliJetContainer);
  */
 AliJetContainer::AliJetContainer():
   AliParticleContainer(),
+  fJetType(kUndefinedJetType),
+  fJetAlgorithm(undefined_jet_algorithm),
+  fRecombinationScheme(undefined_scheme),
   fJetAcceptanceType(0),
   fJetRadius(0),
   fRhoName(),
@@ -75,6 +78,9 @@ AliJetContainer::AliJetContainer():
  */
 AliJetContainer::AliJetContainer(const char *name):
   AliParticleContainer(name),
+  fJetType(kUndefinedJetType),
+  fJetAlgorithm(undefined_jet_algorithm),
+  fRecombinationScheme(undefined_scheme),
   fJetAcceptanceType(0),
   fJetRadius(0),
   fRhoName(),
@@ -127,6 +133,9 @@ AliJetContainer::AliJetContainer(const char *name):
 AliJetContainer::AliJetContainer(EJetType_t jetType, EJetAlgo_t jetAlgo, ERecoScheme_t recoScheme, Double_t radius,
     AliParticleContainer* partCont, AliClusterContainer* clusCont, TString tag):
   AliParticleContainer(GenerateJetName(jetType, jetAlgo, recoScheme, radius, partCont, clusCont, tag)),
+  fJetType(jetType),
+  fJetAlgorithm(jetAlgo),
+  fRecombinationScheme(recoScheme),
   fJetAcceptanceType(0),
   fJetRadius(radius),
   fRhoName(),
@@ -886,6 +895,9 @@ TString AliJetContainer::GenerateJetName(EJetType_t jetType, EJetAlgo_t jetAlgo,
     break;
   case kNeutralJet:
     typeString = "Neutral";
+    break;
+  case kUndefinedJetType:
+    typeString = "Undefined";
     break;
   }
 

@@ -58,7 +58,9 @@ AliAnalysisTaskElectronEfficiencyV2* AddTask_caklein_efficiency(TString name = "
   // #########################################################
   // #########################################################
   // Possibility to set generator. If nothing set all generators are taken into account
-  task->SetGeneratorName(generatorName);
+  // task->SetGeneratorName(generatorName);
+  task->SetGeneratorMCSignalName(generatorNameForMCSignal);
+  task->SetGeneratorULSSignalName(generatorNameForULSSignal);
 
   // #########################################################
   // #########################################################
@@ -139,6 +141,7 @@ AliAnalysisTaskElectronEfficiencyV2* AddTask_caklein_efficiency(TString name = "
   // Pairing related config
   task->SetDoPairing(DoPairing);
   task->SetULSandLS(DoULSLS);
+  task->SetDeactivateLS(DeactivateLS);
 
   // #########################################################
   // #########################################################

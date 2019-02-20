@@ -12,14 +12,16 @@ AliAnalysisTaskSEDvsMultiplicity *AddTaskDvsMultiplicity(Int_t system=0,
 							 Int_t recoEstimator = AliAnalysisTaskSEDvsMultiplicity::kNtrk10,
 							 Int_t MCEstimator = AliAnalysisTaskSEDvsMultiplicity::kEta10,
 							 Bool_t isPPbData=kFALSE,
-							 Int_t year = 16)
+							 Int_t year = 16,
+               Bool_t isLcV0=kTRUE
+               )
 {
   //
   // Macro for the AliAnalysisTaskSE for D candidates vs Multiplicity
   // Invariant mass histogram in pt and multiplicity bins in a 3D histogram
   //   different estimators implemented
   //==============================================================================
-    
+ 
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
   if (!mgr) {
     ::Error("AddTaskDvsMultiplicity", "No analysis manager to connect to.");
@@ -32,7 +34,7 @@ AliAnalysisTaskSEDvsMultiplicity *AddTaskDvsMultiplicity(Int_t system=0,
   } else {
     filecuts=TFile::Open(filename.Data());
     if(!filecuts ||(filecuts&& !filecuts->IsOpen())){
-      AliFatal("Input file not found : check your cut object");
+      Printf("FATAL: Input file not found : check your cut object");
     }
   }
     
@@ -92,6 +94,7 @@ AliAnalysisTaskSEDvsMultiplicity *AddTaskDvsMultiplicity(Int_t system=0,
   dMultTask->SetMultiplicityEstimator(recoEstimator);
   dMultTask->SetMCPrimariesEstimator(MCEstimator);
   dMultTask->SetMCOption(MCOption);
+  dMultTask->SetLcToV0decay(isLcV0);
   if(isPPbData) dMultTask->SetIsPPbData();
     
   if(NchWeight){
@@ -106,7 +109,7 @@ AliAnalysisTaskSEDvsMultiplicity *AddTaskDvsMultiplicity(Int_t system=0,
 	dMultTask->UseMCNchWeight(NchWeight);
 	dMultTask->SetHistoNchWeight(hNchPrimaries);
       } else {
-	AliFatal("Histogram for Nch multiplicity weights not found");
+	Printf("FATAL: Histogram for Nch multiplicity weights not found");
 	return 0x0;
       }
       hMeasNchPrimaries = (TH1F*)filecuts->Get("hMeasNtrUnCorrEvWithD"); // data distribution
@@ -122,7 +125,7 @@ AliAnalysisTaskSEDvsMultiplicity *AddTaskDvsMultiplicity(Int_t system=0,
 	dMultTask->SetHistoNchWeight(hNchPrimaries);
 	dMultTask->SetMeasuredNchHisto(hMeasNchPrimaries);
       } else {
-	AliFatal("Histogram for Ntrk multiplicity weights not found");
+	Printf("FATAL: Histogram for Ntrk multiplicity weights not found");
 	return 0x0;
       }
     }
@@ -143,8 +146,8 @@ AliAnalysisTaskSEDvsMultiplicity *AddTaskDvsMultiplicity(Int_t system=0,
         
     TFile* fileEstimator=TFile::Open(estimatorFilename.Data());
     if(!fileEstimator)  {
-      AliFatal("File with multiplicity estimator not found\n");
-      return;
+      Printf("FATAL: File with multiplicity estimator not found\n");
+      return NULL;
     }
         
     dMultTask->SetReferenceMultiplcity(refMult);
@@ -162,8 +165,8 @@ AliAnalysisTaskSEDvsMultiplicity *AddTaskDvsMultiplicity(Int_t system=0,
 	  cout<< " Trying to get "<<Form("%s_%s",profilebasename,periodNames[ip])<<endl;
 	  multEstimatorAvg[ip] = (TProfile*)(fileEstimator->Get(Form("%s_%s",profilebasename,periodNames[ip]))->Clone(Form("%s_%s_clone",profilebasename,periodNames[ip])));
 	  if (!multEstimatorAvg[ip]) {
-	    AliFatal(Form("Multiplicity estimator for %s not found! Please check your estimator file",periodNames[ip]));
-	    return;
+	    Printf("Multiplicity estimator for %s not found! Please check your estimator file",periodNames[ip]);
+	    return NULL;
 	  }
 	}
 	dMultTask->SetMultiplVsZProfileLHC16qt1stBunch(multEstimatorAvg[0]);
@@ -179,8 +182,8 @@ AliAnalysisTaskSEDvsMultiplicity *AddTaskDvsMultiplicity(Int_t system=0,
 	  cout<< " Trying to get "<<Form("%s_%s",profilebasename,periodNames[ip])<<endl;
 	  multEstimatorAvg[ip] = (TProfile*)(fileEstimator->Get(Form("%s_%s",profilebasename,periodNames[ip]))->Clone(Form("%s_%s_clone",profilebasename,periodNames[ip])));
 	  if (!multEstimatorAvg[ip]) {
-	    AliFatal(Form("Multiplicity estimator for %s not found! Please check your estimator file",periodNames[ip]));
-	    return;
+	    Printf("Multiplicity estimator for %s not found! Please check your estimator file",periodNames[ip]);
+	    return NULL;
 	  }
 	}
 	dMultTask->SetMultiplVsZProfileLHC13b(multEstimatorAvg[0]);
@@ -193,8 +196,8 @@ AliAnalysisTaskSEDvsMultiplicity *AddTaskDvsMultiplicity(Int_t system=0,
       for(Int_t ip=0; ip<4; ip++) {
 	multEstimatorAvg[ip] = (TProfile*)(fileEstimator->Get(Form("%s_%s",profilebasename,periodNames[ip]))->Clone(Form("%s_%s_clone",profilebasename,periodNames[ip])));
 	if (!multEstimatorAvg[ip]) {
-	  AliFatal(Form("Multiplicity estimator for %s not found! Please check your estimator file",periodNames[ip]));
-	  return;
+	  Printf("Multiplicity estimator for %s not found! Please check your estimator file",periodNames[ip]);
+	  return NULL;
 	}
       }
       dMultTask->SetMultiplVsZProfileLHC10b(multEstimatorAvg[0]);
@@ -230,21 +233,20 @@ AliAnalysisTaskSEDvsMultiplicity *AddTaskDvsMultiplicity(Int_t system=0,
   outputfile += ":PWG3_D2H_DMult_";
   outputfile += Name.Data(); 
   outputfile += finDirname.Data(); 
-    
   AliAnalysisDataContainer *coutputCuts = mgr->CreateContainer(cutsname,TList::Class(),AliAnalysisManager::kOutputContainer,outputfile.Data());
   AliAnalysisDataContainer *coutput = mgr->CreateContainer(outname,TList::Class(),AliAnalysisManager::kOutputContainer,outputfile.Data());
   AliAnalysisDataContainer *coutputNorm = mgr->CreateContainer(normname,TList::Class(),AliAnalysisManager::kOutputContainer,outputfile.Data());
   AliAnalysisDataContainer *coutputProf = mgr->CreateContainer(profname,TList::Class(),AliAnalysisManager::kOutputContainer,outputfile.Data());
-    
+
   mgr->ConnectInput(dMultTask,0,mgr->GetCommonInputContainer());
-    
+
   mgr->ConnectOutput(dMultTask,1,coutput);
-    
+
   mgr->ConnectOutput(dMultTask,2,coutputCuts);
-    
-  mgr->ConnectOutput(dMultTask,3,coutputNorm);  
-    
+
+  mgr->ConnectOutput(dMultTask,3,coutputNorm);
+
   mgr->ConnectOutput(dMultTask,4,coutputProf);
-    
+
   return dMultTask;
 }

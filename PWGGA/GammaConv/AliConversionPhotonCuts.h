@@ -243,10 +243,10 @@ class AliConversionPhotonCuts : public AliAnalysisCuts {
     Bool_t UseElecSharingCut(){return fDoSharedElecCut;}
     Bool_t UseToCloseV0sCut(){return fDoToCloseV0sCut;}
     Double_t GetEtaCut(){return fEtaCut;}
+    Double_t GetSingleElectronPtCut(){return fSinglePtCut;}
     void SetDodEdxSigmaCut(Bool_t k=kTRUE)  {fDodEdxSigmaCut=k;}
     void SetSwitchToKappaInsteadOfNSigdEdxTPC(Bool_t k=kTRUE) {fSwitchToKappa=k;}
     void SetDoElecDeDxPostCalibration(Bool_t k=kTRUE)  {fDoElecDeDxPostCalibration=k;}
-
     Bool_t GetMaterialBudgetWeightsInitialized() {return fMaterialBudgetWeightsInitialized;}
     Bool_t InitializeMaterialBudgetWeights(Int_t flag, TString filename);
     Float_t GetMaterialBudgetCorrectingWeightForTrueGamma(AliAODConversionPhoton* gamma);
@@ -255,6 +255,7 @@ class AliConversionPhotonCuts : public AliAnalysisCuts {
     Bool_t GetElecDeDxPostCalibrationInitialized() {return fElecDeDxPostCalibrationInitialized;}
     Bool_t  InitializeElecDeDxPostCalibration(TString filename);
     Double_t GetCorrectedElectronTPCResponse(Short_t charge,Double_t nsig,Double_t P,Double_t Eta,Double_t R);
+
 
   protected:
     TList*            fHistograms;                          ///< List of QA histograms
@@ -331,6 +332,7 @@ class AliConversionPhotonCuts : public AliAnalysisCuts {
     Double_t          fminV0Dist;                           ///<
     Bool_t            fDoSharedElecCut;                     ///<
     Bool_t            fDoPhotonQualitySelectionCut;         ///<
+    Bool_t            fDoPhotonQualityRejectionCut;         ///<
     Int_t             fPhotonQualityCut;                    ///<
     TRandom3          fRandom;                              ///<
     Int_t             fElectronArraySize;                   ///< Size of electron array
@@ -394,10 +396,10 @@ class AliConversionPhotonCuts : public AliAnalysisCuts {
     TH2F**            fHistoEleMapWidth; //[fnRBins] 
     TH2F**            fHistoPosMapMean;  //[fnRBins] 
     TH2F**            fHistoPosMapWidth; //[fnRBins] 
- 
+
   private:
     /// \cond CLASSIMP
-    ClassDef(AliConversionPhotonCuts,18)
+    ClassDef(AliConversionPhotonCuts,20)
     /// \endcond
 };
 

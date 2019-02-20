@@ -24,9 +24,9 @@ include_directories(${AliPhysics_SOURCE_DIR}/PWGLF/RESONANCES/extra)
 include_directories(${ROOT_INCLUDE_DIRS}
                     ${AliPhysics_SOURCE_DIR}/CORRFW
 		    ${AliPhysics_SOURCE_DIR}/OADB
+                    ${AliPhysics_SOURCE_DIR}/PWG/Tools
                     ${AliPhysics_SOURCE_DIR}/PWGLF/RESONANCES
                     ${AliPhysics_SOURCE_DIR}/OADB/COMMON/MULTIPLICITY
-                    ${AliPhysics_SOURCE_DIR}/PWG/Tools
                    )
 
 # Sources - alphabetical order
@@ -36,6 +36,7 @@ set(SRCS
   AliRsnAnalysisPhi900GeV.cxx 
   AliRsnAnalysisPhi7TeV.cxx 
   AliAnalysisTaskSigma1385.cxx
+  AliAnalysisTaskXi1530.cxx
   AliXiStar.cxx
   AliXiStarpp13TeV.cxx
   AliXiStarPbPb.cxx
@@ -60,7 +61,7 @@ add_library_tested(${MODULE} SHARED  ${SRCS} G__${MODULE}.cxx)
 
 # Generate the ROOT map
 # Dependecies
-set(LIBDEPS ANALYSISalice CDB CORRFW TOFbase TOFrec)
+set(LIBDEPS ANALYSISalice CDB CORRFW TOFbase TOFrec PWGTools)
 generate_rootmap("${MODULE}" "${LIBDEPS}" "${CMAKE_CURRENT_SOURCE_DIR}/${MODULE}LinkDef.h")
 
 # Linking the library
@@ -79,6 +80,7 @@ install(TARGETS ${MODULE}
   ARCHIVE DESTINATION lib
   LIBRARY DESTINATION lib)
 install(FILES ${HDRS} DESTINATION include)
+install(FILES AddTaskXi1530.C DESTINATION PWGLF/RESONANCES/extra)
 install(FILES AddTaskXiStar.C DESTINATION PWGLF/RESONANCES/extra)
 install(FILES AddTaskLambda.C DESTINATION PWGLF/RESONANCES/extra)
 install(FILES AddTaskRsnf0f2.C DESTINATION PWGLF/RESONANCES/extra)

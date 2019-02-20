@@ -1,5 +1,5 @@
-AliAnalysisTaskStrangenessLifetimes *AddTaskStrangenessLifetimes(bool isMC = false,
-    TString tskname = "LifetimesFiltering", TString suffix = "") {
+AliAnalysisTaskStrangenessLifetimes *AddTaskStrangenessLifetimes(bool isMC = false,bool V0s=false,
+    TString tskname = "LifetimesFiltering", TString suffix = "std") {
   // Get the current analysis manager
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
   if (!mgr) {
@@ -17,7 +17,7 @@ AliAnalysisTaskStrangenessLifetimes *AddTaskStrangenessLifetimes(bool isMC = fal
 
   tskname.Append(suffix.Data());
   AliAnalysisTaskStrangenessLifetimes *task =
-      new AliAnalysisTaskStrangenessLifetimes(isMC, tskname.Data());
+      new AliAnalysisTaskStrangenessLifetimes(isMC, tskname.Data(),1,true,V0s);
 
   AliAnalysisDataContainer *coutput1 = mgr->CreateContainer(
       Form("%s_summary", tskname.Data()), TList::Class(),
@@ -25,7 +25,7 @@ AliAnalysisTaskStrangenessLifetimes *AddTaskStrangenessLifetimes(bool isMC = fal
 
   AliAnalysisDataContainer *coutput2 =
       mgr->CreateContainer(Form("V0tree%s", suffix.Data()), TTree::Class(),
-                           AliAnalysisManager::kOutputContainer, "V0tree.root");
+                           AliAnalysisManager::kOutputContainer, Form("V0tree.root:%s",suffix.Data()));
   coutput2->SetSpecialOutput();
 
   mgr->ConnectInput(task, 0, mgr->GetCommonInputContainer());

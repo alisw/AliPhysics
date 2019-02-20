@@ -293,11 +293,11 @@ bool AliFemtoESDTrackCut::Pass(const AliFemtoTrack* track)
   }
 
 
- 
+
 
   //****N Sigma Method -- electron rejection****
-  if(fElectronRejection)
-    if(!IsElectron(track->NSigmaTPCE(),track->NSigmaTPCPi(),track->NSigmaTPCK(), track->NSigmaTPCP()))
+  if (fElectronRejection)
+    if (!IsElectron(track->NSigmaTPCE(),track->NSigmaTPCPi(),track->NSigmaTPCK(), track->NSigmaTPCP()))
       return false;
 
 
@@ -310,213 +310,233 @@ bool AliFemtoESDTrackCut::Pass(const AliFemtoTrack* track)
     tMost[4] = track->PidProbProton()*PidFractionProton(track->P().Mag());
 
 
-      float ipidmax = 0.0;
-
+    float ipidmax = 0.0;
     //****N Sigma Method****
-	if(fPIDMethod==0){
-	  // Looking for pions
-	  if (fMostProbable == 2) {
-	    if (IsPionNSigma(track->P().Mag(), track->NSigmaTPCPi(), track->NSigmaTOFPi()))
-	      imost = 2;
-	  }
-	  else if (fMostProbable == 3) {
-	    if (IsKaonNSigma(track->P().Mag(), track->NSigmaTPCK(), track->NSigmaTOFK())){
-	      imost = 3;
-	    }
-	  }
-	  else if (fMostProbable == 4) { // proton nsigma-PID required contour adjusting (in LHC10h)
-	    if ( IsProtonNSigma(track->P().Mag(), track->NSigmaTPCP(), track->NSigmaTOFP()) // && (TMath::Abs(track->NSigmaTPCP()) < TMath::Abs(track->NSigmaTPCPi())) && (TMath::Abs(track->NSigmaTPCP()) < TMath::Abs(track->NSigmaTPCK())) && (TMath::Abs(track->NSigmaTOFP()) < TMath::Abs(track->NSigmaTOFPi())) && (TMath::Abs(track->NSigmaTOFP()) < TMath::Abs(track->NSigmaTOFK()))
-		 // && IsProtonTPCdEdx(track->P().Mag(), track->TPCsignal())
-		 )
-	      imost = 4;
-	  }
-	  
-	  //
-	  if (fMostProbable == 13) {
-	    if (IsDeuteronNSigma(track->P().Mag(), track->NSigmaTPCD(), track->NSigmaTOFD()))
-	      imost = 13;
-	  }
-	  else if (fMostProbable == 14) {
-	    if (IsTritonNSigma(track->P().Mag(), track->NSigmaTPCT(), track->NSigmaTOFT())){
-	      imost = 14;
-	    }
-	  }
-	  else if (fMostProbable == 15) {
-	    if ( IsHe3NSigma(track->P().Mag(), track->NSigmaTPCH(), track->NSigmaTOFH())
-		 )
-	      imost = 15;
-	  }
-	  else if (fMostProbable == 16) {
-	    if ( IsAlphaNSigma(track->P().Mag(), track->NSigmaTPCA(), track->NSigmaTOFA())
-		 )
-	      imost = 16;
-	  }
-		  //
+    if (fPIDMethod==0) {
+      // Looking for pions
+      if (fMostProbable == 2) {
+        if (IsPionNSigma(track->P().Mag(), track->NSigmaTPCPi(), track->NSigmaTOFPi())) {
+          imost = 2;
+        }
+      }
+      else if (fMostProbable == 3) {
+        if (IsKaonNSigma(track->P().Mag(), track->NSigmaTPCK(), track->NSigmaTOFK())){
+          imost = 3;
+        }
+      }
+      else if (fMostProbable == 4) { // proton nsigma-PID required contour adjusting (in LHC10h)
+        if (IsProtonNSigma(track->P().Mag(), track->NSigmaTPCP(), track->NSigmaTOFP())
+         // && (TMath::Abs(track->NSigmaTPCP()) < TMath::Abs(track->NSigmaTPCPi()))
+         // && (TMath::Abs(track->NSigmaTPCP()) < TMath::Abs(track->NSigmaTPCK()))
+         // && (TMath::Abs(track->NSigmaTOFP()) < TMath::Abs(track->NSigmaTOFPi()))
+         // && (TMath::Abs(track->NSigmaTOFP()) < TMath::Abs(track->NSigmaTOFK()))
 
-	  else if (fMostProbable == 5) { // no-protons
-	    if ( !IsProtonNSigma(track->P().Mag(), track->NSigmaTPCP(), track->NSigmaTOFP()) )
-	      imost = 5;
-	  }
-	  else if (fMostProbable == 6) { //pions OR kaons OR protons
-	    if (IsPionNSigma(track->P().Mag(), track->NSigmaTPCPi(), track->NSigmaTOFPi()))
-	      imost = 6;
-	    else if (IsKaonNSigma(track->P().Mag(), track->NSigmaTPCK(), track->NSigmaTOFK()))
-	      imost = 6;
-	    else if (IsProtonNSigma(track->P().Mag(), track->NSigmaTPCP(), track->NSigmaTOFP()) )
-	      imost = 6;
-	    
-	
-	   
-	  }
-	  
-	  else if (fMostProbable == 7) { // pions OR kaons OR protons OR electrons or or or 
-	    if (IsPionNSigma(track->P().Mag(), track->NSigmaTPCPi(), track->NSigmaTOFPi()))
-	      imost = 7;
-	    else if (IsKaonNSigma(track->P().Mag(), track->NSigmaTPCK(), track->NSigmaTOFK()))
-	      imost = 7;
-	    else if (IsProtonNSigma(track->P().Mag(), track->NSigmaTPCP(), track->NSigmaTOFP()) )
-	      imost = 7;
-	    else if (TMath::Abs(track->NSigmaTPCE())<3)
-	      imost = 7;
-	    
-
-	  }
-	  else if (fMostProbable == 8) { // TOF matching
-	    if(track->NSigmaTOFPi() != -1000 || track->Pt()<0.5){
-	      imost = 8;
-	    }
-	  }
-	  else if (fMostProbable == 9) { // Other: no kaons, no pions, no protons
-	    if (IsPionNSigma(track->P().Mag(), track->NSigmaTPCPi(), track->NSigmaTOFPi()))
-	      imost = -1;
-	    else if (IsKaonNSigma(track->P().Mag(), track->NSigmaTPCK(), track->NSigmaTOFK()))
-	      imost = -1;
-	    else if (IsProtonNSigma(track->P().Mag(), track->NSigmaTPCP(), track->NSigmaTOFP()) )
-	      imost = -1;
-	    else if(track->NSigmaTOFPi() != -1000 || track->Pt()<0.5){
-	      imost = 9;
-	    }
-	  }
-	  if (fMostProbable == 10) {//cut on Nsigma in pT not p
-	    if (IsPionNSigma(track->Pt(), track->NSigmaTPCPi(), track->NSigmaTOFPi()))
-	      imost = 10;
-	  }
-	  else if (fMostProbable == 11) {//cut on Nsigma in pT not p
-	    if (IsKaonNSigma(track->Pt(), track->NSigmaTPCK(), track->NSigmaTOFK())){
-	      imost = 11;
-	    }
-	  }
-	  else if (fMostProbable == 12) { //cut on Nsigma in pT not p
-	    if ( IsProtonNSigma(track->Pt(), track->NSigmaTPCP(), track->NSigmaTOFP()) )
-	      imost = 12;
-	  }
-
-
-	}
-
-
+        // && IsProtonTPCdEdx(track->P().Mag(), track->TPCsignal())
+        ) {
+          imost = 4;
+        }
+      }
+      else if (fMostProbable == 13) {
+        if (IsDeuteronNSigma(track->P().Mag(),track->MassTOF(), fNsigmaMass, track->NSigmaTPCD(), track->NSigmaTOFD()))
+          imost = 13;
+        if ((track->P().Mag() < 1) &&!(IsDeuteronTPCdEdx(track->P().Mag(), track->TPCsignal())))
+          imost = 0;
+      }
+      else if (fMostProbable == 14) {
+          if (IsTritonNSigma(track->P().Mag(), track->NSigmaTPCT(), track->NSigmaTOFT())){
+          imost = 14;
+        }
+      }
+      else if (fMostProbable == 15) {
+        if ( IsHe3NSigma(track->P().Mag(), track->NSigmaTPCH(), track->NSigmaTOFH())
+      )
+          imost = 15;
+      }
+      else if (fMostProbable == 16) {
+        if ( IsAlphaNSigma(track->P().Mag(), track->NSigmaTPCA(), track->NSigmaTOFA())
+      )
+          imost = 16;
+      }
+      else if (fMostProbable == 5) { // no-protons
+        if ( !IsProtonNSigma(track->P().Mag(), track->NSigmaTPCP(), track->NSigmaTOFP()) )
+          imost = 5;
+      }
+      else if (fMostProbable == 6) { //pions OR kaons OR protons
+        if (IsPionNSigma(track->P().Mag(), track->NSigmaTPCPi(), track->NSigmaTOFPi()))
+          imost = 6;
+        else if (IsKaonNSigma(track->P().Mag(), track->NSigmaTPCK(), track->NSigmaTOFK()))
+          imost = 6;
+        else if (IsProtonNSigma(track->P().Mag(), track->NSigmaTPCP(), track->NSigmaTOFP()) )
+          imost = 6;
+      }
+      else if (fMostProbable == 7) { // pions OR kaons OR protons OR electrons or or or
+        if (IsPionNSigma(track->P().Mag(), track->NSigmaTPCPi(), track->NSigmaTOFPi()))
+          imost = 7;
+        else if (IsKaonNSigma(track->P().Mag(), track->NSigmaTPCK(), track->NSigmaTOFK()))
+          imost = 7;
+        else if (IsProtonNSigma(track->P().Mag(), track->NSigmaTPCP(), track->NSigmaTOFP()) )
+          imost = 7;
+        else if (TMath::Abs(track->NSigmaTPCE())<3)
+          imost = 7;
+      }
+      else if (fMostProbable == 8) { // TOF matching
+        if (track->NSigmaTOFPi() != -1000 || track->Pt()<0.5){
+          imost = 8;
+        }
+      }
+      else if (fMostProbable == 9) { // Other: no kaons, no pions, no protons
+        if (IsPionNSigma(track->P().Mag(), track->NSigmaTPCPi(), track->NSigmaTOFPi()))
+          imost = -1;
+        else if (IsKaonNSigma(track->P().Mag(), track->NSigmaTPCK(), track->NSigmaTOFK()))
+          imost = -1;
+        else if (IsProtonNSigma(track->P().Mag(), track->NSigmaTPCP(), track->NSigmaTOFP()) )
+          imost = -1;
+        else if (track->NSigmaTOFPi() != -1000 || track->Pt()<0.5){
+          imost = 9;
+        }
+      }
+      if (fMostProbable == 10) {//cut on Nsigma in pT not p
+        if (IsPionNSigma(track->Pt(), track->NSigmaTPCPi(), track->NSigmaTOFPi()))
+          imost = 10;
+      }
+      else if (fMostProbable == 11) {//cut on Nsigma in pT not p
+        if (IsKaonNSigma(track->Pt(), track->NSigmaTPCK(), track->NSigmaTOFK())){
+          imost = 11;
+        }
+      }
+      else if (fMostProbable == 12) { //cut on Nsigma in pT not p
+        if ( IsProtonNSigma(track->Pt(), track->NSigmaTPCP(), track->NSigmaTOFP()) )
+          imost = 12;
+      }
+    }
 
     //****Contour Method****
-	if(fPIDMethod==1){
-	  for (int ip=0; ip<5; ip++)
-	    if (tMost[ip] > ipidmax) { ipidmax = tMost[ip]; imost = ip; };
+    if (fPIDMethod==1) {
+      for (int ip=0; ip<5; ip++) {
+        if (tMost[ip] > ipidmax) {
+          ipidmax = tMost[ip];
+          imost = ip;
+        }
+      }
 
-	  // Looking for pions
-	  if (fMostProbable == 2) {
-	    if (imost == 2) {
-	      // Using the TPC to reject non-pions
-	      if (!(IsPionTPCdEdx(track->P().Mag(), track->TPCsignal())))
-		imost = 0;
-	      if (0) {
-		// Using the TOF to reject non-pions
-		if (track->P().Mag() < 0.6) {
-		  if (tTOFPidIn)
-		    if (!IsPionTOFTime(track->P().Mag(), track->TOFpionTime()))
-		      imost = 0;
-		}
-		else {
-		  if (tTOFPidIn) {
-		    if (!IsPionTOFTime(track->P().Mag(), track->TOFpionTime()))
-		      imost = 0;
-		  }
-		  else {
-		    imost = 0;
-		  }
-		}
-	      }
-	    }
-	  }
+      // Looking for pions
+      if (fMostProbable == 2) {
+        if (imost == 2) {
+          // Using the TPC to reject non-pions
+          if (!(IsPionTPCdEdx(track->P().Mag(), track->TPCsignal()))) {
+            imost = 0;
+          }
 
-	  // Looking for kaons
-	  else if (fMostProbable == 3) {
-	    //       if (imost == 3) {
-	    // Using the TPC to reject non-kaons
-	    if (track->P().Mag() < 0.6) {
-	      if (!(IsKaonTPCdEdx(track->P().Mag(), track->TPCsignal())))
-		imost = 0;
-	      else imost = 3;
-	      if (1) {
-		// Using the TOF to reject non-kaons
-		if (tTOFPidIn)
-		  if (!IsKaonTOFTime(track->P().Mag(), track->TOFkaonTime()))
-		    imost = 0;
-	      }
-	    }
-	    else {
-	      if (1) {
-		if (tTOFPidIn) {
-		  if (!IsKaonTOFTime(track->P().Mag(), track->TOFkaonTime()))
-		    imost = 0;
-		  else
-		    imost = 3;
-		}
-		else {
-		  if (!(IsKaonTPCdEdx(track->P().Mag(), track->TPCsignal())))
-		    imost = 0;
-		  else
-		    imost = 3;
-		}
-	      }
-	    }
-	    //       }
-	  }
+          if (0) {
+            // Using the TOF to reject non-pions
+            if (track->P().Mag() < 0.6) {
+              if (tTOFPidIn)
+                if (!IsPionTOFTime(track->P().Mag(), track->TOFpionTime()))
+                  imost = 0;
+            }
+            else {
+              if (tTOFPidIn) {
+                if (!IsPionTOFTime(track->P().Mag(), track->TOFpionTime()))
+                  imost = 0;
+              }
+              else {
+                imost = 0;
+              }
+            }
+          }
+        }
+      }
 
-	  // Looking for protons
-	  else if (fMostProbable == 4) {
-	    //       if (imost == 3) {
-	    // Using the TPC to reject non-kaons
-	    if (track->P().Mag() < 0.8) {
-	      if (!(IsProtonTPCdEdx(track->P().Mag(), track->TPCsignal())))
-		imost = 0;
-	      else imost = 4;
-	      if (0) {
-		// Using the TOF to reject non-kaons
-		if (tTOFPidIn)
-		  if (!IsKaonTOFTime(track->P().Mag(), track->TOFkaonTime()))
-		    imost = 0;
-	      }
-	    }
-	    else {
-	      if (0) {
-		if (tTOFPidIn) {
-		  if (!IsKaonTOFTime(track->P().Mag(), track->TOFkaonTime()))
-		    imost = 0;
-		  else
-		    imost = 3;
-		}
-		else {
-		  if (!(IsKaonTPCdEdx(track->P().Mag(), track->TPCsignal())))
-		    imost = 0;
-		  else
-		    imost = 3;
-		}
-	      }
-	    }
-	  }
-	  
+      // Looking for kaons
+      else if (fMostProbable == 3) {
+        //       if (imost == 3) {
+        // Using the TPC to reject non-kaons
+        if (track->P().Mag() < 0.6) {
+          if (!(IsKaonTPCdEdx(track->P().Mag(), track->TPCsignal()))) {
+            imost = 0;
+          } else {
+            imost = 3;
+          }
 
-	}
-    if (imost != fMostProbable) return false;
+          if (1) {
+            // Using the TOF to reject non-kaons
+            if (tTOFPidIn)
+              if (!IsKaonTOFTime(track->P().Mag(), track->TOFkaonTime()))
+                imost = 0;
+          }
+        }
+        else {
+          if (1) {
+            if (tTOFPidIn) {
+              if (!IsKaonTOFTime(track->P().Mag(), track->TOFkaonTime()))
+                imost = 0;
+              else
+                imost = 3;
+            }
+            else {
+              if (!(IsKaonTPCdEdx(track->P().Mag(), track->TPCsignal())))
+                imost = 0;
+              else
+                imost = 3;
+            }
+          }
+        }
+        //       }
+      }
+
+      // Looking for protons
+      else if (fMostProbable == 4) {
+        //       if (imost == 3) {
+        // Using the TPC to reject non-kaons
+        if (track->P().Mag() < 0.8) {
+          if (!(IsProtonTPCdEdx(track->P().Mag(), track->TPCsignal())))
+            imost = 0;
+          else imost = 4;
+          if (0) {
+            // Using the TOF to reject non-kaons
+            if (tTOFPidIn)
+              if (!IsKaonTOFTime(track->P().Mag(), track->TOFkaonTime()))
+                imost = 0;
+          }
+        }
+        else {
+          if (0) {
+            if (tTOFPidIn) {
+              if (!IsKaonTOFTime(track->P().Mag(), track->TOFkaonTime()))
+                imost = 0;
+              else
+                imost = 3;
+            }
+            else {
+              if (!(IsKaonTPCdEdx(track->P().Mag(), track->TPCsignal())))
+                imost = 0;
+              else
+                imost = 3;
+            }
+          }
+        }
+      }
+
+
+      /**********************************/
+    else if (fMostProbable == 13) {
+        //       if (imost == 3) {
+        // Using the TPC to reject non-deuterons
+        if (track->P().Mag() < 1) {
+          if (!(IsDeuteronTPCdEdx(track->P().Mag(), track->TPCsignal()))) {
+            imost = 0;
+          } else {
+            imost = 13;
+          }
+        }
+      }
+      /*************************************/
+
+    }
+
+    if (imost != fMostProbable) {
+      return false;
+    }
   }
 
   //fan
@@ -646,28 +666,28 @@ float AliFemtoESDTrackCut::PidFractionElectron(float mom) const
   // Provide a parameterized fraction of electrons dependent on momentum
   if (mom<0.13)
     return (7.594129e-02
-	    -5.535827e-01*0.13
-	    +1.728591e+00*0.13*0.13
-	    -2.827893e+00*0.13*0.13*0.13
-	    +2.503553e+00*0.13*0.13*0.13*0.13
-	    -1.125965e+00*0.13*0.13*0.13*0.13*0.13
-	    +2.009036e-01*0.13*0.13*0.13*0.13*0.13*0.13);
+            -5.535827e-01*0.13
+            +1.728591e+00*0.13*0.13
+            -2.827893e+00*0.13*0.13*0.13
+            +2.503553e+00*0.13*0.13*0.13*0.13
+            -1.125965e+00*0.13*0.13*0.13*0.13*0.13
+            +2.009036e-01*0.13*0.13*0.13*0.13*0.13*0.13);
 
   if (mom>1.8)
     return (7.594129e-02
-	    -5.535827e-01*1.8
-	    +1.728591e+00*1.8*1.8
-	    -2.827893e+00*1.8*1.8*1.8
-	    +2.503553e+00*1.8*1.8*1.8*1.8
-	    -1.125965e+00*1.8*1.8*1.8*1.8*1.8
-	    +2.009036e-01*1.8*1.8*1.8*1.8*1.8*1.8);
+            -5.535827e-01*1.8
+              +1.728591e+00*1.8*1.8
+              -2.827893e+00*1.8*1.8*1.8
+              +2.503553e+00*1.8*1.8*1.8*1.8
+              -1.125965e+00*1.8*1.8*1.8*1.8*1.8
+              +2.009036e-01*1.8*1.8*1.8*1.8*1.8*1.8);
   return (7.594129e-02
-	  -5.535827e-01*mom
-	  +1.728591e+00*mom*mom
-	  -2.827893e+00*mom*mom*mom
-	  +2.503553e+00*mom*mom*mom*mom
-	  -1.125965e+00*mom*mom*mom*mom*mom
-	  +2.009036e-01*mom*mom*mom*mom*mom*mom);
+          -5.535827e-01*mom
+          +1.728591e+00*mom*mom
+          -2.827893e+00*mom*mom*mom
+          +2.503553e+00*mom*mom*mom*mom
+          -1.125965e+00*mom*mom*mom*mom*mom
+          +2.009036e-01*mom*mom*mom*mom*mom*mom);
 }
 
 // pion
@@ -680,15 +700,15 @@ float AliFemtoESDTrackCut::PidFractionPion(float mom) const
   // Provide a parameterized fraction of pions dependent on momentum
   if (mom<0.13)
     return ( 1.063457e+00
-	     -4.222208e-01*0.13
-	     +1.042004e-01*0.0169);
+            -4.222208e-01*0.13
+            +1.042004e-01*0.0169);
   if (mom>2.0)
     return ( 1.063457e+00
-	     -4.222208e-01*2.0
-	     +1.042004e-01*4.0);
+            -4.222208e-01*2.0
+            +1.042004e-01*4.0);
   return ( 1.063457e+00
-	   -4.222208e-01*mom
-	   +1.042004e-01*mom*mom);
+          -4.222208e-01*mom
+          +1.042004e-01*mom*mom);
 }
 
 // kaon
@@ -702,18 +722,18 @@ float AliFemtoESDTrackCut::PidFractionKaon(float mom) const
   // Provide a parameterized fraction of kaons dependent on momentum
   if (mom<0.18)
     return (-7.289406e-02
-	    +4.415666e-01*0.18
-	    -2.996790e-01*0.18*0.18
-	    +6.704652e-02*0.18*0.18*0.18);
+            +4.415666e-01*0.18
+            -2.996790e-01*0.18*0.18
+            +6.704652e-02*0.18*0.18*0.18);
   if (mom>2.0)
     return (-7.289406e-02
-	    +4.415666e-01*2.0
-	    -2.996790e-01*2.0*2.0
-	    +6.704652e-02*2.0*2.0*2.0);
+            +4.415666e-01*2.0
+            -2.996790e-01*2.0*2.0
+            +6.704652e-02*2.0*2.0*2.0);
   return (-7.289406e-02
-	  +4.415666e-01*mom
-	  -2.996790e-01*mom*mom
-	  +6.704652e-02*mom*mom*mom);
+          +4.415666e-01*mom
+          -2.996790e-01*mom*mom
+          +6.704652e-02*mom*mom*mom);
 }
 
 // proton
@@ -728,13 +748,13 @@ float AliFemtoESDTrackCut::PidFractionProton(float mom) const
   if (mom<0.26) return  0.0;
   if (mom>2.0)
     return (-3.730200e-02
-	    +1.163684e-01*2.0
-	    +8.354116e-02*2.0*2.0
-	    -4.608098e-02*2.0*2.0*2.0);
+            +1.163684e-01*2.0
+            +8.354116e-02*2.0*2.0
+            -4.608098e-02*2.0*2.0*2.0);
   return (-3.730200e-02
-	  +1.163684e-01*mom
-	  +8.354116e-02*mom*mom
-	  -4.608098e-02*mom*mom*mom);
+          +1.163684e-01*mom
+          +8.354116e-02*mom*mom
+          -4.608098e-02*mom*mom*mom);
 }
 
 void AliFemtoESDTrackCut::SetMomRangeTOFpidIs(const float& minp, const float& maxp)
@@ -815,6 +835,19 @@ bool AliFemtoESDTrackCut::IsKaonTPCdEdx(float mom, float dEdx)
 
   return true;
 
+}
+
+bool AliFemtoESDTrackCut::IsDeuteronTPCdEdx(float mom, float dEdx)
+{
+  double a1 = -250.0,  b1 = 400.0;
+  double a2 = 0.0,      b2 = 30.0;
+
+  if (mom < 1) {
+    if (dEdx < a1*mom+b1) return false;
+  }
+  //if (dEdx < a2*mom+b2) return true;
+
+  return true;
 }
 
 bool AliFemtoESDTrackCut::IsProtonTPCdEdx(float mom, float dEdx)
@@ -901,9 +934,9 @@ bool AliFemtoESDTrackCut::IsKaonTPCdEdxNSigma(float mom, float nsigmaK)
 //  cout<<" AliFemtoESDTrackCut::IsKaonTPCdEdxNSigma "<<mom<<" "<<nsigmaK<<endl;
 
 
-  if(mom<0.35 && TMath::Abs(nsigmaK)<5.0)return true;
-  if(mom>=0.35 && mom<0.5 && TMath::Abs(nsigmaK)<3.0)return true;
-  if(mom>=0.5 && mom<0.7 && TMath::Abs(nsigmaK)<2.0)return true;
+  if (mom<0.35 && TMath::Abs(nsigmaK)<5.0) return true;
+  if (mom>=0.35 && mom<0.5 && TMath::Abs(nsigmaK)<3.0) return true;
+  if (mom>=0.5 && mom<0.7 && TMath::Abs(nsigmaK)<2.0) return true;
 
   return false;
 }
@@ -912,8 +945,8 @@ bool AliFemtoESDTrackCut::IsKaonTOFNSigma(float mom, float nsigmaK)
 {
 //  cout<<" AliFemtoESDTrackCut::IsKaonTPCdEdxNSigma "<<mom<<" "<<nsigmaK<<endl;
   //fan
-  //  if(mom<1.5 && TMath::Abs(nsigmaK)<3.0)return true;
-  if(mom>=1.5 && TMath::Abs(nsigmaK)<2.0)return true;
+  //  if (mom<1.5 && TMath::Abs(nsigmaK)<3.0) return true;
+  if (mom>=1.5 && TMath::Abs(nsigmaK)<2.0) return true;
   return false;
 }
 
@@ -922,9 +955,9 @@ bool AliFemtoESDTrackCut::IsKaonNSigma(float mom, float nsigmaTPCK, float nsigma
 {
 
 
-  if(mom<0.5)
+  if (mom<0.5)
     {
-	  if(TMath::Abs(nsigmaTPCK)<2.0)
+	  if (TMath::Abs(nsigmaTPCK)<2.0)
 	   {
 	   return true;
 	   }
@@ -935,9 +968,9 @@ bool AliFemtoESDTrackCut::IsKaonNSigma(float mom, float nsigmaTPCK, float nsigma
     }
 
 
-   if(mom>=0.5)
+   if (mom>=0.5)
     {
-         if(TMath::Abs(nsigmaTOFK)<3.0 && TMath::Abs(nsigmaTPCK)<3.0)
+         if (TMath::Abs(nsigmaTOFK)<3.0 && TMath::Abs(nsigmaTPCK)<3.0)
          {
          return true;
          }
@@ -947,7 +980,7 @@ bool AliFemtoESDTrackCut::IsKaonNSigma(float mom, float nsigmaTPCK, float nsigma
          }
     }
 
-//   if(mom>1.5 || mom<0.15)return false;
+//   if (mom>1.5 || mom<0.15) return false;
 
 
 }
@@ -961,36 +994,42 @@ bool AliFemtoESDTrackCut::IsKaonNSigma(float mom, float nsigmaTPCK, float nsigma
     if (mom > 0.5) {
       //        if (TMath::Hypot( nsigmaTOFP, nsigmaTPCP )/TMath::Sqrt(2) < 3.0)
       if (TMath::Hypot( nsigmaTOFK, nsigmaTPCK ) < fNsigma)
-	return true;
+        return true;
     }
     else {
       if (TMath::Abs(nsigmaTPCK) < fNsigma)
-	return true;
+        return true;
     }
   }
   else {
 
-    if(mom<0.4)
+    if (mom<0.4)
       {
-	if(nsigmaTOFK<-999.)
-	  {
-	    if(TMath::Abs(nsigmaTPCK)<2.0) return true;
-	  }
-	else if(TMath::Abs(nsigmaTOFK)<3.0 && TMath::Abs(nsigmaTPCK)<3.0) return true;
+        if (nsigmaTOFK<-999.)
+          {
+            if (TMath::Abs(nsigmaTPCK)<2.0) return true;
+          }
+        else if (TMath::Abs(nsigmaTOFK)<3.0 && TMath::Abs(nsigmaTPCK)<3.0)
+          {
+            return true;
+          }
       }
-    else if(mom>=0.4 && mom<=0.6)
+    else if (mom>=0.4 && mom<=0.6)
       {
-	if(nsigmaTOFK<-999.)
-	  {
-	    if(TMath::Abs(nsigmaTPCK)<2.0) return true;
-	  }
-	else if(TMath::Abs(nsigmaTOFK)<3.0 && TMath::Abs(nsigmaTPCK)<3.0) return true;
+        if (nsigmaTOFK < -999.)
+          {
+            if (TMath::Abs(nsigmaTPCK)<2.0) return true;
+          }
+        else if (TMath::Abs(nsigmaTOFK)<3.0 && TMath::Abs(nsigmaTPCK)<3.0)
+          {
+            return true;
+          }
       }
-    else if(nsigmaTOFK<-999.)
+    else if (nsigmaTOFK < -999.)
       {
-	return false;
+        return false;
       }
-    else if(TMath::Abs(nsigmaTOFK)<3.0 && TMath::Abs(nsigmaTPCK)<3.0) return true;
+    else if (TMath::Abs(nsigmaTOFK)<3.0 && TMath::Abs(nsigmaTPCK)<3.0) return true;
   }
   return false;
 }
@@ -1002,35 +1041,36 @@ bool AliFemtoESDTrackCut::IsPionNSigma(float mom, float nsigmaTPCPi, float nsigm
   if (fNsigmaTPCTOF) {
     if (mom > 0.5) {
       //        if (TMath::Hypot( nsigmaTOFP, nsigmaTPCP )/TMath::Sqrt(2) < 3.0)
-      if (TMath::Hypot( nsigmaTOFPi, nsigmaTPCPi ) < fNsigma)
-	return true;
+      return TMath::Hypot( nsigmaTOFPi, nsigmaTPCPi ) < fNsigma;
     }
-    else {
-      if (TMath::Abs(nsigmaTPCPi) < fNsigma)
-	return true;
+
+    return TMath::Abs(nsigmaTPCPi) < fNsigma;
+  }
+
+  if (mom < 0.65) {
+    if (nsigmaTOFPi < -999.) {
+        if (mom < 0.35 && TMath::Abs(nsigmaTPCPi)<3.0) return true;
+        else if (mom<0.5 && mom>=0.35 && TMath::Abs(nsigmaTPCPi)<3.0) return true;
+        else if (mom>=0.5 && TMath::Abs(nsigmaTPCPi)<2.0) return true;
+        else return false;
+    }
+    else if (TMath::Abs(nsigmaTOFPi)<3.0 && TMath::Abs(nsigmaTPCPi)<3.0) {
+      return true;
     }
   }
-  else {
-    if(mom<0.65)
-      {
-	if(nsigmaTOFPi<-999.)
-	  {
-	    if(mom<0.35 && TMath::Abs(nsigmaTPCPi)<3.0) return true;
-	    else if(mom<0.5 && mom>=0.35 && TMath::Abs(nsigmaTPCPi)<3.0) return true;
-	    else if(mom>=0.5 && TMath::Abs(nsigmaTPCPi)<2.0) return true;
-	    else return false;
-	  }
-	else if(TMath::Abs(nsigmaTOFPi)<3.0 && TMath::Abs(nsigmaTPCPi)<3.0) return true;
-      }
-    else if(nsigmaTOFPi<-999.)
-      {
-	return false;
-      }
-    else if(mom<1.5 && TMath::Abs(nsigmaTOFPi)<3.0 && TMath::Abs(nsigmaTPCPi)<5.0) return true;
-    else if(mom>=1.5 && TMath::Abs(nsigmaTOFPi)<2.0 && TMath::Abs(nsigmaTPCPi)<5.0) return true;
+  else if (nsigmaTOFPi < -999.) {
+    return false;
   }
+  else if (mom<1.5 && TMath::Abs(nsigmaTOFPi)<3.0 && TMath::Abs(nsigmaTPCPi)<5.0) {
+    return true;
+  }
+  else if (mom>=1.5 && TMath::Abs(nsigmaTOFPi)<2.0 && TMath::Abs(nsigmaTPCPi)<5.0) {
+    return true;
+  }
+
   return false;
 }
+
 
 
 bool AliFemtoESDTrackCut::IsProtonNSigma(float mom, float nsigmaTPCP, float nsigmaTOFP)
@@ -1068,22 +1108,26 @@ bool AliFemtoESDTrackCut::IsProtonNSigma(float mom, float nsigmaTPCP, float nsig
 
 
 /***********************************************************************/
-bool AliFemtoESDTrackCut::IsDeuteronNSigma(float mom, float nsigmaTPCD, float nsigmaTOFD)
+
+
+bool AliFemtoESDTrackCut::IsDeuteronNSigma(float mom, float massTOFPDG,float sigmaMass, float nsigmaTPCD, float nsigmaTOFD)
 {
+  double massPDGD=1.8756;
   if (fNsigmaTPCTOF) {
-    if (mom > 1) {  //if TOF avaliable: && (nsigmaTOFD != -1000) --> always TOF!
+    if (mom > 1) {  //if TOF avaliable: && (nsigmaTOFD != -1000) --> always TOF
       //if (TMath::Hypot( nsigmaTOFP, nsigmaTPCP )/TMath::Sqrt(2) < 3.0)
-      if (TMath::Hypot( nsigmaTOFD, nsigmaTPCD ) < fNsigma)
-	return true;
+      if ((TMath::Hypot( nsigmaTOFD, nsigmaTPCD ) < fNsigma) && (TMath::Abs(massTOFPDG-massPDGD*massPDGD)<sigmaMass))
+        return true;
     }
     else {
       if (TMath::Abs(nsigmaTPCD) < fNsigma)
-	return true;
+        return true;
     }
   }
 
   return false;
 }
+
 
 bool AliFemtoESDTrackCut::IsTritonNSigma(float mom, float nsigmaTPCT, float nsigmaTOFT)
 {
@@ -1091,7 +1135,7 @@ bool AliFemtoESDTrackCut::IsTritonNSigma(float mom, float nsigmaTPCT, float nsig
       return false;
   }
   else {
-    if(mom<2 && TMath::Abs(nsigmaTPCT)<fNsigma) return true;
+    if (mom<2 && TMath::Abs(nsigmaTPCT)<fNsigma) return true;
   }
   return false;
 }
@@ -1102,7 +1146,7 @@ bool AliFemtoESDTrackCut::IsHe3NSigma(float mom, float nsigmaTPCH, float nsigmaT
       return false;
   }
   else {
-    if(mom<3 && TMath::Abs(nsigmaTPCH)<fNsigma) return true;
+    if (mom<3 && TMath::Abs(nsigmaTPCH)<fNsigma) return true;
   }
   return false;
 }
@@ -1113,7 +1157,7 @@ bool AliFemtoESDTrackCut::IsAlphaNSigma(float mom, float nsigmaTPCA, float nsigm
       return false;
   }
   else {
-    if(mom<3 && TMath::Abs(nsigmaTPCA)<fNsigma) return true;
+    if (mom<3 && TMath::Abs(nsigmaTPCA)<fNsigma) return true;
   }
   return false;
 }
@@ -1139,6 +1183,10 @@ void AliFemtoESDTrackCut::SetNsigmaTPConly(Bool_t nsigma)
 void AliFemtoESDTrackCut::SetNsigma(Double_t nsigma)
 {
   fNsigma = nsigma;
+}
+void AliFemtoESDTrackCut::SetNsigmaMass(Double_t nsigma)
+{
+  fNsigmaMass = nsigma;
 }
 
 
@@ -1168,7 +1216,7 @@ Bool_t AliFemtoESDTrackCut::CheckITSClusterRequirement(AliESDtrackCuts::ITSClust
 bool AliFemtoESDTrackCut::IsElectron(float nsigmaTPCE, float nsigmaTPCPi,float nsigmaTPCK, float nsigmaTPCP)
 {
 
-  if(TMath::Abs(nsigmaTPCE)<3 && TMath::Abs(nsigmaTPCPi)>3 && TMath::Abs(nsigmaTPCK)>3 && TMath::Abs(nsigmaTPCP)>3)
+  if (TMath::Abs(nsigmaTPCE)<3 && TMath::Abs(nsigmaTPCPi)>3 && TMath::Abs(nsigmaTPCK)>3 && TMath::Abs(nsigmaTPCP)>3)
      return false;
   else
      return true;

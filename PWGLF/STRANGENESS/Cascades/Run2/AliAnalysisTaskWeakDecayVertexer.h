@@ -33,6 +33,10 @@ class AliESDEvent;
 class AliPhysicsSelection;
 
 #include "AliEventCuts.h"
+//For mapping functionality
+#include <map>
+
+using namespace std;
 
 class AliAnalysisTaskWeakDecayVertexer : public AliAnalysisTaskSE {
 public:
@@ -191,12 +195,51 @@ public:
     void SetMaxPtV0     ( Float_t lMaxPt ) {
         fMaxPtV0 = lMaxPt;
     }
+    void SetForceResetV0s     ( Bool_t lOpt ) {
+        fkForceResetV0s = lOpt;
+    }
+    void SetForceResetCascades     ( Bool_t lOpt ) {
+        fkForceResetCascades = lOpt;
+    }
     void SetCentralityInterval     ( Float_t lMinCent, Float_t lMaxCent ) {
         fMinCentrality = lMinCent;
         fMaxCentrality = lMaxCent;
     }
     void SetMassWindowAroundCascade     ( Double_t lMassWin ) {
         fMassWindowAroundCascade = lMassWin;
+    }
+    void SetMinXforXY     ( Double_t lMinX ) {
+        fMinXforXYtest = lMinX;
+    }
+    void SetPreselectX     ( Bool_t lOpt ) {
+        fkPreselectX = lOpt;
+    }
+    void SetSkipLargeXYDCA( Bool_t lOpt = kTRUE) {
+        fkSkipLargeXYDCA=lOpt;
+    }
+//---------------------------------------------------------------------------------------
+    void SetUseImprovedFinding(){
+        fkRunV0Vertexer = kTRUE;
+        fkRunCascadeVertexer = kTRUE;
+        fkDoImprovedDCAV0DauPropagation = kTRUE;
+        fkDoImprovedDCACascDauPropagation = kTRUE;
+        fkDoPureGeometricMinimization = kTRUE;
+        fkDoV0Refit = kTRUE;
+        fkDoCascadeRefit = kTRUE;
+        fkXYCase1 = kTRUE;
+        fkXYCase2 = kTRUE;
+    }
+//---------------------------------------------------------------------------------------
+    void SetUseDefaultFinding(){
+        fkRunV0Vertexer = kTRUE;
+        fkRunCascadeVertexer = kTRUE;
+        fkDoImprovedDCAV0DauPropagation = kFALSE;
+        fkDoImprovedDCACascDauPropagation = kFALSE;
+        fkDoPureGeometricMinimization = kFALSE;
+        fkDoV0Refit = kFALSE;
+        fkDoCascadeRefit = kFALSE;
+        fkXYCase1 = kFALSE;
+        fkXYCase2 = kFALSE;
     }
 //---------------------------------------------------------------------------------------
     //Functions for analysis Bookkeepinp
@@ -226,6 +269,20 @@ public:
     Double_t GetDCAV0Dau ( AliExternalTrackParam *pt, AliExternalTrackParam *nt, Double_t &xp, Double_t &xn, Double_t b, Double_t lNegMassForTracking=0.139, Double_t lPosMassForTracking=0.139);
     void GetHelixCenter(const AliExternalTrackParam *track,Double_t center[2], Double_t b);
     //---------------------------------------------------------------------------------------
+    
+    //---------------------------------------------------------------------------------------
+    // changes to enable AliExternalTrackParam inheritance from on-the-fly finder
+    //selective reset: go over list of V0s and delete offline (0) or on-the-fly (1) V0s
+    void SelectiveResetV0s(AliESDEvent *event, Int_t lType = 0);
+    //Master switch
+    void SetUseOptimalTrackParams (Bool_t lOpt){
+        fkUseOptimalTrackParams = lOpt;
+    }
+    void SetUseOptimalTrackParamsBachelor (Bool_t lOpt){
+        fkUseOptimalTrackParamsBachelor = lOpt;
+    }
+    //---------------------------------------------------------------------------------------
+    
 
 private:
     // Note : In ROOT, "//!" means "do not stream the data from Master node to Worker node" ...
@@ -241,6 +298,8 @@ private:
     AliVEvent::EOfflineTriggerTypes fTrigType; // trigger type
     Bool_t fkDoExtraEvSels; //if true, rely on AliEventCuts
     //Min/Max Centrality
+    Bool_t fkForceResetV0s;
+    Bool_t fkForceResetCascades;
     Float_t fMinCentrality; //centrality interval to actually regenerate candidates
     Float_t fMaxCentrality; //centrality interval to actually regenerate candidates
     
@@ -268,6 +327,12 @@ private:
     Bool_t fkDoPureGeometricMinimization;
     Bool_t fkDoCascadeRefit; //WARNING: needs DoV0Refit!
     Long_t fMaxIterationsWhenMinimizing;
+    Bool_t fkPreselectX;
+    Bool_t fkSkipLargeXYDCA;
+    
+    //Bool_t to conrtol the use of on-the-fly AliExternalTrackParams
+    Bool_t fkUseOptimalTrackParams; //if true, use better track estimates from OTF V0s
+    Bool_t fkUseOptimalTrackParamsBachelor; //if true, use better track estimates from OTF V0s
     
     //Min/Max pT for cascades
     Float_t fMinPtV0; //minimum pt above which we keep candidates in TTree output
@@ -278,8 +343,15 @@ private:
     //Mass Window around masses of interest
     Double_t fMassWindowAroundCascade;
     
+    Double_t fMinXforXYtest; //min X allowed for XY-plane preopt test
+    
     Double_t  fV0VertexerSels[7];        // Array to store the 7 values for the different selections V0 related
     Double_t  fCascadeVertexerSels[8];   // Array to store the 8 values for the different selections Casc. related
+    
+    
+    
+    //(pair) -> (OTF index) map
+    std::map<std::pair<int, int>, int> fOTFMap; //std::map to store index pair <-> OTF index equiv
     
 //===========================================================================================
 //   Histograms
@@ -288,9 +360,12 @@ private:
     TH1D *fHistEventCounter; //!
     TH1D *fHistCentrality; //!
     TH1D *fHistNumberOfCandidates; //!
+    TH1D *fHistV0ToBachelorPropagationStatus; //!
+    TH1D *fHistV0OptimalTrackParamUse; //!
+    TH1D *fHistV0OptimalTrackParamUseBachelor; //!
     
-     
-    TH1D *fHistV0ToBachelorPropagationStatus; //! 
+    //V0 statistics
+    TH1D *fHistV0Statistics; //! 
 
     AliAnalysisTaskWeakDecayVertexer(const AliAnalysisTaskWeakDecayVertexer&);            // not implemented
     AliAnalysisTaskWeakDecayVertexer& operator=(const AliAnalysisTaskWeakDecayVertexer&); // not implemented

@@ -31,6 +31,8 @@
 #include "AliFemtoCorrFctn3DLCMSSym.h"
 #include "AliFemtoModelCorrFctnTrueQ3D.h"
 
+#include "AliFemtoAnalysisPionPionCuts.h"
+
 #include "AliFemtoAnalysisPionPionObjectConstructor.h"
 
 #include <TROOT.h>
@@ -41,6 +43,7 @@
 #include <utility>
 #include <cassert>
 #include <typeinfo>
+#include <random>
 
 
 static const double PionMass = 0.13956995;
@@ -65,9 +68,25 @@ struct Configuration<AliFemtoAnalysisPionPion> {
     }
 };
 
+
+TString AliFemtoAnalysisPionPion::make_random_string(const TString &prefix)
+{
+  std::random_device rd;
+  std::uniform_int_distribution<char> dist('a', 'z');
+  TString result = prefix;
+
+  int N = std::uniform_int_distribution<>(6, 12)(rd);
+  for (int n = 0; n < N; ++n) {
+    result += dist(rd);
+  }
+  return result;
+}
+
+
 AliFemtoAnalysisPionPion::AnalysisParams::AnalysisParams()
-: vertex_bins(16), vertex_min(-10.0), vertex_max(10.0)
-, mult_bins(30), mult_min(0.0), mult_max(10000.0f)
+: TNamed(AliFemtoAnalysisPionPion::make_random_string("analysis_").Data(), "Analysis Parameters")
+, vertex_bins(1), vertex_min(-10.0), vertex_max(10.0)
+, mult_bins(30), mult_min(0.0), mult_max(6480.0)
 // , pion_type_1(kNone)
 // , pion_type_2(kNone)
 , pion_type_1(kPiPlus)
@@ -77,8 +96,29 @@ AliFemtoAnalysisPionPion::AnalysisParams::AnalysisParams()
 , verbose(kFALSE)
 , enable_pair_monitors(kTRUE)
 , group_output_objects(kTRUE)
+, output_settings(kFALSE)
 , is_mc_analysis(kFALSE)
 {
+}
+
+void
+AliFemtoAnalysisPionPion::AnalysisParams::calc_automult(const AliFemtoAnalysisPionPion::CutParams &cut)
+{
+  const double
+    centlo = cut.event_CentralityMax,
+    centhi = cut.event_CentralityMin,
+
+    bin_width = (mult_max - mult_min) / mult_bins,
+
+    // magic numbers fitting the exp curve
+    min_mult = 4293.2 * std::exp(-centhi / 24.01),
+    max_mult = 4293.2 * std::exp(-centlo / 24.01),
+
+    mult_min = std::max(0.0, min_mult - 1000);
+    mult_max = max_mult + 2000;
+
+  // keep the same bin width
+  mult_bins = (mult_max - mult_min) / bin_width;
 }
 
 #include <initializer_list>
@@ -97,151 +137,47 @@ typedef std::pair<Float_t, Float_t> RangeF_t;
 template <>
 AliFemtoConfigObject AliFemtoAnalysisPionPion::GetConfigurationOf<AliFemtoEventCut>(const AliFemtoEventCut &cut)
 {
-  auto *cls = TClass::GetClass(typeid(cut));
-  TString classname(cls->GetName());
-
-  if (cls->GetMethodAny("GetConfigObjectPtr")) {
-
-    auto cmd = TString::Format("reinterpret_cast<%s*>(%p)->GetConfigObjectPtr()", classname.Data(), &cut);
-    AliFemtoConfigObject *cfg = (AliFemtoConfigObject*)gROOT->ProcessLine(cmd);
-
-    AliFemtoConfigObject results(*cfg);
-    delete cfg;
-    return results;
-  }
-
-  #define TRY_CONSTRUCTING_CFG(__name) if (auto ptr = dynamic_cast<const __name*>(&cut)) { return Configuration<__name>::GetConfigurationOf(*ptr); }
-    TRY_CONSTRUCTING_CFG(AliFemtoBasicEventCut)
-    TRY_CONSTRUCTING_CFG(AliFemtoEventCutCentrality)
-  #undef TRY_CONSTRUCTING_CFG
-
-  return AliFemtoConfigObject::BuildMap()
-    ("class", classname)
-    ;
+  return AliFemtoConfigObject::From(cut);
 }
 
 template <>
 AliFemtoConfigObject AliFemtoAnalysisPionPion::GetConfigurationOf<AliFemtoTrackCut>(const AliFemtoTrackCut &cut)
 {
-  auto *cls = TClass::GetClass(typeid(cut));
-  if (!cls) {
-    return AliFemtoConfigObject::Parse("{class: 'AliFemtoTrackCut'}");
-  }
-
-  TString classname(cls->GetName());
-
-  if (cls->GetMethodAny("GetConfigObjectPtr")) {
-
-    auto cmd = TString::Format("reinterpret_cast<%s*>(%p)->GetConfigObjectPtr()", classname.Data(), &cut);
-    AliFemtoConfigObject *cfg = (AliFemtoConfigObject*)gROOT->ProcessLine(cmd);
-
-    AliFemtoConfigObject results(*cfg);
-    delete cfg;
-    return results;
-  }
-
-  #define TRY_CONSTRUCTING_CFG(__name) if (auto ptr = dynamic_cast<const __name*>(&cut)) { return Configuration<__name>::GetConfigurationOf(*ptr); }
-    TRY_CONSTRUCTING_CFG(AliFemtoESDTrackCut)
-  #undef TRY_CONSTRUCTING_CFG
-
-  return AliFemtoConfigObject::BuildMap()
-    ("class", classname)
-    ;
+  return AliFemtoConfigObject::From(cut);
 }
 
 
 template <>
 AliFemtoConfigObject AliFemtoAnalysisPionPion::GetConfigurationOf<AliFemtoPairCut>(const AliFemtoPairCut &cut)
 {
-  auto *cls = TClass::GetClass(typeid(cut));
-  if (!cls) {
-    return AliFemtoConfigObject::Parse("{class: 'AliFemtoPairCut'}");
-  }
-
-  TString classname(cls->GetName());
-
-  if (cls->GetMethodAny("GetConfigObjectPtr")) {
-
-    auto cmd = TString::Format("reinterpret_cast<%s*>(%p)->GetConfigObjectPtr()", classname.Data(), &cut);
-    AliFemtoConfigObject *cfg = (AliFemtoConfigObject*)gROOT->ProcessLine(cmd);
-
-    AliFemtoConfigObject results(*cfg);
-    delete cfg;
-    return results;
-  }
-
-  #define TRY_CONSTRUCTING_CFG(__name) if (auto ptr = dynamic_cast<const __name*>(&cut)) { return Configuration<__name>::GetConfigurationOf(*ptr); }
-    TRY_CONSTRUCTING_CFG(AliFemtoPairCutDetaDphi)
-    TRY_CONSTRUCTING_CFG(AliFemtoShareQualityPairCut)
-  #undef TRY_CONSTRUCTING_CFG
-
-  return AliFemtoConfigObject::BuildMap()
-    ("class", classname)
-    ;
+  return AliFemtoConfigObject::From(cut);
 }
 
-
-template<>
-AliFemtoEventCutCentrality*
-AliFemtoConfigObject::Construct() const
-{
-  Configuration<AliFemtoBasicEventCut> cfg;
-  AliFemtoEventCutCentrality *cut = new AliFemtoEventCutCentrality();
-
-  cut->SetCentralityRange(cfg.centrality.first, cfg.centrality.second);
-  cut->SetZPosRange(cfg.vertex_z.first, cfg.vertex_z.second);
-  cut->SetEPVZERO(cfg.EP_VZero.first, cfg.EP_VZero.second);
-  cut->SetTriggerSelection(cfg.trigger_selection);
-
-  return cut;
-}
-
-template<>
-AliFemtoBasicEventCut*
-AliFemtoConfigObject::Construct() const
-{
-  Configuration<AliFemtoBasicEventCut> cfg;
-
-  // auto x = cfg.Construct<AliFemtoEventCutCentrality>("event");
-
-  // load("multiplicity", cfg.multiplicity);
-  // pop_and_load("vertex_z", cfg.vertex_z);
-  // pop_and_load("ep_v0", cfg.EP_VZero);
-  // pop_and_load("trigger_selection", cfg.trigger_selection);
-
-  AliFemtoBasicEventCut *cut = new AliFemtoBasicEventCut();
-
-  cut->SetEventMult(cfg.multiplicity.first, cfg.multiplicity.second);
-  cut->SetVertZPos(cfg.vertex_z.first, cfg.vertex_z.second);
-  cut->SetEPVZERO(cfg.EP_VZero.first, cfg.EP_VZero.second);
-  cut->SetTriggerSelection(cfg.trigger_selection);
-  // cut->SetAcceptBadVertex(cfg.accept_bad_vertex);
-  // cut->SetAcceptOnlyPhysics(cfg.accept_only_physics);
-
-  return cut;
-}
+extern template AliFemtoEventCutCentrality* AliFemtoConfigObject::Into<AliFemtoEventCutCentrality>(bool);
+extern template AliFemtoBasicEventCut* AliFemtoConfigObject::Into<AliFemtoBasicEventCut>(bool);
 
 
 /// Configuration for creating a particle cut specifically for usage
 /// with pion values.
 ///
 struct CutConfig_Pion {
-    RangeF_t pt = {0.2, 2.0}
-           , eta = {-0.8, 0.8}
-           , DCA = {0.5, 4.0}
-           , nSigma = {-3.0, 3.0}
-           ;
+
+    RangeF_t pt = {0.2, 2.0},
+             eta = {-0.8, 0.8},
+             DCA = {0.5, 4.0},
+             nSigma = {-3.0, 3.0};
 
     Int_t charge = 1;
     UInt_t min_tpc_ncls = 80;
 
-    Float_t max_impact_xy = 2.4
-          , max_impact_z = 3.0
-          , max_tpc_chi_ndof = 0.032
-          , max_its_chi_ndof = 0.032
-          ;
+    Float_t max_impact_xy = .20,
+            max_impact_z = .15,
+            max_tpc_chi_ndof = 0.032,
+            max_its_chi_ndof = 0.032,
+            sigma = 3.0;
 
     Bool_t set_label = kTRUE,
+           use_tpctof = kTRUE,
            remove_kinks = kTRUE;
 
     /// default constructor required to use default initialized members
@@ -260,49 +196,10 @@ struct CutConfig_Pair {
   Bool_t remove_same_label { kFALSE },
          TPCOnly { kTRUE };
 
+  Int_t algorithm_code { 2 };
+
   CutConfig_Pair(){};
 };
-
-template<>
-AliFemtoPairCutDetaDphi*
-AliFemtoConfigObject::Construct<AliFemtoPairCutDetaDphi>() const
-{
-  CutConfig_Pion cfg;
-
-
-  auto cut = new AliFemtoPairCutDetaDphi();
-  return cut;
-}
-
-template<>
-AliFemtoESDTrackCut*
-AliFemtoConfigObject::Construct() const
-{
-
-  CutConfig_Pion cfg;
-
-  AliFemtoESDTrackCut *cut = new AliFemtoESDTrackCut();
-  cut->SetCharge(cfg.charge);
-  cut->SetMass(PionMass);
-  cut->SetPt(cfg.pt.first, cfg.pt.second);
-  cut->SetEta(cfg.eta.first, cfg.eta.second);
-  cut->SetRapidity(cfg.eta.first, cfg.eta.second);
-  cut->SetMostProbablePion();
-//   cut->SetStatus(AliESDtrack::kTPCrefit | AliESDtrack::kITSrefit);
-
-  /// Settings for TPC-Inner Runmode
-  cut->SetStatus(AliESDtrack::kTPCin);
-  cut->SetminTPCncls(cfg.min_tpc_ncls);
-  // cut->SetRemoveKinks(cfg.remove_kinks);
-  // cut->SetLabel(cfg.set_label);
-  cut->SetMaxTPCChiNdof(cfg.max_tpc_chi_ndof);
-  cut->SetMaxITSChiNdof(cfg.max_its_chi_ndof);
-  cut->SetMaxImpactXY(cfg.max_impact_xy);
-  cut->SetMaxImpactZ(cfg.max_impact_z);
-
-  return cut;
-}
-
 
 static const Configuration<AliFemtoBasicEventCut> default_event;
 static const CutConfig_Pion default_pion;
@@ -365,7 +262,6 @@ AliFemtoAnalysisPionPion::AliFemtoAnalysisPionPion(const char *name,
   , fGroupOutputObjects(params.group_output_objects)
   , fOutputSettings(params.output_settings)
   , fMCAnalysis(params.is_mc_analysis)
-  , fConfiguration()
 {
   SetVerboseMode(params.verbose);
   SetEnablePairMonitors(params.enable_pair_monitors);
@@ -373,7 +269,11 @@ AliFemtoAnalysisPionPion::AliFemtoAnalysisPionPion(const char *name,
   SetMinSizePartCollection(params.min_coll_size);
 
   if (fFirstParticleCut == nullptr) {
+    if (cut_params.cuts_use_attrs) {
+    SetFirstParticleCut(new AliFemtoTrackCutPionPionAK());
+    } else {
     SetFirstParticleCut(BuildPionCut1(cut_params));
+    }
   }
 
   if (fPionType_2 != kNone && fSecondParticleCut == nullptr) {
@@ -383,99 +283,20 @@ AliFemtoAnalysisPionPion::AliFemtoAnalysisPionPion(const char *name,
   }
 
   if (fEventCut == nullptr) {
+    // if (cut_params.cuts_use_attrs) {
+    // SetFirstParticleCut(new AliFemtoEventCutPionPionAK());
+    // } else {
     SetEventCut(BuildEventCut(cut_params));
+    // }
   }
 
   if (fPairCut == nullptr) {
+    // if (cut_params.cuts_use_attrs) {
+    // SetFirstParticleCut(new AliFemtoPairCutPionPionAKAvgSep());
+    // } else {
     SetPairCut(BuildPairCut(cut_params));
+    // }
   }
-
-  TString eventcut_classname = "UNKNOWN",
-          trackcut_classname = "UNKNOWN",
-          paircut_classname = "UNKNOWN";
-
-  if (fEventCut)
-  if (auto cls = TClass::GetClass(typeid(*fEventCut))) {
-    eventcut_classname = cls->GetName();
-  }
-  TString event_cut_cfg = fEventCut ? GetConfigurationOf(*fEventCut).Stringify() : "{}";
-
-  if (fFirstParticleCut)
-  if (auto cls = TClass::GetClass(typeid(*fFirstParticleCut))) {
-    trackcut_classname = cls->GetName();
-  }
-  TString track_cut_cfg = fFirstParticleCut ? GetConfigurationOf(*fFirstParticleCut).Stringify() : "{}";
-
-  if (fPairCut)
-  if (auto cls = TClass::GetClass(typeid(*fPairCut))) {
-    paircut_classname = cls->GetName();
-  }
-  TString pair_cut_cfg = fPairCut ? GetConfigurationOf(*fPairCut).Stringify() : "{}";
-
-  fConfiguration = AliFemtoConfigObject::Parse(TString::Format(R"#({
-    class: 'AliFemtoAnalysisPionPion',
-    is_mc: %d,
-    event: {
-      class: '%s',
-      multiplicity: %d:%d,
-      centrality: %f:%f,
-      zVertex: %f:%f,
-      trigger: %d,
-      accept_bad_vertex: %s,
-      accept_only_physics: %s,
-    },
-    track: {
-      class: '%s',
-      pt: %f:%f,
-      eta: %f:%f,
-      DCA: %f:%f,
-      nSigma: %f:%f,
-      impact_xy: %f,
-      impact_z: %f,
-      min_tpc_ncls: %d,
-      remove_kinks: %s,
-      set_label: %s,
-    },
-    pair: {
-      class: '%s',
-      max_share_quality: %f,
-      max_share_fraction: %f,
-      delta_eta_min: %f,
-      delta_phi_min: %f,
-      phi_star_radius: %f,
-      tpc_only: %d,
-    },
-    event_cut: %s,
-    track_cut: %s,
-    pair_cut: %s,
-  })#",
-    fMCAnalysis,
-    eventcut_classname.Data(),
-    cut_params.event_MultMin, cut_params.event_MultMax,
-    cut_params.event_CentralityMin, cut_params.event_CentralityMax,
-    cut_params.event_VertexZMin, cut_params.event_VertexZMax,
-    cut_params.event_TriggerSelection,
-    (cut_params.event_AcceptBadVertex ? "true" : "false"),
-    (cut_params.event_AcceptOnlyPhysics ? "true" : "false"),
-
-    trackcut_classname.Data(),
-    cut_params.pion_1_PtMin, cut_params.pion_1_PtMax,
-    cut_params.pion_1_EtaMin, cut_params.pion_1_EtaMax,
-    cut_params.pion_1_DCAMin, cut_params.pion_1_DCAMax,
-    cut_params.pion_1_NSigmaMin, cut_params.pion_1_NSigmaMax,
-    cut_params.pion_1_max_impact_xy, cut_params.pion_1_max_impact_z,
-    cut_params.pion_1_min_tpc_ncls,
-    (cut_params.pion_1_remove_kinks ? "true" : "false"),
-    (cut_params.pion_1_set_label ? "true" : "false"),
-
-    paircut_classname.Data(),
-    cut_params.pair_max_share_quality, cut_params.pair_max_share_fraction,
-    cut_params.pair_delta_eta_min, cut_params.pair_delta_phi_min,
-    cut_params.pair_phi_star_radius, cut_params.pair_TPCOnly
-    , event_cut_cfg.Data()
-    , track_cut_cfg.Data()
-    , pair_cut_cfg.Data()
-  ).Data());
 }
 
 AliFemtoAnalysisPionPion::AliFemtoAnalysisPionPion(const AliFemtoConfigObject &cfg)
@@ -509,7 +330,6 @@ AliFemtoAnalysisPionPion::AliFemtoAnalysisPionPion(const AliFemtoConfigObject &c
               : BuildPairCut(default_params);
     SetPairCut(cut);
   }
-
 }
 
 AliFemtoAnalysisPionPion::AnalysisParams
@@ -519,75 +339,79 @@ AliFemtoAnalysisPionPion::DefaultConfig()
 }
 
 
+AliFemtoAnalysisPionPion::CutParams::CutParams()
+  : TNamed(AliFemtoAnalysisPionPion::make_random_string("cut_").Data(), "Cut Params")
+  , cuts_use_attrs(false)
+  , event_use_basic(false)
+  , event_MultMin(default_event.multiplicity.first)
+  , event_MultMax(default_event.multiplicity.second)
+  , event_CentralityMin(default_event.centrality.first)
+  , event_CentralityMax(default_event.centrality.second)
+  , event_VertexZMin(default_event.vertex_z.first)
+  , event_VertexZMax(default_event.vertex_z.second)
+  , event_EP_VZeroMin(default_event.ep_psi.first)
+  , event_EP_VZeroMax(default_event.ep_psi.second)
+  , event_TriggerSelection(default_event.trigger_selection)
+  , event_AcceptBadVertex(default_event.accept_bad_vertex)
+  , event_AcceptOnlyPhysics(default_event.accept_bad_vertex)
+
+    // Pion 1
+  , pion_1_PtMin(default_pion.pt.first)
+  , pion_1_PtMax(default_pion.pt.second)
+  , pion_1_EtaMin(default_pion.eta.first)
+  , pion_1_EtaMax(default_pion.eta.second)
+  , pion_1_DCAMin(default_pion.DCA.first)
+  , pion_1_DCAMax(default_pion.DCA.second)
+
+  // , default_pion.nSigma.first
+  // , default_pion.nSigma.second
+  , pion_1_sigma(default_pion.sigma)
+
+  , pion_1_max_impact_xy(default_pion.max_impact_xy)
+  , pion_1_max_impact_z(default_pion.max_impact_z)
+  , pion_1_max_tpc_chi_ndof(default_pion.max_tpc_chi_ndof)
+  , pion_1_max_its_chi_ndof(default_pion.max_its_chi_ndof)
+
+  , pion_1_min_tpc_ncls(default_pion.min_tpc_ncls)
+  , pion_1_remove_kinks(default_pion.remove_kinks)
+  , pion_1_set_label(default_pion.set_label)
+  , pion_1_use_tpctof(default_pion.use_tpctof)
+
+    // Pion 2
+  , pion_2_PtMin(default_pion.pt.first)
+  , pion_2_PtMax(default_pion.pt.second)
+  , pion_2_EtaMin(default_pion.eta.first)
+  , pion_2_EtaMax(default_pion.eta.second)
+  , pion_2_DCAMin(default_pion.DCA.first)
+  , pion_2_DCAMax(default_pion.DCA.second)
+
+  , pion_2_max_impact_xy(default_pion.max_impact_xy)
+  , pion_2_max_impact_z(default_pion.max_impact_z)
+  , pion_2_max_tpc_chi_ndof(default_pion.max_tpc_chi_ndof)
+  , pion_2_max_its_chi_ndof(default_pion.max_its_chi_ndof)
+
+  , pion_2_min_tpc_ncls(default_pion.min_tpc_ncls)
+  , pion_2_remove_kinks(default_pion.remove_kinks)
+  , pion_2_set_label(default_pion.set_label)
+
+    // Pair
+  , pair_TPCOnly(default_pair.TPCOnly)
+
+  , pair_delta_eta_min(default_pair.min_delta_eta)
+  , pair_delta_phi_min(default_pair.min_delta_phi)
+  , pair_phi_star_radius(default_pair.phi_star_radius)
+
+  , pair_max_share_quality(default_pair.max_share_quality)
+  , pair_max_share_fraction(default_pair.max_share_fraction)
+  , pair_remove_same_label(default_pair.remove_same_label)
+  , pair_algorithm(default_pair.algorithm_code)
+{}
+
+
 AliFemtoAnalysisPionPion::CutParams
 AliFemtoAnalysisPionPion::DefaultCutConfig()
 {
-  AliFemtoAnalysisPionPion::CutParams params = {
-    // Event
-    false, // use AliFemtoBasicEventCut
-    std::get<0>(default_event.multiplicity)
-  , std::get<1>(default_event.multiplicity)
-  , default_event.centrality.first
-  , default_event.centrality.second
-  , default_event.vertex_z.first
-  , default_event.vertex_z.second
-  , default_event.EP_VZero.first
-  , default_event.EP_VZero.second
-  , default_event.trigger_selection
-  , default_event.accept_bad_vertex
-  , default_event.accept_only_physics
-
-    // Pion 1
-  , default_pion.pt.first
-  , default_pion.pt.second
-  , default_pion.eta.first
-  , default_pion.eta.second
-  , default_pion.DCA.first
-  , default_pion.DCA.second
-
-  , default_pion.nSigma.first
-  , default_pion.nSigma.second
-
-  , default_pion.max_impact_xy
-  , default_pion.max_impact_z
-  , default_pion.max_tpc_chi_ndof
-  , default_pion.max_its_chi_ndof
-
-  , default_pion.min_tpc_ncls
-  , default_pion.remove_kinks
-  , default_pion.set_label
-
-    // Pion 2
-  , default_pion.pt.first
-  , default_pion.pt.second
-  , default_pion.eta.first
-  , default_pion.eta.second
-  , default_pion.DCA.first
-  , default_pion.DCA.second
-
-  , default_pion.nSigma.first
-  , default_pion.nSigma.second
-
-  , default_pion.max_impact_xy
-  , default_pion.max_impact_z
-  , default_pion.max_tpc_chi_ndof
-  , default_pion.max_its_chi_ndof
-
-  , default_pion.min_tpc_ncls
-  , default_pion.remove_kinks
-  , default_pion.set_label
-
-    // Pair
-  , default_pair.TPCOnly
-
-  , default_pair.min_delta_eta
-  , default_pair.min_delta_phi
-  , default_pair.phi_star_radius
-
-  , default_pair.max_share_quality
-  , default_pair.max_share_fraction
-  , default_pair.remove_same_label
-  };
+  AliFemtoAnalysisPionPion::CutParams params;
 
   // sanity checks
   assert(params.event_MultMin == default_event.multiplicity.first);
@@ -623,6 +447,8 @@ AliFemtoAnalysisPionPion::BuildPionCut1(const CutParams &p) const
   cut->SetEta(p.pion_1_EtaMin, p.pion_1_EtaMax);
   cut->SetRapidity(p.pion_1_EtaMin, p.pion_1_EtaMax);
   cut->SetMostProbablePion();
+  cut->SetNsigma(p.pion_1_sigma);
+  cut->SetNsigmaTPCTOF(p.pion_1_use_tpctof);
 //   cut->SetStatus(AliESDtrack::kTPCrefit | AliESDtrack::kITSrefit);
 
   /// Settings for TPC-Inner Runmode
@@ -731,6 +557,8 @@ AliFemtoAnalysisPionPion::BuildPairCut(const CutParams &p) const
   cut->SetShareQualityMax(p.pair_max_share_quality);
   cut->SetShareFractionMax(p.pair_max_share_fraction);
   cut->SetRemoveSameLabel(p.pair_remove_same_label);
+
+  cut->SetAlternativeAlgorithm(p.pair_algorithm);
 
   return cut;
 }
@@ -864,7 +692,18 @@ TList* AliFemtoAnalysisPionPion::GetOutputList()
     output->Add(new TObjString(settings));
   }
 
-  output->Add(new AliFemtoConfigObject(fConfiguration));
+  auto event_cut_cfg = GetConfigurationOf(*fEventCut);
+  auto track_cut_cfg = GetConfigurationOf(static_cast<const AliFemtoTrackCut&>(*fFirstParticleCut));
+  auto pair_cut_cfg = GetConfigurationOf(*fPairCut);
+
+  output->Add(
+    new AliFemtoConfigObject(AliFemtoConfigObject::BuildMap()
+              ("_class", "AliFemtoAnalysisPionPion")
+              ("is_mc", fMCAnalysis)
+              ("event_cut", event_cut_cfg)
+              ("track_cut", track_cut_cfg)
+              ("pair_cut", pair_cut_cfg))
+             );
   return outputlist;
 }
 
@@ -872,26 +711,18 @@ TList* AliFemtoAnalysisPionPion::ListSettings()
 {
   TList *setting_list = new TList();
 
+  TString prefix = "AliFemtoAnalysisPionPion";
+
   setting_list->AddVector(
 
-    new TObjString(
-      TString::Format("AliFemtoAnalysisPionPion.mc_analysis=%d", fMCAnalysis)
-    ),
-
-    new TObjString(
-      TString::Format("AliFemtoAnalysisPionPion.identical_analysis=%d", AnalyzeIdenticalParticles())
-    ),
-
-    new TObjString(
-      TString::Format("AliFemtoAnalysisPionPion.pion_1_type=%d", fPionType_1)
-    ),
+    new TObjString(prefix + Form(".mc_analysis=%d", fMCAnalysis)),
+    new TObjString(prefix + Form(".identical_analysis=%d", AnalyzeIdenticalParticles())),
+    new TObjString(prefix + Form(".pion_1_type=%d", fPionType_1)),
 
   nullptr);
 
   if (!AnalyzeIdenticalParticles()) {
-    setting_list->Add(
-      new TObjString(TString::Format("AliFemtoAnalysisPionPion.pion_2_type=%d", fPionType_2))
-    );
+    setting_list->Add(new TObjString(prefix + Form(".pion_2_type=%d", fPionType_2)));
   }
 
   TList *parent_list = AliFemtoVertexMultAnalysis::ListSettings();
@@ -929,178 +760,43 @@ void AliFemtoAnalysisPionPion::EventEnd(const AliFemtoEvent* ev)
   }
 }
 
-template <typename T>
-T*
-ConstructClassOfType(const std::string classname)
-{
-  static std::mutex m;
-
-  T *result = nullptr;
-
-  {
-    auto globals = gROOT->GetListOfGlobals();
-    const auto tmpname = TString::Format("___FEMTO_TMP");
-    std::lock_guard<std::mutex> guard(m);
-
-
-    TH1C h(tmpname, "", 1, 0, 1);
-    globals->Add(&h);
-
-    auto tmp_buff = h.fArray;
-
-    // const TString cmd = TString::Format("std::cout << '~' << (%s->fArray = reinterpret_cast<char*>(new %s())) << '\\n';", tmpname.Data(), classname.c_str());
-    // const TString cmd = TString::Format("dynamic_cast<TH1C*>(gROOT->GetListOfGlobals()->FindObject(\"%s\"))->fArray = reinterpret_cast<char*>(new %s());", tmpname.Data(), classname.c_str());
-    const TString cmd = TString::Format(R"( auto a = dynamic_cast<TH1C*>(gROOT->GetListOfGlobals()->FindObject("%s")); a->fArray = reinterpret_cast<char*>(new %s()); )", tmpname.Data(), classname.c_str());
-
-    Int_t err;
-    gROOT->ProcessLine(cmd, &err);
-    if (err) {
-      std::cerr << " --> Error Encountered when processing: " << err << "\n";
-    }
-    result = reinterpret_cast<T*>(h.fArray);
-
-    h.fArray = tmp_buff;
-    globals->Remove(&h);
-  }
-
-  return result;
-}
-
-// AliFemtoEventReader*
-// AliFemtoAnalysisPionPion::ConstructEventReader(AliFemtoConfigObject cfg)
-// {
-
-//   std::string classname;
-//   cfg.pop_and_load("class", classname);
-//   auto result = ConstructClassOfType<AliFemtoEventReader>(classname);
-
-//   std::cout << "\n\n\nCreated event reader at " << (void*)result << "\n\n";
-//   std::cout << "Clone.... " << result->Report() << "\n";
-//   return result;
-// }
 
 AliFemtoEventReader*
 AliFemtoAnalysisPionPion::ConstructEventReader(AliFemtoConfigObject cfg)
 {
-  std::string classname;
-  if (!cfg.pop_and_load("class", classname)) {
-    TString msg = "Could not load string-property 'class' from object:\n" + cfg.Stringify(true);
-    std::cerr << "[AliFemtoAnalysisPionPion::ConstructEventReader] " << msg;
-    return nullptr;
-  }
-
-  std::cout << "classname=`" << classname << "`\n";
-  TClass tclass(classname.c_str(), true);
-
-  // this class is registered with ROOT and is of the correct type
-  if (tclass.GetClassInfo() && tclass.InheritsFrom("AliFemtoEventReader")) {
-
-    // can be constructed from ConfigObject
-    auto ctor = tclass.GetMethodWithPrototype(classname.c_str(), "AliFemtoConfigObject");
-    if (ctor) {
-      TString cfgstr = cfg.Stringify();
-      auto obj = (AliFemtoEventReader*)gInterpreter->ProcessLine(
-        TString::Format("new %s(AliFemtoConfigObject::Parse(\"%s\");", classname.c_str(), cfgstr.Data())
-      );
-      std::cout << "obj=" << obj << "\n";
-      return obj;
-    }
-  }
-
-  #define TRY_CONSTRUCTING_CLASS(__name) (classname == #__name) ? (AliFemtoEventReader*)(Configuration<__name>(cfg))
-
-  AliFemtoEventReader *result = TRY_CONSTRUCTING_CLASS(AliFemtoEventReaderAOD)
-                              : TRY_CONSTRUCTING_CLASS(AliFemtoEventReaderAODChain)
-                              : TRY_CONSTRUCTING_CLASS(AliFemtoEventReaderAODMultSelection)
-                              : nullptr;
-
-  #undef TRY_CONSTRUCTING_CLASS
-
-  if (result == nullptr) {
-    std::cerr << "[AliFemtoAnalysisPionPion::ConstructEventReader] " << "Could not load class '" << classname << "' \n";
-  }
-
-  return result;
+  return cfg.Into<AliFemtoEventReader>();
 }
 
 AliFemtoEventCut*
 AliFemtoAnalysisPionPion::ConstructEventCut(AliFemtoConfigObject cfg)
 {
-  std::string classname;
-  if (!cfg.pop_and_load("class", classname)) {
-    TString msg = "Could not load string-property 'class' from object:\n" + cfg.Stringify(true);
-    std::cerr << "[AliFemtoAnalysisPionPion::ConstructPairCut] " << msg;
-    return nullptr;
-  }
-
-  #define TRY_CONSTRUCTING_CLASS(__name) (classname == #__name) ? (AliFemtoEventCut*)(Configuration<__name>(cfg))
-
-  auto *result = TRY_CONSTRUCTING_CLASS(AliFemtoBasicEventCut)
-              //  : TRY_CONSTRUCTING_CLASS(AliFemtoEventCutCentrality)
-               : classname == "AliFemtoEventCutCentrality" ? new AliFemtoEventCutCentrality(cfg)
-               : nullptr;
-
-  #undef TRY_CONSTRUCTING_CLASS
-
-  if (result == nullptr) {
-    std::cerr << "[AliFemtoAnalysisPionPion::ConstructEventReader] " << "Could not load class '" << classname << "' \n";
-  }
-
+  auto result = cfg.Into<AliFemtoEventCut>();
   return result;
 }
 
 AliFemtoPairCut*
 AliFemtoAnalysisPionPion::ConstructPairCut(AliFemtoConfigObject cfg)
 {
-  std::string classname;
-  if (!cfg.pop_and_load("class", classname)) {
-    TString msg = "Could not load string-property 'class' from object:\n" + cfg.Stringify(true);
-    std::cerr << "[AliFemtoAnalysisPionPion::ConstructPairCut] " << msg;
-    return nullptr;
-  }
-  std::cout << "classname=`" << classname << "`\n";
-
-
-  #define TRY_CONSTRUCTING_CLASS(__name) (classname == #__name) ? (AliFemtoPairCut*)(Configuration<__name>(cfg))
-
-  auto *result = TRY_CONSTRUCTING_CLASS(AliFemtoPairCutAntiGamma)
-               : TRY_CONSTRUCTING_CLASS(AliFemtoPairCutDetaDphi)
-               : TRY_CONSTRUCTING_CLASS(AliFemtoShareQualityPairCut)
-               : nullptr;
-
-  #undef TRY_CONSTRUCTING_CLASS
-
+  auto result = cfg.Into<AliFemtoPairCut>();
   return result;
 }
 
 AliFemtoParticleCut*
 AliFemtoAnalysisPionPion::ConstructParticleCut(AliFemtoConfigObject cfg)
 {
-  std::string classname;
-  if (!cfg.pop_and_load("class", classname)) {
-    TString msg = "Could not load string-property 'class' from object:\n" + cfg.Stringify(true);
-    std::cerr << "[AliFemtoAnalysisPionPion::ConstructParticleCut] " << msg;
-    return nullptr;
-  }
-
-  #define TRY_CONSTRUCTING_CLASS(__name) (classname == #__name) ? static_cast<AliFemtoParticleCut*>(Configuration<__name>(cfg))
-
-  AliFemtoParticleCut *result = TRY_CONSTRUCTING_CLASS(AliFemtoESDTrackCut)
-                          //  : TRY_CONSTRUCTING_CLASS(AliFemtoEventReaderAODMultSelection)
-                           : nullptr;
-  #undef TRY_CONSTRUCTING_CLASS
-
+  auto result = cfg.Into<AliFemtoTrackCut>();
   return result;
-
 }
 
 AliFemtoAnalysis*
 AliFemtoAnalysisPionPion::BuildAnalysisFromConfiguration(AliFemtoConfigObject cfg)
 {
   std::string classname;
-  if (!cfg.pop_and_load("class", classname)) {
-    TString msg = "Could not load string-property 'class' from object:\n" + cfg.Stringify(true);
-    std::cerr << "[AliFemtoAnalysisPionPion::BuildAnalysisFromConfiguration] " << msg;
+  if (!cfg.pop_and_load("_class", classname)) {
+    std::cerr << "[AliFemtoAnalysisPionPion::BuildAnalysisFromConfiguration] "
+              << "Could not load string-property 'class' from object:\n"
+              << cfg.Stringify(true)
+	      << "\n";
     return nullptr;
   }
 
@@ -1118,7 +814,7 @@ AliFemtoCorrFctn*
 AliFemtoAnalysisPionPion::ConstructCorrelationFunction(AliFemtoConfigObject cfg)
 {
   std::string classname;
-  if (!cfg.pop_and_load("class", classname)) {
+  if (!cfg.pop_and_load("_class", classname)) {
     TString msg = "Could not load string-property 'class' from object:\n" + cfg.Stringify(true);
     std::cerr << "[AliFemtoAnalysisPionPion::ConstructCorrelationFunction] " << msg;
     return nullptr;

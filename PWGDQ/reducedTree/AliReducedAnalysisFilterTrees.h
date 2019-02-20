@@ -33,6 +33,7 @@ public:
   void AddPairCut(AliReducedInfoCut* cut) {fPairCuts.Add(cut);}
   void SetWriteFilteredTracks(Bool_t option=kTRUE) {fWriteFilteredTracks=option;}
   void SetWriteFilteredPairs(Bool_t option=kTRUE) {fWriteFilteredPairs=option;}
+  void SetMCJpsiPtWeights(TH1F* weights) {fMCJpsiPtWeights = weights;}
   
   void SetBuildCandidatePairs(AliReducedPairInfo::CandidateType type) {fBuildCandidatePairs=kTRUE; fCandidateType=type;}
   void SetBuildCandidateLikePairs(Bool_t option=kTRUE) {fBuildCandidateLikePairs=option;}
@@ -126,7 +127,8 @@ protected:
    //  e.g. cuts on the MC flags and on kinematics
    //  For each selection, a separate histogram directory will be created
    TList fJpsiMotherMCcuts;
-
+   TH1F*  fMCJpsiPtWeights;            //! weights vs pt to reject events depending on the jpsi true pt (needed to re-weights jpsi Pt distribution)
+   Bool_t fSkipMCEvent; // if true MC event is skipped
    // Selection on the MC truth of the electrons from the jpsi decay
    //  Tipically, here one can specify the kinematic selection on the electrons from jpsi decay
    //       so dividing the jpsi yield at this step by the yield of jpsi selected by the fJpsiMotherMCcuts, one can obtain the
@@ -148,7 +150,7 @@ protected:
 
   Bool_t TrackIsCandidateLeg(AliReducedBaseTrack* track);
    void WriteFilteredPairs();
-   void WriteFilteredTracks();
+   void WriteFilteredTracks(Int_t array=1);
    Bool_t IsCandidateLegSelected(AliReducedBaseTrack* track, Float_t* values=0x0, Int_t whichLeg=1); 
    Bool_t IsCandidatePairSelected(Float_t* values);
    Bool_t IsCandidateLegPrefilterSelected(AliReducedBaseTrack* track, Float_t* values=0x0, Int_t whichLeg=1);

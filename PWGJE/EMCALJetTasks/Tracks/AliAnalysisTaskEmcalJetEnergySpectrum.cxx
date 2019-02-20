@@ -32,17 +32,21 @@
 
 #include <THistManager.h>
 #include <TLinearBinning.h>
+#include <TVariableBinning.h>
 
 #include "AliAODInputHandler.h"
 #include "AliAnalysisManager.h"
 #include "AliAnalysisTaskEmcalJetEnergySpectrum.h"
 #include "AliEmcalAnalysisFactory.h"
+#include "AliEmcalDownscaleFactorsOCDB.h"
 #include "AliEmcalJet.h"
 #include "AliEmcalTriggerDecisionContainer.h"
 #include "AliEmcalTriggerStringDecoder.h"
+#include "AliEventCuts.h"
 #include "AliInputEventHandler.h"
 #include "AliJetContainer.h"
 #include "AliLog.h"
+#include "AliMultSelection.h"
 #include "AliVEvent.h"
 
 ClassImp(EmcalTriggerJets::AliAnalysisTaskEmcalJetEnergySpectrum);
@@ -52,6 +56,7 @@ using namespace EmcalTriggerJets;
 AliAnalysisTaskEmcalJetEnergySpectrum::AliAnalysisTaskEmcalJetEnergySpectrum():
   AliAnalysisTaskEmcalJet(),
   fHistos(nullptr),
+  fEventCuts(nullptr),
   fIsMC(false),
 	fTriggerSelectionBits(AliVEvent::kAny),
   fTriggerSelectionString(""),
@@ -60,7 +65,11 @@ AliAnalysisTaskEmcalJetEnergySpectrum::AliAnalysisTaskEmcalJetEnergySpectrum():
   fNameTriggerDecisionContainer("EmcalTriggerDecision"),
   fUseTriggerSelectionForData(false),
   fUseDownscaleWeight(false),
-  fNameJetContainer("datajets")
+  fNameJetContainer("datajets"),
+  fRequestTriggerClusters(true),
+  fRequestCentrality(false),
+  fUseAliEventCuts(false),
+  fCentralityEstimator("V0M")
 {
   SetUseAliAnaUtils(true);
 }
@@ -68,6 +77,7 @@ AliAnalysisTaskEmcalJetEnergySpectrum::AliAnalysisTaskEmcalJetEnergySpectrum():
 AliAnalysisTaskEmcalJetEnergySpectrum::AliAnalysisTaskEmcalJetEnergySpectrum(const char *name):
   AliAnalysisTaskEmcalJet(name, true),
   fHistos(nullptr),
+  fEventCuts(nullptr),
   fIsMC(false),
 	fTriggerSelectionBits(AliVEvent::kAny),
   fTriggerSelectionString(""),
@@ -76,7 +86,11 @@ AliAnalysisTaskEmcalJetEnergySpectrum::AliAnalysisTaskEmcalJetEnergySpectrum(con
   fNameTriggerDecisionContainer("EmcalTriggerDecision"),
   fUseTriggerSelectionForData(false),
   fUseDownscaleWeight(false),
-  fNameJetContainer("datajets")
+  fNameJetContainer("datajets"),
+  fRequestTriggerClusters(true),
+  fRequestCentrality(false),
+  fUseAliEventCuts(false),
+  fCentralityEstimator("V0M")
 {
   SetUseAliAnaUtils(true);
 }
@@ -88,16 +102,48 @@ AliAnalysisTaskEmcalJetEnergySpectrum::~AliAnalysisTaskEmcalJetEnergySpectrum(){
 void AliAnalysisTaskEmcalJetEnergySpectrum::UserCreateOutputObjects(){
   AliAnalysisTaskEmcalJet::UserCreateOutputObjects();
 
-  TLinearBinning jetptbinning(200, 0., 200.), etabinning(100, -1., 1.), phibinning(100., 0., 7.), nefbinning(100, 0., 1.), trgclusterbinning(kTrgClusterN + 1, -0.5, kTrgClusterN -0.5);
-  const TBinning *binnings[5] = {&jetptbinning, &etabinning, &phibinning, &nefbinning, &trgclusterbinning};
+  if(!fUserPtBinning.GetSize()) {
+    // binning not set. apply default binning
+    AliInfoStream() << "Using default pt binning";
+    fUserPtBinning.Set(201);
+    double current(0.);
+    for(int istep = 0; istep < 201; istep++) {
+      fUserPtBinning[istep] = current;
+      current += 1; 
+    }
+  }
+
+  TLinearBinning centralitybinning(100, 0., 100.), etabinning(100, -1., 1.), phibinning(100., 0., 7.), nefbinning(100, 0., 1.), trgclusterbinning(kTrgClusterN + 1, -0.5, kTrgClusterN -0.5);
+  TVariableBinning jetptbinning(fUserPtBinning);
+  const TBinning *binnings[6] = {&centralitybinning, &jetptbinning, &etabinning, &phibinning, &nefbinning, &trgclusterbinning};
   fHistos = new THistManager(Form("Histos_%s", GetName()));
   fHistos->CreateTH1("hEventCounter", "Event counter histogram", 1, 0.5, 1.5);
+  fHistos->CreateTH1("hEventCounterAbs", "Event counter histogram absolute", 1, 0.5, 1.5);
+  fHistos->CreateTH1("hEventCentrality", "Event centrality", 100., 0., 100.);
+  fHistos->CreateTH1("hEventCentralityAbs", "Event centrality absolute", 100., 0., 100.);
   fHistos->CreateTH1("hClusterCounter", "Event counter histogram", kTrgClusterN, -0.5, kTrgClusterN - 0.5);
-  fHistos->CreateTHnSparse("hJetTHnSparse", "jet thnsparse", 5, binnings, "s");
-  fHistos->CreateTHnSparse("hMaxJetTHnSparse", "jet thnsparse", 5, binnings, "s");
+  fHistos->CreateTH1("hClusterCounterAbs", "Event counter histogram absolute", kTrgClusterN, -0.5, kTrgClusterN - 0.5);
+  fHistos->CreateTHnSparse("hJetTHnSparse", "jet thnsparse", 6, binnings, "s");
+  fHistos->CreateTHnSparse("hMaxJetTHnSparse", "jet thnsparse", 6, binnings, "s");
 
   for(auto h : *fHistos->GetListOfHistograms()) fOutput->Add(h);
+
+  if(fUseAliEventCuts) {
+    fEventCuts = new AliEventCuts(true);
+    // Do not perform trigger selection in the AliEvent cuts but let the task do this before
+    fEventCuts->OverrideAutomaticTriggerSelection(AliVEvent::kAny, true);
+    fOutput->Add(fEventCuts);
+  }
   PostData(1, fOutput);
+}
+
+bool AliAnalysisTaskEmcalJetEnergySpectrum::IsEventSelected(){
+  if(fEventCuts) {
+    if(!IsTriggerSelected()) return false;
+    if(!fEventCuts->AcceptEvent(fInputEvent)) return false;
+    return true;
+  }
+  return AliAnalysisTaskEmcal::IsEventSelected();
 }
 
 bool AliAnalysisTaskEmcalJetEnergySpectrum::Run(){
@@ -107,39 +153,73 @@ bool AliAnalysisTaskEmcalJetEnergySpectrum::Run(){
     return false;
   }
 
+  double eventCentrality = 99;   // without centrality put everything in the peripheral bin
+  if(fRequestCentrality){
+    AliMultSelection *mult = dynamic_cast<AliMultSelection *>(InputEvent()->FindListObject("MultSelection"));
+    if(!mult){
+      AliErrorStream() << GetName() << ": Centrality selection enabled but no centrality estimator found" << std::endl;
+      return false;
+    }
+    if(mult->IsEventSelected()) return false;
+    eventCentrality = mult->GetEstimator(fCentralityEstimator)->GetPercentile();
+    AliDebugStream(1) << GetName() << ": Centrality " <<  eventCentrality << std::endl;
+  } else {
+    AliDebugStream(1) << GetName() << ": No centrality selection applied" << std::endl;
+  }
+
   auto trgclusters = GetTriggerClusterIndices(fInputEvent->GetFiredTriggerClasses());
-  fHistos->FillTH1("hEventCounter", 1);
+  Double_t weight = 1.;
+  if(fUseDownscaleWeight) {
+    weight = 1./PWG::EMCAL::AliEmcalDownscaleFactorsOCDB::Instance()->GetDownscaleFactorForTriggerClass(MatchTrigger(fInputEvent->GetFiredTriggerClasses().Data()));
+  }
+  fHistos->FillTH1("hEventCounterAbs", 1.);
+  fHistos->FillTH1("hEventCounter", weight);
+  fHistos->FillTH1("hEventCentralityAbs", eventCentrality);
+  fHistos->FillTH1("hEventCentrality", eventCentrality, weight);
   AliEmcalJet *maxjet(nullptr);
-  for(auto t : trgclusters) fHistos->FillTH1("hClusterCounter", t);
+  for(auto t : trgclusters) {
+    fHistos->FillTH1("hClusterCounterAbs", t);
+    fHistos->FillTH1("hClusterCounter", t, weight);
+  }
   for(auto j : datajets->accepted()){
     if(!maxjet || (j->E() > maxjet->E())) maxjet = j;
-    double datapoint[5] = {j->Pt(), j->Eta(), j->Phi(), j->NEF(), 0.};
+    double datapoint[6] = {eventCentrality, j->Pt(), j->Eta(), j->Phi(), j->NEF(), 0.};
     for(auto t : trgclusters){
-      datapoint[4] = static_cast<double>(t);
-      fHistos->FillTHnSparse("hJetTHnSparse", datapoint);
+      datapoint[5] = static_cast<double>(t);
+      fHistos->FillTHnSparse("hJetTHnSparse", datapoint, weight);
     }
   }
 
-  double maxdata[5];
+  double maxdata[6];
   memset(maxdata, 0., sizeof(double) * 5);
+  maxdata[0] = eventCentrality;
   if(maxjet){
-    maxdata[0] = maxjet->Pt();
-    maxdata[1] = maxjet->Eta();
-    maxdata[2] = maxjet->Phi();
-    maxdata[3] = maxjet->NEF();
-    for(auto t : trgclusters){
-      maxdata[4] = static_cast<double>(t);
-      fHistos->FillTHnSparse("hMaxJetTHnSparse", maxdata);
-    }
+    maxdata[1] = maxjet->Pt();
+    maxdata[2] = maxjet->Eta();
+    maxdata[3] = maxjet->Phi();
+    maxdata[4] = maxjet->NEF();
+  }
+  for(auto t : trgclusters){
+    maxdata[5] = static_cast<double>(t);
+    fHistos->FillTHnSparse("hMaxJetTHnSparse", maxdata, weight);
   }
   return true;
+}
+
+void AliAnalysisTaskEmcalJetEnergySpectrum::RunChanged(Int_t newrun){
+  if(fUseDownscaleWeight) {
+    auto downscalehandler = PWG::EMCAL::AliEmcalDownscaleFactorsOCDB::Instance();
+    if(downscalehandler->GetCurrentRun() != newrun){
+      downscalehandler->SetRun(newrun);
+    }
+  }
 }
 
 std::vector<AliAnalysisTaskEmcalJetEnergySpectrum::TriggerCluster_t> AliAnalysisTaskEmcalJetEnergySpectrum::GetTriggerClusterIndices(const TString &triggerstring) const {
   // decode trigger string in order to determine the trigger clusters
   std::vector<TriggerCluster_t> result;
   result.emplace_back(kTrgClusterANY);      // cluster ANY always included 
-  if(!fIsMC){
+  if(!fIsMC && fRequestTriggerClusters){
     // Data - separate trigger clusters
     std::vector<std::string> clusternames;
     auto triggerinfos = PWG::EMCAL::Triggerinfo::DecodeTriggerString(triggerstring.Data());
@@ -209,6 +289,19 @@ bool AliAnalysisTaskEmcalJetEnergySpectrum::IsTriggerSelected() {
     }
   }
   return true;
+}
+
+std::string AliAnalysisTaskEmcalJetEnergySpectrum::MatchTrigger(const std::string &triggerstring){
+  auto triggerclasses = PWG::EMCAL::Triggerinfo::DecodeTriggerString(triggerstring);
+  std::string result;
+  for(const auto &t : triggerclasses) {
+    // Use CENT cluster for downscaling
+    if(t.Triggercluster() != "CENT") continue;
+    if(t.Triggerclass().find(fTriggerSelectionString.Data()) == std::string::npos) continue; 
+    result = t.ExpandClassName();
+    break;
+  }
+  return result;
 }
 
 bool AliAnalysisTaskEmcalJetEnergySpectrum::IsSelectEmcalTriggers(const std::string &triggerstring) const {

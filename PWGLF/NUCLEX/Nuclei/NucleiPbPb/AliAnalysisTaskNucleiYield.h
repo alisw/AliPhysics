@@ -38,7 +38,31 @@ class AliAODTrack;
 class AliVVertex;
 class AliPIDResponse;
 class TList;
+class TTree;
 class AliPWGFunc;
+
+struct SLightNucleus {
+  float pt;
+  float eta;
+  float phi;
+  int   pdg;
+  int   flag;
+};
+
+struct RLightNucleus {
+  float pt;
+  float eta;
+  float phi;
+  Double32_t m2;             //[1.1,21.58,13]
+  Double32_t dcaxy;          //[-2,2,10]
+  Double32_t dcaz;           //[-2,2,10]
+  Double32_t tpcNsigmaD;     //[-6.4,6.4,8]
+  Double32_t tpcNsigmaT;     //[-6.4,6.4,8]
+  Double32_t tpcNsigmaHe3;   //[-6.4,6.4,8]
+  Double32_t centrality;     //[0,128,8]
+  unsigned char itsCls;
+  unsigned char tpcPIDcls;
+};
 
 class AliAnalysisTaskNucleiYield : public AliAnalysisTaskSE {
 public:
@@ -63,7 +87,7 @@ public:
   void SetRequireTPCrecPoints (int rec = 70) { fRequireTPCrecPoints = rec; }
   void SetRequireTPCfoundFraction (float rec = 0.8) { fRequireTPCfoundFraction = rec; }
   void SetRequireITSsignal (int sig = 3) { fRequireITSsignal = sig; }
-  void SetRequireTPCsignal (int sig = 70) { fRequireITSsignal = sig; }
+  void SetRequireTPCsignal (int sig = 70) { fRequireTPCsignal = sig; }
   void SetRequireSDDrecPoints (int rec = 1) { fRequireSDDrecPoints = rec; }
   void SetRequireSPDrecPoints (int rec = 1) { fRequireSPDrecPoints = rec; }
   void SetEtaRange (float emin, float emax) { fRequireEtaMin = emin; fRequireEtaMax = emax; }
@@ -97,6 +121,10 @@ public:
     fPtShapeFunction = functionID;
     fPtShapeParams.Set(nPars,pars);
   }
+  void SetBeamRapidity(float rap) { fBeamRapidity = rap; }
+  void SetCentralityEstimator(int est) { fEstimator = est; }
+
+  void SaveTrees(bool save=true) { fSaveTrees = save; }
 
   static int    GetNumberOfITSclustersPerLayer(AliVTrack *track, int &nSPD, int &nSDD, int &nSSD);
   static float  HasTOF(AliAODTrack *t, AliPIDResponse* pid);
@@ -126,6 +154,8 @@ private:
   TF1                  *fTOFfunction;           //!<! TOF signal function
 
   TList                *fList;                  ///<  Output list
+  TTree                *fRTree;                 ///<  Output reconstructed ttree
+  TTree                *fSTree;                 ///<  Output simulated ttree
   TLorentzVector        fCutVec;                ///<  Vector used to perform some cuts
   Int_t                 fPDG;                   ///<  PDG code of the particle of interest
   Float_t               fPDGMass;               ///<  PDG mass
@@ -173,8 +203,15 @@ private:
   Int_t                 fPtShapeFunction;       ///<  Id of the function used to weight the MC input pt shape (see the enum)
   Float_t               fPtShapeMaximum;        ///<  Maximum of the pt shape used
   Float_t               fITSelectronRejectionSigma; ///< nSigma rejection band in ITS response around the electron band for TPC only analysis
+  Float_t               fBeamRapidity;          ///< Beam rapidity in case of asymmetric colliding systems
+  Int_t                 fEstimator;             ///< Choose the centrality estimator from AliEventCuts
 
   Bool_t                fEnableFlattening;      ///<  Switch on/off the flattening
+
+  Bool_t                fSaveTrees;             ///<  Switch on/off the output TTrees
+  RLightNucleus         fRecNucleus;            ///<  Reconstructed nucleus
+  SLightNucleus         fSimNucleus;            ///<  Simulated nucleus
+
 
   AliPID::EParticleType fParticle;              ///<  Particle specie
   TArrayF               fCentBins;              ///<  Centrality bins

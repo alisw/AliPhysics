@@ -96,12 +96,14 @@ class AliAnalysisTaskStudentsML : public AliAnalysisTaskSE{
 
   //2.) Variables for the correlation:
   Int_t fMaxCorrelator;          // maximum of correlation 
-  TProfile *fRecursion[2][8];    //! //how can i set the 8 as fMaxCorrelator?????? 
+  TProfile *fRecursion[2][8];    //!  
+  TProfile *fRecursionSecond[2][8];    //!
   Bool_t bUseWeights; 
 
   const Int_t kNumber;           //number of correlation
 
   const Int_t kh1, kh2, kh3, kh4, kh5, kh6, kh7, kh8;  //harmonics
+  const Int_t ka1, ka2, ka3, ka4, ka5, ka6, ka7, ka8;  //second set of harmonics
    
   const Int_t kSum; 
   const Int_t kMaxHarmonic; 
@@ -120,12 +122,13 @@ class AliAnalysisTaskStudentsML : public AliAnalysisTaskSE{
   // 3.) Final results:
    
   TProfile *fCentrality;         // final centrality result
+  TProfile *fCentralitySecond;         // final centrality result for second harmonics 
   TH1F *fCounterHistogram;       // for some checks
   TList *fFinalResultsList;      // list to hold all histograms with final results
 
   
 
-  ClassDef(AliAnalysisTaskStudentsML,7);
+  ClassDef(AliAnalysisTaskStudentsML,8);
 
 };
 

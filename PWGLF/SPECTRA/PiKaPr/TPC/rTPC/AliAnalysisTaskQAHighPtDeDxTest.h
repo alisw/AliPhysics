@@ -64,6 +64,7 @@ class AliAnalysisTaskQAHighPtDeDxTest : public AliAnalysisTaskSE {
 		virtual void  SetAnalysisType(const char* analysisType) {fAnalysisType = analysisType;}
 		virtual void  SetAnalysisMC(Bool_t isMC) {fAnalysisMC = isMC;}
 		//  virtual void  SetVtxCut(Double_t vtxCut){fVtxCut = vtxCut;}
+		virtual void  SetNcl(const Int_t ncl){fNcl = ncl;}
 		virtual void  SetEtaCut(Double_t etaCut){fEtaCut = etaCut;}
 		virtual void  SetPileUpRej(Bool_t isrej) {fPileUpRej = isrej;}   
 		virtual void  SetMinCent(Float_t minvalc) {fMinCent = minvalc;}
@@ -138,6 +139,7 @@ class AliAnalysisTaskQAHighPtDeDxTest : public AliAnalysisTaskSE {
 		//
 
 		Double_t     fVtxCut;             // Vtx cut on z position in cm
+		Int_t  fNcl;             // Eta cut used to select particles
 		Double_t     fEtaCut;             // Eta cut used to select particles
 		Int_t        cent; //minimum centrality
 		Float_t      fMinCent; //minimum centrality

@@ -49,6 +49,11 @@ Bool_t AliEmcalCorrectionCellBadChannel::Initialize()
 
   fRecoUtils->SetPositionAlgorithm(AliEMCALRecoUtils::kPosTowerGlobal);
 
+  TString customBCmapPath = "";
+  GetProperty("customBadChannelFilePath", customBCmapPath);
+  if (customBCmapPath!="")
+    AliEmcalCorrectionComponent::SetCustomBadChannels(customBCmapPath);
+
   Bool_t dead = kFALSE;
   GetProperty("acceptDead", dead);
   if ( dead ) fRecoUtils->SetDeadChannelAsGood();

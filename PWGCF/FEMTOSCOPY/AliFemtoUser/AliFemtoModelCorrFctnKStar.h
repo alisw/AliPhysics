@@ -64,6 +64,8 @@ public:
 
   virtual TList* AppendOutputList(TList*);
 
+  virtual void AddOutputObjectsTo(TCollection &);
+
   /// Sets whether to expect pairs of Track+Track, Track+V0, or V0+V0 particles
   virtual void SetPairType(const AliFemtoAvgSepCorrFctn::PairType pairtype);
 
@@ -95,6 +97,9 @@ public:
                           AliFemtoTrack*&,
                           AliFemtoV0*&);
 
+private:
+  // AliFemtoModelCorrFctnKStar(const AliFemtoModelCorrFctnKStar&);
+  AliFemtoModelCorrFctnKStar& operator=(const AliFemtoModelCorrFctnKStar&);
 protected:
 
   /// The particle class combination types (track, V0, etc...)

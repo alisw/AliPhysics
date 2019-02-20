@@ -1,11 +1,13 @@
 #ifndef Lifetimes_Utils_h
 #define Lifetimes_Utils_h
 
+#include <limits>
+
 namespace Lifetimes
 {
 
 template <typename F, typename I>
-F getBinCenter(I bin, F binw, F min, F max, bool checkF = false,
+F getBinCenter(I bin, F binw, F min, bool checkF = false,
                bool checkL = false)
 {
   if (checkF && bin == 0)
@@ -40,6 +42,12 @@ I getBinnedValue(F val, F binw, F min, F max)
     return std::numeric_limits<I>::max();
   else
     return 1 + I(std::floor((val - min) / binw));
+}
+
+template <typename I>
+I flipBits(I mask, I bits, bool flag)
+{
+  return (mask & ~bits) | (-flag & bits);
 }
 
 } // namespace Lifetimes

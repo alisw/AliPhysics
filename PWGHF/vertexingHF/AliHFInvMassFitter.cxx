@@ -395,7 +395,7 @@ void AliHFInvMassFitter::DrawHere(TVirtualPad* c, Double_t nsigma,Int_t writeFit
       
       pinfos->AddText(Form("S = %.0f #pm %.0f ",fRawYield,fRawYieldErr));
       pinfos->AddText(Form("B (%.0f#sigma) = %.0f #pm %.0f",nsigma,bkg,errbkg));
-      pinfos->AddText(Form("S/B = (%.0f#sigma) %.4f ",nsigma,fRawYield/bkg));
+      pinfos->AddText(Form("S/B (%.0f#sigma) = %.4f ",nsigma,fRawYield/bkg));
       if(fRflFunc)  pinfos->AddText(Form("Refl/Sig =  %.3f #pm %.3f ",fRflFunc->GetParameter(0),fRflFunc->GetParError(0)));
       pinfos->AddText(Form("Signif (%.0f#sigma) = %.1f #pm %.1f ",nsigma,signif,errsignif));
       pinfos->Draw();
@@ -1018,7 +1018,7 @@ TH1F* AliHFInvMassFitter::SetTemplateReflections(const TH1 *h, TString opt,Doubl
     //    f->SetParLimits(0,0,100.*h->Integral());
     f->SetParameter(1,1.865);
     f->SetParameter(2,0.050);
-    fHistoTemplRfl->Fit(f,"REM","");//,h->GetBinLowEdge(1),h->GetXaxis()->GetBinUpEdge(h->GetNbinsX()));
+    fHistoTemplRfl->Fit(f,"REM0","");//,h->GetBinLowEdge(1),h->GetXaxis()->GetBinUpEdge(h->GetNbinsX()));
   }
   else if(opt.EqualTo("2gaus") || opt.EqualTo("doublegaus")){
     printf("   ---> Reflection contribution from double-Gaussian fit to histogram from simulation\n");
@@ -1031,7 +1031,7 @@ TH1F* AliHFInvMassFitter::SetTemplateReflections(const TH1 *h, TString opt,Doubl
     f->SetParameter(2,0.050);
     f->SetParameter(4,1.88);
     f->SetParameter(5,0.050);
-    fHistoTemplRfl->Fit(f,"REM","");//,h->GetBinLowEdge(1),h->GetXaxis()->GetBinUpEdge(h->GetNbinsX()));
+    fHistoTemplRfl->Fit(f,"REM0","");//,h->GetBinLowEdge(1),h->GetXaxis()->GetBinUpEdge(h->GetNbinsX()));
   }
   else if(opt.EqualTo("pol3")){
     printf("   ---> Reflection contribution from pol3 fit to histogram from simulation\n");
@@ -1039,7 +1039,7 @@ TH1F* AliHFInvMassFitter::SetTemplateReflections(const TH1 *h, TString opt,Doubl
     f->SetParameter(0,h->GetMaximum());
     //    f->SetParLimits(0,0,100.*h->Integral());
     // Hard to initialize the other parameters...
-    fHistoTemplRfl->Fit(f,"REM","");
+    fHistoTemplRfl->Fit(f,"REM0","");
     //    Printf("We USED %d POINTS in the Fit",f->GetNumberFitPoints());
   }
   else if(opt.EqualTo("pol6")){
@@ -1048,7 +1048,7 @@ TH1F* AliHFInvMassFitter::SetTemplateReflections(const TH1 *h, TString opt,Doubl
     f->SetParameter(0,h->GetMaximum());
     //    f->SetParLimits(0,0,100.*h->Integral());
     // Hard to initialize the other parameters...
-    fHistoTemplRfl->Fit(f,"RLEMI","");//,h->GetBinLowEdge(1),h->GetXaxis()->GetBinUpEdge(h->GetNbinsX()));
+    fHistoTemplRfl->Fit(f,"RLEMI0","");//,h->GetBinLowEdge(1),h->GetXaxis()->GetBinUpEdge(h->GetNbinsX()));
   }
   else{
     // no good option passed
@@ -1140,7 +1140,9 @@ Double_t AliHFInvMassFitter::GetRawYieldBinCounting(Double_t& errRyBC, Double_t 
     Double_t cntRefl=0;
     if(option==1 && fRflFunc) cntRefl=fRflFunc->Integral(fHistoInvMass->GetBinLowEdge(jb),fHistoInvMass->GetBinLowEdge(jb)+fHistoInvMass->GetBinWidth(jb))/fHistoInvMass->GetBinWidth(jb);
     //Double_t cntBkg=fbackground->Eval(fHistoInvMass->GetBinCenter(jb));
-    cntSig+=(cntTot-cntBkg-cntRefl);
+    Double_t cntSecPeak=0;
+    if(option==1 && fSecondPeak && fSecFunc) cntSecPeak=fSecFunc->Integral(fHistoInvMass->GetBinLowEdge(jb),fHistoInvMass->GetBinLowEdge(jb)+fHistoInvMass->GetBinWidth(jb))/fHistoInvMass->GetBinWidth(jb);
+    cntSig+=(cntTot-cntBkg-cntRefl-cntSecPeak);
     cntErr+=(fHistoInvMass->GetBinError(jb)*fHistoInvMass->GetBinError(jb));
   }
   errRyBC=TMath::Sqrt(cntErr);
@@ -1149,7 +1151,7 @@ Double_t AliHFInvMassFitter::GetRawYieldBinCounting(Double_t& errRyBC, Double_t 
 
 
 // _______________________________________________________________________
-TH1F* AliHFInvMassFitter::GetResidualsAndPulls(TH1 *hPulls,TH1 *hResidualTrend,TH1 *hPullsTrend, Double_t minrange,Double_t maxrange){
+TH1F* AliHFInvMassFitter::GetResidualsAndPulls(TH1 *hPulls,TH1 *hResidualTrend,TH1 *hPullsTrend, Double_t minrange,Double_t maxrange, Int_t option){
 
   /// fill and return the residual and pull histos
 
@@ -1186,8 +1188,13 @@ TH1F* AliHFInvMassFitter::GetResidualsAndPulls(TH1 *hPulls,TH1 *hResidualTrend,T
   Double_t res=-1.e-6,min=1.e+12,max=-1.e+12;
   TArrayD *arval=new TArrayD(binma-binmi+1);
   for(Int_t jst=1;jst<=fHistoInvMass->GetNbinsX();jst++){      
-    
-    res=fHistoInvMass->GetBinContent(jst)-fTotFunc->Integral(fHistoInvMass->GetBinLowEdge(jst),fHistoInvMass->GetBinLowEdge(jst)+fHistoInvMass->GetBinWidth(jst))/fHistoInvMass->GetBinWidth(jst);
+    Double_t integFit=0;
+    if(option==0) integFit=fTotFunc->Integral(fHistoInvMass->GetBinLowEdge(jst),fHistoInvMass->GetBinLowEdge(jst)+fHistoInvMass->GetBinWidth(jst));
+    else{
+      integFit=fBkgFuncRefit->Integral(fHistoInvMass->GetBinLowEdge(jst),fHistoInvMass->GetBinLowEdge(jst)+fHistoInvMass->GetBinWidth(jst));
+      if(option==2) integFit+=fRflFunc->Integral(fHistoInvMass->GetBinLowEdge(jst),fHistoInvMass->GetBinLowEdge(jst)+fHistoInvMass->GetBinWidth(jst));
+    }
+    res=fHistoInvMass->GetBinContent(jst)-integFit/fHistoInvMass->GetBinWidth(jst);
     if(jst>=binmi&&jst<=binma){
       arval->AddAt(res,jst-binmi);
       if(res<min)min=res;
@@ -1228,6 +1235,17 @@ TH1F* AliHFInvMassFitter::GetResidualsAndPulls(TH1 *hPulls,TH1 *hResidualTrend,T
   delete arval;
   return hout;
 }
+// _______________________________________________________________________
+TH1F* AliHFInvMassFitter::GetOverBackgroundResidualsAndPulls(TH1 *hPulls,TH1 *hResidualTrend,TH1 *hPullsTrend, Double_t minrange,Double_t maxrange){
+  ///
+  return GetResidualsAndPulls(hPulls,hResidualTrend,hPullsTrend,minrange,maxrange,1);
+}
+// _______________________________________________________________________
+TH1F* AliHFInvMassFitter::GetOverBackgroundPlusReflResidualsAndPulls(TH1 *hPulls,TH1 *hResidualTrend,TH1 *hPullsTrend, Double_t minrange,Double_t maxrange){
+  ///
+  return GetResidualsAndPulls(hPulls,hResidualTrend,hPullsTrend,minrange,maxrange,2);
+}
+
 // _______________________________________________________________________
 void AliHFInvMassFitter::PrintFunctions(){
   /// dump the function parameters

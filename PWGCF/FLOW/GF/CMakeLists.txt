@@ -24,11 +24,20 @@ include_directories(${AliPhysics_SOURCE_DIR}/PWGCF/FLOW/GF)
 include_directories(${ROOT_INCLUDE_DIRS}
                     ${AliPhysics_SOURCE_DIR}/OADB
 										${AliPhysics_SOURCE_DIR}/OADB/COMMON/MULTIPLICITY
+                    ${AliPhysics_SOURCE_DIR}/PWG/EMCAL/EMCALbase
   )
 
 # Sources - alphabetical order
 set(SRCS
   AliAnalysisTaskChargedFlow.cxx
+  AliAnalysisTaskGFWFlow.cxx
+  AliAnalysisTaskUniFlow.cxx
+  AliGFW.cxx
+  AliGFWCumulant.cxx
+  AliGFWCuts.cxx
+  AliGFWFlowContainer.cxx
+  AliProfileSubset.cxx
+  AliGFWWeights.cxx
   )
 
 # Headers from sources
@@ -59,7 +68,7 @@ if(${CMAKE_SYSTEM} MATCHES Darwin)
 endif(${CMAKE_SYSTEM} MATCHES Darwin)
 
 # Installation
-install(TARGETS ${MODULE} 
+install(TARGETS ${MODULE}
   ARCHIVE DESTINATION lib
   LIBRARY DESTINATION lib)
 install(FILES ${HDRS} DESTINATION include)

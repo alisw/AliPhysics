@@ -3,6 +3,7 @@
 #include "AliAnalysisManager.h"
 #include "AliInputEventHandler.h"
 #include "AliMultSelection.h"
+#include "TMath.h"
 
 ClassImp(AliSigma0V0Cuts)
 
@@ -18,6 +19,7 @@ ClassImp(AliSigma0V0Cuts)
       fInputEvent(nullptr),
       fMCEvent(nullptr),
       fDataBasePDG(),
+      fV0Container(),
       fIsLightweight(false),
       fCheckCutsMC(false),
       fV0cut(0),
@@ -33,7 +35,7 @@ ClassImp(AliSigma0V0Cuts)
       fUsePID(false),
       fUseArmenteros(false),
       fV0PtMin(0.f),
-      fV0PtMax(1E30),
+      fV0PtMax(999.f),
       fV0CosPAMin(0.f),
       fV0RadiusMax(999.f),
       fV0RadiusMin(0.f),
@@ -69,7 +71,6 @@ ClassImp(AliSigma0V0Cuts)
       fHistK0Mass(nullptr),
       fHistV0Pt(nullptr),
       fHistV0Mass(nullptr),
-      fHistV0PtY(),
       fHistV0MassPt(nullptr),
       fHistLambdaMassK0Rej(nullptr),
       fHistK0MassAfter(nullptr),
@@ -93,19 +94,14 @@ ClassImp(AliSigma0V0Cuts)
       fHistArmenterosBefore(nullptr),
       fHistArmenterosAfter(nullptr),
       fHistMCTruthV0PtY(nullptr),
-      fHistMCTruthV0PtEta(nullptr),
       fHistMCTruthV0DaughterPtY(nullptr),
-      fHistMCTruthV0DaughterPtEta(nullptr),
       fHistMCTruthV0DaughterPtYAccept(nullptr),
-      fHistMCTruthV0DaughterPtEtaAccept(nullptr),
       fHistMCTruthPtYHighMult(nullptr),
-      fHistMCTruthPtEtaHighMult(nullptr),
       fHistMCTruthDaughterPtYHighMult(nullptr),
-      fHistMCTruthDaughterPtEtaHighMult(nullptr),
       fHistMCTruthDaughterPtYAcceptHighMult(nullptr),
-      fHistMCTruthDaughterPtEtaAcceptHighMult(nullptr),
       fHistMCV0Pt(nullptr),
       fHistV0Mother(nullptr),
+      fHistV0MotherTrue(nullptr),
       fHistV0MassPtTrue(nullptr),
       fHistDecayVertexXTrue(nullptr),
       fHistDecayVertexYTrue(nullptr),
@@ -198,6 +194,7 @@ AliSigma0V0Cuts::AliSigma0V0Cuts(const AliSigma0V0Cuts &ref)
       fInputEvent(nullptr),
       fMCEvent(nullptr),
       fDataBasePDG(),
+      fV0Container(),
       fIsLightweight(false),
       fCheckCutsMC(false),
       fV0cut(0),
@@ -213,7 +210,7 @@ AliSigma0V0Cuts::AliSigma0V0Cuts(const AliSigma0V0Cuts &ref)
       fUsePID(false),
       fUseArmenteros(false),
       fV0PtMin(0.f),
-      fV0PtMax(1E30),
+      fV0PtMax(999.f),
       fV0CosPAMin(0.f),
       fV0RadiusMax(999.f),
       fV0RadiusMin(0.f),
@@ -249,7 +246,6 @@ AliSigma0V0Cuts::AliSigma0V0Cuts(const AliSigma0V0Cuts &ref)
       fHistK0Mass(nullptr),
       fHistV0Pt(nullptr),
       fHistV0Mass(nullptr),
-      fHistV0PtY(),
       fHistV0MassPt(nullptr),
       fHistLambdaMassK0Rej(nullptr),
       fHistK0MassAfter(nullptr),
@@ -273,19 +269,14 @@ AliSigma0V0Cuts::AliSigma0V0Cuts(const AliSigma0V0Cuts &ref)
       fHistArmenterosBefore(nullptr),
       fHistArmenterosAfter(nullptr),
       fHistMCTruthV0PtY(nullptr),
-      fHistMCTruthV0PtEta(nullptr),
       fHistMCTruthV0DaughterPtY(nullptr),
-      fHistMCTruthV0DaughterPtEta(nullptr),
       fHistMCTruthV0DaughterPtYAccept(nullptr),
-      fHistMCTruthV0DaughterPtEtaAccept(nullptr),
       fHistMCTruthPtYHighMult(nullptr),
-      fHistMCTruthPtEtaHighMult(nullptr),
       fHistMCTruthDaughterPtYHighMult(nullptr),
-      fHistMCTruthDaughterPtEtaHighMult(nullptr),
       fHistMCTruthDaughterPtYAcceptHighMult(nullptr),
-      fHistMCTruthDaughterPtEtaAcceptHighMult(nullptr),
       fHistMCV0Pt(nullptr),
       fHistV0Mother(nullptr),
+      fHistV0MotherTrue(nullptr),
       fHistV0MassPtTrue(nullptr),
       fHistDecayVertexXTrue(nullptr),
       fHistDecayVertexYTrue(nullptr),
@@ -382,7 +373,7 @@ AliSigma0V0Cuts::~AliSigma0V0Cuts() {
 //____________________________________________________________________________________________________
 AliSigma0V0Cuts *AliSigma0V0Cuts::LambdaCuts() {
   AliSigma0V0Cuts *v0Cuts = new AliSigma0V0Cuts();
-  v0Cuts->SetV0OnFlyStatus(false);
+  v0Cuts->SetV0OnFlyStatus(true);
   v0Cuts->SetV0PtMin(0.3);
   v0Cuts->SetV0CosPAMin(0.99);
   v0Cuts->SetV0RadiusMax(100.f);
@@ -390,13 +381,12 @@ AliSigma0V0Cuts *AliSigma0V0Cuts::LambdaCuts() {
   v0Cuts->SetV0DecayVertexMax(100.f);
   v0Cuts->SetPIDnSigma(5.f);
   v0Cuts->SetTPCclusterMin(70.f);
-  v0Cuts->SetEtaMax(0.8);
+  v0Cuts->SetEtaMax(0.9);
   v0Cuts->SetDaughterDCAMax(1.5);
   v0Cuts->SetDaughterDCAtoPV(0.05);
-  v0Cuts->SetK0Rejection(0.48, 0.515);
-  v0Cuts->SetLambdaSelection(1.115683 - 0.004, 1.115683 + 0.004);
-  v0Cuts->SetPileUpRejectionMode(BothDaughtersCombined);
-  v0Cuts->SetChi2Max(4);
+  v0Cuts->SetLambdaSelection(1.115683 - 0.006, 1.115683 + 0.006);
+  v0Cuts->SetPileUpRejectionMode(OneDaughterCombined);
+  v0Cuts->SetArmenterosCut(0.01, 0.12, 0.3, 0.95);
   return v0Cuts;
 }
 
@@ -424,8 +414,7 @@ AliSigma0V0Cuts *AliSigma0V0Cuts::PhotonCuts() {
 }
 
 //____________________________________________________________________________________________________
-void AliSigma0V0Cuts::SelectV0(AliVEvent *inputEvent, AliMCEvent *mcEvent,
-                               std::vector<AliSigma0ParticleV0> &V0Container) {
+void AliSigma0V0Cuts::SelectV0(AliVEvent *inputEvent, AliMCEvent *mcEvent) {
   // Get the PID manager from the input event handler
   AliAnalysisManager *man = AliAnalysisManager::GetAnalysisManager();
   AliInputEventHandler *inputHandler =
@@ -434,7 +423,7 @@ void AliSigma0V0Cuts::SelectV0(AliVEvent *inputEvent, AliMCEvent *mcEvent,
   fMCEvent = mcEvent;
   fInputEvent = static_cast<AliESDEvent *>(inputEvent);
 
-  V0Container.clear();
+  fV0Container.clear();
 
   if (fIsMC) {
     ProcessMC();
@@ -462,11 +451,12 @@ void AliSigma0V0Cuts::SelectV0(AliVEvent *inputEvent, AliMCEvent *mcEvent,
     // Single Particle Quality
     if (!SingleParticleQualityCuts(pos) || !SingleParticleQualityCuts(neg))
       continue;
-    fHistCuts->Fill(6);
+    if (!fIsLightweight)
+      if (!fIsLightweight) fHistCuts->Fill(6);
 
     // Pile-up rejection
     if (!PileUpRejection(pos, neg)) continue;
-    fHistCuts->Fill(7);
+    if (!fIsLightweight) fHistCuts->Fill(7);
 
     // Topological Selection
     if (!V0TopologicalSelection(v0)) continue;
@@ -477,8 +467,8 @@ void AliSigma0V0Cuts::SelectV0(AliVEvent *inputEvent, AliMCEvent *mcEvent,
     PlotMasses(v0);
 
     // V0 Selection
-    if (std::abs(fPID) == 3122 && !LambdaSelection(v0)) continue;
-    if (std::abs(fPID) == 22 && !PhotonSelection(v0)) continue;
+    if (TMath::Abs(fPID) == 3122 && !LambdaSelection(v0)) continue;
+    if (TMath::Abs(fPID) == 22 && !PhotonSelection(v0)) continue;
 
     AliSigma0ParticleV0 v0Candidate(v0, pos, neg,
                                     fInputEvent->GetPrimaryVertex(), fPID,
@@ -497,27 +487,32 @@ void AliSigma0V0Cuts::SelectV0(AliVEvent *inputEvent, AliMCEvent *mcEvent,
       v0Candidate.ProcessMCInfo(mcParticle, fMCEvent);
 
       fHistMCV0Pt->Fill(v0->Pt());
+
+      const int pdgMother = static_cast<AliMCParticle *>(
+                                fMCEvent->GetTrack(mcParticle->GetMother()))
+                                ->PdgCode();
+      fHistV0Mother->Fill(v0->Pt(), TMath::Abs(pdgMother));
     }
 
     v0Candidate.SetPDGMass(fDataBasePDG.GetParticle(fPID)->Mass());
-    if (std::abs(fPID) == 22) {
+    if (TMath::Abs(fPID) == 22) {
       const float massPhoton = ComputePhotonMassRefit(v0);
       v0Candidate.SetMass(massPhoton);
       v0Candidate.SetRecMass(massPhoton);
     }
 
-    V0Container.push_back(v0Candidate);
+    fV0Container.push_back(v0Candidate);
   }
-  if (!fIsLightweight) fHistNV0->Fill(V0Container.size());
+  if (!fIsLightweight) fHistNV0->Fill(fV0Container.size());
 }
 
 //____________________________________________________________________________________________________
 bool AliSigma0V0Cuts::V0QualityCuts(const AliESDv0 *v0) const {
-  fHistCuts->Fill(0);
+  if (!fIsLightweight) fHistCuts->Fill(0);
 
   // v0 is neutral
   if (v0->Charge() != 0) return false;
-  fHistCuts->Fill(1);
+  if (!fIsLightweight) fHistCuts->Fill(1);
 
   // on-fly status
   if (fV0OnFly) {
@@ -527,22 +522,22 @@ bool AliSigma0V0Cuts::V0QualityCuts(const AliESDv0 *v0) const {
     // offline v0
     if (v0->GetOnFlyStatus()) return false;
   }
-  fHistCuts->Fill(2);
+  if (!fIsLightweight) fHistCuts->Fill(2);
 
   // pt min cut
   if (v0->Pt() < fV0PtMin) return false;
-  fHistCuts->Fill(3);
+  if (!fIsLightweight) fHistCuts->Fill(3);
 
   // pt max cut
   if (v0->Pt() > fV0PtMax) return false;
-  fHistCuts->Fill(4);
+  if (!fIsLightweight) fHistCuts->Fill(4);
 
   // check for daughter tracks
   AliESDtrack *pos = fInputEvent->GetTrack(v0->GetPindex());
   AliESDtrack *neg = fInputEvent->GetTrack(v0->GetNindex());
   if (!pos || !neg) return false;
   if (pos->Charge() == neg->Charge()) return false;
-  fHistCuts->Fill(5);
+  if (!fIsLightweight) fHistCuts->Fill(5);
 
   return true;
 }
@@ -576,7 +571,7 @@ bool AliSigma0V0Cuts::V0PID(const AliESDv0 *v0, const AliESDtrack *pos,
       return false;
   }
 
-  fHistCuts->Fill(15);
+  if (!fIsLightweight) fHistCuts->Fill(15);
   if (!fIsLightweight) {
     fHistArmenterosAfter->Fill(armAlpha, armQt);
     PlotSingleParticlePID(pos, fPosPID);
@@ -596,7 +591,7 @@ bool AliSigma0V0Cuts::SingleParticlePID(const AliVTrack *track,
   // TPC signal must be available
   if (!(AliPIDResponse::kDetPidOk == statusPosTPC)) return false;
 
-  prob = std::abs(fPIDResponse->NumberOfSigmasTPC(track, particle));
+  prob = TMath::Abs(fPIDResponse->NumberOfSigmasTPC(track, particle));
 
   // Proton PID cut
   if (prob > fPIDnSigma) return false;
@@ -640,11 +635,12 @@ bool AliSigma0V0Cuts::SingleParticleQualityCuts(AliESDtrack *track) const {
   const float magField = fInputEvent->GetMagneticField();
   const AliVVertex *vertex = fInputEvent->GetPrimaryVertex();
   const float dcaDaughterToPV =
-      std::abs(track->GetD(vertex->GetX(), vertex->GetY(), magField));
+      TMath::Abs(track->GetD(vertex->GetX(), vertex->GetY(), magField));
 
   const int histoPrefix = (charge > 0) ? 0 : 1;
   int qaHistoCounter = 0;
-  fHistSingleParticleCuts[histoPrefix]->Fill(qaHistoCounter++);
+  if (!fIsLightweight)
+    fHistSingleParticleCuts[histoPrefix]->Fill(qaHistoCounter++);
 
   if (!fIsLightweight) {
     fHistSingleParticleEtaBefore[histoPrefix]->Fill(pt, eta);
@@ -662,42 +658,52 @@ bool AliSigma0V0Cuts::SingleParticleQualityCuts(AliESDtrack *track) const {
   }
 
   // Max eta cut
-  if (std::abs(eta) > fEtaMax) return false;
-  fHistSingleParticleCuts[histoPrefix]->Fill(qaHistoCounter++);
+  if (TMath::Abs(eta) > fEtaMax) return false;
+  if (!fIsLightweight)
+    fHistSingleParticleCuts[histoPrefix]->Fill(qaHistoCounter++);
 
   // Max chi2 cut
   if (chi2 > fChi2Max) return false;
-  fHistSingleParticleCuts[histoPrefix]->Fill(qaHistoCounter++);
+  if (!fIsLightweight)
+    fHistSingleParticleCuts[histoPrefix]->Fill(qaHistoCounter++);
 
   // TPC nCluster cut
   if (nClsTPC < fTPCclusterMin) return false;
-  fHistSingleParticleCuts[histoPrefix]->Fill(qaHistoCounter++);
+  if (!fIsLightweight)
+    fHistSingleParticleCuts[histoPrefix]->Fill(qaHistoCounter++);
 
   // TPC Crossed rows
   if (nCrossedRows < fTPCnCrossedRowsMin) return false;
-  fHistSingleParticleCuts[histoPrefix]->Fill(qaHistoCounter++);
+  if (!fIsLightweight)
+    fHistSingleParticleCuts[histoPrefix]->Fill(qaHistoCounter++);
 
   // TPC Ratio Findable
   if (ratioFindable < fTPCratioFindable) return false;
-  fHistSingleParticleCuts[histoPrefix]->Fill(qaHistoCounter++);
+  if (!fIsLightweight)
+    fHistSingleParticleCuts[histoPrefix]->Fill(qaHistoCounter++);
 
   // TPC nCls Findable
   if (nFindable < fTPCfindableMin) return false;
-  fHistSingleParticleCuts[histoPrefix]->Fill(qaHistoCounter++);
+  if (!fIsLightweight)
+    fHistSingleParticleCuts[histoPrefix]->Fill(qaHistoCounter++);
 
   // TPC nCls Shared
   if (nClsSharedTPC > fTPCnSharedMax) return false;
-  fHistSingleParticleCuts[histoPrefix]->Fill(qaHistoCounter++);
+  if (!fIsLightweight)
+    fHistSingleParticleCuts[histoPrefix]->Fill(qaHistoCounter++);
 
   // Minimal distance of daughters to primary vertex
   if (dcaDaughterToPV < fDaughterDCAPV) return false;
-  fHistSingleParticleCuts[histoPrefix]->Fill(qaHistoCounter++);
+  if (!fIsLightweight)
+    fHistSingleParticleCuts[histoPrefix]->Fill(qaHistoCounter++);
 
   if (!(track->GetStatus() & AliESDtrack::kTPCrefit)) return false;
-  fHistSingleParticleCuts[histoPrefix]->Fill(qaHistoCounter++);
+  if (!fIsLightweight)
+    fHistSingleParticleCuts[histoPrefix]->Fill(qaHistoCounter++);
 
   if (track->GetKinkIndex(0) > 0) return false;
-  fHistSingleParticleCuts[histoPrefix]->Fill(qaHistoCounter++);
+  if (!fIsLightweight)
+    fHistSingleParticleCuts[histoPrefix]->Fill(qaHistoCounter++);
 
   if (!fIsLightweight) {
     fHistSingleParticlePt[histoPrefix]->Fill(pt);
@@ -841,27 +847,29 @@ bool AliSigma0V0Cuts::V0TopologicalSelection(const AliESDv0 *v0) const {
   }
 
   // Position of the decay vertex x, y & z
-  if (std::abs(decayVertexV0[0]) > fV0DecayVertexMax) return false;
-  fHistCuts->Fill(8);
-  if (std::abs(decayVertexV0[1]) > fV0DecayVertexMax) return false;
-  fHistCuts->Fill(9);
-  if (std::abs(decayVertexV0[2]) > fV0DecayVertexMax) return false;
-  fHistCuts->Fill(10);
+  if (TMath::Abs(decayVertexV0[0]) > fV0DecayVertexMax) return false;
+  if (!fIsLightweight)
+    if (!fIsLightweight) fHistCuts->Fill(8);
+  if (TMath::Abs(decayVertexV0[1]) > fV0DecayVertexMax) return false;
+  if (!fIsLightweight)
+    if (!fIsLightweight) fHistCuts->Fill(9);
+  if (TMath::Abs(decayVertexV0[2]) > fV0DecayVertexMax) return false;
+  if (!fIsLightweight) fHistCuts->Fill(10);
 
   // Transverse decay radius min & max
   if (transverseRadius < fV0RadiusMin) return false;
-  fHistCuts->Fill(11);
+  if (!fIsLightweight) fHistCuts->Fill(11);
 
   if (transverseRadius > fV0RadiusMax) return false;
-  fHistCuts->Fill(12);
+  if (!fIsLightweight) fHistCuts->Fill(12);
 
   // DCA of the daughter tracks at the decay vertex
   if (dcaV0Dau > fDaughterDCAMax) return false;
-  fHistCuts->Fill(13);
+  if (!fIsLightweight) fHistCuts->Fill(13);
 
   // Cos pointing angle
   if (point < fV0CosPAMin) return false;
-  fHistCuts->Fill(14);
+  if (!fIsLightweight) fHistCuts->Fill(14);
 
   if (!fIsLightweight) {
     fHistCosPA->Fill(pt, point);
@@ -908,15 +916,11 @@ bool AliSigma0V0Cuts::LambdaSelection(AliESDv0 *v0) const {
   if (fK0Rejection && massK0 > fK0RejectionLow && massK0 < fK0RejectionUp) {
     return false;
   }
-  fHistCuts->Fill(16);
-
-  float rap = v0->RapLambda();
-  int rapBin = GetRapidityBin(rap);
+  if (!fIsLightweight) fHistCuts->Fill(16);
 
   fHistV0MassPt->Fill(v0->Pt(), massLambda);
   if (!fIsLightweight) {
     fHistLambdaMassK0Rej->Fill(massLambda);
-    if (rapBin > -1) fHistV0PtY[rapBin]->Fill(v0->Pt(), massLambda);
     fHistK0MassAfter->Fill(massK0);
     fHistEtaPhi->Fill(v0->Eta(), v0->Phi());
   }
@@ -929,7 +933,7 @@ bool AliSigma0V0Cuts::LambdaSelection(AliESDv0 *v0) const {
   }
 
   if (!fIsLightweight) fHistV0Pt->Fill(v0->Pt());
-  fHistCuts->Fill(17);
+  if (!fIsLightweight) fHistCuts->Fill(17);
   return true;
 }
 
@@ -944,21 +948,17 @@ bool AliSigma0V0Cuts::PhotonSelection(AliESDv0 *v0) const {
   const float psiPair = ComputePsiPair(v0);
   if (!fIsLightweight) fHistPsiPair->Fill(v0->Pt(), psiPair);
 
-  if (std::abs(psiPair) > fPsiPairMax) return false;
-  fHistCuts->Fill(16);
+  if (TMath::Abs(psiPair) > fPsiPairMax) return false;
+  if (!fIsLightweight) fHistCuts->Fill(16);
 
   // K0 rejection cut
   if (fK0Rejection && massK0 > fK0RejectionLow && massK0 < fK0RejectionUp) {
     return false;
   }
-  fHistCuts->Fill(17);
-
-  float rap = ComputeRapidity(v0->Pt(), v0->Pz(), massPhoton);
-  int rapBin = GetRapidityBin(rap);
+  if (!fIsLightweight) fHistCuts->Fill(17);
 
   fHistV0MassPt->Fill(v0->Pt(), massPhoton);
   if (!fIsLightweight) {
-    if (rapBin > -1) fHistV0PtY[rapBin]->Fill(v0->Pt(), massPhoton);
     fHistK0MassAfter->Fill(massK0);
     fHistEtaPhi->Fill(v0->Eta(), v0->Phi());
   }
@@ -973,18 +973,8 @@ bool AliSigma0V0Cuts::PhotonSelection(AliESDv0 *v0) const {
     fHistV0Pt->Fill(v0->Pt());
   }
 
-  fHistCuts->Fill(18);
+  if (!fIsLightweight) fHistCuts->Fill(18);
   return true;
-}
-
-//____________________________________________________________________________________________________
-float AliSigma0V0Cuts::ComputeRapidity(float pt, float pz, float m) const {
-  // calculates rapidity keeping the sign in case E == pz
-
-  float energy = std::sqrt(pt * pt + pz * pz + m * m);
-  if (energy != std::fabs(pz))
-    return 0.5 * std::log((energy + pz) / (energy - pz));
-  return (pz >= 0) ? 1.e30 : -1.e30;
 }
 
 //____________________________________________________________________________________________________
@@ -1104,30 +1094,208 @@ void AliSigma0V0Cuts::ProcessMC() const {
     if (!mcParticle->IsPhysicalPrimary()) continue;
     if (mcParticle->PdgCode() != fPID) continue;
     fHistMCTruthV0PtY->Fill(mcParticle->Y(), mcParticle->Pt());
-    fHistMCTruthV0PtEta->Fill(mcParticle->Eta(), mcParticle->Pt());
     if (lPercentile < fMCHighMultThreshold) {
       fHistMCTruthPtYHighMult->Fill(mcParticle->Y(), mcParticle->Pt());
-      fHistMCTruthPtEtaHighMult->Fill(mcParticle->Eta(), mcParticle->Pt());
     }
 
     if (!CheckDaughters(mcParticle)) continue;
     fHistMCTruthV0DaughterPtY->Fill(mcParticle->Y(), mcParticle->Pt());
-    fHistMCTruthV0DaughterPtEta->Fill(mcParticle->Eta(), mcParticle->Pt());
     if (lPercentile < fMCHighMultThreshold) {
       fHistMCTruthDaughterPtYHighMult->Fill(mcParticle->Y(), mcParticle->Pt());
-      fHistMCTruthDaughterPtEtaHighMult->Fill(mcParticle->Eta(),
-                                              mcParticle->Pt());
     }
 
     if (!CheckDaughtersInAcceptance(mcParticle)) continue;
     fHistMCTruthV0DaughterPtYAccept->Fill(mcParticle->Y(), mcParticle->Pt());
-    fHistMCTruthV0DaughterPtEtaAccept->Fill(mcParticle->Eta(),
-                                            mcParticle->Pt());
     if (lPercentile < fMCHighMultThreshold) {
       fHistMCTruthDaughterPtYAcceptHighMult->Fill(mcParticle->Y(),
                                                   mcParticle->Pt());
-      fHistMCTruthDaughterPtEtaAcceptHighMult->Fill(mcParticle->Eta(),
-                                                    mcParticle->Pt());
+    }
+  }
+}
+
+//____________________________________________________________________________________________________
+void AliSigma0V0Cuts::PhotonQA(AliVEvent *inputEvent,
+                               const TClonesArray *photons) {
+  AliAnalysisManager *man = AliAnalysisManager::GetAnalysisManager();
+  AliInputEventHandler *inputHandler =
+      static_cast<AliInputEventHandler *>(man->GetInputEventHandler());
+  fPIDResponse = inputHandler->GetPIDResponse();
+
+  fHistNV0->Fill(photons->GetEntriesFast());
+
+  for (int iGamma = 0; iGamma < photons->GetEntriesFast(); ++iGamma) {
+    auto *PhotonCandidate =
+        dynamic_cast<AliAODConversionPhoton *>(photons->At(iGamma));
+    if (!PhotonCandidate) continue;
+
+    const float pt = PhotonCandidate->GetPhotonPt();
+    const float invMass = PhotonCandidate->GetPhotonMass();
+    // commpute CPA
+    double momV0[3] = {0, 0, 0};
+    momV0[0] = PhotonCandidate->Px();
+    momV0[1] = PhotonCandidate->Py();
+    momV0[2] = PhotonCandidate->Pz();
+    double conv[3]{0, 0, 0};
+    conv[0] = PhotonCandidate->GetConversionX();
+    conv[1] = PhotonCandidate->GetConversionY();
+    conv[2] = PhotonCandidate->GetConversionZ();
+
+    const AliVVertex *vertex = inputEvent->GetPrimaryVertex();
+    Double_t xPV = vertex->GetX();
+    Double_t yPV = vertex->GetY();
+    Double_t zPV = vertex->GetZ();
+
+    double PosV0[3] = {conv[0] - xPV, conv[1] - yPV, conv[2] - zPV};
+    // Recalculated V0 Position vector
+
+    double momV02 =
+        momV0[0] * momV0[0] + momV0[1] * momV0[1] + momV0[2] * momV0[2];
+    double PosV02 =
+        PosV0[0] * PosV0[0] + PosV0[1] * PosV0[1] + PosV0[2] * PosV0[2];
+
+    double cosinePointingAngle =
+        (momV02 * PosV02 > 0.0)
+            ? (PosV0[0] * momV0[0] + PosV0[1] * momV0[1] +
+               PosV0[2] * momV0[2]) /
+                  std::sqrt(momV02 * PosV02)
+            : -999.f;
+
+    int v0Index = PhotonCandidate->GetV0Index();
+    AliESDv0 *v0 = static_cast<AliESDEvent *>(inputEvent)->GetV0(v0Index);
+    if (!v0) continue;
+    v0->ChangeMassHypothesis(3122);
+    const float massLambda = v0->GetEffMass();
+    v0->ChangeMassHypothesis(310);
+    const float massK0 = v0->GetEffMass();
+    v0->ChangeMassHypothesis(-3122);
+    const float massAntiLambda = v0->GetEffMass();
+
+    fHistK0Mass->Fill(massK0);
+    fHistLambdaMass->Fill(massLambda);
+    fHistAntiLambdaMass->Fill(massAntiLambda);
+
+    // Calculate vertex variables:
+    const float dcaPrim = v0->GetD(xPV, yPV, zPV);
+
+    const float armAlpha = v0->AlphaV0();
+    const float armQt = v0->PtArmV0();
+    fHistArmenterosAfter->Fill(armAlpha, armQt);
+
+    auto pos =
+        (AliESDtrack *)inputEvent->GetTrack(PhotonCandidate->GetLabel1());
+    auto neg =
+        (AliESDtrack *)inputEvent->GetTrack(PhotonCandidate->GetLabel2());
+    if (!pos || !neg) continue;
+
+    fHistV0MassPt->Fill(pt, invMass);
+
+    if (!fIsLightweight) {
+      fHistPhotonMass->Fill(PhotonCandidate->M());
+      fHistPhotonMassRefit->Fill(PhotonCandidate->GetInvMassPair());
+      fHistV0Pt->Fill(pt);
+      fHistV0Mass->Fill(invMass);
+      fHistCosPA->Fill(pt, cosinePointingAngle);
+      fHistEtaPhi->Fill(PhotonCandidate->GetPhotonEta(),
+                        PhotonCandidate->GetPhotonPhi());
+      fHistPsiPair->Fill(pt, PhotonCandidate->GetPsiPair());
+      fHistDecayVertexXAfter->Fill(pt, conv[0]);
+      fHistDecayVertexYAfter->Fill(pt, conv[1]);
+      fHistDecayVertexZAfter->Fill(pt, conv[2]);
+      fHistTransverseRadiusAfter->Fill(
+          pt, std::sqrt(conv[0] * conv[0] + conv[1] * conv[1]));
+      fHistCosPAAfter->Fill(pt, cosinePointingAngle);
+
+      fHistDCADaughtersAfter->Fill(pt, v0->GetDcaV0Daughters());
+      fHistDCA->Fill(pt, dcaPrim);
+      fHistDecayLength->Fill(
+          pt,
+          std::sqrt(conv[0] * conv[0] + conv[1] * conv[1] + conv[2] * conv[2]));
+
+      const float posPt = pos->Pt();
+      const float negPt = neg->Pt();
+      const float magField = inputEvent->GetMagneticField();
+      const float dcaDaughterToPVPos =
+          TMath::Abs(pos->GetD(vertex->GetX(), vertex->GetY(), magField));
+      const short nClsTPCPos = pos->GetTPCNcls();
+      const float nCrossedRowsPos = pos->GetTPCClusterInfo(2, 1);
+      const short nFindablePos = pos->GetTPCNclsF();
+      const float ratioFindablePos =
+          nCrossedRowsPos / (static_cast<float>(nFindablePos) + 1.e-3);
+      const int nClsSharedTPCPos = pos->GetTPCnclsS();
+      const float chi2Pos =
+          (nClsTPCPos > 5) ? (pos->GetTPCchi2() / float(nClsTPCPos - 5)) : -1.;
+
+      const float dcaDaughterToPVNeg =
+          TMath::Abs(neg->GetD(vertex->GetX(), vertex->GetY(), magField));
+      const short nClsTPCNeg = neg->GetTPCNcls();
+      const float nCrossedRowsNeg = neg->GetTPCClusterInfo(2, 1);
+      const short nFindableNeg = neg->GetTPCNclsF();
+      const float ratioFindableNeg =
+          nCrossedRowsNeg / (static_cast<float>(nFindableNeg) + 1.e-3);
+      const int nClsSharedTPCNeg = neg->GetTPCnclsS();
+      const float chi2Neg =
+          (nClsTPCNeg > 5) ? (neg->GetTPCchi2() / float(nClsTPCNeg - 5)) : -1.;
+
+      int nClsSharedITSPos = 0;
+      int nClsSharedITSNeg = 0;
+      for (int i = 0; i < 6; ++i) {
+        if (pos->HasSharedPointOnITSLayer(i)) ++nClsSharedITSPos;
+        if (neg->HasSharedPointOnITSLayer(i)) ++nClsSharedITSNeg;
+      }
+
+      const float pidPos = fPIDResponse->NumberOfSigmasTPC(pos, fPosPID);
+      const float pidNeg = fPIDResponse->NumberOfSigmasTPC(neg, fNegPID);
+
+      bool posTrackITS =
+          (pos->HasPointOnITSLayer(0) || pos->HasPointOnITSLayer(1) ||
+           pos->HasPointOnITSLayer(4) || pos->HasPointOnITSLayer(5));
+      bool negTrackITS =
+          (neg->HasPointOnITSLayer(0) || pos->HasPointOnITSLayer(1) ||
+           neg->HasPointOnITSLayer(4) || pos->HasPointOnITSLayer(5));
+      bool posTrackTOF = pos->GetTOFBunchCrossing() == 0;
+      bool negTrackTOF = neg->GetTOFBunchCrossing() == 0;
+
+      bool posTrackCombined = (posTrackITS || posTrackTOF);
+      bool negTrackCombined = (negTrackITS || negTrackTOF);
+
+      if (!fIsLightweight) {
+        if (posTrackITS) fHistSingleParticlePileUp[0]->Fill(0.f, posPt);
+        if (posTrackTOF) fHistSingleParticlePileUp[0]->Fill(1, posPt);
+        if (posTrackCombined) fHistSingleParticlePileUp[0]->Fill(2, posPt);
+        if (!posTrackITS && !posTrackTOF)
+          fHistSingleParticlePileUp[0]->Fill(3, posPt);
+        if (negTrackITS) fHistSingleParticlePileUp[1]->Fill(0.f, negPt);
+        if (negTrackTOF) fHistSingleParticlePileUp[1]->Fill(1, negPt);
+        if (negTrackCombined) fHistSingleParticlePileUp[1]->Fill(2, negPt);
+        if (!negTrackITS && !negTrackTOF)
+          fHistSingleParticlePileUp[1]->Fill(3, negPt);
+      }
+
+      fHistSingleParticlePt[0]->Fill(posPt);
+      fHistSingleParticleEtaAfter[0]->Fill(posPt, pos->Eta());
+      fHistSingleParticleChi2After[0]->Fill(posPt, chi2Pos);
+      fHistSingleParticleNclsTPCAfter[0]->Fill(posPt, nClsTPCPos);
+      fHistSingleParticleNclsTPCFindableAfter[0]->Fill(posPt, nFindablePos);
+      fHistSingleParticleNclsTPCRatioFindableAfter[0]->Fill(posPt,
+                                                            ratioFindablePos);
+      fHistSingleParticleNcrossedTPCAfter[0]->Fill(posPt, nCrossedRowsPos);
+      fHistSingleParticleNclsTPCSharedAfter[0]->Fill(posPt, nClsSharedTPCPos);
+      fHistSingleParticleNclsITSSharedAfter[0]->Fill(posPt, nClsSharedITSPos);
+      fHistSingleParticleDCAtoPVAfter[0]->Fill(posPt, dcaDaughterToPVPos);
+      fHistSingleParticlePID[0]->Fill(posPt, pidPos);
+
+      fHistSingleParticlePt[1]->Fill(negPt);
+      fHistSingleParticleEtaAfter[1]->Fill(negPt, neg->Eta());
+      fHistSingleParticleChi2After[1]->Fill(negPt, chi2Neg);
+      fHistSingleParticleNclsTPCAfter[1]->Fill(negPt, nClsTPCNeg);
+      fHistSingleParticleNclsTPCFindableAfter[1]->Fill(negPt, nFindableNeg);
+      fHistSingleParticleNclsTPCRatioFindableAfter[1]->Fill(negPt,
+                                                            ratioFindableNeg);
+      fHistSingleParticleNcrossedTPCAfter[1]->Fill(negPt, nCrossedRowsNeg);
+      fHistSingleParticleNclsTPCSharedAfter[1]->Fill(negPt, nClsSharedTPCNeg);
+      fHistSingleParticleNclsITSSharedAfter[1]->Fill(negPt, nClsSharedITSNeg);
+      fHistSingleParticleDCAtoPVAfter[1]->Fill(negPt, dcaDaughterToPVNeg);
+      fHistSingleParticlePID[1]->Fill(negPt, pidNeg);
     }
   }
 }
@@ -1167,7 +1335,7 @@ void AliSigma0V0Cuts::CheckCutsMC() const {
     const float magField = fInputEvent->GetMagneticField();
     const AliVVertex *vertex = fInputEvent->GetPrimaryVertex();
     const float dcaDaughterToPVPos =
-        std::abs(pos->GetD(vertex->GetX(), vertex->GetY(), magField));
+        TMath::Abs(pos->GetD(vertex->GetX(), vertex->GetY(), magField));
     const short nClsTPCPos = pos->GetTPCNcls();
     const float nCrossedRowsPos = pos->GetTPCClusterInfo(2, 1);
     const short nFindablePos = pos->GetTPCNclsF();
@@ -1178,7 +1346,7 @@ void AliSigma0V0Cuts::CheckCutsMC() const {
         (nClsTPCPos > 5) ? (pos->GetTPCchi2() / float(nClsTPCPos - 5)) : -1.;
 
     const float dcaDaughterToPVNeg =
-        std::abs(neg->GetD(vertex->GetX(), vertex->GetY(), magField));
+        TMath::Abs(neg->GetD(vertex->GetX(), vertex->GetY(), magField));
     const short nClsTPCNeg = neg->GetTPCNcls();
     const float nCrossedRowsNeg = neg->GetTPCClusterInfo(2, 1);
     const short nFindableNeg = neg->GetTPCNclsF();
@@ -1265,8 +1433,8 @@ void AliSigma0V0Cuts::CheckCutsMC() const {
       const int pdgMother = static_cast<AliMCParticle *>(
                                 fMCEvent->GetTrack(mcParticle->GetMother()))
                                 ->PdgCode();
-      fHistV0Mother->Fill(pt, std::abs(pdgMother));
-      if (std::abs(pdgMother) == 3212) {
+      fHistV0MotherTrue->Fill(pt, TMath::Abs(pdgMother));
+      if (TMath::Abs(pdgMother) == 3212) {
         fHistV0MassPtTrueSigma->Fill(pt, invMass);
         fHistDecayVertexXTrueSigma->Fill(pt, decayVertexV0[0]);
         fHistDecayVertexYTrueSigma->Fill(pt, decayVertexV0[1]);
@@ -1419,54 +1587,20 @@ bool AliSigma0V0Cuts::CheckDaughtersInAcceptance(
   const float rPos =
       std::sqrt(posVertex[0] * posVertex[0] + posVertex[1] * posVertex[1]);
   if (rPos > fV0RadiusMax || rPos < fV0RadiusMin) return false;
-  if (std::abs(posVertex[0]) > fV0DecayVertexMax) return false;
-  if (std::abs(posVertex[1]) > fV0DecayVertexMax) return false;
-  if (std::abs(posVertex[2]) > fV0DecayVertexMax) return false;
+  if (TMath::Abs(posVertex[0]) > fV0DecayVertexMax) return false;
+  if (TMath::Abs(posVertex[1]) > fV0DecayVertexMax) return false;
+  if (TMath::Abs(posVertex[2]) > fV0DecayVertexMax) return false;
 
   Double_t negVertex[3];
   negDaughter->XvYvZv(negVertex);
   const float rNeg =
       std::sqrt(negVertex[0] * negVertex[0] + negVertex[1] * negVertex[1]);
   if (rNeg > fV0RadiusMax || rNeg < fV0RadiusMin) return false;
-  if (std::abs(negVertex[0]) > fV0DecayVertexMax) return false;
-  if (std::abs(negVertex[1]) > fV0DecayVertexMax) return false;
-  if (std::abs(negVertex[2]) > fV0DecayVertexMax) return false;
+  if (TMath::Abs(negVertex[0]) > fV0DecayVertexMax) return false;
+  if (TMath::Abs(negVertex[1]) > fV0DecayVertexMax) return false;
+  if (TMath::Abs(negVertex[2]) > fV0DecayVertexMax) return false;
 
   return true;
-}
-
-//____________________________________________________________________________________________________
-int AliSigma0V0Cuts::GetRapidityBin(float rapidity) const {
-  if (-10 < rapidity && rapidity <= -1)
-    return 0;
-  else if (-1 < rapidity && rapidity <= -0.5)
-    return 1;
-  else if (-0.5 < rapidity && rapidity <= -0.4)
-    return 2;
-  else if (-0.4 < rapidity && rapidity <= -0.3)
-    return 3;
-  else if (-0.3 < rapidity && rapidity <= -0.2)
-    return 4;
-  else if (-0.2 < rapidity && rapidity <= -0.1)
-    return 5;
-  else if (-0.1 < rapidity && rapidity <= 0.f)
-    return 6;
-  else if (0.f < rapidity && rapidity <= 0.1)
-    return 7;
-  else if (0.1 < rapidity && rapidity <= 0.2)
-    return 8;
-  else if (0.2 < rapidity && rapidity <= 0.3)
-    return 9;
-  else if (0.3 < rapidity && rapidity <= 0.4)
-    return 10;
-  else if (0.4 < rapidity && rapidity <= 0.5)
-    return 11;
-  else if (0.5 < rapidity && rapidity <= 1.f)
-    return 12;
-  else if (1.0 < rapidity && rapidity < 10.f)
-    return 13;
-  else
-    return -1;
 }
 
 //____________________________________________________________________________________________________
@@ -1502,9 +1636,6 @@ void AliSigma0V0Cuts::InitCutHistograms(TString appendix) {
             << " PDG pos      " << fNegPDG << "\n"
             << "============================\n";
 
-  std::vector<float> rapBins = {{-10., -1.f, -0.5, -0.4, -0.3, -0.2, -0.1, 0.f,
-                                 0.1, 0.2, 0.3, 0.4, 0.5, 1.f, 10.f}};
-
   const float pi = TMath::Pi();
 
   TH1::AddDirectory(kFALSE);
@@ -1520,24 +1651,26 @@ void AliSigma0V0Cuts::InitCutHistograms(TString appendix) {
     fHistograms->SetName(name);
   }
 
-  if (fHistogramsPos != nullptr) {
-    delete fHistogramsPos;
-    fHistogramsPos = nullptr;
-  }
-  if (fHistogramsPos == nullptr) {
-    fHistogramsPos = new TList();
-    fHistogramsPos->SetOwner(kTRUE);
-    fHistogramsPos->SetName("V0_PosDaughter");
-  }
+  if (!fIsLightweight) {
+    if (fHistogramsPos != nullptr) {
+      delete fHistogramsPos;
+      fHistogramsPos = nullptr;
+    }
+    if (fHistogramsPos == nullptr) {
+      fHistogramsPos = new TList();
+      fHistogramsPos->SetOwner(kTRUE);
+      fHistogramsPos->SetName("V0_PosDaughter");
+    }
 
-  if (fHistogramsNeg != nullptr) {
-    delete fHistogramsNeg;
-    fHistogramsNeg = nullptr;
-  }
-  if (fHistogramsNeg == nullptr) {
-    fHistogramsNeg = new TList();
-    fHistogramsNeg->SetOwner(kTRUE);
-    fHistogramsNeg->SetName("V0_NegDaughter");
+    if (fHistogramsNeg != nullptr) {
+      delete fHistogramsNeg;
+      fHistogramsNeg = nullptr;
+    }
+    if (fHistogramsNeg == nullptr) {
+      fHistogramsNeg = new TList();
+      fHistogramsNeg->SetOwner(kTRUE);
+      fHistogramsNeg->SetName("V0_NegDaughter");
+    }
   }
 
   fHistCutBooking = new TProfile("fHistCutBooking", ";;Cut value", 32, 0, 32);
@@ -1608,47 +1741,47 @@ void AliSigma0V0Cuts::InitCutHistograms(TString appendix) {
   fHistCutBooking->Fill(30.f, fNegPDG);
   fHistCutBooking->Fill(31.f, fMCHighMultThreshold);
 
-  fHistCuts = new TH1F("fHistCuts", ";;Entries", 20, 0, 20);
-  fHistCuts->GetXaxis()->SetBinLabel(1, "V0");
-  fHistCuts->GetXaxis()->SetBinLabel(2, "Neutral");
-  fHistCuts->GetXaxis()->SetBinLabel(3, "On-fly");
-  fHistCuts->GetXaxis()->SetBinLabel(4, "#it{p}_{T, min}");
-  fHistCuts->GetXaxis()->SetBinLabel(5, "#it{p}_{T, max}");
-  fHistCuts->GetXaxis()->SetBinLabel(6, "Daughter tracks");
-  fHistCuts->GetXaxis()->SetBinLabel(7, "SingleParticle QA");
-  fHistCuts->GetXaxis()->SetBinLabel(8, "Pile-up");
-  fHistCuts->GetXaxis()->SetBinLabel(9, "Decay vtx x");
-  fHistCuts->GetXaxis()->SetBinLabel(10, "Decay vtx y");
-  fHistCuts->GetXaxis()->SetBinLabel(11, "Decay vtx z");
-  fHistCuts->GetXaxis()->SetBinLabel(12, "Radius min");
-  fHistCuts->GetXaxis()->SetBinLabel(13, "Radius max");
-  fHistCuts->GetXaxis()->SetBinLabel(14, "Daughter DCA");
-  fHistCuts->GetXaxis()->SetBinLabel(15, "cos #alpha");
-  fHistCuts->GetXaxis()->SetBinLabel(16, "PID");
-  if (std::abs(fPID) == 3122) {
-    fHistCuts->GetXaxis()->SetBinLabel(17, "K^{0} rejection");
-    fHistCuts->GetXaxis()->SetBinLabel(18, "#Lambda selection");
-  } else if (std::abs(fPID) == 22) {
-    fHistCuts->GetXaxis()->SetBinLabel(17, "#Psi_{pair} selection");
-    fHistCuts->GetXaxis()->SetBinLabel(18, "K^{0} rejection");
-    fHistCuts->GetXaxis()->SetBinLabel(19, "#Lambda rejection");
-  }
-  fHistograms->Add(fHistCuts);
-
-  if (std::abs(fPID) == 3122) {
+  if (TMath::Abs(fPID) == 3122) {
     fHistV0MassPt =
         new TH2F("fHistV0MassPt",
                  "; #it{p}_{T} (GeV/#it{c});Invariant mass (GeV/#it{c}^{2})",
-                 100, 0, 10, 400, 1., 1.2);
-  } else if (std::abs(fPID) == 22) {
+                 100, 0, 10, 200, 1., 1.2);
+  } else if (TMath::Abs(fPID) == 22) {
     fHistV0MassPt =
         new TH2F("fHistV0MassPt",
                  "; #it{p}_{T} (GeV/#it{c});Invariant mass (GeV/#it{c}^{2})",
-                 100, 0, 10, 400, 0., .4);
+                 100, 0, 10, 200, 0., .2);
   }
   fHistograms->Add(fHistV0MassPt);
 
   if (!fIsLightweight) {
+    fHistCuts = new TH1F("fHistCuts", ";;Entries", 20, 0, 20);
+    fHistCuts->GetXaxis()->SetBinLabel(1, "V0");
+    fHistCuts->GetXaxis()->SetBinLabel(2, "Neutral");
+    fHistCuts->GetXaxis()->SetBinLabel(3, "On-fly");
+    fHistCuts->GetXaxis()->SetBinLabel(4, "#it{p}_{T, min}");
+    fHistCuts->GetXaxis()->SetBinLabel(5, "#it{p}_{T, max}");
+    fHistCuts->GetXaxis()->SetBinLabel(6, "Daughter tracks");
+    fHistCuts->GetXaxis()->SetBinLabel(7, "SingleParticle QA");
+    fHistCuts->GetXaxis()->SetBinLabel(8, "Pile-up");
+    fHistCuts->GetXaxis()->SetBinLabel(9, "Decay vtx x");
+    fHistCuts->GetXaxis()->SetBinLabel(10, "Decay vtx y");
+    fHistCuts->GetXaxis()->SetBinLabel(11, "Decay vtx z");
+    fHistCuts->GetXaxis()->SetBinLabel(12, "Radius min");
+    fHistCuts->GetXaxis()->SetBinLabel(13, "Radius max");
+    fHistCuts->GetXaxis()->SetBinLabel(14, "Daughter DCA");
+    fHistCuts->GetXaxis()->SetBinLabel(15, "cos #alpha");
+    fHistCuts->GetXaxis()->SetBinLabel(16, "PID");
+    if (TMath::Abs(fPID) == 3122) {
+      fHistCuts->GetXaxis()->SetBinLabel(17, "K^{0} rejection");
+      fHistCuts->GetXaxis()->SetBinLabel(18, "#Lambda selection");
+    } else if (TMath::Abs(fPID) == 22) {
+      fHistCuts->GetXaxis()->SetBinLabel(17, "#Psi_{pair} selection");
+      fHistCuts->GetXaxis()->SetBinLabel(18, "K^{0} rejection");
+      fHistCuts->GetXaxis()->SetBinLabel(19, "#Lambda rejection");
+    }
+    fHistograms->Add(fHistCuts);
+
     fHistNV0 =
         new TH1F("fHistNV0", ";Number of V0 candidates; Entries", 25, 0, 25);
     fHistograms->Add(fHistNV0);
@@ -1684,30 +1817,30 @@ void AliSigma0V0Cuts::InitCutHistograms(TString appendix) {
     fHistograms->Add(fHistK0Mass);
 
     fHistV0Pt =
-        new TH1F("fHistV0Pt", "; #it{p}_{T} (GeV/#it{c}); Entries", 500, 0, 10);
+        new TH1F("fHistV0Pt", "; #it{p}_{T} (GeV/#it{c}); Entries", 100, 0, 10);
     fHistograms->Add(fHistV0Pt);
 
-    if (std::abs(fPID) == 3122) {
+    if (TMath::Abs(fPID) == 3122) {
       fHistV0Mass =
           new TH1F("fHistV0Mass", "; Invariant mass (GeV/#it{c}^{2}); Entries",
-                   400, 1., 1.2);
-    } else if (std::abs(fPID) == 22) {
+                   200, 1., 1.2);
+    } else if (TMath::Abs(fPID) == 22) {
       fHistV0Mass =
           new TH1F("fHistV0Mass", "; Invariant mass (GeV/#it{c}^{2}); Entries",
-                   400, 0., 0.2);
+                   200, 0., 0.2);
     }
     fHistograms->Add(fHistV0Mass);
 
     fHistLambdaMassK0Rej = new TH1F("fHistLambdaMassK0Rej",
                                     "; Invariant mass p#pi hypothesis w/o "
                                     "K^{0} rejection (GeV/#it{c}^{2}); Entries",
-                                    250, 1., 1.5);
+                                    200, 1., 1.2);
     fHistograms->Add(fHistLambdaMassK0Rej);
 
     fHistK0MassAfter =
         new TH1F("fHistK0MassAfter",
                  "; Invariant mass #pi#pi hypothesis (GeV/#it{c}^{2}); Entries",
-                 250, 0.2, 0.7);
+                 250, 0.35, 0.6);
     fHistograms->Add(fHistK0MassAfter);
     fHistCosPA =
         new TH2F("fHistCosPA", "; #it{p}_{T} (GeV/#it{c}); cos(#alpha)", 100, 0,
@@ -1724,58 +1857,43 @@ void AliSigma0V0Cuts::InitCutHistograms(TString appendix) {
                    100, 0, 10, 200, -pi / 2.f, pi / 2.f);
       fHistograms->Add(fHistPsiPair);
     }
-
-    for (int i = 0; i < static_cast<int>(rapBins.size() - 1); ++i) {
-      if (std::abs(fPID) == 3122) {
-        fHistV0PtY[i] = new TH2F(
-            Form("fHistV0PtY_%.2f_%.2f", rapBins[i], rapBins[i + 1]),
-            Form("%.2f < y < %.2f ; #it{p}_{T} (GeV/#it{c}); Invariant "
-                 "mass (GeV/#it{c}^{2})",
-                 rapBins[i], rapBins[i + 1]),
-            100, 0, 10, 400, 1., 1.2);
-      } else if (std::abs(fPID) == 22) {
-        fHistV0PtY[i] = new TH2F(
-            Form("fHistV0PtY_%.2f_%.2f", rapBins[i], rapBins[i + 1]),
-            Form("%.2f < y < %.2f ; #it{p}_{T} (GeV/#it{c}); Invariant "
-                 "mass (GeV/#it{c}^{2})",
-                 rapBins[i], rapBins[i + 1]),
-            100, 0, 10, 400, 0., 0.4);
-      }
-      fHistograms->Add(fHistV0PtY[i]);
-    }
   }
 
-  fHistSingleParticleCuts[0] =
-      new TH1F("fHistSingleParticleCuts_pos", ";;Entries", 11, 0, 11);
-  fHistSingleParticleCuts[0]->GetXaxis()->SetBinLabel(1, "Daughter tracks");
-  fHistSingleParticleCuts[0]->GetXaxis()->SetBinLabel(2, "#eta");
-  fHistSingleParticleCuts[0]->GetXaxis()->SetBinLabel(3, "#chi^{2}");
-  fHistSingleParticleCuts[0]->GetXaxis()->SetBinLabel(4, "nCls TPC");
-  fHistSingleParticleCuts[0]->GetXaxis()->SetBinLabel(5, "nCrossed Rows TPC");
-  fHistSingleParticleCuts[0]->GetXaxis()->SetBinLabel(6, "Ratio Findable TPC");
-  fHistSingleParticleCuts[0]->GetXaxis()->SetBinLabel(7, "nCls Findable");
-  fHistSingleParticleCuts[0]->GetXaxis()->SetBinLabel(8, "nCls Shared max");
-  fHistSingleParticleCuts[0]->GetXaxis()->SetBinLabel(9, "Daughter DCA to PV");
-  fHistSingleParticleCuts[0]->GetXaxis()->SetBinLabel(10, "TPC refit");
-  fHistSingleParticleCuts[0]->GetXaxis()->SetBinLabel(11, "Kink");
-  fHistogramsPos->Add(fHistSingleParticleCuts[0]);
-
-  fHistSingleParticleCuts[1] =
-      new TH1F("fHistSingleParticleCuts_neg", ";;Entries", 11, 0, 11);
-  fHistSingleParticleCuts[1]->GetXaxis()->SetBinLabel(1, "Daughter tracks");
-  fHistSingleParticleCuts[1]->GetXaxis()->SetBinLabel(2, "#eta");
-  fHistSingleParticleCuts[1]->GetXaxis()->SetBinLabel(3, "#chi^{2}");
-  fHistSingleParticleCuts[1]->GetXaxis()->SetBinLabel(4, "nCls TPC");
-  fHistSingleParticleCuts[1]->GetXaxis()->SetBinLabel(5, "nCrossed Rows TPC");
-  fHistSingleParticleCuts[1]->GetXaxis()->SetBinLabel(6, "Ratio Findable TPC");
-  fHistSingleParticleCuts[1]->GetXaxis()->SetBinLabel(7, "nCls Findable");
-  fHistSingleParticleCuts[1]->GetXaxis()->SetBinLabel(8, "nCls Shared max");
-  fHistSingleParticleCuts[1]->GetXaxis()->SetBinLabel(9, "Daughter DCA to PV");
-  fHistSingleParticleCuts[1]->GetXaxis()->SetBinLabel(10, "TPC refit");
-  fHistSingleParticleCuts[1]->GetXaxis()->SetBinLabel(11, "Kink");
-  fHistogramsNeg->Add(fHistSingleParticleCuts[1]);
-
   if (!fIsLightweight) {
+    fHistSingleParticleCuts[0] =
+        new TH1F("fHistSingleParticleCuts_pos", ";;Entries", 11, 0, 11);
+    fHistSingleParticleCuts[0]->GetXaxis()->SetBinLabel(1, "Daughter tracks");
+    fHistSingleParticleCuts[0]->GetXaxis()->SetBinLabel(2, "#eta");
+    fHistSingleParticleCuts[0]->GetXaxis()->SetBinLabel(3, "#chi^{2}");
+    fHistSingleParticleCuts[0]->GetXaxis()->SetBinLabel(4, "nCls TPC");
+    fHistSingleParticleCuts[0]->GetXaxis()->SetBinLabel(5, "nCrossed Rows TPC");
+    fHistSingleParticleCuts[0]->GetXaxis()->SetBinLabel(6,
+                                                        "Ratio Findable TPC");
+    fHistSingleParticleCuts[0]->GetXaxis()->SetBinLabel(7, "nCls Findable");
+    fHistSingleParticleCuts[0]->GetXaxis()->SetBinLabel(8, "nCls Shared max");
+    fHistSingleParticleCuts[0]->GetXaxis()->SetBinLabel(9,
+                                                        "Daughter DCA to PV");
+    fHistSingleParticleCuts[0]->GetXaxis()->SetBinLabel(10, "TPC refit");
+    fHistSingleParticleCuts[0]->GetXaxis()->SetBinLabel(11, "Kink");
+    fHistogramsPos->Add(fHistSingleParticleCuts[0]);
+
+    fHistSingleParticleCuts[1] =
+        new TH1F("fHistSingleParticleCuts_neg", ";;Entries", 11, 0, 11);
+    fHistSingleParticleCuts[1]->GetXaxis()->SetBinLabel(1, "Daughter tracks");
+    fHistSingleParticleCuts[1]->GetXaxis()->SetBinLabel(2, "#eta");
+    fHistSingleParticleCuts[1]->GetXaxis()->SetBinLabel(3, "#chi^{2}");
+    fHistSingleParticleCuts[1]->GetXaxis()->SetBinLabel(4, "nCls TPC");
+    fHistSingleParticleCuts[1]->GetXaxis()->SetBinLabel(5, "nCrossed Rows TPC");
+    fHistSingleParticleCuts[1]->GetXaxis()->SetBinLabel(6,
+                                                        "Ratio Findable TPC");
+    fHistSingleParticleCuts[1]->GetXaxis()->SetBinLabel(7, "nCls Findable");
+    fHistSingleParticleCuts[1]->GetXaxis()->SetBinLabel(8, "nCls Shared max");
+    fHistSingleParticleCuts[1]->GetXaxis()->SetBinLabel(9,
+                                                        "Daughter DCA to PV");
+    fHistSingleParticleCuts[1]->GetXaxis()->SetBinLabel(10, "TPC refit");
+    fHistSingleParticleCuts[1]->GetXaxis()->SetBinLabel(11, "Kink");
+    fHistogramsNeg->Add(fHistSingleParticleCuts[1]);
+
     if (fHistogramsBefore != nullptr) {
       delete fHistogramsBefore;
       fHistogramsBefore = nullptr;
@@ -1798,50 +1916,50 @@ void AliSigma0V0Cuts::InitCutHistograms(TString appendix) {
 
     fHistDecayVertexXBefore =
         new TH2F("fHistDecayVertexXBefore",
-                 "; #it{p}_{T} (GeV/#it{c}); Decay vertex x (cm)", 100, 0, 10,
+                 "; #it{p}_{T} (GeV/#it{c}); Decay vertex x (cm)", 50, 0, 10,
                  200, 0, 200);
     fHistogramsBefore->Add(fHistDecayVertexXBefore);
 
     fHistDecayVertexYBefore =
         new TH2F("fHistDecayVertexYBefore",
-                 "; #it{p}_{T} (GeV/#it{c}); Decay vertex y (cm)", 100, 0, 10,
+                 "; #it{p}_{T} (GeV/#it{c}); Decay vertex y (cm)", 50, 0, 10,
                  200, 0, 200);
     fHistogramsBefore->Add(fHistDecayVertexYBefore);
 
     fHistDecayVertexZBefore =
         new TH2F("fHistDecayVertexZBefore",
-                 "; #it{p}_{T} (GeV/#it{c}); Decay vertex z (cm)", 100, 0, 10,
+                 "; #it{p}_{T} (GeV/#it{c}); Decay vertex z (cm)", 50, 0, 10,
                  200, 0, 200);
     fHistogramsBefore->Add(fHistDecayVertexZBefore);
 
     fHistDecayVertexXAfter =
         new TH2F("fHistDecayVertexXAfter",
-                 "; #it{p}_{T} (GeV/#it{c}); Decay vertex x (cm)", 100, 0, 10,
+                 "; #it{p}_{T} (GeV/#it{c}); Decay vertex x (cm)", 50, 0, 10,
                  200, 0, 200);
     fHistogramsAfter->Add(fHistDecayVertexXAfter);
 
     fHistDecayVertexYAfter =
         new TH2F("fHistDecayVertexYAfter",
-                 "; #it{p}_{T} (GeV/#it{c}); Decay vertex y (cm)", 100, 0, 10,
+                 "; #it{p}_{T} (GeV/#it{c}); Decay vertex y (cm)", 50, 0, 10,
                  200, 0, 200);
     fHistogramsAfter->Add(fHistDecayVertexYAfter);
 
     fHistDecayVertexZAfter =
         new TH2F("fHistDecayVertexZAfter",
-                 "; #it{p}_{T} (GeV/#it{c}); Decay vertex z (cm)", 100, 0, 10,
+                 "; #it{p}_{T} (GeV/#it{c}); Decay vertex z (cm)", 50, 0, 10,
                  200, 0, 200);
     fHistogramsAfter->Add(fHistDecayVertexZAfter);
 
     fHistTransverseRadiusBefore =
         new TH2F("fHistTransverseRadiusBefore",
-                 "; #it{p}_{T} (GeV/#it{c}); Transverse radius (cm)", 100, 0,
-                 10, 200, 0, 200);
+                 "; #it{p}_{T} (GeV/#it{c}); Transverse radius (cm)", 50, 0, 10,
+                 200, 0, 200);
     fHistogramsBefore->Add(fHistTransverseRadiusBefore);
 
     fHistTransverseRadiusAfter =
         new TH2F("fHistTransverseRadiusAfter",
-                 "; #it{p}_{T} (GeV/#it{c}); Transverse radius (cm)", 100, 0,
-                 10, 200, 0, 200);
+                 "; #it{p}_{T} (GeV/#it{c}); Transverse radius (cm)", 50, 0, 10,
+                 200, 0, 200);
     fHistogramsAfter->Add(fHistTransverseRadiusAfter);
 
     fHistCosPABefore =
@@ -1851,28 +1969,28 @@ void AliSigma0V0Cuts::InitCutHistograms(TString appendix) {
 
     fHistCosPAAfter =
         new TH2F("fHistCosPAAfter", "; #it{p}_{T} (GeV/#it{c}); cos(#alpha)",
-                 100, 0, 10, 100, 0.9, 1);
+                 50, 0, 10, 100, 0.9, 1);
     fHistogramsAfter->Add(fHistCosPAAfter);
 
     fHistDCADaughtersBefore =
         new TH2F("fHistDCADaughtersBefore",
                  "; #it{p}_{T} (GeV/#it{c}); Daughter DCA at decay vertex (cm)",
-                 100, 0, 10, 100, 0, 2);
+                 50, 0, 10, 100, 0, 2);
     fHistogramsBefore->Add(fHistDCADaughtersBefore);
 
     fHistDCADaughtersAfter =
         new TH2F("fHistDCADaughtersAfter",
                  "; #it{p}_{T} (GeV/#it{c}); Daughter DCA at decay vertex (cm)",
-                 100, 0, 10, 100, 0, 2);
+                 50, 0, 10, 100, 0, 2);
     fHistogramsAfter->Add(fHistDCADaughtersAfter);
 
     fHistDCA = new TH2F("fHistDCA", "; #it{p}_{T} (GeV/#it{c}); DCA to PV (cm)",
-                        100, 0, 10, 100, 0, 10);
+                        50, 0, 10, 100, 0, 10);
     fHistogramsAfter->Add(fHistDCA);
 
     fHistDecayLength = new TH2F("fHistDecayLength",
                                 "; #it{p}_{T} (GeV/#it{c}); Decay length (cm)",
-                                100, 0, 10, 200, 0, 200);
+                                50, 0, 10, 200, 0, 200);
     fHistogramsAfter->Add(fHistDecayLength);
 
     fHistArmenterosBefore =
@@ -2084,71 +2202,52 @@ void AliSigma0V0Cuts::InitCutHistograms(TString appendix) {
     }
 
     fHistMCTruthV0PtY =
-        new TH2F("fHistMCTruthV0PtY", "; y; #it{p}_{T} (GeV/#it{c})", 500, -10,
-                 10, 500, 0, 10);
-    fHistMCTruthV0PtEta =
-        new TH2F("fHistMCTruthV0PtEta", "; #eta; #it{p}_{T} (GeV/#it{c})", 500,
-                 -10, 10, 500, 0, 10);
+        new TH2F("fHistMCTruthV0PtY", "; y; #it{p}_{T} (GeV/#it{c})", 100, -10,
+                 10, 100, 0, 10);
     fHistMCTruthV0DaughterPtY =
         new TH2F("fHistMCTruthV0DaughterPtY", "; y; #it{p}_{T} (GeV/#it{c})",
-                 500, -10, 10, 500, 0, 10);
-    fHistMCTruthV0DaughterPtEta =
-        new TH2F("fHistMCTruthV0DaughterPtEta",
-                 "; #eta; #it{p}_{T} (GeV/#it{c})", 500, -10, 10, 500, 0, 10);
+                 100, -10, 10, 100, 0, 10);
     fHistMCTruthV0DaughterPtYAccept =
         new TH2F("fHistMCTruthV0DaughterPtYAccept",
-                 "; y; #it{p}_{T} (GeV/#it{c})", 500, -10, 10, 500, 0, 10);
-    fHistMCTruthV0DaughterPtEtaAccept =
-        new TH2F("fHistMCTruthV0DaughterPtEtaAccept",
-                 "; #eta; #it{p}_{T} (GeV/#it{c})", 500, -10, 10, 500, 0, 10);
+                 "; y; #it{p}_{T} (GeV/#it{c})", 100, -10, 10, 100, 0, 10);
 
     fHistMCTruthPtYHighMult =
-        new TH2F("fHistMCTruthPtYHighMult", "; y; #it{p}_{T} (GeV/#it{c})",
-                 1000, -10, 10, 500, 0, 10);
-    fHistMCTruthPtEtaHighMult =
-        new TH2F("fHistMCTruthPtEtaHighMult", "; #eta; #it{p}_{T} (GeV/#it{c})",
-                 500, -10, 10, 500, 0, 10);
+        new TH2F("fHistMCTruthPtYHighMult", "; y; #it{p}_{T} (GeV/#it{c})", 100,
+                 -10, 10, 100, 0, 10);
     fHistMCTruthDaughterPtYHighMult =
         new TH2F("fHistMCTruthDaughterPtYHighMult",
-                 "; y; #it{p}_{T} (GeV/#it{c})", 1000, -10, 10, 500, 0, 10);
-    fHistMCTruthDaughterPtEtaHighMult =
-        new TH2F("fHistMCTruthDaughterPtEtaHighMult",
-                 "; #eta; #it{p}_{T} (GeV/#it{c})", 500, -10, 10, 500, 0, 10);
+                 "; y; #it{p}_{T} (GeV/#it{c})", 100, -10, 10, 100, 0, 10);
     fHistMCTruthDaughterPtYAcceptHighMult =
         new TH2F("fHistMCTruthDaughterPtYAcceptHighMult",
-                 "; y; #it{p}_{T} (GeV/#it{c})", 1000, -10, 10, 500, 0, 10);
-    fHistMCTruthDaughterPtEtaAcceptHighMult =
-        new TH2F("fHistMCTruthDaughterPtEtaAcceptHighMult",
-                 "; #eta; #it{p}_{T} (GeV/#it{c})", 500, -10, 10, 500, 0, 10);
+                 "; y; #it{p}_{T} (GeV/#it{c})", 100, -10, 10, 100, 0, 10);
 
     fHistMCV0Pt = new TH1F("fHistMCV0Pt", "; #it{p}_{T} (GeV/#it{c}); Entries",
-                           500, 0, 10);
+                           100, 0, 10);
+
+    fHistV0Mother =
+        new TH2F("fHistV0Mother", "; #it{p}_{T} (GeV/#it{c}); PDG code mother",
+                 100, 0, 10, 4000, 0, 4000);
 
     fHistogramsMC->Add(fHistMCTruthV0PtY);
-    fHistogramsMC->Add(fHistMCTruthV0PtEta);
     fHistogramsMC->Add(fHistMCTruthV0DaughterPtY);
-    fHistogramsMC->Add(fHistMCTruthV0DaughterPtEta);
     fHistogramsMC->Add(fHistMCTruthV0DaughterPtYAccept);
-    fHistogramsMC->Add(fHistMCTruthV0DaughterPtEtaAccept);
     fHistogramsMC->Add(fHistMCTruthPtYHighMult);
-    fHistogramsMC->Add(fHistMCTruthPtEtaHighMult);
     fHistogramsMC->Add(fHistMCTruthDaughterPtYHighMult);
-    fHistogramsMC->Add(fHistMCTruthDaughterPtEtaHighMult);
     fHistogramsMC->Add(fHistMCTruthDaughterPtYAcceptHighMult);
-    fHistogramsMC->Add(fHistMCTruthDaughterPtEtaAcceptHighMult);
     fHistogramsMC->Add(fHistMCV0Pt);
+    fHistogramsMC->Add(fHistV0Mother);
 
     if (fCheckCutsMC) {
       // TRUE V0
-      fHistV0Mother = new TH2F("fHistV0Mother",
-                               "; #it{p}_{T} (GeV/#it{c}); PDG code mother",
-                               100, 0, 10, 4000, 0, 4000);
-      fHistogramsMC->Add(fHistV0Mother);
+      fHistV0MotherTrue = new TH2F("fHistV0MotherTrue",
+                                   "; #it{p}_{T} (GeV/#it{c}); PDG code mother",
+                                   100, 0, 10, 4000, 0, 4000);
+      fHistogramsMC->Add(fHistV0MotherTrue);
 
       fHistV0MassPtTrue =
           new TH2F("fHistV0MassPtTrue",
                    "; #it{p}_{T} (GeV/#it{c});Invariant mass (GeV/#it{c}^{2})",
-                   1000, 0, 15, 2400, 0., 1.2);
+                   100, 0, 10, 1200, 0., 1.2);
       fHistogramsMC->Add(fHistV0MassPtTrue);
 
       fHistDecayVertexXTrue =
@@ -2193,7 +2292,7 @@ void AliSigma0V0Cuts::InitCutHistograms(TString appendix) {
 
       fHistPsiPairTrue =
           new TH2F("fHistPsiPairTrue", "; #it{p}_{T} (GeV/#it{c}); #Psi_{pair}",
-                   1000, 0, 10, 1000, -pi, pi);
+                   100, 0, 10, 1000, -pi, pi);
       fHistogramsMC->Add(fHistPsiPairTrue);
 
       fHistSingleParticlePtTrue[0] =
@@ -2291,10 +2390,10 @@ void AliSigma0V0Cuts::InitCutHistograms(TString appendix) {
 
       fHistSingleParticlePIDTrue[0] = new TH2F(
           "fHistSingleParticlePIDTrue_pos",
-          "; #it{p} (GeV/#it{c}); n_{#sigma} TPC", 500, 0, 10, 500, -10, 10);
+          "; #it{p} (GeV/#it{c}); n_{#sigma} TPC", 100, 0, 10, 500, -10, 10);
       fHistSingleParticlePIDTrue[1] = new TH2F(
           "fHistSingleParticlePIDTrue_neg",
-          "; #it{p} (GeV/#it{c}); n_{#sigma} TPC", 500, 0, 10, 500, -10, 10);
+          "; #it{p} (GeV/#it{c}); n_{#sigma} TPC", 100, 0, 10, 500, -10, 10);
       fHistogramsMC->Add(fHistSingleParticlePIDTrue[0]);
       fHistogramsMC->Add(fHistSingleParticlePIDTrue[1]);
 
@@ -2302,7 +2401,7 @@ void AliSigma0V0Cuts::InitCutHistograms(TString appendix) {
       fHistV0MassPtTrueSigma =
           new TH2F("fHistV0MassPtTrueSigma",
                    "; #it{p}_{T} (GeV/#it{c});Invariant mass (GeV/#it{c}^{2})",
-                   1000, 0, 15, 2400, 0., 1.2);
+                   100, 0, 10, 1200, 0., 1.2);
       fHistogramsMC->Add(fHistV0MassPtTrueSigma);
 
       fHistDecayVertexXTrueSigma =
@@ -2349,15 +2448,15 @@ void AliSigma0V0Cuts::InitCutHistograms(TString appendix) {
 
       fHistPsiPairTrueSigma = new TH2F("fHistPsiPairTrueSigma",
                                        "; #it{p}_{T} (GeV/#it{c}); #Psi_{pair}",
-                                       1000, 0, 10, 1000, -pi, pi);
+                                       100, 0, 10, 1000, -pi, pi);
       fHistogramsMC->Add(fHistPsiPairTrueSigma);
 
       fHistSingleParticlePtTrueSigma[0] =
           new TH1F("fHistSingleParticlePtTrueSigma_pos",
-                   ";#it{p}_{T} true Sigma; Entries", 1000, 0, 10);
+                   ";#it{p}_{T} true Sigma; Entries", 100, 0, 10);
       fHistSingleParticlePtTrueSigma[1] =
           new TH1F("fHistSingleParticlePtTrueSigma_neg",
-                   ";#it{p}_{T} true Sigma; Entries", 1000, 0, 10);
+                   ";#it{p}_{T} true Sigma; Entries", 100, 0, 10);
       fHistogramsMC->Add(fHistSingleParticlePtTrueSigma[0]);
       fHistogramsMC->Add(fHistSingleParticlePtTrueSigma[1]);
 
@@ -2449,10 +2548,10 @@ void AliSigma0V0Cuts::InitCutHistograms(TString appendix) {
 
       fHistSingleParticlePIDTrueSigma[0] = new TH2F(
           "fHistSingleParticlePIDTrueSigma_pos",
-          "; #it{p} (GeV/#it{c}); n_{#sigma} TPC", 500, 0, 10, 500, -10, 10);
+          "; #it{p} (GeV/#it{c}); n_{#sigma} TPC", 100, 0, 10, 500, -10, 10);
       fHistSingleParticlePIDTrueSigma[1] = new TH2F(
           "fHistSingleParticlePIDTrueSigma_neg",
-          "; #it{p} (GeV/#it{c}); n_{#sigma} TPC", 500, 0, 10, 500, -10, 10);
+          "; #it{p} (GeV/#it{c}); n_{#sigma} TPC", 100, 0, 10, 500, -10, 10);
       fHistogramsMC->Add(fHistSingleParticlePIDTrueSigma[0]);
       fHistogramsMC->Add(fHistSingleParticlePIDTrueSigma[1]);
 
@@ -2460,7 +2559,7 @@ void AliSigma0V0Cuts::InitCutHistograms(TString appendix) {
       fHistV0MassPtBkg =
           new TH2F("fHistV0MassPtBkg",
                    "; #it{p}_{T} (GeV/#it{c});Invariant mass (GeV/#it{c}^{2})",
-                   1000, 0, 15, 2400, 0., 1.2);
+                   100, 0, 10, 1200, 0., 1.2);
       fHistogramsMC->Add(fHistV0MassPtBkg);
 
       fHistDecayVertexXBkg =
@@ -2603,10 +2702,10 @@ void AliSigma0V0Cuts::InitCutHistograms(TString appendix) {
 
       fHistSingleParticlePIDBkg[0] = new TH2F(
           "fHistSingleParticlePIDBkg_pos",
-          "; #it{p} (GeV/#it{c}); n_{#sigma} TPC", 500, 0, 10, 500, -10, 10);
+          "; #it{p} (GeV/#it{c}); n_{#sigma} TPC", 100, 0, 10, 500, -10, 10);
       fHistSingleParticlePIDBkg[1] = new TH2F(
           "fHistSingleParticlePIDBkg_neg",
-          "; #it{p} (GeV/#it{c}); n_{#sigma} TPC", 500, 0, 10, 500, -10, 10);
+          "; #it{p} (GeV/#it{c}); n_{#sigma} TPC", 100, 0, 10, 500, -10, 10);
       fHistogramsMC->Add(fHistSingleParticlePIDBkg[0]);
       fHistogramsMC->Add(fHistSingleParticlePIDBkg[1]);
     }

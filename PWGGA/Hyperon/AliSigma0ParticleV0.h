@@ -17,6 +17,7 @@ class AliSigma0ParticleV0 : public AliSigma0ParticleBase {
                       const int pdg, const float magneticField,
                       AliMCEvent *mcEvent);
   AliSigma0ParticleV0(const AliAODConversionPhoton *gamma,
+                      const AliESDtrack *pos, const AliESDtrack *neg,
                       const AliVEvent *inputEvent);
   AliSigma0ParticleV0 &operator=(const AliSigma0ParticleV0 &obj);
 
@@ -35,6 +36,7 @@ class AliSigma0ParticleV0 : public AliSigma0ParticleBase {
   double GetMass() const { return AliSigma0ParticleBase::GetMass(); }
 
   double GetPt() const { return AliSigma0ParticleBase::GetPt(); }
+  double GetP() const { return AliSigma0ParticleBase::GetP(); }
   int GetTrackLabel() const { return AliSigma0ParticleBase::GetTrackLabel(); }
   double GetPhi() const { return AliSigma0ParticleBase::GetPhi(); }
   double GetEta() const { return AliSigma0ParticleBase::GetEta(); }
@@ -51,6 +53,7 @@ class AliSigma0ParticleV0 : public AliSigma0ParticleBase {
 
   void SetPDGMass(float mass) { fPDGMass = mass; }
   void SetRecMass(float mass) { fRecMass = mass; }
+  void SetMCLabelV0(int label) { fMCLabelV0 = label; }
 
   float GetArmenterosAlpha() const;
   float GetArmenterosQt() const;

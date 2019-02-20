@@ -34,6 +34,7 @@
 #include "TRandom.h"
 #include "TDatabasePDG.h"
 #include "TGenPhaseSpace.h"
+#include "TSystem.h"
 #include "AliAnalysisTask.h"
 #include "AliAnalysisManager.h"
 #include "AliESDEvent.h"
@@ -149,7 +150,7 @@ AliAnalysisTaskLMeeCocktailMC::AliAnalysisTaskLMeeCocktailMC(): AliAnalysisTaskS
   fFileEff(0),
   fFileNameVPH(0),
   fFileVPH(0),
-	fpPbDataSetName(0),
+  fResolDataSetName(""),
   teeTTree(NULL),
   fParticleList(NULL),
   fParticleListNames(NULL),
@@ -263,7 +264,7 @@ AliAnalysisTaskLMeeCocktailMC::AliAnalysisTaskLMeeCocktailMC(const char *name):
   fFileEff(0),
   fFileNameVPH(0),
   fFileVPH(0),
-	fpPbDataSetName(0),
+  fResolDataSetName(""),
   teeTTree(NULL),
   fParticleList(NULL),
   fParticleListNames(NULL),
@@ -286,7 +287,7 @@ AliAnalysisTaskLMeeCocktailMC::~AliAnalysisTaskLMeeCocktailMC()
 
 //________________________________________________________________________
 void AliAnalysisTaskLMeeCocktailMC::UserCreateOutputObjects(){
-  
+
   // Create histograms
   if(fOutputContainer != NULL){
     delete fOutputContainer;
@@ -375,15 +376,28 @@ void AliAnalysisTaskLMeeCocktailMC::UserCreateOutputObjects(){
   }
   //RUN2
   if(fResolType == 2) {
-   if(fcollisionSystem==200){ //pp 13TeV
-    fFileName = "$ALICE_PHYSICS/PWGDQ/dielectron/files/LMeeCocktailInputs_Respp13TeV.root";
-	 }else if(fcollisionSystem == 300){
-    fFileName = "$ALICE_PHYSICS/PWGDQ/dielectron/files/"+ fpPbDataSetName;
-	 }
-    fFile = TFile::Open(fFileName.Data());
-    if(!fFile->IsOpen()){
-     AliError(Form("Could not open file %s",fFileName.Data() ));
+    if(fResolDataSetName.Contains("alien")){
+      // file is copied from alien path to local directory
+      gSystem->Exec(Form("alien_cp %s .", fResolDataSetName.Data()));
+      
+      // obtain ROOT file name only and local directory
+      TObjArray* Strings = fResolDataSetName.Tokenize("/");
+      fFileName = Form("%s/%s",gSystem->pwd(),Strings->At(Strings->GetEntriesFast()-1)->GetName());
+      
+      Printf("Set resolution file name to %s (copied from %s)",fFileName.Data(),fResolDataSetName.Data());
     }
+    else{
+      if(fcollisionSystem==200){ //pp 13TeV
+	fFileName = "$ALICE_PHYSICS/PWGDQ/dielectron/files/LMeeCocktailInputs_Respp13TeV.root";
+      }
+      else{
+	fFileName = "$ALICE_PHYSICS/PWGDQ/dielectron/files/"+ fResolDataSetName;
+      }
+    }
+   fFile = TFile::Open(fFileName.Data());
+   if(!fFile->IsOpen()){
+     AliError(Form("Could not open file %s",fFileName.Data() ));
+   }
     TObjArray* ArrResoPt=0x0;
     ArrResoPt = (TObjArray*) fFile->Get("RelPtResArrCocktail");
     TObjArray* ArrResoEta=0x0;
@@ -1166,21 +1180,21 @@ TLorentzVector AliAnalysisTaskLMeeCocktailMC::ApplyResolution(TLorentzVector vec
    //smear pt
    Int_t ptbin=((TH2D*)(fArrResoPt->At(0)))->GetXaxis()->FindBin(pt);
    if(ptbin<1) ptbin=1;
-   if(ptbin>69) ptbin=69;
+   if(ptbin > fArrResoPt->GetLast()) ptbin = fArrResoPt->GetLast();
    Double_t smearing = ((TH1D*)(fArrResoPt->At(ptbin)))->GetRandom() * pt;
    Double_t sPt = pt - smearing;
 
    //smear eta
    ptbin=((TH2D*)(fArrResoEta->At(0)))->GetXaxis()->FindBin(pt);
    if(ptbin<1) ptbin=1;
-   if(ptbin>76) ptbin=76;
+   if(ptbin > fArrResoEta->GetLast()) ptbin = fArrResoEta->GetLast();
    smearing = ((TH1D*)(fArrResoEta->At(ptbin)))->GetRandom();
    Double_t sEta = eta - smearing;
 
    //smear phi
    ptbin=((TH2D*)(fArrResoPhi_Pos->At(0)))->GetXaxis()->FindBin(pt);
    if(ptbin<1) ptbin=1;
-   if(ptbin>53) ptbin=53;
+   if(ptbin > fArrResoPhi_Pos->GetLast()) ptbin = fArrResoPhi_Pos->GetLast();
    if(ch>0){
     smearing = ((TH1D*)(fArrResoPhi_Pos->At(ptbin)))->GetRandom();
    }else if(ch<0){

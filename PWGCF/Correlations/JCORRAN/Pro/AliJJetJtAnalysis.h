@@ -161,6 +161,7 @@ class AliJJetJtAnalysis{
     TVector *fJetMultBorders; ///< Jet multiplicity bin borders
     TVector  *fDeltaRBorders;
     TVector *fCentralityBorders; ///< Jet multiplicity bin borders
+    TVector *fXlongBorders; ///< Xlong bin borders
     int nJetContainer; ///< Number of jet finders
     int fnR; ///< Number of jet resolution parameters
     int fnkt; ///< Marks how many kt-algorithms were reconstructed
@@ -214,6 +215,7 @@ class AliJJetJtAnalysis{
     AliJBin fdRBin;
     AliJBin fiHist;
     AliJBin fCentralityBin;
+    AliJBin fXlongBin;
     AliJBin fktFinderBin;
     AliJBin fDeltaPhiCutBin;
     AliJBin fJetFinderBinMC;
@@ -281,6 +283,16 @@ class AliJJetJtAnalysis{
     AliJTH1D fhEventJtBin; ///Distribution of track jT for all tracks without weight
     AliJTH1D fhEventJtWeightBin; ///Distribution of track jT for all tracks with 1/jT weight
     AliJTH1D fhEventJtWithPtCutWeightBinBin; ///Distribution of track jT for all tracks with 1/jT weight in track pT bins
+
+    //Histograms for leading track reference jt
+    AliJTH1D fhLeadingRefJetPtBin; //jet pT distribution of jets used for leading reference jT
+    AliJTH1D fhJetConeJtLeadingRefBin; //jT with leading track reference distribution for tracks inside constant cone around jet axis in jet pT bins
+    AliJTH1D fhJetConeJtWeightLeadingRefBin; //jT with \f$ \frac{1}{j_T} \f$ weight with leading track reference distribution for tracks inside constant cone around jet axis in jet pT bins
+    AliJTH1D fhJetConeJtWeightLeadingRefWithTrackCutBinBin; //jT with \f$ \frac{1}{j_T} \f$ weight with leading track reference distribution for tracks inside constant cone around jet axis in jet pT bins and leading track pT bins
+
+    AliJTH1D fhJtLeadingRefBin; //jT with leading track reference distribution for jet constituents in jet pT bins
+    AliJTH1D fhJtWeightLeadingRefBin; //jT with \f$ \frac{1}{j_T} \f$ weight with leading track reference distribution for jet constituents in jet pT bins
+    AliJTH1D fhJtWeightLeadingRefWithTrackCutBinBin; //jT with \f$ \frac{1}{j_T} \f$ weight with leading track reference distribution for jet constituents in jet pT bins and leading track pT bins
 
 
     //Histograms for jt in cone

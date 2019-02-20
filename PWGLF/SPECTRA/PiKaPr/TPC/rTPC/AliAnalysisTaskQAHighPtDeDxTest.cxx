@@ -252,7 +252,6 @@ ClassImp(AliAnalysisTaskQAHighPtDeDxTest)
 
 	}
 
-
 	//default constructor
 	for(Int_t cent=0;cent<11;++cent){
 		for(Int_t pid=0;pid<7;++pid){
@@ -263,8 +262,24 @@ ClassImp(AliAnalysisTaskQAHighPtDeDxTest)
 			hMcOutNeg[cent][pid]=0;
 			hMcOutPos[cent][pid]=0;
 		}
-
 	}
+
+	for(Int_t cent=0;cent<10;++cent){
+		for(Int_t pid=0;pid<7;++pid){
+			for(Int_t q=0;q<3;++q){
+				hDCApTPrim[cent][pid][q]=0;
+				hDCApTWDec[cent][pid][q]=0;
+				hDCApTMate[cent][pid][q]=0;
+
+				hDCApTPrim2[cent][pid][q]=0;
+				hDCApTWDec2[cent][pid][q]=0;
+				hDCApTMate2[cent][pid][q]=0;
+			}
+		}
+	}
+
+
+
 
 }
 
@@ -379,7 +394,6 @@ AliAnalysisTaskQAHighPtDeDxTest::AliAnalysisTaskQAHighPtDeDxTest(const char *nam
 
 	}
 
-
 	// Default constructor (should not be used)
 	for(Int_t cent=0; cent<11; ++cent){
 		for(Int_t pid=0; pid<7; ++pid){
@@ -389,6 +403,20 @@ AliAnalysisTaskQAHighPtDeDxTest::AliAnalysisTaskQAHighPtDeDxTest(const char *nam
 			hMcInPos[cent][pid]=0;
 			hMcOutNeg[cent][pid]=0;
 			hMcOutPos[cent][pid]=0;
+		}
+	}
+
+	for(Int_t cent=0;cent<10;++cent){
+		for(Int_t pid=0;pid<7;++pid){
+			for(Int_t q=0;q<3;++q){
+				hDCApTPrim[cent][pid][q]=0;
+				hDCApTWDec[cent][pid][q]=0;
+				hDCApTMate[cent][pid][q]=0;
+
+				hDCApTPrim2[cent][pid][q]=0;
+				hDCApTWDec2[cent][pid][q]=0;
+				hDCApTMate2[cent][pid][q]=0;
+			}
 		}
 	}
 
@@ -508,28 +536,27 @@ void AliAnalysisTaskQAHighPtDeDxTest::UserCreateOutputObjects()
 		hPtAllPos[i]->Sumw2();
 
 		hDCAxyVsPtPiNeg[i] = new TH2D(Form("hDCAxyVsPtPiNeg%.2f-%.2f",CentMin[i],CentMax[i]), "hDCAxyVsPtPiNeg; #it{p}_{T} (GeV/#it{c}); DCA_{xy} (cm)", nPtBins, ptBins, ndcaBins, dcaBins );
-		hDCAxyVsPtPiNegC[i] = new TH2D(Form("hDCAxyVsPtPiNegC%.2f-%.2f",CentMin[i],CentMax[i]), "hDCAxyVsPtPiNeg Close; #it{p}_{T} (GeV/#it{c}); DCA_{xy} (cm)", nPtBins, ptBins, ndcaBins, dcaBins );
+		hDCAxyVsPtPiNegC[i] = new TH2D(Form("hDCAxyVsPtPiNegC%.2f-%.2f",CentMin[i],CentMax[i]), "hDCAxyVsPtPiNeg Close; #it{p}_{T} (GeV/#it{c}); DCA_{xy} (cm)", nPtBins, ptBins, 800, -4.0, 4.0 );
 		hDCAxyVsPtPiNeg[i]->Sumw2();
 		hDCAxyVsPtPiNegC[i]->Sumw2();
 		hDCAxyVsPtKNeg[i] = new TH2D(Form("hDCAxyVsPtKNeg%.2f-%.2f",CentMin[i],CentMax[i]), "hDCAxyVsPtKNeg; #it{p}_{T} (GeV/#it{c}); DCA_{xy} (cm)", nPtBins, ptBins, ndcaBins, dcaBins );
-		hDCAxyVsPtKNegC[i] = new TH2D(Form("hDCAxyVsPtKNegC%.2f-%.2f",CentMin[i],CentMax[i]), "hDCAxyVsPtKNeg Close; #it{p}_{T} (GeV/#it{c}); DCA_{xy} (cm)", nPtBins, ptBins, ndcaBins, dcaBins );
+		hDCAxyVsPtKNegC[i] = new TH2D(Form("hDCAxyVsPtKNegC%.2f-%.2f",CentMin[i],CentMax[i]), "hDCAxyVsPtKNeg Close; #it{p}_{T} (GeV/#it{c}); DCA_{xy} (cm)", nPtBins, ptBins, 800, -4.0, 4.0 );
 		hDCAxyVsPtKNeg[i]->Sumw2();
 		hDCAxyVsPtKNegC[i]->Sumw2();
 		hDCAxyVsPtPNeg[i] = new TH2D(Form("hDCAxyVsPtPNeg%.2f-%.2f",CentMin[i],CentMax[i]), "hDCAxyVsPtPNeg; #it{p}_{T} (GeV/#it{c}); DCA_{xy} (cm)", nPtBins, ptBins, ndcaBins, dcaBins );
-		hDCAxyVsPtPNegC[i] = new TH2D(Form("hDCAxyVsPtPNegC%.2f-%.2f",CentMin[i],CentMax[i]), "hDCAxyVsPtPNeg Close; #it{p}_{T} (GeV/#it{c}); DCA_{xy} (cm)", nPtBins, ptBins, ndcaBins, dcaBins );
+		hDCAxyVsPtPNegC[i] = new TH2D(Form("hDCAxyVsPtPNegC%.2f-%.2f",CentMin[i],CentMax[i]), "hDCAxyVsPtPNeg Close; #it{p}_{T} (GeV/#it{c}); DCA_{xy} (cm)", nPtBins, ptBins, 800, -4.0, 4.0 );
 		hDCAxyVsPtPNeg[i]->Sumw2();
 		hDCAxyVsPtPNegC[i]->Sumw2();
-
 		hDCAxyVsPtPiPos[i] = new TH2D(Form("hDCAxyVsPtPiPos%.2f-%.2f",CentMin[i],CentMax[i]), "hDCAxyVsPtPiPos; #it{p}_{T} (GeV/#it{c}); DCA_{xy} (cm)", nPtBins, ptBins, ndcaBins, dcaBins );
-		hDCAxyVsPtPiPosC[i] = new TH2D(Form("hDCAxyVsPtPiPosC%.2f-%.2f",CentMin[i],CentMax[i]), "hDCAxyVsPtPiPos Close; #it{p}_{T} (GeV/#it{c}); DCA_{xy} (cm)", nPtBins, ptBins, ndcaBins, dcaBins );
+		hDCAxyVsPtPiPosC[i] = new TH2D(Form("hDCAxyVsPtPiPosC%.2f-%.2f",CentMin[i],CentMax[i]), "hDCAxyVsPtPiPos Close; #it{p}_{T} (GeV/#it{c}); DCA_{xy} (cm)", nPtBins, ptBins, 800, -4.0, 4.0 );
 		hDCAxyVsPtPiPos[i]->Sumw2();
 		hDCAxyVsPtPiPosC[i]->Sumw2();
 		hDCAxyVsPtKPos[i] = new TH2D(Form("hDCAxyVsPtKPos%.2f-%.2f",CentMin[i],CentMax[i]), "hDCAxyVsPtKPos; #it{p}_{T} (GeV/#it{c}); DCA_{xy} (cm)", nPtBins, ptBins, ndcaBins, dcaBins );
-		hDCAxyVsPtKPosC[i] = new TH2D(Form("hDCAxyVsPtKPosC%.2f-%.2f",CentMin[i],CentMax[i]), "hDCAxyVsPtKPos Close; #it{p}_{T} (GeV/#it{c}); DCA_{xy} (cm)", nPtBins, ptBins, ndcaBins, dcaBins );
+		hDCAxyVsPtKPosC[i] = new TH2D(Form("hDCAxyVsPtKPosC%.2f-%.2f",CentMin[i],CentMax[i]), "hDCAxyVsPtKPos Close; #it{p}_{T} (GeV/#it{c}); DCA_{xy} (cm)", nPtBins, ptBins, 800, -4.0, 4.0 );
 		hDCAxyVsPtKPos[i]->Sumw2();
 		hDCAxyVsPtKPosC[i]->Sumw2();
 		hDCAxyVsPtPPos[i] = new TH2D(Form("hDCAxyVsPtPPos%.2f-%.2f",CentMin[i],CentMax[i]), "hDCAxyVsPtPPos; #it{p}_{T} (GeV/#it{c}); DCA_{xy} (cm)", nPtBins, ptBins, ndcaBins, dcaBins );
-		hDCAxyVsPtPPosC[i] = new TH2D(Form("hDCAxyVsPtPPosC%.2f-%.2f",CentMin[i],CentMax[i]), "hDCAxyVsPtPPos Close; #it{p}_{T} (GeV/#it{c}); DCA_{xy} (cm)", nPtBins, ptBins, ndcaBins, dcaBins );
+		hDCAxyVsPtPPosC[i] = new TH2D(Form("hDCAxyVsPtPPosC%.2f-%.2f",CentMin[i],CentMax[i]), "hDCAxyVsPtPPos Close; #it{p}_{T} (GeV/#it{c}); DCA_{xy} (cm)", nPtBins, ptBins, 800, -4.0, 4.0 );
 		hDCAxyVsPtPPos[i]->Sumw2();
 		hDCAxyVsPtPPosC[i]->Sumw2();
 
@@ -619,7 +646,6 @@ void AliAnalysisTaskQAHighPtDeDxTest::UserCreateOutputObjects()
 			fListOfObjects->Add(pPlateauVsEta[i]);
 			fListOfObjects->Add(hPhi[i]);
 
-
 			for(Int_t j=0; j<nHists; ++j){
 
 				fListOfObjects->Add(hMIPVsNch[i][j]);
@@ -631,51 +657,51 @@ void AliAnalysisTaskQAHighPtDeDxTest::UserCreateOutputObjects()
 
 			}
 
-			if(fMakePid){
+//			if(fMakePid){
 
 				fListOfObjects->Add(hPtAll[i]);
-				fListOfObjects->Add(hPtAllNeg[i]);
+				/*fListOfObjects->Add(hPtAllNeg[i]);
 				fListOfObjects->Add(hPtAllPos[i]);
 
 				fListOfObjects->Add(hDCAxyVsPtPiNeg[i]);
 				fListOfObjects->Add(hDCAxyVsPtPiPos[i]);
-				fListOfObjects->Add(hDCAxyVsPtKNeg[i]);
-				fListOfObjects->Add(hDCAxyVsPtKPos[i]);
+				//				fListOfObjects->Add(hDCAxyVsPtKNeg[i]);
+				//				fListOfObjects->Add(hDCAxyVsPtKPos[i]);
 				fListOfObjects->Add(hDCAxyVsPtPNeg[i]);
 				fListOfObjects->Add(hDCAxyVsPtPPos[i]);
 
 				fListOfObjects->Add(hDCAxyVsPtPiNegC[i]);
 				fListOfObjects->Add(hDCAxyVsPtPiPosC[i]);
-				fListOfObjects->Add(hDCAxyVsPtKNegC[i]);
-				fListOfObjects->Add(hDCAxyVsPtKPosC[i]);
+				//				fListOfObjects->Add(hDCAxyVsPtKNegC[i]);
+				//				fListOfObjects->Add(hDCAxyVsPtKPosC[i]);
 				fListOfObjects->Add(hDCAxyVsPtPNegC[i]);
 				fListOfObjects->Add(hDCAxyVsPtPPosC[i]);
-
+				*/
 
 				for(Int_t j=0; j<nHists; ++j){
 
-					fListOfObjects->Add(hnSigmaPiPos[i][j]);
-					fListOfObjects->Add(hnSigmaPiNeg[i][j]);
-					fListOfObjects->Add(hnSigmaKPos[i][j]);
-					fListOfObjects->Add(hnSigmaKNeg[i][j]);
-					fListOfObjects->Add(hnSigmaPPos[i][j]);
-					fListOfObjects->Add(hnSigmaPNeg[i][j]);
-					fListOfObjects->Add(hPtPos[i][j]);
-					fListOfObjects->Add(hPtNeg[i][j]);
+				/*
+				fListOfObjects->Add(hnSigmaPiPos[i][j]);
+				fListOfObjects->Add(hnSigmaPiNeg[i][j]);	
+				fListOfObjects->Add(hnSigmaKPos[i][j]);
+				fListOfObjects->Add(hnSigmaKNeg[i][j]);
+				fListOfObjects->Add(hnSigmaPPos[i][j]);
+				fListOfObjects->Add(hnSigmaPNeg[i][j]);
+				fListOfObjects->Add(hPtPos[i][j]);
+				fListOfObjects->Add(hPtNeg[i][j]);
+				*/
 
-					fListOfObjects->Add(hPtVsP[i][j]);
-
-
-					fListOfObjects->Add(histPiV0[i][j]);
-					//				fListOfObjects->Add(histpPiV0[i][j]);
-					//				fListOfObjects->Add(histpPV0[i][j]);
-					//				fListOfObjects->Add(histpPiTof[i][j]);
-					fListOfObjects->Add(histPiTof[i][j]);
-					fListOfObjects->Add(histEV0[i][j]);
-					fListOfObjects->Add(histPV0[i][j]);
-					fListOfObjects->Add(hDeDxVsP[i][j]);
+				fListOfObjects->Add(hPtVsP[i][j]);
+				fListOfObjects->Add(histPiV0[i][j]);
+					//					fListOfObjects->Add(histpPiV0[i][j]);
+					//					fListOfObjects->Add(histpPV0[i][j]);
+					//					fListOfObjects->Add(histpPiTof[i][j]);
+				fListOfObjects->Add(histPiTof[i][j]);
+				fListOfObjects->Add(histEV0[i][j]);
+				fListOfObjects->Add(histPV0[i][j]);
+				fListOfObjects->Add(hDeDxVsP[i][j]);
 				}
-			}//	if(MakePID) 
+//			}//	if(MakePID) 
 		}//	Cent
 	}//	!fAnalysisMC
 
@@ -873,11 +899,18 @@ void AliAnalysisTaskQAHighPtDeDxTest::UserExec(Option_t *)
 void AliAnalysisTaskQAHighPtDeDxTest::AnalyzeESD(AliESDEvent* esdEvent)
 {
 
+ 	fEventCuts.SetupLHC15o();
+        fEventCuts.SetManualMode();
+
+	fEventCuts.fUseStrongVarCorrelationCut = true;
+        fEventCuts.fUseVariablesCorrelationCuts = true;
 
 	if (!fEventCuts.AcceptEvent(esdEvent)){
 		PostData(1, fListOfObjects);
 		return;
 	}
+
+
 
 	UInt_t maskPhysSel = ((AliInputEventHandler *)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected();
 	maskPhysSel &= AliVEvent::kINT7;
@@ -1382,8 +1415,11 @@ void AliAnalysisTaskQAHighPtDeDxTest::ProduceArrayTrksESD( AliESDEvent *ESDevent
 		}
 
 		Short_t ncl = esdTrack->GetTPCsignalN();
-		if(ncl<70)continue;
-
+		if(ncl<fNcl)
+		continue;
+		
+		if(ncl < 90)cout<<" ¡¡¡¡¡¡¡¡¡¡¡     ncl < 90"<<endl;
+		
 
 		Double_t eta      = esdTrack->Eta();
 		Double_t phi      = esdTrack->Phi();
@@ -1408,43 +1444,37 @@ void AliAnalysisTaskQAHighPtDeDxTest::ProduceArrayTrksESD( AliESDEvent *ESDevent
 			}
 		}
 
-		if(esdTrack->Charge() < 0.){
-			if(TMath::Abs(fPIDResponse->NumberOfSigmasTPC(esdTrack,AliPID::kPion))<3.0)
+		if(esdTrack->Charge() < 0.0){
+			if(TMath::Sqrt(TMath::Power(fPIDResponse->NumberOfSigmasTPC(esdTrack,AliPID::kPion),2)+TMath::Power(fPIDResponse->NumberOfSigmasTOF(esdTrack,AliPID::kPion),2))<2.0){
 				hDCAxyVsPtPiNeg[Cent]->Fill(pt,dcaxy);
-			if(TMath::Abs(fPIDResponse->NumberOfSigmasTPC(esdTrack,AliPID::kKaon))<3.0)
+				hDCAxyVsPtPiNegC[Cent]->Fill(pt,dcaxy);
+
+			}
+			if(TMath::Sqrt(TMath::Power(fPIDResponse->NumberOfSigmasTPC(esdTrack,AliPID::kKaon),2)+TMath::Power(fPIDResponse->NumberOfSigmasTOF(esdTrack,AliPID::kKaon),2))<2.0){
 				hDCAxyVsPtKNeg[Cent]->Fill(pt,dcaxy);
-			if(TMath::Abs(fPIDResponse->NumberOfSigmasTPC(esdTrack,AliPID::kProton))<3.0)
+				hDCAxyVsPtKNegC[Cent]->Fill(pt,dcaxy);
+
+			}
+			if(TMath::Sqrt(TMath::Power(fPIDResponse->NumberOfSigmasTPC(esdTrack,AliPID::kProton),2)+TMath::Power(fPIDResponse->NumberOfSigmasTOF(esdTrack,AliPID::kProton),2))<2.0){
 				hDCAxyVsPtPNeg[Cent]->Fill(pt,dcaxy);
+				hDCAxyVsPtPNegC[Cent]->Fill(pt,dcaxy);
+			}
 		}
 		else{
-			if(TMath::Abs(fPIDResponse->NumberOfSigmasTPC(esdTrack,AliPID::kPion))<3.0)
+			if(TMath::Sqrt(TMath::Power(fPIDResponse->NumberOfSigmasTPC(esdTrack,AliPID::kPion),2)+TMath::Power(fPIDResponse->NumberOfSigmasTOF(esdTrack,AliPID::kPion),2))<2.0){
 				hDCAxyVsPtPiPos[Cent]->Fill(pt,dcaxy);
-			if(TMath::Abs(fPIDResponse->NumberOfSigmasTPC(esdTrack,AliPID::kKaon))<3.0)
+				hDCAxyVsPtPiPosC[Cent]->Fill(pt,dcaxy);
+			}
+			if(TMath::Sqrt(TMath::Power(fPIDResponse->NumberOfSigmasTPC(esdTrack,AliPID::kKaon),2)+TMath::Power(fPIDResponse->NumberOfSigmasTOF(esdTrack,AliPID::kKaon),2))<2.0){
 				hDCAxyVsPtKPos[Cent]->Fill(pt,dcaxy);
-			if(TMath::Abs(fPIDResponse->NumberOfSigmasTPC(esdTrack,AliPID::kProton))<3.0)
+				hDCAxyVsPtKPosC[Cent]->Fill(pt,dcaxy);
+			}
+			if(TMath::Sqrt(TMath::Power(fPIDResponse->NumberOfSigmasTPC(esdTrack,AliPID::kProton),2)+TMath::Power(fPIDResponse->NumberOfSigmasTOF(esdTrack,AliPID::kProton),2))<2.0){
 				hDCAxyVsPtPPos[Cent]->Fill(pt,dcaxy);
+				hDCAxyVsPtPPosC[Cent]->Fill(pt,dcaxy);
+			}
 		}
 
-		//==========================  DCAxy cut
-
-		cout<<"DCA before::  "<<dcaxy<<endl;
-		if( TMath::Abs(dcaxy) > GetMaxDCApTDep(fcutDCAxy,pt) )
-			continue;
-
-
-		//TOF
-		Bool_t IsTOFout=kFALSE;
-		if ((esdTrack->GetStatus()&AliESDtrack::kTOFout)==0)
-			IsTOFout=kTRUE;
-		Float_t lengthtrack=esdTrack->GetIntegratedLength();
-		Float_t timeTOF=esdTrack->GetTOFsignal();
-		Double_t inttime[5]={0,0,0,0,0};
-		esdTrack->GetIntegratedTimes(inttime);// Returns the array with integrated times for each particle hypothesis
-		Float_t beta = -99;
-		if ( !IsTOFout ){
-			if ( ( lengthtrack != 0 ) && ( timeTOF != 0) )
-				beta = inttime[0] / timeTOF;
-		}
 
 		Short_t pidCode     = 0;
 		if(fAnalysisMC) {
@@ -1463,11 +1493,13 @@ void AliAnalysisTaskQAHighPtDeDxTest::ProduceArrayTrksESD( AliESDEvent *ESDevent
 
 				if( fMCStack->IsPhysicalPrimary(label) ){
 
-					hMcOut[Cent][0]->Fill(esdTrack->Pt());
-					hMcOut[Cent][pidCode]->Fill(esdTrack->Pt());
+					if( TMath::Abs(dcaxy) < GetMaxDCApTDep(fcutDCAxy,pt) ){
+						hMcOut[Cent][0]->Fill(esdTrack->Pt());
+						hMcOut[Cent][pidCode]->Fill(esdTrack->Pt());
 
-					hMcOut[10][0]->Fill(esdTrack->Pt());
-					hMcOut[10][pidCode]->Fill(esdTrack->Pt());
+						hMcOut[10][0]->Fill(esdTrack->Pt());
+						hMcOut[10][pidCode]->Fill(esdTrack->Pt());
+					}
 
 					hDCApTPrim[Cent][0][0]->Fill(pt,dcaxy);
 					hDCApTPrim[Cent][pidCode][0]->Fill(pt,dcaxy);
@@ -1476,11 +1508,14 @@ void AliAnalysisTaskQAHighPtDeDxTest::ProduceArrayTrksESD( AliESDEvent *ESDevent
 					hDCApTPrim2[Cent][pidCode][0]->Fill(pt,dcaxy);
 
 					if( esdTrack->Charge() < 0.0 ){
-						hMcOutNeg[Cent][0]->Fill(esdTrack->Pt());
-						hMcOutNeg[Cent][pidCode]->Fill(esdTrack->Pt());
 
-						hMcOutNeg[10][0]->Fill(esdTrack->Pt());
-						hMcOutNeg[10][pidCode]->Fill(esdTrack->Pt());
+						if( TMath::Abs(dcaxy) < GetMaxDCApTDep(fcutDCAxy,pt) )  {
+							hMcOutNeg[Cent][0]->Fill(esdTrack->Pt());
+							hMcOutNeg[Cent][pidCode]->Fill(esdTrack->Pt());
+
+							hMcOutNeg[10][0]->Fill(esdTrack->Pt());
+							hMcOutNeg[10][pidCode]->Fill(esdTrack->Pt());
+						}
 
 						hDCApTPrim[Cent][0][1]->Fill(pt,dcaxy);
 						hDCApTPrim[Cent][pidCode][1]->Fill(pt,dcaxy);
@@ -1489,11 +1524,14 @@ void AliAnalysisTaskQAHighPtDeDxTest::ProduceArrayTrksESD( AliESDEvent *ESDevent
 						hDCApTPrim2[Cent][pidCode][1]->Fill(pt,dcaxy);
 					}
 					else{
-						hMcOutPos[Cent][0]->Fill(esdTrack->Pt());
-						hMcOutPos[Cent][pidCode]->Fill(esdTrack->Pt());
 
-						hMcOutPos[10][0]  ->Fill(esdTrack->Pt());
-						hMcOutPos[10][pidCode]  ->Fill(esdTrack->Pt());
+						if( TMath::Abs(dcaxy) < GetMaxDCApTDep(fcutDCAxy,pt) ){
+							hMcOutPos[Cent][0]->Fill(esdTrack->Pt());
+							hMcOutPos[Cent][pidCode]->Fill(esdTrack->Pt());
+
+							hMcOutPos[10][0]  ->Fill(esdTrack->Pt());
+							hMcOutPos[10][pidCode]  ->Fill(esdTrack->Pt());
+						}
 
 						hDCApTPrim[Cent][0][2]->Fill(pt,dcaxy);
 						hDCApTPrim[Cent][pidCode][2]->Fill(pt,dcaxy);
@@ -1561,6 +1599,27 @@ void AliAnalysisTaskQAHighPtDeDxTest::ProduceArrayTrksESD( AliESDEvent *ESDevent
 			}	//mcTrack
 		}	//fAnalysis MC
 
+		//==========================  DCAxy cut
+
+		cout<<"DCA before::  "<<dcaxy<<endl;
+		if( TMath::Abs(dcaxy) > GetMaxDCApTDep(fcutDCAxy,pt) )
+			continue;
+
+
+		//TOF
+		Bool_t IsTOFout=kFALSE;
+		if ((esdTrack->GetStatus()&AliESDtrack::kTOFout)==0)
+			IsTOFout=kTRUE;
+		Float_t lengthtrack=esdTrack->GetIntegratedLength();
+		Float_t timeTOF=esdTrack->GetTOFsignal();
+		Double_t inttime[5]={0,0,0,0,0};
+		esdTrack->GetIntegratedTimes(inttime);// Returns the array with integrated times for each particle hypothesis
+		Float_t beta = -99;
+		if ( !IsTOFout ){
+			if ( ( lengthtrack != 0 ) && ( timeTOF != 0) )
+				beta = inttime[0] / timeTOF;
+		}
+
 		if(!fdEdxCalibrated){
 			//			cout<<"PreCalibration"<<endl;
 			if( momentum <= 0.6 && momentum >= 0.4 ){//only p:0.4-0.6 GeV, pion MIP
@@ -1596,21 +1655,21 @@ void AliAnalysisTaskQAHighPtDeDxTest::ProduceArrayTrksESD( AliESDEvent *ESDevent
 
 		if(esdTrack->Charge() < 0.){
 			hPtAllNeg[Cent]->Fill(pt);
-			if(TMath::Abs(fPIDResponse->NumberOfSigmasTPC(esdTrack,AliPID::kPion))<3.0)
-				hDCAxyVsPtPiNegC[Cent]->Fill(pt,dcaxy);
-			if(TMath::Abs(fPIDResponse->NumberOfSigmasTPC(esdTrack,AliPID::kKaon))<3.0)
-				hDCAxyVsPtKNegC[Cent]->Fill(pt,dcaxy);
-			if(TMath::Abs(fPIDResponse->NumberOfSigmasTPC(esdTrack,AliPID::kProton))<3.0)
-				hDCAxyVsPtPNegC[Cent]->Fill(pt,dcaxy);
+			//			if(TMath::Abs(fPIDResponse->NumberOfSigmasTPC(esdTrack,AliPID::kPion))<3.0)
+			//				hDCAxyVsPtPiNegC[Cent]->Fill(pt,dcaxy);
+			//			if(TMath::Abs(fPIDResponse->NumberOfSigmasTPC(esdTrack,AliPID::kKaon))<3.0)
+			//				hDCAxyVsPtKNegC[Cent]->Fill(pt,dcaxy);
+			//			if(TMath::Abs(fPIDResponse->NumberOfSigmasTPC(esdTrack,AliPID::kProton))<3.0)
+			//				hDCAxyVsPtPNegC[Cent]->Fill(pt,dcaxy);
 		}
 		else{
 			hPtAllPos[Cent]->Fill(pt);
-			if(TMath::Abs(fPIDResponse->NumberOfSigmasTPC(esdTrack,AliPID::kPion))<3.0)
-				hDCAxyVsPtPiPosC[Cent]->Fill(pt,dcaxy);
-			if(TMath::Abs(fPIDResponse->NumberOfSigmasTPC(esdTrack,AliPID::kKaon))<3.0)
-				hDCAxyVsPtKPosC[Cent]->Fill(pt,dcaxy);
-			if(TMath::Abs(fPIDResponse->NumberOfSigmasTPC(esdTrack,AliPID::kProton))<3.0)
-				hDCAxyVsPtPPosC[Cent]->Fill(pt,dcaxy);
+			//			if(TMath::Abs(fPIDResponse->NumberOfSigmasTPC(esdTrack,AliPID::kPion))<3.0)
+			//				hDCAxyVsPtPiPosC[Cent]->Fill(pt,dcaxy);
+			//			if(TMath::Abs(fPIDResponse->NumberOfSigmasTPC(esdTrack,AliPID::kKaon))<3.0)
+			//				hDCAxyVsPtKPosC[Cent]->Fill(pt,dcaxy);
+			//			if(TMath::Abs(fPIDResponse->NumberOfSigmasTPC(esdTrack,AliPID::kProton))<3.0)
+			//				hDCAxyVsPtPPosC[Cent]->Fill(pt,dcaxy);
 		}
 
 		Int_t nh = -1;
@@ -1807,7 +1866,7 @@ void AliAnalysisTaskQAHighPtDeDxTest::ProduceArrayTrksAOD( AliAODEvent *AODevent
 		}
 
 
-		if(ncl<70)
+		if(ncl<fNcl)
 			continue;
 
 

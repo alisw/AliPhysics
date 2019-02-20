@@ -2,9 +2,14 @@
 #include "TFile.h"
 #include "TTree.h"
 #include "TH1D.h"
+#include "TH2D.h"
 #include "TCanvas.h"
 #include "TStyle.h"
 #include "AliDAQ.h"
+#include "AliCDBManager.h"
+#include "AliVZEROTriggerData.h"
+#include "TLegend.h"
+#include "TLine.h"
 #endif
 #include "map"
 
@@ -254,20 +259,20 @@ void periodLevelQA(TString inputFileName ="trending.root"){
 
   TString detName[nDetectors]={"ACORDE","PMD","FMD","HMPID","CPV","PHOS","EMCAL","MUONTRK","MUONTRG","T0","VZERO","AD","ZDC","ITSSPD","ITSSDD","ITSSSD","TPC","TRD","TOF"};
   for (Int_t iDet=0;iDet<nDetectors;iDet++) hActiveDetectors->GetYaxis()->SetBinLabel(iDet+1,detName[iDet].Data());
-  hClassL0BvsRun     ->SetBit(TH1::kCanRebin);
-  hClassL2AvsRun     ->SetBit(TH1::kCanRebin);
-  hClassLifetimeVsRun->SetBit(TH1::kCanRebin);
-  hClassLumiVsRun    ->SetBit(TH1::kCanRebin);
-  hRecorded          ->SetBit(TH1::kCanRebin);
-  hReconstructed     ->SetBit(TH1::kCanRebin);
-  hAccepted          ->SetBit(TH1::kCanRebin);
-  hLumiRecorded      ->SetBit(TH1::kCanRebin);
-  hLumiReconstructed ->SetBit(TH1::kCanRebin);
-  hLumiAccepted      ->SetBit(TH1::kCanRebin);
+//  hClassL0BvsRun     ->SetBit(TH1::kCanRebin);
+//  hClassL2AvsRun     ->SetBit(TH1::kCanRebin);
+//  hClassLifetimeVsRun->SetBit(TH1::kCanRebin);
+//  hClassLumiVsRun    ->SetBit(TH1::kCanRebin);
+//  hRecorded          ->SetBit(TH1::kCanRebin);
+//  hReconstructed     ->SetBit(TH1::kCanRebin);
+//  hAccepted          ->SetBit(TH1::kCanRebin);
+//  hLumiRecorded      ->SetBit(TH1::kCanRebin);
+//  hLumiReconstructed ->SetBit(TH1::kCanRebin);
+//  hLumiAccepted      ->SetBit(TH1::kCanRebin);
 
   AliCDBManager* man = AliCDBManager::Instance();
-  if (!man->IsDefaultStorageSet()) man->SetDefaultStorage("local:///cvmfs/alice.cern.ch/calibration/data/2017/OCDB");
-//  if (!man->IsDefaultStorageSet()) man->SetDefaultStorage("raw://");
+//  if (!man->IsDefaultStorageSet()) man->SetDefaultStorage("local:///cvmfs/alice.cern.ch/calibration/data/2017/OCDB");
+  if (!man->IsDefaultStorageSet()) man->SetDefaultStorage("raw://");
 
   for (Int_t r=0;r<nRuns;r++){
     t->GetEntry(r);
@@ -776,7 +781,7 @@ void periodLevelQA(TString inputFileName ="trending.root"){
 
   TFile* fstat = new TFile("alias_statistics.root","recreate");
   for (Int_t i=1;i<=hRecorded->GetNbinsY();i++) {
-    char* bitName = hRecorded->GetYaxis()->GetBinLabel(i);
+    const char* bitName = hRecorded->GetYaxis()->GetBinLabel(i);
     printf("bit=%i %s\n",i,bitName);
     TH1D* hRecorded1D = hRecorded->ProjectionX(Form("hRecorded_%s",bitName),i,i);
     TH1D* hReconstructed1D = hReconstructed->ProjectionX(Form("hReconstructed_%s",bitName),i,i);

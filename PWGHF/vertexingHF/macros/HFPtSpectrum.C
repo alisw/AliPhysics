@@ -39,7 +39,7 @@
 //
 
 enum decay { kD0Kpi, kDplusKpipi, kDstarD0pi, kDsKKpi, kLctopKpi, kLcK0Sp};
-enum centrality{ kpp8, kpp7, kpp5, kpp276, k07half, kpPb0100, k010, k1020, k020, k1030, k2040, k2030, k3040, k4050, k3050, k5060, k4060, k6080, k4080, k5080, k80100, kpPb010, kpPb020, kpPb2040, kpPb4060, kpPb60100 };
+enum centrality{ kpp8, kpp7, kpp5, kpp276, k07half, kpPb0100, k010, k1020, k020, k1030, k2040, k2030, k3040, k4050, k3050, k5060, k4060, k6080, k4080, k5080, k80100, kpPb010, kpPb020, kpPb1020, kpPb2040, kpPb4060, kpPb60100 };
 enum centestimator{ kV0M, kV0A, kZNA, kCL1 };
 enum energy{ k276, k5dot023, k55 };
 enum BFDSubtrMethod { knone, kfc, kNb };
@@ -120,9 +120,13 @@ void HFPtSpectrum ( Int_t decayChan=kDplusKpipi,
     }
   }
   if( (ccestimator == kV0M) && (Energy==k5dot023) ) {
-     if ( cc == k3050 ) {
-       tab = 3.76; tabUnc = 0.13;
-     }
+    if ( cc == k010 ) {
+      tab = 23.07; tabUnc = 0.44;
+    } else if ( cc == k3050 ) {
+      tab = 3.897; tabUnc = 0.11;
+    } else if ( cc == k6080 ) {
+      tab = 0.4173; tabUnc = 0.014;
+    }
   }
 
   // pPb Glauber (A. Toia)
@@ -143,16 +147,18 @@ void HFPtSpectrum ( Int_t decayChan=kDplusKpipi,
     }
   }
   else if( ccestimator == kZNA ){
-     if(cc == kpPb010)  {
-      tab = 0.17; tabUnc = 0.01275;
+    if ( cc == kpPb010 ) {
+      tab = 0.1812; tabUnc = 0.01413;
     } else if ( cc == kpPb020 ) {
-      tab = 0.164; tabUnc = 0.010724;
+      tab = 0.1742; tabUnc = 0.00992;
+    } else if ( cc == kpPb1020 ) {
+      tab = 0.1672; tabUnc = 0.005852;
     } else if ( cc == kpPb2040 ) {
-      tab = 0.137; tabUnc = 0.005099;
+      tab = 0.1453; tabUnc = 0.002615;
     } else if ( cc == kpPb4060 ) {
-      tab = 0.1011; tabUnc = 0.006;
+      tab = 0.1074; tabUnc = 0.004726;
     } else if ( cc == kpPb60100 ) {
-      tab = 0.0459; tabUnc = 0.003162;
+      tab = 0.0486; tabUnc = 0.002430;
     }
   }
   else if( ccestimator == kCL1 ){
@@ -408,7 +414,7 @@ void HFPtSpectrum ( Int_t decayChan=kDplusKpipi,
   if ( (cc != kpp7) && (cc != kpp8) && (cc != kpp276) && (cc != kpp5) ) {
     spectra->SetTabParameter(tab,tabUnc);
   }
-  if ( cc == kpPb0100 || cc == kpPb020 || cc == kpPb2040 || cc == kpPb4060 || cc == kpPb60100 ) {
+  if ( cc == kpPb0100 || cc == kpPb020 || cc == kpPb1020 || cc == kpPb2040 || cc == kpPb4060 || cc == kpPb60100 ) {
     spectra->SetCollisionType(2);
   } else if ( !( cc==kpp7 || cc==kpp8 || cc==kpp276 || cc==kpp5 ) ) {
     spectra->SetCollisionType(1);
@@ -429,7 +435,7 @@ void HFPtSpectrum ( Int_t decayChan=kDplusKpipi,
     systematics->SetRunNumber(17);
     systematics->SetCollisionType(0);
   }
-  else if ( cc == kpPb0100 || cc == kpPb010 || cc == kpPb020 || cc == kpPb2040 || cc == kpPb4060 || cc == kpPb60100 ) {
+  else if ( cc == kpPb0100 || cc == kpPb010 || cc == kpPb020 || cc == kpPb1020 || cc == kpPb2040 || cc == kpPb4060 || cc == kpPb60100 ) {
     systematics->SetCollisionType(2);
     systematics->SetRunNumber(16);//check this
 
@@ -456,11 +462,12 @@ void HFPtSpectrum ( Int_t decayChan=kDplusKpipi,
       else if(cc == kpPb4060) systematics->SetCentrality("4060V0A");
       else if(cc == kpPb60100) systematics->SetCentrality("60100V0A");
     } else if (ccestimator==kZNA) {
-      if(cc == kpPb010){systematics->SetRunNumber(2016); systematics->SetCentrality("010ZNA");}
+      if(cc == kpPb010) {systematics->SetRunNumber(16); systematics->SetCentrality("010ZNA");}
       else if(cc == kpPb020) systematics->SetCentrality("020ZNA");
-      else if(cc == kpPb2040) systematics->SetCentrality("2040ZNA");
-      else if(cc == kpPb4060) systematics->SetCentrality("4060ZNA");
-      else if(cc == kpPb60100){systematics->SetRunNumber(2016); systematics->SetCentrality("60100ZNA");}
+      else if(cc == kpPb1020) {systematics->SetRunNumber(16); systematics->SetCentrality("1020ZNA");}
+      else if(cc == kpPb2040) {systematics->SetRunNumber(16); systematics->SetCentrality("2040ZNA");}
+      else if(cc == kpPb4060) {systematics->SetRunNumber(16); systematics->SetCentrality("4060ZNA");}
+      else if(cc == kpPb60100) {systematics->SetRunNumber(16); systematics->SetCentrality("60100ZNA");}
     } else if (ccestimator==kCL1) {
       if(cc == kpPb020) systematics->SetCentrality("020CL1");
       else if(cc == kpPb2040) systematics->SetCentrality("2040CL1");
@@ -495,11 +502,14 @@ void HFPtSpectrum ( Int_t decayChan=kDplusKpipi,
         else if ( cc == k4080 ) systematics->SetCentrality("4080");
     } else if (Energy==k5dot023){
       systematics->SetRunNumber(15);
-      if ( cc == k3050 ){
-	systematics->SetCentrality("3050");
-      }
-      else if ( cc == k1030 ) {
-	systematics->SetCentrality("3050"); //no systematics available for 10--30
+      if ( cc == k010 ){
+        systematics->SetCentrality("010");
+      } else if ( cc == k1030 ) {
+        systematics->SetCentrality("3050"); //no systematics available for 10--30
+      } else if ( cc == k3050 ) {
+        systematics->SetCentrality("3050");
+      } else if ( cc == k6080 ) {
+        systematics->SetCentrality("6080");
       }
     }
     else {

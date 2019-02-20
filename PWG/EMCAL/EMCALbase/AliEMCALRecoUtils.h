@@ -71,17 +71,20 @@ public:
 
   /// Non linearity enum list of possible parametrizations. 
   /// Recomended for data kBeamTestCorrectedv3 and for simulation kPi0MCv3
-  enum     NonlinearityFunctions{ kPi0MC   = 0, kPi0GammaGamma = 1,
-                                  kPi0GammaConversion = 2, kNoCorrection = 3,
-                                  kBeamTest= 4, kBeamTestCorrected = 5,
-                                  kPi0MCv2 = 6, kPi0MCv3 = 7,
-                                  kBeamTestCorrectedv2   = 8,
-                                  kSDMv5   = 9, kPi0MCv5 = 10,
-                                  kSDMv6   =11, kPi0MCv6 = 12,
-                                  kBeamTestCorrectedv3   = 13,
-				  kPCMv1 = 14, //pure symmetric decay muon method 
-				  kPCMplusBTCv1 = 15, //kPCMv1 convoluted with kBeamTestCorrectedv3
-				  kPCMsysv1 = 16 //variation of kPCMv1 to calculate systematics
+  enum     NonlinearityFunctions
+  { 
+    kPi0MC   = 0, kPi0GammaGamma = 1,
+    kPi0GammaConversion = 2, kNoCorrection = 3,
+    kBeamTest= 4, kBeamTestCorrected = 5,
+    kPi0MCv2 = 6, kPi0MCv3 = 7,
+    kBeamTestCorrectedv2   = 8,
+    kSDMv5   = 9, kPi0MCv5 = 10,
+    kSDMv6   =11, kPi0MCv6 = 12,
+    kBeamTestCorrectedv3   = 13,
+    kPCMv1 = 14,               // pure symmetric decay muon method 
+    kPCMplusBTCv1 = 15,        // kPCMv1 convoluted with kBeamTestCorrectedv3
+    kPCMsysv1 = 16,            // variation of kPCMv1 to calculate systematics
+    kBeamTestCorrectedv4 = 17  // Different parametrization of v3 but similar, improve E>100 GeV linearity
   };
 
   /// Cluster position enum list of possible algoritms
@@ -348,7 +351,10 @@ public:
   void     SetStep(Double_t step)                     { fStepSurface = step           ; }
   void     SetStepCluster(Double_t step)              { fStepCluster = step           ; }
   void     SetITSTrackSA(Bool_t isITS)                { fITSTrackSA = isITS           ; } //Special Handle of AliExternTrackParam    
-    
+  void     SwitchOnOuterTrackParam()                  { fUseOuterTrackParam = kTRUE   ; } 
+  void     SwitchOffOuterTrackParam()                 { fUseOuterTrackParam = kFALSE  ; } 
+  
+  
   // Track Cuts 
   Bool_t   IsAccepted(AliESDtrack *track);
   void     InitTrackCuts();
@@ -376,8 +382,9 @@ public:
   void     SetMaxDCAToVertexXY(Float_t dist=1e10)    { fCutMaxDCAToVertexXY     = dist ; }
   void     SetMaxDCAToVertexZ(Float_t dist=1e10)     { fCutMaxDCAToVertexZ      = dist ; }
   void     SetDCAToVertex2D(Bool_t b=kFALSE)         { fCutDCAToVertex2D        = b    ; }
-  void     SetRequireITSStandAlone(Bool_t b=kFALSE)    {fCutRequireITSStandAlone = b;} //Marcel
-  void     SetRequireITSPureStandAlone(Bool_t b=kFALSE){fCutRequireITSpureSA     = b;}
+  void     SetRequireITSStandAlone(Bool_t b=kFALSE)    {fCutRequireITSStandAlone= b    ; } //Marcel
+  void     SetRequireITSPureStandAlone(Bool_t b=kFALSE){fCutRequireITSpureSA    = b    ; }
+  void     SetRequireTrackDCA(Bool_t b=kFALSE)       { fUseTrackDCA             = b    ; }
   
   // getters								
   Double_t GetMinTrackPt()                     const { return fCutMinTrackPt           ; }
@@ -391,7 +398,8 @@ public:
   Float_t  GetMaxDCAToVertexXY()               const { return fCutMaxDCAToVertexXY     ; }
   Float_t  GetMaxDCAToVertexZ()                const { return fCutMaxDCAToVertexZ      ; }
   Bool_t   GetDCAToVertex2D()                  const { return fCutDCAToVertex2D        ; }
-  Bool_t   GetRequireITSStandAlone()           const { return fCutRequireITSStandAlone ; } //Marcel	
+  Bool_t   GetRequireITSStandAlone()           const { return fCutRequireITSStandAlone ; } //Marcel  
+  Bool_t   GetRequireTrackDCA()                const { return fUseTrackDCA             ; } 
 
   //----------------------------------------------------
   // Exotic cells / clusters
@@ -524,7 +532,9 @@ private:
   Double_t   fMass;                      ///< Mass hypothesis of the track
   Double_t   fStepSurface;               ///< Length of step to extrapolate tracks to EMCal surface
   Double_t   fStepCluster;               ///< Length of step to extrapolate tracks to clusters
-  Bool_t     fITSTrackSA;                ///< If track matching is to be done with ITS tracks standing alone	
+  Bool_t     fITSTrackSA;                ///< If track matching is to be done with ITS tracks standing alone, ESDs	
+  Bool_t     fUseTrackDCA;               ///< Activate use of aodtrack->GetXYZ or XvYxZv like in AliEMCALRecoUtilsBase::ExtrapolateTrackToEMCalSurface 
+  Bool_t     fUseOuterTrackParam;        ///< Use OuterTrackParam not InnerTrackParam, ESDs
   Double_t   fEMCalSurfaceDistance;      ///< EMCal surface distance (= 430 by default, the last 10 cm are propagated on a cluster-track pair basis)
  
   // Track cuts  
@@ -549,7 +559,7 @@ private:
   Bool_t     fMCGenerToAcceptForTrack;   ///<  Activate the removal of tracks entering the track matching that come from a particular generator
   
   /// \cond CLASSIMP
-  ClassDef(AliEMCALRecoUtils, 26) ;
+  ClassDef(AliEMCALRecoUtils, 28) ;
   /// \endcond
 
 };

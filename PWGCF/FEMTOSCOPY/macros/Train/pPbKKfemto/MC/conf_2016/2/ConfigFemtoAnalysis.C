@@ -53,6 +53,7 @@
 #include "AliFemtoKTPairCut.h"
 #include "AliFemtoCutMonitorCollections.h"
 #include "AliFemtoModelCorrFctnKK.h"
+#include "AliFemtoModelCorrFctnKpKp.h"
 #endif
 
 //________________________________________________________________________
@@ -112,8 +113,8 @@ AliFemtoManager* ConfigFemtoAnalysis() {
   tFreeze->SetSizeInv(1.5*TMath::Sqrt(2.0));
   AliFemtoModelWeightGeneratorLednicky *tWeight = new AliFemtoModelWeightGeneratorLednicky();
   tWeight->SetPairType(AliFemtoModelWeightGenerator::KaonPlusKaonPlus());
-  tWeight->SetCoulOff();
-  tWeight->SetQuantumOff();
+  tWeight->SetCoulOn();
+  tWeight->SetQuantumOn();
   tWeight->SetStrongOff();
   tWeight->Set3BodyOff();
   AliFemtoModelManager *tModelManager = new AliFemtoModelManager();
@@ -167,7 +168,8 @@ AliFemtoManager* ConfigFemtoAnalysis() {
   AliFemtoChi2CorrFctn          *cqinvchi2tpc[20];
   AliFemtoTPCInnerCorrFctn      *cqinvinnertpc[20*10];
   //AliFemtoModelCorrFctnKK   *cqinvkttpcmodel[20*8];
-  AliFemtoModelCorrFctnSource   *cqinvkttpcmodel[20*8];
+  AliFemtoModelCorrFctnKpKp   *cqinvkttpcmodel[20*8];
+  //AliFemtoModelCorrFctnSource   *cqinvkttpcmodel[20*8];
 
   // *** Begin pion-pion analysis ***
   int aniter = 0;
@@ -356,8 +358,8 @@ AliFemtoManager* ConfigFemtoAnalysis() {
 	      anetaphitpc[aniter]->AddCorrFctn(cqinvinnertpc[ktm]);
 
 	      //model
-	      //cqinvkttpcmodel[ktm] = new AliFemtoModelCorrFctnKK(Form("cqinvModel%stpcM%ikT%i", chrgs[ichg], imult, ikt),nbinssh,0.0,(imult>6)?shqmax*2.5:shqmax);
-	      cqinvkttpcmodel[ktm] = new AliFemtoModelCorrFctnSource(Form("cqinv%stpcM%ikT%i", chrgs[ichg], imult, ikt),nbinssh,0.0, shqmax);
+	      cqinvkttpcmodel[ktm] = new AliFemtoModelCorrFctnKpKp(Form("cqinvModel%stpcM%ikT%i", chrgs[ichg], imult, ikt),nbinssh,0.0,(imult>6)?shqmax*2.5:shqmax);
+	      //cqinvkttpcmodel[ktm] = new AliFemtoModelCorrFctnSource(Form("cqinv%stpcM%ikT%i", chrgs[ichg], imult, ikt),nbinssh,0.0, shqmax);
 	      cqinvkttpcmodel[ktm]->SetPairSelectionCut(ktpcuts[ktm]);
 	      cqinvkttpcmodel[ktm]->SetKaonPDG(kTRUE);
 	      cqinvkttpcmodel[ktm]->ConnectToManager(tModelManager);

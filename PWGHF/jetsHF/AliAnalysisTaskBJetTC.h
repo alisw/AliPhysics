@@ -3,6 +3,7 @@
 #include "AliAnalysisTaskEmcalJet.h"
 #include "AliV0ReaderV1.h"
 #include "AliConvEventCuts.h"
+#include "AliAnalysisTaskWeakDecayVertexer.h"
 class AliEmcalJet;
 class AliAODVertex;
 class AliAODTrack;
@@ -19,6 +20,7 @@ class TRandom3;
 class AliPIDResponse;
 class AliHFJetsTaggingVertex;
 class AliRDHFJetsCutsVertex;
+class AliVertexerTracks;
 
 
 
@@ -38,10 +40,12 @@ public:
   	virtual void  Terminate(Option_t *);
 	virtual Bool_t Run();
 	virtual Double_t GetDeltaPtRandomCone();
+	virtual Double_t GetDeltaPtRandomConeWithSignal();
 	virtual Bool_t Notify();
 
 
   	void SetPtHardBin(Int_t b){ fSelectPtHardBin   = b;}
+  	void SetPtHardThreshold(Double_t b){ fPtHardThreshold   = b;}
 
 	Bool_t IsEventSelected();
 	  enum EPileup {kNoPileupSelection,kRejectPileupEvent,kRejectTracksFromPileupVertex};
@@ -88,6 +92,18 @@ public:
 	    fResolutionFunction[j] = f;
 	    return kTRUE;
 	}
+	Bool_t SetResFunctionb(TF1 *f, Int_t j){
+	    fResolutionFunctionb[j] = f;
+	    return kTRUE;
+	}
+	Bool_t SetResFunctionc(TF1 *f, Int_t j){
+	    fResolutionFunctionc[j] = f;
+	    return kTRUE;
+	}
+	Bool_t SetResFunctionlf(TF1 *f, Int_t j){
+	    fResolutionFunctionlf[j] = f;
+	    return kTRUE;
+	}
 
 	void ApplyV0Reconstruction(Bool_t val = kTRUE) {fApplyV0Rec = val;}
 	void ApplyV0RejectionAll(Bool_t val = kTRUE) {fApplyV0RejectionAll = val;}
@@ -103,6 +119,14 @@ public:
 	void SetDoImprovedDCACut(Bool_t value){fDoImprovedDCACut = value;}
 
 	void SetMaxFactorPtHardJet(Double_t value){fMaxFactorPtHardJet = value;}
+
+	void SetCalculateDCATruth(Bool_t value){fCalcDCATruth = value;}
+
+	void SetTaggerWorkingPoint(Double_t value){fThresholdIP = value;}
+
+	void SetDoDeltaPtWithSignal(Bool_t value){fDoDeltaPtWithSignal = value;}
+
+	void SetDoTaggedJetsDRM(Bool_t value){fDoTaggedDRM = value;}
 
 	// B jet tracks selection
 	void SetTrackMinPt(Double_t val){ fTCMinTrackPt = val;}
@@ -136,9 +160,9 @@ private:
 	void   DoJetLoop(); //jet matching function 2/4
 	void   SetMatchingLevel(AliEmcalJet *jet1, AliEmcalJet *jet2, int matching=0); //jet matching function 3/4
 	void   GetGeometricalMatchingLevel(AliEmcalJet *jet1, AliEmcalJet *jet2, Double_t &d) const; //jet matching function 4/4
-  	Double_t CalculateTrackProb(Double_t significance, Int_t trclass);
-  	Double_t CalculateJetProb(AliEmcalJet * jet);//!
-  	void FillResolutionFunctionHists(AliAODTrack * track,AliEmcalJet * jet);
+  	Double_t CalculateTrackProb(Double_t significance, Int_t trclass, Int_t jetFlavor);
+  	Double_t CalculateJetProb(AliEmcalJet * jet, Int_t jetFlavor);//!
+  	void FillResolutionFunctionHists(AliAODTrack * track,AliEmcalJet * jet, Int_t jetFlavor);
 
 	AliAODMCParticle* GetMCTrack( const AliAODTrack* _track);
 
@@ -147,10 +171,17 @@ private:
 
 	AliHFJetsTagging* fHFJetUtils;//!
 
+	Double_t fPtHardThreshold;//
 	Bool_t fUseCorrPt;//
 	Bool_t fEnableV0GammaRejection;//
 	Float_t fPythiaEventWeight;//!
 	Bool_t fDoImprovedDCACut;//
+	Bool_t fVertexConstraint;//!
+	Double_t fThresholdIP;//
+	Bool_t fDoDeltaPtWithSignal;//
+
+	AliESDVertex* fDiamond;//!
+	AliVertexerTracks *fVertexer;//!
 
   	AliPIDResponse   *fRespoPID;//!
 
@@ -189,6 +220,11 @@ private:
 	TH2D * f2histRhoVsDeltaPtSecond;//!
 	TH2D * f2histRhoVsDeltaPtThird;//!
 
+	TH2D * f2histRhoVsDeltaPtWithSignal;//!
+	TH2D * f2histRhoVsDeltaPtWithSignalFirst;//!
+	TH2D * f2histRhoVsDeltaPtWithSignalSecond;//!
+	TH2D * f2histRhoVsDeltaPtWithSignalThird;//!
+
 	TH1D * fh1dTracksImpParXY;//! R Impact Parameter
 	TH1D * fh1dTracksImpParXYZ;//! R+z Impact Parameter
 	TH1D * fh1dTracksImpParXYSignificance;//! R Impact Parameter Significance
@@ -221,7 +257,11 @@ private:
 	TH1D * fh1dJetRecPtcAccepted; //!
 	TH1D * fh1dJetRecPtbAccepted; //!
 
+	Bool_t fDoTaggedDRM; //Flag whether to do tagged jets RDM
 	TH2D * fh2dJetGenPtVsJetRecPt; //! raw momentum response matrix
+	TH2D * fh2dJetGenPtVsJetRecPtFirst; //! raw momentum response matrix N=1
+	TH2D * fh2dJetGenPtVsJetRecPtSecond; //! raw momentum response matrix N=2 
+	TH2D * fh2dJetGenPtVsJetRecPtThird; //! raw momentum response matrix N=3
 	TH2D * fh2dJetGenPtVsJetRecPtb; //! b momentum response matrix
 	TH2D * fh2dJetGenPtVsJetRecPtc; //! c momentum response matrix
 	TH2D * fh2dJetGenPtVsJetRecPtudsg; //! udsg momentum response matrix
@@ -256,20 +296,36 @@ private:
         TH2D * fh2dJetSignedImpParXYZ_Class1;//!
         TH2D * fh2dJetSignedImpParXYZSignificance_Class1;//!
 
+        TH2D * fh2dJetSignedImpParXYSignificanceb_Class1;//!
+        TH2D * fh2dJetSignedImpParXYSignificancec_Class1;//!
+        TH2D * fh2dJetSignedImpParXYSignificancelf_Class1;//!
+
         TH2D * fh2dJetSignedImpParXY_Class2;//!
         TH2D * fh2dJetSignedImpParXYSignificance_Class2;//!
         TH2D * fh2dJetSignedImpParXYZ_Class2;//!
         TH2D * fh2dJetSignedImpParXYZSignificance_Class2;//!
+
+        TH2D * fh2dJetSignedImpParXYSignificanceb_Class2;//!
+        TH2D * fh2dJetSignedImpParXYSignificancec_Class2;//!
+        TH2D * fh2dJetSignedImpParXYSignificancelf_Class2;//!
 
         TH2D * fh2dJetSignedImpParXY_Class3;//!
         TH2D * fh2dJetSignedImpParXYSignificance_Class3;//!
         TH2D * fh2dJetSignedImpParXYZ_Class3;//!
         TH2D * fh2dJetSignedImpParXYZSignificance_Class3;//!
 
+        TH2D * fh2dJetSignedImpParXYSignificanceb_Class3;//!
+        TH2D * fh2dJetSignedImpParXYSignificancec_Class3;//!
+        TH2D * fh2dJetSignedImpParXYSignificancelf_Class3;//!
+
         TH2D * fh2dJetSignedImpParXY_Class4;//!
         TH2D * fh2dJetSignedImpParXYSignificance_Class4;//!
         TH2D * fh2dJetSignedImpParXYZ_Class4;//!
         TH2D * fh2dJetSignedImpParXYZSignificance_Class4;//!
+
+        TH2D * fh2dJetSignedImpParXYSignificanceb_Class4;//!
+        TH2D * fh2dJetSignedImpParXYSignificancec_Class4;//!
+        TH2D * fh2dJetSignedImpParXYSignificancelf_Class4;//!
 
 
 	TH2D * fhistJetProbability;//!
@@ -547,6 +603,9 @@ private:
   AliAODVertex*		fPrimaryVertex; //! Event Primary Vertex
 
   TF1* fResolutionFunction[7];//
+  TF1* fResolutionFunctionb[7];//
+  TF1* fResolutionFunctionc[7];//
+  TF1* fResolutionFunctionlf[7];//
 
   //Secondary Vertex
   Bool_t fDoSVAnalysis;//
@@ -589,13 +648,17 @@ private:
   Double_t fValJetProb;//!
   Double_t fLogJetProb;//!
 
+  Bool_t fCalcDCATruth;//
+
+  AliAnalysisTaskWeakDecayVertexer* fDecayVertex;//!
+
   static const Double_t fgkMassPion;    //
   static const Double_t fgkMassKshort;  //
   static const Double_t fgkMassLambda;  //
   static const Double_t fgkMassProton;  //
   static const Int_t fgkiNCategV0 = 18; // number of V0 selection steps
 
-	ClassDef(AliAnalysisTaskBJetTC, 50)
+	ClassDef(AliAnalysisTaskBJetTC, 57)
 };
 #endif
  //

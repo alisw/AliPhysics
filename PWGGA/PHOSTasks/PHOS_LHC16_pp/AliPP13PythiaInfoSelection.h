@@ -2,7 +2,7 @@
 #define ALIPP13PYTHIAINFOSELECTION_H
 
 // --- Custom header files ---
-#include "AliPP13PhotonSelection.h"
+#include "AliPP13PhysicsSelection.h"
 #include "AliPP13SelectionWeights.h"
 
 // --- ROOT system ---
@@ -16,11 +16,11 @@
 #include <AliStack.h>
 #include <AliLog.h>
 
-class AliPP13PythiaInfoSelection: public AliPP13PhotonSelection
+class AliPP13PythiaInfoSelection: public AliPP13PhysicsSelection
 {
 public:
 	AliPP13PythiaInfoSelection():
-		AliPP13PhotonSelection(),
+		AliPP13PhysicsSelection(),
 		fXsec(0),
 		fTrials(0)
 	{
@@ -30,7 +30,7 @@ public:
 	AliPP13PythiaInfoSelection(const char * name, const char * title):
 		// NB: We don't need to set a pointer here 
 		//
-		AliPP13PhotonSelection(name, title, AliPP13ClusterCuts(), 0), 
+		AliPP13PhysicsSelection(name, title, AliPP13ClusterCuts(), 0), 
 		fXsec(0),
 		fTrials(0)
 	{

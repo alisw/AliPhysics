@@ -1,9 +1,24 @@
+// ROOT6 modifications
+#ifdef __CLING__
+#include <AliAnalysisManager.h>
+#include <AliAODInputHandler.h>
+#include <AliDielectronVarCuts.h>
+
+// Tell ROOT where to find AliPhysics headers
+R__ADD_INCLUDE_PATH($ALICE_PHYSICS)
+#include <PWGDQ/dielectron/macrosLMEE/Config_miweber_LMEE_PbPb_woCutLib.C>
+
+#endif
+
 AliAnalysisTask *AddTask_miweber_LMEE_PbPb_woCutLib(Int_t cutDefinition = 0,
-        TString outputFileName = "AnalysisResult.root",
-        TString directoryBaseName = "miweber_LMEE_PbPb",
-        Bool_t isNano = kFALSE,
-        Bool_t bCutQA = kTRUE,
-        Bool_t useTPCCorr=kFALSE){
+						    TString outputFileName = "AnalysisResult.root",
+						    TString directoryBaseName = "miweber_LMEE_PbPb",
+						    Bool_t isNano = kFALSE,
+						    Bool_t bCutQA = kTRUE,
+						    Bool_t useTPCCorr=kFALSE,
+						    Bool_t useRotation=kFALSE,
+						    Bool_t useMixing=kTRUE,
+						    Bool_t noPairing=kFALSE){
 
 
   //get the current analysis manager
@@ -15,14 +30,17 @@ AliAnalysisTask *AddTask_miweber_LMEE_PbPb_woCutLib(Int_t cutDefinition = 0,
 
   Bool_t bESDANA=kFALSE; //Autodetect via InputHandler
 
+  // ROOT6 modifications
+#ifndef __CLING__
   TString configBasePath("$ALICE_PHYSICS/PWGDQ/dielectron/macrosLMEE/");
   TString configFile("Config_miweber_LMEE_PbPb_woCutLib.C");
   TString configFilePath(configBasePath+configFile);
-  
    
   //load dielectron configuration files
   if (!gROOT->GetListOfGlobalFunctions()->FindObject(configFile.Data()))
     gROOT->LoadMacro(configFilePath.Data());
+
+#endif
 
   //Do we have an MC handler?
   Bool_t hasMC=(AliAnalysisManager::GetAnalysisManager()->GetMCtruthEventHandler()!=0x0);
@@ -61,7 +79,7 @@ AliAnalysisTask *AddTask_miweber_LMEE_PbPb_woCutLib(Int_t cutDefinition = 0,
   mgr->AddTask(task);
   
   //add dielectron analysis with selected cut to the task
-  AliDielectron *diel_low = Config_miweber_LMEE_PbPb_woCutLib(cutDefinition,bESDANA,bCutQA,kFALSE,useTPCCorr);
+  AliDielectron *diel_low = Config_miweber_LMEE_PbPb_woCutLib(cutDefinition,bESDANA,bCutQA,kFALSE,useTPCCorr,useRotation,useMixing,noPairing,hasMC);
   if(diel_low){
     AliDielectronVarCuts *eventplaneCuts = new AliDielectronVarCuts("eventplaneCuts","eventplaneCuts");
     // use event plane cuts only for this cut set

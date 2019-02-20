@@ -25,6 +25,7 @@ using namespace std;
 #include <TProfile2D.h>
 #include <TProfile3D.h>
 #include <THn.h>
+#include <THnSparse.h>
 #include <TIterator.h>
 #include <TKey.h>
 #include <TAxis.h>
@@ -188,6 +189,7 @@ void AliHistogramManager::AddHistogram(const Char_t* histClass,
         fBinsAllocated+=nXbins+2;
 	h->Sumw2();
         h->SetUniqueID(1);
+        if(titleStr.Contains("--s--")) ((TProfile*)h)->BuildOptions(0.,0.,"s");
         if(varW>AliReducedVarManager::kNothing) h->SetUniqueID(100*(varW+1)+1);
       }
       else {
@@ -223,6 +225,7 @@ void AliHistogramManager::AddHistogram(const Char_t* histClass,
           h=new TProfile3D(hname.Data(),(arr->At(0) ? arr->At(0)->GetName() : ""),nXbins,xmin,xmax,nYbins,ymin,ymax,nZbins,zmin,zmax);
           fBinsAllocated+=(nXbins+2)*(nYbins+2)*(nZbins+2);
 	  h->Sumw2();
+          if(titleStr.Contains("--s--")) ((TProfile3D*)h)->BuildOptions(0.,0.,"s");
           if(varW>AliReducedVarManager::kNothing) h->SetUniqueID(((varW+1)+(fNVars+1)*(varT+1))*100+1);   // 4th variable "varT" is encoded in the UniqueId of the histogram
           else h->SetUniqueID((fNVars+1)*(varT+1)*100+1);
         }
@@ -231,6 +234,7 @@ void AliHistogramManager::AddHistogram(const Char_t* histClass,
           fBinsAllocated+=(nXbins+2)*(nYbins+2);
 	  h->Sumw2();
           h->SetUniqueID(1);
+          if(titleStr.Contains("--s--")) ((TProfile2D*)h)->BuildOptions(0.,0.,"s");
           if(varW>AliReducedVarManager::kNothing) h->SetUniqueID(100*(varW+1)+1); 
         }
       }
@@ -328,6 +332,7 @@ void AliHistogramManager::AddHistogram(const Char_t* histClass,
         fBinsAllocated+=nXbins+2;
 	h->Sumw2();
         h->SetUniqueID(1);
+        if(titleStr.Contains("--s--")) ((TProfile*)h)->BuildOptions(0.,0.,"s");
         if(varW>AliReducedVarManager::kNothing) h->SetUniqueID(100*(varW+1)+1); 
       }
       else {
@@ -364,6 +369,7 @@ void AliHistogramManager::AddHistogram(const Char_t* histClass,
           h=new TProfile3D(hname.Data(),(arr->At(0) ? arr->At(0)->GetName() : ""),nXbins,xbins,nYbins,ybins,nZbins,zbins);
           fBinsAllocated+=(nXbins+2)*(nYbins+2)*(nZbins+2);
 	  h->Sumw2();
+          if(titleStr.Contains("--s--")) ((TProfile3D*)h)->BuildOptions(0.,0.,"s");
           if(varW>AliReducedVarManager::kNothing) h->SetUniqueID(((varW+1)+(fNVars+1)*(varT+1))*100+1);   // 4th variable "varT" is encoded in the UniqueId of the histogram
           else h->SetUniqueID((fNVars+1)*(varT+1)*100+1);
         }
@@ -372,6 +378,7 @@ void AliHistogramManager::AddHistogram(const Char_t* histClass,
           fBinsAllocated+=(nXbins+2)*(nYbins+2);
 	  h->Sumw2();
           h->SetUniqueID(1);
+          if(titleStr.Contains("--s--")) ((TProfile2D*)h)->BuildOptions(0.,0.,"s");
           if(varW>AliReducedVarManager::kNothing) h->SetUniqueID(100*(varW+1)+1);
         }
       }
@@ -419,9 +426,10 @@ void AliHistogramManager::AddHistogram(const Char_t* histClass,
                                        Int_t nDimensions, Int_t* vars,
                                        Int_t* nBins, Double_t* xmin, Double_t* xmax,
                                        TString* axLabels,
-                                       Int_t varW) {
+                                       Int_t varW,
+                                       Bool_t useSparse) {
   //
-  // add a multi-dimensional histogram THnF
+  // add a multi-dimensional histogram THnF or THnFSparseF
   //
   THashList* hList = (THashList*)fMainList.FindObject(histClass);
   if(!hList) {
@@ -440,7 +448,9 @@ void AliHistogramManager::AddHistogram(const Char_t* histClass,
   
   if(varW>AliReducedVarManager::kNothing) fUsedVars[varW] = kTRUE;
   
-  THnF* h=new THnF(hname.Data(),(arr->At(0) ? arr->At(0)->GetName() : ""),nDimensions,nBins,xmin,xmax);
+  THnBase* h=0x0;
+  if (useSparse)  h=new THnSparseF(hname.Data(),(arr->At(0) ? arr->At(0)->GetName() : ""),nDimensions,nBins,xmin,xmax);
+  else            h=new THnF(hname.Data(),(arr->At(0) ? arr->At(0)->GetName() : ""),nDimensions,nBins,xmin,xmax);
   h->Sumw2();
   if(varW>AliReducedVarManager::kNothing) h->SetUniqueID(10+nDimensions+100*(varW+1));
   else h->SetUniqueID(10+nDimensions);
@@ -457,7 +467,8 @@ void AliHistogramManager::AddHistogram(const Char_t* histClass,
       MakeAxisLabels(axis, axLabels[idim].Data());
     fUsedVars[vars[idim]] = kTRUE;
   }
-  hList->Add(h);
+  if (useSparse)  hList->Add((THnSparseF*)h);
+  else            hList->Add((THnF*)h);
   fBinsAllocated+=bins;
 }
 
@@ -468,9 +479,10 @@ void AliHistogramManager::AddHistogram(const Char_t* histClass,
                                        Int_t nDimensions, Int_t* vars,
                                        TArrayD* binLimits,
                                        TString* axLabels,
-                                       Int_t varW) {
+                                       Int_t varW,
+                                       Bool_t useSparse) {
   //
-  // add a multi-dimensional histogram THnF with equal or variable bin widths
+  // add a multi-dimensional histogram THnF or THnSparseF with equal or variable bin widths
   //
   THashList* hList = (THashList*)fMainList.FindObject(histClass);
   if(!hList) {
@@ -498,7 +510,9 @@ void AliHistogramManager::AddHistogram(const Char_t* histClass,
     xmax[idim] = binLimits[idim][nBins[idim]];
   }
   
-  THnF* h=new THnF(hname.Data(),(arr->At(0) ? arr->At(0)->GetName() : ""),nDimensions,nBins,xmin,xmax);
+  THnBase* h=0x0;
+  if (useSparse)  h=new THnSparseF(hname.Data(),(arr->At(0) ? arr->At(0)->GetName() : ""),nDimensions,nBins,xmin,xmax);
+  else            h=new THnF(hname.Data(),(arr->At(0) ? arr->At(0)->GetName() : ""),nDimensions,nBins,xmin,xmax);
   for(Int_t idim=0;idim<nDimensions;++idim) {
     TAxis* axis=h->GetAxis(idim);
     axis->Set(nBins[idim], binLimits[idim].GetArray());
@@ -520,7 +534,8 @@ void AliHistogramManager::AddHistogram(const Char_t* histClass,
       MakeAxisLabels(axis, axLabels[idim].Data());
     fUsedVars[vars[idim]] = kTRUE;
   }
-  hList->Add(h);
+  if (useSparse)  hList->Add((THnSparseF*)h);
+  else            hList->Add((THnF*)h);
   fBinsAllocated+=bins;
 }
 
@@ -624,6 +639,7 @@ void AliHistogramManager::FillHistClass(const Char_t* className, Float_t* values
   Bool_t isProfile;
   Bool_t isTHn;
   Int_t thnDim=0;
+  Bool_t isSparse=kFALSE;
   Double_t fillValues[20]={0.0};
   Int_t uid = 0;
   Int_t varX=-1, varY=-1, varZ=-1, varT=-1, varW=-1;
@@ -634,6 +650,7 @@ void AliHistogramManager::FillHistClass(const Char_t* className, Float_t* values
     isProfile = (uid%10==1 ? kTRUE : kFALSE);   // units digit encodes the isProfile
     isTHn = ((uid%100)>10 ? kTRUE : kFALSE);      
     if(isTHn) thnDim = (uid%100)-10;        // the excess over 10 from the last 2 digits give the dimension of the THn
+    if(isTHn && ((TString)h->ClassName()).Contains("Sparse")) isSparse = kTRUE;
     dimension = 0;
     if(!isTHn) dimension = ((TH1*)h)->GetDimension();
         
@@ -727,16 +744,25 @@ void AliHistogramManager::FillHistClass(const Char_t* className, Float_t* values
     }  // end if(!isTHn)
     else {
       for(Int_t idim=0;idim<thnDim;++idim) {
-        allVarsGood &= fUsedVars[((THnF*)h)->GetAxis(idim)->GetUniqueID()];
-        fillValues[idim] = values[((THnF*)h)->GetAxis(idim)->GetUniqueID()];
+        if (isSparse) {
+          allVarsGood &= fUsedVars[((THnSparseF*)h)->GetAxis(idim)->GetUniqueID()];
+          fillValues[idim] = values[((THnSparseF*)h)->GetAxis(idim)->GetUniqueID()];
+        } else {
+          allVarsGood &= fUsedVars[((THnF*)h)->GetAxis(idim)->GetUniqueID()];
+          fillValues[idim] = values[((THnF*)h)->GetAxis(idim)->GetUniqueID()];
+        }
       }
       if(allVarsGood) {
         if(varW>AliReducedVarManager::kNothing) {
-          if(fUsedVars[varW])
-            ((THnF*)h)->Fill(fillValues,values[varW]);
+          if(fUsedVars[varW]) {
+            if (isSparse) ((THnSparseF*)h)->Fill(fillValues,values[varW]);
+            else          ((THnF*)h)->Fill(fillValues,values[varW]);
+          }
         }
-        else
-          ((THnF*)h)->Fill(fillValues);
+        else {
+          if (isSparse) ((THnSparseF*)h)->Fill(fillValues);
+          else          ((THnF*)h)->Fill(fillValues);
+        }
       }
     }
   }

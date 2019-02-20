@@ -134,6 +134,13 @@ AliConversionMesonCuts::AliConversionMesonCuts(const char *name,const char *titl
   fUsePtmaxMethodForBG(kFALSE),
   fDoBG(kTRUE),
   fDoBGProbability(kFALSE),
+  fDoConvCaloMixing(kFALSE),
+  fDoSectorMixing(kFALSE),
+  fDoSectorJetMixing(kFALSE),
+  fDoJetMixing(kFALSE),
+  fDoJetRotateMixing(kFALSE),
+  fDoJetPtMixing(kFALSE),
+  fDoSphericityMixing(kFALSE),
   fUseTrackMultiplicityForBG(kFALSE),
   fEnableMinOpeningAngleCut(kTRUE),
   fEnableOneCellDistCut(kFALSE),
@@ -148,7 +155,9 @@ AliConversionMesonCuts::AliConversionMesonCuts(const char *name,const char *titl
   fMaxOpanPtDepCut(kFALSE),
   fBackgroundUseSideband(kFALSE),
   fBackgroundUseSidebandBothSides(kFALSE),
-  fBackgroundUseLikeSign(kFALSE)
+  fBackgroundUseLikeSign(kFALSE),
+  fDoJetAnalysis(kFALSE),
+  fDoJetQA(kFALSE)
 {
   for(Int_t jj=0;jj<kNCuts;jj++){fCuts[jj]=0;}
   fCutString=new TObjString((GetCutNumber()).Data());
@@ -223,6 +232,13 @@ AliConversionMesonCuts::AliConversionMesonCuts(const AliConversionMesonCuts &ref
   fUsePtmaxMethodForBG(ref.fUsePtmaxMethodForBG),
   fDoBG(ref.fDoBG),
   fDoBGProbability(ref.fDoBGProbability),
+  fDoConvCaloMixing(ref.fDoConvCaloMixing),
+  fDoSectorMixing(ref.fDoSectorMixing),
+  fDoSectorJetMixing(ref.fDoSectorJetMixing),
+  fDoJetMixing(ref.fDoJetMixing),
+  fDoJetRotateMixing(ref.fDoJetRotateMixing),
+  fDoJetPtMixing(ref.fDoJetPtMixing),
+  fDoSphericityMixing(ref.fDoSphericityMixing),
   fUseTrackMultiplicityForBG(ref.fUseTrackMultiplicityForBG),
   fEnableMinOpeningAngleCut(ref.fEnableMinOpeningAngleCut),
   fEnableOneCellDistCut(ref.fEnableOneCellDistCut),
@@ -237,7 +253,9 @@ AliConversionMesonCuts::AliConversionMesonCuts(const AliConversionMesonCuts &ref
   fMaxOpanPtDepCut(ref.fMaxOpanPtDepCut),
   fBackgroundUseSideband(ref.fBackgroundUseSideband),
   fBackgroundUseSidebandBothSides(ref.fBackgroundUseSidebandBothSides),
-  fBackgroundUseLikeSign(ref.fBackgroundUseLikeSign)
+  fBackgroundUseLikeSign(ref.fBackgroundUseLikeSign),
+  fDoJetAnalysis(ref.fDoJetAnalysis),
+  fDoJetQA(ref.fDoJetQA)
 
 {
   // Copy Constructor
@@ -660,6 +678,65 @@ Bool_t AliConversionMesonCuts::MesonIsSelectedMCEtaPiPlPiMiGamma(TParticle *fMCM
 }
 
 //________________________________________________________________________
+Bool_t AliConversionMesonCuts::MesonIsSelectedAODMCEtaPiPlPiMiGamma(AliAODMCParticle *fMCMother,TClonesArray *AODMCArray, Int_t &labelNegPion, Int_t &labelPosPion, Int_t &labelGamma, Double_t fRapidityShift){
+
+  // Returns true for all pions within acceptance cuts for decay into 2 photons
+  // If bMCDaughtersInAcceptance is selected, it requires in addition that both daughter photons are within acceptance cuts
+
+  if( !AODMCArray )return kFALSE;
+
+  if( fMCMother->GetPdgCode() != 221 ) return kFALSE;
+
+  Double_t rMeson = sqrt( (fMCMother->Xv()*fMCMother->Xv()) + (fMCMother->Yv()*fMCMother->Yv()) ) ;
+  if(rMeson>fMaxR)  return kFALSE; // cuts on distance from collision point
+
+  Double_t rapidity = 10.;
+
+  if( fMCMother->E() - fMCMother->Pz() == 0 || fMCMother->E() + fMCMother->Pz() == 0 ){
+    rapidity=8.-fRapidityShift;
+  }
+  else{
+    rapidity = 0.5*(TMath::Log((fMCMother->E()+fMCMother->Pz()) / (fMCMother->E()-fMCMother->Pz())))-fRapidityShift;
+  }
+
+  // Rapidity Cut
+  if( TMath::Abs(rapidity) > fRapidityCutMeson )return kFALSE;
+
+  // min Pt Cut
+  if(fDoMinPtCut && (fMCMother->Pt() < fMinPt)) return kFALSE;
+
+  // Select only -> Dalitz decay channel
+  if( fMCMother->GetNDaughters() != 3 )return kFALSE;
+
+  AliAODMCParticle *posPion = 0x0;
+  AliAODMCParticle *negPion = 0x0;
+  AliAODMCParticle    *gamma = 0x0;
+
+  for(Int_t index= fMCMother->GetFirstDaughter();index<= fMCMother->GetLastDaughter();index++){
+    if(index < 0) continue;
+    AliAODMCParticle* temp = static_cast<AliAODMCParticle*>(AODMCArray->At(index));
+
+    switch( temp->GetPdgCode() ) {
+    case 211:
+      posPion      =  temp;
+      labelPosPion = index;
+      break;
+    case -211:
+      negPion      =  temp;
+      labelNegPion = index;
+      break;
+    case ::kGamma:
+      gamma         =  temp;
+      labelGamma    = index;
+      break;
+    }
+  }
+
+  if( posPion && negPion && gamma) return kTRUE;
+  return kFALSE;
+}
+
+//________________________________________________________________________
 Bool_t AliConversionMesonCuts::MesonIsSelectedMCPiPlPiMiEta(TParticle *fMCMother,AliMCEvent *mcEvent, Int_t &labelNegPion, Int_t &labelPosPion, Int_t &labelEtaMeson, Double_t fRapidityShift){
 
   // Returns true for all pions within acceptance cuts for decay into 2 photons
@@ -718,6 +795,65 @@ Bool_t AliConversionMesonCuts::MesonIsSelectedMCPiPlPiMiEta(TParticle *fMCMother
   return kFALSE;
 }
 //________________________________________________________________________
+Bool_t AliConversionMesonCuts::MesonIsSelectedAODMCPiPlPiMiEta(AliAODMCParticle *fMCMother,TClonesArray *AODMCArray, Int_t &labelNegPion, Int_t &labelPosPion, Int_t &labelEtaMeson, Double_t fRapidityShift){
+
+  // Returns true for all pions within acceptance cuts for decay into 2 photons
+  // If bMCDaughtersInAcceptance is selected, it requires in addition that both daughter photons are within acceptance cuts
+
+  if( !AODMCArray )return kFALSE;
+
+  if( !(fMCMother->GetPdgCode() == 331 ) ) return kFALSE;
+
+  Double_t rMeson = sqrt( (fMCMother->Xv()*fMCMother->Xv()) + (fMCMother->Yv()*fMCMother->Yv()) ) ;
+  if( rMeson >fMaxR ) return kFALSE; // cuts on distance from collision point
+
+  Double_t rapidity = 10.;
+
+  if( fMCMother->E() - fMCMother->Pz() == 0 || fMCMother->E() + fMCMother->Pz() == 0 ){
+    rapidity=8.-fRapidityShift;
+  }
+  else{
+    rapidity = 0.5*(TMath::Log((fMCMother->E()+fMCMother->Pz()) / (fMCMother->E()-fMCMother->Pz())))-fRapidityShift;
+  }
+
+  // Rapidity Cut
+  if( TMath::Abs(rapidity) > fRapidityCutMeson )return kFALSE;
+
+  // min Pt Cut
+  if(fDoMinPtCut && (fMCMother->Pt() < fMinPt)) return kFALSE;
+
+  // Select only -> pi+ pi- pi0
+  if( fMCMother->GetNDaughters() != 3 )return kFALSE;
+
+  AliAODMCParticle *posPion = 0x0;
+  AliAODMCParticle *negPion = 0x0;
+  AliAODMCParticle *etaMeson = 0x0;
+
+//   cout << "\n"<< fMCMother->GetPdgCode() << "\n" << endl;
+  for(Int_t index= fMCMother->GetFirstDaughter();index<= fMCMother->GetLastDaughter();index++){
+    if(index < 0) continue;
+    AliAODMCParticle* temp = static_cast<AliAODMCParticle*>(AODMCArray->At(index));
+//     cout << temp->GetPdgCode() << endl;
+    switch( temp->GetPdgCode() ) {
+    case 211:
+      posPion      =  temp;
+      labelPosPion = index;
+      break;
+    case -211:
+      negPion      =  temp;
+      labelNegPion = index;
+      break;
+    case 221:
+      etaMeson         =  temp;
+      labelEtaMeson    = index;
+      break;
+    }
+  }
+
+  if( posPion && negPion && etaMeson ) return kTRUE;
+  return kFALSE;
+}
+//________________________________________________________________________
 Bool_t AliConversionMesonCuts::MesonIsSelectedMCPiPlPiMiPiZero(TParticle *fMCMother,AliMCEvent *mcEvent, Int_t &labelNegPion, Int_t &labelPosPion, Int_t &labelNeutPion, Double_t fRapidityShift){
 
   // Returns true for all pions within acceptance cuts for decay into 2 photons
@@ -725,7 +861,7 @@ Bool_t AliConversionMesonCuts::MesonIsSelectedMCPiPlPiMiPiZero(TParticle *fMCMot
 
   if( !mcEvent )return kFALSE;
 
-  if( !(fMCMother->GetPdgCode() == 221 || fMCMother->GetPdgCode() == 223) ) return kFALSE;
+  if( !(fMCMother->GetPdgCode() == 221 || fMCMother->GetPdgCode() == 223 || fMCMother->GetPdgCode() == 421) ) return kFALSE;
 
   if( fMCMother->R()>fMaxR ) return kFALSE; // cuts on distance from collision point
 
@@ -755,6 +891,66 @@ Bool_t AliConversionMesonCuts::MesonIsSelectedMCPiPlPiMiPiZero(TParticle *fMCMot
   for(Int_t index= fMCMother->GetFirstDaughter();index<= fMCMother->GetLastDaughter();index++){
     if(index < 0) continue;
     TParticle* temp = (TParticle*)mcEvent->Particle( index );
+//     cout << temp->GetPdgCode() << endl;
+    switch( temp->GetPdgCode() ) {
+    case 211:
+      posPion      =  temp;
+      labelPosPion = index;
+      break;
+    case -211:
+      negPion      =  temp;
+      labelNegPion = index;
+      break;
+    case 111:
+      neutPion         =  temp;
+      labelNeutPion    = index;
+      break;
+    }
+  }
+
+  if( posPion && negPion && neutPion ) return kTRUE;
+  return kFALSE;
+}
+
+//________________________________________________________________________
+Bool_t AliConversionMesonCuts::MesonIsSelectedAODMCPiPlPiMiPiZero(AliAODMCParticle *fMCMother,TClonesArray *AODMCArray, Int_t &labelNegPion, Int_t &labelPosPion, Int_t &labelNeutPion, Double_t fRapidityShift){
+
+  // Returns true for all pions within acceptance cuts for decay into 2 photons
+  // If bMCDaughtersInAcceptance is selected, it requires in addition that both daughter photons are within acceptance cuts
+
+  if( !AODMCArray )return kFALSE;
+
+  if( !(fMCMother->GetPdgCode() == 221 || fMCMother->GetPdgCode() == 223 || fMCMother->GetPdgCode() == 421) ) return kFALSE;
+
+  Double_t rMeson = sqrt( (fMCMother->Xv()*fMCMother->Xv()) + (fMCMother->Yv()*fMCMother->Yv()) ) ;
+  if( rMeson >fMaxR ) return kFALSE; // cuts on distance from collision point
+
+  Double_t rapidity = 10.;
+
+  if( fMCMother->E() - fMCMother->Pz() == 0 || fMCMother->E() + fMCMother->Pz() == 0 ){
+    rapidity=8.-fRapidityShift;
+  }
+  else{
+    rapidity = 0.5*(TMath::Log((fMCMother->E()+fMCMother->Pz()) / (fMCMother->E()-fMCMother->Pz())))-fRapidityShift;
+  }
+
+  // Rapidity Cut
+  if( TMath::Abs(rapidity) > fRapidityCutMeson )return kFALSE;
+
+  // min Pt Cut
+  if(fDoMinPtCut && (fMCMother->Pt() < fMinPt)) return kFALSE;
+
+  // Select only -> pi+ pi- pi0
+  if( fMCMother->GetNDaughters() != 3 )return kFALSE;
+
+  AliAODMCParticle *posPion  = 0x0;
+  AliAODMCParticle *negPion  = 0x0;
+  AliAODMCParticle *neutPion = 0x0;
+
+//   cout << "\n"<< fMCMother->GetPdgCode() << "\n" << endl;
+  for(Int_t index= fMCMother->GetFirstDaughter();index<= fMCMother->GetLastDaughter();index++){
+    if(index < 0) continue;
+    AliAODMCParticle* temp = static_cast<AliAODMCParticle*>(AODMCArray->At(index));
 //     cout << temp->GetPdgCode() << endl;
     switch( temp->GetPdgCode() ) {
     case 211:
@@ -807,6 +1003,54 @@ Bool_t AliConversionMesonCuts::MesonIsSelectedMCPiZeroGamma(TParticle *fMCMother
   for(Int_t index = fMCMother->GetFirstDaughter();index <= fMCMother->GetLastDaughter();index++){
     if(index < 0) continue;
     TParticle *temp = (TParticle*)mcEvent->Particle(index);
+    switch(temp->GetPdgCode()){
+    case 22:
+      gamma = temp;
+      labelGamma = index;
+      break;
+    case 111:
+      pi0   = temp;
+      labelNeutPion = index;
+      break;
+    }
+  }
+
+  if(gamma && pi0) return kTRUE;
+  return kFALSE;
+
+}
+
+//________________________________________________________________________
+Bool_t AliConversionMesonCuts::MesonIsSelectedAODMCPiZeroGamma(AliAODMCParticle *fMCMother, TClonesArray *AODMCArray, Int_t &labelNeutPion, Int_t &labelGamma, Double_t fRapidityShift){
+  // returns true for omegas decaying into pi0 + gamma within the rapidity window
+
+  if(!AODMCArray) return kFALSE;
+
+  if(fMCMother->GetPdgCode()!=223) return kFALSE; // we only want omegas
+
+  Double_t rapidity = 10.;
+
+  if(fMCMother->E() - fMCMother->Pz() == 0 || fMCMother->E() + fMCMother->Pz() == 0){
+    rapidity=8.-fRapidityShift;
+  }
+  else{
+    rapidity = 0.5*(TMath::Log((fMCMother->E()+fMCMother->Pz()) / (fMCMother->E()-fMCMother->Pz())))-fRapidityShift;
+  }
+
+  // Rapidity Cut
+  if(TMath::Abs(rapidity) > fRapidityCutMeson)return kFALSE;
+
+  // min Pt Cut
+  if(fDoMinPtCut && (fMCMother->Pt() < fMinPt)) return kFALSE;
+
+  if(fMCMother->GetNDaughters()!=2) return kFALSE;
+
+  AliAODMCParticle *gamma = 0x0;
+  AliAODMCParticle *pi0 = 0x0;
+
+  for(Int_t index = fMCMother->GetFirstDaughter();index <= fMCMother->GetLastDaughter();index++){
+    if(index < 0) continue;
+    AliAODMCParticle* temp = static_cast<AliAODMCParticle*>(AODMCArray->At(index));
     switch(temp->GetPdgCode()){
     case 22:
       gamma = temp;
@@ -896,6 +1140,83 @@ Bool_t AliConversionMesonCuts::MesonIsSelectedMCChiC(TParticle *fMCMother,AliMCE
     for(Int_t index= jpsi->GetFirstDaughter();index<= jpsi->GetLastDaughter();index++){
       if(index < 0) continue;
       TParticle* temp = (TParticle*)mcEvent->Particle( index );
+      switch( temp->GetPdgCode() ) {
+      case -11:
+        electron =  temp;
+        labelelectronChiC = index;
+        break;
+      case 11:
+        positron =  temp;
+        labelpositronChiC = index;
+        break;
+      }
+    }
+    if( !electron || !positron) return kFALSE;
+    if( positron && electron && gamma) return kTRUE;
+  }
+  return kFALSE;
+}
+
+//________________________________________________________________________
+Bool_t AliConversionMesonCuts::MesonIsSelectedAODMCChiC(AliAODMCParticle *fMCMother,TClonesArray *AODMCArray,Int_t & labelelectronChiC, Int_t & labelpositronChiC, Int_t & labelgammaChiC, Double_t fRapidityShift){
+  // Returns true for all ChiC within acceptance cuts for decay into JPsi + gamma -> e+ + e- + gamma
+  // If bMCDaughtersInAcceptance is selected, it requires in addition that both daughter photons are within acceptance cuts
+
+  if(!AODMCArray)return kFALSE;
+  // if(fMCMother->GetPdgCode()==20443 ){
+  //    return kFALSE;
+  // }
+  if(fMCMother->GetPdgCode()==10441 || fMCMother->GetPdgCode()==10443 || fMCMother->GetPdgCode()==445 ){
+    Double_t rMeson = sqrt( (fMCMother->Xv()*fMCMother->Xv()) + (fMCMother->Yv()*fMCMother->Yv()) ) ;
+    if( rMeson >fMaxR ) return kFALSE; // cuts on distance from collision point
+
+    Double_t rapidity = 10.;
+    if(fMCMother->E() - fMCMother->Pz() == 0 || fMCMother->E() + fMCMother->Pz() == 0){
+      rapidity=8.-fRapidityShift;
+    }
+    else{
+      rapidity = 0.5*(TMath::Log((fMCMother->E()+fMCMother->Pz()) / (fMCMother->E()-fMCMother->Pz())))-fRapidityShift;
+    }
+
+    // Rapidity Cut
+    if(TMath::Abs(rapidity)>fRapidityCutMeson)return kFALSE;
+
+    // min Pt Cut
+    if(fDoMinPtCut && (fMCMother->Pt() < fMinPt)) return kFALSE;
+
+    // Select only -> ChiC radiative (JPsi+gamma) decay channel
+    if(fMCMother->GetNDaughters()!=2)return kFALSE;
+
+    AliAODMCParticle *jpsi   = 0x0;
+    AliAODMCParticle *gamma   = 0x0;
+    AliAODMCParticle *positron = 0x0;
+    AliAODMCParticle *electron = 0x0;
+
+    //Int_t labeljpsiChiC = -1;
+
+    for(Int_t index= fMCMother->GetFirstDaughter();index<= fMCMother->GetLastDaughter();index++){
+      if(index < 0) continue;
+      AliAODMCParticle* temp = static_cast<AliAODMCParticle*>(AODMCArray->At(index));
+
+      switch( temp->GetPdgCode() ) {
+      case 443:
+        jpsi =  temp;
+        //labeljpsiChiC = index;
+        break;
+      case 22:
+        gamma    =  temp;
+        labelgammaChiC = index;
+        break;
+      }
+    }
+
+    if ( !jpsi || ! gamma) return kFALSE;
+    if(jpsi->GetNDaughters()!=2)return kFALSE;
+
+
+    for(Int_t index= jpsi->GetFirstDaughter();index<= jpsi->GetLastDaughter();index++){
+      if(index < 0) continue;
+      AliAODMCParticle* temp = static_cast<AliAODMCParticle*>(AODMCArray->At(index));
       switch( temp->GetPdgCode() ) {
       case -11:
         electron =  temp;
@@ -1079,7 +1400,7 @@ Bool_t AliConversionMesonCuts::InitializeCutsFromCutString(const TString analysi
   fCutStringRead = Form("%s",analysisCutSelection.Data());
 
   // Initialize Cuts from a given Cut string
-  AliInfo(Form("Set Meson Cutnumber: %s",analysisCutSelection.Data()));
+  // AliInfo(Form("Set Meson Cutnumber: %s",analysisCutSelection.Data()));
   if(analysisCutSelection.Length()!=kNCuts) {
     AliError(Form("Cut selection has the wrong length! size is %d, number of cuts is %d", analysisCutSelection.Length(), kNCuts));
     return kFALSE;
@@ -1310,6 +1631,14 @@ Bool_t AliConversionMesonCuts::SetMesonKind(Int_t mesonKind){
     break;
   case 1:
     fMesonKind = 1;
+  case 2:
+    fMesonKind = 0;
+    fDoJetAnalysis = kTRUE;
+    break;
+  case 3:
+    fMesonKind = 0;
+    fDoJetAnalysis = kTRUE;
+    fDoJetQA = kTRUE;
     break;
   default:
     cout<<"Warning: Meson kind not defined"<<mesonKind<<endl;
@@ -1480,7 +1809,11 @@ Bool_t AliConversionMesonCuts::SetSelectionWindowCut(Int_t selectionCut){
       fSelectionHigh      = 0.700;
       fAcceptMesonMass    = kTRUE;
       break;
-
+    case 23: //n
+      fSelectionLow       = 0.120;
+      fSelectionHigh      = 0.160;
+      fAcceptMesonMass    = kTRUE;
+      break;
     default:
       cout<<"Warning: SelectionCut not defined "<<selectionCut<<endl;
       return kFALSE;
@@ -1993,6 +2326,11 @@ Bool_t AliConversionMesonCuts::SetAlphaMesonCut(Int_t alphaMesonCut)
     fAlphaCutMeson      = 1.0;
     fAlphaPtDepCut      = kFALSE;
     break;
+  case 13:  //d 0-0.1
+    fAlphaMinCutMeson   = 0.0;
+    fAlphaCutMeson      = 0.1;
+    fAlphaPtDepCut      = kFALSE;
+    break;
   default:
     cout<<"Warning: AlphaMesonCut not defined "<<alphaMesonCut<<endl;
     return kFALSE;
@@ -2176,14 +2514,14 @@ Bool_t AliConversionMesonCuts::SetBackgroundScheme(Int_t BackgroundScheme){
     fDoBGProbability            = kFALSE;
     fUsePtmaxMethodForBG        = kTRUE;
     break;
-  case 10: // mixed event with likesign mixing
+  case 10: // a mixed event with likesign mixing
     fUseRotationMethodInBG      = kFALSE;
     fUseTrackMultiplicityForBG  = kFALSE;
     fDoBGProbability            = kFALSE;
     fBackgroundUseLikeSign      = kTRUE;
     fBackgroundUseSideband      = kFALSE;
     break;
-  case 11: // mixed event with pi0 sideband candidates (right side of pi0 peak)
+  case 11: // b mixed event with pi0 sideband candidates (right side of pi0 peak)
     fUseRotationMethodInBG      = kFALSE;
     fUseTrackMultiplicityForBG  = kFALSE;
     fDoBGProbability            = kFALSE;
@@ -2192,7 +2530,7 @@ Bool_t AliConversionMesonCuts::SetBackgroundScheme(Int_t BackgroundScheme){
     fSidebandMixingLow          = 0.180;
     fSidebandMixingHigh         = 0.220;
     break;
-  case 12: // mixed event with pi0 sideband candidates (left side of pi0 peak)
+  case 12: // c mixed event with pi0 sideband candidates (left side of pi0 peak)
     fUseRotationMethodInBG      = kFALSE;
     fUseTrackMultiplicityForBG  = kFALSE;
     fDoBGProbability            = kFALSE;
@@ -2201,7 +2539,7 @@ Bool_t AliConversionMesonCuts::SetBackgroundScheme(Int_t BackgroundScheme){
     fSidebandMixingLow          = 0.01;
     fSidebandMixingHigh         = 0.05;
     break;
-  case 13: // mixing event with pi0 sideband candidates (both sides of pi0 peak)
+  case 13: // d mixing event with pi0 sideband candidates (both sides of pi0 peak)
     fUseRotationMethodInBG           = kFALSE;
     fUseTrackMultiplicityForBG       = kFALSE;
     fDoBGProbability                 = kFALSE;
@@ -2242,6 +2580,52 @@ Bool_t AliConversionMesonCuts::SetBackgroundScheme(Int_t BackgroundScheme){
     fSidebandMixingLeftHigh          = 0.47;
     fSidebandMixingRightLow          = 0.600;
     fSidebandMixingRightHigh         = 0.650;
+    break;
+  case 17: //h mixed event with V0 multiplicity
+    fUseRotationMethodInBG      = kFALSE;
+    fUseTrackMultiplicityForBG  = kFALSE;
+    fDoBGProbability            = kFALSE;
+    fDoConvCaloMixing           = kTRUE;
+    break;
+  case 18: //i mixed event with V0 multiplicity
+    fUseRotationMethodInBG      = kFALSE;
+    fUseTrackMultiplicityForBG  = kFALSE;
+    fDoBGProbability            = kFALSE;
+    fDoSectorMixing             = kTRUE;
+    break;
+  case 19: //j mixed event with V0 multiplicity
+    fUseRotationMethodInBG      = kFALSE;
+    fUseTrackMultiplicityForBG  = kFALSE;
+    fDoBGProbability            = kFALSE;
+    fDoSectorJetMixing          = kTRUE;
+    break;
+  case 20: //k mixed by jet distance
+    fUseRotationMethodInBG      = kFALSE;
+    fUseTrackMultiplicityForBG  = kFALSE;
+    fDoBGProbability            = kFALSE;
+    fDoJetMixing                = kTRUE;
+    break;
+  case 21: //l mixed by jet distance and rotation
+    fUseRotationMethodInBG      = kFALSE;
+    fUseTrackMultiplicityForBG  = kFALSE;
+    fDoBGProbability            = kFALSE;
+    fDoJetMixing                = kTRUE;
+    fDoJetRotateMixing          = kTRUE;
+    break;
+  case 22: //m mixed by jet distance and jet pt
+    fUseRotationMethodInBG      = kFALSE;
+    fUseTrackMultiplicityForBG  = kFALSE;
+    fDoBGProbability            = kFALSE;
+    fDoJetMixing                = kTRUE;
+    fDoJetPtMixing              = kTRUE;
+    break;
+  case 23: //n mixed by jet distance, rotation and jet pt
+    fUseRotationMethodInBG      = kFALSE;
+    fUseTrackMultiplicityForBG  = kFALSE;
+    fDoBGProbability            = kFALSE;
+    fDoJetMixing                = kTRUE;
+    fDoJetRotateMixing          = kTRUE;
+    fDoJetPtMixing              = kTRUE;
     break;
   default:
     cout<<"Warning: BackgroundScheme not defined "<<BackgroundScheme<<endl;
@@ -2743,6 +3127,16 @@ Bool_t AliConversionMesonCuts::SetMinOpanMesonCut(Int_t minOpanMesonCut){
       fMinOpanPtDepCut  = kFALSE;
       fEnableOneCellDistCut = kTRUE;
       break;
+    case 17:      //h - Min opening angle cut for eta reconstruction - EMCEMC
+      if( fFMinOpanCut ) delete fFMinOpanCut;
+      fFMinOpanCut      = new TF1("fFMinOpanCut","(exp([0]*(x+1))+[1]*(x-1)+[2]-0.05)*(x<[3])+0.017*(x>[3])",0.,100.);
+      fFMinOpanCut->SetParameter(0,-0.530209);
+      fFMinOpanCut->SetParameter(1,-0.00536687);
+      fFMinOpanCut->SetParameter(2,0.168845);
+      fFMinOpanCut->SetParameter(3,20);
+      fMinOpanCutMeson  = 0;
+      fMinOpanPtDepCut  = kTRUE;
+      break;
     // opening angle cut variations for EMCal related analyses up to 17. May 2017
 //    case 5:      //
 //      fMinOpanCutMeson  = 0.0202; // minimum 1 EMCal cell diagonal
@@ -2798,6 +3192,15 @@ Bool_t AliConversionMesonCuts::SetMaxOpanMesonCut(Int_t maxOpanMesonCut){
     fMaxOpanPtDepCut  = kTRUE;
     fMaxOpanCutMeson  = TMath::Pi();
     break;
+  case 3:      // - Max opening angle cut for pi0 & eta reconstruction - EMCEMC
+      if( fFMaxOpanCut ) delete fFMaxOpanCut;
+      fFMaxOpanCut      = new TF1("fFMaxOpanCut","exp([0]*(x-0.5))+[1]*(x-0.5)+[2]+0.15",0.,100.);
+      fFMaxOpanCut->SetParameter(0,-0.530209);
+      fFMaxOpanCut->SetParameter(1,-0.00536687);
+      fFMaxOpanCut->SetParameter(2,0.168845);
+      fMaxOpanPtDepCut  = kTRUE;
+      fMaxOpanCutMeson  = TMath::Pi();
+      break;
   default:
     cout<<"Warning: maxOpanMesonCut not defined "<< maxOpanMesonCut<<endl;
     return kFALSE;

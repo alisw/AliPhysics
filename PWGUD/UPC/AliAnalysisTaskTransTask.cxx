@@ -38,7 +38,7 @@ ClassImp(AliAnalysisTaskTransTask) // classimp: necessary for root
 AliAnalysisTaskTransTask::AliAnalysisTaskTransTask() : AliAnalysisTaskSE(), 
   fAOD(0), fOutputList(0), fAnaTree(0), fRunNum(0), fTracklets(0), fCtrue(0),
   fL0inputs(0), fL1inputs(0), fZem1Energy(0), fZem2Energy(0),
-  fZNCEnergy(0), fZNAEnergy(0), fZPCEnergy(0), fZPAEnergy(0),
+  fZNCEnergy(0), fZNAEnergy(0), fZPCEnergy(0), fZPAEnergy(0),fZNATime(0),fZNCTime(0),
   fV0ADecision(-10), fV0CDecision(-10), fADADecision(-10), fADCDecision(-10), 
   fIR1Map(0),fIR2Map(0),fCounter(0)
 
@@ -51,7 +51,7 @@ AliAnalysisTaskTransTask::AliAnalysisTaskTransTask() : AliAnalysisTaskSE(),
 AliAnalysisTaskTransTask::AliAnalysisTaskTransTask(const char* name) : AliAnalysisTaskSE(name),
   fAOD(0), fOutputList(0), fAnaTree(0), fRunNum(0), fTracklets(0), fCtrue(0),
   fL0inputs(0), fL1inputs(0), fZem1Energy(0), fZem2Energy(0),						       
-  fZNCEnergy(0), fZNAEnergy(0), fZPCEnergy(0), fZPAEnergy(0),
+  fZNCEnergy(0), fZNAEnergy(0), fZPCEnergy(0), fZPAEnergy(0),fZNATime(0),fZNCTime(0),
   fV0ADecision(-10), fV0CDecision(-10), fADADecision(-10), fADCDecision(-10), 
   fIR1Map(0),fIR2Map(0),fCounter(0)
 
@@ -99,7 +99,9 @@ void AliAnalysisTaskTransTask::UserCreateOutputObjects()
   fAnaTree ->Branch("fZNATDC", &fZNATDC[0], "fZNATDC[4]/D");
   fAnaTree ->Branch("fZNCTDC", &fZNCTDC[0], "fZNCTDC[4]/D");  
   fAnaTree ->Branch("fZPATDC", &fZPATDC[0], "fZPATDC[4]/D");
-  fAnaTree ->Branch("fZPCTDC", &fZPCTDC[0], "fZPCTDC[4]/D");  
+  fAnaTree ->Branch("fZPCTDC", &fZPCTDC[0], "fZPCTDC[4]/D"); 
+  fAnaTree ->Branch("fZNATime", &fZNATime, "fZNATime/D");  
+  fAnaTree ->Branch("fZNCTime", &fZNCTime, "fZNCTime/D"); 
   fAnaTree ->Branch("fV0ADecision", &fV0ADecision, "fV0ADecision/I");
   fAnaTree ->Branch("fV0CDecision", &fV0CDecision, "fV0CDecision/I");  
   fAnaTree ->Branch("fADADecision", &fADADecision, "fADADecision/I");
@@ -163,6 +165,9 @@ void AliAnalysisTaskTransTask::UserExec(Option_t *)
   fZNCEnergy = dataZDC->GetZNCTowerEnergy()[0];
   fZPAEnergy = dataZDC->GetZPATowerEnergy()[0];
   fZPCEnergy = dataZDC->GetZPCTowerEnergy()[0];
+  
+  fZNATime = dataZDC->GetZNATime();
+  fZNCTime = dataZDC->GetZNCTime();
 
   for (Int_t i=0;i<4;i++) fZNATDC[i] = dataZDC->GetZNATDCm(i);
   for (Int_t i=0;i<4;i++) fZNCTDC[i] = dataZDC->GetZNCTDCm(i);
@@ -179,12 +184,11 @@ void AliAnalysisTaskTransTask::UserExec(Option_t *)
 
   // AD
   AliVAD *dataAD = dynamic_cast<AliVAD*>(fAOD->GetADData());
-  if(!dataAD) {PostData(2, fOutputList); return;}
-  fCounter->Fill(7);    
-
-  fADADecision = dataAD->GetADADecision();
-  fADCDecision = dataAD->GetADCDecision();
-
+  if(dataAD) {
+    fCounter->Fill(7);    
+    fADADecision = dataAD->GetADADecision();
+    fADCDecision = dataAD->GetADCDecision();
+    }
   // fill the tree
   fAnaTree->Fill();
   

@@ -38,6 +38,7 @@ using namespace std;
 //class TF1;
 class TH1D;
 class TH2D;
+class TH3D;
 class TList;
 class TTree;
 class AliMCEvent;
@@ -142,7 +143,7 @@ private:
 	 TH1D *h_ModuledPhi[CENTN_NAT][2]; // cent7, sub2
 	 TFile *pDataFile[2];
 	 //std::unordered_map<UInt_t, TH2D *> PhiWeightMap[CENTN];
-	 std::map<UInt_t, TH2D *> PhiWeightMap[CENTN_NAT];
+	 std::map<UInt_t, TH3D *> PhiWeightMap[CENTN_NAT];
 
 	 TString fTaskName;
 	 int fEvtNum;

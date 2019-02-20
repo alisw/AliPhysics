@@ -374,7 +374,8 @@ void AliEmcalCorrectionTask::InitializeConfiguration()
     AliInfoStream() << "Using user EMCal corrections configuration located at \"" << fUserConfigurationFilename << "\"\n";
   }
   else {
-    AliInfoStream() << "User file at \"" << fUserConfigurationFilename << "\" does not exist! All settings will be from the default file!\n";
+    // For any tasks to be enabled, we must have a user config. So we make a missing user config a fatal.
+    AliFatal(TString::Format("User config file at \"%s\" does not exist! Please check the user config filename!", fUserConfigurationFilename.c_str()));
   }
 
   // Initialize
@@ -890,14 +891,13 @@ void AliEmcalCorrectionTask::SetupContainer(const AliEmcalContainerUtils::InputO
   AliClusterContainer * clusterContainer = dynamic_cast<AliClusterContainer *>(cont);
   if (clusterContainer) {
     // Default energy
-    // Probably not needed for the corrections
-    /*result = fYAMLConfig.GetProperty(inputObjectPropertiesPath, "defaultClusterEnergy", tempString, false);
+    result = fYAMLConfig.GetProperty(inputObjectPropertiesPath, "defaultClusterEnergy", tempString, false);
     if (result) {
       // Need to get the enumeration
       AliVCluster::VCluUserDefEnergy_t clusterEnergyType = AliClusterContainer::fgkClusterEnergyTypeMap.at(tempString);
       AliDebugStream(2) << clusterContainer->GetName() << ": Setting cluster energy type to " << clusterEnergyType << std::endl;
       clusterContainer->SetDefaultClusterEnergy(clusterEnergyType);
-    }*/
+    }
 
     // NonLinCorrEnergyCut
     result = fYAMLConfig.GetProperty(inputObjectPropertiesPath, "clusNonLinCorrEnergyCut", tempDouble, false);

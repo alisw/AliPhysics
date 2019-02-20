@@ -44,10 +44,25 @@ void writeTree(TFile* fout, TTree* t){
   fout->Close();
 }
 
-//Int_t runLevelEventStatQA(TString qafilename="event_stat.root", Int_t run=254422, TString ocdbStorage = "raw://"){
-//Int_t runLevelEventStatQA(TString qafilename="event_stat.root", Int_t run=255042, TString ocdbStorage = "raw://"){
-//Int_t runLevelEventStatQA(TString qafilename="EventStat_temp.root", Int_t run=256676, TString ocdbStorage = "local:///cvmfs/alice.cern.ch/calibration/data/2016/OCDB"){
-Int_t runLevelEventStatQA(TString qafilename="event_stat.root", Int_t run=282504, TString ocdbStorage = "raw://"){
+
+void DrawEfficiency(TH2F* h2D, const char* multOn, const char* bitName);
+void DrawMultiplicity(TH1F* hOnAll, TH1F* hOnAcc, TH1F* hOnVHM, TH1F* hOfAll,  TH1F* hOfAcc, const char* bitName, TString multOn, TString multOf, Float_t meanOn, Float_t meanOf);
+void DrawSPDClsVsTkl(TH2F* hAll,TH2F* hCln, const char* bitName);
+void DrawV0C012vsTkl(TH2F* hAll,TH2F* hCln, const char* bitName);
+void DrawV0C3vs012(TH2F* hAll,TH2F* hCln, const char* bitName);
+void DrawVIR(TH2F* hPup,TH2F* hAcc, const char* bitName);
+void DrawTiming(TH1F* hAall,TH1F* hAacc,TH1F* hCall,TH1F* hCacc, TString cname, const char* bitName);
+void DrawFlags(TH1F* hBBAflagsAll,TH1F* hBBAflagsAcc,TH1F* hBBCflagsAll,TH1F* hBBCflagsAcc,
+               TH1F* hBGAflagsAll,TH1F* hBGAflagsAcc,TH1F* hBGCflagsAll,TH1F* hBGCflagsAcc, const char* bitName);
+void DrawZDC(TH1F* hTimeZNA, TH1F* hTimeZNC, TH2F* hTimeZNSumVsDif, TH2F* hTimeCorrZDC,const char* bitName);
+Int_t findBinNtimesLessThanMax(const TH1& h, Float_t threshold, Int_t direction);
+void setPointWithError(TGraphErrors *gr, Int_t idx, Float_t x, Float_t y, Float_t yerr);
+Double_t* getCutParametersOnlineVsOffline(TH2* h2d, const std::string detector);
+void DrawV0MOnVsOf(TH2F* hAll,TH2F* hCln,const char* bitName, Double_t* ab=0);
+void DrawSPDOnVsOf(TH2F* hAll,TH2F* hCln, const char* bitName, Double_t* ab=0);
+
+
+Int_t runLevelEventStatQA(TString qafilename="event_stat.root", Int_t run=295588, TString ocdbStorage = "raw://"){
   
   gStyle->SetOptStat(0);
   gStyle->SetLineScalePS(1.5);
@@ -292,7 +307,13 @@ Int_t runLevelEventStatQA(TString qafilename="event_stat.root", Int_t run=282504
   else if (run>=280141 && run<=280235) { refSigma=4000.; refEff = 0.74; refClass = "C0V0M-B-NOPF-CENTNOTRD"; } // INEL=5.4b*C0V0M/CINT7ZAC
   else if (run>=280236 && run<=282007) { refSigma= 30.0; refEff = 0.40; refClass = "C0TVX-B-NOPF-CENTNOTRD"; } // back to pp at 13TeV
   else if (run>=282008 && run<=282441) { refSigma= 21.0; refEff = 0.40; refClass = "C0TVX-B-NOPF-CENTNOTRD"; } // pp@5.02TeV. Taking previous estimates
-  else if (run>=282442               ) { refSigma= 30.0; refEff = 0.40; refClass = "C0TVX-B-NOPF-CENTNOTRD"; } // back to pp at 13TeV
+  else if (run>=282442 && run<=294999) { refSigma= 30.0; refEff = 0.40; refClass = "C0TVX-B-NOPF-CENTNOTRD"; } // back to pp at 13TeV
+  else if (run>=295000 && run<=295670) { refSigma=4000.; refEff = 0.50; refClass = "C0V0M-B-NOPF-CENTNOTRD"; } // PbPb at 5.02TeV, sigma from Martino cs(INEL) = 8000 mb
+  else if (run>=295671 && run<=295715) { refSigma=4000.; refEff = 0.0675; refClass = "C0V0M-B-NOPF-CENTNOTRD"; } // bug in the trigger config
+  else if (run>=295716 && run<=295716) { refSigma=4000.; refEff = 0.50; refClass = "C0V0M-B-NOPF-CENTNOTRD"; } // run ok
+  else if (run>=295717 && run<=295720) { refSigma=4000.; refEff = 0.0675; refClass = "C0V0M-B-NOPF-CENTNOTRD"; } // bug in the trigger config
+  else if (run>=295721               ) { refSigma=4000.; refEff = 0.50; refClass = "C0V0M-B-NOPF-CENTNOTRD"; } // PbPb at 5.02TeV, sigma from Martino cs(INEL) = 8000 mb
+  
   
   Double_t orbitRate = 11245.;
   TString partition;
@@ -340,12 +361,12 @@ Int_t runLevelEventStatQA(TString qafilename="event_stat.root", Int_t run=282504
     cl->GetDownscaleFactor(class_ds[i]);
   }
 
-  // special treatment for Pb-Pb
+  // special treatment for Pb-Pb 2015
   if (run>=244917 && run<=246994) {
     for (Int_t i=0;i<classes.GetEntriesFast();i++){
       AliTriggerClass* cl = (AliTriggerClass*) classes.At(i);
-      TObjArray* tokens = TString(cl->GetName()).Tokenize("-");
-      TString cluster = tokens->At(3)->GetName();
+      TObjArray* tokensArray = TString(cl->GetName()).Tokenize("-");
+      TString cluster = tokensArray->At(3)->GetName();
       TString lifetimeClassName = Form("C0VHM-B-NOPF-%s",cluster.Data());
       if (run<245256) lifetimeClassName = Form("C0V0M-B-NOPF-%s",cluster.Data());
       TObject* lifetimeClass = classes.FindObject(lifetimeClassName.Data());
@@ -358,8 +379,8 @@ Int_t runLevelEventStatQA(TString qafilename="event_stat.root", Int_t run=282504
           class_lumi[i]=class_lumi[index]*ds_ratio;
         }
       }
-      tokens->Delete();
-      delete tokens;
+      tokensArray->Delete();
+      delete tokensArray;
     }
   }
 
@@ -485,6 +506,33 @@ Int_t runLevelEventStatQA(TString qafilename="event_stat.root", Int_t run=282504
     }
   }
   
+  // special treatment for UPC triggers in Pb-Pb 2018
+  if (run>=295000) {
+    for (Int_t i=0;i<classes.GetEntriesFast();i++){
+      AliTriggerClass* cl = (AliTriggerClass*) classes.At(i);
+      if (!TString(cl->GetName()).Contains("CCUP")) continue;
+      TObject* lifetimeClass = 0;
+      if (!lifetimeClass) lifetimeClass = classes.FindObject("CEMC8EG1-B-NOPF-CENTNOTRD");
+      if (!lifetimeClass) lifetimeClass = classes.FindObject("CPHI8PER-B-NOPF-CENTNOTRD");
+      if (!lifetimeClass) lifetimeClass = classes.FindObject("CPHI7PER-B-NOPF-CENTNOPMD");
+      if (!lifetimeClass) continue;
+      Int_t index = classes.IndexOf(lifetimeClass);
+      class_lifetime[i]=class_lifetime[index]*class_ds[i];
+      class_lumi[i]=class_lumi[index]*class_ds[i];
+    }
+
+    for (Int_t i=0;i<classes.GetEntriesFast();i++){
+      AliTriggerClass* cl = (AliTriggerClass*) classes.At(i);
+      if (!TString(cl->GetName()).Contains("CMUP")) continue;
+      TObject* lifetimeClass = 0;
+      if (!lifetimeClass) lifetimeClass = classes.FindObject("CMUL7-B-NOPF-MUFAST");
+      if (!lifetimeClass) continue;
+      Int_t index = classes.IndexOf(lifetimeClass);
+      class_lifetime[i]=class_lifetime[index]*class_ds[i];
+      class_lumi[i]=class_lumi[index]*class_ds[i];
+    }
+  }
+  
   TFile* fin = new TFile(qafilename);
   if (!fin) {
     printf("qa file not found");
@@ -605,17 +653,17 @@ Int_t runLevelEventStatQA(TString qafilename="event_stat.root", Int_t run=282504
     // TODO think how to propagate mask with TBit aliases
     UInt_t mask = 0;
     TString classList = ""; // list of classes for given PS bit
-    TObjArray* array = label.Tokenize(" ");
-    for (Int_t itoken=0;itoken<array->GetEntries();itoken++){
-      TString token = array->At(itoken)->GetName();
+    TObjArray* tokenArray = label.Tokenize(" ");
+    for (Int_t itoken=0;itoken<tokenArray->GetEntries();itoken++){
+      TString token = tokenArray->At(itoken)->GetName();
       if (itoken==0) classList = token; 
       if (token[0]!='&') continue;
       token.Remove(0,1);
       mask = token.Atoi();
       break;
     }
-    array->Delete();
-    delete array;
+    tokenArray->Delete();
+    delete tokenArray;
     printf("%s\n",label.Data());
     printf("%i\n",mask);
     if (!mask) continue;
@@ -781,9 +829,9 @@ Int_t runLevelEventStatQA(TString qafilename="event_stat.root", Int_t run=282504
     DrawTiming(hV0AAll,hV0AAcc,hV0CAll,hV0CAcc,"V0",bitName);
     DrawTiming(hADAAll,hADAAcc,hADCAll,hADCAcc,"AD",bitName);
     DrawFlags(hBBAflagsAll,hBBAflagsAcc,hBBCflagsAll,hBBCflagsAcc,hBGAflagsAll,hBGAflagsAcc,hBGCflagsAll,hBGCflagsAcc,bitName);
+    DrawZDC(hTimeZNA,hTimeZNC,hTimeZNSumVsDif,hTimeCorrZDC,bitName);
     DrawMultiplicity(hV0MOnAll,hV0MOnAcc,hV0MOnVHM,hV0MOfAll,hV0MOfAcc,bitName,"V0M","V0M",meanV0MOn,meanV0MOf);
     DrawMultiplicity(hOFOAll,hOFOAcc,hOFOVHM,hTKLAll,hTKLAcc,bitName,"OFO","TKL",meanOFO,meanTKL);
-    DrawZDC(hTimeZNA,hTimeZNC,hTimeZNSumVsDif,hTimeCorrZDC,bitName);
     if (bitNames[ibit].EqualTo("kINT7")) DrawEfficiency(hOFOvsTKLAcc,"OFO",bitName);
     if (bitNames[ibit].EqualTo("kINT7")) DrawEfficiency(hV0MOnVsOfAcc,"V0M",bitName);
 //
@@ -1024,11 +1072,11 @@ void DrawMultiplicity(TH1F* hOnAll, TH1F* hOnAcc, TH1F* hOnVHM, TH1F* hOfAll,  T
 
   TLegend* leg1 = new TLegend(0.40,0.80,0.97,0.90);
   leg1->AddEntry(hOnAll,Form("All: %.0f",hOnAll->Integral(0,hOnAll->GetNbinsX()+1)));
-  leg1->AddEntry(hOnAcc,Form("Accepted: %.0f, <%s>=%.1f",hOnAcc->Integral(0,hOnAcc->GetNbinsX()+1),hOnAcc->GetMean(),multOn.Data()),"l");
+  leg1->AddEntry(hOnAcc,Form("Accepted: %.0f, <%s>=%.1f",hOnAcc->Integral(0,hOnAcc->GetNbinsX()+1),multOn.Data(),hOnAcc->GetMean()),"l");
 
   TLegend* leg2 = new TLegend(0.40,0.80,0.97,0.90);
   leg2->AddEntry(hOfAll,Form("All: %.0f",hOfAll->Integral(0,hOfAll->GetNbinsX()+1)));
-  leg2->AddEntry(hOfAcc,Form("Accepted: %.0f, <%s>=%.1f",hOfAcc->Integral(0,hOfAcc->GetNbinsX()+1),hOfAcc->GetMean(),multOf.Data()),"l");
+  leg2->AddEntry(hOfAcc,Form("Accepted: %.0f, <%s>=%.1f",hOfAcc->Integral(0,hOfAcc->GetNbinsX()+1),multOf.Data(),hOfAcc->GetMean()),"l");
 
   TCanvas* c = new TCanvas(Form("%s_%s",bitName,multOn.Data()),Form("c_%s",bitName),1800,900);
   c->Divide(2,1,0.001,0.001);
@@ -1503,7 +1551,7 @@ Double_t* getCutParametersOnlineVsOffline(TH2* h2d, const std::string detector) 
   return ret;
 }
 
-void DrawV0MOnVsOf(TH2F* hAll,TH2F* hCln,const char* bitName, Double_t* ab=0){
+void DrawV0MOnVsOf(TH2F* hAll,TH2F* hCln,const char* bitName, Double_t* ab){
   if (!hAll || !hCln) {
     printf("QA histogram not found\n");
     return;
@@ -1530,14 +1578,16 @@ void DrawV0MOnVsOf(TH2F* hAll,TH2F* hCln,const char* bitName, Double_t* ab=0){
     pol1.SetLineColor(kMagenta);
     pol1.SetParameter(0,ab[0]);
     pol1.SetParameter(1,ab[2]);
-    pol1.Draw("same");
+    pol1.DrawCopy("same");
+    printf("ab0 = %f\n",ab[0]);
+    printf("ab2 = %f\n",ab[2]);
   }
   c->Print("V0MOnVsOf.png");
 
 }
 
 
-void DrawSPDOnVsOf(TH2F* hAll,TH2F* hCln, const char* bitName, Double_t* ab=0){
+void DrawSPDOnVsOf(TH2F* hAll,TH2F* hCln, const char* bitName, Double_t* ab){
   if (!hAll || !hCln) {
     printf("QA histogram not found\n");
     return;
@@ -1565,7 +1615,7 @@ void DrawSPDOnVsOf(TH2F* hAll,TH2F* hCln, const char* bitName, Double_t* ab=0){
     pol1.SetLineColor(kMagenta);
     pol1.SetParameter(0,ab[0]);
     pol1.SetParameter(1,ab[2]);
-    pol1.Draw("same");
+    pol1.DrawCopy("same");
   }
   c->Print("SPDOnVsOf.png");
 }

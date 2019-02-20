@@ -151,6 +151,7 @@ ClassImp(AliAnalysisTaskBeautyCal)
   fHistEopHad2(0),
   fHistEopTrueMC(0),
   fM20(0),
+  fM20MC(0),
   fM02(0),
   fM20EovP(0),
   fM02EovP(0),
@@ -324,6 +325,7 @@ AliAnalysisTaskBeautyCal::AliAnalysisTaskBeautyCal()
   fHistEopHad2(0),
   fHistEopTrueMC(0),
   fM20(0),
+  fM20MC(0),
   fM02(0),
   fM20EovP(0),
   fM02EovP(0),
@@ -626,6 +628,9 @@ void AliAnalysisTaskBeautyCal::UserCreateOutputObjects()
 
   fM20 = new TH2F ("fM20","M20 vs pt distribution",200,0,20,400,0,2);
   fOutputList->Add(fM20);
+
+  fM20MC = new TH2F ("fM20MC","M20 vs pt distribution MC HFE",200,0,20,400,0,2);
+  fOutputList->Add(fM20MC);
 
   fM02 = new TH2F ("fM02","M02 vs pt distribution",200,0,20,400,0,2);
   fOutputList->Add(fM02);
@@ -1097,12 +1102,6 @@ void AliAnalysisTaskBeautyCal::UserExec(Option_t *)
   Bool_t EG1tr = kFALSE;
   Bool_t EG2tr = kFALSE;
 
-  //cout << "trigger = " << trigger << endl;
-  //if(trigger==7)fEMCEG1 = kTRUE;
-  //if(firedTrigger.Contains(TriggerEG1))EG1tr = kTRUE;
-  //if(firedTrigger.Contains(TriggerEG2))EG2tr = kTRUE;
-  //cout << "fEMCEGA1 = " << fEMCEG1 << endl;
-  //cout << "firedTrigger = " << firedTrigger << endl;
 
   //if(trigger==7)if(firedTrigger.Contains(TriggerEG1))EG1tr = kTRUE;
   //cout << "EG1tr = " << EG1tr << endl;
@@ -1266,8 +1265,12 @@ void AliAnalysisTaskBeautyCal::UserExec(Option_t *)
     double m20mim = 0.03;
     double m20max = 0.28;
     */
+    /*
     double m20mim = 0.01;
     double m20max = 0.35;
+    */
+    double m20mim = fmimM20;
+    double m20max = fmaxM20;
 
     ////////////////////
     //Apply track cuts//
@@ -1336,11 +1339,8 @@ void AliAnalysisTaskBeautyCal::UserExec(Option_t *)
       fCheckEta->Fill(atrack->Eta());
 
 
-     cout << "<-------------- fRefit 0 = " << fRefit << endl; 
       if(fRefit)
         { 
-          cout << "<-------------- fRefit 1 = " << fRefit << endl; 
-         //cout << "fRefit = " << fRefit << endl; 
          if((!(atrack->GetStatus()&AliESDtrack::kITSrefit)|| (!(atrack->GetStatus()&AliESDtrack::kTPCrefit)))) continue;
         }
       // not apply vAN20180703 to vAN20180705
@@ -1796,6 +1796,7 @@ void AliAnalysisTaskBeautyCal::UserExec(Option_t *)
       if(fTPCnSigma < -3.5 && m20>m20mim && m20<m20max)fHistEopHad->Fill(track->Pt(),eop);
       if(fTPCnSigma < -3.5)fHistEopHad2->Fill(track->Pt(),eop);
       fM20->Fill(track->Pt(),clustMatch->GetM20());
+      if(pid_eleD || pid_eleB)fM20MC->Fill(track->Pt(),clustMatch->GetM20());
       fM02->Fill(track->Pt(),clustMatch->GetM02());
 
       //if(fTPCnSigma > fmimSig && fTPCnSigma < fmaxSig && eop>0.9 && eop<1.3 && m20>m20mim && m20<m20max)

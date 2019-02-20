@@ -56,65 +56,65 @@ void MiniV0QA::SlaveBegin(TTree * /*tree*/) {
       new TH1D("fHistDistOverTotMom", ";V0 L/#it{p} (#it{c} cm / GeV); Counts",
                250, 0, 250);
   fHistV0CosPA = new TH1D("fHistV0CosPA", ";V0 cos(#theta_{P}); Counts",
-                          MiniV0::fgkV0cosPA_n, MiniV0::fgkV0cosPA_f + kEps,
-                          MiniV0::fgkV0cosPA_l + kEps);
+                          MiniV0<3>::fgkV0cosPA_n, MiniV0<3>::fgkV0cosPA_f + kEps,
+                          MiniV0<3>::fgkV0cosPA_l + kEps);
   fHistChi2V0 =
-      new TH1D("fHistChi2V0", ";V0 #chi^{2}; Counts", MiniV0::fgkV0chi2_n,
-               MiniV0::fgkV0chi2_f + kEps, MiniV0::fgkV0chi2_l + kEps);
+      new TH1D("fHistChi2V0", ";V0 #chi^{2}; Counts", MiniV0<3>::fgkV0chi2_n,
+               MiniV0<3>::fgkV0chi2_f + kEps, MiniV0<3>::fgkV0chi2_l + kEps);
   fHistDcaNeg2PrimaryVertex =
       new TH1D("fHistDcaNeg2PrimaryVertex", ";Neg prong DCA (cm); Counts",
-               MiniV0::fgkDCAProng2PV_n, MiniV0::fgkDCAProng2PV_f + kEps,
-               MiniV0::fgkDCAProng2PV_l + kEps);
+               MiniV0<3>::fgkDCAProng2PV_n, MiniV0<3>::fgkDCAProng2PV_f + kEps,
+               MiniV0<3>::fgkDCAProng2PV_l + kEps);
   fHistDcaPos2PrimaryVertex =
       new TH1D("fHistDcaPos2PrimaryVertex", ";Pos prong DCA (cm); Counts",
-               MiniV0::fgkDCAProng2PV_n, MiniV0::fgkDCAProng2PV_f + kEps,
-               MiniV0::fgkDCAProng2PV_l + kEps);
+               MiniV0<3>::fgkDCAProng2PV_n, MiniV0<3>::fgkDCAProng2PV_f + kEps,
+               MiniV0<3>::fgkDCAProng2PV_l + kEps);
   fHistDcaV0daughters = new TH1D(
-      "fHistDcaV0daughters", ";Prongs DCA; Counts", MiniV0::fgkDCAProngs_n,
-      MiniV0::fgkDCAProngs_f + kEps, MiniV0::fgkDCAProngs_l + kEps);
+      "fHistDcaV0daughters", ";Prongs DCA; Counts", MiniV0<3>::fgkDCAProngs_n,
+      MiniV0<3>::fgkDCAProngs_f + kEps, MiniV0<3>::fgkDCAProngs_l + kEps);
   fHistV0armAlpha = new TH1D(
-      "fHistV0armAlpha", ";Armenteros #alpha; Counts", MiniV0::fgkArmAlpha_n,
-      MiniV0::fgkArmAlpha_f + kEps, MiniV0::fgkArmAlpha_l + kEps);
+      "fHistV0armAlpha", ";Armenteros #alpha; Counts", MiniV0<3>::fgkArmAlpha_n,
+      MiniV0<3>::fgkArmAlpha_f + kEps, MiniV0<3>::fgkArmAlpha_l + kEps);
   fHistV0armPt = new TH1D(
       "fHistV0armPt", ";Armenteros #it{p}_{T} (GeV/#it{c}); Counts",
-      MiniV0::fgkArmPt_n, MiniV0::fgkArmPt_f + kEps, MiniV0::fgkArmPt_l + kEps);
+      MiniV0<3>::fgkArmPt_n, MiniV0<3>::fgkArmPt_f + kEps, MiniV0<3>::fgkArmPt_l + kEps);
   fHistLeastNxedRows = new TH1D(
       "fHistLeastNxedRows", ";Min # of crossed rows; Counts", 256, -0.5, 255.5);
   fHistLeastXedOverFindable = new TH1D(
       "fHistLeastXedOverFindable",
       ";Min # of crossed rows / findable clusters; Counts",
-      MiniV0::fgkXedOverFindable_n, MiniV0::fgkXedOverFindable_f + kEps,
-      MiniV0::fgkXedOverFindable_l + kEps);
+      MiniV0<3>::fgkXedOverFindable_n, MiniV0<3>::fgkXedOverFindable_f + kEps,
+      MiniV0<3>::fgkXedOverFindable_l + kEps);
   fHistMaxChi2PerCluster =
       new TH1D("fHistMaxChi2PerCluster", ";Min #chi^{2}/TPC clusters; Counts",
-               MiniV0::fgkChi2xCluster_n, MiniV0::fgkChi2xCluster_f + kEps,
-               MiniV0::fgkChi2xCluster_l + kEps);
+               MiniV0<3>::fgkChi2xCluster_n, MiniV0<3>::fgkChi2xCluster_f + kEps,
+               MiniV0<3>::fgkChi2xCluster_l + kEps);
   fHistNsigmaPosPion =
       new TH1D("fHistNsigmaPosPion", ";n_{#sigma} TPC Pos Pion; Counts",
-               MiniV0::fgkTPCsigma_n, MiniV0::fgkTPCsigma_f + kEps,
-               MiniV0::fgkTPCsigma_l + kEps);
+               MiniV0<3>::fgkTPCsigma_n, MiniV0<3>::fgkTPCsigma_f + kEps,
+               MiniV0<3>::fgkTPCsigma_l + kEps);
   fHistNsigmaPosProton =
       new TH1D("fHistNsigmaPosProton", ";n_{#sigma} TPC Pos Proton; Counts",
-               MiniV0::fgkTPCsigma_n, MiniV0::fgkTPCsigma_f + kEps,
-               MiniV0::fgkTPCsigma_l + kEps);
+               MiniV0<3>::fgkTPCsigma_n, MiniV0<3>::fgkTPCsigma_f + kEps,
+               MiniV0<3>::fgkTPCsigma_l + kEps);
   fHistNsigmaNegPion =
       new TH1D("fHistNsigmaNegPion", ";n_{#sigma} TPC Neg Pion; Counts",
-               MiniV0::fgkTPCsigma_n, MiniV0::fgkTPCsigma_f + kEps,
-               MiniV0::fgkTPCsigma_l + kEps);
+               MiniV0<3>::fgkTPCsigma_n, MiniV0<3>::fgkTPCsigma_f + kEps,
+               MiniV0<3>::fgkTPCsigma_l + kEps);
   fHistNsigmaNegProton =
       new TH1D("fHistNsigmaNegProton", ";n_{#sigma} TPC Neg Proton; Counts",
-               MiniV0::fgkTPCsigma_n, MiniV0::fgkTPCsigma_f + kEps,
-               MiniV0::fgkTPCsigma_l + kEps);
+               MiniV0<3>::fgkTPCsigma_n, MiniV0<3>::fgkTPCsigma_f + kEps,
+               MiniV0<3>::fgkTPCsigma_l + kEps);
   fHistEtaPos =
-      new TH1D("fHistEtaPos", ";Pos prong #eta; Counts", MiniV0::fgkEta_n,
-               MiniV0::fgkEta_f + kEps, MiniV0::fgkEta_l + kEps);
+      new TH1D("fHistEtaPos", ";Pos prong #eta; Counts", MiniV0<3>::fgkEta_n,
+               MiniV0<3>::fgkEta_f + kEps, MiniV0<3>::fgkEta_l + kEps);
   fHistEtaNeg =
-      new TH1D("fHistEtaNeg", ";Neg prong #eta; Counts", MiniV0::fgkEta_n,
-               MiniV0::fgkEta_f + kEps, MiniV0::fgkEta_l + kEps);
-  fHistArmenteros = new TH2D(
-      "fHistArmenteros", ";#alpha;#it{q}_{T}", MiniV0::fgkArmAlpha_n,
-      MiniV0::fgkArmAlpha_f + kEps, MiniV0::fgkArmAlpha_l + kEps,
-      MiniV0::fgkArmPt_n, MiniV0::fgkArmPt_f + kEps, MiniV0::fgkArmPt_l + kEps);
+      new TH1D("fHistEtaNeg", ";Neg prong #eta; Counts", MiniV0<3>::fgkEta_n,
+               MiniV0<3>::fgkEta_f + kEps, MiniV0<3>::fgkEta_l + kEps);
+  fHistArment = new TH2D(
+      "fHistArmenteros", ";#alpha;#it{q}_{T}", MiniV0<3>::fgkArmAlpha_n,
+      MiniV0<3>::fgkArmAlpha_f + kEps, MiniV0<3>::fgkArmAlpha_l + kEps,
+      MiniV0<3>::fgkArmPt_n, MiniV0<3>::fgkArmPt_f + kEps, MiniV0<3>::fgkArmPt_l + kEps);
 
   GetOutputList()->Add(fHistV0radius);
   GetOutputList()->Add(fHistV0pt);
@@ -168,14 +168,14 @@ Bool_t MiniV0QA::Process(Long64_t entry) {
     fHistV0radius->Fill(mini.GetV0radius());
     fHistV0pt->Fill(mini.GetV0pt());
     fHistV0eta->Fill(mini.GetV0eta());
-    fHistInvMassK0s->Fill(mini.GetV0pt(), mini.GetK0sInvMass());
-    fHistInvMassLambda->Fill(mini.GetV0pt(),mini.GetLambdaInvMass());
+    fHistInvMassK0s->Fill(mini.GetV0pt(), mini.GetCandidateInvMass(0));
+    fHistInvMassLambda->Fill(mini.GetV0pt(),mini.GetCandidateInvMass(1));
     fHistDistOverTotMom->Fill(mini.GetDistOverP());
     fHistV0CosPA->Fill(mini.GetV0CosPA());
     fHistChi2V0->Fill(mini.GetV0chi2());
     fHistDcaNeg2PrimaryVertex->Fill(mini.GetNegProngPvDCA());
     fHistDcaPos2PrimaryVertex->Fill(mini.GetPosProngPvDCA());
-    fHistDcaV0daughters->Fill(mini.GetProngsDCA());//non sicuro
+    fHistDcaV0daughters->Fill(mini.GetProngsDCA());
     fHistV0armAlpha->Fill(mini.GetArmenterosAlpha());
     fHistV0armPt->Fill(mini.GetArmenterosPt());
     fHistLeastNxedRows->Fill(mini.GetLeastNumberOfXedRows());
@@ -215,7 +215,7 @@ void MiniV0QA::Terminate() {
   output.Close();
 
 }
-_
+
 
 
 void MiniV0QA::Init(TTree *tree) {
@@ -229,7 +229,7 @@ void MiniV0QA::Init(TTree *tree) {
   fReader.SetTree(tree);
 
 }
-_
+
 
 
 Bool_t MiniV0QA::Notify() {

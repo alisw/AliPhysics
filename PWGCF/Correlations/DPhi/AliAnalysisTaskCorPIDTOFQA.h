@@ -53,7 +53,10 @@ class AliAnalysisTaskCorPIDTOFQA : public AliAnalysisTaskSE
 	
 	TH1F*                 fHistPt;                     //  1
 	TH2F*                 cent_ntracks;                //  2
-	
+
+	TH2F*                 dEdx_p;
+	TH2F*                 ndEdx_p;
+	TH2F*                 dEdx_p_cut;
 //	TH2F*                 m2_pt_pos;                   //  3
 //	TH2F*                 m2_pt_neg;                   //  4
 	TH2F*                 m2_pt_pos_TPC;               //  5

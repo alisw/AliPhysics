@@ -22,37 +22,47 @@ Double_t Getoutput::fgPionMass = 0.13957;
 Double_t Getoutput::fgEleMass = 0.00051;
 Double_t Getoutput::fgProtMass = 0.93827;
 
-Getoutput::Getoutput() {
+Getoutput::Getoutput(const char *filename,Int_t nsTri, Int_t nsPi) {
+ 
+ TString fOutFilename; 
+fOutFilename+=filename;
  fOutputList = new TList();
  fOutputList->SetOwner(kTRUE);
  fRejectBkg = kTRUE;
- fInputList = 0x0;
+ fInputList= new TList();
+ fInputList->SetOwner(kTRUE);
  fIncludePidTOF=kFALSE;//FALSE;
  fUseAODCut=kFALSE;//kTRUE;
  fIsMC=kFALSE;
  f3HPcut=3;
+ TFile *grFile = TFile::Open("outAll.root"); // out2.root has 2sigma cut instead of 3 sigma cut for tritons;
+ grTriPs =(TGraph*)grFile->Get(Form("tP%is",nsTri)); 
+ grTriMs =(TGraph*)grFile->Get(Form("tM%is",nsTri)); 
+ grPiPs =(TGraph*)grFile->Get(Form("piP%is",nsPi)); 
+ grPiMs =(TGraph*)grFile->Get(Form("piM%is",nsPi)); 
 }
 
-void Getoutput::StoreOutputData(const char *filename)
+void Getoutput::Process(){
+
+if(f3Hcharge==2){
+LoopOverV0(-1);
+LoopOverV0(1);
+}
+else LoopOverV0(f3Hcharge);
+}
+
+void Getoutput::StoreOutputData()
 {
 
  printf("storing...\n");
- TString outFileName(filename);
- outFileName.ReplaceAll(".root","");
- outFileName+=Form("3H%i",f3Hsign);
- if(fUseAODCut)outFileName+=".AODcut.";
- if(fIncludePidTOF)outFileName+=".3HTOFpid.";
- if(fIsMC) outFileName+=Form(".MC.root");
- else outFileName+=("root");
- TFile *out = TFile::Open(outFileName.Data(),"recreate");
  for(Int_t elem =0; elem < fOutputList->GetEntries(); elem++){
   TObject *obj = fOutputList->At(elem);
-  out->WriteObjectAny(obj,obj->ClassName(),obj->GetName());
+  fOutFile->WriteObjectAny(obj,obj->ClassName(),obj->GetName());
  }
- out->Write();
- out->Close();
+   fOutFile->Write();
+    fOutFile->Close();
  //if(fInputList) ClearInputData();
- 
+printf("end storing\n"); 
 }
 
 bool Getoutput::LoadParams(const char *paramfile)
@@ -101,6 +111,7 @@ scanId = fscanf(infile, "%f   %f   %f   %f\n",&param[kTOFpid],&param[kIsMc],&par
 
 
 bool Getoutput::LoadFile(const char *inputfile, const char *listName){
+
  if(!gGrid && !gSystem->IsFileInIncludePath(inputfile)){
   printf("no %s file in %s, exiting \n",inputfile,gSystem->pwd());
   return kFALSE;
@@ -118,8 +129,11 @@ bool Getoutput::LoadFile(const char *inputfile, const char *listName){
   return kFALSE;
  }
 
+ //fInputList = (TList*)l->Clone("locLNNlist");
+  for(Int_t ie =0; ie < l->GetEntries(); ie++){
+  fInputList->AddLast(l->At(ie));
+  }
 
- fInputList = (TList*)l->Clone("locLNNlist");
  if(!fInputList){
   printf("no input list after cloning, exiting \n");
   return kFALSE;
@@ -132,14 +146,17 @@ bool Getoutput::LoadFile(const char *inputfile, const char *listName){
       return kFALSE;
     }
     hOut->Add (hIn);
-    return kTRUE;
  }
+
  file->Delete();
+
+    return kTRUE;
 }
 
 
 void Getoutput::ClearInputData(){
-  if(fInputList){
+ printf("clear input data\n");
+  if(!fInputList){
     //printf("pointer to the list %p \n",fInputList);
     fInputList->Clear();
    //delete fInputList;
@@ -179,6 +196,14 @@ Double_t Getoutput::GetInvMass (TVector3 vPos, TVector3 vNeg, Double_t mPos, Dou
 }
 
 void Getoutput::BookOutputData(){
+  printf("initialò filename %s \n",fOutFilename.Data());
+ fOutFilename.ReplaceAll(".root","");
+ fOutFilename+=Form("3H%i",f3Hcharge);
+ if(fUseAODCut)fOutFilename+=".AODcut.";
+ if(fIncludePidTOF)fOutFilename+=".3HTOFpid.";
+ if(fIsMC) fOutFilename+=Form(".MC.root");
+ else fOutFilename+=("root");
+ fOutFile = TFile::Open(fOutFilename.Data(),"recreate"); 
 
  Double_t mRange[2] = { 2.94, 3.1 };
  Int_t massBins = (Int_t) ((mRange[1] - mRange[0]) / 0.0025);
@@ -377,14 +402,14 @@ void Getoutput::BookOutputData(){
  hMonitorPlot->GetXaxis()->SetBinLabel(9,"TOF m2 cut");
  hMonitorPlot->GetXaxis()->SetBinLabel(10,"!TPC pid CUT (>91)");
   fOutputList->AddLast(hMonitorPlot);
- ntTot = new TNtupleD ("ntTot", "ntTot", "V0Mom:piMom:triMom:v0dca:dcaTriXY:dcaV0d:decayL:decayLxy:CosThetaP:SigIIvtx:invM:bkgMassType:isHele:ptArm:alphaArm");
+ ntTot = new TNtupleD ("ntTot", "ntTot", "V0Mom:piMom:triMom:v0dca:dcaTriXY:dcaV0d:decayL:decayLxy:CosThetaP:SigIIvtx:invM:bkgMassType:isHele:ptArm:alphaArm:tpcSignal:TriMom:TRDsignal:nITSc");
  fOutputList->AddLast(ntTot);
 
  return;
 }
 
 void Getoutput::LoopOverV0(Int_t Hcharge){
- f3Hsign = Hcharge;
+ printf("start looping over V0... (charge %i) \n",Hcharge);
  //Double_t tofMassUpperLimit = 7.929 - param[kParNsigmaTOFmass]*0.3634;	//see https://aliceinfo.cern.ch/Notes/node/471 
  //Double_t tofMassLimit = 7.929 + param[kParNsigmaTOFmass]*0.3634;	// pag 12 of 44 of 2016-Nov-28-analysis_note-alice-frontpage_analysis_notes-2.pdf
  Double_t tofMassUpperLimit = 7.929 - param[kParNsigmaTOFmass]*0.6;	//see https://aliceinfo.cern.ch/Notes/node/471 
@@ -396,7 +421,7 @@ void Getoutput::LoopOverV0(Int_t Hcharge){
  const Int_t nPossible = 34; // for MC study only
  Int_t partId[nPossible] = { 11,13, 22, 111, 113, 130, 211, 213, 223, 310, 313, 321, 323, 411, 421, 521,511, 221, 3122, 3222, 3112,3312,443,331,-2212,-2112,1114,2214,2224,2114,431,531,-1,-999};
 
- TNtupleD *hn = (TNtupleD *)(fInputList->At (fInputList->GetEntries() - 1));
+ TNtupleD *hn = (TNtupleD *)(fInputList->At(fInputList->GetEntries() - 1));
  if(hn) printf ("ntuple entries %i ", (int) hn->GetEntries ());
  else {
   printf("No input Ntuple found, exiting... \n");
@@ -405,7 +430,6 @@ void Getoutput::LoopOverV0(Int_t Hcharge){
  Double_t pionMom, tritonMom, v0Mom;
  Int_t countTri=0;
  Int_t countPi=0;
-   TF1 *fiveSigmaSpl = new TF1("fiveSigma","173/(x*x)+41",0,2.0); 
 
  for (Int_t iv0 = 0; iv0 < hn->GetEntries (); iv0++)
  {
@@ -423,19 +447,19 @@ void Getoutput::LoopOverV0(Int_t Hcharge){
   if (fRejectBkg)
   {
    if (TMath::Abs (arr[kSign]) == 11) continue; 
-   if (f3Hsign == 1 && arr[kSign] == -9) continue;
-   else if (f3Hsign == -1 && arr[kSign] == 9) continue;
+   if (Hcharge == 1 && arr[kSign] == -9) continue;
+   else if (Hcharge == -1 && arr[kSign] == 9) continue;
   } else {
    if (TMath::Abs (arr[kSign]) == 9) continue;
-   if (f3Hsign == 1 && arr[kSign] == -11) continue;
-   else if (f3Hsign == -1 && arr[kSign] == 11) continue;
+   if (Hcharge == 1 && arr[kSign] == -11) continue;
+   else if (Hcharge == -1 && arr[kSign] == 11) continue;
   }
 
   
   TVector3 pPion (arr[0], arr[1], arr[2]);
   TVector3 pTriton (arr[3], arr[4], arr[5]);
-  pionMom = pPion.Mag ();
-  tritonMom = pTriton.Mag ();
+  pionMom = pPion.Mag();
+  tritonMom = pTriton.Mag();
   Double_t pionPt = TMath::Sqrt (arr[0] * arr[0] + arr[1] * arr[1]);
   Double_t tritonPt = TMath::Sqrt (arr[3] * arr[3] + arr[4] * arr[4]);
   hMonitorPlot->Fill(0);
@@ -443,7 +467,8 @@ void Getoutput::LoopOverV0(Int_t Hcharge){
    if (pionPt < param[kParMinP]) continue;
    hMonitorPlot->Fill(1);
   if (tritonPt < param[kPar3hLim]) continue;
-   if (tritonPt > param[kParMaxP3H])  continue;
+   if (tritonMom > param[kParMaxP3H])  continue;
+   //if (tritonPt > param[kParMaxP3H])  continue;
    hMonitorPlot->Fill(2);
   Double_t nsigmapi = TMath::Abs (arr[kNSPi]);
   Double_t nsigmapiTof = TMath::Abs (arr[kSigPiFromPiTof]);
@@ -452,10 +477,11 @@ void Getoutput::LoopOverV0(Int_t Hcharge){
   if (nsigmapi > param[kParNsigmaPID]) continue;
  hMonitorPlot->Fill(3);
   if(nsigmatri > param[kParNsigmaPID]) continue;
-   if(tritonMom<2 && arr[kTriTPCsignal] < fiveSigmaSpl->Eval(tritonMom)) {
-   continue; 
-}
-   //if(arr[kNSTri]<-1) continue; 
+   if(arr[kTriTPCsignal]<grTriMs->Eval(tritonMom)) continue; 
+   if(arr[kTriTPCsignal]>grTriPs->Eval(tritonMom)) continue; 
+   if(arr[kPiTPCsignal]<grPiMs->Eval(pionMom)) continue; 
+   if(arr[kPiTPCsignal]>grPiPs->Eval(pionMom)) continue; 
+
  hMonitorPlot->Fill(4);
  //if(nsigmatri>2.999) printf("AFTER : nsigmapi %f , nsigmaTri %f, limit %f \n",nsigmapi,nsigmatri,param[kParNsigmaPID]);
   if (!EventSelectionAOD(arr)) continue;
@@ -475,7 +501,7 @@ void Getoutput::LoopOverV0(Int_t Hcharge){
   else {printf ("sign value not known %i\n", (Int_t)arr[kSign]);}
   if (isPrint)
   {
-   printf(" (triCharge %i) : 3H sign %i | pion sign %i (stored %i) \n", f3Hsign, signTri, signPi, (Int_t) arr[kSign]);
+   printf(" (triCharge %i) : 3H sign %i | pion sign %i (stored %i) \n", f3Hcharge, signTri, signPi, (Int_t) arr[kSign]);
    isPrint = kFALSE;
   }
   //if(arr[kTriTPCsignal]<-55*tritonMom+200) printf("nsigma triton %3.3f \n",arr[kNSTri]);
@@ -497,6 +523,7 @@ void Getoutput::LoopOverV0(Int_t Hcharge){
   
     if(fUseAODCut){
    if (arr[kTriTPCsignal] < 91) // Caio's way
+   //if (arr[kTriTPCsignal] < 75) // 2 sigma 's way
    {
      hMonitorPlot->Fill(7);
 
@@ -549,12 +576,17 @@ void Getoutput::LoopOverV0(Int_t Hcharge){
 
   TDatabasePDG *d; 
   if(fIsMC) d =  TDatabasePDG::Instance ();
-  Double_t tmvaArray[15] = { v0Mom, pionMom, tritonMom, arr[kV0Dca], arr[kDcaTriXY], arr[kV0dcaD], arr[kDecayPath], arr[kDecayPathXY], arr[kCosP], arr[kV0VtxErrSum], LNN, (Double_t)selection, arr[kIsTrdEle],arr[kAlphaArm], arr[kPtArm]};
+  Double_t TRDsig = arr[kTRDsig]; 
+  Double_t tmvaArray[19] = { v0Mom, pionPt, tritonPt, arr[kV0Dca], arr[kDcaTriXY], arr[kV0dcaD], arr[kDecayPath], arr[kDecayPathXY], arr[kCosP], arr[kV0VtxErrSum], LNN, (Double_t)selection, arr[kIsTrdEle],arr[kAlphaArm], arr[kPtArm],arr[kTriTPCsignal],tritonMom,TRDsig,arr[kNclusITS]};
   if(!fIsMC) {
    ntTot->Fill(tmvaArray); 
   }
   else {
-   if (arr[kMumPiPdgCode] == arr[kMumTriPdgCode] && TMath::Abs (arr[kMumPiPdgCode]) == 1010000030) ntTot->Fill (tmvaArray);      // trule LNN inv Mass are in that interval 
+   if (arr[kMumPiPdgCode] == arr[kMumTriPdgCode] && TMath::Abs (arr[kMumPiPdgCode]) == 1010000030) {
+    tmvaArray[17]=arr[kMumTriPdgCode+1]; 
+    ntTot->Fill (tmvaArray);      // true LNN inv Mass are in that interval 
+    printf("analyzing MC, please check that TRD is correctly stored in ntTot\n");
+   }
    // 1010000030 - LNN
    // 1000010030 - 3H
    if(TMath::Abs (arr[kMumPiPdgCode]) == 1010000030) hMassSignal->Fill(LNN);
@@ -652,7 +684,7 @@ void Getoutput::LoopOverV0(Int_t Hcharge){
   hPiP[0]->Fill (pionMom);
   hV0P[0]->Fill (arr[kV0mom]);
   hProdVtx[0]->Fill (arr[kDecayPathXY]);
- hDiffRelP[0]->Fill(arr[kV0mom],(tritonMom-pionMom)/arr[kV0mom]); 
+  hDiffRelP[0]->Fill(arr[kV0mom],(tritonMom)/arr[kV0mom]); 
 
   if (LNN > 3.015)
   {
@@ -662,7 +694,7 @@ void Getoutput::LoopOverV0(Int_t Hcharge){
    hTriP[4]->Fill (tritonMom);
    hV0P[4]->Fill (arr[kV0mom]);
    hHighM->Fill (arr[kV0mom]);
- hDiffRelP[4]->Fill(arr[kV0mom],(tritonMom-pionMom)/arr[kV0mom]); 
+ hDiffRelP[4]->Fill(arr[kV0mom],(tritonMom)/arr[kV0mom]); 
    
   }
 
@@ -681,7 +713,7 @@ void Getoutput::LoopOverV0(Int_t Hcharge){
   hTriP[1]->Fill (tritonMom);
   hPiP[1]->Fill (pionMom);
   hV0P[1]->Fill (arr[kV0mom]);
- hDiffRelP[1]->Fill(arr[kV0mom],(tritonMom-pionMom)/arr[kV0mom]); 
+ hDiffRelP[1]->Fill(arr[kV0mom],(tritonMom)/arr[kV0mom]); 
 
   if (lambda > param[kLambdaMassLow]&& lambda < param[kLambdaMassHigh])
   {
@@ -696,7 +728,7 @@ void Getoutput::LoopOverV0(Int_t Hcharge){
   hTriP[2]->Fill (tritonMom);
   hPiP[2]->Fill (pionMom);
   hV0P[2]->Fill (arr[kV0mom]);
- hDiffRelP[2]->Fill(arr[kV0mom],(tritonMom-pionMom)/arr[kV0mom]); 
+ hDiffRelP[2]->Fill(arr[kV0mom],(tritonMom)/arr[kV0mom]); 
 
   if (gamma < param[kGammaMassHigh] && gamma >= 0)
   {
@@ -713,13 +745,13 @@ void Getoutput::LoopOverV0(Int_t Hcharge){
   hTriP[3]->Fill (tritonMom);
   hPiP[3]->Fill (pionMom);
   hV0P[3]->Fill (arr[kV0mom]);
- hDiffRelP[3]->Fill(arr[kV0mom],(tritonMom-pionMom)/arr[kV0mom]); 
+ hDiffRelP[3]->Fill(arr[kV0mom],(tritonMom)/arr[kV0mom]); 
 
+   if(iv0 == (hn->GetEntries()-1))printf("finishing the loop\n");
 
   }
-   delete fiveSigmaSpl;
 
-
+ printf("end looping over V0...\n");
 
  }
 
@@ -728,6 +760,10 @@ void Getoutput::LoopOverV0(Int_t Hcharge){
   c->Divide (4, 2);
   for (Int_t i = 0; i < 4; i++)
   {
+  if(!hMass[i]){
+  printf("no hMass, continue\n");
+  continue;
+  }
    c->cd (1 + 2*i);  if(hMass[i]) hMass[i]->DrawCopy();
    c->cd (2 + 2*i);  if(hArmPlotSel[i])hArmPlotSel[i]->DrawCopy ("colz");
   }
@@ -785,6 +821,7 @@ void Getoutput::LoopOverV0(Int_t Hcharge){
  }
 
  bool Getoutput::LoadOutputData(const char *filename){
+  printf("load output data \n"); 
   gStyle->SetOptStat(10);
   TFile *f = TFile::Open(filename);
   if(!f){
@@ -826,6 +863,7 @@ void Getoutput::LoopOverV0(Int_t Hcharge){
   // hMassBkg = (TH1F*)f->Get("hMassBkg");
   // hMassSignal = (TH1F*)f->Get("hMassSignal");
   //TH1F *hEv;
+  printf("end load output data \n"); 
   return kTRUE;
  }
 

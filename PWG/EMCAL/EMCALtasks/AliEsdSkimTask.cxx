@@ -8,6 +8,7 @@
 #include <TClonesArray.h>
 #include <TFile.h>
 #include <TTree.h>
+#include <Riostream.h>
 #include "AliAnalysisManager.h"
 #include "AliCentrality.h"
 #include "AliESDEvent.h"
@@ -26,10 +27,11 @@
 AliEsdSkimTask::AliEsdSkimTask(const char *opt) :
   AliAnalysisTaskSE(opt), fEvent(0), fTree(0), fCuts(0),
   fDoZDC(1), fDoV0(1), fDoT0(1), fDoTPCv(1), fDoSPDv(1), fDoPriv(1),
-  fDoEmCs(1), fDoPCs(0), fDoEmT(1), fDoPT(0), fDoTracks(0), fDoFmd(1),
-  fDoMult(1), fDoTof(0), fDoPileup(1), fDoClus(0), fDoMuonTracks(0), fEmcNames(""), 
+  fDoEmCs(1), fDoPCs(1), fDoEmT(0), fDoPT(0), fDoTracks(1), fDoFmd(0),
+  fDoMult(1), fDoTof(1), fDoPileup(1), fDoClus(1), fDoMuonTracks(0),
+  fDoV0s(1), fDoCascades(0), fDoKinks(0), fDoErrorLogs(1),  fEmcNames(""), 
   fDoMiniTracks(0), fTracks("Tracks"), fPhosClusOnly(0), fEmcalClusOnly(0),
-  fDoSaveBytes(0), fDoCent(1), fDoRP(1), fRemoveCP(0), fResetCov(1), 
+  fDoSaveBytes(0), fDoCent(1), fDoRP(1), fRemoveCP(0), fResetCov(0), fDoAllTracks(1),
   fDoPicoTracks(0), fCheckCond(0)
 {
   // Constructor.
@@ -375,6 +377,9 @@ void AliEsdSkimTask::UserExec(Option_t */*opt*/)
                                                 newtrack.Charge(), newtrack.GetLabel(), 0, 
                                                 etaemc, phiemc, newtrack.IsEMCAL());
           ++nacc;
+        } else if (fDoAllTracks) {
+          new ((*tracksout)[nacc]) AliESDtrack(*track);
+          ++nacc;
         } else {
           AliEsdTrackExt *newtrack = new ((*tracksout)[nacc]) AliEsdTrackExt(*track);
           if (fDoMiniTracks) {
@@ -400,6 +405,31 @@ void AliEsdSkimTask::UserExec(Option_t */*opt*/)
       }
     }
   }
+  if (fDoV0s) {
+    TClonesArray *out = dynamic_cast<TClonesArray*>(objsout->FindObject("V0s"));
+    TClonesArray *in  = dynamic_cast<TClonesArray*>(objsin->FindObject("V0s"));
+    if (out)
+      out->AbsorbObjects(in);
+  }
+  if (fDoCascades) {
+    TClonesArray *out = dynamic_cast<TClonesArray*>(objsout->FindObject("Cascades"));
+    TClonesArray *in  = dynamic_cast<TClonesArray*>(objsin->FindObject("Cascades"));
+    if (out)
+      out->AbsorbObjects(in);
+  }
+  if (fDoKinks) {
+    TClonesArray *out = dynamic_cast<TClonesArray*>(objsout->FindObject("Kinks"));
+    TClonesArray *in  = dynamic_cast<TClonesArray*>(objsin->FindObject("Kinks"));
+    if (out)
+      out->AbsorbObjects(in);
+  }
+  if (fDoErrorLogs) {
+    TClonesArray *out = dynamic_cast<TClonesArray*>(objsout->FindObject("AliRawDataErrorLogs"));
+    TClonesArray *in  = dynamic_cast<TClonesArray*>(objsin->FindObject("AliRawDataErrorLogs"));
+    if (out)
+      out->AbsorbObjects(in);
+  }
+
   fTree->Fill();
 }
 

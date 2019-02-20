@@ -43,9 +43,9 @@
 
 #include "AliTRDCalPID.h"
 #include "AliTRDCalPIDNN.h"
-#include "info/AliTRDtrackInfo.h"
-#include "info/AliTRDv0Info.h"
-#include "info/AliTRDpidInfo.h"
+#include "AliTRDtrackInfo.h"
+#include "AliTRDv0Info.h"
+#include "AliTRDpidInfo.h"
 
 ClassImp(AliTRDpidRefMakerNN)
 

@@ -55,6 +55,95 @@ fDoAngles(doAngles)
   }
 }
 
+AliFemtoTrioMinvFctn::AliFemtoTrioMinvFctn(const AliFemtoTrioMinvFctn& aTrioFctn) :
+  fDoMinv(aTrioFctn.fDoMinv),
+  fDoDalitz(aTrioFctn.fDoDalitz),
+  fDoAngles(aTrioFctn.fDoAngles)
+{
+  // copy constructor
+  if(aTrioFctn.fRealDistribution)
+    fRealDistribution = new TH1D(*aTrioFctn.fRealDistribution);
+  else
+    fRealDistribution = 0;
+  if(aTrioFctn.fMixedDistribution)
+    fMixedDistribution = new TH1D(*aTrioFctn.fMixedDistribution);
+  else
+    fMixedDistribution = 0;   
+       
+
+
+  
+  if(fDoDalitz){
+    if(aTrioFctn.fDalitzPlot12_23)
+      fDalitzPlot12_23 = new TH2D(*aTrioFctn.fDalitzPlot12_23);
+    else
+      fDalitzPlot12_23 = 0; 
+    if(aTrioFctn.fDalitzPlot23_31)
+      fDalitzPlot23_31 = new TH2D(*aTrioFctn.fDalitzPlot23_31);
+    else
+      fDalitzPlot23_31 = 0;
+    if(aTrioFctn.fDalitzPlot12_31)
+      fDalitzPlot12_31 = new TH2D(*aTrioFctn.fDalitzPlot12_31);
+    else
+      fDalitzPlot12_31 = 0;
+  }
+  if(fDoAngles){
+    if(aTrioFctn.fAngle12)
+      fAngle12 = new TH1D(*aTrioFctn.fAngle12);
+    else
+      fAngle12 = 0; 
+    if(aTrioFctn.fAngle23)
+      fAngle23 = new TH1D(*aTrioFctn.fAngle23);
+    else
+      fAngle23 = 0; 
+    if(aTrioFctn.fAngle31)
+      fAngle31 = new TH1D(*aTrioFctn.fAngle31);
+    else
+      fAngle31 = 0; 
+
+    if(aTrioFctn.fAngle1)
+      fAngle1 = new TH1D(*aTrioFctn.fAngle1);
+    else
+      fAngle1 = 0;
+    if(aTrioFctn.fAngle2)
+      fAngle2 = new TH1D(*aTrioFctn.fAngle2);
+    else
+      fAngle1 = 0;
+    if(aTrioFctn.fAngle3)
+      fAngle3 = new TH1D(*aTrioFctn.fAngle3);
+    else
+      fAngle3 = 0; 
+
+
+    if(aTrioFctn.fCosAngle12)
+      fCosAngle12 = new TH1D(*aTrioFctn.fCosAngle12);
+    else
+      fCosAngle12 = 0; 
+    if(aTrioFctn.fCosAngle23)
+      fCosAngle23 = new TH1D(*aTrioFctn.fCosAngle23);
+    else
+      fCosAngle23 = 0; 
+    if(aTrioFctn.fCosAngle31)
+      fCosAngle31 = new TH1D(*aTrioFctn.fCosAngle31);
+    else
+      fCosAngle31 = 0; 
+
+    if(aTrioFctn.fCosAngle1)
+      fCosAngle1 = new TH1D(*aTrioFctn.fCosAngle1);
+    else
+      fCosAngle1 = 0;
+    if(aTrioFctn.fCosAngle2)
+      fCosAngle2 = new TH1D(*aTrioFctn.fCosAngle2);
+    else
+      fCosAngle1 = 0;
+    if(aTrioFctn.fCosAngle3)
+      fCosAngle3 = new TH1D(*aTrioFctn.fCosAngle3);
+    else
+      fCosAngle3 = 0; 
+  }
+}
+
+
 AliFemtoTrioMinvFctn::~AliFemtoTrioMinvFctn()
 {
   if(fRealDistribution) delete fRealDistribution;
@@ -74,6 +163,103 @@ AliFemtoTrioMinvFctn::~AliFemtoTrioMinvFctn()
   if(fCosAngle1) delete fCosAngle1;
   if(fCosAngle2) delete fCosAngle2;
   if(fCosAngle3) delete fCosAngle3;
+}
+
+
+AliFemtoTrioMinvFctn& AliFemtoTrioMinvFctn::operator=(const AliFemtoTrioMinvFctn& aTrioFctn)
+{
+  // assignment operator
+  if (this == &aTrioFctn)
+    return *this;
+
+  fDoMinv = aTrioFctn.fDoMinv;
+  fDoDalitz = aTrioFctn.fDoDalitz;
+  fDoAngles = aTrioFctn.fDoAngles;
+
+
+  if(aTrioFctn.fRealDistribution)
+    fRealDistribution = new TH1D(*aTrioFctn.fRealDistribution);
+  else
+    fRealDistribution = 0;
+  if(aTrioFctn.fMixedDistribution)
+    fMixedDistribution = new TH1D(*aTrioFctn.fMixedDistribution);
+  else
+    fMixedDistribution = 0;   
+       
+
+
+  
+  if(fDoDalitz){
+    if(aTrioFctn.fDalitzPlot12_23)
+      fDalitzPlot12_23 = new TH2D(*aTrioFctn.fDalitzPlot12_23);
+    else
+      fDalitzPlot12_23 = 0; 
+    if(aTrioFctn.fDalitzPlot23_31)
+      fDalitzPlot23_31 = new TH2D(*aTrioFctn.fDalitzPlot23_31);
+    else
+      fDalitzPlot23_31 = 0;
+    if(aTrioFctn.fDalitzPlot12_31)
+      fDalitzPlot12_31 = new TH2D(*aTrioFctn.fDalitzPlot12_31);
+    else
+      fDalitzPlot12_31 = 0;
+  }
+  if(fDoAngles){
+    if(aTrioFctn.fAngle12)
+      fAngle12 = new TH1D(*aTrioFctn.fAngle12);
+    else
+      fAngle12 = 0; 
+    if(aTrioFctn.fAngle23)
+      fAngle23 = new TH1D(*aTrioFctn.fAngle23);
+    else
+      fAngle23 = 0; 
+    if(aTrioFctn.fAngle31)
+      fAngle31 = new TH1D(*aTrioFctn.fAngle31);
+    else
+      fAngle31 = 0; 
+
+    if(aTrioFctn.fAngle1)
+      fAngle1 = new TH1D(*aTrioFctn.fAngle1);
+    else
+      fAngle1 = 0;
+    if(aTrioFctn.fAngle2)
+      fAngle2 = new TH1D(*aTrioFctn.fAngle2);
+    else
+      fAngle1 = 0;
+    if(aTrioFctn.fAngle3)
+      fAngle3 = new TH1D(*aTrioFctn.fAngle3);
+    else
+      fAngle3 = 0; 
+
+
+    if(aTrioFctn.fCosAngle12)
+      fCosAngle12 = new TH1D(*aTrioFctn.fCosAngle12);
+    else
+      fCosAngle12 = 0; 
+    if(aTrioFctn.fCosAngle23)
+      fCosAngle23 = new TH1D(*aTrioFctn.fCosAngle23);
+    else
+      fCosAngle23 = 0; 
+    if(aTrioFctn.fCosAngle31)
+      fCosAngle31 = new TH1D(*aTrioFctn.fCosAngle31);
+    else
+      fCosAngle31 = 0; 
+
+    if(aTrioFctn.fCosAngle1)
+      fCosAngle1 = new TH1D(*aTrioFctn.fCosAngle1);
+    else
+      fCosAngle1 = 0;
+    if(aTrioFctn.fCosAngle2)
+      fCosAngle2 = new TH1D(*aTrioFctn.fCosAngle2);
+    else
+      fCosAngle1 = 0;
+    if(aTrioFctn.fCosAngle3)
+      fCosAngle3 = new TH1D(*aTrioFctn.fCosAngle3);
+    else
+      fCosAngle3 = 0; 
+  
+  }
+
+  return *this;
 }
 
 void AliFemtoTrioMinvFctn::AddRealTrio(AliFemtoTrio *trio)

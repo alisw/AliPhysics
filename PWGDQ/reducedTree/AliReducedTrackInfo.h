@@ -32,6 +32,7 @@ class AliReducedTrackInfo : public AliReducedBaseTrack {
   Float_t  DCAxyTPC()                    const {return fTPCDCA[0];}
   Float_t  DCAzTPC()                     const {return fTPCDCA[1];}
   Float_t  Pin()                         const {return fMomentumInner;}
+  Float_t  PonCalo()                     const {return fMomentumOnCalo;}
   Float_t  DCAxy()                       const {return fDCA[0];}
   Float_t  DCAz()                        const {return fDCA[1];}
   Float_t  TrackLength()                 const {return fTrackLength;}
@@ -114,6 +115,7 @@ class AliReducedTrackInfo : public AliReducedBaseTrack {
   Float_t fTPCPt;               // inner param pt  
   Float_t fTPCEta;              // inner param eta 
   Float_t fMomentumInner;       // inner param momentum (only the magnitude)
+  Float_t fMomentumOnCalo;      // momentum on calorimeter surface (only the magnitude)
   Float_t fDCA[2];              // DCA xy,z
   Float_t fTPCDCA[2];           // TPConly DCA xy,z
   Float_t fTrackLength;         // track length
@@ -182,7 +184,7 @@ class AliReducedTrackInfo : public AliReducedBaseTrack {
 
   AliReducedTrackInfo& operator= (const AliReducedTrackInfo &c);
   
-  ClassDef(AliReducedTrackInfo, 6);
+  ClassDef(AliReducedTrackInfo, 7);
 };
 
 //_______________________________________________________________________________

@@ -18,19 +18,17 @@ ClassImp(AliAnalysisTaskSigma0Run2)
       fV0ReaderName("NoInit"),
       fV0Cuts(nullptr),
       fAntiV0Cuts(nullptr),
-      fPhotonV0Cuts(nullptr),
+      fPhotonQA(nullptr),
       fSigmaCuts(nullptr),
       fAntiSigmaCuts(nullptr),
-      fSigmaPhotonCuts(nullptr),
-      fAntiSigmaPhotonCuts(nullptr),
       fIsMC(false),
       fIsHeavyIon(false),
       fIsLightweight(false),
+      fIsRun1(false),
+      fPhotonLegPileUpCut(false),
       fV0PercentileMax(100.f),
       fTrigger(AliVEvent::kINT7),
-      fLambdaContainer(),
-      fAntiLambdaContainer(),
-      fPhotonV0Container(),
+      fMultMode(AliVEvent::kINT7),
       fGammaArray(nullptr),
       fOutputContainer(nullptr),
       fQA(nullptr),
@@ -40,9 +38,10 @@ ClassImp(AliAnalysisTaskSigma0Run2)
       fHistCentralityProfileBefore(nullptr),
       fHistCentralityProfileAfter(nullptr),
       fHistCentralityProfileCoarseAfter(nullptr),
+      fHistMultiplicityRef08(nullptr),
       fHistTriggerBefore(nullptr),
       fHistTriggerAfter(nullptr),
-      fOutputTree(nullptr) {}
+      fHistMultiplicity(nullptr) {}
 
 //____________________________________________________________________________________________________
 AliAnalysisTaskSigma0Run2::AliAnalysisTaskSigma0Run2(const char *name)
@@ -54,19 +53,17 @@ AliAnalysisTaskSigma0Run2::AliAnalysisTaskSigma0Run2(const char *name)
       fV0ReaderName("NoInit"),
       fV0Cuts(nullptr),
       fAntiV0Cuts(nullptr),
-      fPhotonV0Cuts(nullptr),
+      fPhotonQA(nullptr),
       fSigmaCuts(nullptr),
       fAntiSigmaCuts(nullptr),
-      fSigmaPhotonCuts(nullptr),
-      fAntiSigmaPhotonCuts(nullptr),
       fIsMC(false),
       fIsHeavyIon(false),
       fIsLightweight(false),
+      fIsRun1(false),
+      fPhotonLegPileUpCut(false),
       fV0PercentileMax(100.f),
       fTrigger(AliVEvent::kINT7),
-      fLambdaContainer(),
-      fAntiLambdaContainer(),
-      fPhotonV0Container(),
+      fMultMode(AliVEvent::kINT7),
       fGammaArray(nullptr),
       fOutputContainer(nullptr),
       fQA(nullptr),
@@ -76,13 +73,16 @@ AliAnalysisTaskSigma0Run2::AliAnalysisTaskSigma0Run2(const char *name)
       fHistCentralityProfileBefore(nullptr),
       fHistCentralityProfileAfter(nullptr),
       fHistCentralityProfileCoarseAfter(nullptr),
+      fHistMultiplicityRef08(nullptr),
       fHistTriggerBefore(nullptr),
       fHistTriggerAfter(nullptr),
-      fOutputTree(nullptr) {
+      fHistMultiplicity(nullptr) {
   DefineInput(0, TChain::Class());
   DefineOutput(1, TList::Class());
-  DefineOutput(2, TList::Class());
 }
+
+//____________________________________________________________________________________________________
+AliAnalysisTaskSigma0Run2::~AliAnalysisTaskSigma0Run2() {}
 
 //____________________________________________________________________________________________________
 void AliAnalysisTaskSigma0Run2::UserExec(Option_t * /*option*/) {
@@ -100,7 +100,7 @@ void AliAnalysisTaskSigma0Run2::UserExec(Option_t * /*option*/) {
     return;
   }
 
-  if (!fV0Cuts || !fAntiV0Cuts || !fPhotonV0Cuts) {
+  if (!fV0Cuts || !fAntiV0Cuts) {
     AliError("V0 Cuts missing");
     return;
   }
@@ -113,8 +113,7 @@ void AliAnalysisTaskSigma0Run2::UserExec(Option_t * /*option*/) {
     return;
   }
 
-  if (!fSigmaCuts || !fAntiSigmaCuts || !fSigmaPhotonCuts ||
-      !fAntiSigmaPhotonCuts) {
+  if (!fSigmaCuts || !fAntiSigmaCuts) {
     AliError("Sigma0 Cuts missing");
     return;
   }
@@ -123,50 +122,104 @@ void AliAnalysisTaskSigma0Run2::UserExec(Option_t * /*option*/) {
   if (!AcceptEvent(fInputEvent)) return;
 
   // LAMBDA SELECTION
-  fV0Cuts->SelectV0(fInputEvent, fMCEvent, fLambdaContainer);
+  fV0Cuts->SelectV0(fInputEvent, fMCEvent);
 
   // LAMBDA SELECTION
-  fAntiV0Cuts->SelectV0(fInputEvent, fMCEvent, fAntiLambdaContainer);
-
-  // PHOTON V0 SELECTION
-  fPhotonV0Cuts->SelectV0(fInputEvent, fMCEvent, fPhotonV0Container);
+  fAntiV0Cuts->SelectV0(fInputEvent, fMCEvent);
 
   // PHOTON SELECTION
   fGammaArray = fV0Reader->GetReconstructedGammas();  // Gammas from default Cut
+  if (!fIsLightweight) {
+    fPhotonQA->PhotonQA(fInputEvent, fGammaArray);
+  }
   std::vector<AliSigma0ParticleV0> gammaConvContainer;
   CastToVector(gammaConvContainer, fInputEvent);
 
   // Sigma0 selection
   fSigmaCuts->SelectPhotonMother(fInputEvent, fMCEvent, gammaConvContainer,
-                                 fLambdaContainer);
+                                 fV0Cuts->GetV0s());
 
   // Sigma0 selection
   fAntiSigmaCuts->SelectPhotonMother(fInputEvent, fMCEvent, gammaConvContainer,
-                                     fAntiLambdaContainer);
+                                     fAntiV0Cuts->GetV0s());
 
-  // Sigma0 selection
-  fSigmaPhotonCuts->SelectPhotonMother(fInputEvent, fMCEvent,
-                                       fPhotonV0Container, fLambdaContainer);
-
-  // Sigma0 selection
-  fAntiSigmaPhotonCuts->SelectPhotonMother(
-      fInputEvent, fMCEvent, fPhotonV0Container, fAntiLambdaContainer);
   // flush the data
   PostData(1, fOutputContainer);
 }
 
 //____________________________________________________________________________________________________
 bool AliAnalysisTaskSigma0Run2::AcceptEvent(AliVEvent *event) {
-  fHistRunNumber->Fill(0.f, event->GetRunNumber());
-  if (!fIsLightweight) FillTriggerHisto(fHistTriggerBefore);
+  if (fIsRun1) {
+    return AcceptEventRun1(event);
+  } else {
+    return AcceptEventRun2(event);
+  }
+}
 
+//____________________________________________________________________________________________________
+bool AliAnalysisTaskSigma0Run2::AcceptEventRun1(AliVEvent *event) {
+  if (!fIsLightweight) {
+    fHistRunNumber->Fill(0.f, event->GetRunNumber());
+    FillTriggerHisto(fHistTriggerBefore);
+  }
   fHistCutQA->Fill(0);
+
+  auto esdEvent = static_cast<AliESDEvent *>(event);
+  // Checks if we have a primary vertex  // Get primary vertices form ESD
+  bool eventVtxExist = false;
+  if (esdEvent->GetPrimaryVertexTracks()->GetNContributors() > 0) {
+    eventVtxExist = true;
+  } else if (esdEvent->GetPrimaryVertexSPD()->GetNContributors() > 0) {
+    eventVtxExist = true;
+  }
+  if (!eventVtxExist) {
+    return false;
+  }
+
+  const auto esdVertex5 = esdEvent->GetPrimaryVertex();
+
+  if (!(std::abs(esdVertex5->GetZ()) < 10.)) {
+    return false;
+  }
+
+  // Check for pileup and fill pileup histograms
+  if (esdEvent->IsPileupFromSPD()) {
+    return false;
+  }
+  if (!fIsLightweight) {
+    FillTriggerHisto(fHistTriggerAfter);
+  }
+  fHistCutQA->Fill(2);
+
+  bool isConversionEventSelected =
+      ((AliConvEventCuts *)fV0Reader->GetEventCuts())
+          ->EventIsSelected(event, static_cast<AliMCEvent *>(fMCEvent));
+  if (!isConversionEventSelected) return false;
+
+  fHistCutQA->Fill(4);
+  return true;
+}
+
+//____________________________________________________________________________________________________
+bool AliAnalysisTaskSigma0Run2::AcceptEventRun2(AliVEvent *event) {
+  if (!fIsLightweight) {
+    fHistRunNumber->Fill(0.f, event->GetRunNumber());
+    FillTriggerHisto(fHistTriggerBefore);
+  }
+  fHistCutQA->Fill(0);
+
+  // Remove overlap with HM trigger from MB
+  if (!fIsMC && fTrigger == AliVEvent::kINT7 &&
+      (fInputHandler->IsEventSelected() & AliVEvent::kHighMultV0))
+    return false;
+  fHistCutQA->Fill(1);
 
   // EVENT SELECTION
   if (!fAliEventCuts.AcceptEvent(event)) return false;
-  fHistCutQA->Fill(1);
-
-  if (!fIsLightweight) FillTriggerHisto(fHistTriggerAfter);
+  if (!fIsLightweight) {
+    FillTriggerHisto(fHistTriggerAfter);
+  }
+  fHistCutQA->Fill(2);
 
   Float_t lPercentile = 300;
   AliMultSelection *MultSelection = 0x0;
@@ -183,17 +236,28 @@ bool AliAnalysisTaskSigma0Run2::AcceptEvent(AliVEvent *event) {
   // MULTIPLICITY SELECTION
   if (fTrigger == AliVEvent::kHighMultV0 && fV0PercentileMax < 100.f) {
     if (lPercentile > fV0PercentileMax) return false;
-    if (!fIsLightweight) fHistCentralityProfileAfter->Fill(lPercentile);
-    fHistCutQA->Fill(2);
+    if (!fIsLightweight) {
+      fHistCentralityProfileAfter->Fill(lPercentile);
+    }
+    fHistCutQA->Fill(3);
   }
-  if (!fIsLightweight) fHistCentralityProfileCoarseAfter->Fill(lPercentile);
 
   bool isConversionEventSelected =
       ((AliConvEventCuts *)fV0Reader->GetEventCuts())
           ->EventIsSelected(event, static_cast<AliMCEvent *>(fMCEvent));
   if (!isConversionEventSelected) return false;
 
-  fHistCutQA->Fill(3);
+  if (!fIsLightweight) {
+    fHistCentralityProfileCoarseAfter->Fill(lPercentile);
+    fHistMultiplicityRef08->Fill(AliESDtrackCuts::GetReferenceMultiplicity(
+        static_cast<AliESDEvent *>(event), AliESDtrackCuts::kTrackletsITSTPC,
+        0.8, 0));
+  }
+
+  fHistMultiplicity->Fill(
+      AliSigma0PhotonMotherCuts::GetMultiplicityBin(lPercentile, fMultMode));
+
+  fHistCutQA->Fill(4);
   return true;
 }
 
@@ -204,7 +268,34 @@ void AliAnalysisTaskSigma0Run2::CastToVector(
     auto *PhotonCandidate =
         dynamic_cast<AliAODConversionPhoton *>(fGammaArray->At(iGamma));
     if (!PhotonCandidate) continue;
-    AliSigma0ParticleV0 phot(PhotonCandidate, inputEvent);
+
+    auto pos =
+        (AliESDtrack *)inputEvent->GetTrack(PhotonCandidate->GetLabel1());
+    auto neg =
+        (AliESDtrack *)inputEvent->GetTrack(PhotonCandidate->GetLabel2());
+    if (!pos || !neg) continue;
+
+    // pile up check
+    if (fPhotonLegPileUpCut) {
+      bool posTrackITS =
+          (pos->HasPointOnITSLayer(0) || pos->HasPointOnITSLayer(1) ||
+           pos->HasPointOnITSLayer(4) || pos->HasPointOnITSLayer(5));
+      bool negTrackITS =
+          (neg->HasPointOnITSLayer(0) || pos->HasPointOnITSLayer(1) ||
+           neg->HasPointOnITSLayer(4) || pos->HasPointOnITSLayer(5));
+      bool posTrackTOF = pos->GetTOFBunchCrossing() == 0;
+      bool negTrackTOF = neg->GetTOFBunchCrossing() == 0;
+
+      bool posTrackCombined = (posTrackITS || posTrackTOF);
+      bool negTrackCombined = (negTrackITS || negTrackTOF);
+
+      if (!posTrackCombined || !negTrackCombined) continue;
+    }
+
+    AliSigma0ParticleV0 phot(PhotonCandidate, pos, neg, inputEvent);
+    if (fIsMC) {
+      const int label = phot.MatchToMC(fMCEvent, 22, {{11, -11}});
+    }
     container.push_back(phot);
   }
 }
@@ -230,32 +321,15 @@ void AliAnalysisTaskSigma0Run2::UserCreateOutputObjects() {
     fAliEventCuts.fTriggerMask = fTrigger;
   }
 
-  fHistRunNumber = new TProfile("fHistRunNumber", ";;Run Number", 1, 0, 1);
-  fQA->Add(fHistRunNumber);
-
-  fHistCutQA = new TH1F("fHistCutQA", ";;Entries", 5, 0, 5);
-  fHistCutQA->GetXaxis()->SetBinLabel(1, "Event");
-  fHistCutQA->GetXaxis()->SetBinLabel(2, "AliEventCuts");
-  fHistCutQA->GetXaxis()->SetBinLabel(3, "Multiplicity selection");
-  fHistCutQA->GetXaxis()->SetBinLabel(4, "AliConversionCuts");
-  fQA->Add(fHistCutQA);
-
-  fHistCutBooking = new TProfile("fHistCutBooking", ";;Cut value", 1, 0, 1);
-  fHistCutBooking->GetXaxis()->SetBinLabel(1, "V0 percentile");
-  fQA->Add(fHistCutBooking);
-  fHistCutBooking->Fill(0.f, fV0PercentileMax);
+  fV0Reader =
+      (AliV0ReaderV1 *)AliAnalysisManager::GetAnalysisManager()->GetTask(
+          fV0ReaderName.Data());
+  if (!fV0Reader) {
+    AliError("No V0 reader");
+    return;
+  }
 
   if (!fIsLightweight) {
-    fAliEventCuts.AddQAplotsToList(fQA);
-
-    fV0Reader =
-        (AliV0ReaderV1 *)AliAnalysisManager::GetAnalysisManager()->GetTask(
-            fV0ReaderName.Data());
-    if (!fV0Reader) {
-      AliError("No V0 reader");
-      return;
-    }
-
     if (fV0Reader->GetEventCuts() &&
         fV0Reader->GetEventCuts()->GetCutHistograms()) {
       fOutputContainer->Add(fV0Reader->GetEventCuts()->GetCutHistograms());
@@ -264,13 +338,26 @@ void AliAnalysisTaskSigma0Run2::UserCreateOutputObjects() {
         fV0Reader->GetConversionCuts()->GetCutHistograms()) {
       fOutputContainer->Add(fV0Reader->GetConversionCuts()->GetCutHistograms());
     }
-    if (fV0Reader->GetProduceV0FindingEfficiency() &&
-        fV0Reader->GetV0FindingEfficiencyHistograms()) {
-      fOutputContainer->Add(fV0Reader->GetV0FindingEfficiencyHistograms());
-    }
-    if (fV0Reader->GetProduceImpactParamHistograms()) {
-      fOutputContainer->Add(fV0Reader->GetImpactParamHistograms());
-    }
+  }
+
+  fHistCutQA = new TH1F("fHistCutQA", ";;Entries", 10, 0, 10);
+  fHistCutQA->GetXaxis()->SetBinLabel(1, "Event");
+  fHistCutQA->GetXaxis()->SetBinLabel(2, "Overlap with HM");
+  fHistCutQA->GetXaxis()->SetBinLabel(3, "AliEventCuts");
+  fHistCutQA->GetXaxis()->SetBinLabel(4, "Multiplicity selection");
+  fHistCutQA->GetXaxis()->SetBinLabel(5, "AliConversionCuts");
+  fQA->Add(fHistCutQA);
+
+  if (!fIsLightweight) {
+    fHistRunNumber = new TProfile("fHistRunNumber", ";;Run Number", 1, 0, 1);
+    fQA->Add(fHistRunNumber);
+
+    fHistCutBooking = new TProfile("fHistCutBooking", ";;Cut value", 1, 0, 1);
+    fHistCutBooking->GetXaxis()->SetBinLabel(1, "V0 percentile");
+    fQA->Add(fHistCutBooking);
+    fHistCutBooking->Fill(0.f, fV0PercentileMax);
+
+    fAliEventCuts.AddQAplotsToList(fQA);
 
     fHistCentralityProfileBefore =
         new TH1F("fHistCentralityProfileBefore", "; V0 percentile (%); Entries",
@@ -284,6 +371,11 @@ void AliAnalysisTaskSigma0Run2::UserCreateOutputObjects() {
     fQA->Add(fHistCentralityProfileBefore);
     fQA->Add(fHistCentralityProfileAfter);
     fQA->Add(fHistCentralityProfileCoarseAfter);
+
+    fHistMultiplicityRef08 =
+        new TH1F("fHistMultiplicityRef08", "; Multiplicity Ref08; Entries",
+                 1000, 0, 1000);
+    fQA->Add(fHistMultiplicityRef08);
 
     fHistTriggerBefore = new TH1F("fHistTriggerBefore", ";;Entries", 50, 0, 50);
     fHistTriggerBefore->GetXaxis()->LabelsOption("u");
@@ -394,17 +486,29 @@ void AliAnalysisTaskSigma0Run2::UserCreateOutputObjects() {
     fQA->Add(fHistTriggerAfter);
   }
 
+  std::vector<float> multBinsLow, multBinsUp;
+  if (fMultMode == AliVEvent::kINT7) {
+    multBinsLow = {{0, 5., 15., 30., 50.}};
+    multBinsUp = {{5., 15., 30., 50., 100.}};
+  } else if (fMultMode == AliVEvent::kHighMultV0) {
+    multBinsLow = {{0, 0.01, 0.05, 0.1, 1}};
+    multBinsUp = {{0.01, 0.05, 0.1, 1, 100.}};
+  }
+  fHistMultiplicity =
+      new TH1I("fHistMultiplicity", "; Multiplicity bin; Entries", 5, 0, 5);
+  fHistMultiplicity->GetXaxis()->LabelsOption("u");
+  for (int i = 0; i < static_cast<int>(multBinsLow.size()); i++) {
+    fHistMultiplicity->GetXaxis()->SetBinLabel(
+        i + 1, Form("V0M: %.2f - %.2f %%", multBinsLow[i], multBinsUp[i]));
+  }
+  fQA->Add(fHistMultiplicity);
+
   fOutputContainer->Add(fQA);
 
   if (fV0Cuts) fV0Cuts->InitCutHistograms(TString("Lambda"));
   if (fAntiV0Cuts) fAntiV0Cuts->InitCutHistograms(TString("AntiLambda"));
-  if (fPhotonV0Cuts) fPhotonV0Cuts->InitCutHistograms(TString("Photon"));
   if (fSigmaCuts) fSigmaCuts->InitCutHistograms(TString("Sigma0"));
   if (fAntiSigmaCuts) fAntiSigmaCuts->InitCutHistograms(TString("AntiSigma0"));
-  if (fSigmaPhotonCuts)
-    fSigmaPhotonCuts->InitCutHistograms(TString("Sigma0Photon"));
-  if (fAntiSigmaPhotonCuts)
-    fAntiSigmaPhotonCuts->InitCutHistograms(TString("AntiSigma0Photon"));
 
   if (fV0Cuts && fV0Cuts->GetCutHistograms()) {
     fOutputContainer->Add(fV0Cuts->GetCutHistograms());
@@ -414,8 +518,14 @@ void AliAnalysisTaskSigma0Run2::UserCreateOutputObjects() {
     fOutputContainer->Add(fAntiV0Cuts->GetCutHistograms());
   }
 
-  if (fPhotonV0Cuts && fPhotonV0Cuts->GetCutHistograms()) {
-    fOutputContainer->Add(fPhotonV0Cuts->GetCutHistograms());
+  if (!fIsLightweight) {
+    fPhotonQA = new AliSigma0V0Cuts();
+    fPhotonQA->SetLightweight(false);
+    fPhotonQA->SetPID(22);
+    fPhotonQA->SetPosPID(AliPID::kElectron, 11);
+    fPhotonQA->SetNegPID(AliPID::kElectron, -11);
+    fPhotonQA->InitCutHistograms(TString("Photon"));
+    fOutputContainer->Add(fPhotonQA->GetCutHistograms());
   }
 
   if (fSigmaCuts && fSigmaCuts->GetCutHistograms()) {
@@ -426,41 +536,7 @@ void AliAnalysisTaskSigma0Run2::UserCreateOutputObjects() {
     fOutputContainer->Add(fAntiSigmaCuts->GetCutHistograms());
   }
 
-  if (fSigmaPhotonCuts && fSigmaPhotonCuts->GetCutHistograms()) {
-    fOutputContainer->Add(fSigmaPhotonCuts->GetCutHistograms());
-  }
-
-  if (fAntiSigmaPhotonCuts && fAntiSigmaPhotonCuts->GetCutHistograms()) {
-    fOutputContainer->Add(fAntiSigmaPhotonCuts->GetCutHistograms());
-  }
-
-  if (fOutputTree != nullptr) {
-    delete fOutputTree;
-    fOutputTree = nullptr;
-  }
-  if (fOutputTree == nullptr) {
-    fOutputTree = new TList();
-    fOutputTree->SetOwner(kTRUE);
-  }
-
-  if (fSigmaCuts && fSigmaCuts->GetSigmaTree()) {
-    fOutputTree->Add(fSigmaCuts->GetSigmaTree());
-  }
-
-  if (fAntiSigmaCuts && fAntiSigmaCuts->GetSigmaTree()) {
-    fOutputTree->Add(fAntiSigmaCuts->GetSigmaTree());
-  }
-
-  if (fSigmaPhotonCuts && fSigmaPhotonCuts->GetSigmaTree()) {
-    fOutputTree->Add(fSigmaPhotonCuts->GetSigmaTree());
-  }
-
-  if (fAntiSigmaPhotonCuts && fAntiSigmaPhotonCuts->GetSigmaTree()) {
-    fOutputTree->Add(fAntiSigmaPhotonCuts->GetSigmaTree());
-  }
-
   PostData(1, fOutputContainer);
-  PostData(2, fOutputTree);
 }
 
 //____________________________________________________________________________________________________

@@ -19,7 +19,7 @@
 #include "AliPID.h"
 #endif
 #ifndef ALITRDV0INFO_H
-#include "info/AliTRDv0Info.h"
+#include "AliTRDv0Info.h"
 #endif
 
 class TTree;

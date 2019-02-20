@@ -11,7 +11,6 @@
 #include <TGrid.h>
 #include <TList.h>
 #include <TMethodCall.h>
-#include <TAlienCollection.h>
 #include <TGridCollection.h>
 #include <TGridResult.h>
 #include <TGeoGlobalMagField.h>
@@ -30,7 +29,7 @@
 #endif
 
 TChain* MakeChainLST(const char* filename = NULL);
-void run(const Char_t *files=NULL, Bool_t mc=kFALSE, Bool_t tpid=kTRUE,  Bool_t tchg=kFALSE,  Bool_t tpp=kTRUE, Long64_t nev=1234567890, Long64_t first = 0)
+void run(const Char_t *files=NULL, Bool_t mc=kFALSE, Bool_t tpid=kTRUE,  Bool_t tchg=kTRUE,  Bool_t tpp=kTRUE, Long64_t nev=1234567890, Long64_t first = 0)
 {
   TStopwatch timer;
   timer.Start();
@@ -96,15 +95,14 @@ void run(const Char_t *files=NULL, Bool_t mc=kFALSE, Bool_t tpid=kTRUE,  Bool_t 
     gROOT->LoadMacro("$ALICE_PHYSICS/PWGLF/SPECTRA/MultEvShape/AddMESpidTask.C");
 	AddMESpidTask(mc);
   }
-//
 
-//   // *******************  MES CHG task  ******************
+  // *******************  MES CHG task  ******************
   if(tchg){
     gROOT->LoadMacro("$ALICE_PHYSICS/PWGLF/SPECTRA/MultEvShape/AddMESchgTask.C");
     AddMESchgTask(mc);
   }
-//
-//   // *******************  MES ppCol task  ******************
+
+  // *******************  MES ppCol task  ******************
   if(tpp){
     gROOT->LoadMacro("$ALICE_PHYSICS/PWGLF/SPECTRA/MultEvShape/AddMESppColTask.C");
     AddMESppColTask(mc);

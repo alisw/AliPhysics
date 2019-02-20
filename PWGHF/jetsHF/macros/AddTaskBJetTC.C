@@ -13,6 +13,9 @@ AliAnalysisTaskBJetTC* AddTaskBJetTC(
 		Bool_t DoPtRelAna		= kFALSE,
 		Bool_t DoJetProb 		= kFALSE,
 		TString pathToResolFunc		= "",
+		TString pathToResolFuncb	= "",
+		TString pathToResolFuncc	= "",
+		TString pathToResolFunclf	= "",
 		Bool_t V0PhotonRejection 	= kFALSE,
 		TString cutnumberAODBranch 	= "",  // cutnumber for AOD branch
   		Int_t       ptHardBin           = -999,
@@ -183,6 +186,18 @@ AliAnalysisTaskBJetTC* AddTaskBJetTC(
 		TFile* file = TFile::Open(pathToResolFunc.Data());
 		for(int i=0; i<7; i++){
 			jetTask->SetResFunction((TF1*)file->Get(Form("QualityClass%i",i)), i);
+		}
+
+		if(isMC){
+			TFile* fileb = TFile::Open(pathToResolFuncb.Data());
+			TFile* filec = TFile::Open(pathToResolFuncc.Data());
+			TFile* filelf = TFile::Open(pathToResolFunclf.Data());
+
+			for(int i=0; i<7; i++){
+				jetTask->SetResFunctionb((TF1*)fileb->Get(Form("QualityClass%i",i)), i);
+				jetTask->SetResFunctionc((TF1*)filec->Get(Form("QualityClass%i",i)), i);
+				jetTask->SetResFunctionlf((TF1*)filelf->Get(Form("QualityClass%i",i)), i);
+			}
 		}
 	}
 

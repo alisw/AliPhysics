@@ -51,8 +51,14 @@ fV0Reader(NULL),
 fV0ReaderName("V0ReaderV1"),   fReaderGammas(NULL),
 fHFJetUtils(0x0),
 fRespoPID(0x0),
+fPtHardThreshold(0.0),
 fPythiaEventWeight(1.0),
 fDoImprovedDCACut(kTRUE),
+fVertexConstraint(kFALSE),
+fThresholdIP(0.008),
+fDoDeltaPtWithSignal(kFALSE),
+fDiamond(0x0),
+fVertexer(0x0),
 fDoJetProbabilityAnalysis(kFALSE),
 fDoPtRelAnalysis(0),
 fDoSelectionPtRel(0),
@@ -117,6 +123,10 @@ f2histRhoVsDeltaPt(0x0),
 f2histRhoVsDeltaPtFirst(0x0),
 f2histRhoVsDeltaPtSecond(0x0),
 f2histRhoVsDeltaPtThird(0x0),
+f2histRhoVsDeltaPtWithSignal(0x0),
+f2histRhoVsDeltaPtWithSignalFirst(0x0),
+f2histRhoVsDeltaPtWithSignalSecond(0x0),
+f2histRhoVsDeltaPtWithSignalThird(0x0),
 fRandom(new TRandom3(0)),
 fh1dJetRecEtaPhiAccepted(0x0),
 fh1dJetRecPtUnidentified(0x0),
@@ -127,7 +137,11 @@ fh1dJetRecPtUnidentifiedAccepted(0x0),
 fh1dJetRecPtudsgAccepted(0x0),
 fh1dJetRecPtcAccepted(0x0),
 fh1dJetRecPtbAccepted(0x0),
+fDoTaggedDRM(kFALSE),
 fh2dJetGenPtVsJetRecPt(0x0),
+fh2dJetGenPtVsJetRecPtFirst(0x0),
+fh2dJetGenPtVsJetRecPtSecond(0x0),
+fh2dJetGenPtVsJetRecPtThird(0x0),
 fh2dJetGenPtVsJetRecPtb(0x0),
 fh2dJetGenPtVsJetRecPtc(0x0),
 fh2dJetGenPtVsJetRecPtudsg(0x0),
@@ -272,18 +286,30 @@ fh2dJetSignedImpParXYSignificancecForth(0x0),
 //Jet Probabilty
 fh2dJetSignedImpParXY_Class1(0x0),
 fh2dJetSignedImpParXYSignificance_Class1(0x0),
+fh2dJetSignedImpParXYSignificanceb_Class1(0x0),
+fh2dJetSignedImpParXYSignificancec_Class1(0x0),
+fh2dJetSignedImpParXYSignificancelf_Class1(0x0),
 fh2dJetSignedImpParXYZ_Class1(0x0),
 fh2dJetSignedImpParXYZSignificance_Class1(0x0),
 fh2dJetSignedImpParXY_Class2(0x0),
 fh2dJetSignedImpParXYSignificance_Class2(0x0),
+fh2dJetSignedImpParXYSignificanceb_Class2(0x0),
+fh2dJetSignedImpParXYSignificancec_Class2(0x0),
+fh2dJetSignedImpParXYSignificancelf_Class2(0x0),
 fh2dJetSignedImpParXYZ_Class2(0x0),
 fh2dJetSignedImpParXYZSignificance_Class2(0x0),
 fh2dJetSignedImpParXY_Class3(0x0),
 fh2dJetSignedImpParXYSignificance_Class3(0x0),
+fh2dJetSignedImpParXYSignificanceb_Class3(0x0),
+fh2dJetSignedImpParXYSignificancec_Class3(0x0),
+fh2dJetSignedImpParXYSignificancelf_Class3(0x0),
 fh2dJetSignedImpParXYZ_Class3(0x0),
 fh2dJetSignedImpParXYZSignificance_Class3(0x0),
 fh2dJetSignedImpParXY_Class4(0x0),
 fh2dJetSignedImpParXYSignificance_Class4(0x0),
+fh2dJetSignedImpParXYSignificanceb_Class4(0x0),
+fh2dJetSignedImpParXYSignificancec_Class4(0x0),
+fh2dJetSignedImpParXYSignificancelf_Class4(0x0),
 fh2dJetSignedImpParXYZ_Class4(0x0),
 fh2dJetSignedImpParXYZSignificance_Class4(0x0),
 fhistJetProbability(0x0),
@@ -377,6 +403,8 @@ fJetPt(0.),
 fJetFlavor(0),
 fValJetProb(-1),
 fLogJetProb(-1.),
+fCalcDCATruth(kFALSE),
+fDecayVertex(0x0),
 fHistSV2Prong(0x0),
 fHistSV2ProngUnidentified(0x0),
 fHistSV2Prongb(0x0),
@@ -402,6 +430,9 @@ fHistDispersion3Pronglf(0x0)
 
 	for(int i=0; i<7; i++){
 		fResolutionFunction[i]=0x0;
+		fResolutionFunctionb[i]=0x0;
+		fResolutionFunctionc[i]=0x0;
+		fResolutionFunctionlf[i]=0x0;
 	}
 }
 // ######################################################################################## CONSTRUCTORS
@@ -410,8 +441,14 @@ AliAnalysisTaskBJetTC::AliAnalysisTaskBJetTC(const char *name): AliAnalysisTaskE
   		fV0ReaderName("V0ReaderV1"),  fReaderGammas(NULL),
 		fHFJetUtils(0x0),
 		fRespoPID(0x0),
+		fPtHardThreshold(0.0),
 		fPythiaEventWeight(1.0),
 		fDoImprovedDCACut(kTRUE),
+		fVertexConstraint(kFALSE),
+		fThresholdIP(0.008),
+		fDoDeltaPtWithSignal(kFALSE),
+		fDiamond(0x0),
+		fVertexer(0x0),
 		//Bjet Cuts
 		fTCMinTrackPt(0.5),
 		fTCMinClusTPC(80),
@@ -477,6 +514,10 @@ AliAnalysisTaskBJetTC::AliAnalysisTaskBJetTC(const char *name): AliAnalysisTaskE
 		f2histRhoVsDeltaPtFirst(0x0),
 		f2histRhoVsDeltaPtSecond(0x0),
 		f2histRhoVsDeltaPtThird(0x0),
+		f2histRhoVsDeltaPtWithSignal(0x0),
+		f2histRhoVsDeltaPtWithSignalFirst(0x0),
+		f2histRhoVsDeltaPtWithSignalSecond(0x0),
+		f2histRhoVsDeltaPtWithSignalThird(0x0),
 		fh1dJetRecEtaPhiAccepted(0x0),
 		fh1dJetRecPtUnidentified(0x0),
 		fh1dJetRecPtudsg(0x0),
@@ -486,7 +527,11 @@ AliAnalysisTaskBJetTC::AliAnalysisTaskBJetTC(const char *name): AliAnalysisTaskE
 		fh1dJetRecPtudsgAccepted(0x0),
 		fh1dJetRecPtcAccepted(0x0),
 		fh1dJetRecPtbAccepted(0x0),
+		fDoTaggedDRM(kFALSE),
 		fh2dJetGenPtVsJetRecPt(0x0),
+		fh2dJetGenPtVsJetRecPtFirst(0x0),
+		fh2dJetGenPtVsJetRecPtSecond(0x0),
+		fh2dJetGenPtVsJetRecPtThird(0x0),
 		fh2dJetGenPtVsJetRecPtb(0x0),
 		fh2dJetGenPtVsJetRecPtc(0x0),
 		fh2dJetGenPtVsJetRecPtudsg(0x0),
@@ -631,18 +676,30 @@ AliAnalysisTaskBJetTC::AliAnalysisTaskBJetTC(const char *name): AliAnalysisTaskE
 		//Jet Probabilty
 		fh2dJetSignedImpParXY_Class1(0x0),
 		fh2dJetSignedImpParXYSignificance_Class1(0x0),
+		fh2dJetSignedImpParXYSignificanceb_Class1(0x0),
+		fh2dJetSignedImpParXYSignificancec_Class1(0x0),
+		fh2dJetSignedImpParXYSignificancelf_Class1(0x0),
 		fh2dJetSignedImpParXYZ_Class1(0x0),
 		fh2dJetSignedImpParXYZSignificance_Class1(0x0),
 		fh2dJetSignedImpParXY_Class2(0x0),
 		fh2dJetSignedImpParXYSignificance_Class2(0x0),
+		fh2dJetSignedImpParXYSignificanceb_Class2(0x0),
+		fh2dJetSignedImpParXYSignificancec_Class2(0x0),
+		fh2dJetSignedImpParXYSignificancelf_Class2(0x0),
 		fh2dJetSignedImpParXYZ_Class2(0x0),
 		fh2dJetSignedImpParXYZSignificance_Class2(0x0),
 		fh2dJetSignedImpParXY_Class3(0x0),
 		fh2dJetSignedImpParXYSignificance_Class3(0x0),
+		fh2dJetSignedImpParXYSignificanceb_Class3(0x0),
+		fh2dJetSignedImpParXYSignificancec_Class3(0x0),
+		fh2dJetSignedImpParXYSignificancelf_Class3(0x0),
 		fh2dJetSignedImpParXYZ_Class3(0x0),
 		fh2dJetSignedImpParXYZSignificance_Class3(0x0),
 		fh2dJetSignedImpParXY_Class4(0x0),
 		fh2dJetSignedImpParXYSignificance_Class4(0x0),
+		fh2dJetSignedImpParXYSignificanceb_Class4(0x0),
+		fh2dJetSignedImpParXYSignificancec_Class4(0x0),
+		fh2dJetSignedImpParXYSignificancelf_Class4(0x0),
 		fh2dJetSignedImpParXYZ_Class4(0x0),
 		fh2dJetSignedImpParXYZSignificance_Class4(0x0),
 		fhistJetProbability(0x0),
@@ -735,6 +792,8 @@ AliAnalysisTaskBJetTC::AliAnalysisTaskBJetTC(const char *name): AliAnalysisTaskE
 		fJetFlavor(0),
 		fValJetProb(-1),
 		fLogJetProb(-1.),
+		fCalcDCATruth(kFALSE),
+		fDecayVertex(0x0),
 		fHistSV2Prong(0x0),
 		fHistSV2ProngUnidentified(0x0),
 		fHistSV2Prongb(0x0),
@@ -760,6 +819,9 @@ AliAnalysisTaskBJetTC::AliAnalysisTaskBJetTC(const char *name): AliAnalysisTaskE
 
 	for(int i=0; i<7; i++){
 		fResolutionFunction[i]=0x0;
+		fResolutionFunctionb[i]=0x0;
+		fResolutionFunctionc[i]=0x0;
+		fResolutionFunctionlf[i]=0x0;
 	}
 }
 //#######################################
@@ -768,12 +830,23 @@ AliAnalysisTaskBJetTC::~AliAnalysisTaskBJetTC()
 	//Destructor
 	delete fCaloClusters;
 	delete fReaderGammas;
+	delete fV0Reader;
+	delete fV0CandidateArray;
 	delete fMCArray;
 	delete fOutput;
 	delete fJetContainerMC;
 	delete fJetContainerData;
 	delete fAODIn;
 	delete fPrimaryVertex;
+	delete fDecayVertex;
+	delete fVtxTagger3Prong;
+	delete fVtxTagger2Prong;
+	delete fHFJetUtils;
+	delete fRespoPID;
+	delete fUtils;
+	delete fRandom;
+	delete fVertexer;
+	delete fDiamond;
 }
 // #################################################################################
 Bool_t AliAnalysisTaskBJetTC::Notify()
@@ -820,9 +893,19 @@ Bool_t AliAnalysisTaskBJetTC::Run()
 	}
 
 
-	if(fApplyV0Rec) SelectV0CandidateVIT();
+	fVertexer = new AliVertexerTracks(fAODIn->GetMagneticField());
+	fVertexer->SetITSMode();
+	fVertexer->SetMinClusters(3);
+	fVertexer->SetConstraintOn();
 
-
+	if(fVertexConstraint) {
+		Float_t diamondcovxy[3];
+		fAODIn->GetDiamondCovXY(diamondcovxy);
+		Double_t pos[3]={fAODIn->GetDiamondX(),fAODIn->GetDiamondY(),0.};
+		Double_t cov[6]={diamondcovxy[0],diamondcovxy[1],diamondcovxy[2],0.,0.,10.*10.};
+		fDiamond = new AliESDVertex(pos,cov,1.,1);
+		fVertexer->SetVtxStart(fDiamond);
+	}
 
   	Double_t dPrimVtxMCX = 0., dPrimVtxMCY = 0., dPrimVtxMCZ = 0.; // position of the MC primary vertex
 
@@ -842,6 +925,9 @@ Bool_t AliAnalysisTaskBJetTC::Run()
 	       dPrimVtxMCZ = headerMC->GetVtxZ();
 
   		AliAODMCParticle *pAOD = 0;
+		AliEmcalJet * jetMC  = 0x0;
+		double fJetPt=0;
+
 	  	for (Int_t i=0; i<fMCArray->GetEntriesFast(); i++) {
 
 	    		pAOD = dynamic_cast<AliAODMCParticle*>(fMCArray->At(i));
@@ -880,9 +966,6 @@ Bool_t AliAnalysisTaskBJetTC::Run()
 			 if(id==310) {fh1dKshortPtMC->Fill(pAOD->Pt(), fPythiaEventWeight);}
 			 if(id==3122) { fh1dLamdaPtMC->Fill(pAOD->Pt(), fPythiaEventWeight);}
 			 if(id==-3122) { fh1dAnLamdaPtMC->Fill(pAOD->Pt(), fPythiaEventWeight);}
-
-			  AliEmcalJet * jetMC  = 0x0;
-			  double fJetPt=0;
 			 
 			  fJetContainerMC->ResetCurrentID();
 
@@ -909,11 +992,14 @@ Bool_t AliAnalysisTaskBJetTC::Run()
 				}
 				
 
-			   }
+			 }
 
-			   jetMC=NULL;
-			   delete jetMC;
+
 	    	}
+		jetMC=NULL;
+		delete jetMC;
+		pAOD=NULL;
+		delete pAOD;
 		headerMC=NULL;
 		delete headerMC;
 	}
@@ -922,10 +1008,11 @@ Bool_t AliAnalysisTaskBJetTC::Run()
 
 	  	fReaderGammas = fV0Reader->GetReconstructedGammas(); // Gammas from default Cut
 
+		AliAODConversionPhoton* PhotonCandidate = 0x0;
 		// Loop over Photon Candidates allocated by ReaderV1
 		for(Int_t i = 0; i < fReaderGammas->GetEntriesFast(); i++){
 
-		    AliAODConversionPhoton* PhotonCandidate = (AliAODConversionPhoton*) fReaderGammas->At(i);
+		    PhotonCandidate = (AliAODConversionPhoton*) fReaderGammas->At(i);
 		    if(!PhotonCandidate) continue;
 
 		    TVector3 vV0;
@@ -937,7 +1024,8 @@ Bool_t AliAnalysisTaskBJetTC::Run()
 		if(fIsPythia && fInputEvent->IsA()==AliAODEvent::Class() && !(fV0Reader->AreAODsRelabeled())){
 		    fV0Reader->RelabelAODs(kTRUE);
 		}
-
+		PhotonCandidate=NULL;
+		delete PhotonCandidate;
 	}
 
 	//Main loop over AOD tracks with filterbit 4  || or ESD tracks with filter
@@ -947,51 +1035,53 @@ Bool_t AliAnalysisTaskBJetTC::Run()
 
 	AliAODTrack * trackAOD =  NULL;
 
-	for(int itrack= 0; itrack<nTracksInEvent;++itrack)
-	{
+	if(fCalcDCATruth){
+		for(int itrack= 0; itrack<nTracksInEvent;++itrack)
+		{
 		
-		trackAOD = (AliAODTrack*)fAODIn->GetTrack(itrack);
-		if (!trackAOD) continue;
+			trackAOD = (AliAODTrack*)fAODIn->GetTrack(itrack);
+			if (!trackAOD) continue;
 
-		fh1dTracksAccepeted->SetBinContent(1,fh1dTracksAccepeted->GetBinContent(1)+1);
+			fh1dTracksAccepeted->SetBinContent(1,fh1dTracksAccepeted->GetBinContent(1)+1);
 
-		if(!IsTrackAccepted(trackAOD)) {
-			fh1dTracksAccepeted->SetBinContent(3,fh1dTracksAccepeted->GetBinContent(3)+1);
-			continue;
-		}
+			if(!IsTrackAccepted(trackAOD)) {
+				fh1dTracksAccepeted->SetBinContent(3,fh1dTracksAccepeted->GetBinContent(3)+1);
+				continue;
+			}
 
-		fh1dTracksAccepeted->SetBinContent(2,fh1dTracksAccepeted->GetBinContent(2)+1);
-		//Calculate impact parameters and fill histograms
-		double dca[2] = {-99999,-99999};
-		double cov[3] = {-99999,-99999,-99999};
+			fh1dTracksAccepeted->SetBinContent(2,fh1dTracksAccepeted->GetBinContent(2)+1);
+			//Calculate impact parameters and fill histograms
+			double dca[2] = {-99999,-99999};
+			double cov[3] = {-99999,-99999,-99999};
 
-		if (!CalculateTrackImpactParameter(trackAOD,dca,cov)) continue;
+			if (!CalculateTrackImpactParameter(trackAOD,dca,cov)) continue;
 
-		fh1dTracksImpParXY->Fill(GetValImpactParameter(kXY,dca,cov),fPythiaEventWeight);
-		fh1dTracksImpParXYZ->Fill(GetValImpactParameter(kXYZ,dca,cov),fPythiaEventWeight);
-		fh1dTracksImpParXYSignificance->Fill(GetValImpactParameter(kXYSig,dca,cov),fPythiaEventWeight);
-		fh1dTracksImpParXYZSignificance->Fill(GetValImpactParameter(kXYZSig,dca,cov),fPythiaEventWeight);
+			fh1dTracksImpParXY->Fill(GetValImpactParameter(kXY,dca,cov),fPythiaEventWeight);
+			fh1dTracksImpParXYZ->Fill(GetValImpactParameter(kXYZ,dca,cov),fPythiaEventWeight);
+			fh1dTracksImpParXYSignificance->Fill(GetValImpactParameter(kXYSig,dca,cov),fPythiaEventWeight);
+			fh1dTracksImpParXYZSignificance->Fill(GetValImpactParameter(kXYZSig,dca,cov),fPythiaEventWeight);
 
-		if(fIsPythia){
+			if(fIsPythia){
 			
-			double dcaMC[2] = {-99999,-99999};
-			double covMC[3] = {-99999,-99999,-99999};
+				double dcaMC[2] = {-99999,-99999};
+				double covMC[3] = {-99999,-99999,-99999};
 
-			if(!CalculateTrackImpactParameterTruth(trackAOD,dcaMC,covMC)) continue;
+				if(!CalculateTrackImpactParameterTruth(trackAOD,dcaMC,covMC)) continue;
 
-			fh1dTracksImpParXYTruth->Fill(GetValImpactParameter(kXY,dcaMC,covMC),fPythiaEventWeight);
-			fh1dTracksImpParXYZTruth->Fill(GetValImpactParameter(kXYZ,dcaMC,covMC),fPythiaEventWeight);
-			// Fill residual plots
-			double residualxy = TMath::Abs(GetValImpactParameter(kXY,dca,cov)) - TMath::Abs(GetValImpactParameter(kXY,dcaMC,covMC));
-			residualxy /= TMath::Sqrt(cov[0]);
-			fh1dTracksImpParXYResidualTruth->Fill(residualxy,fPythiaEventWeight);
-			double residualxyz = TMath::Abs(GetValImpactParameter(kXYZ,dca,cov)) - TMath::Abs(GetValImpactParameter(kXYZ,dcaMC,covMC));
-			residualxyz /= 	GetValImpactParameter(kXYZSigmaOnly,dca,cov);
-			fh1dTracksImpParXYZResidualTruth->Fill(residualxyz,fPythiaEventWeight);
+				fh1dTracksImpParXYTruth->Fill(GetValImpactParameter(kXY,dcaMC,covMC),fPythiaEventWeight);
+				fh1dTracksImpParXYZTruth->Fill(GetValImpactParameter(kXYZ,dcaMC,covMC),fPythiaEventWeight);
+				// Fill residual plots
+				double residualxy = TMath::Abs(GetValImpactParameter(kXY,dca,cov)) - TMath::Abs(GetValImpactParameter(kXY,dcaMC,covMC));
+				residualxy /= TMath::Sqrt(cov[0]);
+				fh1dTracksImpParXYResidualTruth->Fill(residualxy,fPythiaEventWeight);
+				double residualxyz = TMath::Abs(GetValImpactParameter(kXYZ,dca,cov)) - TMath::Abs(GetValImpactParameter(kXYZ,dcaMC,covMC));
+				residualxyz /= 	GetValImpactParameter(kXYZSigmaOnly,dca,cov);
+				fh1dTracksImpParXYZResidualTruth->Fill(residualxyz,fPythiaEventWeight);
+			}
 		}
+		trackAOD = NULL;
+		delete trackAOD;
 	}
-	trackAOD = NULL;
-	delete trackAOD;
 
 	// Main part jet analysis
 	//preparation
@@ -1002,7 +1092,15 @@ Bool_t AliAnalysisTaskBJetTC::Run()
 	else fUsePicoTracks = kFALSE;
 
 	Double_t randomConePt = GetDeltaPtRandomCone();
+	Double_t randomConePtWithSignal = 0.0;
 	f2histRhoVsDeltaPt->Fill(randomConePt, fJetContainerData->GetRhoVal(), fPythiaEventWeight);
+
+	if(fDoDeltaPtWithSignal){
+		randomConePtWithSignal = GetDeltaPtRandomConeWithSignal();
+		f2histRhoVsDeltaPtWithSignal->Fill(randomConePtWithSignal, fJetContainerData->GetRhoVal(), fPythiaEventWeight);
+	}
+
+	if(fApplyV0Rec) SelectV0CandidateVIT();
 
 
 	if(fIsPythia)
@@ -1031,15 +1129,20 @@ Bool_t AliAnalysisTaskBJetTC::Run()
 				else if(partonpdg==5)MCJetflavour=3;
 			}
 
-			fh1dJetGenPt->Fill(jetgen->Pt(),fPythiaEventWeight);
+			double genpt = jetgen->Pt();
+			if(!(fJetContainerMC->GetRhoParameter() == 0x0)){
+				 genpt = genpt - fJetContainerMC->GetRhoVal() * jetgen->Area();
+			}
+
+			fh1dJetGenPt->Fill(genpt,fPythiaEventWeight);
 			if(MCJetflavour ==0)
-				fh1dJetGenPtUnidentified->Fill(jetgen->Pt(),fPythiaEventWeight);
+				fh1dJetGenPtUnidentified->Fill(genpt,fPythiaEventWeight);
 			else if(MCJetflavour ==1)
-				fh1dJetGenPtudsg->Fill(jetgen->Pt(),fPythiaEventWeight);
+				fh1dJetGenPtudsg->Fill(genpt,fPythiaEventWeight);
 			else if(MCJetflavour ==2)
-				fh1dJetGenPtc->Fill(jetgen->Pt(),fPythiaEventWeight);
+				fh1dJetGenPtc->Fill(genpt,fPythiaEventWeight);
 			else if(MCJetflavour ==3)
-				fh1dJetGenPtb->Fill(jetgen->Pt(),fPythiaEventWeight);
+				fh1dJetGenPtb->Fill(genpt,fPythiaEventWeight);
 		}
 		jetgen = 0x0;
 		delete jetgen;
@@ -1054,7 +1157,6 @@ Bool_t AliAnalysisTaskBJetTC::Run()
 	fJetContainerData->ResetCurrentID();
 	fJetPt=0;
 	double jetptmc=0;
-	Double_t fThresholdIP = 0.01;
 
 	//########################## Electron Enriched Sample
 	Bool_t PtRelSample = kTRUE; 
@@ -1072,11 +1174,12 @@ Bool_t AliAnalysisTaskBJetTC::Run()
 
 		PtRelSample = kFALSE;
 
+		AliAODTrack* trackAOD = 0x0;
+
 		while ((selJet = fJetContainerData->GetNextAcceptJet()))
 		{
 			//if(!(fJetCutsHF->IsJetSelected(selJet))) continue;
 
-			AliAODTrack* trackAOD = 0x0;
 			Int_t ntracks = (Int_t)selJet->GetNumberOfTracks();
 
 			for(Int_t itrack = 0; itrack < ntracks; ++itrack)
@@ -1092,9 +1195,11 @@ Bool_t AliAnalysisTaskBJetTC::Run()
 				}
 			}
 
-              		Double_t value = CalculateJetProb(selJet);
+              		Double_t value = CalculateJetProb(selJet, 0);
+			if(value==0) value = 1e-5;
+			Double_t LogValue = -1*TMath::Log(value);
 
-			if(value>=0 && value<=0.01) TagJet=kTRUE;
+			if(LogValue>=5) TagJet=kTRUE;
 
 			PtRelSample = (TagJet && ElecJet);
 			if(PtRelSample) break;
@@ -1109,6 +1214,11 @@ Bool_t AliAnalysisTaskBJetTC::Run()
 	}
 	//######################
 
+	AliAODMCParticle* partonAOD = NULL;
+
+	std::vector<double> sImpParXY,sImpParXYZ,sImpParXYSig,sImpParXYZSig;
+
+	Bool_t TaggedFirst(0), TaggedSecond(0), TaggedThird(0);
 
 	while ((jetrec = fJetContainerData->GetNextJet()))
 	{
@@ -1122,7 +1232,6 @@ Bool_t AliAnalysisTaskBJetTC::Run()
 		}
 
 		// make inclusive signed imp. parameter constituent histograms
-		AliAODTrack* trackAOD = 0x0;
 		Int_t ntracks = (Int_t)jetrec->GetNumberOfTracks();
 
 		double dca[2] = {-99999,-99999};
@@ -1141,9 +1250,6 @@ Bool_t AliAnalysisTaskBJetTC::Run()
 			jetmatched = 0x0;
 			jetmatched =jetrec->MatchedJet();
 
-			AliAODMCParticle* partonAOD = NULL;
-			partonAOD = NULL;
-
 			if(jetmatched){
 				partonAOD = fHFJetUtils->IsMCJetParton(fMCArray, jetmatched, 0.4);
 
@@ -1155,9 +1261,6 @@ Bool_t AliAnalysisTaskBJetTC::Run()
 					else if(partonpdg==5)fJetFlavor=3;
 				}
 			}
-
-			partonAOD=NULL;
-			delete partonAOD;
 		}
 		//	Printf("%s:%i",__FUNCTION__,__LINE__);
 
@@ -1201,7 +1304,7 @@ Bool_t AliAnalysisTaskBJetTC::Run()
 
 			if(fDoJetProbabilityAnalysis && fResolutionFunction[0]){
 
-              			fValJetProb = CalculateJetProb(jetrec);
+              			fValJetProb = CalculateJetProb(jetrec, fJetFlavor);
 				if(fValJetProb>0){
 					fLogJetProb = -1*TMath::Log(fValJetProb);
 
@@ -1234,8 +1337,6 @@ Bool_t AliAnalysisTaskBJetTC::Run()
 				}
         		}
 
-			std::vector<double> sImpParXY,sImpParXYZ,sImpParXYSig,sImpParXYZSig;
-
 			for(Int_t itrack = 0; itrack < ntracks; ++itrack)
 			{
 				double dcatrackjet =999;
@@ -1246,7 +1347,7 @@ Bool_t AliAnalysisTaskBJetTC::Run()
 				
 				if(!trackAOD) 	continue;
 
-				if (fDoJetProbabilityAnalysis && !fResolutionFunction[0]) FillResolutionFunctionHists(trackAOD,jetrec);
+				if (fDoJetProbabilityAnalysis && !fResolutionFunction[0]) FillResolutionFunctionHists(trackAOD,jetrec,fJetFlavor);
 
 				if(fDoPtRelAnalysis && PtRelSample){
 					Double_t PtRel=0;
@@ -1257,7 +1358,7 @@ Bool_t AliAnalysisTaskBJetTC::Run()
 					if(IsElectronHF(trackAOD)){
 					   PtRel = GetPtRel(trackAOD, jetrec, kFALSE);
 					   if(PtRel>2) PtRel=1.99;
-					   if(CalculateTrackImpactParameter(trackAOD,LepIP,COV)) hasIP=kTRUE;
+					   //if(CalculateTrackImpactParameter(trackAOD,LepIP,COV)) hasIP=kTRUE;
 					   fhistPtRelVsJetPt->Fill(fJetPt, PtRel, fPythiaEventWeight);
 					   if(hasIP) fhistLepIPVsJetPt->Fill(fJetPt, GetValImpactParameter(kXY,LepIP,COV), fPythiaEventWeight);
 					   EleID[ElecNum]=itrack;
@@ -1405,7 +1506,7 @@ Bool_t AliAnalysisTaskBJetTC::Run()
 				fh2dJetSignedImpParXYZSignificanceFirst->Fill(fJetPt,sImpParXYZSig.at(0),fPythiaEventWeight);
 
 				if(sImpParXY.at(0) > fThresholdIP)
-					f2histRhoVsDeltaPtFirst->Fill( randomConePt , fJetContainerData->GetRhoVal(), fPythiaEventWeight);
+					TaggedFirst = kTRUE;
 
 				if(fDoPtRelAnalysis && PtRelSample && sImpParXY.at(0) > fThresholdIP){
 					for(int e=0; e<ntracks; e++){
@@ -1491,7 +1592,7 @@ Bool_t AliAnalysisTaskBJetTC::Run()
 				fh2dJetSignedImpParXYZSignificanceSecond->Fill(fJetPt,sImpParXYZSig.at(1),fPythiaEventWeight);
 
 				if(sImpParXY.at(1) > fThresholdIP)
-					f2histRhoVsDeltaPtSecond->Fill( randomConePt , fJetContainerData->GetRhoVal(), fPythiaEventWeight);
+					TaggedSecond = kTRUE;
 
 				if(fDoPtRelAnalysis && PtRelSample && sImpParXY.at(1) >= fThresholdIP){
 					for(int e=0; e<ntracks; e++){
@@ -1577,7 +1678,7 @@ Bool_t AliAnalysisTaskBJetTC::Run()
 				fh2dJetSignedImpParXYZSignificanceThird->Fill(fJetPt,sImpParXYZSig.at(2),fPythiaEventWeight);
 
 				if(sImpParXY.at(2) > fThresholdIP)
-					f2histRhoVsDeltaPtThird->Fill( randomConePt , fJetContainerData->GetRhoVal(), fPythiaEventWeight);
+					TaggedThird = kTRUE;
 
 				if(fDoPtRelAnalysis && PtRelSample && sImpParXY.at(2) >= fThresholdIP){
 					for(int e=0; e<ntracks; e++){
@@ -1676,6 +1777,28 @@ Bool_t AliAnalysisTaskBJetTC::Run()
 					}
 				}
 			}//N=4
+
+			if(fIsPythia && fDoTaggedDRM){
+
+				if (jetrec->MatchedJet()) {
+					  double genpt = jetrec->MatchedJet()->Pt();
+					  if(!(fJetContainerMC->GetRhoParameter() == 0x0)){
+						genpt = genpt - fJetContainerMC->GetRhoVal() * jetrec->MatchedJet()->Area();
+					  }
+
+					if (sImpParXY.size()>0){
+					  if(sImpParXY.at(0) >= fThresholdIP)  fh2dJetGenPtVsJetRecPtFirst ->Fill(fJetPt,genpt,fPythiaEventWeight);
+					}
+
+					if (sImpParXY.size()>1){
+					  if(sImpParXY.at(1) >= fThresholdIP)  fh2dJetGenPtVsJetRecPtSecond->Fill(fJetPt,genpt,fPythiaEventWeight);
+					}
+
+					if (sImpParXY.size()>2){
+					  if(sImpParXY.at(2) >= fThresholdIP)  fh2dJetGenPtVsJetRecPtThird ->Fill(fJetPt,genpt,fPythiaEventWeight);
+					}
+				}
+			}
 
 			sImpParXY.clear();
 			sImpParXYZ.clear();
@@ -1923,9 +2046,24 @@ Bool_t AliAnalysisTaskBJetTC::Run()
 		delete trackAOD;
 
 	}//End jet loop
+	partonAOD=NULL;
+	delete partonAOD;
 	jetrec = 0x0; jetmatched=0x0;
 	delete jetmatched; delete jetrec;
-	
+
+	if(TaggedFirst){
+		f2histRhoVsDeltaPtFirst->Fill( randomConePt , fJetContainerData->GetRhoVal(), fPythiaEventWeight);
+		if(fDoDeltaPtWithSignal) f2histRhoVsDeltaPtWithSignalFirst->Fill( randomConePtWithSignal , fJetContainerData->GetRhoVal(), fPythiaEventWeight);
+	}
+	if(TaggedSecond){
+		f2histRhoVsDeltaPtSecond->Fill( randomConePt , fJetContainerData->GetRhoVal(), fPythiaEventWeight);
+		if(fDoDeltaPtWithSignal) f2histRhoVsDeltaPtWithSignalSecond->Fill( randomConePtWithSignal , fJetContainerData->GetRhoVal(), fPythiaEventWeight);
+	}
+	if(TaggedThird){
+		f2histRhoVsDeltaPtThird->Fill( randomConePt , fJetContainerData->GetRhoVal(), fPythiaEventWeight);
+		if(fDoDeltaPtWithSignal) f2histRhoVsDeltaPtWithSignalThird->Fill( randomConePtWithSignal , fJetContainerData->GetRhoVal(), fPythiaEventWeight);
+	}
+
 
 	if(fEnableV0GammaRejection){
 		if( fIsPythia > 0 && fInputEvent->IsA()==AliAODEvent::Class() && !(fV0Reader->AreAODsRelabeled())){
@@ -1936,17 +2074,37 @@ Bool_t AliAnalysisTaskBJetTC::Run()
 	return kTRUE;
 }
 // ######################################################################################## JEt Probability Function
-Double_t AliAnalysisTaskBJetTC::CalculateTrackProb(Double_t significance, Int_t trclass)
+Double_t AliAnalysisTaskBJetTC::CalculateTrackProb(Double_t significance, Int_t trclass, Int_t jetFlavor)
 {
   Double_t trackprob = 0;
   //switch resolution function based on track pt;
   if(TMath::Abs(significance) >100) significance =99.9; //Limit to function definition range
-  trackprob = fResolutionFunction[trclass]->Integral(-100,-TMath::Abs(significance))/fResolutionFunction[trclass]->Integral(-100,0);
+  if(fIsPythia){
+ 	 switch(jetFlavor)
+	 {
+		case 0:
+  		      trackprob = fResolutionFunctionlf[trclass]->Integral(-100,-TMath::Abs(significance))/fResolutionFunctionlf[trclass]->Integral(-100,0);
+		      break;
+		case 1:
+  		      trackprob = fResolutionFunctionlf[trclass]->Integral(-100,-TMath::Abs(significance))/fResolutionFunctionlf[trclass]->Integral(-100,0);
+		      break;
+		case 2:
+  		      trackprob = fResolutionFunctionc[trclass]->Integral(-100,-TMath::Abs(significance))/fResolutionFunctionc[trclass]->Integral(-100,0);
+			break;
+		case 3:
+  		      trackprob = fResolutionFunctionb[trclass]->Integral(-100,-TMath::Abs(significance))/fResolutionFunctionb[trclass]->Integral(-100,0);
+			break;
+		default:
+			break;
+	  }
+  }else
+  	trackprob = fResolutionFunction[trclass]->Integral(-100,-TMath::Abs(significance))/fResolutionFunction[trclass]->Integral(-100,0);
+
   if(fMinTrackProb)  trackprob=TMath::Max(trackprob,fMinTrackProb);
   return trackprob;
 }
 // ######################################################################################## Jet Probability Function
-Double_t AliAnalysisTaskBJetTC::CalculateJetProb(AliEmcalJet *jet)
+Double_t AliAnalysisTaskBJetTC::CalculateJetProb(AliEmcalJet *jet, Int_t jetFlavor)
 {
   if(!jet) return -1;
   Double_t JetProb = -1;
@@ -1960,7 +2118,9 @@ Double_t AliAnalysisTaskBJetTC::CalculateJetProb(AliEmcalJet *jet)
       AliAODTrack* trackV = 0x0;
       if(fUsePicoTracks) trackV = (AliAODTrack*)((AliPicoTrack*)jet->Track(itrack))->GetTrack();
       else trackV = (AliAODTrack*)((fJetContainerData->GetParticleContainer())->GetParticle(jet->TrackAt(itrack)));
-      
+
+      if(!trackV) continue;
+
       //class selection
       Int_t QualityClass=0;
       double dca[2] = {0};
@@ -1968,8 +2128,8 @@ Double_t AliAnalysisTaskBJetTC::CalculateJetProb(AliEmcalJet *jet)
       double sign = 0;
 
       if(!IsTrackAcceptedQuality(trackV, jet, QualityClass, dca, cov, sign)) continue;
-      if(sign<0) continue;//only take positive IP tracksz
-      curps =CalculateTrackProb(TMath::Abs(GetValImpactParameter(kXYSig,dca,cov)), QualityClass);
+      if(sign<0) continue;//only take positive IP tracks
+      curps =CalculateTrackProb(TMath::Abs(GetValImpactParameter(kXYSig,dca,cov)), QualityClass, jetFlavor);
       TrackProb*=TMath::Abs(curps);
       trackcounter++;
     }
@@ -1989,7 +2149,7 @@ Double_t AliAnalysisTaskBJetTC::CalculateJetProb(AliEmcalJet *jet)
 }
 //###############################################################################################################
 
-void AliAnalysisTaskBJetTC::FillResolutionFunctionHists(AliAODTrack * track,AliEmcalJet * jet)
+void AliAnalysisTaskBJetTC::FillResolutionFunctionHists(AliAODTrack * track,AliEmcalJet * jet, Int_t jetFlavor)
 {
  
    Int_t QualityClass=0;
@@ -2007,42 +2167,175 @@ void AliAnalysisTaskBJetTC::FillResolutionFunctionHists(AliAODTrack * track,AliE
           	fh2dJetSignedImpParXYSignificance_Class1->Fill(track->Pt(),TMath::Abs(GetValImpactParameter(kXYSig, imp,cov))*sign,weight);
           	fh2dJetSignedImpParXYZ_Class1->Fill(track->Pt(),TMath::Abs(GetValImpactParameter(kXYZ, imp,cov))*sign,weight);
           	fh2dJetSignedImpParXYZSignificance_Class1->Fill(track->Pt(),TMath::Abs(GetValImpactParameter(kXYZSig, imp,cov))*sign,weight);
+		if(fIsPythia){
+		    	switch(jetFlavor)
+			{
+		        	case 0:
+		  			fh2dJetSignedImpParXYSignificancelf_Class1->Fill(track->Pt(),TMath::Abs(GetValImpactParameter(kXYSig, imp,cov))*sign,weight);
+		          		break;
+		        	case 1:
+		  			fh2dJetSignedImpParXYSignificancelf_Class1->Fill(track->Pt(),TMath::Abs(GetValImpactParameter(kXYSig, imp,cov))*sign,weight);
+		          		break;
+		        	case 2:
+		  			fh2dJetSignedImpParXYSignificancec_Class1->Fill(track->Pt(),TMath::Abs(GetValImpactParameter(kXYSig, imp,cov))*sign,weight);
+		          		break;
+		        	case 3:
+		  			fh2dJetSignedImpParXYSignificanceb_Class1->Fill(track->Pt(),TMath::Abs(GetValImpactParameter(kXYSig, imp,cov))*sign,weight);
+					break;
+		        	default:
+		          		break;
+		       }
+		}
 		break;
 	case 1: //Pt<2 nITShits=2
 		fh2dJetSignedImpParXY_Class2->Fill(track->Pt() , TMath::Abs(GetValImpactParameter(kXY, imp,cov))*sign,weight);
 		fh2dJetSignedImpParXYSignificance_Class2->Fill(track->Pt(),TMath::Abs(GetValImpactParameter(kXYSig, imp,cov))*sign,weight);
 		fh2dJetSignedImpParXYZ_Class2->Fill(track->Pt(),TMath::Abs(GetValImpactParameter(kXYZ, imp,cov))*sign,weight);
 		fh2dJetSignedImpParXYZSignificance_Class2->Fill(track->Pt(),TMath::Abs(GetValImpactParameter(kXYZSig, imp,cov))*sign,weight);
+		if(fIsPythia){
+		    	switch(jetFlavor)
+			{
+		        	case 0:
+		  			fh2dJetSignedImpParXYSignificancelf_Class2->Fill(track->Pt(),TMath::Abs(GetValImpactParameter(kXYSig, imp,cov))*sign,weight);
+		          		break;
+		        	case 1:
+		  			fh2dJetSignedImpParXYSignificancelf_Class2->Fill(track->Pt(),TMath::Abs(GetValImpactParameter(kXYSig, imp,cov))*sign,weight);
+		          		break;
+		        	case 2:
+		  			fh2dJetSignedImpParXYSignificancec_Class2->Fill(track->Pt(),TMath::Abs(GetValImpactParameter(kXYSig, imp,cov))*sign,weight);
+		          		break;
+		        	case 3:
+		  			fh2dJetSignedImpParXYSignificanceb_Class2->Fill(track->Pt(),TMath::Abs(GetValImpactParameter(kXYSig, imp,cov))*sign,weight);
+					break;
+		        	default:
+		          		break;
+		        	}
+		}
 		break;
 	case 3: //Pt<2 nITShits=3
 		fh2dJetSignedImpParXY_Class3->Fill(track->Pt() , TMath::Abs(GetValImpactParameter(kXY, imp,cov))*sign,weight);
 		fh2dJetSignedImpParXYSignificance_Class3->Fill(track->Pt(),TMath::Abs(GetValImpactParameter(kXYSig, imp,cov))*sign,weight);
 		fh2dJetSignedImpParXYZ_Class3->Fill(track->Pt(),TMath::Abs(GetValImpactParameter(kXYZ, imp,cov))*sign,weight);
 		fh2dJetSignedImpParXYZSignificance_Class3->Fill(track->Pt(),TMath::Abs(GetValImpactParameter(kXYZSig, imp,cov))*sign,weight);
+		if(fIsPythia){
+		    	switch(jetFlavor)
+			{
+		        	case 0:
+		  			fh2dJetSignedImpParXYSignificancelf_Class3->Fill(track->Pt(),TMath::Abs(GetValImpactParameter(kXYSig, imp,cov))*sign,weight);
+		          		break;
+		        	case 1:
+		  			fh2dJetSignedImpParXYSignificancelf_Class3->Fill(track->Pt(),TMath::Abs(GetValImpactParameter(kXYSig, imp,cov))*sign,weight);
+		          		break;
+		        	case 2:
+		  			fh2dJetSignedImpParXYSignificancec_Class3->Fill(track->Pt(),TMath::Abs(GetValImpactParameter(kXYSig, imp,cov))*sign,weight);
+		          		break;
+		        	case 3:
+		  			fh2dJetSignedImpParXYSignificanceb_Class3->Fill(track->Pt(),TMath::Abs(GetValImpactParameter(kXYSig, imp,cov))*sign,weight);
+					break;
+		        	default:
+		          		break;
+		        	}
+		}
 		break;
 	case 5: //Pt<2 nITShits=4
 		fh2dJetSignedImpParXY_Class4->Fill(track->Pt() , TMath::Abs(GetValImpactParameter(kXY, imp,cov))*sign,weight);
 		fh2dJetSignedImpParXYSignificance_Class4->Fill(track->Pt(),TMath::Abs(GetValImpactParameter(kXYSig, imp,cov))*sign,weight);
 		fh2dJetSignedImpParXYZ_Class4->Fill(track->Pt(),TMath::Abs(GetValImpactParameter(kXYZ, imp,cov))*sign,weight);
 		fh2dJetSignedImpParXYZSignificance_Class4->Fill(track->Pt(),TMath::Abs(GetValImpactParameter(kXYZSig, imp,cov))*sign,weight);
+		if(fIsPythia){
+		    	switch(jetFlavor)
+			{
+		        	case 0:
+		  			fh2dJetSignedImpParXYSignificancelf_Class4->Fill(track->Pt(),TMath::Abs(GetValImpactParameter(kXYSig, imp,cov))*sign,weight);
+		          		break;
+		        	case 1:
+		  			fh2dJetSignedImpParXYSignificancelf_Class4->Fill(track->Pt(),TMath::Abs(GetValImpactParameter(kXYSig, imp,cov))*sign,weight);
+		          		break;
+		        	case 2:
+		  			fh2dJetSignedImpParXYSignificancec_Class4->Fill(track->Pt(),TMath::Abs(GetValImpactParameter(kXYSig, imp,cov))*sign,weight);
+		          		break;
+		        	case 3:
+		  			fh2dJetSignedImpParXYSignificanceb_Class4->Fill(track->Pt(),TMath::Abs(GetValImpactParameter(kXYSig, imp,cov))*sign,weight);
+					break;
+		        	default:
+		          		break;
+		        	}
+		}
 		break;
 	case 2: //Pt>2 nITShits=2
 		fh2dJetSignedImpParXY_Class2->Fill(track->Pt() , TMath::Abs(GetValImpactParameter(kXY, imp,cov))*sign,weight);
 		fh2dJetSignedImpParXYSignificance_Class2->Fill(track->Pt(),TMath::Abs(GetValImpactParameter(kXYSig, imp,cov))*sign,weight);
 		fh2dJetSignedImpParXYZ_Class2->Fill(track->Pt(),TMath::Abs(GetValImpactParameter(kXYZ, imp,cov))*sign,weight);
 		fh2dJetSignedImpParXYZSignificance_Class2->Fill(track->Pt(),TMath::Abs(GetValImpactParameter(kXYZSig, imp,cov))*sign,weight);
+		if(fIsPythia){
+		    	switch(jetFlavor)
+			{
+		        	case 0:
+		  			fh2dJetSignedImpParXYSignificancelf_Class2->Fill(track->Pt(),TMath::Abs(GetValImpactParameter(kXYSig, imp,cov))*sign,weight);
+		          		break;
+		        	case 1:
+		  			fh2dJetSignedImpParXYSignificancelf_Class2->Fill(track->Pt(),TMath::Abs(GetValImpactParameter(kXYSig, imp,cov))*sign,weight);
+		          		break;
+		        	case 2:
+		  			fh2dJetSignedImpParXYSignificancec_Class2->Fill(track->Pt(),TMath::Abs(GetValImpactParameter(kXYSig, imp,cov))*sign,weight);
+		          		break;
+		        	case 3:
+		  			fh2dJetSignedImpParXYSignificanceb_Class2->Fill(track->Pt(),TMath::Abs(GetValImpactParameter(kXYSig, imp,cov))*sign,weight);
+					break;
+		        	default:
+		          		break;
+		        	}
+		}
 		break;
 	case 4: //Pt>2 nITShits=3
 		fh2dJetSignedImpParXY_Class3->Fill(track->Pt() , TMath::Abs(GetValImpactParameter(kXY, imp,cov))*sign,weight);
 		fh2dJetSignedImpParXYSignificance_Class3->Fill(track->Pt(),TMath::Abs(GetValImpactParameter(kXYSig, imp,cov))*sign,weight);
 		fh2dJetSignedImpParXYZ_Class3->Fill(track->Pt(),TMath::Abs(GetValImpactParameter(kXYZ, imp,cov))*sign,weight);
 		fh2dJetSignedImpParXYZSignificance_Class3->Fill(track->Pt(),TMath::Abs(GetValImpactParameter(kXYZSig, imp,cov))*sign,weight);
+		if(fIsPythia){
+		    	switch(jetFlavor)
+			{
+		        	case 0:
+		  			fh2dJetSignedImpParXYSignificancelf_Class3->Fill(track->Pt(),TMath::Abs(GetValImpactParameter(kXYSig, imp,cov))*sign,weight);
+		          		break;
+		        	case 1:
+		  			fh2dJetSignedImpParXYSignificancelf_Class3->Fill(track->Pt(),TMath::Abs(GetValImpactParameter(kXYSig, imp,cov))*sign,weight);
+		          		break;
+		        	case 2:
+		  			fh2dJetSignedImpParXYSignificancec_Class3->Fill(track->Pt(),TMath::Abs(GetValImpactParameter(kXYSig, imp,cov))*sign,weight);
+		          		break;
+		        	case 3:
+		  			fh2dJetSignedImpParXYSignificanceb_Class3->Fill(track->Pt(),TMath::Abs(GetValImpactParameter(kXYSig, imp,cov))*sign,weight);
+					break;
+		        	default:
+		          		break;
+		        	}
+		}
 		break;
 	case 6: //Pt>2 nITShits=4
 		fh2dJetSignedImpParXY_Class4->Fill(track->Pt() , TMath::Abs(GetValImpactParameter(kXY, imp,cov))*sign,weight);
 		fh2dJetSignedImpParXYSignificance_Class4->Fill(track->Pt(),TMath::Abs(GetValImpactParameter(kXYSig, imp,cov))*sign,weight);
 		fh2dJetSignedImpParXYZ_Class4->Fill(track->Pt(),TMath::Abs(GetValImpactParameter(kXYZ, imp,cov))*sign,weight);
 		fh2dJetSignedImpParXYZSignificance_Class4->Fill(track->Pt(),TMath::Abs(GetValImpactParameter(kXYZSig, imp,cov))*sign,weight);
+		if(fIsPythia){
+		    	switch(jetFlavor)
+			{
+		        	case 0:
+		  			fh2dJetSignedImpParXYSignificancelf_Class4->Fill(track->Pt(),TMath::Abs(GetValImpactParameter(kXYSig, imp,cov))*sign,weight);
+		          		break;
+		        	case 1:
+		  			fh2dJetSignedImpParXYSignificancelf_Class4->Fill(track->Pt(),TMath::Abs(GetValImpactParameter(kXYSig, imp,cov))*sign,weight);
+		          		break;
+		        	case 2:
+		  			fh2dJetSignedImpParXYSignificancec_Class4->Fill(track->Pt(),TMath::Abs(GetValImpactParameter(kXYSig, imp,cov))*sign,weight);
+		          		break;
+		        	case 3:
+		  			fh2dJetSignedImpParXYSignificanceb_Class4->Fill(track->Pt(),TMath::Abs(GetValImpactParameter(kXYSig, imp,cov))*sign,weight);
+					break;
+		        	default:
+		          		break;
+		        	}
+		}
 		break;
 
 	default:
@@ -2138,6 +2431,7 @@ Bool_t AliAnalysisTaskBJetTC::IsSelected(Int_t &WhyRejected,ULong_t &RejectionBi
 	    		  RejectionBits+=1<<kNoVertexTracks;
 
 	    	}
+		if(vtxTtl.Contains("WithConstraint")) fVertexConstraint = kTRUE;
 	    	if(trkVtx->GetNContributors()<1)	{
 	    	    		 accept=kFALSE;
 	    	    		 RejectionBits+=1<<kTooFewVtxContrib;
@@ -2198,79 +2492,33 @@ Bool_t AliAnalysisTaskBJetTC::IsSelected(Int_t &WhyRejected,ULong_t &RejectionBi
     		RejectionBits+=1<<kSelPtHardBin;
     		accept=kFALSE;
   	}
-
-	/*if(fIsPythia){
-
-		TList *EventHeadersList         = 0x0;
-		AliGenEventHeader* eventHeader     = 0;
-		Float_t ptHard;
-		AliEmcalJet* jet = 0x0;
-		AliJetContainer* JetContainerMC = static_cast<AliJetContainer*>(fJetCollArray.At(1));
-		Int_t Njets = JetContainerMC->GetNJets();
-
-		EventHeadersList = MCEvent()->GetCocktailList(); //get list of MC cocktail headers 
-		
-		if(EventHeadersList){
-		      for(Int_t i = 0; i<EventHeadersList->GetEntries(); i++){
-			 eventHeader = (AliGenEventHeader*)EventHeadersList->At(i);
-
-			 AliGenPythiaEventHeader* fGenPythiaEventHeader= dynamic_cast<AliGenPythiaEventHeader*>(eventHeader);
-
-			 if(fGenPythiaEventHeader){
-			    ptHard = fGenPythiaEventHeader->GetPtHard();
-
-			    for(Int_t ijet = 0; ijet < Njets; ijet++) {
-			       jet = (AliEmcalJet*)JetContainerMC->GetJet(ijet);
-			       if (!jet) continue;
-
-			       //Compare jet pT and pt Hard
-			       if(jet->Pt() > 2 * ptHard){
-				  	AliInfo(Form("Reject event with : pT Hard %2.2f, jet pT %2.2f", ptHard, jet->Pt()));
-					RejectionBits+=1<<kSelPtHardBin;
-					accept=kFALSE;
-			       }
-			    }
-			 }
-		      }
+	if (fPtHardThreshold > 0){
+		if(fPtHard > fPtHardThreshold){
+			RejectionBits+=1<<kSelPtHardBin;
+	    		accept=kFALSE;
 		}
-	}*/
+	}
 
 	if(fIsPythia){
-		AliGenEventHeader * eventHeader = dynamic_cast<AliGenEventHeader*>(MCEvent()->GenEventHeader());
-		TString eventHeaderName     = eventHeader->ClassName();
-		if (eventHeaderName.CompareTo("AliGenPythiaEventHeader") == 0){
-			AliGenPythiaEventHeader* fGenPythiaEventHeader = dynamic_cast<AliGenPythiaEventHeader*>(eventHeader);
-			if ( fGenPythiaEventHeader ){
-				Int_t nTriggerJets =  fGenPythiaEventHeader->NTriggerJets();
-			  	Float_t ptHard = fGenPythiaEventHeader->GetPtHard();
-			  	TParticle * jet =  0;
-			 	Float_t tmpjet[]={0,0,0,0};
-
-				if(nTriggerJets>0){
-				  	fGenPythiaEventHeader->TriggerJet(0, tmpjet);
-				  	jet = new TParticle(94, 21, -1, -1, -1, -1, tmpjet[0],tmpjet[1],tmpjet[2],tmpjet[3], 0,0,0,0);
-
-				  	//Compare jet pT and pt Hard
-				  	if(jet->Pt() > fMaxFactorPtHardJet * ptHard)
-				  	{
-						cout<<"This event was rejected due large Pthard \n";
-				  		AliInfo(Form("Reject jet event with : pT Hard %2.2f, pycell jet pT %2.2f", ptHard, jet->Pt()));
-					    	RejectionBits+=1<<kSelPtHardBin;
-					    	accept=kFALSE;
-				  	}
+		if(!CheckMCOutliers()) {
+			 	RejectionBits+=1<<kSelPtHardBin;
+				accept=kFALSE;
+		}
+		if (fPtHardAndTrackPtFactor > 0.) {
+			AliParticleContainer* mcpartcont = dynamic_cast<AliParticleContainer*>(fParticleCollArray.At(0));
+			if ((Bool_t)mcpartcont) {
+			      for (auto mctrack : mcpartcont->all()) {// Not cuts applied ; use accept for cuts
+				Float_t trackpt = mctrack->Pt();
+				if (trackpt > (fPtHardAndTrackPtFactor * fPtHard) ) {
+				  AliInfo(Form("Reject : track %2.2f, factor %2.2f, ptHard %f", trackpt, fPtHardAndTrackPtFactor, fPtHard));
+				  RejectionBits+=1<<kSelPtHardBin;
+				  accept=kFALSE;
 				}
-
-			  	if(jet) delete jet;
-
-				fGenPythiaEventHeader = 0x0;
-				delete fGenPythiaEventHeader;
-			} // pythia header
-
-
-	  	}
-		eventHeader=0x0;
-		delete eventHeader;
-	}
+			      }
+			}
+			mcpartcont=NULL; delete mcpartcont;
+		}
+	}	
 
 
 return accept;
@@ -2326,6 +2574,15 @@ void AliAnalysisTaskBJetTC::UserCreateOutputObjects(){
 
 	  fVtxTagger2Prong = new AliHFJetsTaggingVertex();
 	  fVtxTagger2Prong->SetCuts(jetCuts2Prong);
+
+	  delete esdTrackCuts;
+	  delete jetCuts3Prong;
+	  delete jetCuts2Prong;
+  }
+
+  if(fDoImprovedDCACut){
+	fDecayVertex = new AliAnalysisTaskWeakDecayVertexer();
+	fDecayVertex->SetDoImprovedDCAV0DauPropagation(kTRUE);
   }
 
   if(fEnableV0GammaRejection){
@@ -2385,9 +2642,9 @@ void AliAnalysisTaskBJetTC::UserCreateOutputObjects(){
           fV0CandidateArray->Delete();//Reset the TClonesArray
   }
 
-	const Int_t nBins2dSignificance =500;
-	const Int_t nBins3dSignificance =500;
-	const Int_t nBins2d=250;
+	const Int_t nBins2dSignificance =250;
+	const Int_t nBins3dSignificance =250;
+	const Int_t nBins2d=500;
 	const Int_t nBins3d =250;
 
 	if(fIsPythia) fHFJetUtils = new AliHFJetsTagging("fHFJetUtils");
@@ -2577,6 +2834,27 @@ void AliAnalysisTaskBJetTC::UserCreateOutputObjects(){
 			fh2dJetSignedImpParXYSignificance_Class4 = new TH2D("fh2dJetSignedImpParXYSignificance_Class4","Tracks with chi2/NDF<2 and 4 ITS hits sIP_{xy};pt (GeV/c); sIP_{xy}",200,0,100,2000,-100,100);
 			fh2dJetSignedImpParXYZ_Class4 = new TH2D("fh2dJetSignedImpParXYZ_Class4","Tracks with chi2/NDF<2 and 4 ITS hits IP_{xyz};pt (GeV/c); IP3D (cm)",200,0,100,2000,-2,2);
 			fh2dJetSignedImpParXYZSignificance_Class4 = new TH2D("fh2dJetSignedImpParXYZSignificance_Class4","Tracks with chi2/NDF<2.5 and 4 ITS hits sIP_{xyz};pt (GeV/c); sIP3D",200,0,100,2000,-100,100);
+
+			if(fIsPythia){
+
+				fh2dJetSignedImpParXYSignificanceb_Class1 = new TH2D("fh2dJetSignedImpParXYSignificanceb_Class1","Tracks with chi2/NDF>2 sIP_{xy};pt (GeV/c); sIP_{xy}",200,0,100,2000,-100,100);
+				fh2dJetSignedImpParXYSignificancec_Class1 = new TH2D("fh2dJetSignedImpParXYSignificancec_Class1","Tracks with chi2/NDF>2 sIP_{xy};pt (GeV/c); sIP_{xy}",200,0,100,2000,-100,100);
+				fh2dJetSignedImpParXYSignificancelf_Class1 = new TH2D("fh2dJetSignedImpParXYSignificancelf_Class1","Tracks with chi2/NDF>2 sIP_{xy};pt (GeV/c); sIP_{xy}",200,0,100,2000,-100,100);
+
+				fh2dJetSignedImpParXYSignificanceb_Class2 = new TH2D("fh2dJetSignedImpParXYSignificanceb_Class2","Tracks with chi2/NDF<2 and 2 ITS hits sIP_{xy};pt (GeV/c); sIP_{xy}",200,0,100,2000,-100,100);
+				fh2dJetSignedImpParXYSignificancec_Class2 = new TH2D("fh2dJetSignedImpParXYSignificancec_Class2","Tracks with chi2/NDF<2 and 2 ITS hits sIP_{xy};pt (GeV/c); sIP_{xy}",200,0,100,2000,-100,100);
+				fh2dJetSignedImpParXYSignificancelf_Class2 = new TH2D("fh2dJetSignedImpParXYSignificancelf_Class2","Tracks with chi2/NDF<2 and 2 ITS hits sIP_{xy};pt (GeV/c); sIP_{xy}",200,0,100,2000,-100,100);
+
+				fh2dJetSignedImpParXYSignificanceb_Class3 = new TH2D("fh2dJetSignedImpParXYSignificanceb_Class3","Tracks with chi2/NDF<2 and 3 ITS hits sIP_{xy};pt (GeV/c); sIP_{xy}",200,0,100,2000,-100,100);
+				fh2dJetSignedImpParXYSignificancec_Class3 = new TH2D("fh2dJetSignedImpParXYSignificancec_Class3","Tracks with chi2/NDF<2 and 3 ITS hits sIP_{xy};pt (GeV/c); sIP_{xy}",200,0,100,2000,-100,100);
+				fh2dJetSignedImpParXYSignificancelf_Class3 = new TH2D("fh2dJetSignedImpParXYSignificancelf_Class3","Tracks with chi2/NDF<2 and 3 ITS hits sIP_{xy};pt (GeV/c); sIP_{xy}",200,0,100,2000,-100,100);
+
+				fh2dJetSignedImpParXYSignificanceb_Class4 = new TH2D("fh2dJetSignedImpParXYSignificanceb_Class4","Tracks with chi2/NDF<2 and 4 ITS hits sIP_{xy};pt (GeV/c); sIP_{xy}",200,0,100,2000,-100,100);
+				fh2dJetSignedImpParXYSignificancec_Class4 = new TH2D("fh2dJetSignedImpParXYSignificancec_Class4","Tracks with chi2/NDF<2 and 4 ITS hits sIP_{xy};pt (GeV/c); sIP_{xy}",200,0,100,2000,-100,100);
+				fh2dJetSignedImpParXYSignificancelf_Class4 = new TH2D("fh2dJetSignedImpParXYSignificancelf_Class4","Tracks with chi2/NDF<2 and 4 ITS hits sIP_{xy};pt (GeV/c); sIP_{xy}",200,0,100,2000,-100,100);
+
+			}
+
 		}else{	
 			fhistJetProbability = new TH2D("fhistJetProbability","JetProbability;p_{T,jet};JP",250,0,250,1000,0,1);
 			fhistJetProbabilityLog = new TH2D("fhistJetProbabilityLog","JetProbability Logarithmic;p_{T,jet};-ln(JP)",250,0,250,375,0,30);
@@ -2636,10 +2914,17 @@ void AliAnalysisTaskBJetTC::UserCreateOutputObjects(){
 	fh1dJetRecPtAcceptedunCorr = new TH1D("fh1dJetRecPtAcceptedunCorr","Rec Jet Pt uncorrected;P_{T,Jet} (Gev/c)",250 ,0, 250);
 
 
-	f2histRhoVsDeltaPt = new TH2D("f2histRhoVsDeltaPt","Rho Vs Delta Pt;#delta P_{T}^{RC} (Gev/c);#rho (Gev/c)",170,-20,150,20,0,20);
-	f2histRhoVsDeltaPtFirst = new TH2D("f2histRhoVsDeltaPtFirst","Rho Vs Delta Pt N=1 tagged Events;#delta P_{T}^{RC} (Gev/c);#rho (Gev/c)",170,-20,150,20,0,20);
-	f2histRhoVsDeltaPtSecond = new TH2D("f2histRhoVsDeltaPtSecond","Rho Vs Delta Pt N=2 tagged Events;#delta P_{T}^{RC} (Gev/c);#rho (Gev/c)",170,-20,150,20,0,20);
-	f2histRhoVsDeltaPtThird = new TH2D("f2histRhoVsDeltaPtThird","Rho Vs Delta Pt N=3 tagged Events;#delta P_{T}^{RC} (Gev/c);#rho (Gev/c)",170,-20,150,20,0,20);
+	f2histRhoVsDeltaPt = new TH2D("f2histRhoVsDeltaPt","Rho Vs Delta Pt;#delta P_{T}^{RC} (Gev/c);#rho (Gev/c)",170,-20,150,30,0,30);
+	f2histRhoVsDeltaPtFirst = new TH2D("f2histRhoVsDeltaPtFirst","Rho Vs Delta Pt N=1 tagged Events;#delta P_{T}^{RC} (Gev/c);#rho (Gev/c)",170,-20,150,30,0,30);
+	f2histRhoVsDeltaPtSecond = new TH2D("f2histRhoVsDeltaPtSecond","Rho Vs Delta Pt N=2 tagged Events;#delta P_{T}^{RC} (Gev/c);#rho (Gev/c)",170,-20,150,30,0,30);
+	f2histRhoVsDeltaPtThird = new TH2D("f2histRhoVsDeltaPtThird","Rho Vs Delta Pt N=3 tagged Events;#delta P_{T}^{RC} (Gev/c);#rho (Gev/c)",170,-20,150,30,0,30);
+
+	if(fDoDeltaPtWithSignal){
+		f2histRhoVsDeltaPtWithSignal = new TH2D("f2histRhoVsDeltaPtWithSignal","Rho Vs Delta Pt;#delta P_{T}^{RC} (Gev/c);#rho (Gev/c)",170,-20,150,30,0,30);
+		f2histRhoVsDeltaPtWithSignalFirst = new TH2D("f2histRhoVsDeltaPtWithSignalFirst","Rho Vs Delta Pt N=1 tagged Events;#delta P_{T}^{RC} (Gev/c);#rho (Gev/c)",170,-20,150,30,0,30);
+		f2histRhoVsDeltaPtWithSignalSecond = new TH2D("f2histRhoVsDeltaPtWithSignalSecond","Rho Vs Delta Pt N=2 tagged Events;#delta P_{T}^{RC} (Gev/c);#rho (Gev/c)",170,-20,150,30,0,30);
+		f2histRhoVsDeltaPtWithSignalThird = new TH2D("f2histRhoVsDeltaPtWithSignalThird","Rho Vs Delta Pt N=3 tagged Events;#delta P_{T}^{RC} (Gev/c);#rho (Gev/c)",170,-20,150,30,0,30);
+	}
 
         
 
@@ -2663,6 +2948,14 @@ void AliAnalysisTaskBJetTC::UserCreateOutputObjects(){
 		fh2dJetGenPtVsJetRecPtc = new TH2D("fh2dJetGenPtVsJetRecPtc","detector momentum response;rec pt;gen pt",500,0,250,500,0,250);
 
 		fh2dJetGenPtVsJetRecPtudsg = new TH2D("fh2dJetGenPtVsJetRecPtudsg","detector momentum response;rec pt;gen pt",500,0,250,500,0,250);
+
+		if(fDoTaggedDRM){
+
+			fh2dJetGenPtVsJetRecPtFirst = new TH2D("fh2dJetGenPtVsJetRecPtFirst","detector momentum response N=1;rec pt;gen pt",500,0,250,500,0,250);
+			fh2dJetGenPtVsJetRecPtSecond = new TH2D("fh2dJetGenPtVsJetRecPtSecond","detector momentum response N=2 ;rec pt;gen pt",500,0,250,500,0,250);
+			fh2dJetGenPtVsJetRecPtThird = new TH2D("fh2dJetGenPtVsJetRecPtThird","detector momentum response N=3;rec pt;gen pt",500,0,250,500,0,250);
+
+		}
 
 		//Track Counting Analysis
 		if(fDoTrackCountingAnalysis){
@@ -3034,6 +3327,13 @@ void AliAnalysisTaskBJetTC::UserCreateOutputObjects(){
 	fOutput->Add(f2histRhoVsDeltaPtSecond);
 	fOutput->Add(f2histRhoVsDeltaPtThird);
 
+	if(fDoDeltaPtWithSignal){
+		fOutput->Add(f2histRhoVsDeltaPtWithSignal);
+		fOutput->Add(f2histRhoVsDeltaPtWithSignalFirst);
+		fOutput->Add(f2histRhoVsDeltaPtWithSignalSecond);
+		fOutput->Add(f2histRhoVsDeltaPtWithSignalThird);
+	}
+
 	//JetProbability
 	if(fDoJetProbabilityAnalysis){
 		if(!fResolutionFunction[0]){
@@ -3053,6 +3353,24 @@ void AliAnalysisTaskBJetTC::UserCreateOutputObjects(){
 			fOutput->Add(fh2dJetSignedImpParXYSignificance_Class4);
 			fOutput->Add(fh2dJetSignedImpParXYZ_Class4);
 			fOutput->Add(fh2dJetSignedImpParXYZSignificance_Class4);
+			if(fIsPythia){
+				fOutput->Add(fh2dJetSignedImpParXYSignificanceb_Class1);
+				fOutput->Add(fh2dJetSignedImpParXYSignificancec_Class1);
+				fOutput->Add(fh2dJetSignedImpParXYSignificancelf_Class1);
+
+				fOutput->Add(fh2dJetSignedImpParXYSignificanceb_Class2);
+				fOutput->Add(fh2dJetSignedImpParXYSignificancec_Class2);
+				fOutput->Add(fh2dJetSignedImpParXYSignificancelf_Class2);
+
+				fOutput->Add(fh2dJetSignedImpParXYSignificanceb_Class3);
+				fOutput->Add(fh2dJetSignedImpParXYSignificancec_Class3);
+				fOutput->Add(fh2dJetSignedImpParXYSignificancelf_Class3);
+
+				fOutput->Add(fh2dJetSignedImpParXYSignificanceb_Class4);
+				fOutput->Add(fh2dJetSignedImpParXYSignificancec_Class4);
+				fOutput->Add(fh2dJetSignedImpParXYSignificancelf_Class4);
+			}
+
 		}else{
 			fOutput->Add(fhistJetProbability);
 			fOutput->Add(fhistJetProbabilityLog);
@@ -3124,6 +3442,13 @@ void AliAnalysisTaskBJetTC::UserCreateOutputObjects(){
 		fOutput->Add(fh2dJetGenPtVsJetRecPtb);
 		fOutput->Add(fh2dJetGenPtVsJetRecPtc);
 		fOutput->Add(fh2dJetGenPtVsJetRecPtudsg);
+		if(fDoTaggedDRM){
+
+			fOutput->Add(fh2dJetGenPtVsJetRecPtFirst);
+			fOutput->Add(fh2dJetGenPtVsJetRecPtSecond);
+			fOutput->Add(fh2dJetGenPtVsJetRecPtThird);
+
+		}
 
 		if(fDoTrackCountingAnalysis){
 			fOutput->Add(fh2dJetSignedImpParXYUnidentified);
@@ -3291,34 +3616,17 @@ void AliAnalysisTaskBJetTC::UserCreateOutputObjects(){
 // ######################################################################################## Calculate impact parameters
 Bool_t AliAnalysisTaskBJetTC::CalculateTrackImpactParameter(AliAODTrack * track,double *impar, double * cov)
 {
-	AliAODVertex *vtxAODNew=fPrimaryVertex;
-	TString title=fPrimaryVertex->GetTitle();
-	if(!title.Contains("VertexerTracks")) return kFALSE;
+	AliAODVertex *vtxAODNew=0x0;
 	AliESDVertex *vtxESDNew =0x0;
 	Bool_t recalculate = kFALSE;
 	if( fPrimaryVertex->GetNContributors() < 30){
 		recalculate=kTRUE;
-		AliVertexerTracks *vertexer = new AliVertexerTracks(fAODIn->GetMagneticField());
-		Int_t ndg = 1;
-		vertexer->SetITSMode();
-		vertexer->SetMinClusters(3);
-		vertexer->SetConstraintOff();
-		if(title.Contains("WithConstraint")) {
-			Float_t diamondcovxy[3];
-			fAODIn->GetDiamondCovXY(diamondcovxy);
-			Double_t pos[3]={fAODIn->GetDiamondX(),fAODIn->GetDiamondY(),0.};
-			Double_t cov[6]={diamondcovxy[0],diamondcovxy[1],diamondcovxy[2],0.,0.,10.*10.};
-			AliESDVertex *diamond = new AliESDVertex(pos,cov,1.,1);
-			vertexer->SetVtxStart(diamond);
-			delete diamond; diamond=NULL;
-		}
 		Int_t skipped[1] = {-1};
 		Int_t id = (Int_t)track->GetID();
 		if(id<0) return kFALSE;
 		skipped[0] = id;
-		vertexer->SetSkipTracks(1,skipped);
-		vtxESDNew = vertexer->FindPrimaryVertex(fAODIn);
-		delete vertexer; vertexer=NULL;
+		fVertexer->SetSkipTracks(1,skipped);
+		vtxESDNew = fVertexer->FindPrimaryVertex(fAODIn);
 		if(!vtxESDNew) return kFALSE;
 		if(vtxESDNew->GetNContributors()<=0) {
 			delete vtxESDNew; vtxESDNew=NULL;
@@ -3391,32 +3699,15 @@ Bool_t AliAnalysisTaskBJetTC::CalculateTrackImpactParameterTruth(AliAODTrack * t
 
 Bool_t AliAnalysisTaskBJetTC::CalculateJetSignedTrackImpactParameter(AliAODTrack * track,AliEmcalJet * jet ,double *impar, double * cov, double &sign, double &dcajetrack, double &lineardecaylength){
 
-	TString title=fPrimaryVertex->GetTitle();
-	if(!title.Contains("VertexerTracks")) return kFALSE;
-	AliVertexerTracks *vertexer = new AliVertexerTracks(fAODIn->GetMagneticField());
-	Int_t ndg = 1;
-	vertexer->SetITSMode();
-	vertexer->SetMinClusters(3);
-	vertexer->SetConstraintOn();
-	if(title.Contains("WithConstraint")) {
-		Float_t diamondcovxy[3];
-		fAODIn->GetDiamondCovXY(diamondcovxy);
-		Double_t pos[3]={fAODIn->GetDiamondX(),fAODIn->GetDiamondY(),0.};
-		Double_t cov[6]={diamondcovxy[0],diamondcovxy[1],diamondcovxy[2],0.,0.,10.*10.};
-		AliESDVertex *diamond = new AliESDVertex(pos,cov,1.,1);
-		vertexer->SetVtxStart(diamond);
-		delete diamond; diamond=NULL;
-	}
 	Int_t skipped[1] = {-1};
 	Int_t id = (Int_t)track->GetID();
 	if(id<0) return kFALSE;
 	skipped[0] = id;
-	vertexer->SetSkipTracks(1,skipped);
-	AliESDVertex *vtxESDNew = vertexer->FindPrimaryVertex(fAODIn);
-	delete vertexer; vertexer=NULL;
+	fVertexer->SetSkipTracks(1,skipped);
+	AliESDVertex *vtxESDNew = fVertexer->FindPrimaryVertex(fAODIn);
 	if(!vtxESDNew) return kFALSE;
 	if(vtxESDNew->GetNContributors()<=0) {
-		delete vtxESDNew; vtxESDNew=NULL;
+		vtxESDNew=NULL; delete vtxESDNew; 
 		return kFALSE;
 	}
 	// convert to AliAODVertex
@@ -3445,9 +3736,7 @@ Bool_t AliAnalysisTaskBJetTC::CalculateJetSignedTrackImpactParameter(AliAODTrack
 		if(!fDoImprovedDCACut){
 			bjetparam.GetDCA(&etp, fAODIn->GetMagneticField(), xa, xb);
 		}else{
-			AliAnalysisTaskWeakDecayVertexer* DecayVertex = new AliAnalysisTaskWeakDecayVertexer();
-			DecayVertex->SetDoImprovedDCAV0DauPropagation(kTRUE);
-			DecayVertex->GetDCAV0Dau(&bjetparam, &etp, xa, xb, fAODIn->GetMagneticField() );
+			fDecayVertex->GetDCAV0Dau(&bjetparam, &etp, xa, xb, fAODIn->GetMagneticField() );
 		}
 		Double_t xyz[3] = { 0., 0., 0. };
 		Double_t xyzb[3] = { 0., 0., 0. };
@@ -3606,7 +3895,6 @@ Bool_t AliAnalysisTaskBJetTC::IsTrackAcceptedQuality(AliAODTrack* track ,AliEmca
   //if(track->GetNcls(0)<fTCMinHitsITS) return kFALSE;//2
   if(track->Chi2perNDF()>=fTCMaxChi2pNDF) return kFALSE;//5
 
-  
   double dcaTrackJet =0,lindeclen =0 ;
 
   if(!CalculateJetSignedTrackImpactParameter(track,Jet,imp,cov,sign,dcaTrackJet,lindeclen)) return kFALSE;
@@ -3635,16 +3923,16 @@ Bool_t AliAnalysisTaskBJetTC::IsTrackAcceptedQuality(AliAODTrack* track ,AliEmca
 // ######################################################################################## Jet matching 1/4
 Bool_t AliAnalysisTaskBJetTC::MatchJetsGeometricDefault()
 {
-	AliJetContainer *jets1 = static_cast<AliJetContainer*>(fJetCollArray.At(0));
-	AliJetContainer *jets2 = static_cast<AliJetContainer*>(fJetCollArray.At(1));
 	double matchingpar1 =0.25;
 	double matchingpar2 =0.25;
-	if (!jets1 || !jets1->GetArray() || !jets2 || !jets2->GetArray()) return kFALSE;
+	if (!fJetContainerData || !fJetContainerData->GetArray() || !fJetContainerMC || !fJetContainerMC->GetArray()) return kFALSE;
 	DoJetLoop();
 	AliEmcalJet* jet1 = 0;
-	jets1->ResetCurrentID();
-	while ((jet1 = jets1->GetNextJet())) {
-		AliEmcalJet *jet2 = jet1->ClosestJet();
+	AliEmcalJet *jet2 = 0;
+
+	fJetContainerData->ResetCurrentID();
+	while ((jet1 = fJetContainerData->GetNextJet())) {
+		jet2 = jet1->ClosestJet();
 		if (!jet2) continue;
 		if (jet2->ClosestJet() != jet1) continue;
 		if (jet1->ClosestJetDistance() > matchingpar1 || jet2->ClosestJetDistance() > matchingpar2) continue;
@@ -3653,8 +3941,7 @@ Bool_t AliAnalysisTaskBJetTC::MatchJetsGeometricDefault()
 		jet2->SetMatchedToClosest(1);
 	}
 	jet1=NULL; delete jet1;
-	jets1=NULL; jets2=NULL;
-	delete jets1; delete jets2;
+	jet2=NULL; delete jet2;
 	return kTRUE;
 }
 // ######################################################################################## Jet matching 2/4
@@ -3662,27 +3949,23 @@ void AliAnalysisTaskBJetTC::DoJetLoop()
 {
 	// Do the jet loop.
 	double minjetpt =1.;
-	AliJetContainer *jets1 = static_cast<AliJetContainer*>(fJetCollArray.At(0));
-	AliJetContainer *jets2 = static_cast<AliJetContainer*>(fJetCollArray.At(1));
-	if (!jets1 || !jets1->GetArray() || !jets2 || !jets2->GetArray()) return;
+
 	AliEmcalJet* jet1 = 0;
 	AliEmcalJet* jet2 = 0;
-	jets2->ResetCurrentID();
-	while ((jet2 = jets2->GetNextJet())) jet2->ResetMatching();
-	jets1->ResetCurrentID();
-	while ((jet1 = jets1->GetNextJet())) {
+	fJetContainerMC->ResetCurrentID();
+	while ((jet2 = fJetContainerMC->GetNextJet())) jet2->ResetMatching();
+	fJetContainerData->ResetCurrentID();
+	while ((jet1 = fJetContainerData->GetNextJet())) {
 		jet1->ResetMatching();
 		if (jet1->MCPt() < minjetpt) continue;
-		jets2->ResetCurrentID();
-		while ((jet2 = jets2->GetNextJet())) {
+		fJetContainerMC->ResetCurrentID();
+		while ((jet2 = fJetContainerMC->GetNextJet())) {
 			SetMatchingLevel(jet1, jet2, 1);
 		} // jet2 loop
 	} // jet1 loop
 
 	jet1=NULL; jet2=NULL;
 	delete jet1; delete jet2;
-	jets1=NULL; jets2=NULL;
-	delete jets1; delete jets2;
 }
 // ######################################################################################## Jet matching 3/4
 void AliAnalysisTaskBJetTC::SetMatchingLevel(AliEmcalJet *jet1, AliEmcalJet *jet2, int matching)
@@ -3752,10 +4035,11 @@ Bool_t AliAnalysisTaskBJetTC::IsV0PhotonFromBeamPipeDaughter(const AliAODTrack* 
 
 	fReaderGammas = fV0Reader->GetReconstructedGammas(); // Gammas from default Cut
 
+	AliAODConversionPhoton* PhotonCandidate = 0;
 	// Loop over Photon Candidates allocated by ReaderV1
 	for(Int_t i = 0; i < fReaderGammas->GetEntriesFast(); i++){
 
-		    AliAODConversionPhoton* PhotonCandidate = (AliAODConversionPhoton*) fReaderGammas->At(i);
+		    PhotonCandidate = (AliAODConversionPhoton*) fReaderGammas->At(i);
 		    if(!PhotonCandidate) continue;
 
 		    posid = PhotonCandidate->GetLabel1();
@@ -3807,7 +4091,6 @@ Bool_t AliAnalysisTaskBJetTC::IsV0Daughter(const AliAODTrack* track)
 Bool_t AliAnalysisTaskBJetTC::SelectV0CandidateVIT()
 {
   AliAODv0* v0 = 0; // pointer to V0 candidates
-  TVector3 vecV0Momentum; // 3D vector of V0 momentum
   Double_t dMassV0K0s = 0; // invariant mass of the K0s candidate
   Double_t dMassV0Lambda = 0; // invariant mass of the Lambda candidate
   Double_t dMassV0ALambda = 0; // invariant mass of the Lambda candidate
@@ -3895,7 +4178,6 @@ const Double_t fgkdMassLambdaMax = 1.25; // [GeV/c^2]
     iCutIndex++;
 
     Double_t dPtV0 = TMath::Sqrt(v0->Pt2V0()); // transverse momentum of V0
-    vecV0Momentum = TVector3(v0->Px(), v0->Py(), v0->Pz()); // set the vector of V0 momentum
 
     // Sigma of the mass peak window
     Double_t dMassPeakWindowK0s = dNSigmaMassMax * ( 0.0044 + 0.0004 * (dPtV0 - 1.) );
@@ -3970,7 +4252,6 @@ const Double_t fgkdMassLambdaMax = 1.25; // [GeV/c^2]
     Char_t cTypeVtxProdPos = prodVtxDaughterPos->GetType(); // type of the production vertex
     AliAODVertex* prodVtxDaughterNeg = (AliAODVertex*)(trackNeg->GetProdVertex()); // production vertex of the negative daughter track
     Char_t cTypeVtxProdNeg = prodVtxDaughterNeg->GetType(); // type of the production vertex
-
 
     //===== Start of reconstruction cutting =====
 
@@ -4301,6 +4582,7 @@ const Double_t fgkdMassLambdaMax = 1.25; // [GeV/c^2]
 
    }
   fJetContainerData->ResetCurrentID();
+  jetrec=NULL; delete jetrec;
 
   if(bIsCandidateK0s || bIsCandidateLambda || bIsCandidateALambda)
 	 new((*fV0CandidateArray)[fV0CandidateArray->GetEntriesFast()]) AliAODv0(*v0);
@@ -4696,6 +4978,8 @@ Double_t AliAnalysisTaskBJetTC::GetDeltaPtRandomCone()
 			}
 		}
 
+		jet=NULL; delete jet;
+
 		if(LeadingJet){
 			LJeta = LeadingJet->Eta();
 			LJphi = LeadingJet->Phi();
@@ -4722,7 +5006,53 @@ Double_t AliAnalysisTaskBJetTC::GetDeltaPtRandomCone()
 
 	  } while (dLJ < 0.45 || dSLJ < 0.45);
 
-	for(Int_t i = 0; i < partcont->GetNParticles(); i++) {
+	AliVTrack* tmpTrack = 0x0;
+	AliAODTrack* trackAOD = 0x0;
+
+	for(Int_t i = 0; i < partcont->GetNAcceptedParticles(); i++) {
+
+		if(!partcont->GetParticle(i)) continue;
+		tmpTrack = static_cast<AliVTrack*>(partcont->GetParticle(i));
+		trackAOD = (AliAODTrack*)partcont->GetParticle(i);
+		if(!((trackAOD)->TestFilterBit(1 << 4)) && !((trackAOD)->TestFilterBit(1 << 9)) ) continue;
+
+		if(fabs(tmpTrack->Eta()) > 0.9) continue;
+
+		if(tmpTrack->Pt() < 0.15) continue;
+
+		if(sqrt((tmpTrack->Eta() - tmpRandConeEta) * (tmpTrack->Eta() - tmpRandConeEta) +
+				TVector2::Phi_mpi_pi((tmpTrack->Phi() - tmpRandConePhi)) *
+				TVector2::Phi_mpi_pi((tmpTrack->Phi() - tmpRandConePhi))) < jetradius) {
+			tmpConePt += tmpTrack->Pt();
+		}
+	}
+	tmpTrack=NULL; trackAOD=NULL;
+	delete tmpTrack; delete trackAOD;
+
+	partcont=NULL;
+	delete partcont;
+
+	if(tmpConePt > 0) {
+		deltaPt = tmpConePt - jetradius * jetradius * TMath::Pi() * fJetContainerData->GetRhoVal();
+		return deltaPt;
+	}
+	return deltaPt;
+}
+//_________________________________________________________________________
+Double_t AliAnalysisTaskBJetTC::GetDeltaPtRandomConeWithSignal()
+{
+
+	Double_t deltaPt = -1000.;
+	AliParticleContainer* partcont = 0x0;
+	partcont = static_cast<AliParticleContainer*>(fParticleCollArray.At(0));
+	Double_t jetradius = fJetContainerData->GetJetRadius();
+	Double_t minEta = -0.5;
+	Double_t maxEta = 0.5;
+	Double_t tmpRandConeEta = minEta + fRandom->Rndm() * (maxEta - minEta);
+	Double_t tmpRandConePhi = fRandom->Rndm() * TMath::TwoPi();
+	Double_t tmpConePt = -1.;
+
+	for(Int_t i = 0; i < partcont->GetNAcceptedParticles(); i++) {
 
 		if(!partcont->GetParticle(i)) continue;
 		AliVTrack* tmpTrack = static_cast<AliVTrack*>(partcont->GetParticle(i));
@@ -4739,9 +5069,6 @@ Double_t AliAnalysisTaskBJetTC::GetDeltaPtRandomCone()
 			tmpConePt += tmpTrack->Pt();
 		}
 	}
-
-	partcont=NULL;
-	delete partcont;
 
 	if(tmpConePt > 0) {
 		deltaPt = tmpConePt - jetradius * jetradius * TMath::Pi() * fJetContainerData->GetRhoVal();

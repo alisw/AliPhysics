@@ -182,9 +182,7 @@ private:
   Int_t                 fMinClustersTPCTRD;                 ///< Minimum number of TPC+TRD combined clusters
   Double_t              fPtDepParamClusterCut;              ///< \f$p_{t}\f$ weight parameter for the \f$p_{t}\f$ dependent cluster cut
 
-  /// \cond CLASSIMP
   ClassDef(AliEmcalESDHybridTrackCuts, 1);
-  /// \endif
 };
 
 }

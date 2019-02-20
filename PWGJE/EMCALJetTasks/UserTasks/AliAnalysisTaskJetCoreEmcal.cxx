@@ -64,8 +64,6 @@ AliAnalysisTaskJetCoreEmcal::AliAnalysisTaskJetCoreEmcal() :
 	fTTUpSig(50.),
 	fNRPBins(50),
 	fFrac(0.8),
-	fJetEtaMin(-.5),
-	fJetEtaMax(.5),
 	fJetHadronDeltaPhi(0.6),
 	fMinFractionSharedPt(0.5),
 	fMinEmbJetPt(15.),
@@ -85,10 +83,6 @@ AliAnalysisTaskJetCoreEmcal::AliAnalysisTaskJetCoreEmcal() :
 	fh1TrigRef(0x0),
 	fh1TrigSig(0x0),
 	fh2Ntriggers(0x0),
-	fh2RPJetsC10(0x0),
-	fh2RPJetsC20(0x0),
-	fh2RPTC10(0x0),
-	fh2RPTC20(0x0),
 	fhDphiPtSig(0x0),
 	fhDphiPtRef(0x0),
 	fhPtDetPart(0x0),
@@ -144,8 +138,6 @@ AliAnalysisTaskJetCoreEmcal::AliAnalysisTaskJetCoreEmcal(const char *name) :
 	fTTUpSig(50.),
 	fNRPBins(50),
 	fFrac(0.8),
-	fJetEtaMin(-.5),
-	fJetEtaMax(.5),
 	fJetHadronDeltaPhi(0.6),
 	fMinFractionSharedPt(0.5),
 	fMinEmbJetPt(15.),
@@ -165,10 +157,6 @@ AliAnalysisTaskJetCoreEmcal::AliAnalysisTaskJetCoreEmcal(const char *name) :
 	fh1TrigRef(0x0),
 	fh1TrigSig(0x0),
 	fh2Ntriggers(0x0),
-	fh2RPJetsC10(0x0),
-	fh2RPJetsC20(0x0),
-	fh2RPTC10(0x0),
-	fh2RPTC20(0x0),
 	fhDphiPtSig(0x0),
 	fhDphiPtRef(0x0),
 	fhPtDetPart(0x0),
@@ -480,20 +468,12 @@ void AliAnalysisTaskJetCoreEmcal::AllocateJetCoreHistograms()
 	fh1TrigRef=new TH1D("Trig Ref","",10,0.,10);
 	fh1TrigSig=new TH1D("Trig Sig","",10,0.,10);  
 	fh2Ntriggers=new TH2F("# of triggers","",100,0.,100.,50,0.,50.);
-	fh2RPJetsC10=new TH2F("RPJetC10","",35,0.,3.5,100,0.,100.);
-	fh2RPJetsC20=new TH2F("RPJetC20","",35,0.,3.5,100,0.,100.); 
-	fh2RPTC10=new TH2F("RPTriggerC10","",35,0.,3.5,50,0.,50.); 
-	fh2RPTC20=new TH2F("RPTriggerC20","",35,0.,3.5,50,0.,50.);  
 
 	fOutput->Add(fHistEvtSelection);
 
 	fOutput->Add(fh1TrigRef);
 	fOutput->Add(fh1TrigSig); 
 	fOutput->Add(fh2Ntriggers);
-	fOutput->Add(fh2RPJetsC10);
-	fOutput->Add(fh2RPJetsC20);
-	fOutput->Add(fh2RPTC10);
-	fOutput->Add(fh2RPTC20);
 
 	if(fFillRecoilTHnSparse) {
 		const Int_t dimSpec = 6;
@@ -730,6 +710,7 @@ void AliAnalysisTaskJetCoreEmcal::DoJetCoreLoop()
 	fHistEvtSelection->Fill(0); 
 
 	// Background
+  // If rho exists get it, otherwise it is set to 0 and ptJet_corr = ptJet_raw
 	Double_t rho = 0;
 	if (jetCont->GetRhoParameter()) rho = jetCont->GetRhoVal(); 
 	if(fDebug) Printf("rho = %f",rho);
@@ -780,13 +761,8 @@ void AliAnalysisTaskJetCoreEmcal::DoJetCoreLoop()
 		if(fDebug) Printf("trigger particle pt = %f \teta = %f \t phi = %f",partback->Pt(),partback->Eta(),partback->Phi());
 		//     if(partback->Pt()<8) continue;
 
-		Int_t injet4=0;
-		Int_t injet=0; 
-
     fh2Ntriggers->Fill(fCent,partback->Pt());
     Double_t phiBinT = RelativePhi(partback->Phi(),fEPV0);
-    if(fCent<20.) fh2RPTC20->Fill(TMath::Abs(phiBinT),partback->Pt());
-    if(fCent<10.) fh2RPTC10->Fill(TMath::Abs(phiBinT),partback->Pt());
 
 		Double_t etabig=0;
 		Double_t ptbig=0;
@@ -808,10 +784,6 @@ void AliAnalysisTaskJetCoreEmcal::DoJetCoreLoop()
 			Double_t phiBin = RelativePhi(phibig,fEPV0); //relative phi between jet and ev. plane
 			areabig = jetbig->Area();
 			Double_t ptcorr=ptbig-rho*areabig;
-			//JJJ - perhaps should change eta selection if implemented in jet container
-			if((etabig<fJetEtaMin)||(etabig>fJetEtaMax)) continue; 
-			if(areabig>=0.07) injet=injet+1;
-			if(areabig>=0.4) injet4=injet4+1;   
 			Double_t dphi=RelativePhi(partback->Phi(),phibig); 
 			if(fDebug) Printf("jet properties...\n\teta = %f \t phi = %f \t pt = %f \t relativephi = %f\t area = %f\t rho = %f",etabig,phibig,ptbig,dphi,areabig,rho);
 
@@ -828,9 +800,6 @@ void AliAnalysisTaskJetCoreEmcal::DoJetCoreLoop()
 			// selection on relative phi
 			if(fJetHadronDeltaPhi>0. &&
 					TMath::Abs(dphi)<TMath::Pi()-fJetHadronDeltaPhi) continue;
-
-			if(fCent<10.) fh2RPJetsC10->Fill(TMath::Abs(phiBin), ptcorr);
-			if(fCent<20.) fh2RPJetsC20->Fill(TMath::Abs(phiBin), ptcorr);
 
 			if(fFillRecoilTHnSparse) {
 				Float_t phitt=partback->Phi();
@@ -1284,10 +1253,16 @@ Int_t  AliAnalysisTaskJetCoreEmcal::SelectTrigger(TList *list,Double_t minT,Doub
 
 	TString groupname = "";
 	AliParticleContainer* partCont = 0x0;
+	AliParticleContainer* partContDet = 0x0;
 	if(fJetShapeType == AliAnalysisTaskJetCoreEmcal::kDetEmbPart) partCont = GetParticleContainer(1);
+  else if(fJetShapeType == AliAnalysisTaskJetCoreEmcal::kDetEmbPartCorr) {
+    partCont = GetParticleContainer(0);
+    partContDet = GetParticleContainer(1);
+  }
 	else partCont = GetParticleContainer(0);
 	groupname = partCont->GetName();
 	UInt_t iCount = 0;
+  // loop over first container
 	for(auto part : partCont->accepted()) {
 		if (!part) continue;
 		list->Add(part);
@@ -1295,8 +1270,22 @@ Int_t  AliAnalysisTaskJetCoreEmcal::SelectTrigger(TList *list,Double_t minT,Doub
 		if(part->Pt()>=minT && part->Pt()<maxT){
 			triggers[im]=iCount-1;
 			im=im+1;
+//      Printf("Pb-Pb data trigger added - pt = %f, number = %i",part->Pt(),im);
 		}
 	}
+  // loop over second container (embedded) if requested
+  if(partContDet) {
+    for(auto part : partContDet->accepted()) {
+      if (!part) continue;
+      list->Add(part);
+      iCount++;
+      if(part->Pt()>=minT && part->Pt()<maxT){
+        triggers[im]=iCount-1;
+        im=im+1;
+ //       Printf("embedded trigger added - pt = %f, number = %i",part->Pt(),im);
+      }
+    }
+  }
 	number=im;
 	Int_t rd=0;
 	if(im>0) rd=fRandom->Integer(im);

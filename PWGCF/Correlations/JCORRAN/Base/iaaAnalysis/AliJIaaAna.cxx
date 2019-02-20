@@ -294,6 +294,7 @@ void AliJIaaAna::UserExec(){
 	if(cBin<0) return;
 
 	int zBin        = fcard->GetBin(kZVertType, fZvert); //should be alway >0; checked in fdmg->IsGoodEvent()
+  if (zBin<0) return;
 
 	fhistos->fhZVert[cBin]->Fill(fZvert);
 
@@ -348,6 +349,7 @@ void AliJIaaAna::UserExec(){
 
 		if( !triggerTrack->IsInTriggerBin() ) continue;
 		iptt = triggerTrack->GetTriggBin();
+    
 		fhistos->fhIphiTrigg[cBin][iptt]->Fill( triggerTrack->Phi(), effCorr);
 		fhistos->fhIetaTrigg[cBin][iptt]->Fill( triggerTrack->Eta(), effCorr);
 
@@ -419,8 +421,8 @@ void AliJIaaAna::RunCorrelations(TClonesArray *triggList, TClonesArray *assoList
                 if(fenableEP) {
                         double phis = GetPhiS2(triggerTrack->Phi(),fPsi2);
                         phis *= 180./TMath::Pi(); // card in degree 0-360
-                        if (!AccecptEPBins( phis, fEPmin, fEPmax)) return; // EP Enable && in phiS bin
-                        fhistos->fhPhiS[cBin]->Fill(phis);
+                        if (!AccecptEPBins( phis, fEPmin, fEPmax)) continue; // EP Enable && in phiS bin
+                        fhistos->fhPhiS[cBin][iptt]->Fill(phis);
                 }
                 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++
                 double effCorr = 1.0/triggerTrack->GetTrackEff();
@@ -489,6 +491,7 @@ Bool_t AliJIaaAna::AccecptEPBins(double phis, double min, double max) {
 	if( phis>180.-max && phis<180.-min ) accept = kTRUE; 
 	if( phis>180.+min && phis<180.+max ) accept = kTRUE; 
 	if( phis>360.-max && phis<360.-min ) accept = kTRUE; 
+
 	return accept;
 }
 //----------------------------------------------------------------------------------------------------------------------------

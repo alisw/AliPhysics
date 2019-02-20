@@ -43,6 +43,9 @@ public:
   void SetRemoveSameLabel(Bool_t aRemove);
   Bool_t GetRemoveSameLabel() const;
 
+  /// Select sharing-calculation algorithm
+  void SetAlternativeAlgorithm(Int_t code) { fAlternativeAlgorithm = code; }
+
   /// Putting the equality in sharequality
   bool operator==(const AliFemtoShareQualityPairCut &) const;
 
@@ -56,6 +59,9 @@ public:
   Bool_t   fRemoveSameLabel;   ///< Pairs with two tracks with the same label will be removed
 
 
+  /// Use the CountBit() method instead of TestBit()
+  Int_t fAlternativeAlgorithm;
+
 #ifdef __ROOT__
   ClassDef(AliFemtoShareQualityPairCut, 0)
 #endif
@@ -68,6 +74,7 @@ inline AliFemtoShareQualityPairCut::AliFemtoShareQualityPairCut(const AliFemtoSh
   fShareQualityMax(c.fShareQualityMax),
   fShareFractionMax(c.fShareFractionMax),
   fRemoveSameLabel(c.fRemoveSameLabel)
+  , fAlternativeAlgorithm(c.fAlternativeAlgorithm)
 { /* no-op */ }
 
 inline AliFemtoPairCut* AliFemtoShareQualityPairCut::Clone() {

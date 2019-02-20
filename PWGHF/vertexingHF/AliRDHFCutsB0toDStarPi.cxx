@@ -875,7 +875,7 @@ Int_t AliRDHFCutsB0toDStarPi::IsSelected(TObject* obj,Int_t selectionLevel, AliA
     Double_t mB0PDG = TDatabasePDG::Instance()->GetParticle(511)->Mass();
     
     // delta mass PDG
-    Double_t deltaPDG = mD0PDG-mB0PDG;
+    Double_t deltaPDG = mB0PDG - mD0PDG;
    
     // Half width B0 mass
     UInt_t prongs[2];
@@ -3360,6 +3360,7 @@ Int_t AliRDHFCutsB0toDStarPi::SelectPID(AliAODTrack *track, Int_t type)
   //  here the PID
     
   Bool_t isParticle=kTRUE;
+  if(!fUsePID) return isParticle;
   Int_t match = fPidHF->GetMatch();
 
   if(match == 1){//n-sigma
@@ -3476,7 +3477,7 @@ Double_t AliRDHFCutsB0toDStarPi::DeltaInvMassDStarKpipi(AliAODRecoDecayHF2Prong 
   e[2]=DStar->EProng(0,211);
 
   Double_t esum = e[0]+e[1]+e[2];
-  Double_t invMassDStar = TMath::Sqrt(esum*esum-DStar->P()*DStar->P());
+  Double_t invMassDStar = TMath::Sqrt(esum*esum-DStar->P2());
   Double_t invMassD0 = ((AliAODRecoDecayHF2Prong*)DStar->GetDaughter(1))->InvMass(2,prongs);
 
   return invMassDStar - invMassD0; 
@@ -3515,7 +3516,7 @@ Double_t AliRDHFCutsB0toDStarPi::DeltaInvMassB0Kpipipi(AliAODRecoDecayHF2Prong *
   e[3]=B0->EProng(0,211);
 
   Double_t esum = e[0]+e[1]+e[2]+e[3];
-  Double_t invMassB0 = TMath::Sqrt(esum*esum-B0->P()*B0->P());
+  Double_t invMassB0 = TMath::Sqrt(esum*esum-B0->P2());
 
   Double_t invMassD0 = ((AliAODRecoDecayHF2Prong*)DStar->GetDaughter(1))->InvMass(2,prongs);
 

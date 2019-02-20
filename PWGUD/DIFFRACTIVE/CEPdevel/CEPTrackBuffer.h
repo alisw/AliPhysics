@@ -14,6 +14,7 @@ class CEPTrackBuffer : public TObject {
     Int_t    fChargeSign;      // charge sign
     Double_t fGoldenChi2;      // chi2 between the TPC track (TPCinner) constrained to the primary vertex and the global track
     
+    Int_t    fITSModule[12];   // modules crossed by the track in the ITS
     UChar_t  fITSncls;         // ITS cluster map one bit per layer
     Int_t    fTPCncls;         // number of TPC clusters
     Int_t    fTRDncls;         // number of TRD clusters
@@ -72,14 +73,15 @@ class CEPTrackBuffer : public TObject {
     void SetChargeSign(Int_t chs)    { fChargeSign = chs; }
     void SetGoldenChi2(Double_t chi2){ fGoldenChi2 = chi2; }
     
+    void SetITSModuleIndex(Int_t ilayer,Int_t idx) {fITSModule[ilayer]=idx;}
     void SetITSncls(UChar_t ncls)    { fITSncls = ncls; }
     void SetTPCncls(Int_t ncls)      { fTPCncls = ncls; }
     void SetTRDncls(Int_t ncls)      { fTRDncls = ncls; }
     void SetTPCnclsS(Int_t nclss)    { fTPCnclsS = nclss; }
     void SetinVertex(Bool_t invert)  { finVertex = invert; }
     
-    void SetXYv(Int_t xyv)           { fXYv = xyv; }
-    void SetZv(Int_t zv)             { fZv = zv; }
+    void SetXYv(Double_t xyv)           { fXYv = xyv; }
+    void SetZv(Double_t zv)             { fZv = zv; }
     
     void SetMomentum(TVector3 mom)   { fMomentum = mom; }
     
@@ -111,6 +113,7 @@ class CEPTrackBuffer : public TObject {
     Int_t GetChargeSign()         const { return fChargeSign; }
     Double_t GetGoldenChi2()      const { return fGoldenChi2; }
     
+    Int_t GetITSModuleIndex(Int_t ilayer) const {return fITSModule[ilayer];}
     UChar_t GetITSncls()   const { return fITSncls; }
     Int_t GetTPCncls()     const { return fTPCncls; }
     Int_t GetTRDncls()     const { return fTRDncls; }
@@ -141,7 +144,7 @@ class CEPTrackBuffer : public TObject {
     Float_t GetMCMass()         const { return fMCMass; }
     TVector3 GetMCMomentum()    const { return fMCMomentum; }
     
-  ClassDef(CEPTrackBuffer, 7)     // CEP track buffer
+  ClassDef(CEPTrackBuffer, 8)     // CEP track buffer
 
 };
 

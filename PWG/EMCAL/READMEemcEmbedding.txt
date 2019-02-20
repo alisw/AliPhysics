@@ -464,7 +464,7 @@ react as appropriate.
 ## Configuring internal event selection (centrality, etc)
 
 Internal event selection is performed via AliEventCuts. By default, AliEventCuts will use an automatic setup based on
-run number. Piratically speaking, if you would like to modify any of these settings, you will need to setup (often by
+run number. Practically speaking, if you would like to modify any of these settings, you will need to setup (often by
 calling `%Setup{Period}()` for the event cuts object) and then configure it via manual cuts mode. Centrality is the one
 notable exception. Additional centrality selection is implemented in the embedding helper. To use it, simply set the
 centrality range ("internalEventSelection:centralityRange" in YAML or via SetCentralityRange(min, max)). Note that if
@@ -487,6 +487,10 @@ eventCuts->SetCentralityRange(0, 10);
 ~~~
 
 Note that this alternative approach will **not** work with automatic setup of AliEventCuts!
+
+If wanting to run embedding on only a random subset of events, this can be done via SetRandomRejectionFactor(factor),
+where factor defines a rejection factor. The fraction of events kept is then equal to 1 / factor. This may be useful 
+if only a fraction of events is needed in the analysis and one wishes to reduce the running time.
 
 # Note on jets and jet finding                                                  {#emcEmbeddingJetFinding}
 

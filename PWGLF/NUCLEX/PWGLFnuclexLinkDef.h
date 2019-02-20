@@ -28,6 +28,8 @@
 #pragma link C++ typedef FourVector_t;
 
 /// Nuclei
+/// * Absorption
+#pragma link C++ class AliAnalysisTaskDeuteronAbsorption+;
 /// * DeltaMasses
 #pragma link C++ class AliAnalysisNucleiMass+;
 #pragma link C++ class AliAnalysisNuclMult+;
@@ -43,6 +45,8 @@
 #pragma link C++ class AliAnalysisTaskNucleiYieldESD+;
 #pragma link C++ class AliAnalysisTaskNucleiPIDqa+;
 #pragma link C++ class AliAnalysisTaskSignalLoss+;
+#pragma link C++ class RLightNucleus+;
+#pragma link C++ class SLightNucleus+;
 /// * ReducedTreeNuclei
 #pragma link C++ class AliAnalysisTaskReducedTreeNuclei+;
 /// * Nucleipp
@@ -58,6 +62,7 @@
 #pragma link C++ class AliAnalysisTaskAllPtcv2+;
 /// * NucleiKine
 #pragma link C++ class AliAnalysisTaskNucleiKine+;
+#pragma link C++ class AliAnalysisTaskNucleiKineCor+;
 
 /// Hypernuclei
 /// * Hyp2body
@@ -74,6 +79,9 @@
 #pragma link C++ class AliAnalysisTaskHypertriton3+;
 #pragma link C++ class AliAnalysisTaskHypertriton3Dev+;
 #pragma link C++ class AliAnalysisTaskHypertriton3AOD+;
+
+/// * VertexerHyp3Body
+#pragma link C++ class AliVertexerHyperTriton3Body+;
 
 /// Utils
 /// * RecoDecay
