@@ -56,7 +56,8 @@ fHistManager(name)
   SetMakeGeneralHistograms(kTRUE);
 
   // Initializing array in CINT-compatible way
-  EventEMCALTriggerType_t fTriggerTypesValues[kNTriggerTypes] = {kMB, kEL0, kEG1, kEG2, kEJ1, kEJ2};
+  //EventEMCALTriggerType_t fTriggerTypesValues[kNTriggerTypes] = {kMB, kEL0, kEG1, kEG2, kEJ1, kEJ2};
+  EventEMCALTriggerType_t fTriggerTypesValues[kNTriggerTypes] = {kMB, kEL0, kDL0, kEG1, kDG1, kEG2, kDG2, kEJ1, kDJ1, kEJ2, kDJ2};
   memcpy (fTriggerTypes,fTriggerTypesValues,sizeof(fTriggerTypes));
 }
 
@@ -110,7 +111,12 @@ void AliEmcalTriggerSimQATask::UserCreateOutputObjects() {
 
   // loop over trigger types
   for (Int_t i = 0; i < kNTriggerTypes; i++) {
-    histname = TString::Format("fHistClusEnergy_Trig_%s",fTriggerNames[i].Data());
+    // Clusters in the EMCal (not including DCal)
+    histname = TString::Format("fHistEMCalClusEnergy_Trig_%s",fTriggerNames[i].Data());
+    title = histname + ";#it{E}_{cluster} (GeV); counts";
+    fHistManager.CreateTH1(histname.Data(),title.Data(),nPtBins,0,fMaxPt);
+    // Clusters in the DCal
+    histname = TString::Format("fHistDCalClusEnergy_Trig_%s",fTriggerNames[i].Data());
     title = histname + ";#it{E}_{cluster} (GeV); counts";
     fHistManager.CreateTH1(histname.Data(),title.Data(),nPtBins,0,fMaxPt);
   }
@@ -121,7 +127,6 @@ void AliEmcalTriggerSimQATask::UserCreateOutputObjects() {
     fHistManager.CreateTH2(histname.Data(),title.Data(),nEtaBins,fMinEta,fMaxEta,nPhiBins,fMinPhi,fMaxPhi);
   }
 
-  // Only make patch histgrams for L1 patches:
   for (Int_t i = 1; i < kNTriggerTypes; i++) {
     histname = TString::Format("fHistPatchEnergy_Trig_%s",fTriggerNames[i].Data());
     title = histname + ";#it{E}_{patch} (GeV); counts";
@@ -226,34 +231,42 @@ void AliEmcalTriggerSimQATask::DoPatchLoop() {
     AliEMCALTriggerPatchInfo* patch = static_cast<AliEMCALTriggerPatchInfo*>(fTriggerPatches->At(i));
     if (!patch) continue;
     if (patch->GetADCAmp() < fMinAmplitude) continue;
+    Bool_t fIsDCal = patch->IsDCalPHOS();
+    // In Trigger Types array, DCal Triggers are 1 more than the EMCal Trigger type
+    Int_t fTriggerInt = 0;
     if (patch->IsLevel0()) {
-      fEventTriggerBits |= 0x1 << kL0;
-      FillPatchHistograms(patch,1);
-    }
-    if (patch->IsGammaLow()) {
-      fEventTriggerBits |= 0x1 << kEG1;
-      FillPatchHistograms(patch,2);
+      fTriggerInt = kEL0 + fIsDCal;
+      fEventTriggerBits |= 0x1 << fTriggerInt;
+      FillPatchHistograms(patch,fTriggerInt);
     }
     if (patch->IsGammaHigh()) {
-      fEventTriggerBits |= 0x1 << kEG2;
-      FillPatchHistograms(patch,3);
+      fTriggerInt = kEG1 + fIsDCal;
+      fEventTriggerBits |= 0x1 << fTriggerInt;
+      FillPatchHistograms(patch,fTriggerInt);
     }
-    if (patch->IsJetLow()) {
-      fEventTriggerBits |= 0x1 << kEJ1;
-      FillPatchHistograms(patch,4);
+    if (patch->IsGammaLow()) {
+      fTriggerInt = kEG2 + fIsDCal;
+      fEventTriggerBits |= 0x1 << fTriggerInt;
+      FillPatchHistograms(patch,fTriggerInt);
     }
     if (patch->IsJetHigh()) {
-      fEventTriggerBits |= 0x1 << kEJ2;
-      FillPatchHistograms(patch,5);
+      fTriggerInt = kEJ1 + fIsDCal;
+      fEventTriggerBits |= 0x1 << fTriggerInt;
+      FillPatchHistograms(patch,fTriggerInt);
+    }
+    if (patch->IsJetLow()) {
+      fTriggerInt = kEJ2 + fIsDCal;
+      fEventTriggerBits |= 0x1 << fTriggerInt;
+      FillPatchHistograms(patch,fTriggerInt);
     }
   }
 }
 
 void AliEmcalTriggerSimQATask::FillPatchHistograms(AliEMCALTriggerPatchInfo * patch, Int_t i) {
-  fHistManager.FillTH1(Form("fHistPatchEnergy_Trig_%s",fTriggerNames[i].Data()),patch->GetPatchE());
-  fHistManager.FillTH1(Form("fHistPatchOnlineADCAmp_Trig_%s",fTriggerNames[i].Data()),patch->GetADCAmp());
-  fHistManager.FillTH2(Form("fHistPatchColRow_Trig_%s",fTriggerNames[i].Data()),patch->GetColStart(),patch->GetRowStart());
-  fHistManager.FillTH2(Form("fHistPatchEtaPhiGeo_Trig_%s",fTriggerNames[i].Data()),patch->GetEtaGeo(),patch->GetPhiGeo());
+  fHistManager.FillTH1(Form("fHistPatchEnergy_Trig_%s",fTriggerNames[i+1].Data()),patch->GetPatchE());
+  fHistManager.FillTH1(Form("fHistPatchOnlineADCAmp_Trig_%s",fTriggerNames[i+1].Data()),patch->GetADCAmp());
+  fHistManager.FillTH2(Form("fHistPatchColRow_Trig_%s",fTriggerNames[i+1].Data()),patch->GetColStart(),patch->GetRowStart());
+  fHistManager.FillTH2(Form("fHistPatchEtaPhiGeo_Trig_%s",fTriggerNames[i+1].Data()),patch->GetEtaGeo(),patch->GetPhiGeo());
 }
 
 
@@ -287,8 +300,16 @@ void AliEmcalTriggerSimQATask::DoClusterLoop() {
       Double_t fPhi = vCluster.Phi();
       if (fPhi < 0) fPhi+=2*TMath::Pi();
 
-      histname = TString::Format("fHistClusEnergy_Trig_%s",fTriggerNames[j].Data());
+      // Split Cluster spectra into EMCal, DCal
+      Bool_t isDCal = (fPhi > 4.); // Lazy check
+      if (isDCal) {
+        histname = TString::Format("fHistDCalClusEnergy_Trig_%s",fTriggerNames[j].Data());
+      } else {
+        histname = TString::Format("fHistEMCalClusEnergy_Trig_%s",fTriggerNames[j].Data());
+      }
       fHistManager.FillTH1(histname,cluster->E());
+//      histname = TString::Format("fHistClusEnergy_Trig_%s",fTriggerNames[j].Data());
+//      fHistManager.FillTH1(histname,cluster->E());
       histname = TString::Format("fHistClusEtaPhi_Trig_%s",fTriggerNames[j].Data());
       fHistManager.FillTH1(histname,vCluster.Eta(),fPhi);
     }
