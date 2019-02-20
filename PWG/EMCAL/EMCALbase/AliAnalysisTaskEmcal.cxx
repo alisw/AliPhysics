@@ -1324,6 +1324,7 @@ Bool_t AliAnalysisTaskEmcal::IsTriggerSelected(){
 Bool_t AliAnalysisTaskEmcal::CheckMCOutliers()
 {
   if (!fPythiaHeader || !fMCRejectFilter) return kTRUE;
+  AliDebugStream(2) << "Using custom outlier rejection" << std::endl;
 
   // Condition 1: Pythia jet / pT-hard > factor
   if (fPtHardAndJetPtFactor > 0.) {
@@ -1331,7 +1332,7 @@ Bool_t AliAnalysisTaskEmcal::CheckMCOutliers()
 
     Int_t nTriggerJets =  fPythiaHeader->NTriggerJets();
 
-    AliDebug(1,Form("Njets: %d, pT Hard %f",nTriggerJets, fPtHard));
+    AliDebug(2,Form("Njets: %d, pT Hard %f",nTriggerJets, fPtHard));
 
     Float_t tmpjet[]={0,0,0,0};
     for (Int_t ijet = 0; ijet< nTriggerJets; ijet++) {
@@ -1339,7 +1340,7 @@ Bool_t AliAnalysisTaskEmcal::CheckMCOutliers()
 
       jet.SetPxPyPzE(tmpjet[0],tmpjet[1],tmpjet[2],tmpjet[3]);
 
-      AliDebug(1,Form("jet %d; pycell jet pT %f",ijet, jet.Pt()));
+      AliDebug(2,Form("jet %d; pycell jet pT %f",ijet, jet.Pt()));
 
       //Compare jet pT and pt Hard
       if (jet.Pt() > fPtHardAndJetPtFactor * fPtHard) {
