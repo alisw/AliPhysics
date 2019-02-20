@@ -625,8 +625,7 @@ struct TrackCutAttrSigmaPion {
 
   void FillConfiguration(AliFemtoConfigObject &cfg) const
     {
-      cfg.insert("nsigma_pion_range", nsigma_pion_range);
-      cfg.insert("use_tpctof", usetpctof);
+      // cfg.insert("use_tpctof", usetpctof);
       cfg.insert("pion_nsigma", nsigma);
     }
 
