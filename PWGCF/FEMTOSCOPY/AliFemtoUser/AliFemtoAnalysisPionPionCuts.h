@@ -40,7 +40,6 @@ typedef TrackSelectionCut<
                TrackCutAttrMinNclsITS,
                TrackCutAttrCharge> > >,
 
-
           // physics-cuts
           AddTrackCutAttrs<
               TrackCutAttrImpact,
@@ -49,8 +48,11 @@ typedef TrackSelectionCut<
                   AddTrackCutAttrs<
 	                TrackCutAttrEta,
                     AddTrackCutAttrs<
+	                  TrackCutAttrSigmaPion,
+                    AddTrackCutAttrs<
 	                  TrackCutAttrChi2TPC,
-                      TrackCutAttrChi2ITS> > > >
+                      TrackCutAttrChi2ITS
+          > > > > >
 
         > TrackCutAttrsAK;
 
