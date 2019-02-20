@@ -66,7 +66,7 @@ class AliFemtoDreamEventHist {
   void FillSPDTrackletsLyVsCluster(int i, int ly, int spdTrkl, int spdCls) {
     if (ly == 0) {
       fSPDTrklClsLy0[i]->Fill(spdTrkl, spdCls);
-    } else if (ly == 1){
+    } else if (ly == 1) {
       fSPDTrklClsLy1[i]->Fill(spdTrkl, spdCls);
     }
   }
@@ -77,7 +77,7 @@ class AliFemtoDreamEventHist {
     fSPDTrackZVtx[i]->Fill(zVtxSPD, zVtxTracks);
     fSPDTrkZVtxDispl[i]->Fill(TMath::Abs(zVtxSPD - zVtxTracks));
   }
-  void FillMagneticField(int i, float bField){
+  void FillMagneticField(int i, float bField) {
     fBField[i]->Fill(bField);
   }
   void FillCentVsMultV0A(float cent, float mult) {
