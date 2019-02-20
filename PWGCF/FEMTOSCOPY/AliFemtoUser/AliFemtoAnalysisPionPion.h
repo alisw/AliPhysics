@@ -165,9 +165,6 @@ protected:
 
   /// This is a Monte Carlo analysis
   Bool_t fMCAnalysis;
-
-  /// Saved Configuration
-  AliFemtoConfigObject fConfiguration;
 };
 
 /// \class AliFemtoAnalysisPionPion::AnalysisParams
@@ -211,6 +208,8 @@ struct AliFemtoAnalysisPionPion::AnalysisParams : public TNamed {
 /// The expected way to use this class
 ///
 struct AliFemtoAnalysisPionPion::CutParams : public TNamed {
+
+  Bool_t cuts_use_attrs;
 
   Bool_t event_use_basic;
 
@@ -312,7 +311,7 @@ AliFemtoAnalysisPionPion::GetConfigurationOf(const T &cut)
     return AliFemtoConfigObject("");
   }
   AliFemtoConfigObject::MapValue_t result;
-  result["class"] = "AliFemtoSomething";
+  result["_class"] = "AliFemtoSomething";
 
   return AliFemtoConfigObject(result);
 }

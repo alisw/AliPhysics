@@ -841,6 +841,18 @@ Double_t AliPHOSTenderSupply::CorrectNonlinearity(Double_t en){
       return 1.02384*(alpha*en+beta*TMath::Sqrt(en)) ;  
     }
   }
+  if(fNonlinearityVersion=="Run2TuneMC"){ //Improved Run2 tune for MC
+    if(en<=0.) return 0.;
+    const Double_t p0 = 1.04397e+00;
+    const Double_t p1 = 5.19307e-01;
+    const Double_t p2 = 0.144512;
+    const Double_t p3 = -1.55093e-01;
+    const Double_t p4 = -0.470662;
+
+    const Double_t Nonlin = 1.001/(p0+p1/en+p2/en/en+p3/TMath::Sqrt(en)+p4/en/TMath::Sqrt(en));
+
+    return en / Nonlin;
+  }
 
   return en ;
 }

@@ -3833,7 +3833,7 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::ProcessMCParticles(){
                 bool reconstructible(true);
                 if(!((AliPrimaryPionCuts*)fPionCutArray->At(fiCut))->PionIsSelectedMC(indexpiminus,fMCEvent)) reconstructible = false;
                 if(!((AliPrimaryPionCuts*)fPionCutArray->At(fiCut))->PionIsSelectedMC(indexpiplus,fMCEvent)) reconstructible = false;
-                if(neutralMeson->GetNDaughters() != 3) {
+                if(neutralMeson->GetNDaughters() == 3) {
                   // exclude Dalitz-decays
                   reconstructible = false;
                 } else {
@@ -4118,7 +4118,7 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::ProcessAODMCParticles(){
                   bool reconstructible(true);
                   if(!((AliPrimaryPionCuts*)fPionCutArray->At(fiCut))->PionIsSelectedAODMC(indexpiminus,AODMCTrackArray)) reconstructible = false;
                   if(!((AliPrimaryPionCuts*)fPionCutArray->At(fiCut))->PionIsSelectedAODMC(indexpiplus,AODMCTrackArray)) reconstructible = false;
-                  if(neutralMeson->GetNDaughters() != 3) {
+                  if(neutralMeson->GetNDaughters() == 3) {
                     // exclude Dalitz-decays
                     reconstructible = false;
                   } else {

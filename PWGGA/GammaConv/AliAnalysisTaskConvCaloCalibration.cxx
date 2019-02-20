@@ -989,7 +989,6 @@ void AliAnalysisTaskConvCaloCalibration::UserExec(Option_t *){
       }
       return;
     }
-
 //     if(fInputEvent->IsA()==AliAODEvent::Class()){
 //       fInputEvent->InitMagneticField();
 //     }
@@ -1000,7 +999,6 @@ void AliAnalysisTaskConvCaloCalibration::UserExec(Option_t *){
     if(fIsHeavyIon ==1)fEventPlaneAngle = EventPlane->GetEventplane("V0",fInputEvent,2);
     else fEventPlaneAngle=0.0;
 
-
     for(Int_t iCut = 0; iCut<fnCuts; iCut++){
 
       fiCut = iCut;
@@ -1010,7 +1008,6 @@ void AliAnalysisTaskConvCaloCalibration::UserExec(Option_t *){
       }
 
       Int_t eventNotAccepted = ((AliConvEventCuts*)fEventCutArray->At(iCut))->IsEventAcceptedByCut(fV0Reader->GetEventCuts(),fInputEvent,fMCEvent,fIsHeavyIon,isRunningEMCALrelAna);
-
 
       Bool_t triggered = kTRUE;
 
@@ -1024,7 +1021,6 @@ void AliAnalysisTaskConvCaloCalibration::UserExec(Option_t *){
           continue;
         // }
       }
-
       if(eventQuality != 0){// Event Not Accepted
         // cout << "event rejected due to: " <<eventQuality << endl;
         fHistoNEvents[iCut]->Fill(eventQuality, fWeightJetJetMC);
@@ -1047,9 +1043,7 @@ void AliAnalysisTaskConvCaloCalibration::UserExec(Option_t *){
       }
 
 
-
       if (triggered==kFALSE) continue;
-
       // it is in the loop to have the same conversion cut string (used also for MC stuff that should be same for V0 and Cluster)
       if (fMesonRecoMode > 0 || fEnableClusterCutsForTrigger) // process calo clusters
         ProcessClusters();
@@ -1064,7 +1058,6 @@ void AliAnalysisTaskConvCaloCalibration::UserExec(Option_t *){
         SetPhotonVeto();
 
       CalculateMesonCandidates(); // Combine Gammas from conversion and from calo
-
       if(((AliConversionMesonCuts*)fMesonCutArray->At(iCut))->DoBGCalculation()){
         if(((AliConversionMesonCuts*)fMesonCutArray->At(iCut))->BackgroundHandlerType() == 0){
           CalculateBackground(); // Combinatorial Background
@@ -1075,7 +1068,6 @@ void AliAnalysisTaskConvCaloCalibration::UserExec(Option_t *){
           fBGClusHandlerRP[iCut]->AddEvent(fClusterCandidates,fInputEvent); // Store Event for mixed Events
         }
       }
-
 
       fGammaCandidates->Clear(); // delete this cuts good gammas
       fClusterCandidates->Clear(); // delete cluster candidates
@@ -1102,7 +1094,7 @@ void AliAnalysisTaskConvCaloCalibration::ProcessClusters(){
     nclus = arrClustersProcess->GetEntries();
   }
 
-  //   cout << nclus << endl;
+    // cout << nclus << endl;
 
   if(nclus == 0)  return;
 
@@ -1111,7 +1103,6 @@ void AliAnalysisTaskConvCaloCalibration::ProcessClusters(){
 
   // match tracks to clusters
   if(fDoPrimaryTrackMatching) ((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->MatchTracksToClusters(fInputEvent,fWeightJetJetMC,kFALSE);
-
   // vertex
   Double_t vertex[3] = {0,0,0};
   InputEvent()->GetPrimaryVertex()->GetXYZ(vertex);
@@ -1136,7 +1127,6 @@ void AliAnalysisTaskConvCaloCalibration::ProcessClusters(){
       delete clus;
       continue;
     }
-
     // TLorentzvector with cluster
     TLorentzVector clusterVector;
     clus->GetMomentum(clusterVector,vertex);
@@ -1154,22 +1144,23 @@ void AliAnalysisTaskConvCaloCalibration::ProcessClusters(){
     PhotonCandidate->SetLeadingCellID(((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->FindLargestCellInCluster(clus,fInputEvent));
 
 
-
     fIsFromDesiredHeader            = kTRUE;
     fIsOverlappingWithOtherHeader   = kFALSE;
-
     if ( (fIsFromDesiredHeader && !fIsOverlappingWithOtherHeader && !fAllowOverlapHeaders) || (fIsFromDesiredHeader && fAllowOverlapHeaders)){
       fHistoClusGammaPt[fiCut]->Fill(PhotonCandidate->Pt(),fWeightJetJetMC);
       fHistoClusGammaE[fiCut]->Fill(PhotonCandidate->E(),fWeightJetJetMC);
       if(PhotonCandidate->GetIsCaloPhoton()){
-        fHistoClusGammaPtSM[fiCut][fGeomEMCAL->GetSuperModuleNumber(PhotonCandidate->GetLeadingCellID())]->Fill(PhotonCandidate->Pt(),fWeightJetJetMC);
-        fHistoClusGammaESM[fiCut][fGeomEMCAL->GetSuperModuleNumber(PhotonCandidate->GetLeadingCellID())]->Fill(PhotonCandidate->E(),fWeightJetJetMC);
+        fGeomEMCAL = AliEMCALGeometry::GetInstance();
+        Int_t SMNumber = fGeomEMCAL->GetSuperModuleNumber(PhotonCandidate->GetLeadingCellID());
+        if(SMNumber >= 0 && SMNumber < 20){
+          fHistoClusGammaPtSM[fiCut][fGeomEMCAL->GetSuperModuleNumber(PhotonCandidate->GetLeadingCellID())]->Fill(PhotonCandidate->Pt(),fWeightJetJetMC);
+          fHistoClusGammaESM[fiCut][fGeomEMCAL->GetSuperModuleNumber(PhotonCandidate->GetLeadingCellID())]->Fill(PhotonCandidate->E(),fWeightJetJetMC);
+        }
       }
       fClusterCandidates->Add(PhotonCandidate); // if no second loop is required add to events good gammas
     }else{
       delete PhotonCandidate;
     }
-
     delete clus;
     delete tmpvec;
   }

@@ -273,34 +273,37 @@ AliAnalysisTaskSE* AddTaskFemtoDreamSysVar(bool isMC = false,
     AntiXiPosCuts->SetPID(AliPID::kPion, 999, 4.5);
     AntiXiBachCuts->SetPID(AliPID::kPion, 999, 4.5);
   } else if (suffix == "41") {
-    CascadeCuts->SetPtRangeXi(0.1, 999.5);
-    AntiCascadeCuts->SetPtRangeXi(0.1, 999.5);
-    //wide wariation
+    CascadeCuts->SetPtRangeXi(0.4, 999.5);
+    AntiCascadeCuts->SetPtRangeXi(0.4, 999.5);
   } else if (suffix == "42") {
+    CascadeCuts->SetPtRangeXi(0.8, 999.5);
+    AntiCascadeCuts->SetPtRangeXi(0.8, 999.5);
+    //wide wariation
+  } else if (suffix == "43") {
     CascadeCuts->SetXiMassRange(1.368, 0.028);
     AntiCascadeCuts->SetXiMassRange(1.368, 0.028);
-  } else if (suffix == "43") {
+  } else if (suffix == "44") {
     CascadeCuts->SetXiMassRange(1.282, 0.028);
     AntiCascadeCuts->SetXiMassRange(1.282, 0.028);
     //thinner wariation
-  } else if (suffix == "44") {
+  } else if (suffix == "45") {
     CascadeCuts->SetXiMassRange(1.354, 0.014);
     AntiCascadeCuts->SetXiMassRange(1.354, 0.014);
-  } else if (suffix == "45") {
+  } else if (suffix == "46") {
     CascadeCuts->SetXiMassRange(1.296, 0.014);
     AntiCascadeCuts->SetXiMassRange(1.296, 0.014);
     //Further away from the peak
-  } else if (suffix == "46") {
+  } else if (suffix == "47") {
     CascadeCuts->SetXiMassRange(1.368, 0.014);
     AntiCascadeCuts->SetXiMassRange(1.368, 0.014);
-  } else if (suffix == "47") {
+  } else if (suffix == "48") {
     CascadeCuts->SetXiMassRange(1.282, 0.014);
     AntiCascadeCuts->SetXiMassRange(1.282, 0.014);
     //furthest away from the peak
-  } else if (suffix == "48") {
+  } else if (suffix == "49") {
     CascadeCuts->SetXiMassRange(1.382, 0.014);
     AntiCascadeCuts->SetXiMassRange(1.382, 0.014);
-  } else if (suffix == "49") {
+  } else if (suffix == "50") {
     CascadeCuts->SetXiMassRange(1.268, 0.014);
     AntiCascadeCuts->SetXiMassRange(1.268, 0.014);
   }

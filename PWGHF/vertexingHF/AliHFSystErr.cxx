@@ -353,10 +353,15 @@ void AliHFSystErr::Init(Int_t decay){
       }
       else if (fCollisionType==2) {
         if (fRunNumber == 16 || fRunNumber==2016){
-          if (fCentralityClass=="0100")InitDstartoD0pi2016pPb0100();
+          if (fCentralityClass=="0100"){
+		  if(fStandardBins)InitDstartoD0pi2016pPb0100();
+		  else InitDstartoD0pi2016pPb0100_fb();}		
           else if (fCentralityClass=="010ZNA")InitDstartoD0pi2016pPb010ZNA();
+          else if (fCentralityClass=="1020ZNA")InitDstartoD0pi2016pPb1020ZNA();
+          else if (fCentralityClass=="2040ZNA")InitDstartoD0pi2016pPb2040ZNA();
+          else if (fCentralityClass=="4060ZNA")InitDstartoD0pi2016pPb4060ZNA();
           else if (fCentralityClass=="60100ZNA")InitDstartoD0pi2016pPb60100ZNA();
-          else AliFatal("Not yet implemented");
+         else AliFatal("Not yet implemented");
 
 
         }
@@ -4849,7 +4854,65 @@ void AliHFSystErr::InitDstartoD0pi2016pPb0100(){
 
 }
 
+//--------------------------------------------------------------------------
+void AliHFSystErr::InitDstartoD0pi2016pPb0100_fb(){
+ Float_t xbins[23]={0.,0.5,1,1.5,2,2.5,3,3.5,4,4.5,5,5.5,6,6.5,7,7.5,8,9,10,12,16,24,36};
+  // Dstar syst in pPb 2016 MB
+  // Responsible: A.M. Veen in fine binning
 
+  AliInfo(" Settings for D* --> D0 pi, p-Pb collisions at 5.023 TeV 2016");
+  SetNameTitle("AliHFSystErr","SystErrDstartoD0pi2016pPb0100");
+
+  //Normalization
+  fNorm = new TH1F("fNorm","fNorm",22,xbins);
+  for(Int_t i=1;i<=23;i++) fNorm->SetBinContent(i,0.02); // Same as D0?
+
+  // Branching ratio
+  fBR = new TH1F("fBR","fBR",22,xbins);
+  for(Int_t i=1;i<=36;i++) fBR->SetBinContent(i,0.013); // 1.27% but precision D*-> D0pi is 67.7, so only one significant number behind the dot precision
+
+  // Tracking efficiency
+  fTrackingEff = new TH1F("fTrackingEff","fTrackingEff",22,xbins); //Dstar meson: 3.7 in 1-10, 4 in 10-24, 4.5 in 24-36
+  for(Int_t i=1;i<=16;i++) fTrackingEff->SetBinContent(i,0.032);//new version
+  for(Int_t i=17;i<=19;i++) fTrackingEff->SetBinContent(i,0.035);//
+for(Int_t i=20;i<22;i++) fTrackingEff->SetBinContent(i,0.04);//
+  for(Int_t i=22;i<23; i++) fTrackingEff->SetBinContent(i,0.045);//
+
+
+  // Raw yield extraction
+  fRawYield = new TH1F("fRawYield","fRawYield",22,xbins);
+  for(Int_t i=1; i<=3; i++)fRawYield->SetBinContent(i,1.0);
+  fRawYield->SetBinContent(4,0.07);
+  fRawYield->SetBinContent(5,0.07);
+  fRawYield->SetBinContent(6,0.05);
+  fRawYield->SetBinContent(7,0.03);
+  fRawYield->SetBinContent(8,0.03);
+  fRawYield->SetBinContent(9,0.03);
+  fRawYield->SetBinContent(10,0.03);
+  for(Int_t i=11;i<=21;i++) fRawYield->SetBinContent(i,0.02);
+ fRawYield->SetBinContent(22,0.045);
+
+  // Cuts efficiency (from cuts variation)
+  fCutsEff = new TH1F("fCutsEff","fCutsEff",22,xbins);
+  // For now uncertainty added as if we use average with full improver as uncertainty
+  fCutsEff->SetBinContent(4,0.04);// Original values are higher then effect improver in most bins
+  fCutsEff->SetBinContent(5,0.02);
+  for(Int_t i=6;i<=22;i++) fCutsEff->SetBinContent(i,0.02);// Very conservative first values rounded up
+
+  // PID efficiency (from PID/noPID)
+  fPIDEff = new TH1F("fPIDEff","fPIDEff",22,xbins);
+  for(Int_t i=1;i<=4;i++) fPIDEff->SetBinContent(i,0.01); // PID for 2 sigma in TPC
+for(Int_t i=5;i<=22;i++) fPIDEff->SetBinContent(i,0.0);
+
+  // MC dN/dpt
+  fMCPtShape = new TH1F("fMCPtShape","fMCPtShape",36,0,36);
+  for(Int_t i=1;i<=36;i++) fMCPtShape->SetBinContent(i,0); //No systematic assigned final
+
+
+
+  return;
+
+}
 
 //--------------------------------------------------------------------------
 void AliHFSystErr::InitDstartoD0pi2016pPb010ZNA(){
@@ -4868,16 +4931,71 @@ void AliHFSystErr::InitDstartoD0pi2016pPb010ZNA(){
   for(Int_t i=1;i<=36;i++) fBR->SetBinContent(i,0.013); // 1.3% PDG2016 (Dstar->d0+d0->kPipi uncertainty)
 
   // Tracking efficiency
-  fTrackingEff = new TH1F("fTrackingEff","fTrackingEff",36,0,36); //Dstar meson: 3.7 in 1-10, 4 in 10-24, 4.5 in 24-36
-  for(Int_t i=1;i<=10;i++) fTrackingEff->SetBinContent(i,0.037);//same as MB
-  for(Int_t i=11;i<=24;i++) fTrackingEff->SetBinContent(i,0.04);//
+  fTrackingEff = new TH1F("fTrackingEff","fTrackingEff",36,0,36); //Dstar meson: 3.2 in 1-8, 3.5 in 8-12, 4 in 12-24, 4.5 in 24-36
+  for(Int_t i=1;i<=8;i++) fTrackingEff->SetBinContent(i,0.032);//same as MB
+  for(Int_t i=9;i<=12;i++) fTrackingEff->SetBinContent(i,0.035);//
+  for(Int_t i=13;i<=24;i++) fTrackingEff->SetBinContent(i,0.04);//
   for(Int_t i=25;i<=36; i++) fTrackingEff->SetBinContent(i,0.045);//
 
 
   // Raw yield extraction
   fRawYield = new TH1F("fRawYield","fRawYield",36,0,36);
-  fRawYield->SetBinContent(2,0.14);
-  fRawYield->SetBinContent(3,0.07);
+  fRawYield->SetBinContent(2,0.15);
+  fRawYield->SetBinContent(3,0.08);
+
+  for(Int_t i=4;i<=16;i++) fRawYield->SetBinContent(i,0.03);
+  for(Int_t i=17;i<=36;i++) fRawYield->SetBinContent(i,0.05);
+
+  // Cuts efficiency (from cuts variation)
+  fCutsEff = new TH1F("fCutsEff","fCutsEff",36,0,36);//same as MB
+
+  fCutsEff->SetBinContent(2,0.04);
+
+  for(Int_t i=3;i<=36;i++) fCutsEff->SetBinContent(i,0.02);
+
+  // PID efficiency (from PID/noPID)
+  fPIDEff = new TH1F("fPIDEff","fPIDEff",36,0,36);
+  fPIDEff->SetBinContent(2,0.01); // strong PID 
+  for(Int_t i=3;i<=36;i++) fPIDEff->SetBinContent(i,0.0); // PID 
+
+  // MC dN/dpt
+  fMCPtShape = new TH1F("fMCPtShape","fMCPtShape",36,0,36);
+  fMCPtShape->SetBinContent(2,0.01);
+  for(Int_t i=3;i<=36;i++) fMCPtShape->SetBinContent(i,0); //Systematics on multiplicity weights (MC pt shape negligible)
+  
+
+
+  return;
+
+}
+//--------------------------------------------------------------------------
+void AliHFSystErr::InitDstartoD0pi2016pPb1020ZNA(){
+  // Dstar syst in pPb 2016 1020ZNA
+  // Responsible: C. Bedda
+
+  AliInfo(" Settings for D* --> D0 pi, p-Pb collisions at 5.023 TeV 2016");
+  SetNameTitle("AliHFSystErr","SystErrDstartoD0pi2016pPb1020ZNA");
+
+  //Normalization
+  fNorm = new TH1F("fNorm","fNorm",36,0,36);
+  for(Int_t i=1;i<=36;i++) fNorm->SetBinContent(i,0.037);
+
+  // Branching ratio
+  fBR = new TH1F("fBR","fBR",36,0,36);
+  for(Int_t i=1;i<=36;i++) fBR->SetBinContent(i,0.013); // 1.3% PDG2016 (Dstar->d0+d0->kPipi uncertainty)
+
+  // Tracking efficiency
+  fTrackingEff = new TH1F("fTrackingEff","fTrackingEff",36,0,36); //Dstar meson: 3.7 in 1-10, 4 in 10-24, 4.5 in 24-36
+  for(Int_t i=1;i<=8;i++) fTrackingEff->SetBinContent(i,0.032);//same as MB
+  for(Int_t i=9;i<=12;i++) fTrackingEff->SetBinContent(i,0.035);//
+  for(Int_t i=13;i<=24;i++) fTrackingEff->SetBinContent(i,0.04);//
+  for(Int_t i=25;i<=36; i++) fTrackingEff->SetBinContent(i,0.045);//
+
+
+  // Raw yield extraction
+  fRawYield = new TH1F("fRawYield","fRawYield",36,0,36);
+  fRawYield->SetBinContent(2,0.12);
+  fRawYield->SetBinContent(3,0.08);
 
   for(Int_t i=4;i<=15;i++) fRawYield->SetBinContent(i,0.03);
   for(Int_t i=16;i<=36;i++) fRawYield->SetBinContent(i,0.05);
@@ -4891,19 +5009,127 @@ void AliHFSystErr::InitDstartoD0pi2016pPb010ZNA(){
 
   // PID efficiency (from PID/noPID)
   fPIDEff = new TH1F("fPIDEff","fPIDEff",36,0,36);
-  for(Int_t i=1;i<=36;i++) fPIDEff->SetBinContent(i,0.02); // PID for 2 sigma in TPC
-
+  fPIDEff->SetBinContent(2,0.01); // strong PID 
+  for(Int_t i=3;i<=36;i++) fPIDEff->SetBinContent(i,0.0); // PID 
+ 
   // MC dN/dpt
   fMCPtShape = new TH1F("fMCPtShape","fMCPtShape",36,0,36);
   fMCPtShape->SetBinContent(2,0.01);
-  for(Int_t i=3;i<=24;i++) fMCPtShape->SetBinContent(i,0); //Systematics on multiplicity weights (MC pt shape negligible)
-  for(Int_t i=24;i<=36;i++) fMCPtShape->SetBinContent(i,0.01); //Systematics on multiplicity weights (MC pt shape negligible)
+  for(Int_t i=3;i<=36;i++) fMCPtShape->SetBinContent(i,0); //Systematics on multiplicity weights (MC pt shape negligible)
+ 
+
+
+  return;
+
+}
+
+//--------------------------------------------------------------------------
+void AliHFSystErr::InitDstartoD0pi2016pPb2040ZNA(){
+  // Dstar syst in pPb 2016 2040ZNA
+  // Responsible: C. Bedda
+
+  AliInfo(" Settings for D* --> D0 pi, p-Pb collisions at 5.023 TeV 2016");
+  SetNameTitle("AliHFSystErr","SystErrDstartoD0pi2016pPb2040ZNA");
+
+  //Normalization
+  fNorm = new TH1F("fNorm","fNorm",36,0,36);
+  for(Int_t i=1;i<=36;i++) fNorm->SetBinContent(i,0.037);
+
+  // Branching ratio
+  fBR = new TH1F("fBR","fBR",36,0,36);
+  for(Int_t i=1;i<=36;i++) fBR->SetBinContent(i,0.013); // 1.3% PDG2016 (Dstar->d0+d0->kPipi uncertainty)
+
+  // Tracking efficiency
+  fTrackingEff = new TH1F("fTrackingEff","fTrackingEff",36,0,36); //Dstar meson: 3.7 in 1-10, 4 in 10-24, 4.5 in 24-36
+  for(Int_t i=1;i<=8;i++) fTrackingEff->SetBinContent(i,0.032);//same as MB
+  for(Int_t i=9;i<=12;i++) fTrackingEff->SetBinContent(i,0.035);//
+  for(Int_t i=13;i<=24;i++) fTrackingEff->SetBinContent(i,0.04);//
+  for(Int_t i=25;i<=36; i++) fTrackingEff->SetBinContent(i,0.045);//
+
+  // Raw yield extraction
+  fRawYield = new TH1F("fRawYield","fRawYield",36,0,36);
+  fRawYield->SetBinContent(2,0.10);
+  fRawYield->SetBinContent(3,0.05);
+
+  for(Int_t i=4;i<=15;i++) fRawYield->SetBinContent(i,0.03);
+  for(Int_t i=16;i<=36;i++) fRawYield->SetBinContent(i,0.05);
+
+  // Cuts efficiency (from cuts variation)
+  fCutsEff = new TH1F("fCutsEff","fCutsEff",36,0,36);//same as MB
+
+  fCutsEff->SetBinContent(2,0.04);
+
+  for(Int_t i=3;i<=36;i++) fCutsEff->SetBinContent(i,0.02);
+
+  // PID efficiency (from PID/noPID)
+  fPIDEff = new TH1F("fPIDEff","fPIDEff",36,0,36);
+  fPIDEff->SetBinContent(2,0.01); // strong PID 
+  for(Int_t i=3;i<=36;i++) fPIDEff->SetBinContent(i,0.0); // PID 
+ 
+  // MC dN/dpt
+  fMCPtShape = new TH1F("fMCPtShape","fMCPtShape",36,0,36);
+  fMCPtShape->SetBinContent(2,0.01);
+  for(Int_t i=3;i<=36;i++) fMCPtShape->SetBinContent(i,0); //Systematics on multiplicity weights (MC pt shape negligible)
 
 
 
   return;
 
 }
+//--------------------------------------------------------------------------
+void AliHFSystErr::InitDstartoD0pi2016pPb4060ZNA(){
+  // Dstar syst in pPb 2016 4060ZNA
+  // Responsible: C. Bedda
+
+  AliInfo(" Settings for D* --> D0 pi, p-Pb collisions at 5.023 TeV 2016");
+  SetNameTitle("AliHFSystErr","SystErrDstartoD0pi2016pPb4060ZNA");
+
+  //Normalization
+  fNorm = new TH1F("fNorm","fNorm",36,0,36);
+  for(Int_t i=1;i<=36;i++) fNorm->SetBinContent(i,0.037);
+
+  // Branching ratio
+  fBR = new TH1F("fBR","fBR",36,0,36);
+  for(Int_t i=1;i<=36;i++) fBR->SetBinContent(i,0.013); // 1.3% PDG2016 (Dstar->d0+d0->kPipi uncertainty)
+
+  // Tracking efficiency
+  fTrackingEff = new TH1F("fTrackingEff","fTrackingEff",36,0,36); //Dstar meson: 3.7 in 1-10, 4 in 10-24, 4.5 in 24-36
+  for(Int_t i=1;i<=8;i++) fTrackingEff->SetBinContent(i,0.032);//same as MB
+  for(Int_t i=9;i<=12;i++) fTrackingEff->SetBinContent(i,0.035);//
+  for(Int_t i=13;i<=24;i++) fTrackingEff->SetBinContent(i,0.04);//
+  for(Int_t i=25;i<=36; i++) fTrackingEff->SetBinContent(i,0.045);//
+	
+  // Raw yield extraction
+  fRawYield = new TH1F("fRawYield","fRawYield",36,0,36);
+  fRawYield->SetBinContent(2,0.6);
+  fRawYield->SetBinContent(3,0.05);
+
+  for(Int_t i=4;i<=15;i++) fRawYield->SetBinContent(i,0.03);
+  for(Int_t i=16;i<=36;i++) fRawYield->SetBinContent(i,0.05);
+
+  // Cuts efficiency (from cuts variation)
+  fCutsEff = new TH1F("fCutsEff","fCutsEff",36,0,36);//same as MB
+
+  fCutsEff->SetBinContent(2,0.04);
+
+  for(Int_t i=3;i<=36;i++) fCutsEff->SetBinContent(i,0.02);
+
+  // PID efficiency (from PID/noPID)
+  fPIDEff = new TH1F("fPIDEff","fPIDEff",36,0,36);
+  fPIDEff->SetBinContent(2,0.01); // strong PID 
+  for(Int_t i=3;i<=36;i++) fPIDEff->SetBinContent(i,0.0); // PID 
+	
+  // MC dN/dpt
+  fMCPtShape = new TH1F("fMCPtShape","fMCPtShape",36,0,36);
+  fMCPtShape->SetBinContent(2,0.01);
+  for(Int_t i=3;i<=36;i++) fMCPtShape->SetBinContent(i,0); //Systematics on multiplicity weights (MC pt shape negligible)
+  
+
+
+  return;
+
+}
+
 
 //--------------------------------------------------------------------------
 void AliHFSystErr::InitDstartoD0pi2016pPb60100ZNA(){
@@ -4923,18 +5149,18 @@ void AliHFSystErr::InitDstartoD0pi2016pPb60100ZNA(){
 
   // Tracking efficiency
   fTrackingEff = new TH1F("fTrackingEff","fTrackingEff",36,0,36); //Dstar meson: 3.7 in 1-10, 4 in 10-24, 4.5 in 24-36
-  for(Int_t i=1;i<=10;i++) fTrackingEff->SetBinContent(i,0.037);//same as MB analysis
-  for(Int_t i=11;i<=24;i++) fTrackingEff->SetBinContent(i,0.04);//
+  for(Int_t i=1;i<=8;i++) fTrackingEff->SetBinContent(i,0.032);//same as MB
+  for(Int_t i=9;i<=12;i++) fTrackingEff->SetBinContent(i,0.035);//
+  for(Int_t i=13;i<=24;i++) fTrackingEff->SetBinContent(i,0.04);//
   for(Int_t i=25;i<=36; i++) fTrackingEff->SetBinContent(i,0.045);//
 
 
   // Raw yield extraction
   fRawYield = new TH1F("fRawYield","fRawYield",36,0,36);
-  fRawYield->SetBinContent(2,0.11);
+  fRawYield->SetBinContent(2,0.6);
   fRawYield->SetBinContent(3,0.05);
-  fRawYield->SetBinContent(4,0.05);
-
-  for(Int_t i=5;i<=24;i++) fRawYield->SetBinContent(i,0.03);
+ 
+  for(Int_t i=4;i<=24;i++) fRawYield->SetBinContent(i,0.03);
   for(Int_t i=24;i<=36;i++) fRawYield->SetBinContent(i,0.05);
 
   // Cuts efficiency (from cuts variation)
@@ -4945,14 +5171,15 @@ void AliHFSystErr::InitDstartoD0pi2016pPb60100ZNA(){
   for(Int_t i=3;i<=36;i++) fCutsEff->SetBinContent(i,0.02);
   // PID efficiency (from PID/noPID)
   fPIDEff = new TH1F("fPIDEff","fPIDEff",36,0,36);
-  for(Int_t i=1;i<=36;i++) fPIDEff->SetBinContent(i,0.02); // PID for 2 sigma in TPC
-
+  fPIDEff->SetBinContent(2,0.01); // strong PID 
+  for(Int_t i=3;i<=36;i++) fPIDEff->SetBinContent(i,0.0); // PID 
+	
   // MC dN/dpt
   fMCPtShape = new TH1F("fMCPtShape","fMCPtShape",36,0,36);
   //Systematics on multiplicity weights (MC pt shape negligible)
-  fMCPtShape->SetBinContent(2,0.03);
-  fMCPtShape->SetBinContent(3,0.02);
-  for(Int_t i=4;i<=36;i++) fMCPtShape->SetBinContent(i,0.01);
+  fMCPtShape->SetBinContent(2,0.02);
+  fMCPtShape->SetBinContent(3,0.01);
+  for(Int_t i=4;i<=36;i++) fMCPtShape->SetBinContent(i,0.0);
 
 
 

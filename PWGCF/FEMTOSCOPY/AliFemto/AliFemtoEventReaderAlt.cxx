@@ -14,6 +14,24 @@ AliFemtoEventReaderAlt::AliFemtoEventReaderAlt()
 {
 }
 
+AliFemtoEventReaderAlt::AliFemtoEventReaderAlt(const AliFemtoEventReaderAlt &orig)
+  : AliFemtoEventReaderAODMultSelection(orig)
+  , fRng(nullptr)
+  , fEnhanceSmearing(0.0)
+{
+  SetEnhanceSmearing(orig.GetEnhanceSmearing());
+}
+
+AliFemtoEventReaderAlt AliFemtoEventReaderAlt::operator=(const AliFemtoEventReaderAlt& rhs)
+{
+  if (&rhs != this) {
+    AliFemtoEventReaderAODMultSelection::operator=(rhs);
+    SetEnhanceSmearing(rhs.GetEnhanceSmearing());
+  }
+
+  return *this;
+}
+
 AliFemtoEventReaderAlt::~AliFemtoEventReaderAlt()
 {
 }
@@ -50,3 +68,17 @@ AliFemtoEventReaderAlt::CopyAODtoFemtoTrack(AliAODTrack *aod_trk)
 
   return femto_trk;
 }
+
+
+void
+AliFemtoEventReaderAlt::CopyPIDtoFemtoTrack(AliAODTrack *aod_trk, AliFemtoTrack *femto_trk)
+{
+  AliFemtoEventReaderAODMultSelection::CopyPIDtoFemtoTrack(aod_trk, femto_trk);
+
+  femto_trk->SetITSchi2(aod_trk->GetITSchi2());
+  femto_trk->SetITSncls(aod_trk->GetITSNcls());
+  femto_trk->SetTPCchi2(aod_trk->GetTPCchi2());
+  femto_trk->SetTPCncls(aod_trk->GetTPCNcls());
+  femto_trk->SetTPCnclsF(aod_trk->GetTPCNclsF());
+}
+

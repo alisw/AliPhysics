@@ -153,10 +153,10 @@ bool AliFemtoV0PairCut::Pass(const AliFemtoPair *pair)
 //__________________
 AliFemtoString AliFemtoV0PairCut::Report()
 {
-  TString report = "AliFemtoV0 Pair Cut - remove shared and split pairs\n";
-  report += TString::Format("Number of pairs which passed:\t%ld  Number which failed:\t%ld\n", fNPairsPassed, fNPairsFailed);
+  AliFemtoString report = "AliFemtoV0 Pair Cut - remove shared and split pairs\n";
+  report += Form("Number of pairs which passed:\t%ld  Number which failed:\t%ld\n", fNPairsPassed, fNPairsFailed);
 
-  return AliFemtoString((const char *)report);
+  return report;
 }
 //__________________
 
@@ -180,19 +180,22 @@ TList *AliFemtoV0PairCut::ListSettings()
              ptrnI[] = "AliFemtoV0PairCut.%s=%d",
              ptrnL[] = "AliFemtoV0PairCut.%s=%ld";
 
-  tListSetttings->Add(new TObjString(TString::Format(ptrnF, "V0max", fV0Max)));
-  tListSetttings->Add(new TObjString(TString::Format(ptrnF, "sharefractionmax", fShareFractionMax)));
-  tListSetttings->Add(new TObjString(TString::Format(ptrnF, "TPCmin", fDTPCMin)));
-  tListSetttings->Add(new TObjString(TString::Format(ptrnF, "TPCexitmin", fDTPCExitMin)));
-  tListSetttings->Add(new TObjString(TString::Format(ptrnI, "datatype", fDataType)));
+  tListSetttings->AddVector(
+    new TObjString(Form(ptrnF, "V0max", fV0Max)),
+    new TObjString(Form(ptrnF, "sharefractionmax", fShareFractionMax)),
+    new TObjString(Form(ptrnF, "TPCmin", fDTPCMin)),
+    new TObjString(Form(ptrnF, "TPCexitmin", fDTPCExitMin)),
+    new TObjString(Form(ptrnI, "datatype", fDataType)),
 
-  tListSetttings->Add(new TObjString(TString::Format(ptrnF, "minAvgSepPosPos", fMinAvgSepPosPos)));
-  tListSetttings->Add(new TObjString(TString::Format(ptrnF, "minAvgSepPosNeg", fMinAvgSepPosNeg)));
-  tListSetttings->Add(new TObjString(TString::Format(ptrnF, "minAvgSepNegPos", fMinAvgSepNegPos)));
-  tListSetttings->Add(new TObjString(TString::Format(ptrnF, "minAvgSepNegNeg", fMinAvgSepNegNeg)));
+    new TObjString(Form(ptrnF, "minAvgSepPosPos", fMinAvgSepPosPos)),
+    new TObjString(Form(ptrnF, "minAvgSepPosNeg", fMinAvgSepPosNeg)),
+    new TObjString(Form(ptrnF, "minAvgSepNegPos", fMinAvgSepNegPos)),
+    new TObjString(Form(ptrnF, "minAvgSepNegNeg", fMinAvgSepNegNeg)),
 
-  tListSetttings->Add(new TObjString(TString::Format(ptrnL, "pairs_passed", fNPairsPassed)));
-  tListSetttings->Add(new TObjString(TString::Format(ptrnL, "pairs_failed", fNPairsFailed)));
+    new TObjString(Form(ptrnL, "pairs_passed", fNPairsPassed)),
+    new TObjString(Form(ptrnL, "pairs_failed", fNPairsFailed)),
+
+    nullptr);
 
   return tListSetttings;
 }

@@ -146,6 +146,24 @@ bool AliAnalysisTaskEmcalJetEnergySpectrum::IsEventSelected(){
   return AliAnalysisTaskEmcal::IsEventSelected();
 }
 
+Bool_t AliAnalysisTaskEmcalJetEnergySpectrum::CheckMCOutliers() {
+  if(!fMCRejectFilter) return true;
+  if(!(fIsPythia || fIsHerwig)) return true;    // Only relevant for pt-hard production
+  AliDebugStream(1) << "Using custom MC outlier rejection" << std::endl;
+  auto partjets = GetJetContainer("partjets");
+  if(!partjets) return true;
+
+  // Check whether there is at least one particle level jet with pt above n * event pt-hard
+  auto jetiter = partjets->accepted();
+  auto max = std::max_element(jetiter.begin(), jetiter.end(), [](const AliEmcalJet *lhs, const AliEmcalJet *rhs ) { return lhs->Pt() < rhs->Pt(); });
+  if(max != jetiter.end())  {
+    // At least one jet found with pt > n * pt-hard
+    AliDebugStream(1) << "Found max jet with pt " << (*max)->Pt() << " GeV/c" << std::endl;
+    if((*max)->Pt() > fPtHardAndJetPtFactor * fPtHard) return true;
+  }
+  return false;
+}
+
 bool AliAnalysisTaskEmcalJetEnergySpectrum::Run(){
   auto datajets = this->GetJetContainer(fNameJetContainer);
   if(!datajets) {
@@ -384,6 +402,17 @@ AliAnalysisTaskEmcalJetEnergySpectrum *AliAnalysisTaskEmcalJetEnergySpectrum::Ad
   jetcont->SetName("datajets");
   task->SetNameJetContainer("datajets");
   std::cout << "Adding jet container with underlying array:" << jetcont->GetArrayName() << std::endl;
+
+  if(isMC){
+    // Create also particle and particle level jet container for outlier rejection
+    auto partcont = task->AddMCParticleContainer("mcparticles");
+    partcont->SetMinPt(0.);
+    
+    auto pjcont = task->AddJetContainer(jettype, AliJetContainer::antikt_algorithm, AliJetContainer::E_scheme, radius, AliJetContainer::kTPCfid, partcont, nullptr);
+    pjcont->SetName("partjets");
+    pjcont->SetMinPt(0);
+    pjcont->SetMaxTrackPt(1000.);
+  }
 
   // Link input and output container
   outfilename << mgr->GetCommonFileName() << ":JetSpectrum_" << tag.str().data();

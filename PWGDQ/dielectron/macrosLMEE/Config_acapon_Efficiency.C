@@ -11,12 +11,12 @@ const Int_t nMCSignal   = 0;
 const Int_t nCutsetting = 0;
 
 const Double_t minGenPt  = 0.05;
-const Double_t maxGenPt  = 10;
+const Double_t maxGenPt  = 20;
 const Double_t minGenEta = -1.5;
 const Double_t maxGenEta = 1.5;
 
 const Double_t minPtCut  = 0.2;
-const Double_t maxPtCut  = 20.0;
+const Double_t maxPtCut  = 15.0;
 const Double_t minEtaCut = -0.8;
 const Double_t maxEtaCut = 0.8;
 // const Double_t minPtCut = 0.2;
@@ -27,10 +27,11 @@ const Double_t maxEtaCut = 0.8;
 
 // binning of single leg histograms
 Bool_t usePtVector = kTRUE;
-Double_t ptBins[] = {0.000,0.050,0.100,0.150,0.200,0.250,0.300,0.350,0.400,0.450,0.500,0.550,0.600,0.650,0.700,0.750,0.800,0.850,0.900,0.950,
-  1.000,1.10,1.20,1.30,1.40,1.50,1.60,1.70,1.80,1.90,2.00,2.10,2.30,2.50,3.00,3.50,
-  4.00,5.0,6.0,7.0,8.0
-  };
+Double_t ptBins[] = {0.00,0.05,0.10,0.15,0.20,0.25,0.30,0.35,0.40,
+                     0.45,0.50,0.55,0.60,0.65,0.70,0.75,0.80,0.85,
+                     0.90,0.95,1.00,1.10,1.20,1.30,1.40,1.50,1.60,
+                     1.70,1.80,1.90,2.00,2.10,2.30,2.50,3.00,3.50,
+                     4.00,5.00,6.00,7.00,8.00,10.0,15.0};
 const Int_t nBinsPt =  ( sizeof(ptBins) / sizeof(ptBins[0]) )-1;
 
 const Double_t minPtBin   = 0;
@@ -387,63 +388,48 @@ AliAnalysisFilter* SetupTrackCutsAndSettings(TString cutDefinition)
 // #########################################################
 std::vector<Bool_t> AddSingleLegMCSignal(AliAnalysisTaskElectronEfficiencyV2* task){
 
-  AliDielectronSignalMC partFinalState("partFinalState","partFinalState");
-  partFinalState.SetLegPDGs(0,1);//dummy second leg (never MCkTRUE)\n"
-  // partFinalState.SetCheckBothChargesLegs(kTRUE,kTRUE);
-  partFinalState.SetLegSources(AliDielectronSignalMC::kFinalState, AliDielectronSignalMC::kFinalState);
+  // SetLegPDGs() requires two pdg codes. For single tracks a dummy value is
+  // passed, "1".
 
+
+  // All final state electrons (excluding conversion electrons)
   AliDielectronSignalMC eleFinalState("eleFinalState","eleFinalState");
-  eleFinalState.SetLegPDGs(11,1);//dummy second leg (never MCkTRUE)\n"
+  eleFinalState.SetLegPDGs(11,1); 
   eleFinalState.SetCheckBothChargesLegs(kTRUE,kTRUE);
-  //eleFinalState.SetLegSources(AliDielectronSignalMC::kFinalState, AliDielectronSignalMC::kFinalState);
-  eleFinalState.SetMotherPDGs(22, 22, kTRUE, kTRUE);
+  eleFinalState.SetLegSources(AliDielectronSignalMC::kFinalState, AliDielectronSignalMC::kFinalState);
+  eleFinalState.SetMotherPDGs(22, 22, kTRUE, kTRUE); // Exclude conversion electrons
 
-  AliDielectronSignalMC eleFinalStateFromSameMotherMeson("eleFinalStateFromSameMotherMeson","eleFinalStateFromSameMotherMeson");
-  eleFinalStateFromSameMotherMeson.SetLegPDGs(11,1);//dummy second leg (never MCkTRUE)\n"
-  eleFinalStateFromSameMotherMeson.SetCheckBothChargesLegs(kTRUE,kTRUE);
-  eleFinalStateFromSameMotherMeson.SetMotherPDGs(600, 600); // open charm mesons and baryons together
-  eleFinalStateFromSameMotherMeson.SetLegSources(AliDielectronSignalMC::kFinalState, AliDielectronSignalMC::kFinalState);
-  //
+  // Electrons from open charm mesons and baryons
   AliDielectronSignalMC eleFinalStateFromD("eleFinalStateFromD","eleFinalStateFromD");
-  eleFinalStateFromD.SetLegPDGs(11,1);//dummy second leg (never MCkTRUE)\n"
+  eleFinalStateFromD.SetLegPDGs(11,1);
   eleFinalStateFromD.SetCheckBothChargesLegs(kTRUE,kTRUE);
   eleFinalStateFromD.SetLegSources(AliDielectronSignalMC::kFinalState, AliDielectronSignalMC::kFinalState);
-  eleFinalStateFromD.SetMotherPDGs(402, 402); // open charm mesons and baryons together
+  eleFinalStateFromD.SetMotherPDGs(402, 402);
   eleFinalStateFromD.SetCheckBothChargesMothers(kTRUE,kTRUE);
-  //
+  
+  // Electrons from open beauty mesons and baryons
   AliDielectronSignalMC eleFinalStateFromB("eleFinalStateFromB","eleFinalStateFromB");
-  eleFinalStateFromB.SetLegPDGs(11,1);//dummy second leg (never MCkTRUE)\n"
+  eleFinalStateFromB.SetLegPDGs(11,1);
   eleFinalStateFromB.SetCheckBothChargesLegs(kTRUE,kTRUE);
   eleFinalStateFromB.SetLegSources(AliDielectronSignalMC::kFinalState, AliDielectronSignalMC::kFinalState);
-  eleFinalStateFromB.SetMotherPDGs(502, 502); // open charm mesons and baryons together
+  eleFinalStateFromB.SetMotherPDGs(502, 502); 
   eleFinalStateFromB.SetCheckBothChargesMothers(kTRUE,kTRUE);
 
-  // AliDielectronSignalMC eleSecondary("eleSecondary","eleSecondary");
-  // eleSecondary.SetLegPDGs(11,1);//dummy second leg (never MCkTRUE)\n"
-  // eleSecondary.SetCheckBothChargesLegs(kTRUE,kTRUE);
-  // eleSecondary.SetLegSources(AliDielectronSignalMC::kSecondary, AliDielectronSignalMC::kSecondary);
-  // task->AddSingleLegMCSignal(eleSecondary);
-  //
-  // AliDielectronSignalMC eleDontCare("eleDontCare","eleDontCare");
-  // eleDontCare.SetLegPDGs(11,1);//dummy second leg (never MCkTRUE)\n"
-  // eleDontCare.SetCheckBothChargesLegs(kTRUE,kTRUE);
-  // eleDontCare.SetLegSources(AliDielectronSignalMC::kDontCare, AliDielectronSignalMC::kDontCare);
-  // task->AddSingleLegMCSignal(eleDontCare);
-
-  // task->AddSingleLegMCSignal(partFinalState);
+  // Add signals
   task->AddSingleLegMCSignal(eleFinalState);
-  // task->AddSingleLegMCSignal(eleFinalStateFromPion);
   task->AddSingleLegMCSignal(eleFinalStateFromD);
   task->AddSingleLegMCSignal(eleFinalStateFromB);
-  // task->AddSingleLegMCSignal(eleFinalStateFromSameMotherMeson);
 
-  // this is used to get electrons from charmed mesons in a environment where GEANT is doing the decay of D mesons, like in LHC18b5a
-  // ordering is according to MCSignals of single legs
+  // This is used to get electrons not from same mother for pair efficiency.
+  // Needed to look at D and B meson electrons as functionality to pair those is
+  // not implemented in the framework. Instead, use all final start electrons
+  // from D or B decays for efficiency correction, for example.
+  // The ordering must match the ordering of the added signals above*.
   std::vector<Bool_t> DielectronsPairNotFromSameMother;
   DielectronsPairNotFromSameMother.push_back(kFALSE);
   DielectronsPairNotFromSameMother.push_back(kTRUE);
   DielectronsPairNotFromSameMother.push_back(kTRUE);
-  // DielectronsPairNotFromSameMother.push_back(kFALSE);
+
   return DielectronsPairNotFromSameMother;
 }
 
@@ -452,95 +438,79 @@ std::vector<Bool_t> AddSingleLegMCSignal(AliAnalysisTaskElectronEfficiencyV2* ta
 // #########################################################
 void AddPairMCSignal(AliAnalysisTaskElectronEfficiencyV2* task){
 
-    AliDielectronSignalMC pair_sameMother("sameMother","sameMother");
-    pair_sameMother.SetLegPDGs(11,-11);
-    pair_sameMother.SetCheckBothChargesLegs(kTRUE,kTRUE);
-    //pair_sameMother.SetLegSources(AliDielectronSignalMC::kFinalState, AliDielectronSignalMC::kFinalState);
-    //mother
-    pair_sameMother.SetMothersRelation(AliDielectronSignalMC::kSame);
-    pair_sameMother.SetMotherPDGs(22,22,kTRUE,kTRUE); // exclude conversion electrons. should have no effect on final state ele.
+  // Dielectron pairs from same mother (excluding conversions)
+  AliDielectronSignalMC pair_sameMother("sameMother","sameMother");
+  pair_sameMother.SetLegPDGs(11,-11);
+  pair_sameMother.SetCheckBothChargesLegs(kTRUE,kTRUE);
+  pair_sameMother.SetLegSources(AliDielectronSignalMC::kFinalState, AliDielectronSignalMC::kFinalState);
+  // Set mother properties
+  pair_sameMother.SetMothersRelation(AliDielectronSignalMC::kSame);
+  pair_sameMother.SetMotherPDGs(22,22,kTRUE,kTRUE); // Exclude conversion
 
-    AliDielectronSignalMC pair_sameMother_pion("sameMother_pion","sameMother_pion");
-    pair_sameMother_pion.SetLegPDGs(11,-11);
-    pair_sameMother_pion.SetCheckBothChargesLegs(kTRUE,kTRUE);
-    pair_sameMother_pion.SetLegSources(AliDielectronSignalMC::kFinalState, AliDielectronSignalMC::kFinalState);
-    //mother
-    pair_sameMother_pion.SetMothersRelation(AliDielectronSignalMC::kSame);
-    pair_sameMother_pion.SetMotherPDGs(111,111); //
+  //###################################################################
+  // Signals for specific dielectron decay channels
+  AliDielectronSignalMC pair_sameMother_pion("sameMother_pion","sameMother_pion");
+  pair_sameMother_pion.SetLegPDGs(11,-11);
+  pair_sameMother_pion.SetCheckBothChargesLegs(kTRUE,kTRUE);
+  pair_sameMother_pion.SetLegSources(AliDielectronSignalMC::kFinalState, AliDielectronSignalMC::kFinalState);
+  // Set mother properties
+  pair_sameMother_pion.SetMothersRelation(AliDielectronSignalMC::kSame);
+  pair_sameMother_pion.SetMotherPDGs(111,111); 
 
-    AliDielectronSignalMC pair_sameMother_eta("sameMother_eta","sameMother_eta");
-    pair_sameMother_eta.SetLegPDGs(11,-11);
-    pair_sameMother_eta.SetCheckBothChargesLegs(kTRUE,kTRUE);
-    pair_sameMother_eta.SetLegSources(AliDielectronSignalMC::kFinalState, AliDielectronSignalMC::kFinalState);
-    //mother
-    pair_sameMother_eta.SetMothersRelation(AliDielectronSignalMC::kSame);
-    pair_sameMother_eta.SetMotherPDGs(221,221); //
+  AliDielectronSignalMC pair_sameMother_eta("sameMother_eta","sameMother_eta");
+  pair_sameMother_eta.SetLegPDGs(11,-11);
+  pair_sameMother_eta.SetCheckBothChargesLegs(kTRUE,kTRUE);
+  pair_sameMother_eta.SetLegSources(AliDielectronSignalMC::kFinalState, AliDielectronSignalMC::kFinalState);
+  // Set mother properties
+  pair_sameMother_eta.SetMothersRelation(AliDielectronSignalMC::kSame);
+  pair_sameMother_eta.SetMotherPDGs(221,221); 
 
-    AliDielectronSignalMC pair_sameMother_etaP("sameMother_etaP","sameMother_etaP");
-    pair_sameMother_etaP.SetLegPDGs(11,-11);
-    pair_sameMother_etaP.SetCheckBothChargesLegs(kTRUE,kTRUE);
-    pair_sameMother_etaP.SetLegSources(AliDielectronSignalMC::kFinalState, AliDielectronSignalMC::kFinalState);
-    //mother
-    pair_sameMother_etaP.SetMothersRelation(AliDielectronSignalMC::kSame);
-    pair_sameMother_etaP.SetMotherPDGs(331,331); //
+  AliDielectronSignalMC pair_sameMother_etaP("sameMother_etaP","sameMother_etaP");
+  pair_sameMother_etaP.SetLegPDGs(11,-11);
+  pair_sameMother_etaP.SetCheckBothChargesLegs(kTRUE,kTRUE);
+  pair_sameMother_etaP.SetLegSources(AliDielectronSignalMC::kFinalState, AliDielectronSignalMC::kFinalState);
+  // Set mother properties
+  pair_sameMother_etaP.SetMothersRelation(AliDielectronSignalMC::kSame);
+  pair_sameMother_etaP.SetMotherPDGs(331,331);
 
-    AliDielectronSignalMC pair_sameMother_rho("sameMother_rho","sameMother_rho");
-    pair_sameMother_rho.SetLegPDGs(11,-11);
-    pair_sameMother_rho.SetCheckBothChargesLegs(kTRUE,kTRUE);
-    pair_sameMother_rho.SetLegSources(AliDielectronSignalMC::kFinalState, AliDielectronSignalMC::kFinalState);
-    //mother
-    pair_sameMother_rho.SetMothersRelation(AliDielectronSignalMC::kSame);
-    pair_sameMother_rho.SetMotherPDGs(113, 113); //
+  AliDielectronSignalMC pair_sameMother_rho("sameMother_rho","sameMother_rho");
+  pair_sameMother_rho.SetLegPDGs(11,-11);
+  pair_sameMother_rho.SetCheckBothChargesLegs(kTRUE,kTRUE);
+  pair_sameMother_rho.SetLegSources(AliDielectronSignalMC::kFinalState, AliDielectronSignalMC::kFinalState);
+  // Set mother properties
+  pair_sameMother_rho.SetMothersRelation(AliDielectronSignalMC::kSame);
+  pair_sameMother_rho.SetMotherPDGs(113, 113);
 
-    AliDielectronSignalMC pair_sameMother_omega("sameMother_omega","sameMother_omega");
-    pair_sameMother_omega.SetLegPDGs(11,-11);
-    pair_sameMother_omega.SetCheckBothChargesLegs(kTRUE,kTRUE);
-    pair_sameMother_omega.SetLegSources(AliDielectronSignalMC::kFinalState, AliDielectronSignalMC::kFinalState);
-    //mother
-    pair_sameMother_omega.SetMothersRelation(AliDielectronSignalMC::kSame);
-    pair_sameMother_omega.SetMotherPDGs(223, 223); //
+  AliDielectronSignalMC pair_sameMother_omega("sameMother_omega","sameMother_omega");
+  pair_sameMother_omega.SetLegPDGs(11,-11);
+  pair_sameMother_omega.SetCheckBothChargesLegs(kTRUE,kTRUE);
+  pair_sameMother_omega.SetLegSources(AliDielectronSignalMC::kFinalState, AliDielectronSignalMC::kFinalState);
+  // Set mother properties
+  pair_sameMother_omega.SetMothersRelation(AliDielectronSignalMC::kSame);
+  pair_sameMother_omega.SetMotherPDGs(223, 223);
 
-    AliDielectronSignalMC pair_sameMother_phi("sameMother_phi","sameMother_phi");
-    pair_sameMother_phi.SetLegPDGs(11,-11);
-    pair_sameMother_phi.SetCheckBothChargesLegs(kTRUE,kTRUE);
-    pair_sameMother_phi.SetLegSources(AliDielectronSignalMC::kFinalState, AliDielectronSignalMC::kFinalState);
-    //mother
-    pair_sameMother_phi.SetMothersRelation(AliDielectronSignalMC::kSame);
-    pair_sameMother_phi.SetMotherPDGs(333, 333); //
+  AliDielectronSignalMC pair_sameMother_phi("sameMother_phi","sameMother_phi");
+  pair_sameMother_phi.SetLegPDGs(11,-11);
+  pair_sameMother_phi.SetCheckBothChargesLegs(kTRUE,kTRUE);
+  pair_sameMother_phi.SetLegSources(AliDielectronSignalMC::kFinalState, AliDielectronSignalMC::kFinalState);
+  // Set mother properties
+  pair_sameMother_phi.SetMothersRelation(AliDielectronSignalMC::kSame);
+  pair_sameMother_phi.SetMotherPDGs(333, 333); 
 
-    AliDielectronSignalMC pair_sameMother_jpsi("sameMother_jpsi","sameMother_jpsi");
-    pair_sameMother_jpsi.SetLegPDGs(11,-11);
-    pair_sameMother_jpsi.SetCheckBothChargesLegs(kTRUE,kTRUE);
-    pair_sameMother_jpsi.SetLegSources(AliDielectronSignalMC::kFinalState, AliDielectronSignalMC::kFinalState);
-    //mother
-    pair_sameMother_jpsi.SetMothersRelation(AliDielectronSignalMC::kSame);
-    pair_sameMother_jpsi.SetMotherPDGs(443, 443); //
+  AliDielectronSignalMC pair_sameMother_jpsi("sameMother_jpsi","sameMother_jpsi");
+  pair_sameMother_jpsi.SetLegPDGs(11,-11);
+  pair_sameMother_jpsi.SetCheckBothChargesLegs(kTRUE,kTRUE);
+  pair_sameMother_jpsi.SetLegSources(AliDielectronSignalMC::kFinalState, AliDielectronSignalMC::kFinalState);
+  // Set mother properties
+  pair_sameMother_jpsi.SetMothersRelation(AliDielectronSignalMC::kSame);
+  pair_sameMother_jpsi.SetMotherPDGs(443, 443); 
 
-    AliDielectronSignalMC pair_sameMother_CharmedMesonsWithSameMother("CharmedMesonsWithSameMother","CharmedMesonsWithSameMother");
-    pair_sameMother_CharmedMesonsWithSameMother.SetLegPDGs(11,-11);
-    pair_sameMother_CharmedMesonsWithSameMother.SetCheckBothChargesLegs(kTRUE,kTRUE);
-    pair_sameMother_CharmedMesonsWithSameMother.SetLegSources(AliDielectronSignalMC::kFinalState, AliDielectronSignalMC::kFinalState);
-    //mother
-    pair_sameMother_CharmedMesonsWithSameMother.SetMothersRelation(AliDielectronSignalMC::kSame);
-    pair_sameMother_CharmedMesonsWithSameMother.SetMotherPDGs(402, 402); //
-
-    AliDielectronSignalMC pair_conversion("pair_conversion","pair_conversion");
-    pair_conversion.SetLegPDGs(11,-11);
-    pair_conversion.SetCheckBothChargesLegs(kTRUE,kTRUE);
-    pair_conversion.SetLegSources(AliDielectronSignalMC::kSecondary, AliDielectronSignalMC::kSecondary);
-    //mother
-    pair_conversion.SetMothersRelation(AliDielectronSignalMC::kSame);
-
-
-
-    task->AddPairMCSignal(pair_sameMother);
-    // task->AddPairMCSignal(pair_sameMother_pion);
-    // task->AddPairMCSignal(pair_sameMother_eta);
-    // task->AddPairMCSignal(pair_sameMother_etaP);
-    // task->AddPairMCSignal(pair_sameMother_rho);
-    // task->AddPairMCSignal(pair_sameMother_omega);
-    // task->AddPairMCSignal(pair_sameMother_phi);
-    // task->AddPairMCSignal(pair_sameMother_jpsi);
-    // task->AddPairMCSignal(pair_sameMother_CharmedMesonsWithSameMother);
-    // task->AddPairMCSignal(pair_conversion);
+  task->AddPairMCSignal(pair_sameMother);
+  // task->AddPairMCSignal(pair_sameMother_pion);
+  // task->AddPairMCSignal(pair_sameMother_eta);
+  // task->AddPairMCSignal(pair_sameMother_etaP);
+  // task->AddPairMCSignal(pair_sameMother_rho);
+  // task->AddPairMCSignal(pair_sameMother_omega);
+  // task->AddPairMCSignal(pair_sameMother_phi);
+  // task->AddPairMCSignal(pair_sameMother_jpsi);
 }

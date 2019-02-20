@@ -63,14 +63,21 @@ class AliFemtoDreamEventHist {
     fMultDistRef08[i]->Fill(val);
   }
   ;
+  void FillSPDTrackletsLyVsCluster(int i, int ly, int spdTrkl, int spdCls) {
+    if (ly == 0) {
+      fSPDTrklClsLy0[i]->Fill(spdTrkl, spdCls);
+    } else if (ly == 1) {
+      fSPDTrklClsLy1[i]->Fill(spdTrkl, spdCls);
+    }
+  }
   void FillSPDTrackletsVsCluster(int i, int spdTrkl, int spdCls) {
-    fSPDTrklCls[i]->Fill(spdTrkl, spdCls);
+    fSPDTrklClsLySum[i]->Fill(spdTrkl, spdCls);
   }
   void FillEvtVtxZTrackvsSPD(int i, float zVtxSPD, float zVtxTracks) {
     fSPDTrackZVtx[i]->Fill(zVtxSPD, zVtxTracks);
     fSPDTrkZVtxDispl[i]->Fill(TMath::Abs(zVtxSPD - zVtxTracks));
   }
-  void FillMagneticField(int i, float bField){
+  void FillMagneticField(int i, float bField) {
     fBField[i]->Fill(bField);
   }
   void FillCentVsMultV0A(float cent, float mult) {
@@ -107,7 +114,9 @@ class AliFemtoDreamEventHist {
   TH1F *fMultDistV0A[2];    //!
   TH1F *fMultDistV0C[2];    //!
   TH1F *fMultDistRef08[2];  //!
-  TH2F *fSPDTrklCls[2];     //!
+  TH2F *fSPDTrklClsLy0[2];     //!
+  TH2F *fSPDTrklClsLy1[2];     //!
+  TH2F *fSPDTrklClsLySum[2];     //!
   TH2F *fSPDTrackZVtx[2];   //!
   TH1F *fSPDTrkZVtxDispl[2];   //!
   TH1F *fBField[2];         //!

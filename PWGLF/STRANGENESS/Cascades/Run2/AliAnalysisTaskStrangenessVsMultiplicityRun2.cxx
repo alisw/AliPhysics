@@ -3965,17 +3965,17 @@ void AliAnalysisTaskStrangenessVsMultiplicityRun2::AddTopologicalQACascade(Int_t
                                                              -0.813472,
                                                              0.0480962);
         }
-        lCascadeResult[lN]->SetCutDCACascadeToPV        ( 0.8 );
+//        lCascadeResult[lN]->SetCutDCACascadeToPV        ( 0.8 );
         if(i >= 2){
             lCascadeResult[lN]->SetCutDCACascDaughters  ( 0.6 ) ;
             lCascadeResult[lN]->SetCutCascRadius        ( 1.0 ) ;
-            lCascadeResult[lN]->SetCutDCACascadeToPV    ( 0.6 ) ;
+//            lCascadeResult[lN]->SetCutDCACascadeToPV    ( 0.6 ) ;
         }
         lCascadeResult[lN]->SetCutVarDCACascDau ( TMath::Exp(0.0470076), -0.917006, 0, 1, 0.5 );
         //Miscellaneous
         lCascadeResult[lN]->SetCutProperLifetime        ( lLifetimeCut[i] ) ;
         lCascadeResult[lN]->SetCutMaxV0Lifetime         ( 30.0  );
-        lCascadeResult[lN]->SetCutTPCdEdx               ( 3.0 ) ;
+        lCascadeResult[lN]->SetCutTPCdEdx               ( 4.0 ) ;
         lCascadeResult[lN]->SetCutXiRejection           ( 0.008 ) ;
         lCascadeResult[lN]->SetCutBachBaryonCosPA       ( TMath::Cos(0.04) ) ; //+variable
         lCascadeResult[lN]->SetCutVarBBCosPA            (TMath::Exp(-2.29048),
@@ -5350,7 +5350,7 @@ void AliAnalysisTaskStrangenessVsMultiplicityRun2::AddStandardCascadeConfigurati
     lcuts[lIdx][0][ 9] = 17.5;    lcuts[lIdx][1][ 9] =  15.0; lcuts[lIdx][2][ 9] =  12.5; //ProperLifetime 10
     lcuts[lIdx][0][10] = 40.0;    lcuts[lIdx][1][10] =  30.0; lcuts[lIdx][2][10] =  20.0; //ProperLifetimeV0 11
     lcuts[lIdx][0][11] =   80;    lcuts[lIdx][1][11] =    90; lcuts[lIdx][2][11] =   100; //MinimumTrackLength 12
-    lcuts[lIdx][0][12] =    4;    lcuts[lIdx][1][12] =     3; lcuts[lIdx][2][12] =   2.5; //TPCdEdx 13
+    lcuts[lIdx][0][12] =    5;    lcuts[lIdx][1][12] =     4; lcuts[lIdx][2][12] =     3; //TPCdEdx 13
     lcuts[lIdx][0][13] =  0.0;    lcuts[lIdx][1][13] = 0.008; lcuts[lIdx][2][13] = 0.010; //Competing 14
     lcuts[lIdx][0][14] =  1.2;    lcuts[lIdx][1][14] =   0.8; lcuts[lIdx][2][14] =   0.6; //3D DCA Cascade To PV
     lcuts[lIdx][0][15] =   70;    lcuts[lIdx][1][15] =    80; lcuts[lIdx][2][15] =    90; //Least Number of Crossed Rows
@@ -5374,7 +5374,7 @@ void AliAnalysisTaskStrangenessVsMultiplicityRun2::AddStandardCascadeConfigurati
     lcuts[lIdx][0][ 9] = 17.5;    lcuts[lIdx][1][ 9] =  15.0; lcuts[lIdx][2][ 9] =  12.5; //ProperLifetime 10
     lcuts[lIdx][0][10] = 40.0;    lcuts[lIdx][1][10] =  30.0; lcuts[lIdx][2][10] =  20.0; //ProperLifetimeV0 11
     lcuts[lIdx][0][11] =   80;    lcuts[lIdx][1][11] =    90; lcuts[lIdx][2][11] =   100; //MinimumTrackLength 12
-    lcuts[lIdx][0][12] =    4;    lcuts[lIdx][1][12] =     3; lcuts[lIdx][2][12] =   2.5; //TPCdEdx 13
+    lcuts[lIdx][0][12] =    5;    lcuts[lIdx][1][12] =     4; lcuts[lIdx][2][12] =     3; //TPCdEdx 13
     lcuts[lIdx][0][13] =  0.0;    lcuts[lIdx][1][13] = 0.008; lcuts[lIdx][2][13] = 0.010; //Competing 14
     lcuts[lIdx][0][14] =  1.2;    lcuts[lIdx][1][14] =   0.8; lcuts[lIdx][2][14] =   0.6; //3D DCA Cascade To PV
     lcuts[lIdx][0][15] =   70;    lcuts[lIdx][1][15] =    80; lcuts[lIdx][2][15] =    90; //Least Number of Crossed Rows
@@ -5398,7 +5398,7 @@ void AliAnalysisTaskStrangenessVsMultiplicityRun2::AddStandardCascadeConfigurati
     lcuts[lIdx][0][ 9] = 14.0;    lcuts[lIdx][1][ 9] =  12.0; lcuts[lIdx][2][ 9] =  10.0; //ProperLifetime 10
     lcuts[lIdx][0][10] = 40.0;    lcuts[lIdx][1][10] =  30.0; lcuts[lIdx][2][10] =  20.0; //ProperLifetimeV0 11
     lcuts[lIdx][0][11] =   80;    lcuts[lIdx][1][11] =    90; lcuts[lIdx][2][11] =   100; //MinimumTrackLength 12
-    lcuts[lIdx][0][12] =    4;    lcuts[lIdx][1][12] =     3; lcuts[lIdx][2][12] =   2.5; //TPCdEdx 13
+    lcuts[lIdx][0][12] =    5;    lcuts[lIdx][1][12] =     4; lcuts[lIdx][2][12] =     3; //TPCdEdx 13
     lcuts[lIdx][0][13] =  0.0;    lcuts[lIdx][1][13] = 0.008; lcuts[lIdx][2][13] = 0.010; //Competing 14
     lcuts[lIdx][0][14] =  0.8;    lcuts[lIdx][1][14] =   0.6; lcuts[lIdx][2][14] =   0.5; //3D DCA Cascade To PV
     lcuts[lIdx][0][15] =   70;    lcuts[lIdx][1][15] =    80; lcuts[lIdx][2][15] =    90; //Least Number of Crossed Rows
@@ -5422,7 +5422,7 @@ void AliAnalysisTaskStrangenessVsMultiplicityRun2::AddStandardCascadeConfigurati
     lcuts[lIdx][0][ 9] = 14.0;    lcuts[lIdx][1][ 9] =  12.0; lcuts[lIdx][2][ 9] =  10.0; //ProperLifetime 10
     lcuts[lIdx][0][10] = 40.0;    lcuts[lIdx][1][10] =  30.0; lcuts[lIdx][2][10] =  20.0; //ProperLifetimeV0 11
     lcuts[lIdx][0][11] =   80;    lcuts[lIdx][1][11] =    90; lcuts[lIdx][2][11] =   100; //MinimumTrackLength 12
-    lcuts[lIdx][0][12] =    4;    lcuts[lIdx][1][12] =     3; lcuts[lIdx][2][12] =   2.5; //TPCdEdx 13
+    lcuts[lIdx][0][12] =    5;    lcuts[lIdx][1][12] =     4; lcuts[lIdx][2][12] =     3; //TPCdEdx 13
     lcuts[lIdx][0][13] =  0.0;    lcuts[lIdx][1][13] = 0.008; lcuts[lIdx][2][13] = 0.010; //Competing 14
     lcuts[lIdx][0][14] =  0.8;    lcuts[lIdx][1][14] =   0.6; lcuts[lIdx][2][14] =   0.5; //3D DCA Cascade To PV
     lcuts[lIdx][0][15] =   70;    lcuts[lIdx][1][15] =    80; lcuts[lIdx][2][15] =    90; //Least Number of Crossed Rows
@@ -5468,7 +5468,7 @@ void AliAnalysisTaskStrangenessVsMultiplicityRun2::AddStandardCascadeConfigurati
         lCascadeResult[lN]->SetCutMaxV0Lifetime         ( lcuts[i][1][10] ) ;
         lCascadeResult[lN]->SetCutTPCdEdx               ( lcuts[i][1][12] ) ;
         lCascadeResult[lN]->SetCutXiRejection           ( lcuts[i][1][13] ) ;
-        lCascadeResult[lN]->SetCutDCACascadeToPV        ( lcuts[i][1][14] ) ;
+//        lCascadeResult[lN]->SetCutDCACascadeToPV        ( lcuts[i][1][14] ) ;
         //Track Quality
         lCascadeResult[lN]->SetCutMinTrackLength        ( lcuts[i][1][11] ) ;
         lCascadeResult[lN]->SetCutLeastNumberOfClusters( -1 );
@@ -5538,7 +5538,7 @@ void AliAnalysisTaskStrangenessVsMultiplicityRun2::AddStandardCascadeConfigurati
             lCascadeResult[lN]->SetCutMaxV0Lifetime         ( lcuts[i][1][10] ) ;
             lCascadeResult[lN]->SetCutTPCdEdx               ( lcuts[i][1][12] ) ;
             lCascadeResult[lN]->SetCutXiRejection           ( lcuts[i][1][13] ) ;
-            lCascadeResult[lN]->SetCutDCACascadeToPV        ( lcuts[i][1][14] ) ;
+//            lCascadeResult[lN]->SetCutDCACascadeToPV        ( lcuts[i][1][14] ) ;
             //Track Quality
             lCascadeResult[lN]->SetCutMinTrackLength        ( lcuts[i][1][11] ) ;
             lCascadeResult[lN]->SetCutLeastNumberOfClusters( -1 );

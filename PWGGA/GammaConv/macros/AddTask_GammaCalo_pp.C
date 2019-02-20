@@ -1373,20 +1373,22 @@ void AddTask_GammaCalo_pp(
   } else if (trainConfig == 906){
     cuts.AddCutCalo("00010113","11111110a7032230000","2n631031000000d0"); // JetRotation mixing with Jet pt
   } else if (trainConfig == 907){
-    cuts.AddCutCalo("00010113","11111110a7032230000","31631031000000d0"); // std QA
+    cuts.AddCutCalo("00010113","11111110al032230000","21631031000000d0"); // Secondary TrackMatching
   } else if (trainConfig == 908){
+    cuts.AddCutCalo("00010113","11111110a7032230000","31631031000000d0"); // std QA
+  } else if (trainConfig == 909){
     cuts.AddCutCalo("00010113","11111110a7022230000","21631031000000d0"); // min energy cluster variation 1  600 MeV
     cuts.AddCutCalo("00010113","11111110a7042230000","21631031000000d0"); // min energy cluster variation 2  800 MeV
     cuts.AddCutCalo("00010113","11111110a7052230000","21631031000000d0"); // min energy cluster variation 2  900 MeV
     cuts.AddCutCalo("00010113","11111110a7032230000","2163103100000040"); // min opening angle 0.0152
     cuts.AddCutCalo("00010113","11111110a7032230000","2163103100000060"); // min opening angle 0.017
-  } else if (trainConfig == 909){
+  } else if (trainConfig == 910){
     cuts.AddCutCalo("00010113","11111110a7032230000","2163103100000070"); // min opening angle 0.016
     cuts.AddCutCalo("00010113","11111110a0032230000","21631031000000d0"); // tm off
     cuts.AddCutCalo("00010113","11111110a3032230000","21631031000000d0"); // fixed window
     cuts.AddCutCalo("00010113","11111110a6032230000","21631031000000d0"); // tm pt dependent var 1
     cuts.AddCutCalo("00010113","11111110a8032230000","21631031000000d0"); // tm pt dependent var 2
-  } else if (trainConfig == 910){ //EMCAL+DCAL+JETS
+  } else if (trainConfig == 911){ //EMCAL+DCAL+JETS
     cuts.AddCutCalo("00010113","41177000a7032230000","21631031000000d0"); // INT7 - NO NL
     cuts.AddCutCalo("00010113","41177060a7032230000","21631031000000d0"); // INT7 - TB NL
     cuts.AddCutCalo("00010113","41177110a7032230000","21631031000000d0"); // Standard EDC
@@ -1410,7 +1412,8 @@ void AddTask_GammaCalo_pp(
     cuts.AddCutCalo("000a1113","41177110a0032230000","01631031000000d0"); // std EMC7
     cuts.AddCutCalo("000a2113","41177110a0032230000","01631031000000d0"); // std EG2
     cuts.AddCutCalo("000a3113","41177110a0032230000","01631031000000d0"); // std EG1
-
+  } else if (trainConfig == 2005){ // EMCAL+DCAL clusters standard cuts
+    cuts.AddCutCalo("00010113","41177180a7032230000","01631031000000d0"); // Standard EDC, new nonlin pcm-edc
 
   // includes both stripes EMCal and DCal
   } else if (trainConfig == 2010){ // EMCAL+DCAL clusters standard cuts, triggers, no NL, std TM, tight timing

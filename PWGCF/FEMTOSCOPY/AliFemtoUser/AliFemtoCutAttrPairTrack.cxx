@@ -6,6 +6,10 @@
 #include "AliFemtoCutAttrPairTrack.h"
 
 
+
+const std::pair<double, double>
+  pwgfemto::PairCutTrackAttrPt::DEFAULT = {0, 10.0};
+
 /*
 template<>
 pwgfemto::AliFemtoPairCutPionPionAK*
@@ -19,7 +23,7 @@ AliFemtoConfigObject
 AliFemtoConfigObject::From(const pwgfemto::AliFemtoPairCutPionPionAK &cut)
 {
   AliFemtoConfigObject cfg = AliFemtoConfigObject::BuildMap()
-                              ("class", "AliFemtoPairCutPionPionAK");
+                              ("_class", "AliFemtoPairCutPionPionAK");
   cut.FillConfiguration(cfg);
   return cfg;
 }

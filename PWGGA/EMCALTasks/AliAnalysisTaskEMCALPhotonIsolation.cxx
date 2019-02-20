@@ -162,8 +162,8 @@ fEtaPhiClusAftSel(0),
 fPtvsDetavsDphi(0),
 fPtvsTrackPtvsDeta(0),
 fPtvsTrackPtvsDphi(0),
-fPtTrackClusRatiovsPt(0),
-fPtTrackClusRatiovsPtWithCPV(0),
+fEOverPvsPt(0),
+fEOverPvsPtWithCPV(0),
 fClusEvsClusT(0),
 fClustEnBefAftNonLin(0),
 fPTbeforeNonLinScaling(0),
@@ -386,8 +386,8 @@ fEtaPhiClusAftSel(0),
 fPtvsDetavsDphi(0),
 fPtvsTrackPtvsDeta(0),
 fPtvsTrackPtvsDphi(0),
-fPtTrackClusRatiovsPt(0),
-fPtTrackClusRatiovsPtWithCPV(0),
+fEOverPvsPt(0),
+fEOverPvsPtWithCPV(0),
 fClusEvsClusT(0),
 fClustEnBefAftNonLin(0),
 fPTbeforeNonLinScaling(0),
@@ -1016,13 +1016,13 @@ void AliAnalysisTaskEMCALPhotonIsolation::UserCreateOutputObjects(){
 	fPtvsTrackPtvsDphi->Sumw2();
 	fOutput->Add(fPtvsTrackPtvsDphi);
 
-	fPtTrackClusRatiovsPt = new TH2F("hPtTrackClusRatiovsPt","Track #it{p}_{T} over cluster #it{p}_{T} vs. cluster #it{p}_{T}", 120, 0., 60., 300, 0., 15.);
-	fPtTrackClusRatiovsPt->Sumw2();
-	fOutput->Add(fPtTrackClusRatiovsPt);
+	fEOverPvsPt = new TH2F("hEOverPvsPt","Cluster #it{E} over track #it{p} vs. cluster #it{p}_{T} BEFORE CPV", 120, 0., 60., 300, 0., 15.);
+	fEOverPvsPt->Sumw2();
+	fOutput->Add(fEOverPvsPt);
 
-	fPtTrackClusRatiovsPtWithCPV = new TH2F("hPtTrackClusRatiovsPt_WithCPV","Cluster #it{p}_{T} over track #it{p}_{T} vs. cluster #it{p}_{T} with CPV applied", 120, 0., 60., 300, 0., 15.);
-	fPtTrackClusRatiovsPtWithCPV->Sumw2();
-	fOutput->Add(fPtTrackClusRatiovsPtWithCPV);
+	fEOverPvsPtWithCPV = new TH2F("hEOverPvsPt_WithCPV","Cluster #it{E} over track #it{p} vs. cluster #it{p}_{T} AFTER CPV", 120, 0., 60., 300, 0., 15.);
+	fEOverPvsPtWithCPV->Sumw2();
+	fOutput->Add(fEOverPvsPtWithCPV);
       }
       break;
     }
@@ -1940,7 +1940,8 @@ Bool_t AliAnalysisTaskEMCALPhotonIsolation::ClustTrackMatching(AliVCluster *clus
       fPtvsTrackPtvsDeta->Fill(vecClust.Pt(), mt->Pt(), deta);
       fPtvsTrackPtvsDphi->Fill(vecClust.Pt(), mt->Pt(), dphi);
 
-      fPtTrackClusRatiovsPt->Fill(vecClust.Pt(), (mt->Pt()/vecClust.Pt()));
+      fEOverPvsPt->Fill(vecClust.Pt(), clust->GetNonLinCorrEnergy()/mt->P());
+
     }
 
     distCT = TMath::Sqrt(deta*deta+dphi*dphi);
@@ -1968,6 +1969,7 @@ Bool_t AliAnalysisTaskEMCALPhotonIsolation::ClustTrackMatching(AliVCluster *clus
       }
     }
 
+    // Spatial match (and E/p cut if tight values set by the user)
     if(TMath::Abs(dphi) < deltaPhi && TMath::Abs(deta) < deltaEta){
       if(fQA && candidate && fWho != 2){
 	fDeltaETAClusTrackMatch->Fill(deta);
@@ -1975,14 +1977,12 @@ Bool_t AliAnalysisTaskEMCALPhotonIsolation::ClustTrackMatching(AliVCluster *clus
       }
 
       if(candidate && fWho == 2)
-	fPtTrackClusRatiovsPtWithCPV->Fill(vecClust.Pt(), vecClust.Pt()/mt->Pt());
+	fEOverPvsPtWithCPV->Fill(vecClust.Pt(), clust->GetNonLinCorrEnergy()/mt->P());
 
-      matched = kTRUE;
+      // E/p cut (extremely loose by default, 0-2000)
+      if ( (clust->GetNonLinCorrEnergy()/mt->P() >= fEOverPMin) && (clust->GetNonLinCorrEnergy()/mt->P() < fEOverPMax) )
+	matched = kTRUE;
     }
-
-    // E/p cut
-    if ( (clust->GetNonLinCorrEnergy()/mt->P()) > fEOverPMax || (clust->GetNonLinCorrEnergy()/mt->P()) < fEOverPMin )
-      matched = kFALSE;
   }
 
   if(fWho != 2)

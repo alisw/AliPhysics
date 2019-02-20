@@ -48,8 +48,7 @@
       return Configuration<__type>::GetConfigurationOf(*ptr); }
 
   #define TRY_CONSTRUCTING_CLASS(__name) \
-    if (classname == #__name) {          \
-      return Configuration<__name>(*this); }
+    if (classname == #__name) { return Configuration<__name>(*this); }
 
   #define FORWARD_TO_BUILDER(__type, __name) \
     if (classname == #__name) { return Into<__type>(); }
@@ -61,8 +60,7 @@
     return AliFemtoConfigObject::From(*ptr); }
 
 #define TRY_CONSTRUCTING_INTO(__type) \
-    if (classname == #__type) {          \
-      return Into<__type>(true); }
+  if (classname == #__type) { return Into<__type>(true); }
 
 
 template<>
@@ -77,7 +75,7 @@ AliFemtoConfigObject::From<AliFemtoEventReader>(const AliFemtoEventReader &obj)
   // RETURN_IF_CAST(AliFemtoEventReaderESD);
 
   return AliFemtoConfigObject::BuildMap()
-            ("class", "AliFemtoEventCut");
+            ("_class", "AliFemtoEventCut");
 }
 
 
@@ -86,8 +84,8 @@ AliFemtoEventReader*
 AliFemtoConfigObject::Into<AliFemtoEventReader>(bool)
 {
   std::string classname;
-  if (!find_and_load("class", classname)) {
-    TString msg = "Could not load string-property 'class' from object:\n" + Stringify(true);
+  if (!find_and_load("_class", classname)) {
+    TString msg = "Could not load string-property '_class' from object:\n" + Stringify(true);
     std::cerr << "[AliFemtoAnalysisPionPion::ConstructPairCut] " << msg;
     return nullptr;
   }
@@ -95,8 +93,8 @@ AliFemtoConfigObject::Into<AliFemtoEventReader>(bool)
   TRY_CONSTRUCTING_CLASS(AliFemtoEventReaderAODMultSelection);
   TRY_CONSTRUCTING_CLASS(AliFemtoEventReaderAODChain);
   TRY_CONSTRUCTING_CLASS(AliFemtoEventReaderAOD);
-  // TRY_CONSTRUCTING_CLASS(AliFemtoEventReaderESDChain)
-  // TRY_CONSTRUCTING_CLASS(AliFemtoEventReaderESD)
+  // TRY_CONSTRUCTING_CLASS(AliFemtoEventReaderESDChain);
+  // TRY_CONSTRUCTING_CLASS(AliFemtoEventReaderESD);
 
   Warning("AliFemtoConfigObject::Construct<ConstructEventReader>",
           "Could not load class %s", classname.c_str());
@@ -118,7 +116,7 @@ AliFemtoConfigObject::From<AliFemtoEventCut>(const AliFemtoEventCut &obj)
   RETURN_IF_CAST(AliFemtoEventCutCentrality);
 
   return AliFemtoConfigObject::BuildMap()
-            ("class", "AliFemtoEventCut");
+            ("_class", "AliFemtoEventCut");
 }
 
 
@@ -127,7 +125,7 @@ AliFemtoEventCut*
 AliFemtoConfigObject::Into<AliFemtoEventCut>(bool)
 {
   std::string classname;
-  if (!find_and_load("class", classname)) {
+  if (!find_and_load("_class", classname)) {
     std::cerr
       << "[AliFemtoAnalysisPionPion::ConstructPairCut] "
       << "Could not load string-property 'class' from object:\n"
@@ -169,7 +167,7 @@ AliFemtoConfigObject::From<AliFemtoTrackCut>(const AliFemtoTrackCut &obj)
       // AliFemtoQATrackCut
 
   return AliFemtoConfigObject::BuildMap()
-            ("class", "AliFemtoTrackCut");
+            ("_class", "AliFemtoTrackCut");
 }
 
 
@@ -178,7 +176,7 @@ AliFemtoTrackCut*
 AliFemtoConfigObject::Into<AliFemtoTrackCut>(bool)
 {
   std::string classname;
-  if (!find_and_load("class", classname)) {
+  if (!find_and_load("_class", classname)) {
     std::cerr << "[AliFemtoAnalysisPionPion::Into] "
               << "Could not load string-property 'class' from object:\n"
               << Stringify(true)
@@ -216,6 +214,12 @@ AliFemtoConfigObject::Into<AliFemtoTrackCut>(bool)
 //   return nullptr;
 // }
 
+// template<>
+// AliFemtoV0TrackCut*
+// AliFemtoConfigObject::Into<AliFemtoV0TrackCut>(bool)
+// {
+//   return nullptr;
+// }
 
 
 //
@@ -235,14 +239,7 @@ AliFemtoConfigObject::From<AliFemtoParticleCut>(const AliFemtoParticleCut &obj)
   }
 
   return AliFemtoConfigObject::BuildMap()
-            ("class", "AliFemtoParticleCut");
-}
-
-template<>
-AliFemtoV0TrackCut*
-AliFemtoConfigObject::Into<AliFemtoV0TrackCut>(bool)
-{
-  return nullptr;
+            ("_class", "AliFemtoParticleCut");
 }
 
 template<>
@@ -250,12 +247,13 @@ AliFemtoParticleCut*
 AliFemtoConfigObject::Into<AliFemtoParticleCut>(bool)
 {
   std::string classname;
-  if (!find_and_load("class", classname)) {
+  if (!find_and_load("_class", classname)) {
     TString msg = "Could not load string-property 'class' from object:\n" + Stringify(true);
     std::cerr << "[AliFemtoAnalysisPionPion::AliFemtoParticleCut] " << msg;
     return nullptr;
   }
 
+  FORWARD_TO_BUILDER(AliFemtoTrackCut, AliFemtoTrackCutPionPionAK);
   FORWARD_TO_BUILDER(AliFemtoTrackCut, AliFemtoESDTrackCut);
   FORWARD_TO_BUILDER(AliFemtoTrackCut, AliFemtoAODTrackCut);
   FORWARD_TO_BUILDER(AliFemtoV0TrackCut, AliFemtoV0TrackCut);
@@ -284,7 +282,7 @@ AliFemtoConfigObject::From<AliFemtoPairCut>(const AliFemtoPairCut &obj)
   RETURN_IF_CAST(AliFemtoDummyPairCut)
 
   return AliFemtoConfigObject::BuildMap()
-            ("class", "AliFemtoPairCut");
+            ("_class", "AliFemtoPairCut");
 }
 
 
@@ -293,7 +291,7 @@ AliFemtoPairCut*
 AliFemtoConfigObject::Into<AliFemtoPairCut>(bool)
 {
   std::string classname;
-  if (!find_and_load("class", classname)) {
+  if (!find_and_load("_class", classname)) {
     TString msg = "Could not load string-property 'class' from object:\n" + Stringify(true);
     std::cerr << "[AliFemtoAnalysisPionPion::ConstructPairCut] " << msg;
     return nullptr;
@@ -312,6 +310,36 @@ AliFemtoConfigObject::Into<AliFemtoPairCut>(bool)
 
   return nullptr;
 }
+
+
+// Implement concreate AliFemtoConfigObj <-> Configuration<T> <-> Pointer
+// methods using Configuration<T> structs
+//
+#define IMPL_CFG_INTO_OBJ(T) \
+  template <>                \
+  T* AliFemtoConfigObject::Into<T>(bool _debug) { \
+    Configuration<T> cfg(*this);  \
+    T *cut = new T(); cfg.Configure(*cut); return cut; }
+
+#define IMPL_CFG_FROM_OBJ(T) \
+  template <>                \
+  AliFemtoConfigObject AliFemtoConfigObject::From(const T &obj) { \
+    return Configuration<T>::GetConfigurationOf(obj); }
+
+
+#define IMPL_CFG_TOFROM_OBJ(T) \
+  IMPL_CFG_INTO_OBJ(T) \
+  IMPL_CFG_FROM_OBJ(T)
+
+IMPL_CFG_TOFROM_OBJ(AliFemtoBasicEventCut)
+IMPL_CFG_TOFROM_OBJ(AliFemtoEventCutCentrality)
+
+IMPL_CFG_TOFROM_OBJ(AliFemtoESDTrackCut)
+IMPL_CFG_TOFROM_OBJ(AliFemtoAODTrackCut)
+
+#undef IMPL_CFG_INTO_OBJ
+#undef IMPL_CFG_FROM_OBJ
+#undef IMPL_CFG_TOFROM_OBJ
 
 
 #if __cplusplus >= 201103L
