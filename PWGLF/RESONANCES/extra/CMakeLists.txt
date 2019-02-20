@@ -1,4 +1,4 @@
-# **************************************************************************
+o# **************************************************************************
 # * Copyright(c) 1998-2014, ALICE Experiment at CERN, All rights reserved. *
 # *                                                                        *
 # * Author: The ALICE Off-line Project.                                    *
@@ -36,7 +36,6 @@ set(SRCS
   AliRsnAnalysisPhi900GeV.cxx 
   AliRsnAnalysisPhi7TeV.cxx 
   AliAnalysisTaskSigma1385.cxx
-  AliAnalysisTaskXi1530.cxx
   AliXiStar.cxx
   AliXiStarpp13TeV.cxx
   AliXiStarPbPb.cxx
@@ -80,7 +79,6 @@ install(TARGETS ${MODULE}
   ARCHIVE DESTINATION lib
   LIBRARY DESTINATION lib)
 install(FILES ${HDRS} DESTINATION include)
-install(FILES AddTaskXi1530.C DESTINATION PWGLF/RESONANCES/extra)
 install(FILES AddTaskXiStar.C DESTINATION PWGLF/RESONANCES/extra)
 install(FILES AddTaskLambda.C DESTINATION PWGLF/RESONANCES/extra)
 install(FILES AddTaskRsnf0f2.C DESTINATION PWGLF/RESONANCES/extra)
