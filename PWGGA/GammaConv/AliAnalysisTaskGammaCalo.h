@@ -39,6 +39,7 @@ class AliAnalysisTaskGammaCalo : public AliAnalysisTaskSE {
 
     // base functions for selecting photon and meson candidates in reconstructed data
     void ProcessClusters();
+    void ProcessConversionCandidates();
     void ProcessJets();
     void CalculatePi0Candidates();
 
@@ -139,6 +140,8 @@ class AliAnalysisTaskGammaCalo : public AliAnalysisTaskSE {
     TList**               fTreeList;                                            // Array of lists with tree for validated MC
     TList**               fClusterTreeList;                                     // Array of lists with tree for EoverP
     TList*                fOutputContainer;                                     // Output container
+    TClonesArray*         fReaderGammas;                                        // Array with conversion photons selected by V0Reader Cut
+    TList*                fGammaCandidates;                                     // current list of photon candidates
     TList*                fClusterCandidates;                                   //! current list of cluster candidates
     TList*                fEventCutArray;                                       // List with Event Cuts
     AliConvEventCuts*     fEventCuts;                                           // EventCutObject
@@ -147,6 +150,7 @@ class AliAnalysisTaskGammaCalo : public AliAnalysisTaskSE {
     TList*                fMesonCutArray;                                       // List with Meson Cuts
     AliConversionMesonCuts*   fMesonCuts;                                       // MesonCutObject
     AliAnalysisTaskConvJet*   fConvJetReader;                                   // JetReader
+    AliConversionPhotonCuts*  fConversionCuts;                                  // ConversionPhotonCutObject
     Bool_t                fDoJetAnalysis;                                       // Bool to produce Jet Plots
     Bool_t                fDoJetQA;                                             // Bool to produce Jet QA Plots
     Bool_t                fDoTrueSphericity;                                    // Bool to produce Sphericity correlations
@@ -534,7 +538,7 @@ class AliAnalysisTaskGammaCalo : public AliAnalysisTaskSE {
     AliAnalysisTaskGammaCalo(const AliAnalysisTaskGammaCalo&);                  // Prevent copy-construction
     AliAnalysisTaskGammaCalo &operator=(const AliAnalysisTaskGammaCalo&);       // Prevent assignment
 
-    ClassDef(AliAnalysisTaskGammaCalo, 64);
+    ClassDef(AliAnalysisTaskGammaCalo, 65);
 };
 
 #endif

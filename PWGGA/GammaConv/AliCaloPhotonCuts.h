@@ -348,6 +348,7 @@ class AliCaloPhotonCuts : public AliAnalysisCuts {
     Bool_t      GetIsAcceptedForBasicCounting()                 {return fIsAcceptedForBasic;}
 
     Bool_t      GetDoFlatEnergySubtraction()                    {return fDoFlatEnergySubtraction;}
+    Bool_t      GetDoSecondaryTrackMatching()                   {return fDoSecondaryTrackMatching;}
 
     // modify acceptance via histogram with cellID
     void        SetHistoToModifyAcceptance(TH1S* histAcc)       {fHistoModifyAcc  = histAcc; return;}
@@ -497,6 +498,7 @@ class AliCaloPhotonCuts : public AliAnalysisCuts {
     Bool_t    fUseNonLinearity;                         // flag for switching NonLinearity correction
     Int_t     fIsPureCalo;                              // flag for MergedCluster analysis
     Int_t     fNactiveEmcalCells;                       // total number of active emcal cells
+    Bool_t    fDoSecondaryTrackMatching;                // flag to switch on secondary trackmatching
 
     //vector
     std::vector<Int_t> fVectorMatchedClusterIDs;        // vector with cluster IDs that have been matched to tracks in merged cluster analysis
@@ -619,7 +621,7 @@ class AliCaloPhotonCuts : public AliAnalysisCuts {
 
   private:
 
-    ClassDef(AliCaloPhotonCuts,81)
+    ClassDef(AliCaloPhotonCuts,82)
 };
 
 #endif
