@@ -353,7 +353,9 @@ void AliHFSystErr::Init(Int_t decay){
       }
       else if (fCollisionType==2) {
         if (fRunNumber == 16 || fRunNumber==2016){
-          if (fCentralityClass=="0100")InitDstartoD0pi2016pPb0100();
+          if (fCentralityClass=="0100"){
+		  if(fStandardBins)InitDstartoD0pi2016pPb0100();
+		  else InitDstartoD0pi2016pPb0100_fb();}		
           else if (fCentralityClass=="010ZNA")InitDstartoD0pi2016pPb010ZNA();
           else if (fCentralityClass=="1020ZNA")InitDstartoD0pi2016pPb1020ZNA();
           else if (fCentralityClass=="2040ZNA")InitDstartoD0pi2016pPb2040ZNA();
@@ -4852,7 +4854,65 @@ void AliHFSystErr::InitDstartoD0pi2016pPb0100(){
 
 }
 
+//--------------------------------------------------------------------------
+void AliHFSystErr::InitDstartoD0pi2016pPb0100_fb(){
+ Float_t xbins[23]={0.,0.5,1,1.5,2,2.5,3,3.5,4,4.5,5,5.5,6,6.5,7,7.5,8,9,10,12,16,24,36};
+  // Dstar syst in pPb 2016 MB
+  // Responsible: A.M. Veen in fine binning
 
+  AliInfo(" Settings for D* --> D0 pi, p-Pb collisions at 5.023 TeV 2016");
+  SetNameTitle("AliHFSystErr","SystErrDstartoD0pi2016pPb0100");
+
+  //Normalization
+  fNorm = new TH1F("fNorm","fNorm",22,xbins);
+  for(Int_t i=1;i<=23;i++) fNorm->SetBinContent(i,0.02); // Same as D0?
+
+  // Branching ratio
+  fBR = new TH1F("fBR","fBR",22,xbins);
+  for(Int_t i=1;i<=36;i++) fBR->SetBinContent(i,0.013); // 1.27% but precision D*-> D0pi is 67.7, so only one significant number behind the dot precision
+
+  // Tracking efficiency
+  fTrackingEff = new TH1F("fTrackingEff","fTrackingEff",22,xbins); //Dstar meson: 3.7 in 1-10, 4 in 10-24, 4.5 in 24-36
+  for(Int_t i=1;i<=16;i++) fTrackingEff->SetBinContent(i,0.032);//new version
+  for(Int_t i=17;i<=19;i++) fTrackingEff->SetBinContent(i,0.035);//
+for(Int_t i=20;i<22;i++) fTrackingEff->SetBinContent(i,0.04);//
+  for(Int_t i=22;i<23; i++) fTrackingEff->SetBinContent(i,0.045);//
+
+
+  // Raw yield extraction
+  fRawYield = new TH1F("fRawYield","fRawYield",22,xbins);
+  for(Int_t i=1; i<=3; i++)fRawYield->SetBinContent(i,1.0);
+  fRawYield->SetBinContent(4,0.07);
+  fRawYield->SetBinContent(5,0.07);
+  fRawYield->SetBinContent(6,0.05);
+  fRawYield->SetBinContent(7,0.03);
+  fRawYield->SetBinContent(8,0.03);
+  fRawYield->SetBinContent(9,0.03);
+  fRawYield->SetBinContent(10,0.03);
+  for(Int_t i=11;i<=21;i++) fRawYield->SetBinContent(i,0.02);
+ fRawYield->SetBinContent(22,0.045);
+
+  // Cuts efficiency (from cuts variation)
+  fCutsEff = new TH1F("fCutsEff","fCutsEff",22,xbins);
+  // For now uncertainty added as if we use average with full improver as uncertainty
+  fCutsEff->SetBinContent(4,0.04);// Original values are higher then effect improver in most bins
+  fCutsEff->SetBinContent(5,0.02);
+  for(Int_t i=6;i<=22;i++) fCutsEff->SetBinContent(i,0.02);// Very conservative first values rounded up
+
+  // PID efficiency (from PID/noPID)
+  fPIDEff = new TH1F("fPIDEff","fPIDEff",22,xbins);
+  for(Int_t i=1;i<=4;i++) fPIDEff->SetBinContent(i,0.01); // PID for 2 sigma in TPC
+for(Int_t i=5;i<=22;i++) fPIDEff->SetBinContent(i,0.0);
+
+  // MC dN/dpt
+  fMCPtShape = new TH1F("fMCPtShape","fMCPtShape",36,0,36);
+  for(Int_t i=1;i<=36;i++) fMCPtShape->SetBinContent(i,0); //No systematic assigned final
+
+
+
+  return;
+
+}
 
 //--------------------------------------------------------------------------
 void AliHFSystErr::InitDstartoD0pi2016pPb010ZNA(){
