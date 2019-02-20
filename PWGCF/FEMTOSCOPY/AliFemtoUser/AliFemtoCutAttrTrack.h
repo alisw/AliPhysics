@@ -750,7 +750,8 @@ public:
 
   AliFemtoConfigObject GetConfiguration() const
     {
-      AliFemtoConfigObject cfg;
+      AliFemtoConfigObject cfg = AliFemtoConfigObject::BuildMap()
+                                    ("_class", CRTP::ClassName());
       CutAttrs::FillConfiguration(cfg);
       return cfg;
     }

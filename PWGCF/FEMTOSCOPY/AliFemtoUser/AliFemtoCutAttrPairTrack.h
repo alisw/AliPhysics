@@ -467,14 +467,13 @@ public:
   void StoreConfiguration(AliFemtoConfigObject &cfg) const
     {
       CutAttrs::FillConfiguration(cfg);
-      cfg.insert("class", static_cast<CRTP*>(this)->GetName());
+      cfg.insert("_class", static_cast<CRTP*>(this)->GetName());
     }
 
   AliFemtoConfigObject GetConfiguration() const
     {
       AliFemtoConfigObject result = AliFemtoConfigObject::BuildMap()
-                                      ("_class", typeid(CRTP).name());
-                                      // ("_class", CRTP::GetName());
+                                      ("_class", CRTP::ClassName());
       CutAttrs::FillConfiguration(result);
       return result;
     }

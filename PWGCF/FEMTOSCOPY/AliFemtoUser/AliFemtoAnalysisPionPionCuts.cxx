@@ -101,39 +101,16 @@ AliFemtoPairCutPionPionAKDetaDphi::EventBegin(const AliFemtoEvent *ev)
     auto *cut = new __name(*this); return cut; }
 
 #define IMPL_FROM_CUT(__name) \
-  template <> AliFemtoConfigObject AliFemtoConfigObject::From(const __name &cut) { \
+  template <> \
+  AliFemtoConfigObject AliFemtoConfigObject::From(const __name &cut) { \
     return cut.GetConfiguration(); }
-    // AliFemtoConfigObject cfg = AliFemtoConfigObject::BuildMap(); cfg.insert("class", typeid(__name).name()); return cfg; }
+
+#define IMPL_TOFROM_CUT(T) \
+  IMPL_INTO_CUT(T) \
+  IMPL_FROM_CUT(T)
 
 
-IMPL_INTO_CUT(AliFemtoEventCutPionPionAK)
-IMPL_INTO_CUT(AliFemtoTrackCutPionPionAK)
-IMPL_INTO_CUT(AliFemtoPairCutPionPionAKAvgSep)
-IMPL_INTO_CUT(AliFemtoPairCutPionPionAKDetaDphi)
-
-IMPL_FROM_CUT(AliFemtoEventCutPionPionAK)
-IMPL_FROM_CUT(AliFemtoTrackCutPionPionAK)
-// IMPL_FROM_CUT(AliFemtoEventCutPionPionAK)
-
-
-/*
-
-template <>
-AliFemtoTrackCutPionPionAK*
-AliFemtoConfigObject::Into<AliFemtoTrackCutPionPionAK>(bool)
-{
-  auto *cut = AliFemtoTrackCutPionPionAK();
-  return cut;
-}
-
-template <>
-AliFemtoConfigObject
-AliFemtoConfigObject::From(const AliFemtoPairCutPionPionAK &cut)
-{
-  AliFemtoConfigObject cfg = AliFemtoConfigObject::BuildMap()
-                              ("class", "AliFemtoPairCutPionPionAK");
-
-  cut.StoreConfiguration(cfg);
-  return cfg;
-}
-*/
+IMPL_TOFROM_CUT(AliFemtoEventCutPionPionAK)
+IMPL_TOFROM_CUT(AliFemtoTrackCutPionPionAK)
+IMPL_TOFROM_CUT(AliFemtoPairCutPionPionAKAvgSep)
+IMPL_TOFROM_CUT(AliFemtoPairCutPionPionAKDetaDphi)

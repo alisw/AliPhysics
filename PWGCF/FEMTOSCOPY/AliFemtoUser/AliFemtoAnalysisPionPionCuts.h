@@ -88,6 +88,8 @@ public:
 
   virtual void AppendSettings(TCollection &) const;
 
+  static const char* ClassName()
+    { return "AliFemtoEventCutPionPionAK"; }
 };
 
 
@@ -125,7 +127,7 @@ public:
       return passes;
     }
 
-  const char* GetName() const
+  static const char* ClassName()
     { return "AliFemtoTrackCutPionPionAK"; }
 
   ULong_t fNumPass,
@@ -154,7 +156,7 @@ public:
 
   virtual void AppendSettings(TCollection &) const;
 
-  const char* GetName() const
+  static const char* ClassName()
     { return "AliFemtoPairCutPionPionAKAvgSep"; }
 };
 
@@ -186,7 +188,7 @@ public:
 
   virtual void AppendSettings(TCollection &) const;
 
-  const char* GetName() const
+  static const char* ClassName()
     { return "AliFemtoPairCutPionPionAKDetaDphi"; }
 };
 

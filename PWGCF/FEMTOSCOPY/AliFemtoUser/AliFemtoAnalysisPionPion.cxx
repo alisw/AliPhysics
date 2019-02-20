@@ -698,7 +698,7 @@ TList* AliFemtoAnalysisPionPion::GetOutputList()
 
   output->Add(
     new AliFemtoConfigObject(AliFemtoConfigObject::BuildMap()
-              ("class", "AliFemtoAnalysisPionPion")
+              ("_class", "AliFemtoAnalysisPionPion")
               ("is_mc", fMCAnalysis)
               ("event_cut", event_cut_cfg)
               ("track_cut", track_cut_cfg)
@@ -792,7 +792,7 @@ AliFemtoAnalysis*
 AliFemtoAnalysisPionPion::BuildAnalysisFromConfiguration(AliFemtoConfigObject cfg)
 {
   std::string classname;
-  if (!cfg.pop_and_load("class", classname)) {
+  if (!cfg.pop_and_load("_class", classname)) {
     std::cerr << "[AliFemtoAnalysisPionPion::BuildAnalysisFromConfiguration] "
               << "Could not load string-property 'class' from object:\n"
               << cfg.Stringify(true)
@@ -814,7 +814,7 @@ AliFemtoCorrFctn*
 AliFemtoAnalysisPionPion::ConstructCorrelationFunction(AliFemtoConfigObject cfg)
 {
   std::string classname;
-  if (!cfg.pop_and_load("class", classname)) {
+  if (!cfg.pop_and_load("_class", classname)) {
     TString msg = "Could not load string-property 'class' from object:\n" + cfg.Stringify(true);
     std::cerr << "[AliFemtoAnalysisPionPion::ConstructCorrelationFunction] " << msg;
     return nullptr;

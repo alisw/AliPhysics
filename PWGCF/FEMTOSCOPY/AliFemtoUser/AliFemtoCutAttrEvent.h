@@ -257,7 +257,7 @@ public:
   AliFemtoConfigObject GetConfiguration() const
     {
       AliFemtoConfigObject cfg = AliFemtoConfigObject::BuildMap()
-                                  ("class", typeid(CRTP).name());
+                                  ("_class", CRTP::ClassName());
       FillConfig(cfg);
       return cfg;
     }

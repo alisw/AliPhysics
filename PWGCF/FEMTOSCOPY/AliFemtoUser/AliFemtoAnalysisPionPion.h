@@ -311,7 +311,7 @@ AliFemtoAnalysisPionPion::GetConfigurationOf(const T &cut)
     return AliFemtoConfigObject("");
   }
   AliFemtoConfigObject::MapValue_t result;
-  result["class"] = "AliFemtoSomething";
+  result["_class"] = "AliFemtoSomething";
 
   return AliFemtoConfigObject(result);
 }
