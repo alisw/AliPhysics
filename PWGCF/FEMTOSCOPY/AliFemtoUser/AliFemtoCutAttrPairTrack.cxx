@@ -23,7 +23,7 @@ AliFemtoConfigObject
 AliFemtoConfigObject::From(const pwgfemto::AliFemtoPairCutPionPionAK &cut)
 {
   AliFemtoConfigObject cfg = AliFemtoConfigObject::BuildMap()
-                              ("class", "AliFemtoPairCutPionPionAK");
+                              ("_class", "AliFemtoPairCutPionPionAK");
   cut.FillConfiguration(cfg);
   return cfg;
 }

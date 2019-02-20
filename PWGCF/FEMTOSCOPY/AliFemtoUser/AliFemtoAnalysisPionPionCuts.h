@@ -65,45 +65,6 @@ typedef AddPairCutAttrs<
 }  // namespace pwgfemto
 
 
-/// \class AliFemtoEventCutAttr
-/// \brief Bridge from AliFemtoPairCut to a metaclass of PairCut-Attrs
-///
-template <typename CRTP, typename CutAttrType>
-class AliFemtoEventCutAttr : public AliFemtoEventCut, public CutAttrType {
-public:
-
-  typedef CutAttrType CutAttrs;
-
-  AliFemtoEventCutAttr()
-    {}
-
-  AliFemtoEventCutAttr(AliFemtoConfigObject &cfg)
-    : AliFemtoEventCut()
-    , CutAttrType(cfg)
-    {}
-
-  virtual bool Pass(const AliFemtoEvent *ev)
-    {
-      return CutAttrs::Pass(*ev);
-    }
-
-  virtual AliFemtoString Report()
-    {
-      return "AliFemtoEventCutAttr Report\n";
-    }
-
-  virtual TList* ListSettings() const
-    {
-      TList* list = new TList();
-      AppendSettings(*list);
-      return list;
-    }
-
-  virtual void AppendSettings(TCollection &) const = 0;
-  virtual ~AliFemtoEventCutAttr() = 0;
-};
-
-
 /// \class AliFemtoEventCutPionPionAK
 /// \brief Andrew Kubera's event cut for identical-pion analysis
 ///
@@ -116,55 +77,19 @@ public:
 
   AliFemtoEventCutPionPionAK()
     : Super()
-    { }
+    {}
 
   AliFemtoEventCutPionPionAK(AliFemtoConfigObject &cfg)
     : Super(cfg)
     {}
 
   virtual ~AliFemtoEventCutPionPionAK()
-    { }
+    {}
 
   virtual void AppendSettings(TCollection &) const;
 
-};
-
-
-/// \class AliFemtoEventCutAttr
-/// \brief Bridge from AliFemtoPairCut to a metaclass of PairCut-Attrs
-///
-template <typename CRTP, typename CutAttrType>
-class AliFemtoTrackCutAttr : public AliFemtoTrackCut, public CutAttrType {
-public:
-
-  typedef CutAttrType CutAttrs;
-
-  AliFemtoTrackCutAttr()
-    {}
-
-  AliFemtoTrackCutAttr(AliFemtoConfigObject &cfg)
-    : CutAttrType(cfg)
-    {}
-
-  virtual bool Pass(AliFemtoTrack *ev)
-    {
-      return CutAttrs::Pass(*ev);
-    }
-
-  virtual AliFemtoString Report()
-    {
-      return "AliFemtoTrackCutAttr Report\n";
-    }
-
-  virtual TList* ListSettings() const
-    {
-      TList* list = new TList();
-      AppendSettings(*list);
-      return list;
-    }
-
-  virtual void AppendSettings(TCollection &) const = 0;
-  virtual ~AliFemtoTrackCutAttr() = 0;
+  static const char* ClassName()
+    { return "AliFemtoEventCutPionPionAK"; }
 };
 
 
@@ -177,16 +102,20 @@ public:
   typedef pwgfemto::TrackCutAttrsAK CutAttrs;
 
   AliFemtoTrackCutPionPionAK()
+    : fNumPass(0)
+    , fNumFail(0)
     {}
 
   AliFemtoTrackCutPionPionAK(AliFemtoConfigObject &cfg)
     : Super(cfg)
+    , fNumPass(0)
+    , fNumFail(0)
     {}
 
   virtual ~AliFemtoTrackCutPionPionAK()
     { }
 
-  virtual void AppendSettings(TCollection &) const;
+  virtual void AppendSettings(TCollection &, TString prefix="") const;
 
   virtual bool Pass(const AliFemtoTrack *track)
     {
@@ -198,68 +127,22 @@ public:
       return passes;
     }
 
+  static const char* ClassName()
+    { return "AliFemtoTrackCutPionPionAK"; }
+
   ULong_t fNumPass,
           fNumFail;
-};
-
-
-/// \class AliFemtoPairCutAttr
-/// \brief Bridge from AliFemtoPairCut to a metaclass of PairCut-Attrs
-///
-/// Subclass and implement your method:
-///  `const char* GetName() const`
-///
-///
-template <typename CRTP, typename CutAttrType>
-class AliFemtoPairCutAttr : public AliFemtoPairCut, public CutAttrType {
-public:
-
-  typedef CutAttrType CutAttrs;
-
-  virtual ~AliFemtoPairCutAttr()
-    { }
-
-  AliFemtoPairCutAttr();
-
-  AliFemtoPairCutAttr(AliFemtoConfigObject &cfg)
-    : CutAttrType(cfg)
-    {}
-
-  /// user-written method to return string describing cuts
-  virtual AliFemtoString Report()
-    { return ""; }
-
-  /// Return a TList of settings
-  virtual TList* ListSettings()
-    {
-      TList* list = new TList();
-      AppendSettings(*list);
-      return list;
-    }
-
-  virtual void AppendSettings(TCollection &) const = 0;
-
-  virtual bool Pass(const AliFemtoPair *pair)
-    {
-      return CutAttrs::Pass(*pair->Track1()->Track(), *pair->Track2()->Track());
-    }
-
-  void StoreConfiguration(AliFemtoConfigObject &cfg) const
-    {
-      CutAttrs::FillConfiguration(cfg);
-      cfg.insert("class", static_cast<CRTP*>(this)->GetName());
-    }
-
 };
 
 
 /// \class AliFemtoPairCutPionPionAKAvgSep
 /// \brief Andrew Kubera's average separation pair cut
 ///
-class AliFemtoPairCutPionPionAKAvgSep : public AliFemtoPairCutAttr<AliFemtoPairCutPionPionAKAvgSep, pwgfemto::PairCutAttrsAvgSepAK> {
+class AliFemtoPairCutPionPionAKAvgSep : public AliFemtoPairCutAttrTracks<AliFemtoPairCutPionPionAKAvgSep,
+                                                                         pwgfemto::PairCutAttrsAvgSepAK> {
 public:
 
-  typedef AliFemtoPairCutAttr<AliFemtoPairCutPionPionAKAvgSep, pwgfemto::PairCutAttrsAvgSepAK> Super;
+  typedef AliFemtoPairCutAttrTracks<AliFemtoPairCutPionPionAKAvgSep, pwgfemto::PairCutAttrsAvgSepAK> Super;
 
   virtual ~AliFemtoPairCutPionPionAKAvgSep();
 
@@ -273,23 +156,30 @@ public:
 
   virtual void AppendSettings(TCollection &) const;
 
-  const char* GetName() const
-    { return "AliFemtoPairCutPionPionAkAvgSep"; }
+  static const char* ClassName()
+    { return "AliFemtoPairCutPionPionAKAvgSep"; }
 };
 
 
 /// \class AliFemtoPairCutPionPionAKDetaDphi
 /// \brief Andrew Kubera's Deta-Dphi pair cut
 ///
-class AliFemtoPairCutPionPionAKDetaDphi : public AliFemtoPairCutAttr<AliFemtoPairCutPionPionAKDetaDphi, pwgfemto::PairCutAttrsDphiDetaAK> {
+class AliFemtoPairCutPionPionAKDetaDphi : public AliFemtoPairCutAttrTracks<AliFemtoPairCutPionPionAKDetaDphi,
+                                                                           pwgfemto::PairCutAttrsDphiDetaAK> {
 public:
 
-  typedef AliFemtoPairCutAttr<AliFemtoPairCutPionPionAKDetaDphi, pwgfemto::PairCutAttrsDphiDetaAK> Super;
+  typedef AliFemtoPairCutAttrTracks<AliFemtoPairCutPionPionAKDetaDphi, pwgfemto::PairCutAttrsDphiDetaAK> Super;
 
   virtual ~AliFemtoPairCutPionPionAKDetaDphi()
     { }
 
-  AliFemtoPairCutPionPionAKDetaDphi();
+  AliFemtoPairCutPionPionAKDetaDphi()
+    : Super()
+    { }
+
+  AliFemtoPairCutPionPionAKDetaDphi(AliFemtoConfigObject &cfg)
+    : Super(cfg)
+    { }
 
   virtual void EventBegin(const AliFemtoEvent *ev);
 
@@ -298,7 +188,7 @@ public:
 
   virtual void AppendSettings(TCollection &) const;
 
-  const char* GetName() const
+  static const char* ClassName()
     { return "AliFemtoPairCutPionPionAKDetaDphi"; }
 };
 
