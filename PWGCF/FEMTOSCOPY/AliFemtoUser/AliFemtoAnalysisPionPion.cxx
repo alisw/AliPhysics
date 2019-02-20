@@ -682,9 +682,7 @@ TList* AliFemtoAnalysisPionPion::GetOutputList()
 
     TList *setting_list = ListSettings();
     TIter next_setting(setting_list);
-    for (TObject *setting = next_setting();
-                  setting != nullptr;
-                  setting = next_setting()) {
+    while (TObject *setting = next_setting()) {
       TObjString *setting_str = (TObjString*)setting;
       settings += setting_str->String() + "\n";
     }
