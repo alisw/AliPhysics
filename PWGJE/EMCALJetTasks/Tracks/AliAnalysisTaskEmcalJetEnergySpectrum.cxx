@@ -159,9 +159,9 @@ Bool_t AliAnalysisTaskEmcalJetEnergySpectrum::CheckMCOutliers() {
   if(max != jetiter.end())  {
     // At least one jet found with pt > n * pt-hard
     AliDebugStream(1) << "Found max jet with pt " << (*max)->Pt() << " GeV/c" << std::endl;
-    if((*max)->Pt() > fPtHardAndJetPtFactor * fPtHard) return true;
+    if((*max)->Pt() > fPtHardAndJetPtFactor * fPtHard) return false;
   }
-  return false;
+  return true;
 }
 
 bool AliAnalysisTaskEmcalJetEnergySpectrum::Run(){
