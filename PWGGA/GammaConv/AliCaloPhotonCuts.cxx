@@ -5734,6 +5734,17 @@ void AliCaloPhotonCuts::ApplyNonLinearity(AliVCluster* cluster, Int_t isMC)
         } else fPeriodNameAvailable = kFALSE;
       }
       break;
+    // PCM-EDC based nonlinearity kSDM
+    case 18:
+      if(isMC>0){
+         // pp 5 TeV LHC15n+LHC17pq anchored MCs combined
+         if( fCurrentMC==k17l3b || fCurrentMC==k18j2 ||  fCurrentMC==k17e2 || fCurrentMC == k18j3 ) {
+          if(fClusterType==4){
+            energy /= (FunctionNL_kSDM(energy, 0.94723, -3.44986, -0.483821));
+          }
+        } else fPeriodNameAvailable = kFALSE;
+      }
+      break;
 
 // *************** 20 + x **** modified tender Settings 1 - pp
     // NonLinearity pp ConvCalo - only shifting MC - no timing cut
@@ -5913,7 +5924,17 @@ void AliCaloPhotonCuts::ApplyNonLinearity(AliVCluster* cluster, Int_t isMC)
         } else fPeriodNameAvailable = kFALSE;
       }
       break;
-
+    // PCM-EDC based nonlinearity DExp or DPow
+    case 28:
+      if(isMC>0){
+         // pp 5 TeV LHC15n+LHC17pq anchored MCs combined
+         if( fCurrentMC==k17l3b || fCurrentMC==k18j2 ||  fCurrentMC==k17e2 || fCurrentMC == k18j3 ) {
+          if(fClusterType==4){
+            energy /= (FunctionNL_DExp(energy, 0.9857080359, 0.3587374604, -2.9204912856, 1.0362777077, 0.4371862377, -2.4503073858));
+          }
+        } else fPeriodNameAvailable = kFALSE;
+      }
+      break;
 // *************** 30 + x **** modified tender Settings 2 - pp
 
 // *************** 40 + x **** default tender Settings - pPb
