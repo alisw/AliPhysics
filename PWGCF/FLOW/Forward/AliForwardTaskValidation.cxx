@@ -326,6 +326,10 @@ void AliForwardTaskValidation::UserExec(Option_t *)
 
   fUtil.fevent = InputEvent();
   if (fSettings.mc) fUtil.fMCevent = this->MCEvent();
+  if (!fSettings.esd) fUtil.fAODevent = dynamic_cast<AliAODEvent*>(this->InputEvent());
+
+
+
   //std::cout << fSettings.use_primaries_fwd << std::endl;
   fUtil.fSettings = this->fSettings;
 
@@ -419,22 +423,20 @@ if (this->fIsValidEvent){
 }
 
 Bool_t AliForwardTaskValidation::IsAODEvent() {
-  return dynamic_cast<AliAODEvent*>(this->InputEvent()) ? true : false;
+  return fUtil.fAODevent ? true : false;
 }
 
 Bool_t AliForwardTaskValidation::HasPrimaries(){
-  AliMCEvent* mcevent = this->MCEvent();
 
-  if (mcevent->GetNumberOfPrimaries() <= 0) {
+  if (this->MCEvent()->GetNumberOfPrimaries() <= 0) {
     return kFALSE;
   }
   else return kTRUE;
 }
 
 Bool_t AliForwardTaskValidation::HasFMD() {
-  AliAODEvent* aod = dynamic_cast<AliAODEvent*>(this->InputEvent());
   AliAODForwardMult* aodForward =
-    dynamic_cast<AliAODForwardMult*>(aod->FindListObject("Forward"));
+    dynamic_cast<AliAODForwardMult*>(fUtil.fAODevent->FindListObject("Forward"));
   if (!aodForward) {
     return false;
   }
@@ -695,19 +697,17 @@ AliForwardTaskValidation::Tracks AliForwardTaskValidation::GetSPDclusters() cons
 TClonesArray* AliForwardTaskValidation::GetAllCentralBarrelTracks() {
   // If we are dealing with an ESD event, we have to have an AOD handler as well!
   // We get all the particles/tracks from this AOD handler.
-  AliAODEvent* aodEvent = dynamic_cast< AliAODEvent* >(this->InputEvent());
-  return aodEvent->GetTracks();
+  return fUtil.fAODevent->GetTracks();
 }
 
 TClonesArray* AliForwardTaskValidation::GetAllMCTruthTracksAsTClonesArray() {
   // If we are dealing with an ESD event, we have to have an AOD handler as well!
   // We get all the particles/tracks from this AOD handler.
-  auto aodEvent = dynamic_cast< AliAODEvent* >(this->InputEvent());
-  if (!aodEvent) {
+  if (!fUtil.fAODevent) {
     AliFatal("No AOD event found");
   }
   auto tr_arr = dynamic_cast<TClonesArray*>
-    (aodEvent->GetList()->FindObject(AliAODMCParticle::StdBranchName()));
+    (fUtil.fAODevent->GetList()->FindObject(AliAODMCParticle::StdBranchName()));
   if(!tr_arr){
     AliFatal("No MC array found in AOD");
   }
@@ -811,7 +811,6 @@ Bool_t AliForwardTaskValidation::HasValidFMD(){
     }
   } // End of eta bin
   if (totalFMDpar < 10) return kFALSE;
-
   return kTRUE;
 }
 /*
