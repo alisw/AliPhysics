@@ -32,7 +32,7 @@ AliAnalysisTaskDJetCorrelationsQA *AddTaskDJetCorrelationsQA(
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
   if (!mgr) {
     ::Error("AddTaskSEDmesonsFilterCJ", "No analysis manager to connect to.");
-    return nullptr;
+    return NULL;
   } 
 
   Bool_t useStdC = kFALSE;
@@ -42,7 +42,7 @@ AliAnalysisTaskDJetCorrelationsQA *AddTaskDJetCorrelationsQA(
     useStdC = kTRUE;
   }
 
-  AliRDHFCuts *analysiscuts=nullptr;
+  AliRDHFCuts *analysiscuts=NULL;
   switch (cand) {
   case 0 :
     if(useStdC) {
@@ -64,7 +64,7 @@ AliAnalysisTaskDJetCorrelationsQA *AddTaskDJetCorrelationsQA(
   if (!analysiscuts) { // mm let's see if everything is ok
     //AliFatal("Specific AliRDHFCuts not found");
      std::cout<<"Specific AliRDHFCuts not found"<<std::endl;
-    return nullptr;
+    return NULL;
   } 
 
   printf("CREATE TASK\n"); //CREATE THE TASK
