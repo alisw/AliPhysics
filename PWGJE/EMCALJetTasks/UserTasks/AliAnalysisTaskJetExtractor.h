@@ -23,8 +23,18 @@ class AliHFJetsTaggingVertex;
  * \date Jul 27, 2018
  */
 // 
+
 class AliAnalysisTaskJetExtractor : public AliAnalysisTaskEmcalJet {
  public:
+  // ## Define class to store and compare secondary vertices (needed for matching of jet splittings & sec. vertices)
+  struct SimpleSecondaryVertex
+  {
+    Int_t           fIndex;         // Index of sec. vertices in the array that we save to the tree
+    Double_t        fLxy;           // decay length
+    AliVParticle*   fDaughter1;     // daughter particle
+    AliVParticle*   fDaughter2;     // daughter particle
+    AliVParticle*   fDaughter3;     // daughter particle
+  };
 
   AliAnalysisTaskJetExtractor();
   AliAnalysisTaskJetExtractor(const char *name);
@@ -81,7 +91,7 @@ class AliAnalysisTaskJetExtractor : public AliAnalysisTaskEmcalJet {
   void                        AddPIDInformation(const AliVParticle* particle, Float_t& sigITS, Float_t& sigTPC, Float_t& sigTOF, Float_t& sigTRD, Short_t& recoPID, Int_t& truePID);
   void                        GetTrackImpactParameters(const AliVVertex* vtx, const AliAODTrack* track, Float_t& d0, Float_t& d0cov, Float_t& z0, Float_t& z0cov);
   void                        ReconstructSecondaryVertices(const AliVVertex* primVtx, const AliEmcalJet* jet, std::vector<Float_t>& secVtx_X, std::vector<Float_t>& secVtx_Y, std::vector<Float_t>& secVtx_Z, std::vector<Float_t>& secVtx_Mass, std::vector<Float_t>& secVtx_Lxy, std::vector<Float_t>& secVtx_SigmaLxy, std::vector<Float_t>& secVtx_Chi2, std::vector<Float_t>& secVtx_Dispersion);
-  void                        GetJetSplittings(AliEmcalJet* jet, std::vector<Float_t>& splittings_radiatorE, std::vector<Float_t>& splittings_kT, std::vector<Float_t>& splittings_theta);
+  void                        GetJetSplittings(AliEmcalJet* jet, std::vector<Float_t>& splittings_radiatorE, std::vector<Float_t>& splittings_kT, std::vector<Float_t>& splittings_theta, std::vector<Int_t>& splittings_secVtx_rank, std::vector<Int_t>& splittings_secVtx_index);
 
   // ################## CUTS AND SETTINGS: Should be set during task initialization
   Bool_t                      fSaveConstituents;                        ///< save arrays of constituent basic properties
@@ -132,7 +142,7 @@ class AliAnalysisTaskJetExtractor : public AliAnalysisTaskEmcalJet {
   TRandom3*                   fRandomGeneratorCones;                    //!<! Random number generator, used for random cones
   AliHFJetsTaggingVertex*     fVtxTagger;                               //!<! class for sec. vertexing
   Bool_t                      fIsEmbeddedEvent;                         ///< Set to true if at least one embedding container is added to this task
-  std::vector<AliVParticle*>  fSecVertexTracks;                         ///< Vector of track pointers associated to the secondary vertices
+  std::vector<SimpleSecondaryVertex> fSimpleSecVertices;  ///< Vector of secondary vertices
 
   // ################## HELPER FUNCTIONS
   Double_t                    GetDistance(Double_t eta1, Double_t eta2, Double_t phi1, Double_t phi2)
@@ -192,7 +202,7 @@ class AliEmcalJetTree : public TNamed
     Bool_t          AddJetToTree(AliEmcalJet* jet, Bool_t saveConstituents, Bool_t saveConstituentsIP, Bool_t saveCaloClusters, Double_t* vertex, Float_t rho, Float_t rhoMass, Float_t centrality, Int_t multiplicity, Long64_t eventID, Float_t magField);
     void            FillBuffer_SecVertices(std::vector<Float_t>& secVtx_X, std::vector<Float_t>& secVtx_Y, std::vector<Float_t>& secVtx_Z, std::vector<Float_t>& secVtx_Mass, std::vector<Float_t>& secVtx_Lxy, std::vector<Float_t>& secVtx_SigmaLxy, std::vector<Float_t>& secVtx_Chi2, std::vector<Float_t>& secVtx_Dispersion);
     void            FillBuffer_JetShapes(AliEmcalJet* jet, Double_t leSub_noCorr, Double_t angularity, Double_t momentumDispersion, Double_t trackPtMean, Double_t trackPtMedian);
-    void            FillBuffer_Splittings(std::vector<Float_t>& splittings_radiatorE, std::vector<Float_t>& splittings_kT, std::vector<Float_t>& splittings_theta);
+    void            FillBuffer_Splittings(std::vector<Float_t>& splittings_radiatorE, std::vector<Float_t>& splittings_kT, std::vector<Float_t>& splittings_theta, Bool_t saveSecondaryVertices, std::vector<Int_t>& splittings_secVtx_rank, std::vector<Int_t>& splittings_secVtx_index);
     void            FillBuffer_PID(std::vector<Float_t>& trackPID_ITS, std::vector<Float_t>& trackPID_TPC, std::vector<Float_t>& trackPID_TOF, std::vector<Float_t>& trackPID_TRD, std::vector<Short_t>& trackPID_Reco, std::vector<Int_t>& trackPID_Truth);
     void            FillBuffer_MonteCarlo(Int_t motherParton, Int_t motherHadron, Int_t partonInitialCollision, Float_t matchJetDistance, Float_t matchedJetPt, Float_t matchedJetMass, Float_t truePtFraction, Float_t truePtFraction_mcparticles, Float_t ptHard, Float_t eventWeight, Float_t impactParameter);
     void            FillBuffer_ImpactParameters(std::vector<Float_t>& trackIP_d0, std::vector<Float_t>& trackIP_z0, std::vector<Float_t>& trackIP_d0cov, std::vector<Float_t>& trackIP_z0cov);
