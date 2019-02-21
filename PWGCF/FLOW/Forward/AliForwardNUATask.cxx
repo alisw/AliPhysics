@@ -21,7 +21,7 @@
 #include "AliForwardQCumulantRun2.h"
 #include "AliForwardGenericFramework.h"
 #include "AliForwardFlowRun2Task.h"
-
+#include "TObjectTable.h"
 #include "AliAODForwardMult.h"
 #include "AliAODCentralMult.h"
 #include "AliAODEvent.h"
@@ -76,6 +76,7 @@ AliForwardNUATask::AliForwardNUATask() : AliAnalysisTaskSE(),
   centralDist(),
   refDist(),
   forwardDist(),
+  ev_val(),
   fSettings(),
   fUtil(),
   useEvent(kTRUE)
@@ -133,6 +134,9 @@ AliForwardNUATask::AliForwardNUATask() : AliAnalysisTaskSE(),
 void AliForwardNUATask::UserExec(Option_t *)
 {
 
+
+ gObjectTable->Print();
+
   //
   //  Analyses the event with use of the helper class AliForwardQCumulantRun2
   //
@@ -140,16 +144,16 @@ void AliForwardNUATask::UserExec(Option_t *)
   //   option: Not used
   //
   // Get the event validation object
-  AliForwardTaskValidation* ev_val = dynamic_cast<AliForwardTaskValidation*>(this->GetInputData(1));
+  ev_val = dynamic_cast<AliForwardTaskValidation*>(this->GetInputData(1));
   if (!ev_val->IsValidEvent()){
      PostData(1, this->fOutputList);
     return;
   }
-
-  AliAODEvent* aodevent = dynamic_cast<AliAODEvent*>(InputEvent());
-  fUtil.fAODevent = aodevent;
-  if(!aodevent) throw std::runtime_error("Not AOD as expected");
-
+  if (!fSettings.esd) {
+    AliAODEvent* aodevent = dynamic_cast<AliAODEvent*>(InputEvent());
+    fUtil.fAODevent = aodevent;
+    if(!aodevent) throw std::runtime_error("Not AOD as expected");
+  }
 
   fUtil.fevent = fInputEvent;
   fUtil.fSettings = fSettings;
@@ -174,8 +178,8 @@ void AliForwardNUATask::UserExec(Option_t *)
   refDist->SetDirectory(0);
 
   TH1F* dNdeta = static_cast<TH1F*>(fEventList->FindObject("dNdeta"));
-
   dNdeta->SetDirectory(0);
+
   fUtil.dodNdeta = kTRUE;
   fUtil.dNdeta = dNdeta;
   fUtil.FillData(refDist,centralDist,forwardDist);

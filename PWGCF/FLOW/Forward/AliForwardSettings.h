@@ -55,6 +55,7 @@ class AliForwardSettings : public TObject {
 
   TH3F* nuacentral;
   TH3F* nuaforward;
+  TH3F* seccorr;
 
   bool doNUA;
 

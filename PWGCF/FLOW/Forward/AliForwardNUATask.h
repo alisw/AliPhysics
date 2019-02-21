@@ -103,6 +103,8 @@ public:
   TH2D*   centralDist;//!
   TH2D*   refDist;//!
   TH2D*   forwardDist;//!
+  AliForwardTaskValidation* ev_val; //!
+
   // A class combining all the settings for this analysis
   AliForwardSettings fSettings;
   AliForwardFlowUtil fUtil;

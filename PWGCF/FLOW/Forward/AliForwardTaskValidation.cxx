@@ -21,6 +21,7 @@
 #include "AliAnalysisDataContainer.h"
 #include "AliAnalysisDataSlot.h"
 #include "AliInputEventHandler.h"
+#include "TObjectTable.h"
 
 #include "AliForwardSecondariesTask.h"
 #include "AliForwardTaskValidation.h"
@@ -92,22 +93,22 @@ AliForwardTaskValidation::AliForwardTaskValidation(const char *name, bool mc)
     fEventValidators.push_back(EventValidation::kNotSPDClusterVsTrackletBG);
     fEventValidators.push_back(EventValidation::kPassesFMD_V0CorrelatioCut);
   }
-  if (fSettings.use_primaries_fwd || fSettings.use_primaries_cen) {
+  if (fSettings.mc) {
     this->isMC = kTRUE;
-    std::cout << "making vector" << std::endl;
+  }
     fEventValidatorsMC.push_back(EventValidationMC::kNoEventCutMC);
     fEventValidatorsMC.push_back(EventValidationMC::kHasMultSelectionMC);
     fEventValidatorsMC.push_back(EventValidationMC::kHasEntriesFMDMC);
     fEventValidatorsMC.push_back(EventValidationMC::kHasValidFMDMC);
     fEventValidatorsMC.push_back(EventValidationMC::kHasPrimariesMC);
-  }
+  //}
   // Default track cuts
-  if (!fSettings.esd){
+  //if (!fSettings.esd){
   fTrackValidators.push_back(TrackValidation::kNoTrackCut);
   fTrackValidators.push_back(TrackValidation::kTPCOnly);
   fTrackValidators.push_back(TrackValidation::kEtaCut);
   fTrackValidators.push_back(TrackValidation::kPtCut);
-}
+//}
   // Define output slot
   DefineOutput(1, TList::Class());
   DefineOutput(2, this->Class());
@@ -241,7 +242,7 @@ outlist->Add(this->fQA_event_discard_flow_MC);
   if (!fSettings.esd){
 
   /// Track discard flow
-  this->fQA_track_discard_flow = new TH1F("qa_tack_discard_flow",
+  this->fQA_track_discard_flow = new TH1F("qa_track_discard_flow",
 					  "QA track discard flow",
 					  this->fTrackValidators.size(),
 					  0,
@@ -316,12 +317,15 @@ void AliForwardTaskValidation::UserCreateOutputObjects() {
 
 void AliForwardTaskValidation::UserExec(Option_t *)
 {
+
+  gObjectTable->Print();
+
   this->fIsValidEvent = true;
 
   fUtil.dodNdeta = kFALSE;
 
   fUtil.fevent = InputEvent();
-  fUtil.fMCevent = this->MCEvent();
+  if (fSettings.mc) fUtil.fMCevent = this->MCEvent();
   //std::cout << fSettings.use_primaries_fwd << std::endl;
   fUtil.fSettings = this->fSettings;
 
@@ -338,7 +342,7 @@ void AliForwardTaskValidation::UserExec(Option_t *)
     else {
       fUtil.FillFromTrackrefs(forwardDist);
     }
-    //forwardDist->SetDirectory(0);
+    forwardDist->SetDirectory(0);
 
 
 
@@ -386,7 +390,9 @@ void AliForwardTaskValidation::UserExec(Option_t *)
     }
   }
 }
-  if (fSettings.use_primaries_cen || fSettings.use_primaries_fwd){
+if (this->fIsValidEvent){
+
+  if (fSettings.mc){
     for (UInt_t idx = 0; idx < this->fEventValidatorsMC.size(); idx++) {
       switch (this->fEventValidatorsMC[idx]) {
       case EventValidationMC::kNoEventCutMC:
@@ -406,7 +412,7 @@ void AliForwardTaskValidation::UserExec(Option_t *)
       }
     }
   }
-
+}
   PostData(1, fOutputList);
   // Make the current pointer to this task avaialble in the exchange container
   PostData(2, this);
@@ -747,9 +753,6 @@ AliForwardTaskValidation::Tracks AliForwardTaskValidation::GetMCTruthTracks() {
 
 
 Bool_t AliForwardTaskValidation::HasValidFMD(){
-  if (fSettings.use_primaries_fwd) return kTRUE;
-
-
   AliMultSelection *MultSelection = dynamic_cast< AliMultSelection* >(InputEvent()->FindListObject("MultSelection"));
 
   //AliMultSelection *MultSelection = (AliMultSelection*)fInputEvent->FindListObject("MultSelection");

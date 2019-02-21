@@ -144,7 +144,6 @@ void AliForwardFlowUtil::FillData(TH2D*& refDist, TH2D*& centralDist, TH2D*& for
         }
       }
     }
-    forwardDist->SetDirectory(0);
 }
 
 
@@ -460,6 +459,22 @@ AliForwardFlowUtil::ProcessRef(AliMCParticle*       particle,
     fState.angle   = ang;
   }
   return fState.longest;
+}
+
+
+Double_t
+AliForwardFlowUtil::GetTrackRefTheta(const AliTrackReference* ref) const
+{
+  // Get the incidient angle of the track reference.
+  const AliVVertex* vertex = this->fMCevent->GetPrimaryVertex();
+  // Calculate the vector pointing from the vertex to the track reference on the detector
+  Double_t x      = ref->X() - vertex->GetX();
+  Double_t y      = ref->Y() - vertex->GetY();
+  Double_t z      = ref->Z() - vertex->GetZ();
+  Double_t rr   = TMath::Sqrt(x*x+y*y);
+  Double_t theta= TMath::ATan2(rr,z);
+  Double_t ang  = TMath::Abs(TMath::Pi()-theta);
+  return ang;
 }
 
 void
