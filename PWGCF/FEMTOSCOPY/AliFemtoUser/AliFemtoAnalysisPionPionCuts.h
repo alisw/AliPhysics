@@ -161,7 +161,10 @@ public:
 
   virtual ~AliFemtoPairCutPionPionAKAvgSep();
 
-  AliFemtoPairCutPionPionAKAvgSep();
+  AliFemtoPairCutPionPionAKAvgSep()
+    : Super()
+    {}
+
   AliFemtoPairCutPionPionAKAvgSep(AliFemtoConfigObject &cfg)
     : Super(cfg)
     {}

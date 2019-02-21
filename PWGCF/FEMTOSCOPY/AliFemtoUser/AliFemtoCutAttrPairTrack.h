@@ -74,27 +74,34 @@ struct PairCutTrackAttrAvgSep {
 
   static bool is_valid_point(const AliFemtoThreeVector &point)
     {
-      // defined in AliFemtoEventReader::GetGlobalPositionAtGlobalRadiiThroughTPC
-      return point.x() <= -9000.0
-          && point.y() <= -9000.0
-          && point.z() <= -9000.0;
+      return point.x() > -9000.0
+          && point.y() > -9000.0
+          && point.z() > -9000.0;
     }
 
-  static double calc_avg_sep(const AliFemtoTrack &track1, const AliFemtoTrack &track2)
+  static double calc_avg_sep(const AliFemtoTrack &track1,
+                             const AliFemtoTrack &track2)
     {
-      int i = 0;
+      int count = 0;
       double sep_sum = 0.0;
 
-      for (; i<8; ++i) {
+      for (int i=0; i<9; ++i) {
         const auto &p1 = track1.NominalTpcPoint(i),
                    &p2 = track2.NominalTpcPoint(i);
 
         if (!is_valid_point(p1) || !is_valid_point(p2)) {
-          break;
+          continue;
         }
+
         sep_sum += (p1 - p2).Mag();
+        count++;
       }
-      return sep_sum / i;
+
+      double avg = __builtin_expect(count > 0, 1)
+                 ? sep_sum / count
+                 : -1.0;
+
+      return avg;
     }
 
   void FillConfiguration(AliFemtoConfigObject &cfg) const
@@ -152,7 +159,8 @@ struct PairCutTrackAttrShareQuality {
         share_fraction = qual_and_frac.first,
         share_quality = qual_and_frac.second;
 
-      return share_fraction <= share_fraction_max && share_quality <= share_quality_max;
+      return share_fraction <= share_fraction_max
+          && share_quality <= share_quality_max;
     }
 
   static std::pair<double, double>
@@ -253,7 +261,7 @@ struct PairCutTrackAttrDetaDphiStar {
                                 &p2 = track2.P();
 
       const double deta = calc_delta_eta(p1, p2);
-      if (delta_eta_min < deta) {
+      if (delta_eta_min <= std::fabs(deta)) {
         return true;
       }
 
@@ -263,10 +271,11 @@ struct PairCutTrackAttrDetaDphiStar {
                             phistar_radius,
                             fCurrentMagneticField);
 
-      return delta_phistar_min * delta_phistar_min < deta * deta + dphi * dphi;
+      return delta_phistar_min * delta_phistar_min <= deta * deta + dphi * dphi;
     }
 
-  static double calc_delta_eta(const AliFemtoThreeVector &p1, const AliFemtoThreeVector &p2)
+  static double calc_delta_eta(const AliFemtoThreeVector &p1,
+                               const AliFemtoThreeVector &p2)
     {
       return p1.PseudoRapidity() - p2.PseudoRapidity();
     }
@@ -276,7 +285,7 @@ struct PairCutTrackAttrDetaDphiStar {
       cfg.Update(AliFemtoConfigObject::BuildMap()
                  ("delta_eta_min", delta_eta_min)
                  ("delta_phistar_min", delta_phistar_min)
-                 ("phistar_radius", delta_phistar_min));
+                 ("phistar_radius", phistar_radius));
     }
 
   virtual ~PairCutTrackAttrDetaDphiStar() {}
@@ -316,6 +325,20 @@ struct PairCutTrackAttrSameLabel {
 /// assumed particle mass.
 ///
 struct PairCutTrackAttrMinv {
+protected:
+  /// Square of minv range
+  std::pair<double, double> fMinvSqrRange;
+  double fMass1;
+  double fMass2;
+
+public:
+
+  bool Pass(const AliFemtoTrack &track1, const AliFemtoTrack &track2)
+    {
+      // const double minv2 = CalcMinvSqrd(track1.P(), track2.P(), fMass1, fMass2);
+      const double minv2 = CalcMinvSqrd(track1.P(), track2.P());
+      return fMinvSqrRange.first <= minv2 && minv2 < fMinvSqrRange.second;
+    }
 
   /// Minv assuming highly relativistic particles (E >> m)
   ///
@@ -367,13 +390,6 @@ struct PairCutTrackAttrMinv {
       return (p1 + p2).m2();
     }
 
-  bool Pass(const AliFemtoTrack &track1, const AliFemtoTrack &track2)
-    {
-      // const double minv2 = CalcMinvSqrd(track1.P(), track2.P(), fMass1, fMass2);
-      const double minv2 = CalcMinvSqrd(track1.P(), track2.P());
-      return fMinvSqrRange.first <= minv2 && minv2 < fMinvSqrRange.second;
-    }
-
   void SetMinvRange(double lo, double hi)
     {
       fMinvSqrRange = std::make_pair(lo * lo, hi * hi);
@@ -412,12 +428,6 @@ struct PairCutTrackAttrMinv {
     {
       cfg.insert("minv_range", GetMinvRange());
     }
-
-protected:
-  /// Square of minv range
-  std::pair<double, double> fMinvSqrRange;
-  double fMass1;
-  double fMass2;
 
   virtual ~PairCutTrackAttrMinv() {}
 };
