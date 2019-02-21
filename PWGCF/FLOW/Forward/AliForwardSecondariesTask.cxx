@@ -26,7 +26,7 @@
 #include "TMath.h"
 #include "TCutG.h"
 #include "TParticle.h"
-
+#include "AliFMDStripIndex.h"
 #include "AliStack.h"
 #include "AliMCEvent.h"
 #include "AliMCParticle.h"
@@ -371,6 +371,14 @@ AliForwardSecondariesTask::StoreParticle(AliMCParticle*       particle,
   THnD* delta_eta_phi = static_cast<THnD*>(fDeltaList->FindObject("delta_eta_phi")); // (samples, vertex,phi_mother - phi_tr ,centrality,eta_mother,eta_tr,eta_p)
   THnD* fnoPrim = static_cast<THnD*>(fDeltaList->FindObject("fnoPrim"));//->Fill(event_vtx_z,event_vtx_z,event_vtx_z);
 
+
+
+    UInt_t packed = ref->UserId();
+    UShort_t detector, sector, strip;
+    Char_t   ring;
+    AliFMDStripIndex::Unpack(packed,detector,ring,sector,strip);
+
+std::cout << "Detector: " << detector << ", Sector:" << sector << ", Strip: " << strip << ", Ring: " << ring << std::endl;
 
   Double_t eta_mother = mother->Eta();
   Double_t phi_mother = (mother->Phi());//Wrap02pi
@@ -889,7 +897,6 @@ Int_t AliForwardSecondariesTask::GetOriginType(AliMCParticle *p) {
   }
   return cOriginType::kOTHER;
 }
-
 
 
 

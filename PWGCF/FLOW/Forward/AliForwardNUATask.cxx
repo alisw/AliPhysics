@@ -108,11 +108,6 @@ AliForwardNUATask::AliForwardNUATask() : AliAnalysisTaskSE(),
     fOutputList->SetOwner(kTRUE);       // memory stuff: the list is owner of all objects it contains and will delete them if requested
 
 
-    fEventList = new TList();
-    dNdeta = new TH1F("dNdeta","dNdeta",100 /*fSettings.fNDiffEtaBins*/,fSettings.fEtaLowEdge,fSettings.fEtaUpEdge);
-    fEventList->Add(dNdeta);
-
-
     Double_t centralEta = (fSettings.useSPD ? 2.5 : 1.5);
     Int_t forwardBinsEta = (fSettings.use_primaries ? 200 : 200);
     Int_t forwardBinsPhi = (fSettings.use_primaries ? 20 : 20);
@@ -124,7 +119,8 @@ AliForwardNUATask::AliForwardNUATask() : AliAnalysisTaskSE(),
 
     fOutputList->Add(nua_cen);
 
-    fOutputList->Add(fEventList);
+    dNdeta = new TH1F("dNdeta","dNdeta",100 /*fSettings.fNDiffEtaBins*/,fSettings.fEtaLowEdge,fSettings.fEtaUpEdge);
+    fOutputList->Add(dNdeta);
 
     PostData(1, fOutputList);
   }

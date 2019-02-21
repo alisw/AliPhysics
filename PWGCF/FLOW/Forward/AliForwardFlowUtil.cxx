@@ -73,7 +73,7 @@ void AliForwardFlowUtil::FillData(TH2D*& refDist, TH2D*& centralDist, TH2D*& for
         }
       }
 
-      if (fSettings.maxpt < 5) {
+      if (fSettings.gap > 1.0) {
         this->minpt = 0.2;
         this->maxpt = 5;
         if (fSettings.useSPD) this->FillFromTracklets(refDist);
@@ -669,12 +669,13 @@ void AliForwardFlowUtil::FillFromTracklets(TH2D*& cen) const {
 
 void AliForwardFlowUtil::FillFromTracks(TH2D*& cen, UInt_t tracktype) const {
   Int_t  iTracks(fevent->GetNumberOfTracks());
+  std::cout << this->maxpt << std::endl;
   for(Int_t i(0); i < iTracks; i++) {
 
   // loop  over  all  the  tracks
     AliAODTrack* track = static_cast<AliAODTrack *>(fAODevent->GetTrack(i));
 
-    if (track->TestFilterBit(tracktype) && track->GetTPCNcls() < fSettings.fnoClusters){
+    if (track->TestFilterBit(tracktype) && track->GetTPCNcls() > fSettings.fnoClusters){
 
       if( fSettings.fCutChargedDCAzMax > 0. || fSettings.fCutChargedDCAxyMax > 0.){
         Double_t dTrackXYZ[3] = {0.,0.,0.};
