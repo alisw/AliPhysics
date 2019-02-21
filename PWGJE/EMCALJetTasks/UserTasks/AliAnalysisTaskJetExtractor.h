@@ -132,6 +132,7 @@ class AliAnalysisTaskJetExtractor : public AliAnalysisTaskEmcalJet {
   TRandom3*                   fRandomGeneratorCones;                    //!<! Random number generator, used for random cones
   AliHFJetsTaggingVertex*     fVtxTagger;                               //!<! class for sec. vertexing
   Bool_t                      fIsEmbeddedEvent;                         ///< Set to true if at least one embedding container is added to this task
+  std::vector<AliVParticle*>  fSecVertexTracks;                         ///< Vector of track pointers associated to the secondary vertices
 
   // ################## HELPER FUNCTIONS
   Double_t                    GetDistance(Double_t eta1, Double_t eta2, Double_t phi1, Double_t phi2)

@@ -500,7 +500,8 @@ AliAnalysisTaskJetExtractor::AliAnalysisTaskJetExtractor() :
   fRandomGenerator(0),
   fRandomGeneratorCones(0),
   fVtxTagger(0),
-  fIsEmbeddedEvent(kFALSE)
+  fIsEmbeddedEvent(kFALSE),
+  fSecVertexTracks()
 {
   fRandomGenerator = new TRandom3();
   fRandomGeneratorCones = new TRandom3();
@@ -546,7 +547,8 @@ AliAnalysisTaskJetExtractor::AliAnalysisTaskJetExtractor(const char *name) :
   fRandomGenerator(0),
   fRandomGeneratorCones(0),
   fVtxTagger(0),
-  fIsEmbeddedEvent(kFALSE)
+  fIsEmbeddedEvent(kFALSE),
+  fSecVertexTracks()
 {
   fRandomGenerator = new TRandom3();
   fRandomGeneratorCones = new TRandom3();
@@ -1177,8 +1179,6 @@ void AliAnalysisTaskJetExtractor::ReconstructSecondaryVertices(const AliVVertex*
   // Derived from AliAnalysisTaskEmcalJetBtagSV
   secVertexArr = new TClonesArray("AliAODVertex");
   Int_t nDauRejCount = 0;
-  // NOTE: FindVertices uses jet->TrackAt(int, TClonesArray*) which is DEPRECATED
-  // It might cause problems with multi-container environments (e.g. in embedding)
   Int_t nVtx = fVtxTagger->FindVertices(jet,
                                         GetParticleContainer(0)->GetArray(),
                                         (AliAODEvent*)InputEvent(),
@@ -1198,6 +1198,7 @@ void AliAnalysisTaskJetExtractor::ReconstructSecondaryVertices(const AliVVertex*
   //###########################################################################
 
   // Loop over all potential secondary vertices
+  fSecVertexTracks.clear();
   for(Int_t i=0; i<secVertexArr->GetEntriesFast(); i++)
   {
     AliAODVertex* secVtx = (AliAODVertex*)(secVertexArr->UncheckedAt(i));
@@ -1228,6 +1229,11 @@ void AliAnalysisTaskJetExtractor::ReconstructSecondaryVertices(const AliVVertex*
     // Add secondary vertices if they fulfill the conditions
     if( (dispersion > fSecondaryVertexMaxDispersion) || (TMath::Abs(secVtx->GetChi2perNDF()) > fSecondaryVertexMaxChi2) )
       continue;
+
+    // Internally, save the track pointers associated to the sec. vertices to a list
+    // Each secondary vertex is reconstructed from 3 prongs
+    AliVParticle* daughters[3] = {static_cast<AliVParticle*>(aodVtx->GetDaughter(0)), static_cast<AliVParticle*>(aodVtx->GetDaughter(1)), static_cast<AliVParticle*>(aodVtx->GetDaughter(2))};
+    fSecVertexTracks.push_back(daughters);
 
     secVtx_X.push_back(secVtx->GetX()); secVtx_Y.push_back(secVtx->GetY()); secVtx_Z.push_back(secVtx->GetZ()); secVtx_Chi2.push_back(secVtx->GetChi2perNDF());
     secVtx_Dispersion.push_back(dispersion); secVtx_Mass.push_back(mass); secVtx_Lxy.push_back(Lxy); secVtx_SigmaLxy.push_back(sigmaLxy); 
@@ -1446,7 +1452,12 @@ void AliAnalysisTaskJetExtractor::GetJetSplittings(AliEmcalJet* jet, std::vector
       const AliVParticle* constituent = jet->GetParticleConstituents()[iConst].GetParticle();
       Double_t p[3];
       constituent->PxPyPz(p);
-      particles.push_back(fastjet::PseudoJet(p[0], p[1], p[2], constituent->E()));
+      fastjet::PseudoJet pseudoJet = fastjet::PseudoJet(p[0], p[1], p[2], constituent->E());
+      /*
+      if(constiuent in vertex tracks)
+        pseudoJet.set_user_index(vtx id);
+      */
+      particles.push_back(pseudoJet);
     }
 
     // Perform jet reclustering
@@ -1469,6 +1480,16 @@ void AliAnalysisTaskJetExtractor::GetJetSplittings(AliEmcalJet* jet, std::vector
       Float_t radiatorEnergy = leadingSubJet.e()+subleadingSubJet.e();
       // kT
       Float_t kT = subleadingSubJet.perp()*theta;
+
+      /*
+      //TODO
+      vector < fastjet::PseudoJet > constitj1 = sorted_by_pt(j1.constituents());
+      for(Int_t j=0;j<constitj1.size();j++){
+                if(constitj1[j].user_index()==0){
+          xconstperp=constitj1[j].perp();
+          flagSubjet=1; }}
+      //TODO
+      */
 
       // Now add splitting properties to result vector
       splittings_radiatorE.push_back(radiatorEnergy);
