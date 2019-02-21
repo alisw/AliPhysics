@@ -680,13 +680,15 @@ void AliSigma0PhotonMotherCuts::SingleV0QA(
     const std::vector<AliSigma0ParticleV0> &lambdaCandidates) {
   // Photon QA - keep track of kinematics
   for (const auto &photon : photonCandidates) {
+    if (!photon.GetIsUse()) continue;
     fHistPhotonPtPhi->Fill(photon.GetPt(), photon.GetPhi());
     fHistPhotonPtEta->Fill(photon.GetPt(), photon.GetEta());
     fHistPhotonMassPt->Fill(photon.GetPt(), photon.GetMass());
   }
 
+  // Lambda QA - keep track of kinematics
   for (const auto &lambda : lambdaCandidates) {
-    // Lambda QA - keep track of kinematics
+    if (!lambda.GetIsUse()) continue;
     fHistLambdaPtPhi->Fill(lambda.GetPt(), lambda.GetPhi());
     fHistLambdaPtEta->Fill(lambda.GetPt(), lambda.GetEta());
     fHistLambdaMassPt->Fill(lambda.GetPt(), lambda.GetMass());
@@ -736,6 +738,13 @@ void AliSigma0PhotonMotherCuts::SigmaToLambdaGamma(
       const float rap = sigma.GetRapidity();
       const int multBin = GetMultiplicityBin(lPercentile, fMultMode);
 
+      if (!fIsLightweight) {
+        fHistArmenterosAfter->Fill(armAlpha, armQt);
+        fHistInvMassRecPhoton->Fill(pT, sigma.GetRecMassPhoton());
+        fHistInvMassRecLambda->Fill(pT, sigma.GetRecMassLambda());
+        fHistInvMassRec->Fill(pT, sigma.GetRecMass());
+      }
+
       int label = -10;
       int pdgLambdaMother = 0;
       int pdgPhotonMother = 0;
@@ -782,18 +791,7 @@ void AliSigma0PhotonMotherCuts::SigmaToLambdaGamma(
       }
 
       fHistInvMass->Fill(invMass);
-
-      if (TMath::Abs(rap) > fRapidityMax) continue;
       fHistInvMassPt->Fill(pT, invMass);
-
-      if (!fIsLightweight) {
-        fHistArmenterosAfter->Fill(armAlpha, armQt);
-        fHistInvMassRecPhoton->Fill(pT, sigma.GetRecMassPhoton());
-        fHistInvMassRecLambda->Fill(pT, sigma.GetRecMassLambda());
-        fHistInvMassRec->Fill(pT, sigma.GetRecMass());
-      }
-      if (multBin >= 0 && fIsSpectrumAnalysis)
-        fHistPtMult[multBin]->Fill(pT, invMass);
 
       if (fIsMC) {
         if (label > 0) {
@@ -802,8 +800,7 @@ void AliSigma0PhotonMotherCuts::SigmaToLambdaGamma(
         }
         if (!fIsLightweight) {
           // let's where the other particle comes from if one of them stems
-          // from
-          // a Sigma0
+          // from a Sigma0
           if (TMath::Abs(pdgLambdaMother) == 3212 &&
               TMath::Abs(pdgLambdaMother) != 3212) {
             fHistMCV0Mother->Fill(invMass, TMath::Abs(pdgPhotonMother));
@@ -829,6 +826,12 @@ void AliSigma0PhotonMotherCuts::SigmaToLambdaGamma(
                                TMath::Abs(partPhoton->PdgCode()));
         }
       }
+
+      // CUT IN RAPIDITY FOR THE SPECTRUM ANALYSIS
+      if (TMath::Abs(rap) > fRapidityMax) continue;
+
+      if (multBin >= 0 && fIsSpectrumAnalysis)
+        fHistPtMult[multBin]->Fill(pT, invMass);
     }
   }
   fHistNSigma->Fill(nSigma);
@@ -1333,7 +1336,7 @@ void AliSigma0PhotonMotherCuts::InitCutHistograms(TString appendix) {
                            -TMath::Pi(), TMath::Pi());
     fHistPtRapidity =
         new TH2F("fHistPtRapidity", "; #it{p}_{T} (GeV/#it{c}); y", 100, 0, 10,
-                 50, -5, 5);
+                 100, -2, 2);
 
     fHistograms->Add(fHistNPhotonBefore);
     fHistograms->Add(fHistNPhotonAfter);
@@ -1503,22 +1506,22 @@ void AliSigma0PhotonMotherCuts::InitCutHistograms(TString appendix) {
 
     fHistLambdaPtPhi =
         new TH2F("fHistLambdaPtPhi", "; #it{p}_{T} (GeV/#it{c}); #phi (rad)",
-                 50, 0, 10, 50, 0, 2.f * TMath::Pi());
+                 100, 0, 10, 100, 0, 2.f * TMath::Pi());
     fHistLambdaPtEta =
-        new TH2F("fHistLambdaPtEta", "; #it{p}_{T} (GeV/#it{c}); #eta", 50, 0,
-                 10, 50, -1, 1);
+        new TH2F("fHistLambdaPtEta", "; #it{p}_{T} (GeV/#it{c}); #eta", 100, 0,
+                 10, 100, -1, 1);
     fHistLambdaMassPt =
-        new TH2F("fHistLambdaMassPt", "; #it{p}_{T} (GeV/#it{c}); M_{p#pi}", 50,
-                 0, 10, 50, 1., 1.3);
+        new TH2F("fHistLambdaMassPt", "; #it{p}_{T} (GeV/#it{c}); M_{p#pi}",
+                 100, 0, 10, 100, 1., 1.3);
     fHistPhotonPtPhi =
         new TH2F("fHistPhotonPtPhi", "; #it{p}_{T} (GeV/#it{c}); #phi (rad)",
-                 50, 0, 10, 50, 0, 2.f * TMath::Pi());
+                 100, 0, 10, 100, 0, 2.f * TMath::Pi());
     fHistPhotonPtEta =
-        new TH2F("fHistPhotonPtEta", "; #it{p}_{T} (GeV/#it{c}); #eta", 50, 0,
-                 10, 50, -1, 1);
+        new TH2F("fHistPhotonPtEta", "; #it{p}_{T} (GeV/#it{c}); #eta", 100, 0,
+                 10, 100, -1, 1);
     fHistPhotonMassPt =
-        new TH2F("fHistPhotonMassPt", "; #it{p}_{T} (GeV/#it{c}); M_{p#pi}", 50,
-                 0, 10, 50, 0., 0.1);
+        new TH2F("fHistPhotonMassPt", "; #it{p}_{T} (GeV/#it{c}); M_{p#pi}",
+                 100, 0, 10, 100, 0., 0.1);
 
     fHistograms->Add(fHistLambdaPtPhi);
     fHistograms->Add(fHistLambdaPtEta);
