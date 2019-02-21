@@ -25,8 +25,10 @@ typedef AddEventCutAttrs<
           EventCutAttrCentrality,
           AddEventCutAttrs<
             EventCutAttrVertexZ,
-            EventCutAttrTrigger
-          >
+            AddEventCutAttrs<
+              EventCutAttrTrigger,
+              EventCutAttrZdcParticipants
+          > >
         > EventCutAttrsAK;
 
 // track-cut
@@ -61,7 +63,11 @@ typedef AddPairCutAttrs<
           PairCutTrackAttrSameLabel,
             AddPairCutAttrs<
               PairCutTrackAttrPt,
-              PairCutTrackAttrShareQuality> > PairCutAttrsBaseAK;
+              AddPairCutAttrs<
+                PairCutTrackAttrRemoveEE,
+                PairCutTrackAttrShareQuality
+          > >
+        > PairCutAttrsBaseAK;
 
 typedef AddPairCutAttrs<
           PairCutAttrsBaseAK,
@@ -69,7 +75,7 @@ typedef AddPairCutAttrs<
 
 typedef AddPairCutAttrs<
           PairCutAttrsBaseAK,
-          PairCutTrackAttrDetaDphi> PairCutAttrsDphiDetaAK;
+          PairCutTrackAttrDetaDphiStar> PairCutAttrsDphiDetaAK;
 
 }  // namespace pwgfemto
 

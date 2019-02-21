@@ -54,12 +54,13 @@ class AliAnalysisTaskTransTask : public AliAnalysisTaskSE
 	Int_t fADCDecision;
   	TBits fIR1Map;
   	TBits fIR2Map;
+	UShort_t fBCrossNum;
 	TH1I *fCounter; //! analysis counter
 	
         AliAnalysisTaskTransTask(const AliAnalysisTaskTransTask&); // not implemented
         AliAnalysisTaskTransTask& operator=(const AliAnalysisTaskTransTask&); // not implemented
 
-        ClassDef(AliAnalysisTaskTransTask, 2);
+        ClassDef(AliAnalysisTaskTransTask, 3);
 };
 
 #endif

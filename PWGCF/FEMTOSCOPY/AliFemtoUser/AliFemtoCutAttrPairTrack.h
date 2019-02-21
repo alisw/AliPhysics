@@ -55,29 +55,29 @@ struct AddPairCutAttrs : public T1, public T2 {
 ///
 struct PairCutTrackAttrAvgSep {
 
-  double min_avgsep;
+  double avgsep_min;
 
   bool Pass(const AliFemtoTrack &track1, const AliFemtoTrack &track2)
     {
-      return calc_avg_sep(track1, track2) > min_avgsep;
+      return calc_avg_sep(track1, track2) > avgsep_min;
     }
 
   PairCutTrackAttrAvgSep()
-    : min_avgsep(0.0)
+    : avgsep_min(0.0)
     {
     }
 
   PairCutTrackAttrAvgSep(AliFemtoConfigObject &cfg)
-    : min_avgsep(cfg.pop_float("min_avgsep", 0.0))
+    : avgsep_min(cfg.pop_float("avgsep_min", 0.0))
     {
     }
 
   static bool is_valid_point(const AliFemtoThreeVector &point)
     {
       // defined in AliFemtoEventReader::GetGlobalPositionAtGlobalRadiiThroughTPC
-      return point.x() != -9999.0
-          && point.y() != -9999.0
-          && point.z() != -9999.0;
+      return point.x() <= -9000.0
+          && point.y() <= -9000.0
+          && point.z() <= -9000.0;
     }
 
   static double calc_avg_sep(const AliFemtoTrack &track1, const AliFemtoTrack &track2)
@@ -99,7 +99,7 @@ struct PairCutTrackAttrAvgSep {
 
   void FillConfiguration(AliFemtoConfigObject &cfg) const
     {
-      cfg.insert("min_avgsep", min_avgsep);
+      cfg.insert("avgsep_min", avgsep_min);
     }
 
   virtual ~PairCutTrackAttrAvgSep() {}
@@ -140,8 +140,8 @@ struct PairCutTrackAttrPt {
 /// Cut on share quality and fraction
 struct PairCutTrackAttrShareQuality {
 
-  double max_share_fraction;
-  double max_share_quality;
+  double share_fraction_max;
+  double share_quality_max;
 
   bool Pass(const AliFemtoTrack &track1, const AliFemtoTrack &track2)
     {
@@ -152,7 +152,7 @@ struct PairCutTrackAttrShareQuality {
         share_fraction = qual_and_frac.first,
         share_quality = qual_and_frac.second;
 
-      return share_fraction < max_share_fraction && share_quality < max_share_quality;
+      return share_fraction <= share_fraction_max && share_quality <= share_quality_max;
     }
 
   static std::pair<double, double>
@@ -183,26 +183,26 @@ struct PairCutTrackAttrShareQuality {
     }
 
   PairCutTrackAttrShareQuality()
-    : max_share_fraction(1.0)
-    , max_share_quality(1.0)
+    : share_fraction_max(1.0)
+    , share_quality_max(1.0)
     {}
 
   PairCutTrackAttrShareQuality(AliFemtoConfigObject &cfg)
-    : max_share_fraction(cfg.pop_float("max_share_fraction", 1.0))
-    , max_share_quality(cfg.pop_float("max_share_quality", 1.0))
+    : share_fraction_max(cfg.pop_float("share_fraction_max", 1.0))
+    , share_quality_max(cfg.pop_float("share_quality_max", 1.0))
     {}
 
   void FillConfiguration(AliFemtoConfigObject &cfg) const
     {
-      cfg.insert("max_share_quality", max_share_quality);
-      cfg.insert("max_share_fraction", max_share_fraction);
+      cfg.insert("share_quality_max", share_quality_max);
+      cfg.insert("share_fraction_max", share_fraction_max);
     }
 
   virtual ~PairCutTrackAttrShareQuality() {}
 };
 
 
-/// \class PairCutTrackAttrDetaDphi
+/// \class PairCutTrackAttrDetaDphiStar
 /// \brief A pair cut which cuts on the Δη Δφ of the pair.
 ///
 /// The difference in phi is calculated by examining the tracks' azimuthal angle at a particular radius
@@ -215,26 +215,26 @@ struct PairCutTrackAttrShareQuality {
 ///                       - arcsin \left( \frac{ z_2 \cdot B_z \cdot R}{2 p_{T2}} \right)
 ///
 ///
-struct PairCutTrackAttrDetaDphi {
+struct PairCutTrackAttrDetaDphiStar {
 
-  float min_delta_eta,
-        min_delta_phi,
-        radius;
+  float delta_eta_min,
+        delta_phistar_min,
+        phistar_radius;
 
   float fCurrentMagneticField;
 
-  PairCutTrackAttrDetaDphi()
-   : min_delta_eta(0.04)
-   , min_delta_phi(0.02)
-   , radius(1.2)
+  PairCutTrackAttrDetaDphiStar()
+   : delta_eta_min(0.0)
+   , delta_phistar_min(0.0)
+   , phistar_radius(1.2)
    , fCurrentMagneticField(0.0)
    {
    }
 
-  PairCutTrackAttrDetaDphi(AliFemtoConfigObject &cut)
-   : min_delta_eta(cut.pop_float("min_delta_eta", 0.0))
-   , min_delta_phi(cut.pop_float("min_delta_phi", 0.0))
-   , radius(cut.pop_float("phistar_radius", 1.2))
+  PairCutTrackAttrDetaDphiStar(AliFemtoConfigObject &cut)
+   : delta_eta_min(cut.pop_float("delta_eta_min", 0.0))
+   , delta_phistar_min(cut.pop_float("delta_phistar_min", 0.0))
+   , phistar_radius(cut.pop_float("phistar_radius", 1.2))
    , fCurrentMagneticField(0.0)
    {
    }
@@ -245,17 +245,17 @@ struct PairCutTrackAttrDetaDphi {
                                 &p2 = track2.P();
 
       const double deta = calc_delta_eta(p1, p2);
-      if (min_delta_eta < deta) {
+      if (delta_eta_min < deta) {
         return true;
       }
 
       const double dphi = AliFemtoPairCutDetaDphi::CalculateDPhiStar(
                             p1, track1.Charge(),
                             p2, track2.Charge(),
-                            radius,
+                            phistar_radius,
                             fCurrentMagneticField);
 
-      return min_delta_phi * min_delta_phi < deta * deta + dphi * dphi;
+      return delta_phistar_min * delta_phistar_min < deta * deta + dphi * dphi;
     }
 
   static double calc_delta_eta(const AliFemtoThreeVector &p1, const AliFemtoThreeVector &p2)
@@ -266,12 +266,12 @@ struct PairCutTrackAttrDetaDphi {
   void FillConfiguration(AliFemtoConfigObject &cfg) const
     {
       cfg.Update(AliFemtoConfigObject::BuildMap()
-                 ("min_delta_eta", min_delta_eta)
-                 ("min_delta_phi", min_delta_phi)
-                 ("phistar_radius", min_delta_phi));
+                 ("delta_eta_min", delta_eta_min)
+                 ("delta_phistar_min", delta_phistar_min)
+                 ("phistar_radius", delta_phistar_min));
     }
 
-  virtual ~PairCutTrackAttrDetaDphi() {}
+  virtual ~PairCutTrackAttrDetaDphiStar() {}
 };
 
 
@@ -409,6 +409,36 @@ protected:
   virtual ~PairCutTrackAttrMinv() {}
 };
 
+
+/// \class PairCutTrackAttrRemoveEE
+/// \brief Cut pairs with Minv near electron mass
+struct PairCutTrackAttrRemoveEE {
+  float ee_minv_min;
+
+  bool Pass(const AliFemtoTrack &track1, const AliFemtoTrack &track2)
+    {
+      const double
+        E_MASS = 0.000511,
+        minv_sqrd = PairCutTrackAttrMinv::CalcMinvSqrd(track1.P(), track2.P(), E_MASS, E_MASS),
+        minv = std::sqrt(minv_sqrd);
+      return std::abs(minv - E_MASS) >= ee_minv_min;
+    }
+
+  PairCutTrackAttrRemoveEE()
+    : ee_minv_min(0.0)
+    {}
+
+  PairCutTrackAttrRemoveEE(AliFemtoConfigObject &cfg)
+    : ee_minv_min(cfg.pop_float("ee_minv_min", 0.0))
+    {}
+
+  void FillConfiguration(AliFemtoConfigObject &cfg) const
+    {
+      cfg.insert("ee_minv_min", ee_minv_min);
+    }
+
+  virtual ~PairCutTrackAttrRemoveEE() {}
+};
 
 }  // namespace pwgcf
 

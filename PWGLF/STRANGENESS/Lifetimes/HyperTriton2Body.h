@@ -187,8 +187,9 @@ inline LVector_t HyperTriton2Body::GetV0LorentzVector(AliESDtrack *negTrack, Ali
   double posMom[3], negMom[3];
   posTrack->GetPxPyPz(posMom);
   negTrack->GetPxPyPz(negMom);
-  LVector_t posLvec{posMom[0] * posCharge, posMom[1] * posCharge, posMom[2], posMass};
-  LVector_t negLvec{negMom[0] * negCharge, negMom[1] * negCharge, negMom[2], negMass};
+  LVector_t posLvec{posMom[0] * posCharge, posMom[1] * posCharge, posCharge*posMom[2], posMass};
+  LVector_t negLvec{negMom[0] * negCharge, negMom[1] * negCharge, negCharge*negMom[2], negMass};
+
   posLvec += negLvec;
   return posLvec;
 }
@@ -206,8 +207,10 @@ inline HyperTriton2Body HyperTriton2Body::FillHyperTriton2Body(AliESDv0 *v0, Ali
   double decayVtx[3];
   v0->GetXYZ(decayVtx[0], decayVtx[1], decayVtx[2]);
   double v0Radius = std::hypot(decayVtx[0], decayVtx[1]);
-  double alpha = v0->AlphaV0();
-  auto lvector = miniHyper.GetV0LorentzVector(nTrack, pTrack, alpha);
+  double NsigmaSign;
+  if (nsigmaposhe3<=5)NsigmaSign=1;
+  else NsigmaSign=-1;
+  auto lvector = miniHyper.GetV0LorentzVector(nTrack, pTrack, NsigmaSign);
   double mass = lvector.M();
   double v0Pt = lvector.Pt();
   double lV0TotalMomentum = lvector.P();
@@ -216,17 +219,24 @@ inline HyperTriton2Body HyperTriton2Body::FillHyperTriton2Body(AliESDv0 *v0, Ali
                               Sq(decayVtx[2] - primaryVertex[2])) /
                     (lV0TotalMomentum + 1e-16);
   double PtPos;
+  double PlPos;
   double PtNeg;
-  if (alpha < 0)
+  double PlNeg;
+  if (NsigmaSign < 0)
   {
     PtPos = pTrack->Pt();
     PtNeg = 2 * (nTrack->Pt());
+    PlPos=pTrack->Pz();
+    PlNeg=2*nTrack->Pz();
   }
   else
   {
     PtPos = 2 * (pTrack->Pt());
     PtNeg = nTrack->Pt();
+    PlPos=2*pTrack->Pz();
+    PlNeg= nTrack->Pz();
   }
+  double alpha=(PlPos-PlNeg)/(PlPos+PlNeg);
   unsigned char posXedRows = pTrack->GetTPCClusterInfo(2, 1);
   unsigned char negXedRows = nTrack->GetTPCClusterInfo(2, 1);
   float posChi2PerCluster =
@@ -275,7 +285,7 @@ inline HyperTriton2Body HyperTriton2Body::FillHyperTriton2Body(AliESDv0 *v0, Ali
   miniHyper.SetLeastNumberOfXedRows(minXedRows);
   miniHyper.SetDistOverP(distOverP);
   miniHyper.SetInvMass(mass);
-  miniHyper.SetArmenterosVariables(v0->AlphaV0(), v0->PtArmV0());
+  miniHyper.SetArmenterosVariables(alpha, v0->PtArmV0());
   miniHyper.SetV0CosPA(cosPA);
   miniHyper.SetV0Chi2(v0->GetChi2V0());
   miniHyper.SetProngsPt(PtPos, PtNeg);
