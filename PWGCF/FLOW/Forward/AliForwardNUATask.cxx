@@ -135,7 +135,7 @@ void AliForwardNUATask::UserExec(Option_t *)
 {
 
 
- gObjectTable->Print();
+ //gObjectTable->Print();
 
   //
   //  Analyses the event with use of the helper class AliForwardQCumulantRun2

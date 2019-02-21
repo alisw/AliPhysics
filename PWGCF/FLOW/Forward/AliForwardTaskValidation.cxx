@@ -318,7 +318,7 @@ void AliForwardTaskValidation::UserCreateOutputObjects() {
 void AliForwardTaskValidation::UserExec(Option_t *)
 {
 
-  gObjectTable->Print();
+  //gObjectTable->Print();
 
   this->fIsValidEvent = true;
 
