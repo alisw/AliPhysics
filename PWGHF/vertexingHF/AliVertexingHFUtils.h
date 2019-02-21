@@ -22,12 +22,12 @@
 #include "AliAODRecoCascadeHF.h"
 
 class AliMCEvent;
+class AliMCParticle;
 class AliAODMCParticle;
 class AliAODMCHeader;
 class AliGenEventHeader;
 class AliAODEvent;
 class TProfile;
-class TParticle;
 class TClonesArray;
 class TH1F;
 class TH2F;
@@ -133,7 +133,7 @@ class AliVertexingHFUtils : public TObject{
 
   /// Functions to check the decay tree
   static Int_t CheckOrigin(TClonesArray* arrayMC, AliAODMCParticle *mcPart, Bool_t searchUpToQuark=kTRUE);
-  static Int_t CheckOrigin(AliMCEvent* mcEvent, TParticle *mcPart, Bool_t searchUpToQuark=kTRUE);
+  static Int_t CheckOrigin(AliMCEvent* mcEvent, AliMCParticle *mcPart, Bool_t searchUpToQuark=kTRUE);
   static Double_t GetBeautyMotherPt(TClonesArray* arrayMC, AliAODMCParticle *mcPart);
   static Int_t CheckD0Decay(AliMCEvent* mcEvent, Int_t label, Int_t* arrayDauLab);
   static Int_t CheckD0Decay(TClonesArray* arrayMC, AliAODMCParticle *mcPart, Int_t* arrayDauLab);
