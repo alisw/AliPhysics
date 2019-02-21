@@ -130,7 +130,14 @@ class AliAODTrack : public AliVTrack {
   virtual Double_t Zv() const { return GetProdVertex() ? GetProdVertex()->GetZ() : -999.; }
   virtual Bool_t   XvYvZv(Double_t x[3]) const { x[0] = Xv(); x[1] = Yv(); x[2] = Zv(); return kTRUE; }
 
-  Double_t Chi2perNDF()  const { return fChi2perNDF; }
+  Double_t Chi2perNDF()  const {
+    ///
+    /// WARNING: fChi2perNDF=chi2/(nTPCclus-5)
+    ///   from AliAnalysisTaskESDfilter::Chi2perNDF
+    ///   NDF is not correct, to be used only for checks
+    ///
+    return fChi2perNDF;
+  }
 
   UShort_t GetTPCnclsS(Int_t i0=0,Int_t i1=159)  const { 
     UShort_t cl = fTPCSharedMap.CountBits(i0)-fTPCSharedMap.CountBits(i1);
@@ -147,7 +154,26 @@ class AliAODTrack : public AliVTrack {
   Double_t GetTPCchi2() const {
     Int_t nTPCclus=GetNcls(1);
     if(fChi2perNDF>0. && nTPCclus > 5) return fChi2perNDF*(nTPCclus-5);
-    else return 999.;
+    else return 9999.;
+  }
+  Double_t GetTPCchi2perCluster() const {
+    Double_t chi2tpc=GetTPCchi2();
+    if(chi2tpc<9998.) return chi2tpc/GetNcls(1);
+    else return 9999.;
+  }
+  Double_t GetTPCchi2perNDF() const {
+    Int_t ndf=(2*GetNcls(1)-5);
+    Double_t chi2tpc=GetTPCchi2();
+    if(chi2tpc<9998.) return chi2tpc/ndf;
+    else return 9999.;
+  }
+  Double_t GetOldTPCchi2perNDF() const {
+    ///
+    /// WARNING: fChi2perNDF=chi2/(nTPCclus-5)
+    ///   from AliAnalysisTaskESDfilter::Chi2perNDF
+    ///   NDF is not correct, to be used only for checks
+    ///
+    return fChi2perNDF;
   }
 
   Int_t GetNcls(Int_t idet) const;
