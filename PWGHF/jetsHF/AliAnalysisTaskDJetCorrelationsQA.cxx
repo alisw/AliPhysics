@@ -91,22 +91,30 @@ fhInvMassptDbg(),
 fhPtPion(),
 fhsDphiz(),
 fResponseMatrix(),
-fhPhiJetPtJetMC(),
-fhPhiJetTrksPtJetMC(),
-fhEtaJetTrksPtJetMC(),
-fhEtaJetPtJetMC(),
-fhAreaJetPtJetMC(),
-fhJetTrksPtJetMC(),
-fhPhiJetPtJetreco(),
-fhPhiJetTrksPtJetreco(),
-fhEtaJetTrksPtJetreco(),
-fhEtaJetPtJetreco(),
-fhAreaJetPtJetreco(),
-fhJetTrksPtJetreco(),
-fhPhiJetPtJetD(),
-fhPhiJetTrksPtJetD(),
-fhAreaJetPtJetD(),
-fhJetTrksPtJetD()
+fhPhiJetPtJet_incl_MC(),
+fhPhiJetTrksPtJet_incl_MC(),
+fhEtaJetTrksPtJet_incl_MC(),
+fhEtaJetPtJet_incl_MC(),
+fhAreaJetPtJet_incl_MC(),
+fhJetTrksPtJet_incl_MC(),
+fhPhiJetPtJet_incl_Reco(),
+fhPhiJetTrksPtJet_incl_Reco(),
+fhEtaJetTrksPtJet_incl_Reco(),
+fhEtaJetPtJet_incl_Reco(),
+fhAreaJetPtJet_incl_Reco(),
+fhJetTrksPtJet_incl_Reco(),
+fhPhiJetPtJet_Djet_MC(),
+fhPhiJetTrksPtJet_Djet_MC(),
+fhEtaJetTrksPtJet_Djet_MC(),
+fhEtaJetPtJet_Djet_MC(),
+fhAreaJetPtJet_Djet_MC(),
+fhJetTrksPtJet_Djet_MC(),
+fhPhiJetPtJet_Djet_Reco(),
+fhPhiJetTrksPtJet_Djet_Reco(),
+fhEtaJetTrksPtJet_Djet_Reco(),
+fhEtaJetPtJet_Djet_Reco(),
+fhAreaJetPtJet_Djet_Reco(),
+fhJetTrksPtJet_Djet_Reco()
 
 {
    //
@@ -151,22 +159,30 @@ fhInvMassptDbg(),
 fhPtPion(),
 fhsDphiz(),
 fResponseMatrix(),
-fhPhiJetPtJetMC(),
-fhPhiJetTrksPtJetMC(),
-fhEtaJetTrksPtJetMC(),
-fhEtaJetPtJetMC(),
-fhAreaJetPtJetMC(),
-fhJetTrksPtJetMC(),
-fhPhiJetPtJetreco(),
-fhPhiJetTrksPtJetreco(),
-fhEtaJetTrksPtJetreco(),
-fhEtaJetPtJetreco(),
-fhAreaJetPtJetreco(),
-fhJetTrksPtJetreco(),
-fhPhiJetPtJetD(),
-fhPhiJetTrksPtJetD(),
-fhAreaJetPtJetD(),
-fhJetTrksPtJetD()
+fhPhiJetPtJet_incl_MC(),
+fhPhiJetTrksPtJet_incl_MC(),
+fhEtaJetTrksPtJet_incl_MC(),
+fhEtaJetPtJet_incl_MC(),
+fhAreaJetPtJet_incl_MC(),
+fhJetTrksPtJet_incl_MC(),
+fhPhiJetPtJet_incl_Reco(),
+fhPhiJetTrksPtJet_incl_Reco(),
+fhEtaJetTrksPtJet_incl_Reco(),
+fhEtaJetPtJet_incl_Reco(),
+fhAreaJetPtJet_incl_Reco(),
+fhJetTrksPtJet_incl_Reco(),
+fhPhiJetPtJet_Djet_MC(),
+fhPhiJetTrksPtJet_Djet_MC(),
+fhEtaJetTrksPtJet_Djet_MC(),
+fhEtaJetPtJet_Djet_MC(),
+fhAreaJetPtJet_Djet_MC(),
+fhJetTrksPtJet_Djet_MC(),
+fhPhiJetPtJet_Djet_Reco(),
+fhPhiJetTrksPtJet_Djet_Reco(),
+fhEtaJetTrksPtJet_Djet_Reco(),
+fhEtaJetPtJet_Djet_Reco(),
+fhAreaJetPtJet_Djet_Reco(),
+fhJetTrksPtJet_Djet_Reco()
 {
    //
    // Constructor. Initialization of Inputs and Outputs
@@ -378,6 +394,7 @@ Bool_t AliAnalysisTaskDJetCorrelationsQA::Run()
 if(fUseMCInfo && fBuildRMEff){
 
     AliJetContainer* mcjets = 0;
+
     if(!fAnalyseDBkg) mcjets = GetJetContainer(1);
     else mcjets = GetJetContainer(2);
     if(!mcjets) return kFALSE;
@@ -395,18 +412,19 @@ if(fUseMCInfo && fBuildRMEff){
             fhstat->Fill(5);
             continue;
         }
+        //remove pure ghost jets
+        if(jet->Pt() < 1E-9) continue;
 
         fhstat->Fill(3); //Jet accepted
         fhPhiJet->Fill(jet->Phi());
         fhEtaJet->Fill(jet->Eta());
         fhPtJet->Fill(jet->Pt());
 
-        fhPhiJetPtJetMC->Fill(jet->Pt(),jet->Phi());
-        fhEtaJetPtJetMC->Fill(jet->Pt(),jet->Eta());
-        fhAreaJetPtJetMC->Fill(jet->Pt(),jet->Area());
-
+        fhPhiJetPtJet_incl_MC->Fill(jet->Pt(),jet->Phi());
+        fhEtaJetPtJet_incl_MC->Fill(jet->Pt(),jet->Eta());
+        fhAreaJetPtJet_incl_MC->Fill(jet->Pt(),jet->Area());
         Int_t ntrjet=  jet->GetNumberOfTracks();
-        fhJetTrksPtJetMC->Fill(jet->Pt(),ntrjet);
+        fhJetTrksPtJet_incl_MC->Fill(jet->Pt(),ntrjet);
 
         for(Int_t itrk=0;itrk<ntrjet;itrk++)
         {
@@ -415,13 +433,14 @@ if(fUseMCInfo && fBuildRMEff){
             fhPtJetTrks->Fill(jetTrk->Pt());
             fhPhiJetTrks->Fill(jetTrk->Phi());
             fhEtaJetTrks->Fill(jetTrk->Eta());
-            fhPhiJetTrksPtJetMC->Fill(jet->Pt(),jetTrk->Phi());
-            fhEtaJetTrksPtJetMC->Fill(jet->Pt(),jetTrk->Eta());
+            fhPhiJetTrksPtJet_incl_MC->Fill(jet->Pt(),jetTrk->Phi());
+            fhEtaJetTrksPtJet_incl_MC->Fill(jet->Pt(),jetTrk->Eta());
         } //end loop on jet tracks
     } // end loop on mc jets
 
     //loop over rec jets
     AliJetContainer* recojets = GetJetContainer(0);
+
     AliParticleContainer *recoParticlesCont = recojets->GetParticleContainer();
     recojets->ResetCurrentID();
     AliEmcalJet* recojet=0;
@@ -432,20 +451,22 @@ if(fUseMCInfo && fBuildRMEff){
         if(!OKjet) {
             continue;
         }
+        //remove pure ghost jets
+        if(recojet->Pt() < 1E-9) continue;
 
-        fhPhiJetPtJetreco->Fill(recojet->Pt(),recojet->Phi());
-        fhEtaJetPtJetreco->Fill(recojet->Pt(),recojet->Eta());
-        fhAreaJetPtJetreco->Fill(recojet->Pt(),recojet->Area());
+        fhPhiJetPtJet_incl_Reco->Fill(recojet->Pt(),recojet->Phi());
+        fhEtaJetPtJet_incl_Reco->Fill(recojet->Pt(),recojet->Eta());
+        fhAreaJetPtJet_incl_Reco->Fill(recojet->Pt(),recojet->Area());
 
         Int_t ntrjet=  recojet->GetNumberOfTracks();
-        fhJetTrksPtJetreco->Fill(recojet->Pt(),ntrjet);
+        fhJetTrksPtJet_incl_Reco->Fill(recojet->Pt(),ntrjet);
 
         for(Int_t itrk=0;itrk<ntrjet;itrk++)
         {
             AliAODMCParticle* jetTrk=(AliAODMCParticle*)recojet->TrackAt(itrk,recoParticlesCont->GetArray());
             if (!jetTrk) continue;
-            fhPhiJetTrksPtJetreco->Fill(recojet->Pt(),jetTrk->Phi());
-            fhEtaJetTrksPtJetreco->Fill(recojet->Pt(),jetTrk->Eta());
+            fhPhiJetTrksPtJet_incl_Reco->Fill(recojet->Pt(),jetTrk->Phi());
+            fhEtaJetTrksPtJet_incl_Reco->Fill(recojet->Pt(),jetTrk->Eta());
         } //end loop on jet tracks
     } // end loop on reco jets
 
@@ -497,7 +518,7 @@ else {
 
     JetCont->ResetCurrentID();
     AliEmcalJet* jet=0;
-
+    //loop over reco
     while ((jet = JetCont->GetNextJet()))
     {
         UInt_t rejectionReason = 0;
@@ -506,6 +527,9 @@ else {
             fhstat->Fill(5);
             continue;
         }
+
+        //remove pure ghost jets
+        if(jet->Pt() < 1E-9) continue;
 
         Double_t JetPtCorr = 0;
         if(fUseMCInfo && fUsePythia){
@@ -523,17 +547,17 @@ else {
         fhEtaJet->Fill(jet->Eta());
         fhPtJet->Fill(JetPtCorr);
 
-        fhPhiJetPtJetMC->Fill(jet->Pt(),jet->Phi());
-        fhEtaJetPtJetMC->Fill(jet->Pt(),jet->Eta());
-        fhAreaJetPtJetMC->Fill(jet->Pt(),jet->Area());
+        fhPhiJetPtJet_incl_Reco->Fill(jet->Pt(),jet->Phi());
+        fhEtaJetPtJet_incl_Reco->Fill(jet->Pt(),jet->Eta());
+        fhAreaJetPtJet_incl_Reco->Fill(jet->Pt(),jet->Area());
         Int_t ntrjet=  jet->GetNumberOfTracks();
-        fhJetTrksPtJetMC->Fill(jet->Pt(),ntrjet);
+        fhJetTrksPtJet_incl_Reco->Fill(jet->Pt(),ntrjet);
 
         for(Int_t itrk=0;itrk<ntrjet;itrk++){
             AliAODMCParticle* jetTrk=(AliAODMCParticle*)jet->TrackAt(itrk,ParticlesCont->GetArray());
             if (!jetTrk) continue;
-            fhPhiJetTrksPtJetMC->Fill(jet->Pt(),jetTrk->Phi());
-            fhEtaJetTrksPtJetMC->Fill(jet->Pt(),jetTrk->Eta());
+            fhPhiJetTrksPtJet_incl_Reco->Fill(jet->Pt(),jetTrk->Phi());
+            fhEtaJetTrksPtJet_incl_Reco->Fill(jet->Pt(),jetTrk->Eta());
         } //end loop on jet tracks
 
     }
@@ -645,15 +669,26 @@ void AliAnalysisTaskDJetCorrelationsQA::CreateResponseMatrix(AliEmcalJet* jet)
         Double_t zGen = Z(Dgen,MCjet,0);
         Double_t JetPtRec = jet->Pt() - rho*jet->Area();
         Double_t JetPtGen = MCjet->Pt();
-        Double_t etaRec = jet->Eta();
-        Double_t etaGen = MCjet->Eta();
-        Double_t phiRec = jet->Phi();
-        Double_t phiGen = MCjet->Phi();
-        Double_t nTrkRec = jet->GetNumberOfTracks();
-        Double_t nTrkGen = MCjet->GetNumberOfTracks();
-        Double_t DYRec = -999;
+        Double_t JetYRec = jet->Y();
+        Double_t JetYGen = MCjet->Y();
+        Double_t JetEtaRec = jet->Eta();
+        Double_t JetEtaGen = MCjet->Eta();
+        Double_t JetPhiRec = jet->Phi();
+        Double_t JetPhiGen = MCjet->Phi();
+        Double_t JetnTrkRec = jet->GetNumberOfTracks();
+        Double_t JetnTrkGen = MCjet->GetNumberOfTracks();
+        Double_t JetAreaRec = jet->GetNumberOfTracks();
+        Double_t JetAreaGen = MCjet->GetNumberOfTracks();
         AliAODMCParticle* DTrk=(AliAODMCParticle*)Dgen;
         Double_t DYGen = DTrk->Y();
+        Double_t DPtGen = DTrk->Pt();
+        Double_t DEtaGen = DTrk->Eta();
+        Double_t DPhiGen = DTrk->Phi();
+        Double_t DYRec = -999;
+        Double_t DPtRec = -999;
+        Double_t DEtaRec = -999;
+        Double_t DPhiRec = -999;
+
         Double_t pTRes = JetPtGen ? ((JetPtRec - JetPtGen) / JetPtGen) : -999;
         Double_t zRes = zGen ? ((zRec - zGen) / zGen) : -999;
 
@@ -664,16 +699,22 @@ void AliAnalysisTaskDJetCorrelationsQA::CreateResponseMatrix(AliEmcalJet* jet)
         {
             AliAODRecoDecayHF* dzero=(AliAODRecoDecayHF*)Drec;
             DYRec = dzero->Y(pdgMeson);
+            DPtRec = dzero->Pt();
+            DEtaRec = dzero->Eta();
+            DPhiRec = dzero->Phi();
 
         }
         else if(fCandidateType==kDstartoKpipi)
         {
             AliAODRecoCascadeHF* dstar=(AliAODRecoCascadeHF*)Drec;
             DYRec = dstar->Y(pdgMeson);
+            DPtRec = dstar->Pt();
+            DEtaRec = dstar->Eta();
+            DPhiRec = dstar->Phi();
 
         }
 
-        Double_t fillRM[16] = {zRec,JetPtRec,Drec->Pt(),DYRec,etaRec,phiRec,nTrkRec,zGen,JetPtGen,Dgen->Pt(),DYGen,etaGen,phiGen,nTrkGen,pTRes,zRes};
+        Double_t fillRM[24] = {zRec,DPtRec,DYRec,DEtaRec,DPhiRec,JetPtRec,JetYRec,JetEtaRec,JetPhiRec,JetAreaRec,JetnTrkRec,zGen,DPtGen,DYGen,DEtaGen,DPhiGen,JetPtGen,JetYGen,JetEtaGen,JetPhiGen,JetAreaGen,JetnTrkGen,pTRes,zRes};
         fResponseMatrix->Fill(fillRM,1.);
     }
 }
@@ -685,27 +726,41 @@ void AliAnalysisTaskDJetCorrelationsQA::CreateMCResponseMatrix(AliEmcalJet* MCje
     if(!MCjet) AliDebug(2, "No Generated Level Jet Found!");
 
     AliVParticle *Dgen = MCjet->GetFlavourTrack();
-    Double_t zGen = Z(Dgen,MCjet,0);
-    Double_t JetPtGen = MCjet->Pt();
-    Double_t JetEtaGen = MCjet->Eta();
-    Double_t DPtGen = Dgen->Pt();
     AliAODMCParticle* DTrk = (AliAODMCParticle*)Dgen;
-    Double_t DYGen = DTrk->Y();
     Int_t pdg = DTrk->GetPdgCode();
 
     Double_t phiGen = MCjet->Phi();
     Double_t nTrkGen = MCjet->GetNumberOfTracks();
 
+    Double_t zGen = Z(Dgen,MCjet,0);
+    Double_t DPtGen = Dgen->Pt();
+    Double_t DYGen = DTrk->Y();
+    Double_t DEtaGen = Dgen->Eta();
+    Double_t DPhiGen = Dgen->Phi();
+    Double_t JetPtGen = MCjet->Pt();
+    Double_t JetYGen = MCjet->Y();
+    Double_t JetEtaGen = MCjet->Eta();
+    Double_t JetPhiGen = MCjet->Phi();
+    Double_t JetAreaGen = MCjet->Area();
+    Double_t JetnTrkGen = MCjet->GetNumberOfTracks();
+
     Double_t zRec = -999;
-    Double_t JetPtRec = -999;
-    Double_t JetEtaRec = -999;
     Double_t DPtRec = -999;
     Double_t DYRec = -999;
+    Double_t DEtaRec = -999;
+    Double_t DPhiRec = -999;
+    Double_t JetPtRec = -999;
+    Double_t JetYRec = -999;
+    Double_t JetEtaRec = -999;
+    Double_t JetPhiRec = -999;
+    Double_t JetAreaRec = -999;
+    Double_t JetnTrkRec = -999;
+
     Double_t pTRes = -999;
     Double_t zRes = -999;
 
-    Double_t phiRec = -999;
-    Double_t nTrkRec = -999;
+
+
 
     AliJetContainer* JetContRec = GetJetContainer(0);
     if(JetContRec){
@@ -723,11 +778,18 @@ void AliAnalysisTaskDJetCorrelationsQA::CreateMCResponseMatrix(AliEmcalJet* MCje
             zRec = 0;
             if(rho>0) zRec = Z(Drec,jet,rho);
             else zRec = Z(Drec,jet);
-            JetPtRec = jet->Pt() - rho*jet->Area();
-            JetEtaRec = jet->Eta();
-            phiRec = jet->Phi();
-            nTrkRec = jet->GetNumberOfTracks();
+
             DPtRec = Drec->Pt();
+            DYRec = Drec->Y();
+            DEtaRec = Drec->Eta();
+            DPhiRec = Drec->Phi();
+            JetPtRec = jet->Pt() - rho*jet->Area();
+            JetYRec = jet->Y();
+            JetEtaRec = jet->Eta();
+            JetPhiRec = jet->Phi();
+            JetAreaRec = jet->Area();
+            JetnTrkRec = jet->GetNumberOfTracks();
+
             pTRes = JetPtGen ? ((JetPtRec - JetPtGen) / JetPtGen) : -999;
             zRes = zGen ? ((zRec - zGen) / zGen) : -999;
 
@@ -750,22 +812,35 @@ void AliAnalysisTaskDJetCorrelationsQA::CreateMCResponseMatrix(AliEmcalJet* MCje
             Bool_t bDInEMCalAcc=InEMCalAcceptance(Drec);
             Bool_t bJetInEMCalAcc=InEMCalAcceptance(jet);
 
-            fhPhiJetPtJetD->Fill(JetPtRec,jet->Phi());
+            fhPhiJetPtJet_Djet_Reco->Fill(JetPtRec,jet->Phi());
+            fhEtaJetPtJet_Djet_Reco->Fill(JetPtRec,jet->Eta());
+            fhAreaJetPtJet_Djet_Reco->Fill(JetPtRec,jet->Area());
+            fhJetTrksPtJet_Djet_Reco->Fill(JetPtRec,jet->GetNumberOfTracks());
 
-            fhAreaJetPtJetD->Fill(JetPtRec,jet->Area());
-            fhJetTrksPtJetD->Fill(JetPtRec,jet->GetNumberOfTracks());
+            fhPhiJetPtJet_Djet_MC->Fill(MCjet->Pt(),MCjet->Phi());
+            fhEtaJetPtJet_Djet_MC->Fill(MCjet->Pt(),MCjet->Eta());
+            fhAreaJetPtJet_Djet_MC->Fill(MCjet->Pt(),MCjet->Area());
+            fhJetTrksPtJet_Djet_MC->Fill(MCjet->Pt(),MCjet->GetNumberOfTracks());
 
             for(Int_t i=0;i<jet->GetNumberOfTracks();i++)
             {
                 AliVParticle* jetTrk= jet->Track(i);
                 if (!jetTrk) continue;
-                fhPhiJetTrksPtJetD->Fill(JetPtRec,jetTrk->Phi());
+                fhPhiJetTrksPtJet_Djet_Reco->Fill(JetPtRec,jetTrk->Phi());
+                fhEtaJetTrksPtJet_Djet_Reco->Fill(JetPtRec,jetTrk->Eta());
+            }
+            for(Int_t i=0;i<MCjet->GetNumberOfTracks();i++)
+            {
+                AliVParticle* jetTrk= MCjet->Track(i);
+                if (!jetTrk) continue;
+                fhPhiJetTrksPtJet_Djet_MC->Fill(MCjet->Pt(),jetTrk->Phi());
+                fhEtaJetTrksPtJet_Djet_MC->Fill(MCjet->Pt(),jetTrk->Eta());
             }
 
             if(fCandidateType==kD0toKpi)
             {
                 AliAODRecoDecayHF* dzero=(AliAODRecoDecayHF*)Drec;
-                FillHistogramsD0JetCorr(dzero,zRec,Drec->Pt(),JetPtRec,JetEtaRec,kFALSE,bDInEMCalAcc,bJetInEMCalAcc,aodEvent,pdg,phiRec,nTrkRec);
+                FillHistogramsD0JetCorr(dzero,zRec,Drec->Pt(),JetPtRec,JetEtaRec,kFALSE,bDInEMCalAcc,bJetInEMCalAcc,aodEvent,pdg,JetPhiRec,JetnTrkRec);
             }
             else if(fCandidateType==kDstartoKpipi)
             {
@@ -776,7 +851,7 @@ void AliAnalysisTaskDJetCorrelationsQA::CreateMCResponseMatrix(AliEmcalJet* MCje
         } // if HF reco jet
     } // if jet cont reco
 
-    Double_t fillRM[16] = {zRec,JetPtRec,DPtRec,DYRec,JetEtaRec,phiRec,nTrkRec,zGen,JetPtGen,DPtGen,DYGen,JetEtaGen,phiGen,nTrkGen,pTRes,zRes};
+    Double_t fillRM[24] = {zRec,DPtRec,DYRec,DEtaRec,DPhiRec,JetPtRec,JetYRec,JetEtaRec,JetPhiRec,JetAreaRec,JetnTrkRec,zGen,DPtGen,DYGen,DEtaGen,DPhiGen,JetPtGen,JetYGen,JetEtaGen,JetPhiGen,JetAreaGen,JetnTrkGen,pTRes,zRes};
     fResponseMatrix->Fill(fillRM,1.);
 
 }
@@ -1061,6 +1136,7 @@ Bool_t  AliAnalysisTaskDJetCorrelationsQA::DefineHistoForAnalysis(){
    const Int_t nbinsptD=100;
    const Int_t nbinsphi=200;
    const Int_t nbinseta=100;
+   const Int_t nbinsArea=10;
    const Int_t nbinNtracks=50;
 
    //binning for THnSparse
@@ -1093,41 +1169,58 @@ Bool_t  AliAnalysisTaskDJetCorrelationsQA::DefineHistoForAnalysis(){
    fhPtJet      = new TH1F("hPtJet",  "Jet Pt distribution; p_{T} (GeV/c)",nbinsptjet,ptjetlims[0],ptjetlims[1]);
    fhPtJet->Sumw2();
 
-   fhPhiJetPtJetMC  = new TH2F("fhPhiJetPtJetMC","Jet #phi distribution vs Jet p_{T} MC; Jet p_{T};##varphi^{jet} (rad)",nbinsptjet,ptjetlims[0],ptjetlims[1], nbinsphi,philims[0],philims[1]);
-   fhPhiJetTrksPtJetMC = new TH2F("fhPhiJetTrksPtJetMC","Jet tracks #phi distribution vs Jet p_{T} MC; Jet p_{T};#phi (rad)",nbinsptjet,ptjetlims[0],ptjetlims[1], nbinsphi,philims[0],philims[1]);
-   fhEtaJetPtJetMC  = new TH2F("fhEtaJetPtJetMC","Jet #eta distribution vs Jet p_{T} MC; Jet p_{T};#eta",nbinsptjet,ptjetlims[0],ptjetlims[1], nbinseta,etalims[0],etalims[1]);
-   fhEtaJetTrksPtJetMC = new TH2F("fhEtaJetTrksPtJetMC","Jet tracks #eta distribution vs Jet p_{T} MC; Jet p_{T};#eta",nbinsptjet,ptjetlims[0],ptjetlims[1], nbinseta,etalims[0],etalims[1]);
-   fhAreaJetPtJetMC= new TH2F("fhAreaJetPtJetMC","Jet area distribution vs Jet p_{T} MC; Jet p_{T};Area",nbinsptjet,ptjetlims[0],ptjetlims[1], 10,0,1);
-   fhJetTrksPtJetMC= new TH2F("fhJetTrksPtJetMC","Jet N tracks distribution vs Jet p_{T} MC; Jet p_{T};N tracks",nbinsptjet,ptjetlims[0],ptjetlims[1], nbinNtracks,0,nbinNtracks);
-   fhPhiJetPtJetreco  = new TH2F("fhPhiJetPtJetrec","Jet #phi distribution vs Jet p_{T} rec; Jet p_{T};#phi (rad)",nbinsptjet,ptjetlims[0],ptjetlims[1], nbinsphi,philims[0],philims[1]);
-   fhPhiJetTrksPtJetreco = new TH2F("fhPhiJetTrksPtJetrec","Jet tracks #phi distribution vs Jet p_{T} rec; Jet p_{T};#phi (rad)",nbinsptjet,ptjetlims[0],ptjetlims[1], nbinsphi,philims[0],philims[1]);
-   fhEtaJetPtJetreco  = new TH2F("fhEtaJetPtJetrec","Jet #eta distribution vs Jet p_{T} rec; Jet p_{T};#eta",nbinsptjet,ptjetlims[0],ptjetlims[1], nbinseta,etalims[0],etalims[1]);
-   fhEtaJetTrksPtJetreco = new TH2F("fhEtaJetTrksPtJetrec","Jet tracks #eta distribution vs Jet p_{T} rec; Jet p_{T};#eta",nbinsptjet,ptjetlims[0],ptjetlims[1], nbinseta,etalims[0],etalims[1]);
-   fhAreaJetPtJetreco= new TH2F("fhAreaJetPtJetrec","Jet area distribution vs Jet p_{T} rec; Jet p_{T};Area",nbinsptjet,ptjetlims[0],ptjetlims[1], 10,0,1);
-   fhJetTrksPtJetreco= new TH2F("fhJetTrksPtJetrec","Jet N tracks distribution vs Jet p_{T} rec; Jet p_{T};N tracks",nbinsptjet,ptjetlims[0],ptjetlims[1], nbinNtracks,0,nbinNtracks);
+   fhPhiJetPtJet_incl_MC  = new TH2F("fhPhiJetPtJet_incl_MC","Jet #phi distribution vs Jet p_{T} MC; Jet p_{T};#varphi^{jet} (rad)",nbinsptjet,ptjetlims[0],ptjetlims[1], nbinsphi,philims[0],philims[1]);
+   fhPhiJetTrksPtJet_incl_MC = new TH2F("fhPhiJetTrksPtJet_incl_MC","Jet tracks #phi distribution vs Jet p_{T} MC; Jet p_{T};#phi (rad)",nbinsptjet,ptjetlims[0],ptjetlims[1], nbinsphi,philims[0],philims[1]);
+   fhEtaJetPtJet_incl_MC  = new TH2F("fhEtaJetPtJet_incl_MC","Jet #eta distribution vs Jet p_{T} MC; Jet p_{T};#eta",nbinsptjet,ptjetlims[0],ptjetlims[1], nbinseta,etalims[0],etalims[1]);
+   fhEtaJetTrksPtJet_incl_MC = new TH2F("fhEtaJetTrksPtJet_incl_MC","Jet tracks #eta distribution vs Jet p_{T} MC; Jet p_{T};#eta",nbinsptjet,ptjetlims[0],ptjetlims[1], nbinseta,etalims[0],etalims[1]);
+   fhAreaJetPtJet_incl_MC= new TH2F("fhAreaJetPtJet_incl_MC","Jet area distribution vs Jet p_{T} MC; Jet p_{T};Area",nbinsptjet,ptjetlims[0],ptjetlims[1], nbinsArea,0,1);
+   fhJetTrksPtJet_incl_MC= new TH2F("fhJetTrksPtJet_incl_MC","Jet N tracks distribution vs Jet p_{T} MC; Jet p_{T};N tracks",nbinsptjet,ptjetlims[0],ptjetlims[1], nbinNtracks,0,nbinNtracks);
+   fhPhiJetPtJet_incl_Reco  = new TH2F("fhPhiJetPtJet_incl_Reco","Jet #phi distribution vs Jet p_{T} rec; Jet p_{T};#phi (rad)",nbinsptjet,ptjetlims[0],ptjetlims[1], nbinsphi,philims[0],philims[1]);
+   fhPhiJetTrksPtJet_incl_Reco = new TH2F("fhPhiJetTrksPtJet_incl_Reco","Jet tracks #phi distribution vs Jet p_{T} rec; Jet p_{T};#phi (rad)",nbinsptjet,ptjetlims[0],ptjetlims[1], nbinsphi,philims[0],philims[1]);
+   fhEtaJetPtJet_incl_Reco  = new TH2F("fhEtaJetPtJet_incl_Reco","Jet #eta distribution vs Jet p_{T} rec; Jet p_{T};#eta",nbinsptjet,ptjetlims[0],ptjetlims[1], nbinseta,etalims[0],etalims[1]);
+   fhEtaJetTrksPtJet_incl_Reco = new TH2F("fhEtaJetTrksPtJet_incl_Reco","Jet tracks #eta distribution vs Jet p_{T} rec; Jet p_{T};#eta",nbinsptjet,ptjetlims[0],ptjetlims[1], nbinseta,etalims[0],etalims[1]);
+   fhAreaJetPtJet_incl_Reco= new TH2F("fhAreaJetPtJet_incl_Reco","Jet area distribution vs Jet p_{T} rec; Jet p_{T};Area",nbinsptjet,ptjetlims[0],ptjetlims[1], nbinsArea,0,1);
+   fhJetTrksPtJet_incl_Reco= new TH2F("fhJetTrksPtJet_incl_Reco","Jet N tracks distribution vs Jet p_{T} rec; Jet p_{T};N tracks",nbinsptjet,ptjetlims[0],ptjetlims[1], nbinNtracks,0,nbinNtracks);
+
+   fhPhiJetPtJet_Djet_MC  = new TH2F("fhPhiJetPtJet_Djet_MC","D Jet #phi distribution vs Jet p_{T} MC; Jet p_{T};#varphi^{jet} (rad)",nbinsptjet,ptjetlims[0],ptjetlims[1], nbinsphi,philims[0],philims[1]);
+   fhPhiJetTrksPtJet_Djet_MC = new TH2F("fhPhiJetTrksPtJet_Djet_MC","D Jet tracks #phi distribution vs Jet p_{T} MC; Jet p_{T};#phi (rad)",nbinsptjet,ptjetlims[0],ptjetlims[1], nbinsphi,philims[0],philims[1]);
+   fhEtaJetPtJet_Djet_MC  = new TH2F("fhEtaJetPtJet_Djet_MC","D Jet #eta distribution vs Jet p_{T} MC; Jet p_{T};#eta",nbinsptjet,ptjetlims[0],ptjetlims[1], nbinseta,etalims[0],etalims[1]);
+   fhEtaJetTrksPtJet_Djet_MC = new TH2F("fhEtaJetTrksPtJet_Djet_MC","D Jet tracks #eta distribution vs Jet p_{T} MC; Jet p_{T};#eta",nbinsptjet,ptjetlims[0],ptjetlims[1], nbinseta,etalims[0],etalims[1]);
+   fhAreaJetPtJet_Djet_MC= new TH2F("fhAreaJetPtJet_Djet_MC","D Jet area distribution vs Jet p_{T} MC; Jet p_{T};Area",nbinsptjet,ptjetlims[0],ptjetlims[1], nbinsArea,0,1);
+   fhJetTrksPtJet_Djet_MC= new TH2F("fhJetTrksPtJet_Djet_MC","D Jet N tracks distribution vs Jet p_{T} MC; Jet p_{T};N tracks",nbinsptjet,ptjetlims[0],ptjetlims[1], nbinNtracks,0,nbinNtracks);
+   fhPhiJetPtJet_Djet_Reco  = new TH2F("fhPhiJetPtJet_Djet_Reco","D Jet #phi distribution vs Jet p_{T} rec; Jet p_{T};#phi (rad)",nbinsptjet,ptjetlims[0],ptjetlims[1], nbinsphi,philims[0],philims[1]);
+   fhPhiJetTrksPtJet_Djet_Reco = new TH2F("fhPhiJetTrksPtJet_Djet_Reco","D Jet tracks #phi distribution vs Jet p_{T} rec; Jet p_{T};#phi (rad)",nbinsptjet,ptjetlims[0],ptjetlims[1], nbinsphi,philims[0],philims[1]);
+   fhEtaJetPtJet_Djet_Reco  = new TH2F("fhEtaJetPtJet_Djet_Reco","D Jet #eta distribution vs Jet p_{T} rec; Jet p_{T};#eta",nbinsptjet,ptjetlims[0],ptjetlims[1], nbinseta,etalims[0],etalims[1]);
+   fhEtaJetTrksPtJet_Djet_Reco = new TH2F("fhEtaJetTrksPtJet_Djet_Reco","D Jet tracks #eta distribution vs Jet p_{T} rec; Jet p_{T};#eta",nbinsptjet,ptjetlims[0],ptjetlims[1], nbinseta,etalims[0],etalims[1]);
+   fhAreaJetPtJet_Djet_Reco= new TH2F("fhAreaJetPtJet_Djet_Reco","D Jet area distribution vs Jet p_{T} rec; Jet p_{T};Area",nbinsptjet,ptjetlims[0],ptjetlims[1], nbinsArea,0,1);
+   fhJetTrksPtJet_Djet_Reco= new TH2F("fhJetTrksPtJet_Djet_Reco","D Jet N tracks distribution vs Jet p_{T} rec; Jet p_{T};N tracks",nbinsptjet,ptjetlims[0],ptjetlims[1], nbinNtracks,0,nbinNtracks);
 
 
-   fhPhiJetPtJetD = new TH2F("fhPhiJetPtJetD","D Jet #phi distribution vs Jet p_{T}; Jet p_{T};#phi (rad)",nbinsptjet,ptjetlims[0],ptjetlims[1], nbinsphi,philims[0],philims[1]);
-   fhPhiJetTrksPtJetD= new TH2F("fhPhiJetTrksPtJetD","D Jet tracks #phi distribution vs Jet p_{T}; Jet p_{T};#phi (rad)",nbinsptjet,ptjetlims[0],ptjetlims[1], nbinsphi,philims[0],philims[1]);
-   fhAreaJetPtJetD= new TH2F("fhAreaJetPtJetD","D Jet area distribution vs Jet p_{T}; Jet p_{T};Area",nbinsptjet,ptjetlims[0],ptjetlims[1], 10,0,1);
-   fhJetTrksPtJetD= new TH2F("fhJetTrksPtJetD","D Jet N tracks distribution vs Jet p_{T}; Jet p_{T};N tracks",nbinsptjet,ptjetlims[0],ptjetlims[1], nbinNtracks,0,nbinNtracks);
+   fhPhiJetPtJet_incl_MC->Sumw2();
+   fhPhiJetTrksPtJet_incl_MC->Sumw2();
+   fhEtaJetPtJet_incl_MC->Sumw2();
+   fhEtaJetTrksPtJet_incl_MC ->Sumw2();
+   fhAreaJetPtJet_incl_MC->Sumw2();
+   fhJetTrksPtJet_incl_MC->Sumw2();
+   fhPhiJetPtJet_incl_Reco->Sumw2();
+   fhPhiJetTrksPtJet_incl_Reco->Sumw2();
+   fhEtaJetPtJet_incl_Reco->Sumw2();
+   fhEtaJetTrksPtJet_incl_Reco->Sumw2();
+   fhAreaJetPtJet_incl_Reco->Sumw2();
+   fhJetTrksPtJet_incl_Reco->Sumw2();
 
-   fhPhiJetPtJetMC->Sumw2();
-   fhPhiJetTrksPtJetMC->Sumw2();
-   fhEtaJetPtJetMC->Sumw2();
-   fhEtaJetTrksPtJetMC ->Sumw2();
-   fhAreaJetPtJetMC->Sumw2();
-   fhJetTrksPtJetMC->Sumw2();
-   fhPhiJetPtJetreco->Sumw2();
-   fhPhiJetTrksPtJetreco->Sumw2();
-   fhEtaJetPtJetreco->Sumw2();
-   fhEtaJetTrksPtJetreco->Sumw2();
-   fhAreaJetPtJetreco->Sumw2();
-   fhJetTrksPtJetreco->Sumw2();
-   fhPhiJetPtJetD->Sumw2();
-   fhPhiJetTrksPtJetD->Sumw2();
-   fhAreaJetPtJetD->Sumw2();
-   fhJetTrksPtJetD->Sumw2();
+   fhPhiJetPtJet_Djet_MC->Sumw2();
+   fhPhiJetTrksPtJet_Djet_MC->Sumw2();
+   fhEtaJetPtJet_Djet_MC->Sumw2();
+   fhEtaJetTrksPtJet_Djet_MC ->Sumw2();
+   fhAreaJetPtJet_Djet_MC->Sumw2();
+   fhJetTrksPtJet_Djet_MC->Sumw2();
+   fhPhiJetPtJet_Djet_Reco->Sumw2();
+   fhPhiJetTrksPtJet_Djet_Reco->Sumw2();
+   fhEtaJetPtJet_Djet_Reco->Sumw2();
+   fhEtaJetTrksPtJet_Djet_Reco->Sumw2();
+   fhAreaJetPtJet_Djet_Reco->Sumw2();
+   fhJetTrksPtJet_Djet_Reco->Sumw2();
 
    fOutput->Add(fhPhiJetTrks);
    fOutput->Add(fhEtaJetTrks);
@@ -1136,23 +1229,31 @@ Bool_t  AliAnalysisTaskDJetCorrelationsQA::DefineHistoForAnalysis(){
    fOutput->Add(fhEtaJet);
    fOutput->Add(fhPtJet);
 
-   fOutput->Add(fhPhiJetPtJetMC);
-   fOutput->Add(fhPhiJetTrksPtJetMC);
-   fOutput->Add(fhEtaJetPtJetMC);
-   fOutput->Add(fhEtaJetTrksPtJetMC);
-   fOutput->Add(fhAreaJetPtJetMC);
-   fOutput->Add(fhJetTrksPtJetMC);
-   fOutput->Add(fhPhiJetPtJetreco);
-   fOutput->Add(fhPhiJetTrksPtJetreco);
-   fOutput->Add(fhEtaJetPtJetreco);
-   fOutput->Add(fhEtaJetTrksPtJetreco);
-   fOutput->Add(fhAreaJetPtJetreco);
-   fOutput->Add(fhJetTrksPtJetreco);
+   fOutput->Add(fhPhiJetPtJet_incl_MC);
+   fOutput->Add(fhPhiJetTrksPtJet_incl_MC);
+   fOutput->Add(fhEtaJetPtJet_incl_MC);
+   fOutput->Add(fhEtaJetTrksPtJet_incl_MC);
+   fOutput->Add(fhAreaJetPtJet_incl_MC);
+   fOutput->Add(fhJetTrksPtJet_incl_MC);
+   fOutput->Add(fhPhiJetPtJet_incl_Reco);
+   fOutput->Add(fhPhiJetTrksPtJet_incl_Reco);
+   fOutput->Add(fhEtaJetPtJet_incl_Reco);
+   fOutput->Add(fhEtaJetTrksPtJet_incl_Reco);
+   fOutput->Add(fhAreaJetPtJet_incl_Reco);
+   fOutput->Add(fhJetTrksPtJet_incl_Reco);
 
-   fOutput->Add(fhPhiJetPtJetD);
-   fOutput->Add(fhPhiJetTrksPtJetD);
-   fOutput->Add(fhAreaJetPtJetD);
-   fOutput->Add(fhJetTrksPtJetD);
+   fOutput->Add(fhPhiJetPtJet_Djet_MC);
+   fOutput->Add(fhPhiJetTrksPtJet_Djet_MC);
+   fOutput->Add(fhEtaJetPtJet_Djet_MC);
+   fOutput->Add(fhEtaJetTrksPtJet_Djet_MC);
+   fOutput->Add(fhAreaJetPtJet_Djet_MC);
+   fOutput->Add(fhJetTrksPtJet_Djet_MC);
+   fOutput->Add(fhPhiJetPtJet_Djet_Reco);
+   fOutput->Add(fhPhiJetTrksPtJet_Djet_Reco);
+   fOutput->Add(fhEtaJetPtJet_Djet_Reco);
+   fOutput->Add(fhEtaJetTrksPtJet_Djet_Reco);
+   fOutput->Add(fhAreaJetPtJet_Djet_Reco);
+   fOutput->Add(fhJetTrksPtJet_Djet_Reco);
 
       if(fCandidateType==kDstartoKpipi)
       {
@@ -1231,11 +1332,11 @@ Bool_t  AliAnalysisTaskDJetCorrelationsQA::DefineHistoForAnalysis(){
 
     if(fBuildRM == kTRUE || fBuildRMEff == kTRUE)
     {
-        const Int_t nRMAxis=16;
-        const Int_t RMnbins[nRMAxis] = {nbinsSpsz,nbinsSpsptjet,nbinsSpsptD,nbinsSpsy,nbinsSpsy,nbinsphi,nbinNtracks,nbinsSpsz,nbinsSpsptjet,nbinsSpsptD,nbinsSpsy,nbinsSpsy,nbinsphi,nbinNtracks,100,100};
-        const Double_t RMmin[nRMAxis]={zlims[0],ptjetlims[0],ptDlims[0],etalims[0],etalims[0],philims[0],0,zlims[0],ptjetlims[0],ptDlims[0],etalims[0],etalims[0],philims[0],0,-1,-1};
-        const Double_t RMmax[nRMAxis]={zlims[1],ptjetlims[1],ptDlims[1],etalims[1],etalims[1],philims[1],nbinNtracks,zlims[1],ptjetlims[1],ptDlims[1],etalims[1],etalims[1],philims[1],nbinNtracks,1,1};
-        fResponseMatrix = new THnSparseF("ResponseMatrix","z, p_{T}^{jet}, p_{T}^{D}, y^{D}, #eta^{jet}, #varphi^{jet}, Ntracks^{jet}: Rec and Gen, p_{T}^{res}, z^{res}",nRMAxis,RMnbins,RMmin,RMmax);
+        const Int_t nRMAxis=24;
+        const Int_t RMnbins[nRMAxis] = {nbinsSpsz,nbinsSpsptD,nbinsSpsy,nbinseta,nbinsphi,nbinsSpsptjet,nbinsSpsy,nbinseta,nbinsphi,nbinsArea,nbinNtracks,nbinsSpsz,nbinsSpsptD,nbinsSpsy,nbinseta,nbinsphi,nbinsSpsptjet,nbinsSpsy,nbinseta,nbinsphi,nbinsArea,nbinNtracks,100,100};
+        const Double_t RMmin[nRMAxis]= {zlims[0],ptDlims[0],etalims[0],etalims[0],philims[0],ptjetlims[0],etalims[0],etalims[0],philims[0],0,0,zlims[0],ptDlims[0],etalims[0],etalims[0],philims[0],ptjetlims[0],etalims[0],etalims[0],philims[0],0,0,-1,-1};
+        const Double_t RMmax[nRMAxis]= {zlims[1],ptDlims[1],etalims[1],etalims[1],philims[1],ptjetlims[1],etalims[1],etalims[1],philims[1],1,nbinNtracks,zlims[1],ptDlims[1],etalims[1],etalims[1],philims[1],ptjetlims[1],etalims[1],etalims[1],philims[1],1,nbinNtracks,1,1};
+        fResponseMatrix = new THnSparseF("ResponseMatrix","z, p_{T}^{D}, y^{D}, #eta^{D}, #varphi^{D},p_{T}^{jet},y^{jet}, #eta^{jet}, #varphi^{jet}, Area^{jet}, Ntracks^{jet}: Rec and Gen, p_{T}^{res}, z^{res}",nRMAxis,RMnbins,RMmin,RMmax);
         fResponseMatrix->Sumw2();
         fOutput->Add(fResponseMatrix);
     }
