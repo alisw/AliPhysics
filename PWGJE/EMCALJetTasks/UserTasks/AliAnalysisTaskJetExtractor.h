@@ -38,10 +38,11 @@ class AliAnalysisTaskJetExtractor : public AliAnalysisTaskEmcalJet {
   void                        SetSaveConstituentsIP(Bool_t val) {fSaveConstituentsIP = val; fInitialized = kFALSE;}
   void                        SetSaveConstituentPID(Bool_t val) {fSaveConstituentPID = val; fInitialized = kFALSE;}
   void                        SetSaveJetShapes(Bool_t val) {fSaveJetShapes = val; fInitialized = kFALSE;}
+  void                        SetSaveJetSplittings(Bool_t val) {fSaveJetSplittings = val; fInitialized = kFALSE;}
   void                        SetSaveMCInformation(Bool_t val) {fSaveMCInformation = val; fInitialized = kFALSE;}
   void                        SetSaveSecondaryVertices(Bool_t val) {fSaveSecondaryVertices = val; fInitialized = kFALSE;}
-  void                        SetSaveTriggerTracks(Bool_t val) {fSaveTriggerTracks = val;}
-  void                        SetSaveCaloClusters(Bool_t val) {fSaveCaloClusters = val;}
+  void                        SetSaveTriggerTracks(Bool_t val) {fSaveTriggerTracks = val; fInitialized = kFALSE;}
+  void                        SetSaveCaloClusters(Bool_t val) {fSaveCaloClusters = val; fInitialized = kFALSE;}
 
   void                        ActivateJetMatching(const char* arrayName, const char* rhoName = 0, const char* rhoMassName = 0)
                                 {fMatchedJetsArrayName = arrayName; fMatchedJetsRhoName = rhoName ? rhoName : ""; fMatchedJetsRhoMassName = rhoMassName ? rhoMassName : "";}
@@ -80,12 +81,14 @@ class AliAnalysisTaskJetExtractor : public AliAnalysisTaskEmcalJet {
   void                        AddPIDInformation(const AliVParticle* particle, Float_t& sigITS, Float_t& sigTPC, Float_t& sigTOF, Float_t& sigTRD, Short_t& recoPID, Int_t& truePID);
   void                        GetTrackImpactParameters(const AliVVertex* vtx, const AliAODTrack* track, Float_t& d0, Float_t& d0cov, Float_t& z0, Float_t& z0cov);
   void                        ReconstructSecondaryVertices(const AliVVertex* primVtx, const AliEmcalJet* jet, std::vector<Float_t>& secVtx_X, std::vector<Float_t>& secVtx_Y, std::vector<Float_t>& secVtx_Z, std::vector<Float_t>& secVtx_Mass, std::vector<Float_t>& secVtx_Lxy, std::vector<Float_t>& secVtx_SigmaLxy, std::vector<Float_t>& secVtx_Chi2, std::vector<Float_t>& secVtx_Dispersion);
+  void                        GetJetSplittings(AliEmcalJet* jet, std::vector<Float_t>& splittings_radiatorE, std::vector<Float_t>& splittings_kT, std::vector<Float_t>& splittings_theta);
 
   // ################## CUTS AND SETTINGS: Should be set during task initialization
   Bool_t                      fSaveConstituents;                        ///< save arrays of constituent basic properties
   Bool_t                      fSaveConstituentsIP;                      ///< save arrays of constituent impact parameters
   Bool_t                      fSaveConstituentPID;                      ///< save arrays of constituent PID parameters
   Bool_t                      fSaveJetShapes;                           ///< save jet shapes
+  Bool_t                      fSaveJetSplittings;                       ///< save jet splittings from iterative CA reclustering
   Bool_t                      fSaveMCInformation;                       ///< save MC information
   Bool_t                      fSaveSecondaryVertices;                   ///< save reconstructed sec. vertex properties
   Bool_t                      fSaveTriggerTracks;                       ///< save event trigger track
@@ -129,6 +132,7 @@ class AliAnalysisTaskJetExtractor : public AliAnalysisTaskEmcalJet {
   TRandom3*                   fRandomGeneratorCones;                    //!<! Random number generator, used for random cones
   AliHFJetsTaggingVertex*     fVtxTagger;                               //!<! class for sec. vertexing
   Bool_t                      fIsEmbeddedEvent;                         ///< Set to true if at least one embedding container is added to this task
+  std::vector<AliVParticle*>  fSecVertexTracks;                         ///< Vector of track pointers associated to the secondary vertices
 
   // ################## HELPER FUNCTIONS
   Double_t                    GetDistance(Double_t eta1, Double_t eta2, Double_t phi1, Double_t phi2)
@@ -182,12 +186,13 @@ class AliEmcalJetTree : public TNamed
     void            AddExtractionJetTypeHM(Int_t type) {fExtractionJetTypes_HM.push_back(type);}
     void            AddExtractionJetTypePM(Int_t type) {fExtractionJetTypes_PM.push_back(type);}
 
-    void            InitializeTree(Bool_t saveCaloClusters, Bool_t saveMCInformation, Bool_t saveConstituents, Bool_t saveConstituentsIP, Bool_t saveConstituentPID, Bool_t saveJetShapes, Bool_t saveSecondaryVertices, Bool_t saveTriggerTracks);
+    void            InitializeTree(Bool_t saveCaloClusters, Bool_t saveMCInformation, Bool_t saveConstituents, Bool_t saveConstituentsIP, Bool_t saveConstituentPID, Bool_t saveJetShapes, Bool_t saveSplittings, Bool_t saveSecondaryVertices, Bool_t saveTriggerTracks);
 
     // ######################################
     Bool_t          AddJetToTree(AliEmcalJet* jet, Bool_t saveConstituents, Bool_t saveConstituentsIP, Bool_t saveCaloClusters, Double_t* vertex, Float_t rho, Float_t rhoMass, Float_t centrality, Int_t multiplicity, Long64_t eventID, Float_t magField);
     void            FillBuffer_SecVertices(std::vector<Float_t>& secVtx_X, std::vector<Float_t>& secVtx_Y, std::vector<Float_t>& secVtx_Z, std::vector<Float_t>& secVtx_Mass, std::vector<Float_t>& secVtx_Lxy, std::vector<Float_t>& secVtx_SigmaLxy, std::vector<Float_t>& secVtx_Chi2, std::vector<Float_t>& secVtx_Dispersion);
     void            FillBuffer_JetShapes(AliEmcalJet* jet, Double_t leSub_noCorr, Double_t angularity, Double_t momentumDispersion, Double_t trackPtMean, Double_t trackPtMedian);
+    void            FillBuffer_Splittings(std::vector<Float_t>& splittings_radiatorE, std::vector<Float_t>& splittings_kT, std::vector<Float_t>& splittings_theta);
     void            FillBuffer_PID(std::vector<Float_t>& trackPID_ITS, std::vector<Float_t>& trackPID_TPC, std::vector<Float_t>& trackPID_TOF, std::vector<Float_t>& trackPID_TRD, std::vector<Short_t>& trackPID_Reco, std::vector<Int_t>& trackPID_Truth);
     void            FillBuffer_MonteCarlo(Int_t motherParton, Int_t motherHadron, Int_t partonInitialCollision, Float_t matchJetDistance, Float_t matchedJetPt, Float_t matchedJetMass, Float_t truePtFraction, Float_t truePtFraction_mcparticles, Float_t ptHard, Float_t eventWeight, Float_t impactParameter);
     void            FillBuffer_ImpactParameters(std::vector<Float_t>& trackIP_d0, std::vector<Float_t>& trackIP_z0, std::vector<Float_t>& trackIP_d0cov, std::vector<Float_t>& trackIP_z0cov);
@@ -280,9 +285,10 @@ class AliEmcalJetTree : public TNamed
 
     Int_t           fBuffer_NumTriggerTracks;
     Int_t           fBuffer_NumSecVertices;
+    Int_t           fBuffer_NumSplittings;
 
     /// \cond CLASSIMP
-    ClassDef(AliEmcalJetTree, 7) // Jet tree class
+    ClassDef(AliEmcalJetTree, 8) // Jet tree class
     /// \endcond
 };
 

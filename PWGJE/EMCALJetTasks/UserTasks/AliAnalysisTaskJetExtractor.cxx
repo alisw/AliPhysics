@@ -55,6 +55,7 @@
 #include "AliAnalysisTaskEmcalJet.h"
 #include "AliAnalysisManager.h"
 #include "AliEmcalContainerUtils.h"
+#include "AliFJWrapper.h"
 
 
 #include "AliGenHepMCEventHeader.h"
@@ -288,6 +289,15 @@ void AliEmcalJetTree::FillBuffer_JetShapes(AliEmcalJet* jet, Double_t leSub_noCo
 }
 
 //________________________________________________________________________
+void AliEmcalJetTree::FillBuffer_Splittings(std::vector<Float_t>& splittings_radiatorE, std::vector<Float_t>& splittings_kT, std::vector<Float_t>& splittings_theta)
+{
+  fBuffer_NumSplittings = splittings_radiatorE.size();
+  fJetTree->SetBranchAddress("Jet_Splitting_RadiatorE", splittings_radiatorE.data());
+  fJetTree->SetBranchAddress("Jet_Splitting_kT", splittings_kT.data());
+  fJetTree->SetBranchAddress("Jet_Splitting_Theta", splittings_theta.data());
+}
+
+//________________________________________________________________________
 void AliEmcalJetTree::FillBuffer_SecVertices(std::vector<Float_t>& secVtx_X, std::vector<Float_t>& secVtx_Y, std::vector<Float_t>& secVtx_Z, std::vector<Float_t>& secVtx_Mass, std::vector<Float_t>& secVtx_Lxy, std::vector<Float_t>& secVtx_SigmaLxy, std::vector<Float_t>& secVtx_Chi2, std::vector<Float_t>& secVtx_Dispersion)
 {
   fBuffer_NumSecVertices = secVtx_X.size();
@@ -302,7 +312,7 @@ void AliEmcalJetTree::FillBuffer_SecVertices(std::vector<Float_t>& secVtx_X, std
 }
 
 //________________________________________________________________________
-void AliEmcalJetTree::InitializeTree(Bool_t saveCaloClusters, Bool_t saveMCInformation, Bool_t saveConstituents, Bool_t saveConstituentsIP, Bool_t saveConstituentPID, Bool_t saveJetShapes, Bool_t saveSecondaryVertices, Bool_t saveTriggerTracks)
+void AliEmcalJetTree::InitializeTree(Bool_t saveCaloClusters, Bool_t saveMCInformation, Bool_t saveConstituents, Bool_t saveConstituentsIP, Bool_t saveConstituentPID, Bool_t saveJetShapes, Bool_t saveSplittings, Bool_t saveSecondaryVertices, Bool_t saveTriggerTracks)
 {
   // Create the tree with active branches
   
@@ -408,6 +418,14 @@ void AliEmcalJetTree::InitializeTree(Bool_t saveCaloClusters, Bool_t saveMCInfor
     fJetTree->Branch("Jet_Shape_TrackPtMedian",&fBuffer_Shape_TrackPtMedian,"Jet_Shape_TrackPtMedian/F");
   }
 
+  if(saveSplittings)
+  {
+    fJetTree->Branch("Jet_NumSplittings",&fBuffer_NumSplittings,"Jet_NumSplittings/I");
+    fJetTree->Branch("Jet_Splitting_Theta",&dummy,"Jet_Splitting_Theta[Jet_NumSplittings]/F");
+    fJetTree->Branch("Jet_Splitting_RadiatorE",&dummy,"Jet_Splitting_RadiatorE[Jet_NumSplittings]/F");
+    fJetTree->Branch("Jet_Splitting_kT",&dummy,"Jet_Splitting_kT[Jet_NumSplittings]/F");
+  }
+
   if(saveMCInformation)
   {
     fJetTree->Branch("Jet_MC_MotherParton",&fBuffer_Jet_MC_MotherParton,"Jet_MC_MotherParton/I");
@@ -449,7 +467,7 @@ void AliEmcalJetTree::InitializeTree(Bool_t saveCaloClusters, Bool_t saveMCInfor
 //________________________________________________________________________
 AliAnalysisTaskJetExtractor::AliAnalysisTaskJetExtractor() :
   AliAnalysisTaskEmcalJet("AliAnalysisTaskJetExtractor", kTRUE),
-  fSaveConstituents(0), fSaveConstituentsIP(0), fSaveConstituentPID(0), fSaveJetShapes(0), fSaveMCInformation(0), fSaveSecondaryVertices(0), fSaveTriggerTracks(0), fSaveCaloClusters(0),
+  fSaveConstituents(0), fSaveConstituentsIP(0), fSaveConstituentPID(0), fSaveJetShapes(0), fSaveJetSplittings(0), fSaveMCInformation(0), fSaveSecondaryVertices(0), fSaveTriggerTracks(0), fSaveCaloClusters(0),
   fEventPercentage(1.0),
   fEventCut_TriggerTrackMinPt(0),
   fEventCut_TriggerTrackMaxPt(0),
@@ -482,7 +500,8 @@ AliAnalysisTaskJetExtractor::AliAnalysisTaskJetExtractor() :
   fRandomGenerator(0),
   fRandomGeneratorCones(0),
   fVtxTagger(0),
-  fIsEmbeddedEvent(kFALSE)
+  fIsEmbeddedEvent(kFALSE),
+  fSecVertexTracks()
 {
   fRandomGenerator = new TRandom3();
   fRandomGeneratorCones = new TRandom3();
@@ -495,7 +514,7 @@ AliAnalysisTaskJetExtractor::AliAnalysisTaskJetExtractor() :
 //________________________________________________________________________
 AliAnalysisTaskJetExtractor::AliAnalysisTaskJetExtractor(const char *name) :
   AliAnalysisTaskEmcalJet(name, kTRUE),
-  fSaveConstituents(0), fSaveConstituentsIP(0), fSaveConstituentPID(0), fSaveJetShapes(0), fSaveMCInformation(0), fSaveSecondaryVertices(0), fSaveTriggerTracks(0), fSaveCaloClusters(0),
+  fSaveConstituents(0), fSaveConstituentsIP(0), fSaveConstituentPID(0), fSaveJetShapes(0), fSaveJetSplittings(0), fSaveMCInformation(0), fSaveSecondaryVertices(0), fSaveTriggerTracks(0), fSaveCaloClusters(0),
   fEventPercentage(1.0),
   fEventCut_TriggerTrackMinPt(0),
   fEventCut_TriggerTrackMaxPt(0),
@@ -528,7 +547,8 @@ AliAnalysisTaskJetExtractor::AliAnalysisTaskJetExtractor(const char *name) :
   fRandomGenerator(0),
   fRandomGeneratorCones(0),
   fVtxTagger(0),
-  fIsEmbeddedEvent(kFALSE)
+  fIsEmbeddedEvent(kFALSE),
+  fSecVertexTracks()
 {
   fRandomGenerator = new TRandom3();
   fRandomGeneratorCones = new TRandom3();
@@ -567,7 +587,7 @@ void AliAnalysisTaskJetExtractor::UserCreateOutputObjects()
 
   // ### Initialize the jet tree (settings must all be given at this stage)
   fJetTree->SetRandomGenerator(fRandomGenerator);
-  fJetTree->InitializeTree(fSaveCaloClusters, fSaveMCInformation, fSaveConstituents, fSaveConstituentsIP, fSaveConstituentPID, fSaveJetShapes, fSaveSecondaryVertices, fSaveTriggerTracks);
+  fJetTree->InitializeTree(fSaveCaloClusters, fSaveMCInformation, fSaveConstituents, fSaveConstituentsIP, fSaveConstituentPID, fSaveJetShapes, fSaveJetSplittings, fSaveSecondaryVertices, fSaveTriggerTracks);
   OpenFile(2);
   PostData(2, fJetTree->GetTreePointer());
 
@@ -690,6 +710,7 @@ Bool_t AliAnalysisTaskJetExtractor::Run()
   std::vector<Float_t> secVtx_X; std::vector<Float_t> secVtx_Y; std::vector<Float_t> secVtx_Z; std::vector<Float_t> secVtx_Mass; std::vector<Float_t> secVtx_Lxy; std::vector<Float_t> secVtx_SigmaLxy; std::vector<Float_t> secVtx_Chi2; std::vector<Float_t> secVtx_Dispersion;
   std::vector<Float_t> triggerTracks_dEta(fTriggerTracks_Eta);
   std::vector<Float_t> triggerTracks_dPhi(fTriggerTracks_Phi);
+  std::vector<Float_t> splittings_radiatorE; std::vector<Float_t> splittings_kT; std::vector<Float_t> splittings_theta;
 
 
   // Load vertex if possible
@@ -808,6 +829,13 @@ Bool_t AliAnalysisTaskJetExtractor::Run()
       CalculateJetShapes(jet, leSub_noCorr, angularity, momentumDispersion, trackPtMean, trackPtMedian);
       fJetTree->FillBuffer_JetShapes(jet, leSub_noCorr, angularity, momentumDispersion, trackPtMean, trackPtMedian);
     }
+
+    if(fSaveJetSplittings)
+    {
+      GetJetSplittings(jet, splittings_radiatorE, splittings_kT, splittings_theta);
+      fJetTree->FillBuffer_Splittings(splittings_radiatorE, splittings_kT, splittings_theta);
+    }
+
     // Fill jet to tree (here adding the minimum properties)
     Bool_t accepted = fJetTree->AddJetToTree(jet, fSaveConstituents, fSaveConstituentsIP, fSaveCaloClusters, vtx, GetJetContainer(0)->GetRhoVal(), GetJetContainer(0)->GetRhoMassVal(), fCent, fMultiplicity, eventID, InputEvent()->GetMagneticField());
     if(accepted)
@@ -1151,8 +1179,6 @@ void AliAnalysisTaskJetExtractor::ReconstructSecondaryVertices(const AliVVertex*
   // Derived from AliAnalysisTaskEmcalJetBtagSV
   secVertexArr = new TClonesArray("AliAODVertex");
   Int_t nDauRejCount = 0;
-  // NOTE: FindVertices uses jet->TrackAt(int, TClonesArray*) which is DEPRECATED
-  // It might cause problems with multi-container environments (e.g. in embedding)
   Int_t nVtx = fVtxTagger->FindVertices(jet,
                                         GetParticleContainer(0)->GetArray(),
                                         (AliAODEvent*)InputEvent(),
@@ -1172,6 +1198,7 @@ void AliAnalysisTaskJetExtractor::ReconstructSecondaryVertices(const AliVVertex*
   //###########################################################################
 
   // Loop over all potential secondary vertices
+  fSecVertexTracks.clear();
   for(Int_t i=0; i<secVertexArr->GetEntriesFast(); i++)
   {
     AliAODVertex* secVtx = (AliAODVertex*)(secVertexArr->UncheckedAt(i));
@@ -1202,6 +1229,11 @@ void AliAnalysisTaskJetExtractor::ReconstructSecondaryVertices(const AliVVertex*
     // Add secondary vertices if they fulfill the conditions
     if( (dispersion > fSecondaryVertexMaxDispersion) || (TMath::Abs(secVtx->GetChi2perNDF()) > fSecondaryVertexMaxChi2) )
       continue;
+
+    // Internally, save the track pointers associated to the sec. vertices to a list
+    // Each secondary vertex is reconstructed from 3 prongs
+    AliVParticle* daughters[3] = {static_cast<AliVParticle*>(aodVtx->GetDaughter(0)), static_cast<AliVParticle*>(aodVtx->GetDaughter(1)), static_cast<AliVParticle*>(aodVtx->GetDaughter(2))};
+    fSecVertexTracks.push_back(daughters);
 
     secVtx_X.push_back(secVtx->GetX()); secVtx_Y.push_back(secVtx->GetY()); secVtx_Z.push_back(secVtx->GetZ()); secVtx_Chi2.push_back(secVtx->GetChi2perNDF());
     secVtx_Dispersion.push_back(dispersion); secVtx_Mass.push_back(mass); secVtx_Lxy.push_back(Lxy); secVtx_SigmaLxy.push_back(sigmaLxy); 
@@ -1402,6 +1434,75 @@ void AliAnalysisTaskJetExtractor::AddPIDInformation(const AliVParticle* particle
   }
 }
 
+
+//________________________________________________________________________
+void AliAnalysisTaskJetExtractor::GetJetSplittings(AliEmcalJet* jet, std::vector<Float_t>& splittings_radiatorE, std::vector<Float_t>& splittings_kT, std::vector<Float_t>& splittings_theta)
+{
+  // ### Adapted from code in AliAnalysisTaskDmesonJetsSub ###
+  // Define jet reclusterizer
+  fastjet::JetAlgorithm   jetAlgo(fastjet::cambridge_algorithm);
+  Double_t                jetRadius_CA = 1.0;
+  fastjet::JetDefinition  jetDefinition(jetAlgo, jetRadius_CA,static_cast<fastjet::RecombinationScheme>(0), fastjet::Best);
+
+  try{
+    // Convert jet constituents to vector of fastjet::PseudoJet
+    std::vector<fastjet::PseudoJet> particles;
+    for(Int_t iConst=0; iConst<jet->GetNumberOfParticleConstituents(); iConst++)
+    {
+      const AliVParticle* constituent = jet->GetParticleConstituents()[iConst].GetParticle();
+      Double_t p[3];
+      constituent->PxPyPz(p);
+      fastjet::PseudoJet pseudoJet = fastjet::PseudoJet(p[0], p[1], p[2], constituent->E());
+      /*
+      if(constiuent in vertex tracks)
+        pseudoJet.set_user_index(vtx id);
+      */
+      particles.push_back(pseudoJet);
+    }
+
+    // Perform jet reclustering
+    fastjet::ClusterSequence        clusterSeq_CA(particles, jetDefinition);
+    std::vector<fastjet::PseudoJet> jets_CA = clusterSeq_CA.inclusive_jets(0);
+    jets_CA = sorted_by_pt(jets_CA);
+    fastjet::PseudoJet radiator = jets_CA[0];
+    fastjet::PseudoJet leadingSubJet;
+    fastjet::PseudoJet subleadingSubJet;
+
+    // Iterate through the splitting history of the CA clusterization
+    while(radiator.has_parents(leadingSubJet,subleadingSubJet))
+    {
+      if(leadingSubJet.perp() < subleadingSubJet.perp())
+        std::swap(leadingSubJet,subleadingSubJet);
+
+      // Angle theta
+      Float_t theta = leadingSubJet.delta_R(subleadingSubJet);
+      // Radiator energy
+      Float_t radiatorEnergy = leadingSubJet.e()+subleadingSubJet.e();
+      // kT
+      Float_t kT = subleadingSubJet.perp()*theta;
+
+      /*
+      //TODO
+      vector < fastjet::PseudoJet > constitj1 = sorted_by_pt(j1.constituents());
+      for(Int_t j=0;j<constitj1.size();j++){
+                if(constitj1[j].user_index()==0){
+          xconstperp=constitj1[j].perp();
+          flagSubjet=1; }}
+      //TODO
+      */
+
+      // Now add splitting properties to result vector
+      splittings_radiatorE.push_back(radiatorEnergy);
+      splittings_theta.push_back(theta);
+      splittings_kT.push_back(kT);
+
+      // Continue with leadingSubJet as new radiator
+      radiator=leadingSubJet;
+    }
+  } catch (fastjet::Error) { /*return -1;*/ }
+}
+
+
 //________________________________________________________________________
 void AliAnalysisTaskJetExtractor::PrintConfig()
 {
@@ -1475,6 +1576,8 @@ void AliAnalysisTaskJetExtractor::PrintConfig()
     std::cout << "* Secondary vertices" << std::endl;
   if(fSaveJetShapes)
     std::cout << "* Jet shapes (jet mass, LeSub, pTD, ...)" << std::endl;
+  if(fSaveJetSplittings)
+    std::cout << "* Jet splittings (kT, theta, E from iterative CA reclustering)" << std::endl;
   if(fSaveTriggerTracks)
     std::cout << "* Trigger tracks" << std::endl;
   std::cout << std::endl;
