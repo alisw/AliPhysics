@@ -410,6 +410,36 @@ protected:
 };
 
 
+/// \class PairCutTrackAttrRemoveEE
+/// \brief Cut pairs with Minv near electron mass
+struct PairCutTrackAttrRemoveEE {
+  float ee_minv_min;
+
+  bool Pass(const AliFemtoTrack &track1, const AliFemtoTrack &track2)
+    {
+      const double
+        E_MASS = 0.000511,
+        minv_sqrd = PairCutTrackAttrMinv::CalcMinvSqrd(track1.P(), track2.P(), E_MASS, E_MASS),
+        minv = std::sqrt(minv_sqrd);
+      return std::abs(minv - E_MASS) >= ee_minv_min;
+    }
+
+  PairCutTrackAttrRemoveEE()
+    : ee_minv_min(0.0)
+    {}
+
+  PairCutTrackAttrRemoveEE(AliFemtoConfigObject &cfg)
+    : ee_minv_min(cfg.pop_float("ee_minv_min", 0.0))
+    {}
+
+  void FillConfiguration(AliFemtoConfigObject &cfg) const
+    {
+      cfg.insert("ee_minv_min", ee_minv_min);
+    }
+
+  virtual ~PairCutTrackAttrRemoveEE() {}
+};
+
 }  // namespace pwgcf
 
 

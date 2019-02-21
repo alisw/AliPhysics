@@ -61,7 +61,11 @@ typedef AddPairCutAttrs<
           PairCutTrackAttrSameLabel,
             AddPairCutAttrs<
               PairCutTrackAttrPt,
-              PairCutTrackAttrShareQuality> > PairCutAttrsBaseAK;
+              AddPairCutAttrs<
+                PairCutTrackAttrRemoveEE,
+                PairCutTrackAttrShareQuality
+          > >
+        > PairCutAttrsBaseAK;
 
 typedef AddPairCutAttrs<
           PairCutAttrsBaseAK,
