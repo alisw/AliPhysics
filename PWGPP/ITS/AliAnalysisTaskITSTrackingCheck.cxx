@@ -2221,7 +2221,8 @@ void AliAnalysisTaskITSTrackingCheck::UserExec(Option_t *)
 
     //
     Bool_t isPrimary=kTRUE,isFromMat=kFALSE,isFromStrange=kFALSE;
-    Double_t rProdVtx=0,zProdVtx=0;
+    Double_t rProdVtx=0;
+    //    Double_t zProdVtx=0;
     Int_t pdgTrk=0,pdgMoth=0;
     Int_t nClsMCSPD=0;
   
@@ -2241,7 +2242,7 @@ void AliAnalysisTaskITSTrackingCheck::UserExec(Option_t *)
       if (!part) continue;
       isPrimary = mcEvent->IsPhysicalPrimary(trkLabel);
       rProdVtx = TMath::Sqrt((part->Vx()-mcVertex[0])*(part->Vx()-mcVertex[0])+(part->Vy()-mcVertex[1])*(part->Vy()-mcVertex[1]));
-      zProdVtx = TMath::Abs(part->Vz()-mcVertex[2]);
+      //      zProdVtx = TMath::Abs(part->Vz()-mcVertex[2]);
       //if(rProdVtx<2.8) isPrimary=kTRUE; // this could be tried
       pdgTrk = TMath::Abs(part->GetPdgCode());
       AliMCParticle* mcPart=(AliMCParticle*)mcEvent->GetTrack(trkLabel);
@@ -3138,10 +3139,10 @@ Bool_t AliAnalysisTaskITSTrackingCheck::IsSelectedCentrality() const
   //
 
   const AliMultiplicity *alimult = fESD->GetMultiplicity();
-  Int_t ntrklets=1;
+  //  Int_t ntrklets=1;
   Int_t nclsSPDouter=0;
   if(alimult) {
-    ntrklets = alimult->GetNumberOfTracklets();
+    //    ntrklets = alimult->GetNumberOfTracklets();
     nclsSPDouter = alimult->GetNumberOfITSClusters(1);
   }
 
