@@ -204,12 +204,14 @@ AliAnalysisTaskElectronEfficiencyV2* AddTask_acapon_Efficiency(TString names    
 
   // #########################################################
   // #########################################################
-  // Add MCSignals. Can be set to see differences of:
-  // e.g. secondaries and primaries. or primaries from charm and resonances
-  AddSingleLegMCSignal(task);
-  AddPairMCSignal(task);
+  // Add MCSignals
+  // Add single track signal definition, and return vector used for calculating
+  // efficiencies from non resonant dielectron pairs. E.g use all ULS pairs,
+  // electrons from D or B decays etc
   std::vector<Bool_t> DielectronsPairNotFromSameMother = AddSingleLegMCSignal(task);
   task->AddMCSignalsWhereDielectronPairNotFromSameMother(DielectronsPairNotFromSameMother);
+  // Add standard "same-mother" dielectron pair signal
+  AddPairMCSignal(task);
 
   // #########################################################
   // Adding cutsettings

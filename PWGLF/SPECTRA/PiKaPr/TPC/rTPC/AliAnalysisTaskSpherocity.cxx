@@ -86,8 +86,8 @@ const Int_t nHists              = 4;
 const Int_t nCent               = 11;
 const Double_t CentMin[nCent]   = {0.0,1.0,5.0 ,10.0,15.0,20.0,30.0,40.0,50.0,70.0,0.0};
 const Double_t CentMax[nCent]   = {1.0,5.0,10.0,15.0,20.0,30.0,40.0,50.0,70.0,100.0,100.0};
-const Int_t MultTrksMin[nCent]  = {51,41,36,31,26,21,16,11,6,0,0};
-const Int_t MultTrksMax[nCent]  = {100,50,40,35,30,25,20,15,10,5,100};
+//const Int_t MultTrksMin[nCent]  = {51,41,36,31,26,21,16,11,6,0,0};
+//const Int_t MultTrksMax[nCent]  = {100,50,40,35,30,25,20,15,10,5,100};
 
 const Char_t *So[3]         = {"Jetty", "Isotropic", "Reference"};
 
@@ -140,6 +140,7 @@ ClassImp(AliAnalysisTaskSpherocity)
 	fAnalysisType("ESD"),
 	fAnalysisMC(kFALSE),
 	fAnalysisPbPb(kFALSE),
+	fisV0Mestimator(kFALSE),
 	fRandom(0x0),
 	fNcl(70),
 	fEtaCut(0.9),
@@ -151,6 +152,8 @@ ClassImp(AliAnalysisTaskSpherocity)
 	fDeDxMIPMax(60),
 	fdEdxHigh(200),
 	fdEdxLow(40),
+	fJettyCutOff(0.503),
+	fIsotrCutOff(0.774),
 	fMcProcessType(-999),
 	fTriggeredEventMB(-999),
 	fVtxStatus(-999),
@@ -160,7 +163,8 @@ ClassImp(AliAnalysisTaskSpherocity)
 	fEventId(-999),
 	fListOfObjects(0),
 	fEvents(0x0),
-	fVtxMC(0x0),
+	hMult(0x0),
+	fTrcksVsTrklets(0x0),
 	fdEdxCalibrated(0x0),
 	fMakePid(0x0),
 	fLowPt(0x0),
@@ -170,6 +174,11 @@ ClassImp(AliAnalysisTaskSpherocity)
 	fcentAfterV0s(0x0),
 	hphiso(0x0),
 	hetaso(0x0),
+	hPtTruthVsPtRec(0x0),
+	hPtTruthVsPtRecJetty(0x0),
+	hPtTruthVsPtRecIsotr(0x0),
+	hTruthPhiSo(0x0),
+	hTruthEtaSo(0x0),
 	fEtaCalibrationNeg(0x0),
 	fEtaCalibration(0x0),
 	felededxfitPos(0x0),
@@ -188,9 +197,10 @@ ClassImp(AliAnalysisTaskSpherocity)
 
 	}
 
+	hSOrvsV0M  = 0;
+	hSOrvsTrks = 0;
+	hRefMultVsRefMultPer = 0;
 	for(Int_t i = 0; i<nCent; ++i){
-	hSoV0M[i]=0;
-	hSoTrks[i]=0;
 
 	// Histograms for PreCalibration
 
@@ -232,17 +242,26 @@ ClassImp(AliAnalysisTaskSpherocity)
 		}
 	}
 
+//	hTruthEtaSo = 0;
+//	hTruthPhiSo = 0;
+	hSOtvsTrks  = 0;
+	hSOtvsTrkst = 0;
+	hSOtvsV0M   = 0;
 	//default constructor
 	for(Int_t cent=0;cent<nCent;++cent){
+	hSOtVsSOm[cent]   = 0;
 	for(Int_t pid=0;pid<7;++pid){
-	hMcIn[cent][pid]     = 0;
-	hMcOut[cent][pid]    = 0;
-	hMcInNeg[cent][pid]  = 0;
-	hMcInPos[cent][pid]  = 0;
-	hMcOutNeg[cent][pid] = 0;
-	hMcOutPos[cent][pid] = 0;
+	for(Int_t so=0;so<3;++so){
+	hMcIn[cent][pid][so]     = 0;
+	hMcOut[cent][pid][so]    = 0;
+	hMcInNeg[cent][pid][so]  = 0;
+	hMcInPos[cent][pid][so]  = 0;
+	hMcOutNeg[cent][pid][so] = 0;
+	hMcOutPos[cent][pid][so] = 0;
 		}
 	}
+}
+
 }
 
 AliAnalysisTaskSpherocity::AliAnalysisTaskSpherocity(const char *name):
@@ -263,6 +282,7 @@ AliAnalysisTaskSpherocity::AliAnalysisTaskSpherocity(const char *name):
 	fAnalysisType("ESD"),
 	fAnalysisMC(kFALSE),
 	fAnalysisPbPb(kFALSE),
+	fisV0Mestimator(kFALSE),
 	fRandom(0x0),
 	fNcl(70),
 	fEtaCut(0.9),
@@ -274,6 +294,8 @@ AliAnalysisTaskSpherocity::AliAnalysisTaskSpherocity(const char *name):
 	fDeDxMIPMax(60),
 	fdEdxHigh(200),
 	fdEdxLow(40),
+	fJettyCutOff(0.503),
+	fIsotrCutOff(0.774),
 	fMcProcessType(-999),
 	fTriggeredEventMB(-999),
 	fVtxStatus(-999),
@@ -283,7 +305,8 @@ AliAnalysisTaskSpherocity::AliAnalysisTaskSpherocity(const char *name):
 	fEventId(-999),
 	fListOfObjects(0), 
 	fEvents(0x0),
-	fVtxMC(0x0),
+	hMult(0x0),
+	fTrcksVsTrklets(0x0),
 	fdEdxCalibrated(0x0),
 	fMakePid(0x0),
 	fLowPt(0x0),
@@ -293,6 +316,11 @@ AliAnalysisTaskSpherocity::AliAnalysisTaskSpherocity(const char *name):
 	fcentAfterV0s(0x0),
 	hphiso(0x0),
 	hetaso(0x0),
+	hPtTruthVsPtRec(0x0),
+	hPtTruthVsPtRecJetty(0x0),
+	hPtTruthVsPtRecIsotr(0x0),
+	hTruthPhiSo(0x0),
+	hTruthEtaSo(0x0),
 	fEtaCalibrationNeg(0x0),
 	fEtaCalibration(0x0),
 	felededxfitPos(0x0),
@@ -309,23 +337,23 @@ AliAnalysisTaskSpherocity::AliAnalysisTaskSpherocity(const char *name):
 	pMIPVsNch[j]=0;//TProfile, MIP vs Nch for different eta intervals
 	}
 
+	hSOrvsV0M  = 0;
+	hSOrvsTrks = 0;
+	hRefMultVsRefMultPer = 0;
+
 	for(Int_t i = 0; i<nCent; ++i){
-	hSoV0M[i]=0;
-	hSoTrks[i]=0;
+
 	for(Int_t so = 0; so < 3; ++so){
 	hMIPVsEta[i][so] = 0;
-			pMIPVsEta[i][so]=0;
-			hPlateauVsEta[i][so]=0;
-			pPlateauVsEta[i][so]=0;
-			hMIPVsEtaV0s[i][so]=0;
-			pMIPVsEtaV0s[i][so]=0;
-			hPtAll[i][so]=0;
+	pMIPVsEta[i][so]=0;
+	hPlateauVsEta[i][so]=0;
+	pPlateauVsEta[i][so]=0;
+	hMIPVsEtaV0s[i][so]=0;
+	pMIPVsEtaV0s[i][so]=0;
+	hPtAll[i][so]=0;
 		}
 
-		hPhi[i]=0;
-
-		//		hPtAllPos[i]=0;
-		//		hPtAllNeg[i]=0;
+	hPhi[i]=0;
 
 		for(Int_t j=0; j<nHists; ++j){
 
@@ -353,15 +381,23 @@ AliAnalysisTaskSpherocity::AliAnalysisTaskSpherocity(const char *name):
 
 	}
 
+//	hTruthEtaSo = 0;
+//	hTruthPhiSo = 0;
+	hSOtvsTrks  = 0;
+	hSOtvsTrkst = 0;
+	hSOtvsV0M   = 0;
 	// Default constructor (should not be used)
 	for(Int_t cent=0; cent<nCent; ++cent){
-		for(Int_t pid=0; pid<7; ++pid){
-			hMcIn[cent][pid]=0;
-			hMcOut[cent][pid]=0;
-			hMcInNeg[cent][pid]=0;
-			hMcInPos[cent][pid]=0;
-			hMcOutNeg[cent][pid]=0;
-			hMcOutPos[cent][pid]=0;
+	hSOtVsSOm[cent] = 0;
+	for(Int_t pid=0; pid<7; ++pid){
+	for(Int_t so=0; so<3; ++so){
+	hMcIn[cent][pid][so]=0;
+	hMcOut[cent][pid][so]=0;
+	hMcInNeg[cent][pid][so]=0;
+	hMcInPos[cent][pid][so]=0;
+	hMcOutNeg[cent][pid][so]=0;
+	hMcOutPos[cent][pid][so]=0;
+			}
 		}
 	}
 
@@ -378,13 +414,7 @@ AliAnalysisTaskSpherocity::~AliAnalysisTaskSpherocity() {
 	//
 
 }
-
-
-
 //______________________________________________________________________________
-
-
-
 void AliAnalysisTaskSpherocity::UserCreateOutputObjects()
 {
 	// This method is called once per worker node
@@ -410,6 +440,8 @@ void AliAnalysisTaskSpherocity::UserCreateOutputObjects()
 		fSpheroUtils->SetTrackFilter(fTrackFilter);
 		fSpheroUtils->SetMinMult(10);
 		fSpheroUtils->Init();
+		
+		printf("JettyCutOff  =  %f       IsotrCutOff  =  %f\n",fJettyCutOff,fIsotrCutOff);
 	}
 
 	//OpenFile(1);
@@ -431,19 +463,24 @@ void AliAnalysisTaskSpherocity::UserCreateOutputObjects()
 	fEvents->GetXaxis()->SetBinLabel(8, "|Vtz|<10cm");//NotinVertexcut");
 	fEvents->GetXaxis()->SetBinLabel(9, "non-Selected So");//NotinVertexcut");
 	fEvents->GetXaxis()->SetBinLabel(10, "Selected So");//NotinVertexcut");
-	fEvents->GetYaxis()->SetBinLabel(2,Form("%.2f-%.2f",CentMin[0],CentMax[0]));
-	fEvents->GetYaxis()->SetBinLabel(3,Form("%.2f-%.2f",CentMin[1],CentMax[1]));
-	fEvents->GetYaxis()->SetBinLabel(4,Form("%.2f-%.2f",CentMin[2],CentMax[2]));
-	fEvents->GetYaxis()->SetBinLabel(5,Form("%.2f-%.2f",CentMin[3],CentMax[3]));
-	fEvents->GetYaxis()->SetBinLabel(6,Form("%.2f-%.2f",CentMin[4],CentMax[4]));
-	fEvents->GetYaxis()->SetBinLabel(7,Form("%.2f-%.2f",CentMin[5],CentMax[5]));
-	fEvents->GetYaxis()->SetBinLabel(8,Form("%.2f-%.2f",CentMin[6],CentMax[6]));
-	fEvents->GetYaxis()->SetBinLabel(9,Form("%.2f-%.2f",CentMin[7],CentMax[7]));
-	fEvents->GetYaxis()->SetBinLabel(10,Form("%.2f-%.2f",CentMin[8],CentMax[8]));
-	fEvents->GetYaxis()->SetBinLabel(11,Form("%.2f-%.2f",CentMin[9],CentMax[9]));
-	fEvents->GetYaxis()->SetBinLabel(12,"0.0-100.0");
+	fEvents->GetYaxis()->SetBinLabel(1,Form("%.2f-%.2f",CentMin[0],CentMax[0]));
+	fEvents->GetYaxis()->SetBinLabel(2,Form("%.2f-%.2f",CentMin[1],CentMax[1]));
+	fEvents->GetYaxis()->SetBinLabel(3,Form("%.2f-%.2f",CentMin[2],CentMax[2]));
+	fEvents->GetYaxis()->SetBinLabel(4,Form("%.2f-%.2f",CentMin[3],CentMax[3]));
+	fEvents->GetYaxis()->SetBinLabel(5,Form("%.2f-%.2f",CentMin[4],CentMax[4]));
+	fEvents->GetYaxis()->SetBinLabel(6,Form("%.2f-%.2f",CentMin[5],CentMax[5]));
+	fEvents->GetYaxis()->SetBinLabel(7,Form("%.2f-%.2f",CentMin[6],CentMax[6]));
+	fEvents->GetYaxis()->SetBinLabel(8,Form("%.2f-%.2f",CentMin[7],CentMax[7]));
+	fEvents->GetYaxis()->SetBinLabel(9,Form("%.2f-%.2f",CentMin[8],CentMax[8]));
+	fEvents->GetYaxis()->SetBinLabel(10,Form("%.2f-%.2f",CentMin[9],CentMax[9]));
+	fEvents->GetYaxis()->SetBinLabel(11,"0.0-100.0");
 	fListOfObjects->Add(fEvents);
 
+	hMult = new TH1F("hMult","Mult of events with SO measured",100,0,100);
+	fListOfObjects->Add(hMult);
+
+	fTrcksVsTrklets = new TH2F("fTrcksVsTrklets",";SPD_{Tracklets};Global Tracks",100,0,100,100,0,100);
+	fListOfObjects->Add(fTrcksVsTrklets);
 
 	fcent=new TH1F("fcent","fcent",13,0,13);
 	fcentAfterPrimaries =new TH1F("fcentAfterPrimaries","fcentAfterPrimaries",13,0,13);
@@ -460,22 +497,20 @@ void AliAnalysisTaskSpherocity::UserCreateOutputObjects()
 
 	const Int_t nPtBins = 63;
 	Double_t ptBins[nPtBins+1] = {
-
-		0.01, 0.10, 0.12, 0.14, 0.16, 0.18, 0.20, 0.25, 0.30, 0.35,
-		0.40, 0.45, 0.50, 0.55, 0.60, 0.65, 0.70, 0.75, 0.80, 0.85,
-		0.90, 0.95, 1.00, 1.10, 1.20, 1.30, 1.40, 1.50, 1.60, 1.70,
-		1.80, 1.90, 2.00, 2.20, 2.40, 2.60, 2.80, 3.00, 3.20, 3.40,
-		3.60, 3.80, 4.00, 4.50, 5.00, 5.50, 6.00, 6.50, 7.00, 8.00,
-		9.00, 10.00, 11.00, 12.00, 13.00, 14.00, 15.00, 16.00, 18.00, 
-		20.00,22.00,24.00,26.00,30.00
-
-	};
+	0.01, 0.10, 0.12, 0.14, 0.16, 0.18, 0.20, 0.25, 0.30, 0.35,
+	0.40, 0.45, 0.50, 0.55, 0.60, 0.65, 0.70, 0.75, 0.80, 0.85,
+	0.90, 0.95, 1.00, 1.10, 1.20, 1.30, 1.40, 1.50, 1.60, 1.70,
+	1.80, 1.90, 2.00, 2.20, 2.40, 2.60, 2.80, 3.00, 3.20, 3.40,
+	3.60, 3.80, 4.00, 4.50, 5.00, 5.50, 6.00, 6.50, 7.00, 8.00,
+	9.00, 10.00, 11.00, 12.00, 13.00, 14.00, 15.00, 16.00, 18.00, 
+	20.00,22.00,24.00,26.00,30.00};
 
 
 	const Int_t nPtBinsV0s = 25;
-	Double_t ptBinsV0s[nPtBinsV0s+1] = { 0.0 , 0.1 , 0.2 , 0.3 , 0.4 , 0.5 , 0.6 , 0.7 , 0.8 , 0.9 , 1.0 ,
-		1.2 , 1.4 , 1.6 , 1.8 , 2.0 , 2.5 , 3.0 , 3.5 , 4.0 , 5.0 , 7.0 ,
-		9.0 , 12.0, 15.0, 20.0 };
+	Double_t ptBinsV0s[nPtBinsV0s+1] = { 
+	0.0 , 0.1 , 0.2 , 0.3 , 0.4 , 0.5 , 0.6 , 0.7 , 0.8 , 0.9 , 1.0 ,
+	1.2 , 1.4 , 1.6 , 1.8 , 2.0 , 2.5 , 3.0 , 3.5 , 4.0 , 5.0 , 7.0 ,
+	9.0 , 12.0, 15.0, 20.0 };
 
 	const Char_t* ending[nHists] = {"02", "24", "46", "68"};
 	const Char_t* LatexEta[nHists] = {"|#eta|<0.2", "0.2<|#eta|<0.4", "0.4<|#eta|<0.6", "0.6<|#eta|<0.8" };
@@ -507,14 +542,19 @@ void AliAnalysisTaskSpherocity::UserCreateOutputObjects()
 
 	Int_t nPhiBins = 36;
 
+	hSOrvsV0M  = new TH2D("hSOrVsV0M","Measured SO vs V0M Per.;V0M Per.;#it{S}_{O} Reconstructed",100,0,100,1000,0,1);
+	hSOrvsV0M->Sumw2();
+	fListOfObjects->Add(hSOrvsV0M);
+
+	hSOrvsTrks  = new TH2D("hSOrVsTrks","Measured SO vs Measured Ref. Mult. |#eta|<0.8;Reference mult. (|#eta|<0.8);#it{S}_{O} Reconstructed",100, 0, 100, 1000, 0, 1);
+	hSOrvsTrks->Sumw2();
+	fListOfObjects->Add(hSOrvsTrks);
+
+	hRefMultVsRefMultPer = new TH2D("hRefMultVsRefMultPer","Ref Mult. vs Ref. Mult. Per. |#eta|<0.8;Ref. Mult Per.;Ref. Mult",100, 0, 100, 100, 0, 100);
+	hRefMultVsRefMultPer->Sumw2();
+	fListOfObjects->Add(hRefMultVsRefMultPer);
+
 	for(Int_t i = 0; i<nCent; ++i){
-
-	hSoV0M[i] = new TH1D(Form("hSoV0M%.2f-%.2f",CentMin[i],CentMax[i]), "", 800,0,1);
-	hSoV0M[i]->Sumw2();
-
-	hSoTrks[i] = new TH1D(Form("hSoTrks%d-%d",MultTrksMin[i],MultTrksMax[i]), "", 800,0,1);
-	hSoTrks[i]->Sumw2();
-
 	for(Int_t so = 0; so < 3; ++so){
 	hMIPVsEta[i][so] = new TH2D(Form("hMIPVsEta%.2f-%.2f-%s",CentMin[i],CentMax[i],So[so]),"; #eta; dE/dx_{MIP, primary tracks}",50,-0.8,0.8,fDeDxMIPMax-fDeDxMIPMin, fDeDxMIPMin, fDeDxMIPMax);
 	pMIPVsEta[i][so] = new TProfile(Form("pMIPVsEta%.2f-%.2f-%s",CentMin[i],CentMax[i],So[so]),"; #eta; #LT dE/dx #GT_{MIP, primary tracks}",50,-0.8,0.8, fDeDxMIPMin, fDeDxMIPMax);
@@ -588,12 +628,11 @@ void AliAnalysisTaskSpherocity::UserCreateOutputObjects()
 	  fListOfObjects->Add(pMIPVsNch[j]);
 	  }*/
 
+
 	for(Int_t i=0; i<nCent; ++i ){
-	fListOfObjects->Add(hSoV0M[i]);
-	fListOfObjects->Add(hSoTrks[i]);
 
 		if(i > 2)continue;
-	/*for(Int_t so=0; so<3; ++so){
+	for(Int_t so=0; so<3; ++so){
 	fListOfObjects->Add(hMIPVsEta[i][so]);
 	fListOfObjects->Add(pMIPVsEta[i][so]);
 	fListOfObjects->Add(hPlateauVsEta[i][so]);
@@ -607,8 +646,8 @@ void AliAnalysisTaskSpherocity::UserCreateOutputObjects()
 	fListOfObjects->Add(hPlateauVsPhi[i][j][so]);
 	fListOfObjects->Add(pPlateauVsPhi[i][j][so]);
 					}
-			}*/
-	//	fListOfObjects->Add(hPhi[i]);
+			}
+	fListOfObjects->Add(hPhi[i]);
 	if(fMakePid){
 	for(Int_t so=0; so<3; ++so){
 	fListOfObjects->Add(hPtAll[i][so]);
@@ -637,36 +676,77 @@ void AliAnalysisTaskSpherocity::UserCreateOutputObjects()
 
 
 	else{
-	for(Int_t cent=0; cent<nCent; cent++) {
-	for(Int_t pid=0; pid<7; pid++) {
-	hMcIn[cent][pid]=new TH1D(Form("hIn_%.2f-%.2f-%s",CentMin[cent],CentMax[cent],Pid[pid]), Form("MC in (pid %s)", Pid[pid]),nPtBins,ptBins);
-	hMcIn[cent][pid]->Sumw2();
-	hMcInNeg[cent][pid]=new TH1D(Form("hInNeg_%.2f-%.2f-%s",CentMin[cent],CentMax[cent],Pid[pid]),Form("MC in (pid %s)",Pid[pid]),nPtBins,ptBins);
-	hMcInNeg[cent][pid]->Sumw2();
-	hMcInPos[cent][pid]=new TH1D(Form("hInPos_%.2f-%.2f-%s",CentMin[cent],CentMax[cent],Pid[pid]),Form("MC in (pid %s)",Pid[pid]),nPtBins,ptBins);
-	hMcInPos[cent][pid]->Sumw2();
-	hMcOut[cent][pid]=new TH1D(Form("hMcOut_%.2f-%.2f-%s",CentMin[cent],CentMax[cent],Pid[pid]),Form("MC out (pid %s)",Pid[pid]),nPtBins,ptBins);
-	hMcOut[cent][pid]->Sumw2();
-	hMcOutNeg[cent][pid]=new TH1D(Form("hMcOutNeg_%.2f-%.2f-%s",CentMin[cent],CentMax[cent],Pid[pid]),Form("MC out (pid %s)",Pid[pid]),nPtBins,ptBins);
-	hMcOutNeg[cent][pid]->Sumw2();
-	hMcOutPos[cent][pid]=new TH1D(Form("hMcOutPos_%.2f-%.2f-%s",CentMin[cent],CentMax[cent],Pid[pid]),Form("MC out (pid %s)",Pid[pid]),nPtBins,ptBins);
-	hMcOutPos[cent][pid]->Sumw2();
 
-	fListOfObjects->Add(hMcIn[cent][pid]);
-	fListOfObjects->Add(hMcInNeg[cent][pid]);
-	fListOfObjects->Add(hMcInPos[cent][pid]);
-	fListOfObjects->Add(hMcOut[cent][pid]);
-	fListOfObjects->Add(hMcOutNeg[cent][pid]);
-	fListOfObjects->Add(hMcOutPos[cent][pid]);
-			}	// pid Eff
+	for(Int_t cent=0; cent<nCent; cent++) {
+	for(Int_t pid=0; pid<7; pid++){
+	for(Int_t so=0; so<3; so++){
+	hMcIn[cent][pid][so]=new TH1D(Form("hIn_%.2f-%.2f-%s-%s",CentMin[cent],CentMax[cent],Pid[pid],So[so]), Form("MC in (pid %s)", Pid[pid]),nPtBins,ptBins);
+	hMcIn[cent][pid][so]->Sumw2();
+	hMcInNeg[cent][pid][so]=new TH1D(Form("hInNeg_%.2f-%.2f-%s-%s",CentMin[cent],CentMax[cent],Pid[pid],So[so]),Form("MC in (pid %s)",Pid[pid]),nPtBins,ptBins);
+	hMcInNeg[cent][pid][so]->Sumw2();
+	hMcInPos[cent][pid][so]=new TH1D(Form("hInPos_%.2f-%.2f-%s-%s",CentMin[cent],CentMax[cent],Pid[pid],So[so]),Form("MC in (pid %s)",Pid[pid]),nPtBins,ptBins);
+	hMcInPos[cent][pid][so]->Sumw2();
+	hMcOut[cent][pid][so]=new TH1D(Form("hMcOut_%.2f-%.2f-%s-%s",CentMin[cent],CentMax[cent],Pid[pid],So[so]),Form("MC out (pid %s)",Pid[pid]),nPtBins,ptBins);
+	hMcOut[cent][pid][so]->Sumw2();
+	hMcOutNeg[cent][pid][so]=new TH1D(Form("hMcOutNeg_%.2f-%.2f-%s-%s",CentMin[cent],CentMax[cent],Pid[pid],So[so]),Form("MC out (pid %s)",Pid[pid]),nPtBins,ptBins);
+	hMcOutNeg[cent][pid][so]->Sumw2();
+	hMcOutPos[cent][pid][so]=new TH1D(Form("hMcOutPos_%.2f-%.2f-%s-%s",CentMin[cent],CentMax[cent],Pid[pid],So[so]),Form("MC out (pid %s)",Pid[pid]),nPtBins,ptBins);
+	hMcOutPos[cent][pid][so]->Sumw2();
+
+	/*if(cent<3){
+	fListOfObjects->Add(hMcIn[cent][pid][so]);
+	fListOfObjects->Add(hMcInNeg[cent][pid][so]);
+	fListOfObjects->Add(hMcInPos[cent][pid][so]);
+	fListOfObjects->Add(hMcOut[cent][pid][so]);
+	fListOfObjects->Add(hMcOutNeg[cent][pid][so]);
+	fListOfObjects->Add(hMcOutPos[cent][pid][so]);
+	}*/
+			}
+				}	// pid Eff
+
+	fListOfObjects->Add(hPhi[cent]);
+
+	hSOtVsSOm[cent] = new TH2D(Form("hSOtVsSOm-%.2f-%.2f",CentMin[cent],CentMax[cent]),";#it{S}_{O} generated;#it{S}_{O} reconstructed",10, 0, 1, 10, 0, 1);
+	hSOtVsSOm[cent]->Sumw2();
+	fListOfObjects->Add(hSOtVsSOm[cent]);
+
 		}	// cent Eff
 
-	fVtxMC = new TH1F("fVtxMC","mc vtx", 120, -30, 30);
-	fListOfObjects->Add(fVtxMC);
+	hPtTruthVsPtRec = new TH2D("hPtTruthVsPtRec","Pt Truth Vs Pt Rec;#it{p}_{T}^{Gen};#it{p}_{T}^{Rec} ",200, 0, 200, 200, 0, 200);
+	hPtTruthVsPtRec->Sumw2();
+	fListOfObjects->Add(hPtTruthVsPtRec);
+
+	hPtTruthVsPtRecJetty = new TH2D("hPtTruthVsPtRecJetty","Pt Truth Vs Pt Rec Jetty Events;#it{p}_{T}^{Gen};#it{p}_{T}^{Rec} ",200, 0, 200, 200, 0, 200);
+	hPtTruthVsPtRecJetty->Sumw2();
+	fListOfObjects->Add(hPtTruthVsPtRecJetty);
+
+	hPtTruthVsPtRecIsotr = new TH2D("hPtTruthVsPtRecIsotr","Pt Truth Vs Pt Rec Isotropic Events;#it{p}_{T}^{Gen};#it{p}_{T}^{Rec} ",200, 0, 200, 200, 0, 200);
+	hPtTruthVsPtRecIsotr->Sumw2();
+	fListOfObjects->Add(hPtTruthVsPtRecIsotr);
+
+	hTruthEtaSo = new TH1D("hTruthEtaSo","spherocity; #eta; counts",40,-1.0,1.0);
+	hTruthEtaSo->Sumw2();
+	fListOfObjects->Add(hTruthEtaSo);
+
+	hTruthPhiSo = new TH1D("hTruthPhiSo","spherocity; #phi; counts",64,0.0,2*TMath::Pi());
+	hTruthPhiSo->Sumw2();
+	fListOfObjects->Add(hTruthPhiSo);
+
+	hSOtvsTrks  = new TH2D("hSOtVsTrks","Truth SO vs Measured Ref. Mult.;Ref. mult. (|#eta|<0.8);#it{S}_{O} Truth ",100, 0, 100, 1000, 0, 1);
+	hSOtvsTrks->Sumw2();
+	fListOfObjects->Add(hSOtvsTrks);
+
+	hSOtvsTrkst  = new TH2D("hSOtVsTrkst","Truth SO vs Truth. Mult.;Truth Mult. (|#eta|<0.8);#it{S}_{O} Truth ",100, 0, 100, 1000, 0, 1);
+	hSOtvsTrkst->Sumw2();
+	fListOfObjects->Add(hSOtvsTrkst);
+
+	hSOtvsV0M  = new TH2D("hSOtVsV0M","Truth SO vs V0M Per.;V0M Per.;#it{S}_{O} Truth",100, 0, 100, 1000, 0, 1);;
+	hSOtvsV0M->Sumw2();
+	fListOfObjects->Add(hSOtvsV0M);
 
 	}
 
-	//	fEventCuts.AddQAplotsToList(fListOfObjects);
+	//fEventCuts.AddQAplotsToList(fListOfObjects);
 	PostData(1, fListOfObjects);
 }
 
@@ -741,226 +821,318 @@ void AliAnalysisTaskSpherocity::UserExec(Option_t *)
 	if(!isINT7selected)
 		return;
 
+	fEvents->Fill(1.5,10);
+
 	//--------------- Event Selection --------------------
 
 	/*if (!fEventCuts.AcceptEvent(event)){
 	  PostData(1, fListOfObjects);
 	  return;}*/
 
-	Float_t V0MPer  = -1;
-	Float_t MultBin = -1;
+	Float_t V0MPercentile = -1;
+	Float_t RefPercentile = -1;
   	Int_t fnRefGlobal = -1;
 	Int_t IndxTrksMult = -1;
+	Int_t IndxV0MMult = -1;
 
         fnRefGlobal = AliESDtrackCuts::GetReferenceMultiplicity(fESD, AliESDtrackCuts::kTrackletsITSTPC, 0.8 );
-	cout<<" fnRefGlobal  =-=  "<<fnRefGlobal<<endl;
-
-	IndxTrksMult = GetMultiplicityIndex(fnRefGlobal);
-	cout<<" IndxTrksMult  =-=  "<<IndxTrksMult<<endl;
 
 	AliMultSelection *MultSelection = (AliMultSelection*)fESD->FindListObject("MultSelection");
-	if(MultSelection-> IsEventSelected()){
-		V0MPer = MultSelection->GetMultiplicityPercentile("V0M",false);
+	if(!MultSelection){ return; }
+	if( MultSelection-> IsEventSelected() ){
+	V0MPercentile = MultSelection->GetMultiplicityPercentile("V0M",false);
+	RefPercentile = MultSelection->GetMultiplicityPercentile("RefMult08",false);
+
+	IndxV0MMult  = GetV0MIndex(V0MPercentile);
+	IndxTrksMult = GetMultiplicityIndex(RefPercentile);
+	printf("V0MPer === %f   RefPercentile == %f\n",V0MPercentile,RefPercentile);
 	}
+	else{
+	return;}
 
-//	if( (V0MPer>100)||(V0MPer<0) ){return;}
-
-	for(Int_t icent = 0; icent < (nCent-1); ++icent)
-	if((V0MPer>CentMin[icent])&&(V0MPer<=CentMax[icent])){MultBin = icent+1; fCent=icent;}
+	if(!fisV0Mestimator){
+	if(IndxTrksMult>=0)
+	fCent = IndxTrksMult;}
+	else{
+	if(IndxV0MMult>=0)
+	fCent = IndxV0MMult;}
 
 	if( fESD->IsPileupFromSPDInMultBins() ){return;}
-	fEvents->Fill(2.5,MultBin);
-	fEvents->Fill(2.5,11);
+	fEvents->Fill(2.5,fCent);
+	fEvents->Fill(2.5,10);
 
 	if( fESD->IsIncompleteDAQ() ){return;}
-	fEvents->Fill(3.5,MultBin);
-	fEvents->Fill(3.5,11);
+	fEvents->Fill(3.5,fCent);
+	fEvents->Fill(3.5,10);
 
 	if( utils->IsSPDClusterVsTrackletBG(fESD) ){return;}
-	fEvents->Fill(4.5,MultBin);
-	fEvents->Fill(4.5,11);
+	fEvents->Fill(4.5,fCent);
+	fEvents->Fill(4.5,10);
 
-	Int_t INEL = -1;
-	INEL = AliESDtrackCuts::GetReferenceMultiplicity(fESD, AliESDtrackCuts::kTracklets, 1.0);
-	if( INEL < 1 ){return;}
-	fEvents->Fill(5.5,MultBin);
-	fEvents->Fill(5.5,11);
+	//Int_t INEL = -1;
+	//INEL = AliESDtrackCuts::GetReferenceMultiplicity(fESD, AliESDtrackCuts::kTracklets, 1.0);
+	//if( INEL < 1 ){return;}
+	if( !MultSelection->GetThisEventINELgtZERO() ){return;}
+	fEvents->Fill(5.5,fCent);
+	fEvents->Fill(5.5,10);
 
 	if( !selectVertex2015pp(fESD,kTRUE,kFALSE,kTRUE) ){return;}
-	fEvents->Fill(6.5,MultBin);
-	fEvents->Fill(6.5,11);
+	fEvents->Fill(6.5,fCent);
+	fEvents->Fill(6.5,10);
 
 	if( !IsGoodZvertexPos(fESD) ){return;}
-	fEvents->Fill(7.5,MultBin);
-	fEvents->Fill(7.5,11);
+	fEvents->Fill(7.5,fCent);
+	fEvents->Fill(7.5,10);
 
 	Double_t SOm = -1.0;
-	SOm = fSpheroUtils->GetEventShape( event, hphiso, hetaso );
+	SOm = fSpheroUtils->GetEventShape(event, hphiso, hetaso);
+	if(fnRefGlobal < 10 && SOm>0)
+	cout<<"-------------------------------   "<<fnRefGlobal<<	"      SOm  ==="<<SOm<<endl;
 
-	if(IndxTrksMult==0)cout<<"---------------------------------- So"<< SOm << endl;
+        Double_t SOt = -1.0;
+        if(fAnalysisMC)
+        SOt = fSpheroUtils->GetEventShapeTrue(fMCStack,hTruthPhiSo,hTruthEtaSo);
 
 	// Events with non-measured spherocity
 	if( SOm < 0 ){
-		fEvents->Fill(8.5,MultBin);
-		fEvents->Fill(8.5,11);
-		return;}
+	fEvents->Fill(8.5,fCent);
+	fEvents->Fill(8.5,10);
+	return;}
 
-	// Events with measured spherocity
-	if( SOm > 0 ){ 
-	fEvents->Fill(9.5,MultBin);
-	fEvents->Fill(9.5,11);
+	//Events with measured spherocity
+	if(SOm>0){ 
 
-	hSoV0M[fCent]->Fill(SOm);
-	hSoV0M[10]->Fill(SOm);
+	fEvents->Fill(9.5,fCent);
+	fEvents->Fill(9.5,10);
 
-	if(IndxTrksMult>=0){
-	hSoTrks[IndxTrksMult]->Fill(SOm);
-	hSoTrks[10]->Fill(SOm);
+/*      Int_t nTracks = fESD->GetNumberOfTracks();
+        Int_t nRec    = 0;
+        for(Int_t iT = 0; iT < nTracks; iT++){
+                AliESDtrack* Track = 0;
+                Track = fESD->GetTrack(iT);
+                if(!Track)continue;
+
+                Float_t eta  = Track->Eta();
+                if( TMath::Abs(eta) > 0.8 || TMath::Abs(eta) < 0.0 )
+		continue;
+
+                if(!fTrackFilter->IsSelected(Track))
+                continue;
+                nRec++;
+
+        } //close first loop on nTracks
+//	printf("nRec === %d    fnRefGlobal == %d\n",nRec,fnRefGlobal);
+	hMult->Fill(nRec);
+*/
+
+//	fTrcksVsTrklets->Fill(fnRefGlobal,nRec);
+	
+	hSOrvsV0M->Fill(V0MPercentile,SOm);
+	hSOrvsTrks->Fill(RefPercentile,SOm);
+	hRefMultVsRefMultPer->Fill(RefPercentile,fnRefGlobal);
+
+	if(fCent < 3){
+	ProduceArrayTrksESD(fESD,fCent,2);
 	}
 
+	if(fAnalysisMC){
+
+	Int_t TruthMult = -1;
+	TruthMult = GetMultiplicityParticles(0.8);
+
+	if(SOt>0){
+	hSOtvsTrks->Fill(fnRefGlobal,SOt);
+	hSOtvsV0M->Fill(V0MPercentile,SOt);
+	hSOtvsTrkst->Fill(TruthMult,SOt);
+	hSOtVsSOm[fCent]->Fill(SOt,SOm);
+	hSOtVsSOm[10]->Fill(SOt,SOm);}
+	}}
+
+	//Make PID using V0M estimator
+	if(fisV0Mestimator){
 	if(fCent > 2){return;}
-	if( (0<SOm) && (SOm<0.478750) )// Jetty
-	{
+	if((0<SOm) && (SOm<fJettyCutOff)){
 	ProduceArrayTrksESD(fESD,fCent,0);
 	ProduceArrayV0ESD(fESD,fCent,0);
-	}
-	if( (SOm>0.761250) && (SOm<1.0) )// Isotropic
-	{
+
+	if(fAnalysisMC)
+	PtRecVsPtTruth(fESD, kTRUE);
+
+	fcent->Fill(fCent);
+	fcent->Fill(10);
+					}
+
+	if((SOm>fIsotrCutOff) && (SOm<1.0)){
 	ProduceArrayTrksESD(fESD,fCent,1);
 	ProduceArrayV0ESD(fESD,fCent,1);
-	}
-	fcent->Fill(fCent+1);
-	fcent->Fill(11);
-	if(fAnalysisMC) ProcessMCTruthESD(fCent);
-	}
 
-	return;
+	if(fAnalysisMC)
+	PtRecVsPtTruth(fESD, kFALSE);
 
-	if (fAnalysisMC) {
-		if (fAnalysisType == "ESD"){
+	fcent->Fill(fCent);
+	fcent->Fill(10);
+					}
 
-			AliHeader* headerMC = fMC->Header();
-			if (headerMC) {
+	if(fAnalysisMC){
+	if((0<SOt) && (SOt<0.472))
+	ProcessMCTruthESD(fCent,0);
 
-				AliGenEventHeader* genHeader = headerMC->GenEventHeader();
-				TArrayF vtxMC(3); // primary vertex  MC
-				vtxMC[0]=9999; vtxMC[1]=9999;  vtxMC[2]=9999; //initialize with dummy
-				if (genHeader) {
-					genHeader->PrimaryVertex(vtxMC);
-				}
-				fZvtxMC = vtxMC[2];
-
-				// PYTHIA:
-				AliGenPythiaEventHeader* pythiaGenHeader =
-					dynamic_cast<AliGenPythiaEventHeader*>(headerMC->GenEventHeader());
-				if (pythiaGenHeader) {  //works only for pythia
-					fMcProcessType =  GetPythiaEventProcessType(pythiaGenHeader->ProcessType());
-				}
-				// PHOJET:
-				AliGenDPMjetEventHeader* dpmJetGenHeader =
-					dynamic_cast<AliGenDPMjetEventHeader*>(headerMC->GenEventHeader());
-				if (dpmJetGenHeader) {
-					fMcProcessType = GetDPMjetEventProcessType(dpmJetGenHeader->ProcessType());
-				}
+	if((0.759<SOt) && (SOt<1.0))
+	ProcessMCTruthESD(fCent,1);
+				
 			}
-		} else { // AOD
-			AliAODMCHeader* mcHeader = dynamic_cast<AliAODMCHeader*>(fAOD->FindListObject("mcHeader"));
-			if(mcHeader) {
-				fZvtxMC = mcHeader->GetVtxZ();
-				if(strstr(mcHeader->GetGeneratorName(), "Pythia")) {
-					fMcProcessType =  GetPythiaEventProcessType(mcHeader->GetEventType());
-				} else {
-					fMcProcessType =  GetDPMjetEventProcessType(mcHeader->GetEventType());
-				}
-			}
-		}
 	}
 
+	//Make PID using Mid-Rapidity estimator
+	else{ 		
+	if(fCent > 2){return;}
+	if((0<SOm) && (SOm<fJettyCutOff)){
+	ProduceArrayTrksESD(fESD,fCent,0);
+	ProduceArrayV0ESD(fESD,fCent,0);
+	fcent->Fill(fCent);
+	fcent->Fill(10);}
+	if((SOm>fIsotrCutOff) && (SOm<1.0)){
+	ProduceArrayTrksESD(fESD,fCent,1);
+	ProduceArrayV0ESD(fESD,fCent,1);
+	fcent->Fill(fCent);
+	fcent->Fill(10);}
+
+	if(fAnalysisMC){
+	if((0<SOm) && (SOm<fJettyCutOff))
+	ProcessMCTruthESD(fCent,0);
+	if((fIsotrCutOff<SOm) && (SOm<1.0))
+	ProcessMCTruthESD(fCent,1);}
+	}
 
 	PostData(1, fListOfObjects);
 }
-
-//________________________________________________________________________
-/*void AliAnalysisTaskSpherocity::AnalyzeESD(AliESDEvent* esdEvent)
-  {
-
-  Float_t centrality = -10;
-  if(fAnalysisPbPb){
-  centrality = fEventCuts.GetCentrality(); /// Centrality calculated with the default estimator (V0M for LHC15o)
-
-  if((centrality>fMaxCent)||(centrality<fMinCent))return;
-  for(Int_t icent = 0; icent < nCent; ++icent){
-  if(centrality > CentMin[icent] && centrality <= CentMax[icent]){
-//cent = icent;
-fcent->Fill(icent+1);
-//	ProduceArrayTrksESD( esdEvent, cent );
-//	ProduceArrayV0ESD( esdEvent, cent );
-
-//	if(fAnalysisMC)
-//		ProcessMCTruthESD(cent);
-//	cout<<"Cent ::: "<<cent<<endl;
-}
-}
-
-fcent->Fill(11);
-
-}
-
-else{
-
-Float_t V0MPercentile = -1;
-Float_t V0APercentile = -1;
-Float_t ADMPercentile = -1;
-
-AliMultSelection *MultSelection = (AliMultSelection*) esdEvent -> FindListObject("MultSelection");
-if(MultSelection-> IsEventSelected()){
-V0MPercentile = MultSelection->GetMultiplicityPercentile("V0M",false);
-V0APercentile = MultSelection->GetMultiplicityPercentile("V0A",false);
-ADMPercentile = MultSelection->GetMultiplicityPercentile("ADM",false);
-}
-
-cout << "V0MPercentile ~~~~~~~~~~~~ " << V0MPercentile<< endl;
-if((V0MPercentile>100)||(V0MPercentile<0))return;
-for(Int_t icent = 0; icent < (nCent-1); ++icent){
-if(V0MPercentile > CentMin[icent] && V0MPercentile <= CentMax[icent]){
-//	cent = icent;
-fcent->Fill(icent+1);
-//	ProduceArrayTrksESD( esdEvent, cent );
-//	ProduceArrayV0ESD( esdEvent, cent );
-
-//	if(fAnalysisMC)
-//		ProcessMCTruthESD(cent);
-}
-}
-
-fcent->Fill(11);
-
-
-}
-
-
-
-}
-*/
 //_____________________________________________________________________________
-Int_t AliAnalysisTaskSpherocity::GetMultiplicityIndex(Int_t Multiplicity)
+Int_t AliAnalysisTaskSpherocity::GetV0MIndex(Float_t V0MPercentile)
 {
-	if(Multiplicity <= 0)return -1;
+
+	if((V0MPercentile<0))return -1;
 
 	Int_t Index = -1;
-	if((Multiplicity>0) && (Multiplicity<=5))Index=9;
-	else if((Multiplicity>5) && (Multiplicity<=10))Index=8;
-	else if((Multiplicity>10) && (Multiplicity<=15))Index=7;
-	else if((Multiplicity>15) && (Multiplicity<=20))Index=6;
-	else if((Multiplicity>20) && (Multiplicity<=25))Index=5;
-	else if((Multiplicity>25) && (Multiplicity<=30))Index=4;
-	else if((Multiplicity>30) && (Multiplicity<=35))Index=3;
-	else if((Multiplicity>35) && (Multiplicity<=40))Index=2;
-	else if((Multiplicity>40) && (Multiplicity<=50))Index=1;
-	else if((Multiplicity>50))Index=0;
+	if((V0MPercentile>70) && (V0MPercentile<=100))Index=9;
+	else if((V0MPercentile>50) && (V0MPercentile<=70))Index=8;
+	else if((V0MPercentile>40) && (V0MPercentile<=50))Index=7;
+	else if((V0MPercentile>30) && (V0MPercentile<=40))Index=6;
+	else if((V0MPercentile>20) && (V0MPercentile<=30))Index=5;
+	else if((V0MPercentile>15) && (V0MPercentile<=20))Index=4;
+	else if((V0MPercentile>10) && (V0MPercentile<=15))Index=3;
+	else if((V0MPercentile>5) && (V0MPercentile<=10))Index=2;
+	else if((V0MPercentile>1) && (V0MPercentile<=5))Index=1;
+	else if((V0MPercentile>0) && (V0MPercentile<=1))Index=0;
 	else Index=-1;
 
 	return Index;
+}
+//_____________________________________________________________________________
+Int_t AliAnalysisTaskSpherocity::GetMultiplicityIndex(Int_t Multiplicity)
+{
+	if((Multiplicity<=0))return -1;
+
+	Int_t Index = -1;
+	if((Multiplicity>70) && (Multiplicity<=100))Index=9;
+	else if((Multiplicity>50) && (Multiplicity<=70))Index=8;
+	else if((Multiplicity>40) && (Multiplicity<=50))Index=7;
+	else if((Multiplicity>30) && (Multiplicity<=40))Index=6;
+	else if((Multiplicity>20) && (Multiplicity<=30))Index=5;
+	else if((Multiplicity>15) && (Multiplicity<=20))Index=4;
+	else if((Multiplicity>10) && (Multiplicity<=15))Index=3;
+	else if((Multiplicity>5) && (Multiplicity<=10))Index=2;
+	else if((Multiplicity>1) && (Multiplicity<=5))Index=1;
+	else if((Multiplicity>0) && (Multiplicity<=1))Index=0;
+	else Index=-1;
+
+	return Index;
+}
+//_____________________________________________________________________________
+void AliAnalysisTaskSpherocity::PtRecVsPtTruth( AliESDEvent *ESDevent, const Bool_t IsJetty )
+{
+	const Int_t nESDTracks = ESDevent->GetNumberOfTracks();
+	for(Int_t iT = 0; iT < nESDTracks; iT++){
+
+		AliESDtrack* esdTrack = ESDevent->GetTrack(iT);
+			if(!esdTrack){continue;}
+
+		UInt_t selectDebug = 0;
+		if(fTrackFilter){
+			selectDebug = fTrackFilter->IsSelected(esdTrack);
+			if (!selectDebug) {continue;}
+				}
+
+		if(TMath::Abs(esdTrack->Eta())>fEtaCut)
+		printf("++++++++++++++++++++++++++++++++++++++++++++++++++++++++++      ==========  %f\n",esdTrack->Eta());
+
+
+		Float_t dcaxy = 0.;
+		Float_t dcaz = 0.;
+		esdTrack->GetImpactParameters(dcaxy,dcaz);
+		if(TMath::Abs(dcaxy)>GetMaxDCApTDep(fcutDCAxy,esdTrack->Pt())){continue;}
+
+		Short_t ncl = esdTrack->GetTPCNcls();
+		if(ncl<50)
+		printf("--------------------------------------------------         --------------- Ncl      ==========  %d\n",ncl);
+
+		const Int_t label = TMath::Abs(esdTrack->GetLabel());
+		TParticle* mcTrack = fMCStack->Particle(label);
+
+                TParticlePDG* pdgPart = mcTrack->GetPDG();
+                Double_t chargeMC = pdgPart->Charge();
+
+		if (mcTrack){
+			
+		if((esdTrack->Charge()==0) || (TMath::Abs(chargeMC) < 0.1))
+			continue;
+
+		if((TMath::Abs(esdTrack->Eta())>fEtaCut) || (TMath::Abs(mcTrack->Eta())>fEtaCut))
+			continue;
+
+		if( fMCStack->IsPhysicalPrimary(label) ){
+			hPtTruthVsPtRec->Fill(mcTrack->Pt(),esdTrack->Pt());
+
+			if(IsJetty)
+				hPtTruthVsPtRecJetty->Fill(mcTrack->Pt(),esdTrack->Pt());
+			if(!IsJetty)	
+				hPtTruthVsPtRecIsotr->Fill(mcTrack->Pt(),esdTrack->Pt());
+					}
+			}
+						}
+}
+//_____________________________________________________________________________
+Int_t AliAnalysisTaskSpherocity::GetMultiplicityParticles(Double_t etaCut)
+{
+        // Fill the special MC histogram with the MC truth info
+
+        Int_t trackmult = 0;
+        const Int_t nTracksMC = fMCStack->GetNtrack();
+
+        for (Int_t iTracks = 0; iTracks < nTracksMC; iTracks++) {
+
+                TParticle* trackMC = fMCStack->Particle(iTracks);
+                if(!trackMC)
+                        continue;
+
+                if( !(fMCStack->IsPhysicalPrimary(iTracks)) )
+                        continue;
+
+
+                TParticlePDG* pdgPart = trackMC ->GetPDG();
+                Double_t chargeMC = pdgPart->Charge();
+
+                if( TMath::Abs(chargeMC) < 0.1 )
+                        continue;
+
+                if ( TMath::Abs( trackMC->Eta() ) > etaCut )
+                        continue;
+
+                trackmult++;
+
+        }//MC track loop
+
+        return trackmult;
+
 }
 //_____________________________________________________________________________
 Short_t AliAnalysisTaskSpherocity::GetPidCode(Int_t pdgCode) const
@@ -992,7 +1164,7 @@ Short_t AliAnalysisTaskSpherocity::GetPidCode(Int_t pdgCode) const
 	return pidCode;
 }
 //_____________________________________________________________________________
-void AliAnalysisTaskSpherocity::ProcessMCTruthESD(const Int_t Cent)
+void AliAnalysisTaskSpherocity::ProcessMCTruthESD(const Int_t Cent, const Int_t Spherocity)
 {
 	// Fill the special MC histogram with the MC truth info
 
@@ -1017,96 +1189,24 @@ void AliAnalysisTaskSpherocity::ProcessMCTruthESD(const Int_t Cent)
 		if ( TMath::Abs(trackMC->Eta()) > fEtaCut )
 			continue;
 
-		//		if ( TMath::Abs(trackMC->Y()) > 0.5 )
-		//			continue;
-
 		Int_t pdgCode = trackMC->GetPdgCode();
 		Short_t pidCodeMC = 0;
 		pidCodeMC = GetPidCode(pdgCode);
 
-		hMcIn[Cent][0]->Fill(trackMC->Pt());
-		hMcIn[Cent][pidCodeMC]->Fill(trackMC->Pt());
-
-		hMcIn[10][0]->Fill(trackMC->Pt());
-		hMcIn[10][pidCodeMC]->Fill(trackMC->Pt());
+		hMcIn[Cent][0][Spherocity]->Fill(trackMC->Pt());
+		hMcIn[Cent][pidCodeMC][Spherocity]->Fill(trackMC->Pt());
 
 		if( chargeMC < 0 ){
-			hMcInNeg[Cent][0]->Fill(trackMC->Pt());
-			hMcInNeg[Cent][pidCodeMC]->Fill(trackMC->Pt());
-
-			hMcInNeg[10][0]->Fill(trackMC->Pt());
-			hMcInNeg[10][pidCodeMC]->Fill(trackMC->Pt());
+			hMcInNeg[Cent][0][Spherocity]->Fill(trackMC->Pt());
+			hMcInNeg[Cent][pidCodeMC][Spherocity]->Fill(trackMC->Pt());
 		}
 		else{
-			hMcInPos[Cent][0]->Fill(trackMC->Pt());
-			hMcInPos[Cent][pidCodeMC]->Fill(trackMC->Pt());
-
-			hMcInPos[10][0]->Fill(trackMC->Pt());
-			hMcInPos[10][pidCodeMC]->Fill(trackMC->Pt());
+			hMcInPos[Cent][0][Spherocity]->Fill(trackMC->Pt());
+			hMcInPos[Cent][pidCodeMC][Spherocity]->Fill(trackMC->Pt());
 		}
 
-
 	}//MC track loop
-
-
-
 }
-
-//_____________________________________________________________________________
-
-Short_t AliAnalysisTaskSpherocity::GetPythiaEventProcessType(Int_t pythiaType) {
-	//
-	// Get the process type of the event.  PYTHIA
-	//
-	// source PWG0   dNdpt
-
-	Short_t globalType = -1; //init
-
-	if(pythiaType==92||pythiaType==93){
-		globalType = 2; //single diffractive
-	}
-	else if(pythiaType==94){
-		globalType = 3; //double diffractive
-	}
-	//else if(pythiaType != 91){ // also exclude elastic to be sure... CKB??
-	else {
-		globalType = 1;  //non diffractive
-	}
-	return globalType;
-}
-
-//_____________________________________________________________________________
-Short_t AliAnalysisTaskSpherocity::GetDPMjetEventProcessType(Int_t dpmJetType) {
-	//
-	// get the process type of the event.  PHOJET
-	//
-	//source PWG0   dNdpt
-	// can only read pythia headers, either directly or from cocktalil header
-	Short_t globalType = -1;
-
-	if (dpmJetType == 1 || dpmJetType == 4) { // explicitly inelastic plus central diffraction
-		globalType = 1;
-	}
-	else if (dpmJetType==5 || dpmJetType==6) {
-		globalType = 2;
-	}
-	else if (dpmJetType==7) {
-		globalType = 3;
-	}
-	return globalType;
-}
-
-//_____________________________________________________________________________
-ULong64_t AliAnalysisTaskSpherocity::GetEventIdAsLong(AliVHeader* header) const
-{
-	// To have a unique id for each event in a run!
-	// Modified from AliRawReader.h
-	return ((ULong64_t)header->GetBunchCrossNumber()+
-			(ULong64_t)header->GetOrbitNumber()*3564+
-			(ULong64_t)header->GetPeriodNumber()*16777215*3564);
-}
-
-
 //____________________________________________________________________
 TParticle* AliAnalysisTaskSpherocity::FindPrimaryMother(AliStack* stack, Int_t label)
 {
@@ -1221,13 +1321,12 @@ Int_t AliAnalysisTaskSpherocity::FindPrimaryMotherLabelV0(AliStack* stack, Int_t
 }
 
 //__________________________________________________________________
-
 void AliAnalysisTaskSpherocity::ProduceArrayTrksESD( AliESDEvent *ESDevent, const Int_t Cent, const Int_t Spherocity ){
 
 	const Int_t nESDTracks = ESDevent->GetNumberOfTracks();
 
-	fcentAfterPrimaries->Fill(Cent+1);
-	fcentAfterPrimaries->Fill(11);
+	fcentAfterPrimaries->Fill(Cent);
+	fcentAfterPrimaries->Fill(10);
 
 	Float_t V0MPer  = -1;
 
@@ -1263,7 +1362,7 @@ void AliAnalysisTaskSpherocity::ProduceArrayTrksESD( AliESDEvent *ESDevent, cons
 			continue;
 
 		UInt_t selectDebug = 0;
-		if ( fTrackFilterGolden ) {
+		if(fTrackFilterGolden){
 			selectDebug = fTrackFilterGolden->IsSelected(esdTrack);
 			if (!selectDebug) {
 				continue;
@@ -1318,28 +1417,21 @@ void AliAnalysisTaskSpherocity::ProduceArrayTrksESD( AliESDEvent *ESDevent, cons
 				pidCode = GetPidCode(pdgCode);
 
 				if( fMCStack->IsPhysicalPrimary(label) ){
-
 					if( TMath::Abs(dcaxy) < GetMaxDCApTDep(fcutDCAxy,pt) ){
-						hMcOut[Cent][0]->Fill(esdTrack->Pt());
-						hMcOut[Cent][pidCode]->Fill(esdTrack->Pt());
-						hMcOut[10][0]->Fill(esdTrack->Pt());
-						hMcOut[10][pidCode]->Fill(esdTrack->Pt());
+						hMcOut[Cent][0][Spherocity]->Fill(esdTrack->Pt());
+						hMcOut[Cent][pidCode][Spherocity]->Fill(esdTrack->Pt());
 					}
 
 					if( esdTrack->Charge() < 0.0 ){
 						if( TMath::Abs(dcaxy) < GetMaxDCApTDep(fcutDCAxy,pt) )  {
-							hMcOutNeg[Cent][0]->Fill(esdTrack->Pt());
-							hMcOutNeg[Cent][pidCode]->Fill(esdTrack->Pt());
-							hMcOutNeg[10][0]->Fill(esdTrack->Pt());
-							hMcOutNeg[10][pidCode]->Fill(esdTrack->Pt());
+							hMcOutNeg[Cent][0][Spherocity]->Fill(esdTrack->Pt());
+							hMcOutNeg[Cent][pidCode][Spherocity]->Fill(esdTrack->Pt());
 						}
 					}
 					else{
 						if( TMath::Abs(dcaxy) < GetMaxDCApTDep(fcutDCAxy,pt) ){
-							hMcOutPos[Cent][0]->Fill(esdTrack->Pt());
-							hMcOutPos[Cent][pidCode]->Fill(esdTrack->Pt());
-							hMcOutPos[10][0]  ->Fill(esdTrack->Pt());
-							hMcOutPos[10][pidCode]  ->Fill(esdTrack->Pt());
+							hMcOutPos[Cent][0][Spherocity]->Fill(esdTrack->Pt());
+							hMcOutPos[Cent][pidCode][Spherocity]->Fill(esdTrack->Pt());
 						}
 					}
 				}	// Primary particles MC
@@ -1370,24 +1462,16 @@ void AliAnalysisTaskSpherocity::ProduceArrayTrksESD( AliESDEvent *ESDevent, cons
 			if( momentum <= 0.6 && momentum >= 0.4 ){//only p:0.4-0.6 GeV, pion MIP
 				if( dedxUnc < fDeDxMIPMax && dedxUnc > fDeDxMIPMin ){
 					hMIPVsEta[Cent][Spherocity]->Fill(eta,dedxUnc);
-					hMIPVsEta[Cent][2]->Fill(eta,dedxUnc);
 					pMIPVsEta[Cent][Spherocity]->Fill(eta,dedxUnc);
-					pMIPVsEta[Cent][2]->Fill(eta,dedxUnc);
 					//hMIPVsEta[10][Spherocity]->Fill(eta,dedxUnc);
-					//hMIPVsEta[10][2]->Fill(eta,dedxUnc);
 					//pMIPVsEta[10][Spherocity]->Fill(eta,dedxUnc);
-					//pMIPVsEta[10][2]->Fill(eta,dedxUnc);
 				}
 				if( dedxUnc > 70 && dedxUnc < 90 ){
 					if(TMath::Abs(beta-1)<0.1){
 						hPlateauVsEta[Cent][Spherocity]->Fill(eta,dedxUnc);
-						hPlateauVsEta[Cent][2]->Fill(eta,dedxUnc);
 						pPlateauVsEta[Cent][Spherocity]->Fill(eta,dedxUnc);
-						pPlateauVsEta[Cent][2]->Fill(eta,dedxUnc);
 						//hPlateauVsEta[10][Spherocity]->Fill(eta,dedxUnc);
-						//hPlateauVsEta[10][2]->Fill(eta,dedxUnc);
 						//pPlateauVsEta[10][Spherocity]->Fill(eta,dedxUnc);
-						//pPlateauVsEta[10][2]->Fill(eta,dedxUnc);
 					}
 				}
 			}
@@ -1396,31 +1480,22 @@ void AliAnalysisTaskSpherocity::ProduceArrayTrksESD( AliESDEvent *ESDevent, cons
 			if( momentum <= 0.6 && momentum >= 0.4 ){//only p:0.4-0.6 GeV, pion MIP
 				if( dedxUnc < fDeDxMIPMax && dedxUnc > fDeDxMIPMin ){
 					hMIPVsEta[Cent][Spherocity]->Fill(eta,dedx);
-					hMIPVsEta[Cent][2]->Fill(eta,dedx);
 					pMIPVsEta[Cent][Spherocity]->Fill(eta,dedx);
-					pMIPVsEta[Cent][2]->Fill(eta,dedx);
 					//hMIPVsEta[10][Spherocity]->Fill(eta,dedx);
-					//hMIPVsEta[10][2]->Fill(eta,dedx);
 					//pMIPVsEta[10][Spherocity]->Fill(eta,dedx);
-					//pMIPVsEta[10][2]->Fill(eta,dedx);
 				}
 				if( dedxUnc > 70 && dedxUnc < 90 ){
 					if(TMath::Abs(beta-1)<0.1){
 						hPlateauVsEta[Cent][Spherocity]->Fill(eta,dedx);
-						hPlateauVsEta[Cent][2]->Fill(eta,dedx);
 						pPlateauVsEta[Cent][Spherocity]->Fill(eta,dedx);
-						pPlateauVsEta[Cent][2]->Fill(eta,dedx);
 						//hPlateauVsEta[10][Spherocity]->Fill(eta,dedx);
-						//hPlateauVsEta[10][2]->Fill(eta,dedx);
 						//pPlateauVsEta[10][Spherocity]->Fill(eta,dedx);
-						//pPlateauVsEta[10][2]->Fill(eta,dedx);
 					}
 				}
 			}
 		}
 
 		hPtAll[Cent][Spherocity]->Fill(pt);
-		hPtAll[Cent][2]->Fill(pt);
 		//hPtAll[10][Spherocity]->Fill(pt);
 
 		Int_t nh = -1;
@@ -1439,16 +1514,13 @@ void AliAnalysisTaskSpherocity::ProduceArrayTrksESD( AliESDEvent *ESDevent, cons
 
 		if(beta>1){
 			histPiTof[Cent][nh][Spherocity]->Fill(momentum, dedx);
-			histPiTof[Cent][nh][2]->Fill(momentum, dedx);
 			//histPiTof[10][nh]->Fill(momentum, dedx);
 		}
 
 		if( momentum <= 0.6 && momentum >= 0.4  ){
 			if( dedx < fDeDxMIPMax && dedx > fDeDxMIPMin ){
 				hMIPVsPhi[Cent][nh][Spherocity]->Fill(phi,dedx);
-				hMIPVsPhi[Cent][nh][2]->Fill(phi,dedx);
 				pMIPVsPhi[Cent][nh][Spherocity]->Fill(phi,dedx);
-				pMIPVsPhi[Cent][nh][2]->Fill(phi,dedx);
 				//hMIPVsPhi[10][nh][Spherocity]->Fill(phi,dedx);
 				//pMIPVsPhi[10][nh][Spherocity]->Fill(phi,dedx);
 
@@ -1461,9 +1533,7 @@ void AliAnalysisTaskSpherocity::ProduceArrayTrksESD( AliESDEvent *ESDevent, cons
 			if( dedx > 70 && dedx < 90 ){
 				if(TMath::Abs(beta-1)<0.1){
 					hPlateauVsPhi[Cent][nh][Spherocity]->Fill(phi,dedx);
-					hPlateauVsPhi[Cent][nh][2]->Fill(phi,dedx);
 					pPlateauVsPhi[Cent][nh][Spherocity]->Fill(phi,dedx);
-					pPlateauVsPhi[Cent][nh][2]->Fill(phi,dedx);
 					//hPlateauVsPhi[10][nh]->Fill(phi,dedx);
 					//pPlateauVsPhi[10][nh]->Fill(phi,dedx);
 				}
@@ -1471,10 +1541,8 @@ void AliAnalysisTaskSpherocity::ProduceArrayTrksESD( AliESDEvent *ESDevent, cons
 		}
 
 		hPtVsP[Cent][nh][Spherocity]->Fill(momentum,pt);
-		hPtVsP[Cent][nh][2]->Fill(momentum,pt);
 		//hPtVsP[10][nh]->Fill(momentum,pt);
 		hDeDxVsP[Cent][nh][Spherocity]->Fill(momentum,dedx);
-		hDeDxVsP[Cent][nh][2]->Fill(momentum,dedx);
 		//hDeDxVsP[10][nh]->Fill(momentum,dedx);
 
 		if(esdTrack->Charge() < 0.){
@@ -1499,8 +1567,8 @@ void AliAnalysisTaskSpherocity::ProduceArrayV0ESD( AliESDEvent *ESDevent, const 
 
 	Int_t nv0s = ESDevent->GetNumberOfV0s();
 
-	fcentAfterV0s->Fill(Cent+1);
-	fcentAfterV0s->Fill(11);
+	fcentAfterV0s->Fill(Cent);
+	fcentAfterV0s->Fill(10);
 
 	const AliESDVertex *myBestPrimaryVertex = ESDevent->GetPrimaryVertex();
 
@@ -1721,13 +1789,9 @@ void AliAnalysisTaskSpherocity::ProduceArrayV0ESD( AliESDEvent *ESDevent, const 
 							       if( dedxUnc < fDeDxMIPMax && dedxUnc > fDeDxMIPMin ){
 								       if(momentum<0.6&&momentum>0.4){
 									       hMIPVsEtaV0s[Cent][Spherocity]->Fill(eta,dedx);
-									       hMIPVsEtaV0s[Cent][2]->Fill(eta,dedx);
 									       pMIPVsEtaV0s[Cent][Spherocity]->Fill(eta,dedx);
-									       pMIPVsEtaV0s[Cent][2]->Fill(eta,dedx);
 									       //hMIPVsEtaV0s[10][Spherocity]->Fill(eta,dedx);
-									       //hMIPVsEtaV0s[10][2]->Fill(eta,dedx);
 									       //pMIPVsEtaV0s[10][Spherocity]->Fill(eta,dedx);
-									       //pMIPVsEtaV0s[10][2]->Fill(eta,dedx);
 								       }
 							       }
 						       }
@@ -1748,12 +1812,10 @@ void AliAnalysisTaskSpherocity::ProduceArrayV0ESD( AliESDEvent *ESDevent, const 
 
 						       if(fillPos&&fillNeg){
 							       histPiV0[Cent][nh][Spherocity]->Fill(momentum, dedx);
-							       histPiV0[Cent][nh][2]->Fill(momentum, dedx);
 							       //histPiV0[10][nh]->Fill(momentum, dedx);
 						       }
 						       else{
 							       histPV0[Cent][nh][Spherocity]->Fill(momentum, dedx);
-							       histPV0[Cent][nh][2]->Fill(momentum, dedx);
 							       //histPV0[10][nh]->Fill(momentum, dedx);
 						       }
 					       }//end loop over two tracks
@@ -1853,7 +1915,6 @@ void AliAnalysisTaskSpherocity::ProduceArrayV0ESD( AliESDEvent *ESDevent, const 
 
 					       cout<<"Cent :: "<<Cent<<"Eta  :: "<<eta<<"dedx :: "<<dedx<<endl;
 					       histEV0[Cent][nh][Spherocity]->Fill(momentum, dedx);
-					       histEV0[Cent][nh][2]->Fill(momentum, dedx);
 					       //histEV0[10][nh]->Fill(momentum, dedx);
 				       };
 				       break;
@@ -1941,17 +2002,38 @@ Bool_t AliAnalysisTaskSpherocity::IsGoodZvertexPos(AliESDEvent *esd)
 //________________________________________________________________________
 void AliAnalysisTaskSpherocity::SetTrackCutsSpherocity(AliAnalysisFilter* fTrackFilter){
 
+	// My Cuts
+	/*
+  	AliESDtrackCuts* esdTrackCuts = new AliESDtrackCuts;
+
+  	esdTrackCuts->SetMinNClustersTPC(50);
+  	esdTrackCuts->SetMaxChi2PerClusterTPC(4);
+  	esdTrackCuts->SetAcceptKinkDaughters(kFALSE);
+
+  	esdTrackCuts->SetMaxDCAToVertexZ(2);
+  	esdTrackCuts->SetDCAToVertex2D(kFALSE);
+
+	esdTrackCuts->SetMaxDCAToVertexXYPtDep("0.0182+0.0350/pt^1.01");
+	esdTrackCuts->SetRequireTPCRefit(kTRUE);
+	esdTrackCuts->SetRequireITSRefit(kTRUE);
+	esdTrackCuts->SetEtaRange(-0.8,0.8);
+	*/
+
+	
+	//	Vyt Cuts
+	
 	AliESDtrackCuts* esdTrackCuts = AliESDtrackCuts::GetStandardTPCOnlyTrackCuts();
 	esdTrackCuts->SetRequireTPCRefit(kTRUE);
 	esdTrackCuts->SetRequireITSRefit(kTRUE);
 	esdTrackCuts->SetEtaRange(-0.8,0.8);
+		
 
 	/*
 	//	Antonio's Cuts
 	AliESDtrackCuts* esdTrackCuts = new AliESDtrackCuts();
 	esdTrackCuts->SetMaxFractionSharedTPCClusters(0.4);//
 	esdTrackCuts->SetMinRatioCrossedRowsOverFindableClustersTPC(0.8);//
-	esdTrackCuts->SetCutGeoNcrNcl(3., 130., 1.5, 0.85, 0.7);//
+	esdTrackCuts->SetCutGeoNcrNcl(2., 130., 1.5, 0.85, 0.7);//
 	esdTrackCuts->SetMaxChi2PerClusterTPC(4);//
 	esdTrackCuts->SetAcceptKinkDaughters(kFALSE);//
 	esdTrackCuts->SetRequireTPCRefit(kTRUE);//
@@ -1965,7 +2047,7 @@ void AliAnalysisTaskSpherocity::SetTrackCutsSpherocity(AliAnalysisFilter* fTrack
 	esdTrackCuts->SetRequireSigmaToVertex(kFALSE);//
 	esdTrackCuts->SetMaxChi2PerClusterITS(36);//
 	*/
-
+		
 	fTrackFilter->AddCuts(esdTrackCuts);
 }
 //________________________________________________________________________

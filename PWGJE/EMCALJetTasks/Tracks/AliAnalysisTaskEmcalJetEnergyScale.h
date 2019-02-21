@@ -57,6 +57,7 @@ public:
 protected:
   virtual void UserCreateOutputObjects();
   virtual Bool_t Run(); 
+  virtual Bool_t CheckMCOutliers();
   bool IsSelectEmcalTriggers(const TString &triggerstring) const;
 
 private:

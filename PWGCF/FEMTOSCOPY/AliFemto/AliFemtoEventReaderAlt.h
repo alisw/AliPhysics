@@ -2,7 +2,13 @@
 /// AliFemtoEventReaderAlt.h
 ///
 
+#pragma once
+
+#ifndef ALIFEMTOEVENTREADERALT_H
+#define ALIFEMTOEVENTREADERALT_H
+
 #include "AliFemtoEventReaderAODMultSelection.h"
+
 
 class TRandom3;
 
@@ -26,7 +32,11 @@ protected:
   AliFemtoEventReaderAlt operator=(const AliFemtoEventReaderAlt&);
 
   virtual AliFemtoTrack* CopyAODtoFemtoTrack(AliAODTrack *src);
+  void CopyPIDtoFemtoTrack(AliAODTrack *, AliFemtoTrack *);
 
   TRandom3 *fRng;
   double fEnhanceSmearing;
 };
+
+
+#endif

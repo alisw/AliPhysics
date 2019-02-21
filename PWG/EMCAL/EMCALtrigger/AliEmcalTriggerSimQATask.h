@@ -48,10 +48,15 @@ class AliEmcalTriggerSimQATask : public AliAnalysisTaskEmcal {
   enum EventEMCALTriggerType_t { // Which bit is set for the event type
     kMB = -1, // Minimum Bias
     kEL0 = 0,
-    kEG1 = 1,
-    kEG2 = 2,
-    kEJ1 = 3,
-    kEJ2 = 4
+    kDL0 = 1,
+    kEG1 = 2,
+    kDG1 = 3,
+    kEG2 = 4,
+    kDG2 = 5,
+    kEJ1 = 6,
+    kDJ1 = 7,
+    kEJ2 = 8,
+    kDJ2 = 9
   };
 
   AliEmcalTriggerSimQATask();
@@ -70,8 +75,10 @@ class AliEmcalTriggerSimQATask : public AliAnalysisTaskEmcal {
   Bool_t                                    FillHistograms();
   void                                      FillEventQA();
 
-  static const Int_t                        kNTriggerTypes = 6; // MB,L0,EG1,EG2,EJ1,EJ2
-  const TString                             fTriggerNames[kNTriggerTypes] = {"MB","L0","EG1","EG2","EJ1","EJ2"};
+//  static const Int_t                        kNTriggerTypes = 6; // MB,L0,EG1,EG2,EJ1,EJ2
+  static const Int_t                        kNTriggerTypes = 11; // MB,EL0,DL0,EG1,DG1,EG2,DG2,EJ1,DJ1,EJ2,DJ2
+//  const TString                             fTriggerNames[kNTriggerTypes] = {"MB","L0","EG1","EG2","EJ1","EJ2"};
+  const TString                             fTriggerNames[kNTriggerTypes] = {"MB","EL0","DL0","EG1","DG1","EG2","DG2","EJ1","DJ1","EJ2","DJ2"};
   EventEMCALTriggerType_t                   fTriggerTypes[kNTriggerTypes]; ///< Trigger type array
   TString                                   fTriggerPatchesName;         ///< name of input trigger array
   TClonesArray                             *fTriggerPatches;             //!<! trigger array in

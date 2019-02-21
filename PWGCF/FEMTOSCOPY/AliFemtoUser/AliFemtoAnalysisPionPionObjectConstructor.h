@@ -23,6 +23,7 @@
 #if __cplusplus < 201103L
 #warning Partial implementation for standards before C++11
 
+#include <TClass.h>
 #include <typeinfo>
 
 
@@ -32,7 +33,7 @@ struct Configuration {
   static AliFemtoConfigObject GetConfigurationOf(const T&)
     {
       return AliFemtoConfigObject::BuildMap()
-              ("class", typeid(T).name());
+              ("_class", TClass::GetClass(typeid(T))->GetName());
     }
 };
 
@@ -114,7 +115,7 @@ struct Configuration<AliFemtoEventReaderAOD>
       multiplicity = static_cast<AliFemtoEventReaderAOD::EstEventMult>(m_int);
 
       // NOTE : These should be the bounds of the enum
-      if (m_int < AliFemtoEventReaderAOD::kCentrality 
+      if (m_int < AliFemtoEventReaderAOD::kCentrality
           || AliFemtoEventReaderAOD::kCentralityNPA < m_int) {
         std::cerr << "Invalid multiplicity " << m_int << "\n";
       }
@@ -161,7 +162,7 @@ struct Configuration<AliFemtoEventReaderAOD>
 #if defined(ALIFEMTOEVENTREADERAODCHAIN_H) && !defined(ALIFEMTOCONSTRUCTOR_ALIFEMTOEVENTREADERAODCHAIN_H)
 #define ALIFEMTOCONSTRUCTOR_ALIFEMTOEVENTREADERAODCHAIN_H
 template <>
-struct Configuration<AliFemtoEventReaderAODChain> 
+struct Configuration<AliFemtoEventReaderAODChain>
        : public Configuration<AliFemtoEventReaderAOD> {
 
   Configuration(AliFemtoConfigObject &cfg)
@@ -234,7 +235,7 @@ struct Configuration<AliFemtoEventReaderAODMultSelection>
       multiplicity = static_cast<AliFemtoEventReaderAOD::EstEventMult>(m_int);
 
       // NOTE : These should be the bounds of the enum
-      if (m_int < AliFemtoEventReaderAOD::kCentrality 
+      if (m_int < AliFemtoEventReaderAOD::kCentrality
           || AliFemtoEventReaderAOD::kCentralityNPA < m_int) {
         std::cerr << "Invalid multiplicity " << m_int << "\n";
       }
@@ -338,7 +339,7 @@ struct Configuration<AliFemtoBasicEventCut>
   operator AliFemtoConfigObject() const
     {
       return AliFemtoConfigObject::BuildMap()
-          ("class", "AliFemtoBasicEventCut")
+          ("_class", "AliFemtoBasicEventCut")
           ("multiplicity", multiplicity)
           ("vertex_z", vertex_z)
           ("ep_psi", ep_psi)
@@ -371,7 +372,7 @@ struct Configuration<AliFemtoBasicEventCut>
 #define ALIFEMTOCONSTRUCTOR_ALIFEMTOEVENTCUTCENTRALITY_H
 
 template<>
-struct Configuration<AliFemtoEventCutCentrality> 
+struct Configuration<AliFemtoEventCutCentrality>
        : public AbstractConfiguration<AliFemtoEventCut> {
 
   AliFemtoEventCutCentrality::Parameters params;
@@ -439,7 +440,7 @@ struct AbstractConfiguration<AliFemtoParticleCut>
 #if defined(AliFemtoTrackCut_hh) && !defined(ALIFEMTOCONSTRUCTOR_AliFemtoTrackCut_hh)
 #define ALIFEMTOCONSTRUCTOR_ALIFEMTOTRACKCUT_H
 template<>
-struct AbstractConfiguration<AliFemtoTrackCut> 
+struct AbstractConfiguration<AliFemtoTrackCut>
        : public AbstractConfiguration<AliFemtoParticleCut> {
 
   using Super = AbstractConfiguration<AliFemtoParticleCut>;
@@ -465,7 +466,7 @@ struct AbstractConfiguration<AliFemtoTrackCut>
 #if defined(ALIFEMTOESDTRACKCUT_H) && !defined(ALIFEMTOCONSTRUCTOR_ALIFEMTOESDTRACKCUT_H)
 #define ALIFEMTOCONSTRUCTOR_ALIFEMTOESDTRACKCUT_H
 template<>
-struct Configuration<AliFemtoESDTrackCut> 
+struct Configuration<AliFemtoESDTrackCut>
        : public AbstractConfiguration<AliFemtoTrackCut> {
 
   using Super = AbstractConfiguration<AliFemtoTrackCut>;
@@ -565,7 +566,7 @@ struct Configuration<AliFemtoESDTrackCut>
   static void ReadConfigurationInto(AliFemtoConfigObject &dest, const AliFemtoESDTrackCut &cut)
   {
     dest.Update(AliFemtoConfigObject::BuildMap()
-                ("class", "AliFemtoESDTrackCut")
+                ("_class", "AliFemtoESDTrackCut")
                 ("pt", cut.GetPt())
                 ("rapidity", cut.GetRapidity())
                 ("eta", cut.GetEta())
@@ -676,7 +677,7 @@ struct Configuration<AliFemtoBasicTrackCut> : AbstractConfiguration<AliFemtoTrac
 
   static void ReadConfigurationInto(AliFemtoConfigObject &dest, const AliFemtoBasicTrackCut &cut)
     {
-      auto result = AliFemtoConfigObject::BuildMap()("class", "AliFemtoBasicTrackCut");
+      auto result = AliFemtoConfigObject::BuildMap()("_class", "AliFemtoBasicTrackCut");
 
       TList *settings = const_cast<AliFemtoBasicTrackCut&>(cut).ListSettings();
       TIter next(settings);
@@ -774,7 +775,7 @@ struct Configuration<AliFemtoAODTrackCut> : AbstractConfiguration<AliFemtoTrackC
 
   static void ReadConfigurationInto(AliFemtoConfigObject &dest, const AliFemtoAODTrackCut &cut)
   {
-    auto result = AliFemtoConfigObject::BuildMap()("class", "AliFemtoAODTrackCut");
+    auto result = AliFemtoConfigObject::BuildMap()("_class", "AliFemtoAODTrackCut");
 
     TList *settings = const_cast<AliFemtoAODTrackCut&>(cut).ListSettings();
     TIter next(settings);
@@ -864,7 +865,7 @@ struct Configuration<AliFemtoV0TrackCut> : AbstractConfiguration<AliFemtoParticl
   static AliFemtoConfigObject GetConfigurationOf(const AliFemtoV0TrackCut &cut)
     {
       return AliFemtoConfigObject::BuildMap()
-        ("class", "AliFemtoV0TrackCut");
+        ("_class", "AliFemtoV0TrackCut");
     }
 };
 #endif
@@ -895,14 +896,14 @@ struct Configuration<AliFemtoDummyPairCut> : AbstractConfiguration<AliFemtoPairC
   operator AliFemtoConfigObject() const
     {
       return AliFemtoConfigObject::BuildMap()
-        ("class", "AliFemtoDummyPairCut");
+        ("_class", "AliFemtoDummyPairCut");
     }
 
   static AliFemtoConfigObject
   GetConfigurationOf(const AliFemtoDummyPairCut &_cut)
     {
       AliFemtoConfigObject result = AliFemtoConfigObject::BuildMap()
-        ("class", "AliFemtoDummyPairCut");
+        ("_class", "AliFemtoDummyPairCut");
       return result;
     }
 };
@@ -930,7 +931,7 @@ struct Configuration<AliFemtoPairCutPt> : AbstractConfiguration<AliFemtoPairCut>
   virtual operator AliFemtoConfigObject() const
     {
       return AliFemtoConfigObject::BuildMap()
-        ("class", "AliFemtoDummyPairCut");
+        ("_class", "AliFemtoDummyPairCut");
     }
 
   virtual operator AliFemtoPairCut*() const
@@ -950,7 +951,7 @@ struct Configuration<AliFemtoPairCutPt> : AbstractConfiguration<AliFemtoPairCut>
     AliFemtoConfigObject
       result = AliFemtoConfigObject::BuildMap()
                 ("pt_range", pt_range)
-                ("class", "AliFemtoPairCutPt");
+                ("_class", "AliFemtoPairCutPt");
 
     return result;
   }
@@ -1010,7 +1011,7 @@ struct Configuration<AliFemtoShareQualityPairCut> : AbstractConfiguration<AliFem
   static void ReadConfigurationInto(AliFemtoConfigObject &dest, const AliFemtoShareQualityPairCut &cut)
   {
     dest.Update(AliFemtoConfigObject::BuildMap()
-                ("class", "AliFemtoShareQualityPairCut")
+                ("_class", "AliFemtoShareQualityPairCut")
                 ("max_share_quality", cut.GetShareQualityMax())
                 ("max_share_fraction", cut.GetShareFractionMax())
                 ("remove_same_label", cut.GetRemoveSameLabel()));
@@ -1085,7 +1086,7 @@ struct Configuration<AliFemtoPairCutDetaDphi> : Configuration<AliFemtoShareQuali
   static AliFemtoConfigObject GetConfigurationOf(const AliFemtoPairCutDetaDphi &cut)
   {
     return AliFemtoConfigObject::BuildMap()
-      ("class", "AliFemtoPairCutDetaDphi")
+      ("_class", "AliFemtoPairCutDetaDphi")
       ("share_fraction_max", cut.GetShareFractionMax())
       ("share_quality_max", cut.GetShareQualityMax())
       ("remove_same_label", cut.GetRemoveSameLabel())
@@ -1155,7 +1156,7 @@ struct Configuration<AliFemtoPairCutAntiGamma> : Configuration<AliFemtoShareQual
   GetConfigurationOf(const AliFemtoPairCutAntiGamma &cut)
   {
     return AliFemtoConfigObject::BuildMap()
-      ("class", "AliFemtoPairCutAntiGamma")
+      ("_class", "AliFemtoPairCutAntiGamma")
       ("share_fraction_max", cut.GetShareFractionMax())
       ("share_quality_max", cut.GetShareQualityMax())
       ("remove_same_label", cut.GetRemoveSameLabel())
@@ -1414,7 +1415,7 @@ struct Configuration<AliFemtoCorrFctnDPhiStarDEta> : AbstractConfiguration<AliFe
   static AliFemtoConfigObject GetConfigurationOf(const AliFemtoCorrFctnDPhiStarDEta &cut)
   {
     return AliFemtoConfigObject::BuildMap()
-      ("class", "AliFemtoCorrFctnDPhiStarDEta")
+      ("_class", "AliFemtoCorrFctnDPhiStarDEta")
       ;
   }
 };

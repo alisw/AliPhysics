@@ -30,6 +30,11 @@ struct AddPairCutAttrs : public T1, public T2 {
       return T1::Pass(track1, track2) && T2::Pass(track1, track2);
     }
 
+  AddPairCutAttrs()
+    : T1()
+    , T2()
+    { }
+
   AddPairCutAttrs(AliFemtoConfigObject &cfg)
     : T1(cfg)
     , T2(cfg)
@@ -41,7 +46,7 @@ struct AddPairCutAttrs : public T1, public T2 {
       T2::FillConfiguration(cfg);
     }
 
-  virtual ~AddPairCutAttrs() = 0;
+  virtual ~AddPairCutAttrs() {}
 };
 
 
@@ -81,23 +86,23 @@ struct PairCutTrackAttrAvgSep {
       double sep_sum = 0.0;
 
       for (; i<8; ++i) {
-        auto &p1 = track1.NominalTpcPoint(i),
-             &p2 = track2.NominalTpcPoint(i);
+        const auto &p1 = track1.NominalTpcPoint(i),
+                   &p2 = track2.NominalTpcPoint(i);
+
         if (!is_valid_point(p1) || !is_valid_point(p2)) {
           break;
         }
-        sep_sum += (p1 - p1).Mag();
+        sep_sum += (p1 - p2).Mag();
       }
       return sep_sum / i;
     }
 
   void FillConfiguration(AliFemtoConfigObject &cfg) const
     {
-      cfg.Update(AliFemtoConfigObject::BuildMap()
-                 ("min_avgsep", min_avgsep));
+      cfg.insert("min_avgsep", min_avgsep);
     }
 
-  virtual ~PairCutTrackAttrAvgSep() = 0;
+  virtual ~PairCutTrackAttrAvgSep() {}
 };
 
 
@@ -125,11 +130,10 @@ struct PairCutTrackAttrPt {
 
   void FillConfiguration(AliFemtoConfigObject &cfg) const
     {
-      cfg.Update(AliFemtoConfigObject::BuildMap()
-                 ("pt_range", pt_range));
+      cfg.insert("pt_range", pt_range);
     }
 
-  virtual ~PairCutTrackAttrPt() = 0;
+  virtual ~PairCutTrackAttrPt() {}
 };
 
 
@@ -190,12 +194,11 @@ struct PairCutTrackAttrShareQuality {
 
   void FillConfiguration(AliFemtoConfigObject &cfg) const
     {
-      cfg.Update(AliFemtoConfigObject::BuildMap()
-                 ("max_share_quality", max_share_quality)
-                 ("max_share_fraction", max_share_fraction));
+      cfg.insert("max_share_quality", max_share_quality);
+      cfg.insert("max_share_fraction", max_share_fraction);
     }
 
-  virtual ~PairCutTrackAttrShareQuality() = 0;
+  virtual ~PairCutTrackAttrShareQuality() {}
 };
 
 
@@ -224,6 +227,14 @@ struct PairCutTrackAttrDetaDphi {
    : min_delta_eta(0.04)
    , min_delta_phi(0.02)
    , radius(1.2)
+   , fCurrentMagneticField(0.0)
+   {
+   }
+
+  PairCutTrackAttrDetaDphi(AliFemtoConfigObject &cut)
+   : min_delta_eta(cut.pop_float("min_delta_eta", 0.0))
+   , min_delta_phi(cut.pop_float("min_delta_phi", 0.0))
+   , radius(cut.pop_float("phistar_radius", 1.2))
    , fCurrentMagneticField(0.0)
    {
    }
@@ -260,7 +271,7 @@ struct PairCutTrackAttrDetaDphi {
                  ("phistar_radius", min_delta_phi));
     }
 
-  virtual ~PairCutTrackAttrDetaDphi() = 0;
+  virtual ~PairCutTrackAttrDetaDphi() {}
 };
 
 
@@ -284,11 +295,10 @@ struct PairCutTrackAttrSameLabel {
 
   void FillConfiguration(AliFemtoConfigObject &cfg) const
     {
-      cfg.Update(AliFemtoConfigObject::BuildMap()
-                 ("remove_same_label", remove_same_label));
+      cfg.insert("remove_same_label", remove_same_label);
     }
 
-  virtual ~PairCutTrackAttrSameLabel() = 0;
+  virtual ~PairCutTrackAttrSameLabel() {}
 };
 
 
@@ -370,10 +380,24 @@ struct PairCutTrackAttrMinv {
                             std::sqrt(fMinvSqrRange.second));
     }
 
+  PairCutTrackAttrMinv()
+    : fMinvSqrRange(0, 100)
+    , fMass1(0.0)
+    , fMass2(0.0)
+    {}
+
+  PairCutTrackAttrMinv(AliFemtoConfigObject &cfg)
+    : fMinvSqrRange(cfg.pop_range("minv_range", std::make_pair(0.0, 100.0)))
+    , fMass1(0.0)
+    , fMass2(0.0)
+    {
+      fMinvSqrRange.first *= fMinvSqrRange.first;
+      fMinvSqrRange.second *= fMinvSqrRange.second;
+    }
+
   void FillConfiguration(AliFemtoConfigObject &cfg) const
     {
-      cfg.Update(AliFemtoConfigObject::BuildMap()
-                 ("minv_range", GetMinvRange()));
+      cfg.insert("minv_range", GetMinvRange());
     }
 
 protected:
@@ -382,11 +406,81 @@ protected:
   double fMass1;
   double fMass2;
 
-  virtual ~PairCutTrackAttrMinv() = 0;
+  virtual ~PairCutTrackAttrMinv() {}
 };
 
 
 }  // namespace pwgcf
+
+
+
+#include "AliFemtoPairCut.h"
+
+
+/// \class AliFemtoPairCutAttrTracks
+/// \brief Bridge from AliFemtoPairCut to a metaclass of PairCut-Attrs
+///
+/// Note - This expects two tracks
+///
+/// Subclass and implement your method:
+///  `const char* GetName() const`
+///
+///
+template <typename CRTP, typename CutAttrType>
+class AliFemtoPairCutAttrTracks : public AliFemtoPairCut, public CutAttrType {
+public:
+
+  typedef CutAttrType CutAttrs;
+
+  virtual ~AliFemtoPairCutAttrTracks()
+    { }
+
+  AliFemtoPairCutAttrTracks()
+    : AliFemtoPairCut()
+    , CutAttrType()
+    {}
+
+  AliFemtoPairCutAttrTracks(AliFemtoConfigObject &cfg)
+    : AliFemtoPairCut()
+    , CutAttrType(cfg)
+    {}
+
+  /// user-written method to return string describing cuts
+  virtual AliFemtoString Report()
+    { return ""; }
+
+  /// Return a TList of settings
+  virtual TList* ListSettings()
+    {
+      TList* list = new TList();
+      AppendSettings(*list);
+      return list;
+    }
+
+  virtual void AppendSettings(TCollection &) const = 0;
+
+  virtual bool Pass(const AliFemtoPair *pair)
+    {
+      return CutAttrs::Pass(*pair->Track1()->Track(), *pair->Track2()->Track());
+    }
+
+  void StoreConfiguration(AliFemtoConfigObject &cfg) const
+    {
+      CutAttrs::FillConfiguration(cfg);
+      cfg.insert("_class", static_cast<CRTP*>(this)->GetName());
+    }
+
+  AliFemtoConfigObject GetConfiguration() const
+    {
+      AliFemtoConfigObject result = AliFemtoConfigObject::BuildMap()
+                                      ("_class", CRTP::ClassName());
+      CutAttrs::FillConfiguration(result);
+      return result;
+    }
+
+};
+
+
 
 
 #endif
