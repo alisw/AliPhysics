@@ -84,6 +84,9 @@ AliAnalysisTaskStrangenessLifetimes::AliAnalysisTaskStrangenessLifetimes(
       fMC{mc},
       fDownscale{downscale},
       fUseOnTheFly{false},
+      fUseCustomBethe{false},
+      fCustomBethe{0.f,0.f,0.f,0.f,0.f},
+      fCustomResolution{1.f},
       fHistMCct{nullptr},
       fHistMCctPrimary{nullptr},
       fHistMCctSecondaryFromMaterial{nullptr},
@@ -466,14 +469,25 @@ void AliAnalysisTaskStrangenessLifetimes::UserExec(Option_t *)
         std::abs(fPIDResponse->NumberOfSigmasTPC(pTrack, AliPID::kProton));
     float nSigmaAbsPosPion =
         std::abs(fPIDResponse->NumberOfSigmasTPC(pTrack, AliPID::kPion));
-    float nSigmaAbsPosHe3 =
-        std::abs(fPIDResponse->NumberOfSigmasTPC(pTrack, AliPID::kHe3));
+    float nSigmaPosHe3 = fPIDResponse->NumberOfSigmasTPC(pTrack, AliPID::kHe3);
     float nSigmaNegAbsProton =
         std::abs(fPIDResponse->NumberOfSigmasTPC(nTrack, AliPID::kProton));
     float nSigmaNegAbsPion =
         std::abs(fPIDResponse->NumberOfSigmasTPC(nTrack, AliPID::kPion));
-    float nSigmaNegAbsHe3 =
-        std::abs(fPIDResponse->NumberOfSigmasTPC(nTrack, AliPID::kHe3));
+    float nSigmaNegHe3 = fPIDResponse->NumberOfSigmasTPC(nTrack, AliPID::kHe3);
+
+    if (fUseCustomBethe) {
+      const float nbetaGamma = nTrack->GetTPCmomentum() / AliPID::ParticleMass(AliPID::kHe3);
+      const float pbetaGamma = pTrack->GetTPCmomentum() / AliPID::ParticleMass(AliPID::kHe3);
+      const float* pars = fCustomBethe;
+      const float nExpSignal = AliExternalTrackParam::BetheBlochAleph(nbetaGamma, pars[0], pars[1], pars[2], pars[3], pars[4]);
+      const float pExpSignal = AliExternalTrackParam::BetheBlochAleph(pbetaGamma, pars[0], pars[1], pars[2], pars[3], pars[4]);
+      nSigmaNegHe3  = (nTrack->GetTPCsignal() - nExpSignal) / (fCustomResolution * nExpSignal);
+      nSigmaPosHe3  = (pTrack->GetTPCsignal() - pExpSignal) / (fCustomResolution * pExpSignal);
+    }
+
+    float nSigmaNegAbsHe3 = std::abs(nSigmaNegHe3);
+    float nSigmaPosAbsHe3 = std::abs(nSigmaPosHe3);
 
     bool isHyperCandidate = nSigmaNegAbsHe3 < 5 || nSigmaAbsPosHe3 < 5;
     double v0Pt = v0->Pt();
@@ -645,8 +659,7 @@ void AliAnalysisTaskStrangenessLifetimes::UserExec(Option_t *)
       }
       if (isHyperCandidate)
       {
-        auto miniHyper = HyperTriton2Body::FillHyperTriton2Body(v0, pTrack, nTrack, fPIDResponse->NumberOfSigmasTPC(pTrack, AliPID::kHe3),
-                                                                fPIDResponse->NumberOfSigmasTPC(nTrack, AliPID::kHe3), fPIDResponse->NumberOfSigmasTPC(pTrack, AliPID::kPion), 
+        auto miniHyper = HyperTriton2Body::FillHyperTriton2Body(v0, pTrack, nTrack, nSigmaPosHe3, nSigmaNegHe3, fPIDResponse->NumberOfSigmasTPC(pTrack, AliPID::kPion), 
                                                                 fPIDResponse->NumberOfSigmasTPC(nTrack, AliPID::kPion), magneticField, primaryVertex, fake);
 
         fV0Hyvector.push_back(miniHyper);
@@ -745,4 +758,10 @@ LVector_t AliAnalysisTaskStrangenessLifetimes::GetV0LorentzVector(int pdg, AliES
     return posLvec;
   }
   return LVector_t(0, 0, 0, 0);
+}
+
+void AliAnalysisTaskStrangenessLifetimes::SetCustomBetheBloch(float res, const float* bethe) {
+  fUseCustomBethe = true;
+  fCustomResolution = res;
+  std::copy(bethe, fCustomBethe[iSpecies],5);
 }
