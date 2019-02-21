@@ -478,14 +478,13 @@ void AliAnalysisTaskStrangenessLifetimes::UserExec(Option_t *)
     bool isHyperCandidate = nSigmaNegAbsHe3 < 5 || nSigmaAbsPosHe3 < 5;
     double v0Pt = v0->Pt();
 
-    if ((v0Pt < fMinPtToSave) || (fMaxPtToSave < v0Pt))
-      continue;
-
-    double masses[3];
+    double masses[3]{0.,0.,0.};
+    double absRapidities[3]{0.,0.,0.};
     for (int iPdg = 0; iPdg < 3; ++iPdg)
     {
       auto lvector = GetV0LorentzVector(pdgCodes[iPdg], nTrack, pTrack, v0->AlphaV0());
       masses[iPdg] = lvector.M();
+      absRapidities[iPdg] = std::abs(lvector.Rapidity());
       if (iPdg == 2)
       {
         if (isHyperCandidate)
@@ -496,6 +495,9 @@ void AliAnalysisTaskStrangenessLifetimes::UserExec(Option_t *)
           masses[iPdg] = -1;
       }
     }
+
+    if ((v0Pt < fMinPtToSave) || (fMaxPtToSave < v0Pt))
+      continue;
 
     // Calculate the sign of the vec prod with momenta projected to xy plane
     // It is unnecessary to to the full calculation like done in the original
@@ -513,7 +515,9 @@ void AliAnalysisTaskStrangenessLifetimes::UserExec(Option_t *)
     /// TODO: check if this extra cleanup is required
     if (std::abs(nTrack->Eta()) > 0.8 || std::abs(pTrack->Eta()) > 0.8)
       continue;
-    if (std::abs(v0->RapK0Short()) > 0.5 && std::abs(v0->RapLambda()) > 0.5)
+    if (absRapidities[0] > 0.5 &&
+        absRapidities[1] > 0.5 &&
+        absRapidities[2] > 0.5)
       continue;
 
     // Filter like-sign V0 (next: add counter and distribution)
@@ -553,11 +557,11 @@ void AliAnalysisTaskStrangenessLifetimes::UserExec(Option_t *)
       negTrackLength = nTrack->GetLengthInActiveZone(
           1, 2.0, 220.0, esdEvent->GetMagneticField());
 
-    float smallestTrackLength =
-        (posTrackLength < negTrackLength) ? posTrackLength : negTrackLength;
-    if ((((pTrack->GetTPCClusterInfo(2, 1)) < 70) ||
-         ((nTrack->GetTPCClusterInfo(2, 1)) < 70)) &&
-        smallestTrackLength < 80)
+    //float smallestTrackLength =
+    //    (posTrackLength < negTrackLength) ? posTrackLength : negTrackLength;
+    if ((pTrack->GetTPCClusterInfo(2, 1) < 70) ||
+         (nTrack->GetTPCClusterInfo(2, 1) < 70))
+    //    smallestTrackLength < 80)
       continue;
 
     double cosPA = v0->GetV0CosineOfPointingAngle(
