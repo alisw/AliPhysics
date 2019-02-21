@@ -22,7 +22,6 @@
 // Base class for HF Unfolding - agrelli@uu.nl
 //-----------------------------------------------------------------------
 
-#include "TParticle.h"
 #include "TClonesArray.h"
 #include "AliAODMCParticle.h"
 #include "AliAODRecoDecayHF.h"
