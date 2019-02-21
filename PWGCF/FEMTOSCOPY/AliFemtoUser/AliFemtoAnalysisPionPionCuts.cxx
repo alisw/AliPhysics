@@ -26,11 +26,11 @@ AliFemtoPairCutPionPionAKDetaDphi::AppendSettings(TCollection &settings) const
 {
   TString prefix = "AliFemtoPairCutPionPionAKDetaDphi.";
   settings.AddVector(
-    new TObjString(prefix + Form("max_share_fraction=%g", max_share_fraction)),
-    new TObjString(prefix + Form("max_share_quality=%g", max_share_quality)),
-    new TObjString(prefix + Form("min_delta_eta=%g", min_delta_eta)),
-    new TObjString(prefix + Form("min_delta_phi=%g", min_delta_phi)),
-    new TObjString(prefix + Form("radius=%g", radius)),
+    new TObjString(prefix + Form("max_share_fraction=%g", share_fraction_max)),
+    new TObjString(prefix + Form("max_share_quality=%g", share_quality_max)),
+    new TObjString(prefix + Form("min_delta_eta=%g", delta_eta_min)),
+    new TObjString(prefix + Form("min_delta_phi=%g", delta_phistar_min)),
+    new TObjString(prefix + Form("phistar_radius=%g", phistar_radius)),
     nullptr
   );
 }
@@ -40,9 +40,9 @@ AliFemtoPairCutPionPionAKAvgSep::AppendSettings(TCollection &settings) const
 {
   TString prefix = "AliFemtoPairCutPionPionAKAvgSep.";
   settings.AddVector(
-    new TObjString(prefix + Form("max_share_fraction=%g", max_share_fraction)),
-    new TObjString(prefix + Form("max_share_quality=%g", max_share_quality)),
-    new TObjString(prefix + Form("min_avgsep=%g", min_avgsep)),
+    new TObjString(prefix + Form("max_share_fraction=%g", share_fraction_max)),
+    new TObjString(prefix + Form("max_share_quality=%g", share_quality_max)),
+    new TObjString(prefix + Form("min_avgsep=%g", avgsep_min)),
     nullptr
   );
 }
