@@ -2244,8 +2244,10 @@ void AliAnalysisTaskITSTrackingCheck::UserExec(Option_t *)
       zProdVtx = TMath::Abs(part->Vz()-mcVertex[2]);
       //if(rProdVtx<2.8) isPrimary=kTRUE; // this could be tried
       pdgTrk = TMath::Abs(part->GetPdgCode());
-      if(part->GetFirstMother()>=0) {
-	TParticle* mm = mcEvent->Particle(part->GetFirstMother());
+      AliMCParticle* mcPart=(AliMCParticle*)mcEvent->GetTrack(trkLabel);
+      Int_t idMother=mcPart->GetMother();
+      if(idMother>=0) {
+	TParticle* mm = mcEvent->Particle(idMother);
 	if(mm) pdgMoth = TMath::Abs(mm->GetPdgCode());
       }
       if(pdgMoth==310 || pdgMoth==321 || pdgMoth==3122 || pdgMoth==3312) isFromStrange=kTRUE;
