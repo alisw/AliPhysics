@@ -252,7 +252,7 @@ AliFemtoCutMonitorPionPion::Pion::Pion(const bool passing,
   };
 
   fYPt = new TH2F(
-    hist_name("eta_Pt"),
+    hist_name("EtaPt"),
     hist_title("#eta  vs  p_{T}",
                 /*X*/  "#eta;"
                 /*Y*/  "p_{T} (GeV);"
