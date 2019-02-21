@@ -197,7 +197,7 @@ private:
    TH2F* fhJetTrksPtJet_Djet_Reco;        //!
 
 
-   ClassDef(AliAnalysisTaskDJetCorrelationsQA,1); // class for charm-jet CorrelationsExch
+   ClassDef(AliAnalysisTaskDJetCorrelationsQA,2); // class for charm-jet CorrelationsExch
 };
 
 #endif
