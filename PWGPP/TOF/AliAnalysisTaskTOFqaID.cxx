@@ -761,12 +761,12 @@ Bool_t AliAnalysisTaskTOFqaID::ComputeTimeZeroByTOF1GeV()
 {
   /* compute T0-TOF for tracks within momentum range [0.95, 1.05] */
   /* init T0-TOF */
-  AliTOFT0v1* fTOFT0v1 = new AliTOFT0v1(fESDpid); // TOF-T0 v1
-  fTOFT0v1->Init(fESD);
-  fTOFT0v1->DefineT0("all", 0.95, 1.05);
-  fMyTimeZeroTOF = -1000. * fTOFT0v1->GetResult(0);
-  fMyTimeZeroTOFsigma = 1000. * fTOFT0v1->GetResult(1);
-  fMyTimeZeroTOFtracks = fTOFT0v1->GetResult(3);
+  AliTOFT0v1 fTOFT0v1(fESDpid); // TOF-T0 v1
+  fTOFT0v1.Init(fESD);
+  fTOFT0v1.DefineT0("all", 0.95, 1.05);
+  fMyTimeZeroTOF = -1000. * fTOFT0v1.GetResult(0);
+  fMyTimeZeroTOFsigma = 1000. * fTOFT0v1.GetResult(1);
+  fMyTimeZeroTOFtracks = fTOFT0v1.GetResult(3);
   Bool_t hasTimeZeroTOF = kFALSE;
   /* check T0-TOF sigma */
   if (fMyTimeZeroTOFsigma < 250.)
@@ -1320,7 +1320,7 @@ void AliAnalysisTaskTOFqaID::FillPidHisto(AliESDtrack* track, Int_t charge, TStr
   //fill histos for pion only
   ((TH2F*)theL->FindObject(Form("hExpTimePiVsStrip%s_%s", suffix.Data(), cLabel.Data())))->Fill((Int_t)GetStripIndex(volId), tofps - fTrkExpTimes[AliPID::kPion]); //ps
   ((TH1F*)theL->FindObject(Form("hExpTimePi%s_%s", suffix.Data(), cLabel.Data())))->Fill(tofps - fTrkExpTimes[AliPID::kPion]);                                     //ps
-  if (ComputeTimeZeroByTOF1GeV() && (fPt > 0.95) && (fPt < 1.05)) {
+  if (ComputeTimeZeroByTOF1GeV() && (fP > 0.95) && (fP < 1.05)) {
     ((TH2F*)theL->FindObject(Form("hExpTimePiT0Sub1GeV%s_%s", suffix.Data(), cLabel.Data())))->Fill(fMyTimeZeroTOFtracks, tofps - fMyTimeZeroTOF - fTrkExpTimes[AliPID::kPion]);
   }
   //fill sigmas and deltas for each specie
