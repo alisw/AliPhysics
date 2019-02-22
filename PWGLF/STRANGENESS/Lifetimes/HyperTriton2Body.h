@@ -98,7 +98,7 @@ private:
   Double32_t fV0CosPA;              //[0.9,1.0,16] V0 cosine of pointing angle
   Double32_t fChi2V0;               //[0.0,10.24,8] V0 fit chi2
   Double32_t fDcaNeg2PrimaryVertex; //[0.0,0.256,8] DCA of the negative prong to the PV
-  Double32_t fDcaPos2PrimaryVertex; // [0.0,0.256,8]  DCA of the positive prong to the PV
+  Double32_t fDcaPos2PrimaryVertex; //[0.0,0.256,8]  DCA of the positive prong to the PV
   Double32_t fDcaV0daughters;       //[0.0,2.56,8] DCA between the two prongs
   Double32_t fV0armAlpha;           //[-1.28,1.28,8] Armenteros alpha
   Double32_t fV0armPt;              //[0.0,0.256,8] Armenteros pt
