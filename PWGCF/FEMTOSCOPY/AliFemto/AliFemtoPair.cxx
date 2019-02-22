@@ -618,15 +618,19 @@ double AliFemtoPair::Quality2() const
 double AliFemtoPair::NominalTpcExitSeparation() const
 {
   // separation at exit from STAR TPC
-  AliFemtoThreeVector diff = fTrack1->Track()->NominalTpcExitPoint() - fTrack2->Track()->NominalTpcExitPoint();
-  return diff.Mag();
+  const auto &point1 = fTrack1->Track()->NominalTpcExitPoint(),
+             &point2 = fTrack2->Track()->NominalTpcExitPoint();
+
+  return (point1 - point2).Mag();
 }
 
 double AliFemtoPair::NominalTpcEntranceSeparation() const
 {
   // separation at entrance to STAR TPC
-  AliFemtoThreeVector diff = fTrack1->Track()->NominalTpcEntrancePoint() - fTrack2->Track()->NominalTpcEntrancePoint();
-  return diff.Mag();
+  const auto &point1 = fTrack1->Track()->NominalTpcEntrancePoint(),
+             &point2 = fTrack2->Track()->NominalTpcEntrancePoint();
+
+  return (point1 - point2).Mag();
 }
 
 // double AliFemtoPair::NominalTpcAverageSeparation() const {
