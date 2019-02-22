@@ -26,7 +26,7 @@
 #include "TMath.h"
 #include "TCutG.h"
 #include "TParticle.h"
-
+#include "AliFMDStripIndex.h"
 #include "AliStack.h"
 #include "AliMCEvent.h"
 #include "AliMCParticle.h"
@@ -161,11 +161,11 @@ AliForwardSecondariesTask::AliForwardSecondariesTask() : AliAnalysisTaskSE(),
     fDeltaList = new TList();
     fDeltaList->SetName("Delta");
     Int_t phibins = 4000;
-    Int_t etabins = 24;
+    Int_t etabins = 50;
     fSettings.fnoSamples = 1;
     fSettings.fCentBins = 1;
     Int_t bins_phi_eta[5] = {fSettings.fnoSamples, fSettings.fNZvtxBins, phibins, 1, etabins} ;
-    Double_t xmin_phi_eta[5] = {0,fSettings.fZVtxAcceptanceLowEdge, -TMath::Pi(), 0, -6};
+    Double_t xmin_phi_eta[5] = {0,fSettings.fZVtxAcceptanceLowEdge, -TMath::Pi(), 0, -4};
     Double_t xmax_phi_eta[5] = {10,fSettings.fZVtxAcceptanceUpEdge, TMath::Pi(), 100, 6}; //
     Int_t dimensions = 5;
 
@@ -223,7 +223,7 @@ AliForwardSecondariesTask::AliForwardSecondariesTask() : AliAnalysisTaskSE(),
     phihist = new TH1D("name","name",20,0,2*TMath::Pi());
     phihist->SetDirectory(0);
     Int_t bins_prim[4] = {fSettings.fnoSamples, fSettings.fNZvtxBins, 1, etabins} ;
-    Double_t xmin_prim[4] = {0,fSettings.fZVtxAcceptanceLowEdge, 0, -6};
+    Double_t xmin_prim[4] = {0,fSettings.fZVtxAcceptanceLowEdge, 0, -4};
     Double_t xmax_prim[4] = {10,fSettings.fZVtxAcceptanceUpEdge, 100, 6}; //
     Int_t dimensions_prim = 4;
     fDeltaList->Add(new THnD("fnoPrim", "fnoPrim", dimensions_prim, bins_prim, xmin_prim, xmax_prim)); //(samples,vertex, phi, cent, eta)
@@ -252,11 +252,6 @@ void AliForwardSecondariesTask::UserExec(Option_t *)
   //  Parameters:
   //   option: Not used
   //
-  // AliForwardTaskValidation* ev_val = dynamic_cast<AliForwardTaskValidation*>(this->GetInputData(1));
-  // if (!ev_val->IsValidEvent()){
-  //  PostData(1, this->fOutputList);
-  //  return;
-  // }
 
   std::cout << "getting validation";
   AliForwardTaskValidation* ev_val = dynamic_cast<AliForwardTaskValidation*>(this->GetInputData(1));
@@ -376,6 +371,14 @@ AliForwardSecondariesTask::StoreParticle(AliMCParticle*       particle,
   THnD* delta_eta_phi = static_cast<THnD*>(fDeltaList->FindObject("delta_eta_phi")); // (samples, vertex,phi_mother - phi_tr ,centrality,eta_mother,eta_tr,eta_p)
   THnD* fnoPrim = static_cast<THnD*>(fDeltaList->FindObject("fnoPrim"));//->Fill(event_vtx_z,event_vtx_z,event_vtx_z);
 
+
+
+    UInt_t packed = ref->UserId();
+    UShort_t detector, sector, strip;
+    Char_t   ring;
+    AliFMDStripIndex::Unpack(packed,detector,ring,sector,strip);
+
+std::cout << "Detector: " << detector << ", Sector:" << sector << ", Strip: " << strip << ", Ring: " << ring << std::endl;
 
   Double_t eta_mother = mother->Eta();
   Double_t phi_mother = (mother->Phi());//Wrap02pi
@@ -894,7 +897,6 @@ Int_t AliForwardSecondariesTask::GetOriginType(AliMCParticle *p) {
   }
   return cOriginType::kOTHER;
 }
-
 
 
 

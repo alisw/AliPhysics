@@ -21,6 +21,7 @@
 #include "AliAnalysisDataContainer.h"
 #include "AliAnalysisDataSlot.h"
 #include "AliInputEventHandler.h"
+#include "TObjectTable.h"
 
 #include "AliForwardSecondariesTask.h"
 #include "AliForwardTaskValidation.h"
@@ -92,22 +93,22 @@ AliForwardTaskValidation::AliForwardTaskValidation(const char *name, bool mc)
     fEventValidators.push_back(EventValidation::kNotSPDClusterVsTrackletBG);
     fEventValidators.push_back(EventValidation::kPassesFMD_V0CorrelatioCut);
   }
-  if (fSettings.use_primaries_fwd || fSettings.use_primaries_cen) {
+  if (fSettings.mc) {
     this->isMC = kTRUE;
-    std::cout << "making vector" << std::endl;
+  }
     fEventValidatorsMC.push_back(EventValidationMC::kNoEventCutMC);
     fEventValidatorsMC.push_back(EventValidationMC::kHasMultSelectionMC);
     fEventValidatorsMC.push_back(EventValidationMC::kHasEntriesFMDMC);
     fEventValidatorsMC.push_back(EventValidationMC::kHasValidFMDMC);
     fEventValidatorsMC.push_back(EventValidationMC::kHasPrimariesMC);
-  }
+  //}
   // Default track cuts
-  if (!fSettings.esd){
+  //if (!fSettings.esd){
   fTrackValidators.push_back(TrackValidation::kNoTrackCut);
   fTrackValidators.push_back(TrackValidation::kTPCOnly);
   fTrackValidators.push_back(TrackValidation::kEtaCut);
   fTrackValidators.push_back(TrackValidation::kPtCut);
-}
+//}
   // Define output slot
   DefineOutput(1, TList::Class());
   DefineOutput(2, this->Class());
@@ -241,7 +242,7 @@ outlist->Add(this->fQA_event_discard_flow_MC);
   if (!fSettings.esd){
 
   /// Track discard flow
-  this->fQA_track_discard_flow = new TH1F("qa_tack_discard_flow",
+  this->fQA_track_discard_flow = new TH1F("qa_track_discard_flow",
 					  "QA track discard flow",
 					  this->fTrackValidators.size(),
 					  0,
@@ -316,12 +317,19 @@ void AliForwardTaskValidation::UserCreateOutputObjects() {
 
 void AliForwardTaskValidation::UserExec(Option_t *)
 {
+
+  //gObjectTable->Print();
+
   this->fIsValidEvent = true;
 
   fUtil.dodNdeta = kFALSE;
 
   fUtil.fevent = InputEvent();
-  fUtil.fMCevent = this->MCEvent();
+  if (fSettings.mc) fUtil.fMCevent = this->MCEvent();
+  if (!fSettings.esd) fUtil.fAODevent = dynamic_cast<AliAODEvent*>(this->InputEvent());
+
+
+
   //std::cout << fSettings.use_primaries_fwd << std::endl;
   fUtil.fSettings = this->fSettings;
 
@@ -338,7 +346,7 @@ void AliForwardTaskValidation::UserExec(Option_t *)
     else {
       fUtil.FillFromTrackrefs(forwardDist);
     }
-    //forwardDist->SetDirectory(0);
+    forwardDist->SetDirectory(0);
 
 
 
@@ -386,7 +394,9 @@ void AliForwardTaskValidation::UserExec(Option_t *)
     }
   }
 }
-  if (fSettings.use_primaries_cen || fSettings.use_primaries_fwd){
+if (this->fIsValidEvent){
+
+  if (fSettings.mc){
     for (UInt_t idx = 0; idx < this->fEventValidatorsMC.size(); idx++) {
       switch (this->fEventValidatorsMC[idx]) {
       case EventValidationMC::kNoEventCutMC:
@@ -406,29 +416,27 @@ void AliForwardTaskValidation::UserExec(Option_t *)
       }
     }
   }
-
+}
   PostData(1, fOutputList);
   // Make the current pointer to this task avaialble in the exchange container
   PostData(2, this);
 }
 
 Bool_t AliForwardTaskValidation::IsAODEvent() {
-  return dynamic_cast<AliAODEvent*>(this->InputEvent()) ? true : false;
+  return fUtil.fAODevent ? true : false;
 }
 
 Bool_t AliForwardTaskValidation::HasPrimaries(){
-  AliMCEvent* mcevent = this->MCEvent();
 
-  if (mcevent->GetNumberOfPrimaries() <= 0) {
+  if (this->MCEvent()->GetNumberOfPrimaries() <= 0) {
     return kFALSE;
   }
   else return kTRUE;
 }
 
 Bool_t AliForwardTaskValidation::HasFMD() {
-  AliAODEvent* aod = dynamic_cast<AliAODEvent*>(this->InputEvent());
   AliAODForwardMult* aodForward =
-    dynamic_cast<AliAODForwardMult*>(aod->FindListObject("Forward"));
+    dynamic_cast<AliAODForwardMult*>(fUtil.fAODevent->FindListObject("Forward"));
   if (!aodForward) {
     return false;
   }
@@ -689,19 +697,17 @@ AliForwardTaskValidation::Tracks AliForwardTaskValidation::GetSPDclusters() cons
 TClonesArray* AliForwardTaskValidation::GetAllCentralBarrelTracks() {
   // If we are dealing with an ESD event, we have to have an AOD handler as well!
   // We get all the particles/tracks from this AOD handler.
-  AliAODEvent* aodEvent = dynamic_cast< AliAODEvent* >(this->InputEvent());
-  return aodEvent->GetTracks();
+  return fUtil.fAODevent->GetTracks();
 }
 
 TClonesArray* AliForwardTaskValidation::GetAllMCTruthTracksAsTClonesArray() {
   // If we are dealing with an ESD event, we have to have an AOD handler as well!
   // We get all the particles/tracks from this AOD handler.
-  auto aodEvent = dynamic_cast< AliAODEvent* >(this->InputEvent());
-  if (!aodEvent) {
+  if (!fUtil.fAODevent) {
     AliFatal("No AOD event found");
   }
   auto tr_arr = dynamic_cast<TClonesArray*>
-    (aodEvent->GetList()->FindObject(AliAODMCParticle::StdBranchName()));
+    (fUtil.fAODevent->GetList()->FindObject(AliAODMCParticle::StdBranchName()));
   if(!tr_arr){
     AliFatal("No MC array found in AOD");
   }
@@ -747,9 +753,6 @@ AliForwardTaskValidation::Tracks AliForwardTaskValidation::GetMCTruthTracks() {
 
 
 Bool_t AliForwardTaskValidation::HasValidFMD(){
-  if (fSettings.use_primaries_fwd) return kTRUE;
-
-
   AliMultSelection *MultSelection = dynamic_cast< AliMultSelection* >(InputEvent()->FindListObject("MultSelection"));
 
   //AliMultSelection *MultSelection = (AliMultSelection*)fInputEvent->FindListObject("MultSelection");
@@ -808,7 +811,6 @@ Bool_t AliForwardTaskValidation::HasValidFMD(){
     }
   } // End of eta bin
   if (totalFMDpar < 10) return kFALSE;
-
   return kTRUE;
 }
 /*

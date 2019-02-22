@@ -73,7 +73,7 @@ void AliForwardFlowUtil::FillData(TH2D*& refDist, TH2D*& centralDist, TH2D*& for
         }
       }
 
-      if (fSettings.maxpt < 5) {
+      if (fSettings.gap > 1.0) {
         this->minpt = 0.2;
         this->maxpt = 5;
         if (fSettings.useSPD) this->FillFromTracklets(refDist);
@@ -144,7 +144,6 @@ void AliForwardFlowUtil::FillData(TH2D*& refDist, TH2D*& centralDist, TH2D*& for
         }
       }
     }
-    forwardDist->SetDirectory(0);
 }
 
 
@@ -462,6 +461,22 @@ AliForwardFlowUtil::ProcessRef(AliMCParticle*       particle,
   return fState.longest;
 }
 
+
+Double_t
+AliForwardFlowUtil::GetTrackRefTheta(const AliTrackReference* ref) const
+{
+  // Get the incidient angle of the track reference.
+  const AliVVertex* vertex = this->fMCevent->GetPrimaryVertex();
+  // Calculate the vector pointing from the vertex to the track reference on the detector
+  Double_t x      = ref->X() - vertex->GetX();
+  Double_t y      = ref->Y() - vertex->GetY();
+  Double_t z      = ref->Z() - vertex->GetZ();
+  Double_t rr   = TMath::Sqrt(x*x+y*y);
+  Double_t theta= TMath::ATan2(rr,z);
+  Double_t ang  = TMath::Abs(TMath::Pi()-theta);
+  return ang;
+}
+
 void
 AliForwardFlowUtil::StoreParticle(AliMCParticle*       particle,
 				     AliMCParticle* mother,
@@ -654,12 +669,13 @@ void AliForwardFlowUtil::FillFromTracklets(TH2D*& cen) const {
 
 void AliForwardFlowUtil::FillFromTracks(TH2D*& cen, UInt_t tracktype) const {
   Int_t  iTracks(fevent->GetNumberOfTracks());
+  std::cout << this->maxpt << std::endl;
   for(Int_t i(0); i < iTracks; i++) {
 
   // loop  over  all  the  tracks
     AliAODTrack* track = static_cast<AliAODTrack *>(fAODevent->GetTrack(i));
 
-    if (track->TestFilterBit(tracktype) && track->GetTPCNcls() < fSettings.fnoClusters){
+    if (track->TestFilterBit(tracktype) && track->GetTPCNcls() > fSettings.fnoClusters){
 
       if( fSettings.fCutChargedDCAzMax > 0. || fSettings.fCutChargedDCAxyMax > 0.){
         Double_t dTrackXYZ[3] = {0.,0.,0.};
