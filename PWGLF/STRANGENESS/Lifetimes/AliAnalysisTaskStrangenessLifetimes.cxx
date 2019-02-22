@@ -763,8 +763,8 @@ LVector_t AliAnalysisTaskStrangenessLifetimes::GetV0LorentzVector(int pdg, AliES
     double posMom[3], negMom[3];
     posTrack->GetPxPyPz(posMom);
     negTrack->GetPxPyPz(negMom);
-    LVector_t posLvec{posMom[0] * posCharge, posMom[1] * posCharge, posMom[2], posMass};
-    LVector_t negLvec{negMom[0] * negCharge, negMom[1] * negCharge, negMom[2], negMass};
+    LVector_t posLvec{posMom[0] * posCharge, posMom[1] * posCharge, posCharge*posMom[2], posMass};
+    LVector_t negLvec{negMom[0] * negCharge, negMom[1] * negCharge, negCharge*negMom[2], negMass};
     posLvec += negLvec;
     return posLvec;
   }
