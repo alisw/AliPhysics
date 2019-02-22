@@ -832,7 +832,8 @@ void AliSigma0PhotonMotherCuts::SigmaToLambdaGamma(
         }
         if (!fIsLightweight) {
           // let's where the other particle comes from if one of them stems
-          // from a Sigma0
+          // from
+          // a Sigma0
           if (TMath::Abs(pdgLambdaMother) == 3212 &&
               TMath::Abs(pdgLambdaMother) != 3212) {
             fHistMCV0Mother->Fill(invMass, TMath::Abs(pdgPhotonMother));
@@ -859,7 +860,6 @@ void AliSigma0PhotonMotherCuts::SigmaToLambdaGamma(
         }
       }
 
-      // CUT IN RAPIDITY FOR THE SPECTRUM ANALYSIS
       if (TMath::Abs(rap) > fRapidityMax) continue;
 
       if (multBin >= 0 && fIsSpectrumAnalysis)
