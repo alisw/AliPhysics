@@ -360,6 +360,14 @@ void AliSigma0PhotonMotherCuts::CleanUpClones(
           fHistDeltaEtaDeltaPhiGammaPosBefore[i]->Fill(deltaEtaPos,
                                                        deltaPhistarPos);
         }
+        deltaPhistarPos =
+            posDaughter1.GetAveragePhiStar() - posDaughter2.GetAveragePhiStar();
+        deltaPhistarNeg =
+            negDaughter1.GetAveragePhiStar() - negDaughter2.GetAveragePhiStar();
+        fHistDeltaEtaDeltaPhiGammaNegBefore[9]->Fill(deltaEtaNeg,
+                                                     deltaPhistarNeg);
+        fHistDeltaEtaDeltaPhiGammaPosBefore[9]->Fill(deltaEtaPos,
+                                                     deltaPhistarPos);
       }
 
       bool hasSameLabels =
@@ -461,6 +469,14 @@ void AliSigma0PhotonMotherCuts::CleanUpClones(
           fHistDeltaEtaDeltaPhiLambdaPosBefore[i]->Fill(deltaEtaPos,
                                                         deltaPhistarPos);
         }
+        deltaPhistarPos =
+            posDaughter1.GetAveragePhiStar() - posDaughter2.GetAveragePhiStar();
+        deltaPhistarNeg =
+            negDaughter1.GetAveragePhiStar() - negDaughter2.GetAveragePhiStar();
+        fHistDeltaEtaDeltaPhiLambdaNegBefore[9]->Fill(deltaEtaNeg,
+                                                      deltaPhistarNeg);
+        fHistDeltaEtaDeltaPhiLambdaPosBefore[9]->Fill(deltaEtaPos,
+                                                      deltaPhistarPos);
       }
 
       bool hasSameLabels =
@@ -562,6 +578,14 @@ void AliSigma0PhotonMotherCuts::CleanUpClones(
           fHistDeltaEtaDeltaPhiGammaPosAfter[i]->Fill(deltaEtaPos,
                                                       deltaPhistarPos);
         }
+        deltaPhistarPos =
+            posDaughter1.GetAveragePhiStar() - posDaughter2.GetAveragePhiStar();
+        deltaPhistarNeg =
+            negDaughter1.GetAveragePhiStar() - negDaughter2.GetAveragePhiStar();
+        fHistDeltaEtaDeltaPhiGammaNegAfter[9]->Fill(deltaEtaNeg,
+                                                    deltaPhistarNeg);
+        fHistDeltaEtaDeltaPhiGammaPosAfter[9]->Fill(deltaEtaPos,
+                                                    deltaPhistarPos);
       }
     }
   }
@@ -636,6 +660,14 @@ void AliSigma0PhotonMotherCuts::CleanUpClones(
           fHistDeltaEtaDeltaPhiLambdaPosAfter[i]->Fill(deltaEtaPos,
                                                        deltaPhistarPos);
         }
+        deltaPhistarPos =
+            posDaughter1.GetAveragePhiStar() - posDaughter2.GetAveragePhiStar();
+        deltaPhistarNeg =
+            negDaughter1.GetAveragePhiStar() - negDaughter2.GetAveragePhiStar();
+        fHistDeltaEtaDeltaPhiLambdaNegAfter[9]->Fill(deltaEtaNeg,
+                                                     deltaPhistarNeg);
+        fHistDeltaEtaDeltaPhiLambdaPosAfter[9]->Fill(deltaEtaPos,
+                                                     deltaPhistarPos);
       }
     }
   }
@@ -1436,41 +1468,42 @@ void AliSigma0PhotonMotherCuts::InitCutHistograms(TString appendix) {
       fHistograms->Add(fHistDiffPLambdaNegAfter[i]);
     }
 
-    std::vector<float> TPCradii = {
-        {85., 105., 125., 145., 165., 185., 205., 225., 245.}};
+    std::vector<TString> TPCradii = {{"85 cm", "105 cm", "125 cm", "145 cm",
+                                      "165 cm", "185 cm", "205 cm", "225 cm",
+                                      "245 cm", "average"}};
     for (size_t i = 0; i < TPCradii.size(); ++i) {
       fHistDeltaEtaDeltaPhiGammaNegBefore[i] = new TH2F(
-          Form("fHistDeltaEtaDeltaPhiGammaNegBefore_%.0f", TPCradii[i]),
-          Form("r_{TPC} = %.0f cm; #Delta #eta; #Delta #phi", TPCradii[i]), 201,
-          -0.01, 0.01, 201, -0.01, 0.01);
+          Form("fHistDeltaEtaDeltaPhiGammaNegBefore_%s", TPCradii[i].Data()),
+          Form("r_{TPC} = %s; #Delta #eta; #Delta #phi", TPCradii[i].Data()),
+          201, -0.01, 0.01, 201, -0.01, 0.01);
       fHistDeltaEtaDeltaPhiGammaPosBefore[i] = new TH2F(
-          Form("fHistDeltaEtaDeltaPhiGammaPosBefore_%.0f", TPCradii[i]),
-          Form("r_{TPC} = %.0f cm; #Delta #eta; #Delta #phi", TPCradii[i]), 201,
-          -0.01, 0.01, 201, -0.01, 0.01);
+          Form("fHistDeltaEtaDeltaPhiGammaPosBefore_%s", TPCradii[i].Data()),
+          Form("r_{TPC} = %s; #Delta #eta; #Delta #phi", TPCradii[i].Data()),
+          201, -0.01, 0.01, 201, -0.01, 0.01);
       fHistDeltaEtaDeltaPhiLambdaNegBefore[i] = new TH2F(
-          Form("fHistDeltaEtaDeltaPhiLambdaNegBefore_%.0f", TPCradii[i]),
-          Form("r_{TPC} = %.0f cm; #Delta #eta; #Delta #phi", TPCradii[i]), 201,
-          -0.01, 0.01, 201, -0.01, 0.01);
+          Form("fHistDeltaEtaDeltaPhiLambdaNegBefore_%s", TPCradii[i].Data()),
+          Form("r_{TPC} = %s; #Delta #eta; #Delta #phi", TPCradii[i].Data()),
+          201, -0.01, 0.01, 201, -0.01, 0.01);
       fHistDeltaEtaDeltaPhiLambdaPosBefore[i] = new TH2F(
-          Form("fHistDeltaEtaDeltaPhiLambdaPosBefore_%.0f", TPCradii[i]),
-          Form("r_{TPC} = %.0f cm; #Delta #eta; #Delta #phi", TPCradii[i]), 201,
-          -0.01, 0.01, 201, -0.01, 0.01);
+          Form("fHistDeltaEtaDeltaPhiLambdaPosBefore_%s", TPCradii[i].Data()),
+          Form("r_{TPC} = %s; #Delta #eta; #Delta #phi", TPCradii[i].Data()),
+          201, -0.01, 0.01, 201, -0.01, 0.01);
       fHistDeltaEtaDeltaPhiGammaNegAfter[i] = new TH2F(
-          Form("fHistDeltaEtaDeltaPhiGammaNegAfter_%.0f", TPCradii[i]),
-          Form("r_{TPC} = %.0f cm; #Delta #eta; #Delta #phi", TPCradii[i]), 201,
-          -0.01, 0.01, 201, -0.01, 0.01);
+          Form("fHistDeltaEtaDeltaPhiGammaNegAfter_%s", TPCradii[i].Data()),
+          Form("r_{TPC} = %s; #Delta #eta; #Delta #phi", TPCradii[i].Data()),
+          201, -0.01, 0.01, 201, -0.01, 0.01);
       fHistDeltaEtaDeltaPhiGammaPosAfter[i] = new TH2F(
-          Form("fHistDeltaEtaDeltaPhiGammaPosAfter_%.0f", TPCradii[i]),
-          Form("r_{TPC} = %.0f cm; #Delta #eta; #Delta #phi", TPCradii[i]), 201,
-          -0.01, 0.01, 201, -0.01, 0.01);
+          Form("fHistDeltaEtaDeltaPhiGammaPosAfter_%s", TPCradii[i].Data()),
+          Form("r_{TPC} = %s; #Delta #eta; #Delta #phi", TPCradii[i].Data()),
+          201, -0.01, 0.01, 201, -0.01, 0.01);
       fHistDeltaEtaDeltaPhiLambdaNegAfter[i] = new TH2F(
-          Form("fHistDeltaEtaDeltaPhiLambdaNegAfter_%.0f", TPCradii[i]),
-          Form("r_{TPC} = %.0f cm; #Delta #eta; #Delta #phi", TPCradii[i]), 201,
-          -0.01, 0.01, 201, -0.01, 0.01);
+          Form("fHistDeltaEtaDeltaPhiLambdaNegAfter_%s", TPCradii[i].Data()),
+          Form("r_{TPC} = %s; #Delta #eta; #Delta #phi", TPCradii[i].Data()),
+          201, -0.01, 0.01, 201, -0.01, 0.01);
       fHistDeltaEtaDeltaPhiLambdaPosAfter[i] = new TH2F(
-          Form("fHistDeltaEtaDeltaPhiLambdaPosAfter_%.0f", TPCradii[i]),
-          Form("r_{TPC} = %.0f cm; #Delta #eta; #Delta #phi", TPCradii[i]), 201,
-          -0.01, 0.01, 201, -0.01, 0.01);
+          Form("fHistDeltaEtaDeltaPhiLambdaPosAfter_%s", TPCradii[i].Data()),
+          Form("r_{TPC} = %s; #Delta #eta; #Delta #phi", TPCradii[i].Data()),
+          201, -0.01, 0.01, 201, -0.01, 0.01);
 
       fHistograms->Add(fHistDeltaEtaDeltaPhiGammaNegBefore[i]);
       fHistograms->Add(fHistDeltaEtaDeltaPhiGammaPosBefore[i]);

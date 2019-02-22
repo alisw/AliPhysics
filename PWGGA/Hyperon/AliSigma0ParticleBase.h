@@ -65,6 +65,7 @@ class AliSigma0ParticleBase {
   double GetDCAr() { return fDCAr; }
   double GetDCAz() { return fDCAz; }
   double GetPhiStar(int iRadius) const { return fPhistar[iRadius]; }
+  double GetAveragePhiStar() const;
   const std::vector<float> &GetPhiStar() const { return fPhistar; }
   int GetMCLabel() const { return fMClabel; }
 
@@ -95,5 +96,13 @@ class AliSigma0ParticleBase {
  private:
   ClassDef(AliSigma0ParticleBase, 4)
 };
+
+inline double AliSigma0ParticleBase::GetAveragePhiStar() const {
+  double avPhiStar = 0.f;
+  for (size_t i = 0; i < fPhistar.size(); ++i) {
+    avPhiStar += fPhistar[i];
+  }
+  return avPhiStar / (static_cast<double>(fPhistar.size()) + 1e-32);
+}
 
 #endif
