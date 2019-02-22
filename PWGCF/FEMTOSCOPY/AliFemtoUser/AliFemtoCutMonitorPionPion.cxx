@@ -627,7 +627,6 @@ AliFemtoCutMonitorPionPion::Pair::Fill(const AliFemtoPair *pair)
   //     printf(">> %f % 6f % 6f %p \n", pair, delta_eta, delta_phi_star, this);
     // std::cout << ">> " << pair << " " << delta_eta << ", " << delta_phi_star << "\n"; // -> " << passes << "\n";
 
-
   fDetaDphi->Fill(delta_eta, delta_phi_star);
   fQinvDeta->Fill(qinv, delta_eta);
   fQinvDphiStar->Fill(qinv, delta_phi_star);

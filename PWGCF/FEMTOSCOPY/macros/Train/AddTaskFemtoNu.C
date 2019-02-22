@@ -25,8 +25,8 @@
 /// - Config macro path is relative to `$ALICE_PHYSICS`
 ///
 AliAnalysisTaskFemto*
-AddTaskFemtoNu(TString configMacroName,
-               TString containerName,
+AddTaskFemtoNu(TString containerName,
+               TString configMacroName,
                TString configMacroParameters)
 {
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
@@ -64,8 +64,8 @@ AddTaskFemtoNu(TString configMacroName,
 ///   macro
 ///
 AliAnalysisTaskFemto*
-AddTaskFemtoNu(TString configMacroName,
-               TString containerName,
+AddTaskFemtoNu(TString containerName,
+               TString configMacroName,
                TString configMacroParameters,
                TString subwagon)
 {
