@@ -68,6 +68,7 @@ AliAnalysisTaskTOFqaID::AliAnalysisTaskTOFqaID(const char* name)
     , fMyTimeZeroTOFsigma(1e20)
     , fMyTimeZeroTOFtracks(-1)
     , fIsMC(kFALSE)
+    , fVerbose(kFALSE)
     , fSelectedPdg(0)
     , fP(1e10)
     , fPt(1e10)
@@ -82,6 +83,8 @@ AliAnalysisTaskTOFqaID::AliAnalysisTaskTOFqaID(const char* name)
     , fOCDBLocation("local://$ALICE_PHYSICS/OCDB")
     , fChannelArray(0x0)
     , fCalib(0x0)
+    , fResolutionMinP(.95)
+    , fResolutionMaxP(1.05)
     , fHlist(0x0)
     , fHlistTimeZero(0x0)
     , fHlistPID(0x0)
@@ -142,6 +145,7 @@ AliAnalysisTaskTOFqaID::AliAnalysisTaskTOFqaID(const AliAnalysisTaskTOFqaID& cop
     , cpVar(fMyTimeZeroTOFsigma)
     , cpVar(fMyTimeZeroTOFtracks)
     , cpVar(fIsMC)
+    , cpVar(fVerbose)
     , cpVar(fSelectedPdg)
     , cpVar(fP)
     , cpVar(fPt)
@@ -156,6 +160,8 @@ AliAnalysisTaskTOFqaID::AliAnalysisTaskTOFqaID(const AliAnalysisTaskTOFqaID& cop
     , cpVar(fOCDBLocation)
     , cpVar(fChannelArray)
     , cpVar(fCalib)
+    , cpVar(fResolutionMinP)
+    , cpVar(fResolutionMaxP)
     , cpVar(fHlist)
     , cpVar(fHlistTimeZero)
     , cpVar(fHlistPID)
@@ -209,6 +215,7 @@ AliAnalysisTaskTOFqaID& AliAnalysisTaskTOFqaID::operator=(const AliAnalysisTaskT
     cpVar(fMyTimeZeroTOFsigma);
     cpVar(fMyTimeZeroTOFtracks);
     cpVar(fIsMC);
+    cpVar(fVerbose);
     cpVar(fSelectedPdg);
     cpVar(fP);
     cpVar(fPt);
@@ -223,6 +230,8 @@ AliAnalysisTaskTOFqaID& AliAnalysisTaskTOFqaID::operator=(const AliAnalysisTaskT
     cpVar(fOCDBLocation);
     cpVar(fChannelArray);
     cpVar(fCalib);
+    cpVar(fResolutionMinP);
+    cpVar(fResolutionMaxP);
     cpVar(fHlist);
     cpVar(fHlistTimeZero);
     cpVar(fHlistPID);
@@ -759,11 +768,11 @@ void AliAnalysisTaskTOFqaID::FillStartTimeMaskHisto(TString suffix)
 //----------------------------------------------------
 Bool_t AliAnalysisTaskTOFqaID::ComputeTimeZeroByTOF1GeV()
 {
-  /* compute T0-TOF for tracks within momentum range [0.95, 1.05] */
+  /* compute T0-TOF for tracks within momentum range [fResolutionMinP, fResolutionMaxP] */
   /* init T0-TOF */
   AliTOFT0v1 fTOFT0v1(fESDpid); // TOF-T0 v1
   fTOFT0v1.Init(fESD);
-  fTOFT0v1.DefineT0("all", 0.95, 1.05);
+  fTOFT0v1.DefineT0("all", fResolutionMinP, fResolutionMaxP);
   fMyTimeZeroTOF = -1000. * fTOFT0v1.GetResult(0);
   fMyTimeZeroTOFsigma = 1000. * fTOFT0v1.GetResult(1);
   fMyTimeZeroTOFtracks = fTOFT0v1.GetResult(3);
@@ -995,7 +1004,7 @@ void AliAnalysisTaskTOFqaID::AddPidHisto(THashList* list, Int_t charge, TString 
 
   CreateH(hExpTimePiVsStrip, TH2F, "matched trk t_{TOF}-t_{#pi,exp} vs strip;strip (#eta);t_{TOF}-t_{#pi,exp} (ps)", 92, 0, 92, fnExpTimeSmallBins, fExpTimeSmallRangeMin, fExpTimeSmallRangeMax);
 
-  CreateH(hExpTimePiT0Sub1GeV, TH2F, "trk (0.95#leq #it{p}_{T}#leq 1.05 GeV/#it{c}) t_{TOF}-t_{#pi,exp}-t_{0}^{TOF};n. tracks used for t_{0}^{TOF};t_{TOF}-t_{#pi,exp}-t_{0}^{TOF}", fnBinsMult, fVariableBinsMult, fnExpTimeBins, fExpTimeRangeMin, fExpTimeRangeMax);
+  CreateH(hExpTimePiT0Sub1GeV, TH2F, Form("trk (%.2f#leq #it{p}#leq %.2f GeV/#it{c}) t_{TOF}-t_{#pi,exp}-t_{0}^{TOF};n. tracks used for t_{0}^{TOF};t_{TOF}-t_{#pi,exp}-t_{0}^{TOF}", fResolutionMinP, fResolutionMaxP), fnBinsMult, fVariableBinsMult, fnExpTimeBins, fExpTimeRangeMin, fExpTimeRangeMax);
 
   CreateH(hExpTimePiFillSub, TH1F, "trk t_{TOF}-t_{#pi,exp}-t_{0,fill};t_{TOF}-t_{#pi,exp} -t_{0,fill} (ps);entries", 6150, -75030., 75030.);
 
@@ -1261,11 +1270,13 @@ void AliAnalysisTaskTOFqaID::FillPidHisto(AliESDtrack* track, Int_t charge, TStr
 {
   //basic PID performance check
   if (fTof <= 0) {
-    printf("WARNING: track with negative TOF time found! Skipping this track for PID checks\n");
+    if (fVerbose)
+      printf("WARNING: track with negative TOF time found! Skipping this track for PID checks\n");
     return;
   }
   if (fL <= 0) {
-    printf("WARNING: track with negative length found!Skipping this track for PID checks\n");
+    if (fVerbose)
+      printf("WARNING: track with negative length found!Skipping this track for PID checks\n");
     return;
   }
   if (!track)
@@ -1320,7 +1331,7 @@ void AliAnalysisTaskTOFqaID::FillPidHisto(AliESDtrack* track, Int_t charge, TStr
   //fill histos for pion only
   ((TH2F*)theL->FindObject(Form("hExpTimePiVsStrip%s_%s", suffix.Data(), cLabel.Data())))->Fill((Int_t)GetStripIndex(volId), tofps - fTrkExpTimes[AliPID::kPion]); //ps
   ((TH1F*)theL->FindObject(Form("hExpTimePi%s_%s", suffix.Data(), cLabel.Data())))->Fill(tofps - fTrkExpTimes[AliPID::kPion]);                                     //ps
-  if (ComputeTimeZeroByTOF1GeV() && (fP > 0.95) && (fP < 1.05)) {
+  if (ComputeTimeZeroByTOF1GeV() && (fP > fResolutionMinP) && (fP < fResolutionMaxP)) {
     ((TH2F*)theL->FindObject(Form("hExpTimePiT0Sub1GeV%s_%s", suffix.Data(), cLabel.Data())))->Fill(fMyTimeZeroTOFtracks, tofps - fMyTimeZeroTOF - fTrkExpTimes[AliPID::kPion]);
   }
   //fill sigmas and deltas for each specie

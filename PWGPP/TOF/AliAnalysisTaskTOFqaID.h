@@ -78,6 +78,8 @@ class AliAnalysisTaskTOFqaID : public AliAnalysisTaskSE {
     fExpTimeBinWidth = width;
     return;
   };
+  void SetResolutionMinP(Double_t min) { fResolutionMinP = min; };
+  void SetResolutionMaxP(Double_t max) { fResolutionMaxP = max; };
   Bool_t SetSelectMCspecies(Bool_t enableMC, Int_t absPdgCode)
   {
     fIsMC = enableMC;
@@ -146,6 +148,7 @@ class AliAnalysisTaskTOFqaID : public AliAnalysisTaskSE {
   Double_t fMyTimeZeroTOF, fMyTimeZeroTOFsigma;  //timeZero by TOF recomputed
   Int_t fMyTimeZeroTOFtracks;                    // number of tracks used to recompute TOF_T0
   Bool_t fIsMC;                                  //flag for MC
+  Bool_t fVerbose;                               //Flag for verbose mode
   Int_t fSelectedPdg;                            //pdg code of the selected specie (for MC only)
   Double_t fP;                                   //momentum
   Double_t fPt;                                  //transverse momentum
@@ -160,6 +163,8 @@ class AliAnalysisTaskTOFqaID : public AliAnalysisTaskSE {
   TString fOCDBLocation;                         // ocdb path
   AliTOFChannelOnlineStatusArray* fChannelArray; //array of channel status
   AliTOFcalib* fCalib;                           //TOF calibration object
+  Double_t fResolutionMinP;                      //Minimum momentum to compute the TOF resolution
+  Double_t fResolutionMaxP;                      //Maximum momentum to compute the TOF resolution
   //output objects
   THashList* fHlist;         //list of general histos
   THashList* fHlistTimeZero; //list of timeZero related histos
@@ -180,7 +185,7 @@ class AliAnalysisTaskTOFqaID : public AliAnalysisTaskSE {
 
   void SetVariableBinning(); // sets the array with variable binning
 
-  ClassDef(AliAnalysisTaskTOFqaID, 7); // Analysis for the TOF QA
+  ClassDef(AliAnalysisTaskTOFqaID, 8); // Analysis for the TOF QA
 };
 
 #endif
