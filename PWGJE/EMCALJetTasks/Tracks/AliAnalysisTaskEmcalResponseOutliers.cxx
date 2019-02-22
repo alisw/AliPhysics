@@ -86,7 +86,7 @@ void AliAnalysisTaskEmcalResponseOutliers::UserCreateOutputObjects(){
 
     fOutput->Add(fOutlierData);
 
-    PostData(1, fOutlierData);
+    PostData(1, fOutput);
 }
 
 bool AliAnalysisTaskEmcalResponseOutliers::Run(){
