@@ -595,6 +595,7 @@ class AliReducedVarManager : public TObject {
     kEMCALmatchedClusterId,
     kEMCALmatchedEOverP,
     kEMCALmatchedM02,
+    kEMCALmatchedM20,
     // Calorimeter cluster variables --------------------------------------
     kEMCALclusterEnergy,        
     kEMCALclusterDx,            

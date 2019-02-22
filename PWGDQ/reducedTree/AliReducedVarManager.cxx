@@ -1669,12 +1669,13 @@ void AliReducedVarManager::FillTrackInfo(BASETRACK* p, Float_t* values) {
   values[kTRDGTUPID]         = pinfo->TRDGTUPID();
 
 
-  if(fgUsedVars[kEMCALmatchedEnergy] || fgUsedVars[kEMCALmatchedEOverP] || fgUsedVars[kEMCALmatchedM02]) {
+  if(fgUsedVars[kEMCALmatchedEnergy] || fgUsedVars[kEMCALmatchedEOverP] || fgUsedVars[kEMCALmatchedM02] || fgUsedVars[kEMCALmatchedM20]) {
     values[kEMCALmatchedClusterId] = pinfo->CaloClusterId();
     if(fgEvent && (fgEvent->IsA()==EVENT::Class())){
       CLUSTER* cluster = ((EVENT*)fgEvent)->GetCaloCluster(pinfo->CaloClusterId());
       values[kEMCALmatchedEnergy] = (cluster ? cluster->Energy() : -999.0);
       values[kEMCALmatchedM02]    = (cluster ? cluster->M02() : -999.0);
+      values[kEMCALmatchedM20]    = (cluster ? cluster->M20() : -999.0);
       Float_t               mom = 0.0;
       if (pinfo->PonCalo()) mom = pinfo->PonCalo();
       else                  mom = pinfo->P();
@@ -3047,6 +3048,7 @@ void AliReducedVarManager::SetDefaultVarNames() {
   fgVariableNames[kEMCALmatchedClusterId] = "matched Calo cluster id"; fgVariableUnits[kEMCALmatchedClusterId] = "";
   fgVariableNames[kEMCALmatchedEOverP]    = "Calo E/p";                fgVariableUnits[kEMCALmatchedEOverP] = "";  
   fgVariableNames[kEMCALmatchedM02]       = "Calo M02";                fgVariableUnits[kEMCALmatchedM02] = "";
+  fgVariableNames[kEMCALmatchedM20]       = "Calo M20";                fgVariableUnits[kEMCALmatchedM20] = "";
   fgVariableNames[kEMCALclusterEnergy]    = "Calo cls. energy";        fgVariableUnits[kEMCALclusterEnergy] = "GeV";
   fgVariableNames[kEMCALclusterDx]        = "Calo cls. dx";            fgVariableUnits[kEMCALclusterDx] = "";  
   fgVariableNames[kEMCALclusterDz]        = "Calo cls. dz";            fgVariableUnits[kEMCALclusterDz] = "";  
