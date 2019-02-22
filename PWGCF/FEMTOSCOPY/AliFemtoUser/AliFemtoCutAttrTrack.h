@@ -394,7 +394,7 @@ struct TrackCutAttrMomentum {
   virtual ~TrackCutAttrMomentum() {}
 };
 
-/// Remove tracks with "negative" number of ITS clusters
+/// Remove tracks on the transverse momentum
 struct TrackCutAttrPt {
 
   static const std::pair<double, double> DEFAULT;
@@ -422,7 +422,7 @@ struct TrackCutAttrPt {
 };
 
 
-/// Remove tracks with "negative" number of ITS clusters
+/// Remove tracks outside of pseudorapidity
 struct TrackCutAttrEta {
 
   static const std::pair<double, double> DEFAULT;
@@ -449,7 +449,7 @@ struct TrackCutAttrEta {
 };
 
 
-/// Rapidity assuming mass
+/// Cut tracks on calculated rapidity with assumed mass
 struct TrackCutAttrRapidity {
 
   static const std::pair<double, double> DEFAULT;

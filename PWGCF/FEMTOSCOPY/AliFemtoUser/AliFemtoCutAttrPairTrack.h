@@ -106,7 +106,7 @@ struct PairCutTrackAttrAvgSep {
 };
 
 
-/// Cut on the sum of the PT
+/// Cut on the sum of the pT
 struct PairCutTrackAttrPt {
 
   static const std::pair<double, double> DEFAULT;
@@ -205,10 +205,18 @@ struct PairCutTrackAttrShareQuality {
 /// \class PairCutTrackAttrDetaDphiStar
 /// \brief A pair cut which cuts on the Δη Δφ of the pair.
 ///
-/// The difference in phi is calculated by examining the tracks' azimuthal angle at a particular radius
-/// of all tracks. The default value for this radius is 1.6 (inside the TPC) but this may be changed via
-/// the SetR method.
+/// Pairs pass which have |Δη| > delta_eta_min
+/// and √(Δφ² + Δη²) > delta_phi_min
 ///
+/// The difference in phi is calculated by examining the tracks'
+/// azimuthal angle at a particular radius, as determined by the
+/// magnetic field of the event.
+/// Note: fCurrentMagneticField should be set *before* using this cut
+/// It is recommended to do this in the EventBegin method of
+/// AliFemtoPairCut.
+///
+/// The default value for this radius is 1.2 (inside the TPC) but
+/// this maybe changed via by changing the phistar_radius member.
 ///
 ///    \Delta \phi_{min}* = \phi_1 - \phi_2
 ///                       + arcsin \left( \frac{ z_1 \cdot B_z \cdot R}{2 p_{T1}} \right)
@@ -302,6 +310,11 @@ struct PairCutTrackAttrSameLabel {
 };
 
 
+/// Cut on Minv of the pair
+///
+/// This assumes highly relativistic particles and does not need an
+/// assumed particle mass.
+///
 struct PairCutTrackAttrMinv {
 
   /// Minv assuming highly relativistic particles (E >> m)
@@ -412,6 +425,7 @@ protected:
 
 /// \class PairCutTrackAttrRemoveEE
 /// \brief Cut pairs with Minv near electron mass
+///
 struct PairCutTrackAttrRemoveEE {
   float ee_minv_min;
 
@@ -450,7 +464,7 @@ struct PairCutTrackAttrRemoveEE {
 /// \class AliFemtoPairCutAttrTracks
 /// \brief Bridge from AliFemtoPairCut to a metaclass of PairCut-Attrs
 ///
-/// Note - This expects two tracks
+/// Note - This expects two tracks, not an AliFemtoPair
 ///
 /// Subclass and implement your method:
 ///  `const char* GetName() const`
