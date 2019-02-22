@@ -874,7 +874,7 @@ Bool_t AliAnalysisTaskTOFqaID::ComputeMatchingEfficiency(THashList* list, TStrin
   return 1;
 }
 //----------------------------------------------------------------------------------
-void AliAnalysisTaskTOFqaID::HistogramMakeUp(TH1* hist, Color_t color, Int_t markerStyle, TString drawOpt, TString newName, TString newTitle, TString xTitle, TString yTitle)
+void AliAnalysisTaskTOFqaID::HistogramMakeUp(TH1* hist, Color_t color, Int_t markerStyle, TString newName, TString newTitle, TString xTitle, TString yTitle)
 {
   //set histogram style and axes style at once
   if (!hist)
@@ -894,15 +894,13 @@ void AliAnalysisTaskTOFqaID::HistogramMakeUp(TH1* hist, Color_t color, Int_t mar
   if (markerStyle >= 0)
     hist->SetMarkerStyle(markerStyle);
   hist->SetMarkerSize(0.7);
-  if (!drawOpt.IsNull())
-    hist->SetDrawOption(drawOpt);
   //hist->Sumw2();
   return;
 }
 
 #define CreateH(Hname, Type, title, ...)                                                                                           \
   Type* Hname = new Type(Form("%s%s_%s", #Hname, suffix.Data(), cLabel.Data()), Form("%s %s", cLabel.Data(), title), __VA_ARGS__); \
-  HistogramMakeUp(Hname, ((charge > 0) ? kRed + 2 : kBlue + 2), 1, optDraw, "", "", "", "");                                       \
+  HistogramMakeUp(Hname, ((charge > 0) ? kRed + 2 : kBlue + 2), 1, "", "", "", "");                                                \
   list->AddLast(Hname);
 
 //----------------------------------------------------------------------------------
@@ -920,7 +918,6 @@ void AliAnalysisTaskTOFqaID::AddTofBaseHisto(THashList* list, Int_t charge, TStr
   else if (charge > 0)
     cLabel.Form("pos");
 
-  TString optDraw = "E1";
   CreateH(hTOFmulti, TH1I, Form("matched trk per event (|#eta|#leq%3.2f, #it{p}_{T}#geq0.3 GeV/#it{c});N;events", fMatchingEtaCut), 100, 0, 100);
 
   CreateH(hTime, TH1F, "matched trk TOF signal;t (ns);tracks", 250, 0., 610.);
@@ -931,12 +928,10 @@ void AliAnalysisTaskTOFqaID::AddTofBaseHisto(THashList* list, Int_t charge, TStr
 
   CreateH(hMatchedL, TH1F, "matched trk lenght;L (cm);tracks", 900, -100., 800);
 
-  optDraw = "COLZ";
   CreateH(hMatchedDxVsPt, TH2F, "matched trk dx vs. #it{p}_{T};#it{p}_{T} (GeV/#it{c});dx (cm)", fnBinsPt, fVariableBinsPt, 200, -10., 10.);
 
   CreateH(hMatchedDzVsStrip, TH2F, "matched trk dz vs. strip (#eta);strip index;dz (cm)", 92, 0., 92., 200, -10., 10.);
 
-  optDraw = "";
   CreateH(hMatchedDxVsCh, TProfile, "matched trk dx vs. channel;channel index;dx (cm)", 157248., 0., 157248.);
 
   CreateH(hMatchedDzVsCh, TProfile, "matched trk dz vs. channel;channel index;dz (cm)", 157248., 0., 157248.);
@@ -958,26 +953,22 @@ void AliAnalysisTaskTOFqaID::AddMatchingEffHisto(THashList* list, Int_t charge, 
   else if (charge > 0)
     cLabel = "pos";
 
-  TString optDraw = "E1";
   CreateH(hMatchedP, TH1F, "matched trk p;p (GeV/#it{c});tracks", fnBinsPt, fVariableBinsPt);
 
   CreateH(hMatchedPt, TH1F, "matched trk #it{p}_{T};#it{p}_{T} (GeV/#it{c});tracks", fnBinsPt, fVariableBinsPt);
 
   CreateH(hMatchedPhi, TH1F, "matched trk #phi_{vtx};#phi_{vtx} (deg);tracks", fnBinsPhi, fBinsPhi[0], fBinsPhi[1]);
 
-  optDraw = "colz";
   CreateH(hMatchedPtVsOutPhi, TH2F, "matched trk #it{p}_{T} vs. #phi_{TPC out};#phi_{TPC out} (deg);#it{p}_{T} (GeV/#it{c})", fnBinsPhi, fBinsPhi[0], fBinsPhi[1], fnBinsPt, fVariableBinsPt);
 
   CreateH(hMatchedEtaVsOutPhi, TH2F, "matched trk #eta vs. #phi_{TPC out};#phi_{TPC out} (deg);#eta", fnBinsPhi, fBinsPhi[0], fBinsPhi[1], fnBinsEta, fBinsEta[0], fBinsEta[1]);
 
-  optDraw = "E1";
   CreateH(hPrimaryP, TH1F, "primary trk p;p (GeV/#it{c});tracks", fnBinsPt, fVariableBinsPt);
 
   CreateH(hPrimaryPt, TH1F, "primary trk #it{p}_{T};#it{p}_{T} (GeV/#it{c});tracks", fnBinsPt, fVariableBinsPt);
 
   CreateH(hPrimaryPhi, TH1F, "primary trk #phi_{vtx};#phi_{vtx} (deg);tracks", fnBinsPhi, fBinsPhi[0], fBinsPhi[1]);
 
-  optDraw = "colz";
   CreateH(hPrimaryPtVsOutPhi, TH2F, "primary trk #it{p}_{T} vs. #phi_{TPC out};#phi_{TPC out} (deg);#it{p}_{T} (GeV/#it{c})", fnBinsPhi, fBinsPhi[0], fBinsPhi[1], fnBinsPt, fVariableBinsPt);
 
   CreateH(hPrimaryEtaVsOutPhi, TH2F, "primary trk #eta vs. #phi_{TPC out}; #eta; #phi_{TPC out};#phi_{TPC out} (deg);#eta", fnBinsPhi, fBinsPhi[0], fBinsPhi[1], fnBinsEta, fBinsEta[0], fBinsEta[1]);
@@ -998,20 +989,16 @@ void AliAnalysisTaskTOFqaID::AddPidHisto(THashList* list, Int_t charge, TString 
   else if (charge > 0)
     cLabel.Form("pos");
 
-  TString optDraw = "COLZ";
   CreateH(hMatchedBetaVsP, TH2F, "matched trk #beta vs. p#it{p} (GeV/#it{c});#beta", fnBinsPt, fVariableBinsPt, 150, 0., 1.5);
 
-  optDraw = "";
   CreateH(hMatchedMass, TH1F, "matched p.le M;M (GeV/#it{c}^{2});entries", 500, 0., 5.);
 
   CreateH(hMatchedMass2, TH1F, "matched p.le M^{2};M^{2} (GeV^{2}/c^{4});entries", 500, 0., 10.);
 
   CreateH(hExpTimePiVsStrip, TH2F, "matched trk t_{TOF}-t_{#pi,exp} vs strip;strip (#eta);t_{TOF}-t_{#pi,exp} (ps)", 92, 0, 92, fnExpTimeSmallBins, fExpTimeSmallRangeMin, fExpTimeSmallRangeMax);
 
-  optDraw = "COLZ";
   CreateH(hExpTimePiT0Sub1GeV, TH2F, "trk (0.95#leq #it{p}_{T}#leq 1.05 GeV/#it{c}) t_{TOF}-t_{#pi,exp}-t_{0}^{TOF};n. tracks used for t_{0}^{TOF};t_{TOF}-t_{#pi,exp}-t_{0}^{TOF}", 500, 0., 500., fnExpTimeBins, fExpTimeRangeMin, fExpTimeRangeMax);
 
-  optDraw = "";
   CreateH(hExpTimePiFillSub, TH1F, "trk t_{TOF}-t_{#pi,exp}-t_{0,fill};t_{TOF}-t_{#pi,exp} -t_{0,fill} (ps);entries", 6150, -75030., 75030.);
 
   CreateH(hExpTimePi, TH1F, "matched trk t_{TOF}-t_{#pi,exp};t_{TOF}-t_{#pi,exp} (ps);tracks", 6150, -75030., 75030.);
@@ -1089,10 +1076,10 @@ void AliAnalysisTaskTOFqaID::AddStartTimeHisto(THashList* list, TString suffix)
   HistogramMakeUp(hT0DetRes, kMagenta + 1, 1);
 
   CreateH(hEventT0MeanVsVtx, TH2F, "T0 detector: mean vs vertex ; (t0_{A}-t0_{C})/2 [ns]; (t0_{A}+t0_{C})/2 [ns]; events", 50, -25., 25., 50, -25., 25.);
-  HistogramMakeUp(hEventT0MeanVsVtx, kBlue + 2, 1, "colz");
+  HistogramMakeUp(hEventT0MeanVsVtx, kBlue + 2, 1);
 
   CreateH(hEventV0MeanVsVtx, TH2F, "V0 detector: mean vs vertex ; (V0_{A}-V0_{C})/2 [ns]; (V0_{A}+V0_{C})/2 [ns]; events", 50, -25., 25., 50, -25., 25.);
-  HistogramMakeUp(hEventV0MeanVsVtx, kBlack, 1, "colz");
+  HistogramMakeUp(hEventV0MeanVsVtx, kBlack, 1);
 
   TString labels = "best_t0,fill_t0,tof_t0,T0AC,T0A,T0C";
   TObjArray* labels_arr = labels.Tokenize(",");
@@ -1108,27 +1095,27 @@ void AliAnalysisTaskTOFqaID::AddStartTimeHisto(THashList* list, TString suffix)
   SetBinLabels(hStartTimeRes);
 
   CreateH(hT0TOFvsNtrk, TH2F, "Event timeZero estimated by TOF vs. TOF-matching tracks; N_{TOF}; t0 (ps)", 700, 0., 700., 140, -700., 700.);
-  HistogramMakeUp(hT0TOFvsNtrk, kTeal - 5, 1, "colz");
+  HistogramMakeUp(hT0TOFvsNtrk, kTeal - 5, 1);
 
   CreateH(hT0ACvsNtrk, TH2F, "Event timeZero estimated by T0AC vs. TOF-matching tracks;  N_{TOF}; t0 (ps)", 700, 0., 700., 140, -700., 700.);
-  HistogramMakeUp(hT0ACvsNtrk, kRed + 2, 1, "colz");
+  HistogramMakeUp(hT0ACvsNtrk, kRed + 2, 1);
 
   CreateH(hT0AvsNtrk, TH2F, "Event timeZero estimated by T0A vs. TOF-matching tracks;  N_{TOF}; t0 (ps)", 700, 0., 700., 140, -700., 700.);
-  HistogramMakeUp(hT0AvsNtrk, kBlue + 2, 1, "colz");
+  HistogramMakeUp(hT0AvsNtrk, kBlue + 2, 1);
 
   CreateH(hT0CvsNtrk, TH2F, "Event timeZero estimated by T0C vs. TOF-matching tracks;  N_{TOF}; t0 (ps)", 700, 0., 700., 140, -700., 700.);
-  HistogramMakeUp(hT0CvsNtrk, kGreen + 2, 1, "colz");
+  HistogramMakeUp(hT0CvsNtrk, kGreen + 2, 1);
 
   labels = "fill_t0,tof_t0,T0A,T0A & tof_t0,T0C,T0C & tof_t0,T0AC,T0AC & tof_t0";
   labels_arr = labels.Tokenize(",");
   const Double_t startTimeMomBins[13] = { 0.0, 0.3, 0.5, 0.6, 0.7, 0.8, 0.9, 1., 1.2, 1.5, 2., 3., 10. };
   CreateH(hStartTimeMaskMatched, TH2F, "Start Time Mask vs p bin for matched tracks; p(GeV/#it{c});", 12, startTimeMomBins, 8, 0., 8.);
   SetBinLabels(hStartTimeMaskMatched);
-  HistogramMakeUp(hStartTimeMaskMatched, kRed + 2, 1, "colz");
+  HistogramMakeUp(hStartTimeMaskMatched, kRed + 2, 1);
 
   CreateH(hStartTimeMask, TH2F, "Start Time Mask vs p bin for primary tracks; p(GeV/#it{c});", 12, startTimeMomBins, 8, 0., 8.);
   SetBinLabels(hStartTimeMask);
-  HistogramMakeUp(hStartTimeMask, kRed + 2, 1, "colz");
+  HistogramMakeUp(hStartTimeMask, kRed + 2, 1);
 #undef SetBinLabels
 }
 #undef CreateH
@@ -1172,23 +1159,23 @@ void AliAnalysisTaskTOFqaID::AddTofTrgHisto(TString suffix)
   }
 
   TH1I* hFiredMaxipad = new TH1I(Form("hFiredMaxipad%s", suffix.Data()), Form("Fired maxipad per event"), 1584, 0, 1584);
-  HistogramMakeUp(hFiredMaxipad, kBlue + 2, 1, "E1", "", "", "N_{maxipad}", "events");
+  HistogramMakeUp(hFiredMaxipad, kBlue + 2, 1, "", "", "N_{maxipad}", "events");
   fHlistTrigger->AddLast(hFiredMaxipad);
 
   TH1I* hFiredReadoutPad = new TH1I(Form("hFiredReadoutPad%s", suffix.Data()), Form("Fired readout pad per event"), 153000, 0, 153000);
-  HistogramMakeUp(hFiredReadoutPad, kRed + 2, 1, "E1", "", "", "N_{pad}", "events");
+  HistogramMakeUp(hFiredReadoutPad, kRed + 2, 1, "", "", "N_{pad}", "events");
   fHlistTrigger->AddLast(hFiredReadoutPad);
 
   TH1I* hFiredReadoutTrgPad = new TH1I(Form("hFiredReadoutTrgPad%s", suffix.Data()), Form("Fired readout pad in trg window"), 153000, 0, 153000);
-  HistogramMakeUp(hFiredReadoutTrgPad, kBlack, 1, "E1", "", "", "N_{pad} in trg window", "events");
+  HistogramMakeUp(hFiredReadoutTrgPad, kBlack, 1, "", "", "N_{pad} in trg window", "events");
   fHlistTrigger->AddLast(hFiredReadoutTrgPad);
 
   TH2I* hFiredMaxipadVsTrgPad = new TH2I(Form("hFiredMaxipadVsTrgPad%s", suffix.Data()), Form("Fired maxipad vs pads in trg window per event"), 100, 0, 100, 100, 0, 100);
-  HistogramMakeUp(hFiredMaxipadVsTrgPad, kBlue + 2, 1, "colz", "", "", "N_{pad} in trg window", "N_{maxipad}");
+  HistogramMakeUp(hFiredMaxipadVsTrgPad, kBlue + 2, 1, "", "", "N_{pad} in trg window", "N_{maxipad}");
   fHlistTrigger->AddLast(hFiredMaxipadVsTrgPad);
 
   TH2I* hTrgMap = new TH2I(Form("hTrgMap%s", suffix.Data()), Form("Map of fired maxipads"), 72, 0, 72, 23, 0, 23);
-  HistogramMakeUp(hTrgMap, kBlue + 2, 1, "colz", "", "", "LTM", "maxipad");
+  HistogramMakeUp(hTrgMap, kBlue + 2, 1, "", "", "LTM", "maxipad");
   fHlistTrigger->AddLast(hTrgMap);
 
   return;
