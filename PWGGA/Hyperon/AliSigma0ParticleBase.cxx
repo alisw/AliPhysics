@@ -173,7 +173,7 @@ float AliSigma0ParticleBase::ComputePhiStar(const AliESDtrack *track,
                                             const float magneticField,
                                             const float radius) const {
   const float phi0 = track->Phi();  // angle at primary vertex
-  const float pt = track->Pt();
+  const float pt = track->GetTPCInnerParam()->Pt();
   const float charge = track->Charge();
 
   // To use the following equation:
