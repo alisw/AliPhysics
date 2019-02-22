@@ -161,28 +161,31 @@ AliAnalysisTaskSE *AddTaskSigma0DebugTest(bool isMC = false,
   }
 
   if (suffix == "1") {
-    sigmaCuts->SetDeltaEtaDeltaPhiMax(0.0005);
-    sigmaCuts->SetLightweight(false);
-    antiSigmaCuts->SetDeltaEtaDeltaPhiMax(0.0005);
+    sigmaCuts->SetSigmaMassCut(0.003);
+    antiSigmaCuts->SetSigmaMassCut(0.003);
   } else if (suffix == "2") {
     sigmaCuts->SetDeltaEtaDeltaPhiMax(0.0005);
+    sigmaCuts->SetLightweight(false);
+    antiSigmaCuts->SetDeltaEtaDeltaPhiMax(0.0005);
+  } else if (suffix == "3") {
+    sigmaCuts->SetDeltaEtaDeltaPhiMax(0.0005);
     antiSigmaCuts->SetDeltaEtaDeltaPhiMax(0.0005);
     sigmaCuts->SetSigmaMassCut(0.003);
     antiSigmaCuts->SetSigmaMassCut(0.003);
-  } else if (suffix == "3") {
-    sigmaCuts->SetDeltaEtaDeltaPhiMax(0.00025);
-    sigmaCuts->SetLightweight(false);
-    antiSigmaCuts->SetDeltaEtaDeltaPhiMax(0.00025);
   } else if (suffix == "4") {
-    sigmaCuts->SetDeltaEtaDeltaPhiMax(0.00025);
-    antiSigmaCuts->SetDeltaEtaDeltaPhiMax(0.00025);
+    sigmaCuts->SetDeltaEtaDeltaPhiMax(0.001);
+    sigmaCuts->SetLightweight(false);
+    antiSigmaCuts->SetDeltaEtaDeltaPhiMax(0.001);
+  } else if (suffix == "5") {
+    sigmaCuts->SetDeltaEtaDeltaPhiMax(0.001);
+    antiSigmaCuts->SetDeltaEtaDeltaPhiMax(0.001);
     sigmaCuts->SetSigmaMassCut(0.003);
     antiSigmaCuts->SetSigmaMassCut(0.003);
-  } else if (suffix == "5") {
+  } else if (suffix == "6") {
     sigmaCuts->SetDeltaEtaDeltaPhiMax(0.0015);
     sigmaCuts->SetLightweight(false);
     antiSigmaCuts->SetDeltaEtaDeltaPhiMax(0.0015);
-  } else if (suffix == "6") {
+  } else if (suffix == "7") {
     sigmaCuts->SetDeltaEtaDeltaPhiMax(0.0015);
     antiSigmaCuts->SetDeltaEtaDeltaPhiMax(0.0015);
     sigmaCuts->SetSigmaMassCut(0.003);
