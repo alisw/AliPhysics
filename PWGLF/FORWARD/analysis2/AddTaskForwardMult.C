@@ -17,7 +17,7 @@
  * @author Christian Holm Christensen <cholm@nbi.dk>
  * @date   Wed Mar 23 12:13:54 2011
  *
- * @brief  Add task to put forward multiplicity in AOD
+ * @brief  Add task to put forward multiplicity in AOD 
  *
  *
  * @ingroup pwglf_forward_scripts_tasks
@@ -32,7 +32,7 @@
  * @param field   L3 field setting.
  * @param config  Configuration file to use
  * @param corrs   Corrections to use
- * @param dead    (Optional) file with extra dead scripts
+ * @param dead    (Optional) file with extra dead scripts 
  *
  * @return newly allocated analysis task
  *
@@ -63,11 +63,10 @@ AddTaskForwardMult(Bool_t   mc,
   if (mc) task = new AliForwardMCMultiplicityTask("Forward");
   else    task = new AliForwardMultiplicityTask("Forward");
   task->Configure(config);
-	task->GetCorrections().SetUseSecondaryMap(false/*mc*/);
 
   // --- Possible set extra dead channels ----------------------------
   if (dead && dead[0] != '\0') task->GetESDFixer().AddDead(dead);
-
+  
   // --- Set alternative corrections path ----------------------------
   AliForwardCorrectionManager& cm = AliForwardCorrectionManager::Instance();
   if (corrs && corrs[0] != '\0') cm.SetPrefix(corrs);
