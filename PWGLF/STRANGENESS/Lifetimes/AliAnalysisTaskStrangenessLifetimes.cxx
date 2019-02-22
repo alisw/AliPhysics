@@ -85,7 +85,7 @@ AliAnalysisTaskStrangenessLifetimes::AliAnalysisTaskStrangenessLifetimes(
       fDownscale{downscale},
       fUseOnTheFly{false},
       fUseCustomBethe{false},
-      fCustomBethe{0.f,0.f,0.f,0.f,0.f},
+      fCustomBethe{0.f, 0.f, 0.f, 0.f, 0.f},
       fCustomResolution{1.f},
       fHistMCct{nullptr},
       fHistMCctPrimary{nullptr},
@@ -226,8 +226,8 @@ void AliAnalysisTaskStrangenessLifetimes::UserCreateOutputObjects()
 
   fHistNsigmaPosHe =
       new TH1D("fHistNsigmaPosHe", ";n_{#sigma} TPC Pos He; Counts", 20, 0, 10);
-    fHistNsigmaNegHe =
-      new TH1D("fHistNsigmaNegHe", ";n_{#sigma} TPC Pos He; Counts", 20, 0, 10);    
+  fHistNsigmaNegHe =
+      new TH1D("fHistNsigmaNegHe", ";n_{#sigma} TPC Pos He; Counts", 20, 0, 10);
   fHistdEdxVsPt =
       new TH2D("fHistdedxpt", ";pt;dedx;counts", 100, 0, 10, 100, 0, 1500);
 
@@ -476,14 +476,15 @@ void AliAnalysisTaskStrangenessLifetimes::UserExec(Option_t *)
         std::abs(fPIDResponse->NumberOfSigmasTPC(nTrack, AliPID::kPion));
     float nSigmaNegHe3 = fPIDResponse->NumberOfSigmasTPC(nTrack, AliPID::kHe3);
 
-    if (fUseCustomBethe) {
+    if (fUseCustomBethe)
+    {
       const float nbetaGamma = nTrack->GetTPCmomentum() / AliPID::ParticleMass(AliPID::kHe3);
       const float pbetaGamma = pTrack->GetTPCmomentum() / AliPID::ParticleMass(AliPID::kHe3);
-      const float* pars = fCustomBethe;
+      const float *pars = fCustomBethe;
       const float nExpSignal = AliExternalTrackParam::BetheBlochAleph(nbetaGamma, pars[0], pars[1], pars[2], pars[3], pars[4]);
       const float pExpSignal = AliExternalTrackParam::BetheBlochAleph(pbetaGamma, pars[0], pars[1], pars[2], pars[3], pars[4]);
-      nSigmaNegHe3  = (nTrack->GetTPCsignal() - nExpSignal) / (fCustomResolution * nExpSignal);
-      nSigmaPosHe3  = (pTrack->GetTPCsignal() - pExpSignal) / (fCustomResolution * pExpSignal);
+      nSigmaNegHe3 = (nTrack->GetTPCsignal() - nExpSignal) / (fCustomResolution * nExpSignal);
+      nSigmaPosHe3 = (pTrack->GetTPCsignal() - pExpSignal) / (fCustomResolution * pExpSignal);
     }
 
     float nSigmaNegAbsHe3 = std::abs(nSigmaNegHe3);
@@ -492,11 +493,21 @@ void AliAnalysisTaskStrangenessLifetimes::UserExec(Option_t *)
     bool isHyperCandidate = nSigmaNegAbsHe3 < 5 || nSigmaPosAbsHe3 < 5;
     double v0Pt = v0->Pt();
 
-    double masses[3]{0.,0.,0.};
-    double absRapidities[3]{0.,0.,0.};
+    double masses[3]{0., 0., 0.};
+    double absRapidities[3]{0., 0., 0.};
     for (int iPdg = 0; iPdg < 3; ++iPdg)
     {
-      auto lvector = GetV0LorentzVector(pdgCodes[iPdg], nTrack, pTrack, v0->AlphaV0());
+      double alpha;
+      if (iPdg < 2)
+         alpha = v0->AlphaV0();
+      else
+      {
+        if (nSigmaPosHe3 <= 5)
+          alpha= 1;
+        else
+          alpha = -1;
+      }
+      auto lvector = GetV0LorentzVector(pdgCodes[iPdg], nTrack, pTrack, alpha);
       masses[iPdg] = lvector.M();
       absRapidities[iPdg] = std::abs(lvector.Rapidity());
       if (iPdg == 2)
@@ -562,20 +573,20 @@ void AliAnalysisTaskStrangenessLifetimes::UserExec(Option_t *)
       continue;
 
     // Extra track quality: min track length
-    float posTrackLength = -1;
-    float negTrackLength = -1;
-    if (pTrack->GetInnerParam())
-      posTrackLength = pTrack->GetLengthInActiveZone(
-          1, 2.0, 220.0, esdEvent->GetMagneticField());
-    if (nTrack->GetInnerParam())
-      negTrackLength = nTrack->GetLengthInActiveZone(
-          1, 2.0, 220.0, esdEvent->GetMagneticField());
+   //  float posTrackLength = -1;
+   //  float negTrackLength = -1;
+   // if (pTrack->GetInnerParam())
+   //   posTrackLength = pTrack->GetLengthInActiveZone(
+   //       1, 2.0, 220.0, esdEvent->GetMagneticField());
+   // if (nTrack->GetInnerParam())
+   //   negTrackLength = nTrack->GetLengthInActiveZone(
+   //       1, 2.0, 220.0, esdEvent->GetMagneticField());
 
     //float smallestTrackLength =
     //    (posTrackLength < negTrackLength) ? posTrackLength : negTrackLength;
     if ((pTrack->GetTPCClusterInfo(2, 1) < 70) ||
-         (nTrack->GetTPCClusterInfo(2, 1) < 70))
-    //    smallestTrackLength < 80)
+        (nTrack->GetTPCClusterInfo(2, 1) < 70))
+      //    smallestTrackLength < 80)
       continue;
 
     double cosPA = v0->GetV0CosineOfPointingAngle(
@@ -659,7 +670,7 @@ void AliAnalysisTaskStrangenessLifetimes::UserExec(Option_t *)
       }
       if (isHyperCandidate)
       {
-        auto miniHyper = HyperTriton2Body::FillHyperTriton2Body(v0, pTrack, nTrack, nSigmaPosHe3, nSigmaNegHe3, fPIDResponse->NumberOfSigmasTPC(pTrack, AliPID::kPion), 
+        auto miniHyper = HyperTriton2Body::FillHyperTriton2Body(v0, pTrack, nTrack, nSigmaPosHe3, nSigmaNegHe3, fPIDResponse->NumberOfSigmasTPC(pTrack, AliPID::kPion),
                                                                 fPIDResponse->NumberOfSigmasTPC(nTrack, AliPID::kPion), magneticField, primaryVertex, fake);
 
         fV0Hyvector.push_back(miniHyper);
@@ -752,16 +763,17 @@ LVector_t AliAnalysisTaskStrangenessLifetimes::GetV0LorentzVector(int pdg, AliES
     double posMom[3], negMom[3];
     posTrack->GetPxPyPz(posMom);
     negTrack->GetPxPyPz(negMom);
-    LVector_t posLvec{posMom[0] * posCharge, posMom[1] * posCharge, posMom[2], posMass};
-    LVector_t negLvec{negMom[0] * negCharge, negMom[1] * negCharge, negMom[2], negMass};
+    LVector_t posLvec{posMom[0] * posCharge, posMom[1] * posCharge, posCharge*posMom[2], posMass};
+    LVector_t negLvec{negMom[0] * negCharge, negMom[1] * negCharge, negCharge*negMom[2], negMass};
     posLvec += negLvec;
     return posLvec;
   }
   return LVector_t(0, 0, 0, 0);
 }
 
-void AliAnalysisTaskStrangenessLifetimes::SetCustomBetheBloch(float res, const float* bethe) {
+void AliAnalysisTaskStrangenessLifetimes::SetCustomBetheBloch(float res, const float *bethe)
+{
   fUseCustomBethe = true;
   fCustomResolution = res;
-  std::copy(bethe, bethe+5, fCustomBethe);
+  std::copy(bethe, bethe + 5, fCustomBethe);
 }
