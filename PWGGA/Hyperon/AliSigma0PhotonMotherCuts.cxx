@@ -1265,7 +1265,7 @@ void AliSigma0PhotonMotherCuts::InitCutHistograms(TString appendix) {
   fHistCutBooking->GetXaxis()->SetBinLabel(9, "Armenteros #alpha low");
   fHistCutBooking->GetXaxis()->SetBinLabel(10, "Armenteros #alpha up");
   fHistCutBooking->GetXaxis()->SetBinLabel(11, "Rapidity y max");
-  fHistCutBooking->GetXaxis()->SetBinLabel(12, "#Delat#eta#Delta#varphi* min");
+  fHistCutBooking->GetXaxis()->SetBinLabel(12, "#Delta#eta#Delta#varphi* min");
   fHistCutBooking->GetXaxis()->SetBinLabel(13, "MC Mult for efficiency");
   fHistograms->Add(fHistCutBooking);
 

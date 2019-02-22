@@ -246,7 +246,7 @@ class AliSigma0PhotonMotherCuts : public TObject {
   TH2F *fHistMCV0MotherCheck;  //!
 
  private:
-  ClassDef(AliSigma0PhotonMotherCuts, 23)
+  ClassDef(AliSigma0PhotonMotherCuts, 24)
 };
 
 #endif
