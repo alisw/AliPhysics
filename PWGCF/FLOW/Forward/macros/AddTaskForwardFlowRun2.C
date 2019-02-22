@@ -19,7 +19,7 @@
  *
  * @ingroup pwglf_forward_flow
  */
-AliAnalysisTaskSE* AddTaskForwardFlowRun2( bool doNUA, bool makeFakeHoles, TString nua_file, UShort_t nua_mode, bool doetagap, Double_t gap, bool mc,  bool esd,bool prim_cen,bool prim_fwd , UInt_t tracktype, TString centrality,Double_t minpt,Double_t maxpt,TString name1)
+AliAnalysisTaskSE* AddTaskForwardFlowRun2( bool doNUA, bool makeFakeHoles, TString nua_file, UShort_t nua_mode, bool doetagap, Double_t gap, bool mc,  bool esd,bool prim_cen,bool prim_fwd , UInt_t tracktype, TString centrality,Double_t minpt,Double_t maxpt,TString sec_file,TString name1)
 {
   std::cout << "______________________________________________________________________________" << std::endl;
 
@@ -131,6 +131,14 @@ AliAnalysisTaskSE* AddTaskForwardFlowRun2( bool doNUA, bool makeFakeHoles, TStri
     file->GetObject("nuaforward", task->fSettings.nuaforward);
     task->fSettings.nuaforward->SetDirectory(0);
     file->Close();
+  }
+
+  if (task->fSettings.gap > 1.5){
+    TFile *file1 = new TFile(sec_file);
+
+    file1->GetObject("seccorr", task->fSettings.seccorr);
+    task->fSettings.seccorr->SetDirectory(0);
+    file1->Close();
   }
 
   resName += "_" + centrality;

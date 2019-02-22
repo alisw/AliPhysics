@@ -62,6 +62,9 @@ void AliForwardGenericFramework::CumulantsAccumulate(TH2D& dNdetadphi, TList* ou
       if (!fSettings.use_primaries_fwd && !fSettings.esd){
         if (dNdetadphi.GetBinContent(etaBin, 0) == 0 && detType == "forward") break;
       }
+
+
+
       if (fSettings.doNUA){
         // holes in the FMD
         if ((fSettings.nua_mode & fSettings.kFill) && detType == "forward"){
@@ -96,6 +99,16 @@ void AliForwardGenericFramework::CumulantsAccumulate(TH2D& dNdetadphi, TList* ou
 
     if (weight == 0) continue; // || weight > 10.0
     for (Int_t n = 0; n <= 5; n++) {
+      if (doRefFlow && detType == "forward"){
+        if (!fSettings.use_primaries_fwd && n>=2 && n<=4) {
+          Double_t seceta = fSettings.seccorr->GetXaxis()->FindBin(eta);
+          Double_t secvtz = fSettings.seccorr->GetYaxis()->FindBin(zvertex);
+          Double_t secn = fSettings.seccorr->GetZaxis()->FindBin(n-2);
+          weight = weight*fSettings.seccorr->GetBinContent(seceta,secvtz,secn);
+        }
+      }
+
+
       for (Int_t p = 1; p <= 4; p++) {
         Double_t realPart = TMath::Power(weight, p)*TMath::Cos(n*phi);
         Double_t imPart =   TMath::Power(weight, p)*TMath::Sin(n*phi);

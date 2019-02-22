@@ -1021,6 +1021,7 @@ Bool_t AliAnalysisTaskHFSubstructure::FillHistograms()
 	Bool_t Is_Unmatched_D=kFALSE;
 	Int_t D_Meson_Matched_Index=-1; 
 	if (TMath::Abs(Inclusive_Jets_Truth[i_Jet_Truth].pseudorapidity()) > 0.9-fJetRadius) continue;
+	if (Inclusive_Jets_Truth[i_Jet_Truth].perp()<fJetMinPt) continue;
 	std::vector<fastjet::PseudoJet> Constituents_Truth(fFastJetWrapper_Truth->GetJetConstituents(i_Jet_Truth)); 
 	for (UInt_t i_Constituents_Truth = 0; i_Constituents_Truth < Constituents_Truth.size(); i_Constituents_Truth++) { 
 	  for (UInt_t i_Unmacthed_D=0; i_Unmacthed_D<Unmatched_Truth_Level_D.size(); i_Unmacthed_D++){ 

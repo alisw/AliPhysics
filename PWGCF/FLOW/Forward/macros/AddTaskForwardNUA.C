@@ -20,7 +20,7 @@
  * @ingroup pwglf_forward_flow
  */
 
-AliAnalysisTaskSE* AddTaskForwardNUA(UShort_t nua_mode, bool makeFakeHoles, bool mc,  bool esd,bool prim_cen,bool prim_fwd , Int_t tracktype, TString centrality,TString suffix="")
+AliAnalysisTaskSE* AddTaskForwardNUA(UShort_t nua_mode, bool makeFakeHoles, bool mc,  bool esd,bool prim_cen,bool prim_fwd , Int_t tracktype, TString centrality,Double_t minpt,Double_t maxpt,TString suffix="")
 {
   std::cout << "______________________________________________________________________________" << std::endl;
 
@@ -74,6 +74,16 @@ AliAnalysisTaskSE* AddTaskForwardNUA(UShort_t nua_mode, bool makeFakeHoles, bool
     }
   }
 
+
+    task->fSettings.minpt = minpt;
+    resName += "_minpt";
+    resName += std::to_string((int)(minpt*10));
+
+    task->fSettings.maxpt = maxpt;
+    resName += "_maxpt";
+    resName += std::to_string((int)(maxpt*10));
+
+
   resName += "_" + centrality;
   if (mc) resName += "_mc";
 
@@ -94,7 +104,8 @@ AliAnalysisTaskSE* AddTaskForwardNUA(UShort_t nua_mode, bool makeFakeHoles, bool
   task->fSettings.nua_mode = nua_mode; // "V0M";// RefMult08; // "V0M" // "SPDTracklets";
 
   std::cout << "Container name: " << resName << std::endl;
-  TString combName = resName += '_' + suffix;
+  TString combName = resName + '_' + suffix;
+  std::cout << "Container name: " << combName << std::endl;
 
   //resName = "hej";
   AliAnalysisDataContainer* valid = (AliAnalysisDataContainer*)mgr->GetContainers()->FindObject("event_selection_xchange");

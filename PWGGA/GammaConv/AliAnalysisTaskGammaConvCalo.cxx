@@ -897,7 +897,8 @@ void AliAnalysisTaskGammaConvCalo::UserCreateOutputObjects(){
   Double_t *arrQAPtBinning    = new Double_t[1200];
   Double_t *arrClusPtBinning  = new Double_t[1200];
   // Set special pt binning for pp 8TeV
-  if (((AliConvEventCuts*)fV0Reader->GetEventCuts())->GetEnergyEnum() == AliConvEventCuts::k8TeV ){
+  if (((AliConvEventCuts*)fV0Reader->GetEventCuts())->GetEnergyEnum() == AliConvEventCuts::k7TeV ||
+      ((AliConvEventCuts*)fV0Reader->GetEventCuts())->GetEnergyEnum() == AliConvEventCuts::k8TeV ){
     nBinsQAPt                 = 190;
     maxQAPt                   = 40;
     for(Int_t i=0; i<nBinsQAPt+1;i++){
