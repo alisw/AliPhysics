@@ -18,11 +18,13 @@ AliPHOSTenderTask * AddTenderTaskCustomParameters(Bool_t isMC = kFALSE, TString 
 	//
 	gROOT->LoadMacro("$ALICE_PHYSICS/PWGGA/PHOSTasks/PHOS_PbPb/AddAODPHOSTender.C");
 	TString tenderOption = isMC ? "Run2Default" : "";
+	TString nonlinearity = isMC ? "Run2" : "Run2MC";
 
 	AliPHOSTenderTask * tenderPHOS = AddAODPHOSTender("PHOSTenderTask", "PHOStender", tenderOption, 1, isMC);
 	AliPHOSTenderSupply * PHOSSupply = tenderPHOS->GetPHOSTenderSupply();
 	// IMPORTANT: Set the map of bad channels
 	PHOSSupply->ForceUsingBadMap(badmap.Data());
+	PHOSSupply->SetNonlinearityVersion(nonlinearity); 
 	if (isMC)
 	{
 		// Important: Keep track of this variable
