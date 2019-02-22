@@ -1,3 +1,3 @@
-PWGJE::EMCALJetTasks::AliAnalysisTaskEmcalResponseOutliers *AddTaskEmcalResponseOutliers(){
+PWGJE::EMCALJetTasks::AliAnalysisTaskEmcalResponseOutliers *AddTaskResponseOutliers(){
     return PWGJE::EMCALJetTasks::AliAnalysisTaskEmcalResponseOutliers::AddTaskEmcalResponseOutliers();
 }
