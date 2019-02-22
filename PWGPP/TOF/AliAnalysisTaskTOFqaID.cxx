@@ -874,19 +874,11 @@ Bool_t AliAnalysisTaskTOFqaID::ComputeMatchingEfficiency(THashList* list, TStrin
   return 1;
 }
 //----------------------------------------------------------------------------------
-void AliAnalysisTaskTOFqaID::HistogramMakeUp(TH1* hist, Color_t color, Int_t markerStyle, TString newName, TString newTitle, TString xTitle, TString yTitle)
+void AliAnalysisTaskTOFqaID::HistogramMakeUp(TH1* hist, Color_t color, Int_t markerStyle)
 {
   //set histogram style and axes style at once
   if (!hist)
     return;
-  if (!newName.IsNull())
-    hist->SetName(newName);
-  if (!newTitle.IsNull())
-    hist->SetTitle(newTitle);
-  if (!xTitle.IsNull())
-    hist->GetXaxis()->SetTitle(xTitle);
-  if (!yTitle.IsNull())
-    hist->GetYaxis()->SetTitle(yTitle);
   if (color >= 0) {
     hist->SetLineColor(color);
     hist->SetMarkerColor(color);
@@ -900,7 +892,7 @@ void AliAnalysisTaskTOFqaID::HistogramMakeUp(TH1* hist, Color_t color, Int_t mar
 
 #define CreateH(Hname, Type, title, ...)                                                                                           \
   Type* Hname = new Type(Form("%s%s_%s", #Hname, suffix.Data(), cLabel.Data()), Form("%s %s", cLabel.Data(), title), __VA_ARGS__); \
-  HistogramMakeUp(Hname, ((charge > 0) ? kRed + 2 : kBlue + 2), 1, "", "", "", "");                                                \
+  HistogramMakeUp(Hname, ((charge > 0) ? kRed + 2 : kBlue + 2), 1);                                                                \
   list->AddLast(Hname);
 
 //----------------------------------------------------------------------------------
@@ -1158,24 +1150,24 @@ void AliAnalysisTaskTOFqaID::AddTofTrgHisto(TString suffix)
     return;
   }
 
-  TH1I* hFiredMaxipad = new TH1I(Form("hFiredMaxipad%s", suffix.Data()), Form("Fired maxipad per event"), 1584, 0, 1584);
-  HistogramMakeUp(hFiredMaxipad, kBlue + 2, 1, "", "", "N_{maxipad}", "events");
+  TH1I* hFiredMaxipad = new TH1I("hFiredMaxipad" + suffix, "Fired maxipad per event;N_{maxipad};events", 1584, 0, 1584);
+  HistogramMakeUp(hFiredMaxipad, kBlue + 2, 1);
   fHlistTrigger->AddLast(hFiredMaxipad);
 
-  TH1I* hFiredReadoutPad = new TH1I(Form("hFiredReadoutPad%s", suffix.Data()), Form("Fired readout pad per event"), 153000, 0, 153000);
-  HistogramMakeUp(hFiredReadoutPad, kRed + 2, 1, "", "", "N_{pad}", "events");
+  TH1I* hFiredReadoutPad = new TH1I("hFiredReadoutPad" + suffix, "Fired readout pad per event;N_{pad};events", 153000, 0, 153000);
+  HistogramMakeUp(hFiredReadoutPad, kRed + 2, 1);
   fHlistTrigger->AddLast(hFiredReadoutPad);
 
-  TH1I* hFiredReadoutTrgPad = new TH1I(Form("hFiredReadoutTrgPad%s", suffix.Data()), Form("Fired readout pad in trg window"), 153000, 0, 153000);
-  HistogramMakeUp(hFiredReadoutTrgPad, kBlack, 1, "", "", "N_{pad} in trg window", "events");
+  TH1I* hFiredReadoutTrgPad = new TH1I("hFiredReadoutTrgPad" + suffix, "Fired readout pad in trg window;N_{pad} in trg window;events", 153000, 0, 153000);
+  HistogramMakeUp(hFiredReadoutTrgPad, kBlack, 1);
   fHlistTrigger->AddLast(hFiredReadoutTrgPad);
 
-  TH2I* hFiredMaxipadVsTrgPad = new TH2I(Form("hFiredMaxipadVsTrgPad%s", suffix.Data()), Form("Fired maxipad vs pads in trg window per event"), 100, 0, 100, 100, 0, 100);
-  HistogramMakeUp(hFiredMaxipadVsTrgPad, kBlue + 2, 1, "", "", "N_{pad} in trg window", "N_{maxipad}");
+  TH2I* hFiredMaxipadVsTrgPad = new TH2I("hFiredMaxipadVsTrgPad" + suffix, "Fired maxipad vs pads in trg window per event;N_{pad} in trg window;N_{maxipad}", 100, 0, 100, 100, 0, 100);
+  HistogramMakeUp(hFiredMaxipadVsTrgPad, kBlue + 2, 1);
   fHlistTrigger->AddLast(hFiredMaxipadVsTrgPad);
 
-  TH2I* hTrgMap = new TH2I(Form("hTrgMap%s", suffix.Data()), Form("Map of fired maxipads"), 72, 0, 72, 23, 0, 23);
-  HistogramMakeUp(hTrgMap, kBlue + 2, 1, "", "", "LTM", "maxipad");
+  TH2I* hTrgMap = new TH2I("hTrgMap" + suffix, "Map of fired maxipads;LTM;maxipad", 72, 0, 72, 23, 0, 23);
+  HistogramMakeUp(hTrgMap, kBlue + 2, 1);
   fHlistTrigger->AddLast(hTrgMap);
 
   return;

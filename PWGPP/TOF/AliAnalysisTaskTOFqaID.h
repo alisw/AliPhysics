@@ -85,7 +85,7 @@ class AliAnalysisTaskTOFqaID : public AliAnalysisTaskSE {
     return kTRUE;
   };
   TString GetSpeciesName(Int_t absPdgCode);
-  void HistogramMakeUp(TH1* hist, Color_t color = -1, Int_t markerStyle = -1, TString newName = "", TString newTitle = "", TString xTitle = "", TString yTitle = "");
+  void HistogramMakeUp(TH1* hist, Color_t color = -1, Int_t markerStyle = -1);
   Double_t GetPhiAtTPCouterRadius(AliESDtrack* track);
   void SetOCDBInfo(const char* cdbLocation, UInt_t runN)
   {
