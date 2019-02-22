@@ -82,6 +82,7 @@ void AliAnalysisTaskEmcalResponseOutliers::UserCreateOutputObjects(){
     varlist += ":leadingpart";
     varlist += ":leadingcharged";
     varlist += ":leadingneutral";
+    varlist += ":pdgmaxpart";
     fOutlierData = new TNtuple("fOutlierData", "Outlier information", varlist.data()); 
 
     fOutput->Add(fOutlierData);
@@ -93,6 +94,8 @@ bool AliAnalysisTaskEmcalResponseOutliers::Run(){
     auto detjets = GetJetContainer("detjets"),
          mcjets = GetJetContainer("partjets");
 
+    auto partcont = GetParticleContainer("mcparticles");
+
     // Outlier selection based on pt-hard bin
     const double detptmax[21] = {0., 10., 20., 20., 30., 40., 50., 60., 80., 100., 120., 140., 150., 300., 300., 300., 300., 300., 300., 300., 300.},
                  partptmin[21] = {0., 20., 25., 30., 40., 50., 70., 80., 100., 120., 140., 180., 200., 250., 270., 300., 350., 380., 420., 450., 600.};
@@ -102,9 +105,10 @@ bool AliAnalysisTaskEmcalResponseOutliers::Run(){
         if(!mcjet) continue;
         if(!(detjet->Pt() < detptmax[fPtHardBinGlobal] && mcjet->Pt() > partptmin[fPtHardBinGlobal])) continue;
         // jet identified as outlier
+        auto truepart = mcjet->GetLeadingTrack(partcont->GetArray());
         TVector3 detvec, mcvec;
         detvec.SetPtEtaPhi(detjet->Pt(), detjet->Eta(), detjet->Phi());
-        Float_t outlierDataBlock[15];
+        Float_t outlierDataBlock[16];
         outlierDataBlock[0] = mcjet->Pt();
         outlierDataBlock[1] = detjet->Pt();
         outlierDataBlock[2] = detvec.DeltaR(mcvec);
@@ -120,6 +124,7 @@ bool AliAnalysisTaskEmcalResponseOutliers::Run(){
         outlierDataBlock[12] = mcjet->MaxPartPt();
         outlierDataBlock[13] = detjet->MaxChargedPt();
         outlierDataBlock[14] = detjet->MaxNeutralPt();
+        outlierDataBlock[15] = static_cast<Float_t>(truepart->PdgCode());
         fOutlierData->Fill(outlierDataBlock);
     }
 }
