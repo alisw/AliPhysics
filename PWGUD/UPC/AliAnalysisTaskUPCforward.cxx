@@ -27,6 +27,7 @@
 #include "TH1D.h"
 #include "TH2D.h"
 #include "TH2F.h"
+#include "TH1.h"
 #include <TFile.h>
 #include <TF2.h>
 #include <TF1.h>
@@ -58,7 +59,7 @@
 #include "AliAODEvent.h"
 #include "AliAODInputHandler.h"
 #include "AliMuonTrackCuts.h"
-#include "AliAODVertex.h"         
+#include "AliAODVertex.h"
 
 
 // my headers
@@ -358,7 +359,7 @@ void AliAnalysisTaskUPCforward::UserCreateOutputObjects()
   fEntriesAgainstRunNumberProperlyH = new TH1F("fEntriesAgainstRunNumberProperlyH", "fEntriesAgainstRunNumberProperlyH", 10000, 290000, 300000);
   fEntriesAgainstRunNumberProperlyH->SetStats(0);
   fEntriesAgainstRunNumberProperlyH->SetFillColor(38);
-  fEntriesAgainstRunNumberProperlyH->SetCanExtend(TH1::kAllAxes);
+  // fEntriesAgainstRunNumberProperlyH->SetCanExtend(TH1::kAllAxes);
   fEntriesAgainstRunNumberProperlyH->LabelsDeflate();
   fOutputList->Add(fEntriesAgainstRunNumberProperlyH);
 
