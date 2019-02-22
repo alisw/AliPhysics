@@ -103,6 +103,8 @@ AliAnalysisTaskTOFqaID::AliAnalysisTaskTOFqaID(const char* name)
   }
   for (Int_t i = 0; i <= fnBinsPt; i++)
     fVariableBinsPt[i] = 0.0;
+  for (Int_t i = 0; i <= fnBinsMult; i++)
+    fVariableBinsMult[i] = 0.0;
   //
   // Input slot #0 works with a TChain
   DefineInput(0, TChain::Class());
@@ -172,6 +174,8 @@ AliAnalysisTaskTOFqaID::AliAnalysisTaskTOFqaID(const AliAnalysisTaskTOFqaID& cop
   }
   for (Int_t i = 0; i <= fnBinsPt; i++)
     fVariableBinsPt[i] = copy.fVariableBinsPt[i];
+  for (Int_t i = 0; i <= fnBinsMult; i++)
+    fVariableBinsMult[i] = copy.fVariableBinsMult[i];
   //
 }
 #undef cpVar
@@ -235,6 +239,8 @@ AliAnalysisTaskTOFqaID& AliAnalysisTaskTOFqaID::operator=(const AliAnalysisTaskT
     }
     for (Int_t i = 0; i <= fnBinsPt; i++)
       fVariableBinsPt[i] = copy.fVariableBinsPt[i];
+    for (Int_t i = 0; i <= fnBinsMult; i++)
+      fVariableBinsMult[i] = copy.fVariableBinsMult[i];
     //
   }
   return *this;
@@ -308,7 +314,7 @@ void AliAnalysisTaskTOFqaID::UserCreateOutputObjects()
   OpenFile(1);
 
   //define variable binning for pt and p before creating histos
-  SetPtVariableBinning();
+  SetVariableBinning();
 
   if (!fHlist)
     fHlist = new THashList();
@@ -910,7 +916,7 @@ void AliAnalysisTaskTOFqaID::AddTofBaseHisto(THashList* list, Int_t charge, TStr
   else if (charge > 0)
     cLabel.Form("pos");
 
-  CreateH(hTOFmulti, TH1I, Form("matched trk per event (|#eta|#leq%3.2f, #it{p}_{T}#geq0.3 GeV/#it{c});N;events", fMatchingEtaCut), 100, 0, 100);
+  CreateH(hTOFmulti, TH1I, Form("matched trk per event (|#eta|#leq%3.2f, #it{p}_{T}#geq0.3 GeV/#it{c});N;events", fMatchingEtaCut), fnBinsMult, fVariableBinsMult);
 
   CreateH(hTime, TH1F, "matched trk TOF signal;t (ns);tracks", 250, 0., 610.);
 
@@ -981,7 +987,7 @@ void AliAnalysisTaskTOFqaID::AddPidHisto(THashList* list, Int_t charge, TString 
   else if (charge > 0)
     cLabel.Form("pos");
 
-  CreateH(hMatchedBetaVsP, TH2F, "matched trk #beta vs. p#it{p} (GeV/#it{c});#beta", fnBinsPt, fVariableBinsPt, 150, 0., 1.5);
+  CreateH(hMatchedBetaVsP, TH2F, "matched trk #beta vs. p;#it{p} (GeV/#it{c});#beta", fnBinsPt, fVariableBinsPt, 150, 0., 1.5);
 
   CreateH(hMatchedMass, TH1F, "matched p.le M;M (GeV/#it{c}^{2});entries", 500, 0., 5.);
 
@@ -989,7 +995,7 @@ void AliAnalysisTaskTOFqaID::AddPidHisto(THashList* list, Int_t charge, TString 
 
   CreateH(hExpTimePiVsStrip, TH2F, "matched trk t_{TOF}-t_{#pi,exp} vs strip;strip (#eta);t_{TOF}-t_{#pi,exp} (ps)", 92, 0, 92, fnExpTimeSmallBins, fExpTimeSmallRangeMin, fExpTimeSmallRangeMax);
 
-  CreateH(hExpTimePiT0Sub1GeV, TH2F, "trk (0.95#leq #it{p}_{T}#leq 1.05 GeV/#it{c}) t_{TOF}-t_{#pi,exp}-t_{0}^{TOF};n. tracks used for t_{0}^{TOF};t_{TOF}-t_{#pi,exp}-t_{0}^{TOF}", 500, 0., 500., fnExpTimeBins, fExpTimeRangeMin, fExpTimeRangeMax);
+  CreateH(hExpTimePiT0Sub1GeV, TH2F, "trk (0.95#leq #it{p}_{T}#leq 1.05 GeV/#it{c}) t_{TOF}-t_{#pi,exp}-t_{0}^{TOF};n. tracks used for t_{0}^{TOF};t_{TOF}-t_{#pi,exp}-t_{0}^{TOF}", fnBinsMult, fVariableBinsMult, fnExpTimeBins, fExpTimeRangeMin, fExpTimeRangeMax);
 
   CreateH(hExpTimePiFillSub, TH1F, "trk t_{TOF}-t_{#pi,exp}-t_{0,fill};t_{TOF}-t_{#pi,exp} -t_{0,fill} (ps);entries", 6150, -75030., 75030.);
 
@@ -1556,10 +1562,10 @@ Bool_t AliAnalysisTaskTOFqaID::IsChannelGood(Int_t channel)
 }
 
 //-----------------------------------------------------------
-void AliAnalysisTaskTOFqaID::SetPtVariableBinning()
+void AliAnalysisTaskTOFqaID::SetVariableBinning()
 {
   //
-  // returns an array with variable binning in p and pT
+  // defines an array with variable binning in p and pT
   //
   for (Int_t j = 0; j < fnBinsPt + 1; j++) {
     if (j < 200)
@@ -1567,6 +1573,20 @@ void AliAnalysisTaskTOFqaID::SetPtVariableBinning()
     else
       fVariableBinsPt[j] = 5.0 + (j - 200) * 0.050;
   }
+
+  //
+  // defines an array with variable binning in multiplicity (e.g. TOF hits)
+  //
+  fVariableBinsMult[0] = 1;
+  for (Int_t j = 1; j < fnBinsMult + 1; j++) {
+    Double_t delta = TMath::Power(10, TMath::Floor(TMath::Log10(fVariableBinsMult[j - 1])));
+    if (fVariableBinsMult[j - 1] >= 10)
+      delta /= 2;
+    if (fVariableBinsMult[j - 1] >= 100)
+      delta /= 2;
+    fVariableBinsMult[j] = fVariableBinsMult[j - 1] + delta;
+  }
+
   return;
 }
 
