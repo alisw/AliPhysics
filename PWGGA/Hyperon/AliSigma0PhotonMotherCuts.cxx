@@ -39,7 +39,7 @@ ClassImp(AliSigma0PhotonMotherCuts)
       fPhotonPtMin(0),
       fPhotonPtMax(999.f),
       fRapidityMax(0.5),
-      fDeltaEtaDeltaPhiMax(0.001f),
+      fDeltaEtaDeltaPhiMax(0.f),
       fArmenterosCut(false),
       fArmenterosQtLow(0.f),
       fArmenterosQtUp(0.f),
@@ -154,7 +154,7 @@ AliSigma0PhotonMotherCuts::AliSigma0PhotonMotherCuts(
       fPhotonPtMin(0),
       fPhotonPtMax(999.f),
       fRapidityMax(0.5),
-      fDeltaEtaDeltaPhiMax(0.001f),
+      fDeltaEtaDeltaPhiMax(0.f),
       fArmenterosCut(false),
       fArmenterosQtLow(0.f),
       fArmenterosQtUp(0.f),
@@ -360,6 +360,14 @@ void AliSigma0PhotonMotherCuts::CleanUpClones(
           fHistDeltaEtaDeltaPhiGammaPosBefore[i]->Fill(deltaEtaPos,
                                                        deltaPhistarPos);
         }
+        deltaPhistarPos =
+            posDaughter1.GetAveragePhiStar() - posDaughter2.GetAveragePhiStar();
+        deltaPhistarNeg =
+            negDaughter1.GetAveragePhiStar() - negDaughter2.GetAveragePhiStar();
+        fHistDeltaEtaDeltaPhiGammaNegBefore[9]->Fill(deltaEtaNeg,
+                                                     deltaPhistarNeg);
+        fHistDeltaEtaDeltaPhiGammaPosBefore[9]->Fill(deltaEtaPos,
+                                                     deltaPhistarPos);
       }
 
       bool hasSameLabels =
@@ -387,7 +395,7 @@ void AliSigma0PhotonMotherCuts::CleanUpClones(
           photon1->SetUse(false);
         }
       }
-      if (!photon2->GetIsUse()) break;
+      if (!photon1->GetIsUse()) break;
     }
   }
 
@@ -461,6 +469,14 @@ void AliSigma0PhotonMotherCuts::CleanUpClones(
           fHistDeltaEtaDeltaPhiLambdaPosBefore[i]->Fill(deltaEtaPos,
                                                         deltaPhistarPos);
         }
+        deltaPhistarPos =
+            posDaughter1.GetAveragePhiStar() - posDaughter2.GetAveragePhiStar();
+        deltaPhistarNeg =
+            negDaughter1.GetAveragePhiStar() - negDaughter2.GetAveragePhiStar();
+        fHistDeltaEtaDeltaPhiLambdaNegBefore[9]->Fill(deltaEtaNeg,
+                                                      deltaPhistarNeg);
+        fHistDeltaEtaDeltaPhiLambdaPosBefore[9]->Fill(deltaEtaPos,
+                                                      deltaPhistarPos);
       }
 
       bool hasSameLabels =
@@ -488,7 +504,7 @@ void AliSigma0PhotonMotherCuts::CleanUpClones(
           lambda1->SetUse(false);
         }
       }
-      if (!lambda2->GetIsUse()) break;
+      if (!lambda1->GetIsUse()) break;
     }
   }
 
@@ -562,6 +578,14 @@ void AliSigma0PhotonMotherCuts::CleanUpClones(
           fHistDeltaEtaDeltaPhiGammaPosAfter[i]->Fill(deltaEtaPos,
                                                       deltaPhistarPos);
         }
+        deltaPhistarPos =
+            posDaughter1.GetAveragePhiStar() - posDaughter2.GetAveragePhiStar();
+        deltaPhistarNeg =
+            negDaughter1.GetAveragePhiStar() - negDaughter2.GetAveragePhiStar();
+        fHistDeltaEtaDeltaPhiGammaNegAfter[9]->Fill(deltaEtaNeg,
+                                                    deltaPhistarNeg);
+        fHistDeltaEtaDeltaPhiGammaPosAfter[9]->Fill(deltaEtaPos,
+                                                    deltaPhistarPos);
       }
     }
   }
@@ -636,6 +660,14 @@ void AliSigma0PhotonMotherCuts::CleanUpClones(
           fHistDeltaEtaDeltaPhiLambdaPosAfter[i]->Fill(deltaEtaPos,
                                                        deltaPhistarPos);
         }
+        deltaPhistarPos =
+            posDaughter1.GetAveragePhiStar() - posDaughter2.GetAveragePhiStar();
+        deltaPhistarNeg =
+            negDaughter1.GetAveragePhiStar() - negDaughter2.GetAveragePhiStar();
+        fHistDeltaEtaDeltaPhiLambdaNegAfter[9]->Fill(deltaEtaNeg,
+                                                     deltaPhistarNeg);
+        fHistDeltaEtaDeltaPhiLambdaPosAfter[9]->Fill(deltaEtaPos,
+                                                     deltaPhistarPos);
       }
     }
   }
@@ -654,24 +686,20 @@ void AliSigma0PhotonMotherCuts::CleanUpClones(
 bool AliSigma0PhotonMotherCuts::RejectClosePairs(
     const AliSigma0ParticleBase &part1,
     const AliSigma0ParticleBase &part2) const {
-  bool outBool = true;
   const float deltaEta = part1.GetEta() - part2.GetEta();
   const float pi = TMath::Pi();
 
-  for (int iRad = 0; iRad < 9; ++iRad) {
-    float deltaPhiStar = part1.GetPhiStar(iRad) - part2.GetPhiStar(iRad);
-    if (deltaPhiStar > pi) {
-      deltaPhiStar += -pi * 2;
-    } else if (deltaPhiStar < -pi) {
-      deltaPhiStar += pi * 2;
-    }
-    if (deltaPhiStar * deltaPhiStar + deltaEta * deltaEta <
-        fDeltaEtaDeltaPhiMax * fDeltaEtaDeltaPhiMax) {
-      outBool = false;
-      break;
-    }
+  float deltaPhiStar = part1.GetAveragePhiStar() - part2.GetAveragePhiStar();
+  if (deltaPhiStar > pi) {
+    deltaPhiStar += -pi * 2;
+  } else if (deltaPhiStar < -pi) {
+    deltaPhiStar += pi * 2;
   }
-  return outBool;
+  if (deltaPhiStar * deltaPhiStar + deltaEta * deltaEta <
+      fDeltaEtaDeltaPhiMax * fDeltaEtaDeltaPhiMax) {
+    return true;
+  }
+  return false;
 }
 
 //____________________________________________________________________________________________________
@@ -680,13 +708,15 @@ void AliSigma0PhotonMotherCuts::SingleV0QA(
     const std::vector<AliSigma0ParticleV0> &lambdaCandidates) {
   // Photon QA - keep track of kinematics
   for (const auto &photon : photonCandidates) {
+    if (!photon.GetIsUse()) continue;
     fHistPhotonPtPhi->Fill(photon.GetPt(), photon.GetPhi());
     fHistPhotonPtEta->Fill(photon.GetPt(), photon.GetEta());
     fHistPhotonMassPt->Fill(photon.GetPt(), photon.GetMass());
   }
 
+  // Lambda QA - keep track of kinematics
   for (const auto &lambda : lambdaCandidates) {
-    // Lambda QA - keep track of kinematics
+    if (!lambda.GetIsUse()) continue;
     fHistLambdaPtPhi->Fill(lambda.GetPt(), lambda.GetPhi());
     fHistLambdaPtEta->Fill(lambda.GetPt(), lambda.GetEta());
     fHistLambdaMassPt->Fill(lambda.GetPt(), lambda.GetMass());
@@ -736,6 +766,13 @@ void AliSigma0PhotonMotherCuts::SigmaToLambdaGamma(
       const float rap = sigma.GetRapidity();
       const int multBin = GetMultiplicityBin(lPercentile, fMultMode);
 
+      if (!fIsLightweight) {
+        fHistArmenterosAfter->Fill(armAlpha, armQt);
+        fHistInvMassRecPhoton->Fill(pT, sigma.GetRecMassPhoton());
+        fHistInvMassRecLambda->Fill(pT, sigma.GetRecMassLambda());
+        fHistInvMassRec->Fill(pT, sigma.GetRecMass());
+      }
+
       int label = -10;
       int pdgLambdaMother = 0;
       int pdgPhotonMother = 0;
@@ -782,18 +819,7 @@ void AliSigma0PhotonMotherCuts::SigmaToLambdaGamma(
       }
 
       fHistInvMass->Fill(invMass);
-
-      if (TMath::Abs(rap) > fRapidityMax) continue;
       fHistInvMassPt->Fill(pT, invMass);
-
-      if (!fIsLightweight) {
-        fHistArmenterosAfter->Fill(armAlpha, armQt);
-        fHistInvMassRecPhoton->Fill(pT, sigma.GetRecMassPhoton());
-        fHistInvMassRecLambda->Fill(pT, sigma.GetRecMassLambda());
-        fHistInvMassRec->Fill(pT, sigma.GetRecMass());
-      }
-      if (multBin >= 0 && fIsSpectrumAnalysis)
-        fHistPtMult[multBin]->Fill(pT, invMass);
 
       if (fIsMC) {
         if (label > 0) {
@@ -829,6 +855,11 @@ void AliSigma0PhotonMotherCuts::SigmaToLambdaGamma(
                                TMath::Abs(partPhoton->PdgCode()));
         }
       }
+
+      if (TMath::Abs(rap) > fRapidityMax) continue;
+
+      if (multBin >= 0 && fIsSpectrumAnalysis)
+        fHistPtMult[multBin]->Fill(pT, invMass);
     }
   }
   fHistNSigma->Fill(nSigma);
@@ -1195,12 +1226,18 @@ void AliSigma0PhotonMotherCuts::InitCutHistograms(TString appendix) {
 
   std::cout << "============================\n"
             << " PHOTON MOTHER CUT CONFIGURATION \n"
-            << " Sigma0 mass      " << fMassSigma << "\n"
-            << " Sigma0 selection " << fSigmaMassCut << "\n"
-            << " Sigma0 sb up     " << fSidebandCutUp << "\n"
-            << " Sigma0 sb down   " << fSidebandCutDown << "\n"
-            << " Photon pT min    " << fPhotonPtMin << "\n"
-            << " Photon pT max    " << fPhotonPtMax << "\n"
+            << " Sigma0 mass       " << fMassSigma << "\n"
+            << " Sigma0 selection  " << fSigmaMassCut << "\n"
+            << " Sigma0 sb up      " << fSidebandCutUp << "\n"
+            << " Sigma0 sb down    " << fSidebandCutDown << "\n"
+            << " Photon pT min     " << fPhotonPtMin << "\n"
+            << " Photon pT max     " << fPhotonPtMax << "\n"
+            << " Armenteros Qt low " << fArmenterosQtLow << "\n"
+            << " Armenteros Qt up  " << fArmenterosQtUp << "\n"
+            << " Armenteros a low  " << fArmenterosAlphaLow << "\n"
+            << " Armenteros a up   " << fArmenterosAlphaUp << "\n"
+            << " Rapidity max      " << fRapidityMax << "\n"
+            << " DeltaEtaDeltaPhi* " << fDeltaEtaDeltaPhiMax << "\n"
             << "============================\n";
 
   TH1::AddDirectory(kFALSE);
@@ -1216,7 +1253,7 @@ void AliSigma0PhotonMotherCuts::InitCutHistograms(TString appendix) {
     fHistograms->SetName(appendix);
   }
 
-  fHistCutBooking = new TProfile("fHistCutBooking", ";;Cut value", 12, 0, 12);
+  fHistCutBooking = new TProfile("fHistCutBooking", ";;Cut value", 13, 0, 13);
   fHistCutBooking->GetXaxis()->SetBinLabel(1, "#Sigma^{0} selection");
   fHistCutBooking->GetXaxis()->SetBinLabel(2, "#Sigma^{0} sb down");
   fHistCutBooking->GetXaxis()->SetBinLabel(3, "#Sigma^{0} sb up");
@@ -1228,7 +1265,8 @@ void AliSigma0PhotonMotherCuts::InitCutHistograms(TString appendix) {
   fHistCutBooking->GetXaxis()->SetBinLabel(9, "Armenteros #alpha low");
   fHistCutBooking->GetXaxis()->SetBinLabel(10, "Armenteros #alpha up");
   fHistCutBooking->GetXaxis()->SetBinLabel(11, "Rapidity y max");
-  fHistCutBooking->GetXaxis()->SetBinLabel(12, "MC Mult for efficiency");
+  fHistCutBooking->GetXaxis()->SetBinLabel(12, "#Delta#eta#Delta#varphi* min");
+  fHistCutBooking->GetXaxis()->SetBinLabel(13, "MC Mult for efficiency");
   fHistograms->Add(fHistCutBooking);
 
   fHistCutBooking->Fill(0.f, fSigmaMassCut);
@@ -1242,7 +1280,8 @@ void AliSigma0PhotonMotherCuts::InitCutHistograms(TString appendix) {
   fHistCutBooking->Fill(8.f, fArmenterosAlphaLow);
   fHistCutBooking->Fill(9.f, fArmenterosAlphaUp);
   fHistCutBooking->Fill(10.f, fRapidityMax);
-  fHistCutBooking->Fill(11.f, fMCHighMultThreshold);
+  fHistCutBooking->Fill(11.f, fDeltaEtaDeltaPhiMax);
+  fHistCutBooking->Fill(12.f, fMCHighMultThreshold);
 
   fHistInvMass =
       new TH1F("fHistInvMass", "; M_{#Lambda#gamma} (GeV/#it{c}^{2}); Entries",
@@ -1333,7 +1372,7 @@ void AliSigma0PhotonMotherCuts::InitCutHistograms(TString appendix) {
                            -TMath::Pi(), TMath::Pi());
     fHistPtRapidity =
         new TH2F("fHistPtRapidity", "; #it{p}_{T} (GeV/#it{c}); y", 100, 0, 10,
-                 50, -5, 5);
+                 100, -2, 2);
 
     fHistograms->Add(fHistNPhotonBefore);
     fHistograms->Add(fHistNPhotonAfter);
@@ -1433,41 +1472,42 @@ void AliSigma0PhotonMotherCuts::InitCutHistograms(TString appendix) {
       fHistograms->Add(fHistDiffPLambdaNegAfter[i]);
     }
 
-    std::vector<float> TPCradii = {
-        {85., 105., 125., 145., 165., 185., 205., 225., 245.}};
+    std::vector<TString> TPCradii = {{"85 cm", "105 cm", "125 cm", "145 cm",
+                                      "165 cm", "185 cm", "205 cm", "225 cm",
+                                      "245 cm", "average"}};
     for (size_t i = 0; i < TPCradii.size(); ++i) {
       fHistDeltaEtaDeltaPhiGammaNegBefore[i] = new TH2F(
-          Form("fHistDeltaEtaDeltaPhiGammaNegBefore_%.0f", TPCradii[i]),
-          Form("r_{TPC} = %.0f cm; #Delta #eta; #Delta #phi", TPCradii[i]), 201,
-          -0.01, 0.01, 201, -0.01, 0.01);
+          Form("fHistDeltaEtaDeltaPhiGammaNegBefore_%s", TPCradii[i].Data()),
+          Form("r_{TPC} = %s; #Delta #eta; #Delta #phi", TPCradii[i].Data()),
+          201, -0.1, 0.1, 201, -0.1, 0.1);
       fHistDeltaEtaDeltaPhiGammaPosBefore[i] = new TH2F(
-          Form("fHistDeltaEtaDeltaPhiGammaPosBefore_%.0f", TPCradii[i]),
-          Form("r_{TPC} = %.0f cm; #Delta #eta; #Delta #phi", TPCradii[i]), 201,
-          -0.01, 0.01, 201, -0.01, 0.01);
+          Form("fHistDeltaEtaDeltaPhiGammaPosBefore_%s", TPCradii[i].Data()),
+          Form("r_{TPC} = %s; #Delta #eta; #Delta #phi", TPCradii[i].Data()),
+          201, -0.1, 0.1, 201, -0.1, 0.1);
       fHistDeltaEtaDeltaPhiLambdaNegBefore[i] = new TH2F(
-          Form("fHistDeltaEtaDeltaPhiLambdaNegBefore_%.0f", TPCradii[i]),
-          Form("r_{TPC} = %.0f cm; #Delta #eta; #Delta #phi", TPCradii[i]), 201,
-          -0.01, 0.01, 201, -0.01, 0.01);
+          Form("fHistDeltaEtaDeltaPhiLambdaNegBefore_%s", TPCradii[i].Data()),
+          Form("r_{TPC} = %s; #Delta #eta; #Delta #phi", TPCradii[i].Data()),
+          201, -0.1, 0.1, 201, -0.1, 0.1);
       fHistDeltaEtaDeltaPhiLambdaPosBefore[i] = new TH2F(
-          Form("fHistDeltaEtaDeltaPhiLambdaPosBefore_%.0f", TPCradii[i]),
-          Form("r_{TPC} = %.0f cm; #Delta #eta; #Delta #phi", TPCradii[i]), 201,
-          -0.01, 0.01, 201, -0.01, 0.01);
+          Form("fHistDeltaEtaDeltaPhiLambdaPosBefore_%s", TPCradii[i].Data()),
+          Form("r_{TPC} = %s; #Delta #eta; #Delta #phi", TPCradii[i].Data()),
+          201, -0.1, 0.1, 201, -0.1, 0.1);
       fHistDeltaEtaDeltaPhiGammaNegAfter[i] = new TH2F(
-          Form("fHistDeltaEtaDeltaPhiGammaNegAfter_%.0f", TPCradii[i]),
-          Form("r_{TPC} = %.0f cm; #Delta #eta; #Delta #phi", TPCradii[i]), 201,
-          -0.01, 0.01, 201, -0.01, 0.01);
+          Form("fHistDeltaEtaDeltaPhiGammaNegAfter_%s", TPCradii[i].Data()),
+          Form("r_{TPC} = %s; #Delta #eta; #Delta #phi", TPCradii[i].Data()),
+          201, -0.1, 0.1, 201, -0.1, 0.1);
       fHistDeltaEtaDeltaPhiGammaPosAfter[i] = new TH2F(
-          Form("fHistDeltaEtaDeltaPhiGammaPosAfter_%.0f", TPCradii[i]),
-          Form("r_{TPC} = %.0f cm; #Delta #eta; #Delta #phi", TPCradii[i]), 201,
-          -0.01, 0.01, 201, -0.01, 0.01);
+          Form("fHistDeltaEtaDeltaPhiGammaPosAfter_%s", TPCradii[i].Data()),
+          Form("r_{TPC} = %s; #Delta #eta; #Delta #phi", TPCradii[i].Data()),
+          201, -0.1, 0.1, 201, -0.1, 0.1);
       fHistDeltaEtaDeltaPhiLambdaNegAfter[i] = new TH2F(
-          Form("fHistDeltaEtaDeltaPhiLambdaNegAfter_%.0f", TPCradii[i]),
-          Form("r_{TPC} = %.0f cm; #Delta #eta; #Delta #phi", TPCradii[i]), 201,
-          -0.01, 0.01, 201, -0.01, 0.01);
+          Form("fHistDeltaEtaDeltaPhiLambdaNegAfter_%s", TPCradii[i].Data()),
+          Form("r_{TPC} = %s; #Delta #eta; #Delta #phi", TPCradii[i].Data()),
+          201, -0.1, 0.1, 201, -0.1, 0.1);
       fHistDeltaEtaDeltaPhiLambdaPosAfter[i] = new TH2F(
-          Form("fHistDeltaEtaDeltaPhiLambdaPosAfter_%.0f", TPCradii[i]),
-          Form("r_{TPC} = %.0f cm; #Delta #eta; #Delta #phi", TPCradii[i]), 201,
-          -0.01, 0.01, 201, -0.01, 0.01);
+          Form("fHistDeltaEtaDeltaPhiLambdaPosAfter_%s", TPCradii[i].Data()),
+          Form("r_{TPC} = %s; #Delta #eta; #Delta #phi", TPCradii[i].Data()),
+          201, -0.1, 0.1, 201, -0.1, 0.1);
 
       fHistograms->Add(fHistDeltaEtaDeltaPhiGammaNegBefore[i]);
       fHistograms->Add(fHistDeltaEtaDeltaPhiGammaPosBefore[i]);
@@ -1503,22 +1543,22 @@ void AliSigma0PhotonMotherCuts::InitCutHistograms(TString appendix) {
 
     fHistLambdaPtPhi =
         new TH2F("fHistLambdaPtPhi", "; #it{p}_{T} (GeV/#it{c}); #phi (rad)",
-                 50, 0, 10, 50, 0, 2.f * TMath::Pi());
+                 100, 0, 10, 100, 0, 2.f * TMath::Pi());
     fHistLambdaPtEta =
-        new TH2F("fHistLambdaPtEta", "; #it{p}_{T} (GeV/#it{c}); #eta", 50, 0,
-                 10, 50, -1, 1);
+        new TH2F("fHistLambdaPtEta", "; #it{p}_{T} (GeV/#it{c}); #eta", 100, 0,
+                 10, 100, -1, 1);
     fHistLambdaMassPt =
-        new TH2F("fHistLambdaMassPt", "; #it{p}_{T} (GeV/#it{c}); M_{p#pi}", 50,
-                 0, 10, 50, 1., 1.3);
+        new TH2F("fHistLambdaMassPt", "; #it{p}_{T} (GeV/#it{c}); M_{p#pi}",
+                 100, 0, 10, 100, 1., 1.3);
     fHistPhotonPtPhi =
         new TH2F("fHistPhotonPtPhi", "; #it{p}_{T} (GeV/#it{c}); #phi (rad)",
-                 50, 0, 10, 50, 0, 2.f * TMath::Pi());
+                 100, 0, 10, 100, 0, 2.f * TMath::Pi());
     fHistPhotonPtEta =
-        new TH2F("fHistPhotonPtEta", "; #it{p}_{T} (GeV/#it{c}); #eta", 50, 0,
-                 10, 50, -1, 1);
+        new TH2F("fHistPhotonPtEta", "; #it{p}_{T} (GeV/#it{c}); #eta", 100, 0,
+                 10, 100, -1, 1);
     fHistPhotonMassPt =
-        new TH2F("fHistPhotonMassPt", "; #it{p}_{T} (GeV/#it{c}); M_{p#pi}", 50,
-                 0, 10, 50, 0., 0.1);
+        new TH2F("fHistPhotonMassPt", "; #it{p}_{T} (GeV/#it{c}); M_{p#pi}",
+                 100, 0, 10, 100, 0., 0.1);
 
     fHistograms->Add(fHistLambdaPtPhi);
     fHistograms->Add(fHistLambdaPtEta);
