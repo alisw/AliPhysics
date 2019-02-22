@@ -686,24 +686,20 @@ void AliSigma0PhotonMotherCuts::CleanUpClones(
 bool AliSigma0PhotonMotherCuts::RejectClosePairs(
     const AliSigma0ParticleBase &part1,
     const AliSigma0ParticleBase &part2) const {
-  bool outBool = true;
   const float deltaEta = part1.GetEta() - part2.GetEta();
   const float pi = TMath::Pi();
 
-  for (int iRad = 0; iRad < 9; ++iRad) {
-    float deltaPhiStar = part1.GetPhiStar(iRad) - part2.GetPhiStar(iRad);
-    if (deltaPhiStar > pi) {
-      deltaPhiStar += -pi * 2;
-    } else if (deltaPhiStar < -pi) {
-      deltaPhiStar += pi * 2;
-    }
-    if (deltaPhiStar * deltaPhiStar + deltaEta * deltaEta <
-        fDeltaEtaDeltaPhiMax * fDeltaEtaDeltaPhiMax) {
-      outBool = false;
-      break;
-    }
+  float deltaPhiStar = part1.GetAveragePhiStar() - part2.GetAveragePhiStar();
+  if (deltaPhiStar > pi) {
+    deltaPhiStar += -pi * 2;
+  } else if (deltaPhiStar < -pi) {
+    deltaPhiStar += pi * 2;
   }
-  return outBool;
+  if (deltaPhiStar * deltaPhiStar + deltaEta * deltaEta <
+      fDeltaEtaDeltaPhiMax * fDeltaEtaDeltaPhiMax) {
+    return false;
+  }
+  return true;
 }
 
 //____________________________________________________________________________________________________
