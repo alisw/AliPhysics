@@ -1475,19 +1475,11 @@ void AliAnalysisTaskTOFqaID::FillTrdHisto(AliESDtrack* track, Int_t charge)
     AliError("Invalid track object");
     return;
   }
-
-  if (IsInTRD(track)) {
-    FillPrimaryTrkHisto(charge, "_Trd");
-    if (IsTPCTOFMatched(track, 0)) {
-      FillMatchedTrkHisto(charge, "_Trd");
-      FillPidHisto(track, charge, "_Trd");
-    }
-  } else {
-    FillPrimaryTrkHisto(charge, "_noTrd");
-    if (IsTPCTOFMatched(track, 0)) {
-      FillMatchedTrkHisto(charge, "_noTrd");
-      FillPidHisto(track, charge, "_noTrd");
-    }
+  const TString suffix = IsInTRD(track) ? "_Trd" : "_noTrd";
+  FillPrimaryTrkHisto(charge, suffix);
+  if (IsTPCTOFMatched(track, 0)) {
+    FillMatchedTrkHisto(charge, suffix);
+    FillPidHisto(track, charge, suffix);
   }
   return;
 }

@@ -36,48 +36,22 @@ class AliAnalysisTaskTOFqaID : public AliAnalysisTaskSE {
   virtual void Terminate(Option_t*);
 
   Int_t GetStripIndex(const Int_t* in);
-  void SetTrackFilter(AliAnalysisFilter* filter)
-  {
-    fTrackFilter = filter;
-    return;
-  };
-  void SetMinPtCut(Float_t minpt)
-  {
-    fMatchingMomCut = minpt;
-    return;
-  }
-  void SetMaxEtaCut(Float_t maxeta)
-  {
-    fMatchingEtaCut = maxeta;
-    return;
-  }
-  void EnableAdvancedCheck(Bool_t enable)
-  {
-    fEnableAdvancedCheck = enable;
-    return;
-  };
-  void EnableChargeSplit(Bool_t enable)
-  {
-    fEnableChargeSplit = enable;
-    return;
-  };
+  void SetTrackFilter(AliAnalysisFilter* filter) { fTrackFilter = filter; };
+  void SetMinPtCut(Float_t minpt) { fMatchingMomCut = minpt; }
+  void SetMaxEtaCut(Float_t maxeta) { fMatchingEtaCut = maxeta; }
+  void EnableAdvancedCheck(Bool_t enable) { fEnableAdvancedCheck = enable; };
+  void EnableChargeSplit(Bool_t enable) { fEnableChargeSplit = enable; };
   void SetExpTimeHistoRange(Float_t min, Float_t max)
   {
     fExpTimeRangeMin = min;
     fExpTimeRangeMax = max;
-    return;
   };
   void SetExpTimeHistoSmallRange(Float_t min, Float_t max)
   {
     fExpTimeSmallRangeMin = min;
     fExpTimeSmallRangeMax = max;
-    return;
   };
-  void SetExpTimeBinWidth(Float_t width)
-  {
-    fExpTimeBinWidth = width;
-    return;
-  };
+  void SetExpTimeBinWidth(Float_t width) { fExpTimeBinWidth = width; };
   void SetResolutionMinP(Double_t min) { fResolutionMinP = min; };
   void SetResolutionMaxP(Double_t max) { fResolutionMaxP = max; };
   Bool_t SetSelectMCspecies(Bool_t enableMC, Int_t absPdgCode)
