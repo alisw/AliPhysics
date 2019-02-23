@@ -96,8 +96,11 @@ struct MacroParams : public TNamed {
   Float_t delta_eta_min { -0.1 };
   Float_t delta_eta_max { 0.1 };
 
-  UInt_t q3d_bin_count { 59 };
-  Float_t q3d_maxq { 0.295 };
+  UInt_t q3d_bin_count { 51 };
+  Float_t q3d_maxq { 0.1275 };
+
+  UInt_t avgsep_nbins { 100 };
+  Float_t avgsep_max { 20.0 };
 
   bool trueq3d_extra_bins { false };
   bool trueq3d_weighted_denoms { true };
@@ -110,6 +113,7 @@ struct MacroParams : public TNamed {
 
   bool do_deltaeta_deltaphi_cf { false };
   bool do_avg_sep_cf { false };
+  bool do_kt_avg_sep_cf { false };
 
   bool do_qinv_cf { false };
   bool do_kt_qinv_cf { false };
@@ -278,13 +282,31 @@ ConfigFemtoAnalysis(const TString& param_str="")
       analysis->AddStanardCutMonitors();
 
       if (macro_config.do_avg_sep_cf) {
-        AliFemtoAvgSepCorrFctn *avgsep_cf = new AliFemtoAvgSepCorrFctn("avg_sep", 100, 0.0, 40.0);
+        auto *avgsep_cf = new AliFemtoAvgSepCorrFctn("AvgSep",
+                                                     macro_config.avgsep_nbins,
+                                                     0.0, macro_config.avgsep_max);
         avgsep_cf->SetPairType(AliFemtoAvgSepCorrFctn::kTracks);
         analysis->AddCorrFctn(avgsep_cf);
       }
 
+      if (macro_config.do_kt_avg_sep_cf) {
+        auto *avgsep_cf = new AliFemtoAvgSepCorrFctn("",
+                                                     macro_config.avgsep_nbins,
+                                                     0.0, macro_config.avgsep_max);
+        avgsep_cf->SetPairType(AliFemtoAvgSepCorrFctn::kTracks);
+
+        auto *kt_binned_cfs = new AliFemtoKtBinnedCorrFunc("KT_AvgSep", avgsep_cf);
+
+        for (size_t kt_idx=0; kt_idx < macro_config.kt_ranges.size(); kt_idx += 2) {
+          float low = macro_config.kt_ranges[kt_idx],
+                high = macro_config.kt_ranges[kt_idx+1];
+          kt_binned_cfs->AddKtRange(low, high);
+        }
+        analysis->AddCorrFctn(kt_binned_cfs);
+      }
+
       if (macro_config.do_deltaeta_deltaphi_cf && !analysis_config.is_mc_analysis) {
-        AliFemtoCorrFctnDPhiStarDEta *deta_dphi_cf = new AliFemtoCorrFctnDPhiStarDEta("_",
+        auto *deta_dphi_cf = new AliFemtoCorrFctnDPhiStarDEta("",
           cut_config.pair_phi_star_radius,
           macro_config.delta_phi_bin_count, macro_config.delta_phi_min, macro_config.delta_phi_max,
       	  macro_config.delta_eta_bin_count, macro_config.delta_eta_min, macro_config.delta_eta_max
@@ -365,7 +387,7 @@ ConfigFemtoAnalysis(const TString& param_str="")
       }
 
       if (macro_config.do_kt_qinv_cf) {
-        AliFemtoQinvCorrFctn *kt_qinv_cf = new AliFemtoQinvCorrFctn("_qinv", QINV_BIN_COUNT, QINV_MIN_VAL, QINV_MAX_VAL);
+        AliFemtoQinvCorrFctn *kt_qinv_cf = new AliFemtoQinvCorrFctn("", QINV_BIN_COUNT, QINV_MIN_VAL, QINV_MAX_VAL);
         AliFemtoKtBinnedCorrFunc *kt_qinv_cfs = new AliFemtoKtBinnedCorrFunc("KT_Qinv", kt_qinv_cf);
         // loop over (low,high) pairs in the kt_ranges vector
         for (size_t kt_idx=0; kt_idx < macro_config.kt_ranges.size(); kt_idx += 2) {
