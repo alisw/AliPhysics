@@ -166,6 +166,12 @@ AliTPCPIDResponse::~AliTPCPIDResponse()
   delete fhEtaSigmaPar1;
   fhEtaSigmaPar1 = 0x0;
   
+  delete fCorrFuncSlope;
+  fCorrFuncSlope = 0x0;
+  
+  delete fCorrFuncCurv;
+  fCorrFuncCurv = 0x0;
+  
   delete fCorrFuncMultiplicity;
   fCorrFuncMultiplicity = 0x0;
   
