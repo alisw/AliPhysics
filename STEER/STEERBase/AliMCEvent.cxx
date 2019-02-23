@@ -1092,6 +1092,39 @@ TParticle* AliMCEvent::Particle(int i) const
   return mcpart ? mcpart->Particle() : 0;
 }
 
+TParticle* AliMCEvent::MotherOfParticle(int i) const
+{
+  // extract mother Particle from the MCTrack with global index i
+  Int_t labmoth=GetLabelOfParticleMother(i);
+  const AliMCParticle* mothpart = (const AliMCParticle*)GetTrack(labmoth);
+  return mothpart ? mothpart->Particle() : 0;
+}
+
+Int_t AliMCEvent::GetLabelOfParticleMother(int i) const
+{
+  // return index of the mother of particle i
+  const AliMCParticle* mcpart = (const AliMCParticle*)GetTrack(i);
+  Int_t labmoth=mcpart->GetMother();
+  return labmoth;
+}
+
+Int_t AliMCEvent::GetLabelOfParticleFirstDaughter(int i) const
+{
+  // return index of the first daughter of particle i
+  const AliMCParticle* mcpart = (const AliMCParticle*)GetTrack(i);
+  Int_t labdau=mcpart->GetFirstDaughter();
+  return labdau;
+}
+
+Int_t AliMCEvent::GetLabelOfParticleLastDaughter(int i) const
+{
+  // return index of the last daughter of particle i
+  const AliMCParticle* mcpart = (const AliMCParticle*)GetTrack(i);
+  Int_t labdau=mcpart->GetLastDaughter();
+  return labdau;
+}
+
+
 Int_t AliMCEvent::Raw2MergedLabel(int lbRaw) const
 {
   // convert raw label corresponding to stack and eventual embedded MC component to global
