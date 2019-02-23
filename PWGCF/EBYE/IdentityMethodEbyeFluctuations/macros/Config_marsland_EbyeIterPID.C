@@ -71,6 +71,27 @@ AliAnalysisTaskEbyeIterPID* Config_marsland_EbyeIterPID(Bool_t getFromAlien, Int
     }
     break;
     case 4:{
+      std::cout << settingType << " Info::marsland: Fill hists for all syst setting " << std::endl;
+      // Real data settings
+      task->SetNEtabins(16);
+      task->SetEtaLowerEdge(-0.8.);
+      task->SetEtaUpperEdge( 0.8.);
+      task->SetNMomBins(600);
+      task->SetMomLowerEdge(0.);
+      task->SetMomUpperEdge(12.);
+      task->SetDeDxBinWidth(1);
+      task->SetDeDxLowerEdge(20.);
+      task->SetDeDxUpperEdge(1020.);
+      task->SetFillAllCutVariables(kTRUE);
+      //
+      task->SetDefaultTrackCuts(kFALSE);
+      task->SetFillArmPodTree(kFALSE);
+      task->SetFillOnlyHists(kTRUE);
+      task->SetRunOnGrid(kTRUE);
+      task->fEventCuts.fUseVariablesCorrelationCuts = true;
+    }
+    break;
+    case 5:{
       std::cout << settingType << " Info::marsland: Marians event tree " << std::endl;
       task->SetRunOnGrid(kTRUE);
       task->SetFillEventInfo(kTRUE);
@@ -840,6 +861,7 @@ void SetDefaults(AliAnalysisTaskEbyeIterPID *defaultTask)
   defaultTask->SetDeDxCheck(kFALSE);
   defaultTask->SetEffMatrix(kFALSE);
   defaultTask->SetFillAllCutVariables(kFALSE);
+  defaultTask->SetFillOnlyHists(kFALSE);
   defaultTask->SetRunFastSimulation(kFALSE);
   defaultTask->SetFillHigherMomentsMCclosure(kFALSE);
   defaultTask->SetFillDnchDeta(kFALSE);
