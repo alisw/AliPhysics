@@ -35,6 +35,9 @@
 #include "AliFemtoAnalysisPionPionObjectConstructor.h"
 
 
+#include <TClass.h>
+
+
 #if __cplusplus < 201103L
 
   #define RETURN_IF_CAST(__type)
@@ -74,8 +77,15 @@ AliFemtoConfigObject::From<AliFemtoEventReader>(const AliFemtoEventReader &obj)
   // RETURN_IF_CAST(AliFemtoEventReaderESDChain);
   // RETURN_IF_CAST(AliFemtoEventReaderESD);
 
+  std::string classname = "AliFemtoEventCut";
+
+  auto *cut_tclass = TClass::GetClass(classname.c_str());
+  if (auto *tc = cut_tclass->GetActualClass(&obj)) {
+    classname = tc->GetName();
+  }
+
   return AliFemtoConfigObject::BuildMap()
-            ("_class", "AliFemtoEventCut");
+            ("_class", classname);
 }
 
 
@@ -115,8 +125,14 @@ AliFemtoConfigObject::From<AliFemtoEventCut>(const AliFemtoEventCut &obj)
   RETURN_IF_CAST(AliFemtoBasicEventCut);
   RETURN_IF_CAST(AliFemtoEventCutCentrality);
 
+  std::string classname = "AliFemtoEventCut";
+  auto *cut_tclass = TClass::GetClass(classname.c_str());
+  if (auto *tc = cut_tclass->GetActualClass(&obj)) {
+    classname = tc->GetName();
+  }
+
   return AliFemtoConfigObject::BuildMap()
-            ("_class", "AliFemtoEventCut");
+            ("_class", classname);
 }
 
 
@@ -166,8 +182,15 @@ AliFemtoConfigObject::From<AliFemtoTrackCut>(const AliFemtoTrackCut &obj)
       // AliFemtoMJTrackCut
       // AliFemtoQATrackCut
 
+  std::string classname = "AliFemtoTrackCut";
+
+  auto *track_cut_class = TClass::GetClass("AliFemtoTrackCut");
+  if (auto *tc = track_cut_class->GetActualClass(&obj)) {
+    classname = tc->GetName();
+  }
+
   return AliFemtoConfigObject::BuildMap()
-            ("_class", "AliFemtoTrackCut");
+            ("_class", classname);
 }
 
 
@@ -238,8 +261,15 @@ AliFemtoConfigObject::From<AliFemtoParticleCut>(const AliFemtoParticleCut &obj)
     return From(*v0);
   }
 
+  std::string classname = "AliFemtoParticleCut";
+
+  auto *cut_tclass = TClass::GetClass("AliFemtoParticleCut");
+  if (auto *tc = cut_tclass->GetActualClass(&obj)) {
+    classname = tc->GetName();
+  }
+
   return AliFemtoConfigObject::BuildMap()
-            ("_class", "AliFemtoParticleCut");
+            ("_class", classname);
 }
 
 template<>
@@ -281,8 +311,14 @@ AliFemtoConfigObject::From<AliFemtoPairCut>(const AliFemtoPairCut &obj)
   RETURN_IF_CAST(AliFemtoShareQualityPairCut)
   RETURN_IF_CAST(AliFemtoDummyPairCut)
 
+  std::string classname = "AliFemtoPairCut";
+  auto *cut_tclass = TClass::GetClass(classname.c_str());
+  if (auto *tc = cut_tclass->GetActualClass(&obj)) {
+    classname = tc->GetName();
+  }
+
   return AliFemtoConfigObject::BuildMap()
-            ("_class", "AliFemtoPairCut");
+            ("_class", classname);
 }
 
 
