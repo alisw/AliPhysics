@@ -199,10 +199,10 @@ struct CutConfig_Pair {
 
   Float_t ee_min = { 0.0 };
 
-  Float_t max_share_fraction = { 0.05 },
+  Float_t max_share_fraction = { 1.0 },
           max_share_quality = { 1.0 };
 
-  Bool_t remove_same_label { kFALSE },
+  Bool_t remove_same_label { kTRUE },
          TPCOnly { kTRUE };
 
   Int_t algorithm_code { 2 };
@@ -409,6 +409,7 @@ AliFemtoAnalysisPionPion::CutParams::CutParams()
   , pair_delta_phi_min(default_pair.min_delta_phi)
   , pair_phi_star_radius(default_pair.phi_star_radius)
 
+  , pair_ee_min(default_pair.ee_min)
   , pair_max_share_quality(default_pair.max_share_quality)
   , pair_max_share_fraction(default_pair.max_share_fraction)
   , pair_remove_same_label(default_pair.remove_same_label)
