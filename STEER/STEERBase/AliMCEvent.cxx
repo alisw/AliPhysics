@@ -1092,12 +1092,12 @@ TParticle* AliMCEvent::Particle(int i) const
   return mcpart ? mcpart->Particle() : 0;
 }
 
-TParticle* AliMCEvent::MotherOfParticle(int i) const
+AliMCParticle* AliMCEvent::MotherOfParticle(int i) const
 {
   // extract mother Particle from the MCTrack with global index i
   Int_t labmoth=GetLabelOfParticleMother(i);
-  const AliMCParticle* mothpart = (const AliMCParticle*)GetTrack(labmoth);
-  return mothpart ? mothpart->Particle() : 0;
+  AliMCParticle* mothpart = (AliMCParticle*)GetTrack(labmoth);
+  return mothpart;
 }
 
 Int_t AliMCEvent::GetLabelOfParticleMother(int i) const

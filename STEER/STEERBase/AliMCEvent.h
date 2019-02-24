@@ -103,7 +103,7 @@ public:
   
     TParticle* ParticleFromStack(Int_t i) const;
     TParticle* Particle(int i) const;
-    TParticle* MotherOfParticle(int i) const;
+    AliMCParticle* MotherOfParticle(int i) const;
     Int_t GetLabelOfParticleMother(int i) const;
     Int_t GetLabelOfParticleFirstDaughter(int i) const;
     Int_t GetLabelOfParticleLastDaughter(int i) const;
