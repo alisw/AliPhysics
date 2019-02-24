@@ -1,21 +1,25 @@
-AliAnalysisTaskSimpleTreeMaker *AddTaskSimpleTreeMaker(TString taskName = "MLtree", 
-                                                       Bool_t hasSDD = kTRUE,
-                                                       Bool_t useTPCcorr = kTRUE,
-																											 Bool_t getFromAlien = kFALSE) {				
-
+AliAnalysisTaskSimpleTreeMaker *AddTaskSimpleTreeMaker(TString taskName    = "MLtree",
+                                                       Bool_t hasSDD       = kTRUE,
+                                                       Bool_t useITScorr   = kFALSE,
+                                                       Bool_t useTPCcorr   = kFALSE,
+                                                       Bool_t useTOFcorr   = kFALSE,
+                                                       Bool_t isMC         = kFALSE,
+                                                       Bool_t runOnGrid    = kTRUE,
+							       Bool_t getFromAlien = kFALSE,
+							       Bool_t ExtraDCA = kFALSE)
+{
     AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
     if (!mgr) {
         ::Error("AddTaskSimpleTreeMaker",  "No analysis manager to connect to.");
         return NULL;
     }
-		
-		//TString configBasePath("/home/aaron/analyses/LHC16q/eeFrameworkQA/"); //Local
-    TString configBasePath("$ALICE_PHYSICS/PWGDQ/dielectron/macrosLMEE/"); //AliPhysics
+
+        TString configBasePath("$ALICE_PHYSICS/PWGDQ/dielectron/macrosLMEE/"); //AliPhysics
     TString configLMEECutLib("LMEECutLib_acapon.C");
 
     //Load updated macros from private ALIEN path
-    TString myCutLib ="alien_cp alien:///alice/cern.ch/user/a/acapon/dielectronShizzle/LMEECutLib_acapon.C ."; 
-    if (getFromAlien && (!gSystem->Exec(myCutLib))){
+    TString myCutLib ="alien_cp alien:///alice/cern.ch/user/a/acapon/PWGDQ/dielectron/macrosLMEE/LMEECutLib_acapon.C ."; 
+    if(getFromAlien && (!gSystem->Exec(myCutLib))){
 
         std::cout << "Copy config from Alien" << std::endl;
         configBasePath=Form("%s/",gSystem->pwd());
@@ -27,36 +31,63 @@ AliAnalysisTaskSimpleTreeMaker *AddTaskSimpleTreeMaker(TString taskName = "MLtre
     if(!gROOT->GetListOfGlobalFunctions()->FindObject(configLMEECutLib.Data())){
         gROOT->LoadMacro(configLMEECutLibPath.Data());
     }
-   
     // Check the analysis type using the event handlers connected to the analysis manager.
     //===========================================================================
-    if (!mgr->GetInputEventHandler()) {
-        ::Error("AddTaskSimpleTreeMaker",  "This task requires an input event handler");
-        return NULL;
+    if(!mgr->GetInputEventHandler()){
+			::Error("AddTaskSimpleTreeMaker",  "This task requires an input event handler");
+			return NULL;
     }
 
     TString analysisType = mgr->GetInputEventHandler()->GetDataType(); // can be "ESD" or "AOD"
 
-    if (analysisType != "ESD" && analysisType != "AOD"){
-        ::Error("AddTaskSimpleTreeMaker",  "analysis type NOT AOD or ESD --> makes no sense!");
-        return NULL;
+    if(analysisType != "ESD" && analysisType != "AOD"){
+			::Error("AddTaskSimpleTreeMaker",  "analysis type NOT AOD or ESD --> makes no sense!");
+			return NULL;
     }
 
 		LMEECutLib* cutLib = new LMEECutLib(hasSDD);
-    AliAnalysisTaskSimpleTreeMaker *task = new AliAnalysisTaskSimpleTreeMaker(taskName);
+		AliAnalysisTaskSimpleTreeMaker *task = new AliAnalysisTaskSimpleTreeMaker(taskName, ExtraDCA);
+		task->analyseMC(isMC);
+		task->GRIDanalysis(runOnGrid);
     // ==========================================================================
     // user customization part
 
-    if(useTPCcorr){
-			TH3D mean = cutLib->SetEtaCorrectionTPCTTree(AliDielectronVarManager::kP,
+		// TPC in MC is already calibrated
+    if(useTPCcorr && !isMC){
+			TH3D meanTPC = cutLib->SetEtaCorrectionTPCTTree(AliDielectronVarManager::kP,
                                               AliDielectronVarManager::kEta,
-                                              AliDielectronVarManager::kRefMultTPConly, kFALSE,1);
+                                              AliDielectronVarManager::kRefMultTPConly, 1);
 
-			TH3D width = cutLib->SetEtaCorrectionTPCTTree(AliDielectronVarManager::kP,
+			TH3D widthTPC = cutLib->SetEtaCorrectionTPCTTree(AliDielectronVarManager::kP,
                                                AliDielectronVarManager::kEta,
-                                               AliDielectronVarManager::kRefMultTPConly, kFALSE,2);
-			task->SetUseCorr(kTRUE);
-			task->SetCorrWidthMean((TH3D*)width.Clone(),(TH3D*)mean.Clone());
+                                               AliDielectronVarManager::kRefMultTPConly, 2);
+			task->SetUseTPCcorr(kTRUE);
+			task->SetCorrWidthMeanTPC((TH3D*)widthTPC.Clone(),(TH3D*)meanTPC.Clone());
+
+		}
+
+    if(useITScorr){
+			TH3D meanITS = cutLib->SetEtaCorrectionITSTTree(AliDielectronVarManager::kP,
+                                              AliDielectronVarManager::kEta,
+                                              AliDielectronVarManager::kRefMultTPConly, 1, isMC);
+
+			TH3D widthITS = cutLib->SetEtaCorrectionITSTTree(AliDielectronVarManager::kP,
+                                               AliDielectronVarManager::kEta,
+                                               AliDielectronVarManager::kRefMultTPConly, 2, isMC);
+			task->SetUseITScorr(kTRUE);
+			task->SetCorrWidthMeanITS((TH3D*)widthITS.Clone(),(TH3D*)meanITS.Clone());
+
+		}
+		if(useTOFcorr){
+			TH3D meanTOF = cutLib->SetEtaCorrectionTOFTTree(AliDielectronVarManager::kP,
+                                              AliDielectronVarManager::kEta,
+                                              AliDielectronVarManager::kRefMultTPConly, 1, isMC);
+
+			TH3D widthTOF = cutLib->SetEtaCorrectionTOFTTree(AliDielectronVarManager::kP,
+                                               AliDielectronVarManager::kEta,
+                                               AliDielectronVarManager::kRefMultTPConly, 2, isMC);
+			task->SetUseTOFcorr(kTRUE);
+			task->SetCorrWidthMeanTOF((TH3D*)widthTOF.Clone(),(TH3D*)meanTOF.Clone());
 
 		}
     //Add event filter
