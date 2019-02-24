@@ -171,16 +171,13 @@ void AliAnalysisTaskRidge::UserCreateOutputObjects()
 
 	binTPt = AxisVar("TPt",ptbin); //trig
 	auto binAPt = AxisVar("APt",ptbin); //associate
-	binNtrig = AxisFix("Ntrig",200,0,200);
+	binNtrig = AxisFix("Ntrig",1,0.5,1.5);
 	auto binNtrigRatio = AxisFix("binNtrigRatio",100,0,5);
-	auto binRunID = AxisFix("runID",260014-258883+1,258883,260014);
+
+	auto binTrig = AxisFix("Trig",2,-0.5,1.5);
 	auto binCentUniform = AxisFix("binCentUniform",100,0,100);
 	auto binNPri = AxisFix("Npri",200,0,200);
 	auto binV0Amp = AxisFix("binV0Amp",3000,0,3e3);
-
-	CreateTHnSparse("hCent","Centrality",1,{binCent},"s");
-	CreateTHnSparse("hCentRun","hCentRun",2,{binCentUniform,binRunID},"s");
-	CreateTHnSparse("hMultV0m","hMultV0m",2,{binCent,binV0Amp},"s");
 
 	auto binPhi = AxisFix("phi",32,-0.5*pi-pi/32.0, 1.5*pi-pi/32.0);
 	auto binEta = AxisFix("eta",80,-4.0,4.0);
@@ -196,7 +193,6 @@ void AliAnalysisTaskRidge::UserCreateOutputObjects()
 	Double1D ltpttrackbin = {
 	0.2, 3.0, 4.0, 5.0, 6.0, 7.0, 9.0, 13.0, 20.0};
 	binLtpt = AxisVar("LPPt",ltpttrackbin);
-	auto binHMT = AxisFix("binHMT",1000,0,1);	
 
 	Double1D verzbin = {-15,-10,-8,-6,6,8,10,15};
 	binZ = AxisVar("Z",verzbin);
@@ -253,11 +249,10 @@ void AliAnalysisTaskRidge::UserCreateOutputObjects()
 
         fHistos->CreateTH1("hZvtx","",620,-15.5,15.5,"s");
 
-
+ 	CreateTHnSparse("TrigEffMult","TrigEffMult",2,{binCent,binTrig},"s");
 
 	fHistos->CreateTH2("hPhiEta","",180,0,2*pi,40,-2,2);
         fHistos->CreateTH2("hPhiEtaCor","",180,0,2*pi,40,-2,2);
-	fHistos->CreateTH2("hPhiEtaMC","",180,0,2*pi,40,-2,2);
 
 
 
@@ -279,6 +274,8 @@ void AliAnalysisTaskRidge::UserCreateOutputObjects()
 			AliPIDResponse::kDetITS |
 			AliPIDResponse::kDetTRD);//Do we need??
 */
+
+
 
 	if( !fOption.Contains("ITS") ){
 		for(int i=0;i<fEff_npT_step;i++){
@@ -309,18 +306,25 @@ void AliAnalysisTaskRidge::UserCreateOutputObjects()
 	}
 	if( fefficiencyFile ){
 		cout << "Eff found " << endl;
-		if( fOption.Contains("Glb") ) cout << "NoFile" << endl;
+		if( fOption.Contains("Glb") ) hEfficiencyHist = (TH1D*)fefficiencyFile->Get("Glb8cm");
+		else if( fOption.Contains("GlbSDD") ) hEfficiencyHist = (TH1D*)fefficiencyFile->Get("GlbSDD8cm");
+		else if( fOption.Contains("TightVtx") ) hEfficiencyHist = (TH1D*)fefficiencyFile->Get("Hyb6cm");
+		else if( fOption.Contains("LooseVtx") ) hEfficiencyHist = (TH1D*)fefficiencyFile->Get("Hyb10cm");
 		else{ hEfficiencyHist = (TH1D*)fefficiencyFile->Get("Hyb8cm"); }
+
+		if( !hEfficiencyHist ) hEfficiencyHist = (TH1D*)fefficiencyFile->Get("Hyb8cm");
 		for(int i=0;i<fEff_npT_step;i++){
 			for(int j=0;j<fEff_neta_step;j++){
-				if( hEfficiencyHist->GetBinContent(j+1,i+1) != 0.0 ){
-					if( i<hEfficiencyHist->GetNbinsY() ) Eff[i][j] = hEfficiencyHist->GetBinContent(j+1,i+1);
-					else{ Eff[i][j] = hEfficiencyHist->GetBinContent(j+1, hEfficiencyHist->GetNbinsY() ); }
-				}
-				else{ Eff[i][j] = 1.0; }
+				if( i<hEfficiencyHist->GetNbinsY() ) Eff[i][j] = hEfficiencyHist->GetBinContent(j+1,i+1);
+				else{ Eff[i][j] = hEfficiencyHist->GetBinContent(j+1, hEfficiencyHist->GetNbinsY() ); }
+
+				if( Eff[i][j] < 0.01 ){ Eff[i][j] = 1.0; }
+
 			}
 		}
 	}
+
+
 }
 //___________________________________________________________________
 void AliAnalysisTaskRidge::Exec(Option_t* )
@@ -364,7 +368,7 @@ void AliAnalysisTaskRidge::Exec(Option_t* )
         	for(int i=0;i<64;i++){ v0amplitude += lVV0->GetMultiplicity(i); }
 	}
 
-//	const AliVVertex* trackVtx = fEvt->GetPrimaryVertexTPC() ;
+        const AliVVertex* trackVtx = fEvt->GetPrimaryVertexTPC() ;
         const AliVVertex* spdVtx   = fEvt->GetPrimaryVertexSPD() ;
 
         if( IsMC ){
@@ -497,6 +501,7 @@ void AliAnalysisTaskRidge::Exec(Option_t* )
 	        	        for(Int_t iTracks = 0; iTracks < nTracksMC; iTracks++){
 	        	                AliAODMCParticle* trackMC = dynamic_cast<AliAODMCParticle*>(fMCArray->At(iTracks));
 	        	                if( !trackMC ) continue;
+	        	                Int_t pdgCode = trackMC->PdgCode();
 	        	                if( !(trackMC->IsPhysicalPrimary()) ) continue;
 					if( trackMC->Charge() == 0 ) continue;
 	        	                FillTHnSparse("hTrackMCallcut",{trackMC->Pt(),trackMC->Phi(),trackMC->Eta(),fCent,fZ_gen},1.0);
@@ -521,7 +526,36 @@ void AliAnalysisTaskRidge::Exec(Option_t* )
 			}
 */
 		}
-	}		
+	}	
+
+//Trig Efficiency ************** kIINT7 to INEL>0
+	bool IsINEL=false;
+	if( IsMC ){
+        	if( fEvt->IsA()==AliAODEvent::Class() ){
+        	        fMCArray = (TClonesArray*) fEvt->FindListObject("mcparticles");
+        	        AliAODMCHeader *cHeaderAOD  = dynamic_cast<AliAODMCHeader*>
+        	                (fEvt->FindListObject(AliAODMCHeader::StdBranchName()));
+        	        const Int_t nTracksMC = fMCArray->GetEntriesFast();
+        	        for(Int_t iTracks = 0; iTracks < nTracksMC; iTracks++){
+        	                AliAODMCParticle* trackMC = dynamic_cast<AliAODMCParticle*>(fMCArray->At(iTracks));
+        	                if( !trackMC ) continue;
+        	                if( !(trackMC->IsPhysicalPrimary()) ) continue;
+        	                if( trackMC->Charge() == 0 ) continue;
+        	                if( fabs( trackMC->Eta() ) > 1.0 ) continue;
+        	                IsINEL = true;
+        	        }
+        	}
+	}	
+
+	if( IsINEL ){
+	        if( (inputHandler -> IsEventSelected()) & (AliVEvent::kINT7) ){
+	                FillTHnSparse("TrigEffMult",{fCent,1.0},1.0 );
+	        }
+	        else{
+	                FillTHnSparse("TrigEffMult",{fCent,0.0},1.0 );
+	        }
+	}
+//*******************************************
 
 	PostData(1, fHistos->GetListOfHistograms());
 }
@@ -563,8 +597,8 @@ Bool_t AliAnalysisTaskRidge::GoodTracksSelection(){
                                 }
 
 			if( track->Pt()<fptcut ) continue;
-			if( !fOption.Contains("ITS") ){ if( fabs(track->Eta())>fetacut ){ continue; } }
-			else if( fOption.Contains("ITS") ){ if( fabs(track->Eta())>1.3 ){ continue; } }	
+			if( !fOption.Contains("ITS") && fabs(track->Eta())>fetacut ) continue;
+			else if( fOption.Contains("ITS") && fabs(track->Eta())>1.3 ) continue;			
 
 			FillTHnSparse("hTrackData",{track->Pt(),track->Phi(),track->Eta(),fCent,fZ},1.0);
 
@@ -762,7 +796,6 @@ Bool_t AliAnalysisTaskRidge::GoodTrackletSelection(){
 
 void AliAnalysisTaskRidge::FillTracks(){
 
-	cout << "FillTracks started" << endl;
 
 	NTracksPerPtBin.clear();
 	NTracksPerPtBin.resize( binTPt.GetNbins() );
@@ -847,8 +880,8 @@ void AliAnalysisTaskRidge::FillTracks(){
 		FillTHnSparse("hTrackDataLTRaw",{fCent,MaxPt,MaxPhi,MaxEta,fZ},1.0);
 	}
         for(int i=0;i<binTPt.GetNbins();i++){
-		if( binNtrig.FindBin( NTracksPerPtBin[i] ) -1 >= 0 ) 
-		if( NTracksPerPtBin[i] > 0 ) FillTHnSparse("hNtrig",{fCent,binTPt.GetBinCenter(i+1),NTracksPerPtBin[i],MaxPt},1.0);
+//		if( NTracksPerPtBin[i] > 0.5 )
+		FillTHnSparse("hNtrig",{fCent,binTPt.GetBinCenter(i+1),1.0,MaxPt},NTracksPerPtBin[i]);
         }
 
 	double PhiThres = MaxPhi;
@@ -985,7 +1018,7 @@ void AliAnalysisTaskRidge::FillTracks(){
 				FillTHnSparse("hRidgeLT",{fCent, deltaphi, deltaeta,
 					max(track1-> Pt(),track2-> Pt()),
 					min(track1-> Pt(),track2-> Pt()),MaxPt},
-					1.0/ ( NTracksPerPtBin[binTPt.FindBin( max(track1->Pt(),track2-> Pt()) )-1]*eff1*eff2 ) );
+					1.0/ ( eff1*eff2 ) );
 			}
 //			FillTHnSparse("hRidgeNTrig",{fCent, deltaphi, deltaeta,
   //                              max(track1-> Pt(),track2-> Pt()),
@@ -1194,7 +1227,6 @@ void AliAnalysisTaskRidge::FillTracklets(){
 
 void AliAnalysisTaskRidge::FillTracksMC(){
 
-	cout << "FillTracksMC started" << endl;
 
         NTracksPerPtBinMCALICE.clear();
         NTracksPerPtBinMCALICE.resize( binTPt.GetNbins() );
@@ -1285,14 +1317,12 @@ void AliAnalysisTaskRidge::FillTracksMC(){
 	if( nTracksMCCMS > 1 ) FillTHnSparse("hTrackMCCMSLT",{fCent,MaxPtCMS,MaxPhiCMS,MaxEtaCMS,fZ_gen},1.0);
 
         for(int i=0;i<binTPt.GetNbins();i++){
-                if( binNtrig.FindBin( NTracksPerPtBinMCALICE[i] ) -1 >= 0 )       
-                if( NTracksPerPtBinMCALICE[i] > 0 ) FillTHnSparse("hNtrigMCALICE",{fCent,binTPt.GetBinCenter(i+1),NTracksPerPtBinMCALICE[i],MaxPtALICE},1.0);
-
-                if( binNtrig.FindBin( NTracksPerPtBinMCCMS[i] ) -1 >= 0 )
-                if( NTracksPerPtBinMCCMS[i] > 0 ) FillTHnSparse("hNtrigMCCMS",{fCent,binTPt.GetBinCenter(i+1),NTracksPerPtBinMCCMS[i],MaxPtCMS},1.0);
+//                if( NTracksPerPtBinMCALICE[i] > 0.5 )
+		FillTHnSparse("hNtrigMCALICE",{fCent,binTPt.GetBinCenter(i+1),1.0,MaxPtALICE},NTracksPerPtBinMCALICE[i]);
+//                if( NTracksPerPtBinMCCMS[i] > 0.5 )
+		FillTHnSparse("hNtrigMCCMS",{fCent,binTPt.GetBinCenter(i+1),1.0,MaxPtCMS},NTracksPerPtBinMCCMS[i]);
         }
 
-	cout << "TrigMC : " << nTracksMCALICE << ", " << nTracksMCCMS << endl;
 
 	if( IsMC && fEvt->IsA()==AliAODEvent::Class() ){
 		if( fabs(fZ_gen)<AbsZmax ){
@@ -1313,7 +1343,7 @@ void AliAnalysisTaskRidge::FillTracksMC(){
                                 	deltaphi = TVector2::Phi_0_2pi(deltaphi);
                                 	if( deltaphi > 1.5*pi ) deltaphi -= 2.0*pi;
 
-					if( NTracksPerPtBinMCALICE[binTPt.FindBin( max(par1->Pt(),parMixing.pt) )-1] > 0 ){
+					if( NTracksPerPtBinMCALICE[binTPt.FindBin( max(par1->Pt(),par2->Pt()) )-1] > 0 ){
 //						FillTHnSparse("hRidgeMCALICE",{fCent,deltaphi,deltaeta,
   //                                      	        max(par1-> Pt(),par2-> Pt()), min(par1-> Pt(),par2-> Pt()) },
     //                                    	        1.0 / ( NTracksPerPtBinMCALICE[binTPt.FindBin( max(par1->Pt(),par2-> Pt()) )-1] ) );
