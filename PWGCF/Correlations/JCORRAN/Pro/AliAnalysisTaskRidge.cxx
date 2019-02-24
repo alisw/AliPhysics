@@ -306,8 +306,13 @@ void AliAnalysisTaskRidge::UserCreateOutputObjects()
 	}
 	if( fefficiencyFile ){
 		cout << "Eff found " << endl;
-		if( fOption.Contains("Glb") ) cout << "NoFile" << endl;
+		if( fOption.Contains("Glb") ) hEfficiencyHist = (TH1D*)fefficiencyFile->Get("Glb8cm");
+		else if( fOption.Contains("GlbSDD") ) hEfficiencyHist = (TH1D*)fefficiencyFile->Get("GlbSDD8cm");
+		else if( fOption.Contains("TightVtx") ) hEfficiencyHist = (TH1D*)fefficiencyFile->Get("Hyb6cm");
+		else if( fOption.Contains("LooseVtx") ) hEfficiencyHist = (TH1D*)fefficiencyFile->Get("Hyb10cm");
 		else{ hEfficiencyHist = (TH1D*)fefficiencyFile->Get("Hyb8cm"); }
+
+		if( !hEfficiencyHist ) hEfficiencyHist = (TH1D*)fefficiencyFile->Get("Hyb8cm");
 		for(int i=0;i<fEff_npT_step;i++){
 			for(int j=0;j<fEff_neta_step;j++){
 				if( i<hEfficiencyHist->GetNbinsY() ) Eff[i][j] = hEfficiencyHist->GetBinContent(j+1,i+1);
@@ -318,6 +323,8 @@ void AliAnalysisTaskRidge::UserCreateOutputObjects()
 			}
 		}
 	}
+
+
 }
 //___________________________________________________________________
 void AliAnalysisTaskRidge::Exec(Option_t* )
