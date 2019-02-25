@@ -103,6 +103,7 @@ _debugLevel    ( 0),
 _singlesOnly   ( 0),
 PIDparticle   ( 0),
 use_pT_cut   ( 0),
+veto_Lambda   ( 0),
 useAliHelperPID( 0),
 useCircularCutPID_1( 0),
 useCircularCutPID_2( 0),
@@ -491,6 +492,7 @@ _debugLevel    ( 0),
 _singlesOnly   ( 0),
 PIDparticle    ( 0),
 use_pT_cut     ( 0),
+veto_Lambda   ( 0),
 useAliHelperPID( 0),
 useCircularCutPID_1( 0),
 useCircularCutPID_2( 0),
@@ -2619,6 +2621,15 @@ void  AliAnalysisTaskGeneralBF::UserExec(Option_t */*option*/)
               float EngyProtonSq = massProtonSq + pt_2*pt_2 + pz_2*pz_2;
               float mInvLambdaSq = massPionSq + massProtonSq + 2*sqrt(EngyPionSq*EngyProtonSq) - 2*(px_1*px_2 + py_1*py_2 + pz_1*pz_2);
               float mInvLambda = sqrt(mInvLambdaSq);
+              
+              if (veto_Lambda)
+              {
+                if ( q_1 != q_2 ) // for unlike-sign pion-proton correlations only
+                {
+                  if ( mInvLambda>1.114683 && mInvLambda<1.116683 ) continue;
+                }
+              }
+              
               _invMassLambdaSq->Fill(mInvLambdaSq);
               _invMassLambda->Fill(mInvLambda);
             }

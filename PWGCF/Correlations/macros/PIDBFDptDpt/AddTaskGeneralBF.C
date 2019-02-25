@@ -56,6 +56,7 @@ AliAnalysisTaskGeneralBF * AddTaskGeneralBF
  double ptMax                   =  3.0, // pt range upper limit for histos; NOT pt cut!!!
  double ptWidthBin              =  0.1, // pt bin width in histos
  int nBinsPhi                   =  36,  // 36 is default value
+ bool   Lambda_Cut              =  1,   // 0: No Lambda_Cut       1: Lambda_Cut
  const char* taskname           = "ChPM",
  char *inputHistogramFileName   = "alien:///alice/cern.ch/user/j/jipan/TUNE_rHJ_2eCut_8vZ32_G162_4C4_NOwCut_08y16_36phi_02pt2_pi_Pos_S1S2/TUNE_rHJ_2eCut_8vZ32_G162_4C4_NOwCut_08y16_36phi_02pt2_pi_Pos_S1S2.root" )
 
@@ -429,6 +430,7 @@ AliAnalysisTaskGeneralBF * AddTaskGeneralBF
     task->SetSinglesOnly(         singlesOnly     );
     task->SetPIDparticle(         pidparticle     );
     task->SetUse_pT_cut(          Use_PT_Cut      );
+    task->SetVetoLambdaCut(        Lambda_Cut     );
     task->SetIfContaminationInMC(   PurePIDinMC   );
     task->SetUseWeights(          useWeights      );
     task->SetUseRapidity(         useRapidity     );

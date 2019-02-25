@@ -122,6 +122,7 @@ public:
   virtual     void    SetSinglesOnly(int v)               { _singlesOnly  = v; }
   virtual     void    SetPIDparticle( bool v )            { PIDparticle   = v; }
   virtual     void    SetUse_pT_cut( bool v )             { use_pT_cut   = v; }
+  virtual     void    SetVetoLambdaCut( bool v )          { veto_Lambda   = v; }
   virtual     void    SetUse_AliHelperPID( bool v )       { useAliHelperPID   = v; }
   virtual     void    SetUse_CircularCutPID_1( bool v )   { useCircularCutPID_1 = v; }
   virtual     void    SetUse_CircularCutPID_2( bool v )   { useCircularCutPID_2 = v; }
@@ -226,6 +227,7 @@ protected:
   int      _singlesOnly;
   bool      PIDparticle;
   bool      use_pT_cut;
+  bool      veto_Lambda;
   bool      useAliHelperPID;
   bool      useCircularCutPID_1;
   bool      useCircularCutPID_2;
