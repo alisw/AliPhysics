@@ -1240,13 +1240,12 @@ Double_t AliRsnMiniAnalysisTask::ComputeSpherocity()
 
   AliVEvent * evTypeS = InputEvent();
   Int_t ntracksLoop = evTypeS->GetNumberOfTracks();
+  Int_t GoodTracks = 0;
   Float_t spherocity = -10.0;
   Float_t pFull = 0;
   Float_t Spherocity = 2;
   Float_t pt[10000],phi[1000];
-
-  if (ntracksLoop>2)
-    {
+  
   //computing total pt
   Float_t sumapt = 0;
   for(Int_t i1 = 0; i1 < ntracksLoop; ++i1){
@@ -1257,6 +1256,7 @@ Double_t AliRsnMiniAnalysisTask::ComputeSpherocity()
     if(TMath::Abs(track->Eta()) > 0.8) continue;
     pt[i1] = track->Pt();
     sumapt += pt[i1];
+    GoodTracks++;
   }
 
   //Getting thrust
@@ -1287,8 +1287,7 @@ Double_t AliRsnMiniAnalysisTask::ComputeSpherocity()
 	  }
   }
   spherocity=((Spherocity)*TMath::Pi()*TMath::Pi())/4.0;
-  return spherocity;
-    }
+  if (GoodTracks > 2) return spherocity;
 }
 
 //__________________________________________________________________________________________________
