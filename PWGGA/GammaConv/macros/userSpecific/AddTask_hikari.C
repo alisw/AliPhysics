@@ -211,8 +211,8 @@ AliAnalysisTaskGammaConvV1* AddTask_hikari(
       cuts.AddCutPCM("00010113", "0d200009a27300008250a04200", "0152103500000000"); // dcar 5cm
       cuts.AddCutPCM("00010113", "0d200009a27300008250a04300", "0152105500000000"); // dcar 4cm
 
-    // } else if (trainConfig == 400){//cut selection for pp 5 TeV 2017 ------------------------------------
-    //   cuts.AddCutPCM("00010113", "0d200009227300008250404000", "0152103500000000"); // Standard cut for pp 5 TeV analysis VAND
+    } else if (trainConfig == 400){//cut selection for pp 5 TeV 2017 ------------------------------------
+      cuts.AddCutPCM("00010113", "0d200009227300008250404000", "0152103500000000"); // Standard cut for pp 5 TeV analysis VAND
     } else if (trainConfig == 403){
       cuts.AddCutPCM("00010113", "00200009227300008250404000", "0152103500000000"); // eta < 0.9
       cuts.AddCutPCM("00010113", "0c200009227300008250404000", "0152103500000000"); // eta < 0.85
@@ -282,7 +282,7 @@ AliAnalysisTaskGammaConvV1* AddTask_hikari(
     if (trainConfig == 1){
       cuts.AddCutPCM("80010113", "0d200009a27300008250404000", "0162103500000000"); // default 0100 +
     } else if (trainConfig == 2){
-      cuts.AddCutPCM("a0010113", "0d200009a27300008250404000", "0162103500000000"); // default 0005
+      cuts.AddCutPCM("a0110113", "0d200009a27300008250404000", "0162103500000000"); // default 0005
     } else if (trainConfig == 3){
       cuts.AddCutPCM("80210113", "0d200009a27300008250404000", "0162103500000000"); // default 0020
     } else if (trainConfig == 4){
