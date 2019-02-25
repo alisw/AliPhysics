@@ -379,7 +379,7 @@ void AliFemtoDreamZVtxMultContainer::DeltaEtaDeltaPhi(
       const int size =
           (PhiAtRad1.size() > phiAtRad2.size()) ?
               phiAtRad2.size() : PhiAtRad1.size();
-      for (int iRad = 0; iRad < size; ++iRad) {
+      for (int iRad = 0; iRad < size; iRad+=3) {
         float dphi = PhiAtRad1.at(iRad) - phiAtRad2.at(iRad);
         if (dphi > piHi) {
           dphi += -piHi * 2;
@@ -387,10 +387,10 @@ void AliFemtoDreamZVtxMultContainer::DeltaEtaDeltaPhi(
           dphi += piHi * 2;
         }
         if (SEorME) {
-          ResultsHist->FillEtaPhiAtRadiiSE(Hist, 3 * iDaug1 + iDaug2, iRad,
+          ResultsHist->FillEtaPhiAtRadiiSE(Hist, 3 * iDaug1 + iDaug2, iRad/3,
                                            dphi, deta, relk);
         } else {
-          ResultsHist->FillEtaPhiAtRadiiME(Hist, 3 * iDaug1 + iDaug2, iRad,
+          ResultsHist->FillEtaPhiAtRadiiME(Hist, 3 * iDaug1 + iDaug2, iRad/3,
                                            dphi, deta, relk);
         }
       }
@@ -443,6 +443,7 @@ bool AliFemtoDreamZVtxMultContainer::RejectClosePairs(
         iDaug2 < part2.GetPhiAtRaidius().size() && outBool; ++iDaug2) {
       std::vector<float> phiAtRad2 = part2.GetPhiAtRaidius().at(iDaug2);
       float etaPar2;
+      float dPhiAvg = 0;
       if (nDaug2 == 1) {
         etaPar2 = eta2.at(0);
       } else {
@@ -454,16 +455,12 @@ bool AliFemtoDreamZVtxMultContainer::RejectClosePairs(
               phiAtRad2.size() : PhiAtRad1.size();
       for (int iRad = 0; iRad < size; ++iRad) {
         float dphi = PhiAtRad1.at(iRad) - phiAtRad2.at(iRad);
-        if (dphi > piHi) {
-          dphi += -piHi * 2;
-        } else if (dphi < -piHi) {
-          dphi += piHi * 2;
-        }
         dphi = TVector2::Phi_mpi_pi(dphi);
-        if (dphi * dphi + deta * deta < fDeltaPhiEtaMax) {
-          outBool = false;
-          break;
-        }
+        dPhiAvg+=dphi;
+      }
+      dPhiAvg/=(float)size;
+      if (dPhiAvg * dPhiAvg + deta * deta < fDeltaPhiEtaMax) {
+        outBool = false;
       }
     }
   }
