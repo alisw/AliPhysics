@@ -1,38 +1,38 @@
 #include "TROOT.h"
 #include "TSystem.h"
 AliAnalysisTaskSE* AddTaskFemtoDream(bool isMC = false, bool isESD = false,
-                                     TString CentEst = "kInt7", bool notpp =
-                                         true,  //1
-                                     bool fineBinning = true,  //2
-                                     bool DCAPlots = false,  //3
-                                     bool CPAPlots = false,  //4
-                                     bool MomReso = false,  //5
-                                     bool etaPhiPlotsAtTPCRadii = false,  //6
-                                     bool CombSigma = false,  //7
-                                     bool PileUpRej = true,  //8
-                                     bool mTkTPlot = false,  //9
-                                     bool kTCentPlot = false,  //10
-                                     bool MultvsCentPlot = false,  //11
-                                     bool dPhidEtaPlots = false,  //12
-                                     bool eventMixing = true,  //13
-                                     bool phiSpin = true,  //14
-                                     bool stravinskyPhiSpin = true,  //15
-                                     bool ContributionSplitting = false,  //16
-                                     bool ContributionSplittingDaug = false,  //17
-                                     bool RunNumberQA = false,  //18
-                                     int FilterBit = 128,  //19
-                                     bool InvMassPairs = false,  //20
-                                     bool DeltaEtaDeltaPhiCut = false,  //21
-                                     bool DEtadPhiAllPairs = false,
-                                     int SphericityRange = 0,  // 22
-                                     bool excludeUnwantedPairs = false,  //23
-                                     bool stricterPileUpRej = false)  //24
+                                     TString CentEst = "kInt7",
+                                     bool notpp = true,  //1
+                                     bool DCAPlots = false,  //2
+                                     bool CPAPlots = false,  //3
+                                     bool MomReso = false,  //4
+                                     bool etaPhiPlotsAtTPCRadii = false,  //5
+                                     bool CombSigma = false,  //6
+                                     bool mTkTPlot = false,  //7
+                                     bool kTCentPlot = false,  //8
+                                     bool MultvsCentPlot = false,  //9
+                                     bool dPhidEtaPlots = false,  //10
+                                     bool phiSpin = true,  //11
+                                     bool stravinskyPhiSpin = true,  //12
+                                     bool ContributionSplitting = false,  //13
+                                     bool ContributionSplittingDaug = false,  //14
+                                     bool RunNumberQA = false,  //15
+                                     int FilterBit = 128,  //16
+                                     bool DeltaEtaDeltaPhiCut = false,  //17
+                                     bool DEtadPhiAllPairs = false, // 18
+                                     int SphericityRange = 0,  // 19
+                                     bool excludeUnwantedPairs = false,  //20
+                                     bool stricterPileUpRej = false)  //21
                                      {
   // 1    2     3     4     5     6     7    8    9      10   11     12   13    14    15    16   17
   //true,true,false,false,false,false,false,true,false,false,true,false,true,false,false,false,true
+  bool PileUpRej = true;  //8
+  bool fineBinning = true;  //2
+  bool eventMixing = true;  //13
+  bool InvMassPairs = false;  //20
+
   // the manager is static, so get the existing manager via the static method
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
-
   if (!mgr) {
     printf("No analysis manager to connect to!\n");
     return nullptr;

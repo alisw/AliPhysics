@@ -97,7 +97,8 @@ void AliFemtoDreamZVtxMultContainer::PairParticlesSE(
           AliFemtoDreamBasePart part2 = *itPart2;
           // Delta eta - Delta phi* cut
           if (fDoDeltaEtaDeltaPhiCut && CPR) {
-            if (!RejectClosePairs(part1, part2)) {
+            if (!RejectClosePairs(HistCounter, part1, part2, true, fillHists,
+                                  ResultsHist)) {
               ++itPart2;
               continue;
             }
@@ -191,7 +192,8 @@ void AliFemtoDreamZVtxMultContainer::PairParticlesME(
             AliFemtoDreamBasePart part2 = *itPart2;
             // Delta eta - Delta phi* cut
             if (fDoDeltaEtaDeltaPhiCut && CPR) {
-              if (!RejectClosePairs(part1, part2)) {
+              if (!RejectClosePairs(HistCounter, part1, part2, false, fillHists,
+                                    ResultsHist)) {
                 continue;
               }
             }
@@ -379,7 +381,7 @@ void AliFemtoDreamZVtxMultContainer::DeltaEtaDeltaPhi(
       const int size =
           (PhiAtRad1.size() > phiAtRad2.size()) ?
               phiAtRad2.size() : PhiAtRad1.size();
-      for (int iRad = 0; iRad < size; ++iRad) {
+      for (int iRad = 0; iRad < size; iRad += 3) {
         float dphi = PhiAtRad1.at(iRad) - phiAtRad2.at(iRad);
         if (dphi > piHi) {
           dphi += -piHi * 2;
@@ -387,10 +389,10 @@ void AliFemtoDreamZVtxMultContainer::DeltaEtaDeltaPhi(
           dphi += piHi * 2;
         }
         if (SEorME) {
-          ResultsHist->FillEtaPhiAtRadiiSE(Hist, 3 * iDaug1 + iDaug2, iRad,
+          ResultsHist->FillEtaPhiAtRadiiSE(Hist, 3 * iDaug1 + iDaug2, iRad / 3,
                                            dphi, deta, relk);
         } else {
-          ResultsHist->FillEtaPhiAtRadiiME(Hist, 3 * iDaug1 + iDaug2, iRad,
+          ResultsHist->FillEtaPhiAtRadiiME(Hist, 3 * iDaug1 + iDaug2, iRad / 3,
                                            dphi, deta, relk);
         }
       }
@@ -421,7 +423,8 @@ float AliFemtoDreamZVtxMultContainer::ComputeDeltaPhi(
 }
 
 bool AliFemtoDreamZVtxMultContainer::RejectClosePairs(
-    AliFemtoDreamBasePart& part1, AliFemtoDreamBasePart& part2) {
+    int Hist, AliFemtoDreamBasePart& part1, AliFemtoDreamBasePart& part2,
+    bool SEorME, bool fillHist, AliFemtoDreamCorrHists *ResultsHist) {
   bool outBool = true;
   //Method calculates the average separation between two tracks
   //at different radii within the TPC and rejects pairs which a
@@ -443,6 +446,7 @@ bool AliFemtoDreamZVtxMultContainer::RejectClosePairs(
         iDaug2 < part2.GetPhiAtRaidius().size() && outBool; ++iDaug2) {
       std::vector<float> phiAtRad2 = part2.GetPhiAtRaidius().at(iDaug2);
       float etaPar2;
+      float dPhiAvg = 0;
       if (nDaug2 == 1) {
         etaPar2 = eta2.at(0);
       } else {
@@ -454,15 +458,21 @@ bool AliFemtoDreamZVtxMultContainer::RejectClosePairs(
               phiAtRad2.size() : PhiAtRad1.size();
       for (int iRad = 0; iRad < size; ++iRad) {
         float dphi = PhiAtRad1.at(iRad) - phiAtRad2.at(iRad);
-        if (dphi > piHi) {
-          dphi += -piHi * 2;
-        } else if (dphi < -piHi) {
-          dphi += piHi * 2;
-        }
         dphi = TVector2::Phi_mpi_pi(dphi);
-        if (dphi * dphi + deta * deta < fDeltaPhiEtaMax) {
-          outBool = false;
-          break;
+        dPhiAvg += dphi;
+      }
+      dPhiAvg /= (float) size;
+      if (dPhiAvg * dPhiAvg + deta * deta < fDeltaPhiEtaMax) {
+        outBool = false;
+      } else {
+        if (SEorME) {
+          if (fillHist)
+            ResultsHist->FillEtaPhiAverageSE(Hist, 3 * iDaug1 + iDaug2, dPhiAvg,
+                                             deta);
+        } else {
+          if (fillHist)
+            ResultsHist->FillEtaPhiAverageME(Hist, 3 * iDaug1 + iDaug2, dPhiAvg,
+                                             deta);
         }
       }
     }
