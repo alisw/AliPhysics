@@ -5,8 +5,8 @@ AliAnalysisTaskSimpleTreeMaker *AddTaskSimpleTreeMaker(TString taskName    = "ML
                                                        Bool_t useTOFcorr   = kFALSE,
                                                        Bool_t isMC         = kFALSE,
                                                        Bool_t runOnGrid    = kTRUE,
-							       Bool_t getFromAlien = kFALSE,
-							       Bool_t ExtraDCA = kFALSE)
+                                                       Bool_t getFromAlien = kFALSE,
+						        Bool_t ExtraDCA = kFALSE)
 {
     AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
     if (!mgr) {
@@ -14,7 +14,7 @@ AliAnalysisTaskSimpleTreeMaker *AddTaskSimpleTreeMaker(TString taskName    = "ML
         return NULL;
     }
 
-        TString configBasePath("$ALICE_PHYSICS/PWGDQ/dielectron/macrosLMEE/"); //AliPhysics
+    TString configBasePath("$ALICE_PHYSICS/PWGDQ/dielectron/macrosLMEE/"); //AliPhysics
     TString configLMEECutLib("LMEECutLib_acapon.C");
 
     //Load updated macros from private ALIEN path
@@ -31,6 +31,7 @@ AliAnalysisTaskSimpleTreeMaker *AddTaskSimpleTreeMaker(TString taskName    = "ML
     if(!gROOT->GetListOfGlobalFunctions()->FindObject(configLMEECutLib.Data())){
         gROOT->LoadMacro(configLMEECutLibPath.Data());
     }
+
     // Check the analysis type using the event handlers connected to the analysis manager.
     //===========================================================================
     if(!mgr->GetInputEventHandler()){
