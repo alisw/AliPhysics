@@ -30,6 +30,7 @@
 #include "AliAnalysisTaskEmcalJet.h"
 
 class TNtuple;
+class TH2;
 
 namespace PWGJE {
 
@@ -48,7 +49,9 @@ protected:
     virtual bool Run();
 
 private:
-    TNtuple                         *fOutlierData;
+    TNtuple                         *fOutlierData;              //!<! Output tree
+    TH2                             *fHistNonOutliers;          //!<! Control histogram for jets not identified as outliers
+    TH2                             *fHistOutliers;             //!<! Control histogram for jets identified as outliers
 
     AliAnalysisTaskEmcalResponseOutliers(const AliAnalysisTaskEmcalResponseOutliers &);
     AliAnalysisTaskEmcalResponseOutliers &operator=(const AliAnalysisTaskEmcalResponseOutliers &);

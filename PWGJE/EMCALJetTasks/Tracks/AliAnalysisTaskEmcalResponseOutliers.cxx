@@ -27,6 +27,7 @@
 #include <sstream>
 #include <string>
 
+#include <TH2.h>
 #include <TList.h>
 #include <TNtuple.h>
 
@@ -45,14 +46,18 @@ using namespace PWGJE::EMCALJetTasks;
 
 AliAnalysisTaskEmcalResponseOutliers::AliAnalysisTaskEmcalResponseOutliers():
     AliAnalysisTaskEmcalJet(),
-    fOutlierData(nullptr)
+    fOutlierData(nullptr),
+    fHistNonOutliers(nullptr),
+    fHistOutliers(nullptr)
 {
 
 }
 
 AliAnalysisTaskEmcalResponseOutliers::AliAnalysisTaskEmcalResponseOutliers(const char *name):
     AliAnalysisTaskEmcalJet(name, true),
-    fOutlierData(nullptr)
+    fOutlierData(nullptr),
+    fHistNonOutliers(nullptr),
+    fHistOutliers(nullptr)
 {
     SetIsPythia(true);
     SetUsePtHardBinScaling(true);
@@ -85,29 +90,41 @@ void AliAnalysisTaskEmcalResponseOutliers::UserCreateOutputObjects(){
     varlist += ":pdgmaxpart";
     fOutlierData = new TNtuple("fOutlierData", "Outlier information", varlist.data()); 
 
+    fHistNonOutliers = new TH2D("fHistNonOutliers", "histogram for non-outlier jets; p_{t,det} (GeV/c); p_{t,part} (GeV/c)", 500, 0., 500., 500, 0., 500.);
+    fHistOutliers = new TH2D("fHistOutliers", "histogram for outlier jets; p_{t,det} (GeV/c); p_{t,part} (GeV/c)", 500, 0., 500., 500, 0., 500.);
+
     fOutput->Add(fOutlierData);
+    fOutput->Add(fHistNonOutliers);
+    fOutput->Add(fHistOutliers);
 
     PostData(1, fOutput);
 }
 
 bool AliAnalysisTaskEmcalResponseOutliers::Run(){
-    auto detjets = GetJetContainer("detjets"),
-         mcjets = GetJetContainer("partjets");
-
+    auto detjets = GetJetContainer("detjets");
     auto partcont = GetParticleContainer("mcparticles");
 
     // Outlier selection based on pt-hard bin
     const double detptmax[21] = {0., 10., 20., 20., 30., 40., 50., 60., 80., 100., 120., 140., 150., 300., 300., 300., 300., 300., 300., 300., 300.},
                  partptmin[21] = {0., 20., 25., 30., 40., 50., 70., 80., 100., 120., 140., 180., 200., 250., 270., 300., 350., 380., 420., 450., 600.};
+    AliDebugStream(1) << "Using outlier cuts for pt-hard bin " << fPtHardBinGlobal << ": pt max det: " << detptmax[fPtHardBinGlobal] 
+                      << ", pt min part: " << partptmin[fPtHardBinGlobal] << std::endl;
+
+    AliDebugStream(1) << "Found " << detjets->GetNEntries() << " jets at detector level" << std::endl;
 
     for(auto detjet : detjets->accepted()) {
         auto mcjet = detjet->ClosestJet();
         if(!mcjet) continue;
-        if(!(detjet->Pt() < detptmax[fPtHardBinGlobal] && mcjet->Pt() > partptmin[fPtHardBinGlobal])) continue;
+        if(!(detjet->Pt() < detptmax[fPtHardBinGlobal] && mcjet->Pt() > partptmin[fPtHardBinGlobal])){
+            fHistNonOutliers->Fill(detjet->Pt(), mcjet->Pt());
+            continue;
+        } 
         // jet identified as outlier
+        fHistOutliers->Fill(detjet->Pt(), mcjet->Pt());
         auto truepart = mcjet->GetLeadingTrack(partcont->GetArray());
         TVector3 detvec, mcvec;
         detvec.SetPtEtaPhi(detjet->Pt(), detjet->Eta(), detjet->Phi());
+        mcvec.SetPtEtaPhi(mcjet->Pt(), mcjet->Eta(), mcjet->Phi());
         Float_t outlierDataBlock[16];
         outlierDataBlock[0] = mcjet->Pt();
         outlierDataBlock[1] = detjet->Pt();
@@ -119,7 +136,7 @@ bool AliAnalysisTaskEmcalResponseOutliers::Run(){
         outlierDataBlock[7] = mcjet->NEF();
         outlierDataBlock[8] = detjet->NEF();
         outlierDataBlock[9] = mcjet->GetNumberOfTracks() + mcjet->GetNumberOfClusters();
-        outlierDataBlock[10] = detjet->GetNumberOfClusters();
+        outlierDataBlock[10] = detjet->GetNumberOfTracks();
         outlierDataBlock[11] = detjet->GetNumberOfClusters();
         outlierDataBlock[12] = mcjet->MaxPartPt();
         outlierDataBlock[13] = detjet->MaxChargedPt();
@@ -127,6 +144,7 @@ bool AliAnalysisTaskEmcalResponseOutliers::Run(){
         outlierDataBlock[15] = static_cast<Float_t>(truepart->PdgCode());
         fOutlierData->Fill(outlierDataBlock);
     }
+    return true;
 }
 
 AliAnalysisTaskEmcalResponseOutliers *AliAnalysisTaskEmcalResponseOutliers::AddTaskEmcalResponseOutliers(){
@@ -149,11 +167,7 @@ AliAnalysisTaskEmcalResponseOutliers *AliAnalysisTaskEmcalResponseOutliers::AddT
   clusters->SetDefaultClusterEnergy(AliVCluster::kHadCorr);
   clusters->SetClusHadCorrEnergyCut(0.3);
   auto tracks = responsetask->AddTrackContainer(EMCalTriggerPtAnalysis::AliEmcalAnalysisFactory::TrackContainerNameFactory(isAOD));
-
-  auto contpartjet = responsetask->AddJetContainer(AliJetContainer::kFullJet, AliJetContainer::antikt_algorithm, AliJetContainer::E_scheme, 0.2,
-                                                      AliJetContainer::kTPCfid, partcont, nullptr);
-  contpartjet->SetName("partjets");
-  auto contdetjet = responsetask->AddJetContainer(AliJetContainer::kNeutralJet, AliJetContainer::antikt_algorithm, AliJetContainer::E_scheme, 0.2,
+  auto contdetjet = responsetask->AddJetContainer(AliJetContainer::kFullJet, AliJetContainer::antikt_algorithm, AliJetContainer::E_scheme, 0.2,
                                                      AliJetContainer::kEMCALfid, tracks, clusters);
   contdetjet->SetName("detjets");
 
