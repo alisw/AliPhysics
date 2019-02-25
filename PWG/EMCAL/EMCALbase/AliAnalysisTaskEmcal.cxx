@@ -499,13 +499,16 @@ void AliAnalysisTaskEmcal::UserCreateOutputObjects()
     fOutput->Add(fHistEventPlane);
   }
 
-  if(fUseBuiltinEventSelection){
-    fHistEventRejection = new TH1F("fHistEventRejection","Reasons to reject event",20,0,20);
+  fHistEventRejection = new TH1F("fHistEventRejection","Reasons to reject event",20,0,20);
 #if ROOT_VERSION_CODE < ROOT_VERSION(6,4,2)
-    fHistEventRejection->SetBit(TH1::kCanRebin);
+  fHistEventRejection->SetBit(TH1::kCanRebin);
 #else
-    fHistEventRejection->SetCanExtend(TH1::kAllAxes);
+  fHistEventRejection->SetCanExtend(TH1::kAllAxes);
 #endif
+  // We must keep track of the recycled embedded event count. If we use the builtin event selection, then
+  // this count is appended after all of the rest of the bins.
+  int recycleEmbeddedEventIndex = 1;
+  if(fUseBuiltinEventSelection){
     fHistEventRejection->GetXaxis()->SetBinLabel(1,"PhysSel");
     fHistEventRejection->GetXaxis()->SetBinLabel(2,"trigger");
     fHistEventRejection->GetXaxis()->SetBinLabel(3,"trigTypeSel");
@@ -520,10 +523,15 @@ void AliAnalysisTaskEmcal::UserCreateOutputObjects()
     fHistEventRejection->GetXaxis()->SetBinLabel(12,"EvtPlane");
     fHistEventRejection->GetXaxis()->SetBinLabel(13,"SelPtHardBin");
     fHistEventRejection->GetXaxis()->SetBinLabel(14,"Bkg evt");
-    fHistEventRejection->GetXaxis()->SetBinLabel(15,"RecycleEmbeddedEvent");
+    recycleEmbeddedEventIndex = 15;
     fHistEventRejection->GetYaxis()->SetTitle("counts");
-    fOutput->Add(fHistEventRejection);
-  } else {
+  }
+  // Finish setting up the event rejection histogram.
+  fHistEventRejection->GetXaxis()->SetBinLabel(recycleEmbeddedEventIndex,"RecycleEmbeddedEvent");
+  fOutput->Add(fHistEventRejection);
+
+  // Finish setting up AliEventCuts
+  if (!fUseBuiltinEventSelection) {
     fAliEventCuts.AddQAplotsToList(fOutput);
   }
 
