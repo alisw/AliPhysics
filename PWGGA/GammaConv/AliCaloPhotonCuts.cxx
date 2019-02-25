@@ -5546,6 +5546,11 @@ void AliCaloPhotonCuts::ApplyNonLinearity(AliVCluster* cluster, Int_t isMC)
           } else if(fClusterType==2){
             energy /= 0.9827788048; //const fit
           }
+        // 7 TeV LHC11x (using MB and EMC7)
+        } else if( fCurrentMC==k14b7 || fCurrentMC==k14k1ab ){
+          if(fClusterType==1){
+            energy /= FunctionNL_kSDM(energy, 0.923536, -2.63133, -0.152515) ;
+          }
         // pp 5.02 TeV LHC15n
         // pass2
         } else if( fCurrentMC==k16h8a ){
@@ -5790,6 +5795,11 @@ void AliCaloPhotonCuts::ApplyNonLinearity(AliVCluster* cluster, Int_t isMC)
             // ext PHOS + additional correction PCM-PHOS
             energy /= FunctionNL_kSDM(energy, 0.990156, -3.86446, -2.17927);
             goto label_case_01;
+          }
+        // 7 TeV LHC11x (with MB and EMC7)
+        } else if( fCurrentMC==k14b7 || fCurrentMC==k14k1ab ){
+          if(fClusterType==1){
+            energy /= (FunctionNL_DExp(energy, 0.9898309757, 0.2470261543, -3.0333352573, 1.0932323138, 0.1173201428, -2.0088635359));
           }
         // 5 TeV LHC15n
         //pass2
