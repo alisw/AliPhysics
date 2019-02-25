@@ -1365,13 +1365,13 @@ void AddTask_GammaCalo_pp(
   } else if (trainConfig == 902){
     cuts.AddCutCalo("00010113","11111110a7032230000","2j631031000000d0"); // JetSector mixing
   } else if (trainConfig == 903){
-    cuts.AddCutCalo("00010113","11111110a7032230000","2k631031000000d0"); // Jet mixing
+    cuts.AddCutCalo("00010113","11111110al032230000","2k631031000000d0"); // Jet mixing
   } else if (trainConfig == 904){
-    cuts.AddCutCalo("00010113","11111110a7032230000","2l631031000000d0"); // JetRotation mixing
+    cuts.AddCutCalo("00010113","11111110al032230000","2l631031000000d0"); // JetRotation mixing
   } else if (trainConfig == 905){
-    cuts.AddCutCalo("00010113","11111110a7032230000","2m631031000000d0"); // Jet mixing with Jet pt
+    cuts.AddCutCalo("00010113","11111110al032230000","2m631031000000d0"); // Jet mixing with Jet pt
   } else if (trainConfig == 906){
-    cuts.AddCutCalo("00010113","11111110a7032230000","2n631031000000d0"); // JetRotation mixing with Jet pt
+    cuts.AddCutCalo("00010113","11111110al032230000","2n631031000000d0"); // JetRotation mixing with Jet pt
   } else if (trainConfig == 907){
     cuts.AddCutCalo("00010113","11111110al032230000","21631031000000d0"); // Secondary TrackMatching
   } else if (trainConfig == 908){
