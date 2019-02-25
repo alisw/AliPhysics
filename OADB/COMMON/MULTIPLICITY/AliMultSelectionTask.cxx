@@ -1217,6 +1217,7 @@ void AliMultSelectionTask::UserExec(Option_t *)
             fMC_NchEta05->SetValueInteger(lCounter_NchEta05);
             fMC_NchEta08->SetValueInteger(lCounter_NchEta08);
             fMC_NchEta10->SetValueInteger(lCounter_NchEta10);
+            fMC_NchEta14->SetValueInteger(lCounter_NchEta14);
             fNPartINELgtONE->SetValue(npartINELgtONE);
         }
     }
