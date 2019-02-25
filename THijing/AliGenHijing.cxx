@@ -465,8 +465,10 @@ void AliGenHijing::Generate()
 		 //printf(" Putting spec.p from targ. %d into the stack\n", countSpecTp);
 	      }
 	      PushTrack(tFlag,imo,kf,p,origin,polar,tof,kPNoProcess,nt, 1., ks);
-	      fNprimaries++;
-	      KeepTrack(nt);
+	      if (nt>=0) {
+		fNprimaries++;
+		KeepTrack(nt);
+	      }
 	      newPos[i] = nt;
 	  } // if selected
       } // particle loop
