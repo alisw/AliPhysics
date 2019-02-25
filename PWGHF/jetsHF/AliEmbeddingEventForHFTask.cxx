@@ -69,13 +69,7 @@ AliEmbeddingEventForHFTask::AliEmbeddingEventForHFTask() :
   fFirstAODEntry(-1),
   fLastAODEntry(-1),
   fEmbeddingCount(0),
-  fMinCentrality(-1),
-  fMaxCentrality(-1),
-  fZVertexCut(10),
-  fMaxVertexDist(999),
-  fTriggerMask(AliVEvent::kAny),
   fCurrentAODTree(0),
-  fEmbeddedTracksName("EmbeddedTracks"),
   fAODTreeName("aodTree"),
   fAODHeaderName("header"),
   fAODVertexName("vertices"),
@@ -85,17 +79,23 @@ AliEmbeddingEventForHFTask::AliEmbeddingEventForHFTask() :
   fPassAndDataType("pass1/AOD"),
   fDataFile("AliAOD.root"),
   fMaxFileNumber(500),
-  fIsSimulation(kTRUE),
   fAODHeader(0),
+  fAODFilePath(0),
+  fZVertexCut(10),
+  fMaxVertexDist(999),
+  fMinCentrality(-1),
+  fMaxCentrality(-1),
+  fTriggerMask(AliVEvent::kAny),
   fAODVertex(0),
   fAODTracks(0),
   fAODVZERO(0),
-  fAODFilePath(0),
-  fCandidateType(0),
+  fEmbeddedTracks(0),
+  fEmbeddedTracksName("EmbeddedTracks"),
   fCuts(0),
   fAodEvent(0),
   fArrayDStartoD0pi(0),
   fInhibitTask(kFALSE),
+  fCandidateType(0),
   fBranchName(""),
   fMCarray(0),
   fPDGmother(0),
@@ -106,21 +106,24 @@ AliEmbeddingEventForHFTask::AliEmbeddingEventForHFTask() :
   fCheckDmeson(kTRUE),
   fDSignalOnly(kTRUE),
   fRandomAccess(kTRUE),
-  fRandomGetter(0),
+  fIsSimulation(kTRUE),
+  fEmbTrackEff(kFALSE),
+  fEmbTrackEffPath(""),
+  fEmbTrackEffHistName(""),
   fBaseTrackEff(kFALSE),
   fBaseTrackEffPath(""),
   fBaseTrackEffHistName(""),
-  fBaseTrackEffHist(0),
-  fBaseTrackEffAccepted(0),
-  fBaseTrackEffAll(0),
-  fEmbTrackEff(kFALSE),
+  fRandomGetter(0),
+  fTrackEffHist(0),
+  fTrackEffON(),
+  fTrackEffOFF(),
   fEmbTrackEffHist(0),
   fEmbTrackEffAccepted(0),
   fEmbTrackEffAll(0),
-  fEmbTrackEffPath(""),
-  fEmbTrackEffHistName("")
-
-
+  fBaseTrackEffHist(0),
+  fBaseTrackEffAccepted(0),
+  fBaseTrackEffAll(0)
+  
 {
   //
   // Default constructor
@@ -139,13 +142,7 @@ AliEmbeddingEventForHFTask::AliEmbeddingEventForHFTask(const char *name, AliRDHF
   fFirstAODEntry(-1),
   fLastAODEntry(-1),
   fEmbeddingCount(0),
-  fMinCentrality(-1),
-  fMaxCentrality(-1),
-  fZVertexCut(10),
-  fMaxVertexDist(999),
-  fTriggerMask(AliVEvent::kAny),
   fCurrentAODTree(0),
-  fEmbeddedTracksName("EmbeddedTracks"),
   fAODTreeName("aodTree"),
   fAODHeaderName("header"),
   fAODVertexName("vertices"),
@@ -155,17 +152,23 @@ AliEmbeddingEventForHFTask::AliEmbeddingEventForHFTask(const char *name, AliRDHF
   fPassAndDataType("pass1/AOD"),
   fDataFile("AliAOD.root"),
   fMaxFileNumber(500),
-  fIsSimulation(kTRUE),
   fAODHeader(0),
+  fAODFilePath(0),
+  fZVertexCut(10),
+  fMaxVertexDist(999),
+  fMinCentrality(-1),
+  fMaxCentrality(-1),
+  fTriggerMask(AliVEvent::kAny),
   fAODVertex(0),
   fAODTracks(0),
   fAODVZERO(0),
-  fAODFilePath(0),
-  fCandidateType(candtype),
+  fEmbeddedTracks(0),
+  fEmbeddedTracksName("EmbeddedTracks"),
   fCuts(cuts),
   fAodEvent(0),
   fArrayDStartoD0pi(0),
   fInhibitTask(kFALSE),
+  fCandidateType(candtype),
   fBranchName(""),
   fMCarray(0),
   fPDGmother(0),
@@ -176,19 +179,23 @@ AliEmbeddingEventForHFTask::AliEmbeddingEventForHFTask(const char *name, AliRDHF
   fCheckDmeson(kTRUE),
   fDSignalOnly(kTRUE),
   fRandomAccess(kTRUE),
-  fRandomGetter(0),
+  fIsSimulation(kTRUE),
+  fEmbTrackEff(kFALSE),
+  fEmbTrackEffPath(""),
+  fEmbTrackEffHistName(""),
   fBaseTrackEff(kFALSE),
   fBaseTrackEffPath(""),
   fBaseTrackEffHistName(""),
-  fBaseTrackEffHist(0),
-  fBaseTrackEffAccepted(0),
-  fBaseTrackEffAll(0),
-  fEmbTrackEff(kFALSE),
+  fRandomGetter(0),
+  fTrackEffHist(0),
+  fTrackEffON(),
+  fTrackEffOFF(),
   fEmbTrackEffHist(0),
   fEmbTrackEffAccepted(0),
   fEmbTrackEffAll(0),
-  fEmbTrackEffPath(""),
-  fEmbTrackEffHistName("")
+  fBaseTrackEffHist(0),
+  fBaseTrackEffAccepted(0),
+  fBaseTrackEffAll(0)
 
 
 {
@@ -450,8 +457,9 @@ TFile* AliEmbeddingEventForHFTask::GetNextFile()
         TString dirNumberString;
         Int_t dirNumber = TMath::Nint(fRandomGetter->Rndm()*fMaxFileNumber);
         
-        if(dirNumber < 10) dirNumberString = Form("00%d",dirNumber);
-        else if(dirNumber < 100) dirNumberString = Form("0%d",dirNumber);
+        if(dirNumber < 10) dirNumberString = Form("000%d",dirNumber);
+        else if(dirNumber < 100) dirNumberString = Form("00%d",dirNumber);
+        else if(dirNumber < 1000) dirNumberString = Form("0%d",dirNumber);
         else dirNumberString = Form("%d",dirNumber);
         
         fileName = Form("%s/%s/%s/%s/%s",fGridDir.Data(),runNumber.Data(),fPassAndDataType.Data(),dirNumberString.Data(),fDataFile.Data());
