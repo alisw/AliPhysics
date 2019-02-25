@@ -156,6 +156,7 @@ AliAnalysisTaskNucleiYield::AliAnalysisTaskNucleiYield(TString taskname)
    ,fReconstructed{{nullptr}}
    ,fTotal{nullptr}
    ,fPtCorrection{nullptr}
+   ,fPcorrectionTPC{nullptr}
    ,fDCAPrimary{{nullptr}}
    ,fDCASecondary{{nullptr}}
    ,fDCASecondaryWeak{{nullptr}}
@@ -170,7 +171,7 @@ AliAnalysisTaskNucleiYield::AliAnalysisTaskNucleiYield(TString taskname)
      Float_t aCorrection[3] = {-2.10154e-03,-4.53472e-01,-3.01246e+00};
      Float_t mCorrection[3] = {-2.00277e-03,-4.93461e-01,-3.05463e+00};
      fPtCorrectionA.Set(3, aCorrection);
-     fPtCorrectionM.Set(3,mCorrection);
+     fPtCorrectionM.Set(3, mCorrection);
      DefineInput(0, TChain::Class());
      DefineOutput(1, TList::Class());
      DefineOutput(2, TTree::Class());
@@ -230,8 +231,12 @@ void AliAnalysisTaskNucleiYield::UserCreateOutputObjects() {
       fPtCorrection[iC] = new TH2F(Form("f%cPtCorrection",letter[iC]),
           ";#it{p}_{T}^{rec} (GeV/#it{c});#it{p}_{T}^{MC}-#it{p}_{T}^{rec} (GeV/#it{c});Entries",
           160,0.4,6.,80,-1.,1.);
+      fPcorrectionTPC[iC] = new TH2F(Form("f%cPcorrectionTPC",letter[iC]),
+          ";#it{p}^{rec} (GeV/#it{c});#it{p}^{MC}-#it{p}^{rec} (GeV/#it{c});Entries",
+          160,0.4,6.,80,-1.,1.);
       fList->Add(fTotal[iC]);
       fList->Add(fPtCorrection[iC]);
+      fList->Add(fPcorrectionTPC[iC]);
       for (int iT = 0; iT < 2; ++iT) {
         fReconstructed[iT][iC] = new TH2F(Form("f%cITS_%s",letter[iC],tpctofMC[iT].data()),";Centrality (%);#it{p}_{T} (GeV/#it{c}); Counts",
             nCentBins,centBins,nPtBins,pTbins);
@@ -457,6 +462,7 @@ void AliAnalysisTaskNucleiYield::UserExec(Option_t *){
 
     const int iTof = beta > EPS ? 1 : 0;
     float pT = track->Pt() * fCharge;
+    float p_TPC = track->GetTPCmomentum(); 
     int pid_mask = PassesPIDSelection(track);
     bool pid_check = (pid_mask & 7) == 7;
     if (fEnablePtCorrection) PtCorrection(pT,track->Charge() > 0);
@@ -485,7 +491,10 @@ void AliAnalysisTaskNucleiYield::UserExec(Option_t *){
                 (!iR || pid_check) && (iR || pid_mask & 8))
               fReconstructed[iR][iC]->Fill(centrality,pT);
             fDCAPrimary[iR][iC]->Fill(centrality,pT,dca[0]);
-            if (!iR) fPtCorrection[iC]->Fill(pT,part->Pt()-pT); // Fill it only once.
+            if (!iR) {
+              fPtCorrection[iC]->Fill(pT,part->Pt()-pT);
+              fPcorrectionTPC[iC]->Fill(p_TPC,part->P()-p_TPC);
+              } // Fill it only once.
           } else if (part->IsSecondaryFromMaterial() && !isFromHyperNucleus)
             fDCASecondary[iR][iC]->Fill(centrality,pT,dca[0]);
           else
