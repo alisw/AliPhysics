@@ -131,7 +131,7 @@ void AliAnalysisTaskPP13::UserExec(Option_t *)
 	//
 	Int_t nTriggered = 0;
 	TObjArray clusArray;
-	clusArray.SetOwner(kTRUE);
+	// clusArray.SetOwner(kTRUE);
 	for (Int_t i = 0; i < event->GetNumberOfCaloClusters(); i++)
 	{
 		AliVCluster * clus = event->GetCaloCluster(i);	
