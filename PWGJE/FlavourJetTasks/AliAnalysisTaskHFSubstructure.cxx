@@ -522,6 +522,18 @@ Bool_t AliAnalysisTaskHFSubstructure::FillHistograms()
 
 	  fTreeResponseMatrixAxis->Fill();
 	  fTreeSplittings->Fill();
+	  fShapesVar_Splittings_DeltaR.clear();
+	  fShapesVar_Splittings_DeltaR_Truth.clear();
+	  fShapesVar_Splittings_Zg.clear();
+	  fShapesVar_Splittings_Zg_Truth.clear();
+	  fShapesVar_Splittings_LeadingSubJetpT.clear();
+	  fShapesVar_Splittings_LeadingSubJetpT_Truth.clear();
+	  fShapesVar_Splittings_HardestSubJetD0.clear();
+	  fShapesVar_Splittings_HardestSubJetD0_Truth.clear();
+	  fShapesVar_Splittings_RadiatorE.clear();
+	  fShapesVar_Splittings_RadiatorE_Truth.clear();
+	  fShapesVar_Splittings_RadiatorpT.clear();
+	  fShapesVar_Splittings_RadiatorpT_Truth.clear(); 
       }
       }
       //delete D_Candidate;
@@ -636,6 +648,19 @@ Bool_t AliAnalysisTaskHFSubstructure::FillHistograms()
 	
 	fTreeResponseMatrixAxis->Fill();
 	fTreeSplittings->Fill();
+
+	fShapesVar_Splittings_DeltaR.clear();
+	fShapesVar_Splittings_DeltaR_Truth.clear();
+	fShapesVar_Splittings_Zg.clear();
+	fShapesVar_Splittings_Zg_Truth.clear();
+	fShapesVar_Splittings_LeadingSubJetpT.clear();
+	fShapesVar_Splittings_LeadingSubJetpT_Truth.clear();
+	fShapesVar_Splittings_HardestSubJetD0.clear();
+	fShapesVar_Splittings_HardestSubJetD0_Truth.clear();
+	fShapesVar_Splittings_RadiatorE.clear();
+	fShapesVar_Splittings_RadiatorE_Truth.clear();
+	fShapesVar_Splittings_RadiatorpT.clear();
+	fShapesVar_Splittings_RadiatorpT_Truth.clear();
 
       }
     }
@@ -991,7 +1016,19 @@ Bool_t AliAnalysisTaskHFSubstructure::FillHistograms()
 	
 	  fTreeResponseMatrixAxis->Fill();
 	  fTreeSplittings->Fill();
-	
+
+	  fShapesVar_Splittings_DeltaR.clear();
+	  fShapesVar_Splittings_DeltaR_Truth.clear();
+	  fShapesVar_Splittings_Zg.clear();
+	  fShapesVar_Splittings_Zg_Truth.clear();
+	  fShapesVar_Splittings_LeadingSubJetpT.clear();
+	  fShapesVar_Splittings_LeadingSubJetpT_Truth.clear();
+	  fShapesVar_Splittings_HardestSubJetD0.clear();
+	  fShapesVar_Splittings_HardestSubJetD0_Truth.clear();
+	  fShapesVar_Splittings_RadiatorE.clear();
+	  fShapesVar_Splittings_RadiatorE_Truth.clear();
+	  fShapesVar_Splittings_RadiatorpT.clear();
+	  fShapesVar_Splittings_RadiatorpT_Truth.clear(); 
 	}
       }
       // delete Matched_Truth_Particle;
@@ -1155,6 +1192,19 @@ Bool_t AliAnalysisTaskHFSubstructure::FillHistograms()
 	
 	fTreeResponseMatrixAxis->Fill();
 	fTreeSplittings->Fill();
+	
+	fShapesVar_Splittings_DeltaR.clear();
+	fShapesVar_Splittings_DeltaR_Truth.clear();
+	fShapesVar_Splittings_Zg.clear();
+	fShapesVar_Splittings_Zg_Truth.clear(); 
+	fShapesVar_Splittings_LeadingSubJetpT.clear();
+	fShapesVar_Splittings_LeadingSubJetpT_Truth.clear();
+	fShapesVar_Splittings_HardestSubJetD0.clear();
+	fShapesVar_Splittings_HardestSubJetD0_Truth.clear();
+	fShapesVar_Splittings_RadiatorE.clear();
+	fShapesVar_Splittings_RadiatorE_Truth.clear();
+	fShapesVar_Splittings_RadiatorpT.clear();
+	fShapesVar_Splittings_RadiatorpT_Truth.clear();
 	// delete Truth_D_Particle;		
       }	 
     }
@@ -1357,6 +1407,19 @@ Bool_t AliAnalysisTaskHFSubstructure::FillHistograms()
 	
 	fTreeResponseMatrixAxis->Fill();
 	fTreeSplittings->Fill();
+
+	fShapesVar_Splittings_DeltaR.clear();
+	fShapesVar_Splittings_DeltaR_Truth.clear();
+	fShapesVar_Splittings_Zg.clear();
+	fShapesVar_Splittings_Zg_Truth.clear();
+	fShapesVar_Splittings_LeadingSubJetpT.clear();
+	fShapesVar_Splittings_LeadingSubJetpT_Truth.clear();
+	fShapesVar_Splittings_HardestSubJetD0.clear();
+	fShapesVar_Splittings_HardestSubJetD0_Truth.clear();
+	fShapesVar_Splittings_RadiatorE.clear();
+	fShapesVar_Splittings_RadiatorE_Truth.clear();
+	fShapesVar_Splittings_RadiatorpT.clear();
+	fShapesVar_Splittings_RadiatorpT_Truth.clear();
 	
 
 	//	delete Truth_D_Particle;
