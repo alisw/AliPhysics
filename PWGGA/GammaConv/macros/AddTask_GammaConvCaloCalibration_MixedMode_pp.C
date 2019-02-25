@@ -153,7 +153,7 @@ void AddTask_GammaConvCaloCalibration_MixedMode_pp(
   task->SetDoPrimaryTrackMatching(doPrimaryTrackMatching);
 
   // *****************************************************************************************************
-  // pp 2.76 TeV EMC configurations, pi0/eta paper cuts -
+  // 13 TeV  pp Run2 - EDC configurations
   // *****************************************************************************************************
   if (trainConfig == 1){ // EMCAL + DCal clusters 13 TeV
     cuts.AddCutPCMCalo("00010113","00200009327000008250400000","4117900007032220000","0163103100000010"); // no timing cut, no NL INT7

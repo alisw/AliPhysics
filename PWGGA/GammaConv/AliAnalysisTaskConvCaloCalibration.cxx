@@ -1,7 +1,7 @@
 /**************************************************************************
  * Copyright(c) 1998-2020, ALICE Experiment at CERN, All rights reserved. *
  *                                                                        *
- * Author: Friederike Bock, Sandro Wenzel                                 *
+ * Author: Friederike Bock, Joshua König                                  *
  * Version 1.0                                                            *
  *                                                                        *
  *                                                                        *
@@ -1505,10 +1505,11 @@ void AliAnalysisTaskConvCaloCalibration::CalculateMesonCandidates(){
             //Get SM for Cluster0 & Cluster1
             Int_t iCellClus0 = Cluster0->GetCellsAbsId()[0];
             Int_t iCellClus1 = Cluster1->GetCellsAbsId()[0];
-            if(TMath::Abs(mesonCand->GetAlpha())<0.1 && fGeomEMCAL->GetSuperModuleNumber(iCellClus0) == fGeomEMCAL->GetSuperModuleNumber(iCellClus1)){
-
-              fHistoMotherInvMassECalibSM[fiCut][fGeomEMCAL->GetSuperModuleNumber(iCellClus0)]->Fill(mesonCand->M(),mesonCand->E(),tempmesonCandWeight);
+            if(TMath::Abs(mesonCand->GetAlpha())<0.1 ){
               fHistoMotherInvMassECalib[fiCut]->Fill(mesonCand->M(),mesonCand->E(),tempmesonCandWeight);
+              if(fGeomEMCAL->GetSuperModuleNumber(iCellClus0) == fGeomEMCAL->GetSuperModuleNumber(iCellClus1)){
+                fHistoMotherInvMassECalibSM[fiCut][fGeomEMCAL->GetSuperModuleNumber(iCellClus0)]->Fill(mesonCand->M(),mesonCand->E(),tempmesonCandWeight);
+              }
             }
 
 
@@ -1646,21 +1647,26 @@ void AliAnalysisTaskConvCaloCalibration::CalculateBackground(){
                 ((AliConvEventCuts*)fEventCutArray->At(fiCut))->GetEtaShift()), currentEventGoodV0.GetLeadingCellID(), previousGoodV0.GetLeadingCellID())){
               if (fHistoMotherBackInvMassPt[fiCut]) fHistoMotherBackInvMassPt[fiCut]->Fill(backgroundCandidate->M(),backgroundCandidate->Pt(),fWeightJetJetMC);
 
-              if( TMath::Abs(backgroundCandidate->GetAlpha())<0.1){
-                if( currentEventGoodV0.GetIsCaloPhoton() && previousGoodV0.GetIsCaloPhoton() ){
+              if( currentEventGoodV0.GetIsCaloPhoton() && previousGoodV0.GetIsCaloPhoton() ){
+                if( TMath::Abs(backgroundCandidate->GetAlpha())<0.1){
+                  fHistoMotherBackInvMassECalib[fiCut]->Fill(backgroundCandidate->M(),backgroundCandidate->E(),fWeightJetJetMC);
                   if(fGeomEMCAL->GetSuperModuleNumber(currentEventGoodV0.GetLeadingCellID()) == fGeomEMCAL->GetSuperModuleNumber(previousGoodV0.GetLeadingCellID())){
                     nMod = fGeomEMCAL->GetSuperModuleNumber(currentEventGoodV0.GetLeadingCellID());
                     fHistoMotherBackInvMassECalibSM[fiCut][nMod]->Fill(backgroundCandidate->M(),backgroundCandidate->E(),fWeightJetJetMC);
-                    fHistoMotherBackInvMassECalib[fiCut]->Fill(backgroundCandidate->M(),backgroundCandidate->E(),fWeightJetJetMC);
                   }
+                }
                } else{
-                  if( currentEventGoodV0.GetIsCaloPhoton() ) nMod = fGeomEMCAL->GetSuperModuleNumber(currentEventGoodV0.GetLeadingCellID());
-                  else if(previousGoodV0.GetIsCaloPhoton()) nMod = fGeomEMCAL->GetSuperModuleNumber(previousGoodV0.GetLeadingCellID());
-                  fHistoMotherBackInvMassECalibSM[fiCut][nMod]->Fill(backgroundCandidate->M(),backgroundCandidate->E(),fWeightJetJetMC);
-                  fHistoMotherBackInvMassECalib[fiCut]->Fill(backgroundCandidate->M(),backgroundCandidate->E(),fWeightJetJetMC);
+                  if( currentEventGoodV0.GetIsCaloPhoton() ){
+                    nMod = fGeomEMCAL->GetSuperModuleNumber(currentEventGoodV0.GetLeadingCellID());
+                    fHistoMotherBackInvMassECalibSM[fiCut][nMod]->Fill(backgroundCandidate->M(),currentEventGoodV0.E(),fWeightJetJetMC);
+                    fHistoMotherBackInvMassECalib[fiCut]->Fill(backgroundCandidate->M(),currentEventGoodV0.E(),fWeightJetJetMC);
+                  }
+                  else if(previousGoodV0.GetIsCaloPhoton()){
+                    nMod = fGeomEMCAL->GetSuperModuleNumber(previousGoodV0.GetLeadingCellID());
+                    fHistoMotherBackInvMassECalibSM[fiCut][nMod]->Fill(backgroundCandidate->M(),previousGoodV0.E(),fWeightJetJetMC);
+                    fHistoMotherBackInvMassECalib[fiCut]->Fill(backgroundCandidate->M(),previousGoodV0.E(),fWeightJetJetMC);
+                  }
                }
-
-              }
 
 
 
