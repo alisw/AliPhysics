@@ -230,8 +230,8 @@ static TH3D LMEECutLib::SetEtaCorrectionTPCTTree( Int_t corrXdim, Int_t corrYdim
   else {
     std::cout << "Correction loaded locally" << std::endl;
   }
-  TH3D* mean  = dynamic_cast<TH3D*>(recalFile->Get("sum_mean_correction"));
-  TH3D* width = dynamic_cast<TH3D*>(recalFile->Get("sum_width_correction"));
+  TH3D* mean  = dynamic_cast<TH3D*>(inFile->Get("sum_mean_correction"));
+  TH3D* width = dynamic_cast<TH3D*>(inFile->Get("sum_width_correction"));
   if(!mean || !width){
     ::Error("LMEECutLib_acapon", "Recal histograms not found.");
     return 0x0;
