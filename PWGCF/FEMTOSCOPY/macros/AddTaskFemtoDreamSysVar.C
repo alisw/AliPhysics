@@ -5,10 +5,10 @@ AliAnalysisTaskSE* AddTaskFemtoDreamSysVar(bool isMC = false,
                                            bool isESD = false, TString CentEst =
                                                "kInt7",
                                            bool notpp = true,  //1
-                                           bool kTBinning = false,  //2
-                                           bool kTCentBinning = false,  //3
-                                           bool mTBinning = false,  //4
-                                           bool eventMixing = true,  //5
+                                           bool fineBinning = true,  //2
+                                           bool kTBinning = false,  //3
+                                           bool kTCentBinning = false,  //4
+                                           bool mTBinning = false,  //5
                                            bool minimalBooking = true,  // 6
                                            const char *swuffix = "")  //7
                                            {
@@ -19,8 +19,8 @@ AliAnalysisTaskSE* AddTaskFemtoDreamSysVar(bool isMC = false,
   bool ContributionSplitting = false;
   bool ContributionSplittingDaug = false;
   bool PileUpRej = true;
-  bool fineBinning = true; 
-  bool phiSpin = false; 
+  bool eventMixing = true;
+  bool phiSpin = false;
   // the manager is static, so get the existing manager via the static method
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
 
