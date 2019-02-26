@@ -1336,7 +1336,11 @@ Bool_t AliGenEMlibV2::SetPtParametrizations(TString fileName, TString dirName) {
   // check for pi0 parametrization
   TF1* fPtParametrizationTemp = (TF1*)fParametrizationDir->Get("111_pt");
   if (!fPtParametrizationTemp) AliFatalClass(Form("File %s doesn't contain pi0 parametrization",fileName.Data()));
-  fPtParametrization[0] = new TF1(*fPtParametrizationTemp);
+  // function needs to be recreated for ROOT6 compatibility
+  fPtParametrization[0] = new TF1("111_pt",fPtParametrizationTemp->GetExpFormula(),0,300);
+  for (Int_t iparam = 0; iparam < fPtParametrizationTemp->GetNpar(); iparam++ ){
+    fPtParametrization[0]->SetParameter(iparam,fPtParametrizationTemp->GetParameter(iparam));
+  }
   fPtParametrization[0]->SetName("111_pt");
 
   // check for proton parametrization (base for baryon mt scaling)
@@ -1345,7 +1349,11 @@ Bool_t AliGenEMlibV2::SetPtParametrizations(TString fileName, TString dirName) {
     AliWarningClass(Form("File %s doesn't contain proton parametrization, scaling baryons from pi0.", fileName.Data()));
     fPtParametrizationProton = NULL;
   } else {
-    fPtParametrizationProton = new TF1(*fPtParametrizationProtonTemp);
+    // function needs to be recreated for ROOT6 compatibility
+    fPtParametrizationProton = new TF1("2212_pt",fPtParametrizationProtonTemp->GetExpFormula(),0,300);
+    for (Int_t iparam = 0; iparam < fPtParametrizationProtonTemp->GetNpar(); iparam++ ){
+      fPtParametrizationProton->SetParameter(iparam,fPtParametrizationProtonTemp->GetParameter(iparam));
+    }
     fPtParametrizationProton->SetName("2212_pt");
   }
 
@@ -1357,8 +1365,13 @@ Bool_t AliGenEMlibV2::SetPtParametrizations(TString fileName, TString dirName) {
     Int_t ip = (Int_t)(lib.GetIp(i, ""))(rndm);
     fPtParametrizationTemp = (TF1*)fParametrizationDir->Get(Form("%d_pt", ip));
     if (fPtParametrizationTemp) {
-      fPtParametrization[i] = new TF1(*fPtParametrizationTemp);
+      // function needs to be recreated for ROOT6 compatibility
+      fPtParametrization[i] = new TF1(Form("%d_pt", ip),fPtParametrizationTemp->GetExpFormula(),0,300);
+      for (Int_t iparam = 0; iparam < fPtParametrizationTemp->GetNpar(); iparam++ ){
+        fPtParametrization[i]->SetParameter(iparam,fPtParametrizationTemp->GetParameter(iparam));
+      }
       fPtParametrization[i]->SetName(Form("%d_pt", ip));
+
     } else {
       if (i==7 || i==9 || i==10 || i==11 || i==12 || i==17 || (i>=20 && i<=25))
         fPtParametrization[i] = (TF1*)MtScal(i, Form("%d_pt_mtScaled", ip), 0);
