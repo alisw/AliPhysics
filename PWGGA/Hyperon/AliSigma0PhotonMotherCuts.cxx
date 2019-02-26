@@ -301,7 +301,9 @@ void AliSigma0PhotonMotherCuts::CleanUpClones(
 
       bool hasSameLabels =
           (photon1->GetTrackLabelPos() == photon2->GetTrackLabelPos() ||
-           photon1->GetTrackLabelNeg() == photon2->GetTrackLabelNeg());
+           photon1->GetTrackLabelNeg() == photon2->GetTrackLabelNeg() ||
+           photon1->GetTrackLabelNeg() == photon2->GetTrackLabelPos() ||
+           photon1->GetTrackLabelPos() == photon2->GetTrackLabelNeg());
 
       // do the check for both daughters
       if (hasSameLabels) {
@@ -349,7 +351,9 @@ void AliSigma0PhotonMotherCuts::CleanUpClones(
 
       bool hasSameLabels =
           (lambda1->GetTrackLabelPos() == lambda2->GetTrackLabelPos() ||
-           lambda1->GetTrackLabelNeg() == lambda2->GetTrackLabelNeg());
+           lambda1->GetTrackLabelNeg() == lambda2->GetTrackLabelNeg() ||
+           lambda1->GetTrackLabelNeg() == lambda2->GetTrackLabelPos() ||
+           lambda1->GetTrackLabelPos() == lambda2->GetTrackLabelNeg());
 
       // do the check for both daughters
       if (hasSameLabels) {
@@ -398,7 +402,9 @@ void AliSigma0PhotonMotherCuts::CleanUpClones(
 
       bool hasSameLabels =
           (photon->GetTrackLabelPos() == lambda->GetTrackLabelPos() ||
-           photon->GetTrackLabelNeg() == lambda->GetTrackLabelNeg());
+           photon->GetTrackLabelNeg() == lambda->GetTrackLabelNeg() ||
+           photon->GetTrackLabelNeg() == lambda->GetTrackLabelPos() ||
+           photon->GetTrackLabelPos() == lambda->GetTrackLabelNeg());
 
       // do the check for both daughters
       if (hasSameLabels) {
