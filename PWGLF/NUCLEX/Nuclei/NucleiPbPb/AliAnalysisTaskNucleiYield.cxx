@@ -442,10 +442,9 @@ void AliAnalysisTaskNucleiYield::UserExec(Option_t *){
         fRecNucleus.m2 = m2;
         fRecNucleus.dcaxy = dca[0];
         fRecNucleus.dcaz = dca[1];
-        AliTPCPIDResponse &tpcPidResp = fPID->GetTPCResponse();
-        fRecNucleus.tpcNsigmaD = tpcPidResp.GetNumberOfSigmas(track, AliPID::kDeuteron);
-        fRecNucleus.tpcNsigmaT = tpcPidResp.GetNumberOfSigmas(track, AliPID::kTriton);
-        fRecNucleus.tpcNsigmaHe3 = tpcPidResp.GetNumberOfSigmas(track, AliPID::kHe3);
+        fRecNucleus.tpcNsigmaD = fPID->NumberOfSigmasTPC(track, AliPID::kDeuteron);
+        fRecNucleus.tpcNsigmaT = fPID->NumberOfSigmasTPC(track, AliPID::kTriton);
+        fRecNucleus.tpcNsigmaHe3 = fPID->NumberOfSigmasTPC(track, AliPID::kHe3);
         fRecNucleus.centrality = centrality;
         fRecNucleus.itsCls = track->GetITSClusterMap();
         fRecNucleus.tpcPIDcls = track->GetTPCsignalN();
@@ -505,7 +504,7 @@ void AliAnalysisTaskNucleiYield::UserExec(Option_t *){
       const int iC = (track->Charge() > 0) ? 1 : 0;
 
       float tpc_n_sigma = GetTPCsigmas(track);
-      float tof_n_sigma = iTof ? fPID->NumberOfSigmas(AliPIDResponse::kTOF, track, fParticle) : -999.f;
+      float tof_n_sigma = iTof ? fPID->NumberOfSigmasTOF(track, fParticle) : -999.f;
 
       for (int iR = iTof; iR >= 0; iR--) {
         /// TPC asymmetric cut to avoid contamination from protons in the DCA distributions. TOF sigma cut is set to 4
@@ -674,8 +673,7 @@ void AliAnalysisTaskNucleiYield::SetCustomTPCpid(Float_t *par, Float_t sigma) {
 
 float AliAnalysisTaskNucleiYield::GetTPCsigmas(AliVTrack* t) {
   if (fCustomTPCpid.GetSize() < 6 || fIsMC) {
-    AliTPCPIDResponse &tpcPidResp = fPID->GetTPCResponse();
-    return tpcPidResp.GetNumberOfSigmas(t, fParticle);
+    return fPID->NumberOfSigmasTPC(t, fParticle);
   } else {
     const float p = t->GetTPCmomentum() / fPDGMassOverZ;
     const float r = fCharge * fCharge * AliExternalTrackParam::BetheBlochAleph(p, fCustomTPCpid[0], fCustomTPCpid[1],
@@ -696,13 +694,12 @@ float AliAnalysisTaskNucleiYield::GetTPCsigmas(AliVTrack* t) {
 int AliAnalysisTaskNucleiYield::PassesPIDSelection(AliAODTrack *t) {
   bool tofPID = true, itsPID = true, tpcPID = true, electronRejection = true;
 
-  AliITSPIDResponse &itsPidResp = fPID->GetITSResponse();
   if (fRequireITSpidSigmas > 0 && t->Pt() < fDisableITSatHighPt) {
-    itsPID = TMath::Abs(itsPidResp.GetNumberOfSigmas(t, fParticle)) < fRequireITSpidSigmas;
+    itsPID = TMath::Abs(fPID->NumberOfSigmasITS(t, fParticle)) < fRequireITSpidSigmas;
   }
 
   /// Anyway it is always true if fITSelectronRejectionSigma is less than 0 (the default)
-  electronRejection = TMath::Abs(itsPidResp.GetNumberOfSigmas(t, AliPID::kElectron)) > fITSelectronRejectionSigma;
+  electronRejection = TMath::Abs(fPID->NumberOfSigmasITS(t, AliPID::kElectron)) > fITSelectronRejectionSigma;
 
   if (fRequireTOFpidSigmas > 0) {
     tofPID = TMath::Abs(fPID->NumberOfSigmasTOF(t, fParticle)) < fRequireTOFpidSigmas;
@@ -710,8 +707,7 @@ int AliAnalysisTaskNucleiYield::PassesPIDSelection(AliAODTrack *t) {
 
   if (t->Pt() < fDisableTPCpidAtHighPt) {
     if (fCustomTPCpid.GetSize() < 6 || fIsMC) {
-      AliTPCPIDResponse &tpcPidResp = fPID->GetTPCResponse();
-      tpcPID = TMath::Abs(tpcPidResp.GetNumberOfSigmas(t, fParticle)) < fRequireTPCpidSigmas;
+      tpcPID = TMath::Abs(fPID->NumberOfSigmasTPC(t, fParticle)) < fRequireTPCpidSigmas;
     } else {
       const float p = t->GetTPCmomentum() / fPDGMassOverZ;
       const float r = AliExternalTrackParam::BetheBlochAleph(p, fCustomTPCpid[0], fCustomTPCpid[1],
