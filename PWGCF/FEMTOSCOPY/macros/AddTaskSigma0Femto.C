@@ -249,9 +249,9 @@ AliAnalysisTaskSE *AddTaskSigma0Femto(bool isMC = false,
   sigmaCuts->SetPDG(3212, 3122, 22);
   sigmaCuts->SetLambdaCuts(v0Cuts);
   sigmaCuts->SetV0ReaderName(V0ReaderName.Data());
+  sigmaCuts->SetIsSpectrum(false);
   if (suffix != "0" && suffix != "999") {
     sigmaCuts->SetLightweight(true);
-    sigmaCuts->SetIsSpectrum(false);
   }
 
   AliSigma0PhotonMotherCuts *antiSigmaCuts =
@@ -260,14 +260,14 @@ AliAnalysisTaskSE *AddTaskSigma0Femto(bool isMC = false,
   antiSigmaCuts->SetPDG(-3212, -3122, 22);
   antiSigmaCuts->SetLambdaCuts(antiv0Cuts);
   antiSigmaCuts->SetV0ReaderName(V0ReaderName.Data());
+  antiSigmaCuts->SetIsSpectrum(false);
   if (suffix != "0" && suffix != "999") {
     antiSigmaCuts->SetLightweight(true);
-    antiSigmaCuts->SetIsSpectrum(false);
   }
 
   if (suffix == "37") {
-    sigmaCuts->SetSigmaMassCut(0.005);
-    antiSigmaCuts->SetSigmaMassCut(0.005);
+    sigmaCuts->SetSigmaMassCut(0.0035);
+    antiSigmaCuts->SetSigmaMassCut(0.0035);
   } else if (suffix == "38") {
     sigmaCuts->SetSigmaSideband(0.025, 0.075);
     antiSigmaCuts->SetSigmaSideband(0.025, 0.075);
