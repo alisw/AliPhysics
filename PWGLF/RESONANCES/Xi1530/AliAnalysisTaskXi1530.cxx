@@ -182,7 +182,7 @@ void AliAnalysisTaskXi1530::UserCreateOutputObjects()
     binSystematics = AxisStr("Sys", SysCheck);
 
     CreateTHnSparse("hInvMass_dXi","InvMass",4,{binType,binCent,binPt,binMass},"s"); // inv mass distribution of Xi
-    CreateTHnSparse("hInvMass","InvMass",5,{binType,binCent,binPt,binMass,binSystematics},"s"); // Normal inv mass distribution of Xi1530
+    CreateTHnSparse("hInvMass", "InvMass", 5, {binSystematics,binType, binCent, binPt, binMass}, "s"); // Normal inv mass distribution of Xi1530
     CreateTHnSparse("hMult","Multiplicity",1,{binCent},"s");
     CreateTHnSparse("hV0MSignal","V0MSignal",3,{binType_V0M,binCent,AxisFix("V0MSig",2000,0,2000)},"s");
     
@@ -926,7 +926,7 @@ void AliAnalysisTaskXi1530::FillTracks(){
                         if ( IsTrueXi1530(Xicandidate,track1) ){ // MC Association, if it comes from True Xi1530
 
                             // True Xi1530 signals
-                            FillTHnSparse("hInvMass",{(double)kMCReco,fCent,vecsum.Pt(),vecsum.M(),sys});
+                            FillTHnSparse("hInvMass",{sys,(double)kMCReco,fCent,vecsum.Pt(),vecsum.M()});
                             fHistos->FillTH1("hMC_reconstructed_Y", vecsum.Rapidity());
                             // For cut study
                             fHistos -> FillTH1("hDCADist_Lambda_BTW_Daughters_TrueMC",fabs(Xicandidate->GetDcaV0Daughters()));
@@ -960,9 +960,11 @@ void AliAnalysisTaskXi1530::FillTracks(){
                         //
                     }// MC AOD
                 }// MC
-                FillTHnSparse("hInvMass",{(double)sign,fCent,vecsum.Pt(),vecsum.M(),sys});
-                if((int)sign == (int)kData) fHistos->FillTH1("hTotalInvMass_data",vecsum.M());
+                FillTHnSparse("hInvMass", {sys,(double) sign, fCent, vecsum.Pt(), vecsum.M()});
+                if(sys == 0){
+                    if((int)sign == (int)kData) fHistos->FillTH1("hTotalInvMass_data",vecsum.M());
                 if((int)sign == (int)kLS) fHistos->FillTH1("hTotalInvMass_LS",vecsum.M());
+                }
             }
         }
         AliInfo(Form("Sys check! %.f", sys));
@@ -990,8 +992,8 @@ void AliAnalysisTaskXi1530::FillTracks(){
                     || (Xicandidate->Charge() ==+1 && track1->Charge()==+1)) continue; // check only unlike-sign
                 
                 if (fabs(vecsum.Rapidity()) > fXi1530RapidityCut) continue; // rapidity cut
-                
-                FillTHnSparse("hInvMass",{(double)kMixing,fCent,vecsum.Pt(),vecsum.M(),(double)kDefaultOption});
+
+                FillTHnSparse("hInvMass", {(double)kDefaultOption,(double) kMixing, fCent, vecsum.Pt(), vecsum.M()});
                 fHistos->FillTH1("hTotalInvMass_Mix",vecsum.M());
             }
         }
@@ -1077,8 +1079,8 @@ void AliAnalysisTaskXi1530::FillMCinput(AliStack* fMCStack, Bool_t PS){
         // Y cut
         if (fabs(mcInputTrack->Y()) > fXi1530RapidityCut) continue;
             
-        if(PS) FillTHnSparse("hInvMass",{(double)kMCTruePS,fCent,mcInputTrack->Pt(),mcInputTrack->GetCalcMass(),(double)kDefaultOption});
-        else FillTHnSparse("hInvMass",{(double)kMCTrue,fCent,mcInputTrack->Pt(),mcInputTrack->GetCalcMass(),(double)kDefaultOption});
+        if(PS) FillTHnSparse("hInvMass",{(double)kDefaultOption,(double)kMCTruePS,fCent,mcInputTrack->Pt(),mcInputTrack->GetCalcMass()});
+        else FillTHnSparse("hInvMass",{(double)kDefaultOption,(double)kMCTrue,fCent,mcInputTrack->Pt(),mcInputTrack->GetCalcMass()});
     }
 }
 void AliAnalysisTaskXi1530::FillMCinputdXi(AliStack* fMCStack, Bool_t PS){

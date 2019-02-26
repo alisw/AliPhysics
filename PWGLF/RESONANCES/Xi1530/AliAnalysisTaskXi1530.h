@@ -189,28 +189,28 @@ class AliAnalysisTaskXi1530 : public AliAnalysisTaskSE {
         std::vector<TString> SysCheck = {"DefaultOption", "TPCNsigmaXi1530PionLoose", "TPCNsigmaXi1530PionTight", "TPCNsigmaLambdaProtonLoose", "TPCNsigmaLambdaProtonTight", "TPCNsigmaLambdaPionLoose", "TPCNsigmaLambdaPionTight", "TPCNsigmaBachelorPionLoose", "TPCNsigmaBachelorPionTight", "Xi1530PionZVertexLoose", "Xi1530PionZVertexTight", "DCADistLambdaDaughtersLoose", "DCADistLambdaDaughtersTight", "DCADistXiDaughtersLoose", "DCADistXiDaughtersTight", "DCADistLambdaPVLoose", "DCADistLambdaPVTight", "V0CosineOfPointingAngleLoose", "V0CosineOfPointingAngleTight", "CascadeCosineOfPointingAngleLoose", "CascadeCosineOfPointingAngleTight", "XiMassWindowLoose", "XiMassWindowTight", "XiTrackCut"};
         TAxis binSystematics;
 
-        Double_t fTPCNsigXi1530PionCut_loose = 2.0;
+        Double_t fTPCNsigXi1530PionCut_loose = 4.0;
         Double_t fTPCNsigXi1530PionCut = 3.0;
-        Double_t fTPCNsigXi1530PionCut_tight = 4.0;
+        Double_t fTPCNsigXi1530PionCut_tight = 2.0;
 
-        Double_t fTPCNsigLambdaProtonCut_loose = 2.0;
+        Double_t fTPCNsigLambdaProtonCut_loose = 4.0;
         Double_t fTPCNsigLambdaProtonCut = 3.0;
-        Double_t fTPCNsigLambdaProtonCut_tight = 4.0;
+        Double_t fTPCNsigLambdaProtonCut_tight = 2.0;
 
-        Double_t fTPCNsigLambdaPionCut_loose = 2.0;
+        Double_t fTPCNsigLambdaPionCut_loose = 4.0;
         Double_t fTPCNsigLambdaPionCut = 3.0;
-        Double_t fTPCNsigLambdaPionCut_tight = 4.0;
+        Double_t fTPCNsigLambdaPionCut_tight = 2.0;
 
-        Double_t fTPCNsigBachelorPionCut_loose = 2.0;
+        Double_t fTPCNsigBachelorPionCut_loose = 4.0;
         Double_t fTPCNsigBachelorPionCut = 3.0;
-        Double_t fTPCNsigBachelorPionCut_tight = 4.0;
+        Double_t fTPCNsigBachelorPionCut_tight = 2.0;
 
         Double_t fXi1530PionEtaCut = 0.8;
         Double_t fXiEtaCut = 0.8;
 
-        Double_t fXi1530PionZVertexCut_loose = 1.5;
+        Double_t fXi1530PionZVertexCut_loose = 2.5;
         Double_t fXi1530PionZVertexCut = 2.0;
-        Double_t fXi1530PionZVertexCut_tight = 2.5;
+        Double_t fXi1530PionZVertexCut_tight = 1.5;
 
         Double_t fDCADist_LambdaDaughtersCut_loose = 2.0;
         Double_t fDCADist_LambdaDaughtersCut = 1.6;
@@ -257,7 +257,7 @@ class AliAnalysisTaskXi1530 : public AliAnalysisTaskSE {
         Double_t PVy = 999;
         Double_t PVz = 999;
         Double_t bField = 999;
-        ClassDef(AliAnalysisTaskXi1530, 7);
+        ClassDef(AliAnalysisTaskXi1530, 8);
         //1: Frist version
         //2: Add Track cut2 for the Xi daughter particles
         //3: Add FillMixingPool function
@@ -265,6 +265,7 @@ class AliAnalysisTaskXi1530 : public AliAnalysisTaskSE {
         //5: include AliAnalysisTaskSE.h to avoid compile problem.
         //6: Add IsPrimaryMC option for MC study
         //7: Add Systematics option for systematics study
+        //8: Default vaule update
 };
 
 #endif
