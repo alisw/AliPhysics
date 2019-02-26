@@ -37,6 +37,7 @@ class LMEECutLib {
     kPIDcut20,
     // Traditional ePID cut set taken from Run 1 pPb analysis
     kTheoPID,
+    kTOFreq,
     // 20 "randomly" chosen cut variations (track+ePID)
     kCutVar1,
     kCutVar2,
@@ -168,7 +169,7 @@ void LMEECutLib::SetEtaCorrectionITS(AliDielectron *die, Int_t corrXdim, Int_t c
 
 // Eta correction for the centroid and width of electron sigmas in the TOF, can be one/two/three-dimensional
 void LMEECutLib::SetEtaCorrectionTOF(AliDielectron *die, Int_t corrXdim, Int_t corrYdim, Int_t corrZdim, Bool_t hasMC){
-  
+
   std::cout << "starting LMEECutLib::SetEtaCorrectionTOF()\n";
   TString localPath = "/home/aaron/Data/diElec_framework_output/PIDcalibration/";
   TString fileName = "outputTOF";
@@ -569,7 +570,7 @@ AliDielectronEventCuts* LMEECutLib::GetEventCuts() {
   eventCuts->SetRequireVertex();
   eventCuts->SetMinVtxContributors(1);
   eventCuts->SetVertexZ(-10.,10.);
-  
+
   return eventCuts;
 }
 
@@ -588,7 +589,7 @@ AliAnalysisCuts* LMEECutLib::GetCentralityCuts(Int_t centSel) {
       centCuts = new AliDielectronVarCuts("centCutsHigh","cent00100");
       centCuts->AddCut(AliDielectronVarManager::kCentralityNew,0.,100.);
       break;
-    default: 
+    default:
       std::cout << "No Centrality selected" << std::endl;
   }
   return centCuts;
@@ -892,10 +893,18 @@ AliAnalysisCuts* LMEECutLib::GetPIDCuts(Int_t PIDcuts) {
       cuts->AddCut(pidCuts);
       return cuts;
     case kTheoPID:
-      cutsPID->AddCut(AliDielectronPID::kTPC,AliPID::kPion,    -100. ,4. ,0.0, 100., kTRUE ,AliDielectronPID::kRequire    ,AliDielectronVarManager::kPt);
-      cutsPID->AddCut(AliDielectronPID::kTOF,AliPID::kElectron,  -3. ,3. ,0.0, 100., kFALSE,AliDielectronPID::kIfAvailable,AliDielectronVarManager::kPt);
-      cutsPID->AddCut(AliDielectronPID::kITS,AliPID::kElectron,  -4. ,1. ,0.0, 100., kFALSE,AliDielectronPID::kRequire    ,AliDielectronVarManager::kPt);
-      cutsPID->AddCut(AliDielectronPID::kTPC,AliPID::kElectron,  -1.5,3. ,0.0, 100., kFALSE,AliDielectronPID::kRequire    ,AliDielectronVarManager::kPt);
+      cutsPID->AddCut(AliDielectronPID::kTPC,AliPID::kPion,    -100. , 4., 0.0, 100., kTRUE , AliDielectronPID::kRequire    , AliDielectronVarManager::kPt);
+      cutsPID->AddCut(AliDielectronPID::kTOF,AliPID::kElectron,  -3. , 3., 0.0, 100., kFALSE, AliDielectronPID::kIfAvailable, AliDielectronVarManager::kPt);
+      cutsPID->AddCut(AliDielectronPID::kITS,AliPID::kElectron,  -4. , 1., 0.0, 100., kFALSE, AliDielectronPID::kRequire    , AliDielectronVarManager::kPt);
+      cutsPID->AddCut(AliDielectronPID::kTPC,AliPID::kElectron,  -1.5, 3., 0.0, 100., kFALSE, AliDielectronPID::kRequire    , AliDielectronVarManager::kPt);
+      cuts->AddCut(cutsPID);
+      cuts->Print();
+      return cuts;
+    case kTOFreq:
+      cutsPID->AddCut(AliDielectronPID::kTPC,AliPID::kPion,    -100. , 4. , 0.0, 100., kTRUE , AliDielectronPID::kRequire   , AliDielectronVarManager::kPt);
+      cutsPID->AddCut(AliDielectronPID::kTOF,AliPID::kElectron,  -3. , 3. , 0.0, 100., kFALSE, AliDielectronPID::kRequire   , AliDielectronVarManager::kPt);
+      cutsPID->AddCut(AliDielectronPID::kITS,AliPID::kElectron,  -4. , 1. , 0.0, 100., kFALSE, AliDielectronPID::kRequire   , AliDielectronVarManager::kPt);
+      cutsPID->AddCut(AliDielectronPID::kTPC,AliPID::kElectron,  -1.5, 3. , 0.0, 100., kFALSE, AliDielectronPID::kRequire   , AliDielectronVarManager::kPt);
       cuts->AddCut(cutsPID);
       cuts->Print();
       return cuts;
@@ -1454,7 +1463,7 @@ AliDielectronCutGroup* LMEECutLib::GetTrackCuts(Int_t cutSet, Int_t PIDcuts){
       varCutsFilter->AddCut(AliDielectronVarManager::kImpactParXY,    -0.5,  0.5);
       varCutsFilter->AddCut(AliDielectronVarManager::kImpactParZ,     -2.0,  2.0);
       if(wSDD){
-        varCutsFilter->AddCut(AliDielectronVarManager::kNclsITS,      5.0,   100.0); 
+        varCutsFilter->AddCut(AliDielectronVarManager::kNclsITS,      5.0,   100.0);
         // Shared cluster cut the same for all cut settings
         varCutsFilter->AddCut(AliDielectronVarManager::kNclsSFracITS, 0.0,   0.01);
       }
@@ -1532,7 +1541,7 @@ AliDielectronCutGroup* LMEECutLib::GetTrackCuts(Int_t cutSet, Int_t PIDcuts){
       varCutsFilter->AddCut(AliDielectronVarManager::kImpactParXY,    -0.5,  0.5);
       varCutsFilter->AddCut(AliDielectronVarManager::kImpactParZ,     -3.0,  3.0);
       if(wSDD){
-        varCutsFilter->AddCut(AliDielectronVarManager::kNclsITS,      4.0,   100.0); 
+        varCutsFilter->AddCut(AliDielectronVarManager::kNclsITS,      4.0,   100.0);
         // Shared cluster cut the same for all cut settings
         varCutsFilter->AddCut(AliDielectronVarManager::kNclsSFracITS, 0.0,   0.01);
       }
