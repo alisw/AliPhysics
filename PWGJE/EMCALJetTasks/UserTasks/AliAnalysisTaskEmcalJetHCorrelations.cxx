@@ -63,8 +63,6 @@ AliAnalysisTaskEmcalJetHCorrelations::AliAnalysisTaskEmcalJetHCorrelations() :
   AliAnalysisTaskEmcalJet("AliAnalysisTaskEmcalJetHCorrelations", kFALSE),
   fYAMLConfig(),
   fConfigurationInitialized(false),
-  fEventCuts(),
-  fUseAliEventCuts(true),
   fTrackBias(5),
   fClusterBias(5),
   fDoEventMixing(kFALSE),
@@ -101,8 +99,6 @@ AliAnalysisTaskEmcalJetHCorrelations::AliAnalysisTaskEmcalJetHCorrelations(const
   AliAnalysisTaskEmcalJet(name, kTRUE),
   fYAMLConfig(),
   fConfigurationInitialized(false),
-  fEventCuts(),
-  fUseAliEventCuts(true),
   fTrackBias(5),
   fClusterBias(5),
   fDoEventMixing(kFALSE),
@@ -169,14 +165,6 @@ bool AliAnalysisTaskEmcalJetHCorrelations::Initialize()
   RetrieveAndSetTaskPropertiesFromYAMLConfig();
   AliDebugStream(2) << "Finished configuring via the YAML configuration.\n";
 
-  if (fUseAliEventCuts) {
-    // We use the AliEventCuts version implemented here instead of the one from the base class. The base class
-    // won't work because it is configured well after intialization. So it would be reinitialized with the wrong
-    // settings. So we disable it (to do so, we claim to use the default event selection, even though we will just
-    // ignore it).
-    SetUseInternalEventSelection(true);
-  }
-
   // Print the results of the initialization
   // Print outside of the ALICE Log system to ensure that it is always available!
   std::cout << *this;
@@ -202,13 +190,17 @@ void AliAnalysisTaskEmcalJetHCorrelations::RetrieveAndSetTaskPropertiesFromYAMLC
   }
 
   // Event cuts
-  // This exceptionally defaults to true.
-  fYAMLConfig.GetProperty({baseName, "enabled"}, fUseAliEventCuts, false);
-  if (fUseAliEventCuts) {
+  // If event cuts are enabled (which they exceptionally are by default), then we want to configure them here.
+  // If the event cuts are explicitly disabled, then we invert that value to enable the AliAnylsisTaskEmcal
+  // builtin event selection.
+  bool tempBool;
+  fYAMLConfig.GetProperty({baseName, "enabled"}, tempBool, false);
+  fUseBuiltinEventSelection = !tempBool;
+  if (fUseBuiltinEventSelection == false) {
     // Need to include the namespace so that AliDebug will work properly...
     std::string taskName = "PWGJE::EMCALJetTasks::";
     taskName += GetName();
-    AliAnalysisTaskEmcalJetHUtils::ConfigureEventCuts(fEventCuts, fYAMLConfig, fOfflineTriggerMask, baseName, taskName);
+    AliAnalysisTaskEmcalJetHUtils::ConfigureEventCuts(fAliEventCuts, fYAMLConfig, fOfflineTriggerMask, baseName, taskName);
   }
 
   // General task options
@@ -230,16 +222,6 @@ void AliAnalysisTaskEmcalJetHCorrelations::UserCreateOutputObjects()
   }
   // Reinitialize the YAML configuration
   fYAMLConfig.Reinitialize();
-
-  // Setup AliEventCuts output
-  if (fUseAliEventCuts) {
-    // We use a separate list so the output is separated.
-    auto eventCutsList = new TList();
-    eventCutsList->SetOwner(true);
-    eventCutsList->SetName("EventCuts");
-    fEventCuts.AddQAplotsToList(eventCutsList);
-    fOutput->Add(eventCutsList);
-  }
 
   // Create histograms
   fHistJetHTrackPt = new TH1F("fHistJetHTrackPt", "P_{T} distribution", 1000, 0.0, 100.0);
@@ -360,24 +342,6 @@ void AliAnalysisTaskEmcalJetHCorrelations::UserExecOnce()
 
   // Ensure that the random number generator is seeded in each job.
   fRandom.SetSeed(0);
-}
-
-/**
- * Overloads the base class function to use AliEventCuts (if selected).
- */
-Bool_t AliAnalysisTaskEmcalJetHCorrelations::IsEventSelected()
-{
-  if (fUseAliEventCuts) {
-    if (!fEventCuts.AcceptEvent(InputEvent())) {
-      PostData(1, fOutput);
-      return kFALSE;
-    }
-  }
-  else {
-    return AliAnalysisTaskEmcalJet::IsEventSelected();
-  }
-  // The event was accepted by AliEventCuts, so we return true.
-  return kTRUE;
 }
 
 /**
@@ -1743,9 +1707,7 @@ std::string AliAnalysisTaskEmcalJetHCorrelations::toString() const
     tempSS << "\t" << jetCont->GetName() << ": " << jetCont->GetArrayName() << "\n";
   }
   tempSS << "Event selection\n";
-  tempSS << "\tUse AliEventCuts: " << fUseAliEventCuts << "\n";
-  // AliEventCuts in the base class needs to be __disabled__ because the implementation isn't compatible with how it's implemented here.
-  tempSS << "\tUse AliAnalysisTaskEmcal event selection (needs to be enabled to use AliEventCuts): " << fUseBuiltinEventSelection << "\n";
+  tempSS << "\tUse AliEventCuts: " << !fUseBuiltinEventSelection << "\n";
   tempSS << "\tTrigger event selection: " << std::bitset<32>(fTriggerType) << "\n";
   tempSS << "\tMixed event selection: " << std::bitset<32>(fMixingEventType) << "\n";
   tempSS << "\tEnabled only for non-fast partition: " << fDisableFastPartition << "\n";
