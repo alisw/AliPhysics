@@ -6607,9 +6607,10 @@ void AliAnalysisTaskGammaCalo::CalculateBackground(){
             }else{
                mbinJets = fBGHandler[fiCut]->GetMultiplicityBinIndex(2);
             }
+            Int_t zbinJets = fBGHandler[fiCut]->GetZBinIndex(2);
             for(Int_t nEventsInBG=0;nEventsInBG <fBGHandler[fiCut]->GetNBGEvents();nEventsInBG++){
-              AliGammaConversionAODVector *previousEventV0s = fBGHandler[fiCut]->GetBGGoodV0s(zbin,mbinJets,nEventsInBG);
-              AliGammaConversionAODBGHandler::GammaConversionVertex* BGVertex = fBGHandler[fiCut]->GetBGEventVertex(zbin,mbinJets,nEventsInBG);
+              AliGammaConversionAODVector *previousEventV0s = fBGHandler[fiCut]->GetBGGoodV0s(zbinJets,mbinJets,nEventsInBG);
+              AliGammaConversionAODBGHandler::GammaConversionVertex* BGVertex = fBGHandler[fiCut]->GetBGEventVertex(zbinJets,mbinJets,nEventsInBG);
               if(previousEventV0s){
                 Double_t BGJetEta = BGVertex->fX;
                 Double_t BGJetPhi = BGVertex->fY;
@@ -6745,7 +6746,7 @@ void AliAnalysisTaskGammaCalo::UpdateEventByEventData(){
             if(fVectorJetPt.at(fMaxPtNearEMCalPlace) > 15) mBinPt = 3;
             else mBinPt = 2;
           }else mBinPt = 2;
-          fBGHandler[fiCut]->AddEvent(fClusterCandidates,fVectorJetEta.at(fMaxPtNearEMCalPlace),fVectorJetPhi.at(fMaxPtNearEMCalPlace), fInputEvent->GetPrimaryVertex()->GetZ(),mBinPt,fVectorJetPt.at(fMaxPtNearEMCalPlace));
+          fBGHandler[fiCut]->AddEvent(fClusterCandidates,fVectorJetEta.at(fMaxPtNearEMCalPlace),fVectorJetPhi.at(fMaxPtNearEMCalPlace), 2,mBinPt,fVectorJetPt.at(fMaxPtNearEMCalPlace));
         }
     } else if(((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->UseTrackMultiplicity()){
       fBGHandler[fiCut]->AddEvent(fClusterCandidates,fInputEvent->GetPrimaryVertex()->GetX(),fInputEvent->GetPrimaryVertex()->GetY(),fInputEvent->GetPrimaryVertex()->GetZ(),fV0Reader->GetNumberOfPrimaryTracks(),fEventPlaneAngle);
