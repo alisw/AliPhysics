@@ -199,7 +199,6 @@ set(SRCS
     UserTasks/AliAnalysisTaskEmcalTriggerInfoQA.cxx
     UserTasks/AliAnalysisTaskEmcalTriggerTreeWriter.cxx
     UserTasks/AliAnalysisTaskHJetEmbed.cxx
-    UserTasks/AliAnalysisTaskJetExtractor.cxx
     UserTasks/AliAnalysisTaskJetJTJT.cxx
     UserTasks/AliAnalysisTaskJetMassResponseDet.cxx
     UserTasks/AliAnalysisTaskJetMatching.cxx
@@ -256,6 +255,7 @@ if(FASTJET_FOUND)
         UserTasks/AliAnalysisTaskFullppJet.cxx
         UserTasks/AliAnalysisTaskHJetDphi.cxx
         UserTasks/AliAnalysisTaskHJetSpectra.cxx
+        UserTasks/AliAnalysisTaskJetExtractor.cxx
         UserTasks/AliAnalysisTaskJetPP.cxx
         UserTasks/AliAnalysisTaskSVtaskMCFilter.cxx
         UserTasks/AliAnalysisTaskEA.cxx
