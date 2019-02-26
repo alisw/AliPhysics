@@ -18,7 +18,7 @@ class TGeoMatrix;
 class AliAnalysisTaskTOFTrigger : public AliAnalysisTaskSE {
  public:
   AliAnalysisTaskTOFTrigger();
-  AliAnalysisTaskTOFTrigger(const char *name,Float_t lowpt,Float_t highpt,Int_t highmult,TString trgcls,Int_t nBCs,Bool_t useEVS,Int_t fTrackCutSet,Float_t fMaxTrackError);
+  AliAnalysisTaskTOFTrigger(const char *name,Float_t lowpt,Float_t highpt,Int_t highmult,TString trgcls,Int_t nBCs,Bool_t useEVS,Int_t fTrackCutSet,Float_t fMaxTrackError,Float_t mintof,Float_t maxtof);
   virtual ~AliAnalysisTaskTOFTrigger();
 
   virtual void UserCreateOutputObjects();
@@ -52,8 +52,10 @@ class AliAnalysisTaskTOFTrigger : public AliAnalysisTaskSE {
   TH2F *hTrackDistribution;			//!
   TH2F *hFiredMaxiPad;				//!
   TH2F *hFiredMaxiPadOnlyAround;		//!
-  TH2F *hNotFiredMaxiPad;			//!
-  TH2F *hExtraFiredMaxiPad;			//!
+  TH2F *hNotFiredMaxiPadCls;			//!
+  TH2F *hExtraFiredMaxiPadCls;			//!
+  TH2F *hNotFiredMaxiPadTrk;			//!
+  TH2F *hExtraFiredMaxiPadTrk;			//!
   TH2F *hTrackPadCorrPhi;			//!
   TH2F *hTrackPadCorrEta;			//!
   TH2F *hNoiseMaxiPad;				//!
@@ -73,6 +75,7 @@ class AliAnalysisTaskTOFTrigger : public AliAnalysisTaskSE {
   TH1I *hNMaxiPadIn;				//!
   TH1I *hNCrossTracks;				//!
   TH2I *hBadMaxiPadMask;			//!
+  TH1F *hTOFHitTime;				//!
 
   Bool_t fGeomLoaded;
   TGeoHMatrix matOrig[18]; 
@@ -85,6 +88,9 @@ class AliAnalysisTaskTOFTrigger : public AliAnalysisTaskSE {
   Bool_t fUseEventSelection;
   Int_t fTrackCutSet;
   Float_t fMaxTrackError;
+  Float_t fMinTOF;
+  Float_t fMaxTOF;
+  
   
   AliEventCuts fEventCuts;	
 
