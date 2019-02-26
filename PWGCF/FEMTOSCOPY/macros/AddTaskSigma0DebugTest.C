@@ -127,10 +127,6 @@ AliAnalysisTaskSE *AddTaskSigma0DebugTest(bool isMC = false,
     antiv0Cuts->SetLightweight(true);
   }
 
-  // So for the moment we by default use offline V0s
-  v0Cuts->SetV0OnFlyStatus(false);
-  antiv0Cuts->SetV0OnFlyStatus(false);
-
   if (suffix == "999") {
     v0Cuts->SetCheckCutsMC(true);
     antiv0Cuts->SetCheckCutsMC(true);
