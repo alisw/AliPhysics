@@ -38,10 +38,8 @@ AliAnalysisTaskEmcalJetHPerformance::AliAnalysisTaskEmcalJetHPerformance():
   AliAnalysisTaskEmcalJet("AliAnalysisTaskEmcalJetHPerformance", kFALSE),
   fYAMLConfig(),
   fConfigurationInitialized(false),
-  fEventCuts(),
   fHistManager(),
   fEmbeddingQA(),
-  fUseAliEventCuts(true),
   fCreateQAHists(false),
   fCreateResponseMatrix(false),
   fEmbeddedCellsName("emcalCells"),
@@ -59,10 +57,8 @@ AliAnalysisTaskEmcalJetHPerformance::AliAnalysisTaskEmcalJetHPerformance(const c
   AliAnalysisTaskEmcalJet(name, kTRUE),
   fYAMLConfig(),
   fConfigurationInitialized(false),
-  fEventCuts(),
   fHistManager(name),
   fEmbeddingQA(),
-  fUseAliEventCuts(true),
   fCreateQAHists(false),
   fCreateResponseMatrix(false),
   fEmbeddedCellsName("emcalCells"),
@@ -81,10 +77,8 @@ AliAnalysisTaskEmcalJetHPerformance::AliAnalysisTaskEmcalJetHPerformance(const c
 AliAnalysisTaskEmcalJetHPerformance::AliAnalysisTaskEmcalJetHPerformance(const AliAnalysisTaskEmcalJetHPerformance & other):
   fYAMLConfig(other.fYAMLConfig),
   fConfigurationInitialized(other.fConfigurationInitialized),
-  //fEventCuts(other.fEventCuts), // Copy constructor is private.
   fHistManager(other.fHistManager.GetName()),
   //fEmbeddingQA(other.fEmbeddingQA), // Cannot use because the THistManager (which is in the class) copy constructor is private.
-  fUseAliEventCuts(other.fUseAliEventCuts),
   fCreateQAHists(other.fCreateQAHists),
   fCreateResponseMatrix(other.fCreateResponseMatrix),
   fEmbeddedCellsName(other.fEmbeddedCellsName),
@@ -133,13 +127,17 @@ void AliAnalysisTaskEmcalJetHPerformance::RetrieveAndSetTaskPropertiesFromYAMLCo
 
   // Event cuts
   baseName = "eventCuts";
-  // This exceptionally defaults to true.
-  fYAMLConfig.GetProperty({baseName, "enabled"}, fUseAliEventCuts, false);
-  if (fUseAliEventCuts) {
+  // If event cuts are enabled (which they exceptionally are by default), then we want to configure them here.
+  // If the event cuts are explicitly disabled, then we invert that value to enable the AliAnylsisTaskEmcal
+  // builtin event selection.
+  bool tempBool;
+  fYAMLConfig.GetProperty({baseName, "enabled"}, tempBool, false);
+  fUseBuiltinEventSelection = !tempBool;
+  if (fUseBuiltinEventSelection == false) {
     // Need to include the namespace so that AliDebug will work properly...
     std::string taskName = "PWGJE::EMCALJetTasks::";
     taskName += GetName();
-    AliAnalysisTaskEmcalJetHUtils::ConfigureEventCuts(fEventCuts, fYAMLConfig, fOfflineTriggerMask, baseName, taskName);
+    AliAnalysisTaskEmcalJetHUtils::ConfigureEventCuts(fAliEventCuts, fYAMLConfig, fOfflineTriggerMask, baseName, taskName);
   }
 
   // General task options
@@ -224,14 +222,6 @@ bool AliAnalysisTaskEmcalJetHPerformance::Initialize()
   SetupJetContainersFromYAMLConfig();
   AliDebugStream(2) << "Finished configuring via the YAML configuration.\n";
 
-  if (fUseAliEventCuts) {
-    // We use the AliEventCuts version implemented here instead of the one from the base class. The base class
-    // won't work because it is configured well after intialization. So it would be reinitialized with the wrong
-    // settings. So we disable it (to do so, we claim to use the default event selection, even though we will just
-    // ignore it).
-    SetUseInternalEventSelection(true);
-  }
-
   // Print the results of the initialization
   // Print outside of the ALICE Log system to ensure that it is always available!
   std::cout << *this;
@@ -254,16 +244,6 @@ void AliAnalysisTaskEmcalJetHPerformance::UserCreateOutputObjects()
   }
   // Reinitialize the YAML configuration
   fYAMLConfig.Reinitialize();
-
-  // Setup AliEventCuts output
-  if (fUseAliEventCuts) {
-    // We use a separate list so the output is separated.
-    auto eventCutsList = new TList();
-    eventCutsList->SetOwner(true);
-    eventCutsList->SetName("EventCuts");
-    fEventCuts.AddQAplotsToList(eventCutsList);
-    fOutput->Add(eventCutsList);
-  }
 
   // Create histograms
   if (fCreateQAHists) {
@@ -387,24 +367,6 @@ void AliAnalysisTaskEmcalJetHPerformance::SetupResponseMatrixHists()
   // Need to include the bin from 1-1.01 to ensure that jets which shared all of their momentum
   // due not end up in the overflow bin!
   fHistManager.CreateTH1(name.c_str(), title.c_str(), 101, 0, 1.01);
-}
-
-/**
- * Overloads the base class function to use AliEventCuts (if selected).
- */
-Bool_t AliAnalysisTaskEmcalJetHPerformance::IsEventSelected()
-{
-  if (fUseAliEventCuts) {
-    if (!fEventCuts.AcceptEvent(InputEvent())) {
-      PostData(1, fOutput);
-      return kFALSE;
-    }
-  }
-  else {
-    return AliAnalysisTaskEmcalJet::IsEventSelected();
-  }
-  // The event was accepted by AliEventCuts, so we return true.
-  return kTRUE;
 }
 
 /**
@@ -692,9 +654,7 @@ std::string AliAnalysisTaskEmcalJetHPerformance::toString() const
     tempSS << "\t" << jetCont->GetName() << ": " << jetCont->GetArrayName() << "\n";
   }
   tempSS << "AliEventCuts\n";
-  tempSS << "\tEnabled: " << fUseAliEventCuts << "\n";
-  // AliEventCuts in the base class needs to be __disabled__ because the implementation isn't compatible with how it's implemented here.
-  tempSS << "\tUse AliAnalysisTaskEmcal event selection (needs to be enabled to use AliEventCuts): " << fUseBuiltinEventSelection << "\n";
+  tempSS << "\tEnabled: " << !fUseBuiltinEventSelection << "\n";
   tempSS << "QA Hists:\n";
   tempSS << "\tEnabled: " << fCreateQAHists << "\n";
   tempSS << "Response matrix:\n";
@@ -760,10 +720,8 @@ void swap(PWGJE::EMCALJetTasks::AliAnalysisTaskEmcalJetHPerformance & first, PWG
   // Same ordering as in the constructors (for consistency)
   swap(first.fYAMLConfig, second.fYAMLConfig);
   swap(first.fConfigurationInitialized, second.fConfigurationInitialized);
-  //swap(first.fEventCuts, second.fEventCuts); // Skip here, because the AliEventCuts copy constructor is private.
   //swap(first.fHistManager, second.fHistManager); // Skip here, because the THistManager copy constructor is private.
   //swap(first.fEmbeddingQA, second.fEmbeddingQA); // Skip here, because the THistManager copy constructor is private.
-  swap(first.fUseAliEventCuts, second.fUseAliEventCuts);
   swap(first.fCreateQAHists, second.fCreateQAHists);
   swap(first.fCreateResponseMatrix, second.fCreateResponseMatrix);
   swap(first.fEmbeddedCellsName, second.fEmbeddedCellsName);

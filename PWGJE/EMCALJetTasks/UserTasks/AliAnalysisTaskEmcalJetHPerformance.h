@@ -13,7 +13,6 @@
 
 class AliJetContainer;
 class AliEmcalJet;
-#include "AliEventCuts.h"
 #include "THistManager.h"
 #include "AliYAMLConfiguration.h"
 #include "AliAnalysisTaskEmcalJet.h"
@@ -70,7 +69,6 @@ class AliAnalysisTaskEmcalJetHPerformance : public AliAnalysisTaskEmcalJet {
 
  private:
 
-  Bool_t IsEventSelected();
   Bool_t Run();
 
   // Configuration
@@ -91,14 +89,12 @@ class AliAnalysisTaskEmcalJetHPerformance : public AliAnalysisTaskEmcalJet {
   // Basic configuration
   PWG::Tools::AliYAMLConfiguration fYAMLConfig; ///< YAML configuration file.
   bool fConfigurationInitialized;     ///<  True if the task configuration has been successfully initialized.
-  AliEventCuts fEventCuts;            ///<  AliEventCuts to handle event selection.
 
   // Histograms
   THistManager fHistManager;          ///<  Histogram manager.
   AliEmcalEmbeddingQA fEmbeddingQA;   //!<! Embedding QA hists (will only be added if embedding).
 
   // Configuration options
-  bool fUseAliEventCuts;              ///<  If true, use AliEventCuts for event selection instead of IsEventSelected.
   bool fCreateQAHists;                ///<  If true, create QA histograms.
   bool fCreateResponseMatrix;         ///<  If true, create a response matrix with the available jet collections.
 
@@ -118,7 +114,7 @@ class AliAnalysisTaskEmcalJetHPerformance : public AliAnalysisTaskEmcalJet {
   double fMinFractionShared;             ///<  Minimum fraction of shared jet pt required for matching a hybrid jet to detector level
   AliAnalysisTaskEmcalJetHUtils::ELeadingHadronBiasType_t fLeadingHadronBiasType; ///<  Leading hadron in jet bias type (either charged, neutral, or both)
 
-  ClassDef(AliAnalysisTaskEmcalJetHPerformance, 2);
+  ClassDef(AliAnalysisTaskEmcalJetHPerformance, 3);
 };
 
 } /* namespace EMCALJetTasks */
