@@ -376,7 +376,8 @@ Bool_t AliMCEventHandler::BeginEvent(Long64_t entry)
       // RS: event ID's are not necessarily the same: bg event may repeat for multiple signal events
       int repFactor = fMCEvent->Header()->GetSgPerBgEmbedded();
       if (repFactor>0) {
-	fReusedBG = entry%repFactor; // is this the 1st read of the BG event? 
+	fReusedBG = entry%repFactor; // is this the 1st read of the BG event?
+	fMCEvent->SetBGEventReused(fReusedBG);
 	entry /= repFactor; //RS bg entry corresponding to signal one
       }
       TIter next(fSubsidiaryHandlers);

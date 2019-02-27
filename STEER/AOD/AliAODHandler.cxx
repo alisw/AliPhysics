@@ -300,6 +300,7 @@ void AliAODHandler::StoreMCParticles(){
   Int_t np    = mcEvent->GetNumberOfTracks();
   Int_t nprim = mcEvent->GetNumberOfPrimaries();
 
+  mcHeader->SetBGEventReused(mcEvent->GetBGEventReused());
 
   Int_t j = 0;
   TClonesArray& l = *mcarray;

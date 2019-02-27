@@ -38,6 +38,7 @@ AliAODMCHeader::AliAODMCHeader() :
   ,fXsection(0)
   ,fTrials(0)
   ,fEventType(0)
+  ,fBGEventReused(0)
   ,fReactionPlaneAngle(0)  
   ,fHeaders(0)
 {
@@ -65,6 +66,7 @@ AliAODMCHeader::AliAODMCHeader(const AliAODMCHeader &header) :
   ,fXsection(0)
   ,fTrials(0)
   ,fEventType(header.fEventType)
+  ,fBGEventReused(header.fBGEventReused)
   ,fReactionPlaneAngle(header.fReactionPlaneAngle)  
   ,fHeaders(0)
 {
@@ -89,6 +91,7 @@ AliAODMCHeader& AliAODMCHeader::operator=(const AliAODMCHeader &header)
     fXsection = header.fXsection;
     fTrials = header.fTrials;
     fEventType = header.fEventType;
+    fBGEventReused = header.fBGEventReused;
     fReactionPlaneAngle = header.fReactionPlaneAngle;
 
     if(header.fHeaders){
@@ -135,6 +138,7 @@ void AliAODMCHeader::Reset()
   fGenerator = "";
   fImpactPar = 0;
   fEventType = 0;
+  fBGEventReused = 0;
   fPtHard = 0;
   fXsection = 0;
   fTrials = 0;

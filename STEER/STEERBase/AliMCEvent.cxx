@@ -65,7 +65,8 @@ AliMCEvent::AliMCEvent():
     fExternal(0),
     fTopEvent(0),
     fVertex(0),
-    fNBG(-1)
+    fNBG(-1),
+    fBGEventReused(0)
 {
     // Default constructor
   fTopEvent = this;
@@ -91,7 +92,8 @@ AliMCEvent::AliMCEvent(const AliMCEvent& mcEvnt) :
     fExternal(0),
     fTopEvent(mcEvnt.fTopEvent),
     fVertex(mcEvnt.fVertex),
-    fNBG(mcEvnt.fNBG)
+    fNBG(mcEvnt.fNBG),
+    fBGEventReused(mcEvnt.fBGEventReused)
 { 
 // Copy constructor
 }
@@ -262,6 +264,7 @@ void AliMCEvent::FinishEvent()
     delete fSubsidiaryEvents;
     fSubsidiaryEvents = 0;
     fNBG = -1;
+    fBGEventReused = 0;
 }
 
 
