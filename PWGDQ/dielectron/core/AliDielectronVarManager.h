@@ -523,8 +523,8 @@ public:
     kQnFMDCrpH2,               // FMDA eventplane from QnCorrections framework
     kQnFMDCxH2,
     kQnFMDCyH2,
-    kQnZDCArpH2,               // ZDCA eventplane from QnCorrections framework
-    kQnZDCCrpH2,               // ZDCC eventplane from QnCorrections framework
+    kQnZDCArpH1,               // ZDCA eventplane from QnCorrections framework (1st harmonic)
+    kQnZDCCrpH1,               // ZDCC eventplane from QnCorrections framework (1st harmonic)
  
     // Average Eventplane differences for 2nd harmonics from QnCorrections framework est. 2016 - as input for 3 sub-detector method
     // Returns cos(2(psi_DetA-psi_DetB))
@@ -4008,8 +4008,8 @@ inline void AliDielectronVarManager::FillQnEventplanes(TList *qnlist, Double_t *
   TVector2 *qVectorZDCA = new TVector2(-200.,-200.);
   if(qVecQnFrameworkZDCA != NULL){
     bZDCAqVector = kTRUE;
-    qVectorZDCA->Set(qVecQnFrameworkZDCA->Qx(2),qVecQnFrameworkZDCA->Qy(2));
-    values[AliDielectronVarManager::kQnZDCArpH2] = TVector2::Phi_mpi_pi(qVectorZDCA->Phi())/2;
+    qVectorZDCA->Set(qVecQnFrameworkZDCA->Qx(1),qVecQnFrameworkZDCA->Qy(1));
+    values[AliDielectronVarManager::kQnZDCArpH1] = TVector2::Phi_mpi_pi(qVectorZDCA->Phi())/2;
   }
   delete qVectorZDCA;
 
@@ -4019,8 +4019,8 @@ inline void AliDielectronVarManager::FillQnEventplanes(TList *qnlist, Double_t *
   TVector2 *qVectorZDCC = new TVector2(-200.,-200.);
   if(qVecQnFrameworkZDCC != NULL){
     bZDCCqVector = kTRUE;
-    qVectorZDCC->Set(qVecQnFrameworkZDCC->Qx(2),qVecQnFrameworkZDCC->Qy(2));
-    values[AliDielectronVarManager::kQnZDCCrpH2] = TVector2::Phi_mpi_pi(qVectorZDCC->Phi())/2;
+    qVectorZDCC->Set(qVecQnFrameworkZDCC->Qx(1),qVecQnFrameworkZDCC->Qy(1));
+    values[AliDielectronVarManager::kQnZDCCrpH1] = TVector2::Phi_mpi_pi(qVectorZDCC->Phi())/2;
   }
   delete qVectorZDCC;
 
