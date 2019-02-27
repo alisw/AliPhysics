@@ -502,7 +502,7 @@ void AliAnalysisTaskStrangenessLifetimes::UserExec(Option_t *)
          alpha = v0->AlphaV0();
       else
       {
-        if (nSigmaPosHe3 <= 5)
+        if (nSigmaPosAbsHe3 <= 5)
           alpha= 1;
         else
           alpha = -1;

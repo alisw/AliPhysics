@@ -208,7 +208,7 @@ inline HyperTriton2Body HyperTriton2Body::FillHyperTriton2Body(AliESDv0 *v0, Ali
   v0->GetXYZ(decayVtx[0], decayVtx[1], decayVtx[2]);
   double v0Radius = std::hypot(decayVtx[0], decayVtx[1]);
   double NsigmaSign;
-  if (nsigmaposhe3<=5)NsigmaSign=1;
+  if (std::abs(nsigmaposhe3)<=5)NsigmaSign=1;
   else NsigmaSign=-1;
   auto lvector = miniHyper.GetV0LorentzVector(nTrack, pTrack, NsigmaSign);
   double mass = lvector.M();
