@@ -118,6 +118,7 @@ set(SRCS
   AliAnalysisTaskFlowITSTPCTOFQCSP.cxx
   AliAnalysisTaskHFEIPDistribution.cxx
   AliAnalysisTaskHFEBeautyMCTemplates.cxx
+  AliAnalysisTaskHFEBeautyMCTemplatesRun2.cxx
   AliAnalysisTaskHFEIPCorrection.cxx
   AliAnalysisTaskHFEMulti.cxx
   AliAnalysisTaskHFEMultiplicity.cxx
