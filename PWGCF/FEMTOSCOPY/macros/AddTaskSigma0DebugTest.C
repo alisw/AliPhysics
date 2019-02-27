@@ -156,6 +156,29 @@ AliAnalysisTaskSE *AddTaskSigma0DebugTest(bool isMC = false,
     antiSigmaCuts->SetLightweight(true);
   }
 
+  if (suffix == "1") {
+    sigmaCuts->SetArmenterosCut(0, 0.12, -0.95, -0.6);
+    antiSigmaCuts->SetArmenterosCut(0, 0.12, -0.95, -0.6);
+  } else if (suffix == "2") {
+    sigmaCuts->SetArmenterosCut(0, 0.12, -0.9, -0.6);
+    antiSigmaCuts->SetArmenterosCut(0, 0.12, -0.9, -0.6);
+  } else if (suffix == "3") {
+    sigmaCuts->SetArmenterosCut(0, 0.12, -1, -0.65);
+    antiSigmaCuts->SetArmenterosCut(0, 0.12, -1, -0.65);
+  } else if (suffix == "4") {
+    sigmaCuts->SetArmenterosCut(0, 0.12, -1, -0.7);
+    antiSigmaCuts->SetArmenterosCut(0, 0.12, -1, -0.7);
+  } else if (suffix == "5") {
+    sigmaCuts->SetArmenterosCut(0, 0.1, -1, -0.6);
+    antiSigmaCuts->SetArmenterosCut(0, 0.1, -1, -0.6);
+  } else if (suffix == "6") {
+    sigmaCuts->SetArmenterosCut(0.02, 0.12, -1, -0.6);
+    antiSigmaCuts->SetArmenterosCut(0.02, 0.12, -1, -0.6);
+  } else if (suffix == "7") {
+    sigmaCuts->SetArmenterosCut(0.02, 0.1, -0.9, -0.65);
+    antiSigmaCuts->SetArmenterosCut(0.02, 0.1, -0.9, -0.65);
+  }
+
   if (trigger == "kINT7") {
     sigmaCuts->SetMultiplicityMode(AliVEvent::kINT7);
     antiSigmaCuts->SetMultiplicityMode(AliVEvent::kINT7);
