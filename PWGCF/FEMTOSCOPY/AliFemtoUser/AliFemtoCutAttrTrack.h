@@ -261,24 +261,32 @@ struct TrackCutAttrMinNclsITS {
 struct TrackCutAttrChi2ITS {
 
   double rchi2_its_max;
+  double rchi2_its_min;
 
   bool Pass(const AliFemtoTrack &track)
     {
-      return (track.ITSncls() > 0)
-              && (track.ITSchi2() / track.ITSncls()) < rchi2_its_max;
+      double chi2 = track.ITSncls() > 0
+                  ? track.ITSchi2() / track.ITSncls()
+                  : 9999.0;
+      return rchi2_its_min <= chi2 && chi2 < rchi2_its_max;
     }
 
   TrackCutAttrChi2ITS()
     : rchi2_its_max(3.0)
+    , rchi2_its_min(0.0)
     {}
 
   TrackCutAttrChi2ITS(AliFemtoConfigObject &cfg)
     : rchi2_its_max(cfg.pop_float("rchi2_its_max", 3.0))
+    , rchi2_its_min(cfg.pop_float("rchi2_its_min", 0.0))
     {}
 
   void FillConfiguration(AliFemtoConfigObject &cfg) const
     {
       cfg.insert("rchi2_its_max", rchi2_its_max);
+      if (rchi2_its_min != 0.0) {
+        cfg.insert("rchi2_its_min", rchi2_its_min);
+      }
     }
 
   virtual ~TrackCutAttrChi2ITS() {}
@@ -286,29 +294,35 @@ struct TrackCutAttrChi2ITS {
 
 
 /// \class TrackCutAttrChi2TPC
-/// \brief Cut on reduced chi2 of TPC
+/// \brief Track quality cut on reduced chi2 of TPC fit
 ///
 struct TrackCutAttrChi2TPC {
 
   double rchi2_tpc_max;
+  double rchi2_tpc_min;
 
   bool Pass(const AliFemtoTrack &track)
     {
-      return (track.TPCncls() > 5)
-              && (track.TPCchi2() / (track.TPCncls() - 5)) < rchi2_tpc_max;
+      double chi2 = track.TPCchi2perNDF();
+      return rchi2_tpc_min <= chi2 && chi2 < rchi2_tpc_max;
     }
 
   TrackCutAttrChi2TPC()
     : rchi2_tpc_max(3.0)
+    , rchi2_tpc_min(0.0)
     {}
 
   TrackCutAttrChi2TPC(AliFemtoConfigObject &cfg)
     : rchi2_tpc_max(cfg.pop_float("rchi2_tpc_max", 3.0))
+    , rchi2_tpc_min(cfg.pop_float("rchi2_tpc_min", 0.0))
     {}
 
   void FillConfiguration(AliFemtoConfigObject &cfg) const
     {
       cfg.insert("rchi2_tpc_max", rchi2_tpc_max);
+      if (rchi2_tpc_min != 0.0) {
+        cfg.insert("rchi2_tpc_min", rchi2_tpc_min);
+      }
     }
 
   virtual ~TrackCutAttrChi2TPC() {}
