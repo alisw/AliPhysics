@@ -5550,6 +5550,7 @@ void AliCaloPhotonCuts::ApplyNonLinearity(AliVCluster* cluster, Int_t isMC)
         } else if( fCurrentMC==k14b7 || fCurrentMC==k14k1ab ){
           if(fClusterType==1){
             energy /= FunctionNL_kSDM(energy, 0.923536, -2.63133, -0.152515) ;
+            energy /= FunctionNL_kSDM(energy, 0.991343, -4.26797, -0.156959) ;
           }
         // pp 5.02 TeV LHC15n
         // pass2
@@ -5811,6 +5812,7 @@ void AliCaloPhotonCuts::ApplyNonLinearity(AliVCluster* cluster, Int_t isMC)
         } else if( fCurrentMC==k14b7 || fCurrentMC==k14k1ab ){
           if(fClusterType==1){
             energy /= (FunctionNL_DExp(energy, 0.9898309757, 0.2470261543, -3.0333352573, 1.0932323138, 0.1173201428, -2.0088635359));
+            energy /= (FunctionNL_DExp(energy, 1.0830004158, 0.1234703150, -2.0898601923, 1.1073840098, 0.1042803065, -1.8965494640));
           }
         // 5 TeV LHC15n
         //pass2
