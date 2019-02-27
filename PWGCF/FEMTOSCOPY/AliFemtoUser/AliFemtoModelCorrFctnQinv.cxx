@@ -74,31 +74,30 @@ AliFemtoModelCorrFctnQinv::AliFemtoModelCorrFctnQinv():
 {
 }
 
-AliFemtoModelCorrFctnQinv::AliFemtoModelCorrFctnQinv(const char *name,
+AliFemtoModelCorrFctnQinv::AliFemtoModelCorrFctnQinv(const char *suffix,
                                                      const int nbins,
                                                      const float qinv_low_limit,
-                                                     const float qinv_high_limit):
-  AliFemtoModelCorrFctn(name, nbins, qinv_low_limit, qinv_high_limit)
-
-  , fRecNum(new TH1F(TString::Format("%s_Num", name),
-                     "Reconstructed q_{inv} - Numerator; q_inv (GeV);",
-                     nbins, qinv_low_limit, qinv_high_limit))
-
-  , fRecDen(new TH1F(TString::Format("%s_Den", name),
-                     "Reconstructed q_{inv} - Denominator; q_{inv} (GeV);",
-                     nbins, qinv_low_limit, qinv_high_limit))
-
+                                                     const float qinv_high_limit)
+  : AliFemtoModelCorrFctn(suffix, nbins, qinv_low_limit, qinv_high_limit)
   , fTrueNum(nullptr)
   , fTrueDen(nullptr)
 {
-  fRecNum->Sumw2();
-  fRecDen->Sumw2();
+  fNumeratorTrue->SetTitle("Reconstructed Numerator; q_{inv} (Gev)");
+  fNumeratorFake->SetTitle("Simulated Reconstructed Numerator; q_{inv} (Gev)");
+  fDenominator->SetTitle("Reconstructed Denominator; q_{inv} (Gev)");
+
+  fNumeratorTrueIdeal->SetTitle("Generated Numerator; q_{inv} (Gev)");
+  fNumeratorFakeIdeal->SetTitle("Simulated Generated Numerator; q_{inv} (Gev)");
+  fDenominatorIdeal->SetTitle("Generated Denominator; q_{inv} (Gev)");
+
+  fDenominatorIdeal->Sumw2(false);
+  fDenominator->Sumw2(false);
 
   const float binstart = -0.5,
               binstop = true_type_codes.size() - 0.5;
 
   fTrueNum = new TH2F(
-    TString::Format("true_%s_Num", name),
+    TString::Format("TrueNum%s", suffix),
     "True q_{inv} - Numerator; q_{inv} (GeV);",
     nbins, qinv_low_limit, qinv_high_limit,
     true_type_codes.size(), binstart, binstop
@@ -106,12 +105,12 @@ AliFemtoModelCorrFctnQinv::AliFemtoModelCorrFctnQinv(const char *name,
   fTrueNum->Sumw2();
 
   fTrueDen = new TH2F(
-    TString::Format("true_%s_Den", name),
+    TString::Format("TrueDen%s", suffix),
     "q_{inv} - Denominator; q_{inv} (GeV);",
     nbins, qinv_low_limit, qinv_high_limit,
     true_type_codes.size(), binstart, binstop
   );
-  fTrueDen->Sumw2();
+  // fTrueDen->Sumw2();
 
   for (size_t bin = 0; bin < true_type_codes.size(); ++bin) {
     Int_t code = true_type_codes[bin];
@@ -176,8 +175,8 @@ AliFemtoModelCorrFctnQinv::~AliFemtoModelCorrFctnQinv()
 AliFemtoString
 AliFemtoModelCorrFctnQinv::Report()
 {
-  TString report;
-  return AliFemtoString((const char *)report);
+  AliFemtoString report;
+  return report;
 }
 
 
@@ -272,10 +271,12 @@ void AliFemtoModelCorrFctnQinv::AddPair(const AliFemtoPair *pair,
 
 void AliFemtoModelCorrFctnQinv::AddRealPair(AliFemtoPair* aPair)
 {
+  AliFemtoModelCorrFctn::AddRealPair(aPair);
   AddPair(aPair, fRecNum, fTrueNum);
 }
 
 void AliFemtoModelCorrFctnQinv::AddMixedPair(AliFemtoPair* aPair)
 {
+  AliFemtoModelCorrFctn::AddMixedPair(aPair);
   AddPair(aPair, fRecDen, fTrueDen);
 }

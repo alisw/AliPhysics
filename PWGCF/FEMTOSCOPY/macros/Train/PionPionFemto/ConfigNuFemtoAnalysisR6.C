@@ -32,6 +32,7 @@
 #include "AliFemtoModelWeightGeneratorBasic.h"
 #include "AliFemtoModelWeightGeneratorLednicky.h"
 
+#include "AliFemtoModelCorrFctnQinv.h"
 #include "AliFemtoModelCorrFctnDEtaDPhiStar.h"
 #include "AliFemtoModelCorrFctnDEtaDPhiAK.h"
 #include "AliFemtoCorrFctn3DLCMSPosQuad.h"
@@ -367,6 +368,22 @@ ConfigFemtoAnalysis(const TString& param_str="")
         trueq_cf->ConnectToManager(model_manager);
         analysis->AddCorrFctn(trueq_cf);
       }
+
+      if (macro_config.do_kt_trueq_cf) {
+        auto *qinv_cf = new AliFemtoModelCorrFctnQinv("", QINV_BIN_COUNT, QINV_MIN_VAL, QINV_MAX_VAL);
+        qinv_cf->ConnectToManager(model_manager);
+
+        auto *kt_qinv_cfs = new AliFemtoKtBinnedCorrFunc("KT_TrueQinv", qinv_cf);
+
+        for (size_t kt_idx=0; kt_idx < macro_config.kt_ranges.size(); kt_idx += 2) {
+          float low = macro_config.kt_ranges[kt_idx],
+                high = macro_config.kt_ranges[kt_idx+1];
+          kt_qinv_cfs->AddKtRange(low, high);
+        }
+        analysis->AddCorrFctn(kt_qinv_cfs);
+      }
+
+
       if (macro_config.do_q3d_cf) {
         analysis->AddCorrFctn(new AliFemtoCorrFctn3DLCMSSym("Q3D", macro_config.q3d_bin_count, macro_config.q3d_maxq));
       }
