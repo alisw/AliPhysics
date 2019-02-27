@@ -511,11 +511,10 @@ void AliFemtoCutMonitorPionPion::Pion::Fill(const AliFemtoTrack* track)
   fTofVsP->Fill(p, track->TOFpionTime());
   fNsigTof->Fill(p, track->NSigmaTOFPi());
   fNsigTpc->Fill(p, track->NSigmaTPCPi());
-  fChi2Tpc->Fill((TPC_ncls > 0) ? track->TPCchi2() / TPC_ncls : 0.0);
+  fChi2Tpc->Fill(TPC_ncls > 0 ? track->TPCchi2() / TPC_ncls : -1.0);
 
-  fChiTpcIts->Fill( (TPC_ncls > 6) ? track->TPCchi2() / (TPC_ncls - 6) : 0.0,
-                    (ITS_ncls > 0) ? track->ITSchi2() / ITS_ncls : 0.0);
-
+  fChiTpcIts->Fill(track->TPCchi2perNDF(),
+                    (ITS_ncls > 0) ? track->ITSchi2() / ITS_ncls : -1.0);
 
   fImpact->Fill(track->ImpactZ(), track->ImpactD());
 }
