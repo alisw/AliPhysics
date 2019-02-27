@@ -45,7 +45,6 @@ public:
   Double32_t GetPosProngPt() const { return fPtPos; }
   Double32_t GetNegProngPhi() const { return fPhiNeg; }
   Double32_t GetPosProngPhi() const { return fPhiPos; }
-  Double32_t GetBlasWaveNum() const { return fBlastWave; }
   bool IsCowboy() const { return fFlags & kCowboySailor; }
   bool IsLikeSign() const { return fV0radius < 0.; } //TODO: switch to signbit with ROOT6
   bool IsFake() const { return fV0pt < 0.; }         //TODO: switch to signbit with ROOT6
@@ -71,7 +70,6 @@ public:
   void SetLeastNumberOfXedRows(unsigned char xedrows) { fLeastNxedRows = xedrows; }
   void SetLeastXedRowsOverFindable(float ratio) { fLeastXedOverFindable = ratio; }
   void SetMaxChi2perCluster(float chi2) { fMaxChi2PerCluster = chi2; }
-  void SetBlastWaveNum(float BlastWave){fBlastWave=BlastWave;}
   void SetProngsTPCnsigmas(float pPi, float pP, float nPi, float nP);
   void SetProngsEtaTOF(float posEta, float negEta);
   void SetProngsPt(float posPt, float negPt);
@@ -116,7 +114,6 @@ private:
   Double32_t fPhiNeg;               //[0,2*pi,8]
   Double32_t fEtaPos;               //[-1.0,1.0,7] Pseudorapidity of the positive prong. MSB is the TOF bit.
   Double32_t fEtaNeg;               //[-1.0,1.0,7] Pseudorapidity of the negative prong. MSB is the TOF bit.
-  Double32_t fBlastWave;            //[0.0,1.0,6]
   unsigned char fLeastNxedRows;     // Min number of xed roads
   unsigned char fITSInfo;           // Starting from the MSB: kITSrefit for neg and pos, kSPDany for neg and pos, least number of ITS clusters (last 4 bits)
   unsigned char fFlags;             // Cowboy&Saylor, TOF bits for neg and pos, optimal tracking parameters
