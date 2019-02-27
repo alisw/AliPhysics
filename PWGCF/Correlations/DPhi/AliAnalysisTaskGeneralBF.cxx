@@ -2626,18 +2626,12 @@ void  AliAnalysisTaskGeneralBF::UserExec(Option_t */*option*/)
               
               if (veto_Lambda)
               {
-                if ( q_1 != q_2 ) // for unlike-sign pion-proton correlations only
-                {
-                  if ( mInvLambda>1.114683 && mInvLambda<1.116683 ) continue;
-                }
+                if ( mInvLambda>1.114683 && mInvLambda<1.116683 ) continue; // for both US and LS pion-proton correlations  
               }
               
               if (veto_Lambda_left_sideband)
               {
-                if ( q_1 != q_2 ) // for unlike-sign pion-proton correlations only
-                {
-                  if ( mInvLambda>1.1109 && mInvLambda<1.1131 ) continue;
-                }
+                if ( mInvLambda>1.1109 && mInvLambda<1.1131 ) continue; // for both US and LS pion-proton correlations
               }
               
               _invMassLambdaSq->Fill(mInvLambdaSq);
