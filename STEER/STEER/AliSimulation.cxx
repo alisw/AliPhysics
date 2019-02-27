@@ -687,7 +687,7 @@ Bool_t AliSimulation::Run(Int_t nEvents)
       AliInfoF("HLT simulation set to %s",fRunHLT.Data());
     }
     else {
-      fRunHLT.ReplaceAll(fgkRunHLTAuto,"");
+      fRunHLT = "";
       AliInfoF("HLT simulation set to \"%s\"",fRunHLT.Data());
     }    
   }
