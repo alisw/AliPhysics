@@ -323,6 +323,7 @@ void AliAODHandler::StoreMCParticles(){
 	  
 	  mcpartTmp.SetStatus(mcpart->Particle()->GetStatusCode());
 	  mcpartTmp.SetMCProcessCode(mcpart->Particle()->GetUniqueID());
+	  mcpartTmp.SetFromSubsidiaryEvent(mcpart->IsFromSubsidiaryEvent());
 	  // 
 	  Int_t d0 =  mcpartTmp.GetDaughter(0);
 	  Int_t d1 =  mcpartTmp.GetDaughter(1);

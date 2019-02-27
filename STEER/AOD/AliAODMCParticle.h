@@ -85,7 +85,8 @@ class AliAODMCParticle: public AliVParticle {
     virtual Int_t PdgCode()    const { return GetPdgCode();}
     virtual void    SetGeneratorIndex(Short_t i) {fGeneratorIndex = i;}
     virtual Short_t GetGeneratorIndex() const {return fGeneratorIndex;}
-    enum { kPrimary = 1<<0, kPhysicalPrim = 1<<1, kSecondaryFromWeakDecay = 1<<2, kSecondaryFromMaterial = 1 <<3}; // use only the first 8bits!
+    enum { kPrimary = 1<<0, kPhysicalPrim = 1<<1, kSecondaryFromWeakDecay = 1<<2, kSecondaryFromMaterial = 1 <<3,
+	   kFromSubsidiary = 1<<4 }; // use only the first 8bits!
     virtual void SetFlag(UInt_t flag){fFlag = flag;} // carefull flag encodes three different types of information 
     virtual UInt_t GetFlag() const {return fFlag;}
 
@@ -131,6 +132,11 @@ class AliAODMCParticle: public AliVParticle {
     } 
     Bool_t IsSecondaryFromMaterial() const {return ((fFlag&kSecondaryFromMaterial)==kSecondaryFromMaterial);} 
 
+    virtual void   SetFromSubsidiaryEvent(Bool_t b = kTRUE){
+      if(b)fFlag |= kFromSubsidiary;
+      else fFlag &= ~kFromSubsidiary;
+    }
+    virtual Bool_t IsFromSubsidiaryEvent() const {return ((fFlag&kFromSubsidiary)==kFromSubsidiary);} 
 
     void SetMCProcessCode(UInt_t mcProcess){
       if(mcProcess>1<<7)return; // should not be larger than 46 (see TMCProcess) allow up to 128

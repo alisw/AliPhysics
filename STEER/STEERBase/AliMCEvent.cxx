@@ -535,7 +535,11 @@ Bool_t AliMCEvent::IsFromSubsidiaryEvent(int id) const
     AliMCEvent* mc;
     FindIndexAndEvent(id, mc);
     if (mc != fSubsidiaryEvents->At(0)) return kTRUE;
-  } 
+  }
+  if (!fAODMCHeader) { // for the AOD need to check the particle itself
+    return GetTrack(id)->IsFromSubsidiaryEvent();
+  }
+  
   return kFALSE;
 }
 
@@ -611,6 +615,11 @@ AliVParticle* AliMCEvent::GetTrack(Int_t i) const
       mcParticle = new ((*fMCParticles)[nentries]) AliMCParticle(particle, rarray, i);
       fMCParticleMap->AddAt(mcParticle, i);
       if (mcParticle) {
+	// in case of embedding flag if it is from the underlying event
+	if (fTopEvent && fTopEvent->fSubsidiaryEvents && (fTopEvent->fSubsidiaryEvents->At(0)!= this) ) {
+	  mcParticle->SetFromSubsidiaryEvent(kTRUE);
+	}
+	
 	TParticle* part = mcParticle->Particle();
 	Int_t imo  = part->GetFirstMother();
 	Int_t id1  = part->GetFirstDaughter();

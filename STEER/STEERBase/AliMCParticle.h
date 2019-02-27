@@ -19,14 +19,15 @@
 #include "AliVParticle.h"
 #include "AliStack.h"
 
+
 class AliMCParticle: public AliVParticle {
 public:
+  enum {kFromSubsidiary = BIT(23)};
     AliMCParticle();
     AliMCParticle(TParticle* part, TObjArray* rarray = 0, Int_t label=-1);
     virtual ~AliMCParticle();
     AliMCParticle(const AliMCParticle& mcPart); 
     AliMCParticle& operator=(const AliMCParticle& mcPart);
-    
     // Kinematics
     virtual Double_t Px()        const;
     virtual Double_t Py()        const;
@@ -92,6 +93,9 @@ public:
     Bool_t     IsSecondaryFromWeakDecay() const {return fStack->IsSecondaryFromWeakDecay(fLabel);}
     Bool_t     IsSecondaryFromMaterial()  const {return fStack->IsSecondaryFromMaterial(fLabel);}
 
+    virtual Bool_t IsFromSubsidiaryEvent() const {return TestBit(kFromSubsidiary);}
+    virtual void   SetFromSubsidiaryEvent(Bool_t v) {SetBit(kFromSubsidiary,v);}
+    
  private:
     TParticle *fParticle;             // The wrapped TParticle
     TObjArray *fTrackReferences;      // Array to track references
