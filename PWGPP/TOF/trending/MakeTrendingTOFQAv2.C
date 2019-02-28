@@ -1194,7 +1194,7 @@ std::pair<Double_t, Double_t> ComputeEff(Double_t num, Double_t den, Double_t nu
     const Double_t ratio = num / den;
     Double_t ratioErr = 0;
     if (num > 0)
-      TMath::Sqrt(TMath::Power(numE / num, 2.0) + TMath::Power(denE / den, 2.0));
+      ratioErr = TMath::Sqrt(TMath::Power(numE / num, 2.0) + TMath::Power(denE / den, 2.0));
     //
     ratioErr *= ratio;
     eff.first = ratio;
