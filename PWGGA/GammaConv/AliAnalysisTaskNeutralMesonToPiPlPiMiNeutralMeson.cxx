@@ -3837,7 +3837,7 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::ProcessMCParticles(){
                   // exclude Dalitz-decays
                   reconstructible = false;
                 } else {
-                  AliVParticle *photon1 = fMCEvent->GetTrack(neutralMeson->GetFirstDaughter()), *photon2 = fMCEvent->GetTrack(neutralMeson->GetLastDaughter());
+                  AliVParticle *photon1 = fMCEvent->GetTrack(neutralMeson->GetDaughterFirst()), *photon2 = fMCEvent->GetTrack(neutralMeson->GetDaughterLast());
                   if(!(photon1 && photon2)) reconstructible = false;
                   else {
                     switch(fNDMRecoMode) {
@@ -4083,7 +4083,7 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::ProcessAODMCParticles(){
               if(particle->GetNDaughters() == 3){
                 AliAODMCParticle *neutralMeson(nullptr), *piplus(nullptr), *piminus(nullptr);
                 Int_t indexpiplus(-1), indexpiminus(-1);
-                for(int idaug = particle->GetFirstDaughter(); idaug <= particle->GetLastDaughter(); idaug++) {
+                for(int idaug = particle->GetDaughterFirst(); idaug <= particle->GetDaughterLast(); idaug++) {
                   AliAODMCParticle *daughter = static_cast<AliAODMCParticle *>(AODMCTrackArray->At(idaug));
                   if(daughter->PdgCode() == kPiPlus){
                     piplus = daughter;
@@ -4122,8 +4122,8 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::ProcessAODMCParticles(){
                     // exclude Dalitz-decays
                     reconstructible = false;
                   } else {
-                    AliAODMCParticle *photon1 = static_cast<AliAODMCParticle *>(AODMCTrackArray->At(neutralMeson->GetFirstDaughter())), 
-                                     *photon2 = static_cast<AliAODMCParticle *>(AODMCTrackArray->At(neutralMeson->GetLastDaughter()));
+                    AliAODMCParticle *photon1 = static_cast<AliAODMCParticle *>(AODMCTrackArray->At(neutralMeson->GetDaughterFirst())), 
+                                     *photon2 = static_cast<AliAODMCParticle *>(AODMCTrackArray->At(neutralMeson->GetDaughterLast()));
                     if(!(photon1 && photon2)) reconstructible = false;
                     else {
                       switch(fNDMRecoMode) {
@@ -4280,9 +4280,9 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::ProcessAODMCParticles(){
 
           if(labelNDM>-1){
             AliAODMCParticle* particleNDM    = static_cast<AliAODMCParticle*>(AODMCTrackArray->At(labelNDM));
-            if(particleNDM->GetDaughter(0)>-1 && particleNDM->GetDaughter(1)>-1){
-              AliAODMCParticle *gamma1 = static_cast<AliAODMCParticle*>(AODMCTrackArray->At(particleNDM->GetDaughter(0)));
-              AliAODMCParticle *gamma2 = static_cast<AliAODMCParticle*>(AODMCTrackArray->At(particleNDM->GetDaughter(1)));
+            if(particleNDM->GetDaughterLabel(0)>-1 && particleNDM->GetDaughterLabel(1)>-1){
+              AliAODMCParticle *gamma1 = static_cast<AliAODMCParticle*>(AODMCTrackArray->At(particleNDM->GetDaughterLabel(0)));
+              AliAODMCParticle *gamma2 = static_cast<AliAODMCParticle*>(AODMCTrackArray->At(particleNDM->GetDaughterLabel(1)));
               AliAODMCParticle *negpion = static_cast<AliAODMCParticle*>(AODMCTrackArray->At(labelNegPion));
               AliAODMCParticle *pospion = static_cast<AliAODMCParticle*>(AODMCTrackArray->At(labelPosPion));
               Bool_t kDaughter0IsPrim = ((AliConvEventCuts*)fEventCutArray->At(fiCut))->IsConversionPrimaryAOD( fInputEvent, gamma1, mcProdVtxX, mcProdVtxY, mcProdVtxZ);
@@ -5361,7 +5361,7 @@ Bool_t AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::IsPiPlPiMiPiZeroDecayA
   AliAODMCParticle *negPion = 0x0;
   AliAODMCParticle *neutPion    = 0x0;
 
-  for(Int_t index= fMCMother->GetFirstDaughter();index<= fMCMother->GetLastDaughter();index++){
+  for(Int_t index= fMCMother->GetDaughterFirst();index<= fMCMother->GetDaughterLast();index++){
     if(index<0) continue;
     AliAODMCParticle* temp =  static_cast<AliAODMCParticle*>(trackArray->At( index ));
 
@@ -5423,7 +5423,7 @@ Bool_t AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::IsPiPlPiMiEtaDecayAOD(
   AliAODMCParticle *negPion  = 0x0;
   AliAODMCParticle *etaMeson = 0x0;
 
-  for(Int_t index= fMCMother->GetFirstDaughter();index<= fMCMother->GetLastDaughter();index++){
+  for(Int_t index= fMCMother->GetDaughterFirst();index<= fMCMother->GetDaughterLast();index++){
     if(index<0) continue;
     AliAODMCParticle * temp =static_cast<AliAODMCParticle*>(trackArray->At( index ));
 

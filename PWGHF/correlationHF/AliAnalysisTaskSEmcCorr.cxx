@@ -214,8 +214,8 @@ void AliAnalysisTaskSEmcCorr::Init()
 //_______________________________________________
 void AliAnalysisTaskSEmcCorr::GetFinalStateParticles(AliAODMCParticle *part,TClonesArray *clarr){
   
-  Int_t fdaugh=part->GetDaughter(0);
-  Int_t ldaugh=part->GetDaughter(1);  
+  Int_t fdaugh=part->GetDaughterLabel(0);
+  Int_t ldaugh=part->GetDaughterLabel(1);  
   if(fdaugh<0||ldaugh<0||(fdaugh>ldaugh))return;
   for(Int_t j=fdaugh;j<=ldaugh;j++){
     AliAODMCParticle *pd=(AliAODMCParticle*)clarr->At(j);
@@ -631,8 +631,8 @@ void AliAnalysisTaskSEmcCorr::UserExec(Option_t */*option*/){
 	  Int_t nprongsD0=0;
 	  Int_t nprongsD0charged=0;
 	  
-	  Int_t lab1=part->GetDaughter(0);
-	  Int_t lab2=part->GetDaughter(1);
+	  Int_t lab1=part->GetDaughterLabel(0);
+	  Int_t lab2=part->GetDaughterLabel(1);
 	  if(lab1>=0&&lab2>=0){
 	    for(Int_t jd=lab1;jd<=lab2;jd++){
 	      AliAODMCParticle *d=(AliAODMCParticle*)arrayMC->At(jd);
@@ -648,8 +648,8 @@ void AliAnalysisTaskSEmcCorr::UserExec(Option_t */*option*/){
 		nprongsD0charged++;
 	      }	    
 	      else{	    
-		Int_t lab1d=d->GetDaughter(0);
-		Int_t lab2d=d->GetDaughter(1);
+		Int_t lab1d=d->GetDaughterLabel(0);
+		Int_t lab2d=d->GetDaughterLabel(1);
 		if(lab1d>=0&&lab2d>=0){
 		  for(Int_t jdd=lab1d;jdd<=lab2d;jdd++){
 		    AliAODMCParticle *dd=(AliAODMCParticle*)arrayMC->At(jdd);
@@ -715,8 +715,8 @@ void AliAnalysisTaskSEmcCorr::FillSkipParticleArray(AliAODMCParticle *part,TClon
   
   // Loop on daughters and nephews
   if(part->GetNDaughters()>0){
-    Int_t pos1=part->GetDaughter(0);
-    Int_t pos2=part->GetDaughter(1);
+    Int_t pos1=part->GetDaughterLabel(0);
+    Int_t pos2=part->GetDaughterLabel(1);
     if(pos2<0)pos2=pos1;
     if(pos1>=0){
       for(Int_t jd=pos1;jd<=pos2;jd++){ 
@@ -729,8 +729,8 @@ void AliAnalysisTaskSEmcCorr::FillSkipParticleArray(AliAODMCParticle *part,TClon
 	else if(pdgd!=12&&pdgd!=14&&pdgd!=16&&pdgd!=310&&pdgd!=111){// CHECK NEPHEWS (FOR RESONANT CHANNELS)
 	  Int_t nephw=pd->GetNDaughters();
 	  if(nephw>0){
-	    Int_t posN1=pd->GetDaughter(0);
-	    Int_t posN2=pd->GetDaughter(1);
+	    Int_t posN1=pd->GetDaughterLabel(0);
+	    Int_t posN2=pd->GetDaughterLabel(1);
 	    if(posN2<0)posN2=posN1;
 	    if(posN1>=0){
 	      for(Int_t jN=posN1;jN<=posN2;jN++){ 
@@ -744,8 +744,8 @@ void AliAnalysisTaskSEmcCorr::FillSkipParticleArray(AliAODMCParticle *part,TClon
 		  
 		  Int_t gnephw=pN->GetNDaughters();
 		  if(gnephw>0){
-		    Int_t posGN1=pN->GetDaughter(0);
-		    Int_t posGN2=pN->GetDaughter(1);
+		    Int_t posGN1=pN->GetDaughterLabel(0);
+		    Int_t posGN2=pN->GetDaughterLabel(1);
 		    if(posGN2<0)posGN2=posGN1;
 		    if(posGN1>=0){
 		      for(Int_t jGN=posGN1;jGN<=posGN2;jGN++){ 
@@ -835,7 +835,7 @@ void AliAnalysisTaskSEmcCorr::FillCorrelationPlots(AliAODMCParticle *part,TClone
     }
     if(pdgmum==413){ // D from Dstar: check soft pion  and go to the grandmother
       if(pdgTrig==1){
-	for(Int_t isp=moth->GetDaughter(0);isp<=moth->GetDaughter(1);isp++){
+	for(Int_t isp=moth->GetDaughterLabel(0);isp<=moth->GetDaughterLabel(1);isp++){
 	  AliAODMCParticle *sfp=(AliAODMCParticle*)arrayMC->At(isp);
 	  Int_t pdgsp=TMath::Abs(sfp->GetPdgCode());
 	  if(pdgsp==211)softpi=isp;

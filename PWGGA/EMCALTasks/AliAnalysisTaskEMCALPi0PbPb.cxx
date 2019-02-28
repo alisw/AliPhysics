@@ -2350,7 +2350,7 @@ void AliAnalysisTaskEMCALPi0PbPb::PrintDaughters(const AliVParticle *p, const TO
 
   Int_t n = amc->GetNDaughters();
   for (Int_t i=0; i<n; ++i) {
-    Int_t d = amc->GetDaughter(i);
+    Int_t d = amc->GetDaughterLabel(i);
     const AliVParticle *dmc = static_cast<const AliVParticle*>(arr->At(d));
     PrintDaughters(dmc,arr,level+1);
   }
@@ -2365,8 +2365,8 @@ void AliAnalysisTaskEMCALPi0PbPb::PrintDaughters(const AliMCParticle *p, const A
     return;
 
   for (Int_t i=0; i<level; ++i) printf(" ");
-  Int_t d1 = p->GetFirstDaughter();
-  Int_t d2 = p->GetLastDaughter();
+  Int_t d1 = p->GetDaughterFirst();
+  Int_t d2 = p->GetDaughterLast();
   printf("pid=%d: %.2f %.2f %.2f (%.2f %.2f %.2f); nd=%d,%d\n",
          p->PdgCode(),p->Px(),p->Py(),p->Pz(),p->Xv(),p->Yv(),p->Zv(),d1,d2);
   if (d1<0)
@@ -2439,7 +2439,7 @@ void AliAnalysisTaskEMCALPi0PbPb::ProcessDaughters(AliVParticle *p, Int_t index,
 
   Int_t n = amc->GetNDaughters();
   for (Int_t i=0; i<n; ++i) {
-    Int_t d = amc->GetDaughter(i);
+    Int_t d = amc->GetDaughterLabel(i);
     if (d<=index || d>=nparts) 
       continue;
     AliVParticle *dmc = static_cast<AliVParticle*>(arr->At(d));
@@ -2455,8 +2455,8 @@ void AliAnalysisTaskEMCALPi0PbPb::ProcessDaughters(AliMCParticle *p, Int_t index
   if (!p || !arr)
     return;
 
-  Int_t d1 = p->GetFirstDaughter();
-  Int_t d2 = p->GetLastDaughter();
+  Int_t d1 = p->GetDaughterFirst();
+  Int_t d2 = p->GetDaughterLast();
   if (0) {
     printf("%d pid=%d: %.3f %.3f %.3f (%.2f %.2f %.2f); nd=%d,%d, mo=%d\n",
            index,p->PdgCode(),p->Px(),p->Py(),p->Pz(),p->Xv(),p->Yv(),p->Zv(),d1,d2, p->GetMother());

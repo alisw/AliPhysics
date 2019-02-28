@@ -359,36 +359,36 @@ void AliAnalysisTaskInclusivef0f2::UserExec(Option_t *option)
 			if( pdgCode == 113 ){
 				if( fabs( trackMC->Y() ) > 0.5 ) continue;
 				if( trackMC->GetNDaughters() != 2 ) continue;
-			        AliAODMCParticle* trackd1 = dynamic_cast<AliAODMCParticle*>(fMCArray->At( trackMC->GetDaughter(0) ));
-                                AliAODMCParticle* trackd2 = dynamic_cast<AliAODMCParticle*>(fMCArray->At( trackMC->GetDaughter(1) ));
+			        AliAODMCParticle* trackd1 = dynamic_cast<AliAODMCParticle*>(fMCArray->At( trackMC->GetDaughterLabel(0) ));
+                                AliAODMCParticle* trackd2 = dynamic_cast<AliAODMCParticle*>(fMCArray->At( trackMC->GetDaughterLabel(1) ));
 				if( !trackd2 ) continue;
 				if( !trackd1 ) continue;
-				if( abs( dynamic_cast<AliAODMCParticle*>(fMCArray->At( trackMC->GetDaughter(0) ))->PdgCode() ) != 211 ) continue;
-				if( abs( dynamic_cast<AliAODMCParticle*>(fMCArray->At( trackMC->GetDaughter(1) ))->PdgCode() ) != 211 ) continue;
+				if( abs( dynamic_cast<AliAODMCParticle*>(fMCArray->At( trackMC->GetDaughterLabel(0) ))->PdgCode() ) != 211 ) continue;
+				if( abs( dynamic_cast<AliAODMCParticle*>(fMCArray->At( trackMC->GetDaughterLabel(1) ))->PdgCode() ) != 211 ) continue;
 				FillTHnSparse("hRhoGenParticle",
 					{genzvtx,fCent,trackMC->Pt(),trackMC->GetCalcMass()},1.0 );
 			}
 			else if( pdgCode == 9010221 ){
 				if( fabs( trackMC->Y() ) > 0.5 ) continue;
                                 if( trackMC->GetNDaughters() != 2 ) continue;
-                                AliAODMCParticle* trackd1 = dynamic_cast<AliAODMCParticle*>(fMCArray->At( trackMC->GetDaughter(0) ));
-                                AliAODMCParticle* trackd2 = dynamic_cast<AliAODMCParticle*>(fMCArray->At( trackMC->GetDaughter(1) ));
+                                AliAODMCParticle* trackd1 = dynamic_cast<AliAODMCParticle*>(fMCArray->At( trackMC->GetDaughterLabel(0) ));
+                                AliAODMCParticle* trackd2 = dynamic_cast<AliAODMCParticle*>(fMCArray->At( trackMC->GetDaughterLabel(1) ));
                                 if( !trackd2 ) continue;
                                 if( !trackd1 ) continue;
-                                if( abs( dynamic_cast<AliAODMCParticle*>(fMCArray->At( trackMC->GetDaughter(0) ))->PdgCode() ) != 211 ) continue;
-                                if( abs( dynamic_cast<AliAODMCParticle*>(fMCArray->At( trackMC->GetDaughter(1) ))->PdgCode() ) != 211 ) continue;
+                                if( abs( dynamic_cast<AliAODMCParticle*>(fMCArray->At( trackMC->GetDaughterLabel(0) ))->PdgCode() ) != 211 ) continue;
+                                if( abs( dynamic_cast<AliAODMCParticle*>(fMCArray->At( trackMC->GetDaughterLabel(1) ))->PdgCode() ) != 211 ) continue;
 				FillTHnSparse("hF0GenParticle",
 					{genzvtx,fCent,trackMC->Pt(),trackMC->GetCalcMass()},1.0 );
 			}
 			else if( pdgCode == 225 ){
 				if( fabs( trackMC->Y() ) > 0.5 ) continue;
                                 if( trackMC->GetNDaughters() != 2 ) continue;
-                                AliAODMCParticle* trackd1 = dynamic_cast<AliAODMCParticle*>(fMCArray->At( trackMC->GetDaughter(0) ));
-                                AliAODMCParticle* trackd2 = dynamic_cast<AliAODMCParticle*>(fMCArray->At( trackMC->GetDaughter(1) ));
+                                AliAODMCParticle* trackd1 = dynamic_cast<AliAODMCParticle*>(fMCArray->At( trackMC->GetDaughterLabel(0) ));
+                                AliAODMCParticle* trackd2 = dynamic_cast<AliAODMCParticle*>(fMCArray->At( trackMC->GetDaughterLabel(1) ));
                                 if( !trackd2 ) continue;
                                 if( !trackd1 ) continue;
-                                if( abs( dynamic_cast<AliAODMCParticle*>(fMCArray->At( trackMC->GetDaughter(0) ))->PdgCode() ) != 211 ) continue;
-                                if( abs( dynamic_cast<AliAODMCParticle*>(fMCArray->At( trackMC->GetDaughter(1) ))->PdgCode() ) != 211 ) continue;
+                                if( abs( dynamic_cast<AliAODMCParticle*>(fMCArray->At( trackMC->GetDaughterLabel(0) ))->PdgCode() ) != 211 ) continue;
+                                if( abs( dynamic_cast<AliAODMCParticle*>(fMCArray->At( trackMC->GetDaughterLabel(1) ))->PdgCode() ) != 211 ) continue;
 				FillTHnSparse("hF2GenParticle",
 					{genzvtx,fCent,trackMC->Pt(),trackMC->GetCalcMass()},1.0 );
 			}
@@ -707,8 +707,8 @@ bool AliAnalysisTaskInclusivef0f2::GoodTracksSelection(int trkcut, double TPCsig
 			if( fabs( trackMC->Y() ) > 0.5 ) continue;
 			if( pdgCode == 113 || pdgCode == 9010221 || pdgCode == 225 ){
 				if( trackMC->GetNDaughters() != 2 ) continue;
-				Label1 = trackMC->GetDaughter(0);
-				Label2 = trackMC->GetDaughter(1);
+				Label1 = trackMC->GetDaughterLabel(0);
+				Label2 = trackMC->GetDaughterLabel(1);
 
 				AliAODMCParticle* trackd1 = dynamic_cast<AliAODMCParticle*>(fMCArray->At( Label1 ));
 				AliAODMCParticle* trackd2 = dynamic_cast<AliAODMCParticle*>(fMCArray->At( Label2 ));
@@ -864,9 +864,9 @@ bool AliAnalysisTaskInclusivef0f2::GoodTracksSelection(int trkcut, double TPCsig
 
 			else if( pdgCode == 223 ){
 				if( trackMC->GetNDaughters() != 3 ) continue; //omega
-				Label1 = trackMC->GetDaughter(0);
-				Label2 = trackMC->GetDaughter(0)+1;
-				Label3 = trackMC->GetDaughter(1);
+				Label1 = trackMC->GetDaughterLabel(0);
+				Label2 = trackMC->GetDaughterLabel(0)+1;
+				Label3 = trackMC->GetDaughterLabel(1);
 
 				AliAODMCParticle* trackd1 = dynamic_cast<AliAODMCParticle*>(fMCArray->At( Label1 ));
                                 AliAODMCParticle* trackd2 = dynamic_cast<AliAODMCParticle*>(fMCArray->At( Label2 ));
@@ -943,8 +943,8 @@ bool AliAnalysisTaskInclusivef0f2::GoodTracksSelection(int trkcut, double TPCsig
 			else if( pdgCode ==313 ){
 				if( trackMC->GetNDaughters() != 2 ) continue; //kstart
 
-                                Label1 = trackMC->GetDaughter(0);
-                                Label2 = trackMC->GetDaughter(1);
+                                Label1 = trackMC->GetDaughterLabel(0);
+                                Label2 = trackMC->GetDaughterLabel(1);
 
                                 AliAODMCParticle* trackd1 = dynamic_cast<AliAODMCParticle*>(fMCArray->At( Label1 ));
                                 AliAODMCParticle* trackd2 = dynamic_cast<AliAODMCParticle*>(fMCArray->At( Label2 ));
