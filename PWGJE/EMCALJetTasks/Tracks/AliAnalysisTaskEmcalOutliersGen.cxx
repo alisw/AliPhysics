@@ -37,7 +37,7 @@ void AliAnalysisTaskEmcalOutliersGen::UserCreateOutputObjects() {
 }
 
 bool AliAnalysisTaskEmcalOutliersGen::Run() {
-    auto particles = GetParticleContainer("mcparticles");
+    auto particles = GetParticleContainer("mcparticlesSelected");
     auto jets = GetJetContainer("partjets");
 
     double partptmin[21] = {0., 20., 25., 30., 40., 50., 70., 80., 100., 120., 140., 180., 200., 250., 270., 300., 350., 380., 420., 450., 600.};
@@ -51,9 +51,22 @@ bool AliAnalysisTaskEmcalOutliersGen::Run() {
             for(int i = 0; i < j->GetNumberOfTracks(); i++){
                 auto part = j->TrackAt(i, particles->GetArray());
                 auto z = j->GetZ(part->Px(), part->Py(), part->Pz());
-                auto mother = MCEvent()->GetTrack(part->GetMother());
-                auto grandmother = MCEvent()->GetTrack(mother->GetMother());
-                std::cout << "Particle " << i << ": pt " << part->Pt() << " GeV/c, z " << z << ", pdg " << part->PdgCode() << ", mother pdg " << mother->PdgCode() << ", mother pt " << mother->Pt() << ", grandmother pdg " << grandmother->PdgCode() << ",  grandmother pt " << grandmother->Pt() << std::endl;
+                auto mother = part->GetMother() > -1 ? MCEvent()->GetTrack(part->GetMother()) : nullptr;
+                std::cout << "Particle " << i << ": pt " << part->Pt() << " GeV/c, z " << z << ", pdg " << part->PdgCode();
+                if(mother) {
+                    std::cout << ", mother pdg " << mother->PdgCode() << ", mother pt " << mother->Pt();
+                    auto grandmother =  mother->GetMother() > -1 ? MCEvent()->GetTrack(mother->GetMother()) : nullptr;
+                    if(grandmother) {
+                        std::cout << ", grandmother pdg " << grandmother->PdgCode() << ",  grandmother pt " << grandmother->Pt();
+
+                    } else {
+                        std::cout << ", no grand mother";
+                    }
+
+                } else {
+                    std::cout << ", no mother";
+                }
+                std::cout << std::endl;
             }
         }
     }
@@ -71,7 +84,7 @@ AliAnalysisTaskEmcalOutliersGen *AliAnalysisTaskEmcalOutliersGen::AddTaskEmcalOu
   auto task = new AliAnalysisTaskEmcalOutliersGen(name);
   mgr->AddTask(task);
 
-  auto partcont = task->AddMCParticleContainer("mcparticles");
+  auto partcont = task->AddMCParticleContainer("mcparticlesSelected");
   partcont->SetMinPt(0.);
   auto contjet = task->AddJetContainer(AliJetContainer::kFullJet, AliJetContainer::antikt_algorithm, AliJetContainer::E_scheme, 0.2,
                                                      AliJetContainer::kTPCfid, partcont, nullptr);
