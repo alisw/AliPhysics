@@ -120,10 +120,10 @@ protected:
   Int_t fExpectedTrack1Code;
   Int_t fExpectedTrack2Code;
 
-  /// KStar numerator of reconstructed pairs
+  /// Qinv numerator of reconstructed pairs
   TH1F *fRecNum;
 
-  /// KStar denominator of reconstructed pairs
+  /// Qinv denominator of reconstructed pairs
   TH1F *fRecDen;
 
   /// Numerator of only true pairs
@@ -205,8 +205,8 @@ AliFemtoModelCorrFctnQinv::CalcTrueQinv(const AliFemtoPair *pair)
   const AliFemtoThreeVector *momentum1 = info1->GetTrueMomentum(),
                             *momentum2 = info2->GetTrueMomentum();
 
-  const Float_t e1 = sqrt(mass1 * mass1 + momentum1->Mag2()),
-                e2 = sqrt(mass2 * mass2 + momentum2->Mag2());
+  const Float_t e1 = momentum1->MassHypothesis(mass1),
+                e2 = momentum2->MassHypothesis(mass2);
 
   return CalcQinv(AliFemtoLorentzVector(e1, *momentum1),
                   AliFemtoLorentzVector(e2, *momentum2));
@@ -224,7 +224,7 @@ inline double AliFemtoModelCorrFctnQinv::CalcQinv(
                q_inv = (p1 - p2).m2(),
            mass_diff = p1.m2() - p2.m2();
 
-  const double tQ = (p_inv == 0.0 ? 0.0 : ::pow(mass_diff, 2) / p_inv) - q_inv;
+  const double tQ = (p_inv == 0.0 ? 0.0 : (mass_diff * mass_diff) / p_inv) - q_inv;
   return ::sqrt(std::fabs(tQ));
 }
 

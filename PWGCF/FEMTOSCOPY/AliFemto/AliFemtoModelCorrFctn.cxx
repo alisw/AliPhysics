@@ -242,34 +242,36 @@ void AliFemtoModelCorrFctn::AddMixedPair(AliFemtoPair* aPair)
   }
 
   if(!fKaonPDG) {
-    Double_t weight = fManager->GetWeight(aPair);
-    fNumeratorFake->Fill(aPair->QInv(), weight);
-    fDenominator->Fill(aPair->QInv(), 1.0);
+    const Double_t
+      weight = fManager->GetWeight(aPair),
+      qinv = aPair->QInv(),
+      qinv_ideal = GetQinvTrue(aPair);
 
-    Double_t tQinvTrue = GetQinvTrue(aPair);
+    fNumeratorFake->Fill(qinv, weight);
+    fDenominator->Fill(qinv, 1.0);
 
-    fNumeratorFakeIdeal->Fill(tQinvTrue, weight);
-    fDenominatorIdeal->Fill(tQinvTrue, 1.0);
+    fNumeratorFakeIdeal->Fill(qinv_ideal, weight);
+    fDenominatorIdeal->Fill(qinv_ideal, 1.0);
 
-      if(fFillkT)
-      {
-          int pairNumber = GetPairNumber(aPair);
+    if (fFillkT) {
+        int pairNumber = GetPairNumber(aPair);
 
-          if(pairNumber >= 0){
-              if(fkTdists[pairNumber]){
-                  fkTdists[pairNumber]->Fill(GetParentsKt(aPair));
-              }
-          }
-      }
-    fQgenQrec->Fill(tQinvTrue,aPair->QInv());
+        if(pairNumber >= 0){
+            if(fkTdists[pairNumber]){
+                fkTdists[pairNumber]->Fill(GetParentsKt(aPair));
+            }
+        }
+    }
+
+    fQgenQrec->Fill(qinv_ideal, qinv);
   }
   //Special MC analysis for K selected by PDG code -->
   else {
     Double_t weight = fManager->GetWeight(aPair);
     AliFemtoTrack *inf1 = (AliFemtoTrack *) aPair->Track1()->Track();
     AliFemtoTrack *inf2 = (AliFemtoTrack *) aPair->Track2()->Track();
-    Double_t pdg1 = ((AliFemtoModelHiddenInfo*)inf1->GetHiddenInfo())->GetPDGPid();
-    Double_t pdg2 = ((AliFemtoModelHiddenInfo*)inf2->GetHiddenInfo())->GetPDGPid();
+    // Double_t pdg1 = ((AliFemtoModelHiddenInfo*)inf1->GetHiddenInfo())->GetPDGPid();
+    // Double_t pdg2 = ((AliFemtoModelHiddenInfo*)inf2->GetHiddenInfo())->GetPDGPid();
     // if((aPair->KT())<0.5)cout<<" Corr Func  pdg1 "<<pdg1<<" pdg2 "<<pdg2<<" qinv "<<aPair->QInv()<< " w "<<weight<<endl;
     fNumeratorFake->Fill(aPair->QInv(), weight);
     fDenominator->Fill(aPair->QInv(), 1.0);
