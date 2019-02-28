@@ -194,8 +194,8 @@ void AliEmcalMCTrackSelector::ConvertMCParticles(AliMCEvent* mcEvent, TClonesArr
       if(TMath::Abs(part->PdgCode()) == 22){
         bool hasPhotonDaughter = false;
         // check if particle has photon daughter
-        if(part->GetFirstDaughter() > -1 && part->GetLastDaughter() > -1) {
-          for(int idaughter = part->GetFirstDaughter(); idaughter <= part->GetLastDaughter(); idaughter++) {
+        if(part->GetDaughterFirst() > -1 && part->GetDaughterLast() > -1) {
+          for(int idaughter = part->GetDaughterFirst(); idaughter <= part->GetDaughterLast(); idaughter++) {
             AliMCParticle *daughter = static_cast<AliMCParticle *>(mcEvent->GetTrack(idaughter));
             if(TMath::Abs(daughter->PdgCode()) == 22) {
               hasPhotonDaughter = true;
@@ -268,8 +268,8 @@ void AliEmcalMCTrackSelector::CopyMCParticles(TClonesArray* partIn, TClonesArray
       if(TMath::Abs(part->PdgCode()) == 22){
         bool hasPhotonDaughter = false;
         // check if particle has photon daughter
-        if(part->GetFirstDaughter() > -1 && part->GetLastDaughter() > -1) {
-          for(int idaughter = part->GetFirstDaughter(); idaughter <= part->GetLastDaughter(); idaughter++) {
+        if(part->GetDaughterFirst() > -1 && part->GetDaughterLast() > -1) {
+          for(int idaughter = part->GetDaughterFirst(); idaughter <= part->GetDaughterLast(); idaughter++) {
             AliAODMCParticle *daughter = static_cast<AliAODMCParticle *>(partIn->At(idaughter));
             if(TMath::Abs(daughter->PdgCode()) == 22) {
               hasPhotonDaughter = true;

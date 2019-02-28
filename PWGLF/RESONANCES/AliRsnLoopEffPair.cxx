@@ -194,7 +194,7 @@ Bool_t AliRsnLoopEffPair::AssignMotherAndDaughtersAOD(AliRsnEvent *rsnEvent, Int
    // assign them as MC reference of the 'fDaughter' objects
    fDaughter[0].Reset();
    fDaughter[1].Reset();
-   Int_t index[2] = {(Int_t)mother->GetDaughter(0), (Int_t)mother->GetDaughter(1)};
+   Int_t index[2] = {(Int_t)mother->GetDaughterLabel(0), (Int_t)mother->GetDaughterLabel(1)};
    Int_t i, pdg;
    Short_t charge;
    AliAODMCParticle *daughter = 0x0;

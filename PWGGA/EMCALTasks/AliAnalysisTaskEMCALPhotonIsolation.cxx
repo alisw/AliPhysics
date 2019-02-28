@@ -3673,8 +3673,8 @@ void AliAnalysisTaskEMCALPhotonIsolation::LookforParticle(Int_t clusterlabel, Do
             // printf(" of a pi0 or a eta mesons");
           clusterFromPromptPhoton=5;
 
-          Int_t idxdaug1 = momP2Check->GetFirstDaughter();
-          Int_t idxdaug2 = momP2Check->GetLastDaughter();
+          Int_t idxdaug1 = momP2Check->GetDaughterFirst();
+          Int_t idxdaug2 = momP2Check->GetDaughterLast();
 
           if(idxdaug1 == clusterlabel){ // Cluster associated with the 1st daughter? Then look if also the 2nd daughter contributes to the cluster energy
             if(idxdaug2<npart){         // 2nd daughter within List of Particles
@@ -3728,8 +3728,8 @@ void AliAnalysisTaskEMCALPhotonIsolation::LookforParticle(Int_t clusterlabel, Do
         clusterFromPromptPhoton=5; // Cluster created by a photon but not a prompt one
       }
 
-      Int_t firstidx=momP2Check->GetFirstDaughter();
-      Int_t lastidx=momP2Check->GetLastDaughter();
+      Int_t firstidx=momP2Check->GetDaughterFirst();
+      Int_t lastidx=momP2Check->GetDaughterLast();
 
       if(clusterFromPromptPhoton==1){
         if( firstidx == clusterlabel ){ // Cluster associated with the 1st electron? Then look if also the 2nd electron contributes to the cluster energy
@@ -3764,8 +3764,8 @@ void AliAnalysisTaskEMCALPhotonIsolation::LookforParticle(Int_t clusterlabel, Do
         AliAODMCParticle *grandma=static_cast<AliAODMCParticle*>(fAODMCParticles->At(idxgrandma));
 
         if( grandma->GetPdgCode() == 111 || momP2Check->GetPdgCode() == 221 ){ // Add also omega mesons, Lambda barion, neutral Kaons?
-          Int_t idxaunt1 = grandma->GetFirstDaughter();
-          Int_t idxaunt2 = grandma->GetLastDaughter();
+          Int_t idxaunt1 = grandma->GetDaughterFirst();
+          Int_t idxaunt2 = grandma->GetDaughterLast();
 
           if( idxaunt1 ==  mom2checkidx ){ // The 1st daughter of the pi0/eta is the mother of the electron that produced the cluster
                                            // Check if the 2nd pi0/eta daughter contributes to the cluster energy

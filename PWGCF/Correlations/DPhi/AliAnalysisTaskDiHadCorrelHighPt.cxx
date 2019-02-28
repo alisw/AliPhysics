@@ -686,9 +686,9 @@ void AliAnalysisTaskDiHadCorrelHighPt::UserExec(Option_t *)
             
             AliAODMCParticle* daughter0 = 0x0;
             AliAODMCParticle* daughter1 = 0x0;
-            Int_t dau0 = mcTrack->GetDaughter(0);
+            Int_t dau0 = mcTrack->GetDaughterLabel(0);
             if (dau0>0) daughter0 = (AliAODMCParticle*) mcArray->At(dau0);
-            Int_t dau1 = mcTrack->GetDaughter(1);
+            Int_t dau1 = mcTrack->GetDaughterLabel(1);
             if (dau1>0) daughter1 = (AliAODMCParticle*) mcArray->At(dau1);
             
             if(!daughter0||!daughter1) continue;

@@ -968,8 +968,8 @@ bool AliSigma0PhotonMotherCuts::CheckDaughters(
 
   if (particle->GetNDaughters() != 2) return false;
 
-  for (int daughterIndex = particle->GetFirstDaughter();
-       daughterIndex <= particle->GetLastDaughter(); ++daughterIndex) {
+  for (int daughterIndex = particle->GetDaughterFirst();
+       daughterIndex <= particle->GetDaughterLast(); ++daughterIndex) {
     if (daughterIndex < 0) continue;
     AliMCParticle *tmpDaughter =
         static_cast<AliMCParticle *>(fMCEvent->GetTrack(daughterIndex));
@@ -996,8 +996,8 @@ bool AliSigma0PhotonMotherCuts::CheckDaughtersInAcceptance(
 
   if (particle->GetNDaughters() != 2) return false;
 
-  for (int daughterIndex = particle->GetFirstDaughter();
-       daughterIndex <= particle->GetLastDaughter(); ++daughterIndex) {
+  for (int daughterIndex = particle->GetDaughterFirst();
+       daughterIndex <= particle->GetDaughterLast(); ++daughterIndex) {
     if (daughterIndex < 0) continue;
     AliMCParticle *tmpDaughter =
         static_cast<AliMCParticle *>(fMCEvent->GetTrack(daughterIndex));

@@ -323,7 +323,7 @@ void AliJJetJtTask::UserExec(Option_t* /*option*/)
 /// 
 void AliJJetJtTask::FindDaughters(AliJJet *jet, AliAODMCParticle *track, AliMCParticleContainer *mcTracksCont){
 
-  for(int id = track->GetFirstDaughter(); id <= track->GetLastDaughter() ; id++){
+  for(int id = track->GetDaughterFirst(); id <= track->GetDaughterLast() ; id++){
     AliAODMCParticle *daughter = static_cast<AliAODMCParticle*>(mcTracksCont->GetParticle(id));
     if(daughter->GetNDaughters() > 0){
       FindDaughters(jet,daughter,mcTracksCont);

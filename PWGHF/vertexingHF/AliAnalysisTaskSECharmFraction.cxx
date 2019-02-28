@@ -6743,7 +6743,7 @@ AliAODRecoDecayHF* AliAnalysisTaskSECharmFraction::GetD0toKPiSignalTypeObsolete(
     }
   }
 
-  if(mum1->GetDaughter(1)-mum1->GetDaughter(0)+1!=2){
+  if(mum1->GetDaughterLabel(1)-mum1->GetDaughterLabel(0)+1!=2){
     // from D0 but NOT A 2 PRONG DECAY
     signaltype=6;
     return aodDMC;
@@ -7496,10 +7496,10 @@ Bool_t AliAnalysisTaskSECharmFraction::FillHistos(AliAODRecoDecayHF2Prong *d,TLi
        ((TH1F*)flistMCproperties->FindObject("hMCcquarkAllEta"))->Fill(mcPart->Eta());
        ((TH1F*)flistMCproperties->FindObject("hMCcquarkAllEnergy"))->Fill(mcPart->E());
        //NOW LOOK FOR A D0 among cquark daughters
-       ncdaught=mcPart->GetDaughter(1)-mcPart->GetDaughter(0)+1;
+       ncdaught=mcPart->GetDaughterLabel(1)-mcPart->GetDaughterLabel(0)+1;
        ((TH1F*)flistMCproperties->FindObject("hMCcquarkNdaught"))->Fill(ncdaught);
        if(ncdaught>1){
-	 for(Int_t iDaught=mcPart->GetDaughter(0);iDaught<mcPart->GetDaughter(1);iDaught++){
+	 for(Int_t iDaught=mcPart->GetDaughterLabel(0);iDaught<mcPart->GetDaughterLabel(1);iDaught++){
 	   AliAODMCParticle* mcPartD0 = dynamic_cast<AliAODMCParticle*>(arrayMC->At(iDaught));
 	   if(mcPartD0==0x0)continue;
 	   if(TMath::Abs(mcPartD0->GetPdgCode()) == 421){
@@ -7571,7 +7571,7 @@ Bool_t AliAnalysisTaskSECharmFraction::FillHistos(AliAODRecoDecayHF2Prong *d,TLi
 	((TH1F*)flistMCproperties->FindObject("hMCBhadrEta"))->Fill(mcD0Parent->Eta());
 	((TH1F*)flistMCproperties->FindObject("hMCBhadrEnergy"))->Fill(mcD0Parent->E());
 	
-	nBdaught=mcD0Parent->GetDaughter(1)-mcD0Parent->GetDaughter(0)+1;
+	nBdaught=mcD0Parent->GetDaughterLabel(1)-mcD0Parent->GetDaughterLabel(0)+1;
 	((TH1F*)flistMCproperties->FindObject("hMCBhadrNdaught"))->Fill(nBdaught);
 
 	

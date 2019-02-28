@@ -1082,7 +1082,7 @@ if(fmult){
                 if(NDaugh != 2) continue; // skip decay channels w/0 2 prongs
                 
                 for(Int_t i=0; i<NDaugh;i++){ // loop on DStar daughters
-                    Int_t daugh_label = DStarMC->GetDaughter(i);
+                    Int_t daugh_label = DStarMC->GetDaughterLabel(i);
                     AliAODMCParticle* mcDaughter = dynamic_cast<AliAODMCParticle*>(fmcArray->At(daugh_label));
                     if(!mcDaughter) continue;
                     Int_t daugh_pdg = TMath::Abs(mcDaughter->GetPdgCode());
@@ -1091,13 +1091,13 @@ if(fmult){
                     if(daugh_pdg == 421) {
                         Int_t NDaughD0 = mcDaughter->GetNDaughters();
                         if(NDaughD0 != 2) continue; // skip decay channels w/0 2 prongs
-                        trackiddaugh0 = mcDaughter->GetDaughter(0);
-                        trackiddaugh1 = mcDaughter->GetDaughter(1);
+                        trackiddaugh0 = mcDaughter->GetDaughterLabel(0);
+                        trackiddaugh1 = mcDaughter->GetDaughterLabel(1);
                         Bool_t isKaon = kFALSE;
                         Bool_t isPion = kFALSE;
                         
                         for(Int_t k=0;k<NDaughD0;k++){
-                            Int_t labelD0daugh = mcDaughter->GetDaughter(k);
+                            Int_t labelD0daugh = mcDaughter->GetDaughterLabel(k);
                             AliAODMCParticle* mcGrandDaughter = dynamic_cast<AliAODMCParticle*>(fmcArray->At(labelD0daugh));
                             if(!mcGrandDaughter) continue;
                             if(fLimitAcceptanceForMC && mcGrandDaughter->Eta()>0.8) continue;

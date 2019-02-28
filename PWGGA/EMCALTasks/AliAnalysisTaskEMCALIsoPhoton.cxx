@@ -1472,7 +1472,7 @@ Float_t AliAnalysisTaskEMCALIsoPhoton::GetClusSource(const AliVCluster *c)
     if(fDebug){
       printf("\tclus mc truth eta=%1.1f,phi=%1.1f,E=%1.1f, pdgcode=%d, stackpos=%d\n",mcp->Eta(),mcp->Phi(),mcp->E(),mcp->GetPdgCode(),clabel);
     }
-    Int_t lab1 =  mcp->GetDaughter(0);
+    Int_t lab1 =  mcp->GetDaughterLabel(0);
     if(lab1<0 || lab1>nmcp)
       return -0.1;
     AliAODMCParticle *mcd = static_cast<AliAODMCParticle*>(fAODMCParticles->At(lab1));
@@ -1534,8 +1534,8 @@ void AliAnalysisTaskEMCALIsoPhoton::FollowGamma()
       if(!mcp)
 	return;
     }  
-    daug0f =  mcp->GetDaughter(0);
-    daug0l =  mcp->GetDaughter(mcp->GetNDaughters()-1);
+    daug0f =  mcp->GetDaughterLabel(0);
+    daug0l =  mcp->GetDaughterLabel(mcp->GetNDaughters()-1);
     nd0 = daug0l - daug0f;
     if(fDebug)
       printf("\n\tGenerated gamma (%d) eta=%1.1f,phi=%1.1f,E=%1.1f, pdgcode=%d, n-daug=%d\n",selfid,mcp->Eta(),mcp->Phi(),mcp->E(),mcp->GetPdgCode(),nd0+1);
@@ -1601,8 +1601,8 @@ void AliAnalysisTaskEMCALIsoPhoton::GetDaughtersInfo(int firstd, int lastd, int 
       dp =  static_cast<AliAODMCParticle*>(fAODMCParticles->At(id));
       if(!dp)
 	continue;
-      Int_t dfd = dp->GetDaughter(0); 
-      Int_t dld = dp->GetDaughter(dp->GetNDaughters()-1);
+      Int_t dfd = dp->GetDaughterLabel(0); 
+      Int_t dld = dp->GetDaughterLabel(dp->GetNDaughters()-1);
       Int_t dnd =  dld - dfd + 1;
       Float_t vr = TMath::Sqrt(dp->Xv()*dp->Xv()+dp->Xv()*dp->Xv());
       if(fDebug)

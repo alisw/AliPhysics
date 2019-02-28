@@ -737,8 +737,8 @@ void AliAnalysisV0Lam::Exec(Option_t *)
     if(v0->ChargeProng(0) == v0->ChargeProng(1))         continue;
     if(v0->CosPointingAngle(primaryVertexAOD) < 0.998) continue;
     //Now look at daughter tracks
-    AliAODTrack* daughterTrackPos = (AliAODTrack*)v0->GetDaughter(0);
-    AliAODTrack* daughterTrackNeg = (AliAODTrack*)v0->GetDaughter(1);
+    AliAODTrack* daughterTrackPos = (AliAODTrack*)v0->GetDaughterLabel(0);
+    AliAODTrack* daughterTrackNeg = (AliAODTrack*)v0->GetDaughterLabel(1);
     if(!daughterTrackPos) continue; //Daughter tracks must exist
     if(!daughterTrackNeg) continue;
 
@@ -1202,8 +1202,8 @@ TH1F *AliAnalysisV0Lam::CreateLambdaOriginHist(TClonesArray *mcArray, Int_t numb
     //If this MCParticle has no mother but it has a label > LastHijingLabel,
     //reject it
     else if(mcParticle->GetLabel() > numberOfLastHijingLabel) continue;
-    AliAODMCParticle *mcDaughter1 = (AliAODMCParticle*)mcArray->At(mcParticle->GetDaughter(0));
-    AliAODMCParticle *mcDaughter2 = (AliAODMCParticle*)mcArray->At(mcParticle->GetDaughter(1));
+    AliAODMCParticle *mcDaughter1 = (AliAODMCParticle*)mcArray->At(mcParticle->GetDaughterLabel(0));
+    AliAODMCParticle *mcDaughter2 = (AliAODMCParticle*)mcArray->At(mcParticle->GetDaughterLabel(1));
     //We won't count any MC Particles that have daughters outside the acceptance
     //region
     if(fabs(mcDaughter1->Eta()) > fEtaDaughter) continue;
@@ -1283,8 +1283,8 @@ int AliAnalysisV0Lam::GetV0MCParticleID(AliAODv0 *v0, TClonesArray *mcArray)
   // MCParticles have the same mother, return the MCParticle index of that
   // mother.  If they don't have the same mother (or if both tracks are
   // primary) the V0 is a fake.  In that case, return -1.
-  AliAODTrack* daughterTrackPos = (AliAODTrack*)v0->GetDaughter(0);
-  AliAODTrack* daughterTrackNeg = (AliAODTrack*)v0->GetDaughter(1);
+  AliAODTrack* daughterTrackPos = (AliAODTrack*)v0->GetDaughterLabel(0);
+  AliAODTrack* daughterTrackNeg = (AliAODTrack*)v0->GetDaughterLabel(1);
   daughterTrackPos->SetAODEvent(fAOD);
   daughterTrackNeg->SetAODEvent(fAOD);
   AliAODMCParticle* mcParticlePos = (AliAODMCParticle*)mcArray->At(abs(daughterTrackPos->GetLabel()));
