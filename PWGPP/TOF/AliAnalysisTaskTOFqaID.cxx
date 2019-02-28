@@ -659,10 +659,10 @@ Bool_t AliAnalysisTaskTOFqaID::IsEventSelected(AliESDEvent* event)
     return kFALSE;
   }
   fVertex = (AliESDVertex*)event->GetPrimaryVertexTracks();
-  if (fVertex->GetNContributors() < 1) {
+  if (!fVertex || fVertex->GetNContributors() < 1) {
     // SPD vertex
     fVertex = (AliESDVertex*)event->GetPrimaryVertexSPD();
-    if (fVertex->GetNContributors() < 1)
+    if (!fVertex || fVertex->GetNContributors() < 1)
       fVertex = 0x0;
   }
   if (!fVertex)
