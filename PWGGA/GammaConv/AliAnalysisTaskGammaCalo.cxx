@@ -850,6 +850,10 @@ AliAnalysisTaskGammaCalo::~AliAnalysisTaskGammaCalo()
     delete fClusterCandidates;
     fClusterCandidates = 0x0;
   }
+  if(fGammaCandidates){
+    delete fGammaCandidates;
+    fGammaCandidates = 0x0;
+  }
   if(fBGHandler){
     delete[] fBGHandler;
     fBGHandler = 0x0;
@@ -3819,15 +3823,6 @@ void AliAnalysisTaskGammaCalo::ProcessConversionCandidates(){
   for(Int_t i = 0; i < fReaderGammas->GetEntriesFast(); i++){
     AliAODConversionPhoton* PhotonCandidate = (AliAODConversionPhoton*) fReaderGammas->At(i);
     if(!PhotonCandidate) continue;
-    //fIsFromDesiredHeader = kTRUE;
-    //if(fIsMC>0 && ((AliConvEventCuts*)fEventCutArray->At(fiCut))->GetSignalRejection() != 0){
-    //  Int_t isPosFromMBHeader = ((AliConvEventCuts*)fEventCutArray->At(fiCut))->IsParticleFromBGEvent(PhotonCandidate->GetMCLabelPositive(), fMCEvent, fInputEvent);
-    //  if(isPosFromMBHeader == 0 && ((AliConvEventCuts*)fEventCutArray->At(fiCut))->GetSignalRejection() != 3) continue;
-    //  Int_t isNegFromMBHeader = ((AliConvEventCuts*)fEventCutArray->At(fiCut))->IsParticleFromBGEvent(PhotonCandidate->GetMCLabelNegative(), fMCEvent, fInputEvent);
-    //  if(isNegFromMBHeader == 0 && ((AliConvEventCuts*)fEventCutArray->At(fiCut))->GetSignalRejection() != 3) continue;
-    //  if( (isNegFromMBHeader+isPosFromMBHeader) != 4) fIsFromDesiredHeader = kFALSE;
-    //}  ???
-
     if(!fConversionCuts->PhotonIsSelected(PhotonCandidate,fInputEvent)) continue;
     if(!fConversionCuts->InPlaneOutOfPlaneCut(PhotonCandidate->GetPhotonPhi(),fEventPlaneAngle)) continue;
     if(!fConversionCuts->UseElecSharingCut() && !fConversionCuts->UseToCloseV0sCut()){
@@ -4944,6 +4939,10 @@ void AliAnalysisTaskGammaCalo::CalculatePi0Candidates(){
             if(matchedGamma0 || matchedGamma1) {
               ClusterMatched = kTRUE;
             }
+          }
+          if(arrClustersProcess){
+              delete Cluster0;
+              delete Cluster1;
           }
           if(ClusterMatched) continue;
         }
@@ -6649,7 +6648,7 @@ void AliAnalysisTaskGammaCalo::CalculateBackground(){
                   AliAODConversionMother *backgroundCandidate = new AliAODConversionMother(&currentEventGoodV0,&previousGoodV0);
                   backgroundCandidate->CalculateDistanceOfClossetApproachToPrimVtx(fInputEvent->GetPrimaryVertex());
 
-                  if((((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->MesonIsSelected(backgroundCandidate,kFALSE,((AliConvEventCuts*)fEventCutArray->At(fiCut))->GetEtaShift(),currentEventGoodV0.GetLeadingCellID(),previousGoodV0.GetLeadingCellID()))){
+                  if((((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->MesonIsSelected(backgroundCandidate,kTRUE,((AliConvEventCuts*)fEventCutArray->At(fiCut))->GetEtaShift(),currentEventGoodV0.GetLeadingCellID(),previousGoodV0.GetLeadingCellID()))){
                     if(!fDoLightOutput) fHistoMotherBackJetInvMassPt[fiCut]->Fill(backgroundCandidate->M(),backgroundCandidate->Pt(), tempBGCandidateWeight);
                     else fHistoMotherBackInvMassPt[fiCut]->Fill(backgroundCandidate->M(),backgroundCandidate->Pt(), tempBGCandidateWeight);
                   }
