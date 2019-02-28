@@ -378,15 +378,13 @@ TList *AliFemtoV0TrackPairCut::ListSettings()
   TList *list = new TList();
 
   // The TString format patterns (F is float, I is integer, L is long)
-  const char ptrnF[] = "AliFemtoV0TrackPairCut.%s=%f",
-             //ptrnI[] = "AliFemtoV0TrackPairCut.%s=%d",
-             ptrnL[] = "AliFemtoV0TrackPairCut.%s=%ld";
+  const TString prefix = "AliFemtoV0TrackPairCut.";
 
-  list->Add(new TObjString(TString::Format(ptrnF, "sharequalitymax", fShareQualityMax)));
-  list->Add(new TObjString(TString::Format(ptrnF, "sharefractionmax", fShareFractionMax)));
+  list->Add(new TObjString(prefix + Form("sharequalitymax=%g", fShareQualityMax)));
+  list->Add(new TObjString(prefix + Form("sharefractionmax=%g", fShareFractionMax)));
 
-  list->Add(new TObjString(TString::Format(ptrnL, "pairs_passed", fNPairsPassed)));
-  list->Add(new TObjString(TString::Format(ptrnL, "pairs_failed", fNPairsFailed)));
+  list->Add(new TObjString(prefix + Form("pairs_passed=%ld", fNPairsPassed)));
+  list->Add(new TObjString(prefix + Form("pairs_failed=%ld", fNPairsFailed)));
 
   return list;
 }
