@@ -69,6 +69,7 @@ AliAnalysisTaskTOFqaID::AliAnalysisTaskTOFqaID(const char* name)
     , fMyTimeZeroTOF(1e20)
     , fMyTimeZeroTOFsigma(1e20)
     , fMyTimeZeroTOFtracks(-1)
+    , fMyTimeZeroTOFstatus(kFALSE)
     , fIsMC(kFALSE)
     , fVerbose(kFALSE)
     , fSelectedPdg(0)
@@ -146,6 +147,7 @@ AliAnalysisTaskTOFqaID::AliAnalysisTaskTOFqaID(const AliAnalysisTaskTOFqaID& cop
     , cpVar(fMyTimeZeroTOF)
     , cpVar(fMyTimeZeroTOFsigma)
     , cpVar(fMyTimeZeroTOFtracks)
+    , cpVar(fMyTimeZeroTOFstatus)
     , cpVar(fIsMC)
     , cpVar(fVerbose)
     , cpVar(fSelectedPdg)
@@ -214,6 +216,7 @@ AliAnalysisTaskTOFqaID& AliAnalysisTaskTOFqaID::operator=(const AliAnalysisTaskT
     cpVar(fMyTimeZeroTOF);
     cpVar(fMyTimeZeroTOFsigma);
     cpVar(fMyTimeZeroTOFtracks);
+    cpVar(fMyTimeZeroTOFstatus);
     cpVar(fIsMC);
     cpVar(fVerbose);
     cpVar(fSelectedPdg);
@@ -478,9 +481,13 @@ void AliAnalysisTaskTOFqaID::UserExec(Option_t*)
     return;
   }
 
+  //Computing our own TOF_T0 once per event
+  ComputeTimeZeroByTOF1GeV();
+
   // loop over ESD tracks
+  AliESDtrack* track = 0x0;
   for (Int_t iTracks = 0; iTracks < fESD->GetNumberOfTracks(); iTracks++) {
-    AliESDtrack* track = fESD->GetTrack(iTracks);
+    track = fESD->GetTrack(iTracks);
     if (!track) {
       AliInfo(Form("Cannot receive track %d", iTracks));
       continue;
@@ -766,17 +773,17 @@ Bool_t AliAnalysisTaskTOFqaID::ComputeTimeZeroByTOF1GeV()
 {
   /* compute T0-TOF for tracks within momentum range [fResolutionMinP, fResolutionMaxP] */
   /* init T0-TOF */
-  AliTOFT0v1 fTOFT0v1(fESDpid); // TOF-T0 v1
-  fTOFT0v1.Init(fESD);
-  fTOFT0v1.DefineT0("all", fResolutionMinP, fResolutionMaxP);
-  fMyTimeZeroTOF = -1000. * fTOFT0v1.GetResult(0);
-  fMyTimeZeroTOFsigma = 1000. * fTOFT0v1.GetResult(1);
-  fMyTimeZeroTOFtracks = fTOFT0v1.GetResult(3);
-  Bool_t hasTimeZeroTOF = kFALSE;
+  AliTOFT0v1 TOFT0v1(fESDpid); // TOF-T0 v1
+  TOFT0v1.Init(fESD);
+  TOFT0v1.DefineT0("all", fResolutionMinP, fResolutionMaxP);
+  fMyTimeZeroTOF = -1000. * TOFT0v1.GetResult(0);
+  fMyTimeZeroTOFsigma = 1000. * TOFT0v1.GetResult(1);
+  fMyTimeZeroTOFtracks = TOFT0v1.GetResult(3);
+  fMyTimeZeroTOFstatus = kFALSE;
   /* check T0-TOF sigma */
   if (fMyTimeZeroTOFsigma < 250.)
-    hasTimeZeroTOF = kTRUE;
-  return hasTimeZeroTOF;
+    fMyTimeZeroTOFstatus = kTRUE;
+  return fMyTimeZeroTOFstatus;
 }
 
 //------------------------------------------------------
@@ -1330,7 +1337,7 @@ void AliAnalysisTaskTOFqaID::FillPidHisto(AliESDtrack* track, Int_t charge, TStr
   //fill histos for pion only
   ((TH2F*)theL->FindObject(Form("hExpTimePiVsStrip%s_%s", suffix.Data(), cLabel.Data())))->Fill((Int_t)GetStripIndex(volId), tofps - fTrkExpTimes[AliPID::kPion]); //ps
   ((TH1F*)theL->FindObject(Form("hExpTimePi%s_%s", suffix.Data(), cLabel.Data())))->Fill(tofps - fTrkExpTimes[AliPID::kPion]);                                     //ps
-  if (ComputeTimeZeroByTOF1GeV() && (fP > fResolutionMinP) && (fP < fResolutionMaxP)) {
+  if (fMyTimeZeroTOFstatus && (fP > fResolutionMinP) && (fP < fResolutionMaxP)) {
     ((TH2F*)theL->FindObject(Form("hExpTimePiT0Sub1GeV%s_%s", suffix.Data(), cLabel.Data())))->Fill(fMyTimeZeroTOFtracks, tofps - fMyTimeZeroTOF - fTrkExpTimes[AliPID::kPion]);
   }
   //fill sigmas and deltas for each specie

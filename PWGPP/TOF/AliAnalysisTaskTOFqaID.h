@@ -125,6 +125,7 @@ class AliAnalysisTaskTOFqaID : public AliAnalysisTaskSE {
 
   Double_t fMyTimeZeroTOF, fMyTimeZeroTOFsigma;  //timeZero by TOF recomputed
   Int_t fMyTimeZeroTOFtracks;                    // number of tracks used to recompute TOF_T0
+  Bool_t fMyTimeZeroTOFstatus;                   // Status of the computed TOF_T0 (kTRUE -> OK, kFALSE -> not OK)
   Bool_t fIsMC;                                  //flag for MC
   Bool_t fVerbose;                               //Flag for verbose mode
   Int_t fSelectedPdg;                            //pdg code of the selected specie (for MC only)
@@ -159,7 +160,7 @@ class AliAnalysisTaskTOFqaID : public AliAnalysisTaskSE {
 
   void SetVariableBinning(); // sets the array with variable binning
 
-  ClassDef(AliAnalysisTaskTOFqaID, 8); // Analysis for the TOF QA
+  ClassDef(AliAnalysisTaskTOFqaID, 9); // Analysis for the TOF QA
 };
 
 #endif
