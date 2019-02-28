@@ -5,7 +5,7 @@
 
 #include "AliFemtoCutMonitorPionPion.h"
 #include "AliFemtoModelHiddenInfo.h"
-#include "AliFemtoAvgSepCalculator.h"
+// #include "AliFemtoAvgSepCalculator.h"
 
 #include "AliFemtoPairCutDetaDphi.h"
 
