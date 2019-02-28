@@ -141,7 +141,14 @@ void MakeSDDADCCalib(Int_t run = 245705,TString foldname = "15o_Bunch4",TString 
     
   if(!fin)return;
   TString lname = Form("clistSDDCalib");
-  TList *cOutput = (TList*)fin->Get(lname.Data());
+  TList *cOutput= 0x0;
+  if(filename.Contains("CalibObjects")) cOutput = (TList*)fin->Get(lname.Data());
+  else{
+    TDirectoryFile* drf=(TDirectoryFile*)fin->Get("ITSAlignQA");
+    lname="clistITSAlignQA";
+    if(drf) cOutput = (TList*)drf->Get(lname.Data());
+  }
+  
   if(!cOutput) {
     Printf("E: Cannot open TList %s",lname.Data());
     return;
@@ -265,7 +272,7 @@ void MakeSDDADCCalib(Int_t run = 245705,TString foldname = "15o_Bunch4",TString 
       hmpv->SetMinimum(0.95*minMPV);
       hmpv->SetMaximum(1.02*maxMPV);
     }
-    TF1 *pol1mpv = new TF1("pol1mpv","pol1mpv",0,6400);
+    TF1 *pol1mpv = new TF1("pol1mpv","pol1",0,6400);
     //Mod 469 only one part of the dr Time region is full 
     if(imod==469) maxFit=3000;
     if(hmpv->GetEntries()<=3) pol1mpv->FixParameter(1,0);
@@ -308,7 +315,7 @@ void MakeSDDADCCalib(Int_t run = 245705,TString foldname = "15o_Bunch4",TString 
     //        cmod->Update();
     //        hmpv->Reset("M");
         
-    TF1 *pol1sig = new TF1("pol1sig","pol1sig",0,6400);
+    TF1 *pol1sig = new TF1("pol1sig","pol1",0,6400);
     if(hsig->GetEntries()>2){
       hsig->Fit(pol1sig,"0NQ","",minFit,maxFit);
     }
@@ -323,7 +330,7 @@ void MakeSDDADCCalib(Int_t run = 245705,TString foldname = "15o_Bunch4",TString 
     //        cmod->Update();
     //        hsig->Reset("M");
         
-    TF1 *pol1sigl = new TF1("pol1sigl","pol1sigl",0,6400);
+    TF1 *pol1sigl = new TF1("pol1sigl","pol1",0,6400);
     if(hsigl->GetEntries()>2){
       hsigl->Fit(pol1sigl,"0NQ","",minFit,maxFit);
     }
