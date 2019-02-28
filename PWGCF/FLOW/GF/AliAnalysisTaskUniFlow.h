@@ -65,7 +65,7 @@ class AliAnalysisTaskUniFlow : public AliAnalysisTaskSE
       };
 
                               AliAnalysisTaskUniFlow(); // constructor
-                              AliAnalysisTaskUniFlow(const char *name, ColSystem colSys, Bool_t bUseWeights = kFALSE); // named (primary) constructor
+                              AliAnalysisTaskUniFlow(const char *name, ColSystem colSys, Bool_t bUseWeights = kFALSE, Bool_t bIsMC = kFALSE); // named (primary) constructor
                               AliAnalysisTaskUniFlow(const AliAnalysisTaskUniFlow&); // not implemented
                               AliAnalysisTaskUniFlow& operator=(const AliAnalysisTaskUniFlow&); // not implemented
       virtual                 ~AliAnalysisTaskUniFlow(); // destructor
@@ -79,7 +79,6 @@ class AliAnalysisTaskUniFlow : public AliAnalysisTaskSE
       void                    SetNumEventsAnalyse(Int_t num) { fNumEventsAnalyse = num; }
       void                    SetDumpTObjectTable(Bool_t dump = kTRUE) { fDumpTObjectTable = dump; }
       void					          SetAnalysisType(AnalType type = kAOD) { fAnalType = type; }
-      void                    SetMC(Bool_t mc = kTRUE) { fMC = mc; }
       void                    SetSampling(Bool_t sample = kTRUE, Int_t iNum = 10) { fSampling = sample; fNumSamples = iNum; }
       void                    SetFillQAhistos(Bool_t fill = kTRUE) { fFillQA = fill; }
       void                    SetProcessPID(Bool_t use = kTRUE) { fProcessSpec[kPion] = use; fProcessSpec[kKaon] = use; fProcessSpec[kProton] = use; }

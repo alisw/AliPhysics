@@ -12,8 +12,13 @@ AliFemtoEventCutPionPionAK::AppendSettings(TCollection &settings) const
 }
 
 void
-AliFemtoTrackCutPionPionAK::AppendSettings(TCollection &settings) const
+AliFemtoTrackCutPionPionAK::AppendSettings(TCollection &settings, TString prefix) const
 {
+  settings.AddVector(
+    new TObjString(prefix + Form("eta_min=%f", eta_range.first)),
+    new TObjString(prefix + Form("eta_max=%f", eta_range.second)),
+    nullptr
+  );
 }
 
 void
@@ -21,11 +26,11 @@ AliFemtoPairCutPionPionAKDetaDphi::AppendSettings(TCollection &settings) const
 {
   TString prefix = "AliFemtoPairCutPionPionAKDetaDphi.";
   settings.AddVector(
-    new TObjString(prefix + Form("max_share_fraction=%g", max_share_fraction)),
-    new TObjString(prefix + Form("max_share_quality=%g", max_share_quality)),
-    new TObjString(prefix + Form("min_delta_eta=%g", min_delta_eta)),
-    new TObjString(prefix + Form("min_delta_phi=%g", min_delta_phi)),
-    new TObjString(prefix + Form("radius=%g", radius)),
+    new TObjString(prefix + Form("max_share_fraction=%g", share_fraction_max)),
+    new TObjString(prefix + Form("max_share_quality=%g", share_quality_max)),
+    new TObjString(prefix + Form("min_delta_eta=%g", delta_eta_min)),
+    new TObjString(prefix + Form("min_delta_phi=%g", delta_phistar_min)),
+    new TObjString(prefix + Form("phistar_radius=%g", phistar_radius)),
     nullptr
   );
 }
@@ -35,9 +40,9 @@ AliFemtoPairCutPionPionAKAvgSep::AppendSettings(TCollection &settings) const
 {
   TString prefix = "AliFemtoPairCutPionPionAKAvgSep.";
   settings.AddVector(
-    new TObjString(prefix + Form("max_share_fraction=%g", max_share_fraction)),
-    new TObjString(prefix + Form("max_share_quality=%g", max_share_quality)),
-    new TObjString(prefix + Form("min_avgsep=%g", min_avgsep)),
+    new TObjString(prefix + Form("max_share_fraction=%g", share_fraction_max)),
+    new TObjString(prefix + Form("max_share_quality=%g", share_quality_max)),
+    new TObjString(prefix + Form("min_avgsep=%g", avgsep_min)),
     nullptr
   );
 }
@@ -91,32 +96,21 @@ AliFemtoPairCutPionPionAKDetaDphi::EventBegin(const AliFemtoEvent *ev)
   Super::EventBegin(ev);
 }
 
-/*
+#define IMPL_INTO_CUT(__name) \
+  template <> __name* AliFemtoConfigObject::Into<__name>(bool) { \
+    auto *cut = new __name(*this); return cut; }
 
-template <>
-AliFemtoEventCutPionPionAK*
-AliFemtoConfigObject::Into<AliFemtoEventCutPionPionAK>(bool)
-{
-  auto *cut = AliFemtoEventCutPionPionAK();
-  return cut;
-}
+#define IMPL_FROM_CUT(__name) \
+  template <> \
+  AliFemtoConfigObject AliFemtoConfigObject::From(const __name &cut) { \
+    return cut.GetConfiguration(); }
 
-template <>
-AliFemtoTrackCutPionPionAK*
-AliFemtoConfigObject::Into<AliFemtoTrackCutPionPionAK>(bool)
-{
-  auto *cut = AliFemtoTrackCutPionPionAK();
-  return cut;
-}
+#define IMPL_TOFROM_CUT(T) \
+  IMPL_INTO_CUT(T) \
+  IMPL_FROM_CUT(T)
 
-template <>
-AliFemtoConfigObject
-AliFemtoConfigObject::From(const AliFemtoPairCutPionPionAK &cut)
-{
-  AliFemtoConfigObject cfg = AliFemtoConfigObject::BuildMap()
-                              ("class", "AliFemtoPairCutPionPionAK");
 
-  cut.StoreConfiguration(cfg);
-  return cfg;
-}
-*/
+IMPL_TOFROM_CUT(AliFemtoEventCutPionPionAK)
+IMPL_TOFROM_CUT(AliFemtoTrackCutPionPionAK)
+IMPL_TOFROM_CUT(AliFemtoPairCutPionPionAKAvgSep)
+IMPL_TOFROM_CUT(AliFemtoPairCutPionPionAKDetaDphi)

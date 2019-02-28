@@ -123,6 +123,7 @@ public:
   }
   void SetBeamRapidity(float rap) { fBeamRapidity = rap; }
   void SetCentralityEstimator(int est) { fEstimator = est; }
+  void SetupTRDstudies(int vintage, bool trdin) { fTRDvintage = vintage; fTRDin = trdin; }
 
   void SaveTrees(bool save=true) { fSaveTrees = save; }
 
@@ -144,6 +145,7 @@ private:
   AliAnalysisTaskNucleiYield (const AliAnalysisTaskNucleiYield &source);
   AliAnalysisTaskNucleiYield &operator=(const AliAnalysisTaskNucleiYield &source);
 
+  bool IsInTRD(float pt, float phi, float sign);
   bool   AcceptTrack(AliAODTrack *t, Double_t dca[2]);
   int   PassesPIDSelection(AliAODTrack *t);
   float  GetTPCsigmas(AliVTrack *t);
@@ -232,6 +234,7 @@ private:
   TH2F                 *fReconstructed[2][2];    //!<! *(MC only)* Positive and negative tracks reconstructed in the acceptance (ITS-TPC,ITS-TPC-TOF)
   TH2F                 *fTotal[2];               //!<! *(MC only)* Positively and negatively charged particles in acceptance
   TH2F                 *fPtCorrection[2];        //!<! *(MC only)* \f$p_{T}^{rec}-p_{T}^{MC}\f$ as a function of \f$p_{T}^{rec}\f$ for positive and negative tracks
+  TH2F                 *fPcorrectionTPC[2];     //!<! *(MC only)* \f$p_{T}^{rec}-p_{T}^{MC}\f$ as a function of \f$p_{T}^{rec}\f$ for positive and negative tracks in TPC
   TH3F                 *fDCAPrimary[2][2];       //!<! *(MC only)* \f$DCA_{xy}\f$ distribution of primaries
   TH3F                 *fDCASecondary[2][2];     //!<! *(MC only)* \f$DCA_{xy}\f$ distribution of secondaries from material
   TH3F                 *fDCASecondaryWeak[2][2]; //!<! *(MC only)* \f$DCA_{xy}\f$ distribution of secondaries from Weak Decay
@@ -243,6 +246,12 @@ private:
   TH3F                 *fTPCbackgroundTpl[2];    //!<! *(Data only)* TPC counts for (anti-)matter
   TH3F                 *fDCAxy[2][2];            //!<! *(Data only)* \f$DCA_{xy}\f$ distribution for ITS+TPC tracks
   TH3F                 *fDCAz[2][2];             //!<! *(Data only)* \f$DCA_{z}\f$ distribution for ITS+TPC tracks
+  TH2F *fHist2Phi[2]; //! phi vs pt, negative (0) and positive (1): used for monitoring
+  TF1 *fTRDboundariesPos[4]; //! Function with the phi limits of TRD boundaries as a function of pt
+  TF1 *fTRDboundariesNeg[4]; //! Function with the phi limits of TRD boundaries as a function of pt
+  int  fTRDvintage;          /// TRD configuration (year)
+  bool fTRDin;               /// if true only tracks within TRD area are considered
+
 
   /// \cond CLASSDEF
   ClassDef(AliAnalysisTaskNucleiYield, 1);

@@ -130,7 +130,7 @@ void SetNumOfCaloModules              ( Int_t nModules)                         
   // Function to enable MC label sorting
   void SetEnableSortingOfMCClusLabels (Bool_t enableSort) { fEnableSortForClusMC   = enableSort;}
 
-  AliEMCALGeometry* GetGeomEMCAL(){return fGeomEMCAL;}
+
 
 
 protected:

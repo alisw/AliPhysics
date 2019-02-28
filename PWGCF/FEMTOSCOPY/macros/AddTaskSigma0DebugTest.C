@@ -127,10 +127,6 @@ AliAnalysisTaskSE *AddTaskSigma0DebugTest(bool isMC = false,
     antiv0Cuts->SetLightweight(true);
   }
 
-  // So for the moment we by default use offline V0s
-  v0Cuts->SetV0OnFlyStatus(false);
-  antiv0Cuts->SetV0OnFlyStatus(false);
-
   if (suffix == "999") {
     v0Cuts->SetCheckCutsMC(true);
     antiv0Cuts->SetCheckCutsMC(true);
@@ -144,9 +140,9 @@ AliAnalysisTaskSE *AddTaskSigma0DebugTest(bool isMC = false,
   sigmaCuts->SetPDG(3212, 3122, 22);
   sigmaCuts->SetLambdaCuts(v0Cuts);
   sigmaCuts->SetV0ReaderName(V0ReaderName.Data());
+  sigmaCuts->SetIsSpectrum(false);
   if (suffix != "0" && suffix != "999") {
     sigmaCuts->SetLightweight(true);
-    sigmaCuts->SetIsSpectrum(false);
   }
 
   AliSigma0PhotonMotherCuts *antiSigmaCuts =
@@ -155,38 +151,32 @@ AliAnalysisTaskSE *AddTaskSigma0DebugTest(bool isMC = false,
   antiSigmaCuts->SetPDG(-3212, -3122, 22);
   antiSigmaCuts->SetLambdaCuts(antiv0Cuts);
   antiSigmaCuts->SetV0ReaderName(V0ReaderName.Data());
+  antiSigmaCuts->SetIsSpectrum(false);
   if (suffix != "0" && suffix != "999") {
     antiSigmaCuts->SetLightweight(true);
-    antiSigmaCuts->SetIsSpectrum(false);
   }
 
   if (suffix == "1") {
-    sigmaCuts->SetDeltaEtaDeltaPhiMax(0.0005);
-    sigmaCuts->SetLightweight(false);
-    antiSigmaCuts->SetDeltaEtaDeltaPhiMax(0.0005);
+    sigmaCuts->SetArmenterosCut(0, 0.12, -0.95, -0.6);
+    antiSigmaCuts->SetArmenterosCut(0, 0.12, -0.95, -0.6);
   } else if (suffix == "2") {
-    sigmaCuts->SetDeltaEtaDeltaPhiMax(0.0005);
-    antiSigmaCuts->SetDeltaEtaDeltaPhiMax(0.0005);
-    sigmaCuts->SetSigmaMassCut(0.003);
-    antiSigmaCuts->SetSigmaMassCut(0.003);
+    sigmaCuts->SetArmenterosCut(0, 0.12, -0.9, -0.6);
+    antiSigmaCuts->SetArmenterosCut(0, 0.12, -0.9, -0.6);
   } else if (suffix == "3") {
-    sigmaCuts->SetDeltaEtaDeltaPhiMax(0.00025);
-    sigmaCuts->SetLightweight(false);
-    antiSigmaCuts->SetDeltaEtaDeltaPhiMax(0.00025);
+    sigmaCuts->SetArmenterosCut(0, 0.12, -1, -0.65);
+    antiSigmaCuts->SetArmenterosCut(0, 0.12, -1, -0.65);
   } else if (suffix == "4") {
-    sigmaCuts->SetDeltaEtaDeltaPhiMax(0.00025);
-    antiSigmaCuts->SetDeltaEtaDeltaPhiMax(0.00025);
-    sigmaCuts->SetSigmaMassCut(0.003);
-    antiSigmaCuts->SetSigmaMassCut(0.003);
+    sigmaCuts->SetArmenterosCut(0, 0.12, -1, -0.7);
+    antiSigmaCuts->SetArmenterosCut(0, 0.12, -1, -0.7);
   } else if (suffix == "5") {
-    sigmaCuts->SetDeltaEtaDeltaPhiMax(0.0015);
-    sigmaCuts->SetLightweight(false);
-    antiSigmaCuts->SetDeltaEtaDeltaPhiMax(0.0015);
+    sigmaCuts->SetArmenterosCut(0, 0.1, -1, -0.6);
+    antiSigmaCuts->SetArmenterosCut(0, 0.1, -1, -0.6);
   } else if (suffix == "6") {
-    sigmaCuts->SetDeltaEtaDeltaPhiMax(0.0015);
-    antiSigmaCuts->SetDeltaEtaDeltaPhiMax(0.0015);
-    sigmaCuts->SetSigmaMassCut(0.003);
-    antiSigmaCuts->SetSigmaMassCut(0.003);
+    sigmaCuts->SetArmenterosCut(0.02, 0.12, -1, -0.6);
+    antiSigmaCuts->SetArmenterosCut(0.02, 0.12, -1, -0.6);
+  } else if (suffix == "7") {
+    sigmaCuts->SetArmenterosCut(0.02, 0.1, -0.9, -0.65);
+    antiSigmaCuts->SetArmenterosCut(0.02, 0.1, -0.9, -0.65);
   }
 
   if (trigger == "kINT7") {

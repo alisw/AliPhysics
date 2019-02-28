@@ -94,7 +94,7 @@ public:
    void CreateMCResponseMatrix(AliEmcalJet* MCjet, AliAODEvent* aodEvent);
    void FillDJetHistograms(AliEmcalJet* jet, Double_t rho, Bool_t IsBkg, AliAODEvent* aodEvent);
    void GetHFJet(AliEmcalJet*& jet, Bool_t IsBkg);
-   void FillHistogramsD0JetCorr(AliAODRecoDecayHF* candidate, Double_t z, Double_t ptD, Double_t ptj, Double_t jetEta, Bool_t IsBkg, Bool_t bDInEMCalAcc, Bool_t bJetInEMCalAcc, AliAODEvent* aodEvent, Int_t pdg,Double_t JetPhiRec,Double_t JetNTracksRec);
+   void FillHistogramsD0JetCorr(AliAODRecoDecayHF* candidate, Double_t z, Double_t ptD, Double_t ptj, Double_t jetEta, Bool_t IsBkg, Bool_t bDInEMCalAcc, Bool_t bJetInEMCalAcc, AliAODEvent* aodEvent, Int_t pdg,Double_t JetPhi,Double_t JetNTracks,Double_t JetY,Double_t JetArea);
    void FillHistogramsDstarJetCorr(AliAODRecoCascadeHF* dstar, Double_t z, Double_t ptD, Double_t ptj, Double_t jetEta, Bool_t IsBkg, Bool_t bDInEMCalAcc, Bool_t bJetInEMCalAcc);
    void FillHistogramsMCGenDJetCorr(Double_t z,Double_t ptD,Double_t ptjet, Double_t yD, Double_t jetEta, Bool_t bDInEMCalAcc, Bool_t bJetInEMCalAcc);
    void FindMCJet(AliEmcalJet*& mcjet);
@@ -171,24 +171,33 @@ private:
    THnSparse* fResponseMatrix;      //!
 
    //Added for QA
-   TH2F* fhPhiJetPtJetMC;           //!
-   TH2F* fhPhiJetTrksPtJetMC;       //!
-   TH2F* fhEtaJetTrksPtJetMC;       //!
-   TH2F* fhEtaJetPtJetMC;           //!
-   TH2F* fhAreaJetPtJetMC;          //!
-   TH2F* fhJetTrksPtJetMC;          //!
-   TH2F* fhPhiJetPtJetreco;         //!
-   TH2F* fhPhiJetTrksPtJetreco;     //!
-   TH2F* fhEtaJetTrksPtJetreco;     //!
-   TH2F* fhEtaJetPtJetreco;         //!
-   TH2F* fhAreaJetPtJetreco;        //!
-   TH2F* fhJetTrksPtJetreco;        //!
-   TH2F* fhPhiJetPtJetD;            //!
-   TH2F* fhPhiJetTrksPtJetD;        //!
-   TH2F* fhAreaJetPtJetD;           //!
-   TH2F* fhJetTrksPtJetD;           //!
+   TH2F* fhPhiJetPtJet_incl_MC;           //!
+   TH2F* fhPhiJetTrksPtJet_incl_MC;       //!
+   TH2F* fhEtaJetTrksPtJet_incl_MC;       //!
+   TH2F* fhEtaJetPtJet_incl_MC;           //!
+   TH2F* fhAreaJetPtJet_incl_MC;          //!
+   TH2F* fhJetTrksPtJet_incl_MC;          //!
+   TH2F* fhPhiJetPtJet_incl_Reco;         //!
+   TH2F* fhPhiJetTrksPtJet_incl_Reco;     //!
+   TH2F* fhEtaJetTrksPtJet_incl_Reco;     //!
+   TH2F* fhEtaJetPtJet_incl_Reco;         //!
+   TH2F* fhAreaJetPtJet_incl_Reco;        //!
+   TH2F* fhJetTrksPtJet_incl_Reco;        //!
+   TH2F* fhPhiJetPtJet_Djet_MC;           //!
+   TH2F* fhPhiJetTrksPtJet_Djet_MC;       //!
+   TH2F* fhEtaJetTrksPtJet_Djet_MC;       //!
+   TH2F* fhEtaJetPtJet_Djet_MC;           //!
+   TH2F* fhAreaJetPtJet_Djet_MC;          //!
+   TH2F* fhJetTrksPtJet_Djet_MC;          //!
+   TH2F* fhPhiJetPtJet_Djet_Reco;         //!
+   TH2F* fhPhiJetTrksPtJet_Djet_Reco;     //!
+   TH2F* fhEtaJetTrksPtJet_Djet_Reco;     //!
+   TH2F* fhEtaJetPtJet_Djet_Reco;         //!
+   TH2F* fhAreaJetPtJet_Djet_Reco;        //!
+   TH2F* fhJetTrksPtJet_Djet_Reco;        //!
 
-   ClassDef(AliAnalysisTaskDJetCorrelationsQA,1); // class for charm-jet CorrelationsExch
+
+   ClassDef(AliAnalysisTaskDJetCorrelationsQA,2); // class for charm-jet CorrelationsExch
 };
 
 #endif

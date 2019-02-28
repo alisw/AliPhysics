@@ -584,7 +584,8 @@ class AliReducedVarManager : public TObject {
     kTRDpidProbabilitiesLQ2D=kTRDpidProbabilitiesLQ1D+2,
     kEMCALmatchedEnergy=kTRDpidProbabilitiesLQ2D+2,         
     kEMCALmatchedClusterId,
-    kEMCALmatchedEOverP,        
+    kEMCALmatchedEOverP,
+    kEMCALmatchedM02,
     // Calorimeter cluster variables --------------------------------------
     kEMCALclusterEnergy,        
     kEMCALclusterDx,            
@@ -775,7 +776,7 @@ class AliReducedVarManager : public TObject {
   AliReducedVarManager(AliReducedVarManager const&);
   AliReducedVarManager& operator=(AliReducedVarManager const&);  
   
-  ClassDef(AliReducedVarManager, 6);
+  ClassDef(AliReducedVarManager, 7);
 };
 
 #endif

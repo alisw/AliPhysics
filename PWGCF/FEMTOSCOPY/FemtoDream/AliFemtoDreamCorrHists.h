@@ -132,6 +132,16 @@ class AliFemtoDreamCorrHists {
       }
     }
   }
+  void FillEtaPhiAverageSE(int hist, int iDaug, float dPhi, float dEta) {
+    if (!fMinimalBooking && fPhiEtaPlots) {
+      fIntRadiiQAEtaPhiSE[hist][iDaug]->Fill(dEta, dPhi);
+    }
+  }
+  void FillEtaPhiAverageME(int hist, int iDaug, float dPhi, float dEta) {
+    if (!fMinimalBooking && fPhiEtaPlots) {
+      fIntRadiiQAEtaPhiME[hist][iDaug]->Fill(dEta, dPhi);
+    }
+  }
   void FilldPhidEtaSE(int iHist, float dPhi, float dEta, float mT);
   void FilldPhidEtaME(int iHist, float dPhi, float dEta, float mT);
   void FillEffectiveMixingDepth(int iHist, int iDepth) {
@@ -176,6 +186,8 @@ class AliFemtoDreamCorrHists {
   TH2F **fMomResolutionDist;
   TH2F ****fRadiiEtaPhiSE;
   TH2F ****fRadiiEtaPhiME;
+  TH2F ***fIntRadiiQAEtaPhiSE;
+  TH2F ***fIntRadiiQAEtaPhiME;
   TH2F ****fRadiiEtaPhiSEsmallK;
   TH2F ****fRadiiEtaPhiMEsmallK;
   TH2F **fdEtadPhiSE;

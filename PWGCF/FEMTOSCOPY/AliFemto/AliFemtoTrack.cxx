@@ -10,6 +10,7 @@
 #include <algorithm>
 
 
+
 AliFemtoTrack::AliFemtoTrack():
   fCharge(0),
   fPidProbElectron(0.0f),
@@ -102,7 +103,7 @@ AliFemtoTrack::AliFemtoTrack():
   std::fill_n(fKinkIndexes, 3, 0);
   std::fill_n(fVertex, 3, -9999);
   std::fill_n(fHasPointOnITS, 6, kFALSE);
-  std::fill_n(fNominalTpcPoints, 9, AliFemtoThreeVector(0.0));
+  std::fill_n(fNominalTpcPoints, 9, AliFemtoThreeVector(-9999, -9999, -9999));
 }
 
 

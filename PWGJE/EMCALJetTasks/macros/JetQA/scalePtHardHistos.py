@@ -133,6 +133,13 @@ def scalePtHardHistos(referenceFile):
         
         # Write the histograms to file
         qaList.Write("%sScaled" % qaListName, ROOT.TObject.kSingleKey)
+
+        # Make sure we delete the lists and sublists, to prevent memory leak
+        for obj in qaList:
+          obj.SetOwner(True)
+          obj.Delete()
+        qaList.SetOwner(True)
+        qaList.Delete()
     
       f.Close()
     print("ooo Save control table for current run")
@@ -222,6 +229,14 @@ def scalePtHardHistos(referenceFile):
       hScaleFactor.Write()
       hScaleFactor.Reset()
       qaList.Write("%sScaled" % qaListNames[0], ROOT.TObject.kSingleKey)
+      
+      # Make sure we delete the lists and sublists, to prevent memory leak
+      for obj in qaList:
+        obj.SetOwner(True)
+        obj.Delete()
+        qaList.SetOwner(True)
+        qaList.Delete()
+      
       f.Close()
     twikifile.close()  # you can omit in most cases as the destructor will call it
 

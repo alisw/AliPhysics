@@ -1403,6 +1403,15 @@ TCanvas* CompareDatatoModels(Int_t collsystem,Int_t binass,Int_t quantity,TPad *
 
   }
     
+  printf("binass = %d, quantity = %d\n",binass,quantity);
+  if((binass==5 && quantity==0) || (binass==5 && quantity==1)) { //remove NSy and NSw of ptass>3 in 3-5 and 16-24
+     grData[0]->RemovePoint(0);
+     grDatav2[0]->RemovePoint(0);
+     hData[0]->SetBinContent(2,0);
+     hData[0]->SetBinError(2,0);
+     printf("Removing NSy and NSw of ptass>3 in 3-5 and 16-24\n");
+   }
+
   pd->cd();
   TH2D *hDraw;
   if(style==-1){
@@ -3286,6 +3295,31 @@ void CompareFitResults_Ratios_NS_2() {
                     Double_t errv2H = yvalv2[ip]/yvalMCref[ip]*(TMath::Sqrt((eyvalv2H[ip]/yvalv2[ip])*(eyvalv2H[ip]/yvalv2[ip])+(eyvalMCref[ip]/yvalMCref[ip])*(eyvalMCref[ip]/yvalMCref[ip])));
                     grv2uncRat->SetPoint(ip,xval[ip],yvalv2[ip]/yvalMCref[ip]);
                     grv2uncRat->SetPointError(ip,exval[ip],exval[ip],errv2L,errv2H);
+                }
+
+                if(xvalDa[0]==4) {
+                    for(int ip=0;ip<grModRef->GetN();ip++) {
+                      Double_t errL = yvalDa[ip]/yvalMCref[ip]*(TMath::Sqrt((eyvalDaL[ip]/yvalDa[ip])*(eyvalDaL[ip]/yvalDa[ip])+(eyvalMCref[ip]/yvalMCref[ip])*(eyvalMCref[ip]/yvalMCref[ip])));
+                      Double_t errH = yvalDa[ip]/yvalMCref[ip]*(TMath::Sqrt((eyvalDaH[ip]/yvalDa[ip])*(eyvalDaH[ip]/yvalDa[ip])+(eyvalMCref[ip]/yvalMCref[ip])*(eyvalMCref[ip]/yvalMCref[ip])));
+                      grDataRat->SetPoint(ip,xval[ip],yvalDa[ip]/yvalMCref[ip]);
+                      grDataRat->SetPointError(ip,exval[ip],exval[ip],errL,errH);
+                      Double_t errv2L = yvalv2[ip]/yvalMCref[ip]*(TMath::Sqrt((eyvalv2L[ip]/yvalv2[ip])*(eyvalv2L[ip]/yvalv2[ip])+(eyvalMCref[ip]/yvalMCref[ip])*(eyvalMCref[ip]/yvalMCref[ip])));
+                      Double_t errv2H = yvalv2[ip]/yvalMCref[ip]*(TMath::Sqrt((eyvalv2H[ip]/yvalv2[ip])*(eyvalv2H[ip]/yvalv2[ip])+(eyvalMCref[ip]/yvalMCref[ip])*(eyvalMCref[ip]/yvalMCref[ip])));
+                      grv2uncRat->SetPoint(ip,xval[ip],yvalv2[ip]/yvalMCref[ip]);
+                      grv2uncRat->SetPointError(ip,exval[ip],exval[ip],errv2L,errv2H);
+                    }                
+                }
+                else {  //this for ad hoc points removal!
+                    for(int ip=0;ip<grModRef->GetN();ip++) {                  
+                      Double_t errL = yvalDa[ip]/yvalMCref[ip+1]*(TMath::Sqrt((eyvalDaL[ip]/yvalDa[ip])*(eyvalDaL[ip]/yvalDa[ip])+(eyvalMCref[ip+1]/yvalMCref[ip+1])*(eyvalMCref[ip+1]/yvalMCref[ip+1])));
+                      Double_t errH = yvalDa[ip]/yvalMCref[ip+1]*(TMath::Sqrt((eyvalDaH[ip]/yvalDa[ip])*(eyvalDaH[ip]/yvalDa[ip])+(eyvalMCref[ip+1]/yvalMCref[ip+1])*(eyvalMCref[ip+1]/yvalMCref[ip+1])));
+                      grDataRat->SetPoint(ip,xval[ip+1],yvalDa[ip]/yvalMCref[ip+1]);
+                      grDataRat->SetPointError(ip,exval[ip+1],exval[ip+1],errL,errH);
+                      Double_t errv2L = yvalv2[ip]/yvalMCref[ip+1]*(TMath::Sqrt((eyvalv2L[ip]/yvalv2[ip])*(eyvalv2L[ip]/yvalv2[ip])+(eyvalMCref[ip+1]/yvalMCref[ip+1])*(eyvalMCref[ip+1]/yvalMCref[ip+1])));
+                      Double_t errv2H = yvalv2[ip]/yvalMCref[ip+1]*(TMath::Sqrt((eyvalv2H[ip]/yvalv2[ip])*(eyvalv2H[ip]/yvalv2[ip])+(eyvalMCref[ip+1]/yvalMCref[ip+1])*(eyvalMCref[ip+1]/yvalMCref[ip+1])));
+                      grv2uncRat->SetPoint(ip,xval[ip+1],yvalv2[ip+1]/yvalMCref[ip]);
+                      grv2uncRat->SetPointError(ip,exval[ip+1],exval[ip+1],errv2L,errv2H);                    
+                    }
                 }
 
                 pad->cd();

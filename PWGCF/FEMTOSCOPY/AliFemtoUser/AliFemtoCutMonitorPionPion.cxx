@@ -252,7 +252,7 @@ AliFemtoCutMonitorPionPion::Pion::Pion(const bool passing,
   };
 
   fYPt = new TH2F(
-    hist_name("eta_Pt"),
+    hist_name("EtaPt"),
     hist_title("#eta  vs  p_{T}",
                 /*X*/  "#eta;"
                 /*Y*/  "p_{T} (GeV);"
@@ -511,11 +511,10 @@ void AliFemtoCutMonitorPionPion::Pion::Fill(const AliFemtoTrack* track)
   fTofVsP->Fill(p, track->TOFpionTime());
   fNsigTof->Fill(p, track->NSigmaTOFPi());
   fNsigTpc->Fill(p, track->NSigmaTPCPi());
-  fChi2Tpc->Fill((TPC_ncls > 0) ? track->TPCchi2() / TPC_ncls : 0.0);
+  fChi2Tpc->Fill(TPC_ncls > 0 ? track->TPCchi2() / TPC_ncls : -1.0);
 
-  fChiTpcIts->Fill( (TPC_ncls > 6) ? track->TPCchi2() / (TPC_ncls - 6) : 0.0,
-                    (ITS_ncls > 0) ? track->ITSchi2() / ITS_ncls : 0.0);
-
+  fChiTpcIts->Fill(track->TPCchi2perNDF(),
+                    (ITS_ncls > 0) ? track->ITSchi2() / ITS_ncls : -1.0);
 
   fImpact->Fill(track->ImpactZ(), track->ImpactD());
 }
@@ -626,7 +625,6 @@ AliFemtoCutMonitorPionPion::Pair::Fill(const AliFemtoPair *pair)
   // if (fabs(delta_eta) <= 0.07 && fabs(delta_phi_star) <= 0.07 && passes)
   //     printf(">> %f % 6f % 6f %p \n", pair, delta_eta, delta_phi_star, this);
     // std::cout << ">> " << pair << " " << delta_eta << ", " << delta_phi_star << "\n"; // -> " << passes << "\n";
-
 
   fDetaDphi->Fill(delta_eta, delta_phi_star);
   fQinvDeta->Fill(qinv, delta_eta);

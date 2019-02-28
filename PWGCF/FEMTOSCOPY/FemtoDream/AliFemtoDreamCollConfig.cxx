@@ -447,10 +447,10 @@ std::vector<bool> AliFemtoDreamCollConfig::GetClosePairRej() {
     AliFatal("Not all Pairs have a specified QA Behaviour, terminating \n");
   } else {
     fClosePairRej->SetBranchAddress("RejPair", &out);
-    for (int iRej = 0; iRej < fWhichQAPairs->GetEntries(); ++iRej) {
+    for (int iRej = 0; iRej < fClosePairRej->GetEntries(); ++iRej) {
       fClosePairRej->GetEntry(iRej);
       Pairs.push_back(TMath::Abs(out) < 1e-6 ? false : true);
-      std::cout << "Close Pair Rejection for Pair " << iRej << "is "
+      std::cout << "Close Pair Rejection for Pair " << iRej << " is "
                 << (TMath::Abs(out) < 1e-6 ? "deactivated" : "activated")
                 << std::endl;
     }

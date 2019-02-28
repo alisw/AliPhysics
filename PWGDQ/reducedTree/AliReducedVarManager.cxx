@@ -1649,12 +1649,15 @@ void AliReducedVarManager::FillTrackInfo(BASETRACK* p, Float_t* values) {
   values[kTRDGTUPID]         = pinfo->TRDGTUPID();
 
 
-  if(fgUsedVars[kEMCALmatchedEnergy] || fgUsedVars[kEMCALmatchedEOverP]) {
+  if(fgUsedVars[kEMCALmatchedEnergy] || fgUsedVars[kEMCALmatchedEOverP] || fgUsedVars[kEMCALmatchedM02]) {
     values[kEMCALmatchedClusterId] = pinfo->CaloClusterId();
     if(fgEvent && (fgEvent->IsA()==EVENT::Class())){
       CLUSTER* cluster = ((EVENT*)fgEvent)->GetCaloCluster(pinfo->CaloClusterId());
       values[kEMCALmatchedEnergy] = (cluster ? cluster->Energy() : -999.0);
-      Float_t mom = pinfo->P();
+      values[kEMCALmatchedM02]    = (cluster ? cluster->M02() : -999.0);
+      Float_t               mom = 0.0;
+      if (pinfo->PonCalo()) mom = pinfo->PonCalo();
+      else                  mom = pinfo->P();
       values[kEMCALmatchedEOverP] = (TMath::Abs(mom)>1.e-8 && cluster ? values[kEMCALmatchedEnergy]/mom : -999.0);
     }
   }  
@@ -3014,7 +3017,8 @@ void AliReducedVarManager::SetDefaultVarNames() {
   fgVariableNames[kEMCALmatchedEnergy]    = "Calo energy";             fgVariableUnits[kEMCALmatchedEnergy] = "GeV";
   fgVariableNames[kEMCALmatchedClusterId] = "matched Calo cluster id"; fgVariableUnits[kEMCALmatchedClusterId] = "";
   fgVariableNames[kEMCALmatchedEOverP]    = "Calo E/p";                fgVariableUnits[kEMCALmatchedEOverP] = "";  
-  fgVariableNames[kEMCALclusterEnergy]    = "Calo cls. energy";        fgVariableUnits[kEMCALclusterEnergy] = "GeV";    
+  fgVariableNames[kEMCALmatchedM02]       = "Calo M02";                fgVariableUnits[kEMCALmatchedM02] = "";
+  fgVariableNames[kEMCALclusterEnergy]    = "Calo cls. energy";        fgVariableUnits[kEMCALclusterEnergy] = "GeV";
   fgVariableNames[kEMCALclusterDx]        = "Calo cls. dx";            fgVariableUnits[kEMCALclusterDx] = "";  
   fgVariableNames[kEMCALclusterDz]        = "Calo cls. dz";            fgVariableUnits[kEMCALclusterDz] = "";  
   fgVariableNames[kEMCALdetector]         = "Calo detector";           fgVariableUnits[kEMCALdetector] = "";  

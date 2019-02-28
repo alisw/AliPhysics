@@ -171,7 +171,7 @@ AliFemtoCorrFctnDirectYlm::operator=(const AliFemtoCorrFctnDirectYlm& aCorrFctn)
 
   } else {
     // delete and resize to match
-    for (auto i = 0; i < fnumsreal.size(); ++i) {
+    for (size_t i = 0; i < fnumsreal.size(); ++i) {
       delete fnumsreal[i];
       delete fnumsimag[i];
       delete fdensreal[i];

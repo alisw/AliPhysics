@@ -602,27 +602,28 @@ Bool_t AliVertexingHFUtils::HasCascadeCandidateAnyDaughInjected(AliAODRecoCascad
   return kFALSE;
 }
 //____________________________________________________________________________
-Int_t AliVertexingHFUtils::CheckOrigin(AliMCEvent* mcEvent, TParticle *mcPart, Bool_t searchUpToQuark){
+Int_t AliVertexingHFUtils::CheckOrigin(AliMCEvent* mcEvent, AliMCParticle *mcPart, Bool_t searchUpToQuark){
   /// checking whether the mother of the particles come from a charm or a bottom quark
 
   Int_t pdgGranma = 0;
   Int_t mother = 0;
-  mother = mcPart->GetFirstMother();
+  mother = mcPart->GetMother();
   Int_t istep = 0;
   Int_t abspdgGranma =0;
   Bool_t isFromB=kFALSE;
   Bool_t isQuarkFound=kFALSE;
   while (mother >0 ){
     istep++;
-    TParticle* mcGranma = mcEvent->Particle(mother);
+    AliMCParticle* mcGranma = (AliMCParticle*)mcEvent->GetTrack(mother);
     if (mcGranma){
-      pdgGranma = mcGranma->GetPdgCode();
+      TParticle* partGranma = mcGranma->Particle();
+      if(partGranma) pdgGranma = partGranma->GetPdgCode();
       abspdgGranma = TMath::Abs(pdgGranma);
       if ((abspdgGranma > 500 && abspdgGranma < 600) || (abspdgGranma > 5000 && abspdgGranma < 6000)){
 	isFromB=kTRUE;
       }
       if(abspdgGranma==4 || abspdgGranma==5) isQuarkFound=kTRUE;
-      mother = mcGranma->GetFirstMother();
+      mother = mcGranma->GetMother();
     }else{
       printf("CheckOrigin: Failed casting the mother particle!");
       break;
@@ -698,15 +699,17 @@ Int_t AliVertexingHFUtils::CheckD0Decay(AliMCEvent* mcEvent, Int_t label, Int_t*
   /// Checks the D0 decay channel. Returns 1 for the D0->Kpi case, 2 for the D0->Kpipipi case, -1 in other cases
 
   if(label<0) return -1;
-  TParticle* mcPart = mcEvent->Particle(label);
-  Int_t pdgD=mcPart->GetPdgCode();
+  AliMCParticle* mcPart = (AliMCParticle*)mcEvent->GetTrack(label);
+  TParticle* part = mcEvent->Particle(label);
+  if(!part || !mcPart) return -1;
+  Int_t pdgD=part->GetPdgCode();
   if(TMath::Abs(pdgD)!=421) return -1;
 
   Int_t nDau=mcPart->GetNDaughters();
 
   if(nDau==2){
-    Int_t daughter0 = mcPart->GetDaughter(0);
-    Int_t daughter1 = mcPart->GetDaughter(1);
+    Int_t daughter0 = mcPart->GetFirstDaughter();
+    Int_t daughter1 = mcPart->GetLastDaughter();
     TParticle* mcPartDaughter0 = mcEvent->Particle(daughter0);
     TParticle* mcPartDaughter1 = mcEvent->Particle(daughter1);
     if(!mcPartDaughter0 || !mcPartDaughter1) return -1;
@@ -724,9 +727,9 @@ Int_t AliVertexingHFUtils::CheckD0Decay(AliMCEvent* mcEvent, Int_t label, Int_t*
     Double_t sumPxDau=mcPartDaughter0->Px()+mcPartDaughter1->Px();
     Double_t sumPyDau=mcPartDaughter0->Py()+mcPartDaughter1->Py();
     Double_t sumPzDau=mcPartDaughter0->Pz()+mcPartDaughter1->Pz();
-    if(TMath::Abs(mcPart->Px()-sumPxDau)>0.001) return -2;
-    if(TMath::Abs(mcPart->Py()-sumPyDau)>0.001) return -2;
-    if(TMath::Abs(mcPart->Pz()-sumPzDau)>0.001) return -2;
+    if(TMath::Abs(part->Px()-sumPxDau)>0.001) return -2;
+    if(TMath::Abs(part->Py()-sumPyDau)>0.001) return -2;
+    if(TMath::Abs(part->Pz()-sumPzDau)>0.001) return -2;
     return 1;
   }
 
@@ -737,12 +740,13 @@ Int_t AliVertexingHFUtils::CheckD0Decay(AliMCEvent* mcEvent, Int_t label, Int_t*
     Double_t sumPyDau=0.;
     Double_t sumPzDau=0.;
     Int_t nFoundKpi=0;
-    Int_t labelFirstDau = mcPart->GetDaughter(0);
+    Int_t labelFirstDau = mcPart->GetFirstDaughter();
     for(Int_t iDau=0; iDau<nDau; iDau++){
       Int_t indDau = labelFirstDau+iDau;
       if(indDau<0) return -1;
+      AliMCParticle* mcDau=(AliMCParticle*)mcEvent->GetTrack(indDau);
       TParticle* dau=mcEvent->Particle(indDau);
-      if(!dau) return -1;
+      if(!mcDau || !dau) return -1;
       Int_t pdgdau=dau->GetPdgCode();
       if(TMath::Abs(pdgdau)==321){
 	if(pdgD>0 && pdgdau>0) return -1;
@@ -761,9 +765,9 @@ Int_t AliVertexingHFUtils::CheckD0Decay(AliMCEvent* mcEvent, Int_t label, Int_t*
 	arrayDauLab[nFoundKpi++]=indDau;
 	if(nFoundKpi>4) return -1;
       }else if(TMath::Abs(pdgdau)==113 || TMath::Abs(pdgdau)==313){
-	Int_t nResDau=dau->GetNDaughters();
+	Int_t nResDau=mcDau->GetNDaughters();
 	if(nResDau!=2) return -1;
-	Int_t indFirstResDau=dau->GetDaughter(0);
+	Int_t indFirstResDau=mcDau->GetFirstDaughter();
 	for(Int_t resDau=0; resDau<2; resDau++){
 	  Int_t indResDau=indFirstResDau+resDau;
 	  if(indResDau<0) return -1;
@@ -795,9 +799,9 @@ Int_t AliVertexingHFUtils::CheckD0Decay(AliMCEvent* mcEvent, Int_t label, Int_t*
     }
     if(nPions!=3) return -1;
     if(nKaons!=1) return -1;
-    if(TMath::Abs(mcPart->Px()-sumPxDau)>0.001) return -1;
-    if(TMath::Abs(mcPart->Py()-sumPyDau)>0.001) return -1;
-    if(TMath::Abs(mcPart->Pz()-sumPzDau)>0.001) return -1;
+    if(TMath::Abs(part->Px()-sumPxDau)>0.001) return -1;
+    if(TMath::Abs(part->Py()-sumPyDau)>0.001) return -1;
+    if(TMath::Abs(part->Pz()-sumPzDau)>0.001) return -1;
     return 2;
   }
   return -1;
@@ -915,12 +919,14 @@ Int_t AliVertexingHFUtils::CheckDplusDecay(AliMCEvent* mcEvent, Int_t label, Int
   /// Checks the Dplus decay channel. Returns 1 for the non-resonant case, 2 for the resonant case, -1 in other cases
 
   if(label<0) return -1;
-  TParticle* mcPart = mcEvent->Particle(label);
-  Int_t pdgD=mcPart->GetPdgCode();
+  AliMCParticle* mcPart = (AliMCParticle*)mcEvent->GetTrack(label);
+  TParticle* part = mcEvent->Particle(label);
+  if(!part || !mcPart) return -1;
+  Int_t pdgD=part->GetPdgCode();
   if(TMath::Abs(pdgD)!=411) return -1;
 
   Int_t nDau=mcPart->GetNDaughters();
-  Int_t labelFirstDau = mcPart->GetDaughter(0);
+  Int_t labelFirstDau = mcPart->GetFirstDaughter();
   Int_t nKaons=0;
   Int_t nPions=0;
   Double_t sumPxDau=0.;
@@ -932,8 +938,9 @@ Int_t AliVertexingHFUtils::CheckDplusDecay(AliMCEvent* mcEvent, Int_t label, Int
     for(Int_t iDau=0; iDau<nDau; iDau++){
       Int_t indDau = labelFirstDau+iDau;
       if(indDau<0) return -1;
+      AliMCParticle* mcDau=(AliMCParticle*)mcEvent->GetTrack(indDau);
       TParticle* dau=mcEvent->Particle(indDau);
-      if(!dau) return -1;
+      if(!mcDau || !dau) return -1;
       Int_t pdgdau=dau->GetPdgCode();
       if(TMath::Abs(pdgdau)==321){
 	if(pdgD*pdgdau>0) return -1;
@@ -952,9 +959,9 @@ Int_t AliVertexingHFUtils::CheckDplusDecay(AliMCEvent* mcEvent, Int_t label, Int
 	arrayDauLab[nFoundKpi++]=indDau;
 	if(nFoundKpi>3) return -1;
       }else if(TMath::Abs(pdgdau)==313){
-	Int_t nResDau=dau->GetNDaughters();
+	Int_t nResDau=mcDau->GetNDaughters();
 	if(nResDau!=2) return -1;
-	Int_t indFirstResDau=dau->GetDaughter(0);
+	Int_t indFirstResDau=mcDau->GetFirstDaughter();
 	for(Int_t resDau=0; resDau<2; resDau++){
 	  Int_t indResDau=indFirstResDau+resDau;
 	  if(indResDau<0) return -1;
@@ -986,9 +993,9 @@ Int_t AliVertexingHFUtils::CheckDplusDecay(AliMCEvent* mcEvent, Int_t label, Int
     }
     if(nPions!=2) return -1;
     if(nKaons!=1) return -1;
-    if(TMath::Abs(mcPart->Px()-sumPxDau)>0.001) return -2;
-    if(TMath::Abs(mcPart->Py()-sumPyDau)>0.001) return -2;
-    if(TMath::Abs(mcPart->Pz()-sumPzDau)>0.001) return -2;
+    if(TMath::Abs(part->Px()-sumPxDau)>0.001) return -2;
+    if(TMath::Abs(part->Py()-sumPyDau)>0.001) return -2;
+    if(TMath::Abs(part->Pz()-sumPzDau)>0.001) return -2;
     if(nDau==3) return 1;
     else if(nDau==2) return 2;
   }
@@ -1086,12 +1093,14 @@ Int_t AliVertexingHFUtils::CheckDplusKKpiDecay(AliMCEvent* mcEvent, Int_t label,
   /// Checks the Ds decay channel. Returns 1 for Ds->phipi->KKpi, 2 for Ds->K0*K->KKpi, 3 for the non-resonant case
 
   if(label<0) return -1;
-  TParticle* mcPart = mcEvent->Particle(label);
-  Int_t pdgD=mcPart->GetPdgCode();
+  AliMCParticle* mcPart = (AliMCParticle*)mcEvent->GetTrack(label);
+  TParticle* part = mcEvent->Particle(label);
+  if(!part || !mcPart) return -1;
+  Int_t pdgD=part->GetPdgCode();
   if(TMath::Abs(pdgD)!=411) return -1;
 
   Int_t nDau=mcPart->GetNDaughters();
-  Int_t labelFirstDau = mcPart->GetDaughter(0);
+  Int_t labelFirstDau = mcPart->GetFirstDaughter();
   Int_t nKaons=0;
   Int_t nPions=0;
   Double_t sumPxDau=0.;
@@ -1105,8 +1114,9 @@ Int_t AliVertexingHFUtils::CheckDplusKKpiDecay(AliMCEvent* mcEvent, Int_t label,
     for(Int_t iDau=0; iDau<nDau; iDau++){
       Int_t indDau = labelFirstDau+iDau;
       if(indDau<0) return -1;
+      AliMCParticle* mcDau=(AliMCParticle*)mcEvent->GetTrack(indDau);
       TParticle* dau=mcEvent->Particle(indDau);
-      if(!dau) return -1;
+      if(!mcDau || !dau) return -1;
       Int_t pdgdau=dau->GetPdgCode();
       if(TMath::Abs(pdgdau)==321){
 	nKaons++;
@@ -1125,9 +1135,9 @@ Int_t AliVertexingHFUtils::CheckDplusKKpiDecay(AliMCEvent* mcEvent, Int_t label,
       }else if(TMath::Abs(pdgdau)==313 || TMath::Abs(pdgdau)==333){
 	if(TMath::Abs(pdgdau)==313) isk0st=kTRUE;
 	if(TMath::Abs(pdgdau)==333) isPhi=kTRUE;
-	Int_t nResDau=dau->GetNDaughters();
+	Int_t nResDau=mcDau->GetNDaughters();
 	if(nResDau!=2) return -1;
-	Int_t indFirstResDau=dau->GetDaughter(0);
+	Int_t indFirstResDau=mcDau->GetFirstDaughter();
 	for(Int_t resDau=0; resDau<2; resDau++){
 	  Int_t indResDau=indFirstResDau+resDau;
 	  if(indResDau<0) return -1;
@@ -1157,9 +1167,9 @@ Int_t AliVertexingHFUtils::CheckDplusKKpiDecay(AliMCEvent* mcEvent, Int_t label,
     }
     if(nPions!=1) return -1;
     if(nKaons!=2) return -1;
-    if(TMath::Abs(mcPart->Px()-sumPxDau)>0.001) return -2;
-    if(TMath::Abs(mcPart->Py()-sumPyDau)>0.001) return -2;
-    if(TMath::Abs(mcPart->Pz()-sumPzDau)>0.001) return -2;
+    if(TMath::Abs(part->Px()-sumPxDau)>0.001) return -2;
+    if(TMath::Abs(part->Py()-sumPyDau)>0.001) return -2;
+    if(TMath::Abs(part->Pz()-sumPzDau)>0.001) return -2;
     if(nDau==3) return 3;
     else if(nDau==2){
       if(isk0st) return 2;
@@ -1262,12 +1272,14 @@ Int_t AliVertexingHFUtils::CheckDplusK0spiDecay(AliMCEvent* mcEvent, Int_t label
   /// Checks the Dplus->V0+pion decay channel. Returns 1 if success, -1 otherwise
 
   if(label<0) return -1;
-  TParticle* mcPart = mcEvent->Particle(label);
-  Int_t pdgD=mcPart->GetPdgCode();
+  AliMCParticle* mcPart = (AliMCParticle*)mcEvent->GetTrack(label);
+  TParticle* part = mcEvent->Particle(label);
+  if(!part || !mcPart) return -1;
+  Int_t pdgD=part->GetPdgCode();
   if(TMath::Abs(pdgD)!=411) return -1;
 
   Int_t nDau=mcPart->GetNDaughters();
-  Int_t labelFirstDau = mcPart->GetDaughter(0);
+  Int_t labelFirstDau = mcPart->GetFirstDaughter();
   Int_t nPions=0;
   Double_t sumPxDau=0.;
   Double_t sumPyDau=0.;
@@ -1279,8 +1291,9 @@ Int_t AliVertexingHFUtils::CheckDplusK0spiDecay(AliMCEvent* mcEvent, Int_t label
     for(Int_t iDau=0; iDau<nDau; iDau++){
       Int_t indDau = labelFirstDau+iDau;
       if(indDau<0) return -1;
+      AliMCParticle* mcDau=(AliMCParticle*)mcEvent->GetTrack(indDau);
       TParticle* dau=mcEvent->Particle(indDau);
-      if(!dau) return -1;
+      if(!mcDau || !dau) return -1;
       Int_t pdgdau=dau->GetPdgCode();
       if(TMath::Abs(pdgdau)==211){
 	nPions++;
@@ -1292,19 +1305,21 @@ Int_t AliVertexingHFUtils::CheckDplusK0spiDecay(AliMCEvent* mcEvent, Int_t label
       }else if(TMath::Abs(pdgdau)==311){
 	codeV0=TMath::Abs(pdgdau);
 	TParticle* v0=dau;
+	AliMCParticle* mcV0=mcDau;
 	if(codeV0==311){
-	  Int_t nK0Dau=dau->GetNDaughters();
+	  Int_t nK0Dau=mcDau->GetNDaughters();
 	  if(nK0Dau!=1) return -1;
-	  Int_t indK0s=dau->GetDaughter(0);
+	  Int_t indK0s=mcDau->GetFirstDaughter();
 	  if(indK0s<0) return -1;
 	  v0=mcEvent->Particle(indK0s);
-	  if(!v0) return -1;
+	  mcV0=(AliMCParticle*)mcEvent->GetTrack(indK0s);
+	  if(!v0 || !mcV0) return -1;
 	  Int_t pdgK0sl=v0->GetPdgCode();
 	  codeV0=TMath::Abs(pdgK0sl);
 	}
-	Int_t nV0Dau=v0->GetNDaughters();
+	Int_t nV0Dau=mcV0->GetNDaughters();
 	if(nV0Dau!=2) return -1;
-	Int_t indFirstV0Dau=v0->GetDaughter(0);
+	Int_t indFirstV0Dau=mcV0->GetFirstDaughter();
 	for(Int_t v0Dau=0; v0Dau<2; v0Dau++){
 	  Int_t indV0Dau=indFirstV0Dau+v0Dau;
 	  if(indV0Dau<0) return -1;
@@ -1325,9 +1340,9 @@ Int_t AliVertexingHFUtils::CheckDplusK0spiDecay(AliMCEvent* mcEvent, Int_t label
       }
     }
     if(nPions!=3) return -1;
-    if(TMath::Abs(mcPart->Px()-sumPxDau)>0.001) return -2;
-    if(TMath::Abs(mcPart->Py()-sumPyDau)>0.001) return -2;
-    if(TMath::Abs(mcPart->Pz()-sumPzDau)>0.001) return -2;
+    if(TMath::Abs(part->Px()-sumPxDau)>0.001) return -2;
+    if(TMath::Abs(part->Py()-sumPyDau)>0.001) return -2;
+    if(TMath::Abs(part->Pz()-sumPzDau)>0.001) return -2;
     if(codeV0==310) return 1;
   }
   return -1;
@@ -1340,12 +1355,14 @@ Int_t AliVertexingHFUtils::CheckDsDecay(AliMCEvent* mcEvent, Int_t label, Int_t*
   /// Checks the Ds decay channel. Returns 1 for Ds->phipi->KKpi, 2 for Ds->K0*K->KKpi, 3 for the non-resonant case, 4 for Ds->f0pi->KKpi
 
   if(label<0) return -1;
-  TParticle* mcPart = mcEvent->Particle(label);
-  Int_t pdgD=mcPart->GetPdgCode();
+  AliMCParticle* mcPart = (AliMCParticle*)mcEvent->GetTrack(label);
+  TParticle* part = mcEvent->Particle(label);
+  if(!part || !mcPart) return -1;
+  Int_t pdgD=part->GetPdgCode();
   if(TMath::Abs(pdgD)!=431) return -1;
 
   Int_t nDau=mcPart->GetNDaughters();
-  Int_t labelFirstDau = mcPart->GetDaughter(0);
+  Int_t labelFirstDau = mcPart->GetFirstDaughter();
   Int_t nKaons=0;
   Int_t nPions=0;
   Double_t sumPxDau=0.;
@@ -1360,8 +1377,9 @@ Int_t AliVertexingHFUtils::CheckDsDecay(AliMCEvent* mcEvent, Int_t label, Int_t*
     for(Int_t iDau=0; iDau<nDau; iDau++){
       Int_t indDau = labelFirstDau+iDau;
       if(indDau<0) return -1;
+      AliMCParticle* mcDau=(AliMCParticle*)mcEvent->GetTrack(indDau);
       TParticle* dau=mcEvent->Particle(indDau);
-      if(!dau) return -1;
+      if(!mcDau || !dau) return -1;
       Int_t pdgdau=dau->GetPdgCode();
       if(TMath::Abs(pdgdau)==321){
 	nKaons++;
@@ -1381,9 +1399,9 @@ Int_t AliVertexingHFUtils::CheckDsDecay(AliMCEvent* mcEvent, Int_t label, Int_t*
 	if(TMath::Abs(pdgdau)==313) isk0st=kTRUE;
 	if(TMath::Abs(pdgdau)==333) isPhi=kTRUE;
         if(TMath::Abs(pdgdau)==9010221) isf0=kTRUE;
-	Int_t nResDau=dau->GetNDaughters();
+	Int_t nResDau=mcDau->GetNDaughters();
 	if(nResDau!=2) return -1;
-	Int_t indFirstResDau=dau->GetDaughter(0);
+	Int_t indFirstResDau=mcDau->GetFirstDaughter();
 	for(Int_t resDau=0; resDau<2; resDau++){
 	  Int_t indResDau=indFirstResDau+resDau;
 	  if(indResDau<0) return -1;
@@ -1413,9 +1431,9 @@ Int_t AliVertexingHFUtils::CheckDsDecay(AliMCEvent* mcEvent, Int_t label, Int_t*
     }
     if(nPions!=1) return -1;
     if(nKaons!=2) return -1;
-    if(TMath::Abs(mcPart->Px()-sumPxDau)>0.001) return -2;
-    if(TMath::Abs(mcPart->Py()-sumPyDau)>0.001) return -2;
-    if(TMath::Abs(mcPart->Pz()-sumPzDau)>0.001) return -2;
+    if(TMath::Abs(part->Px()-sumPxDau)>0.001) return -2;
+    if(TMath::Abs(part->Py()-sumPyDau)>0.001) return -2;
+    if(TMath::Abs(part->Pz()-sumPzDau)>0.001) return -2;
     if(nDau==3) return 3;
     else if(nDau==2){
       if(isk0st) return 2;
@@ -1520,12 +1538,14 @@ Int_t AliVertexingHFUtils::CheckDsK0sKDecay(AliMCEvent* mcEvent, Int_t label, In
   /// Checks the Ds->K0s+S decay channel. Returns 1 in case of success, otherwise -1
 
   if(label<0) return -1;
-  TParticle* mcPart = mcEvent->Particle(label);
-  Int_t pdgD=mcPart->GetPdgCode();
+  AliMCParticle* mcPart = (AliMCParticle*)mcEvent->GetTrack(label);
+  TParticle* part = mcEvent->Particle(label);
+  if(!part || !mcPart) return -1;
+  Int_t pdgD=part->GetPdgCode();
   if(TMath::Abs(pdgD)!=431) return -1;
 
   Int_t nDau=mcPart->GetNDaughters();
-  Int_t labelFirstDau = mcPart->GetDaughter(0);
+  Int_t labelFirstDau = mcPart->GetFirstDaughter();
   Int_t nPions=0;
   Int_t nKaons=0;
   Double_t sumPxDau=0.;
@@ -1538,8 +1558,9 @@ Int_t AliVertexingHFUtils::CheckDsK0sKDecay(AliMCEvent* mcEvent, Int_t label, In
     for(Int_t iDau=0; iDau<nDau; iDau++){
       Int_t indDau = labelFirstDau+iDau;
       if(indDau<0) return -1;
+      AliMCParticle* mcDau=(AliMCParticle*)mcEvent->GetTrack(indDau);
       TParticle* dau=mcEvent->Particle(indDau);
-      if(!dau) return -1;
+      if(!mcDau || !dau) return -1;
       Int_t pdgdau=dau->GetPdgCode();
       if(TMath::Abs(pdgdau)==211){
 	nPions++;
@@ -1558,19 +1579,21 @@ Int_t AliVertexingHFUtils::CheckDsK0sKDecay(AliMCEvent* mcEvent, Int_t label, In
       }else if(TMath::Abs(pdgdau)==311){
 	codeV0=TMath::Abs(pdgdau);
 	TParticle* v0=dau;
+	AliMCParticle* mcV0=mcDau;
 	if(codeV0==311){
-	  Int_t nK0Dau=dau->GetNDaughters();
+	  Int_t nK0Dau=mcDau->GetNDaughters();
 	  if(nK0Dau!=1) return -1;
-	  Int_t indK0s=dau->GetDaughter(0);
+	  Int_t indK0s=mcDau->GetFirstDaughter();
 	  if(indK0s<0) return -1;
 	  v0=mcEvent->Particle(indK0s);
-	  if(!v0) return -1;
+	  mcV0=(AliMCParticle*)mcEvent->GetTrack(indK0s);
+	  if(!v0 || !mcV0) return -1;
 	  Int_t pdgK0sl=v0->GetPdgCode();
 	  codeV0=TMath::Abs(pdgK0sl);
 	}
-	Int_t nV0Dau=v0->GetNDaughters();
+	Int_t nV0Dau=mcV0->GetNDaughters();
 	if(nV0Dau!=2) return -1;
-	Int_t indFirstV0Dau=v0->GetDaughter(0);
+	Int_t indFirstV0Dau=mcV0->GetFirstDaughter();
 	for(Int_t v0Dau=0; v0Dau<2; v0Dau++){
 	  Int_t indV0Dau=indFirstV0Dau+v0Dau;
 	  if(indV0Dau<0) return -1;
@@ -1592,9 +1615,9 @@ Int_t AliVertexingHFUtils::CheckDsK0sKDecay(AliMCEvent* mcEvent, Int_t label, In
     }
     if(nPions!=2) return -1;
     if(nKaons!=1) return -1;
-    if(TMath::Abs(mcPart->Px()-sumPxDau)>0.001) return -2;
-    if(TMath::Abs(mcPart->Py()-sumPyDau)>0.001) return -2;
-    if(TMath::Abs(mcPart->Pz()-sumPzDau)>0.001) return -2;
+    if(TMath::Abs(part->Px()-sumPxDau)>0.001) return -2;
+    if(TMath::Abs(part->Py()-sumPyDau)>0.001) return -2;
+    if(TMath::Abs(part->Pz()-sumPzDau)>0.001) return -2;
     if(codeV0==310) return 1;
   }
   return -1;
@@ -1605,14 +1628,16 @@ Int_t AliVertexingHFUtils::CheckDstarDecay(AliMCEvent* mcEvent, Int_t label, Int
   /// Checks the Dstar decay channel. Returns 1 for D*->D0pi->Kpipi, -1 in other cases
 
   if(label<0) return -1;
-  TParticle* mcPart = mcEvent->Particle(label);
-  Int_t pdgD=mcPart->GetPdgCode();
+  AliMCParticle* mcPart = (AliMCParticle*)mcEvent->GetTrack(label);
+  TParticle* part = mcEvent->Particle(label);
+  if(!part || !mcPart) return -1;
+  Int_t pdgD=part->GetPdgCode();
   if(TMath::Abs(pdgD)!=413) return -1;
 
   Int_t nDau=mcPart->GetNDaughters();
   if(nDau!=2) return -1;
 
-  Int_t labelFirstDau = mcPart->GetDaughter(0);
+  Int_t labelFirstDau = mcPart->GetFirstDaughter();
   Int_t nKaons=0;
   Int_t nPions=0;
   Double_t sumPxDau=0.;
@@ -1623,13 +1648,14 @@ Int_t AliVertexingHFUtils::CheckDstarDecay(AliMCEvent* mcEvent, Int_t label, Int
   for(Int_t iDau=0; iDau<nDau; iDau++){
     Int_t indDau = labelFirstDau+iDau;
     if(indDau<0) return -1;
+    AliMCParticle* mcDau=(AliMCParticle*)mcEvent->GetTrack(indDau);
     TParticle* dau=mcEvent->Particle(indDau);
-    if(!dau) return -1;
+    if(!mcDau || !dau) return -1;
     Int_t pdgdau=dau->GetPdgCode();
     if(TMath::Abs(pdgdau)==421){
-      Int_t nResDau=dau->GetNDaughters();
+      Int_t nResDau=mcDau->GetNDaughters();
       if(nResDau!=2) return -1;
-      Int_t indFirstResDau=dau->GetDaughter(0);
+      Int_t indFirstResDau=mcDau->GetFirstDaughter();
       for(Int_t resDau=0; resDau<2; resDau++){
 	Int_t indResDau=indFirstResDau+resDau;
 	if(indResDau<0) return -1;
@@ -1668,9 +1694,9 @@ Int_t AliVertexingHFUtils::CheckDstarDecay(AliMCEvent* mcEvent, Int_t label, Int
 
   if(nPions!=2) return -1;
   if(nKaons!=1) return -1;
-  if(TMath::Abs(mcPart->Px()-sumPxDau)>0.001) return -2;
-  if(TMath::Abs(mcPart->Py()-sumPyDau)>0.001) return -2;
-  if(TMath::Abs(mcPart->Pz()-sumPzDau)>0.001) return -2;
+  if(TMath::Abs(part->Px()-sumPxDau)>0.001) return -2;
+  if(TMath::Abs(part->Py()-sumPyDau)>0.001) return -2;
+  if(TMath::Abs(part->Pz()-sumPzDau)>0.001) return -2;
   return 1;
 
 }
@@ -1753,12 +1779,14 @@ Int_t AliVertexingHFUtils::CheckLcpKpiDecay(AliMCEvent* mcEvent, Int_t label, In
   /// Checks the Lc->pKpi decay channel. Returns 1 for non-resonant decays and 2, 3 or 4 for resonant ones, -1 in other cases
 
   if(label<0) return -1;
-  TParticle* mcPart = mcEvent->Particle(label);
-  Int_t pdgD=mcPart->GetPdgCode();
+  AliMCParticle* mcPart = (AliMCParticle*)mcEvent->GetTrack(label);
+  TParticle* part = mcEvent->Particle(label);
+  if(!part || !mcPart) return -1;
+  Int_t pdgD=part->GetPdgCode();
   if(TMath::Abs(pdgD)!=4122) return -1;
 
   Int_t nDau=mcPart->GetNDaughters();
-  Int_t labelFirstDau = mcPart->GetDaughter(0);
+  Int_t labelFirstDau = mcPart->GetFirstDaughter();
   Int_t nKaons=0;
   Int_t nPions=0;
   Int_t nProtons=0;
@@ -1772,8 +1800,9 @@ Int_t AliVertexingHFUtils::CheckLcpKpiDecay(AliMCEvent* mcEvent, Int_t label, In
     for(Int_t iDau=0; iDau<nDau; iDau++){
       Int_t indDau = labelFirstDau+iDau;
       if(indDau<0) return -1;
+      AliMCParticle* mcDau=(AliMCParticle*)mcEvent->GetTrack(indDau);
       TParticle* dau=mcEvent->Particle(indDau);
-      if(!dau) return -1;
+      if(!mcDau || !dau) return -1;
       Int_t pdgdau=dau->GetPdgCode();
       if(TMath::Abs(pdgdau)==321){
 	nKaons++;
@@ -1799,9 +1828,9 @@ Int_t AliVertexingHFUtils::CheckLcpKpiDecay(AliMCEvent* mcEvent, Int_t label, In
       }else if(TMath::Abs(pdgdau)==313 || TMath::Abs(pdgdau)==3124 ||
 	       TMath::Abs(pdgdau)==2224){
 	codeRes=TMath::Abs(pdgdau);
-	Int_t nResDau=dau->GetNDaughters();
+	Int_t nResDau=mcDau->GetNDaughters();
 	if(nResDau!=2) return -1;
-	Int_t indFirstResDau=dau->GetDaughter(0);
+	Int_t indFirstResDau=mcDau->GetFirstDaughter();
 	for(Int_t resDau=0; resDau<2; resDau++){
 	  Int_t indResDau=indFirstResDau+resDau;
 	  if(indResDau<0) return -1;
@@ -1838,9 +1867,9 @@ Int_t AliVertexingHFUtils::CheckLcpKpiDecay(AliMCEvent* mcEvent, Int_t label, In
     if(nPions!=1) return -1;
     if(nKaons!=1) return -1;
     if(nProtons!=1) return -1;
-    if(TMath::Abs(mcPart->Px()-sumPxDau)>0.001) return -2;
-    if(TMath::Abs(mcPart->Py()-sumPyDau)>0.001) return -2;
-    if(TMath::Abs(mcPart->Pz()-sumPzDau)>0.001) return -2;
+    if(TMath::Abs(part->Px()-sumPxDau)>0.001) return -2;
+    if(TMath::Abs(part->Py()-sumPyDau)>0.001) return -2;
+    if(TMath::Abs(part->Pz()-sumPzDau)>0.001) return -2;
     if(nDau==3) return 1;
     else if(nDau==2){
       if(codeRes==313) return 2;
@@ -1958,12 +1987,14 @@ Int_t AliVertexingHFUtils::CheckLcV0bachelorDecay(AliMCEvent* mcEvent, Int_t lab
   /// Checks the Lc->V0+bachelor decay channel. Returns 1 for pK0s, 2 for piLambda, 3 for pK0l -1 in other cases
 
   if(label<0) return -1;
-  TParticle* mcPart = mcEvent->Particle(label);
-  Int_t pdgD=mcPart->GetPdgCode();
+  AliMCParticle* mcPart = (AliMCParticle*)mcEvent->GetTrack(label);
+  TParticle* part = mcEvent->Particle(label);
+  if(!part || !mcPart) return -1;
+  Int_t pdgD=part->GetPdgCode();
   if(TMath::Abs(pdgD)!=4122) return -1;
 
   Int_t nDau=mcPart->GetNDaughters();
-  Int_t labelFirstDau = mcPart->GetDaughter(0);
+  Int_t labelFirstDau = mcPart->GetFirstDaughter();
   Int_t nPions=0;
   Int_t nProtons=0;
   Double_t sumPxDau=0.;
@@ -1976,8 +2007,9 @@ Int_t AliVertexingHFUtils::CheckLcV0bachelorDecay(AliMCEvent* mcEvent, Int_t lab
     for(Int_t iDau=0; iDau<nDau; iDau++){
       Int_t indDau = labelFirstDau+iDau;
       if(indDau<0) return -1;
+      AliMCParticle* mcDau=(AliMCParticle*)mcEvent->GetTrack(indDau);
       TParticle* dau=mcEvent->Particle(indDau);
-      if(!dau) return -1;
+      if(!mcDau || !dau) return -1;
       Int_t pdgdau=dau->GetPdgCode();
       if(TMath::Abs(pdgdau)==211){
 	nPions++;
@@ -1996,19 +2028,21 @@ Int_t AliVertexingHFUtils::CheckLcV0bachelorDecay(AliMCEvent* mcEvent, Int_t lab
       }else if(TMath::Abs(pdgdau)==311 ||  TMath::Abs(pdgdau)==3122){
 	codeV0=TMath::Abs(pdgdau);
 	TParticle* v0=dau;
+	AliMCParticle* mcV0=mcDau;
 	if(codeV0==311){
-	  Int_t nK0Dau=dau->GetNDaughters();
+	  Int_t nK0Dau=mcDau->GetNDaughters();
 	  if(nK0Dau!=1) return -1;
-	  Int_t indK0s=dau->GetDaughter(0);
+	  Int_t indK0s=mcDau->GetFirstDaughter();
 	  if(indK0s<0) return -1;
 	  v0=mcEvent->Particle(indK0s);
-	  if(!v0) return -1;
+	  mcV0=(AliMCParticle*)mcEvent->GetTrack(indK0s);
+	  if(!v0 || !mcV0) return -1;
 	  Int_t pdgK0sl=v0->GetPdgCode();
 	  codeV0=TMath::Abs(pdgK0sl);
 	}
-	Int_t nV0Dau=v0->GetNDaughters();
+	Int_t nV0Dau=mcV0->GetNDaughters();
 	if(nV0Dau!=2) return -1;
-	Int_t indFirstV0Dau=v0->GetDaughter(0);
+	Int_t indFirstV0Dau=mcV0->GetFirstDaughter();
 	for(Int_t v0Dau=0; v0Dau<2; v0Dau++){
 	  Int_t indV0Dau=indFirstV0Dau+v0Dau;
 	  if(indV0Dau<0) return -1;
@@ -2037,9 +2071,9 @@ Int_t AliVertexingHFUtils::CheckLcV0bachelorDecay(AliMCEvent* mcEvent, Int_t lab
     }
     if(nPions!=2) return -1;
     if(nProtons!=1) return -1;
-    if(TMath::Abs(mcPart->Px()-sumPxDau)>0.001) return -2;
-    if(TMath::Abs(mcPart->Py()-sumPyDau)>0.001) return -2;
-    if(TMath::Abs(mcPart->Pz()-sumPzDau)>0.001) return -2;
+    if(TMath::Abs(part->Px()-sumPxDau)>0.001) return -2;
+    if(TMath::Abs(part->Py()-sumPyDau)>0.001) return -2;
+    if(TMath::Abs(part->Pz()-sumPzDau)>0.001) return -2;
     if(codeV0==310) return 1;
     else if(codeV0==3122) return 2;
   }
@@ -2143,14 +2177,16 @@ Int_t AliVertexingHFUtils::CheckXicXipipiDecay(AliMCEvent* mcEvent, Int_t label,
   /// Checks the Xic decay channel. Returns 1 for Xic->Xipipi, -1 in other cases
 
   if(label<0) return -1;
-  TParticle* mcPart = mcEvent->Particle(label);
-  Int_t pdgD=mcPart->GetPdgCode();
+  AliMCParticle* mcPart = (AliMCParticle*)mcEvent->GetTrack(label);
+  TParticle* part = mcEvent->Particle(label);
+  if(!part || !mcPart) return -1;
+  Int_t pdgD=part->GetPdgCode();
   if(TMath::Abs(pdgD)!=4232) return -1;
 
   Int_t nDau=mcPart->GetNDaughters();
   if(nDau!=3) return -1;
 
-  Int_t labelFirstDau = mcPart->GetDaughter(0);
+  Int_t labelFirstDau = mcPart->GetFirstDaughter();
   Int_t nXi=0;
   Int_t nPions=0;
   Double_t sumPxDau=0.;
@@ -2186,9 +2222,9 @@ Int_t AliVertexingHFUtils::CheckXicXipipiDecay(AliMCEvent* mcEvent, Int_t label,
 
   if(nPions!=2) return -1;
   if(nXi!=1) return -1;
-  if(TMath::Abs(mcPart->Px()-sumPxDau)>0.001) return -2;
-  if(TMath::Abs(mcPart->Py()-sumPyDau)>0.001) return -2;
-  if(TMath::Abs(mcPart->Pz()-sumPzDau)>0.001) return -2;
+  if(TMath::Abs(part->Px()-sumPxDau)>0.001) return -2;
+  if(TMath::Abs(part->Py()-sumPyDau)>0.001) return -2;
+  if(TMath::Abs(part->Pz()-sumPzDau)>0.001) return -2;
   return 1;
 
 }
@@ -2198,14 +2234,16 @@ Int_t AliVertexingHFUtils::CheckBplusDecay(AliMCEvent* mcEvent, Int_t label, Int
   /// Checks the Bplus decay channel. Returns 1 for Bplus->D0pi->Kpipi, -1 in other cases
 
   if(label<0) return -1;
-  TParticle* mcPart = mcEvent->Particle(label);
-  Int_t pdgD=mcPart->GetPdgCode();
+  AliMCParticle* mcPart = (AliMCParticle*)mcEvent->GetTrack(label);
+  TParticle* part = mcEvent->Particle(label);
+  if(!part || !mcPart) return -1;
+  Int_t pdgD=part->GetPdgCode();
   if(TMath::Abs(pdgD)!=521) return -1;
 
   Int_t nDau=mcPart->GetNDaughters();
   if(nDau!=2) return -1;
 
-  Int_t labelFirstDau = mcPart->GetDaughter(0);
+  Int_t labelFirstDau = mcPart->GetFirstDaughter();
   Int_t nKaons=0;
   Int_t nPions=0;
   Double_t sumPxDau=0.;
@@ -2216,13 +2254,14 @@ Int_t AliVertexingHFUtils::CheckBplusDecay(AliMCEvent* mcEvent, Int_t label, Int
   for(Int_t iDau=0; iDau<nDau; iDau++){
     Int_t indDau = labelFirstDau+iDau;
     if(indDau<0) return -1;
+    AliMCParticle* mcDau=(AliMCParticle*)mcEvent->GetTrack(indDau);
     TParticle* dau=mcEvent->Particle(indDau);
-    if(!dau) return -1;
+    if(!mcDau || !dau) return -1;
     Int_t pdgdau=dau->GetPdgCode();
     if(TMath::Abs(pdgdau)==421){
-      Int_t nResDau=dau->GetNDaughters();
+      Int_t nResDau=mcDau->GetNDaughters();
       if(nResDau!=2) return -1;
-      Int_t indFirstResDau=dau->GetDaughter(0);
+      Int_t indFirstResDau=mcDau->GetFirstDaughter();
       for(Int_t resDau=0; resDau<2; resDau++){
 	Int_t indResDau=indFirstResDau+resDau;
 	if(indResDau<0) return -1;
@@ -2261,9 +2300,9 @@ Int_t AliVertexingHFUtils::CheckBplusDecay(AliMCEvent* mcEvent, Int_t label, Int
 
   if(nPions!=2) return -1;
   if(nKaons!=1) return -1;
-  if(TMath::Abs(mcPart->Px()-sumPxDau)>0.001) return -2;
-  if(TMath::Abs(mcPart->Py()-sumPyDau)>0.001) return -2;
-  if(TMath::Abs(mcPart->Pz()-sumPzDau)>0.001) return -2;
+  if(TMath::Abs(part->Px()-sumPxDau)>0.001) return -2;
+  if(TMath::Abs(part->Py()-sumPyDau)>0.001) return -2;
+  if(TMath::Abs(part->Pz()-sumPzDau)>0.001) return -2;
   return 1;
 
 }

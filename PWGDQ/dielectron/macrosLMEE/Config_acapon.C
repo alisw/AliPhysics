@@ -225,8 +225,14 @@ AliDielectron* Config_acapon(TString cutDefinition,
       die->GetPairFilter().AddCuts(LMcutlib->GetPairCuts(LMEECutLib::kCutSet1));
     }
   }
-  else if(cutDefinition == "kTheoPID"){ // Standard PID cut set taken from a Run 1 analysis
+  else if(cutDefinition == "kTheoPID"){ // Standard TOFif PID cut set taken from a Run 1 analysis
     die->GetTrackFilter().AddCuts(LMcutlib->GetTrackCuts(LMEECutLib::kCutSet1, LMEECutLib::kTheoPID));
+    if(applyPairCuts){
+      die->GetPairFilter().AddCuts(LMcutlib->GetPairCuts(LMEECutLib::kCutSet1));
+    }
+  }
+  else if(cutDefinition == "kTOFreq"){ // Copy of TheoPID cut setting however TOF always required
+    die->GetTrackFilter().AddCuts(LMcutlib->GetTrackCuts(LMEECutLib::kCutSet1, LMEECutLib::kTOFreq));
     if(applyPairCuts){
       die->GetPairFilter().AddCuts(LMcutlib->GetPairCuts(LMEECutLib::kCutSet1));
     }
@@ -653,14 +659,16 @@ void InitHistograms(AliDielectron *die, Bool_t doPairing, Bool_t trackVarPlots, 
         histos->UserHistogram("Pair","Rapidity","",200,-2.,2.,AliDielectronVarManager::kY);
         histos->UserHistogram("Pair","OpeningAngle","",240,0.,TMath::Pi(),AliDielectronVarManager::kOpeningAngle);
         histos->UserHistogram("Pair","PhiV","", GetVector(kPhiV), AliDielectronVarManager::kPhivPair);
-        /* histos->UserHistogram("Pair","dXY abs (sqrt)",""    ,200 ,0,2.0 , AliDielectronVarManager::kPairDCAabsXY); */
-        /* histos->UserHistogram("Pair","dZ abs (sqrt)",""     ,500 ,0,5.0 , AliDielectronVarManager::kPairDCAabsZ); */
-        /* histos->UserHistogram("Pair","dXY sigma (sqrt)",""  ,2000,0,20.0, AliDielectronVarManager::kPairDCAsigXY); */
-        /* histos->UserHistogram("Pair","dZ sigma (sqrt)",""   ,2000,0,20.0, AliDielectronVarManager::kPairDCAsigZ); */
-        /* histos->UserHistogram("Pair","dXY abs (linear)",""  ,100 ,0,1.0 , AliDielectronVarManager::kPairLinDCAabsXY); */
-        /* histos->UserHistogram("Pair","dZ abs (linear)",""   ,500 ,0,5.0 , AliDielectronVarManager::kPairLinDCAabsZ); */
-        /* histos->UserHistogram("Pair","dXY sigma (linear)","",2000,0,20.0, AliDielectronVarManager::kPairLinDCAsigXY); */
-        /* histos->UserHistogram("Pair","dZ sigma (linear)","" ,2000,0,20.0, AliDielectronVarManager::kPairLinDCAsigZ); */
+        if(trackVarPlots){
+          histos->UserHistogram("Pair","dXY abs (sqrt)",""    ,200 ,0,2.0 , AliDielectronVarManager::kPairDCAabsXY);
+          histos->UserHistogram("Pair","dZ abs (sqrt)",""     ,500 ,0,5.0 , AliDielectronVarManager::kPairDCAabsZ);
+          histos->UserHistogram("Pair","dXY sigma (sqrt)",""  ,2000,0,20.0, AliDielectronVarManager::kPairDCAsigXY);
+          histos->UserHistogram("Pair","dZ sigma (sqrt)",""   ,2000,0,20.0, AliDielectronVarManager::kPairDCAsigZ);
+          histos->UserHistogram("Pair","dXY abs (linear)",""  ,100 ,0,1.0 , AliDielectronVarManager::kPairLinDCAabsXY);
+          histos->UserHistogram("Pair","dZ abs (linear)",""   ,500 ,0,5.0 , AliDielectronVarManager::kPairLinDCAabsZ);
+          histos->UserHistogram("Pair","dXY sigma (linear)","",2000,0,20.0, AliDielectronVarManager::kPairLinDCAsigXY);
+          histos->UserHistogram("Pair","dZ sigma (linear)","" ,2000,0,20.0, AliDielectronVarManager::kPairLinDCAsigZ);
+        }
 
         // 2D and 3D histograms
         /* histos->UserHistogram("Pair","InvMass_PairPt",";Inv. Mass (GeV);Pair Pt (GeV);#pairs", */

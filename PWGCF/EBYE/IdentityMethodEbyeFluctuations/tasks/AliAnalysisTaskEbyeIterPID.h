@@ -184,6 +184,7 @@ class AliAnalysisTaskEbyeIterPID : public AliAnalysisTaskSE {
   void   SetDeDxCheck(const Bool_t ifDeDxCheck = kFALSE)              {fDEdxCheck           = ifDeDxCheck;}
   void   SetEffMatrix(const Bool_t ifEffMatrix = kFALSE)              {fEffMatrix           = ifEffMatrix;}
   void   SetFillAllCutVariables(const Bool_t ifAllCuts = kFALSE)      {fFillTracks          = ifAllCuts;}
+  void   SetFillOnlyHists(const Bool_t ifFillOnlyHists = kFALSE)      {fFillOnlyHists       = ifFillOnlyHists;}
   void   SetFillEffLookUpTable(const Bool_t ifEffLookUpTable = kFALSE){fFillEffLookUpTable  = ifEffLookUpTable;}
   void   SetFillHigherMomentsMCclosure(const Bool_t ifHigherMomentsMCclosure = kFALSE){fFillHigherMomentsMCclosure  = ifHigherMomentsMCclosure;}
   void   SetRunFastSimulation(const Bool_t ifFastSimul = kFALSE)      {fRunFastSimulation   = ifFastSimul;}
@@ -540,8 +541,9 @@ private:
   Bool_t            fEffMatrix;              // flag for efficiency matrix filling
   Bool_t            fDEdxCheck;              // flag to check only the dEdx performance
   Bool_t            fIncludeITS;             // decide whether to use ITS or not
-  Bool_t            fFillTracks;               // switch whether to fill all cut variables
-  Bool_t            fFillEffLookUpTable;
+  Bool_t            fFillTracks;             // switch whether to fill all cut variables
+  Bool_t            fFillOnlyHists;          //
+  Bool_t            fFillEffLookUpTable;     //
   Bool_t            fFillHigherMomentsMCclosure;
   Bool_t            fFillArmPodTree;         // switch whether to fill clean sample tree
   Bool_t            fRunFastSimulation;      // when running over galice.root do not fill other objects

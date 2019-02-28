@@ -428,6 +428,7 @@ void AliAnalysisTaskGammaCaloMerged::UserCreateOutputObjects(){
     startPtLog                                = 20;
     endPtLog                                  = 70;
   } else if (((AliConvEventCuts*)fV0Reader->GetEventCuts())->GetEnergyEnum() == AliConvEventCuts::k5TeV ||
+             ((AliConvEventCuts*)fV0Reader->GetEventCuts())->GetEnergyEnum() == AliConvEventCuts::k7TeV ||
              ((AliConvEventCuts*)fV0Reader->GetEventCuts())->GetEnergyEnum() == AliConvEventCuts::k8TeV ||
              ((AliConvEventCuts*)fV0Reader->GetEventCuts())->GetEnergyEnum() == AliConvEventCuts::k13TeV ||
              ((AliConvEventCuts*)fV0Reader->GetEventCuts())->GetEnergyEnum() == AliConvEventCuts::kpPb8TeV ||
@@ -772,12 +773,14 @@ void AliAnalysisTaskGammaCaloMerged::UserCreateOutputObjects(){
       fHistoMCEtaDalitzWOEvtWeightInAccPt         = new TH1F*[fnCuts];
     }
     if (fIsMC == 2){
-      if (GetSelectedMesonID() != 2)
+      if (GetSelectedMesonID() != 2){
         fHistoMCPi0WOEvtWeightPt                  = new TH1F*[fnCuts];
         fHistoMCPi0DalitzWOEvtWeightPt            = new TH1F*[fnCuts];
-      if (GetSelectedMesonID() != 1)
+      }
+      if (GetSelectedMesonID() != 1){
         fHistoMCEtaWOEvtWeightPt                  = new TH1F*[fnCuts];
         fHistoMCEtaDalitzWOEvtWeightPt            = new TH1F*[fnCuts];
+      }
       if (fDoMesonQA > 0){
         if (GetSelectedMesonID() != 2)
           fHistoMCPi0PtJetPt                      = new TH2F*[fnCuts];
@@ -788,7 +791,7 @@ void AliAnalysisTaskGammaCaloMerged::UserCreateOutputObjects(){
 
     fHistoTrueClusMergedPtvsM02                   = new TH2F*[fnCuts];
     fHistoTrueClusPi0PtvsM02                      = new TH2F*[fnCuts];
-    fHistoTrueClusPi0DalitzPtvsM02                      = new TH2F*[fnCuts];
+    fHistoTrueClusPi0DalitzPtvsM02                = new TH2F*[fnCuts];
     if (GetSelectedMesonID() < 2){
       fHistoTrueClusPrimPi0PtvsM02                = new TH2F*[fnCuts];
       fHistoTrueClusSecPi0PtvsM02                 = new TH2F*[fnCuts];

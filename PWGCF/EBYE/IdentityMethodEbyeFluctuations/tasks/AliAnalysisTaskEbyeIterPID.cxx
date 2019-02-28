@@ -158,6 +158,7 @@ fEffMatrix(kFALSE),
 fDEdxCheck(kFALSE),
 fIncludeITS(kTRUE),
 fFillTracks(kFALSE),
+fFillOnlyHists(kFALSE),
 fFillEffLookUpTable(kFALSE),
 fFillHigherMomentsMCclosure(kFALSE),
 fFillArmPodTree(kTRUE),
@@ -414,6 +415,7 @@ fEffMatrix(kFALSE),
 fDEdxCheck(kFALSE),
 fIncludeITS(kTRUE),
 fFillTracks(kFALSE),
+fFillOnlyHists(kFALSE),
 fFillEffLookUpTable(kFALSE),
 fFillHigherMomentsMCclosure(kFALSE),
 fFillArmPodTree(kTRUE),
@@ -960,9 +962,10 @@ void AliAnalysisTaskEbyeIterPID::UserCreateOutputObjects()
       fHndEdx   ->GetAxis(iaxis)->SetTitle(axisTitledEdx[iaxis]);
     }
     fListHist->Add(fHndEdx);
-
-    //
-    // Clean Kaons
+  }
+  //
+  // Clean Kaons and deuterons
+  if (fFillOnlyHists){
     Int_t   binsCleanKa[nhistbins]  = { 2,  fNCentbinsData,  fNEtaBins,   fNMomBins,     dEdxnBinsClean};
     Double_t xminCleanKa[nhistbins] = {-2,   0.,             fEtaDown,    fMomDown,      fDEdxDown};
     Double_t xmaxCleanKa[nhistbins] = { 2,  80.,             fEtaUp,      fMomUp,        fDEdxCleanUp};
@@ -986,6 +989,8 @@ void AliAnalysisTaskEbyeIterPID::UserCreateOutputObjects()
     }
     fListHist->Add(fHnCleanDe);
   }
+
+
   //
   // ************************************************************************
   //   Efficiency matrix histograms
@@ -1414,6 +1419,9 @@ void AliAnalysisTaskEbyeIterPID::FillTPCdEdxReal()
   AliTPCdEdxInfo tpcdEdxInfo;
   for (Int_t itrack=0;itrack<event->GetNumberOfTracks();++itrack) {   // Track loop
 
+    fDEdxEl=-100;  fDEdxPi=-100;  fDEdxKa=-100;  fDEdxPr=-100;  fDEdxDe=-100;
+    fSigmaEl=-100; fSigmaPi=-100; fSigmaKa=-100; fSigmaPr=-100; fSigmaDe=-100;
+
     AliESDtrack *track = fESD->GetTrack(itrack);
     //
     // --------------------------------------------------------------
@@ -1449,7 +1457,7 @@ void AliAnalysisTaskEbyeIterPID::FillTPCdEdxReal()
     Bool_t fAcceptance = (etaAcc && centAcc && momAcc && dEdxAcc);
     //
     //  Fill the tracks tree
-    if (fFillTracks)
+    if (fFillTracks && !fFillOnlyHists)
     {
       if(!fTreeSRedirector) return;
 
@@ -1526,16 +1534,8 @@ void AliAnalysisTaskEbyeIterPID::FillTPCdEdxReal()
 
       }
     }
-    //
-    // --------------------------------------------------------------
-    //  Fill thnsparse for inclusive data and clean kaons & deuterons
-    // --------------------------------------------------------------
-    //
-    if (fUseThnSparse){
-      // Fill the THnSparseF for the inclusive spectra
-      Double_t trackdEdx[5] = {Double_t(fSign),fCentrality, fEta,fPtot, fTPCSignal};
-      if(fUseThnSparse) fHndEdx->Fill(trackdEdx);
-      //  Fill clean kaons
+    //  Fill clean kaons
+    if (fFillOnlyHists){
       Float_t nSigmasKaTOF = fPIDResponse->NumberOfSigmasTOF(track, AliPID::kKaon);
       if ((TMath::Abs(nSigmasKaTOF)<=1.2)) {
         Double_t nclsTRD      = (Float_t)track->GetTRDncls();
@@ -1552,6 +1552,16 @@ void AliAnalysisTaskEbyeIterPID::FillTPCdEdxReal()
         Double_t weightCleanDe[5] = {Double_t(fSign),fCentrality,fEta,fPtot, fTPCSignal};
         fHnCleanDe->Fill(weightCleanDe);
       }
+    }
+    //
+    // --------------------------------------------------------------
+    //  Fill thnsparse for inclusive data and clean kaons & deuterons
+    // --------------------------------------------------------------
+    //
+    if (fUseThnSparse){
+      // Fill the THnSparseF for the inclusive spectra
+      Double_t trackdEdx[5] = {Double_t(fSign),fCentrality, fEta,fPtot, fTPCSignal};
+      if(fUseThnSparse) fHndEdx->Fill(trackdEdx);
     }
     //
     fTrackCutBits=0;  // reset the bits for the next track
@@ -3669,7 +3679,7 @@ void AliAnalysisTaskEbyeIterPID::GetExpecteds(AliESDtrack *track, Float_t closes
   fNSigmasKaTPC = fPIDResponse->NumberOfSigmasTPC(track, AliPID::kKaon);
   fNSigmasPrTPC = fPIDResponse->NumberOfSigmasTPC(track, AliPID::kProton);
   fNSigmasDeTPC = fPIDResponse->NumberOfSigmasTPC(track, AliPID::kDeuteron);
-  Int_t nSigmaTmp = (fEventInfo) ? 10000 : 3;
+  Int_t nSigmaTmp = (fEventInfo) ? 10000 : 2;
 
   if (fEventInfo){
     fElNSigmasTOF = fPIDResponse->NumberOfSigmasTOF(track, AliPID::kElectron, fPIDResponse->GetTOFResponse().GetTimeZero());
@@ -3972,7 +3982,6 @@ void AliAnalysisTaskEbyeIterPID::SelectCleanSamplesFromV0s(AliESDv0 *v0, AliESDt
   fHasTrack0FirstITSlayer = track0->HasPointOnITSLayer(0);
   fHasTrack1FirstITSlayer = track1->HasPointOnITSLayer(0);
   fHasV0FirstITSlayer = (fHasTrack0FirstITSlayer||fHasTrack1FirstITSlayer);
-
   //
   //
   Double_t v0Rr = v0->GetRr();  // rec position of the vertex CKBrev

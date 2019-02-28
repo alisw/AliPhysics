@@ -45,8 +45,9 @@ class AliFemtoDreamZVtxMultContainer {
                        TVector3 Part2Momentum, int PDGPart2);
   float RelativePairmT(TVector3 Part1Momentum, int PDGPart1,
                        TVector3 Part2Momentum, int PDGPart2);
-  bool RejectClosePairs(AliFemtoDreamBasePart& part1,
-                        AliFemtoDreamBasePart& part2);
+  bool RejectClosePairs(int Hist, AliFemtoDreamBasePart& part1,
+                        AliFemtoDreamBasePart& part2, bool SEorME,
+                        bool fillHist, AliFemtoDreamCorrHists *ResultsHist);
   std::vector<AliFemtoDreamPartContainer> fPartContainer;
   std::vector<int> fPDGParticleSpecies;
   std::vector<unsigned int> fWhichPairs;

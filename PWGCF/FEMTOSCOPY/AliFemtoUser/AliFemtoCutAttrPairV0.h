@@ -29,7 +29,7 @@ struct AddPairCutV0Attr : public T1, public T2 {
       T2::FillConfiguration(cfg);
     }
 
-  virtual ~AddPairCutV0Attr() = 0;
+  virtual ~AddPairCutV0Attr() {}
 };
 
 
@@ -50,7 +50,7 @@ struct PairCutV0AttrPt {
       cfg.insert("pt_range", pt_range);
     }
 
-  virtual ~PairCutV0AttrPt() = 0;
+  virtual ~PairCutV0AttrPt() {}
 };
 
 /// Simple cut removing pairs sharing a daugther track
@@ -65,7 +65,7 @@ struct PairCutV0SharedDaughters {
   void FillConfiguration(AliFemtoConfigObject &) const
     { }
 
-  virtual ~PairCutV0SharedDaughters() = 0;
+  virtual ~PairCutV0SharedDaughters() {}
 };
 
 
@@ -95,7 +95,7 @@ struct PairCutV0MinEntranceSep {
       cfg.insert("min_entrance_sep", min_entrance_sep);
     }
 
-  virtual ~PairCutV0MinEntranceSep() = 0;
+  virtual ~PairCutV0MinEntranceSep() {}
 };
 
 /// \class PairCutV0AvgSep
@@ -168,7 +168,7 @@ struct PairCutV0AvgSep {
       return counter==0 ? 0.0 : sep / counter;
     }
 
-  virtual ~PairCutV0AvgSep() = 0;
+  virtual ~PairCutV0AvgSep() {}
 };
 
 

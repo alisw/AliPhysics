@@ -21,7 +21,7 @@
 #include "AliForwardQCumulantRun2.h"
 #include "AliForwardGenericFramework.h"
 #include "AliForwardFlowRun2Task.h"
-
+#include "TObjectTable.h"
 #include "AliAODForwardMult.h"
 #include "AliAODCentralMult.h"
 #include "AliAODEvent.h"
@@ -59,9 +59,11 @@ AliForwardNUATask::AliForwardNUATask() : AliAnalysisTaskSE(),
   centralDist(),
   refDist(),
   forwardDist(),
+  nua_cen(),
+  nua_fmd(),
+  dNdeta(),
   fSettings(),
-  fUtil(),
-  useEvent(kTRUE)
+  fUtil()
   {
   //
   //  Default constructor
@@ -76,9 +78,12 @@ AliForwardNUATask::AliForwardNUATask() : AliAnalysisTaskSE(),
   centralDist(),
   refDist(),
   forwardDist(),
+  nua_cen(),
+  nua_fmd(),
+  dNdeta(),
+  ev_val(),
   fSettings(),
-  fUtil(),
-  useEvent(kTRUE)
+  fUtil()
   {
   //
   //  Constructor
@@ -103,27 +108,19 @@ AliForwardNUATask::AliForwardNUATask() : AliAnalysisTaskSE(),
     fOutputList->SetOwner(kTRUE);       // memory stuff: the list is owner of all objects it contains and will delete them if requested
 
 
-    fEventList = new TList();
-    //fEventList->Add(new TH1D("ImpactParam","ImpactParam",100,0,20));
-    fEventList->Add(new TH1D("Centrality","Centrality",100,0,100));
-    fEventList->Add(new TH1D("Vertex","Vertex",fSettings.fNZvtxBins,fSettings.fZVtxAcceptanceLowEdge,fSettings.fZVtxAcceptanceUpEdge));
-    fEventList->Add(new TH1D("EventCuts_FMD","EventCuts_FMD",3,0,3));
-    fEventList->Add(new TH2D("hOutliers","Maximum #sigma from mean N_{ch} pr. bin",
-       20, 0., 100., 500, 0., 5.)); //((fFlags & kMC) ? 15. : 5. // Sigma <M> histogram
-    fEventList->SetName("EventInfo");
-
-    fEventList->Add(new TH1F("dNdeta","dNdeta",100 /*fSettings.fNDiffEtaBins*/,fSettings.fEtaLowEdge,fSettings.fEtaUpEdge));
-
-
     Double_t centralEta = (fSettings.useSPD ? 2.5 : 1.5);
     Int_t forwardBinsEta = (fSettings.use_primaries ? 200 : 200);
     Int_t forwardBinsPhi = (fSettings.use_primaries ? 20 : 20);
 
-    fOutputList->Add(new TH3D("NUA_fwd","NUA_fwd", forwardBinsEta, -4.0, 6.0, forwardBinsPhi, 0., 2*TMath::Pi(),fSettings.fNZvtxBins,fSettings.fZVtxAcceptanceLowEdge,fSettings.fZVtxAcceptanceUpEdge));
+    nua_cen = new TH3D("NUA_cen","NUA_cen", 400, -centralEta, centralEta, 400, 0., 2*TMath::Pi(),fSettings.fNZvtxBins,fSettings.fZVtxAcceptanceLowEdge,fSettings.fZVtxAcceptanceUpEdge);
 
-    fOutputList->Add(new TH3D("NUA_cen","NUA_cen", 400, -centralEta, centralEta, 400, 0., 2*TMath::Pi(),fSettings.fNZvtxBins,fSettings.fZVtxAcceptanceLowEdge,fSettings.fZVtxAcceptanceUpEdge));
+    nua_fmd = new TH3D("NUA_fwd","NUA_fwd", forwardBinsEta, -4.0, 6.0, forwardBinsPhi, 0., 2*TMath::Pi(),fSettings.fNZvtxBins,fSettings.fZVtxAcceptanceLowEdge,fSettings.fZVtxAcceptanceUpEdge);
+    fOutputList->Add(nua_fmd);
 
-    fOutputList->Add(fEventList);
+    fOutputList->Add(nua_cen);
+
+    dNdeta = new TH1F("dNdeta","dNdeta",100 /*fSettings.fNDiffEtaBins*/,fSettings.fEtaLowEdge,fSettings.fEtaUpEdge);
+    fOutputList->Add(dNdeta);
 
     PostData(1, fOutputList);
   }
@@ -133,6 +130,9 @@ AliForwardNUATask::AliForwardNUATask() : AliAnalysisTaskSE(),
 void AliForwardNUATask::UserExec(Option_t *)
 {
 
+
+  //gObjectTable->Print();
+
   //
   //  Analyses the event with use of the helper class AliForwardQCumulantRun2
   //
@@ -140,16 +140,15 @@ void AliForwardNUATask::UserExec(Option_t *)
   //   option: Not used
   //
   // Get the event validation object
-  AliForwardTaskValidation* ev_val = dynamic_cast<AliForwardTaskValidation*>(this->GetInputData(1));
+  ev_val = dynamic_cast<AliForwardTaskValidation*>(this->GetInputData(1));
   if (!ev_val->IsValidEvent()){
      PostData(1, this->fOutputList);
     return;
   }
-
-  AliAODEvent* aodevent = dynamic_cast<AliAODEvent*>(InputEvent());
-  fUtil.fAODevent = aodevent;
-  if(!aodevent) throw std::runtime_error("Not AOD as expected");
-
+  if (!fSettings.esd) {
+    fUtil.fAODevent =  dynamic_cast<AliAODEvent*>(InputEvent());
+    if(!fUtil.fAODevent) throw std::runtime_error("Not AOD as expected");
+  }
 
   fUtil.fevent = fInputEvent;
   fUtil.fSettings = fSettings;
@@ -167,41 +166,26 @@ void AliForwardNUATask::UserExec(Option_t *)
   forwardTrRef.SetDirectory(0);
   forwardPrim.SetDirectory(0);
   forwardDist = (fSettings.use_primaries_fwd ? &forwardPrim : &forwardTrRef);
+  forwardDist->SetDirectory(0);
 
   centralDist = &centralDist_tmp;
   centralDist->SetDirectory(0);
   refDist = &refDist_tmp;
   refDist->SetDirectory(0);
 
-  TH1F* dNdeta = static_cast<TH1F*>(fEventList->FindObject("dNdeta"));
-
-  dNdeta->SetDirectory(0);
   fUtil.dodNdeta = kTRUE;
   fUtil.dNdeta = dNdeta;
   fUtil.FillData(refDist,centralDist,forwardDist);
 
-  forwardDist->SetDirectory(0);
 
   Double_t zvertex = fUtil.GetZ();
-  Double_t cent = fUtil.GetCentrality(fSettings.centrality_estimator);
-
-  TList* eventList = static_cast<TList*>(fOutputList->FindObject("EventInfo"));
-  TH3D* nua_fmd = static_cast<TH3D*>(fOutputList->FindObject("NUA_fwd"));
-  TH3D* nua_tpc = static_cast<TH3D*>(fOutputList->FindObject("NUA_cen"));
-  nua_tpc->SetDirectory(0);
-  nua_fmd->SetDirectory(0);
-
-  if (useEvent) {
-    static_cast<TH1D*>(fEventList->FindObject("Vertex"))->Fill(zvertex);
-    static_cast<TH1D*>(fEventList->FindObject("Centrality"))->Fill(cent);
 
     // loop for the TPC
-
     for (Int_t etaBin = 1; etaBin <= centralDist->GetNbinsX(); etaBin++) {
       for (Int_t phiBin = 1; phiBin <= centralDist->GetNbinsY(); phiBin++) {
         if (centralDist->GetBinContent(etaBin,phiBin) == 0) continue;//TH2D
         //nua_tpc->SetBinContent(etaBin,phiBin,nua_tpc->GetZaxis()->FindBin(zvertex),centralDist->GetBinContent(etaBin,phiBin));
-        nua_tpc->Fill(centralDist->GetXaxis()->GetBinCenter(etaBin),centralDist->GetYaxis()->GetBinCenter(phiBin),zvertex,centralDist->GetBinContent(etaBin,phiBin)); //TH3D
+        nua_cen->Fill(centralDist->GetXaxis()->GetBinCenter(etaBin),centralDist->GetYaxis()->GetBinCenter(phiBin),zvertex,centralDist->GetBinContent(etaBin,phiBin)); //TH3D
         //nua_tpc->AddBinContent(nua_fmd->GetBin(etaBin,phiBin,nua_tpc->GetZaxis()->FindBin(zvertex)),centralDist->GetBinContent(etaBin,phiBin));
       }
     }
@@ -223,7 +207,7 @@ void AliForwardNUATask::UserExec(Option_t *)
         //nua_fmd->AddBinContent(nua_fmd->GetBin(etaBin,phiBin,nua_fmd->GetZaxis()->FindBin(zvertex)),weight);
       }
     }
-  }
+
   PostData(1, fOutputList);
   return;
 }

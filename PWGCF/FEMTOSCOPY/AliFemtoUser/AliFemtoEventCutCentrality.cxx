@@ -33,7 +33,7 @@ AliFemtoEventCutCentrality::AliFemtoEventCutCentrality(const Parameters &param):
 AliFemtoConfigObject AliFemtoEventCutCentrality::GetConfigObject() const
 {
   return AliFemtoConfigObject::BuildMap()
-    ("class", "AliFemtoEventCutCentrality")
+    ("_class", "AliFemtoEventCutCentrality")
     ("centrality_type", fCentralityType)
     ("centrality_range", fEventCentrality)
     ("vertex_z_range", fVertZPos)

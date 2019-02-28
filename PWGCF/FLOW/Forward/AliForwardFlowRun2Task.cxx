@@ -190,12 +190,13 @@ void AliForwardFlowRun2Task::UserExec(Option_t *)
      return;
    }
 
-
-  AliAODEvent* aodevent = dynamic_cast<AliAODEvent*>(InputEvent());
-  fUtil.fAODevent = aodevent;
+  if (!fSettings.esd){
+    AliAODEvent* aodevent = dynamic_cast<AliAODEvent*>(InputEvent());
+    fUtil.fAODevent = aodevent;
+    if(!aodevent) throw std::runtime_error("Not AOD as expected");
+  }
   if (fSettings.mc) fUtil.fMCevent = this->MCEvent();
 
-  if(!aodevent) throw std::runtime_error("Not AOD as expected");
 
 
   fUtil.fevent = fInputEvent;
@@ -244,12 +245,17 @@ void AliForwardFlowRun2Task::UserExec(Option_t *)
     if (fSettings.maxpt < 5){
       calculator.CumulantsAccumulate(*refDist, fOutputList, cent, zvertex,"central",true,false);
       calculator.CumulantsAccumulate(*centralDist, fOutputList, cent, zvertex,"central",false,true);
+      calculator.CumulantsAccumulate(*forwardDist, fOutputList, cent, zvertex,"forward",false,true);
+    }
+    if (fSettings.gap > 1.5){
+      calculator.CumulantsAccumulate(*forwardDist, fOutputList, cent, zvertex,"forward",true,true);
+      calculator.CumulantsAccumulate(*centralDist, fOutputList, cent, zvertex,"central",false,true);
     }
     else{
       calculator.CumulantsAccumulate(*centralDist, fOutputList, cent, zvertex,"central",true,true);
+      calculator.CumulantsAccumulate(*forwardDist, fOutputList, cent, zvertex,"forward",false,true);
     }
 
-    calculator.CumulantsAccumulate(*forwardDist, fOutputList, cent, zvertex,"forward",false,true);
     calculator.saveEvent(fOutputList, cent, zvertex,  randomInt);
     calculator.reset();
     PostData(1, fOutputList);

@@ -156,23 +156,29 @@ AliFemtoDreamEventHist::AliFemtoDreamEventHist(bool centVsMultPlot) {
     fMultDistRef08[i]->GetXaxis()->SetTitle("Multiplicity (RefMult08)");
     fEvtCutQA[i]->Add(fMultDistRef08[i]);
 
-    TString SPDtrklClsLy0Name = Form("SPDTrackletsVsClusterL0_%s", sName[i].Data());
-    fSPDTrklClsLy0[i] = new TH2F(SPDtrklClsLy0Name.Data(), SPDtrklClsLy0Name.Data(), 250,
-                              0, 250, 1000, 0, 1000);
+    TString SPDtrklClsLy0Name = Form("SPDTrackletsVsClusterL0_%s",
+                                     sName[i].Data());
+    fSPDTrklClsLy0[i] = new TH2F(SPDtrklClsLy0Name.Data(),
+                                 SPDtrklClsLy0Name.Data(), 250, 0, 250, 1000, 0,
+                                 1000);
     fSPDTrklClsLy0[i]->GetXaxis()->SetTitle("SPD Tracklets");
     fSPDTrklClsLy0[i]->GetYaxis()->SetTitle("SPD Cluster L0");
     fEvtCutQA[i]->Add(fSPDTrklClsLy0[i]);
 
-    TString SPDtrklClsLy1Name = Form("SPDTrackletsVsClusterL1_%s", sName[i].Data());
-    fSPDTrklClsLy1[i] = new TH2F(SPDtrklClsLy1Name.Data(), SPDtrklClsLy1Name.Data(), 250,
-                              0, 250, 1000, 0, 1000);
+    TString SPDtrklClsLy1Name = Form("SPDTrackletsVsClusterL1_%s",
+                                     sName[i].Data());
+    fSPDTrklClsLy1[i] = new TH2F(SPDtrklClsLy1Name.Data(),
+                                 SPDtrklClsLy1Name.Data(), 250, 0, 250, 1000, 0,
+                                 1000);
     fSPDTrklClsLy1[i]->GetXaxis()->SetTitle("SPD Tracklets");
     fSPDTrklClsLy1[i]->GetYaxis()->SetTitle("SPD Cluster L1");
     fEvtCutQA[i]->Add(fSPDTrklClsLy1[i]);
 
-    TString SPDtrklClsSumName = Form("SPDTrackletsVsClusterL01Sum_%s", sName[i].Data());
-    fSPDTrklClsLySum[i] = new TH2F(SPDtrklClsSumName.Data(), SPDtrklClsSumName.Data(), 250,
-                              0, 250, 1000, 0, 1000);
+    TString SPDtrklClsSumName = Form("SPDTrackletsVsClusterL01Sum_%s",
+                                     sName[i].Data());
+    fSPDTrklClsLySum[i] = new TH2F(SPDtrklClsSumName.Data(),
+                                   SPDtrklClsSumName.Data(), 250, 0, 250, 1000,
+                                   0, 1000);
     fSPDTrklClsLySum[i]->GetXaxis()->SetTitle("SPD Tracklets");
     fSPDTrklClsLySum[i]->GetYaxis()->SetTitle("SPD Cluster Sum (L0+L1)");
     fEvtCutQA[i]->Add(fSPDTrklClsLySum[i]);
@@ -192,13 +198,13 @@ AliFemtoDreamEventHist::AliFemtoDreamEventHist(bool centVsMultPlot) {
     fSPDTrkZVtxDispl[i]->GetXaxis()->SetTitle("zVtx Position |SPD - Tracks|");
     fEvtCutQA[i]->Add(fSPDTrkZVtxDispl[i]);
 
-    TString BFieldName = Form("MagneticFieldkGauss_%s",sName[i].Data());
-    fBField[i] = new TH1F(BFieldName.Data(),BFieldName.Data(),20,-10,10);
+    TString BFieldName = Form("MagneticFieldkGauss_%s", sName[i].Data());
+    fBField[i] = new TH1F(BFieldName.Data(), BFieldName.Data(), 20, -10, 10);
     fEvtCutQA[i]->Add(fBField[i]);
 
     TString EvtSpherName = Form("Sphericity_%s", sName[i].Data());
     fEvtSpher[i] = new TH1F(EvtSpherName.Data(), EvtSpherName.Data(), 50, 0.,
-                           1.);
+                            1.);
     fEvtSpher[i]->GetXaxis()->SetTitle("Sphericity S_{T}");
     fEvtCutQA[i]->Add(fEvtSpher[i]);
 
@@ -254,8 +260,8 @@ AliFemtoDreamEventHist& AliFemtoDreamEventHist::operator=(
       this->fMultDistV0A[i] = hists.fMultDistV0A[i];
       this->fMultDistV0C[i] = hists.fMultDistV0C[i];
       this->fMultDistRef08[i] = hists.fMultDistRef08[i];
-      this->fBField[i]=hists.fBField[i];
-      this->fEvtSpher[i]=hists.fEvtSpher[i];
+      this->fBField[i] = hists.fBField[i];
+      this->fEvtSpher[i] = hists.fEvtSpher[i];
     }
   }
   return *this;
