@@ -1580,6 +1580,8 @@ void AddTask_GammaConvCalo_pp(
     cuts.AddCutPCMCalo("00010113","00200009327000008250400000","41179280a7032230000","0163103100000010"); // INT7
   } else if (trainConfig == 2102){  // EMCal+DCAL clusters standard cuts, triggers, NL kSDM sep for EMC/DMC, tight timing, E/p TM
     cuts.AddCutPCMCalo("00010113","00200009327000008250400000","41179110a7032230000","0163103100000010"); // INT7
+  } else if (trainConfig == 2103){  // EMCal+DCAL clusters standard cuts, triggers, NL kSDM, tight timing, E/p TM
+    cuts.AddCutPCMCalo("00010113","00200009327000008250400000","41179170a7032230000","0163103100000010"); // INT7
   // PCM-EDC systematics
   } else if (trainConfig == 2200){ // PCM based systematics
     cuts.AddCutPCMCalo("00010113","00200009327000008250400000","41179180a7032230000","0163103100000010"); // std
