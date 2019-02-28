@@ -22,6 +22,7 @@
 #pragma link C++ class AlidNdPtEventCuts+;
 #pragma link C++ class AlidNdPtHelper+;
 #pragma link C++ class AlidNdPtTask+;
+#pragma link C++ class AlidNdPtTools+;
 #pragma link C++ class AlidNdPtTrackDumpTask+;
 #pragma link C++ class AliPtResolAnalysis+;
 #pragma link C++ class AliPtResolAnalysisPbPb+;

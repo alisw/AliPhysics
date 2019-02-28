@@ -56,6 +56,7 @@ set(SRCS
   ChargedHadrons/dNdPt/AlidNdPtEventCuts.cxx
   ChargedHadrons/dNdPt/AlidNdPtHelper.cxx
   ChargedHadrons/dNdPt/AlidNdPtTask.cxx
+  ChargedHadrons/dNdPt/AlidNdPtTools.cxx
   ChargedHadrons/dNdPt/AlidNdPtTrackDumpTask.cxx
   ChargedHadrons/dNdPt/AliPtResolAnalysis.cxx
   ChargedHadrons/dNdPt/AliPtResolAnalysisPbPb.cxx
