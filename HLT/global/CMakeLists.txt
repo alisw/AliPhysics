@@ -108,15 +108,15 @@ set(SRCS
     physics/examples/AliAnalysisTaskExampleV.cxx
    )
 
-if(DEFINED ALIGPU_DIR)
+if(NOT ALIROOT_ONLINE_MODE)
   add_definitions(-DHAVE_ALIGPU -DGPUCA_ALIROOT_LIB)
   set(SRCS ${SRCS} AliHLTGlobalPromptRecoQAComponent.cxx)
-  include_directories(${ALIGPU_DIR}/sources/GPUTracking/SliceTracker
-    ${ALIGPU_DIR}/sources/GPUTracking/TRDTracking
-    ${ALIGPU_DIR}/sources/GPUTracking/Merger
-    ${ALIGPU_DIR}/sources/GPUTracking/Global
-    ${ALIGPU_DIR}/sources/GPUTracking/Base
-    ${ALIGPU_DIR}/sources/Common
+  include_directories(${AliRoot_SOURCE_DIR}/GPU/GPUTracking/SliceTracker
+    ${AliRoot_SOURCE_DIR}/GPU/GPUTracking/TRDTracking
+    ${AliRoot_SOURCE_DIR}/GPU/GPUTracking/Merger
+    ${AliRoot_SOURCE_DIR}/GPU/GPUTracking/Global
+    ${AliRoot_SOURCE_DIR}/GPU/GPUTracking/Base
+    ${AliRoot_SOURCE_DIR}/GPU/Common
   )
 endif()
 

@@ -23,24 +23,20 @@ endif()
 
 set(LIBDEPS)
 if(ALIROOT_ONLINE_MODE)
-    message(WARNING "Online build for non-HLT: Disabling TPC GPU Tracking")
+    message(WARNING "Online build for non-HLT: Disabling GPU")
 else()
-    if(DEFINED ALIGPU_DIR)
-        set(ALIGPU_BUILD_TYPE "ALIROOT")
-        add_subdirectory(${ALIGPU_DIR}/sources/GPUTracking GPUTracking)
-        add_subdirectory(${ALIGPU_DIR}/sources/TPCFastTransformation TPCFastTransformation)
-        include_directories(${ALIGPU_DIR}/sources/Common
-                            ${ALIGPU_DIR}/sources/GPUTracking/SliceTracker
-                            ${ALIGPU_DIR}/sources/GPUTracking/Merger
-                            ${ALIGPU_DIR}/sources/GPUTracking/Global
-                            ${ALIGPU_DIR}/sources/GPUTracking/Base
-                            ${ALIGPU_DIR}/sources/GPUTracking/DataCompression
-                            ${ALIGPU_DIR}/sources/TPCFastTransformation)
-        add_definitions(-DHAVE_ALIGPU)
-    else()
-        message(FATAL_ERROR "cmake variable ALIGPU_DIR is not defined")
-    endif()
-    set(LIBDEPS ${LIBDEPS} AliGPUTracking)
+    set(ALIGPU_BUILD_TYPE "ALIROOT")
+    add_subdirectory(${AliRoot_SOURCE_DIR}/GPU/GPUTracking GPUTracking)
+    add_subdirectory(${AliRoot_SOURCE_DIR}/GPU/TPCFastTransformation TPCFastTransformation)
+    include_directories(${AliRoot_SOURCE_DIR}/GPU/Common
+                        ${AliRoot_SOURCE_DIR}/GPU/GPUTracking/SliceTracker
+                        ${AliRoot_SOURCE_DIR}/GPU/GPUTracking/Merger
+                        ${AliRoot_SOURCE_DIR}/GPU/GPUTracking/Global
+                        ${AliRoot_SOURCE_DIR}/GPU/GPUTracking/Base
+                        ${AliRoot_SOURCE_DIR}/GPU/GPUTracking/DataCompression
+                        ${AliRoot_SOURCE_DIR}/GPU/TPCFastTransformation)
+    add_definitions(-DHAVE_ALIGPU)
+    set(LIBDEPS ${LIBDEPS} GPUTracking)
     set(LIBDEPS ${LIBDEPS} AliTPCFastTransformation)
 endif()
 

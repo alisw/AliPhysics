@@ -35,8 +35,8 @@ AliHLTTRDAgent gAliHLTTRDAgent;
 
 // component headers
 #ifdef HAVE_ALIGPU
-#include "AliGPUTRDTrackerComponent.h"
-#include "AliGPUTRDTrackletReaderComponent.h"
+#include "GPUTRDTrackerComponent.h"
+#include "GPUTRDTrackletReaderComponent.h"
 #endif
 #include "AliHLTTRDPreprocessorComponent.h"
 #include "AliHLTTRDMonitorComponent.h"
@@ -118,8 +118,8 @@ int AliHLTTRDAgent::RegisterComponents(AliHLTComponentHandler* pHandler) const
   // see header file for class documentation
   if (!pHandler) return -EINVAL;
 #ifdef HAVE_ALIGPU  
-  pHandler->AddComponent(new AliGPUTRDTrackerComponent);
-  pHandler->AddComponent(new AliGPUTRDTrackletReaderComponent);
+  pHandler->AddComponent(new GPUTRDTrackerComponent);
+  pHandler->AddComponent(new GPUTRDTrackletReaderComponent);
 #endif
   pHandler->AddComponent(new AliHLTTRDPreprocessorComponent);
   pHandler->AddComponent(new AliHLTTRDMonitorComponent);

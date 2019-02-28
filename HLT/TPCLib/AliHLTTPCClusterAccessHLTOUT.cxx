@@ -46,7 +46,7 @@
 #include <iostream>
 #include <iomanip>
 #ifdef HAVE_ALIGPU
-#include "AliGPUTPCGMTracksToTPCSeeds.h"
+#include "GPUTPCGMTracksToTPCSeeds.h"
 #endif
 
 #if __cplusplus > 201402L
@@ -170,9 +170,9 @@ void AliHLTTPCClusterAccessHLTOUT::Copy(TObject &object) const
     if (seeds)
     {
 #ifdef HAVE_ALIGPU
-      if (fCopySeeds == 1) AliGPUTPCGMTracksToTPCSeeds::CreateSeedsFromHLTTracks(seeds, fTPCtracker);
-      else if (fCopySeeds == 2) AliGPUTPCGMTracksToTPCSeeds::UpdateParamsOuter(seeds);
-      else if (fCopySeeds == 3) AliGPUTPCGMTracksToTPCSeeds::UpdateParamsInner(seeds);
+      if (fCopySeeds == 1) GPUTPCGMTracksToTPCSeeds::CreateSeedsFromHLTTracks(seeds, fTPCtracker);
+      else if (fCopySeeds == 2) GPUTPCGMTracksToTPCSeeds::UpdateParamsOuter(seeds);
+      else if (fCopySeeds == 3) GPUTPCGMTracksToTPCSeeds::UpdateParamsInner(seeds);
 #endif      
     }
   }

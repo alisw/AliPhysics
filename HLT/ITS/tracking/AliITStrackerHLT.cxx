@@ -56,7 +56,7 @@
 #include "AliITSV0Finder.h"
 #include "AliITStrackerHLT.h"
 #include "TStopwatch.h"
-//#include "AliGPUTPCTrackParam.h"
+//#include "GPUTPCTrackParam.h"
 //#include "AliHLTVertexer.h"
 #include <vector>
 #include "AliHLTITSTrackPoint.h"
