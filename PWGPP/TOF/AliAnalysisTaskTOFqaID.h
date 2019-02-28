@@ -69,6 +69,10 @@ class AliAnalysisTaskTOFqaID : public AliAnalysisTaskSE {
     fRunNumber = runN;
   }
 
+  // Binning arrays
+  TArrayD fVariableBinsPt;   // array of bins for pt and p
+  TArrayD fVariableBinsMult; // array of bins for multiplicity (e.g. TOF hits)
+
   protected:
   void AddTofBaseHisto(THashList* list, Int_t charge, TString suffix);
   void AddMatchingEffHisto(THashList* list, Int_t charge, TString suffix);
@@ -146,16 +150,12 @@ class AliAnalysisTaskTOFqaID : public AliAnalysisTaskSE {
   THashList* fHlistTRD;      //list of general histos for positive tracks
   THashList* fHlistTrigger;  //list of general histos for TOF trg infos
 
-  static const Int_t fnBinsPt = 300;      // binning for pt and p
-  static const Int_t fnBinsEta = 200;     // binning for eta
-  static const Int_t fnBinsPhi = 72;      // binning for phi and phi_TPCouter
-  static const Int_t fnBinsMult = 100;    // binning for multiplicity (e.g. TOF hits)
-  static const Double_t fBinsPt[2];       // binning for pt and p - max and min
-  static const Double_t fBinsEta[2];      // binning for eta - max and min
-  static const Double_t fBinsPhi[2];      // binning for phi and phi_TPCouter - max and min
-  Double_t fVariableBinsPt[fnBinsPt + 1]; // array of bins for pt and p
-
-  Double_t fVariableBinsMult[fnBinsMult + 1]; // array of bins for multiplicity (e.g. TOF hits)
+  static const Int_t fnBinsPt = 300;  // binning for pt and p
+  static const Int_t fnBinsEta = 200; // binning for eta
+  static const Int_t fnBinsPhi = 72;  // binning for phi and phi_TPCouter
+  static const Double_t fBinsPt[2];   // binning for pt and p - max and min
+  static const Double_t fBinsEta[2];  // binning for eta - max and min
+  static const Double_t fBinsPhi[2];  // binning for phi and phi_TPCouter - max and min
 
   void SetVariableBinning(); // sets the array with variable binning
 

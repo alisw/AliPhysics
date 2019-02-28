@@ -48,6 +48,8 @@ AliAnalysisTaskTOFqaID::AliAnalysisTaskTOFqaID()
 //________________________________________________________________________
 AliAnalysisTaskTOFqaID::AliAnalysisTaskTOFqaID(const char* name)
     : AliAnalysisTaskSE(name)
+    , fVariableBinsPt(300 + 1)
+    , fVariableBinsMult(100 + 1)
     , fRunNumber(0)
     , fESD(0x0)
     , fMCevent(0x0)
@@ -104,10 +106,8 @@ AliAnalysisTaskTOFqaID::AliAnalysisTaskTOFqaID(const char* name)
     fTrkExpTimes[j] = 0.0;
     fThExpTimes[j] = 0.0;
   }
-  for (Int_t i = 0; i <= fnBinsPt; i++)
-    fVariableBinsPt[i] = 0.0;
-  for (Int_t i = 0; i <= fnBinsMult; i++)
-    fVariableBinsMult[i] = 0.0;
+  fVariableBinsPt.Reset(0.);
+  fVariableBinsMult.Reset(0.);
   //
   // Input slot #0 works with a TChain
   DefineInput(0, TChain::Class());
@@ -126,6 +126,8 @@ AliAnalysisTaskTOFqaID::AliAnalysisTaskTOFqaID(const char* name)
 AliAnalysisTaskTOFqaID::AliAnalysisTaskTOFqaID(const AliAnalysisTaskTOFqaID& copy)
     : AliAnalysisTaskSE()
     , cpVar(fRunNumber)
+    , cpVar(fVariableBinsPt)
+    , cpVar(fVariableBinsMult)
     , cpVar(fESD)
     , cpVar(fMCevent)
     , cpVar(fTrackFilter)
@@ -178,10 +180,6 @@ AliAnalysisTaskTOFqaID::AliAnalysisTaskTOFqaID(const AliAnalysisTaskTOFqaID& cop
     fTrkExpTimes[j] = copy.fTrkExpTimes[j];
     fThExpTimes[j] = copy.fThExpTimes[j];
   }
-  for (Int_t i = 0; i <= fnBinsPt; i++)
-    fVariableBinsPt[i] = copy.fVariableBinsPt[i];
-  for (Int_t i = 0; i <= fnBinsMult; i++)
-    fVariableBinsMult[i] = copy.fVariableBinsMult[i];
   //
 }
 #undef cpVar
@@ -196,6 +194,8 @@ AliAnalysisTaskTOFqaID& AliAnalysisTaskTOFqaID::operator=(const AliAnalysisTaskT
   if (this != &copy) {
     AliAnalysisTaskSE::operator=(copy);
     cpVar(fRunNumber);
+    cpVar(fVariableBinsPt);
+    cpVar(fVariableBinsMult);
     cpVar(fESD);
     cpVar(fMCevent);
     cpVar(fTrackFilter);
@@ -246,10 +246,6 @@ AliAnalysisTaskTOFqaID& AliAnalysisTaskTOFqaID::operator=(const AliAnalysisTaskT
       fTrkExpTimes[j] = copy.fTrkExpTimes[j];
       fThExpTimes[j] = copy.fThExpTimes[j];
     }
-    for (Int_t i = 0; i <= fnBinsPt; i++)
-      fVariableBinsPt[i] = copy.fVariableBinsPt[i];
-    for (Int_t i = 0; i <= fnBinsMult; i++)
-      fVariableBinsMult[i] = copy.fVariableBinsMult[i];
     //
   }
   return *this;
@@ -905,6 +901,7 @@ void AliAnalysisTaskTOFqaID::HistogramMakeUp(TH1* hist, Color_t color, Int_t mar
   return;
 }
 
+#define GetArrayBinning(arr) arr.GetSize() - 1, arr.GetArray()
 #define CreateH(Hname, Type, title, ...)                                                                                           \
   Type* Hname = new Type(Form("%s%s_%s", #Hname, suffix.Data(), cLabel.Data()), Form("%s %s", cLabel.Data(), title), __VA_ARGS__); \
   HistogramMakeUp(Hname, ((charge > 0) ? kRed + 2 : kBlue + 2), 1);                                                                \
@@ -925,7 +922,7 @@ void AliAnalysisTaskTOFqaID::AddTofBaseHisto(THashList* list, Int_t charge, TStr
   else if (charge > 0)
     cLabel.Form("pos");
 
-  CreateH(hTOFmulti, TH1I, Form("matched trk per event (|#eta|#leq%3.2f, #it{p}_{T}#geq0.3 GeV/#it{c});N;events", fMatchingEtaCut), fnBinsMult, fVariableBinsMult);
+  CreateH(hTOFmulti, TH1I, Form("matched trk per event (|#eta|#leq%3.2f, #it{p}_{T}#geq0.3 GeV/#it{c});N;events", fMatchingEtaCut), GetArrayBinning(fVariableBinsMult));
 
   CreateH(hTime, TH1F, "matched trk TOF signal;t (ns);tracks", 250, 0., 610.);
 
@@ -935,7 +932,7 @@ void AliAnalysisTaskTOFqaID::AddTofBaseHisto(THashList* list, Int_t charge, TStr
 
   CreateH(hMatchedL, TH1F, "matched trk lenght;L (cm);tracks", 900, -100., 800);
 
-  CreateH(hMatchedDxVsPt, TH2F, "matched trk dx vs. #it{p}_{T};#it{p}_{T} (GeV/#it{c});dx (cm)", fnBinsPt, fVariableBinsPt, 200, -10., 10.);
+  CreateH(hMatchedDxVsPt, TH2F, "matched trk dx vs. #it{p}_{T};#it{p}_{T} (GeV/#it{c});dx (cm)", GetArrayBinning(fVariableBinsPt), 200, -10., 10.);
 
   CreateH(hMatchedDzVsStrip, TH2F, "matched trk dz vs. strip (#eta);strip index;dz (cm)", 92, 0., 92., 200, -10., 10.);
 
@@ -960,23 +957,23 @@ void AliAnalysisTaskTOFqaID::AddMatchingEffHisto(THashList* list, Int_t charge, 
   else if (charge > 0)
     cLabel = "pos";
 
-  CreateH(hMatchedP, TH1F, "matched trk p;p (GeV/#it{c});tracks", fnBinsPt, fVariableBinsPt);
+  CreateH(hMatchedP, TH1F, "matched trk p;p (GeV/#it{c});tracks", GetArrayBinning(fVariableBinsPt));
 
-  CreateH(hMatchedPt, TH1F, "matched trk #it{p}_{T};#it{p}_{T} (GeV/#it{c});tracks", fnBinsPt, fVariableBinsPt);
+  CreateH(hMatchedPt, TH1F, "matched trk #it{p}_{T};#it{p}_{T} (GeV/#it{c});tracks", GetArrayBinning(fVariableBinsPt));
 
   CreateH(hMatchedPhi, TH1F, "matched trk #phi_{vtx};#phi_{vtx} (deg);tracks", fnBinsPhi, fBinsPhi[0], fBinsPhi[1]);
 
-  CreateH(hMatchedPtVsOutPhi, TH2F, "matched trk #it{p}_{T} vs. #phi_{TPC out};#phi_{TPC out} (deg);#it{p}_{T} (GeV/#it{c})", fnBinsPhi, fBinsPhi[0], fBinsPhi[1], fnBinsPt, fVariableBinsPt);
+  CreateH(hMatchedPtVsOutPhi, TH2F, "matched trk #it{p}_{T} vs. #phi_{TPC out};#phi_{TPC out} (deg);#it{p}_{T} (GeV/#it{c})", fnBinsPhi, fBinsPhi[0], fBinsPhi[1], GetArrayBinning(fVariableBinsPt));
 
   CreateH(hMatchedEtaVsOutPhi, TH2F, "matched trk #eta vs. #phi_{TPC out};#phi_{TPC out} (deg);#eta", fnBinsPhi, fBinsPhi[0], fBinsPhi[1], fnBinsEta, fBinsEta[0], fBinsEta[1]);
 
-  CreateH(hPrimaryP, TH1F, "primary trk p;p (GeV/#it{c});tracks", fnBinsPt, fVariableBinsPt);
+  CreateH(hPrimaryP, TH1F, "primary trk p;p (GeV/#it{c});tracks", GetArrayBinning(fVariableBinsPt));
 
-  CreateH(hPrimaryPt, TH1F, "primary trk #it{p}_{T};#it{p}_{T} (GeV/#it{c});tracks", fnBinsPt, fVariableBinsPt);
+  CreateH(hPrimaryPt, TH1F, "primary trk #it{p}_{T};#it{p}_{T} (GeV/#it{c});tracks", GetArrayBinning(fVariableBinsPt));
 
   CreateH(hPrimaryPhi, TH1F, "primary trk #phi_{vtx};#phi_{vtx} (deg);tracks", fnBinsPhi, fBinsPhi[0], fBinsPhi[1]);
 
-  CreateH(hPrimaryPtVsOutPhi, TH2F, "primary trk #it{p}_{T} vs. #phi_{TPC out};#phi_{TPC out} (deg);#it{p}_{T} (GeV/#it{c})", fnBinsPhi, fBinsPhi[0], fBinsPhi[1], fnBinsPt, fVariableBinsPt);
+  CreateH(hPrimaryPtVsOutPhi, TH2F, "primary trk #it{p}_{T} vs. #phi_{TPC out};#phi_{TPC out} (deg);#it{p}_{T} (GeV/#it{c})", fnBinsPhi, fBinsPhi[0], fBinsPhi[1], GetArrayBinning(fVariableBinsPt));
 
   CreateH(hPrimaryEtaVsOutPhi, TH2F, "primary trk #eta vs. #phi_{TPC out}; #eta; #phi_{TPC out};#phi_{TPC out} (deg);#eta", fnBinsPhi, fBinsPhi[0], fBinsPhi[1], fnBinsEta, fBinsEta[0], fBinsEta[1]);
 }
@@ -996,7 +993,7 @@ void AliAnalysisTaskTOFqaID::AddPidHisto(THashList* list, Int_t charge, TString 
   else if (charge > 0)
     cLabel.Form("pos");
 
-  CreateH(hMatchedBetaVsP, TH2F, "matched trk #beta vs. p;#it{p} (GeV/#it{c});#beta", fnBinsPt, fVariableBinsPt, 150, 0., 1.5);
+  CreateH(hMatchedBetaVsP, TH2F, "matched trk #beta vs. p;#it{p} (GeV/#it{c});#beta", GetArrayBinning(fVariableBinsPt), 150, 0., 1.5);
 
   CreateH(hMatchedMass, TH1F, "matched p.le M;M (GeV/#it{c}^{2});entries", 500, 0., 5.);
 
@@ -1004,19 +1001,19 @@ void AliAnalysisTaskTOFqaID::AddPidHisto(THashList* list, Int_t charge, TString 
 
   CreateH(hExpTimePiVsStrip, TH2F, "matched trk t_{TOF}-t_{#pi,exp} vs strip;strip (#eta);t_{TOF}-t_{#pi,exp} (ps)", 92, 0, 92, fnExpTimeSmallBins, fExpTimeSmallRangeMin, fExpTimeSmallRangeMax);
 
-  CreateH(hExpTimePiT0Sub1GeV, TH2F, Form("trk (%.2f#leq #it{p}#leq %.2f GeV/#it{c}) t_{TOF}-t_{#pi,exp}-t_{0}^{TOF};n. tracks used for t_{0}^{TOF};t_{TOF}-t_{#pi,exp}-t_{0}^{TOF}", fResolutionMinP, fResolutionMaxP), fnBinsMult, fVariableBinsMult, fnExpTimeBins, fExpTimeRangeMin, fExpTimeRangeMax);
+  CreateH(hExpTimePiT0Sub1GeV, TH2F, Form("trk (%.2f#leq #it{p}#leq %.2f GeV/#it{c}) t_{TOF}-t_{#pi,exp}-t_{0}^{TOF};n. tracks used for t_{0}^{TOF};t_{TOF}-t_{#pi,exp}-t_{0}^{TOF}", fResolutionMinP, fResolutionMaxP), GetArrayBinning(fVariableBinsMult), fnExpTimeBins, fExpTimeRangeMin, fExpTimeRangeMax);
 
   CreateH(hExpTimePiFillSub, TH1F, "trk t_{TOF}-t_{#pi,exp}-t_{0,fill};t_{TOF}-t_{#pi,exp} -t_{0,fill} (ps);entries", 6150, -75030., 75030.);
 
   CreateH(hExpTimePi, TH1F, "matched trk t_{TOF}-t_{#pi,exp};t_{TOF}-t_{#pi,exp} (ps);tracks", 6150, -75030., 75030.);
 
-  CreateH(hExpTimePiVsP, TH2F, "matched trk t_{TOF}-t_{#pi,exp};#it{p} (GeV/#it{c});t_{TOF}-t_{#pi,exp} (ps)", fnBinsPt, fVariableBinsPt, fnExpTimeBins, fExpTimeRangeMin, fExpTimeRangeMax);
+  CreateH(hExpTimePiVsP, TH2F, "matched trk t_{TOF}-t_{#pi,exp};#it{p} (GeV/#it{c});t_{TOF}-t_{#pi,exp} (ps)", GetArrayBinning(fVariableBinsPt), fnExpTimeBins, fExpTimeRangeMin, fExpTimeRangeMax);
   HistogramMakeUp(hExpTimePiVsP, kRed + 2);
 
-  CreateH(hExpTimeKaVsP, TH2F, "matched trk t_{TOF}-t_{K,exp};#it{p} (GeV/#it{c});t_{TOF}-t_{K,exp} (ps)", fnBinsPt, fVariableBinsPt, fnExpTimeBins, fExpTimeRangeMin, fExpTimeRangeMax);
+  CreateH(hExpTimeKaVsP, TH2F, "matched trk t_{TOF}-t_{K,exp};#it{p} (GeV/#it{c});t_{TOF}-t_{K,exp} (ps)", GetArrayBinning(fVariableBinsPt), fnExpTimeBins, fExpTimeRangeMin, fExpTimeRangeMax);
   HistogramMakeUp(hExpTimeKaVsP, kBlue + 2);
 
-  CreateH(hExpTimeProVsP, TH2F, "matched trk t_{TOF}-t_{p,exp};#it{p} (GeV/#it{c});t_{TOF}-t_{p,exp} (ps)", fnBinsPt, fVariableBinsPt, fnExpTimeBins, fExpTimeRangeMin, fExpTimeRangeMax);
+  CreateH(hExpTimeProVsP, TH2F, "matched trk t_{TOF}-t_{p,exp};#it{p} (GeV/#it{c});t_{TOF}-t_{p,exp} (ps)", GetArrayBinning(fVariableBinsPt), fnExpTimeBins, fExpTimeRangeMin, fExpTimeRangeMax);
   HistogramMakeUp(hExpTimeProVsP, kGreen + 2);
 
   CreateH(hTOFpidSigmaPi, TH2F, "trk n#sigma^{TOF}_{#pi} vs #it{p}_{T};#it{p} (GeV/#it{c});n#sigma_{#pi,exp} (ps)", 500, 0., 5., 200, -10., 10.);
@@ -1028,13 +1025,13 @@ void AliAnalysisTaskTOFqaID::AddPidHisto(THashList* list, Int_t charge, TString 
   CreateH(hTOFpidSigmaPro, TH2F, "trk TOF n#sigma^{TOF}_{p} vs #it{p}_{T};#it{p} (GeV/#it{c});n#sigma_{p,exp} (ps)", 500, 0., 5., 200, -10., 10.);
   HistogramMakeUp(hTOFpidSigmaPro, kGreen + 2);
 
-  CreateH(hExpTimePiT0SubVsP, TH2F, "trk t_{TOF}-t_{#pi,exp}-t_{0}^{TOF};#it{p} (GeV/#it{c});t_{TOF}-t_{#pi,exp}-t_{0}^{TOF}", fnBinsPt, fVariableBinsPt, fnExpTimeBins, fExpTimeRangeMin, fExpTimeRangeMax);
+  CreateH(hExpTimePiT0SubVsP, TH2F, "trk t_{TOF}-t_{#pi,exp}-t_{0}^{TOF};#it{p} (GeV/#it{c});t_{TOF}-t_{#pi,exp}-t_{0}^{TOF}", GetArrayBinning(fVariableBinsPt), fnExpTimeBins, fExpTimeRangeMin, fExpTimeRangeMax);
   HistogramMakeUp(hExpTimePiT0SubVsP, kRed + 2);
 
-  CreateH(hExpTimeKaT0SubVsP, TH2F, "trk t_{TOF}-t_{K,exp}-t_{0}^{TOF};#it{p} (GeV/#it{c});t_{TOF}-t_{K,exp}-t_{0}^{TOF}", fnBinsPt, fVariableBinsPt, fnExpTimeBins, fExpTimeRangeMin, fExpTimeRangeMax);
+  CreateH(hExpTimeKaT0SubVsP, TH2F, "trk t_{TOF}-t_{K,exp}-t_{0}^{TOF};#it{p} (GeV/#it{c});t_{TOF}-t_{K,exp}-t_{0}^{TOF}", GetArrayBinning(fVariableBinsPt), fnExpTimeBins, fExpTimeRangeMin, fExpTimeRangeMax);
   HistogramMakeUp(hExpTimeKaT0SubVsP, kBlue + 2);
 
-  CreateH(hExpTimeProT0SubVsP, TH2F, "trk t_{TOF}-t_{p,exp}-t_{0}^{TOF};#it{p} (GeV/#it{c});t_{TOF}-t_{p,exp}-t_{0}^{TOF}", fnBinsPt, fVariableBinsPt, fnExpTimeBins, fExpTimeRangeMin, fExpTimeRangeMax);
+  CreateH(hExpTimeProT0SubVsP, TH2F, "trk t_{TOF}-t_{p,exp}-t_{0}^{TOF};#it{p} (GeV/#it{c});t_{TOF}-t_{p,exp}-t_{0}^{TOF}", GetArrayBinning(fVariableBinsPt), fnExpTimeBins, fExpTimeRangeMin, fExpTimeRangeMax);
   HistogramMakeUp(hExpTimeProT0SubVsP, kGreen + 2);
 
   CreateH(hExpTimePiVsOutPhi, TH2F, "matched trk t_{TOF}-t_{#pi,exp} vs #phi_{TPC out};#phi_{TPC out} (deg);t_{TOF}-t_{#pi,exp} (ps)", fnBinsPhi, fBinsPhi[0], fBinsPhi[1], fnExpTimeBins, fExpTimeRangeMin, fExpTimeRangeMax);
@@ -1046,13 +1043,13 @@ void AliAnalysisTaskTOFqaID::AddPidHisto(THashList* list, Int_t charge, TString 
   CreateH(hExpTimeProVsOutPhi, TH2F, "matched trk t_{TOF}-t_{p,exp} vs #phi_{TPC out};#phi_{TPC out} (deg);t_{TOF}-t_{p,exp} (ps)", fnBinsPhi, fBinsPhi[0], fBinsPhi[1], fnExpTimeBins, fExpTimeRangeMin, fExpTimeRangeMax);
   HistogramMakeUp(hExpTimeProVsOutPhi, kGreen + 2);
 
-  CreateH(hExpTimePiVsPgoodCh, TH2F, "matched trk t_{TOF}-t_{#pi,exp} - good channels;#it{p} (GeV/#it{c});t_{TOF}-t_{#pi,exp} (ps)", fnBinsPt, fVariableBinsPt, fnExpTimeBins, fExpTimeRangeMin, fExpTimeRangeMax);
+  CreateH(hExpTimePiVsPgoodCh, TH2F, "matched trk t_{TOF}-t_{#pi,exp} - good channels;#it{p} (GeV/#it{c});t_{TOF}-t_{#pi,exp} (ps)", GetArrayBinning(fVariableBinsPt), fnExpTimeBins, fExpTimeRangeMin, fExpTimeRangeMax);
   HistogramMakeUp(hExpTimePiVsPgoodCh, kRed + 2);
 
-  CreateH(hExpTimeKaVsPgoodCh, TH2F, "matched trk t_{TOF}-t_{K,exp} - good channels;#it{p} (GeV/#it{c});t_{TOF}-t_{K,exp} (ps)", fnBinsPt, fVariableBinsPt, fnExpTimeBins, fExpTimeRangeMin, fExpTimeRangeMax);
+  CreateH(hExpTimeKaVsPgoodCh, TH2F, "matched trk t_{TOF}-t_{K,exp} - good channels;#it{p} (GeV/#it{c});t_{TOF}-t_{K,exp} (ps)", GetArrayBinning(fVariableBinsPt), fnExpTimeBins, fExpTimeRangeMin, fExpTimeRangeMax);
   HistogramMakeUp(hExpTimeKaVsPgoodCh, kBlue + 2);
 
-  CreateH(hExpTimeProVsPgoodCh, TH2F, "matched trk t_{TOF}-t_{p,exp} - good channels;#it{p} (GeV/#it{c});t_{TOF}-t_{p,exp} (ps)", fnBinsPt, fVariableBinsPt, fnExpTimeBins, fExpTimeRangeMin, fExpTimeRangeMax);
+  CreateH(hExpTimeProVsPgoodCh, TH2F, "matched trk t_{TOF}-t_{p,exp} - good channels;#it{p} (GeV/#it{c});t_{TOF}-t_{p,exp} (ps)", GetArrayBinning(fVariableBinsPt), fnExpTimeBins, fExpTimeRangeMin, fExpTimeRangeMax);
   HistogramMakeUp(hExpTimeProVsPgoodCh, kGreen + 2);
 
   return;
@@ -1062,6 +1059,11 @@ void AliAnalysisTaskTOFqaID::AddPidHisto(THashList* list, Int_t charge, TString 
   Type* Hname = new Type(Form("%s%s", #Hname, suffix.Data()), title, __VA_ARGS__); \
   list->AddLast(Hname);
 
+#define SetBinLabels(H)                                \
+  if (labels_arr->GetEntries() != H->GetNbinsY())      \
+    AliFatal("Not the right number of labels");        \
+  for (Int_t i = 0; i < labels_arr->GetEntries(); i++) \
+    H->GetYaxis()->SetBinLabel(i + 1, labels_arr->At(i)->GetName());
 //----------------------------------------------------------------------------------
 void AliAnalysisTaskTOFqaID::AddStartTimeHisto(THashList* list, TString suffix)
 {
@@ -1090,27 +1092,23 @@ void AliAnalysisTaskTOFqaID::AddStartTimeHisto(THashList* list, TString suffix)
 
   TString labels = "best_t0,fill_t0,tof_t0,T0AC,T0A,T0C";
   TObjArray* labels_arr = labels.Tokenize(",");
-#define SetBinLabels(H)                                                                     \
-  if (labels_arr->GetEntries() != H->GetNbinsY())                                           \
-    ::Fatal("AliAnalysisTaskTOFqaID::AddStartTimeHisto", "Not the right number of labels"); \
-  for (Int_t i = 0; i < labels_arr->GetEntries(); i++)                                      \
-    H->GetYaxis()->SetBinLabel(i + 1, labels_arr->At(i)->GetName());
+
   CreateH(hStartTime, TH2F, "Start time for each method (mask); start time (ps); method;", 140, -700, 700, 6, -1., 5.);
   SetBinLabels(hStartTime);
 
   CreateH(hStartTimeRes, TH2F, "Start time resolution for each method (mask); resolution (ps); method;", 300, 0., 300., 6, -1., 5.);
   SetBinLabels(hStartTimeRes);
 
-  CreateH(hT0TOFvsNtrk, TH2F, "Event timeZero estimated by TOF vs. TOF-matching tracks; N_{TOF}; t0 (ps)", 700, 0., 700., 140, -700., 700.);
+  CreateH(hT0TOFvsNtrk, TH2F, "Event timeZero estimated by TOF vs. TOF-matching tracks; N_{TOF}; t0 (ps)", GetArrayBinning(fVariableBinsMult), 140, -700., 700.);
   HistogramMakeUp(hT0TOFvsNtrk, kTeal - 5, 1);
 
-  CreateH(hT0ACvsNtrk, TH2F, "Event timeZero estimated by T0AC vs. TOF-matching tracks;  N_{TOF}; t0 (ps)", 700, 0., 700., 140, -700., 700.);
+  CreateH(hT0ACvsNtrk, TH2F, "Event timeZero estimated by T0AC vs. TOF-matching tracks; N_{TOF}; t0 (ps)", GetArrayBinning(fVariableBinsMult), 140, -700., 700.);
   HistogramMakeUp(hT0ACvsNtrk, kRed + 2, 1);
 
-  CreateH(hT0AvsNtrk, TH2F, "Event timeZero estimated by T0A vs. TOF-matching tracks;  N_{TOF}; t0 (ps)", 700, 0., 700., 140, -700., 700.);
+  CreateH(hT0AvsNtrk, TH2F, "Event timeZero estimated by T0A vs. TOF-matching tracks; N_{TOF}; t0 (ps)", GetArrayBinning(fVariableBinsMult), 140, -700., 700.);
   HistogramMakeUp(hT0AvsNtrk, kBlue + 2, 1);
 
-  CreateH(hT0CvsNtrk, TH2F, "Event timeZero estimated by T0C vs. TOF-matching tracks;  N_{TOF}; t0 (ps)", 700, 0., 700., 140, -700., 700.);
+  CreateH(hT0CvsNtrk, TH2F, "Event timeZero estimated by T0C vs. TOF-matching tracks; N_{TOF}; t0 (ps)", GetArrayBinning(fVariableBinsMult), 140, -700., 700.);
   HistogramMakeUp(hT0CvsNtrk, kGreen + 2, 1);
 
   labels = "fill_t0,tof_t0,T0A,T0A & tof_t0,T0C,T0C & tof_t0,T0AC,T0AC & tof_t0";
@@ -1123,9 +1121,10 @@ void AliAnalysisTaskTOFqaID::AddStartTimeHisto(THashList* list, TString suffix)
   CreateH(hStartTimeMask, TH2F, "Start Time Mask vs p bin for primary tracks; p(GeV/#it{c});", 12, startTimeMomBins, 8, 0., 8.);
   SetBinLabels(hStartTimeMask);
   HistogramMakeUp(hStartTimeMask, kRed + 2, 1);
-#undef SetBinLabels
 }
+#undef SetBinLabels
 #undef CreateH
+#undef GetArrayBinning
 
 //----------------------------------------------------------------------------------
 void AliAnalysisTaskTOFqaID::AddTrdHisto()
@@ -1570,25 +1569,35 @@ void AliAnalysisTaskTOFqaID::SetVariableBinning()
   //
   // defines an array with variable binning in p and pT
   //
-  for (Int_t j = 0; j < fnBinsPt + 1; j++) {
-    if (j < 200)
-      fVariableBinsPt[j] = 0.025 * j;
-    else
-      fVariableBinsPt[j] = 5.0 + (j - 200) * 0.050;
+  Int_t size = fVariableBinsPt.GetSize();
+  Double_t delta = size > 1 ? fVariableBinsPt.At(0) - fVariableBinsPt.At(1) : 0.;
+  if (size > 1 && TMath::Abs(delta) < 0.01) { //Check to see if it was set externally
+    for (Int_t j = 0; j < size; j++) {
+      if (j < 200)
+        fVariableBinsPt.SetAt(0.025 * j, j);
+      else
+        fVariableBinsPt.SetAt(5.0 + (j - 200) * 0.050, j);
+    }
   }
+  //Checking that the binning is in order
+  for (Int_t j = 0; j < size - 1; j++)
+    if (fVariableBinsPt.GetAt(j) > fVariableBinsPt.GetAt(j + 1))
+      AliFatal(Form("Binning fVariableBinsPt is well ordered at position %i: %f > %f", j, fVariableBinsPt.GetAt(j), fVariableBinsPt.GetAt(j + 1)));
 
   //
   // defines an array with variable binning in multiplicity (e.g. TOF hits)
   //
-  fVariableBinsMult[0] = 1;
-  for (Int_t j = 1; j < fnBinsMult + 1; j++) {
-    Double_t delta = TMath::Power(10, TMath::Floor(TMath::Log10(fVariableBinsMult[j - 1])));
-    if (fVariableBinsMult[j - 1] >= 10)
-      delta /= 2;
-    if (fVariableBinsMult[j - 1] >= 100)
-      delta /= 2;
-    fVariableBinsMult[j] = fVariableBinsMult[j - 1] + delta;
+  size = fVariableBinsMult.GetSize();
+  delta = size > 1 ? fVariableBinsMult.At(0) - fVariableBinsMult.At(1) : 0.;
+  if (size > 1 && TMath::Abs(delta) < 0.01) { //Check to see if it was set externally
+    fVariableBinsMult.SetAt(1., 0);
+    for (Int_t j = 1; j < fVariableBinsMult.GetSize(); j++)
+      fVariableBinsMult.SetAt(fVariableBinsMult.At(j - 1) + TMath::Ceil(TMath::Sqrt(fVariableBinsMult.At(j - 1))), j);
   }
+  //Checking that the binning is in order
+  for (Int_t j = 0; j < size - 1; j++)
+    if (fVariableBinsMult.GetAt(j) > fVariableBinsMult.GetAt(j + 1))
+      AliFatal(Form("Binning fVariableBinsMult is well ordered at position %i: %f > %f", j, fVariableBinsMult.GetAt(j), fVariableBinsMult.GetAt(j + 1)));
 
   return;
 }
@@ -1602,5 +1611,4 @@ const Double_t AliAnalysisTaskTOFqaID::fBinsEta[2] = { -1.0, 1.0 };
 //-----------------------------------------------------------
 const Double_t AliAnalysisTaskTOFqaID::fBinsPhi[2] = { 0.0, 360.0 };
 
-#undef CreateH
 #endif
