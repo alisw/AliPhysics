@@ -72,36 +72,10 @@ struct PairCutTrackAttrAvgSep {
     {
     }
 
-  static bool is_valid_point(const AliFemtoThreeVector &point)
-    {
-      return point.x() > -9000.0
-          && point.y() > -9000.0
-          && point.z() > -9000.0;
-    }
-
   static double calc_avg_sep(const AliFemtoTrack &track1,
                              const AliFemtoTrack &track2)
     {
-      int count = 0;
-      double sep_sum = 0.0;
-
-      for (int i=0; i<9; ++i) {
-        const auto &p1 = track1.NominalTpcPoint(i),
-                   &p2 = track2.NominalTpcPoint(i);
-
-        if (!is_valid_point(p1) || !is_valid_point(p2)) {
-          continue;
-        }
-
-        sep_sum += (p1 - p2).Mag();
-        count++;
-      }
-
-      double avg = __builtin_expect(count > 0, 1)
-                 ? sep_sum / count
-                 : -1.0;
-
-      return avg;
+      return AliFemtoPair::CalcAvgSepTracks(track1, track2);
     }
 
   void FillConfiguration(AliFemtoConfigObject &cfg) const
