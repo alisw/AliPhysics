@@ -65,7 +65,8 @@ AliMCEvent::AliMCEvent():
     fExternal(0),
     fTopEvent(0),
     fVertex(0),
-    fNBG(-1)
+    fNBG(-1),
+    fBGEventReused(0)
 {
     // Default constructor
   fTopEvent = this;
@@ -91,7 +92,8 @@ AliMCEvent::AliMCEvent(const AliMCEvent& mcEvnt) :
     fExternal(0),
     fTopEvent(mcEvnt.fTopEvent),
     fVertex(mcEvnt.fVertex),
-    fNBG(mcEvnt.fNBG)
+    fNBG(mcEvnt.fNBG),
+    fBGEventReused(mcEvnt.fBGEventReused)
 { 
 // Copy constructor
 }
@@ -262,6 +264,7 @@ void AliMCEvent::FinishEvent()
     delete fSubsidiaryEvents;
     fSubsidiaryEvents = 0;
     fNBG = -1;
+    fBGEventReused = 0;
 }
 
 
@@ -532,7 +535,11 @@ Bool_t AliMCEvent::IsFromSubsidiaryEvent(int id) const
     AliMCEvent* mc;
     FindIndexAndEvent(id, mc);
     if (mc != fSubsidiaryEvents->At(0)) return kTRUE;
-  } 
+  }
+  if (!fAODMCHeader) { // for the AOD need to check the particle itself
+    return GetTrack(id)->IsFromSubsidiaryEvent();
+  }
+  
   return kFALSE;
 }
 
@@ -608,6 +615,11 @@ AliVParticle* AliMCEvent::GetTrack(Int_t i) const
       mcParticle = new ((*fMCParticles)[nentries]) AliMCParticle(particle, rarray, i);
       fMCParticleMap->AddAt(mcParticle, i);
       if (mcParticle) {
+	// in case of embedding flag if it is from the underlying event
+	if (fTopEvent && fTopEvent->fSubsidiaryEvents && (fTopEvent->fSubsidiaryEvents->At(0)!= this) ) {
+	  mcParticle->SetFromSubsidiaryEvent(kTRUE);
+	}
+	
 	TParticle* part = mcParticle->Particle();
 	Int_t imo  = part->GetFirstMother();
 	Int_t id1  = part->GetFirstDaughter();

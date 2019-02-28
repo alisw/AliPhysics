@@ -124,6 +124,10 @@ public:
   
   virtual void    SetSecondaryFromMaterial(Bool_t ) { ; }
   virtual Bool_t  IsSecondaryFromMaterial() const { return 0  ; }
+
+  virtual Bool_t  IsFromSubsidiaryEvent() const {return kFALSE; }
+  virtual void    SetFromSubsidiaryEvent(Bool_t ) {}
+
   
   ClassDef(AliVParticle, 4)  // base class for particles
 };

@@ -76,7 +76,8 @@ public:
   virtual UChar_t   GetTriggerCluster()     const {return 0;}
   virtual UInt_t    GetTimeStamp()          const {return 0;}
   // 
-  
+  Int_t GetBGEventReused()                  const {return fBGEventReused;}
+  void  SetBGEventReused(int n)                   {fBGEventReused = n;}  
   // Access to header informations
 
   virtual void AddCocktailHeader(const AliGenEventHeader* header);
@@ -104,12 +105,12 @@ private:
   Double32_t   fXsection;          ///< Cross section for particlar process
   UInt_t       fTrials;            ///< Number of trials
   UInt_t       fEventType;         ///< MC Process Type of Event
+  Int_t        fBGEventReused;     ///< in case of embedding counts how many time currebt BKG event was used
   Double32_t   fReactionPlaneAngle;///< MC Reaction Plane Angle
-
   // more details in the headers
   TList  *fHeaders;                ///< List of all MC Headers
 
-  ClassDef(AliAODMCHeader,6)
+  ClassDef(AliAODMCHeader,7)
 
 };
 

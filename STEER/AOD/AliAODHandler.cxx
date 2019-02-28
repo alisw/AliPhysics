@@ -300,6 +300,7 @@ void AliAODHandler::StoreMCParticles(){
   Int_t np    = mcEvent->GetNumberOfTracks();
   Int_t nprim = mcEvent->GetNumberOfPrimaries();
 
+  mcHeader->SetBGEventReused(mcEvent->GetBGEventReused());
 
   Int_t j = 0;
   TClonesArray& l = *mcarray;
@@ -322,6 +323,7 @@ void AliAODHandler::StoreMCParticles(){
 	  
 	  mcpartTmp.SetStatus(mcpart->Particle()->GetStatusCode());
 	  mcpartTmp.SetMCProcessCode(mcpart->Particle()->GetUniqueID());
+	  mcpartTmp.SetFromSubsidiaryEvent(mcpart->IsFromSubsidiaryEvent());
 	  // 
 	  Int_t d0 =  mcpartTmp.GetDaughter(0);
 	  Int_t d1 =  mcpartTmp.GetDaughter(1);
