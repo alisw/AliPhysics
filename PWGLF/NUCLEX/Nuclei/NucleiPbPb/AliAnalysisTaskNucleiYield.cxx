@@ -75,7 +75,41 @@ void SetSLightNucleus(AliAODMCParticle* part, SLightNucleus& snucl) {
     snucl.flag = 4;
 }
 
+void SetupTRD2013(TF1* neg[4], TF1* pos[4]) { 
+  const double fgkPhiParamPos[4][4] = {
+      {1.38984e+00, -2.10187e+01, 5.81724e-02, 1.91938e+01},
+      {2.02372e+00, -2.44456e+00, 8.99000e-01, 9.22399e-01},
+      {4.21954e+00, -2.56555e+01, 4.17557e-02, 2.40301e+01},
+      {5.17499e+00, -2.69241e+00, 6.97167e-01, 1.25974e+00}};
+    const double fgkPhiParamNeg[4][4] = {
+      {2.81984e+00, -1.81497e-01, -2.03494e+00, 2.64148e-01},
+      {5.79322e+00, -5.44966e-02, -1.10803e+00, 1.29737e+00},
+      {5.60000e+00, -2.06000e-01, -1.97130e+00, 2.67181e-01},
+      {9.72180e+00, -4.35801e-02, -1.14550e+00, 1.49160e+00}};
+  for (int iFunction = 0; iFunction < 4; ++iFunction)
+  {
+    for (int iParam = 0; iParam < 4; ++iParam)
+    {
+      neg[iFunction]->SetParameter(iParam, fgkPhiParamNeg[iFunction][iParam]);
+      pos[iFunction]->SetParameter(iParam, fgkPhiParamPos[iFunction][iParam]);
+    }
+  }
 }
+
+}
+
+bool AliAnalysisTaskNucleiYield::IsInTRD(float pt, float phi, float sign) {
+    bool withTRD[2]{
+        phi < fTRDboundariesNeg[0]->Eval(pt) ||
+            (phi > fTRDboundariesNeg[1]->Eval(pt) && phi < fTRDboundariesNeg[2]->Eval(pt)) ||
+            phi > fTRDboundariesNeg[3]->Eval(pt),
+        phi < fTRDboundariesPos[0]->Eval(pt) ||
+            (phi > fTRDboundariesPos[1]->Eval(pt) && phi < fTRDboundariesPos[2]->Eval(pt)) ||
+            phi > fTRDboundariesPos[3]->Eval(pt)};
+    bool positive = sign > 0;
+    return withTRD[positive];
+}
+
 /// Standard and default constructor of the class.
 ///
 /// \param taskname Name of the task
@@ -166,6 +200,11 @@ AliAnalysisTaskNucleiYield::AliAnalysisTaskNucleiYield(TString taskname)
    ,fTPCbackgroundTpl{nullptr}
    ,fDCAxy{{nullptr}}
    ,fDCAz{{nullptr}}
+   ,fHist2Phi{nullptr}
+   ,fTRDboundariesPos{nullptr}
+   ,fTRDboundariesNeg{nullptr}
+   ,fTRDvintage{0}
+   ,fTRDin{false}
    {
      gRandom->SetSeed(0); //TODO: provide a simple method to avoid "complete randomness"
      Float_t aCorrection[3] = {-2.10154e-03,-4.53472e-01,-3.01246e+00};
@@ -187,6 +226,13 @@ AliAnalysisTaskNucleiYield::~AliAnalysisTaskNucleiYield(){
   if (fSTree) delete fSTree;
   if (fTOFfunction) delete fTOFfunction;
   if (fFunctCollection) delete fFunctCollection;
+  for (int iFunction = 0; iFunction < 4; ++iFunction)
+  {
+    if (fTRDboundariesPos[iFunction])
+      delete fTRDboundariesPos[iFunction];
+    if (fTRDboundariesNeg[iFunction])
+      delete fTRDboundariesNeg[iFunction];
+  }
 }
 
 /// This function creates all the histograms and all the objects in general used during the analysis
@@ -277,11 +323,12 @@ void AliAnalysisTaskNucleiYield::UserCreateOutputObjects() {
           nCentBins,centBins,nPtBins,pTbins,nSigmaBins,sigmaBins);
       fTPCbackgroundTpl[iC] = new TH3F(Form("f%cTPCbackgroundTpl",letter[iC]),";Centrality (%);#it{p}_{T} (GeV/#it{c}); n_{#sigma} d",
           nCentBins,centBins,nPtBins,pTbins,nSigmaBins,sigmaBins);
-
+      fHist2Phi[iC] = new TH2F(Form("fHist2Phi%c", letter[iC]), Form("%c; #Phi (rad) ;#it{p}_{T} (Gev/#it{c});", letter[iC]), 100, 0, TMath::TwoPi(), 100, 0, 7);
       fList->Add(fTOFsignal[iC]);
       fList->Add(fTPCcounts[iC]);
       fList->Add(fTPCsignalTpl[iC]);
       fList->Add(fTPCbackgroundTpl[iC]);
+      fList->Add(fHist2Phi[iC]);
 
       for (int iT = 0; iT < 2; ++iT) {
         fDCAxy[iT][iC] = new TH3F(Form("f%cDCAxy%s",letter[iC],tpctof[iT].data()),";Centrality (%);#it{p}_{T} (GeV/#it[c}); DCA_{xy} (cm)",
@@ -324,6 +371,14 @@ void AliAnalysisTaskNucleiYield::UserCreateOutputObjects() {
       PostData(3, fSTree);
     }
   }
+
+  for (int iFunction = 0; iFunction < 4; ++iFunction)
+  {
+    fTRDboundariesNeg[iFunction] = new TF1(Form("fNeg%i", iFunction), "[0]-exp([1]*pow(x,[2])+[3])", 0.2, 10);
+    fTRDboundariesPos[iFunction] = new TF1(Form("fPos%i", iFunction), "[0]-exp([1]*pow(x,[2])+[3])", 0.2, 10);
+  }
+  if (fTRDvintage == 2013)
+    SetupTRD2013(fTRDboundariesNeg, fTRDboundariesPos);
 }
 
 /// This is the function that is evaluated for each event. The analysis code stays here.
@@ -424,11 +479,11 @@ void AliAnalysisTaskNucleiYield::UserExec(Option_t *){
     const float m2 = track->P() * track->P() * (1.f / (beta * beta) - 1.f);
 
     if (fSaveTrees && track->Pt() < 10.) {
-      double mcPt = 0;
+      //double mcPt = 0;
       bool good2save{true};
       if (fIsMC) {
         int mcId = std::abs(track->GetLabel());
-        AliAODMCParticle *part = (AliAODMCParticle*)stack->At(mcId); 
+        AliAODMCParticle *part = (AliAODMCParticle*)stack->At(mcId);
         if (part) {
           good2save = std::abs(part->GetPdgCode()) == fPDG;
           SetSLightNucleus(part, fSimNucleus);
@@ -458,6 +513,7 @@ void AliAnalysisTaskNucleiYield::UserExec(Option_t *){
     }
 
     if (!acceptedTrack) continue;
+    fHist2Phi[track->GetSign() > 0]->Fill(track->Phi() , track->Pt() );
 
     const int iTof = beta > EPS ? 1 : 0;
     float pT = track->Pt() * fCharge;
@@ -569,6 +625,7 @@ bool AliAnalysisTaskNucleiYield::AcceptTrack(AliAODTrack *track, Double_t dca[2]
   if (track->GetTPCFoundFraction() < fRequireTPCfoundFraction) return false;
   if (track->GetTPCsignalN() < fRequireTPCsignal) return false;
   if (track->GetTPCsignal() < fRequireMinEnergyLoss) return false;
+  if (fTRDvintage != 0 && fTRDin != IsInTRD(track->Pt(), track->Phi(), track->GetSign())) return false;
 
   /// ITS related cuts
   dca[0] = 0.;
