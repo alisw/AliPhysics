@@ -4,19 +4,23 @@
 
 #include "AliFemtoModelCorrFctnDEtaDPhiAK.h"
 
-#include <tuple>
-#include <cstdio>
-#include <TMath.h>
-
-#ifdef __ROOT__
-ClassImp(AliFemtoModelCorrFctnDEtaDPhiAK)
-#endif
-
 #include "AliFemtoModelGausLCMSFreezeOutGenerator.h"
 #include "AliFemtoModelHiddenInfo.h"
 #include "AliFemtoPair.h"
 #include "AliFemtoModelManager.h"
 
+#include <TMath.h>
+
+#include <tuple>
+#include <cstdio>
+
+
+AliFemtoModelCorrFctnDEtaDPhiAK
+  ::AliFemtoModelCorrFctnDEtaDPhiAK(const Params &p)
+  : AliFemtoModelCorrFctnDEtaDPhiAK(p.suffix,
+                                    p.nbins_phi,
+                                    p.nbins_eta)
+{}
 
 AliFemtoModelCorrFctnDEtaDPhiAK
   ::AliFemtoModelCorrFctnDEtaDPhiAK(const char* suffix,
@@ -289,10 +293,10 @@ calculate_quantities(const AliFemtoPair &pair)
     coleta = cosphi > 0.0 ? deta : -(eta1 + eta2);
 
   double dphi = phi1 - phi2;
-  while (dphi < -M_PI_2) {
+  while (__builtin_expect(dphi < -M_PI_2, 0)) {
     dphi += 2 * M_PI;
   }
-  while (dphi > 3 * M_PI_2) {
+  while (__builtin_expect(dphi > 3 * M_PI_2, 0)) {
     dphi -= 2 * M_PI;
   }
 
