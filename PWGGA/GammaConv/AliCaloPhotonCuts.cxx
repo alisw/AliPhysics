@@ -2971,8 +2971,8 @@ void AliCaloPhotonCuts::SplitEnergy(Int_t absCellId1, Int_t absCellId2,
   cluster2->SetCellsAmplitudeFraction(fracList2);
 
   // Correct linearity
-  ApplyNonLinearity(cluster1, isMC) ;
-  ApplyNonLinearity(cluster2, isMC) ;
+  ApplyNonLinearity(cluster1, isMC, event) ;
+  ApplyNonLinearity(cluster2, isMC, event) ;
 
   // Initialize EMCAL rec utils if not initialized
   if(!fEMCALInitialized && (fClusterType == 1 || fClusterType == 3 || fClusterType == 4) ) InitializeEMCAL(event);
@@ -3184,7 +3184,7 @@ Bool_t AliCaloPhotonCuts::ClusterIsSelected(AliVCluster *cluster, AliVEvent * ev
     // do NonLinearity if switched on
     if(fUseNonLinearity){
       if(fHistEnergyOfClusterBeforeNL) fHistEnergyOfClusterBeforeNL->Fill(cluster->E(),weight);
-      ApplyNonLinearity(cluster,isMC);
+      ApplyNonLinearity(cluster,isMC,event);
       if(fHistEnergyOfClusterAfterNL) fHistEnergyOfClusterAfterNL->Fill(cluster->E(),weight);
     }
   }
@@ -5361,7 +5361,7 @@ Bool_t AliCaloPhotonCuts::SetNonLinearity2(Int_t nl2)
 }
 
 //________________________________________________________________________
-void AliCaloPhotonCuts::ApplyNonLinearity(AliVCluster* cluster, Int_t isMC)
+void AliCaloPhotonCuts::ApplyNonLinearity(AliVCluster* cluster, Int_t isMC, AliVEvent *event)
 {
   if(!fUseNonLinearity) return;
 
@@ -5373,16 +5373,15 @@ void AliCaloPhotonCuts::ApplyNonLinearity(AliVCluster* cluster, Int_t isMC)
   Float_t energy = cluster->E();
 
   Bool_t isDCal = kFALSE;
-  if(fClusterType == 4){
-    Float_t clusPos[3]={0,0,0};
-    cluster->GetPosition(clusPos);
-    TVector3 clusterVector(clusPos[0],clusPos[1],clusPos[2]);
-    Double_t phiCluster = clusterVector.Phi();
-    if (phiCluster < 0) phiCluster += 2*TMath::Pi();
-    if (phiCluster > fMinPhiCut && phiCluster < fMaxPhiCut)
-      isDCal = kFALSE;
-    else if (phiCluster > fMinPhiCutDMC && phiCluster < fMaxPhiCutDMC)
-      isDCal = kTRUE;
+  Int_t clusterSMID = -1;
+  if(fClusterType == 4 && event){
+    Int_t largestCellIDcluster = FindLargestCellInCluster(cluster,event);
+    if(largestCellIDcluster>-1){
+      Int_t dummycol = -1, dummyrow = -1;
+      clusterSMID = GetModuleNumberAndCellPosition(largestCellIDcluster, dummycol, dummyrow);
+      if(clusterSMID>11)
+        isDCal = kTRUE;
+    }
   }
 
   if( fClusterType == 1 || fClusterType == 3|| fClusterType == 4){
@@ -5752,18 +5751,40 @@ void AliCaloPhotonCuts::ApplyNonLinearity(AliVCluster* cluster, Int_t isMC)
       }
       break;
 
-    // New PCM-EMC nonlinearity with energy squared
+    // New PCM-EMC based SM-wise relative correction applied on data
     case 17:
-      if(isMC>0){
-         if( fCurrentMC==k16h3 ||fCurrentMC==k16k5a ||fCurrentMC==k16k5b ||  fCurrentMC==k17e2 || fCurrentMC == k18j3 ) {
-          if(fClusterType==1){
-            energy /= (FunctionNL_kSDM(energy, 0.945037*1.005, -3.42935, -0.384718));
-          }
-        } else fPeriodNameAvailable = kFALSE;
+      if(isMC==0){
+        switch (clusterSMID){
+          // values determined on LHC17pq
+          case 0: energy/=0.996406; break;
+          case 1: energy/=0.995672; break;
+          case 2: energy/=1.000260; break;
+          case 3: energy/=0.998378; break;
+          case 4: energy/=0.998326; break;
+          case 5: energy/=0.999704; break;
+          case 6: energy/=1.001140; break;
+          case 7: energy/=0.999142; break;
+          case 8: energy/=1.002450; break;
+          case 9: energy/=1.002400; break;
+          case 10: energy/=1.006850; break;
+          case 11: energy/=1.005900; break;
+          case 12: energy/=0.999443; break;
+          case 13: energy/=0.996047; break;
+          case 14: energy/=0.997640; break;
+          case 15: energy/=0.996848; break;
+          case 16: energy/=1.005100; break;
+          case 17: energy/=1.007150; break;
+          case 18: energy/=1.006660; break;
+          case 19: energy/=1.008700; break;
+          default: energy/=1.0; break;
+        }
       }
+      else
+        goto label_case_18;
       break;
     // PCM-EDC based nonlinearity kSDM
     case 18:
+      label_case_18:
       if(isMC>0){
          // pp 5 TeV LHC15n+LHC17pq anchored MCs combined
          if( fCurrentMC==k17l3b || fCurrentMC==k18j2 ||  fCurrentMC==k17e2 || fCurrentMC == k18j3 || fCurrentMC == k18b8) {
