@@ -154,6 +154,7 @@ AliFlowAnalysisWithMultiparticleCorrelations::AliFlowAnalysisWithMultiparticleCo
   this->InitializeArraysForSymmetryPlanes();
   this->InitializeArraysForNestedLoops(); 
   this->InitializeArraysForEtaGaps(); 
+  // TBI test for the workflow
 
   // c) Determine seed for gRandom:
   delete gRandom;
