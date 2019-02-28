@@ -61,8 +61,8 @@ AliHLTTPCClusterTransformation::AliHLTTPCClusterTransformation()
   fOrigTransform(NULL),
   fFastTransform(),
 #ifdef HAVE_ALIGPU
-  fFastTransformIRS(new ali_tpc_common::tpc_fast_transformation::TPCFastTransform),
-  fFastTransformManager( new ali_tpc_common::tpc_fast_transformation::TPCFastTransformManager ),
+  fFastTransformIRS(new o2::gpu::TPCFastTransform),
+  fFastTransformManager( new o2::gpu::TPCFastTransformManager ),
 #else
   fFastTransformIRS(NULL),
   fFastTransformManager(NULL),

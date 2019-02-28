@@ -79,6 +79,8 @@
 #include "AliHLTITSClusterDataFormat.h"
 #include "AliHLTCDHWrapper.h"
 
+using namespace o2::gpu;
+
 /** ROOT macro for the implementation of ROOT specific class methods */
 ClassImp(AliHLTGlobalPromptRecoQAComponent)
 
@@ -643,7 +645,7 @@ static void ReBinLogX(TAxis* axis)
   }
   axis->Set(bins, new_bins);
   delete [] new_bins;
-} 
+}
 
 //__________________________________________________________________________________________________
 void AliHLTGlobalPromptRecoQAComponent::CreateFixedHistograms()
@@ -1078,7 +1080,7 @@ int AliHLTGlobalPromptRecoQAComponent::DoEvent( const AliHLTComponentEventData& 
     memset(clusterRAWblocks, 0, sizeof(clusterRAWblocks));
   }
 
-  AliHLTFloat32_t *dEdxTPCOffline = NULL; 
+  AliHLTFloat32_t *dEdxTPCOffline = NULL;
   Int_t ndEdxTPCOffline = 0;
   AliHLTTPCdEdxData* dEdxInfo = NULL;
 

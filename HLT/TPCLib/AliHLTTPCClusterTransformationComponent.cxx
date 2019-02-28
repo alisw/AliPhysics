@@ -199,7 +199,7 @@ int AliHLTTPCClusterTransformationComponent::DoInit( int argc, const char** argv
 
   //fgTransform.GetFastTransformNonConst().WriteQATree("fastTransformQA.root");
   
-  //ali_tpc_common::tpc_fast_transformation::TPCFastTransformQA qa;
+  //o2::gpu::TPCFastTransformQA qa;
   //qa.doQA( GetTimeStamp() );
 
   return iResult;

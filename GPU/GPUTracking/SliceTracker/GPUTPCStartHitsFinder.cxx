@@ -1,0 +1,77 @@
+//**************************************************************************\
+//* This file is property of and copyright by the ALICE Project            *\
+//* ALICE Experiment at CERN, All rights reserved.                         *\
+//*                                                                        *\
+//* Primary Authors: Matthias Richter <Matthias.Richter@ift.uib.no>        *\
+//*                  for The ALICE HLT Project.                            *\
+//*                                                                        *\
+//* Permission to use, copy, modify and distribute this software and its   *\
+//* documentation strictly for non-commercial purposes is hereby granted   *\
+//* without fee, provided that the above copyright notice appears in all   *\
+//* copies and that both the copyright notice and this permission notice   *\
+//* appear in the supporting documentation. The authors make no claims     *\
+//* about the suitability of this software for any purpose. It is          *\
+//* provided "as is" without express or implied warranty.                  *\
+//**************************************************************************
+
+/// \file GPUTPCStartHitsFinder.cxx
+/// \author Sergey Gorbunov, Ivan Kisel, David Rohr
+
+#include "GPUTPCStartHitsFinder.h"
+#include "GPUTPCTracker.h"
+#include "GPUCommonMath.h"
+
+using namespace GPUCA_NAMESPACE::gpu;
+
+template <>
+GPUd() void GPUTPCStartHitsFinder::Thread<0>(int /*nBlocks*/, int nThreads, int iBlock, int iThread, GPUsharedref() MEM_LOCAL(GPUTPCSharedMemory) & s, processorType& tracker)
+{
+  // find start hits for tracklets
+
+  if (iThread == 0) {
+    s.mIRow = iBlock + 1;
+    s.mNRowStartHits = 0;
+    if (s.mIRow <= GPUCA_ROW_COUNT - 4) {
+      s.mNHits = tracker.Row(s.mIRow).NHits();
+    } else {
+      s.mNHits = -1;
+    }
+  }
+  GPUbarrier();
+  GPUglobalref() const MEM_GLOBAL(GPUTPCRow)& row = tracker.Row(s.mIRow);
+  GPUglobalref() const MEM_GLOBAL(GPUTPCRow)& rowUp = tracker.Row(s.mIRow + 2);
+  for (int ih = iThread; ih < s.mNHits; ih += nThreads) {
+    if (tracker.HitLinkDownData(row, ih) == CALINK_INVAL && tracker.HitLinkUpData(row, ih) != CALINK_INVAL && tracker.HitLinkUpData(rowUp, tracker.HitLinkUpData(row, ih)) != CALINK_INVAL) {
+#ifdef GPUCA_SORT_STARTHITS
+      GPUglobalref() GPUTPCHitId* const startHits = tracker.TrackletTmpStartHits() + s.mIRow * GPUCA_MAX_ROWSTARTHITS;
+      int nextRowStartHits = CAMath::AtomicAddShared(&s.mNRowStartHits, 1);
+      if (nextRowStartHits >= GPUCA_MAX_ROWSTARTHITS)
+#else
+      GPUglobalref() GPUTPCHitId* const startHits = tracker.TrackletStartHits();
+      int nextRowStartHits = CAMath::AtomicAdd(tracker.NTracklets(), 1);
+      if (nextRowStartHits >= GPUCA_MAX_TRACKLETS)
+#endif
+      {
+        tracker.GPUParameters()->gpuError = GPUCA_ERROR_TRACKLET_OVERFLOW;
+        CAMath::AtomicExch(tracker.NTracklets(), 0);
+        break;
+      }
+      startHits[nextRowStartHits].Set(s.mIRow, ih);
+    }
+  }
+  GPUbarrier();
+
+#ifdef GPUCA_SORT_STARTHITS
+  if (iThread == 0) {
+    int nOffset = CAMath::AtomicAdd(tracker.NTracklets(), s.mNRowStartHits);
+    (void)nOffset; // Suppress compiler warning
+#ifdef GPUCA_GPUCODE
+    tracker.RowStartHitCountOffset()[s.mIRow] = s.mNRowStartHits;
+    if (nOffset + s.mNRowStartHits >= GPUCA_MAX_TRACKLETS) {
+      tracker.GPUParameters()->gpuError = GPUCA_ERROR_TRACKLET_OVERFLOW;
+      CAMath::AtomicExch(tracker.NTracklets(), 0);
+    }
+#endif
+  }
+#endif
+}
