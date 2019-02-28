@@ -1093,22 +1093,22 @@ void AliAnalysisTaskTOFqaID::AddStartTimeHisto(THashList* list, TString suffix)
   TString labels = "best_t0,fill_t0,tof_t0,T0AC,T0A,T0C";
   TObjArray* labels_arr = labels.Tokenize(",");
 
-  CreateH(hStartTime, TH2F, "Start time for each method (mask); start time (ps); method;", 140, -700, 700, 6, -1., 5.);
+  CreateH(hStartTime, TH2F, "Start time for each method (mask); start time (ps); method;", fnBinsT0, fBinsT0[0], fBinsT0[1], 6, -1., 5.);
   SetBinLabels(hStartTime);
 
   CreateH(hStartTimeRes, TH2F, "Start time resolution for each method (mask); resolution (ps); method;", 300, 0., 300., 6, -1., 5.);
   SetBinLabels(hStartTimeRes);
 
-  CreateH(hT0TOFvsNtrk, TH2F, "Event timeZero estimated by TOF vs. TOF-matching tracks; N_{TOF}; t0 (ps)", GetArrayBinning(fVariableBinsMult), 140, -700., 700.);
+  CreateH(hT0TOFvsNtrk, TH2F, "Event timeZero estimated by TOF vs. TOF-matching tracks; N_{TOF}; t0 (ps)", GetArrayBinning(fVariableBinsMult), fnBinsT0, fBinsT0[0], fBinsT0[1]);
   HistogramMakeUp(hT0TOFvsNtrk, kTeal - 5, 1);
 
-  CreateH(hT0ACvsNtrk, TH2F, "Event timeZero estimated by T0AC vs. TOF-matching tracks; N_{TOF}; t0 (ps)", GetArrayBinning(fVariableBinsMult), 140, -700., 700.);
+  CreateH(hT0ACvsNtrk, TH2F, "Event timeZero estimated by T0AC vs. TOF-matching tracks; N_{TOF}; t0 (ps)", GetArrayBinning(fVariableBinsMult), fnBinsT0, fBinsT0[0], fBinsT0[1]);
   HistogramMakeUp(hT0ACvsNtrk, kRed + 2, 1);
 
-  CreateH(hT0AvsNtrk, TH2F, "Event timeZero estimated by T0A vs. TOF-matching tracks; N_{TOF}; t0 (ps)", GetArrayBinning(fVariableBinsMult), 140, -700., 700.);
+  CreateH(hT0AvsNtrk, TH2F, "Event timeZero estimated by T0A vs. TOF-matching tracks; N_{TOF}; t0 (ps)", GetArrayBinning(fVariableBinsMult), fnBinsT0, fBinsT0[0], fBinsT0[1]);
   HistogramMakeUp(hT0AvsNtrk, kBlue + 2, 1);
 
-  CreateH(hT0CvsNtrk, TH2F, "Event timeZero estimated by T0C vs. TOF-matching tracks; N_{TOF}; t0 (ps)", GetArrayBinning(fVariableBinsMult), 140, -700., 700.);
+  CreateH(hT0CvsNtrk, TH2F, "Event timeZero estimated by T0C vs. TOF-matching tracks; N_{TOF}; t0 (ps)", GetArrayBinning(fVariableBinsMult), fnBinsT0, fBinsT0[0], fBinsT0[1]);
   HistogramMakeUp(hT0CvsNtrk, kGreen + 2, 1);
 
   labels = "fill_t0,tof_t0,T0A,T0A & tof_t0,T0C,T0C & tof_t0,T0AC,T0AC & tof_t0";
@@ -1603,12 +1603,12 @@ void AliAnalysisTaskTOFqaID::SetVariableBinning()
 }
 
 //-----------------------------------------------------------
-const Double_t AliAnalysisTaskTOFqaID::fBinsPt[2] = { 0.0, 20.0 };
-
-//-----------------------------------------------------------
 const Double_t AliAnalysisTaskTOFqaID::fBinsEta[2] = { -1.0, 1.0 };
 
 //-----------------------------------------------------------
 const Double_t AliAnalysisTaskTOFqaID::fBinsPhi[2] = { 0.0, 360.0 };
+
+//-----------------------------------------------------------
+const Double_t AliAnalysisTaskTOFqaID::fBinsT0[2] = { -700., 700. };
 
 #endif

@@ -150,12 +150,12 @@ class AliAnalysisTaskTOFqaID : public AliAnalysisTaskSE {
   THashList* fHlistTRD;      //list of general histos for positive tracks
   THashList* fHlistTrigger;  //list of general histos for TOF trg infos
 
-  static const Int_t fnBinsPt = 300;  // binning for pt and p
   static const Int_t fnBinsEta = 200; // binning for eta
   static const Int_t fnBinsPhi = 72;  // binning for phi and phi_TPCouter
-  static const Double_t fBinsPt[2];   // binning for pt and p - max and min
+  static const Int_t fnBinsT0 = 140;  // binning for T0
   static const Double_t fBinsEta[2];  // binning for eta - max and min
   static const Double_t fBinsPhi[2];  // binning for phi and phi_TPCouter - max and min
+  static const Double_t fBinsT0[2];   // binning for T0
 
   void SetVariableBinning(); // sets the array with variable binning
 
