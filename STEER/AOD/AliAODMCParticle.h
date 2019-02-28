@@ -71,14 +71,13 @@ class AliAODMCParticle: public AliVParticle {
     // 
     virtual Double_t GetCalcMass() const;
     virtual void  SetDaughter(Int_t i,Int_t id){if(i<2)fDaughter[i] = id;}
-    virtual Int_t GetDaughter(Int_t i) const {if(i<2)return fDaughter[i];else return -1;}
-    virtual Int_t GetDaughterLabel(Int_t i) const { return GetDaughter(i); }
+    virtual Int_t GetDaughterLabel(Int_t i) const { return i ? fDaughter[1] : fDaughter[0];}
     virtual Int_t GetNDaughters  () const { return fDaughter[1]>0 ? fDaughter[1]-fDaughter[0]+1 : (fDaughter[0]>0 ? 1:0 ) ;}
     virtual void  SetMother(Int_t im){fMother = im;}
     virtual Int_t GetMother() const {return fMother;}
 
-    virtual Int_t   GetFirstDaughter()   const {return fDaughter[0];}
-    virtual Int_t   GetLastDaughter()    const {return fDaughter[1];}
+    virtual Int_t   GetDaughterFirst()   const {return fDaughter[0];}
+    virtual Int_t   GetDaughterLast()    const {return fDaughter[1];}
 
     virtual void Print(const Option_t *opt = "") const;
     virtual Int_t GetPdgCode() const { return fPdgCode;}

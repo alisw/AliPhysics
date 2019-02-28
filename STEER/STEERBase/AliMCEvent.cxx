@@ -999,8 +999,8 @@ void AliMCEvent::AssignGeneratorIndex() {
 	  break;
 	}
 	part->SetGeneratorIndex(i);
-	Int_t dmin = part->GetFirstDaughter();
-	Int_t dmax = part->GetLastDaughter();
+	Int_t dmin = part->GetDaughterFirst();
+	Int_t dmax = part->GetDaughterLast();
 	if (dmin == -1) continue;
 	AssignGeneratorIndex(i, dmin, dmax);
       } 
@@ -1012,8 +1012,8 @@ void AliMCEvent::AssignGeneratorIndex(Int_t index, Int_t dmin, Int_t dmax) {
   for (Int_t k = dmin; k <= dmax; k++) {
     AliVParticle* dpart = fTopEvent->GetTrack(k);
     dpart->SetGeneratorIndex(index);
-    Int_t d1 = dpart->GetFirstDaughter();
-    Int_t d2 = dpart->GetLastDaughter();
+    Int_t d1 = dpart->GetDaughterFirst();
+    Int_t d2 = dpart->GetDaughterLast();
     if (d1 > -1) {
       AssignGeneratorIndex(index, d1, d2);
     }
@@ -1124,7 +1124,7 @@ Int_t AliMCEvent::GetLabelOfParticleFirstDaughter(int i) const
 {
   // return index of the first daughter of particle i
   const AliMCParticle* mcpart = (const AliMCParticle*)GetTrack(i);
-  Int_t labdau=mcpart->GetFirstDaughter();
+  Int_t labdau=mcpart->GetDaughterFirst();
   return labdau;
 }
 
@@ -1132,7 +1132,7 @@ Int_t AliMCEvent::GetLabelOfParticleLastDaughter(int i) const
 {
   // return index of the last daughter of particle i
   const AliMCParticle* mcpart = (const AliMCParticle*)GetTrack(i);
-  Int_t labdau=mcpart->GetLastDaughter();
+  Int_t labdau=mcpart->GetDaughterLast();
   return labdau;
 }
 
