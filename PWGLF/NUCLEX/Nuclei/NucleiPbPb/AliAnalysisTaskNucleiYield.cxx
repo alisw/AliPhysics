@@ -513,7 +513,8 @@ void AliAnalysisTaskNucleiYield::UserExec(Option_t *){
     }
 
     if (!acceptedTrack) continue;
-    fHist2Phi[track->GetSign() > 0]->Fill(track->Phi() , track->Pt() );
+    bool positive = track->GetSign() > 0;
+    if (fHist2Phi[positive]) fHist2Phi[positive]->Fill(track->Phi() , track->Pt() );
 
     const int iTof = beta > EPS ? 1 : 0;
     float pT = track->Pt() * fCharge;
