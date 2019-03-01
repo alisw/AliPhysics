@@ -3047,7 +3047,6 @@ Bool_t AliConvEventCuts::IsJetJetMCEventAccepted(AliMCEvent *mcEvent, Double_t& 
       TString GeneratorName = gh->GetName();
       if (GeneratorName.CompareTo("AliGenPythiaEventHeader") == 0 || GeneratorName.Contains("Pythia8Jets")){
         Bool_t eventAccepted = kTRUE;
-        TParticle * jet = 0;
         Int_t nTriggerJets = dynamic_cast<AliGenPythiaEventHeader*>(gh)->NTriggerJets();
         Float_t ptHard = dynamic_cast<AliGenPythiaEventHeader*>(gh)->GetPtHard();
         Float_t tmpjet[]={0,0,0,0};
@@ -3287,7 +3286,6 @@ Bool_t AliConvEventCuts::IsJetJetMCEventAccepted(AliMCEvent *mcEvent, Double_t& 
       }
     }
     if(eventAccepted){
-      TParticle * jet =  0;
       Int_t nTriggerJets =  dynamic_cast<AliGenPythiaEventHeader*>(eventHeader)->NTriggerJets();
       Float_t ptHard = dynamic_cast<AliGenPythiaEventHeader*>(eventHeader)->GetPtHard();
       Float_t tmpjet[]={0,0,0,0};

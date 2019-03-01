@@ -1457,9 +1457,9 @@ Bool_t AliConversionPhotonCuts::TracksAreSelected(AliVTrack * negTrack, AliVTrac
   Bool_t passCuts = kTRUE;
 
   if(negTrack->IsA()==AliAODTrack::Class()) {
-    passCuts = passCuts * SpecificTrackCuts(static_cast<AliAODTrack*>(negTrack), static_cast<AliAODTrack*>(posTrack),cutIndex);
+    passCuts = SpecificTrackCuts(static_cast<AliAODTrack*>(negTrack), static_cast<AliAODTrack*>(posTrack),cutIndex);
   } else {
-    passCuts = passCuts * SpecificTrackCuts(static_cast<AliESDtrack*>(negTrack), static_cast<AliESDtrack*>(posTrack),cutIndex);
+    passCuts = SpecificTrackCuts(static_cast<AliESDtrack*>(negTrack), static_cast<AliESDtrack*>(posTrack),cutIndex);
   }
 
   if(!passCuts){

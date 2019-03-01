@@ -267,11 +267,11 @@ AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::AliAnalysisTaskNeutralMesonTo
   fNDMRecoMode(0),
   fTolerance(-1),
   fWeightJetJetMC(1.),
+  fTrackMatcherRunningMode(0),
   fMCEventPos(),
   fMCEventNeg(),
   fESDArrayPos(),
-  fESDArrayNeg(),
-  fTrackMatcherRunningMode(0)
+  fESDArrayNeg()
 {
 
 }
@@ -489,11 +489,11 @@ AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::AliAnalysisTaskNeutralMesonTo
   fNDMRecoMode(0),
   fTolerance(-1),
   fWeightJetJetMC(1.),
+  fTrackMatcherRunningMode(0),
   fMCEventPos(),
   fMCEventNeg(),
   fESDArrayPos(),
-  fESDArrayNeg(),
-  fTrackMatcherRunningMode(0)
+  fESDArrayNeg()
 {
   DefineOutput(1, TList::Class());
 }

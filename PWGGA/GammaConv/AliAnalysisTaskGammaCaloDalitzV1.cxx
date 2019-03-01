@@ -2736,8 +2736,7 @@ void AliAnalysisTaskGammaCaloDalitzV1::CalculatePi0DalitzCandidates(){
 
 						fHistoMotherInvMassPt[fiCut]->Fill(pi0cand->M(),pi0cand->Pt());
 
-                            if(TMath::Abs(pi0cand->GetAlpha())<0.1)
-							fHistoMotherInvMassEalpha[fiCut]->Fill(pi0cand->M(),pi0cand->E());
+                            if(TMath::Abs(pi0cand->GetAlpha())<0.1) fHistoMotherInvMassEalpha[fiCut]->Fill(pi0cand->M(),pi0cand->E());
 
 
 							if( fDoMesonQA > 0 ) {
@@ -2768,8 +2767,7 @@ void AliAnalysisTaskGammaCaloDalitzV1::CalculatePi0DalitzCandidates(){
 
 						    fHistoMotherInvMassPt[fiCut]->Fill(pi0cand->M(),pi0cand->Pt());
 
-                            if(TMath::Abs( pi0cand->GetAlpha()) < 0.1 )
-						    fHistoMotherInvMassEalpha[fiCut]->Fill(pi0cand->M(),pi0cand->E());
+                            if(TMath::Abs( pi0cand->GetAlpha()) < 0.1 ) fHistoMotherInvMassEalpha[fiCut]->Fill(pi0cand->M(),pi0cand->E());
 
 						    if ( fDoTHnSparse ) {
 							Double_t sparesFill[4] = {pi0cand->M(),pi0cand->Pt(),(Double_t)zbin,(Double_t)mbin};
