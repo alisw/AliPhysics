@@ -23,7 +23,7 @@
 //  author: Bong-Hwi Lim (bong-hwi.lim@cern.ch)
 //        , Beomkyu  KIM (kimb@cern.ch)
 //
-//  Last Modified Date: 2019/02/26
+//  Last Modified Date: 2019/03/01
 //
 ////////////////////////////////////////////////////////////////////////////
 
@@ -790,11 +790,11 @@ void AliAnalysisTaskXi1530::FillTracks(){
     }
     
 
-    for (double sys = 0; sys < (double)binSystematics.GetNbins(); sys++ ){
+    for (UInt_t sys = 0; sys < (UInt_t)binSystematics.GetNbins(); sys++ ){
         // Systematic study loop.
         // sys = 0 -> Default cut option
         // for more details, please check "SysCheck" in header file.
-        
+        std::cout << "TEST sys: " << SysCheck.at(sys)  << std::endl;
         for (UInt_t i = 0; i < ncascade; i++) {
             Xicandidate = ((AliESDEvent*)fEvt)->GetCascade(goodcascadeindices[i]);
             if(!Xicandidate) continue;
@@ -836,21 +836,23 @@ void AliAnalysisTaskXi1530::FillTracks(){
                     continue;
                 if ((SysCheck.at(sys) == "TPCNsigmaXi1530PionTight") && (abs(fTPCNSigPion) > fTPCNsigXi1530PionCut_tight))
                     continue;
-                // LambdaProton
-                if ((SysCheck.at(sys) != "TPCNsigmaLambdaProtonLoose") && (abs(fTPCNSigProton) > fTPCNsigLambdaProtonCut))
-                    continue;
-                if ((SysCheck.at(sys) == "TPCNsigmaLambdaProtonTight") && (abs(fTPCNSigProton) > fTPCNsigLambdaProtonCut_tight))
-                    continue;
-                // LambdaPion
-                if ((SysCheck.at(sys) != "TPCNsigmaLambdaPionLoose") && (abs(fTPCNSigLambdaPion) > fTPCNsigLambdaPionCut))
-                    continue;
-                if ((SysCheck.at(sys) == "TPCNsigmaLambdaPionTight") && (abs(fTPCNSigLambdaPion) > fTPCNsigLambdaPionCut_tight))
-                    continue;
-                // BachelorPion
-                if ((SysCheck.at(sys) != "TPCNsigmaBachelorPionLoose") && (abs(fTPCNSigBachelorPion) > fTPCNsigBachelorPionCut))
-                    continue;
-                if ((SysCheck.at(sys) == "TPCNsigmaBachelorPionTight") && (abs(fTPCNSigBachelorPion) > fTPCNsigBachelorPionCut_tight))
-                    continue;
+                // Xi PID
+                if (SysCheck.at(sys) != "TPCNsigmaXiLoose"){
+                    if (abs(fTPCNSigProton) > fTPCNsigLambdaProtonCut)
+                        continue;
+                    if (abs(fTPCNSigLambdaPion) > fTPCNsigLambdaPionCut)
+                        continue;
+                    if (abs(fTPCNSigBachelorPion) > fTPCNsigBachelorPionCut)
+                        continue;
+                }
+                if (SysCheck.at(sys) != "TPCNsigmaXiTight"){
+                    if (abs(fTPCNSigProton) > fTPCNsigLambdaProtonCut_tight)
+                        continue;
+                    if (abs(fTPCNSigLambdaPion) > fTPCNsigLambdaPionCut_tight)
+                        continue;
+                    if (abs(fTPCNSigBachelorPion) > fTPCNsigBachelorPionCut_tight)
+                        continue;
+                }
                 
                 // Xi1530Pion DCA zVetex Check
                 if ((SysCheck.at(sys) != "Xi1530PionZVertexLoose") && (abs(track1->GetZ() - fZ) > fXi1530PionZVertexCut))
@@ -926,7 +928,7 @@ void AliAnalysisTaskXi1530::FillTracks(){
                         if ( IsTrueXi1530(Xicandidate,track1) ){ // MC Association, if it comes from True Xi1530
 
                             // True Xi1530 signals
-                            FillTHnSparse("hInvMass",{sys,(double)kMCReco,fCent,vecsum.Pt(),vecsum.M()});
+                            FillTHnSparse("hInvMass", {(double)sys, (double)kMCReco, fCent, vecsum.Pt(), vecsum.M()});
                             fHistos->FillTH1("hMC_reconstructed_Y", vecsum.Rapidity());
                             // For cut study
                             fHistos -> FillTH1("hDCADist_Lambda_BTW_Daughters_TrueMC",fabs(Xicandidate->GetDcaV0Daughters()));
@@ -960,14 +962,14 @@ void AliAnalysisTaskXi1530::FillTracks(){
                         //
                     }// MC AOD
                 }// MC
-                FillTHnSparse("hInvMass", {sys,(double) sign, fCent, vecsum.Pt(), vecsum.M()});
+                FillTHnSparse("hInvMass", {(double)sys, (double)sign, fCent, vecsum.Pt(), vecsum.M()});
                 if(sys == 0){
                     if((int)sign == (int)kData) fHistos->FillTH1("hTotalInvMass_data",vecsum.M());
-                if((int)sign == (int)kLS) fHistos->FillTH1("hTotalInvMass_LS",vecsum.M());
+                    if((int)sign == (int)kLS) fHistos->FillTH1("hTotalInvMass_LS",vecsum.M());
                 }
             }
         }
-        AliInfo(Form("Sys check! %.f", sys));
+        AliInfo(Form("Sys check! %.u", sys));
         if((!fsetsystematics) && (sys == 0)) break;
     }
     

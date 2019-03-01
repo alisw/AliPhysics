@@ -90,6 +90,23 @@ class AliAnalysisTaskXi1530 : public AliAnalysisTaskSE {
             if(fSysOption == 1) fTPCNsigBachelorPionCut_loose = nBachelorPionCut; 
             if(fSysOption == 2) fTPCNsigBachelorPionCut_tight = nBachelorPionCut; 
             }
+        void SetTPCNsigXiCut(Int_t fSysOption, Double_t nXiCut) { 
+            if(fSysOption == 0){
+                fTPCNsigLambdaProtonCut = nXiCut;
+                fTPCNsigLambdaPionCut = nXiCut;
+                fTPCNsigBachelorPionCut = nXiCut; 
+                }
+            if(fSysOption == 1){
+                fTPCNsigLambdaProtonCut_loose = nXiCut;
+                fTPCNsigLambdaPionCut_loose = nXiCut;
+                fTPCNsigBachelorPionCut_loose = nXiCut;
+                }
+            if(fSysOption == 2){
+                fTPCNsigLambdaProtonCut_tight = nXiCut;
+                fTPCNsigLambdaPionCut_tight = nXiCut;
+                fTPCNsigBachelorPionCut_tight = nXiCut;
+                }
+            }
         void SetXi1530PionEtaCut(Double_t nXi1530PionEtaCut) { fXi1530PionEtaCut = nXi1530PionEtaCut; }
         void SetXiEtaCut(Double_t nXiEtaCut) { fXiEtaCut = nXiEtaCut; }
         void SetXi1530PionZVertexCut(Int_t fSysOption, Double_t nXi1530PionZVertexCut) {
@@ -186,7 +203,7 @@ class AliAnalysisTaskXi1530 : public AliAnalysisTaskSE {
         Int_t fnMix = 10;
         Int_t centbin = -1;
         Int_t zbin = -1;
-        std::vector<TString> SysCheck = {"DefaultOption", "TPCNsigmaXi1530PionLoose", "TPCNsigmaXi1530PionTight", "TPCNsigmaLambdaProtonLoose", "TPCNsigmaLambdaProtonTight", "TPCNsigmaLambdaPionLoose", "TPCNsigmaLambdaPionTight", "TPCNsigmaBachelorPionLoose", "TPCNsigmaBachelorPionTight", "Xi1530PionZVertexLoose", "Xi1530PionZVertexTight", "DCADistLambdaDaughtersLoose", "DCADistLambdaDaughtersTight", "DCADistXiDaughtersLoose", "DCADistXiDaughtersTight", "DCADistLambdaPVLoose", "DCADistLambdaPVTight", "V0CosineOfPointingAngleLoose", "V0CosineOfPointingAngleTight", "CascadeCosineOfPointingAngleLoose", "CascadeCosineOfPointingAngleTight", "XiMassWindowLoose", "XiMassWindowTight", "XiTrackCut"};
+        std::vector<TString> SysCheck = {"DefaultOption", "TPCNsigmaXi1530PionLoose", "TPCNsigmaXi1530PionTight", "TPCNsigmaXiLoose", "TPCNsigmaXiTight", "Xi1530PionZVertexLoose", "Xi1530PionZVertexTight", "DCADistLambdaDaughtersLoose", "DCADistLambdaDaughtersTight", "DCADistXiDaughtersLoose", "DCADistXiDaughtersTight", "DCADistLambdaPVLoose", "DCADistLambdaPVTight", "V0CosineOfPointingAngleLoose", "V0CosineOfPointingAngleTight", "CascadeCosineOfPointingAngleLoose", "CascadeCosineOfPointingAngleTight", "XiMassWindowLoose", "XiMassWindowTight", "XiTrackCut"};
         TAxis binSystematics;
 
         Double_t fTPCNsigXi1530PionCut_loose = 4.0;
@@ -265,7 +282,7 @@ class AliAnalysisTaskXi1530 : public AliAnalysisTaskSE {
         //5: include AliAnalysisTaskSE.h to avoid compile problem.
         //6: Add IsPrimaryMC option for MC study
         //7: Add Systematics option for systematics study
-        //8: Default vaule update
+        //8: Change default systmatics on TPC PID for Xi daughter, Add Setter function for that.
 };
 
 #endif
