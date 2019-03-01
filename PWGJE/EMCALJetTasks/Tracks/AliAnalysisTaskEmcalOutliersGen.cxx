@@ -38,6 +38,7 @@ void AliAnalysisTaskEmcalOutliersGen::UserCreateOutputObjects() {
 
 bool AliAnalysisTaskEmcalOutliersGen::Run() {
     auto particles = GetParticleContainer("mcparticlesSelected");
+    //auto particles = GetParticleContainer("mcparticles");
     auto jets = GetJetContainer("partjets");
 
     double partptmin[21] = {0., 20., 25., 30., 40., 50., 70., 80., 100., 120., 140., 180., 200., 250., 270., 300., 350., 380., 420., 450., 600.};
@@ -85,6 +86,7 @@ AliAnalysisTaskEmcalOutliersGen *AliAnalysisTaskEmcalOutliersGen::AddTaskEmcalOu
   mgr->AddTask(task);
 
   auto partcont = task->AddMCParticleContainer("mcparticlesSelected");
+  //auto partcont = task->AddMCParticleContainer("mcparticles");
   partcont->SetMinPt(0.);
   auto contjet = task->AddJetContainer(AliJetContainer::kFullJet, AliJetContainer::antikt_algorithm, AliJetContainer::E_scheme, 0.2,
                                                      AliJetContainer::kTPCfid, partcont, nullptr);
