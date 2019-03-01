@@ -598,7 +598,7 @@ AliFemtoDreamCorrHists::AliFemtoDreamCorrHists(AliFemtoDreamCollConfig *conf,
           fRadiiEtaPhiSEsmallK[Counter] = new TH2F**[nDaugComb];
           fRadiiEtaPhiMEsmallK[Counter] = new TH2F**[nDaugComb];
 
-          const int nRad = conf->GetNRadii() / 3.;
+          const int nRad = conf->GetNRadii();
           for (unsigned int iDaug1 = 0; iDaug1 < nDaug1; ++iDaug1) {
             for (unsigned int iDaug2 = 0; iDaug2 < nDaug2; ++iDaug2) {
               int DaugIndex = iDaug1 * 3 + iDaug2;
