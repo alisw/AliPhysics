@@ -49,7 +49,8 @@ enum EAnalysisContainerFlags {
    kSpecialOutput = BIT(15),
    kRegisterDataset = BIT(16),
    kExchangeData  = BIT(17),
-   kTouchedFlag   = BIT(18)
+   kTouchedFlag   = BIT(18),
+   kDirList       = BIT(19)
 };     
    AliAnalysisDataContainer();
    AliAnalysisDataContainer(const AliAnalysisDataContainer &cont);
@@ -72,6 +73,7 @@ enum EAnalysisContainerFlags {
    void                      ResetDataReady()     {fDataReady = kFALSE;}
    virtual Bool_t            SetData(TObject *data, Option_t *option="");
    void                      SetDataOwned(Bool_t flag) {fOwnedData = flag;}
+   void                      SetDirList(Bool_t flag) {TObject::SetBit(kDirList,flag);}
    void                      SetExchange(Bool_t flag) {TObject::SetBit(kExchangeData,flag);}
    void                      SetPostEventLoop(Bool_t flag=kTRUE) {TObject::SetBit(kPostEventLoop,flag);}
    void                      SetSpecialOutput(Bool_t flag=kTRUE) {TObject::SetBit(kSpecialOutput,flag);}
@@ -87,6 +89,7 @@ enum EAnalysisContainerFlags {
    void                      ImportData(AliAnalysisDataWrapper *pack);
    /// Container status checking
    Bool_t                    IsDataReady() const  {return fDataReady;}
+   Bool_t                    IsDirList() const    {return TObject::TestBit(kDirList);}
    Bool_t                    IsExchange() const      {return TObject::TestBit(kExchangeData);}
    Bool_t                    IsPostEventLoop() const {return TObject::TestBit(kPostEventLoop);}
    Bool_t                    IsSpecialOutput() const {return TObject::TestBit(kSpecialOutput);}

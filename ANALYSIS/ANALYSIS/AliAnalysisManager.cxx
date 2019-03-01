@@ -54,6 +54,7 @@
 #include "AliSysInfo.h"
 #include "AliAnalysisStatistics.h"
 #include "AliVEvent.h"
+#include "AliDirList.h"
 
 using std::ofstream;
 using std::ios;
@@ -1016,8 +1017,15 @@ void AliAnalysisManager::ImportWrappers(TList *source)
          // Cd to the directory pointed by the container
          TString folder = cont->GetFolderName();
          if (!folder.IsNull()) f->cd(folder);
-         // Try to fetch first an object having the container name.
-         obj = gDirectory->Get(cont->GetName());
+         // Special treatment for a directory list
+         if (cont->IsDirList() || (cont->GetProducer() && cont->GetProducer()->IsListsToFolders())) {
+            auto dirlist = AliDirList::CreateFrom((TDirectoryFile*)gDirectory, cont->GetName());
+            if (dirlist) dirlist->SetOwner(true);
+            obj = dirlist;
+         }
+         // Try to fetch an object having the container name.
+         if (!obj)
+            obj = gDirectory->Get(cont->GetName());
          if (!obj) {
             Warning("ImportWrappers", "Could not import object of type:%s for container %s in file %s:%s.\n Object will not be available in Terminate(). Try if possible to name the output object as the container (%s) or to embed it in a TList", 
                     cont->GetType()->GetName(), cont->GetName(), filename, cont->GetFolderName(), cont->GetName());
@@ -1207,7 +1215,13 @@ void AliAnalysisManager::Terminate()
       // as the one of the container and we save as a single key.
          TCollection *coll = (TCollection*)output->GetData();
          coll->SetName(output->GetName());
-         coll->Write(output->GetName(), TObject::kSingleKey);
+         if (output->GetProducer() && output->GetProducer()->IsListsToFolders()) {
+            // Write the collection in a folder having the same name as the container
+            auto dirlist = AliDirList(output->GetName(), coll);
+            dirlist.Write();
+         } else {
+            coll->Write(output->GetName(), TObject::kSingleKey);
+         }
       } else {
          if (output->GetData()->InheritsFrom(TTree::Class())) {
             TTree *tree = (TTree*)output->GetData();
