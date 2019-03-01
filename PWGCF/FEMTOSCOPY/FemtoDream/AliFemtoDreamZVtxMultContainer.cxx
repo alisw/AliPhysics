@@ -462,17 +462,26 @@ bool AliFemtoDreamZVtxMultContainer::RejectClosePairs(
         dPhiAvg += dphi;
       }
       dPhiAvg /= (float) size;
+      if (SEorME) {
+        if (fillHist)
+          ResultsHist->FillEtaPhiAverageSE(Hist, 3 * iDaug1 + iDaug2, dPhiAvg,
+                                           deta, true);
+      } else {
+        if (fillHist)
+          ResultsHist->FillEtaPhiAverageME(Hist, 3 * iDaug1 + iDaug2, dPhiAvg,
+                                           deta, true);
+      }
       if (dPhiAvg * dPhiAvg + deta * deta < fDeltaPhiEtaMax) {
         outBool = false;
       } else {
         if (SEorME) {
           if (fillHist)
             ResultsHist->FillEtaPhiAverageSE(Hist, 3 * iDaug1 + iDaug2, dPhiAvg,
-                                             deta);
+                                             deta, false);
         } else {
           if (fillHist)
             ResultsHist->FillEtaPhiAverageME(Hist, 3 * iDaug1 + iDaug2, dPhiAvg,
-                                             deta);
+                                             deta, false);
         }
       }
     }
