@@ -503,14 +503,12 @@ void AliFemtoDreamTrack::SetAODTrackingInformation() {
   SetPhiAtRadii(fAODTrack->GetAODEvent()->GetMagneticField());
 }
 void AliFemtoDreamTrack::SetPhiAtRadii(const float bfield) {
-  float TPCradii[33] = { 85., 90., 95., 100., 105., 110., 115., 120., 125.,
-      130., 135., 140., 145., 150., 155., 160., 165., 170., 175., 180., 185.,
-      190., 195., 200., 205., 210., 215., 220., 225., 230., 235., 240., 245. };
+  float TPCradii[9] = { 85., 105., 125., 145., 165., 185., 205., 225., 245. };
   float phi0 = GetPhi().at(0);
   float pt = GetPt();
   float chg = GetCharge().at(0);
   std::vector<float> phiatRadius;
-  for (int radius = 0; radius < 33; radius++) {
+  for (int radius = 0; radius < 9; radius++) {
     phiatRadius.push_back(
         phi0
             - TMath::ASin(

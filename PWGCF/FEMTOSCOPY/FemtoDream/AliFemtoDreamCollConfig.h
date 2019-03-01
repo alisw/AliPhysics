@@ -46,7 +46,7 @@ class AliFemtoDreamCollConfig : public TNamed {
   ;
   void SetPhiEtaBinnign(bool doIt) {
     fPhiEtaBinning = doIt;
-    fNumberRadii = 33;
+    fNumberRadii = 9;
   }
   ;
   void SetdPhidEtaPlots(bool doIt) {
