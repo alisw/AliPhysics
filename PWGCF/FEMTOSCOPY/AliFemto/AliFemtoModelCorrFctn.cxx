@@ -30,6 +30,7 @@ AliFemtoCorrFctn(),
   fDenominatorIdeal(0),
   fQgenQrec(0),
   fKaonPDG(kFALSE)
+  , fFillkT(kFALSE)
 {
   // Default constructor
   fNumeratorTrue = new TH1D("ModelNumTrue","ModelNumTrue",50,0.0,0.5);
@@ -71,6 +72,7 @@ AliFemtoModelCorrFctn::AliFemtoModelCorrFctn(const char *title, Int_t aNbins, Do
   fDenominatorIdeal(0),
   fQgenQrec(0),
   fKaonPDG(kFALSE)
+  , fFillkT(kFALSE)
 {
   // Normal constructor
   char *buf;
@@ -125,6 +127,7 @@ AliFemtoModelCorrFctn::AliFemtoModelCorrFctn(const AliFemtoModelCorrFctn& aCorrF
   fDenominatorIdeal(0),
   fQgenQrec(0),
   fKaonPDG(aCorrFctn.fKaonPDG)
+  , fFillkT(aCorrFctn.fFillkT)
 {
   // Copy constructor
   fNumeratorTrue = new TH1D(*(aCorrFctn.fNumeratorTrue));
