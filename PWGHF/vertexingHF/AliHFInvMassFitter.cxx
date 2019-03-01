@@ -386,7 +386,7 @@ void AliHFInvMassFitter::DrawHere(TVirtualPad* c, Double_t nsigma,Int_t writeFit
       for(Int_t ipar=1; ipar<fNParsSig; ipar++){
 	pinfom->AddText(Form("%s = %.3f #pm %.3f",fTotFunc->GetParName(ipar+fNParsBkg),fTotFunc->GetParameter(ipar+fNParsBkg),fTotFunc->GetParError(ipar+fNParsBkg)));
       }
-      pinfom->Draw();
+      if(writeFitInfo>=1) pinfom->Draw();
 
       Double_t bkg,errbkg;
       Background(nsigma,bkg,errbkg);
@@ -398,7 +398,7 @@ void AliHFInvMassFitter::DrawHere(TVirtualPad* c, Double_t nsigma,Int_t writeFit
       pinfos->AddText(Form("S/B (%.0f#sigma) = %.4f ",nsigma,fRawYield/bkg));
       if(fRflFunc)  pinfos->AddText(Form("Refl/Sig =  %.3f #pm %.3f ",fRflFunc->GetParameter(0),fRflFunc->GetParError(0)));
       pinfos->AddText(Form("Signif (%.0f#sigma) = %.1f #pm %.1f ",nsigma,signif,errsignif));
-      pinfos->Draw();
+      if(writeFitInfo>=2) pinfos->Draw();
     }
   }
   c->Update();

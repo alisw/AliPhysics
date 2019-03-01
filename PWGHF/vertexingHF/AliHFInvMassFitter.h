@@ -119,6 +119,8 @@ class AliHFInvMassFitter : public TNamed {
   TF1*     GetBkgPlusReflFunc(){return fBkRFunc;}
   TF1*     GetSignalFunc(){return fSigFunc;}
   TF1*     GetMassFunc(){return fTotFunc;}
+  TF1*     GetSecondPeakFunc(){return fSecFunc;}
+  TF1*     GetReflFunc(){return fRflFunc;}
   Double_t GetChiSquare() const{
     if(fTotFunc) return fTotFunc->GetChisquare();
     else return -1;
