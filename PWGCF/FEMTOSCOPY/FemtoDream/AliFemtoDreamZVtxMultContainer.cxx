@@ -379,8 +379,10 @@ void AliFemtoDreamZVtxMultContainer::DeltaEtaDeltaPhi(
       const int size =
           (PhiAtRad1.size() > phiAtRad2.size()) ?
               phiAtRad2.size() : PhiAtRad1.size();
+      float dphiAvg = 0;
       for (int iRad = 0; iRad < size; ++iRad) {
         float dphi = PhiAtRad1.at(iRad) - phiAtRad2.at(iRad);
+        dphiAvg += dphi;
         if (dphi > piHi) {
           dphi += -piHi * 2;
         } else if (dphi < -piHi) {
@@ -393,6 +395,14 @@ void AliFemtoDreamZVtxMultContainer::DeltaEtaDeltaPhi(
           ResultsHist->FillEtaPhiAtRadiiME(Hist, 3 * iDaug1 + iDaug2, iRad,
                                            dphi, deta, relk);
         }
+      }
+      //fill dPhi avg
+      if (SEorME) {
+        ResultsHist->FillEtaPhiAverageSE(Hist, 3 * iDaug1 + iDaug2,
+                                         dphiAvg / (float) size, deta, false);
+      } else {
+        ResultsHist->FillEtaPhiAverageME(Hist, 3 * iDaug1 + iDaug2,
+                                         dphiAvg / (float) size, deta, false);
       }
     }
   }
