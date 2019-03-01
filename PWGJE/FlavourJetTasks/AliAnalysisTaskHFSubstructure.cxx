@@ -548,21 +548,21 @@ Bool_t AliAnalysisTaskHFSubstructure::FillHistograms()
 
     if (fIncludeInclusive){ 
       fFastJetWrapper->Clear(); 
-
+      /*
       for (UInt_t i_D_Found=0; i_D_Found<D_Candidates_Vector.size(); i_D_Found++){
 	fFastJetWrapper->AddInputVector(D_Candidates_Vector[i_D_Found]->Px(), D_Candidates_Vector[i_D_Found]->Py(), D_Candidates_Vector[i_D_Found]->Pz(), D_Candidates_Vector[i_D_Found]->AliAODRecoDecay::E(fCandidatePDG), i_D_Found);
 	//Track_Container->SetDMesonCandidate(D_Candidates_Vector[i_D_Found]);
       }
-
+      */
       AliAODTrack *Track = NULL;
       Bool_t DMeson_Daughter_Track=kFALSE;
       for (Int_t i_Track=0; i_Track<Track_Container->GetNTracks(); i_Track++){
-	for (UInt_t i_D_Found=0; i_D_Found<D_Candidates_Vector.size(); i_D_Found++){
+	/*	for (UInt_t i_D_Found=0; i_D_Found<D_Candidates_Vector.size(); i_D_Found++){
 	  Track_Container->SetDMesonCandidate(D_Candidates_Vector[i_D_Found]);
 	  Track = static_cast<AliAODTrack*>(Track_Container->GetAcceptParticle(i_Track));
 	  if(!Track) DMeson_Daughter_Track=kTRUE;
-	}
-	if (DMeson_Daughter_Track) continue;
+	  }
+	  if (DMeson_Daughter_Track) continue;*/
 	Track = static_cast<AliAODTrack*>(Track_Container->GetAcceptParticle(i_Track));
 	fFastJetWrapper->AddInputVector(Track->Px(), Track->Py(), Track->Pz(), Track->E(),i_Track+100);
       }
@@ -572,7 +572,7 @@ Bool_t AliAnalysisTaskHFSubstructure::FillHistograms()
       for (UInt_t i_Jet=0; i_Jet < Inclusive_Jets.size(); i_Jet++){ 
 	if (Inclusive_Jets[i_Jet].perp()<fJetMinPt) continue;
 	if (TMath::Abs(Inclusive_Jets[i_Jet].pseudorapidity()) > 0.9-fJetRadius) continue;
-	Bool_t Is_D_Jet = kFALSE; 
+	/*	Bool_t Is_D_Jet = kFALSE; 
 	std::vector<fastjet::PseudoJet> Constituents(fFastJetWrapper->GetJetConstituents(i_Jet));
 	for (UInt_t i_Constituents = 0; i_Constituents < Constituents.size(); i_Constituents++) { 
 	  for (UInt_t i_D_Found=0; i_D_Found<D_Candidates_Vector.size(); i_D_Found++){
@@ -581,7 +581,7 @@ Bool_t AliAnalysisTaskHFSubstructure::FillHistograms()
 	    }
 	  }
 	}
-	if (Is_D_Jet) continue; 
+	if (Is_D_Jet) continue; */
 	fhEvent->Fill(23); 
 	std::vector<Double_t> Splittings_Zg;
 	std::vector<Double_t> Splittings_DeltaR;
