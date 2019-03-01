@@ -2,11 +2,11 @@
 /* See cxx source for full Copyright notice */
 /* $Id$ */
 
-#ifndef AliAnalysisTaskUPCforward_H
-#define AliAnalysisTaskUPCforward_H
+#ifndef AliAnalysisTaskUPCforwardMC_H
+#define AliAnalysisTaskUPCforwardMC_H
 
 /**
- * @file   AliAnalysisTaskUPCforward.h
+ * @file   AliAnalysisTaskUPCforwardMC.h
  * @author Simone Ragoni <Simone.Ragoni@cern.ch>
  * @date   February 2019
  */
@@ -14,45 +14,46 @@
 #include "AliAnalysisTaskSE.h"
 #include "TBits.h"
 
-class AliMuonTrackCuts; 											// Include class for standard muon tack cuts
+class AliMuonTrackCuts; 					// Include class for standard muon tack cuts
 
 /**
- * \file AliAnalysisTaskUPCforward.h
- * \brief Contains the declaration of the AliAnalysisTaskUPCforward class
+ * \file AliAnalysisTaskUPCforwardMC.h
+ * \brief Contains the declaration of the AliAnalysisTaskUPCforwardMC class
  */
 
 /**
- * \class AliAnalysisTaskUPCforward
+ * \class AliAnalysisTaskUPCforwardMC
  * \brief Contains the tools to every part of my analysis
  */
-class AliAnalysisTaskUPCforward : public AliAnalysisTaskSE
+class AliAnalysisTaskUPCforwardMC : public AliAnalysisTaskSE
 {
     public:
                                 /**
-                                 * Create a new AliAnalysisTaskUPCforward with
+                                 * Create a new AliAnalysisTaskUPCforwardMC with
                                  * default constructor. Based on my understanding
                                  * this is mostly related to input/output
                                  * processes.
                                  */
-                                AliAnalysisTaskUPCforward();
+                                AliAnalysisTaskUPCforwardMC();
 
                                 /**
-                                 * Create a new AliAnalysisTaskUPCforward with
+                                 * Create a new AliAnalysisTaskUPCforwardMC with
                                  * a specific name. This serves to instantiate
                                  * the AliAnalysisTaskSE object built with the
                                  * constructor, that will take this specific
                                  * name.
                                  *
                                  * \param name , the name taken by the AliAnalysisTaskSE object.
+                                 * \param isMC , 0 if Data, 1 if MC(look at the AddTask please).
                                  */
-                                AliAnalysisTaskUPCforward(const char *name);
+                                AliAnalysisTaskUPCforwardMC(const char *name);
 
                                 /**
                                  * Virtual destructor for the class. It will
                                  * take care of all the particular objects to be
                                  * destroyed for the class.
                                  */
-        virtual                 ~AliAnalysisTaskUPCforward();
+        virtual                 ~AliAnalysisTaskUPCforwardMC();
 
                                 /**
                                  * The function related to the instantiation of
@@ -92,6 +93,21 @@ class AliAnalysisTaskUPCforward : public AliAnalysisTaskSE
         void   			            FillGoodRunVector(std::vector<Int_t> &fVectorGoodRunNumbers);
 
                                 /**
+                                 * This function substitutes the roel of the
+                                 * triggers for the MC.
+                                 */
+        Bool_t                  IsTriggered();
+
+                                /**
+                                 * This function is needed to record the MC
+                                 * truth information inside the nanoAODs.
+                                 * Everything MC related should go in here.
+                                 * This should help for a subsequent merging
+                                 * of the MC and DATA classes.
+                                 */
+        void                    ProcessMCParticles(AliMCEvent* fMCEvent);
+
+                                /**
                                  * Use the class as a data member. It contains
                                  * the cuts for the muon track.
                                  */
@@ -101,7 +117,7 @@ class AliAnalysisTaskUPCforward : public AliAnalysisTaskSE
 
         // Bool_t                  CheckIfPassedCuts(vector<>)
 
-    protected:
+    private:
 
                                 /// The input events for the analysis.
         AliAODEvent*            fAOD;               //!
@@ -114,6 +130,12 @@ class AliAnalysisTaskUPCforward : public AliAnalysisTaskSE
                                  * systematics.
                                  */
         TList*                  fOutputList;        //!
+
+                                /**
+                                 * The corresponding MC event as explained in
+                                 * the Analysis Tutorial...
+                                 */
+        AliMCEvent*             fMCEvent;       //!
 
                                 /**
                                  * Utility type histo. It counts the GOOD muons
@@ -139,7 +161,6 @@ class AliAnalysisTaskUPCforward : public AliAnalysisTaskSE
                                  *
                                  */
 	      TH1F*                   fRAbsMuonH;         //!
-
 
                                 /**
                                  * This histogram records the invariant mass
@@ -184,160 +205,6 @@ class AliAnalysisTaskUPCforward : public AliAnalysisTaskSE
         TH1F*                   fDimuonPtDistributionH;         //!
 
                                 /**
-                                 * This histogram records the energy distri-
-                                 * bution of the neutron ZDC. This plot should
-                                 * show the relative components of the 0 neutron
-                                 * peak, the 1 neutron peak and possibly the
-                                 * 2 neutrons peak. Anything higher than that,
-                                 * requires help from the user and is more like
-                                 * a guess...
-                                 */
-        TH1F*                   fZNCEnergyAgainstEntriesH;         //!
-
-                                /**
-                                 * This histogram records the energy distri-
-                                 * bution of the neutron ZDC. This plot should
-                                 * show the relative components of the 0 neutron
-                                 * peak, the 1 neutron peak and possibly the
-                                 * 2 neutrons peak. Anything higher than that,
-                                 * requires help from the user and is more like
-                                 * a guess...
-                                 */
-        TH1F*                   fZNAEnergyAgainstEntriesH;         //!
-
-
-
-
-
-
-
-                                /**
-                                 * This histogram records the energy distri-
-                                 * bution of the neutron ZDC. CALIBRATED.
-                                 */
-        TH1F*                   fZNCEnergyCalibratedH;         //!
-
-                                /**
-                                 * This histogram records the energy distri-
-                                 * bution of the neutron ZDC. CALIBRATED.
-                                 */
-        TH1F*                   fZNAEnergyCalibratedH;         //!
-
-                                /**
-                                 * This histogram records the energy distri-
-                                 * bution of the neutron ZDC. UNCALIBRATED.
-                                 */
-        TH1F*                   fZNCEnergyUncalibratedH;         //!
-
-                                /**
-                                 * This histogram records the energy distri-
-                                 * bution of the neutron ZDC. UNCALIBRATED.
-                                 */
-        TH1F*                   fZNAEnergyUncalibratedH;         //!
-
-
-
-
-
-
-
-
-                                /**
-                                 * This histogram records the invariant mass
-                                 * distribution pt-integrated
-                                 * of the dimuon pairs when the
-                                 * neutron ZNC has not seen any neutrons.
-                                 */
-        TH1F*                   fInvariantMassDistributionNoNeutronsH;//!
-
-                                /**
-                                 * This histogram records the invariant mass
-                                 * distribution pt-integrated
-                                 * of the dimuon pairs when the
-                                 * neutron ZNC has seen a SINGLE neutron.
-                                 */
-        TH1F*                   fInvariantMassDistributionOneNeutronH;//!
-
-                                /**
-                                 * This histogram records the invariant mass
-                                 * distribution pt-integrated
-                                 * of the dimuon pairs when the
-                                 * neutron ZNC has seen at LEAST a single
-                                 * neutron.
-                                 */
-        TH1F*                   fInvariantMassDistributionAtLeastOneNeutronH;//!
-
-
-                                /**
-                                 * This histogram records the invariant mass
-                                 * distribution for the COHERENT component
-                                 * of the dimuon pairs when the
-                                 * neutron ZNC has not seen any neutrons.
-                                 */
-        TH1F*                   fInvariantMassDistributionCoherentNoNeutronsH;//!
-
-                                /**
-                                 * This histogram records the invariant mass
-                                 * distribution for the COHERENT component
-                                 * of the dimuon pairs when the
-                                 * neutron ZNC has seen a SINGLE neutron.
-                                 */
-        TH1F*                   fInvariantMassDistributionCoherentOneNeutronH;//!
-
-                                /**
-                                 * This histogram records the invariant mass
-                                 * distribution for the COHERENT component
-                                 * of the dimuon pairs when the
-                                 * neutron ZNC has seen at LEAST a single
-                                 * neutron.
-                                 */
-        TH1F*                   fInvariantMassDistributionCoherentAtLeastOneNeutronH;//!
-
-                                /**
-                                 * This histogram records the invariant mass
-                                 * distribution for the INCOHERENT component
-                                 * of the dimuon pairs when the
-                                 * neutron ZNC has not seen any neutrons.
-                                 */
-        TH1F*                   fInvariantMassDistributionIncoherentNoNeutronsH;//!
-
-                                /**
-                                 * This histogram records the invariant mass
-                                 * distribution for the INCOHERENT component
-                                 * of the dimuon pairs when the
-                                 * neutron ZNC has seen a SINGLE neutron.
-                                 */
-        TH1F*                   fInvariantMassDistributionIncoherentOneNeutronH;//!
-
-                                /**
-                                 * This histogram records the invariant mass
-                                 * distribution for the INCOHERENT component
-                                 * of the dimuon pairs when the
-                                 * neutron ZNC has seen at LEAST a single
-                                 * neutron.
-                                 */
-        TH1F*                   fInvariantMassDistributionIncoherentAtLeastOneNeutronH;//!
-
-                                /**
-                                 * This histogram records the time ditribution
-                                 * of neutron ZDC.
-                                 */
-        TH1F*                   fZNCTimeAgainstEntriesH;         //!
-
-                                /**
-                                 * This histogram records the invariant mass
-                                 * distribution of the dimuon system, but the
-                                 * novelty is the use of a different method to
-                                 * extract the data. While before we were always
-                                 * using the fMomentum, this histogram will be
-                                 * filled wth the information from the
-                                 * fMomentumAtDCA, hopefully this may lead to a
-                                 * change in the sigma of the peaks. If not, it
-                                 * will just do nothing!
-                                 */
-        TH1F*                   fInvariantMassDistributionAtDcaH;         //!
-
-                                /**
                                  * This histogram records the invariant mass
                                  * distribution of the dimuon system, but the
                                  * novelty is the use of a different method to
@@ -375,92 +242,6 @@ class AliAnalysisTaskUPCforward : public AliAnalysisTaskSE
                                  * pt > 0.25 GeV/c for pt of the dimuon pair.
                                  */
         TH1F*                   fInvariantMassDistributionIncoherentExtendedH;     //!
-        // Finished cloned histograms.
-        //_______________________________
-
-
-        //_______________________________
-        // DIFFERENTIAL NEUTRON EMISSION PLOTS
-
-                                /**
-                                 * This histogram records the invariant mass
-                                 * distribution of the dimuon system, only
-                                 * coherent component, so as to say, only
-                                 * pt < 0.25 GeV/c for pt of the dimuon pair.
-                                 * The ZNC has 0 neutrons.
-                                 * The ZNA has 0 neutrons.
-                                 */
-        TH1F*                   fInvariantMassDistributionCoherentZNCzeroZNAzeroH;       //!
-
-                                /**
-                                 * This histogram records the invariant mass
-                                 * distribution of the dimuon system, only
-                                 * coherent component, so as to say, only
-                                 * pt < 0.25 GeV/c for pt of the dimuon pair.
-                                 * The ZNC has 0 neutrons.
-                                 * The ZNA has ANY neutrons.
-                                 */
-        TH1F*                   fInvariantMassDistributionCoherentZNCzeroZNAanyH;       //!
-
-                                /**
-                                 * This histogram records the invariant mass
-                                 * distribution of the dimuon system, only
-                                 * coherent component, so as to say, only
-                                 * pt < 0.25 GeV/c for pt of the dimuon pair.
-                                 * The ZNC has ANY neutrons.
-                                 * The ZNA has 0 neutrons.
-                                 */
-        TH1F*                   fInvariantMassDistributionCoherentZNCanyZNAzeroH;       //!
-
-                                /**
-                                 * This histogram records the invariant mass
-                                 * distribution of the dimuon system, only
-                                 * coherent component, so as to say, only
-                                 * pt < 0.25 GeV/c for pt of the dimuon pair.
-                                 * The ZNC has ANY neutrons.
-                                 * The ZNA has ANY neutrons.
-                                 */
-        TH1F*                   fInvariantMassDistributionCoherentZNCanyZNAanyH;       //!
-
-                                /**
-                                 * This histogram records the invariant mass
-                                 * distribution of the dimuon system, only
-                                 * coherent component, so as to say, only
-                                 * pt > 0.25 GeV/c for pt of the dimuon pair.
-                                 * The ZNC has 0 neutrons.
-                                 * The ZNA has 0 neutrons.
-                                 */
-        TH1F*                   fInvariantMassDistributionIncoherentZNCzeroZNAzeroH;       //!
-
-                                /**
-                                 * This histogram records the invariant mass
-                                 * distribution of the dimuon system, only
-                                 * coherent component, so as to say, only
-                                 * pt > 0.25 GeV/c for pt of the dimuon pair.
-                                 * The ZNC has 0 neutrons.
-                                 * The ZNA has ANY neutrons.
-                                 */
-        TH1F*                   fInvariantMassDistributionIncoherentZNCzeroZNAanyH;       //!
-
-                                /**
-                                 * This histogram records the invariant mass
-                                 * distribution of the dimuon system, only
-                                 * coherent component, so as to say, only
-                                 * pt > 0.25 GeV/c for pt of the dimuon pair.
-                                 * The ZNC has ANY neutrons.
-                                 * The ZNA has 0 neutrons.
-                                 */
-        TH1F*                   fInvariantMassDistributionIncoherentZNCanyZNAzeroH;       //!
-
-                                /**
-                                 * This histogram records the invariant mass
-                                 * distribution of the dimuon system, only
-                                 * coherent component, so as to say, only
-                                 * pt > 0.25 GeV/c for pt of the dimuon pair.
-                                 * The ZNC has ANY neutrons.
-                                 * The ZNA has ANY neutrons.
-                                 */
-        TH1F*                   fInvariantMassDistributionIncoherentZNCanyZNAanyH;       //!
 
                                 /**
                                  * This histogram shows the angular distribution
@@ -478,8 +259,106 @@ class AliAnalysisTaskUPCforward : public AliAnalysisTaskSE
                                  */
         TH1F*                   fAngularDistribOfNegativeMuonRestFrameJPsiH;
 
+        //_______________________________
+        // MC TRUTH PLOTS
+                                /**
+                                 * This histogram records the pdgCodes of all
+                                 * the MC GENERATED particles...
+                                 */
+        TH1F*                   fMCpdgCodesH;
 
-        // END DIFFERENTIAL NEUTRON EMISSION PLOTS
+                                /**
+                                 * This histogram records the pdgCodes of all
+                                 * the MC GENERATED PRIMARY particles...
+                                 */
+        TH1F*                   fMCpdgCodesOnlyPrimaryH;
+
+        // MC TRUTH GENERATED FEATURES
+                                /**
+                                 * This histogram records the PHI of all
+                                 * the MC GENERATED particles...
+                                 */
+        TH1F*                   fMCphiGeneratedTruthH;
+
+                                /**
+                                 * This histogram records the ETA of all
+                                 * the MC GENERATED PRIMARY particles...
+                                 */
+        TH1F*                   fMCetaGeneratedTruthH;
+
+                                /**
+                                 * This histogram records the PSEUDORAPIDITY of
+                                 * all the MC GENERATED PRIMARY particles...
+                                 */
+        TH1F*                   fMCpseudorapidityGeneratedTruthH;
+
+                                /**
+                                 * This histogram records the Pt of all
+                                 * the MC GENERATED particles...
+                                 */
+        TH1F*                   fMCptGeneratedTruthH;
+
+        // MC TRUTH GENERATED DIMUONS FEATURES
+                                /**
+                                 * This histogram records the PHI of all
+                                 * the MC GENERATED muons of the J/Psi...
+                                 */
+        TH1F*                   fMCphiDimuonGeneratedTruthH;
+
+                                /**
+                                 * This histogram records the ETA of all
+                                 * the MC GENERATED muons of the J/Psi...
+                                 */
+        TH1F*                   fMCetaDimuonGeneratedTruthH;
+
+                                /**
+                                 * This histogram records the PSEUDORAPIDITY of
+                                 * all the MC GENERATED muons of the J/Psi...
+                                 */
+        TH1F*                   fMCpseudorapidityDimuonGeneratedTruthH;
+
+                                /**
+                                 * This histogram records the Pt of all
+                                 * the MC GENERATED muons of the J/Psi...
+                                 */
+        TH1F*                   fMCptDimuonGeneratedTruthH;
+
+
+
+                                /**
+                                 * Invariant Mass Distribution of the J/Psi
+                                 * before EVENT and TRACK selection for the MC
+                                 * (aka GENERATED).
+                                 */
+        TH1F*                   fMCinvariantMassDistrJPsiGeneratedTruthH;
+
+                                /**
+                                 * Invariant Mass Distribution of the J/Psi
+                                 * after EVENT and TRACK selection for the MC
+                                 * WITH MC TRUTH.
+                                 */
+        TH1F*                   fMCinvariantMassDistrJPsiAfterEvtAndTrkSelectionTruthH;
+
+                                /**
+                                 * This histogram shows the angular distribution
+                                 * of the positive muon in the rest frame of the
+                                 * J/Psi. This histogram is needed to evaluate
+                                 * the polarization of the J/Psi!
+                                 */
+        TH1F*                   fMCthetaDistribOfPositiveMuonRestFrameJPsiGeneratedTruthH;
+
+                                /**
+                                 * This histogram shows the angular distribution
+                                 * of the negative muon in the rest frame of the
+                                 * J/Psi. This histogram is needed to evaluate
+                                 * the polarization of the J/Psi!
+                                 */
+        TH1F*                   fMCthetaDistribOfNegativeMuonRestFrameJPsiGeneratedTruthH;
+
+
+
+
+
         //_______________________________
 
         //_______________________________
@@ -519,30 +398,51 @@ class AliAnalysisTaskUPCforward : public AliAnalysisTaskSE
         Int_t                   fV0TotalNCells; //!
         //_______________________________
 
+
+        //_______________________________
+        // TRIGGER INPUTS for MC
+
+        // V0 inputs
+        Bool_t                  fBBFlag[64];    //!
+        Bool_t                  fBGFlag[64];    //!
+        UInt_t                  fBBAFlags;      //!
+        UInt_t                  fBBCFlags;      //!
+        UInt_t                  fBGAFlags;      //!
+        UInt_t                  fBGCFlags;      //!
+
+        // AD inputs
+        Bool_t                  fBBFlagAD[16];  //!
+        Bool_t                  fBGFlagAD[16];  //!
+        UInt_t                  fBBAFlagsAD;    //!
+        UInt_t                  fBBCFlagsAD;    //!
+        UInt_t                  fBGAFlagsAD;    //!
+        UInt_t                  fBGCFlagsAD;    //!
+
+        // FINISHED TRIGGER INPUTS for MC
+        //_______________________________
+
+
         /**
          * This is the vector containing the GOOD RunNumbers.
          */
         std::vector<Int_t> fVectorGoodRunNumbers;
 
-
+        /**
+         * Not implemented yet...
+         */
+        AliAnalysisTaskUPCforwardMC(const AliAnalysisTaskUPCforwardMC&);
 
         /**
          * Not implemented yet...
          */
-        AliAnalysisTaskUPCforward(const AliAnalysisTaskUPCforward&);
-
-        /**
-         * Not implemented yet...
-         */
-        AliAnalysisTaskUPCforward& operator=(const AliAnalysisTaskUPCforward&);
-
+        AliAnalysisTaskUPCforwardMC& operator=(const AliAnalysisTaskUPCforwardMC&);
 
         /**
          * This is important for ROOT only. I do not remember the reason anymore.
          * If I happen to encounter it again in the future, I will make sure to
          * record it!
          */
-        ClassDef(AliAnalysisTaskUPCforward, 1);
+        ClassDef(AliAnalysisTaskUPCforwardMC, 1);
 };
 
 #endif

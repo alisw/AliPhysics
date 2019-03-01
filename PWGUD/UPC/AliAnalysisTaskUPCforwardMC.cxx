@@ -60,52 +60,42 @@
 #include "AliAODEvent.h"
 #include "AliAODInputHandler.h"
 #include "AliMuonTrackCuts.h"
-#include "AliAODVertex.h"         // My addition, to use Eugeny Krishen's format
+#include "AliAODVertex.h"
 
 
 // my headers
-#include "AliAnalysisTaskUPCforward.h"
+#include "AliAnalysisTaskUPCforwardMC.h"
+
+
+// headers for MC
+#include "AliMCEvent.h"
+#include "AliMCParticle.h"
+#include "AliAODMCParticle.h"
 
 
 
-class AliAnalysisTaskUPCforward;    // your analysis class
+class AliAnalysisTaskUPCforwardMC;    // your analysis class
 
 using namespace std;            // std namespace: so you can do things like 'cout'
 
-ClassImp(AliAnalysisTaskUPCforward) // classimp: necessary for root
+ClassImp(AliAnalysisTaskUPCforwardMC) // classimp: necessary for root
 
 //_____________________________________________________________________________
-AliAnalysisTaskUPCforward::AliAnalysisTaskUPCforward()
+AliAnalysisTaskUPCforwardMC::AliAnalysisTaskUPCforwardMC()
     : AliAnalysisTaskSE(),
       fAOD(0),
       fOutputList(0),
+      fMCEvent(0),
       fNumberMuonsH(0),
       fCounterH(0),
       fEtaMuonH(0),
       fRAbsMuonH(0),
       fInvariantMassDistributionH(0),
-      fInvariantMassDistributionAtDcaH(0),
       fEntriesAgainstRunNumberH(0),
       fEntriesAgainstRunNumberProperlyH(0),
       fInvariantMassDistributionCoherentH(0),
       fInvariantMassDistributionIncoherentH(0),
       fDimuonPtDistributionH(0),
-      fZNCEnergyAgainstEntriesH(0),
-      fZNAEnergyAgainstEntriesH(0),
-      fZNCEnergyCalibratedH(0),
-      fZNAEnergyCalibratedH(0),
-      fZNCEnergyUncalibratedH(0),
-      fZNAEnergyUncalibratedH(0),
-      fZNCTimeAgainstEntriesH(0),
-      fInvariantMassDistributionNoNeutronsH(0),
-      fInvariantMassDistributionOneNeutronH(0),
-      fInvariantMassDistributionAtLeastOneNeutronH(0),
-      fInvariantMassDistributionCoherentNoNeutronsH(0),
-      fInvariantMassDistributionCoherentOneNeutronH(0),
-      fInvariantMassDistributionCoherentAtLeastOneNeutronH(0),
-      fInvariantMassDistributionIncoherentNoNeutronsH(0),
-      fInvariantMassDistributionIncoherentOneNeutronH(0),
-      fInvariantMassDistributionIncoherentAtLeastOneNeutronH(0),
       fDcaAgainstInvariantMassH(0),
       fInvariantMassDistributionExtendedH(0),
       fInvariantMassDistributionCoherentExtendedH(0),
@@ -139,53 +129,61 @@ AliAnalysisTaskUPCforward::AliAnalysisTaskUPCforward()
                0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 },
       fV0TotalNCells(0),
       fVectorGoodRunNumbers(0),
-      fInvariantMassDistributionCoherentZNCzeroZNAzeroH(0),
-      fInvariantMassDistributionCoherentZNCzeroZNAanyH(0),
-      fInvariantMassDistributionCoherentZNCanyZNAzeroH(0),
-      fInvariantMassDistributionCoherentZNCanyZNAanyH(0),
-      fInvariantMassDistributionIncoherentZNCzeroZNAzeroH(0),
-      fInvariantMassDistributionIncoherentZNCzeroZNAanyH(0),
-      fInvariantMassDistributionIncoherentZNCanyZNAzeroH(0),
-      fInvariantMassDistributionIncoherentZNCanyZNAanyH(0),
       fAngularDistribOfPositiveMuonRestFrameJPsiH(0),
-      fAngularDistribOfNegativeMuonRestFrameJPsiH(0)
+      fAngularDistribOfNegativeMuonRestFrameJPsiH(0),
+      fMCpdgCodesH(0),
+      fMCpdgCodesOnlyPrimaryH(0),
+      fMCphiGeneratedTruthH(0),
+      fMCetaGeneratedTruthH(0),
+      fMCpseudorapidityGeneratedTruthH(0),
+      fMCptGeneratedTruthH(0),
+      fMCphiDimuonGeneratedTruthH(0),
+      fMCetaDimuonGeneratedTruthH(0),
+      fMCpseudorapidityDimuonGeneratedTruthH(0),
+      fMCptDimuonGeneratedTruthH(0),
+      fMCinvariantMassDistrJPsiGeneratedTruthH(0),
+      fMCinvariantMassDistrJPsiAfterEvtAndTrkSelectionTruthH(0),
+      fMCthetaDistribOfPositiveMuonRestFrameJPsiGeneratedTruthH(0),
+      fMCthetaDistribOfNegativeMuonRestFrameJPsiGeneratedTruthH(0),
+      fBBFlag{ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+               0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+               0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+               0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 },
+      fBGFlag{ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+               0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+               0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+               0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 },
+      fBBAFlags(0),
+      fBBCFlags(0),
+      fBGAFlags(0),
+      fBGCFlags(0),
+      fBBFlagAD{ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 },
+      fBGFlagAD{ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 },
+      fBBAFlagsAD(0),
+      fBBCFlagsAD(0),
+      fBGAFlagsAD(0),
+      fBGCFlagsAD(0)
 {
     // default constructor, don't allocate memory here!
     // this is used by root for IO purposes, it needs to remain empty
 }
 
 //_____________________________________________________________________________
-AliAnalysisTaskUPCforward::AliAnalysisTaskUPCforward(const char* name)
+AliAnalysisTaskUPCforwardMC::AliAnalysisTaskUPCforwardMC( const char* name )
     : AliAnalysisTaskSE(name),
       fAOD(0),
       fOutputList(0),
+      fMCEvent(0),
       fNumberMuonsH(0),
       fCounterH(0),
       fEtaMuonH(0),
       fRAbsMuonH(0),
       fInvariantMassDistributionH(0),
-      fInvariantMassDistributionAtDcaH(0),
       fEntriesAgainstRunNumberH(0),
       fEntriesAgainstRunNumberProperlyH(0),
       fInvariantMassDistributionCoherentH(0),
       fInvariantMassDistributionIncoherentH(0),
       fDimuonPtDistributionH(0),
-      fZNCEnergyAgainstEntriesH(0),
-      fZNAEnergyAgainstEntriesH(0),
-      fZNCEnergyCalibratedH(0),
-      fZNAEnergyCalibratedH(0),
-      fZNCEnergyUncalibratedH(0),
-      fZNAEnergyUncalibratedH(0),
-      fZNCTimeAgainstEntriesH(0),
-      fInvariantMassDistributionNoNeutronsH(0),
-      fInvariantMassDistributionOneNeutronH(0),
-      fInvariantMassDistributionAtLeastOneNeutronH(0),
-      fInvariantMassDistributionCoherentNoNeutronsH(0),
-      fInvariantMassDistributionCoherentOneNeutronH(0),
-      fInvariantMassDistributionCoherentAtLeastOneNeutronH(0),
-      fInvariantMassDistributionIncoherentNoNeutronsH(0),
-      fInvariantMassDistributionIncoherentOneNeutronH(0),
-      fInvariantMassDistributionIncoherentAtLeastOneNeutronH(0),
       fDcaAgainstInvariantMassH(0),
       fInvariantMassDistributionExtendedH(0),
       fInvariantMassDistributionCoherentExtendedH(0),
@@ -219,16 +217,40 @@ AliAnalysisTaskUPCforward::AliAnalysisTaskUPCforward(const char* name)
                0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 },
       fV0TotalNCells(0),
       fVectorGoodRunNumbers(0),
-      fInvariantMassDistributionCoherentZNCzeroZNAzeroH(0),
-      fInvariantMassDistributionCoherentZNCzeroZNAanyH(0),
-      fInvariantMassDistributionCoherentZNCanyZNAzeroH(0),
-      fInvariantMassDistributionCoherentZNCanyZNAanyH(0),
-      fInvariantMassDistributionIncoherentZNCzeroZNAzeroH(0),
-      fInvariantMassDistributionIncoherentZNCzeroZNAanyH(0),
-      fInvariantMassDistributionIncoherentZNCanyZNAzeroH(0),
-      fInvariantMassDistributionIncoherentZNCanyZNAanyH(0),
       fAngularDistribOfPositiveMuonRestFrameJPsiH(0),
-      fAngularDistribOfNegativeMuonRestFrameJPsiH(0)
+      fAngularDistribOfNegativeMuonRestFrameJPsiH(0),
+      fMCpdgCodesH(0),
+      fMCpdgCodesOnlyPrimaryH(0),
+      fMCphiGeneratedTruthH(0),
+      fMCetaGeneratedTruthH(0),
+      fMCpseudorapidityGeneratedTruthH(0),
+      fMCptGeneratedTruthH(0),
+      fMCphiDimuonGeneratedTruthH(0),
+      fMCetaDimuonGeneratedTruthH(0),
+      fMCpseudorapidityDimuonGeneratedTruthH(0),
+      fMCptDimuonGeneratedTruthH(0),
+      fMCinvariantMassDistrJPsiGeneratedTruthH(0),
+      fMCinvariantMassDistrJPsiAfterEvtAndTrkSelectionTruthH(0),
+      fMCthetaDistribOfPositiveMuonRestFrameJPsiGeneratedTruthH(0),
+      fMCthetaDistribOfNegativeMuonRestFrameJPsiGeneratedTruthH(0),
+      fBBFlag{ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+               0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+               0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+               0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 },
+      fBGFlag{ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+               0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+               0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+               0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 },
+      fBBAFlags(0),
+      fBBCFlags(0),
+      fBGAFlags(0),
+      fBGCFlags(0),
+      fBBFlagAD{ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 },
+      fBGFlagAD{ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 },
+      fBBAFlagsAD(0),
+      fBBCFlagsAD(0),
+      fBGAFlagsAD(0),
+      fBGCFlagsAD(0)
 {
     FillGoodRunVector(fVectorGoodRunNumbers);
 
@@ -242,14 +264,14 @@ AliAnalysisTaskUPCforward::AliAnalysisTaskUPCforward(const char* name)
                                         // make changes to your AddTask macro!
 }
 //_____________________________________________________________________________
-AliAnalysisTaskUPCforward::~AliAnalysisTaskUPCforward()
+AliAnalysisTaskUPCforwardMC::~AliAnalysisTaskUPCforwardMC()
 {
     // destructor
     if(fOutputList)    {delete fOutputList;}     	// at the end of your task, it is deleted
     if(fMuonTrackCuts) {delete fMuonTrackCuts;}   // from memory by calling this function
 }
 //_____________________________________________________________________________
-void AliAnalysisTaskUPCforward::FillGoodRunVector(std::vector<Int_t> &fVectorGoodRunNumbers)
+void AliAnalysisTaskUPCforwardMC::FillGoodRunVector(std::vector<Int_t> &fVectorGoodRunNumbers)
 {
   fVectorGoodRunNumbers.clear();
   Int_t listOfGoodRunNumbersLHC18q[] = { 295585, 295586, 295587, 295588, 295589, 295612,
@@ -301,17 +323,9 @@ void AliAnalysisTaskUPCforward::FillGoodRunVector(std::vector<Int_t> &fVectorGoo
         fVectorGoodRunNumbers.push_back(GoodRunNumberLHC18r);
         sizeOfLHC18r++;
   }
-  cout << std::endl << "LHC18q GOOD RUNS:  " << std::endl;
-  for ( Int_t i = 0; i < sizeOfLHC18q; i++ ) {
-        cout << fVectorGoodRunNumbers.at(i) << ",   number: " << i << std::endl;
-  }
-  cout << std::endl << "LHC18r GOOD RUNS:  " << std::endl;
-  for ( Int_t i = sizeOfLHC18q; i < sizeOfLHC18q + sizeOfLHC18r; i++ ) {
-        cout << fVectorGoodRunNumbers.at(i) << ",   number: " << (i-sizeOfLHC18q) << std::endl;
-  }
 }
 //_____________________________________________________________________________
-void AliAnalysisTaskUPCforward::UserCreateOutputObjects()
+void AliAnalysisTaskUPCforwardMC::UserCreateOutputObjects()
 {
   // create output objects
   //
@@ -330,7 +344,6 @@ void AliAnalysisTaskUPCforward::UserCreateOutputObjects()
                                     AliMuonTrackCuts::kMuMatchLpt   );
   fMuonTrackCuts->SetAllowDefaultParams(kTRUE);
   fMuonTrackCuts->Print("mask");
-
 
 
   fOutputList = new TList();          // this is a list which will contain all
@@ -359,9 +372,6 @@ void AliAnalysisTaskUPCforward::UserCreateOutputObjects()
   fInvariantMassDistributionH = new TH1F("fInvariantMassDistributionH", "fInvariantMassDistributionH", 2000, 0, 20);
   fOutputList->Add(fInvariantMassDistributionH);
 
-  fInvariantMassDistributionAtDcaH = new TH1F("fInvariantMassDistributionAtDcaH", "fInvariantMassDistributionAtDcaH", 2000, 0, 20);
-  fOutputList->Add(fInvariantMassDistributionAtDcaH);
-
   fEntriesAgainstRunNumberH = new TH1F("fEntriesAgainstRunNumberH", "fEntriesAgainstRunNumberH", 10000, 290000, 300000);
   fOutputList->Add(fEntriesAgainstRunNumberH);
 
@@ -374,7 +384,6 @@ void AliAnalysisTaskUPCforward::UserCreateOutputObjects()
   fEntriesAgainstRunNumberProperlyH = new TH1F("fEntriesAgainstRunNumberProperlyH", "fEntriesAgainstRunNumberProperlyH", 10000, 290000, 300000);
   fEntriesAgainstRunNumberProperlyH->SetStats(0);
   fEntriesAgainstRunNumberProperlyH->SetFillColor(38);
-  // fEntriesAgainstRunNumberProperlyH->SetCanExtend(TH1::kAllAxes);
   fEntriesAgainstRunNumberProperlyH->LabelsDeflate();
   fOutputList->Add(fEntriesAgainstRunNumberProperlyH);
 
@@ -386,55 +395,6 @@ void AliAnalysisTaskUPCforward::UserCreateOutputObjects()
 
   fDimuonPtDistributionH = new TH1F("fDimuonPtDistributionH", "fDimuonPtDistributionH", 2000, 0, 20);
   fOutputList->Add(fDimuonPtDistributionH);
-
-  fZNCEnergyAgainstEntriesH = new TH1F("fZNCEnergyAgainstEntriesH", "fZNCEnergyAgainstEntriesH", 1000, -500, 2000);
-  fOutputList->Add(fZNCEnergyAgainstEntriesH);
-
-  fZNAEnergyAgainstEntriesH = new TH1F("fZNAEnergyAgainstEntriesH", "fZNAEnergyAgainstEntriesH", 1000, -500, 2000);
-  fOutputList->Add(fZNAEnergyAgainstEntriesH);
-
-  fZNCEnergyCalibratedH = new TH1F("fZNCEnergyCalibratedH", "fZNCEnergyCalibratedH", 1000, -500, 2000);
-  fOutputList->Add(fZNCEnergyCalibratedH);
-
-  fZNAEnergyCalibratedH = new TH1F("fZNAEnergyCalibratedH", "fZNAEnergyCalibratedH", 1000, -500, 2000);
-  fOutputList->Add(fZNAEnergyCalibratedH);
-
-  fZNCEnergyUncalibratedH = new TH1F("fZNCEnergyUncalibratedH", "fZNCEnergyUncalibratedH", 1000, -500, 2000);
-  fOutputList->Add(fZNCEnergyUncalibratedH);
-
-  fZNAEnergyUncalibratedH = new TH1F("fZNAEnergyUncalibratedH", "fZNAEnergyUncalibratedH", 1000, -500, 2000);
-  fOutputList->Add(fZNAEnergyUncalibratedH);
-
-
-  fZNCTimeAgainstEntriesH = new TH1F("fZNCTimeAgainstEntriesH", "fZNCTimeAgainstEntriesH", 6000, -1500, 1500);
-  fOutputList->Add(fZNCTimeAgainstEntriesH);
-
-  fInvariantMassDistributionNoNeutronsH = new TH1F("fInvariantMassDistributionNoNeutronsH", "fInvariantMassDistributionNoNeutronsH", 2000, 0, 20);
-  fOutputList->Add(fInvariantMassDistributionNoNeutronsH);
-
-  fInvariantMassDistributionOneNeutronH = new TH1F("fInvariantMassDistributionOneNeutronH", "fInvariantMassDistributionOneNeutronH", 2000, 0, 20);
-  fOutputList->Add(fInvariantMassDistributionOneNeutronH);
-
-  fInvariantMassDistributionAtLeastOneNeutronH = new TH1F("fInvariantMassDistributionAtLeastOneNeutronH", "fInvariantMassDistributionAtLeastOneNeutronH", 2000, 0, 20);
-  fOutputList->Add(fInvariantMassDistributionAtLeastOneNeutronH);
-
-  fInvariantMassDistributionCoherentNoNeutronsH = new TH1F("fInvariantMassDistributionCoherentNoNeutronsH", "fInvariantMassDistributionCoherentNoNeutronsH", 2000, 0, 20);
-  fOutputList->Add(fInvariantMassDistributionCoherentNoNeutronsH);
-
-  fInvariantMassDistributionCoherentOneNeutronH = new TH1F("fInvariantMassDistributionCoherentOneNeutronH", "fInvariantMassDistributionCoherentOneNeutronH", 2000, 0, 20);
-  fOutputList->Add(fInvariantMassDistributionCoherentOneNeutronH);
-
-  fInvariantMassDistributionCoherentAtLeastOneNeutronH = new TH1F("fInvariantMassDistributionCoherentAtLeastOneNeutronH", "fInvariantMassDistributionCoherentAtLeastOneNeutronH", 2000, 0, 20);
-  fOutputList->Add(fInvariantMassDistributionCoherentAtLeastOneNeutronH);
-
-  fInvariantMassDistributionIncoherentNoNeutronsH = new TH1F("fInvariantMassDistributionIncoherentNoNeutronsH", "fInvariantMassDistributionIncoherentNoNeutronsH", 2000, 0, 20);
-  fOutputList->Add(fInvariantMassDistributionIncoherentNoNeutronsH);
-
-  fInvariantMassDistributionIncoherentOneNeutronH = new TH1F("fInvariantMassDistributionIncoherentOneNeutronH", "fInvariantMassDistributionIncoherentOneNeutronH", 2000, 0, 20);
-  fOutputList->Add(fInvariantMassDistributionIncoherentOneNeutronH);
-
-  fInvariantMassDistributionIncoherentAtLeastOneNeutronH = new TH1F("fInvariantMassDistributionIncoherentAtLeastOneNeutronH", "fInvariantMassDistributionIncoherentAtLeastOneNeutronH", 2000, 0, 20);
-  fOutputList->Add(fInvariantMassDistributionIncoherentAtLeastOneNeutronH);
 
   fDcaAgainstInvariantMassH = new TH2F("fDcaAgainstInvariantMassH", "fDcaAgainstInvariantMassH", 4000, 0, 40, 2000, -100, 100);
   fOutputList->Add(fDcaAgainstInvariantMassH);
@@ -451,35 +411,6 @@ void AliAnalysisTaskUPCforward::UserCreateOutputObjects()
   fInvariantMassDistributionIncoherentExtendedH = new TH1F("fInvariantMassDistributionIncoherentExtendedH", "fInvariantMassDistributionIncoherentExtendedH", 4000, 0, 40);
   fOutputList->Add(fInvariantMassDistributionIncoherentExtendedH);
 
-
-  /* - These histograms pertain the differential neutron emission analysis.
-     -
-   */
-  fInvariantMassDistributionCoherentZNCzeroZNAzeroH = new TH1F("fInvariantMassDistributionCoherentZNCzeroZNAzeroH", "fInvariantMassDistributionCoherentZNCzeroZNAzeroH", 2000, 0, 20);
-  fOutputList->Add(fInvariantMassDistributionCoherentZNCzeroZNAzeroH);
-
-  fInvariantMassDistributionCoherentZNCzeroZNAanyH = new TH1F("fInvariantMassDistributionCoherentZNCzeroZNAanyH", "fInvariantMassDistributionCoherentZNCzeroZNAanyH", 2000, 0, 20);
-  fOutputList->Add(fInvariantMassDistributionCoherentZNCzeroZNAanyH);
-
-  fInvariantMassDistributionCoherentZNCanyZNAzeroH = new TH1F("fInvariantMassDistributionCoherentZNCanyZNAzeroH", "fInvariantMassDistributionCoherentZNCanyZNAzeroH", 2000, 0, 20);
-  fOutputList->Add(fInvariantMassDistributionCoherentZNCanyZNAzeroH);
-
-  fInvariantMassDistributionCoherentZNCanyZNAanyH = new TH1F("fInvariantMassDistributionCoherentZNCanyZNAanyH", "fInvariantMassDistributionCoherentZNCanyZNAanyH", 2000, 0, 20);
-  fOutputList->Add(fInvariantMassDistributionCoherentZNCanyZNAanyH);
-
-  fInvariantMassDistributionIncoherentZNCzeroZNAzeroH = new TH1F("fInvariantMassDistributionIncoherentZNCzeroZNAzeroH", "fInvariantMassDistributionIncoherentZNCzeroZNAzeroH", 2000, 0, 20);
-  fOutputList->Add(fInvariantMassDistributionIncoherentZNCzeroZNAzeroH);
-
-  fInvariantMassDistributionIncoherentZNCzeroZNAanyH = new TH1F("fInvariantMassDistributionIncoherentZNCzeroZNAanyH", "fInvariantMassDistributionIncoherentZNCzeroZNAanyH", 2000, 0, 20);
-  fOutputList->Add(fInvariantMassDistributionIncoherentZNCzeroZNAanyH);
-
-  fInvariantMassDistributionIncoherentZNCanyZNAzeroH = new TH1F("fInvariantMassDistributionIncoherentZNCanyZNAzeroH", "fInvariantMassDistributionIncoherentZNCanyZNAzeroH", 2000, 0, 20);
-  fOutputList->Add(fInvariantMassDistributionIncoherentZNCanyZNAzeroH);
-
-  fInvariantMassDistributionIncoherentZNCanyZNAanyH = new TH1F("fInvariantMassDistributionIncoherentZNCanyZNAanyH", "fInvariantMassDistributionIncoherentZNCanyZNAanyH", 2000, 0, 20);
-  fOutputList->Add(fInvariantMassDistributionIncoherentZNCanyZNAanyH);
-
-
   /* - Here starts the list of histograms needed for the analysis of the J/Psi's
      - polarization.
      -
@@ -492,19 +423,72 @@ void AliAnalysisTaskUPCforward::UserCreateOutputObjects()
 
 
   //_______________________________
+  // - MC-only plots
+  fMCpdgCodesH = new TH1F("fMCpdgCodesH", "fMCpdgCodesH", 3, 0, 3);
+  fMCpdgCodesH ->SetStats(0);
+  fMCpdgCodesH ->SetFillColor(38);
+  fMCpdgCodesH->LabelsDeflate();
+  fOutputList->Add(fMCpdgCodesH);
+
+  fMCpdgCodesOnlyPrimaryH = new TH1F("fMCpdgCodesOnlyPrimaryH", "fMCpdgCodesOnlyPrimaryH", 3, 0, 3);
+  fMCpdgCodesOnlyPrimaryH ->SetStats(0);
+  fMCpdgCodesOnlyPrimaryH ->SetFillColor(38);
+  fMCpdgCodesOnlyPrimaryH->LabelsDeflate();
+  fOutputList->Add(fMCpdgCodesOnlyPrimaryH);
+
+  fMCinvariantMassDistrJPsiGeneratedTruthH = new TH1F("fMCinvariantMassDistrJPsiGeneratedTruthH", "fMCinvariantMassDistrJPsiGeneratedTruthH", 2000, 0, 20);
+  fOutputList->Add(fMCinvariantMassDistrJPsiGeneratedTruthH);
+
+  fMCinvariantMassDistrJPsiAfterEvtAndTrkSelectionTruthH = new TH1F("fMCinvariantMassDistrJPsiAfterEvtAndTrkSelectionTruthH", "fMCinvariantMassDistrJPsiAfterEvtAndTrkSelectionTruthH", 2000, 0, 20);
+  fOutputList->Add(fMCinvariantMassDistrJPsiAfterEvtAndTrkSelectionTruthH);
+
+  fMCphiGeneratedTruthH = new TH1F("fMCphiGeneratedTruthH", "fMCphiGeneratedTruthH", 2000, 0, 20);
+  fOutputList->Add(fMCphiGeneratedTruthH);
+
+  fMCetaGeneratedTruthH = new TH1F("fMCetaGeneratedTruthH", "fMCetaGeneratedTruthH", 2000, 0, 20);
+  fOutputList->Add(fMCetaGeneratedTruthH);
+
+  fMCpseudorapidityGeneratedTruthH = new TH1F("fMCpseudorapidityGeneratedTruthH", "fMCpseudorapidityGeneratedTruthH", 2000, 0, 20);
+  fOutputList->Add(fMCpseudorapidityGeneratedTruthH);
+
+  fMCptGeneratedTruthH = new TH1F("fMCptGeneratedTruthH", "fMCptGeneratedTruthH", 2000, 0, 20);
+  fOutputList->Add(fMCptGeneratedTruthH);
+
+  fMCphiDimuonGeneratedTruthH = new TH1F("fMCphiDimuonGeneratedTruthH", "fMCphiDimuonGeneratedTruthH", 2000, 0, 20);
+  fOutputList->Add(fMCphiDimuonGeneratedTruthH);
+
+  fMCetaDimuonGeneratedTruthH = new TH1F("fMCetaDimuonGeneratedTruthH", "fMCetaDimuonGeneratedTruthH", 2000, 0, 20);
+  fOutputList->Add(fMCetaDimuonGeneratedTruthH);
+
+  fMCpseudorapidityDimuonGeneratedTruthH = new TH1F("fMCpseudorapidityDimuonGeneratedTruthH", "fMCpseudorapidityDimuonGeneratedTruthH", 2000, 0, 20);
+  fOutputList->Add(fMCpseudorapidityDimuonGeneratedTruthH);
+
+  fMCptDimuonGeneratedTruthH = new TH1F("fMCptDimuonGeneratedTruthH", "fMCptDimuonGeneratedTruthH", 2000, 0, 20);
+  fOutputList->Add(fMCptDimuonGeneratedTruthH);
+
+  /* - Here starts the list of histograms needed for the analysis of the J/Psi's
+     - polarization. GENERATED MC TRUTH.
+     -
+   */
+  fMCthetaDistribOfPositiveMuonRestFrameJPsiGeneratedTruthH = new TH1F("fMCthetaDistribOfPositiveMuonRestFrameJPsiGeneratedTruthH", "fMCthetaDistribOfPositiveMuonRestFrameJPsiGeneratedTruthH", 1000, -1., 1.);
+  fOutputList->Add(fMCthetaDistribOfPositiveMuonRestFrameJPsiGeneratedTruthH);
+
+  fMCthetaDistribOfNegativeMuonRestFrameJPsiGeneratedTruthH = new TH1F("fMCthetaDistribOfNegativeMuonRestFrameJPsiGeneratedTruthH", "fMCthetaDistribOfNegativeMuonRestFrameJPsiGeneratedTruthH", 1000, -1., 1.);
+  fOutputList->Add(fMCthetaDistribOfNegativeMuonRestFrameJPsiGeneratedTruthH);
+
+
+  //_______________________________
   // - End of the function
-  PostData(1, fOutputList);           // postdata will notify the analysis manager of changes / updates to the
-  // fOutputList object. the manager will in the end take care of writing your output to file
-  // so it needs to know what's in the output
+  PostData(1, fOutputList);
 }
 //_____________________________________________________________________________
-void AliAnalysisTaskUPCforward::NotifyRun()
+void AliAnalysisTaskUPCforwardMC::NotifyRun()
 {
   /// Set run number for cuts
   fMuonTrackCuts->SetRun(fInputHandler);
 }
 //_____________________________________________________________________________
-void AliAnalysisTaskUPCforward::UserExec(Option_t *)
+void AliAnalysisTaskUPCforwardMC::UserExec(Option_t *)
 {
   /* - This iSelectionCounter is used as a token. So at every passing step it is
      - increased by one. All the events are supposed to pass the first step
@@ -522,28 +506,14 @@ void AliAnalysisTaskUPCforward::UserExec(Option_t *)
       PostData(1, fOutputList);
       return;
   }
-  fCounterH->Fill(iSelectionCounter); // AOD event found
-  iSelectionCounter++;
-
-  /* - Is it the right trigger?
-     - In 2018 there were the following CMUP triggers:
-     - CMUP11-B-NOPF-MUFAST,
-     - CMUP26-B-NOPF-MUFAST,
-     - CMUP6-B-NOPF-MUFAST.
-     - At this 2nd step of fCounterH, all events are in fact proper events,
-     - and with the correct trigger as well.
-   */
-  TString trigger = fAOD->GetFiredTriggerClasses();
-  if (    !(trigger.Contains("CMUP11-B-NOPF-MUFAST") ||
-	          trigger.Contains("CMUP26-B-NOPF-MUFAST") ||
-	          trigger.Contains("CMUP6-B-NOPF-MUFAST"))
-          )  {
-                    PostData(1, fOutputList);
-                    return;
+  fMCEvent = MCEvent();
+  if(!fMCEvent) {
+      PostData(1, fOutputList);
+      return;
   }
-  fCounterH->Fill(iSelectionCounter); // right trigger found
-  iSelectionCounter++;
-
+  if(fMCEvent) {
+    ProcessMCParticles(fMCEvent);
+  }
   /* - We are now checking if there were any tracks. If there were at least one,
      - then the histogram gets filled again. If not we are returning. There
      - would be no point in going further.
@@ -582,15 +552,15 @@ void AliAnalysisTaskUPCforward::UserExec(Option_t *)
      - L0: ..... ;
      - L1: ..... .
    */
-  fL0inputs = fAOD->GetHeader()->GetL0TriggerInputs();
-  fL1inputs = fAOD->GetHeader()->GetL1TriggerInputs();
+  // fL0inputs = fAOD->GetHeader()->GetL0TriggerInputs();
+  // fL1inputs = fAOD->GetHeader()->GetL1TriggerInputs();
 
   /* - Past-future protection maps:
      - IR1: .... ;
      - IR2: .... .
    */
-  fIR1Map = fAOD->GetHeader()->GetIRInt1InteractionMap();
-  fIR2Map = fAOD->GetHeader()->GetIRInt2InteractionMap();
+  // fIR1Map = fAOD->GetHeader()->GetIRInt1InteractionMap();
+  // fIR2Map = fAOD->GetHeader()->GetIRInt2InteractionMap();
 
   /* - ZDC: we try to find the ZDC object data in the nano-AOD. If we cannot,
      - we return, because there would be no way to actually select the events
@@ -636,7 +606,7 @@ void AliAnalysisTaskUPCforward::UserExec(Option_t *)
   /* - These lines are the calibration for the ZDC as provided by Evgeny Kryshen.
      -
    */
-  Bool_t calibrated = 0;
+  // Bool_t calibrated = 0;
   // if ( fRunNum <  295726 ) calibrated = 1;
   // if ( fRunNum == 296509 ) calibrated = 1;
   // if ( fRunNum >  296689 ) calibrated = 1;
@@ -650,19 +620,7 @@ void AliAnalysisTaskUPCforward::UserExec(Option_t *)
   //   fZNCEnergy *= (2500./190.);
   // }
 
-  /* - V0: we try to find the V0 object data in the nano-AOD. If we cannot,
-     - we return, because there would be no way to actually select the events
-     - otherwise! We are here, so we could even check if there is a discrepancy
-     - between good events with and without V0's information. Or at least, this
-     - is my impression of it (filling fCounterH). V0 information:
-     - fV0ADecision: ..... ;
-     - fV0CDecision: ..... .
-     -
-     -
-     -
-     - Plot the V0 variables to try to understand whether it is cells we are
-     - talking about or boolean responses or something else altogether.
-  */
+  // V0
   AliVVZERO *dataVZERO = dynamic_cast<AliVVZERO*>(fAOD->GetVZEROData());
   if(!dataVZERO) {
         PostData(1, fOutputList);
@@ -673,6 +631,24 @@ void AliAnalysisTaskUPCforward::UserExec(Option_t *)
 
   fV0ADecision = dataVZERO->GetV0ADecision();
   fV0CDecision = dataVZERO->GetV0CDecision();
+
+  // Reset event info
+  fBBCFlags = 0;
+  fBGCFlags = 0;
+  fBBAFlags = 0;
+  fBGAFlags = 0;
+  for (Int_t i=0; i<64; i++) {
+    // get array of fired cells
+    fBBFlag[i] = dataVZERO->GetBBFlag(i);
+    fBGFlag[i] = dataVZERO->GetBGFlag(i);
+  }
+
+  for (Int_t i=0; i<32; i++){ // loop over cells
+    fBBCFlags+=fBBFlag[i];
+    fBGCFlags+=fBGFlag[i];
+    fBBAFlags+=fBBFlag[i+32];
+    fBGAFlags+=fBGFlag[i+32];
+  }
 
 
   //_____________________________________
@@ -691,7 +667,6 @@ void AliAnalysisTaskUPCforward::UserExec(Option_t *)
    if (findRunNumber != std::end(fVectorGoodRunNumbers)) {
         // std::cout << "fVectorGoodRunNumbers DOES     contain: " << fRunNum << std::endl;
    } else {
-        // std::cout << "fVectorGoodRunNumbers does not contain: " << fRunNum << std::endl;
         PostData(1, fOutputList);
         return;
    }
@@ -706,32 +681,15 @@ void AliAnalysisTaskUPCforward::UserExec(Option_t *)
      - 32<i<64 for the V0A cells. Then I thought the easiest way to check
      - whether the number of fired V0C cells is above 2 is just to add up the
      - boolean numbers for 0<i<32. Let's see.
-     -
-     - Weird fact: this doesn't seem to work... I have changed it so that if
-     - the single cell has recorded a signal (kTRUE) then it adds up to the
-     - total number of cells. Hope for the best.
-     -
-     - I am an idiot!!!!!! I have to reset the variable everytime!!!!
    */
   fV0TotalNCells = 0;
   for(Int_t iV0Hits = 0; iV0Hits < 64; iV0Hits++) {
         fV0Hits[iV0Hits] = dataVZERO->GetBBFlag(iV0Hits);
         if(fV0Hits[iV0Hits] == kTRUE) {
-              // if(iV0Hits < 32) fV0TotalNCells += fV0Hits[iV0Hits];
               if(iV0Hits < 32) fV0TotalNCells += 1;
         }
-        // std::cout << "fV0Hits[iV0Hits = " << iV0Hits << ", fRunNum=" << fRunNum << "] = " << fV0Hits[iV0Hits] << endl;
-        // std::cout << "fV0TotalNCells (fRunNum = " << fRunNum << ") = " << fV0TotalNCells << endl;
   }
 
-  /* - AD: we try to find the AD object data in the nano-AOD. If we cannot,
-     - we return, because there would be no way to actually select the events
-     - otherwise! We are here, so we could even check if there is a discrepancy
-     - between good events with and without AD's information. Or at least, this
-     - is my impression of it (filling fCounterH). AD information:
-     - fADADecision: small detector in ALICE, ADA and ADC at large distances;
-     - fADCDecision: again, maybe check whether it is cells or boolean, same as V0.
-  */
   // AD
   AliVAD *dataAD = dynamic_cast<AliVAD*>(fAOD->GetADData());
   if(dataAD) {
@@ -740,8 +698,35 @@ void AliAnalysisTaskUPCforward::UserExec(Option_t *)
 
         fADADecision = dataAD->GetADADecision();
         fADCDecision = dataAD->GetADCDecision();
+
+        // Reset event info
+        fBBCFlagsAD = 0;
+        fBGCFlagsAD = 0;
+        fBBAFlagsAD = 0;
+        fBGAFlagsAD = 0;
+        for(Int_t i=0; i<16; i++) {
+          // get array of fired pads
+          fBBFlagAD[i] = dataAD->GetBBFlag(i);
+          fBGFlagAD[i] = dataAD->GetBGFlag(i);
+        }
+
+        for(Int_t i=0; i<4; i++) { // loop over pairs of pads
+          if ( fBBFlagAD[i]   && fBBFlagAD[i+4]  ) fBBCFlagsAD++;
+          if ( fBGFlagAD[i]   && fBGFlagAD[i+4]  ) fBGCFlagsAD++;
+          if ( fBBFlagAD[i+8] && fBBFlagAD[i+12] ) fBBAFlagsAD++;
+          if ( fBGFlagAD[i+8] && fBGFlagAD[i+12] ) fBGAFlagsAD++;
+        }
   }
   // END EVENT DATA EXTRACTION
+  //_______________________________
+  // APPLY TRIGGER MC!
+  if(!IsTriggered()) {
+    cout << "Ehm" ;
+    PostData(1, fOutputList);
+    return;
+  }
+  fCounterH->Fill(iSelectionCounter); // right trigger found
+  iSelectionCounter++;
   //_______________________________
   // EVENT SELECTION
   /* - This is Eugeny Krishen's event selection from the talk in 14/1/2019 for
@@ -753,12 +738,6 @@ void AliAnalysisTaskUPCforward::UserExec(Option_t *)
      - Empty ADC decision;
      - 0 tracklets in SPD;
      - Exactly 2 unlike-sign muons;
-   */
-  /* - CMUP11-B triggers: I have to check with my supervisor, but this requirement
-     - may have already been satisfied with the requirements for the trigger info
-   */
-  /* - Maximum 2 V0C cells fired:
-     -
    */
   /* - Empty V0A decision
      - Empty ADA decision
@@ -777,26 +756,17 @@ void AliAnalysisTaskUPCforward::UserExec(Option_t *)
        return;
   }
   /* - 0 tracklets in SPD
-     - Is it like this?? Not too sure what fTracklets was!
    */
   if(fTracklets != 0) {
        PostData(1, fOutputList);
        return;
   }
   /* - Maximum 2 V0C cells fired.
-     -
-     - Trying a more readable and immediate approach.
    */
-  // if( !(fV0TotalNCells < 2) ) {
-  //      PostData(1, fOutputList);
-  //      return;
-  // }
   if( fV0TotalNCells > 2 ) {
        PostData(1, fOutputList);
        return;
   }
-
-
 
   /* - We are finally at the starting point. We loop over the tracks and select
      - the good muons. Later on everything should happen in this loop. Let us
@@ -823,14 +793,6 @@ void AliAnalysisTaskUPCforward::UserExec(Option_t *)
          PostData(1, fOutputList);
          return;
     }
-    // get track
-    // AliAODTrack* track = static_cast<AliAODTrack*>(fAOD->GetTrack(iTrack));
-    // if(!track) return;
-    //
-    // // is it a good muon track?
-    // if(!track->IsMuonTrack()) continue;
-    // if(!fMuonTrackCuts->IsSelected(track)) continue;
-
     track[nGoodMuons] = static_cast<AliAODTrack*>(fAOD->GetTrack(iTrack));
     if(!track[nGoodMuons]) return;
 
@@ -855,11 +817,6 @@ void AliAnalysisTaskUPCforward::UserExec(Option_t *)
 
     // increase counter
     nGoodMuons++;
-
-    // fill muon info
-    // fEtaMuonH->Fill(track->Eta());
-    // fRAbsMuonH->Fill(track->GetRAtAbsorberEnd());
-
   }
   /* - We need EXACTLY 2 good muons !!!!!
      -
@@ -888,8 +845,6 @@ void AliAnalysisTaskUPCforward::UserExec(Option_t *)
   fEntriesAgainstRunNumberProperlyH->Fill( Form("%d", fRunNum) , 1 );
   if (nGoodMuons>0) fCounterH->Fill(iSelectionCounter); // At least one good muon
   iSelectionCounter++;
-
-
 
   /* - Finally the core!!!
    * - What will be happening is that we will instantiate TLorentzVectors to
@@ -938,180 +893,6 @@ void AliAnalysisTaskUPCforward::UserExec(Option_t *)
   fDimuonPtDistributionH->Fill(ptOfTheDimuonPair);
 
 
-
-
-
-  //_____________________________________
-  // STARTING THE CHECK FOR THE UPC GROUP
-  /* - Here we will be using the information about the fMomentumAtDCA, to try
-     - and see if there are any differences compared to before. Hopefully this
-     - will be doing something. Maybe not. However there is already a major
-     - difference with the way they are implemented. Here,
-     - fMomentumAtDCA = [px, py, pz], while
-     - fMomentum      = [pt, eta,phi]
-     -
-     -
-     - RESULTS: the information here is too imprecise to be properly used.
-     -          Switching to the usual fMomentum only. With the information
-     -          at the DCA it is impossible to resolve the PsiPrime peak.
-     -
-   */
-  TLorentzVector muonsAtDCA[2];
-  TLorentzVector possibleJPsiAtDCA;
-  for(int indexMuonAtDCA = 0; indexMuonAtDCA < 2; indexMuonAtDCA++) {
-        /* - If dummy values then we cannot compute the J/Psi...
-           - The dummy values are -999. but I do not trust the threshold for the
-           - comparison... Better safe than sorry.
-         */
-        if( (track[indexMuonAtDCA]->PxAtDCA()) < -998. ) {
-              PostData(1, fOutputList);
-              return;
-        }
-        if( (track[indexMuonAtDCA]->PyAtDCA()) < -998. ) {
-              PostData(1, fOutputList);
-              return;
-        }
-        if( (track[indexMuonAtDCA]->PzAtDCA()) < -998. ) {
-              PostData(1, fOutputList);
-              return;
-        }
-        Double_t EnergyOfTheTrack = TMath::Sqrt(  track[indexMuonAtDCA]->PxAtDCA()*track[indexMuonAtDCA]->PxAtDCA() +
-                                                  track[indexMuonAtDCA]->PyAtDCA()*track[indexMuonAtDCA]->PyAtDCA() +
-                                                  track[indexMuonAtDCA]->PzAtDCA()*track[indexMuonAtDCA]->PzAtDCA() +
-                                                  TDatabasePDG::Instance()->GetParticle(13)->Mass()*TDatabasePDG::Instance()->GetParticle(13)->Mass()/1000000
-                                                  );
-        muonsAtDCA[indexMuonAtDCA].SetPxPyPzE(   track[indexMuonAtDCA]->PxAtDCA(),
-                                                 track[indexMuonAtDCA]->PyAtDCA(),
-                                                 track[indexMuonAtDCA]->PzAtDCA(),
-                                                 EnergyOfTheTrack
-                                                 );
-        possibleJPsiAtDCA += muonsAtDCA[indexMuonAtDCA];
-  }
-  fInvariantMassDistributionAtDcaH->Fill(possibleJPsiAtDCA.Mag());
-  // END THE CHECK
-  //_____________________________________
-
-
-
-
-  /* - Now this is a critical part of  the analysis. What happens next is a
-     - differential analysisin terms of the energy perceived by the neutron ZDC.
-     - What it means is that now we may cut on those sensible values to select
-     - only those J/Psi candidates falling under a certain peak of the neutron
-     - ZNC energy distribution. It will be seen that the fZNCEnergyAgainstEntriesH
-     - plot will present many gaussian-like peaks. Each peak represent an
-     - increasingly large number of neutrons seen by the ZNC.
-     -
-     - Starting from the first peak, 0n, then 1n, hopefully 2n, but anything
-     - else is more like a guess. If my understanding is good enough, even the
-     - 2n peak requires user input to facilitate the minimizer's job.
-     -
-     - So, first thing first, Guillermo Contreras has suggested the preliminary
-     - cut on the ZDC time, quoting:
-     - "The energy value makes sense only when the time information is not
-     - -999... You can choose times |t|<5 ns to plot the energy distributions
-     - in the neutron ZDC".
-     -
-     - This happens with the request |fZNCTime|<5 if I have understood correctly.
-     - After this we can fill whatever histogram we want to.
-     -
-   */
-  fZNCTimeAgainstEntriesH->Fill(fZNCTime);
-  if( fZNCTime > -5.0 ) {
-    if( fZNCTime < 5.0 ) {
-          /* At any levels, this means |fZNCTime| < 5. */
-          fZNCEnergyAgainstEntriesH->Fill(fZNCEnergy);
-          fZNAEnergyAgainstEntriesH->Fill(fZNAEnergy);
-          if ( calibrated == 0 ) fZNAEnergyUncalibratedH->Fill(fZNAEnergy);
-          if ( calibrated == 1 ) fZNAEnergyCalibratedH  ->Fill(fZNAEnergy);
-          if ( calibrated == 0 ) fZNCEnergyUncalibratedH->Fill(fZNCEnergy);
-          if ( calibrated == 1 ) fZNCEnergyCalibratedH  ->Fill(fZNCEnergy);
-
-          /* - Now this offers the oppurtunity to do differential mass studies.
-             - This can be seen here. When we try to do everything while cutting
-             - on the ZNC energy.
-             -
-             - I don't if by the time you will be reading these lines of mine
-             - the ZDC calibration will be done or not. For now I am Implementing
-             - the cut based on Evgeny Kryshen's plot. Then we will see in the
-             - future.
-             -
-           */
-          if( fZNCEnergy > -300 ) {
-                    if( fZNCEnergy < 125 ) {
-                            fInvariantMassDistributionNoNeutronsH->Fill(possibleJPsi.Mag());
-                            if( ptOfTheDimuonPair < 0.25) {
-                                  fInvariantMassDistributionCoherentNoNeutronsH->Fill(possibleJPsi.Mag());
-                            } else {
-                                  fInvariantMassDistributionIncoherentNoNeutronsH->Fill(possibleJPsi.Mag());
-                            }
-                    } else if( fZNCEnergy < 375 ) {
-                            fInvariantMassDistributionOneNeutronH->Fill(possibleJPsi.Mag());
-                            fInvariantMassDistributionAtLeastOneNeutronH->Fill(possibleJPsi.Mag());
-                            if( ptOfTheDimuonPair < 0.25) {
-                                  fInvariantMassDistributionCoherentOneNeutronH->Fill(possibleJPsi.Mag());
-                                  fInvariantMassDistributionCoherentAtLeastOneNeutronH->Fill(possibleJPsi.Mag());
-                            } else {
-                                  fInvariantMassDistributionIncoherentOneNeutronH->Fill(possibleJPsi.Mag());
-                                  fInvariantMassDistributionIncoherentAtLeastOneNeutronH->Fill(possibleJPsi.Mag());
-                            }
-                    } else  {
-                            fInvariantMassDistributionAtLeastOneNeutronH->Fill(possibleJPsi.Mag());
-                            if( ptOfTheDimuonPair < 0.25) {
-                                  fInvariantMassDistributionCoherentAtLeastOneNeutronH->Fill(possibleJPsi.Mag());
-                            } else {
-                                  fInvariantMassDistributionIncoherentAtLeastOneNeutronH->Fill(possibleJPsi.Mag());
-                            }
-                    }
-          }
-    }
-  }
-
-  //_____________________________________
-  // DIFFERENTIAL ANALYSIS NEUTRON EMISSION
-  if( fZNCTime > -5.0 ) {
-    if( fZNCTime < 5.0 ) {
-          /* At any levels, this means |fZNCTime| < 5. */
-          if( fZNCEnergy > -300 ) {
-                      if( fZNCEnergy < 125 ) {
-                                  if( fZNAEnergy > -300 ) {
-                                              if( fZNAEnergy < 125 ) {
-                                                          if( ptOfTheDimuonPair < 0.25) {
-                                                                    fInvariantMassDistributionCoherentZNCzeroZNAzeroH->Fill(possibleJPsi.Mag());
-                                                          } else {
-                                                                    fInvariantMassDistributionIncoherentZNCzeroZNAzeroH->Fill(possibleJPsi.Mag());
-                                                          }
-                                              } else {
-                                                          if( ptOfTheDimuonPair < 0.25) {
-                                                                    fInvariantMassDistributionCoherentZNCzeroZNAanyH->Fill(possibleJPsi.Mag());
-                                                          } else {
-                                                                    fInvariantMassDistributionIncoherentZNCzeroZNAanyH->Fill(possibleJPsi.Mag());
-                                                          }
-                                              }
-                                  }
-                      } else {
-                                  if( fZNAEnergy > -300 ) {
-                                              if( fZNAEnergy < 125 ) {
-                                                          if( ptOfTheDimuonPair < 0.25) {
-                                                                    fInvariantMassDistributionCoherentZNCanyZNAzeroH->Fill(possibleJPsi.Mag());
-                                                          } else {
-                                                                    fInvariantMassDistributionIncoherentZNCanyZNAzeroH->Fill(possibleJPsi.Mag());
-                                                          }
-                                              } else {
-                                                          if( ptOfTheDimuonPair < 0.25) {
-                                                                    fInvariantMassDistributionCoherentZNCanyZNAanyH->Fill(possibleJPsi.Mag());
-                                                          } else {
-                                                                    fInvariantMassDistributionIncoherentZNCanyZNAanyH->Fill(possibleJPsi.Mag());
-                                                          }
-                                              }
-                                  }
-
-                      }
-          }
-    }
-  }
-
-
   /* - Filling the J/Psi's polarization plots.
      -
      - Now we are ordering the muons. The first muon will always be positive.
@@ -1151,7 +932,161 @@ void AliAnalysisTaskUPCforward::UserExec(Option_t *)
   PostData(1, fOutputList);
 }
 //_____________________________________________________________________________
-void AliAnalysisTaskUPCforward::Terminate(Option_t *)
+Bool_t AliAnalysisTaskUPCforwardMC::IsTriggered()
+{
+  /* - This function IS roughly speaking the trigger for the MC.
+     - This code has been greatly inspired by David Horak's work.
+     - It returns kTRUE if the trigger has been fired.
+     -
+     - The only problem is that this could work only with ESDs...
+     - But I am working with AODs!!
+     -
+   */
+  // Bool_t V0A = kFALSE;
+  // Bool_t V0C = kFALSE;
+  // Bool_t ADA = kFALSE;
+  // Bool_t ADC = kFALSE;
+  // // V0
+  // V0A = fAODevent->GetHeader()->IsTriggerInputFired("0VBA");
+  // V0C = fAODevent->GetHeader()->IsTriggerInputFired("0VBC");
+  // // AD
+  // ADA = fAODevent->GetHeader()->IsTriggerInputFired("0UBA");
+  // ADC = fAODevent->GetHeader()->IsTriggerInputFired("0UBC");
+  //
+  // if      (!V0A && !ADA && !ADC ) return kTRUE;
+  // else return kFALSE;
+
+  Bool_t is0VBAfired = fBBAFlags > 0;
+  Bool_t is0VBCfired = fBBCFlags > 0;
+  Bool_t is0UBAfired = fBBAFlagsAD > 0;
+  Bool_t is0UBCfired = fBBCFlagsAD > 0;
+  // cout << "is0VBAfired = ( fBBAFlags   = " << fBBAFlags   << " ) > 0 => " << is0VBAfired << endl;
+  // cout << "is0VBCfired = ( fBBCFlags   = " << fBBCFlags   << " ) > 0 => " << is0VBCfired << endl;
+  // cout << "is0UBAfired = ( fBBAFlagsAD = " << fBBAFlagsAD << " ) > 0 => " << is0UBAfired << endl;
+  // cout << "is0UBCfired = ( fBBCFlagsAD = " << fBBCFlagsAD << " ) > 0 => " << is0UBCfired << endl;
+  if (!is0VBAfired && !is0UBAfired && !is0UBCfired ) return kTRUE;
+  else return kFALSE;
+
+}
+//_____________________________________________________________________________
+void AliAnalysisTaskUPCforwardMC::ProcessMCParticles(AliMCEvent* fMCEventArg)
+{
+  // Loop over the MC tracks
+  for(int iPart = 0; iPart < (fMCEventArg->GetNumberOfTracks()); iPart++) {
+    AliAODMCParticle *mcParticle  = (AliAODMCParticle*)fMCEventArg->GetTrack(iPart);
+    if (!mcParticle) {
+      AliError(Form("Could not receive track %d", iPart));
+      continue;
+    }
+    if (  mcParticle->Charge()    == 0) continue;
+    Double_t pT     = mcParticle->Pt();
+    Double_t eta    = mcParticle->Eta();
+    Double_t pseudo = mcParticle->Y();
+    Double_t phi    = mcParticle->Phi();
+    Short_t  charge = mcParticle->Charge();
+    Int_t    pdg    = mcParticle->PdgCode();
+    fMCpdgCodesH->Fill( Form("%d", pdg) , 1 );
+    if ( mcParticle->IsPrimary() ) fMCpdgCodesOnlyPrimaryH->Fill( Form("%d", pdg) , 1 );
+    fMCphiGeneratedTruthH           ->Fill(phi);
+    fMCetaGeneratedTruthH           ->Fill(eta);
+    fMCpseudorapidityGeneratedTruthH->Fill(pseudo);
+    fMCptGeneratedTruthH            ->Fill(pT);
+  }
+
+  /* - This is loop where we record the MC TRUTH stuff BEFORE both
+     - the event selection and the track selection.
+     - It is nonetheless strange that we can't directly use the
+     - J/Psi and that we have to o through such a roundabout
+     - road like reconstructing the invariant mass...
+     -
+   */
+  Int_t nGoodMuonsMC = 0;
+  TLorentzVector muonsMC[2];
+  TLorentzVector possibleJPsiMC;
+  Double_t pT[2];
+  Double_t eta[2];
+  Double_t pseudo[2];
+  Double_t phi[2];
+  Short_t  charge[2];
+  Int_t    pdg[2];
+  // Loop over the MC tracks
+  for(int iPart = 0; iPart < (fMCEventArg->GetNumberOfTracks()); iPart++) {
+    if(nGoodMuonsMC > 2) continue;
+    AliAODMCParticle *mcParticle  = (AliAODMCParticle*)fMCEventArg->GetTrack(iPart);
+    if (!mcParticle) {
+      AliError(Form("Could not receive track %d", iPart));
+      continue;
+    }
+    if (  !mcParticle->IsPrimary()                 ) continue;
+    if (   mcParticle->Charge()              == 0  ) continue;
+    if (   TMath::Abs(mcParticle->PdgCode()) == 13 ) {
+      if ( nGoodMuonsMC < 2 ) {
+        // cout << "Ok" << nGoodMuonsMC << endl;
+        pT[nGoodMuonsMC]     = mcParticle->Pt();
+        eta[nGoodMuonsMC]    = mcParticle->Eta();
+        pseudo[nGoodMuonsMC] = mcParticle->Y();
+        phi[nGoodMuonsMC]    = mcParticle->Phi();
+        charge[nGoodMuonsMC] = mcParticle->Charge();
+        pdg[nGoodMuonsMC]    = mcParticle->PdgCode();
+        muonsMC[nGoodMuonsMC].SetPtEtaPhiM( pT[nGoodMuonsMC],
+                                            eta[nGoodMuonsMC],
+                                            phi[nGoodMuonsMC],
+                                            TDatabasePDG::Instance()->GetParticle(13)->Mass()
+                                           );
+        nGoodMuonsMC++;
+      }
+    }
+  }
+  // cout << "Tracks in this event:  " << fMCEventArg->GetNumberOfTracks() << endl;
+  /* - We need EXACTLY 2 good muons !!!!!
+     -
+   */
+  if( nGoodMuonsMC == 2 ) {
+    /* - Unlike-sign muons
+       -
+     */
+    if( charge[0] != charge[1] ) {
+      for( Int_t iMuonsMC = 0; iMuonsMC < 2; iMuonsMC++ ) {
+        possibleJPsiMC+=muonsMC[iMuonsMC];
+        fMCphiDimuonGeneratedTruthH           ->Fill(phi[iMuonsMC]);
+        fMCetaDimuonGeneratedTruthH           ->Fill(eta[iMuonsMC]);
+        fMCpseudorapidityDimuonGeneratedTruthH->Fill(pseudo[iMuonsMC]);
+        fMCptDimuonGeneratedTruthH            ->Fill(pT[iMuonsMC]);
+      }
+      fMCinvariantMassDistrJPsiGeneratedTruthH->Fill(possibleJPsiMC.Mag());
+      for( Int_t iBoosting = 0; iBoosting < 2; iBoosting++ ) {
+        // TLorentzVector boostBack = -(possibleJPsiCopy).BoostVector();
+        /* - This snippet has beem taken from the website:
+           - http://personalpages.to.infn.it/~puccio/htmldoc/src/AliAODDimuon.cxx.html
+           -
+         */
+        TVector3 betaMC = (-1./possibleJPsiMC.E())*possibleJPsiMC.Vect();
+        muonsMC[iBoosting].Boost( betaMC );
+      }
+      Double_t cosThetaMuonsRestFrameMC[2];
+      for( Int_t iAngle = 0; iAngle < 2; iAngle++ ) {
+        TVector3 muonsMCVector            = muonsMC[iAngle].Vect();
+        TVector3 possibleJPsiMCVector     = possibleJPsiMC.Vect();
+        Double_t dotProductMuonJPsiMC     = muonsMCVector.Dot(possibleJPsiMCVector);
+        cosThetaMuonsRestFrameMC[iAngle]  = dotProductMuonJPsiMC/( muonsMCVector.Mag() * possibleJPsiMCVector.Mag() );
+      }
+      if( charge[0] > 0 ) {
+              /* - This means that [0] is the positive muon while [1]
+                 - is the negative muon!
+                 -
+               */
+              fMCthetaDistribOfPositiveMuonRestFrameJPsiGeneratedTruthH->Fill(cosThetaMuonsRestFrameMC[0]);
+              fMCthetaDistribOfNegativeMuonRestFrameJPsiGeneratedTruthH->Fill(cosThetaMuonsRestFrameMC[1]);
+      } else  {
+              fMCthetaDistribOfNegativeMuonRestFrameJPsiGeneratedTruthH->Fill(cosThetaMuonsRestFrameMC[0]);
+              fMCthetaDistribOfPositiveMuonRestFrameJPsiGeneratedTruthH->Fill(cosThetaMuonsRestFrameMC[1]);
+      }
+    }
+  }
+
+}
+//_____________________________________________________________________________
+void AliAnalysisTaskUPCforwardMC::Terminate(Option_t *)
 {
     cout << endl;
     // terminate
