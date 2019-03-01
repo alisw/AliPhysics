@@ -83,7 +83,7 @@ AliEmcalJetTask* AddTaskEmcalJet(
 
 
   AliParticleContainer* partCont = 0;
-  if (trackName == "mcparticles") {
+  if (trackName.Contains("mcparticles")) {  // must be contains in order to allow for non-standard particle containers
     AliMCParticleContainer* mcpartCont = new AliMCParticleContainer(trackName);
     partCont = mcpartCont;
   }
