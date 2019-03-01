@@ -73,15 +73,22 @@ void AliForwardFlowUtil::FillData(TH2D*& refDist, TH2D*& centralDist, TH2D*& for
         }
       }
 
-      if (fSettings.gap > 1.0) {
-        this->minpt = 0.2;
-        this->maxpt = 5;
-        if (fSettings.useSPD) this->FillFromTracklets(refDist);
-        else                  this->FillFromTracks(refDist, fSettings.tracktype);
-      }
-      this->minpt = fSettings.minpt;
-      this->maxpt = fSettings.maxpt;
+        if (fSettings.ref_mode && fSettings.kSPDref) this->FillFromTracklets(refDist);
+        else if (fSettings.ref_mode && fSettings.kITSref) this->FillFromCentralClusters(refDist);
+        else if (fSettings.ref_mode && fSettings.kFMDref) {
+          AliAODForwardMult* aodfmult = static_cast<AliAODForwardMult*>(aodevent->FindListObject("Forward"));
+          refDist = &aodfmult->GetHistogram();
+        }
+        else {
+          this->minpt = 0.2;
+          this->maxpt = 5;
+          this->FillFromTracks(refDist, fSettings.tracktype);
+          this->minpt = fSettings.minpt;
+          this->maxpt = fSettings.maxpt;
+        }
+
       if (fSettings.useSPD) this->FillFromTracklets(centralDist);
+      else if (fSettings.useITS) this->FillFromCentralClusters(refDist);
       else                  this->FillFromTracks(centralDist, fSettings.tracktype);
     }
     else {
@@ -666,6 +673,11 @@ void AliForwardFlowUtil::FillFromTracklets(TH2D*& cen) const {
   }
 }
 
+
+void AliForwardFlowUtil::FillFromCentralClusters(TH2D*& cen) const {
+  AliAODCentralMult* aodcmult = static_cast<AliAODCentralMult*>(fAODevent->FindListObject("CentralClusters"));
+  cen = &aodcmult->GetHistogram();
+}
 
 void AliForwardFlowUtil::FillFromTracks(TH2D*& cen, UInt_t tracktype) const {
   Int_t  iTracks(fevent->GetNumberOfTracks());

@@ -74,14 +74,16 @@ AliAnalysisTaskSE* AddTaskForwardNUA(UShort_t nua_mode, bool makeFakeHoles, bool
     }
   }
 
+  TString name; name.Form("%d",type);
+   return name.Data();
 
     task->fSettings.minpt = minpt;
     resName += "_minpt";
-    resName += std::to_string((int)(minpt*10));
+    resName += TString.Form("%d",(int)(minpt*10)); //std::to_string
 
     task->fSettings.maxpt = maxpt;
     resName += "_maxpt";
-    resName += std::to_string((int)(maxpt*10));
+    resName += TString.Form("%d",(int)(maxpt*10));//std::to_string
 
 
   resName += "_" + centrality;

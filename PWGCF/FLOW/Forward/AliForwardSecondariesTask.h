@@ -195,7 +195,7 @@ TF1 *fMultCentLowCut; //!
   TCutG *fPipe;  //!
   TCutG *fEarlyDecay;  //!
   TH1D* phihist; //!
-
+  AliTrackReference* fStored; //! Last stored
   enum {
     kTPCOnly = 128, // TPC only tracks
     kHybrid = 768, // TPC only tracks
@@ -281,6 +281,7 @@ protected:
   // etaPhi is a 2-element array where the values will be written in.
   // If no FMD-reference was created, etaPhi will be NULL
   void GetTrackRefEtaPhi(AliMCParticle* p, Double_t* etaPhi);
+  void GetTrackRefEtaPhi(AliTrackReference* ref, Double_t* etaPhi);
 
   // Get the phi coordinate where the track ref was created
   // Double_t GetTrackRefPhi(AliTrackReference* ref);

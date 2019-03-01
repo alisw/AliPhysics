@@ -75,7 +75,7 @@ AliForwardSecondariesTask::AliForwardSecondariesTask() : AliAnalysisTaskSE(),
   fRandom(0),
   fTrackDensity(),
   fState(),
-  fMaxConsequtiveStrips(3),
+  fMaxConsequtiveStrips(2),
   fLowCutvalue(0),
   fTrackGammaToPi0(true),
   fSettings(),
@@ -95,7 +95,8 @@ AliForwardSecondariesTask::AliForwardSecondariesTask() : AliAnalysisTaskSE(),
   fFMD3(0),
   fPipe(0),
   fEarlyDecay(0),
-  phihist()
+  phihist(),
+  fStored(0)
   {
   //
   //  Default constructor
@@ -109,7 +110,7 @@ AliForwardSecondariesTask::AliForwardSecondariesTask() : AliAnalysisTaskSE(),
   fDeltaList(0),
   fTrackDensity(),
   fState(),
-  fMaxConsequtiveStrips(3),
+  fMaxConsequtiveStrips(2),
   fLowCutvalue(0),
   fTrackGammaToPi0(true),
   fRandom(0),
@@ -130,7 +131,8 @@ AliForwardSecondariesTask::AliForwardSecondariesTask() : AliAnalysisTaskSE(),
   fFMD3(0),
   fPipe(0),
   fEarlyDecay(0),
-  phihist()
+  phihist(),
+  fStored(0)
   {
   //
   //  Constructor
@@ -163,25 +165,31 @@ AliForwardSecondariesTask::AliForwardSecondariesTask() : AliAnalysisTaskSE(),
     Int_t phibins = 4000;
     Int_t etabins = 50;
     fSettings.fnoSamples = 1;
-    fSettings.fCentBins = 1;
-    Int_t bins_phi_eta[5] = {fSettings.fnoSamples, fSettings.fNZvtxBins, phibins, 1, etabins} ;
+    fSettings.fCentBins = 5;
+    Int_t bins_phi_eta[5] = {fSettings.fnoSamples, fSettings.fNZvtxBins, phibins, fSettings.fCentBins, etabins} ;
     Double_t xmin_phi_eta[5] = {0,fSettings.fZVtxAcceptanceLowEdge, -TMath::Pi(), 0, -4};
     Double_t xmax_phi_eta[5] = {10,fSettings.fZVtxAcceptanceUpEdge, TMath::Pi(), 100, 6}; //
+
+    Int_t bins_phi_eta_spd[5] = {fSettings.fnoSamples, fSettings.fNZvtxBins, phibins, 1, etabins} ;
+    Double_t xmin_phi_eta_spd[5] = {0,fSettings.fZVtxAcceptanceLowEdge, -TMath::Pi(), 0, -4};
+    Double_t xmax_phi_eta_spd[5] = {10,fSettings.fZVtxAcceptanceUpEdge, TMath::Pi(), 100, 6}; //
+
     Int_t dimensions = 5;
 
-    Int_t bins_eta_phi[5] = {fSettings.fnoSamples, fSettings.fNZvtxBins, 51, fSettings.fCentBins, 20} ;
+    Int_t bins_eta_phi[5] = {fSettings.fnoSamples, fSettings.fNZvtxBins, 51, 1, 20} ;
     Double_t xmin_eta_phi[5] = {0,fSettings.fZVtxAcceptanceLowEdge, -4, 0, 0.0};
     Double_t xmax_eta_phi[5] = {10,fSettings.fZVtxAcceptanceUpEdge, 6, 100, 2*TMath::Pi()}; //
 
-    Int_t bins_phi[5] = {fSettings.fnoSamples, fSettings.fNZvtxBins, 20, fSettings.fCentBins, 20} ;
+    Int_t bins_phi[5] = {fSettings.fnoSamples, fSettings.fNZvtxBins, 20, 1, 20} ;
     Double_t xmin_phi[5] = {0,fSettings.fZVtxAcceptanceLowEdge, -TMath::Pi(), 0.0, 0.0};
     Double_t xmax_phi[5] = {10,fSettings.fZVtxAcceptanceUpEdge, TMath::Pi(), 100, 2*TMath::Pi()}; //
 
-    Int_t bins_eta[5] = {fSettings.fnoSamples, fSettings.fNZvtxBins, 51, fSettings.fCentBins, 50} ;
+    Int_t bins_eta[5] = {fSettings.fnoSamples, fSettings.fNZvtxBins, 51, 1, 50} ;
     Double_t xmin_eta[5] = {0,fSettings.fZVtxAcceptanceLowEdge, -4, 0, -4};
     Double_t xmax_eta[5] = {10,fSettings.fZVtxAcceptanceUpEdge, 6, 100, 6}; //
 
     fDeltaList->Add(new THnD("delta_phi_eta", "delta_phi_eta",dimensions,bins_phi_eta, xmin_phi_eta, xmax_phi_eta)); // (samples, vertex,phi_mother - phi_tr ,centrality,eta_mother,eta_tr,eta_p)
+    fDeltaList->Add(new THnD("delta_phi_eta_spd", "delta_phi_eta_spd",dimensions,bins_phi_eta_spd, xmin_phi_eta_spd, xmax_phi_eta_spd)); // (samples, vertex,phi_mother - phi_tr ,centrality,eta_mother,eta_tr,eta_p)
     fDeltaList->Add(new THnD("delta_eta_phi", "delta_eta_phi",dimensions,bins_eta_phi, xmin_eta_phi, xmax_eta_phi));// (samples, vertex,eta_mother - eta_tr ,centrality,phi_mother,phi_tr,phi_p)
     fDeltaList->Add(new THnD("delta_phi", "delta_phi",dimensions,bins_phi, xmin_phi, xmax_phi)); // (samples, vertex,phi_mother - phi_tr ,centrality,eta_mother,eta_tr,eta_p)
     fDeltaList->Add(new THnD("delta_eta", "delta_eta",dimensions,bins_eta, xmin_eta, xmax_eta));// (samples, vertex,eta_mother - eta_tr ,centrality,phi_mother,phi_tr,phi_p)
@@ -191,6 +199,12 @@ AliForwardSecondariesTask::AliForwardSecondariesTask() : AliAnalysisTaskSE(),
     static_cast<THnD*>(fDeltaList->FindObject("delta_phi_eta"))->GetAxis(2)->SetName("phi_mother - phi_tr");
     static_cast<THnD*>(fDeltaList->FindObject("delta_phi_eta"))->GetAxis(3)->SetName("centrality");
     static_cast<THnD*>(fDeltaList->FindObject("delta_phi_eta"))->GetAxis(4)->SetName("eta");
+
+    static_cast<THnD*>(fDeltaList->FindObject("delta_phi_eta_spd"))->GetAxis(0)->SetName("samples");
+    static_cast<THnD*>(fDeltaList->FindObject("delta_phi_eta_spd"))->GetAxis(1)->SetName("vertex");
+    static_cast<THnD*>(fDeltaList->FindObject("delta_phi_eta_spd"))->GetAxis(2)->SetName("phi_mother - phi_tr");
+    static_cast<THnD*>(fDeltaList->FindObject("delta_phi_eta_spd"))->GetAxis(3)->SetName("centrality");
+    static_cast<THnD*>(fDeltaList->FindObject("delta_phi_eta_spd"))->GetAxis(4)->SetName("eta");
 
     static_cast<THnD*>(fDeltaList->FindObject("delta_eta_phi"))->GetAxis(0)->SetName("samples");
     static_cast<THnD*>(fDeltaList->FindObject("delta_eta_phi"))->GetAxis(1)->SetName("vertex");
@@ -322,6 +336,8 @@ Bool_t
 AliForwardSecondariesTask::ProcessTrack(AliMCParticle* particle,
 				    AliMCParticle* mother, std::vector< Int_t > listOfMothers, Double_t randomInt, Float_t event_vtx_z, Double_t v0cent)
 {
+  THnD* delta_phi_eta_spd = static_cast<THnD*>(fDeltaList->FindObject("delta_phi_eta_spd")); // (samples, vertex,phi_mother - phi_tr ,centrality,eta_mother,eta_tr,eta_p)
+
   // Check the returned particle
   //
   // Note: If particle refers to a primary, then particle and mother
@@ -343,6 +359,31 @@ AliForwardSecondariesTask::ProcessTrack(AliMCParticle* particle,
     if (!ref) continue;
 
     // Check that we hit an Base element
+    if (AliTrackReference::kITS == ref->DetectorId()) {
+
+      // We are interested if it produced a signal, not only a hit in the support structure.
+      // This is an envelop around the active area
+      if (ref->R() > 3.5 && ref->R() < 4.5 && TMath::Abs(ref->Z()) < 14.1) {
+        if (!fStored){
+          fStored = ref;
+        Double_t eta_mother_spd = mother->Eta();
+        Double_t phi_mother_spd = (mother->Phi());//Wrap02pi
+
+        Double_t *etaPhi_spd = new Double_t[2];
+        this->GetTrackRefEtaPhi(ref, etaPhi_spd);
+
+        Double_t phi_tr_spd = etaPhi_spd[1]; //Wrap02pi
+        Double_t eta_tr_spd = etaPhi_spd[0];
+        Double_t phi[5] = {randomInt,event_vtx_z, WrapPi(phi_mother_spd - phi_tr_spd), v0cent, eta_tr_spd};//Wrap02pi
+
+        delta_phi_eta_spd->Fill(phi,1);
+      }
+    }
+  }
+
+
+
+
     if (ref->DetectorId() != AliTrackReference::kFMD) continue;
 
     AliTrackReference* test = ProcessRef(particle, mother, ref,listOfMothers,  randomInt,  event_vtx_z,  v0cent);
@@ -377,6 +418,21 @@ AliForwardSecondariesTask::StoreParticle(AliMCParticle*       particle,
     UShort_t detector, sector, strip;
     Char_t   ring;
     AliFMDStripIndex::Unpack(packed,detector,ring,sector,strip);
+    TString inner = "I";
+    const Char_t* outer = "O";
+    if (detector == 1){
+      v0cent = 10;
+    }
+
+    if (detector == 2){
+      if (TString(ring) == inner) v0cent = 30;
+      else v0cent = 50;
+    }
+
+    if (detector == 3){
+      if (ring == inner) v0cent = 70;
+      else v0cent = 90;
+    }
 
 std::cout << "Detector: " << detector << ", Sector:" << sector << ", Strip: " << strip << ", Ring: " << ring << std::endl;
 
@@ -384,7 +440,7 @@ std::cout << "Detector: " << detector << ", Sector:" << sector << ", Strip: " <<
   Double_t phi_mother = (mother->Phi());//Wrap02pi
 
   Double_t *etaPhi = new Double_t[2];
-  this->GetTrackRefEtaPhi(particle, etaPhi);
+  this->GetTrackRefEtaPhi(ref, etaPhi);
 
 
   Double_t phi_tr = etaPhi[1]; //Wrap02pi
@@ -438,6 +494,8 @@ void
 AliForwardSecondariesTask::BeginTrackRefs()
 {
   fState.Clear(true);
+  fStored = 0;
+
 }
 
 void
@@ -833,6 +891,32 @@ AliTrackReference* AliForwardSecondariesTask::IsHitITS(AliMCParticle* p) {
   return 0x0;
 }
 
+
+void AliForwardSecondariesTask::GetTrackRefEtaPhi(AliTrackReference* ref, Double_t* etaPhi) {
+
+  const AliVVertex* vertex = this->MCEvent()->GetPrimaryVertex();
+  // Calculate the vector pointing from the vertex to the track reference on the detector
+  Double_t x      = ref->X() - vertex->GetX();
+  Double_t y      = ref->Y() - vertex->GetY();
+  Double_t z      = ref->Z() - vertex->GetZ();
+  Double_t rr     = TMath::Sqrt(x * x + y * y);
+  Double_t thetaR = TMath::ATan2(rr, z);
+  Double_t phiR   = TMath::ATan2(y,x);
+  // Correct angles
+  if (thetaR < 0) {
+    thetaR += 2*TMath::Pi();
+  }
+  if (phiR < 0) {
+    phiR += 2*TMath::Pi();
+  }
+  etaPhi[0] = -TMath::Log(TMath::Tan(thetaR / 2));
+  etaPhi[1] = phiR;
+  // cout << x << " " << y << " " << z << endl << endl;
+  // cout << etaPhi[0] - p->Eta() << " " << etaPhi[1] - p->Phi() << " "
+  //      << this->GetDaughters(p).size() << " "
+  //      << p->PdgCode() << " "
+  //      << endl;
+}
 
 void AliForwardSecondariesTask::GetTrackRefEtaPhi(AliMCParticle* p, Double_t* etaPhi) {
   AliTrackReference* ref = 0x0;

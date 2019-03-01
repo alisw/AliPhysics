@@ -40,6 +40,7 @@ class AliForwardFlowUtil : public TObject {
   void FillFromPrimaries(TH2D*& cen) const;
   void FillFromPrimariesAOD(TH2D*& cen) const;
   void FillFromTracklets(TH2D*& cen) const;
+  void FillFromCentralClusters(TH2D*& cen) const;
   void FillFromTracks(TH2D*& cen, UInt_t tracktype) const;
 
   void FillFromTrackrefs(TH3D*& cen, TH3D*& fwd, Double_t zvertex) const;
