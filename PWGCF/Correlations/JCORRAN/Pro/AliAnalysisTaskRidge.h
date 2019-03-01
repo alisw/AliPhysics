@@ -89,7 +89,7 @@ class AliAnalysisTaskRidge : public AliAnalysisTaskSE {
 
 //        Int_t GetPID(AliPIDResponse *pid, const AliVTrack *trk); 
     
-        Bool_t  GoodTracksSelection();
+        Bool_t  GoodTracksSelection(int trk);
         Bool_t  GoodTrackletSelection();
 	Bool_t  GoodTracksSelectionMC();
 
@@ -204,7 +204,7 @@ class AliAnalysisTaskRidge : public AliAnalysisTaskSE {
 	std::vector< std::vector< double > > Eff;
 	Double1D EffpT;
 
-	Int_t fEff_npT_step = 47;
+	Int_t fEff_npT_step = 40;
 	Double_t fEff_pT_min = 0.2;
 	Double_t fEff_pT_max = 20.0;
 	Double_t fEff_pT_l = 0.1;
