@@ -41,6 +41,7 @@
 #pragma link C++ class AliAnalysisTaskTOFSpectra+;
 #pragma link C++ class AliAnalysisCombinedHadronSpectra2MC+;
 #pragma link C++ class AliAnalysisTaskParticleEfficiencyLF+;
+#pragma link C++ class AliAnalysisTaskMKTest+;
 
 #pragma link C++ class AliAnalysisTaskTOFMC+;
 #pragma link C++ class AliAnalysisTaskTOFppSpectra+;

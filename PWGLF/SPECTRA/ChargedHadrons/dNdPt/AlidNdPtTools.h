@@ -20,7 +20,7 @@ class AlidNdPtTools
         static void            ResetHist() { if (fSparseTmp) delete fSparseTmp; }
         static TH1D*           CreateLogHist(const char* name, const char* title);                
         static TH1D*           CreateLogHist(const char* name);         
-        void                   Log(TH1D* h, const char* name) { if (h) h->Fill(name,1); }
+        static void            Log(TH1D* h, const char* name) { if (h) h->Fill(name,1); }
 
     private:
         static THnSparseD*      fSparseTmp;     //! temporary histogram

@@ -38,6 +38,7 @@ set(SRCS
   ChargedHadrons/MultDepSpec/AliMultDepSpecAnalysisTask.cxx
   ChargedHadrons/dNdPt/AlidNdPtHelper.cxx
   ChargedHadrons/dNdPt/AliMeanPtAnalysisTask.cxx
+  ChargedHadrons/dNdPt/AliAnalysisTaskMKTest.cxx
   ChargedHadrons/dNdPt/AliAnalysisTaskCutTest.cxx
   ChargedHadrons/dNdPt/AlidNdPtUnifiedAnalysisTask.cxx
   ChargedHadrons/dNdPt/MeanPtRaw/AliAnalysisTaskMeanPtRaw.cxx
