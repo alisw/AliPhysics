@@ -19,11 +19,12 @@ AliAnalysisTaskSE* AddTaskFemtoDream(bool isMC = false, bool isESD = false,
                                      bool RunNumberQA = false,  //15
                                      int FilterBit = 128,  //16
                                      bool DeltaEtaDeltaPhiCut = false,  //17
-                                     bool DEtadPhiAllPairs = false, // 18
+                                     bool DEtadPhiAllPairs = false,  // 18
                                      int SphericityRange = 0,  // 19
                                      bool excludeUnwantedPairs = false,  //20
-                                     bool stricterPileUpRej = false)  //21
-                                     {
+                                     bool stricterPileUpRej = false,//21
+                                     float dPhidEta = 0.01)  //22
+    {
   // 1    2     3     4     5     6     7    8    9      10   11     12   13    14    15    16   17
   //true,true,false,false,false,false,false,true,false,false,true,false,true,false,false,false,true
   bool PileUpRej = true;  //8
@@ -228,7 +229,7 @@ AliAnalysisTaskSE* AddTaskFemtoDream(bool isMC = false, bool isESD = false,
   AntiCascadeCuts->SetPDGCodeBach(-211);
 
   if (RunNumberQA) {
-    if (!notpp) {//works for pPb
+    if (!notpp) {  //works for pPb
       v0Cuts->SetRunNumberQA(265309, 267167);
       Antiv0Cuts->SetRunNumberQA(265309, 267167);
       CascadeCuts->SetRunNumberQA(265309, 267167);
@@ -437,8 +438,8 @@ AliAnalysisTaskSE* AddTaskFemtoDream(bool isMC = false, bool isESD = false,
 //    }
   }
   if (DeltaEtaDeltaPhiCut) {
-    config->SetDeltaEtaMax(0.01);
-    config->SetDeltaPhiMax(0.01);
+    config->SetDeltaEtaMax(dPhidEta);
+    config->SetDeltaPhiMax(dPhidEta);
     if (!DEtadPhiAllPairs) {
       config->SetClosePairRejection(config->GetStandardPairRejection());
     } else {
