@@ -23,7 +23,7 @@
 //  author: Bong-Hwi Lim (bong-hwi.lim@cern.ch)
 //        , Beomkyu  KIM (kimb@cern.ch)
 //
-//  Last Modified Date: 2019/03/01
+//  Last Modified Date: 2019/02/06
 //
 ////////////////////////////////////////////////////////////////////////////
 
@@ -179,6 +179,7 @@ void AliAnalysisTaskXi1530::UserCreateOutputObjects()
     binZ = AxisVar("Z",{-10,-5,-3,-1,1,3,5,10});
     auto binType_V0M = AxisStr("Type",{"isSelected","isSelectedPS"});
     // Axis for the systematic study
+    SysCheck = {"DefaultOption", "TPCNsigmaXi1530PionLoose", "TPCNsigmaXi1530PionTight", "TPCNsigmaXiLoose", "TPCNsigmaXiTight", "Xi1530PionZVertexLoose", "Xi1530PionZVertexTight", "DCADistLambdaDaughtersLoose", "DCADistLambdaDaughtersTight", "DCADistXiDaughtersLoose", "DCADistXiDaughtersTight", "DCADistLambdaPVLoose", "DCADistLambdaPVTight", "V0CosineOfPointingAngleLoose", "V0CosineOfPointingAngleTight", "CascadeCosineOfPointingAngleLoose", "CascadeCosineOfPointingAngleTight", "XiMassWindowLoose", "XiMassWindowTight", "XiTrackCut"};
     binSystematics = AxisStr("Sys", SysCheck);
 
     CreateTHnSparse("hInvMass_dXi","InvMass",4,{binType,binCent,binPt,binMass},"s"); // inv mass distribution of Xi
@@ -794,7 +795,7 @@ void AliAnalysisTaskXi1530::FillTracks(){
         // Systematic study loop.
         // sys = 0 -> Default cut option
         // for more details, please check "SysCheck" in header file.
-        
+        AliInfo(Form("Sys check! %s", (const char *)SysCheck.at(sys)));
         for (UInt_t i = 0; i < ncascade; i++) {
             Xicandidate = ((AliESDEvent*)fEvt)->GetCascade(goodcascadeindices[i]);
             if(!Xicandidate) continue;

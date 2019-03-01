@@ -203,7 +203,7 @@ class AliAnalysisTaskXi1530 : public AliAnalysisTaskSE {
         Int_t fnMix = 10;
         Int_t centbin = -1;
         Int_t zbin = -1;
-        std::vector<TString> SysCheck = {"DefaultOption", "TPCNsigmaXi1530PionLoose", "TPCNsigmaXi1530PionTight", "TPCNsigmaXiLoose", "TPCNsigmaXiTight", "Xi1530PionZVertexLoose", "Xi1530PionZVertexTight", "DCADistLambdaDaughtersLoose", "DCADistLambdaDaughtersTight", "DCADistXiDaughtersLoose", "DCADistXiDaughtersTight", "DCADistLambdaPVLoose", "DCADistLambdaPVTight", "V0CosineOfPointingAngleLoose", "V0CosineOfPointingAngleTight", "CascadeCosineOfPointingAngleLoose", "CascadeCosineOfPointingAngleTight", "XiMassWindowLoose", "XiMassWindowTight", "XiTrackCut"};
+        std::vector<TString> SysCheck;
         TAxis binSystematics;
 
         Double_t fTPCNsigXi1530PionCut_loose = 4.0;
@@ -274,7 +274,7 @@ class AliAnalysisTaskXi1530 : public AliAnalysisTaskSE {
         Double_t PVy = 999;
         Double_t PVz = 999;
         Double_t bField = 999;
-        ClassDef(AliAnalysisTaskXi1530, 8);
+        ClassDef(AliAnalysisTaskXi1530, 9);
         //1: Frist version
         //2: Add Track cut2 for the Xi daughter particles
         //3: Add FillMixingPool function
@@ -283,6 +283,7 @@ class AliAnalysisTaskXi1530 : public AliAnalysisTaskSE {
         //6: Add IsPrimaryMC option for MC study
         //7: Add Systematics option for systematics study
         //8: Change default systmatics on TPC PID for Xi daughter, Add Setter function for that.
+        //9: Hot fix for the AliPhysics building
 };
 
 #endif
