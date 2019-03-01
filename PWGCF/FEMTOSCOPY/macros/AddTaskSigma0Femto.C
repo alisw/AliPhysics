@@ -51,7 +51,7 @@ AliAnalysisTaskSE *AddTaskSigma0Femto(bool isMC = false,
     // 1-D Qt cut, qt < 0.1
     cutnumberPhoton = "00200008400000001280920000";
   } else if (suffix == "28") {
-    // 2-D Qt cut, qt < 0.02
+    // 2-D Qt cut, qt < 0.05
     cutnumberPhoton = "00200008400000003280920000";
   } else if (suffix == "29") {
     // psiPair < 0.2, 1-D
