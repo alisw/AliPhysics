@@ -51,6 +51,7 @@ public:
     AliJetContainer::EJetType_t       jetType,
     Double_t                          radius,
     Bool_t                            useDCAL,
+    const char *                      namepartcont,
     const char *                      trigger
   );
 
