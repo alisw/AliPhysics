@@ -6658,6 +6658,8 @@ void AliAnalysisTaskGammaCalo::CalculateBackground(){
           }
           fVectorJetEta.clear();
           fVectorJetPhi.clear();
+          delete backgroundCandidate;
+          backgroundCandidate = 0x0;
         }
       }
     }
