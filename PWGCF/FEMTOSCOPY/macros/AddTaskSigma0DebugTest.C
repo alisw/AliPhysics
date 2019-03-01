@@ -1,5 +1,4 @@
 AliAnalysisTaskSE *AddTaskSigma0DebugTest(bool isMC = false,
-                                          bool isHeavyIon = false,
                                           bool MomRes = false,
                                           bool etaPhiPlotsAtTPCRadii = false,
                                           TString trigger = "kINT7",
@@ -68,7 +67,7 @@ AliAnalysisTaskSE *AddTaskSigma0DebugTest(bool isMC = false,
       fCuts = new AliConversionPhotonCuts(cutnumberPhoton.Data(),
                                           cutnumberPhoton.Data());
       fCuts->SetPreSelectionCutFlag(kTRUE);
-      fCuts->SetIsHeavyIon(isHeavyIon);
+      fCuts->SetIsHeavyIon(false);
       fCuts->SetV0ReaderName(V0ReaderName);
       fCuts->SetLightOutput(runLightOutput);
       if (fCuts->InitializeCutsFromCutString(cutnumberPhoton.Data())) {
@@ -358,9 +357,7 @@ AliAnalysisTaskSE *AddTaskSigma0DebugTest(bool isMC = false,
   }
   task->SetEventCuts(evtCuts);
   task->SetV0ReaderName(V0ReaderName.Data());
-  task->SetIsHeavyIon(isHeavyIon);
   task->SetIsMC(isMC);
-  task->SetIsRun1(false);
   task->SetProtonCuts(TrackCuts);
   task->SetAntiProtonCuts(AntiTrackCuts);
   task->SetV0Cuts(v0Cuts);

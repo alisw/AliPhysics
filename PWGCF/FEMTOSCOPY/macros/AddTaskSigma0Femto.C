@@ -1,5 +1,4 @@
 AliAnalysisTaskSE *AddTaskSigma0Femto(bool isMC = false,
-                                      bool isHeavyIon = false,
                                       bool MomRes = false,
                                       bool etaPhiPlotsAtTPCRadii = false,
                                       TString trigger = "kINT7",
@@ -51,7 +50,7 @@ AliAnalysisTaskSE *AddTaskSigma0Femto(bool isMC = false,
     // 1-D Qt cut, qt < 0.1
     cutnumberPhoton = "00200008400000001280920000";
   } else if (suffix == "28") {
-    // 2-D Qt cut, qt < 0.02
+    // 2-D Qt cut, qt < 0.05
     cutnumberPhoton = "00200008400000003280920000";
   } else if (suffix == "29") {
     // psiPair < 0.2, 1-D
@@ -110,7 +109,7 @@ AliAnalysisTaskSE *AddTaskSigma0Femto(bool isMC = false,
       fCuts = new AliConversionPhotonCuts(cutnumberPhoton.Data(),
                                           cutnumberPhoton.Data());
       fCuts->SetPreSelectionCutFlag(kTRUE);
-      fCuts->SetIsHeavyIon(isHeavyIon);
+      fCuts->SetIsHeavyIon(false);
       fCuts->SetV0ReaderName(V0ReaderName);
       fCuts->SetLightOutput(runLightOutput);
       fCuts->SetFillCutHistograms("", fillHistos);
@@ -435,7 +434,6 @@ AliAnalysisTaskSE *AddTaskSigma0Femto(bool isMC = false,
   }
   task->SetEventCuts(evtCuts);
   task->SetV0ReaderName(V0ReaderName.Data());
-  task->SetIsHeavyIon(isHeavyIon);
   task->SetIsMC(isMC);
   task->SetProtonCuts(TrackCuts);
   task->SetAntiProtonCuts(AntiTrackCuts);
