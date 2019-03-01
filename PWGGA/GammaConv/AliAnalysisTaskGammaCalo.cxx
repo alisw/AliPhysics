@@ -6652,6 +6652,8 @@ void AliAnalysisTaskGammaCalo::CalculateBackground(){
                     if(!fDoLightOutput) fHistoMotherBackJetInvMassPt[fiCut]->Fill(backgroundCandidate->M(),backgroundCandidate->Pt(), tempBGCandidateWeight);
                     else fHistoMotherBackInvMassPt[fiCut]->Fill(backgroundCandidate->M(),backgroundCandidate->Pt(), tempBGCandidateWeight);
                   }
+                  delete backgroundCandidate;
+                  backgroundCandidate = 0x0;
                 }
               }
             }
