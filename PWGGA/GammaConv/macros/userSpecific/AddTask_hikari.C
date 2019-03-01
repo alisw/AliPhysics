@@ -213,6 +213,10 @@ AliAnalysisTaskGammaConvV1* AddTask_hikari(
 
     } else if (trainConfig == 400){//cut selection for pp 5 TeV 2017 ------------------------------------
       cuts.AddCutPCM("00010113", "0d200009227300008250404000", "0152103500000000"); // Standard cut for pp 5 TeV analysis VAND
+    } else if (trainConfig == 401){
+      cuts.AddCutPCM("00010113", "0d200009227300008250424000", "0152103500000000"); // Standard cut for pp 5 TeV analysis VAND Cat1
+    } else if (trainConfig == 402){
+      cuts.AddCutPCM("00010113", "0d200009227300008250454000", "0152103500000000"); // Standard cut for pp 5 TeV analysis VAND Cat23
     } else if (trainConfig == 403){
       cuts.AddCutPCM("00010113", "00200009227300008250404000", "0152103500000000"); // eta < 0.9
       cuts.AddCutPCM("00010113", "0c200009227300008250404000", "0152103500000000"); // eta < 0.85
