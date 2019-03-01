@@ -68,6 +68,8 @@ class AliAnalysisTaskTOFqaID : public AliAnalysisTaskSE {
     fOCDBLocation = cdbLocation;
     fRunNumber = runN;
   }
+  void SetVerboseMode(Bool_t verbose = kTRUE) { fVerbose = verbose; };                   // Setter for verbose flag
+  void SetUseTOFT0CalibMode(Bool_t usecalib = kTRUE) { fUseTOFT0CalibMode = usecalib; }; // Setter for TOFT0V1 calib. mode
 
   // Binning arrays
   TArrayD fVariableBinsPt;   // array of bins for pt and p
@@ -123,11 +125,13 @@ class AliAnalysisTaskTOFqaID : public AliAnalysisTaskSE {
   Int_t fnExpTimeBins;
   Int_t fnExpTimeSmallBins;
 
-  Double_t fMyTimeZeroTOF, fMyTimeZeroTOFsigma;  //timeZero by TOF recomputed
-  Int_t fMyTimeZeroTOFtracks;                    // number of tracks used to recompute TOF_T0
+  TArrayD fMyTimeZeroTOF;                        //timeZero by TOF recomputed one from not calib., the other two for calib. mode
+  TArrayD fMyTimeZeroTOFsigma;                   //timeZero sigma by TOF recomputed
+  TArrayD fMyTimeZeroTOFtracks;                  // number of tracks used to recompute TOF_T0
   Bool_t fMyTimeZeroTOFstatus;                   // Status of the computed TOF_T0 (kTRUE -> OK, kFALSE -> not OK)
   Bool_t fIsMC;                                  //flag for MC
   Bool_t fVerbose;                               //Flag for verbose mode
+  Bool_t fUseTOFT0CalibMode;                     // Flag to use AliTOFT0v1 in calibration mode and user mode
   Int_t fSelectedPdg;                            //pdg code of the selected specie (for MC only)
   Double_t fP;                                   //momentum
   Double_t fPt;                                  //transverse momentum
