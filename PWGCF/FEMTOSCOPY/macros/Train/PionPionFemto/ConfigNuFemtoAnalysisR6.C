@@ -83,6 +83,7 @@ struct MacroParams : public TNamed {
   bool eventreader_use_aux { false };
   int eventreader_filter_bit { 7 };
   bool eventreader_epvzero { true };
+  bool eventreader_vertex_shift { true };
   bool eventreader_dca_globaltrack { true };
   bool eventreader_centrality_flattening { false };
   int eventreader_use_multiplicity { AliFemtoEventReaderAOD::kCentrality };
@@ -136,6 +137,8 @@ struct MacroParams : public TNamed {
   // monte-carlo correlation functions
   bool do_trueq_cf { false };
   bool do_kt_trueq_cf { false };
+  bool do_trueqinv_cf { false };
+  bool do_kt_trueqinv_cf { false };
   bool do_trueq3d_cf { false };
   bool do_kt_trueq3d_cf { false };
   bool do_trueq3dbp_cf { false };
@@ -151,6 +154,21 @@ struct MacroParams : public TNamed {
   bool do_kt_detadphistar_cf { false };
   double phistar_radius { 1.2 };
   UInt_t detadphistar_nbins { 144 };
+
+  bool RequestsMonteCarloData() const
+    {
+      return do_trueq_cf ||
+             do_kt_trueq_cf ||
+             do_trueqinv_cf ||
+             do_kt_trueqinv_cf ||
+             do_trueq3d_cf ||
+             do_kt_trueq3d_cf ||
+             do_trueq3dbp_cf ||
+             do_kt_trueq3dbp_cf ||
+             do_truedetadphi_cf ||
+             do_kt_truedetadphi_cf;
+    }
+
   // ClassDef(MacroParams, 1);
 };
 
@@ -199,7 +217,10 @@ ConfigFemtoAnalysis(const TString& param_str="")
   BuildConfiguration(param_str, analysis_config, cut_config, macro_config);
 
   // Update Configurations
-  macro_config.do_kt_trueq3d_cf &= analysis_config.is_mc_analysis;
+  if (macro_config.RequestsMonteCarloData() && !analysis_config.is_mc_analysis) {
+    std::cerr << "MonteCarlo correlation function requested when analysis is *not* MC\n";
+    return nullptr;
+  }
 
   // Begin to build the manager and analyses
   AliFemtoManager *manager = new AliFemtoManager();
@@ -214,7 +235,7 @@ ConfigFemtoAnalysis(const TString& param_str="")
     rdr->SetUseMultiplicity(multest);
     rdr->SetCentralityFlattening(macro_config.eventreader_centrality_flattening);
     rdr->SetReadV0(0);
-    // rdr->SetPrimaryVertexCorrectionTPCPoints(kTRUE);
+    rdr->SetPrimaryVertexCorrectionTPCPoints(macro_config.eventreader_vertex_shift);
     rdr->SetDCAglobalTrack(macro_config.eventreader_dca_globaltrack);
     rdr->SetReadMC(analysis_config.is_mc_analysis);
     manager->SetEventReader(rdr);
@@ -369,12 +390,30 @@ ConfigFemtoAnalysis(const TString& param_str="")
       }
 
       if (macro_config.do_trueq_cf) {
-        AliFemtoModelCorrFctn *trueq_cf = new AliFemtoModelCorrFctnTrueQ("_MC_CF", QINV_BIN_COUNT, QINV_MIN_VAL, QINV_MAX_VAL);
+        AliFemtoModelCorrFctn *trueq_cf = new AliFemtoModelCorrFctnTrueQ("CF", QINV_BIN_COUNT, QINV_MIN_VAL, QINV_MAX_VAL);
         trueq_cf->ConnectToManager(model_manager);
         analysis->AddCorrFctn(trueq_cf);
       }
 
       if (macro_config.do_kt_trueq_cf) {
+        AliFemtoModelCorrFctn *cf = new AliFemtoModelCorrFctnTrueQ("", QINV_BIN_COUNT, QINV_MIN_VAL, QINV_MAX_VAL);
+        auto *kt_qinv_cfs = new AliFemtoKtBinnedCorrFunc("KT_TrueQ", cf);
+
+        for (size_t kt_idx=0; kt_idx < macro_config.kt_ranges.size(); kt_idx += 2) {
+          float low = macro_config.kt_ranges[kt_idx],
+                high = macro_config.kt_ranges[kt_idx+1];
+          kt_qinv_cfs->AddKtRange(low, high);
+        }
+        analysis->AddCorrFctn(kt_qinv_cfs);
+      }
+
+      if (macro_config.do_trueqinv_cf) {
+        AliFemtoModelCorrFctn *trueq_cf = new AliFemtoModelCorrFctnQinv("Qinv", QINV_BIN_COUNT, QINV_MIN_VAL, QINV_MAX_VAL);
+        trueq_cf->ConnectToManager(model_manager);
+        analysis->AddCorrFctn(trueq_cf);
+      }
+
+      if (macro_config.do_kt_trueqinv_cf) {
         auto *qinv_cf = new AliFemtoModelCorrFctnQinv("", QINV_BIN_COUNT, QINV_MIN_VAL, QINV_MAX_VAL);
         qinv_cf->ConnectToManager(model_manager);
 
@@ -387,7 +426,6 @@ ConfigFemtoAnalysis(const TString& param_str="")
         }
         analysis->AddCorrFctn(kt_qinv_cfs);
       }
-
 
       if (macro_config.do_q3d_cf) {
         analysis->AddCorrFctn(new AliFemtoCorrFctn3DLCMSSym("Q3D", macro_config.q3d_bin_count, macro_config.q3d_maxq));
