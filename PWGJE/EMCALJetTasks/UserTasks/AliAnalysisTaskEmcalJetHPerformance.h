@@ -13,6 +13,7 @@
 
 class AliJetContainer;
 class AliEmcalJet;
+class AliVCaloCells;
 #include "THistManager.h"
 #include "AliYAMLConfiguration.h"
 #include "AliAnalysisTaskEmcalJet.h"
@@ -79,6 +80,11 @@ class AliAnalysisTaskEmcalJetHPerformance : public AliAnalysisTaskEmcalJet {
   void SetupQAHists();
   void QAHists();
   void FillQAHists();
+  // Cell QA
+  void SetupCellQAHistsWithPrefix(const std::string & prefix);
+  void SetupCellQAHists();
+  void FillCellQAHists(const std::string & prefix, AliVCaloCells * cells);
+  void FillCellQAHists();
 
   // Response matrix functions
   void SetupResponseMatrixHists();
