@@ -23,5 +23,5 @@
 #pragma link C++ class AliAnalysisTaskTransTask+;
 #pragma link C++ class AliAnalysisTaskTOFTrigger+;
 #pragma link C++ class AliAnalysisTaskZDCTree+;
-
+#pragma link C++ class AliAnalysisTaskUPCPhiTest+;
 #endif
