@@ -794,7 +794,7 @@ void AliAnalysisTaskXi1530::FillTracks(){
         // Systematic study loop.
         // sys = 0 -> Default cut option
         // for more details, please check "SysCheck" in header file.
-        std::cout << "TEST sys: " << SysCheck.at(sys)  << std::endl;
+        
         for (UInt_t i = 0; i < ncascade; i++) {
             Xicandidate = ((AliESDEvent*)fEvt)->GetCascade(goodcascadeindices[i]);
             if(!Xicandidate) continue;
