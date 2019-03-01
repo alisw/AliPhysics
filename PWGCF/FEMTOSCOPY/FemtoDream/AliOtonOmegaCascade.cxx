@@ -196,13 +196,10 @@ void AliOtonOmegaCascade::SetCascade(AliESDEvent *evt, AliMCEvent *mcEvent,
   int idxBachFromCascade = casc->GetBindex();
 
   bool IsOmegaTrack = true;
-cout<<"setting pos"<<endl;
   AliESDtrack *esdCascadePos = evt->GetTrack(idxPosFromV0Dghter);
   fPosDaug->SetTrack(esdCascadePos,mcEvent,-1,false,IsOmegaTrack);
-cout<<"setting neg"<<endl;
   AliESDtrack *esdCascadeNeg = evt->GetTrack(idxNegFromV0Dghter);
   fNegDaug->SetTrack(esdCascadeNeg,mcEvent,-1,false,IsOmegaTrack);
-cout<<"setting bach"<<endl;
   AliESDtrack *esdCascadeBach = evt->GetTrack(idxBachFromCascade);
   fBach->SetTrack(esdCascadeBach,mcEvent,-1,false,IsOmegaTrack);
 
