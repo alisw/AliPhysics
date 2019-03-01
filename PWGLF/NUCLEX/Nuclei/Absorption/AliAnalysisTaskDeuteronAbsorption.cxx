@@ -168,19 +168,12 @@ void AliAnalysisTaskDeuteronAbsorption::UserCreateOutputObjects()
 
   for (int iFunction = 0; iFunction < 4; ++iFunction)
   {
-    fTRDboundariesPos[iFunction] = new TF1(Form("f%i", iFunction), "[0]-exp([1]*pow(x,[2])+[3])", 0.2, 10);
-    for (int iParam = 0; iParam < 4; ++iParam)
-    {
-      fTRDboundariesPos[iFunction]->SetParameter(iParam, fgkPhiParamPos[iFunction][iParam]);
-    }
-  }
-
-  for (int iFunction = 0; iFunction < 4; ++iFunction)
-  {
-    fTRDboundariesNeg[iFunction] = new TF1(Form("f%i", iFunction), "[0]-exp([1]*pow(x,[2])+[3])", 0.2, 10);
+    fTRDboundariesNeg[iFunction] = new TF1(Form("fNeg%i", iFunction), "[0]-exp([1]*pow(x,[2])+[3])", 0.2, 10);
+    fTRDboundariesPos[iFunction] = new TF1(Form("fPos%i", iFunction), "[0]-exp([1]*pow(x,[2])+[3])", 0.2, 10);
     for (int iParam = 0; iParam < 4; ++iParam)
     {
       fTRDboundariesNeg[iFunction]->SetParameter(iParam, fgkPhiParamNeg[iFunction][iParam]);
+      fTRDboundariesPos[iFunction]->SetParameter(iParam, fgkPhiParamPos[iFunction][iParam]);
     }
   }
 }

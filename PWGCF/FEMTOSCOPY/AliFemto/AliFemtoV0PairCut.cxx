@@ -59,39 +59,6 @@ AliFemtoV0PairCut &AliFemtoV0PairCut::operator=(const AliFemtoV0PairCut &cut)
   return *this;
 }
 
-inline
-bool is_unset_vector(const AliFemtoThreeVector& v)
-{
-  return v.x() <= -9999.0 || v.y() <= -9999.0 ||  v.z() <= -9999.0;
-}
-
-inline
-double calculate_avg_separation_daughters(const AliFemtoV0* V1,
-                                          const bool use_pos_daughter_1,
-                                          const AliFemtoV0* V2,
-                                          const bool use_pos_daughter_2)
-{
-  int counter = 0;
-  double avgSep = 0.0;
-
-  for (int i = 0; i < 8; i++) {
-    const AliFemtoThreeVector p1 = use_pos_daughter_1
-      ? V1->NominalTpcPointPos(i)
-      : V1->NominalTpcPointNeg(i),
-
-      p2 = use_pos_daughter_2
-      ? V2->NominalTpcPointPos(i)
-      : V2->NominalTpcPointNeg(i);
-    if (is_unset_vector(p1) || is_unset_vector(p2)) {
-      continue;
-    }
-    avgSep += (p1 - p2).Mag();
-    counter++;
-  }
-  if(counter==0) return 0;
-  return avgSep / counter;
-}
-
 //__________________
 bool AliFemtoV0PairCut::Pass(const AliFemtoPair *pair)
 {
@@ -99,7 +66,7 @@ bool AliFemtoV0PairCut::Pass(const AliFemtoPair *pair)
                    *V0_2 = pair->Track2()->V0();
 
   // Assert pair is of two V0 particles
-  if (V0_1 == NULL || V0_2 == NULL) {
+  if (V0_1 == nullptr || V0_2 == nullptr) {
     return false;
   }
 
@@ -125,26 +92,30 @@ bool AliFemtoV0PairCut::Pass(const AliFemtoPair *pair)
   }
 
   // Find average separations between tracks
-  double avgSep = 0.0;
+  double avgSep_pp = 0.0,
+         avgSep_pn = 0.0,
+         avgSep_np = 0.0,
+         avgSep_nn = 0.0;
 
-  avgSep = calculate_avg_separation_daughters(V0_1, true, V0_2, true);
+  AliFemtoPair::CalcAvgSepV0V0(*V0_1, *V0_2,
+                               avgSep_nn,
+                               avgSep_np,
+                               avgSep_pn,
+                               avgSep_pp);
 
-  if (avgSep < fMinAvgSepPosPos) {
+  if (avgSep_pp < fMinAvgSepPosPos) {
     return false;
   }
 
-  avgSep = calculate_avg_separation_daughters(V0_1, true, V0_2, false);
-  if (avgSep < fMinAvgSepPosNeg) {
+  if (avgSep_pn < fMinAvgSepPosNeg) {
     return false;
   }
 
-  avgSep = calculate_avg_separation_daughters(V0_1, false, V0_2, true);
-  if (avgSep < fMinAvgSepNegPos) {
+  if (avgSep_np < fMinAvgSepNegPos) {
     return false;
   }
 
-  avgSep = calculate_avg_separation_daughters(V0_1, false, V0_2, false);
-  if (avgSep < fMinAvgSepNegNeg) {
+  if (avgSep_nn < fMinAvgSepNegNeg) {
     return false;
   }
 
@@ -176,24 +147,22 @@ TList *AliFemtoV0PairCut::ListSettings()
   TList *tListSetttings = new TList();
 
   // The TString format patterns (F is float, I is integer, L is long)
-  const char ptrnF[] = "AliFemtoV0PairCut.%s=%f",
-             ptrnI[] = "AliFemtoV0PairCut.%s=%d",
-             ptrnL[] = "AliFemtoV0PairCut.%s=%ld";
+  TString prefix = "AliFemtoV0PairCut.";
 
   tListSetttings->AddVector(
-    new TObjString(Form(ptrnF, "V0max", fV0Max)),
-    new TObjString(Form(ptrnF, "sharefractionmax", fShareFractionMax)),
-    new TObjString(Form(ptrnF, "TPCmin", fDTPCMin)),
-    new TObjString(Form(ptrnF, "TPCexitmin", fDTPCExitMin)),
-    new TObjString(Form(ptrnI, "datatype", fDataType)),
+    new TObjString(prefix + Form("V0max=%g", fV0Max)),
+    new TObjString(prefix + Form("sharefractionmax=%g", fShareFractionMax)),
+    new TObjString(prefix + Form("TPCmin=%g", fDTPCMin)),
+    new TObjString(prefix + Form("TPCexitmin=%g", fDTPCExitMin)),
+    new TObjString(prefix + Form("datatype=%d", fDataType)),
 
-    new TObjString(Form(ptrnF, "minAvgSepPosPos", fMinAvgSepPosPos)),
-    new TObjString(Form(ptrnF, "minAvgSepPosNeg", fMinAvgSepPosNeg)),
-    new TObjString(Form(ptrnF, "minAvgSepNegPos", fMinAvgSepNegPos)),
-    new TObjString(Form(ptrnF, "minAvgSepNegNeg", fMinAvgSepNegNeg)),
+    new TObjString(prefix + Form("minAvgSepPosPos=%g", fMinAvgSepPosPos)),
+    new TObjString(prefix + Form("minAvgSepPosNeg=%g", fMinAvgSepPosNeg)),
+    new TObjString(prefix + Form("minAvgSepNegPos=%g", fMinAvgSepNegPos)),
+    new TObjString(prefix + Form("minAvgSepNegNeg=%g", fMinAvgSepNegNeg)),
 
-    new TObjString(Form(ptrnL, "pairs_passed", fNPairsPassed)),
-    new TObjString(Form(ptrnL, "pairs_failed", fNPairsFailed)),
+    new TObjString(prefix + Form("pairs_passed=%ld", fNPairsPassed)),
+    new TObjString(prefix + Form("pairs_failed=%ld", fNPairsFailed)),
 
     nullptr);
 

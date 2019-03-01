@@ -25,6 +25,7 @@
 
 #include "AliFemtoCorrFctnKStar.h"
 #include "AliFemtoCorrFctnDEtaDPhiSimple.h"
+#include "AliFemtoCorrFctnDEtaDPhiStar.h"
 
 #include "AliFemtoAvgSepCorrFctn.h"
 #include "AliFemtoCorrFctnDPhiStarDEta.h"
@@ -32,6 +33,7 @@
 #include "AliFemtoModelWeightGeneratorBasic.h"
 #include "AliFemtoModelWeightGeneratorLednicky.h"
 
+#include "AliFemtoModelCorrFctnQinv.h"
 #include "AliFemtoModelCorrFctnDEtaDPhiStar.h"
 #include "AliFemtoModelCorrFctnDEtaDPhiAK.h"
 #include "AliFemtoCorrFctn3DLCMSPosQuad.h"
@@ -145,6 +147,10 @@ struct MacroParams : public TNamed {
   bool do_detadphi_simple_cf { false };
   bool do_kt_detadphi_simple_cf { false };
 
+  bool do_detadphistar_cf { false };
+  bool do_kt_detadphistar_cf { false };
+  double phistar_radius { 1.2 };
+  UInt_t detadphistar_nbins { 144 };
   // ClassDef(MacroParams, 1);
 };
 
@@ -367,6 +373,22 @@ ConfigFemtoAnalysis(const TString& param_str="")
         trueq_cf->ConnectToManager(model_manager);
         analysis->AddCorrFctn(trueq_cf);
       }
+
+      if (macro_config.do_kt_trueq_cf) {
+        auto *qinv_cf = new AliFemtoModelCorrFctnQinv("", QINV_BIN_COUNT, QINV_MIN_VAL, QINV_MAX_VAL);
+        qinv_cf->ConnectToManager(model_manager);
+
+        auto *kt_qinv_cfs = new AliFemtoKtBinnedCorrFunc("KT_TrueQinv", qinv_cf);
+
+        for (size_t kt_idx=0; kt_idx < macro_config.kt_ranges.size(); kt_idx += 2) {
+          float low = macro_config.kt_ranges[kt_idx],
+                high = macro_config.kt_ranges[kt_idx+1];
+          kt_qinv_cfs->AddKtRange(low, high);
+        }
+        analysis->AddCorrFctn(kt_qinv_cfs);
+      }
+
+
       if (macro_config.do_q3d_cf) {
         analysis->AddCorrFctn(new AliFemtoCorrFctn3DLCMSSym("Q3D", macro_config.q3d_bin_count, macro_config.q3d_maxq));
       }
@@ -557,6 +579,34 @@ ConfigFemtoAnalysis(const TString& param_str="")
           kt_detadphi_simple_cfs->AddKtRange(low, high);
         }
         analysis->AddCorrFctn(kt_detadphi_simple_cfs);
+      }
+
+      if (macro_config.do_detadphistar_cf) {
+        auto *starcf = AliFemtoCorrFctnDEtaDPhiStar::Params()
+                      .Suffix("DEtaDPhiStar")
+                      .Radius(macro_config.phistar_radius)
+                      .NbinsEta(macro_config.detadphistar_nbins)
+                      .NbinsPhi(macro_config.detadphistar_nbins)
+                      .into_ptr();
+        analysis->AddCorrFctn(starcf);
+      }
+
+      if (macro_config.do_kt_detadphistar_cf) {
+        auto *kt_starcf = AliFemtoCorrFctnDEtaDPhiStar::Params()
+                         .Suffix("")
+                         .Radius(macro_config.phistar_radius)
+                         .NbinsEta(macro_config.detadphistar_nbins)
+                         .NbinsPhi(macro_config.detadphistar_nbins)
+                         .into_ptr();
+
+        AliFemtoKtBinnedCorrFunc *kt_detadphi_star_cfs = new AliFemtoKtBinnedCorrFunc("KT_DEtaDPhiStar", kt_starcf);
+
+        for (size_t kt_idx=0; kt_idx < macro_config.kt_ranges.size(); kt_idx += 2) {
+          float low = macro_config.kt_ranges[kt_idx],
+                high = macro_config.kt_ranges[kt_idx+1];
+          kt_detadphi_star_cfs->AddKtRange(low, high);
+        }
+        analysis->AddCorrFctn(kt_detadphi_star_cfs);
       }
 
       if (macro_config.do_ylm_cf) {

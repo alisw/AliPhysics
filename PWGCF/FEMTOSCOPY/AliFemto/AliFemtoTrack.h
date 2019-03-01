@@ -57,6 +57,12 @@ public:
   float ITSchi2() const;
   int   ITSncls() const;
   float TPCchi2() const;
+
+  /// Calculate reduced chi-squared (χ²/NDoF) for TPC
+  ///
+  /// Calculation comes from AliAODTrack::GetTPCchi2perNDF
+  ///
+  float TPCchi2perNDF() const;
   int   TPCncls() const;
   short TPCnclsF() const;
   float TPCsignal() const;
@@ -349,7 +355,7 @@ public:
   short fTPCnclsF;        ///< number of findable clusters in the TPC
   float fTPCsignal;       ///< dEdx TPC value
   short fTPCsignalN;      ///< number of points used for dEdx
-  float fTPCsignalS;      ///< RMS of dEdx measurement
+  float fTPCsignalS;      ///< RMS of dEdx measurement (not used in AOD files)
 
   float fVTOF;            ///< v=length/TOF
   float fNSigmaTPCPi;     ///< nsigma TPC for pion
@@ -435,9 +441,14 @@ inline float AliFemtoTrack::PidProbPion() const {return fPidProbPion;}
 inline float AliFemtoTrack::PidProbKaon() const {return fPidProbKaon;}
 inline float AliFemtoTrack::PidProbProton() const {return fPidProbProton;}
 inline float AliFemtoTrack::PidProbMuon() const {return fPidProbMuon;}
-inline int AliFemtoTrack::Multiplicity() const{ return fMultiplicity;}
-inline double AliFemtoTrack::Zvtx() const{  return fZvtx;}
+inline int AliFemtoTrack::Multiplicity() const { return fMultiplicity;}
+inline double AliFemtoTrack::Zvtx() const { return fZvtx;}
 
+inline float AliFemtoTrack::TPCchi2perNDF() const
+{
+  Int_t ndof = 2 * TPCncls() - 5;
+  return ndof > 0 ? fTPCchi2 / ndof : 9999;
+}
 
 
 #endif

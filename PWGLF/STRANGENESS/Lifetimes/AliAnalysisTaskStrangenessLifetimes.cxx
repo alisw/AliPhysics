@@ -492,22 +492,12 @@ void AliAnalysisTaskStrangenessLifetimes::UserExec(Option_t *)
 
     bool isHyperCandidate = nSigmaNegAbsHe3 < 5 || nSigmaPosAbsHe3 < 5;
     double v0Pt = v0->Pt();
-
     double masses[3]{0., 0., 0.};
     double absRapidities[3]{0., 0., 0.};
+    
     for (int iPdg = 0; iPdg < 3; ++iPdg)
     {
-      double alpha;
-      if (iPdg < 2)
-         alpha = v0->AlphaV0();
-      else
-      {
-        if (nSigmaPosHe3 <= 5)
-          alpha= 1;
-        else
-          alpha = -1;
-      }
-      auto lvector = GetV0LorentzVector(pdgCodes[iPdg], nTrack, pTrack, alpha);
+      auto lvector = GetV0LorentzVector(pdgCodes[iPdg], nTrack, pTrack, v0->AlphaV0());
       masses[iPdg] = lvector.M();
       absRapidities[iPdg] = std::abs(lvector.Rapidity());
       if (iPdg == 2)
@@ -573,14 +563,14 @@ void AliAnalysisTaskStrangenessLifetimes::UserExec(Option_t *)
       continue;
 
     // Extra track quality: min track length
-   //  float posTrackLength = -1;
-   //  float negTrackLength = -1;
-   // if (pTrack->GetInnerParam())
-   //   posTrackLength = pTrack->GetLengthInActiveZone(
-   //       1, 2.0, 220.0, esdEvent->GetMagneticField());
-   // if (nTrack->GetInnerParam())
-   //   negTrackLength = nTrack->GetLengthInActiveZone(
-   //       1, 2.0, 220.0, esdEvent->GetMagneticField());
+    //  float posTrackLength = -1;
+    //  float negTrackLength = -1;
+    // if (pTrack->GetInnerParam())
+    //   posTrackLength = pTrack->GetLengthInActiveZone(
+    //       1, 2.0, 220.0, esdEvent->GetMagneticField());
+    // if (nTrack->GetInnerParam())
+    //   negTrackLength = nTrack->GetLengthInActiveZone(
+    //       1, 2.0, 220.0, esdEvent->GetMagneticField());
 
     //float smallestTrackLength =
     //    (posTrackLength < negTrackLength) ? posTrackLength : negTrackLength;
@@ -763,8 +753,8 @@ LVector_t AliAnalysisTaskStrangenessLifetimes::GetV0LorentzVector(int pdg, AliES
     double posMom[3], negMom[3];
     posTrack->GetPxPyPz(posMom);
     negTrack->GetPxPyPz(negMom);
-    LVector_t posLvec{posMom[0] * posCharge, posMom[1] * posCharge, posCharge*posMom[2], posMass};
-    LVector_t negLvec{negMom[0] * negCharge, negMom[1] * negCharge, negCharge*negMom[2], negMass};
+    LVector_t posLvec{posMom[0] * posCharge, posMom[1] * posCharge, posCharge * posMom[2], posMass};
+    LVector_t negLvec{negMom[0] * negCharge, negMom[1] * negCharge, negCharge * negMom[2], negMass};
     posLvec += negLvec;
     return posLvec;
   }

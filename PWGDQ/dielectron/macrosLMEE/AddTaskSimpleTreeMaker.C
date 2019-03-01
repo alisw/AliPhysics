@@ -93,7 +93,7 @@ AliAnalysisTaskSimpleTreeMaker *AddTaskSimpleTreeMaker(TString taskName    = "ML
 		}
     //Add event filter
 		task->SelectCollisionCandidates(AliVEvent::kINT7);
-    task->SetupEventCuts(cutLib->GetEventCuts(LMEECutLib::kAllSpecies));
+    task->SetupEventCuts(cutLib->GetEventCuts());
 		task->SetupTrackCuts(cutLib->GetTrackCuts(LMEECutLib::kTTreeCuts, LMEECutLib::kTTreeCuts));
 
     // ==========================================================================

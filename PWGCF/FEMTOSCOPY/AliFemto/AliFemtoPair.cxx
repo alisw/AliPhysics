@@ -52,6 +52,7 @@ AliFemtoPair::AliFemtoPair():
 {
   // Default constructor
   SetDefaultHalfFieldMergingPar();
+  std::fill_n(fAverageSeparations, 4, NAN);
 }
 
 AliFemtoPair::AliFemtoPair(AliFemtoParticle* a, AliFemtoParticle* b):
@@ -90,6 +91,7 @@ AliFemtoPair::AliFemtoPair(AliFemtoParticle* a, AliFemtoParticle* b):
 {
   // Construct a pair from two particles
   SetDefaultHalfFieldMergingPar();
+  std::fill_n(fAverageSeparations, 4, NAN);
 }
 
 void AliFemtoPair::SetDefaultHalfFieldMergingPar()
@@ -159,6 +161,7 @@ AliFemtoPair::AliFemtoPair(const AliFemtoPair &aPair):
 {
   // Copy constructor
   /* no-op */
+  std::fill_n(fAverageSeparations, 4, NAN);
 }
 
 AliFemtoPair& AliFemtoPair::operator=(const AliFemtoPair &aPair)
@@ -209,6 +212,8 @@ AliFemtoPair& AliFemtoPair::operator=(const AliFemtoPair &aPair)
   fMergingParNotCalculatedV0NegV0Neg = aPair.fMergingParNotCalculatedV0NegV0Neg;
   fFracOfMergedRowV0NegV0Neg = aPair.fFracOfMergedRowV0NegV0Neg;
   fClosestRowAtDCAV0NegV0Neg = aPair.fClosestRowAtDCAV0NegV0Neg;
+
+  std::fill_n(fAverageSeparations, 4, NAN);
 
   return *this;
 }
@@ -730,8 +735,10 @@ double AliFemtoPair::CVKFlipped() const
 double AliFemtoPair::PInv() const
 {
   // invariant total momentum
-  AliFemtoLorentzVector tP1 = fTrack1->FourMomentum();
-  AliFemtoLorentzVector tP2 = fTrack2->FourMomentum();
+  const AliFemtoLorentzVector
+    &tP1 = fTrack1->FourMomentum(),
+    &tP2 = fTrack2->FourMomentum();
+
   double tP = (tP1.px()+tP2.px())*(tP1.px()+tP2.px())+
               (tP1.py()+tP2.py())*(tP1.py()+tP2.py())+
               (tP1.pz()+tP2.pz())*(tP1.pz()+tP2.pz())-
@@ -757,44 +764,39 @@ void AliFemtoPair::CalcNonIdPar() const
   // anything for non-identical particles
   fNonIdParNotCalculated=0;
 
-  const AliFemtoLorentzVector &p1 = fTrack1->FourMomentum();
-  double px1 = p1.x();
-  double py1 = p1.y();
-  double pz1 = p1.z();
-  double pE1  = p1.e();
-  double tParticle1Mass;
-  if((pE1*pE1 - px1*px1 - py1*py1 - pz1*pz1)>0)
-    tParticle1Mass = ::sqrt(pE1*pE1 - px1*px1 - py1*py1 - pz1*pz1);
-  else
-    tParticle1Mass = 0;
+  const AliFemtoLorentzVector
+    &p1 = fTrack1->FourMomentum(),
+    &p2 = fTrack2->FourMomentum();
 
-  const AliFemtoLorentzVector &p2 = fTrack1->FourMomentum();
-  double px2 = p2.x();
-  double py2 = p2.y();
-  double pz2 = p2.z();
-  double pE2  = p2.e();
-  double tParticle2Mass;
-  if((pE2*pE2 - px2*px2 - py2*py2 - pz2*pz2)>0)
-    tParticle2Mass = ::sqrt(pE2*pE2 - px2*px2 - py2*py2 - pz2*pz2);
-  else
-    tParticle2Mass = 0;
+  const double
+    px1 = p1.x(),
+    py1 = p1.y(),
+    pz1 = p1.z(),
+    pE1  = p1.e(),
+    mass1_sqrd = std::max({0.0, p1.m2()}),
 
-  double tPx = px1+px2;
-  double tPy = py1+py2;
-  double tPz = pz1+pz2;
-  double tPE = pE1+pE2;
+    px2 = p2.x(),
+    py2 = p2.y(),
+    pz2 = p2.z(),
+    pE2  = p2.e(),
+    mass2_sqrd = std::max({0.0, p2.m2()}),
+
+    tPx = px1 + px2,
+    tPy = py1 + py2,
+    tPz = pz1 + pz2,
+    tPE = pE1 + pE2;
 
   double tPtrans = tPx*tPx + tPy*tPy;
   double tMtrans = tPE*tPE - tPz*tPz;
-  double tPinv =   ::sqrt(tMtrans - tPtrans);
+  double tPinv = ::sqrt(tMtrans - tPtrans);
   tMtrans = ::sqrt(tMtrans);
   tPtrans = ::sqrt(tPtrans);
 
   double tQinvL = (pE1-pE2)*(pE1-pE2) - (px1-px2)*(px1-px2) -
     (py1-py2)*(py1-py2) - (pz1-pz2)*(pz1-pz2);
 
-  double tQ = (tParticle1Mass*tParticle1Mass - tParticle2Mass*tParticle2Mass)/tPinv;
-  tQ = sqrt ( tQ*tQ - tQinvL);
+  double tQ = (mass1_sqrd - mass2_sqrd)/tPinv;
+  tQ = ::sqrt( tQ*tQ - tQinvL);
 
   fKStarCalc = tQ/2;
 
@@ -825,6 +827,221 @@ void AliFemtoPair::CalcNonIdPar() const
   fDKOut  = px1C;
 
   fCVK = (fDKOut*tPtrans + fDKLong*tPz)/fKStarCalc/::sqrt(tPtrans*tPtrans+tPz*tPz);
+}
+
+
+static double _calc_avgsep_mean(double sep, int count)
+{
+  return __builtin_expect(count != 0, 1)
+       ? sep / count
+       : -1.0;
+}
+
+double
+AliFemtoPair::CalcAvgSepTracks(const AliFemtoTrack &t1, const AliFemtoTrack &t2)
+{
+  double sep = 0.0;
+  int count = 0;
+
+  for (int i=0; i < 9; ++i) {
+    const auto &p1 = t1.NominalTpcPoint(i),
+               &p2 = t2.NominalTpcPoint(i);
+
+    if (IsPointUnset(p1) || IsPointUnset(p2)) {
+      continue;
+    }
+
+    sep += (p1 - p2).Mag();
+    count++;
+  }
+
+  return _calc_avgsep_mean(sep, count);
+}
+
+// std::tuple<double, double>
+//AliFemtoPair::CalcAvgSepTrackV0(const AliFemtoTrack &trk,
+//                                const AliFemtoV0 &v0)
+void
+AliFemtoPair::CalcAvgSepTrackV0(const AliFemtoTrack &trk,
+                                const AliFemtoV0 &v0,
+                                double &avgsep_neg,
+                                double &avgsep_pos)
+{
+  double sep_neg = 0.0,
+         sep_pos = 0.0;
+  int count_neg = 0,
+      count_pos = 0;
+
+  for (int i=0; i < 9; ++i) {
+    const auto &tpt = trk.NominalTpcPoint(i),
+               &npt = v0.NominalTpcPointNeg(i),
+               &ppt = v0.NominalTpcPointPos(i);
+
+    if (IsPointUnset(tpt)) {
+      continue;
+    }
+    if (!IsPointUnset(npt)) {
+      sep_neg += (tpt - npt).Mag();
+      count_neg++;
+    }
+    if (!IsPointUnset(npt)) {
+      sep_pos += (tpt - ppt).Mag();
+      count_pos++;
+    }
+  }
+
+  avgsep_neg = _calc_avgsep_mean(sep_neg, count_neg);
+  avgsep_pos = _calc_avgsep_mean(sep_pos, count_pos);
+
+  // return std::make_tuple(avgsep_neg, avgsep_pos);
+}
+
+// std::tuple<double, double, double, double>
+void
+AliFemtoPair::CalcAvgSepV0V0(const AliFemtoV0 &v1,
+                             const AliFemtoV0 &v2,
+                             double &avgsep_nn,
+                             double &avgsep_np,
+                             double &avgsep_pn,
+                             double &avgsep_pp)
+{
+  double sep_nn = 0.0,
+         sep_pn = 0.0,
+         sep_np = 0.0,
+         sep_pp = 0.0;
+
+  int count_nn = 0,
+      count_pn = 0,
+      count_np = 0,
+      count_pp = 0;
+
+  for (int i=0; i < 9; ++i) {
+    const auto &n1 = v1.NominalTpcPointNeg(i),
+               &p1 = v1.NominalTpcPointPos(i),
+               &n2 = v2.NominalTpcPointNeg(i),
+               &p2 = v2.NominalTpcPointPos(i);
+
+    if (!IsPointUnset(n1)) {
+      if (!IsPointUnset(n2)) {
+        sep_nn += (n1 - n2).Mag();
+        count_nn++;
+      }
+      if (!IsPointUnset(p2)) {
+        sep_np += (n1 - p2).Mag();
+        count_np++;
+      }
+    }
+
+    if (!IsPointUnset(p1)) {
+      if (!IsPointUnset(n2)) {
+        sep_pn += (p1 - n2).Mag();
+        count_pn++;
+      }
+      if (!IsPointUnset(p2)) {
+        sep_pp += (p1 - p2).Mag();
+        count_pp++;
+      }
+    }
+  }
+
+  avgsep_nn = _calc_avgsep_mean(sep_nn, count_nn);
+  avgsep_np = _calc_avgsep_mean(sep_np, count_np);
+  avgsep_pn = _calc_avgsep_mean(sep_pn, count_pn);
+  avgsep_pp = _calc_avgsep_mean(sep_pp, count_pp);
+
+  // return std::make_tuple(avgsep_nn,
+  //                        avgsep_np,
+  //                        avgsep_pn,
+  //                        avgsep_pp);
+}
+
+
+double
+AliFemtoPair::NominalTpcAverageSeparationTracks() const
+{
+  if (std::isnan(fAverageSeparations[0])) {
+    fAverageSeparations[0] = CalcAvgSepTracks(*fTrack1->Track(), *fTrack2->Track());
+  }
+  return fAverageSeparations[0];
+}
+
+void AliFemtoPair::FillCacheAvgSepTrackV0() const
+{
+  const AliFemtoTrack *trk = fTrack1->Track() ?: fTrack2->Track();
+  const AliFemtoV0 *v0 = fTrack2->V0() ?: fTrack1->V0();
+
+  CalcAvgSepTrackV0(*trk, *v0,
+                    fAverageSeparations[0],
+                    fAverageSeparations[1]);
+}
+
+void AliFemtoPair::FillCacheAvgSepV0V0() const
+{
+  CalcAvgSepV0V0(*fTrack1->V0(),
+                 *fTrack2->V0(),
+                 fAverageSeparations[0],
+                 fAverageSeparations[1],
+                 fAverageSeparations[2],
+                 fAverageSeparations[3]);
+}
+
+
+double
+AliFemtoPair::NominalTpcAverageSeparationTrackV0Neg() const
+{
+  if (std::isnan(fAverageSeparations[1])) {
+    FillCacheAvgSepTrackV0();
+  }
+  return fAverageSeparations[0];
+}
+
+double
+AliFemtoPair::NominalTpcAverageSeparationTrackV0Pos() const
+{
+  if (std::isnan(fAverageSeparations[1])) {
+    FillCacheAvgSepTrackV0();
+  }
+  return fAverageSeparations[1];
+}
+
+double
+AliFemtoPair::NominalTpcAverageSeparationV0NegV0Neg() const
+{
+  if (std::isnan(fAverageSeparations[3])) {
+    FillCacheAvgSepV0V0();
+  }
+
+  return fAverageSeparations[0];
+}
+
+double
+AliFemtoPair::NominalTpcAverageSeparationV0NegV0Pos() const
+{
+  if (std::isnan(fAverageSeparations[3])) {
+    FillCacheAvgSepV0V0();
+  }
+
+  return fAverageSeparations[1];
+}
+
+double
+AliFemtoPair::NominalTpcAverageSeparationV0PosV0Neg() const
+{
+  if (std::isnan(fAverageSeparations[3])) {
+    FillCacheAvgSepV0V0();
+  }
+
+  return fAverageSeparations[2];
+}
+
+double
+AliFemtoPair::NominalTpcAverageSeparationV0PosV0Pos() const
+{
+  if (std::isnan(fAverageSeparations[3])) {
+    FillCacheAvgSepV0V0();
+  }
+
+  return fAverageSeparations[3];
 }
 
 

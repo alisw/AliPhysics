@@ -230,8 +230,8 @@ static TH3D LMEECutLib::SetEtaCorrectionTPCTTree( Int_t corrXdim, Int_t corrYdim
   else {
     std::cout << "Correction loaded locally" << std::endl;
   }
-  TH3D* mean  = dynamic_cast<TH3D*>(recalFile->Get("sum_mean_correction"));
-  TH3D* width = dynamic_cast<TH3D*>(recalFile->Get("sum_width_correction"));
+  TH3D* mean  = dynamic_cast<TH3D*>(inFile->Get("sum_mean_correction"));
+  TH3D* width = dynamic_cast<TH3D*>(inFile->Get("sum_width_correction"));
   if(!mean || !width){
     ::Error("LMEECutLib_acapon", "Recal histograms not found.");
     return 0x0;
@@ -350,8 +350,8 @@ TH3D LMEECutLib::SetEtaCorrectionITSTTree( Int_t corrXdim, Int_t corrYdim, Int_t
   else {
     std::cout << "Correction loaded locally" << std::endl;
   }
-  TH3D* mean  = dynamic_cast<TH3D*>(recalFile->Get("sum_mean_correction"));
-  TH3D* width = dynamic_cast<TH3D*>(recalFile->Get("sum_width_correction"));
+  TH3D* mean  = dynamic_cast<TH3D*>(inFile->Get("sum_mean_correction"));
+  TH3D* width = dynamic_cast<TH3D*>(inFile->Get("sum_width_correction"));
   if(!mean || !width){
     ::Error("LMEECutLib_acapon", "Recal histograms not found.");
     return 0x0;
@@ -470,8 +470,8 @@ static TH3D LMEECutLib::SetEtaCorrectionTOFTTree( Int_t corrXdim, Int_t corrYdim
   else {
     std::cout << "Correction loaded locally" << std::endl;
   }
-  TH3D* mean  = dynamic_cast<TH3D*>(recalFile->Get("sum_mean_correction"));
-  TH3D* width = dynamic_cast<TH3D*>(recalFile->Get("sum_width_correction"));
+  TH3D* mean  = dynamic_cast<TH3D*>(inFile->Get("sum_mean_correction"));
+  TH3D* width = dynamic_cast<TH3D*>(inFile->Get("sum_width_correction"));
   if(!mean || !width){
     ::Error("LMEECutLib_acapon", "Recal histograms not found.");
     return 0x0;
@@ -731,10 +731,16 @@ AliAnalysisCuts* LMEECutLib::GetPIDCuts(Int_t PIDcuts) {
       //cuts->AddCut(cutsPID);
       return cutsPID;
     case kV0_TPCcorr:
-      // PID cuts used to select out a very pure sample of V0 electrons using only ITS and TOF
-      cutsPID->AddCut(AliDielectronPID::kITS, AliPID::kElectron, -1., 1., 0.1, 100., kFALSE);
-      cutsPID->AddCut(AliDielectronPID::kTOF, AliPID::kElectron, -1., 1., 0.4, 100., kFALSE, AliDielectronPID::kRequire);
+      // PID cuts used to select out a very pure sample of V0 electrons using only ITS (if available) and TOF
+      if(wSDD){
+        cutsPID->AddCut(AliDielectronPID::kITS, AliPID::kElectron, -1., 1., 0.1, 100., kFALSE);
+        cutsPID->AddCut(AliDielectronPID::kTOF, AliPID::kElectron, -1., 1., 0.4, 100., kFALSE, AliDielectronPID::kRequire);
+      }else{
+        cutsPID->AddCut(AliDielectronPID::kTOF, AliPID::kElectron, -3., 3., 0.4, 100., kFALSE, AliDielectronPID::kRequire);
+      }
+      cutsPID->AddCut(AliDielectronPID::kTPC, AliPID::kElectron, -3.0, 3.0, 0.1, 100., kFALSE, AliDielectronPID::kRequire);
       cuts->AddCut(cutsPID);
+      cuts->Print();
       return cuts;
     case kV0_ITScorr:
       // PID cuts used to select out a very pure sample of V0 electrons using only TPC and TOF
@@ -742,12 +748,19 @@ AliAnalysisCuts* LMEECutLib::GetPIDCuts(Int_t PIDcuts) {
       cutsPID->AddCut(AliDielectronPID::kTOF, AliPID::kElectron, -1.,  1., 0.1, 0.4,  kFALSE, AliDielectronPID::kIfAvailable);
       cutsPID->AddCut(AliDielectronPID::kTOF, AliPID::kElectron, -1.,  1., 0.4, 100., kFALSE, AliDielectronPID::kRequire);
       cuts->AddCut(cutsPID);
+      cuts->Print();
       return cuts;
     case kV0_TOFcorr:
-      // PID cuts used to select out a very pure sample of V0 electrons using only TPC and TOF
-      cutsPID->AddCut(AliDielectronPID::kITS, AliPID::kElectron, -1., 1., 0.1, 100., kFALSE);
-      cutsPID->AddCut(AliDielectronPID::kTPC, AliPID::kElectron, -0.6, 1., 0.1, 100., kFALSE);
+      // PID cuts used to select out a very pure sample of V0 electrons using only ITS (if available) and TPC
+      if(wSDD){
+        cutsPID->AddCut(AliDielectronPID::kITS, AliPID::kElectron, -1., 1., 0.1, 100., kFALSE);
+        cutsPID->AddCut(AliDielectronPID::kTPC, AliPID::kElectron, -0.6, 1., 0.1, 100., kFALSE);
+      }else{
+        cutsPID->AddCut(AliDielectronPID::kTPC, AliPID::kElectron, -3., 3., 0.1, 100., kFALSE);
+        cutsPID->AddCut(AliDielectronPID::kTOF, AliPID::kElectron, -3., 3., 0.4, 100., kFALSE, AliDielectronPID::kRequire);
+      }
       cuts->AddCut(cutsPID);
+      cuts->Print();
       return cuts;
     case kPdgSel:
       cuts->AddCut(PdgLepton);

@@ -168,7 +168,6 @@ set(HDRS ${HDRS}
   AliFemtoCorrFctnDPhiStarKStarAverageMergedPointsFraction.h
   AliFemtoBetaTPairCut.h
   AliFemtoCutMonitorPairBetaT.h
-  AliFemtoAvgSepCalculator.h
   AliFemtoTrioAnalysis.h
   AliFemtoTrioCut.h
   AliFemtoTrio.h

@@ -47,27 +47,27 @@ AliFemtoCutMonitorTrackTPCchiNdof::~AliFemtoCutMonitorTrackTPCchiNdof()
 AliFemtoCutMonitorTrackTPCchiNdof& AliFemtoCutMonitorTrackTPCchiNdof::operator=(const AliFemtoCutMonitorTrackTPCchiNdof& aCut)
 {
   // assignment operator
-  if (this == &aCut) 
+  if (this == &aCut)
     return *this;
 
   if (fTrTPCchiNdof) delete fTrTPCchiNdof;
   fTrTPCchiNdof = new TH1D(*aCut.fTrTPCchiNdof);
-  
+
   return *this;
 }
 
-AliFemtoString AliFemtoCutMonitorTrackTPCchiNdof::Report(){ 
+AliFemtoString AliFemtoCutMonitorTrackTPCchiNdof::Report(){
   // Prepare report from the execution
-  string stemp = "*** AliFemtoCutMonitorTrackTPCchiNdof report"; 
+  string stemp = "*** AliFemtoCutMonitorTrackTPCchiNdof report";
   AliFemtoString returnThis = stemp;
-  return returnThis; 
+  return returnThis;
 }
 
 void AliFemtoCutMonitorTrackTPCchiNdof::Fill(const AliFemtoTrack* aTrack)
 {
   // Fill in the monitor histograms with the values from the current track
   if (aTrack->TPCncls() > 0) {
-    fTrTPCchiNdof->Fill(aTrack->TPCchi2()/aTrack->TPCncls());
+    fTrTPCchiNdof->Fill(aTrack->TPCchi2perNDF());
   }
 }
 
@@ -84,21 +84,3 @@ TList *AliFemtoCutMonitorTrackTPCchiNdof::GetOutputList()
 
   return tOutputList;
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

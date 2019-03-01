@@ -371,7 +371,7 @@ AliSigma0V0Cuts::~AliSigma0V0Cuts() {
 //____________________________________________________________________________________________________
 AliSigma0V0Cuts *AliSigma0V0Cuts::LambdaCuts() {
   AliSigma0V0Cuts *v0Cuts = new AliSigma0V0Cuts();
-  v0Cuts->SetV0OnFlyStatus(true);
+  v0Cuts->SetV0OnFlyStatus(false);
   v0Cuts->SetV0PtMin(0.3);
   v0Cuts->SetV0CosPAMin(0.99);
   v0Cuts->SetV0RadiusMax(100.f);

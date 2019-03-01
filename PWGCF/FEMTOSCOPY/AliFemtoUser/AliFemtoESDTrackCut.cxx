@@ -181,7 +181,7 @@ bool AliFemtoESDTrackCut::Pass(const AliFemtoTrack* track)
     return false;
   }
 
-  if (track->TPCncls() > 0 && (track->TPCchi2() / track->TPCncls()) > fMaxTPCchiNdof) {
+  if (track->TPCchi2perNDF() > fMaxTPCchiNdof) {
     return false;
   }
 
