@@ -469,7 +469,8 @@ calling `%Setup{Period}()` for the event cuts object) and then configure it via 
 notable exception. Additional centrality selection is implemented in the embedding helper. To use it, simply set the
 centrality range ("internalEventSelection:centralityRange" in YAML or via SetCentralityRange(min, max)). Note that if
 a centrality range is set in AliEventCuts (for example, through the automatic setup), that range must be wider than or
-equal to the range in the embedding helper for the embedding helper setting to be meaningful.
+equal to the range in the embedding helper for the embedding helper setting to be meaningful. Physics selection of
+the `AliEventCuts` object can also be configured via YAML.
 
 Alternatively, the user may use manual cuts in AliEventCuts, configure it for a particular period, and then set the
 centrality range in AliEventCuts and disregard the centrality selection capabilities in the embedding helper. In code,

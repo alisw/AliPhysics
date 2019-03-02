@@ -300,6 +300,8 @@ class AliAnalysisTaskEmcalEmbeddingHelper : public AliAnalysisTaskSE {
   Bool_t          InitEvent()           ;
   void            InitTree()            ;
   bool            PythiaInfoFromCrossSectionFile(std::string filename);
+  // Validation helper
+  void            ValidatePhysicsSelectionForInternalEventSelection();
   // Helper functions
   bool            IsFileAccessible() const;
   void            ConnectToAliEn() const;

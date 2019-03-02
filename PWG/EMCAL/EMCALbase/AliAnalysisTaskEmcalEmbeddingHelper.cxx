@@ -1131,7 +1131,8 @@ void AliAnalysisTaskEmcalEmbeddingHelper::UserCreateOutputObjects()
     bool useEventCutsAutomaticTriggerSelection = false;
     bool res = fYAMLConfig.GetProperty(std::vector<std::string>({"internalEventSelection", "useEventCutsAutomaticTriggerSelection"}), useEventCutsAutomaticTriggerSelection, false);
     if (res && useEventCutsAutomaticTriggerSelection) {
-      // Use the autmoatic selection. Nothing to be done.
+      // Use the automatic selection. We will validate the trigger mask later because it
+      // isn't yet set if we're using automatic mode.
       AliDebugStream(1) << "Using the automatic trigger selection from AliEventCuts.\n";
     }
     else {
@@ -1599,6 +1600,16 @@ void AliAnalysisTaskEmcalEmbeddingHelper::UserExec(Option_t*)
       fEmbeddedEventUsed = true;
       fHistManager.FillTH1("fHistInternalEventCutsStats", "passedEventCuts", 1);
 
+      // Validate the event selection. We will only do this once, but we must wait
+      // until `AcceptEvent(...)` is called once in case automatic setup is used.
+      if (fValidatedPhysicsSelection == false) {
+        // Validate that the trigger selection in the other tasks is a subset of the internal event selection
+        AliDebugStream(1) << "Validating physics selection.\n";
+        ValidatePhysicsSelectionForInternalEventSelection();
+        fValidatedPhysicsSelection = true;
+        AliDebugStream(1) << "Successfully validated the physics selection!\n";
+      }
+
       // The event was accepted by AliEventCuts. Now check for additional cuts.
       // Centrality
       // NOTE: If the centrality range is the same as AliEventCuts, then simply all will pass
@@ -1651,6 +1662,69 @@ void AliAnalysisTaskEmcalEmbeddingHelper::UserExec(Option_t*)
 
   if (fCreateHisto && fOutput) {
     PostData(1, fOutput);
+  }
+}
+
+/**
+ * Validate that the physics selection of the embedding helper is at least as broad
+ * as all other tasks. Also checks that the internal event selection isn't broader
+ * than the main physics selection. If either is not the case, it will throw an error.
+ *
+ * This ensures that other tasks are never accessing an old embedded event due to other
+ * tasks seeing events that the embedding helper is not selected for.
+ */
+void AliAnalysisTaskEmcalEmbeddingHelper::ValidatePhysicsSelectionForInternalEventSelection()
+{
+  AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
+  if (!mgr) {
+    AliFatal("No analysis manager to connect to.");
+  }
+
+  // Check that the internal event physics selection that has been applied is a subset of
+  // the collision candidates that are selected. Otherwise, it could be quite misleading.
+  // NOTE: We either set `fTriggerMask` to our internal event selection, or it was set automatically.
+  //       In either case, `fInternalEventCuts.fTriggerMask` should have the correct internal
+  //       event physics selection.
+  // For information on the comparison method, see: https://stackoverflow.com/a/8639510
+  UInt_t collisionCandidates = this->GetCollisionCandidates();
+  bool res = (fInternalEventCuts.fTriggerMask | collisionCandidates) == collisionCandidates;
+  if (res == false) {
+    std::stringstream message;
+    message << "Collision candidates selected for the embedding helper are more restrictive than"
+        << " the internal event physics selection! You will not have access to all of the events"
+        << " selected in the internal event physics selection. Please expand your trigger mask set"
+        << " via SelectCollisionCandidates().\n"
+        << std::bitset<32>(fInternalEventCuts.fTriggerMask) << " <- Embedding helper internal event physics selection\n"
+        << std::bitset<32>(collisionCandidates) << " <- Collision candidates\n";
+    AliFatal(message.str().c_str());
+  }
+
+  auto tasks = mgr->GetTasks();
+  for (auto t : *tasks)
+  {
+    auto task = dynamic_cast<AliAnalysisTaskSE *>(t);
+    if (!task || task->GetName() == GetName()) {
+      // Skip the task if it's not an analysis task or if it's the embedding
+      // helper, since it's allowed to have a broader physics selection than the
+      // internal event physics selection.
+      continue;
+    }
+
+    // Compare the selected collision candidates to the embedding helper physics selection.
+    // Every subsequent task must be a subset or equal to the embedding helper physics selection.
+    // Otherwise, subsequent tasks will be be selected for internal events where we haven't update
+    // the embedded event. This will lead to double counting, double corrections, etc.
+    // For information on the comparison method, see: https://stackoverflow.com/a/8639510
+    UInt_t taskCollisionCandidates = task->GetCollisionCandidates();
+    res = (taskCollisionCandidates | collisionCandidates) == collisionCandidates;
+    if (res == false) {
+      std::stringstream message;
+      message << "The physics selection of all tasks must be a subset of the physics selection used"
+          << " in the embedding helper.\n"
+          << std::bitset<32>(collisionCandidates) << " <- Embedding helper internal event physics selection\n"
+          << std::bitset<32>(taskCollisionCandidates) << " <- Task \"" << task->GetName() << "\" collision candidates\n";
+      AliFatal(message.str().c_str());
+    }
   }
 }
 
