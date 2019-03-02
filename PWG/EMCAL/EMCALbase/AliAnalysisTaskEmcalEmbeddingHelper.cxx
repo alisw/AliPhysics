@@ -552,7 +552,7 @@ bool AliAnalysisTaskEmcalEmbeddingHelper::GetFilenames()
 }
 
 /**
- * Determine the Pythia cross section filename by checking for the existance of files with various possible filenames.
+ * Determine the Pythia cross section filename by checking for the existence of files with various possible filenames.
  * Note that it uses the first input filename as a proxy for all other input files following the same pattern.
  */
 void AliAnalysisTaskEmcalEmbeddingHelper::DeterminePythiaXSecFilename()
@@ -719,9 +719,9 @@ bool AliAnalysisTaskEmcalEmbeddingHelper::AutoConfigurePtHardBins()
       config.WriteProperty(propertyName.str(), trainNumber, fAutoConfigureIdentifier);
       config.WriteConfiguration(filename, fAutoConfigureIdentifier);
 
-      // NOTE: Cannot clean up the yaml file on the last pt hard bin because the train can be launched
+      // NOTE: Cannot clean up the YAML file on the last pt hard bin because the train can be launched
       // multiple times due to tests, etc. Therefore, we have to accept that we are leaving around used
-      // yaml config files.
+      // YAML config files.
 
       // We are done - continue on.
       returnValue = true;
@@ -771,7 +771,7 @@ std::string AliAnalysisTaskEmcalEmbeddingHelper::GenerateUniqueFileListFilename(
  *
  * @param[in] filename String containing a filename with some number of extra trailing slashes.
  *
- * @return string without trailing slahes.
+ * @return string without trailing slashes.
  */
 std::string AliAnalysisTaskEmcalEmbeddingHelper::RemoveTrailingSlashes(std::string filename) const
 {
@@ -834,12 +834,13 @@ Bool_t AliAnalysisTaskEmcalEmbeddingHelper::GetNextEntry()
     }
     else {
       // NOTE: On transition from one file to the next, this calls the next entry that would be expected.
-      //       However, if it is for the last file, it tries to GetEntry() of one entry past the end of the last file.
-      //       Normally, this would be a problem, however GetEntry() just doesn't fill the fields of an invalid index
-      //       instead of throwing an error. So "invalid values" are filled for a file that doesn't exist, but then 
-      //       they are immediately replaced by the lines below that reset the access values and re-init the tree.
-      //       The benefit of this approach is it simplies file counting (we don't need to carefully increment here
-      //       and in InitTree()) and preserves the desired behavior when we are not at the last file.
+      //       However, if it is for the last file, it tries to GetEntry() of one entry past the end of the last
+      //       file. Normally, this would be a problem, however GetEntry() just doesn't fill the fields of an
+      //       invalid index instead of throwing an error. So "invalid values" are filled for a file that doesn't
+      //       exist, but then they are immediately replaced by the lines below that reset the access values and
+      //       re-init the tree. The benefit of this approach is it simplies file counting (we don't need to
+      //       carefully increment here and in InitTree()) and preserves the desired behavior when we are not at
+      //       the last file.
       InitTree();
     }
 
@@ -1436,7 +1437,7 @@ void AliAnalysisTaskEmcalEmbeddingHelper::InitTree()
   }
   
   // Load first entry of the (next) file so that we can query information about it
-  // (it is unaccessible otherwise).
+  // (it is inaccessible otherwise).
   // Since fUpperEntry is the total number of entries, loading it will retrieve the
   // next tree (in the next file) since entries are indexed starting from 0.
   fChain->GetEntry(fUpperEntry);
@@ -1541,7 +1542,7 @@ bool AliAnalysisTaskEmcalEmbeddingHelper::PythiaInfoFromCrossSectionFile(std::st
     }
     else {
       // Check if it's instead the histograms
-      // find the tlist we want to be independtent of the name so use the Tkey
+      // find the Tlist we want to be independent of the name so use the Tkey
       TKey* key = static_cast<TKey*>(fxsec->GetListOfKeys()->At(0));
       if (!key) return false;
       TList *list = dynamic_cast<TList*>(key->ReadObj());
@@ -1549,7 +1550,7 @@ bool AliAnalysisTaskEmcalEmbeddingHelper::PythiaInfoFromCrossSectionFile(std::st
       TProfile * crossSectionHist = static_cast<TProfile*>(list->FindObject("h1Xsec"));
       // check for failure
       if(!(crossSectionHist->GetEntries())) {
-        // No cross seciton information available - fall back to raw
+        // No cross section information available - fall back to raw
         AliErrorStream() << "No cross section information available in file \"" << fxsec->GetName() << "\". Will still attempt to extract cross section information from pythia header.\n";
       } else {
         // Cross section histogram filled - take it from there
@@ -1561,7 +1562,7 @@ bool AliAnalysisTaskEmcalEmbeddingHelper::PythiaInfoFromCrossSectionFile(std::st
       nEvents = trialsHist->GetEntries();
     }
 
-    // If successful in retrieveing the values, normalizae the xsec and trials by the number of events
+    // If successful in retrieving the values, normalize the xsec and trials by the number of events
     // in the file. This way, we can use it as an approximate event-by-event value
     // We do not want to just use the overall value because some of the events may be rejected by various
     // event selections, so we only want that ones that were actually use. The easiest way to do so is by
@@ -1573,7 +1574,7 @@ bool AliAnalysisTaskEmcalEmbeddingHelper::PythiaInfoFromCrossSectionFile(std::st
     return true;
   }
   else {
-    AliDebugStream(3) << "Unable to open file \"" << pythiaFileName << "\". Will attempt to use values from the hader.";
+    AliDebugStream(3) << "Unable to open file \"" << pythiaFileName << "\". Will attempt to use values from the header.";
   }
 
   // Could not open file
@@ -1737,7 +1738,7 @@ void AliAnalysisTaskEmcalEmbeddingHelper::Terminate(Option_t*)
 
 /**
  * Remove the dummy task which had to be added by ConfigureEmcalEmbeddingHelperOnLEGOTrain()
- * from the Analysis Mangaer. This is the same function as in AliEmcalCorrectionTask.
+ * from the Analysis Manager. This is the same function as in AliEmcalCorrectionTask.
  */
 void AliAnalysisTaskEmcalEmbeddingHelper::RemoveDummyTask() const
 {
