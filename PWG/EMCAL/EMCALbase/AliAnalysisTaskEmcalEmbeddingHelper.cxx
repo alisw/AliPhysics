@@ -132,6 +132,8 @@ AliAnalysisTaskEmcalEmbeddingHelper::AliAnalysisTaskEmcalEmbeddingHelper() :
   fUseManualInternalEventCuts(false),
   fInternalEventCuts(),
   fEmbeddedEventUsed(true),
+  fValidatedPhysicsSelection(false),
+  fInternalEventTriggerMask(0),
   fCentMin(-999),
   fCentMax(-999),
   fRandomRejectionFactor(1.),
@@ -204,6 +206,8 @@ AliAnalysisTaskEmcalEmbeddingHelper::AliAnalysisTaskEmcalEmbeddingHelper(const c
   fUseManualInternalEventCuts(false),
   fInternalEventCuts(),
   fEmbeddedEventUsed(true),
+  fValidatedPhysicsSelection(false),
+  fInternalEventTriggerMask(0),
   fCentMin(-999),
   fCentMax(-999),
   fRandomRejectionFactor(1.),
@@ -356,7 +360,7 @@ void AliAnalysisTaskEmcalEmbeddingHelper::RetrieveTaskPropertiesFromYAMLConfig()
   // Physics selection
   res = fYAMLConfig.GetProperty({baseName, "physicsSelection"}, physicsSelection, false);
   if (res) {
-    fOfflineTriggerMask = AliEmcalContainerUtils::DeterminePhysicsSelectionFromYAML(physicsSelection);
+    fInternalEventTriggerMask = AliEmcalContainerUtils::DeterminePhysicsSelectionFromYAML(physicsSelection);
   }
 
   // Auto configure pt hard properties
@@ -1131,9 +1135,10 @@ void AliAnalysisTaskEmcalEmbeddingHelper::UserCreateOutputObjects()
       AliDebugStream(1) << "Using the automatic trigger selection from AliEventCuts.\n";
     }
     else {
-      // Use the cuts selected by SelectCollisionCandidates()
-      AliDebugStream(1) << "Using the trigger selection specified with SelectCollisionCandidates().\n";
-      fInternalEventCuts.OverrideAutomaticTriggerSelection(fOfflineTriggerMask);
+      // Use the cuts selected by via YAML.
+      std::bitset<32> triggerMask(fInternalEventTriggerMask);
+      AliDebugStream(1) << "Using the trigger selection specified via YAML: " << triggerMask << ".\n";
+      fInternalEventCuts.OverrideAutomaticTriggerSelection(fInternalEventTriggerMask);
     }
   }
   
@@ -1813,6 +1818,8 @@ std::string AliAnalysisTaskEmcalEmbeddingHelper::toString(bool includeFileList) 
   else {
     tempSS << "Internal event selection centrality range disabled.\n";
   }
+  tempSS << "Internal event physics selection via class (should propagate to AliEventCuts): " << std::bitset<32>(fInternalEventTriggerMask) << "\n";
+  tempSS << "Internal event physics selection via AliEventCuts: " << std::bitset<32>(fInternalEventCuts.fTriggerMask) << "\n";
 
   std::bitset<32> triggerMask(fTriggerMask);
   tempSS << "\nEmbedded event settings:\n";
