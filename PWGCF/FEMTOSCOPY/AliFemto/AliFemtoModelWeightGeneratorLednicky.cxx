@@ -258,6 +258,12 @@ double AliFemtoModelWeightGeneratorLednicky::GenerateWeight(AliFemtoPair* aPair)
   // Get hidden information pointers
   //AliFemtoModelHiddenInfo *inf1 = (AliFemtoModelHiddenInfo *) aPair->Track1()->HiddenInfo();
   //AliFemtoModelHiddenInfo *inf2 = (AliFemtoModelHiddenInfo *) aPair->Track2()->HiddenInfo();
+  {
+    double cached_weight = aPair->LookupFemtoWeightCache(this);
+    if (!std::isnan(cached_weight)) {
+      return cached_weight;
+    }
+  }
 
   const AliFemtoTrack &track1 = *aPair->Track1()->Track(),
                       &track2 = *aPair->Track2()->Track();
@@ -415,10 +421,13 @@ double AliFemtoModelWeightGeneratorLednicky::GenerateWeight(AliFemtoPair* aPair)
   //  cout<<" fWeif "<<fWeif<<" fWei "<<fWei<<" fWein "<<fWein<<endl;
 
   if (fI3c == 0) {
+    aPair->AddWeightToCache(this, fWein);
     return fWein;
   }
 
   fWeightDen = fWeif;
+
+  aPair->AddWeightToCache(this, fWei);
   return fWei;
 }
 
