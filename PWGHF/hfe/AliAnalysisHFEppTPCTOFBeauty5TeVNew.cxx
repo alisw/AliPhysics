@@ -1890,8 +1890,11 @@ void AliAnalysisHFEppTPCTOFBeauty5TeVNew::UserExec(Option_t *)
        
         
         if(!fIsMC){
+            if(fTPCnSigma >= ftpcPIDmincut && fTPCnSigma <= ftpcPIDmaxcut){
+		if(fTOFnSigma >= ftofPIDmincut && fTOFnSigma <= ftofPIDmaxcut){
                 InvMassCheckData(iTracks, track, d0z0, signB);
-
+		}
+	      }  
             }
         
                
