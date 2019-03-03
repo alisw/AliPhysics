@@ -36,9 +36,13 @@ AliFemtoAvgSepCorrFctn::AliFemtoAvgSepCorrFctn(const char *suffix,
 {
   TString suf = suffix;
 
-  fNumerator = new TH1D("Num" + suf, "Num Qinv (MeV/c)", nbins, Low, High);
-  fDenominator = new TH1D("Den" + suf, "Den Qinv (MeV/c)", nbins, Low, High);
-  fRatio = new TH1D("Rat" + suf, "Ratio Qinv (MeV/c)", nbins, Low, High);
+  auto hist_title = [] (TString title) {
+    return "Average Separation " + title + "; $\\left< \\Delta X \\right>$ (cm)";
+  };
+
+  fNumerator = new TH1D("Num" + suf, hist_title("Numerator"), nbins, Low, High);
+  fDenominator = new TH1D("Den" + suf, hist_title("Denominator"), nbins, Low, High);
+  fRatio = new TH1D("Rat" + suf, hist_title("Ratio"), nbins, Low, High);
 
   fNumeratorPos = new TH1D("NumV0TrackPos" + suf, "Num : Track & V0.Pos", nbins, Low, High);
   fDenominatorPos = new TH1D("DenV0TrackPos" + suf, "Den : Track & V0.Pos", nbins, Low, High);
@@ -251,15 +255,6 @@ static bool TpcPointIsUnset(const AliFemtoThreeVector& v) {
          v.z() < -9000.;
 }
 
-static void StoreAvgSepBetweenTracks(const AliFemtoTrack &track_1,
-                                     const AliFemtoTrack &track_2,
-                                     TH1D *output)
-{
-  // sums the separation magnitude
-  double avgSep = AliFemtoPair::CalcAvgSepTracks(track_1, track_2);
-  output->Fill(avgSep);
-}
-
 static void StoreAvgSepBetweenV0AndTrack(const AliFemtoV0 &V0,
                                          const AliFemtoTrack &track,
                                          TH1D *pos_output,
@@ -384,9 +379,7 @@ void AliFemtoAvgSepCorrFctn::AddRealPair(AliFemtoPair *pair)
   switch (fPairType) {
   // 2 tracks
   case kTracks:
-    StoreAvgSepBetweenTracks(*track_1->Track(),
-                             *track_2->Track(),
-                             fNumerator);
+    fNumerator->Fill(pair->NominalTpcAverageSeparationTracks());
     break;
 
   // track + V0
