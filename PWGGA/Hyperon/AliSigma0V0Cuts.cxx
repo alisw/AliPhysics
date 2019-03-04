@@ -1740,12 +1740,12 @@ void AliSigma0V0Cuts::InitCutHistograms(TString appendix) {
 
   if (TMath::Abs(fPID) == 3122) {
     fHistV0MassPt =
-        new TH2F("fHistV0MassPt",
+        new TH2F("InvMassPt",
                  "; #it{p}_{T} (GeV/#it{c});Invariant mass (GeV/#it{c}^{2})",
                  100, 0, 10, 100, 1.07, 1.17);
   } else if (TMath::Abs(fPID) == 22) {
     fHistV0MassPt =
-        new TH2F("fHistV0MassPt",
+        new TH2F("InvMassPt",
                  "; #it{p}_{T} (GeV/#it{c});Invariant mass (GeV/#it{c}^{2})",
                  100, 0, 10, 100, 0., .1);
   }
