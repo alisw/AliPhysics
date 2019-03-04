@@ -323,6 +323,7 @@ typedef struct {
    Int_t      n11;
    Float_t    bb;
    Int_t      npart;
+   Float_t    phirp;
    } Himain1Common;
 
 #define HIMAIN1 COMMON_BLOCK(HIMAIN1,himain1)

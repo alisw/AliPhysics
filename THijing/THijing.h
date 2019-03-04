@@ -101,6 +101,7 @@ public:
    virtual Int_t       GetN11() const;
 
    virtual Float_t     GetBB()     const;
+   virtual Float_t     GetPhi()    const;
 
    // common HIMAIN2 access routines - read-only common:
 

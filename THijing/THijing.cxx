@@ -612,6 +612,14 @@ Float_t  THijing::GetBB() const
 
 }
 
+Float_t  THijing::GetPhi() const
+{
+// Get impact parameter
+
+   return HIMAIN1.phirp;
+
+}
+
 
 //====================== access to common HIMAIN2 ===============================
 

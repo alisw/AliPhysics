@@ -177,9 +177,8 @@ void AliStack::PushTrack(Int_t done, Int_t parent, Int_t pdg, const Float_t *pmo
 		 vpos[0], vpos[1], vpos[2], tof, polar[0], polar[1], polar[2],
 		 mech, ntr, weight, is);
     } else {
-      ntr = -1;
-      AliWarning(Form("Particle type %d not defined in PDG Database !", pdg));
-      AliWarning("Particle skipped !");
+	AliWarning(Form("Particle type %d not defined in PDG Database !", pdg));
+	AliWarning("Particle skipped !");
     }
 }
 
@@ -1076,6 +1075,14 @@ Bool_t AliStack::IsPhysicalPrimary(Int_t index, Bool_t useInEmbedding)
       if (ipm > -1) {
 	TParticle* ppm  = Particle(ipm, useInEmbedding);
 	if (TMath::Abs(ppm->GetPdgCode()) == 130) return kFALSE;
+      }
+      // <-
+      // check for direct photon in parton shower
+      // ->
+      Int_t ipd = p->GetFirstDaughter();
+      if (pdg == 22 && ipd > -1) {
+	TParticle* ppd  = Particle(ipd, useInEmbedding); 
+	if (ppd->GetPdgCode() == 22) return kFALSE;
       }
       // <-
 	return kTRUE;
