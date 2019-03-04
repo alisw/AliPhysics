@@ -38,6 +38,7 @@ ClassImp(AliSigma0PhotonMotherCuts)
       fSidebandCutDown(0.01),
       fPhotonPtMin(0),
       fPhotonPtMax(999.f),
+      fPtMin(0.f),
       fRapidityMax(0.5),
       fArmenterosCut(false),
       fArmenterosQtLow(0.f),
@@ -144,6 +145,7 @@ AliSigma0PhotonMotherCuts::AliSigma0PhotonMotherCuts(
       fSidebandCutDown(0.01),
       fPhotonPtMin(0),
       fPhotonPtMax(999.f),
+      fPtMin(0.f),
       fRapidityMax(0.5),
       fArmenterosCut(false),
       fArmenterosQtLow(0.f),
@@ -571,6 +573,9 @@ void AliSigma0PhotonMotherCuts::SigmaToLambdaGamma(
       const float armAlpha = sigma.GetArmenterosAlpha();
       const float armQt = sigma.GetArmenterosQt();
       const float pT = sigma.GetPt();
+
+      if (pT < fPtMin) continue;
+
       if (!fIsLightweight) {
         fHistArmenterosBefore->Fill(armAlpha, armQt);
       }
