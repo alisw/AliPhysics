@@ -1412,7 +1412,7 @@ void AliAnalysisHFEppTPCTOFBeauty5TeVNew::UserExec(Option_t *)
             
         Bool_t test = GetNMCPartProduced(); ///Getting number of particles produced by the MC generator
            
-        for(Int_t iMC = 0; iMC < fNTotMCpart; iMC++)
+        for(Int_t iMC = 0; iMC < fMCarray->GetEntries(); iMC++)
         {
 			fMCparticle = (AliAODMCParticle*) fMCarray->At(iMC);
 			fMCparticleMother = (AliAODMCParticle*) fMCarray->At(fMCparticle->GetMother());
