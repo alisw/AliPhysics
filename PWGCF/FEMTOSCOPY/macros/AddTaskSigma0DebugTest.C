@@ -299,6 +299,7 @@ AliAnalysisTaskSE *AddTaskSigma0DebugTest(bool isMC = false,
   config->SetMultBinning(true);
 
   config->SetExtendedQAPairs(pairQA);
+  config->SetdPhidEtaPlotsSmallK(false);
   config->SetZBins(ZVtxBins);
   if (MomRes && isMC) {
     config->SetMomentumResolution(true);

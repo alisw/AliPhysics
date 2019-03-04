@@ -49,6 +49,9 @@ class AliFemtoDreamCorrHists {
     return fdPhidEtaPlots;
   }
   ;
+  bool GetDodPhidEtaPlotsSmallK() {
+    return fPhiEtaPlotsSmallK;
+  }
   bool GetDodPhidEtamTPlots() {
     return fmTDetaDPhi;
   }
@@ -118,7 +121,7 @@ class AliFemtoDreamCorrHists {
                            float dEta, float relk) {
     if (!fMinimalBooking && fPhiEtaPlots) {
       fRadiiEtaPhiSE[hist][iDaug][iRad]->Fill(dEta, dPhi);
-      if (relk < fRelKThreshold) {
+      if (relk < fRelKThreshold && fPhiEtaPlotsSmallK) {
         fRadiiEtaPhiSEsmallK[hist][iDaug][iRad]->Fill(dEta, dPhi);
       }
     }
@@ -127,7 +130,7 @@ class AliFemtoDreamCorrHists {
                            float dEta, float relk) {
     if (!fMinimalBooking && fPhiEtaPlots) {
       fRadiiEtaPhiME[hist][iDaug][iRad]->Fill(dEta, dPhi);
-      if (relk < fRelKThreshold) {
+      if (relk < fRelKThreshold && fPhiEtaPlotsSmallK) {
         fRadiiEtaPhiMEsmallK[hist][iDaug][iRad]->Fill(dEta, dPhi);
       }
     }
@@ -211,10 +214,11 @@ class AliFemtoDreamCorrHists {
   bool fDomTBinning;
   bool fDokTCentralityBins;
   bool fdPhidEtaPlots;
+  bool fPhiEtaPlotsSmallK;
   bool fmTDetaDPhi;
   std::vector<float> fmTdEtadPhiBins;
   std::vector<unsigned int> fWhichPairs;
-  std::vector<float> fCentBins;ClassDef(AliFemtoDreamCorrHists,4)
+  std::vector<float> fCentBins;ClassDef(AliFemtoDreamCorrHists,5)
   ;
 };
 

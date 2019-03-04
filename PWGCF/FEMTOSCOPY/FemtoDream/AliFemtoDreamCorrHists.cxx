@@ -54,6 +54,7 @@ AliFemtoDreamCorrHists::AliFemtoDreamCorrHists()
       fDomTBinning(false),
       fDokTCentralityBins(false),
       fdPhidEtaPlots(false),
+      fPhiEtaPlotsSmallK(false),
       fmTDetaDPhi(false),
       fmTdEtadPhiBins(),
       fWhichPairs(),
@@ -105,6 +106,7 @@ AliFemtoDreamCorrHists::AliFemtoDreamCorrHists(
       fDomTBinning(hists.fDomTBinning),
       fDokTCentralityBins(hists.fDokTCentralityBins),
       fdPhidEtaPlots(hists.fdPhidEtaPlots),
+      fPhiEtaPlotsSmallK(hists.fPhiEtaPlotsSmallK),
       fmTDetaDPhi(hists.fmTDetaDPhi),
       fmTdEtadPhiBins(hists.fmTdEtadPhiBins),
       fWhichPairs(hists.fWhichPairs),
@@ -156,6 +158,7 @@ AliFemtoDreamCorrHists::AliFemtoDreamCorrHists(AliFemtoDreamCollConfig *conf,
       fDomTBinning(false),
       fDokTCentralityBins(false),
       fdPhidEtaPlots(false),
+      fPhiEtaPlotsSmallK(false),
       fmTDetaDPhi(false),
       fmTdEtadPhiBins(),
       fWhichPairs(),
@@ -169,6 +172,7 @@ AliFemtoDreamCorrHists::AliFemtoDreamCorrHists(AliFemtoDreamCollConfig *conf,
   fDomTBinning = conf->GetDomTBinning();
   fPhiEtaPlots = conf->GetDoPhiEtaBinning();
   fdPhidEtaPlots = conf->GetdPhidEtaPlots();
+  fPhiEtaPlotsSmallK = conf->GetdPhidEtaPlotsSmallK();
   fmTDetaDPhi = conf->GetdPhidEtamTPlots();
   if (fDokTCentralityBins && !fDokTBinning) {
     AliWarning(
@@ -237,8 +241,10 @@ AliFemtoDreamCorrHists::AliFemtoDreamCorrHists(AliFemtoDreamCollConfig *conf,
       fIntRadiiQAEtaPhiMEBefore = new TH2F**[nHists];
       fIntRadiiQAEtaPhiSEAfter = new TH2F**[nHists];
       fIntRadiiQAEtaPhiMEAfter = new TH2F**[nHists];
-      fRadiiEtaPhiSEsmallK = new TH2F***[nHists];
-      fRadiiEtaPhiMEsmallK = new TH2F***[nHists];
+      if (fPhiEtaPlotsSmallK) {
+        fRadiiEtaPhiSEsmallK = new TH2F***[nHists];
+        fRadiiEtaPhiMEsmallK = new TH2F***[nHists];
+      }
     } else {
       fRadiiEtaPhiSE = nullptr;
       fRadiiEtaPhiME = nullptr;
@@ -595,8 +601,10 @@ AliFemtoDreamCorrHists::AliFemtoDreamCorrHists(AliFemtoDreamCollConfig *conf,
           fIntRadiiQAEtaPhiSEAfter[Counter] = new TH2F*[nDaugComb];  //maximum of 9 combinations
           fIntRadiiQAEtaPhiMEAfter[Counter] = new TH2F*[nDaugComb];
 
-          fRadiiEtaPhiSEsmallK[Counter] = new TH2F**[nDaugComb];
-          fRadiiEtaPhiMEsmallK[Counter] = new TH2F**[nDaugComb];
+          if(fPhiEtaPlotsSmallK) {
+            fRadiiEtaPhiSEsmallK[Counter] = new TH2F**[nDaugComb];
+            fRadiiEtaPhiMEsmallK[Counter] = new TH2F**[nDaugComb];
+          }
 
           const int nRad = conf->GetNRadii();
           for (unsigned int iDaug1 = 0; iDaug1 < nDaug1; ++iDaug1) {
@@ -604,8 +612,10 @@ AliFemtoDreamCorrHists::AliFemtoDreamCorrHists(AliFemtoDreamCollConfig *conf,
               int DaugIndex = iDaug1 * 3 + iDaug2;
               fRadiiEtaPhiSE[Counter][DaugIndex] = new TH2F*[nRad];
               fRadiiEtaPhiME[Counter][DaugIndex] = new TH2F*[nRad];
-              fRadiiEtaPhiSEsmallK[Counter][DaugIndex] = new TH2F*[nRad];
-              fRadiiEtaPhiMEsmallK[Counter][DaugIndex] = new TH2F*[nRad];
+              if (fPhiEtaPlotsSmallK) {
+                fRadiiEtaPhiSEsmallK[Counter][DaugIndex] = new TH2F*[nRad];
+                fRadiiEtaPhiMEsmallK[Counter][DaugIndex] = new TH2F*[nRad];
+              }
 
               TString RadIntNameSE_Before = Form(
                   "SERadQA_Before_Particle%d_Particle%d_DaugMix%d", iPar1, iPar2,
@@ -681,27 +691,29 @@ AliFemtoDreamCorrHists::AliFemtoDreamCorrHists(AliFemtoDreamCollConfig *conf,
                     "#Delta#phi");
                 fPairQA[Counter]->Add(fRadiiEtaPhiME[Counter][DaugIndex][iRad]);
 
-                RadNameSE += "_smallK";
-                RadNameME += "_smallK";
+                if(fPhiEtaPlotsSmallK) {
+                  RadNameSE += "_smallK";
+                  RadNameME += "_smallK";
 
-                fRadiiEtaPhiSEsmallK[Counter][DaugIndex][iRad] = new TH2F(
-                    RadNameSE.Data(), RadNameSE.Data(), 300, -0.15, 0.15, 400,
-                    -0.2, 0.2);
-                fRadiiEtaPhiSEsmallK[Counter][DaugIndex][iRad]->GetXaxis()
-                    ->SetTitle("#Delta#eta");
-                fRadiiEtaPhiSEsmallK[Counter][DaugIndex][iRad]->GetYaxis()
-                    ->SetTitle("#Delta#phi");
-                fPairQA[Counter]->Add(
-                    fRadiiEtaPhiSEsmallK[Counter][DaugIndex][iRad]);
-                fRadiiEtaPhiMEsmallK[Counter][DaugIndex][iRad] = new TH2F(
-                    RadNameME.Data(), RadNameME.Data(), 300, -0.15, 0.15, 400,
-                    -0.2, 0.2);
-                fRadiiEtaPhiMEsmallK[Counter][DaugIndex][iRad]->GetXaxis()
-                    ->SetTitle("#Delta#eta");
-                fRadiiEtaPhiMEsmallK[Counter][DaugIndex][iRad]->GetYaxis()
-                    ->SetTitle("#Delta#phi");
-                fPairQA[Counter]->Add(
-                    fRadiiEtaPhiMEsmallK[Counter][DaugIndex][iRad]);
+                  fRadiiEtaPhiSEsmallK[Counter][DaugIndex][iRad] = new TH2F(
+                      RadNameSE.Data(), RadNameSE.Data(), 300, -0.15, 0.15, 400,
+                      -0.2, 0.2);
+                  fRadiiEtaPhiSEsmallK[Counter][DaugIndex][iRad]->GetXaxis()
+                      ->SetTitle("#Delta#eta");
+                  fRadiiEtaPhiSEsmallK[Counter][DaugIndex][iRad]->GetYaxis()
+                      ->SetTitle("#Delta#phi");
+                  fPairQA[Counter]->Add(
+                      fRadiiEtaPhiSEsmallK[Counter][DaugIndex][iRad]);
+                  fRadiiEtaPhiMEsmallK[Counter][DaugIndex][iRad] = new TH2F(
+                      RadNameME.Data(), RadNameME.Data(), 300, -0.15, 0.15, 400,
+                      -0.2, 0.2);
+                  fRadiiEtaPhiMEsmallK[Counter][DaugIndex][iRad]->GetXaxis()
+                      ->SetTitle("#Delta#eta");
+                  fRadiiEtaPhiMEsmallK[Counter][DaugIndex][iRad]->GetYaxis()
+                      ->SetTitle("#Delta#phi");
+                  fPairQA[Counter]->Add(
+                      fRadiiEtaPhiMEsmallK[Counter][DaugIndex][iRad]);
+                }
               }
             }
           }

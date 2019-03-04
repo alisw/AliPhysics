@@ -374,6 +374,7 @@ AliAnalysisTaskSE *AddTaskSigma0Femto(bool isMC = false, bool MomRes = false,
   config->SetMultBinning(true);
 
   config->SetExtendedQAPairs(pairQA);
+  config->SetdPhidEtaPlotsSmallK(false);
   config->SetZBins(ZVtxBins);
   if (MomRes && isMC) {
     config->SetMomentumResolution(true);

@@ -16,6 +16,7 @@ AliFemtoDreamCollConfig::AliFemtoDreamCollConfig()
       fMomentumResolution(false),
       fPhiEtaBinning(false),
       fdPhidEtaPlots(false),
+      fdPhidEtaPlotsSmallK(false),
       fMixedEventStatistics(true),
       fGetTheControlSampel(false),
       fStravinsky(false),
@@ -54,6 +55,7 @@ AliFemtoDreamCollConfig::AliFemtoDreamCollConfig(
       fMomentumResolution(config.fMomentumResolution),
       fPhiEtaBinning(config.fPhiEtaBinning),
       fdPhidEtaPlots(config.fdPhidEtaPlots),
+      fdPhidEtaPlotsSmallK(config.fdPhidEtaPlotsSmallK),
       fMixedEventStatistics(config.fMixedEventStatistics),
       fGetTheControlSampel(config.fGetTheControlSampel),
       fStravinsky(config.fStravinsky),
@@ -91,6 +93,7 @@ AliFemtoDreamCollConfig::AliFemtoDreamCollConfig(const char *name,
       fMomentumResolution(false),
       fPhiEtaBinning(false),
       fdPhidEtaPlots(false),
+      fdPhidEtaPlotsSmallK(false),
       fMixedEventStatistics(true),
       fGetTheControlSampel(false),
       fStravinsky(false),
@@ -138,6 +141,7 @@ AliFemtoDreamCollConfig& AliFemtoDreamCollConfig::operator=(
     this->fMomentumResolution = config.fMomentumResolution;
     this->fPhiEtaBinning = config.fPhiEtaBinning;
     this->fdPhidEtaPlots = config.fdPhidEtaPlots;
+    this->fdPhidEtaPlotsSmallK = config.fdPhidEtaPlotsSmallK;
     this->fMixedEventStatistics = config.fMixedEventStatistics;
     this->fGetTheControlSampel = config.fGetTheControlSampel;
     this->fInvMassPairs = config.fInvMassPairs;
