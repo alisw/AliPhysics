@@ -749,7 +749,6 @@ void AliAnalysisTaskUpcNano_MB::RunMC(AliVEvent *fEvent)
   TDatabasePDG *pdgdat = TDatabasePDG::Instance();
   
   vGenerated.SetXYZM(0.,0.,0.,0.);
-  Bool_t motherFound = kFALSE;
   fInEtaGen = kTRUE;
   
   AliMCEvent *mc = MCEvent();
@@ -759,33 +758,31 @@ void AliAnalysisTaskUpcNano_MB::RunMC(AliVEvent *fEvent)
     AliMCParticle *mcPart = (AliMCParticle*) mc->GetTrack(imc);
     if(!mcPart) continue;
     
-    if((TMath::Abs(mcPart->PdgCode()) == 443 || TMath::Abs(mcPart->PdgCode()) == 100443) && mcPart->GetMother() == -1){//Mother found
-    	fPt = mcPart->Pt();
-  	fY  = mcPart->Y();
-  	fM  = mcPart->Particle()->GetCalcMass();
-	fTreeGen->Fill();
-	motherFound = kTRUE;
-	break;
-        }
-    
     if(TMath::Abs(mcPart->PdgCode()) == 11 || 
        TMath::Abs(mcPart->PdgCode()) == 13 ||
        TMath::Abs(mcPart->PdgCode()) == 2212 ||
        TMath::Abs(mcPart->PdgCode()) == 211||
        TMath::Abs(mcPart->PdgCode()) == 22){
        
-       if(mcPart->GetMother() != -1)continue;
-       if(TMath::Abs(mcPart->PdgCode()) != 22 && TMath::Abs(mcPart->Eta())>cutEta) fInEtaGen = kFALSE;
+       if(mcPart->GetMother() == -1){
+         if(TMath::Abs(mcPart->PdgCode()) != 22 && TMath::Abs(mcPart->Eta())>cutEta) fInEtaGen = kFALSE;
     
-       TParticlePDG *partGen = pdgdat->GetParticle(mcPart->PdgCode());
-       vDecayProduct.SetXYZM(mcPart->Px(),mcPart->Py(), mcPart->Pz(),partGen->Mass());
+         TParticlePDG *partGen = pdgdat->GetParticle(mcPart->PdgCode());
+         vDecayProduct.SetXYZM(mcPart->Px(),mcPart->Py(), mcPart->Pz(),partGen->Mass());
+         vGenerated += vDecayProduct;
+         }
+       else{
+         AliMCParticle *mcMother = (AliMCParticle*) mc->GetTrack(mcPart->GetMother());
+	 if(TMath::Abs(mcMother->PdgCode()) != 443 && TMath::Abs(mcMother->PdgCode()) != 100443)continue;
+	 if(TMath::Abs(mcPart->PdgCode()) != 22 && TMath::Abs(mcPart->Eta())>cutEta) fInEtaGen = kFALSE;
     
-       vGenerated += vDecayProduct;
-       }
-       
-    
+         TParticlePDG *partGen = pdgdat->GetParticle(mcPart->PdgCode());
+         vDecayProduct.SetXYZM(mcPart->Px(),mcPart->Py(), mcPart->Pz(),partGen->Mass());
+         vGenerated += vDecayProduct;
+	 }
+    }
   }//loop over mc particles 
-  if(!motherFound)FillTree(fTreeGen,vGenerated);
+  FillTree(fTreeGen,vGenerated);
 
 }//RunMC
 
