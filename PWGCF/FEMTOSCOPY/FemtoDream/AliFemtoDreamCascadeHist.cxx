@@ -242,7 +242,7 @@ AliFemtoDreamCascadeHist::AliFemtoDreamCascadeHist(float mass,
     TString InvMassRunNumbName = "InvMassPerRunnumber";
     fInvMassPerRunNumber = new TH2F(InvMassRunNumbName.Data(),
                                     InvMassRunNumbName.Data(), nBins, iRunMin,
-                                    iRunMax, 200, mass/1.02, mass*1.04);
+                                    iRunMax, 200, mass/1.039, mass*1.034);
     fHistList->Add(fInvMassPerRunNumber);
   } else {
     fInvMassPerRunNumber = nullptr;
