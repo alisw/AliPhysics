@@ -1450,24 +1450,24 @@ void AliAnalysisTaskSEHFTreeCreator::Process3Prong(TClonesArray *array3Prong, Al
                         if(fWriteVariableTreeDs==1) {
                           if(isSelectedAnalysis&4) isSelAnCutsKKpi=kTRUE;
                           if(isSelectedAnalysis&8) isSelAnCutspiKK=kTRUE;
-                          if(isSelectedPidAnalysis&4) isSelAnPidCutsKKpi=kTRUE;
-                          if(isSelectedPidAnalysis&8) isSelAnPidCutspiKK=kTRUE;
+                          if(isSelectedPidAnalysis==1 || isSelectedPidAnalysis==3) isSelAnPidCutsKKpi=kTRUE;
+                          if(isSelectedPidAnalysis==2 || isSelectedPidAnalysis==3) isSelAnPidCutspiKK=kTRUE;
                           if(isSelectedTopoAnalysis&4) isSelAnTopoCutsKKpi=kTRUE;
                           if(isSelectedTopoAnalysis&8) isSelAnTopoCutspiKK=kTRUE;
                         }
                         else if(fWriteVariableTreeDs==2) {
                           if(isSelectedAnalysis&16) isSelAnCutsKKpi=kTRUE;
                           if(isSelectedAnalysis&32) isSelAnCutspiKK=kTRUE;
-                          if(isSelectedPidAnalysis&16) isSelAnPidCutsKKpi=kTRUE;
-                          if(isSelectedPidAnalysis&32) isSelAnPidCutspiKK=kTRUE;
+                          if(isSelectedPidAnalysis==1 || isSelectedPidAnalysis==3) isSelAnPidCutsKKpi=kTRUE;
+                          if(isSelectedPidAnalysis==2 || isSelectedPidAnalysis==3) isSelAnPidCutspiKK=kTRUE;
                           if(isSelectedTopoAnalysis&16) isSelAnTopoCutsKKpi=kTRUE;
                           if(isSelectedTopoAnalysis&32) isSelAnTopoCutspiKK=kTRUE;
                         }
                         else if(fWriteVariableTreeDs==3) {
                           if(isSelectedAnalysis&1) isSelAnCutsKKpi=kTRUE;
                           if(isSelectedAnalysis&2) isSelAnCutspiKK=kTRUE;
-                          if(isSelectedPidAnalysis&1) isSelAnPidCutsKKpi=kTRUE;
-                          if(isSelectedPidAnalysis&2) isSelAnPidCutspiKK=kTRUE;
+                          if(isSelectedPidAnalysis==1 || isSelectedPidAnalysis==3) isSelAnPidCutsKKpi=kTRUE;
+                          if(isSelectedPidAnalysis==2 || isSelectedPidAnalysis==3) isSelAnPidCutspiKK=kTRUE;
                           if(isSelectedTopoAnalysis&1) isSelAnTopoCutsKKpi=kTRUE;
                           if(isSelectedTopoAnalysis&2) isSelAnTopoCutspiKK=kTRUE;
                         }
