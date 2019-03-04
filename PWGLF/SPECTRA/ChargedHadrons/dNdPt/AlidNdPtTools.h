@@ -1,8 +1,9 @@
 #ifndef AlidNdPtTools_H
 #define AlidNdPtTools_H
 
+#include "THnSparse.h"
 
-class AlidNdPtTools
+class AlidNdPtTools : public TObject
 {
     public:
         virtual                 ~AlidNdPtTools() = 0;
@@ -25,6 +26,7 @@ class AlidNdPtTools
     private:
         static THnSparseD*      fSparseTmp;     //! temporary histogram
  
+     ClassDef(AlidNdPtTools, 1);
 };
 
 #endif

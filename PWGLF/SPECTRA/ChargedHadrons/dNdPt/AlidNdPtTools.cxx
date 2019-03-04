@@ -6,6 +6,8 @@ class AlidNdPtTools;
 
 using namespace std;
 
+ClassImp(AlidNdPtTools)
+
 THnSparseD* AlidNdPtTools::fSparseTmp = 0;
 
 //____________________________________________________________________________
