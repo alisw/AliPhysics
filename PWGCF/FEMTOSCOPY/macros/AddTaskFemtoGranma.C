@@ -7,10 +7,10 @@ AliAnalysisTaskSE* AddTaskFemtoGranma(
     bool DCAPlots = false,//3
     bool CPAPlots = false,//4
     bool MomReso = false,//5 to set to true only when running on MC
-    bool etaPhiPlotsAtTPCRadii=false,//6 to set to true only when running on MC
+    bool etaPhiPlotsAtTPCRadii=true,//6 to set to true only when running on MC
     bool CombSigma = false,//7
     bool PileUpRej=true,//8
-    bool dPhidEtaPlots=false,//9
+    bool dPhidEtaPlots=true,//9
     bool ContributionSplitting = false,//10
     bool InvMassPairs=false, //11
     const char *swuffix = "") {
@@ -120,6 +120,8 @@ AliAnalysisTaskSE* AddTaskFemtoGranma(
 
   AliFemtoDreamCollConfig *config = new AliFemtoDreamCollConfig("Femto",
                                                                 "Femto");
+
+
   std::vector<int> PDGParticles;
   PDGParticles.push_back(2212);
   PDGParticles.push_back(2212);
@@ -191,7 +193,7 @@ if (MomReso) {
 }
   if (etaPhiPlotsAtTPCRadii) {
   if (isMC) {
-    config->SetPhiEtaBinnign(true);  // check for track splitting/merging at various TPC Radii
+    config->SetPhiEtaBinnign(true);
   } else {
     std::cout
         << "You are trying to request the Eta Phi Plots without MC Info; fix it wont work! \n";
@@ -202,7 +204,18 @@ if (MomReso) {
 //    config->SetDeltaPhiMax(0.01);
 //  }
   config->SetdPhidEtaPlots(dPhidEtaPlots);  // warsaw like plots
-
+  std::vector<int> PairQA;
+  PairQA.push_back(0);        // p p
+  PairQA.push_back(11);         // p barp
+  PairQA.push_back(0);        // p Lambda
+  PairQA.push_back(12);         // p barLambda
+  PairQA.push_back(0);        // barp barp
+  PairQA.push_back(12);         // barp Lambda
+  PairQA.push_back(0);        // barp barLambda
+  PairQA.push_back(0);         // Lambda Lambda
+  PairQA.push_back(22);         // Lambda barLambda
+  PairQA.push_back(0);         // barLambda barLamb
+  config->SetExtendedQAPairs(PairQA);  // check for track splitting/merging at various TPC Radii
   std::vector<int> NBins;
   NBins.push_back(750);  // p p
   NBins.push_back(750);  // p barp
