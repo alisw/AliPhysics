@@ -513,7 +513,7 @@ void AliAnalysisTaskNucleiYield::UserExec(Option_t *){
     }
 
     if (!acceptedTrack) continue;
-    bool positive = track->GetSign() > 0;
+    bool positive = track->Charge() > 0;
     if (fHist2Phi[positive]) fHist2Phi[positive]->Fill(track->Phi() , track->Pt() );
 
     const int iTof = beta > EPS ? 1 : 0;
@@ -626,7 +626,7 @@ bool AliAnalysisTaskNucleiYield::AcceptTrack(AliAODTrack *track, Double_t dca[2]
   if (track->GetTPCFoundFraction() < fRequireTPCfoundFraction) return false;
   if (track->GetTPCsignalN() < fRequireTPCsignal) return false;
   if (track->GetTPCsignal() < fRequireMinEnergyLoss) return false;
-  if (fTRDvintage != 0 && fTRDin != IsInTRD(track->Pt(), track->Phi(), track->GetSign())) return false;
+  if (fTRDvintage != 0 && fTRDin != IsInTRD(track->Pt(), track->Phi(), track->Charge())) return false;
 
   /// ITS related cuts
   dca[0] = 0.;
