@@ -64,12 +64,6 @@ AliAnalysisTaskSE *AddTaskSigma0Femto(bool isMC = false,
   } else if (suffix == "32") {
     // cosPA < 0.995
     cutnumberPhoton = "00200008400000002280a20000";
-  } else if (suffix == "33") {
-    // DCA_R < 5
-    cutnumberPhoton = "00200008400000002280920200";
-  } else if (suffix == "34") {
-    // DCA_Z < 5
-    cutnumberPhoton = "00200008400000002280920020";
   }
 
   //========= Add V0 Reader to  ANALYSIS manager if not yet existent =====
