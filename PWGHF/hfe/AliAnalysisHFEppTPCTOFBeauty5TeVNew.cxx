@@ -1457,7 +1457,7 @@ void AliAnalysisHFEppTPCTOFBeauty5TeVNew::UserExec(Option_t *)
 				fMCMBPtEleEtaGeneratedAft->Fill(fMCparticle->Pt(),WeightEtaMB);
 				fMCEnhPtEleEtaGeneratedAft->Fill(fMCparticle->Pt(),WeightEtaEnh);
 				}
-				
+				}
 				if(fType == 2 || fType == 3 || fType == 4){
 				if(TMath::Abs(pdg_mother) == 111)fMCPtElePi0GeneratedBef->Fill(fMCparticle->Pt());
 				if(TMath::Abs(pdg_mother) == 221)fMCPtEleEtaGeneratedBef->Fill(fMCparticle->Pt());
@@ -1465,7 +1465,7 @@ void AliAnalysisHFEppTPCTOFBeauty5TeVNew::UserExec(Option_t *)
 				if(fType == 0 || fType == 1 || fType == 2 || fType == 3 || fType == 4){
 				if(TMath::Abs(pdg_mother) == 22) fMCPtEleGammaGenerated->Fill(fMCparticle->Pt());
 				}
-				}
+				
 				}
 			}
 			///----------------------------------------------------  
