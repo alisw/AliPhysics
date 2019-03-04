@@ -283,7 +283,7 @@ void AliForwardTaskValidation::UserCreateOutputObjects() {
   this->fOutputList->Add(this->fOutliers);
 
   // Create QA histograms in Event selection
-  if (!fSettings.esd) fEventCuts.AddQAplotsToList(this->fOutputList);
+  if (fSettings.useEventcuts) fEventCuts.AddQAplotsToList(this->fOutputList);
   this->CreateQAHistograms(this->fOutputList);
 
   // FMD V0 QA histograms
@@ -352,7 +352,7 @@ void AliForwardTaskValidation::UserExec(Option_t *)
 
 
 
-  if (!fSettings.esd){
+  if (fSettings.useEventcuts){
   for (UInt_t idx = 0; idx < this->fEventValidators.size(); idx++) {
     switch (this->fEventValidators[idx]) {
     case EventValidation::kNoEventCut:
