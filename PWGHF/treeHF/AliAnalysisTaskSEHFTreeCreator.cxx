@@ -159,6 +159,8 @@ fNcontributors(0),
 fNtracks(0),
 fIsEvRej(0),
 fRunNumber(0),
+fnTracklets(0),
+fnV0A(0),
 fFillMCGenTrees(kTRUE),
 fDsMassKKOpt(1),
 fLc2V0bachelorCalcSecoVtx(0),
@@ -247,6 +249,8 @@ fNcontributors(0),
 fNtracks(0),
 fIsEvRej(0),
 fRunNumber(0),
+fnTracklets(0),
+fnV0A(0),
 fFillMCGenTrees(kTRUE),
 fDsMassKKOpt(1),
 fLc2V0bachelorCalcSecoVtx(0),
@@ -616,7 +620,7 @@ void AliAnalysisTaskSEHFTreeCreator::UserCreateOutputObjects()
     OpenFile(5);
     fTreeEvChar = new TTree("tree_event_char","tree_event_char");
     //set variables
-    TString varnames[7] = {"centrality", "z_vtx_reco", "n_vtx_contributors", "n_tracks", "is_ev_rej", "run_number", "z_vtx_gen"};
+    TString varnames[9] = {"centrality", "z_vtx_reco", "n_vtx_contributors", "n_tracks", "is_ev_rej", "run_number", "z_vtx_gen","n_tracklets","V0Amult"};
     fTreeEvChar->Branch(varnames[0].Data(),&fCentrality,Form("%s/F",varnames[0].Data()));
     fTreeEvChar->Branch(varnames[1].Data(),&fzVtxReco,Form("%s/F",varnames[1].Data()));
     fTreeEvChar->Branch(varnames[2].Data(),&fNcontributors,Form("%s/I",varnames[2].Data()));
@@ -624,6 +628,8 @@ void AliAnalysisTaskSEHFTreeCreator::UserCreateOutputObjects()
     fTreeEvChar->Branch(varnames[4].Data(),&fIsEvRej,Form("%s/I",varnames[4].Data()));
     fTreeEvChar->Branch(varnames[5].Data(),&fRunNumber,Form("%s/I",varnames[5].Data()));
     if(fReadMC) fTreeEvChar->Branch(varnames[6].Data(),&fzVtxGen,Form("%s/F",varnames[6].Data()));
+    fTreeEvChar->Branch(varnames[7].Data(),&fnTracklets,Form("%s/I",varnames[7].Data()));
+    fTreeEvChar->Branch(varnames[8].Data(),&fnV0A,Form("%s/I",varnames[8].Data()));
     fTreeEvChar->SetMaxVirtualSize(1.e+8/nEnabledTrees);
 
     if(fWriteVariableTreeD0){
@@ -986,6 +992,24 @@ void AliAnalysisTaskSEHFTreeCreator::UserExec(Option_t */*option*/)
     fNtracks = aod->GetNumberOfTracks();
     fIsEvRej = fEvSelectionCuts->GetEventRejectionBitMap();
     fRunNumber=aod->GetRunNumber();
+    //n tracklets
+    AliAODTracklets* tracklets=aod->GetTracklets();
+    Int_t nTr=tracklets->GetNumberOfTracklets();
+    Int_t countTreta1=0;
+    for(Int_t iTr=0; iTr<nTr; iTr++){
+     Double_t theta=tracklets->GetTheta(iTr);
+     Double_t eta=-TMath::Log(TMath::Tan(theta/2.));
+     if(eta>-1.0 && eta<1.0) countTreta1++;//count at central rapidity
+  }
+    fnTracklets=countTreta1;
+    //v0A multiplicity
+    Int_t vzeroMultA=0;
+    AliAODVZERO *vzeroAOD = (AliAODVZERO*)aod->GetVZEROData();
+    if(vzeroAOD) {
+    vzeroMultA = static_cast<Int_t>(vzeroAOD->GetMTotV0A());
+    }
+   fnV0A=vzeroMultA;
+   
     fTreeEvChar->Fill();
     
     //get PID response
