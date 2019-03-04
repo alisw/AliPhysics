@@ -271,12 +271,6 @@ AliAnalysisTaskSE *AddTaskSigma0Femto(bool isMC = false, bool MomRes = false,
   PDGParticles.push_back(3212);
   PDGParticles.push_back(3212);
   PDGParticles.push_back(3212);
-  if (suffix == "0") {
-    PDGParticles.push_back(3122);
-    PDGParticles.push_back(22);
-    PDGParticles.push_back(3122);
-    PDGParticles.push_back(22);
-  }
 
   std::vector<float> ZVtxBins;
   ZVtxBins.push_back(-10);
@@ -296,35 +290,36 @@ AliAnalysisTaskSE *AddTaskSigma0Femto(bool isMC = false, bool MomRes = false,
   std::vector<float> kMax;
   std::vector<int> pairQA;
   std::vector<bool> closeRejection;
-  const int nPairs = (suffix == "0") ? 78 : 36;
+  const int nPairs = 36;
   for (int i = 0; i < nPairs; ++i) {
     pairQA.push_back(0);
     closeRejection.push_back(false);
     if (suffix == "0") {
-      NBins.push_back(750);
+      NBins.push_back(600);
       kMin.push_back(0.);
       kMax.push_back(3.);
     } else {
-      NBins.push_back(250);
+      NBins.push_back(200);
       kMin.push_back(0.);
       kMax.push_back(1.);
     }
   }
 
+  NBins[0] = 250;  // pp
+  NBins[8] = 250;  // barp barp
+
+  closeRejection[0] = true;  // pp
+  closeRejection[8] = true;  // barp barp
+
   // do extended QA for the pairs in default mode
   if (suffix == "0") {
+    NBins[0] = 750;  // pp
+    NBins[8] = 750;  // barp barp
+
     pairQA[0] = 11;   // pp
     pairQA[2] = 14;   // pSigma
-    pairQA[12] = 11;  // barp barp
-    pairQA[14] = 14;  // barp bSigma
-    pairQA[23] = 44;  // Sigma Sigma
-    pairQA[33] = 44;  // barSigma barSigma
-
-    closeRejection[0] = true;   // pp
-    closeRejection[12] = true;  // barp barp
-  } else {
-    closeRejection[0] = true;  // pp
-    closeRejection[8] = true;  // barp barp
+    pairQA[8] = 11;   // barp barp
+    pairQA[10] = 14;  // barp bSigma
   }
 
   AliFemtoDreamCollConfig *config =
@@ -380,10 +375,8 @@ AliAnalysisTaskSE *AddTaskSigma0Femto(bool isMC = false, bool MomRes = false,
 
   config->SetExtendedQAPairs(pairQA);
   config->SetZBins(ZVtxBins);
-  if (MomRes) {
-    if (isMC) {
-      config->SetMomentumResolution(true);
-    }
+  if (MomRes && isMC) {
+    config->SetMomentumResolution(true);
   }
 
   if (trigger == "kHighMultV0") {
@@ -392,7 +385,7 @@ AliAnalysisTaskSE *AddTaskSigma0Femto(bool isMC = false, bool MomRes = false,
     config->SetClosePairRejection(closeRejection);
   }
 
-  if (suffix == "0") {
+  if (suffix == "0" && etaPhiPlotsAtTPCRadii) {
     config->SetPhiEtaBinnign(true);
   }
   config->SetdPhidEtaPlots(false);
