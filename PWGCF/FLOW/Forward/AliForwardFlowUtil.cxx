@@ -56,7 +56,7 @@ maxpt(5),
 dodNdeta(kTRUE),
 fTrackDensity(),
 fState(),
-fMaxConsequtiveStrips(3),
+fMaxConsequtiveStrips(2),
 fLowCutvalue(0)
 {
 }
@@ -222,11 +222,21 @@ Double_t AliForwardFlowUtil::GetZ(){
 
 Double_t AliForwardFlowUtil::GetCentrality(TString centrality_estimator){
   // Get MultSelection
+/*
+  std::cout << std::boolalpha << fSettings.mc << std::endl;
+  if (fSettings.mc)  {
+    AliMultSelection* MultSelection  = (AliMultSelection*)fMCevent->FindListObject("MultSelection");
+    return MultSelection->GetMultiplicityPercentile(centrality_estimator);
+  }
+  else {
+    AliMultSelection* MultSelection  = (AliMultSelection*)fAODevent->FindListObject("MultSelection");
+    return MultSelection->GetMultiplicityPercentile(centrality_estimator);
+  }
+*/
   AliMultSelection *MultSelection;
 
   MultSelection  = (AliMultSelection*)fevent->FindListObject("MultSelection");
 
-  return MultSelection->GetMultiplicityPercentile(centrality_estimator);
 }
 
 
