@@ -234,10 +234,10 @@ private:
     TH1F				*fNeventAnalized;//!
     TH1F				*fCent;	//!
     TH1F				*fCent2;//!
-    TGraphErrors				*hMCWeightPi0MB;//!
-    TGraphErrors				*hMCWeightEtaMB;//!
-    TGraphErrors				*hMCWeightPi0Enh;//!
-    TGraphErrors				*hMCWeightEtaEnh;//!
+    TGraphErrors				*hMCWeightPi0MB;
+    TGraphErrors				*hMCWeightEtaMB;
+    TGraphErrors				*hMCWeightPi0Enh;
+    TGraphErrors				*hMCWeightEtaEnh;
     TH2F				*fTPC_p1;//!
     TH2F				*fTPC_p2;//!
     TH2F				*fTPC_p3;//!
