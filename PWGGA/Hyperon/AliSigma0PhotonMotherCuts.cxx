@@ -1138,16 +1138,16 @@ void AliSigma0PhotonMotherCuts::InitCutHistograms(TString appendix) {
 
     for (int i = 0; i < static_cast<int>(multBinsUp.size()); ++i) {
       fHistPtMult[i] =
-          new TH2F(Form("fHistPtMult_%i", i),
-                   Form("V0M: %.2f - %.2f %%; #it{p}_{T} (GeV/#it{c}); "
+          new TH2F(TString::Format("fHistPtMult_%i", i),
+                   TString::Format("V0M: %.2f - %.2f %%; #it{p}_{T} (GeV/#it{c}); "
                         "M_{#Lambda#gamma} (GeV/#it{c}^{2})",
                         multBinsLow[i], multBinsUp[i]),
                    100, 0, 10, 300, 1.15, 1.3);
       fHistograms->Add(fHistPtMult[i]);
 
       fHistMixedInvMassBinnedMultPt[i] =
-          new TH2F(Form("fHistMixedInvMassBinnedMultPt_%i", i),
-                   Form("V0M: %.2f - %.2f %%; #it{p}_{T} (GeV/#it{c}); "
+          new TH2F(TString::Format("fHistMixedInvMassBinnedMultPt_%i", i),
+                   TString::Format("V0M: %.2f - %.2f %%; #it{p}_{T} (GeV/#it{c}); "
                         "M_{#Lambda#gamma} (GeV/#it{c}^{2})",
                         multBinsLow[i], multBinsUp[i]),
                    100, 0, 10, 300, 1.15, 1.3);
@@ -1341,9 +1341,10 @@ void AliSigma0PhotonMotherCuts::InitCutHistograms(TString appendix) {
 
     for (int i = 0; i < static_cast<int>(multBinsUp.size()); ++i) {
       fHistMCTruthPtMult[i] =
-          new TH1F(Form("fHistMCTruthPtMult%i", i),
-                   Form("V0M: %.2f - %.2f %%; #it{p}_{T} (GeV/#it{c}); Entries",
-                        multBinsLow[i], multBinsUp[i]),
+          new TH1F(TString::Format("fHistMCTruthPtMult%i", i),
+                   TString::Format(
+                       "V0M: %.2f - %.2f %%; #it{p}_{T} (GeV/#it{c}); Entries",
+                       multBinsLow[i], multBinsUp[i]),
                    100, 0, 10);
       fHistogramsMC->Add(fHistMCTruthPtMult[i]);
     }

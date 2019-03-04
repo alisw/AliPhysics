@@ -1719,12 +1719,12 @@ void AliSigma0V0Cuts::InitCutHistograms(TString appendix) {
   fHistCutBooking->Fill(11.f, fTPCfindableMin);
   fHistCutBooking->Fill(12.f, fTPCnSharedMax);
   fHistCutBooking->Fill(13.f, fEtaMax);
-  fHistCutBooking->Fill(13.f, fChi2Max);
-  fHistCutBooking->Fill(14.f, fDaughterDCAMax);
-  fHistCutBooking->Fill(15.f, fDaughterDCAPV);
-  fHistCutBooking->Fill(16.f, fK0RejectionLow);
-  fHistCutBooking->Fill(17.f, fK0RejectionUp);
-  fHistCutBooking->Fill(18.f, fLambdaSelectionLow);
+  fHistCutBooking->Fill(14.f, fChi2Max);
+  fHistCutBooking->Fill(15.f, fDaughterDCAMax);
+  fHistCutBooking->Fill(16.f, fDaughterDCAPV);
+  fHistCutBooking->Fill(17.f, fK0RejectionLow);
+  fHistCutBooking->Fill(18.f, fK0RejectionUp);
+  fHistCutBooking->Fill(19.f, fLambdaSelectionLow);
   fHistCutBooking->Fill(20.f, fLambdaSelectionUp);
   fHistCutBooking->Fill(21.f, static_cast<double>(fPileUpRejectionMode));
   fHistCutBooking->Fill(22.f, fArmenterosQtLow);
