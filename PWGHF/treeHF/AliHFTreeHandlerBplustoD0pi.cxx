@@ -151,7 +151,7 @@ TTree* AliHFTreeHandlerBplustoD0pi::BuildTree(TString name, TString title)
 }
 
 //________________________________________________________________
-bool AliHFTreeHandlerBplustoD0pi::SetVariables(AliAODRecoDecayHF* cand, float bfield, int /*masshypo*/, AliPIDResponse* pidrespo)
+bool AliHFTreeHandlerBplustoD0pi::SetVariables(int runnumber, unsigned int eventID, AliAODRecoDecayHF* cand, float bfield, int /*masshypo*/, AliPIDResponse* pidrespo)
 {
   fIsMCGenTree=false;
 
@@ -160,7 +160,9 @@ bool AliHFTreeHandlerBplustoD0pi::SetVariables(AliAODRecoDecayHF* cand, float bf
     if(!(fCandTypeMap&kSignal)) return true;
   }
   fNCandidates++;
-
+  fRunNumber.push_back(runnumber);
+  fEvID.push_back(eventID);
+  
   fCandTypeMap &= ~kRefl; //protection --> Bplus -> D0pi cannot be reflected
 
   AliAODTrack* cand_pr0 = (AliAODTrack*)cand->GetDaughter(0); //Bplus pion

@@ -118,7 +118,7 @@ TTree* AliHFTreeHandlerDstartoKpipi::BuildTree(TString name, TString title)
 }
 
 //________________________________________________________________
-bool AliHFTreeHandlerDstartoKpipi::SetVariables(AliAODRecoDecayHF* cand, float bfield, int /*masshypo*/, AliPIDResponse *pidrespo)
+bool AliHFTreeHandlerDstartoKpipi::SetVariables(int runnumber, unsigned int eventID, AliAODRecoDecayHF* cand, float bfield, int /*masshypo*/, AliPIDResponse *pidrespo)
 {
   fIsMCGenTree=false;
 
@@ -127,7 +127,9 @@ bool AliHFTreeHandlerDstartoKpipi::SetVariables(AliAODRecoDecayHF* cand, float b
     if(!(fCandTypeMap&kSignal)) return true;
   }
   fNCandidates++;
-
+  fRunNumber.push_back(runnumber);
+  fEvID.push_back(eventID);
+  
   fCandTypeMap &= ~kRefl; //protection --> Dstar ->Kpipi cannot be reflected
 
   AliAODRecoDecayHF2Prong *d0 = ((AliAODRecoCascadeHF*)cand)->Get2Prong();

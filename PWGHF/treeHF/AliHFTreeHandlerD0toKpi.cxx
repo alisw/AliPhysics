@@ -103,7 +103,7 @@ TTree* AliHFTreeHandlerD0toKpi::BuildTree(TString name, TString title)
 }
 
 //________________________________________________________________
-bool AliHFTreeHandlerD0toKpi::SetVariables(AliAODRecoDecayHF* cand, float bfield, int masshypo, AliPIDResponse *pidrespo) 
+bool AliHFTreeHandlerD0toKpi::SetVariables(int runnumber, unsigned int eventID, AliAODRecoDecayHF* cand, float bfield, int masshypo, AliPIDResponse *pidrespo) 
 {
   fIsMCGenTree=false;
 
@@ -112,7 +112,9 @@ bool AliHFTreeHandlerD0toKpi::SetVariables(AliAODRecoDecayHF* cand, float bfield
     if(!(fCandTypeMap&kSignal || fCandTypeMap&kRefl)) return true;
   }
   fNCandidates++;
-
+  fRunNumber.push_back(runnumber);
+  fEvID.push_back(eventID);
+  
   //topological variables
   //common
   fCandType.push_back(fCandTypeMap);
