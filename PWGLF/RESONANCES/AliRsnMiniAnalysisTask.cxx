@@ -1895,21 +1895,16 @@ Int_t AliRsnMiniAnalysisTask::AddResonanceFinder(AliRsnMiniResonanceFinder* f)
 void AliRsnMiniAnalysisTask::SetTrackCuts(AliAnalysisFilter* fTrackFilter){
 
 	AliESDtrackCuts* esdTrackCuts = new AliESDtrackCuts();
-	esdTrackCuts->SetMaxFractionSharedTPCClusters(0.4);//
-	esdTrackCuts->SetMinRatioCrossedRowsOverFindableClustersTPC(0.8);//
-	esdTrackCuts->SetCutGeoNcrNcl(3., 130., 1.5, 0.85, 0.7);//
-	esdTrackCuts->SetMaxChi2PerClusterTPC(4);//
-	esdTrackCuts->SetAcceptKinkDaughters(kFALSE);//
-	esdTrackCuts->SetRequireTPCRefit(kTRUE);//
-	esdTrackCuts->SetRequireITSRefit(kTRUE);//
-	esdTrackCuts->SetClusterRequirementITS(AliESDtrackCuts::kSPD,
-			AliESDtrackCuts::kAny);//
-	esdTrackCuts->SetMaxDCAToVertexXYPtDep("0.0182+0.0350/pt^1.01");//
-	esdTrackCuts->SetMaxChi2TPCConstrainedGlobal(36);//
-	esdTrackCuts->SetMaxDCAToVertexZ(2);//
-	esdTrackCuts->SetDCAToVertex2D(kFALSE);//
-	esdTrackCuts->SetRequireSigmaToVertex(kFALSE);//
-	esdTrackCuts->SetMaxChi2PerClusterITS(36);//
+	//TPC Only
+	esdTrackCuts->SetMinNClustersTPC(50);
+	esdTrackCuts->SetMaxChi2PerClusterTPC(4);
+	esdTrackCuts->SetAcceptKinkDaughters(kFALSE);
+	esdTrackCuts->SetMaxDCAToVertexZ(3.2);
+	esdTrackCuts->SetMaxDCAToVertexXY(2.4);
+	esdTrackCuts->SetDCAToVertex2D(kTRUE);
+	
+	esdTrackCuts->SetRequireTPCRefit(kTRUE);// TPC Refit
+	esdTrackCuts->SetRequireITSRefit(kTRUE);// ITS Refit
 	fTrackFilter->AddCuts(esdTrackCuts);
 
 }
