@@ -15,9 +15,18 @@
 #endif
 
 
+AliFemtoCorrFctn3DLCMSSym
+  ::AliFemtoCorrFctn3DLCMSSym(const char* title,
+                              const int nbins,
+                              const float QHi)
+  : AliFemtoCorrFctn3DLCMSSym(title, nbins, QHi, true)
+{}
+
+
 AliFemtoCorrFctn3DLCMSSym::AliFemtoCorrFctn3DLCMSSym(const char* title,
                                                      const int nbins,
-                                                     const float QHi):
+                                                     const float QHi,
+                                                     bool enable_errs):
   AliFemtoCorrFctn()
   , fNumerator(nullptr)
   , fDenominator(nullptr)
@@ -57,10 +66,12 @@ AliFemtoCorrFctn3DLCMSSym::AliFemtoCorrFctn3DLCMSSym(const char* title,
                            nbins, -QHi, QHi);
 
   // to enable error bar calculation...
+  if (enable_errs) {
   fNumerator->Sumw2();
   fDenominator->Sumw2();
   fNumeratorW->Sumw2();
   fDenominatorW->Sumw2();
+  }
 }
 
 AliFemtoCorrFctn3DLCMSSym::AliFemtoCorrFctn3DLCMSSym(const AliFemtoCorrFctn3DLCMSSym& aCorrFctn):
