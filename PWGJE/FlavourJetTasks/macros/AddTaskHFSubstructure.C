@@ -26,7 +26,7 @@ AliAnalysisTaskHFSubstructure* AddTaskHFSubstructure(const char * ntracksData,
   TString wagonName1, wagonName2,wagonName3;
   TString tag="";
   if (ECandidateType == AliAnalysisTaskHFSubstructure::kD0toKpi) tag="kD0toKpi";
-  if (jetShapeType==AliAnalysisTaskHFSubstructure::kData){
+  if (jetShapeType==AliAnalysisTaskHFSubstructure::kData || jetShapeType==AliAnalysisTaskHFSubstructure::kInclusive){
     wagonName1 = Form("AliAnalysisTaskHFSubstructure_%s_TC%s",ntracksData,tag.Data());
     wagonName2 = Form("AliAnalysisTaskHFSubstructure_%s_TC%sTree",ntracksData,tag.Data());
     wagonName3 = Form("AliAnalysisTaskHFSubstructure_%s_TC%sTreeSplittings",ntracksData,tag.Data());
@@ -55,7 +55,7 @@ AliAnalysisTaskHFSubstructure* AddTaskHFSubstructure(const char * ntracksData,
   //AliParticleContainer *trackContTrue=0x0;
 
 
-  if (jetShapeType == AliAnalysisTaskHFSubstructure::kData){
+  if (jetShapeType == AliAnalysisTaskHFSubstructure::kData || jetShapeType == AliAnalysisTaskHFSubstructure::kDataInclusive){
     AliHFTrackContainer* trackContData = new AliHFTrackContainer(ntracksData);
     task->AdoptParticleContainer(trackContData);
   }
@@ -131,6 +131,12 @@ AliAnalysisTaskHFSubstructure* AddTaskHFSubstructure(const char * ntracksData,
     contName1 += "_Inclusive";
     contName2 += "_Inclusive";
     contName3 += "_Inclusive";
+  }
+
+  if (jetShapeType == AliAnalysisTaskHFSubstructure::kDataInclusive){
+    contName1 += "_DataInclusive";
+    contName2 += "_DataInclusive";
+    contName3 += "_DataInclusive";
   }
 
 

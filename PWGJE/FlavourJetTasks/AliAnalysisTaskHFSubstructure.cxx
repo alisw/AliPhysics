@@ -282,7 +282,7 @@ Bool_t AliAnalysisTaskHFSubstructure::FillHistograms()
   fFastJetWrapper->SetRecombScheme(static_cast<fastjet::RecombinationScheme>(0));
 
   fFastJetWrapper_Truth=new AliFJWrapper("fastjetwrapper_truth","fastjetwrapper_truth");
-  
+
   if (fJetShapeType == kData || fJetShapeType == kDetSignal || fJetShapeType == kDetBackground || fJetShapeType == kDetReflection){
     
     fCandidateArray = dynamic_cast<TClonesArray*>(fAodEvent->GetList()->FindObject("D0toKpi"));
@@ -1435,6 +1435,120 @@ Bool_t AliAnalysisTaskHFSubstructure::FillHistograms()
     }
     //delete Particle_Container; 
   }
+
+
+
+
+  if (fJetShapeType == kDataInclusive){
+
+    AliHFTrackContainer* Track_Container=dynamic_cast<AliHFTrackContainer*>(GetTrackContainer(0));
+    if (!Track_Container) return kTRUE;
+    //Track_Container->SetDMesonCandidate(NULL);
+    fFastJetWrapper->Clear();
+    AliAODTrack *Track = NULL;
+    for (Int_t i_Track=0; i_Track<Track_Container->GetNTracks(); i_Track++){
+      Track = static_cast<AliAODTrack*>(Track_Container->GetAcceptParticle(i_Track));
+      if(!Track) continue;
+      fFastJetWrapper->AddInputVector(Track->Px(), Track->Py(), Track->Pz(), Track->E(),i_Track+100);
+    }
+    fFastJetWrapper->Run();
+    std::vector<fastjet::PseudoJet> Inclusive_Jets = fFastJetWrapper->GetInclusiveJets();
+    for (UInt_t i_Jet=0; i_Jet < Inclusive_Jets.size(); i_Jet++){
+      if (Inclusive_Jets[i_Jet].perp()<fJetMinPt) continue;
+      if (TMath::Abs(Inclusive_Jets[i_Jet].pseudorapidity()) > 0.9-fJetRadius) continue;
+      fhEvent->Fill(23); 
+      std::vector<Double_t> Splittings_Zg;
+      std::vector<Double_t> Splittings_DeltaR;
+      std::vector<Double_t> Splittings_LeadingSubJetpT;
+      std::vector<Double_t> Splittings_HardestSubJetD0;
+      std::vector<Double_t> Splittings_RadiatorE;
+      std::vector<Double_t> Splittings_RadiatorpT;
+
+      fastjet::JetDefinition Jet_Definition(fastjet::cambridge_algorithm, fJetRadius*2.5,static_cast<fastjet::RecombinationScheme>(0), fastjet::Best);
+  
+      try{
+	std::vector<fastjet::PseudoJet> Reclustered_Particles(fFastJetWrapper->GetJetConstituents(i_Jet));
+	fastjet::ClusterSequence Cluster_Sequence_CA(Reclustered_Particles, Jet_Definition);
+	std::vector<fastjet::PseudoJet> Reclustered_Jet =  Cluster_Sequence_CA.inclusive_jets(0.0);
+	Reclustered_Jet = sorted_by_pt(Reclustered_Jet);
+         
+
+	fastjet::PseudoJet Daughter_Jet = Reclustered_Jet[0];
+	fastjet::PseudoJet Parent_SubJet_1; 
+	fastjet::PseudoJet Parent_SubJet_2;  
+
+	while(Daughter_Jet.has_parents(Parent_SubJet_1,Parent_SubJet_2)){
+	  if(Parent_SubJet_1.perp() < Parent_SubJet_2.perp()) std::swap(Parent_SubJet_1,Parent_SubJet_2);
+	  Splittings_LeadingSubJetpT.push_back(Parent_SubJet_1.perp());
+	  Splittings_HardestSubJetD0.push_back(0.0);  
+	  Splittings_DeltaR.push_back(Parent_SubJet_1.delta_R(Parent_SubJet_2));
+	  Splittings_Zg.push_back(Parent_SubJet_2.perp()/(Parent_SubJet_1.perp()+Parent_SubJet_2.perp()));
+	  Splittings_RadiatorE.push_back(Daughter_Jet.E());
+	  Splittings_RadiatorpT.push_back(Daughter_Jet.perp());
+	  Daughter_Jet=Parent_SubJet_1;
+	}
+
+         
+      } catch (fastjet::Error) { /*return -1;*/ }
+
+
+	
+      fShapesVar[0] = Inclusive_Jets[i_Jet].perp();
+      fShapesVar[1] = 0.0;
+      fShapesVar[2] = 0.0;
+      fShapesVar[3] = 0.0;
+      fShapesVar[4] = 0.0;
+      fShapesVar[5] = 0.0;
+      fShapesVar[6] = 0.0;
+      fShapesVar[7] = 0.0;
+      fShapesVar[8] = 0.0;
+      fShapesVar[9] = 0.0;
+
+
+      fShapesVar_Splittings_DeltaR.push_back(Splittings_DeltaR);
+      fShapesVar_Splittings_DeltaR_Truth.push_back(Splittings_DeltaR); 
+      fShapesVar_Splittings_Zg.push_back(Splittings_Zg);
+      fShapesVar_Splittings_Zg_Truth.push_back(Splittings_Zg);
+      fShapesVar_Splittings_LeadingSubJetpT.push_back(Splittings_LeadingSubJetpT);
+      fShapesVar_Splittings_LeadingSubJetpT_Truth.push_back(Splittings_LeadingSubJetpT); 
+      fShapesVar_Splittings_HardestSubJetD0.push_back(Splittings_HardestSubJetD0);
+      fShapesVar_Splittings_HardestSubJetD0_Truth.push_back(Splittings_HardestSubJetD0);
+      fShapesVar_Splittings_RadiatorE.push_back(Splittings_RadiatorE);
+      fShapesVar_Splittings_RadiatorE_Truth.push_back(Splittings_RadiatorE);
+      fShapesVar_Splittings_RadiatorpT.push_back(Splittings_RadiatorpT);
+      fShapesVar_Splittings_RadiatorpT_Truth.push_back(Splittings_RadiatorpT); 
+
+
+      fTreeResponseMatrixAxis->Fill();
+      fTreeSplittings->Fill();
+
+      fShapesVar_Splittings_DeltaR.clear();
+      fShapesVar_Splittings_DeltaR_Truth.clear();
+      fShapesVar_Splittings_Zg.clear();
+      fShapesVar_Splittings_Zg_Truth.clear();
+      fShapesVar_Splittings_LeadingSubJetpT.clear();
+      fShapesVar_Splittings_LeadingSubJetpT_Truth.clear();
+      fShapesVar_Splittings_HardestSubJetD0.clear();
+      fShapesVar_Splittings_HardestSubJetD0_Truth.clear();
+      fShapesVar_Splittings_RadiatorE.clear();
+      fShapesVar_Splittings_RadiatorE_Truth.clear();
+      fShapesVar_Splittings_RadiatorpT.clear();
+      fShapesVar_Splittings_RadiatorpT_Truth.clear();
+
+    }
+  }
+
+
+
+
+
+
+
+
+
+
+
+  
 
   delete fFastJetWrapper_Truth;
   delete fFastJetWrapper;
