@@ -67,6 +67,7 @@ class AliSigma0PhotonMotherCuts : public TObject {
 
   void SetPhotonMinPt(float minpT) { fPhotonPtMin = minpT; }
   void SetPhotonMaxPt(float maxpT) { fPhotonPtMax = maxpT; }
+  void SetMinPt(float minpT) { fPtMin = minpT; }
   void SetArmenterosCut(float qtLow, float qtUp, float alphaLow,
                         float alphaUp) {
     fArmenterosCut = true;
@@ -142,13 +143,14 @@ class AliSigma0PhotonMotherCuts : public TObject {
   int fPDGDaughter1;   //
   int fPDGDaughter2;   //
 
-  float fMassSigma;            //
-  float fSigmaMassCut;         //
-  float fSidebandCutUp;        //
-  float fSidebandCutDown;      //
-  float fPhotonPtMin;          //
-  float fPhotonPtMax;          //
-  float fRapidityMax;          //
+  float fMassSigma;        //
+  float fSigmaMassCut;     //
+  float fSidebandCutUp;    //
+  float fSidebandCutDown;  //
+  float fPhotonPtMin;      //
+  float fPhotonPtMax;      //
+  float fPtMin;            //
+  float fRapidityMax;      //
 
   float fArmenterosCut;       //
   float fArmenterosQtLow;     //
@@ -234,7 +236,7 @@ class AliSigma0PhotonMotherCuts : public TObject {
   TH2F *fHistMCV0MotherCheck;  //!
 
  private:
-  ClassDef(AliSigma0PhotonMotherCuts, 25)
+  ClassDef(AliSigma0PhotonMotherCuts, 26)
 };
 
 #endif
