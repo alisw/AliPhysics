@@ -176,6 +176,7 @@ AliConvEventCuts::AliConvEventCuts(const char *name,const char *title) :
   fEMCALTrigInitialized(kFALSE),
   fSecProdBoundary(1.0),
   fMaxPtJetMC(0),
+  fMinFacPtHard(-1),
   fMaxFacPtHard(2.5),
   fMaxFacPtHardSingleParticle(1.5),
   fMimicTrigger(kFALSE),
@@ -300,6 +301,7 @@ AliConvEventCuts::AliConvEventCuts(const AliConvEventCuts &ref) :
   fEMCALTrigInitialized(kFALSE),
   fSecProdBoundary(ref.fSecProdBoundary),
   fMaxPtJetMC(ref.fMaxPtJetMC),
+  fMinFacPtHard(ref.fMinFacPtHard),
   fMaxFacPtHard(ref.fMaxFacPtHard),
   fMaxFacPtHardSingleParticle(ref.fMaxFacPtHardSingleParticle),
   fMimicTrigger(ref.fMimicTrigger),
@@ -1159,7 +1161,9 @@ void AliConvEventCuts::PrintCutsWithValues() {
     else if (fRejectExtraSignals == 1) printf("\t only MB header will be inspected \n");
     else if (fRejectExtraSignals == 4) printf("\t special handling for Jets embedded in MB events \n");
     else if (fRejectExtraSignals > 1) printf("\t special header have been selected \n");
+  printf("\t minimum factor between jet and pt hard = %2.2f \n", fMinFacPtHard);
   printf("\t maximum factor between jet and pt hard = %2.2f \n", fMaxFacPtHard);
+  printf("\t maximum factor between pi0 or eta pt and pt hard = %2.2f \n", fMaxFacPtHardSingleParticle);
 }
 
 ///________________________________________________________________________
@@ -3047,7 +3051,6 @@ Bool_t AliConvEventCuts::IsJetJetMCEventAccepted(AliMCEvent *mcEvent, Double_t& 
       TString GeneratorName = gh->GetName();
       if (GeneratorName.CompareTo("AliGenPythiaEventHeader") == 0 || GeneratorName.Contains("Pythia8Jets")){
         Bool_t eventAccepted = kTRUE;
-        TParticle * jet = 0;
         Int_t nTriggerJets = dynamic_cast<AliGenPythiaEventHeader*>(gh)->NTriggerJets();
         Float_t ptHard = dynamic_cast<AliGenPythiaEventHeader*>(gh)->GetPtHard();
         Float_t tmpjet[]={0,0,0,0};
@@ -3055,20 +3058,24 @@ Bool_t AliConvEventCuts::IsJetJetMCEventAccepted(AliMCEvent *mcEvent, Double_t& 
           dynamic_cast<AliGenPythiaEventHeader*>(gh)->TriggerJet(ijet, tmpjet);
           TParticle jet(94, 21, -1, -1, -1, -1, tmpjet[0],tmpjet[1],tmpjet[2],tmpjet[3], 0,0,0,0);
           //Compare jet pT and pt Hard
-          if(jet.Pt() > fMaxFacPtHard * ptHard){
+          if(jet.Pt() > fMaxFacPtHard * ptHard)
             eventAccepted= kFALSE;
-          }
+          //set highest jet pT
           if (jet.Pt() > fMaxPtJetMC) fMaxPtJetMC = jet.Pt();
         }
+        // if minimum jet pT compared to pT hard is required, reject event based on it
+        if(fMaxPtJetMC < fMinFacPtHard * ptHard)
+          eventAccepted= kFALSE;
+
         if (mcEvent){
           for(Long_t i = 0; i < mcEvent->GetNumberOfPrimaries(); i++) {
             TParticle* particle = (TParticle *)mcEvent->Particle(i);
             if (!particle) continue;
-            if (TMath::Abs(particle->GetPdgCode()) == 111 || TMath::Abs(particle->GetPdgCode()) == 221){
-              if (particle->Pt() > fMaxFacPtHardSingleParticle*ptHard){
+            // if (TMath::Abs(particle->GetPdgCode()) == 111 || TMath::Abs(particle->GetPdgCode()) == 221){
+              if (particle->Pt() > fMaxFacPtHardSingleParticle*ptHard && TMath::Abs(particle->GetPdgCode()) > 21){
                 eventAccepted= kFALSE;
               }
-            }
+            // }
 
           }
         }
@@ -3287,7 +3294,6 @@ Bool_t AliConvEventCuts::IsJetJetMCEventAccepted(AliMCEvent *mcEvent, Double_t& 
       }
     }
     if(eventAccepted){
-      TParticle * jet =  0;
       Int_t nTriggerJets =  dynamic_cast<AliGenPythiaEventHeader*>(eventHeader)->NTriggerJets();
       Float_t ptHard = dynamic_cast<AliGenPythiaEventHeader*>(eventHeader)->GetPtHard();
       Float_t tmpjet[]={0,0,0,0};
@@ -3298,18 +3304,24 @@ Bool_t AliConvEventCuts::IsJetJetMCEventAccepted(AliMCEvent *mcEvent, Double_t& 
         if(jet.Pt() > fMaxFacPtHard * ptHard){
           eventAccepted= kFALSE;
         }
+        //set highest jet pT
         if (jet.Pt() > fMaxPtJetMC) fMaxPtJetMC = jet.Pt();
       }
+      // if minimum jet pT compared to pT hard is required, reject event based on it
+      if(fMaxPtJetMC < fMinFacPtHard * ptHard){
+        eventAccepted= kFALSE;
+      }
+
       if (mcEvent){
         for(Long_t i = 0; i < mcEvent->GetNumberOfPrimaries(); i++) {
-          TParticle* particle = (TParticle *)mcEvent->Particle(i);
+          // TParticle* particle = (TParticle *)mcEvent->Particle(i);
+          AliMCParticle* particle = (AliMCParticle*) mcEvent->GetTrack(i);
           if (!particle) continue;
-          if (TMath::Abs(particle->GetPdgCode()) == 111 || TMath::Abs(particle->GetPdgCode()) == 221){
-            if (particle->Pt() > fMaxFacPtHardSingleParticle*ptHard){
-              eventAccepted= kFALSE;
-            }
-          }
-
+          // if (TMath::Abs(particle->GetPdgCode()) == 111 || TMath::Abs(particle->GetPdgCode()) == 221){
+              if (particle->Pt() > fMaxFacPtHardSingleParticle*ptHard && TMath::Abs(particle->PdgCode()) > 21){
+                eventAccepted= kFALSE;
+              }
+          // }
         }
       }
 
