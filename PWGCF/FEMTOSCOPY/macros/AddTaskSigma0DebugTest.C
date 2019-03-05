@@ -173,6 +173,19 @@ AliAnalysisTaskSE *AddTaskSigma0DebugTest(bool isMC = false,
   } else if (suffix == "7") {
     sigmaCuts->SetArmenterosCut(0.02, 0.1, -0.9, -0.65);
     antiSigmaCuts->SetArmenterosCut(0.02, 0.1, -0.9, -0.65);
+  } else if (suffix == "8") {
+    sigmaCuts->SetMinPt(0.5);
+    antiSigmaCuts->SetMinPt(0.5);
+  } else if (suffix == "9") {
+    sigmaCuts->SetMinPt(1);
+    antiSigmaCuts->SetMinPt(1);
+  } else if (suffix == "10") {
+    sigmaCuts->SetMinPt(1.5);
+    antiSigmaCuts->SetMinPt(1.5);
+  } else if (suffix == "11") {
+    sigmaCuts->SetSigmaMassPt(true);
+    sigmaCuts->SetLightweight(false);
+    antiSigmaCuts->SetSigmaMassPt(true);
   }
 
   if (trigger == "kINT7") {
