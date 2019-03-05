@@ -121,11 +121,7 @@ void AliForwardFlowRun2Task::UserCreateOutputObjects()
 
     fEventList->Add(new TH1D("Centrality","Centrality",fSettings.fCentBins,0,100));
     fEventList->Add(new TH1D("Vertex","Vertex",fSettings.fNZvtxBins,fSettings.fZVtxAcceptanceLowEdge,fSettings.fZVtxAcceptanceUpEdge));
-    fEventList->Add(new TH2D("hOutliers","Maximum #sigma from mean N_{ch} pr. bin",
-       20, 0., 100., 500, 0., 5.)); //((fFlags & kMC) ? 15. : 5. // Sigma <M> histogram
     fEventList->Add(new TH1D("FMDHits","FMDHits",100,0,10));
-    fEventList->Add(new TH1D("EventCuts_FMD","EventCuts_FMD",3,0,3));
-    fEventList->Add(new TH1D("No Primaries","No Primaries",3,0,3));
     fEventList->Add(new TH1F("dNdeta","dNdeta",100 /*fSettings.fNDiffEtaBins*/,fSettings.fEtaLowEdge,fSettings.fEtaUpEdge));
 
     fAnalysisList->Add(new TList());
@@ -230,7 +226,7 @@ void AliForwardFlowRun2Task::UserExec(Option_t *)
 
   Double_t zvertex = fUtil.GetZ();
   Double_t cent = fUtil.GetCentrality(fSettings.centrality_estimator);
-
+  std::cout << cent << std::endl;
 
   if (fSettings.makeFakeHoles) fUtil.MakeFakeHoles(*forwardDist);
 

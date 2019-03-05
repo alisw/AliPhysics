@@ -6,34 +6,40 @@
 //--------------------------------------------------------------------------------------//
 
 //--------------------------------------------------------------------------------------//
-// Analysis task for the computation of the multiparticle correlations with different   //
-// flow harmonics v_n. This script can takes the Monte Carlo simulations data (e.g.     //
-// HIJING), as well as the experimental Pb-Pb data taken by the ALICE experiment.       //
-// The current script computes the multiparticle correlators using the method of the    //
-// Q-vectors for a maximum of 6 different harmonics and 8 particles).                   //
+// Analysis task for the computation of the multiparticle correlations for the flow     //
+// harmonics v_1 to v_6. This version of the script compute the 2-, 4- and 6- particle  //
+// correlations for all the useful combinations of these six harmonics. It can take     //
+// Monte Carlo simulations data (e.g. HIJING), as well as the experimental Pb-Pb data   //
+// taken by the ALICE experiment.                                                       //
+// The method used to compute the multiparticle correlations is the Generic Framework   //
+// based on Q-vectors. A setter lets open the possibility to cross-check the results    //
+// with nested loops.                                                                   //
 //                                                                                      //
 // Author: Cindy Mordasini (cindy.mordasini@cern.ch)                                    //
-// Version: 12.02.2019                                                                  //
+// Version: 27.02.2019                                                                  //
 //--------------------------------------------------------------------------------------//
 
 #ifndef ALIANALYSISTASKTWOMULTICORRELATIONS_H
 #define ALIANALYSISTASKTWOMULTICORRELATIONS_H
 
 #include "AliAnalysisTaskSE.h"
-#include "AliAODTrack.h"
 #include "AliAODEvent.h"
 #include "AliMCEvent.h"
-#include "AliAODMCParticle.h"
 #include "AliVEvent.h"
-#include "TProfile.h"
+#include "AliAODTrack.h"
+#include "TList.h"
 #include "TComplex.h"
 #include "TH1D.h"
+#include "TH1I.h"
+#include "TProfile.h"
 
-//======================================================================================//
+//######################################################################################//
 // Definition of the class.
-class AliAnalysisTaskTwoMultiCorrelations : public AliAnalysisTaskSE{
+//======================================================================================//
+class AliAnalysisTaskTwoMultiCorrelations : public AliAnalysisTaskSE
+{
 public:
-/* The six following functions are mandatory for AliAnalysisTaskSE to use the class properly. */
+/* These six functions are mandatory for the class to work properly. */
   AliAnalysisTaskTwoMultiCorrelations();
   AliAnalysisTaskTwoMultiCorrelations(const char *name, Bool_t useParticleWeights=kFALSE);
   virtual ~AliAnalysisTaskTwoMultiCorrelations();
@@ -43,39 +49,39 @@ public:
   virtual void Terminate(Option_t *);
 
 //--------------------------------------------------------------------------------------//
-// Setters and getters for all the data members.
-  void SetGeneralParameters(Int_t maxNumberCorrelations, Int_t highestHarmonic, Int_t nbHarmonics, Bool_t useParticleWeights, Bool_t computeNestedLoops)
-  {
-    this->fMaxNumberCorrelations = maxNumberCorrelations;
-    this->fMaxFlowHarmonic = highestHarmonic;
-    this->fNumberHarmonicsInSC = nbHarmonics;
-    this->fUseParticleWeights = useParticleWeights;
-    this->fComputeNestedLoops = computeNestedLoops;
-  } // End: void SetGeneralParameters().
-
-  void SetControlListEventCuts(TList* const sclec) {this->fControlListEventCuts = sclec;};
-  TList* GetControlListEventCuts() const {return this->fControlListEventCuts;}
-  void SetControlListTrackCuts(TList* const scltc) {this->fControlListTrackCuts = scltc;};
-  TList* GetControlListTrackCuts() const {return this->fControlListTrackCuts;}
+// Setters and getters for the data members.
+  void SetQAListBeforeSelection(TList* const slbs) {this->fQAListBeforeSelection = slbs;};
+  TList* GetQAListBeforeSelection() const {return this->fQAListBeforeSelection;}
+  void SetQAListAfterSelection(TList* const slas) {this->fQAListAfterSelection = slas;};
+  TList* GetQAListAfterSelection() const {return this->fQAListAfterSelection;}
   void SetListCorrelations(TList* const slc) {this->fListCorrelations = slc;};
   TList* GetListCorrelations() const {return this->fListCorrelations;}
 
-  void SetAnalysisType(Bool_t bothAnalysis, Bool_t mcAnalysis, Bool_t aodAnalysis)
+  void SetGeneralParameters(Int_t maxParticlesInCorrelations, Int_t maxFlowHarmonic, Bool_t useNonUnitWeights, Bool_t crossCheckFourParticle, Bool_t crossCheckNestedLoops)
   {
-    this->fProcessBothKineAndReco = bothAnalysis;
-    this->fProcessOnlyKine = mcAnalysis;
-    this->fProcessOnlyReco = aodAnalysis;
-  } // End: SetAnalysisType().
+    this->fMaxNumberOfParticlesInCorrelations = maxParticlesInCorrelations;
+    this->fHighestFlowHarmonic = maxFlowHarmonic;
+    this->fUseParticleWeights = useNonUnitWeights;
+    this->fCrossCheckFourParticleCorrelations = crossCheckFourParticle;
+    this->fCrossCheckWithNestedLoops = crossCheckNestedLoops;
+  }
 
-  void SetCentralityEstimation(Bool_t useSPD, Bool_t useVzero, Int_t const nBins, Float_t minCentrality, Float_t maxCentrality)
+  void SetAnalysisType(Bool_t aodFiles, Bool_t mcFiles, Bool_t bothFiles)
   {
-    this->fUseSPDForCentrality = useSPD;
-    this->fUseVZeroForCentrality = useVzero;
+    this->fProcessOnlyAOD = aodFiles;
+    this->fProcessOnlyMC = mcFiles;
+    this->fProcessBothMCandAOD = bothFiles;
+  }
+
+  void SetCentralityEstimation(Bool_t useVZero, Bool_t useSPD, Int_t const nBins, Double_t minCentrality, Double_t maxCentrality)
+  {
+    this->fCentralityFromVZero = useVZero;
+    this->fCentralityFromSPD = useSPD;
     this->fCentralityMin = minCentrality;
     this->fCentralityMax = maxCentrality;
-  } // End: void SetCentralityEstimation().
+  }
 
-  void SetEventSelection(Bool_t cutOnVertexX, Float_t minVertexX, Float_t maxVertexX, Bool_t cutOnVertexY, Float_t minVertexY, Float_t maxVertexY, Bool_t cutOnVertexZ, Float_t minVertexZ, Float_t maxVertexZ)
+  void SetEventSelection(Bool_t cutOnVertexX, Double_t minVertexX, Double_t maxVertexX, Bool_t cutOnVertexY, Double_t minVertexY, Double_t maxVertexY, Bool_t cutOnVertexZ, Double_t minVertexZ, Double_t maxVertexZ, Int_t minNumberOfTracks)
   {
     this->fCutOnVertexX = cutOnVertexX;
     this->fVertexMinX = minVertexX;
@@ -86,170 +92,160 @@ public:
     this->fCutOnVertexZ = cutOnVertexZ;
     this->fVertexMinZ = minVertexZ;
     this->fVertexMaxZ = maxVertexZ;
-  } // End: void SetEventSelection().
+    this->fNumberOfTracksMin = minNumberOfTracks;
+  } 
 
-  void SetTrackSelection(Float_t minPt, Float_t maxPt, Float_t minEta, Float_t maxEta, Int_t minNumberOfClustersTPC, Float_t maxDCAxy, Float_t maxDCAz)
+  void SetTrackSelection(Double_t minPt, Double_t maxPt, Double_t minEta, Double_t maxEta, Int_t minNumberOfClustersTPC, Double_t minChiSquareTPC, Double_t maxChiSquareTPC, Double_t maxDCAxy, Double_t maxDCAz)
   {
     this->fPtMin = minPt;
     this->fPtMax = maxPt;
     this->fEtaMin = minEta;
     this->fEtaMax = maxEta;
     this->fNumberOfTPCMin = minNumberOfClustersTPC;
+    this->fChiSquarePInTPCMin = minChiSquareTPC;
+    this->fChiSquarePInTPCMax = maxChiSquareTPC;
     this->fDCAxyMax = maxDCAxy;
     this->fDCAzMax = maxDCAz;
-  } // End: void SetTrackSelection().
+  }
 
-  void SetHarmonics(Int_t nOne, Int_t nTwo, Int_t nThree, Int_t nFour, Int_t nFive, Int_t nSix, Int_t nSeven, Int_t nEight)
+  void SetQAHistoForEventSelection(Int_t HNOTbins, Double_t HNOTmax)
   {
-    this->fHarmonicOne = nOne;
-    this->fHarmonicTwo = nTwo;
-    this->fHarmonicThree = nThree;
-    this->fHarmonicFour = nFour;
-    this->fHarmonicFive = nFive;
-    this->fHarmonicSix = nSix;
-    this->fHarmonicSeven = nSeven;
-    this->fHarmonicEight = nEight;
-  } // End: void SetHarmonics().
+    this->fHNOTNumberOfBins = HNOTbins;
+    this->fHNOTMax = HNOTmax;
+  }
 
-// Methods called in the constructor.
+//--------------------------------------------------------------------------------------//
+// Methods called in the constructors.
   virtual void InitialiseArraysOfQvectors();
-  virtual void InitialiseArraysOfTProfiles();
 
-// Methods called in UserCreateOutputObjects().
+//--------------------------------------------------------------------------------------//
+// Methods called in 'UserCreateOutputObjects'.
   virtual void BookAllLists();
-  virtual void BookControlListEventCuts();
-  virtual void BookControlListTrackCuts();
+  virtual void BookQAListBeforeSelection();
+  virtual void BookQAListAfterSelection();
   virtual void BookListCorrelations();
 
-// Methods called in UserExec(Option_t *).
-  virtual void AODanalysis(AliAODEvent *aAODevent);
-  virtual void MCanalysis(AliMCEvent *aMCevent);
-  Bool_t CreateTrackSelection(Double_t currentPt, Double_t currentEta, Int_t currentNumberOfTPC, Double_t currentDCAXY, Double_t currentDCAZ);
-  virtual void CalculateQvectors(long long nParticles, Double_t angles[], Double_t weights[]);
-  virtual void GSCfullAnalysis(long long nParticles, Double_t angles[], Double_t weights[]);
+//--------------------------------------------------------------------------------------//
+// Methods called in 'UserExec'.
+  virtual void AnalyseAODevent(AliAODEvent *aAODevent);
+  virtual void AnalyseMCevent(AliMCEvent *aMCevent);
+  Bool_t ApplyTrackSelection(Double_t momentum, Double_t pseudorapidity, Int_t NclustersInTPC, Double_t TPCchiSquare, Double_t xyDCA, Double_t zDCA);
+  virtual void CalculateQvectors(long long numberOfParticles, Double_t angles[], Double_t pWeights[]);
   TComplex Q(Int_t n, Int_t p);
+  virtual void ComputeMultiparticleCorrelations(long long numberOfParticles, Double_t angles[], Double_t pWeights[]);
   TComplex CalculateRecursion(Int_t n, Int_t *harmonic, Int_t mult=1, Int_t skip=0);
-  Double_t ComputeTwoNestedLoops(long long nParticles, Int_t *harmonic, Double_t angles[], Double_t weights[], TProfile *profile);
-  Double_t ComputeThreeNestedLoops(long long nParticles, Int_t *harmonic, Double_t angles[], Double_t weights[], TProfile *profile);
-  Double_t ComputeFourNestedLoops(long long nParticles, Int_t *harmonic, Double_t angles[], Double_t weights[], TProfile *profile);
+  virtual void ComputeTwoNestedLoops(long long nParticles, Int_t *harmonic, Double_t aAngles[], Double_t weights[], TProfile *profile, Double_t middleBin);
+  virtual void ComputeFourNestedLoops(long long nParticles, Int_t *harmonic, Double_t aAngles[], Double_t weights[], TProfile *profile, Double_t middleBin);
 
-// Methods called in Terminate(Option_t *).
+//--------------------------------------------------------------------------------------//
+// Methods called in 'Terminate'.
 
+
+//======================================================================================//
+// Data members.
 //--------------------------------------------------------------------------------------//
 private:
   AliAnalysisTaskTwoMultiCorrelations(const AliAnalysisTaskTwoMultiCorrelations& aattmc);
   AliAnalysisTaskTwoMultiCorrelations& operator=(const AliAnalysisTaskTwoMultiCorrelations& aattmc);
 
-// General parameters.
-  Int_t fMaxNumberCorrelations; // Maximum number of particles in the correlator (default: 8).
-  Int_t fMaxFlowHarmonic; // Maximum harmonic n for v_n (default: 6).
-  TComplex fQvectors[49][9];  // All needed combinations of Q-vectors (size: [fMaxFlowHarmonic*fMaxNumberCorrelations+1][fMaxNumberCorrelations+1]).
-  Int_t fNumberHarmonicsInSC; // Number of harmonics in the GSC (default: 3).
-  Bool_t fUseParticleWeights; // Use non-unit particle weights (default: kFALSE).
-  Bool_t fComputeNestedLoops; // Compute the nested loops for cross-check (default: kFALSE).
-
 // Structure of the output file.
-  TList *fMainList; // Main output list.
-  TList *fControlListEventCuts; // Secondary list with the observables for the event cuts.
-  TList *fControlListTrackCuts; // Secondary list with the observables for the track cuts.
-  TList *fListCorrelations; // Secondary list with the results for all the correlations.
-  TList *fListTwoParticles; // Tertiary list with the 2-p correlations.
-  TList *fListThreeParticles; // Tertiary list with the 3-p correlations.
-  TList *fListFourParticles;  // Tertiary list with the 4-p correlations.
-  TList *fListSixParticles; // Tertiary list with the 6- and 8-p correlations.
+  TList *fMainList; // Mother list inside the output file.
+  TList *fQAListBeforeSelection; // Daughter list with the observables before selection (event or track).
+  TList *fQAListAfterSelection; // Daughter list with the observables after the full selection.
+  TList *fListCorrelations; // Daughter list with the multiparticle correlations.
 
-// Control histograms for the distribution of observables for the event selection.
-  TH1D *fHistoCentrality; //! Centrality distribution.
-  TH1D *fHistoNumberOfTracksBeforeCuts; //! Number of tracks in the event before any selection.
-  TH1D *fHistoNumberOfTracksAfterEventCuts; //! Number of tracks remaining after the event selection.
-  TH1D *fHistoVertexXBeforeCuts;  //! x-position of the PV before the event selection.
-  TH1D *fHistoVertexYBeforeCuts;  //! y-position of the PV before the event selection.
-  TH1D *fHistoVertexZBeforeCuts;  //! z-position of the PV before the event selection.
-  TH1D *fHistoVertexXAfterEventCuts;  //! x-position of the PV after the event selection.
-  TH1D *fHistoVertexYAfterEventCuts;  //! y-position of the PV after the event selection.
-  TH1D *fHistoVertexZAfterEventCuts;  //! z-position of the PV after the event selection.
+// General parameters.
+  Int_t fMaxNumberOfParticlesInCorrelations;  // Maximum number of particles in the correlations. (default: 8)
+  Int_t fHighestFlowHarmonic; // Highest flow harmonic taken into account. (default: v_6).
+  TComplex fQvectors[49][9];  // All needed combinations of Q-vectors. (size: [fHighestFlowHarmonic*fMaxNumberCorrelations+1][fMaxNumberCorrelations+1])
+  Bool_t fUseParticleWeights; // Use non-unit particle weights. (default: kFALSE)
+  Bool_t fCrossCheckFourParticleCorrelations; // Compute the doubled combinations of harmonics for <4> to cross-check the results. (default: kFALSE)
+  Bool_t fCrossCheckWithNestedLoops;  // Compute the nested loops for the 2- and 4-particle correlations to cross-check the results. (default: kFALSE)
 
-// Control histrograms for the distribution of observables for the track selection.
-  TH1D *fHistoNumberOfTracksAfterAllCuts; //! Number of tracks remaining after both the event and the track selection.
-  TH1D *fHistoPtBeforeCuts; //! Transverse momentum before the track selection.
-  TH1D *fHistoPtAfterCuts;  //! Transverse momentum distribution after the track selection.  
-  TH1D *fHistoEtaBeforeCuts;  //! Pseudorapidity distribution before the track selection.
-  TH1D *fHistoEtaAfterCuts; //! Pseudorapidity distribution after the track selection.
-  TH1D *fHistoPhiBeforeCuts;  //! Azimuthal angles distribution before the track selection.
-  TH1D *fHistoPhiAfterCuts; //! Azimuthal angles distribution after the track selection.
-  TH1D *fHistoTPCClustersBeforeCuts;  //! Number of TPC clusters before the track selection.
-  TH1D *fHistoTPCClustersAfterCuts; //! Number of TPC clusters after the track selection.
-  TH1D *fHistoDCAXYBeforeCuts; //! xy-plane of the DCA before the track selection.
-  TH1D *fHistoDCAZBeforeCuts; //! z-coordinate of the DCA before the track selection.
-  TH1D *fHistoDCAXYAfterCuts;  //! xy-plane of the DCA after the track selection.
-  TH1D *fHistoDCAZAfterCuts;  //! z-coordinate of the DCA after the track selection.
-
-// TProfiles with the final multiparticle correlations.
-  TProfile *fProfileCosineTwoParticles[6];  //! <2>_{j,-j}, j: k,l,m,n,(k+l),(k-l).
-  TProfile *fProfileCosineTwoNestedLoops[6];  //! <2>_{j,-j} with nested loops.
-  TProfile *fProfileTwoCosine[5]; //! <<2>_{i,-i}<2>_{j,-j}> for ij: kl,km,lm, and <<2>_{i,-i}<2>_{j,-j}<2>_{h,-h}>, ijh: klm and <<4>_{k,l,-k,-l} <2>_{m,-m}>.
-  TProfile *fProfileTwoCosineNestedLoops[5];  //! N<<2>_{i,-i}<2>_{j,-j}> with nested loops.
-  TProfile *fProfileCosineThreeParticles[4];  //! <3>_{h,i,j}, h: (k+l),(k-l) (first two), j: (l-k),(-k-l) (last two).
-  TProfile *fProfileCosineThreeNestedLoops[4];  //! <3>_{h,i,j} with nested loops.
-  TProfile *fProfileCosineFourParticles[6]; //! <4>_{i,j,-i,-j}, ij: kl,km,lm,kn,ln,mn.
-  TProfile *fProfileCosineFourNestedLoops[6]; //! <4>_{i,j,-i,-j} with nested loops.
-  TProfile *fProfileCosineSixParticles[4];  //! <6>_{h,i,j,-h,-i,-j}, hij: klm,kln,kmn,lmn.
-  TProfile *fProfileCosineEightParticles; //! <8>_{k,l,m,n,-k,-l,-m,-n}.
-
-// Type of analysis.
-  TString *fAnalysisType; //! Type of analysis: MC or AOD.
-  Bool_t fProcessBothKineAndReco; // Process both MC and AOD (default: kFALSE).
-  Bool_t fProcessOnlyKine;  // Process only MC (default: kFALSE).
-  Bool_t fProcessOnlyReco;  // Process only AOD (default: kFALSE).
+// Type of files used in the analysis.
+  Bool_t fProcessOnlyAOD; // Process only AOD files (or Reco). (default: kFALSE)
+  Bool_t fProcessOnlyMC;  // Process only MC files (or Kine). (default: kFALSE)
+  Bool_t fProcessBothMCandAOD;  // Process both MC and AOD files. (default: kFALSE)
 
 // Determination of the centrality.
-  TString *fCentralitySelection;  //! Detector for the centrality estimation: SPD (CL1) or V0 (V0M).
-  Bool_t fUseSPDForCentrality;  // Use the SPD detector (default: kFALSE).
-  Bool_t fUseVZeroForCentrality;  // Use the V0 detector (default: kFALSE).
-  Double_t fCentralityMin;  // Minimum value for the centrality percentile (default: 0).
-  Double_t fCentralityMax;  // Maximum value for the centrality percentile (default: 100).
+  Bool_t fCentralityFromVZero;  // Use the V0 detector to estimate the centrality of the events. (default: kFALSE)
+  Bool_t fCentralityFromSPD;  // Use the SPD detector to estimate the centrality of the events. (default: kFALSE)
+  Double_t fCentralityMin;  // Minimum value for the centrality percentile. (default: 0)
+  Double_t fCentralityMax;  // Maximum value for the centrality percentile. (default: 100)
 
 // Event selection.
-  Bool_t fCutOnVertexX; // Apply the cuts on the x-position of the PV (default: kFALSE).
-  Double_t fVertexMinX; // Minimum of the x-position of the PV (default: -44).
-  Double_t fVertexMaxX; // Maximum of the x-position of the PV (default: -44).
+  Bool_t fCutOnVertexX; // Apply the cuts on the x-position of the PV? (default: kFALSE)
+  Double_t fVertexMinX; // Minimum of the x-position of the PV. (default: -44)
+  Double_t fVertexMaxX; // Maximum of the x-position of the PV. (default: -44)
 
-  Bool_t fCutOnVertexY; // Apply the cuts on the y-position of the PV (default: kFALSE).
-  Double_t fVertexMinY; // Minimum of the y-position of the PV (default: -44).
-  Double_t fVertexMaxY; // Maximum of the y-position of the PV (default: -44).
+  Bool_t fCutOnVertexY; // Apply the cuts on the y-position of the PV? (default: kFALSE)
+  Double_t fVertexMinY; // Minimum of the y-position of the PV. (default: -44)
+  Double_t fVertexMaxY; // Maximum of the y-position of the PV. (default: -44)
 
-  Bool_t fCutOnVertexZ; // Apply the cuts on the y-position of the PV (default: kFALSE).
-  Double_t fVertexMinZ; // Minimum of the z-position of the PV (default: -10 cm).
-  Double_t fVertexMaxZ; // Maximum of the z-position of the PV (default: 10 cm).
+  Bool_t fCutOnVertexZ; // Apply the cuts on the y-position of the PV? (default: kFALSE)
+  Double_t fVertexMinZ; // Minimum of the z-position of the PV. (default: -10 cm)
+  Double_t fVertexMaxZ; // Maximum of the z-position of the PV. (default: 10 cm)
+
+  Int_t fNumberOfTracksMin; // Strict minimum number of tracks needed in an event to have an event weight which makes sense. (default: 6)
 
 // Track selection.
-  Double_t fPtMin;  // Minimum value of the transverse momentum (default: 0.2 GeV).
-  Double_t fPtMax;  // Maximum value of the transverse momentum (default: 5 GeV).
+  Double_t fPtMin;  // Minimum value of the transverse momentum. (default: 0.2 GeV)
+  Double_t fPtMax;  // Maximum value of the transverse momentum. (default: 5 GeV)
 
-  Double_t fEtaMin; // Minimum value of the pseudorapidity (default: -0.8).
-  Double_t fEtaMax; // Maximum value of the pseudorapidity (default: 0.8).
+  Double_t fEtaMin; // Minimum value of the pseudorapidity. (default: -0.8)
+  Double_t fEtaMax; // Maximum value of the pseudorapidity. (default: 0.8)
 
-  Double_t fNumberOfTPCMin; // Minimum number of TPC clusters (default: 70?).
+  Int_t fFilter;  // Filter bit used on the tracks. (default: 128)
+  Int_t fNumberOfTPCMin; // Minimum number of TPC clusters. (default: 70)
+  Double_t fChiSquarePInTPCMin;  // Minimum value of chi^2 of the track momentum in TPC. (default: 0.1)
+  Double_t fChiSquarePInTPCMax;  // Maximum value of chi^2 of the track momentum in TPC. (default: 4.)
+  
+  Double_t fDCAxyMax;  // Maximum value for the xy-coordinate of the DCA. (default: 3.2 cm)
+  Double_t fDCAzMax;  // Maximum value for the z-coordinate of the DCA. (default: 2.4 cm)
 
-  Double_t fDCAxyMax;  // Maximum value for the xy-coordinate of the DCA (default: 3.2 cm).
-  Double_t fDCAzMax;  // Maximum value for the z-coordinate of the DCA (default: 2.4 cm).
+// TH1D with the observables for the event selection.
+  TH1D *fHistoCentrality; //! Distribution of the centrality of the events.
+  TH1I *fHistoInitialNumberOfTracks;  //! Distribution of the initial number of tracks.
+  TH1I *fHistoNumberOfTracksBeforeTrackSelection; //! Distribution of the number of tracks before the track selection.
+  TH1I *fHistoFinalNumberOfTracks;  //! Final number of tracks.
+  Int_t fHNOTNumberOfBins;  // Number of bins for 'fHisto*NumberOfTracks'. (default: 30000)
+  Double_t fHNOTMax;  // Maximum value for 'fHisto*NumberOfTracks'. (default: 30000)
+  TH1D *fHistoVertexXBeforeSelection; //! Distribution of the initial PV x-position.
+  TH1D *fHistoVertexXAfterSelection;  //! Distribution of the PV x-position after the full selection.
+  TH1D *fHistoVertexYBeforeSelection; //! Distribution of the initial PV y-position.
+  TH1D *fHistoVertexYAfterSelection;  //! Distribution of the PV y-position after the full selection.
+  TH1D *fHistoVertexZBeforeSelection; //! Distribution of the initial PV z-position.
+  TH1D *fHistoVertexZAfterSelection;  //! Distribution of the PV z-position after the full selection.
 
-// Harmonics.
-  Int_t fHarmonicOne; // Harmonic n_1 (default: 2).
-  Int_t fHarmonicTwo; // Harmonic n_2 (default: -2).
-  Int_t fHarmonicThree; // Harmonic n_3 (default: 3).
-  Int_t fHarmonicFour;  // Harmonic n_4 (default: -3).
-  Int_t fHarmonicFive;  // Harmonic n_5 (default: 4).
-  Int_t fHarmonicSix; // Harmonic n_6 (default: -4).
-  Int_t fHarmonicSeven; // Harmonic n_7 (default: 0).
-  Int_t fHarmonicEight; // Harmonic n_8 (default: 0).
+// TH1D with the observables for the track selection.
+  TH1D *fHistoPtBeforeSelection;  //! Distribution of the transverse momentum before the track selection.
+  TH1D *fHistoPtAfterSelection; //! Distribution of the transverse momentum after the full selection.
+  TH1D *fHistoEtaBeforeSelection; //! Distribution of the pseudorapidity before the track selection.
+  TH1D *fHistoEtaAfterSelection;  //! Distribution of the pseudorapidity after the full selection.
+  TH1D *fHistoPhiBeforeSelection; //! Distribution of the azimuthal angles before the track selection.
+  TH1D *fHistoPhiAfterSelection;  //! Distribution of the azimuthal angles after the full selection.
+  TH1I *fHistoTPCClustersBeforeSelection; //! Distribution of the number of TPC clusters before the track selection.
+  TH1I *fHistoTPCClustersAfterSelection;  //! Distribution of the number of TPC clusters after the full selection.
+  TH1D *fHistoTPCChiSquareBeforeSelection;  //! Distribution of the chi square of the track momentum in the TPC before the track selection.
+  TH1D *fHistoTPCChiSquareAfterSelection; //! Distribution of the chi square of the track momentum in the TPC after the full selection.
+  TH1D *fHistoDCAXYBeforeSelection; //! Distribution of the xy-plane of the DCA before the track selection.
+  TH1D *fHistoDCAXYAfterSelection;  //! Distribution of the xy-plane of the DCA after the full selection.
+  TH1D *fHistoDCAZBeforeSelection;  //! Distribution of the z-coordinate of the DCA before the track selection.
+  TH1D *fHistoDCAZAfterSelection; //! Distribution of the z-coordinate of the DCA after the full selection.
 
-// Version counter for the submissions on Grid.
-/// Increase the counter by one when the latest version changes the structure
-/// of the output file (version of the 2019-02-08, counter: 6).
-  ClassDef(AliAnalysisTaskTwoMultiCorrelations,6);
+// TProfiles with the final multiparticle correlations.
+  TProfile *fProfileTwoParticleCorrelations;  //! <2>_{j,-j} for j = 1..6. (6 bins)
+  TProfile *fProfileFourParticleCorrelations; //! <4>_{j,k,-j,-k} for j = 1..6, k = j..6. (21 bins)
+  TProfile *fProfileFourParticleCorrelationsCrossCheck; //! <4>_{j,k,-j,-k} for j = 2..6, k = 1..j-1. (15 bins, cross-check purpose)
+  TProfile *fProfileSixParticleCorrelations;  //! <6>_{j,k,l,-j,-k,-l} for j = 1..4, k = 2..5 (k > j), l = 3..6 (l > k). (20 bins)
+  TProfile *fProfileTwoParticleCorrelationsNestedLoops; //! <2>_{j,-j} for j = 1..6 with nested loops. (6 bins)
+  TProfile *fProfileFourParticleCorrelationsNestedLoops;  //! <4>_{j,k,-j,-k} for j = 1..6, k = j..6 with nested loops. (21 bins)
 
-};  // End: class AliAnalysisTaskTwoMultiCorrelations().
+//--------------------------------------------------------------------------------------//
+// Version number to handle properly objects written before and after the changes.
+// Version 7, date: 2019-02-27.
+  ClassDef(AliAnalysisTaskTwoMultiCorrelations, 7);
+
+};  // End: class AliAnalysisTaskTwoMultiCorrelations.
 
 #endif
-

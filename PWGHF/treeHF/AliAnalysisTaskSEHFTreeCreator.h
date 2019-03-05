@@ -206,6 +206,8 @@ private:
     Int_t                   fNtracks;                              /// number of tracks
     Int_t                   fIsEvRej;                              /// flag with information about rejection of the event
     Int_t                   fRunNumber;                            /// run number
+    Int_t                   fnTracklets;                           /// number of tracklets
+    Int_t                   fnV0A;                                 /// V0A multiplicity 
 
     Bool_t                  fFillMCGenTrees;                       /// flag to enable fill of the generated trees
   
@@ -215,7 +217,7 @@ private:
     Int_t                   fTreeSingleTrackVarsOpt;               /// option for single-track variables to be filled in the trees
   
     /// \cond CLASSIMP
-    ClassDef(AliAnalysisTaskSEHFTreeCreator,8);
+    ClassDef(AliAnalysisTaskSEHFTreeCreator,9);
     /// \endcond
 };
 

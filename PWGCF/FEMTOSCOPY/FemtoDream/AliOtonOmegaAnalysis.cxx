@@ -254,8 +254,8 @@ void AliOtonOmegaAnalysis::InitializeTreeBooking() {
  //fomegaTTree->Branch("ProtonP",&fTProtonP,"fTProtonP[fTnProton]/F");
  fomegaTTree->Branch("ProtonPt",&fTProtonPt,"fTProtonPt[fTnProton]/F");
  //fomegaTTree->Branch("ProtonTPCmom",&fTProtonTPCmom,"fTProtonTPCmom[fTnProton]/F");
- //fomegaTTree->Branch("ProtonCharge",&fTProtonCharge,"fTProtonCharge[fTnCascade]/S");
- fomegaTTree->Branch("ProtonDCA",&fTProtonDCA,"fTProtonDCA[fTnCascade]/F");
+ //fomegaTTree->Branch("ProtonCharge",&fTProtonCharge,"fTProtonCharge[fTnProton]/S");
+ fomegaTTree->Branch("ProtonDCA",&fTProtonDCA,"fTProtonDCA[fTnProton]/F");
  //fomegaTTree->Branch("ProtonNcl",&fTProtonNcl,"fTProtonNcl[fTnProton]/I");
  //fomegaTTree->Branch("ProtonCrF",&fTProtonCrF,"fTProtonCrF[fTnProton]/F");
  //fomegaTTree->Branch("ProtonShared",&fTProtonShared,"fTProtonShared[fTnProton]/I");
