@@ -106,13 +106,15 @@ public:
     Bool_t CheckDaugAcc(TClonesArray* arrayMC,Int_t nProng, Int_t *labDau);
     AliAODVertex* ReconstructBplusVertex(const AliVVertex *primary, TObjArray *tracks, Double_t bField, Double_t dispersion);
     
+    unsigned int GetEvID();
+    
 private:
     
     AliAnalysisTaskSEHFTreeCreator(const AliAnalysisTaskSEHFTreeCreator&);
     AliAnalysisTaskSEHFTreeCreator& operator=(const AliAnalysisTaskSEHFTreeCreator&);
     
     
-    
+    unsigned int            fEventNumber;
     TH1F                    *fNentries;                            //!<!   histogram with number of events on output slot 1
     TH2F                    *fHistoNormCounter;                    //!<!   histogram with number of events on output slot 1
     TList                   *fListCuts;                            //      list of cuts sent to output slot 2
@@ -206,6 +208,9 @@ private:
     Int_t                   fNtracks;                              /// number of tracks
     Int_t                   fIsEvRej;                              /// flag with information about rejection of the event
     Int_t                   fRunNumber;                            /// run number
+    UInt_t                  fEventID;                              /// unique event ID
+    TString                 fFileName;
+    unsigned int            fDirNumber;
     Int_t                   fnTracklets;                           /// number of tracklets
     Int_t                   fnV0A;                                 /// V0A multiplicity 
 
@@ -217,7 +222,7 @@ private:
     Int_t                   fTreeSingleTrackVarsOpt;               /// option for single-track variables to be filled in the trees
   
     /// \cond CLASSIMP
-    ClassDef(AliAnalysisTaskSEHFTreeCreator,9);
+    ClassDef(AliAnalysisTaskSEHFTreeCreator,10);
     /// \endcond
 };
 

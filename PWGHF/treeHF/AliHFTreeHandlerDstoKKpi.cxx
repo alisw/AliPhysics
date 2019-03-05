@@ -108,14 +108,16 @@ TTree* AliHFTreeHandlerDstoKKpi::BuildTree(TString name, TString title)
 }
 
 //________________________________________________________________
-bool AliHFTreeHandlerDstoKKpi::SetVariables(AliAODRecoDecayHF* cand, float bfield, int masshypo, AliPIDResponse *pidrespo) 
+bool AliHFTreeHandlerDstoKKpi::SetVariables(int runnumber, unsigned int eventID, AliAODRecoDecayHF* cand, float bfield, int masshypo, AliPIDResponse *pidrespo) 
 {
   if(!cand) return false;
   if(fFillOnlySignal) { //if fill only signal and not signal candidate, do not store
     if(!(fCandTypeMap&kSignal || fCandTypeMap&kRefl)) return true;
   }
   fNCandidates++;
-
+  fRunNumber.push_back(runnumber);
+  fEvID.push_back(eventID);
+    
   //topological variables
   //common
   fCandType.push_back(fCandTypeMap);

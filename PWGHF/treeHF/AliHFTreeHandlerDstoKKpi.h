@@ -37,7 +37,7 @@ class AliHFTreeHandlerDstoKKpi : public AliHFTreeHandler
     virtual ~AliHFTreeHandlerDstoKKpi();
 
     virtual TTree* BuildTree(TString name="tree", TString title="tree");
-    virtual bool SetVariables(AliAODRecoDecayHF* cand, float bfield, int masshypo=0, AliPIDResponse *pidrespo=0x0);
+    virtual bool SetVariables(int runnumber, unsigned int eventID, AliAODRecoDecayHF* cand, float bfield, int masshypo=0, AliPIDResponse *pidrespo=0x0);
     virtual void FillTree();
 
     void SetMassKKOption(int opt) {fMassKKOpt=opt;}
