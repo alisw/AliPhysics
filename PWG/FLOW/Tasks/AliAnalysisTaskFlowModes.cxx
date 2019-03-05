@@ -1510,7 +1510,8 @@ Bool_t AliAnalysisTaskFlowModes::IsEventSelected_PbPb()
   fESDvsTPConlyLinearCut[0] = 700.;
   fESDvsTPConlyLinearCut[1] = 3.38;
     
-  if(multEsdn > fESDvsTPConlyLinearCut[0] + fESDvsTPConlyLinearCut[1] * multTPCn) return kFALSE;
+  if(fExtraPileUp && (multEsdn > fESDvsTPConlyLinearCut[0] + fESDvsTPConlyLinearCut[1] * multTPCn)) return kFALSE;
+  if(!fExtraPileUp && (multEsdn > 15000 + fESDvsTPConlyLinearCut[1] * multTPCn)) return kFALSE;
   fhEventCounter->Fill("ESD TPC Mult. Diff. OK",1);
 
   Int_t fTOFvsFB32nSigmaCut[2];
@@ -1542,7 +1543,7 @@ Bool_t AliAnalysisTaskFlowModes::IsEventSelected_PbPb()
   Double_t sigma32tof = fTOFvsFB32sigmaPars[0] + fTOFvsFB32sigmaPars[1]* multTrkn + fTOFvsFB32sigmaPars[2]* pow(multTrkn,2) + fTOFvsFB32sigmaPars[3]* pow(multTrkn,3) + fTOFvsFB32sigmaPars[4]* pow(multTrkn,4) + fTOFvsFB32sigmaPars[5]* pow(multTrkn,5);
 
 
-  if ((multTrkTOFn > mu32tof + fTOFvsFB32nSigmaCut[0] * sigma32tof || multTrkTOFn < mu32tof - fTOFvsFB32nSigmaCut[1] * sigma32tof)) return kFALSE;
+  if (fExtraPileUp && (multTrkTOFn > mu32tof + fTOFvsFB32nSigmaCut[0] * sigma32tof || multTrkTOFn < mu32tof - fTOFvsFB32nSigmaCut[1] * sigma32tof)) return kFALSE;
   //if(fExtraPileUp && multTrkTOFn< (-32+ 0.32*multTrkn+0.000037*multTrkn*multTrkn)) return kFALSE;
   //if(fExtraPileUp && multTrkTOFn> (13+0.46*multTrkn+0.000018*multTrkn*multTrkn)) return kFALSE;
   fhEventCounter->Fill("TOF fb32 Mult. correlation OK",1);
@@ -1749,7 +1750,9 @@ void AliAnalysisTaskFlowModes::FillEventsQA(const Short_t iQAindex)
         fESDvsTPConlyLinearCut[0] = 700.;
         fESDvsTPConlyLinearCut[1] = 3.38;
 
-        if(multEsdn > fESDvsTPConlyLinearCut[0] + fESDvsTPConlyLinearCut[1] * multTPCn) return;
+        if(fExtraPileUp && (multEsdn > fESDvsTPConlyLinearCut[0] + fESDvsTPConlyLinearCut[1] * multTPCn)) return;
+        if(!fExtraPileUp && (multEsdn > 15000 + fESDvsTPConlyLinearCut[1] * multTPCn)) return;
+
   }
   fhQAEventsPileUp[iQAindex]->Fill(multTPC,multEsd);
   
@@ -1783,7 +1786,7 @@ void AliAnalysisTaskFlowModes::FillEventsQA(const Short_t iQAindex)
 	Double_t mu32tof = fTOFvsFB32correlationPars[0] + fTOFvsFB32correlationPars[1]* multTrkn + fTOFvsFB32correlationPars[2]* pow(multTrkn,2) + fTOFvsFB32correlationPars[3]* pow(multTrkn,3);
         Double_t sigma32tof = fTOFvsFB32sigmaPars[0] + fTOFvsFB32sigmaPars[1]* multTrkn + fTOFvsFB32sigmaPars[2]* pow(multTrkn,2) + fTOFvsFB32sigmaPars[3]* pow(multTrkn,3) + fTOFvsFB32sigmaPars[4]* pow(multTrkn,4) + fTOFvsFB32sigmaPars[5]* pow(multTrkn,5);
 
-        if ((multTrkTOFn > mu32tof + fTOFvsFB32nSigmaCut[0] * sigma32tof || multTrkTOFn < mu32tof - fTOFvsFB32nSigmaCut[1] * sigma32tof)) return;
+        if (fExtraPileUp && (multTrkTOFn > mu32tof + fTOFvsFB32nSigmaCut[0] * sigma32tof || multTrkTOFn < mu32tof - fTOFvsFB32nSigmaCut[1] * sigma32tof)) return;
 
   	//if(fExtraPileUp && multTrkTOFn< (-32+ 0.32*multTrkn+0.000037*multTrkn*multTrkn)) return;
   	//if(fExtraPileUp && multTrkTOFn> (13+0.46*multTrkn+0.000018*multTrkn*multTrkn)) return;	
