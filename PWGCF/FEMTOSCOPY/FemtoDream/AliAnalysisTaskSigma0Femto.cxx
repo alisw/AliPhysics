@@ -352,6 +352,10 @@ void AliAnalysisTaskSigma0Femto::UserCreateOutputObjects() {
     fQA->Add(fEvent->GetEvtCutList());
     if (fEvtCuts->GetHistList() && !fIsLightweight) {
       fEvtHistList = fEvtCuts->GetHistList();
+    } else {
+      fEvtHistList = new TList();
+      fEvtHistList->SetName("EvtCuts");
+      fEvtHistList->SetOwner(true);
     }
   } else {
     AliWarning("Event cuts are missing! \n");
@@ -437,6 +441,10 @@ void AliAnalysisTaskSigma0Femto::UserCreateOutputObjects() {
   }
   if (!fConfig->GetMinimalBookingME() && fPartColl && fPartColl->GetQAList()) {
     fResultQAList = fPartColl->GetQAList();
+  } else {
+    fResultQAList = new TList();
+    fResultQAList->SetName("ResultsQA");
+    fResultQAList->SetOwner(true);
   }
 
   PostData(1, fQA);
