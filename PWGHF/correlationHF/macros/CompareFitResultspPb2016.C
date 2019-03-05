@@ -959,14 +959,14 @@ TH1D *GetAndPreparePP(Int_t binass,Int_t quantity,TGraphAsymmErrors *&gr){
 
 
   hPP->SetLineColor(colSystem[0]);
-  hPP->SetLineWidth(2);
+  hPP->SetLineWidth(1);
   hPP->SetMarkerColor(colSystem[0]);
   hPP->SetMarkerStyle(markerStyle[0]);
   hPP->SetMarkerSize(markersize);
 
   gr->SetMarkerColor(colSystem[0]);
   gr->SetLineColor(colSystem[0]);
-  gr->SetLineWidth(2);
+  gr->SetLineWidth(1);
   gr->SetMarkerStyle(markerStyle[0]);
   gr->SetMarkerSize(markersize);
 
@@ -995,13 +995,13 @@ TH1D *GetAndPreparePPb(Int_t binass,Int_t quantity,TGraphAsymmErrors *&gr, TGrap
   hPPb->SetName(Form("%sPPb",hPPb->GetName()));
 
   hPPb->SetLineColor(colSystem[1]);
-  hPPb->SetLineWidth(2);
+  hPPb->SetLineWidth(1);
   hPPb->SetMarkerColor(colSystem[1]);
   hPPb->SetMarkerStyle(markerStyle[1]);
   hPPb->SetMarkerSize(markersize);
   gr->SetMarkerColor(colSystem[1]);
   gr->SetLineColor(colSystem[1]);
-  gr->SetLineWidth(2);
+  gr->SetLineWidth(1);
   gr->SetMarkerStyle(markerStyle[1]);
   gr->SetMarkerSize(markersize);
 
@@ -1193,14 +1193,14 @@ TCanvas* ComparePPtoPPb(Int_t binass,Int_t quantity,TPad *pd=0x0,Int_t textlegen
     ConvertTH1ToTGraphAsymmError2016(hPPb,gr_pointCount_PPb,shift);    
   }
   gr_points_PPb->SetLineColor(colSystem[1]);
-  gr_points_PPb->SetLineWidth(2);
+  gr_points_PPb->SetLineWidth(1);
   gr_points_PPb->SetMarkerColor(colSystem[1]);
   gr_points_PPb->SetMarkerStyle(markerStyle[1]);
   gr_points_PPb->SetMarkerSize(markersize);
   gr_points_PPb->Draw("samePZ");
   
   gr_pointCount_PPb->SetLineColor(colSystem[1]);
-  gr_pointCount_PPb->SetLineWidth(2);
+  gr_pointCount_PPb->SetLineWidth(1);
   gr_pointCount_PPb->SetMarkerStyle(25);
   gr_pointCount_PPb->SetMarkerColor(kRed+1);
   gr_pointCount_PPb->SetMarkerSize(markersize);
@@ -1428,7 +1428,7 @@ TCanvas* CompareDatatoModels(Int_t collsystem,Int_t binass,Int_t quantity,TPad *
     if(system==1)hData[0]->GetYaxis()->SetRangeUser(0,maxRangePPb[binass][quantity]);
     
     hData[0]->SetLineColor(colSystem[system]);
-    hData[0]->SetLineWidth(2);
+    hData[0]->SetLineWidth(1);
     hData[0]->SetMarkerColor(colSystem[system]);
     hData[0]->SetMarkerStyle(markerStyle[system]);
     hData[0]->SetMarkerSize(markersize);
@@ -1509,7 +1509,7 @@ TCanvas* CompareDatatoModels(Int_t collsystem,Int_t binass,Int_t quantity,TPad *
   hData[0]->SetMarkerColor(colSystem[system]);
   grData[0]->SetMarkerColor(colSystem[system]);
   grData[0]->SetLineColor(colSystem[system]);
-  grData[0]->SetLineWidth(2);
+  grData[0]->SetLineWidth(1);
   grData[0]->SetMarkerStyle(markerStyle[system]);
   grData[0]->SetMarkerSize(markersize);
   grData[0]->Draw("E2");
@@ -1523,13 +1523,13 @@ TCanvas* CompareDatatoModels(Int_t collsystem,Int_t binass,Int_t quantity,TPad *
     if(collsystem==-1){    
       hData[1]->Draw("same");
       hData[1]->SetLineColor(colSystem[1]);
-      hData[1]->SetLineWidth(2);
+      hData[1]->SetLineWidth(1);
       hData[1]->SetMarkerColor(colSystem[1]);
       hData[1]->SetMarkerStyle(markerStyle[1]);
       hData[1]->SetMarkerSize(markersize);
       grData[1]->SetMarkerColor(colSystem[1]);
       grData[1]->SetLineColor(colSystem[1]);
-      grData[1]->SetLineWidth(2);
+      grData[1]->SetLineWidth(1);
       grData[1]->SetMarkerStyle(markerStyle[1]);
       grData[1]->SetMarkerSize(markersize);
       grData[1]->Draw("E2");
@@ -1601,7 +1601,7 @@ TCanvas* CompareDatatoModels(Int_t collsystem,Int_t binass,Int_t quantity,TPad *
 	hMC[kmc]->Draw("same");
       }
       hMC[kmc]->SetLineColor(modelColors[kmc]);
-      hMC[kmc]->SetLineWidth(2);
+      hMC[kmc]->SetLineWidth(1);
       if(drawMCasLines==1){
 	hMC[kmc]->SetLineStyle(2);
       }
@@ -1610,7 +1610,7 @@ TCanvas* CompareDatatoModels(Int_t collsystem,Int_t binass,Int_t quantity,TPad *
       hMC[kmc]->SetMarkerSize(markersizeMC);
       grMC[kmc]->SetMarkerColor(modelColors[kmc]);
       grMC[kmc]->SetLineColor(modelColors[kmc]);
-      grMC[kmc]->SetLineWidth(2);
+      grMC[kmc]->SetLineWidth(1);
       grMC[kmc]->SetMarkerStyle(modelMarkerStyle[kmc]);
       grMC[kmc]->SetFillStyle(3001+kmc);
       grMC[kmc]->SetFillColor(modelColors[kmc]);
