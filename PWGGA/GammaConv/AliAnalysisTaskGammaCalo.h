@@ -61,6 +61,7 @@ class AliAnalysisTaskGammaCalo : public AliAnalysisTaskSE {
     void SetDoTHnSparse(Bool_t flag){fDoTHnSparse = flag;}
     void SetPlotHistsExtQA(Bool_t flag){fSetPlotHistsExtQA = flag;}
     void SetAllowOverlapHeaders( Bool_t allowOverlapHeader ) {fAllowOverlapHeaders = allowOverlapHeader;}
+    void SetDoPi0Only(Bool_t flag){fDoPi0Only = flag;}
 
     void SetInOutTimingCluster(Double_t min, Double_t max){
       fDoInOutTimingCluster = kTRUE; fMinTimingCluster = min; fMaxTimingCluster = max;
@@ -534,6 +535,7 @@ class AliAnalysisTaskGammaCalo : public AliAnalysisTaskSE {
     Bool_t                fAllowOverlapHeaders;                                 // enable overlapping headers for cluster selection
     Int_t                 fNCurrentClusterBasic;                                // current number of cluster without minE
     Int_t                 fTrackMatcherRunningMode;                             // CaloTrackMatcher running mode
+    Bool_t                fDoPi0Only;                                           // switches ranges of histograms and binnings to pi0 specific analysis
   private:
     AliAnalysisTaskGammaCalo(const AliAnalysisTaskGammaCalo&);                  // Prevent copy-construction
     AliAnalysisTaskGammaCalo &operator=(const AliAnalysisTaskGammaCalo&);       // Prevent assignment

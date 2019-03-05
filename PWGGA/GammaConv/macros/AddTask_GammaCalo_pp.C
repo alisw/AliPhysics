@@ -31,7 +31,7 @@ void AddTask_GammaCalo_pp(
   // general setting for task
   Int_t     enableQAMesonTask             = 0,        // enable QA in AliAnalysisTaskGammaConvV1
   Int_t     enableQAClusterTask           = 0,        // enable additional QA task
-  Int_t     enableExtMatchAndQA           = 0,                            // disabled (0), extMatch (1), extQA_noCellQA (2), extMatch+extQA_noCellQA (3), extQA+cellQA (4), extMatch+extQA+cellQA (5)
+  Int_t     enableExtMatchAndQA           = 0,        // disabled (0), extMatch (1), extQA_noCellQA (2), extMatch+extQA_noCellQA (3), extQA+cellQA (4), extMatch+extQA+cellQA (5)
   Bool_t    enableLightOutput             = kFALSE,   // switch to run light output (only essential histograms for afterburner)
   Bool_t    enableTHnSparse               = kFALSE,   // switch on THNsparse
   Bool_t    enableTriggerMimicking        = kFALSE,   // enable trigger mimicking
@@ -93,12 +93,13 @@ void AddTask_GammaCalo_pp(
     cout << "found: " << histoAcc << endl;
   }
 
-  Int_t localDebugFlag = 0;
+  Int_t localDebugFlag = 1;
   TString strLocalDebugFlag              = cuts.GetSpecialSettingFromAddConfig(additionalTrainConfig, "LOCALDEBUGFLAG", "", addTaskName);
   if(strLocalDebugFlag.Atoi()>0)
     localDebugFlag = strLocalDebugFlag.Atoi();
 
   Int_t isHeavyIon = 0;
+  Bool_t enablePi0Only = kFALSE;
 
   // ================== GetAnalysisManager ===============================
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
@@ -1638,6 +1639,8 @@ void AddTask_GammaCalo_pp(
   task->SetDoTHnSparse(enableTHnSparse);
   task->SetProduceTreeEOverP(doTreeEOverP);
   task->SetEnableSortingOfMCClusLabels(enableSortingMCLabels);
+  if(trainConfig == 2020 || trainConfig == 2021 || trainConfig == 2022) enablePi0Only = kTRUE;
+  task->SetDoPi0Only(enablePi0Only);
   if(trainConfig == 446) task->SetSoftAnalysis(kTRUE);
   if(enableExtMatchAndQA > 1){ task->SetPlotHistsExtQA(kTRUE);}
   if(trainConfig == 106 || trainConfig == 125 || trainConfig == 145){
