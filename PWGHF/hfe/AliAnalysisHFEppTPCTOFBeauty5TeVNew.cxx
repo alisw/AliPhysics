@@ -1438,18 +1438,18 @@ void AliAnalysisHFEppTPCTOFBeauty5TeVNew::UserExec(Option_t *)
 					fPtBeautyGenerated->Fill(fMCparticle->Pt());
                     //cout<<iMC<<endl;
 				}
-				fMCparticleGMother = (AliAODMCParticle*) fMCarray->At(fMCparticleMother->GetMother());
-			        fMCparticleGGMother = (AliAODMCParticle*) fMCarray->At(fMCparticleGMother->GetMother());
 				if(!fMCparticleMother){
 				pdg_mother = -999;
 				}else{
 				pdg_mother = fMCparticleMother->GetPdgCode();
+				fMCparticleGMother = (AliAODMCParticle*) fMCarray->At(fMCparticleMother->GetMother());
 				}
 				//cout<<"pdg_mother    "<<pdg_mother<<"   "<<fMCparticleGMother<<"   "<<fMCparticleGGMother<<endl;
 				if(!fMCparticleGMother){
 				pdg_gmother = -999;
 				}else{
 				pdg_gmother = fMCparticleGMother->GetPdgCode();
+				fMCparticleGGMother = (AliAODMCParticle*) fMCarray->At(fMCparticleGMother->GetMother());
 				}
 				//cout<<"pdg_gmother    "<<pdg_gmother<<endl;
 				if(!fMCparticleGGMother){
@@ -2222,7 +2222,8 @@ void AliAnalysisHFEppTPCTOFBeauty5TeVNew::UserExec(Option_t *)
 							hCharmMotherPt_vsElecPt_corr->Fill(fPt,fMCparticleMother->Pt());
 							hElecPt_vsCharmMotherPt_corr->Fill(fMCparticleMother->Pt(),fPt);
 							fDCAxy_pt_charmaft->Fill(fPt,DCAxy*track->Charge()*signB);						 
-						 }												 
+						 }
+																	 
 					}
 					
 					if(TMath::Abs(pdg_mother)>4000 && TMath::Abs(pdg_mother)<5000){///charmed baryon
@@ -2653,8 +2654,6 @@ void AliAnalysisHFEppTPCTOFBeauty5TeVNew::InvMassCheckMC(int itrack, AliVTrack *
         if (fFlagULS && mass<0.14) {
            // kFlagReco = kTRUE;
                 fMCparticleMother = (AliAODMCParticle*) fMCarray->At(fMCparticle->GetMother());
-                fMCparticleGMother = (AliAODMCParticle*) fMCarray->At(fMCparticleMother->GetMother());
-                fMCparticleGGMother = (AliAODMCParticle*) fMCarray->At(fMCparticleGMother->GetMother());
                 Int_t pdg_mother = -999;
 	        Int_t pdg_gmother = -999;
 		Int_t pdg_ggmother = -999;
@@ -2665,11 +2664,13 @@ void AliAnalysisHFEppTPCTOFBeauty5TeVNew::InvMassCheckMC(int itrack, AliVTrack *
 		pdg_mother = -999;
 		}else{
 		pdg_mother = fMCparticleMother->GetPdgCode();
+		fMCparticleGMother = (AliAODMCParticle*) fMCarray->At(fMCparticleMother->GetMother());
 		}
 		if(!fMCparticleGMother){
 		pdg_gmother = -999;
 		}else{
 		pdg_gmother = fMCparticleGMother->GetPdgCode();
+		fMCparticleGGMother = (AliAODMCParticle*) fMCarray->At(fMCparticleGMother->GetMother());
 		}
 		if(!fMCparticleGGMother){
 		pdg_ggmother = -999;
@@ -3221,7 +3222,8 @@ Int_t AliAnalysisHFEppTPCTOFBeauty5TeVNew::GetPi0EtaType(AliAODMCParticle *pi0et
     //
     // Return what type of pi0, eta it is
     //
-    
+    Int_t motherpdg = -999;
+    Int_t kaonmotherpdg = -999;
     //IsPrimary
     Bool_t primMC = pi0eta->IsPrimary(); ///Does not include particles from weak decays or created in an interaction with the material
     if(!primMC) return kNoIsPrimary;
@@ -3232,7 +3234,11 @@ Int_t AliAnalysisHFEppTPCTOFBeauty5TeVNew::GetPi0EtaType(AliAODMCParticle *pi0et
     else {
         
         AliAODMCParticle *mother = (AliAODMCParticle*)fMCarray->At(motherlabel);
-        Int_t motherpdg = TMath::Abs(mother->GetPdgCode());
+        if(!mother){
+        motherpdg = -999;
+        }else{
+        motherpdg = TMath::Abs(mother->GetPdgCode());
+        }
         ///pi0, eta, omega, phi, eta',rho0, rho+
         if(motherpdg == 111 || motherpdg == 221 || motherpdg == 223 || motherpdg == 333 || motherpdg == 331 || motherpdg == 113 || motherpdg == 213) return kLightMesons;
         
@@ -3241,7 +3247,11 @@ Int_t AliAnalysisHFEppTPCTOFBeauty5TeVNew::GetPi0EtaType(AliAODMCParticle *pi0et
 			Int_t kaonmotherlabel = mother->GetMother();
 			if(kaonmotherlabel>0){
 				AliAODMCParticle *kaonmother = (AliAODMCParticle*)fMCarray->At(kaonmotherlabel);
-				Int_t kaonmotherpdg = TMath::Abs(kaonmother->GetPdgCode());
+				if(!kaonmother){
+        			kaonmotherpdg = -999;
+        			}else{
+        			kaonmotherpdg = TMath::Abs(kaonmother->GetPdgCode());
+       				}
 				if ( (int(TMath::Abs(kaonmotherpdg)/100.)%10) == 5 || (int(TMath::Abs(kaonmotherpdg)/1000.)%10) == 5 || (int(TMath::Abs(kaonmotherpdg)/100.)%10) == 4 || (int(TMath::Abs(kaonmotherpdg)/1000.)%10) == 4 ) return kKaonFromHF;
 				else return kKaonFromNonHF;
 			}
