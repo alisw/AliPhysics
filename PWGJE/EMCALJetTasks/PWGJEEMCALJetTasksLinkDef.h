@@ -108,7 +108,6 @@
 #pragma link C++ class AliAnalysisTaskEmcalTriggerInfoQA+;
 #pragma link C++ class AliAnalysisTaskHJetEmbed+;
 #pragma link C++ class AliAnalysisTaskIDFragmentationFunction+;
-#pragma link C++ class AliEmcalJetTree+;
 #pragma link C++ class AliAnalysisTaskJetJTJT+;
 #pragma link C++ class AliAnalysisTaskJetShapeBase+;
 #pragma link C++ class AliAnalysisTaskJetShapeDeriv+;
@@ -269,6 +268,7 @@
 #pragma link C++ class AliAnalysisTaskJetSubstructure+;
 #pragma link C++ class AliAnalysisTaskSoftDrop+;
 #pragma link C++ class AliAnalysisTaskSoftDropResponse+;
+#pragma link C++ class AliEmcalJetTree+;
 #pragma link C++ class AliAnalysisTaskJetExtractor+;
 #pragma link C++ class std::vector<AliAnalysisTaskJetExtractor::SimpleSecondaryVertex>+;
 #pragma link C++ class AliAnalysisTaskEmcalSubjet+;
