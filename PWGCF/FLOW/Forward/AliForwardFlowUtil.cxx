@@ -795,7 +795,6 @@ void AliForwardFlowUtil::FillFromCentralClusters(TH2D*& cen) const {
 
 void AliForwardFlowUtil::FillFromTracks(TH2D*& cen, UInt_t tracktype) const {
   Int_t  iTracks(fevent->GetNumberOfTracks());
-  //std::cout << this->maxpt << std::endl;
   for(Int_t i(0); i < iTracks; i++) {
 
   // loop  over  all  the  tracks
@@ -934,7 +933,6 @@ void AliForwardFlowUtil::FillFromTracks(TH3D*& cen, Int_t tracktype, Double_t zv
 
 
 AliTrackReference* AliForwardFlowUtil::IsHitFMD(AliMCParticle* p) {
-  //std::cout << "p->GetNumberOfTrackReferences() = " << p->GetNumberOfTrackReferences() << std::endl;
   for (Int_t iTrRef = 0; iTrRef < p->GetNumberOfTrackReferences(); iTrRef++) {
     AliTrackReference* ref = p->GetTrackReference(iTrRef);
     // Check hit on FMD

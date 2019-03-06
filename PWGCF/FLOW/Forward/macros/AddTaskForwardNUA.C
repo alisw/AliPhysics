@@ -112,7 +112,6 @@ ptmaxname.Form("%d",(int)(maxpt*10));
 
   task->fSettings.nua_mode = nua_mode; // "V0M";// RefMult08; // "V0M" // "SPDTracklets";
 
-  std::cout << "Container name: " << resName << std::endl;
   TString combName = resName + '_' + suffix;
   std::cout << "Container name: " << combName << std::endl;
 
