@@ -20,6 +20,14 @@ using std::vector;
 class AliHFTreeHandlerLc2V0bachelor : public AliHFTreeHandler
 {
   public:
+
+    //Standard kSelected of AliHFTreeHandler is Lc->pK0s, but keep possibility to enable also Lc->Lpi (and charge conjugate together)
+    enum isLctoLpi {
+      kLctoLpi       = BIT(11),
+      kLcTopotoLpi   = BIT(12),
+      kLcPIDtoLpi    = BIT(13),
+    };
+
     AliHFTreeHandlerLc2V0bachelor();
     AliHFTreeHandlerLc2V0bachelor(int PIDopt);
 
@@ -30,6 +38,15 @@ class AliHFTreeHandlerLc2V0bachelor : public AliHFTreeHandler
     virtual void FillTree();
 
     void SetCalcSecoVtx(int opt) {fCalcSecoVtx=opt;}
+
+    void SetIsLctoLpi(int isSeltoLpi, int isSelTopotoLpi, int isSelPIDtoLpi) {
+      if(isSeltoLpi) fCandTypeMap |= kLctoLpi;
+      else fCandTypeMap &= ~kLctoLpi;
+      if(isSelTopotoLpi) fCandTypeMap |= kLcTopotoLpi;
+      else fCandTypeMap &= ~kLcTopotoLpi;
+      if(isSelPIDtoLpi) fCandTypeMap |= kLcPIDtoLpi;
+      else fCandTypeMap &= ~kLcPIDtoLpi;
+    }
 
   private:
 
