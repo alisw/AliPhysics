@@ -90,7 +90,7 @@ struct TrackCutAttrStatus {
 
   bool Pass(const AliFemtoTrack &trk) const
     {
-      return (trk.Flags() & status) == status;
+      return status == 0 || (trk.Flags() & status) == status;
     }
 
   TrackCutAttrStatus()
@@ -107,6 +107,9 @@ struct TrackCutAttrStatus {
 
   void FillConfiguration(AliFemtoConfigObject &cfg) const
     {
+      if (status == 0) {
+        return;
+      }
       cfg.insert("status", status);
     }
 
@@ -117,7 +120,7 @@ struct TrackCutAttrRemoveKinks {
 
   bool remove_kinks;
 
-  bool Pass(const AliFemtoTrack &track)
+  bool Pass(const AliFemtoTrack &track) const
     {
       return !remove_kinks
           || !(track.KinkIndex(0)
@@ -147,7 +150,7 @@ struct TrackCutAttrRemoveFakeITS {
 
   bool remove_its_fake;
 
-  bool Pass(const AliFemtoTrack &track)
+  bool Pass(const AliFemtoTrack &track) const
     {
       return !remove_its_fake || track.ITSncls() < 0;
     }
@@ -177,7 +180,7 @@ struct TrackCutAttrImpact {
   double max_xy;
   double max_z;
 
-  bool Pass(const AliFemtoTrack &track)
+  bool Pass(const AliFemtoTrack &track) const
     {
       return std::abs(track.ImpactZ()) <= max_z
           && track.ImpactD() < max_xy;
@@ -208,7 +211,7 @@ struct TrackCutAttrImpact {
 struct TrackCutAttrMinNclsTPC {
   int ncls_tpc_min;
 
-  bool Pass(const AliFemtoTrack &track)
+  bool Pass(const AliFemtoTrack &track) const
     {
       return ncls_tpc_min <= track.TPCncls();
     }
@@ -233,7 +236,7 @@ struct TrackCutAttrMinNclsTPC {
 struct TrackCutAttrMinNclsITS {
   int ncls_its_min;
 
-  bool Pass(const AliFemtoTrack &track)
+  bool Pass(const AliFemtoTrack &track) const
     {
       return ncls_its_min <= track.ITSncls();
     }
@@ -265,7 +268,7 @@ struct TrackCutAttrChi2ITS {
   double rchi2_its_max;
   double rchi2_its_min;
 
-  bool Pass(const AliFemtoTrack &track)
+  bool Pass(const AliFemtoTrack &track) const
     {
       if (rchi2_its_max < 0) {
         return true;
@@ -311,7 +314,7 @@ struct TrackCutAttrChi2TPC {
   double rchi2_tpc_max;
   double rchi2_tpc_min;
 
-  bool Pass(const AliFemtoTrack &track)
+  bool Pass(const AliFemtoTrack &track) const
     {
       if (rchi2_tpc_max < 0) {
         return true;
@@ -345,30 +348,35 @@ struct TrackCutAttrChi2TPC {
 };
 
 
-/// Remove tracks with negative label (global tracks)
-struct TrackCutAttrRemoveNonTpc {
+/// Remove tracks with negative label
+///
+///
+struct TrackCutAttrRemoveNegLabel {
 
-  bool remove_non_tpc;
+  bool remove_neg_label;
 
-  bool Pass(const AliFemtoTrack &track)
+  bool Pass(const AliFemtoTrack &track) const
     {
-      return !remove_non_tpc || track.Label() < 0;
+      return !remove_neg_label || track.Label() < 0;
     }
+
+  TrackCutAttrRemoveNegLabel()
+    : remove_neg_label(false)
+    {}
+
+  TrackCutAttrRemoveNegLabel(AliFemtoConfigObject &cfg)
+    : remove_neg_label(cfg.pop_bool("remove_neg_label", false))
+    {}
 
   void FillConfiguration(AliFemtoConfigObject &cfg) const
     {
-      cfg.insert("remove_non_tpc", remove_non_tpc);
+      if (!remove_neg_label) {
+        return;
+      }
+      cfg.insert("remove_neg_label", remove_neg_label);
     }
 
-  TrackCutAttrRemoveNonTpc()
-    : remove_non_tpc(false)
-    {}
-
-  TrackCutAttrRemoveNonTpc(AliFemtoConfigObject &cfg)
-    : remove_non_tpc(cfg.pop_bool("remove_non_tpc", false))
-    {}
-
-  virtual ~TrackCutAttrRemoveNonTpc() {}
+  virtual ~TrackCutAttrRemoveNegLabel() {}
 };
 
 
@@ -382,7 +390,7 @@ struct TrackCutAttrCharge {
 
   int charge;
 
-  bool Pass(const AliFemtoTrack &track)
+  bool Pass(const AliFemtoTrack &track) const
     {
       return charge != 0 && track.Charge() == charge;
     }
@@ -407,7 +415,7 @@ struct TrackCutAttrMomentum {
 
   std::pair<double, double> momentum_range;
 
-  bool Pass(const AliFemtoTrack &track)
+  bool Pass(const AliFemtoTrack &track) const
     {
       double p = track.P().Mag();
       return momentum_range.first <= p && p < momentum_range.second;
@@ -434,7 +442,7 @@ struct TrackCutAttrPt {
 
   std::pair<double, double> pt_range;
 
-  bool Pass(const AliFemtoTrack &track)
+  bool Pass(const AliFemtoTrack &track) const
     {
       const double pt = track.Pt();
       return pt_range.first <= pt && pt < pt_range.second;
@@ -461,7 +469,7 @@ struct TrackCutAttrEta {
   static const std::pair<double, double> DEFAULT;
   std::pair<double, double> eta_range;
 
-  bool Pass(const AliFemtoTrack &track)
+  bool Pass(const AliFemtoTrack &track) const
     {
       const double eta = track.P().PseudoRapidity();
       return eta_range.first <= eta && eta < eta_range.second;
@@ -489,7 +497,7 @@ struct TrackCutAttrRapidity {
   std::pair<double, double> rapidity_range;
   double rapidity_mass;
 
-  bool Pass(const AliFemtoTrack &track)
+  bool Pass(const AliFemtoTrack &track) const
     {
       const auto p = track.P();
       const double
@@ -540,7 +548,7 @@ struct TrackCutAttrMostProbablePion {
 
   std::pair<double, double> pidprob_pion_range;
 
-  bool Pass(const AliFemtoTrack &track)
+  bool Pass(const AliFemtoTrack &track) const
     {
       const float prob = track.PidProbPion();
       return pidprob_pion_range.first <= prob && prob < pidprob_pion_range.second;
@@ -567,7 +575,7 @@ struct TrackCutAttrPidContourPion {
 
   bool tpc_contour_pion;
 
-  bool Pass(const AliFemtoTrack &track)
+  bool Pass(const AliFemtoTrack &track) const
     {
       const float
         p = track.P().Mag(),
@@ -575,7 +583,7 @@ struct TrackCutAttrPidContourPion {
       return tpc_contour_pion && is_pion_tpc_dedx(p, tpc_signal);
     }
 
-  bool is_pion_tpc_dedx(float mom, float dedx)
+  static bool is_pion_tpc_dedx(float mom, float dedx)
     {
       const double
         a1 = -343.75,
@@ -613,16 +621,17 @@ struct TrackCutAttrSigmaPion {
   bool usetpctof;
   double nsigma_pion;
 
-  bool Pass(const AliFemtoTrack &track)
+  bool Pass(const AliFemtoTrack &track) const
     {
       double momentum = track.P().Mag(),
              nsgima_tpc = track.NSigmaTPCPi(),
              nsgima_tof = track.NSigmaTOFPi();
 
-      return is_pion_nsigma(momentum, nsgima_tpc, nsgima_tof);
+      bool pass = is_pion_nsigma(momentum, nsgima_tpc, nsgima_tof);
+      return pass;
     }
 
-  bool is_pion_nsigma(float mom, float sigtpc, float sigtof)
+  bool is_pion_nsigma(float mom, float sigtpc, float sigtof) const
     {
       if (usetpctof) {
         return mom > 0.5 ? sigtof*sigtof + sigtpc*sigtpc < nsigma_pion * nsigma_pion
@@ -677,7 +686,7 @@ struct TrackCutAttrSigmaProton {
   bool usetpctof;
   double nsigma;
 
-  bool Pass(const AliFemtoTrack &track)
+  bool Pass(const AliFemtoTrack &track) const
     {
       const double
         momentum = track.P().Mag(),
@@ -687,7 +696,7 @@ struct TrackCutAttrSigmaProton {
       return is_proton_nsigma(momentum, nsgima_tpc, nsgima_tof);
     }
 
-  bool is_proton_nsigma(float mom, float sigtpc, float sigtof)
+  bool is_proton_nsigma(float mom, float sigtpc, float sigtof) const
     {
       if (usetpctof) {
         return mom > 0.5 ? sigtof*sigtof + sigtpc*sigtpc < nsigma*nsigma
@@ -732,7 +741,7 @@ struct TrackCutAttrItsCluster {
 
   AliESDtrackCuts::ITSClusterRequirement cluster_reqs[3];
 
-  bool Pass(const AliFemtoTrack &track)
+  bool Pass(const AliFemtoTrack &track) const
     {
       for (int i=0; i < 3; ++i) {
         if (!check_ITS_cluster(cluster_reqs[i],
@@ -744,9 +753,9 @@ struct TrackCutAttrItsCluster {
       return true;
     }
 
-  bool check_ITS_cluster(AliESDtrackCuts::ITSClusterRequirement req,
-                         Bool_t clusterL1,
-                         Bool_t clusterL2)
+  static bool check_ITS_cluster(AliESDtrackCuts::ITSClusterRequirement req,
+                                Bool_t clusterL1,
+                                Bool_t clusterL2)
     {
       // checks if the cluster requirement is fullfilled (in this case: return kTRUE)
 
@@ -796,7 +805,7 @@ struct TrackCutAttrElectronRejection {
 
   bool reject_electrons;
 
-  bool Pass(const AliFemtoTrack &track)
+  bool Pass(const AliFemtoTrack &track) const
     {
       return !reject_electrons
           || !is_electron(track.NSigmaTPCE(),
