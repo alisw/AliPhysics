@@ -1047,7 +1047,7 @@ void AliAnalysisTaskGammaCalo::UserCreateOutputObjects(){
       binWidthPt                = 0.1;
       for(Int_t i=0; i<nBinsPt+1;i++){
         if (i < 1) arrPtBinning[i]              = 0.3*i;
-        else if(i<197) arrPtBinning[i]          = 3.+0.1*(i-1);
+        else if(i<197) arrPtBinning[i]          = 0.3+0.1*(i-1);
         else if(i<237) arrPtBinning[i]          = 20.+0.25*(i-197);
         else if(i<277) arrPtBinning[i]          = 30.+0.5*(i-237);
         else if(i<297) arrPtBinning[i]          = 50.+1.0*(i-277);
@@ -1069,7 +1069,7 @@ void AliAnalysisTaskGammaCalo::UserCreateOutputObjects(){
       maxClusterPt              = 100;
       for(Int_t i=0; i<nBinsClusterPt+1;i++){
         if (i < 1) arrClusPtBinning[i]          = 0.3*i;
-        else if(i<197) arrClusPtBinning[i]      = 3.+0.1*(i-1);
+        else if(i<197) arrClusPtBinning[i]      = 0.3+0.1*(i-1);
         else if(i<237) arrClusPtBinning[i]      = 20.+0.25*(i-197);
         else if(i<277) arrClusPtBinning[i]      = 30.+0.5*(i-237);
         else if(i<297) arrClusPtBinning[i]      = 50.+1.0*(i-277);
@@ -2144,40 +2144,36 @@ void AliAnalysisTaskGammaCalo::UserCreateOutputObjects(){
         fMCList[iCut]->Add(fHistoMCAllSecondaryGammaPt[iCut]);
         fHistoMCDecayGammaPi0Pt[iCut]     = new TH1F("MC_DecayGammaPi0_Pt", "MC_DecayGammaPi0_Pt", nBinsClusterPt, arrClusPtBinning);
         fHistoMCDecayGammaPi0Pt[iCut]->SetXTitle("p_{T} (GeV/c)");
-        if( !fDoPi0Only ){
-          fMCList[iCut]->Add(fHistoMCDecayGammaPi0Pt[iCut]);
-          fHistoMCDecayGammaRhoPt[iCut]     = new TH1F("MC_DecayGammaRho_Pt", "MC_DecayGammaRho_Pt", nBinsClusterPt, arrClusPtBinning);
-          fHistoMCDecayGammaRhoPt[iCut]->SetXTitle("p_{T} (GeV/c)");
-          fMCList[iCut]->Add(fHistoMCDecayGammaRhoPt[iCut]);
-          fHistoMCDecayGammaEtaPt[iCut]     = new TH1F("MC_DecayGammaEta_Pt", "MC_DecayGammaEta_Pt", nBinsClusterPt, arrClusPtBinning);
-          fHistoMCDecayGammaEtaPt[iCut]->SetXTitle("p_{T} (GeV/c)");
-          fMCList[iCut]->Add(fHistoMCDecayGammaEtaPt[iCut]);
-          fHistoMCDecayGammaOmegaPt[iCut]   = new TH1F("MC_DecayGammaOmega_Pt", "MC_DecayGammaOmmega_Pt", nBinsClusterPt, arrClusPtBinning);
-          fHistoMCDecayGammaOmegaPt[iCut]->SetXTitle("p_{T} (GeV/c)");
-          fMCList[iCut]->Add(fHistoMCDecayGammaOmegaPt[iCut]);
-          fHistoMCDecayGammaEtapPt[iCut]    = new TH1F("MC_DecayGammaEtap_Pt", "MC_DecayGammaEtap_Pt", nBinsClusterPt, arrClusPtBinning);
-          fHistoMCDecayGammaEtapPt[iCut]->SetXTitle("p_{T} (GeV/c)");
-          fMCList[iCut]->Add(fHistoMCDecayGammaEtapPt[iCut]);
-          fHistoMCDecayGammaPhiPt[iCut]     = new TH1F("MC_DecayGammaPhi_Pt", "MC_DecayGammaPhi_Pt", nBinsClusterPt, arrClusPtBinning);
-          fHistoMCDecayGammaPhiPt[iCut]->SetXTitle("p_{T} (GeV/c)");
-          fMCList[iCut]->Add(fHistoMCDecayGammaPhiPt[iCut]);
-          fHistoMCDecayGammaSigmaPt[iCut]   = new TH1F("MC_DecayGammaSigma_Pt", "MC_DecayGammaSigma_Pt", nBinsClusterPt, arrClusPtBinning);
-          fHistoMCDecayGammaSigmaPt[iCut]->SetXTitle("p_{T} (GeV/c)");
-          fMCList[iCut]->Add(fHistoMCDecayGammaSigmaPt[iCut]);
-        }
+        fMCList[iCut]->Add(fHistoMCDecayGammaPi0Pt[iCut]);
+        fHistoMCDecayGammaRhoPt[iCut]     = new TH1F("MC_DecayGammaRho_Pt", "MC_DecayGammaRho_Pt", nBinsClusterPt, arrClusPtBinning);
+        fHistoMCDecayGammaRhoPt[iCut]->SetXTitle("p_{T} (GeV/c)");
+        fMCList[iCut]->Add(fHistoMCDecayGammaRhoPt[iCut]);
+        fHistoMCDecayGammaEtaPt[iCut]     = new TH1F("MC_DecayGammaEta_Pt", "MC_DecayGammaEta_Pt", nBinsClusterPt, arrClusPtBinning);
+        fHistoMCDecayGammaEtaPt[iCut]->SetXTitle("p_{T} (GeV/c)");
+        fMCList[iCut]->Add(fHistoMCDecayGammaEtaPt[iCut]);
+        fHistoMCDecayGammaOmegaPt[iCut]   = new TH1F("MC_DecayGammaOmega_Pt", "MC_DecayGammaOmmega_Pt", nBinsClusterPt, arrClusPtBinning);
+        fHistoMCDecayGammaOmegaPt[iCut]->SetXTitle("p_{T} (GeV/c)");
+        fMCList[iCut]->Add(fHistoMCDecayGammaOmegaPt[iCut]);
+        fHistoMCDecayGammaEtapPt[iCut]    = new TH1F("MC_DecayGammaEtap_Pt", "MC_DecayGammaEtap_Pt", nBinsClusterPt, arrClusPtBinning);
+        fHistoMCDecayGammaEtapPt[iCut]->SetXTitle("p_{T} (GeV/c)");
+        fMCList[iCut]->Add(fHistoMCDecayGammaEtapPt[iCut]);
+        fHistoMCDecayGammaPhiPt[iCut]     = new TH1F("MC_DecayGammaPhi_Pt", "MC_DecayGammaPhi_Pt", nBinsClusterPt, arrClusPtBinning);
+        fHistoMCDecayGammaPhiPt[iCut]->SetXTitle("p_{T} (GeV/c)");
+        fMCList[iCut]->Add(fHistoMCDecayGammaPhiPt[iCut]);
+        fHistoMCDecayGammaSigmaPt[iCut]   = new TH1F("MC_DecayGammaSigma_Pt", "MC_DecayGammaSigma_Pt", nBinsClusterPt, arrClusPtBinning);
+        fHistoMCDecayGammaSigmaPt[iCut]->SetXTitle("p_{T} (GeV/c)");
+        fMCList[iCut]->Add(fHistoMCDecayGammaSigmaPt[iCut]);
 
         if (fIsMC > 1){
           fHistoMCAllGammaPt[iCut]->Sumw2();
           fHistoMCAllSecondaryGammaPt[iCut]->Sumw2();
           fHistoMCDecayGammaPi0Pt[iCut]->Sumw2();
-          if( !fDoPi0Only ){
             fHistoMCDecayGammaRhoPt[iCut]->Sumw2();
             fHistoMCDecayGammaEtaPt[iCut]->Sumw2();
             fHistoMCDecayGammaOmegaPt[iCut]->Sumw2();
             fHistoMCDecayGammaEtapPt[iCut]->Sumw2();
             fHistoMCDecayGammaPhiPt[iCut]->Sumw2();
             fHistoMCDecayGammaSigmaPt[iCut]->Sumw2();
-          }
         }
       }
       if(fDoMesonAnalysis){
@@ -4391,22 +4387,22 @@ void AliAnalysisTaskGammaCalo::ProcessAODMCParticles()
               fHistoMCDecayGammaPi0Pt[fiCut]->Fill(particle->Pt(), tempParticleWeight);
               break;
             case 113: // Rho0
-              if( !fDoPi0Only ) fHistoMCDecayGammaRhoPt[fiCut]->Fill(particle->Pt(), tempParticleWeight);
+              fHistoMCDecayGammaRhoPt[fiCut]->Fill(particle->Pt(), tempParticleWeight);
               break;
             case 221: // Eta
-              if( !fDoPi0Only ) fHistoMCDecayGammaEtaPt[fiCut]->Fill(particle->Pt(), tempParticleWeight);
+              fHistoMCDecayGammaEtaPt[fiCut]->Fill(particle->Pt(), tempParticleWeight);
               break;
             case 223: // Omega
-              if( !fDoPi0Only ) fHistoMCDecayGammaOmegaPt[fiCut]->Fill(particle->Pt(), tempParticleWeight);
+              fHistoMCDecayGammaOmegaPt[fiCut]->Fill(particle->Pt(), tempParticleWeight);
               break;
             case 331: // Eta'
-              if( !fDoPi0Only ) fHistoMCDecayGammaEtapPt[fiCut]->Fill(particle->Pt(), tempParticleWeight);
+              fHistoMCDecayGammaEtapPt[fiCut]->Fill(particle->Pt(), tempParticleWeight);
               break;
             case 333: // Phi
-              if( !fDoPi0Only ) fHistoMCDecayGammaPhiPt[fiCut]->Fill(particle->Pt(), tempParticleWeight);
+              fHistoMCDecayGammaPhiPt[fiCut]->Fill(particle->Pt(), tempParticleWeight);
               break;
             case 3212: // Sigma
-              if( !fDoPi0Only ) fHistoMCDecayGammaSigmaPt[fiCut]->Fill(particle->Pt(), tempParticleWeight);
+              fHistoMCDecayGammaSigmaPt[fiCut]->Fill(particle->Pt(), tempParticleWeight);
               break;
             }
           }
@@ -4691,22 +4687,22 @@ void AliAnalysisTaskGammaCalo::ProcessMCParticles()
               fHistoMCDecayGammaPi0Pt[fiCut]->Fill(particle->Pt(), tempParticleWeight);
               break;
             case 113: // Rho0
-              if(!fDoPi0Only) fHistoMCDecayGammaRhoPt[fiCut]->Fill(particle->Pt(), tempParticleWeight);
+              fHistoMCDecayGammaRhoPt[fiCut]->Fill(particle->Pt(), tempParticleWeight);
               break;
             case 221: // Eta
-              if(!fDoPi0Only) fHistoMCDecayGammaEtaPt[fiCut]->Fill(particle->Pt(), tempParticleWeight);
+              fHistoMCDecayGammaEtaPt[fiCut]->Fill(particle->Pt(), tempParticleWeight);
               break;
             case 223: // Omega
-              if(!fDoPi0Only) fHistoMCDecayGammaOmegaPt[fiCut]->Fill(particle->Pt(), tempParticleWeight);
+              fHistoMCDecayGammaOmegaPt[fiCut]->Fill(particle->Pt(), tempParticleWeight);
               break;
             case 331: // Eta'
-              if(!fDoPi0Only) fHistoMCDecayGammaEtapPt[fiCut]->Fill(particle->Pt(), tempParticleWeight);
+              fHistoMCDecayGammaEtapPt[fiCut]->Fill(particle->Pt(), tempParticleWeight);
               break;
             case 333: // Phi
-              if(!fDoPi0Only) fHistoMCDecayGammaPhiPt[fiCut]->Fill(particle->Pt(), tempParticleWeight);
+              fHistoMCDecayGammaPhiPt[fiCut]->Fill(particle->Pt(), tempParticleWeight);
               break;
             case 3212: // Sigma
-              if(!fDoPi0Only) fHistoMCDecayGammaSigmaPt[fiCut]->Fill(particle->Pt(), tempParticleWeight);
+              fHistoMCDecayGammaSigmaPt[fiCut]->Fill(particle->Pt(), tempParticleWeight);
               break;
             }
           }
