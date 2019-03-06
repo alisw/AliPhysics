@@ -161,7 +161,7 @@ AliAnalysisManager *man = AliAnalysisManager::GetAnalysisManager();
   for (Int_t i = 0; i<9; i++) fHistEvents->GetXaxis()->SetBinLabel(i+1,gCutName[i].Data());
   fOutputList->Add(fHistEvents);
   
-  TString gTriggerName[12] = {"0VBA","0VBC","0UBA","0UBC","0OMU","0OM2","0SMB","0SM2","0STP","0SH1","Offline OM2","Offline OMU"};		  
+  TString gTriggerName[12] = {"0VBA","0VBC","0UBA","0UBC","0OMU","0OM2","0SMB","0SM2","0STP","0SH1","0STG","Offline OMU"};		  
   fHistMCTriggers = new TH1D("fHistMCTriggers","Fired MC trigger inputs",12,0.5,12.5);
   for (Int_t i = 0; i<12; i++) fHistMCTriggers->GetXaxis()->SetBinLabel(i+1,gTriggerName[i].Data());
   fOutputList->Add(fHistMCTriggers);
@@ -180,7 +180,7 @@ AliAnalysisManager *man = AliAnalysisManager::GetAnalysisManager();
   fTreeJPsi ->Branch("fRunNumber", &fRunNumber, "fRunNumber/I");
   fTreeJPsi ->Branch("fInEtaRec", &fInEtaRec, "fInEtaRec/O");
   if(isMC){
-	fTreeJPsi ->Branch("fTriggerInputsMC", &fTriggerInputsMC[0], "fTriggerInputsMC[10]/O");
+	fTreeJPsi ->Branch("fTriggerInputsMC", &fTriggerInputsMC[0], "fTriggerInputsMC[11]/O");
 	}
   fOutputList->Add(fTreeJPsi);
   
@@ -197,7 +197,7 @@ AliAnalysisManager *man = AliAnalysisManager::GetAnalysisManager();
   fTreePhi ->Branch("fPIDsigma", &fPIDsigma,"fPIDsigma/F");
   fTreePhi ->Branch("fRunNumber", &fRunNumber, "fRunNumber/I");
   fTreePhi ->Branch("fTriggers", &fTriggers, "fTriggers[8]/O");
-  if(isMC) fTreePhi ->Branch("fTriggerInputsMC", &fTriggerInputsMC[0], "fTriggerInputsMC[10]/O");
+  if(isMC) fTreePhi ->Branch("fTriggerInputsMC", &fTriggerInputsMC[0], "fTriggerInputsMC[11]/O");
   fOutputList->Add(fTreePhi);
   
   fTreeRho = new TTree("fTreeRho", "fTreeRho");
@@ -215,7 +215,7 @@ AliAnalysisManager *man = AliAnalysisManager::GetAnalysisManager();
   fTreeRho ->Branch("fInEtaRec", &fInEtaRec, "fInEtaRec/O");
   fTreeRho ->Branch("fTriggers", &fTriggers, "fTriggers[8]/O");
   
-  if(isMC) fTreeRho ->Branch("fTriggerInputsMC", &fTriggerInputsMC[0], "fTriggerInputsMC[10]/O");
+  if(isMC) fTreeRho ->Branch("fTriggerInputsMC", &fTriggerInputsMC[0], "fTriggerInputsMC[11]/O");
   fOutputList->Add(fTreeRho);
 
   fTreePsi2s = new TTree("fTreePsi2s", "fTreePsi2s");
@@ -233,7 +233,7 @@ AliAnalysisManager *man = AliAnalysisManager::GetAnalysisManager();
   fTreePsi2s ->Branch("fPIDsigma", &fPIDsigma,"fPIDsigma/F");
   fTreePsi2s ->Branch("fRunNumber", &fRunNumber, "fRunNumber/I");
   if(isMC){ 
-  	fTreePsi2s ->Branch("fTriggerInputsMC", &fTriggerInputsMC[0], "fTriggerInputsMC[10]/O");
+  	fTreePsi2s ->Branch("fTriggerInputsMC", &fTriggerInputsMC[0], "fTriggerInputsMC[11]/O");
 	}
   fOutputList->Add(fTreePsi2s);
     
@@ -322,12 +322,14 @@ void AliAnalysisTaskUpcNano_MB::UserExec(Option_t *)
   fRunNumber = fEvent->GetRunNumber();
   TString trigger = fEvent->GetFiredTriggerClasses();
   
-  if(fRunNumber>=295881){
-  	if(!isMC && !trigger.Contains("CCUP29-B-SPD2-CENTNOTRD") && !trigger.Contains("CCUP30-B-SPD2-CENTNOTRD") && !trigger.Contains("CCUP31-B-SPD2-CENTNOTRD"))return;
-	}
-  else{ 
-  	if(!isMC && !trigger.Contains("CCUP29-B-NOPF-CENTNOTRD") && !trigger.Contains("CCUP30-B-NOPF-CENTNOTRD") && !trigger.Contains("CCUP31-B-NOPF-CENTNOTRD"))return;
-	}
+  if(!isMC){
+    if(fRunNumber>=295881 && fRunNumber<296594)
+      if(!trigger.Contains("CCUP29-U-SPD2-CENTNOTRD") && !trigger.Contains("CCUP30-B-SPD2-CENTNOTRD") && !trigger.Contains("CCUP31-B-SPD2-CENTNOTRD"))return;
+    if(fRunNumber>=296594)
+      if(!trigger.Contains("CCUP29-U-SPD2-CENTNOTRD") && !trigger.Contains("CCUP30-B-SPD2-CENTNOTRD") && !trigger.Contains("CCUP31-B-SPD2-CENTNOTRD"))return;
+    if(fRunNumber<295881)
+      if(!trigger.Contains("CCUP29-B-NOPF-CENTNOTRD") && !trigger.Contains("CCUP30-B-NOPF-CENTNOTRD") && !trigger.Contains("CCUP31-B-NOPF-CENTNOTRD"))return;
+    }
 
   UInt_t fL0inputs = fEvent->GetHeader()->GetL0TriggerInputs();
   fTriggers[0] = trigger.Contains("CCUP29-B-SPD2-CENTNOTRD");
@@ -339,7 +341,7 @@ void AliAnalysisTaskUpcNano_MB::UserExec(Option_t *)
   fTriggers[6] =  fL0inputs & (1 << 11); //OM2
   fTriggers[7] =  fL0inputs & (1 << 12); //OMU
   
-  if(trigger.Contains("CCUP29-B"))hTriggerCounter->Fill(1,fRunNumber); 
+  if(trigger.Contains("CCUP29-B") || trigger.Contains("CCUP29-U"))hTriggerCounter->Fill(1,fRunNumber); 
   if(trigger.Contains("CCUP30-B"))hTriggerCounter->Fill(2,fRunNumber); 
   if(trigger.Contains("CCUP31-B"))hTriggerCounter->Fill(3,fRunNumber);
   
@@ -348,7 +350,7 @@ void AliAnalysisTaskUpcNano_MB::UserExec(Option_t *)
   
   if(isMC) RunMC(fEvent);
   
-  for(Int_t i = 0; i<10; i++)if(fTriggerInputsMC[i])fHistMCTriggers->Fill(i+1);
+  for(Int_t i = 0; i<11; i++)if(fTriggerInputsMC[i])fHistMCTriggers->Fill(i+1);
     
   if(isESD){
   	AliESDZDC *fZDCdata = (AliESDZDC*)fEvent->GetZDCData();
@@ -611,7 +613,7 @@ void AliAnalysisTaskUpcNano_MB::UserExec(Option_t *)
   	  FillTree(fTreeJPsi,vJPsiCandidate);
   	  }
 
-  if(nSigmaDistMuon > nSigmaDistElectron &&(isMC || trigger.Contains("CCUP29-B"))){
+  if(nSigmaDistMuon > nSigmaDistElectron &&(isMC || (trigger.Contains("CCUP29-B") || trigger.Contains("CCUP29-U")))){
   	  fPIDsigma = nSigmaDistElectron;
   	  vRhoCandidate = vElectron[0]+vElectron[1];
   	  fChannel = -1;
@@ -690,7 +692,7 @@ void AliAnalysisTaskUpcNano_MB::UserExec(Option_t *)
 void AliAnalysisTaskUpcNano_MB::RunMC(AliVEvent *fEvent)
 {
   
-  for(Int_t i=0; i<10; i++) fTriggerInputsMC[i] = kFALSE;
+  for(Int_t i=0; i<11; i++) fTriggerInputsMC[i] = kFALSE;
   UShort_t fTriggerAD = fEvent->GetADData()->GetTriggerBits();
   UShort_t fTriggerVZERO = fEvent->GetVZEROData()->GetTriggerBits();
   UInt_t fL0inputs = fEvent->GetHeader()->GetL0TriggerInputs();
@@ -724,6 +726,22 @@ void AliAnalysisTaskUpcNano_MB::RunMC(AliVEvent *fEvent)
     }
   }
  
+  Int_t dphiMax=10; 
+  Int_t dphiMin=9;
+  Bool_t tolerance = 1;
+  Bool_t firedSTG = 0;
+  Bool_t phi[20]={0};
+  if(fRunNumber<295753){ dphiMin = 3; }
+
+  for (Int_t i=0; i<20; ++i) {
+    if (tolerance) phi[i] = vPhiInner[i] & (vPhiOuter[(2*i)%40] | vPhiOuter[(2*i+1)%40] | vPhiOuter[(2*i+2)%40] | vPhiOuter[(2*i+39)%40]);
+    else           phi[i] = vPhiInner[i] & (vPhiOuter[(2*i)%40] | vPhiOuter[(2*i+1)%40]);
+  }
+  for (Int_t dphi=dphiMin;dphi<=dphiMax;dphi++)
+    for (Int_t i=0; i<20; ++i) firedSTG |= phi[i] & phi[(i+dphi)%20];
+
+ 
+ 
   Int_t fired = 0;
   for (Int_t i(0); i<10; ++i) {
     for (Int_t j(0); j<2; ++j) {
@@ -744,6 +762,7 @@ void AliAnalysisTaskUpcNano_MB::RunMC(AliVEvent *fEvent)
   if (fired != 0) fTriggerInputsMC[8] = kTRUE;
   //0SH1 - More then 6 hits on outer layer
   if (nOuter >= 7) fTriggerInputsMC[9] = kTRUE;
+  if(firedSTG) fTriggerInputsMC[10] = kTRUE;
   
   TLorentzVector vGenerated, vDecayProduct;
   TDatabasePDG *pdgdat = TDatabasePDG::Instance();
