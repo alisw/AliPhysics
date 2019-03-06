@@ -21,61 +21,51 @@
 namespace pwgfemto {
 
 // event-cut
-typedef AddEventCutAttrs<
-          EventCutAttrCentrality,
-          AddEventCutAttrs<
-            EventCutAttrVertexZ,
-            AddEventCutAttrs<
-              EventCutAttrTrigger,
-              EventCutAttrZdcParticipants
-          > >
-        > EventCutAttrsAK;
+typedef AddEventCutAttrs< EventCutAttrCentrality,
+        AddEventCutAttrs< EventCutAttrVertexZ,
+        AddEventCutAttrs< EventCutAttrTrigger,
+                          EventCutAttrZdcParticipants
+                          > > >
+        EventCutAttrsAK;
 
 // track-cut
 typedef TrackSelectionCut<
-          // non-physics properties
-          AddTrackCutAttrs<
-            TrackCutAttrStatus,
-            AddTrackCutAttrs<
-              TrackCutAttrMinNclsTPC,
-              AddTrackCutAttrs<
-               TrackCutAttrMinNclsITS,
-               TrackCutAttrCharge> > >,
+          // track-selection properties
+          AddTrackCutAttrs< TrackCutAttrStatus,
+          AddTrackCutAttrs< TrackCutAttrRemoveNegLabel,
+          AddTrackCutAttrs< TrackCutAttrMinNclsTPC,
+          AddTrackCutAttrs< TrackCutAttrMinNclsITS,
+                            TrackCutAttrCharge
+                            > > > >,
 
-          // physics-cuts
-          AddTrackCutAttrs<
-              TrackCutAttrImpact,
-                AddTrackCutAttrs<
-                  TrackCutAttrPt,
-                  AddTrackCutAttrs<
-	                TrackCutAttrEta,
-                    AddTrackCutAttrs<
-	                  TrackCutAttrSigmaPion,
-                    AddTrackCutAttrs<
-	                  TrackCutAttrChi2TPC,
-                      TrackCutAttrChi2ITS
-          > > > > >
+          // physical-cuts
+          AddTrackCutAttrs< TrackCutAttrImpact,
+          AddTrackCutAttrs< TrackCutAttrPt,
+          AddTrackCutAttrs< TrackCutAttrEta,
+          AddTrackCutAttrs< TrackCutAttrChi2TPC,
+          AddTrackCutAttrs< TrackCutAttrChi2ITS,
+	                          TrackCutAttrSigmaPion
+                            > > > > >
 
         > TrackCutAttrsAK;
 
 // paircut
-typedef AddPairCutAttrs<
-          PairCutTrackAttrSameLabel,
-            AddPairCutAttrs<
-              PairCutTrackAttrPt,
-              AddPairCutAttrs<
-                PairCutTrackAttrRemoveEE,
-                PairCutTrackAttrShareQuality
-          > >
-        > PairCutAttrsBaseAK;
+typedef AddPairCutAttrs< PairCutTrackAttrSameLabel,
+        AddPairCutAttrs< PairCutTrackAttrPt,
+        AddPairCutAttrs< PairCutTrackAttrRemoveEE,
+                         PairCutTrackAttrShareQuality
+                         > > >
+        PairCutAttrsBaseAK;
 
-typedef AddPairCutAttrs<
-          PairCutAttrsBaseAK,
-          PairCutTrackAttrAvgSep> PairCutAttrsAvgSepAK;
+typedef AddPairCutAttrs< PairCutAttrsBaseAK,
+                         PairCutTrackAttrAvgSep
+                         >
+        PairCutAttrsAvgSepAK;
 
-typedef AddPairCutAttrs<
-          PairCutAttrsBaseAK,
-          PairCutTrackAttrDetaDphiStar> PairCutAttrsDphiDetaAK;
+typedef AddPairCutAttrs< PairCutAttrsBaseAK,
+                         PairCutTrackAttrDetaDphiStar
+                         >
+        PairCutAttrsDphiDetaAK;
 
 }  // namespace pwgfemto
 
