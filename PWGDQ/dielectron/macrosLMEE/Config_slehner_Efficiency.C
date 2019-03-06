@@ -29,7 +29,7 @@ Bool_t setGens=kFALSE;  //decides if generator to be used are set (e.g. for LHC1
 
 Bool_t SetTPCCorrection = kTRUE;
 Bool_t SetITSCorrection = kTRUE;
-Bool_t SetTOFCorrection = kTRUE;
+Bool_t SetTOFCorrection = kFALSE;
 
 Bool_t SetGeneratedSmearingHistos = kFALSE;
 
@@ -105,8 +105,8 @@ const Int_t    stepsPairPtBin = 20;
 //  double ptbinsarr[]= {0.0,0.4,0.6,1,2.5,8};
   
 //low ptee
-double mbinsarr[]= { 0.0,0.4,0.5 ,0.6 ,0.7 ,1.1, 1.5,2.0 ,2.7,3.1 ,5.0}; // for low ptee
-double ptbinsarr[]= {0.0, 0.025, 0.05, 0.075, 0.1, 0.15, 0.2, 0.3, 0.4, 0.5, 0.6, 1, 2.0, 8};// for low ptee
+double mbinsarr[]= { 0.0,0.1,0.4,0.5 ,0.6 ,0.7 ,1.1, 1.5,2.0 ,2.7,3.1 ,5.0}; // for low ptee
+double ptbinsarr[]= {0.0, 0.025, 0.05, 0.075, 0.1,0.125, 0.15, 0.2, 0.3, 0.4, 0.5, 0.6, 1, 2.0, 5.0, 8.0};// for low ptee
 //  TVectorD* centbins= AliDielectronHelper::MakeLinBinning(10,0,100);
 
 // Binning of resolution histograms
