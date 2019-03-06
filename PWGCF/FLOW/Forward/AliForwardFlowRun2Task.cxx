@@ -226,7 +226,6 @@ void AliForwardFlowRun2Task::UserExec(Option_t *)
 
   Double_t zvertex = fUtil.GetZ();
   Double_t cent = fUtil.GetCentrality(fSettings.centrality_estimator);
-  std::cout << cent << std::endl;
 
   if (fSettings.makeFakeHoles) fUtil.MakeFakeHoles(*forwardDist);
 

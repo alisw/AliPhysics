@@ -20,7 +20,8 @@
  * @ingroup pwglf_forward_flow
  */
 
-AliAnalysisTaskSE* AddTaskForwardNUA(UShort_t nua_mode, bool makeFakeHoles, bool mc,  bool esd,bool prim_cen,bool prim_fwd , Int_t tracktype, TString centrality,Double_t minpt,Double_t maxpt,TString suffix="")
+AliAnalysisTaskSE* AddTaskForwardNUA(UShort_t nua_mode, bool makeFakeHoles, bool mc,  bool esd,bool prim_cen,bool prim_fwd , 
+                                     Int_t tracktype, TString centrality,Double_t minpt,Double_t maxpt,TString suffix="")
 {
   std::cout << "______________________________________________________________________________" << std::endl;
 
@@ -32,7 +33,7 @@ AliAnalysisTaskSE* AddTaskForwardNUA(UShort_t nua_mode, bool makeFakeHoles, bool
     Fatal("","No analysis manager to connect to.");
 
   AliForwardNUATask* task = new AliForwardNUATask(suffix);
-  TString resName = "ForwardNUA";
+  TString resName = suffix;
 
     task->fSettings.use_primaries_cen = prim_cen;
     if (mc) resName += (prim_cen ? "_primcen" : "_trcen");
@@ -111,7 +112,6 @@ ptmaxname.Form("%d",(int)(maxpt*10));
 
   task->fSettings.nua_mode = nua_mode; // "V0M";// RefMult08; // "V0M" // "SPDTracklets";
 
-  std::cout << "Container name: " << resName << std::endl;
   TString combName = resName + '_' + suffix;
   std::cout << "Container name: " << combName << std::endl;
 
