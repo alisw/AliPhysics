@@ -44,7 +44,7 @@ typedef TrackSelectionCut<
           AddTrackCutAttrs< TrackCutAttrEta,
           AddTrackCutAttrs< TrackCutAttrChi2TPC,
           AddTrackCutAttrs< TrackCutAttrChi2ITS,
-	                          TrackCutAttrSigmaPion
+                            TrackCutAttrSigmaPion
                             > > > > >
 
         > TrackCutAttrsAK;
