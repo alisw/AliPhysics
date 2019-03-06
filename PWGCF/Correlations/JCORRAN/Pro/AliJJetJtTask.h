@@ -51,6 +51,7 @@ class AliJJetJtTask : public AliAnalysisTaskSE {
 
   void SetJetTaskName(TString name){ fJetTaskName=name; }
   void SetMCJetTaskName(TString name){ fMCJetTaskName=name; }
+  void SetSelector(TString name) {fSelector =name;}
   void SetJJetJtAnalysis(AliJJetJtAnalysis * jco){ fJJetJtAnalysis=jco; }
   void SetCard( AliJCard * card ){ fCard=card; }
   void SetMC(int mc) {fDoMC = mc;};
@@ -69,6 +70,7 @@ class AliJJetJtTask : public AliAnalysisTaskSE {
     AliJJetTask           * fMCJetTask; ///< Pointer to MC jet finder task (obsolete)
     TString                 fJetTaskName; ///< Name of the jet finder task
     TString                 fMCJetTaskName; ///< Name of the MC jet finder task
+    TString                 fSelector; ///< Name of multiplicity selector
     AliJJetJtAnalysis     * fJJetJtAnalysis; ///< Pointer to the jT analysis class
     TClonesArray           *fJMCTracks; ///< List of MC tracks
     TDirectory            * fOutput; 
