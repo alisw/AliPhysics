@@ -121,6 +121,7 @@ bool AliHFTreeHandlerDstoKKpi::SetVariables(int runnumber, unsigned int eventID,
   //topological variables
   //common
   fCandType.push_back(fCandTypeMap);
+  fCandTypeMap=0; //reset candtype
   fPt.push_back(cand->Pt());
   fY.push_back(cand->Y(431));
   fEta.push_back(cand->Eta());

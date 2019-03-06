@@ -137,6 +137,7 @@ bool AliHFTreeHandlerDstartoKpipi::SetVariables(int runnumber, unsigned int even
   //topological variables (Dstar and D0 variables combined)
   //common (Dstar)
   fCandType.push_back(fCandTypeMap);
+  fCandTypeMap=0; //reset candtype
   fPt.push_back(((AliAODRecoCascadeHF*)cand)->Pt());
   fY.push_back(((AliAODRecoCascadeHF*)cand)->YDstar());
   fEta.push_back(((AliAODRecoCascadeHF*)cand)->Eta());
