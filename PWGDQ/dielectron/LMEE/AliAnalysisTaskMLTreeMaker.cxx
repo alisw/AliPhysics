@@ -513,8 +513,8 @@ void AliAnalysisTaskMLTreeMaker::UserExec(Option_t *) {
     AliDielectronPID::SetWidthCorrFunction( (TH1*) fwidthTPC->Clone());
     AliDielectronPID::SetCentroidCorrFunctionITS( (TH1*) fmeanITS->Clone());
     AliDielectronPID::SetWidthCorrFunctionITS( (TH1*) fwidthITS->Clone());
-    AliDielectronPID::SetCentroidCorrFunctionTOF( (TH1*) fmeanTOF->Clone());
-    AliDielectronPID::SetWidthCorrFunctionTOF( (TH1*) fwidthTOF->Clone());
+//    AliDielectronPID::SetCentroidCorrFunctionTOF( (TH1*) fmeanTOF->Clone());
+//    AliDielectronPID::SetWidthCorrFunctionTOF( (TH1*) fwidthTOF->Clone());
     ::Info("AliAnalysisTaskMLTreeMaker::UserExec","Setting Correction Histos");
   }
 
@@ -703,8 +703,8 @@ Int_t AliAnalysisTaskMLTreeMaker::GetAcceptedTracks(AliVEvent *event, Double_t g
             tempEsigTPC/=AliDielectronPID::GetWdthCorr(track);
             tempEsigITS-=AliDielectronPID::GetCntrdCorrITS(track);
             tempEsigITS/=AliDielectronPID::GetWdthCorrITS(track);
-            tempEsigTOF-=AliDielectronPID::GetCntrdCorrTOF(track);
-            tempEsigTOF/=AliDielectronPID::GetWdthCorrTOF(track);
+//            tempEsigTOF-=AliDielectronPID::GetCntrdCorrTOF(track);
+//            tempEsigTOF/=AliDielectronPID::GetWdthCorrTOF(track);
         }
       
       fQAHist->Fill("Selected tracks",1); 

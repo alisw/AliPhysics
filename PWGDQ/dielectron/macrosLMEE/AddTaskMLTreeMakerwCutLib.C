@@ -49,7 +49,8 @@ AliAnalysisTaskMLTreeMaker *task = new AliAnalysisTaskMLTreeMaker("treemaker",we
 
 if(SetPIDCorrection){
   task->SetUseCorr(kTRUE);
-  for(int det=1; det<4; det++){
+//  for(int det=1; det<4; det++){
+  for(int det=1; det<3; det++){
     TH3D mean = cutlib->SetEtaCorrection(det, isMC, AliDielectronVarManager::kP, AliDielectronVarManager::kEta, AliDielectronVarManager::kRefMultTPConly, 1);
     TH3D width = cutlib->SetEtaCorrection(det, isMC, AliDielectronVarManager::kP, AliDielectronVarManager::kEta, AliDielectronVarManager::kRefMultTPConly, 2);
     task->SetCorrWidthMean(det,(TH3D*)width.Clone(),(TH3D*)mean.Clone());
