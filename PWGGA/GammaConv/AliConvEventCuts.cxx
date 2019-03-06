@@ -3069,14 +3069,13 @@ Bool_t AliConvEventCuts::IsJetJetMCEventAccepted(AliMCEvent *mcEvent, Double_t& 
 
         if (mcEvent){
           for(Long_t i = 0; i < mcEvent->GetNumberOfPrimaries(); i++) {
-            TParticle* particle = (TParticle *)mcEvent->Particle(i);
+            AliMCParticle* particle = (AliMCParticle*) mcEvent->GetTrack(i);
             if (!particle) continue;
             // if (TMath::Abs(particle->GetPdgCode()) == 111 || TMath::Abs(particle->GetPdgCode()) == 221){
-              if (particle->Pt() > fMaxFacPtHardSingleParticle*ptHard && TMath::Abs(particle->GetPdgCode()) > 21){
-                eventAccepted= kFALSE;
-              }
+                if (particle->Pt() > fMaxFacPtHardSingleParticle*ptHard && TMath::Abs(particle->PdgCode()) > 21){
+                  eventAccepted= kFALSE;
+                }
             // }
-
           }
         }
 
