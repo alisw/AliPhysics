@@ -103,7 +103,9 @@ AliAnalysisTaskTaggedPhotons::AliAnalysisTaskTaggedPhotons() :
   for(int cen=1; cen<=fNCenBin; cen++)
     fCenBinEdges.AddAt(int(100.*cen/fNCenBin),cen-1) ; 
 
-  for(Int_t i=0; i<7; i++)
+  fWeightParamPi0[0]=1.;  
+
+  for(Int_t i=1; i<7; i++)
     fWeightParamPi0[i]=0.;  
 
   for(Int_t i=0; i<6; i++)
