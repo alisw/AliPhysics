@@ -1475,12 +1475,17 @@ Bool_t AliAnalysisTaskHFSubstructure::FillHistograms()
 
 	fastjet::PseudoJet Daughter_Jet = Reclustered_Jet[0];
 	fastjet::PseudoJet Parent_SubJet_1; 
-	fastjet::PseudoJet Parent_SubJet_2;  
+	fastjet::PseudoJet Parent_SubJet_2;
 
 	while(Daughter_Jet.has_parents(Parent_SubJet_1,Parent_SubJet_2)){
 	  if(Parent_SubJet_1.perp() < Parent_SubJet_2.perp()) std::swap(Parent_SubJet_1,Parent_SubJet_2);
+	  Double_t Leading_Track_pT=0.0;
+	  vector <fastjet::PseudoJet> Hard_SubJet_Constituents = sorted_by_pt(Parent_SubJet_1.constituents());
+	  for (Int_t i_Leading_Track=0; i_Leading_Track < Hard_SubJet_Constituents.size(); i_Leading_Track++){
+	    if (Hard_SubJet_Constituents[i_Leading_Track].perp() > Leading_Track_pT) Leading_Track_pT=Hard_SubJet_Constituents[i_Leading_Track].perp();
+	  }
 	  Splittings_LeadingSubJetpT.push_back(Parent_SubJet_1.perp());
-	  Splittings_HardestSubJetD0.push_back(0.0);  
+	  Splittings_HardestSubJetD0.push_back(Leading_Track_pT);  
 	  Splittings_DeltaR.push_back(Parent_SubJet_1.delta_R(Parent_SubJet_2));
 	  Splittings_Zg.push_back(Parent_SubJet_2.perp()/(Parent_SubJet_1.perp()+Parent_SubJet_2.perp()));
 	  Splittings_RadiatorE.push_back(Daughter_Jet.E());
