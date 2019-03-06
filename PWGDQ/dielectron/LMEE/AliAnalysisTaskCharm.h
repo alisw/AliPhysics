@@ -41,6 +41,7 @@ public:
   void         SetPtCutHigh(Double_t max)                   { fPtCutHigh = max; }
   void         ScaleByRAA(Bool_t b)                         { fScaleByRAA = b; }
   void         ScaleByCNM(Bool_t b,TGraph *cnmgraph)        { fScaleByCNM = b; fgraphCNM = cnmgraph;}
+  void         TakeptOfDCNM(Bool_t b)                       { fTakeptOfDCNM = b; }
   void         SetNbEvent(Int_t b)                          { fNbEvent = b;  }
   void         SetApplywm(Bool_t b)                         { fApplywm = b;  }
   void         SetApplyEventw(Bool_t b)                     { fEventWeight = b;  }
@@ -69,6 +70,7 @@ protected:
   Bool_t                   fScaleByRAA;
   Bool_t                   fScaleByCNM;
   TGraph                  *fgraphCNM;
+  Bool_t                   fTakeptOfDCNM;
   Bool_t                   fApplywm;
   Bool_t                   fEventWeight;
   Bool_t                   fSelectoneccbar;
@@ -197,7 +199,7 @@ protected:
   AliAnalysisTaskCharm(const AliAnalysisTaskCharm &c); // not implemented
   AliAnalysisTaskCharm& operator= (const AliAnalysisTaskCharm &c); // not implemented
   
-  ClassDef(AliAnalysisTaskCharm,1)
+  ClassDef(AliAnalysisTaskCharm,2)
 };
 
 #endif

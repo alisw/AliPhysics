@@ -60,6 +60,7 @@ fPtCutHigh(1e6),
 fScaleByRAA(kFALSE),
 fScaleByCNM(kFALSE),
 fgraphCNM(0),
+fTakeptOfDCNM(kFALSE),
 fApplywm(kFALSE),
 fEventWeight(kFALSE),
 fSelectoneccbar(kFALSE),
@@ -176,6 +177,7 @@ fPtCutHigh(1e6),
 fScaleByRAA(kFALSE),
 fScaleByCNM(kFALSE),
 fgraphCNM(0),
+fTakeptOfDCNM(kFALSE),
 fApplywm(kFALSE),
 fEventWeight(kFALSE),
 fSelectoneccbar(kFALSE),
@@ -304,6 +306,7 @@ void AliAnalysisTaskCharm::UserCreateOutputObjects()
   printf("  select event with clean history:    %s\n", fSelectcleanhistory?"YES":"NO");
   printf("  high-pt cut:         %f\n", fPtCutHigh);
   printf("  use CNM scaling:    %s\n", fScaleByCNM?"YES":"NO");
+  printf("  Take pt of D meson:    %s\n", fTakeptOfDCNM?"YES":"NO");
   printf("  use R_AA scaling:    %s\n", fScaleByRAA?"YES":"NO");
   printf("  use Decay weight:    %s\n", fApplywm?"YES":"NO");
   printf("  use Event weight:    %s\n", fEventWeight?"YES":"NO");
@@ -732,14 +735,17 @@ void AliAnalysisTaskCharm::UserExec(Option_t *)
     // D mesons spectra
     //
 
-   
     // D from B mesons
     
     Bool_t is_Dmeson = kFALSE;
     Bool_t is_DfromBmeson = kFALSE;
     Double_t pt_cquark = -1.;
+    Double_t pt_Dmeson = -1.;
     //Int_t i_c_quark = -1;
-    if (((abs(pdg)>=400) && (abs(pdg)<=439)) || ((abs(pdg)>=4000) && (abs(pdg)<=4399))) is_Dmeson = kTRUE;
+    if (((abs(pdg)>=400) && (abs(pdg)<=439)) || ((abs(pdg)>=4000) && (abs(pdg)<=4399))) {
+      is_Dmeson = kTRUE;
+      pt_Dmeson = p->Pt();
+    }
     // Check if the D meson comes from B
     if(is_Dmeson == kTRUE) {
       //printf("Found one D mesons %d with pdg %d\n",iparticle,pdg);
@@ -752,6 +758,10 @@ void AliAnalysisTaskCharm::UserExec(Option_t *)
 	if (((pid_gm_i>=500) && (pid_gm_i<=549)) || ((pid_gm_i>=5000) && (pid_gm_i<=5499)) || (pid_gm_i == 5)) {
 	  is_DfromBmeson = kTRUE;
 	}
+	// Take the last open-charmed hadrons in the chain
+	if (((pid_gm_i>=400) && (pid_gm_i<=439)) || ((pid_gm_i>=4000) && (pid_gm_i<=4399))) {
+	  pt_Dmeson = gm_i->Pt();
+	}
 	if((pid_gm_i==4) && (pt_cquark<0.)){
 	  //i_c_quark = indexx_i;
 	  pt_cquark = gm_i->Pt();
@@ -759,14 +769,14 @@ void AliAnalysisTaskCharm::UserExec(Option_t *)
 	indexx_i = gm_i->GetFirstMother(); //
       }
     }
-
+    
     // weight
     Double_t wcnm = 1.;
     if(fScaleByCNM && is_Dmeson && !is_DfromBmeson){
       if(fSelectoneccbar && !fSelectcleanhistory){
 	wcnm = eventcnm;
       } 
-      else {
+      else if(!fTakeptOfDCNM) {
 	if(pt_cquark > 0.){
 	  wcnm = scale_CNM(pt_cquark);
 	}
@@ -774,7 +784,16 @@ void AliAnalysisTaskCharm::UserExec(Option_t *)
 	  wcnm = -1.;
 	}
       }
-      hweightcnmD->Fill(wcnm,pt_cquark);
+      else {
+	if(pt_Dmeson > 0.){
+	  wcnm = scale_CNM(pt_Dmeson);
+	}
+	else {
+	  wcnm = -1.;
+	}
+      }
+      if(!fTakeptOfDCNM) hweightcnmD->Fill(wcnm,pt_cquark);
+      else hweightcnmD->Fill(wcnm,pt_Dmeson);
     }
 
     // **** default ****
@@ -818,7 +837,11 @@ void AliAnalysisTaskCharm::UserExec(Option_t *)
     bool is_beauty2charm = kFALSE;
     pt_cquark = -1;
     //i_c_quark = -1;
-    if (((abs(ppid)>=400) && (abs(ppid)<=439)) || ((abs(ppid)>=4000) && (abs(ppid)<=4399))) is_charm = kTRUE;
+    pt_Dmeson = -1;
+    if (((abs(ppid)>=400) && (abs(ppid)<=439)) || ((abs(ppid)>=4000) && (abs(ppid)<=4399))) {
+      is_charm = kTRUE;
+      pt_Dmeson = mom->Pt();
+    }
     // Check if the D meson comes from B
     if(is_charm == kTRUE) {
       TParticle *gm_i = 0x0;
@@ -828,6 +851,9 @@ void AliAnalysisTaskCharm::UserExec(Option_t *)
 	int pid_gm_i = TMath::Abs( gm_i->GetPdgCode() );// pdg of the mother
 	if (((pid_gm_i>=500) && (pid_gm_i<=549)) || ((pid_gm_i>=5000) && (pid_gm_i<=5499)) || (pid_gm_i == 5)) {
 	  is_beauty2charm = kTRUE;
+	}
+	if (((pid_gm_i>=400) && (pid_gm_i<=439)) || ((pid_gm_i>=4000) && (pid_gm_i<=4399))) {
+	  pt_Dmeson = gm_i->Pt();
 	}
 	if((pid_gm_i==4) && (pt_cquark < 0.)){
 	  //i_c_quark = indexx_i;
@@ -849,7 +875,7 @@ void AliAnalysisTaskCharm::UserExec(Option_t *)
     }
     wm = wm*eventw;
     
-
+    
     // weight CNM
     if(fScaleByCNM && is_charm && !is_beauty2charm){
       Double_t wcnme = 1.;
@@ -859,9 +885,17 @@ void AliAnalysisTaskCharm::UserExec(Option_t *)
 	//if(pt_cquark > 0.){
 	  //printf("HFE: mean weight %f and single weight %f\n",wcnme,scale_CNM(pt_cquark));
 	//}
-      } else {
+      } else if(!fTakeptOfDCNM) {
 	if(pt_cquark>0){
 	  wcnme = scale_CNM(pt_cquark);
+	}
+	else {
+	  wcnme = -1.;
+	  //printf("HFE %d with c quark %d\n",iparticle,i_c_quark);
+	}
+      } else {
+	if(pt_Dmeson>0){
+	  wcnme = scale_CNM(pt_Dmeson);
 	}
 	else {
 	  wcnme = -1.;
@@ -870,7 +904,8 @@ void AliAnalysisTaskCharm::UserExec(Option_t *)
       }
       //printf("HFE: wcnme %f\n",wcnme);
       wm = wm*wcnme;
-      hweightcnmHFE->Fill(wcnme,pt_cquark);
+      if(!fTakeptOfDCNM) hweightcnmHFE->Fill(wcnme,pt_cquark);
+      else hweightcnmHFE->Fill(wcnme,pt_Dmeson);
     }
    
     if(is_charm && !is_beauty2charm){
@@ -1104,12 +1139,16 @@ void AliAnalysisTaskCharm::UserExec(Option_t *)
       double ppx_j  = mom_j->Px();
       double ppy_j  = mom_j->Py();
       double ppt_j  = sqrt(ppx_j*ppx_j+ppy_j*ppy_j);
-
-      // i electron
+      
+       // i electron
       bool i_is_charm = kFALSE;
       bool i_is_beauty2charm = kFALSE;
       Double_t i_pt_c = -1.;
-      if (((abs(ppid_i)>=400) && (abs(ppid_i)<=439)) || ((abs(ppid_i)>=4000) && (abs(ppid_i)<=4399))) i_is_charm = kTRUE;
+      Double_t i_pt_D = -1.;
+      if (((abs(ppid_i)>=400) && (abs(ppid_i)<=439)) || ((abs(ppid_i)>=4000) && (abs(ppid_i)<=4399))) {
+	i_is_charm = kTRUE;
+	i_pt_D = mom_i->Pt();
+      }
       // Check if the D meson comes from B
       if(i_is_charm == kTRUE) {
 	TParticle *gm_i = 0x0;
@@ -1119,6 +1158,9 @@ void AliAnalysisTaskCharm::UserExec(Option_t *)
 	  int pid_gm_i = TMath::Abs( gm_i->GetPdgCode() );// pdg of the mother
 	  if (((pid_gm_i>=500) && (pid_gm_i<=549)) || ((pid_gm_i>=5000) && (pid_gm_i<=5499)) || (pid_gm_i == 5)) {
 	    i_is_beauty2charm = kTRUE;
+	  }
+	  if (((pid_gm_i>=400) && (pid_gm_i<=439)) || ((pid_gm_i>=4000) && (pid_gm_i<=4399))) {
+	    i_pt_D = gm_i->Pt();
 	  }
 	  if((pid_gm_i==4) && (i_pt_c < 0.)) {
 	    i_pt_c = gm_i->Pt();
@@ -1131,7 +1173,11 @@ void AliAnalysisTaskCharm::UserExec(Option_t *)
       bool j_is_charm = kFALSE;
       bool j_is_beauty2charm = kFALSE;
       Double_t j_pt_c = -1.;
-      if (((abs(ppid_j)>=400) && (abs(ppid_j)<=439)) || ((abs(ppid_j)>=4000) && (abs(ppid_j)<=4399))) j_is_charm = kTRUE;
+      Double_t j_pt_D = -1.;
+      if (((abs(ppid_j)>=400) && (abs(ppid_j)<=439)) || ((abs(ppid_j)>=4000) && (abs(ppid_j)<=4399))) {
+	j_is_charm = kTRUE;
+	j_pt_D = mom_j->Pt();
+      }
       // Check if the D meson comes from B
       if(j_is_charm == kTRUE) {
 	TParticle *gm_j = 0x0;
@@ -1142,6 +1188,9 @@ void AliAnalysisTaskCharm::UserExec(Option_t *)
 	  if (((pid_gm_j>=500) && (pid_gm_j<=549)) || ((pid_gm_j>=5000) && (pid_gm_j<=5499)) || (pid_gm_j == 5)) {
 	    j_is_beauty2charm = kTRUE;
 	  }
+	  if (((pid_gm_j>=400) && (pid_gm_j<=439)) || ((pid_gm_j>=4000) && (pid_gm_j<=4399))) {
+	    j_pt_D = gm_j->Pt();
+	  }
 	  if((pid_gm_j==4) && (j_pt_c < 0.)){
 	    j_pt_c = gm_j->Pt();
 	  }
@@ -1149,7 +1198,6 @@ void AliAnalysisTaskCharm::UserExec(Option_t *)
 	}
 	if(j_is_beauty2charm == kTRUE) j_is_charm = kFALSE; // it is a charm that comes from beauty.
       }
-
       
       //
       Double_t wm_i = 1.;
@@ -1179,7 +1227,7 @@ void AliAnalysisTaskCharm::UserExec(Option_t *)
       double ptweight3 = pt_cut300(pt_i) * pt_cut300(pt_j) * pt_cutHigh(pt_i) * pt_cutHigh(pt_j); // pT>0.3
       double ptweight4 = pt_cut400(pt_i) * pt_cut400(pt_j) * pt_cutHigh(pt_i) * pt_cutHigh(pt_j); // pT>0.4
 
-      // R_AA CNM quark
+       // R_AA CNM quark
       if (fScaleByCNM && i_is_charm && j_is_charm) {
 	Double_t cnmw = 1.;
 	if(fSelectoneccbar && !fSelectcleanhistory){
@@ -1188,7 +1236,7 @@ void AliAnalysisTaskCharm::UserExec(Option_t *)
 	  //if((i_pt_c > 0.) && (j_pt_c>0.)){
 	    //printf("ee: mean weight %f and single weight %f\n",cnmw,0.5*(scale_CNM(i_pt_c)+scale_CNM(j_pt_c)));
 	  //}
-	} else {
+	} else if(!fTakeptOfDCNM) {
 	  if((i_pt_c > 0.) && (j_pt_c>0.)) {
 	    cnmw = 0.5*(scale_CNM(i_pt_c)+scale_CNM(j_pt_c));
 	  }
@@ -1196,14 +1244,28 @@ void AliAnalysisTaskCharm::UserExec(Option_t *)
 	    cnmw = -1.;
 	    //printf("ee: Event with negative weight %d and pt1 %f pt2 %f\n",fNbEventCounter,i_pt_c,j_pt_c);
 	  }
+	} else {
+	  if((i_pt_D > 0.) && (j_pt_D>0.)) {
+	    cnmw = 0.5*(scale_CNM(i_pt_D)+scale_CNM(j_pt_D));
+	  }
+	  else {
+	    cnmw = -1.;
+	    //printf("ee: Event with negative weight %d and pt1 %f pt2 %f\n",fNbEventCounter,i_pt_c,j_pt_c);
+	  }
 	}
 	//printf("ee: cnmw %f\n",cnmw);
-	hweightcnmee->Fill(cnmw,i_pt_c);
-	hweightcnmee->Fill(cnmw,j_pt_c);
+	if(!fTakeptOfDCNM) {
+	  hweightcnmee->Fill(cnmw,i_pt_c);
+	  hweightcnmee->Fill(cnmw,j_pt_c);
+	} else {
+	  hweightcnmee->Fill(cnmw,i_pt_D);
+	  hweightcnmee->Fill(cnmw,j_pt_D);
+	}
 	ptweight2 *= cnmw;
 	ptweight3 *= cnmw;
 	ptweight4 *= cnmw;
       }
+      
       
       // HFE R_AA scaling
       if (fScaleByRAA) {
