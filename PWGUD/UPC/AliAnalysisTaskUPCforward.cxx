@@ -97,6 +97,7 @@ AliAnalysisTaskUPCforward::AliAnalysisTaskUPCforward()
       fZNCEnergyUncalibratedH(0),
       fZNAEnergyUncalibratedH(0),
       fZNCTimeAgainstEntriesH(0),
+      fZNATimeAgainstEntriesH(0),
       fInvariantMassDistributionNoNeutronsH(0),
       fInvariantMassDistributionOneNeutronH(0),
       fInvariantMassDistributionAtLeastOneNeutronH(0),
@@ -177,6 +178,7 @@ AliAnalysisTaskUPCforward::AliAnalysisTaskUPCforward(const char* name)
       fZNCEnergyUncalibratedH(0),
       fZNAEnergyUncalibratedH(0),
       fZNCTimeAgainstEntriesH(0),
+      fZNATimeAgainstEntriesH(0),
       fInvariantMassDistributionNoNeutronsH(0),
       fInvariantMassDistributionOneNeutronH(0),
       fInvariantMassDistributionAtLeastOneNeutronH(0),
@@ -387,27 +389,30 @@ void AliAnalysisTaskUPCforward::UserCreateOutputObjects()
   fDimuonPtDistributionH = new TH1F("fDimuonPtDistributionH", "fDimuonPtDistributionH", 2000, 0, 20);
   fOutputList->Add(fDimuonPtDistributionH);
 
-  fZNCEnergyAgainstEntriesH = new TH1F("fZNCEnergyAgainstEntriesH", "fZNCEnergyAgainstEntriesH", 1000, -500, 2000);
+  fZNCEnergyAgainstEntriesH = new TH1F("fZNCEnergyAgainstEntriesH", "fZNCEnergyAgainstEntriesH", 20000, -10000, 40000);
   fOutputList->Add(fZNCEnergyAgainstEntriesH);
 
-  fZNAEnergyAgainstEntriesH = new TH1F("fZNAEnergyAgainstEntriesH", "fZNAEnergyAgainstEntriesH", 1000, -500, 2000);
+  fZNAEnergyAgainstEntriesH = new TH1F("fZNAEnergyAgainstEntriesH", "fZNAEnergyAgainstEntriesH", 20000, -10000, 40000);
   fOutputList->Add(fZNAEnergyAgainstEntriesH);
 
-  fZNCEnergyCalibratedH = new TH1F("fZNCEnergyCalibratedH", "fZNCEnergyCalibratedH", 1000, -500, 2000);
+  fZNCEnergyCalibratedH = new TH1F("fZNCEnergyCalibratedH", "fZNCEnergyCalibratedH", 20000, -10000, 40000);
   fOutputList->Add(fZNCEnergyCalibratedH);
 
-  fZNAEnergyCalibratedH = new TH1F("fZNAEnergyCalibratedH", "fZNAEnergyCalibratedH", 1000, -500, 2000);
+  fZNAEnergyCalibratedH = new TH1F("fZNAEnergyCalibratedH", "fZNAEnergyCalibratedH", 20000, -10000, 40000);
   fOutputList->Add(fZNAEnergyCalibratedH);
 
-  fZNCEnergyUncalibratedH = new TH1F("fZNCEnergyUncalibratedH", "fZNCEnergyUncalibratedH", 1000, -500, 2000);
+  fZNCEnergyUncalibratedH = new TH1F("fZNCEnergyUncalibratedH", "fZNCEnergyUncalibratedH", 20000, -10000, 40000);
   fOutputList->Add(fZNCEnergyUncalibratedH);
 
-  fZNAEnergyUncalibratedH = new TH1F("fZNAEnergyUncalibratedH", "fZNAEnergyUncalibratedH", 1000, -500, 2000);
+  fZNAEnergyUncalibratedH = new TH1F("fZNAEnergyUncalibratedH", "fZNAEnergyUncalibratedH", 20000, -10000, 40000);
   fOutputList->Add(fZNAEnergyUncalibratedH);
 
 
   fZNCTimeAgainstEntriesH = new TH1F("fZNCTimeAgainstEntriesH", "fZNCTimeAgainstEntriesH", 6000, -1500, 1500);
   fOutputList->Add(fZNCTimeAgainstEntriesH);
+
+  fZNATimeAgainstEntriesH = new TH1F("fZNATimeAgainstEntriesH", "fZNATimeAgainstEntriesH", 6000, -1500, 1500);
+  fOutputList->Add(fZNATimeAgainstEntriesH);
 
   fInvariantMassDistributionNoNeutronsH = new TH1F("fInvariantMassDistributionNoNeutronsH", "fInvariantMassDistributionNoNeutronsH", 2000, 0, 20);
   fOutputList->Add(fInvariantMassDistributionNoNeutronsH);
@@ -637,18 +642,18 @@ void AliAnalysisTaskUPCforward::UserExec(Option_t *)
      -
    */
   Bool_t calibrated = 0;
-  // if ( fRunNum <  295726 ) calibrated = 1;
-  // if ( fRunNum == 296509 ) calibrated = 1;
-  // if ( fRunNum >  296689 ) calibrated = 1;
-  // if ( fRunNum >  296695 ) calibrated = 0;
-  // if ( fRunNum == 297219 ) calibrated = 1;
-  // if ( fRunNum == 297221 ) calibrated = 1;
-  // if ( fRunNum == 297415 ) calibrated = 1;
-  //
-  // if ( !calibrated ) {
-  //   fZNAEnergy *= (2500./190.);
-  //   fZNCEnergy *= (2500./190.);
-  // }
+  if ( fRunNum <  295726 ) calibrated = 1;
+  if ( fRunNum == 296509 ) calibrated = 1;
+  if ( fRunNum >  296689 ) calibrated = 1;
+  if ( fRunNum >  296695 ) calibrated = 0;
+  if ( fRunNum == 297219 ) calibrated = 1;
+  if ( fRunNum == 297221 ) calibrated = 1;
+  if ( fRunNum == 297415 ) calibrated = 1;
+
+  if ( !calibrated ) {
+    fZNAEnergy *= (2500./190.);
+    fZNCEnergy *= (2500./190.);
+  }
 
   /* - V0: we try to find the V0 object data in the nano-AOD. If we cannot,
      - we return, because there would be no way to actually select the events
@@ -1015,11 +1020,77 @@ void AliAnalysisTaskUPCforward::UserExec(Option_t *)
      - This happens with the request |fZNCTime|<5 if I have understood correctly.
      - After this we can fill whatever histogram we want to.
      -
+     -
+     -
+     - NEW: after UPC meeting 5/3/2019
+     - On ZDC timing. Usually we use time information from TDCs corresponding to
+     - the common PMT (reads all four ZN sectors) on both sides. Each AOD event
+     - contains information on up to four consecutive timing hits from these
+     - TDCs within +/-12 bcs around the trigger bunch crossing. These hits are
+     - stored in fZNATDCm and fZNCTDCm arrays:
+     - https://github.com/alisw/AliRoot/blob/master/STEER/AOD/AliAODZDC.h#L153
+     - and can be accessed as in:
+     -
+     - AliAODZDC* aodZDC = aod->GetZDCData();
+     - for (Int_t i=0;i<4;i++) fZNATDC[i] = aodZDC->GetZNATDCm(i);
+     - for (Int_t i=0;i<4;i++) fZNCTDC[i] = aodZDC->GetZNCTDCm(i);
+     -
+     - These hits may come from hadronic or EMD processes in neighbouring bcs.
+     - In Pb-Pb we usually have 0-2 hits within +/-12 bcs mainly due to EMD.
+     - Unused timing slots in these arrays are filled with large negative value
+     - (-999). In order to check if there was a timing hit in the trigger bc,
+     - you have to check if at least one timing hit out of four is within +/-2
+     - ns around 0.
+     -
+     - Regarding these getters GetZNATime() and GetZNCTime(), defined here:
+     - https://github.com/alisw/AliRoot/blob/master/STEER/AOD/AliAODZDC.h#L51
+     - They are outdated because, as mentioned here, they return timing
+     - information from the first slot in those arrays (fZNATDCm[0], fZNCTDCm[0]):
+     - https://github.com/alisw/AliRoot/blob/master/STEER/AOD/AliAODZDC.h#L145
+     - The first hit often corresponds to previous bunch crossings (e.g. EMD),
+     - while interesting hit around 0 may be stored in the next slots.
+     -
+     -
    */
+  Bool_t isZNAfired = kFALSE;
+  Bool_t isZNCfired = kFALSE;
+  /* - Note that in C++ the && and || operators "short-circuit". That means that
+     - they only evaluate a parameter if required. If the first parameter to &&
+     - is false, or the first to || is true, the rest will not be evaluated.
+     - That means that writing:
+     - if ( (isZNAfired == 0) && (...) )
+     - should mean effectively
+     - if ( isZNAfired != 0 ) continue;
+     - hence it should be *at least* one hit!!!
+     -
+   */
+  for(Int_t iZDC = 0; iZDC < 4 ; iZDC++) {
+    if ( (isZNAfired == 0) && (fZNATDC[iZDC] > -2.) && (fZNATDC[iZDC] < 2.) ) {
+      isZNAfired = kTRUE;
+      fZNATimeAgainstEntriesH->Fill(fZNATDC[iZDC]);
+    }
+    if ( (isZNCfired == 0) && (fZNCTDC[iZDC] > -2.) && (fZNCTDC[iZDC] < 2.) ) {
+      isZNCfired = kTRUE;
+      fZNCTimeAgainstEntriesH->Fill(fZNCTDC[iZDC]);
+    }
+  }
+
+  if ( isZNCfired != 0 ) {
+    fZNCEnergyAgainstEntriesH->Fill(fZNCEnergy);
+    if ( calibrated == 0 ) fZNCEnergyUncalibratedH->Fill(fZNCEnergy);
+    if ( calibrated == 1 ) fZNCEnergyCalibratedH  ->Fill(fZNCEnergy);
+  }
+  if ( isZNAfired != 0 ) {
+    fZNAEnergyAgainstEntriesH->Fill(fZNAEnergy);
+    if ( calibrated == 0 ) fZNAEnergyUncalibratedH->Fill(fZNAEnergy);
+    if ( calibrated == 1 ) fZNAEnergyCalibratedH  ->Fill(fZNAEnergy);
+  }
+
+  /*
   fZNCTimeAgainstEntriesH->Fill(fZNCTime);
   if( fZNCTime > -5.0 ) {
     if( fZNCTime < 5.0 ) {
-          /* At any levels, this means |fZNCTime| < 5. */
+          At any levels, this means |fZNCTime| < 5.
           fZNCEnergyAgainstEntriesH->Fill(fZNCEnergy);
           fZNAEnergyAgainstEntriesH->Fill(fZNAEnergy);
           if ( calibrated == 0 ) fZNAEnergyUncalibratedH->Fill(fZNAEnergy);
@@ -1036,7 +1107,8 @@ void AliAnalysisTaskUPCforward::UserExec(Option_t *)
              - the cut based on Evgeny Kryshen's plot. Then we will see in the
              - future.
              -
-           */
+             - NB: this is wrong and outdated. See next cycle for new code!
+
           if( fZNCEnergy > -300 ) {
                     if( fZNCEnergy < 125 ) {
                             fInvariantMassDistributionNoNeutronsH->Fill(possibleJPsi.Mag());
@@ -1066,11 +1138,21 @@ void AliAnalysisTaskUPCforward::UserExec(Option_t *)
           }
     }
   }
+  */
 
   //_____________________________________
   // DIFFERENTIAL ANALYSIS NEUTRON EMISSION
-  if( fZNCTime > -5.0 ) {
-    if( fZNCTime < 5.0 ) {
+  /* - This if should be really wrong...
+     - But now I think I can do the same implementing th ZNA timing information
+     - too by simply requesting:
+     -  (1)   isZNAfired == kTRUE;
+     -  (2)   isZNCfired == kTRUE;
+     -
+   */
+  // if( fZNCTime > -5.0 ) {
+  //   if( fZNCTime < 5.0 ) {
+  if ( isZNAfired != 0 ) {
+    if ( isZNCfired != 0 ) {
           /* At any levels, this means |fZNCTime| < 5. */
           if( fZNCEnergy > -300 ) {
                       if( fZNCEnergy < 125 ) {

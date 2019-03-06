@@ -140,6 +140,7 @@ AliAnalysisTaskUPCforwardMC::AliAnalysisTaskUPCforwardMC()
       fMCphiDimuonGeneratedTruthH(0),
       fMCetaDimuonGeneratedTruthH(0),
       fMCpseudorapidityDimuonGeneratedTruthH(0),
+      fMCptDimuonGeneratedTruthSingleMuonsH(0),
       fMCptDimuonGeneratedTruthH(0),
       fMCinvariantMassDistrJPsiGeneratedTruthH(0),
       fMCinvariantMassDistrJPsiAfterEvtAndTrkSelectionTruthH(0),
@@ -228,6 +229,7 @@ AliAnalysisTaskUPCforwardMC::AliAnalysisTaskUPCforwardMC( const char* name )
       fMCphiDimuonGeneratedTruthH(0),
       fMCetaDimuonGeneratedTruthH(0),
       fMCpseudorapidityDimuonGeneratedTruthH(0),
+      fMCptDimuonGeneratedTruthSingleMuonsH(0),
       fMCptDimuonGeneratedTruthH(0),
       fMCinvariantMassDistrJPsiGeneratedTruthH(0),
       fMCinvariantMassDistrJPsiAfterEvtAndTrkSelectionTruthH(0),
@@ -436,10 +438,10 @@ void AliAnalysisTaskUPCforwardMC::UserCreateOutputObjects()
   fMCpdgCodesOnlyPrimaryH->LabelsDeflate();
   fOutputList->Add(fMCpdgCodesOnlyPrimaryH);
 
-  fMCinvariantMassDistrJPsiGeneratedTruthH = new TH1F("fMCinvariantMassDistrJPsiGeneratedTruthH", "fMCinvariantMassDistrJPsiGeneratedTruthH", 2000, 0, 20);
+  fMCinvariantMassDistrJPsiGeneratedTruthH = new TH1F("fMCinvariantMassDistrJPsiGeneratedTruthH", "fMCinvariantMassDistrJPsiGeneratedTruthH", 20000, 0, 20);
   fOutputList->Add(fMCinvariantMassDistrJPsiGeneratedTruthH);
 
-  fMCinvariantMassDistrJPsiAfterEvtAndTrkSelectionTruthH = new TH1F("fMCinvariantMassDistrJPsiAfterEvtAndTrkSelectionTruthH", "fMCinvariantMassDistrJPsiAfterEvtAndTrkSelectionTruthH", 2000, 0, 20);
+  fMCinvariantMassDistrJPsiAfterEvtAndTrkSelectionTruthH = new TH1F("fMCinvariantMassDistrJPsiAfterEvtAndTrkSelectionTruthH", "fMCinvariantMassDistrJPsiAfterEvtAndTrkSelectionTruthH", 20000, 0, 20);
   fOutputList->Add(fMCinvariantMassDistrJPsiAfterEvtAndTrkSelectionTruthH);
 
   fMCphiGeneratedTruthH = new TH1F("fMCphiGeneratedTruthH", "fMCphiGeneratedTruthH", 2000, 0, 20);
@@ -463,8 +465,12 @@ void AliAnalysisTaskUPCforwardMC::UserCreateOutputObjects()
   fMCpseudorapidityDimuonGeneratedTruthH = new TH1F("fMCpseudorapidityDimuonGeneratedTruthH", "fMCpseudorapidityDimuonGeneratedTruthH", 2000, 0, 20);
   fOutputList->Add(fMCpseudorapidityDimuonGeneratedTruthH);
 
+  fMCptDimuonGeneratedTruthSingleMuonsH = new TH1F("fMCptDimuonGeneratedTruthSingleMuonsH", "fMCptDimuonGeneratedTruthSingleMuonsH", 2000, 0, 20);
+  fOutputList->Add(fMCptDimuonGeneratedTruthSingleMuonsH);
+
   fMCptDimuonGeneratedTruthH = new TH1F("fMCptDimuonGeneratedTruthH", "fMCptDimuonGeneratedTruthH", 2000, 0, 20);
   fOutputList->Add(fMCptDimuonGeneratedTruthH);
+
 
   /* - Here starts the list of histograms needed for the analysis of the J/Psi's
      - polarization. GENERATED MC TRUTH.
@@ -1051,9 +1057,10 @@ void AliAnalysisTaskUPCforwardMC::ProcessMCParticles(AliMCEvent* fMCEventArg)
         fMCphiDimuonGeneratedTruthH           ->Fill(phi[iMuonsMC]);
         fMCetaDimuonGeneratedTruthH           ->Fill(eta[iMuonsMC]);
         fMCpseudorapidityDimuonGeneratedTruthH->Fill(pseudo[iMuonsMC]);
-        fMCptDimuonGeneratedTruthH            ->Fill(pT[iMuonsMC]);
+        fMCptDimuonGeneratedTruthSingleMuonsH ->Fill(pT[iMuonsMC]);
       }
       fMCinvariantMassDistrJPsiGeneratedTruthH->Fill(possibleJPsiMC.Mag());
+      fMCptDimuonGeneratedTruthH->Fill(possibleJPsiMC.Pt());
       for( Int_t iBoosting = 0; iBoosting < 2; iBoosting++ ) {
         // TLorentzVector boostBack = -(possibleJPsiCopy).BoostVector();
         /* - This snippet has beem taken from the website:
