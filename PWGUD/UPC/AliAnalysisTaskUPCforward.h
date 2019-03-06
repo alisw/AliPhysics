@@ -82,20 +82,20 @@ class AliAnalysisTaskUPCforward : public AliAnalysisTaskSE
                                  * parameters at each new runs. Sets the run
                                  * number for the successive cuts.
                                  */
-        virtual void   			    NotifyRun();
+        virtual void            NotifyRun();
 
                                 /**
                                  * This will fill the vector containing the good
                                  * run numbers. For now this function will be
                                  * inside the constructor of the class.
                                  */
-        void   			            FillGoodRunVector(std::vector<Int_t> &fVectorGoodRunNumbers);
+        void                    FillGoodRunVector(std::vector<Int_t> &fVectorGoodRunNumbers);
 
                                 /**
                                  * Use the class as a data member. It contains
                                  * the cuts for the muon track.
                                  */
-        AliMuonTrackCuts* 		  fMuonTrackCuts;
+        AliMuonTrackCuts*       fMuonTrackCuts;
 
 
 
@@ -323,6 +323,13 @@ class AliAnalysisTaskUPCforward : public AliAnalysisTaskSE
                                  * of neutron ZDC.
                                  */
         TH1F*                   fZNCTimeAgainstEntriesH;         //!
+
+                                /**
+                                 * This histogram records the time ditribution
+                                 * of neutron ZDC.
+                                 */
+        TH1F*                   fZNATimeAgainstEntriesH;         //!
+
 
                                 /**
                                  * This histogram records the invariant mass

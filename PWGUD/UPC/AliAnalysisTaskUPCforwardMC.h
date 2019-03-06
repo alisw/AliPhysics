@@ -321,7 +321,16 @@ class AliAnalysisTaskUPCforwardMC : public AliAnalysisTaskSE
                                  * This histogram records the Pt of all
                                  * the MC GENERATED muons of the J/Psi...
                                  */
+        TH1F*                   fMCptDimuonGeneratedTruthSingleMuonsH;
+
+                                /**
+                                 * This histogram records the Pt of all
+                                 * the MC GENERATED J/Psi.
+                                 */
         TH1F*                   fMCptDimuonGeneratedTruthH;
+
+
+
 
 
 
