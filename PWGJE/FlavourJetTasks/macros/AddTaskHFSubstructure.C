@@ -26,7 +26,7 @@ AliAnalysisTaskHFSubstructure* AddTaskHFSubstructure(const char * ntracksData,
   TString wagonName1, wagonName2,wagonName3;
   TString tag="";
   if (ECandidateType == AliAnalysisTaskHFSubstructure::kD0toKpi) tag="kD0toKpi";
-  if (jetShapeType==AliAnalysisTaskHFSubstructure::kData || jetShapeType==AliAnalysisTaskHFSubstructure::kInclusive){
+  if (jetShapeType==AliAnalysisTaskHFSubstructure::kData || jetShapeType==AliAnalysisTaskHFSubstructure::kDataInclusive){
     wagonName1 = Form("AliAnalysisTaskHFSubstructure_%s_TC%s",ntracksData,tag.Data());
     wagonName2 = Form("AliAnalysisTaskHFSubstructure_%s_TC%sTree",ntracksData,tag.Data());
     wagonName3 = Form("AliAnalysisTaskHFSubstructure_%s_TC%sTreeSplittings",ntracksData,tag.Data());
