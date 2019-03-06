@@ -75,7 +75,7 @@ AliForwardSecondariesTask::AliForwardSecondariesTask() : AliAnalysisTaskSE(),
   fRandom(0),
   fTrackDensity(),
   fState(),
-  fMaxConsequtiveStrips(2),
+  fMaxConsequtiveStrips(3),
   fLowCutvalue(0),
   fTrackGammaToPi0(true),
   fSettings(),
@@ -110,7 +110,7 @@ AliForwardSecondariesTask::AliForwardSecondariesTask() : AliAnalysisTaskSE(),
   fDeltaList(0),
   fTrackDensity(),
   fState(),
-  fMaxConsequtiveStrips(2),
+  fMaxConsequtiveStrips(3),
   fLowCutvalue(0),
   fTrackGammaToPi0(true),
   fRandom(0),
@@ -163,15 +163,15 @@ AliForwardSecondariesTask::AliForwardSecondariesTask() : AliAnalysisTaskSE(),
     fDeltaList = new TList();
     fDeltaList->SetName("Delta");
     Int_t phibins = 4000;
-    Int_t etabins = 50;
+    Int_t etabins = 24;
     fSettings.fnoSamples = 1;
     fSettings.fCentBins = 5;
     Int_t bins_phi_eta[5] = {fSettings.fnoSamples, fSettings.fNZvtxBins, phibins, fSettings.fCentBins, etabins} ;
-    Double_t xmin_phi_eta[5] = {0,fSettings.fZVtxAcceptanceLowEdge, -TMath::Pi(), 0, -4};
+    Double_t xmin_phi_eta[5] = {0,fSettings.fZVtxAcceptanceLowEdge, -TMath::Pi(), 0, -6};
     Double_t xmax_phi_eta[5] = {10,fSettings.fZVtxAcceptanceUpEdge, TMath::Pi(), 100, 6}; //
 
     Int_t bins_phi_eta_spd[5] = {fSettings.fnoSamples, fSettings.fNZvtxBins, phibins, 1, etabins} ;
-    Double_t xmin_phi_eta_spd[5] = {0,fSettings.fZVtxAcceptanceLowEdge, -TMath::Pi(), 0, -4};
+    Double_t xmin_phi_eta_spd[5] = {0,fSettings.fZVtxAcceptanceLowEdge, -TMath::Pi(), 0, -6};
     Double_t xmax_phi_eta_spd[5] = {10,fSettings.fZVtxAcceptanceUpEdge, TMath::Pi(), 100, 6}; //
 
     Int_t dimensions = 5;
@@ -237,7 +237,7 @@ AliForwardSecondariesTask::AliForwardSecondariesTask() : AliAnalysisTaskSE(),
     phihist = new TH1D("name","name",20,0,2*TMath::Pi());
     phihist->SetDirectory(0);
     Int_t bins_prim[4] = {fSettings.fnoSamples, fSettings.fNZvtxBins, 1, etabins} ;
-    Double_t xmin_prim[4] = {0,fSettings.fZVtxAcceptanceLowEdge, 0, -4};
+    Double_t xmin_prim[4] = {0,fSettings.fZVtxAcceptanceLowEdge, 0, -6};
     Double_t xmax_prim[4] = {10,fSettings.fZVtxAcceptanceUpEdge, 100, 6}; //
     Int_t dimensions_prim = 4;
     fDeltaList->Add(new THnD("fnoPrim", "fnoPrim", dimensions_prim, bins_prim, xmin_prim, xmax_prim)); //(samples,vertex, phi, cent, eta)

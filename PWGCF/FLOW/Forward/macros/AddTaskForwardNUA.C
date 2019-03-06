@@ -20,7 +20,8 @@
  * @ingroup pwglf_forward_flow
  */
 
-AliAnalysisTaskSE* AddTaskForwardNUA(UShort_t nua_mode, bool makeFakeHoles, bool mc,  bool esd,bool prim_cen,bool prim_fwd , Int_t tracktype, TString centrality,Double_t minpt,Double_t maxpt,TString suffix="")
+AliAnalysisTaskSE* AddTaskForwardNUA(UShort_t nua_mode, bool makeFakeHoles, bool mc,  bool esd,bool prim_cen,bool prim_fwd , 
+                                     Int_t tracktype, TString centrality,Double_t minpt,Double_t maxpt,TString suffix="")
 {
   std::cout << "______________________________________________________________________________" << std::endl;
 
@@ -32,7 +33,7 @@ AliAnalysisTaskSE* AddTaskForwardNUA(UShort_t nua_mode, bool makeFakeHoles, bool
     Fatal("","No analysis manager to connect to.");
 
   AliForwardNUATask* task = new AliForwardNUATask(suffix);
-  TString resName = "ForwardNUA";
+  TString resName = suffix;
 
     task->fSettings.use_primaries_cen = prim_cen;
     if (mc) resName += (prim_cen ? "_primcen" : "_trcen");
