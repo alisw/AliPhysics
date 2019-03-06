@@ -203,6 +203,11 @@ void AddTask_GammaConvNeutralMesonPiPlPiMiNeutralMeson_MixedMode_pp(
     cuts.AddCutHeavyMesonPCMCalo("00085113","00200009227000008250400000","1111111047032230000","32c010708","0103603700000000","0153503000000000"); // EG2
     cuts.AddCutHeavyMesonPCMCalo("00083113","00200009227000008250400000","1111111047032230000","32c010708","0103603700000000","0153503000000000"); // EG1
 
+    // EMCal LHC11pp 7 TeV
+  } else if ( trainConfig == 115) { // with TPC refit + ITS requirement
+    cuts.AddCutHeavyMesonPCMCalo("00010113","00200009227000008250400000","1111111057032230000","32c010708","0103603700000000","0153503000000000"); // INT7
+    cuts.AddCutHeavyMesonPCMCalo("00052113","00200009227000008250400000","1111111057032230000","32c010708","0103603700000000","0153503000000000"); // EMC7
+
     // ---------------------------------
     // systematic studies 7 TeV (EMCal)
     // ---------------------------------
@@ -405,6 +410,13 @@ void AddTask_GammaConvNeutralMesonPiPlPiMiNeutralMeson_MixedMode_pp(
   } else if(trainConfig == 191)  { // Standard PHOS  with TPC refit + ITS requirement
     cuts.AddCutHeavyMesonPCMCalo("00010113","00200009227000008250400000","2444411043012300000","32c010708","0103603n00000000","0153503000000000"); // INT7
     cuts.AddCutHeavyMesonPCMCalo("00062113","00200009227000008250400000","2444411043012300000","32c010708","0103603n00000000","0153503000000000"); // PHI7
+
+    // PHOS pp 13 TeV
+  } else if(trainConfig == 195)  { // with TPC refit + ITS requirement
+    cuts.AddCutHeavyMesonPCMCalo("00010113","00200009227000008250400000","2444400053012300000","32c010708","0103603n00000000","0153503000000000"); // INT7
+    cuts.AddCutHeavyMesonPCMCalo("00062113","00200009227000008250400000","2444400053012300000","32c010708","0103603n00000000","0153503000000000"); // PHI7
+
+
   // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
   // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
   //                                          ETA PRIME MESON
