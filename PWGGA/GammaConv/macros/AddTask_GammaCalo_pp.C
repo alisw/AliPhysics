@@ -93,7 +93,7 @@ void AddTask_GammaCalo_pp(
     cout << "found: " << histoAcc << endl;
   }
 
-  Int_t localDebugFlag = 1;
+  Int_t localDebugFlag = 0;
   TString strLocalDebugFlag              = cuts.GetSpecialSettingFromAddConfig(additionalTrainConfig, "LOCALDEBUGFLAG", "", addTaskName);
   if(strLocalDebugFlag.Atoi()>0)
     localDebugFlag = strLocalDebugFlag.Atoi();
