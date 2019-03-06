@@ -122,7 +122,6 @@ class AliGFWFlowContainer:public TNamed {
   TObjArray *fProfRand;
   Int_t fNRandom;
   TString fIDName;
-  Bool_t fMergeRequired; //! a flag whether for given identidier merging is required (checks for + in fIDName)
   TProfile *GetRefFlowProfile(const char *order, Double_t m1=-1, Double_t m2=-1);
   ClassDef(AliGFWFlowContainer, 1);
 };

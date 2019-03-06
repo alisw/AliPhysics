@@ -196,7 +196,6 @@ Bool_t AliGFWFlowContainer::OverrideMainWithSub(Int_t ind, Bool_t ExcludeChosen)
 };
 void AliGFWFlowContainer::SetIDName(TString newname) {
   fIDName = newname;
-  if(fIDName.Contains(" ")) fMergeRequired=kTRUE; else fMergeRequired=kFALSE;
 };
 TProfile *AliGFWFlowContainer::GetCorrXXVsMulti(const char *order, Int_t l_pti) {
   TProfile *retSubset=0;
