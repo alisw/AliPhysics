@@ -1640,7 +1640,7 @@ void AddTask_GammaCalo_pp(
   task->SetProduceTreeEOverP(doTreeEOverP);
   task->SetEnableSortingOfMCClusLabels(enableSortingMCLabels);
   if(trainConfig == 2020 || trainConfig == 2021 || trainConfig == 2022) enablePi0Only = kTRUE;
-    task->SetDoPi0Only(enablePi0Only);
+  task->SetDoPi0Only(enablePi0Only);
   if(trainConfig == 446) task->SetSoftAnalysis(kTRUE);
   if(enableExtMatchAndQA > 1){ task->SetPlotHistsExtQA(kTRUE);}
   if(trainConfig == 106 || trainConfig == 125 || trainConfig == 145){

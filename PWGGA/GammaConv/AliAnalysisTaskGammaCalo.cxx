@@ -2317,17 +2317,12 @@ void AliAnalysisTaskGammaCalo::UserCreateOutputObjects(){
         fTrueJetHistograms[iCut]->SetName(Form("%s_%s_%s True Jet histograms", cutstringEvent.Data(), cutstringCalo.Data(), cutstringMeson.Data()));
         fTrueJetHistograms[iCut]->SetOwner(kTRUE);
         fCutFolder[iCut]->Add(fTrueJetHistograms[iCut]);
-
         fHistoTruevsRecJetPt[iCut] = new TH2F("True_JetPt_vs_Rec_JetPt", "True_JetPt_vs_Rec_JetPt", 150, 0, 150, 150, 0, 150);
         fTrueJetHistograms[iCut]->Add(fHistoTruevsRecJetPt[iCut]);
         fHistoTruePi0JetMotherInvMassPt[iCut] = new TH2F("ESD_TruePi0_Jet_InvMass_Pt", "ESD_TruePi0_Jet_InvMass_Pt", nBinsMinv, 0, maxMinv, nBinsPt, arrPtBinning);
         fTrueJetHistograms[iCut]->Add(fHistoTruePi0JetMotherInvMassPt[iCut]);
         fHistoTruePrimaryPi0JetInvMassPt[iCut] = new TH2F("ESD_TruePrimaryPi0Jet_InvMass_Pt", "ESD_TruePrimaryPi0Jet_InvMass_Pt", nBinsMinv, 0, maxMinv, nBinsPt, arrPtBinning);
         fTrueJetHistograms[iCut]->Add(fHistoTruePrimaryPi0JetInvMassPt[iCut]);
-        fHistoTrueEtaJetMotherInvMassPt[iCut] = new TH2F("ESD_TrueEta_Jet_InvMass_Pt", "ESD_TruePi0_Jet_InvMass_Pt", nBinsMinv, 0, maxMinv, nBinsPt, arrPtBinning);
-        fTrueJetHistograms[iCut]->Add(fHistoTrueEtaJetMotherInvMassPt[iCut]);
-        fHistoTruePrimaryEtaJetInvMassPt[iCut] = new TH2F("ESD_TruePrimaryEtaJet_InvMass_Pt", "ESD_TruePrimaryEtaJet_InvMass_Pt", nBinsMinv, 0, maxMinv, nBinsPt, arrPtBinning);
-        fTrueJetHistograms[iCut]->Add(fHistoTruePrimaryEtaJetInvMassPt[iCut]);
         fHistoTruePi0InJetMotherInvMassPt[iCut] = new TH2F("ESD_TruePi0_Pi0inJet_InvMass_Pt", "ESD_TruePi0_Pi0inJet_InvMass_Pt", nBinsMinv, 0, maxMinv, nBinsPt, arrPtBinning);
         fTrueJetHistograms[iCut]->Add(fHistoTruePi0InJetMotherInvMassPt[iCut]);
         fHistoTruePrimaryPi0inJetInvMassPt[iCut] = new TH2F("ESD_TruePrimaryPi0inJet_InvMass_Pt", "ESD_TruePrimaryPi0inJet_InvMass_Pt", nBinsMinv, 0, maxMinv, nBinsPt, arrPtBinning);
@@ -2336,36 +2331,18 @@ void AliAnalysisTaskGammaCalo::UserCreateOutputObjects(){
         fTrueJetHistograms[iCut]->Add(fHistoTruePrimaryPi0InJetInvMassTruePt[iCut]);
         fHistoTrueDoubleCountingPi0Jet[iCut] = new TH1F("Double_Counting_True_Pi0inJet", "Double_Counting_True_Pi0inJet", 6, 0, 6);
         fTrueJetHistograms[iCut]->Add(fHistoTrueDoubleCountingPi0Jet[iCut]);
-        fHistoTrueEtaInJetMotherInvMassPt[iCut] = new TH2F("ESD_TrueEta_EtainJet_InvMass_Pt", "ESD_TruePi0_Pi0inJet_InvMass_Pt", nBinsMinv, 0, maxMinv, nBinsPt, arrPtBinning);
-        fTrueJetHistograms[iCut]->Add(fHistoTrueEtaInJetMotherInvMassPt[iCut]);
-        fHistoTruePrimaryEtainJetInvMassPt[iCut] = new TH2F("ESD_TruePrimaryEtainJet_InvMass_Pt", "ESD_TruePrimaryEtainJet_InvMass_Pt", nBinsMinv, 0, maxMinv, nBinsPt, arrPtBinning);
-        fTrueJetHistograms[iCut]->Add(fHistoTruePrimaryEtainJetInvMassPt[iCut]);
-        fHistoTrueDoubleCountingEtaJet[iCut] = new TH1F("Double_Counting_True_EtainJet", "Double_Counting_True_EtainJet", 6, 0, 6);
-        fTrueJetHistograms[iCut]->Add(fHistoTrueDoubleCountingEtaJet[iCut]);
         fHistoTruePi0JetFragmFunc[iCut] = new TH2F("ESD_TruePi0inJetPt_FragmentationFunc", "ESD_TruePi0inJetPt_FragmentationFunc", 50, arrLogBinning, 150, 0., 150.);
         fTrueJetHistograms[iCut]->Add(fHistoTruePi0JetFragmFunc[iCut]);
         fHistoTruePi0JetFragmFuncChargPart[iCut] = new TH2F("ESD_TruePi0inJet_FragmentationFunc_ChargPart", "ESD_TruePi0inJet_FragmentationFunc_ChargPart", 50, arrLogBinning, 60, 0., 60.);
         fTrueJetHistograms[iCut]->Add(fHistoTruePi0JetFragmFuncChargPart[iCut]);
-        fHistoTrueEtaJetFragmFunc[iCut] = new TH2F("ESD_TrueEtainJet_FragmentationFunc", "ESD_TrueEtainJet_FragmentationFunc", 50, arrLogBinning, 150, 0., 150.);
-        fTrueJetHistograms[iCut]->Add(fHistoTrueEtaJetFragmFunc[iCut]);
-        fHistoTrueEtaJetFragmFuncChargPart[iCut] = new TH2F("ESD_TrueEtainJet_FragmentationFunc_ChargPart", "ESD_TrueEtainJet_FragmentationFunc_ChargPart", 50, arrLogBinning, 60, 0., 60.);
-        fTrueJetHistograms[iCut]->Add(fHistoTrueEtaJetFragmFuncChargPart[iCut]);
         fHistoMCPi0JetInAccPt[iCut]      = new TH1F("MC_Pi0JetInAcc_Pt", "MC_Pi0JetInAcc_Pt", (Int_t)((maxPt-minPt)/binWidthPt), minPt, maxPt);
         fTrueJetHistograms[iCut]->Add(fHistoMCPi0JetInAccPt[iCut]);
         fHistoMCPi0inJetInAccPt[iCut]      = new TH1F("MC_Pi0inJetInAcc_Pt", "MC_Pi0inJetInAcc_Pt", (Int_t)((maxPt-minPt)/binWidthPt), minPt, maxPt);
         fTrueJetHistograms[iCut]->Add(fHistoMCPi0inJetInAccPt[iCut]);
-        fHistoMCEtaJetInAccPt[iCut]      = new TH1F("MC_EtaJetInAcc_Pt", "MC_EtaJetInAcc_Pt", (Int_t)((maxPt-minPt)/binWidthPt), minPt, maxPt);
-        fTrueJetHistograms[iCut]->Add(fHistoMCEtaJetInAccPt[iCut]);
-        fHistoMCEtainJetInAccPt[iCut]      = new TH1F("MC_EtainJetInAcc_Pt", "MC_EtainJetInAcc_Pt", (Int_t)((maxPt-minPt)/binWidthPt), minPt, maxPt);
-        fTrueJetHistograms[iCut]->Add(fHistoMCEtainJetInAccPt[iCut]);
         fHistoMCPi0JetEventGenerated[iCut]    = new TH1F("MC_Pi0_JetEvent_Generated", "MC_Pi0_JetEvent_Generated", (Int_t)((maxPt-minPt)/binWidthPt), minPt, maxPt);
         fTrueJetHistograms[iCut]->Add(fHistoMCPi0JetEventGenerated[iCut]);
         fHistoMCPi0inJetGenerated[iCut]    = new TH1F("MC_Pi0_inJet_Generated", "MC_Pi0_inJet_Generated", (Int_t)((maxPt-minPt)/binWidthPt), minPt, maxPt);
         fTrueJetHistograms[iCut]->Add(fHistoMCPi0inJetGenerated[iCut]);
-        fHistoMCEtaJetEventGenerated[iCut]    = new TH1F("MC_Eta_JetEvent_Generated", "MC_Eta_JetEvent_Generated", (Int_t)((maxPt-minPt)/binWidthPt), minPt, maxPt);
-        fTrueJetHistograms[iCut]->Add(fHistoMCEtaJetEventGenerated[iCut]);
-        fHistoMCEtainJetGenerated[iCut]    = new TH1F("MC_Eta_inJet_Generated", "MC_Eta_inJet_Generated", (Int_t)((maxPt-minPt)/binWidthPt), minPt, maxPt);
-        fTrueJetHistograms[iCut]->Add(fHistoMCEtainJetGenerated[iCut]);
         fHistoTrueSecondaryPi0FromK0sJetInvMassPt[iCut] = new TH2F("ESD_TrueSecondaryPi0FromK0sJet_InvMass_Pt", "ESD_TrueSecondaryPi0FromK0sJet_InvMass_Pt", nBinsMinv, 0, maxMinv, nBinsPt, arrPtBinning);
         fTrueJetHistograms[iCut]->Add(fHistoTrueSecondaryPi0FromK0sJetInvMassPt[iCut]);
         fHistoTrueSecondaryPi0FromK0sinJetInvMassPt[iCut] = new TH2F("ESD_TrueSecondaryPi0FromK0s_inJet_InvMass_Pt", "ESD_TrueSecondaryPi0FromK0s_inJet_InvMass_Pt", nBinsMinv, 0, maxMinv, nBinsPt, arrPtBinning);
@@ -2384,12 +2361,37 @@ void AliAnalysisTaskGammaCalo::UserCreateOutputObjects(){
         fTrueJetHistograms[iCut]->Add(fHistoTrueSecondaryPi0InvinJetMassPt[iCut]);
         fHistoMotherPi0inJetPtY[iCut] = new TH2F("ESD_MotherPi0inJet_Pt_Y", "ESD_MotherPi0inJet_Pt_Y", nBinsQAPt, arrQAPtBinning, 150, -1.5, 1.5);
         fTrueJetHistograms[iCut]->Add(fHistoMotherPi0inJetPtY[iCut]);
-        fHistoMotherEtainJetPtY[iCut] = new TH2F("ESD_MotherEtainJet_Pt_Y", "ESD_MotherEtainJet_Pt_Y", nBinsQAPt, arrQAPtBinning, 150, -1.5, 1.5);
-        fTrueJetHistograms[iCut]->Add(fHistoMotherEtainJetPtY[iCut]);
         fHistoMotherPi0inJetPtPhi[iCut] = new TH2F("ESD_MotherPi0inJet_Pt_Phi", "ESD_MotherPi0inJet_Pt_Phi", nBinsQAPt, arrQAPtBinning, 150, 0, 6.5);
         fTrueJetHistograms[iCut]->Add(fHistoMotherPi0inJetPtPhi[iCut]);
-        fHistoMotherEtainJetPtPhi[iCut] = new TH2F("ESD_MotherEtainJet_Pt_Phi", "ESD_MotherEtainJet_Pt_Phi", nBinsQAPt, arrQAPtBinning, 150, 0, 6.5);
-        fTrueJetHistograms[iCut]->Add(fHistoMotherEtainJetPtPhi[iCut]);
+
+        if(!fDoPi0Only){
+          fHistoTrueEtaJetMotherInvMassPt[iCut] = new TH2F("ESD_TrueEta_Jet_InvMass_Pt", "ESD_TruePi0_Jet_InvMass_Pt", nBinsMinv, 0, maxMinv, nBinsPt, arrPtBinning);
+          fTrueJetHistograms[iCut]->Add(fHistoTrueEtaJetMotherInvMassPt[iCut]);
+          fHistoTruePrimaryEtaJetInvMassPt[iCut] = new TH2F("ESD_TruePrimaryEtaJet_InvMass_Pt", "ESD_TruePrimaryEtaJet_InvMass_Pt", nBinsMinv, 0, maxMinv, nBinsPt, arrPtBinning);
+          fTrueJetHistograms[iCut]->Add(fHistoTruePrimaryEtaJetInvMassPt[iCut]);
+          fHistoTrueEtaInJetMotherInvMassPt[iCut] = new TH2F("ESD_TrueEta_EtainJet_InvMass_Pt", "ESD_TruePi0_Pi0inJet_InvMass_Pt", nBinsMinv, 0, maxMinv, nBinsPt, arrPtBinning);
+          fTrueJetHistograms[iCut]->Add(fHistoTrueEtaInJetMotherInvMassPt[iCut]);
+          fHistoTruePrimaryEtainJetInvMassPt[iCut] = new TH2F("ESD_TruePrimaryEtainJet_InvMass_Pt", "ESD_TruePrimaryEtainJet_InvMass_Pt", nBinsMinv, 0, maxMinv, nBinsPt, arrPtBinning);
+          fTrueJetHistograms[iCut]->Add(fHistoTruePrimaryEtainJetInvMassPt[iCut]);
+          fHistoTrueDoubleCountingEtaJet[iCut] = new TH1F("Double_Counting_True_EtainJet", "Double_Counting_True_EtainJet", 6, 0, 6);
+          fTrueJetHistograms[iCut]->Add(fHistoTrueDoubleCountingEtaJet[iCut]);
+          fHistoTrueEtaJetFragmFunc[iCut] = new TH2F("ESD_TrueEtainJet_FragmentationFunc", "ESD_TrueEtainJet_FragmentationFunc", 50, arrLogBinning, 150, 0., 150.);
+          fTrueJetHistograms[iCut]->Add(fHistoTrueEtaJetFragmFunc[iCut]);
+          fHistoTrueEtaJetFragmFuncChargPart[iCut] = new TH2F("ESD_TrueEtainJet_FragmentationFunc_ChargPart", "ESD_TrueEtainJet_FragmentationFunc_ChargPart", 50, arrLogBinning, 60, 0., 60.);
+          fTrueJetHistograms[iCut]->Add(fHistoTrueEtaJetFragmFuncChargPart[iCut]);
+          fHistoMCEtaJetInAccPt[iCut]      = new TH1F("MC_EtaJetInAcc_Pt", "MC_EtaJetInAcc_Pt", (Int_t)((maxPt-minPt)/binWidthPt), minPt, maxPt);
+          fTrueJetHistograms[iCut]->Add(fHistoMCEtaJetInAccPt[iCut]);
+          fHistoMCEtainJetInAccPt[iCut]      = new TH1F("MC_EtainJetInAcc_Pt", "MC_EtainJetInAcc_Pt", (Int_t)((maxPt-minPt)/binWidthPt), minPt, maxPt);
+          fTrueJetHistograms[iCut]->Add(fHistoMCEtainJetInAccPt[iCut]);
+          fHistoMCEtaJetEventGenerated[iCut]    = new TH1F("MC_Eta_JetEvent_Generated", "MC_Eta_JetEvent_Generated", (Int_t)((maxPt-minPt)/binWidthPt), minPt, maxPt);
+          fTrueJetHistograms[iCut]->Add(fHistoMCEtaJetEventGenerated[iCut]);
+          fHistoMCEtainJetGenerated[iCut]    = new TH1F("MC_Eta_inJet_Generated", "MC_Eta_inJet_Generated", (Int_t)((maxPt-minPt)/binWidthPt), minPt, maxPt);
+          fTrueJetHistograms[iCut]->Add(fHistoMCEtainJetGenerated[iCut]);
+          fHistoMotherEtainJetPtY[iCut] = new TH2F("ESD_MotherEtainJet_Pt_Y", "ESD_MotherEtainJet_Pt_Y", nBinsQAPt, arrQAPtBinning, 150, -1.5, 1.5);
+          fTrueJetHistograms[iCut]->Add(fHistoMotherEtainJetPtY[iCut]);
+          fHistoMotherEtainJetPtPhi[iCut] = new TH2F("ESD_MotherEtainJet_Pt_Phi", "ESD_MotherEtainJet_Pt_Phi", nBinsQAPt, arrQAPtBinning, 150, 0, 6.5);
+          fTrueJetHistograms[iCut]->Add(fHistoMotherEtainJetPtPhi[iCut]);
+        }
         if(fIsMC > 0 && fDoClusterQA == kTRUE){
           fNumberOfClusters[iCut]      = new TH1F("MC_NumberofClusters", "MC_NumberofClusters", 25, 0 ,25);
           fNumberOfClusters[iCut]->SetXTitle("Number of clusters");
@@ -5813,7 +5815,7 @@ void AliAnalysisTaskGammaCalo::ProcessTrueMesonCandidates(AliAODConversionMother
         if (CheckVectorForDoubleCount(fVectorDoubleCountTrueEtas,gamma0MotherLabel)) fHistoDoubleCountTrueEtaInvMassPt[fiCut]->Fill(Pi0Candidate->M(),Pi0Candidate->Pt(), weighted*tempTruePi0CandWeight);
         if(fDoJetAnalysis){
           if(fConvJetReader->GetTrueNJets()>0){
-            if(!fDoLightOutput) fHistoTruePrimaryEtaJetInvMassPt[fiCut]->Fill(Pi0Candidate->M(),Pi0Candidate->Pt(),weighted* tempTruePi0CandWeight);
+            if(!fDoLightOutput && !fDoPi0Only) fHistoTruePrimaryEtaJetInvMassPt[fiCut]->Fill(Pi0Candidate->M(),Pi0Candidate->Pt(),weighted* tempTruePi0CandWeight);
             fTrueVectorJetEta = fConvJetReader->GetTrueVectorJetEta();
             fTrueVectorJetPhi = fConvJetReader->GetTrueVectorJetPhi();
             fTrueVectorJetPt  = fConvJetReader->GetTrueVectorJetPt();
@@ -5829,7 +5831,7 @@ void AliAnalysisTaskGammaCalo::ProcessTrueMesonCandidates(AliAODConversionMother
                   DeltaPhi = 2*M_PI - DeltaPhi;
                 }
                 RJetPi0Cand = TMath::Sqrt(pow((DeltaEta),2)+pow((DeltaPhi),2));
-                if(fConvJetReader->Get_Jet_Radius() > 0 ){
+                if(fConvJetReader->Get_Jet_Radius() > 0 && !fDoPi0Only){
                   if(RJetPi0Cand < fConvJetReader->Get_Jet_Radius()){
                     if(!fDoLightOutput){
                       fHistoTruePrimaryEtainJetInvMassPt[fiCut]->Fill(Pi0Candidate->M(),Pi0Candidate->Pt(),weighted* tempTruePi0CandWeight);
@@ -6389,7 +6391,7 @@ void AliAnalysisTaskGammaCalo::ProcessTrueMesonCandidatesAOD(AliAODConversionMot
                 }
                 RJetPi0Cand = TMath::Sqrt(pow((DeltaEta),2)+pow((DeltaPhi),2));
                 if(fConvJetReader->Get_Jet_Radius() > 0 ){
-                  if(RJetPi0Cand < fConvJetReader->Get_Jet_Radius()){
+                  if(RJetPi0Cand < fConvJetReader->Get_Jet_Radius() && !fDoPi0Only){
                     if(!fDoLightOutput){
                       fHistoTruePrimaryEtainJetInvMassPt[fiCut]->Fill(Pi0Candidate->M(),Pi0Candidate->Pt(),weighted* tempTruePi0CandWeight);
                       Double_t dotproduct = fTrueVectorJetPx.at(i)*Pi0Candidate->Px() + fTrueVectorJetPy.at(i)*Pi0Candidate->Py() + fTrueVectorJetPz.at(i)*Pi0Candidate->Pz();
