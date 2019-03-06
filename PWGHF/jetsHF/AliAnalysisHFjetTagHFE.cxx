@@ -204,6 +204,7 @@ AliAnalysisHFjetTagHFE::AliAnalysisHFjetTagHFE() :
   fEMCClsEtaPhi(0),
   fHistBGfrac(0),
   fHistBGfracHFEev(0),
+  fHistBGrandHFEev(0),
   fHistJetEnergyReso(0),
   fPi0Weight(0),
   fEtaWeight(0),
@@ -386,6 +387,7 @@ AliAnalysisHFjetTagHFE::AliAnalysisHFjetTagHFE(const char *name) :
   fEMCClsEtaPhi(0),
   fHistBGfrac(0),
   fHistBGfracHFEev(0),
+  fHistBGrandHFEev(0),
   fHistJetEnergyReso(0),
   fPi0Weight(0),
   fEtaWeight(0),
@@ -874,6 +876,9 @@ void AliAnalysisHFjetTagHFE::UserCreateOutputObjects()
 
   fHistBGfracHFEev = new TH1F("fHistBGfracHFEev", "BG frac; #Delta p_{T}(GeV/c)", 200, -100.0, 100.0);
   fOutput->Add(fHistBGfracHFEev);
+
+  fHistBGrandHFEev = new TH1F("fHistBGrandHFEev", "BG rand; #Delta p_{T}(GeV/c)", 200, -100.0, 100.0);
+  fOutput->Add(fHistBGrandHFEev);
 
   fHistJetEnergyReso = new TH2D("fHistJetENergyReso",";p_{T,ch jet}^{part};<(p_{T,ch,jet}^{det}-p_{T,ch,jet}^{part}/p_{T,ch,jet}^{part})>",100,0,100,200,-1,1);
   fOutput->Add(fHistJetEnergyReso);
@@ -1781,7 +1786,9 @@ Bool_t AliAnalysisHFjetTagHFE::Run()
                               ExJetPhi[2] = Phi_eJet;
                               ExJetEta[2] = Eta_eJet;
                               //Double_t BGfracHFE = CalRandomCone(ExJetPhi,ExJetEta,0.3) - fJetsCont->GetRhoVal()*acos(-1.0)*pow(0.3,2);
-                              Double_t BGfracHFE = CalRandomCone(ExJetPhi,ExJetEta,jetRadius) - fJetsCont->GetRhoVal()*acos(-1.0)*pow(jetRadius,2);
+                              Double_t randomcone = CalRandomCone(ExJetPhi,ExJetEta,jetRadius);
+                              Double_t BGfracHFE = randomcone - fJetsCont->GetRhoVal()*acos(-1.0)*pow(jetRadius,2);
+                              fHistBGrandHFEev->Fill(randomcone);
                               fHistBGfracHFEev->Fill(BGfracHFE);
 
                       } // end of HF selections
@@ -2161,6 +2168,7 @@ Double_t AliAnalysisHFjetTagHFE::CalRandomCone(Double_t HFjetPhi[], Double_t HFj
      }
 
            //cout << "all : pTrand = "<< pTrand << endl; 
+
 
   return pTrand;
 }
