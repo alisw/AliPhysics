@@ -49,12 +49,12 @@ class AliAnalysisTaskUPCPhiTest : public AliAnalysisTaskSE
         
         TH1D* fHistCcup8Triggers;
         TH1D* fHistCcup9Triggers;
-        TH1D* fHistCcup10Triggers;
-        TH1D* fHistCcup11Triggers;
-        TH1D* fHistCcup12Triggers;
-        TH1D* fHistCcup25Triggers;
-        TH1D* fHistCcup26Triggers;
-        TH1D* fHistCcup27Triggers;
+        TH1D* fHistCcup291Triggers;
+        TH1D* fHistCcup301Triggers;
+        TH1D* fHistCcup311Triggers;
+        TH1D* fHistCcup29Triggers;
+        TH1D* fHistCcup30Triggers;
+        TH1D* fHistCcup31Triggers;
         TH1D* fHistCtrueTriggers;
         // information that are being saved
         Float_t                 fPt;
@@ -63,6 +63,7 @@ class AliAnalysisTaskUPCPhiTest : public AliAnalysisTaskSE
         Int_t                   fRunNumber; 
         Float_t                 fPhi1;
         Float_t                 fPhi2;
+        Float_t                 fDelPhi;
         Int_t                  fITSInHits;
         Int_t                  fITSOutHits;
         

@@ -58,7 +58,7 @@
 #include "TList.h"
 #include "AliAnalysisTask.h"
 #include "AliAODInputHandler.h"
-#include "AliAnalysisTaskUPCPhiTest.h"
+  #include "AliAnalysisTaskUPCPhiTest.h"
 #include "AliPIDResponse.h"
 #include "TMath.h" 
 
@@ -69,7 +69,7 @@ ClassImp(AliAnalysisTaskUPCPhiTest) // classimp: necessary for root
 
 
 AliAnalysisTaskUPCPhiTest::AliAnalysisTaskUPCPhiTest() : AliAnalysisTaskSE(),
-fAOD(0), fOutputList(0),fOutputList2(0),fTreeP_TPC(0),fPt(0),fM(0),fPt0(0),fPt1(0),fPiM(0),fMuM(0),fElM(0),fPIDResponse(0),fKaonSigma1(0),fKaonSigma0(0),fPiSigma1(0),fElSigma0(0),fElSigma1(0),fMuSigma0(0),fMuSigma1(0),fTree_NoCut(0),fPiSigma0(0),fKaonSigmaTOF1(0),fKaonSigmaTOF0(0),fPiSigmaTOF1(0),fPiSigmaTOF0(0),fElSigmaTOF1(0),fElSigmaTOF0(0),fMuSigmaTOF1(0),fMuSigmaTOF0(0),fTPCcluster1(0),fEta1(0),fTPCcluster2(0),fEta2(0),fHistCounter(0),fDCAxy2(0),fDCAz2(0),fDCAxy1(0),fDCAz1(0),fTriggerClass(0),fdEdX0(0),fdEdX1(0),fPd0(0),fdEdXTOF0(0),fdEdXTOF1(0),fPd1(0),fPp(0),fZDCdata(0),fZNAenergy(0),fZNCenergy(0),fZDCAtime(0),fZDCCtime(0),fRunNumber(0), fHistRunCounter(0),fCharge0(0),fCharge1(0),fHistCcup4Triggers(0),fHistCcup7Triggers(0),fHistCcup2Triggers(0),fHistCint1Triggers(0),fHistCint6Triggers(0),fHistC0tvxAndCint1(0) ,fHistZedTriggers(0),fHistCvlnTriggers(0),fHistMBTriggers(0),fHistCentralTriggers(0),fHistSemiCentralTriggers(0),fHistCTest58Triggers(0),fHistCTest59Triggers(0),fHistCTest60Triggers(0),fHistCTest61Triggers(0),fHistCcup8Triggers(0),fHistCcup9Triggers(0),fHistCcup10Triggers(0),fHistCcup11Triggers(0),fHistCcup12Triggers(0),fHistCcup25Triggers(0),fHistCcup26Triggers(0),fHistCcup27Triggers(0), fHistCtrueTriggers(0),fPhi1(0),fPhi2(0),fITSInHits(0),fITSOutHits(0)
+fAOD(0), fOutputList(0),fOutputList2(0),fTreeP_TPC(0),fPt(0),fM(0),fPt0(0),fPt1(0),fPiM(0),fMuM(0),fElM(0),fPIDResponse(0),fKaonSigma1(0),fKaonSigma0(0),fPiSigma1(0),fElSigma0(0),fElSigma1(0),fMuSigma0(0),fMuSigma1(0),fTree_NoCut(0),fPiSigma0(0),fKaonSigmaTOF1(0),fKaonSigmaTOF0(0),fPiSigmaTOF1(0),fPiSigmaTOF0(0),fElSigmaTOF1(0),fElSigmaTOF0(0),fMuSigmaTOF1(0),fMuSigmaTOF0(0),fTPCcluster1(0),fEta1(0),fTPCcluster2(0),fEta2(0),fHistCounter(0),fDCAxy2(0),fDCAz2(0),fDCAxy1(0),fDCAz1(0),fTriggerClass(0),fdEdX0(0),fdEdX1(0),fPd0(0),fdEdXTOF0(0),fdEdXTOF1(0),fPd1(0),fPp(0),fZDCdata(0),fZNAenergy(0),fZNCenergy(0),fZDCAtime(0),fZDCCtime(0),fRunNumber(0), fHistRunCounter(0),fCharge0(0),fCharge1(0),fHistCcup4Triggers(0),fHistCcup7Triggers(0),fHistCcup2Triggers(0),fHistCint1Triggers(0),fHistCint6Triggers(0),fHistC0tvxAndCint1(0) ,fHistZedTriggers(0),fHistCvlnTriggers(0),fHistMBTriggers(0),fHistCentralTriggers(0),fHistSemiCentralTriggers(0),fHistCTest58Triggers(0),fHistCTest59Triggers(0),fHistCTest60Triggers(0),fHistCTest61Triggers(0),fHistCcup8Triggers(0),fHistCcup9Triggers(0),fHistCcup291Triggers(0),fHistCcup301Triggers(0),fHistCcup311Triggers(0),fHistCcup29Triggers(0),fHistCcup30Triggers(0),fHistCcup31Triggers(0), fHistCtrueTriggers(0),fPhi1(0),fPhi2(0),fITSInHits(0),fITSOutHits(0),fDelPhi(0)
  
 {
     // default constructor, don't allocate memory here!
@@ -77,7 +77,7 @@ fAOD(0), fOutputList(0),fOutputList2(0),fTreeP_TPC(0),fPt(0),fM(0),fPt0(0),fPt1(
   }
 //_____________________________________________________________________________
 AliAnalysisTaskUPCPhiTest::AliAnalysisTaskUPCPhiTest(const char* name) : AliAnalysisTaskSE(name),
-fAOD(0), fOutputList(0),fOutputList2(0),fTreeP_TPC(0),fPt(0),fM(0),fPt0(0),fPt1(0),fPiM(0),fMuM(0),fElM(0),fPIDResponse(0),fKaonSigma1(0),fKaonSigma0(0),fPiSigma1(0),fElSigma0(0),fElSigma1(0),fMuSigma0(0),fMuSigma1(0), fTree_NoCut(0),fPiSigma0(0),fKaonSigmaTOF1(0),fKaonSigmaTOF0(0),fPiSigmaTOF1(0),fPiSigmaTOF0(0),fElSigmaTOF1(0),fElSigmaTOF0(0),fMuSigmaTOF1(0),fMuSigmaTOF0(0),fTPCcluster1(0), fEta1(0),fTPCcluster2(0), fEta2(0),fHistCounter(0),fDCAxy2(0),fDCAz2(0),fDCAxy1(0),fDCAz1(0),fTriggerClass(0),fdEdX0(0),fdEdX1(0),fPd0(0),fdEdXTOF0(0),fdEdXTOF1(0),fPd1(0),fPp(0),fZDCdata(0),fZNAenergy(0),fZNCenergy(0),fZDCAtime(0),fZDCCtime(0),fRunNumber(0) , fHistRunCounter(0),fCharge0(0),fCharge1(0),fHistCcup4Triggers(0),fHistCcup7Triggers(0),fHistCcup2Triggers(0),fHistCint1Triggers(0),fHistCint6Triggers(0),fHistC0tvxAndCint1(0),fHistZedTriggers(0),fHistCvlnTriggers(0),fHistMBTriggers(0),fHistCentralTriggers(0),fHistSemiCentralTriggers(0),fHistCTest58Triggers(0),fHistCTest59Triggers(0),fHistCTest60Triggers(0),fHistCTest61Triggers(0),fHistCcup8Triggers(0),fHistCcup9Triggers(0),fHistCcup10Triggers(0),fHistCcup11Triggers(0),fHistCcup12Triggers(0),fHistCcup25Triggers(0),fHistCcup26Triggers(0),fHistCcup27Triggers(0), fHistCtrueTriggers(0),fPhi1(0),fPhi2(0),fITSInHits(0),fITSOutHits(0)
+fAOD(0), fOutputList(0),fOutputList2(0),fTreeP_TPC(0),fPt(0),fM(0),fPt0(0),fPt1(0),fPiM(0),fMuM(0),fElM(0),fPIDResponse(0),fKaonSigma1(0),fKaonSigma0(0),fPiSigma1(0),fElSigma0(0),fElSigma1(0),fMuSigma0(0),fMuSigma1(0), fTree_NoCut(0),fPiSigma0(0),fKaonSigmaTOF1(0),fKaonSigmaTOF0(0),fPiSigmaTOF1(0),fPiSigmaTOF0(0),fElSigmaTOF1(0),fElSigmaTOF0(0),fMuSigmaTOF1(0),fMuSigmaTOF0(0),fTPCcluster1(0), fEta1(0),fTPCcluster2(0), fEta2(0),fHistCounter(0),fDCAxy2(0),fDCAz2(0),fDCAxy1(0),fDCAz1(0),fTriggerClass(0),fdEdX0(0),fdEdX1(0),fPd0(0),fdEdXTOF0(0),fdEdXTOF1(0),fPd1(0),fPp(0),fZDCdata(0),fZNAenergy(0),fZNCenergy(0),fZDCAtime(0),fZDCCtime(0),fRunNumber(0) , fHistRunCounter(0),fCharge0(0),fCharge1(0),fHistCcup4Triggers(0),fHistCcup7Triggers(0),fHistCcup2Triggers(0),fHistCint1Triggers(0),fHistCint6Triggers(0),fHistC0tvxAndCint1(0),fHistZedTriggers(0),fHistCvlnTriggers(0),fHistMBTriggers(0),fHistCentralTriggers(0),fHistSemiCentralTriggers(0),fHistCTest58Triggers(0),fHistCTest59Triggers(0),fHistCTest60Triggers(0),fHistCTest61Triggers(0),fHistCcup8Triggers(0),fHistCcup9Triggers(0),fHistCcup291Triggers(0),fHistCcup301Triggers(0),fHistCcup311Triggers(0),fHistCcup29Triggers(0),fHistCcup30Triggers(0),fHistCcup31Triggers(0), fHistCtrueTriggers(0),fPhi1(0),fPhi2(0),fITSInHits(0),fITSOutHits(0),fDelPhi(0)
 
   {
     
@@ -134,7 +134,7 @@ void AliAnalysisTaskUPCPhiTest::UserCreateOutputObjects()
          
         fHistCounter = new TH1I("fHistCounter","Counter",15,0,15);  
         fOutputList->Add(fHistCounter);  
-        fHistRunCounter = new TH1D("fHistRunCounter","Counter", 40000, 240000.5, 280000.5);
+        fHistRunCounter = new TH1D("fHistRunCounter","Counter", 40000, 270000.5, 310000.5);
         fOutputList->Add(fHistRunCounter);                              
         fHistCcup4Triggers= (TH1D*)fHistRunCounter->Clone("fHistCcup4Triggers");
         fHistCcup7Triggers= (TH1D*)fHistRunCounter->Clone("fHistCcup7Triggers");
@@ -155,12 +155,12 @@ void AliAnalysisTaskUPCPhiTest::UserCreateOutputObjects()
         
         fHistCcup8Triggers= (TH1D*)fHistRunCounter->Clone("fHistCcup8Triggers");
         fHistCcup9Triggers= (TH1D*)fHistRunCounter->Clone("fHistCcup9Triggers");
-        fHistCcup10Triggers= (TH1D*)fHistRunCounter->Clone("fHistCcup10Triggers");
-        fHistCcup11Triggers= (TH1D*)fHistRunCounter->Clone("fHistCcup11Triggers");
-        fHistCcup12Triggers= (TH1D*)fHistRunCounter->Clone("fHistCcup12Triggers");
-        fHistCcup25Triggers= (TH1D*)fHistRunCounter->Clone("fHistCcup25Triggers");
-        fHistCcup26Triggers= (TH1D*)fHistRunCounter->Clone("fHistCcup26Triggers");
-        fHistCcup27Triggers= (TH1D*)fHistRunCounter->Clone("fHistCcup27Triggers");
+        fHistCcup291Triggers= (TH1D*)fHistRunCounter->Clone("fHistCcup291Triggers");
+        fHistCcup301Triggers= (TH1D*)fHistRunCounter->Clone("fHistCcup301Triggers");
+        fHistCcup311Triggers= (TH1D*)fHistRunCounter->Clone("fHistCcup311Triggers");
+        fHistCcup29Triggers= (TH1D*)fHistRunCounter->Clone("fHistCcup29Triggers");
+        fHistCcup30Triggers= (TH1D*)fHistRunCounter->Clone("fHistCcup30Triggers");
+        fHistCcup31Triggers= (TH1D*)fHistRunCounter->Clone("fHistCcup31Triggers");
         fHistCtrueTriggers= (TH1D*)fHistRunCounter->Clone(" fHistCtrueTriggers"); 
          fOutputList->Add(fHistCcup4Triggers);
          fOutputList->Add(fHistCcup7Triggers);
@@ -181,12 +181,12 @@ void AliAnalysisTaskUPCPhiTest::UserCreateOutputObjects()
         
          fOutputList->Add(fHistCcup8Triggers);
          fOutputList->Add(fHistCcup9Triggers);
-         fOutputList->Add(fHistCcup10Triggers);
-         fOutputList->Add(fHistCcup11Triggers);
-         fOutputList->Add(fHistCcup12Triggers);
-         fOutputList->Add(fHistCcup25Triggers);
-         fOutputList->Add(fHistCcup26Triggers);
-         fOutputList->Add(fHistCcup27Triggers);
+         fOutputList->Add(fHistCcup291Triggers);
+         fOutputList->Add(fHistCcup301Triggers);
+         fOutputList->Add(fHistCcup311Triggers);
+         fOutputList->Add(fHistCcup29Triggers);
+         fOutputList->Add(fHistCcup30Triggers);
+         fOutputList->Add(fHistCcup31Triggers);
          fOutputList->Add(fHistCtrueTriggers);  
   
   
@@ -250,6 +250,7 @@ void AliAnalysisTaskUPCPhiTest::UserCreateOutputObjects()
     fTreeP_TPC->Branch("fCharge1", &fCharge1, "fCharge1/I");
     fTreeP_TPC->Branch("fPhi1", &fPhi1, "fPhi1/F");
     fTreeP_TPC->Branch("fPhi2", &fPhi2, "fPhi2/F");
+     fTreeP_TPC->Branch("fDelPhi", &fDelPhi, "fDelPhi/F");
     fTreeP_TPC->Branch("fITSInHits",  &fITSInHits, "fITSInHits/I");
     fTreeP_TPC->Branch("fITSOutHits",  &fITSOutHits, "fITSOutHits/I");
     PostData(1, fOutputList);           
@@ -270,8 +271,9 @@ void AliAnalysisTaskUPCPhiTest::UserExec(Option_t *)
    fRunNumber = fAOD ->GetRunNumber();
     fHistCounter->Fill(0);
 	 TString trigger = fAOD-> GetFiredTriggerClasses();
+      //if(!trigger.Contains("CCUP")) return;
       fHistCounter->Fill(1);
-   
+  // cout<<trigger<<endl; //return;
     if(trigger.Contains("CCUP4-B")) fHistCcup4Triggers->Fill(fRunNumber); //CCUP4 triggers
   if(trigger.Contains("CCUP7-B")) fHistCcup7Triggers->Fill(fRunNumber); //CCUP7 triggers
   if(trigger.Contains("CCUP2-B")) fHistCcup2Triggers->Fill(fRunNumber); //CCUP2 triggers
@@ -285,13 +287,13 @@ void AliAnalysisTaskUPCPhiTest::UserExec(Option_t *)
   
   if(trigger.Contains("CCUP8-B")) fHistCcup8Triggers->Fill(fRunNumber); //CCUP8 triggers
   if(trigger.Contains("CCUP9-B")) fHistCcup9Triggers->Fill(fRunNumber); //CCUP9 triggers
-  if(trigger.Contains("CCUP10-B")) fHistCcup10Triggers->Fill(fRunNumber); //CCUP10 triggers
-  if(trigger.Contains("CCUP11-B")) fHistCcup11Triggers->Fill(fRunNumber); //CCUP11 triggers
-  if(trigger.Contains("CCUP12-B")) fHistCcup12Triggers->Fill(fRunNumber); //CCUP12 triggers
+  if(trigger.Contains("CCUP29-B-NOPF")) fHistCcup291Triggers->Fill(fRunNumber); //CCUP29-nopf triggers
+  if(trigger.Contains("CCUP30-B-NOPF")) fHistCcup301Triggers->Fill(fRunNumber); //CCUP30-nopf triggers
+  if(trigger.Contains("CCUP31-B-NOPF")) fHistCcup311Triggers->Fill(fRunNumber); //CCUP31-nopf triggers
   
-  if(trigger.Contains("CCUP25-B")) fHistCcup25Triggers->Fill(fRunNumber); //CCUP25 triggers
-  if(trigger.Contains("CCUP26-B")) fHistCcup26Triggers->Fill(fRunNumber); //CCUP26 triggers
-  if(trigger.Contains("CCUP27-B")) fHistCcup27Triggers->Fill(fRunNumber); //CCUP27 triggers
+  if(trigger.Contains("CCUP29-B-SPD2")) fHistCcup29Triggers->Fill(fRunNumber); //CCUP29-spd triggers
+  if(trigger.Contains("CCUP30-B-SPD2")) fHistCcup30Triggers->Fill(fRunNumber); //CCUP30-spd triggers
+  if(trigger.Contains("CCUP31-B-SPD2")) fHistCcup31Triggers->Fill(fRunNumber); //CCUP31-spd triggers
   
   if(trigger.Contains("CTRUE-B")) fHistCtrueTriggers->Fill(fRunNumber); //CTRUE triggers
    
@@ -311,15 +313,15 @@ void AliAnalysisTaskUPCPhiTest::UserExec(Option_t *)
   
   if(trigger.Contains("CCUP8-B")) fTriggerClass =8; //CCUP8 triggers
   if(trigger.Contains("CCUP9-B")) fTriggerClass =9; //CCUP9 triggers
-  if(trigger.Contains("CCUP10-B")) fTriggerClass =10; //CCUP10 triggers
-  if(trigger.Contains("CCUP11-B")) fTriggerClass =11;; //CCUP11 triggers
-  if(trigger.Contains("CCUP12-B")) fTriggerClass =12; //CCUP12 triggers
+  if(trigger.Contains("CCUP29-B-NOPF")) fTriggerClass =25; //CCUP29-nopf triggers
+  if(trigger.Contains("CCUP30-B-NOPF")) fTriggerClass =26;; //CCUP30-nopf triggers
+  if(trigger.Contains("CCUP31-B-NOPF")) fTriggerClass =27; //CCUP31-nopf triggers
   
-  if(trigger.Contains("CCUP25-B")) fTriggerClass =25; //CCUP25 triggers
-  if(trigger.Contains("CCUP26-B")) fTriggerClass =26; //CCUP26 triggers
-  if(trigger.Contains("CCUP27-B"))fTriggerClass =27; //CCUP27 triggers
+  if(trigger.Contains("CCUP29-B-SPD2")) fTriggerClass =29; //CCUP29-spd triggers
+  if(trigger.Contains("CCUP30-B-SPD2")) fTriggerClass =30; //CCUP30-spd triggers
+  if(trigger.Contains("CCUP31-B-SPD2"))fTriggerClass =31; //CCUP31-spd triggers
   
-  if(trigger.Contains("CTRUE-B")) fTriggerClass =31; //CTRUE triggers     
+  if(trigger.Contains("CTRUE-B")) fTriggerClass =32; //CTRUE triggers     
          
          
   /*   if (trigger.Contains("CCUP8") && !trigger.Contains("CCUP9") ){
@@ -481,6 +483,10 @@ void AliAnalysisTaskUPCPhiTest::UserExec(Option_t *)
       fPt = p.Pt();
       fPhi1= savetrack1->Phi();
       fPhi2= savetrack2->Phi();
+      if (TMath::Abs(fPhi1-fPhi2)<=TMath::Pi()){
+        fDelPhi = TMath::Abs(fPhi1-fPhi2);
+      }
+      else fDelPhi = TMath::Abs(fPhi1-fPhi2) -2*(TMath::Pi());
       fM  =  p.M();
       fMuM  =  p3.M();
       fElM  =  p4.M();
