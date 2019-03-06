@@ -194,29 +194,43 @@ Bool_t AliGFWFlowContainer::OverrideMainWithSub(Int_t ind, Bool_t ExcludeChosen)
     return kTRUE;
   };
 };
+void AliGFWFlowContainer::SetIDName(TString newname) {
+  fIDName = newname;
+  if(fIDName.Contains(" ")) fMergeRequired=kTRUE; else fMergeRequired=kFALSE;
+};
 TProfile *AliGFWFlowContainer::GetCorrXXVsMulti(const char *order, Int_t l_pti) {
-  const char *ptpf = l_pti>0?Form("_pt_%i",l_pti):"";
-  const char *ybinlab = Form("%s%s%s",fIDName.Data(),order,ptpf);
-  Int_t ybinno = fProf->GetYaxis()->FindBin(ybinlab);
-  if(ybinno<0) {
-    printf("Could not find %s!\n",ybinlab);
-    return 0;
+  TProfile *retSubset=0;
+  TString l_name("");
+  Ssiz_t l_pos=0;
+  while(fIDName.Tokenize(l_name,l_pos)) {
+    const char *ptpf = l_pti>0?Form("_pt_%i",l_pti):"";
+    const char *ybinlab = Form("%s%s%s",l_name.Data(),order,ptpf);
+    Int_t ybinno = fProf->GetYaxis()->FindBin(ybinlab);
+    if(ybinno<0) {
+      printf("Could not find %s!\n",ybinlab);
+      return 0;
+    };
+    TProfile *rethist = (TProfile*)fProf->ProfileX("temp_prof",ybinno,ybinno);
+    rethist->SetTitle(Form(";multi.;#LT#LT%s#GT#GT",order));
+    if(!retSubset) {
+      retSubset=(TProfile*)rethist->Clone(Form("corr_%s",order));
+    } else { retSubset->Add(rethist);};
+    delete rethist;
   };
-  TProfile *rethist = (TProfile*)fProf->ProfileX(Form("corr_%s",order),ybinno,ybinno);
-  rethist->SetTitle(Form(";multi.;#LT#LT%s#GT#GT",order));
-  return rethist;
+  return retSubset;
 };
 TProfile *AliGFWFlowContainer::GetCorrXXVsPt(const char *order, Double_t lminmulti, Double_t lmaxmulti) {
   Int_t minm = 1;
   Int_t maxm = fProf->GetXaxis()->GetNbins();
   //This is hardcoded for now. There must be a better (convenient) way to set this
-  Int_t fNbinsPt=24;
+  Int_t fNbinsPt=27;
   Double_t fbinsPt[] = {
     0.2, 0.4, 0.6, 0.8, 1.0,
     1.2, 1.4, 1.6, 1.8, 2.0,
     2.2, 2.4, 2.6, 3.0, 3.4,
     3.8, 4.2, 4.6, 5.2, 5.8,
-    6.6, 8.0, 12.0, 16.0, 20.};
+    6.6, 8.0, 12.0, 16.0, 20.,
+    26.0, 32.0, 40.};
 
   if(lminmulti>0) {
     minm=fProf->GetXaxis()->FindBin(lminmulti);
@@ -224,16 +238,26 @@ TProfile *AliGFWFlowContainer::GetCorrXXVsPt(const char *order, Double_t lminmul
   };
   if(lmaxmulti>lminmulti) maxm=fProf->GetXaxis()->FindBin(lmaxmulti);
   TProfile *projection = (TProfile*)fProf->ProfileY("tempproj",minm,maxm);
-  TProfile *rethist = new TProfile(Form("%s_MultiB_%i_%i",order,minm,maxm),Form("%s_MultiB_%i_%i",order,minm,maxm), fNbinsPt, fbinsPt);
-  const char *ybl1 = Form("%s%s_pt_1",fIDName.Data(),order);
-  const char *ybl2 = Form("%s%s_pt_%i",fIDName.Data(),order,fNbinsPt);
-  Int_t ybn1 = fProf->GetYaxis()->FindBin(ybl1);
-  Int_t ybn2 = fProf->GetYaxis()->FindBin(ybl2);
-  AliProfileSubset *rhSubset = new AliProfileSubset(rethist);
-  delete rethist;
-  rhSubset->CopyFromProfile(ybn1,ybn2,projection);
+  TProfile *retSubset=0;
+  TString l_name("");
+  Ssiz_t l_pos=0;
+  while(fIDName.Tokenize(l_name,l_pos)) {
+    const char *ybl1 = Form("%s%s_pt_1",l_name.Data(),order);
+    const char *ybl2 = Form("%s%s_pt_%i",l_name.Data(),order,fNbinsPt);
+    Int_t ybn1 = fProf->GetYaxis()->FindBin(ybl1);
+    Int_t ybn2 = fProf->GetYaxis()->FindBin(ybl2);
+    TProfile *rethist = new TProfile("temp_prof","temp_prof", fNbinsPt, fbinsPt);
+    AliProfileSubset *rhSubset = new AliProfileSubset(rethist);
+    delete rethist;
+    rhSubset->CopyFromProfile(ybn1,ybn2,projection);
+    if(!retSubset) {
+      const char *profname = Form("%s_MultiB_%i_%i",order,minm,maxm);
+      retSubset = (TProfile*)rhSubset->Clone(profname);
+      delete rhSubset;
+    } else { retSubset->Add(rhSubset); delete rhSubset; };
+  };
   delete projection;
-  return rhSubset;
+  return retSubset;
 };
 TH1D *AliGFWFlowContainer::ProfToHist(TProfile *inpf) {
   Int_t nbins = inpf->GetNbinsX();
@@ -818,3 +842,4 @@ Double_t AliGFWFlowContainer::VDN8Error(Double_t d8, Double_t d8e, Double_t c8, 
   Double_t dc = -7*c8e/(8*c8);
   return vdn8v * TMath::Sqrt(dd*dd+dc*dc);
 };
+
