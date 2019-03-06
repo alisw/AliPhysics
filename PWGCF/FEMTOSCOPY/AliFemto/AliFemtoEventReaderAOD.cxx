@@ -69,6 +69,7 @@ AliFemtoEventReaderAOD::AliFemtoEventReaderAOD():
   fAnaUtils(nullptr),
   fEventCuts(nullptr),
   fUseAliEventCuts(0),
+  fReadFullMCData(false),
   fInputFile(""),
   fTree(nullptr),
   fAodFile(nullptr),
@@ -146,6 +147,7 @@ AliFemtoEventReaderAOD::AliFemtoEventReaderAOD(const AliFemtoEventReaderAOD &aRe
   fAnaUtils(aReader.fAnaUtils),
   fEventCuts(aReader.fEventCuts),
   fUseAliEventCuts(aReader.fUseAliEventCuts),
+  fReadFullMCData(aReader.fReadFullMCData),
   fInputFile(aReader.fInputFile),
   fTree(nullptr),
   fAodFile(new TFile(aReader.fAodFile->GetName())),
@@ -242,6 +244,10 @@ AliFemtoEventReaderAOD &AliFemtoEventReaderAOD::operator=(const AliFemtoEventRea
   fAllFalse.ResetAllBits(kFALSE);
   fFilterBit = aReader.fFilterBit;
   fFilterMask = aReader.fFilterMask;
+  fReadMC = aReader.fReadMC;
+  fReadV0 = aReader.fReadV0;
+  fReadCascade = aReader.fReadCascade;
+  fReadFullMCData = aReader.fReadFullMCData;
   //  fPWG2AODTracks = aReader.fPWG2AODTracks;
   fAODpidUtil = aReader.fAODpidUtil;
   fAODheader = aReader.fAODheader;
@@ -646,7 +652,7 @@ AliFemtoEvent *AliFemtoEventReaderAOD::CopyAODtoFemtoEvent()
     const Int_t pid_track_id = (fFilterBit == (1 << 7) || fFilterMask == 128)
                              ? labels[-1 - fEvent->GetTrack(i)->GetID()]
                              : i;
-    AliAODTrack *aodtrackpid = dynamic_cast<AliAODTrack *>(fEvent->GetTrack(pid_track_id));
+    AliAODTrack *aodtrackpid = static_cast<AliAODTrack *>(fEvent->GetTrack(pid_track_id));
     assert(aodtrackpid && "Not a standard AOD");
 
     //Pile-up removal
@@ -686,7 +692,8 @@ AliFemtoEvent *AliFemtoEventReaderAOD::CopyAODtoFemtoEvent()
       Int_t track_label = aodtrack->GetLabel();
       const AliAODMCParticle *tPart = (track_label > -1)
                                     ? static_cast<const AliAODMCParticle *>(mcP->At(track_label))
-                                    : nullptr;
+                                    : !fReadFullMCData ? nullptr
+                                    : static_cast<const AliAODMCParticle *>(mcP->At(std::abs(track_label)));
 
       AliFemtoModelGlobalHiddenInfo *tInfo = new AliFemtoModelGlobalHiddenInfo();
       double fpx = 0.0, fpy = 0.0, fpz = 0.0, fpt = 0.0;
