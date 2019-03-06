@@ -183,6 +183,12 @@ AliAnalysisTaskSE *AddTaskSigma0DebugTest(bool isMC = false,
     sigmaCuts->SetMinPt(1.5);
     antiSigmaCuts->SetMinPt(1.5);
   } else if (suffix == "11") {
+    sigmaCuts->SetMinPt(2);
+    antiSigmaCuts->SetMinPt(2);
+  } else if (suffix == "12") {
+    sigmaCuts->SetMinPt(2.5);
+    antiSigmaCuts->SetMinPt(2.5);
+  } else if (suffix == "13") {
     sigmaCuts->SetSigmaMassPt(true);
     sigmaCuts->SetLightweight(false);
     antiSigmaCuts->SetSigmaMassPt(true);
