@@ -176,6 +176,7 @@ bool AliHFTreeHandlerBplustoD0pi::SetVariables(int runnumber, unsigned int event
   //topological variables
   //common (B+ -> D0 pi)
   fCandType.push_back(fCandTypeMap);
+  fCandTypeMap=0; //reset candtype
   fPt.push_back(((AliAODRecoDecayHF2Prong*)cand)->Pt());
   fY.push_back(((AliAODRecoDecayHF2Prong*)cand)->Y(521));
   fEta.push_back(((AliAODRecoDecayHF2Prong*)cand)->Eta());
