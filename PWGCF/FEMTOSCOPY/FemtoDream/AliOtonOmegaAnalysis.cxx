@@ -642,6 +642,24 @@ void AliOtonOmegaAnalysis::Make(AliESDEvent *evt, AliMCEvent *mcEvent, bool Casc
   }
 */
 
+  //proton loop
+  std::vector<AliFemtoDreamBasePart> Particles;
+  std::vector<AliFemtoDreamBasePart> AntiParticles;
+  for (int iTrack = 0; iTrack < evt->GetNumberOfTracks(); ++iTrack) {
+    AliESDtrack *track = static_cast<AliESDtrack *>(evt->GetTrack(iTrack));
+    fFemtoTrack->SetTrack(track, mcEvent, fEvent->GetMultiplicity());
+    if (fTrackCuts->isSelected(fFemtoTrack)) {
+      Particles.push_back(*fFemtoTrack); 
+      Bool_t protonfilled = FillProtonTrack(evt, iTrack);
+      fTnProton++;
+    }
+    if (fAntiTrackCuts->isSelected(fFemtoTrack)) {
+      AntiParticles.push_back(*fFemtoTrack);
+      Bool_t protonfilled = FillProtonTrack(evt, iTrack);
+      fTnProton++;
+    }
+  }
+
 
   //Cascades loop
   std::vector<AliFemtoDreamBasePart> XiOmegaDecays;
@@ -680,28 +698,6 @@ void AliOtonOmegaAnalysis::Make(AliESDEvent *evt, AliMCEvent *mcEvent, bool Casc
      fTnCascade++;
     }
   }//cascades loop
-
-
-  //proton loop
-  //For proton-Omega exclusive analysis, go on with the proton loop only if we have selected at least one omega candidate:
-  std::vector<AliFemtoDreamBasePart> Particles;
-  std::vector<AliFemtoDreamBasePart> AntiParticles;
-  if(fTnCascade>0){
-   for (int iTrack = 0; iTrack < evt->GetNumberOfTracks(); ++iTrack) {
-     AliESDtrack *track = static_cast<AliESDtrack *>(evt->GetTrack(iTrack));
-     fFemtoTrack->SetTrack(track, mcEvent, fEvent->GetMultiplicity());
-     if (fTrackCuts->isSelected(fFemtoTrack)) {
-       Particles.push_back(*fFemtoTrack); 
-       Bool_t protonfilled = FillProtonTrack(evt, iTrack);
-       fTnProton++;
-     }
-     if (fAntiTrackCuts->isSelected(fFemtoTrack)) {
-       AntiParticles.push_back(*fFemtoTrack);
-       Bool_t protonfilled = FillProtonTrack(evt, iTrack);
-       fTnProton++;
-     }
-   }
-  }
 
 
   //if we have selected at least one cascade and tree flag is on, fill the omega tree:
