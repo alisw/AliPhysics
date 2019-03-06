@@ -981,7 +981,6 @@ void AliAnalysisTaskSEHFTreeCreator::UserExec(Option_t */*option*/)
     // fix for temporary bug in ESDfilter
     // the AODs with null vertex pointer didn't pass the PhysSel
     if(!aod->GetPrimaryVertex() || TMath::Abs(aod->GetMagneticField())<0.001) return;
-    fEventNumber++;
     fNentries->Fill(3); // count events
 
     TClonesArray *mcArray = 0;
@@ -2550,6 +2549,7 @@ unsigned int AliAnalysisTaskSEHFTreeCreator::GetEvID() {
     
     TString currentfilename = ((AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()->GetTree()->GetCurrentFile()))->GetName();
     if(!fFileName.EqualTo(currentfilename)) {
+        fEventNumber = 0;
         fFileName = currentfilename;
         TObjArray *path = fFileName.Tokenize("/");
         TString s = ((TObjString*)path->At( ((path->GetLast())-1) ))->GetString();
@@ -2561,7 +2561,7 @@ unsigned int AliAnalysisTaskSEHFTreeCreator::GetEvID() {
         ev_number = fEventNumber;
     }
     unsigned int evID = (unsigned int)ev_number + (unsigned int)(fDirNumber<<17);
-
+    fEventNumber++;
     return evID;
 }
   
