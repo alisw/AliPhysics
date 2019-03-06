@@ -1,6 +1,6 @@
 #include "AliGFWCuts.h"
 const Int_t AliGFWCuts::fNTrackFlags=9;
-const Int_t AliGFWCuts::fNEventFlags=6;
+const Int_t AliGFWCuts::fNEventFlags=8;
 AliGFWCuts::AliGFWCuts():
   fSystFlag(0),
   fFilterBit(96),
@@ -141,6 +141,14 @@ void AliGFWCuts::SetupEventCuts(Int_t sysflag) {
     printf("Warning! Event flag %i (syst. flag %i), PU cuts: make sure proper PU cuts are used in the task!\n",sysflag, sysflag+fNTrackFlags);
     fRequiresExtraWeight=kTRUE;
     break;
+  case 7:
+    printf("Warning! Event flag %i (syst. flag %i), magnetic field configuration ++: no cuts here, please make sure the proper runlist is used!\n",sysflag,sysflag+fNTrackFlags);
+    fRequiresExtraWeight=kFALSE;
+    break;
+  case 8:
+    printf("Warning! Event flag %i (syst. flag %i), magnetic field configuration --: no cuts here, please make sure the proper runlist is used!\n",sysflag,sysflag+fNTrackFlags);
+    fRequiresExtraWeight=kFALSE;
+    break;
   default:
     break;
   };
@@ -207,6 +215,13 @@ TString* AliGFWCuts::GetEventFlagDescriptor(Int_t sysflag) {
     break;
   case 6:
     retstr->Append("PU cut 1500");
+    break;
+  case 7:
+    retstr->Append("MF ++");
+    break;
+  case 8:
+    retstr->Append("MF --");
+    break;
   default:
     break;
   };
