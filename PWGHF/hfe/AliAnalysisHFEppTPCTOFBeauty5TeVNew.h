@@ -126,6 +126,7 @@ public:
     
     void InvMassCheckData(int itrack, AliVTrack *track, Double_t *d0z0, Int_t MagSign);
     void InvMassCheckMC(int itrack, AliVTrack *track, Double_t *d0z0, Int_t MagSign);
+    void InvMassCheckMCDenom(AliVTrack *track);
     //Getters
     AliHFEpid *GetPID() const {return fPID;};
     //______________________________________________________________________

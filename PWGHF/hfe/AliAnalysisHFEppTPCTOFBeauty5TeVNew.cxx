@@ -1415,13 +1415,7 @@ void AliAnalysisHFEppTPCTOFBeauty5TeVNew::UserExec(Option_t *)
         for(Int_t iMC = 0; iMC < fMCarray->GetEntries(); iMC++)
         {
 			fMCparticle = (AliAODMCParticle*) fMCarray->At(iMC);
-			fMCparticleMother = (AliAODMCParticle*) fMCarray->At(fMCparticle->GetMother());
-			Int_t pdg_mother = -999;
-			Int_t pdg_gmother = -999;
-			Int_t pdg_ggmother = -999;
-			Int_t fType = -999;
-			Int_t fType2 = -999;
-			Int_t fType3 = -999;
+			
 			///Pseudo-rapidity cut
 			if((fMCparticle->Eta() < fEtaMin) || (fMCparticle->Eta() > fEtaMax)) continue;     				
 			
@@ -1438,97 +1432,7 @@ void AliAnalysisHFEppTPCTOFBeauty5TeVNew::UserExec(Option_t *)
 					fPtBeautyGenerated->Fill(fMCparticle->Pt());
                     //cout<<iMC<<endl;
 				}
-				if(!fMCparticleMother){
-				pdg_mother = -999;
-				}else{
-				pdg_mother = fMCparticleMother->GetPdgCode();
-				fMCparticleGMother = (AliAODMCParticle*) fMCarray->At(fMCparticleMother->GetMother());
-				}
-				//cout<<"pdg_mother    "<<pdg_mother<<"   "<<fMCparticleGMother<<"   "<<fMCparticleGGMother<<endl;
-				if(!fMCparticleGMother){
-				pdg_gmother = -999;
-				}else{
-				pdg_gmother = fMCparticleGMother->GetPdgCode();
-				fMCparticleGGMother = (AliAODMCParticle*) fMCarray->At(fMCparticleGMother->GetMother());
-				}
-				//cout<<"pdg_gmother    "<<pdg_gmother<<endl;
-				if(!fMCparticleGGMother){
-				pdg_ggmother = -999;
-				}else{
-				pdg_ggmother = fMCparticleGGMother->GetPdgCode();
-				}
-				//cout<<"pdg_ggmother    "<<pdg_ggmother<<endl;
-                		//Tagging efficiency: Generated electrons from Pi0 (and gamma from pi0) and eta (and gamma from eta)
-                		if(TMath::Abs(pdg_mother) == 111 || TMath::Abs(pdg_mother) == 221 || TMath::Abs(pdg_mother) == 22){
-                 		if(!fMCparticleMother){
-                                fType = -999;
-                   		}else{
-                   		fType = GetPi0EtaType(fMCparticleMother,fMCarray);
-                   		}
-                   		if(!fMCparticleGMother){
-                   		fType2 = -999;
-                   		}else{
-                   		fType2 = GetPi0EtaType(fMCparticleGMother,fMCarray);
-                   		}
-		   		if(!fMCparticleGGMother){
-                   		fType3 = -999;
-                   		}else{
-                   		fType3 = GetPi0EtaType(fMCparticleGGMother,fMCarray);
-                   		}
-                               // if(fType == 0 || fType == 1){
-
-                  		if(((fType == 0 || fType == 1) && TMath::Abs(pdg_mother) == 111)){			
-                  		if(fMCparticleMother->Pt() > 20.0) continue;
-                  		Double_t WeightPi0MB = hMCWeightPi0MB->Eval(fMCparticleMother->Pt());
-				Double_t WeightPi0Enh = hMCWeightPi0Enh->Eval(fMCparticleMother->Pt());
-				fMCMBPtElePi0GeneratedAft->Fill(fMCparticle->Pt(),WeightPi0MB);
-				fMCEnhPtElePi0GeneratedAft->Fill(fMCparticle->Pt(),WeightPi0Enh);
-				}
-				if(((fType2 == 0 || fType2 == 1) && TMath::Abs(pdg_mother) == 22 && TMath::Abs(pdg_gmother) == 111)){			
-                  		if(fMCparticleGMother->Pt() > 20.0) continue;
-                  		Double_t WeightPi0MB = hMCWeightPi0MB->Eval(fMCparticleGMother->Pt());
-				Double_t WeightPi0Enh = hMCWeightPi0Enh->Eval(fMCparticleGMother->Pt());
-				fMCMBPtElePi0GeneratedAft->Fill(fMCparticle->Pt(),WeightPi0MB);
-				fMCEnhPtElePi0GeneratedAft->Fill(fMCparticle->Pt(),WeightPi0Enh);
-				}
-				if(((fType3 == 0 || fType3 == 1) && TMath::Abs(pdg_mother) == 22 && TMath::Abs(pdg_gmother) == 22 && TMath::Abs(pdg_ggmother) == 111)){			
-                  		if(fMCparticleGGMother->Pt() > 20.0) continue;
-                  		Double_t WeightPi0MB = hMCWeightPi0MB->Eval(fMCparticleGGMother->Pt());
-				Double_t WeightPi0Enh = hMCWeightPi0Enh->Eval(fMCparticleGGMother->Pt());
-				fMCMBPtElePi0GeneratedAft->Fill(fMCparticle->Pt(),WeightPi0MB);
-				fMCEnhPtElePi0GeneratedAft->Fill(fMCparticle->Pt(),WeightPi0Enh);
-				}
-				if(((fType == 0 || fType == 1) && TMath::Abs(pdg_mother) == 221)){
-				if(fMCparticleMother->Pt() > 20.0) continue;
-				Double_t WeightEtaMB = hMCWeightEtaMB->Eval(fMCparticleMother->Pt());
-				Double_t WeightEtaEnh = hMCWeightEtaEnh->Eval(fMCparticleMother->Pt());
-				fMCMBPtEleEtaGeneratedAft->Fill(fMCparticle->Pt(),WeightEtaMB);
-				fMCEnhPtEleEtaGeneratedAft->Fill(fMCparticle->Pt(),WeightEtaEnh);
-				}
-				if(((fType2 == 0 || fType2 == 1) && TMath::Abs(pdg_mother) == 22 && TMath::Abs(pdg_gmother) == 221) || ((fType2 == 0 || fType2 == 1) && TMath::Abs(pdg_mother) == 111 && TMath::Abs(pdg_gmother) == 221)){
-				if(fMCparticleGMother->Pt() > 20.0) continue;
-				Double_t WeightEtaMB = hMCWeightEtaMB->Eval(fMCparticleGMother->Pt());
-				Double_t WeightEtaEnh = hMCWeightEtaEnh->Eval(fMCparticleGMother->Pt());
-				fMCMBPtEleEtaGeneratedAft->Fill(fMCparticle->Pt(),WeightEtaMB);
-				fMCEnhPtEleEtaGeneratedAft->Fill(fMCparticle->Pt(),WeightEtaEnh);
-				}
-				if(((fType3 == 0 || fType3 == 1) && TMath::Abs(pdg_mother) == 22 && TMath::Abs(pdg_gmother) == 111 && TMath::Abs(pdg_ggmother) == 221)){
-				if(fMCparticleGGMother->Pt() > 20.0) continue;
-				Double_t WeightEtaMB = hMCWeightEtaMB->Eval(fMCparticleGGMother->Pt());
-				Double_t WeightEtaEnh = hMCWeightEtaEnh->Eval(fMCparticleGGMother->Pt());
-				fMCMBPtEleEtaGeneratedAft->Fill(fMCparticle->Pt(),WeightEtaMB);
-				fMCEnhPtEleEtaGeneratedAft->Fill(fMCparticle->Pt(),WeightEtaEnh);
-				}
-				//}
-				if(fType == 2 || fType == 3 || fType == 4){
-				if(TMath::Abs(pdg_mother) == 111)fMCPtElePi0GeneratedBef->Fill(fMCparticle->Pt());
-				if(TMath::Abs(pdg_mother) == 221)fMCPtEleEtaGeneratedBef->Fill(fMCparticle->Pt());
-				}
-				if(fType == 0 || fType == 1 || fType == 2 || fType == 3 || fType == 4){
-				if(TMath::Abs(pdg_mother) == 22) fMCPtEleGammaGenerated->Fill(fMCparticle->Pt());
-				}
 				
-				}
 			}
 			///----------------------------------------------------  
         }
@@ -2037,6 +1941,7 @@ void AliAnalysisHFEppTPCTOFBeauty5TeVNew::UserExec(Option_t *)
 		
 	if(fIsMC){
                 InvMassCheckMC(iTracks, track, d0z0, signB);
+                InvMassCheckMCDenom(track);
 
             }	
 	
@@ -2861,6 +2766,120 @@ void AliAnalysisHFEppTPCTOFBeauty5TeVNew::InvMassCheckMC(int itrack, AliVTrack *
 
 //=========================================================================
 
+void AliAnalysisHFEppTPCTOFBeauty5TeVNew::InvMassCheckMCDenom(AliVTrack *track){
+
+				fMCparticle = (AliAODMCParticle*) fMCarray->At(TMath::Abs(track->GetLabel()));
+				Int_t TrackPDG = TMath::Abs(fMCparticle->GetPdgCode());
+          			if(TrackPDG == 11){	
+				//if((fMCparticle->Eta() < fEtaMin) || (fMCparticle->Eta() > fEtaMax)) continue; 
+				fMCparticleMother = (AliAODMCParticle*) fMCarray->At(fMCparticle->GetMother());
+				Int_t pdg_mother = -999;
+				Int_t pdg_gmother = -999;
+				Int_t pdg_ggmother = -999;
+				Int_t fType = -999;
+				Int_t fType2 = -999;
+				Int_t fType3 = -999;
+
+				if(!fMCparticleMother){
+				pdg_mother = -999;
+				}else{
+				pdg_mother = fMCparticleMother->GetPdgCode();
+				fMCparticleGMother = (AliAODMCParticle*) fMCarray->At(fMCparticleMother->GetMother());
+				}
+				//cout<<"pdg_mother    "<<pdg_mother<<"   "<<fMCparticleGMother<<"   "<<fMCparticleGGMother<<endl;
+				if(!fMCparticleGMother){
+				pdg_gmother = -999;
+				}else{
+				pdg_gmother = fMCparticleGMother->GetPdgCode();
+				fMCparticleGGMother = (AliAODMCParticle*) fMCarray->At(fMCparticleGMother->GetMother());
+				}
+				//cout<<"pdg_gmother    "<<pdg_gmother<<endl;
+				if(!fMCparticleGGMother){
+				pdg_ggmother = -999;
+				}else{
+				pdg_ggmother = fMCparticleGGMother->GetPdgCode();
+				}
+				//cout<<"pdg_ggmother    "<<pdg_ggmother<<endl;
+                		//Tagging efficiency: Generated electrons from Pi0 (and gamma from pi0) and eta (and gamma from eta)
+                		if(TMath::Abs(pdg_mother) == 111 || TMath::Abs(pdg_mother) == 221 || TMath::Abs(pdg_mother) == 22){
+                 		if(!fMCparticleMother){
+                                fType = -999;
+                   		}else{
+                   		fType = GetPi0EtaType(fMCparticleMother,fMCarray);
+                   		}
+                   		if(!fMCparticleGMother){
+                   		fType2 = -999;
+                   		}else{
+                   		fType2 = GetPi0EtaType(fMCparticleGMother,fMCarray);
+                   		}
+		   		if(!fMCparticleGGMother){
+                   		fType3 = -999;
+                   		}else{
+                   		fType3 = GetPi0EtaType(fMCparticleGGMother,fMCarray);
+                   		}
+                               // if(fType == 0 || fType == 1){
+
+                  		if(((fType == 0 || fType == 1) && TMath::Abs(pdg_mother) == 111)){			
+                  		if(fMCparticleMother->Pt() <= 20.0){
+                  		Double_t WeightPi0MB = hMCWeightPi0MB->Eval(fMCparticleMother->Pt());
+				Double_t WeightPi0Enh = hMCWeightPi0Enh->Eval(fMCparticleMother->Pt());
+				fMCMBPtElePi0GeneratedAft->Fill(fMCparticle->Pt(),WeightPi0MB);
+				fMCEnhPtElePi0GeneratedAft->Fill(fMCparticle->Pt(),WeightPi0Enh);
+				}
+				}
+				if(((fType2 == 0 || fType2 == 1) && TMath::Abs(pdg_mother) == 22 && TMath::Abs(pdg_gmother) == 111)){			
+                  		if(fMCparticleGMother->Pt() <= 20.0){
+                  		Double_t WeightPi0MB = hMCWeightPi0MB->Eval(fMCparticleGMother->Pt());
+				Double_t WeightPi0Enh = hMCWeightPi0Enh->Eval(fMCparticleGMother->Pt());
+				fMCMBPtElePi0GeneratedAft->Fill(fMCparticle->Pt(),WeightPi0MB);
+				fMCEnhPtElePi0GeneratedAft->Fill(fMCparticle->Pt(),WeightPi0Enh);
+				}
+				}
+				if(((fType3 == 0 || fType3 == 1) && TMath::Abs(pdg_mother) == 22 && TMath::Abs(pdg_gmother) == 22 && TMath::Abs(pdg_ggmother) == 111)){			
+                  		if(fMCparticleGGMother->Pt() <= 20.0){
+                  		Double_t WeightPi0MB = hMCWeightPi0MB->Eval(fMCparticleGGMother->Pt());
+				Double_t WeightPi0Enh = hMCWeightPi0Enh->Eval(fMCparticleGGMother->Pt());
+				fMCMBPtElePi0GeneratedAft->Fill(fMCparticle->Pt(),WeightPi0MB);
+				fMCEnhPtElePi0GeneratedAft->Fill(fMCparticle->Pt(),WeightPi0Enh);
+				}
+				}
+				if(((fType == 0 || fType == 1) && TMath::Abs(pdg_mother) == 221)){
+				if(fMCparticleMother->Pt() <= 20.0){
+				Double_t WeightEtaMB = hMCWeightEtaMB->Eval(fMCparticleMother->Pt());
+				Double_t WeightEtaEnh = hMCWeightEtaEnh->Eval(fMCparticleMother->Pt());
+				fMCMBPtEleEtaGeneratedAft->Fill(fMCparticle->Pt(),WeightEtaMB);
+				fMCEnhPtEleEtaGeneratedAft->Fill(fMCparticle->Pt(),WeightEtaEnh);
+				}
+				}
+				if(((fType2 == 0 || fType2 == 1) && TMath::Abs(pdg_mother) == 22 && TMath::Abs(pdg_gmother) == 221) || ((fType2 == 0 || fType2 == 1) && TMath::Abs(pdg_mother) == 111 && TMath::Abs(pdg_gmother) == 221)){
+				if(fMCparticleGMother->Pt() <= 20.0){
+				Double_t WeightEtaMB = hMCWeightEtaMB->Eval(fMCparticleGMother->Pt());
+				Double_t WeightEtaEnh = hMCWeightEtaEnh->Eval(fMCparticleGMother->Pt());
+				fMCMBPtEleEtaGeneratedAft->Fill(fMCparticle->Pt(),WeightEtaMB);
+				fMCEnhPtEleEtaGeneratedAft->Fill(fMCparticle->Pt(),WeightEtaEnh);
+				}
+				}
+				if(((fType3 == 0 || fType3 == 1) && TMath::Abs(pdg_mother) == 22 && TMath::Abs(pdg_gmother) == 111 && TMath::Abs(pdg_ggmother) == 221)){
+				if(fMCparticleGGMother->Pt() <= 20.0){
+				Double_t WeightEtaMB = hMCWeightEtaMB->Eval(fMCparticleGGMother->Pt());
+				Double_t WeightEtaEnh = hMCWeightEtaEnh->Eval(fMCparticleGGMother->Pt());
+				fMCMBPtEleEtaGeneratedAft->Fill(fMCparticle->Pt(),WeightEtaMB);
+				fMCEnhPtEleEtaGeneratedAft->Fill(fMCparticle->Pt(),WeightEtaEnh);
+				}
+				}
+				//}
+				if(fType == 2 || fType == 3 || fType == 4){
+				if(TMath::Abs(pdg_mother) == 111)fMCPtElePi0GeneratedBef->Fill(fMCparticle->Pt());
+				if(TMath::Abs(pdg_mother) == 221)fMCPtEleEtaGeneratedBef->Fill(fMCparticle->Pt());
+				}
+				if(fType == 0 || fType == 1 || fType == 2 || fType == 3 || fType == 4){
+				if(TMath::Abs(pdg_mother) == 22) fMCPtEleGammaGenerated->Fill(fMCparticle->Pt());
+				}
+				
+				}
+			}
+
+}
 
 //=======================================================================
 Bool_t AliAnalysisHFEppTPCTOFBeauty5TeVNew::ProcessCutStep(Int_t cutStep, AliVParticle *track)
