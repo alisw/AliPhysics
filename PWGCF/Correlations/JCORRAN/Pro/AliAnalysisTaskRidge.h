@@ -85,7 +85,7 @@ class AliAnalysisTaskRidge : public AliAnalysisTaskSE {
         void SetOption(char * option) {fOption = option;}
         void SetFilterBit(UInt_t filterbit) {fFilterBit = filterbit;}
 //	void SetEfficiencyFile(char* fname) { fEffciencyFile.open(fname); }
-
+	void SetEfficiencyFile(char* fname) { fefficiencyFile = new TFile(fname,"read"); }
 
 //        Int_t GetPID(AliPIDResponse *pid, const AliVTrack *trk); 
     
@@ -139,10 +139,10 @@ class AliAnalysisTaskRidge : public AliAnalysisTaskSE {
 	typedef std::deque<trackMClist>  eventpoolMC;
 	typedef std::vector<vector<eventpoolMC> > mixingpoolMC;
 
-//	std::ifstream 			fEffciencyFile;
       
         TString                         fOption;
         TList*                          fOutput=nullptr; //!
+	TFile*				fefficiencyFile=nullptr;
 
         AliTriggerAnalysis*             fTrigger=nullptr; //!
         AliESDtrackCuts*                fTrackCuts=nullptr; //!
