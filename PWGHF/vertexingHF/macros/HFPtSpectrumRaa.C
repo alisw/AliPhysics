@@ -1,5 +1,6 @@
 #if !defined(__CINT__) || defined(__MAKECINT__)
 #include "TFile.h"
+#include "TSystem.h"
 #include "TH1.h"
 #include "TH1D.h"
 #include "TH2.h"
@@ -53,6 +54,7 @@
 enum centrality{ kpp, k07half, kpPb0100, k010, k1020, k020, k1030, k2040, k2030, k3040, k4050, k3050, k5060, k4060, k6080, k4080, k5080, k80100,kpPb010, kpPb020, kpPb1020, kpPb2040, kpPb4060, kpPb60100 };
 enum centestimator{ kV0M, kV0A, kZNA, kCL1 };
 enum energy{ k276, k5dot023, k55 };
+enum datayear{k2010, k2011, k2012, k2013, k2015, k2016, k2017, k2018};
 enum BFDSubtrMethod { kfc, kNb };
 enum RaavsEP {kPhiIntegrated, kInPlane, kOutOfPlane};
 enum rapidity{ kdefault, k08to04, k07to04, k04to01, k01to01, k01to04, k04to07, k04to08, k01to05 };
@@ -103,13 +105,23 @@ void HFPtSpectrumRaa(const char *ppfile="HFPtSpectrum_D0Kpi_method2_rebinnedth_2
 		     const char *outfile="HFPtSpectrumRaa.root",
 		     Int_t decay=1,
 		     Double_t sigmaABCINT1B=54.e9,
-		     Int_t fdMethod = kNb, Int_t cc=kpp, Int_t Energy=k276,
-		     Double_t MinHypo=1./3., Double_t MaxHypo=3.0, Double_t MaxRb=6.0,
-		     Bool_t isRbHypo=false, Double_t CentralHypo = 1.0,
+		     Int_t fdMethod = kNb,
+		     Int_t cc=kpp,
+		     Int_t year=k2010,
+		     Int_t Energy=k276,
+		     Double_t MinHypo=1./3.,
+		     Double_t MaxHypo=3.0,
+		     Double_t MaxRb=6.0,
+		     Bool_t isRbHypo=false,
+		     Double_t CentralHypo = 1.0,
 		     Int_t ccestimator = kV0M,
-		     Bool_t isUseTaaForRaa=true, const char *shadRbcFile="", Int_t nSigmaShad=3.0,
-		     Int_t isRaavsEP=kPhiIntegrated, Bool_t isScaledAndExtrapRef=kFALSE,
-		     Int_t rapiditySlice=kdefault, Int_t analysisSpeciality=kTopological)
+		     Bool_t isUseTaaForRaa=true,
+		     const char *shadRbcFile="",
+		     Int_t nSigmaShad=3.0,
+		     Int_t isRaavsEP=kPhiIntegrated,
+		     Bool_t isScaledAndExtrapRef=kFALSE,
+		     Int_t rapiditySlice=kdefault,
+		     Int_t analysisSpeciality=kTopological)
 {
 
   gROOT->Macro("$ALICE_PHYSICS/PWGHF/vertexingHF/macros/LoadLibraries.C");
@@ -220,6 +232,10 @@ void HFPtSpectrumRaa(const char *ppfile="HFPtSpectrum_D0Kpi_method2_rebinnedth_2
   //
   // Reading the pp file
   //
+  if(gSystem->Exec(Form("ls -l %s > /dev/null 2>&1",ppfile)) !=0){
+    printf("File %s with pp reference does not exist -> exiting\n",ppfile);
+    return;
+  }
   TFile * ppf = new TFile(ppfile,"read");
   TH1D * hSigmaPP;
   TGraphAsymmErrors * gSigmaPPSyst;
@@ -259,6 +275,11 @@ void HFPtSpectrumRaa(const char *ppfile="HFPtSpectrum_D0Kpi_method2_rebinnedth_2
   //
   // Reading the AB collisions file
   //
+  if(gSystem->Exec(Form("ls -l %s > /dev/null 2>&1",ABfile)) !=0){
+    printf("File %s with A-A (p-A) results does not exist -> exiting\n",ABfile);
+    return;
+  }
+  
   TFile * ABf = new TFile(ABfile,"read");
   TH1D *hSigmaAB = (TH1D*)ABf->Get("histoSigmaCorr");
   //  TH2D *hSigmaABRcb = (TH2D*)ABf->Get("histoSigmaCorrRcb");
@@ -298,9 +319,16 @@ void HFPtSpectrumRaa(const char *ppfile="HFPtSpectrum_D0Kpi_method2_rebinnedth_2
   }else{
     systematicsAB = new AliHFSystErr();
     systematicsAB->SetCollisionType(1);
-    systematicsAB->SetRunNumber(2016);// check this
+    if(year==k2010) systematicsAB->SetRunNumber(10);
+    else if(year==k2011) systematicsAB->SetRunNumber(11);
+    else if(year==k2012) systematicsAB->SetRunNumber(12);
+    else if(year==k2013) systematicsAB->SetRunNumber(13);
+    else if(year==k2015) systematicsAB->SetRunNumber(15);
+    else if(year==k2016) systematicsAB->SetRunNumber(16);
+    else if(year==k2017) systematicsAB->SetRunNumber(17);
+    else if(year==k2018) systematicsAB->SetRunNumber(18);
+
     if(Energy==k276){
-      systematicsAB->SetRunNumber(11);
       if ( cc == k07half ) systematicsAB->SetCentrality("07half");
       else if ( cc == k010 ) systematicsAB->SetCentrality("010");
       else if ( cc == k1020 ) systematicsAB->SetCentrality("1020");
@@ -318,7 +346,6 @@ void HFPtSpectrumRaa(const char *ppfile="HFPtSpectrum_D0Kpi_method2_rebinnedth_2
 	else if (isRaavsEP == kOutOfPlane) systematicsAB->SetCentrality("3050OutOfPlane");
       }
     } else if (Energy==k5dot023){
-      systematicsAB->SetRunNumber(15);
       if ( cc == k010 ){
         systematicsAB->SetCentrality("010");
       } else if ( cc == k1030 ) {
@@ -355,12 +382,12 @@ void HFPtSpectrumRaa(const char *ppfile="HFPtSpectrum_D0Kpi_method2_rebinnedth_2
 	else if(cc == kpPb4060) systematicsAB->SetCentrality("4060V0A");
 	else if(cc == kpPb60100) systematicsAB->SetCentrality("60100V0A");
       } else if (ccestimator==kZNA) {
-  if(cc == kpPb010) {systematicsAB->SetRunNumber(16); systematicsAB->SetCentrality("010ZNA");}
-  else if(cc == kpPb020) systematicsAB->SetCentrality("020ZNA");
-  else if(cc == kpPb1020) {systematicsAB->SetRunNumber(16); systematicsAB->SetCentrality("1020ZNA");}
-  else if(cc == kpPb2040) {systematicsAB->SetRunNumber(16); systematicsAB->SetCentrality("2040ZNA");}
-  else if(cc == kpPb4060) {systematicsAB->SetRunNumber(16); systematicsAB->SetCentrality("4060ZNA");}
-  else if(cc == kpPb60100) {systematicsAB->SetRunNumber(16); systematicsAB->SetCentrality("60100ZNA");}
+	if(cc == kpPb010) systematicsAB->SetCentrality("010ZNA");
+	else if(cc == kpPb020) systematicsAB->SetCentrality("020ZNA");
+	else if(cc == kpPb1020) systematicsAB->SetCentrality("1020ZNA");
+	else if(cc == kpPb2040) systematicsAB->SetCentrality("2040ZNA");
+	else if(cc == kpPb4060) systematicsAB->SetCentrality("4060ZNA");
+	else if(cc == kpPb60100) systematicsAB->SetCentrality("60100ZNA");
       } else if (ccestimator==kCL1) {
 	if(cc == kpPb020) systematicsAB->SetCentrality("020CL1");
 	else if(cc == kpPb2040) systematicsAB->SetCentrality("2040CL1");
@@ -380,7 +407,7 @@ void HFPtSpectrumRaa(const char *ppfile="HFPtSpectrum_D0Kpi_method2_rebinnedth_2
     if(analysisSpeciality==kLowPt){
       systematicsAB->SetIsLowPtAnalysis(true);
     }
-		else if(analysisSpeciality==kBDT){
+    else if(analysisSpeciality==kBDT){
       systematicsAB->SetIsBDTAnalysis(true);
     }
     //
