@@ -403,6 +403,7 @@ ConfigFemtoAnalysis(const TString& param_str="")
 
       if (macro_config.do_kt_trueq_cf) {
         AliFemtoModelCorrFctn *cf = new AliFemtoModelCorrFctnTrueQ("", QINV_BIN_COUNT, QINV_MIN_VAL, QINV_MAX_VAL);
+        cf->ConnectToManager(model_manager);
         auto *kt_qinv_cfs = new AliFemtoKtBinnedCorrFunc("KT_TrueQ", cf);
 
         for (size_t kt_idx=0; kt_idx < macro_config.kt_ranges.size(); kt_idx += 2) {
