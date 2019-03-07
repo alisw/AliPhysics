@@ -221,7 +221,8 @@ AliAnalysisHFjetTagHFE::AliAnalysisHFjetTagHFE() :
   fMCarray(0),
   fMCparticle(0),
   fMCparticleMother(0),
-  iMCcorr(kTRUE)
+  iMCcorr(kTRUE),
+  iDCApTweight(kTRUE)
   //fmcData(kFALSE)
 {
   // Default constructor.
@@ -405,7 +406,8 @@ AliAnalysisHFjetTagHFE::AliAnalysisHFjetTagHFE(const char *name) :
   fMCarray(0),
   fMCparticle(0),
   fMCparticleMother(0),
-  iMCcorr(kTRUE)
+  iMCcorr(kTRUE),
+  iDCApTweight(kTRUE)
   //fmcData(kFALSE)
 {
   // Standard constructor.
@@ -1820,8 +1822,14 @@ Bool_t AliAnalysisHFjetTagHFE::Run()
                      
                        if(track->Pt()>4.0 && track->Pt()<18.0)
                           {
-                           Double_t wb = fpowheg_b->Eval(pTeJetTrue)/fpythia_b->Eval(pTeJetTrue);
-                           Double_t wc = fpowheg_c->Eval(pTeJetTrue)/fpythia_c->Eval(pTeJetTrue);
+                           Double_t wb = 1.0;
+                           Double_t wc = 1.0;
+    
+                           if(iDCApTweight)
+                             {
+                              wb = fpowheg_b->Eval(pTeJetTrue)/fpythia_b->Eval(pTeJetTrue);
+                              wc = fpowheg_c->Eval(pTeJetTrue)/fpythia_c->Eval(pTeJetTrue);
+                             }
 
                            if(ich)
                               {
