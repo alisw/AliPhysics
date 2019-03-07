@@ -1,5 +1,5 @@
 AliAnalysisTaskDJetCorrelations *AddTaskDFilterCorrelations(
-  AliAnalysisTaskSEDmesonsFilterCJ::ECandidateType cand = AliAnalysisTaskSEDmesonsFilterCJ::kDstartoKpipi,
+  AliAnalysisTaskDJetCorrelations::ECandidateType cand = AliAnalysisTaskDJetCorrelations::kDstartoKpipi,
   TString filename = "DStartoKpipiCuts.root",
   Bool_t theMCon = kFALSE,
   Bool_t reco = kTRUE /*must be true if theMCon is false*/,
