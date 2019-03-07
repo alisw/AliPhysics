@@ -99,7 +99,6 @@ void AddTask_GammaCalo_pp(
     localDebugFlag = strLocalDebugFlag.Atoi();
 
   Int_t isHeavyIon = 0;
-  Bool_t enablePi0Only = kFALSE;
 
   // ================== GetAnalysisManager ===============================
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
@@ -1639,8 +1638,7 @@ void AddTask_GammaCalo_pp(
   task->SetDoTHnSparse(enableTHnSparse);
   task->SetProduceTreeEOverP(doTreeEOverP);
   task->SetEnableSortingOfMCClusLabels(enableSortingMCLabels);
-  if(trainConfig == 2020 || trainConfig == 2021 || trainConfig == 2022) enablePi0Only = kTRUE;
-  task->SetDoPi0Only(enablePi0Only);
+  if(trainConfig == 2020 || trainConfig == 2021 || trainConfig == 2022) task->SetDoPi0Only(kTRUE);
   if(trainConfig == 446) task->SetSoftAnalysis(kTRUE);
   if(enableExtMatchAndQA > 1){ task->SetPlotHistsExtQA(kTRUE);}
   if(trainConfig == 106 || trainConfig == 125 || trainConfig == 145){

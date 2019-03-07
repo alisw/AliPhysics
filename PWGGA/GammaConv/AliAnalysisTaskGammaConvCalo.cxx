@@ -1387,12 +1387,12 @@ void AliAnalysisTaskGammaConvCalo::UserCreateOutputObjects(){
       }
 
       if(!fDoLightOutput){
-        fHistoMotherInvMassECalib[iCut]         = new TH2F("ESD_Mother_InvMass_E_Calib", "ESD_Mother_InvMass_E_Calib", nBinsMinv, minMinv, maxMinv, nBinsPt, arrPtBinning);
+        fHistoMotherInvMassECalib[iCut]         = new TH2F("ESD_Mother_InvMass_E_Calib", "ESD_Mother_InvMass_E_Calib", 300, 0, 0.3, nBinsPt, arrPtBinning);
         fHistoMotherInvMassECalib[iCut]->SetXTitle("M_{inv} (GeV/c^{2})");
         fHistoMotherInvMassECalib[iCut]->SetYTitle("E_{cluster}(GeV)");
         fESDList[iCut]->Add(fHistoMotherInvMassECalib[iCut]);
 
-        fHistoMotherBackInvMassECalib[iCut]     = new TH2F("ESD_Background_InvMass_E_Calib", "ESD_Background_InvMass_E_Calib", nBinsMinv, minMinv, maxMinv, nBinsPt, arrPtBinning);
+        fHistoMotherBackInvMassECalib[iCut]     = new TH2F("ESD_Background_InvMass_E_Calib", "ESD_Background_InvMass_E_Calib", 300, 0, 0.3, nBinsPt, arrPtBinning);
         fHistoMotherBackInvMassECalib[iCut]->SetXTitle("M_{inv} (GeV/c^{2})");
         fHistoMotherBackInvMassECalib[iCut]->SetYTitle("E_{cluster}(GeV)");
         fESDList[iCut]->Add(fHistoMotherBackInvMassECalib[iCut]);
