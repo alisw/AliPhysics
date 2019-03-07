@@ -1443,7 +1443,7 @@ void AliAnalysisTaskSEHFTreeCreator::Process2Prong(TClonesArray *array2prong, Al
                             }
                             if(issignal || isbkg) fTreeHandlerD0->SetCandidateType(issignal,isbkg,isprompt,isFD,isrefl);
                         }//end read MC
-                        if(issignal || isbkg) {
+                        if(!fReadMC || (issignal || isbkg)) {
                             fTreeHandlerD0->SetIsSelectedStd(isSelAnCutsD0, isSelTopoAnCutsD0, isSelPidAnCutsD0, isSelTracksAnCuts);
                             fTreeHandlerD0->SetVariables(fRunNumber,fEventID,d,bfield,masshypo,fPIDresp);
                         }
@@ -1473,7 +1473,7 @@ void AliAnalysisTaskSEHFTreeCreator::Process2Prong(TClonesArray *array2prong, Al
                             }
                             if(issignal || isbkg) fTreeHandlerD0->SetCandidateType(issignal,isbkg,isprompt,isFD,isrefl);
                         }//end readMC
-                        if(issignal || isbkg) {
+                        if(!fReadMC || (issignal || isbkg)) {
                             fTreeHandlerD0->SetIsSelectedStd(isSelAnCutsD0bar, isSelTopoAnCutsD0bar, isSelPidAnCutsD0bar, isSelTracksAnCuts);
                             fTreeHandlerD0->SetVariables(fRunNumber,fEventID,d,bfield,masshypo,fPIDresp);
                         }
@@ -1797,7 +1797,7 @@ void AliAnalysisTaskSEHFTreeCreator::Process3Prong(TClonesArray *array3Prong, Al
                                     //do not apply cuts, but enable flag if is selected
                                     if(issignal || isbkg) fTreeHandlerDs->SetCandidateType(issignal,isbkg,isprompt,isFD,isrefl);
                                 }
-                                if(issignal || isbkg) {
+                                if(!fReadMC || (issignal || isbkg)) {
                                     fTreeHandlerDs->SetIsSelectedStd(isSelAnCutsKKpi,isSelAnTopoCutsKKpi,isSelAnPidCutsKKpi,isSelTracksAnCuts);
                                     fTreeHandlerDs->SetVariables(fRunNumber,fEventID,ds,bfield,0,fPIDresp);
                                 }
@@ -1824,7 +1824,7 @@ void AliAnalysisTaskSEHFTreeCreator::Process3Prong(TClonesArray *array3Prong, Al
                                     //do not apply cuts, but enable flag if is selected
                                     if(issignal || isbkg) fTreeHandlerDs->SetCandidateType(issignal,isbkg,isprompt,isFD,isrefl);
                                 }
-                                if(issignal || isbkg) {
+                                if(!fReadMC || (issignal || isbkg)) {
                                     fTreeHandlerDs->SetIsSelectedStd(isSelAnCutspiKK,isSelAnTopoCutspiKK,isSelAnPidCutspiKK,isSelTracksAnCuts);
                                     fTreeHandlerDs->SetVariables(fRunNumber,fEventID,ds,bfield,1,fPIDresp);
                                 }
@@ -1918,7 +1918,7 @@ void AliAnalysisTaskSEHFTreeCreator::Process3Prong(TClonesArray *array3Prong, Al
                     } //end read MC
                     
                     // fill tree
-                    if(issignal || isbkg) {
+                    if(!fReadMC || (issignal || isbkg)) {
                         fTreeHandlerDplus->SetIsSelectedStd(isSelAnCuts,isSelAnTopolCuts,isSelAnPidCuts,isSelTracksAnCuts);
                         fTreeHandlerDplus->SetVariables(fRunNumber,fEventID,dplus,bfield,0,fPIDresp);
                     }
@@ -2035,7 +2035,7 @@ void AliAnalysisTaskSEHFTreeCreator::Process3Prong(TClonesArray *array3Prong, Al
                     } //end read MC
 
                     // fill tree
-                    if(issignal || isbkg) {
+                    if(!fReadMC || (issignal || isbkg)) {
                         fTreeHandlerLctopKpi->SetIsSelectedStd(isSelAnCutspKpi,isSelTopopKpi,isSelPIDpKpi,isSelTracksAnCuts);
                         fTreeHandlerLctopKpi->SetVariables(fRunNumber,fEventID,lctopkpi,bfield,1,fPIDresp);
                     }
@@ -2082,7 +2082,7 @@ void AliAnalysisTaskSEHFTreeCreator::Process3Prong(TClonesArray *array3Prong, Al
                     } //end read MC
 
                     // fill tree
-                    if(issignal || isbkg) {
+                    if(!fReadMC || (issignal || isbkg)) {
                         fTreeHandlerLctopKpi->SetIsSelectedStd(isSelAnCutspiKp,isSelTopopiKp,isSelPIDpiKp,isSelTracksAnCuts);
                         fTreeHandlerLctopKpi->SetVariables(fRunNumber,fEventID,lctopkpi,bfield,2,fPIDresp);
                     }
@@ -2219,7 +2219,7 @@ void AliAnalysisTaskSEHFTreeCreator::ProcessDstar(TClonesArray *arrayDstar, AliA
                         }
                         if(issignal || isbkg) fTreeHandlerDstar->SetCandidateType(issignal,isbkg,isprompt,isFD,isrefl);
                     }//end read MC
-                    if(issignal || isbkg) {
+                    if(!fReadMC || (issignal || isbkg)) {
                         fTreeHandlerDstar->SetIsSelectedStd(isSelAnCuts,isSelAnTopolCuts,isSelAnPidCuts,isSelTracksAnCuts);
                         fTreeHandlerDstar->SetVariables(fRunNumber,fEventID,d,bfield,masshypo,fPIDresp);
                     }
@@ -2358,7 +2358,7 @@ void AliAnalysisTaskSEHFTreeCreator::ProcessCasc(TClonesArray *arrayCasc, AliAOD
             }
             if(issignal || isbkg) fTreeHandlerLc2V0bachelor->SetCandidateType(issignal,isbkg,isprompt,isFD,isrefl);
           }//end read MC
-          if(issignal || isbkg) {
+          if(!fReadMC || (issignal || isbkg)) {
             fTreeHandlerLc2V0bachelor->SetIsSelectedStd(isSelAnCutstopK0s,isSelAnTopolCutstopK0s,isSelAnPidCutstopK0s,isSelTracksAnCuts);
             fTreeHandlerLc2V0bachelor->SetIsLctoLpi(isSelAnCutstoLpi, isSelAnTopolCutstoLpi, isSelAnPidCutstoLpi);
             fTreeHandlerLc2V0bachelor->SetVariables(fRunNumber,fEventID,d,bfield,masshypo,fPIDresp);
