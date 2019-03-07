@@ -23,7 +23,7 @@
 //  author: Bong-Hwi Lim (bong-hwi.lim@cern.ch)
 //        , Beomkyu  KIM (kimb@cern.ch)
 //
-//  Last Modified Date: 2019/02/06
+//  Last Modified Date: 2019/03/07
 //
 ////////////////////////////////////////////////////////////////////////////
 
@@ -170,9 +170,9 @@ void AliAnalysisTaskXi1530::UserCreateOutputObjects()
     if(!IsMC){
         if (IsAA && !IsHighMult) binCent = AxisFix("Cent",10,0,100); // for AA study
         else if (!IsHighMult) binCent = AxisVar("Cent",{0,1,5,10,15,20,30,40,50,70,100}); // for kINT7 study
-        else binCent = AxisFix("Cent",100,0,0.1); // for HM study.
+        else binCent = AxisVar("Cent",{0,0.01,0.03,0.05,0.07,0.1}); // for HM study
     }
-    else binCent = AxisFix("Cent",1000,0,100); // for MC, including HM/Int7
+    else binCent = AxisVar("Cent",{0,0.01,0.03,0.05,0.07,0.01,1,5,10,15,20,30,40,50,70,100}); // for kINT7 study
     
     auto binPt   = AxisFix("Pt",200,0,20);
     auto binMass = AxisFix("Mass",2000,1.0,3.0);
