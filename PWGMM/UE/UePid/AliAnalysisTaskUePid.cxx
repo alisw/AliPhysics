@@ -4,10 +4,13 @@
    This macro produces: leading particle dE/dx vs leading particle momentum vs Multiplicity (near side, away side and transverse side) 
    Antonio Ortiz, ICN-UNAM
    Please report bugs to: aortizve@cern.ch / antonio.ortiz@nucleares.unam.mx 
-   First version: 20/02/208
-
+   First version: 20/02/2019
    Calibration factors of dE/dx were provided by Omar Vazquez (Lund University)
 
+   Update 05/03/2019
+   - dE/dx range was extended
+   - Selction on momentum for pion MIP was added. dE/dx vs eta histos before recalibration were added 
+   - Sum pT density has been added
 
  */
 
@@ -87,8 +90,8 @@ ClassImp(AliAnalysisTaskUePid)
 		fAnalysisType("ESD"),
 		fcutLow(0x0),
 		fcutHigh(0x0),
-		fDeDxMIPMin(40),
-		fDeDxMIPMax(90),
+		fDeDxMIPMin(35),
+		fDeDxMIPMax(95),
 		fEtaCalibrationNeg(0x0),
 		fEtaCalibrationPos(0x0),
 		fNcl(70),
@@ -96,6 +99,8 @@ ClassImp(AliAnalysisTaskUePid)
 		fHistEventCounter(0x0),
 		fEvents(0x0),
 		hPhi(0x0),
+		hMIPVsEtaBefore(0x0),
+		pMIPVsEtaBefore(0x0),		
 		hMIPVsEta(0x0),
 		pMIPVsEta(0x0),
 		hpT(0x0),
@@ -128,6 +133,21 @@ ClassImp(AliAnalysisTaskUePid)
 		h3DAS[i_eta] = 0;
 		h3DTS[i_eta] = 0;
 
+		pNNS2[i_eta] = 0;
+		pNS2[i_eta] = 0;
+		pAS2[i_eta] = 0;
+		pTS2[i_eta] = 0;
+
+		hNNS2[i_eta] = 0;
+		hNS2[i_eta] = 0;
+		hAS2[i_eta] = 0;
+		hTS2[i_eta] = 0;
+
+		h3DNNS2[i_eta] = 0;
+		h3DNS2[i_eta] = 0;
+		h3DAS2[i_eta] = 0;
+		h3DTS2[i_eta] = 0;
+
 		hptVSp[i_eta] = 0;
 	}
 
@@ -144,8 +164,8 @@ AliAnalysisTaskUePid::AliAnalysisTaskUePid(const char *name):
 	fAnalysisType("ESD"),
 	fcutLow(0x0),
 	fcutHigh(0x0),
-	fDeDxMIPMin(40),
-	fDeDxMIPMax(90),
+	fDeDxMIPMin(35),
+	fDeDxMIPMax(95),
 	fEtaCalibrationNeg(0x0),
 	fEtaCalibrationPos(0x0),
 	fNcl(70),
@@ -153,6 +173,8 @@ AliAnalysisTaskUePid::AliAnalysisTaskUePid(const char *name):
 	fHistEventCounter(0x0), 
 	fEvents(0x0),
 	hPhi(0x0),
+	hMIPVsEtaBefore(0x0),
+	pMIPVsEtaBefore(0x0),	
 	hMIPVsEta(0x0),
 	pMIPVsEta(0x0),
 	hpT(0x0),
@@ -184,6 +206,21 @@ AliAnalysisTaskUePid::AliAnalysisTaskUePid(const char *name):
 		h3DNS[i_eta] = 0;
 		h3DAS[i_eta] = 0;
 		h3DTS[i_eta] = 0;
+
+		pNNS2[i_eta] = 0;
+		pNS2[i_eta] = 0;
+		pAS2[i_eta] = 0;
+		pTS2[i_eta] = 0;
+
+		hNNS2[i_eta] = 0;
+		hNS2[i_eta] = 0;
+		hAS2[i_eta] = 0;
+		hTS2[i_eta] = 0;
+
+		h3DNNS2[i_eta] = 0;
+		h3DNS2[i_eta] = 0;
+		h3DAS2[i_eta] = 0;
+		h3DTS2[i_eta] = 0;
 
 		hptVSp[i_eta] = 0;
 	}
@@ -238,14 +275,27 @@ void AliAnalysisTaskUePid::UserCreateOutputObjects()
 		10.5, 11.5, 12.5, 13.5, 14.5, 15.5, 16.5, 17.5, 18.5, 19.5, 20.5
 	};
 
-	const Int_t nDeDxBins = 50;
+	const Int_t nNchBins2 = 60;
+	Double_t NchBins2[nNchBins2+1]={
+		0.5,  0.55, 0.6,  0.65, 0.7,  0.75, 0.8,  0.85, 0.9,  0.95,
+		1.0,  1.1 , 1.2,  1.3 , 1.4,  1.5 , 1.6,  1.7 , 1.8,  1.9 ,
+		2.0,  2.2 , 2.4,  2.6 , 2.8,  3.0 , 3.2,  3.4 , 3.6,  3.8 ,
+		4.0,  4.5 , 5.0,  5.5 , 6.0,  6.5 , 7.0,  8.0 , 9.0,  10.0,
+		11.0, 12.0, 13.0, 14.0, 15.0, 16.0, 18.0, 20.0, 22.0, 24.0,
+		26.0, 28.0, 30.0, 35.0, 40.0, 45.0, 50.0, 60.0, 80.0, 100.0, 200.0
+	};
+
+
+
+	const Int_t nDeDxBins = 60;
 	Double_t DeDxBins[nDeDxBins+1]=
 	{
-		40,41,42,43,44,45,46,47,48,49,
-		50,51,52,53,54,55,56,57,58,59,
-		60,61,62,63,64,65,66,67,68,69,
-		70,71,72,73,74,75,76,77,78,79,
-		80,81,82,83,84,85,86,87,88,89,90
+		35,36,37,38,39,40,41,42,43,44,
+		45,46,47,48,49,50,51,52,53,54,
+		55,56,57,58,59,60,61,62,63,64,
+		65,66,67,68,69,70,71,72,73,74,
+		75,76,77,78,79,80,81,82,83,84,
+		85,86,87,88,89,90,91,92,93,94,95
 	};
 	// This method is called once per worker node
 	// Here we define the output: histograms and debug tree if requested 
@@ -277,6 +327,13 @@ void AliAnalysisTaskUePid::UserCreateOutputObjects()
 
 	hPhi = new TH2D("histPhi", ";pt; #phi'", nPtBins,xBins, 90, -0.05, 0.4);
 	fListOfObjects->Add(hPhi);
+
+	hMIPVsEtaBefore = new TH2D("hMIPVsEtaBefore","; #eta; dE/dx_{MIP, primary tracks}",50,-0.8,0.8,fDeDxMIPMax-fDeDxMIPMin, fDeDxMIPMin, fDeDxMIPMax);
+	fListOfObjects->Add(hMIPVsEtaBefore);
+
+	pMIPVsEtaBefore = new TProfile("pMIPVsEtaBefore","; #eta; #LT dE/dx #GT_{MIP, primary tracks}",50,-0.8,0.8, fDeDxMIPMin, fDeDxMIPMax);
+	fListOfObjects->Add(pMIPVsEtaBefore);
+
 
 	hMIPVsEta = new TH2D("hMIPVsEta","; #eta; dE/dx_{MIP, primary tracks}",50,-0.8,0.8,fDeDxMIPMax-fDeDxMIPMin, fDeDxMIPMin, fDeDxMIPMax);
 	fListOfObjects->Add(hMIPVsEta);
@@ -323,6 +380,9 @@ void AliAnalysisTaskUePid::UserCreateOutputObjects()
 		hPhiL[i_eta] = 0;
 		hPhiL[i_eta] = new TH1D(Form("hPhiL_etaInt%d",i_eta),Form("%s; #phi^{leading} (rad);counts",legendsEta[i_eta]),64,0,2.0*TMath::Pi());
 		fListOfObjects->Add(hPhiL[i_eta]);
+
+		// Number density 
+
 
 		pNNS[i_eta] = 0;
 		pNNS[i_eta] = new TProfile(Form("pNNS%d",i_eta),Form("R<0.5 (%s); #it{p}^{leading} (GeV/#it{c}); #it{N}_{ch} (#it{p}_{T}>0.5 GeV/#it{c})",legendsEta[i_eta]),nPtBins,xBins,0,20);
@@ -371,6 +431,58 @@ void AliAnalysisTaskUePid::UserCreateOutputObjects()
 		h3DTS[i_eta] = 0;
 		h3DTS[i_eta] = new TH3D(Form("h3DTS%d",i_eta),Form("Transverse side (%s); #it{p}^{leading} (GeV/#it{c}); #it{N}_{ch} (#it{p}_{T}>0.5 GeV/#it{c}); TPC-d#it{E}/d#it{x}^{leading}",legendsEta[i_eta]),nPtBins,xBins,nNchBins,NchBins,nDeDxBins,DeDxBins);
 		fListOfObjects->Add(h3DTS[i_eta]);
+
+		// Sum pT density [TODO: chanhe the sum pT intervals] 
+
+		pNNS2[i_eta] = 0;
+		pNNS2[i_eta] = new TProfile(Form("pNNS_pt_%d",i_eta),Form("R<0.5 (%s); #it{p}^{leading} (GeV/#it{c}); #sum #it{p}_{T} (#it{p}_{T}>0.5 GeV/#it{c})",legendsEta[i_eta]),nPtBins,xBins,0,20);
+		fListOfObjects->Add(pNNS2[i_eta]);
+
+		pNS2[i_eta] = 0;
+		pNS2[i_eta] = new TProfile(Form("pNS_pt_%d",i_eta),Form("Near side (%s); #it{p}^{leading} (GeV/#it{c}); #sum #it{p}_{T} (#it{p}_{T}>0.5 GeV/#it{c})",legendsEta[i_eta]),nPtBins,xBins,0,20);
+		fListOfObjects->Add(pNS2[i_eta]);
+
+		pAS2[i_eta] = 0;
+		pAS2[i_eta] = new TProfile(Form("pAS_pt_%d",i_eta),Form("Away side (%s); #it{p}^{leading} (GeV/#it{c}); #sum #it{N}_{ch} (#it{p}_{T}>0.5 GeV/#it{c})",legendsEta[i_eta]),nPtBins,xBins,0,20);
+		fListOfObjects->Add(pAS2[i_eta]);
+
+		pTS2[i_eta] = 0;
+		pTS2[i_eta] = new TProfile(Form("pTS_pt_%d",i_eta),Form("Transverse side (%s); #it{p}^{leading} (GeV/#it{c}); #sum #it{p}_{T} (#it{p}_{T}>0.5 GeV/#it{c})",legendsEta[i_eta]),nPtBins,xBins,0,20);
+		fListOfObjects->Add(pTS2[i_eta]);
+
+		hNNS2[i_eta] = 0;
+		hNNS2[i_eta] = new TH2D(Form("hNNS_pt_%d",i_eta),Form("R<0.5 (%s); #it{p}^{leading} (GeV/#it{c}); #sum #it{p}_{T} (#it{p}_{T}>0.5 GeV/#it{c})",legendsEta[i_eta]),nPtBins,xBins,nNchBins2,NchBins2);
+		fListOfObjects->Add(hNNS2[i_eta]);
+
+		hNS2[i_eta] = 0;
+		hNS2[i_eta] = new TH2D(Form("hNS_pt_%d",i_eta),Form("Near side (%s); #it{p}^{leading} (GeV/#it{c}); #sum #it{p}_{T} (#it{p}_{T}>0.5 GeV/#it{c})",legendsEta[i_eta]),nPtBins,xBins,nNchBins2,NchBins2);
+		fListOfObjects->Add(hNS2[i_eta]);
+
+		hAS2[i_eta] = 0;
+		hAS2[i_eta] = new TH2D(Form("hAS_pt_%d",i_eta),Form("Away side (%s); #it{p}^{leading} (GeV/#it{c}); #sum #it{p}_{T} (#it{p}_{T}>0.5 GeV/#it{c})",legendsEta[i_eta]),nPtBins,xBins,nNchBins2,NchBins2);
+		fListOfObjects->Add(hAS2[i_eta]);
+
+		hTS2[i_eta] = 0;
+		hTS2[i_eta] = new TH2D(Form("hTS_pt_%d",i_eta),Form("Transverse side (%s); #it{p}^{leading} (GeV/#it{c}); #sum #it{p}_{T} (#it{p}_{T}>0.5 GeV/#it{c})",legendsEta[i_eta]),nPtBins,xBins,nNchBins2,NchBins2);
+		fListOfObjects->Add(hTS2[i_eta]);
+
+		h3DNNS2[i_eta] = 0;
+		h3DNNS2[i_eta] = new TH3D(Form("h3DNNS_pt_%d",i_eta),Form("#it{R}<0.5 (%s); #it{p}^{leading} (GeV/#it{c}); #sum #it{p}_{T} (#it{p}_{T}>0.5 GeV/#it{c}); TPC-d#it{E}/d#it{x}^{leading}",legendsEta[i_eta]),nPtBins,xBins,nNchBins2,NchBins2,nDeDxBins,DeDxBins);
+		fListOfObjects->Add(h3DNNS2[i_eta]);
+
+		h3DNS2[i_eta] = 0;
+		h3DNS2[i_eta] = new TH3D(Form("h3DNS_pt_%d",i_eta),Form("Near side (%s); #it{p}^{leading} (GeV/#it{c}); #sum #it{p}_{T} (#it{p}_{T}>0.5 GeV/#it{c}); TPC-d#it{E}/d#it{x}^{leading}",legendsEta[i_eta]),nPtBins,xBins,nNchBins2,NchBins2,nDeDxBins,DeDxBins);
+		fListOfObjects->Add(h3DNS2[i_eta]);
+
+		h3DAS2[i_eta] = 0;
+		h3DAS2[i_eta] = new TH3D(Form("h3DAS_pt_%d",i_eta),Form("Away side (%s); #it{p}^{leading} (GeV/#it{c}); #sum #it{p}_{T} (#it{p}_{T}>0.5 GeV/#it{c}); TPC-d#it{E}/d#it{x}^{leading}",legendsEta[i_eta]),nPtBins,xBins,nNchBins2,NchBins2,nDeDxBins,DeDxBins);
+		fListOfObjects->Add(h3DAS2[i_eta]);
+
+		h3DTS2[i_eta] = 0;
+		h3DTS2[i_eta] = new TH3D(Form("h3DTS_pt_%d",i_eta),Form("Transverse side (%s); #it{p}^{leading} (GeV/#it{c}); #sum #it{p}_{T} (#it{p}_{T}>0.5 GeV/#it{c}); TPC-d#it{E}/d#it{x}^{leading}",legendsEta[i_eta]),nPtBins,xBins,nNchBins2,NchBins2,nDeDxBins,DeDxBins);
+		fListOfObjects->Add(h3DTS2[i_eta]);
+
+		// momentum vs pT
 
 
 		hptVSp[i_eta] = 0;
@@ -503,10 +615,15 @@ void AliAnalysisTaskUePid::MakeAnalysis( Double_t etaCut ){
 			dedx *= 50/EtaCalibrationPos(index_data,eta);
 		}
 
-		// test using pions at MIP
-		if( dedxUnc < fDeDxMIPMax && dedxUnc > fDeDxMIPMin ){
-			hMIPVsEta->Fill(eta,dedx);
-			pMIPVsEta->Fill(eta,dedx);
+		// test using pions at MIP,  0.4<p<0.6 GeV/c
+		if(momentum>0.4 && momentum<0.6){
+			if( dedxUnc < fDeDxMIPMax && dedxUnc > fDeDxMIPMin ){
+				hMIPVsEtaBefore->Fill(eta,dedxUnc);
+				pMIPVsEtaBefore->Fill(eta,dedxUnc);
+
+				hMIPVsEta->Fill(eta,dedx);
+				pMIPVsEta->Fill(eta,dedx);
+			}
 		}
 		// For high pT analysis
 		if(!PhiCut(pt, phi, esdTrack->Charge(), Magf, fcutLow, fcutHigh))
@@ -547,6 +664,11 @@ void AliAnalysisTaskUePid::MakeAnalysis( Double_t etaCut ){
 	Double_t mult_nns = 0;
 	Double_t mult_as = 0;
 	Double_t mult_ts = 0;
+	// DeDx vs p vs Sum pT density (NS, AS, TS)
+	Double_t pt_ns = 0;
+	Double_t pt_nns = 0;
+	Double_t pt_as = 0;
+	Double_t pt_ts = 0;
 
 	for(Int_t i = 0; i < fESD->GetNumberOfTracks(); i++) {
 
@@ -577,22 +699,26 @@ void AliAnalysisTaskUePid::MakeAnalysis( Double_t etaCut ){
 		hDphi->Fill(DPhi);
 
 		// new near side
-		if(R<0.5){
+		if(R<0.2){
 			mult_nns++;
+			pt_nns+=pt;
 			hDphiNNS->Fill(DPhi);
 		}
 
 		// near side
 		if(TMath::Abs(DPhi)<pi/3.0){
 			mult_ns++;
+			pt_ns+=pt;
 			hDphiNS->Fill(DPhi);
 		}
 		else if(TMath::Abs(DPhi-pi)<pi/3.0){
 			mult_as++;
+			pt_as++;
 			hDphiAS->Fill(DPhi);
 		}
 		else{
 			mult_ts++;
+			pt_ts++;
 			hDphiTS->Fill(DPhi);
 		}
 
@@ -604,6 +730,8 @@ void AliAnalysisTaskUePid::MakeAnalysis( Double_t etaCut ){
 	Double_t ns_a = 2*(TMath::Pi()/3.0)*1.6;
 	Double_t as_a = 2*(TMath::Pi()/3.0)*1.6;
 	Double_t ts_a = total_a-(ns_a+as_a);
+
+	// Plotting results for number density
 
 	pNNS[0]->Fill(p_leading,mult_nns/(pi*0.5*0.5));
 	pNS[0]->Fill(p_leading,mult_ns/ns_a);
@@ -620,9 +748,28 @@ void AliAnalysisTaskUePid::MakeAnalysis( Double_t etaCut ){
 	h3DAS[0]->Fill(p_leading,mult_as,dedx_leading);
 	h3DTS[0]->Fill(p_leading,mult_ts,dedx_leading);
 
+	// Plotting results for sum pT density
+	pNNS2[0]->Fill(p_leading,pt_nns/(pi*0.5*0.5));
+	pNS2[0]->Fill(p_leading,pt_ns/ns_a);
+	pAS2[0]->Fill(p_leading,pt_as/as_a);
+	pTS2[0]->Fill(p_leading,pt_ts/ts_a);
+
+	hNNS2[0]->Fill(p_leading,1.0*pt_nns);
+	hNS2[0]->Fill(p_leading,1.0*pt_ns);
+	hAS2[0]->Fill(p_leading,1.0*pt_as);
+	hTS2[0]->Fill(p_leading,1.0*pt_ts);
+
+	h3DNNS2[0]->Fill(p_leading,pt_nns,dedx_leading);
+	h3DNS2[0]->Fill(p_leading,pt_ns,dedx_leading);
+	h3DAS2[0]->Fill(p_leading,pt_as,dedx_leading);
+	h3DTS2[0]->Fill(p_leading,pt_ts,dedx_leading);
+
+	// momentum vs pt
 	hptVSp[0]->Fill(pt_leading,p_leading);
 
 	if(index_leading>0){
+
+		// Plotting results for number density
 		pNNS[index_leading]->Fill(p_leading,mult_nns/(pi*0.5*0.5));
 		pNS[index_leading]->Fill(p_leading,mult_ns/ns_a);
 		pAS[index_leading]->Fill(p_leading,mult_as/as_a);
@@ -638,7 +785,25 @@ void AliAnalysisTaskUePid::MakeAnalysis( Double_t etaCut ){
 		h3DAS[index_leading]->Fill(p_leading,mult_as,dedx_leading);
 		h3DTS[index_leading]->Fill(p_leading,mult_ts,dedx_leading);
 
+		// Plotting results for sum pT density
+		pNNS2[index_leading]->Fill(p_leading,pt_nns/(pi*0.5*0.5));
+		pNS2[index_leading]->Fill(p_leading,pt_ns/ns_a);
+		pAS2[index_leading]->Fill(p_leading,pt_as/as_a);
+		pTS2[index_leading]->Fill(p_leading,pt_ts/ts_a);
+
+		hNNS2[index_leading]->Fill(p_leading,1.0*pt_nns);
+		hNS2[index_leading]->Fill(p_leading,1.0*pt_ns);
+		hAS2[index_leading]->Fill(p_leading,1.0*pt_as);
+		hTS2[index_leading]->Fill(p_leading,1.0*pt_ts);
+
+		h3DNNS2[index_leading]->Fill(p_leading,pt_nns,dedx_leading);
+		h3DNS2[index_leading]->Fill(p_leading,pt_ns,dedx_leading);
+		h3DAS2[index_leading]->Fill(p_leading,pt_as,dedx_leading);
+		h3DTS2[index_leading]->Fill(p_leading,pt_ts,dedx_leading);
+
+		// momentum vs pt
 		hptVSp[index_leading]->Fill(pt_leading,p_leading);
+
 	}
 
 
