@@ -1160,7 +1160,7 @@ void AliAnalysisTaskTOFqaID::AddStartTimeHisto(THashList* list, TString suffix)
     CreateH(hT0TOFdiffvsNtrk, TH2F, "Event timeZero estimated by TOF (first half - second half) vs. TOF-matching tracks; n. tracks used for t_{0}^{TOF} (average f. h. and s. h.); TOFt0_{f. h.} - TOFt0_{s. h.} (ps)", GetArrayBinning(fVariableBinsMult), fnBinsT0, fBinsT0[0], fBinsT0[1]);
     HistogramMakeUp(hT0TOFdiffvsNtrk, -1, -1);
 
-    CreateH(hT0TOFdiffNormvsNtrk, TH2F, "Event timeZero estimated by TOF (first half - second half) normalized to reso. vs. TOF-matching tracks; n. tracks used for t_{0}^{TOF} (average f. h. and s. h.); (TOFt0_{f. h.} - TOFt0_{s. h.})/#sqrt{#sigma_{TOFt0_{f. h.}}^{2} -#sigma_{TOFt0_{s. h.}}^{2}}", GetArrayBinning(fVariableBinsMult), fnBinsT0, fBinsT0[0], fBinsT0[1]);
+    CreateH(hT0TOFdiffNormvsNtrk, TH2F, "Event timeZero estimated by TOF (first half - second half) normalized to reso. vs. TOF-matching tracks; n. tracks used for t_{0}^{TOF} (average f. h. and s. h.); (TOFt0_{f. h.} - TOFt0_{s. h.})/#sqrt{#sigma_{TOFt0_{f. h.}}^{2} -#sigma_{TOFt0_{s. h.}}^{2}}", GetArrayBinning(fVariableBinsMult), fnBinsT0, -10, 10);
     HistogramMakeUp(hT0TOFdiffNormvsNtrk, -1, -1);
   }
 }
