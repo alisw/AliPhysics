@@ -773,6 +773,7 @@ void AliAnalysisTaskTOFqaID::FillStartTimeMaskHisto(TString suffix)
       ((TH2F*)fHlistTimeZero->FindObject(Form("hStartTimeMaskMatched%s", suffix.Data())))->Fill(track->P(), StartTimeBit);
     }
   }
+  ((TH2F*)fHlistTimeZero->FindObject(Form("hStartTimeMaskvsTOFmulti%s", suffix.Data())))->Fill(fNTOFtracks[0], fESDpid->GetTOFResponse().GetStartTimeMask(10.));
   return;
 }
 
@@ -1150,6 +1151,10 @@ void AliAnalysisTaskTOFqaID::AddStartTimeHisto(THashList* list, TString suffix)
   CreateH(hStartTimeMask, TH2F, "Start Time Mask vs p bin for primary tracks; p(GeV/#it{c});", 12, startTimeMomBins, 8, 0., 8.);
   SetBinLabels(hStartTimeMask);
   HistogramMakeUp(hStartTimeMask, kRed + 2, 1);
+
+  CreateH(hStartTimeMaskvsTOFmulti, TH2F, "Start Time Mask vs TOF hit multiplicity; TOF hit multiplicity;", GetArrayBinning(fVariableBinsMult), 8, 0., 8.);
+  SetBinLabels(hStartTimeMaskvsTOFmulti);
+  HistogramMakeUp(hStartTimeMaskvsTOFmulti, -1, -1);
 
   if (fUseTOFT0CalibMode) {
     CreateH(hT0TOFdiffvsNtrk, TH2F, "Event timeZero estimated by TOF (first half - second half) vs. TOF-matching tracks; n. tracks used for t_{0}^{TOF} (average f. h. and s. h.); TOFt0_{f. h.} - TOFt0_{s. h.} (ps)", GetArrayBinning(fVariableBinsMult), fnBinsT0, fBinsT0[0], fBinsT0[1]);
