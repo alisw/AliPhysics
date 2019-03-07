@@ -20,7 +20,6 @@ class AliAnalysisTaskUPCPhiTest : public AliAnalysisTaskSE
 
     private:
         AliAODEvent*            fAOD;  //! input event
-        AliAODZDC*              fZDCdata; 
         
         AliPIDResponse*         fPIDResponse;            
         TList*                  fOutputList;    //! output list
