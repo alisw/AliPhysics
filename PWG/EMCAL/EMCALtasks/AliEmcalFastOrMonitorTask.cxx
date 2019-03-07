@@ -127,6 +127,13 @@ void AliEmcalFastOrMonitorTask::UserCreateOutputObjects() {
   cellmaskaxis.SetNameTitle("maskedcells", "Number of masked cells");
   fHistosQA->CreateTHnSparse("hFastOrEnergyOfflineOnline", "FastOr Offline vs Online energy", 4, sparseaxis);
 
+  TAxis adcAxisL0(2101, -0.5, 2100.5), adcAxisL1(2101, -0.5, 2100.5);
+  const TAxis *adcaxes[3] = {&fastorIDAxis, &adcAxisL0, &adcAxisL1};
+  adcAxisL0.SetNameTitle("adcL0", "L0 ADC amplitude");
+  adcAxisL1.SetNameTitle("adcL1", "L1 ADC amplitude");
+  fHistosQA->CreateTHnSparse("hFastOrADCL0L1", "FastOR ADC in L0 and L1", 3, adcaxes);
+  
+
   for(auto h : *(fHistosQA->GetListOfHistograms())) fOutput->Add(h);
   PostData(1, fOutput);
 }
@@ -234,10 +241,16 @@ bool AliEmcalFastOrMonitorTask::Run() {
       double energydata[4] = {
             static_cast<double>(fastOrID),
             fCellData(globCol, globRow),
-            l1timesum * EMCALTrigger::kEMCL1ADCtoGeV,
+            static_cast<double>(l1timesum) * EMCALTrigger::kEMCL1ADCtoGeV,
             static_cast<double>(ncellmasked)
       };
       fHistosQA->FillTHnSparse("hFastOrEnergyOfflineOnline", energydata);
+      double adcdata[3] = {
+            static_cast<double>(fastOrID),
+            amp * 4.,         // correction for the bit shift
+            static_cast<double>(l1timesum)
+      };
+      fHistosQA->FillTHnSparse("hFastOrADCL0L1", adcdata);
     }
   }
   return true;
