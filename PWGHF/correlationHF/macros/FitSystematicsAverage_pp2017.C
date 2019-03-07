@@ -35,6 +35,7 @@ TString inputpath = "/Users/sandrobjelogrlic/Desktop/FinalPlots/";
 TString outputpath="";
 TString strAverage;
 TString strTempl;
+TString betadir="";
 Bool_t saveAwaySide=kFALSE;
 void SetSaveAwaySidePlots(Bool_t saveAS){
   saveAwaySide=saveAS;
@@ -50,6 +51,9 @@ void SetOutputPath(TString str){
 }
 void SetAverageString(TString str){
   strAverage=str;
+}
+void SetBetaDir(TString str){
+  betadir=str;
 }
 
 void Systematics_pp_03to99had(Bool_t useReflected){
@@ -70,28 +74,29 @@ void Systematics_pp_03to99had(Bool_t useReflected){
     //systfitter->Setv2ForSystematics(0.1, 0.1); // Set v2 values for the systematics (v2had, v2 D)
     systfitter->SetPlotV2SystSeparately(kFALSE); // set true if you want the v2 box to be plotted separately
  //   systfitter->SetFitRange(-0.5*TMath::Pi(),1.5*TMath::Pi()); // set the fit range
+    systfitter->SetBetaDir(betadir); 
     
     if(useReflected) systfitter->SetFitRange(0,TMath::Pi()); // set the fit range
     if(!useReflected) systfitter->SetFitRange(-0.5*TMath::Pi(),1.5*TMath::Pi()); // set the fit range
     
     systfitter->SetReferenceBaselineEstimationRange(0.25*TMath::Pi(),0.5*TMath::Pi()); // set the default baseline estimation range
     
-    systfitter->AddSystematicMode(AliHFCorrFitSystematics::kTransverse,kTRUE,0.25*TMath::Pi(),0.5*TMath::Pi()); //add systematic method (ktrue if is default to compare to, kfalse if is used to estimated the variations)
-    systfitter->AddSystematicMode(AliHFCorrFitSystematics::kTransverse,kFALSE,0.25*TMath::Pi(),0.375*TMath::Pi());
-    systfitter->AddSystematicMode(AliHFCorrFitSystematics::kTransverse,kFALSE,0.375*TMath::Pi(),0.5*TMath::Pi());
-    systfitter->AddSystematicMode(AliHFCorrFitSystematics::kTransverse,kFALSE,0.25*TMath::Pi(),0.625*TMath::Pi());
-    systfitter->AddSystematicMode(AliHFCorrFitSystematics::kTransverse,kFALSE,0.25*TMath::Pi(),0.5*TMath::Pi(),0,AliHFCorrFitter::kModifNSGausPeriodicity); //Generalized gaussian NS
-    systfitter->AddSystematicMode(AliHFCorrFitSystematics::kTransverse,kFALSE,0.25*TMath::Pi(),0.375*TMath::Pi(),0,AliHFCorrFitter::kModifNSGausPeriodicity);
-    systfitter->AddSystematicMode(AliHFCorrFitSystematics::kTransverse,kFALSE,0.375*TMath::Pi(),0.5*TMath::Pi(),0,AliHFCorrFitter::kModifNSGausPeriodicity);
-    systfitter->AddSystematicMode(AliHFCorrFitSystematics::kTransverse,kFALSE,0.25*TMath::Pi(),0.625*TMath::Pi(),0,AliHFCorrFitter::kModifNSGausPeriodicity);    
-    systfitter->AddSystematicMode(AliHFCorrFitSystematics::kTransverseUppStatUnc,kFALSE,0.25*TMath::Pi(),0.5*TMath::Pi());    
-    systfitter->AddSystematicMode(AliHFCorrFitSystematics::kTransverseLowStatUnc,kFALSE,0.25*TMath::Pi(),0.5*TMath::Pi());  
+    systfitter->AddSystematicMode(AliHFCorrFitSystematics::kTransverse,kTRUE,0.25*TMath::Pi(),0.5*TMath::Pi(),0,AliHFCorrFitter::kModifNSGausPeriodicityFixBeta);  //Generalized gaussian NS //add systematic method (ktrue if is default to compare to, kfalse if is used to estimated the variations)
+    systfitter->AddSystematicMode(AliHFCorrFitSystematics::kTransverse,kFALSE,0.25*TMath::Pi(),0.5*TMath::Pi(),0,AliHFCorrFitter::kModifNSGausPeriodicityConstrainedBeta);
+    systfitter->AddSystematicMode(AliHFCorrFitSystematics::kTransverse,kFALSE,0.25*TMath::Pi(),0.375*TMath::Pi(),0,AliHFCorrFitter::kModifNSGausPeriodicityConstrainedBeta);
+    systfitter->AddSystematicMode(AliHFCorrFitSystematics::kTransverse,kFALSE,0.375*TMath::Pi(),0.5*TMath::Pi(),0,AliHFCorrFitter::kModifNSGausPeriodicityConstrainedBeta);
+    systfitter->AddSystematicMode(AliHFCorrFitSystematics::kTransverse,kFALSE,0.25*TMath::Pi(),0.625*TMath::Pi(),0,AliHFCorrFitter::kModifNSGausPeriodicityConstrainedBeta);
+    systfitter->AddSystematicMode(AliHFCorrFitSystematics::kTransverse,kFALSE,0.25*TMath::Pi(),0.375*TMath::Pi(),0,AliHFCorrFitter::kModifNSGausPeriodicityFixBeta);
+    systfitter->AddSystematicMode(AliHFCorrFitSystematics::kTransverse,kFALSE,0.375*TMath::Pi(),0.5*TMath::Pi(),0,AliHFCorrFitter::kModifNSGausPeriodicityFixBeta);
+    systfitter->AddSystematicMode(AliHFCorrFitSystematics::kTransverse,kFALSE,0.25*TMath::Pi(),0.625*TMath::Pi(),0,AliHFCorrFitter::kModifNSGausPeriodicityFixBeta);    
+    systfitter->AddSystematicMode(AliHFCorrFitSystematics::kTransverseUppStatUnc,kFALSE,0.25*TMath::Pi(),0.5*TMath::Pi(),0,AliHFCorrFitter::kModifNSGausPeriodicityFixBeta);    
+    systfitter->AddSystematicMode(AliHFCorrFitSystematics::kTransverseLowStatUnc,kFALSE,0.25*TMath::Pi(),0.5*TMath::Pi(),0,AliHFCorrFitter::kModifNSGausPeriodicityFixBeta);  
     //    systfitter->AddSystematicMode(AliHFCorrFitSystematics::kNLowest,kFALSE,0.25*TMath::Pi(),0.5*TMath::Pi(),1); 
     //systfitter->AddSystematicMode(AliHFCorrFitSystematics::kFree,kFALSE,0.25*TMath::Pi(),0.5*TMath::Pi(),0);
     // systfitter->AddSystematicMode(AliHFCorrFitSystematics::kLowestPoint,kFALSE);
     // systfitter->AddSystematicMode(AliHFCorrFitSystematics::k2PointsAtPiHalf,kFALSE);
-    systfitter->AddSystematicMode(AliHFCorrFitSystematics::kMinVar,kFALSE);
-    systfitter->AddSystematicMode(AliHFCorrFitSystematics::kMaxVar,kFALSE);
+    systfitter->AddSystematicMode(AliHFCorrFitSystematics::kMinVar,kFALSE,0.25*TMath::Pi(),0.5*TMath::Pi(),0,AliHFCorrFitter::kModifNSGausPeriodicityFixBeta);
+    systfitter->AddSystematicMode(AliHFCorrFitSystematics::kMaxVar,kFALSE,0.25*TMath::Pi(),0.5*TMath::Pi(),0,AliHFCorrFitter::kModifNSGausPeriodicityFixBeta);
     //systfitter->AddSystematicMode(AliHFCorrFitSystematics::kBinCount,kFALSE);
     
     //systfitter->CheckBaselineRanges();
@@ -155,7 +160,7 @@ void Systematics_pp_03to99had(Bool_t useReflected){
         return;
     }
  
-    if(saveAwaySide)systfitter->DrawFinalPlots(kTRUE,kTRUE,kTRUE,kTRUE,kTRUE);
+    if(saveAwaySide)systfitter->DrawFinalPlots(kTRUE,kTRUE,kTRUE,kTRUE,kTRUE,kTRUE);
     else systfitter->DrawFinalPlots(); // draws the final trend plots
     systfitter->PrintAllSystematicsOnShell(); // print all the systematics on shell
    // systfitter->DrawFinalPlots(kTRUE,kFALSE,kFALSE,kFALSE,kFALSE);
@@ -168,7 +173,7 @@ void Systematics_pp_03to99had(Bool_t useReflected){
     systfitter->SaveCanvasesDotPdf();
     
   
-    if(saveAwaySide)systfitter->DrawFinalCorrelationPlot(kTRUE,kTRUE,kTRUE,kTRUE,kTRUE); // draws the final correlation plots
+    if(saveAwaySide)systfitter->DrawFinalCorrelationPlot(kTRUE,kTRUE,kTRUE,kTRUE,kTRUE,kTRUE); // draws the final correlation plots
     else systfitter->DrawFinalCorrelationPlot(); // draws the final correlation plots
    // systfitter->CheckHisto(1);
 }
@@ -191,28 +196,29 @@ void Systematics_pp_03to1had(Bool_t useReflected){
     //systfitter->Setv2ForSystematics(0.1, 0.1); // Set v2 values for the systematics (v2had, v2 D)
     systfitter->SetPlotV2SystSeparately(kFALSE); // set true if you want the v2 box to be plotted separately
  //   systfitter->SetFitRange(-0.5*TMath::Pi(),1.5*TMath::Pi()); // set the fit range
-    
+    systfitter->SetBetaDir(betadir); 
+
     if(useReflected) systfitter->SetFitRange(0,TMath::Pi()); // set the fit range
     if(!useReflected) systfitter->SetFitRange(-0.5*TMath::Pi(),1.5*TMath::Pi()); // set the fit range
     
     systfitter->SetReferenceBaselineEstimationRange(0.25*TMath::Pi(),0.5*TMath::Pi()); // set the default baseline estimation range
     
-    systfitter->AddSystematicMode(AliHFCorrFitSystematics::kTransverse,kTRUE,0.25*TMath::Pi(),0.5*TMath::Pi()); //add systematic method (ktrue if is default to compare to, kfalse if is used to estimated the variations)
-    systfitter->AddSystematicMode(AliHFCorrFitSystematics::kTransverse,kFALSE,0.25*TMath::Pi(),0.375*TMath::Pi());
-    systfitter->AddSystematicMode(AliHFCorrFitSystematics::kTransverse,kFALSE,0.375*TMath::Pi(),0.5*TMath::Pi());
-    systfitter->AddSystematicMode(AliHFCorrFitSystematics::kTransverse,kFALSE,0.25*TMath::Pi(),0.625*TMath::Pi());
-    systfitter->AddSystematicMode(AliHFCorrFitSystematics::kTransverse,kFALSE,0.25*TMath::Pi(),0.5*TMath::Pi(),0,AliHFCorrFitter::kModifNSGausPeriodicity); //Generalized gaussian NS
-    systfitter->AddSystematicMode(AliHFCorrFitSystematics::kTransverse,kFALSE,0.25*TMath::Pi(),0.375*TMath::Pi(),0,AliHFCorrFitter::kModifNSGausPeriodicity);
-    systfitter->AddSystematicMode(AliHFCorrFitSystematics::kTransverse,kFALSE,0.375*TMath::Pi(),0.5*TMath::Pi(),0,AliHFCorrFitter::kModifNSGausPeriodicity);
-    systfitter->AddSystematicMode(AliHFCorrFitSystematics::kTransverse,kFALSE,0.25*TMath::Pi(),0.625*TMath::Pi(),0,AliHFCorrFitter::kModifNSGausPeriodicity);  
-    systfitter->AddSystematicMode(AliHFCorrFitSystematics::kTransverseUppStatUnc,kFALSE,0.25*TMath::Pi(),0.5*TMath::Pi());    
-    systfitter->AddSystematicMode(AliHFCorrFitSystematics::kTransverseLowStatUnc,kFALSE,0.25*TMath::Pi(),0.5*TMath::Pi());  
+    systfitter->AddSystematicMode(AliHFCorrFitSystematics::kTransverse,kTRUE,0.25*TMath::Pi(),0.5*TMath::Pi(),0,AliHFCorrFitter::kModifNSGausPeriodicityFixBeta);  //Generalized gaussian NS //add systematic method (ktrue if is default to compare to, kfalse if is used to estimated the variations)
+    systfitter->AddSystematicMode(AliHFCorrFitSystematics::kTransverse,kFALSE,0.25*TMath::Pi(),0.5*TMath::Pi(),0,AliHFCorrFitter::kModifNSGausPeriodicityConstrainedBeta);
+    systfitter->AddSystematicMode(AliHFCorrFitSystematics::kTransverse,kFALSE,0.25*TMath::Pi(),0.375*TMath::Pi(),0,AliHFCorrFitter::kModifNSGausPeriodicityConstrainedBeta);
+    systfitter->AddSystematicMode(AliHFCorrFitSystematics::kTransverse,kFALSE,0.375*TMath::Pi(),0.5*TMath::Pi(),0,AliHFCorrFitter::kModifNSGausPeriodicityConstrainedBeta);
+    systfitter->AddSystematicMode(AliHFCorrFitSystematics::kTransverse,kFALSE,0.25*TMath::Pi(),0.625*TMath::Pi(),0,AliHFCorrFitter::kModifNSGausPeriodicityConstrainedBeta);
+    systfitter->AddSystematicMode(AliHFCorrFitSystematics::kTransverse,kFALSE,0.25*TMath::Pi(),0.375*TMath::Pi(),0,AliHFCorrFitter::kModifNSGausPeriodicityFixBeta);
+    systfitter->AddSystematicMode(AliHFCorrFitSystematics::kTransverse,kFALSE,0.375*TMath::Pi(),0.5*TMath::Pi(),0,AliHFCorrFitter::kModifNSGausPeriodicityFixBeta);
+    systfitter->AddSystematicMode(AliHFCorrFitSystematics::kTransverse,kFALSE,0.25*TMath::Pi(),0.625*TMath::Pi(),0,AliHFCorrFitter::kModifNSGausPeriodicityFixBeta);    
+    systfitter->AddSystematicMode(AliHFCorrFitSystematics::kTransverseUppStatUnc,kFALSE,0.25*TMath::Pi(),0.5*TMath::Pi(),0,AliHFCorrFitter::kModifNSGausPeriodicityFixBeta);    
+    systfitter->AddSystematicMode(AliHFCorrFitSystematics::kTransverseLowStatUnc,kFALSE,0.25*TMath::Pi(),0.5*TMath::Pi(),0,AliHFCorrFitter::kModifNSGausPeriodicityFixBeta);  
     //    systfitter->AddSystematicMode(AliHFCorrFitSystematics::kNLowest,kFALSE,0.25*TMath::Pi(),0.5*TMath::Pi(),1); 
     //systfitter->AddSystematicMode(AliHFCorrFitSystematics::kFree,kFALSE,0.25*TMath::Pi(),0.5*TMath::Pi(),0);
     // systfitter->AddSystematicMode(AliHFCorrFitSystematics::kLowestPoint,kFALSE);
     // systfitter->AddSystematicMode(AliHFCorrFitSystematics::k2PointsAtPiHalf,kFALSE);
-    systfitter->AddSystematicMode(AliHFCorrFitSystematics::kMinVar,kFALSE);
-    systfitter->AddSystematicMode(AliHFCorrFitSystematics::kMaxVar,kFALSE);
+    systfitter->AddSystematicMode(AliHFCorrFitSystematics::kMinVar,kFALSE,0.25*TMath::Pi(),0.5*TMath::Pi(),0,AliHFCorrFitter::kModifNSGausPeriodicityFixBeta);
+    systfitter->AddSystematicMode(AliHFCorrFitSystematics::kMaxVar,kFALSE,0.25*TMath::Pi(),0.5*TMath::Pi(),0,AliHFCorrFitter::kModifNSGausPeriodicityFixBeta);
     //systfitter->AddSystematicMode(AliHFCorrFitSystematics::kBinCount,kFALSE);
     
     //systfitter->CheckBaselineRanges();
@@ -276,7 +282,7 @@ void Systematics_pp_03to1had(Bool_t useReflected){
         return;
     }
  
-    if(saveAwaySide)systfitter->DrawFinalPlots(kTRUE,kTRUE,kTRUE,kTRUE,kTRUE);
+    if(saveAwaySide)systfitter->DrawFinalPlots(kTRUE,kTRUE,kTRUE,kTRUE,kTRUE,kTRUE);
     else systfitter->DrawFinalPlots(); // draws the final trend plots
     systfitter->PrintAllSystematicsOnShell(); // print all the systematics on shell
    // systfitter->DrawFinalPlots(kTRUE,kFALSE,kFALSE,kFALSE,kFALSE);
@@ -289,7 +295,7 @@ void Systematics_pp_03to1had(Bool_t useReflected){
     systfitter->SaveCanvasesDotPdf();
     
   
-    if(saveAwaySide)systfitter->DrawFinalCorrelationPlot(kTRUE,kTRUE,kTRUE,kTRUE,kTRUE); // draws the final correlation plots
+    if(saveAwaySide)systfitter->DrawFinalCorrelationPlot(kTRUE,kTRUE,kTRUE,kTRUE,kTRUE,kTRUE); // draws the final correlation plots
     else systfitter->DrawFinalCorrelationPlot(); // draws the final correlation plots
    // systfitter->CheckHisto(1);
 }
@@ -312,28 +318,29 @@ void Systematics_pp_1to99had(Bool_t useReflected){
     //systfitter->Setv2ForSystematics(0.1, 0.1); // Set v2 values for the systematics (v2had, v2 D)
     systfitter->SetPlotV2SystSeparately(kFALSE); // set true if you want the v2 box to be plotted separately
  //   systfitter->SetFitRange(-0.5*TMath::Pi(),1.5*TMath::Pi()); // set the fit range
-    
+    systfitter->SetBetaDir(betadir); 
+        
     if(useReflected) systfitter->SetFitRange(0,TMath::Pi()); // set the fit range
     if(!useReflected) systfitter->SetFitRange(-0.5*TMath::Pi(),1.5*TMath::Pi()); // set the fit range
     
     systfitter->SetReferenceBaselineEstimationRange(0.25*TMath::Pi(),0.5*TMath::Pi()); // set the default baseline estimation range
     
-    systfitter->AddSystematicMode(AliHFCorrFitSystematics::kTransverse,kTRUE,0.25*TMath::Pi(),0.5*TMath::Pi()); //add systematic method (ktrue if is default to compare to, kfalse if is used to estimated the variations)
-    systfitter->AddSystematicMode(AliHFCorrFitSystematics::kTransverse,kFALSE,0.25*TMath::Pi(),0.375*TMath::Pi());
-    systfitter->AddSystematicMode(AliHFCorrFitSystematics::kTransverse,kFALSE,0.375*TMath::Pi(),0.5*TMath::Pi());
-    systfitter->AddSystematicMode(AliHFCorrFitSystematics::kTransverse,kFALSE,0.25*TMath::Pi(),0.625*TMath::Pi());
-    systfitter->AddSystematicMode(AliHFCorrFitSystematics::kTransverse,kFALSE,0.25*TMath::Pi(),0.5*TMath::Pi(),0,AliHFCorrFitter::kModifNSGausPeriodicity); //Generalized gaussian NS
-    systfitter->AddSystematicMode(AliHFCorrFitSystematics::kTransverse,kFALSE,0.25*TMath::Pi(),0.375*TMath::Pi(),0,AliHFCorrFitter::kModifNSGausPeriodicity);
-    systfitter->AddSystematicMode(AliHFCorrFitSystematics::kTransverse,kFALSE,0.375*TMath::Pi(),0.5*TMath::Pi(),0,AliHFCorrFitter::kModifNSGausPeriodicity);
-    systfitter->AddSystematicMode(AliHFCorrFitSystematics::kTransverse,kFALSE,0.25*TMath::Pi(),0.625*TMath::Pi(),0,AliHFCorrFitter::kModifNSGausPeriodicity);  
-    systfitter->AddSystematicMode(AliHFCorrFitSystematics::kTransverseUppStatUnc,kFALSE,0.25*TMath::Pi(),0.5*TMath::Pi());    
-    systfitter->AddSystematicMode(AliHFCorrFitSystematics::kTransverseLowStatUnc,kFALSE,0.25*TMath::Pi(),0.5*TMath::Pi());  
-        //    systfitter->AddSystematicMode(AliHFCorrFitSystematics::kNLowest,kFALSE,0.25*TMath::Pi(),0.5*TMath::Pi(),1); 
+    systfitter->AddSystematicMode(AliHFCorrFitSystematics::kTransverse,kTRUE,0.25*TMath::Pi(),0.5*TMath::Pi(),0,AliHFCorrFitter::kModifNSGausPeriodicityFixBeta);  //Generalized gaussian NS //add systematic method (ktrue if is default to compare to, kfalse if is used to estimated the variations)
+    systfitter->AddSystematicMode(AliHFCorrFitSystematics::kTransverse,kFALSE,0.25*TMath::Pi(),0.5*TMath::Pi(),0,AliHFCorrFitter::kModifNSGausPeriodicityConstrainedBeta);
+    systfitter->AddSystematicMode(AliHFCorrFitSystematics::kTransverse,kFALSE,0.25*TMath::Pi(),0.375*TMath::Pi(),0,AliHFCorrFitter::kModifNSGausPeriodicityConstrainedBeta);
+    systfitter->AddSystematicMode(AliHFCorrFitSystematics::kTransverse,kFALSE,0.375*TMath::Pi(),0.5*TMath::Pi(),0,AliHFCorrFitter::kModifNSGausPeriodicityConstrainedBeta);
+    systfitter->AddSystematicMode(AliHFCorrFitSystematics::kTransverse,kFALSE,0.25*TMath::Pi(),0.625*TMath::Pi(),0,AliHFCorrFitter::kModifNSGausPeriodicityConstrainedBeta);
+    systfitter->AddSystematicMode(AliHFCorrFitSystematics::kTransverse,kFALSE,0.25*TMath::Pi(),0.375*TMath::Pi(),0,AliHFCorrFitter::kModifNSGausPeriodicityFixBeta);
+    systfitter->AddSystematicMode(AliHFCorrFitSystematics::kTransverse,kFALSE,0.375*TMath::Pi(),0.5*TMath::Pi(),0,AliHFCorrFitter::kModifNSGausPeriodicityFixBeta);
+    systfitter->AddSystematicMode(AliHFCorrFitSystematics::kTransverse,kFALSE,0.25*TMath::Pi(),0.625*TMath::Pi(),0,AliHFCorrFitter::kModifNSGausPeriodicityFixBeta);    
+    systfitter->AddSystematicMode(AliHFCorrFitSystematics::kTransverseUppStatUnc,kFALSE,0.25*TMath::Pi(),0.5*TMath::Pi(),0,AliHFCorrFitter::kModifNSGausPeriodicityFixBeta);    
+    systfitter->AddSystematicMode(AliHFCorrFitSystematics::kTransverseLowStatUnc,kFALSE,0.25*TMath::Pi(),0.5*TMath::Pi(),0,AliHFCorrFitter::kModifNSGausPeriodicityFixBeta);  
+    //    systfitter->AddSystematicMode(AliHFCorrFitSystematics::kNLowest,kFALSE,0.25*TMath::Pi(),0.5*TMath::Pi(),1); 
     //systfitter->AddSystematicMode(AliHFCorrFitSystematics::kFree,kFALSE,0.25*TMath::Pi(),0.5*TMath::Pi(),0);
     // systfitter->AddSystematicMode(AliHFCorrFitSystematics::kLowestPoint,kFALSE);
     // systfitter->AddSystematicMode(AliHFCorrFitSystematics::k2PointsAtPiHalf,kFALSE);
-    systfitter->AddSystematicMode(AliHFCorrFitSystematics::kMinVar,kFALSE);
-    systfitter->AddSystematicMode(AliHFCorrFitSystematics::kMaxVar,kFALSE);
+    systfitter->AddSystematicMode(AliHFCorrFitSystematics::kMinVar,kFALSE,0.25*TMath::Pi(),0.5*TMath::Pi(),0,AliHFCorrFitter::kModifNSGausPeriodicityFixBeta);
+    systfitter->AddSystematicMode(AliHFCorrFitSystematics::kMaxVar,kFALSE,0.25*TMath::Pi(),0.5*TMath::Pi(),0,AliHFCorrFitter::kModifNSGausPeriodicityFixBeta);
     //systfitter->AddSystematicMode(AliHFCorrFitSystematics::kBinCount,kFALSE);
     
     //systfitter->CheckBaselineRanges();
@@ -397,7 +404,7 @@ void Systematics_pp_1to99had(Bool_t useReflected){
         return;
     }
  
-    if(saveAwaySide)systfitter->DrawFinalPlots(kTRUE,kTRUE,kTRUE,kTRUE,kTRUE);
+    if(saveAwaySide)systfitter->DrawFinalPlots(kTRUE,kTRUE,kTRUE,kTRUE,kTRUE,kTRUE);
     else systfitter->DrawFinalPlots(); // draws the final trend plots
     systfitter->PrintAllSystematicsOnShell(); // print all the systematics on shell
    // systfitter->DrawFinalPlots(kTRUE,kFALSE,kFALSE,kFALSE,kFALSE);
@@ -410,7 +417,7 @@ void Systematics_pp_1to99had(Bool_t useReflected){
     systfitter->SaveCanvasesDotPdf();
     
   
-    if(saveAwaySide)systfitter->DrawFinalCorrelationPlot(kTRUE,kTRUE,kTRUE,kTRUE,kTRUE); // draws the final correlation plots
+    if(saveAwaySide)systfitter->DrawFinalCorrelationPlot(kTRUE,kTRUE,kTRUE,kTRUE,kTRUE,kTRUE); // draws the final correlation plots
     else systfitter->DrawFinalCorrelationPlot(); // draws the final correlation plots
    // systfitter->CheckHisto(1);
 }
@@ -433,28 +440,29 @@ void Systematics_pp_2to99had(Bool_t useReflected){
     //systfitter->Setv2ForSystematics(0.1, 0.1); // Set v2 values for the systematics (v2had, v2 D)
     systfitter->SetPlotV2SystSeparately(kFALSE); // set true if you want the v2 box to be plotted separately
  //   systfitter->SetFitRange(-0.5*TMath::Pi(),1.5*TMath::Pi()); // set the fit range
-    
+    systfitter->SetBetaDir(betadir); 
+        
     if(useReflected) systfitter->SetFitRange(0,TMath::Pi()); // set the fit range
     if(!useReflected) systfitter->SetFitRange(-0.5*TMath::Pi(),1.5*TMath::Pi()); // set the fit range
     
     systfitter->SetReferenceBaselineEstimationRange(0.25*TMath::Pi(),0.5*TMath::Pi()); // set the default baseline estimation range
     
-    systfitter->AddSystematicMode(AliHFCorrFitSystematics::kTransverse,kTRUE,0.25*TMath::Pi(),0.5*TMath::Pi()); //add systematic method (ktrue if is default to compare to, kfalse if is used to estimated the variations)
-    systfitter->AddSystematicMode(AliHFCorrFitSystematics::kTransverse,kFALSE,0.25*TMath::Pi(),0.375*TMath::Pi());
-    systfitter->AddSystematicMode(AliHFCorrFitSystematics::kTransverse,kFALSE,0.375*TMath::Pi(),0.5*TMath::Pi());
-    systfitter->AddSystematicMode(AliHFCorrFitSystematics::kTransverse,kFALSE,0.25*TMath::Pi(),0.625*TMath::Pi());
-    systfitter->AddSystematicMode(AliHFCorrFitSystematics::kTransverse,kFALSE,0.25*TMath::Pi(),0.5*TMath::Pi(),0,AliHFCorrFitter::kModifNSGausPeriodicity); //Generalized gaussian NS
-    systfitter->AddSystematicMode(AliHFCorrFitSystematics::kTransverse,kFALSE,0.25*TMath::Pi(),0.375*TMath::Pi(),0,AliHFCorrFitter::kModifNSGausPeriodicity);
-    systfitter->AddSystematicMode(AliHFCorrFitSystematics::kTransverse,kFALSE,0.375*TMath::Pi(),0.5*TMath::Pi(),0,AliHFCorrFitter::kModifNSGausPeriodicity);
-    systfitter->AddSystematicMode(AliHFCorrFitSystematics::kTransverse,kFALSE,0.25*TMath::Pi(),0.625*TMath::Pi(),0,AliHFCorrFitter::kModifNSGausPeriodicity);  
-    systfitter->AddSystematicMode(AliHFCorrFitSystematics::kTransverseUppStatUnc,kFALSE,0.25*TMath::Pi(),0.5*TMath::Pi());    
-    systfitter->AddSystematicMode(AliHFCorrFitSystematics::kTransverseLowStatUnc,kFALSE,0.25*TMath::Pi(),0.5*TMath::Pi());  
+    systfitter->AddSystematicMode(AliHFCorrFitSystematics::kTransverse,kTRUE,0.25*TMath::Pi(),0.5*TMath::Pi(),0,AliHFCorrFitter::kModifNSGausPeriodicityFixBeta);  //Generalized gaussian NS //add systematic method (ktrue if is default to compare to, kfalse if is used to estimated the variations)
+    systfitter->AddSystematicMode(AliHFCorrFitSystematics::kTransverse,kFALSE,0.25*TMath::Pi(),0.5*TMath::Pi(),0,AliHFCorrFitter::kModifNSGausPeriodicityConstrainedBeta);
+    systfitter->AddSystematicMode(AliHFCorrFitSystematics::kTransverse,kFALSE,0.25*TMath::Pi(),0.375*TMath::Pi(),0,AliHFCorrFitter::kModifNSGausPeriodicityConstrainedBeta);
+    systfitter->AddSystematicMode(AliHFCorrFitSystematics::kTransverse,kFALSE,0.375*TMath::Pi(),0.5*TMath::Pi(),0,AliHFCorrFitter::kModifNSGausPeriodicityConstrainedBeta);
+    systfitter->AddSystematicMode(AliHFCorrFitSystematics::kTransverse,kFALSE,0.25*TMath::Pi(),0.625*TMath::Pi(),0,AliHFCorrFitter::kModifNSGausPeriodicityConstrainedBeta);
+    systfitter->AddSystematicMode(AliHFCorrFitSystematics::kTransverse,kFALSE,0.25*TMath::Pi(),0.375*TMath::Pi(),0,AliHFCorrFitter::kModifNSGausPeriodicityFixBeta);
+    systfitter->AddSystematicMode(AliHFCorrFitSystematics::kTransverse,kFALSE,0.375*TMath::Pi(),0.5*TMath::Pi(),0,AliHFCorrFitter::kModifNSGausPeriodicityFixBeta);
+    systfitter->AddSystematicMode(AliHFCorrFitSystematics::kTransverse,kFALSE,0.25*TMath::Pi(),0.625*TMath::Pi(),0,AliHFCorrFitter::kModifNSGausPeriodicityFixBeta);    
+    systfitter->AddSystematicMode(AliHFCorrFitSystematics::kTransverseUppStatUnc,kFALSE,0.25*TMath::Pi(),0.5*TMath::Pi(),0,AliHFCorrFitter::kModifNSGausPeriodicityFixBeta);    
+    systfitter->AddSystematicMode(AliHFCorrFitSystematics::kTransverseLowStatUnc,kFALSE,0.25*TMath::Pi(),0.5*TMath::Pi(),0,AliHFCorrFitter::kModifNSGausPeriodicityFixBeta);  
     //    systfitter->AddSystematicMode(AliHFCorrFitSystematics::kNLowest,kFALSE,0.25*TMath::Pi(),0.5*TMath::Pi(),1); 
     //systfitter->AddSystematicMode(AliHFCorrFitSystematics::kFree,kFALSE,0.25*TMath::Pi(),0.5*TMath::Pi(),0);
     // systfitter->AddSystematicMode(AliHFCorrFitSystematics::kLowestPoint,kFALSE);
     // systfitter->AddSystematicMode(AliHFCorrFitSystematics::k2PointsAtPiHalf,kFALSE);
-    systfitter->AddSystematicMode(AliHFCorrFitSystematics::kMinVar,kFALSE);
-    systfitter->AddSystematicMode(AliHFCorrFitSystematics::kMaxVar,kFALSE);
+    systfitter->AddSystematicMode(AliHFCorrFitSystematics::kMinVar,kFALSE,0.25*TMath::Pi(),0.5*TMath::Pi(),0,AliHFCorrFitter::kModifNSGausPeriodicityFixBeta);
+    systfitter->AddSystematicMode(AliHFCorrFitSystematics::kMaxVar,kFALSE,0.25*TMath::Pi(),0.5*TMath::Pi(),0,AliHFCorrFitter::kModifNSGausPeriodicityFixBeta);
     //systfitter->AddSystematicMode(AliHFCorrFitSystematics::kBinCount,kFALSE);
     
     //systfitter->CheckBaselineRanges();
@@ -518,7 +526,7 @@ void Systematics_pp_2to99had(Bool_t useReflected){
         return;
     }
  
-    if(saveAwaySide)systfitter->DrawFinalPlots(kTRUE,kTRUE,kTRUE,kTRUE,kTRUE);
+    if(saveAwaySide)systfitter->DrawFinalPlots(kTRUE,kTRUE,kTRUE,kTRUE,kTRUE,kTRUE);
     else systfitter->DrawFinalPlots(); // draws the final trend plots
     systfitter->PrintAllSystematicsOnShell(); // print all the systematics on shell
    // systfitter->DrawFinalPlots(kTRUE,kFALSE,kFALSE,kFALSE,kFALSE);
@@ -531,7 +539,7 @@ void Systematics_pp_2to99had(Bool_t useReflected){
     systfitter->SaveCanvasesDotPdf();
     
   
-    if(saveAwaySide)systfitter->DrawFinalCorrelationPlot(kTRUE,kTRUE,kTRUE,kTRUE,kTRUE); // draws the final correlation plots
+    if(saveAwaySide)systfitter->DrawFinalCorrelationPlot(kTRUE,kTRUE,kTRUE,kTRUE,kTRUE,kTRUE); // draws the final correlation plots
     else systfitter->DrawFinalCorrelationPlot(); // draws the final correlation plots
    // systfitter->CheckHisto(1);
 }
@@ -554,28 +562,29 @@ void Systematics_pp_3to99had(Bool_t useReflected){
     //systfitter->Setv2ForSystematics(0.1, 0.1); // Set v2 values for the systematics (v2had, v2 D)
     systfitter->SetPlotV2SystSeparately(kFALSE); // set true if you want the v2 box to be plotted separately
  //   systfitter->SetFitRange(-0.5*TMath::Pi(),1.5*TMath::Pi()); // set the fit range
-    
+    systfitter->SetBetaDir(betadir); 
+        
     if(useReflected) systfitter->SetFitRange(0,TMath::Pi()); // set the fit range
     if(!useReflected) systfitter->SetFitRange(-0.5*TMath::Pi(),1.5*TMath::Pi()); // set the fit range
     
     systfitter->SetReferenceBaselineEstimationRange(0.25*TMath::Pi(),0.5*TMath::Pi()); // set the default baseline estimation range
     
-    systfitter->AddSystematicMode(AliHFCorrFitSystematics::kTransverse,kTRUE,0.25*TMath::Pi(),0.5*TMath::Pi()); //add systematic method (ktrue if is default to compare to, kfalse if is used to estimated the variations)
-    systfitter->AddSystematicMode(AliHFCorrFitSystematics::kTransverse,kFALSE,0.25*TMath::Pi(),0.375*TMath::Pi());
-    systfitter->AddSystematicMode(AliHFCorrFitSystematics::kTransverse,kFALSE,0.375*TMath::Pi(),0.5*TMath::Pi());
-    systfitter->AddSystematicMode(AliHFCorrFitSystematics::kTransverse,kFALSE,0.25*TMath::Pi(),0.625*TMath::Pi());
-    systfitter->AddSystematicMode(AliHFCorrFitSystematics::kTransverse,kFALSE,0.25*TMath::Pi(),0.5*TMath::Pi(),0,AliHFCorrFitter::kModifNSGausPeriodicity); //Generalized gaussian NS
-    systfitter->AddSystematicMode(AliHFCorrFitSystematics::kTransverse,kFALSE,0.25*TMath::Pi(),0.375*TMath::Pi(),0,AliHFCorrFitter::kModifNSGausPeriodicity);
-    systfitter->AddSystematicMode(AliHFCorrFitSystematics::kTransverse,kFALSE,0.375*TMath::Pi(),0.5*TMath::Pi(),0,AliHFCorrFitter::kModifNSGausPeriodicity);
-    systfitter->AddSystematicMode(AliHFCorrFitSystematics::kTransverse,kFALSE,0.25*TMath::Pi(),0.625*TMath::Pi(),0,AliHFCorrFitter::kModifNSGausPeriodicity);  
-    systfitter->AddSystematicMode(AliHFCorrFitSystematics::kTransverseUppStatUnc,kFALSE,0.25*TMath::Pi(),0.5*TMath::Pi());    
-    systfitter->AddSystematicMode(AliHFCorrFitSystematics::kTransverseLowStatUnc,kFALSE,0.25*TMath::Pi(),0.5*TMath::Pi());  
+    systfitter->AddSystematicMode(AliHFCorrFitSystematics::kTransverse,kTRUE,0.25*TMath::Pi(),0.5*TMath::Pi(),0,AliHFCorrFitter::kModifNSGausPeriodicityFixBeta);  //Generalized gaussian NS //add systematic method (ktrue if is default to compare to, kfalse if is used to estimated the variations)
+    systfitter->AddSystematicMode(AliHFCorrFitSystematics::kTransverse,kFALSE,0.25*TMath::Pi(),0.5*TMath::Pi(),0,AliHFCorrFitter::kModifNSGausPeriodicityConstrainedBeta);
+    systfitter->AddSystematicMode(AliHFCorrFitSystematics::kTransverse,kFALSE,0.25*TMath::Pi(),0.375*TMath::Pi(),0,AliHFCorrFitter::kModifNSGausPeriodicityConstrainedBeta);
+    systfitter->AddSystematicMode(AliHFCorrFitSystematics::kTransverse,kFALSE,0.375*TMath::Pi(),0.5*TMath::Pi(),0,AliHFCorrFitter::kModifNSGausPeriodicityConstrainedBeta);
+    systfitter->AddSystematicMode(AliHFCorrFitSystematics::kTransverse,kFALSE,0.25*TMath::Pi(),0.625*TMath::Pi(),0,AliHFCorrFitter::kModifNSGausPeriodicityConstrainedBeta);
+    systfitter->AddSystematicMode(AliHFCorrFitSystematics::kTransverse,kFALSE,0.25*TMath::Pi(),0.375*TMath::Pi(),0,AliHFCorrFitter::kModifNSGausPeriodicityFixBeta);
+    systfitter->AddSystematicMode(AliHFCorrFitSystematics::kTransverse,kFALSE,0.375*TMath::Pi(),0.5*TMath::Pi(),0,AliHFCorrFitter::kModifNSGausPeriodicityFixBeta);
+    systfitter->AddSystematicMode(AliHFCorrFitSystematics::kTransverse,kFALSE,0.25*TMath::Pi(),0.625*TMath::Pi(),0,AliHFCorrFitter::kModifNSGausPeriodicityFixBeta);    
+    systfitter->AddSystematicMode(AliHFCorrFitSystematics::kTransverseUppStatUnc,kFALSE,0.25*TMath::Pi(),0.5*TMath::Pi(),0,AliHFCorrFitter::kModifNSGausPeriodicityFixBeta);    
+    systfitter->AddSystematicMode(AliHFCorrFitSystematics::kTransverseLowStatUnc,kFALSE,0.25*TMath::Pi(),0.5*TMath::Pi(),0,AliHFCorrFitter::kModifNSGausPeriodicityFixBeta);  
     //    systfitter->AddSystematicMode(AliHFCorrFitSystematics::kNLowest,kFALSE,0.25*TMath::Pi(),0.5*TMath::Pi(),1); 
     //systfitter->AddSystematicMode(AliHFCorrFitSystematics::kFree,kFALSE,0.25*TMath::Pi(),0.5*TMath::Pi(),0);
     // systfitter->AddSystematicMode(AliHFCorrFitSystematics::kLowestPoint,kFALSE);
     // systfitter->AddSystematicMode(AliHFCorrFitSystematics::k2PointsAtPiHalf,kFALSE);
-    systfitter->AddSystematicMode(AliHFCorrFitSystematics::kMinVar,kFALSE);
-    systfitter->AddSystematicMode(AliHFCorrFitSystematics::kMaxVar,kFALSE);
+    systfitter->AddSystematicMode(AliHFCorrFitSystematics::kMinVar,kFALSE,0.25*TMath::Pi(),0.5*TMath::Pi(),0,AliHFCorrFitter::kModifNSGausPeriodicityFixBeta);
+    systfitter->AddSystematicMode(AliHFCorrFitSystematics::kMaxVar,kFALSE,0.25*TMath::Pi(),0.5*TMath::Pi(),0,AliHFCorrFitter::kModifNSGausPeriodicityFixBeta);
     //systfitter->AddSystematicMode(AliHFCorrFitSystematics::kBinCount,kFALSE);
     
     //systfitter->CheckBaselineRanges();
@@ -639,7 +648,7 @@ void Systematics_pp_3to99had(Bool_t useReflected){
         return;
     }
  
-    if(saveAwaySide)systfitter->DrawFinalPlots(kTRUE,kTRUE,kTRUE,kTRUE,kTRUE);
+    if(saveAwaySide)systfitter->DrawFinalPlots(kTRUE,kTRUE,kTRUE,kTRUE,kTRUE,kTRUE);
     else systfitter->DrawFinalPlots(); // draws the final trend plots
     systfitter->PrintAllSystematicsOnShell(); // print all the systematics on shell
    // systfitter->DrawFinalPlots(kTRUE,kFALSE,kFALSE,kFALSE,kFALSE);
@@ -652,7 +661,7 @@ void Systematics_pp_3to99had(Bool_t useReflected){
     systfitter->SaveCanvasesDotPdf();
     
   
-    if(saveAwaySide)systfitter->DrawFinalCorrelationPlot(kTRUE,kTRUE,kTRUE,kTRUE,kTRUE); // draws the final correlation plots
+    if(saveAwaySide)systfitter->DrawFinalCorrelationPlot(kTRUE,kTRUE,kTRUE,kTRUE,kTRUE,kTRUE); // draws the final correlation plots
     else systfitter->DrawFinalCorrelationPlot(); // draws the final correlation plots
    // systfitter->CheckHisto(1);
 }
@@ -675,28 +684,29 @@ void Systematics_pp_1to2had(Bool_t useReflected){
     //systfitter->Setv2ForSystematics(0.1, 0.1); // Set v2 values for the systematics (v2had, v2 D)
     systfitter->SetPlotV2SystSeparately(kFALSE); // set true if you want the v2 box to be plotted separately
  //   systfitter->SetFitRange(-0.5*TMath::Pi(),1.5*TMath::Pi()); // set the fit range
-    
+    systfitter->SetBetaDir(betadir); 
+        
     if(useReflected) systfitter->SetFitRange(0,TMath::Pi()); // set the fit range
     if(!useReflected) systfitter->SetFitRange(-0.5*TMath::Pi(),1.5*TMath::Pi()); // set the fit range
     
     systfitter->SetReferenceBaselineEstimationRange(0.25*TMath::Pi(),0.5*TMath::Pi()); // set the default baseline estimation range
     
-    systfitter->AddSystematicMode(AliHFCorrFitSystematics::kTransverse,kTRUE,0.25*TMath::Pi(),0.5*TMath::Pi()); //add systematic method (ktrue if is default to compare to, kfalse if is used to estimated the variations)
-    systfitter->AddSystematicMode(AliHFCorrFitSystematics::kTransverse,kFALSE,0.25*TMath::Pi(),0.375*TMath::Pi());
-    systfitter->AddSystematicMode(AliHFCorrFitSystematics::kTransverse,kFALSE,0.375*TMath::Pi(),0.5*TMath::Pi());
-    systfitter->AddSystematicMode(AliHFCorrFitSystematics::kTransverse,kFALSE,0.25*TMath::Pi(),0.625*TMath::Pi());
-    systfitter->AddSystematicMode(AliHFCorrFitSystematics::kTransverse,kFALSE,0.25*TMath::Pi(),0.5*TMath::Pi(),0,AliHFCorrFitter::kModifNSGausPeriodicity); //Generalized gaussian NS
-    systfitter->AddSystematicMode(AliHFCorrFitSystematics::kTransverse,kFALSE,0.25*TMath::Pi(),0.375*TMath::Pi(),0,AliHFCorrFitter::kModifNSGausPeriodicity);
-    systfitter->AddSystematicMode(AliHFCorrFitSystematics::kTransverse,kFALSE,0.375*TMath::Pi(),0.5*TMath::Pi(),0,AliHFCorrFitter::kModifNSGausPeriodicity);
-    systfitter->AddSystematicMode(AliHFCorrFitSystematics::kTransverse,kFALSE,0.25*TMath::Pi(),0.625*TMath::Pi(),0,AliHFCorrFitter::kModifNSGausPeriodicity);  
-    systfitter->AddSystematicMode(AliHFCorrFitSystematics::kTransverseUppStatUnc,kFALSE,0.25*TMath::Pi(),0.5*TMath::Pi());    
-    systfitter->AddSystematicMode(AliHFCorrFitSystematics::kTransverseLowStatUnc,kFALSE,0.25*TMath::Pi(),0.5*TMath::Pi());  
+    systfitter->AddSystematicMode(AliHFCorrFitSystematics::kTransverse,kTRUE,0.25*TMath::Pi(),0.5*TMath::Pi(),0,AliHFCorrFitter::kModifNSGausPeriodicityFixBeta);  //Generalized gaussian NS //add systematic method (ktrue if is default to compare to, kfalse if is used to estimated the variations)
+    systfitter->AddSystematicMode(AliHFCorrFitSystematics::kTransverse,kFALSE,0.25*TMath::Pi(),0.5*TMath::Pi(),0,AliHFCorrFitter::kModifNSGausPeriodicityConstrainedBeta);
+    systfitter->AddSystematicMode(AliHFCorrFitSystematics::kTransverse,kFALSE,0.25*TMath::Pi(),0.375*TMath::Pi(),0,AliHFCorrFitter::kModifNSGausPeriodicityConstrainedBeta);
+    systfitter->AddSystematicMode(AliHFCorrFitSystematics::kTransverse,kFALSE,0.375*TMath::Pi(),0.5*TMath::Pi(),0,AliHFCorrFitter::kModifNSGausPeriodicityConstrainedBeta);
+    systfitter->AddSystematicMode(AliHFCorrFitSystematics::kTransverse,kFALSE,0.25*TMath::Pi(),0.625*TMath::Pi(),0,AliHFCorrFitter::kModifNSGausPeriodicityConstrainedBeta);
+    systfitter->AddSystematicMode(AliHFCorrFitSystematics::kTransverse,kFALSE,0.25*TMath::Pi(),0.375*TMath::Pi(),0,AliHFCorrFitter::kModifNSGausPeriodicityFixBeta);
+    systfitter->AddSystematicMode(AliHFCorrFitSystematics::kTransverse,kFALSE,0.375*TMath::Pi(),0.5*TMath::Pi(),0,AliHFCorrFitter::kModifNSGausPeriodicityFixBeta);
+    systfitter->AddSystematicMode(AliHFCorrFitSystematics::kTransverse,kFALSE,0.25*TMath::Pi(),0.625*TMath::Pi(),0,AliHFCorrFitter::kModifNSGausPeriodicityFixBeta);    
+    systfitter->AddSystematicMode(AliHFCorrFitSystematics::kTransverseUppStatUnc,kFALSE,0.25*TMath::Pi(),0.5*TMath::Pi(),0,AliHFCorrFitter::kModifNSGausPeriodicityFixBeta);    
+    systfitter->AddSystematicMode(AliHFCorrFitSystematics::kTransverseLowStatUnc,kFALSE,0.25*TMath::Pi(),0.5*TMath::Pi(),0,AliHFCorrFitter::kModifNSGausPeriodicityFixBeta);  
     //    systfitter->AddSystematicMode(AliHFCorrFitSystematics::kNLowest,kFALSE,0.25*TMath::Pi(),0.5*TMath::Pi(),1); 
     //systfitter->AddSystematicMode(AliHFCorrFitSystematics::kFree,kFALSE,0.25*TMath::Pi(),0.5*TMath::Pi(),0);
     // systfitter->AddSystematicMode(AliHFCorrFitSystematics::kLowestPoint,kFALSE);
     // systfitter->AddSystematicMode(AliHFCorrFitSystematics::k2PointsAtPiHalf,kFALSE);
-    systfitter->AddSystematicMode(AliHFCorrFitSystematics::kMinVar,kFALSE);
-    systfitter->AddSystematicMode(AliHFCorrFitSystematics::kMaxVar,kFALSE);
+    systfitter->AddSystematicMode(AliHFCorrFitSystematics::kMinVar,kFALSE,0.25*TMath::Pi(),0.5*TMath::Pi(),0,AliHFCorrFitter::kModifNSGausPeriodicityFixBeta);
+    systfitter->AddSystematicMode(AliHFCorrFitSystematics::kMaxVar,kFALSE,0.25*TMath::Pi(),0.5*TMath::Pi(),0,AliHFCorrFitter::kModifNSGausPeriodicityFixBeta);
     //systfitter->AddSystematicMode(AliHFCorrFitSystematics::kBinCount,kFALSE);
     
     //systfitter->CheckBaselineRanges();
@@ -760,7 +770,7 @@ void Systematics_pp_1to2had(Bool_t useReflected){
         return;
     }
  
-    if(saveAwaySide)systfitter->DrawFinalPlots(kTRUE,kTRUE,kTRUE,kTRUE,kTRUE);
+    if(saveAwaySide)systfitter->DrawFinalPlots(kTRUE,kTRUE,kTRUE,kTRUE,kTRUE,kTRUE);
     else systfitter->DrawFinalPlots(); // draws the final trend plots
     systfitter->PrintAllSystematicsOnShell(); // print all the systematics on shell
    // systfitter->DrawFinalPlots(kTRUE,kFALSE,kFALSE,kFALSE,kFALSE);
@@ -773,7 +783,7 @@ void Systematics_pp_1to2had(Bool_t useReflected){
     systfitter->SaveCanvasesDotPdf();
     
   
-    if(saveAwaySide)systfitter->DrawFinalCorrelationPlot(kTRUE,kTRUE,kTRUE,kTRUE,kTRUE); // draws the final correlation plots
+    if(saveAwaySide)systfitter->DrawFinalCorrelationPlot(kTRUE,kTRUE,kTRUE,kTRUE,kTRUE,kTRUE); // draws the final correlation plots
     else systfitter->DrawFinalCorrelationPlot(); // draws the final correlation plots
    // systfitter->CheckHisto(1);
 }
@@ -796,28 +806,29 @@ void Systematics_pp_2to3had(Bool_t useReflected){
     //systfitter->Setv2ForSystematics(0.1, 0.1); // Set v2 values for the systematics (v2had, v2 D)
     systfitter->SetPlotV2SystSeparately(kFALSE); // set true if you want the v2 box to be plotted separately
  //   systfitter->SetFitRange(-0.5*TMath::Pi(),1.5*TMath::Pi()); // set the fit range
-    
+    systfitter->SetBetaDir(betadir); 
+        
     if(useReflected) systfitter->SetFitRange(0,TMath::Pi()); // set the fit range
     if(!useReflected) systfitter->SetFitRange(-0.5*TMath::Pi(),1.5*TMath::Pi()); // set the fit range
     
     systfitter->SetReferenceBaselineEstimationRange(0.25*TMath::Pi(),0.5*TMath::Pi()); // set the default baseline estimation range
     
-    systfitter->AddSystematicMode(AliHFCorrFitSystematics::kTransverse,kTRUE,0.25*TMath::Pi(),0.5*TMath::Pi()); //add systematic method (ktrue if is default to compare to, kfalse if is used to estimated the variations)
-    systfitter->AddSystematicMode(AliHFCorrFitSystematics::kTransverse,kFALSE,0.25*TMath::Pi(),0.375*TMath::Pi());
-    systfitter->AddSystematicMode(AliHFCorrFitSystematics::kTransverse,kFALSE,0.375*TMath::Pi(),0.5*TMath::Pi());
-    systfitter->AddSystematicMode(AliHFCorrFitSystematics::kTransverse,kFALSE,0.25*TMath::Pi(),0.625*TMath::Pi());
-    systfitter->AddSystematicMode(AliHFCorrFitSystematics::kTransverse,kFALSE,0.25*TMath::Pi(),0.5*TMath::Pi(),0,AliHFCorrFitter::kModifNSGausPeriodicity); //Generalized gaussian NS
-    systfitter->AddSystematicMode(AliHFCorrFitSystematics::kTransverse,kFALSE,0.25*TMath::Pi(),0.375*TMath::Pi(),0,AliHFCorrFitter::kModifNSGausPeriodicity);
-    systfitter->AddSystematicMode(AliHFCorrFitSystematics::kTransverse,kFALSE,0.375*TMath::Pi(),0.5*TMath::Pi(),0,AliHFCorrFitter::kModifNSGausPeriodicity);
-    systfitter->AddSystematicMode(AliHFCorrFitSystematics::kTransverse,kFALSE,0.25*TMath::Pi(),0.625*TMath::Pi(),0,AliHFCorrFitter::kModifNSGausPeriodicity);  
-    systfitter->AddSystematicMode(AliHFCorrFitSystematics::kTransverseUppStatUnc,kFALSE,0.25*TMath::Pi(),0.5*TMath::Pi());    
-    systfitter->AddSystematicMode(AliHFCorrFitSystematics::kTransverseLowStatUnc,kFALSE,0.25*TMath::Pi(),0.5*TMath::Pi());  
+    systfitter->AddSystematicMode(AliHFCorrFitSystematics::kTransverse,kTRUE,0.25*TMath::Pi(),0.5*TMath::Pi(),0,AliHFCorrFitter::kModifNSGausPeriodicityFixBeta);  //Generalized gaussian NS //add systematic method (ktrue if is default to compare to, kfalse if is used to estimated the variations)
+    systfitter->AddSystematicMode(AliHFCorrFitSystematics::kTransverse,kFALSE,0.25*TMath::Pi(),0.5*TMath::Pi(),0,AliHFCorrFitter::kModifNSGausPeriodicityConstrainedBeta);
+    systfitter->AddSystematicMode(AliHFCorrFitSystematics::kTransverse,kFALSE,0.25*TMath::Pi(),0.375*TMath::Pi(),0,AliHFCorrFitter::kModifNSGausPeriodicityConstrainedBeta);
+    systfitter->AddSystematicMode(AliHFCorrFitSystematics::kTransverse,kFALSE,0.375*TMath::Pi(),0.5*TMath::Pi(),0,AliHFCorrFitter::kModifNSGausPeriodicityConstrainedBeta);
+    systfitter->AddSystematicMode(AliHFCorrFitSystematics::kTransverse,kFALSE,0.25*TMath::Pi(),0.625*TMath::Pi(),0,AliHFCorrFitter::kModifNSGausPeriodicityConstrainedBeta);
+    systfitter->AddSystematicMode(AliHFCorrFitSystematics::kTransverse,kFALSE,0.25*TMath::Pi(),0.375*TMath::Pi(),0,AliHFCorrFitter::kModifNSGausPeriodicityFixBeta);
+    systfitter->AddSystematicMode(AliHFCorrFitSystematics::kTransverse,kFALSE,0.375*TMath::Pi(),0.5*TMath::Pi(),0,AliHFCorrFitter::kModifNSGausPeriodicityFixBeta);
+    systfitter->AddSystematicMode(AliHFCorrFitSystematics::kTransverse,kFALSE,0.25*TMath::Pi(),0.625*TMath::Pi(),0,AliHFCorrFitter::kModifNSGausPeriodicityFixBeta);    
+    systfitter->AddSystematicMode(AliHFCorrFitSystematics::kTransverseUppStatUnc,kFALSE,0.25*TMath::Pi(),0.5*TMath::Pi(),0,AliHFCorrFitter::kModifNSGausPeriodicityFixBeta);    
+    systfitter->AddSystematicMode(AliHFCorrFitSystematics::kTransverseLowStatUnc,kFALSE,0.25*TMath::Pi(),0.5*TMath::Pi(),0,AliHFCorrFitter::kModifNSGausPeriodicityFixBeta);  
     //    systfitter->AddSystematicMode(AliHFCorrFitSystematics::kNLowest,kFALSE,0.25*TMath::Pi(),0.5*TMath::Pi(),1); 
     //systfitter->AddSystematicMode(AliHFCorrFitSystematics::kFree,kFALSE,0.25*TMath::Pi(),0.5*TMath::Pi(),0);
     // systfitter->AddSystematicMode(AliHFCorrFitSystematics::kLowestPoint,kFALSE);
     // systfitter->AddSystematicMode(AliHFCorrFitSystematics::k2PointsAtPiHalf,kFALSE);
-    systfitter->AddSystematicMode(AliHFCorrFitSystematics::kMinVar,kFALSE);
-    systfitter->AddSystematicMode(AliHFCorrFitSystematics::kMaxVar,kFALSE);
+    systfitter->AddSystematicMode(AliHFCorrFitSystematics::kMinVar,kFALSE,0.25*TMath::Pi(),0.5*TMath::Pi(),0,AliHFCorrFitter::kModifNSGausPeriodicityFixBeta);
+    systfitter->AddSystematicMode(AliHFCorrFitSystematics::kMaxVar,kFALSE,0.25*TMath::Pi(),0.5*TMath::Pi(),0,AliHFCorrFitter::kModifNSGausPeriodicityFixBeta);
     //systfitter->AddSystematicMode(AliHFCorrFitSystematics::kBinCount,kFALSE);
     
     //systfitter->CheckBaselineRanges();
@@ -881,7 +892,7 @@ void Systematics_pp_2to3had(Bool_t useReflected){
         return;
     }
  
-    if(saveAwaySide)systfitter->DrawFinalPlots(kTRUE,kTRUE,kTRUE,kTRUE,kTRUE);
+    if(saveAwaySide)systfitter->DrawFinalPlots(kTRUE,kTRUE,kTRUE,kTRUE,kTRUE,kTRUE);
     else systfitter->DrawFinalPlots(); // draws the final trend plots
     systfitter->PrintAllSystematicsOnShell(); // print all the systematics on shell
    // systfitter->DrawFinalPlots(kTRUE,kFALSE,kFALSE,kFALSE,kFALSE);
@@ -894,7 +905,7 @@ void Systematics_pp_2to3had(Bool_t useReflected){
     systfitter->SaveCanvasesDotPdf();
     
   
-    if(saveAwaySide)systfitter->DrawFinalCorrelationPlot(kTRUE,kTRUE,kTRUE,kTRUE,kTRUE); // draws the final correlation plots
+    if(saveAwaySide)systfitter->DrawFinalCorrelationPlot(kTRUE,kTRUE,kTRUE,kTRUE,kTRUE,kTRUE); // draws the final correlation plots
     else systfitter->DrawFinalCorrelationPlot(); // draws the final correlation plots
    // systfitter->CheckHisto(1);
 }
@@ -911,7 +922,7 @@ void SystematicsMC_pp_03to99had(Bool_t useReflected,TString strTemplRootName){
     else if(strTemplRootName.Contains("Perugia2011"))mcCase="Perugia2011";
     else if(strTemplRootName.Contains("Perugia0"))mcCase="Perugia0";
     else if(strTemplRootName.Contains("PYTHIA8"))mcCase="PYTHIA8";
-    else if(strTemplRootName.Contains("Herwig"))mcCase="Herwig";
+    else if(strTemplRootName.Contains("HERWIG"))mcCase="HERWIG";
     else if(strTemplRootName.Contains("POWHEG")){
       mcCase="POWHEG";
       strTemplRootName.Remove(0,2);
@@ -945,12 +956,12 @@ void SystematicsMC_pp_03to99had(Bool_t useReflected,TString strTemplRootName){
     
     if(useReflected){
       if(strTemplRootName.Contains("EPOS3")){
-	systfitter->AddSystematicMode(AliHFCorrFitSystematics::kNLowest,kTRUE,0.25*TMath::Pi(),0.5*TMath::Pi(),1);//,AliHFCorrFitter::kConstThreeGausPeriodicity); 
-	systfitter->AddSystematicMode(AliHFCorrFitSystematics::kNLowest,kFALSE,0.25*TMath::Pi(),0.5*TMath::Pi(),2);//,AliHFCorrFitter::kConstThreeGausPeriodicity);
+	systfitter->AddSystematicMode(AliHFCorrFitSystematics::kNLowest,kTRUE,0.25*TMath::Pi(),0.5*TMath::Pi(),1,AliHFCorrFitter::kModifNSGausPeriodicity);//,AliHFCorrFitter::kConstThreeGausPeriodicity); 
+	systfitter->AddSystematicMode(AliHFCorrFitSystematics::kNLowest,kFALSE,0.25*TMath::Pi(),0.5*TMath::Pi(),2,AliHFCorrFitter::kModifNSGausPeriodicity);//,AliHFCorrFitter::kConstThreeGausPeriodicity);
       }
       else{
-	systfitter->AddSystematicMode(AliHFCorrFitSystematics::kNLowest,kTRUE,0.25*TMath::Pi(),0.5*TMath::Pi(),1); 
-	systfitter->AddSystematicMode(AliHFCorrFitSystematics::kNLowest,kFALSE,0.25*TMath::Pi(),0.5*TMath::Pi(),2);
+	systfitter->AddSystematicMode(AliHFCorrFitSystematics::kNLowest,kTRUE,0.25*TMath::Pi(),0.5*TMath::Pi(),1,AliHFCorrFitter::kModifNSGausPeriodicity); 
+	systfitter->AddSystematicMode(AliHFCorrFitSystematics::kNLowest,kFALSE,0.25*TMath::Pi(),0.5*TMath::Pi(),2,AliHFCorrFitter::kModifNSGausPeriodicity);
       }
       //      systfitter->AddSystematicMode(AliHFCorrFitSystematics::kFree,kFALSE,0.25*TMath::Pi(),0.5*TMath::Pi(),0);  
       //      systfitter->AddSystematicMode(AliHFCorrFitSystematics::kNLowest,kFALSE,0.25*TMath::Pi(),0.5*TMath::Pi(),1,AliHFCorrFitter::kConstThreeGausPeriodicity);  
@@ -958,12 +969,12 @@ void SystematicsMC_pp_03to99had(Bool_t useReflected,TString strTemplRootName){
     }
     else {
       if(strTemplRootName.Contains("EPOS3")){
-	    systfitter->AddSystematicMode(AliHFCorrFitSystematics::kNLowest,kTRUE,0.25*TMath::Pi(),0.5*TMath::Pi(),2);//,AliHFCorrFitter::kConstThreeGausPeriodicity); 
-	    systfitter->AddSystematicMode(AliHFCorrFitSystematics::kNLowest,kFALSE,0.25*TMath::Pi(),0.5*TMath::Pi(),4);//,AliHFCorrFitter::kConstThreeGausPeriodicity);
+	    systfitter->AddSystematicMode(AliHFCorrFitSystematics::kNLowest,kTRUE,0.25*TMath::Pi(),0.5*TMath::Pi(),2,AliHFCorrFitter::kModifNSGausPeriodicity);//,AliHFCorrFitter::kConstThreeGausPeriodicity); 
+	    systfitter->AddSystematicMode(AliHFCorrFitSystematics::kNLowest,kFALSE,0.25*TMath::Pi(),0.5*TMath::Pi(),4,AliHFCorrFitter::kModifNSGausPeriodicity);//,AliHFCorrFitter::kConstThreeGausPeriodicity);
       }
       else{
-        systfitter->AddSystematicMode(AliHFCorrFitSystematics::kNLowest,kTRUE,0.25*TMath::Pi(),0.5*TMath::Pi(),2); 
-        systfitter->AddSystematicMode(AliHFCorrFitSystematics::kNLowest,kFALSE,0.25*TMath::Pi(),0.5*TMath::Pi(),4); 
+        systfitter->AddSystematicMode(AliHFCorrFitSystematics::kNLowest,kTRUE,0.25*TMath::Pi(),0.5*TMath::Pi(),2,AliHFCorrFitter::kModifNSGausPeriodicity); 
+        systfitter->AddSystematicMode(AliHFCorrFitSystematics::kNLowest,kFALSE,0.25*TMath::Pi(),0.5*TMath::Pi(),4,AliHFCorrFitter::kModifNSGausPeriodicity); 
     }
       //      systfitter->AddSystematicMode(AliHFCorrFitSystematics::kFree,kFALSE,0.25*TMath::Pi(),0.5*TMath::Pi(),0);  
       //      systfitter->AddSystematicMode(AliHFCorrFitSystematics::kNLowest,kFALSE,0.25*TMath::Pi(),0.5*TMath::Pi(),2,AliHFCorrFitter::kConstThreeGausPeriodicity);  
@@ -1031,7 +1042,7 @@ void SystematicsMC_pp_03to99had(Bool_t useReflected,TString strTemplRootName){
     
     systfitter->PrintAllSystematicsOnShell(); // print all the systematics on shell
    
-    if(saveAwaySide)systfitter->DrawFinalPlots(kTRUE,kTRUE,kTRUE,kTRUE,kTRUE);
+    if(saveAwaySide)systfitter->DrawFinalPlots(kTRUE,kTRUE,kTRUE,kTRUE,kTRUE,kTRUE);
     else systfitter->DrawFinalPlots(); // draws the final trend plots
     
     // systfitter->DrawFinalPlots(kTRUE,kFALSE,kFALSE,kFALSE,kFALSE);
@@ -1044,7 +1055,7 @@ void SystematicsMC_pp_03to99had(Bool_t useReflected,TString strTemplRootName){
     systfitter->SaveCanvasesDotEps();
     systfitter->SaveCanvasesDotPdf();
     
-    if(saveAwaySide)systfitter->DrawFinalCorrelationPlot(kTRUE,kTRUE,kTRUE,kTRUE,kTRUE); // draws the final correlation plots
+    if(saveAwaySide)systfitter->DrawFinalCorrelationPlot(kTRUE,kTRUE,kTRUE,kTRUE,kTRUE,kTRUE); // draws the final correlation plots
     else systfitter->DrawFinalCorrelationPlot(); // draws the final correlation plots
 
     // systfitter->CheckHisto(1);
@@ -1059,7 +1070,7 @@ void SystematicsMC_pp_1to99had(Bool_t useReflected,TString strTemplRootName){
     else if(strTemplRootName.Contains("Perugia2011"))mcCase="Perugia2011";
     else if(strTemplRootName.Contains("Perugia0"))mcCase="Perugia0";
     else if(strTemplRootName.Contains("PYTHIA8"))mcCase="PYTHIA8";
-    else if(strTemplRootName.Contains("Herwig"))mcCase="Herwig";
+    else if(strTemplRootName.Contains("HERWIG"))mcCase="HERWIG";
     else if(strTemplRootName.Contains("POWHEG")){
       mcCase="POWHEG";
       strTemplRootName.Remove(0,2);
@@ -1093,12 +1104,12 @@ void SystematicsMC_pp_1to99had(Bool_t useReflected,TString strTemplRootName){
     
     if(useReflected){
       if(strTemplRootName.Contains("EPOS3")){
-    systfitter->AddSystematicMode(AliHFCorrFitSystematics::kNLowest,kTRUE,0.25*TMath::Pi(),0.5*TMath::Pi(),1);//,AliHFCorrFitter::kConstThreeGausPeriodicity); 
-    systfitter->AddSystematicMode(AliHFCorrFitSystematics::kNLowest,kFALSE,0.25*TMath::Pi(),0.5*TMath::Pi(),2);//,AliHFCorrFitter::kConstThreeGausPeriodicity);
+    systfitter->AddSystematicMode(AliHFCorrFitSystematics::kNLowest,kTRUE,0.25*TMath::Pi(),0.5*TMath::Pi(),1,AliHFCorrFitter::kModifNSGausPeriodicity);//,AliHFCorrFitter::kConstThreeGausPeriodicity); 
+    systfitter->AddSystematicMode(AliHFCorrFitSystematics::kNLowest,kFALSE,0.25*TMath::Pi(),0.5*TMath::Pi(),2,AliHFCorrFitter::kModifNSGausPeriodicity);//,AliHFCorrFitter::kConstThreeGausPeriodicity);
       }
       else{
-    systfitter->AddSystematicMode(AliHFCorrFitSystematics::kNLowest,kTRUE,0.25*TMath::Pi(),0.5*TMath::Pi(),1); 
-    systfitter->AddSystematicMode(AliHFCorrFitSystematics::kNLowest,kFALSE,0.25*TMath::Pi(),0.5*TMath::Pi(),2);
+    systfitter->AddSystematicMode(AliHFCorrFitSystematics::kNLowest,kTRUE,0.25*TMath::Pi(),0.5*TMath::Pi(),1,AliHFCorrFitter::kModifNSGausPeriodicity); 
+    systfitter->AddSystematicMode(AliHFCorrFitSystematics::kNLowest,kFALSE,0.25*TMath::Pi(),0.5*TMath::Pi(),2,AliHFCorrFitter::kModifNSGausPeriodicity);
       }
       //      systfitter->AddSystematicMode(AliHFCorrFitSystematics::kFree,kFALSE,0.25*TMath::Pi(),0.5*TMath::Pi(),0);  
       //      systfitter->AddSystematicMode(AliHFCorrFitSystematics::kNLowest,kFALSE,0.25*TMath::Pi(),0.5*TMath::Pi(),1,AliHFCorrFitter::kConstThreeGausPeriodicity);  
@@ -1106,12 +1117,12 @@ void SystematicsMC_pp_1to99had(Bool_t useReflected,TString strTemplRootName){
     }
     else {
       if(strTemplRootName.Contains("EPOS3")){
-        systfitter->AddSystematicMode(AliHFCorrFitSystematics::kNLowest,kTRUE,0.25*TMath::Pi(),0.5*TMath::Pi(),2);//,AliHFCorrFitter::kConstThreeGausPeriodicity); 
-        systfitter->AddSystematicMode(AliHFCorrFitSystematics::kNLowest,kFALSE,0.25*TMath::Pi(),0.5*TMath::Pi(),4);//,AliHFCorrFitter::kConstThreeGausPeriodicity);
+        systfitter->AddSystematicMode(AliHFCorrFitSystematics::kNLowest,kTRUE,0.25*TMath::Pi(),0.5*TMath::Pi(),2,AliHFCorrFitter::kModifNSGausPeriodicity);//,AliHFCorrFitter::kConstThreeGausPeriodicity); 
+        systfitter->AddSystematicMode(AliHFCorrFitSystematics::kNLowest,kFALSE,0.25*TMath::Pi(),0.5*TMath::Pi(),4,AliHFCorrFitter::kModifNSGausPeriodicity);//,AliHFCorrFitter::kConstThreeGausPeriodicity);
       }
       else{
-        systfitter->AddSystematicMode(AliHFCorrFitSystematics::kNLowest,kTRUE,0.25*TMath::Pi(),0.5*TMath::Pi(),2); 
-        systfitter->AddSystematicMode(AliHFCorrFitSystematics::kNLowest,kFALSE,0.25*TMath::Pi(),0.5*TMath::Pi(),4); 
+        systfitter->AddSystematicMode(AliHFCorrFitSystematics::kNLowest,kTRUE,0.25*TMath::Pi(),0.5*TMath::Pi(),2,AliHFCorrFitter::kModifNSGausPeriodicity); 
+        systfitter->AddSystematicMode(AliHFCorrFitSystematics::kNLowest,kFALSE,0.25*TMath::Pi(),0.5*TMath::Pi(),4,AliHFCorrFitter::kModifNSGausPeriodicity); 
     }
       //      systfitter->AddSystematicMode(AliHFCorrFitSystematics::kFree,kFALSE,0.25*TMath::Pi(),0.5*TMath::Pi(),0);  
       //      systfitter->AddSystematicMode(AliHFCorrFitSystematics::kNLowest,kFALSE,0.25*TMath::Pi(),0.5*TMath::Pi(),2,AliHFCorrFitter::kConstThreeGausPeriodicity);  
@@ -1179,7 +1190,7 @@ void SystematicsMC_pp_1to99had(Bool_t useReflected,TString strTemplRootName){
     
     systfitter->PrintAllSystematicsOnShell(); // print all the systematics on shell
    
-    if(saveAwaySide)systfitter->DrawFinalPlots(kTRUE,kTRUE,kTRUE,kTRUE,kTRUE);
+    if(saveAwaySide)systfitter->DrawFinalPlots(kTRUE,kTRUE,kTRUE,kTRUE,kTRUE,kTRUE);
     else systfitter->DrawFinalPlots(); // draws the final trend plots
     
     // systfitter->DrawFinalPlots(kTRUE,kFALSE,kFALSE,kFALSE,kFALSE);
@@ -1192,7 +1203,7 @@ void SystematicsMC_pp_1to99had(Bool_t useReflected,TString strTemplRootName){
     systfitter->SaveCanvasesDotEps();
     systfitter->SaveCanvasesDotPdf();
     
-    if(saveAwaySide)systfitter->DrawFinalCorrelationPlot(kTRUE,kTRUE,kTRUE,kTRUE,kTRUE); // draws the final correlation plots
+    if(saveAwaySide)systfitter->DrawFinalCorrelationPlot(kTRUE,kTRUE,kTRUE,kTRUE,kTRUE,kTRUE); // draws the final correlation plots
     else systfitter->DrawFinalCorrelationPlot(); // draws the final correlation plots
 
     // systfitter->CheckHisto(1);
@@ -1207,7 +1218,7 @@ void SystematicsMC_pp_03to1had(Bool_t useReflected,TString strTemplRootName){
     else if(strTemplRootName.Contains("Perugia2011"))mcCase="Perugia2011";
     else if(strTemplRootName.Contains("Perugia0"))mcCase="Perugia0";
     else if(strTemplRootName.Contains("PYTHIA8"))mcCase="PYTHIA8";
-    else if(strTemplRootName.Contains("Herwig"))mcCase="Herwig";
+    else if(strTemplRootName.Contains("HERWIG"))mcCase="HERWIG";
     else if(strTemplRootName.Contains("POWHEG")){
       mcCase="POWHEG";
       strTemplRootName.Remove(0,2);
@@ -1241,12 +1252,12 @@ void SystematicsMC_pp_03to1had(Bool_t useReflected,TString strTemplRootName){
     
     if(useReflected){
       if(strTemplRootName.Contains("EPOS3")){
-    systfitter->AddSystematicMode(AliHFCorrFitSystematics::kNLowest,kTRUE,0.25*TMath::Pi(),0.5*TMath::Pi(),1);//,AliHFCorrFitter::kConstThreeGausPeriodicity); 
-    systfitter->AddSystematicMode(AliHFCorrFitSystematics::kNLowest,kFALSE,0.25*TMath::Pi(),0.5*TMath::Pi(),2);//,AliHFCorrFitter::kConstThreeGausPeriodicity);
+    systfitter->AddSystematicMode(AliHFCorrFitSystematics::kNLowest,kTRUE,0.25*TMath::Pi(),0.5*TMath::Pi(),1,AliHFCorrFitter::kModifNSGausPeriodicity);//,AliHFCorrFitter::kConstThreeGausPeriodicity); 
+    systfitter->AddSystematicMode(AliHFCorrFitSystematics::kNLowest,kFALSE,0.25*TMath::Pi(),0.5*TMath::Pi(),2,AliHFCorrFitter::kModifNSGausPeriodicity);//,AliHFCorrFitter::kConstThreeGausPeriodicity);
       }
       else{
-    systfitter->AddSystematicMode(AliHFCorrFitSystematics::kNLowest,kTRUE,0.25*TMath::Pi(),0.5*TMath::Pi(),1); 
-    systfitter->AddSystematicMode(AliHFCorrFitSystematics::kNLowest,kFALSE,0.25*TMath::Pi(),0.5*TMath::Pi(),2);
+    systfitter->AddSystematicMode(AliHFCorrFitSystematics::kNLowest,kTRUE,0.25*TMath::Pi(),0.5*TMath::Pi(),1,AliHFCorrFitter::kModifNSGausPeriodicity); 
+    systfitter->AddSystematicMode(AliHFCorrFitSystematics::kNLowest,kFALSE,0.25*TMath::Pi(),0.5*TMath::Pi(),2,AliHFCorrFitter::kModifNSGausPeriodicity);
       }
       //      systfitter->AddSystematicMode(AliHFCorrFitSystematics::kFree,kFALSE,0.25*TMath::Pi(),0.5*TMath::Pi(),0);  
       //      systfitter->AddSystematicMode(AliHFCorrFitSystematics::kNLowest,kFALSE,0.25*TMath::Pi(),0.5*TMath::Pi(),1,AliHFCorrFitter::kConstThreeGausPeriodicity);  
@@ -1254,12 +1265,12 @@ void SystematicsMC_pp_03to1had(Bool_t useReflected,TString strTemplRootName){
     }
     else {
       if(strTemplRootName.Contains("EPOS3")){
-        systfitter->AddSystematicMode(AliHFCorrFitSystematics::kNLowest,kTRUE,0.25*TMath::Pi(),0.5*TMath::Pi(),2);//,AliHFCorrFitter::kConstThreeGausPeriodicity); 
-        systfitter->AddSystematicMode(AliHFCorrFitSystematics::kNLowest,kFALSE,0.25*TMath::Pi(),0.5*TMath::Pi(),4);//,AliHFCorrFitter::kConstThreeGausPeriodicity);
+        systfitter->AddSystematicMode(AliHFCorrFitSystematics::kNLowest,kTRUE,0.25*TMath::Pi(),0.5*TMath::Pi(),2,AliHFCorrFitter::kModifNSGausPeriodicity);//,AliHFCorrFitter::kConstThreeGausPeriodicity); 
+        systfitter->AddSystematicMode(AliHFCorrFitSystematics::kNLowest,kFALSE,0.25*TMath::Pi(),0.5*TMath::Pi(),4,AliHFCorrFitter::kModifNSGausPeriodicity);//,AliHFCorrFitter::kConstThreeGausPeriodicity);
       }
       else{
-        systfitter->AddSystematicMode(AliHFCorrFitSystematics::kNLowest,kTRUE,0.25*TMath::Pi(),0.5*TMath::Pi(),2); 
-        systfitter->AddSystematicMode(AliHFCorrFitSystematics::kNLowest,kFALSE,0.25*TMath::Pi(),0.5*TMath::Pi(),4); 
+        systfitter->AddSystematicMode(AliHFCorrFitSystematics::kNLowest,kTRUE,0.25*TMath::Pi(),0.5*TMath::Pi(),2,AliHFCorrFitter::kModifNSGausPeriodicity); 
+        systfitter->AddSystematicMode(AliHFCorrFitSystematics::kNLowest,kFALSE,0.25*TMath::Pi(),0.5*TMath::Pi(),4,AliHFCorrFitter::kModifNSGausPeriodicity); 
     }
       //      systfitter->AddSystematicMode(AliHFCorrFitSystematics::kFree,kFALSE,0.25*TMath::Pi(),0.5*TMath::Pi(),0);  
       //      systfitter->AddSystematicMode(AliHFCorrFitSystematics::kNLowest,kFALSE,0.25*TMath::Pi(),0.5*TMath::Pi(),2,AliHFCorrFitter::kConstThreeGausPeriodicity);  
@@ -1327,7 +1338,7 @@ void SystematicsMC_pp_03to1had(Bool_t useReflected,TString strTemplRootName){
     
     systfitter->PrintAllSystematicsOnShell(); // print all the systematics on shell
    
-    if(saveAwaySide)systfitter->DrawFinalPlots(kTRUE,kTRUE,kTRUE,kTRUE,kTRUE);
+    if(saveAwaySide)systfitter->DrawFinalPlots(kTRUE,kTRUE,kTRUE,kTRUE,kTRUE,kTRUE);
     else systfitter->DrawFinalPlots(); // draws the final trend plots
     
     // systfitter->DrawFinalPlots(kTRUE,kFALSE,kFALSE,kFALSE,kFALSE);
@@ -1340,7 +1351,7 @@ void SystematicsMC_pp_03to1had(Bool_t useReflected,TString strTemplRootName){
     systfitter->SaveCanvasesDotEps();
     systfitter->SaveCanvasesDotPdf();
     
-    if(saveAwaySide)systfitter->DrawFinalCorrelationPlot(kTRUE,kTRUE,kTRUE,kTRUE,kTRUE); // draws the final correlation plots
+    if(saveAwaySide)systfitter->DrawFinalCorrelationPlot(kTRUE,kTRUE,kTRUE,kTRUE,kTRUE,kTRUE); // draws the final correlation plots
     else systfitter->DrawFinalCorrelationPlot(); // draws the final correlation plots
 
     // systfitter->CheckHisto(1);
@@ -1355,7 +1366,7 @@ void SystematicsMC_pp_2to99had(Bool_t useReflected,TString strTemplRootName){
     else if(strTemplRootName.Contains("Perugia2011"))mcCase="Perugia2011";
     else if(strTemplRootName.Contains("Perugia0"))mcCase="Perugia0";
     else if(strTemplRootName.Contains("PYTHIA8"))mcCase="PYTHIA8";
-    else if(strTemplRootName.Contains("Herwig"))mcCase="Herwig";
+    else if(strTemplRootName.Contains("HERWIG"))mcCase="HERWIG";
     else if(strTemplRootName.Contains("POWHEG")){
       mcCase="POWHEG";
       strTemplRootName.Remove(0,2);
@@ -1389,12 +1400,12 @@ void SystematicsMC_pp_2to99had(Bool_t useReflected,TString strTemplRootName){
     
     if(useReflected){
       if(strTemplRootName.Contains("EPOS3")){
-    systfitter->AddSystematicMode(AliHFCorrFitSystematics::kNLowest,kTRUE,0.25*TMath::Pi(),0.5*TMath::Pi(),1);//,AliHFCorrFitter::kConstThreeGausPeriodicity); 
-    systfitter->AddSystematicMode(AliHFCorrFitSystematics::kNLowest,kFALSE,0.25*TMath::Pi(),0.5*TMath::Pi(),2);//,AliHFCorrFitter::kConstThreeGausPeriodicity);
+    systfitter->AddSystematicMode(AliHFCorrFitSystematics::kNLowest,kTRUE,0.25*TMath::Pi(),0.5*TMath::Pi(),1,AliHFCorrFitter::kModifNSGausPeriodicity);//,AliHFCorrFitter::kConstThreeGausPeriodicity); 
+    systfitter->AddSystematicMode(AliHFCorrFitSystematics::kNLowest,kFALSE,0.25*TMath::Pi(),0.5*TMath::Pi(),2,AliHFCorrFitter::kModifNSGausPeriodicity);//,AliHFCorrFitter::kConstThreeGausPeriodicity);
       }
       else{
-    systfitter->AddSystematicMode(AliHFCorrFitSystematics::kNLowest,kTRUE,0.25*TMath::Pi(),0.5*TMath::Pi(),1); 
-    systfitter->AddSystematicMode(AliHFCorrFitSystematics::kNLowest,kFALSE,0.25*TMath::Pi(),0.5*TMath::Pi(),2);
+    systfitter->AddSystematicMode(AliHFCorrFitSystematics::kNLowest,kTRUE,0.25*TMath::Pi(),0.5*TMath::Pi(),1,AliHFCorrFitter::kModifNSGausPeriodicity); 
+    systfitter->AddSystematicMode(AliHFCorrFitSystematics::kNLowest,kFALSE,0.25*TMath::Pi(),0.5*TMath::Pi(),2,AliHFCorrFitter::kModifNSGausPeriodicity);
       }
       //      systfitter->AddSystematicMode(AliHFCorrFitSystematics::kFree,kFALSE,0.25*TMath::Pi(),0.5*TMath::Pi(),0);  
       //      systfitter->AddSystematicMode(AliHFCorrFitSystematics::kNLowest,kFALSE,0.25*TMath::Pi(),0.5*TMath::Pi(),1,AliHFCorrFitter::kConstThreeGausPeriodicity);  
@@ -1402,12 +1413,12 @@ void SystematicsMC_pp_2to99had(Bool_t useReflected,TString strTemplRootName){
     }
     else {
       if(strTemplRootName.Contains("EPOS3")){
-        systfitter->AddSystematicMode(AliHFCorrFitSystematics::kNLowest,kTRUE,0.25*TMath::Pi(),0.5*TMath::Pi(),2);//,AliHFCorrFitter::kConstThreeGausPeriodicity); 
-        systfitter->AddSystematicMode(AliHFCorrFitSystematics::kNLowest,kFALSE,0.25*TMath::Pi(),0.5*TMath::Pi(),4);//,AliHFCorrFitter::kConstThreeGausPeriodicity);
+        systfitter->AddSystematicMode(AliHFCorrFitSystematics::kNLowest,kTRUE,0.25*TMath::Pi(),0.5*TMath::Pi(),2,AliHFCorrFitter::kModifNSGausPeriodicity);//,AliHFCorrFitter::kConstThreeGausPeriodicity); 
+        systfitter->AddSystematicMode(AliHFCorrFitSystematics::kNLowest,kFALSE,0.25*TMath::Pi(),0.5*TMath::Pi(),4,AliHFCorrFitter::kModifNSGausPeriodicity);//,AliHFCorrFitter::kConstThreeGausPeriodicity);
       }
       else{
-        systfitter->AddSystematicMode(AliHFCorrFitSystematics::kNLowest,kTRUE,0.25*TMath::Pi(),0.5*TMath::Pi(),2); 
-        systfitter->AddSystematicMode(AliHFCorrFitSystematics::kNLowest,kFALSE,0.25*TMath::Pi(),0.5*TMath::Pi(),4); 
+        systfitter->AddSystematicMode(AliHFCorrFitSystematics::kNLowest,kTRUE,0.25*TMath::Pi(),0.5*TMath::Pi(),2,AliHFCorrFitter::kModifNSGausPeriodicity); 
+        systfitter->AddSystematicMode(AliHFCorrFitSystematics::kNLowest,kFALSE,0.25*TMath::Pi(),0.5*TMath::Pi(),4,AliHFCorrFitter::kModifNSGausPeriodicity); 
     }
       //      systfitter->AddSystematicMode(AliHFCorrFitSystematics::kFree,kFALSE,0.25*TMath::Pi(),0.5*TMath::Pi(),0);  
       //      systfitter->AddSystematicMode(AliHFCorrFitSystematics::kNLowest,kFALSE,0.25*TMath::Pi(),0.5*TMath::Pi(),2,AliHFCorrFitter::kConstThreeGausPeriodicity);  
@@ -1475,7 +1486,7 @@ void SystematicsMC_pp_2to99had(Bool_t useReflected,TString strTemplRootName){
     
     systfitter->PrintAllSystematicsOnShell(); // print all the systematics on shell
    
-    if(saveAwaySide)systfitter->DrawFinalPlots(kTRUE,kTRUE,kTRUE,kTRUE,kTRUE);
+    if(saveAwaySide)systfitter->DrawFinalPlots(kTRUE,kTRUE,kTRUE,kTRUE,kTRUE,kTRUE);
     else systfitter->DrawFinalPlots(); // draws the final trend plots
     
     // systfitter->DrawFinalPlots(kTRUE,kFALSE,kFALSE,kFALSE,kFALSE);
@@ -1488,7 +1499,7 @@ void SystematicsMC_pp_2to99had(Bool_t useReflected,TString strTemplRootName){
     systfitter->SaveCanvasesDotEps();
     systfitter->SaveCanvasesDotPdf();
     
-    if(saveAwaySide)systfitter->DrawFinalCorrelationPlot(kTRUE,kTRUE,kTRUE,kTRUE,kTRUE); // draws the final correlation plots
+    if(saveAwaySide)systfitter->DrawFinalCorrelationPlot(kTRUE,kTRUE,kTRUE,kTRUE,kTRUE,kTRUE); // draws the final correlation plots
     else systfitter->DrawFinalCorrelationPlot(); // draws the final correlation plots
 
     // systfitter->CheckHisto(1);
@@ -1503,7 +1514,7 @@ void SystematicsMC_pp_3to99had(Bool_t useReflected,TString strTemplRootName){
     else if(strTemplRootName.Contains("Perugia2011"))mcCase="Perugia2011";
     else if(strTemplRootName.Contains("Perugia0"))mcCase="Perugia0";
     else if(strTemplRootName.Contains("PYTHIA8"))mcCase="PYTHIA8";
-    else if(strTemplRootName.Contains("Herwig"))mcCase="Herwig";
+    else if(strTemplRootName.Contains("HERWIG"))mcCase="HERWIG";
     else if(strTemplRootName.Contains("POWHEG")){
       mcCase="POWHEG";
       strTemplRootName.Remove(0,2);
@@ -1537,12 +1548,12 @@ void SystematicsMC_pp_3to99had(Bool_t useReflected,TString strTemplRootName){
     
     if(useReflected){
       if(strTemplRootName.Contains("EPOS3")){
-    systfitter->AddSystematicMode(AliHFCorrFitSystematics::kNLowest,kTRUE,0.25*TMath::Pi(),0.5*TMath::Pi(),1);//,AliHFCorrFitter::kConstThreeGausPeriodicity); 
-    systfitter->AddSystematicMode(AliHFCorrFitSystematics::kNLowest,kFALSE,0.25*TMath::Pi(),0.5*TMath::Pi(),2);//,AliHFCorrFitter::kConstThreeGausPeriodicity);
+    systfitter->AddSystematicMode(AliHFCorrFitSystematics::kNLowest,kTRUE,0.25*TMath::Pi(),0.5*TMath::Pi(),1,AliHFCorrFitter::kModifNSGausPeriodicity);//,AliHFCorrFitter::kConstThreeGausPeriodicity); 
+    systfitter->AddSystematicMode(AliHFCorrFitSystematics::kNLowest,kFALSE,0.25*TMath::Pi(),0.5*TMath::Pi(),2,AliHFCorrFitter::kModifNSGausPeriodicity);//,AliHFCorrFitter::kConstThreeGausPeriodicity);
       }
       else{
-    systfitter->AddSystematicMode(AliHFCorrFitSystematics::kNLowest,kTRUE,0.25*TMath::Pi(),0.5*TMath::Pi(),1); 
-    systfitter->AddSystematicMode(AliHFCorrFitSystematics::kNLowest,kFALSE,0.25*TMath::Pi(),0.5*TMath::Pi(),2);
+    systfitter->AddSystematicMode(AliHFCorrFitSystematics::kNLowest,kTRUE,0.25*TMath::Pi(),0.5*TMath::Pi(),1,AliHFCorrFitter::kModifNSGausPeriodicity1); 
+    systfitter->AddSystematicMode(AliHFCorrFitSystematics::kNLowest,kFALSE,0.25*TMath::Pi(),0.5*TMath::Pi(),2,AliHFCorrFitter::kModifNSGausPeriodicity);
       }
       //      systfitter->AddSystematicMode(AliHFCorrFitSystematics::kFree,kFALSE,0.25*TMath::Pi(),0.5*TMath::Pi(),0);  
       //      systfitter->AddSystematicMode(AliHFCorrFitSystematics::kNLowest,kFALSE,0.25*TMath::Pi(),0.5*TMath::Pi(),1,AliHFCorrFitter::kConstThreeGausPeriodicity);  
@@ -1550,12 +1561,12 @@ void SystematicsMC_pp_3to99had(Bool_t useReflected,TString strTemplRootName){
     }
     else {
       if(strTemplRootName.Contains("EPOS3")){
-        systfitter->AddSystematicMode(AliHFCorrFitSystematics::kNLowest,kTRUE,0.25*TMath::Pi(),0.5*TMath::Pi(),2);//,AliHFCorrFitter::kConstThreeGausPeriodicity); 
-        systfitter->AddSystematicMode(AliHFCorrFitSystematics::kNLowest,kFALSE,0.25*TMath::Pi(),0.5*TMath::Pi(),4);//,AliHFCorrFitter::kConstThreeGausPeriodicity);
+        systfitter->AddSystematicMode(AliHFCorrFitSystematics::kNLowest,kTRUE,0.25*TMath::Pi(),0.5*TMath::Pi(),2,AliHFCorrFitter::kModifNSGausPeriodicity);//,AliHFCorrFitter::kConstThreeGausPeriodicity); 
+        systfitter->AddSystematicMode(AliHFCorrFitSystematics::kNLowest,kFALSE,0.25*TMath::Pi(),0.5*TMath::Pi(),4,AliHFCorrFitter::kModifNSGausPeriodicity);//,AliHFCorrFitter::kConstThreeGausPeriodicity);
       }
       else{
-        systfitter->AddSystematicMode(AliHFCorrFitSystematics::kNLowest,kTRUE,0.25*TMath::Pi(),0.5*TMath::Pi(),2); 
-        systfitter->AddSystematicMode(AliHFCorrFitSystematics::kNLowest,kFALSE,0.25*TMath::Pi(),0.5*TMath::Pi(),4); 
+        systfitter->AddSystematicMode(AliHFCorrFitSystematics::kNLowest,kTRUE,0.25*TMath::Pi(),0.5*TMath::Pi(),2,AliHFCorrFitter::kModifNSGausPeriodicity); 
+        systfitter->AddSystematicMode(AliHFCorrFitSystematics::kNLowest,kFALSE,0.25*TMath::Pi(),0.5*TMath::Pi(),4,AliHFCorrFitter::kModifNSGausPeriodicity); 
     }
       //      systfitter->AddSystematicMode(AliHFCorrFitSystematics::kFree,kFALSE,0.25*TMath::Pi(),0.5*TMath::Pi(),0);  
       //      systfitter->AddSystematicMode(AliHFCorrFitSystematics::kNLowest,kFALSE,0.25*TMath::Pi(),0.5*TMath::Pi(),2,AliHFCorrFitter::kConstThreeGausPeriodicity);  
@@ -1623,7 +1634,7 @@ void SystematicsMC_pp_3to99had(Bool_t useReflected,TString strTemplRootName){
     
     systfitter->PrintAllSystematicsOnShell(); // print all the systematics on shell
    
-    if(saveAwaySide)systfitter->DrawFinalPlots(kTRUE,kTRUE,kTRUE,kTRUE,kTRUE);
+    if(saveAwaySide)systfitter->DrawFinalPlots(kTRUE,kTRUE,kTRUE,kTRUE,kTRUE,kTRUE);
     else systfitter->DrawFinalPlots(); // draws the final trend plots
     
     // systfitter->DrawFinalPlots(kTRUE,kFALSE,kFALSE,kFALSE,kFALSE);
@@ -1636,7 +1647,7 @@ void SystematicsMC_pp_3to99had(Bool_t useReflected,TString strTemplRootName){
     systfitter->SaveCanvasesDotEps();
     systfitter->SaveCanvasesDotPdf();
     
-    if(saveAwaySide)systfitter->DrawFinalCorrelationPlot(kTRUE,kTRUE,kTRUE,kTRUE,kTRUE); // draws the final correlation plots
+    if(saveAwaySide)systfitter->DrawFinalCorrelationPlot(kTRUE,kTRUE,kTRUE,kTRUE,kTRUE,kTRUE); // draws the final correlation plots
     else systfitter->DrawFinalCorrelationPlot(); // draws the final correlation plots
 
     // systfitter->CheckHisto(1);
@@ -1651,7 +1662,7 @@ void SystematicsMC_pp_1to2had(Bool_t useReflected,TString strTemplRootName){
     else if(strTemplRootName.Contains("Perugia2011"))mcCase="Perugia2011";
     else if(strTemplRootName.Contains("Perugia0"))mcCase="Perugia0";
     else if(strTemplRootName.Contains("PYTHIA8"))mcCase="PYTHIA8";
-    else if(strTemplRootName.Contains("Herwig"))mcCase="Herwig";
+    else if(strTemplRootName.Contains("HERWIG"))mcCase="HERWIG";
     else if(strTemplRootName.Contains("POWHEG")){
       mcCase="POWHEG";
       strTemplRootName.Remove(0,2);
@@ -1685,12 +1696,12 @@ void SystematicsMC_pp_1to2had(Bool_t useReflected,TString strTemplRootName){
     
     if(useReflected){
       if(strTemplRootName.Contains("EPOS3")){
-    systfitter->AddSystematicMode(AliHFCorrFitSystematics::kNLowest,kTRUE,0.25*TMath::Pi(),0.5*TMath::Pi(),1);//,AliHFCorrFitter::kConstThreeGausPeriodicity); 
-    systfitter->AddSystematicMode(AliHFCorrFitSystematics::kNLowest,kFALSE,0.25*TMath::Pi(),0.5*TMath::Pi(),2);//,AliHFCorrFitter::kConstThreeGausPeriodicity);
+    systfitter->AddSystematicMode(AliHFCorrFitSystematics::kNLowest,kTRUE,0.25*TMath::Pi(),0.5*TMath::Pi(),1,AliHFCorrFitter::kModifNSGausPeriodicity);//,AliHFCorrFitter::kConstThreeGausPeriodicity); 
+    systfitter->AddSystematicMode(AliHFCorrFitSystematics::kNLowest,kFALSE,0.25*TMath::Pi(),0.5*TMath::Pi(),2,AliHFCorrFitter::kModifNSGausPeriodicity);//,AliHFCorrFitter::kConstThreeGausPeriodicity);
       }
       else{
-    systfitter->AddSystematicMode(AliHFCorrFitSystematics::kNLowest,kTRUE,0.25*TMath::Pi(),0.5*TMath::Pi(),1); 
-    systfitter->AddSystematicMode(AliHFCorrFitSystematics::kNLowest,kFALSE,0.25*TMath::Pi(),0.5*TMath::Pi(),2);
+    systfitter->AddSystematicMode(AliHFCorrFitSystematics::kNLowest,kTRUE,0.25*TMath::Pi(),0.5*TMath::Pi(),1,AliHFCorrFitter::kModifNSGausPeriodicity); 
+    systfitter->AddSystematicMode(AliHFCorrFitSystematics::kNLowest,kFALSE,0.25*TMath::Pi(),0.5*TMath::Pi(),2,AliHFCorrFitter::kModifNSGausPeriodicity);
       }
       //      systfitter->AddSystematicMode(AliHFCorrFitSystematics::kFree,kFALSE,0.25*TMath::Pi(),0.5*TMath::Pi(),0);  
       //      systfitter->AddSystematicMode(AliHFCorrFitSystematics::kNLowest,kFALSE,0.25*TMath::Pi(),0.5*TMath::Pi(),1,AliHFCorrFitter::kConstThreeGausPeriodicity);  
@@ -1698,12 +1709,12 @@ void SystematicsMC_pp_1to2had(Bool_t useReflected,TString strTemplRootName){
     }
     else {
       if(strTemplRootName.Contains("EPOS3")){
-        systfitter->AddSystematicMode(AliHFCorrFitSystematics::kNLowest,kTRUE,0.25*TMath::Pi(),0.5*TMath::Pi(),2);//,AliHFCorrFitter::kConstThreeGausPeriodicity); 
-        systfitter->AddSystematicMode(AliHFCorrFitSystematics::kNLowest,kFALSE,0.25*TMath::Pi(),0.5*TMath::Pi(),4);//,AliHFCorrFitter::kConstThreeGausPeriodicity);
+        systfitter->AddSystematicMode(AliHFCorrFitSystematics::kNLowest,kTRUE,0.25*TMath::Pi(),0.5*TMath::Pi(),2,AliHFCorrFitter::kModifNSGausPeriodicity);//,AliHFCorrFitter::kConstThreeGausPeriodicity); 
+        systfitter->AddSystematicMode(AliHFCorrFitSystematics::kNLowest,kFALSE,0.25*TMath::Pi(),0.5*TMath::Pi(),4,AliHFCorrFitter::kModifNSGausPeriodicity);//,AliHFCorrFitter::kConstThreeGausPeriodicity);
       }
       else{
-        systfitter->AddSystematicMode(AliHFCorrFitSystematics::kNLowest,kTRUE,0.25*TMath::Pi(),0.5*TMath::Pi(),2); 
-        systfitter->AddSystematicMode(AliHFCorrFitSystematics::kNLowest,kFALSE,0.25*TMath::Pi(),0.5*TMath::Pi(),4); 
+        systfitter->AddSystematicMode(AliHFCorrFitSystematics::kNLowest,kTRUE,0.25*TMath::Pi(),0.5*TMath::Pi(),2,AliHFCorrFitter::kModifNSGausPeriodicity); 
+        systfitter->AddSystematicMode(AliHFCorrFitSystematics::kNLowest,kFALSE,0.25*TMath::Pi(),0.5*TMath::Pi(),4,AliHFCorrFitter::kModifNSGausPeriodicity); 
     }
       //      systfitter->AddSystematicMode(AliHFCorrFitSystematics::kFree,kFALSE,0.25*TMath::Pi(),0.5*TMath::Pi(),0);  
       //      systfitter->AddSystematicMode(AliHFCorrFitSystematics::kNLowest,kFALSE,0.25*TMath::Pi(),0.5*TMath::Pi(),2,AliHFCorrFitter::kConstThreeGausPeriodicity);  
@@ -1771,7 +1782,7 @@ void SystematicsMC_pp_1to2had(Bool_t useReflected,TString strTemplRootName){
     
     systfitter->PrintAllSystematicsOnShell(); // print all the systematics on shell
    
-    if(saveAwaySide)systfitter->DrawFinalPlots(kTRUE,kTRUE,kTRUE,kTRUE,kTRUE);
+    if(saveAwaySide)systfitter->DrawFinalPlots(kTRUE,kTRUE,kTRUE,kTRUE,kTRUE,kTRUE);
     else systfitter->DrawFinalPlots(); // draws the final trend plots
     
     // systfitter->DrawFinalPlots(kTRUE,kFALSE,kFALSE,kFALSE,kFALSE);
@@ -1784,7 +1795,7 @@ void SystematicsMC_pp_1to2had(Bool_t useReflected,TString strTemplRootName){
     systfitter->SaveCanvasesDotEps();
     systfitter->SaveCanvasesDotPdf();
     
-    if(saveAwaySide)systfitter->DrawFinalCorrelationPlot(kTRUE,kTRUE,kTRUE,kTRUE,kTRUE); // draws the final correlation plots
+    if(saveAwaySide)systfitter->DrawFinalCorrelationPlot(kTRUE,kTRUE,kTRUE,kTRUE,kTRUE,kTRUE); // draws the final correlation plots
     else systfitter->DrawFinalCorrelationPlot(); // draws the final correlation plots
 
     // systfitter->CheckHisto(1);
@@ -1799,7 +1810,7 @@ void SystematicsMC_pp_2to3had(Bool_t useReflected,TString strTemplRootName){
     else if(strTemplRootName.Contains("Perugia2011"))mcCase="Perugia2011";
     else if(strTemplRootName.Contains("Perugia0"))mcCase="Perugia0";
     else if(strTemplRootName.Contains("PYTHIA8"))mcCase="PYTHIA8";
-    else if(strTemplRootName.Contains("Herwig"))mcCase="Herwig";
+    else if(strTemplRootName.Contains("HERWIG"))mcCase="HERWIG";
     else if(strTemplRootName.Contains("POWHEG")){
       mcCase="POWHEG";
       strTemplRootName.Remove(0,2);
@@ -1833,12 +1844,12 @@ void SystematicsMC_pp_2to3had(Bool_t useReflected,TString strTemplRootName){
     
     if(useReflected){
       if(strTemplRootName.Contains("EPOS3")){
-    systfitter->AddSystematicMode(AliHFCorrFitSystematics::kNLowest,kTRUE,0.25*TMath::Pi(),0.5*TMath::Pi(),1);//,AliHFCorrFitter::kConstThreeGausPeriodicity); 
-    systfitter->AddSystematicMode(AliHFCorrFitSystematics::kNLowest,kFALSE,0.25*TMath::Pi(),0.5*TMath::Pi(),2);//,AliHFCorrFitter::kConstThreeGausPeriodicity);
+    systfitter->AddSystematicMode(AliHFCorrFitSystematics::kNLowest,kTRUE,0.25*TMath::Pi(),0.5*TMath::Pi(),1,AliHFCorrFitter::kModifNSGausPeriodicity);//,AliHFCorrFitter::kConstThreeGausPeriodicity); 
+    systfitter->AddSystematicMode(AliHFCorrFitSystematics::kNLowest,kFALSE,0.25*TMath::Pi(),0.5*TMath::Pi(),2,AliHFCorrFitter::kModifNSGausPeriodicity);//,AliHFCorrFitter::kConstThreeGausPeriodicity);
       }
       else{
-    systfitter->AddSystematicMode(AliHFCorrFitSystematics::kNLowest,kTRUE,0.25*TMath::Pi(),0.5*TMath::Pi(),1); 
-    systfitter->AddSystematicMode(AliHFCorrFitSystematics::kNLowest,kFALSE,0.25*TMath::Pi(),0.5*TMath::Pi(),2);
+    systfitter->AddSystematicMode(AliHFCorrFitSystematics::kNLowest,kTRUE,0.25*TMath::Pi(),0.5*TMath::Pi(),1,AliHFCorrFitter::kModifNSGausPeriodicity); 
+    systfitter->AddSystematicMode(AliHFCorrFitSystematics::kNLowest,kFALSE,0.25*TMath::Pi(),0.5*TMath::Pi(),2,AliHFCorrFitter::kModifNSGausPeriodicity);
       }
       //      systfitter->AddSystematicMode(AliHFCorrFitSystematics::kFree,kFALSE,0.25*TMath::Pi(),0.5*TMath::Pi(),0);  
       //      systfitter->AddSystematicMode(AliHFCorrFitSystematics::kNLowest,kFALSE,0.25*TMath::Pi(),0.5*TMath::Pi(),1,AliHFCorrFitter::kConstThreeGausPeriodicity);  
@@ -1846,12 +1857,12 @@ void SystematicsMC_pp_2to3had(Bool_t useReflected,TString strTemplRootName){
     }
     else {
       if(strTemplRootName.Contains("EPOS3")){
-        systfitter->AddSystematicMode(AliHFCorrFitSystematics::kNLowest,kTRUE,0.25*TMath::Pi(),0.5*TMath::Pi(),2);//,AliHFCorrFitter::kConstThreeGausPeriodicity); 
-        systfitter->AddSystematicMode(AliHFCorrFitSystematics::kNLowest,kFALSE,0.25*TMath::Pi(),0.5*TMath::Pi(),4);//,AliHFCorrFitter::kConstThreeGausPeriodicity);
+        systfitter->AddSystematicMode(AliHFCorrFitSystematics::kNLowest,kTRUE,0.25*TMath::Pi(),0.5*TMath::Pi(),2,AliHFCorrFitter::kModifNSGausPeriodicity);//,AliHFCorrFitter::kConstThreeGausPeriodicity); 
+        systfitter->AddSystematicMode(AliHFCorrFitSystematics::kNLowest,kFALSE,0.25*TMath::Pi(),0.5*TMath::Pi(),4,AliHFCorrFitter::kModifNSGausPeriodicity);//,AliHFCorrFitter::kConstThreeGausPeriodicity);
       }
       else{
-        systfitter->AddSystematicMode(AliHFCorrFitSystematics::kNLowest,kTRUE,0.25*TMath::Pi(),0.5*TMath::Pi(),2); 
-        systfitter->AddSystematicMode(AliHFCorrFitSystematics::kNLowest,kFALSE,0.25*TMath::Pi(),0.5*TMath::Pi(),4); 
+        systfitter->AddSystematicMode(AliHFCorrFitSystematics::kNLowest,kTRUE,0.25*TMath::Pi(),0.5*TMath::Pi(),2,AliHFCorrFitter::kModifNSGausPeriodicity); 
+        systfitter->AddSystematicMode(AliHFCorrFitSystematics::kNLowest,kFALSE,0.25*TMath::Pi(),0.5*TMath::Pi(),4,AliHFCorrFitter::kModifNSGausPeriodicity); 
     }
       //      systfitter->AddSystematicMode(AliHFCorrFitSystematics::kFree,kFALSE,0.25*TMath::Pi(),0.5*TMath::Pi(),0);  
       //      systfitter->AddSystematicMode(AliHFCorrFitSystematics::kNLowest,kFALSE,0.25*TMath::Pi(),0.5*TMath::Pi(),2,AliHFCorrFitter::kConstThreeGausPeriodicity);  
@@ -1919,7 +1930,7 @@ void SystematicsMC_pp_2to3had(Bool_t useReflected,TString strTemplRootName){
     
     systfitter->PrintAllSystematicsOnShell(); // print all the systematics on shell
    
-    if(saveAwaySide)systfitter->DrawFinalPlots(kTRUE,kTRUE,kTRUE,kTRUE,kTRUE);
+    if(saveAwaySide)systfitter->DrawFinalPlots(kTRUE,kTRUE,kTRUE,kTRUE,kTRUE,kTRUE);
     else systfitter->DrawFinalPlots(); // draws the final trend plots
     
     // systfitter->DrawFinalPlots(kTRUE,kFALSE,kFALSE,kFALSE,kFALSE);
@@ -1932,7 +1943,7 @@ void SystematicsMC_pp_2to3had(Bool_t useReflected,TString strTemplRootName){
     systfitter->SaveCanvasesDotEps();
     systfitter->SaveCanvasesDotPdf();
     
-    if(saveAwaySide)systfitter->DrawFinalCorrelationPlot(kTRUE,kTRUE,kTRUE,kTRUE,kTRUE); // draws the final correlation plots
+    if(saveAwaySide)systfitter->DrawFinalCorrelationPlot(kTRUE,kTRUE,kTRUE,kTRUE,kTRUE,kTRUE); // draws the final correlation plots
     else systfitter->DrawFinalCorrelationPlot(); // draws the final correlation plots
 
     // systfitter->CheckHisto(1);

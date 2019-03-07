@@ -30,7 +30,6 @@
 // Author: A.Grelli ,  Utrecht - agrelli@uu.nl
 //-----------------------------------------------------------------------
 #include <TCanvas.h>
-#include <TParticle.h>
 #include <TDatabasePDG.h>
 #include <TProfile.h>
 #include <TH1I.h>

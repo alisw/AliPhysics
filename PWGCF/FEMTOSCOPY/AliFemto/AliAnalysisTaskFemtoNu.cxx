@@ -135,6 +135,10 @@ AliAnalysisTaskFemtoNu::CreateOutputObjects()
   fStorage = new AliFemtoResultStorage(fName, *femto_mgr);
 
   PostData(RESULT_STORAGE_OUTPUT_SLOT, fStorage);
+
+  auto tlist = new TList();
+  tlist->SetOwner();
+  PostData(0, tlist);
 }
 
 void
@@ -150,16 +154,17 @@ AliAnalysisTaskFemtoNu::Exec(Option_t *ex)
   // auto *mc_input_handler = mgr->GetMCtruthEventHandler();
 
   // Task making a femtoscopic analysis.
-  if (fOfflineTriggerMask) {
-    Bool_t is_selected = input_handler->IsEventSelected() & fOfflineTriggerMask;
-    if (!is_selected) {
-      if (fVerbose) {
-        cout << "AliAnalysisTaskFemto: is not selected "
-             << input_handler->IsEventSelected() << " != " << fOfflineTriggerMask << "\n";
-      }
-      return;
+  if (fOfflineTriggerMask
+      && (input_handler->IsEventSelected() & fOfflineTriggerMask) == 0) {
+    if (fVerbose) {
+      cout << "AliAnalysisTaskFemto: is not selected "
+           << input_handler->IsEventSelected() << " != "
+	   << fOfflineTriggerMask << "\n";
     }
+    return;
   }
+
+  static_cast<AliFemtoEventReaderAODChain*>(fReader)->SetAODSource(fAOD);
 
   fManager->ProcessEvent();
 }

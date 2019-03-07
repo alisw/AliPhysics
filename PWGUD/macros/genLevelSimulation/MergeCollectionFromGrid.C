@@ -2,7 +2,7 @@
 #include "TSystem.h"
 #include "TFileMerger.h"
 #include "TGrid.h"
-#include "TAlienCollection.h"
+#include "TGridCollection.h"
 #include "TFile.h"
 #include "TH1F.h"
 #include "TList.h"
@@ -37,7 +37,7 @@ void MergeCollectionFromGrid(const char * incollection = "test.xml", const char 
   TFileMerger * fileMerger  = new TFileMerger(0); // dont merge local files
 
   TGrid::Connect("alien://");
-  TGridCollection * coll = TAlienCollection::Open (incollection);
+  TGridCollection * coll = gGrid->OpenCollection(incollection);
   Int_t  ifile=0;
   while(coll->Next()){
     fileMerger->AddFile(TString("alien://")+coll->GetLFN());

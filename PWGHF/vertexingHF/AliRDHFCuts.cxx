@@ -130,7 +130,8 @@ fCutGeoNcrNclFractionNcr(0.85),
 fCutGeoNcrNclFractionNcl(0.7),
 fUseV0ANDSelectionOffline(kFALSE),
 fUseTPCtrackCutsOnThisDaughter(kTRUE),
-fApplyZcutOnSPDvtx(kFALSE)
+fApplyZcutOnSPDvtx(kFALSE),
+fUsePreselect(0)
 {
   //
   // Default Constructor
@@ -208,7 +209,8 @@ AliRDHFCuts::AliRDHFCuts(const AliRDHFCuts &source) :
   fCutGeoNcrNclFractionNcl(source.fCutGeoNcrNclFractionNcl),
   fUseV0ANDSelectionOffline(source.fUseV0ANDSelectionOffline),
   fUseTPCtrackCutsOnThisDaughter(source.fUseTPCtrackCutsOnThisDaughter),
-  fApplyZcutOnSPDvtx(source.fApplyZcutOnSPDvtx)
+  fApplyZcutOnSPDvtx(source.fApplyZcutOnSPDvtx),
+  fUsePreselect(source.fUsePreselect)
 {
   //
   // Copy constructor
@@ -312,6 +314,7 @@ AliRDHFCuts &AliRDHFCuts::operator=(const AliRDHFCuts &source)
   fCutGeoNcrNclFractionNcl=source.fCutGeoNcrNclFractionNcl;
   fUseV0ANDSelectionOffline=source.fUseV0ANDSelectionOffline;
   fUseTPCtrackCutsOnThisDaughter=source.fUseTPCtrackCutsOnThisDaughter;
+  fUsePreselect=source.fUsePreselect;
 
   PrintAll();
 
@@ -997,8 +1000,8 @@ Bool_t AliRDHFCuts::IsDaughterSelected(AliAODTrack *track,const AliESDVertex *pr
     Double_t phi2=TMath::ATan2(xyz2[1],xyz2[0]);
     if(phi2<0) phi2+=2*TMath::Pi();
     Int_t lad2=(Int_t)(phi2/(2.*TMath::Pi()/40.));
-    Int_t mod1=(Int_t)((xyz1[2]+14)/7.);
-    Int_t mod2=(Int_t)((xyz2[2]+14)/7.);
+    Int_t mod1=TMath::Floor((xyz1[2]+14)/7.);
+    Int_t mod2=TMath::Floor((xyz2[2]+14)/7.);
     Bool_t lay1ok=kFALSE;
     if(mod1>=0 && mod1<4 && lad1<20){
       lay1ok=deadSPDLay1PbPb2011[lad1][mod1];
@@ -1232,6 +1235,7 @@ void AliRDHFCuts::PrintAll() const {
    }
    cout<<endl;
   }
+  printf("fUsePreselect=%d \n",fUsePreselect);
   if(fPidHF) fPidHF->PrintAll();
   return;
 }
@@ -1577,6 +1581,8 @@ Bool_t AliRDHFCuts::CompareCuts(const AliRDHFCuts *obj) const {
 
     if(fTrackCuts->GetClusterRequirementITS(AliESDtrackCuts::kSPD)!=obj->fTrackCuts->GetClusterRequirementITS(AliESDtrackCuts::kSPD)) {printf("ClusterReq SPD %d  %d\n",fTrackCuts->GetClusterRequirementITS(AliESDtrackCuts::kSPD),obj->fTrackCuts->GetClusterRequirementITS(AliESDtrackCuts::kSPD)); areEqual=kFALSE;}
   }
+  
+  if(fUsePreselect!=obj->fUsePreselect){printf("fUsePreselect: %d %d\n",fUsePreselect,obj->fUsePreselect);areEqual=kFALSE;}
 
   if(fCutsRD) {
    for(Int_t iv=0;iv<fnVars;iv++) {

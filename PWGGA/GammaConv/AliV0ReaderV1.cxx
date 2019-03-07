@@ -65,6 +65,7 @@
 #include "AliAnalysisManager.h"
 #include "AliInputEventHandler.h"
 #include "AliAODHandler.h"
+#include "AliAODMCParticle.h"
 #include "AliPIDResponse.h"
 #include "TChain.h"
 #include "TFile.h"
@@ -98,10 +99,19 @@ AliV0ReaderV1::AliV0ReaderV1(const char *name) : AliAnalysisTaskSE(name),
   fEventIsSelected(kFALSE),
   fNumberOfPrimaryTracks(0),
   fNumberOfTPCoutTracks(0),
-  fSphericity(0),
-  fPtMaxSector(0),
   fCalcSphericity(kFALSE),
   fCalcSector(kFALSE),
+  fSphericity(0),
+  fSphericityAxisMainPhi(0),
+  fSphericityAxisSecondaryPhi(0),
+  fInEMCalAcceptance(kFALSE),
+  fNumberOfRecTracks(0),
+  fHighestPt(0),
+  fTotalPt(0),
+  fMeanPt(0),
+  fSphericityTrue(0),
+  fNumberOfTruePrimaryTracks(0),
+  fPtMaxSector(0),
   fPeriodName(""),
   fPtHardBin(0),
   fUseMassToZero(kTRUE),
@@ -634,8 +644,9 @@ Bool_t AliV0ReaderV1::ProcessEvent(AliVEvent *inputEvent,AliMCEvent *mcEvent)
   //Count Tracks with TPCout flag
   CountTPCoutTracks();
 
-  // Calculate the Sphericity
+  // Calculate the Sphericity and true sphericity
   if(fCalcSphericity) CalculateSphericity();
+  if(fCalcSphericity && fMCEvent) CalculateSphericityMCTrue(fInputEvent);
   if(fCalcSector) CalculatePtMaxSector();
 
   // Event Cuts
@@ -1465,8 +1476,17 @@ void AliV0ReaderV1::CalculateSphericity(){
   TMatrixD S(2,2);
   TMatrixD St(2,2);
   double_t P(0);
-  Int_t nTracks = 0;
+  fNumberOfRecTracks = 0;
   fSphericity = -1;
+  TMatrixD EigenV(2,2);
+  TVector2* EigenVector;
+  fSphericityAxisMainPhi = 0;
+  Double_t MirroredMainSphericityAxis = 0;
+  fSphericityAxisSecondaryPhi = 0;
+  fInEMCalAcceptance = kFALSE;
+  fHighestPt = 0;
+  fTotalPt = 0;
+  fMeanPt = 0;
   if(fInputEvent->IsA()==AliESDEvent::Class()){
     static AliESDtrackCuts *EsdTrackCuts = 0x0;
     static int prevRun = -1;
@@ -1511,15 +1531,15 @@ void AliV0ReaderV1::CalculateSphericity(){
       }
       EsdTrackCuts->SetMaxDCAToVertexZ(2);
       EsdTrackCuts->SetEtaRange(-0.8, 0.8);
-      EsdTrackCuts->SetPtRange(0.15);
+      EsdTrackCuts->SetPtRange(0.5);
     }
     fSphericity = -1;
-    nTracks = 0;
+    fNumberOfRecTracks = 0;
     for(Int_t iTracks = 0; iTracks < fInputEvent->GetNumberOfTracks(); iTracks++){
       AliESDtrack* curTrack = (AliESDtrack*) fInputEvent->GetTrack(iTracks);
       if(!curTrack) continue;
       if(!EsdTrackCuts->AcceptTrack(curTrack)) continue;
-      nTracks++;
+      fNumberOfRecTracks++;
       Si.Zero();
       Si(0,0)=pow(curTrack->Px(),2);
       Si(0,1)=curTrack->Px()*curTrack->Py();
@@ -1527,24 +1547,40 @@ void AliV0ReaderV1::CalculateSphericity(){
       Si(1,1)=pow(curTrack->Py(),2);
       S += (1/curTrack->Pt())*Si;
       P += curTrack->Pt();
+      if(curTrack->Pt()>fHighestPt) fHighestPt = curTrack->Pt();
     }
-    if(P==0 || nTracks<3){
+    if(P==0 || fNumberOfRecTracks<3){
       fSphericity = -1;
     }else{
       St = (1/P)*S;
       fSphericity = (2*TMatrixDEigen(St).GetEigenValues()(1,1))/(TMatrixDEigen(St).GetEigenValues()(0,0)+TMatrixDEigen(St).GetEigenValues()(1,1));
+      EigenV.Zero();
+      EigenV = TMatrixDEigen(St).GetEigenVectors();
+      EigenVector = new TVector2(EigenV(0,0), EigenV(1,0));
+      fSphericityAxisMainPhi = EigenVector->Phi();
+      MirroredMainSphericityAxis = fSphericityAxisMainPhi + TMath::Pi();
+      if(MirroredMainSphericityAxis > 2*TMath::Pi()) MirroredMainSphericityAxis -= 2*TMath::Pi();
+      EigenVector = new TVector2(EigenV(0,1), EigenV(1,1));
+      fSphericityAxisSecondaryPhi = EigenVector->Phi();
+      if(fSphericityAxisMainPhi > 1.396263 && fSphericityAxisMainPhi < 3.263766){
+          fInEMCalAcceptance = kTRUE;
+      }else if((MirroredMainSphericityAxis > 1.396263) && (MirroredMainSphericityAxis < 3.263766)){
+          fInEMCalAcceptance = kTRUE;
+      }
+      fTotalPt = P;
+      fMeanPt = P/fNumberOfRecTracks;
     }
   }
   else if(fInputEvent->IsA()==AliAODEvent::Class()){
     fSphericity = -1;
-    nTracks = 0;
+    fNumberOfRecTracks = 0;
     for(Int_t iTracks = 0; iTracks<fInputEvent->GetNumberOfTracks(); iTracks++){
       AliAODTrack* curTrack = (AliAODTrack*) fInputEvent->GetTrack(iTracks);
       if(curTrack->GetID()<0) continue; // Avoid double counting of tracks
       if(!curTrack->IsHybridGlobalConstrainedGlobal()) continue;
       if(TMath::Abs(curTrack->Eta())>0.8) continue;
-      if(curTrack->Pt()<0.15) continue;
-      nTracks++;
+      if(curTrack->Pt()<0.5) continue;
+      fNumberOfRecTracks++;
       Si.Zero();
       Si(0,0)=pow(curTrack->Px(),2);
       Si(0,1)=curTrack->Px()*curTrack->Py();
@@ -1552,13 +1588,67 @@ void AliV0ReaderV1::CalculateSphericity(){
       Si(1,1)=pow(curTrack->Py(),2);
       S += (1/curTrack->Pt())*Si;
       P += curTrack->Pt();
+      if(curTrack->Pt()>fHighestPt) fHighestPt = curTrack->Pt();
     }
-    if(P==0 || nTracks<3){
+    if(P==0 || fNumberOfRecTracks<3){
       fSphericity = -1;
     }else{
       St = (1/P)*S;
       fSphericity = (2*TMatrixDEigen(St).GetEigenValues()(1,1))/(TMatrixDEigen(St).GetEigenValues()(0,0)+TMatrixDEigen(St).GetEigenValues()(1,1));
+      EigenV.Zero();
+      EigenV = TMatrixDEigen(St).GetEigenVectors();
+      EigenVector = new TVector2(EigenV(0,0), EigenV(1,0));
+      fSphericityAxisMainPhi = EigenVector->Phi();
+      MirroredMainSphericityAxis = fSphericityAxisMainPhi + TMath::Pi();
+      if(MirroredMainSphericityAxis > 2*TMath::Pi()) MirroredMainSphericityAxis -= 2*TMath::Pi();
+      EigenVector = new TVector2(EigenV(0,1), EigenV(1,1));
+      fSphericityAxisSecondaryPhi = EigenVector->Phi();
+      if(fSphericityAxisMainPhi > 1.396263 && fSphericityAxisMainPhi < 3.263766){
+          fInEMCalAcceptance = kTRUE;
+      }else if((MirroredMainSphericityAxis > 1.396263) && (MirroredMainSphericityAxis < 3.263766)){
+          fInEMCalAcceptance = kTRUE;
+      }
+      fTotalPt = P;
+      fMeanPt = P/fNumberOfRecTracks;
     }
+  }
+  return;
+}
+///________________________________________________________________________
+void AliV0ReaderV1::CalculateSphericityMCTrue(AliVEvent *inputEvent){
+  TMatrixD Si(2,2);
+  TMatrixD S(2,2);
+  TMatrixD St(2,2);
+  double_t P(0);
+  fNumberOfTruePrimaryTracks = 0;
+  fSphericityTrue = -1;
+  if(inputEvent->IsA()==AliAODEvent::Class()){
+      TClonesArray *AODMCTrackArray = dynamic_cast<TClonesArray*>(inputEvent->FindListObject(AliAODMCParticle::StdBranchName()));
+      if (AODMCTrackArray == NULL) return;
+      for(Long_t i = 0; i < AODMCTrackArray->GetEntriesFast(); i++) {
+        AliAODMCParticle* particle = static_cast<AliAODMCParticle*>(AODMCTrackArray->At(i));
+            if (!particle) continue;
+            if (!particle->IsPhysicalPrimary()) continue;
+            if (!particle->Pt()) continue;
+            if(particle->Pt()<0.5) continue;
+            if(TMath::Abs(particle->Eta())>0.8) continue;
+            fNumberOfTruePrimaryTracks++;
+            Si.Zero();
+            Si(0,0)=pow(particle->Px(),2);
+            Si(0,1)=particle->Px()*particle->Py();
+            Si(1,0)=particle->Py()*particle->Px();
+            Si(1,1)=pow(particle->Py(),2);
+            S += (1/particle->Pt())*Si;
+            P += particle->Pt();
+      }
+  }else if(inputEvent->IsA()==AliESDEvent::Class()){
+        fSphericityTrue = -1;
+  }
+  if(P==0 || fNumberOfTruePrimaryTracks<3){
+      fSphericityTrue = -1;
+  }else{
+      St = (1/P)*S;
+      fSphericityTrue = (2*TMatrixDEigen(St).GetEigenValues()(1,1))/(TMatrixDEigen(St).GetEigenValues()(0,0)+TMatrixDEigen(St).GetEigenValues()(1,1));
   }
   return;
 }

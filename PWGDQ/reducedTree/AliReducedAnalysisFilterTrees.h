@@ -150,7 +150,7 @@ protected:
 
   Bool_t TrackIsCandidateLeg(AliReducedBaseTrack* track);
    void WriteFilteredPairs();
-   void WriteFilteredTracks();
+   void WriteFilteredTracks(Int_t array=1);
    Bool_t IsCandidateLegSelected(AliReducedBaseTrack* track, Float_t* values=0x0, Int_t whichLeg=1); 
    Bool_t IsCandidatePairSelected(Float_t* values);
    Bool_t IsCandidateLegPrefilterSelected(AliReducedBaseTrack* track, Float_t* values=0x0, Int_t whichLeg=1);

@@ -43,9 +43,11 @@
 #pragma link C++ class  AliEmcalCorrectionCellCombineCollections+;
 #pragma link C++ class  AliEmcalCorrectionClusterizer+;
 #pragma link C++ class  AliEmcalCorrectionClusterNonLinearity+;
+#pragma link C++ class  AliEmcalCorrectionClusterNonLinearityMCAfterburner+;
 #pragma link C++ class  AliEmcalCorrectionClusterExotics+;
 #pragma link C++ class  AliEmcalCorrectionClusterTrackMatcher+;
 #pragma link C++ class  AliEmcalCorrectionClusterHadronicCorrection+;
+#pragma link C++ class  AliEmcalCorrectionCellEnergyVariation+;
 #pragma link C++ class  AliEmcalCorrectionClusterEnergyVariation+;
 #pragma link C++ class  std::map<AliVTrack *,AliParticleContainer *>+;
 #pragma link C++ class  std::pair<AliVTrack *,AliParticleContainer *>+;

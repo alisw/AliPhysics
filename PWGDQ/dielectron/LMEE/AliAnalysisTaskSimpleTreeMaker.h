@@ -23,6 +23,7 @@ class AliESDtrackCuts;
 * Created: 05.10.2016                                  *
 * Authors: Aaron Capon      (aaron.capon@cern.ch)      *
 *          Sebastian Lehner (sebastian.lehner@cern.ch) *
+*          Elisa Meninno    (elisa.meninno@cern.ch)    *   
 *                                                      *
 *******************************************************/
 
@@ -30,7 +31,7 @@ class AliESDtrackCuts;
 class AliAnalysisTaskSimpleTreeMaker : public AliAnalysisTaskSE {
 
   public:
-		AliAnalysisTaskSimpleTreeMaker(const char *name);
+  AliAnalysisTaskSimpleTreeMaker(const char *name, Bool_t ExtraDCA = kFALSE);
 		AliAnalysisTaskSimpleTreeMaker();
 		~AliAnalysisTaskSimpleTreeMaker();
 
@@ -42,8 +43,8 @@ class AliAnalysisTaskSimpleTreeMaker : public AliAnalysisTaskSE {
 		void SetupTrackCuts(AliDielectronCutGroup* finalTrackCuts);
 		void SetupEventCuts(AliDielectronEventCuts* finalEventCuts);
 	
-		//PID calibration function to correct the width and mean of detector
-		//response (I.e should be unit guassian)
+		// PID calibration function to correct the width and mean of detector
+		// response (I.e should be unit guassian)
 		void SetCorrWidthMeanTPC(TH3D* width, TH3D* mean){
 			fMeanTPC  = mean;
 			fWidthTPC = width;
@@ -64,44 +65,32 @@ class AliAnalysisTaskSimpleTreeMaker : public AliAnalysisTaskSE {
 				fCentralityPercentileMax = max;
 		}
 
+		// Kinematic cuts set here only applied to V0 TTrees
+		// For standard TTree a dielectron cut library is needed
 		void SetPtRange(Float_t min, Float_t max){
-				fPtMin = min;
-				fPtMax = max;
+			fPtMin = min;
+			fPtMax = max;
 		}
 
 		void SetEtaRange(Float_t min, Float_t max){
-				fEtaMin = min;
-				fEtaMax = max;
+			fEtaMin = min;
+			fEtaMax = max;
 		}
 
-		//Set inclusive electron PID cuts
-		void SetESigRangeITS(Float_t min, Float_t max){
-				fPIDcutITS = kTRUE;
-				fESigITSMin = min;
-				fESigITSMax = max;
-		}
-
+		// PID cut used for V0 TTrees
 		void SetESigRangeTPC(Float_t min, Float_t max){
-				fESigTPCMin = min;
-				fESigTPCMax = max;
+			fESigTPCMin = min;
+			fESigTPCMax = max;
 		}
 
-		void SetESigRangeTOF(Float_t min, Float_t max){
-				fPIDcutTOF = kTRUE;
-				fESigTOFMin = min;
-				fESigTOFMax = max;
-		}
-
-		//Set pion PID exclusion cut
-		void SetPSigRangeTPC(Float_t min, Float_t max){
-				fPionPIDcutTPC = kTRUE;
-				fPSigTPCMin = min;
-				fPSigTPCMax = max;
+		// Kaon PID values not saved by default
+		void writeKaonPIDtoTree(Bool_t answer){
+			storeKaonPID = answer;
 		}
 
 		void SetMC(Bool_t answer){ hasMC = answer; }
 
-		//Track cut setters. StandardITSTPC2011 cuts used if nothing specified
+		// Track cut setters. StandardITSTPC2011 cuts used if nothing specified
 		void SetTPCminClusters(Int_t number){
 				fESDtrackCuts->SetMinNClustersTPC(number);
 		}
@@ -148,6 +137,9 @@ class AliAnalysisTaskSimpleTreeMaker : public AliAnalysisTaskSE {
 		void GRIDanalysis(Bool_t answer){
 				fIsGRIDanalysis = answer;
 		}
+		void createDCAbranches(Bool_t answer){
+		  fExtraDCA = answer;
+		}
 		void createV0tree(Bool_t answer){
 				fIsV0tree = answer;
 		}
@@ -175,22 +167,26 @@ class AliAnalysisTaskSimpleTreeMaker : public AliAnalysisTaskSE {
 			fUseTOFcorr = answer;
 		}
 
+		void SetMaxPtPIDcorrection(Float_t answer){
+			maxPtPIDcorrection = answer;
+		}
+
 		Bool_t GetDCA(const AliVEvent* event, const AliAODTrack* track, Double_t* d0z0, Double_t* covd0z0);
 
 		// Check if the generator is on the list of generators
 		// If found, assign track with integer value correspding to generator
-		//0 = gen purp, 1=Pythia CC_1, 2= Pythia BB_1, 3=Pythia B_1, 4=Jpsi2ee_1, 5=B2Jpsi2ee_1";
+		// 0 = gen purp, 1=Pythia CC_1, 2= Pythia BB_1, 3=Pythia B_1, 4=Jpsi2ee_1, 5=B2Jpsi2ee_1";
 		Int_t CheckGenerator(Int_t trackID);
 
   private:
  
 		Int_t IsEventAccepted(AliVEvent* event);
-		//Int_t GetAcceptedTracks(AliVEvent *event, Double_t gCentrality);
 	
 		AliAnalysisTaskSimpleTreeMaker(const AliAnalysisTaskSimpleTreeMaker&); // not implemented
 
 		AliAnalysisTaskSimpleTreeMaker& operator=(const AliAnalysisTaskSimpleTreeMaker&); // not implemented
 
+		Int_t eventNum; //!
 		Bool_t hasMC;
 
 		AliESDtrackCuts* fESDtrackCuts;
@@ -200,8 +196,8 @@ class AliAnalysisTaskSimpleTreeMaker : public AliAnalysisTaskSE {
 
 		TTree* fTree;
 	
-		//Dielectron cut classes needed to source cuts from LMEE cut libraries
-		//The desired cut library should be specified in the AddTask
+		// Dielectron cut classes needed to source cuts from LMEE cut libraries
+		// The desired cut library should be specified in the AddTask
 		AliDielectronEventCuts* eventCuts;
 		AliAnalysisFilter* eventFilter;
 		
@@ -211,7 +207,7 @@ class AliAnalysisTaskSimpleTreeMaker : public AliAnalysisTaskSE {
 		AliDielectronCutGroup* cuts;
 		AliAnalysisFilter* trackFilter;
 
-		//Class needed to use PID within the Dielectron Framework
+		// Class needed to use PID within the Dielectron Framework
 		AliDielectronVarManager* varManager;
 
 		// TTree branch variables
@@ -233,7 +229,12 @@ class AliAnalysisTaskSimpleTreeMaker : public AliAnalysisTaskSE {
 		TBits tpcSharedMap;
 		Float_t nTPCshared;
 		Float_t chi2TPC;
-		Float_t DCA[2];
+		//DCA
+		Double_t DCA[2];
+		Double_t DCAsigma[2];
+		Double_t DCA3[3];
+		//Double_t DCA3sigma[3];  
+		Double_t DCAXYtest;
 		Int_t nITS;
 		Float_t chi2ITS;
 		Float_t fITSshared;
@@ -245,9 +246,11 @@ class AliAnalysisTaskSimpleTreeMaker : public AliAnalysisTaskSE {
 		Float_t EnSigmaTPCcorr;
 		Float_t EnSigmaTOF;
 		Float_t EnSigmaTOFcorr;
-		Float_t PnSigmaTPC;
+		Float_t maxPtPIDcorrection;
 		Float_t PnSigmaITS;
+		Float_t PnSigmaTPC;
 		Float_t PnSigmaTOF;
+		Bool_t storeKaonPID;
 		Float_t KnSigmaITS;
 		Float_t KnSigmaTPC;
 		Float_t KnSigmaTOF;
@@ -255,7 +258,7 @@ class AliAnalysisTaskSimpleTreeMaker : public AliAnalysisTaskSE {
 		Float_t TPCsignal;
 		Float_t TOFsignal;
 		Float_t goldenChi2;
-		//MC 
+		// MC 
 		Float_t mcEta;
 		Float_t mcPhi;
 		Float_t mcPt;
@@ -264,13 +267,13 @@ class AliAnalysisTaskSimpleTreeMaker : public AliAnalysisTaskSE {
 		Int_t iPdgMother;
 		Bool_t HasMother;
 		Int_t motherLabel;
-		Int_t isInj; // If track is injected 
+		Int_t isInj; 
 		// Pdg and label for initial particle in decay chain
 		Int_t iPdgFirstMother;
 		Int_t gLabelFirstMother;
 		Int_t gLabelMinFirstMother;
 		Int_t gLabelMaxFirstMother;
-		//V0 features
+		// V0 features
 		Float_t pointingAngle;
 		Float_t daughtersDCA;
 		Float_t decayLength;
@@ -280,32 +283,21 @@ class AliAnalysisTaskSimpleTreeMaker : public AliAnalysisTaskSE {
 
 		TH1F* fQAhist; //!
 		// Currently no cut on centrality
-		Float_t fCentralityPercentileMin;// minimum centrality threshold (default = 0)
-		Float_t fCentralityPercentileMax;// maximum centrality threshold (default = 100)
+		Float_t fCentralityPercentileMin;
+		Float_t fCentralityPercentileMax;
 
-		Float_t fPtMin;// minimum pT threshold (default = 0)
-		Float_t fPtMax;// maximum pT threshold (default = 10)
-		Float_t fEtaMin;// minimum eta threshold (default = -0.8)
-		Float_t fEtaMax;// maximum eta threshold (default = 0.8)
+		// Kinematic cuts used in the creation of the V0 TTrees
+		Float_t fPtMin;
+		Float_t fPtMax;
+		Float_t fEtaMin;
+		Float_t fEtaMax;
 
-		//Values and flags for PID cuts in ITS and TOF
-		Float_t fESigITSMin;
-		Float_t fESigITSMax;
+		// TPC PID cuts for V0 TTree
 		Float_t fESigTPCMin; 
 		Float_t fESigTPCMax; 
-		Float_t fESigTOFMin;
-		Float_t fESigTOFMax;
-		
-		Bool_t fPIDcutITS;
-		Bool_t fPIDcutTOF;
-		
-		//Values and flag for pion PID cuts in TPC
-		Bool_t fPionPIDcutTPC;
-		Float_t fPSigTPCMin;
-		Float_t fPSigTPCMax;
 		
 		Bool_t fHasSDD;
-
+		Bool_t fExtraDCA;
 		Bool_t fIsV0tree;
 		TH2F* fArmPlot; //!
 
@@ -331,10 +323,11 @@ class AliAnalysisTaskSimpleTreeMaker : public AliAnalysisTaskSE {
 		// Temp variable (needed for testing MC issues)
 		Int_t TOFstartMask;
 
-		// Store list of generator hashes which can be checked against to determine
-		// whether or not the track was injected
+		// Store list of generator hashes which can be checked to determine whether
+		// or not the track was injected
 		std::vector<UInt_t> fGeneratorHashes;
-		ClassDef(AliAnalysisTaskSimpleTreeMaker, 5); //
+
+		ClassDef(AliAnalysisTaskSimpleTreeMaker, 6); 
 
 };
 

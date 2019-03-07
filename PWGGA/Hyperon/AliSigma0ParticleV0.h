@@ -17,6 +17,7 @@ class AliSigma0ParticleV0 : public AliSigma0ParticleBase {
                       const int pdg, const float magneticField,
                       AliMCEvent *mcEvent);
   AliSigma0ParticleV0(const AliAODConversionPhoton *gamma,
+                      const AliESDtrack *pos, const AliESDtrack *neg,
                       const AliVEvent *inputEvent);
   AliSigma0ParticleV0 &operator=(const AliSigma0ParticleV0 &obj);
 

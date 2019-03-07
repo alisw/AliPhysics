@@ -148,9 +148,9 @@ void AliAnalysisTaskPP13::UserExec(Option_t *)
 			continue;
 
 		// triggerProperties.FillTriggerInformation(clus);
+		// Use only with triggerUtils
 		// clus->SetTrigger(triggerUtils->IsFiredTrigger(c));
 		// nTriggered += clus->IsTrigger();
-
 		clusArray.Add(clus);
 	}
 	// delete triggerUtils;

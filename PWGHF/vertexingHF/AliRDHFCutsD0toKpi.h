@@ -12,6 +12,7 @@
 //***********************************************************
 
 #include "AliRDHFCuts.h"
+#include "TObjArray.h"
 
 class AliAODEvent;
 class AliAODRecoDecayHF;
@@ -39,9 +40,11 @@ class AliRDHFCutsD0toKpi : public AliRDHFCuts
   virtual Int_t IsSelected(TObject* obj,Int_t selectionLevel) 
                          {return IsSelected(obj,selectionLevel,0);}
   virtual Int_t IsSelected(TObject* obj,Int_t selectionLevel,AliAODEvent* aod);
-
+  virtual Int_t PreSelect(TObjArray aodtracks);
   virtual Int_t IsSelectedCombPID(AliAODRecoDecayHF* d); 
+  Int_t IsSelectedCombPID(TObjArray aodTracks); 
   virtual void CalculateBayesianWeights(AliAODRecoDecayHF* d);
+  void CalculateBayesianWeights(TObjArray aodTracks);
 
   Float_t GetMassCut(Int_t iPtBin=0) const { return (GetCuts() ? fCutsRD[GetGlobalIndex(0,iPtBin)] : 1.e6);}
   Float_t GetDCACut(Int_t iPtBin=0) const { return (GetCuts() ? fCutsRD[GetGlobalIndex(1,iPtBin)] : 1.e6);}
@@ -54,7 +57,9 @@ class AliRDHFCutsD0toKpi : public AliRDHFCuts
   virtual void SetStandardCutsPbPb2011();
   void SetStandardCutsPbPb2010Peripherals();
   virtual Int_t IsSelectedPID(AliAODRecoDecayHF *rd);
+  Int_t IsSelectedPID(Double_t pt, TObjArray aodTracks);
   Int_t IsSelectedPIDdefault(AliAODRecoDecayHF *rd);
+  Int_t IsSelectedPIDdefault(Double_t pt, TObjArray aodTracks);
   Int_t IsSelectedSpecialCuts(AliAODRecoDecayHF *d) const;
   void SetUseSpecialCuts(Bool_t useSpecialCuts) {fUseSpecialCuts=useSpecialCuts;}
   void Setd0MeasMinusExpCut(UInt_t nPtBins, Float_t *cutval);
@@ -107,6 +112,9 @@ class AliRDHFCutsD0toKpi : public AliRDHFCuts
   Bool_t GetCombPID() const {return fCombPID;}
   void SetBayesProbThreshold(Double_t thresh){fProbThreshold=thresh;}
   Double_t GetBayesProbThreshold() const {return fProbThreshold;}
+  
+  const Float_t *Getd0MeasMinusExpCut() const {return fMaxd0MeasMinusExp;} 
+  const Float_t *GetImpParDCut() const {return fMaxImpParD;} 
 
   virtual void PrintAll()const;  
 

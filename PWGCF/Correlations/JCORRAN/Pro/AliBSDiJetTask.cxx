@@ -1,6 +1,6 @@
 /*************************************************************************
  *
- * Copyright(c) 1998-2016, ALICE Experiment at CERN, All rights reserved. *
+ * Copyright(c) 1998-2018, ALICE Experiment at CERN, All rights reserved. *
  *                                                                        *
  * Author: The ALICE Off-line Project.                                    *
  * Contributors are mentioned in the code where appropriate.              *
@@ -17,7 +17,7 @@
 // Comment describing what this class does needed!
 
 //==================================================================
-// Simple class for di-charged jet analyses.
+// Class for di-charged and full jet analyses.
 // by Beomkyu KIM
 //==================================================================
 #include <TClonesArray.h>
@@ -126,7 +126,6 @@ void AliBSDiJetTask::UserCreateOutputObjects(){
 
 	if (fOption.Contains("LHC16l")){
 		binCent = AxisVar("Cent",{0,0.001,0.01,0.1,0.5,1,5,10,15,20,30,40,50,70,100});
-
 	}
   auto binLog1k     = AxisLog("Log1k",500,0.1,1000,0);
   //auto binLog3c     = AxisVar("Log3c",{0,5,7,9,12,16,21,28,36,45,57,70,85,99,115,132,150,169,190,212,235,500});
@@ -135,10 +134,11 @@ void AliBSDiJetTask::UserCreateOutputObjects(){
   auto bin1c = AxisFix("Fix1c",100,0,100);
   auto binAsim = AxisFix("Asim", 100 ,0,1);
   auto binM = AxisFix("BinM",600,-300,300);
+	auto binpthardbin = AxisFix("pthardbin",20,0,20);
 	//auto binjetpt = AxisVar("binjetpt",{0,2,4,6,8,10,12,14,16,18,20,22,24,26,28,30,35,40,45,50,55,60,65,70,80,90,100,120,140,160,180,200,250,300,350,400,450,500,600,700,800,900,1000});
 
 	//auto binjetpt = AxisVar("binjetpt",{0,10,20,30,40,50,60,70,80,90,100,110,120,130,140,150,160,170,180,190,200,500,1000});
-	auto binjetpt = AxisLog("binjetpt",100,1,1000,1);;
+	auto binjetpt = AxisLog("binjetpt",100,1,1000,1);
 
   //===============================
   // HISTOGRAMS
@@ -152,102 +152,44 @@ void AliBSDiJetTask::UserCreateOutputObjects(){
   Double_t logbw= (log(high)-log(low))/nbins;
   for(int ij=0;ij<=nbins;ij++) logbins[ij]=low*exp(ij*logbw);
 
-  fHistos -> CreateTH1("hJetMulti","",101,-1,100,"s");
-  fHistos -> CreateTH1("jetpt","jetpt",nbins,logbins,"s");
-  fHistos -> CreateTH1("jetptresum","jetptresum",nbins,logbins,"s");
-  fHistos -> CreateTProfile("jetptresumRatio","jetptresumRatio",nbins,logbins,"s");
-  fHistos -> CreateTH1("jetinv","jetinv",600,-300,300,"s");
-  fHistos -> CreateTH1("jetinvcorr","jetinvcorr",600,-300,300,"s");
   fHistos -> CreateTH1("zvtx","zvtx",60,-30,30,"s");
   fHistos -> CreateTH1("mczvtx","mczvtx",60,-30,30,"s");
+  fHistos -> CreateTH1("hPtHardBin","pthardbin",20,0,20,"s");
   fHistos -> CreateTH1("nCentrality","nCentrality", 10,0,100,"s");
   fHistos -> CreateTH2("trketaphi","trketaphi",20,-1,1,90,0,TMath::TwoPi(),"s");
   fHistos -> CreateTH2("jetetaphi","jetetaphi",20,-1,1,90,0,TMath::TwoPi(),"s");
-  fHistos -> CreateTH2("trketaphifulljet","trketaphifulljet",20,-1,1,90,0,TMath::TwoPi(),"s");
-  fHistos -> CreateTH2("cluetaphifulljet","cluetaphifulljet",20,-1,1,90,0,TMath::TwoPi(),"s");
-	fHistos -> CreateTH1("hGammaEnergy","EMCAL gamma energy",600,0,60,"s");
-	fHistos -> CreateTH1("hGammaEnergyBeIso","EMCAL gamma energy",600,0,60,"s");
-	fHistos -> CreateTH1("hGammaEnergyAfIso","EMCAL gamma energy",600,0,60,"s");
-	fHistos -> CreateTH2("hLambda0vsEnergy","EMCAL lambda0 vs energy",350 ,5,40,300,0,3,"s");
-	fHistos -> CreateTH2("hLambda1vsEnergy","EMCAL lambda1 vs energy",350 ,5,40,300,0,3,"s");
-	fHistos -> CreateTH2("hLambda0vsPt","EMCAL lambda0 vs Pt",350 ,5,40,300,0,3,"s");
-	fHistos -> CreateTH2("hLambda1vsPt","EMCAL lambda1 vs Pt",350 ,5,40,300,0,3,"s");
-	fHistos -> CreateTH2("hDispersionvsEnergy","EMCAL Disp vs energy",350 ,5,40,300,0,3,"s");
-	fHistos -> CreateTH2("hDispersionvsPt","EMCAL Disp vs Pt",350 ,5,40,300,0,3,"s");
-	fHistos -> CreateTH2("hNCellsvsEnergy","N cells vs energy", 400,0,40,30,0,30,"s");
-	fHistos -> CreateTH1("hNLM","Local maxima",30,0,30,"s");
-	fHistos -> CreateTH1("hXE","XE",20,0,1,"s");
-	fHistos -> CreateTH1("hXEunderlying","XE",20,0,1,"s");
-	fHistos -> CreateTH1("hdPhiGamma","dPhi_Gamma_hpm",100,0,2*pi,"s");
-	fHistos -> CreateTH2("hIsoEtaPhi","Eta phi of iso gamma",100,0,2*pi,100,-1,1,"s");
-	fHistos -> CreateTH2("hGammaJetdetadphi","",100,-1,1,100,-0.5*pi,2.5*pi,"s");
-	fHistos -> CreateTH2("hJetPtLeadingSubLeading","LeadingSubleading",100,0,100,100,0,100,"s");
- 	fHistos -> CreateTH1("hDijetMassTest","DijetMassTest",300,0,300,"s");
- 	fHistos -> CreateTH1("hDijetDPhiTest","DijetDPhiTest",100,0,2*pi,"s");
-	fHistos -> CreateTH1("hInclJetPt","InclJetPt",110,-100,1000,"s");
-	fHistos -> CreateTH1("hInclJetPtCorrected","InclJetPt after bg subtraction",110,-100,1000,"s");
-	fHistos -> CreateTH1("hInclJetPtCorrectedAndMatched","InclJetPt after bg subtraction",110,-100,1000,"s");
-	fHistos -> CreateTH1("hInclTruthJetPt","Truth jet pt",110,-100,1000,"s");
   vector<TString> ent ={"All","PassPileUp","PassPileUpGoodz","GoodzNTrials","GoodzNX","NXoNTrials"};
   auto h = fHistos->CreateTH1("hEventNumbers","",ent.size(), 0, ent.size());
   for(auto i=0u;i<ent.size();i++) h->GetXaxis()->SetBinLabel(i+1,ent.at(i).Data());
 
-  CreateTHnSparse( "hJetPtLeading","",3,{
-      binDiJetSel,binCent,bintpt}, "s" );
-  CreateTHnSparse( "hRho","Rho dist",2,{binCent,bin1c},"s");
-  CreateTHnSparse( "hDiJetInvM", "DiJetMass", 4, {
-      binDiJetSel, binCent,bintpt,binInvM }, "s" );
-  CreateTHnSparse( "hDiJetDPhi_0_2pi", "DiJet #Delta#Phi", 5, {
-      binDiJetSel, binCent, bintpt,binInvM, AxisFix( "",100, 0, 2*pi ) },"s");
-  CreateTHnSparse( "hDiJetDPhi_0_2piTruth", "DiJet #Delta#Phi", 5, {
-      binDiJetSel, binCent, bintpt,binInvM, AxisFix( "",100, 0, 2*pi ) },"s");
-  CreateTHnSparse( "hDiJetPtPair", "DiJet PtPair", 5, {
-      binDiJetSel, binCent, bintpt, binInvM, binLog3c  },"s");
-  CreateTHnSparse( "hDiJetPtPairTruth", "DiJet PtPair Truth", 5, {
-      binDiJetSel, binCent, bintpt, binInvM, binLog3c  },"s");
-  CreateTHnSparse( "hDiJetPtPairH", "DiJet PtPair", 5, {
-      binDiJetSel, binCent, bintpt,binInvM, binLog3c  },"s");
-  CreateTHnSparse( "hDiJetPtPairL", "DiJet PtPair", 5, {
-      binDiJetSel, binCent, bintpt,binInvM, binLog3c  },"s");
-  CreateTHnSparse( "hDiJetInvMPtPairRes", "DiJet InvM PtPair Res Matrix", 7, {
-      binDiJetSel, binCent, bintpt,binInvM,binInvM,binLog3c,binLog3c},"s");
-  CreateTHnSparse( "hDiJetInvMPtPairMiss", "DiJet InvM PtPair missing tracks", 5, {
-      binDiJetSel, binCent, bintpt,binInvM, binLog3c},"s");
-  CreateTHnSparse( "hDiJetInvMPtPairFake", "DiJet InvM PtPair fake tracks", 5, {
-      binDiJetSel, binCent, bintpt,binInvM, binLog3c},"s");
+  CreateTHnSparse( "hJetPtLeading","",4,{
+      binDiJetSel,binCent,bintpt,binpthardbin}, "s" );
+  CreateTHnSparse( "hRho","Rho dist",3,{binCent,bin1c,binpthardbin},"s");
+  CreateTHnSparse( "hDiJetDPhi_0_2pi", "DiJet #Delta#Phi", 6, {
+      binDiJetSel, binCent, bintpt,binInvM, AxisFix( "",100, 0, 2*pi ), binpthardbin },"s");
+  CreateTHnSparse( "hDiJetDPhi_0_2piTruth", "DiJet #Delta#Phi", 6, {
+      binDiJetSel, binCent, bintpt,binInvM, AxisFix( "",100, 0, 2*pi ), binpthardbin },"s");
+  CreateTHnSparse( "hDiJetInvMPtPair", "DiJet PtPair", 6, {
+      binDiJetSel, binCent, bintpt, binInvM, binLog3c, binpthardbin  },"s");
+  CreateTHnSparse( "hDiJetInvMPtPairTruth", "DiJet PtPair Truth", 6, {
+      binDiJetSel, binCent, bintpt, binInvM, binLog3c, binpthardbin },"s");
+  CreateTHnSparse( "hDiJetInvMPtPairRes", "DiJet InvM PtPair Res Matrix", 8, {
+      binDiJetSel, binCent, bintpt,binInvM,binInvM,binLog3c,binLog3c, binpthardbin},"s");
+  CreateTHnSparse( "hDiJetInvMPtPairMiss", "DiJet InvM PtPair missing tracks", 6, {
+      binDiJetSel, binCent, bintpt,binInvM, binLog3c, binpthardbin},"s");
+  CreateTHnSparse( "hDiJetInvMPtPairFake", "DiJet InvM PtPair fake tracks", 6, {
+      binDiJetSel, binCent, bintpt,binInvM, binLog3c, binpthardbin},"s");
  
 	
-  //CreateTHnSparse( "hInclJetPt", "Inclusive jet pt", 2, {
-  //    binCent, binjetpt  },"s");
-  CreateTHnSparse( "hInclJetPtCorrectedScaledToMB", "Inclusive jet pt", 2, {
-      binCent, binjetpt  },"s");
-  CreateTHnSparse( "hInclJetPtCorrectedScaledToMBH", "Inclusive jet pt", 2, {
-      binCent, binjetpt  },"s");
-  CreateTHnSparse( "hInclJetPtCorrectedScaledToMBL", "Inclusive jet pt", 2, {
-      binCent, binjetpt  },"s");
-  CreateTHnSparse( "hInclJetPtScaledToMB", "Inclusive jet pt", 2, {
-      binCent, binjetpt  },"s");
-  //CreateTHnSparse( "hInclJetPtCorrected", "Inclusive jet pt", 2, {
-  //    binCent, binjetpt  },"s");
-  //CreateTHnSparse( "hInclTruthJetPt", "Inclusive jet pt", 2, {
-  //    binCent, binjetpt  },"s");
-  //CreateTHnSparse( "hInclJetPtCorrectedAndMatched", "Inclusive jet pt", 2, {
-  //    binCent, binjetpt  },"s");
-  CreateTHnSparse( "hInclJetMass", "Inclusive jet Mass", 2, {
-      binCent, binjetpt  },"s");
-  CreateTHnSparse( "hInclJetMassScaledToMB", "Inclusive jet Mass", 2, {
-      binCent, binjetpt  },"s");
-  CreateTHnSparse( "hInclJetMassCorrected", "Inclusive jet mass", 2, {
-      binCent, binjetpt  },"s");
-  CreateTHnSparse( "hInclJetMassCorrectedScaledToMB", "Inclusive jet mass", 2, {
-      binCent, binjetpt  },"s");
-
-  CreateTHnSparse( "hInclJetPtRes", "Inclusive jet pt Res Matrix", 3, {
-      binCent, binjetpt,binjetpt},"s");
-  CreateTHnSparse( "hInclJetPtFake", "Inclusive jet pt fake tracks", 2, {
-      binCent, binjetpt},"s");
-  CreateTHnSparse( "hInclJetPtMiss", "Inclusive jet pt  missing tracks", 2, {
-      binCent, binjetpt},"s");
+  CreateTHnSparse( "hJetPt", "Inclusive jet pt", 3, {binCent, binjetpt, binpthardbin  },"s");
+  CreateTHnSparse( "hJetPtMatched", "Inclusive matched jet pt", 3, {binCent, binjetpt, binpthardbin  },"s");
+  CreateTHnSparse( "hJetPtTruth", "Inclusive Gen jet pt", 3, {binCent, binjetpt, binpthardbin  },"s");
+  CreateTHnSparse( "hJetPtRes", "Inclusive jet pt Res Matrix", 4, {
+      binCent, binjetpt, binjetpt, binpthardbin },"s");
+  CreateTHnSparse( "hJetPtFake", "Inclusive jet pt fake tracks", 3, {
+      binCent, binjetpt, binpthardbin},"s");
+  CreateTHnSparse( "hJetPtMiss", "Inclusive jet pt  missing tracks", 3, {
+      binCent, binjetpt, binpthardbin},"s");
 
 
   PostData(1, fHistos->GetListOfHistograms());
@@ -255,8 +197,8 @@ void AliBSDiJetTask::UserCreateOutputObjects(){
   //===============================
   // For Sure
   //===============================
-  std::cout<< "DEBUG4 IsAA?"<< (fIsAA?"AA":"pp")<<std::endl;
-  std::cout<<"NBins of Cent : "<<binCent.GetNbins()<<"\t"<<binCent.GetXmin()<<"\t"<<binCent.GetXmax()<<endl;
+  //std::cout<< "DEBUG4 IsAA?"<< (fIsAA?"AA":"pp")<<std::endl;
+  //std::cout<<"NBins of Cent : "<<binCent.GetNbins()<<"\t"<<binCent.GetXmin()<<"\t"<<binCent.GetXmax()<<endl;
   if( fNDiJetSelection != kBDiJetSelEnd-1 ){
     cout<<"fNDiJetSelection("<<fNDiJetSelection
       <<") is not match with kBDiJetSelEnd("<<kBDiJetSelEnd<<")"<<endl;
@@ -268,114 +210,10 @@ void AliBSDiJetTask::UserCreateOutputObjects(){
 		fDijetInvM.push_back(0.);
   }
   fUtils = new AliAnalysisUtils();
-
   fUtils -> 	SetMaxVtxZ(10);
-	fCaloUtils = new AliCalorimeterUtils();
-	fCaloUtils->SetNumberOfCellsFromEMCALBorder(1);
-	fCaloUtils->SetNumberOfCellsFromPHOSBorder (2);
-	fCaloUtils->SetNumberOfSuperModulesUsed(10);
-	const Int_t year = 2011;
-	if     (year == 2010) fCaloUtils->SetNumberOfSuperModulesUsed(4);
-	else if(year <= 2013) fCaloUtils->SetNumberOfSuperModulesUsed(10);
-	else if(year >  2013) fCaloUtils->SetNumberOfSuperModulesUsed(20);
-	else                  fCaloUtils->SetNumberOfSuperModulesUsed(10);
-	if(!fIsAA)
-	{
-		fCaloUtils->SetLocalMaximaCutE(0.1);
-		fCaloUtils->SetLocalMaximaCutEDiff(0.03);
-	}
-	else
-	{
-		fCaloUtils->SetLocalMaximaCutE(0.2);
-		fCaloUtils->SetLocalMaximaCutEDiff(0.03);
-	}
-	fCaloUtils->SwitchOffRecalculateClusterTrackMatching();
-	fCaloUtils->SwitchOffBadChannelsRemoval() ;
-	if(!fIsMC)
-		fCaloUtils->SwitchOnLoadOwnEMCALGeometryMatrices();
-	
-	fCaloUtils->InitEMCALGeometry();
-
-	tsf = new TF1("tsf","[0]/pow([1]+x*x*x*x,[2])+[3]",5,1000) ;
-	tsfh = new TF1("tsfh","[0]/pow([1]+x*x*x*x,[2])+[3]",5,1000) ;
-	tsfl = new TF1("tsfl","[0]/pow([1]+x*x*x*x,[2])+[3]",5,1000) ;
 
 
-	if (fOption.Contains("LHC12d")) { //ch jet
-		if (fOption.Contains("ScaleTo5TeV")){
-			tsf->SetParameters(20.8877,197.93,0.813918,0.000309556);
-			tsfh->SetParameters(21.9551,207.686,0.818395,0.000332579);
-			tsfl->SetParameters(19.864,188.184,0.809403,0.000286503);
-		}
-		else {
-			tsf->SetParameters(27.9874,419.65,0.800532,0.000613293);
-			tsfh->SetParameters(29.7364,436.329,0.806079,0.000655603);
-			tsfl->SetParameters(26.3315,403.03,0.794951,0.000570913);
-		}
-	} 
-	else if (fOption.Contains("LHC12f")){
-		if (fOption.Contains("ScaleTo5TeV")){
-			tsf->SetParameters(21.768,224.487,0.811922,0.000256762);
-			tsfh->SetParameters(22.937,233.167,0.816485,0.00027829);
-			tsfl->SetParameters(20.6467,215.804,0.807307,0.000235205);
-		} else {
-			tsf->SetParameters(29.2384,450.817,0.798505,0.000520484);
-			tsfh->SetParameters(30.9866,465.512,0.803686,0.000557798);
-			tsfl->SetParameters(27.5756,436.145,0.793281,0.000483107);
-		}
-	}
-	else if (fOption.Contains("LHC12h")){
-		if (fOption.Contains("ScaleTo5TeV")){
-			if (fOption.Contains("Trigger1")){
-				tsf->SetParameters(23.2189,216.902,0.823087,0.000208479);
-				tsfh->SetParameters(24.2083,222.941,0.826666,0.000224221);
-				tsfl->SetParameters(22.2599,210.825,0.819468,0.000192719);
-			}
-			if (fOption.Contains("Trigger2")){
-				tsf->SetParameters(17.5794,91.6111,0.794505,0.00028183);
-				tsfh->SetParameters(18.4342,99.0281,0.798727,0.000303145);
-				tsfl->SetParameters(16.7568,84.1957,0.790243,0.000260487);
-			}
 
-		} else { 
-			if (fOption.Contains("Trigger1")){
-				tsf->SetParameters(30.7108,432.104,0.807976,0.000424779);
-				tsfh->SetParameters(32.3394,444.05,0.812517,0.000455315);
-				tsfl->SetParameters(29.1507,420.144,0.803393,0.000394201);
-			}
-			if (fOption.Contains("Trigger2")){
-				tsf->SetParameters(22.888,277.488,0.778264,0.000561091);
-				tsfh->SetParameters(24.2841,291.415,0.78364,0.000602462);
-				tsfl->SetParameters(21.563,263.625,0.772848,0.000519645);
-			}
-			if (fOption.Contains("All")){
-				tsf->SetParameters(26.2369,880.724,0.736723,0.000845877);
-				tsfh->SetParameters(28.0387,913.16,0.742835,0.000932078);
-				tsfl->SetParameters(24.5484,848.55,0.7306,0.000759487);
-			}
-		}
-	}
-	else if (fOption.Contains("LHC13d")) {
-		tsf->SetParameters(250.954,1918.07,0.865423,0.000799134);
-		tsfh->SetParameters(266.475,1932.12,0.870167,0.000851788);
-		tsfl->SetParameters(236.116,1903.93,0.860602,0.000746376);
-	}
- 	else if (fOption.Contains("LHC13e")) {
-		tsf->SetParameters(199.456,1931.83,0.838126,0.00114861);
-		tsfh->SetParameters(212.014,1955.28,0.843172,0.00122398);
-		tsfl->SetParameters(187.52,1908.36,0.833025,0.00107308);
-	}
-	else if (fOption.Contains("LHC13f")) {
-		tsf->SetParameters(143.084,1774.16,0.800964,0.00128229);
-		tsfh->SetParameters(152.963,1803.91,0.806621,0.00139113);
-		tsfl->SetParameters(133.764,1744.48,0.795255,0.0011732);
-	} 
-
-	else {
-		tsf->SetParameters(37.8667,490.515,0.795349,0.000840197);
-		tsfh->SetParameters(41.4233,520.858,0.803635,0.00094383);
-		tsfl->SetParameters(34.594,460.346,0.787003,0.000736331);
-	}
 }
 
 //________________________________________________________________________
@@ -393,10 +231,7 @@ Bool_t AliBSDiJetTask::Run(){
 				fOption.Contains("13d") ||
 				fOption.Contains("13e") 
 				) fCent = sel -> GetMultiplicityPercentile("V0A");
-		else if (fOption.Contains("15o")) fCent = sel -> GetMultiplicityPercentile("V0M");
-		else if (fOption.Contains("16l")) fCent = sel -> GetMultiplicityPercentile("V0M");
-		else if (fOption.Contains("17n")) fCent = sel -> GetMultiplicityPercentile("V0M");
-		else	fCent = 50.;
+		else  fCent = sel -> GetMultiplicityPercentile("V0M");
 	}
 
   //pt hard bin scaling-----------------------------------------------------------
@@ -423,7 +258,7 @@ Bool_t AliBSDiJetTask::Run(){
   // Fill z_vertex and cut z_vertex range
   IsGoodVertex = false;
   IsGenGoodVtx = false;
-  if (fOption.Contains("Emb")){
+  if (fOption.Contains("Emb") || fOption.Contains("MC")){
 		fHistos -> FillTH1 ("zvtx",genzvtx);
 		//cout<<"bkkim genzvtx : "<<genzvtx<<endl;
   	if (abs(genzvtx)<=10) {
@@ -448,6 +283,7 @@ Bool_t AliBSDiJetTask::Run(){
 		fHistos->FillTH1("hEventNumbers","GoodzNX",XSection);
 		fHistos->FillTH1("hEventNumbers","NXoNTrials",XSection/NTrials);
 		fHistos -> FillTH1 ("nCentrality",fCent);
+		fHistos -> FillTH1("hPtHardBin",pthardbin);
   }
 	
   AliAnalysisManager *man = AliAnalysisManager::GetAnalysisManager();
@@ -467,7 +303,7 @@ Bool_t AliBSDiJetTask::Run(){
 	//cout<<"Second jet Container name : "<<ktContainer -> GetName()<<endl;
 
 	AliJetContainer *mcContainer = nullptr;
-	if (fOption.Contains("Emb")){
+	if (fOption.Contains("Emb") || fOption.Contains("MC")){
 		mcContainer = GetJetContainer(2);
 		//cout<<"MC jet Container name : "<<mcContainer -> GetName()<<endl;
 	}
@@ -482,6 +318,9 @@ Bool_t AliBSDiJetTask::Run(){
 		//cout<<"trk -> Label : "<<trk->GetLabel()<<endl;
   }
   //cout<<((AliAODEvent*)AliAnalysisTaskEmcalEmbeddingHelper::GetInstance()->GetExternalEvent())->GetCentrality()->GetCentralityPercentile("V0M")<<endl;
+  //for(int i=0; i<10; i++) cout<<"pt hard bin : "<<AliAnalysisTaskEmcalEmbeddingHelper::GetInstance()->GetInputFilename()<<endl;
+  //for(int i=0; i<10; i++) cout<<"pt hard bin : "<<AliAnalysisTaskEmcalEmbeddingHelper::GetInstance()-> GetStartingFileIndex()<<endl;
+  //for(int i=0; i<10; i++) cout<<"pt hard bin : "<<((AliAODEvent*)AliAnalysisTaskEmcalEmbeddingHelper::GetInstance()->GetExternalEvent()) -> GetTree() -> GetCurrentFile() <<endl;
 
 
   // Underlying background calculation
@@ -492,54 +331,65 @@ Bool_t AliBSDiJetTask::Run(){
 	TLorentzVector1D RecJets; 
 	Bool_t gooddijet = this -> MeasureJets(jetContainer, RecJets, false);
 	std::sort(RecJets.begin(), RecJets.end(), [&](const TLorentzVector& x, const TLorentzVector& y) { return x.Pt() > y.Pt() ;});
-	for (auto j : RecJets){
-			//cout<<"corrected rec jet eta phi  pt  = "<< j.Eta()<<"     "<<TVector2::Phi_0_2pi(j.Phi())<<"     " <<j.Pt() <<endl;
-	}
-	if (!gooddijet) return false;
+	
+if (!gooddijet) return false;
 
 	
 	TLorentzVector1D TrueJets; 
 	Bool_t gooddijetkine = false; 
 	
-	if (fOption.Contains("Emb")){
+	if (fOption.Contains("Emb") || fOption.Contains("MC")){
 		gooddijetkine = this -> MeasureJets(mcContainer, TrueJets, true);
 		for (auto j : TrueJets){
-			//cout<<"True jet eta phi  pt  = "<< j.Eta()<<"     "<<TVector2::Phi_0_2pi(j.Phi())<<"     " <<j.Pt() <<endl;
 		}
 		if (!gooddijetkine) return false;
 		std::sort(TrueJets.begin(), TrueJets.end(), [&](const TLorentzVector& x, const TLorentzVector& y) { return x.Pt() > y.Pt(); });
 	}
 
-	//cout<<"pjet size : "<<TrueJets.size()<<endl;
-	// Embedding matching with truth jets
 	TLorentzVector1D matchedjets;
-	if (fOption.Contains("Emb") && IsGenGoodVtx){ // Inclusive jet pt response matrix
+	if ((fOption.Contains("Emb") || fOption.Contains("MC")) && IsGenGoodVtx){ // Inclusive jet pt response matrix
 		TLorentzVector1D pjets = TrueJets;
 		TLorentzVector1D rjets = RecJets;
+		for(auto pj : pjets){
+			  	FillTHnSparse("hJetPtTruth",{fCent,pj.Pt(),pthardbin},sf);
+		} 
+		
 		if (IsGoodVertex){
+			for(auto rj : rjets){
+				FillTHnSparse("hJetPt",{fCent,rj.Pt(),pthardbin},sf);
+			} 
+			
 			for (auto pj : pjets){
 				double maxjpt = 0;
 				TLorentzVector maxjet(0,0,0,0);
 				for (auto rj : rjets){
 					if (rj.Pt()>pj.Pt()*0.3 && rj.DeltaR(pj)<0.4 && maxjet.Pt()<rj.Pt())  {
-					//if (rj.Pt()>pj.Pt()*0.3  && maxjet.Pt()<rj.Pt())  {
 						maxjet = rj;
 					}
 				}
-
 				if (maxjet.Pt()>0) {
+					matchedjets.push_back(maxjet);
 					rjets.erase(std::remove_if(rjets.begin(), rjets.end(),
 								[&](const TLorentzVector& x) { return x.Pt() == maxjet.Pt() ; }), rjets.end());
-					matchedjets.push_back(maxjet);
+			  	FillTHnSparse("hJetPtRes",{fCent,maxjet.Pt(),pj.Pt(),pthardbin},sf);
 				}
+				if (maxjet.Pt()==0) FillTHnSparse("hJetPtMiss",{fCent,pj.Pt(),pthardbin},sf);
+
 			} 
+			for (auto rj : rjets){
+				FillTHnSparse("hJetPtFake",{fCent,rj.Pt(),pthardbin},sf); 
+			}
 			RecJets = matchedjets;
 			//cout<<"matchedjets"<<endl;
-			for (auto j : matchedjets){	
-				//cout<<j.Pt()<<endl;
-				if (abs(j.Eta())<0.5) fHistos->FillTH1("hInclJetPtCorrectedAndMatched",j.Pt(),sf);
+			for (auto mj : RecJets){	
+				FillTHnSparse("hJetPtMatched",{fCent,mj.Pt(),pthardbin},sf);
 			}
 		}
+	} else if (IsGoodVertex) {
+		TLorentzVector1D rjets = RecJets;
+		for(auto rj : rjets){
+			FillTHnSparse("hJetPt",{fCent,rj.Pt(),pthardbin},sf);
+		} 
 	}
 
 
@@ -549,7 +399,7 @@ Bool_t AliBSDiJetTask::Run(){
 	this->CheckDijetSelections(RecJets,sj, recdisel);
 	TLorentzVector2D sjkine( fNDiJetSelection+1, TLorentzVector1D(2));
 	Bool1D truedisel(fNDiJetSelection +1, false);
-	if (fOption.Contains("Emb")) {
+	if (fOption.Contains("Emb") || fOption.Contains("MC")) {
 		this->CheckDijetSelections(TrueJets,sjkine, truedisel);
 	}
 	
@@ -564,14 +414,14 @@ Bool_t AliBSDiJetTask::Run(){
 		//=== SKIP Empty DiJet
 		if( j[0].E() < 1e-4 || j[1].E() < 1e-4 ) {
 			//fDijetSelectionCut[ids] = false;
-			if (fOption.Contains("Emb")){
+			if (fOption.Contains("Emb") || fOption.Contains("MC")){
 				auto truej = sjkine[ids];
 				auto dijet    = truej[0] + truej[1];
 				auto invM     = dijet.M();
 				auto ptpair   = dijet.Pt(); 
         Bool_t  truthdijetcut = truedisel.at(ids);
 				if (IsGenGoodVtx && truthdijetcut ) {
-					FillTHnSparse( "hDiJetInvMPtPairMiss", {(double)ids,fCent,truej[0].Pt(),invM,ptpair},sf);
+					FillTHnSparse( "hDiJetInvMPtPairMiss", {(double)ids,fCent,truej[0].Pt(),invM,ptpair,pthardbin},sf);
 				}
 			}
 		}
@@ -595,17 +445,10 @@ Bool_t AliBSDiJetTask::Run(){
 		double tratio = 1.;
 		double tratioh = 1.;
 		double tratiol = 1.;
-		if (fName.Contains("EMCEJE")){
-			tratio = tsf->Eval(j[0].Pt());
-			tratioh = tsfh->Eval(j[0].Pt());
-			tratiol = tsfl->Eval(j[0].Pt());
-		}
 		
-		if (fOption.Contains("Emb") ){	
+		if (fOption.Contains("Emb") || fOption.Contains("MC")){	
 			auto truej = sjkine[ids];
 			auto truedijet    = truej[0] + truej[1];
-			//auto invM     = dijet.M();
-			//auto ptpair   = dijet.Pt(); 
 			Double_t truthptpair =  truedijet.Pt();
 			Double_t truthinvM =  truedijet.M();
 			Bool_t  truthdijetcut = truedisel.at(ids);
@@ -614,30 +457,22 @@ Bool_t AliBSDiJetTask::Run(){
 			if ( IsGenGoodVtx) {
 				if (IsGoodVertex){
 					if (truthdijetcut){
-						//cout <<"truth ptpair mjj : "<< ids << " "  <<truthptpair<<" "<<truthinvM<<endl;
-						//cout <<"rec ptpair mjj : "<<ids<< " " << ptpair <<" "<<invM<<endl;
-						FillTHnSparse( "hDiJetInvMPtPairRes", { diJetSel,fCent,tpt,invM,truthinvM,ptpair,truthptpair},sf);
+						FillTHnSparse( "hDiJetInvMPtPairRes", { diJetSel,fCent,tpt,invM,truthinvM,ptpair,truthptpair, pthardbin},sf);
 					} else {
-						FillTHnSparse( "hDiJetInvMPtPairFake", {diJetSel,fCent,tpt,invM,ptpair},sf);
-						FillTHnSparse( "hDiJetInvMPtPairMiss", {diJetSel,fCent,tpt,truthinvM,truthptpair},sf);
+						FillTHnSparse( "hDiJetInvMPtPairFake", {diJetSel,fCent,tpt,invM,ptpair, pthardbin},sf);
+						FillTHnSparse( "hDiJetInvMPtPairMiss", {diJetSel,fCent,tpt,truthinvM,truthptpair, pthardbin},sf);
 					}
-				} else FillTHnSparse( "hDiJetInvMPtPairMiss", {diJetSel,fCent,tpt,truthinvM,truthptpair},sf);
-
+				} else FillTHnSparse( "hDiJetInvMPtPairMiss", {diJetSel,fCent,tpt,truthinvM,truthptpair,pthardbin},sf);
 			}
-			
 			if (truthdijetcut) {
-				FillTHnSparse( "hDiJetPtPairTruth",         { diJetSel, fCent, tpt, truthinvM, truthptpair },sf); 
-				FillTHnSparse( "hDiJetDPhi_0_2piTruth",     { diJetSel, fCent, tpt, truthinvM, dPhi_0_2piTruth },sf*tratio);
+				FillTHnSparse( "hDiJetInvMPtPairTruth",     { diJetSel, fCent, tpt, truthinvM, truthptpair,pthardbin },sf); 
+				FillTHnSparse( "hDiJetDPhi_0_2piTruth", { diJetSel, fCent, tpt, truthinvM, dPhi_0_2piTruth, pthardbin },sf);
 			}
 		}
-
 		if (IsGoodVertex){
-			FillTHnSparse( "hJetPtLeading",        { diJetSel, fCent, tpt},sf*tratio );
-			FillTHnSparse( "hDiJetInvM",           { diJetSel, fCent, tpt, invM },sf*tratio);
-			FillTHnSparse( "hDiJetDPhi_0_2pi",     { diJetSel, fCent, tpt, invM, dPhi_0_2pi },sf*tratio);
-			FillTHnSparse( "hDiJetPtPair",         { diJetSel, fCent, tpt, invM, ptpair },sf*tratio); 
-			FillTHnSparse( "hDiJetPtPairH",   { diJetSel, fCent, tpt, invM, ptpair },sf*tratioh); 
-			FillTHnSparse( "hDiJetPtPairL",   { diJetSel, fCent, tpt, invM, ptpair },sf*tratiol); 
+			FillTHnSparse( "hJetPtLeading",        { diJetSel, fCent, tpt, pthardbin},sf*tratio );
+			FillTHnSparse( "hDiJetDPhi_0_2pi",     { diJetSel, fCent, tpt, invM, dPhi_0_2pi, pthardbin },sf);
+			FillTHnSparse( "hDiJetInvMPtPair",         { diJetSel, fCent, tpt, invM, ptpair, pthardbin },sf); 
 		}
 
 	}
@@ -715,18 +550,19 @@ void AliBSDiJetTask::MeasureBgDensity(AliJetContainer* ktContainer){
 	}
 	RHO = TMath::Median(Sumpt.size(),rhopt);
 	RHOM = TMath::Median(Summ.size(),rhom);
-	//cout<<"bkkim RHO :"<<RHO<<endl;
-	FillTHnSparse("hRho",{fCent,RHO},sf); 
+	FillTHnSparse("hRho",{fCent,RHO, pthardbin},sf); 
 }
 
 void AliBSDiJetTask::MeasurePtHardBinScalingFactor(){
 	NTrials = -1;
 	XSection =-1;
   genzvtx = -30;
+  auto bin16j5 = AxisVar( "bin16j5", {5,7,9,12,16,21,28,36,45,57,70,85,99,115,132,150,169,190,212,235,10000});
+
 	if(fIsMC){
 		if (fOption.Contains("AOD")){
 			AliVEvent *event = InputEvent();
-			//if (fOption.Contains("Emb")) event = AliAnalysisTaskEmcalEmbeddingHelper::GetInstance()->GetExternalEvent();
+			if (fOption.Contains("Emb")) event = AliAnalysisTaskEmcalEmbeddingHelper::GetInstance()->GetExternalEvent();
 			if (!event) {
 				Printf("ERROR: Could not retrieve event");
 				sf = 0;
@@ -746,26 +582,20 @@ void AliBSDiJetTask::MeasurePtHardBinScalingFactor(){
 					AliGenPythiaEventHeader* gPythia = dynamic_cast<AliGenPythiaEventHeader*>(gh);
 					NTrials = gPythia->Trials();
 					XSection = gPythia->GetXsection();
+					pthardbin =  double(bin16j5.FindBin(gPythia->GetPtHard())) -0.5;
 				}
 			}
 			sf = XSection/NTrials;
+			cout<<"XSection : "<<XSection<<endl;
+			cout<<"NTrials : "<<NTrials<<endl;
 
 			fMCArray = (TClonesArray*) event->FindListObject("mcparticles");
 			const Int_t nTracksMC = fMCArray->GetEntriesFast();
 			for (Int_t iTracks = 0; iTracks < nTracksMC; iTracks++) {
 				AliAODMCParticle* trackMC = dynamic_cast<AliAODMCParticle*>(fMCArray->At(iTracks));
 				Int_t pdgCode = trackMC->PdgCode();
-				if (iTracks == 4 || iTracks == 5)
-					//cout<<"iTracks  : "<<iTracks<<"   pdgcode : "<<pdgCode
-						//<< "  Pt " <<trackMC->Pt()
-						//<< "   Phi  " <<trackMC->Phi()
-						//<<endl;
 				if (iTracks == 4) p6.SetXYZT(trackMC->Px(), trackMC->Py(), trackMC->Pz(), trackMC->E());
 				if (iTracks == 5) p7.SetXYZT(trackMC->Px(), trackMC->Py(), trackMC->Pz(), trackMC->E());
-				//cout<<"p6 pt "<<p6.Pt()<<endl;
-				// Select only primaries
-				//if(!(trackMC->IsPhysicalPrimary())) continue;
-				//Float_t ptMC = trackMC->Pt();
 			}	
 		}
     else {
@@ -828,13 +658,11 @@ Bool_t AliBSDiJetTask::MeasureJets(AliJetContainer *jetContainer, TLorentzVector
 		for( int it=0; it<j->GetNumberOfTracks(); it++ ) {
 			auto trk =  j->Track(it);
 			if( ! ((AliAODTrack*) trk)->TestFilterBit(768)) continue;
-			//cout<<"trk : "<<trk->GetLabel()<<endl;
 			if (!istruth && fOption.Contains("MBTR")){
 				if (fBSRandom->Uniform(0,100)<5.) continue;
 			}
 			TLorentzVector temp;
 			temp.SetXYZM(trk->Px(),trk->Py(),trk->Pz(),pionmass);
-			fHistos->FillTH2("trketaphifulljet",trk->Eta(),trk->Phi(),sf);
 			sum+=temp;
 			sumpt+=trk->Pt();
 			if( lpt < temp.Pt() )  lpt = temp.Pt();
@@ -845,8 +673,6 @@ Bool_t AliBSDiJetTask::MeasureJets(AliJetContainer *jetContainer, TLorentzVector
 				auto clu =  j->Cluster(it);
 				TLorentzVector temp;
 				clu->GetMomentum(temp,vertex);
-				fHistos->FillTH2("cluetaphifulljet",temp.Eta(),temp.Phi(),sf);
-				//cout<<"Clu Pt : "<<temp.Pt()<<endl;
 				sum+=temp;
 				sumpt+=temp.Pt();
 				if( lpt < temp.Pt() )  lpt = temp.Pt();
@@ -864,49 +690,6 @@ Bool_t AliBSDiJetTask::MeasureJets(AliJetContainer *jetContainer, TLorentzVector
 				);
 		//MC Pythia jet / pT-hard > 4 cut
 		if( lpt < fLeadingParticlePtMin ) continue;
-		//if (TMath::Abs(sum.DeltaR(p6))<0.4 && (sum.Pt()/p6.Pt())>4) return false;
-		//if (TMath::Abs(sum.DeltaR(p7))<0.4 && (sum.Pt()/p7.Pt())>4) return false;
-
-
-		//=== Jet geometric and kinematic CUT 
-		//=== MCTRUTH=0, MCREC & DATA = 5GeV
-		if (IsGoodVertex && abs(sum.Eta())<0.5){
-			//fHistos->FillTH1("hInclJetPtBefore",sum.Pt());
-		}
-		if (IsGoodVertex && abs(sumcorr.Eta())<0.5){
-			//fHistos->FillTH1("hInclJetPtAfter",sumcorr.Pt());
-		}
-
-		if (IsGoodVertex){
-			fHistos->FillTH1("jetptresum",sumpt,sf);
-			fHistos->FillProfile("jetptresumRatio",sumpt, j->Pt()/sumpt);
-			Double_t tratio = 1.;
-			Double_t tratioh = 1.;
-			Double_t tratiol = 1.;
-			if (fName.Contains("EMCEJE")) {
-				tratio = tsf->Eval(sum.Pt());
-				tratioh = tsfh->Eval(sum.Pt());
-				tratiol = tsfl->Eval(sum.Pt());
-			}
-			if (!istruth){
-				//if (fOption.Contains("LHC16j5") && (sum.DeltaR(p6)<0.1 || sum.DeltaR(p7)<0.1))  
-				if (abs(sum.Eta())<0.5) fHistos->FillTH1("hInclJetPt",sum.Pt(),sf);
-				if (abs(sumcorr.Eta())<0.5) fHistos->FillTH1("hInclJetPtCorrected",sumcorr.Pt(),sf);
-				//else FillTHnSparse("hInclJetPt",{fCent,sum.Pt()},sf);
-				//FillTHnSparse("hInclJetPtScaledToMB",{fCent,sum.Pt()},sf*tratio);
-				//FillTHnSparse("hInclJetMass",{fCent,sum.M()},sf);
-				//FillTHnSparse("hInclJetMassScaledToMB",{fCent,sum.M()},sf*tratio);
-			}	
-			if (istruth){
-				if (abs(sum.Eta())<0.5) fHistos->FillTH1("hInclTruthJetPt",sum.Pt(),sf);
-				//FillTHnSparse("hInclJetPtCorrected",{fCent,sumcorr.Pt()},sf);
-				//FillTHnSparse("hInclJetPtCorrectedScaledToMB",{fCent,sumcorr.Pt()},sf*tratio);
-				//FillTHnSparse("hInclJetPtCorrectedScaledToMBH",{fCent,sumcorr.Pt()},sf*tratioh);
-				//FillTHnSparse("hInclJetPtCorrectedScaledToMBL",{fCent,sumcorr.Pt()},sf*tratiol);
-				//FillTHnSparse("hInclJetMassCorrected",{fCent,sumcorr.M()},sf);
-				//FillTHnSparse("hInclJetMassCorrectedScaledToMB",{fCent,sumcorr.M()},sf*tratio);
-			}
-		}
 
 		if (istruth){
 			if (abs(sum.Eta())<0.5) Jets.push_back(sum);

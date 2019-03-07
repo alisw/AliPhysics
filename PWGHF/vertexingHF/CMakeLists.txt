@@ -16,6 +16,7 @@
 #Module
 set(MODULE PWGHFvertexingHF)
 add_definitions(-D_MODULE_="${MODULE}")
+add_subdirectory (TMVA)
 
 # Module include folder
 include_directories(${AliPhysics_SOURCE_DIR}/PWGHF/vertexingHF)
@@ -62,6 +63,7 @@ set(SRCS
   AliRDHFCutsLctopK0sfromAODtracks.cxx
   AliRDHFCutsOmegactoeleOmegafromAODtracks.cxx
   AliRDHFCutsXicPlustoXiPiPifromAODtracks.cxx
+  AliRDHFCutsXicZerotoXiPifromAODtracks.cxx
   AliRDHFCutsXictoeleXifromAODtracks.cxx
   AliAnalysisVertexingHF.cxx
   AliAnalysisTaskSEB0toDStarPi.cxx
@@ -86,6 +88,7 @@ set(SRCS
   AliAnalysisTaskDmesonMCPerform.cxx
   AliAnalysisTaskSELc2pK0sfromAODtracks.cxx
   AliAnalysisTaskSEXicPlus2XiPiPifromAODtracks.cxx
+  AliAnalysisTaskSEXicZero2XiPifromAODtracks.cxx
   AliCFVertexingHF.cxx
   AliCFVertexingHF2Prong.cxx
   AliCFVertexingHF3Prong.cxx
@@ -99,7 +102,6 @@ set(SRCS
   AliAnalysisTaskSEDStarCharmFraction.cxx
   AliAnalysisTaskSESignificance.cxx
   AliAnalysisTaskSEHFQA.cxx
-  AliAnalysisTaskSEHFTreeCreator.cxx
   AliAnalysisTaskTrackingSysPropagation.cxx
   AliMultiDimVector.cxx
   AliSignificanceCalculator.cxx
@@ -120,6 +122,9 @@ set(SRCS
   charmFlow/AliAnalysisTaskHFv1.cxx
   charmFlow/AliHFAfterBurner.cxx
   charmFlow/AliAnalysisTaskFlowD2H.cxx
+  charmFlow/AliHFQnVectorHandler.cxx
+  charmFlow/AliAnalysisTaskSEHFTenderQnVectors.cxx
+  charmFlow/AliAnalysisTaskSECharmHadronvn.cxx  
   cutVarFDsub/AliHFCutVarFDsubAnalysisManager.cxx
   cutVarFDsub/AliHFCutVarFDsubAnalysisManagerD0.cxx
   cutVarFDsub/AliHFCutVarFDsubAnalysisManagerDplus.cxx
@@ -140,9 +145,10 @@ set(SRCS
   AliAnalysisTaskSEB0toDminuspi.cxx
   AliAnalysisTaskSEDstoK0sK.cxx
   AliHFVnVsMassFitter.cxx
-  AliHFCutOptTreeHandler.cxx
   AliAnalysisTaskSELc2V0bachelorTMVAApp.cxx
-  )
+  AliAnalysisTaskSEHFSystPID.cxx
+  AliAnalysisTaskSEDmesonPIDSysProp.cxx
+   )
 
 # Headers from sources
 string(REPLACE ".cxx" ".h" HDRS "${SRCS}")
@@ -203,6 +209,7 @@ install(FILES
             ConfigVertexingHF_Pb_AllCent_NoLS.C
             ConfigVertexingHF_DplustoK0s_DstoK0s.C
             ConfigVertexingHF_pPbRHF_DplustoK0s_DstoK0s.C
+	    ConfigVertexingHF_Pb_AllCent_NoLS_PIDLc_PtDepSel_LcMinpt1_DsMinPt15_2018opt.C
         DESTINATION
             PWGHF/vertexingHF/)
 

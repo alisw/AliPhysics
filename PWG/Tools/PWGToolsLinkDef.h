@@ -40,6 +40,10 @@
 #pragma link C++ namespace PWG::Tools+;
 #pragma link C++ class PWG::Tools::AliYAMLConfiguration+;
 #pragma link C++ namespace TestTHistManager;
+#pragma link C++ class TBinning+;
+#pragma link C++ class TCustomBinning+;
+#pragma link C++ class TLinearBinning+;
+#pragma link C++ class TVariableBinning+;
 #pragma link C++ class TestTHistManager::THistManagerTestSuite;
 #pragma link C++ function TestTHistManager::TestRunAll();
 #pragma link C++ function TestTHistManager::TestRunBuildSimple();

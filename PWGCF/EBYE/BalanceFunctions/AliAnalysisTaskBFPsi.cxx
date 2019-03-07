@@ -182,6 +182,8 @@ AliAnalysisTaskBFPsi::AliAnalysisTaskBFPsi(const char *name)
   fElectronRejectionMinPt(0.),
   fElectronRejectionMaxPt(1000.),
   fPIDMomCut(0.6),
+  fHistPhiNUADeep(0),
+  fUseNUADeep(kFALSE),
   fESDtrackCuts(0),
   fCentralityEstimator("V0M"),
   fUseCentrality(kFALSE),
@@ -203,11 +205,17 @@ AliAnalysisTaskBFPsi::AliAnalysisTaskBFPsi(const char *name)
   fCheckPileUp(kFALSE),
   fCheckPrimaryFlagAOD(kFALSE),
   fUseMCforKinematics(kFALSE),
+  fRebinCorrHistos(kFALSE),
   fUseAdditionalVtxCuts(kFALSE),
-  fUseOutOfBunchPileUpCutsLHC15o(kFALSE),
-  fUseOutOfBunchPileUpCutsLHC15oJpsi(kFALSE),
+  fCheckOutOfBunchPileUp(kFALSE),
+  fUseOOBPileUpCutsLHC15o(kFALSE),
   fPileupLHC15oSlope(3.38),
   fPileupLHC15oOffset(15000),
+  fUseOOBPileUpCutsLHC15oJpsi(kFALSE),
+  fUseOOBPileUpCutsLHC18nTPCclus(kFALSE),
+  fOOBLHC18Slope(2000.0),
+  fOOBLHC18Par1(0.013),
+  fOOBLHC18Par2(1.25e-9),
   fDetailedTracksQA(kFALSE),
   fVxMax(0.8),
   fVyMax(0.8),
@@ -255,6 +263,10 @@ AliAnalysisTaskBFPsi::AliAnalysisTaskBFPsi(const char *name)
   fHistGlobalvsESDAfterPileUpCuts(0),
   fHistV0MvsTPCoutBeforePileUpCuts(0), 
   fHistV0MvsTPCoutAfterPileUpCuts(0),
+  fHistV0MvsnTPCclusBeforePileUpCuts(0),
+  fHistV0MvsnTPCclusAfterPileUpCuts(0),
+  fHistCentrBeforePileUpCuts(0),
+  fHistCentrAfterPileUpCuts(0),
   fUtils(0) {
   // Constructor
   // Define input and output slots here
@@ -482,7 +494,8 @@ void AliAnalysisTaskBFPsi::UserCreateOutputObjects() {
   fList->Add(fHistPdgMC);
   fHistPdgMCAODrec  = new TH1F("fHistPdgMCAODrec","Pdg code distribution;pdg code;Entries",6401,-3200.5,3200.5);
   fList->Add(fHistPdgMCAODrec);
-				     
+  fHistPhiNUADeep = new TH2F("fHistPhiNUADeep","#phi distribution;#phi (rad);Centrality percentile",200,0.0,2.*TMath::Pi(),220,-5,105);
+  fList->Add(fHistPhiNUADeep); 
   fHistEtaVzPos  = new TH3F("fHistEtaVzPos","#eta vs Vz distribution (+);#eta;V_{z} (cm);Centrality percentile",40,-1.6,1.6,140,-12.,12.,220,-5,105);
   fList->Add(fHistEtaVzPos); 
   fHistEtaVzPosCorr  = new TH3F("fHistEtaVzPosCorr","#eta vs Vz distribution (+);#eta;V_{z} (cm);Centrality percentile",40,-1.6,1.6,140,-12.,12.,220,-5,105);
@@ -501,34 +514,81 @@ void AliAnalysisTaskBFPsi::UserCreateOutputObjects() {
   fHistEtaPhiNegCorr  = new TH3F("fHistEtaPhiNegCorr","#eta-#phi distribution (-);#eta;#phi (rad);Centrality percentile",40,-1.6,1.6,72,0.,2.*TMath::Pi(),220,-5,105); 	       	 
   fList->Add(fHistEtaPhiNegCorr);
   
-  Int_t phiBin = 100;
-  Int_t etaBin = 16;
-  Int_t vertex_bin = 9;
+    if (fRebinCorrHistos) {
 
-  Double_t nArrayPhi[phiBin+1];
-  for(Int_t iBin = 0; iBin <= phiBin; iBin++)
+    Int_t perphiBin = 100;
+    Int_t phiBinRebin = 94;
+    Int_t etaBin = 16;
+    Int_t vertex_bin = 9;
+    Double_t nArrayPhiRebin[phiBinRebin+1];
+    for(Int_t iBin = 0; iBin < 32; iBin++)
+    nArrayPhiRebin[iBin] = iBin*TMath::TwoPi()/perphiBin;
+    for(Int_t iBin = 32; iBin <= phiBinRebin; iBin++)
+    nArrayPhiRebin[iBin] = (iBin+6)*TMath::TwoPi()/perphiBin;
+
+    Double_t nArrayEta[17]={-0.8, -0.7, -0.6, -0.5, -0.4, -0.3, -0.2, -0.1, 0.0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8};
+    Double_t nArrayVertex[10]={-10, -7, -5, -3, -1, 1, 3, 5, 7, 10};
+
+    fHistEtaPhiVzPlusCorr = new TH3F("fHistEtaPhiVzPlusCorr",
+                                 "Survived positive primaries;#phi;#eta;V_{z} (cm)",
+                                 phiBinRebin, nArrayPhiRebin, etaBin, nArrayEta, vertex_bin, nArrayVertex);
+    fHistEtaPhiVzMinusCorr = new TH3F("fHistEtaPhiVzMinusCorr",
+                                  "Survived negative primaries;#phi;#eta;V_{z} (cm)",
+                                  phiBinRebin, nArrayPhiRebin, etaBin,nArrayEta, vertex_bin, nArrayVertex);
+
+    Int_t phiBin = 100;
+    Double_t nArrayPhi[phiBin+1];
+    for(Int_t iBin = 0; iBin <= phiBin; iBin++)
         nArrayPhi[iBin] = iBin*TMath::TwoPi()/phiBin;
 
-  Double_t nArrayEta[17]={-0.8, -0.7, -0.6, -0.5, -0.4, -0.3, -0.2, -0.1, 0.0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8};
-  Double_t nArrayVertex[10]={-10, -7, -5, -3, -1, 1, 3, 5, 7, 10};
-
-  fHistEtaPhiVzPlus = new TH3F("fHistEtaPhiVzPlus",
+    fHistEtaPhiVzPlus = new TH3F("fHistEtaPhiVzPlus",
                                  "Survived positive primaries;#phi;#eta;V_{z} (cm)",
                                  phiBin, nArrayPhi, etaBin, nArrayEta, vertex_bin, nArrayVertex);
-  fHistEtaPhiVzPlusCorr = new TH3F("fHistEtaPhiVzPlusCorr",
-                                     "Survived positive primaries;#phi;#eta;V_{z} (cm)",
-                                     phiBin, nArrayPhi, etaBin, nArrayEta, vertex_bin, nArrayVertex);
-  fHistEtaPhiVzMinus = new TH3F("fHistEtaPhiVzMinus",
+
+    fHistEtaPhiVzMinus = new TH3F("fHistEtaPhiVzMinus",
                                   "Survived negative primaries;#phi;#eta;V_{z} (cm)",
                                   phiBin, nArrayPhi, etaBin,nArrayEta, vertex_bin, nArrayVertex);
-  fHistEtaPhiVzMinusCorr = new TH3F("fHistEtaPhiVzMinusCorr",
+
+    fList->Add(fHistEtaPhiVzPlus);
+    fList->Add(fHistEtaPhiVzPlusCorr);
+    fList->Add(fHistEtaPhiVzMinus);
+    fList->Add(fHistEtaPhiVzMinusCorr);
+
+    }
+    
+    else if (!fRebinCorrHistos) {
+
+    Int_t phiBin = 100;
+    Int_t etaBin = 16;
+    Int_t vertex_bin = 9;
+
+    Double_t nArrayPhi[phiBin+1];
+    for(Int_t iBin = 0; iBin <= phiBin; iBin++)
+        nArrayPhi[iBin] = iBin*TMath::TwoPi()/phiBin;
+
+    Double_t nArrayEta[17]={-0.8, -0.7, -0.6, -0.5, -0.4, -0.3, -0.2, -0.1, 0.0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8};
+    Double_t nArrayVertex[10]={-10, -7, -5, -3, -1, 1, 3, 5, 7, 10};
+
+    fHistEtaPhiVzPlus = new TH3F("fHistEtaPhiVzPlus",
+                                 "Survived positive primaries;#phi;#eta;V_{z} (cm)",
+                                 phiBin, nArrayPhi, etaBin, nArrayEta, vertex_bin, nArrayVertex);
+    fHistEtaPhiVzPlusCorr = new TH3F("fHistEtaPhiVzPlusCorr",
+                                     "Survived positive primaries;#phi;#eta;V_{z} (cm)",
+                                     phiBin, nArrayPhi, etaBin, nArrayEta, vertex_bin, nArrayVertex);
+    fHistEtaPhiVzMinus = new TH3F("fHistEtaPhiVzMinus",
+                                  "Survived negative primaries;#phi;#eta;V_{z} (cm)",
+                                  phiBin, nArrayPhi, etaBin,nArrayEta, vertex_bin, nArrayVertex);
+    fHistEtaPhiVzMinusCorr = new TH3F("fHistEtaPhiVzMinusCorr",
                                       "Survived negative primaries;#phi;#eta;V_{z} (cm)",
                                       phiBin, nArrayPhi, etaBin,nArrayEta, vertex_bin, nArrayVertex);
-  fList->Add(fHistEtaPhiVzPlus);
-  fList->Add(fHistEtaPhiVzPlusCorr);
-  fList->Add(fHistEtaPhiVzMinus);
-  fList->Add(fHistEtaPhiVzMinusCorr);
 
+    fList->Add(fHistEtaPhiVzPlus);
+    fList->Add(fHistEtaPhiVzPlusCorr);
+    fList->Add(fHistEtaPhiVzMinus);
+    fList->Add(fHistEtaPhiVzMinusCorr);
+      
+    }
+    
   fHistPhiBefore  = new TH2F("fHistPhiBefore","#phi distribution;#phi;Centrality percentile",200,0.,2*TMath::Pi(),220,-5,105);
   fList->Add(fHistPhiBefore);
   fHistPhiAfter  = new TH2F("fHistPhiAfter","#phi distribution;#phi;Centrality percentile",200,0.,2*TMath::Pi(),220,-5,105);
@@ -580,6 +640,19 @@ void AliAnalysisTaskBFPsi::UserCreateOutputObjects() {
     fList->Add(fHistV0MvsTPCoutBeforePileUpCuts);
     fList->Add(fHistV0MvsTPCoutAfterPileUpCuts);
 
+     fHistV0MvsnTPCclusBeforePileUpCuts = new TH2F("fHistV0MvsnTPCclusBeforePileUpCuts","V0M amplitude vs nTPC cluster; nTPCClus; V0M amplitude;",1000,0,1E7,1000,0,60000);
+  fHistV0MvsnTPCclusAfterPileUpCuts = new TH2F("fHistV0MvsnTPCclusAfterPileUpCuts","V0M amplitude vs nTPC cluster; nTPCClus; V0M amplitude;",1000,0,1E7,1000,0,60000);
+
+    fList->Add(fHistV0MvsnTPCclusBeforePileUpCuts);
+    fList->Add(fHistV0MvsnTPCclusAfterPileUpCuts);
+    
+    
+    fHistCentrBeforePileUpCuts = new TH1F("fHistCentrBeforePileUpCuts","V0M centrality",101,0,101);
+    fHistCentrAfterPileUpCuts = new TH1F("fHistCentrAfterPileUpCuts","V0M centrality",101,0,101);
+    
+    fList->Add(fHistCentrBeforePileUpCuts);
+    fList->Add(fHistCentrAfterPileUpCuts);
+
   // Balance function histograms
   // Initialize histograms if not done yet (including the custom binning)
   if(!fBalance->GetHistNp()){
@@ -623,9 +696,11 @@ void AliAnalysisTaskBFPsi::UserCreateOutputObjects() {
   fList->Add(fBalance->GetQAHistConversionafter());
   fList->Add(fBalance->GetQAHistPsiMinusPhi());
   fList->Add(fBalance->GetQAHistResonancesBefore());
+  fList->Add(fBalance->GetQAHistResonancesPhiBefore());
   fList->Add(fBalance->GetQAHistResonancesRho());
   fList->Add(fBalance->GetQAHistResonancesK0());
   fList->Add(fBalance->GetQAHistResonancesLambda());
+  fList->Add(fBalance->GetQAHistResonancesPhi()); 
   fList->Add(fBalance->GetQAHistQbefore());
   fList->Add(fBalance->GetQAHistQafter());
 
@@ -1213,6 +1288,89 @@ Double_t AliAnalysisTaskBFPsi::IsEventAccepted(AliVEvent *event){
     fHistEventStats->Fill(7,gRefMultiplicity); 
   }
 
+  if (fCheckOutOfBunchPileUp){
+    AliMultSelection *multSelection = (AliMultSelection*) event->FindListObject("MultSelection");
+    
+    if (fUseOOBPileUpCutsLHC15o) { //Out of bunch pile up cut based on ESD vs TPC tracks
+      if (TMath::Abs(multSelection->GetMultiplicityPercentile("V0M") - multSelection->GetMultiplicityPercentile("CL1")) > 7.5) {
+	fHistEventStats->Fill(9, -1);
+	return -1;
+      }
+      const Int_t nTracks = event->GetNumberOfTracks();
+      Int_t multEsd = ((AliAODHeader*)event->GetHeader())->GetNumberOfESDTracks();
+      fHistGlobalvsESDBeforePileUpCuts->Fill(nTracks,multEsd);
+      fHistCentrBeforePileUpCuts->Fill(multSelection->GetMultiplicityPercentile("V0M"));
+      
+      Int_t multTPC = 0;
+      for (Int_t it = 0; it < nTracks; it++) {
+	AliAODTrack* AODTrk = (AliAODTrack*)event->GetTrack(it);
+	if (!AODTrk){ delete AODTrk; continue; }
+	if (AODTrk->TestFilterBit(128)) {multTPC++;}
+      } // end of for (Int_t it = 0; it < nTracks; it++)
+      
+      if ((multEsd - fPileupLHC15oSlope*multTPC) > fPileupLHC15oOffset) return -1;
+      fHistGlobalvsESDAfterPileUpCuts->Fill(nTracks,multEsd);
+      fHistCentrAfterPileUpCuts->Fill(multSelection->GetMultiplicityPercentile("V0M"));
+      
+    }
+    
+    if (fUseOOBPileUpCutsLHC15oJpsi) {//Out of bunch pile up cut based on V0mult vs TPC out tracks
+      
+      if (TMath::Abs(multSelection->GetMultiplicityPercentile("V0M") - multSelection->GetMultiplicityPercentile("CL1")) > 7.5) {
+	fHistEventStats->Fill(9, -1);
+	return -1;
+      }
+      
+      Int_t ntrkTPCout = 0;
+      for (int it = 0; it < event->GetNumberOfTracks(); it++) {
+	AliAODTrack* AODTrk = (AliAODTrack*)event->GetTrack(it);
+	if ((AODTrk->GetStatus() & AliAODTrack::kTPCout) && AODTrk->GetID() > 0)
+	    ntrkTPCout++;
+      }
+      
+      Double_t multVZERO =0; 
+      AliVVZERO *vzero = (AliVVZERO*)event->GetVZEROData();
+	if(vzero) {
+	  for(int ich=0; ich < 64; ich++)
+	    multVZERO += vzero->GetMultiplicity(ich);
+	}
+	
+	fHistV0MvsTPCoutBeforePileUpCuts->Fill(ntrkTPCout, multVZERO);
+	fHistCentrBeforePileUpCuts->Fill(multSelection->GetMultiplicityPercentile("V0M"));
+	
+	if (multVZERO < (-2200 + 2.5*ntrkTPCout + 1.2e-5*ntrkTPCout*ntrkTPCout))  {
+	  fHistEventStats->Fill(9, -1);
+	  return -1;
+	}
+	fHistV0MvsTPCoutAfterPileUpCuts->Fill(ntrkTPCout, multVZERO);
+	fHistCentrAfterPileUpCuts->Fill(multSelection->GetMultiplicityPercentile("V0M"));
+    }
+
+    if (fUseOOBPileUpCutsLHC18nTPCclus) {//Out of bunch pile up cut based on V0mult vs TPC out tracks
+      
+      Double_t multVZERO =0; 
+      AliVVZERO *vzero = (AliVVZERO*)event->GetVZEROData();
+      if(vzero) {
+	for(int ich=0; ich < 64; ich++)
+	  multVZERO += vzero->GetMultiplicity(ich);
+      }
+
+      Int_t nTPCclus = ((AliAODHeader*)event->GetHeader())->GetNumberOfTPCClusters();
+      fHistV0MvsnTPCclusBeforePileUpCuts->Fill(nTPCclus, multVZERO);
+      fHistCentrBeforePileUpCuts->Fill(multSelection->GetMultiplicityPercentile("V0M"));
+      
+      if (multVZERO < (-fOOBLHC18Slope + fOOBLHC18Par1*nTPCclus + fOOBLHC18Par2*nTPCclus*nTPCclus)) {
+	fHistEventStats->Fill(9, -1);
+	return -1 ;
+      }
+      
+      fHistV0MvsnTPCclusAfterPileUpCuts->Fill(nTPCclus, multVZERO);
+      fHistCentrAfterPileUpCuts->Fill(multSelection->GetMultiplicityPercentile("V0M"));
+      
+    }
+    
+  }
+  
   
   // Event trigger bits
   fHistTriggerStats->Fill(((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected());
@@ -1461,57 +1619,6 @@ Double_t AliAnalysisTaskBFPsi::GetRefMultiOrCentrality(AliVEvent *event){
       fHistMultiplicity->Fill(gMultiplicity);
       fHistMultvsPercent->Fill(gMultiplicity, gCentrality);
 
-      if (fUseOutOfBunchPileUpCutsLHC15o) {	
-	if (TMath::Abs(multSelection->GetMultiplicityPercentile("V0M") - multSelection->GetMultiplicityPercentile("CL1")) > 7.5) {
-	  fHistEventStats->Fill(9, -1);
-	  return -1;
-	}
-	const Int_t nTracks = event->GetNumberOfTracks();
-	Int_t multEsd = ((AliAODHeader*)event->GetHeader())->GetNumberOfESDTracks();
-	fHistGlobalvsESDBeforePileUpCuts->Fill(nTracks,multEsd);
-	Int_t multTPC = 0;
-	for (Int_t it = 0; it < nTracks; it++) {
-	  AliAODTrack* AODTrk = (AliAODTrack*)event->GetTrack(it);
-	  if (!AODTrk){ delete AODTrk; continue; }
-	  if (AODTrk->TestFilterBit(128)) {multTPC++;}
-	} // end of for (Int_t it = 0; it < nTracks; it++)
-	
-	if ((multEsd - fPileupLHC15oSlope*multTPC) > fPileupLHC15oOffset) return -1;
-	fHistGlobalvsESDAfterPileUpCuts->Fill(nTracks,multEsd);
-      }
-
-      if (fUseOutOfBunchPileUpCutsLHC15oJpsi) {
-
-	if (TMath::Abs(multSelection->GetMultiplicityPercentile("V0M") - multSelection->GetMultiplicityPercentile("CL1")) > 7.5) {
-	  fHistEventStats->Fill(9, -1);
-	  return -1;
-	}
-	
-	Int_t ntrkTPCout = 0;
-	 for (int it = 0; it < event->GetNumberOfTracks(); it++) {
-	   AliAODTrack* AODTrk = (AliAODTrack*)event->GetTrack(it);
-	   if ((AODTrk->GetStatus() & AliAODTrack::kTPCout) && AODTrk->GetID() > 0)
-	     ntrkTPCout++;
-	 }
-	 
-	 Double_t multVZERO =0; 
-	 AliVVZERO *vzero = (AliVVZERO*)event->GetVZEROData();
-	 if(vzero) {
-	   for(int ich=0; ich < 64; ich++)
-	     multVZERO += vzero->GetMultiplicity(ich);
-	 }
-	 
-	 
-	 fHistV0MvsTPCoutBeforePileUpCuts->Fill(ntrkTPCout, multVZERO);
-	 
-	 if (multVZERO < (-2200 + 2.5*ntrkTPCout + 1.2e-5*ntrkTPCout*ntrkTPCout))  {
-	   fHistEventStats->Fill(9, -1);
-	   return -1;
-	 }
-	 fHistV0MvsTPCoutAfterPileUpCuts->Fill(ntrkTPCout, multVZERO);
-	 
-      }     
-      
       fHistCL1vsVZEROPercentile->Fill(multSelection->GetMultiplicityPercentile("V0M"),multSelection->GetMultiplicityPercentile("CL1"));
       
       if(multSelection->GetEstimator("RefMult08"))
@@ -1591,57 +1698,7 @@ Double_t AliAnalysisTaskBFPsi::GetRefMultiOrCentrality(AliVEvent *event){
 	  
 	  // Centrality estimator USED   ++++++++++++++++++++++++++++++
 	  fHistCentStatsUsed->Fill(0.,gCentrality);
-	  
-	  if (fUseOutOfBunchPileUpCutsLHC15o) {
-	    if (TMath::Abs(multSelection->GetMultiplicityPercentile("V0M") - multSelection->GetMultiplicityPercentile("CL1")) > 7.5) {
-	      fHistEventStats->Fill(9, -1);
-	      return -1;
-	    }
-	    const Int_t nTracks = event->GetNumberOfTracks();
-	    Int_t multEsd = ((AliAODHeader*)event->GetHeader())->GetNumberOfESDTracks();
-	    Int_t multTPC = 0;
-	    for (Int_t it = 0; it < nTracks; it++) {
-	      AliAODTrack* AODTrk = (AliAODTrack*)event->GetTrack(it);
-	      if (!AODTrk){ delete AODTrk; continue; }
-	      if (AODTrk->TestFilterBit(128)) {multTPC++;}
-	    } // end of for (Int_t it = 0; it < nTracks; it++)
-	    
-	    if ((multEsd - 3.38*multTPC) > 15000) {
-	      fHistEventStats->Fill(10, -1);
-	      return -1;
-	    }
-	  }
-
-	  if (fUseOutOfBunchPileUpCutsLHC15oJpsi) {
-	    
-	    if (TMath::Abs(multSelection->GetMultiplicityPercentile("V0M") - multSelection->GetMultiplicityPercentile("CL1")) > 7.5) {
-	      fHistEventStats->Fill(9, -1);
-	      return -1;
-	    }
-	    Int_t ntrkTPCout = 0;
-	    for (int it = 0; it < event->GetNumberOfTracks(); it++) {
-	      AliAODTrack* AODTrk = (AliAODTrack*)event->GetTrack(it);
-	      if ((AODTrk->GetStatus() & AliAODTrack::kTPCout) && AODTrk->GetID() > 0)
-		ntrkTPCout++;
-	    }
-	    
-	    Double_t multVZERO =0; 
-	    AliVVZERO *vzero = (AliVVZERO*)event->GetVZEROData();
-	    if(vzero) {
-	      for(int ich=0; ich < 64; ich++)
-		multVZERO += vzero->GetMultiplicity(ich);
-	    }
-	    
-	    
-	    fHistV0MvsTPCoutBeforePileUpCuts->Fill(ntrkTPCout, multVZERO);
-	    
-	    if (multVZERO < (-2200 + 2.5*ntrkTPCout + 1.2e-5*ntrkTPCout*ntrkTPCout))  {
-	      fHistEventStats->Fill(9, -1);
-	      return -1;
-	    }
-	    fHistV0MvsTPCoutAfterPileUpCuts->Fill(ntrkTPCout, multVZERO);
-	  }
-	    
+	 
 	  fHistCL1vsVZEROPercentile->Fill(multSelection->GetMultiplicityPercentile("V0M"),multSelection->GetMultiplicityPercentile("CL1"));
 	  if(multSelection->GetEstimator("RefMult08"))
 	    fHistTPCvsVZEROMultiplicity->Fill( multSelection->GetEstimator("V0M")->GetValue(),multSelection->GetEstimator("RefMult08")->GetValue());
@@ -3066,6 +3123,219 @@ TObjArray* AliAnalysisTaskBFPsi::GetAcceptedTracks(AliVEvent *event, Double_t gC
       }
       //===========================end of PID (so far only for electron rejection)===============================//
       
+        
+        //+++++++++++++++++++++++++++++//
+        //===========================PID New Trial===============================//
+        
+        if(fUsePIDNewTrial) {
+                        
+            //Double_t prob[AliPID::kSPECIES]={0.};
+            Double_t probTPC[AliPID::kSPECIES]={0.};
+            Double_t probTOF[AliPID::kSPECIES]={0.};
+            Double_t probTPCTOF[AliPID::kSPECIES]={0.};
+            
+            AliAODPid* pidObj = aodTrack->GetDetPid();
+            
+            //    Double_t nSigma = 0.;
+            Double_t nSigmaTPC = 0.;
+            
+            Double_t nSigmaTPCPions = 0.;
+            Double_t nSigmaTPCKaons = 0.;
+            Double_t nSigmaTPCProtons = 0.;
+            
+            Double_t nSigmaTOF = 0.;
+            Double_t nSigmaTPCTOF = 0.;
+            
+            Double_t nSigmaTOFPions = 0.;
+            Double_t nSigmaTOFKaons = 0.;
+            Double_t nSigmaTOFProtons = 0.;
+            
+            Double_t nSigmaTPCTOFPions = 0.;
+            Double_t nSigmaTPCTOFKaons = 0.;
+            Double_t nSigmaTPCTOFProtons = 0.;
+            
+            //    Double_t nSigmaTPCTOFreq = 0.;
+            //UInt_t detUsedTPC = 0;
+            //UInt_t detUsedTOF = 0;
+            //UInt_t detUsedTPCTOF = 0;
+            Double_t tofTime = -999., length = 999., tof = -999.;
+            Double_t c = TMath::C()*1.E-9;// m/ns
+            Double_t beta = -999.;
+            
+            fPIDCombined->SetDetectorMask(AliPIDResponse::kDetTPC); //firts check only TPC
+            UInt_t detUsed = fPIDCombined->ComputeProbabilities(aodTrack, fPIDResponse, probTPC);
+            Bool_t isPartIDselected = kFALSE;
+            
+            if (detUsed  == (UInt_t)fPIDCombined->GetDetectorMask()){
+                
+                nSigmaTPC = fPIDResponse->NumberOfSigmasTPC(aodTrack,(AliPID::EParticleType)fParticleOfInterest);
+                
+                nSigmaTPCPions   = TMath::Abs(fPIDResponse->NumberOfSigmasTPC(aodTrack,(AliPID::EParticleType)AliPID::kPion));
+                nSigmaTPCKaons   = TMath::Abs(fPIDResponse->NumberOfSigmasTPC(aodTrack,(AliPID::EParticleType)AliPID::kKaon));
+                nSigmaTPCProtons = TMath::Abs(fPIDResponse->NumberOfSigmasTPC(aodTrack,(AliPID::EParticleType)AliPID::kProton));
+                
+                fHistdEdxVsPTPCbeforePID -> Fill(aodTrack->GetTPCmomentum()*aodTrack->Charge(),aodTrack->GetTPCsignal()); //aodTrack->P()*aodTrack->Charge()
+                fHistProbTPCvsPtbeforePID -> Fill(aodTrack->Pt(),probTPC[fParticleOfInterest]);
+                fHistNSigmaTPCvsPtbeforePID -> Fill(aodTrack->Pt(),nSigmaTPC);
+                
+                // fPIDCombined->SetDetectorMask(AliPIDResponse::kDetTOF); //firts check only TPC
+                //detUsed = fPIDCombined->ComputeProbabilities(aodTrack, fPIDResponse, probTOF);
+                
+                
+                fPIDCombined->SetDetectorMask(AliPIDResponse::kDetTOF|AliPIDResponse::kDetTPC);
+                detUsed = fPIDCombined->ComputeProbabilities(aodTrack, fPIDResponse, probTPCTOF);
+                
+                if (detUsed == (UInt_t)fPIDCombined->GetDetectorMask()){
+                    
+                    if(!pidObj || pidObj->GetTOFsignal() > 99999)  continue;
+                    
+                    nSigmaTOF = fPIDResponse->NumberOfSigmasTOF(aodTrack,fParticleOfInterest);
+                    nSigmaTPCTOF = TMath::Sqrt(nSigmaTPC*nSigmaTPC + nSigmaTOF*nSigmaTOF);
+                    
+                    nSigmaTOFPions = fPIDResponse->NumberOfSigmasTOF(aodTrack,(AliPID::EParticleType)AliPID::kPion);
+                    nSigmaTOFKaons = fPIDResponse->NumberOfSigmasTOF(aodTrack,(AliPID::EParticleType)AliPID::kKaon);
+                    nSigmaTOFProtons = fPIDResponse->NumberOfSigmasTOF(aodTrack,(AliPID::EParticleType)AliPID::kProton);
+                    
+                    nSigmaTPCTOFPions = TMath::Sqrt(nSigmaTPCPions*nSigmaTPCPions + nSigmaTOFPions*nSigmaTOFPions);
+                    nSigmaTPCTOFKaons = TMath::Sqrt(nSigmaTPCKaons*nSigmaTPCKaons + nSigmaTOFKaons*nSigmaTOFKaons);
+                    nSigmaTPCTOFProtons = TMath::Sqrt(nSigmaTPCProtons*nSigmaTPCProtons + nSigmaTOFProtons*nSigmaTOFProtons);
+                    
+                    
+                    if ((aodTrack->IsOn(AliAODTrack::kITSin)) && (aodTrack->IsOn(AliAODTrack::kTOFout)) ) {
+                        tofTime = aodTrack->GetTOFsignal();//in ps
+                        length = aodTrack->GetIntegratedLength();
+                        tof = tofTime*1E-3; // ns
+                        if (tof <= 0) {
+                            Printf("WARNING: track with negative TOF time found! Skipping this track for PID checks\n");
+                            continue;
+                        }
+                        if (length <= 0){
+                            // in old productions integrated track length is not stored in AODs -> need workaround
+                            Double_t exptime[10];
+                            aodTrack->GetIntegratedTimes(exptime);
+                            length = exptime[0]*c*1E-3/0.01; //assume electrons are relativistic (and add all multiplication factors)
+                            if (length <= 0){
+                                Printf("WARNING: track with negative length found!Skipping this track for PID checks\n");
+                                continue;
+                            }
+                        }
+                        length = length*0.01; // in meters
+                        tof = tof*c;
+                        beta = length/tof;
+                        
+                        fHistBetavsPTOFbeforePID ->Fill(aodTrack->P()*aodTrack->Charge(),beta);
+                        fHistProbTOFvsPtbeforePID ->Fill(aodTrack->Pt(),probTOF[fParticleOfInterest]);
+                        fHistNSigmaTOFvsPtbeforePID ->Fill(aodTrack->Pt(),nSigmaTOF);
+                        
+                        
+                        fHistProbTPCTOFvsPtbeforePID -> Fill(aodTrack->Pt(),probTPCTOF[fParticleOfInterest]);
+                        fHistBetaVsdEdXbeforePID->Fill(aodTrack->GetTPCsignal(),beta);
+                        fHistNSigmaTPCTOFvsPtbeforePID -> Fill(aodTrack->Pt(),nSigmaTPCTOF);
+                        fHistNSigmaTPCTOFPbefPID ->Fill(nSigmaTPC,nSigmaTOF,aodTrack->P());
+                    }
+                    
+                    if(vPt < fPIDMomCut){
+                        
+                        if (fParticleOfInterest == (AliPID::kPion)){
+                            
+                            if (fUsePIDnSigma){
+                                
+                                if ((TMath::Abs(nSigmaTPC)<2.) && !(TMath::Abs(nSigmaTPCKaons)<3.) && !(TMath::Abs(nSigmaTPCProtons)<3.)) isPartIDselected = kTRUE;
+                                else continue;
+                                
+                            }
+                            
+                        } //end of pions
+                        
+                        if (fParticleOfInterest == (AliPID::kKaon)){
+                            
+                            if (fUsePIDnSigma){
+                                
+                                if ((TMath::Abs(nSigmaTPC)<2.) && !(TMath::Abs(nSigmaTPCPions)<3.) && !(TMath::Abs(nSigmaTPCProtons)<3.)) isPartIDselected = kTRUE;
+                                else continue;
+                                
+                            }
+                            
+                        } //end of kaons
+                        
+                        if (fParticleOfInterest == (AliPID::kProton)){
+                            
+                            if (fUsePIDnSigma){
+                                                                
+                                if ((TMath::Abs(nSigmaTPC)<2.) && !(TMath::Abs(nSigmaTPCPions)<3.) && !(TMath::Abs(nSigmaTPCKaons)<3.)) isPartIDselected = kTRUE;
+                                else continue;
+                                
+                            }
+                            
+                        } //end of protons
+                        
+                    }
+                    
+                    if (vPt >= fPIDMomCut){
+                        
+                        if (fParticleOfInterest == (AliPID::kPion)){
+                            
+                            if (fUsePIDnSigma){
+                                
+                                if ((TMath::Abs(nSigmaTPCTOF)<2.) && !(TMath::Abs(nSigmaTPCTOFKaons)<3.) && !(TMath::Abs(nSigmaTPCTOFProtons)<3.)) isPartIDselected = kTRUE;
+                                else continue;
+                                
+                            }
+                            
+                        } //end of pions
+                        
+                        if (fParticleOfInterest == (AliPID::kKaon)){
+                            
+                            if (fUsePIDnSigma){
+                                
+                                if ((TMath::Abs(nSigmaTPCTOF)<2.) && !(TMath::Abs(nSigmaTPCTOFPions)<3.) && !(TMath::Abs(nSigmaTPCTOFProtons)<3.)) isPartIDselected = kTRUE;
+                                else continue;
+                            }
+                            
+                        } //end of kaons
+                        
+                        if (fParticleOfInterest == (AliPID::kProton)){
+                            
+                            if (fUsePIDnSigma){
+                                
+                                if ((TMath::Abs(nSigmaTPCTOF)<2.) && !(TMath::Abs(nSigmaTPCTOFPions)<3.) && !(TMath::Abs(nSigmaTPCTOFKaons)<3.)) isPartIDselected = kTRUE;
+                                else continue;
+                            }
+                            
+                        } //end of protons
+                        
+                    }
+                    
+                    if (isPartIDselected == kTRUE) {
+                        
+                        if (fUsePIDnSigma){
+                            fHistNSigmaTOFvsPtafterPID ->Fill(aodTrack->Pt(),nSigmaTOF);
+                            fHistNSigmaTPCvsPtafterPID ->Fill(aodTrack->Pt(),nSigmaTPC);
+                            fHistNSigmaTPCTOFvsPtafterPID ->Fill(aodTrack->Pt(),nSigmaTPCTOF);
+                            fHistNSigmaTPCTOFPafterPID ->Fill(nSigmaTPC,nSigmaTOF,aodTrack->P());  //++++++++++++++
+                        }
+                        
+                        //Fill QA after the PID
+                        fHistBetavsPTOFafterPID ->Fill(aodTrack->P()*aodTrack->Charge(),beta);
+                        fHistdEdxVsPTPCafterPID ->Fill(aodTrack->P()*aodTrack->Charge(),aodTrack->GetTPCsignal());
+                        fHistBetaVsdEdXafterPID ->Fill(aodTrack->GetTPCsignal(),beta);
+                    }
+                }
+            }
+            // if no detector flag remove track
+            else{
+                continue;
+            }
+            
+            if (isPartIDselected == kFALSE) continue;
+        }
+        
+        
+        //===========================PID New Trial===============================//
+        //+++++++++++++++++++++++++++++//
+        
+        
+        
       if(vPt > fPtTriggerMin) {
 	nAcceptedTracksAboveHighPtThreshold += 1;
 	fHistPtTriggerThreshold->Fill(vPt,gCentrality);
@@ -3582,10 +3852,10 @@ TObjArray* AliAnalysisTaskBFPsi::GetAcceptedTracks(AliVEvent *event, Double_t gC
 	
 	if( vPt < fPtMin || vPt > fPtMax)      
 	  continue;
-	if (!fUsePID) {
+	if (!fUseRapidity) {
 	  if( vEta < fEtaMin || vEta > fEtaMax)  continue;
 	}
-	else if (fUsePID){
+	else if (fUseRapidity){
 	  if( vY < fEtaMin || vY > fEtaMax)  continue;
 	}
 
@@ -3788,6 +4058,17 @@ TObjArray* AliAnalysisTaskBFPsi::GetAcceptedTracks(AliVEvent *event, Double_t gC
 	  
 	}
 	
+        if(fUseNUADeep) {
+          
+          if (vPhi > 1.5 && vPhi < 2){
+              continue;
+      
+          }
+          
+          fHistPhiNUADeep->Fill(vPhi,gCentrality);
+
+        }
+          
 	//vPhi *= TMath::RadToDeg();
 
 	//caluclation of sphericity

@@ -17,6 +17,7 @@
 #include <fstream>
 
 #include <THashList.h>
+#include <TLinearBinning.h>
 #include <TH1D.h>
 #include <TH2D.h>
 #include <TH3D.h>
@@ -45,6 +46,7 @@ AliEMCALTriggerOfflineLightQAPP::AliEMCALTriggerOfflineLightQAPP():
   fL0MaxTime(10),
   fMinL0FastORAmp(0),
   fMinL1FastORAmp(0),
+  fEnableEnergyCorrelationSM(kFALSE),
   fHistManager(),
   fNTotTRU(0),
   fMaxFORabsId(0)
@@ -67,6 +69,7 @@ AliEMCALTriggerOfflineLightQAPP::AliEMCALTriggerOfflineLightQAPP(const char* nam
   fL0MaxTime(10),
   fMinL0FastORAmp(0),
   fMinL1FastORAmp(0),
+  fEnableEnergyCorrelationSM(kFALSE),
   fHistManager(name),
   fNTotTRU(0),
   fMaxFORabsId(0)
@@ -89,6 +92,7 @@ AliEMCALTriggerOfflineLightQAPP::AliEMCALTriggerOfflineLightQAPP(const AliEMCALT
   fL0MaxTime(triggerQA.fL0MaxTime),
   fMinL0FastORAmp(triggerQA.fMinL0FastORAmp),
   fMinL1FastORAmp(triggerQA.fMinL1FastORAmp),
+  fEnableEnergyCorrelationSM(triggerQA.fEnableEnergyCorrelationSM),
   fHistManager(triggerQA.GetName()),
   fNTotTRU(0),
   fMaxFORabsId(0)
@@ -193,6 +197,14 @@ void AliEMCALTriggerOfflineLightQAPP::Init()
   hname = "EMCTRQA_histCellAmpVsFastORL1Amp";
   htitle = "EMCTRQA_histCellAmpVsFastORL1Amp;FastOR L1 amplitude;2x2 cell sum energy (GeV)";
   fHistManager.CreateTH2(hname, htitle, 1024/fADCperBin, 0, 1024, 1024/fADCperBin, 0, 80);
+
+  if(fEnableEnergyCorrelationSM) {
+    hname = "EMCTRQA_histCellAmpVsFastORL1AmpSM";
+    htitle = "EMCTRQA_histCellAmpVsFastORL1AmpSM;SM; FastOR L1 amplitude;2x2 cell sum energy (GeV)";
+    TLinearBinning smbinning(21, -1.5, 19.5), energybinning(200, 0., 20.);
+    const TBinning *histsmbinning[3] = {&smbinning, &energybinning, &energybinning};
+    fHistManager.CreateTHnSparse(hname, htitle, 3, histsmbinning);
+  }
 
   for (Int_t nTRU = 0; nTRU < fNTotTRU; nTRU++) {
     if (nTRU == 34 || nTRU == 35 ||
@@ -403,6 +415,12 @@ void AliEMCALTriggerOfflineLightQAPP::ProcessFastor(const AliEMCALTriggerFastOR*
 
     hname = "EMCTRQA_histCellAmpVsFastORL1Amp";
     fHistManager.FillTH2(hname, fastor->GetL1Amp(), offlineAmp);
+
+    if(fEnableEnergyCorrelationSM) {
+      double point[3] = {static_cast<double>(iSM), fastor->GetL1Amp() * EMCALTrigger::kEMCL1ADCtoGeV , offlineAmp};
+      hname = "EMCTRQA_histCellAmpVsFastORL1AmpSM";
+      fHistManager.FillTHnSparse(hname, point);
+    }
 
     hname = TString::Format("ByTRU/EMCTRQA_histCellAmpVsFastORL1AmpSTU%d",nTRU);
     fHistManager.FillTH2(hname, fastor->GetL1Amp(), offlineAmp);

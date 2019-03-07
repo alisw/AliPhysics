@@ -1,11 +1,13 @@
 AliAnalysisTask* AddTaskHFEMultiplicity(TString suffixName = "",
 					Bool_t readMC	=	kFALSE,
-				        Bool_t SwitchPi0EtaWeightCalc = kTRUE,
+                    Bool_t SwitchPi0EtaWeightCalc = kTRUE,
 					Bool_t PhysSelINT7 =  kTRUE,
-					Bool_t useTender   =  kTRUE, 
+					Bool_t useTender   =  kTRUE,
 					Bool_t ClsTypeEMC  =  kTRUE,
 					Bool_t ClsTypeDCAL =  kTRUE,
 					TString estimatorFilename="",
+                    Bool_t zvtxcut =  kTRUE,
+                    Bool_t zvtxQA =  kTRUE,
 					Double_t refMult=61.2,
 					Int_t NcontV =2,
 					Int_t MaxTPCclus = 100.,
@@ -28,7 +30,7 @@ AliAnalysisTask* AddTaskHFEMultiplicity(TString suffixName = "",
   					Double_t AssoENsigma =3.,
   					Bool_t AssoITSRefit =kTRUE,
   					Double_t InvmassCut = 0.14					)
-  
+
 { // Get the pointer to the existing analysis manager via the static access method.
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
   if (!mgr) {
@@ -59,6 +61,8 @@ AliAnalysisTask* AddTaskHFEMultiplicity(TString suffixName = "",
     HFEtaskINT7->SwitchPi0EtaWeightCalc(SwitchPi0EtaWeightCalc);
     HFEtaskINT7->SetClusterTypeEMC(ClsTypeEMC);
     HFEtaskINT7->SetClusterTypeDCAL(ClsTypeDCAL);
+    HFEtaskINT7->Setzvtxcut(zvtxcut);
+    HFEtaskINT7->SetzvtxQA(zvtxQA);
     HFEtaskINT7->SetNcontVCut(NcontV);
     HFEtaskINT7->SetEtaRange(Etarange);
     HFEtaskINT7->SetMaxTPCCluster(MaxTPCclus);
@@ -79,8 +83,8 @@ AliAnalysisTask* AddTaskHFEMultiplicity(TString suffixName = "",
  
     TFile* fileEstimator=TFile::Open(estimatorFilename.Data());
     if(!fileEstimator)  {
-      AliFatal("File with multiplicity estimator not found\n");
-      return;
+        Printf("File with multiplicity estimator not found\n");
+      return NULL;
     }
     HFEtaskINT7->SetReferenceMultiplicity(refMult);
     const Char_t* profilebasename="SPDmult";
@@ -91,8 +95,8 @@ AliAnalysisTask* AddTaskHFEMultiplicity(TString suffixName = "",
       cout<< " Trying to get "<<Form("%s_%s",profilebasename,periodNames[ip])<<endl;
       multEstimatorAvg[ip] = (TProfile*)(fileEstimator->Get(Form("%s_%s",profilebasename,periodNames[ip]))->Clone(Form("%s_%s_clone",profilebasename,periodNames[ip])));
       if (!multEstimatorAvg[ip]) {
-	AliFatal(Form("Multiplicity estimator for %s not found! Please check your estimator file",periodNames[ip]));
-	return;
+	Printf("Multiplicity estimator for %s not found! Please check your estimator file",periodNames[ip]);
+	return NULL;
       }
     }
 
@@ -103,16 +107,16 @@ AliAnalysisTask* AddTaskHFEMultiplicity(TString suffixName = "",
     TString finDirname         = "_INT7";
     TString outBasicname       = "EID";
     TString profname       = "coutputProf";
-        
+      
     finDirname 	      +=   suffixName.Data();
     outBasicname      +=   finDirname.Data();
     profname          +=   finDirname.Data();
-        
-        
-        
+      
+      
+      
     mgr->ConnectInput(HFEtaskINT7,0,mgr->GetCommonInputContainer());
     mgr->ConnectOutput(HFEtaskINT7,1,mgr->CreateContainer(outBasicname, TList::Class(), AliAnalysisManager::kOutputContainer, fileName.Data()));
-     mgr->ConnectOutput(HFEtaskINT7,2,mgr->CreateContainer(profname, TList::Class(), AliAnalysisManager::kOutputContainer, fileName.Data()));    
+     mgr->ConnectOutput(HFEtaskINT7,2,mgr->CreateContainer(profname, TList::Class(), AliAnalysisManager::kOutputContainer, fileName.Data()));
 
    
 
@@ -133,6 +137,8 @@ AliAnalysisTask* AddTaskHFEMultiplicity(TString suffixName = "",
      HFEtaskGA1->SwitchPi0EtaWeightCalc(SwitchPi0EtaWeightCalc);
      HFEtaskGA1->SetClusterTypeEMC(ClsTypeEMC);
      HFEtaskGA1->SetClusterTypeDCAL(ClsTypeDCAL);
+     HFEtaskGA1->Setzvtxcut(zvtxcut);
+     HFEtaskGA1->SetzvtxQA(zvtxQA);
      HFEtaskGA1->SetNcontVCut(NcontV);
      HFEtaskGA1->SetEtaRange(Etarange);
      HFEtaskGA1->SetMaxTPCCluster(MaxTPCclus);
@@ -151,45 +157,44 @@ AliAnalysisTask* AddTaskHFEMultiplicity(TString suffixName = "",
      HFEtaskGA1->SetAssoEtarange(AssoEEtarange);
      HFEtaskGA1->SetAssoTPCnsig(AssoENsigma);
 
-    TFile* fileEstimator=TFile::Open(estimatorFilename.Data());
-    if(!fileEstimator)  {
-      AliFatal("File with multiplicity estimator not found\n");
-      return;
+    TFile* fileEstimatorGA1=TFile::Open(estimatorFilename.Data());
+    if(!fileEstimatorGA1)  {
+      Printf("File with multiplicity estimator not found\n");
+      return NULL;
     }
     HFEtaskGA1->SetReferenceMultiplicity(refMult);
-    const Char_t* profilebasename="SPDmultEG1";
-    
-    const Char_t* periodNames[2] = {"LHC16s", "LHC16r"};
+    const Char_t* profilebasenameEG1="SPDmultEG1";
+       const Char_t* periodNamesGA1[2] = {"LHC16s", "LHC16r"};
     TProfile* multEstimatorAvgGA1[2];
     for(Int_t ip=0; ip<2; ip++) {
-      cout<< " Trying to get "<<Form("%s_%s",profilebasename,periodNames[ip])<<endl;
-      multEstimatorAvgGA1[ip] = (TProfile*)(fileEstimator->Get(Form("%s_%s",profilebasename,periodNames[ip]))->Clone(Form("%s_%s_clone",profilebasename,periodNames[ip])));
+      cout<< " Trying to get "<<Form("%s_%s",profilebasenameEG1,periodNamesGA1[ip])<<endl;
+      multEstimatorAvgGA1[ip] = (TProfile*)(fileEstimatorGA1->Get(Form("%s_%s",profilebasenameEG1,periodNamesGA1[ip]))->Clone(Form("%s_%s_clone",profilebasenameEG1,periodNamesGA1[ip])));
       if (!multEstimatorAvgGA1[ip]) {
-	AliFatal(Form("Multiplicity estimator for %s not found! Please check your estimator file",periodNames[ip]));
-	return;
+	Printf("Multiplicity estimator for %s not found! Please check your estimator file",periodNamesGA1[ip]);
+	return NULL;
       }
     }
 
     HFEtaskGA1->SetMultiProfileLHC16s(multEstimatorAvgGA1[0]);
     HFEtaskGA1->SetMultiProfileLHC16r(multEstimatorAvgGA1[1]);
-            
-            
-     TString finDirname         = "_TrigGA1";
-     TString outBasicname       = "EID";
-     TString profname       = "coutputProf";
-        
-     finDirname 	      +=   suffixName.Data();
-     outBasicname      +=   finDirname.Data();
-     profname          +=   finDirname.Data();       
-            
-            
+       
+       
+     TString finDirnameGA1         = "_TrigGA1";
+     TString outBasicnameGA1       = "EID";
+     TString profnameGA1       = "coutputProf";
+       
+     finDirnameGA1 	      +=   suffixName.Data();
+     outBasicnameGA1      +=   finDirnameGA1.Data();
+     profnameGA1          +=   finDirnameGA1.Data();
+       
+       
      mgr->ConnectInput(HFEtaskGA1,0,mgr->GetCommonInputContainer());
-     mgr->ConnectOutput(HFEtaskGA1,1,mgr->CreateContainer(outBasicname, TList::Class(), AliAnalysisManager::kOutputContainer, fileName.Data()));
-     mgr->ConnectOutput(HFEtaskGA1,2,mgr->CreateContainer(profname, TList::Class(), AliAnalysisManager::kOutputContainer, fileName.Data()));    
+     mgr->ConnectOutput(HFEtaskGA1,1,mgr->CreateContainer(outBasicnameGA1, TList::Class(), AliAnalysisManager::kOutputContainer, fileName.Data()));
+     mgr->ConnectOutput(HFEtaskGA1,2,mgr->CreateContainer(profnameGA1, TList::Class(), AliAnalysisManager::kOutputContainer, fileName.Data()));
      
 
 // EMCal EGA GA2
-            
+       
      AliAnalysisTaskHFEMultiplicity* HFEtaskGA2 = new AliAnalysisTaskHFEMultiplicity("");
      mgr->AddTask(HFEtaskGA2);
      HFEtaskGA2->SetReadMC(readMC);
@@ -200,6 +205,8 @@ AliAnalysisTask* AddTaskHFEMultiplicity(TString suffixName = "",
      HFEtaskGA2->SwitchPi0EtaWeightCalc(SwitchPi0EtaWeightCalc);
      HFEtaskGA2->SetClusterTypeEMC(ClsTypeEMC);
      HFEtaskGA2->SetClusterTypeDCAL(ClsTypeDCAL);
+     HFEtaskGA2->Setzvtxcut(zvtxcut);
+     HFEtaskGA2->SetzvtxQA(zvtxQA);
      HFEtaskGA2->SetNcontVCut(NcontV);
      HFEtaskGA2->SetEtaRange(Etarange);
      HFEtaskGA2->SetNTPCCluster(TPCNclus);
@@ -217,43 +224,42 @@ AliAnalysisTask* AddTaskHFEMultiplicity(TString suffixName = "",
      HFEtaskGA2->SetAssoEtarange(AssoEEtarange);
      HFEtaskGA2->SetAssoTPCnsig(AssoENsigma);
 
-      TFile* fileEstimator=TFile::Open(estimatorFilename.Data());
-    if(!fileEstimator)  {
-      AliFatal("File with multiplicity estimator not found\n");
-      return;
+    TFile* fileEstimatorGA2=TFile::Open(estimatorFilename.Data());
+    if(!fileEstimatorGA2)  {
+      Printf("File with multiplicity estimator not found\n");
+      return NULL;
     }
     HFEtaskGA2->SetReferenceMultiplicity(refMult);
-    const Char_t* profilebasename="SPDmultEG2";
-    
-    const Char_t* periodNames[2] = {"LHC16s", "LHC16r"};
+    const Char_t* profilebasenameEG2="SPDmultEG2";
+       const Char_t* periodNamesGA2[2] = {"LHC16s", "LHC16r"};
     TProfile* multEstimatorAvgGA2[2];
     for(Int_t ip=0; ip<2; ip++) {
-      cout<< " Trying to get "<<Form("%s_%s",profilebasename,periodNames[ip])<<endl;
-      multEstimatorAvgGA2[ip] = (TProfile*)(fileEstimator->Get(Form("%s_%s",profilebasename,periodNames[ip]))->Clone(Form("%s_%s_clone",profilebasename,periodNames[ip])));
+      cout<< " Trying to get "<<Form("%s_%s",profilebasenameEG2,periodNamesGA2[ip])<<endl;
+      multEstimatorAvgGA2[ip] = (TProfile*)(fileEstimatorGA2->Get(Form("%s_%s",profilebasenameEG2,periodNamesGA2[ip]))->Clone(Form("%s_%s_clone",profilebasenameEG2,periodNamesGA2[ip])));
       if (!multEstimatorAvgGA2[ip]) {
-	AliFatal(Form("Multiplicity estimator for %s not found! Please check your estimator file",periodNames[ip]));
-	return;
+	Printf("Multiplicity estimator for %s not found! Please check your estimator file",periodNamesGA2[ip]);
+	return NULL;
       }
     }
 
     HFEtaskGA2->SetMultiProfileLHC16s(multEstimatorAvgGA2[0]);
     HFEtaskGA2->SetMultiProfileLHC16r(multEstimatorAvgGA2[1]);
-            
-            
-     TString finDirname         = "_TrigGA2";
-     TString outBasicname       = "EID";
-     TString profname       = "coutputProf";
        
-     finDirname 	      +=   suffixName.Data();
-     outBasicname      +=   finDirname.Data();
-     profname          +=   finDirname.Data();      
-            
-            
+       
+     TString finDirnameGA2         = "_TrigGA2";
+     TString outBasicnameGA2       = "EID";
+     TString profnameGA2       = "coutputProf";
+       
+     finDirnameGA2 	      +=   suffixName.Data();
+     outBasicnameGA2      +=   finDirnameGA2.Data();
+     profnameGA2          +=   finDirnameGA2.Data();
+       
+       
      mgr->ConnectInput(HFEtaskGA2,0,mgr->GetCommonInputContainer());
-     mgr->ConnectOutput(HFEtaskGA2,1,mgr->CreateContainer(outBasicname, TList::Class(), AliAnalysisManager::kOutputContainer, fileName.Data()));
-       mgr->ConnectOutput(HFEtaskGA2,2,mgr->CreateContainer(profname, TList::Class(), AliAnalysisManager::kOutputContainer, fileName.Data()));         
+     mgr->ConnectOutput(HFEtaskGA2,1,mgr->CreateContainer(outBasicnameGA2, TList::Class(), AliAnalysisManager::kOutputContainer, fileName.Data()));
+        mgr->ConnectOutput(HFEtaskGA2,2,mgr->CreateContainer(profnameGA2, TList::Class(), AliAnalysisManager::kOutputContainer, fileName.Data()));
      
-        
+       
     
      
 }

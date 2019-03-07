@@ -45,6 +45,8 @@
 #pragma link C++ class AliAnalysisTaskNucleiYieldESD+;
 #pragma link C++ class AliAnalysisTaskNucleiPIDqa+;
 #pragma link C++ class AliAnalysisTaskSignalLoss+;
+#pragma link C++ class RLightNucleus+;
+#pragma link C++ class SLightNucleus+;
 /// * ReducedTreeNuclei
 #pragma link C++ class AliAnalysisTaskReducedTreeNuclei+;
 /// * Nucleipp
@@ -77,6 +79,9 @@
 #pragma link C++ class AliAnalysisTaskHypertriton3+;
 #pragma link C++ class AliAnalysisTaskHypertriton3Dev+;
 #pragma link C++ class AliAnalysisTaskHypertriton3AOD+;
+
+/// * VertexerHyp3Body
+#pragma link C++ class AliVertexerHyperTriton3Body+;
 
 /// Utils
 /// * RecoDecay

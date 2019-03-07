@@ -21,6 +21,8 @@
 #include <TMath.h>
 #include <TCustomBinning.h>
 
+ClassImp(TCustomBinning)
+
 TCustomBinning::TCustomBinning() :
   TBinning(),
   fMinimum(-10000.),

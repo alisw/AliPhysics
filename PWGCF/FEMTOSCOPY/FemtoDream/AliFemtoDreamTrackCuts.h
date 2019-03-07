@@ -116,6 +116,10 @@ class AliFemtoDreamTrackCuts {
     fCheckPileUpITS = check;
   }
   ;
+  void SetCheckPileUpSPDTOF(bool check) {
+    fCheckPileUpSPDTOF = check;
+  }
+  ;
   void SetCheckPileUpTOF(bool check) {
     fCheckPileUpTOF = check;
   }
@@ -176,10 +180,13 @@ class AliFemtoDreamTrackCuts {
     fRatioCrossedRows = ratio;
   }
   ;
-  void SetPID(AliPID::EParticleType pid, float pTPChresh, float sigVal = 3.) {
+  void SetPID(AliPID::EParticleType pid, float pTPChresh, float sigVal = 3.,
+              bool AllowITSonly = false, float sigValITS = 3.) {
     fParticleID = pid;
     fPIDPTPCThreshold = pTPChresh;
     fNSigValue = sigVal;
+    fAllowITSonly = AllowITSonly;
+    fNSigValueITS = sigValITS;
     fCutPID = kTRUE;
   }
   ;
@@ -208,8 +215,12 @@ class AliFemtoDreamTrackCuts {
     return fHists->GetHistList();
   }
   ;
+  UInt_t GetFilterBit() const {
+    return fFilterBit;
+  }
+
   TList *GetMCQAHists() {
-    return fMCHists?fMCHists->GetHistList():nullptr;
+    return fMCHists ? fMCHists->GetHistList() : nullptr;
   }
   ;
   TString ClassName() {
@@ -246,6 +257,7 @@ class AliFemtoDreamTrackCuts {
   bool fCheckFilterBit;               // This one is used for AODs
   bool fCheckESDFiltering;  // This one checks if the filtering of ESDs to AODs with FB128 passes
   bool fCheckPileUpITS;               //
+  bool fCheckPileUpSPDTOF;               //
   bool fCheckPileUpTOF;               //
   bool fCheckPileUp;                //  Should only be used for Daughters of v0s
   UInt_t fFilterBit;                  //
@@ -275,12 +287,14 @@ class AliFemtoDreamTrackCuts {
   int fCrossedRows;                 //
   float fRatioCrossedRows;            //
   bool fCutPID;                       //
+  bool fAllowITSonly;                       //
   bool fCutHighPtSig;  // Reject tracks which have a lower Sigma for other particles (implemented for electrons, pion, kaons and protons)
   AliPID::EParticleType fParticleID;  //
   float fNSigValue;                  // defaults to 3
+  float fNSigValueITS;                  // defaults to 3
   float fPIDPTPCThreshold;           // defaults to 0
   bool fRejectPions;  // Supress Pions at low pT with the TOF, if information is available
-ClassDef(AliFemtoDreamTrackCuts,5)
+ClassDef(AliFemtoDreamTrackCuts,7)
   ;
 };
 

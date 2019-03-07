@@ -26,6 +26,7 @@ AliEmcalTrackingQATask::AliEmcalTrackingQATask() :
   fDoSigma1OverPt(kFALSE),
   fDoSigmaPtOverPtGen(kFALSE),
   fDoSeparateTRDrefit(kFALSE),
+  fUseTRDUpdateFlag(kTRUE),
   fIsEsd(kFALSE),
   fGeneratorLevel(nullptr),
   fDetectorLevel(nullptr),
@@ -54,6 +55,7 @@ AliEmcalTrackingQATask::AliEmcalTrackingQATask(const char *name) :
   fDoSigma1OverPt(kFALSE),
   fDoSigmaPtOverPtGen(kFALSE),
   fDoSeparateTRDrefit(kFALSE),
+  fUseTRDUpdateFlag(kTRUE),
   fIsEsd(kFALSE),
   fGeneratorLevel(nullptr),
   fDetectorLevel(nullptr),
@@ -434,7 +436,11 @@ Bool_t AliEmcalTrackingQATask::FillHistograms()
       if(fDoSeparateTRDrefit) {
         // Gold condition:
         // - at least 3 TRD tracklets (with this cut track without TRD in global track fit is at % level)
-        if(ntracklets < 3) type += 4;    // failed TRD gold condition
+        if(fUseTRDUpdateFlag) {
+          if(!(track->GetStatus() & AliVTrack::kTRDupdate)) type += 4;
+        } else  {
+          if(ntracklets < 3) type += 4;    // failed TRD gold condition
+        }
       }
 
       Int_t label = TMath::Abs(track->GetLabel());

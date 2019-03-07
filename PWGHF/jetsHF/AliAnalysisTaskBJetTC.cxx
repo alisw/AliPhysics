@@ -286,18 +286,30 @@ fh2dJetSignedImpParXYSignificancecForth(0x0),
 //Jet Probabilty
 fh2dJetSignedImpParXY_Class1(0x0),
 fh2dJetSignedImpParXYSignificance_Class1(0x0),
+fh2dJetSignedImpParXYSignificanceb_Class1(0x0),
+fh2dJetSignedImpParXYSignificancec_Class1(0x0),
+fh2dJetSignedImpParXYSignificancelf_Class1(0x0),
 fh2dJetSignedImpParXYZ_Class1(0x0),
 fh2dJetSignedImpParXYZSignificance_Class1(0x0),
 fh2dJetSignedImpParXY_Class2(0x0),
 fh2dJetSignedImpParXYSignificance_Class2(0x0),
+fh2dJetSignedImpParXYSignificanceb_Class2(0x0),
+fh2dJetSignedImpParXYSignificancec_Class2(0x0),
+fh2dJetSignedImpParXYSignificancelf_Class2(0x0),
 fh2dJetSignedImpParXYZ_Class2(0x0),
 fh2dJetSignedImpParXYZSignificance_Class2(0x0),
 fh2dJetSignedImpParXY_Class3(0x0),
 fh2dJetSignedImpParXYSignificance_Class3(0x0),
+fh2dJetSignedImpParXYSignificanceb_Class3(0x0),
+fh2dJetSignedImpParXYSignificancec_Class3(0x0),
+fh2dJetSignedImpParXYSignificancelf_Class3(0x0),
 fh2dJetSignedImpParXYZ_Class3(0x0),
 fh2dJetSignedImpParXYZSignificance_Class3(0x0),
 fh2dJetSignedImpParXY_Class4(0x0),
 fh2dJetSignedImpParXYSignificance_Class4(0x0),
+fh2dJetSignedImpParXYSignificanceb_Class4(0x0),
+fh2dJetSignedImpParXYSignificancec_Class4(0x0),
+fh2dJetSignedImpParXYSignificancelf_Class4(0x0),
 fh2dJetSignedImpParXYZ_Class4(0x0),
 fh2dJetSignedImpParXYZSignificance_Class4(0x0),
 fhistJetProbability(0x0),
@@ -418,6 +430,9 @@ fHistDispersion3Pronglf(0x0)
 
 	for(int i=0; i<7; i++){
 		fResolutionFunction[i]=0x0;
+		fResolutionFunctionb[i]=0x0;
+		fResolutionFunctionc[i]=0x0;
+		fResolutionFunctionlf[i]=0x0;
 	}
 }
 // ######################################################################################## CONSTRUCTORS
@@ -661,18 +676,30 @@ AliAnalysisTaskBJetTC::AliAnalysisTaskBJetTC(const char *name): AliAnalysisTaskE
 		//Jet Probabilty
 		fh2dJetSignedImpParXY_Class1(0x0),
 		fh2dJetSignedImpParXYSignificance_Class1(0x0),
+		fh2dJetSignedImpParXYSignificanceb_Class1(0x0),
+		fh2dJetSignedImpParXYSignificancec_Class1(0x0),
+		fh2dJetSignedImpParXYSignificancelf_Class1(0x0),
 		fh2dJetSignedImpParXYZ_Class1(0x0),
 		fh2dJetSignedImpParXYZSignificance_Class1(0x0),
 		fh2dJetSignedImpParXY_Class2(0x0),
 		fh2dJetSignedImpParXYSignificance_Class2(0x0),
+		fh2dJetSignedImpParXYSignificanceb_Class2(0x0),
+		fh2dJetSignedImpParXYSignificancec_Class2(0x0),
+		fh2dJetSignedImpParXYSignificancelf_Class2(0x0),
 		fh2dJetSignedImpParXYZ_Class2(0x0),
 		fh2dJetSignedImpParXYZSignificance_Class2(0x0),
 		fh2dJetSignedImpParXY_Class3(0x0),
 		fh2dJetSignedImpParXYSignificance_Class3(0x0),
+		fh2dJetSignedImpParXYSignificanceb_Class3(0x0),
+		fh2dJetSignedImpParXYSignificancec_Class3(0x0),
+		fh2dJetSignedImpParXYSignificancelf_Class3(0x0),
 		fh2dJetSignedImpParXYZ_Class3(0x0),
 		fh2dJetSignedImpParXYZSignificance_Class3(0x0),
 		fh2dJetSignedImpParXY_Class4(0x0),
 		fh2dJetSignedImpParXYSignificance_Class4(0x0),
+		fh2dJetSignedImpParXYSignificanceb_Class4(0x0),
+		fh2dJetSignedImpParXYSignificancec_Class4(0x0),
+		fh2dJetSignedImpParXYSignificancelf_Class4(0x0),
 		fh2dJetSignedImpParXYZ_Class4(0x0),
 		fh2dJetSignedImpParXYZSignificance_Class4(0x0),
 		fhistJetProbability(0x0),
@@ -792,6 +819,9 @@ AliAnalysisTaskBJetTC::AliAnalysisTaskBJetTC(const char *name): AliAnalysisTaskE
 
 	for(int i=0; i<7; i++){
 		fResolutionFunction[i]=0x0;
+		fResolutionFunctionb[i]=0x0;
+		fResolutionFunctionc[i]=0x0;
+		fResolutionFunctionlf[i]=0x0;
 	}
 }
 //#######################################
@@ -1165,7 +1195,7 @@ Bool_t AliAnalysisTaskBJetTC::Run()
 				}
 			}
 
-              		Double_t value = CalculateJetProb(selJet);
+              		Double_t value = CalculateJetProb(selJet, 0);
 			if(value==0) value = 1e-5;
 			Double_t LogValue = -1*TMath::Log(value);
 
@@ -1274,7 +1304,7 @@ Bool_t AliAnalysisTaskBJetTC::Run()
 
 			if(fDoJetProbabilityAnalysis && fResolutionFunction[0]){
 
-              			fValJetProb = CalculateJetProb(jetrec);
+              			fValJetProb = CalculateJetProb(jetrec, fJetFlavor);
 				if(fValJetProb>0){
 					fLogJetProb = -1*TMath::Log(fValJetProb);
 
@@ -1317,7 +1347,7 @@ Bool_t AliAnalysisTaskBJetTC::Run()
 				
 				if(!trackAOD) 	continue;
 
-				if (fDoJetProbabilityAnalysis && !fResolutionFunction[0]) FillResolutionFunctionHists(trackAOD,jetrec);
+				if (fDoJetProbabilityAnalysis && !fResolutionFunction[0]) FillResolutionFunctionHists(trackAOD,jetrec,fJetFlavor);
 
 				if(fDoPtRelAnalysis && PtRelSample){
 					Double_t PtRel=0;
@@ -2044,17 +2074,37 @@ Bool_t AliAnalysisTaskBJetTC::Run()
 	return kTRUE;
 }
 // ######################################################################################## JEt Probability Function
-Double_t AliAnalysisTaskBJetTC::CalculateTrackProb(Double_t significance, Int_t trclass)
+Double_t AliAnalysisTaskBJetTC::CalculateTrackProb(Double_t significance, Int_t trclass, Int_t jetFlavor)
 {
   Double_t trackprob = 0;
   //switch resolution function based on track pt;
   if(TMath::Abs(significance) >100) significance =99.9; //Limit to function definition range
-  trackprob = fResolutionFunction[trclass]->Integral(-100,-TMath::Abs(significance))/fResolutionFunction[trclass]->Integral(-100,0);
+  if(fIsPythia){
+ 	 switch(jetFlavor)
+	 {
+		case 0:
+  		      trackprob = fResolutionFunctionlf[trclass]->Integral(-100,-TMath::Abs(significance))/fResolutionFunctionlf[trclass]->Integral(-100,0);
+		      break;
+		case 1:
+  		      trackprob = fResolutionFunctionlf[trclass]->Integral(-100,-TMath::Abs(significance))/fResolutionFunctionlf[trclass]->Integral(-100,0);
+		      break;
+		case 2:
+  		      trackprob = fResolutionFunctionc[trclass]->Integral(-100,-TMath::Abs(significance))/fResolutionFunctionc[trclass]->Integral(-100,0);
+			break;
+		case 3:
+  		      trackprob = fResolutionFunctionb[trclass]->Integral(-100,-TMath::Abs(significance))/fResolutionFunctionb[trclass]->Integral(-100,0);
+			break;
+		default:
+			break;
+	  }
+  }else
+  	trackprob = fResolutionFunction[trclass]->Integral(-100,-TMath::Abs(significance))/fResolutionFunction[trclass]->Integral(-100,0);
+
   if(fMinTrackProb)  trackprob=TMath::Max(trackprob,fMinTrackProb);
   return trackprob;
 }
 // ######################################################################################## Jet Probability Function
-Double_t AliAnalysisTaskBJetTC::CalculateJetProb(AliEmcalJet *jet)
+Double_t AliAnalysisTaskBJetTC::CalculateJetProb(AliEmcalJet *jet, Int_t jetFlavor)
 {
   if(!jet) return -1;
   Double_t JetProb = -1;
@@ -2078,8 +2128,8 @@ Double_t AliAnalysisTaskBJetTC::CalculateJetProb(AliEmcalJet *jet)
       double sign = 0;
 
       if(!IsTrackAcceptedQuality(trackV, jet, QualityClass, dca, cov, sign)) continue;
-      if(sign<0) continue;//only take positive IP tracksz
-      curps =CalculateTrackProb(TMath::Abs(GetValImpactParameter(kXYSig,dca,cov)), QualityClass);
+      if(sign<0) continue;//only take positive IP tracks
+      curps =CalculateTrackProb(TMath::Abs(GetValImpactParameter(kXYSig,dca,cov)), QualityClass, jetFlavor);
       TrackProb*=TMath::Abs(curps);
       trackcounter++;
     }
@@ -2099,7 +2149,7 @@ Double_t AliAnalysisTaskBJetTC::CalculateJetProb(AliEmcalJet *jet)
 }
 //###############################################################################################################
 
-void AliAnalysisTaskBJetTC::FillResolutionFunctionHists(AliAODTrack * track,AliEmcalJet * jet)
+void AliAnalysisTaskBJetTC::FillResolutionFunctionHists(AliAODTrack * track,AliEmcalJet * jet, Int_t jetFlavor)
 {
  
    Int_t QualityClass=0;
@@ -2117,42 +2167,175 @@ void AliAnalysisTaskBJetTC::FillResolutionFunctionHists(AliAODTrack * track,AliE
           	fh2dJetSignedImpParXYSignificance_Class1->Fill(track->Pt(),TMath::Abs(GetValImpactParameter(kXYSig, imp,cov))*sign,weight);
           	fh2dJetSignedImpParXYZ_Class1->Fill(track->Pt(),TMath::Abs(GetValImpactParameter(kXYZ, imp,cov))*sign,weight);
           	fh2dJetSignedImpParXYZSignificance_Class1->Fill(track->Pt(),TMath::Abs(GetValImpactParameter(kXYZSig, imp,cov))*sign,weight);
+		if(fIsPythia){
+		    	switch(jetFlavor)
+			{
+		        	case 0:
+		  			fh2dJetSignedImpParXYSignificancelf_Class1->Fill(track->Pt(),TMath::Abs(GetValImpactParameter(kXYSig, imp,cov))*sign,weight);
+		          		break;
+		        	case 1:
+		  			fh2dJetSignedImpParXYSignificancelf_Class1->Fill(track->Pt(),TMath::Abs(GetValImpactParameter(kXYSig, imp,cov))*sign,weight);
+		          		break;
+		        	case 2:
+		  			fh2dJetSignedImpParXYSignificancec_Class1->Fill(track->Pt(),TMath::Abs(GetValImpactParameter(kXYSig, imp,cov))*sign,weight);
+		          		break;
+		        	case 3:
+		  			fh2dJetSignedImpParXYSignificanceb_Class1->Fill(track->Pt(),TMath::Abs(GetValImpactParameter(kXYSig, imp,cov))*sign,weight);
+					break;
+		        	default:
+		          		break;
+		       }
+		}
 		break;
 	case 1: //Pt<2 nITShits=2
 		fh2dJetSignedImpParXY_Class2->Fill(track->Pt() , TMath::Abs(GetValImpactParameter(kXY, imp,cov))*sign,weight);
 		fh2dJetSignedImpParXYSignificance_Class2->Fill(track->Pt(),TMath::Abs(GetValImpactParameter(kXYSig, imp,cov))*sign,weight);
 		fh2dJetSignedImpParXYZ_Class2->Fill(track->Pt(),TMath::Abs(GetValImpactParameter(kXYZ, imp,cov))*sign,weight);
 		fh2dJetSignedImpParXYZSignificance_Class2->Fill(track->Pt(),TMath::Abs(GetValImpactParameter(kXYZSig, imp,cov))*sign,weight);
+		if(fIsPythia){
+		    	switch(jetFlavor)
+			{
+		        	case 0:
+		  			fh2dJetSignedImpParXYSignificancelf_Class2->Fill(track->Pt(),TMath::Abs(GetValImpactParameter(kXYSig, imp,cov))*sign,weight);
+		          		break;
+		        	case 1:
+		  			fh2dJetSignedImpParXYSignificancelf_Class2->Fill(track->Pt(),TMath::Abs(GetValImpactParameter(kXYSig, imp,cov))*sign,weight);
+		          		break;
+		        	case 2:
+		  			fh2dJetSignedImpParXYSignificancec_Class2->Fill(track->Pt(),TMath::Abs(GetValImpactParameter(kXYSig, imp,cov))*sign,weight);
+		          		break;
+		        	case 3:
+		  			fh2dJetSignedImpParXYSignificanceb_Class2->Fill(track->Pt(),TMath::Abs(GetValImpactParameter(kXYSig, imp,cov))*sign,weight);
+					break;
+		        	default:
+		          		break;
+		        	}
+		}
 		break;
 	case 3: //Pt<2 nITShits=3
 		fh2dJetSignedImpParXY_Class3->Fill(track->Pt() , TMath::Abs(GetValImpactParameter(kXY, imp,cov))*sign,weight);
 		fh2dJetSignedImpParXYSignificance_Class3->Fill(track->Pt(),TMath::Abs(GetValImpactParameter(kXYSig, imp,cov))*sign,weight);
 		fh2dJetSignedImpParXYZ_Class3->Fill(track->Pt(),TMath::Abs(GetValImpactParameter(kXYZ, imp,cov))*sign,weight);
 		fh2dJetSignedImpParXYZSignificance_Class3->Fill(track->Pt(),TMath::Abs(GetValImpactParameter(kXYZSig, imp,cov))*sign,weight);
+		if(fIsPythia){
+		    	switch(jetFlavor)
+			{
+		        	case 0:
+		  			fh2dJetSignedImpParXYSignificancelf_Class3->Fill(track->Pt(),TMath::Abs(GetValImpactParameter(kXYSig, imp,cov))*sign,weight);
+		          		break;
+		        	case 1:
+		  			fh2dJetSignedImpParXYSignificancelf_Class3->Fill(track->Pt(),TMath::Abs(GetValImpactParameter(kXYSig, imp,cov))*sign,weight);
+		          		break;
+		        	case 2:
+		  			fh2dJetSignedImpParXYSignificancec_Class3->Fill(track->Pt(),TMath::Abs(GetValImpactParameter(kXYSig, imp,cov))*sign,weight);
+		          		break;
+		        	case 3:
+		  			fh2dJetSignedImpParXYSignificanceb_Class3->Fill(track->Pt(),TMath::Abs(GetValImpactParameter(kXYSig, imp,cov))*sign,weight);
+					break;
+		        	default:
+		          		break;
+		        	}
+		}
 		break;
 	case 5: //Pt<2 nITShits=4
 		fh2dJetSignedImpParXY_Class4->Fill(track->Pt() , TMath::Abs(GetValImpactParameter(kXY, imp,cov))*sign,weight);
 		fh2dJetSignedImpParXYSignificance_Class4->Fill(track->Pt(),TMath::Abs(GetValImpactParameter(kXYSig, imp,cov))*sign,weight);
 		fh2dJetSignedImpParXYZ_Class4->Fill(track->Pt(),TMath::Abs(GetValImpactParameter(kXYZ, imp,cov))*sign,weight);
 		fh2dJetSignedImpParXYZSignificance_Class4->Fill(track->Pt(),TMath::Abs(GetValImpactParameter(kXYZSig, imp,cov))*sign,weight);
+		if(fIsPythia){
+		    	switch(jetFlavor)
+			{
+		        	case 0:
+		  			fh2dJetSignedImpParXYSignificancelf_Class4->Fill(track->Pt(),TMath::Abs(GetValImpactParameter(kXYSig, imp,cov))*sign,weight);
+		          		break;
+		        	case 1:
+		  			fh2dJetSignedImpParXYSignificancelf_Class4->Fill(track->Pt(),TMath::Abs(GetValImpactParameter(kXYSig, imp,cov))*sign,weight);
+		          		break;
+		        	case 2:
+		  			fh2dJetSignedImpParXYSignificancec_Class4->Fill(track->Pt(),TMath::Abs(GetValImpactParameter(kXYSig, imp,cov))*sign,weight);
+		          		break;
+		        	case 3:
+		  			fh2dJetSignedImpParXYSignificanceb_Class4->Fill(track->Pt(),TMath::Abs(GetValImpactParameter(kXYSig, imp,cov))*sign,weight);
+					break;
+		        	default:
+		          		break;
+		        	}
+		}
 		break;
 	case 2: //Pt>2 nITShits=2
 		fh2dJetSignedImpParXY_Class2->Fill(track->Pt() , TMath::Abs(GetValImpactParameter(kXY, imp,cov))*sign,weight);
 		fh2dJetSignedImpParXYSignificance_Class2->Fill(track->Pt(),TMath::Abs(GetValImpactParameter(kXYSig, imp,cov))*sign,weight);
 		fh2dJetSignedImpParXYZ_Class2->Fill(track->Pt(),TMath::Abs(GetValImpactParameter(kXYZ, imp,cov))*sign,weight);
 		fh2dJetSignedImpParXYZSignificance_Class2->Fill(track->Pt(),TMath::Abs(GetValImpactParameter(kXYZSig, imp,cov))*sign,weight);
+		if(fIsPythia){
+		    	switch(jetFlavor)
+			{
+		        	case 0:
+		  			fh2dJetSignedImpParXYSignificancelf_Class2->Fill(track->Pt(),TMath::Abs(GetValImpactParameter(kXYSig, imp,cov))*sign,weight);
+		          		break;
+		        	case 1:
+		  			fh2dJetSignedImpParXYSignificancelf_Class2->Fill(track->Pt(),TMath::Abs(GetValImpactParameter(kXYSig, imp,cov))*sign,weight);
+		          		break;
+		        	case 2:
+		  			fh2dJetSignedImpParXYSignificancec_Class2->Fill(track->Pt(),TMath::Abs(GetValImpactParameter(kXYSig, imp,cov))*sign,weight);
+		          		break;
+		        	case 3:
+		  			fh2dJetSignedImpParXYSignificanceb_Class2->Fill(track->Pt(),TMath::Abs(GetValImpactParameter(kXYSig, imp,cov))*sign,weight);
+					break;
+		        	default:
+		          		break;
+		        	}
+		}
 		break;
 	case 4: //Pt>2 nITShits=3
 		fh2dJetSignedImpParXY_Class3->Fill(track->Pt() , TMath::Abs(GetValImpactParameter(kXY, imp,cov))*sign,weight);
 		fh2dJetSignedImpParXYSignificance_Class3->Fill(track->Pt(),TMath::Abs(GetValImpactParameter(kXYSig, imp,cov))*sign,weight);
 		fh2dJetSignedImpParXYZ_Class3->Fill(track->Pt(),TMath::Abs(GetValImpactParameter(kXYZ, imp,cov))*sign,weight);
 		fh2dJetSignedImpParXYZSignificance_Class3->Fill(track->Pt(),TMath::Abs(GetValImpactParameter(kXYZSig, imp,cov))*sign,weight);
+		if(fIsPythia){
+		    	switch(jetFlavor)
+			{
+		        	case 0:
+		  			fh2dJetSignedImpParXYSignificancelf_Class3->Fill(track->Pt(),TMath::Abs(GetValImpactParameter(kXYSig, imp,cov))*sign,weight);
+		          		break;
+		        	case 1:
+		  			fh2dJetSignedImpParXYSignificancelf_Class3->Fill(track->Pt(),TMath::Abs(GetValImpactParameter(kXYSig, imp,cov))*sign,weight);
+		          		break;
+		        	case 2:
+		  			fh2dJetSignedImpParXYSignificancec_Class3->Fill(track->Pt(),TMath::Abs(GetValImpactParameter(kXYSig, imp,cov))*sign,weight);
+		          		break;
+		        	case 3:
+		  			fh2dJetSignedImpParXYSignificanceb_Class3->Fill(track->Pt(),TMath::Abs(GetValImpactParameter(kXYSig, imp,cov))*sign,weight);
+					break;
+		        	default:
+		          		break;
+		        	}
+		}
 		break;
 	case 6: //Pt>2 nITShits=4
 		fh2dJetSignedImpParXY_Class4->Fill(track->Pt() , TMath::Abs(GetValImpactParameter(kXY, imp,cov))*sign,weight);
 		fh2dJetSignedImpParXYSignificance_Class4->Fill(track->Pt(),TMath::Abs(GetValImpactParameter(kXYSig, imp,cov))*sign,weight);
 		fh2dJetSignedImpParXYZ_Class4->Fill(track->Pt(),TMath::Abs(GetValImpactParameter(kXYZ, imp,cov))*sign,weight);
 		fh2dJetSignedImpParXYZSignificance_Class4->Fill(track->Pt(),TMath::Abs(GetValImpactParameter(kXYZSig, imp,cov))*sign,weight);
+		if(fIsPythia){
+		    	switch(jetFlavor)
+			{
+		        	case 0:
+		  			fh2dJetSignedImpParXYSignificancelf_Class4->Fill(track->Pt(),TMath::Abs(GetValImpactParameter(kXYSig, imp,cov))*sign,weight);
+		          		break;
+		        	case 1:
+		  			fh2dJetSignedImpParXYSignificancelf_Class4->Fill(track->Pt(),TMath::Abs(GetValImpactParameter(kXYSig, imp,cov))*sign,weight);
+		          		break;
+		        	case 2:
+		  			fh2dJetSignedImpParXYSignificancec_Class4->Fill(track->Pt(),TMath::Abs(GetValImpactParameter(kXYSig, imp,cov))*sign,weight);
+		          		break;
+		        	case 3:
+		  			fh2dJetSignedImpParXYSignificanceb_Class4->Fill(track->Pt(),TMath::Abs(GetValImpactParameter(kXYSig, imp,cov))*sign,weight);
+					break;
+		        	default:
+		          		break;
+		        	}
+		}
 		break;
 
 	default:
@@ -2651,6 +2834,27 @@ void AliAnalysisTaskBJetTC::UserCreateOutputObjects(){
 			fh2dJetSignedImpParXYSignificance_Class4 = new TH2D("fh2dJetSignedImpParXYSignificance_Class4","Tracks with chi2/NDF<2 and 4 ITS hits sIP_{xy};pt (GeV/c); sIP_{xy}",200,0,100,2000,-100,100);
 			fh2dJetSignedImpParXYZ_Class4 = new TH2D("fh2dJetSignedImpParXYZ_Class4","Tracks with chi2/NDF<2 and 4 ITS hits IP_{xyz};pt (GeV/c); IP3D (cm)",200,0,100,2000,-2,2);
 			fh2dJetSignedImpParXYZSignificance_Class4 = new TH2D("fh2dJetSignedImpParXYZSignificance_Class4","Tracks with chi2/NDF<2.5 and 4 ITS hits sIP_{xyz};pt (GeV/c); sIP3D",200,0,100,2000,-100,100);
+
+			if(fIsPythia){
+
+				fh2dJetSignedImpParXYSignificanceb_Class1 = new TH2D("fh2dJetSignedImpParXYSignificanceb_Class1","Tracks with chi2/NDF>2 sIP_{xy};pt (GeV/c); sIP_{xy}",200,0,100,2000,-100,100);
+				fh2dJetSignedImpParXYSignificancec_Class1 = new TH2D("fh2dJetSignedImpParXYSignificancec_Class1","Tracks with chi2/NDF>2 sIP_{xy};pt (GeV/c); sIP_{xy}",200,0,100,2000,-100,100);
+				fh2dJetSignedImpParXYSignificancelf_Class1 = new TH2D("fh2dJetSignedImpParXYSignificancelf_Class1","Tracks with chi2/NDF>2 sIP_{xy};pt (GeV/c); sIP_{xy}",200,0,100,2000,-100,100);
+
+				fh2dJetSignedImpParXYSignificanceb_Class2 = new TH2D("fh2dJetSignedImpParXYSignificanceb_Class2","Tracks with chi2/NDF<2 and 2 ITS hits sIP_{xy};pt (GeV/c); sIP_{xy}",200,0,100,2000,-100,100);
+				fh2dJetSignedImpParXYSignificancec_Class2 = new TH2D("fh2dJetSignedImpParXYSignificancec_Class2","Tracks with chi2/NDF<2 and 2 ITS hits sIP_{xy};pt (GeV/c); sIP_{xy}",200,0,100,2000,-100,100);
+				fh2dJetSignedImpParXYSignificancelf_Class2 = new TH2D("fh2dJetSignedImpParXYSignificancelf_Class2","Tracks with chi2/NDF<2 and 2 ITS hits sIP_{xy};pt (GeV/c); sIP_{xy}",200,0,100,2000,-100,100);
+
+				fh2dJetSignedImpParXYSignificanceb_Class3 = new TH2D("fh2dJetSignedImpParXYSignificanceb_Class3","Tracks with chi2/NDF<2 and 3 ITS hits sIP_{xy};pt (GeV/c); sIP_{xy}",200,0,100,2000,-100,100);
+				fh2dJetSignedImpParXYSignificancec_Class3 = new TH2D("fh2dJetSignedImpParXYSignificancec_Class3","Tracks with chi2/NDF<2 and 3 ITS hits sIP_{xy};pt (GeV/c); sIP_{xy}",200,0,100,2000,-100,100);
+				fh2dJetSignedImpParXYSignificancelf_Class3 = new TH2D("fh2dJetSignedImpParXYSignificancelf_Class3","Tracks with chi2/NDF<2 and 3 ITS hits sIP_{xy};pt (GeV/c); sIP_{xy}",200,0,100,2000,-100,100);
+
+				fh2dJetSignedImpParXYSignificanceb_Class4 = new TH2D("fh2dJetSignedImpParXYSignificanceb_Class4","Tracks with chi2/NDF<2 and 4 ITS hits sIP_{xy};pt (GeV/c); sIP_{xy}",200,0,100,2000,-100,100);
+				fh2dJetSignedImpParXYSignificancec_Class4 = new TH2D("fh2dJetSignedImpParXYSignificancec_Class4","Tracks with chi2/NDF<2 and 4 ITS hits sIP_{xy};pt (GeV/c); sIP_{xy}",200,0,100,2000,-100,100);
+				fh2dJetSignedImpParXYSignificancelf_Class4 = new TH2D("fh2dJetSignedImpParXYSignificancelf_Class4","Tracks with chi2/NDF<2 and 4 ITS hits sIP_{xy};pt (GeV/c); sIP_{xy}",200,0,100,2000,-100,100);
+
+			}
+
 		}else{	
 			fhistJetProbability = new TH2D("fhistJetProbability","JetProbability;p_{T,jet};JP",250,0,250,1000,0,1);
 			fhistJetProbabilityLog = new TH2D("fhistJetProbabilityLog","JetProbability Logarithmic;p_{T,jet};-ln(JP)",250,0,250,375,0,30);
@@ -2710,16 +2914,16 @@ void AliAnalysisTaskBJetTC::UserCreateOutputObjects(){
 	fh1dJetRecPtAcceptedunCorr = new TH1D("fh1dJetRecPtAcceptedunCorr","Rec Jet Pt uncorrected;P_{T,Jet} (Gev/c)",250 ,0, 250);
 
 
-	f2histRhoVsDeltaPt = new TH2D("f2histRhoVsDeltaPt","Rho Vs Delta Pt;#delta P_{T}^{RC} (Gev/c);#rho (Gev/c)",170,-20,150,20,0,20);
-	f2histRhoVsDeltaPtFirst = new TH2D("f2histRhoVsDeltaPtFirst","Rho Vs Delta Pt N=1 tagged Events;#delta P_{T}^{RC} (Gev/c);#rho (Gev/c)",170,-20,150,20,0,20);
-	f2histRhoVsDeltaPtSecond = new TH2D("f2histRhoVsDeltaPtSecond","Rho Vs Delta Pt N=2 tagged Events;#delta P_{T}^{RC} (Gev/c);#rho (Gev/c)",170,-20,150,20,0,20);
-	f2histRhoVsDeltaPtThird = new TH2D("f2histRhoVsDeltaPtThird","Rho Vs Delta Pt N=3 tagged Events;#delta P_{T}^{RC} (Gev/c);#rho (Gev/c)",170,-20,150,20,0,20);
+	f2histRhoVsDeltaPt = new TH2D("f2histRhoVsDeltaPt","Rho Vs Delta Pt;#delta P_{T}^{RC} (Gev/c);#rho (Gev/c)",170,-20,150,30,0,30);
+	f2histRhoVsDeltaPtFirst = new TH2D("f2histRhoVsDeltaPtFirst","Rho Vs Delta Pt N=1 tagged Events;#delta P_{T}^{RC} (Gev/c);#rho (Gev/c)",170,-20,150,30,0,30);
+	f2histRhoVsDeltaPtSecond = new TH2D("f2histRhoVsDeltaPtSecond","Rho Vs Delta Pt N=2 tagged Events;#delta P_{T}^{RC} (Gev/c);#rho (Gev/c)",170,-20,150,30,0,30);
+	f2histRhoVsDeltaPtThird = new TH2D("f2histRhoVsDeltaPtThird","Rho Vs Delta Pt N=3 tagged Events;#delta P_{T}^{RC} (Gev/c);#rho (Gev/c)",170,-20,150,30,0,30);
 
 	if(fDoDeltaPtWithSignal){
-		f2histRhoVsDeltaPtWithSignal = new TH2D("f2histRhoVsDeltaPtWithSignal","Rho Vs Delta Pt;#delta P_{T}^{RC} (Gev/c);#rho (Gev/c)",170,-20,150,20,0,20);
-		f2histRhoVsDeltaPtWithSignalFirst = new TH2D("f2histRhoVsDeltaPtWithSignalFirst","Rho Vs Delta Pt N=1 tagged Events;#delta P_{T}^{RC} (Gev/c);#rho (Gev/c)",170,-20,150,20,0,20);
-		f2histRhoVsDeltaPtWithSignalSecond = new TH2D("f2histRhoVsDeltaPtWithSignalSecond","Rho Vs Delta Pt N=2 tagged Events;#delta P_{T}^{RC} (Gev/c);#rho (Gev/c)",170,-20,150,20,0,20);
-		f2histRhoVsDeltaPtWithSignalThird = new TH2D("f2histRhoVsDeltaPtWithSignalThird","Rho Vs Delta Pt N=3 tagged Events;#delta P_{T}^{RC} (Gev/c);#rho (Gev/c)",170,-20,150,20,0,20);
+		f2histRhoVsDeltaPtWithSignal = new TH2D("f2histRhoVsDeltaPtWithSignal","Rho Vs Delta Pt;#delta P_{T}^{RC} (Gev/c);#rho (Gev/c)",170,-20,150,30,0,30);
+		f2histRhoVsDeltaPtWithSignalFirst = new TH2D("f2histRhoVsDeltaPtWithSignalFirst","Rho Vs Delta Pt N=1 tagged Events;#delta P_{T}^{RC} (Gev/c);#rho (Gev/c)",170,-20,150,30,0,30);
+		f2histRhoVsDeltaPtWithSignalSecond = new TH2D("f2histRhoVsDeltaPtWithSignalSecond","Rho Vs Delta Pt N=2 tagged Events;#delta P_{T}^{RC} (Gev/c);#rho (Gev/c)",170,-20,150,30,0,30);
+		f2histRhoVsDeltaPtWithSignalThird = new TH2D("f2histRhoVsDeltaPtWithSignalThird","Rho Vs Delta Pt N=3 tagged Events;#delta P_{T}^{RC} (Gev/c);#rho (Gev/c)",170,-20,150,30,0,30);
 	}
 
         
@@ -3149,6 +3353,24 @@ void AliAnalysisTaskBJetTC::UserCreateOutputObjects(){
 			fOutput->Add(fh2dJetSignedImpParXYSignificance_Class4);
 			fOutput->Add(fh2dJetSignedImpParXYZ_Class4);
 			fOutput->Add(fh2dJetSignedImpParXYZSignificance_Class4);
+			if(fIsPythia){
+				fOutput->Add(fh2dJetSignedImpParXYSignificanceb_Class1);
+				fOutput->Add(fh2dJetSignedImpParXYSignificancec_Class1);
+				fOutput->Add(fh2dJetSignedImpParXYSignificancelf_Class1);
+
+				fOutput->Add(fh2dJetSignedImpParXYSignificanceb_Class2);
+				fOutput->Add(fh2dJetSignedImpParXYSignificancec_Class2);
+				fOutput->Add(fh2dJetSignedImpParXYSignificancelf_Class2);
+
+				fOutput->Add(fh2dJetSignedImpParXYSignificanceb_Class3);
+				fOutput->Add(fh2dJetSignedImpParXYSignificancec_Class3);
+				fOutput->Add(fh2dJetSignedImpParXYSignificancelf_Class3);
+
+				fOutput->Add(fh2dJetSignedImpParXYSignificanceb_Class4);
+				fOutput->Add(fh2dJetSignedImpParXYSignificancec_Class4);
+				fOutput->Add(fh2dJetSignedImpParXYSignificancelf_Class4);
+			}
+
 		}else{
 			fOutput->Add(fhistJetProbability);
 			fOutput->Add(fhistJetProbabilityLog);
@@ -4787,7 +5009,7 @@ Double_t AliAnalysisTaskBJetTC::GetDeltaPtRandomCone()
 	AliVTrack* tmpTrack = 0x0;
 	AliAODTrack* trackAOD = 0x0;
 
-	for(Int_t i = 0; i < partcont->GetNParticles(); i++) {
+	for(Int_t i = 0; i < partcont->GetNAcceptedParticles(); i++) {
 
 		if(!partcont->GetParticle(i)) continue;
 		tmpTrack = static_cast<AliVTrack*>(partcont->GetParticle(i));
@@ -4830,7 +5052,7 @@ Double_t AliAnalysisTaskBJetTC::GetDeltaPtRandomConeWithSignal()
 	Double_t tmpRandConePhi = fRandom->Rndm() * TMath::TwoPi();
 	Double_t tmpConePt = -1.;
 
-	for(Int_t i = 0; i < partcont->GetNParticles(); i++) {
+	for(Int_t i = 0; i < partcont->GetNAcceptedParticles(); i++) {
 
 		if(!partcont->GetParticle(i)) continue;
 		AliVTrack* tmpTrack = static_cast<AliVTrack*>(partcont->GetParticle(i));

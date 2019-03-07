@@ -1,5 +1,3 @@
-#include <AliMCEventHandler.h>
-
 //______________________________________________________________________________
 // creates an AliAnalysisTaskCEP and the output containers
 //

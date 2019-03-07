@@ -113,10 +113,15 @@ class AliConversionMesonCuts : public AliAnalysisCuts {
     Bool_t MesonIsSelectedMCDalitz(TParticle *fMCMother,AliMCEvent *mcEvent, Int_t &labelelectron, Int_t &labelpositron, Int_t &labelgamma,Double_t fRapidityShift=0.);
     Bool_t MesonIsSelectedAODMCDalitz(AliAODMCParticle *MCMother,TClonesArray *AODMCArray, Int_t &labelelectron, Int_t &labelpositron, Int_t &labelgamma,Double_t fRapidityShift=0.);
     Bool_t MesonIsSelectedMCEtaPiPlPiMiGamma(TParticle *fMCMother,AliMCEvent *mcEvent, Int_t &labelNegPion, Int_t &labelPosPion, Int_t &labelGamma, Double_t fRapidityShift=0);
+    Bool_t MesonIsSelectedAODMCEtaPiPlPiMiGamma(AliAODMCParticle *fMCMother,TClonesArray *AODMCArray, Int_t &labelNegPion, Int_t &labelPosPion, Int_t &labelGamma, Double_t fRapidityShift=0);
     Bool_t MesonIsSelectedMCPiPlPiMiEta(TParticle *fMCMother,AliMCEvent *mcEvent, Int_t &labelNegPion, Int_t &labelPosPion, Int_t &labelNeutPion, Double_t fRapidityShift=0);
+    Bool_t MesonIsSelectedAODMCPiPlPiMiEta(AliAODMCParticle *fMCMother,TClonesArray *AODMCArray, Int_t &labelNegPion, Int_t &labelPosPion, Int_t &labelNeutPion, Double_t fRapidityShift=0);
     Bool_t MesonIsSelectedMCPiPlPiMiPiZero(TParticle *fMCMother,AliMCEvent *mcEvent, Int_t &labelNegPion, Int_t &labelPosPion, Int_t &labelNeutPion, Double_t fRapidityShift=0);
+    Bool_t MesonIsSelectedAODMCPiPlPiMiPiZero(AliAODMCParticle *fMCMother,TClonesArray *AODMCArray, Int_t &labelNegPion, Int_t &labelPosPion, Int_t &labelNeutPion, Double_t fRapidityShift=0);
     Bool_t MesonIsSelectedMCPiZeroGamma(TParticle *fMCMother, AliMCEvent *mcEvent, Int_t &labelNeutPion, Int_t &labelGamma, Double_t fRapidityShift=0);
+    Bool_t MesonIsSelectedAODMCPiZeroGamma(AliAODMCParticle *fMCMother, TClonesArray *AODMCArray, Int_t &labelNeutPion, Int_t &labelGamma, Double_t fRapidityShift=0);
     Bool_t MesonIsSelectedMCChiC(TParticle *fMCMother,AliMCEvent *mcEvent, Int_t &, Int_t &, Int_t &, Double_t fRapidityShift=0. );
+    Bool_t MesonIsSelectedAODMCChiC(AliAODMCParticle *fMCMother,TClonesArray *AODMCArray, Int_t &, Int_t &, Int_t &, Double_t fRapidityShift=0. );
     Bool_t MesonIsSelectedPiZeroGammaAngle(AliAODConversionMother *omega, AliAODConversionMother *pi0, AliAODConversionPhoton *gamma,
                                            Bool_t DoPiZeroAngleCut, TF1 *maxfit, Double_t lowerFactor, Double_t upperFactor);
     void   PrintCuts();
@@ -177,6 +182,10 @@ class AliConversionMesonCuts : public AliAnalysisCuts {
     Bool_t   DoBGProbability(){return fDoBGProbability;}
     Bool_t   DoConvCaloMixing(){return fDoConvCaloMixing;}
     Bool_t   DoSectorMixing(){return fDoSectorMixing;}
+    Bool_t   DoSectorJetMixing(){return fDoSectorJetMixing;}
+    Bool_t   DoJetMixing(){return fDoJetMixing;}
+    Bool_t   DoJetRotateMixing() {return fDoJetRotateMixing;}
+    Bool_t   DoJetPtMixing() {return fDoJetPtMixing;}
     Bool_t   DoSphericityMixing(){return fDoSphericityMixing;}
     Bool_t   DoJetAnalysis(){return fDoJetAnalysis;}
     Bool_t   DoJetQA(){return fDoJetQA;}
@@ -266,6 +275,10 @@ class AliConversionMesonCuts : public AliAnalysisCuts {
     Bool_t      fDoBGProbability;               ///< flag to use probability method for meson bg estimation
     Bool_t      fDoConvCaloMixing;              ///< flag to use enable convcalo mixing in addition to caloconv mixing
     Bool_t      fDoSectorMixing;                ///< flag to enable Sectormixing for meson bg estimation
+    Bool_t      fDoSectorJetMixing;             ///< flag to enable Sectormixing with jets for meson bg estimation
+    Bool_t      fDoJetMixing;                   ///< flag to enable mixing by cluster distance to jet axis
+    Bool_t      fDoJetRotateMixing;             ///< flag to enable mixing by rotating calorimeter
+    Bool_t      fDoJetPtMixing;                 ///< flag to enbale mixing by jet pt bins
     Bool_t      fDoSphericityMixing;            ///< flag to enable Sphericitymixing for meson bg estimation
     Bool_t      fUseTrackMultiplicityForBG;     ///< flag to use track multiplicity for meson bg estimation (else V0 mult)
     Bool_t      fEnableMinOpeningAngleCut;      ///< flag to enable min opening angle cut
@@ -288,7 +301,7 @@ class AliConversionMesonCuts : public AliAnalysisCuts {
   private:
 
     /// \cond CLASSIMP
-    ClassDef(AliConversionMesonCuts,28)
+    ClassDef(AliConversionMesonCuts,32)
     /// \endcond
 };
 

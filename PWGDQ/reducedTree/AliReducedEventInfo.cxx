@@ -38,6 +38,7 @@ AliReducedEventInfo::AliReducedEventInfo() :
   fTriggerMask(0),
   fOnlineTriggerMask(0),
   fOnlineTriggerMaskNext50(0),
+  fTriggerClass(""),
   fMultiplicityEstimators(),
   fMultiplicityEstimatorPercentiles(),
   fIsPhysicsSelection(kTRUE),
@@ -58,6 +59,7 @@ AliReducedEventInfo::AliReducedEventInfo() :
   fNTRDtracklets(0),
   fSPDntracklets(0),
   fSPDnSingle(0),
+  fNtracksTPCout(0),
   fVZEROMult(),
   fVZEROTotalMult(),
   fZDCnEnergy(),
@@ -118,6 +120,7 @@ AliReducedEventInfo::AliReducedEventInfo(const Char_t* name, Int_t trackOption /
   fTriggerMask(0),
   fOnlineTriggerMask(0),
   fOnlineTriggerMaskNext50(0),
+  fTriggerClass(""),
   fMultiplicityEstimators(),
   fMultiplicityEstimatorPercentiles(),
   fIsPhysicsSelection(kTRUE),
@@ -137,6 +140,7 @@ AliReducedEventInfo::AliReducedEventInfo(const Char_t* name, Int_t trackOption /
   fNTRDtracklets(0),
   fSPDntracklets(0),
   fSPDnSingle(0),
+  fNtracksTPCout(0),
   fVZEROMult(),
   fVZEROTotalMult(),
   fZDCnEnergy(),
@@ -214,6 +218,7 @@ void AliReducedEventInfo::CopyEventHeader(const AliReducedEventInfo* other) {
    fTriggerMask = other->fTriggerMask;
    fOnlineTriggerMask = other->fOnlineTriggerMask;
    fOnlineTriggerMaskNext50 = other->fOnlineTriggerMaskNext50;
+   fTriggerClass = other->fTriggerClass;
    for(Int_t i=0; i<10; ++i) {
       fMultiplicityEstimators[i] = other->fMultiplicityEstimators[i];
       fMultiplicityEstimatorPercentiles[i] = other->fMultiplicityEstimatorPercentiles[i];
@@ -239,6 +244,7 @@ void AliReducedEventInfo::CopyEventHeader(const AliReducedEventInfo* other) {
    for(Int_t i=0; i<2; ++i) fSPDFiredChips[i] = other->fSPDFiredChips[i];
    for(Int_t i=0; i<6; ++i) fITSClusters[i] = other->fITSClusters[i];
    fSPDnSingle = other->fSPDnSingle;
+   fNtracksTPCout = other->fNtracksTPCout;
    for(Int_t i=0; i<32; ++i) fNtracksPerTrackingFlag[i] = other->fNtracksPerTrackingFlag[i];
    for(Int_t i=0; i<8; ++i) fNch[i] = other->fNch[i];
    for(Int_t i=0; i<64; ++i) fVZEROMult[i] = other->fVZEROMult[i];
@@ -280,6 +286,7 @@ void AliReducedEventInfo::ClearEvent() {
   fTriggerMask = 0;
   fOnlineTriggerMask = 0;
   fOnlineTriggerMaskNext50 = 0;
+  fTriggerClass = "";
   fIsPhysicsSelection = kTRUE;
   fIsSPDPileup = kFALSE;
   fIsSPDPileupMultBins = kFALSE;
@@ -295,6 +302,7 @@ void AliReducedEventInfo::ClearEvent() {
   fSPDntracklets = 0;
   for(Int_t i=0; i<32; ++i) fSPDntrackletsEta[i] = 0;
   fSPDnSingle = 0;
+  fNtracksTPCout = 0;
   for(Int_t i=0; i<6; ++i) fVtxCovMatrix[i]=0;
   for(Int_t i=0; i<2; ++i) fSPDFiredChips[i]=0;
   for(Int_t i=0; i<6; ++i) fITSClusters[i]=0;
@@ -670,40 +678,44 @@ Float_t AliReducedEventInfo::EnergyZDCn(Int_t ch) const
 }
 
 //____________________________________________________________________________
-Float_t AliReducedEventInfo::MultVZEROA() const
+Float_t AliReducedEventInfo::MultVZEROA(Bool_t fromChannels /*=kFALSE*/) const
 {
   //
   // Total VZERO multiplicity in A side
   //
-  /*Float_t mult=0.0;
-  for(Int_t i=32;i<64;++i)
-    mult += fVZEROMult[i];
-  return mult;*/
+  if(fromChannels) {
+    Float_t mult=0.0;
+    for(Int_t i=32;i<64;++i)
+      mult += fVZEROMult[i];
+    return mult;
+  }
   return fVZEROTotalMult[0];
 }
 
 
 //____________________________________________________________________________
-Float_t AliReducedEventInfo::MultVZEROC() const
+Float_t AliReducedEventInfo::MultVZEROC(Bool_t fromChannels /*=kFALSE*/) const
 {
   //
   // Total VZERO multiplicity in C side
   //
-  /*Float_t mult=0.0;
-  for(Int_t i=0;i<32;++i)
-    mult += fVZEROMult[i];
-  return mult;*/
+  if(fromChannels) {
+    Float_t mult=0.0;
+    for(Int_t i=0;i<32;++i)
+      mult += fVZEROMult[i];
+    return mult;
+  }
   return fVZEROTotalMult[1];
 }
 
 
 //____________________________________________________________________________
-Float_t AliReducedEventInfo::MultVZERO() const
+Float_t AliReducedEventInfo::MultVZERO(Bool_t fromChannels /*=kFALSE*/) const
 {
   //
   // Total VZERO multiplicity
   //
-  return MultVZEROA()+MultVZEROC();
+  return MultVZEROA(fromChannels)+MultVZEROC(fromChannels);
 }
 
 

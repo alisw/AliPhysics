@@ -43,6 +43,10 @@ class AliAnalysisTaskHFEIPDistribution : public AliAnalysisTaskSE {
   
   Bool_t PassesTrackCuts(AliAODTrack *track);
   Bool_t PassesElectronPID(AliAODTrack *track, AliPIDResponse *pid);
+  Bool_t PassesPionPID(AliAODTrack *track, AliPIDResponse *pid);
+  Bool_t PassesKaonPID(AliAODTrack *track, AliPIDResponse *pid);
+  Bool_t PassesMinimalTrackCuts(AliAODTrack *track);
+  Bool_t PassesITSTrackCuts(AliAODTrack *track);
   
   AliAnalysisTaskHFEIPDistribution(const AliAnalysisTaskHFEIPDistribution&); // not implemented
   AliAnalysisTaskHFEIPDistribution& operator=(const AliAnalysisTaskHFEIPDistribution&); // not implemented
@@ -67,11 +71,22 @@ class AliAnalysisTaskHFEIPDistribution : public AliAnalysisTaskSE {
   TH2D * fpTIP2040OOP;
   TH2D * fpTIP3050IP;
   TH2D * fpTIP3050OOP;
-  
+  TH3D * fPionV0pTRNoCuts;
+  TH3D * fPionV0pTRWithCuts;
+  TH2D * fPionV0pTTPC;
+  TH2D * fPionV0pTTPCWithCuts;
+
   TH1D * EventSelectionSteps;
+  TH2D * fDCAHadrons; // Pions, mostly
+  TH3D * fDCAWErrHadrons; // Pions, mostly
+  TH3D * fDCAHadronsFineBins;
+  TH2D * fDCAKaons; // Should have less contamination, but have higher mass
+  TH3D * fDCAWErrKaons;
+  TH3D * fDCAKaonsFineBins;
   
   //AliHFEcuts * hfetrackCuts;           // Track cuts
   AliHFEextraCuts * fExtraCuts;
+  AliAODv0KineCuts * fAODV0Cuts;
   
   
   ClassDef(AliAnalysisTaskHFEIPDistribution, 1); // example of analysis

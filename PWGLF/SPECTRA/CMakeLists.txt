@@ -35,7 +35,10 @@ include_directories(${ROOT_INCLUDE_DIRS}
 
 # Sources - alphabetical order
 set(SRCS
+  ChargedHadrons/MultDepSpec/AliMultDepSpecAnalysisTask.cxx
+  ChargedHadrons/dNdPt/AlidNdPtHelper.cxx
   ChargedHadrons/dNdPt/AliMeanPtAnalysisTask.cxx
+  ChargedHadrons/dNdPt/AliAnalysisTaskCutTest.cxx
   ChargedHadrons/dNdPt/AlidNdPtUnifiedAnalysisTask.cxx
   ChargedHadrons/dNdPt/MeanPtRaw/AliAnalysisTaskMeanPtRaw.cxx
   ChargedHadrons/dNdPt/AlidNdPtAcceptanceCuts.cxx
@@ -63,6 +66,8 @@ set(SRCS
   PiKaPr/ITSsa/AliAnalysisTaskSEITSsaSpectra.cxx
   PiKaPr/ITSsa/AliAnalysisTaskSEITSsaSpectraMultiplicity.cxx
   PiKaPr/TPC/rTPC/AliAnalysisTaskQAHighPtDeDxTest.cxx
+  PiKaPr/TPC/rTPC/AliAnalysisTaskPPvsMult.cxx
+  PiKaPr/TPC/rTPC/AliAnalysisTaskSpherocity.cxx
   PiKaPr/TPCTOF/AliAnalysisCombinedHadronSpectra.cxx
   PiKaPr/TPCTOFpA/AliAnalysisTPCTOFpA.cxx
   PiKaPr/TPCTOFfits/AliAnalysisPIDEvent.cxx
@@ -70,6 +75,8 @@ set(SRCS
   PiKaPr/TPCTOFfits/AliAnalysisPIDTrack.cxx
   PiKaPr/TPCTOFfits/AliAnalysisPIDV0.cxx
   PiKaPr/TPCTOFfits/AliAnalysisTaskTPCTOFPID.cxx
+  PiKaPr/TPCTOFCascades/AliAnalysisPIDCascade.cxx
+  PiKaPr/TPCTOFCascades/AliAnalysisTaskTPCTOFCascade.cxx
   PiKaPr/TOF/pp13/AliAnalysisTaskTOFppSpectra.cxx
   PiKaPr/TOF/pp13/AliAnalysisTaskTOFMC.cxx
   PiKaPr/TOF/pp7/TOFSpectrappAnalysis.cxx
@@ -122,6 +129,7 @@ set(SRCS
   AntiprotonToProton/train/AliAnalysisTaskProtonQA.cxx
   AntiprotonToProton/train/AliAnalysisTaskProtonAbsorbtion.cxx
   Spherocity/AliTransverseEventShape.cxx
+  Spherocity/AliSpherocityEstimator.cxx
   Spherocity/AliSpherocityUtils.cxx
 )
 
@@ -191,8 +199,10 @@ install(TARGETS ${MODULE}
         LIBRARY DESTINATION lib)
 
 install(FILES ${HDRS} DESTINATION include)
+install(FILES PiKaPr/TestAOD/HistogramsBoth.h PiKaPr/TestAOD/Histograms.h DESTINATION include)
 
 # install macros
+install(DIRECTORY ChargedHadrons/MultDepSpec/macros DESTINATION  PWGLF/SPECTRA/ChargedHadrons/MultDepSpec)
 install(DIRECTORY ChargedHadrons/dNdPt/macros DESTINATION  PWGLF/SPECTRA/ChargedHadrons/dNdPt)
 install(DIRECTORY ChargedHadrons/dNdPt/MeanPtRaw/macros DESTINATION
   PWGLF/SPECTRA/ChargedHadrons/dNdPt/MeanPtRaw)
@@ -204,6 +214,8 @@ install(DIRECTORY PiKaPr/TestAOD DESTINATION PWGLF/SPECTRA/PiKaPr)
 install(DIRECTORY PiKaPr/ITSsa DESTINATION PWGLF/SPECTRA/PiKaPr)
 install(DIRECTORY PiKaPr/TPC/rTPC DESTINATION PWGLF/SPECTRA/PiKaPr/TPC)
 install(DIRECTORY PiKaPr/TPCTOFfits DESTINATION PWGLF/SPECTRA/PiKaPr)
+install(DIRECTORY PiKaPr/TPCTOFCascades DESTINATION PWGLF/SPECTRA/PiKaPr)
+
 install(FILES PiKaPr/TOF/PbPb502/task/AddTaskTOFSpectra.C DESTINATION  PWGLF/SPECTRA/PiKaPr/TOF)
 install(FILES PiKaPr/TOF/PbPb502/task/AliUtilTOFParams.h DESTINATION  PWGLF/SPECTRA/PiKaPr/TOF/utilities)
 install(FILES PiKaPr/TOF/PbPb502/task/AliUtilTOFParams.cxx DESTINATION  PWGLF/SPECTRA/PiKaPr/TOF/utilities)

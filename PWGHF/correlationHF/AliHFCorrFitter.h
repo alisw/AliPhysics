@@ -28,7 +28,7 @@ class AliHFCorrFitter{
  public:
     
   // enums
-  enum FunctionType{kConstwoGaus = 1, kTwoGausPeriodicity =2, kConstThreeGausPeriodicity = 3, kConstThreeGausPeriodicityAS =4, kv2Modulation =5, kTwoGausPeriodicityWithv2Modulation = 6, kModifNSGausPeriodicity =7};  
+  enum FunctionType{kConstwoGaus = 1, kTwoGausPeriodicity =2, kConstThreeGausPeriodicity = 3, kConstThreeGausPeriodicityAS =4, kv2Modulation =5, kTwoGausPeriodicityWithv2Modulation = 6, kModifNSGausPeriodicity =7, kModifNSGausPeriodicityFixBeta =8, kModifNSGausPeriodicityConstrainedBeta =9};  
 
   // constructors
   AliHFCorrFitter();
@@ -74,6 +74,7 @@ class AliHFCorrFitter{
   
   Double_t GetNSYield(){return fFit->GetParameter("NS Y");}
   Double_t GetASYield(){return fFit->GetParameter("AS Y");}
+  Double_t GetBeta(){return fFit->GetParameter(7);}
   Double_t GetPedestal(){return fBaseline;}
   Double_t Getv2hadron(){return fFit->GetParameter("v_{2} hadron");}
   Double_t Getv2Dmeson(){return fFit->GetParameter("v_{2} D meson");}
@@ -91,6 +92,7 @@ class AliHFCorrFitter{
   }
   Double_t GetNSYieldError(){return fFit->GetParError(fFit->GetParNumber("NS Y"));}
   Double_t GetASYieldError(){return fFit->GetParError(fFit->GetParNumber("AS Y"));}
+  Double_t GetBetaError(){return fFit->GetParError(7);}
   Double_t GetPedestalError(){return fErrbaseline;}
   Double_t Getv2hadronError(){return fFit->GetParError(fFit->GetParNumber("v_{2} hadron"));}
   Double_t Getv2DmesonError(){return fFit->GetParError(fFit->GetParNumber("v_{2} D meson"));}
@@ -113,6 +115,7 @@ class AliHFCorrFitter{
   TH1F* SubtractBaseline();
   void DrawLegendWithParameters();
   void SetSingleTermsForDrawing(Bool_t draw);
+  void SetBetaVal(Double_t val) {fBetaVal=val;}
 
 
  private:
@@ -144,6 +147,7 @@ class AliHFCorrFitter{
   Double_t			  fMinAsspt;
   Double_t			  fMaxAsspt;
   Double_t			  fIspPb;
-  ClassDef(AliHFCorrFitter,4);
+  Double_t        fBetaVal;
+  ClassDef(AliHFCorrFitter,6);
 };
 #endif

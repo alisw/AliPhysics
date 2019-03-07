@@ -48,7 +48,8 @@ public:
   void SetRunPrefilter(Bool_t option) {fOptionRunPrefilter = option;}
   void SetStoreJpsiCandidates(Bool_t option) {fOptionStoreJpsiCandidates = option;}
   void SetMCJpsiPtWeights(TH1F* weights) {fMCJpsiPtWeights = weights;}
-  
+  void SetFillCaloClusterHistograms(Bool_t option) {fFillCaloClusterHistograms = option;}
+
   void AddLegCandidateMCcut(AliReducedInfoCut* cut, Bool_t sameMother=kTRUE) {
      if(fLegCandidatesMCcuts.GetEntries()>=32) return;
      fLegCandidatesMCcuts.Add(cut);
@@ -88,6 +89,7 @@ protected:
    Bool_t fOptionLoopOverTracks;       // true (default); if false do not loop over tracks and consequently no pairing
    Bool_t fOptionRunPrefilter;        // true (default); if false do not run the prefilter
    Bool_t fOptionStoreJpsiCandidates;   // false (default); if true, store the same event jpsi candidates in a TList 
+   Bool_t fFillCaloClusterHistograms;   // false (default); if true, fill calorimeter cluster histograms
   
    TList fEventCuts;               // array of event cuts
    TList fTrackCuts;               // array of track cuts
@@ -146,7 +148,7 @@ protected:
   Bool_t fSkipMCEvent;          // decision to skip MC event
   TH1F*  fMCJpsiPtWeights;            // weights vs pt to reject events depending on the jpsi true pt (needed to re-weights jpsi Pt distribution)
   
-  ClassDef(AliReducedAnalysisJpsi2ee,7);
+  ClassDef(AliReducedAnalysisJpsi2ee,8);
 };
 
 #endif

@@ -831,6 +831,12 @@ void AliCSTrackCuts::SetActualTypeOfTrackCuts() {
     system = "Xe-Xe";
     period = "2017n";
     break;
+  case kLHC18q:
+    fBaseSystem = k2011based;
+    basename = "2011";
+    system = "Pb-Pb";
+    period = "2018q";
+    break;
   default:
     fESDTrackCuts = AliESDtrackCuts::GetStandardTPCOnlyTrackCuts();
     fAODFilterBits = 1;

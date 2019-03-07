@@ -230,6 +230,11 @@ AliAnalysisTaskPIDBFDptDpt::AliAnalysisTaskPIDBFDptDpt()
   __s1pt_1_vsEtaPhi(0),
   __n1_1_vsZEtaPhiPt(0),
   __n1_2_vsPt(0),
+  __n1_2_vsPt_pdg(0),
+  __n1_2_vsPt_pdg_Weak(0),
+  __n1_2_vsPt_pdg_Weak_Material(0),
+  __n1_2_vsPt_Weak(0),
+  __n1_2_vsPt_Material(0),
   __n1_2_vsEtaPhi(0),
   __s1pt_2_vsEtaPhi(0),
   __n1_2_vsZEtaPhiPt(0),
@@ -326,6 +331,11 @@ AliAnalysisTaskPIDBFDptDpt::AliAnalysisTaskPIDBFDptDpt()
   _corrDedxVsP_1     ( 0),
   _betaVsP_1         ( 0),
   _n1_2_vsPt         ( 0),
+  _n1_2_vsPt_pdg(0),
+  _n1_2_vsPt_pdg_Weak(0),
+  _n1_2_vsPt_pdg_Weak_Material(0),
+  _n1_2_vsPt_Weak(0),
+  _n1_2_vsPt_Material(0),
   _n1_2_vsEtaVsPhi   ( 0),
   _s1pt_2_vsEtaVsPhi ( 0),
   _n1_2_vsZVsEtaVsPhiVsPt ( 0),
@@ -624,6 +634,11 @@ AliAnalysisTaskPIDBFDptDpt::AliAnalysisTaskPIDBFDptDpt(const TString & name)
   __s1pt_1_vsEtaPhi(0),
   __n1_1_vsZEtaPhiPt(0),
   __n1_2_vsPt(0),
+  __n1_2_vsPt_pdg(0),
+  __n1_2_vsPt_pdg_Weak(0),
+  __n1_2_vsPt_pdg_Weak_Material(0),
+  __n1_2_vsPt_Weak(0),
+  __n1_2_vsPt_Material(0),
   __n1_2_vsEtaPhi(0),
   __s1pt_2_vsEtaPhi(0),
   __n1_2_vsZEtaPhiPt(0),
@@ -719,6 +734,11 @@ AliAnalysisTaskPIDBFDptDpt::AliAnalysisTaskPIDBFDptDpt(const TString & name)
   _corrDedxVsP_1     ( 0),
   _betaVsP_1         ( 0),
   _n1_2_vsPt         ( 0),
+  _n1_2_vsPt_pdg(0),
+  _n1_2_vsPt_pdg_Weak(0),
+  _n1_2_vsPt_pdg_Weak_Material(0),
+  _n1_2_vsPt_Weak(0),
+  _n1_2_vsPt_Material(0),
   _n1_2_vsEtaVsPhi   ( 0),
   _s1pt_2_vsEtaVsPhi ( 0),
   _n1_2_vsZVsEtaVsPhiVsPt ( 0),
@@ -959,10 +979,14 @@ void AliAnalysisTaskPIDBFDptDpt::UserCreateOutputObjects()
       _correction_2 = new float[arraySize];
       _dedx_2       = new float[arraySize];
       __n1_2_vsPt              = getDoubleArray(_nBins_pt_2,        0.);
+      __n1_2_vsPt_pdg               = getDoubleArray(_nBins_pt_2, 0.);
+      __n1_2_vsPt_pdg_Weak          = getDoubleArray(_nBins_pt_2, 0.);
+      __n1_2_vsPt_pdg_Weak_Material = getDoubleArray(_nBins_pt_2, 0.);
+      __n1_2_vsPt_Weak              = getDoubleArray(_nBins_pt_2, 0.);
+      __n1_2_vsPt_Material          = getDoubleArray(_nBins_pt_2, 0.);
       __n1_2_vsEtaPhi          = getDoubleArray(_nBins_etaPhi_2,    0.);
       __s1pt_2_vsEtaPhi        = getDoubleArray(_nBins_etaPhi_2,    0.);
-      __n1_2_vsZEtaPhiPt       = getFloatArray(_nBins_zEtaPhiPt_2, 0.);
-        
+      __n1_2_vsZEtaPhiPt       = getFloatArray(_nBins_zEtaPhiPt_2, 0.);        
     }
     
   __n2_12_vsPtPt           = getDoubleArray(_nBins_pt_1*_nBins_pt_2,0.);
@@ -1210,6 +1234,11 @@ void  AliAnalysisTaskPIDBFDptDpt::createHistograms()
       name = n1Name + part_1_Name + vsPt + Material;              _n1_1_vsPt_Material = createHisto1F( name, name, _nBins_pt_1, _min_pt_1, _max_pt_1, _title_pt_1, _title_AvgN_1 );
       name = n1Name + part_1_Name + vsZ + vsEtaPhi + vsPt;        _n1_1_vsZVsEtaVsPhiVsPt = createHisto3F( name, name, _nBins_vertexZ, _min_vertexZ, _max_vertexZ, _nBins_etaPhi_1, 0., double(_nBins_etaPhi_1), _nBins_pt_1, _min_pt_1, _max_pt_1, "zVertex", _title_etaPhi_1,  _title_pt_1);        
       name = n1Name + part_2_Name + vsPt;                         _n1_2_vsPt = createHisto1F( name, name, _nBins_pt_2, _min_pt_2, _max_pt_2, _title_pt_2, _title_AvgN_2 );
+      name = n1Name + part_2_Name + vsPt + pdg;                   _n1_2_vsPt_pdg = createHisto1F( name, name, _nBins_pt_2, _min_pt_2, _max_pt_2, _title_pt_2, _title_AvgN_2 );
+      name = n1Name + part_2_Name + vsPt + pdg + Weak;            _n1_2_vsPt_pdg_Weak = createHisto1F( name, name, _nBins_pt_2, _min_pt_2, _max_pt_2, _title_pt_2, _title_AvgN_2 );
+      name = n1Name + part_2_Name + vsPt + pdg + Weak + Material; _n1_2_vsPt_pdg_Weak_Material = createHisto1F( name, name, _nBins_pt_2, _min_pt_2, _max_pt_2, _title_pt_2, _title_AvgN_2 );
+      name = n1Name + part_2_Name + vsPt + Weak;                  _n1_2_vsPt_Weak = createHisto1F( name, name, _nBins_pt_2, _min_pt_2, _max_pt_2, _title_pt_2, _title_AvgN_2 );
+      name = n1Name + part_2_Name + vsPt + Material;              _n1_2_vsPt_Material = createHisto1F( name, name, _nBins_pt_2, _min_pt_2, _max_pt_2, _title_pt_2, _title_AvgN_2 );
       name = n1Name + part_2_Name + vsZ + vsEtaPhi + vsPt;        _n1_2_vsZVsEtaVsPhiVsPt = createHisto3F( name, name, _nBins_vertexZ, _min_vertexZ, _max_vertexZ, _nBins_etaPhi_2, 0., double(_nBins_etaPhi_2), _nBins_pt_2, _min_pt_2, _max_pt_2, "zVertex", _title_etaPhi_2,  _title_pt_2);	
     }
   else
@@ -1267,6 +1296,11 @@ void  AliAnalysisTaskPIDBFDptDpt::finalizeHistograms()
           fillHistoWithArray(_n1_1_vsPt_Material,            __n1_1_vsPt_Material,            _nBins_pt_1);
 	  fillHistoWithArray(_n1_1_vsZVsEtaVsPhiVsPt, __n1_1_vsZEtaPhiPt, _nBins_vertexZ, _nBins_etaPhi_1, _nBins_pt_1);
 	  fillHistoWithArray(_n1_2_vsPt,              __n1_1_vsPt,        _nBins_pt_1);
+	  fillHistoWithArray(_n1_2_vsPt_pdg,          __n1_1_vsPt_pdg,    _nBins_pt_1);
+          fillHistoWithArray(_n1_2_vsPt_pdg_Weak,            __n1_1_vsPt_pdg_Weak,            _nBins_pt_1);
+          fillHistoWithArray(_n1_2_vsPt_pdg_Weak_Material,   __n1_1_vsPt_pdg_Weak_Material,   _nBins_pt_1);
+          fillHistoWithArray(_n1_2_vsPt_Weak,                __n1_1_vsPt_Weak,                _nBins_pt_1);
+          fillHistoWithArray(_n1_2_vsPt_Material,            __n1_1_vsPt_Material,            _nBins_pt_1);
 	  fillHistoWithArray(_n1_2_vsZVsEtaVsPhiVsPt, __n1_1_vsZEtaPhiPt, _nBins_vertexZ, _nBins_etaPhi_1, _nBins_pt_1);
         }
       else
@@ -1279,6 +1313,11 @@ void  AliAnalysisTaskPIDBFDptDpt::finalizeHistograms()
           fillHistoWithArray(_n1_1_vsPt_Material,            __n1_1_vsPt_Material,            _nBins_pt_1);
 	  fillHistoWithArray(_n1_1_vsZVsEtaVsPhiVsPt, __n1_1_vsZEtaPhiPt, _nBins_vertexZ, _nBins_etaPhi_1, _nBins_pt_1);
 	  fillHistoWithArray(_n1_2_vsPt,              __n1_2_vsPt,        _nBins_pt_2);
+	  fillHistoWithArray(_n1_2_vsPt_pdg,          __n1_2_vsPt_pdg,    _nBins_pt_2);
+          fillHistoWithArray(_n1_2_vsPt_pdg_Weak,            __n1_2_vsPt_pdg_Weak,            _nBins_pt_2);
+          fillHistoWithArray(_n1_2_vsPt_pdg_Weak_Material,   __n1_2_vsPt_pdg_Weak_Material,   _nBins_pt_2);
+          fillHistoWithArray(_n1_2_vsPt_Weak,                __n1_2_vsPt_Weak,                _nBins_pt_2);
+          fillHistoWithArray(_n1_2_vsPt_Material,            __n1_2_vsPt_Material,            _nBins_pt_2);
 	  fillHistoWithArray(_n1_2_vsZVsEtaVsPhiVsPt, __n1_2_vsZEtaPhiPt, _nBins_vertexZ, _nBins_etaPhi_2, _nBins_pt_2);
         }
     }
@@ -1907,6 +1946,51 @@ void  AliAnalysisTaskPIDBFDptDpt::UserExec(Option_t */*option*/)
 		    {
 		      __n1_2_vsPt[iPt]               += corr;          //cout << "step 15" << endl;
 		      __n1_2_vsZEtaPhiPt[iZEtaPhiPt] += corr;       //cout << "step 12" << endl;
+			  
+	          // This block of code used to get PdgCode for MC reco tracks
+                      if ( fAnalysisType == "MCAODreco" )
+                        {
+                          Int_t lab =  t -> GetLabel();
+                          TClonesArray * arr = dynamic_cast<TClonesArray*>( fAODEvent -> FindListObject( "mcparticles" ) );
+                          if( !arr ) continue;
+                          AliAODMCParticle * particle = ( AliAODMCParticle * ) arr -> At( TMath::Abs(lab) );
+              
+                          if ( NoContamination )
+                            {
+                              if( particleSpecies == 0 )
+                                { if( TMath::Abs( particle -> GetPdgCode() ) != 211  )  continue; }
+                              else if( particleSpecies == 1 )
+                                { if( TMath::Abs( particle -> GetPdgCode() ) != 321  )  continue; }
+                              else if( particleSpecies == 2 )
+                                { if( TMath::Abs( particle -> GetPdgCode() ) != 2212 )  continue; }
+                
+                              __n1_2_vsPt_pdg[iPt]   += corr;
+                
+                              if ( NoContaminationWeak )
+                                {
+                                 if( particle -> IsSecondaryFromWeakDecay() )  continue;
+                                 __n1_2_vsPt_pdg_Weak[iPt]   += corr;
+                  
+                                 if ( NoContaminationWeakMaterial )
+                                   {
+                                    if( particle -> IsSecondaryFromMaterial() )  continue;
+                                    __n1_2_vsPt_pdg_Weak_Material[iPt]  += corr;
+                                   }
+                                }
+                            }
+              
+                          if ( NoWeak )
+                            {
+                             if( particle -> IsSecondaryFromWeakDecay() )  continue;
+                             __n1_2_vsPt_Weak[iPt]   += corr;
+			    }
+              
+                          if ( NoMaterial )
+                            {
+                             if( particle -> IsSecondaryFromMaterial() )  continue;
+                             __n1_2_vsPt_Material[iPt]   += corr;
+                            }
+                        }	  
 		    }
 		  else
 		    {

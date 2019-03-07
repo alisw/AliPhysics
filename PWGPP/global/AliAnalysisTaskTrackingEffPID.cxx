@@ -5,7 +5,6 @@
 #include <TF1.h>
 #include <TList.h>
 #include <TMath.h>
-#include <TParticle.h>
 #include <TClonesArray.h>
 #include <TTree.h>
 #include <TRandom3.h>

@@ -31,6 +31,10 @@
 #pragma link C++ class AliAnalysisTaskFemtoDream+;
 #pragma link C++ class AliAnalysisTaskSigma0Femto+;
 #pragma link C++ class AliAnalysisTaskGrandma+;
+#pragma link C++ class AliAnalysisTaskOtonOmega+;
+#pragma link C++ class AliOtonOmegaAnalysis+;
+#pragma link C++ class AliOtonOmegaCascadeCuts+;
+#pragma link C++ class AliOtonOmegaCascade+;
 
 #endif
 

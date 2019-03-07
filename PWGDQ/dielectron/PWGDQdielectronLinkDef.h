@@ -59,4 +59,9 @@
 #pragma link C++ class AliDielectronTGReducedInfo+;
 #pragma link C++ class AliAnalysisTaskTGReducedTree+;
 #pragma link C++ class AliAnalysisTaskLMeeCocktailMC+;
+#pragma link C++ class AliCocktailSmearing+;
+#pragma link C++ class AliAnalysisTaskCharm+;
+#pragma link C++ class AliAnalysisTaskBeauty+;
+#pragma link C++ class AliAnalysisTaskJpsi+;
+#pragma link C++ class AlimakeJPsiTree+;
 #endif

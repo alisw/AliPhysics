@@ -77,6 +77,7 @@ set(SRCS
   AliFemtoEventReaderAOD.cxx
   AliFemtoEventReaderAODChain.cxx
   AliFemtoEventReaderAODMultSelection.cxx
+  AliFemtoEventReaderAlt.cxx
   AliFemtoAODTrackCut.cxx
   AliFemtoCutMonitor.cxx
   AliFemtoCorrFctn.cxx
@@ -167,7 +168,6 @@ set(HDRS ${HDRS}
   AliFemtoCorrFctnDPhiStarKStarAverageMergedPointsFraction.h
   AliFemtoBetaTPairCut.h
   AliFemtoCutMonitorPairBetaT.h
-  AliFemtoAvgSepCalculator.h
   AliFemtoTrioAnalysis.h
   AliFemtoTrioCut.h
   AliFemtoTrio.h

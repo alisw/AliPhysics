@@ -2221,19 +2221,20 @@ void AliAnalysisTaskITSTrackingCheck::UserExec(Option_t *)
 
     //
     Bool_t isPrimary=kTRUE,isFromMat=kFALSE,isFromStrange=kFALSE;
-    Double_t rProdVtx=0,zProdVtx=0;
+    Double_t rProdVtx=0;
+    //    Double_t zProdVtx=0;
     Int_t pdgTrk=0,pdgMoth=0;
     Int_t nClsMCSPD=0;
   
     Int_t trkLabel = TMath::Abs(track->GetLabel());
     Bool_t isFake=(track->GetLabel()>=0 ? kFALSE : kTRUE);
-    Bool_t hasShared=kFALSE,hasSharedSPD=kFALSE;
-    for(Int_t i=0;i<fNITSLayers;i++) {
-      if(track->HasSharedPointOnITSLayer(i)) {
-	hasShared=kTRUE;
-	if(i<(fNITSLayers-4)) hasSharedSPD=kTRUE;
-      }
-    }
+    // Bool_t hasShared=kFALSE,hasSharedSPD=kFALSE;
+    // for(Int_t i=0;i<fNITSLayers;i++) {
+    //   if(track->HasSharedPointOnITSLayer(i)) {
+    // 	hasShared=kTRUE;
+    // 	if(i<(fNITSLayers-4)) hasSharedSPD=kTRUE;
+    //   }
+    // }
 
     // check if it is primary
     if(fReadMC && mcEvent) {
@@ -2241,11 +2242,13 @@ void AliAnalysisTaskITSTrackingCheck::UserExec(Option_t *)
       if (!part) continue;
       isPrimary = mcEvent->IsPhysicalPrimary(trkLabel);
       rProdVtx = TMath::Sqrt((part->Vx()-mcVertex[0])*(part->Vx()-mcVertex[0])+(part->Vy()-mcVertex[1])*(part->Vy()-mcVertex[1]));
-      zProdVtx = TMath::Abs(part->Vz()-mcVertex[2]);
+      //      zProdVtx = TMath::Abs(part->Vz()-mcVertex[2]);
       //if(rProdVtx<2.8) isPrimary=kTRUE; // this could be tried
       pdgTrk = TMath::Abs(part->GetPdgCode());
-      if(part->GetFirstMother()>=0) {
-	TParticle* mm = mcEvent->Particle(part->GetFirstMother());
+      AliMCParticle* mcPart=(AliMCParticle*)mcEvent->GetTrack(trkLabel);
+      Int_t idMother=mcPart->GetMother();
+      if(idMother>=0) {
+	TParticle* mm = mcEvent->Particle(idMother);
 	if(mm) pdgMoth = TMath::Abs(mm->GetPdgCode());
       }
       if(pdgMoth==310 || pdgMoth==321 || pdgMoth==3122 || pdgMoth==3312) isFromStrange=kTRUE;
@@ -2287,8 +2290,17 @@ void AliAnalysisTaskITSTrackingCheck::UserExec(Option_t *)
       if(layer>=(fNITSLayers-4) && track->HasPointOnITSLayer(layer)) nclsSDDSSD++;
       if(layer==0 && !track->HasPointOnITSLayer(1)) continue;
       if(layer==1 && !track->HasPointOnITSLayer(0)) continue;
-      track->GetITSModuleIndexInfo(layer,idet,status,xloc,zloc);
-      if(status<0) continue;
+      Bool_t goodIndex=track->GetITSModuleIndexInfo(layer,idet,status,xloc,zloc);
+      if(!goodIndex) continue;
+      if(status<=0) continue; // status cannot be zero
+      if(idet<0) continue; // wrong module retrieved
+      if(layer==0 && idet>=80) continue; // Inner SPD has modules from 0 to 79
+      else if(layer==1 && (idet<80 || idet>=240)) continue; // Outer SPD has modules from 80 to 239
+      else if(layer==2 && idet>=84) continue; // Inner SDD from 0 to 83
+      else if(layer==3 && (idet<84 || idet>=260)) continue; // Outer SDD from 84 to 259
+      else if(layer==4 && idet>=748) continue; // Inner SSD from 0 to 747
+      else if(layer==5 && (idet<748 || idet>=1698)) continue; // Outer SSD from 748 to 1697
+   
       if(layer>=2) idet+=240; // add n SPD modules
       if(layer>=4) idet+=260; // add n SDD modules
       if(status==4) outInZ=kTRUE;
@@ -3127,10 +3139,10 @@ Bool_t AliAnalysisTaskITSTrackingCheck::IsSelectedCentrality() const
   //
 
   const AliMultiplicity *alimult = fESD->GetMultiplicity();
-  Int_t ntrklets=1;
+  //  Int_t ntrklets=1;
   Int_t nclsSPDouter=0;
   if(alimult) {
-    ntrklets = alimult->GetNumberOfTracklets();
+    //    ntrklets = alimult->GetNumberOfTracklets();
     nclsSPDouter = alimult->GetNumberOfITSClusters(1);
   }
 

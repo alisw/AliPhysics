@@ -523,13 +523,14 @@ void AliAnalysisTaskSEDplus::UserCreateOutputObjects()
   fHistNEvents->SetMinimum(0);
   fOutput->Add(fHistNEvents);
 
-  fHistNCandidates = new TH1F("hNCandidates","number of candidates",6,-0.5,5.5);
+  fHistNCandidates = new TH1F("hNCandidates","number of candidates",7,-0.5,6.5);
   fHistNCandidates->GetXaxis()->SetBinLabel(1,"no. of 3prong candidates");
   fHistNCandidates->GetXaxis()->SetBinLabel(2,"no. of cand with D+ bitmask");
   fHistNCandidates->GetXaxis()->SetBinLabel(3,"D+ not on-the-fly reco");
   fHistNCandidates->GetXaxis()->SetBinLabel(4,"D+ after topological cuts");
   fHistNCandidates->GetXaxis()->SetBinLabel(5,"D+ after Topological+SingleTrack cuts");
   fHistNCandidates->GetXaxis()->SetBinLabel(6,"D+ after Topological+SingleTrack+PID cuts");
+  fHistNCandidates->GetXaxis()->SetBinLabel(7,"D+ rejected by preselect");
   fHistNCandidates->GetXaxis()->SetNdivisions(1,kFALSE);
   fHistNCandidates->SetMinimum(0);
   fOutput->Add(fHistNCandidates);
@@ -989,6 +990,16 @@ void AliAnalysisTaskSEDplus::UserExec(Option_t */*option*/)
 	continue;
       }
       fHistNCandidates->Fill(1);
+
+      TObjArray arrTracks(3);
+      for(Int_t jdau=0; jdau<3; jdau++){
+        AliAODTrack *tr=vHF->GetProng(aod,d,jdau);
+        arrTracks.AddAt(tr,jdau);
+      }
+      if(!fRDCutsAnalysis->PreSelect(arrTracks)){
+        fHistNCandidates->Fill(6);
+        continue;
+      }
 
       if(!(vHF->FillRecoCand(aod,d))) { //Fill the data members of the candidate only if they are empty.
         fHistNCandidates->Fill(2); //monitor how often this fails

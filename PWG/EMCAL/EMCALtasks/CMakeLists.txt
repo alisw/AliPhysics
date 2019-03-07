@@ -75,9 +75,11 @@ set(SRCS
   AliEmcalCorrectionCellCombineCollections.cxx
   AliEmcalCorrectionClusterizer.cxx
   AliEmcalCorrectionClusterNonLinearity.cxx
+  AliEmcalCorrectionClusterNonLinearityMCAfterburner.cxx
   AliEmcalCorrectionClusterExotics.cxx
   AliEmcalCorrectionClusterTrackMatcher.cxx
   AliEmcalCorrectionClusterHadronicCorrection.cxx
+  AliEmcalCorrectionCellEnergyVariation.cxx
   AliEmcalCorrectionClusterEnergyVariation.cxx
   AliEmcalCorrectionPHOSCorrections.cxx
   AliAnalysisTaskEmcalOccupancy.cxx

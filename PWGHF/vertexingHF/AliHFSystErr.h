@@ -39,6 +39,21 @@ class AliHFSystErr : public TNamed
   Double_t GetTrackingEffErr(Double_t pt) const;
   Double_t GetTotalSystErr(Double_t pt,Double_t feeddownErr=0) const;
 
+  void  ResetRawYieldErr(Double_t pt, Double_t val){
+    fRawYield->SetBinContent(fRawYield->FindBin(pt),val);
+  }
+  void  ResetCutEfficErr(Double_t pt, Double_t val){
+    fCutsEff->SetBinContent(fCutsEff->FindBin(pt),val);
+  }
+  void  ResetPIDEfficErr(Double_t pt, Double_t val){
+    fPIDEff->SetBinContent(fPIDEff->FindBin(pt),val);
+  }
+  void  ResetMCPtShapeErr(Double_t pt, Double_t val){
+    fMCPtShape->SetBinContent(fMCPtShape->FindBin(pt),val);
+  }
+  void  ResetTrackEfficErr(Double_t pt, Double_t val){
+    fTrackingEff->SetBinContent(fTrackingEff->FindBin(pt),val);
+  }
   /// Setting  the run number
   ///  set the two last numbers of the year (is 10 for 2010)
   void SetRunNumber(Int_t number) { 
@@ -175,6 +190,9 @@ class AliHFSystErr : public TNamed
   void InitD0toKpi2013pPb60100ZNA();
 
   void InitD0toKpi2016pPb010ZNA();
+  void InitD0toKpi2016pPb1020ZNA();
+  void InitD0toKpi2016pPb2040ZNA();
+  void InitD0toKpi2016pPb4060ZNA();
   void InitD0toKpi2016pPb60100ZNA();
   
   void InitD0toKpi2013pPb020CL1();
@@ -193,6 +211,9 @@ class AliHFSystErr : public TNamed
   void InitDstartoD0pi2013pPb60100ZNA();
 
    void InitDstartoD0pi2016pPb010ZNA();
+   void InitDstartoD0pi2016pPb1020ZNA();
+   void InitDstartoD0pi2016pPb2040ZNA();
+   void InitDstartoD0pi2016pPb4060ZNA();
    void InitDstartoD0pi2016pPb60100ZNA();
  
   void InitDstartoD0pi2013pPb020CL1();
@@ -219,6 +240,9 @@ class AliHFSystErr : public TNamed
   void InitDplustoKpipi2016pPb4070trkl();
   void InitDplustoKpipi2016pPb70200trkl();
   void InitDplustoKpipi2016pPb010ZNA();
+  void InitDplustoKpipi2016pPb1020ZNA();
+  void InitDplustoKpipi2016pPb2040ZNA();
+  void InitDplustoKpipi2016pPb4060ZNA();
   void InitDplustoKpipi2016pPb60100ZNA();
 
  private:
@@ -243,6 +267,7 @@ class AliHFSystErr : public TNamed
   void InitD0toKpi2011PbPb010();
   void InitD0toKpi2013pPb0100();
   void InitD0toKpi2016pPb0100();
+  void InitD0toKpi2016pPb5TeV_finebins();
   void InitD0toKpi2013pPb0100LowPtAn();
   void InitD0toKpi2016pPb0100LowPtAn();
 
@@ -273,6 +298,7 @@ class AliHFSystErr : public TNamed
   void InitDstartoD0pi2011PbPb010();
   void InitDstartoD0pi2013pPb0100();
   void InitDstartoD0pi2016pPb0100();
+  void InitDstartoD0pi2016pPb0100_fb();
   void InitDstartoD0pi2010ppPass4();
   void InitDstartoD0pi2017pp5TeV();
   void InitDstartoD0pi2017pp5TeV_finebins();
@@ -345,7 +371,7 @@ class AliHFSystErr : public TNamed
   Bool_t fIs5TeVAnalysis; /// flag for the pp5TeV analysis
   Bool_t fIsBDTAnalysis;   /// flag for the Lc BDT analysis and Ds BDT analysis
   Bool_t fIsCentScan;      /// flag fot the PbPb centrality scan
-  Bool_t fStandardBins;    /// flag for the standard bins in pp@5TeV
+  Bool_t fStandardBins;    /// flag for the standard bins in pp@5TeV and pPb@5TeV
   Bool_t fIsRapidityScan;  /// flag for the pPb vs y measurement
 
   /// \cond CLASSIMP    

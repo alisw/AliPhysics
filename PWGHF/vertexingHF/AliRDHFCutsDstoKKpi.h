@@ -19,7 +19,7 @@ class AliRDHFCutsDstoKKpi : public AliRDHFCuts
 
   AliRDHFCutsDstoKKpi(const char* name="CutsDstoKKpi");
   
-  virtual ~AliRDHFCutsDstoKKpi(){}
+  virtual ~AliRDHFCutsDstoKKpi();
 
   AliRDHFCutsDstoKKpi(const AliRDHFCutsDstoKKpi& source);
   AliRDHFCutsDstoKKpi& operator=(const AliRDHFCutsDstoKKpi& source); 
@@ -36,19 +36,31 @@ class AliRDHFCutsDstoKKpi : public AliRDHFCuts
   }
   virtual Int_t IsSelected(TObject* obj,Int_t selectionLevel,AliAODEvent* aod);
 
-
   virtual Int_t IsSelectedPID(AliAODRecoDecayHF *rd);
+  Int_t IsSelectedPID(Double_t Pt, TObjArray aodtracks);
   virtual Int_t IsSelectedPIDBayes(AliAODRecoDecayHF *rd);
+  Int_t IsSelectedPIDBayes(Double_t Pt, TObjArray aodtracks);
   virtual void SetStandardCutsPP2010();
    
   virtual Bool_t IsInFiducialAcceptance(Double_t pt,Double_t y) const;
   Float_t GetMassCut(Int_t iPtBin=0) const { return (GetCuts() ? fCutsRD[GetGlobalIndex(0,iPtBin)] : 1.e6);}
   Float_t GetDCACut(Int_t iPtBin=0) const { return (GetCuts() ? fCutsRD[GetGlobalIndex(11,iPtBin)] : 1.e6);}
+  Float_t GetPhiMassCut(Int_t iPtBin=0) const { return (GetCuts() ? fCutsRD[GetGlobalIndex(12,iPtBin)] : 1.e6);}
+  Float_t GetK0starMassCut(Int_t iPtBin=0) const { return (GetCuts() ? fCutsRD[GetGlobalIndex(13,iPtBin)] : 1.e6);}
+
   UInt_t GetPIDTrackTPCTOFBitMap(AliAODTrack *track) const;
 
   void Setd0MeasMinusExpCut(Int_t nPtBins, Float_t *cutval);
   void Setd0Cut(Int_t nPtBins, Float_t *cutval);
-    
+  void EnableK0starChannel(){fCheckK0star=kTRUE;}
+  void DisableK0starChannel(){fCheckK0star=kFALSE;}
+  Bool_t IsK0starChannelEnabled() const{ return fCheckK0star;}
+
+  const Float_t *Getd0MeasMinusExpCut() const {return fMaxd0MeasMinusExp;} 
+  const Float_t *Getd0Cut() const {return fMaxd0;} 
+
+  virtual Int_t PreSelect(TObjArray aodTracks);
+
   enum TrackPIDBit{kTPCPionLess1,kTPCPionMore1Less2,kTPCPionMore2Less3,kTPCPionMore3,
                    kTPCKaonLess1,kTPCKaonMore1Less2,kTPCKaonMore2Less3,kTPCKaonMore3,
                    kTPCProtonLess1,kTPCProtonMore1Less2,kTPCProtonMore2Less3,kTPCProtonMore3,
@@ -91,6 +103,9 @@ class AliRDHFCutsDstoKKpi : public AliRDHFCuts
     fCutOnResonances=opt;
   }
 
+  Double_t ComputeInvMass2(AliAODTrack* track1, AliAODTrack* track2, Int_t pdg1, Int_t pdg2);
+
+  virtual void PrintAll() const;
 
  protected:
  
@@ -109,9 +124,10 @@ class AliRDHFCutsDstoKKpi : public AliRDHFCuts
   Float_t* fMaxd0MeasMinusExp;  //[fnPtBins] cut values on d0meas-d0exp
   Bool_t fUsed0Cut; /// switch for cut on d0
   Float_t* fMaxd0;  //[fnPtBins] cut values on d0
+  Bool_t fCheckK0star;  /// switch for K*0
 
   /// \cond CLASSIMP     
-  ClassDef(AliRDHFCutsDstoKKpi,6);  /// class for cuts on AOD reconstructed Ds->KKpi
+  ClassDef(AliRDHFCutsDstoKKpi,7);  /// class for cuts on AOD reconstructed Ds->KKpi
   /// \endcond
 };
 

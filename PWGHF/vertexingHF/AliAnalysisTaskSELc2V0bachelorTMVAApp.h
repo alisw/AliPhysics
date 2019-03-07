@@ -94,7 +94,13 @@ class AliAnalysisTaskSELc2V0bachelorTMVAApp : public AliAnalysisTaskSE
   
   void SetMVReader(IClassifierReader* r) {fBDTReader = r;}
   IClassifierReader* const GetMVReader() {return fBDTReader;}
-
+  void SetTMVAlibName(const char* libName) {fTMVAlibName = libName;}
+  TString GetTMVAlibName() {return fTMVAlibName;}
+  void SetTMVAlibPtBin(const char* libPtBin) {fTMVAlibPtBin = libPtBin;}
+  TString GetTMVAlibPtBin() {return fTMVAlibPtBin;}
+  void SetNamesTMVAVariables(TString names) {fNamesTMVAVar = names;}
+  TString GetNamesTMVAVariables() {return fNamesTMVAVar;}
+  
   /// set MC usage
   void SetMC(Bool_t theMCon) {fUseMCInfo = theMCon;}
   Bool_t GetMC() const {return fUseMCInfo;}
@@ -114,7 +120,7 @@ class AliAnalysisTaskSELc2V0bachelorTMVAApp : public AliAnalysisTaskSE
   void SetCallKFVertexing(Bool_t a) { fCallKFVertexing=a; }
   Bool_t GetCallKFVertexing() { return fCallKFVertexing; }
 
-  void SetKeepingKeepingOnlyHIJINGBkg(Bool_t a) { fKeepingOnlyHIJINGBkg = a;}
+  void SetKeepingOnlyHIJINGBkg(Bool_t a) { fKeepingOnlyHIJINGBkg = a;}
   Bool_t GetKeepingOnlyHIJINGBkg() {return fKeepingOnlyHIJINGBkg;}
 
   void SetKFCutChi2NDF(Float_t a) {fCutKFChi2NDF = a;}
@@ -126,7 +132,7 @@ class AliAnalysisTaskSELc2V0bachelorTMVAApp : public AliAnalysisTaskSE
   void SetKFCutDeviationFromVtxV0(Float_t a) {fCutKFDeviationFromVtxV0 = a;}
   Float_t GetKFCutDeviationFromVtxV0() {return fCutKFDeviationFromVtxV0;}
 
-  void SetKeepingKeepingOnlyPYTHIABkg(Bool_t a) { fKeepingOnlyPYTHIABkg = a;}
+  void SetKeepingOnlyPYTHIABkg(Bool_t a) { fKeepingOnlyPYTHIABkg = a;}
   Bool_t GetKeepingOnlyPYTHIABkg() {return fKeepingOnlyPYTHIABkg;}
   
   void SetTriggerMask(ULong64_t c) { fTriggerMask = c;}	
@@ -138,6 +144,8 @@ class AliAnalysisTaskSELc2V0bachelorTMVAApp : public AliAnalysisTaskSE
     fHistoMCNch = new TH1F(*h);
   }
     
+  void SetDebugHistograms(Bool_t flag) {fDebugHistograms = flag;}
+  Bool_t GetDebugHistograms() const {return fDebugHistograms;}
 
  private:
   
@@ -290,7 +298,10 @@ class AliAnalysisTaskSELc2V0bachelorTMVAApp : public AliAnalysisTaskSE
   
   Bool_t fFillTree;                    /// flag to decide whether to fill the sgn and bkg trees
 
-  IClassifierReader *fBDTReader;       /// BDT reader
+  IClassifierReader *fBDTReader;       //!<! BDT reader
+  TString fTMVAlibName;                /// Name of the library to load to have the TMVA weights
+  TString fTMVAlibPtBin;               /// Pt bin that will be in the library to be loaded for the TMVA
+  TString fNamesTMVAVar;               /// vector of the names of the input variables
   TH2D *fBDTHisto;                     //!<!
   TH2D *fBDTHistoVsMassK0S;            //!<! BDT classifier vs mass (pi+pi-) pairs
   TH2D *fBDTHistoVstImpParBach;        //!<! BDT classifier vs proton d0
@@ -304,7 +315,8 @@ class AliAnalysisTaskSELc2V0bachelorTMVAApp : public AliAnalysisTaskSE
   TH2D *fHistoNsigmaTPC;               //!<! 
   TH2D *fHistoNsigmaTOF;               //!<! 
 
-
+  Bool_t fDebugHistograms;             /// flag to decide whether or not to have extra histograms (useful mainly for debug)
+  
   /// \cond CLASSIMP    
   ClassDef(AliAnalysisTaskSELc2V0bachelorTMVAApp, 1); /// class for Lc->p K0
   /// \endcond    

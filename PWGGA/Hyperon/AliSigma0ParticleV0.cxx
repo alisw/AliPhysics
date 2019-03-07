@@ -1,4 +1,5 @@
 #include "AliSigma0ParticleV0.h"
+#include "TMath.h"
 
 ClassImp(AliSigma0ParticleV0)
 
@@ -36,9 +37,6 @@ AliSigma0ParticleV0::AliSigma0ParticleV0(AliESDv0 *v0, const AliESDtrack *pos,
   fP[0] = v0->Px();
   fP[1] = v0->Py();
   fP[2] = v0->Pz();
-  fPMC[0] = -1.;
-  fPMC[1] = -1.;
-  fPMC[2] = -1.;
 
   fPDGCode = pdg;
   fPt = v0->Pt();
@@ -75,11 +73,13 @@ AliSigma0ParticleV0::AliSigma0ParticleV0(AliESDv0 *v0, const AliESDtrack *pos,
   fTrackPos = fCandidatePos;
   fTrackNeg = fCandidateNeg;
 
-  fUse = true;
+  AliSigma0ParticleBase::SetUse(true);
 }
 
 //____________________________________________________________________________________________________
 AliSigma0ParticleV0::AliSigma0ParticleV0(const AliAODConversionPhoton *gamma,
+                                         const AliESDtrack *pos,
+                                         const AliESDtrack *neg,
                                          const AliVEvent *inputEvent)
     : AliSigma0ParticleBase(),
       fTrackLabelPos(-1),
@@ -92,12 +92,11 @@ AliSigma0ParticleV0::AliSigma0ParticleV0(const AliAODConversionPhoton *gamma,
       fCosAlpha(0),
       fRecMass(0),
       fPDGMass(0) {
+  AliSigma0ParticleBase::SetUse(true);
+
   fP[0] = gamma->GetPx();
   fP[1] = gamma->GetPy();
   fP[2] = gamma->GetPz();
-  fPMC[0] = -1.;
-  fPMC[1] = -1.;
-  fPMC[2] = -1.;
 
   fPDGCode = 22;
   fPt = gamma->GetPhotonPt();
@@ -131,14 +130,19 @@ AliSigma0ParticleV0::AliSigma0ParticleV0(const AliAODConversionPhoton *gamma,
   double cosinePointingAngle =
       (momV02 * PosV02 > 0.0)
           ? (PosV0[0] * momV0[0] + PosV0[1] * momV0[1] + PosV0[2] * momV0[2]) /
-                std::sqrt(momV02 * PosV02)
+                TMath::Sqrt(momV02 * PosV02)
           : -999.f;
   fCosAlpha = cosinePointingAngle;
 
   fMCLabelPos = gamma->GetMCLabelPositive();
   fMCLabelNeg = gamma->GetMCLabelNegative();
 
-  fUse = true;
+  AliSigma0ParticleBase fCandidatePos(pos, 0, inputEvent->GetMagneticField());
+  AliSigma0ParticleBase fCandidateNeg(neg, 0, inputEvent->GetMagneticField());
+  fTrackPos = fCandidatePos;
+  fTrackNeg = fCandidateNeg;
+
+  AliSigma0ParticleBase::SetUse(true);
 }
 
 //____________________________________________________________________________________________________
@@ -213,7 +217,7 @@ int AliSigma0ParticleV0::MatchToMC(const AliMCEvent *mcEvent,
   // loop on daughter labels
   for (int i = 0; i < 2; ++i) {
     labMom[i] = -1;
-    lab = std::abs(trackLabels[i]);
+    lab = TMath::Abs(trackLabels[i]);
     if (lab < 0) {
       return -1;
     }
@@ -275,14 +279,17 @@ int AliSigma0ParticleV0::MatchToMC(const AliMCEvent *mcEvent,
   Double_t pyMother = mother->Py();
   Double_t pzMother = mother->Pz();
   // within 0.1%
-  if ((std::abs(pxMother - pxSumDgs) / (std::abs(pxMother) + 1.e-13)) >
+  if ((TMath::Abs(pxMother - pxSumDgs) / (TMath::Abs(pxMother) + 1.e-13)) >
           0.00001 &&
-      (std::abs(pyMother - pySumDgs) / (std::abs(pyMother) + 1.e-13)) >
+      (TMath::Abs(pyMother - pySumDgs) / (TMath::Abs(pyMother) + 1.e-13)) >
           0.00001 &&
-      (std::abs(pzMother - pzSumDgs) / (std::abs(pzMother) + 1.e-13)) >
+      (TMath::Abs(pzMother - pzSumDgs) / (TMath::Abs(pzMother) + 1.e-13)) >
           0.00001) {
     return -1;
   }
+  fPMC[0] = pxMother;
+  fPMC[1] = pyMother;
+  fPMC[2] = pzMother;
 
   fMCLabelV0 = labMother;
   return labMother;

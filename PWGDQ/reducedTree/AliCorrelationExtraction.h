@@ -9,12 +9,142 @@
  *                                                            *
  **************************************************************/
 
+/*
+
+ Brief usage guide: ---------------------------------------------------------------------------------------------
+
+ This class is supposed to be used as a toolbox for the J/psi - hadron correlation analysis. It provides
+ all necessary functionality to extract the correlation signal based on e+e- - hadron correlation
+ distributions (provided as THnF or THnSparseF) obtained with the reduced tree framework. The class uses
+ the AliResonanceFits class to extract the J/psi signal from the e+e- invariant mass distributions. The
+ AliResonanceFits object is supposed to be configured in a macro and provided to the AliCorrelationExtraction
+ class. A brief overview of the main functionality of the class is provided in the following. For a more
+ detailed description of the different functions check AliCorrelationExtraction.cxx.
+
+ 1) Input data --------------------------------------------------------------------------------------------------
+
+  The main input distributions are the same-event opposite sign (fSEOS) and mixed-event opposite sign (fMEOS)
+  THnF (or THnSparseF) distributions obtained from the reducedTree framework, namely the class
+  AliReducedAnalysisJpsi2eeCorrelations. Hereby, opposite sign refers to the e+e- pairs used in the
+  e+e- - hadron correlation histograms. The input distributions are set using SetSEOSHistogram() and
+  SetMEOSHistogram(), respectively.
+
+  Additionally, depending on the correlation signal extraction method that is used, like sign distributions
+  are required. Hereby, correlation distributions (fSEMM, fSEPP, fMEMM and fMEPP) and electron/positron pair
+  distributions (fSEPPPair, fSEMMPair, fMEPPPair and fMEMMPair) are set with the functions SetSELSHistogram(),
+  SetMELSHistogram(), SetSELSPairHistogram() and SetMELSPairHistogram(), respectively.
+
+  All input THnF (or THnSparseF) can also be set at the same time using SetHistograms() for the correlation
+  and SetPairHistograms() for the pair distributions.
+
+  In order to correct the J/psi - hadron correlation function for the associated hadron efficiency, an
+  1-dimensional efficiency distribution (fHadronEff) can be set via SetHadronEfficiencyHistogram(). Note that
+  the variable/dimension (see 2) in which the efficiency is provided has to be set.
+
+  In case of the two-component superposition method for the correlation signal extraction, two additional
+  mixed event distributions are required (fMEOS2 and fMEOSPair), one for the correlation and one for the
+  pair distributions. These can be set via SetMEOS2Histogram() and SetMEOSPairHistogram(), respectively.
+
+ 2) Dimensions and variables ------------------------------------------------------------------------------------
+
+  There are 3 "types" of variables (THnF/THnSparseF dimensions) that can be (2.1 and 2.3) or need to be (2.2)
+  defined by the user in order to do the correlation signal extraction with this class:
+
+  2.1) General variables, which correspond to the input THnF/THnSparseF dimensions (i.e. axes), can be set
+    using AddVariable() or AddVariables(). Hereby, variable ranges can be set using SetVarRange() in order to
+    cut on the axes of the input distributions.
+    Not all dimensions have to be provided and those which are not provided by the user or are not given a
+    specific variable range will be integrated over.
+
+  2.2) Correlation variables, i.e. the delta phi, delta eta and e+e- pair mass variables, are required for the
+    correlation signal extraction and can be set using SetDeltaPhiVariable(), SetDeltaEtaVariable() and
+    SetMassVariable(), respectively. In addition to the specific setting using the 3 functions quoted above,
+    the corresponding dimension of the input THnF/THnSparseF has to be defined using AddVariable() or
+    AddVariables() as described in 2.1. Variable ranges, i.e. cuts, can also be defined for the 3 correlation
+    variables using SetVarRange().
+    In addition, if the like sign distributions (see 1) are used for the correlation signal extraction, the
+    index (i.e. the axis) of the mass variable in the like sign electron pair input distributions has to be
+    defined using SetMassVariablePairIndex().
+
+  2.3) Mixing variables, i.e. event variables which are used to define the event mixing pool, can be provided
+    using AddMixingVariable() or AddMixingVariables(). These have to be dimensions of the input THnF/THnSparseF
+    and, if provided, will be used during the calculation of the inclusive e+e- - hadron correlation extraction.
+    Hereby, the inclusive correlation function will be extracted in bins of the mixing variables and summed
+    afterwards.
+    Typical examples for these variables are the z_vtx. position or the event multiplicity. These variables are
+    not required for the correlation signal extraction and a test on 2016 pp 13 TeV data showed no significant
+    difference between using the mixing variables (z_vtx, mult, and both) or not.
+
+ 3) User options ------------------------------------------------------------------------------------------------
+
+  There are different options for the correlation signal extraction which can be set by the user.
+
+  3.1) The background method, all of which can be found in the enumerated list BackgroundMethods, that is used
+    to determine the non-J/psi background in the e+e- - hadron correlation function can be set via
+    SetBackgroundMethod(). By default, no background extraction method is set and the class will not run the
+    processing.
+
+  3.2) If a fitting method (kBkgFitting) is requested for the background determination, a fit function must be
+    provided via SetBackgroundFitFunction(). There is no default fit function defined.
+
+  3.3) The e+e- pair mass signal window must be defined using SetSignalMassWindow(). Again, there is not default
+    setting and the processing will be stopped if none is provided.
+
+  3.4) The e+e- pair background mass window(s) can be set with SetBackgroundMassWindows() and define the mass
+    windows used for the correlation background extraction with the various background extraction methods. Note
+    that some methods (e.g. kBkgSideband) require only one background window while others (e.g. kBkgFitting or
+    kBkgSuperposition) require more. Check Initialize() or the different background extraction functions in order
+    to find out how many windows you need.
+
+  3.5) Additionally, a verbose mode can be used by calling SetVerbose(). Per default, verbose mode is switched off.
+
+ 4) Processing --------------------------------------------------------------------------------------------------
+
+  The processing, i.e. the correlation signal extraction, is done by calling Process() in the user defined macro.
+  This function returns a flag (fProcessDone) that can be tested to see if the processing was successful. The
+  processing works as follows:
+
+  4.1) Initialize() is called first and will stop the processing in case of erroneous inputs or conflicting user
+    options.
+
+  4.2) The J/psi signal is extracted using the user provided AliResonanceFits object.
+
+  4.3) The inclusive e+e- - hadron correlation function is calculated in the user provided mass signal window using
+    the (private) function CalculateInclusiveCorrelation().
+
+  4.4) Depending on the user options for the background extraction method, a specific function to determined the
+    background correlation function (CalculateBackgroundCorrelation...) is called. For some background extraction
+    methods (kBkgSuperposition, kBkgSuperpositionTwoComponent and kBkgFitting), the signal correlation function
+    (i.e. J/psi - hadron) is already calculated here and 4.5 is skipped.
+
+  4.5) The signal correlation function is calculated using the superposition principle from the inclusive
+    e+e- - hadron and the background correlation function using CalculateSignalCorrelation().
+
+  4.6) If a hadron efficiency map is provided, the signal correlation function is corrected for the associated
+    hadron efficiency using EfficiencyCorrection().
+
+ 5) Output ------------------------------------------------------------------------------------------------------
+
+  After the processing is done, the final and some intermediate distributions can be obtained using the
+  provided getter functions. The most important output objects hereby are the inclusive (all e+e-), background
+  (non-J/psi e+e-) and signal (J/psi) correlation functions which can be obtained using the GetInclusiveCF...(),
+  GetBackgroundCF...() and GetSignalCF...() functions, respectively. For all other possible output objects,
+  please consult the class in order to understand in detail what they represent.
+
+  Additionally, the trigger (i.e. e+e- pair) values caluclated using the AliResonanceFits object can be obtained
+  in the signal and background windows using GetTriggerValuesSignal() and GetTriggerValuesBackground(),
+  respectively. The trigger values are provided as arrays with the elements according to the enumerated list
+  TriggerValues, including e.g. the signal (J/psi) and background counts.
+
+*/
+
 #ifndef ALICORRELATIONEXTRACTION_H
 #define ALICORRELATIONEXTRACTION_H
 
 #include <TObject.h>
 #include <THn.h>
 #include <THnSparse.h>
+#include <TH1.h>
 #include <TF1.h>
 
 #include "AliResonanceFits.h"
@@ -95,8 +225,9 @@ class AliCorrelationExtraction : public TObject {
     void SetMEOSPairHistogram(THnF* h) {fMEOSPair = h; fProcessDone = kFALSE;}
     void SetSELSPairHistogram(THnF* hpp, THnF* hmm) {fSEPPPair = hpp; fSEMMPair = hmm; fProcessDone = kFALSE;}
     void SetMELSPairHistogram(THnF* hpp, THnF* hmm) {fMEPPPair = hpp; fMEMMPair = hmm; fProcessDone = kFALSE;}
+    void SetHadronEfficiencyHistogram(TH1D* h, Int_t var) {fHadronEff = h; fEfficiencyVariable = var; fProcessDone = kFALSE;}
     void SetAliResonanceFitsObject(AliResonanceFits* resonanceFits) {fResonanceFits = (AliResonanceFits*)resonanceFits->Clone("ResonanceFits"); fProcessDone = kFALSE;}
-    void SetBackgroundMethod(Int_t method) {fOptionBkgMethod = method; fProcessDone = kFALSE;}
+    void SetBackgroundMethod(Int_t method, Bool_t integrateDeltaEta=kFALSE);
     void SetBackgroundFitFunction(TF1* fitFunc) {fBkgFitFunction = (TF1*)fitFunc->Clone("BkgFitFunction"); fProcessDone = kFALSE;}
     void SetSignalMassWindow(Double_t min, Double_t max) {fMassSignalRange[0] = min; fMassSignalRange[1] = max; fProcessDone = kFALSE;}
     void SetBackgroundMassWindows(Int_t n, Double_t* min, Double_t* max);
@@ -131,7 +262,9 @@ class AliCorrelationExtraction : public TObject {
     TH2D*             GetCombinatorialBackgroundCF2D(Int_t massWindow) const {return (fProcessDone ? fCombinatorialBackgroundCF2D[massWindow] : 0x0);}
     TH1D*             GetSignalCF1D() const {return (fProcessDone ? fSignalCF1D : 0x0);}
     TH1D*             GetSignalCF1D(Int_t phiBin, Int_t etaBin) const {return (fProcessDone ? fSignalCF1DInvMass[phiBin][etaBin] : 0x0);}
+    TH1D*             GetSignalCF1DEfficiencyCorrected() const {return (fProcessDone ? fSignalCF1DEffCorr : 0x0);}
     TH2D*             GetSignalCF2D() const {return (fProcessDone ? fSignalCF2D : 0x0);}
+    TH2D*             GetSignalCF2DEfficiencyCorrected() const {return (fProcessDone ? fSignalCF2DEffCorr : 0x0);}
     AliResonanceFits* GetAliResonanceFitsObject() const {return (fProcessDone ? fResonanceFits : 0x0);}
     Int_t             GetBackgroundMethod() const {return (fProcessDone ? fOptionBkgMethod : 0x0);}
     TF1*              GetBackgroundFitFunction() const {return (fProcessDone ? fBkgFitFunction : 0x0);}
@@ -181,6 +314,8 @@ class AliCorrelationExtraction : public TObject {
     THnF*       fMEPPPair;
     THnF*       fMEMMPair;
   
+    TH1D*       fHadronEff;
+
     // output histograms
     TH2D* fSEOSNorm;
     TH2D* fSEOSNormBackgroundMassWindow[kNMaxBackgroundMassRanges];
@@ -210,9 +345,11 @@ class AliCorrelationExtraction : public TObject {
     TH1D* fCombinatorialBackgroundCF1D[kNMaxBackgroundMassRanges];
     TH2D* fCombinatorialBackgroundCF2D[kNMaxBackgroundMassRanges];
     TH1D* fSignalCF1D;
+    TH1D* fSignalCF1DEffCorr;
     TH1D* fSignalCF1DInvMass[kNMaxDeltaPhiBins][kNMaxDeltaEtaBins];
     TH2D* fSignalCF2D;
-  
+    TH2D* fSignalCF2DEffCorr;
+
     // variables
     Int_t     fNVariables;                                    // number of variables to be handled
     Int_t     fVariables[kNMaxVariables];                     // list of variables
@@ -230,10 +367,13 @@ class AliCorrelationExtraction : public TObject {
     Int_t     fDeltaPhiVariableIndex;
     Int_t     fDeltaEtaVariable;
     Int_t     fDeltaEtaVariableIndex;
+    Int_t     fEfficiencyVariable;                            // variable the efficiency (fHadronEff) is a function of
+    Int_t     fEfficiencyVariableIndex;                       // index of fEfficiencyVariable in fSEOS, etc.
 
     // user options
     Bool_t            fVerboseFlag;
     Bool_t            fUseMixingVars;
+    Bool_t            fIntegrateDeltaEta[kNBackgroundMethods];
     AliResonanceFits* fResonanceFits;
     Int_t             fOptionBkgMethod;
     TF1*              fBkgFitFunction;
@@ -268,8 +408,9 @@ class AliCorrelationExtraction : public TObject {
     Bool_t  CalculateBackgroundCorrelationSuperposition();
     Bool_t  CalculateBackgroundCorrelationSuperpositionTwoComponent();
     Bool_t  CalculateSignalCorrelation();
+    Bool_t  EfficiencyCorrection();
   
-  ClassDef(AliCorrelationExtraction, 0);
+  ClassDef(AliCorrelationExtraction, 2);
 };
 
 #endif

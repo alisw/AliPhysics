@@ -51,6 +51,10 @@ class AliFemtoDreamCollConfig : public TNamed {
   ;
   void SetdPhidEtaPlots(bool doIt) {
     fdPhidEtaPlots = doIt;
+    fdPhidEtaPlotsSmallK = doIt;
+  }
+  void SetdPhidEtaPlotsSmallK(bool doIt) {
+    fdPhidEtaPlotsSmallK = doIt;
   }
   ;
   void SetUseEventMixing(bool use) {
@@ -72,16 +76,15 @@ class AliFemtoDreamCollConfig : public TNamed {
   void SetMinKRel(std::vector<float> minKRel);
   void SetMaxKRel(std::vector<float> maxKRel);
   void SetCentBins(std::vector<float> CentBins);
+  void SetmTdEtadPhiBins(std::vector<float> mTBins);
+  void SetExtendedQAPairs(std::vector<int> whichPairs);
+  void SetClosePairRejection(std::vector<bool> whichPairs);
   void SetMixingDepth(int MixingDepth) {
     fMixingDepth = MixingDepth;
   }
   ;
   void SetSpinningDepth(int SpinningDepth) {
     fSpinningDepth = SpinningDepth;
-  }
-  ;
-  void SetSECommonAncestor(bool doit) {
-    fMCCommonAncestor = doit;
   }
   ;
   void SetInvMassPairs(bool doIt) {
@@ -128,10 +131,6 @@ class AliFemtoDreamCollConfig : public TNamed {
     return fkTCentrality;
   }
   ;
-  bool GetDoSECommonAncestor() {
-    return fMCCommonAncestor;
-  }
-  ;
   bool GetUseEventMixing() {
     return fMixedEventStatistics;
   }
@@ -147,7 +146,13 @@ class AliFemtoDreamCollConfig : public TNamed {
   bool GetdPhidEtaPlots() {
     return fdPhidEtaPlots;
   }
+  bool GetdPhidEtaPlotsSmallK() {
+    return fdPhidEtaPlotsSmallK;
+  }
   ;
+  bool GetdPhidEtamTPlots() {
+    return (fdPhidEtaPlots&&fmTdEtadPhi);
+  }
   bool GetInvMassPairs() {
     return fInvMassPairs;
   }
@@ -183,11 +188,17 @@ class AliFemtoDreamCollConfig : public TNamed {
   }
   ;
   int GetNParticleCombinations();
-
   std::vector<int> GetNBinsHist();
   std::vector<float> GetMinKRel();
   std::vector<float> GetMaxKRel();
   std::vector<float> GetCentBins();
+  std::vector<float> GetmTBins();
+  std::vector<unsigned int> GetWhichPairs();
+  std::vector<bool> GetClosePairRej();
+  std::vector<float> GetStandardmTBins();
+  std::vector<int> GetStandardPairs();
+  std::vector<bool> GetStandardPairRejection();
+  std::vector<bool> GetAllPairRejection();
   int GetMixingDepth() {
     return fMixingDepth;
   }
@@ -220,6 +231,7 @@ class AliFemtoDreamCollConfig : public TNamed {
   bool fMomentumResolution;     //
   bool fPhiEtaBinning;          //
   bool fdPhidEtaPlots;          //
+  bool fdPhidEtaPlotsSmallK;    //
   bool fMixedEventStatistics;   //
   bool fGetTheControlSampel;    //
   bool fStravinsky;             //
@@ -234,17 +246,19 @@ class AliFemtoDreamCollConfig : public TNamed {
   TNtuple *fMinK_rel;           //
   TNtuple *fMaxK_rel;           //
   TNtuple *fCentBins;           //
+  TNtuple *fmTBins;             //
+  TNtuple *fWhichQAPairs;       //
+  TNtuple *fClosePairRej;       //
   int fMixingDepth;             //
   int fSpinningDepth;			      //
   bool fkTCentrality;           //
-  bool fMCCommonAncestor;  // Setter used in MC Only to obtain the SE distribution for common ancestor and non common ancestor
+  bool fmTdEtadPhi;             //
   AliFemtoDreamEvent::MultEstimator fEst;  //
+  float fDeltaEtaMax;           //
+  float fDeltaPhiMax;           //
+  bool fDoDeltaEtaDeltaPhiCut;  //
 
-  float fDeltaEtaMax;
-  float fDeltaPhiMax;
-  bool fDoDeltaEtaDeltaPhiCut;
-
-ClassDef(AliFemtoDreamCollConfig,8)
+ClassDef(AliFemtoDreamCollConfig,10)
   ;
 };
 

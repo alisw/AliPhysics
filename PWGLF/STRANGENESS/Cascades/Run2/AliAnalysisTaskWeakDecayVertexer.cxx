@@ -88,8 +88,6 @@ class AliAODv0;
 #include "AliAnalysisTaskSE.h"
 #include "AliAnalysisUtils.h"
 #include "AliEventCuts.h"
-#include "AliV0Result.h"
-#include "AliCascadeResult.h"
 #include "AliAnalysisTaskWeakDecayVertexer.h"
 
 //stuff for mat corr
@@ -119,7 +117,7 @@ fkDoExtraEvSels(kTRUE),
 fkForceResetV0s(kFALSE),
 fkForceResetCascades(kFALSE),
 fMinCentrality(0.0),
-fMaxCentrality(300.0),
+fMaxCentrality(301.0),
 fkRevertexAllEvents(kTRUE),
 //________________________________________________
 //Flags for both V0+cascade vertexer
@@ -146,6 +144,8 @@ fkDoXYPlanePreOptCascade( kFALSE ),
 fkDoPureGeometricMinimization( kTRUE ),
 fkDoCascadeRefit( kFALSE ) ,
 fMaxIterationsWhenMinimizing(27),
+fkPreselectX(kTRUE),
+fkSkipLargeXYDCA(kFALSE),
 fkUseOptimalTrackParams(kFALSE),
 fkUseOptimalTrackParamsBachelor(kFALSE),
 fMinPtV0(   -1 ), //pre-selection
@@ -153,6 +153,7 @@ fMaxPtV0( 1000 ),
 fMinPtCascade(   0.3 ),
 fMaxPtCascade( 100.00 ),
 fMassWindowAroundCascade(0.060),
+fMinXforXYtest( -3.0 ),
 //________________________________________________
 //Histos
 fHistEventCounter(0),
@@ -203,6 +204,8 @@ fkDoXYPlanePreOptCascade( kFALSE ),
 fkDoPureGeometricMinimization( kTRUE ),
 fkDoCascadeRefit( kFALSE ) ,
 fMaxIterationsWhenMinimizing(27),
+fkPreselectX(kTRUE),
+fkSkipLargeXYDCA(kFALSE),
 fkUseOptimalTrackParams(kFALSE),
 fkUseOptimalTrackParamsBachelor(kFALSE),
 fMinPtV0(   -1 ), //pre-selection
@@ -210,6 +213,7 @@ fMaxPtV0( 1000 ),
 fMinPtCascade(   0.3 ), //pre-selection
 fMaxPtCascade( 100.00 ),
 fMassWindowAroundCascade(0.060),
+fMinXforXYtest( -3.0 ),
 //________________________________________________
 //Histos
 fHistEventCounter(0),
@@ -410,8 +414,8 @@ void AliAnalysisTaskWeakDecayVertexer::UserExec(Option_t *)
     
     //classical Proton-proton like selection
     const AliESDVertex *lPrimaryBestESDVtx     = lESDevent->GetPrimaryVertex();
-    const AliESDVertex *lPrimaryTrackingESDVtx = lESDevent->GetPrimaryVertexTracks();
-    const AliESDVertex *lPrimarySPDVtx         = lESDevent->GetPrimaryVertexSPD();
+    //const AliESDVertex *lPrimaryTrackingESDVtx = lESDevent->GetPrimaryVertexTracks();
+    //const AliESDVertex *lPrimarySPDVtx         = lESDevent->GetPrimaryVertexSPD();
     
     Double_t lBestPrimaryVtxPos[3]          = {-100.0, -100.0, -100.0};
     lPrimaryBestESDVtx->GetXYZ( lBestPrimaryVtxPos );
@@ -475,7 +479,7 @@ void AliAnalysisTaskWeakDecayVertexer::UserExec(Option_t *)
     nv0s = lESDevent->GetNumberOfV0s();
     fHistNumberOfCandidates->Fill(0.5, nv0s);
     
-    Info("UserExec","Number of pre-reco'ed V0 vertices: %ld",nv0s);
+    Info("UserExec","Number of pre-reco'ed V0 vertices: %i",nv0s);
     
     if( fkRunV0Vertexer ){
         if ( !fkUseOptimalTrackParams ){
@@ -740,8 +744,8 @@ Long_t AliAnalysisTaskWeakDecayVertexer::Tracks2V0vertices(AliESDEvent *event) {
             
             fHistV0Statistics->Fill(2.5); //pass dca
             
-            if ((xn+xp) > 2*fV0VertexerSels[6]) continue;
-            if ((xn+xp) < 2*fV0VertexerSels[5]) continue;
+            if ((xn+xp) > 2*fV0VertexerSels[6] && fkPreselectX) continue;
+            if ((xn+xp) < 2*fV0VertexerSels[5] && fkPreselectX) continue;
             
             fHistV0Statistics->Fill(3.5); //pass X within R2D cut
             
@@ -1177,7 +1181,6 @@ Long_t AliAnalysisTaskWeakDecayVertexer::V0sTracks2CascadeVerticesUncheckedCharg
     //stores relevant V0s in an array
     TObjArray vtcs(nV0);
     Int_t i;
-    Long_t lNumberOfLikeSignV0s = 0;
     for (i=0; i<nV0; i++) {
         AliESDv0 *v=event->GetV0(i);
         if ( v->GetOnFlyStatus() && !fkUseOnTheFlyV0Cascading) continue;
@@ -1816,7 +1819,7 @@ Double_t AliAnalysisTaskWeakDecayVertexer::GetDCAV0Dau( AliExternalTrackParam *p
     p2[6]=TMath::Sin(p2[2]); p2[7]=TMath::Cos(p2[2]);
     
     //Minimum X: allow for negative X if it means we're still *after* the primary vertex in the track ref frame
-    Double_t lMinimumX = -3; //
+    Double_t lMinimumX = fMinXforXYtest; //
     //Maximum X: some very big value, should not be a problem
     Double_t lMaximumX = 300;
     
@@ -1882,6 +1885,13 @@ Double_t AliAnalysisTaskWeakDecayVertexer::GetDCAV0Dau( AliExternalTrackParam *p
         //============================================================
         
         //______________________
+        //fast skipper: if XY plane pre-optimization says they're far, they're far! don't insist
+        if ( fkSkipLargeXYDCA ) {
+            if( lDist > NegRadius + PosRadius + 2*fV0VertexerSels[3] ) return 2000;
+            if( lDist < TMath::Abs(NegRadius - PosRadius) - 2*fV0VertexerSels[3] ) return 2000;
+        }
+        
+        //______________________
         //CASE 1
         if( (lDist > NegRadius + PosRadius) && fkXYCase1 ){
             //================================================================
@@ -1902,17 +1912,20 @@ Double_t AliAnalysisTaskWeakDecayVertexer::GetDCAV0Dau( AliExternalTrackParam *p
             Double_t xThisPos=xPosOptPosition*csPos + yPosOptPosition*snPos;
             
             if( xThisNeg < lMaximumX && xThisPos < lMaximumX && xThisNeg > lMinimumX && xThisPos > lMinimumX){
-                Double_t lCase1NegR[3]; nt->GetXYZAt(xThisNeg,b, lCase1NegR);
-                Double_t lCase1PosR[3]; pt->GetXYZAt(xThisPos,b, lCase1PosR);
-                lPreprocessDCAxy = TMath::Sqrt(
-                                               TMath::Power(lCase1NegR[0]-lCase1PosR[0],2)+
-                                               TMath::Power(lCase1NegR[1]-lCase1PosR[1],2)+
-                                               TMath::Power(lCase1NegR[2]-lCase1PosR[2],2)
-                                               );
-                //Pass coordinates
-                if( lPreprocessDCAxy<999){
-                    lPreprocessxp = xThisPos;
-                    lPreprocessxn = xThisNeg;
+                Bool_t lPropagA = kFALSE, lPropagB = kFALSE;
+                Double_t lCase1NegR[3]; lPropagA=nt->GetXYZAt(xThisNeg,b, lCase1NegR);
+                Double_t lCase1PosR[3]; lPropagB=pt->GetXYZAt(xThisPos,b, lCase1PosR);
+                if( lPropagA && lPropagB ){
+                    lPreprocessDCAxy = TMath::Sqrt(
+                                                   TMath::Power(lCase1NegR[0]-lCase1PosR[0],2)+
+                                                   TMath::Power(lCase1NegR[1]-lCase1PosR[1],2)+
+                                                   TMath::Power(lCase1NegR[2]-lCase1PosR[2],2)
+                                                   );
+                    //Pass coordinates
+                    if( lPreprocessDCAxy<999){
+                        lPreprocessxp = xThisPos;
+                        lPreprocessxn = xThisNeg;
+                    }
                 }
             }
             //================================================================
@@ -1972,24 +1985,38 @@ Double_t AliAnalysisTaskWeakDecayVertexer::GetDCAV0Dau( AliExternalTrackParam *p
             
             //Case 2a
             if( xThisNeg[0] < lMaximumX && xThisPos[0] < lMaximumX && xThisNeg[0] > lMinimumX && xThisPos[0] > lMinimumX ){
-                Double_t lCase2aNegR[3]; nt->GetXYZAt(xThisNeg[0],b, lCase2aNegR);
-                Double_t lCase2aPosR[3]; pt->GetXYZAt(xThisPos[0],b, lCase2aPosR);
+                Bool_t lPropagA = kFALSE, lPropagB = kFALSE;
+                Double_t lCase2aNegR[3]; lPropagA=nt->GetXYZAt(xThisNeg[0],b, lCase2aNegR);
+                Double_t lCase2aPosR[3]; lPropagB=pt->GetXYZAt(xThisPos[0],b, lCase2aPosR);
+                if( lPropagA && lPropagB ){
                 lCase2aDCA = TMath::Sqrt(
                                          TMath::Power(lCase2aNegR[0]-lCase2aPosR[0],2)+
                                          TMath::Power(lCase2aNegR[1]-lCase2aPosR[1],2)+
                                          TMath::Power(lCase2aNegR[2]-lCase2aPosR[2],2)
                                          );
+                }else{
+                    for(Int_t ic=0;ic<3;ic++)lCase2aNegR[ic]=0;
+                    for(Int_t ic=0;ic<3;ic++)lCase2aPosR[ic]=0;
+                    lCase2aDCA=1e+4;
+                }
             }
             
             //Case 2b
             if( xThisNeg[1] < lMaximumX && xThisPos[1] < lMaximumX && xThisNeg[1] > lMinimumX && xThisPos[1] > lMinimumX ){
-                Double_t lCase2bNegR[3]; nt->GetXYZAt(xThisNeg[1],b, lCase2bNegR);
-                Double_t lCase2bPosR[3]; pt->GetXYZAt(xThisPos[1],b, lCase2bPosR);
-                lCase2bDCA = TMath::Sqrt(
-                                         TMath::Power(lCase2bNegR[0]-lCase2bPosR[0],2)+
-                                         TMath::Power(lCase2bNegR[1]-lCase2bPosR[1],2)+
-                                         TMath::Power(lCase2bNegR[2]-lCase2bPosR[2],2)
-                                         );
+                Bool_t lPropagA = kFALSE, lPropagB = kFALSE;
+                Double_t lCase2bNegR[3]; lPropagA=nt->GetXYZAt(xThisNeg[1],b, lCase2bNegR);
+                Double_t lCase2bPosR[3]; lPropagB=pt->GetXYZAt(xThisPos[1],b, lCase2bPosR);
+                if( lPropagA && lPropagB ){
+                    lCase2bDCA = TMath::Sqrt(
+                                             TMath::Power(lCase2bNegR[0]-lCase2bPosR[0],2)+
+                                             TMath::Power(lCase2bNegR[1]-lCase2bPosR[1],2)+
+                                             TMath::Power(lCase2bNegR[2]-lCase2bPosR[2],2)
+                                             );
+                }else{
+                    for(Int_t ic=0;ic<3;ic++)lCase2bNegR[ic]=0;
+                    for(Int_t ic=0;ic<3;ic++)lCase2bPosR[ic]=0;
+                    lCase2bDCA=1e+4;
+                }
             }
             
             //Minor detail: all things being equal, prefer closest X
@@ -2153,25 +2180,13 @@ void AliAnalysisTaskWeakDecayVertexer::GetHelixCenter(const AliExternalTrackPara
     phi -= TMath::Pi()/2.;
     Double_t xpoint =	radius * TMath::Cos(phi);
     Double_t ypoint =	radius * TMath::Sin(phi);
-    if(b<0){
-        if(charge > 0){
-            xpoint = - xpoint;
-            ypoint = - ypoint;
-        }
-        if(charge < 0){
-            xpoint =	xpoint;
-            ypoint =	ypoint;
-        }
+    if(b<0&&charge > 0){
+        xpoint = - xpoint;
+        ypoint = - ypoint;
     }
-    if(b>0){
-        if(charge > 0){
-            xpoint =	xpoint;
-            ypoint =	ypoint;
-        }
-        if(charge < 0){
-            xpoint = - xpoint;
-            ypoint = - ypoint;
-        }
+    if(b>0 && charge < 0){
+        xpoint = - xpoint;
+        ypoint = - ypoint;
     }
     center[0] =	xpos + xpoint;
     center[1] =	ypos + ypoint;

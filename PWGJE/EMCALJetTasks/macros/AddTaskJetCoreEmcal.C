@@ -63,6 +63,10 @@ AliAnalysisTaskJetCoreEmcal* AddTaskJetCoreEmcal(
     trackContTrueLevel = task->AddTrackContainer("tracks");
     trackContPartLevel = task->AddMCParticleContainer("mcparticles");
 	}
+	else if (jetShapeType == AliAnalysisTaskJetCoreEmcal::kDetEmbPartCorr) {
+		trackCont = task->AddTrackContainer("tracks");
+    trackContTrueLevel = task->AddTrackContainer("tracks");
+	}
   task->AddClusterContainer(clusName);
 
   // connect jet container 
@@ -71,7 +75,8 @@ AliAnalysisTaskJetCoreEmcal* AddTaskJetCoreEmcal(
   AliJetContainer* jetContTrue = 0x0;
   AliJetContainer* jetContPart = 0x0;
 	if(jetShapeType == AliAnalysisTaskJetCoreEmcal::kData ||
-			jetShapeType == AliAnalysisTaskJetCoreEmcal::kMCTrue) { 
+			jetShapeType == AliAnalysisTaskJetCoreEmcal::kMCTrue ||
+			jetShapeType == AliAnalysisTaskJetCoreEmcal::kDetEmbPartCorr) { 
 
 		jetContBase = task->AddJetContainer(njetsBase,typeStr,R);
 		jetContBase->SetRhoName(nRho);

@@ -6,7 +6,7 @@
 //
 //=============================================================================
 
-AliAnalysisTaskParticleEff *AddTaskEfficiency()
+AliAnalysisTaskParticleEff *AddTaskEfficiency(TString containerName="femtolist")
 {
   // A. Get the pointer to the existing analysis manager via the static access method.
   //==============================================================================
@@ -53,7 +53,7 @@ AliAnalysisTaskParticleEff *AddTaskEfficiency()
   //==============================================================================
   TString outputfile = AliAnalysisManager::GetCommonFileName();
   outputfile += ":PWG2FEMTO";
-  AliAnalysisDataContainer *cout_femto  = mgr->CreateContainer("femtolist",  TList::Class(),
+  AliAnalysisDataContainer *cout_femto  = mgr->CreateContainer(containerName,  TList::Class(),
   							       AliAnalysisManager::kOutputContainer,outputfile);
 
 

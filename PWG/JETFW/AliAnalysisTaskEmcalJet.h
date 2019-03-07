@@ -41,6 +41,7 @@ class AliAnalysisTaskEmcalJet : public AliAnalysisTaskEmcal {
   void                        SetAnaType(UInt_t t, Int_t c = 0) { SetJetAcceptanceType(t,c); }
   void                        SetJetAcceptanceType(UInt_t t, Int_t c = 0);
   void                        SetJetAcceptanceType(TString cutType, Int_t c = 0);
+  void                        SetJetType(EJetType_t type, Int_t c = 0);
   void                        SetJetEtaLimits(Float_t min, Float_t max, Int_t c = 0);
   void                        SetJetPhiLimits(Float_t min, Float_t max, Int_t c = 0);
   void                        SetJetAreaCut(Float_t cut, Int_t c = 0);

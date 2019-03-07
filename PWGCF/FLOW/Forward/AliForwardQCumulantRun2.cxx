@@ -2,7 +2,7 @@
 #include "TMath.h"
 #include <iostream>
 #include "TRandom.h"
-#include "AliForwardFlowRun2Settings.h"
+#include "AliForwardSettings.h"
 #include "TH1D.h"
 #include <complex>
 #include <cmath>
@@ -15,8 +15,8 @@ fMaxMoment(5),
 nHBins(fMaxMoment*4+2),
 nRefBins(1),
 nEtaBins(24),
-fCumuRef("fCumuRef","fCumuRef", nRefBins, -4.0, 6.0, nHBins, 0.5, nHBins+0.5),
-fCumuDiff("fCumuDiff","fCumuDiff", nEtaBins, -4.0, 6.0, nHBins, 0.5, nHBins+0.5),
+fCumuRef("fCumuRef","fCumuRef", nRefBins, fSettings.fEtaLowEdge, fSettings.fEtaUpEdge, nHBins, 0.5, nHBins+0.5),
+fCumuDiff("fCumuDiff","fCumuDiff", nEtaBins, fSettings.fEtaLowEdge, fSettings.fEtaUpEdge, nHBins, 0.5, nHBins+0.5),
 fSumOfWeights(0),
 fSumOfWeightsSquared(0),
 useEvent(kTRUE)
@@ -37,8 +37,6 @@ void AliForwardQCumulantRun2::CumulantsAccumulate(TH2D& dNdetadphi, TList* outpu
     Double_t sumOfWeights = 0;
 
   for (Int_t etaBin = 1; etaBin <= dNdetadphi.GetNbinsX(); etaBin++) {
-  
-    Double_t acceptance = 1.;
 
     Double_t eta = dNdetadphi.GetXaxis()->GetBinCenter(etaBin);
     Double_t runAvg = 0;
@@ -50,14 +48,15 @@ void AliForwardQCumulantRun2::CumulantsAccumulate(TH2D& dNdetadphi, TList* outpu
     //if ( fabs(eta) > 1.7) {
     //  if (dNdetadphi.GetBinContent(etaBin, 0) == 0) break;
     //}
+    /*
     if (fabs(eta) > 1.7 && detType == "forward"){
       acceptance = dNdetadphi.GetBinContent(etaBin, kphiAcceptanceBin);
-      
+
       if (acceptance == 0 || acceptance > 2.0) continue;
-    }
+    }*/
 
     for (Int_t phiBin = 1; phiBin <= phibins; phiBin++) {
-  
+
 
       Double_t phi = dNdetadphi.GetYaxis()->GetBinCenter(phiBin);
       Double_t refEtaBin = fCumuRef.GetXaxis()->FindBin(eta);
@@ -70,10 +69,10 @@ void AliForwardQCumulantRun2::CumulantsAccumulate(TH2D& dNdetadphi, TList* outpu
       nInAvg++;
       if (weight == 0) continue;
       if (weight > max) max = weight;
-      
+
       // Fill into Cos() and Sin() hists
       fFMDHits->Fill(weight);
-      if ((fSettings.fFlowFlags & fSettings.kEtaGap) && (fabs(eta) > 0.4 && fabs(eta) < 0.8)) { 
+      if ((fSettings.fFlowFlags & fSettings.kEtaGap) && (fabs(eta) > 0.4 && fabs(eta) < 0.8)) {
         fCumuRef.Fill(refEta, 0., weight);// mult goes in underflowbin kWA2
         //fCumuRef.Fill(refEta, 1., weight*weight);// mult goes in underflowbin kWA2
       }
@@ -88,35 +87,35 @@ void AliForwardQCumulantRun2::CumulantsAccumulate(TH2D& dNdetadphi, TList* outpu
         fCumuDiff.Fill(eta, 0., weight);
         //fCumuDiff.Fill(eta, 1., weight*weight);
       //}
-      
-      for (Int_t n = 1; n <= 2*fMaxMoment; n++) {         
-        Double_t cosBin = fCumuDiff.GetYaxis()->GetBinCenter(GetBinNumberCos(n));         
-        Double_t sinBin = fCumuDiff.GetYaxis()->GetBinCenter(GetBinNumberSin(n));   
-        Double_t cosnPhi = weight*TMath::Cos(n*phi);         
-        Double_t sinnPhi = weight*TMath::Sin(n*phi);        
+
+      for (Int_t n = 1; n <= 2*fMaxMoment; n++) {
+        Double_t cosBin = fCumuDiff.GetYaxis()->GetBinCenter(GetBinNumberCos(n));
+        Double_t sinBin = fCumuDiff.GetYaxis()->GetBinCenter(GetBinNumberSin(n));
+        Double_t cosnPhi = weight*TMath::Cos(n*phi);
+        Double_t sinnPhi = weight*TMath::Sin(n*phi);
         sumOfWeights += weight;
 
         fSumOfWeights += weight;
         fSumOfWeightsSquared += weight*weight;
 
-        // fill diff         
+        // fill diff
         //if (fabs(eta) >= 1.7 && detType == "forward"){
-        //  fCumuDiff.Fill(eta, cosBin, cosnPhi); 
+        //  fCumuDiff.Fill(eta, cosBin, cosnPhi);
         //  fCumuDiff.Fill(eta, sinBin, sinnPhi);
         //}
         //else if (fabs(eta) < 1.7 && detType == "central"){
-        //  fCumuDiff.Fill(eta, cosBin, cosnPhi);         
-          fCumuDiff.Fill(eta, sinBin, sinnPhi); 
+          fCumuDiff.Fill(eta, cosBin, cosnPhi);
+          fCumuDiff.Fill(eta, sinBin, sinnPhi);
         //}
 
-        // fill ref         
+        // fill ref
         if ((fSettings.fFlowFlags & fSettings.kEtaGap) &&  ((fabs(eta) > 0.4) && (fabs(eta) < 0.8) ) ){
-            fCumuRef.Fill(refEta, cosBin, cosnPhi);         
+            fCumuRef.Fill(refEta, cosBin, cosnPhi);
             fCumuRef.Fill(refEta, sinBin, sinnPhi);
         }
         else if (detType == "central") {
         //else if (!(fSettings.fFlowFlags & fSettings.kEtaGap) && detType == "central") {
-          fCumuRef.Fill(refEta, cosBin, cosnPhi);         
+          fCumuRef.Fill(refEta, cosBin, cosnPhi);
           fCumuRef.Fill(refEta, sinBin, sinnPhi);
         }
       } // End of n loop
@@ -131,8 +130,8 @@ void AliForwardQCumulantRun2::CumulantsAccumulate(TH2D& dNdetadphi, TList* outpu
       if (fSigmaCut > 0. && nSigma >= fSigmaCut && cent < 60) nBadBins++;
       else nBadBins = 0;
       fOutliers->Fill(cent, nSigma);
-      // We still finish the loop, for fOutliers to make sense, 
-      // but we do no keep the event for analysis 
+      // We still finish the loop, for fOutliers to make sense,
+      // but we do no keep the event for analysis
       if (nBadBins > 3) useEvent = kFALSE;
     }
   } // End of eta bin
@@ -161,10 +160,10 @@ void AliForwardQCumulantRun2::saveEvent(TH2D& dNdetadphi, TList* outputList, dou
       cumuDiff = static_cast<THnD*>(difList->FindObject(Form("cumuDiff_v%d", n)));
 
       // Per mom. quantities
-      Double_t dQnReA = 0, dQnImA = 0, multA = 0; 
+      Double_t dQnReA = 0, dQnImA = 0, multA = 0;
       Double_t dQ2nReA = 0, dQ2nImA = 0;
       Double_t two = 0, w2 = 0, four = 0, w4 = 0;
-      Double_t dQnReB = 0, dQnImB = 0, multB = 0; 
+      Double_t dQnReB = 0, dQnImB = 0, multB = 0;
       //Double_t dQ2nReB = 0, dQ2nImB = 0;
 
       for (Int_t etaBin = 1; etaBin <= fCumuDiff.GetNbinsX(); etaBin++) {
@@ -196,13 +195,13 @@ void AliForwardQCumulantRun2::saveEvent(TH2D& dNdetadphi, TList* outputList, dou
         //dQ2nImB = fCumuRef.GetBinContent(refEtaBinB, GetBinNumberSin(2*n));
 
         if (refEtaBinA != prevRefEtaBin) {
-            if (multA <= 3) continue; 
+            if (multA <= 3) continue;
 
-        // The reference flow is calculated 
+        // The reference flow is calculated
         // 2-particle
             if ((fSettings.fFlowFlags & fSettings.kEtaGap)){
               w2 = multA * multB;
-              two = (dQnReA*dQnReB + dQnImA*dQnImB);   
+              two = (dQnReA*dQnReB + dQnImA*dQnImB);
             }
             else{
               w2 = multA * (multA - 1.);
@@ -211,7 +210,7 @@ void AliForwardQCumulantRun2::saveEvent(TH2D& dNdetadphi, TList* outputList, dou
 
             //if (w2 <= 0) continue;
             //if (two/w2 < 0) continue;
-            
+
             Double_t x[5] = {noSamples, vertexpos, refEtaA, cent, fSettings.kW4Four};
 
             x[4] = fSettings.kW2Two;
@@ -238,7 +237,7 @@ void AliForwardQCumulantRun2::saveEvent(TH2D& dNdetadphi, TList* outputList, dou
               //Double_t w3 = (mp*multA-2.*mq)*(multA-1.);
 
               w4 = multA * (multA - 1.) * (multA - 2.) * (multA - 3.);
-              four = 
+              four =
               2.*multA*(multA-3.) + TMath::Power((TMath::Power(dQnReA,2.)+TMath::Power(dQnImA,2.)),2.)
               -4.*(multA-2.)*(TMath::Power(dQnReA,2.) + TMath::Power(dQnImA,2.))
               -2.*(TMath::Power(dQnReA,2.)*dQ2nReA+2.*dQnReA*dQnImA*dQ2nImA-TMath::Power(dQnImA,2.)*dQ2nReA)
@@ -266,7 +265,7 @@ void AliForwardQCumulantRun2::saveEvent(TH2D& dNdetadphi, TList* outputList, dou
             cumuRef->Fill(x, calcSinPhi1Phi2Phi3m(dQnReA, dQnImA, dQ2nReA, dQ2nImA, multA) );
             }
             prevRefEtaBin = refEtaBinA;
-          
+
         }
 
     // DIFFERENTIAL FLOW -----------------------------------------------------------------------------
@@ -293,7 +292,7 @@ void AliForwardQCumulantRun2::saveEvent(TH2D& dNdetadphi, TList* outputList, dou
 
 
         if (mp == 0) continue;
-        if (multB <= 3) continue; 
+        if (multB <= 3) continue;
 
         Double_t twoPrime = 0.;
 
@@ -323,10 +322,10 @@ void AliForwardQCumulantRun2::saveEvent(TH2D& dNdetadphi, TList* outputList, dou
         if ((fSettings.fFlowFlags & fSettings.kEtaGap)) continue;
 
         Double_t w4p = (mp * multA - 3.*mq)*(multA - 1.)*(multA - 2.);
-        Double_t fourPrime = calcFourPrime(dQnReA, dQnImA, qnRe, qnIm, pnRe, pnIm, q2nRe, q2nIm, dQ2nReA, dQ2nImA, mq, multA); 
+        Double_t fourPrime = calcFourPrime(dQnReA, dQnImA, qnRe, qnIm, pnRe, pnIm, q2nRe, q2nIm, dQ2nReA, dQ2nImA, mq, multA);
 
         x[4] = fSettings.k3pWeight;
-        cumuDiff->Fill(x, (mp*multA-2.*mq)*(multA-1.));       
+        cumuDiff->Fill(x, (mp*multA-2.*mq)*(multA-1.));
         x[4] = fSettings.kW4Four;
         cumuDiff->Fill(x, fourPrime);
         x[4] = fSettings.kW4;
@@ -336,7 +335,7 @@ void AliForwardQCumulantRun2::saveEvent(TH2D& dNdetadphi, TList* outputList, dou
         x[4] = fSettings.kSinphi1A;
         cumuDiff->Fill(x,pnIm);
         x[4] = fSettings.kCosphi1A;
-        cumuDiff->Fill(x,pnRe);     
+        cumuDiff->Fill(x,pnRe);
         x[4] = fSettings.kCosphi1phi2m;
         cumuDiff->Fill(x, twoPrime);
         x[4] = fSettings.kCosphi1phi2p;
@@ -355,7 +354,7 @@ void AliForwardQCumulantRun2::saveEvent(TH2D& dNdetadphi, TList* outputList, dou
 
       }
     } // End of moment loop
-  
+
 
 
   return;
@@ -363,7 +362,7 @@ void AliForwardQCumulantRun2::saveEvent(TH2D& dNdetadphi, TList* outputList, dou
 
 
 //_____________________________________________________________________
-Int_t AliForwardQCumulantRun2::GetBinNumberCos(Int_t n) const  
+Int_t AliForwardQCumulantRun2::GetBinNumberCos(Int_t n) const
 {
   //
   //  Get the bin number of <<cos(nphi)>>
@@ -378,7 +377,7 @@ Int_t AliForwardQCumulantRun2::GetBinNumberCos(Int_t n) const
 }
 
 //_____________________________________________________________________
-Int_t AliForwardQCumulantRun2::GetBinNumberSin(Int_t n) const  
+Int_t AliForwardQCumulantRun2::GetBinNumberSin(Int_t n) const
 {
   //
   //  Get the bin number of <<sin(nphi)>>

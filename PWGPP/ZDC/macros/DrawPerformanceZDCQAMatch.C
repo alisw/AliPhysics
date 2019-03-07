@@ -144,8 +144,8 @@ ttree->SetBranchAddress("ZN_TDC_Sum",&ZN_TDC_Sum);
 ttree->SetBranchAddress("ZN_TDC_Diff",&ZN_TDC_Diff);
 ttree->SetBranchAddress("ZN_TDC_Sum_Err",&ZN_TDC_Sum_err);
 ttree->SetBranchAddress("ZN_TDC_Diff_Err",&ZN_TDC_Diff_err);
-//ttree->SetBranchAddress("ZNC_TDC",&ZNC_TDC);
-//ttree->SetBranchAddress("ZNA_TDC",&ZNA_TDC);
+ttree->SetBranchAddress("ZNC_TDC",&ZNC_TDC);
+ttree->SetBranchAddress("ZNA_TDC",&ZNA_TDC);
 
 printf(" branch addresses set\n");
 
@@ -554,6 +554,10 @@ cTimingDiff->Print(Form("%s/cTimingDiff.png",plotDir.Data()));
 //----------------------------------------------------------------------
 //out
 //----------------------------------------------------------------------
+TFile *fout = 0;
+fout = TFile::Open("prodQAhistos.root", "update");
+if(!fout) fout = new TFile("prodQAhistos.root","RECREATE");
+
 printf(" preparing output tree\n");
 tree->Branch("run",&runNumber,"runNumber/I");
 tree->Branch("ZNC_mean_value",&ZNC_mean,"ZNC_mean/D");
@@ -580,6 +584,8 @@ tree->Branch("ZN_TDC_Sum_Err",&ZN_TDC_Sum_err,"ZN_TDC_Sum_err/D");
 tree->Branch("ZN_TDC_Diff_Err",&ZN_TDC_Diff_err,"ZN_TDC_Diff_err/D");
 tree->Fill();
 
+fout->cd();
+
 if(hZNCpmcUncalib) list.Add(cZNC_Spectra_Uncal);
 if(hZNApmcUncalib) list.Add(cZNA_Spectra_Uncal);
 if(hZPCpmcUncalib) list.Add(cZPC_Spectra_Uncal);
@@ -593,10 +599,6 @@ list.Add(cZNA_Y_centroid);
 list.Add(cZNC_X_centroid);
 list.Add(cZNC_Y_centroid);
 
-TFile *fout;
-fout = TFile::Open("prodQAhistos.root", "update");
-if(!fout) fout = new TFile("prodQAhistos.root");
-fout->cd();
 list.Write();
 tree->Write();
 fout->Close();

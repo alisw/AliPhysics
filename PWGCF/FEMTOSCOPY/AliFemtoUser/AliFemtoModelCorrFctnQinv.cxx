@@ -74,44 +74,54 @@ AliFemtoModelCorrFctnQinv::AliFemtoModelCorrFctnQinv():
 {
 }
 
-AliFemtoModelCorrFctnQinv::AliFemtoModelCorrFctnQinv(const char *name,
+AliFemtoModelCorrFctnQinv::AliFemtoModelCorrFctnQinv(const char *suffix,
                                                      const int nbins,
                                                      const float qinv_low_limit,
-                                                     const float qinv_high_limit):
-  AliFemtoModelCorrFctn(name, nbins, qinv_low_limit, qinv_high_limit)
-
-  , fRecNum(new TH1F(TString::Format("%s_Num", name),
-                     "Reconstructed q_{inv} - Numerator; q_inv (GeV);",
-                     nbins, qinv_low_limit, qinv_high_limit))
-
-  , fRecDen(new TH1F(TString::Format("%s_Den", name),
-                     "Reconstructed q_{inv} - Denominator; q_{inv} (GeV);",
-                     nbins, qinv_low_limit, qinv_high_limit))
-
+                                                     const float qinv_high_limit)
+  : AliFemtoModelCorrFctn(suffix, nbins, qinv_low_limit, qinv_high_limit)
+  , fPairType(AliFemtoAvgSepCorrFctn::kTracks)
+  , fExpectedTrack1Code(0)
+  , fExpectedTrack2Code(0)
+  , fRecNum(nullptr)
+  , fRecDen(nullptr)
   , fTrueNum(nullptr)
   , fTrueDen(nullptr)
 {
-  fRecNum->Sumw2();
-  fRecDen->Sumw2();
+  fNumeratorTrue->SetTitle("Reconstructed Numerator; q_{inv} (Gev)");
+  fNumeratorFake->SetTitle("Simulated Reconstructed Numerator; q_{inv} (Gev)");
+  fDenominator->SetTitle("Reconstructed Denominator; q_{inv} (Gev)");
+
+  fNumeratorTrueIdeal->SetTitle("Generated Numerator; q_{inv} (Gev)");
+  fNumeratorFakeIdeal->SetTitle("Simulated Generated Numerator; q_{inv} (Gev)");
+  fDenominatorIdeal->SetTitle("Generated Denominator; q_{inv} (Gev)");
+
+  fDenominatorIdeal->Sumw2(false);
+  fDenominator->Sumw2(false);
 
   const float binstart = -0.5,
               binstop = true_type_codes.size() - 0.5;
 
-  fTrueNum = new TH2F(
-    TString::Format("true_%s_Num", name),
-    "True q_{inv} - Numerator; q_{inv} (GeV);",
-    nbins, qinv_low_limit, qinv_high_limit,
-    true_type_codes.size(), binstart, binstop
-  );
-  fTrueNum->Sumw2();
+  auto _build_1d_hist = [&](const TString &name, const TString &title)
+    {
+      return new TH1F(name + suffix, title,
+                      nbins, qinv_low_limit, qinv_high_limit);
+    };
 
-  fTrueDen = new TH2F(
-    TString::Format("true_%s_Den", name),
-    "q_{inv} - Denominator; q_{inv} (GeV);",
-    nbins, qinv_low_limit, qinv_high_limit,
-    true_type_codes.size(), binstart, binstop
-  );
-  fTrueDen->Sumw2();
+  auto _build_2d_hist = [&](const TString &name, const TString &title)
+    {
+      return new TH2F(name + suffix, title,
+                      nbins, qinv_low_limit, qinv_high_limit,
+                      true_type_codes.size(), binstart, binstop);
+    };
+
+  fRecNum = _build_1d_hist("RecNum", "Reconstructed q_{inv} - Numerator; q_{inv} (GeV);");
+  fRecDen = _build_1d_hist("DenNum", "Reconstructed q_{inv} - Denominator; q_{inv} (GeV);");
+
+  fTrueNum = _build_2d_hist("TrueNum", "True q_{inv} - Numerator; q_{inv} (GeV);");
+  fTrueDen = _build_2d_hist("TrueDen", "True q_{inv} - Denominator; q_{inv} (GeV);");
+
+  fRecNum->Sumw2();
+  fTrueNum->Sumw2();
 
   for (size_t bin = 0; bin < true_type_codes.size(); ++bin) {
     Int_t code = true_type_codes[bin];
@@ -176,8 +186,8 @@ AliFemtoModelCorrFctnQinv::~AliFemtoModelCorrFctnQinv()
 AliFemtoString
 AliFemtoModelCorrFctnQinv::Report()
 {
-  TString report;
-  return AliFemtoString((const char *)report);
+  AliFemtoString report;
+  return report;
 }
 
 
@@ -237,8 +247,8 @@ void AliFemtoModelCorrFctnQinv::AddPair(const AliFemtoPair *pair,
   //   *info1 = dynamic_cast<const AliFemtoModelHiddenInfo*>(aPair->Track1()->HiddenInfo()),
   //   *info2 = dynamic_cast<const AliFemtoModelHiddenInfo*>(aPair->Track2()->HiddenInfo());
   const AliFemtoModelHiddenInfo
-    *info1 = (const AliFemtoModelHiddenInfo*)pair->Track1()->HiddenInfo(),
-    *info2 = (const AliFemtoModelHiddenInfo*)pair->Track2()->HiddenInfo();
+    *info1 = static_cast<const AliFemtoModelHiddenInfo*>(pair->Track1()->HiddenInfo()),
+    *info2 = static_cast<const AliFemtoModelHiddenInfo*>(pair->Track2()->HiddenInfo());
 
   if (info1 == nullptr || info2 == nullptr) {
     return;
@@ -272,10 +282,12 @@ void AliFemtoModelCorrFctnQinv::AddPair(const AliFemtoPair *pair,
 
 void AliFemtoModelCorrFctnQinv::AddRealPair(AliFemtoPair* aPair)
 {
+  AliFemtoModelCorrFctn::AddRealPair(aPair);
   AddPair(aPair, fRecNum, fTrueNum);
 }
 
 void AliFemtoModelCorrFctnQinv::AddMixedPair(AliFemtoPair* aPair)
 {
+  AliFemtoModelCorrFctn::AddMixedPair(aPair);
   AddPair(aPair, fRecDen, fTrueDen);
 }

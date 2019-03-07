@@ -377,6 +377,11 @@ protected:
     float  * __n1_1_vsZEtaPhiPt;    //!
     
     double * __n1_2_vsPt;   //!
+    double * __n1_2_vsPt_pdg;   //!
+    double * __n1_2_vsPt_pdg_Weak;   //!
+    double * __n1_2_vsPt_pdg_Weak_Material;   //!
+    double * __n1_2_vsPt_Weak;   //!
+    double * __n1_2_vsPt_Material;   //!
     double * __n1_2_vsEtaPhi;     //!
     double * __s1pt_2_vsEtaPhi;    //!
     float  * __n1_2_vsZEtaPhiPt;    //!
@@ -489,6 +494,11 @@ protected:
     // PARTICLE 2 (satisfies filter 2)
     // Primary filled quantities
     TH1F      *  _n1_2_vsPt;
+    TH1F      *  _n1_2_vsPt_pdg;
+    TH1F      *  _n1_2_vsPt_pdg_Weak;
+    TH1F      *  _n1_2_vsPt_pdg_Weak_Material;
+    TH1F      *  _n1_2_vsPt_Weak;
+    TH1F      *  _n1_2_vsPt_Material;
     TH2F      *  _n1_2_vsEtaVsPhi;
     TH2F      *  _s1pt_2_vsEtaVsPhi;
     TH3F      *  _n1_2_vsZVsEtaVsPhiVsPt;

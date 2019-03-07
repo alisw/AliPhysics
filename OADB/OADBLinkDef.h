@@ -34,5 +34,6 @@
 #pragma link C++ class AliMultSelectionTask+;
 #pragma link C++ class AliMultSelectionCalibrator+;
 #pragma link C++ class AliMultSelectionCalibratorMC+;
+#pragma link C++ class AliMultGlauberNBDFitter+;
 
 #endif

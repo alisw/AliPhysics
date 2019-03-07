@@ -5,7 +5,8 @@ AliAnalysisTaskSEpPbCorrelationsYS* AddTaskpPbCorrelationsYS(
 								       TString  fCollisiontype = "pPb",
 								       Bool_t  fDataType       =kTRUE,//TRUE=real data, FALSE=MC
 								       Bool_t frun2            =kTRUE,
-								       TString anamode         ="SECA",//TPCTPC, TPCV0A, TPCV0C, V0AV0C,TPCFMD, TPCFMDC, FMDFMD, SECA
+								       Bool_t fFMDcut          =kFALSE,
+								       TString anamode         ="ITSFMD",//TPCTPC, TPCV0A, TPCV0C, V0AV0C,TPCFMD, TPCFMDC, FMDFMD, SECA
 								       TString anacent         ="V0A",
 								       TString assomode        ="hadron",
 								       Int_t ffilterbit        =5
@@ -49,7 +50,9 @@ AliAnalysisTaskSEpPbCorrelationsYS* AddTaskpPbCorrelationsYS(
   //myTask->SetPID(fpid);
   myTask->SetDatatype(fDataType);
   myTask->SetRunType(frun2);
-  if(anamode=="FMDFMD" || anamode=="SECA")myTask-> SetMinNTracksInPool(5000);
+  myTask->SetFMDcut(fFMDcut);
+  //  if(anamode=="FMDFMD" || anamode=="SECA")myTask-> SetMinNTracksInPool(5000);
+  myTask->SetMinNTracksInPool(5000);
   myTask->SetAnalysisCent(anacent);//0:V0A 1:ZNA 2:
   myTask->SetAnalysisCollisionType(fCollisiontype);
 
@@ -58,6 +61,11 @@ AliAnalysisTaskSEpPbCorrelationsYS* AddTaskpPbCorrelationsYS(
   if(fCollisiontype=="pPb")myTask->SetPoolCentBinLimits(cent_mult_bin_numbpPb,cent_mult_binlimitspPb);
   
   mgr->AddTask(myTask);
+
+  //cout<<"hogehoge"<<endl;
+  //  gSystem->Exec("alien_cp alien:///alice/cern.ch/user/y/ysekiguc/correction.root ./");
+  //cout<<"hogehoge"<<endl;
+
 
   // Create containers for input/output
   TString outputFileName = AliAnalysisManager::GetCommonFileName();
@@ -73,6 +81,9 @@ AliAnalysisTaskSEpPbCorrelationsYS* AddTaskpPbCorrelationsYS(
   mgr->ConnectOutput(myTask,1,coutput);
   mgr->ConnectOutput(myTask,2,coutput2);
   mgr->ConnectOutput(myTask,3,coutput3);
+
+  
+  
 
   return myTask;
 }

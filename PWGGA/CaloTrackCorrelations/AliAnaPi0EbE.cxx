@@ -3286,8 +3286,11 @@ void  AliAnaPi0EbE::MakeInvMassInCalorimeterAndCTS()
       if(IsDataMC())
       {
         Int_t	label2 = photon2->GetLabel();
-        if ( label2 >= 0 ) photon2->SetTag(GetMCAnalysisUtils()->CheckOrigin(label2, GetMC(),
-                                                                             GetReader()->GetNameOfMCEventHederGeneratorToAccept()));
+        if ( label2 >= 0 ) 
+          photon2->SetTag(GetMCAnalysisUtils()->CheckOrigin(label2, 
+                                                            GetMC(),
+                                                            GetReader()->GetNameOfMCEventHederGeneratorToAccept(),
+                                                            fMomentum2.Pt())); // Not needed?
         
         HasPairSameMCMother(photon1->GetLabel(), photon2->GetLabel(),
                             photon1->GetTag()  , photon2->GetTag(),
@@ -3463,7 +3466,7 @@ void  AliAnaPi0EbE::MakeShowerShapeIdentification()
     }
     
     // If too small or big pt, skip it
-    if(fMomentum.E() < GetMinEnergy() || fMomentum.E() > GetMaxEnergy() ) continue ;
+    if ( fMomentum.E() < GetMinEnergy() || fMomentum.E() > GetMaxEnergy() ) continue ;
     
     // Check acceptance selection
     if(IsFiducialCutOn())
@@ -3479,8 +3482,11 @@ void  AliAnaPi0EbE::MakeShowerShapeIdentification()
     Int_t tag	= 0 ;
     if(IsDataMC())
     {
-      tag = GetMCAnalysisUtils()->CheckOrigin(calo->GetLabels(), calo->GetNLabels(), GetMC(),
-                                              GetReader()->GetNameOfMCEventHederGeneratorToAccept());
+      tag = GetMCAnalysisUtils()->CheckOrigin(calo->GetLabels(), 
+                                              calo->GetClusterMCEdepFraction(),
+                                              calo->GetNLabels(), GetMC(),
+                                              GetReader()->GetNameOfMCEventHederGeneratorToAccept(),
+                                              fMomentum.E());
       AliDebug(1,Form("Origin of candidate %d",tag));
     }
     

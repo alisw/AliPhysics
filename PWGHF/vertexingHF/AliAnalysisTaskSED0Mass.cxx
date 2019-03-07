@@ -28,6 +28,7 @@
 
 #include <Riostream.h>
 #include <TClonesArray.h>
+#include <TObjArray.h>
 #include <TCanvas.h>
 #include <TNtuple.h>
 #include <TTree.h>
@@ -973,7 +974,7 @@ void AliAnalysisTaskSED0Mass::UserCreateOutputObjects()
 
   const char* nameoutput=GetOutputSlot(3)->GetContainer()->GetName();
 
-  fNentries=new TH1F(nameoutput, "Integral(1,2) = number of AODs *** Integral(2,3) = number of candidates selected with cuts *** Integral(3,4) = number of D0 selected with cuts *** Integral(4,5) = events with good vertex ***  Integral(5,6) = pt out of bounds", 23,-0.5,22.5);
+  fNentries=new TH1F(nameoutput, "Integral(1,2) = number of AODs *** Integral(2,3) = number of candidates selected with cuts *** Integral(3,4) = number of D0 selected with cuts *** Integral(4,5) = events with good vertex ***  Integral(5,6) = pt out of bounds", 24,-0.5,23.5);
 
   fNentries->GetXaxis()->SetBinLabel(1,"nEventsAnal");
   fNentries->GetXaxis()->SetBinLabel(2,"nCandSel(Cuts)");
@@ -1003,6 +1004,7 @@ void AliAnalysisTaskSED0Mass::UserCreateOutputObjects()
   fNentries->GetXaxis()->SetBinLabel(21,"fisFilled is 1");
   fNentries->GetXaxis()->SetBinLabel(22,"AOD/dAOD mismatch");
   fNentries->GetXaxis()->SetBinLabel(23,"AOD/dAOD #events ok");
+  fNentries->GetXaxis()->SetBinLabel(24,"PreSelect rejection");
   fNentries->GetXaxis()->SetNdivisions(1,kFALSE);
 
   fCounter = new AliNormalizationCounter(Form("%s",GetOutputSlot(5)->GetContainer()->GetName()));
@@ -1263,6 +1265,16 @@ void AliAnalysisTaskSED0Mass::UserExec(Option_t */*option*/)
       }
     if(d->GetIsFilled()==0)fNentries->Fill(19);//tmp check
     if(d->GetIsFilled()==1)fNentries->Fill(20);//tmp check
+    TObjArray arrTracks(2);
+    for(Int_t ipr=0;ipr<2;ipr++){
+      AliAODTrack *tr=vHF->GetProng(aod,d,ipr);
+      arrTracks.AddAt(tr,ipr);
+    }
+
+    if(!fCuts->PreSelect(arrTracks)){
+      fNentries->Fill(23);
+      continue;
+    }
     if(!(vHF->FillRecoCand(aod,d))) {//Fill the data members of the candidate only if they are empty.   
       fNentries->Fill(18); //monitor how often this fails 
       continue;

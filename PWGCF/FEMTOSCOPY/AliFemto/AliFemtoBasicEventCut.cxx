@@ -88,15 +88,15 @@ TList* AliFemtoBasicEventCut::AppendSettings(TList *settings,
 {
   settings->AddVector(
 
-    new TObjString(prefix + TString::Format("AliFemtoBasicEventCut.mult.min=%d", fEventMult[0])),
-    new TObjString(prefix + TString::Format("AliFemtoBasicEventCut.mult.max=%d", fEventMult[1])),
-    new TObjString(prefix + TString::Format("AliFemtoBasicEventCut.vertex.min=%f", fVertZPos[0])),
-    new TObjString(prefix + TString::Format("AliFemtoBasicEventCut.vertex.max=%f", fVertZPos[1])),
-    new TObjString(prefix + TString::Format("AliFemtoBasicEventCut.psiep.min=%f", fPsiEP[0])),
-    new TObjString(prefix + TString::Format("AliFemtoBasicEventCut.psiep.max=%f", fPsiEP[1])),
-    new TObjString(prefix + TString::Format("AliFemtoBasicEventCut.accept_bad_vertex=%d", fAcceptBadVertex)),
-    new TObjString(prefix + TString::Format("AliFemtoBasicEventCut.accept_only_physics=%d", fAcceptOnlyPhysics)),
-    new TObjString(prefix + TString::Format("AliFemtoBasicEventCut.trigger=%d", fSelectTrigger)),
+    new TObjString(prefix + Form("AliFemtoBasicEventCut.mult.min=%d", fEventMult[0])),
+    new TObjString(prefix + Form("AliFemtoBasicEventCut.mult.max=%d", fEventMult[1])),
+    new TObjString(prefix + Form("AliFemtoBasicEventCut.vertex.min=%f", fVertZPos[0])),
+    new TObjString(prefix + Form("AliFemtoBasicEventCut.vertex.max=%f", fVertZPos[1])),
+    new TObjString(prefix + Form("AliFemtoBasicEventCut.psiep.min=%f", fPsiEP[0])),
+    new TObjString(prefix + Form("AliFemtoBasicEventCut.psiep.max=%f", fPsiEP[1])),
+    new TObjString(prefix + Form("AliFemtoBasicEventCut.accept_bad_vertex=%d", fAcceptBadVertex)),
+    new TObjString(prefix + Form("AliFemtoBasicEventCut.accept_only_physics=%d", fAcceptOnlyPhysics)),
+    new TObjString(prefix + Form("AliFemtoBasicEventCut.trigger=%d", fSelectTrigger)),
 
   NULL);
 
@@ -107,18 +107,10 @@ TList* AliFemtoBasicEventCut::AppendSettings(TList *settings,
 AliFemtoString AliFemtoBasicEventCut::Report()
 {
   /// Prepare report
-  TString report = TString::Format("Multiplicity:\t %d - %d\n", fEventMult[0], fEventMult[1]);
+  AliFemtoString report = "AliFemtoBasicEventCut\n";
+  report += Form("Multiplicity:\t %d - %d\n", fEventMult[0], fEventMult[1]);
+  report += Form("Vertex Z-position:\t %E - %E\n", fVertZPos[0], fVertZPos[1]);
+  report += Form("Number of events which passed:\t%ld  Number which failed:\t%ld\n", fNEventsPassed, fNEventsFailed);
 
-   report += TString::Format("Vertex Z-position:\t %E - %E\n", fVertZPos[0], fVertZPos[1])
-           + TString::Format("Number of events which passed:\t%ld  Number which failed:\t%ld\n", fNEventsPassed, fNEventsFailed);
-
-  return AliFemtoString((const char *)report);
-}
-void AliFemtoBasicEventCut::SetAcceptBadVertex(bool b)
-{
-  fAcceptBadVertex = b;
-}
-bool AliFemtoBasicEventCut::GetAcceptBadVertex()
-{
-  return fAcceptBadVertex;
+  return report;
 }

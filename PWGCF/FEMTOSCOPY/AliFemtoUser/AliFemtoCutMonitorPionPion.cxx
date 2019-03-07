@@ -5,7 +5,7 @@
 
 #include "AliFemtoCutMonitorPionPion.h"
 #include "AliFemtoModelHiddenInfo.h"
-#include "AliFemtoAvgSepCalculator.h"
+// #include "AliFemtoAvgSepCalculator.h"
 
 #include "AliFemtoPairCutDetaDphi.h"
 
@@ -229,8 +229,11 @@ AliFemtoCutMonitorPionPion::Pion::Pion(const bool passing,
   , fPtPhi(nullptr)
   , fEtaPhi(nullptr)
   , fChi2Tpc(nullptr)
-//  , fChiTpcIts(nullptr)
+  , fChiTpcIts(nullptr)
   , fdEdX(nullptr)
+  , fTofVsP(nullptr)
+  , fNsigTof(nullptr)
+  , fNsigTpc(nullptr)
   , fMC_mass(nullptr)
   , fMC_pt(nullptr)
   , fMC_type(nullptr)
@@ -249,7 +252,7 @@ AliFemtoCutMonitorPionPion::Pion::Pion(const bool passing,
   };
 
   fYPt = new TH2F(
-    hist_name("eta_Pt"),
+    hist_name("EtaPt"),
     hist_title("#eta  vs  p_{T}",
                 /*X*/  "#eta;"
                 /*Y*/  "p_{T} (GeV);"
@@ -278,13 +281,14 @@ AliFemtoCutMonitorPionPion::Pion::Pion(const bool passing,
     hist_title("#chi^{2} / N_{cls} TPC", "TPC"),
     144, 0.0, 0.1
   );
-  // fChiTpcIts = new TH2F(
-  //   "ChiTpcIts" + pf,
-  //   TString::Format(title_format,
-  //                   "#chi^{2} / N_{cls} TPC vs ITS",
-  //                   "TPC; ITS;"),
-  //   144, 0.0, 0.1,
-  //   144, 0.0, 0.1);
+
+  fChiTpcIts = new TH2F(
+    "ChiTpcIts" + pf,
+    TString::Format(title_format,
+                    "#chi^{2} / N_{cls} TPC vs ITS",
+                    "TPC; ITS;"),
+    144, 0.0, 6.1,
+    144, 0.0, 7.1);
 
   fdEdX = new TH2F(
     hist_name("dEdX"),
@@ -295,6 +299,34 @@ AliFemtoCutMonitorPionPion::Pion::Pion(const bool passing,
     128, 0, 6.0,
     128, 0, 500.0
   );
+
+  fTofVsP = new TH2F(
+    hist_name("TofVsP"),
+    hist_title("TOF Time vs p",
+               "p (GeV);"
+               "TOF Time;"
+               "N_{tracks}"),
+    256, 0, 6.0,
+    128, -2000.0, 2000.0
+  );
+
+  fNsigTof = new TH2F(
+    hist_name("NsigTof"),
+    hist_title("TOF NSigma vs p",
+               "p (GeV);"
+               "TOF #sigma;"
+               "N_{tracks}"),
+    128, 0, 6.0,
+    128, -5.0, 5.0);
+
+  fNsigTpc = new TH2F(
+    hist_name("NsigTpc"),
+    hist_title("TPC NSigma vs p",
+               "p (GeV);"
+               "TPC #sigma;"
+               "N_{tracks}"),
+    128, 0, 6.0,
+    128, -5.0, 5.0);
 
   fImpact = new TH2F(
     hist_name("impact"),
@@ -385,6 +417,23 @@ AliFemtoCutMonitorPionPion::Pion::Pion(const bool passing,
 
 }
 
+AliFemtoCutMonitorPionPion::Pion::Pion(const Pion &orig):
+  AliFemtoCutMonitor()
+  , fYPt(static_cast<TH2F*>(orig.fYPt->Clone()))
+  , fPtPhi(static_cast<TH2F*>(orig.fPtPhi->Clone()))
+  , fEtaPhi(static_cast<TH2F*>(orig.fEtaPhi->Clone()))
+  , fChi2Tpc(static_cast<TH1F*>(orig.fChi2Tpc->Clone()))
+  , fChiTpcIts(static_cast<TH2F*>(orig.fChiTpcIts->Clone()))
+  , fdEdX(static_cast<TH2F*>(orig.fdEdX->Clone()))
+  , fTofVsP(static_cast<TH2F*>(orig.fTofVsP->Clone()))
+  , fNsigTof(static_cast<TH2F*>(orig.fNsigTof->Clone()))
+  , fNsigTpc(static_cast<TH2F*>(orig.fNsigTpc->Clone()))
+  , fMC_mass(static_cast<TH1F*>(orig.fMC_mass ? orig.fMC_mass->Clone(): nullptr))
+  , fMC_pt(static_cast<TH2F*>(orig.fMC_pt ? orig.fMC_pt->Clone(): nullptr))
+  , fMC_type(static_cast<TH1I*>(orig.fMC_type ? orig.fMC_type->Clone(): nullptr))
+  , fMC_parent(static_cast<THnSparseI*>(orig.fMC_parent ? orig.fMC_parent->Clone(): nullptr))
+{
+}
 
 TList*
 AliFemtoCutMonitorPionPion::Pion::GetOutputList()
@@ -396,8 +445,11 @@ AliFemtoCutMonitorPionPion::Pion::GetOutputList()
   output->Add(fPtPhi);
   output->Add(fEtaPhi);
   output->Add(fChi2Tpc);
-  // output->Add(fChiTpcIts);
+  output->Add(fChiTpcIts);
   output->Add(fdEdX);
+  output->Add(fTofVsP);
+  output->Add(fNsigTof);
+  output->Add(fNsigTpc);
   output->Add(fImpact);
   if (fMC_type) {
     output->Add(fMC_mass);
@@ -415,15 +467,14 @@ void AliFemtoCutMonitorPionPion::Pion::Fill(const AliFemtoTrack* track)
   const float pz = track->P().z(),
               pt = track->Pt(),
                p = track->P().Mag(),
+             eta = track->P().PseudoRapidity(),
              phi = track->P().Phi();
 
-  const double energy = ::sqrt(track->P().Mag2() + PionMass * PionMass),
-                  eta = 0.5 * ::log((energy + pz) / (energy - pz));
+  const double energy = ::sqrt(p * p + PionMass * PionMass),
+             rapidity = 0.5 * ::log((energy + pz) / (energy - pz));
 
-
-  const Int_t // ITS_ncls = track->ITSncls(),
+  const Int_t ITS_ncls = track->ITSncls(),
               TPC_ncls = track->TPCncls();
-
 
   if (fMC_mass) {
     const AliFemtoModelHiddenInfo *mc = dynamic_cast<const AliFemtoModelHiddenInfo*>(track->GetHiddenInfo());
@@ -453,16 +504,17 @@ void AliFemtoCutMonitorPionPion::Pion::Fill(const AliFemtoTrack* track)
 
   }
 
-  fYPt->Fill(eta, pt);
+  fYPt->Fill(rapidity, pt);
   fPtPhi->Fill(phi, pt);
   fEtaPhi->Fill(phi, eta);
   fdEdX->Fill(p, track->TPCsignal());
+  fTofVsP->Fill(p, track->TOFpionTime());
+  fNsigTof->Fill(p, track->NSigmaTOFPi());
+  fNsigTpc->Fill(p, track->NSigmaTPCPi());
+  fChi2Tpc->Fill(TPC_ncls > 0 ? track->TPCchi2() / TPC_ncls : -1.0);
 
-  fChi2Tpc->Fill((TPC_ncls > 0) ? track->TPCchi2() / TPC_ncls : 0.0);
-
-  // fChiTpcIts->Fill( (TPC_ncls > 0) ? track->TPCchi2() / TPC_ncls : 0.0,
-  //                   (ITS_ncls > 0) ? track->ITSchi2() / ITS_ncls : 0.0);
-
+  fChiTpcIts->Fill(track->TPCchi2perNDF(),
+                    (ITS_ncls > 0) ? track->ITSchi2() / ITS_ncls : -1.0);
 
   fImpact->Fill(track->ImpactZ(), track->ImpactD());
 }
@@ -573,7 +625,6 @@ AliFemtoCutMonitorPionPion::Pair::Fill(const AliFemtoPair *pair)
   // if (fabs(delta_eta) <= 0.07 && fabs(delta_phi_star) <= 0.07 && passes)
   //     printf(">> %f % 6f % 6f %p \n", pair, delta_eta, delta_phi_star, this);
     // std::cout << ">> " << pair << " " << delta_eta << ", " << delta_phi_star << "\n"; // -> " << passes << "\n";
-
 
   fDetaDphi->Fill(delta_eta, delta_phi_star);
   fQinvDeta->Fill(qinv, delta_eta);

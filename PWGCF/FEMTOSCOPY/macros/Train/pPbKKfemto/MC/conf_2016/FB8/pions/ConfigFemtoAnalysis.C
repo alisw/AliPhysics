@@ -267,7 +267,7 @@ AliFemtoManager* ConfigFemtoAnalysis() {
 	  sqpcetaphitpc[aniter] = new AliFemtoPairCutRadialDistanceKKdist();
 	  sqpcetaphitpc[aniter]->SetShareQualityMax(1.0);
 	  sqpcetaphitpc[aniter]->SetShareFractionMax(0.05);
-	  sqpcetaphitpc[aniter]->SetAverageSeparation(6.0);
+	  sqpcetaphitpc[aniter]->SetAverageSeparation(9.0);
 
 	  sqpcetaphitpc[aniter]->SetRemoveSameLabel(kFALSE);
 	  

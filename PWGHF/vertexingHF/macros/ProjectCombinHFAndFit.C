@@ -60,7 +60,7 @@ Bool_t useEMwithLS=kTRUE;
 Int_t typeb=2;
 Double_t nsigmaBinCounting=4.;      // defines the mass interval over which the signal is bin counted
 Int_t optBkgBinCount=1;
-Double_t massD;
+Double_t massD=-1.;     // use negative value to use PDG mass
 
 Int_t smoothLS=0;
 
@@ -406,8 +406,10 @@ void ProjectCombinHFAndFit(){
   else if(fileNameMC.Contains("_G4")) suffix.Append("_Geant4MC");
   if(smoothLS!=0) suffix.Append(Form("_smoothLS%d",smoothLS));
 
-  if(meson=="Dplus") massD=TDatabasePDG::Instance()->GetParticle(411)->Mass();
-  else if(meson=="Dzero") massD=TDatabasePDG::Instance()->GetParticle(421)->Mass();
+  if(massD<0){
+    if(meson=="Dplus") massD=TDatabasePDG::Instance()->GetParticle(411)->Mass();
+    else if(meson=="Dzero") massD=TDatabasePDG::Instance()->GetParticle(421)->Mass();
+  }
 
   Int_t nBinsWithFixSig=0;
   Int_t nBinsWithFixMean=0;
