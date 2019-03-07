@@ -5,7 +5,8 @@ AliGFWFlowContainer::AliGFWFlowContainer():
   fProf(0),
   fProfRand(0),
   fNRandom(0),
-  fIDName("MidV")
+  fIDName("MidV"),
+  fPtRebin(1)
 {
 };
 AliGFWFlowContainer::AliGFWFlowContainer(const char *name):
@@ -13,7 +14,8 @@ AliGFWFlowContainer::AliGFWFlowContainer(const char *name):
   fProf(0),
   fProfRand(0),
   fNRandom(0),
-  fIDName("MidV")
+  fIDName("MidV"),
+  fPtRebin(1)
 {
 };
 AliGFWFlowContainer::~AliGFWFlowContainer() {
@@ -249,6 +251,7 @@ TProfile *AliGFWFlowContainer::GetCorrXXVsPt(const char *order, Double_t lminmul
     AliProfileSubset *rhSubset = new AliProfileSubset(rethist);
     delete rethist;
     rhSubset->CopyFromProfile(ybn1,ybn2,projection);
+    if(fPtRebin>1) rhSubset->RebinX(fPtRebin);
     if(!retSubset) {
       const char *profname = Form("%s_MultiB_%i_%i",order,minm,maxm);
       retSubset = (TProfile*)rhSubset->Clone(profname);
