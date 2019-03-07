@@ -5,6 +5,7 @@
 #include "TH2F.h"
 #include "TNtuple.h"
 #include "TFile.h"
+#include "TSystem.h"
 #include "TGraphAsymmErrors.h"
 #include "TCanvas.h"
 #include "TROOT.h"
@@ -204,7 +205,16 @@ void HFPtSpectrum ( Int_t decayChan=kDplusKpipi,
   // Define/Get the input histograms
   //
   Int_t decay=0;
+  
+  if(gSystem->Exec(Form("ls -l %s > /dev/null 2>&1",mcfilename)) !=0){
+    printf("File %s with FONLL predictions does not exist -> exiting\n",mcfilename);
+    return;
+  }
   TFile * mcfile = new TFile(mcfilename,"read");
+  if(!mcfile){
+    printf("File %s with FONLL predictions not opened -> exiting\n",mcfilename);
+    return;
+  }
   if (decayChan==kD0Kpi){
     decay = 1;
     hDirectMCpt = (TH1D*)mcfile->Get("hD0Kpipred_central");
@@ -304,7 +314,19 @@ void HFPtSpectrum ( Int_t decayChan=kDplusKpipi,
 
   //
   //
+  if(gSystem->Exec(Form("ls -l %s > /dev/null 2>&1",recofilename)) !=0){
+    printf("File %s with raw yield does not exist -> exiting\n",recofilename);
+    return;
+  }
+  if(gSystem->Exec(Form("ls -l %s > /dev/null 2>&1",efffilename)) !=0){
+    printf("File %s with efficiencies does not exist -> exiting\n",efffilename);
+    return;
+  }
   TFile * efffile = new TFile(efffilename,"read");
+  if(!efffile){
+    printf("File %s with efficiencies not opened -> exiting\n",efffilename);
+    return;
+  }
   hDirectEffpt = (TH1D*)efffile->Get("hEffD");
   hDirectEffpt->SetNameTitle("hDirectEffpt","direct acc x eff");
   hFeedDownEffpt = (TH1D*)efffile->Get("hEffB");
@@ -312,6 +334,10 @@ void HFPtSpectrum ( Int_t decayChan=kDplusKpipi,
   //
   //
   TFile * recofile = new TFile(recofilename,"read");
+  if(!recofile){
+    printf("File %s with raw yields not opened -> exiting\n",recofilename);
+    return;
+  }
   hRECpt = (TH1D*)recofile->Get(recohistoname);
   hRECpt->SetNameTitle("hRECpt","Reconstructed spectra");
   //
