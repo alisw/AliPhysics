@@ -283,7 +283,7 @@ Bool_t AliAnalysisTaskHFSubstructure::FillHistograms()
 
   fFastJetWrapper_Truth=new AliFJWrapper("fastjetwrapper_truth","fastjetwrapper_truth");
 
-  if (fJetShapeType == kData || fJetShapeType == kDetSignal || fJetShapeType == kDetBackground || fJetShapeType == kDetReflection){
+  if (fJetShapeType == kData || fJetShapeType == kDetSignal || fJetShapeType == kDetBackground || fJetShapeType == kDetReflection || fJetShapeType == kDet){
     
     fCandidateArray = dynamic_cast<TClonesArray*>(fAodEvent->GetList()->FindObject("D0toKpi"));
 
@@ -360,7 +360,7 @@ Bool_t AliAnalysisTaskHFSubstructure::FillHistograms()
 
       Double_t Inv_Mass_D=0.0;
       if (Mass_Hypo_Type==1){ 
-	if (fJetShapeType==kData || (fJetShapeType==kDetSignal && Matched_Truth_Particle_PDG==fCandidatePDG) || (fJetShapeType==kDetBackground && Matched_Truth_Particle_PDG!=fCandidatePDG) || (fJetShapeType==kDetReflection && Matched_Truth_Particle_PDG==-fCandidatePDG)){
+	if (fJetShapeType==kData || fJetShapeType == kDet || (fJetShapeType==kDetSignal && Matched_Truth_Particle_PDG==fCandidatePDG) || (fJetShapeType==kDetBackground && Matched_Truth_Particle_PDG!=fCandidatePDG) || (fJetShapeType==kDetReflection && Matched_Truth_Particle_PDG==-fCandidatePDG)){
 	  Inv_Mass_D=D_Candidate->InvMassD0();
 	  fhEvent->Fill(6); 
 	}
@@ -371,7 +371,7 @@ Bool_t AliAnalysisTaskHFSubstructure::FillHistograms()
       }
 
       if (Mass_Hypo_Type==2){ 
-	if (fJetShapeType==kData || (fJetShapeType==kDetSignal && Matched_Truth_Particle_PDG==-fCandidatePDG) || (fJetShapeType==kDetBackground && Matched_Truth_Particle_PDG!=-fCandidatePDG) || (fJetShapeType==kDetReflection && Matched_Truth_Particle_PDG==fCandidatePDG)){
+	if (fJetShapeType==kData || fJetShapeType == kDet || (fJetShapeType==kDetSignal && Matched_Truth_Particle_PDG==-fCandidatePDG) || (fJetShapeType==kDetBackground && Matched_Truth_Particle_PDG!=-fCandidatePDG) || (fJetShapeType==kDetReflection && Matched_Truth_Particle_PDG==fCandidatePDG)){
 	  Inv_Mass_D=D_Candidate->InvMassD0bar();
 	  fhEvent->Fill(8); 
 	}
@@ -388,7 +388,7 @@ Bool_t AliAnalysisTaskHFSubstructure::FillHistograms()
 
 	if (Mass_Hypo_Type==3){ 
 	    if(i_Mass_Hypotheses==0){
-	      if (fJetShapeType==kData || (fJetShapeType==kDetSignal && Matched_Truth_Particle_PDG==fCandidatePDG) || (fJetShapeType==kDetBackground && Matched_Truth_Particle_PDG!=fCandidatePDG) || (fJetShapeType==kDetReflection && Matched_Truth_Particle_PDG==-fCandidatePDG)){
+	      if (fJetShapeType==kData || fJetShapeType == kDet || (fJetShapeType==kDetSignal && Matched_Truth_Particle_PDG==fCandidatePDG) || (fJetShapeType==kDetBackground && Matched_Truth_Particle_PDG!=fCandidatePDG) || (fJetShapeType==kDetReflection && Matched_Truth_Particle_PDG==-fCandidatePDG)){
 		Inv_Mass_D=D_Candidate->InvMassD0();
 		fhEvent->Fill(11); 
 	      }
@@ -398,7 +398,7 @@ Bool_t AliAnalysisTaskHFSubstructure::FillHistograms()
 	      }
 	    }
 	    if(i_Mass_Hypotheses==1){
-	      if (fJetShapeType==kData || (fJetShapeType==kDetSignal && Matched_Truth_Particle_PDG==-fCandidatePDG) || (fJetShapeType==kDetBackground && Matched_Truth_Particle_PDG!=-fCandidatePDG) || (fJetShapeType==kDetReflection && Matched_Truth_Particle_PDG==fCandidatePDG)){
+	      if (fJetShapeType==kData || fJetShapeType == kDet || (fJetShapeType==kDetSignal && Matched_Truth_Particle_PDG==-fCandidatePDG) || (fJetShapeType==kDetBackground && Matched_Truth_Particle_PDG!=-fCandidatePDG) || (fJetShapeType==kDetReflection && Matched_Truth_Particle_PDG==fCandidatePDG)){
 		Inv_Mass_D=D_Candidate->InvMassD0bar();
 		fhEvent->Fill(13); 
 	      }
@@ -502,7 +502,8 @@ Bool_t AliAnalysisTaskHFSubstructure::FillHistograms()
 	  fShapesVar[4] = Inv_Mass_D;
 	  fShapesVar[5] = 0.0;
 	  fShapesVar[6] = Flag_D;
-	  fShapesVar[7] = 0.0;
+	  if (fJetShapeType == kData) fShapesVar[7] = 0.0;
+	  else fShapesVar[7] = Matched_Truth_Particle_PDG;
 	  fShapesVar[8] = Is_Prompt_Correct_Quark_PDG;
 	  fShapesVar[9] = 0.0;
 
