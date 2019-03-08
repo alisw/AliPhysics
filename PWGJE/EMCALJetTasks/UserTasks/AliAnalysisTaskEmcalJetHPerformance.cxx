@@ -559,11 +559,15 @@ void AliAnalysisTaskEmcalJetHPerformance::ResponseMatrix()
   // Handle matching of jets.
   for (auto jet1 : jetsHybrid->accepted())
   {
+    AliDebugStream(4) << "jet1: " << jet1->toString() << "\n";
+    AliDebugStream(4) << "jet1 address: " << jet1 << "\n";
+
     // Get jet the det level jet from the hybrid jet
     AliEmcalJet * jet2 = jet1->ClosestJet();
     if(!jet2) continue;
 
     AliDebugStream(4) << "jet2: " << jet2->toString() << "\n";
+    AliDebugStream(4) << "jet2 address: " << jet2 << "\n";
 
     // Check shared fraction
     double sharedFraction = jetsHybrid->GetFractionSharedPt(jet1);
@@ -593,6 +597,7 @@ void AliAnalysisTaskEmcalJetHPerformance::ResponseMatrix()
       }
 
       AliDebugStream(4) << "jet3: " << jet3->toString() << "\n";
+      AliDebugStream(4) << "jet3 address: " << jet3 << "\n";
 
       // Use for the response
       AliDebugStream(4) << "Using part level jet for response\n";
