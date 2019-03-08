@@ -55,19 +55,19 @@ void ComputeDmesonYield(){
 
   TString mesName="Dzero";
   Int_t mesCode=1;
-  Double_t brat=0.0393;
+  Double_t brat=0.0389;
   TString mesSymb="D^{0}";
   Float_t ptForExtrap=36.;
   if(mesonSpecie==kDplus){
     mesName="Dplus";
     mesCode=2;
-    brat=0.0946;
+    brat=0.0898;
     mesSymb="D^{+}";
     ptForExtrap=24.;
  }else if(mesonSpecie==kDstar){
     mesName="Dstar";
     mesCode=3;
-    brat=0.0393*0.677;
+    brat=0.0389*0.677;
     mesSymb="D^{*+}";
     ptForExtrap=24.;
   }else if(mesonSpecie==kDs){
