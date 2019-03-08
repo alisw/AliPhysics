@@ -73,7 +73,6 @@ enum EAnalysisContainerFlags {
    void                      ResetDataReady()     {fDataReady = kFALSE;}
    virtual Bool_t            SetData(TObject *data, Option_t *option="");
    void                      SetDataOwned(Bool_t flag) {fOwnedData = flag;}
-   void                      SetDirList(Bool_t flag) {TObject::SetBit(kDirList,flag);}
    void                      SetExchange(Bool_t flag) {TObject::SetBit(kExchangeData,flag);}
    void                      SetPostEventLoop(Bool_t flag=kTRUE) {TObject::SetBit(kPostEventLoop,flag);}
    void                      SetSpecialOutput(Bool_t flag=kTRUE) {TObject::SetBit(kSpecialOutput,flag);}
@@ -107,7 +106,8 @@ enum EAnalysisContainerFlags {
    void                      PrintContainer(Option_t *option="all", Int_t indent=0) const;
 
 private:
-   void                      SetType(TClass *type) {fType = type;}   
+   void                      SetDirList(Bool_t flag) {TObject::SetBit(kDirList,flag);}
+   void                      SetType(TClass *type) {fType = type;}
 
 protected:
    Bool_t                    fDataReady;  ///< Flag that data is ready

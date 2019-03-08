@@ -107,8 +107,7 @@ class AliAnalysisTask : public TTask {
     kTaskUsed           = BIT(14),
     kTaskZombie         = BIT(15),
     kTaskChecked        = BIT(16),
-    kTaskPostEventLoop  = BIT(17),
-    kTaskListsToFolders = BIT(18)
+    kTaskPostEventLoop  = BIT(17)
   };
 
   //=====================================================================
@@ -204,7 +203,6 @@ public:
   TObject                  *GetOutputData(Int_t islot) const;  
   Bool_t                    IsOutputReady(Int_t islot) const {return fOutputReady[islot];}
   Bool_t                    IsChecked() const  {return TObject::TestBit(kTaskChecked);}
-  Bool_t                    IsListsToFolders() const {return TObject::TestBit(kTaskListsToFolders);}
   Bool_t                    IsPostEventLoop() const {return TObject::TestBit(kTaskPostEventLoop);}
   Bool_t                    IsInitialized() const  {return fInitialized;}
   Bool_t                    IsReady() const  {return fReady;}
@@ -216,7 +214,6 @@ public:
   Bool_t                    ProducersTouched() const;
   void                      SetBranches(const char *names) {fBranchNames = names;}
   void                      SetChecked(Bool_t flag=kTRUE) {TObject::SetBit(kTaskChecked,flag);}
-  void                      SetListsToFolders(Bool_t flag=kTRUE) {TObject::SetBit(kTaskListsToFolders,flag);}
   void                      SetPostEventLoop(Bool_t flag=kTRUE);
   void                      SetUsed(Bool_t flag=kTRUE);
   void                      SetZombie(Bool_t flag=kTRUE) {TObject::SetBit(kTaskZombie,flag);}

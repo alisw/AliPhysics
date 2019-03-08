@@ -1018,8 +1018,8 @@ void AliAnalysisManager::ImportWrappers(TList *source)
          TString folder = cont->GetFolderName();
          if (!folder.IsNull()) f->cd(folder);
          // Special treatment for a directory list
-         if (cont->IsDirList() || (cont->GetProducer() && cont->GetProducer()->IsListsToFolders())) {
-            auto dirlist = AliDirList::CreateFrom((TDirectoryFile*)gDirectory, cont->GetName());
+         if (cont->IsDirList()) {
+            auto dirlist = AliDirList::CreateFrom(cont->GetName());
             if (dirlist) dirlist->SetOwner(true);
             obj = dirlist;
          }
@@ -1210,18 +1210,13 @@ void AliAnalysisManager::Terminate()
          file->cd(dir);
       }  
       if (fDebug > 1) printf("...writing container %s to file %s:%s\n", output->GetName(), file->GetName(), output->GetFolderName());
+      if (output->IsDirList()) (static_cast<AliDirList*>(output->GetData()))->SetName(output->GetName());
       if (output->GetData()->InheritsFrom(TCollection::Class())) {
       // If data is a collection, we set the name of the collection 
       // as the one of the container and we save as a single key.
          TCollection *coll = (TCollection*)output->GetData();
          coll->SetName(output->GetName());
-         if (output->GetProducer() && output->GetProducer()->IsListsToFolders()) {
-            // Write the collection in a folder having the same name as the container
-            auto dirlist = AliDirList(output->GetName(), coll);
-            dirlist.Write();
-         } else {
-            coll->Write(output->GetName(), TObject::kSingleKey);
-         }
+         coll->Write(output->GetName(), TObject::kSingleKey);
       } else {
          if (output->GetData()->InheritsFrom(TTree::Class())) {
             TTree *tree = (TTree*)output->GetData();
@@ -1229,8 +1224,8 @@ void AliAnalysisManager::Terminate()
             tree->AutoSave();
          } else {
             output->GetData()->Write();
-         }   
-      }      
+         }
+      }
       if (opwd) opwd->cd();
    }
    gROOT->cd();

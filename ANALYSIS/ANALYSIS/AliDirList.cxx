@@ -76,10 +76,10 @@ void AliDirList::Clear(Option_t *)
 }
 
 //______________________________________________________________________________
-TObject *AliDirList::FindObject(const char *name) {
+TObject *AliDirList::FindObject(const char *name) const {
    for (auto &h : fList) {
       if (!strcmp(h.GetName(), name))
-         return h.Get(fDir);
+         return ((PHolder&)h).Get(fDir);
    }
    return nullptr;
 }
@@ -104,24 +104,21 @@ void AliDirList::Print(Option_t *option)  const
 }
 
 //______________________________________________________________________________
-AliDirList *AliDirList::CreateFrom(TDirectoryFile *parent, const char *dirname)
+AliDirList *AliDirList::CreateFrom(const char *dirname, Bool_t mem)
 {
-   TDirectory *dir = parent->GetDirectory(dirname);
+   TDirectory *dir = gDirectory->GetDirectory(dirname);
    if (!dir) return nullptr;
-   TDirectory *cdir = gDirectory;
-   parent->cd();
    AliDirList *list = new AliDirList(dirname);
-   list->Read();
-   cdir->cd();
+   list->ReadFrom("", mem);
    return list;
 }
 
 //______________________________________________________________________________
-Int_t AliDirList::Read(const char *name)
+Int_t AliDirList::ReadFrom(const char *dirname, Bool_t mem)
 {
    // Read keys from the current directory and create placeholders.
    // Does not actually read the objects. These are read when calling At function.
-   if (name && name[0] != '\0') SetName(name);
+   if (dirname && dirname[0] != '\0') SetName(dirname);
    fDir = gDirectory->GetDirectory(GetName());
    if (!fDir) return 0;
    TIter next(fDir->GetListOfKeys());
@@ -130,7 +127,8 @@ Int_t AliDirList::Read(const char *name)
       TClass *cl = TClass::GetClass(key->GetClassName());
       if (!cl->InheritsFrom(TDirectory::Class())) {
          // Good key, create placeholder for the key name
-         fList.push_back(PHolder(key->GetName(), key->GetTitle(), key->GetClassName()));
+         TObject *obj = (mem) ? key->ReadObj() : nullptr;
+         fList.push_back(PHolder(key->GetName(), key->GetTitle(), key->GetClassName(), obj));
       }
    }
    return 0;

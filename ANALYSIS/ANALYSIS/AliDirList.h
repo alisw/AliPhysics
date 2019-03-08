@@ -34,8 +34,8 @@ class AliDirList : public TNamed
       TString  fClassName;        //! class name
 
    public:
-      PHolder(const char *name, const char *title = "", const char *classname = "")
-         : TNamed(name, title), fClassName(classname) {}
+      PHolder(const char *name, const char *title = "", const char *classname = "", TObject *obj = nullptr)
+         : TNamed(name, title), fObj(obj), fClassName(classname) {}
       PHolder(TObject *obj) : TNamed(obj->GetName(), obj->ClassName()), fObj(obj) {}
       PHolder(const PHolder &other) : TNamed(other), fObj(other.fObj), fClassName(other.fClassName) {}
       ~PHolder() {}
@@ -51,7 +51,7 @@ class AliDirList : public TNamed
    };
 
 private:
-   Bool_t fOwner = false;                //! Container owns the content
+   Bool_t fOwner = kFALSE;                //! Container owns the content
    TDirectory *fDir = nullptr;           //! Directory containing the the objects to read
    std::vector<PHolder> fList;           //! List content
 
@@ -60,19 +60,25 @@ public:
    AliDirList(const char *name, TCollection *list);
    virtual ~AliDirList();
 
+   // Compatibility methods (TCollection, TList, TObjArray)
    void           Add(TObject *obj) { fList.push_back(PHolder(obj)); }
    TObject       *At(Int_t i);
    TObject       *operator[](Int_t i) { return At(i); }
    virtual void   Clear(Option_t *option = "");
-   size_t         Size() const { return fList.size(); }
-   TObject       *FindObject(const char *name);
-   static AliDirList *CreateFrom(TDirectoryFile *parent, const char *dirname);
+   TObject       *First() { return At(0); }
+   TObject       *Last() { return At(Size() - 1); }
+   int            GetSize() const { return (Int_t)fList.size(); }
+   int            GetEntries() const { return (Int_t)fList.size(); }
+   int            GetEntriesFast() const { return (Int_t)fList.size(); }
+   TObject       *FindObject(const char *name) const;
+   static AliDirList *CreateFrom(const char *dirname, bool mem = kFALSE);
 
    virtual void   ls (Option_t *option="") const;
    virtual void   Print(Option_t *option="") const;
    void           SetOwner(Bool_t flag = true) { fOwner = flag; }
-   virtual Int_t  Write (const char *name="", Int_t option=0, Int_t bufsize=0);
-   virtual Int_t  Read(const char *name="");
+   size_t         Size() const { return fList.size(); }
+   Int_t          Write (const char *dir="", Int_t option=0, Int_t bufsize=0);
+   Int_t          ReadFrom(const char *dir="", bool mem = kFALSE);
 
    ClassDef(AliDirList, 0)  // Class representing a special list of objects from a ROOT directory
 };
