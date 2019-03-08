@@ -163,7 +163,11 @@ AliAnalysisTaskUPCforwardMC::AliAnalysisTaskUPCforwardMC()
       fBBAFlagsAD(0),
       fBBCFlagsAD(0),
       fBGAFlagsAD(0),
-      fBGCFlagsAD(0)
+      fBGCFlagsAD(0),
+      fVectorCosThetaGenerated(0),
+      fVectorCosThetaReconstructed(0),
+      fCounterUPCevent(0),
+      fBinMigrationHelicityH(0)
 {
     // default constructor, don't allocate memory here!
     // this is used by root for IO purposes, it needs to remain empty
@@ -252,7 +256,11 @@ AliAnalysisTaskUPCforwardMC::AliAnalysisTaskUPCforwardMC( const char* name )
       fBBAFlagsAD(0),
       fBBCFlagsAD(0),
       fBGAFlagsAD(0),
-      fBGCFlagsAD(0)
+      fBGCFlagsAD(0),
+      fVectorCosThetaGenerated(0),
+      fVectorCosThetaReconstructed(0),
+      fCounterUPCevent(0),
+      fBinMigrationHelicityH(0)
 {
     FillGoodRunVector(fVectorGoodRunNumbers);
 
@@ -423,6 +431,9 @@ void AliAnalysisTaskUPCforwardMC::UserCreateOutputObjects()
   fAngularDistribOfNegativeMuonRestFrameJPsiH = new TH1F("fAngularDistribOfNegativeMuonRestFrameJPsiH", "fAngularDistribOfNegativeMuonRestFrameJPsiH", 1000, -1., 1.);
   fOutputList->Add(fAngularDistribOfNegativeMuonRestFrameJPsiH);
 
+  fBinMigrationHelicityH = new TH2F("fBinMigrationHelicityH", "fBinMigrationHelicityH", 1000, -1., 1., 1000, -1., 1.);
+  fOutputList->Add(fBinMigrationHelicityH);
+
 
   //_______________________________
   // - MC-only plots
@@ -519,6 +530,7 @@ void AliAnalysisTaskUPCforwardMC::UserExec(Option_t *)
   }
   if(fMCEvent) {
     ProcessMCParticles(fMCEvent);
+    fCounterUPCevent += 1;
   }
   /* - We are now checking if there were any tracks. If there were at least one,
      - then the histogram gets filled again. If not we are returning. There
@@ -932,6 +944,19 @@ void AliAnalysisTaskUPCforwardMC::UserExec(Option_t *)
   }
   fAngularDistribOfPositiveMuonRestFrameJPsiH->Fill(cosThetaMuonsRestFrame[0]);
   fAngularDistribOfNegativeMuonRestFrameJPsiH->Fill(cosThetaMuonsRestFrame[1]);
+  fVectorCosThetaReconstructed.push_back(cosThetaMuonsRestFrame[0]);
+  /* - Mind that it could generate segmentation fault without
+     - fCounterUPCevent-1, because we are incrementing the counter right after
+     - it processes the MC events at Generated level...
+     -
+   */
+  if ( fVectorCosThetaGenerated.at(fCounterUPCevent-1) && cosThetaMuonsRestFrame[0] ) {
+        fBinMigrationHelicityH->Fill( fVectorCosThetaGenerated.at(fCounterUPCevent-1),
+                                      cosThetaMuonsRestFrame[0]
+                                    );
+  }
+
+
 
 
   // post the data
@@ -1084,9 +1109,11 @@ void AliAnalysisTaskUPCforwardMC::ProcessMCParticles(AliMCEvent* fMCEventArg)
                */
               fMCthetaDistribOfPositiveMuonRestFrameJPsiGeneratedTruthH->Fill(cosThetaMuonsRestFrameMC[0]);
               fMCthetaDistribOfNegativeMuonRestFrameJPsiGeneratedTruthH->Fill(cosThetaMuonsRestFrameMC[1]);
+              fVectorCosThetaGenerated.push_back(cosThetaMuonsRestFrameMC[0]);
       } else  {
               fMCthetaDistribOfNegativeMuonRestFrameJPsiGeneratedTruthH->Fill(cosThetaMuonsRestFrameMC[0]);
               fMCthetaDistribOfPositiveMuonRestFrameJPsiGeneratedTruthH->Fill(cosThetaMuonsRestFrameMC[1]);
+              fVectorCosThetaGenerated.push_back(cosThetaMuonsRestFrameMC[1]);
       }
     }
   }
