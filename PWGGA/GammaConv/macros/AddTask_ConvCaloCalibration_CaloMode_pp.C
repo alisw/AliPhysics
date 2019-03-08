@@ -152,6 +152,8 @@ void AddTask_ConvCaloCalibration_CaloMode_pp(
     cuts.AddCutCalo("0008e113","41179000a7032230000","01631031000000d0"); // EG2
     cuts.AddCutCalo("0008d113","41179000a7032230000","01631031000000d0"); // EG1
     cuts.AddCutCalo("0009b113","41179060a7032230000","01631031000000d0"); // EJ1
+  } else if (trainConfig == 3){ // pp 5 TeV EMCal + DCal - iteration2 test
+    cuts.AddCutCalo("00010113","4117917007032220000","01631031000000d0"); // MB
   } else {
     Error(Form("HeavyNeutralMesonToGG_%i_%i", mesonRecoMode, trainConfig), "wrong trainConfig variable no cuts have been specified for the configuration");
     return;
