@@ -50,9 +50,7 @@
 
 #include <TROOT.h>
 #include <TBase64.h>
-
 #include <TNamed.h>
-#include <random>
 
 
 using AFAPP = AliFemtoAnalysisPionPion;
@@ -298,8 +296,7 @@ ConfigFemtoAnalysis(const TString& param_str="")
         type_2 = PI_MINUS;
         break;
       default:
-        cout << "W-ConfigFemtoAnalysis: Invalid pair code " << pair_code << ". Skipping.\n";
-        continue;
+        throw std::runtime_error(Form("Invalid pair code %d", pair_code));
       }
 
       const TString pair_type_str =
@@ -848,7 +845,7 @@ BuildConfiguration(const TString &text,
 
     cmd += ";";
 
-    cout << "I-BuildConfiguration: `" << cmd << "`\n";
+    std::cout << "I-BuildConfiguration: `" << cmd << "`\n";
     Int_t err = 0;
     gROOT->ProcessLineFast(cmd, &err);
 
