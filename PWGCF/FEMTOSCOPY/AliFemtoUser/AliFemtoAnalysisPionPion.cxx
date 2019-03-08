@@ -646,8 +646,11 @@ void AliFemtoAnalysisPionPion::AddStanardCutMonitors()
                                                         : "ERROR";
 
   if (fFirstParticleCut) {
-    fFirstParticleCut->AddCutMonitor(new AliFemtoCutMonitorPionPion::Pion(true, p1_type_str, fMCAnalysis),
-                                     new AliFemtoCutMonitorPionPion::Pion(false, p1_type_str, fMCAnalysis));
+    auto *pass_cut = new AliFemtoCutMonitorPionPion::Pion(true, p1_type_str, fMCAnalysis),
+         *fail_cut = new AliFemtoCutMonitorPionPion::Pion(false, p1_type_str, fMCAnalysis);
+
+    fail_cut->SetCharge(fPionType_1 == kPiPlus ? 1 : -1);
+    fFirstParticleCut->AddCutMonitor(pass_cut, fail_cut);
   }
 
   if (!identical) {

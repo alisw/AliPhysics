@@ -795,6 +795,8 @@ template<> ostream&  operator<<(ostream& os,const AliFmThreeVector<float>& v);
 //
 //        Non-member functions
 //
+#if !defined(__CLING__) || defined(__ROOTCLING__)
+
 template<class T>
 inline T abs(const AliFmThreeVector<T>& v) {return v.Mag();}
 
@@ -863,5 +865,6 @@ istream&  operator>>(istream& is, AliFmThreeVector<T>& v)
     v.SetZ(z);
     return is;
 }
+#endif
 #endif /* ! __CINT__ */
 #endif
