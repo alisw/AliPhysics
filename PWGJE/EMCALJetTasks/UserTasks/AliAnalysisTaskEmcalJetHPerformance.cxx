@@ -508,7 +508,6 @@ void AliAnalysisTaskEmcalJetHPerformance::FillCellQAHists(const std::string & pr
        ((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))
         ->IsEventSelected();
       std::bitset<sizeof(UInt_t) * 8> testBits = eventTrigger;
-      std::cout << testBits << "\n";
       for (unsigned int i = 0; i < 32; i++) {
         if (testBits.test(i)) {
           fHistManager.FillTH2(embeddedInteranlEventSelection.c_str(),
