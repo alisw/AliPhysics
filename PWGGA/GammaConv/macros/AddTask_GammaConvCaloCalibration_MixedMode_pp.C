@@ -163,6 +163,8 @@ void AddTask_GammaConvCaloCalibration_MixedMode_pp(
     cuts.AddCutPCMCalo("0008e113","00200009327000008250400000","41179000a7032230000","0163103100000010"); // EG2+DG2
     cuts.AddCutPCMCalo("0008d113","00200009327000008250400000","41179000a7032230000","0163103100000010"); // EG1+DG1
     cuts.AddCutPCMCalo("0009b113","00200009327000008250400000","41179060a7032230000","0163103100000010"); // EGJ+DJ1
+  } else if (trainConfig == 3){ // EMCAL + DCal clusters 5 TeV - iteration2 test
+    cuts.AddCutPCMCalo("00010113","00200009327000008250400000","4117917067032220000","0163103100000010"); // -50ns, 30ns timing cut, no NL INT7
   } else {
     Error(Form("AddTask_GammaConvCaloCalibration_MixedMode_pp%i",trainConfig), "wrong trainConfig variable no cuts have been specified for the configuration");
     return;
