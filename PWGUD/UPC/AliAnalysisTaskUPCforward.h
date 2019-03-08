@@ -5,6 +5,12 @@
 #ifndef AliAnalysisTaskUPCforward_H
 #define AliAnalysisTaskUPCforward_H
 
+/**
+ * @file   AliAnalysisTaskUPCforward.h
+ * @author Simone Ragoni <Simone.Ragoni@cern.ch>
+ * @date   February 2019
+ */
+
 #include "AliAnalysisTaskSE.h"
 #include "TBits.h"
 
@@ -95,7 +101,7 @@ class AliAnalysisTaskUPCforward : public AliAnalysisTaskSE
 
         // Bool_t                  CheckIfPassedCuts(vector<>)
 
-    private:
+    protected:
 
                                 /// The input events for the analysis.
         AliAODEvent*            fAOD;               //!
@@ -198,6 +204,42 @@ class AliAnalysisTaskUPCforward : public AliAnalysisTaskSE
                                  * a guess...
                                  */
         TH1F*                   fZNAEnergyAgainstEntriesH;         //!
+
+
+
+
+
+
+
+                                /**
+                                 * This histogram records the energy distri-
+                                 * bution of the neutron ZDC. CALIBRATED.
+                                 */
+        TH1F*                   fZNCEnergyCalibratedH;         //!
+
+                                /**
+                                 * This histogram records the energy distri-
+                                 * bution of the neutron ZDC. CALIBRATED.
+                                 */
+        TH1F*                   fZNAEnergyCalibratedH;         //!
+
+                                /**
+                                 * This histogram records the energy distri-
+                                 * bution of the neutron ZDC. UNCALIBRATED.
+                                 */
+        TH1F*                   fZNCEnergyUncalibratedH;         //!
+
+                                /**
+                                 * This histogram records the energy distri-
+                                 * bution of the neutron ZDC. UNCALIBRATED.
+                                 */
+        TH1F*                   fZNAEnergyUncalibratedH;         //!
+
+
+
+
+
+
 
 
                                 /**
@@ -419,6 +461,22 @@ class AliAnalysisTaskUPCforward : public AliAnalysisTaskSE
                                  * The ZNA has ANY neutrons.
                                  */
         TH1F*                   fInvariantMassDistributionIncoherentZNCanyZNAanyH;       //!
+
+                                /**
+                                 * This histogram shows the angular distribution
+                                 * of the positive muon in the rest frame of the
+                                 * J/Psi. This histogram is needed to evaluate
+                                 * the polarization of the J/Psi!
+                                 */
+        TH1F*                   fAngularDistribOfPositiveMuonRestFrameJPsiH;
+
+                                /**
+                                 * This histogram shows the angular distribution
+                                 * of the negative muon in the rest frame of the
+                                 * J/Psi. This histogram is needed to evaluate
+                                 * the polarization of the J/Psi!
+                                 */
+        TH1F*                   fAngularDistribOfNegativeMuonRestFrameJPsiH;
 
 
         // END DIFFERENTIAL NEUTRON EMISSION PLOTS

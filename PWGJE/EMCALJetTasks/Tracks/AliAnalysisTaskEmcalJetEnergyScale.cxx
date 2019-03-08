@@ -210,7 +210,7 @@ bool AliAnalysisTaskEmcalJetEnergyScale::IsSelectEmcalTriggers(const TString &tr
   return isEMCAL;
 }
 
-AliAnalysisTaskEmcalJetEnergyScale *AliAnalysisTaskEmcalJetEnergyScale::AddTaskJetEnergyScale(AliJetContainer::EJetType_t jettype, Double_t jetradius, Bool_t useDCAL, const char *trigger) {
+AliAnalysisTaskEmcalJetEnergyScale *AliAnalysisTaskEmcalJetEnergyScale::AddTaskJetEnergyScale(AliJetContainer::EJetType_t jettype, Double_t jetradius, Bool_t useDCAL, const char *namepartcont, const char *trigger) {
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
   if(!mgr){
     ::Error("EmcalTriggerJets::AliAnalysisTaskEmcalJetEnergyScale::AddTaskJetEnergyScale", "No analysis manager available");
@@ -250,7 +250,9 @@ AliAnalysisTaskEmcalJetEnergyScale *AliAnalysisTaskEmcalJetEnergyScale::AddTaskJ
   mgr->AddTask(energyscaletask);
   energyscaletask->SetTriggerName(trigger);
 
-  auto partcont = energyscaletask->AddMCParticleContainer("mcparticles");
+  TString partcontname(namepartcont);
+  if(partcontname == "usedefault") partcontname = "mcparticles";
+  auto partcont = energyscaletask->AddMCParticleContainer(partcontname.Data());
   partcont->SetMinPt(0.);
 
   AliClusterContainer *clusters(nullptr);

@@ -1,5 +1,4 @@
 AliAnalysisTaskSE *AddTaskSigma0DebugTest(bool isMC = false,
-                                          bool isHeavyIon = false,
                                           bool MomRes = false,
                                           bool etaPhiPlotsAtTPCRadii = false,
                                           TString trigger = "kINT7",
@@ -68,7 +67,7 @@ AliAnalysisTaskSE *AddTaskSigma0DebugTest(bool isMC = false,
       fCuts = new AliConversionPhotonCuts(cutnumberPhoton.Data(),
                                           cutnumberPhoton.Data());
       fCuts->SetPreSelectionCutFlag(kTRUE);
-      fCuts->SetIsHeavyIon(isHeavyIon);
+      fCuts->SetIsHeavyIon(false);
       fCuts->SetV0ReaderName(V0ReaderName);
       fCuts->SetLightOutput(runLightOutput);
       if (fCuts->InitializeCutsFromCutString(cutnumberPhoton.Data())) {
@@ -154,6 +153,29 @@ AliAnalysisTaskSE *AddTaskSigma0DebugTest(bool isMC = false,
   antiSigmaCuts->SetIsSpectrum(false);
   if (suffix != "0" && suffix != "999") {
     antiSigmaCuts->SetLightweight(true);
+  }
+
+  if (suffix == "1") {
+    sigmaCuts->SetArmenterosCut(0, 0.12, -0.95, -0.6);
+    antiSigmaCuts->SetArmenterosCut(0, 0.12, -0.95, -0.6);
+  } else if (suffix == "2") {
+    sigmaCuts->SetArmenterosCut(0, 0.12, -0.9, -0.6);
+    antiSigmaCuts->SetArmenterosCut(0, 0.12, -0.9, -0.6);
+  } else if (suffix == "3") {
+    sigmaCuts->SetArmenterosCut(0, 0.12, -1, -0.65);
+    antiSigmaCuts->SetArmenterosCut(0, 0.12, -1, -0.65);
+  } else if (suffix == "4") {
+    sigmaCuts->SetArmenterosCut(0, 0.12, -1, -0.7);
+    antiSigmaCuts->SetArmenterosCut(0, 0.12, -1, -0.7);
+  } else if (suffix == "5") {
+    sigmaCuts->SetArmenterosCut(0, 0.1, -1, -0.6);
+    antiSigmaCuts->SetArmenterosCut(0, 0.1, -1, -0.6);
+  } else if (suffix == "6") {
+    sigmaCuts->SetArmenterosCut(0.02, 0.12, -1, -0.6);
+    antiSigmaCuts->SetArmenterosCut(0.02, 0.12, -1, -0.6);
+  } else if (suffix == "7") {
+    sigmaCuts->SetArmenterosCut(0.02, 0.1, -0.9, -0.65);
+    antiSigmaCuts->SetArmenterosCut(0.02, 0.1, -0.9, -0.65);
   }
 
   if (trigger == "kINT7") {
@@ -335,9 +357,7 @@ AliAnalysisTaskSE *AddTaskSigma0DebugTest(bool isMC = false,
   }
   task->SetEventCuts(evtCuts);
   task->SetV0ReaderName(V0ReaderName.Data());
-  task->SetIsHeavyIon(isHeavyIon);
   task->SetIsMC(isMC);
-  task->SetIsRun1(false);
   task->SetProtonCuts(TrackCuts);
   task->SetAntiProtonCuts(AntiTrackCuts);
   task->SetV0Cuts(v0Cuts);

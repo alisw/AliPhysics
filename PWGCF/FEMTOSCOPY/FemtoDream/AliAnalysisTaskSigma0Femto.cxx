@@ -29,9 +29,7 @@ ClassImp(AliAnalysisTaskSigma0Femto)
       fPairCleaner(nullptr),
       fPartColl(nullptr),
       fIsMC(false),
-      fIsHeavyIon(false),
       fIsLightweight(false),
-      fIsRun1(false),
       fPhotonLegPileUpCut(false),
       fV0PercentileMax(100.f),
       fTrigger(AliVEvent::kINT7),
@@ -39,13 +37,7 @@ ClassImp(AliAnalysisTaskSigma0Femto)
       fGammaArray(nullptr),
       fOutputContainer(nullptr),
       fQA(nullptr),
-      fOutputFemto(nullptr),
-      fHistCorrelationPSigmaPLambda(),
-      fHistCorrelationPSigmaPGamma(),
-      fHistCorrelationPLambdaPGamma(),
-      fHistCorrelationAntiPAntiSigmaAntiPAntiLambda(),
-      fHistCorrelationAntiPAntiSigmaAntiPAntiGamma(),
-      fHistCorrelationAntiPAntiLambdaAntiPAntiGamma() {}
+      fOutputFemto(nullptr) {}
 
 //____________________________________________________________________________________________________
 AliAnalysisTaskSigma0Femto::AliAnalysisTaskSigma0Femto(const char *name)
@@ -68,9 +60,7 @@ AliAnalysisTaskSigma0Femto::AliAnalysisTaskSigma0Femto(const char *name)
       fPairCleaner(nullptr),
       fPartColl(nullptr),
       fIsMC(false),
-      fIsHeavyIon(false),
       fIsLightweight(false),
-      fIsRun1(false),
       fPhotonLegPileUpCut(false),
       fV0PercentileMax(100.f),
       fTrigger(AliVEvent::kINT7),
@@ -78,13 +68,7 @@ AliAnalysisTaskSigma0Femto::AliAnalysisTaskSigma0Femto(const char *name)
       fGammaArray(nullptr),
       fOutputContainer(nullptr),
       fQA(nullptr),
-      fOutputFemto(nullptr),
-      fHistCorrelationPSigmaPLambda(),
-      fHistCorrelationPSigmaPGamma(),
-      fHistCorrelationPLambdaPGamma(),
-      fHistCorrelationAntiPAntiSigmaAntiPAntiLambda(),
-      fHistCorrelationAntiPAntiSigmaAntiPAntiGamma(),
-      fHistCorrelationAntiPAntiLambdaAntiPAntiGamma() {
+      fOutputFemto(nullptr) {
   DefineInput(0, TChain::Class());
   DefineOutput(1, TList::Class());
   DefineOutput(2, TList::Class());
@@ -259,13 +243,6 @@ void AliAnalysisTaskSigma0Femto::UserExec(Option_t * /*option*/) {
 
   fPartColl->SetEvent(fPairCleaner->GetCleanParticles(), fEvent->GetZVertex(),
                       fEvent->GetMultiplicity(), fEvent->GetV0MCentrality());
-
-  if (!fIsLightweight) {
-    FillCorrelationCorrelator(particles, sigma0particles,
-                              fSigmaCuts->GetSigma(), false);
-    FillCorrelationCorrelator(antiParticles, antiSigma0particles,
-                              fAntiSigmaCuts->GetSigma(), true);
-  }
 
   // flush the data
   PostData(1, fOutputContainer);
@@ -467,194 +444,6 @@ void AliAnalysisTaskSigma0Femto::UserCreateOutputObjects() {
     fOutputFemto->Add(fPartColl->GetQAList());
   }
 
-  if (!fIsLightweight) {
-    fHistCorrelationPSigmaPLambda[0] =
-        new TH2F("fHistCorrelationPSigmaPLambda",
-                 "; k* (p-#Sigma^{0}) (GeV/#it{c});  k* "
-                 "(p-#Lambda_{#Sigma^{0}}) (GeV/#it{c})",
-                 750, 0, 3, 750, 0, 3);
-    fHistCorrelationPSigmaPGamma[0] =
-        new TH2F("fHistCorrelationPSigmaPGamma",
-                 "; k* (p-#Sigma^{0}) (GeV/#it{c});  k* "
-                 "(p-#gamma_{#Sigma^{0}}) (GeV/#it{c})",
-                 750, 0, 3, 750, 0, 3);
-    fHistCorrelationPLambdaPGamma[0] =
-        new TH2F("fHistCorrelationPLambdaPGamma",
-                 "; k* (p-#Lambda_{#Sigma^{0}}) (GeV/#it{c});  k* "
-                 "(p-#gamma_{#Sigma^{0}}) (GeV/#it{c})",
-                 750, 0, 3, 750, 0, 3);
-    fHistCorrelationAntiPAntiSigmaAntiPAntiLambda[0] =
-        new TH2F("fHistCorrelationAntiPAntiSigmaAntiPAntiLambda",
-                 "; k* (#bar{p}-#bar{#Sigma}^{0}) (GeV/#it{c});  k* "
-                 "(#bar{p}-#bar{#Lambda}_{#bar{#Sigma}^{0}}) (GeV/#it{c})",
-                 750, 0, 3, 750, 0, 3);
-    fHistCorrelationAntiPAntiSigmaAntiPAntiGamma[0] =
-        new TH2F("fHistCorrelationAntiPAntiSigmaAntiPAntiGamma",
-                 "; k* (#bar{p}-#bar{#Sigma}^{0}) (GeV/#it{c});  k* "
-                 "(#bar{p}-#gamma_{#bar{#Sigma}^{0}}) (GeV/#it{c})",
-                 750, 0, 3, 750, 0, 3);
-    fHistCorrelationAntiPAntiLambdaAntiPAntiGamma[0] = new TH2F(
-        "fHistCorrelationAntiPAntiLambdaAntiPAntiGamma",
-        "; k* (#bar{p}-#bar{#Lambda}_{#bar{#Sigma}^{0}}) (GeV/#it{c});  k* "
-        "(#bar{p}-#gamma_{#bar{#Sigma}^{0}}) (GeV/#it{c})",
-        750, 0, 3, 750, 0, 3);
-    fOutputFemto->Add(fHistCorrelationPSigmaPLambda[0]);
-    fOutputFemto->Add(fHistCorrelationPSigmaPGamma[0]);
-    fOutputFemto->Add(fHistCorrelationPLambdaPGamma[0]);
-    fOutputFemto->Add(fHistCorrelationAntiPAntiSigmaAntiPAntiLambda[0]);
-    fOutputFemto->Add(fHistCorrelationAntiPAntiSigmaAntiPAntiGamma[0]);
-    fOutputFemto->Add(fHistCorrelationAntiPAntiLambdaAntiPAntiGamma[0]);
-
-    if (fIsMC) {
-      for (unsigned int i = 1; i < 3; ++i) {
-        const char *appendix = (i == 1) ? "SigmaPrim" : "Background";
-        fHistCorrelationPSigmaPLambda[i] =
-            new TH2F(Form("fHistCorrelationPSigmaPLambda_%s", appendix),
-                     "; k* (p-#Sigma^{0}) (GeV/#it{c});  k* "
-                     "(p-#Lambda_{#Sigma^{0}}) (GeV/#it{c})",
-                     750, 0, 3, 750, 0, 3);
-        fHistCorrelationPSigmaPGamma[i] =
-            new TH2F(Form("fHistCorrelationPSigmaPGamma_%s", appendix),
-                     "; k* (p-#Sigma^{0}) (GeV/#it{c});  k* "
-                     "(p-#gamma_{#Sigma^{0}}) (GeV/#it{c})",
-                     750, 0, 3, 750, 0, 3);
-        fHistCorrelationPLambdaPGamma[i] =
-            new TH2F(Form("fHistCorrelationPLambdaPGamma_%s", appendix),
-                     "; k* (p-#Lambda_{#Sigma^{0}}) (GeV/#it{c});  k* "
-                     "(p-#gamma_{#Sigma^{0}}) (GeV/#it{c})",
-                     750, 0, 3, 750, 0, 3);
-        fHistCorrelationAntiPAntiSigmaAntiPAntiLambda[i] = new TH2F(
-            Form("fHistCorrelationAntiPAntiSigmaAntiPAntiLambda_%s", appendix),
-            "; k* (#bar{p}-#bar{#Sigma}^{0}) (GeV/#it{c});  k* "
-            "(#bar{p}-#bar{#Lambda}_{#bar{#Sigma}^{0}}) (GeV/#it{c})",
-            750, 0, 3, 750, 0, 3);
-        fHistCorrelationAntiPAntiSigmaAntiPAntiGamma[i] = new TH2F(
-            Form("fHistCorrelationAntiPAntiSigmaAntiPAntiGamma_%s", appendix),
-            "; k* (#bar{p}-#bar{#Sigma}^{0}) (GeV/#it{c});  k* "
-            "(#bar{p}-#gamma_{#bar{#Sigma}^{0}}) (GeV/#it{c})",
-            750, 0, 3, 750, 0, 3);
-        fHistCorrelationAntiPAntiLambdaAntiPAntiGamma[i] = new TH2F(
-            Form("fHistCorrelationAntiPAntiLambdaAntiPAntiGamma_%s", appendix),
-            "; k* (#bar{p}-#bar{#Lambda}_{#bar{#Sigma}^{0}}) "
-            "(GeV/#it{c});  k* "
-            "(#bar{p}-#gamma_{#bar{#Sigma}^{0}}) (GeV/#it{c})",
-            750, 0, 3, 750, 0, 3);
-        fOutputFemto->Add(fHistCorrelationPSigmaPLambda[i]);
-        fOutputFemto->Add(fHistCorrelationPSigmaPGamma[i]);
-        fOutputFemto->Add(fHistCorrelationPLambdaPGamma[i]);
-        fOutputFemto->Add(fHistCorrelationAntiPAntiSigmaAntiPAntiLambda[i]);
-        fOutputFemto->Add(fHistCorrelationAntiPAntiSigmaAntiPAntiGamma[i]);
-        fOutputFemto->Add(fHistCorrelationAntiPAntiLambdaAntiPAntiGamma[i]);
-      }
-    }
-  }
-
   PostData(1, fOutputContainer);
   PostData(2, fOutputFemto);
-}
-
-void AliAnalysisTaskSigma0Femto::FillCorrelationCorrelator(
-    const std::vector<AliFemtoDreamBasePart> &particles,
-    const std::vector<AliFemtoDreamBasePart> &sigmasFemto,
-    const std::vector<AliSigma0ParticlePhotonMother> &sigmas,
-    const bool isAnti) const {
-  for (const auto &proton : particles) {
-    const TVector3 protonVec = proton.GetMomentum();
-    if (!proton.UseParticle()) continue;
-
-    unsigned int sigmaCounter = 0;
-    for (const auto &sigma : sigmas) {
-      const auto &SigmaParticleFemto = sigmasFemto[sigmaCounter++];
-      if (!SigmaParticleFemto.UseParticle()) continue;
-      const TVector3 sigmaVec =
-          TVector3(sigma.GetPx(), sigma.GetPy(), sigma.GetPz());
-      const auto lambda = sigma.GetV0();
-      const TVector3 lambdaVec =
-          TVector3(lambda.GetPx(), lambda.GetPy(), lambda.GetPz());
-      const auto photon = sigma.GetPhoton();
-      const TVector3 photonVec =
-          TVector3(photon.GetPx(), photon.GetPy(), photon.GetPz());
-
-      const float kRelpSigma =
-          ComputeRelk(protonVec, 2212, sigmaVec, (isAnti) ? -3212 : 3212);
-      const float kRelpLambda =
-          ComputeRelk(protonVec, 2212, lambdaVec, (isAnti) ? -3122 : 3122);
-      const float kRelpPhoton = ComputeRelk(protonVec, 2212, photonVec, 22);
-
-      if (!isAnti) {
-        fHistCorrelationPSigmaPLambda[0]->Fill(kRelpSigma, kRelpLambda);
-        fHistCorrelationPSigmaPGamma[0]->Fill(kRelpSigma, kRelpPhoton);
-        fHistCorrelationPLambdaPGamma[0]->Fill(kRelpLambda, kRelpPhoton);
-      } else {
-        fHistCorrelationAntiPAntiSigmaAntiPAntiLambda[0]->Fill(kRelpSigma,
-                                                               kRelpLambda);
-        fHistCorrelationAntiPAntiSigmaAntiPAntiGamma[0]->Fill(kRelpSigma,
-                                                              kRelpPhoton);
-        fHistCorrelationAntiPAntiLambdaAntiPAntiGamma[0]->Fill(kRelpLambda,
-                                                               kRelpPhoton);
-      }
-
-      if (fIsMC) {
-        if (SigmaParticleFemto.GetParticleOrigin() ==
-            AliFemtoDreamBasePart::kPhysPrimary) {
-          if (!isAnti) {
-            fHistCorrelationPSigmaPLambda[1]->Fill(kRelpSigma, kRelpLambda);
-            fHistCorrelationPSigmaPGamma[1]->Fill(kRelpSigma, kRelpPhoton);
-            fHistCorrelationPLambdaPGamma[1]->Fill(kRelpLambda, kRelpPhoton);
-          } else {
-            fHistCorrelationAntiPAntiSigmaAntiPAntiLambda[1]->Fill(kRelpSigma,
-                                                                   kRelpLambda);
-            fHistCorrelationAntiPAntiSigmaAntiPAntiGamma[1]->Fill(kRelpSigma,
-                                                                  kRelpPhoton);
-            fHistCorrelationAntiPAntiLambdaAntiPAntiGamma[1]->Fill(kRelpLambda,
-                                                                   kRelpPhoton);
-          }
-        } else if (SigmaParticleFemto.GetParticleOrigin() ==
-                   AliFemtoDreamBasePart::kFake) {
-          if (!isAnti) {
-            fHistCorrelationPSigmaPLambda[2]->Fill(kRelpSigma, kRelpLambda);
-            fHistCorrelationPSigmaPGamma[2]->Fill(kRelpSigma, kRelpPhoton);
-            fHistCorrelationPLambdaPGamma[2]->Fill(kRelpLambda, kRelpPhoton);
-          } else {
-            fHistCorrelationAntiPAntiSigmaAntiPAntiLambda[2]->Fill(kRelpSigma,
-                                                                   kRelpLambda);
-            fHistCorrelationAntiPAntiSigmaAntiPAntiGamma[2]->Fill(kRelpSigma,
-                                                                  kRelpPhoton);
-            fHistCorrelationAntiPAntiLambdaAntiPAntiGamma[2]->Fill(kRelpLambda,
-                                                                   kRelpPhoton);
-          }
-        }
-      }
-    }
-  }
-}
-
-float AliAnalysisTaskSigma0Femto::ComputeRelk(const TVector3 &Part1Momentum,
-                                              const int PDGPart1,
-                                              const TVector3 &Part2Momentum,
-                                              const int PDGPart2) const {
-  float results = 0.;
-  TLorentzVector SPtrack, TPProng, trackSum, SPtrackCMS, TPProngCMS;
-  SPtrack.SetXYZM(Part1Momentum.X(), Part1Momentum.Y(), Part1Momentum.Z(),
-                  TDatabasePDG::Instance()->GetParticle(PDGPart1)->Mass());
-  TPProng.SetXYZM(Part2Momentum.X(), Part2Momentum.Y(), Part2Momentum.Z(),
-                  TDatabasePDG::Instance()->GetParticle(PDGPart2)->Mass());
-  trackSum = SPtrack + TPProng;
-
-  float beta = trackSum.Beta();
-  float betax = beta * cos(trackSum.Phi()) * sin(trackSum.Theta());
-  float betay = beta * sin(trackSum.Phi()) * sin(trackSum.Theta());
-  float betaz = beta * cos(trackSum.Theta());
-
-  SPtrackCMS = SPtrack;
-  TPProngCMS = TPProng;
-
-  SPtrackCMS.Boost(-betax, -betay, -betaz);
-  TPProngCMS.Boost(-betax, -betay, -betaz);
-
-  TLorentzVector trackRelK;
-
-  trackRelK = SPtrackCMS - TPProngCMS;
-  results = 0.5 * trackRelK.P();
-  return results;
 }

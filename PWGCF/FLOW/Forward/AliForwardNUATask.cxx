@@ -107,6 +107,11 @@ AliForwardNUATask::AliForwardNUATask() : AliAnalysisTaskSE(),
     fOutputList = new TList();          // the final output list
     fOutputList->SetOwner(kTRUE);       // memory stuff: the list is owner of all objects it contains and will delete them if requested
 
+    fEventList = new TList();
+    //fEventList->Add(new TH1D("ImpactParam","ImpactParam",100,0,20));
+    fEventList->Add(new TH1D("Vertex","Vertex",fSettings.fNZvtxBins,fSettings.fZVtxAcceptanceLowEdge,fSettings.fZVtxAcceptanceUpEdge));
+    fEventList->SetName("EventInfo");
+
 
     Double_t centralEta = (fSettings.useSPD ? 2.5 : 1.5);
     Int_t forwardBinsEta = (fSettings.use_primaries ? 200 : 200);
@@ -121,6 +126,7 @@ AliForwardNUATask::AliForwardNUATask() : AliAnalysisTaskSE(),
 
     dNdeta = new TH1F("dNdeta","dNdeta",100 /*fSettings.fNDiffEtaBins*/,fSettings.fEtaLowEdge,fSettings.fEtaUpEdge);
     fOutputList->Add(dNdeta);
+    fOutputList->Add(fEventList);
 
     PostData(1, fOutputList);
   }
@@ -179,6 +185,10 @@ void AliForwardNUATask::UserExec(Option_t *)
 
 
   Double_t zvertex = fUtil.GetZ();
+
+  TList* eventList = static_cast<TList*>(fOutputList->FindObject("EventInfo"));
+  static_cast<TH1D*>(fEventList->FindObject("Vertex"))->Fill(zvertex);
+
 
     // loop for the TPC
     for (Int_t etaBin = 1; etaBin <= centralDist->GetNbinsX(); etaBin++) {

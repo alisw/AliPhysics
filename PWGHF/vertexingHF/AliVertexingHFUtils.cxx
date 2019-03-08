@@ -45,6 +45,7 @@
 ClassImp(AliVertexingHFUtils);
 /// \endcond
 
+using namespace std;
 
 //______________________________________________________________________
 AliVertexingHFUtils::AliVertexingHFUtils():TObject(),
@@ -2694,4 +2695,125 @@ TH1* AliVertexingHFUtils::AdaptTemplateRangeAndBinning(const TH1 *hMC,TH1 *hData
     }
   }
   return hOut;
+}
+
+//___________________________________________________________________________________//
+//method that performs simultaneus fit of in-plane and out-of-plane inv-mass spectra
+ROOT::Fit::FitResult AliVertexingHFUtils::DoInPlaneOutOfPlaneSimultaneusFit(AliHFInvMassFitter* massfitterInPlane, AliHFInvMassFitter* massfitterOutOfPlane, TH1F* hMassInPlane, TH1F* hMassOutOfPlane, Double_t MinMass, Double_t MaxMass, Double_t massD, vector<UInt_t> commonpars) {
+
+  cout << "\nIn-plane - out-of-plane simultaneus fit" << endl;
+  cout << "\nIndependent prefits" << endl;
+
+  //prefits to initialise parameters
+  massfitterInPlane->SetUseLikelihoodFit();
+  massfitterInPlane->SetInitialGaussianMean(massD);
+  massfitterInPlane->SetInitialGaussianSigma(0.010);
+  massfitterInPlane->MassFitter(kFALSE);
+
+  massfitterOutOfPlane->SetUseLikelihoodFit();
+  massfitterOutOfPlane->SetInitialGaussianMean(massD);
+  massfitterOutOfPlane->SetInitialGaussianSigma(0.010);
+  massfitterOutOfPlane->MassFitter(kFALSE);
+
+  ROOT::Math::WrappedMultiTF1 wfInPlane(*(massfitterInPlane->GetMassFunc()),1);
+  ROOT::Math::WrappedMultiTF1 wfOutOfPlane(*(massfitterOutOfPlane->GetMassFunc()),1);
+
+  // set data options and ranges
+  ROOT::Fit::DataOptions opt;
+  ROOT::Fit::DataRange rangeMass; //same range for two functions
+
+  rangeMass.SetRange(MinMass,MaxMass);
+  ROOT::Fit::BinData dataInPlane(opt,rangeMass);
+  ROOT::Fit::FillData(dataInPlane, hMassInPlane);
+  ROOT::Fit::BinData dataOutOfPlane(opt,rangeMass);
+  ROOT::Fit::FillData(dataOutOfPlane, hMassOutOfPlane);
+
+  //define the 2 chi squares
+  ROOT::Fit::Chi2Function chi2InPlane(dataInPlane, wfInPlane);
+  ROOT::Fit::Chi2Function chi2OutOfPlane(dataOutOfPlane, wfOutOfPlane);
+
+  //define the global chi square and get initial parameters from prefits
+  const Int_t npars = massfitterInPlane->GetMassFunc()->GetNpar();
+  const UInt_t ncommonpars = commonpars.size();
+  Int_t nparsBkg = massfitterInPlane->GetBackgroundRecalcFunc()->GetNpar();
+  Int_t nparsSgn = massfitterInPlane->GetSignalFunc()->GetNpar();
+  Int_t nparsSecPeak = 0, nparsRefl = 0;
+  if(massfitterInPlane->GetSecondPeakFunc())
+    nparsSecPeak = massfitterInPlane->GetSecondPeakFunc()->GetNpar();
+  if(massfitterInPlane->GetReflFunc())
+    nparsRefl = massfitterInPlane->GetReflFunc()->GetNpar();
+
+  GlobalInOutOfPlaneChi2 globalChi2(chi2InPlane, chi2OutOfPlane, npars, commonpars);
+
+  vector<UInt_t>::iterator iter;
+  vector<Double_t> initpars;
+  for(Int_t iPar=0; iPar<2*npars; iPar++) {
+    if(iPar<npars) { //in-plane
+      initpars.push_back(massfitterInPlane->GetMassFunc()->GetParameter(iPar));
+    }
+    else { //out-of-plane
+      iter = find(commonpars.begin(),commonpars.end(),iPar-npars);
+      if(iter!=commonpars.end()) continue;
+      else {
+        initpars.push_back(massfitterOutOfPlane->GetMassFunc()->GetParameter(iPar-npars));
+      }
+    }
+  }
+
+  //define fitter and fit
+  ROOT::Fit::Fitter simulfitter;
+  simulfitter.Config().SetParamsSettings(npars*2-ncommonpars,initpars.data()); //set initial parameters from prefits
+  if(nparsSecPeak>0) { //fix S/R 
+    simulfitter.Config().ParSettings(nparsBkg+nparsSgn+nparsSecPeak).Fix();
+
+    iter = find(commonpars.begin(),commonpars.end(),npars+nparsBkg+nparsSgn+nparsSecPeak);
+    if(iter==commonpars.end()) //if not included in common pars, need to be fixed also for out-of-plane func
+      simulfitter.Config().ParSettings(npars+nparsBkg+nparsSgn+nparsSecPeak-ncommonpars).Fix();
+  }
+
+  simulfitter.Config().MinimizerOptions().SetPrintLevel(0);
+  simulfitter.Config().SetMinimizer("Minuit2","Migrad");
+  simulfitter.FitFCN(npars*2-ncommonpars,globalChi2,0,dataInPlane.Size()+dataOutOfPlane.Size(),kFALSE);
+  ROOT::Fit::FitResult result = simulfitter.Result();
+  cout << "\nSimultaneus fit" << endl;
+  result.Print(cout);
+
+  //Set new parameters to functions of mass fitters
+  Int_t ncommonparsused = 0;
+  for(Int_t iPar=0; iPar<npars; iPar++) {
+    massfitterInPlane->GetMassFunc()->SetParameter(iPar,result.Parameter(iPar));
+    massfitterInPlane->GetMassFunc()->SetParError(iPar,result.ParError(iPar));
+    iter = find(commonpars.begin(),commonpars.end(),iPar);
+    if(iter!=commonpars.end()) { //is common parameter
+      massfitterOutOfPlane->GetMassFunc()->SetParameter(iPar,result.Parameter(iPar));
+      massfitterOutOfPlane->GetMassFunc()->SetParError(iPar,result.ParError(iPar));
+      ncommonparsused++;
+    }
+    else {
+      massfitterOutOfPlane->GetMassFunc()->SetParameter(iPar,result.Parameter(iPar+npars-ncommonparsused));
+      massfitterOutOfPlane->GetMassFunc()->SetParError(iPar,result.ParError(iPar+npars-ncommonparsused));
+    }
+
+    if(iPar < nparsBkg) { //bkg
+      massfitterInPlane->GetBackgroundRecalcFunc()->SetParameter(iPar,massfitterInPlane->GetMassFunc()->GetParameter(iPar));
+      massfitterInPlane->GetBackgroundRecalcFunc()->SetParError(iPar,massfitterInPlane->GetMassFunc()->GetParError(iPar));
+      massfitterOutOfPlane->GetBackgroundRecalcFunc()->SetParameter(iPar,massfitterOutOfPlane->GetMassFunc()->GetParameter(iPar));
+      massfitterOutOfPlane->GetBackgroundRecalcFunc()->SetParError(iPar,massfitterOutOfPlane->GetMassFunc()->GetParError(iPar));
+    }
+    else if(iPar >= nparsBkg && iPar < nparsBkg+nparsSgn){ //signal
+      massfitterInPlane->GetSignalFunc()->SetParameter(iPar-nparsBkg,massfitterInPlane->GetMassFunc()->GetParameter(iPar));
+      massfitterInPlane->GetSignalFunc()->SetParError(iPar-nparsBkg,massfitterInPlane->GetMassFunc()->GetParError(iPar));
+      massfitterOutOfPlane->GetSignalFunc()->SetParameter(iPar-nparsBkg,massfitterOutOfPlane->GetMassFunc()->GetParameter(iPar));
+      massfitterOutOfPlane->GetSignalFunc()->SetParError(iPar-nparsBkg,massfitterOutOfPlane->GetMassFunc()->GetParError(iPar));
+    }
+    else if(iPar >= nparsBkg && iPar < nparsBkg+nparsSgn){ //signal
+      massfitterInPlane->GetSignalFunc()->SetParameter(iPar-nparsBkg,massfitterInPlane->GetMassFunc()->GetParameter(iPar));
+      massfitterInPlane->GetSignalFunc()->SetParError(iPar-nparsBkg,massfitterInPlane->GetMassFunc()->GetParError(iPar));
+      massfitterOutOfPlane->GetSignalFunc()->SetParameter(iPar-nparsBkg,massfitterOutOfPlane->GetMassFunc()->GetParameter(iPar));
+      massfitterOutOfPlane->GetSignalFunc()->SetParError(iPar-nparsBkg,massfitterOutOfPlane->GetMassFunc()->GetParError(iPar));
+    }
+  }
+
+  cout << "\n" << endl;
+  return result;
 }

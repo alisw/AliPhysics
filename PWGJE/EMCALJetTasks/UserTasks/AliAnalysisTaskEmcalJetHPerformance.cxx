@@ -146,6 +146,7 @@ void AliAnalysisTaskEmcalJetHPerformance::RetrieveAndSetTaskPropertiesFromYAMLCo
 
   // QA options
   baseName = "QA";
+  fYAMLConfig.GetProperty({baseName, "cellsName"}, fCaloCellsName, false);
   // Defaults to "emcalCells" if not set.
   fYAMLConfig.GetProperty({baseName, "embeddedCellsName"}, fEmbeddedCellsName, false);
 
@@ -274,17 +275,54 @@ void AliAnalysisTaskEmcalJetHPerformance::UserCreateOutputObjects()
 }
 
 /**
+ * Setup cell QA histograms at a specific prefix within the histogram manager. This allows us to avoid repeating
+ * definitions for the same histograms in the embedded vs internal event. This function actually defines the histograms.
+ *
+ * @param[in] prefix Prefix under which the histograms will be created within the hist manager.
+ */
+void AliAnalysisTaskEmcalJetHPerformance::SetupCellQAHistsWithPrefix(const std::string & prefix)
+{
+  std::string name = prefix + "/fHistCellEnergy";
+  std::string title = name + ";\\mathit{E}_{\\mathrm{cell}} (\\mathrm{GeV});counts";
+  fHistManager.CreateTH1(name.c_str(), title.c_str(), 300, 0, 150);
+
+  name = prefix + "/fHistCellTime";
+  title = name + ";t (s);counts";
+  fHistManager.CreateTH1(name.c_str(), title.c_str(), 1000, -10e-6, 10e-6);
+
+  name = prefix + "/fHistNCells";
+  title = name + ";\\mathrm{N}_{\\mathrm{cells}};counts";
+  fHistManager.CreateTH1(name.c_str(), title.c_str(), 100, 0, 5000);
+
+  name = prefix + "/fHistCellID";
+  title = name + ";\\mathrm{N}_{\\mathrm{cell}};counts";
+  fHistManager.CreateTH1(name.c_str(), title.c_str(), 20000, 0, 20000);
+
+}
+
+/**
+ * Directs the creation of Cell QA histograms for the internal and external events (if it exists).
+ */
+void AliAnalysisTaskEmcalJetHPerformance::SetupCellQAHists()
+{
+  std::string prefix = "QA/";
+  prefix += fCaloCellsName.Data();
+  SetupCellQAHistsWithPrefix(prefix);
+  auto embeddingInstance = AliAnalysisTaskEmcalEmbeddingHelper::GetInstance();
+  if (embeddingInstance) {
+    prefix = "QA/embedding/";
+    prefix += fEmbeddedCellsName;
+    SetupCellQAHistsWithPrefix(prefix);
+  }
+}
+
+/**
  * Setup and allocate histograms related to QA histograms.
  */
 void AliAnalysisTaskEmcalJetHPerformance::SetupQAHists()
 {
   // Cell level QA
-  auto embeddingInstance = AliAnalysisTaskEmcalEmbeddingHelper::GetInstance();
-  if (embeddingInstance) {
-    std::string name = "QA/embedding/cells/fHistCellTime";
-    std::string title = name + ";E_{time} (s);counts";
-    fHistManager.CreateTH1(name.c_str(), title.c_str(), 1000, -10e-6, 10e-6);
-  }
+  SetupCellQAHists();
 
   // Clusters
   AliEmcalContainer* cont = 0;
@@ -402,10 +440,67 @@ void AliAnalysisTaskEmcalJetHPerformance::QAHists()
 }
 
 /**
+ * Helper function to fill cell QA into the defined histograms. This actually fills the histograms at a given prefix
+ * from the provided calo cells.
+ *
+ * @param[in] prefix Prefix under which the histograms will be created within the hist manager.
+ * @param[in] cells Cells from which the information should be extracted.
+ */
+void AliAnalysisTaskEmcalJetHPerformance::FillCellQAHists(const std::string & prefix, AliVCaloCells * cells)
+{
+  AliDebugStream(4) << "Storing cells with prefix \"" << prefix << "\". N cells:" << cells->GetNumberOfCells() << "\n";
+  short absId = -1;
+  double eCell = 0;
+  double tCell = 0;
+  double eFrac = 0;
+  int mcLabel = -1;
+
+  std::string energyName = prefix + "/fHistCellEnergy";
+  std::string timeName = prefix + "/fHistCellTime";
+  std::string idName = prefix + "/fHistCellID";
+  for (unsigned int iCell = 0; iCell < cells->GetNumberOfCells(); iCell++) {
+    cells->GetCell(iCell, absId, eCell, tCell, mcLabel, eFrac);
+
+    AliDebugStream(5) << "Cell " << iCell << ": absId: " << absId << ", E: " << eCell << ", t: " << tCell
+             << ", mcLabel: " << mcLabel << ", eFrac: " << eFrac << "\n";
+    fHistManager.FillTH1(energyName.c_str(), eCell);
+    fHistManager.FillTH1(timeName.c_str(), tCell);
+    fHistManager.FillTH1(idName.c_str(), absId);
+  }
+
+  std::string nCellsName = prefix + "/fHistNCells";
+  fHistManager.FillTH1(nCellsName.c_str(), cells->GetNumberOfCells());
+}
+
+/**
+ * Directs the filling of cell QA into the defined histograms.
+ */
+void AliAnalysisTaskEmcalJetHPerformance::FillCellQAHists()
+{
+  // Fill standard cell QA
+  std::string prefix = "QA/";
+  prefix += fCaloCellsName.Data();
+  FillCellQAHists(prefix, fCaloCells);
+
+  // Fill embedded cell QA it if's available.
+  auto embeddingInstance = AliAnalysisTaskEmcalEmbeddingHelper::GetInstance();
+  if (embeddingInstance) {
+    auto embeddedCells = dynamic_cast<AliVCaloCells*>(
+     embeddingInstance->GetExternalEvent()->FindListObject(fEmbeddedCellsName.c_str()));
+    if (embeddedCells) {
+      prefix = "QA/embedding/";
+      prefix += fEmbeddedCellsName;
+      FillCellQAHists(prefix, embeddedCells);
+    }
+  }
+}
+
+/**
  * Fill QA histograms.
  */
 void AliAnalysisTaskEmcalJetHPerformance::FillQAHists()
 {
+  FillCellQAHists();
   // Embedded cells
   // Need to be retrieved manually since the base class only retrieves the cells in the internal event.
   auto embeddingInstance = AliAnalysisTaskEmcalEmbeddingHelper::GetInstance();
@@ -413,21 +508,6 @@ void AliAnalysisTaskEmcalJetHPerformance::FillQAHists()
     auto embeddedCells = dynamic_cast<AliVCaloCells*>(
      embeddingInstance->GetExternalEvent()->FindListObject(fEmbeddedCellsName.c_str()));
     if (embeddedCells) {
-      AliDebugStream(4) << "Found embedded cells. N cells:" << embeddedCells->GetNumberOfCells() << "\n";
-      short absId = -1;
-      double eCell = 0;
-      double tCell = 0;
-      double eFrac = 0;
-      int mcLabel = -1;
-
-      std::string histName = "QA/embedding/cells/fHistCellTime";
-      for (unsigned int iCell = 0; iCell < embeddedCells->GetNumberOfCells(); iCell++) {
-        embeddedCells->GetCell(iCell, absId, eCell, tCell, mcLabel, eFrac);
-
-        AliDebugStream(5) << "Cell " << iCell << ": absId: " << absId << ", E: " << eCell << ", t: " << tCell
-                 << ", mcLabel: " << mcLabel << ", eFrac: " << eFrac << "\n";
-        fHistManager.FillTH1(histName.c_str(), tCell);
-      }
     }
   }
 

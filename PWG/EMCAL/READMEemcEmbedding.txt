@@ -373,9 +373,9 @@ In addition to the information below, in terms of best practices for the user, a
 are a few additional points which should be checked:
 - Check that all of the embedding helper histograms look reasonable.
 - Check the train number to pt hard bin map provides the correct mapping, as described [below](\ref emcEmbeddingAutoConfigurePtHard).
-- If ]internal event selection](\ref emcEmbeddingEventSelection) is enabled (it is highly recommended), check
+- If [internal event selection](\ref emcEmbeddingEventSelection) is enabled (it is highly recommended), check
   that embedded event recycling is properly enabled for every task. This is easiest to do by looking at the event
-  rejection histogra. If even just one task is missed, it will negate the performance benefits for the entire train.
+  rejection histogram. If even just one task is missed, it will negate the performance benefits for the entire train.
 
 ## Configuring the LEGO Train Wagon                                         {#emcEmbeddingLEGOTrainWagon}
 
@@ -440,10 +440,12 @@ as well as define the base and train type paths, such that all you need to do is
 
 # Optimization of Event Selection and Computing                                 {#emcEmbeddingEventSelection}
 
+**It is highly recommended to follow the advice of this section. It will often substantially improve performance!**
+
 It is important to take care when applying event selection during embedding. For example, if the embedding helper
 is run with `AliVEvent::kAny`, but your task is run with `AliVEvent::kAnyINT`, some good embedded events will be
 missed because the physics selection of your task is more restrictive. There are two parts to solution to this issue.
-First, it is best to have the same collision candidates for the embedding helper and all other tasks.
+As a start, it is best to have the same collision candidates for the embedding helper and all other tasks.
 
 While this is a good start, it is not sufficient in all cases, such as selecting on centrality. To address this
 issue, the embedding helper allows for more complicated internal event selection via AliEventCuts (disabled by default).
@@ -469,7 +471,8 @@ calling `%Setup{Period}()` for the event cuts object) and then configure it via 
 notable exception. Additional centrality selection is implemented in the embedding helper. To use it, simply set the
 centrality range ("internalEventSelection:centralityRange" in YAML or via SetCentralityRange(min, max)). Note that if
 a centrality range is set in AliEventCuts (for example, through the automatic setup), that range must be wider than or
-equal to the range in the embedding helper for the embedding helper setting to be meaningful.
+equal to the range in the embedding helper for the embedding helper setting to be meaningful. Physics selection of
+the `AliEventCuts` object can also be configured via YAML.
 
 Alternatively, the user may use manual cuts in AliEventCuts, configure it for a particular period, and then set the
 centrality range in AliEventCuts and disregard the centrality selection capabilities in the embedding helper. In code,
@@ -481,7 +484,7 @@ embeddingHelper->SetUseInternalEventSelection(true);
 // Use manual event cuts
 embeddingHelper->SetUseManualInternalEventCuts(true);
 auto eventCuts = embeddingHelper->GetInternalEventCuts();
-eventCuts->SetupLHC11h();
+eventCuts->SetupRun1PbPb();
 // Use 0-10%
 eventCuts->SetCentralityRange(0, 10);
 ~~~

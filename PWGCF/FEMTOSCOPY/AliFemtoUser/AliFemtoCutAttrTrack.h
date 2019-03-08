@@ -258,27 +258,43 @@ struct TrackCutAttrMinNclsITS {
 /// \class TrackCutAttrChi2ITS
 /// \brief Cut on reduced chi2 of results in ITS
 ///
+/// If rchi2_its_max is negative, this cut is ignored
+///
 struct TrackCutAttrChi2ITS {
 
   double rchi2_its_max;
+  double rchi2_its_min;
 
   bool Pass(const AliFemtoTrack &track)
     {
-      return (track.ITSncls() > 0)
-              && (track.ITSchi2() / track.ITSncls()) < rchi2_its_max;
+      if (rchi2_its_max < 0) {
+        return true;
+      }
+      double chi2 = track.ITSncls() > 0
+                  ? track.ITSchi2() / track.ITSncls()
+                  : 9999.0;
+      return rchi2_its_min <= chi2 && chi2 < rchi2_its_max;
     }
 
   TrackCutAttrChi2ITS()
-    : rchi2_its_max(3.0)
+    : rchi2_its_max(-1.0)
+    , rchi2_its_min(0.0)
     {}
 
   TrackCutAttrChi2ITS(AliFemtoConfigObject &cfg)
-    : rchi2_its_max(cfg.pop_float("rchi2_its_max", 3.0))
+    : rchi2_its_max(cfg.pop_float("rchi2_its_max", -1.0))
+    , rchi2_its_min(cfg.pop_float("rchi2_its_min", 0.0))
     {}
 
   void FillConfiguration(AliFemtoConfigObject &cfg) const
     {
+      if (rchi2_its_max < 0) {
+        return;
+      }
       cfg.insert("rchi2_its_max", rchi2_its_max);
+      if (rchi2_its_min != 0.0) {
+        cfg.insert("rchi2_its_min", rchi2_its_min);
+      }
     }
 
   virtual ~TrackCutAttrChi2ITS() {}
@@ -286,36 +302,50 @@ struct TrackCutAttrChi2ITS {
 
 
 /// \class TrackCutAttrChi2TPC
-/// \brief Cut on reduced chi2 of TPC
+/// \brief Track quality cut on reduced chi2 of TPC fit
+///
+/// This cut is diabled if rchi2_tpc_max is negative.
 ///
 struct TrackCutAttrChi2TPC {
 
   double rchi2_tpc_max;
+  double rchi2_tpc_min;
 
   bool Pass(const AliFemtoTrack &track)
     {
-      return (track.TPCncls() > 5)
-              && (track.TPCchi2() / (track.TPCncls() - 5)) < rchi2_tpc_max;
+      if (rchi2_tpc_max < 0) {
+        return true;
+      }
+      double chi2 = track.TPCchi2perNDF();
+      return rchi2_tpc_min <= chi2 && chi2 < rchi2_tpc_max;
     }
 
   TrackCutAttrChi2TPC()
-    : rchi2_tpc_max(3.0)
+    : rchi2_tpc_max(-1.0)
+    , rchi2_tpc_min(0.0)
     {}
 
   TrackCutAttrChi2TPC(AliFemtoConfigObject &cfg)
-    : rchi2_tpc_max(cfg.pop_float("rchi2_tpc_max", 3.0))
+    : rchi2_tpc_max(cfg.pop_float("rchi2_tpc_max", -1.0))
+    , rchi2_tpc_min(cfg.pop_float("rchi2_tpc_min", 0.0))
     {}
 
   void FillConfiguration(AliFemtoConfigObject &cfg) const
     {
+      if (rchi2_tpc_max < 0) {
+        return;
+      }
       cfg.insert("rchi2_tpc_max", rchi2_tpc_max);
+      if (rchi2_tpc_min != 0.0) {
+        cfg.insert("rchi2_tpc_min", rchi2_tpc_min);
+      }
     }
 
   virtual ~TrackCutAttrChi2TPC() {}
 };
 
 
-/// Remove tracks with "negative" number of ITS clusters
+/// Remove tracks with negative label (global tracks)
 struct TrackCutAttrRemoveNonTpc {
 
   bool remove_non_tpc;
@@ -342,7 +372,10 @@ struct TrackCutAttrRemoveNonTpc {
 };
 
 
-/// Remove tracks with "negative" number of ITS clusters
+/// Cut based on charge
+///
+/// If charge is 0, the cut is not applied.
+///
 struct TrackCutAttrCharge {
 
   static const int DEFAULT;
@@ -368,7 +401,7 @@ struct TrackCutAttrCharge {
   virtual ~TrackCutAttrCharge() {}
 };
 
-/// Remove tracks with "negative" number of ITS clusters
+/// Remove outside momentum range
 struct TrackCutAttrMomentum {
   static const std::pair<double, double> DEFAULT;
 
@@ -394,7 +427,7 @@ struct TrackCutAttrMomentum {
   virtual ~TrackCutAttrMomentum() {}
 };
 
-/// Remove tracks on the transverse momentum
+/// Remove tracks outside a range of transverse momentum
 struct TrackCutAttrPt {
 
   static const std::pair<double, double> DEFAULT;
@@ -422,7 +455,7 @@ struct TrackCutAttrPt {
 };
 
 
-/// Remove tracks outside of pseudorapidity
+/// Remove tracks outside a range of pseudorapidity
 struct TrackCutAttrEta {
 
   static const std::pair<double, double> DEFAULT;
@@ -527,7 +560,9 @@ struct TrackCutAttrMostProbablePion {
   virtual ~TrackCutAttrMostProbablePion() {}
 };
 
-
+/// Equivalent to AliFemtoESDTrackCut with PIDMethodType 'kContour'
+/// and `SetMostProbablePion();`
+///
 struct TrackCutAttrPidContourPion {
 
   bool tpc_contour_pion;
@@ -550,7 +585,6 @@ struct TrackCutAttrPidContourPion {
 
       return dedx < ((mom < 0.32) ? a1 * mom + b1 : a2 * mom + b2);
     }
-
 
   TrackCutAttrPidContourPion()
     : tpc_contour_pion(true)

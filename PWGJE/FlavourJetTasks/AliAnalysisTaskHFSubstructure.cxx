@@ -546,33 +546,34 @@ Bool_t AliAnalysisTaskHFSubstructure::FillHistograms()
     if(N_DMesons==5) fhEvent->Fill(21); 
     if(N_DMesons==6) fhEvent->Fill(22); 
 
-    if (fIncludeInclusive){ 
-      fFastJetWrapper->Clear(); 
-
+    if (fIncludeInclusive){
+      fFastJetWrapper->Clear();
+      /*
       for (UInt_t i_D_Found=0; i_D_Found<D_Candidates_Vector.size(); i_D_Found++){
 	fFastJetWrapper->AddInputVector(D_Candidates_Vector[i_D_Found]->Px(), D_Candidates_Vector[i_D_Found]->Py(), D_Candidates_Vector[i_D_Found]->Pz(), D_Candidates_Vector[i_D_Found]->AliAODRecoDecay::E(fCandidatePDG), i_D_Found);
 	//Track_Container->SetDMesonCandidate(D_Candidates_Vector[i_D_Found]);
       }
-
+      */
       AliAODTrack *Track = NULL;
       Bool_t DMeson_Daughter_Track=kFALSE;
       for (Int_t i_Track=0; i_Track<Track_Container->GetNTracks(); i_Track++){
-	for (UInt_t i_D_Found=0; i_D_Found<D_Candidates_Vector.size(); i_D_Found++){
+	/*	for (UInt_t i_D_Found=0; i_D_Found<D_Candidates_Vector.size(); i_D_Found++){
 	  Track_Container->SetDMesonCandidate(D_Candidates_Vector[i_D_Found]);
 	  Track = static_cast<AliAODTrack*>(Track_Container->GetAcceptParticle(i_Track));
 	  if(!Track) DMeson_Daughter_Track=kTRUE;
-	}
-	if (DMeson_Daughter_Track) continue;
+	  }
+	  if (DMeson_Daughter_Track) continue;*/
 	Track = static_cast<AliAODTrack*>(Track_Container->GetAcceptParticle(i_Track));
+	if(!Track) continue;
 	fFastJetWrapper->AddInputVector(Track->Px(), Track->Py(), Track->Pz(), Track->E(),i_Track+100);
       }
       //delete Track;
-      fFastJetWrapper->Run(); 
-      std::vector<fastjet::PseudoJet> Inclusive_Jets = fFastJetWrapper->GetInclusiveJets(); 
-      for (UInt_t i_Jet=0; i_Jet < Inclusive_Jets.size(); i_Jet++){ 
+      fFastJetWrapper->Run();
+      std::vector<fastjet::PseudoJet> Inclusive_Jets = fFastJetWrapper->GetInclusiveJets();
+      for (UInt_t i_Jet=0; i_Jet < Inclusive_Jets.size(); i_Jet++){
 	if (Inclusive_Jets[i_Jet].perp()<fJetMinPt) continue;
 	if (TMath::Abs(Inclusive_Jets[i_Jet].pseudorapidity()) > 0.9-fJetRadius) continue;
-	Bool_t Is_D_Jet = kFALSE; 
+	/*	Bool_t Is_D_Jet = kFALSE; 
 	std::vector<fastjet::PseudoJet> Constituents(fFastJetWrapper->GetJetConstituents(i_Jet));
 	for (UInt_t i_Constituents = 0; i_Constituents < Constituents.size(); i_Constituents++) { 
 	  for (UInt_t i_D_Found=0; i_D_Found<D_Candidates_Vector.size(); i_D_Found++){
@@ -581,7 +582,7 @@ Bool_t AliAnalysisTaskHFSubstructure::FillHistograms()
 	    }
 	  }
 	}
-	if (Is_D_Jet) continue; 
+	if (Is_D_Jet) continue; */
 	fhEvent->Fill(23); 
 	std::vector<Double_t> Splittings_Zg;
 	std::vector<Double_t> Splittings_DeltaR;
@@ -589,7 +590,6 @@ Bool_t AliAnalysisTaskHFSubstructure::FillHistograms()
 	std::vector<Double_t> Splittings_HardestSubJetD0;
 	std::vector<Double_t> Splittings_RadiatorE;
 	std::vector<Double_t> Splittings_RadiatorpT;
-
 
 	fastjet::JetDefinition Jet_Definition(fastjet::cambridge_algorithm, fJetRadius*2.5,static_cast<fastjet::RecombinationScheme>(0), fastjet::Best);
   
@@ -603,7 +603,7 @@ Bool_t AliAnalysisTaskHFSubstructure::FillHistograms()
 	  fastjet::PseudoJet Daughter_Jet = Reclustered_Jet[0];
 	  fastjet::PseudoJet Parent_SubJet_1; 
 	  fastjet::PseudoJet Parent_SubJet_2;  
-    
+
 	  while(Daughter_Jet.has_parents(Parent_SubJet_1,Parent_SubJet_2)){
 	    if(Parent_SubJet_1.perp() < Parent_SubJet_2.perp()) std::swap(Parent_SubJet_1,Parent_SubJet_2);
 	    Splittings_LeadingSubJetpT.push_back(Parent_SubJet_1.perp());
@@ -645,7 +645,7 @@ Bool_t AliAnalysisTaskHFSubstructure::FillHistograms()
 	fShapesVar_Splittings_RadiatorpT.push_back(Splittings_RadiatorpT);
 	fShapesVar_Splittings_RadiatorpT_Truth.push_back(Splittings_RadiatorpT); 
 
-	
+
 	fTreeResponseMatrixAxis->Fill();
 	fTreeSplittings->Fill();
 
@@ -666,6 +666,7 @@ Bool_t AliAnalysisTaskHFSubstructure::FillHistograms()
     }
     // delete Track_Container;
     // if (fJetShapeType != kData) delete Particle_Container;
+  
   }
 
 

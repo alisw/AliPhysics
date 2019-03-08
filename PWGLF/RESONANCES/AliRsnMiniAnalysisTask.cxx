@@ -105,6 +105,7 @@ AliRsnMiniAnalysisTask::AliRsnMiniAnalysisTask() :
    fRsnTreeInFile(kFALSE),
    fComputeSpherocity(kFALSE),
    fSpherocity(-10),
+   fTrackFilter(0x0),
    fResonanceFinders(0)
 {
 //
@@ -166,6 +167,7 @@ AliRsnMiniAnalysisTask::AliRsnMiniAnalysisTask(const char *name, Bool_t useMC,Bo
    fRsnTreeInFile(saveRsnTreeInFile),
    fComputeSpherocity(kFALSE),
    fSpherocity(-10),
+   fTrackFilter(0x0),
    fResonanceFinders(0)
 {
 //
@@ -233,6 +235,7 @@ AliRsnMiniAnalysisTask::AliRsnMiniAnalysisTask(const AliRsnMiniAnalysisTask &cop
    fRsnTreeInFile(copy.fRsnTreeInFile),
    fComputeSpherocity(copy.fComputeSpherocity),
    fSpherocity(copy.fSpherocity),
+   fTrackFilter(copy.fTrackFilter),
    fResonanceFinders(copy.fResonanceFinders)
 {
 //
@@ -301,6 +304,7 @@ AliRsnMiniAnalysisTask &AliRsnMiniAnalysisTask::operator=(const AliRsnMiniAnalys
    fRsnTreeInFile = copy.fRsnTreeInFile;
    fComputeSpherocity = copy.fComputeSpherocity;
    fSpherocity = copy.fSpherocity;
+   fTrackFilter = copy.fTrackFilter;
    fResonanceFinders = copy.fResonanceFinders;
 
    return (*this);
@@ -372,6 +376,12 @@ void AliRsnMiniAnalysisTask::UserCreateOutputObjects()
    // initialize ESD quality cuts
    if (fESDtrackCuts) delete fESDtrackCuts;
    fESDtrackCuts = AliESDtrackCuts::GetStandardITSTPCTrackCuts2010();
+
+   //initialize quality trackcuts for spherocity
+   if(!fTrackFilter){	
+     fTrackFilter = new AliAnalysisFilter("trackFilter2015");
+     SetTrackCuts(fTrackFilter);
+   }
 
    // create list and set it as owner of its content (MANDATORY)
    if (fBigOutput) OpenFile(1);
@@ -1251,7 +1261,9 @@ Double_t AliRsnMiniAnalysisTask::ComputeSpherocity()
   for(Int_t i1 = 0; i1 < ntracksLoop; ++i1){
     AliVTrack   *track = (AliVTrack *)evTypeS->GetTrack(i1);
     AliAODTrack *aodt  = dynamic_cast<AliAODTrack *>(track);
+    AliESDtrack *esdt  = dynamic_cast<AliESDtrack *>(track);
     if (aodt) if (!aodt->TestFilterBit(5)) continue;
+    if (esdt) if (!fTrackFilter->IsSelected(esdt)) continue;
     if (track->Pt() < 0.15) continue;
     if(TMath::Abs(track->Eta()) > 0.8) continue;
     pt[i1] = track->Pt();
@@ -1271,7 +1283,9 @@ Double_t AliRsnMiniAnalysisTask::ComputeSpherocity()
 	for(Int_t i1 = 0; i1 < ntracksLoop; ++i1){
 	  AliVTrack   *track = (AliVTrack *)evTypeS->GetTrack(i1);
 	  AliAODTrack *aodt  = dynamic_cast<AliAODTrack *>(track);
+	  AliESDtrack *esdt  = dynamic_cast<AliESDtrack *>(track);
 	  if (aodt) if (!aodt->TestFilterBit(5)) continue;
+	  if (esdt) if (!fTrackFilter->IsSelected(esdt)) continue;
 	  if (track->Pt() < 0.15) continue;
 	  if(TMath::Abs(track->Eta()) > 0.8) continue;
 	  pt[i1] = track->Pt();
@@ -1876,4 +1890,26 @@ Int_t AliRsnMiniAnalysisTask::AddResonanceFinder(AliRsnMiniResonanceFinder* f)
    }
 
    return v;
+}
+
+void AliRsnMiniAnalysisTask::SetTrackCuts(AliAnalysisFilter* fTrackFilter){
+
+	AliESDtrackCuts* esdTrackCuts = new AliESDtrackCuts();
+	esdTrackCuts->SetMaxFractionSharedTPCClusters(0.4);//
+	esdTrackCuts->SetMinRatioCrossedRowsOverFindableClustersTPC(0.8);//
+	esdTrackCuts->SetCutGeoNcrNcl(3., 130., 1.5, 0.85, 0.7);//
+	esdTrackCuts->SetMaxChi2PerClusterTPC(4);//
+	esdTrackCuts->SetAcceptKinkDaughters(kFALSE);//
+	esdTrackCuts->SetRequireTPCRefit(kTRUE);//
+	esdTrackCuts->SetRequireITSRefit(kTRUE);//
+	esdTrackCuts->SetClusterRequirementITS(AliESDtrackCuts::kSPD,
+			AliESDtrackCuts::kAny);//
+	esdTrackCuts->SetMaxDCAToVertexXYPtDep("0.0182+0.0350/pt^1.01");//
+	esdTrackCuts->SetMaxChi2TPCConstrainedGlobal(36);//
+	esdTrackCuts->SetMaxDCAToVertexZ(2);//
+	esdTrackCuts->SetDCAToVertex2D(kFALSE);//
+	esdTrackCuts->SetRequireSigmaToVertex(kFALSE);//
+	esdTrackCuts->SetMaxChi2PerClusterITS(36);//
+	fTrackFilter->AddCuts(esdTrackCuts);
+
 }

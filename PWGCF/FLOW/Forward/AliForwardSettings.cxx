@@ -30,12 +30,15 @@ AliForwardSettings::AliForwardSettings() :
   esd(kFALSE),
   tracktype(kHybrid),
   nua_mode(kNormal),
+  ref_mode(kTPCref),
   useTPC{kTRUE},
   useSPD(kFALSE),
+  useITS(kFALSE),
   use_primaries(kFALSE),
   use_primaries_cen(kFALSE),
   use_primaries_fwd(kFALSE),
-  centrality_estimator('SPDTracklets'),//CL0, V0M
+  useEventcuts(kTRUE),
+  centrality_estimator("V0M"),//CL0, V0M
   etagap(kTRUE),
   makeFakeHoles(kFALSE),
   fnoClusters(70),

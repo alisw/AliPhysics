@@ -9,7 +9,7 @@ AliAnalysisTaskSE* AddTaskOtonOmega(	bool isMC = false,
                                      	bool GetConfigFromAlien = true,
                                     	TString cFileName = "ConfigOtonOmega.C", 
 					bool DCAPlots = false,
-					bool DeltaEtaDeltaPhiCut = true,
+					bool DeltaEtaDeltaPhiCut = false,
 					bool RunNumberQA = false
 )
 {
@@ -171,12 +171,15 @@ int SphericityRange = 0;  //22
   CascadeCuts->SetXiCharge(-1);
   AliFemtoDreamTrackCuts *XiPosCuts = AliFemtoDreamTrackCuts::Xiv0ProtonCuts(isMC, PileUpRej, false);
   AliFemtoDreamTrackCuts *XiNegCuts = AliFemtoDreamTrackCuts::Xiv0PionCuts(isMC, PileUpRej, false);
-  AliFemtoDreamTrackCuts *XiBachCuts = AliFemtoDreamTrackCuts::XiBachPionCuts(isMC, PileUpRej, false);
-  CascadeCuts->SetPDGCodeCasc(3312);
+  AliFemtoDreamTrackCuts *XiBachCuts = AliFemtoDreamTrackCuts::OmegaBachKaonCuts(isMC, PileUpRej, false);
+  //AliOtonOmegaTrackCuts *XiBachCuts = AliOtonOmegaTrackCuts::OmegaBachKaonCuts(isMC, PileUpRej, false);
+  //CascadeCuts->SetPDGCodeCasc(3312);
+  CascadeCuts->SetPDGCodeCasc(3334);
   CascadeCuts->SetPDGCodev0(3122);
   CascadeCuts->SetPDGCodePosDaug(2212);
   CascadeCuts->SetPDGCodeNegDaug(-211);
-  CascadeCuts->SetPDGCodeBach(-211);
+  //CascadeCuts->SetPDGCodeBach(-211);
+  CascadeCuts->SetPDGCodeBach(-321);
 
 
   AliOtonOmegaCascadeCuts *AntiCascadeCuts;
@@ -186,13 +189,16 @@ int SphericityRange = 0;  //22
   AntiXiNegCuts->SetCutCharge(-1);
   AliFemtoDreamTrackCuts *AntiXiPosCuts = AliFemtoDreamTrackCuts::Xiv0PionCuts(isMC, PileUpRej, false);
   AntiXiPosCuts->SetCutCharge(1);
-  AliFemtoDreamTrackCuts *AntiXiBachCuts = AliFemtoDreamTrackCuts::XiBachPionCuts(isMC, PileUpRej, false);
+  AliFemtoDreamTrackCuts *AntiXiBachCuts = AliFemtoDreamTrackCuts::OmegaBachKaonCuts(isMC, PileUpRej, false);
+  //AliOtonOmegaTrackCuts *AntiXiBachCuts = AliOtonOmegaTrackCuts::OmegaBachKaonCuts(isMC, PileUpRej, false);
   AntiXiBachCuts->SetCutCharge(1);
-  AntiCascadeCuts->SetPDGCodeCasc(-3312);
+  //AntiCascadeCuts->SetPDGCodeCasc(-3312);
+  AntiCascadeCuts->SetPDGCodeCasc(-3334);
   AntiCascadeCuts->SetPDGCodev0(-3122);
   AntiCascadeCuts->SetPDGCodePosDaug(211);
   AntiCascadeCuts->SetPDGCodeNegDaug(-2212);
-  AntiCascadeCuts->SetPDGCodeBach(-211);
+  //AntiCascadeCuts->SetPDGCodeBach(-211);
+  AntiCascadeCuts->SetPDGCodeBach(-321);
 
 
   AliOtonOmegaCascadeCuts *CascadeOmegaCuts;
@@ -201,6 +207,7 @@ int SphericityRange = 0;  //22
   AliFemtoDreamTrackCuts *OmegaNegCuts = AliFemtoDreamTrackCuts::Xiv0PionCuts(isMC,PileUpRej,false);
   AliFemtoDreamTrackCuts *OmegaPosCuts = AliFemtoDreamTrackCuts::Xiv0ProtonCuts(isMC,PileUpRej,false);
   AliFemtoDreamTrackCuts *OmegaBachCuts = AliFemtoDreamTrackCuts::OmegaBachKaonCuts(isMC,PileUpRej,false);
+  //AliOtonOmegaTrackCuts *OmegaBachCuts = AliOtonOmegaTrackCuts::OmegaBachKaonCuts(isMC,PileUpRej,false);
   CascadeOmegaCuts->SetPDGCodeCasc(3334);
   CascadeOmegaCuts->SetPDGCodev0(3122);
   CascadeOmegaCuts->SetPDGCodePosDaug(2212);
@@ -216,6 +223,7 @@ int SphericityRange = 0;  //22
   AliFemtoDreamTrackCuts *AntiOmegaPosCuts = AliFemtoDreamTrackCuts::Xiv0PionCuts(isMC,PileUpRej,false);
   AntiOmegaPosCuts->SetCutCharge(1);
   AliFemtoDreamTrackCuts *AntiOmegaBachCuts = AliFemtoDreamTrackCuts::OmegaBachKaonCuts(isMC,PileUpRej,false);
+  //AliOtonOmegaTrackCuts *AntiOmegaBachCuts = AliOtonOmegaTrackCuts::OmegaBachKaonCuts(isMC,PileUpRej,false);
   AntiOmegaBachCuts->SetCutCharge(1);
   AntiCascadeOmegaCuts->SetPDGCodeCasc(-3334);
   AntiCascadeOmegaCuts->SetPDGCodev0(-3122);

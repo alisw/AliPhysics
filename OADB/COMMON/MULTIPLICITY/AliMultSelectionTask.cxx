@@ -2589,13 +2589,17 @@ Bool_t AliMultSelectionTask::PassesTrackletVsCluster(AliVEvent* event)
 //______________________________________________________________________
 Bool_t AliMultSelectionTask::HasGoodVertex2016(AliVEvent* event)
 {
+    if(!event) return kFALSE;
     //Good Vertex according to criteria discussed on the 05th October 2016
     //Adaptation (virtual classes) of snippet from:
     // https://indico.cern.ch/event/489471/contributions/2320075/attachments/1348724/2034963/DPG_PF_20161005.pdf
     
     Bool_t lReturnValue = kTRUE; //optimisitc: good until proven otherwise
+    
     const AliVVertex* vtTrc = event->GetPrimaryVertex();
+    if(!vtTrc) return kFALSE;
     const AliVVertex* vtSPD = event->GetPrimaryVertexSPD();
+    if(!vtSPD) return kFALSE;
     if (vtTrc->GetNContributors()<2 || vtSPD->GetNContributors()<1) lReturnValue = kFALSE;// one of vertices is missing
     double covTrc[6],covSPD[6];
     vtTrc->GetCovarianceMatrix(covTrc);

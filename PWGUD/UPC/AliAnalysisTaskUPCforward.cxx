@@ -47,6 +47,7 @@
 #include "TClonesArray.h"
 #include "TDatabasePDG.h"
 #include "TLorentzVector.h"
+#include "TVector3.h"
 #include "TParticle.h"
 #include "TObjString.h"
 #include "TList.h"
@@ -59,7 +60,7 @@
 #include "AliAODEvent.h"
 #include "AliAODInputHandler.h"
 #include "AliMuonTrackCuts.h"
-#include "AliAODVertex.h"
+#include "AliAODVertex.h"         // My addition, to use Eugeny Krishen's format
 
 
 // my headers
@@ -74,146 +75,160 @@ using namespace std;            // std namespace: so you can do things like 'cou
 ClassImp(AliAnalysisTaskUPCforward) // classimp: necessary for root
 
 //_____________________________________________________________________________
-AliAnalysisTaskUPCforward::AliAnalysisTaskUPCforward() : AliAnalysisTaskSE(),
-                                                         fAOD(0),
-                                                         fOutputList(0),
-                                                         fNumberMuonsH(0),
-                                                         fCounterH(0),
-                                                         fEtaMuonH(0),
-                                                         fRAbsMuonH(0),
-                                                         fInvariantMassDistributionH(0),
-                                                         fInvariantMassDistributionAtDcaH(0),
-                                                         fEntriesAgainstRunNumberH(0),
-                                                         fEntriesAgainstRunNumberProperlyH(0),
-                                                         fInvariantMassDistributionCoherentH(0),
-                                                         fInvariantMassDistributionIncoherentH(0),
-                                                         fDimuonPtDistributionH(0),
-                                                         fZNCEnergyAgainstEntriesH(0),
-                                                         fZNAEnergyAgainstEntriesH(0),
-                                                         fZNCTimeAgainstEntriesH(0),
-                                                         fInvariantMassDistributionNoNeutronsH(0),
-                                                         fInvariantMassDistributionOneNeutronH(0),
-                                                         fInvariantMassDistributionAtLeastOneNeutronH(0),
-                                                         fInvariantMassDistributionCoherentNoNeutronsH(0),
-                                                         fInvariantMassDistributionCoherentOneNeutronH(0),
-                                                         fInvariantMassDistributionCoherentAtLeastOneNeutronH(0),
-                                                         fInvariantMassDistributionIncoherentNoNeutronsH(0),
-                                                         fInvariantMassDistributionIncoherentOneNeutronH(0),
-                                                         fInvariantMassDistributionIncoherentAtLeastOneNeutronH(0),
-                                                         fDcaAgainstInvariantMassH(0),
-                                                         fInvariantMassDistributionExtendedH(0),
-                                                         fInvariantMassDistributionCoherentExtendedH(0),
-                                                         fInvariantMassDistributionIncoherentExtendedH(0),
-                                                         fMuonTrackCuts(0x0),
-                                                         fRunNum(0),
-                                                         fTracklets(0),
-                                                         fL0inputs(0),
-                                                         fL1inputs(0),
-                                                         fZem1Energy(0),
-                                                         fZem2Energy(0),
-                                                         fZNCEnergy(0),
-                                                         fZNAEnergy(0),
-                                                         fZPCEnergy(0),
-                                                         fZPAEnergy(0),
-                                                         fZNATime(0),
-                                                         fZNCTime(0),
-                                                         fV0ADecision(-10),
-                                                         fV0CDecision(-10),
-                                                         fADADecision(-10),
-                                                         fADCDecision(-10),
-                                                         fIR1Map(0),
-                                                         fIR2Map(0),
-                                                         fZNATDC{0, 0, 0, 0},
-                                                         fZNCTDC{0, 0, 0, 0},
-                                                         fZPATDC{0, 0, 0, 0},
-                                                         fZPCTDC{0, 0, 0, 0},
-                                                         fV0Hits{ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-                                                                  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-                                                                  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-                                                                  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, },
-                                                         fV0TotalNCells(0),
-                                                         fVectorGoodRunNumbers(0),
-                                                         fInvariantMassDistributionCoherentZNCzeroZNAzeroH(0),
-                                                         fInvariantMassDistributionCoherentZNCzeroZNAanyH(0),
-                                                         fInvariantMassDistributionCoherentZNCanyZNAzeroH(0),
-                                                         fInvariantMassDistributionCoherentZNCanyZNAanyH(0),
-                                                         fInvariantMassDistributionIncoherentZNCzeroZNAzeroH(0),
-                                                         fInvariantMassDistributionIncoherentZNCzeroZNAanyH(0),
-                                                         fInvariantMassDistributionIncoherentZNCanyZNAzeroH(0),
-                                                         fInvariantMassDistributionIncoherentZNCanyZNAanyH(0)
+AliAnalysisTaskUPCforward::AliAnalysisTaskUPCforward()
+    : AliAnalysisTaskSE(),
+      fAOD(0),
+      fOutputList(0),
+      fNumberMuonsH(0),
+      fCounterH(0),
+      fEtaMuonH(0),
+      fRAbsMuonH(0),
+      fInvariantMassDistributionH(0),
+      fInvariantMassDistributionAtDcaH(0),
+      fEntriesAgainstRunNumberH(0),
+      fEntriesAgainstRunNumberProperlyH(0),
+      fInvariantMassDistributionCoherentH(0),
+      fInvariantMassDistributionIncoherentH(0),
+      fDimuonPtDistributionH(0),
+      fZNCEnergyAgainstEntriesH(0),
+      fZNAEnergyAgainstEntriesH(0),
+      fZNCEnergyCalibratedH(0),
+      fZNAEnergyCalibratedH(0),
+      fZNCEnergyUncalibratedH(0),
+      fZNAEnergyUncalibratedH(0),
+      fZNCTimeAgainstEntriesH(0),
+      fInvariantMassDistributionNoNeutronsH(0),
+      fInvariantMassDistributionOneNeutronH(0),
+      fInvariantMassDistributionAtLeastOneNeutronH(0),
+      fInvariantMassDistributionCoherentNoNeutronsH(0),
+      fInvariantMassDistributionCoherentOneNeutronH(0),
+      fInvariantMassDistributionCoherentAtLeastOneNeutronH(0),
+      fInvariantMassDistributionIncoherentNoNeutronsH(0),
+      fInvariantMassDistributionIncoherentOneNeutronH(0),
+      fInvariantMassDistributionIncoherentAtLeastOneNeutronH(0),
+      fDcaAgainstInvariantMassH(0),
+      fInvariantMassDistributionExtendedH(0),
+      fInvariantMassDistributionCoherentExtendedH(0),
+      fInvariantMassDistributionIncoherentExtendedH(0),
+      fMuonTrackCuts(0x0),
+      fRunNum(0),
+      fTracklets(0),
+      fL0inputs(0),
+      fL1inputs(0),
+      fZem1Energy(0),
+      fZem2Energy(0),
+      fZNCEnergy(0),
+      fZNAEnergy(0),
+      fZPCEnergy(0),
+      fZPAEnergy(0),
+      fZNATime(0),
+      fZNCTime(0),
+      fV0ADecision(-10),
+      fV0CDecision(-10),
+      fADADecision(-10),
+      fADCDecision(-10),
+      fIR1Map(0),
+      fIR2Map(0),
+      fZNATDC{0, 0, 0, 0},
+      fZNCTDC{0, 0, 0, 0},
+      fZPATDC{0, 0, 0, 0},
+      fZPCTDC{0, 0, 0, 0},
+      fV0Hits{ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+               0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+               0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+               0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 },
+      fV0TotalNCells(0),
+      fVectorGoodRunNumbers(0),
+      fInvariantMassDistributionCoherentZNCzeroZNAzeroH(0),
+      fInvariantMassDistributionCoherentZNCzeroZNAanyH(0),
+      fInvariantMassDistributionCoherentZNCanyZNAzeroH(0),
+      fInvariantMassDistributionCoherentZNCanyZNAanyH(0),
+      fInvariantMassDistributionIncoherentZNCzeroZNAzeroH(0),
+      fInvariantMassDistributionIncoherentZNCzeroZNAanyH(0),
+      fInvariantMassDistributionIncoherentZNCanyZNAzeroH(0),
+      fInvariantMassDistributionIncoherentZNCanyZNAanyH(0),
+      fAngularDistribOfPositiveMuonRestFrameJPsiH(0),
+      fAngularDistribOfNegativeMuonRestFrameJPsiH(0)
 {
     // default constructor, don't allocate memory here!
     // this is used by root for IO purposes, it needs to remain empty
 }
 
 //_____________________________________________________________________________
-AliAnalysisTaskUPCforward::AliAnalysisTaskUPCforward(const char* name) : AliAnalysisTaskSE(name),
-                                                                         fAOD(0),
-                                                                         fOutputList(0),
-                                                                         fNumberMuonsH(0),
-                                                                         fCounterH(0),
-                                                                         fEtaMuonH(0),
-                                                                         fRAbsMuonH(0),
-                                                                         fInvariantMassDistributionH(0),
-                                                                         fInvariantMassDistributionAtDcaH(0),
-                                                                         fEntriesAgainstRunNumberH(0),
-                                                                         fEntriesAgainstRunNumberProperlyH(0),
-                                                                         fInvariantMassDistributionCoherentH(0),
-                                                                         fInvariantMassDistributionIncoherentH(0),
-                                                                         fDimuonPtDistributionH(0),
-                                                                         fZNCEnergyAgainstEntriesH(0),
-                                                                         fZNAEnergyAgainstEntriesH(0),
-                                                                         fZNCTimeAgainstEntriesH(0),
-                                                                         fInvariantMassDistributionNoNeutronsH(0),
-                                                                         fInvariantMassDistributionOneNeutronH(0),
-                                                                         fInvariantMassDistributionAtLeastOneNeutronH(0),
-                                                                         fInvariantMassDistributionCoherentNoNeutronsH(0),
-                                                                         fInvariantMassDistributionCoherentOneNeutronH(0),
-                                                                         fInvariantMassDistributionCoherentAtLeastOneNeutronH(0),
-                                                                         fInvariantMassDistributionIncoherentNoNeutronsH(0),
-                                                                         fInvariantMassDistributionIncoherentOneNeutronH(0),
-                                                                         fInvariantMassDistributionIncoherentAtLeastOneNeutronH(0),
-                                                                         fDcaAgainstInvariantMassH(0),
-                                                                         fInvariantMassDistributionExtendedH(0),
-                                                                         fInvariantMassDistributionCoherentExtendedH(0),
-                                                                         fInvariantMassDistributionIncoherentExtendedH(0),
-                                                                         fMuonTrackCuts(0x0),
-                                                                         fRunNum(0),
-                                                                         fTracklets(0),
-                                                                         fL0inputs(0),
-                                                                         fL1inputs(0),
-                                                                         fZem1Energy(0),
-                                                                         fZem2Energy(0),
-                                                                         fZNCEnergy(0),
-                                                                         fZNAEnergy(0),
-                                                                         fZPCEnergy(0),
-                                                                         fZPAEnergy(0),
-                                                                         fZNATime(0),
-                                                                         fZNCTime(0),
-                                                                         fV0ADecision(-10),
-                                                                         fV0CDecision(-10),
-                                                                         fADADecision(-10),
-                                                                         fADCDecision(-10),
-                                                                         fIR1Map(0),
-                                                                         fIR2Map(0),
-                                                                         fZNATDC{0, 0, 0, 0},
-                                                                         fZNCTDC{0, 0, 0, 0},
-                                                                         fZPATDC{0, 0, 0, 0},
-                                                                         fZPCTDC{0, 0, 0, 0},
-                                                                         fV0Hits{ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-                                                                                  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-                                                                                  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-                                                                                  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, },
-                                                                         fV0TotalNCells(0),
-                                                                         fVectorGoodRunNumbers(0),
-                                                                         fInvariantMassDistributionCoherentZNCzeroZNAzeroH(0),
-                                                                         fInvariantMassDistributionCoherentZNCzeroZNAanyH(0),
-                                                                         fInvariantMassDistributionCoherentZNCanyZNAzeroH(0),
-                                                                         fInvariantMassDistributionCoherentZNCanyZNAanyH(0),
-                                                                         fInvariantMassDistributionIncoherentZNCzeroZNAzeroH(0),
-                                                                         fInvariantMassDistributionIncoherentZNCzeroZNAanyH(0),
-                                                                         fInvariantMassDistributionIncoherentZNCanyZNAzeroH(0),
-                                                                         fInvariantMassDistributionIncoherentZNCanyZNAanyH(0)
+AliAnalysisTaskUPCforward::AliAnalysisTaskUPCforward(const char* name)
+    : AliAnalysisTaskSE(name),
+      fAOD(0),
+      fOutputList(0),
+      fNumberMuonsH(0),
+      fCounterH(0),
+      fEtaMuonH(0),
+      fRAbsMuonH(0),
+      fInvariantMassDistributionH(0),
+      fInvariantMassDistributionAtDcaH(0),
+      fEntriesAgainstRunNumberH(0),
+      fEntriesAgainstRunNumberProperlyH(0),
+      fInvariantMassDistributionCoherentH(0),
+      fInvariantMassDistributionIncoherentH(0),
+      fDimuonPtDistributionH(0),
+      fZNCEnergyAgainstEntriesH(0),
+      fZNAEnergyAgainstEntriesH(0),
+      fZNCEnergyCalibratedH(0),
+      fZNAEnergyCalibratedH(0),
+      fZNCEnergyUncalibratedH(0),
+      fZNAEnergyUncalibratedH(0),
+      fZNCTimeAgainstEntriesH(0),
+      fInvariantMassDistributionNoNeutronsH(0),
+      fInvariantMassDistributionOneNeutronH(0),
+      fInvariantMassDistributionAtLeastOneNeutronH(0),
+      fInvariantMassDistributionCoherentNoNeutronsH(0),
+      fInvariantMassDistributionCoherentOneNeutronH(0),
+      fInvariantMassDistributionCoherentAtLeastOneNeutronH(0),
+      fInvariantMassDistributionIncoherentNoNeutronsH(0),
+      fInvariantMassDistributionIncoherentOneNeutronH(0),
+      fInvariantMassDistributionIncoherentAtLeastOneNeutronH(0),
+      fDcaAgainstInvariantMassH(0),
+      fInvariantMassDistributionExtendedH(0),
+      fInvariantMassDistributionCoherentExtendedH(0),
+      fInvariantMassDistributionIncoherentExtendedH(0),
+      fMuonTrackCuts(0x0),
+      fRunNum(0),
+      fTracklets(0),
+      fL0inputs(0),
+      fL1inputs(0),
+      fZem1Energy(0),
+      fZem2Energy(0),
+      fZNCEnergy(0),
+      fZNAEnergy(0),
+      fZPCEnergy(0),
+      fZPAEnergy(0),
+      fZNATime(0),
+      fZNCTime(0),
+      fV0ADecision(-10),
+      fV0CDecision(-10),
+      fADADecision(-10),
+      fADCDecision(-10),
+      fIR1Map(0),
+      fIR2Map(0),
+      fZNATDC{0, 0, 0, 0},
+      fZNCTDC{0, 0, 0, 0},
+      fZPATDC{0, 0, 0, 0},
+      fZPCTDC{0, 0, 0, 0},
+      fV0Hits{ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+               0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+               0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+               0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 },
+      fV0TotalNCells(0),
+      fVectorGoodRunNumbers(0),
+      fInvariantMassDistributionCoherentZNCzeroZNAzeroH(0),
+      fInvariantMassDistributionCoherentZNCzeroZNAanyH(0),
+      fInvariantMassDistributionCoherentZNCanyZNAzeroH(0),
+      fInvariantMassDistributionCoherentZNCanyZNAanyH(0),
+      fInvariantMassDistributionIncoherentZNCzeroZNAzeroH(0),
+      fInvariantMassDistributionIncoherentZNCzeroZNAanyH(0),
+      fInvariantMassDistributionIncoherentZNCanyZNAzeroH(0),
+      fInvariantMassDistributionIncoherentZNCanyZNAanyH(0),
+      fAngularDistribOfPositiveMuonRestFrameJPsiH(0),
+      fAngularDistribOfNegativeMuonRestFrameJPsiH(0)
 {
     FillGoodRunVector(fVectorGoodRunNumbers);
 
@@ -378,6 +393,19 @@ void AliAnalysisTaskUPCforward::UserCreateOutputObjects()
   fZNAEnergyAgainstEntriesH = new TH1F("fZNAEnergyAgainstEntriesH", "fZNAEnergyAgainstEntriesH", 1000, -500, 2000);
   fOutputList->Add(fZNAEnergyAgainstEntriesH);
 
+  fZNCEnergyCalibratedH = new TH1F("fZNCEnergyCalibratedH", "fZNCEnergyCalibratedH", 1000, -500, 2000);
+  fOutputList->Add(fZNCEnergyCalibratedH);
+
+  fZNAEnergyCalibratedH = new TH1F("fZNAEnergyCalibratedH", "fZNAEnergyCalibratedH", 1000, -500, 2000);
+  fOutputList->Add(fZNAEnergyCalibratedH);
+
+  fZNCEnergyUncalibratedH = new TH1F("fZNCEnergyUncalibratedH", "fZNCEnergyUncalibratedH", 1000, -500, 2000);
+  fOutputList->Add(fZNCEnergyUncalibratedH);
+
+  fZNAEnergyUncalibratedH = new TH1F("fZNAEnergyUncalibratedH", "fZNAEnergyUncalibratedH", 1000, -500, 2000);
+  fOutputList->Add(fZNAEnergyUncalibratedH);
+
+
   fZNCTimeAgainstEntriesH = new TH1F("fZNCTimeAgainstEntriesH", "fZNCTimeAgainstEntriesH", 6000, -1500, 1500);
   fOutputList->Add(fZNCTimeAgainstEntriesH);
 
@@ -450,6 +478,17 @@ void AliAnalysisTaskUPCforward::UserCreateOutputObjects()
 
   fInvariantMassDistributionIncoherentZNCanyZNAanyH = new TH1F("fInvariantMassDistributionIncoherentZNCanyZNAanyH", "fInvariantMassDistributionIncoherentZNCanyZNAanyH", 2000, 0, 20);
   fOutputList->Add(fInvariantMassDistributionIncoherentZNCanyZNAanyH);
+
+
+  /* - Here starts the list of histograms needed for the analysis of the J/Psi's
+     - polarization.
+     -
+   */
+  fAngularDistribOfPositiveMuonRestFrameJPsiH = new TH1F("fAngularDistribOfPositiveMuonRestFrameJPsiH", "fAngularDistribOfPositiveMuonRestFrameJPsiH", 1000, -1., 1.);
+  fOutputList->Add(fAngularDistribOfPositiveMuonRestFrameJPsiH);
+
+  fAngularDistribOfNegativeMuonRestFrameJPsiH = new TH1F("fAngularDistribOfNegativeMuonRestFrameJPsiH", "fAngularDistribOfNegativeMuonRestFrameJPsiH", 1000, -1., 1.);
+  fOutputList->Add(fAngularDistribOfNegativeMuonRestFrameJPsiH);
 
 
   //_______________________________
@@ -593,6 +632,23 @@ void AliAnalysisTaskUPCforward::UserExec(Option_t *)
   for (Int_t i=0;i<4;i++) fZNCTDC[i] = dataZDC->GetZNCTDCm(i);
   for (Int_t i=0;i<4;i++) fZPATDC[i] = dataZDC->GetZPATDCm(i);
   for (Int_t i=0;i<4;i++) fZPCTDC[i] = dataZDC->GetZPCTDCm(i);
+
+  /* - These lines are the calibration for the ZDC as provided by Evgeny Kryshen.
+     -
+   */
+  Bool_t calibrated = 0;
+  // if ( fRunNum <  295726 ) calibrated = 1;
+  // if ( fRunNum == 296509 ) calibrated = 1;
+  // if ( fRunNum >  296689 ) calibrated = 1;
+  // if ( fRunNum >  296695 ) calibrated = 0;
+  // if ( fRunNum == 297219 ) calibrated = 1;
+  // if ( fRunNum == 297221 ) calibrated = 1;
+  // if ( fRunNum == 297415 ) calibrated = 1;
+  //
+  // if ( !calibrated ) {
+  //   fZNAEnergy *= (2500./190.);
+  //   fZNCEnergy *= (2500./190.);
+  // }
 
   /* - V0: we try to find the V0 object data in the nano-AOD. If we cannot,
      - we return, because there would be no way to actually select the events
@@ -843,6 +899,7 @@ void AliAnalysisTaskUPCforward::UserExec(Option_t *)
    */
   TLorentzVector muons[2];
   TLorentzVector possibleJPsi;
+  Double_t       chargeOfMuons[2];
   for(int indexMuon = 0; indexMuon < 2; indexMuon++) {
         muons[indexMuon].SetPtEtaPhiM(   track[indexMuon]->Pt(),
                                          track[indexMuon]->Eta(),
@@ -850,6 +907,7 @@ void AliAnalysisTaskUPCforward::UserExec(Option_t *)
                                          TDatabasePDG::Instance()->GetParticle(13)->Mass()
                                        );
         possibleJPsi += muons[indexMuon];
+        chargeOfMuons[indexMuon] = track[indexMuon]->Charge();
   }
   fInvariantMassDistributionH->Fill(possibleJPsi.Mag());
   fInvariantMassDistributionExtendedH->Fill(possibleJPsi.Mag());
@@ -964,6 +1022,10 @@ void AliAnalysisTaskUPCforward::UserExec(Option_t *)
           /* At any levels, this means |fZNCTime| < 5. */
           fZNCEnergyAgainstEntriesH->Fill(fZNCEnergy);
           fZNAEnergyAgainstEntriesH->Fill(fZNAEnergy);
+          if ( calibrated == 0 ) fZNAEnergyUncalibratedH->Fill(fZNAEnergy);
+          if ( calibrated == 1 ) fZNAEnergyCalibratedH  ->Fill(fZNAEnergy);
+          if ( calibrated == 0 ) fZNCEnergyUncalibratedH->Fill(fZNCEnergy);
+          if ( calibrated == 1 ) fZNCEnergyCalibratedH  ->Fill(fZNCEnergy);
 
           /* - Now this offers the oppurtunity to do differential mass studies.
              - This can be seen here. When we try to do everything while cutting
@@ -1048,6 +1110,41 @@ void AliAnalysisTaskUPCforward::UserExec(Option_t *)
           }
     }
   }
+
+
+  /* - Filling the J/Psi's polarization plots.
+     -
+     - Now we are ordering the muons. The first muon will always be positive.
+     - This is useful for the histograms...
+   */
+  TLorentzVector muonsCopy[2];
+  TLorentzVector possibleJPsiCopy;
+  if( chargeOfMuons[0] > 0 ){
+    muonsCopy[0]     = muons[0];
+    muonsCopy[1]     = muons[1];
+  } else if( chargeOfMuons[0] < 0 ){
+    muonsCopy[0]     = muons[1];
+    muonsCopy[1]     = muons[0];
+  }
+  possibleJPsiCopy = possibleJPsi;
+  for( Int_t iBoosting = 0; iBoosting < 2; iBoosting++ ) {
+    // TLorentzVector boostBack = -(possibleJPsiCopy).BoostVector();
+    /* - This snippet has beem taken from the website:
+       - http://personalpages.to.infn.it/~puccio/htmldoc/src/AliAODDimuon.cxx.html
+       -
+     */
+    TVector3 beta=(-1./possibleJPsiCopy.E())*possibleJPsiCopy.Vect();
+    muonsCopy[iBoosting].Boost( beta );
+  }
+  Double_t cosThetaMuonsRestFrame[2];
+  for( Int_t iAngle = 0; iAngle < 2; iAngle++ ) {
+    TVector3 muonsCopyVector        = muonsCopy[iAngle].Vect();
+    TVector3 possibleJPsiCopyVector = possibleJPsiCopy.Vect();
+    Double_t dotProductMuonJPsi     = muonsCopyVector.Dot(possibleJPsiCopyVector);
+    cosThetaMuonsRestFrame[iAngle]  = dotProductMuonJPsi/( muonsCopyVector.Mag() * possibleJPsiCopyVector.Mag() );
+  }
+  fAngularDistribOfPositiveMuonRestFrameJPsiH->Fill(cosThetaMuonsRestFrame[0]);
+  fAngularDistribOfNegativeMuonRestFrameJPsiH->Fill(cosThetaMuonsRestFrame[1]);
 
 
   // post the data

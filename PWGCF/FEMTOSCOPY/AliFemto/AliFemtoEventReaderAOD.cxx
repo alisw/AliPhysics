@@ -1233,13 +1233,10 @@ AliFemtoTrack *AliFemtoEventReaderAOD::CopyAODtoFemtoTrack(AliAODTrack *tAodTrac
   //  tFemtoTrack->SetCdd(covmat[0]);
   //  tFemtoTrack->SetCdz(covmat[1]);
   //  tFemtoTrack->SetCzz(covmat[2]);
-  tFemtoTrack->SetITSchi2(tAodTrack->Chi2perNDF());
-  tFemtoTrack->SetITSncls(tAodTrack->GetITSNcls());
-  tFemtoTrack->SetTPCchi2(tAodTrack->Chi2perNDF());
+
+  tFemtoTrack->SetTPCchi2(tAodTrack->GetTPCchi2());
   tFemtoTrack->SetTPCncls(tAodTrack->GetTPCNcls());
-  tFemtoTrack->SetTPCnclsF(tAodTrack->GetTPCNcls());
-  tFemtoTrack->SetTPCsignalN(1);
-  tFemtoTrack->SetTPCsignalS(1);
+  tFemtoTrack->SetTPCnclsF(tAodTrack->GetTPCNclsF());
   tFemtoTrack->SetTPCsignal(tAodTrack->GetTPCsignal());
   tFemtoTrack->SetTPCClusterMap(tAodTrack->GetTPCClusterMap());
   tFemtoTrack->SetTPCSharedMap(tAodTrack->GetTPCSharedMap());
@@ -1270,10 +1267,6 @@ AliFemtoTrack *AliFemtoEventReaderAOD::CopyAODtoFemtoTrack(AliAODTrack *tAodTrac
 
   int kink_indexes[3] = { 0, 0, 0 };
   tFemtoTrack->SetKinkIndexes(kink_indexes);
-
-  for (int ii = 0; ii < 6; ii++) {
-    tFemtoTrack->SetITSHitOnLayer(ii, tAodTrack->HasPointOnITSLayer(ii));
-  }
 
   //Corrections
 
@@ -2175,13 +2168,17 @@ void AliFemtoEventReaderAOD::CopyPIDtoFemtoTrack(AliAODTrack *tAodTrack, AliFemt
   tFemtoTrack->SetNSigmaTPCA(nsigmaTPCA);
   /****************************************/
 
-  tFemtoTrack->SetTPCchi2(tAodTrack->Chi2perNDF());
-  tFemtoTrack->SetTPCncls(tAodTrack->GetTPCNcls());
-  tFemtoTrack->SetTPCnclsF(tAodTrack->GetTPCNcls());
-
-  tFemtoTrack->SetTPCsignalN(1);
+  tFemtoTrack->SetTPCsignalN(tAodTrack->GetTPCsignalN());
   tFemtoTrack->SetTPCsignalS(1);
   tFemtoTrack->SetTPCsignal(tAodTrack->GetTPCsignal());
+
+  tFemtoTrack->SetITSchi2(tAodTrack->GetITSchi2());
+  tFemtoTrack->SetITSncls(tAodTrack->GetITSNcls());
+
+  for (int ii = 0; ii < 6; ii++) {
+    tFemtoTrack->SetITSHitOnLayer(ii, tAodTrack->HasPointOnITSLayer(ii));
+  }
+
 
   //////  TOF ////////////////////////////////////////////
 

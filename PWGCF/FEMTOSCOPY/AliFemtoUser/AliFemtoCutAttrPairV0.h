@@ -118,10 +118,21 @@ struct PairCutV0AvgSep {
 
   bool Pass(const AliFemtoV0 &trk1, const AliFemtoV0 &trk2)
     {
-      return min_avgsep_nn <= avg_separation_child(trk1, false, trk2, false)
-          && min_avgsep_np <= avg_separation_child(trk1, false, trk2, true)
-          && min_avgsep_pn <= avg_separation_child(trk1, true, trk2, false)
-          && min_avgsep_pp <= avg_separation_child(trk1, true, trk2, true);
+      double avgsep_nn = -1.0,
+             avgsep_np = -1.0,
+             avgsep_pn = -1.0,
+             avgsep_pp = -1.0;
+
+      AliFemtoPair::CalcAvgSepV0V0(*trk1, *trk2,
+                                   avgsep_nn,
+                                   avgsep_np,
+                                   avgsep_pn,
+                                   avgsep_pp);
+
+      return min_avgsep_nn <= avgsep_nn
+          && min_avgsep_np <= avgsep_np
+          && min_avgsep_pn <= avgsep_pn
+          && min_avgsep_pp <= avgsep_pp;
     }
 
   void FillConfiguration(AliFemtoConfigObject &cfg) const
@@ -137,35 +148,6 @@ struct PairCutV0AvgSep {
       return v.x() <= -9999.0
           || v.y() <= -9999.0
           || v.z() <= -9999.0;
-    }
-
-  static double
-  avg_separation_child(const AliFemtoV0& V1, bool pos_child_1,
-                       const AliFemtoV0& V2, bool pos_child_2)
-    {
-      int counter = 0;
-      double sep = 0.0;
-
-      for (int i=0; i < 8; i++) {
-
-        const AliFemtoThreeVector
-          p1 = pos_child_1
-             ? V1.NominalTpcPointPos(counter)
-             : V1.NominalTpcPointNeg(counter),
-
-          p2 = pos_child_2
-             ? V2.NominalTpcPointPos(counter)
-             : V2.NominalTpcPointNeg(counter);
-
-        if (is_unset_vector(p1) || is_unset_vector(p2)) {
-          continue;
-        }
-
-        sep += (p1 - p2).Mag();
-        ++counter;
-      }
-
-      return counter==0 ? 0.0 : sep / counter;
     }
 
   virtual ~PairCutV0AvgSep() {}

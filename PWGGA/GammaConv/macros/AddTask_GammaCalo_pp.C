@@ -1459,6 +1459,29 @@ void AddTask_GammaCalo_pp(
     cuts.AddCutCalo("0008e113","411790000f032230000","01631031000000d0"); // EG2
     cuts.AddCutCalo("0008d113","411790000f032230000","01631031000000d0"); // EG1
     cuts.AddCutCalo("0009b113","411790600f032230000","01631031000000d0"); // EJ1
+
+
+    // EDC 13 TeV 2016 & 2017 settings with MC fine tuning correction
+  } else if (trainConfig == 2020){ // EMCAL+DCAL clusters standard cuts, INT7, NL , std TM, tight timing
+    cuts.AddCutCalo("00010113","41179000a7032230000","01631031000000d0"); // INT7 No NL
+    cuts.AddCutCalo("00010113","41179110a7032230000","01631031000000d0"); // INT7 NL11
+    cuts.AddCutCalo("00010113","41179120a7032230000","01631031000000d0"); // INT7 NL12
+    cuts.AddCutCalo("00010113","41179210a7032230000","01631031000000d0"); // INT7 NL21
+    cuts.AddCutCalo("00010113","41179220a7032230000","01631031000000d0"); // INT7 NL22
+  } else if (trainConfig == 2021){ // EMCAL+DCAL clusters standard cuts, EG2, NL , std TM, tight timing
+    cuts.AddCutCalo("0008e113","41179000a7032230000","01631031000000d0"); // EG2  No NL
+    cuts.AddCutCalo("0008e113","41179110a7032230000","01631031000000d0"); // EG2  NL11
+    cuts.AddCutCalo("0008e113","41179120a7032230000","01631031000000d0"); // EG2  NL12
+    cuts.AddCutCalo("0008e113","41179210a7032230000","01631031000000d0"); // EG2  NL21
+    cuts.AddCutCalo("0008e113","41179220a7032230000","01631031000000d0"); // EG2  NL22
+  } else if (trainConfig == 2022){ // EMCAL+DCAL clusters standard cuts, EG1, NL , std TM, tight timing
+    cuts.AddCutCalo("0008d113","41179110a7032230000","01631031000000d0"); // EG1  No NL
+    cuts.AddCutCalo("0008d113","41179110a7032230000","01631031000000d0"); // EG1  NL11
+    cuts.AddCutCalo("0008d113","41179120a7032230000","01631031000000d0"); // EG1  NL12
+    cuts.AddCutCalo("0008d113","41179210a7032230000","01631031000000d0"); // EG1  NL21
+    cuts.AddCutCalo("0008d113","41179220a7032230000","01631031000000d0"); // EG1  NL22
+
+
   } else {
     Error(Form("GammaCalo_%i",trainConfig), "wrong trainConfig variable no cuts have been specified for the configuration");
     return;

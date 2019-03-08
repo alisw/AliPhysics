@@ -250,6 +250,7 @@ struct AliFemtoAnalysisPionPion::CutParams : public TNamed {
 
   Float_t pion_1_max_impact_xy,
           pion_1_max_impact_z,
+          pion_1_min_tpc_chi_ndof,
           pion_1_max_tpc_chi_ndof,
           pion_1_max_its_chi_ndof;
 

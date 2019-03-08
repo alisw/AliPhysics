@@ -231,6 +231,7 @@ AliSigma0PhotonMotherCuts &AliSigma0PhotonMotherCuts::operator=(
 AliSigma0PhotonMotherCuts *AliSigma0PhotonMotherCuts::DefaultCuts() {
   AliSigma0PhotonMotherCuts *photonMotherCuts = new AliSigma0PhotonMotherCuts();
   photonMotherCuts->SetPhotonMaxPt(2);
+  photonMotherCuts->SetArmenterosCut(0, 0.12, -1, -0.6);
   return photonMotherCuts;
 }
 
@@ -1185,10 +1186,10 @@ void AliSigma0PhotonMotherCuts::InitCutHistograms(TString appendix) {
                                50, 0, 10, 150, 1.15, 1.3);
     fHistArmenterosBefore =
         new TH2F("fHistArmenterosBefore", " ; #alpha; #it{q}_{T} (GeV/#it{c})",
-                 100, -1, 1, 100, 0, 0.5);
+                 250, -1, 1, 250, 0, 0.5);
     fHistArmenterosAfter =
         new TH2F("fHistArmenterosAfter", " ; #alpha; #it{q}_{T} (GeV/#it{c})",
-                 100, -1, 1, 100, 0, 0.5);
+                 250, -1, 1, 250, 0, 0.5);
     fHistEtaPhi = new TH2F("fHistEtaPhi", "; #eta; #phi", 100, -1, 1, 100,
                            -TMath::Pi(), TMath::Pi());
     fHistPtRapidity =

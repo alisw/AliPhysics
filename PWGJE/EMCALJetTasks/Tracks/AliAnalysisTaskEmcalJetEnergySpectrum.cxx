@@ -337,7 +337,7 @@ bool AliAnalysisTaskEmcalJetEnergySpectrum::IsSelectEmcalTriggers(const std::str
 }
 
 
-AliAnalysisTaskEmcalJetEnergySpectrum *AliAnalysisTaskEmcalJetEnergySpectrum::AddTaskJetEnergySpectrum(Bool_t isMC, AliJetContainer::EJetType_t jettype, double radius, const char *trigger, const char *suffix){
+AliAnalysisTaskEmcalJetEnergySpectrum *AliAnalysisTaskEmcalJetEnergySpectrum::AddTaskJetEnergySpectrum(Bool_t isMC, AliJetContainer::EJetType_t jettype, double radius, const char *namepartcont, const char *trigger, const char *suffix){
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
   if(!mgr) {
     std::cerr << "Analysis manager not initialized" << std::endl;
@@ -405,7 +405,9 @@ AliAnalysisTaskEmcalJetEnergySpectrum *AliAnalysisTaskEmcalJetEnergySpectrum::Ad
 
   if(isMC){
     // Create also particle and particle level jet container for outlier rejection
-    auto partcont = task->AddMCParticleContainer("mcparticles");
+    TString partcontname = namepartcont;
+    if(partcontname == "usedefault") partcontname = "mcparticles";
+    auto partcont = task->AddMCParticleContainer(partcontname.Data());
     partcont->SetMinPt(0.);
     
     auto pjcont = task->AddJetContainer(jettype, AliJetContainer::antikt_algorithm, AliJetContainer::E_scheme, radius, AliJetContainer::kTPCfid, partcont, nullptr);

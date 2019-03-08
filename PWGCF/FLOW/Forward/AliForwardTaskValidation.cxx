@@ -112,7 +112,9 @@ AliForwardTaskValidation::AliForwardTaskValidation(const char *name, bool mc)
   // Define output slot
   DefineOutput(1, TList::Class());
   DefineOutput(2, this->Class());
-
+  //fEventCuts.fMC = true;
+  //fEventCuts.SetupRun2PbPb();
+  //fEventCuts.SetManualMode();// = true;
   // Enable mulivertex pileup cuts
   fEventCuts.fPileUpCutMV = true;
 }
@@ -180,7 +182,7 @@ void AliForwardTaskValidation::CreateQAHistograms(TList* outlist) {
 					  0,
 					  this->fEventValidatorsMC.size());
 
-  if (!fSettings.esd){
+  if (fSettings.useEventcuts){
   TAxis *discardedEvtsAx = this->fQA_event_discard_flow->GetXaxis();
 
   for (UInt_t idx = 0; idx < this->fEventValidators.size(); idx++) {
@@ -281,7 +283,7 @@ void AliForwardTaskValidation::UserCreateOutputObjects() {
   this->fOutputList->Add(this->fOutliers);
 
   // Create QA histograms in Event selection
-  if (!fSettings.esd) fEventCuts.AddQAplotsToList(this->fOutputList);
+  if (fSettings.useEventcuts) fEventCuts.AddQAplotsToList(this->fOutputList);
   this->CreateQAHistograms(this->fOutputList);
 
   // FMD V0 QA histograms
@@ -350,7 +352,7 @@ void AliForwardTaskValidation::UserExec(Option_t *)
 
 
 
-  if (!fSettings.esd){
+  if (fSettings.useEventcuts){
   for (UInt_t idx = 0; idx < this->fEventValidators.size(); idx++) {
     switch (this->fEventValidators[idx]) {
     case EventValidation::kNoEventCut:

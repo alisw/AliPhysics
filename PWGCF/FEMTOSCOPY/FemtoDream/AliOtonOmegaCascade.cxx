@@ -195,12 +195,14 @@ void AliOtonOmegaCascade::SetCascade(AliESDEvent *evt, AliMCEvent *mcEvent,
   int idxNegFromV0Dghter = casc->GetNindex();
   int idxBachFromCascade = casc->GetBindex();
 
+  bool IsOmegaTrack = true;
   AliESDtrack *esdCascadePos = evt->GetTrack(idxPosFromV0Dghter);
-  fPosDaug->SetTrack(esdCascadePos,mcEvent,-1,false);
+  fPosDaug->SetTrack(esdCascadePos,mcEvent,-1,false,IsOmegaTrack);
   AliESDtrack *esdCascadeNeg = evt->GetTrack(idxNegFromV0Dghter);
-  fNegDaug->SetTrack(esdCascadeNeg,mcEvent,-1,false);
+  fNegDaug->SetTrack(esdCascadeNeg,mcEvent,-1,false,IsOmegaTrack);
   AliESDtrack *esdCascadeBach = evt->GetTrack(idxBachFromCascade);
-  fBach->SetTrack(esdCascadeBach,mcEvent,-1,false);
+  fBach->SetTrack(esdCascadeBach,mcEvent,-1,false,IsOmegaTrack);
+
   // Identification of the V0 within the esdCascade (via both daughter track indices)
   AliESDv0 * currentV0 = 0x0;
   int idxV0FromCascade = -1;
@@ -228,10 +230,14 @@ void AliOtonOmegaCascade::SetCascade(AliESDEvent *evt, AliMCEvent *mcEvent,
   //the bachelor momenta at the cascade vertex
   currentV0->GetPPxPyPz(posMom[0], posMom[1], posMom[2]);
   fPosDaug->SetMomentum(posMom[0], posMom[1], posMom[2]);
+  fPosDaug->SetPt(posMom[0]*posMom[0]+posMom[1]*posMom[1]);
   currentV0->GetNPxPyPz(negMom[0], negMom[1], negMom[2]);
   fNegDaug->SetMomentum(negMom[0], negMom[1], negMom[2]);
+  fNegDaug->SetPt(negMom[0]*negMom[0]+negMom[1]*negMom[1]);
   casc->GetBPxPyPz(bachMom[0], bachMom[1], bachMom[2]);
   fBach->SetMomentum(bachMom[0], bachMom[1], bachMom[2]);
+  fBach->SetPt(bachMom[0]*bachMom[0]+bachMom[1]*bachMom[1]);
+
 
   TVector3 xiMom = fPosDaug->GetMomentum();
   xiMom += fNegDaug->GetMomentum();

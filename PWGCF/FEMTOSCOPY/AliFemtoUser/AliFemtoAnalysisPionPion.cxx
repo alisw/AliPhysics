@@ -176,8 +176,9 @@ struct CutConfig_Pion {
 
     Float_t max_impact_xy = .20,
             max_impact_z = .15,
-            max_tpc_chi_ndof = 0.032,
-            max_its_chi_ndof = 0.032,
+            min_tpc_chi_ndof = 0.0,
+            max_tpc_chi_ndof = 2.0,
+            max_its_chi_ndof = 5.0,
             sigma = 3.0;
 
     Bool_t set_label = kTRUE,
@@ -355,7 +356,7 @@ AliFemtoAnalysisPionPion::CutParams::CutParams()
   , event_TriggerSelection(default_event.trigger_selection)
   , event_AcceptBadVertex(default_event.accept_bad_vertex)
   , event_AcceptOnlyPhysics(default_event.accept_bad_vertex)
-  , event_zdc_part(1.0)
+  , event_zdc_part(0.0)
 
     // Pion 1
   , pion_1_PtMin(default_pion.pt.first)
@@ -372,6 +373,7 @@ AliFemtoAnalysisPionPion::CutParams::CutParams()
 
   , pion_1_max_impact_xy(default_pion.max_impact_xy)
   , pion_1_max_impact_z(default_pion.max_impact_z)
+  , pion_1_min_tpc_chi_ndof(default_pion.min_tpc_chi_ndof)
   , pion_1_max_tpc_chi_ndof(default_pion.max_tpc_chi_ndof)
   , pion_1_max_its_chi_ndof(default_pion.max_its_chi_ndof)
 
@@ -456,6 +458,7 @@ AliFemtoAnalysisPionPion::BuildPionCut1(const CutParams &p) const
     cut->max_xy = p.pion_1_max_impact_xy;
     cut->max_z = p.pion_1_max_impact_z;
     cut->nsigma_pion = p.pion_1_sigma;
+    cut->rchi2_tpc_min = p.pion_1_min_tpc_chi_ndof;
     cut->rchi2_tpc_max = p.pion_1_max_tpc_chi_ndof;
     cut->rchi2_its_max = p.pion_1_max_its_chi_ndof;
     return cut;
