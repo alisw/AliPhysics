@@ -57,10 +57,13 @@ fDCAxyMax(0),
 fnSigmaTOFmax(0),
 fnSigmaTPCmax(0),
 fTRDntracklets(0),
-fMeanTPC(NULL),
-fWidthTPC(NULL),
-fMeanTOF(NULL),
-fWidthTOF(NULL)
+fpar0_mean_TPC(0),
+fpar1_mean_TPC(0),
+fpar0_sigma_TPC(0),
+fpar0_mean_TOF(0),
+fpar1_mean_TOF(0),
+fpar0_sigma_TOF(0),
+fpar1_sigma_TOF(0)
 {}
 //_________________________________________________________________________________________________________________________________________________________________________________________________
 AliAnalysisTaskTritonVsMultiplicity_PbPb::AliAnalysisTaskTritonVsMultiplicity_PbPb(const char *name):
@@ -93,11 +96,13 @@ fDCAxyMax(0),
 fnSigmaTOFmax(0),
 fnSigmaTPCmax(0),
 fTRDntracklets(0),
-fMeanTPC(NULL),
-fWidthTPC(NULL),
-fMeanTOF(NULL),
-fWidthTOF(NULL)
-
+fpar0_mean_TPC(0),
+fpar1_mean_TPC(0),
+fpar0_sigma_TPC(0),
+fpar0_mean_TOF(0),
+fpar1_mean_TOF(0),
+fpar0_sigma_TOF(0),
+fpar1_sigma_TOF(0)
 {
     fUtils = new AliAnalysisUtils();
     DefineInput(0, TChain::Class());
@@ -446,8 +451,8 @@ Double_t AliAnalysisTaskTritonVsMultiplicity_PbPb::Centered_nsigmaTPC (AliAODTra
    
     Double_t nsigmaTPC = fPIDResponse -> NumberOfSigmasTPC (track,AliPID::kTriton);
    
-    Double_t mean_fitted  = fMeanTPC  -> Eval(track->P());
-    Double_t sigma_fitted = fWidthTPC -> Eval(track->P());
+    Double_t mean_fitted  = fpar0_mean_TPC*exp(fpar1_mean_TPC*(track->P()));
+    Double_t sigma_fitted = fpar0_sigma_TPC*(track->P());
     
     nsigmaTPC = (nsigmaTPC - mean_fitted)/sigma_fitted;
    
@@ -458,14 +463,13 @@ Double_t AliAnalysisTaskTritonVsMultiplicity_PbPb::Centered_nsigmaTOF (AliAODTra
    
     Double_t nsigmaTOF = fPIDResponse -> NumberOfSigmasTOF (track,AliPID::kTriton);
    
-    Double_t mean_fitted  = fMeanTOF -> Eval(track->P());
-    Double_t sigma_fitted = fWidthTOF -> Eval(track->P());
+    Double_t mean_fitted  = fpar0_mean_TOF*exp(fpar1_mean_TOF*(track->P()));
+    Double_t sigma_fitted = fpar0_sigma_TOF*exp(fpar1_sigma_TOF*(track->P()));
     
     nsigmaTOF = (nsigmaTOF - mean_fitted)/sigma_fitted;
    
     return nsigmaTOF;
 }
-
 //_________________________________________________________________________________________________________________________________________________________________________________________________
 Bool_t AliAnalysisTaskTritonVsMultiplicity_PbPb::PassedTOFSelection (AliAODTrack *track)  {
     

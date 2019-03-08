@@ -7,7 +7,7 @@
 #endif
 
 //____________________________________________________________________________________
-AliAnalysisTask *AddTaskTritonVsMultiplicity_PbPb(unsigned long fTriggerMask, const char *filename, Double_t CentralityMin, Double_t CentralityMax, Double_t VertexZmin, Double_t VertexZmax, Int_t NumberOfVertexContributorsMin, const char *CentralityEstimator, Double_t PtMin, Double_t PtMax, Double_t EtaMax, Double_t YMax, Int_t NumberClustersITSMin, Int_t NumberClustersTPCMin, Int_t NumberCrossedRowsTPCMin, Double_t CrossedRowsFindableClsMin, Int_t NumberClustersTPCdEdxMin, Double_t ChiSquarePerNDFMax, const char *ITSrequirement, Double_t DCAzMax, Double_t DCAxyMax, Double_t nSigmaTOFmax, Double_t nSigmaTPCmax, Int_t TRDntracklets, TF1 *MeanTPC, TF1 *WidthTPC, TF1 *MeanTOF, TF1 *WidthTOF )  {
+AliAnalysisTask *AddTaskTritonVsMultiplicity_PbPb(unsigned long fTriggerMask, const char *filename, Double_t CentralityMin, Double_t CentralityMax, Double_t VertexZmin, Double_t VertexZmax, Int_t NumberOfVertexContributorsMin, const char *CentralityEstimator, Double_t PtMin, Double_t PtMax, Double_t EtaMax, Double_t YMax, Int_t NumberClustersITSMin, Int_t NumberClustersTPCMin, Int_t NumberCrossedRowsTPCMin, Double_t CrossedRowsFindableClsMin, Int_t NumberClustersTPCdEdxMin, Double_t ChiSquarePerNDFMax, const char *ITSrequirement, Double_t DCAzMax, Double_t DCAxyMax, Double_t nSigmaTOFmax, Double_t nSigmaTPCmax, Int_t TRDntracklets, Double_t par0_mean_TPC, Double_t par1_mean_TPC, Double_t par0_sigma_TPC, Double_t par0_mean_TOF, Double_t par1_mean_TOF, Double_t par0_sigma_TOF, Double_t par1_sigma_TOF )  {
 
   //Get the current analysis manager
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
@@ -32,7 +32,7 @@ AliAnalysisTask *AddTaskTritonVsMultiplicity_PbPb(unsigned long fTriggerMask, co
     task -> SetCentralityRange (CentralityMin,CentralityMax);
     task -> SetEventCuts       (VertexZmin,VertexZmax,NumberOfVertexContributorsMin,CentralityEstimator);
     task -> SetTrackCuts (PtMin, PtMax, EtaMax, YMax, NumberClustersITSMin,NumberClustersTPCMin, NumberCrossedRowsTPCMin,CrossedRowsFindableClsMin, NumberClustersTPCdEdxMin, ChiSquarePerNDFMax, ITSrequirement,DCAzMax, DCAxyMax, nSigmaTOFmax, nSigmaTPCmax, TRDntracklets);
-    task -> RecalibrationTPCandTOF (fMeanTPC_central, fWidthTPC_central, fMeanTOF_central, fWidthTOF_central );
+    task -> RecalibrationTPCandTOF (par0_mean_TPC, par1_mean_TPC, par0_sigma_TPC, par0_mean_TOF, par1_mean_TOF, par0_sigma_TOF, par1_sigma_TOF );
     //task -> RecalibrationTPCandTOF (fMeanTPC_semicentral, fWidthTPC_semicentral, fMeanTOF_semicentral, fWidthTOF_semicentral );
     
        
