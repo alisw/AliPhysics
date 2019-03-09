@@ -106,7 +106,7 @@ public:
     void SetFlukaFactor(TGraph* GraphOmega, TGraph* GraphXi, TGraph* K0Star, TGraph* Phi);
     void localtoglobal(double alpha, double *local, double *global);
     Bool_t FillTrackHistograms(AliVTrack * track, double * dca , double *cov,double weight);
-    void EventwiseCleanup();
+   // void EventwiseCleanup();
     AliVParticle * GetVParticleMother(AliVParticle *part);
     Bool_t IsPhysicalPrimary(AliVParticle *part);
     void SetDefaultAnalysisCuts();
@@ -137,6 +137,11 @@ public:
     void setFRunSmearing(Bool_t value){fRunSmearing = value;}
     void setFDoMCCorrection(Bool_t value){fDoMCCorrection=value;}
     void setFDoUnderlyingEventSub(Bool_t value){fDoUnderlyingEventSub=value;}
+    void setfDoFlavourMatching(Bool_t value){fDoFlavourMatching=value;}
+    void setfDaughterRadius(Double_t value){fDaughtersRadius=value;}
+    void setfNoJetConstituents(Int_t value){fNoJetConstituents=value;}
+
+
 
     Bool_t IsTrackAcceptedJP(AliVTrack *track, Int_t n);
     bool IsFromElectron(AliAODTrack *track);
@@ -212,7 +217,7 @@ private:
     Bool_t IsPromptBMeson(AliVParticle * part );
     Double_t GetValImpactParameter(TTypeImpPar type, Double_t *impar, Double_t *cov);
     static Bool_t mysort(const SJetIpPati& i, const SJetIpPati& j);
-    Int_t IsMCJetPartonFast(const AliEmcalJet *jet, Double_t radius,Bool_t &is_udg);
+    Int_t IsMCJetPartonFast(const AliEmcalJet *jet,  Double_t radius,Bool_t &is_udg);
     Int_t GetRunNr(AliVEvent * event){return event->GetRunNumber();}
     Double_t GetPtCorrected(const AliEmcalJet* jet);
     Double_t GetPtCorrectedMC(const AliEmcalJet *jet);
@@ -233,6 +238,7 @@ private:
     Bool_t   fUsePIDJetProb;//
     Bool_t   fDoMCCorrection;//  Bool to turn on/off MC correction. Take care: some histograms may still be influenced by weighting.
     Bool_t   fDoUnderlyingEventSub;//
+    Bool_t   fDoFlavourMatching;//
 
     Bool_t   fFillCorrelations;//
     Double_t fParam_Smear_Sigma;//
@@ -263,20 +269,21 @@ private:
     AliVertexerTracks *fVertexer;//!
     Bool_t fMcEvtSampled;//
     Double_t fBackgroundFactorLinus[21][498]; //[21][498]FineBinned correction factors up 0.1-25 GeV/c first value below last above 0.05 binwidth
-    std::vector <Double_t > fEtaSEvt;//!
-    std::vector <Double_t > fPhiSEvt;//!
-    std::vector <Double_t > fEtaBEvt;//!
-    std::vector <Double_t > fPhiBEvt;//!
-    std::vector <Double_t > fEtaCEvt;//!
-    std::vector <Double_t > fPhiCEvt;//!
-    std::vector <Double_t > fEtaUdsgEvt;//!
-    std::vector <Double_t > fPhiUdsgEvt;//!
+    std::vector <Double_t > fPUdsgJet;//!
+    std::vector <Double_t > fPSJet;//!
+    std::vector <Double_t > fPCJet;//!
+    std::vector <Double_t > fPBJet;//!
+    std::vector <Double_t > fJetCont;//!
+    std::map<int, int> daughtermother;//!
+
     TGraph fResolutionFunction[200];//[200]<-
     Double_t fAnalysisCuts[15]; ///Additional (to ESD track cut or AOD filter bits) analysis cuts.
     AliPIDCombined *fCombined ;//!
     Float_t fXsectionWeightingFactor;//
     Int_t   fProductionNumberPtHard;//
     Double_t fJetRadius;//
+    Double_t fDaughtersRadius;//
+    Int_t fNoJetConstituents;//
     Double_t fMCglobalDCAxyShift;//
     Double_t fMCglobalDCASmear;//
     Double_t fVertexRecalcMinPt;//
@@ -346,7 +353,7 @@ private:
 
 
 
-    ClassDef(AliAnalysisTaskHFJetIPQA, 31)
+    ClassDef(AliAnalysisTaskHFJetIPQA, 32)
 };
 
 #endif
