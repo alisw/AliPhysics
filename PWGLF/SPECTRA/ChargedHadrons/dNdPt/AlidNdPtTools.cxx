@@ -1,5 +1,6 @@
 #include "THnSparse.h"
 #include "TH1.h"
+#include "AliESDtrackCuts.h"
 #include "AlidNdPtTools.h"
 
 class AlidNdPtTools;
@@ -160,6 +161,59 @@ TH1D* AlidNdPtTools::CreateLogHist(const char* name, const char* title)
 TH1D* AlidNdPtTools::CreateLogHist(const char* name) 
 { 
     return CreateLogHist(name,name);
+}
+
+//____________________________________________________________________________
+
+AliESDtrackCuts* CreatedNdPtTrackCuts(const char* option)
+{
+    AliESDtrackCuts* cuts = 0;
+    TString o(option);
+    o.ToLower();
+    if ( o.Equalto("") || o.Equalto ("default") ) o = "TPCITSgeo";
+    if (o.Equalto("TPCITSgeo") {
+        cuts = new AliESDtrackCuts("default TPCITS with geo L cut");
+        cuts->SetRequireTPCRefit(kTRUE);    
+        cuts->SetMinRatioCrossedRowsOverFindableClustersTPC(0.8);
+        cuts->SetMaxChi2PerClusterTPC(4);
+        cuts->SetMaxFractionSharedTPCClusters(0.4);
+        cuts->SetMaxDCAToVertexXY(3.0);
+        cuts->SetRequireITSRefit(kTRUE);
+        cuts->SetClusterRequirementITS(AliESDtrackCuts::kSPD,AliESDtrackCuts::kAny);
+        cuts->SetMaxChi2PerClusterITS(36.);
+        cuts->SetDCAToVertex2D(kFALSE);
+        cuts->SetRequireSigmaToVertex(kFALSE);
+        cuts->SetMaxDCAToVertexZ(2.0);
+        // 7*(0.0026+0.0050/pt^1.01)
+        cuts->SetMaxDCAToVertexXYPtDep("0.0182+0.0350/pt^1.01");
+        cuts->SetAcceptKinkDaughters(kFALSE);
+        // tpcc cut
+        cuts->SetMaxChi2TPCConstrainedGlobal(36.);
+        // Geometrical-Length Cut
+        cuts->SetCutGeoNcrNcl(3,130,1.5,0.85,0.7);
+        cuts->SetEtaRange(-0.8,0.8);
+    } else if (o.Equalto("TPCITSgeoNoDCAr") {
+        cuts = new AliESDtrackCuts("default TPCITS with geo L cut without DCAr");
+        cuts->SetRequireTPCRefit(kTRUE);    
+        cuts->SetMinRatioCrossedRowsOverFindableClustersTPC(0.8);
+        cuts->SetMaxChi2PerClusterTPC(4);
+        cuts->SetMaxFractionSharedTPCClusters(0.4);
+        cuts->SetMaxDCAToVertexXY(3.0);
+        cuts->SetRequireITSRefit(kTRUE);
+        cuts->SetClusterRequirementITS(AliESDtrackCuts::kSPD,AliESDtrackCuts::kAny);
+        cuts->SetMaxChi2PerClusterITS(36.);
+        cuts->SetDCAToVertex2D(kFALSE);
+        cuts->SetRequireSigmaToVertex(kFALSE);
+        cuts->SetMaxDCAToVertexZ(2.0);
+        cuts->SetAcceptKinkDaughters(kFALSE);
+        // tpcc cut
+        cuts->SetMaxChi2TPCConstrainedGlobal(36.);
+        // Geometrical-Length Cut
+        cuts->SetCutGeoNcrNcl(3,130,1.5,0.85,0.7);
+        cuts->SetEtaRange(-0.8,0.8);
+    }
+    
+    return cuts;
 }
 
 //____________________________________________________________________________

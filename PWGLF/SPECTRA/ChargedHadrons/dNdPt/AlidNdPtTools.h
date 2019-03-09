@@ -3,6 +3,8 @@
 
 #include "THnSparse.h"
 
+class AliESDtrackCuts;
+
 class AlidNdPtTools : public TObject
 {
     public:
@@ -22,6 +24,8 @@ class AlidNdPtTools : public TObject
         static TH1D*           CreateLogHist(const char* name, const char* title);                
         static TH1D*           CreateLogHist(const char* name);         
         static void            Log(TH1D* h, const char* name) { if (h) h->Fill(name,1); }
+        
+        static AliESDtrackCuts* CreatedNdPtTrackCuts(const char* option); // options
 
     private:
         static THnSparseD*      fSparseTmp;     //! temporary histogram
