@@ -415,6 +415,11 @@ class AliTPCDcalibRes: public TNamed
   static void SetUsedInstanceExt(AliTPCDcalibRes* inst) {fgUsedInstanceExt = inst;}
   static AliTPCDcalibRes* GetUsedInstanceExt()          {return fgUsedInstanceExt;}
   static float GetTPCRowX(int r)                     {return kTPCRowX[r];}
+  static void SetMorphingFunctionXZY(TF1* fun = 0);
+  static TF1* GetMorphingFunctionXZY() { return fgMorphingFunctionXZY;}
+  static Bool_t GetUseChebForTraining() { return fgUseChebForTraining; }
+  static void   SetUseChebForTraining(Bool_t v) { fgUseChebForTraining = v; }
+  
  protected:
   //
   Bool_t   fInitDone;                               // init flag
@@ -570,8 +575,10 @@ class AliTPCDcalibRes: public TNamed
   float fArrTgSlp[kNPadRows];             //! track inclination at padrow
   int   fArrSectID[kNPadRows];            //! cluster sector id 
   //
-  static AliTPCDcalibRes* fgUsedInstance; //! interface instance to use for parameterization
-  static AliTPCDcalibRes* fgUsedInstanceExt; //! interface to extra instance if average of 2 maps to be used
+  static AliTPCDcalibRes* fgUsedInstance; // interface instance to use for parameterization
+  static AliTPCDcalibRes* fgUsedInstanceExt; // interface to extra instance if average of 2 maps to be used
+  static TF1* fgMorphingFunctionXZY; // optional function: TF1(x) or TF2(x,z/x) or TF3(x, z/x, y/x) to get weights for morphing of 2 maps
+  static Bool_t fgUseChebForTraining; // optional flag to use existing Cheb params for training (instead of the smoothed raw values)
   //
   static const float kMaxResid;     // max range of distortions, must be <= than the double32_t range of dst_t
   static const float kMaxResidZVD;  // max range of distortions in VDrift calib, must be <= than the double32_t range of dtv_t
