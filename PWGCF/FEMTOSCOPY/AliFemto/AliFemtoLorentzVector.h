@@ -678,7 +678,6 @@ template<> float  abs(const AliFemtoLorentzVector<float>& v);
 //
 //   Non-member operators
 //
-#if !defined(__CLING__) || defined(__ROOTCLING__)
 
 template<class T, class X>
 AliFemtoLorentzVector<T>
@@ -743,8 +742,6 @@ istream&  operator>>(istream& is, AliFemtoLorentzVector<T>& v)
 //
 template<class T>
 T abs(const AliFemtoLorentzVector<T>& v) {return v.m();}
-
-#endif
 
 #endif /*  __CINT__ */
 #endif

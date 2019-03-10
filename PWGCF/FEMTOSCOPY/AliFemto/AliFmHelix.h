@@ -119,7 +119,6 @@ protected:
 //
 //     Non-member functions
 //
-#if !defined(__CLING__) || defined(__ROOTCLING__)
 
 int operator== (const AliFmHelix&, const AliFmHelix&);
 int operator!= (const AliFmHelix&, const AliFmHelix&);
@@ -191,5 +190,4 @@ inline int AliFmHelix::Bad(double WorldSize) const
     return 0;
 }
 
-#endif
 #endif

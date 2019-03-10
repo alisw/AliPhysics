@@ -786,10 +786,11 @@ template<> istream  &operator>>(istream &is, const AliFmThreeVector<float> &v);
 template<> ostream  &operator<<(ostream &os, const AliFmThreeVector<double> &v);
 template<> ostream  &operator<<(ostream &os, const AliFmThreeVector<float> &v);
 #else
+
 //
 //        Non-member functions
 //
-#if !defined(__CLING__) || defined(__ROOTCLING__)
+
 template<class T>
 inline T abs(const AliFmThreeVector<T> &v)
 {
@@ -861,8 +862,6 @@ istream  &operator>>(istream &is, AliFmThreeVector<T> &v)
   v.SetZ(z);
   return is;
 }
-
-#endif // __CLING__
 
 
 #endif /* ! __CINT__ */

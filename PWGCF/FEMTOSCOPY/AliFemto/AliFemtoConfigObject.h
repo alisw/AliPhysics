@@ -7,10 +7,6 @@
 #ifndef ALIFEMTOCONFIGOBJECT_H
 #define ALIFEMTOCONFIGOBJECT_H
 
-// to avoid reinterpreting the code
-#if !defined(__CLING__) || defined(__ROOTCLING__)
-
-
 #include <map>
 #include <list>
 #include <string>
@@ -1332,7 +1328,5 @@ AliFemtoConfigObject::Popper::operator()<UInt_t>(const Key_t &key, UInt_t &dest)
 
 #undef FORWARD_STANDARD_TYPES
 
-
-#endif // __ROOTCLING__
 
 #endif // ALIFEMTOCONFIGOBJECT_H
