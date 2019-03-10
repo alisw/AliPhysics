@@ -1,7 +1,8 @@
 AliAnalysisTaskRidge* AddTaskRidge(
 	const char* taskname = "test",
         const char* option = "LHC16lAODSysZSysTrk",
-        bool ismc = kFALSE){
+        bool ismc = kFALSE,
+	const char* suffix = "" ){
 
 	AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
 	if (!mgr) return 0x0;
