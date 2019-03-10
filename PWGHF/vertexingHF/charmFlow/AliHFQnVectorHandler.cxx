@@ -17,9 +17,8 @@
 // S. Trogolo, stefano.trogolo@cern.ch
 ///////////////////////////////////////////////////////////////////////////////////////
 
-#include <TMath.h>
-
 #include "AliHFQnVectorHandler.h"
+#include "AliAODVertex.h"
 #include "AliOADBContainer.h"
 #include "AliLog.h"
 #include "AliAnalysisManager.h"
