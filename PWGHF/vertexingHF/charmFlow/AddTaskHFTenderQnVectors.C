@@ -1,5 +1,3 @@
-#include "AliHFQnVectorHandler.h"
-
 AliAnalysisTaskSEHFTenderQnVectors* AddTaskHFTenderQnVectors(TString taskname = "HFTenderQnVectors",
                                                              TString outputSuffix = "", 
                                                              int harmonic = 2, 
