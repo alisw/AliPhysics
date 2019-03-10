@@ -485,7 +485,9 @@ void AliAnalysisTaskEmcalJetHPerformance::FillCellQAHists(const std::string & pr
     // We will record the event selection if the time is less than -400 ns
     // This corresponds to a doubly corrected embedded event, which shouldn't be possible, and therefore
     // indicates that something has gone awry
-    if (tCell < -400e-9 && fillingEmbeddedCells) {
+    // NOTE: We must also require that the time is greater than -1 because apparently some uncalibrated cells
+    //       will report their time as -1. We don't want to include those cells.
+    if (tCell < -400e-9 && tCell > -1 && fillingEmbeddedCells) {
       embeddedCellWithLateCellTime = true;
     }
   }
