@@ -25,7 +25,7 @@ AliAnalysisTaskRidge* AddTaskRidge(
 	taskRidge->SetEfficiencyFile("alien:///alice/cern.ch/user/j/junlee/Efficiency_RIDGE/EffOut.root");
 
 	mgr->ConnectInput(taskRidge, 0, cinput);
-	mgr->ConnectOutput(taskRidge,1,mgr->CreateContainer("output", TList::Class(), AliAnalysisManager::kOutputContainer,"AnalysisResults.root"));
+	mgr->ConnectOutput(taskRidge,1,mgr->CreateContainer(Form("output%s",suffix), TList::Class(), AliAnalysisManager::kOutputContainer,"AnalysisResults.root"));
 
 	return taskRidge;
 
