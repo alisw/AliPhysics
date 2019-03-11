@@ -155,19 +155,17 @@ void HFPtSpectrum ( Int_t decayChan=kDplusKpipi,
       tab = 0.041; tabUnc = 0.008832;
     }
   }
-  else if( ccestimator == kZNA ){
+  else if( ccestimator == kZNA ){//values from https://alice-notes.web.cern.ch/system/files/notes/public/711/2019-03-05-ALICE_public_note.pdf
     if ( cc == kpPb010 ) {
-      tab = 0.1812; tabUnc = 0.01413;
-    } else if ( cc == kpPb020 ) {
-      tab = 0.1742; tabUnc = 0.00992;
+      tab = 0.172; tabUnc = 0.012;
     } else if ( cc == kpPb1020 ) {
-      tab = 0.1672; tabUnc = 0.005852;
+      tab = 0.158; tabUnc = 0.006;
     } else if ( cc == kpPb2040 ) {
-      tab = 0.1453; tabUnc = 0.002615;
+      tab = 0.137; tabUnc = 0.003;
     } else if ( cc == kpPb4060 ) {
-      tab = 0.1074; tabUnc = 0.004726;
+      tab = 0.102; tabUnc = 0.005;
     } else if ( cc == kpPb60100 ) {
-      tab = 0.0486; tabUnc = 0.002430;
+      tab = 0.0459; tabUnc = 0.0024;
     }
   }
   else if( ccestimator == kCL1 ){

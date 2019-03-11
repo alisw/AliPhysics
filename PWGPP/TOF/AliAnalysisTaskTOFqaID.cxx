@@ -66,11 +66,13 @@ AliAnalysisTaskTOFqaID::AliAnalysisTaskTOFqaID(const char* name)
     , fExpTimeSmallRangeMax(5002.)
     , fnExpTimeBins(1)
     , fnExpTimeSmallBins(1)
-    , fMyTimeZeroTOF(1e20)
-    , fMyTimeZeroTOFsigma(1e20)
-    , fMyTimeZeroTOFtracks(-1)
+    , fMyTimeZeroTOF(3)
+    , fMyTimeZeroTOFsigma(3)
+    , fMyTimeZeroTOFtracks(3)
+    , fMyTimeZeroTOFstatus(kFALSE)
     , fIsMC(kFALSE)
     , fVerbose(kFALSE)
+    , fUseTOFT0CalibMode(kFALSE)
     , fSelectedPdg(0)
     , fP(1e10)
     , fPt(1e10)
@@ -106,6 +108,11 @@ AliAnalysisTaskTOFqaID::AliAnalysisTaskTOFqaID(const char* name)
     fTrkExpTimes[j] = 0.0;
     fThExpTimes[j] = 0.0;
   }
+  //
+  fMyTimeZeroTOF.Reset(1e20);
+  fMyTimeZeroTOFsigma.Reset(1e20);
+  fMyTimeZeroTOFtracks.Reset(-1);
+  //
   fVariableBinsPt.Reset(0.);
   fVariableBinsMult.Reset(0.);
   //
@@ -125,9 +132,9 @@ AliAnalysisTaskTOFqaID::AliAnalysisTaskTOFqaID(const char* name)
 #define cpVar(var) var(copy.var)
 AliAnalysisTaskTOFqaID::AliAnalysisTaskTOFqaID(const AliAnalysisTaskTOFqaID& copy)
     : AliAnalysisTaskSE()
-    , cpVar(fRunNumber)
     , cpVar(fVariableBinsPt)
     , cpVar(fVariableBinsMult)
+    , cpVar(fRunNumber)
     , cpVar(fESD)
     , cpVar(fMCevent)
     , cpVar(fTrackFilter)
@@ -146,8 +153,10 @@ AliAnalysisTaskTOFqaID::AliAnalysisTaskTOFqaID(const AliAnalysisTaskTOFqaID& cop
     , cpVar(fMyTimeZeroTOF)
     , cpVar(fMyTimeZeroTOFsigma)
     , cpVar(fMyTimeZeroTOFtracks)
+    , cpVar(fMyTimeZeroTOFstatus)
     , cpVar(fIsMC)
     , cpVar(fVerbose)
+    , cpVar(fUseTOFT0CalibMode)
     , cpVar(fSelectedPdg)
     , cpVar(fP)
     , cpVar(fPt)
@@ -214,8 +223,10 @@ AliAnalysisTaskTOFqaID& AliAnalysisTaskTOFqaID::operator=(const AliAnalysisTaskT
     cpVar(fMyTimeZeroTOF);
     cpVar(fMyTimeZeroTOFsigma);
     cpVar(fMyTimeZeroTOFtracks);
+    cpVar(fMyTimeZeroTOFstatus);
     cpVar(fIsMC);
     cpVar(fVerbose);
+    cpVar(fUseTOFT0CalibMode);
     cpVar(fSelectedPdg);
     cpVar(fP);
     cpVar(fPt);
@@ -478,9 +489,13 @@ void AliAnalysisTaskTOFqaID::UserExec(Option_t*)
     return;
   }
 
+  //Computing our own TOF_T0 once per event
+  ComputeTimeZeroByTOF1GeV();
+
   // loop over ESD tracks
+  AliESDtrack* track = 0x0;
   for (Int_t iTracks = 0; iTracks < fESD->GetNumberOfTracks(); iTracks++) {
-    AliESDtrack* track = fESD->GetTrack(iTracks);
+    track = fESD->GetTrack(iTracks);
     if (!track) {
       AliInfo(Form("Cannot receive track %d", iTracks));
       continue;
@@ -758,6 +773,7 @@ void AliAnalysisTaskTOFqaID::FillStartTimeMaskHisto(TString suffix)
       ((TH2F*)fHlistTimeZero->FindObject(Form("hStartTimeMaskMatched%s", suffix.Data())))->Fill(track->P(), StartTimeBit);
     }
   }
+  ((TH2F*)fHlistTimeZero->FindObject(Form("hStartTimeMaskvsTOFmulti%s", suffix.Data())))->Fill(fNTOFtracks[0], fESDpid->GetTOFResponse().GetStartTimeMask(10.));
   return;
 }
 
@@ -766,17 +782,31 @@ Bool_t AliAnalysisTaskTOFqaID::ComputeTimeZeroByTOF1GeV()
 {
   /* compute T0-TOF for tracks within momentum range [fResolutionMinP, fResolutionMaxP] */
   /* init T0-TOF */
-  AliTOFT0v1 fTOFT0v1(fESDpid); // TOF-T0 v1
-  fTOFT0v1.Init(fESD);
-  fTOFT0v1.DefineT0("all", fResolutionMinP, fResolutionMaxP);
-  fMyTimeZeroTOF = -1000. * fTOFT0v1.GetResult(0);
-  fMyTimeZeroTOFsigma = 1000. * fTOFT0v1.GetResult(1);
-  fMyTimeZeroTOFtracks = fTOFT0v1.GetResult(3);
-  Bool_t hasTimeZeroTOF = kFALSE;
+  AliTOFT0v1 TOFT0v1(fESDpid); // TOF-T0 v1
+  TOFT0v1.Init(fESD);
+  TOFT0v1.DefineT0("all", fResolutionMinP, fResolutionMaxP);
+  fMyTimeZeroTOF.SetAt(-1000. * TOFT0v1.GetResult(0), 0);
+  fMyTimeZeroTOFsigma.SetAt(1000. * TOFT0v1.GetResult(1), 0);
+  fMyTimeZeroTOFtracks.SetAt(TOFT0v1.GetResult(3), 0);
+  if (fUseTOFT0CalibMode) {
+    //Get TOFT0 with first half of the tracks
+    Int_t mode = 1;
+    TOFT0v1.DefineT0("all", fResolutionMinP, fResolutionMaxP, mode);
+    fMyTimeZeroTOF.SetAt(-1000. * TOFT0v1.GetResult(0), mode);
+    fMyTimeZeroTOFsigma.SetAt(1000. * TOFT0v1.GetResult(1), mode);
+    fMyTimeZeroTOFtracks.SetAt(TOFT0v1.GetResult(3), mode);
+    //Get TOFT0 with second half of the tracks
+    mode = 2;
+    TOFT0v1.DefineT0("all", fResolutionMinP, fResolutionMaxP, mode);
+    fMyTimeZeroTOF.SetAt(-1000. * TOFT0v1.GetResult(0), mode);
+    fMyTimeZeroTOFsigma.SetAt(1000. * TOFT0v1.GetResult(1), mode);
+    fMyTimeZeroTOFtracks.SetAt(TOFT0v1.GetResult(3), mode);
+  }
+  fMyTimeZeroTOFstatus = kFALSE;
   /* check T0-TOF sigma */
-  if (fMyTimeZeroTOFsigma < 250.)
-    hasTimeZeroTOF = kTRUE;
-  return hasTimeZeroTOF;
+  if (fMyTimeZeroTOFsigma.At(0) < 250.)
+    fMyTimeZeroTOFstatus = kTRUE;
+  return fMyTimeZeroTOFstatus;
 }
 
 //------------------------------------------------------
@@ -1063,7 +1093,7 @@ void AliAnalysisTaskTOFqaID::AddPidHisto(THashList* list, Int_t charge, TString 
   if (labels_arr->GetEntries() != H->GetNbinsY())      \
     AliFatal("Not the right number of labels");        \
   for (Int_t i = 0; i < labels_arr->GetEntries(); i++) \
-    H->GetYaxis()->SetBinLabel(i + 1, labels_arr->At(i)->GetName());
+    H->GetYaxis()->SetBinLabel(i, labels_arr->At(i)->GetName());
 //----------------------------------------------------------------------------------
 void AliAnalysisTaskTOFqaID::AddStartTimeHisto(THashList* list, TString suffix)
 {
@@ -1090,7 +1120,7 @@ void AliAnalysisTaskTOFqaID::AddStartTimeHisto(THashList* list, TString suffix)
   CreateH(hEventV0MeanVsVtx, TH2F, "V0 detector: mean vs vertex ; (V0_{A}-V0_{C})/2 [ns]; (V0_{A}+V0_{C})/2 [ns]; events", 50, -25., 25., 50, -25., 25.);
   HistogramMakeUp(hEventV0MeanVsVtx, kBlack, 1);
 
-  TString labels = "best_t0,fill_t0,tof_t0,T0AC,T0A,T0C";
+  TString labels = "All events,best_t0,fill_t0,tof_t0,T0AC,T0A,T0C";
   TObjArray* labels_arr = labels.Tokenize(",");
 
   CreateH(hStartTime, TH2F, "Start time for each method (mask); start time (ps); method;", fnBinsT0, fBinsT0[0], fBinsT0[1], 6, -1., 5.);
@@ -1111,7 +1141,7 @@ void AliAnalysisTaskTOFqaID::AddStartTimeHisto(THashList* list, TString suffix)
   CreateH(hT0CvsNtrk, TH2F, "Event timeZero estimated by T0C vs. TOF-matching tracks; N_{TOF}; t0 (ps)", GetArrayBinning(fVariableBinsMult), fnBinsT0, fBinsT0[0], fBinsT0[1]);
   HistogramMakeUp(hT0CvsNtrk, kGreen + 2, 1);
 
-  labels = "fill_t0,tof_t0,T0A,T0A & tof_t0,T0C,T0C & tof_t0,T0AC,T0AC & tof_t0";
+  labels = "All events,fill_t0,tof_t0,T0A,T0A & tof_t0,T0C,T0C & tof_t0,T0AC,T0AC & tof_t0";
   labels_arr = labels.Tokenize(",");
   const Double_t startTimeMomBins[13] = { 0.0, 0.3, 0.5, 0.6, 0.7, 0.8, 0.9, 1., 1.2, 1.5, 2., 3., 10. };
   CreateH(hStartTimeMaskMatched, TH2F, "Start Time Mask vs p bin for matched tracks; p(GeV/#it{c});", 12, startTimeMomBins, 8, 0., 8.);
@@ -1121,6 +1151,18 @@ void AliAnalysisTaskTOFqaID::AddStartTimeHisto(THashList* list, TString suffix)
   CreateH(hStartTimeMask, TH2F, "Start Time Mask vs p bin for primary tracks; p(GeV/#it{c});", 12, startTimeMomBins, 8, 0., 8.);
   SetBinLabels(hStartTimeMask);
   HistogramMakeUp(hStartTimeMask, kRed + 2, 1);
+
+  CreateH(hStartTimeMaskvsTOFmulti, TH2F, "Start Time Mask vs TOF hit multiplicity; TOF hit multiplicity;", GetArrayBinning(fVariableBinsMult), 8, 0., 8.);
+  SetBinLabels(hStartTimeMaskvsTOFmulti);
+  HistogramMakeUp(hStartTimeMaskvsTOFmulti, -1, -1);
+
+  if (fUseTOFT0CalibMode) {
+    CreateH(hT0TOFdiffvsNtrk, TH2F, "Event timeZero estimated by TOF (first half - second half) vs. TOF-matching tracks; n. tracks used for t_{0}^{TOF} (average f. h. and s. h.); TOFt0_{f. h.} - TOFt0_{s. h.} (ps)", GetArrayBinning(fVariableBinsMult), fnBinsT0, fBinsT0[0], fBinsT0[1]);
+    HistogramMakeUp(hT0TOFdiffvsNtrk, -1, -1);
+
+    CreateH(hT0TOFdiffNormvsNtrk, TH2F, "Event timeZero estimated by TOF (first half - second half) normalized to reso. vs. TOF-matching tracks; n. tracks used for t_{0}^{TOF} (average f. h. and s. h.); (TOFt0_{f. h.} - TOFt0_{s. h.})/#sqrt{#sigma_{TOFt0_{f. h.}}^{2} -#sigma_{TOFt0_{s. h.}}^{2}}", GetArrayBinning(fVariableBinsMult), fnBinsT0, -10, 10);
+    HistogramMakeUp(hT0TOFdiffNormvsNtrk, -1, -1);
+  }
 }
 #undef SetBinLabels
 #undef CreateH
@@ -1330,8 +1372,8 @@ void AliAnalysisTaskTOFqaID::FillPidHisto(AliESDtrack* track, Int_t charge, TStr
   //fill histos for pion only
   ((TH2F*)theL->FindObject(Form("hExpTimePiVsStrip%s_%s", suffix.Data(), cLabel.Data())))->Fill((Int_t)GetStripIndex(volId), tofps - fTrkExpTimes[AliPID::kPion]); //ps
   ((TH1F*)theL->FindObject(Form("hExpTimePi%s_%s", suffix.Data(), cLabel.Data())))->Fill(tofps - fTrkExpTimes[AliPID::kPion]);                                     //ps
-  if (ComputeTimeZeroByTOF1GeV() && (fP > fResolutionMinP) && (fP < fResolutionMaxP)) {
-    ((TH2F*)theL->FindObject(Form("hExpTimePiT0Sub1GeV%s_%s", suffix.Data(), cLabel.Data())))->Fill(fMyTimeZeroTOFtracks, tofps - fMyTimeZeroTOF - fTrkExpTimes[AliPID::kPion]);
+  if (fMyTimeZeroTOFstatus && (fP > fResolutionMinP) && (fP < fResolutionMaxP)) {
+    ((TH2F*)theL->FindObject(Form("hExpTimePiT0Sub1GeV%s_%s", suffix.Data(), cLabel.Data())))->Fill(fMyTimeZeroTOFtracks.At(0), tofps - fMyTimeZeroTOF.At(0) - fTrkExpTimes[AliPID::kPion]);
   }
   //fill sigmas and deltas for each specie
   for (Int_t specie = AliPID::kPion; specie <= AliPID::kProton; specie++) {
@@ -1425,6 +1467,13 @@ void AliAnalysisTaskTOFqaID::FillStartTimeHisto(TString suffix)
     FillH2("hStartTime", timeZero, "tof_t0", 1);
     FillH2("hStartTimeRes", timeZeroRes, "tof_t0", 1);
     FillH2("hT0TOFvsNtrk", fNTOFtracks[0], timeZero);
+  }
+  if (fUseTOFT0CalibMode
+      && (fMyTimeZeroTOFtracks.At(1) > 0 || fMyTimeZeroTOFtracks.At(2) > 0)
+      && TMath::Abs((fMyTimeZeroTOFtracks.At(1) - fMyTimeZeroTOFtracks.At(2)) / (fMyTimeZeroTOFtracks.At(1) + fMyTimeZeroTOFtracks.At(2))) < 0.2) {
+    FillH2("hT0TOFdiffvsNtrk", (fMyTimeZeroTOFtracks.At(1) + fMyTimeZeroTOFtracks.At(2)) / 2., (fMyTimeZeroTOF.At(1) - fMyTimeZeroTOF.At(2)));
+    if (fMyTimeZeroTOFsigma.At(1) > 0 || fMyTimeZeroTOFsigma.At(2) > 0)
+      FillH2("hT0TOFdiffNormvsNtrk", (fMyTimeZeroTOFtracks.At(1) + fMyTimeZeroTOFtracks.At(2)) / 2., (fMyTimeZeroTOF.At(1) - fMyTimeZeroTOF.At(2)) / TMath::Sqrt(fMyTimeZeroTOFsigma.At(1) * fMyTimeZeroTOFsigma.At(1) + fMyTimeZeroTOFsigma.At(2) * fMyTimeZeroTOFsigma.At(2)));
   }
 
   //fill T0_T0 plots

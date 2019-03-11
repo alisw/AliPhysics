@@ -240,6 +240,8 @@ class AliOtonOmegaAnalysis {
   TTree* fomegaTTree;
   TTree* foTTree;
   Int_t fTRunNumber;
+  Float_t fTVx;
+  Float_t fTVy;
   Float_t fTVz;
 
 
