@@ -242,8 +242,7 @@ AliSigma0PhotonMotherCuts &AliSigma0PhotonMotherCuts::operator=(
 //____________________________________________________________________________________________________
 AliSigma0PhotonMotherCuts *AliSigma0PhotonMotherCuts::DefaultCuts() {
   AliSigma0PhotonMotherCuts *photonMotherCuts = new AliSigma0PhotonMotherCuts();
-  photonMotherCuts->SetPhotonMaxPt(2);
-  photonMotherCuts->SetArmenterosCut(0, 0.12, -1, -0.6);
+  photonMotherCuts->SetSigmaMassPt(true);
   return photonMotherCuts;
 }
 
