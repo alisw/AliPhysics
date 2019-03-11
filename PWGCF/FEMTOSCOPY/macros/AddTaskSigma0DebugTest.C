@@ -450,7 +450,7 @@ AliAnalysisTaskSE *AddTaskSigma0DebugTest(bool isMC = false,
   mgr->ConnectOutput(task, 8, coutputSigmaCuts);
 
   TString AntiSigmaCutsName =
-      Form("%sAntiSigmaCuts%s", addon.Data(), suffix.Data());
+      Form("%sAntiSigma0Cuts%s", addon.Data(), suffix.Data());
   AliAnalysisDataContainer *coutputAntiSigmaCuts = mgr->CreateContainer(
       AntiSigmaCutsName.Data(), TList::Class(),
       AliAnalysisManager::kOutputContainer,
@@ -481,11 +481,11 @@ AliAnalysisTaskSE *AddTaskSigma0DebugTest(bool isMC = false,
     mgr->ConnectOutput(task, 12, coutputTrkCutsMC);
 
     TString AntiTrkCutsMCName =
-        Form("%sTrackCutsMC%s", addon.Data(), suffix.Data());
-    AliAnalysisDataContainer *coutputAntiTrkCutsMC =
-        mgr->CreateContainer(TrkCutsMCName.Data(), TList::Class(),
-                             AliAnalysisManager::kOutputContainer,
-                             Form("%s:%s", file.Data(), TrkCutsMCName.Data()));
+        Form("%sAntiTrackCutsMC%s", addon.Data(), suffix.Data());
+    AliAnalysisDataContainer *coutputAntiTrkCutsMC = mgr->CreateContainer(
+        AntiTrkCutsMCName.Data(), TList::Class(),
+        AliAnalysisManager::kOutputContainer,
+        Form("%s:%s", file.Data(), AntiTrkCutsMCName.Data()));
     mgr->ConnectOutput(task, 13, coutputAntiTrkCutsMC);
   }
 

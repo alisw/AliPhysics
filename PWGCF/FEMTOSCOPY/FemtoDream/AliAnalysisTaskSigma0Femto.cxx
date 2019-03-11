@@ -20,6 +20,7 @@ ClassImp(AliAnalysisTaskSigma0Femto)
       fPhotonQA(nullptr),
       fSigmaCuts(nullptr),
       fAntiSigmaCuts(nullptr),
+      fRandom(nullptr),
       fEvent(nullptr),
       fEvtCuts(nullptr),
       fProtonTrack(nullptr),
@@ -47,7 +48,9 @@ ClassImp(AliAnalysisTaskSigma0Femto)
       fSigmaHistList(nullptr),
       fAntiSigmaHistList(nullptr),
       fResultList(nullptr),
-      fResultQAList(nullptr) {}
+      fResultQAList(nullptr) {
+  fRandom = new TRandom3();
+}
 
 //____________________________________________________________________________________________________
 AliAnalysisTaskSigma0Femto::AliAnalysisTaskSigma0Femto(const char *name,
@@ -63,6 +66,7 @@ AliAnalysisTaskSigma0Femto::AliAnalysisTaskSigma0Femto(const char *name,
       fSigmaCuts(nullptr),
       fAntiSigmaCuts(nullptr),
       fEvent(nullptr),
+      fRandom(nullptr),
       fEvtCuts(nullptr),
       fProtonTrack(nullptr),
       fTrackCutsPartProton(nullptr),
@@ -102,6 +106,8 @@ AliAnalysisTaskSigma0Femto::AliAnalysisTaskSigma0Femto(const char *name,
   DefineOutput(9, TList::Class());
   DefineOutput(10, TList::Class());
   DefineOutput(11, TList::Class());
+
+  fRandom = new TRandom3();
   if (fIsMC) {
     DefineOutput(12, TList::Class());
     DefineOutput(13, TList::Class());
@@ -260,8 +266,8 @@ void AliAnalysisTaskSigma0Femto::UserExec(Option_t * /*option*/) {
   PostData(10, fResultList);
   PostData(11, fResultQAList);
   if (fIsMC) {
-    PostData(12, fAntiTrackCutHistMCList);
-    PostData(13, fTrackCutHistMCList);
+    PostData(12, fTrackCutHistMCList);
+    PostData(13, fAntiTrackCutHistMCList);
   }
 }
 
@@ -309,18 +315,11 @@ void AliAnalysisTaskSigma0Femto::CastToVector(
     std::vector<AliSigma0ParticlePhotonMother> &sigmaContainer,
     std::vector<AliFemtoDreamBasePart> &particles, const AliMCEvent *mcEvent) {
   particles.clear();
-  for (const auto &sigma : sigmaContainer) {
-    particles.push_back({sigma, mcEvent});
-  }
-}
 
-//____________________________________________________________________________________________________
-void AliAnalysisTaskSigma0Femto::CastToVector(
-    std::vector<AliSigma0ParticleV0> &container,
-    std::vector<AliFemtoDreamBasePart> &particles, const AliMCEvent *mcEvent) {
-  particles.clear();
-  for (const auto &part : container) {
-    particles.push_back({part, mcEvent});
+  // Randomly pick one of the particles in the container
+  if (sigmaContainer.size() > 0) {
+    particles.push_back(
+        {sigmaContainer[fRandom->Rndm() * sigmaContainer.size()], mcEvent});
   }
 }
 
@@ -370,9 +369,8 @@ void AliAnalysisTaskSigma0Femto::UserCreateOutputObjects() {
 
   if (fTrackCutsPartProton && fTrackCutsPartProton->GetQAHists()) {
     fTrackCutHistList = fTrackCutsPartProton->GetQAHists();
-    if (fIsMC && !fTrackCutsPartProton->GetMinimalBooking() &&
-        fTrackCutsPartProton->GetMCQAHists()) {
-      fTrackCutsPartProton->SetMCName("MC_Proton");
+    if (fIsMC && fTrackCutsPartProton->GetMCQAHists() &&
+        fTrackCutsPartProton->GetIsMonteCarlo()) {
       fTrackCutHistMCList = fTrackCutsPartProton->GetMCQAHists();
     }
   }
@@ -383,9 +381,8 @@ void AliAnalysisTaskSigma0Femto::UserCreateOutputObjects() {
 
   if (fTrackCutsPartAntiProton && fTrackCutsPartAntiProton->GetQAHists()) {
     fAntiTrackCutHistList = fTrackCutsPartAntiProton->GetQAHists();
-    if (fIsMC && !fTrackCutsPartAntiProton->GetMinimalBooking() &&
-        fTrackCutsPartAntiProton->GetMCQAHists()) {
-      fTrackCutsPartAntiProton->SetMCName("MC_Anti-proton");
+    if (fIsMC && fTrackCutsPartAntiProton->GetMCQAHists() &&
+        fTrackCutsPartAntiProton->GetIsMonteCarlo()) {
       fAntiTrackCutHistMCList = fTrackCutsPartAntiProton->GetMCQAHists();
     }
   }
@@ -459,7 +456,7 @@ void AliAnalysisTaskSigma0Femto::UserCreateOutputObjects() {
   PostData(10, fResultList);
   PostData(11, fResultQAList);
   if (fIsMC) {
-    PostData(12, fAntiTrackCutHistMCList);
-    PostData(13, fTrackCutHistMCList);
+    PostData(12, fTrackCutHistMCList);
+    PostData(13, fAntiTrackCutHistMCList);
   }
 }
