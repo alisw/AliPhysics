@@ -202,19 +202,17 @@ void HFPtSpectrumRaa(const char *ppfile="HFPtSpectrum_D0Kpi_method2_rebinnedth_2
       Tab = 0.041; TabSyst = 0.008832;
     }
   }
-  else if( ccestimator == kZNA ){//values from https://alice-notes.web.cern.ch/system/files/notes/public/711/2019-02-25-ALICE_public_note.pdf
+  else if( ccestimator == kZNA ){//values from https://alice-notes.web.cern.ch/system/files/notes/public/711/2019-03-05-ALICE_public_note.pdf
     if ( cc == kpPb010 ) {
-      Tab = 0.1716; TabSyst = 0.0123;
-    } else if ( cc == kpPb020 ) {
-      Tab = 0.1649; TabSyst = 0.0089;
+      Tab = 0.172; TabSyst = 0.012;
     } else if ( cc == kpPb1020 ) {
-      Tab = 0.1583; TabSyst = 0.0065;
+      Tab = 0.158; TabSyst = 0.006;
     } else if ( cc == kpPb2040 ) {
-      Tab = 0.1374; TabSyst = 0.0033;
+      Tab = 0.137; TabSyst = 0.003;
     } else if ( cc == kpPb4060 ) {
-      Tab = 0.1016; TabSyst = 0.0052;
+      Tab = 0.102; TabSyst = 0.005;
     } else if ( cc == kpPb60100 ) {
-      Tab = 0.0459; TabSyst = 0.0025;
+      Tab = 0.0459; TabSyst = 0.0024;
     }
   }
   else if( ccestimator == kCL1 ){
