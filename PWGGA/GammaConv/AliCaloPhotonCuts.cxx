@@ -5608,6 +5608,33 @@ void AliCaloPhotonCuts::ApplyNonLinearity(AliVCluster* cluster, Int_t isMC, AliV
           if(fClusterType==1) energy /= FunctionNL_kSDM(energy, 0.922912, -2.97895, -0.132756);
           if(fClusterType==2) energy /= FunctionNL_kSDM(energy, 1.00571, -2.03882, -2.12252);
         } else fPeriodNameAvailable = kFALSE;
+      } else if(isMC == 0){         // data; SM wise correction
+        if( fCurrentMC == k16pp13TeV || fCurrentMC == k17pp13TeV){
+          switch (clusterSMID){
+            // values determined on LHC16x & LHC17c
+            case 0: energy/=0.994364; break;
+            case 1: energy/=0.991352; break;
+            case 2: energy/=1.000522; break;
+            case 3: energy/=0.995918; break;
+            case 4: energy/=0.995661; break;
+            case 5: energy/=0.998285; break;
+            case 6: energy/=1.000275; break;
+            case 7: energy/=1.003544; break;
+            case 8: energy/=1.007220; break;
+            case 9: energy/=1.000911; break;
+            case 10: energy/=1.012508; break;
+            case 11: energy/=1.012867; break;
+            case 12: energy/=1.001028; break;
+            case 13: energy/=0.995514; break;
+            case 14: energy/=0.994373; break;
+            case 15: energy/=0.997765; break;
+            case 16: energy/=1.009084; break;
+            case 17: energy/=1.011123; break;
+            case 18: energy/=1.022673; break;
+            case 19: energy/=1.018894; break;
+            default: energy/=1.0; break;
+          }
+        }
       }
       break;
 
@@ -5692,6 +5719,33 @@ void AliCaloPhotonCuts::ApplyNonLinearity(AliVCluster* cluster, Int_t isMC, AliV
           if(fClusterType==4) energy /= FunctionNL_kSDM(energy, 0.955163, -3.4446, -0.696097);
 
         } else fPeriodNameAvailable = kFALSE;
+      } else if(isMC == 0){         // data; SM wise correction
+        if( fCurrentMC == k16pp13TeV || fCurrentMC == k17pp13TeV){
+          switch (clusterSMID){
+            // values determined on LHC16x & LHC17c
+            case 0: energy/=0.994364; break;
+            case 1: energy/=0.991352; break;
+            case 2: energy/=1.000522; break;
+            case 3: energy/=0.995918; break;
+            case 4: energy/=0.995661; break;
+            case 5: energy/=0.998285; break;
+            case 6: energy/=1.000275; break;
+            case 7: energy/=1.003544; break;
+            case 8: energy/=1.007220; break;
+            case 9: energy/=1.000911; break;
+            case 10: energy/=1.012508; break;
+            case 11: energy/=1.012867; break;
+            case 12: energy/=1.001028; break;
+            case 13: energy/=0.995514; break;
+            case 14: energy/=0.994373; break;
+            case 15: energy/=0.997765; break;
+            case 16: energy/=1.009084; break;
+            case 17: energy/=1.011123; break;
+            case 18: energy/=1.022673; break;
+            case 19: energy/=1.018894; break;
+            default: energy/=1.0; break;
+          }
+        }
       }
       break;
 
@@ -5890,6 +5944,33 @@ void AliCaloPhotonCuts::ApplyNonLinearity(AliVCluster* cluster, Int_t isMC, AliV
           if(fClusterType==1) energy /= (FunctionNL_DPOW(energy, 1.0496452471, -0.1047424135, -0.2108759639, 1.1740021856, -0.2000000000, -0.1917378883));
           if(fClusterType==2) energy /= (FunctionNL_DPOW(energy, 1.0167588250, 0.0501002307, -0.8336787497, 0.9500009312, 0.0944118922, -0.1043983134));
         } else fPeriodNameAvailable = kFALSE;
+      } else if(isMC == 0){         // data; SM wise correction
+        if( fCurrentMC == k16pp13TeV || fCurrentMC == k17pp13TeV){
+          switch (clusterSMID){
+            // values determined on LHC16x & LHC17c
+            case 0: energy/=0.994364; break;
+            case 1: energy/=0.991352; break;
+            case 2: energy/=1.000522; break;
+            case 3: energy/=0.995918; break;
+            case 4: energy/=0.995661; break;
+            case 5: energy/=0.998285; break;
+            case 6: energy/=1.000275; break;
+            case 7: energy/=1.003544; break;
+            case 8: energy/=1.007220; break;
+            case 9: energy/=1.000911; break;
+            case 10: energy/=1.012508; break;
+            case 11: energy/=1.012867; break;
+            case 12: energy/=1.001028; break;
+            case 13: energy/=0.995514; break;
+            case 14: energy/=0.994373; break;
+            case 15: energy/=0.997765; break;
+            case 16: energy/=1.009084; break;
+            case 17: energy/=1.011123; break;
+            case 18: energy/=1.022673; break;
+            case 19: energy/=1.018894; break;
+            default: energy/=1.0; break;
+          }
+        }
       }
       break;
 
@@ -5962,6 +6043,33 @@ void AliCaloPhotonCuts::ApplyNonLinearity(AliVCluster* cluster, Int_t isMC, AliV
           if(fClusterType==4) energy /= (FunctionNL_DPOW(energy, 1.0145205998, -0.0860364686, -0.4999999971, 1.0894446295, -0.1383339489, -0.3858694211));
 
         } else fPeriodNameAvailable = kFALSE;
+      } else if(isMC == 0){         // data; SM wise correction
+        if( fCurrentMC == k16pp13TeV || fCurrentMC == k17pp13TeV){
+          switch (clusterSMID){
+            // values determined on LHC16x & LHC17c
+            case 0: energy/=0.994364; break;
+            case 1: energy/=0.991352; break;
+            case 2: energy/=1.000522; break;
+            case 3: energy/=0.995918; break;
+            case 4: energy/=0.995661; break;
+            case 5: energy/=0.998285; break;
+            case 6: energy/=1.000275; break;
+            case 7: energy/=1.003544; break;
+            case 8: energy/=1.007220; break;
+            case 9: energy/=1.000911; break;
+            case 10: energy/=1.012508; break;
+            case 11: energy/=1.012867; break;
+            case 12: energy/=1.001028; break;
+            case 13: energy/=0.995514; break;
+            case 14: energy/=0.994373; break;
+            case 15: energy/=0.997765; break;
+            case 16: energy/=1.009084; break;
+            case 17: energy/=1.011123; break;
+            case 18: energy/=1.022673; break;
+            case 19: energy/=1.018894; break;
+            default: energy/=1.0; break;
+          }
+        }
       }
       break;
     // NonLinearity ConvCalo - kTestBeamv3 + shifting MC
@@ -6969,7 +7077,7 @@ AliCaloPhotonCuts::MCSet AliCaloPhotonCuts::FindEnumForMCSet(TString namePeriod)
   else if ( namePeriod.CompareTo("LHC18P1Pyt8LowB") ==0 ||
             namePeriod.CompareTo("LHC18h1") ==0  )      return kPP13T18P1Pyt8LowB;
   // PbPb 5 TeV 2015 Gamma-Jet MC
-  else if ( namePeriod.CompareTo("LHC18b11c")) return  kLHC18b11c;
+  else if ( namePeriod.CompareTo("LHC18b11c") == 0 ) return  kLHC18b11c;
 
   // data starts here
   else if ( namePeriod.CompareTo("LHC10b") == 0 ||
