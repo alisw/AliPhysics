@@ -45,6 +45,8 @@ AliAnalysisTaskEmcalJetHPerformance::AliAnalysisTaskEmcalJetHPerformance():
   fCreateQAHists(false),
   fCreateResponseMatrix(false),
   fEmbeddedCellsName("emcalCells"),
+  fPreviousEventTrigger(0),
+  fPreviousEmbeddedEventSelected(false),
   fResponseMatrixFillMap(),
   fResponseFromThreeJetCollections(true),
   fMinFractionShared(0.),
@@ -64,6 +66,8 @@ AliAnalysisTaskEmcalJetHPerformance::AliAnalysisTaskEmcalJetHPerformance(const c
   fCreateQAHists(false),
   fCreateResponseMatrix(false),
   fEmbeddedCellsName("emcalCells"),
+  fPreviousEventTrigger(0),
+  fPreviousEmbeddedEventSelected(false),
   fResponseMatrixFillMap(),
   fResponseFromThreeJetCollections(true),
   fMinFractionShared(0.),
@@ -501,19 +505,16 @@ void AliAnalysisTaskEmcalJetHPerformance::FillCellQAHists(const std::string & pr
     auto embeddingInstance = AliAnalysisTaskEmcalEmbeddingHelper::GetInstance();
     if (embeddingInstance) {
       fHistManager.FillTH1(embeddedEventUsed.c_str(),
-                 static_cast<double>(embeddingInstance->EmbeddedEventUsed()));
+                 static_cast<double>(fPreviousEmbeddedEventSelected));
 
       // Determine the physics selection. This isn't quite a perfect way to store it, as it mingles the
       // selections between different events. But it is simple, which will let us investigate quickly.
       // Plus, it's a reasonable bet that the event selection when be the same when it goes wrong.
-      UInt_t eventTrigger =
-       ((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))
-        ->IsEventSelected();
-      std::bitset<sizeof(UInt_t) * 8> testBits = eventTrigger;
+      std::bitset<sizeof(UInt_t) * 8> testBits = fPreviousEventTrigger;
       for (unsigned int i = 0; i < 32; i++) {
         if (testBits.test(i)) {
           fHistManager.FillTH2(embeddedInteranlEventSelection.c_str(),
-                     static_cast<double>(embeddingInstance->EmbeddedEventUsed()), i);
+                     static_cast<double>(fPreviousEmbeddedEventSelected), i);
         }
       }
     }
@@ -574,6 +575,16 @@ void AliAnalysisTaskEmcalJetHPerformance::FillQAHists()
     {
       fHistManager.FillTH1(TString::Format("QA/%s/fHistJetPt", jetCont->GetName()), jet->Pt());
     }
+  }
+
+  // Update the previous event trigger to the current event trigger so that it is available next event.
+  // This is stored for keeping track of when embedded events are double corrected.
+  // This must be updated after filling the relevant hists above!
+  fPreviousEventTrigger =
+   ((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected();
+  auto embeddingInstance = AliAnalysisTaskEmcalEmbeddingHelper::GetInstance();
+  if (embeddingInstance) {
+    fPreviousEmbeddedEventSelected = embeddingInstance->EmbeddedEventUsed();
   }
 }
 
