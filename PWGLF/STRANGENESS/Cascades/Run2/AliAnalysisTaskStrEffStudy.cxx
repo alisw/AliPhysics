@@ -2188,22 +2188,28 @@ void AliAnalysisTaskStrEffStudy::UserExec(Option_t *)
 
     //_________________________________________________________
     //Step 1: establish list of tracks coming from des
-    for (Long_t iTrack = 0; iTrack < lNTracks; iTrack++){
+    const int hyp3pdgCodes[3]{AliPID::ParticleCode(AliPID::kDeuteron), AliPID::ParticleCode(AliPID::kProton), AliPID::ParticleCode(AliPID::kPion)};
+    for(Long_t iTrack = 0; iTrack < lNTracks; iTrack++){
         AliESDtrack *esdTrack = lESDevent->GetTrack(iTrack);
         if (!esdTrack) continue;
         /// The minimal TPC/ITS reconstruction criteria must be statisfied
         if (((esdTrack->GetStatus() & AliVTrack::kTPCrefit) == 0 &&
              (esdTrack->GetStatus() & AliVTrack::kITSrefit) == 0) ||
-              esdTrack->GetKinkIndex(0) > 0) continue;
-        Int_t lLabel = (Int_t) TMath::Abs(esdTrack->GetLabel());
-        TParticle* lParticle = lMCstack->Particle(lLabel);
+            esdTrack->GetKinkIndex(0) > 0)
+            continue;
+        Int_t lLabel = (Int_t) TMath::Abs( esdTrack->GetLabel() );
+        TParticle* lParticle = lMCevent->Particle( lLabel );
+        const int pdgAbs = std::abs(lParticle->GetPdgCode());
+        if (pdgAbs != hyp3pdgCodes[0] && pdgAbs != hyp3pdgCodes[1] && pdgAbs != hyp3pdgCodes[2])
+            continue;
 
         Int_t lLabelMother = lParticle->GetFirstMother();
         if (lLabelMother < 0) continue;
 
         if (!lMCevent->IsPhysicalPrimary(lLabelMother)) continue;
 
-        TParticle *lParticleMother = lMCstack->Particle(lLabelMother);
+        TParticle *lParticleMother = lMCevent->Particle( lLabelMother );
+
         Int_t lParticleMotherPDG = lParticleMother->GetPdgCode();
         if (std::abs(lParticleMotherPDG) != 1010010030) continue;
         int lNDaughters = lRemoveDeltaRayFromDaughters(lMCevent, lParticleMother);
