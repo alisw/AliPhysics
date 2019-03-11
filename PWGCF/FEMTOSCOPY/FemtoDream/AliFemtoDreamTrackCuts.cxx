@@ -1064,7 +1064,7 @@ AliFemtoDreamTrackCuts* AliFemtoDreamTrackCuts::OmegaBachKaonCuts(
   trackCuts->SetCutTPCCrossedRows(true, 70, 0.83);
   trackCuts->SetDCAReCalculation(kTRUE);
   trackCuts->SetCutCharge(-1);
-  trackCuts->SetCheckTPCRefit(false);
+  trackCuts->SetCheckTPCRefit(true);
   trackCuts->SetPID(AliPID::kKaon, 999., 4);
   return trackCuts;
 }
