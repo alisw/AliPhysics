@@ -116,7 +116,11 @@ AliAnalysisTaskDiHadCorrelHighPt::AliAnalysisTaskDiHadCorrelHighPt() : AliAnalys
     fHistV0Lam(0),
     fHistMultiplicityALam(0),
     fHitsNTracks(0),
-    fHistPhiEta(0)
+    fHistPhiEta(0),
+    fRejectTOF(kTRUE),
+    fRejectV0PileUp(kTRUE),
+    fMultEstimator("V0M"),
+    fCorrelationsGen(kTRUE)
 {
     // default constructor, don't allocate memory here!
     // this is used by root for IO purposes, it needs to remain empty
@@ -186,7 +190,11 @@ AliAnalysisTaskDiHadCorrelHighPt::AliAnalysisTaskDiHadCorrelHighPt(const char* n
     fHistV0Lam(0),
     fHistMultiplicityALam(0),
     fHitsNTracks(0),
-    fHistPhiEta(0)
+    fHistPhiEta(0),
+    fRejectTOF(kTRUE),
+    fRejectV0PileUp(kTRUE),
+    fMultEstimator("V0M"),
+    fCorrelationsGen(kTRUE)
 {
     // constructor
     DefineInput(0, TChain::Class());    // define the input of the analysis: in this case we take a 'chain' of events
@@ -580,7 +588,11 @@ void AliAnalysisTaskDiHadCorrelHighPt::UserExec(Option_t *)
     if( !MultSelection) {
         AliWarning("AliMultSelection object not found!");
     }else{
-        lPercentile = MultSelection->GetMultiplicityPercentile("V0M");
+        if(fMultEstimator=="V0M") lPercentile = MultSelection->GetMultiplicityPercentile("V0M");
+        else if(fMultEstimator=="V0A") lPercentile = MultSelection->GetMultiplicityPercentile("V0A");
+        else if(fMultEstimator=="SPDTracklets") lPercentile = MultSelection->GetMultiplicityPercentile("SPDTracklets");
+        else if(fMultEstimator=="RefMult05") lPercentile = MultSelection->GetMultiplicityPercentile("RefMult05");
+        else if(fMultEstimator=="RefMult08") lPercentile = MultSelection->GetMultiplicityPercentile("RefMult08");
     }
     if ((lPercentile<0.)||(lPercentile>100.)) return;
     
@@ -639,10 +651,10 @@ void AliAnalysisTaskDiHadCorrelHighPt::UserExec(Option_t *)
 			if (TrIsPrim && TrPtMin && TrCharge && TrEtaMax) {
                 
                 if(fEfficiency) fHistMCPtAs->Fill(mcTrackPt,lPVz,mcTrackEta); // for recunstruction efficiency calculation
-                if(fCorrelations) mcTracksSel->Add(new AliV0ChParticle(mcTrack->Eta(),mcTrack->Phi(),mcTrack->Pt(),4,mcTrack->GetLabel(),mcTrack->GetLabel(),kFALSE));
+                if(fCorrelationsGen) mcTracksSel->Add(new AliV0ChParticle(mcTrack->Eta(),mcTrack->Phi(),mcTrack->Pt(),4,mcTrack->GetLabel(),mcTrack->GetLabel(),kFALSE));
                 
                 if (mcTrackPt>fPtTrigMin) {
-                    if(fCorrelations) mcTracksTrigSel->Add(new AliV0ChParticle(mcTrack->Eta(),mcTrack->Phi(),mcTrack->Pt(),4,mcTrack->GetLabel(),kFALSE));
+                    if(fCorrelationsGen) mcTracksTrigSel->Add(new AliV0ChParticle(mcTrack->Eta(),mcTrack->Phi(),mcTrack->Pt(),4,mcTrack->GetLabel(),kFALSE));
                     if(fEfficiency) fHistMCPtTrigg->Fill(mcTrackPt,lPVz,mcTrackEta); // for recunstruction efficiency calculation
                 }
             }
@@ -697,24 +709,25 @@ void AliAnalysisTaskDiHadCorrelHighPt::UserExec(Option_t *)
             }
 
             //MC V0 cuts
+            Double_t V0genrapidity = mcTrack->Y();
 
-            if (mcTrack->Pt()>fPtAsocMin&&TrEtaMax){
+            if (mcTrack->Pt()>fPtAsocMin&&TMath::Abs(V0genrapidity)<0.5){
                 if(IsK0) {
-                    if(fCorrelations) mcV0AssocSel->Add(new AliV0ChParticle(mcTrack->Eta(),mcTrack->Phi(),mcTrack->Pt(),5,mcTrack->GetLabel(),labelPos,labelNeg,kFALSE,mcTrack->M()));
+                    if(fCorrelationsGen) mcV0AssocSel->Add(new AliV0ChParticle(mcTrack->Eta(),mcTrack->Phi(),mcTrack->Pt(),5,mcTrack->GetLabel(),labelPos,labelNeg,kFALSE,mcTrack->M()));
                     if (fEfficiency){
                         Double_t v0effic[4]={mcTrack->Pt(),lPVz,0.5,mcTrack->Eta()};
                         fHistGenV0->Fill(v0effic); // for recunstruction efficiency calculation
                     }
                 }
                 if(IsLambda) {
-                    if(fCorrelations) mcV0AssocSel->Add(new AliV0ChParticle(mcTrack->Eta(),mcTrack->Phi(),mcTrack->Pt(),6,mcTrack->GetLabel(),labelPos,labelNeg,kFALSE,mcTrack->M()));
+                    if(fCorrelationsGen) mcV0AssocSel->Add(new AliV0ChParticle(mcTrack->Eta(),mcTrack->Phi(),mcTrack->Pt(),6,mcTrack->GetLabel(),labelPos,labelNeg,kFALSE,mcTrack->M()));
                     if (fEfficiency){
                         Double_t v0effic[4]={mcTrack->Pt(),lPVz,1.5,mcTrack->Eta()};
                         fHistGenV0->Fill(v0effic); // for recunstruction efficiency calculation
                     }
                 }
                 if(IsAntiLambda) {
-                    if(fCorrelations) mcV0AssocSel->Add(new AliV0ChParticle(mcTrack->Eta(),mcTrack->Phi(),mcTrack->Pt(),7,mcTrack->GetLabel(),labelPos,labelNeg,kFALSE,mcTrack->M()));
+                    if(fCorrelationsGen) mcV0AssocSel->Add(new AliV0ChParticle(mcTrack->Eta(),mcTrack->Phi(),mcTrack->Pt(),7,mcTrack->GetLabel(),labelPos,labelNeg,kFALSE,mcTrack->M()));
                     if (fEfficiency){
                         Double_t v0effic[4]={mcTrack->Pt(),lPVz,2.5,mcTrack->Eta()};
                         fHistGenV0->Fill(v0effic); // for recunstruction efficiency calculation
@@ -722,7 +735,7 @@ void AliAnalysisTaskDiHadCorrelHighPt::UserExec(Option_t *)
                 }
                 
             }
-            if (mcTrack->Pt()>fPtTrigMin&&TrEtaMax&&fCorrelations){
+            if (mcTrack->Pt()>fPtTrigMin&&fCorrelationsGen&&TMath::Abs(V0genrapidity)<0.5){
                 if(IsK0) mcTracksV0Sel->Add(new AliV0ChParticle(mcTrack->Eta(),mcTrack->Phi(),mcTrack->Pt(),1,mcTrack->GetLabel(),labelPos,labelNeg,kFALSE,mcTrack->M()));
                 if(IsLambda) mcTracksV0Sel->Add(new AliV0ChParticle(mcTrack->Eta(),mcTrack->Phi(),mcTrack->Pt(),2,mcTrack->GetLabel(),labelPos,labelNeg,kFALSE,mcTrack->M()));
                 if(IsAntiLambda) mcTracksV0Sel->Add(new AliV0ChParticle(mcTrack->Eta(),mcTrack->Phi(),mcTrack->Pt(),3,mcTrack->GetLabel(),labelPos,labelNeg,kFALSE,mcTrack->M()));
@@ -730,7 +743,7 @@ void AliAnalysisTaskDiHadCorrelHighPt::UserExec(Option_t *)
 
 		}
         // MC closure test corellations
-        if(fCorrelations){
+        if(fCorrelationsGen){
             //V0-h
             Corelations(mcTracksV0Sel,mcTracksSel,fHistMCKorelacie, lPVz, fHistNumberOfTriggersGen,kFALSE,kTRUE,lPercentile,fHistPtHard,ptHard,kFALSE);
 
@@ -755,7 +768,8 @@ void AliAnalysisTaskDiHadCorrelHighPt::UserExec(Option_t *)
         	
             if ((tras->Charge())==0) continue;
             
-            if(fRejectTrackPileUp&&(!(tras->HasPointOnITSLayer(0) || tras->GetTOFBunchCrossing()==0 ))) continue; // track by track pile-up rejection
+            if(fRejectTrackPileUp&&fRejectTOF&&(!(tras->HasPointOnITSLayer(1) || tras->HasPointOnITSLayer(0) || tras->GetTOFBunchCrossing()==0 ))) continue; // track by track pile-up rejection
+            if(fRejectTrackPileUp&&!fRejectTOF&&(!(tras->HasPointOnITSLayer(1) ||tras->HasPointOnITSLayer(0)))) continue; // track by track pile-up rejection
             
             Double_t mcPt = tras->Pt();
             Double_t mcPhi = tras->Phi();
@@ -813,7 +827,8 @@ void AliAnalysisTaskDiHadCorrelHighPt::UserExec(Option_t *)
         
         if(!IsMyGoodPrimaryTrack(track)) continue; // hybrid track selection
         nTrakBefore+=1;
-        if(fRejectTrackPileUp&&(!(track->HasPointOnITSLayer(0) || track->GetTOFBunchCrossing()==0 ))) continue;
+        if(fRejectTrackPileUp&&fRejectTOF&&(!(track->HasPointOnITSLayer(1) || track->HasPointOnITSLayer(0) || track->GetTOFBunchCrossing()==0 ))) continue; // track by track pile-up rejection using TOF
+        if(fRejectTrackPileUp&&!fRejectTOF&&(!(track->HasPointOnITSLayer(1) ||track->HasPointOnITSLayer(0)))) continue; // track by track pile-up rejection without TOF information
         nTrak+=1;
         
 		if(track->Pt()>fPtAsocMin) selectedTracks->Add(track);
@@ -923,7 +938,7 @@ void AliAnalysisTaskDiHadCorrelHighPt::UserExec(Option_t *)
         
         // reject bunch-off pile-up
         
-        if (fRejectTrackPileUp&&(!(((myTrackNeg->IsOn(AliAODTrack::kTPCrefit)&&myTrackNeg->IsOn(AliAODTrack::kITSrefit))||myTrackNeg->IsOn(AliAODTrack::kTOFout))||((myTrackPos->IsOn(AliAODTrack::kTPCrefit)&&myTrackPos->IsOn(AliAODTrack::kITSrefit))||myTrackPos->IsOn(AliAODTrack::kTOFout))))) continue;
+        if (fRejectV0PileUp&&(!(((myTrackNeg->IsOn(AliAODTrack::kTPCrefit)&&myTrackNeg->IsOn(AliAODTrack::kITSrefit))||myTrackNeg->IsOn(AliAODTrack::kTOFout))||((myTrackPos->IsOn(AliAODTrack::kTPCrefit)&&myTrackPos->IsOn(AliAODTrack::kITSrefit))||myTrackPos->IsOn(AliAODTrack::kTOFout))))) continue;
         
         if (k0) {
             fHistK0MassPtCut->Fill(massK0,ptTrig,0.5);
