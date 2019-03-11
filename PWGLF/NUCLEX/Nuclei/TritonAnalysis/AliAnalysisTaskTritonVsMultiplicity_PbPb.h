@@ -68,12 +68,16 @@ public:
         fTRDntracklets             = TRDntracklets;
           }
     
-    void RecalibrationTPCandTOF (TF1 *MeanTPC, TF1 *WidthTPC, TF1 *MeanTOF, TF1 *WidthTOF )  {
+    void RecalibrationTPCandTOF (Double_t par0_mean_TPC, Double_t par1_mean_TPC, Double_t par0_sigma_TPC, Double_t par0_mean_TOF, Double_t par1_mean_TOF, Double_t par0_sigma_TOF, Double_t par1_sigma_TOF )  {
     
-        fMeanTPC                   = MeanTPC;
-        fWidthTPC                  = WidthTPC;
-        fMeanTOF                   = MeanTOF;
-        fWidthTOF                  = WidthTOF;
+        fpar0_mean_TPC                  = par0_mean_TPC;
+        fpar1_mean_TPC                  = par1_mean_TPC;
+        fpar0_sigma_TPC                 = par0_sigma_TPC;
+        fpar0_mean_TOF                  = par0_mean_TOF;
+        fpar1_mean_TOF                  = par1_mean_TOF;
+        fpar0_sigma_TOF                 = par0_sigma_TOF;
+        fpar1_sigma_TOF                 = par1_sigma_TOF;
+        
       
       
     }
@@ -126,11 +130,13 @@ private:
     Int_t fTRDntracklets;//
     
     
-    TF1 *fMeanTPC;//
-    TF1 *fWidthTPC;//
-    TF1 *fMeanTOF;//
-    TF1 *fWidthTOF;//
-    
+    Double_t fpar0_mean_TPC;//
+    Double_t fpar1_mean_TPC;//
+    Double_t fpar0_sigma_TPC;//
+    Double_t fpar0_mean_TOF;//
+    Double_t fpar1_mean_TOF;//
+    Double_t fpar0_sigma_TOF;//
+    Double_t fpar1_sigma_TOF;//
     
     //Histograms
     TH1F *histoNumberOfEvents;//!
