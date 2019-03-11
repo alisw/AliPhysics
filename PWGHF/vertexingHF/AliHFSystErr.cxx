@@ -1550,10 +1550,10 @@ void AliHFSystErr::InitD0toKpi2016pPb0100(){
 
   // Tracking efficiency
   fTrackingEff = new TH1F("fTrackingEff","fTrackingEff",36,0,36);
-  for(Int_t i=0;i<=12;i++) fTrackingEff->SetBinContent(i,0.025); //
-  for(Int_t i=12;i<=16;i++) fTrackingEff->SetBinContent(i,0.03); //
+  for(Int_t i=1;i<=12;i++) fTrackingEff->SetBinContent(i,0.025); //
+  for(Int_t i=13;i<=16;i++) fTrackingEff->SetBinContent(i,0.03); //
   for(Int_t i=17;i<=24;i++) fTrackingEff->SetBinContent(i,0.035); //
-  for(Int_t i=24;i<=36;i++) fTrackingEff->SetBinContent(i,0.04); //
+  for(Int_t i=25;i<=36;i++) fTrackingEff->SetBinContent(i,0.04); //
 
   // Raw yield extraction
   fRawYield = new TH1F("fRawYield","fRawYield",36,0,36);
@@ -1589,19 +1589,21 @@ void AliHFSystErr::InitD0toKpi2016pPb0100(){
 }
 //______________________________________________________________________
 void AliHFSystErr::InitD0toKpi2016pPb5TeV_finebins(){
-  Float_t xbins[23]={0.,0.5,1,1.5,2,2.5,3,3.5,4,4.5,5,5.5,6,6.5,7,7.5,8,9,10,12,16,24,36};
   // D0->Kpi syst errors. Responsible: C. Terrevoli
   //  2016 pPb sample - 5.02TeV with finer pt bins
   //
+  AliInfo(" Settings for D0 --> K pi, p-Pb collisions at 5.023 TeV - 2016 run - fine bins");
   SetNameTitle("AliHFSystErr","SystErrD0toKpi2016pPb5TeVFineBins");
 
+  Float_t xbins[23]={0.,0.5,1,1.5,2,2.5,3,3.5,4,4.5,5,5.5,6,6.5,7,7.5,8,9,10,12,16,24,36};
+
   // Normalization
-  fNorm = new TH1F("fNorm","fNorm",23,xbins);
+  fNorm = new TH1F("fNorm","fNorm",22,xbins);
   for(Int_t i=1;i<=22;i++) fNorm->SetBinContent(i,0.02);
 
   // Branching ratio
   fBR = new TH1F("fBR","fBR",22,xbins);
-  for(Int_t i=1;i<=23;i++) fBR->SetBinContent(i,0.0129);// (0.05/3.88)
+  for(Int_t i=1;i<=22;i++) fBR->SetBinContent(i,0.0129);// (0.05/3.88)
 
 
    // Tracking efficiency
@@ -1611,7 +1613,7 @@ void AliHFSystErr::InitD0toKpi2016pPb5TeV_finebins(){
   for(Int_t i=21;i<22;i++) fTrackingEff->SetBinContent(i,0.035);
   for(Int_t i=22;i<23;i++) fTrackingEff->SetBinContent(i,0.04);
 
-  fRawYield = new TH1F("fRawYield","fRawYield",23,xbins);//
+  fRawYield = new TH1F("fRawYield","fRawYield",22,xbins);//
   fRawYield->SetBinContent(1,0.1);//pt bin not used for this analysis  0-0.5, bins
   fRawYield->SetBinContent(2,0.1);//pt bin not used for this analysis  0.5-1 bins
   fRawYield->SetBinContent(3,0.10);// 1-1.5
@@ -1622,16 +1624,16 @@ void AliHFSystErr::InitD0toKpi2016pPb5TeV_finebins(){
   for(Int_t i=22;i<23;i++) fRawYield->SetBinContent(i,0.04);//>12
 
   // Cuts efficiency (from cuts variation)
-  fCutsEff = new TH1F("fCutsEff","fCutsEff",23,xbins);
+  fCutsEff = new TH1F("fCutsEff","fCutsEff",22,xbins);
   for(Int_t i=1;i<=3;i++) fCutsEff->SetBinContent(i,0.05);
   for(Int_t i=4;i<23;i++) fCutsEff->SetBinContent(i,0.03);
 
   // PID efficiency (from PID/noPID)
-  fPIDEff = new TH1F("fPIDEff","fPIDEff",23,xbins);
+  fPIDEff = new TH1F("fPIDEff","fPIDEff",22,xbins);
   for(Int_t i=1;i<23;i++) fPIDEff->SetBinContent(i,0.0);
 
   // MC dN/dpt
-  fMCPtShape = new TH1F("fMCPtShape","fMCPtShape",23,xbins);
+  fMCPtShape = new TH1F("fMCPtShape","fMCPtShape",22,xbins);
   for(Int_t i=1;i<23;i++) fMCPtShape->SetBinContent(i,0);
 
   // particle-antiparticle
@@ -1656,7 +1658,7 @@ void AliHFSystErr::InitD0toKpi2016pPb010ZNA(){
   for(Int_t i=1;i<=36;i++) fBR->SetBinContent(i,0.0129); // (0.05/3.88)
   // Tracking efficiency
   fTrackingEff = new TH1F("fTrackingEff","fTrackingEff",36,0,36);
-  for(Int_t i=0;i<=12;i++) fTrackingEff->SetBinContent(i,0.025); //
+  for(Int_t i=1;i<=12;i++) fTrackingEff->SetBinContent(i,0.025); //
   for(Int_t i=13;i<=16;i++) fTrackingEff->SetBinContent(i,0.03); //
   for(Int_t i=17;i<=24;i++) fTrackingEff->SetBinContent(i,0.035); //
   for(Int_t i=25;i<=36;i++) fTrackingEff->SetBinContent(i,0.04); //
@@ -1703,7 +1705,7 @@ void AliHFSystErr::InitD0toKpi2016pPb1020ZNA(){
   for(Int_t i=1;i<=36;i++) fBR->SetBinContent(i,0.0129); // (0.05/3.88)
   // Tracking efficiency
   fTrackingEff = new TH1F("fTrackingEff","fTrackingEff",36,0,36);
-  for(Int_t i=0;i<=12;i++) fTrackingEff->SetBinContent(i,0.025); //
+  for(Int_t i=1;i<=12;i++) fTrackingEff->SetBinContent(i,0.025); //
   for(Int_t i=13;i<=16;i++) fTrackingEff->SetBinContent(i,0.03); //
   for(Int_t i=17;i<=24;i++) fTrackingEff->SetBinContent(i,0.035); //
   for(Int_t i=25;i<=36;i++) fTrackingEff->SetBinContent(i,0.04); //
@@ -1747,7 +1749,7 @@ void AliHFSystErr::InitD0toKpi2016pPb2040ZNA(){
   for(Int_t i=1;i<=36;i++) fBR->SetBinContent(i,0.0129); // (0.05/3.88)
   // Tracking efficiency
   fTrackingEff = new TH1F("fTrackingEff","fTrackingEff",36,0,36);
-  for(Int_t i=0;i<=12;i++) fTrackingEff->SetBinContent(i,0.025); //
+  for(Int_t i=1;i<=12;i++) fTrackingEff->SetBinContent(i,0.025); //
   for(Int_t i=13;i<=16;i++) fTrackingEff->SetBinContent(i,0.03); //
   for(Int_t i=17;i<=24;i++) fTrackingEff->SetBinContent(i,0.035); //
   for(Int_t i=25;i<=36;i++) fTrackingEff->SetBinContent(i,0.04); //
@@ -1794,7 +1796,7 @@ void AliHFSystErr::InitD0toKpi2016pPb4060ZNA(){
   for(Int_t i=1;i<=36;i++) fBR->SetBinContent(i,0.0129); // (0.05/3.88)
   // Tracking efficiency
   fTrackingEff = new TH1F("fTrackingEff","fTrackingEff",36,0,36);
-  for(Int_t i=0;i<=12;i++) fTrackingEff->SetBinContent(i,0.025); //
+  for(Int_t i=1;i<=12;i++) fTrackingEff->SetBinContent(i,0.025); //
   for(Int_t i=13;i<=16;i++) fTrackingEff->SetBinContent(i,0.03); //
   for(Int_t i=17;i<=24;i++) fTrackingEff->SetBinContent(i,0.035); //
   for(Int_t i=25;i<=36;i++) fTrackingEff->SetBinContent(i,0.04); //
@@ -1847,8 +1849,8 @@ void AliHFSystErr::InitD0toKpi2016pPb60100ZNA(){
 
   // Tracking efficiency
   fTrackingEff = new TH1F("fTrackingEff","fTrackingEff",36,0,36);
-  for(Int_t i=0;i<=12;i++) fTrackingEff->SetBinContent(i,0.025); //
-  for(Int_t i=12;i<=16;i++) fTrackingEff->SetBinContent(i,0.03); //
+  for(Int_t i=1;i<=12;i++) fTrackingEff->SetBinContent(i,0.025); //
+  for(Int_t i=13;i<=16;i++) fTrackingEff->SetBinContent(i,0.03); //
   for(Int_t i=17;i<=24;i++) fTrackingEff->SetBinContent(i,0.035); //
   for(Int_t i=25;i<=36;i++) fTrackingEff->SetBinContent(i,0.04); //
 
@@ -1902,8 +1904,8 @@ void AliHFSystErr::InitD0toKpi2016pPb0100LowPtAn(){
 
   // Tracking efficiency
   fTrackingEff = new TH1F("fTrackingEff","fTrackingEff",24,0,24);
-  for(Int_t i=0;i<=12;i++) fTrackingEff->SetBinContent(i,0.025); //
-  for(Int_t i=12;i<=16;i++) fTrackingEff->SetBinContent(i,0.03); //
+  for(Int_t i=1;i<=12;i++) fTrackingEff->SetBinContent(i,0.025); //
+  for(Int_t i=13;i<=16;i++) fTrackingEff->SetBinContent(i,0.03); //
   for(Int_t i=17;i<=24;i++) fTrackingEff->SetBinContent(i,0.035); //
 
   // Raw yield extraction
