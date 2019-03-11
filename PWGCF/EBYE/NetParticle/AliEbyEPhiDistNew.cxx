@@ -648,6 +648,7 @@ void AliEbyEPhiDistNew::UserExec( Option_t * ){
 //  if (!fInputEventHandler) return;
  
     //Plie up cout for Run2
+    if(!fIsMC){
     
     if(fRun == "LHC15o"){
         cout << " I am in frun = lhc15o" << endl;
@@ -655,7 +656,7 @@ void AliEbyEPhiDistNew::UserExec( Option_t * ){
             LocalPost(); return;
         }
     }
-
+    }
   const AliVVertex *vertex = fVevent->GetPrimaryVertex();
   if(!vertex) { LocalPost(); return; }
 
