@@ -34,7 +34,7 @@ class AliHFTreeHandlerBplustoD0pi : public AliHFTreeHandler
     virtual ~AliHFTreeHandlerBplustoD0pi();
 
     virtual TTree* BuildTree(TString name="tree", TString title="tree");
-    virtual bool SetVariables(AliAODRecoDecayHF* cand, float bfield, int masshypo=0, AliPIDResponse *pidrespo=0x0);
+    virtual bool SetVariables(int runnumber, unsigned int eventID, AliAODRecoDecayHF* cand, float bfield, int masshypo=0, AliPIDResponse *pidrespo=0x0);
     virtual void FillTree(); //to be called for each event, not each candidate!
 
   private:

@@ -92,6 +92,8 @@ public:
   void SetShiftedPositions(const AliAODTrack *track ,const Float_t bfield, Float_t posShifted[3], const Double_t radius=1.25);
 
   void SetUseAliEventCuts(Bool_t useAliEventCuts);
+  void SetReadFullMCData(Bool_t should_read=true);
+  bool GetReadFullMCData() const;
 
   void Set1DCorrectionsPions(TH1D *h1);
   void Set1DCorrectionsKaons(TH1D *h1);
@@ -164,6 +166,9 @@ protected:
   AliEventCuts     *fEventCuts;
   Bool_t           fUseAliEventCuts;
 
+  /// Read generated particle info of "low quality" MC tracks
+  /// (i.e. tracks with negative labels)
+  Bool_t           fReadFullMCData;
 
 private:
 
@@ -240,5 +245,12 @@ private:
 #endif
 
 };
+
+
+inline void AliFemtoEventReaderAOD::SetReadFullMCData(bool read)
+  { fReadFullMCData = read; }
+
+inline bool AliFemtoEventReaderAOD::GetReadFullMCData() const
+  { return fReadFullMCData; }
 
 #endif

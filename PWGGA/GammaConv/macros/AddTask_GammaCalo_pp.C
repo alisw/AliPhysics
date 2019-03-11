@@ -31,7 +31,7 @@ void AddTask_GammaCalo_pp(
   // general setting for task
   Int_t     enableQAMesonTask             = 0,        // enable QA in AliAnalysisTaskGammaConvV1
   Int_t     enableQAClusterTask           = 0,        // enable additional QA task
-  Int_t     enableExtMatchAndQA           = 0,                            // disabled (0), extMatch (1), extQA_noCellQA (2), extMatch+extQA_noCellQA (3), extQA+cellQA (4), extMatch+extQA+cellQA (5)
+  Int_t     enableExtMatchAndQA           = 0,        // disabled (0), extMatch (1), extQA_noCellQA (2), extMatch+extQA_noCellQA (3), extQA+cellQA (4), extMatch+extQA+cellQA (5)
   Bool_t    enableLightOutput             = kFALSE,   // switch to run light output (only essential histograms for afterburner)
   Bool_t    enableTHnSparse               = kFALSE,   // switch on THNsparse
   Bool_t    enableTriggerMimicking        = kFALSE,   // enable trigger mimicking
@@ -1463,23 +1463,23 @@ void AddTask_GammaCalo_pp(
 
     // EDC 13 TeV 2016 & 2017 settings with MC fine tuning correction
   } else if (trainConfig == 2020){ // EMCAL+DCAL clusters standard cuts, INT7, NL , std TM, tight timing
-    cuts.AddCutCalo("00010113","41179000a7032230000","01631031000000d0"); // INT7 No NL
-    cuts.AddCutCalo("00010113","41179110a7032230000","01631031000000d0"); // INT7 NL11
-    cuts.AddCutCalo("00010113","41179120a7032230000","01631031000000d0"); // INT7 NL12
-    cuts.AddCutCalo("00010113","41179210a7032230000","01631031000000d0"); // INT7 NL21
-    cuts.AddCutCalo("00010113","41179220a7032230000","01631031000000d0"); // INT7 NL22
+    cuts.AddCutCalo("00010113","4117900067032230000","01631031000000d0"); // INT7 No NL
+    cuts.AddCutCalo("00010113","4117911067032230000","01631031000000d0"); // INT7 NL11
+    cuts.AddCutCalo("00010113","4117912067032230000","01631031000000d0"); // INT7 NL12
+    cuts.AddCutCalo("00010113","4117921067032230000","01631031000000d0"); // INT7 NL21
+    cuts.AddCutCalo("00010113","4117922067032230000","01631031000000d0"); // INT7 NL22
   } else if (trainConfig == 2021){ // EMCAL+DCAL clusters standard cuts, EG2, NL , std TM, tight timing
-    cuts.AddCutCalo("0008e113","41179000a7032230000","01631031000000d0"); // EG2  No NL
-    cuts.AddCutCalo("0008e113","41179110a7032230000","01631031000000d0"); // EG2  NL11
-    cuts.AddCutCalo("0008e113","41179120a7032230000","01631031000000d0"); // EG2  NL12
-    cuts.AddCutCalo("0008e113","41179210a7032230000","01631031000000d0"); // EG2  NL21
-    cuts.AddCutCalo("0008e113","41179220a7032230000","01631031000000d0"); // EG2  NL22
+    cuts.AddCutCalo("0008e113","4117900067032230000","01631031000000d0"); // EG2  No NL
+    cuts.AddCutCalo("0008e113","4117911067032230000","01631031000000d0"); // EG2  NL11
+    cuts.AddCutCalo("0008e113","4117912067032230000","01631031000000d0"); // EG2  NL12
+    cuts.AddCutCalo("0008e113","4117921067032230000","01631031000000d0"); // EG2  NL21
+    cuts.AddCutCalo("0008e113","4117922067032230000","01631031000000d0"); // EG2  NL22
   } else if (trainConfig == 2022){ // EMCAL+DCAL clusters standard cuts, EG1, NL , std TM, tight timing
-    cuts.AddCutCalo("0008d113","41179110a7032230000","01631031000000d0"); // EG1  No NL
-    cuts.AddCutCalo("0008d113","41179110a7032230000","01631031000000d0"); // EG1  NL11
-    cuts.AddCutCalo("0008d113","41179120a7032230000","01631031000000d0"); // EG1  NL12
-    cuts.AddCutCalo("0008d113","41179210a7032230000","01631031000000d0"); // EG1  NL21
-    cuts.AddCutCalo("0008d113","41179220a7032230000","01631031000000d0"); // EG1  NL22
+    cuts.AddCutCalo("0008d113","4117911067032230000","01631031000000d0"); // EG1  No NL
+    cuts.AddCutCalo("0008d113","4117911067032230000","01631031000000d0"); // EG1  NL11
+    cuts.AddCutCalo("0008d113","4117912067032230000","01631031000000d0"); // EG1  NL12
+    cuts.AddCutCalo("0008d113","4117921067032230000","01631031000000d0"); // EG1  NL21
+    cuts.AddCutCalo("0008d113","4117922067032230000","01631031000000d0"); // EG1  NL22
 
 
   } else {
@@ -1638,6 +1638,7 @@ void AddTask_GammaCalo_pp(
   task->SetDoTHnSparse(enableTHnSparse);
   task->SetProduceTreeEOverP(doTreeEOverP);
   task->SetEnableSortingOfMCClusLabels(enableSortingMCLabels);
+  if(trainConfig == 2020 || trainConfig == 2021 || trainConfig == 2022) task->SetDoPi0Only(kTRUE);
   if(trainConfig == 446) task->SetSoftAnalysis(kTRUE);
   if(enableExtMatchAndQA > 1){ task->SetPlotHistsExtQA(kTRUE);}
   if(trainConfig == 106 || trainConfig == 125 || trainConfig == 145){

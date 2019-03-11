@@ -161,7 +161,7 @@ void AliForwardNUATask::UserExec(Option_t *)
   if (fSettings.mc) fUtil.fMCevent = this->MCEvent();
 
 
-  Double_t centralEta = (fSettings.useSPD ? 2.5 : 1.5);
+  Double_t centralEta = ((fSettings.useSPD || fSettings.useITS) ? 2.5 : 1.5);
   TH2D centralDist_tmp = TH2D("c","",400,-centralEta,centralEta,400,0,2*TMath::Pi());
   centralDist_tmp.SetDirectory(0);
   TH2D refDist_tmp = TH2D("c","",400,-centralEta,centralEta,400,0,2*TMath::Pi());

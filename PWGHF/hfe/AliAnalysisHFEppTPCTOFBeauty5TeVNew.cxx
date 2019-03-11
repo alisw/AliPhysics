@@ -715,10 +715,10 @@ void AliAnalysisHFEppTPCTOFBeauty5TeVNew::UserCreateOutputObjects()
     fInvmassULS = new TH1F("fInvmassULS", "Inv mass of ULS (e,e) for pt^{e}>1; mass(GeV/c^2); counts;", 100,0,1.0);
     fOutputList->Add(fInvmassULS);
     
-    fULSdcaBelow = new TH2F("fULSdcaBelow","ULS Elec DCA m<0.1GeV/c^{2}; p_{T}(GeV/c); DCAxMagFieldxSign; counts;", 60,0,30., 8000,-0.5,0.5);
+    fULSdcaBelow = new TH2F("fULSdcaBelow","ULS Elec DCA m<0.1GeV/c^{2}; p_{T}(GeV/c); DCAxMagFieldxSign; counts;", 32,ptbinning, 8000,-0.5,0.5);
     fOutputList->Add(fULSdcaBelow);
     
-    fLSdcaBelow = new TH2F("fLSdcaBelow","LS Elec DCA m<0.1GeV/c^{2}; p_{T}(GeV/c); DCAxMagFieldxSign; counts;", 60,0,30., 8000,-0.5,0.5);
+    fLSdcaBelow = new TH2F("fLSdcaBelow","LS Elec DCA m<0.1GeV/c^{2}; p_{T}(GeV/c); DCAxMagFieldxSign; counts;", 32,ptbinning, 8000,-0.5,0.5);
     fOutputList->Add(fLSdcaBelow);
     
     fMCInvmassLS = new TH1F("fMCInvmassLS", "MC Inv mass of LS (e,e) for pt^{e}>1; mass(GeV/c^2); counts;", 100,0,1.0);
@@ -727,10 +727,10 @@ void AliAnalysisHFEppTPCTOFBeauty5TeVNew::UserCreateOutputObjects()
     fMCInvmassULS = new TH1F("fMCInvmassULS", "MC Inv mass of ULS (e,e) for pt^{e}>1; mass(GeV/c^2); counts;", 100,0,1.0);
     fOutputList->Add(fMCInvmassULS);
     
-    fMCULSdcaBelow = new TH2F("fMCULSdcaBelow","MC ULS Elec DCA m<0.1GeV/c^{2}; p_{T}(GeV/c); DCAxMagFieldxSign; counts;", 60,0,30., 8000,-0.5,0.5);
+    fMCULSdcaBelow = new TH2F("fMCULSdcaBelow","MC ULS Elec DCA m<0.1GeV/c^{2}; p_{T}(GeV/c); DCAxMagFieldxSign; counts;", 32,ptbinning, 8000,-0.5,0.5);
     fOutputList->Add(fMCULSdcaBelow);
     
-    fMCLSdcaBelow = new TH2F("fMCLSdcaBelow","MC LS Elec DCA m<0.1GeV/c^{2}; p_{T}(GeV/c); DCAxMagFieldxSign; counts;", 60,0,30., 8000,-0.5,0.5);
+    fMCLSdcaBelow = new TH2F("fMCLSdcaBelow","MC LS Elec DCA m<0.1GeV/c^{2}; p_{T}(GeV/c); DCAxMagFieldxSign; counts;", 32,ptbinning, 8000,-0.5,0.5);
     fOutputList->Add(fMCLSdcaBelow);
     
     fTPC_p1 = new TH2F("fTPC_p1","p (GeV/c);TPC dE/dx (a. u.)",300,0,15,400,-20,200);
@@ -1412,10 +1412,10 @@ void AliAnalysisHFEppTPCTOFBeauty5TeVNew::UserExec(Option_t *)
             
         Bool_t test = GetNMCPartProduced(); ///Getting number of particles produced by the MC generator
            
-        for(Int_t iMC = 0; iMC < fNTotMCpart; iMC++)
+        for(Int_t iMC = 0; iMC < fMCarray->GetEntries(); iMC++)
         {
 			fMCparticle = (AliAODMCParticle*) fMCarray->At(iMC);
-			fMCparticleMother = (AliAODMCParticle*) fMCarray->At(fMCparticle->GetMother());
+			
 			///Pseudo-rapidity cut
 			if((fMCparticle->Eta() < fEtaMin) || (fMCparticle->Eta() > fEtaMax)) continue;     				
 			
@@ -1432,41 +1432,7 @@ void AliAnalysisHFEppTPCTOFBeauty5TeVNew::UserExec(Option_t *)
 					fPtBeautyGenerated->Fill(fMCparticle->Pt());
                     //cout<<iMC<<endl;
 				}
-				Int_t pdg_mother = fMCparticleMother->GetPdgCode();
-                		///Photonic Electrons:
-                		if(TMath::Abs(pdg_mother) == 111 || TMath::Abs(pdg_mother) == 221 || TMath::Abs(pdg_mother) == 22){
-				Int_t fType = GetPi0EtaType(fMCparticleMother,fMCarray);
-                                if(fType == 0 || fType == 1){
-                  		if(TMath::Abs(pdg_mother) == 111){
-                  		if(fMCparticleMother->Pt() > 20.0) continue;
-                  		//TAxis * axis1 = hMCWeightPi0->GetXaxis();
-                  		//Int_t fbin = axis1->FindBin(fMCparticleMother->Pt());
-                  		//cout<<fbin<<endl;
-				Double_t WeightPi0MB = hMCWeightPi0MB->Eval(fMCparticleMother->Pt());
-				Double_t WeightPi0Enh = hMCWeightPi0Enh->Eval(fMCparticleMother->Pt());
-				//cout<<"Weight:   "<<WeightPi0MB<<"    "<<WeightPi0Enh<<endl;
-				fMCMBPtElePi0GeneratedAft->Fill(fMCparticle->Pt(),WeightPi0MB);
-				fMCEnhPtElePi0GeneratedAft->Fill(fMCparticle->Pt(),WeightPi0Enh);
-				}
-				if(TMath::Abs(pdg_mother) == 221){ 
-				if(fMCparticleMother->Pt() > 20.0) continue;
-				//TAxis * axis2 = hMCWeightEta->GetXaxis();
-                  		//Int_t fbin = axis2->FindBin(fMCparticleMother->Pt());
-				Double_t WeightEtaMB = hMCWeightEtaMB->Eval(fMCparticleMother->Pt());
-				Double_t WeightEtaEnh = hMCWeightEtaEnh->Eval(fMCparticleMother->Pt());
-				fMCMBPtEleEtaGeneratedAft->Fill(fMCparticle->Pt(),WeightEtaMB);
-				fMCEnhPtEleEtaGeneratedAft->Fill(fMCparticle->Pt(),WeightEtaEnh);
-				}
 				
-				if(fType == 2 || fType == 3 || fType == 4){
-				if(TMath::Abs(pdg_mother) == 111)fMCPtElePi0GeneratedBef->Fill(fMCparticle->Pt());
-				if(TMath::Abs(pdg_mother) == 221)fMCPtEleEtaGeneratedBef->Fill(fMCparticle->Pt());
-				}
-				if(fType == 0 || fType == 1 || fType == 2 || fType == 3 || fType == 4){
-				if(TMath::Abs(pdg_mother) == 22) fMCPtEleGammaGenerated->Fill(fMCparticle->Pt());
-				}
-				}
-				}
 			}
 			///----------------------------------------------------  
         }
@@ -1975,6 +1941,7 @@ void AliAnalysisHFEppTPCTOFBeauty5TeVNew::UserExec(Option_t *)
 		
 	if(fIsMC){
                 InvMassCheckMC(iTracks, track, d0z0, signB);
+                InvMassCheckMCDenom(track);
 
             }	
 	
@@ -2160,7 +2127,8 @@ void AliAnalysisHFEppTPCTOFBeauty5TeVNew::UserExec(Option_t *)
 							hCharmMotherPt_vsElecPt_corr->Fill(fPt,fMCparticleMother->Pt());
 							hElecPt_vsCharmMotherPt_corr->Fill(fMCparticleMother->Pt(),fPt);
 							fDCAxy_pt_charmaft->Fill(fPt,DCAxy*track->Charge()*signB);						 
-						 }												 
+						 }
+																	 
 					}
 					
 					if(TMath::Abs(pdg_mother)>4000 && TMath::Abs(pdg_mother)<5000){///charmed baryon
@@ -2591,22 +2559,75 @@ void AliAnalysisHFEppTPCTOFBeauty5TeVNew::InvMassCheckMC(int itrack, AliVTrack *
         if (fFlagULS && mass<0.14) {
            // kFlagReco = kTRUE;
                 fMCparticleMother = (AliAODMCParticle*) fMCarray->At(fMCparticle->GetMother());
-                Int_t pdg_mother = fMCparticleMother->GetPdgCode();
-                
-                ///Photonic Electrons:
+                Int_t pdg_mother = -999;
+	        Int_t pdg_gmother = -999;
+		Int_t pdg_ggmother = -999;
+		Int_t fType = -999;
+		Int_t fType2 = -999;
+		Int_t fType3 = -999;
+                if(!fMCparticleMother){
+		pdg_mother = -999;
+		}else{
+		pdg_mother = fMCparticleMother->GetPdgCode();
+		fMCparticleGMother = (AliAODMCParticle*) fMCarray->At(fMCparticleMother->GetMother());
+		}
+		if(!fMCparticleGMother){
+		pdg_gmother = -999;
+		}else{
+		pdg_gmother = fMCparticleGMother->GetPdgCode();
+		fMCparticleGGMother = (AliAODMCParticle*) fMCarray->At(fMCparticleGMother->GetMother());
+		}
+		if(!fMCparticleGGMother){
+		pdg_ggmother = -999;
+		}else{
+		pdg_ggmother = fMCparticleGGMother->GetPdgCode();
+		}
+                ///Tagging efficiency: Found electrons from Pi0 (and gamma from pi0) and eta (and gamma from eta)
                 if(TMath::Abs(pdg_mother) == 111 || TMath::Abs(pdg_mother) == 221 || TMath::Abs(pdg_mother) == 22){
-                   Int_t fType = GetPi0EtaType(fMCparticleMother,fMCarray);
-                   if(fType == 0 || fType == 1){
-                   if(TMath::Abs(pdg_mother) == 111){
+                   if(!fMCparticleMother){
+                   fType = -999;
+                   }else{
+                   fType = GetPi0EtaType(fMCparticleMother,fMCarray);
+                   }
+                   if(!fMCparticleGMother){
+                   fType2 = -999;
+                   }else{
+                   fType2 = GetPi0EtaType(fMCparticleGMother,fMCarray);
+                   }
+		   if(!fMCparticleGGMother){
+                   fType3 = -999;
+                   }else{
+                   fType3 = GetPi0EtaType(fMCparticleGGMother,fMCarray);
+                   }
+                   //if(fType == 0 || fType == 1){
+                   // pi0 and gamma from pi0 feeddown
+                   if(((fType == 0 || fType == 1) && TMath::Abs(pdg_mother) == 111)){			
                    if(fMCparticleMother->Pt() > 20.0) continue; 
-                   //TAxis * axis3 = hMCWeightPi0->GetXaxis();
-                   //Int_t fbin = axis3->FindBin(fMCparticleMother->Pt());
-		   Double_t WeightPi0MB = hMCWeightPi0MB->Eval(fMCparticleMother->Pt());
+                   Double_t WeightPi0MB = hMCWeightPi0MB->Eval(fMCparticleMother->Pt());
 		   Double_t WeightPi0Enh = hMCWeightPi0Enh->Eval(fMCparticleMother->Pt());
 		   fMCMBPtElePi0FoundAft->Fill(track->Pt(),WeightPi0MB); 
 		   fMCEnhPtElePi0FoundAft->Fill(track->Pt(),WeightPi0Enh); 
 		   }
-		   if(TMath::Abs(pdg_mother) == 221){
+		    if(((fType2 == 0 || fType2 == 1) && TMath::Abs(pdg_mother) == 22 && TMath::Abs(pdg_gmother) == 111)){			
+                   if(fMCparticleGMother->Pt() > 20.0) continue; 
+                   //TAxis * axis3 = hMCWeightPi0->GetXaxis();
+                   //Int_t fbin = axis3->FindBin(fMCparticleMother->Pt());
+		   Double_t WeightPi0MB = hMCWeightPi0MB->Eval(fMCparticleGMother->Pt());
+		   Double_t WeightPi0Enh = hMCWeightPi0Enh->Eval(fMCparticleGMother->Pt());
+		   fMCMBPtElePi0FoundAft->Fill(track->Pt(),WeightPi0MB); 
+		   fMCEnhPtElePi0FoundAft->Fill(track->Pt(),WeightPi0Enh); 
+		   }
+		    if(((fType3 == 0 || fType3 == 1) && TMath::Abs(pdg_mother) == 22 && TMath::Abs(pdg_gmother) == 22 && TMath::Abs(pdg_ggmother) == 111)){			
+                   if(fMCparticleGGMother->Pt() > 20.0) continue; 
+                   //TAxis * axis3 = hMCWeightPi0->GetXaxis();
+                   //Int_t fbin = axis3->FindBin(fMCparticleMother->Pt());
+		   Double_t WeightPi0MB = hMCWeightPi0MB->Eval(fMCparticleGGMother->Pt());
+		   Double_t WeightPi0Enh = hMCWeightPi0Enh->Eval(fMCparticleGGMother->Pt());
+		   fMCMBPtElePi0FoundAft->Fill(track->Pt(),WeightPi0MB); 
+		   fMCEnhPtElePi0FoundAft->Fill(track->Pt(),WeightPi0Enh); 
+		   }
+		   // eta and gamma from eta feeddown
+		   if(((fType == 0 || fType == 1) && TMath::Abs(pdg_mother) == 221)){			
 		   if(fMCparticleMother->Pt() > 20.0) continue;
 		   //TAxis * axis4 = hMCWeightEta->GetXaxis();
                    //Int_t fbin = axis4->FindBin(fMCparticleMother->Pt());
@@ -2615,7 +2636,27 @@ void AliAnalysisHFEppTPCTOFBeauty5TeVNew::InvMassCheckMC(int itrack, AliVTrack *
 		   fMCMBPtEleEtaFoundAft->Fill(track->Pt(),WeightEtaMB);
 		   fMCEnhPtEleEtaFoundAft->Fill(track->Pt(),WeightEtaEnh);
 		   }
+		   if(((fType2 == 0 || fType2 == 1) && TMath::Abs(pdg_mother) == 22 && TMath::Abs(pdg_gmother) == 221) || ((fType2 == 0 || fType2 == 1) && TMath::Abs(pdg_mother) == 111 && TMath::Abs(pdg_gmother) == 221)){			
+		   if(fMCparticleGMother->Pt() > 20.0) continue;
+		   //TAxis * axis4 = hMCWeightEta->GetXaxis();
+                   //Int_t fbin = axis4->FindBin(fMCparticleMother->Pt());
+		   Double_t WeightEtaMB = hMCWeightEtaMB->Eval(fMCparticleGMother->Pt());
+		   Double_t WeightEtaEnh = hMCWeightEtaEnh->Eval(fMCparticleGMother->Pt());
+		   fMCMBPtEleEtaFoundAft->Fill(track->Pt(),WeightEtaMB);
+		   fMCEnhPtEleEtaFoundAft->Fill(track->Pt(),WeightEtaEnh);
 		   }
+		   if(((fType3 == 0 || fType3 == 1) && TMath::Abs(pdg_mother) == 22 && TMath::Abs(pdg_gmother) == 111 && TMath::Abs(pdg_ggmother) == 221)){			
+		   if(fMCparticleGGMother->Pt() > 20.0) continue;
+		   //TAxis * axis4 = hMCWeightEta->GetXaxis();
+                   //Int_t fbin = axis4->FindBin(fMCparticleMother->Pt());
+		   Double_t WeightEtaMB = hMCWeightEtaMB->Eval(fMCparticleGGMother->Pt());
+		   Double_t WeightEtaEnh = hMCWeightEtaEnh->Eval(fMCparticleGGMother->Pt());
+		   fMCMBPtEleEtaFoundAft->Fill(track->Pt(),WeightEtaMB);
+		   fMCEnhPtEleEtaFoundAft->Fill(track->Pt(),WeightEtaEnh);
+		   }
+		   
+
+		 //  }
 		   if(fType == 2 || fType == 3 || fType == 4){
 		   if(TMath::Abs(pdg_mother) == 111)fMCPtElePi0FoundBef->Fill(track->Pt());
 		   if(TMath::Abs(pdg_mother) == 221)fMCPtEleEtaFoundBef->Fill(track->Pt());
@@ -2725,6 +2766,120 @@ void AliAnalysisHFEppTPCTOFBeauty5TeVNew::InvMassCheckMC(int itrack, AliVTrack *
 
 //=========================================================================
 
+void AliAnalysisHFEppTPCTOFBeauty5TeVNew::InvMassCheckMCDenom(AliVTrack *track){
+
+				fMCparticle = (AliAODMCParticle*) fMCarray->At(TMath::Abs(track->GetLabel()));
+				Int_t TrackPDG = TMath::Abs(fMCparticle->GetPdgCode());
+          			if(TrackPDG == 11){	
+				//if((fMCparticle->Eta() < fEtaMin) || (fMCparticle->Eta() > fEtaMax)) continue; 
+				fMCparticleMother = (AliAODMCParticle*) fMCarray->At(fMCparticle->GetMother());
+				Int_t pdg_mother = -999;
+				Int_t pdg_gmother = -999;
+				Int_t pdg_ggmother = -999;
+				Int_t fType = -999;
+				Int_t fType2 = -999;
+				Int_t fType3 = -999;
+
+				if(!fMCparticleMother){
+				pdg_mother = -999;
+				}else{
+				pdg_mother = fMCparticleMother->GetPdgCode();
+				fMCparticleGMother = (AliAODMCParticle*) fMCarray->At(fMCparticleMother->GetMother());
+				}
+				//cout<<"pdg_mother    "<<pdg_mother<<"   "<<fMCparticleGMother<<"   "<<fMCparticleGGMother<<endl;
+				if(!fMCparticleGMother){
+				pdg_gmother = -999;
+				}else{
+				pdg_gmother = fMCparticleGMother->GetPdgCode();
+				fMCparticleGGMother = (AliAODMCParticle*) fMCarray->At(fMCparticleGMother->GetMother());
+				}
+				//cout<<"pdg_gmother    "<<pdg_gmother<<endl;
+				if(!fMCparticleGGMother){
+				pdg_ggmother = -999;
+				}else{
+				pdg_ggmother = fMCparticleGGMother->GetPdgCode();
+				}
+				//cout<<"pdg_ggmother    "<<pdg_ggmother<<endl;
+                		//Tagging efficiency: Generated electrons from Pi0 (and gamma from pi0) and eta (and gamma from eta)
+                		if(TMath::Abs(pdg_mother) == 111 || TMath::Abs(pdg_mother) == 221 || TMath::Abs(pdg_mother) == 22){
+                 		if(!fMCparticleMother){
+                                fType = -999;
+                   		}else{
+                   		fType = GetPi0EtaType(fMCparticleMother,fMCarray);
+                   		}
+                   		if(!fMCparticleGMother){
+                   		fType2 = -999;
+                   		}else{
+                   		fType2 = GetPi0EtaType(fMCparticleGMother,fMCarray);
+                   		}
+		   		if(!fMCparticleGGMother){
+                   		fType3 = -999;
+                   		}else{
+                   		fType3 = GetPi0EtaType(fMCparticleGGMother,fMCarray);
+                   		}
+                               // if(fType == 0 || fType == 1){
+
+                  		if(((fType == 0 || fType == 1) && TMath::Abs(pdg_mother) == 111)){			
+                  		if(fMCparticleMother->Pt() <= 20.0){
+                  		Double_t WeightPi0MB = hMCWeightPi0MB->Eval(fMCparticleMother->Pt());
+				Double_t WeightPi0Enh = hMCWeightPi0Enh->Eval(fMCparticleMother->Pt());
+				fMCMBPtElePi0GeneratedAft->Fill(fMCparticle->Pt(),WeightPi0MB);
+				fMCEnhPtElePi0GeneratedAft->Fill(fMCparticle->Pt(),WeightPi0Enh);
+				}
+				}
+				if(((fType2 == 0 || fType2 == 1) && TMath::Abs(pdg_mother) == 22 && TMath::Abs(pdg_gmother) == 111)){			
+                  		if(fMCparticleGMother->Pt() <= 20.0){
+                  		Double_t WeightPi0MB = hMCWeightPi0MB->Eval(fMCparticleGMother->Pt());
+				Double_t WeightPi0Enh = hMCWeightPi0Enh->Eval(fMCparticleGMother->Pt());
+				fMCMBPtElePi0GeneratedAft->Fill(fMCparticle->Pt(),WeightPi0MB);
+				fMCEnhPtElePi0GeneratedAft->Fill(fMCparticle->Pt(),WeightPi0Enh);
+				}
+				}
+				if(((fType3 == 0 || fType3 == 1) && TMath::Abs(pdg_mother) == 22 && TMath::Abs(pdg_gmother) == 22 && TMath::Abs(pdg_ggmother) == 111)){			
+                  		if(fMCparticleGGMother->Pt() <= 20.0){
+                  		Double_t WeightPi0MB = hMCWeightPi0MB->Eval(fMCparticleGGMother->Pt());
+				Double_t WeightPi0Enh = hMCWeightPi0Enh->Eval(fMCparticleGGMother->Pt());
+				fMCMBPtElePi0GeneratedAft->Fill(fMCparticle->Pt(),WeightPi0MB);
+				fMCEnhPtElePi0GeneratedAft->Fill(fMCparticle->Pt(),WeightPi0Enh);
+				}
+				}
+				if(((fType == 0 || fType == 1) && TMath::Abs(pdg_mother) == 221)){
+				if(fMCparticleMother->Pt() <= 20.0){
+				Double_t WeightEtaMB = hMCWeightEtaMB->Eval(fMCparticleMother->Pt());
+				Double_t WeightEtaEnh = hMCWeightEtaEnh->Eval(fMCparticleMother->Pt());
+				fMCMBPtEleEtaGeneratedAft->Fill(fMCparticle->Pt(),WeightEtaMB);
+				fMCEnhPtEleEtaGeneratedAft->Fill(fMCparticle->Pt(),WeightEtaEnh);
+				}
+				}
+				if(((fType2 == 0 || fType2 == 1) && TMath::Abs(pdg_mother) == 22 && TMath::Abs(pdg_gmother) == 221) || ((fType2 == 0 || fType2 == 1) && TMath::Abs(pdg_mother) == 111 && TMath::Abs(pdg_gmother) == 221)){
+				if(fMCparticleGMother->Pt() <= 20.0){
+				Double_t WeightEtaMB = hMCWeightEtaMB->Eval(fMCparticleGMother->Pt());
+				Double_t WeightEtaEnh = hMCWeightEtaEnh->Eval(fMCparticleGMother->Pt());
+				fMCMBPtEleEtaGeneratedAft->Fill(fMCparticle->Pt(),WeightEtaMB);
+				fMCEnhPtEleEtaGeneratedAft->Fill(fMCparticle->Pt(),WeightEtaEnh);
+				}
+				}
+				if(((fType3 == 0 || fType3 == 1) && TMath::Abs(pdg_mother) == 22 && TMath::Abs(pdg_gmother) == 111 && TMath::Abs(pdg_ggmother) == 221)){
+				if(fMCparticleGGMother->Pt() <= 20.0){
+				Double_t WeightEtaMB = hMCWeightEtaMB->Eval(fMCparticleGGMother->Pt());
+				Double_t WeightEtaEnh = hMCWeightEtaEnh->Eval(fMCparticleGGMother->Pt());
+				fMCMBPtEleEtaGeneratedAft->Fill(fMCparticle->Pt(),WeightEtaMB);
+				fMCEnhPtEleEtaGeneratedAft->Fill(fMCparticle->Pt(),WeightEtaEnh);
+				}
+				}
+				//}
+				if(fType == 2 || fType == 3 || fType == 4){
+				if(TMath::Abs(pdg_mother) == 111)fMCPtElePi0GeneratedBef->Fill(fMCparticle->Pt());
+				if(TMath::Abs(pdg_mother) == 221)fMCPtEleEtaGeneratedBef->Fill(fMCparticle->Pt());
+				}
+				if(fType == 0 || fType == 1 || fType == 2 || fType == 3 || fType == 4){
+				if(TMath::Abs(pdg_mother) == 22) fMCPtEleGammaGenerated->Fill(fMCparticle->Pt());
+				}
+				
+				}
+			}
+
+}
 
 //=======================================================================
 Bool_t AliAnalysisHFEppTPCTOFBeauty5TeVNew::ProcessCutStep(Int_t cutStep, AliVParticle *track)
@@ -3086,7 +3241,8 @@ Int_t AliAnalysisHFEppTPCTOFBeauty5TeVNew::GetPi0EtaType(AliAODMCParticle *pi0et
     //
     // Return what type of pi0, eta it is
     //
-    
+    Int_t motherpdg = -999;
+    Int_t kaonmotherpdg = -999;
     //IsPrimary
     Bool_t primMC = pi0eta->IsPrimary(); ///Does not include particles from weak decays or created in an interaction with the material
     if(!primMC) return kNoIsPrimary;
@@ -3097,7 +3253,11 @@ Int_t AliAnalysisHFEppTPCTOFBeauty5TeVNew::GetPi0EtaType(AliAODMCParticle *pi0et
     else {
         
         AliAODMCParticle *mother = (AliAODMCParticle*)fMCarray->At(motherlabel);
-        Int_t motherpdg = TMath::Abs(mother->GetPdgCode());
+        if(!mother){
+        motherpdg = -999;
+        }else{
+        motherpdg = TMath::Abs(mother->GetPdgCode());
+        }
         ///pi0, eta, omega, phi, eta',rho0, rho+
         if(motherpdg == 111 || motherpdg == 221 || motherpdg == 223 || motherpdg == 333 || motherpdg == 331 || motherpdg == 113 || motherpdg == 213) return kLightMesons;
         
@@ -3106,7 +3266,11 @@ Int_t AliAnalysisHFEppTPCTOFBeauty5TeVNew::GetPi0EtaType(AliAODMCParticle *pi0et
 			Int_t kaonmotherlabel = mother->GetMother();
 			if(kaonmotherlabel>0){
 				AliAODMCParticle *kaonmother = (AliAODMCParticle*)fMCarray->At(kaonmotherlabel);
-				Int_t kaonmotherpdg = TMath::Abs(kaonmother->GetPdgCode());
+				if(!kaonmother){
+        			kaonmotherpdg = -999;
+        			}else{
+        			kaonmotherpdg = TMath::Abs(kaonmother->GetPdgCode());
+       				}
 				if ( (int(TMath::Abs(kaonmotherpdg)/100.)%10) == 5 || (int(TMath::Abs(kaonmotherpdg)/1000.)%10) == 5 || (int(TMath::Abs(kaonmotherpdg)/100.)%10) == 4 || (int(TMath::Abs(kaonmotherpdg)/1000.)%10) == 4 ) return kKaonFromHF;
 				else return kKaonFromNonHF;
 			}

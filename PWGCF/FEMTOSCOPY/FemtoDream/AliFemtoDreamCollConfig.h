@@ -51,6 +51,10 @@ class AliFemtoDreamCollConfig : public TNamed {
   ;
   void SetdPhidEtaPlots(bool doIt) {
     fdPhidEtaPlots = doIt;
+    fdPhidEtaPlotsSmallK = doIt;
+  }
+  void SetdPhidEtaPlotsSmallK(bool doIt) {
+    fdPhidEtaPlotsSmallK = doIt;
   }
   ;
   void SetUseEventMixing(bool use) {
@@ -142,6 +146,9 @@ class AliFemtoDreamCollConfig : public TNamed {
   bool GetdPhidEtaPlots() {
     return fdPhidEtaPlots;
   }
+  bool GetdPhidEtaPlotsSmallK() {
+    return fdPhidEtaPlotsSmallK;
+  }
   ;
   bool GetdPhidEtamTPlots() {
     return (fdPhidEtaPlots&&fmTdEtadPhi);
@@ -224,6 +231,7 @@ class AliFemtoDreamCollConfig : public TNamed {
   bool fMomentumResolution;     //
   bool fPhiEtaBinning;          //
   bool fdPhidEtaPlots;          //
+  bool fdPhidEtaPlotsSmallK;    //
   bool fMixedEventStatistics;   //
   bool fGetTheControlSampel;    //
   bool fStravinsky;             //
@@ -250,7 +258,7 @@ class AliFemtoDreamCollConfig : public TNamed {
   float fDeltaPhiMax;           //
   bool fDoDeltaEtaDeltaPhiCut;  //
 
-ClassDef(AliFemtoDreamCollConfig,9)
+ClassDef(AliFemtoDreamCollConfig,10)
   ;
 };
 

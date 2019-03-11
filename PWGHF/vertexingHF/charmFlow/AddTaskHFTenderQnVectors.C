@@ -1,23 +1,23 @@
 AliAnalysisTaskSEHFTenderQnVectors* AddTaskHFTenderQnVectors(TString taskname = "HFTenderQnVectors",
                                                              TString outputSuffix = "", 
                                                              int harmonic = 2, 
-                                                             int normmethod = AliHFQnVectorHandler::kQoverM,
-                                                             int calibType = AliHFQnVectorHandler::kQnCalib, 
+                                                             int normmethod = 1,//AliHFQnVectorHandler::kQoverM,
+                                                             int calibType = 0,//AliHFQnVectorHandler::kQnCalib, 
                                                              TString AODBfileName = "")
 {
     AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
     if (!mgr) {
-        ::Error("AliAnalysisTaskSEHFSystPID", "No analysis manager found.");
-        return 0;
+        ::Error("AliAnalysisTaskSEHFTenderQnVectors", "No analysis manager found.");
+        return NULL;
     }
     if (!mgr->GetInputEventHandler()) {
-        ::Error("AliAnalysisTaskSEHFSystPID", "This task requires an input event handler");
+        ::Error("AliAnalysisTaskSEHFTenderQnVectors", "This task requires an input event handler");
         return NULL;
     }
 
     TString type = mgr->GetInputEventHandler()->GetDataType(); // can be "ESD" or "AOD"
     if(type.Contains("ESD")){
-        ::Error("AliAnalysisTaskSEHFSystPID", "This task requires to run on AOD");
+        ::Error("AliAnalysisTaskSEHFTenderQnVectors", "This task requires to run on AOD");
         return NULL;
     }
 

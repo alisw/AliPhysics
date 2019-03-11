@@ -93,19 +93,22 @@ TTree* AliHFTreeHandlerDplustoKpipi::BuildTree(TString name, TString title)
 }
 
 //________________________________________________________________
-bool AliHFTreeHandlerDplustoKpipi::SetVariables(AliAODRecoDecayHF* cand, float bfield, int /*masshypo*/, AliPIDResponse *pidrespo) 
+bool AliHFTreeHandlerDplustoKpipi::SetVariables(int runnumber, unsigned int eventID, AliAODRecoDecayHF* cand, float bfield, int /*masshypo*/, AliPIDResponse *pidrespo) 
 {
   if(!cand) return false;
   if(fFillOnlySignal) { //if fill only signal and not signal candidate, do not store
     if(!(fCandTypeMap&kSignal)) return true;
   }
   fNCandidates++;
-
+  fRunNumber.push_back(runnumber);
+  fEvID.push_back(eventID);
+  
   fCandTypeMap &= ~kRefl; //protection --> D+ ->Kpipi cannot be reflected
 
   //topological variables
   //common
   fCandType.push_back(fCandTypeMap);
+  fCandTypeMap=0; //reset candtype
   fPt.push_back(cand->Pt());
   fY.push_back(cand->Y(411));
   fEta.push_back(cand->Eta());

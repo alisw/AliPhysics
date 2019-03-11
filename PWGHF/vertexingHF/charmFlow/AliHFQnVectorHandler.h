@@ -20,6 +20,8 @@
 // S. Trogolo, stefano.trogolo@cern.ch
 ///////////////////////////////////////////////////////////////////////////////////////
 
+#include <TMath.h>
+#include <TFile.h>
 #include <TBits.h>
 #include <TH1D.h>
 #include <TString.h>

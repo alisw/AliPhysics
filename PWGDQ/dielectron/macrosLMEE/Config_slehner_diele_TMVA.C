@@ -52,7 +52,7 @@ void Config_slehner_diele_TMVA(AliAnalysisTaskMultiDielectron *task,Bool_t usePI
       if(usePIDCorr){
        SetITSCorr(diel_low,hasMC);
        SetTPCCorr(diel_low,hasMC);
-       SetTOFCorr(diel_low,hasMC);
+//       SetTOFCorr(diel_low,hasMC);
       }
 
       diel_low->SetUseKF(kFALSE);   //keep this one, otherwise masses are slightly wrong and R factors very wrong!
@@ -276,8 +276,8 @@ void InitHistograms(AliDielectron *die, Int_t cutDefinition)
 //                        AliDielectronVarManager::kM, AliDielectronVarManager::kPt);
   
 ////low ptee
-  TVectorD* mbins=  AliDielectronHelper::MakeArbitraryBinning(" 0.00,0.4,0.5 ,0.6 ,0.7 ,1.1, 1.5,2.0 ,2.7,3.1 ,5.0"); // for low ptee
-  TVectorD* ptbins= AliDielectronHelper::MakeArbitraryBinning("0.0, 0.025, 0.05, 0.075, 0.1, 0.15, 0.2, 0.3, 0.4, 0.5, 0.6, 1, 2.0, 8");
+  TVectorD* mbins=  AliDielectronHelper::MakeArbitraryBinning(" 0.0,0.1,0.4,0.5 ,0.6 ,0.7 ,1.1, 1.5,2.0 ,2.7,3.1 ,5.0"); // for low ptee
+  TVectorD* ptbins= AliDielectronHelper::MakeArbitraryBinning("0.0, 0.025, 0.05, 0.075, 0.1,0.125, 0.15, 0.2, 0.3, 0.4, 0.5, 0.6, 1, 2.0, 5.0, 8.0");
   TVectorD* centbins= AliDielectronHelper::MakeLinBinning(20,0,100);
   histos->UserHistogram("Pair","InvMass_pPt_cent","Inv.Mass:PairPt:Cent;Inv. Mass (GeV/c^{2});Pair Pt (GeV/c); Centrality (V0M)",
                         mbins, ptbins, centbins,

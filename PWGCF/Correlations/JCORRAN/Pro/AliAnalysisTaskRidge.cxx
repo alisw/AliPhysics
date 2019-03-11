@@ -365,7 +365,8 @@ void AliAnalysisTaskRidge::Exec(Option_t* )
 		cout << "Period : " << Period << endl;
 
 		TGrid::Connect("alien:");
-		TFile* fefficiencyFile = TFile::Open("alien:///alice/cern.ch/user/j/junlee/Efficiency_RIDGE/EffOut.root");
+//		TFile* fefficiencyFile = TFile::Open("alien:///alice/cern.ch/user/j/junlee/Efficiency_RIDGE/EffOut.root");
+//		fefficiencyFile = TFile::Open("alien:///alice/cern.ch/user/j/junlee/Efficiency_RIDGE/EffOut.root");
 		TH1D* hEfficiencyHist;
 		if( !fefficiencyFile ){
                 	cout << "No Eff file " << endl;
@@ -435,12 +436,6 @@ void AliAnalysisTaskRidge::Exec(Option_t* )
                         (fEvt->FindListObject(AliAODMCHeader::StdBranchName()));
                 fZ_gen = cHeaderAOD -> GetVtxZ();
         }
-
-/*
-	if( fOption.Contains("ITS") ) fFilterBit = 0x2;
-        if( fOption.Contains("Glb") ) fFilterBit = 0x20;
-        if( fOption.Contains("GlbSDD") ) fFilterBit = 0x60;
-*/
 
 
 	if( fOption.Contains("TightVtx") ) AbsZmax = 6.0;
@@ -566,9 +561,10 @@ void AliAnalysisTaskRidge::Exec(Option_t* )
 	        	                Int_t pdgCode = trackMC->PdgCode();
 	        	                if( !(trackMC->IsPhysicalPrimary()) ) continue;
 					if( trackMC->Charge() == 0 ) continue;
-	        	                FillTHnSparse("hTrackMCallcut",{trackMC->Pt(),trackMC->Phi(),trackMC->Eta(),fZ_gen,1},1.0);
-					if( fabs(fZ) < 8 ) FillTHnSparse("hTrackMCallcut",{trackMC->Pt(),trackMC->Phi(),trackMC->Eta(),fZ_gen,2},1.0);
-					if( fabs(fZ) < 6 ) FillTHnSparse("hTrackMCallcut",{trackMC->Pt(),trackMC->Phi(),trackMC->Eta(),fZ_gen,3},1.0);
+
+	        	                FillTHnSparse("hTrackMCallcut",{trackMC->Pt(),trackMC->Phi(),trackMC->Eta(),fZ_gen,1.0},1.0);
+					if( fabs(fZ) < 8 ) FillTHnSparse("hTrackMCallcut",{trackMC->Pt(),trackMC->Phi(),trackMC->Eta(),fZ_gen,2.0},1.0);
+					if( fabs(fZ) < 6 ) FillTHnSparse("hTrackMCallcut",{trackMC->Pt(),trackMC->Phi(),trackMC->Eta(),fZ_gen,3.0},1.0);
 	        	        }
 	        	}
 		}
@@ -584,11 +580,12 @@ void AliAnalysisTaskRidge::Exec(Option_t* )
 			if( fOption.Contains("MC") ){ if( this -> GoodTracksSelectionMC() ){ this -> FillTracksMC(); } }
 		}
 		else if( fOption.Contains("EffCorrection") ){
-			if( fabs(fZ) < 10 )this -> GoodTracksSelection( 1 );
-			if( fabs(fZ) < 8  )this -> GoodTracksSelection( 2 );
-			if( fabs(fZ) < 6  )this -> GoodTracksSelection( 3 );
-			if( IsGoodVtx )this -> GoodTracksSelection( 4 );
-			if( IsGoodVtx )this -> GoodTracksSelection( 5 );
+			fsetmixing = kFALSE;
+			if( fabs(fZ) < 10 ){ this -> GoodTracksSelection( 1 ); }
+			if( fabs(fZ) < 8  ){ this -> GoodTracksSelection( 2 ); }
+			if( fabs(fZ) < 6  ){ this -> GoodTracksSelection( 3 ); }
+			if( IsGoodVtx ){ this -> GoodTracksSelection( 4 ); }
+			if( IsGoodVtx ){ this -> GoodTracksSelection( 5 ); }
 		}
 	}	
 
@@ -628,7 +625,7 @@ Bool_t AliAnalysisTaskRidge::GoodTracksSelection(int trk){
 
 	fFilterBit = 0x300;
         if( trk == 4 ) fFilterBit = 0x20;
-        if( trk == 5 ) fFilterBit = 0x60;
+        else if( trk == 5 ) fFilterBit = 0x60;
 
 	const UInt_t ntracks = fEvt ->GetNumberOfTracks();
 	goodtrackindices.clear();
@@ -658,15 +655,15 @@ Bool_t AliAnalysisTaskRidge::GoodTracksSelection(int trk){
 
 			if( ! ((AliAODTrack*) track)->TestFilterBit(fFilterBit)) continue; //for hybrid
 
-                        if( IsMC && fabs( dynamic_cast<AliAODMCHeader*>(fEvt->FindListObject(AliAODMCHeader::StdBranchName()))->GetVtxZ() ) < 10 )
+                        if( IsMC && fabs( dynamic_cast<AliAODMCHeader*>(fEvt->FindListObject(AliAODMCHeader::StdBranchName()))->GetVtxZ() ) < 10 ){
                                 if( track->GetLabel()>-1 && dynamic_cast<AliAODMCParticle*>(fMCArray->At( track->GetLabel() ))->IsPhysicalPrimary() ){
                                         FillTHnSparse("hTrackDataTrue",{track->Pt(),track->Phi(),track->Eta(),fCent,fZ},1.0);
                                 }
+			}
 
 			if( track->Pt()<fptcut ) continue;
 			if( !fOption.Contains("ITS") && fabs(track->Eta())>fetacut ) continue;
 			else if( fOption.Contains("ITS") && fabs(track->Eta())>1.3 ) continue;			
-
 			FillTHnSparse("hTrackData",{track->Pt(),track->Phi(),track->Eta(),fZ,(double)trk},1.0);
 
 			fHistos->FillTH2("hPhiEta",track->Phi(),track->Eta(),1.0);

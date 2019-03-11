@@ -73,6 +73,10 @@ class AliAnalysisTaskDiHadCorrelHighPt : public AliAnalysisTaskSE
         void                    SetLifeTimeCutLamda(Double_t rej) { fMassRejectCutLam = rej; }
         void                    SetEventPileUpCut(Bool_t cut) { fRejectEventPileUp = cut; }
         void                    SetTrackPileUpCut(Bool_t cut) { fRejectTrackPileUp = cut; }
+        void                    SetTrackPileUpTOFCut(Bool_t cut) { fRejectTOF = cut; }
+        void                    SetV0PileUpCut(Bool_t cut) { fRejectV0PileUp = cut; }
+        void                    SetMultiplicityEstimator(TString est) { fMultEstimator = est; }
+        void                    SetCorrelationsGen(Bool_t correl) { fCorrelationsGen = correl; }
     
         AliEventCuts            fAliEventCuts;
     
@@ -117,7 +121,7 @@ class AliAnalysisTaskDiHadCorrelHighPt : public AliAnalysisTaskSE
         Double_t                      fMassRejectCutK0; // V0 competing rejection for K0
         Double_t                      fMassRejectCutLam;// V0 competing rejection for Lambdas and AntiLambdas
         Bool_t                        fRejectEventPileUp; // enable to use Pile-up cuts
-        Bool_t                        fRejectTrackPileUp; // enable to use Bunch-Of Pile-up cuts
+        Bool_t                        fRejectTrackPileUp; // enable to use Bunch-Of Pile-up cuts for tracks
 
         THnSparse*              fHistKorelacieMCrec; //!  
         THnSparse*              fHistNumberOfTriggersGen;  //!
@@ -153,11 +157,15 @@ class AliAnalysisTaskDiHadCorrelHighPt : public AliAnalysisTaskSE
         TH1F *                  fHistMultiplicityALam;//!
         TH2F *                  fHitsNTracks;//!
         THnSparse *             fHistPhiEta;//!
+        Bool_t                  fRejectTOF; // enable to use Bunch-Of Pile-up cuts for tracks using TOF
+        Bool_t                  fRejectV0PileUp;// enable to use Bunch-Of Pile-up cuts for V0
+        TString                 fMultEstimator; // enable to change the Multiplicity estimator
+        Bool_t                  fCorrelationsGen; // enable to compute the correlation function from generated MC particles
 
         AliAnalysisTaskDiHadCorrelHighPt(const AliAnalysisTaskDiHadCorrelHighPt&); // not implemented
         AliAnalysisTaskDiHadCorrelHighPt& operator=(const AliAnalysisTaskDiHadCorrelHighPt&); // not implemented
 
-        ClassDef(AliAnalysisTaskDiHadCorrelHighPt, 11);
+        ClassDef(AliAnalysisTaskDiHadCorrelHighPt, 12);
 };
 
 class AliV0ChParticle : public AliVParticle

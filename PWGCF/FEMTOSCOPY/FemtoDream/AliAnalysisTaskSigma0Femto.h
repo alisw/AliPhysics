@@ -23,7 +23,7 @@ class AliVTrack;
 class AliAnalysisTaskSigma0Femto : public AliAnalysisTaskSE {
  public:
   AliAnalysisTaskSigma0Femto();
-  AliAnalysisTaskSigma0Femto(const char *name);
+  AliAnalysisTaskSigma0Femto(const char *name, const bool isMC);
   virtual ~AliAnalysisTaskSigma0Femto();
 
   virtual void UserCreateOutputObjects();
@@ -58,9 +58,6 @@ class AliAnalysisTaskSigma0Femto : public AliAnalysisTaskSE {
   void CastToVector(std::vector<AliSigma0ParticlePhotonMother> &sigmaContainer,
                     std::vector<AliFemtoDreamBasePart> &particles,
                     const AliMCEvent *mcEvent);
-  void CastToVector(std::vector<AliSigma0ParticleV0> &container,
-                    std::vector<AliFemtoDreamBasePart> &particles,
-                    const AliMCEvent *mcEvent);
   void FillTriggerHisto(TH1F *histo);
 
  private:
@@ -76,6 +73,8 @@ class AliAnalysisTaskSigma0Femto : public AliAnalysisTaskSE {
   AliSigma0V0Cuts *fPhotonQA;                 //
   AliSigma0PhotonMotherCuts *fSigmaCuts;      //
   AliSigma0PhotonMotherCuts *fAntiSigmaCuts;  //
+
+  TRandom3 *fRandom;  //!
 
   AliFemtoDreamEvent *fEvent;                        //!
   AliFemtoDreamEventCuts *fEvtCuts;                  //
@@ -95,13 +94,20 @@ class AliAnalysisTaskSigma0Femto : public AliAnalysisTaskSE {
 
   TClonesArray *fGammaArray;  //!
 
-  // Histograms
-  // =====================================================================
+  TList *fQA;                      //!
+  TList *fEvtHistList;             //!
+  TList *fTrackCutHistList;        //!
+  TList *fTrackCutHistMCList;      //!
+  TList *fAntiTrackCutHistList;    //!
+  TList *fAntiTrackCutHistMCList;  //!
+  TList *fLambdaHistList;          //!
+  TList *fAntiLambdaHistList;      //!
+  TList *fPhotonHistList;          //!
+  TList *fSigmaHistList;           //!
+  TList *fAntiSigmaHistList;       //!
+  TList *fResultList;              //!
+  TList *fResultQAList;            //!
 
-  TList *fOutputContainer;  //!
-  TList *fQA;               //!
-  TList *fOutputFemto;      //!
-
-  ClassDef(AliAnalysisTaskSigma0Femto, 13)
+  ClassDef(AliAnalysisTaskSigma0Femto, 15)
 };
 #endif

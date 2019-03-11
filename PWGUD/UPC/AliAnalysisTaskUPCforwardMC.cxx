@@ -140,6 +140,7 @@ AliAnalysisTaskUPCforwardMC::AliAnalysisTaskUPCforwardMC()
       fMCphiDimuonGeneratedTruthH(0),
       fMCetaDimuonGeneratedTruthH(0),
       fMCpseudorapidityDimuonGeneratedTruthH(0),
+      fMCptDimuonGeneratedTruthSingleMuonsH(0),
       fMCptDimuonGeneratedTruthH(0),
       fMCinvariantMassDistrJPsiGeneratedTruthH(0),
       fMCinvariantMassDistrJPsiAfterEvtAndTrkSelectionTruthH(0),
@@ -162,7 +163,11 @@ AliAnalysisTaskUPCforwardMC::AliAnalysisTaskUPCforwardMC()
       fBBAFlagsAD(0),
       fBBCFlagsAD(0),
       fBGAFlagsAD(0),
-      fBGCFlagsAD(0)
+      fBGCFlagsAD(0),
+      fVectorCosThetaGenerated(0),
+      fVectorCosThetaReconstructed(0),
+      fCounterUPCevent(0),
+      fBinMigrationHelicityH(0)
 {
     // default constructor, don't allocate memory here!
     // this is used by root for IO purposes, it needs to remain empty
@@ -228,6 +233,7 @@ AliAnalysisTaskUPCforwardMC::AliAnalysisTaskUPCforwardMC( const char* name )
       fMCphiDimuonGeneratedTruthH(0),
       fMCetaDimuonGeneratedTruthH(0),
       fMCpseudorapidityDimuonGeneratedTruthH(0),
+      fMCptDimuonGeneratedTruthSingleMuonsH(0),
       fMCptDimuonGeneratedTruthH(0),
       fMCinvariantMassDistrJPsiGeneratedTruthH(0),
       fMCinvariantMassDistrJPsiAfterEvtAndTrkSelectionTruthH(0),
@@ -250,7 +256,11 @@ AliAnalysisTaskUPCforwardMC::AliAnalysisTaskUPCforwardMC( const char* name )
       fBBAFlagsAD(0),
       fBBCFlagsAD(0),
       fBGAFlagsAD(0),
-      fBGCFlagsAD(0)
+      fBGCFlagsAD(0),
+      fVectorCosThetaGenerated(0),
+      fVectorCosThetaReconstructed(0),
+      fCounterUPCevent(0),
+      fBinMigrationHelicityH(0)
 {
     FillGoodRunVector(fVectorGoodRunNumbers);
 
@@ -421,6 +431,9 @@ void AliAnalysisTaskUPCforwardMC::UserCreateOutputObjects()
   fAngularDistribOfNegativeMuonRestFrameJPsiH = new TH1F("fAngularDistribOfNegativeMuonRestFrameJPsiH", "fAngularDistribOfNegativeMuonRestFrameJPsiH", 1000, -1., 1.);
   fOutputList->Add(fAngularDistribOfNegativeMuonRestFrameJPsiH);
 
+  fBinMigrationHelicityH = new TH2F("fBinMigrationHelicityH", "fBinMigrationHelicityH", 1000, -1., 1., 1000, -1., 1.);
+  fOutputList->Add(fBinMigrationHelicityH);
+
 
   //_______________________________
   // - MC-only plots
@@ -436,10 +449,10 @@ void AliAnalysisTaskUPCforwardMC::UserCreateOutputObjects()
   fMCpdgCodesOnlyPrimaryH->LabelsDeflate();
   fOutputList->Add(fMCpdgCodesOnlyPrimaryH);
 
-  fMCinvariantMassDistrJPsiGeneratedTruthH = new TH1F("fMCinvariantMassDistrJPsiGeneratedTruthH", "fMCinvariantMassDistrJPsiGeneratedTruthH", 2000, 0, 20);
+  fMCinvariantMassDistrJPsiGeneratedTruthH = new TH1F("fMCinvariantMassDistrJPsiGeneratedTruthH", "fMCinvariantMassDistrJPsiGeneratedTruthH", 20000, 0, 20);
   fOutputList->Add(fMCinvariantMassDistrJPsiGeneratedTruthH);
 
-  fMCinvariantMassDistrJPsiAfterEvtAndTrkSelectionTruthH = new TH1F("fMCinvariantMassDistrJPsiAfterEvtAndTrkSelectionTruthH", "fMCinvariantMassDistrJPsiAfterEvtAndTrkSelectionTruthH", 2000, 0, 20);
+  fMCinvariantMassDistrJPsiAfterEvtAndTrkSelectionTruthH = new TH1F("fMCinvariantMassDistrJPsiAfterEvtAndTrkSelectionTruthH", "fMCinvariantMassDistrJPsiAfterEvtAndTrkSelectionTruthH", 20000, 0, 20);
   fOutputList->Add(fMCinvariantMassDistrJPsiAfterEvtAndTrkSelectionTruthH);
 
   fMCphiGeneratedTruthH = new TH1F("fMCphiGeneratedTruthH", "fMCphiGeneratedTruthH", 2000, 0, 20);
@@ -463,8 +476,12 @@ void AliAnalysisTaskUPCforwardMC::UserCreateOutputObjects()
   fMCpseudorapidityDimuonGeneratedTruthH = new TH1F("fMCpseudorapidityDimuonGeneratedTruthH", "fMCpseudorapidityDimuonGeneratedTruthH", 2000, 0, 20);
   fOutputList->Add(fMCpseudorapidityDimuonGeneratedTruthH);
 
+  fMCptDimuonGeneratedTruthSingleMuonsH = new TH1F("fMCptDimuonGeneratedTruthSingleMuonsH", "fMCptDimuonGeneratedTruthSingleMuonsH", 2000, 0, 20);
+  fOutputList->Add(fMCptDimuonGeneratedTruthSingleMuonsH);
+
   fMCptDimuonGeneratedTruthH = new TH1F("fMCptDimuonGeneratedTruthH", "fMCptDimuonGeneratedTruthH", 2000, 0, 20);
   fOutputList->Add(fMCptDimuonGeneratedTruthH);
+
 
   /* - Here starts the list of histograms needed for the analysis of the J/Psi's
      - polarization. GENERATED MC TRUTH.
@@ -513,6 +530,7 @@ void AliAnalysisTaskUPCforwardMC::UserExec(Option_t *)
   }
   if(fMCEvent) {
     ProcessMCParticles(fMCEvent);
+    fCounterUPCevent += 1;
   }
   /* - We are now checking if there were any tracks. If there were at least one,
      - then the histogram gets filled again. If not we are returning. There
@@ -926,6 +944,19 @@ void AliAnalysisTaskUPCforwardMC::UserExec(Option_t *)
   }
   fAngularDistribOfPositiveMuonRestFrameJPsiH->Fill(cosThetaMuonsRestFrame[0]);
   fAngularDistribOfNegativeMuonRestFrameJPsiH->Fill(cosThetaMuonsRestFrame[1]);
+  fVectorCosThetaReconstructed.push_back(cosThetaMuonsRestFrame[0]);
+  /* - Mind that it could generate segmentation fault without
+     - fCounterUPCevent-1, because we are incrementing the counter right after
+     - it processes the MC events at Generated level...
+     -
+   */
+  if ( fVectorCosThetaGenerated.at(fCounterUPCevent-1) && cosThetaMuonsRestFrame[0] ) {
+        fBinMigrationHelicityH->Fill( fVectorCosThetaGenerated.at(fCounterUPCevent-1),
+                                      cosThetaMuonsRestFrame[0]
+                                    );
+  }
+
+
 
 
   // post the data
@@ -1051,9 +1082,10 @@ void AliAnalysisTaskUPCforwardMC::ProcessMCParticles(AliMCEvent* fMCEventArg)
         fMCphiDimuonGeneratedTruthH           ->Fill(phi[iMuonsMC]);
         fMCetaDimuonGeneratedTruthH           ->Fill(eta[iMuonsMC]);
         fMCpseudorapidityDimuonGeneratedTruthH->Fill(pseudo[iMuonsMC]);
-        fMCptDimuonGeneratedTruthH            ->Fill(pT[iMuonsMC]);
+        fMCptDimuonGeneratedTruthSingleMuonsH ->Fill(pT[iMuonsMC]);
       }
       fMCinvariantMassDistrJPsiGeneratedTruthH->Fill(possibleJPsiMC.Mag());
+      fMCptDimuonGeneratedTruthH->Fill(possibleJPsiMC.Pt());
       for( Int_t iBoosting = 0; iBoosting < 2; iBoosting++ ) {
         // TLorentzVector boostBack = -(possibleJPsiCopy).BoostVector();
         /* - This snippet has beem taken from the website:
@@ -1077,9 +1109,11 @@ void AliAnalysisTaskUPCforwardMC::ProcessMCParticles(AliMCEvent* fMCEventArg)
                */
               fMCthetaDistribOfPositiveMuonRestFrameJPsiGeneratedTruthH->Fill(cosThetaMuonsRestFrameMC[0]);
               fMCthetaDistribOfNegativeMuonRestFrameJPsiGeneratedTruthH->Fill(cosThetaMuonsRestFrameMC[1]);
+              fVectorCosThetaGenerated.push_back(cosThetaMuonsRestFrameMC[0]);
       } else  {
               fMCthetaDistribOfNegativeMuonRestFrameJPsiGeneratedTruthH->Fill(cosThetaMuonsRestFrameMC[0]);
               fMCthetaDistribOfPositiveMuonRestFrameJPsiGeneratedTruthH->Fill(cosThetaMuonsRestFrameMC[1]);
+              fVectorCosThetaGenerated.push_back(cosThetaMuonsRestFrameMC[1]);
       }
     }
   }

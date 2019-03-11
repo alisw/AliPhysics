@@ -489,6 +489,7 @@ void DoComparison_pPb2016VsMCallPanels(){
 	  histo[iset][kassoc][jmes]->SetMarkerColor(4); 
 	  histo[iset][kassoc][jmes]->SetMarkerStyle(21); 
 	  histo[iset][kassoc][jmes]->SetLineColor(4);  
+    histo[iset][kassoc][jmes]->SetLineWidth(1);  
 	  
 	  subtractedhisto[iset][kassoc][jmes] = GetPedestalHistoAndSystAndSubtractPed(iset,kassoc,jmes,histo[iset][kassoc][jmes],err[iset][kassoc][jmes],suberr[iset][kassoc][jmes],"CanvasBaselineVariationTrendPedestal",grbase[iset][kassoc][jmes],grv2[iset][kassoc][jmes]);
 	  Printf("Histo subtrcated obtained");
@@ -497,9 +498,11 @@ void DoComparison_pPb2016VsMCallPanels(){
 	  if(grv2[iset][kassoc][jmes]){
 	    Printf("SHOULD NOT ENTER HERE");
 	    grv2[iset][kassoc][jmes]->SetFillStyle(3002);
-	    grv2[iset][kassoc][jmes]->SetFillColor(kMagenta);  
+	    grv2[iset][kassoc][jmes]->SetFillColor(kMagenta);
+    histo[iset][kassoc][jmes]->SetLineWidth(1);    
 	  }
 	  suberr[iset][kassoc][jmes]->SetLineColor(kBlack);
+    histo[iset][kassoc][jmes]->SetLineWidth(1);  
 	}
 	
 
@@ -657,6 +660,7 @@ void DoComparison_pPb2016VsMCallPanels(){
       //}
       ltscale[0][iassoc][jDpt]->Draw();
       for(Int_t kmod=1;kmod<nSets;kmod++){
+  if(includeset[kmod])subtractedhisto[kmod][iassoc][jDpt]->SetLineWidth(1);        
 	if(includeset[kmod])subtractedhisto[kmod][iassoc][jDpt]->Draw("hist same c");
       }
 //       subtractedhisto[1][iassoc][jDpt]->Draw("hist same c");//Perugia0

@@ -363,7 +363,7 @@ void AliAnalysisTaskSECharmHadronvn::UserCreateOutputObjects()
     //EP / Qn resolutions
     TString detLabels[3][2] = {{"A","B"},{"A","C"},{"B","C"}};
     for(int iResoHisto=0; iResoHisto<3; iResoHisto++) {
-        if(fFlowMethod==kEP || fFlowMethod==kEvShapeEP) {
+        if(fFlowMethod==kEP || fFlowMethod==kEvShapeEP || fFlowMethod==kEPVsMass || fFlowMethod==kEvShapeEPVsMass) {
             fHistEPResolVsCentrVsqn[iResoHisto] = new TH3F(Form("fHistEvPlaneReso%d",iResoHisto+1),Form("Event plane angle Resolution;centrality (%%);%s;cos2(#psi_{%s}-#psi_{%s})",qnaxisnamefill.Data(),detLabels[iResoHisto][0].Data(),detLabels[iResoHisto][1].Data()),ncentbins,fMinCentr,fMaxCentr,nqnbins,qnmin,qnmax,220,-1.1,1.1);
         }
         else if(fFlowMethod==kSP || fFlowMethod==kEvShapeSP) {
@@ -393,6 +393,12 @@ void AliAnalysisTaskSECharmHadronvn::UserCreateOutputObjects()
         maxdeltaphi      = fScalProdLimit*fScalProdLimit;
         deltaphiname     = "u_{D} #cdot Q_{A}";
     }
+    else if(fFlowMethod==kEPVsMass || fFlowMethod==kEvShapeEPVsMass) {
+        ndeltaphibins    = 100;
+        mindeltaphi      = -1.;
+        maxdeltaphi      = 1.;
+        deltaphiname     = Form("cos(%d#Delta#varphi)",fHarmonic);
+    }
 
     int nphibins         = 18;
     double phimin        = 0.;
@@ -412,16 +418,12 @@ void AliAnalysisTaskSECharmHadronvn::UserCreateOutputObjects()
     else if(fDecChannel==2) massaxisname = "#it{M}(K#pi#pi)-#it{M}(K#pi) (GeV/#it{c}^{2})";
     else if(fDecChannel==3) massaxisname = "#it{M}(KK#pi) (GeV/#it{c}^{2})";
 
-    const int nmaxnaxes=9;
+    const int naxes=9;
     
-    int nbins[nmaxnaxes]     = {fNMassBins, nptbins, ndeltaphibins, nfphibins, nfphibins, nphibins, ncentbins, nNtrkBins, nqnbins};
-    double xmin[nmaxnaxes]   = {fLowmasslimit, ptmin, mindeltaphi, fphimin, fphimin, phimin, fMinCentr, Ntrkmin, qnmin};
-    double xmax[nmaxnaxes]   = {fUpmasslimit, ptmax, maxdeltaphi, fphimax, fphimax, phimax, fMaxCentr, Ntrkmax, qnmax};
-    TString axTit[nmaxnaxes] = {massaxisname, "#it{p}_{T} (GeV/#it{c})", "#Delta#varphi", "Cos(n#varphi_{D})", "Sin(n#varphi_{D})", "#varphi_{D}", "Centrality (%)", "N_{tracklets}", qnaxisnamefill};
-
-    int naxes = nmaxnaxes;
-    if(fFlowMethod==kEP || fFlowMethod==kSP) 
-        naxes -= 1;
+    int nbins[naxes]     = {fNMassBins, nptbins, ndeltaphibins, nfphibins, nfphibins, nphibins, ncentbins, nNtrkBins, nqnbins};
+    double xmin[naxes]   = {fLowmasslimit, ptmin, mindeltaphi, fphimin, fphimin, phimin, fMinCentr, Ntrkmin, qnmin};
+    double xmax[naxes]   = {fUpmasslimit, ptmax, maxdeltaphi, fphimax, fphimax, phimax, fMaxCentr, Ntrkmax, qnmax};
+    TString axTit[naxes] = {massaxisname, "#it{p}_{T} (GeV/#it{c})", "#Delta#varphi", "Cos(n#varphi_{D})", "Sin(n#varphi_{D})", "#varphi_{D}", "Centrality (%)", "N_{tracklets}", qnaxisnamefill};
 
     fHistMassPtPhiqnCentr = new THnSparseF("fHistMassPtPhiqnCentr",Form("InvMass vs. #it{p}_{T} vs. %s vs. centr vs. #it{q}_{%d} ",deltaphiname.Data(),fHarmonic),naxes,nbins,xmin,xmax);
 
@@ -685,7 +687,7 @@ void AliAnalysisTaskSECharmHadronvn::UserExec(Option_t */*option*/)
     }
 
     //EP / Qn resolution histos
-    if(fFlowMethod==kEP || fFlowMethod==kEvShapeEP) {
+    if(fFlowMethod==kEP || fFlowMethod==kEvShapeEP || fFlowMethod==kEPVsMass || fFlowMethod==kEvShapeEPVsMass) {
         fHistEPResolVsCentrVsqn[0]->Fill(evCentr,mainpercqn,TMath::Cos(fHarmonic*GetDeltaPsiSubInRange(SubAPsin,SubBPsin)));
         if(nsubevents==3) {
             fHistEPResolVsCentrVsqn[1]->Fill(evCentr,mainpercqn,TMath::Cos(fHarmonic*GetDeltaPsiSubInRange(SubAPsin,SubCPsin)));
@@ -693,10 +695,10 @@ void AliAnalysisTaskSECharmHadronvn::UserExec(Option_t */*option*/)
         }
     }
     else if(fFlowMethod==kSP || fFlowMethod==kEvShapeSP) {
-        fHistEPResolVsCentrVsqn[0]->Fill(evCentr,mainpercqn,SubAQn[0]*SubBQn[0]+SubAQn[1]*SubBQn[1]);
+        fHistEPResolVsCentrVsqn[0]->Fill(evCentr,mainpercqn,(SubAQn[0]*SubBQn[0]+SubAQn[1]*SubBQn[1])/(SubAMultQn * SubBMultQn));
         if(nsubevents==3) {
-            fHistEPResolVsCentrVsqn[1]->Fill(evCentr,mainpercqn,SubAQn[0]*SubCQn[0]+SubAQn[1]*SubCQn[1]);
-            fHistEPResolVsCentrVsqn[2]->Fill(evCentr,mainpercqn,SubBQn[0]*SubCQn[0]+SubBQn[1]*SubCQn[1]);            
+            fHistEPResolVsCentrVsqn[1]->Fill(evCentr,mainpercqn,(SubAQn[0]*SubCQn[0]+SubAQn[1]*SubCQn[1])/(SubAMultQn * SubCMultQn));
+            fHistEPResolVsCentrVsqn[2]->Fill(evCentr,mainpercqn,(SubBQn[0]*SubCQn[0]+SubBQn[1]*SubCQn[1])/(SubCMultQn * SubBMultQn));            
         }
     }
 
@@ -750,13 +752,14 @@ void AliAnalysisTaskSECharmHadronvn::UserExec(Option_t */*option*/)
         CalculateInvMasses(d,invMass,nmasses);
 
         double phiD = d->Phi();
-        double etaD = d->Eta();
         
         double deltaphi = GetPhiInRange(phiD-mainPsin);
         double scalprod = (TMath::Cos(fHarmonic*phiD)*mainQn[0]+TMath::Sin(fHarmonic*phiD)*mainQn[1]) / mainMultQn;
+        double cosndeltaphi = TMath::Cos(fHarmonic*deltaphi);
         double vnfunc = -999.;
-        if(fFlowMethod==kEP || fFlowMethod==kEvShapeEP)      vnfunc = deltaphi;
-        else if(fFlowMethod==kSP || fFlowMethod==kEvShapeSP) vnfunc = scalprod;
+        if(fFlowMethod==kEP || fFlowMethod==kEvShapeEP)                  vnfunc = deltaphi;
+        else if(fFlowMethod==kSP || fFlowMethod==kEvShapeSP)             vnfunc = scalprod;
+        else if(fFlowMethod==kEPVsMass || fFlowMethod==kEvShapeEPVsMass) vnfunc = cosndeltaphi;
 
         if(fDecChannel==kDplustoKpipi) {
             double sparsearray[9] = {invMass[0],ptD,vnfunc,TMath::Cos(fHarmonic*phiD),TMath::Sin(fHarmonic*phiD),phiD,evCentr,static_cast<double>(tracklets),mainpercqn};
@@ -871,7 +874,7 @@ void AliAnalysisTaskSECharmHadronvn::SetqnPercentileSelection(TString splinesfil
 //________________________________________________________________________
 double AliAnalysisTaskSECharmHadronvn::GetPhiInRange(double phi)
 {
-    // Sets the phi angle in the range 0-pi
+    // Sets the phi angle in the range [0,2*pi/harmonic]
     
     double result = phi;
     while(result < 0) {

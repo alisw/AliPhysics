@@ -258,7 +258,7 @@ struct AliFemtoAnalysisPionPion::CutParams : public TNamed {
   UInt_t pion_1_min_its_ncls;
 
   Bool_t pion_1_remove_kinks,
-         pion_1_set_label,
+         pion_1_rm_neg_lbl,
          pion_1_use_tpctof;
 
   // PION - 2

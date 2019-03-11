@@ -181,7 +181,7 @@ struct CutConfig_Pion {
             max_its_chi_ndof = 5.0,
             sigma = 3.0;
 
-    Bool_t set_label = kTRUE,
+    Bool_t remove_negative_label = kFALSE,
            use_tpctof = kTRUE,
            remove_kinks = kTRUE;
 
@@ -203,7 +203,7 @@ struct CutConfig_Pair {
   Float_t max_share_fraction = { 1.0 },
           max_share_quality = { 1.0 };
 
-  Bool_t remove_same_label { kTRUE },
+  Bool_t remove_same_label { kFALSE },
          TPCOnly { kTRUE };
 
   Int_t algorithm_code { 2 };
@@ -381,7 +381,7 @@ AliFemtoAnalysisPionPion::CutParams::CutParams()
   , pion_1_min_its_ncls(default_pion.min_its_ncls)
 
   , pion_1_remove_kinks(default_pion.remove_kinks)
-  , pion_1_set_label(default_pion.set_label)
+  , pion_1_rm_neg_lbl(default_pion.remove_negative_label)
   , pion_1_use_tpctof(default_pion.use_tpctof)
 
     // Pion 2
@@ -399,7 +399,7 @@ AliFemtoAnalysisPionPion::CutParams::CutParams()
 
   , pion_2_min_tpc_ncls(default_pion.min_tpc_ncls)
   , pion_2_remove_kinks(default_pion.remove_kinks)
-  , pion_2_set_label(default_pion.set_label)
+  , pion_2_set_label(default_pion.remove_negative_label)
 
     // Pair
   , pair_use_avgsep(default_pair.use_avgsep)
@@ -461,6 +461,8 @@ AliFemtoAnalysisPionPion::BuildPionCut1(const CutParams &p) const
     cut->rchi2_tpc_min = p.pion_1_min_tpc_chi_ndof;
     cut->rchi2_tpc_max = p.pion_1_max_tpc_chi_ndof;
     cut->rchi2_its_max = p.pion_1_max_its_chi_ndof;
+    cut->remove_neg_label = p.pion_1_rm_neg_lbl;
+
     return cut;
   }
 
@@ -484,7 +486,7 @@ AliFemtoAnalysisPionPion::BuildPionCut1(const CutParams &p) const
   cut->SetStatus(AliESDtrack::kTPCin);
   cut->SetminTPCncls(p.pion_1_min_tpc_ncls);
   cut->SetRemoveKinks(p.pion_1_remove_kinks);
-  cut->SetLabel(p.pion_1_set_label);
+  cut->SetLabel(p.pion_1_rm_neg_lbl);
   cut->SetMaxTPCChiNdof(p.pion_1_max_tpc_chi_ndof);
   cut->SetMaxITSChiNdof(p.pion_1_max_its_chi_ndof);
   cut->SetMaxImpactXY(p.pion_1_max_impact_xy);
@@ -644,8 +646,11 @@ void AliFemtoAnalysisPionPion::AddStanardCutMonitors()
                                                         : "ERROR";
 
   if (fFirstParticleCut) {
-    fFirstParticleCut->AddCutMonitor(new AliFemtoCutMonitorPionPion::Pion(true, p1_type_str, fMCAnalysis),
-                                     new AliFemtoCutMonitorPionPion::Pion(false, p1_type_str, fMCAnalysis));
+    auto *pass_cut = new AliFemtoCutMonitorPionPion::Pion(true, p1_type_str, fMCAnalysis),
+         *fail_cut = new AliFemtoCutMonitorPionPion::Pion(false, p1_type_str, fMCAnalysis);
+
+    fail_cut->SetCharge(fPionType_1 == kPiPlus ? 1 : -1);
+    fFirstParticleCut->AddCutMonitor(pass_cut, fail_cut);
   }
 
   if (!identical) {

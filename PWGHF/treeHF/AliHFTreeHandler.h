@@ -76,10 +76,10 @@ class AliHFTreeHandler : public TObject
 
     //core methods --> implemented in each derived class
     virtual TTree* BuildTree(TString name, TString title) = 0;
-    virtual bool SetVariables(AliAODRecoDecayHF* cand, float bfield, int masshypo, AliPIDResponse* pidrespo) = 0;
+    virtual bool SetVariables(int runnumber, unsigned int eventID, AliAODRecoDecayHF* cand, float bfield, int masshypo, AliPIDResponse* pidrespo) = 0;
     //for MC gen --> common implementation
     TTree* BuildTreeMCGen(TString name, TString title);
-    bool SetMCGenVariables(AliAODMCParticle* mcpart);
+    bool SetMCGenVariables(int runnumber, unsigned int eventID, AliAODMCParticle* mcpart);
 
     virtual void FillTree() = 0; //to be called for each event, not each candidate!
     
@@ -204,9 +204,11 @@ class AliHFTreeHandler : public TObject
     bool fIsMCGenTree; ///flag to know if is a tree for MC generated particles
     bool fDauInAccFlag; ///flag to know if the daughter are in acceptance in case of MC gen
     vector<bool> fDauInAcceptance; ///vector of flags to know if the daughter are in acceptance in case of MC gen
+    vector<unsigned int> fEvID; /// event ID corresponding to the one set in fTreeEvChar
+    vector<int> fRunNumber; /// run number
   
   /// \cond CLASSIMP
-  ClassDef(AliHFTreeHandler,3); ///
+  ClassDef(AliHFTreeHandler,4); ///
   /// \endcond
 };
 

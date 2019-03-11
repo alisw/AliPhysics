@@ -107,12 +107,17 @@ namespace AliFemtoCutMonitorPionPion {
     virtual TList* GetOutputList();
     virtual void Fill(const AliFemtoTrack* aEvent);
 
+    void SetCharge(int c)
+      { fAllowCharge = c; }
+
   private:
     Pion(const Pion &);
     Pion& operator=(const Pion &);
 
 
   protected:
+
+    int fAllowCharge;
 
     TH2F *fYPt;
     TH2F *fPtPhi;

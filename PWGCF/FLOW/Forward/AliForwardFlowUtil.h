@@ -38,6 +38,7 @@ class AliForwardFlowUtil : public TObject {
   void FillFromPrimaries(TH2D*& cen, TH2D*& fwd) const;
   void FillFromPrimariesAOD(TH2D*& cen, TH2D*& fwd) const;
   void FillFromPrimaries(TH2D*& cen) const;
+  void FillFromPrimariesFwd(TH2D*& cen) const;
   void FillFromPrimariesAOD(TH2D*& cen) const;
   void FillFromTracklets(TH2D*& cen) const;
   void FillFromCentralClusters(TH2D*& cen) const;
@@ -47,6 +48,9 @@ class AliForwardFlowUtil : public TObject {
   void FillFromPrimaries(TH3D*& cen, TH3D*& fwd, Double_t zvertex) const;
   void FillFromTracklets(TH3D*& cen, Double_t zvertex) const;
   void FillFromTracks(TH3D*& cen, Int_t tracktype, Double_t zvertex) const;
+  void FillFromTrackrefsITS(TH2D*& fwd);
+  Bool_t ProcessTrackITS(AliMCParticle* particle,AliMCParticle* mother,TH2D*& cen);
+
   Double_t GetZ();
   Double_t GetCentrality(TString centrality_estimator);
   // Check if a given particle itself hit the FMD. If so, return the
@@ -54,6 +58,8 @@ class AliForwardFlowUtil : public TObject {
   AliTrackReference* IsHitTPC(AliMCParticle* p);
   AliTrackReference* IsHitFMD(AliMCParticle* p);
   void GetTrackRefEtaPhi(AliMCParticle* p, Double_t* etaPhi);
+    void GetTrackRefEtaPhi(AliTrackReference* ref, Double_t* etaPhi);
+
   AliMCParticle* GetMother(Int_t iTr, const AliMCEvent* event) const;
 
   void MakeFakeHoles(TH2D& forwarddNdedp);
@@ -114,6 +120,7 @@ class AliForwardFlowUtil : public TObject {
 
   Double_t GetTrackRefTheta(const AliTrackReference* ref) const;
 
+  AliTrackReference* fStored; //! Last stored
 
 
 private:

@@ -19,7 +19,7 @@
  *
  * @ingroup pwglf_forward_flow
  */
-AliAnalysisTaskSE* AddTaskForwardFlowRun2( bool doNUA, bool makeFakeHoles, TString nua_file, UShort_t nua_mode, bool doetagap, Double_t gap, bool mc,  bool esd,bool prim_cen,bool prim_fwd , UInt_t tracktype, TString centrality,Double_t minpt,Double_t maxpt,TString sec_file,TString name1)
+AliAnalysisTaskSE* AddTaskForwardFlowRun2( bool doNUA, bool makeFakeHoles, TString nua_file, UShort_t nua_mode, bool doetagap, Double_t gap, bool mc,  bool esd,bool prim_cen,bool prim_fwd , UInt_t tracktype, TString centrality,Double_t minpt,Double_t maxpt,TString sec_file,TString suffix)
 {
   std::cout << "______________________________________________________________________________" << std::endl;
 
@@ -30,7 +30,7 @@ AliAnalysisTaskSE* AddTaskForwardFlowRun2( bool doNUA, bool makeFakeHoles, TStri
   if (!mgr)
     Fatal("","No analysis manager to connect to.");
 
-  TString name = name1;
+  TString name = suffix;
 
   AliForwardFlowRun2Task* task = new AliForwardFlowRun2Task(name);
   TString resName = "ForwardFlow";
@@ -145,12 +145,14 @@ AliAnalysisTaskSE* AddTaskForwardFlowRun2( bool doNUA, bool makeFakeHoles, TStri
   if (mc) resName += "_mc";
 
   task->fSettings.centrality_estimator = centrality; // "V0M";// RefMult08; // "V0M" // "SPDTracklets";
-  std::cout << "Container name: " << resName << std::endl;
+   TString combName = resName + '_' + suffix;
+
+  std::cout << "Container name: " << combName << std::endl;
   //resName = "hej";
   std::cout << "______________________________________________________________________________" << std::endl;
 
   AliAnalysisDataContainer *coutput_recon =
-  mgr->CreateContainer(resName,
+  mgr->CreateContainer(combName,
    TList::Class(),
    AliAnalysisManager::kOutputContainer,
    mgr->GetCommonFileName());

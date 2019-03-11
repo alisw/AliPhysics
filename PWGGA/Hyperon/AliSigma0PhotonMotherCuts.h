@@ -37,6 +37,7 @@ class AliSigma0PhotonMotherCuts : public TObject {
   void SigmaToLambdaGamma(
       const std::vector<AliSigma0ParticleV0> &photonCandidates,
       const std::vector<AliSigma0ParticleV0> &lambdaCandidates);
+  float GetMassSigmaPt(float pt) const;
   void SigmaToLambdaGammaMixedEvent(
       const std::vector<AliSigma0ParticleV0> &photonCandidates,
       const std::vector<AliSigma0ParticleV0> &lambdaCandidates);
@@ -67,6 +68,7 @@ class AliSigma0PhotonMotherCuts : public TObject {
 
   void SetPhotonMinPt(float minpT) { fPhotonPtMin = minpT; }
   void SetPhotonMaxPt(float maxpT) { fPhotonPtMax = maxpT; }
+  void SetMinPt(float minpT) { fPtMin = minpT; }
   void SetArmenterosCut(float qtLow, float qtUp, float alphaLow,
                         float alphaUp) {
     fArmenterosCut = true;
@@ -86,6 +88,13 @@ class AliSigma0PhotonMotherCuts : public TObject {
   void SetLambdaCuts(AliSigma0V0Cuts *lamCut) { fLambdaCuts = lamCut; }
   void SetPhotonCuts(AliSigma0V0Cuts *photCut) { fPhotonCuts = photCut; }
   void SetV0ReaderName(TString name) { fV0ReaderName = name; }
+  void SetSigmaMassPt(bool doIt) { fMassWindowPt = doIt; }
+  void SetSigmaMassParameters(const float p0, const float p1, const float p2) {
+    fMassWindowPt = true;
+    fMassWindowP0 = p0;
+    fMassWindowP1 = p1;
+    fMassWindowP2 = p2;
+  }
 
   void InitCutHistograms(TString appendix = TString(""));
   TList *GetCutHistograms() const { return fHistograms; }
@@ -142,13 +151,19 @@ class AliSigma0PhotonMotherCuts : public TObject {
   int fPDGDaughter1;   //
   int fPDGDaughter2;   //
 
-  float fMassSigma;            //
-  float fSigmaMassCut;         //
-  float fSidebandCutUp;        //
-  float fSidebandCutDown;      //
-  float fPhotonPtMin;          //
-  float fPhotonPtMax;          //
-  float fRapidityMax;          //
+  bool fMassWindowPt;   //
+  float fMassWindowP0;  //
+  float fMassWindowP1;  //
+  float fMassWindowP2;  //
+
+  float fMassSigma;        //
+  float fSigmaMassCut;     //
+  float fSidebandCutUp;    //
+  float fSidebandCutDown;  //
+  float fPhotonPtMin;      //
+  float fPhotonPtMax;      //
+  float fPtMin;            //
+  float fRapidityMax;      //
 
   float fArmenterosCut;       //
   float fArmenterosQtLow;     //
@@ -172,6 +187,7 @@ class AliSigma0PhotonMotherCuts : public TObject {
   TH1F *fHistNLambdaGammaLabel;                     //!
   TH1F *fHistMassCutPt;                             //!
   TH1F *fHistInvMass;                               //!
+  TH2F *fHistInvMassSelected;                       //!
   TH2F *fHistInvMassRecPhoton;                      //!
   TH2F *fHistInvMassRecLambda;                      //!
   TH2F *fHistInvMassRec;                            //!
@@ -234,7 +250,7 @@ class AliSigma0PhotonMotherCuts : public TObject {
   TH2F *fHistMCV0MotherCheck;  //!
 
  private:
-  ClassDef(AliSigma0PhotonMotherCuts, 25)
+  ClassDef(AliSigma0PhotonMotherCuts, 27)
 };
 
 #endif

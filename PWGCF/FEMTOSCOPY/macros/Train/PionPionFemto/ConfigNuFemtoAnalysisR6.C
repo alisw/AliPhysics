@@ -82,6 +82,7 @@ struct MacroParams : public TNamed {
 
   bool eventreader_use_aux { false };
   int eventreader_filter_bit { 7 };
+  int eventreader_read_full_mc { false };
   bool eventreader_epvzero { true };
   bool eventreader_vertex_shift { true };
   bool eventreader_dca_globaltrack { true };
@@ -218,8 +219,12 @@ ConfigFemtoAnalysis(const TString& param_str="")
 
   // Update Configurations
   if (macro_config.RequestsMonteCarloData() && !analysis_config.is_mc_analysis) {
-    std::cerr << "MonteCarlo correlation function requested when analysis is *not* MC\n";
+    std::cerr << "\nMonteCarlo correlation function requested when analysis is *not* MC\n\n";
     return nullptr;
+  }
+
+  if (cut_config.pion_1_rm_neg_lbl && macro_config.eventreader_read_full_mc) {
+    std::cerr << "\nWARNING : Requested reading full-MC AND removing tracks with negative labels\n\n";
   }
 
   // Begin to build the manager and analyses
@@ -238,6 +243,7 @@ ConfigFemtoAnalysis(const TString& param_str="")
     rdr->SetPrimaryVertexCorrectionTPCPoints(macro_config.eventreader_vertex_shift);
     rdr->SetDCAglobalTrack(macro_config.eventreader_dca_globaltrack);
     rdr->SetReadMC(analysis_config.is_mc_analysis);
+    rdr->SetReadFullMCData(analysis_config.is_mc_analysis && macro_config.eventreader_read_full_mc);
     manager->SetEventReader(rdr);
 
   if (macro_config.centrality_ranges.empty()) {
@@ -397,6 +403,7 @@ ConfigFemtoAnalysis(const TString& param_str="")
 
       if (macro_config.do_kt_trueq_cf) {
         AliFemtoModelCorrFctn *cf = new AliFemtoModelCorrFctnTrueQ("", QINV_BIN_COUNT, QINV_MIN_VAL, QINV_MAX_VAL);
+        cf->ConnectToManager(model_manager);
         auto *kt_qinv_cfs = new AliFemtoKtBinnedCorrFunc("KT_TrueQ", cf);
 
         for (size_t kt_idx=0; kt_idx < macro_config.kt_ranges.size(); kt_idx += 2) {

@@ -50,7 +50,7 @@ struct EventCutAttrEpPsi {
 
   std::pair<double, double> ep_psi_range;
 
-  bool Pass(const AliFemtoEvent &ev)
+  bool Pass(const AliFemtoEvent &ev) const
     {
       const double phi = ev.ReactionPlaneAngle();
       return ep_psi_range.first <= phi && phi < ep_psi_range.second;
@@ -78,7 +78,7 @@ struct EventCutAttrMultiplicty {
 
   std::pair<int, int> mult_range;
 
-  bool Pass(const AliFemtoEvent &ev)
+  bool Pass(const AliFemtoEvent &ev) const
     {
       const int mult = ev.UncorrectedNumberOfPrimaries();
       return mult_range.first <= mult && mult < mult_range.second;
@@ -105,7 +105,7 @@ struct EventCutAttrCentrality {
   static const std::pair<double, double> DEFAULT;
   std::pair<double, double> cent_range;
 
-  bool Pass(const AliFemtoEvent &ev)
+  bool Pass(const AliFemtoEvent &ev) const
     {
       const double cent = ev.CentralityV0();
       return cent_range.first <= cent && cent < cent_range.second;
@@ -133,7 +133,7 @@ struct EventCutAttrCentrality {
 struct EventCutAttrVertexZ {
   std::pair<double, double> zvert_range;
 
-  bool Pass(const AliFemtoEvent &ev)
+  bool Pass(const AliFemtoEvent &ev) const
     {
       const double vertex_z = ev.PrimVertPos().z();
       return zvert_range.first <= vertex_z && vertex_z < zvert_range.second;
@@ -161,7 +161,7 @@ struct EventCutAttrVertexZ {
 struct EventCutAttrZdcParticipants {
   unsigned int min_zdc_participants;
 
-  bool Pass(const AliFemtoEvent &ev)
+  bool Pass(const AliFemtoEvent &ev) const
     {
       return ev.ZDCParticipants() >= min_zdc_participants;
     }
@@ -187,7 +187,7 @@ struct EventCutAttrZdcParticipants {
 struct EventCutAttrTrigger {
   unsigned char trigger;
 
-  bool Pass(const AliFemtoEvent &ev)
+  bool Pass(const AliFemtoEvent &ev) const
     {
       return trigger == 0 || ev.TriggerCluster() == trigger;
     }

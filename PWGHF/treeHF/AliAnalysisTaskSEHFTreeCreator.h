@@ -47,8 +47,13 @@
 #include "AliHFTreeHandlerBplustoD0pi.h"
 #include "AliHFTreeHandlerDstartoKpipi.h"
 #include "AliHFTreeHandlerLc2V0bachelor.h"
+#include "AliJetTreeHandler.h"
+#include "AliJetContainer.h"
 
 class AliAODEvent;
+class TClonesArray;
+class AliEmcalJet;
+class AliRhoParameter;
 
 class AliAnalysisTaskSEHFTreeCreator : public AliAnalysisTaskSE
 {
@@ -57,7 +62,7 @@ public:
 
     
     AliAnalysisTaskSEHFTreeCreator();
-    AliAnalysisTaskSEHFTreeCreator(const char *name,TList *cutsList);
+    AliAnalysisTaskSEHFTreeCreator(const char *name,TList *cutsList, int fillNJetTrees);
     virtual ~AliAnalysisTaskSEHFTreeCreator();
     
     
@@ -66,6 +71,8 @@ public:
     virtual void Init();
     virtual void LocalInit() {Init();}
     virtual void UserExec(Option_t *option);
+    virtual void ExecOnce();
+    virtual Bool_t RetrieveEventObjects();
     virtual void Terminate(Option_t *option);
     
     
@@ -89,6 +96,15 @@ public:
     void SetPIDoptLc2V0bachelorTree(Int_t opt){fPIDoptLc2V0bachelor=opt;}
     void SetFillMCGenTrees(Bool_t fillMCgen) {fFillMCGenTrees=fillMCgen;}
   
+    void SetFillPtUncorr(bool b) { fFillPtUncorr = b; }
+    void SetFillArea(bool b) { fFillArea = b; }
+    void SetFillNConstituents(bool b) { fFillNConstituents = b; }
+    void SetFillZLeading(bool b) { fFillZLeading = b; }
+    void SetFillRadialMoment(bool b) { fFillRadialMoment = b; }
+    void SetFillpTD(bool b) { fFillpTD = b; }
+    void SetFillMass(bool b) { fFillMass = b; }
+    void SetFillMatchingJetID(bool b) { fFillMatchingJetID = b; }
+  
     void SetDsMassKKOption(AliHFTreeHandlerDstoKKpi::massKKopt opt) {fDsMassKKOpt=opt;}
     void SetLc2V0bachelorCalcSecoVtx(Int_t opt=1) {fLc2V0bachelorCalcSecoVtx=opt;}
   
@@ -105,6 +121,18 @@ public:
   
     Bool_t CheckDaugAcc(TClonesArray* arrayMC,Int_t nProng, Int_t *labDau);
     AliAODVertex* ReconstructBplusVertex(const AliVVertex *primary, TObjArray *tracks, Double_t bField, Double_t dispersion);
+  
+    // Jets
+    //-----------------------------------------------------------------------------------------------
+    void SetFillNJetTrees(Int_t n){fWriteNJetTrees=n;}
+  
+    AliJetContainer* AddJetContainer(AliJetContainer::EJetType_t jetType, AliJetContainer::EJetAlgo_t jetAlgo, AliJetContainer::ERecoScheme_t recoScheme, Double_t radius, UInt_t accType, AliParticleContainer* partCont, AliClusterContainer* clusCont, TString tag = "Jet");
+    AliJetContainer* AddJetContainer(const char *n, UInt_t accType, Float_t jetRadius);
+    AliJetContainer* GetJetContainer(Int_t i=0) const;
+    void FillJetTree();
+  
+    
+    unsigned int GetEvID();
     
 private:
     
@@ -112,7 +140,7 @@ private:
     AliAnalysisTaskSEHFTreeCreator& operator=(const AliAnalysisTaskSEHFTreeCreator&);
     
     
-    
+    unsigned int            fEventNumber;
     TH1F                    *fNentries;                            //!<!   histogram with number of events on output slot 1
     TH2F                    *fHistoNormCounter;                    //!<!   histogram with number of events on output slot 1
     TList                   *fListCuts;                            //      list of cuts sent to output slot 2
@@ -206,6 +234,11 @@ private:
     Int_t                   fNtracks;                              /// number of tracks
     Int_t                   fIsEvRej;                              /// flag with information about rejection of the event
     Int_t                   fRunNumber;                            /// run number
+    UInt_t                  fEventID;                              /// unique event ID
+    TString                 fFileName;
+    unsigned int            fDirNumber;
+    Int_t                   fnTracklets;                           /// number of tracklets
+    Int_t                   fnV0A;                                 /// V0A multiplicity 
 
     Bool_t                  fFillMCGenTrees;                       /// flag to enable fill of the generated trees
   
@@ -214,8 +247,37 @@ private:
   
     Int_t                   fTreeSingleTrackVarsOpt;               /// option for single-track variables to be filled in the trees
   
+  
+    // Jets
+    //-----------------------------------------------------------------------------------------------
+  
+    // Tree
+    Int_t                   fWriteNJetTrees;                       ///< number of jet trees to write
+                                                                   // (should match number of jet containers added)
+    std::vector<TTree*>     fVariablesTreeJet;                     //!<! vector of trees of the candidate variables
+    std::vector<AliJetTreeHandler*> fTreeHandlerJet;               //!<! vector of handler objects for jet tree
+  
+    // Jet container and array
+    Bool_t                  fLocalInitialized;                     ///< whether or not the task has been already initialized
+    TObjArray               fJetCollArray;                         ///< array of jet containers
+  
+    // Jet background subtraction
+    TString                 fRhoName;                              ///<  rho name
+    AliRhoParameter        *fRho;                                  //!<! event rho
+    Double_t                fRhoVal;                               //!<! event rho value
+  
+    // Flags specifying what info to fill to the tree
+    bool                    fFillPtUncorr;                         ///< Pt of the jet (GeV/c) (not background subtracted)
+    bool                    fFillArea;                             ///< Area
+    bool                    fFillNConstituents;                    ///< N constituents
+    bool                    fFillZLeading;                         ///< ZLeading
+    bool                    fFillRadialMoment;                     ///< Radial moment
+    bool                    fFillpTD;                              ///< pT,D
+    bool                    fFillMass;                             ///< Mass
+    bool                    fFillMatchingJetID;                    ///< jet matching
+  
     /// \cond CLASSIMP
-    ClassDef(AliAnalysisTaskSEHFTreeCreator,8);
+    ClassDef(AliAnalysisTaskSEHFTreeCreator,10);
     /// \endcond
 };
 

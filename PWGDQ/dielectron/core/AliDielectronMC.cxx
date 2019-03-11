@@ -764,7 +764,85 @@ Int_t AliDielectronMC::GetMothersLabel(Int_t daughterLabel) const {
   return momsLabel;
 }
 
+//________________________________________________________________________________
+Int_t AliDielectronMC::GetFirstMothersLabelInChain(Int_t daughterLabel) const {
+  //
+  //  Get the label of the very first mother in the decay chain for particle with label daughterLabel
+  //  NOTE: for tracks, the absolute label should be passed
+  //
+  if(daughterLabel<0) return -1;
+  if (!fMCEvent) return -1;
 
+  Int_t labelfirstmother = -1;
+  Int_t firstMotherIndex = GetMCTrackFromMCEvent(daughterLabel)->GetMother(); // get label of the mother
+ 
+  while(firstMotherIndex>0){
+    labelfirstmother = firstMotherIndex;
+    firstMotherIndex = GetMCTrackFromMCEvent(labelfirstmother)->GetMother(); // get label of mother of mother....
+  }
+
+  // labelfirstmother is -1 if particle has no mother (primary) or equaled to the very first primary particle in the chain
+  return labelfirstmother;
+
+}
+//________________________________________________________________________________
+Int_t AliDielectronMC::GetMinLabelParticlePrimaryAround(Int_t label) const {
+  //
+  //  Get the label of the last primary particle around the primary particle at the label
+  //  NOTE: for tracks, the absolute label should be passed
+  //
+  if(label<0) return -1;
+  if (!fMCEvent) return -1;
+
+  Int_t labelminfirstMother = label; // start at the particle label
+  // get label of the mother: should be -1 since we assume that this is the first mother in the chain
+  Int_t firstMotherIndex = GetMCTrackFromMCEvent(label)->GetMother(); 
+  if(firstMotherIndex>-1) return -1;
+  
+  while(firstMotherIndex<0){
+    labelminfirstMother--;
+    if(labelminfirstMother<0){
+      firstMotherIndex = 0;
+    }
+    else{
+      firstMotherIndex = GetMCTrackFromMCEvent(labelminfirstMother)->GetMother(); // get the mother label of the neighborhood particle
+    }
+  }
+  
+  labelminfirstMother ++; // set back by one to the last primary particle in the - neighborhood
+
+  return labelminfirstMother;
+
+}
+//________________________________________________________________________________
+Int_t AliDielectronMC::GetMaxLabelParticlePrimaryAround(Int_t label) const {
+  //
+  //  Get the label of the last primary particle around the primary particle at the label
+  //  NOTE: for tracks, the absolute label should be passed
+  //
+  if(label<0) return -1;
+  if (!fMCEvent) return -1;
+
+  Int_t labelmaxfirstMother = label; // start at the particle label
+  // get label of the mother: should be -1 since we assume that this is the first mother in the chain
+  Int_t firstMotherIndex = GetMCTrackFromMCEvent(label)->GetMother(); 
+  if(firstMotherIndex>-1) return -1;
+  
+  while(firstMotherIndex<0){
+    labelmaxfirstMother++;
+    if(labelmaxfirstMother > fMCEvent->GetNumberOfTracks()){
+      firstMotherIndex = 0;
+    }
+    else{
+      firstMotherIndex = GetMCTrackFromMCEvent(labelmaxfirstMother)->GetMother(); // get the mother label of the neighborhood particle
+    }
+  }
+  
+  labelmaxfirstMother --; // set back by one to the last primary particle in the + neighborhood
+
+  return labelmaxfirstMother;
+
+}
 //________________________________________________________________________________
 Int_t AliDielectronMC::GetPdgFromLabel(Int_t label) const {
   //
@@ -1678,6 +1756,21 @@ Bool_t AliDielectronMC::IsMCTruth(const AliDielectronPair* pair, const AliDielec
   if (signalMC->GetCheckStackForPDG()) {
     pdgInStack = CheckStackParticle(labelM1,signalMC->GetStackPDG()) && CheckStackParticle(labelM2,signalMC->GetStackPDG());
   }
+  // check is first mothers are closed (correlated charm/beauty)
+  Bool_t correlated = kTRUE;
+  if (signalMC->GetCheckCorrelatedHF()){
+    Int_t labelfirstmother1 = GetFirstMothersLabelInChain(labelD1);
+    Int_t labelminfirstmother1 = GetMinLabelParticlePrimaryAround(labelfirstmother1);
+    Int_t labelmaxfirstmother1 = GetMaxLabelParticlePrimaryAround(labelfirstmother1);
+    Int_t labelfirstmother2 = GetFirstMothersLabelInChain(labelD2);
+    Int_t labelminfirstmother2 = GetMinLabelParticlePrimaryAround(labelfirstmother2);
+    Int_t labelmaxfirstmother2 = GetMaxLabelParticlePrimaryAround(labelfirstmother2);
+    if(labelfirstmother1==-1 || labelminfirstmother1==-1 || labelmaxfirstmother1==-1) correlated = kFALSE; // security
+    if(labelfirstmother2==-1 || labelminfirstmother2==-1 || labelmaxfirstmother2==-1) correlated = kFALSE; // security
+    if(labelfirstmother1<labelminfirstmother2 || labelfirstmother1>labelmaxfirstmother2) correlated = kFALSE;
+    if(labelfirstmother2<labelminfirstmother1 || labelfirstmother2>labelmaxfirstmother1) correlated = kFALSE;   
+  }
+    
   // check if a mother is also a grandmother
   Bool_t motherIsGrandmother = kTRUE;
   if (signalMC->GetCheckMotherGrandmotherRelation()) {
@@ -1685,7 +1778,7 @@ Bool_t AliDielectronMC::IsMCTruth(const AliDielectronPair* pair, const AliDielec
     motherIsGrandmother = MotherIsGrandmother(labelM1,labelM2,labelG1,labelG2, signalMC->GetMotherIsGrandmother());
   }
 
-  return ((directTerm || crossTerm) && motherRelation && processGEANT && motherIsGrandmother && pdgInStack);
+  return ((directTerm || crossTerm) && motherRelation && processGEANT && motherIsGrandmother && pdgInStack && correlated);
 
 }
 
@@ -1836,11 +1929,15 @@ Bool_t AliDielectronMC::IsMCTruth(AliVParticle* mcD1, AliVParticle* mcD2, const 
     Bool_t pdgInStack = kTRUE;
     // Not implemented
 
+    // check if correlated for HF
+    Bool_t correlated = kTRUE;
+    // Not implemented
+
     // check if a mother is also a grandmother
     Bool_t motherIsGrandmother = kTRUE;
     // Not implemented
 
-    return ((directTerm || crossTerm) && motherRelation && processGEANT && motherIsGrandmother && pdgInStack);
+    return ((directTerm || crossTerm) && motherRelation && processGEANT && motherIsGrandmother && pdgInStack && correlated);
 
   }
   else if (mcD1->IsA() == AliAODMCParticle::Class()){
@@ -1980,11 +2077,15 @@ Bool_t AliDielectronMC::IsMCTruth(AliVParticle* mcD1, AliVParticle* mcD2, const 
     Bool_t pdgInStack = kTRUE;
     // Not implemented
 
+    // check if correlated
+    Bool_t correlated = kTRUE;
+    // Not implemented
+
     // check if a mother is also a grandmother
     Bool_t motherIsGrandmother = kTRUE;
     // Not implemented
 
-    return ((directTerm || crossTerm) && motherRelation && processGEANT && motherIsGrandmother && pdgInStack);
+    return ((directTerm || crossTerm) && motherRelation && processGEANT && motherIsGrandmother && pdgInStack && correlated);
 
   }
 

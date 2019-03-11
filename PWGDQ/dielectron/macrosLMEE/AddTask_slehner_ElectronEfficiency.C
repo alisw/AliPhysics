@@ -54,14 +54,15 @@ AliAnalysisTaskElectronEfficiencyV2* AddTask_slehner_ElectronEfficiency(
   // #########################################################
   // Possibility to set generator. If nothing set all generators are taken into account
   // task->SetGeneratorName(generatorName);
-  TString generators="";
-  if(genGroup&1<<0) generators+= "Hijing_0;";
-  if(genGroup&1<<1) generators+= "pizero_1;eta_2;etaprime_3;rho_4;omega_5;phi_6;jpsi_7;";
-  if(genGroup&1<<2) generators+= "Pythia CC_8;Pythia BB_8;Pythia B_8";
-  TString generatorsPair=generators;
-  task->SetGeneratorMCSignalName(generatorsPair);
-  task->SetGeneratorULSSignalName(generators);
-
+  if(setGens){
+    TString generators="";
+    if(genGroup&1<<0) generators+= "Hijing_0;";
+    if(genGroup&1<<1) generators+= "pizero_1;eta_2;etaprime_3;rho_4;omega_5;phi_6;jpsi_7;";
+    if(genGroup&1<<2) generators+= "Pythia CC_8;Pythia BB_8;Pythia B_8";
+    TString generatorsPair=generators;
+    task->SetGeneratorMCSignalName(generatorsPair);
+    task->SetGeneratorULSSignalName(generators);
+  }
   // #########################################################
   // #########################################################
 	// Cut lib

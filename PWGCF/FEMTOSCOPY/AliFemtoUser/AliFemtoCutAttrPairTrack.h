@@ -57,7 +57,7 @@ struct PairCutTrackAttrAvgSep {
 
   double avgsep_min;
 
-  bool Pass(const AliFemtoTrack &track1, const AliFemtoTrack &track2)
+  bool Pass(const AliFemtoTrack &track1, const AliFemtoTrack &track2) const
     {
       return calc_avg_sep(track1, track2) > avgsep_min;
     }
@@ -93,7 +93,7 @@ struct PairCutTrackAttrPt {
   static const std::pair<double, double> DEFAULT;
   std::pair<double, double> pt_range;
 
-  bool Pass(const AliFemtoTrack &track1, const AliFemtoTrack &track2)
+  bool Pass(const AliFemtoTrack &track1, const AliFemtoTrack &track2) const
     {
       const double pt_sum = track1.Pt() + track2.Pt();
       return pt_range.first <= pt_sum && pt_sum < pt_range.second;
@@ -124,7 +124,7 @@ struct PairCutTrackAttrShareQuality {
   double share_fraction_max;
   double share_quality_max;
 
-  bool Pass(const AliFemtoTrack &track1, const AliFemtoTrack &track2)
+  bool Pass(const AliFemtoTrack &track1, const AliFemtoTrack &track2) const
     {
       const std::pair<double, double>
         qual_and_frac = calc_share_quality_fraction(track1, track2);
@@ -229,7 +229,7 @@ struct PairCutTrackAttrDetaDphiStar {
    {
    }
 
-  bool Pass(const AliFemtoTrack &track1, const AliFemtoTrack &track2)
+  bool Pass(const AliFemtoTrack &track1, const AliFemtoTrack &track2) const
     {
       const AliFemtoThreeVector &p1 = track1.P(),
                                 &p2 = track2.P();
@@ -271,21 +271,25 @@ struct PairCutTrackAttrSameLabel {
 
   bool remove_same_label;
 
-  bool Pass(const AliFemtoTrack &track1, const AliFemtoTrack &track2)
+  bool Pass(const AliFemtoTrack &track1, const AliFemtoTrack &track2) const
     {
-      return remove_same_label ? abs(track1.Label()) == abs(track2.Label()) : true;
+      // either not removing same label, or passes if they are not equal
+      return !remove_same_label || abs(track1.Label()) != abs(track2.Label());
     }
 
   PairCutTrackAttrSameLabel()
-    : remove_same_label(true)
+    : remove_same_label(false)
     {}
 
   PairCutTrackAttrSameLabel(AliFemtoConfigObject &cfg)
-    : remove_same_label(cfg.pop_bool("remove_same_label", true))
+    : remove_same_label(cfg.pop_bool("remove_same_label", false))
     {}
 
   void FillConfiguration(AliFemtoConfigObject &cfg) const
     {
+      if (!remove_same_label) {
+        return;
+      }
       cfg.insert("remove_same_label", remove_same_label);
     }
 
@@ -307,7 +311,7 @@ protected:
 
 public:
 
-  bool Pass(const AliFemtoTrack &track1, const AliFemtoTrack &track2)
+  bool Pass(const AliFemtoTrack &track1, const AliFemtoTrack &track2) const
     {
       // const double minv2 = CalcMinvSqrd(track1.P(), track2.P(), fMass1, fMass2);
       const double minv2 = CalcMinvSqrd(track1.P(), track2.P());
@@ -413,7 +417,7 @@ public:
 struct PairCutTrackAttrRemoveEE {
   float ee_minv_min;
 
-  bool Pass(const AliFemtoTrack &track1, const AliFemtoTrack &track2)
+  bool Pass(const AliFemtoTrack &track1, const AliFemtoTrack &track2) const
     {
       const double
         E_MASS = 0.000511,
@@ -507,8 +511,6 @@ public:
     }
 
 };
-
-
 
 
 #endif

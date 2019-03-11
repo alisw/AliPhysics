@@ -27,8 +27,6 @@ AliAnalysisTaskSE* AddTaskForwardValidation(TString name,bool mc,TString suffix)
     AliForwardTaskValidation* task = AliForwardTaskValidation::ConnectTask(name, mc,suffix);
 
   return task;
-  //std::cout << validation_task << std::endl;
-  //return validation_task;
 }
 /*
  * EOF

@@ -112,7 +112,7 @@ public:
 protected:
 
   /// Adds pair information to appropriate histogram points
-  void AddPair(const AliFemtoPair *, TH1F*, TH2F*);
+  void AddPair(const AliFemtoPair&, TH1F*, TH2F*);
 
   /// The particle class combination types (track, V0, etc...)
   AliFemtoAvgSepCorrFctn::PairType fPairType;
@@ -120,18 +120,11 @@ protected:
   Int_t fExpectedTrack1Code;
   Int_t fExpectedTrack2Code;
 
-  /// Qinv numerator of reconstructed pairs
-  TH1F *fRecNum;
+  /// Numerator with axis for non-expected particle PID
+  TH2F *fNumPid;
 
-  /// Qinv denominator of reconstructed pairs
-  TH1F *fRecDen;
-
-  /// Numerator of only true pairs
-  TH2F *fTrueNum;
-
-  /// Denominator of only true pairs
-  TH2F *fTrueDen;
-
+  /// Denominator with axis for non-expected particle PID
+  TH2F *fDenPid;
 };
 
 

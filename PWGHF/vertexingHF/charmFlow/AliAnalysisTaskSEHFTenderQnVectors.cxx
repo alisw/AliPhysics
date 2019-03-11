@@ -17,12 +17,13 @@
 // S. Trogolo, stefano.trogolo@cern.ch
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 
-#include <TMath.h>
 #include <TChain.h>
 
 #include "AliAnalysisTaskSEHFTenderQnVectors.h"
 #include "AliAODHandler.h"
+#include "AliAnalysisManager.h"
 #include "AliMultSelection.h"
+#include "AliAODVertex.h"
 
 ClassImp(AliAnalysisTaskSEHFTenderQnVectors)
 

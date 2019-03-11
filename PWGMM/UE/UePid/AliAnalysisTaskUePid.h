@@ -72,6 +72,8 @@ class AliAnalysisTaskUePid : public AliAnalysisTaskSE {
 		TH1D   * fHistEventCounter;
 		TH1I   * fEvents;
 		TH2D * hPhi;
+		TH2D * hMIPVsEtaBefore;
+		TProfile * pMIPVsEtaBefore;		
 		TH2D * hMIPVsEta;
 		TProfile * pMIPVsEta;
 		TH1D * hpT;
@@ -85,6 +87,8 @@ class AliAnalysisTaskUePid : public AliAnalysisTaskSE {
 		TH2D * hDeDxL[5];
 		TH1D * hEtaL[5];
 		TH1D * hPhiL[5];
+
+		// Number density
 
 		TProfile * pNNS[5]; // R<0.5
 		TProfile * pNS[5];
@@ -100,6 +104,26 @@ class AliAnalysisTaskUePid : public AliAnalysisTaskSE {
 		TH3D * h3DNS[5];
 		TH3D * h3DAS[5];
 		TH3D * h3DTS[5];
+
+		// Sum pT density
+
+                TProfile * pNNS2[5]; // R<0.5
+                TProfile * pNS2[5];
+                TProfile * pAS2[5];
+                TProfile * pTS2[5];
+
+                TH2D * hNNS2[5]; // R<0.5
+                TH2D * hNS2[5];
+                TH2D * hAS2[5];
+                TH2D * hTS2[5];
+
+                TH3D * h3DNNS2[5]; // R<0.5
+                TH3D * h3DNS2[5];
+                TH3D * h3DAS2[5];
+                TH3D * h3DTS2[5];
+
+
+
 		TH2D * hptVSp[5];
 
 		ClassDef(AliAnalysisTaskUePid, 11);    //Analysis task for high pt analysis 
