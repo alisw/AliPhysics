@@ -9177,7 +9177,7 @@ void AliHFSystErr::DrawErrors(TGraphAsymmErrors *grErrFeeddown) const {
   if(grErrFeeddown) {
     grErrFeeddown->SetFillColor(kTeal-8);
     grErrFeeddown->SetFillStyle(3001);
-    grErrFeeddown->Draw("2 hist ");
+    grErrFeeddown->Draw("2 same ");
     leg->AddEntry(grErrFeeddown,"Feed-down from B","f");
   }
 
