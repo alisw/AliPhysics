@@ -266,8 +266,8 @@ void AliAnalysisTaskSigma0Femto::UserExec(Option_t * /*option*/) {
   PostData(10, fResultList);
   PostData(11, fResultQAList);
   if (fIsMC) {
-    PostData(12, fAntiTrackCutHistMCList);
-    PostData(13, fTrackCutHistMCList);
+    PostData(12, fTrackCutHistMCList);
+    PostData(13, fAntiTrackCutHistMCList);
   }
 }
 
@@ -369,9 +369,8 @@ void AliAnalysisTaskSigma0Femto::UserCreateOutputObjects() {
 
   if (fTrackCutsPartProton && fTrackCutsPartProton->GetQAHists()) {
     fTrackCutHistList = fTrackCutsPartProton->GetQAHists();
-    if (fIsMC && !fTrackCutsPartProton->GetMinimalBooking() &&
-        fTrackCutsPartProton->GetMCQAHists()) {
-      fTrackCutsPartProton->SetMCName("MC_Proton");
+    if (fIsMC && fTrackCutsPartProton->GetMCQAHists() &&
+        fTrackCutsPartProton->GetIsMonteCarlo()) {
       fTrackCutHistMCList = fTrackCutsPartProton->GetMCQAHists();
     }
   }
@@ -382,9 +381,8 @@ void AliAnalysisTaskSigma0Femto::UserCreateOutputObjects() {
 
   if (fTrackCutsPartAntiProton && fTrackCutsPartAntiProton->GetQAHists()) {
     fAntiTrackCutHistList = fTrackCutsPartAntiProton->GetQAHists();
-    if (fIsMC && !fTrackCutsPartAntiProton->GetMinimalBooking() &&
-        fTrackCutsPartAntiProton->GetMCQAHists()) {
-      fTrackCutsPartAntiProton->SetMCName("MC_Anti-proton");
+    if (fIsMC && fTrackCutsPartAntiProton->GetMCQAHists() &&
+        fTrackCutsPartAntiProton->GetIsMonteCarlo()) {
       fAntiTrackCutHistMCList = fTrackCutsPartAntiProton->GetMCQAHists();
     }
   }
@@ -458,7 +456,7 @@ void AliAnalysisTaskSigma0Femto::UserCreateOutputObjects() {
   PostData(10, fResultList);
   PostData(11, fResultQAList);
   if (fIsMC) {
-    PostData(12, fAntiTrackCutHistMCList);
-    PostData(13, fTrackCutHistMCList);
+    PostData(12, fTrackCutHistMCList);
+    PostData(13, fAntiTrackCutHistMCList);
   }
 }
