@@ -1035,35 +1035,48 @@ AliEmcalJetTask* AliEmcalJetTask::AddTaskEmcalJet(
   const Bool_t lockTask, const Bool_t bFillGhosts
 )
 {
-  // Get the pointer to the existing analysis manager via the static access method
+  // Get the pointer to the existing analysis manager via the static access method.
+  //==============================================================================
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
-  if (!mgr) {
+  if (!mgr)
+  {
     ::Error("AddTaskEmcalJet", "No analysis manager to connect to.");
     return 0;
   }
 
-  // Check the analysis type using the event handlers connected to the analysis manager
+  // Check the analysis type using the event handlers connected to the analysis manager.
+  //==============================================================================
   AliVEventHandler* handler = mgr->GetInputEventHandler();
-  if (!handler) {
+  if (!handler)
+  {
     ::Error("AddTaskEmcalJet", "This task requires an input event handler");
     return 0;
   }
 
-  EDataType_t dataType = kUnknownDataType;
+  enum EDataType_t {
+    kUnknown,
+    kESD,
+    kAOD,
+    kMCgen
+  };
 
+  TString trackName(nTracks);
+  TString clusName(nClusters);
+
+  EDataType_t dataType = kUnknown;
   if (handler->InheritsFrom("AliESDInputHandler")) {
     dataType = kESD;
   }
   else if (handler->InheritsFrom("AliAODInputHandler")) {
     dataType = kAOD;
+  } else if (handler->InheritsFrom("AliMCGenHandler")) {
+    dataType = kMCgen;
   }
 
   //-------------------------------------------------------
   // Init the task and do settings
   //-------------------------------------------------------
 
-  TString trackName(nTracks);
-  TString clusName(nClusters);
 
   if (trackName == "usedefault") {
     if (dataType == kESD) {
@@ -1072,8 +1085,8 @@ AliEmcalJetTask* AliEmcalJetTask::AddTaskEmcalJet(
     else if (dataType == kAOD) {
       trackName = "tracks";
     }
-    else {
-      trackName = "";
+    else if (dataType == kMCgen) {
+      trackName = "mcparticles";
     }
   }
 
@@ -1089,8 +1102,9 @@ AliEmcalJetTask* AliEmcalJetTask::AddTaskEmcalJet(
     }
   }
 
+
   AliParticleContainer* partCont = 0;
-  if (trackName == "mcparticles") {
+  if (trackName.Contains("mcparticles")) {  // must be contains in order to allow for non-standard particle containers
     AliMCParticleContainer* mcpartCont = new AliMCParticleContainer(trackName);
     partCont = mcpartCont;
   }
@@ -1144,7 +1158,9 @@ AliEmcalJetTask* AliEmcalJetTask::AddTaskEmcalJet(
   if (bFillGhosts) jetTask->SetFillGhost();
   if (lockTask) jetTask->SetLocked();
 
+  //-------------------------------------------------------
   // Final settings, pass to manager and set the containers
+  //-------------------------------------------------------
 
   mgr->AddTask(jetTask);
 
