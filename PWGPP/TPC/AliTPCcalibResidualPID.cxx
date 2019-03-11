@@ -39,6 +39,7 @@
 #include "AliESDv0KineCuts.h"
 #include "AliESDv0.h"
 #include "AliCentrality.h"
+#include "AliAnalysisUtils.h"
 #include "THnSparse.h"
 #include "TH2D.h"
 #include "TCanvas.h"
@@ -126,7 +127,8 @@ AliTPCcalibResidualPID::AliTPCcalibResidualPID()
     fTree_tanTheta_nb(0.),
     fTree_tanTheta_vs(0.),
     fTree_distance_nb(0.),
-    fTree_distance_vs(0.)
+    fTree_distance_vs(0.),
+    fAnaUtils(0x0)
 {
   // default Constructor
    /* fast compilation test
@@ -200,7 +202,8 @@ AliTPCcalibResidualPID::AliTPCcalibResidualPID(const char *name)
     fTree_tanTheta_nb(0.),
     fTree_tanTheta_vs(0.),
     fTree_distance_nb(0.),
-    fTree_distance_vs(0.)
+    fTree_distance_vs(0.),
+    fAnaUtils(0x0)
 {
 
   //fESDtrackCuts = AliESDtrackCuts::GetStandardITSTPCTrackCuts2011(kTRUE);
@@ -255,6 +258,9 @@ AliTPCcalibResidualPID::~AliTPCcalibResidualPID()
 
   delete [] fV0motherPDG;
   fV0motherPDG = 0;
+  
+  delete fAnaUtils;
+  fAnaUtils = 0;
 }
 
 
@@ -427,6 +433,8 @@ void AliTPCcalibResidualPID::UserCreateOutputObjects()
     fTreeV0Pr->Branch("distance_nb", &fTree_distance_nb);
     fTreeV0Pr->Branch("distance_vs", &fTree_distance_vs);
   }
+  
+  fAnaUtils = new AliAnalysisUtils;
 
   PostData(1,fOutputContainer);
   if (fWriteAdditionalOutput) {
@@ -498,10 +506,13 @@ void AliTPCcalibResidualPID::Process(AliESDEvent *const esdEvent, AliMCEvent *co
     return;
   }
 
-  if (!fPIDResponse || !fV0KineCuts) {
-    Printf("ERROR: No PIDresponse and/or v0KineCuts!");
+  if (!fPIDResponse || !fV0KineCuts || fAnaUtils) {
+    Printf("ERROR: No PIDresponse, v0KineCuts or AliAnalysisUtils!");
     return;
   }
+  
+  if (fAnaUtils->IsPileUpSPD(esdEvent))
+    return;
 
   Float_t centralityFper=99;
 

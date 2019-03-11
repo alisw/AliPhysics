@@ -45,6 +45,7 @@ class AliESDInputHandler;
 class AliESDv0KineCuts;
 class AliAnalysisManager;
 class AliCentrality;
+class AliAnalysisUtils;
 class TTree;
 class TSystem;
 class TStyle;
@@ -164,6 +165,8 @@ class AliTPCcalibResidualPID : public AliAnalysisTaskSE {
   static Double_t fgCutGeo;  // Cut variable for TPCCutMIGeo concerning geometry
   static Double_t fgCutNcr;  // Cut variable for TPCCutMIGeo concerning num crossed rows
   static Double_t fgCutNcl;  // Cut variable for TPCCutMIGeo concerning num clusters
+  
+    AliAnalysisUtils *fAnaUtils; //! Object to use analysis utils like pile-up rejection
   
   static Double_t Lund(Double_t* xx, Double_t* par);
   static Double_t SaturatedLund(Double_t* xx, Double_t* par);
