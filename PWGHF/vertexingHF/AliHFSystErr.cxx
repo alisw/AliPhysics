@@ -1908,10 +1908,8 @@ void AliHFSystErr::InitD0toKpi2016pPb0100LowPtAn(){
 
   // Raw yield extraction
   fRawYield = new TH1F("fRawYield","fRawYield",24,0,24);
-  for(Int_t i=1;i<=24;i++) fRawYield->SetBinContent(i,0.2);
-  fRawYield->SetBinContent(1,0.06);
-  fRawYield->SetBinContent(2,0.06);
-  for(Int_t i=3;i<=12;i++) fRawYield->SetBinContent(i,0.05);
+  for(Int_t i=1;i<=12;i++) fRawYield->SetBinContent(i,0.05);
+  for(Int_t i=13;i<=24;i++) fRawYield->SetBinContent(i,0.2);
 
   // Cuts efficiency (from cuts variation)
   fCutsEff = new TH1F("fCutsEff","fCutsEff",24,0,24);
@@ -9179,7 +9177,7 @@ void AliHFSystErr::DrawErrors(TGraphAsymmErrors *grErrFeeddown) const {
   if(grErrFeeddown) {
     grErrFeeddown->SetFillColor(kTeal-8);
     grErrFeeddown->SetFillStyle(3001);
-    grErrFeeddown->Draw("2 hist ");
+    grErrFeeddown->Draw("2 same ");
     leg->AddEntry(grErrFeeddown,"Feed-down from B","f");
   }
 
