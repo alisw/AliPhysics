@@ -1596,8 +1596,8 @@ void AliAnalysisTaskHFEemcQA::CheckMCgen(AliAODMCHeader* fMCheader, Int_t &Npure
             Int_t Ndecay = fMCparticle->GetNDaughters();
             if(Ndecay==3)
             {
-                Int_t firstCh = fMCparticle->GetDaughter(0);
-                Int_t lastCh = fMCparticle->GetDaughter(1);
+                Int_t firstCh = fMCparticle->GetDaughterLabel(0);
+                Int_t lastCh = fMCparticle->GetDaughterLabel(1);
                 //cout << "firstCh = " << firstCh << " ; lastCh = " << lastCh << endl;
                 
                 AliAODMCParticle* fMCpar0 = (AliAODMCParticle*) fMCarray->At(firstCh);

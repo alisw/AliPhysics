@@ -1119,10 +1119,10 @@ void AliAnalysisTaskTaggedPhotons::FillMCHistos(){
 	if(grandParentPDG==111){
 	  //First find which daughter is our cluster
           //iparent - index of curent photon	  
-	  Int_t ipartner=grandParent->GetDaughter(0) ;
+	  Int_t ipartner=grandParent->GetDaughterLabel(0) ;
 	  if(ipartner==iparent){//look for other
   	    if(grandParent->GetNDaughters()>1){
-	      ipartner=grandParent->GetDaughter(1);  
+	      ipartner=grandParent->GetDaughterLabel(1);  
 	    }
 	    else{
 	      ipartner=-1 ;
@@ -1251,7 +1251,7 @@ void AliAnalysisTaskTaggedPhotons::FillMCHistos(){
                 if(!isPartnerLost){
 		  //this photon is converted before it is registered
 		  if(partner->GetNDaughters()>0){
-		    AliAODMCParticle* tmpP=(AliAODMCParticle*)fStack->At(partner->GetDaughter(0));
+		    AliAODMCParticle* tmpP=(AliAODMCParticle*)fStack->At(partner->GetDaughterLabel(0));
 		    if(tmpP->Xv()*tmpP->Xv()+tmpP->Yv()*tmpP->Yv()<450.*450.){  
 		      FillPIDHistograms("hMCDecWMisPartnConv",p) ;  //Spectrum of tagged with missed partner
 		      isPartnerLost=kTRUE;

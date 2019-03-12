@@ -995,8 +995,8 @@ void  AliAnalysisTaskEMCALPhoton::FillMcPart(  Int_t itrack, Int_t label)
     mcp->fEta = amcP->Eta() ;
     mcp->fPhi = amcP->Phi() ;
     mcp->fMother = amcP->GetMother() ;
-    mcp->fFirstD = amcP->GetDaughter(0) ;
-    mcp->fLastD = amcP->GetDaughter(amcP->GetNDaughters()-1) ;
+    mcp->fFirstD = amcP->GetDaughterLabel(0) ;
+    mcp->fLastD = amcP->GetDaughterLabel(amcP->GetNDaughters()-1) ;
     mcp->fStatus = amcP->GetStatus();
   }
   mcp->fVR = vmcv.Perp();

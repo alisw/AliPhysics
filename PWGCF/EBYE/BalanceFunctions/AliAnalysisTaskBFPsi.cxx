@@ -3833,12 +3833,12 @@ TObjArray* AliAnalysisTaskBFPsi::GetAcceptedTracks(AliVEvent *event, Double_t gC
 	if(fExcludeParticlesExtra){
 
 	  //exclude particles that are primary and have primary daughters
-	  if(track->GetFirstDaughter()!=-1){
-	    if(gMCEvent->IsPhysicalPrimary(track->GetFirstDaughter()))
+	  if(track->GetDaughterFirst()!=-1){
+	    if(gMCEvent->IsPhysicalPrimary(track->GetDaughterFirst()))
 	      continue;
 	  }
-	  if(track->GetLastDaughter()!=-1){
-	    if(gMCEvent->IsPhysicalPrimary(track->GetLastDaughter()))
+	  if(track->GetDaughterLast()!=-1){
+	    if(gMCEvent->IsPhysicalPrimary(track->GetDaughterLast()))
 	      continue;
 	  }
 	}

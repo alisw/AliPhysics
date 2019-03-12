@@ -1778,8 +1778,8 @@ void AliRsnMiniTaskPhiVn::FillTrueMotherAOD(AliRsnMiniEvent *miniEvent)
       // check that daughters match expected species
       if (part->GetNDaughters() < 2) continue;
       if (fMaxNDaughters > 0 && part->GetNDaughters() > fMaxNDaughters) continue;
-      label1 = part->GetDaughter(0);
-      label2 = part->GetDaughter(1);
+      label1 = part->GetDaughterLabel(0);
+      label2 = part->GetDaughterLabel(1);
       daughter1 = (AliAODMCParticle *)list->At(label1);
       daughter2 = (AliAODMCParticle *)list->At(label2);
       okMatch = kFALSE;

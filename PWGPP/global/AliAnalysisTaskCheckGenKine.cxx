@@ -382,7 +382,7 @@ void AliAnalysisTaskCheckGenKine::UserExec(Option_t *)
     }
     fPrimSec[spId]->Fill(primSec,pt,distToVert);
     Int_t nDau=mcPart->GetNDaughters();
-    Int_t iDau=mcPart->GetFirstDaughter();
+    Int_t iDau=mcPart->GetDaughterFirst();
     if(iDau>=0){
 
       TParticle* firstDau = (TParticle*)mcEvent->Particle(iDau);
