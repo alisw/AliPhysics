@@ -3,8 +3,6 @@
 /// \author Andrew Kubera, Ohio State University, andrew.kubera@cern.ch
 ///
 
-#if !defined(__CINT__) && !defined(__CLING__)
-
 #include <TROOT.h>
 
 #include <TString.h>
@@ -16,7 +14,6 @@
 
 #include "AliAnalysisTaskFemtoNu.h"
 
-#endif
 
 struct MacroCfg : public TNamed {
 
