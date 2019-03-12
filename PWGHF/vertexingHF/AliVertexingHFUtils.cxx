@@ -2699,7 +2699,7 @@ TH1* AliVertexingHFUtils::AdaptTemplateRangeAndBinning(const TH1 *hMC,TH1 *hData
 
 //___________________________________________________________________________________//
 //method that performs simultaneus fit of in-plane and out-of-plane inv-mass spectra
-ROOT::Fit::FitResult AliVertexingHFUtils::DoInPlaneOutOfPlaneSimultaneusFit(AliHFInvMassFitter* massfitterInPlane, AliHFInvMassFitter* massfitterOutOfPlane, TH1F* hMassInPlane, TH1F* hMassOutOfPlane, Double_t MinMass, Double_t MaxMass, Double_t massD, vector<UInt_t> commonpars) {
+ROOT::Fit::FitResult AliVertexingHFUtils::DoInPlaneOutOfPlaneSimultaneusFit(AliHFInvMassFitter *&massfitterInPlane, AliHFInvMassFitter *&massfitterOutOfPlane, TH1F* hMassInPlane, TH1F* hMassOutOfPlane, Double_t MinMass, Double_t MaxMass, Double_t massD, vector<UInt_t> commonpars) {
 
   cout << "\nIn-plane - out-of-plane simultaneus fit" << endl;
   cout << "\nIndependent prefits" << endl;

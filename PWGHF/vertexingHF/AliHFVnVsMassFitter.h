@@ -95,8 +95,8 @@ public:
   Double_t GetFitProbability() const {return fProb;}
   Double_t GetParticlePdgMass() const {return fMassParticle;}
   TH1F* GetTemplateReflections() {
-    if(fHistoTemplRfl) {return (TH1F*)fHistoTemplRfl->Clone();}
-    else if(fHistoTemplRflInit) {return (TH1F*)fHistoTemplRflInit->Clone();}
+    if(fHistoTemplRfl) {return (TH1F*)fHistoTemplRfl->Clone("fHistoTemplRfl");}
+    else if(fHistoTemplRflInit) {return (TH1F*)fHistoTemplRflInit->Clone("fHistoTemplRflInit");}
     else {return 0;}
   }
   void Signal(Double_t nOfSigma,Double_t &signal,Double_t &errsignal) const;
