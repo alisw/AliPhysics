@@ -1573,6 +1573,7 @@ void AddTask_GammaConvCalo_pp(
 
 
 
+
   // configs with MC finetuning
   } else if (trainConfig == 2100){  // EMCal+DCAL clusters standard cuts, triggers, NL kSDM, tight timing, E/p TM
     cuts.AddCutPCMCalo("00010113","00200009327000008250400000","4117918077032230000","0163103100000010"); // INT7
@@ -1642,9 +1643,9 @@ void AddTask_GammaConvCalo_pp(
   // *********************************************************************************************************
 
   } else if ( trainConfig == 2300){ // Jet analysis pp 5 TeV 2017 EMCAL+DCal
-    cuts.AddCutPCMCalo("00010113","00200009327000008250400000","41177000al032230000","2163103100000010"); // INT7 - NO NL
-    cuts.AddCutPCMCalo("00010113","00200009327000008250400000","41177060al032230000","2163103100000010"); // INT7 - TB NL
-    cuts.AddCutPCMCalo("00010113","00200009327000008250400000","41177110al032230000","2163103100000010"); // Standard EDC
+    cuts.AddCutPCMCalo("00010113","00200009327000008250400000","411770007l032230000","2l63103100000010"); // INT7 - NO NL
+    cuts.AddCutPCMCalo("00010113","00200009327000008250400000","411770607l032230000","2l63103100000010"); // INT7 - TB NL
+    cuts.AddCutPCMCalo("00010113","00200009327000008250400000","411771107l032230000","2l63103100000010"); // Standard EDC
 
   } else {
     Error(Form("GammaConvCalo_%i",trainConfig), "wrong trainConfig variable no cuts have been specified for the configuration");

@@ -4861,7 +4861,7 @@ void AliAnalysisTaskGammaConvCalo::CalculatePi0Candidates(){
                 if(!fDoLightOutput)  fHistoJetMotherInvMassPt[fiCut]->Fill(pi0cand->M(),pi0cand->Pt(),fWeightJetJetMC);
                 Double_t RJetPi0Cand = 0;
                 if(fVectorJetPt.size() == fConvJetReader->GetNJets() && fVectorJetEta.size() == fConvJetReader->GetNJets() && fVectorJetPhi.size() == fConvJetReader->GetNJets()){
-                  Int_t counter = 0;l;
+                  Int_t counter = 0;
                   for(Int_t i=0; i<fConvJetReader->GetNJets(); i++){
                     Double_t DeltaEta = fVectorJetEta.at(i)-pi0cand->Eta();
                     Double_t DeltaPhi = abs(fVectorJetPhi.at(i)-pi0cand->Phi());
