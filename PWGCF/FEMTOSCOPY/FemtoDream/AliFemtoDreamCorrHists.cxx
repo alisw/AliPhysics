@@ -587,11 +587,11 @@ AliFemtoDreamCorrHists::AliFemtoDreamCorrHists(AliFemtoDreamCollConfig *conf,
         }
         if (fillHists && fPhiEtaPlots) {
           const unsigned int nDaug1 = (unsigned int) DoThisPair / 10;
-          if (nDaug1 > 9) {
-            AliWarning("you are doing something wrong \n");
+          if (nDaug1 > 3) {
+            AliWarning("you are doing something wrong, maximum of 3 Daughters supported \n");
           }
           const unsigned int nDaug2 = (unsigned int) DoThisPair % 10;
-          const int nDaugComb = nDaug1 * nDaug2;
+          const int nDaugComb = 9;
           fRadiiEtaPhiSE[Counter] = new TH2F**[nDaugComb];  //maximum of 9 combinations
           fRadiiEtaPhiME[Counter] = new TH2F**[nDaugComb];
 
