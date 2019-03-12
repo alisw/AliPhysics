@@ -234,15 +234,6 @@ class AliSigma0PhotonMotherCuts : public TObject {
   TH2F *fHistMCTruthDaughterPtYHighMult;        //!
   TH2F *fHistMCTruthDaughterPtYAcceptHighMult;  //!
 
-  TH2F *fHistMCTrueSigmaLambdaPtCorr;  //!
-  TH2F *fHistMCTrueSigmaPhotonPtCorr;  //!
-  TH2F *fHistMCTrueSigmaLambdaPCorr;   //!
-  TH2F *fHistMCTrueSigmaPhotonPCorr;   //!
-  TH2F *fHistMCBkgSigmaLambdaPtCorr;   //!
-  TH2F *fHistMCBkgSigmaPhotonPtCorr;   //!
-  TH2F *fHistMCBkgSigmaLambdaPCorr;    //!
-  TH2F *fHistMCBkgSigmaPhotonPCorr;    //!
-
   TH1F *fHistMCV0Pt;           //!
   TH1F *fHistMCV0Mass;         //!
   TH2F *fHistMCV0Mother;       //!
@@ -250,7 +241,7 @@ class AliSigma0PhotonMotherCuts : public TObject {
   TH2F *fHistMCV0MotherCheck;  //!
 
  private:
-  ClassDef(AliSigma0PhotonMotherCuts, 27)
+  ClassDef(AliSigma0PhotonMotherCuts, 28)
 };
 
 #endif
