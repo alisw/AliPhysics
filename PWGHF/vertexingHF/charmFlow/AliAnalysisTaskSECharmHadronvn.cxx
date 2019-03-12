@@ -328,7 +328,7 @@ void AliAnalysisTaskSECharmHadronvn::UserCreateOutputObjects()
     int nqnbins=1; //single bin if unbiased analysis
     double qnmin = 0.;
     double qnmax = 10.;
-    if(fFlowMethod==kEvShapeEP || fFlowMethod==kEvShapeSP) {
+    if(fFlowMethod==kEvShapeEP || fFlowMethod==kEvShapeSP || fFlowMethod==kEvShapeEPVsMass) {
         if(!fPercentileqn) {
             nqnbins=500;
         }
@@ -344,14 +344,14 @@ void AliAnalysisTaskSECharmHadronvn::UserCreateOutputObjects()
         fOutput->Add(fHistEvPlaneQncorr[iDet]);
 
         // histos for qn vs. centrality with fine binning (for qn percentiles calibration)
-        if(fFlowMethod==kEvShapeEP || fFlowMethod==kEvShapeSP) {
+        if(fFlowMethod==kEvShapeEP || fFlowMethod==kEvShapeSP || fFlowMethod==kEvShapeEPVsMass) {
             fHistqnVsCentrPercCalib[iDet] = new TH2F(Form("fHistqnVsCentr%s",detConfName[iDet].Data()),Form("#it{q}_{%d}^{%s} vs. centrality;centrality(%%);#it{q}_{%d}^{%s}",fHarmonic,detConfName[iDet].Data(),fHarmonic,detConfName[iDet].Data()),ncentbins,fMinCentr,fMaxCentr,15000,0.,15.);
             fOutput->Add(fHistqnVsCentrPercCalib[iDet]);
         }
     }
 
     //qn percentile vs. qn vs. centrality
-    if(fFlowMethod==kEvShapeEP || fFlowMethod==kEvShapeSP) {
+    if(fFlowMethod==kEvShapeEP || fFlowMethod==kEvShapeSP || fFlowMethod==kEvShapeEPVsMass) {
         fHistNtrklVsqnVsCentr = new TH3F("fHistNtrklVsqnVsCentr",Form("#it{N}_{tracklets} vs. %s vs. centrality;centrality (%%);%s;#it{N}_{tracklets}",qnaxisname.Data(),qnaxisname.Data()),ncentbins,fMinCentr,fMaxCentr,nqnbins,qnmin,qnmax,500,-0.5,4999.5);
         fOutput->Add(fHistNtrklVsqnVsCentr);
         if(fPercentileqn) {
@@ -617,7 +617,7 @@ void AliAnalysisTaskSECharmHadronvn::UserExec(Option_t */*option*/)
     double qnFullTPC = -1., qnPosTPC = -1., qnNegTPC = -1.;
     double qnFullV0 = -1., qnV0A = -1., qnV0C = -1.;
     double mainqn = -1., mainpercqn = -1.;
-    if(fFlowMethod==kEvShapeEP || fFlowMethod==kEvShapeSP) {
+    if(fFlowMethod==kEvShapeEP || fFlowMethod==kEvShapeSP || fFlowMethod==kEvShapeEPVsMass) {
         HFQnVectorHandler->GetqnTPC(qnFullTPC,qnPosTPC,qnNegTPC);
         HFQnVectorHandler->GetqnV0(qnFullV0,qnV0A,qnV0C);
         TSpline3* qnspline = nullptr;
@@ -671,7 +671,7 @@ void AliAnalysisTaskSECharmHadronvn::UserExec(Option_t */*option*/)
     fHistEvPlaneQncorr[4]->Fill(evCentr,mainpercqn,PsinV0A);
     fHistEvPlaneQncorr[5]->Fill(evCentr,mainpercqn,PsinV0C);
 
-    if(fFlowMethod==kEvShapeEP || fFlowMethod==kEvShapeSP) {
+    if(fFlowMethod==kEvShapeEP || fFlowMethod==kEvShapeSP || fFlowMethod==kEvShapeEPVsMass) {
         fHistqnVsCentrPercCalib[0]->Fill(evCentr,qnFullTPC);
         fHistqnVsCentrPercCalib[1]->Fill(evCentr,qnPosTPC);
         fHistqnVsCentrPercCalib[2]->Fill(evCentr,qnNegTPC);
