@@ -103,7 +103,7 @@ private:
     AliEventCuts      fAODeventCuts;//
     AliAnalysisUtils *fUtils;//!
     TList            *fOutputList;//!
-    TList            *fQAList;//!
+    //TList            *fQAList;//!
 
     Double_t fCentralityMin;//
     Double_t fCentralityMax;//
