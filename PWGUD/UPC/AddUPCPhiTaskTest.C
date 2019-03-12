@@ -23,7 +23,7 @@ AliAnalysisTaskUPCPhiTest* AddUPCPhiTaskTest(TString name = "name")
         return 0x0;
     }
     // by default, a file is open for writing. here, we get the filename
-    TString fileName = "Incohernt_Phi_PID.root";    //AliAnalysisManager::GetCommonFileName();
+    TString fileName = AliAnalysisManager::GetCommonFileName();
     //cout<< fileName<<endl;
    // return;
     fileName += ":UPCPhiTaskTest";      // create a subfolder in the file
