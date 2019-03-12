@@ -50,6 +50,8 @@ AliAnalysisTaskEmcalJetTagger::AliAnalysisTaskEmcalJetTagger() :
   fMatchingDone(0),
   fTypeAcc(3),
   fMaxDist(0.3),
+  fExtraMarginAccBase(0.1),
+  fExtraMarginAccTag(0.1),
   fInit(kFALSE),
   fh3PtJet1VsDeltaEtaDeltaPhi(0),
   fh2PtJet1VsDeltaR(0),
@@ -94,6 +96,8 @@ AliAnalysisTaskEmcalJetTagger::AliAnalysisTaskEmcalJetTagger(const char *name) :
   fMatchingDone(0),
   fTypeAcc(3),
   fMaxDist(0.3),
+  fExtraMarginAccBase(0.1),
+  fExtraMarginAccTag(0.1),
   fInit(kFALSE),
   fh3PtJet1VsDeltaEtaDeltaPhi(0),
   fh2PtJet1VsDeltaR(0),
@@ -209,8 +213,8 @@ void AliAnalysisTaskEmcalJetTagger::UserCreateOutputObjects()
     for (Int_t i=0; i<fOutput->GetEntries(); ++i) {
       TH1 *h1 = dynamic_cast<TH1*>(fOutput->At(i));
       if (h1){
-	h1->Sumw2();
-	continue;
+	      h1->Sumw2();
+	      continue;
       }
       THnSparse *hn = dynamic_cast<THnSparse*>(fOutput->At(i));
       if(hn)hn->Sumw2();
@@ -224,35 +228,41 @@ void AliAnalysisTaskEmcalJetTagger::UserCreateOutputObjects()
 
 void AliAnalysisTaskEmcalJetTagger::Init(){
    
-   if(fInit) return;
+  if(fInit) return;
    
-   AliJetContainer *cont1 = GetJetContainer(fContainerBase);
-   AliJetContainer *cont2 = GetJetContainer(fContainerTag);
-   if(!cont1 || !cont2) AliError("Missing jet container");
+  AliJetContainer *cont1 = GetJetContainer(fContainerBase);
+  AliJetContainer *cont2 = GetJetContainer(fContainerTag);
+  if(!cont1 || !cont2) AliError("Missing jet container");
    
-   // when full azimuth, don't do anything
-   Double_t phiMin1 = cont1->GetJetPhiMin();
-   Double_t phiMin2 = cont2->GetJetPhiMin();
-   Bool_t isZeroTwoPi1 = kFALSE;
-   //check only one side of phi, since the upper bound is not well defined
-   if(phiMin1 > -1.e-6 && phiMin1 < 1.e-6) isZeroTwoPi1 = kTRUE;
-   Bool_t isZeroTwoPi2 = kFALSE;
-   if(phiMin2 > -1.e-6 && phiMin2 < 1.e-6) isZeroTwoPi2 = kTRUE;
+  // when full azimuth, don't do anything
+  Double_t phiMin1 = cont1->GetJetPhiMin();
+  Double_t phiMin2 = cont2->GetJetPhiMin();
+  Bool_t isZeroTwoPi1 = kFALSE;
+  //check only one side of phi, since the upper bound is not well defined
+  if(phiMin1 > -1.e-6 && phiMin1 < 1.e-6) isZeroTwoPi1 = kTRUE;
+  Bool_t isZeroTwoPi2 = kFALSE;
+  if(phiMin2 > -1.e-6 && phiMin2 < 1.e-6) isZeroTwoPi2 = kTRUE;
    
-   if(fTypeAcc==1)
-      cont2->SetJetEtaLimits(cont2->GetJetEtaMin()-0.1,cont2->GetJetEtaMax()+0.1);
-   else if(fTypeAcc==2) {
-      cont2->SetJetEtaLimits(cont2->GetJetEtaMin()-0.1,cont2->GetJetEtaMax()+0.1);
-      if(!isZeroTwoPi2) cont2->SetJetPhiLimits(cont2->GetJetPhiMin()-0.1,cont2->GetJetPhiMax()+0.1);
-   } 
-   else if(fTypeAcc==3) {
-      cont1->SetJetEtaLimits(cont1->GetJetEtaMin()-0.1,cont1->GetJetEtaMax()+0.1);
-      if(!isZeroTwoPi1) cont1->SetJetPhiLimits(cont1->GetJetPhiMin()-0.1,cont1->GetJetPhiMax()+0.1);
-      cont2->SetJetEtaLimits(cont2->GetJetEtaMin()-0.1,cont2->GetJetEtaMax()+0.1);
-      if(!isZeroTwoPi2) cont2->SetJetPhiLimits(cont2->GetJetPhiMin()-0.1,cont2->GetJetPhiMax()+0.1);
-   }
-   fInit = kTRUE;
-   return;
+  switch(fTypeAcc) {
+  case 1:
+    cont2->SetJetEtaLimits(cont2->GetJetEtaMin()-fExtraMarginAccTag,cont2->GetJetEtaMax()+fExtraMarginAccTag);
+    break;
+  case 2:
+    cont2->SetJetEtaLimits(cont2->GetJetEtaMin()-fExtraMarginAccTag,cont2->GetJetEtaMax()+fExtraMarginAccTag);
+    if(!isZeroTwoPi2) cont2->SetJetPhiLimits(cont2->GetJetPhiMin()-fExtraMarginAccTag,cont2->GetJetPhiMax()+fExtraMarginAccTag);
+    break;
+  case 3:
+    cont1->SetJetEtaLimits(cont1->GetJetEtaMin()-fExtraMarginAccBase,cont1->GetJetEtaMax()+fExtraMarginAccBase);
+    if(!isZeroTwoPi1) cont1->SetJetPhiLimits(cont1->GetJetPhiMin()-fExtraMarginAccBase,cont1->GetJetPhiMax()+fExtraMarginAccBase);
+    cont2->SetJetEtaLimits(cont2->GetJetEtaMin()-fExtraMarginAccTag,cont2->GetJetEtaMax()+fExtraMarginAccTag);
+    if(!isZeroTwoPi2) cont2->SetJetPhiLimits(cont2->GetJetPhiMin()-fExtraMarginAccTag,cont2->GetJetPhiMax()+fExtraMarginAccTag);
+    break;
+  default:
+    break;
+  };
+
+  fInit = kTRUE;
+  return;
 }
 Bool_t AliAnalysisTaskEmcalJetTagger::Run()
 {
