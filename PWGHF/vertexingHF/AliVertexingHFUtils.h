@@ -210,7 +210,7 @@ class AliVertexingHFUtils : public TObject{
     vector<UInt_t> fCommonPars;
   };
 
-  static ROOT::Fit::FitResult DoInPlaneOutOfPlaneSimultaneusFit(AliHFInvMassFitter* massfitterInPlane, AliHFInvMassFitter* massfitterOutOfPlane, TH1F* hMassInPlane, TH1F* hMassOutOfPlane, Double_t MinMass, Double_t MaxMass, Double_t massD, vector<UInt_t> commonpars);
+  static ROOT::Fit::FitResult DoInPlaneOutOfPlaneSimultaneusFit(AliHFInvMassFitter *&massfitterInPlane, AliHFInvMassFitter *&massfitterOutOfPlane, TH1F* hMassInPlane, TH1F* hMassOutOfPlane, Double_t MinMass, Double_t MaxMass, Double_t massD, vector<UInt_t> commonpars);
 
  private:
 
