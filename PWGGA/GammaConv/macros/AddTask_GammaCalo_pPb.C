@@ -1431,6 +1431,8 @@ void AddTask_GammaCalo_pPb(
     cuts.AddCutCalo("80010113","2446642055012200000","0163103100000010"); // tm variation
     cuts.AddCutCalo("80010113","2446642056012200000","0163103100000010"); // tm variation
   } else if (trainconfig == 534) { // min. cluster energy variations (standard: 0.5 MeV)
+    cuts.AddCutCalo("80010113","2446642051002200000","0163103100000010"); // 0.1 MeV
+    cuts.AddCutCalo("80010113","24466420510i2200000","0163103100000010"); // 0.2 MeV
     cuts.AddCutCalo("80010113","24466420510g2200000","0163103100000010"); // 0.3 MeV
     cuts.AddCutCalo("80010113","24466420510h2200000","0163103100000010"); // 0.4 MeV
     cuts.AddCutCalo("80010113","2446642051022200000","0163103100000010"); // 0.6 MeV
