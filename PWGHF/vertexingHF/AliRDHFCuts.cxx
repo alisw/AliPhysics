@@ -68,6 +68,7 @@ fMinVtxContr(1),
 fMaxVtxRedChi2(1e6),
 fMaxVtxZ(10.),
 fMinSPDMultiplicity(0),
+fMinContrPileupMV(5),
 fMaxVtxChi2PileupMV(5.),
 fMinWDzPileupMV(15.),
 fRejectPlpFromDiffBCMV(kFALSE),
@@ -146,6 +147,7 @@ AliRDHFCuts::AliRDHFCuts(const AliRDHFCuts &source) :
   fMaxVtxRedChi2(source.fMaxVtxRedChi2),
   fMaxVtxZ(source.fMaxVtxZ),
   fMinSPDMultiplicity(source.fMinSPDMultiplicity),
+  fMinContrPileupMV(source.fMinContrPileupMV),
   fMaxVtxChi2PileupMV(source.fMaxVtxChi2PileupMV),
   fMinWDzPileupMV(source.fMinWDzPileupMV),
   fRejectPlpFromDiffBCMV(source.fRejectPlpFromDiffBCMV),
@@ -245,6 +247,7 @@ AliRDHFCuts &AliRDHFCuts::operator=(const AliRDHFCuts &source)
   fMaxVtxRedChi2=source.fMaxVtxRedChi2;
   fMaxVtxZ=source.fMaxVtxZ;
   fMinSPDMultiplicity=source.fMinSPDMultiplicity;
+  fMinContrPileupMV=source.fMinContrPileupMV;
   fMaxVtxChi2PileupMV=source.fMaxVtxChi2PileupMV;
   fMinWDzPileupMV=source.fMinWDzPileupMV;
   fRejectPlpFromDiffBCMV=source.fRejectPlpFromDiffBCMV;
@@ -712,7 +715,7 @@ Bool_t AliRDHFCuts::IsEventSelected(AliVEvent *event) {
   }
   else if(fOptPileup==kRejectMVPileupEvent){
     AliAnalysisUtils utils;
-    utils.SetMinPlpContribMV(fMinContrPileup);  // min. multiplicity of the pile-up vertex to consider
+    utils.SetMinPlpContribMV(fMinContrPileupMV);  // min. multiplicity of the pile-up vertex to consider
     utils.SetMaxPlpChi2MV(fMaxVtxChi2PileupMV); // max chi2 per contributor of the pile-up vertex to consider.
     utils.SetMinWDistMV(fMinWDzPileupMV);       // minimum weighted distance in Z between 2 vertices (i.e. (zv1-zv2)/sqrt(sigZv1^2+sigZv2^2) )
     utils.SetCheckPlpFromDifferentBCMV(fRejectPlpFromDiffBCMV); // vertex with |BCID|>2 will trigger pile-up (based on TOF)
