@@ -831,6 +831,7 @@ void ComputeDmesonYield(){
   TH2F *hempty=new TH2F("hempty","",100,0.,binlim[nPtBins]*1.02,100,ymin,ymax);
   hempty->GetXaxis()->SetTitle("#it{p}_{T} (GeV/#it{c})");
   hempty->GetYaxis()->SetTitle("d#it{N}/d#it{p}_{T}_{ }|_{ |#it{y}|<0.5} (1/GeV/#it{c})");
+  if(TMath::Abs(normToCsec-1)>0.001)  hempty->GetYaxis()->SetTitle("d#sigma/d#it{p}_{T}_{ }|_{ |#it{y}|<0.5} (#mub/GeV/#it{c})");
   hempty->GetYaxis()->SetTitleSize(0.05);
   hempty->GetXaxis()->SetTitleSize(0.05);
   hempty->GetYaxis()->SetTitleOffset(1.3);
@@ -868,7 +869,7 @@ void ComputeDmesonYield(){
   legC->SetFillColor(0);
   legC->SetTextFont(42);
   ent=legC->AddEntry(hppC,"p-p rescaled reference","PL");
-  ent=legC->AddEntry("","(#pm 6% norm. unc. not shown)","");
+  //  ent=legC->AddEntry("","(#pm 6% norm. unc. not shown)","");
   //ent->SetTextColor(hppC->GetLineColor());
   ent=legC->AddEntry(hAAC,collSyst.Data(),"PL");
   //ent->SetTextColor(hAAC->GetLineColor());
