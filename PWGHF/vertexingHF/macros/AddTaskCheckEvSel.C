@@ -33,11 +33,11 @@ AliAnalysisTaskCheckEvSel *AddTaskCheckEvSel(TString suffix="",
     }
     evselCuts->SetOptPileup(optPileup);
     if(optPileup==AliRDHFCuts::kRejectPileupEvent){
-      evselCuts->ConfigurePileupCuts(minContPileup,minDzPileup);
+      evselCuts->ConfigureSPDPileupCuts(minContPileup,minDzPileup);
       evselCuts->SetUseMultDepPileupCut(multDepPileup);
     }
     else if(optPileup==AliRDHFCuts::kRejectMVPileupEvent){
-      evselCuts->ConfigurePileupCuts(minContPileup,minDzPileup);
+      evselCuts->SetMinContribPileupMV(minContPileup);
     }
     evselCuts->SetCutOnzVertexSPD(cutOnZVertexSPD);
   }else{
