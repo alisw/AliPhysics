@@ -23,7 +23,7 @@ AliAnalysisTaskUPCPhiTest* AddUPCPhiTaskTest(TString name = "name")
         return 0x0;
     }
     // by default, a file is open for writing. here, we get the filename
-    TString fileName = AliAnalysisManager::GetCommonFileName();
+    TString fileName = AliAnalysisManager::GetCommonFileName(); //gets default file name
     //cout<< fileName<<endl;
    // return;
     fileName += ":UPCPhiTaskTest";      // create a subfolder in the file
