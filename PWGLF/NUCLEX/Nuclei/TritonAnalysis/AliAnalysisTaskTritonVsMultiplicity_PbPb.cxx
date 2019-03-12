@@ -34,7 +34,7 @@ fPIDResponse(NULL),
 fAODeventCuts(),
 fUtils(NULL),
 fOutputList(NULL),
-fQAList(NULL),
+//fQAList(NULL),
 fCentralityMin(0),
 fCentralityMax(0),
 fVertexZmin(0),
@@ -73,7 +73,7 @@ fPIDResponse(NULL),
 fAODeventCuts(),
 fUtils(NULL),
 fOutputList(NULL),
-fQAList(NULL),
+//fQAList(NULL),
 fCentralityMin(0),
 fCentralityMax(0),
 fVertexZmin(0),
@@ -107,7 +107,7 @@ fpar1_sigma_TOF(0)
     fUtils = new AliAnalysisUtils();
     DefineInput(0, TChain::Class());
     DefineOutput(1, TList::Class());
-    DefineOutput(2, TList::Class());
+    //DefineOutput(2, TList::Class());
 }
 //_________________________________________________________________________________________________________________________________________________________________________________________________
 AliAnalysisTaskTritonVsMultiplicity_PbPb::~AliAnalysisTaskTritonVsMultiplicity_PbPb()
@@ -117,7 +117,7 @@ AliAnalysisTaskTritonVsMultiplicity_PbPb::~AliAnalysisTaskTritonVsMultiplicity_P
     delete fPIDResponse;
     delete fUtils;
     delete fOutputList;
-    delete fQAList;
+    //delete fQAList;
 }
 //_________________________________________________________________________________________________________________________________________________________________________________________________
 void AliAnalysisTaskTritonVsMultiplicity_PbPb::UserCreateOutputObjects()
@@ -125,10 +125,10 @@ void AliAnalysisTaskTritonVsMultiplicity_PbPb::UserCreateOutputObjects()
     fOutputList = new TList();
     fOutputList -> SetOwner();
    
-    fQAList = new TList();
-    fQAList -> SetOwner();
+    //fQAList = new TList();
+    //fQAList -> SetOwner();
     
-    fAODeventCuts.AddQAplotsToList(fQAList);//Add event selection QA plots
+    //fAODeventCuts.AddQAplotsToList(fQAList);//Add event selection QA plots
 
     
     //Number of Events
@@ -219,7 +219,7 @@ void AliAnalysisTaskTritonVsMultiplicity_PbPb::UserCreateOutputObjects()
     
     
     PostData(1, fOutputList);
-    PostData(2, fQAList);
+    //PostData(2, fQAList);
 }
 //_________________________________________________________________________________________________________________________________________________________________________________________________
 void AliAnalysisTaskTritonVsMultiplicity_PbPb::UserExec(Option_t *)
@@ -297,7 +297,7 @@ void AliAnalysisTaskTritonVsMultiplicity_PbPb::UserExec(Option_t *)
     
     
     PostData(1, fOutputList);
-    PostData(2, fQAList);
+    //PostData(2, fQAList);
 }
 //_________________________________________________________________________________________________________________________________________________________________________________________________
 Bool_t AliAnalysisTaskTritonVsMultiplicity_PbPb::GetInputEvent ()  {
@@ -309,7 +309,7 @@ Bool_t AliAnalysisTaskTritonVsMultiplicity_PbPb::GetInputEvent ()  {
     
     //Standard Event Cuts
     if (!fAODeventCuts.AcceptEvent(fAODevent)) {
-        PostData(2, fQAList);
+        //PostData(2, fQAList);
         return false;
     }
     histoNumberOfEvents -> Fill(1.5);
