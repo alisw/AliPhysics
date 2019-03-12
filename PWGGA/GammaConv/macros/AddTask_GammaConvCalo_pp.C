@@ -1637,6 +1637,15 @@ void AddTask_GammaConvCalo_pp(
     cuts.AddCutPCMCalo("00010113","00200009327000008250400000","4117918087032230000","0163103100000010"); // time
     cuts.AddCutPCMCalo("00010113","00200009327000008250400000","4117918097032230000","0163103100000010"); // time
 
+  // *********************************************************************************************************
+  // 5 TeV 2017 pp - Jet configurations
+  // *********************************************************************************************************
+
+  } else if ( trainConfig == 2300){ // Jet analysis pp 5 TeV 2017 EMCAL+DCal
+    cuts.AddCutPCMCalo("00010113","00200009327000008250400000","41177000al032230000","2163103100000010"); // INT7 - NO NL
+    cuts.AddCutPCMCalo("00010113","00200009327000008250400000","41177060al032230000","2163103100000010"); // INT7 - TB NL
+    cuts.AddCutPCMCalo("00010113","00200009327000008250400000","41177110al032230000","2163103100000010"); // Standard EDC
+
   } else {
     Error(Form("GammaConvCalo_%i",trainConfig), "wrong trainConfig variable no cuts have been specified for the configuration");
     return;
