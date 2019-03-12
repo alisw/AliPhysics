@@ -75,10 +75,10 @@ public:
     Float_t  GetTPCTrackLength(Float_t bz, Float_t ptmin, Int_t &counter, Float_t deadWidth, Float_t zMax=230. );
     // Navigation
     virtual Int_t GetMother()       const {return fMother;}
-    Int_t GetFirstDaughter()        const {return fFirstDaughter;}
-    Int_t GetLastDaughter()         const {return fLastDaughter;}
-    Int_t GetDaughterLabel(Int_t i) const {return fParticle->GetDaughter(i) ;}
-    Int_t GetNDaughters()           const {return fParticle->GetNDaughters();}
+    Int_t GetDaughterFirst()        const {return fFirstDaughter;}
+    Int_t GetDaughterLast()         const {return fLastDaughter;}
+    Int_t GetDaughterLabel(Int_t i) const {return i ? fLastDaughter : fFirstDaughter;}
+    Int_t GetNDaughters()           const {return fLastDaughter>0 ? fLastDaughter - fFirstDaughter + 1 : 0;}
     
     void  SetMother(Int_t idx)        {fMother        = idx;}
     void  SetFirstDaughter(Int_t idx) {fFirstDaughter = idx;}
