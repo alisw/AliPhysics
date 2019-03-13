@@ -110,7 +110,40 @@ Int_t AlidNdPtTools::AddAxis(const char* label, const char* title, const char* o
         const Int_t nbins = 35;
         Double_t xbins[36] = {-1,0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,30,40,50,60,70,80,90,100,200,300,400,500,1000,2000};
         return AddAxis(label, title, nbins, xbins);
-    }    
+    } 
+    if (o.Contains("mult6kfine")) {
+        // variable mult binning total 0-6000
+        // 1-width 0-100            101
+        // 10-width 100-1000         90
+        // 100-width 1000-6000       50
+        const Int_t nbins = 241;
+        Double_t xbins[242];
+        xbins[0] = -0.5;
+        int i =0;
+        for (; i<=100; i++) { xbins[i+1] = xbins[i]+1; }
+        for (; i<=100+90; i++) { xbins[i+1] = xbins[i]+10; }
+        for (; i<=100+90+50; i++) { xbins[i+1] = xbins[i]+100; }
+        return AddAxis(label, title, nbins, xbins);
+    }       
+    if (o.Contains("mult100kcoarse")) {
+        // variable mult binning total 0-100000
+        // 1-width 0-10             11
+        // 10-width 10-100           9
+        // 100-width 100-1000        9
+        // 1000-width 1000-10000     9
+        // 10000-width 10000-100000  9
+        const Int_t nbins = 47;
+        Double_t xbins[48];
+        xbins[0] = -0.5;
+        int i =0;
+        for (; i<=10; i++) { xbins[i+1] = xbins[i]+1; }
+        for (; i<=10+9; i++) { xbins[i+1] = xbins[i]+10; }
+        for (; i<=10+9+9; i++) { xbins[i+1] = xbins[i]+100; }
+        for (; i<=10+9+9+9; i++) { xbins[i+1] = xbins[i]+1000; }
+        for (; i<=10+9+9+9+9; i++) { xbins[i+1] = xbins[i]+10000; }            
+        return AddAxis(label, title, nbins, xbins);
+    }       
+
     return 0;
 }
 
@@ -165,13 +198,15 @@ TH1D* AlidNdPtTools::CreateLogHist(const char* name)
 
 //____________________________________________________________________________
 
-AliESDtrackCuts* CreatedNdPtTrackCuts(const char* option)
+AliESDtrackCuts* AlidNdPtTools::CreateESDtrackCuts(const char* option)
 {
     AliESDtrackCuts* cuts = 0;
     TString o(option);
     o.ToLower();
-    if ( o.Equalto("") || o.Equalto ("default") ) o = "TPCITSgeo";
-    if (o.Equalto("TPCITSgeo") {
+    // as default use the cuts with geometric length cut
+    if ( (o.EqualTo("")) || (o.EqualTo("default")) ) { o = "TPCITSgeo"; }
+    
+    if (o.EqualTo("TPCITSgeo")) {
         cuts = new AliESDtrackCuts("default TPCITS with geo L cut");
         cuts->SetRequireTPCRefit(kTRUE);    
         cuts->SetMinRatioCrossedRowsOverFindableClustersTPC(0.8);
@@ -192,7 +227,8 @@ AliESDtrackCuts* CreatedNdPtTrackCuts(const char* option)
         // Geometrical-Length Cut
         cuts->SetCutGeoNcrNcl(3,130,1.5,0.85,0.7);
         cuts->SetEtaRange(-0.8,0.8);
-    } else if (o.Equalto("TPCITSgeoNoDCAr") {
+        
+    } else if (o.EqualTo("TPCITSgeoNoDCAr")) {
         cuts = new AliESDtrackCuts("default TPCITS with geo L cut without DCAr");
         cuts->SetRequireTPCRefit(kTRUE);    
         cuts->SetMinRatioCrossedRowsOverFindableClustersTPC(0.8);
@@ -211,8 +247,76 @@ AliESDtrackCuts* CreatedNdPtTrackCuts(const char* option)
         // Geometrical-Length Cut
         cuts->SetCutGeoNcrNcl(3,130,1.5,0.85,0.7);
         cuts->SetEtaRange(-0.8,0.8);
+        
+    } else if (o.EqualTo("TPConlyGeo")) { 
+        cuts = new AliESDtrackCuts("TPConly with geo L");
+        cuts->SetRequireTPCRefit(kTRUE);
+        cuts->SetAcceptKinkDaughters(kFALSE);
+        cuts->SetMinRatioCrossedRowsOverFindableClustersTPC(0.8);
+        cuts->SetMaxChi2PerClusterTPC(4);
+        cuts->SetMaxFractionSharedTPCClusters(0.4);
+        cuts->SetMaxDCAToVertexZ(3);
+        cuts->SetMaxDCAToVertexXY(3);
+        // Geometrical-Length Cut
+        cuts->SetCutGeoNcrNcl(3,130,1.5,0.85,0.7);
+    } else if (o.EqualTo("TPCgeo+ITShit")) { 
+        cuts = new AliESDtrackCuts("TPConly with geo L + hit in ITS");
+        cuts->SetRequireTPCRefit(kTRUE);
+        cuts->SetAcceptKinkDaughters(kFALSE);
+        cuts->SetMinRatioCrossedRowsOverFindableClustersTPC(0.8);
+        cuts->SetMaxChi2PerClusterTPC(4);
+        cuts->SetMaxFractionSharedTPCClusters(0.4);
+        cuts->SetMaxDCAToVertexZ(3);
+        cuts->SetMaxDCAToVertexXY(3);
+        // Geometrical-Length Cut
+        cuts->SetCutGeoNcrNcl(3,130,1.5,0.85,0.7);
+        // its hit
+        cuts->SetMinNClustersITS(1);
+        
+    } else if (o.EqualTo("TPCgeo+ITSrefit")) { 
+        cuts = new AliESDtrackCuts("TPC with geo L + ITSrefit");
+        cuts->SetRequireTPCRefit(kTRUE);
+        cuts->SetAcceptKinkDaughters(kFALSE);
+        cuts->SetMinRatioCrossedRowsOverFindableClustersTPC(0.8);
+        cuts->SetMaxChi2PerClusterTPC(4);
+        cuts->SetMaxFractionSharedTPCClusters(0.4);
+        cuts->SetMaxDCAToVertexZ(3);
+        cuts->SetMaxDCAToVertexXY(3);
+        // Geometrical-Length Cut
+        cuts->SetCutGeoNcrNcl(3,130,1.5,0.85,0.7);
+        // its refit
+        cuts->SetRequireITSRefit(kTRUE);
+        
+    } else if (o.EqualTo("TPCgeo+SPDhit")) { 
+        cuts = new AliESDtrackCuts("TPC with geo L + hit in SPD");
+        cuts->SetRequireTPCRefit(kTRUE);
+        cuts->SetAcceptKinkDaughters(kFALSE);
+        cuts->SetMinRatioCrossedRowsOverFindableClustersTPC(0.8);
+        cuts->SetMaxChi2PerClusterTPC(4);
+        cuts->SetMaxFractionSharedTPCClusters(0.4);
+        cuts->SetMaxDCAToVertexZ(3);
+        cuts->SetMaxDCAToVertexXY(3);
+        // Geometrical-Length Cut
+        cuts->SetCutGeoNcrNcl(3,130,1.5,0.85,0.7);
+        // spd hit
+        cuts->SetClusterRequirementITS(AliESDtrackCuts::kSPD,AliESDtrackCuts::kAny);
+        
+    }  else if (o.EqualTo("TPCgeo+ITSrefit+SPDhit")) { 
+        cuts = new AliESDtrackCuts("TPC with geo L + ITSrefit + hit in SPD");
+        cuts->SetRequireTPCRefit(kTRUE);
+        cuts->SetAcceptKinkDaughters(kFALSE);
+        cuts->SetMinRatioCrossedRowsOverFindableClustersTPC(0.8);
+        cuts->SetMaxChi2PerClusterTPC(4);
+        cuts->SetMaxFractionSharedTPCClusters(0.4);
+        cuts->SetMaxDCAToVertexZ(3);
+        cuts->SetMaxDCAToVertexXY(3);
+        // Geometrical-Length Cut
+        cuts->SetCutGeoNcrNcl(3,130,1.5,0.85,0.7);
+        // its refit + spd hit
+        cuts->SetRequireITSRefit(kTRUE);
+        cuts->SetClusterRequirementITS(AliESDtrackCuts::kSPD,AliESDtrackCuts::kAny);
     }
-    
+
     return cuts;
 }
 
