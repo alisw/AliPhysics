@@ -72,10 +72,11 @@ AliTPCcalibResidualPID::AliTPCcalibResidualPID()
     fNumMultCorrReqErrorsIssued(0),
     fUseTPCCutMIGeo(kFALSE),
     fUseMCinfo(kTRUE),
-    fIsPbPb(kFALSE),
     fIsPbpOrpPb(kFALSE),
+    fIsPbPb(kFALSE),
     fZvtxCutEvent(9999.0),
     fV0KineCuts(0x0),
+    fAnaUtils(0x0),
     fCutOnProdRadiusForV0el(kTRUE),
     fNumTagsStored(0),
     fV0tags(0x0),
@@ -127,8 +128,7 @@ AliTPCcalibResidualPID::AliTPCcalibResidualPID()
     fTree_tanTheta_nb(0.),
     fTree_tanTheta_vs(0.),
     fTree_distance_nb(0.),
-    fTree_distance_vs(0.),
-    fAnaUtils(0x0)
+    fTree_distance_vs(0.)
 {
   // default Constructor
    /* fast compilation test
@@ -147,10 +147,11 @@ AliTPCcalibResidualPID::AliTPCcalibResidualPID(const char *name)
     fNumMultCorrReqErrorsIssued(0),
     fUseTPCCutMIGeo(kFALSE),
     fUseMCinfo(kTRUE),
-    fIsPbPb(kFALSE),
     fIsPbpOrpPb(kFALSE),
+    fIsPbPb(kFALSE),
     fZvtxCutEvent(9999.0),
     fV0KineCuts(0x0),
+    fAnaUtils(0x0),
     fCutOnProdRadiusForV0el(kTRUE),
     fNumTagsStored(0),
     fV0tags(0x0),
@@ -202,8 +203,7 @@ AliTPCcalibResidualPID::AliTPCcalibResidualPID(const char *name)
     fTree_tanTheta_nb(0.),
     fTree_tanTheta_vs(0.),
     fTree_distance_nb(0.),
-    fTree_distance_vs(0.),
-    fAnaUtils(0x0)
+    fTree_distance_vs(0.)
 {
 
   //fESDtrackCuts = AliESDtrackCuts::GetStandardITSTPCTrackCuts2011(kTRUE);
@@ -248,6 +248,9 @@ AliTPCcalibResidualPID::~AliTPCcalibResidualPID()
 
   delete fV0KineCuts;
   fV0KineCuts = 0;
+  
+  delete fAnaUtils;
+  fAnaUtils = 0;
 
   delete [] fV0tags;
   fV0tags = 0;
@@ -258,9 +261,6 @@ AliTPCcalibResidualPID::~AliTPCcalibResidualPID()
 
   delete [] fV0motherPDG;
   fV0motherPDG = 0;
-  
-  delete fAnaUtils;
-  fAnaUtils = 0;
 }
 
 
@@ -486,8 +486,8 @@ THnSparseF* AliTPCcalibResidualPID::InitialisePIDQAHist(TString name, TString ti
   title.Append(";p (GeV/c);tpc signal;particle ID;assumed particle;nSigmaTPC;nSigmaTOF;centrality");
   const Int_t kNdim = 7;
   Int_t    binsHistQA[kNdim] = {135, 1980,    4,    5, 40, 10,  IsPbPb ? 40 : 40 };
-  Double_t xminHistQA[kNdim] = {0.1,   20, -0.5, -0.5, -10, -5,   0.};
-  Double_t xmaxHistQA[kNdim] = {50., 2000,  3.5,  4.5,  10,  5, IsPbPb ? 20000 : 4000};
+  Double_t xminHistQA[kNdim] = {0.1,   20., -0.5, -0.5, -10., -5.,   0.};
+  Double_t xmaxHistQA[kNdim] = {50., 2000.,  3.5,  4.5,  10.,  5., IsPbPb ? 20000. : 4000.};
   THnSparseF* h = new THnSparseF(name.Data(), title.Data(), kNdim, binsHistQA, xminHistQA, xmaxHistQA);
   BinLogAxis(h, 0);
   SetAxisNamesFromTitle(h);
