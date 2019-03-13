@@ -167,7 +167,10 @@ AliAnalysisTaskUPCforwardMC::AliAnalysisTaskUPCforwardMC()
       fVectorCosThetaGenerated(0),
       fVectorCosThetaReconstructed(0),
       fCounterUPCevent(0),
-      fBinMigrationHelicityH(0)
+      fBinMigrationHelicityH(0),
+      fCheckHelicityRestFrameJPsiH(0),
+      fThetaDistribOfPositiveMuonRestFrameJPsiRapidityBinH{ 0, 0, 0, 0, 0, 0, 0, 0},
+      fMCthetaDistribOfPositiveMuonRestFrameJPsiGeneratedTruthRapidityBinH{ 0, 0, 0, 0, 0, 0, 0, 0}
 {
     // default constructor, don't allocate memory here!
     // this is used by root for IO purposes, it needs to remain empty
@@ -260,7 +263,10 @@ AliAnalysisTaskUPCforwardMC::AliAnalysisTaskUPCforwardMC( const char* name )
       fVectorCosThetaGenerated(0),
       fVectorCosThetaReconstructed(0),
       fCounterUPCevent(0),
-      fBinMigrationHelicityH(0)
+      fBinMigrationHelicityH(0),
+      fCheckHelicityRestFrameJPsiH(0),
+      fThetaDistribOfPositiveMuonRestFrameJPsiRapidityBinH{ 0, 0, 0, 0, 0, 0, 0, 0},
+      fMCthetaDistribOfPositiveMuonRestFrameJPsiGeneratedTruthRapidityBinH{ 0, 0, 0, 0, 0, 0, 0, 0}
 {
     FillGoodRunVector(fVectorGoodRunNumbers);
 
@@ -449,7 +455,7 @@ void AliAnalysisTaskUPCforwardMC::UserCreateOutputObjects()
   fMCpdgCodesOnlyPrimaryH->LabelsDeflate();
   fOutputList->Add(fMCpdgCodesOnlyPrimaryH);
 
-  fMCinvariantMassDistrJPsiGeneratedTruthH = new TH1F("fMCinvariantMassDistrJPsiGeneratedTruthH", "fMCinvariantMassDistrJPsiGeneratedTruthH", 20000, 0, 20);
+  fMCinvariantMassDistrJPsiGeneratedTruthH = new TH1F("fMCinvariantMassDistrJPsiGeneratedTruthH", "fMCinvariantMassDistrJPsiGeneratedTruthH", 2000000, 0, 20);
   fOutputList->Add(fMCinvariantMassDistrJPsiGeneratedTruthH);
 
   fMCinvariantMassDistrJPsiAfterEvtAndTrkSelectionTruthH = new TH1F("fMCinvariantMassDistrJPsiAfterEvtAndTrkSelectionTruthH", "fMCinvariantMassDistrJPsiAfterEvtAndTrkSelectionTruthH", 20000, 0, 20);
@@ -493,6 +499,25 @@ void AliAnalysisTaskUPCforwardMC::UserCreateOutputObjects()
   fMCthetaDistribOfNegativeMuonRestFrameJPsiGeneratedTruthH = new TH1F("fMCthetaDistribOfNegativeMuonRestFrameJPsiGeneratedTruthH", "fMCthetaDistribOfNegativeMuonRestFrameJPsiGeneratedTruthH", 1000, -1., 1.);
   fOutputList->Add(fMCthetaDistribOfNegativeMuonRestFrameJPsiGeneratedTruthH);
 
+  fCheckHelicityRestFrameJPsiH = new TH1F("fCheckHelicityRestFrameJPsiH", "fCheckHelicityRestFrameJPsiH", 100000, -50., 50.);
+  fOutputList->Add(fCheckHelicityRestFrameJPsiH);
+
+  for(Int_t iRapidityBin = 0; iRapidityBin < 8; iRapidityBin++ ){
+    fThetaDistribOfPositiveMuonRestFrameJPsiRapidityBinH[iRapidityBin] = new TH1F(
+                Form("fThetaDistribOfPositiveMuonRestFrameJPsiRapidityBinH_%d", iRapidityBin),
+                Form("fThetaDistribOfPositiveMuonRestFrameJPsiRapidityBinH_%d", iRapidityBin),
+                1000, -1., 1.
+              );
+    fOutputList->Add(fThetaDistribOfPositiveMuonRestFrameJPsiRapidityBinH[iRapidityBin]);
+
+    fMCthetaDistribOfPositiveMuonRestFrameJPsiGeneratedTruthRapidityBinH[iRapidityBin] = new TH1F(
+                Form("fMCthetaDistribOfPositiveMuonRestFrameJPsiGeneratedTruthRapidityBinH_%d", iRapidityBin),
+                Form("fMCthetaDistribOfPositiveMuonRestFrameJPsiGeneratedTruthRapidityBinH_%d", iRapidityBin),
+                1000, -1., 1.
+              );
+    fOutputList->Add(fMCthetaDistribOfPositiveMuonRestFrameJPsiGeneratedTruthRapidityBinH[iRapidityBin]);
+
+  }
 
   //_______________________________
   // - End of the function
@@ -942,8 +967,33 @@ void AliAnalysisTaskUPCforwardMC::UserExec(Option_t *)
     Double_t dotProductMuonJPsi     = muonsCopyVector.Dot(possibleJPsiCopyVector);
     cosThetaMuonsRestFrame[iAngle]  = dotProductMuonJPsi/( muonsCopyVector.Mag() * possibleJPsiCopyVector.Mag() );
   }
-  fAngularDistribOfPositiveMuonRestFrameJPsiH->Fill(cosThetaMuonsRestFrame[0]);
-  fAngularDistribOfNegativeMuonRestFrameJPsiH->Fill(cosThetaMuonsRestFrame[1]);
+  /* - If we are in the J/Psi peak, hence 2.8 < M < 3.3 GeV/c, AND if we are
+     - in the coherent regime, so if the Pt < 0.25 GeV/c, we fill the plots.
+     -
+     - In the following note that the rapidity is well computed, so we are
+     - dealing with negative values... -4.0 < Y < -2.5 !!!
+     -
+   */
+  if ( (possibleJPsiCopy.Mag() > 2.8) && (possibleJPsiCopy.Mag() < 3.3) && (possibleJPsiCopy.Pt() < 0.25) ) {
+    fAngularDistribOfPositiveMuonRestFrameJPsiH->Fill(cosThetaMuonsRestFrame[0]);
+    fAngularDistribOfNegativeMuonRestFrameJPsiH->Fill(cosThetaMuonsRestFrame[1]);
+    fCheckHelicityRestFrameJPsiH->Fill( muonsCopy[0].Dot(muonsCopy[1]) );
+    /* - Now we are filling in terms of rapidity...
+       - The easiest way to do so I have envisioned is to simply
+       - check everytime if we are below the following threshold
+       - in a consecutive sense. This means that if we have not passed
+       - the previous check we are at least above it.
+       - This readily defines the rapidity bin.
+       -
+       */
+    for(Int_t iRapidityBin = 0; iRapidityBin < 8; iRapidityBin++){
+        if( (possibleJPsiCopy.Rapidity() + 4) < 1.5*(iRapidityBin + 1)/8 ){
+          fThetaDistribOfPositiveMuonRestFrameJPsiRapidityBinH[iRapidityBin]->Fill(cosThetaMuonsRestFrame[0]);
+          break;
+        }
+    }
+  }
+
   fVectorCosThetaReconstructed.push_back(cosThetaMuonsRestFrame[0]);
   /* - Mind that it could generate segmentation fault without
      - fCounterUPCevent-1, because we are incrementing the counter right after
@@ -1102,18 +1152,49 @@ void AliAnalysisTaskUPCforwardMC::ProcessMCParticles(AliMCEvent* fMCEventArg)
         Double_t dotProductMuonJPsiMC     = muonsMCVector.Dot(possibleJPsiMCVector);
         cosThetaMuonsRestFrameMC[iAngle]  = dotProductMuonJPsiMC/( muonsMCVector.Mag() * possibleJPsiMCVector.Mag() );
       }
-      if( charge[0] > 0 ) {
-              /* - This means that [0] is the positive muon while [1]
-                 - is the negative muon!
-                 -
-               */
-              fMCthetaDistribOfPositiveMuonRestFrameJPsiGeneratedTruthH->Fill(cosThetaMuonsRestFrameMC[0]);
-              fMCthetaDistribOfNegativeMuonRestFrameJPsiGeneratedTruthH->Fill(cosThetaMuonsRestFrameMC[1]);
-              fVectorCosThetaGenerated.push_back(cosThetaMuonsRestFrameMC[0]);
-      } else  {
-              fMCthetaDistribOfNegativeMuonRestFrameJPsiGeneratedTruthH->Fill(cosThetaMuonsRestFrameMC[0]);
-              fMCthetaDistribOfPositiveMuonRestFrameJPsiGeneratedTruthH->Fill(cosThetaMuonsRestFrameMC[1]);
-              fVectorCosThetaGenerated.push_back(cosThetaMuonsRestFrameMC[1]);
+      if ( (possibleJPsiMC.Mag() > 2.8) && (possibleJPsiMC.Mag() < 3.3) && (possibleJPsiMC.Pt() < 0.25) ) {
+          if( charge[0] > 0 ) {
+                  /* - This means that [0] is the positive muon while [1]
+                     - is the negative muon!
+                     -
+                   */
+                  fMCthetaDistribOfPositiveMuonRestFrameJPsiGeneratedTruthH->Fill(cosThetaMuonsRestFrameMC[0]);
+                  fMCthetaDistribOfNegativeMuonRestFrameJPsiGeneratedTruthH->Fill(cosThetaMuonsRestFrameMC[1]);
+                  fVectorCosThetaGenerated.push_back(cosThetaMuonsRestFrameMC[0]);
+                  /* - Now we are filling in terms of rapidity...
+                     - The easiest way to do so I have envisioned is to simply
+                     - check everytime if we are below the following threshold
+                     - in a consecutive sense. This means that if we have not passed
+                     - the previous check we are at least above it.
+                     - This readily defines the rapidity bin.
+                     -
+                     */
+                  for(Int_t iRapidityBin = 0; iRapidityBin < 8; iRapidityBin++){
+                      if( (possibleJPsiMC.Rapidity() + 4) < 1.5*(iRapidityBin + 1)/8 ){
+                        fMCthetaDistribOfPositiveMuonRestFrameJPsiGeneratedTruthRapidityBinH[iRapidityBin]->Fill(cosThetaMuonsRestFrameMC[0]);
+                        break;
+                      }
+                  }
+          } else  {
+                  fMCthetaDistribOfNegativeMuonRestFrameJPsiGeneratedTruthH->Fill(cosThetaMuonsRestFrameMC[0]);
+                  fMCthetaDistribOfPositiveMuonRestFrameJPsiGeneratedTruthH->Fill(cosThetaMuonsRestFrameMC[1]);
+                  fVectorCosThetaGenerated.push_back(cosThetaMuonsRestFrameMC[1]);
+                  /* - Now we are filling in terms of rapidity...
+                     - The easiest way to do so I have envisioned is to simply
+                     - check everytime if we are below the following threshold
+                     - in a consecutive sense. This means that if we have not passed
+                     - the previous check we are at least above it.
+                     - This readily defines the rapidity bin.
+                     -
+                     */
+                  for(Int_t iRapidityBin = 0; iRapidityBin < 8; iRapidityBin++){
+                      if( (possibleJPsiMC.Rapidity() + 4) < 1.5*(iRapidityBin + 1)/8 ){
+                        fMCthetaDistribOfPositiveMuonRestFrameJPsiGeneratedTruthRapidityBinH[iRapidityBin]->Fill(cosThetaMuonsRestFrameMC[1]);
+                        break;
+                      }
+                  }
+
+          }
       }
     }
   }

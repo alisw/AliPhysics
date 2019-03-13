@@ -83,14 +83,14 @@ class AliAnalysisTaskUPCforwardMC : public AliAnalysisTaskSE
                                  * parameters at each new runs. Sets the run
                                  * number for the successive cuts.
                                  */
-        virtual void   			    NotifyRun();
+        virtual void            NotifyRun();
 
                                 /**
                                  * This will fill the vector containing the good
                                  * run numbers. For now this function will be
                                  * inside the constructor of the class.
                                  */
-        void   			            FillGoodRunVector(std::vector<Int_t> &fVectorGoodRunNumbers);
+        void                    FillGoodRunVector(std::vector<Int_t> &fVectorGoodRunNumbers);
 
                                 /**
                                  * This function substitutes the roel of the
@@ -111,11 +111,8 @@ class AliAnalysisTaskUPCforwardMC : public AliAnalysisTaskSE
                                  * Use the class as a data member. It contains
                                  * the cuts for the muon track.
                                  */
-        AliMuonTrackCuts* 		  fMuonTrackCuts;
+        AliMuonTrackCuts*       fMuonTrackCuts;
 
-
-
-        // Bool_t                  CheckIfPassedCuts(vector<>)
 
     private:
 
@@ -155,12 +152,12 @@ class AliAnalysisTaskUPCforwardMC : public AliAnalysisTaskSE
                                  * As far as I understand, it should be the
                                  * pseudorapidity distribution of the many muons.
                                  */
-	      TH1F*                   fEtaMuonH;          //!
+        TH1F*                   fEtaMuonH;          //!
 
                                 /**
                                  *
                                  */
-	      TH1F*                   fRAbsMuonH;         //!
+        TH1F*                   fRAbsMuonH;         //!
 
                                 /**
                                  * This histogram records the invariant mass
@@ -258,6 +255,23 @@ class AliAnalysisTaskUPCforwardMC : public AliAnalysisTaskSE
                                  * the polarization of the J/Psi!
                                  */
         TH1F*                   fAngularDistribOfNegativeMuonRestFrameJPsiH;      //!
+
+                                /**
+                                 * This histogram represents the check over
+                                 * the helicity of the J/Psi. It should be flat
+                                 * if I remember well enough!
+                                 */
+        TH1F*                   fCheckHelicityRestFrameJPsiH;
+
+                                /**
+                                 * This histogram shows the angular distribution
+                                 * of the positive muon in the rest frame of the
+                                 * J/Psi. This histogram is needed to evaluate
+                                 * the polarization of the J/Psi! Divided in
+                                 * psudorapidity bins... 8??
+                                 */
+        TH1F*                   fThetaDistribOfPositiveMuonRestFrameJPsiRapidityBinH[8];
+
 
         //_______________________________
         // MC TRUTH PLOTS
@@ -363,6 +377,15 @@ class AliAnalysisTaskUPCforwardMC : public AliAnalysisTaskSE
                                  * the polarization of the J/Psi!
                                  */
         TH1F*                   fMCthetaDistribOfNegativeMuonRestFrameJPsiGeneratedTruthH;           //!
+
+                                /**
+                                 * This histogram shows the angular distribution
+                                 * of the positive muon in the rest frame of the
+                                 * J/Psi. This histogram is needed to evaluate
+                                 * the polarization of the J/Psi! Divided in
+                                 * psudorapidity bins... 8??
+                                 */
+        TH1F*                   fMCthetaDistribOfPositiveMuonRestFrameJPsiGeneratedTruthRapidityBinH[8];
 
                                 /**
                                  * This is the vector containing the GENERATED
