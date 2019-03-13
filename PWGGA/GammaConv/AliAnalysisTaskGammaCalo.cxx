@@ -1294,7 +1294,7 @@ void AliAnalysisTaskGammaCalo::UserCreateOutputObjects(){
   if(fDoMesonAnalysis){
     fHistoMotherInvMassPt           = new TH2F*[fnCuts];
     fHistoMotherBackInvMassPt       = new TH2F*[fnCuts];
-    if(!fDoLightOutput){
+    if(!fDoLightOutput || fDoPi0Only){
       fHistoMotherInvMassECalib         = new TH2F*[fnCuts];
       fHistoMotherBackInvMassECalib     = new TH2F*[fnCuts];
     }
