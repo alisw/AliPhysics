@@ -353,6 +353,12 @@ private:
 	TH1F				*fPtBeautyReconstructedTracksPID;//!
 	TH1F				*fPtBeautyReconstructedTracksPIDTPC;//!
 	TH1F				*fPtBeautyReconstructedTracksPIDTOF;//!
+	TH1F				*fPtCharmGenerated;//!
+	TH1F				*fPtCharmReconstructedAll;//!
+	TH1F				*fPtCharmReconstructedTracks;//!
+	TH1F				*fPtCharmReconstructedTracksPID;//!
+	TH1F				*fPtCharmReconstructedTracksPIDTPC;//!
+	TH1F				*fPtCharmReconstructedTracksPIDTOF;//!
         TH1F				*fMCPtElePi0FoundBef;//! for tagging efficiency
         TH1F				*fMCPtEleEtaFoundBef;//!
         TH1F				*fMCPtEleGammaFound;//!
