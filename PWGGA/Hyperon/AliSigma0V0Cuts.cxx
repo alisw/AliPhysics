@@ -474,10 +474,6 @@ void AliSigma0V0Cuts::SelectV0(AliVEvent *inputEvent, AliMCEvent *mcEvent) {
 
     if (fIsMC) {
       int label = v0Candidate.MatchToMC(fMCEvent, fPID, {{fPosPDG, fNegPDG}});
-      if (label < 0) {
-        // no mc info assigned to this track - don't use it
-        v0Candidate.SetUse(false);
-      }
 
       AliMCParticle *mcParticle =
           static_cast<AliMCParticle *>(fMCEvent->GetTrack(label));
