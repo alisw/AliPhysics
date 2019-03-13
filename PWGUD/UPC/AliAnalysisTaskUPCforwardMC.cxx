@@ -96,6 +96,7 @@ AliAnalysisTaskUPCforwardMC::AliAnalysisTaskUPCforwardMC()
       fInvariantMassDistributionCoherentH(0),
       fInvariantMassDistributionIncoherentH(0),
       fDimuonPtDistributionH(0),
+      fTemplatePtDistributionH(0),
       fDcaAgainstInvariantMassH(0),
       fInvariantMassDistributionExtendedH(0),
       fInvariantMassDistributionCoherentExtendedH(0),
@@ -192,6 +193,7 @@ AliAnalysisTaskUPCforwardMC::AliAnalysisTaskUPCforwardMC( const char* name )
       fInvariantMassDistributionCoherentH(0),
       fInvariantMassDistributionIncoherentH(0),
       fDimuonPtDistributionH(0),
+      fTemplatePtDistributionH(0),
       fDcaAgainstInvariantMassH(0),
       fInvariantMassDistributionExtendedH(0),
       fInvariantMassDistributionCoherentExtendedH(0),
@@ -411,6 +413,9 @@ void AliAnalysisTaskUPCforwardMC::UserCreateOutputObjects()
 
   fDimuonPtDistributionH = new TH1F("fDimuonPtDistributionH", "fDimuonPtDistributionH", 2000, 0, 20);
   fOutputList->Add(fDimuonPtDistributionH);
+
+  fTemplatePtDistributionH = new TH1F("fTemplatePtDistributionH", "fTemplatePtDistributionH", 2000, 0, 20);
+  fOutputList->Add(fTemplatePtDistributionH);
 
   fDcaAgainstInvariantMassH = new TH2F("fDcaAgainstInvariantMassH", "fDcaAgainstInvariantMassH", 4000, 0, 40, 2000, -100, 100);
   fOutputList->Add(fDcaAgainstInvariantMassH);
@@ -934,6 +939,7 @@ void AliAnalysisTaskUPCforwardMC::UserExec(Option_t *)
         fInvariantMassDistributionIncoherentExtendedH->Fill(possibleJPsi.Mag());
   }
   fDimuonPtDistributionH->Fill(ptOfTheDimuonPair);
+  if ( (possibleJPsi.Mag() > 2.8) && (possibleJPsi.Mag() < 3.3) ) fTemplatePtDistributionH->Fill(ptOfTheDimuonPair);
 
 
   /* - Filling the J/Psi's polarization plots.

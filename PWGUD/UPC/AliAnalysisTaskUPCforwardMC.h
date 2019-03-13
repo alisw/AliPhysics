@@ -202,6 +202,14 @@ class AliAnalysisTaskUPCforwardMC : public AliAnalysisTaskSE
         TH1F*                   fDimuonPtDistributionH;         //!
 
                                 /**
+                                 * This histogram records the pt-ditribution
+                                 * of the dimuon pairs. This is the template
+                                 * to be used for the Pt-distribution fit.
+                                 */
+        TH1F*                   fTemplatePtDistributionH;         //!
+
+
+                                /**
                                  * This histogram records the invariant mass
                                  * distribution of the dimuon system, but the
                                  * novelty is the use of a different method to
