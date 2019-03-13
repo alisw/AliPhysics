@@ -2403,8 +2403,8 @@ AliAnalysisTaskDmesonJetsSub::EMesonDecayChannel_t AliAnalysisTaskDmesonJetsSub:
 
   if (part->GetNDaughters() == 2) {
 
-    AliAODMCParticle* d1 = static_cast<AliAODMCParticle*>(mcArray->At(part->GetDaughter(0)));
-    AliAODMCParticle* d2 = static_cast<AliAODMCParticle*>(mcArray->At(part->GetDaughter(1)));
+    AliAODMCParticle* d1 = static_cast<AliAODMCParticle*>(mcArray->At(part->GetDaughterLabel(0)));
+    AliAODMCParticle* d2 = static_cast<AliAODMCParticle*>(mcArray->At(part->GetDaughterLabel(1)));
 
     if (!d1 || !d2) {
       return decay;
@@ -2787,16 +2787,20 @@ void AliAnalysisTaskDmesonJetsSub::AnalysisEngine::AddInputVectors(AliEmcalConta
 
 void AliAnalysisTaskDmesonJetsSub::AnalysisEngine::IterativeDeclustering(Int_t ijet,Double_t type,AliHFJetDefinition& jetDef, Double_t invmass)
 {
-   double nsd = 0;        
+  
    double nall = 0;        
    double zg = 0.;         
    double flagSubjet=0;
    double xconstperp=0;
-   TString hname; 
+   TString hname;
+   TString hname2;
    fastjet::JetAlgorithm jet_algo(fastjet::cambridge_algorithm);
    double jet_radius_ca = 1.0;
    fastjet::JetDefinition jet_def(jet_algo, jet_radius_ca,static_cast<fastjet::RecombinationScheme>(0), fastjet::Best);
-  
+   hname = TString::Format("%s/%s/LundIterative", GetName(), jetDef.GetName());
+   THnSparse* h = static_cast<THnSparse*>(fHistManager->FindObject(hname)); 
+   hname2 = TString::Format("%s/%s/AngleDifference", GetName(), jetDef.GetName());
+   TH2* hdiffangle = static_cast<TH2*>(fHistManager->FindObject(hname2)); 	    
       try{
       std::vector<fastjet::PseudoJet> particles(fFastJetWrapper->GetJetConstituents(ijet));
       fastjet::ClusterSequence cs_ca(particles, jet_def);
@@ -2807,7 +2811,7 @@ void AliAnalysisTaskDmesonJetsSub::AnalysisEngine::IterativeDeclustering(Int_t i
       fastjet::PseudoJet jj = output_jets[0];
       fastjet::PseudoJet j1; 
       fastjet::PseudoJet j2;  
-    
+      
       while(jj.has_parents(j1,j2)){
          nall = nall + 1;
          if(j1.perp() < j2.perp()) std::swap(j1,j2);
@@ -2821,20 +2825,21 @@ void AliAnalysisTaskDmesonJetsSub::AnalysisEngine::IterativeDeclustering(Int_t i
 
 	 
          double delta_R = j1.delta_R(j2);
+	 double delta_Raxis=j2.delta_R(output_jets[0]);
          zg = j2.perp()/(j1.perp()+j2.perp());   
-                     
+         double yh=j1.e()+j2.e();            
          double y = log(1.0/delta_R);
-         double lnpt_rel = log(zg*delta_R);
-	 double frac=j1.perp()/output_jets[0].perp();
-	 double lundEntries[9] = {y, lnpt_rel, output_jets[0].perp(), nall, type, flagSubjet, xconstperp, invmass,frac};
-	   hname = TString::Format("%s/LundIterative", jetDef.GetName());
-           THnSparse* h = static_cast<THnSparse*>(fHistManager->FindObject(hname)); 
-	   //   if(!h) cout<<"caca"<<endl;
-	   h->Fill(lundEntries);
+         double lnpt_rel = log(j2.perp()*delta_R);
+
+	 double lundEntries[10] = {y, lnpt_rel, output_jets[0].perp(), nall, type, flagSubjet, xconstperp, invmass,yh,TMath::Abs(output_jets[0].eta())};
+         h->Fill(lundEntries);
+	 hdiffangle->Fill(delta_R, delta_Raxis);
                 jj=j1;
       }
 
-         
+      if(nall==0){ double lundEntrieszero[10]={0,0,output_jets[0].perp(),0,type,0,0,invmass,0,TMath::Abs(output_jets[0].eta())};
+	h->Fill(lundEntrieszero);}
+      
       } catch (fastjet::Error) { /*return -1;*/ }
                        
 }
@@ -3198,11 +3203,11 @@ void AliAnalysisTaskDmesonJetsSub::UserCreateOutputObjects()
     maxTracks = 500;
   }
 
-      Int_t dimx   = 9;
-      Int_t nbinsx[9]   = {50,50,10,20,2,2,20,20,10};
-      Double_t minx[9] =  {0,-10,0,0,0,0,0,1.4,0};
-      Double_t maxx[9]  = {5,0,100,20,2,2,20,2.4,1};
-      TString titlex[9]={"log(1/deltaR)","log(zteta)","jet pt","n","type","flagSubjet","ptD","invmass","frac"};
+      Int_t dimx   = 10;
+      Int_t nbinsx[10]   = {50,100,10,20,2,2,200,150,100,9};
+      Double_t minx[10] =  {0,-10,0,0,0,0,0,1.6,0,0};
+      Double_t maxx[10]  = {5,10,100,20,2,2,100,2.3,100,0.9};
+      TString titlex[10]={"log(1/deltaR)","log(zteta)","jet pt","n","type","flagSubjet","ptD","invmass","frac","abs(eta)"};
 
 
 
@@ -3422,10 +3427,17 @@ void AliAnalysisTaskDmesonJetsSub::UserCreateOutputObjects()
         htitle = hname + ";no. of tracks;#it{p}_{T,D} (GeV/#it{c});counts";
         fHistManager.CreateTH2(hname, htitle, 200, 0, maxTracks, 300, 0, 150);
       }
-       hname = TString::Format("%s/LundIterative",jetDef.GetName());
+      hname = TString::Format("%s/%s/LundIterative",param.GetName(),jetDef.GetName());
+      cout<<"at the begining"<<hname<<endl;
       THnSparse* h = fHistManager.CreateTHnSparse(hname,hname,dimx,nbinsx,minx,maxx);
       for (Int_t j = 0; j < dimx; j++) {
       h->GetAxis(j)->SetTitle(titlex[j]);}
+
+   
+      hname = TString::Format("%s/%s/AngleDifference",param.GetName(),jetDef.GetName());
+      htitle = hname + ";angle iterative declustering;angle to axis";
+      fHistManager.CreateTH2(hname,htitle,100,0.,2*3.1416,100,0,2*3.1416);
+      
     }
     switch (fOutputType) {
     case kTreeOutput:
@@ -3720,7 +3732,7 @@ void AliAnalysisTaskDmesonJetsSub::FillPartonLevelHistograms()
 
     Bool_t lastInPartonShower = kTRUE;
     Bool_t hadronDaughter = kFALSE;
-    for (Int_t daughterIndex = part.second->GetFirstDaughter(); daughterIndex <= part.second->GetLastDaughter(); daughterIndex++){
+    for (Int_t daughterIndex = part.second->GetDaughterFirst(); daughterIndex <= part.second->GetDaughterLast(); daughterIndex++){
       if (daughterIndex < 0) {
         AliDebugStream(5) << "Could not find daughter index!" << std::endl;
         continue;

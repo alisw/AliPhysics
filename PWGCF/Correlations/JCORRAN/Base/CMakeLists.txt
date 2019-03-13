@@ -66,6 +66,7 @@ set(SRCS
   AliJXtAnalysis.cxx
   AliJHistogramInterface.cxx
   AliJCorrelationInterface.cxx
+  AliJESE.cxx
   jtAnalysis/AliJDiHadronJtTask.cxx
   jtAnalysis/AliJJtAnalysis.cxx
   jtAnalysis/AliJJtHistograms.cxx

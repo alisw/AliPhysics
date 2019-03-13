@@ -167,6 +167,7 @@ AliConversionPhotonCuts::AliConversionPhotonCuts(const char *name,const char *ti
   fminV0Dist(200.),
   fDoSharedElecCut(kFALSE),
   fDoPhotonQualitySelectionCut(kFALSE),
+  fDoPhotonQualityRejectionCut(kFALSE),
   fPhotonQualityCut(0),
   fRandom(0),
   fElectronArraySize(500),
@@ -323,6 +324,7 @@ AliConversionPhotonCuts::AliConversionPhotonCuts(const AliConversionPhotonCuts &
   fminV0Dist(ref.fminV0Dist),
   fDoSharedElecCut(ref.fDoSharedElecCut),
   fDoPhotonQualitySelectionCut(ref.fDoPhotonQualitySelectionCut),
+  fDoPhotonQualityRejectionCut(ref.fDoPhotonQualityRejectionCut),
   fPhotonQualityCut(ref.fPhotonQualityCut),
   fRandom(ref.fRandom),
   fElectronArraySize(ref.fElectronArraySize),
@@ -954,7 +956,7 @@ Bool_t AliConversionPhotonCuts::PhotonIsSelectedAODMC(AliAODMCParticle *particle
     AliAODMCParticle* eNeg = NULL;
 
     if(particle->GetNDaughters() >= 2){
-      for(Int_t daughterIndex=particle->GetDaughter(0);daughterIndex<=particle->GetDaughter(1);daughterIndex++){
+      for(Int_t daughterIndex=particle->GetDaughterLabel(0);daughterIndex<=particle->GetDaughterLabel(1);daughterIndex++){
         AliAODMCParticle *tmpDaughter = static_cast<AliAODMCParticle*>(aodmcArray->At(daughterIndex));
         if(!tmpDaughter) continue;
         if(((tmpDaughter->GetMCProcessCode())) == 5){    // STILL A BUG IN ALIROOT >>8 HAS TPO BE REMOVED AFTER FIX
@@ -1128,6 +1130,10 @@ Bool_t AliConversionPhotonCuts::PhotonCuts(AliConversionPhotonBase *photon,AliVE
         if(fHistoPhotonCuts)fHistoPhotonCuts->Fill(cutIndex, photon->GetPhotonPt()); //11
         return kFALSE;
       }
+      if (fDoPhotonQualityRejectionCut && photonQuality == fPhotonQualityCut){
+        if(fHistoPhotonCuts)fHistoPhotonCuts->Fill(cutIndex, photon->GetPhotonPt()); //11
+        return kFALSE;
+      }
   }
   cutIndex++; //12
   if(fHistoPhotonCuts)fHistoPhotonCuts->Fill(cutIndex, photon->GetPhotonPt()); //11
@@ -1223,6 +1229,7 @@ Bool_t AliConversionPhotonCuts::PhotonIsSelected(AliConversionPhotonBase *photon
   }
 
   photon->DeterminePhotonQuality(negTrack,posTrack);
+
   // Track Cuts
   if(!TracksAreSelected(negTrack, posTrack)){
     FillPhotonCutIndex(kTrackCuts);
@@ -1450,9 +1457,9 @@ Bool_t AliConversionPhotonCuts::TracksAreSelected(AliVTrack * negTrack, AliVTrac
   Bool_t passCuts = kTRUE;
 
   if(negTrack->IsA()==AliAODTrack::Class()) {
-    passCuts = passCuts * SpecificTrackCuts(static_cast<AliAODTrack*>(negTrack), static_cast<AliAODTrack*>(posTrack),cutIndex);
+    passCuts = SpecificTrackCuts(static_cast<AliAODTrack*>(negTrack), static_cast<AliAODTrack*>(posTrack),cutIndex);
   } else {
-    passCuts = passCuts * SpecificTrackCuts(static_cast<AliESDtrack*>(negTrack), static_cast<AliESDtrack*>(posTrack),cutIndex);
+    passCuts = SpecificTrackCuts(static_cast<AliESDtrack*>(negTrack), static_cast<AliESDtrack*>(posTrack),cutIndex);
   }
 
   if(!passCuts){
@@ -1792,8 +1799,8 @@ Bool_t AliConversionPhotonCuts::PIDProbabilityCut(AliConversionPhotonBase *photo
 
     Bool_t iResult=kFALSE;
 
-    Double_t *posProbArray = new Double_t[AliPID::kSPECIES];
-    Double_t *negProbArray = new Double_t[AliPID::kSPECIES];
+    Double_t posProbArray[AliPID::kSPECIES];
+    Double_t negProbArray[AliPID::kSPECIES];
 
     AliESDtrack* negTrack   = esdEvent->GetTrack(photon->GetTrackLabelNegative());
     AliESDtrack* posTrack   = esdEvent->GetTrack(photon->GetTrackLabelPositive());
@@ -1808,8 +1815,6 @@ Bool_t AliConversionPhotonCuts::PIDProbabilityCut(AliConversionPhotonBase *photo
       }
     }
 
-    delete [] posProbArray;
-    delete [] negProbArray;
     return iResult;
 
   } else {
@@ -2221,6 +2226,7 @@ void AliConversionPhotonCuts::PrintCutsWithValues() {
   printf("\t dca_{R} < %3.2f \n", fDCARPrimVtxCut );
   printf("\t dca_{Z} < %3.2f \n", fDCAZPrimVtxCut );
   if (fDoPhotonQualitySelectionCut) printf("\t selection based on photon quality with quality %d \n", fPhotonQualityCut );
+  if (fDoPhotonQualityRejectionCut) printf("\t rejection based on photon quality with quality %d \n", fPhotonQualityCut );
   if (fDoDoubleCountingCut) printf("\t Reject doubly counted photons with R > %3.2f, DeltaR < %3.2f, OpenAngle < %3.2f  \n", fMinRDC, fDeltaR,fOpenAngle );
 
 }
@@ -3298,6 +3304,18 @@ Bool_t AliConversionPhotonCuts::SetChi2GammaCut(Int_t chi2GammaCut){   // Set Cu
   case 10:
     fChi2CutConversion = 25.;
     break;
+  case 11:
+    fChi2CutConversion = 35.;
+    break;
+  case 12:
+    fChi2CutConversion = 40.;
+    break;
+  case 13:
+    fChi2CutConversion = 45.;
+    break;
+  case 14:
+    fChi2CutConversion = 55.;
+    break;
   default:
     AliError(Form("Warning: Chi2GammaCut not defined %d",chi2GammaCut));
     return kFALSE;
@@ -3432,6 +3450,16 @@ Bool_t AliConversionPhotonCuts::SetPhotonAsymmetryCut(Int_t doPhotonAsymmetryCut
     fMinPPhotonAsymmetryCut=8.;
     fMinPhotonAsymmetry=0.05;
     break;
+  case 8:
+    fDoPhotonAsymmetryCut=1;
+    fDoPhotonPDependentAsymCut=1;
+    fFAsymmetryCut = new TF1("fFAsymmetryCut","[0] + [1]*tanh(2*TMath::Power(x,[2]))",0.,100.);
+    fFAsymmetryCut->SetParameter(0,0.5);
+    fFAsymmetryCut->SetParameter(1,0.46);
+    fFAsymmetryCut->SetParameter(2,0.7);
+    fMinPPhotonAsymmetryCut=0.0;
+    fMinPhotonAsymmetry=0.;
+    break;
   default:
     AliError(Form("PhotonAsymmetryCut not defined %d",doPhotonAsymmetryCut));
     return kFALSE;
@@ -3507,27 +3535,38 @@ Bool_t AliConversionPhotonCuts::SetSharedElectronCut(Int_t sharedElec) {
     case 0:
       fDoSharedElecCut = kFALSE;
       fDoPhotonQualitySelectionCut = kFALSE;
+      fDoPhotonQualityRejectionCut = kFALSE;
       fPhotonQualityCut = 0;
       break;
     case 1:
       fDoSharedElecCut = kTRUE;
       fDoPhotonQualitySelectionCut = kFALSE;
+      fDoPhotonQualityRejectionCut = kFALSE;
       fPhotonQualityCut = 0;
       break;
     case 2:
       fDoSharedElecCut = kFALSE;
       fDoPhotonQualitySelectionCut = kTRUE;
+      fDoPhotonQualityRejectionCut = kFALSE;
       fPhotonQualityCut = 1;
       break;
     case 3:
       fDoSharedElecCut = kFALSE;
       fDoPhotonQualitySelectionCut = kTRUE;
+      fDoPhotonQualityRejectionCut = kFALSE;
       fPhotonQualityCut = 2;
       break;
     case 4:
       fDoSharedElecCut = kFALSE;
       fDoPhotonQualitySelectionCut = kTRUE;
+      fDoPhotonQualityRejectionCut = kFALSE;
       fPhotonQualityCut = 3;
+      break;
+    case 5://Cat1 rejection
+      fDoSharedElecCut = kFALSE;
+      fDoPhotonQualitySelectionCut = kFALSE;
+      fDoPhotonQualityRejectionCut = kTRUE;
+      fPhotonQualityCut = 1;
       break;
     default:
       AliError(Form("Shared Electron Cut not defined %d",sharedElec));

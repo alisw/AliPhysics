@@ -2363,7 +2363,7 @@ for (Int_t iCascType = 1; iCascType < 5; iCascType++) {
         if ((lCurrentParticleaod->GetStatus()==21)||
             ( (lCurrentParticleaod->GetPdgCode() == 443) &&
               (lCurrentParticleaod->GetMother() == -1)   &&
-              (lCurrentParticleaod->GetDaughter(0) ==  (iCurrentLabelStack+1)))) {
+              (lCurrentParticleaod->GetDaughterLabel(0) ==  (iCurrentLabelStack+1)))) {
  
          
           endOfHijingEvent = iCurrentLabelStack; 
@@ -2389,8 +2389,8 @@ for (Int_t iCascType = 1; iCascType < 5; iCascType++) {
       partVy = lCurrentParticleaod->Yv();
       partVz = lCurrentParticleaod->Zv();
 
-      if (lCurrentParticleaod->GetDaughter(0)>=0) {
-        AliAODMCParticle *mcBach = (AliAODMCParticle*) arrayMC->At(lCurrentParticleaod->GetDaughter(0));
+      if (lCurrentParticleaod->GetDaughterLabel(0)>=0) {
+        AliAODMCParticle *mcBach = (AliAODMCParticle*) arrayMC->At(lCurrentParticleaod->GetDaughterLabel(0));
         if (mcBach) {
           bacVx  = mcBach->Xv();
           bacVy  = mcBach->Yv();
@@ -2528,11 +2528,11 @@ for (Int_t iCascType = 1; iCascType < 5; iCascType++) {
 
       AliAODMCParticle *xiMC = (AliAODMCParticle*) arrayMC->At(iCurrentLabelStack);
       if ( xiMC->GetNDaughters() != 2) continue;
-      if ( xiMC->GetDaughter(0) < 0 )  continue;
-      if ( xiMC->GetDaughter(1) < 0 )  continue;
+      if ( xiMC->GetDaughterLabel(0) < 0 )  continue;
+      if ( xiMC->GetDaughterLabel(1) < 0 )  continue;
 
-      AliAODMCParticle* lDght0ofXi = (AliAODMCParticle*) arrayMC->At(  xiMC->GetDaughter(0) );
-      AliAODMCParticle* lDght1ofXi = (AliAODMCParticle*) arrayMC->At(  xiMC->GetDaughter(1) );
+      AliAODMCParticle* lDght0ofXi = (AliAODMCParticle*) arrayMC->At(  xiMC->GetDaughterLabel(0) );
+      AliAODMCParticle* lDght1ofXi = (AliAODMCParticle*) arrayMC->At(  xiMC->GetDaughterLabel(1) );
 
       AliAODMCParticle* lLambda = 0;
       AliAODMCParticle* lBach   = 0;
@@ -2568,12 +2568,12 @@ for (Int_t iCascType = 1; iCascType < 5; iCascType++) {
       AliAODMCParticle* lDghtMesV0 = 0;
 
       if( lLambda->GetNDaughters() != 2 )  continue;
-      if( lLambda->GetDaughter(0) < 0 )    continue;
-      if( lLambda->GetDaughter(1) < 0 )    continue;
+      if( lLambda->GetDaughterLabel(0) < 0 )    continue;
+      if( lLambda->GetDaughterLabel(1) < 0 )    continue;
 
 
-      AliAODMCParticle* lDght0ofLambda = (AliAODMCParticle*) arrayMC->At(  lLambda->GetDaughter(0) );
-      AliAODMCParticle* lDght1ofLambda = (AliAODMCParticle*) arrayMC->At(  lLambda->GetDaughter(1) );
+      AliAODMCParticle* lDght0ofLambda = (AliAODMCParticle*) arrayMC->At(  lLambda->GetDaughterLabel(0) );
+      AliAODMCParticle* lDght1ofLambda = (AliAODMCParticle*) arrayMC->At(  lLambda->GetDaughterLabel(1) );
 
       // V0 - Case 1
       if ( lDght0ofLambda->PdgCode() == lPdgCodeDghtBarV0 &&    // Here !

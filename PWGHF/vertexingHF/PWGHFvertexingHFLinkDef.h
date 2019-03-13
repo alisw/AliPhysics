@@ -32,6 +32,7 @@
 #pragma link C++ class AliRDHFCutsLctopK0sfromAODtracks++;
 #pragma link C++ class AliRDHFCutsOmegactoeleOmegafromAODtracks+;
 #pragma link C++ class AliRDHFCutsXicPlustoXiPiPifromAODtracks++;
+#pragma link C++ class AliRDHFCutsXicZerotoXiPifromAODtracks++;
 #pragma link C++ class AliRDHFCutsXictoeleXifromAODtracks+;
 #pragma link C++ class AliAnalysisVertexingHF+;
 #pragma link C++ class AliAnalysisTaskSEVertexingHF+;
@@ -57,6 +58,7 @@
 #pragma link C++ class AliAnalysisTaskSELc2eleLambdafromAODtracks+;
 #pragma link C++ class AliAnalysisTaskSEOmegac2eleOmegafromAODtracks+;
 #pragma link C++ class AliAnalysisTaskSEXicPlus2XiPiPifromAODtracks++;
+#pragma link C++ class AliAnalysisTaskSEXicZero2XiPifromAODtracks++;
 #pragma link C++ class AliAnalysisTaskSEXic2eleXifromAODtracks+;
 #pragma link C++ class AliAnalysisTaskCharmBaryonsMC+;
 #pragma link C++ class AliAnalysisTaskSEDvsEventShapes+;
@@ -91,6 +93,9 @@
 #pragma link C++ class AliAnalysisTaskHFv1+;
 #pragma link C++ class AliAnalysisTaskFlowD2H+;
 #pragma link C++ class AliHFAfterBurner+;
+#pragma link C++ class AliHFQnVectorHandler+;
+#pragma link C++ class AliAnalysisTaskSEHFTenderQnVectors+;
+#pragma link C++ class AliAnalysisTaskSECharmHadronvn+;
 #pragma link C++ class AliAnalysisTaskSELambdacUp+;
 #pragma link C++ class AliAnalysisTaskCountLcEta+;
 #pragma link C++ class AliAnalysisTaskSELc2V0bachelorTMVA+;
@@ -110,6 +115,8 @@
 #pragma link C++ class AliHFCutVarFDsubMinimiser+;
 #pragma link C++ class AliHFVnVsMassFitter+;
 #pragma link C++ class AliAnalysisTaskSELc2V0bachelorTMVAApp+;
+#pragma link C++ class AliAnalysisTaskSEHFSystPID+;
+#pragma link C++ class AliAnalysisTaskSEDmesonPIDSysProp+;
 #pragma link C++ class IClassifierReader+;
 
 #endif

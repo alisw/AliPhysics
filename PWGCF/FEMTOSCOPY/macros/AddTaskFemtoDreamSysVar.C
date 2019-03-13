@@ -6,15 +6,11 @@ AliAnalysisTaskSE* AddTaskFemtoDreamSysVar(bool isMC = false,
                                                "kInt7",
                                            bool notpp = true,  //1
                                            bool fineBinning = true,  //2
-                                           bool PileUpRej = true,  //3
-                                           bool multBinning = true,  //4
-                                           bool kTBinning = false,  //5
-                                           bool kTCentBinning = false,  //6
-                                           bool mTBinning = false,  //7
-                                           bool eventMixing = true,  //8
-                                           bool phiSpin = true,  //9
-                                           bool minimalBooking = true,  // 10
-                                           const char *swuffix = "")  //11
+                                           bool kTBinning = false,  //3
+                                           bool kTCentBinning = false,  //4
+                                           bool mTBinning = false,  //5
+                                           bool minimalBooking = true,  // 6
+                                           const char *swuffix = "")  //7
                                            {
   TString suffix = Form("%s", swuffix);
   bool DCAPlots = false;
@@ -22,7 +18,9 @@ AliAnalysisTaskSE* AddTaskFemtoDreamSysVar(bool isMC = false,
   bool CombSigma = false;
   bool ContributionSplitting = false;
   bool ContributionSplittingDaug = false;
-
+  bool PileUpRej = true;
+  bool eventMixing = true;
+  bool phiSpin = false;
   // the manager is static, so get the existing manager via the static method
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
 
@@ -69,8 +67,8 @@ AliAnalysisTaskSE* AddTaskFemtoDreamSysVar(bool isMC = false,
     TrackCuts->SetPtRange(0.4, 4.05);
     AntiTrackCuts->SetPtRange(0.4, 4.05);
   } else if (suffix == "2") {
-    TrackCuts->SetPtRange(0.5, 4.05);
-    AntiTrackCuts->SetPtRange(0.5, 4.05);
+    TrackCuts->SetPtRange(0.6, 4.05);
+    AntiTrackCuts->SetPtRange(0.6, 4.05);
   } else if (suffix == "3") {
     TrackCuts->SetEtaRange(-0.7, 0.7);
     AntiTrackCuts->SetEtaRange(-0.7, 0.7);
@@ -273,34 +271,38 @@ AliAnalysisTaskSE* AddTaskFemtoDreamSysVar(bool isMC = false,
     AntiXiPosCuts->SetPID(AliPID::kPion, 999, 4.5);
     AntiXiBachCuts->SetPID(AliPID::kPion, 999, 4.5);
   } else if (suffix == "41") {
-    CascadeCuts->SetPtRangeXi(0.1, 999.5);
-    AntiCascadeCuts->SetPtRangeXi(0.1, 999.5);
-    //wide wariation
+    CascadeCuts->SetPtRangeXi(0.4, 999.5);
+    AntiCascadeCuts->SetPtRangeXi(0.4, 999.5);
   } else if (suffix == "42") {
+    CascadeCuts->SetPtRangeXi(0.8, 999.5);
+    AntiCascadeCuts->SetPtRangeXi(0.8, 999.5);
+
+    //wide wariation
+  } else if (suffix == "101") {
     CascadeCuts->SetXiMassRange(1.368, 0.028);
     AntiCascadeCuts->SetXiMassRange(1.368, 0.028);
-  } else if (suffix == "43") {
+  } else if (suffix == "102") {
     CascadeCuts->SetXiMassRange(1.282, 0.028);
     AntiCascadeCuts->SetXiMassRange(1.282, 0.028);
     //thinner wariation
-  } else if (suffix == "44") {
+  } else if (suffix == "103") {
     CascadeCuts->SetXiMassRange(1.354, 0.014);
     AntiCascadeCuts->SetXiMassRange(1.354, 0.014);
-  } else if (suffix == "45") {
+  } else if (suffix == "104") {
     CascadeCuts->SetXiMassRange(1.296, 0.014);
     AntiCascadeCuts->SetXiMassRange(1.296, 0.014);
     //Further away from the peak
-  } else if (suffix == "46") {
+  } else if (suffix == "105") {
     CascadeCuts->SetXiMassRange(1.368, 0.014);
     AntiCascadeCuts->SetXiMassRange(1.368, 0.014);
-  } else if (suffix == "47") {
+  } else if (suffix == "106") {
     CascadeCuts->SetXiMassRange(1.282, 0.014);
     AntiCascadeCuts->SetXiMassRange(1.282, 0.014);
     //furthest away from the peak
-  } else if (suffix == "48") {
+  } else if (suffix == "107") {
     CascadeCuts->SetXiMassRange(1.382, 0.014);
     AntiCascadeCuts->SetXiMassRange(1.382, 0.014);
-  } else if (suffix == "49") {
+  } else if (suffix == "108") {
     CascadeCuts->SetXiMassRange(1.268, 0.014);
     AntiCascadeCuts->SetXiMassRange(1.268, 0.014);
   }
@@ -481,7 +483,7 @@ AliAnalysisTaskSE* AddTaskFemtoDreamSysVar(bool isMC = false,
     MultBins.push_back(80);
     config->SetMultBins(MultBins);
   }
-  config->SetMultBinning(multBinning);
+  config->SetMultBinning(true);
   config->SetZBins(ZVtxBins);
   config->SetPDGCodes(PDGParticles);
   config->SetNBinsHist(NBins);
@@ -494,6 +496,17 @@ AliAnalysisTaskSE* AddTaskFemtoDreamSysVar(bool isMC = false,
   config->SetmTBinning(mTBinning);
   config->SetUseEventMixing(eventMixing);
   config->SetUsePhiSpinning(phiSpin);
+
+  config->SetDeltaEtaMax(0.010);
+  config->SetDeltaPhiMax(0.010);
+  if (suffix == "43") {
+    config->SetDeltaEtaMax(0.012);
+    config->SetDeltaPhiMax(0.012) ;
+  } else if (suffix == "44") {
+    config->SetDeltaEtaMax(0.014);
+    config->SetDeltaPhiMax(0.014);
+  }
+  config->SetClosePairRejection(config->GetStandardPairRejection());
   if (minimalBooking) {
     config->SetMinimalBookingME(true);
     config->SetMinimalBookingSample(true);

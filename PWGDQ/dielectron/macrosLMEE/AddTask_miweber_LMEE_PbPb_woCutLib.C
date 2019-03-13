@@ -11,11 +11,14 @@ R__ADD_INCLUDE_PATH($ALICE_PHYSICS)
 #endif
 
 AliAnalysisTask *AddTask_miweber_LMEE_PbPb_woCutLib(Int_t cutDefinition = 0,
-        TString outputFileName = "AnalysisResult.root",
-        TString directoryBaseName = "miweber_LMEE_PbPb",
-        Bool_t isNano = kFALSE,
-        Bool_t bCutQA = kTRUE,
-        Bool_t useTPCCorr=kFALSE){
+						    TString outputFileName = "AnalysisResult.root",
+						    TString directoryBaseName = "miweber_LMEE_PbPb",
+						    Bool_t isNano = kFALSE,
+						    Bool_t bCutQA = kTRUE,
+						    Bool_t useTPCCorr=kFALSE,
+						    Bool_t useRotation=kFALSE,
+						    Bool_t useMixing=kTRUE,
+						    Bool_t noPairing=kFALSE){
 
 
   //get the current analysis manager
@@ -76,7 +79,7 @@ AliAnalysisTask *AddTask_miweber_LMEE_PbPb_woCutLib(Int_t cutDefinition = 0,
   mgr->AddTask(task);
   
   //add dielectron analysis with selected cut to the task
-  AliDielectron *diel_low = Config_miweber_LMEE_PbPb_woCutLib(cutDefinition,bESDANA,bCutQA,kFALSE,useTPCCorr,hasMC);
+  AliDielectron *diel_low = Config_miweber_LMEE_PbPb_woCutLib(cutDefinition,bESDANA,bCutQA,kFALSE,useTPCCorr,useRotation,useMixing,noPairing,hasMC);
   if(diel_low){
     AliDielectronVarCuts *eventplaneCuts = new AliDielectronVarCuts("eventplaneCuts","eventplaneCuts");
     // use event plane cuts only for this cut set

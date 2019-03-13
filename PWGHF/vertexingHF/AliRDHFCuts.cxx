@@ -68,6 +68,7 @@ fMinVtxContr(1),
 fMaxVtxRedChi2(1e6),
 fMaxVtxZ(10.),
 fMinSPDMultiplicity(0),
+fMinContrPileupMV(5),
 fMaxVtxChi2PileupMV(5.),
 fMinWDzPileupMV(15.),
 fRejectPlpFromDiffBCMV(kFALSE),
@@ -130,7 +131,8 @@ fCutGeoNcrNclFractionNcr(0.85),
 fCutGeoNcrNclFractionNcl(0.7),
 fUseV0ANDSelectionOffline(kFALSE),
 fUseTPCtrackCutsOnThisDaughter(kTRUE),
-fApplyZcutOnSPDvtx(kFALSE)
+fApplyZcutOnSPDvtx(kFALSE),
+fUsePreselect(0)
 {
   //
   // Default Constructor
@@ -145,6 +147,7 @@ AliRDHFCuts::AliRDHFCuts(const AliRDHFCuts &source) :
   fMaxVtxRedChi2(source.fMaxVtxRedChi2),
   fMaxVtxZ(source.fMaxVtxZ),
   fMinSPDMultiplicity(source.fMinSPDMultiplicity),
+  fMinContrPileupMV(source.fMinContrPileupMV),
   fMaxVtxChi2PileupMV(source.fMaxVtxChi2PileupMV),
   fMinWDzPileupMV(source.fMinWDzPileupMV),
   fRejectPlpFromDiffBCMV(source.fRejectPlpFromDiffBCMV),
@@ -208,7 +211,8 @@ AliRDHFCuts::AliRDHFCuts(const AliRDHFCuts &source) :
   fCutGeoNcrNclFractionNcl(source.fCutGeoNcrNclFractionNcl),
   fUseV0ANDSelectionOffline(source.fUseV0ANDSelectionOffline),
   fUseTPCtrackCutsOnThisDaughter(source.fUseTPCtrackCutsOnThisDaughter),
-  fApplyZcutOnSPDvtx(source.fApplyZcutOnSPDvtx)
+  fApplyZcutOnSPDvtx(source.fApplyZcutOnSPDvtx),
+  fUsePreselect(source.fUsePreselect)
 {
   //
   // Copy constructor
@@ -243,6 +247,7 @@ AliRDHFCuts &AliRDHFCuts::operator=(const AliRDHFCuts &source)
   fMaxVtxRedChi2=source.fMaxVtxRedChi2;
   fMaxVtxZ=source.fMaxVtxZ;
   fMinSPDMultiplicity=source.fMinSPDMultiplicity;
+  fMinContrPileupMV=source.fMinContrPileupMV;
   fMaxVtxChi2PileupMV=source.fMaxVtxChi2PileupMV;
   fMinWDzPileupMV=source.fMinWDzPileupMV;
   fRejectPlpFromDiffBCMV=source.fRejectPlpFromDiffBCMV;
@@ -312,6 +317,7 @@ AliRDHFCuts &AliRDHFCuts::operator=(const AliRDHFCuts &source)
   fCutGeoNcrNclFractionNcl=source.fCutGeoNcrNclFractionNcl;
   fUseV0ANDSelectionOffline=source.fUseV0ANDSelectionOffline;
   fUseTPCtrackCutsOnThisDaughter=source.fUseTPCtrackCutsOnThisDaughter;
+  fUsePreselect=source.fUsePreselect;
 
   PrintAll();
 
@@ -709,7 +715,7 @@ Bool_t AliRDHFCuts::IsEventSelected(AliVEvent *event) {
   }
   else if(fOptPileup==kRejectMVPileupEvent){
     AliAnalysisUtils utils;
-    utils.SetMinPlpContribMV(fMinContrPileup);  // min. multiplicity of the pile-up vertex to consider
+    utils.SetMinPlpContribMV(fMinContrPileupMV);  // min. multiplicity of the pile-up vertex to consider
     utils.SetMaxPlpChi2MV(fMaxVtxChi2PileupMV); // max chi2 per contributor of the pile-up vertex to consider.
     utils.SetMinWDistMV(fMinWDzPileupMV);       // minimum weighted distance in Z between 2 vertices (i.e. (zv1-zv2)/sqrt(sigZv1^2+sigZv2^2) )
     utils.SetCheckPlpFromDifferentBCMV(fRejectPlpFromDiffBCMV); // vertex with |BCID|>2 will trigger pile-up (based on TOF)
@@ -997,8 +1003,8 @@ Bool_t AliRDHFCuts::IsDaughterSelected(AliAODTrack *track,const AliESDVertex *pr
     Double_t phi2=TMath::ATan2(xyz2[1],xyz2[0]);
     if(phi2<0) phi2+=2*TMath::Pi();
     Int_t lad2=(Int_t)(phi2/(2.*TMath::Pi()/40.));
-    Int_t mod1=(Int_t)((xyz1[2]+14)/7.);
-    Int_t mod2=(Int_t)((xyz2[2]+14)/7.);
+    Int_t mod1=TMath::Floor((xyz1[2]+14)/7.);
+    Int_t mod2=TMath::Floor((xyz2[2]+14)/7.);
     Bool_t lay1ok=kFALSE;
     if(mod1>=0 && mod1<4 && lad1<20){
       lay1ok=deadSPDLay1PbPb2011[lad1][mod1];
@@ -1232,6 +1238,7 @@ void AliRDHFCuts::PrintAll() const {
    }
    cout<<endl;
   }
+  printf("fUsePreselect=%d \n",fUsePreselect);
   if(fPidHF) fPidHF->PrintAll();
   return;
 }
@@ -1577,6 +1584,8 @@ Bool_t AliRDHFCuts::CompareCuts(const AliRDHFCuts *obj) const {
 
     if(fTrackCuts->GetClusterRequirementITS(AliESDtrackCuts::kSPD)!=obj->fTrackCuts->GetClusterRequirementITS(AliESDtrackCuts::kSPD)) {printf("ClusterReq SPD %d  %d\n",fTrackCuts->GetClusterRequirementITS(AliESDtrackCuts::kSPD),obj->fTrackCuts->GetClusterRequirementITS(AliESDtrackCuts::kSPD)); areEqual=kFALSE;}
   }
+  
+  if(fUsePreselect!=obj->fUsePreselect){printf("fUsePreselect: %d %d\n",fUsePreselect,obj->fUsePreselect);areEqual=kFALSE;}
 
   if(fCutsRD) {
    for(Int_t iv=0;iv<fnVars;iv++) {

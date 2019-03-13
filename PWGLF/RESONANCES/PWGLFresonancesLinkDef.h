@@ -75,4 +75,7 @@
 #pragma link C++ class AliRsnTrainManager+;
 #pragma link C++ class AliRsnMiniTaskPhiVn+;
 
+// Xi1530
+#pragma link C++ class AliAnalysisTaskXi1530+;
+#pragma link C++ class AliAnalysisTaskXi1530RunTable+;
 #endif

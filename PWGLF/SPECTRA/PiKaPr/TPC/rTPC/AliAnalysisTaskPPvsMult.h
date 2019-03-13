@@ -56,17 +56,18 @@ public:
 //		virtual void  SetCentralityEstimator(const char * centEst) {fCentEst = centEst;}
 		virtual void  SetAnalysisType(const char* analysisType) {fAnalysisType = analysisType;}
 		virtual void  SetAnalysisMC(Bool_t isMC) {fAnalysisMC = isMC;}
-		//  virtual void  SetVtxCut(Double_t vtxCut){fVtxCut = vtxCut;}
+		virtual void  SetVtxCut(Double_t vtxCut){fVtxCut = vtxCut;}
 		virtual void  SetNcl(const Int_t ncl){fNcl = ncl;}
 		virtual void  SetEtaCut(Double_t etaCut){fEtaCut = etaCut;}
 //		virtual void  SetPileUpRej(Bool_t isrej) {fPileUpRej = isrej;}   
 		virtual void  SetMinCent(Float_t minvalc) {fMinCent = minvalc;}
 		virtual void  SetMaxCent(Float_t maxvalc) {fMaxCent = maxvalc;}
 //		virtual void  SetStoreMcIn(Bool_t value) {fStoreMcIn = value;}
-		virtual void  SetAnalysisPbPb(Bool_t isanaPbPb) {fAnalysisPbPb = isanaPbPb;}
-		virtual void  SetAnalysisTask(Bool_t PostCalib) {fdEdxCalibrated = PostCalib;}
-		virtual void  SetAnalysisPID(Bool_t makePid) {fMakePid = makePid;}
-		virtual void  SetAddLowPt(Bool_t addlowpt) {fLowPt = addlowpt;}
+		virtual void  SetAnalysisPbPb(Bool_t isanaPbPb) { fAnalysisPbPb = isanaPbPb; }
+		virtual void  SetAnalysisTask(Bool_t PostCalib) { fdEdxCalibrated = PostCalib; }
+		virtual void  SetAnalysisPID(Bool_t makePid) { fMakePid = makePid; }
+		virtual void  SetAddLowPt(Bool_t addlowpt) { fLowPt = addlowpt; }
+		virtual void  SetPeriod(Int_t isLHC16l) { fLHC16l = isLHC16l; }
 
 	private:
 		virtual Float_t GetVertex(const AliVEvent* event) const;
@@ -134,7 +135,7 @@ public:
 		// Cuts and options
 		//
 
-//		Double_t     fVtxCut;             // Vtx cut on z position in cm
+		Double_t     fVtxCut;             // Vtx cut on z position in cm
 		Int_t        fNcl;                
 		Double_t     fEtaCut;             // Eta cut used to select particles
 		Int_t        cent; //minimum centrality
@@ -171,6 +172,7 @@ public:
 		Bool_t       fdEdxCalibrated;
 		Bool_t       fMakePid;
 		Bool_t       fLowPt;
+		Int_t  fLHC16l;
 		TH1F* fcent;
 		TH1F* fcentAfterPrimaries;
 		TH1F* fcentAfterV0s;

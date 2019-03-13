@@ -271,17 +271,17 @@ class AliAnalysisTaskCMEV0PID : public AliAnalysisTaskSE {
 
   
   
-  TH3D                  *fHCorrectNUApos[5];   //! 5 centrality bin, read NUA from file
-  TH3D                  *fHCorrectNUAneg[5];   //! 5 centrality bin, read NUA from file
+  TH3F                  *fHCorrectNUApos[5];   //! 5 centrality bin, read NUA from file
+  TH3F                  *fHCorrectNUAneg[5];   //! 5 centrality bin, read NUA from file
 
-  TH3D              *fHCorrectNUAposPion[5];   //! 5 centrality bin, read NUA from file
-  TH3D              *fHCorrectNUAnegPion[5];   //! 5 centrality bin, read NUA from file
+  TH3F              *fHCorrectNUAposPion[5];   //! 5 centrality bin, read NUA from file
+  TH3F              *fHCorrectNUAnegPion[5];   //! 5 centrality bin, read NUA from file
 
-  TH3D              *fHCorrectNUAposKaon[5];   //! 5 centrality bin, read NUA from file
-  TH3D              *fHCorrectNUAnegKaon[5];   //! 5 centrality bin, read NUA from file
+  TH3F              *fHCorrectNUAposKaon[5];   //! 5 centrality bin, read NUA from file
+  TH3F              *fHCorrectNUAnegKaon[5];   //! 5 centrality bin, read NUA from file
 
-  TH3D            *fHCorrectNUAposProton[5];   //! 5 centrality bin, read NUA from file
-  TH3D            *fHCorrectNUAnegProton[5];   //! 5 centrality bin, read NUA from file
+  TH3F            *fHCorrectNUAposProton[5];   //! 5 centrality bin, read NUA from file
+  TH3F            *fHCorrectNUAnegProton[5];   //! 5 centrality bin, read NUA from file
 
 
 

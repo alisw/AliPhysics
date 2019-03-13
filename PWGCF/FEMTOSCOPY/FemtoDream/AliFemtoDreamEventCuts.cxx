@@ -22,11 +22,13 @@ AliFemtoDreamEventCuts::AliFemtoDreamEventCuts()
       fUseV0AMult(false),
       fUseV0CMult(false),
       fUseRef08Mult(false),
+      fUseMultPercentileCut(false),
+      fMultPercentileMax(999.f),
       fUseAliEvtCuts(false),
       fCentVsMultPlots(false),
       fDoSpherCuts(false),
       fSpherCutsLow(0.f),
-      fSpherCutsUp(1.f)        {
+      fSpherCutsUp(1.f) {
 }
 
 AliFemtoDreamEventCuts::AliFemtoDreamEventCuts(
@@ -45,6 +47,8 @@ AliFemtoDreamEventCuts::AliFemtoDreamEventCuts(
       fUseV0AMult(cuts.fUseV0AMult),
       fUseV0CMult(cuts.fUseV0CMult),
       fUseRef08Mult(cuts.fUseRef08Mult),
+      fUseMultPercentileCut(cuts.fUseMultPercentileCut),
+      fMultPercentileMax(cuts.fMultPercentileMax),
       fUseAliEvtCuts(cuts.fUseAliEvtCuts),
       fCentVsMultPlots(cuts.fCentVsMultPlots),
       fDoSpherCuts(cuts.fDoSpherCuts),
@@ -71,6 +75,8 @@ AliFemtoDreamEventCuts& AliFemtoDreamEventCuts::operator=(
   this->fUseV0AMult = cuts.fUseV0AMult;
   this->fUseV0CMult = cuts.fUseV0CMult;
   this->fUseRef08Mult = cuts.fUseRef08Mult;
+  this->fUseMultPercentileCut = cuts.fUseMultPercentileCut;
+  this->fMultPercentileMax = cuts.fMultPercentileMax;
   this->fUseAliEvtCuts = cuts.fUseAliEvtCuts;
   this->fCentVsMultPlots = cuts.fCentVsMultPlots;
   this->fDoSpherCuts = cuts.fDoSpherCuts;
@@ -167,11 +173,21 @@ bool AliFemtoDreamEventCuts::isSelected(AliFemtoDreamEvent *evt) {
   }
 
   if (pass && fDoSpherCuts) {
-    if (evt->GetSpher() <= fSpherCutsLow || evt->GetSpher() > fSpherCutsUp) {
+    if (evt->GetSpher() <= fSpherCutsLow || evt->GetSpher() >= fSpherCutsUp) {
       pass = false;
     } else {
       if (!fMinimalBooking)
         fHist->FillEvtCounter(10);
+    }
+  }
+
+  if (pass & fUseMultPercentileCut) {
+    if (evt->GetV0MCentrality() > fMultPercentileMax) {
+      pass = false;
+    } else {
+      if (!fMinimalBooking) {
+        fHist->FillEvtCounter(11);
+      }
     }
   }
 
@@ -216,8 +232,13 @@ void AliFemtoDreamEventCuts::BookQA(AliFemtoDreamEvent *evt) {
         fHist->FillMultV0A(i, evt->GetV0AMult());
         fHist->FillMultV0C(i, evt->GetV0CMult());
         fHist->FillMultRef08(i, evt->GetRefMult08());
-        fHist->FillSPDTrackletsVsCluster(i, evt->GetSPDMult(),
-                                         evt->GetSPDCluster());
+        fHist->FillSPDTrackletsVsCluster(
+            i, evt->GetSPDMult(),
+            evt->GetSPDCluster(0) + evt->GetSPDCluster(1));
+        fHist->FillSPDTrackletsLyVsCluster(i, 0, evt->GetSPDMult(),
+                                           evt->GetSPDCluster(0));
+        fHist->FillSPDTrackletsLyVsCluster(i, 1, evt->GetSPDMult(),
+                                           evt->GetSPDCluster(1));
         fHist->FillEvtVtxZTrackvsSPD(i, evt->GetZVertexSPD(),
                                      evt->GetZVertexTracks());
         fHist->FillMagneticField(i, evt->GetBField());
@@ -297,6 +318,11 @@ void AliFemtoDreamEventCuts::BookCuts() {
     } else {
       fHist->FillCuts(11, 0);
       fHist->FillCuts(12, 0);
+    }
+    if (fUseMultPercentileCut) {
+      fHist->FillCuts(13, fMultPercentileMax);
+    } else {
+      fHist->FillCuts(13, 0);
     }
   }
 }

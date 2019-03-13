@@ -702,7 +702,7 @@ void AliAODConversionPhoton::SetCaloPhotonMCFlagsAOD(AliVEvent* event, Bool_t en
         while (dummyMother->GetPdgCode() == 22 && !originReached){ // follow conversion photon's history, as long as the mother is a photon
           if (dummyMother->GetMother() > -1){
             dummyMother = (AliAODMCParticle*) AODMCTrackArray->At(dummyMother->GetMother());
-            if (TMath::Abs(dummyMother->GetPdgCode()) == 11){ // in case of additional conversion skip to photon's grandma, which should be a photon
+            if ((TMath::Abs(dummyMother->GetPdgCode()) == 11) || (TMath::Abs(dummyMother->GetPdgCode()) == 22)){  // in case of additional conversion skip to photon's grandma, which should be a photon
               if (dummyMother->GetMother() > -1){
                 dummyMother = (AliAODMCParticle*) AODMCTrackArray->At(dummyMother->GetMother());
               } else {

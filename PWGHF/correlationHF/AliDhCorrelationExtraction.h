@@ -110,6 +110,7 @@ public:
     void SetSignalSigmas(Double_t nsigma=2) {fSignalSigmas=nsigma;}
     void SetAutoSBRange(Bool_t autoSB=kFALSE, Double_t inSigma=0., Double_t outSigma=0.) {fAutoSBRange=autoSB; fSBOuterSigmas=outSigma; fSBInnerSigmas=inSigma;}
     void SetAutoSignRange(Bool_t autoSign=kFALSE) {fAutoSignRange=autoSign;}
+    void SetSignSingleBin(Bool_t singleSignbin=kFALSE) {fSignSingleBin=singleSignbin;}
     void SetSBSingleBin(Bool_t singleSBbin=kFALSE) {fSBSingleBin=singleSBbin;}
     void SetSBRanges(Double_t* rangesSB1L=0x0, Double_t* rangesSB1R=0x0, Double_t* rangesSB2L=0x0, Double_t* rangesSB2R=0x0);
     void SetSignRanges(Double_t* rangesSignL=0x0, Double_t* rangesSignR=0x0);
@@ -134,6 +135,7 @@ public:
     TH2D* GetCorrelHistoDxHFE_MC(Int_t SEorME, Int_t pool, Int_t pTbin, Double_t thrMin, Double_t thrMax, Int_t orig);
     void NormalizeMEplot(TH2D* &histoME, TH2D* &histoMEsoftPi); //normalize ME plots to the average value of the 4 'central' bins
     void RescaleSidebandsInMassBinEdges(Int_t i); //readjust SB scaling factor if single bin is used & ranges passed from outside & ranges don't match bin edges
+    Bool_t CheckSignRegionInMassBinEdges(Int_t i); //check whether the signal region passed from outside matches with the bin edges
     void MergeMassPlotsVsPt(); //merge spectra from mass-pT bins in larger correlation-pT bins (as if you have a single pT bin)
     void MergeMassPlotsVsPt_MC(); //merge spectra from mass-pT bins in larger correlation-pT bins (as if you have a single pT bin)
     void MergeCorrelPlotsVsPt(THnSparse* &hsparse, Int_t SEorME, Int_t SorSB=0, Int_t pool=0); //merge THnSparse from mass-pT bins in correlation-pT bins (as if you have 1 pT bin)
@@ -236,6 +238,7 @@ private:
     Bool_t fAutoSignRange;
     Double_t fSBOuterSigmas;
     Double_t fSBInnerSigmas;
+    Bool_t fSignSingleBin;    
     Bool_t fSBSingleBin;
     Double_t fDeltaEtaMin;
     Double_t fDeltaEtaMax;
@@ -273,7 +276,7 @@ private:
     std::vector<Int_t>    fMCOriginType;      //container of specificators of origins
     MCmode		  fMCmode;	      //kine or reco analysis (changes just the filenames for output, for now)
 
-    ClassDef(AliDhCorrelationExtraction,6); // class for plotting HF correlations
+    ClassDef(AliDhCorrelationExtraction,7); // class for plotting HF correlations
 
 };
 

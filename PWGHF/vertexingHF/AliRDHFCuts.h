@@ -18,6 +18,7 @@
 #include "AliAODPidHF.h"
 #include "AliAODEvent.h"
 #include "AliVEvent.h"
+#include "TObjArray.h"
 
 class AliAODTrack;
 class AliAODRecoDecayHF;
@@ -60,6 +61,7 @@ class AliRDHFCuts : public AliAnalysisCuts
   void SetMaxVtxRdChi2(Float_t chi2=1e6) {fMaxVtxRedChi2=chi2;}  
   void SetMaxVtxZ(Float_t z=1e6) {fMaxVtxZ=z;}  
   void SetMinSPDMultiplicity(Int_t mult=0) {fMinSPDMultiplicity=mult;}  
+  void SetMinContribPileupMV(Int_t contr=5) {fMinContrPileupMV=contr;}
   void SetMaxVtxChi2PileupMV(Float_t chi2=5.) {fMaxVtxChi2PileupMV=chi2;}
   void SetMinWeightedDzVtxPileupMV(Float_t min=15.) {fMinWDzPileupMV=min;}
   void SetRejectPlpFromDifferentBCMV(Bool_t ok=kTRUE) {fRejectPlpFromDiffBCMV=ok;}
@@ -224,13 +226,17 @@ class AliRDHFCuts : public AliAnalysisCuts
     /// see enum below
     fOptPileup=opt;
     if (fOptPileup==kRejectMVPileupEvent) {
-      fMinContrPileup=5.;
+      fMinContrPileupMV=5.;
       fMaxVtxChi2PileupMV=5.;
       fMinWDzPileupMV=15.;
       fRejectPlpFromDiffBCMV=kFALSE;
     }
   }
   void ConfigurePileupCuts(Int_t minContrib=3, Float_t minDz=0.6){
+    AliError("Obsolete method, call ConfigureSPDPileupCuts or the setters for MV pileup");
+    return;
+  }
+  void ConfigureSPDPileupCuts(Int_t minContrib=3, Float_t minDz=0.6){
     fMinContrPileup=minContrib;
     fMinDzPileup=minDz;
   }
@@ -291,6 +297,7 @@ class AliRDHFCuts : public AliAnalysisCuts
   Bool_t GetUseTPCtrackCutsOnThisDaughter() const {return fUseTPCtrackCutsOnThisDaughter;}
   Bool_t IsSelected(TObject *obj) {return IsSelected(obj,AliRDHFCuts::kAll);}
   Bool_t IsSelected(TList *list) {if(!list) return kTRUE; return kFALSE;}
+  virtual Int_t PreSelect(TObjArray aodtracks){return 3;}
   Int_t  IsEventSelectedInCentrality(AliVEvent *event);
   Bool_t IsEventSelectedForCentrFlattening(Float_t centvalue);
   Bool_t IsEventSelected(AliVEvent *event);
@@ -362,7 +369,8 @@ class AliRDHFCuts : public AliAnalysisCuts
   void SetUsePhysicsSelection(Bool_t use=kTRUE){fUsePhysicsSelection=use; return;}
   Bool_t GetUsePhysicsSelection() const { return fUsePhysicsSelection; }
 
-
+  void SetUsePreSelect(Int_t usePreselect){fUsePreselect=usePreselect;return;}
+  Int_t GetUsePreselect(){return fUsePreselect;}
 
   Bool_t CompareCuts(const AliRDHFCuts *obj) const;
   void MakeTable()const;
@@ -412,6 +420,7 @@ class AliRDHFCuts : public AliAnalysisCuts
   Float_t fMaxVtxRedChi2; /// maximum chi2/ndf
   Float_t fMaxVtxZ; /// maximum |z| of primary vertex
   Int_t fMinSPDMultiplicity; /// SPD multiplicity
+  Int_t  fMinContrPileupMV; /// min. n. of tracklets in pileup vertex (multi-vertexer)
   Float_t fMaxVtxChi2PileupMV; /// max chi2 per contributor of the pile-up vertex to consider (multi-vertexer).
   Float_t fMinWDzPileupMV; /// minimum weighted distance in Z between 2 vertices (multi-vertexer)
   Bool_t fRejectPlpFromDiffBCMV; /// flag to reject pileup from different BC (multi-vertexer)
@@ -482,9 +491,9 @@ class AliRDHFCuts : public AliAnalysisCuts
   Bool_t fUseV0ANDSelectionOffline; ///flag to apply V0AND selection offline
   Bool_t fUseTPCtrackCutsOnThisDaughter; ///flag to apply TPC track quality cuts on specific D-meson daughter (used for different strategies for soft pion and D0daughters from Dstar decay)
   Bool_t fApplyZcutOnSPDvtx; //flag to apply the cut on |Zvtx| > X cm using the z coordinate of the SPD vertex
-
+  Int_t fUsePreselect;  /// flag that defines whether the PreSelect method has to be used: note that it is up to the task user to call it. This flag is mainly for bookkeeping
   /// \cond CLASSIMP    
-  ClassDef(AliRDHFCuts,43);  /// base class for cuts on AOD reconstructed heavy-flavour decays
+  ClassDef(AliRDHFCuts,45);  /// base class for cuts on AOD reconstructed heavy-flavour decays
   /// \endcond
 };
 

@@ -34,6 +34,7 @@
 #include "TString.h"
 #include "TFile.h"
 #include "THashList.h"
+#include "TRandom2.h"
 
 #include "AliAnalysisTask.h"
 #include "AliAnalysisManager.h"
@@ -148,6 +149,7 @@ AliAnalysisTaskHaHFECorrel::AliAnalysisTaskHaHFECorrel(const char *name)
 ,fRecEff(kTRUE)
 ,fTagEff(kTRUE)
 ,fHadCont(kTRUE)
+,fOneTimeCheck(kFALSE)
 ,fLParticle(kTRUE)
 ,fESD(0)
 ,fesdTrackCuts(0)
@@ -300,6 +302,8 @@ AliAnalysisTaskHaHFECorrel::AliAnalysisTaskHaHFECorrel(const char *name)
 ,fInvmassULS(0)
 ,fInvmassMCTrue(0)
 ,fRecMCInvMass(0)
+,fPhotMixULS(0)
+,fPhotMixLS(0)
 ,fPhotPt1PtMTag(0)
 ,fPhotPt1PtMNTag(0)
 ,fPhotPt1Pt2(0)
@@ -455,6 +459,7 @@ AliAnalysisTaskHaHFECorrel::AliAnalysisTaskHaHFECorrel(const char *name)
 ,fMCPiPlusProd(0)
 ,fMCPiPlusProdV2(0)
 ,fMCLeadingParticle(0)
+,fCompareLPRecCheck(0)
 ,fMCTruePoolMgr(0)
 ,fTrueMCHadronEventCuts(0)   
 ,fTrueMCHadronEventCutsZvtx(0)   
@@ -469,12 +474,12 @@ AliAnalysisTaskHaHFECorrel::AliAnalysisTaskHaHFECorrel(const char *name)
 ,fTrueMCElecLPTriggerEventCuts(0) 
 ,fTrueMCElecLPTrigger(0) 
 ,fTrueElectronEta(0) 
-,fRecElectronEtaWRecEff(0) 
+,fRecHFEEtaWRecEff(0) 
 ,fTrueLPinAcceptanceEta(0) 
 ,fTrueLPEta(0) 
 ,fRecLPEta(0) 
 ,fTrueHadronEta(0) 
-,fRecHadronEta(0) 
+,fRecHadronEtaWRecEff(0) 
 ,fCompareLP(0) 
 ,fV0cutsESD(0)
 ,fV0cuts(0)
@@ -544,6 +549,7 @@ AliAnalysisTaskHaHFECorrel::AliAnalysisTaskHaHFECorrel()
 ,fRecEff(kTRUE)
 ,fTagEff(kTRUE)
 ,fHadCont(kTRUE)
+,fOneTimeCheck(kFALSE)
 ,fLParticle(kTRUE)
 ,fESD(0)
 ,fesdTrackCuts(0)
@@ -696,6 +702,8 @@ AliAnalysisTaskHaHFECorrel::AliAnalysisTaskHaHFECorrel()
 ,fInvmassULS(0)
 ,fInvmassMCTrue(0)
 ,fRecMCInvMass(0)
+,fPhotMixULS(0)
+,fPhotMixLS(0)
 ,fPhotPt1PtMTag(0)
 ,fPhotPt1PtMNTag(0)
 ,fPhotPt1Pt2(0)
@@ -850,6 +858,7 @@ AliAnalysisTaskHaHFECorrel::AliAnalysisTaskHaHFECorrel()
 ,fMCPiPlusProd(0)
 ,fMCPiPlusProdV2(0)
 ,fMCLeadingParticle(0)
+,fCompareLPRecCheck(0)
 ,fMCTruePoolMgr(0)
 ,fTrueMCHadronEventCuts(0)   
 ,fTrueMCHadronEventCutsZvtx(0)   
@@ -864,12 +873,12 @@ AliAnalysisTaskHaHFECorrel::AliAnalysisTaskHaHFECorrel()
 ,fTrueMCElecLPTriggerEventCuts(0) 
 ,fTrueMCElecLPTrigger(0)
 ,fTrueElectronEta(0) 
-,fRecElectronEtaWRecEff(0) 
+,fRecHFEEtaWRecEff(0) 
 ,fTrueLPinAcceptanceEta(0) 
 ,fTrueLPEta(0) 
 ,fRecLPEta(0) 
 ,fTrueHadronEta(0) 
-,fRecHadronEta(0) 
+,fRecHadronEtaWRecEff(0) 
 ,fCompareLP(0) 
 ,fV0cutsESD(0)
 ,fV0cuts(0)
@@ -1266,7 +1275,7 @@ void AliAnalysisTaskHaHFECorrel::UserExec(Option_t*)
   Bool_t EvContainsTaggedPhot=kFALSE;
   Bool_t EvContainsNonTaggedPhot=kFALSE;
 
-
+  PhotULSLSElectronAcceptance(pVtx, mult,  nMotherKink, listofmotherkink);
   LPtrack=FindLPAndHFE(RedTracksHFE, pVtx,nMotherKink,listofmotherkink, mult, EvContainsTaggedPhot, EvContainsNonTaggedPhot);
   if (fLParticle) if (LPtrack->Pt()>=1000) return;
 
@@ -1996,25 +2005,25 @@ void AliAnalysisTaskHaHFECorrel::UserCreateOutputObjects()
     }    
   }
 
-  fInclElecPtEta = new TH2F("fInclElePtEta", "fInclElePtEta",NBinsElectron,XminElectron, XmaxElectron, NBinsEta, -0.9, 0.9 );
+  fInclElecPtEta = new TH2F("fInclElePtEta", "fInclElePtEta; #it{p}_{T}; #eta",NBinsElectron,XminElectron, XmaxElectron, NBinsEta, -0.9, 0.9 );
   fOutputListMain->Add(fInclElecPtEta);
 
-  fInclElecPtEtaWRecEff = new TH2F("fInclElePtEtaWRecEff", "fInclElePtEtaWRecEff",NBinsElectron,XminElectron, XmaxElectron,  NBinsEta, -0.9, 0.9 );
+  fInclElecPtEtaWRecEff = new TH2F("fInclElePtEtaWRecEff", "fInclElePtEtaWRecEff; #it{p}_{T}; #eta",NBinsElectron,XminElectron, XmaxElectron,  NBinsEta, -0.9, 0.9 );
   fOutputListMain->Add(fInclElecPtEtaWRecEff);
 
   // fInclElecP = new TH1F("fInclEleP", "fInclEleP",NBinsElectronRed, XBinsElectronRed);
   // fOutputListMain->Add(fInclElecP);
 
-  fULSElecPt = new TH1F("fULSElePt", "fULSElePt",NBinsElectron,XminElectron, XmaxElectron);
+  fULSElecPt = new TH1F("fULSElePt", "fULSElePt; #it{p}_{T}",NBinsElectron,XminElectron, XmaxElectron);
   fOutputListMain->Add(fULSElecPt);
     
-  fULSElecPtWRecEff = new TH1F("fULSElePtWRecEff", "fULSElePtWRecEff",NBinsElectron,XminElectron, XmaxElectron);
+  fULSElecPtWRecEff = new TH1F("fULSElePtWRecEff", "fULSElePtWRecEff; #it{p}_{T}",NBinsElectron,XminElectron, XmaxElectron);
   fOutputListMain->Add(fULSElecPtWRecEff);
     
-  fLSElecPt = new TH1F("fLSElePt", "fLSElePt",NBinsElectron,XminElectron, XmaxElectron);
+  fLSElecPt = new TH1F("fLSElePt", "fLSElePt; #it{p}_{T}",NBinsElectron,XminElectron, XmaxElectron);
   fOutputListMain->Add(fLSElecPt);
 
-  fLSElecPtWRecEff = new TH1F("fLSElePtWRecEff", "fLSElePtWRecEff",NBinsElectron,XminElectron, XmaxElectron);
+  fLSElecPtWRecEff = new TH1F("fLSElePtWRecEff", "fLSElePtWRecEff; #it{p}_{T}",NBinsElectron,XminElectron, XmaxElectron);
   fOutputListMain->Add(fLSElecPtWRecEff);
     
     
@@ -2023,6 +2032,16 @@ void AliAnalysisTaskHaHFECorrel::UserCreateOutputObjects()
     
   fInvmassLS = new TH2F("fInvmassLS", "fInvmassLS", 500,0,0.5,NBinsElectronRed, XBinsElectronRed);
   fOutputListMain->Add(fInvmassLS);
+
+
+  fPhotMixULS = new TH1F("fPhotMixULS", "fPhotMixULS; #it{p}_{T}", NBinsElectron,XminElectron, XmaxElectron);
+  fOutputListMain->Add(fPhotMixULS);
+
+  fPhotMixLS = new TH2F("fPhotMixLS", "fPhotMixcLS; #it{p}_{T}; Charge", NBinsElectron,XminElectron, XmaxElectron, 3, -1.5, 1.5);
+  fOutputListMain->Add(fPhotMixLS);
+
+
+
 
   fPhotPt1Pt2Only = new TH2F("fPhotPt1Pt2Only", "fPhotPt1Pt2 for tagged; Pt1Rec; Pt2Rec", 48, 0., 6., 48, 0., 6.);
   fOutputListMain->Add(fPhotPt1Pt2Only);
@@ -2571,93 +2590,103 @@ void AliAnalysisTaskHaHFECorrel::UserCreateOutputObjects()
     fCheckMCVertex = new TH2F("fCheckMCVertex", "TruthVsRec Vertex", 200, -10, 10, 200, -10, 10);
     fOutputListQA->Add(fCheckMCVertex);
   }
-  // NBinsEta/2.5 makes 0.5 steps
-  Int_t  EffHBins[4]={NBinsHadRed, 36, 32, NVertexBins};
+
+
+
+  //////////// Hadron and Electron RecEff //////////////////////
+
+  Int_t    EffHBins[4]={NBinsHadRed, 18, 16, NVertexBins};
   Double_t EffHXmin[4]={XminHadron, -0.9, 0, -10};
   Double_t EffHXmax[4]={XmaxHadron, 0.9, TMath::TwoPi(), 10};
 
+  Int_t    EffEBins[4]={NBinsElectronRed, 18, 16, NVertexBins};
+  Double_t EffEXmin[4]={XminElectron, -0.9, 0, -10};
+  Double_t EffEXmax[4]={100, 0.9, TMath::TwoPi(), 10};
+    
+  if (!fOneTimeCheck) { // maybe reduce axis further
+    EffHBins[2]=1; // hadrons for pt, eta, zVtx
+    EffEBins[1]=1; // electrons only pt, zVtx
+    EffEBins[2]=1;
+  }
 
-  fRecHFE = new TH1F("fRecHFE", "fRecHFE", NBinsElectronRed, XminElectron, XmaxElectron);
+  fRecHFE = new TH1F("fRecHFE", "fRecHFE; #it{p}_{T}", NBinsElectronRed, XminElectron, XmaxElectron);
   fOutputListMain->Add(fRecHFE);
 
-  
-  if (fRecEff) {
+  fRecHFEEtaWRecEff = new TH2F("fRecHFEEtaWRecEff", "fRecHFEEtaWRecEff; Pt; Eta", NBinsElectron , XminElectron, XmaxElectron, 250, -2.5, 2.5); 
+  fOutputList->Add(fRecHFEEtaWRecEff);
 
-    fRecHadPtEtaPhiVtx=new THnSparseF("fRecHadPtEtaPhiVtx", "Rec hadrons w. rec. pt, eta, phi, vtxz", 4, EffHBins, EffHXmin, EffHXmax);
+
+  // each time count corrected hadrons and electrons (check for right efficiency)
+  fRecHadPtEtaPhiVtxWRecEff=new THnSparseF("fRecHadPtEtaPhiVtxWRecEff", "Rec hadrons wRecEff; rec #it{p}_{T}; rec #eta; rec #varphi; rec zVtx", 4, EffHBins, EffHXmin, EffHXmax);
+  fRecHadPtEtaPhiVtxWRecEff->GetAxis(3)->Set(NVertexBins, XVertexBins);
+  fRecHadPtEtaPhiVtxWRecEff->GetAxis(0)->Set(NBinsHadRed, XBinsHadRed);
+  fOutputListMain->Add(fRecHadPtEtaPhiVtxWRecEff);   
+
+  fRecElecPtEtaPhiVtxWRecEff=new THnSparseF("fRecElePtEtaPhiWRecEff", "Rec electrons w. rec.Eff; rec #it{p}_{T}; rec #eta; rec #varphi; rec zVtx", 4, EffEBins, EffEXmin, EffEXmax);
+  fRecElecPtEtaPhiVtxWRecEff->GetAxis(3)->Set(NVertexBins, XVertexBins);
+  fRecElecPtEtaPhiVtxWRecEff->GetAxis(0)->Set(NBinsElectronRed, XBinsElectronRed);
+  fOutputListMain->Add(fRecElecPtEtaPhiVtxWRecEff);
+
+  if (fIsMC) {
+    // accordingly check truth generated hadrons and electrons
+    fMCHadPtEtaPhiVtx=new THnSparseF("fMCHadPtEtaPhiVtx", "MC truth gen. hadrons; MC #it{p}_{T}; MC #eta; MC #varphi; MC zVtx", 4, EffHBins, EffHXmin, EffHXmax);
+    fMCHadPtEtaPhiVtx->GetAxis(3)->Set(NVertexBins, XVertexBins);
+    fMCHadPtEtaPhiVtx->GetAxis(0)->Set(NBinsHadRed, XBinsHadRed);
+    fOutputListMain->Add(fMCHadPtEtaPhiVtx);
+    
+    fMCElecPtEtaPhiVtx=new THnSparseF("fMCElePtEtaPhiVtx", "MC truth gen. electrons;  MC #it{p}_{T}; MC #eta; MC #varphi; MC zVt", 4, EffEBins, EffEXmin, EffEXmax);
+    fMCElecPtEtaPhiVtx->GetAxis(3)->Set(NVertexBins, XVertexBins);
+    fMCElecPtEtaPhiVtx->GetAxis(0)->Set(NBinsElectronRed, XBinsElectronRed);
+    fOutputListMain->Add(fMCElecPtEtaPhiVtx);
+  }
+  if (fRecEff) { // for rec eff count rec. hadrons and electrons wo. receff correction
+    fRecHadPtEtaPhiVtx=new THnSparseF("fRecHadPtEtaPhiVtx", "Rec hadrons; rec #it{p}_{T}; rec #eta; rec #varphi; rec zVtx", 4, EffHBins, EffHXmin, EffHXmax);
     fRecHadPtEtaPhiVtx->GetAxis(3)->Set(NVertexBins, XVertexBins);
     fRecHadPtEtaPhiVtx->GetAxis(0)->Set(NBinsHadRed, XBinsHadRed);
     fOutputListMain->Add(fRecHadPtEtaPhiVtx);
-
-
-    fRecHadPtEtaPhiVtxWRecEff=new THnSparseF("fRecHadPtEtaPhiVtxWRecEff", "Rec hadrons w. rec. pt, eta, phi, vtxz", 4, EffHBins, EffHXmin, EffHXmax);
-    fRecHadPtEtaPhiVtxWRecEff->GetAxis(3)->Set(NVertexBins, XVertexBins);
-    fRecHadPtEtaPhiVtxWRecEff->GetAxis(0)->Set(NBinsHadRed, XBinsHadRed);
-    fOutputListMain->Add(fRecHadPtEtaPhiVtxWRecEff);
   
-    if (fIsMC) {
-      fMCHadPtEtaPhiVtx=new THnSparseF("fMCHadPtEtaPhiVtx", "MC truth gen. hadrons pt, eta, phi, vtxz", 4, EffHBins, EffHXmin, EffHXmax);
-      fMCHadPtEtaPhiVtx->GetAxis(3)->Set(NVertexBins, XVertexBins);
-      fMCHadPtEtaPhiVtx->GetAxis(0)->Set(NBinsHadRed, XBinsHadRed);
-      fOutputListMain->Add(fMCHadPtEtaPhiVtx);
+    fRecElecPtEtaPhiVtx=new THnSparseF("fRecElePtEtaPhi", "Rec electrons; rec #it{p}_{T}; rec #eta; rec #varphi; rec zVtx", 4, EffEBins, EffEXmin, EffEXmax);
+    fRecElecPtEtaPhiVtx->GetAxis(3)->Set(NVertexBins, XVertexBins);
+    fRecElecPtEtaPhiVtx->GetAxis(0)->Set(NBinsElectronRed, XBinsElectronRed);
+    fOutputListMain->Add(fRecElecPtEtaPhiVtx);
+
+    if (fIsMC & fOneTimeCheck) { // check mc pt .. for rec. hadrons and electrons wo receff correction
        
-      fRecHadMCPtEtaPhiVtx=new THnSparseF("fRecHadMCPtEtaPhiVtx", "MC rec hadrons w. MC pt, eta, phi, vtxz", 4, EffHBins, EffHXmin, EffHXmax);
+      fRecHadMCPtEtaPhiVtx=new THnSparseF("fRecHadMCPtEtaPhiVtx", "MC rec hadrons w. MC ; MC #it{p}_{T}; MC #eta; MC #varphi; MC zVtx", 4, EffHBins, EffHXmin, EffHXmax);
       fRecHadMCPtEtaPhiVtx->GetAxis(3)->Set(NVertexBins, XVertexBins);
       fRecHadMCPtEtaPhiVtx->GetAxis(0)->Set(NBinsHadRed, XBinsHadRed);
       fOutputListMain->Add(fRecHadMCPtEtaPhiVtx);    
 
-      fCheckMCPtvsRecPtHad = new TH2F("fCheckMCPtvsRecPtHad", "MCvsRec Pt; MC pt; Rec pt", NBinsHadron, XminHadron, XmaxHadron, NBinsHadron, XminHadron, XmaxHadron); //200, 0, 20, 200, 0, 20);
-      fOutputListMain->Add(fCheckMCPtvsRecPtHad);
 
-      fCheckMCEtavsRecEtaHad = new TH2F("fCheckMCEtavsRecEtaHad", "MC vs. Rec; rec. #eta; MC #eta", 36, -0.9, 0.9, 36, -0.9, 0.9);
-      fOutputListMain->Add(fCheckMCEtavsRecEtaHad);
-
-      fCheckMCPhivsRecPhiHad = new TH2F("fCheckMCPhivsRecPhiHad", "MC vs. Rec; rec. #eta; MC #eta", NBinsPhi/2, 0, TMath::TwoPi(), NBinsPhi/2, 0, TMath::TwoPi());
-      fOutputListMain->Add(fCheckMCPhivsRecPhiHad);
-
-    }   
-   
-    Int_t  EffEBins[4]={NBinsElectronRed, 36, 32, NVertexBins};
-    Double_t EffEXmin[4]={XminElectron, -0.9, 0, -10};
-    Double_t EffEXmax[4]={XmaxElectron, 0.9, TMath::TwoPi(), 10};
- 
- 
-   
-    fRecElecPtEtaPhiVtx=new THnSparseF("fRecElePtEtaPhi", "Rec electrons w. rec.  pt, eta, phi, vtx", 4, EffEBins, EffEXmin, EffEXmax);
-    fRecElecPtEtaPhiVtx->GetAxis(3)->Set(NVertexBins, XVertexBins);
-    fRecElecPtEtaPhiVtx->GetAxis(0)->Set(NBinsElectronRed, XBinsElectronRed);
-    fOutputListMain->Add(fRecElecPtEtaPhiVtx);
-    
-
-    fRecElecPtEtaPhiVtxWRecEff=new THnSparseF("fRecElePtEtaPhiWRecEff", "Rec electrons w. rec.  pt, eta, phi, vtx", 4, EffEBins, EffEXmin, EffEXmax);
-    fRecElecPtEtaPhiVtxWRecEff->GetAxis(3)->Set(NVertexBins, XVertexBins);
-    fRecElecPtEtaPhiVtxWRecEff->GetAxis(0)->Set(NBinsElectronRed, XBinsElectronRed);
-    fOutputListMain->Add(fRecElecPtEtaPhiVtxWRecEff);
-    
-
-    if (fIsMC) {
-  
-      fMCElecPtEtaPhiVtx=new THnSparseF("fMCElePtEtaPhi", "MC truth gen. electrons  pt, eta, phi, vtx", 4, EffEBins, EffEXmin, EffEXmax);
-      fMCElecPtEtaPhiVtx->GetAxis(3)->Set(NVertexBins, XVertexBins);
-      fMCElecPtEtaPhiVtx->GetAxis(0)->Set(NBinsElectronRed, XBinsElectronRed);
-      fOutputListMain->Add(fMCElecPtEtaPhiVtx);
-
-      fRecElecMCPtEtaPhiVtx=new THnSparseF("fRecEleMCPtEtaPhi", "MC rec electrons w. MC  pt, eta, phi, vtx", 4, EffEBins, EffEXmin, EffEXmax);
+      fRecElecMCPtEtaPhiVtx=new THnSparseF("fRecEleMCPtEtaPhi", "MC rec electrons w. MC; MC #it{p}_{T}; MC #eta; MC #varphi; MC zVtx", 4, EffEBins, EffEXmin, EffEXmax);
       fRecElecMCPtEtaPhiVtx->GetAxis(3)->Set(NVertexBins, XVertexBins);
       fRecElecMCPtEtaPhiVtx->GetAxis(0)->Set(NBinsElectronRed, XBinsElectronRed);
       fOutputListMain->Add(fRecElecMCPtEtaPhiVtx);
 
+      fCheckMCPtvsRecPtHad = new TH2F("fCheckMCPtvsRecPtHad", "MCvsRec Pt; MC pt; Rec pt", NBinsHadron, XminHadron, XmaxHadron, NBinsHadron, XminHadron, XmaxHadron); 
+      fOutputListMain->Add(fCheckMCPtvsRecPtHad);
+      
+      fCheckMCEtavsRecEtaHad = new TH2F("fCheckMCEtavsRecEtaHad", "MC vs. Rec; rec. #eta; MC #eta", 36, -0.9, 0.9, 36, -0.9, 0.9);
+      fOutputListMain->Add(fCheckMCEtavsRecEtaHad);
+      
+      fCheckMCPhivsRecPhiHad = new TH2F("fCheckMCPhivsRecPhiHad", "MC vs. Rec; rec. #eta; MC #eta", NBinsPhi/2, 0, TMath::TwoPi(), NBinsPhi/2, 0, TMath::TwoPi());
+      fOutputListMain->Add(fCheckMCPhivsRecPhiHad);
+      
+      
       fCheckMCPtvsRecPtEle = new TH2F("fCheckMCPtvsRecPtEle", "MCvsRec Pt", NBinsElectron, XminElectron, XmaxElectron, NBinsElectron, XminElectron, XmaxElectron); //200, 0, 20, 200, 0, 20);
       fOutputListMain->Add(fCheckMCPtvsRecPtEle);
 
       fMCElecPDG=new TH1F("fMCElePDG", "MC truth mother of heavy electrons", 10000, -0.5, 9999.5);
       fOutputListMain->Add(fMCElecPDG);
     
-      fMCElecPtEtaPhiStrictVtx=new THnSparseF("fMCElePtEtaPhiStrictVtx", "MC truth electrons  pt, eta, phi, vtx", 4, EffEBins, EffEXmin, EffEXmax);
-      fMCElecPtEtaPhiStrictVtx->GetAxis(3)->Set(NVertexBins, XVertexBins);
-      fMCElecPtEtaPhiStrictVtx->GetAxis(0)->Set(NBinsElectronRed, XBinsElectronRed);
-      fOutputListMain->Add(fMCElecPtEtaPhiStrictVtx);
+      // fMCElecPtEtaPhiStrictVtx=new THnSparseF("fMCElePtEtaPhiStrictVtx", "MC truth electrons  pt, eta, phi, vtx", 4, EffEBins, EffEXmin, EffEXmax);
+      // fMCElecPtEtaPhiStrictVtx->GetAxis(3)->Set(NVertexBins, XVertexBins);
+      // fMCElecPtEtaPhiStrictVtx->GetAxis(0)->Set(NBinsElectronRed, XBinsElectronRed);
+      // fOutputListMain->Add(fMCElecPtEtaPhiStrictVtx);
+      
     }
-  }
+  }   
+
 
   Int_t Pi0EtaBins[5] ={100, 4, 40, PDGSize,5}; // pt,eta,y, 
   Double_t Pi0EtaXmin[5]={0.1, -2,-2, 0.5, 0};
@@ -2699,6 +2728,10 @@ void AliAnalysisTaskHaHFECorrel::UserCreateOutputObjects()
     fOutputListLP->Add(fMCLeadingParticle);
   }
 
+  fCompareLPRecCheck = new TH3F("fCompareLPRecCheck", "fMCLPRecCheck; #Delta pt; #Delta phi; #Delta eta", 50, -1, 4, 36, -TMath::Pi()/2, (3.*TMath::Pi())/2, 40, -4, 4);
+  fOutputListLP->Add(fCompareLPRecCheck);
+
+
   if (fMCTrueCorrelation) {
     Int_t    poolSize = 1000;
     Int_t    trackDepth = 2000; 
@@ -2722,11 +2755,9 @@ void AliAnalysisTaskHaHFECorrel::UserCreateOutputObjects()
     fCompareLP = new TH3F("fCompareLP", "fComparelP; RecLP; LPinAcc; LP", NBinsHadRed, XBinsHadRed, NBinsHadRed, XBinsHadRed,NBinsHadRed, XBinsHadRed);
     fOutputList->Add(fCompareLP);
 
-    fRecElectronEtaWRecEff = new TH2F("fRecElectronEtaWRecEff", "fRecElectronEtaWRecEff; Pt; Eta", NBinsElectron , XminElectron, XmaxElectron, 250, -2.5, 2.5); 
-    fOutputList->Add(fRecElectronEtaWRecEff);
-
-    fRecHadronEta = new TH2F("fRecHadronEta", "fRecHadronEta; Pt; Eta", NBinsHadron , XminHadron, XmaxHadron, 250, -2.5, 2.5); 
-    fOutputList->Add(fRecHadronEta);
+   
+    fRecHadronEtaWRecEff = new TH2F("fRecHadronEtaWRecEff", "fRecHadronEtaWRecEff; Pt; Eta", NBinsHadron , XminHadron, XmaxHadron, 250, -2.5, 2.5); 
+    fOutputList->Add(fRecHadronEtaWRecEff);
 
     fRecLPEta = new TH2F("fRecLPEta", "fRecLPEta; Pt; Eta", NBinsHadRed , XminHadron, XmaxHadron, 250, -2.5, 2.5); 
     fRecLPEta->GetXaxis()->Set(NBinsHadRed, XBinsHadRed);
@@ -2734,24 +2765,6 @@ void AliAnalysisTaskHaHFECorrel::UserCreateOutputObjects()
 
 
     if (fIsMC) {
-      fTrueElectronEta = new TH2F("fTrueElectronEta", "fTrueElectronEta; Pt; Eta", NBinsElectron , XminElectron, XmaxElectron, 250, -2.5, 2.5); 
-      fOutputList->Add(fTrueElectronEta);
-
-      fTrueHadronEta = new TH2F("fTrueHadronEta", "fTrueHadronEta; Pt; Eta", NBinsHadron , XminHadron, XmaxHadron, 250, -2.5, 2.5); 
-      fOutputList->Add(fTrueHadronEta);
-   
-      fTrueLPinAcceptanceEta= new TH2F("fTrueLPinAcceptanceEta", "fTrueLPinAcceptanceEta; Pt; Eta", NBinsHadRed , XminHadron, XmaxHadron, 250, -2.5, 2.5); 
-      fTrueLPinAcceptanceEta->GetXaxis()->Set(NBinsHadRed, XBinsHadRed);
-      fOutputList->Add(fTrueLPinAcceptanceEta);
-
-      fTrueLPEta = new TH2F("fTrueLPEta", "fTrueLPEta; Pt; Eta", NBinsHadRed , XminHadron, XmaxHadron, 250, -2.5, 2.5); 
-      fTrueLPEta->GetXaxis()->Set(NBinsHadRed, XBinsHadRed);
-      fOutputList->Add(fTrueLPEta);
-
-      fTrueMCHadronEventCuts = new THnSparseF("fMCTrueHadronEvCuts", "fMCTrueHadronEvCuts; ptH; ptE; dphi; deta; case", 5, MCTrueBins, MCTrueXmin, MCTrueXmax);
-      fTrueMCHadronEventCuts->GetAxis(0)->Set(NBinsHadRed, XBinsHadRed);
-      fOutputList->Add(fTrueMCHadronEventCuts);
-
       fTrueMCHadronEventCutsZvtx = new THnSparseF("fTrueMCHadronEventCutsZvtx", "fTrueMCHadronEventCutsZvtx: ptH, ptE, dphi, deta, zVtx", 5, MCTrueMEvBins, MCTrueMEvXmin, MCTrueMEvXmax);
       fTrueMCHadronEventCutsZvtx->GetAxis(0)->Set(NBinsHadRed, XBinsHadRed);
       fTrueMCHadronEventCutsZvtx->GetAxis(4)->Set(NVertexBins, XVertexBins);
@@ -2762,19 +2775,8 @@ void AliAnalysisTaskHaHFECorrel::UserCreateOutputObjects()
       fTrueMCHadronEventCutsZvtxMEv->GetAxis(4)->Set(NVertexBins, XVertexBins);
       fOutputList->Add(fTrueMCHadronEventCutsZvtxMEv);
 
-      fTrueMCHadron  = new THnSparseF("fMCTrueHadron", "fMCTrueHadron; ptH; ptE; dphi; deta; case", 5, MCTrueBins, MCTrueXmin, MCTrueXmax);
-      fTrueMCHadron->GetAxis(0)->Set(NBinsHadRed, XBinsHadRed);
-      fOutputList->Add(fTrueMCHadron);
-    
       fTrueMCElecHaTriggerEventCuts = new TH3F("fMCTrueEleHaTriggerEvCuts", "fMCTrueEleHaTriggerEvCuts: pt, case, assbin",MCTrueBins[1], MCTrueXmin[1], MCTrueXmax[1], 10, 0.5, 10.5,  fAssPtHad_Nbins, -0.5, fAssPtHad_Nbins-0.5); 
       fOutputList->Add(fTrueMCElecHaTriggerEventCuts);
-
-      fTrueMCElecHaTrigger = new TH3F("fMCTrueEleHaTrigger", "fMCTrueEleHaTrigger: pt, case, assbin",MCTrueBins[1], MCTrueXmin[1], MCTrueXmax[1], 10, 0.5, 10.5, fAssPtHad_Nbins, -0.5, fAssPtHad_Nbins-0.5);
-      fOutputList->Add(fTrueMCElecHaTrigger);
-
-      fTrueMCLPEventCuts = new THnSparseF("fMCTrueLPEvCuts", "fMCTrueLPEvCuts; ptH; ptE; dphi; deta; case", 5, MCTrueBins, MCTrueXmin, MCTrueXmax);
-      fTrueMCLPEventCuts->GetAxis(0)->Set(NBinsHadRed, XBinsHadRed);
-      fOutputList->Add(fTrueMCLPEventCuts);
 
       fTrueMCLPEventCutsZvtx = new THnSparseF("fTrueMCLPEventCutsZvtx", "fTrueMCLPEventCutsZvtx: ptH, ptE, dphi, deta, zVtx", 5, MCTrueMEvBins, MCTrueMEvXmin, MCTrueMEvXmax);
       fTrueMCLPEventCutsZvtx->GetAxis(0)->Set(NBinsHadRed, XBinsHadRed);
@@ -2786,17 +2788,50 @@ void AliAnalysisTaskHaHFECorrel::UserCreateOutputObjects()
       fTrueMCLPEventCutsZvtxMEv->GetAxis(4)->Set(NVertexBins, XVertexBins);
       fOutputList->Add(fTrueMCLPEventCutsZvtxMEv);
 
-      fTrueMCLP  = new THnSparseF("fMCTrueLP", "fMCTrueLP; ptH; ptE; dphi; deta; case", 5, MCTrueBins, MCTrueXmin, MCTrueXmax);
-      fTrueMCLP->GetAxis(0)->Set(NBinsHadRed, XBinsHadRed);
-      fOutputList->Add(fTrueMCLP);
-
       fTrueMCElecLPTriggerEventCuts = new TH3F("fMCTrueEleLPTriggerEvCuts", "fMCTrueEleLPTriggerEvCuts: pt, case, assbin",MCTrueBins[1], MCTrueXmin[1], MCTrueXmax[1], 10, 0.5, 10.5,  fAssPtHad_Nbins,-0.5, fAssPtHad_Nbins-0.5); 
       fOutputList->Add(fTrueMCElecLPTriggerEventCuts);
 
-      fTrueMCElecLPTrigger = new TH3F("fMCTrueEleLPTrigger", "fMCTrueEleLPTrigger: pt, case, assbin",MCTrueBins[1], MCTrueXmin[1], MCTrueXmax[1], 10, 0.5, 10.5,  fAssPtHad_Nbins,-0.5, fAssPtHad_Nbins-0.5);
-      fOutputList->Add(fTrueMCElecLPTrigger);
-    }
 
+
+      if (fOneTimeCheck) {
+	fTrueElectronEta = new TH2F("fTrueElectronEta", "fTrueElectronEta; Pt; Eta", NBinsElectron , XminElectron, XmaxElectron, 250, -2.5, 2.5); 
+	fOutputList->Add(fTrueElectronEta);
+	
+	fTrueHadronEta = new TH2F("fTrueHadronEta", "fTrueHadronEta; Pt; Eta", NBinsHadron , XminHadron, XmaxHadron, 250, -2.5, 2.5); 
+	fOutputList->Add(fTrueHadronEta);
+	
+	fTrueLPinAcceptanceEta= new TH2F("fTrueLPinAcceptanceEta", "fTrueLPinAcceptanceEta; Pt; Eta", NBinsHadRed , XminHadron, XmaxHadron, 250, -2.5, 2.5); 
+	fTrueLPinAcceptanceEta->GetXaxis()->Set(NBinsHadRed, XBinsHadRed);
+	fOutputList->Add(fTrueLPinAcceptanceEta);
+	
+	fTrueLPEta = new TH2F("fTrueLPEta", "fTrueLPEta; Pt; Eta", NBinsHadRed , XminHadron, XmaxHadron, 250, -2.5, 2.5); 
+	fTrueLPEta->GetXaxis()->Set(NBinsHadRed, XBinsHadRed);
+	fOutputList->Add(fTrueLPEta);
+
+	fTrueMCHadronEventCuts = new THnSparseF("fMCTrueHadronEvCuts", "fMCTrueHadronEvCuts; ptH; ptE; dphi; deta; case", 5, MCTrueBins, MCTrueXmin, MCTrueXmax);
+	fTrueMCHadronEventCuts->GetAxis(0)->Set(NBinsHadRed, XBinsHadRed);
+	fOutputList->Add(fTrueMCHadronEventCuts);
+
+	fTrueMCHadron  = new THnSparseF("fMCTrueHadron", "fMCTrueHadron; ptH; ptE; dphi; deta; case", 5, MCTrueBins, MCTrueXmin, MCTrueXmax);
+	fTrueMCHadron->GetAxis(0)->Set(NBinsHadRed, XBinsHadRed);
+	fOutputList->Add(fTrueMCHadron);
+
+	fTrueMCElecHaTrigger = new TH3F("fMCTrueEleHaTrigger", "fMCTrueEleHaTrigger: pt, case, assbin",MCTrueBins[1], MCTrueXmin[1], MCTrueXmax[1], 10, 0.5, 10.5, fAssPtHad_Nbins, -0.5, fAssPtHad_Nbins-0.5);
+	fOutputList->Add(fTrueMCElecHaTrigger);
+
+	fTrueMCLPEventCuts = new THnSparseF("fMCTrueLPEvCuts", "fMCTrueLPEvCuts; ptH; ptE; dphi; deta; case", 5, MCTrueBins, MCTrueXmin, MCTrueXmax);
+	fTrueMCLPEventCuts->GetAxis(0)->Set(NBinsHadRed, XBinsHadRed);
+	fOutputList->Add(fTrueMCLPEventCuts);
+
+	fTrueMCLP  = new THnSparseF("fMCTrueLP", "fMCTrueLP; ptH; ptE; dphi; deta; case", 5, MCTrueBins, MCTrueXmin, MCTrueXmax);
+	fTrueMCLP->GetAxis(0)->Set(NBinsHadRed, XBinsHadRed);
+	fOutputList->Add(fTrueMCLP);
+
+	fTrueMCElecLPTrigger = new TH3F("fMCTrueEleLPTrigger", "fMCTrueEleLPTrigger: pt, case, assbin",MCTrueBins[1], MCTrueXmin[1], MCTrueXmax[1], 10, 0.5, 10.5,  fAssPtHad_Nbins,-0.5, fAssPtHad_Nbins-0.5);
+	fOutputList->Add(fTrueMCElecLPTrigger);
+
+      } 
+    }
   }
 
 
@@ -2931,13 +2966,16 @@ Double_t AliAnalysisTaskHaHFECorrel::GetDeltaEta(Double_t etaA,Double_t etaB) co
 AliVTrack*  AliAnalysisTaskHaHFECorrel::FindLPAndHFE( TObjArray* RedTracks, const AliVVertex *pVtx, Int_t nMother, Int_t listMother[], Double_t mult, Bool_t & EvContTP, Bool_t & EvContNTP)
 {
   AliVTrack* LPtrack=0;
+  AliVTrack* LPRecChecktrack=0;
   fLParticle=kFALSE;
+  Double_t fLParticleRecCheck=kFALSE;
   Int_t ntracks = -999;
   if(!fUseTender) ntracks = fVevent->GetNumberOfTracks();
   if(fUseTender)  ntracks = fTracks_tender->GetEntries();
   
   // Leading Particle
-  Double_t ptH=-9;
+  Double_t ptH=-999; // tmp highest pt particle in acceptance
+  Double_t ptHRecCheck = -999; // tmp highest pt patricle in acceptance with random rejection base on rec eff
 
   // Check NHadron Correlation
   Double_t NHadrons=0, NElectrons=0, NNonElectrons=0, NHadCont=0;
@@ -2972,38 +3010,47 @@ AliVTrack*  AliAnalysisTaskHaHFECorrel::FindLPAndHFE( TObjArray* RedTracks, cons
     Bool_t passHadPIDCut=kFALSE;
     passHadPIDCut = ChargedHadronPIDCuts(Vtrack); // currently empty
     
-    if (passHadTrackCut && passHadPIDCut) {
+    if (passHadTrackCut && passHadPIDCut) { // calculate Hadron reconstruction efficiency
       recEffH = GetHadronRecEff(pt, phi, eta, pVtx->GetZ());
       if (recEffH>0) {
 	NHadrons+=(1./recEffH);
-	if (fRecEff) fRecHadronEta->Fill(pt, eta, 1./recEffH);
+	if (fRecEff) fRecHadronEtaWRecEff->Fill(pt, eta, 1./recEffH);
       }
     }
-
 
 
     // find hadron with the largest pT -> leading particle
     if (passHadTrackCut && passHadPIDCut) {
 
-      // for LP
+      // check for LP
       if(Vtrack->Pt()>ptH) {
 	ptH = Vtrack->Pt();
 	LPtrack=Vtrack;
 	fLParticle=kTRUE;
       }
+      // check for LP reconstruction (data driven)
+      TRandom2 RandGen(1);
+      if ( (RandGen.Rndm())>recEffH) {
+	if (Vtrack->Pt()>ptHRecCheck) {
+	  ptHRecCheck = Vtrack->Pt();
+	  LPRecChecktrack=Vtrack;
+	  fLParticleRecCheck=kTRUE;
+	}
+      }
+
 
       fEtaVtxZ->Fill(eta, pVtx->GetZ());
      
-      if(fRecEff) {
-	Double_t fillSparse[4]={-999,-999,-999,-999};
-	fillSparse[0]=pt;
-	fillSparse[1]=eta;
-	fillSparse[2]=phi;
-	fillSparse[3]=pVtx->GetZ();
-	fRecHadPtEtaPhiVtx->Fill(fillSparse);
-	if (recEffH>0) fRecHadPtEtaPhiVtxWRecEff->Fill(fillSparse, 1./recEffH);
-
-
+      // fill rec hadron histograms for RecEff 
+      Double_t fillSparse[4]={-999,-999,-999,-999};
+      fillSparse[0]=pt;
+      fillSparse[1]=eta;
+      fillSparse[2]=phi;
+      fillSparse[3]=pVtx->GetZ();
+      if (recEffH>0) fRecHadPtEtaPhiVtxWRecEff->Fill(fillSparse, 1./recEffH);
+      if (fRecEff && fIsMC)  fRecHadPtEtaPhiVtx->Fill(fillSparse);
+      
+      if (fRecEff && fOneTimeCheck) {
 	if (fIsAOD && fIsMC) {
 	  Int_t MClabel=AODtrack->GetLabel();
 	  AliAODMCParticle* MCParticle = (AliAODMCParticle*) fMC->GetTrack(abs(MClabel));  
@@ -3023,6 +3070,8 @@ AliVTrack*  AliAnalysisTaskHaHFECorrel::FindLPAndHFE( TObjArray* RedTracks, cons
       }
     }  
  
+
+    // Select HFE candidates
     Bool_t passHFETrackCut=kFALSE;
     passHFETrackCut= InclElecTrackCuts(pVtx,Vtrack,nMother,listMother);
     if (passHFETrackCut)  fTrkpt->Fill(pt,1); // after track cuts
@@ -3089,6 +3138,7 @@ AliVTrack*  AliAnalysisTaskHaHFECorrel::FindLPAndHFE( TObjArray* RedTracks, cons
       fInclElecEta->Fill(pt,eta); 
       fInclElecPhiEta->Fill(eta, phi);
 
+      // count reconstructed heavy electrons for recEff
       if (fIsMC & fIsAOD) {
 	Int_t MClabel=AODtrack->GetLabel();
 	AliAODMCParticle* MCParticle = (AliAODMCParticle*) fMC->GetTrack(abs(MClabel));     
@@ -3101,26 +3151,26 @@ AliVTrack*  AliAnalysisTaskHaHFECorrel::FindLPAndHFE( TObjArray* RedTracks, cons
 	  Int_t mcMotherPDG = abs(mcPartMother->GetPdgCode()); 
 	  Int_t MIsHeavy  = Int_t (mcMotherPDG / TMath::Power(10, Int_t(TMath::Log10(mcMotherPDG))));
 	  if (MIsHeavy>3 && MIsHeavy<6) {
+	    Double_t fillSparse[4];
+	    fillSparse[0]=pt;
+	    fillSparse[1]=eta;
+	    fillSparse[2]=phi;
+	    fillSparse[3]=pVtx->GetZ();
+	    fRecElecPtEtaPhiVtxWRecEff->Fill(fillSparse, 1./recEffE); // for checks if right efficiency has been used
+	    
 	    fRecHFE->Fill(pt);
-	    fRecElectronEtaWRecEff->Fill(pt, eta, 1./recEffE);
+	    fRecHFEEtaWRecEff->Fill(pt, eta, 1./recEffE);
 	    if (fRecEff) {
 	      // Fill Reconstructed Histogram
-	      Double_t fillSparse[4];
-	      fillSparse[0]=pt;
-	      fillSparse[1]=eta;
-	      fillSparse[2]=phi;
-	      fillSparse[3]=pVtx->GetZ();
-	      fRecElecPtEtaPhiVtx->Fill(fillSparse);
-	      fRecElecPtEtaPhiVtxWRecEff->Fill(fillSparse, 1./recEffE);
-	      
-	      
+	      fRecElecPtEtaPhiVtx->Fill(fillSparse);                 
 	      fillSparse[0]=MCParticle->Pt();
 	      fillSparse[1]=MCParticle->Eta();
 	      fillSparse[2]=MCParticle->Phi();
 	      fillSparse[3]=mcVtx[2];
-	      fRecElecMCPtEtaPhiVtx->Fill(fillSparse);
-	      
-	      fCheckMCPtvsRecPtEle->Fill(MCParticle->Pt(), pt);
+	      if (fOneTimeCheck) {
+		fRecElecMCPtEtaPhiVtx->Fill(fillSparse);
+		fCheckMCPtvsRecPtEle->Fill(MCParticle->Pt(), pt);
+	      }
 	    }
 	  }
 	}
@@ -3186,6 +3236,18 @@ AliVTrack*  AliAnalysisTaskHaHFECorrel::FindLPAndHFE( TObjArray* RedTracks, cons
     fillSparse[1]=PDGMap.find(PDGCode)->second;
     fillSparse[2]=PDGMap.find(PDGCodeMother)->second;
     fMCLeadingParticle->Fill(fillSparse);
+
+    if (LPRecChecktrack) {
+      AliAODTrack *LPRecCheckTrack = dynamic_cast<AliAODTrack*>(LPRecChecktrack);   
+      Double_t LPDeltaPhi = GetDeltaPhi(LPAODtrack->Phi(), LPRecCheckTrack->Phi());
+      Double_t LPDeltaEta = GetDeltaEta(LPAODtrack->Eta(), LPRecCheckTrack->Eta());
+      Double_t LPDeltaPt  = LPAODtrack->Pt()  -LPRecCheckTrack->Pt();
+      fCompareLPRecCheck->Fill(LPDeltaPt, LPDeltaPhi, LPDeltaEta);
+    }
+
+
+
+
   }
   //  if (fLParticle && RedTracks->GetEntriesFast()>0) cout<< "RecLP " << LPtrack->GetLabel() <<  "\t" << LPtrack->Pt() << endl;
 
@@ -3362,6 +3424,17 @@ void AliAnalysisTaskHaHFECorrel::FindPhotonicPartner(Int_t iTracks, AliVTrack* V
 	  //	  cout << "RecPt " << RecPartnerPt << "\tMCPt " << MCPartnerPt << endl;
 	}
       }
+      /*
+      Int_t nclustersOuter=0;
+      for(Int_t ily = 2; ily < 6; ily++) {
+	if(AODtrackAsso->HasPointOnITSLayer(ily)) nclustersOuter++;
+      }
+      if (!trueULSPartner && AODtrackAsso->TestFilterMask(AliAODTrack::kTrkITSsa)) cout << "tagged, but not true:" << nclustersOuter << endl;
+      if (trueULSPartner && nclustersOuter<2) cout << "true tagged:" << nclustersOuter << endl;
+      */
+
+
+
       fULSElecPhi->Fill(pt,phi);
       fULSElecPt->Fill(pt);
       fULSElecPtWRecEff->Fill(pt, 1./recEff);
@@ -4625,17 +4698,17 @@ Bool_t AliAnalysisTaskHaHFECorrel::PhotElecPIDCuts(AliVTrack* Vtrack) {
   
   if (fIsAOD) {
     AliAODTrack *AODtrack = dynamic_cast<AliAODTrack*>(Vtrack);   
-   Bool_t FBTPCOnly = AODtrack->TestFilterMask(AliAODTrack::kTrkTPCOnly);
-   Bool_t FBITSsa = AODtrack->TestFilterMask(AliAODTrack::kTrkITSsa);
-   Bool_t FBITSConst =  AODtrack->TestFilterMask(AliAODTrack::kTrkITSConstrained);
+    Bool_t FBTPCOnly =  AODtrack->TestFilterMask(AliAODTrack::kTrkTPCOnly);
+    Bool_t FBITSsa = AODtrack->TestFilterMask(AliAODTrack::kTrkITSsa);
+    Bool_t FBITSConst =  AODtrack->TestFilterMask(AliAODTrack::kTrkITSConstrained);
 
 
-  // looser PID cuts
-  fITSnSigmaAsso = fpidResponse->NumberOfSigmasITS(Vtrack, AliPID::kElectron);
-  fTPCnSigmaAsso = fpidResponse->NumberOfSigmasTPC(Vtrack, AliPID::kElectron);
-
-  if(FBTPCOnly && TMath::Abs(fTPCnSigmaAsso)>fPhotElecSigmaTPCcut) return kFALSE;
-  if(FBITSsa && TMath::Abs(fITSnSigmaAsso)>3) return kFALSE;
+   // looser PID cuts
+   fITSnSigmaAsso = fpidResponse->NumberOfSigmasITS(Vtrack, AliPID::kElectron);
+   fTPCnSigmaAsso = fpidResponse->NumberOfSigmasTPC(Vtrack, AliPID::kElectron);
+   
+   if(FBTPCOnly && TMath::Abs(fTPCnSigmaAsso)>fPhotElecSigmaTPCcut) return kFALSE;
+   if(FBITSsa && TMath::Abs(fITSnSigmaAsso)>3) return kFALSE;
   }
   return kTRUE;
   
@@ -4648,14 +4721,14 @@ Bool_t AliAnalysisTaskHaHFECorrel::PhotElecTrackCuts(const AliVVertex *pVtx,AliV
   if (fIsAOD){
     AliAODTrack *AODtrack = dynamic_cast<AliAODTrack*>(Vtrack);   
     // quality track cuts for associate tracks of photonic electrons
-    Bool_t FBTPCOnly = AODtrack->TestFilterMask(AliAODTrack::kTrkTPCOnly);
-    Bool_t FBITSsa = AODtrack->TestFilterMask(AliAODTrack::kTrkITSsa);
-    Bool_t FBITSConst =  AODtrack->TestFilterMask(AliAODTrack::kTrkITSConstrained);
-  
-   
-    //if(Vtrack->Pt() < fPhotElecPtCut) return kFALSE;
+    Bool_t FBTPCOnly  = AODtrack->TestFilterMask(AliAODTrack::kTrkTPCOnly);
+    Bool_t FBITSsa    = AODtrack->TestFilterMask(AliAODTrack::kTrkITSsa);
+    Bool_t FBITSConst = AODtrack->TestFilterMask(AliAODTrack::kTrkITSConstrained);
+    //  if (FBTPCOnly && FBITSsa) cout << "ERRRRRRRRRRRRRORR" << endl;
+     // if (!AODtrack->IsOn(AliAODTrack::kITSrefit) && FBITSsa) cout << "No REFIT" << endl;
+
     if(TMath::Abs(Vtrack->Eta())>0.9) return kFALSE;
-    // if(Vtrack->GetTPCNcls() < fPhotElecTPCnCut) return kFALSE;
+    //if(Vtrack->Pt() < fPhotElecPtCut) return kFALSE;
     // if (fPhotElecITSrefitCut && !(Vtrack->GetStatus()&AliESDtrack::kITSrefit)) return kFALSE;
     // if (fPhotElecITSrefitCut && !(Vtrack->GetStatus()&AliESDtrack::kTPCrefit)) return kFALSE;
 
@@ -4663,7 +4736,7 @@ Bool_t AliAnalysisTaskHaHFECorrel::PhotElecTrackCuts(const AliVVertex *pVtx,AliV
     Int_t ITSNcls;
     ITSNcls = AODtrack->GetITSNcls();
    
-        //* ITS shared cluster cut - not useful for single electron studies
+    //* ITS shared cluster cut - not useful for single electron studies
     Int_t ITSNclsShared = 0;
     for(int i=0; i<6; i++){
       if( Vtrack->HasSharedPointOnITSLayer(i) ) ITSNclsShared++;
@@ -4679,16 +4752,20 @@ Bool_t AliAnalysisTaskHaHFECorrel::PhotElecTrackCuts(const AliVVertex *pVtx,AliV
       //fPhotTrackITSCuts->Fill(fillSparse);
     }
 
+    if(!(FBTPCOnly || FBITSsa) ) return kFALSE;
+    if(FBITSsa) {
+      if (AODtrack->GetITSNcls()<5) return kFALSE;
+      if (fPhotElecITSrefitCut && !(Vtrack->GetStatus()&AliESDtrack::kITSrefit)) return kFALSE;
+    }
+    if(FBTPCOnly) {
+      if (Vtrack->GetTPCNcls() < fPhotElecTPCnCut) return kFALSE;
+      if (fPhotElecITSrefitCut && !(Vtrack->GetStatus()&AliESDtrack::kITSrefit)) return kFALSE;
+      if (fPhotElecITSrefitCut && !(Vtrack->GetStatus()&AliESDtrack::kTPCrefit)) return kFALSE;
+    }
 
-    if(!(FBTPCOnly ||FBITSsa) ) return kFALSE;
-    if(FBITSsa && AODtrack->GetITSNcls()<4) return kFALSE;
-    if(FBTPCOnly && Vtrack->GetTPCNcls() < fPhotElecTPCnCut) return kFALSE;  
-
-
-
-
-  return kTRUE;
+    return kTRUE;
   }
+  return kFALSE; // if not AOD
 }
 
  //_________________________________________
@@ -4866,37 +4943,33 @@ void AliAnalysisTaskHaHFECorrel::MCEfficiencyCorrections(const AliVVertex * RecV
       }
     }
     
-    // test check for MC Generator 
    
-    // HadElectronRecEff
+    // select true generate hadrons and electrons for rec efficiency
     if (mcPart->Charge()==0) continue;    
     
-    if (fRecEff) {
-
-      // Fill Histogram for Hadron and Electron Reconstruction
-      if (mcPart->IsPhysicalPrimary()) {
-	Double_t fillSparse[4];
-	fillSparse[0]=mcPt;
-	fillSparse[1]=mcEta;
-	fillSparse[2]=mcPhi;
-	fillSparse[3]=mcVtx[2];
-
-	if (mcEta> fMinHadronEta && mcEta < fMaxHadronEta) {
-	  fMCHadPtEtaPhiVtx->Fill(fillSparse);
-	  //	  cout << "Hadron PDG " << mcPDG << endl;
-	}
+    if (mcPart->IsPhysicalPrimary()) {
+      Double_t fillSparse[4];
+      fillSparse[0]=mcPt;
+      fillSparse[1]=mcEta;
+      fillSparse[2]=mcPhi;
+      fillSparse[3]=mcVtx[2];
       
-	if (abs(mcPDG)==11) {
-	  if (mcMotherID>0) {
-	    AliAODMCParticle* mcPartMother=(AliAODMCParticle*)fMC->GetTrack(mcMotherID);
-	    Int_t mcMotherPDG = abs(mcPartMother->GetPdgCode()); 
-	    Int_t MIsHeavy  = Int_t (mcMotherPDG / TMath::Power(10, Int_t(TMath::Log10(mcMotherPDG))));
-	    if (MIsHeavy>3 && mcEta> fMinElectronEta && mcEta < fMaxElectronEta) {
-	      fillSparse[2]=mcPhi;
-	      fMCElecPtEtaPhiVtx->Fill(fillSparse);
+      if (mcEta> fMinHadronEta && mcEta < fMaxHadronEta) {
+	fMCHadPtEtaPhiVtx->Fill(fillSparse);
+      }
+      
+      if (abs(mcPDG)==11) {
+	if (mcMotherID>0) {
+	  AliAODMCParticle* mcPartMother=(AliAODMCParticle*)fMC->GetTrack(mcMotherID);
+	  Int_t mcMotherPDG = abs(mcPartMother->GetPdgCode()); 
+	  Int_t MIsHeavy  = Int_t (mcMotherPDG / TMath::Power(10, Int_t(TMath::Log10(mcMotherPDG))));
+	  if (MIsHeavy>3 && mcEta> fMinElectronEta && mcEta < fMaxElectronEta) {
+	    fillSparse[2]=mcPhi;
+	    fMCElecPtEtaPhiVtx->Fill(fillSparse);
+	    if (fOneTimeCheck && fRecEff) {
 	      fMCElecPDG->Fill(mcMotherPDG);
 	      if (mcMotherPDG==411 || mcMotherPDG==421 || mcMotherPDG==431 || mcMotherPDG==511 || mcMotherPDG ==521 || mcMotherPDG ==531 || mcMotherPDG==541) {
-		fMCElecPtEtaPhiStrictVtx->Fill(fillSparse);
+		//	fMCElecPtEtaPhiStrictVtx->Fill(fillSparse);
 	      }
 	    } 
 	  }
@@ -5042,7 +5115,11 @@ Bool_t  AliAnalysisTaskHaHFECorrel::CloneAndReduceTrackList(TObjArray* RedTracks
     if (ESDtrack) label=ESDtrack->GetLabel();
   }
 
-  bparticle = new AliBasicParticleHaHFE(Vtrack->GetID(), Vtrack->Eta(), Vtrack->Phi(), Vtrack->Pt(), Vtrack->Charge(), LSPartner, ULSPartner, LSPartnerID, ULSPartnerID, LSPartnerWeight, ULSPartnerWeight, trueULSPartner, MCPartnerPt, RecPartnerPt, isPhotonic, isHadron, abs(label));
+
+ AliExternalTrackParam extTrackParam;
+ extTrackParam.CopyFromVTrack(Vtrack);
+
+  bparticle = new AliBasicParticleHaHFE(Vtrack->GetID(), Vtrack->Eta(), Vtrack->Phi(), Vtrack->Pt(), Vtrack->Charge(), LSPartner, ULSPartner, LSPartnerID, ULSPartnerID, LSPartnerWeight, ULSPartnerWeight, trueULSPartner, MCPartnerPt, RecPartnerPt, isPhotonic, isHadron, abs(label), extTrackParam);
   if (!bparticle) return kFALSE;
   
   RedTracks->Add(bparticle);
@@ -5670,11 +5747,8 @@ void AliAnalysisTaskHaHFECorrel::MCTruthCorrelation(Bool_t AfterEventCuts, Int_t
     for (Int_t j=0; j<fAssPtHad_Nbins; j++) ElectronIsTrigger[i][j]=kFALSE;
   }
 
-
   TObjArray* MCTrueRedTracks = new TObjArray;
   MCTrueRedTracks->SetOwner(kTRUE);
-
-  //cout << "A" << endl;
  
   if (fIsAOD) {
     // Find HFE Eelcton
@@ -5683,9 +5757,8 @@ void AliAnalysisTaskHaHFECorrel::MCTruthCorrelation(Bool_t AfterEventCuts, Int_t
       if (!MCElectron) continue;
       if (!MCElectron->IsPhysicalPrimary() || MCElectron->Charge()==0) continue; // strong and electronweak decays safe for particles not reaching the detector
       PDGCode = abs(MCElectron->GetPdgCode());
-      //  cout << PDGCode << "  CHARGE " << MCElectron->Charge() << endl;
-
-      if (PDGCode==11) {
+   
+      if (PDGCode==11) { // should be an electron
 	for (Int_t i=0; i<11; i++) { 
 	  for (Int_t j=0; j<fAssPtHad_Nbins; j++) ElectronIsTrigger[i][j]=kFALSE; // reset trigger 
 	}
@@ -5693,8 +5766,7 @@ void AliAnalysisTaskHaHFECorrel::MCTruthCorrelation(Bool_t AfterEventCuts, Int_t
 	if (Mother>=0) { // Mother exists
 	  AliAODMCParticle* MCElectronMother= dynamic_cast<AliAODMCParticle*>(fMC->GetTrack(Mother));
 	  MotherPDG = abs(MCElectronMother->GetPdgCode()); 
-	  if (MotherPDG ==11) {
-	    // cout << "Electron from Electron " << endl;
+	  if (MotherPDG ==11) { // e from e
 	    Mother = MCElectronMother->GetMother();
 	    if (Mother>=0) {
 	      AliAODMCParticle* MCElectronGrandMother= dynamic_cast<AliAODMCParticle*>(fMC->GetTrack(Mother));
@@ -5713,19 +5785,14 @@ void AliAnalysisTaskHaHFECorrel::MCTruthCorrelation(Bool_t AfterEventCuts, Int_t
 	  if ((MCElectron->Eta() < fMaxElectronEta) && (MCElectron->Eta() > fMinElectronEta)) ElectronInAcceptanceCut = kTRUE;
 
 	  if (MotherIsHeavy>3 && MotherIsHeavy<6) { // start Hadron loop
-	    if (AfterEventCuts) fTrueElectronEta->Fill(MCElectron->Pt(), MCElectron->Eta());
+	    if (AfterEventCuts && fOneTimeCheck) fTrueElectronEta->Fill(MCElectron->Pt(), MCElectron->Eta());
 
 	    if (AfterEventCuts && ElectronInAcceptanceCut) {
 	      AliBasicParticleHaHFE * ElectronParticle  = 0;
-	      ElectronParticle = new AliBasicParticleHaHFE(MotherIsHeavy, MCElectron->Eta(), MCElectron->Phi(), MCElectron->Pt(), MCElectron->Charge(), 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);  // Original mixed event particle class: id has been filled with c or b flag
+	      AliExternalTrackParam ExtTrackParam;
+	      ElectronParticle = new AliBasicParticleHaHFE(MotherIsHeavy, MCElectron->Eta(), MCElectron->Phi(), MCElectron->Pt(), MCElectron->Charge(), 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,ExtTrackParam);  // Original mixed event particle class: id has been filled with c or b flag
 	      if (ElectronParticle) MCTrueRedTracks->Add(ElectronParticle);
 	    }
-
-
-	 
-
-
-
 
 	    Int_t CharmOrBeauty = MotherIsHeavy*5-20;
 	    LeadingParticleInAcceptance = -999;
@@ -5736,11 +5803,9 @@ void AliAnalysisTaskHaHFECorrel::MCTruthCorrelation(Bool_t AfterEventCuts, Int_t
 	      AliAODMCParticle* MCHadron = dynamic_cast<AliAODMCParticle*>(fMC->GetTrack(iMCHadron));  
 	      if (!MCHadron) continue;
 	      if ((!MCHadron->IsPhysicalPrimary()) || ( MCHadron->Charge()==0)) continue; 
-	      if (AfterEventCuts) fTrueHadronEta->Fill(MCHadron->Pt(), MCHadron->Eta());
+	      if (AfterEventCuts && fOneTimeCheck) fTrueHadronEta->Fill(MCHadron->Pt(), MCHadron->Eta());
 
-	      // cout << "MPHadron " << MCHadron->GetPdgCode() << "\t" << MCHadron->Charge() << endl;
-
-	      HadronInAcceptanceCut = kFALSE;
+	    	      HadronInAcceptanceCut = kFALSE;
 	      if ((MCHadron->Eta() < fMaxHadronEta) && (MCHadron->Eta() > fMinHadronEta)) HadronInAcceptanceCut = kTRUE;
 	      
 	      if (HadronInAcceptanceCut  && (MCHadron->Pt() > LeadingParticlePtInAcceptance)) {
@@ -5751,10 +5816,9 @@ void AliAnalysisTaskHaHFECorrel::MCTruthCorrelation(Bool_t AfterEventCuts, Int_t
 		LeadingParticle = abs(MCHadron->Label());
 		LeadingParticlePt = MCHadron->Pt();
 	      }
-
-	      //    cout << MCElectron->Label() << "\t" << MCHadron->Label() << endl;
+	      
 	      if (MCElectron->Label() == MCHadron->Label()) continue; // self correlation
-
+	      
 	      Double_t FillSparse[5];
 	      FillSparse[0]=MCHadron->Pt();
 	      FillSparse[1]=MCElectron->Pt();
@@ -5764,26 +5828,30 @@ void AliAnalysisTaskHaHFECorrel::MCTruthCorrelation(Bool_t AfterEventCuts, Int_t
 	      if (ElectronInAcceptanceCut && HadronInAcceptanceCut) {
 		FillSparse[4]=CharmOrBeauty+1;
 		CheckElectronIsTrigger(MCHadron->Pt(), ElectronIsTrigger[CharmOrBeauty+1]);
-		if (AfterEventCuts) fTrueMCHadronEventCuts->Fill(FillSparse);
-		else fTrueMCHadron->Fill(FillSparse);
-
+		if (fOneTimeCheck) {
+		  if (AfterEventCuts) fTrueMCHadronEventCuts->Fill(FillSparse);
+		  else fTrueMCHadron->Fill(FillSparse);
+		}
 		if (AfterEventCuts) {
 		  FillSparse[4]=pVtxZ;
 		  fTrueMCHadronEventCutsZvtx->Fill(FillSparse);
 		}
-
 	      }
 	      if (ElectronInAcceptanceCut) {
 		FillSparse[4]=CharmOrBeauty+2;
 		CheckElectronIsTrigger(MCHadron->Pt(), ElectronIsTrigger[CharmOrBeauty+2]);
-		if (AfterEventCuts) fTrueMCHadronEventCuts->Fill(FillSparse);
-		else fTrueMCHadron->Fill(FillSparse);
+		if (fOneTimeCheck) {
+		  if (AfterEventCuts) fTrueMCHadronEventCuts->Fill(FillSparse);
+		  else fTrueMCHadron->Fill(FillSparse);
+		}
 	      }
 	      if (HadronInAcceptanceCut) {
 		FillSparse[4]=CharmOrBeauty+3;
 		CheckElectronIsTrigger(MCHadron->Pt(), ElectronIsTrigger[CharmOrBeauty+3]);
-		if (AfterEventCuts) fTrueMCHadronEventCuts->Fill(FillSparse);
-		else fTrueMCHadron->Fill(FillSparse);
+		if (fOneTimeCheck) {
+		  if (AfterEventCuts) fTrueMCHadronEventCuts->Fill(FillSparse);
+		  else fTrueMCHadron->Fill(FillSparse);
+		}
 	      }
 	    }
 	   
@@ -5792,9 +5860,10 @@ void AliAnalysisTaskHaHFECorrel::MCTruthCorrelation(Bool_t AfterEventCuts, Int_t
 	    for (Int_t i=0; i<11; i++) { // case
 	      for (Int_t j=0; j<fAssPtHad_Nbins; j++) {
 		if (ElectronIsTrigger[i][j]) {
-		  if (AfterEventCuts) { fTrueMCElecHaTriggerEventCuts->Fill(MCElectron->Pt(), i, j);
+		  if (AfterEventCuts) {
+		    fTrueMCElecHaTriggerEventCuts->Fill(MCElectron->Pt(), i, j);
 		  }
-		  else {
+		  else if (fOneTimeCheck) {
 		    fTrueMCElecHaTrigger->Fill(MCElectron->Pt(), i, j);
 		  }
 		}
@@ -5810,7 +5879,7 @@ void AliAnalysisTaskHaHFECorrel::MCTruthCorrelation(Bool_t AfterEventCuts, Int_t
 
 	      if (MCElectron->Label() != LeadingParticleInAcceptance) {
 		AliAODMCParticle* MCLPinAcceptance = dynamic_cast<AliAODMCParticle*>(fMC->GetTrack(LeadingParticleInAcceptance));  
-		if (AfterEventCuts) fTrueLPinAcceptanceEta->Fill(MCLPinAcceptance->Pt(), MCLPinAcceptance->Eta());
+		if (AfterEventCuts && fOneTimeCheck) fTrueLPinAcceptanceEta->Fill(MCLPinAcceptance->Pt(), MCLPinAcceptance->Eta());
 
 	
 		FillSparseLP[0]=MCLPinAcceptance->Pt();
@@ -5821,18 +5890,22 @@ void AliAnalysisTaskHaHFECorrel::MCTruthCorrelation(Bool_t AfterEventCuts, Int_t
 		if (ElectronInAcceptanceCut) { //electron in acceptancen and LP within particles in acceptance
 		  FillSparseLP[4]=CharmOrBeauty+1;
 		  CheckElectronIsTrigger(MCLPinAcceptance->Pt(), ElectronIsTrigger[CharmOrBeauty+1]);
-		  if (AfterEventCuts) fTrueMCLPEventCuts->Fill(FillSparseLP);
-		  else fTrueMCLP->Fill(FillSparseLP);
+		  if (fOneTimeCheck) {		 
+		    if (AfterEventCuts) fTrueMCLPEventCuts->Fill(FillSparseLP);
+		    else fTrueMCLP->Fill(FillSparseLP);
+		  }
 		}
 		FillSparseLP[4]=CharmOrBeauty+3; // all eclectron with LP from acceptance
 		CheckElectronIsTrigger(MCLPinAcceptance->Pt(), ElectronIsTrigger[CharmOrBeauty+3]);
-		if (AfterEventCuts) fTrueMCLPEventCuts->Fill(FillSparseLP);
-		else fTrueMCLP->Fill(FillSparseLP);
+		if (fOneTimeCheck) {
+		  if (AfterEventCuts) fTrueMCLPEventCuts->Fill(FillSparseLP);
+		  else fTrueMCLP->Fill(FillSparseLP);
+		}
 	      }	 
 
 	      if (MCElectron->Label() != LeadingParticle) {
 		AliAODMCParticle* MCLP = dynamic_cast<AliAODMCParticle*>(fMC->GetTrack(LeadingParticle));  
-		if(AfterEventCuts) fTrueLPEta->Fill(MCLP->Pt(), MCLP->Eta());
+		if(AfterEventCuts && fOneTimeCheck) fTrueLPEta->Fill(MCLP->Pt(), MCLP->Eta());
 		
 		FillSparseLP[0]=MCLP->Pt();
 		FillSparseLP[2]=GetDeltaPhi(MCElectron->Phi(), MCLP->Phi());
@@ -5840,14 +5913,18 @@ void AliAnalysisTaskHaHFECorrel::MCTruthCorrelation(Bool_t AfterEventCuts, Int_t
 		if (ElectronInAcceptanceCut) { // electron in acceptance with true LP
 		  FillSparseLP[4]=CharmOrBeauty+2;
 		  CheckElectronIsTrigger(MCLP->Pt(), ElectronIsTrigger[CharmOrBeauty+2]);
-		  if (AfterEventCuts) fTrueMCLPEventCuts->Fill(FillSparseLP);
-		  else fTrueMCLP->Fill(FillSparseLP);
+		  if (fOneTimeCheck) {
+		    if (AfterEventCuts) fTrueMCLPEventCuts->Fill(FillSparseLP);
+		    else fTrueMCLP->Fill(FillSparseLP);
+		  }
 		}
 		
 		FillSparseLP[4]=CharmOrBeauty+4;
 		CheckElectronIsTrigger(MCLP->Pt(), ElectronIsTrigger[CharmOrBeauty+4]);
-		if (AfterEventCuts) fTrueMCLPEventCuts->Fill(FillSparseLP);
-		else fTrueMCLP->Fill(FillSparseLP);
+		if (fOneTimeCheck) { // neighter in acceptance
+		  if (AfterEventCuts) fTrueMCLPEventCuts->Fill(FillSparseLP);
+		  else fTrueMCLP->Fill(FillSparseLP);
+		}
 	      }
 
 	      if (RecLPLabel>0 && ( abs(MCElectron->Label()) != abs(RecLPLabel))) {
@@ -5857,16 +5934,18 @@ void AliAnalysisTaskHaHFECorrel::MCTruthCorrelation(Bool_t AfterEventCuts, Int_t
 		FillSparseLP[0]=MCLPRec->Pt();
 		FillSparseLP[2]=GetDeltaPhi(MCElectron->Phi(), MCLPRec->Phi());
 		FillSparseLP[3]=GetDeltaEta(MCElectron->Eta(), MCLPRec->Eta());
-		if (ElectronInAcceptanceCut) { // electron in acceptance with true LP
+		if (ElectronInAcceptanceCut) { // electron in acceptance with rec LP
 		  FillSparseLP[4]=CharmOrBeauty+5;
 		  CheckElectronIsTrigger(MCLPRec->Pt(), ElectronIsTrigger[CharmOrBeauty+5]);
-		  if (AfterEventCuts) fTrueMCLPEventCuts->Fill(FillSparseLP);
-		  else fTrueMCLP->Fill(FillSparseLP);
-		}
-		
-		if (AfterEventCuts && ElectronInAcceptanceCut) {
-		  FillSparseLP[4]=pVtxZ;
-		  fTrueMCLPEventCutsZvtx->Fill(FillSparseLP);
+		  if (fOneTimeCheck) {
+		    if (AfterEventCuts) fTrueMCLPEventCuts->Fill(FillSparseLP);
+		    else fTrueMCLP->Fill(FillSparseLP);
+		  }
+	
+		  if (AfterEventCuts ) {
+		    FillSparseLP[4]=pVtxZ;
+		    fTrueMCLPEventCutsZvtx->Fill(FillSparseLP);
+		  }
 		}
 	      }
 	    }
@@ -5876,9 +5955,10 @@ void AliAnalysisTaskHaHFECorrel::MCTruthCorrelation(Bool_t AfterEventCuts, Int_t
 	    for (Int_t i=0; i<11; i++) { // case
 	      for (Int_t j=0; j<fAssPtHad_Nbins; j++) {
 		if (ElectronIsTrigger[i][j]) {
-		  if (AfterEventCuts) { fTrueMCElecLPTriggerEventCuts->Fill(MCElectron->Pt(), i, j);
+		  if (AfterEventCuts) {
+		    fTrueMCElecLPTriggerEventCuts->Fill(MCElectron->Pt(), i, j);
 		  }
-		  else {
+		  else if (fOneTimeCheck) {
 		    fTrueMCElecLPTrigger->Fill(MCElectron->Pt(), i, j);
 		  }
 		}
@@ -5893,9 +5973,6 @@ void AliAnalysisTaskHaHFECorrel::MCTruthCorrelation(Bool_t AfterEventCuts, Int_t
     delete [] ElectronIsTrigger[i];
   }
   delete [] ElectronIsTrigger;
-
-
-
 
 
 
@@ -6047,5 +6124,132 @@ Double_t AliAnalysisTaskHaHFECorrel::Sphericity(const TObjArray* tracks, Double_
 }
 
 
+void AliAnalysisTaskHaHFECorrel::PhotULSLSElectronAcceptance(const AliVVertex *pVtx, Float_t mult,  Int_t nMother, Int_t listMother[]) {
+  
+  AliEventPool* fPool;
+  fPool = fPoolMgr->GetEventPool(mult, pVtx->GetZ(), 0.); // Get the buffer associated with the current centrality and z-vtx
+  //  fPool->SetDebug(kTRUE);
+  if (!fPool)
+  {
+    AliFatal(Form("No pool found for centrality = %f, zVtx = %f, maxPt = %f", mult, pVtx->GetZ(), 0.));
+    return;
+  }
 
+  if (fPool->GetCurrentNEvents() >= 3){// start mixing when 3 events are in the buffer
+    Int_t nMix = fPool->GetCurrentNEvents();   
+    for (Int_t jMix=0; jMix<nMix; jMix++){  // mix with each event in the buffer
+      TObjArray* mixTracks = fPool->GetEvent(jMix);
 
+      for (Int_t i=0;i<mixTracks->GetEntriesFast(); i++) {	
+	AliBasicParticleHaHFE* mixtrk = (AliBasicParticleHaHFE*) mixTracks->At(i);
+	if (!mixtrk) {
+	  printf("ERROR: Could not receive mix pool track %d\n",i);
+	  continue;
+	}
+	  
+	Double_t ptMix=-9., phiMix=-9., etaMix=-9, recEff=-9;
+	Int_t ls=-9, uls=-9;
+	Short_t chargeMix=0;;
+	ptMix=mixtrk->Pt();
+	phiMix=mixtrk->Phi();
+	etaMix=mixtrk->Eta();
+	chargeMix = mixtrk->Charge();
+	
+	Int_t ntracks = -999;
+	if(!fUseTender) ntracks = fVevent->GetNumberOfTracks();
+	if(fUseTender)  ntracks = fTracks_tender->GetEntries();
+	
+	// Loop over all tracks to find photonic partner
+	for(Int_t jTracks = 0; jTracks < ntracks; jTracks++){
+	  
+	 
+	  AliVParticle* Vassotrack = 0x0;
+	  if(!fUseTender) Vassotrack  = fVevent->GetTrack(jTracks);
+	  if(fUseTender)  Vassotrack  = dynamic_cast<AliVTrack*>(fTracks_tender->At(jTracks));
+	  if (!Vassotrack) {
+	    printf("ERROR: Could not receive associated track %d\n", jTracks);
+	    continue;
+	  }
+	  AliVTrack *VtrackAsso = dynamic_cast<AliVTrack*>(Vassotrack);
+	  if(!VtrackAsso) continue;
+	  AliAODTrack *AODtrackAsso = dynamic_cast<AliAODTrack*>(VtrackAsso);   
+	  if(!AODtrackAsso) continue;
+	  
+	  // associated particle variables
+	  Double_t phiAsso=-9.;
+	  Int_t chargeAsso = 0;
+	  phiAsso = VtrackAsso->Phi();
+	  chargeAsso = VtrackAsso->Charge();
+
+	  // looser Track cuts for associated photonic eletron
+	  Bool_t passAssoTrackCutPhot = kFALSE;
+	  passAssoTrackCutPhot = PhotElecTrackCuts(pVtx,VtrackAsso,nMother,listMother);
+	  if(!passAssoTrackCutPhot) continue;
+   
+	  Bool_t passAssoPIDCutPhot = kFALSE;
+	  passAssoPIDCutPhot = PhotElecPIDCuts(VtrackAsso); 
+	  if (!passAssoPIDCutPhot) continue;         
+   
+	  Bool_t fFlagLS=kFALSE, fFlagULS=kFALSE;
+	  Double_t openingAngle = -999., mass=999., width = -999;
+	  Double_t energy=-999., transenergy=-999., mom=-999., tansmom=-999.;
+        
+	  Int_t fPDGe1 = 11; Int_t fPDGe2 = 11;
+	  if(chargeMix>0) fPDGe1 = -11;
+	  if(chargeAsso>0) fPDGe2 = -11;
+        
+	  if(chargeMix == chargeAsso) fFlagLS = kTRUE;
+	  if(chargeMix != chargeAsso) fFlagULS = kTRUE;
+    
+	  //Variables
+	  Double_t p1[3], p2[3];
+	  Double_t xt1, xt2; //radial position track 1 and 2  at the DCA point
+	  Double_t dca12; //DCA 1-2
+	  Bool_t hasdcaT1, hasdcaT2;
+	  Double_t bfield = fVevent->GetMagneticField();
+	  
+	  AliExternalTrackParam extTrackParam1;
+	  extTrackParam1=mixtrk->GetExtTrackParam();
+	  AliExternalTrackParam extTrackParam2;
+	  extTrackParam2.CopyFromVTrack(VtrackAsso);
+
+	  //DCA track1-track2
+	  dca12 = extTrackParam2.GetDCA(&extTrackParam1,bfield,xt2,xt1);
+	  
+	  //Momento of the track extrapolated to DCA track-track
+	  //Track1
+	  hasdcaT1 = extTrackParam1.GetPxPyPzAt(xt1,bfield,p1);
+	  //Track2
+	  hasdcaT2 = extTrackParam2.GetPxPyPzAt(xt2,bfield,p2);
+	  
+	  if(!hasdcaT1 || !hasdcaT2) AliWarning("There could be a problem in the extrapolation");
+	  //track1-track2 Invariant Mass
+	  Double_t eMass = 0.000510998910; //Electron mass in GeV
+	  Double_t pP1 = sqrt(p1[0]*p1[0]+p1[1]*p1[1]+p1[2]*p1[2]); //Track 1 momentum
+	  Double_t pP2 = sqrt(p2[0]*p2[0]+p2[1]*p2[1]+p2[2]*p2[2]); //Track 1 momentum
+
+	  TLorentzVector v1(p1[0],p1[1],p1[2],sqrt(eMass*eMass+pP1*pP1));
+	  TLorentzVector v2(p2[0],p2[1],p2[2],sqrt(eMass*eMass+pP2*pP2));
+	  mass = (v1+v2).M(); //Invariant Mass
+	  openingAngle = v1.Angle(v2.Vect()); //Opening Angle (Total Angle)
+    
+	  if(fFlagLS){
+	    //   fInvmassLS->Fill(mass,ptMix);
+	  }
+	  if(fFlagULS){
+	    //  fInvmassULS->Fill(mass,ptMix);
+	  }
+      
+	  if(mass<fInvmassCut && fFlagULS) {
+	    fPhotMixULS->Fill(ptMix);
+	  }
+        
+	  if(mass<fInvmassCut && fFlagLS){
+	    fPhotMixLS->Fill(ptMix, chargeMix);
+	  }
+  
+	}//track loop
+      } // mixtracks
+    }// mix events
+  }	  
+}

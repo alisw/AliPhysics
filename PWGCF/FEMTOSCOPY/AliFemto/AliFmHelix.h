@@ -119,6 +119,7 @@ protected:
 //
 //     Non-member functions
 //
+
 int operator== (const AliFmHelix&, const AliFmHelix&);
 int operator!= (const AliFmHelix&, const AliFmHelix&);
 ostream& operator<<(ostream&, const AliFmHelix&);

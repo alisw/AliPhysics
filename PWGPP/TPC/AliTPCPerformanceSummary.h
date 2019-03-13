@@ -37,6 +37,8 @@ class AliTPCPerformanceSummary
     static Bool_t GetForceTHnSparse() { return fgForceTHnSparse; }
     static void SetForceTHnSparse(Bool_t forceSparse = kTRUE) { fgForceTHnSparse = forceSparse; }      
   
+    static void  MakeMissingChambersAliases(TTree * tree); 
+    
     private:
     
     static Bool_t fgForceTHnSparse;   // force to use THnSparse 
@@ -65,7 +67,6 @@ class AliTPCPerformanceSummary
 
     static void DrawSectors(const int side);
   
-  static void  MakeMissingChambersAliases(TTree * tree); 
     static void MakeRawOCDBQAPlot(TTreeSRedirector *pcstream);
     AliTPCPerformanceSummary(const AliTPCPerformanceSummary&); // copy contructor (not implemented)
     AliTPCPerformanceSummary& operator=(const AliTPCPerformanceSummary&); // assignment operator (not implemented)

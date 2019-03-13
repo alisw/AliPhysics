@@ -112,6 +112,14 @@ class AliFemtoDreamBasePart {
     return fPhiAtRadius;
   }
   ;
+  void SetXYZAtRadius(TVector3 XYZAtRad) {
+    fXYZAtRadius.push_back(XYZAtRad);
+  }
+  ;
+  std::vector<TVector3> GetXYZAtRadius() {
+    return fXYZAtRadius;
+  }
+  ;
   void SetMCPhi(float phi) {
     fMCPhi.push_back(phi);
   }
@@ -241,6 +249,7 @@ class AliFemtoDreamBasePart {
   std::vector<float> fMCTheta;
   std::vector<float> fPhi;
   std::vector<std::vector<float>> fPhiAtRadius;
+  std::vector<TVector3> fXYZAtRadius;
   std::vector<float> fMCPhi;
   std::vector<int> fIDTracks;
   std::vector<int> fCharge;

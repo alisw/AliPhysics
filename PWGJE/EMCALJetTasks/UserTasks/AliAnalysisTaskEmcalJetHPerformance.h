@@ -13,6 +13,7 @@
 
 class AliJetContainer;
 class AliEmcalJet;
+class AliVCaloCells;
 #include "THistManager.h"
 #include "AliYAMLConfiguration.h"
 #include "AliAnalysisTaskEmcalJet.h"
@@ -56,7 +57,7 @@ class AliAnalysisTaskEmcalJetHPerformance : public AliAnalysisTaskEmcalJet {
   // Initialize the task
   // Configuration is handled via the YAML configuration file
   bool Initialize();
-  void SetConfigurationPath(const std::string & configurationPath) { fConfigurationPath = configurationPath; }
+  void AddConfigurationFile(const std::string & configurationPath, const std::string & configName = "") { fYAMLConfig.AddConfiguration(configurationPath, configName); }
 
   // Utility functions
   // AddTask
@@ -75,23 +76,38 @@ class AliAnalysisTaskEmcalJetHPerformance : public AliAnalysisTaskEmcalJet {
   void RetrieveAndSetTaskPropertiesFromYAMLConfig();
   void SetupJetContainersFromYAMLConfig();
 
+  // QA histograms
+  void SetupQAHists();
+  void QAHists();
+  void FillQAHists();
+  // Cell QA
+  void SetupCellQAHistsWithPrefix(const std::string & prefix);
+  void SetupCellQAHists();
+  void FillCellQAHists(const std::string & prefix, AliVCaloCells * cells);
+  void FillCellQAHists();
+
   // Response matrix functions
   void SetupResponseMatrixHists();
-  void CreateResponseMatrix();
+  void ResponseMatrix();
   void FillResponseMatrix(AliEmcalJet * jet1, AliEmcalJet * jet2);
   ResponseMatrixFillWrapper CreateResponseMatrixFillWrapper(AliEmcalJet * jet) const;
 
   // Basic configuration
-  PWG::Tools::AliYAMLConfiguration fYAMLConfig; ///< YAML configuration file
-  std::string fConfigurationPath;     ///<  Path to the YAML configuration file
-  bool fConfigurationInitialized;     ///<  True if the task configuration has been successfully initialized
+  PWG::Tools::AliYAMLConfiguration fYAMLConfig; ///< YAML configuration file.
+  bool fConfigurationInitialized;     ///<  True if the task configuration has been successfully initialized.
 
   // Histograms
-  THistManager fHistManager;          ///<  Histogram manager
-  AliEmcalEmbeddingQA fEmbeddingQA;   //!<! Embedding QA hists (will only be added if embedding)
+  THistManager fHistManager;          ///<  Histogram manager.
+  AliEmcalEmbeddingQA fEmbeddingQA;   //!<! Embedding QA hists (will only be added if embedding).
 
   // Configuration options
-  bool fCreateResponseMatrix;         ///<  If true, create a response matrix with the available jet collections
+  bool fCreateQAHists;                ///<  If true, create QA histograms.
+  bool fCreateResponseMatrix;         ///<  If true, create a response matrix with the available jet collections.
+
+  // QA variables
+  std::string fEmbeddedCellsName;     ///<  Set the embedded cells collection name
+  UInt_t fPreviousEventTrigger;       ///<  Physics selection (offline trigger) of the previous event for determine why a small unumber of embedded event are double counted.
+  bool fPreviousEmbeddedEventSelected;///<  True if the previous embedded event was selected. Used to determine why a small unumber of embedded event are double counted.
 
   // Response matrix variables
   // Response matrix fill map
@@ -106,7 +122,7 @@ class AliAnalysisTaskEmcalJetHPerformance : public AliAnalysisTaskEmcalJet {
   double fMinFractionShared;             ///<  Minimum fraction of shared jet pt required for matching a hybrid jet to detector level
   AliAnalysisTaskEmcalJetHUtils::ELeadingHadronBiasType_t fLeadingHadronBiasType; ///<  Leading hadron in jet bias type (either charged, neutral, or both)
 
-  ClassDef(AliAnalysisTaskEmcalJetHPerformance, 1);
+  ClassDef(AliAnalysisTaskEmcalJetHPerformance, 4);
 };
 
 } /* namespace EMCALJetTasks */

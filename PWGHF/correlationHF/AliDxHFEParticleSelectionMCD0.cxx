@@ -271,8 +271,8 @@ int AliDxHFEParticleSelectionMCD0::IsSelected(AliVParticle* p, const AliVEvent* 
 	  if(nrDaughters!= 2)
 	    return 0;
 
-	  Int_t label0 = mcPart->GetDaughter(0);
-	  Int_t label1 = mcPart->GetDaughter(1);
+	  Int_t label0 = mcPart->GetDaughterLabel(0);
+	  Int_t label1 = mcPart->GetDaughterLabel(1);
 	  AliDebug(2,Form("label0 = %d, label1 = %d",label0,label1));
 
 	  if (label1<=0 || label0 <= 0){

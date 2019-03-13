@@ -130,6 +130,7 @@ class AliAnalysisTaskEMCALPhotonIsolation: public AliAnalysisTaskEmcal {
   void                         SetVariableCPVInCone        ( Bool_t   variable                             ) { fVariableCPVInCone = variable;                            }
   void                         SetVariableCPVBoth          ( Bool_t   variable                             ) { fVariableCPVBoth = variable;                              }
   void                         SetVariableCPVSystematics   ( TString  systematics                          ) { fVariableCPVSyst = systematics;                           }
+  void                         SetEOverP                   ( Float_t  min, Float_t max                     ) { fEOverPMin = min; fEOverPMax = max;                       }
   void                         SetNonLinRecoEnergyScaling  ( Bool_t   scaling                              ) { fNonLinRecoEnergyScaling = scaling;                       }
   void                         SetExtraPerpConesFactor     ( Double_t factor                               ) { fExtraPerpConesFactor = factor;                           }
   
@@ -196,6 +197,8 @@ class AliAnalysisTaskEMCALPhotonIsolation: public AliAnalysisTaskEmcal {
   Bool_t		       fVariableCPVInCone;	     ///<
   Bool_t		       fVariableCPVBoth;             ///<
   TString		       fVariableCPVSyst;	     ///<
+  Float_t		       fEOverPMin;		     ///< Min calo cluster E / track p
+  Float_t		       fEOverPMax;		     ///< Max calo cluster E / track p
   Bool_t		       fNonLinRecoEnergyScaling;     ///< Set a scaling factor for reconstructed energy (regarding non-linearity correction)
   Double_t                     fExtraPerpConesFactor;        ///< Charged to neutral + charged UE extrapolation factor (perpendicular cones)
   TClonesArray		     * fTracksAna;		     ///< Hybrid track array in
@@ -294,8 +297,8 @@ class AliAnalysisTaskEMCALPhotonIsolation: public AliAnalysisTaskEmcal {
   TH3F                       * fPtvsDetavsDphi;                 ///<  Cluster-track matching vs. cluster energy
   TH3F                       * fPtvsTrackPtvsDeta;              ///<  Cluster-track matching Deta vs. track pT vs. cluster energy
   TH3F                       * fPtvsTrackPtvsDphi;              ///<  Cluster-track matching Dphi vs. track pT vs. cluster energy
-  TH2F                       * fPtTrackClusRatiovsPt;           ///<  Track pT over Cluster pT vs. cluster energy
-  TH2F                       * fPtTrackClusRatiovsPtWithCPV;    ///<  Track pT over Cluster pT vs. cluster energy with CPV applied
+  TH2F                       * fEOverPvsPt;                     ///<  Cluster E over track p vs. cluster pT before CPV
+  TH2F                       * fEOverPvsPtWithCPV;              ///<  Cluster E over track p vs. cluster pT after CPV
   TH2F                       * fClusEvsClusT;                   //!<! Cluster Energy vs Cluster Time ---QA
   TH2F                       * fClustEnBefAftNonLin;            //!<! Cluster Energy before/after non-linearity correction
   TH1F                       * fPTbeforeNonLinScaling;          //!<! Pt distribution (before non-lin scaling in MC, when applied)

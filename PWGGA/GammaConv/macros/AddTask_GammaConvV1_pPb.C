@@ -51,30 +51,23 @@ void AddTask_GammaConvV1_pPb(
 
   AliCutHandlerPCM cuts;
 
-  Int_t trackMatcherRunningMode = 0; // CaloTrackMatcher running mode
-  TString fileNamePtWeights     = cuts.GetSpecialFileNameFromString (fileNameExternalInputs, "FPTW:");
-  TString fileNameMultWeights   = cuts.GetSpecialFileNameFromString (fileNameExternalInputs, "FMUW:");
-  TString fileNameMatBudWeights = cuts.GetSpecialFileNameFromString (fileNameExternalInputs, "FMAW:");
-  TString fileNamedEdxPostCalib = cuts.GetSpecialFileNameFromString (fileNameExternalInputs, "FEPC:");
+  Int_t trackMatcherRunningMode       = 0; // CaloTrackMatcher running mode
+  TString fileNamePtWeights           = cuts.GetSpecialFileNameFromString (fileNameExternalInputs, "FPTW:");
+  TString fileNameMultWeights         = cuts.GetSpecialFileNameFromString (fileNameExternalInputs, "FMUW:");
+  TString fileNameMatBudWeights       = cuts.GetSpecialFileNameFromString (fileNameExternalInputs, "FMAW:");
+  TString fileNamedEdxPostCalib       = cuts.GetSpecialFileNameFromString (fileNameExternalInputs, "FEPC:");
 
-  TString sAdditionalTrainConfig  = cuts.GetSpecialSettingFromAddConfig(additionalTrainConfig, "","");
+  TString addTaskName                 = "AddTask_GammaConvV1_pPb";
+  TString sAdditionalTrainConfig      = cuts.GetSpecialSettingFromAddConfig(additionalTrainConfig, "", "", addTaskName);
   if (sAdditionalTrainConfig.Atoi() > 0){
     trainConfig = trainConfig + sAdditionalTrainConfig.Atoi();
-    cout << "INFO: AddTask_GammaConvV1_pPb running additionalTrainConfig '" << sAdditionalTrainConfig.Atoi() << "', train config: '" << trainConfig << "'" << endl;
+    cout << "INFO: " << addTaskName.Data() << " running additionalTrainConfig '" << sAdditionalTrainConfig.Atoi() << "', train config: '" << trainConfig << "'" << endl;
   }
-  TString corrTaskSetting         = cuts.GetSpecialSettingFromAddConfig(additionalTrainConfig, "CF","");
+  TString corrTaskSetting         = cuts.GetSpecialSettingFromAddConfig(additionalTrainConfig, "CF","", addTaskName);
   if(corrTaskSetting.CompareTo(""))
     cout << "corrTaskSetting: " << corrTaskSetting.Data() << endl;
   if(additionalTrainConfig.Contains("MaterialBudgetWeights"))
-    fileNameMatBudWeights         = cuts.GetSpecialSettingFromAddConfig(additionalTrainConfig, "MaterialBudgetWeights",fileNameMatBudWeights);
-
-
-  cout << endl << endl;
-  cout << "************************************************************************" << endl;
-  cout << "************************************************************************" << endl;
-  cout << "INFO: Initializing GammaConvV1 for pPb - config: " <<  trainConfig << endl;
-  cout << "************************************************************************" << endl;
-  cout << "************************************************************************" << endl;
+    fileNameMatBudWeights         = cuts.GetSpecialSettingFromAddConfig(additionalTrainConfig, "MaterialBudgetWeights",fileNameMatBudWeights, addTaskName);
 
   Int_t isHeavyIon = 2;
 
@@ -84,19 +77,12 @@ void AddTask_GammaConvV1_pPb(
   // ================== GetAnalysisManager ===============================
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
   if (!mgr) {
-    Error(Form("AddTask_GammaConvV1_%i",trainConfig), "No analysis manager found.");
+    Error(Form("%s_%i", addTaskName.Data(),  trainConfig), "No analysis manager found.");
     return ;
   }
 
   // ================== GetInputEventHandler =============================
   AliVEventHandler *inputHandler=mgr->GetInputEventHandler();
-
-
-  //========= Check whether PID Reponse is there ====
-  if(!(AliPIDResponse*)mgr->GetTask("PIDResponseTask")){
-    Error(Form("AddTask_GammaConvV1_%i",trainConfig), "No PID response has been initialized aborting.");
-    return;
-  }
 
   //=========  Set Cutnumber for V0Reader ================================
   TString cutnumberPhoton     = photonCutNumberV0Reader.Data();
@@ -1111,10 +1097,12 @@ void AddTask_GammaConvV1_pPb(
   if (periodNameV0Reader.Contains("LHC18b9")||periodNameV0Reader.Contains("LHC17g8")){
     TObjString *HeaderPMB = new TObjString("EPOSLHC_0");
     TObjString *HeaderP8J = new TObjString("Pythia8Jets_1");
-    if (doWeightingPart==4) {
+    if (doWeightingPart==4) { // all headers
       HeaderList->Add(HeaderPMB);
       HeaderList->Add(HeaderP8J);
-    } else {
+    } else if (doWeightingPart==5) { // only MB header
+      HeaderList->Add(HeaderPMB);
+    } else { // only JJ header
       HeaderList->Add(HeaderP8J);
     }
   }

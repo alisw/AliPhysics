@@ -76,6 +76,8 @@
 using std::cout;
 using std::endl;
 
+#include <dlfcn.h>
+
 /// \cond CLASSIMP
 ClassImp(AliAnalysisTaskSELc2V0bachelorTMVAApp);
 /// \endcond
@@ -200,7 +202,8 @@ AliAnalysisTaskSELc2V0bachelorTMVAApp::AliAnalysisTaskSELc2V0bachelorTMVAApp():
   fBDTHistoVsSignd0(0),
   fBDTHistoVsCosThetaStar(0),
   fHistoNsigmaTPC(0),
-  fHistoNsigmaTOF(0)
+  fHistoNsigmaTOF(0),
+  fDebugHistograms(kFALSE)
 {
   /// Default ctor
   //
@@ -326,7 +329,8 @@ AliAnalysisTaskSELc2V0bachelorTMVAApp::AliAnalysisTaskSELc2V0bachelorTMVAApp(con
   fBDTHistoVsSignd0(0),
   fBDTHistoVsCosThetaStar(0),
   fHistoNsigmaTPC(0),
-  fHistoNsigmaTOF(0)
+  fHistoNsigmaTOF(0),
+  fDebugHistograms(kFALSE)
 {
   //
   /// Constructor. Initialization of Inputs and Outputs
@@ -669,18 +673,19 @@ void AliAnalysisTaskSELc2V0bachelorTMVAApp::UserCreateOutputObjects() {
   
 
   fBDTHisto = new TH2D("fBDTHisto", "Lc inv mass vs bdt output; bdt; m_{inv}(pK^{0}_{S})[GeV/#it{c}^{2}]", 10000, -1, 1, 1000, 2.05, 2.55);
-  fBDTHistoVsMassK0S = new TH2D("fBDTHistoVsMassK0S", "K0S inv mass vs bdt output; bdt; m_{inv}(#pi^{+}#pi^{#minus})[GeV/#it{c}^{2}]", 10000, -1, 1, 1000, 0.485, 0.51);
-  fBDTHistoVstImpParBach = new TH2D("fBDTHistoVstImpParBach", "d0 bachelor vs bdt output; bdt; d_{0, bachelor}[cm]", 10000, -1, 1, 1000, -1, 1);
-  fBDTHistoVstImpParV0 = new TH2D("fBDTHistoVstImpParV0", "d0 K0S vs bdt output; bdt; d_{0, V0}[cm]", 10000, -1, 1, 1000, -1, 1);
-  fBDTHistoVsBachelorPt = new TH2D("fBDTHistoVsBachelorPt", "bachelor pT vs bdt output; bdt; p_{T, bachelor}[GeV/#it{c}]", 10000, -1, 1, 1000, 0, 20);
-  fBDTHistoVsCombinedProtonProb = new TH2D("fBDTHistoVsCombinedProtonProb", "combined proton probability vs bdt output; bdt; Bayesian PID_{bachelor}", 10000, -1, 1, 1000, 0, 1);
-  fBDTHistoVsCtau = new TH2D("fBDTHistoVsCtau", "K0S ctau vs bdt output; bdt; c#tau_{V0}[cm]",  10000, -1, 1, 1000, -2, 2);
-  fBDTHistoVsCosPAK0S = new TH2D("fBDTHistoVsCosPAK0S", "V0 cosine pointing angle vs bdt output; bdt; CosPAK^{0}_{S}", 10000, -1, 1, 1000, 0.9, 1);
-  fBDTHistoVsCosThetaStar = new TH2D("fBDTHistoVsCosThetaStar", "proton emission angle in pK0s pair rest frame vs bdt output; bdt; Cos#Theta*", 10000, -1, 1, 1000, -1, 1);
-  fBDTHistoVsSignd0 = new TH2D("fBDTHistoVstImpParBach", "signed d0 bachelor vs bdt output; bdt; signd_{0, bachelor}[cm]", 10000, -1, 1, 1000, -1, 1);
-  fHistoNsigmaTPC = new TH2D("fHistoNsigmaTPC", "; #it{p} (GeV/#it{c}); n_{#sigma}^{TPC} (proton hypothesis)", 500, 0, 5, 1000, -5, 5);
-  fHistoNsigmaTOF = new TH2D("fHistoNsigmaTOF", "; #it{p} (GeV/#it{c}); n_{#sigma}^{TOF} (proton hypothesis)", 500, 0, 5, 1000, -5, 5);
-  
+  if (fDebugHistograms) {    
+    fBDTHistoVsMassK0S = new TH2D("fBDTHistoVsMassK0S", "K0S inv mass vs bdt output; bdt; m_{inv}(#pi^{+}#pi^{#minus})[GeV/#it{c}^{2}]", 1000, -1, 1, 1000, 0.485, 0.51);
+    fBDTHistoVstImpParBach = new TH2D("fBDTHistoVstImpParBach", "d0 bachelor vs bdt output; bdt; d_{0, bachelor}[cm]", 1000, -1, 1, 100, -1, 1);
+    fBDTHistoVstImpParV0 = new TH2D("fBDTHistoVstImpParV0", "d0 K0S vs bdt output; bdt; d_{0, V0}[cm]", 1000, -1, 1, 100, -1, 1);
+    fBDTHistoVsBachelorPt = new TH2D("fBDTHistoVsBachelorPt", "bachelor pT vs bdt output; bdt; p_{T, bachelor}[GeV/#it{c}]", 1000, -1, 1, 100, 0, 20);
+    fBDTHistoVsCombinedProtonProb = new TH2D("fBDTHistoVsCombinedProtonProb", "combined proton probability vs bdt output; bdt; Bayesian PID_{bachelor}", 1000, -1, 1, 100, 0, 1);
+    fBDTHistoVsCtau = new TH2D("fBDTHistoVsCtau", "K0S ctau vs bdt output; bdt; c#tau_{V0}[cm]",  1000, -1, 1, 100, -2, 2);
+    fBDTHistoVsCosPAK0S = new TH2D("fBDTHistoVsCosPAK0S", "V0 cosine pointing angle vs bdt output; bdt; CosPAK^{0}_{S}", 1000, -1, 1, 100, 0.9, 1);
+    fBDTHistoVsCosThetaStar = new TH2D("fBDTHistoVsCosThetaStar", "proton emission angle in pK0s pair rest frame vs bdt output; bdt; Cos#Theta*", 1000, -1, 1, 100, -1, 1);
+    fBDTHistoVsSignd0 = new TH2D("fBDTHistoVsSignd0", "signed d0 bachelor vs bdt output; bdt; signd_{0, bachelor}[cm]", 1000, -1, 1, 100, -1, 1);
+    fHistoNsigmaTPC = new TH2D("fHistoNsigmaTPC", "; #it{p} (GeV/#it{c}); n_{#sigma}^{TPC} (proton hypothesis)", 500, 0, 5, 1000, -5, 5);
+    fHistoNsigmaTOF = new TH2D("fHistoNsigmaTOF", "; #it{p} (GeV/#it{c}); n_{#sigma}^{TOF} (proton hypothesis)", 500, 0, 5, 1000, -5, 5);
+  }
   
   fOutput->Add(fHistoEvents);
   fOutput->Add(fHistoLc);
@@ -696,18 +701,19 @@ void AliAnalysisTaskSELc2V0bachelorTMVAApp::UserCreateOutputObjects() {
   fOutput->Add(fHistoMCLcK0SpGenLimAcc);
   fOutput->Add(fHistoCentrality);
   fOutput->Add(fBDTHisto);
-  fOutput->Add(fBDTHistoVsMassK0S);
-  fOutput->Add(fBDTHistoVstImpParBach);
-  fOutput->Add(fBDTHistoVstImpParV0);
-  fOutput->Add(fBDTHistoVsBachelorPt);
-  fOutput->Add(fBDTHistoVsCombinedProtonProb);
-  fOutput->Add(fBDTHistoVsCtau);
-  fOutput->Add(fBDTHistoVsCosPAK0S);
-  fOutput->Add(fBDTHistoVsCosThetaStar);
-  fOutput->Add(fBDTHistoVsSignd0);
-  fOutput->Add(fHistoNsigmaTPC);
-  fOutput->Add(fHistoNsigmaTOF);
-  
+  if (fDebugHistograms) {    
+    fOutput->Add(fBDTHistoVsMassK0S);
+    fOutput->Add(fBDTHistoVstImpParBach);
+    fOutput->Add(fBDTHistoVstImpParV0);
+    fOutput->Add(fBDTHistoVsBachelorPt);
+    fOutput->Add(fBDTHistoVsCombinedProtonProb);
+    fOutput->Add(fBDTHistoVsCtau);
+    fOutput->Add(fBDTHistoVsCosPAK0S);
+    fOutput->Add(fBDTHistoVsCosThetaStar);
+    fOutput->Add(fBDTHistoVsSignd0);
+    fOutput->Add(fHistoNsigmaTPC);
+    fOutput->Add(fHistoNsigmaTOF);
+  }
   
   PostData(1, fOutput);
   PostData(4, fVariablesTreeSgn);
@@ -716,7 +722,7 @@ void AliAnalysisTaskSELc2V0bachelorTMVAApp::UserCreateOutputObjects() {
   AliInputEventHandler* inputHandler = (AliInputEventHandler*) (man->GetInputEventHandler());
   fPIDResponse = inputHandler->GetPIDResponse();
 
-  fAnalCuts->SetUsePID(kTRUE);
+  //  fAnalCuts->SetUsePID(kTRUE); // this forces the PID to be used, despite the settings in the cut object
   // if (fAnalCuts->GetIsUsePID()){
   //   /*
   //     fAnalCuts->GetPidHF()->SetPidResponse(fPIDResponse);
@@ -910,6 +916,19 @@ void AliAnalysisTaskSELc2V0bachelorTMVAApp::UserCreateOutputObjects() {
  
   PostData(7, fListWeight);
 
+  // creating the BDT reader
+  std::vector<std::string> inputNamesVec;
+  TObjArray *tokens = fNamesTMVAVar.Tokenize(",");
+  for(Int_t i=0; i<tokens->GetEntries(); i++){
+    TString variable = ((TObjString*)(tokens->At(i)))->String();
+    std::string tmpvar = variable.Data();
+    inputNamesVec.push_back(tmpvar);
+  }
+  void* lib = dlopen(fTMVAlibName.Data(), RTLD_NOW);
+  void* p = dlsym(lib, Form("ReadBDT_Default_maker%s", fTMVAlibPtBin.Data()));
+  IClassifierReader* (*maker1)(std::vector<std::string>&) = (IClassifierReader* (*)(std::vector<std::string>&)) p;
+  fBDTReader = maker1(inputNamesVec);
+  
   return;
 }
 
@@ -1066,8 +1085,8 @@ void AliAnalysisTaskSELc2V0bachelorTMVAApp::FillMCHisto(TClonesArray *mcArray){
       continue;
     }
     AliDebug(2, Form("Step 0 ok: MC particle %d is a Lc: its pdg code is %d", iPart, pdg));
-    Int_t labeldaugh0 = mcPart->GetDaughter(0);
-    Int_t labeldaugh1 = mcPart->GetDaughter(1);
+    Int_t labeldaugh0 = mcPart->GetDaughterLabel(0);
+    Int_t labeldaugh1 = mcPart->GetDaughterLabel(1);
     if (labeldaugh0 <= 0 || labeldaugh1 <= 0){
       AliDebug(2, Form("The MC particle doesn't have correct daughters, skipping!!"));
       continue;
@@ -1099,7 +1118,7 @@ void AliAnalysisTaskSELc2V0bachelorTMVAApp::FillMCHisto(TClonesArray *mcArray){
 	}
 	else { // So far: Lc --> K0 + p, K0 with 1 daughter
 	  AliDebug(2, "Step 2 ok: The K0 does decay in 1 body only! ");
-	  Int_t labelK0daugh = v0MC->GetDaughter(0);
+	  Int_t labelK0daugh = v0MC->GetDaughterLabel(0);
 	  AliAODMCParticle* partK0S = dynamic_cast<AliAODMCParticle*>(mcArray->At(labelK0daugh));
 	  if(!partK0S){
 	    AliError("Error while casting particle! returning a NULL array");
@@ -1112,8 +1131,8 @@ void AliAnalysisTaskSELc2V0bachelorTMVAApp::FillMCHisto(TClonesArray *mcArray){
 	    }
 	    else { // So far: Lc --> K0 + p, K0 --> K0S, K0S in 2 bodies
 	      AliDebug(2, "Step 3 ok: The K0 daughter is a K0S and does decay in 2 bodies");
-	      Int_t labelK0Sdaugh0 = partK0S->GetDaughter(0);
-	      Int_t labelK0Sdaugh1 = partK0S->GetDaughter(1);
+	      Int_t labelK0Sdaugh0 = partK0S->GetDaughterLabel(0);
+	      Int_t labelK0Sdaugh1 = partK0S->GetDaughterLabel(1);
 	      AliAODMCParticle* daughK0S0 = dynamic_cast<AliAODMCParticle*>(mcArray->At(labelK0Sdaugh0));
 	      AliAODMCParticle* daughK0S1 = dynamic_cast<AliAODMCParticle*>(mcArray->At(labelK0Sdaugh1));
 	      if (!daughK0S0 || ! daughK0S1){
@@ -1193,7 +1212,6 @@ void AliAnalysisTaskSELc2V0bachelorTMVAApp::MakeAnalysisForLc2prK0S(AliAODEvent 
 
     if (!(lcK0spr->CheckCascadeFlags())) {
       AliDebug(2,Form("Cascade %d is not flagged as Lc candidate",iLctopK0s));
-      Printf(Form("Cascade %d is not flagged as Lc candidate",iLctopK0s));
       continue;
     }
 
@@ -1279,7 +1297,6 @@ void AliAnalysisTaskSELc2V0bachelorTMVAApp::MakeAnalysisForLc2prK0S(AliAODEvent 
       mcLabel = lcK0spr->MatchToMC(pdgCand, pdgDgLctoV0bachelor[1], pdgDgLctoV0bachelor, pdgDgV0toDaughters, mcArray, kTRUE);
       if (mcLabel>=0) {
 	AliDebug(2,Form(" ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~cascade number %d (total cascade number = %d)", iLctopK0s, nCascades));
-	Printf(Form(" ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~cascade number %d (total cascade number = %d)", iLctopK0s, nCascades));
 
 	AliAODMCParticle *partLc = dynamic_cast<AliAODMCParticle*>(mcArray->At(mcLabel));
 	if(partLc){
@@ -1296,9 +1313,7 @@ void AliAnalysisTaskSELc2V0bachelorTMVAApp::MakeAnalysisForLc2prK0S(AliAODEvent 
       }
     }
     AliDebug(2, Form("\n\n\n Analysing candidate %d\n", iLctopK0s));
-    Printf(Form("\n\n\n Analysing candidate %d\n", iLctopK0s));
     AliDebug(2, Form(">>>>>>>>>> Candidate is background, fFillOnlySgn = %d --> SKIPPING", fFillOnlySgn));
-    Printf(Form(">>>>>>>>>> Candidate is background, fFillOnlySgn = %d --> SKIPPING", fFillOnlySgn));
     if (!isLc) {
       if (fFillOnlySgn) { // if it is background, and we want only signal, we do not fill the tree
 	continue;
@@ -1358,8 +1373,6 @@ void AliAnalysisTaskSELc2V0bachelorTMVAApp::MakeAnalysisForLc2prK0S(AliAODEvent 
 
     //FillLc2pK0Sspectrum(lcK0spr, isLc, nSelectedAnal, cutsAnal, mcArray, iLctopK0s);
     FillLc2pK0Sspectrum(lcK0spr, isLc, nSelectedAnal, cutsAnal, mcArray, mcLabel);    
-    AliAODVertex* v = lcK0spr->GetSecondaryVtx();
-    delete v;
   }
   
   delete vHF;
@@ -1446,16 +1459,13 @@ void AliAnalysisTaskSELc2V0bachelorTMVAApp::FillLc2pK0Sspectrum(AliAODRecoCascad
 
   Bool_t isCandidateSelectedCuts = (((cutsAnal->IsSelected(part, AliRDHFCuts::kCandidate)) & (AliRDHFCutsLctoV0::kLcToK0Spr)) == (AliRDHFCutsLctoV0::kLcToK0Spr)); // kinematic/topological cuts
   AliDebug(2, Form("recoAnalysisCuts = %d", cutsAnal->IsSelected(part, AliRDHFCuts::kCandidate) & (AliRDHFCutsLctoV0::kLcToK0Spr)));
-  Printf(Form("recoAnalysisCuts = %d, isLc = %d", cutsAnal->IsSelected(part, AliRDHFCuts::kCandidate) & (AliRDHFCutsLctoV0::kLcToK0Spr), isLc));
   if (!isCandidateSelectedCuts){
     AliDebug(2, "No: Analysis cuts kCandidate level NOT passed");
-    //Printf("No: Analysis cuts kCandidate level NOT passed");
       if (isLc) Printf("SIGNAL candidate rejected");
     return;
   }
   else {
     AliDebug(2, "Yes: Analysis cuts kCandidate level passed");
-    Printf("Yes: Analysis cuts kCandidate level passed");
   }
 
   AliAODTrack *bachelor = (AliAODTrack*)part->GetBachelor();
@@ -1491,13 +1501,11 @@ void AliAnalysisTaskSELc2V0bachelorTMVAApp::FillLc2pK0Sspectrum(AliAODRecoCascad
     }
     else {
       AliDebug(2, "Only TPC did not work...");
-      Printf("Only TPC did not work...");
     }
     // resetting mask to ask for both TPC+TOF
     fPIDCombined->SetDetectorMask(AliPIDResponse::kDetTPC+AliPIDResponse::kDetTOF);
   }
   AliDebug(2, Form("probProton = %f", probProton));
-  Printf(Form("probProton = %f", probProton));
 
   // now we get the TPC and TOF single PID probabilities (only for Proton, or the tree will explode :) )
   Double_t probProtonTPC = -1.;
@@ -1870,21 +1878,22 @@ void AliAnalysisTaskSELc2V0bachelorTMVAApp::FillLc2pK0Sspectrum(AliAODRecoCascad
       
       
       Double_t BDTResponse = -1;
-      Printf("************************************************ fBDTReader = %p", fBDTReader);
       BDTResponse = fBDTReader->GetMvaValue(inputVars);
       fBDTHisto->Fill(BDTResponse, invmassLc); 
-      fBDTHistoVsMassK0S->Fill(BDTResponse, invmassK0s);
-      fBDTHistoVstImpParBach->Fill(BDTResponse, part->Getd0Prong(0));
-      fBDTHistoVstImpParV0->Fill(BDTResponse, part->Getd0Prong(1));
-      fBDTHistoVsBachelorPt->Fill(BDTResponse, bachelor->Pt());
-      fBDTHistoVsCombinedProtonProb->Fill(BDTResponse, probProton);
-      fBDTHistoVsCtau->Fill(BDTResponse, (part->DecayLengthV0())*0.497/(v0part->P()));
-      fBDTHistoVsCosPAK0S->Fill(BDTResponse, part->CosV0PointingAngle());
-      fBDTHistoVsSignd0->Fill(BDTResponse, signd0);
-      fBDTHistoVsCosThetaStar->Fill(BDTResponse, cts);
-      
-      fHistoNsigmaTPC->Fill(bachelor->P(), nSigmaTPCpr);
-      fHistoNsigmaTOF->Fill(bachelor->P(), nSigmaTOFpr);
+      if (fDebugHistograms) {    
+	fBDTHistoVsMassK0S->Fill(BDTResponse, invmassK0s);
+	fBDTHistoVstImpParBach->Fill(BDTResponse, part->Getd0Prong(0));
+	fBDTHistoVstImpParV0->Fill(BDTResponse, part->Getd0Prong(1));
+	fBDTHistoVsBachelorPt->Fill(BDTResponse, bachelor->Pt());
+	fBDTHistoVsCombinedProtonProb->Fill(BDTResponse, probProton);
+	fBDTHistoVsCtau->Fill(BDTResponse, (part->DecayLengthV0())*0.497/(v0part->P()));
+	fBDTHistoVsCosPAK0S->Fill(BDTResponse, part->CosV0PointingAngle());
+	fBDTHistoVsSignd0->Fill(BDTResponse, signd0);
+	fBDTHistoVsCosThetaStar->Fill(BDTResponse, cts);
+	
+	fHistoNsigmaTPC->Fill(bachelor->P(), nSigmaTPCpr);
+	fHistoNsigmaTOF->Fill(bachelor->P(), nSigmaTOFpr);
+      }
     }
     
   }

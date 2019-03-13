@@ -50,14 +50,23 @@
 #pragma link C++ class AliCascadeResult+;
 #pragma link C++ class AliStrangenessModule+;
 #pragma link C++ class AliAnalysisTaskWeakDecayVertexer+;
-#pragma link C++ class AliAnalysisTaskStrEffStudy+; 
-#pragma link C++ class AliAnalysisTaskMCPredictions+; 
-#pragma link C++ class Lifetimes::MiniV0<1>+;
-#pragma link C++ class Lifetimes::MiniV0<2>+;
-#pragma link C++ class Lifetimes::MiniV0<3>+;
-#pragma link C++ class std::vector<Lifetimes::MiniV0<1> >+;
-#pragma link C++ class std::vector<Lifetimes::MiniV0<2> >+;
-#pragma link C++ class std::vector<Lifetimes::MiniV0<3> >+;
+#pragma link C++ class AliAnalysisTaskStrEffStudy+;
+#pragma link C++ class AliAnalysisTaskMCPredictions+;
+#pragma link C++ class Lifetimes::MiniV0+;
+#pragma link C++ class std::vector<Lifetimes::MiniV0>+;
 #pragma link C++ class Lifetimes::MCparticle+;
 #pragma link C++ class std::vector<Lifetimes::MCparticle>+;
+#pragma link C++ class Lifetimes::HyperTriton2Body+;
+#pragma link C++ class std::vector<Lifetimes::HyperTriton2Body>+;
+#pragma link C++ class Lifetimes::MiniEvent+;
+#endif
+
+#ifdef __CLING__
+#pragma link C++ class AliAnalysisTaskFindableHyperTriton+;
+#pragma link C++ class Event+;
+#pragma link C++ class AliSelectorFindableHyperTriton3Body+;
+#pragma link C++ class std::vector<FindableHyperTriton>+;
+#pragma link C++ class std::vector<AliESDtrack>+;
+//#pragma link C++ class std::vector<FindableHyperTriton<2>>+;
+//#pragma link C++ class std::vector<FindableHyperTriton<3>>+;
 #endif

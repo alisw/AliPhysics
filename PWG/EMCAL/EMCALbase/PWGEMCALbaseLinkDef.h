@@ -50,5 +50,5 @@
 #pragma link C++ class PWG::EMCAL::TestAliEmcalTrackSelResultPtr+;
 #pragma link C++ class PWG::EMCAL::TestAliEmcalAODHybridTrackCuts+;
 #pragma link C++ class PWG::EMCAL::TestAliEmcalTrackSelectionAOD+;
-
+#pragma link C++ class std::vector<PWG::EMCAL::AliEmcalTrackSelResultPtr>+;
 #endif

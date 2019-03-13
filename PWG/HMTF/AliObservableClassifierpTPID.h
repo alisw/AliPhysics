@@ -30,6 +30,7 @@ class AliObservableClassifierpTPID : public AliObservableBase {
     kOMEGAPLUS,
     kALLCHARGED,
     kLAMBDA0B,
+    kANITLAMBDA0B,
     kNPID
   };
 

@@ -1228,8 +1228,8 @@ void AliAnalysisTaskSELc2V0bachelorTMVA::FillMCHisto(TClonesArray *mcArray){
       continue;
     }
     AliDebug(2, Form("Step 0 ok: MC particle %d is a Lc: its pdg code is %d", iPart, pdg));
-    Int_t labeldaugh0 = mcPart->GetDaughter(0);
-    Int_t labeldaugh1 = mcPart->GetDaughter(1);
+    Int_t labeldaugh0 = mcPart->GetDaughterLabel(0);
+    Int_t labeldaugh1 = mcPart->GetDaughterLabel(1);
     if (labeldaugh0 <= 0 || labeldaugh1 <= 0){
       AliDebug(2, Form("The MC particle doesn't have correct daughters, skipping!!"));
       continue;
@@ -1261,7 +1261,7 @@ void AliAnalysisTaskSELc2V0bachelorTMVA::FillMCHisto(TClonesArray *mcArray){
 	}
 	else { // So far: Lc --> K0 + p, K0 with 1 daughter
 	  AliDebug(2, "Step 2 ok: The K0 does decay in 1 body only! ");
-	  Int_t labelK0daugh = v0MC->GetDaughter(0);
+	  Int_t labelK0daugh = v0MC->GetDaughterLabel(0);
 	  AliAODMCParticle* partK0S = dynamic_cast<AliAODMCParticle*>(mcArray->At(labelK0daugh));
 	  if(!partK0S){
 	    AliError("Error while casting particle! returning a NULL array");
@@ -1274,8 +1274,8 @@ void AliAnalysisTaskSELc2V0bachelorTMVA::FillMCHisto(TClonesArray *mcArray){
 	    }
 	    else { // So far: Lc --> K0 + p, K0 --> K0S, K0S in 2 bodies
 	      AliDebug(2, "Step 3 ok: The K0 daughter is a K0S and does decay in 2 bodies");
-	      Int_t labelK0Sdaugh0 = partK0S->GetDaughter(0);
-	      Int_t labelK0Sdaugh1 = partK0S->GetDaughter(1);
+	      Int_t labelK0Sdaugh0 = partK0S->GetDaughterLabel(0);
+	      Int_t labelK0Sdaugh1 = partK0S->GetDaughterLabel(1);
 	      AliAODMCParticle* daughK0S0 = dynamic_cast<AliAODMCParticle*>(mcArray->At(labelK0Sdaugh0));
 	      AliAODMCParticle* daughK0S1 = dynamic_cast<AliAODMCParticle*>(mcArray->At(labelK0Sdaugh1));
 	      if (!daughK0S0 || ! daughK0S1){
@@ -1534,8 +1534,6 @@ void AliAnalysisTaskSELc2V0bachelorTMVA::MakeAnalysisForLc2prK0S(TClonesArray *a
     //FillLc2pK0Sspectrum(lcK0spr, isLc, nSelectedAnal, cutsAnal, mcArray, iLctopK0s);
     FillLc2pK0Sspectrum(lcK0spr, isLc, nSelectedAnal, cutsAnal, mcArray, mcLabel);
 
-    AliAODVertex* v = lcK0spr->GetSecondaryVtx();
-    delete v;
 
   }
 

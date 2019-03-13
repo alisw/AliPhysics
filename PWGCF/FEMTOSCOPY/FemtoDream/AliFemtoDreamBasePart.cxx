@@ -23,7 +23,8 @@ ClassImp(AliFemtoDreamBasePart) AliFemtoDreamBasePart::AliFemtoDreamBasePart()
       fTheta(0),
       fMCTheta(0),
       fPhi(0),
-      fPhiAtRadius(0),
+      fPhiAtRadius(),
+      fXYZAtRadius(),
       fMCPhi(0),
       fIDTracks(0),
       fCharge(0),
@@ -54,6 +55,7 @@ AliFemtoDreamBasePart::AliFemtoDreamBasePart(const AliFemtoDreamBasePart &part)
       fMCTheta(part.fMCTheta),
       fPhi(part.fPhi),
       fPhiAtRadius(part.fPhiAtRadius),
+      fXYZAtRadius(part.fXYZAtRadius),
       fMCPhi(part.fMCPhi),
       fIDTracks(part.fIDTracks),
       fCharge(part.fCharge),
@@ -86,6 +88,7 @@ AliFemtoDreamBasePart &AliFemtoDreamBasePart::operator=(
   fMCTheta = obj.fMCTheta;
   fPhi = obj.fPhi;
   fPhiAtRadius = obj.fPhiAtRadius;
+  fXYZAtRadius = obj.fXYZAtRadius;
   fMCPhi = obj.fMCPhi;
   fIDTracks = obj.fIDTracks;
   fCharge = obj.fCharge;
@@ -119,41 +122,52 @@ AliFemtoDreamBasePart::AliFemtoDreamBasePart(
       fMCTheta(),
       fPhi(),
       fPhiAtRadius(0),
+      fXYZAtRadius(0),
       fMCPhi(),
       fIDTracks(),
       fCharge(0),
       fCPA(0),
       fOrigin(kUnknown),
       fPDGCode(mother.GetPDGCode()),
-      fMotherPDG(0),
-      fMCPDGCode(0),
+      fMCPDGCode(mother.GetPDGCode()),
       fPDGMotherWeak(0),
       fMotherID(),
+      fMotherPDG(0),
       fEvtNumber(0),
       fIsMC((mother.GetMCLabel() > 0)),
       fUse(true),
       fIsSet(true),
       fEvtMultiplicity(-1) {
+  fEta.push_back(mother.GetEta());
   fEta.push_back(mother.GetV0().GetPosDaughter().GetEta());
   fEta.push_back(mother.GetPhoton().GetPosDaughter().GetEta());
   fEta.push_back(mother.GetV0().GetNegDaughter().GetEta());
   fEta.push_back(mother.GetPhoton().GetNegDaughter().GetEta());
 
+  fTheta.push_back(mother.GetTheta());
   fTheta.push_back(mother.GetV0().GetPosDaughter().GetTheta());
   fTheta.push_back(mother.GetPhoton().GetPosDaughter().GetTheta());
   fTheta.push_back(mother.GetV0().GetNegDaughter().GetTheta());
   fTheta.push_back(mother.GetPhoton().GetNegDaughter().GetTheta());
 
+  fMCTheta.push_back(mother.GetThetaMC());
   fMCTheta.push_back(mother.GetV0().GetPosDaughter().GetThetaMC());
   fMCTheta.push_back(mother.GetPhoton().GetPosDaughter().GetThetaMC());
   fMCTheta.push_back(mother.GetV0().GetNegDaughter().GetThetaMC());
   fMCTheta.push_back(mother.GetPhoton().GetNegDaughter().GetThetaMC());
 
+  fPhiAtRadius.push_back(mother.GetV0().GetPosDaughter().GetPhiStar());
+  fPhiAtRadius.push_back(mother.GetPhoton().GetPosDaughter().GetPhiStar());
+  fPhiAtRadius.push_back(mother.GetV0().GetNegDaughter().GetPhiStar());
+  fPhiAtRadius.push_back(mother.GetPhoton().GetNegDaughter().GetPhiStar());
+
+  fPhi.push_back(mother.GetPhi());
   fPhi.push_back(mother.GetV0().GetPosDaughter().GetPhi());
   fPhi.push_back(mother.GetPhoton().GetPosDaughter().GetPhi());
   fPhi.push_back(mother.GetV0().GetNegDaughter().GetPhi());
   fPhi.push_back(mother.GetPhoton().GetNegDaughter().GetPhi());
 
+  fMCPhi.push_back(mother.GetPhiMC());
   fMCPhi.push_back(mother.GetV0().GetPosDaughter().GetPhiMC());
   fMCPhi.push_back(mother.GetPhoton().GetPosDaughter().GetPhiMC());
   fMCPhi.push_back(mother.GetV0().GetNegDaughter().GetPhiMC());
@@ -211,16 +225,17 @@ AliFemtoDreamBasePart::AliFemtoDreamBasePart(
       fMCTheta(),
       fPhi(),
       fPhiAtRadius(0),
+      fXYZAtRadius(0),
       fMCPhi(),
       fIDTracks(),
       fCharge(0),
       fCPA(0),
       fOrigin(kUnknown),
       fPDGCode(daughter.GetPDGcode()),
-      fMotherPDG(0),
-      fMCPDGCode(0),
+      fMCPDGCode(daughter.GetPDGcode()),
       fPDGMotherWeak(0),
       fMotherID(-1),
+      fMotherPDG(0),
       fEvtNumber(0),
       fIsMC(-1),
       fUse(true),
@@ -234,6 +249,9 @@ AliFemtoDreamBasePart::AliFemtoDreamBasePart(
 
   fMCTheta.push_back(daughter.GetPosDaughter().GetThetaMC());
   fMCTheta.push_back(daughter.GetNegDaughter().GetThetaMC());
+
+  fPhiAtRadius.push_back(daughter.GetPosDaughter().GetPhiStar());
+  fPhiAtRadius.push_back(daughter.GetNegDaughter().GetPhiStar());
 
   fPhi.push_back(daughter.GetPosDaughter().GetPhi());
   fPhi.push_back(daughter.GetNegDaughter().GetPhi());

@@ -34,12 +34,19 @@ AliSigma0ParticlePhotonMother::AliSigma0ParticlePhotonMother(
                  photonCandidate.GetPz(), photonCandidate.GetRecMass());
   TLorentzVector trackSum = track1 + track2;
 
+  TLorentzVector track1MC, track2MC;
+  track1MC.SetXYZM(lambdaCandidate.GetPxMC(), lambdaCandidate.GetPyMC(),
+                   lambdaCandidate.GetPzMC(), lambdaCandidate.GetRecMass());
+  track2MC.SetXYZM(photonCandidate.GetPxMC(), photonCandidate.GetPyMC(),
+                   photonCandidate.GetPzMC(), photonCandidate.GetRecMass());
+  TLorentzVector trackSumMC = track1MC + track2MC;
+
   fP[0] = trackSum.Px();
   fP[1] = trackSum.Py();
   fP[2] = trackSum.Pz();
-  fPMC[0] = -1.;
-  fPMC[1] = -1.;
-  fPMC[2] = -1.;
+  fPMC[0] = trackSumMC.Px();
+  fPMC[1] = trackSumMC.Px();
+  fPMC[2] = trackSumMC.Px();
 
   //  fPDGCode = pdg;
   fPt = std::sqrt(fP[0] * fP[0] + fP[1] * fP[1]);
@@ -162,8 +169,8 @@ float AliSigma0ParticlePhotonMother::GetArmenterosQt() const {
 //____________________________________________________________________________________________________
 double AliSigma0ParticlePhotonMother::GetRapidity() const {
   double energy =
-      std::sqrt(GetPt() * GetPt() + GetPz() * GetPz() + GetMass() * GetMass());
-  if (energy != std::fabs(GetPz()))
-    return 0.5 * std::log((energy + GetPz()) / (energy - GetPz()));
+      TMath::Sqrt(GetPt() * GetPt() + GetPz() * GetPz() + GetMass() * GetMass());
+  if (energy != TMath::Abs(GetPz()))
+    return 0.5 * TMath::Log((energy + GetPz()) / (energy - GetPz()));
   return (GetPz() >= 0) ? 1.e30 : -1.e30;
 }

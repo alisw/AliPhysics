@@ -1020,7 +1020,7 @@ void AliAnalysisTaskElectronEfficiencyV2::UserExec(Option_t* option){
               if (fGenNegPart[neg_i].isMCSignal[iMCSignal] == true && fGenPosPart[pos_i].isMCSignal[iMCSignal] == true &&
                   fGenNegPart[neg_i].DielectronPairFromSameMother[iMCSignal] == false && fGenPosPart[pos_i].DielectronPairFromSameMother[iMCSignal] == false){
                 if (!fDeactivateLS) {
-                  std::cout << "Deactivate" << std::endl;
+//                  std::cout << "Deactivate" << std::endl;
                  fHistGenPair_ULSandLS.at(3*iMCSignal)->Fill(mass, pairpt, weight);
                 }
                 else {
@@ -1439,8 +1439,8 @@ void AliAnalysisTaskElectronEfficiencyV2::CheckIfFromMotherWithDielectronAsDaugh
       if (part.isMCSignal[k] == true && fDielectronPairNotFromSameMother[k] == true){
         AliAODMCParticle* mother = dynamic_cast<AliAODMCParticle*> (fMC->GetTrack(part.GetMotherID()));
         // int number_of_daugthers = mother->GetNDaughters() ;
-        int LabelFirstDaughter = mother->GetFirstDaughter();
-        int LabelLastDaughter = mother->GetLastDaughter();
+        int LabelFirstDaughter = mother->GetDaughterFirst();
+        int LabelLastDaughter = mother->GetDaughterLast();
         // std::cout << "number_of_daughters = " << number_of_daugthers << "  first_daugther = " << LabelFirstDaughter << "  last_daugther = " << LabelLastDaughter << std::endl;
 
         bool ele_from_same_mother = false;

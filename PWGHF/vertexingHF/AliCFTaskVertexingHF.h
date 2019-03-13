@@ -34,7 +34,6 @@
 #include <TProfile.h>
 
 class TH1I;
-class TParticle ;
 class TFile ;
 class TClonesArray ;
 class AliCFManager;

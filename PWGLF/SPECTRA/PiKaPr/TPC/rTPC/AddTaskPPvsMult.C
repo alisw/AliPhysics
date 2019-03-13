@@ -1,4 +1,3 @@
-
 #if !defined (__CINT__) || defined (__CLING__)
 #include "AliAnalysisManager.h"
 #include "AliAnalysisTaskPPvsMult.h"
@@ -14,10 +13,14 @@ AliAnalysisTaskPPvsMult* AddTaskPPvsMult(
 		Int_t system =1, // 0 for pp and 1 for Pb-Pb
 		Bool_t PostCalib = kFALSE,
 		Bool_t LowpT = kFALSE,
-		Bool_t MakePid = kFALSE
+		Bool_t MakePid = kFALSE,
+		const Int_t LHC16l = 1,  // 1-LHC16l 0-LHC16k 
+		const Int_t CrossedRowsTPC = 60,
+		const Int_t ChiSquaredTPC = 5,
+		const Int_t MaxDCAz = 1,
+		const Int_t VtxZcut = 10
 		)   
 {
-
 
 	// get the manager via the static access member. since it's static, you don't need
 	// an instance of the class to call the function
@@ -34,6 +37,9 @@ AliAnalysisTaskPPvsMult* AddTaskPPvsMult(
 
 	AliAnalysisFilter* trackFilterGolden = new AliAnalysisFilter("trackFilter");
 	AliESDtrackCuts* esdTrackCutsGolden = AliESDtrackCuts::GetStandardITSTPCTrackCuts2011(kFALSE,1);
+	esdTrackCutsGolden->SetMinNCrossedRowsTPC(CrossedRowsTPC);
+	esdTrackCutsGolden->SetMaxChi2PerClusterTPC(ChiSquaredTPC);
+	esdTrackCutsGolden->SetMaxDCAToVertexZ(MaxDCAz);
 	trackFilterGolden->AddCuts(esdTrackCutsGolden);
 
 	AliAnalysisFilter* trackFilterTPC = new AliAnalysisFilter("trackFilterTPC");
@@ -55,12 +61,12 @@ AliAnalysisTaskPPvsMult* AddTaskPPvsMult(
 	AliAnalysisTaskPPvsMult* task = new AliAnalysisTaskPPvsMult("taskHighPtDeDxpp");   
 	if(!task) return 0x0;
 
-
 	TString type = mgr->GetInputEventHandler()->GetDataType(); // can be "ESD" or "AOD"
 //	task->SelectCollisionCandidates(AliVEvent::kAnyINT);
 	task->SetAnalysisType(type);
 	task->SetAnalysisMC(AnalysisMC);
 	task->SetAddLowPt(LowpT);
+	task->SetPeriod(LHC16l);
 
 	if(system==1){
 		task->SetAnalysisPbPb(kTRUE);
@@ -74,7 +80,7 @@ AliAnalysisTaskPPvsMult* AddTaskPPvsMult(
 	task->SetNcl(70);
 	task->SetDebugLevel(0);
 	task->SetEtaCut(0.8);
-//	task->SetVtxCut(10.0);
+	task->SetVtxCut(VtxZcut);
 //	task->SetTrigger(AliVEvent::kINT7);
 //	task->SetPileUpRej(ispileuprej);
 	//Set Filtesr
@@ -95,4 +101,3 @@ AliAnalysisTaskPPvsMult* AddTaskPPvsMult(
 	// when you will run your analysis in an analysis train on grid
 	return task;
 }
-

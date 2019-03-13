@@ -46,6 +46,7 @@ set(SRCS
     AliAnaConvCorrPhoton.cxx
     AliAnaConvCorrPion.cxx
     AliAnaConvIsolation.cxx
+    AliAnalysisTaskConvCaloCalibration.cxx
     AliAnalysisTaskConversionQA.cxx
     AliAnalysisTaskConvJet.cxx
     AliAnalysisTaskClusterQA.cxx
@@ -55,6 +56,7 @@ set(SRCS
     AliAnalysisTaskGammaCaloIso.cxx
     AliAnalysisTaskGammaCaloMerged.cxx
     AliAnalysisTaskGammaConvCalo.cxx
+    AliAnalysisTaskGammaConvCaloIso.cxx
     AliAnalysisTaskGammaConvDalitzV1.cxx
     AliAnalysisTaskGammaConvFlow.cxx
     AliAnalysisTaskGammaConvV1.cxx

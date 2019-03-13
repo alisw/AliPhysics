@@ -148,7 +148,7 @@ Int_t GetMode(TString inputFileName)
 TChain* CreateChainFromCollection(const char *xmlfile)
 {
   // Create a chain from the collection of tags.
-  TAlienCollection* coll = TAlienCollection::Open(xmlfile);
+  TGridCollection* coll = gGrid->OpenCollection(xmlfile);
   if (!coll) {
     ::Error("CreateChainFromTags", "Cannot create an AliEn collection from %s", xmlfile);
     return NULL;

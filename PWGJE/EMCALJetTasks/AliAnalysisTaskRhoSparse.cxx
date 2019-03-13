@@ -26,6 +26,8 @@ AliAnalysisTaskRhoSparse::AliAnalysisTaskRhoSparse() :
   fNExclLeadJets(0),
   fExcludeOverlaps(0),
   fRhoCMS(0),
+  fUseTPCArea(0),
+  fExcludeAreaExcludedJets(0),
   fHistOccCorrvsCent(0)
 {
   // Constructor.
@@ -37,6 +39,8 @@ AliAnalysisTaskRhoSparse::AliAnalysisTaskRhoSparse(const char *name, Bool_t hist
   fNExclLeadJets(0),
   fExcludeOverlaps(0),
   fRhoCMS(0),
+  fUseTPCArea(0),
+  fExcludeAreaExcludedJets(0),
   fHistOccCorrvsCent(0)
 {
   // Constructor.
@@ -48,7 +52,7 @@ void AliAnalysisTaskRhoSparse::UserCreateOutputObjects()
   if (!fCreateHisto) return;
 
   AliAnalysisTaskRhoBase::UserCreateOutputObjects();
-  
+
   fHistOccCorrvsCent = new TH2F("OccCorrvsCent", "OccCorrvsCent", 101, -1, 100, 2000, 0 , 2);
   fOutput->Add(fHistOccCorrvsCent);
 }
@@ -73,12 +77,11 @@ Bool_t AliAnalysisTaskRhoSparse::IsJetOverlapping(AliEmcalJet* jet1, AliEmcalJet
 Bool_t AliAnalysisTaskRhoSparse::IsJetSignal(AliEmcalJet* jet)
 {
   if(jet->Pt()>5){
-      return kTRUE;
+    return kTRUE;
   }else{
     return kFALSE;
   }
 }
-
 
 //________________________________________________________________________
 Bool_t AliAnalysisTaskRhoSparse::Run() 
@@ -104,8 +107,8 @@ Bool_t AliAnalysisTaskRhoSparse::Run()
     for (Int_t ij = 0; ij < Njets; ++ij) {
       AliEmcalJet *jet = static_cast<AliEmcalJet*>(fJets->At(ij));
       if (!jet) {
-    	  AliError(Form("%s: Could not receive jet %d", GetName(), ij));
-    	  continue;
+        AliError(Form("%s: Could not receive jet %d", GetName(), ij));
+        continue;
       } 
 
       if (!AcceptJet(jet))
@@ -113,13 +116,13 @@ Bool_t AliAnalysisTaskRhoSparse::Run()
 
       //Search the two leading KT jets
       if (jet->Pt() > maxJetPts[0]) {
-	maxJetPts[1] = maxJetPts[0];
-	maxJetIds[1] = maxJetIds[0];
-	maxJetPts[0] = jet->Pt();
-	maxJetIds[0] = ij;
+        maxJetPts[1] = maxJetPts[0];
+        maxJetIds[1] = maxJetIds[0];
+        maxJetPts[0] = jet->Pt();
+        maxJetIds[0] = ij;
       } else if (jet->Pt() > maxJetPts[1]) {
-	maxJetPts[1] = jet->Pt();
-	maxJetIds[1] = ij;
+        maxJetPts[1] = jet->Pt();
+        maxJetIds[1] = ij;
       }
     }
     if (fNExclLeadJets < 2) {
@@ -131,14 +134,11 @@ Bool_t AliAnalysisTaskRhoSparse::Run()
   static Double_t rhovec[999];
   Int_t NjetAcc = 0;
   Double_t TotaljetAreaPhys=0;
+  Double_t TotalAreaCovered=0;
   Double_t TotalTPCArea=2*TMath::Pi()*0.9;
 
   // push all jets within selected acceptance into stack
   for (Int_t iJets = 0; iJets < Njets; ++iJets) {
-
-    // exlcuding leading background jets (could be signal)
-    if (iJets == maxJetIds[0] || iJets == maxJetIds[1])
-      continue;
 
     AliEmcalJet *jet = static_cast<AliEmcalJet*>(fJets->At(iJets));
     if (!jet) {
@@ -146,6 +146,25 @@ Bool_t AliAnalysisTaskRhoSparse::Run()
       continue;
     } 
 
+    // Take into account the area of real jets (no pure ghost jets)
+    // and also the area of later excluded jets.
+    // Some of these jets do not contribute to the rho calculation
+    // but to the factor with which this rho is scaled down
+    if (fExcludeAreaExcludedJets==0)
+    {
+      // Total area of physical jets that are used for the rho calculation
+      if(jet->GetNumberOfTracks()>0)
+      {
+       TotaljetAreaPhys+=jet->Area();
+      }
+      // Total area of all found jets ghost+phyical jets. This is a proxy
+      // for the available detector area in which the rho could have been calculated
+      TotalAreaCovered+=jet->Area();
+    }
+    // Exclude leading background jets (could be signal)
+    if (iJets == maxJetIds[0] || iJets == maxJetIds[1])
+      continue;
+    // Exclude background jets that do not fullfill basic cuts defined in AliJetContainer
     if (!AcceptJet(jet))
       continue;
 
@@ -153,35 +172,61 @@ Bool_t AliAnalysisTaskRhoSparse::Run()
     Bool_t isOverlapping = kFALSE;
     if (sigjets) {
       for(Int_t j=0;j<NjetsSig;j++)
-	{
-	  AliEmcalJet* signalJet = sigjets->GetAcceptJet(j);
-	  if(!signalJet)
-	    continue;
-	  if(!IsJetSignal(signalJet))     
-	    continue;
-	  
-	  if(IsJetOverlapping(signalJet, jet))
-	    {
-	      isOverlapping = kTRUE;
-	      break;
-	    }
-	}
-    }
+      {
+        AliEmcalJet* signalJet = sigjets->GetAcceptJet(j);
+        if(!signalJet)
+          continue;
+        if(!IsJetSignal(signalJet))
+          continue;
 
+        if(IsJetOverlapping(signalJet, jet))
+        {
+          isOverlapping = kTRUE;
+          break;
+        }
+      }
+    }
+    // Exclude background jets that overlap with anti-kT signal jets
     if(fExcludeOverlaps && isOverlapping)
       continue;
 
-    //This is to exclude pure ghost jets from the rho calculation
+    // Take into account only real jets (no pure ghost jets) that also
+    // contribute to the rho calculation
+    if (fExcludeAreaExcludedJets==1)
+    {
+      // Total area of physical jets that are used for the rho calculation
+      if(jet->GetNumberOfTracks()>0)
+      {
+       TotaljetAreaPhys+=jet->Area();
+      }
+      // Total area of all found jets ghost+phyical jets. This is a proxy
+      // for the available detector area in which the rho could have been calculated
+      TotalAreaCovered+=jet->Area();
+    }
+
+    // Exclude pure ghost jets from the rho calculation.
+    // Use only jets that fulfill your background jet selection
+    // for the rho calculation.
+    // Eg. real signal jets should not bias the background rho
     if(jet->GetNumberOfTracks()>0)
     {
-    	  TotaljetAreaPhys+=jet->Area();
-    	  rhovec[NjetAcc] = jet->Pt() / jet->Area();
-    	  ++NjetAcc;
+      rhovec[NjetAcc] = jet->Pt() / jet->Area();
+      ++NjetAcc;
     }
   }
 
-  Double_t OccCorr=TotaljetAreaPhys/TotalTPCArea;
- 
+  Double_t OccCorr=1;
+  //Use the total TPC area in which rho is calculated as denominater
+  if(fUseTPCArea)
+  {
+    OccCorr = TotaljetAreaPhys/TotalTPCArea;
+  }
+  //Use the total area covered by all ghost+physical jets that pass the selection in the detector as denominator
+  else if (TotalAreaCovered>0)
+  {
+    OccCorr = TotaljetAreaPhys/TotalAreaCovered;
+  }
+
   if (fCreateHisto)
     fHistOccCorrvsCent->Fill(fCent, OccCorr);
 
@@ -208,21 +253,21 @@ Bool_t AliAnalysisTaskRhoSparse::Run()
  */
 
 AliAnalysisTaskRhoSparse* AliAnalysisTaskRhoSparse::AddTaskRhoSparse(
-					   const char    *nTracks,
-					   const char    *nClusters,
-					   const char    *nRho,
-					   Double_t       jetradius,
-					   UInt_t         acceptance,
-					   AliJetContainer::EJetType_t jetType,
-					   AliJetContainer::ERecoScheme_t rscheme,
-					   const Bool_t   histo,
-					   const char    *nJetsSig,
-					   const char    *cutType,
-					   Double_t       jetptcut,
-					   Double_t       jetareacut,
-					   Double_t       emcareacut,
-					   const char    *suffix
-					   )
+    const char    *nTracks,
+    const char    *nClusters,
+    const char    *nRho,
+    Double_t       jetradius,
+    UInt_t         acceptance,
+    AliJetContainer::EJetType_t jetType,
+    AliJetContainer::ERecoScheme_t rscheme,
+    const Bool_t   histo,
+    const char    *nJetsSig,
+    const char    *cutType,
+    Double_t       jetptcut,
+    Double_t       jetareacut,
+    Double_t       emcareacut,
+    const char    *suffix
+)
 {
 
   // Get the pointer to the existing analysis manager via the static access method.
@@ -328,7 +373,7 @@ AliAnalysisTaskRhoSparse* AliAnalysisTaskRhoSparse::AddTaskRhoSparse(
   AliJetContainer *bkgJetCont = rhotask->AddJetContainer(jetType, AliJetContainer::kt_algorithm, rscheme, jetradius, acceptance, partCont, clusterCont);
   if (bkgJetCont) {
     //why?? bkgJetCont->SetJetAreaCut(jetareacut);
-	//why?? bkgJetCont->SetAreaEmcCut(emcareacut);
+    //why?? bkgJetCont->SetAreaEmcCut(emcareacut);
     bkgJetCont->SetJetPtCut(0.);
   }
 
@@ -336,15 +381,15 @@ AliAnalysisTaskRhoSparse* AliAnalysisTaskRhoSparse::AddTaskRhoSparse(
   AliJetContainer *sigJetCont;
   if(nJetsSig!=0)
   {
-	  sigJetCont = rhotask->AddJetContainer(nJetsSig,cutType,jetradius);
-	  if (sigJetCont)
-	  {
-		  sigJetCont->SetJetAreaCut(jetareacut);
-		  sigJetCont->SetAreaEmcCut(emcareacut);
-		  sigJetCont->SetJetPtCut(jetptcut);
-		  sigJetCont->ConnectParticleContainer(trackCont);
-		  sigJetCont->ConnectClusterContainer(clusterCont);
-	  }
+    sigJetCont = rhotask->AddJetContainer(nJetsSig,cutType,jetradius);
+    if (sigJetCont)
+    {
+      sigJetCont->SetJetAreaCut(jetareacut);
+      sigJetCont->SetAreaEmcCut(emcareacut);
+      sigJetCont->SetJetPtCut(jetptcut);
+      sigJetCont->ConnectParticleContainer(trackCont);
+      sigJetCont->ConnectClusterContainer(clusterCont);
+    }
   }
   //-------------------------------------------------------
   // Final settings, pass to manager and set the containers
@@ -357,8 +402,8 @@ AliAnalysisTaskRhoSparse* AliAnalysisTaskRhoSparse::AddTaskRhoSparse(
     TString contname(name);
     contname += "_histos";
     AliAnalysisDataContainer *coutput1 = mgr->CreateContainer(contname.Data(),
-							      TList::Class(),AliAnalysisManager::kOutputContainer,
-							      Form("%s", AliAnalysisManager::GetCommonFileName()));
+        TList::Class(),AliAnalysisManager::kOutputContainer,
+        Form("%s", AliAnalysisManager::GetCommonFileName()));
     mgr->ConnectOutput(rhotask, 1, coutput1);
   }
 

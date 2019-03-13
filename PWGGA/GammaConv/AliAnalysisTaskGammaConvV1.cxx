@@ -754,24 +754,24 @@ void AliAnalysisTaskGammaConvV1::UserCreateOutputObjects(){
     }
   // Set special pt binning for PbPb 5TeV
   } else if (((AliConvEventCuts*)fV0Reader->GetEventCuts())->GetEnergyEnum() == AliConvEventCuts::kPbPb5TeV ){
-//    binWidthPt  = 0.1;
-    nBinsPt     = 63;
+
+    nBinsPt     = 38;
     minPt       = 0.0;
     maxPt       = 25.0;
     for(Int_t i=0; i<=nBinsPt;i++){
-      if(i<=30)           arrPtBinning[i]  = 0.0   + 0.10*i;              // 0.1GeV bin width until  3GeV
-      else if(i<=38)      arrPtBinning[i]  = 3.0   + 0.25*(i-30);         // 0.25GeV                 5GeV
-      else if(i<=48)      arrPtBinning[i]  = 5.0   + 0.50*(i-38);         // 0.5GeV                 10GeV
-      else /*i<=nBinsPt*/ arrPtBinning[i]  = 10.0  +  1.0*(i-48);         // 1.0GeV                 25GeV
+      if(i<=20)           arrPtBinning[i]  = 0.0   + 0.2*i;             // 0.2 GeV bin width until 4 GeV
+      else if(i<=30)      arrPtBinning[i]  = 4.0   + 0.5*(i-20);        // 0.5 GeV                 9 GeV
+      else if(i<=36)      arrPtBinning[i]  = 9.0   + 1.0*(i-30);        // 1.0 GeV                 15 GeV
+      else /*i<=nBinsPt*/ arrPtBinning[i]  = 15.0  + 5.0*(i-36);        // 5.0 GeV                 25 GeV
     }
 
-    nBinsQAPt = 63;
+    nBinsQAPt = 38;
     maxQAPt   = 25.0;
     for(Int_t i=0; i<=nBinsQAPt;i++){
-      if(i<=30)           arrQAPtBinning[i]  = 0.0   + 0.10*i;              // 0.1GeV bin width until  3GeV
-      else if(i<=38)      arrQAPtBinning[i]  = 3.0   + 0.25*(i-30);         // 0.25GeV                 5GeV
-      else if(i<=48)      arrQAPtBinning[i]  = 5.0   + 0.50*(i-38);         // 0.5GeV                 10GeV
-      else /*i<=nBinsPt*/ arrQAPtBinning[i]  = 10.0  +  1.0*(i-48);         // 1.0GeV                 25GeV
+      if(i<=20)           arrQAPtBinning[i]  = 0.0   + 0.2*i;             // 0.2 GeV bin width until 4 GeV
+      else if(i<=30)      arrQAPtBinning[i]  = 4.0   + 0.5*(i-20);        // 0.5 GeV                 9 GeV
+      else if(i<=36)      arrQAPtBinning[i]  = 9.0   + 1.0*(i-30);        // 1.0 GeV                 15 GeV
+      else /*i<=nBinsPt*/ arrQAPtBinning[i]  = 15.0  + 5.0*(i-36);        // 5.0 GeV                 25 GeV
     }
 
     nBinsClusterPt            = 148;
@@ -829,6 +829,7 @@ void AliAnalysisTaskGammaConvV1::UserCreateOutputObjects(){
     fMotherList             = new TList*[fnCuts];
   }
 
+  // event histos:
   fHistoNEvents             = new TH1F*[fnCuts];
   if (fIsMC > 1){
     fHistoNEventsWOWeight   = new TH1F*[fnCuts];
@@ -850,16 +851,21 @@ void AliAnalysisTaskGammaConvV1::UserCreateOutputObjects(){
     fHistoVertexZWeighted        = new TH1F*[fnCuts];
     fHistoCentralityFlattened    = new TH1F*[fnCuts];
   }
-  fHistoNGammaCandidates         = new TH1F*[fnCuts];
-  if (fIsMC < 2){
-    fHistoNGoodESDTracksVsNGammaCandidates   = new TH2F*[fnCuts];
-    fHistoSPDClusterTrackletBackground       = new TH2F*[fnCuts];
-  }
-  fHistoV0MultVsNumberTPCoutTracks = new TH2F*[fnCuts];
-  fHistoConvGammaPt              = new TH1F*[fnCuts];
-  fHistoNV0Tracks                = new TH1F*[fnCuts];
-  fHistoEtaShift                 = new TProfile*[fnCuts];
 
+  if(!fDoLightOutput){
+    fHistoNGammaCandidates                     = new TH1F*[fnCuts];
+    if (fIsMC < 2){
+      fHistoNGoodESDTracksVsNGammaCandidates   = new TH2F*[fnCuts];
+      fHistoSPDClusterTrackletBackground       = new TH2F*[fnCuts];
+    }
+    fHistoV0MultVsNumberTPCoutTracks           = new TH2F*[fnCuts];
+    fHistoNV0Tracks                            = new TH1F*[fnCuts];
+  }
+
+  fHistoEtaShift                             = new TProfile*[fnCuts];
+
+  // gamma histos:
+  fHistoConvGammaPt                          = new TH1F*[fnCuts];
   if (fDoPhotonQA > 0 && fIsMC < 2 ){
     fHistoConvGammaPsiPairPt    = new TH2F*[fnCuts];
     fHistoConvGammaR            = new TH1F*[fnCuts];
@@ -873,6 +879,8 @@ void AliAnalysisTaskGammaConvV1::UserCreateOutputObjects(){
   if ((fDoPhotonQA == 2)||(fDoPhotonQA == 5)){
     tESDConvGammaPtDcazCat      = new TTree*[fnCuts];
   }
+
+  // meson histos:
   if(fDoMesonAnalysis){
     fHistoMotherInvMassPt           = new TH2F*[fnCuts];
     fHistoMotherBackInvMassPt       = new TH2F*[fnCuts];
@@ -1030,36 +1038,37 @@ void AliAnalysisTaskGammaConvV1::UserCreateOutputObjects(){
       fESDList[iCut]->Add(fHistoCentralityFlattened[iCut]);
     }
 
-    fHistoNGammaCandidates[iCut]       = new TH1F("GammaCandidates", "GammaCandidates", nGammaCand, -0.5, nGammaCand-0.5);
-    if(fDoCentralityFlat > 0 || fIsMC > 1) fHistoNGammaCandidates[iCut]->Sumw2();
-    fESDList[iCut]->Add(fHistoNGammaCandidates[iCut]);
-    if (fIsMC < 2){
-      fHistoNGoodESDTracksVsNGammaCandidates[iCut]   = new TH2F("GoodESDTracksVsGammaCandidates", "GoodESDTracksVsGammaCandidates", nTracks, -0.5, nTracks-0.5, nGammaCand, -0.5, nGammaCand-0.5);
-      if(fDoCentralityFlat > 0) fHistoNGoodESDTracksVsNGammaCandidates[iCut]->Sumw2();
-      fESDList[iCut]->Add(fHistoNGoodESDTracksVsNGammaCandidates[iCut]);
+    if(!fDoLightOutput){
+      fHistoNGammaCandidates[iCut]       = new TH1F("GammaCandidates", "GammaCandidates", nGammaCand, -0.5, nGammaCand-0.5);
+      if(fDoCentralityFlat > 0 || fIsMC > 1) fHistoNGammaCandidates[iCut]->Sumw2();
+      fESDList[iCut]->Add(fHistoNGammaCandidates[iCut]);
+      if (fIsMC < 2){
+	fHistoNGoodESDTracksVsNGammaCandidates[iCut]   = new TH2F("GoodESDTracksVsGammaCandidates", "GoodESDTracksVsGammaCandidates", nTracks, -0.5, nTracks-0.5, nGammaCand, -0.5, nGammaCand-0.5);
+	if(fDoCentralityFlat > 0) fHistoNGoodESDTracksVsNGammaCandidates[iCut]->Sumw2();
+	fESDList[iCut]->Add(fHistoNGoodESDTracksVsNGammaCandidates[iCut]);
+	fHistoSPDClusterTrackletBackground[iCut]    = new TH2F("SPD tracklets vs SPD clusters", "SPD tracklets vs SPD clusters", nBinsTrklCls, 0, nSPDTracklets, nBinsTrklCls, 0, nSPDClusters);
+	if(fDoCentralityFlat > 0) fHistoSPDClusterTrackletBackground[iCut]->Sumw2();
+	fESDList[iCut]->Add(fHistoSPDClusterTrackletBackground[iCut]);
+      }
 
-      fHistoSPDClusterTrackletBackground[iCut]    = new TH2F("SPD tracklets vs SPD clusters", "SPD tracklets vs SPD clusters", nBinsTrklCls, 0, nSPDTracklets, nBinsTrklCls, 0, nSPDClusters);
-      if(fDoCentralityFlat > 0) fHistoSPDClusterTrackletBackground[iCut]->Sumw2();
-      fESDList[iCut]->Add(fHistoSPDClusterTrackletBackground[iCut]);
+      if(fIsHeavyIon == 1)
+	fHistoV0MultVsNumberTPCoutTracks[iCut]    = new TH2F("V0Mult vs TPCout Tracks", "V0Mult vs TPCout Tracks", 500, 0, 15000, 500, 0, 40000);
+      else if(fIsHeavyIon == 2)
+	fHistoV0MultVsNumberTPCoutTracks[iCut]    = new TH2F("V0Mult vs TPCout Tracks", "V0Mult vs TPCout Tracks", 500, 0, 1000, 500, 0, 2500);
+      else
+	fHistoV0MultVsNumberTPCoutTracks[iCut]    = new TH2F("V0Mult vs TPCout Tracks", "V0Mult vs TPCout Tracks", 200, 0, 400, 500, 0, 1500);
+      fESDList[iCut]->Add(fHistoV0MultVsNumberTPCoutTracks[iCut]);
+
+      if(fIsHeavyIon == 1)
+	fHistoNV0Tracks[iCut]            = new TH1F("V0 Multiplicity", "V0 Multiplicity", 20000, 0, 40000);
+      else if(fIsHeavyIon == 2)
+	fHistoNV0Tracks[iCut]            = new TH1F("V0 Multiplicity", "V0 Multiplicity", 2500, 0, 2500);
+      else
+	fHistoNV0Tracks[iCut]            = new TH1F("V0 Multiplicity", "V0 Multiplicity", 1500, 0, 1500);
+      if(fDoCentralityFlat > 0 || fIsMC > 1) fHistoNV0Tracks[iCut]->Sumw2();
+      fESDList[iCut]->Add(fHistoNV0Tracks[iCut]);
     }
 
-    if(fIsHeavyIon == 1)
-      fHistoV0MultVsNumberTPCoutTracks[iCut]    = new TH2F("V0Mult vs TPCout Tracks", "V0Mult vs TPCout Tracks", 500, 0, 15000, 500, 0, 40000);
-    else if(fIsHeavyIon == 2)
-      fHistoV0MultVsNumberTPCoutTracks[iCut]    = new TH2F("V0Mult vs TPCout Tracks", "V0Mult vs TPCout Tracks", 500, 0, 1000, 500, 0, 2500);
-    else
-      fHistoV0MultVsNumberTPCoutTracks[iCut]    = new TH2F("V0Mult vs TPCout Tracks", "V0Mult vs TPCout Tracks", 200, 0, 400, 500, 0, 1500);
-
-    fESDList[iCut]->Add(fHistoV0MultVsNumberTPCoutTracks[iCut]);
-
-    if(fIsHeavyIon == 1)
-      fHistoNV0Tracks[iCut]            = new TH1F("V0 Multiplicity", "V0 Multiplicity", 20000, 0, 40000);
-    else if(fIsHeavyIon == 2)
-      fHistoNV0Tracks[iCut]            = new TH1F("V0 Multiplicity", "V0 Multiplicity", 2500, 0, 2500);
-    else
-      fHistoNV0Tracks[iCut]            = new TH1F("V0 Multiplicity", "V0 Multiplicity", 1500, 0, 1500);
-    if(fDoCentralityFlat > 0 || fIsMC > 1) fHistoNV0Tracks[iCut]->Sumw2();
-    fESDList[iCut]->Add(fHistoNV0Tracks[iCut]);
     fHistoEtaShift[iCut]               = new TProfile("Eta Shift", "Eta Shift", 1, -0.5, 0.5);
     fESDList[iCut]->Add(fHistoEtaShift[iCut]);
 
@@ -1929,28 +1938,29 @@ void AliAnalysisTaskGammaConvV1::UserExec(Option_t *)
     fHistoVertexZ[iCut]->Fill(fInputEvent->GetPrimaryVertex()->GetZ(),fWeightJetJetMC);
     if(fDoCentralityFlat > 0) fHistoVertexZWeighted[iCut]->Fill(fInputEvent->GetPrimaryVertex()->GetZ(), fWeightCentrality[iCut]*fWeightJetJetMC);
 
-    if( fIsMC < 2 ){
-      if(fDoCentralityFlat > 0) fHistoSPDClusterTrackletBackground[iCut]->Fill(fInputEvent->GetMultiplicity()->GetNumberOfTracklets(),(fInputEvent->GetNumberOfITSClusters(0)+fInputEvent->GetNumberOfITSClusters(1)), fWeightCentrality[iCut]);
-      else fHistoSPDClusterTrackletBackground[iCut]->Fill(fInputEvent->GetMultiplicity()->GetNumberOfTracklets(),(fInputEvent->GetNumberOfITSClusters(0)+fInputEvent->GetNumberOfITSClusters(1)));
-    }
-
     if(fDoPlotVsCentrality) fHistoCentrality[iCut]->Fill(((AliConvEventCuts*)fEventCutArray->At(iCut))->GetCentrality(fInputEvent),fWeightJetJetMC);
     if(fDoCentralityFlat > 0) fHistoCentralityFlattened[iCut]->Fill(((AliConvEventCuts*)fEventCutArray->At(iCut))->GetCentrality(fInputEvent), fWeightCentrality[iCut]*fWeightJetJetMC);
 
     if(fDoCentralityFlat > 0) fHistoCentralityVsPrimaryTracks[iCut]->Fill(((AliConvEventCuts*)fEventCutArray->At(iCut))->GetCentrality(fInputEvent),fV0Reader->GetNumberOfPrimaryTracks(), fWeightCentrality[iCut]*fWeightJetJetMC);
     else if(fDoPlotVsCentrality) fHistoCentralityVsPrimaryTracks[iCut]->Fill(((AliConvEventCuts*)fEventCutArray->At(iCut))->GetCentrality(fInputEvent),fV0Reader->GetNumberOfPrimaryTracks(), fWeightJetJetMC);
 
-    if(((AliConvEventCuts*)fEventCutArray->At(iCut))->IsHeavyIon() == 2){
-      fHistoV0MultVsNumberTPCoutTracks[iCut]->Fill(fV0Reader->GetNumberOfTPCoutTracks(), fInputEvent->GetVZEROData()->GetMTotV0A());
-    } else {
-      fHistoV0MultVsNumberTPCoutTracks[iCut]->Fill(fV0Reader->GetNumberOfTPCoutTracks(), fInputEvent->GetVZEROData()->GetMTotV0A()+fInputEvent->GetVZEROData()->GetMTotV0C());
-    }
+    if(!fDoLightOutput){
+      if( fIsMC < 2 ){
+	if(fDoCentralityFlat > 0) fHistoSPDClusterTrackletBackground[iCut]->Fill(fInputEvent->GetMultiplicity()->GetNumberOfTracklets(),(fInputEvent->GetNumberOfITSClusters(0)+fInputEvent->GetNumberOfITSClusters(1)), fWeightCentrality[iCut]);
+	else fHistoSPDClusterTrackletBackground[iCut]->Fill(fInputEvent->GetMultiplicity()->GetNumberOfTracklets(),(fInputEvent->GetNumberOfITSClusters(0)+fInputEvent->GetNumberOfITSClusters(1)));
+      }
 
-    if(((AliConvEventCuts*)fEventCutArray->At(iCut))->IsHeavyIon() == 2) fHistoNV0Tracks[iCut]->Fill(fInputEvent->GetVZEROData()->GetMTotV0A(),fWeightJetJetMC);
-    else if(fDoCentralityFlat > 0){
-      fHistoNV0Tracks[iCut]->Fill(fInputEvent->GetVZEROData()->GetMTotV0A()+fInputEvent->GetVZEROData()->GetMTotV0C(), fWeightCentrality[iCut]*fWeightJetJetMC);
-    } else {
-      fHistoNV0Tracks[iCut]->Fill(fInputEvent->GetVZEROData()->GetMTotV0A()+fInputEvent->GetVZEROData()->GetMTotV0C(),fWeightJetJetMC);
+      if(((AliConvEventCuts*)fEventCutArray->At(iCut))->IsHeavyIon() == 2){
+	fHistoV0MultVsNumberTPCoutTracks[iCut]->Fill(fV0Reader->GetNumberOfTPCoutTracks(), fInputEvent->GetVZEROData()->GetMTotV0A());
+      } else {
+	fHistoV0MultVsNumberTPCoutTracks[iCut]->Fill(fV0Reader->GetNumberOfTPCoutTracks(), fInputEvent->GetVZEROData()->GetMTotV0A()+fInputEvent->GetVZEROData()->GetMTotV0C());
+      }
+      if(((AliConvEventCuts*)fEventCutArray->At(iCut))->IsHeavyIon() == 2) fHistoNV0Tracks[iCut]->Fill(fInputEvent->GetVZEROData()->GetMTotV0A(),fWeightJetJetMC);
+      else if(fDoCentralityFlat > 0){
+	fHistoNV0Tracks[iCut]->Fill(fInputEvent->GetVZEROData()->GetMTotV0A()+fInputEvent->GetVZEROData()->GetMTotV0C(), fWeightCentrality[iCut]*fWeightJetJetMC);
+      } else {
+	fHistoNV0Tracks[iCut]->Fill(fInputEvent->GetVZEROData()->GetMTotV0A()+fInputEvent->GetVZEROData()->GetMTotV0C(),fWeightJetJetMC);
+      }
     }
 
     if (fEnableClusterCutsForTrigger ){
@@ -1994,12 +2004,14 @@ void AliAnalysisTaskGammaConvV1::UserExec(Option_t *)
 
     ProcessPhotonCandidates(); // Process this cuts gammas
 
-    if(fDoCentralityFlat > 0){
-      fHistoNGammaCandidates[iCut]->Fill(fGammaCandidates->GetEntries(), fWeightCentrality[iCut]*fWeightJetJetMC);
-      if( fIsMC < 2 ) fHistoNGoodESDTracksVsNGammaCandidates[iCut]->Fill(fV0Reader->GetNumberOfPrimaryTracks(),fGammaCandidates->GetEntries(), fWeightCentrality[iCut]);
-    } else {
-      fHistoNGammaCandidates[iCut]->Fill(fGammaCandidates->GetEntries(),fWeightJetJetMC);
-      if( fIsMC < 2 ) fHistoNGoodESDTracksVsNGammaCandidates[iCut]->Fill(fV0Reader->GetNumberOfPrimaryTracks(),fGammaCandidates->GetEntries());
+    if(!fDoLightOutput){
+      if(fDoCentralityFlat > 0){
+	fHistoNGammaCandidates[iCut]->Fill(fGammaCandidates->GetEntries(), fWeightCentrality[iCut]*fWeightJetJetMC);
+	if( fIsMC < 2 ) fHistoNGoodESDTracksVsNGammaCandidates[iCut]->Fill(fV0Reader->GetNumberOfPrimaryTracks(),fGammaCandidates->GetEntries(), fWeightCentrality[iCut]);
+      } else {
+	fHistoNGammaCandidates[iCut]->Fill(fGammaCandidates->GetEntries(),fWeightJetJetMC);
+	if( fIsMC < 2 ) fHistoNGoodESDTracksVsNGammaCandidates[iCut]->Fill(fV0Reader->GetNumberOfPrimaryTracks(),fGammaCandidates->GetEntries());
+      }
     }
 
     if(fDoMesonAnalysis){ // Meson Analysis
@@ -2718,7 +2730,7 @@ void AliAnalysisTaskGammaConvV1::ProcessAODMCParticles()
         }
         if(((AliConversionPhotonCuts*)fCutArray->At(fiCut))->PhotonIsSelectedAODMC(particle,AODMCTrackArray,kTRUE)){
           Double_t rConv = 0;
-          for(Int_t daughterIndex=particle->GetDaughter(0);daughterIndex<=particle->GetDaughter(1);daughterIndex++){
+          for(Int_t daughterIndex=particle->GetDaughterLabel(0);daughterIndex<=particle->GetDaughterLabel(1);daughterIndex++){
             AliAODMCParticle *tmpDaughter = static_cast<AliAODMCParticle*>(AODMCTrackArray->At(daughterIndex));
             if(!tmpDaughter) continue;
             if(TMath::Abs(tmpDaughter->GetPdgCode()) == 11){
@@ -2768,8 +2780,8 @@ void AliAnalysisTaskGammaConvV1::ProcessAODMCParticles()
           }
 
           if(((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->MesonIsSelectedAODMC(particle,AODMCTrackArray,((AliConvEventCuts*)fEventCutArray->At(fiCut))->GetEtaShift())){
-            AliAODMCParticle* daughter0 = static_cast<AliAODMCParticle*>(AODMCTrackArray->At(particle->GetDaughter(0)));
-            AliAODMCParticle* daughter1 = static_cast<AliAODMCParticle*>(AODMCTrackArray->At(particle->GetDaughter(1)));
+            AliAODMCParticle* daughter0 = static_cast<AliAODMCParticle*>(AODMCTrackArray->At(particle->GetDaughterLabel(0)));
+            AliAODMCParticle* daughter1 = static_cast<AliAODMCParticle*>(AODMCTrackArray->At(particle->GetDaughterLabel(1)));
             Float_t weighted= 1;
 	    if (particle->Pt()>0.005){
 	      weighted= ((AliConvEventCuts*)fEventCutArray->At(fiCut))->GetWeightForMeson(i, 0x0, fInputEvent);
@@ -2889,8 +2901,8 @@ void AliAnalysisTaskGammaConvV1::ProcessAODMCParticles()
 
         if(fDoMesonAnalysis){
           if(((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->MesonIsSelectedAODMC(particle,AODMCTrackArray,((AliConvEventCuts*)fEventCutArray->At(fiCut))->GetEtaShift())){
-            AliAODMCParticle* daughter0 = static_cast<AliAODMCParticle*>(AODMCTrackArray->At(particle->GetDaughter(0)));
-            AliAODMCParticle* daughter1 = static_cast<AliAODMCParticle*>(AODMCTrackArray->At(particle->GetDaughter(1)));
+            AliAODMCParticle* daughter0 = static_cast<AliAODMCParticle*>(AODMCTrackArray->At(particle->GetDaughterLabel(0)));
+            AliAODMCParticle* daughter1 = static_cast<AliAODMCParticle*>(AODMCTrackArray->At(particle->GetDaughterLabel(1)));
             AliAODMCParticle* mother = static_cast<AliAODMCParticle*>(AODMCTrackArray->At(particle->GetMother()));
             Int_t pdgCode         = mother->GetPdgCode();
             if(particle->GetPdgCode() == 111){

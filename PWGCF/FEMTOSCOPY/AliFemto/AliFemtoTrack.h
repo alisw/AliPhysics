@@ -1,14 +1,6 @@
 ///
 /// \file AliFemtoTrack.h
 ///
-/// \class AliFemtoTrack
-/// \brief Main class holding track information (before identification)
-///
-/// AliFemtoTrack holds all the necessary information about a track that is
-/// required during femtoscopic analysis. This class is filled with information
-/// from the input stream by the reader. A particle has a link back to the Track
-/// it was created from, so we do not copy the information.
-///
 
 #pragma once
 
@@ -21,6 +13,14 @@
 #include "AliFemtoHiddenInfo.h"
 
 
+/// \class AliFemtoTrack
+/// \brief Main class holding track information (before identification)
+///
+/// AliFemtoTrack holds all the necessary information about a track that is
+/// required during femtoscopic analysis. This class is filled with information
+/// from the input stream by the reader. A particle has a link back to the Track
+/// it was created from, so we do not copy the information.
+///
 class AliFemtoTrack {
 public:
   AliFemtoTrack();
@@ -57,6 +57,12 @@ public:
   float ITSchi2() const;
   int   ITSncls() const;
   float TPCchi2() const;
+
+  /// Calculate reduced chi-squared (χ²/NDoF) for TPC
+  ///
+  /// Calculation comes from AliAODTrack::GetTPCchi2perNDF
+  ///
+  float TPCchi2perNDF() const;
   int   TPCncls() const;
   short TPCnclsF() const;
   float TPCsignal() const;
@@ -78,14 +84,12 @@ public:
   //
   /***********************/
 
-  
   float VTOF() const;
   float NSigmaTOFPi() const;
   float NSigmaTOFK() const;
   float NSigmaTOFP() const;
   float NSigmaTOFE() const;
 
-  
   /**************************/
   //
   float NSigmaTOFD() const;
@@ -97,13 +101,10 @@ public:
   //
   /**************************/
 
-
-  
   float TOFpionTime() const;
   float TOFkaonTime() const;
   float TOFprotonTime() const;
 
-  
   /***************************/
   //
   float TOFdeuteronTime() const;
@@ -112,8 +113,6 @@ public:
   float TOFalphaTime() const;
   //
   /******************************/
-
-
 
   double XatDCA() const;
   double YatDCA() const;
@@ -139,7 +138,6 @@ public:
   float CorrectionAlphaMinus() const;
   //
   /**************************************/
-  
 
   const TBits& TPCclusters() const;
   const TBits& TPCsharing()  const;
@@ -205,7 +203,6 @@ public:
   void SetMassTOF(const float& x);
   //
   /**************************************************/
-  
 
   void SetTPCcluster(const short& aNBit, const Bool_t& aValue);
   void SetTPCshared(const short& aNBit, const Bool_t& aValue);
@@ -213,7 +210,7 @@ public:
   void SetTPCClusterMap(const TBits& aBits);
   void SetTPCSharedMap(const TBits& aBits);
 
-  void SetKinkIndexes(int points[3]);
+  void SetKinkIndexes(const int points[3]);
   int  KinkIndex(int aIndex) const;
   void SetITSHitOnLayer(int i, bool val);
   bool HasPointOnITSLayer(int aIndex) const; ///< i: 0-5, for 6 layers
@@ -230,6 +227,7 @@ public:
   void SetNominalTPCEntrancePoint(const AliFemtoThreeVector& aXTPC);
   void SetNominalTPCEntrancePoint(double *aXTPC);
 
+  void SetNominalTPCPoints(const AliFemtoThreeVector * const);
   void SetNominalTPCPoints(double **aXTPC);
 
   void SetNominalTPCExitPoint(const AliFemtoThreeVector& aXTPC);
@@ -287,12 +285,12 @@ public:
 
   void SetPrimaryVertex(const double *vertex);
   void GetPrimaryVertex(double *fisvertex);
-  
+
   int Multiplicity() const;
   double Zvtx() const;
   void SetMultiplicity(int mult);
   void SetZvtx(double vtx);
-  
+
   //Alice stuff
   enum {
     kITSin=0x0001,kITSout=0x0002,kITSrefit=0x0004,kITSpid=0x0008,
@@ -327,14 +325,12 @@ public:
   //
   /**************************************************************/
 
-  
-
   AliFemtoThreeVector fP; ///< track momentum
   float fPt;              ///< transverse momenta
   float fInnerMomentum;   ///< *total* momentum at the *inner* wall of the TPC
   int fMultiplicity;
   double fZvtx;
-  
+
   AliFmPhysicalHelixD fHelix; ///< track helix
   //alice stuff
   //Long_t  fFlags;
@@ -359,7 +355,7 @@ public:
   short fTPCnclsF;        ///< number of findable clusters in the TPC
   float fTPCsignal;       ///< dEdx TPC value
   short fTPCsignalN;      ///< number of points used for dEdx
-  float fTPCsignalS;      ///< RMS of dEdx measurement
+  float fTPCsignalS;      ///< RMS of dEdx measurement (not used in AOD files)
 
   float fVTOF;            ///< v=length/TOF
   float fNSigmaTPCPi;     ///< nsigma TPC for pion
@@ -377,14 +373,14 @@ public:
   float fNSigmaTPCT;      ///< nsigma TPC for triton
   float fNSigmaTPCH;      ///< nsigma TPC for he3
   float fNSigmaTPCA;      ///< nsigma TPC for alpha
-  float fNSigmaTOFD;      ///< nsigma TPC for deuteron 
+  float fNSigmaTOFD;      ///< nsigma TPC for deuteron
   float fNSigmaTOFT;      ///< nsigma TPC for triton
   float fNSigmaTOFH;      ///< nsigma TPC for he3
   float fNSigmaTOFA;      ///< nsigma TPC for alpha
-  float fMassTOF;      ///< 
+  float fMassTOF;         ///<
   //
   /******************************************************/
-  
+
   float fSigmaToVertex;   ///< Distance from track to vertex in sigmas
   TBits fClusters;        ///< Cluster per padrow map
   TBits fShared;          ///< Sharing per padrow map
@@ -412,28 +408,27 @@ public:
   double fVertex[3];
 
   //Corrections related information
-  float fCorrPi;     //corrections for pion hypothesis
-  float fCorrK;      //corrections for kaon hypothesis
-  float fCorrP;      //corrections for proton hypothesis
+  float fCorrPi;  ///< corrections for pion hypothesis
+  float fCorrK;   ///< corrections for kaon hypothesis
+  float fCorrP;   ///< corrections for proton hypothesis
 
-  float fCorrPiMinus;     //corrections for pion hypothesis
-  float fCorrKMinus;      //corrections for kaon hypothesis
-  float fCorrPMinus;      //corrections for proton hypothesis
+  float fCorrPiMinus;  ///< corrections for pion hypothesis
+  float fCorrKMinus;   ///< corrections for kaon hypothesis
+  float fCorrPMinus;   ///< corrections for proton hypothesis
 
-  float fCorrAll;    //corrections for particles without PID
+  float fCorrAll;  ///< corrections for particles without PID
 
-  
   /***********************************************************/
   //
-  float fCorrD;     //corrections for deuteron hypothesis
-  float fCorrT;      //corrections for triton hypothesis
-  float fCorrH;      //corrections for he3 hypothesis
-  float fCorrA;      //corrections for alpha hypothesis
+  float fCorrD;  ///< corrections for deuteron hypothesis
+  float fCorrT;  ///< corrections for triton hypothesis
+  float fCorrH;  ///< corrections for he3 hypothesis
+  float fCorrA;  ///< corrections for alpha hypothesis
 
-  float fCorrDMinus;     //corrections for deuteron hypothesis
-  float fCorrTMinus;      //corrections for triton hypothesis
-  float fCorrHMinus;      //corrections frr he3 hypothesis
-  float fCorrAMinus;      //corrections for alpha hypothesis
+  float fCorrDMinus;  ///< corrections for deuteron hypothesis
+  float fCorrTMinus;  ///< corrections for triton hypothesis
+  float fCorrHMinus;  ///< corrections frr he3 hypothesis
+  float fCorrAMinus;  ///< corrections for alpha hypothesis
   //
   /**************************************************************/
 
@@ -446,10 +441,14 @@ inline float AliFemtoTrack::PidProbPion() const {return fPidProbPion;}
 inline float AliFemtoTrack::PidProbKaon() const {return fPidProbKaon;}
 inline float AliFemtoTrack::PidProbProton() const {return fPidProbProton;}
 inline float AliFemtoTrack::PidProbMuon() const {return fPidProbMuon;}
-inline int AliFemtoTrack::Multiplicity() const{ return fMultiplicity;}
-inline double AliFemtoTrack::Zvtx() const{  return fZvtx;}
+inline int AliFemtoTrack::Multiplicity() const { return fMultiplicity;}
+inline double AliFemtoTrack::Zvtx() const { return fZvtx;}
 
+inline float AliFemtoTrack::TPCchi2perNDF() const
+{
+  Int_t ndof = 2 * TPCncls() - 5;
+  return ndof > 0 ? fTPCchi2 / ndof : 9999;
+}
 
 
 #endif
-

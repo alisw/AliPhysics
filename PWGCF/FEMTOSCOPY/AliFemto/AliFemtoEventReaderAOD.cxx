@@ -69,6 +69,7 @@ AliFemtoEventReaderAOD::AliFemtoEventReaderAOD():
   fAnaUtils(nullptr),
   fEventCuts(nullptr),
   fUseAliEventCuts(0),
+  fReadFullMCData(false),
   fInputFile(""),
   fTree(nullptr),
   fAodFile(nullptr),
@@ -146,6 +147,7 @@ AliFemtoEventReaderAOD::AliFemtoEventReaderAOD(const AliFemtoEventReaderAOD &aRe
   fAnaUtils(aReader.fAnaUtils),
   fEventCuts(aReader.fEventCuts),
   fUseAliEventCuts(aReader.fUseAliEventCuts),
+  fReadFullMCData(aReader.fReadFullMCData),
   fInputFile(aReader.fInputFile),
   fTree(nullptr),
   fAodFile(new TFile(aReader.fAodFile->GetName())),
@@ -242,6 +244,10 @@ AliFemtoEventReaderAOD &AliFemtoEventReaderAOD::operator=(const AliFemtoEventRea
   fAllFalse.ResetAllBits(kFALSE);
   fFilterBit = aReader.fFilterBit;
   fFilterMask = aReader.fFilterMask;
+  fReadMC = aReader.fReadMC;
+  fReadV0 = aReader.fReadV0;
+  fReadCascade = aReader.fReadCascade;
+  fReadFullMCData = aReader.fReadFullMCData;
   //  fPWG2AODTracks = aReader.fPWG2AODTracks;
   fAODpidUtil = aReader.fAODpidUtil;
   fAODheader = aReader.fAODheader;
@@ -466,12 +472,12 @@ AliFemtoEvent *AliFemtoEventReaderAOD::CopyAODtoFemtoEvent()
   }
 
   // Primary Vertex position
-  auto *aodvertex = (fUseAliEventCuts)
-                  ? static_cast<const AliAODVertex *>(fEventCuts->GetPrimaryVertex())
-                  : static_cast<const AliAODVertex *>(fEvent->GetPrimaryVertex());
+  const auto *aodvertex = (fUseAliEventCuts)
+                        ? static_cast<const AliAODVertex *>(fEventCuts->GetPrimaryVertex())
+                        : static_cast<const AliAODVertex *>(fEvent->GetPrimaryVertex());
 
   if (!aodvertex || aodvertex->GetNContributors() < 1) {
-    delete tEvent; // Bad vertex, skip event.
+    delete tEvent;  // Bad vertex, skip event.
     return nullptr;
   }
 
@@ -517,19 +523,28 @@ AliFemtoEvent *AliFemtoEventReaderAOD::CopyAODtoFemtoEvent()
   int realnofTracks = 0; // number of track which we use in a analysis
   int tracksPrim = 0;
 
+  // constant indicating label has been unset
+  const int UNDEFINED_LABEL = -1;
+
   // 'labels' maps a track's id to the track's index in the Event
   // i.e. labels[Event->GetTrack(x)->GetID()] == x
-  std::map<int, int> labels;
+  std::vector<int> labels(nofTracks, UNDEFINED_LABEL);
 
-  // looking for global tracks and saving their numbers to copy from them PID information to TPC-only tracks in the main loop over tracks
+  // looking for global tracks and saving their numbers to copy from
+  // them PID information to TPC-only tracks in the main loop over tracks
   for (int i = 0; i < nofTracks; i++) {
-    const AliAODTrack *aodtrack = dynamic_cast<const AliAODTrack *>(fEvent->GetTrack(i));
-    assert(aodtrack && "Not a standard AOD");
+    const auto *aodtrack = static_cast<AliAODTrack *>(fEvent->GetTrack(i));
+
     if (!aodtrack->TestFilterBit(fFilterBit)) {
       // Skip TPC-only tracks
-      auto id = aodtrack->GetID();
+      const int id = aodtrack->GetID();
       if (id < 0) {
         continue;
+      }
+
+      // Resize labels vector if "id" is larger than mapping allows
+      if (static_cast<size_t>(id) >= labels.size()) {
+        labels.resize(id + 1024, UNDEFINED_LABEL);
       }
       labels[id] = i;
     }
@@ -539,7 +554,7 @@ AliFemtoEvent *AliFemtoEventReaderAOD::CopyAODtoFemtoEvent()
   Int_t norm_mult = 0;
   for (int i = 0; i < nofTracks; i++) {
     //  const AliAODTrack *aodtrack=dynamic_cast<AliAODTrack*>(fEvent->GetTrack(i));
-    AliAODTrack *aodtrack = dynamic_cast<AliAODTrack *>(fEvent->GetTrack(i));
+    AliAODTrack *aodtrack = static_cast<AliAODTrack *>(fEvent->GetTrack(i));
     assert(aodtrack && "Not a standard AOD"); // Getting the AODtrack directly
 
     if (aodtrack->IsPrimaryCandidate()) {
@@ -637,7 +652,7 @@ AliFemtoEvent *AliFemtoEventReaderAOD::CopyAODtoFemtoEvent()
     const Int_t pid_track_id = (fFilterBit == (1 << 7) || fFilterMask == 128)
                              ? labels[-1 - fEvent->GetTrack(i)->GetID()]
                              : i;
-    AliAODTrack *aodtrackpid = dynamic_cast<AliAODTrack *>(fEvent->GetTrack(pid_track_id));
+    AliAODTrack *aodtrackpid = static_cast<AliAODTrack *>(fEvent->GetTrack(pid_track_id));
     assert(aodtrackpid && "Not a standard AOD");
 
     //Pile-up removal
@@ -677,7 +692,8 @@ AliFemtoEvent *AliFemtoEventReaderAOD::CopyAODtoFemtoEvent()
       Int_t track_label = aodtrack->GetLabel();
       const AliAODMCParticle *tPart = (track_label > -1)
                                     ? static_cast<const AliAODMCParticle *>(mcP->At(track_label))
-                                    : nullptr;
+                                    : !fReadFullMCData ? nullptr
+                                    : static_cast<const AliAODMCParticle *>(mcP->At(std::abs(track_label)));
 
       AliFemtoModelGlobalHiddenInfo *tInfo = new AliFemtoModelGlobalHiddenInfo();
       double fpx = 0.0, fpy = 0.0, fpz = 0.0, fpt = 0.0;
@@ -881,6 +897,7 @@ AliFemtoEvent *AliFemtoEventReaderAOD::CopyAODtoFemtoEvent()
     int count_pass = 0;
     for (Int_t i = 0; i < fEvent->GetNumberOfV0s(); i++) {
       AliAODv0 *aodv0 = fEvent->GetV0(i);
+      // ensure a "good" v0 particle passes these conditions
       if (!aodv0
           || aodv0->GetNDaughters() > 2
           || aodv0->GetNProngs() > 2
@@ -1223,13 +1240,10 @@ AliFemtoTrack *AliFemtoEventReaderAOD::CopyAODtoFemtoTrack(AliAODTrack *tAodTrac
   //  tFemtoTrack->SetCdd(covmat[0]);
   //  tFemtoTrack->SetCdz(covmat[1]);
   //  tFemtoTrack->SetCzz(covmat[2]);
-  tFemtoTrack->SetITSchi2(tAodTrack->Chi2perNDF());
-  tFemtoTrack->SetITSncls(tAodTrack->GetITSNcls());
-  tFemtoTrack->SetTPCchi2(tAodTrack->Chi2perNDF());
+
+  tFemtoTrack->SetTPCchi2(tAodTrack->GetTPCchi2());
   tFemtoTrack->SetTPCncls(tAodTrack->GetTPCNcls());
-  tFemtoTrack->SetTPCnclsF(tAodTrack->GetTPCNcls());
-  tFemtoTrack->SetTPCsignalN(1);
-  tFemtoTrack->SetTPCsignalS(1);
+  tFemtoTrack->SetTPCnclsF(tAodTrack->GetTPCNclsF());
   tFemtoTrack->SetTPCsignal(tAodTrack->GetTPCsignal());
   tFemtoTrack->SetTPCClusterMap(tAodTrack->GetTPCClusterMap());
   tFemtoTrack->SetTPCSharedMap(tAodTrack->GetTPCSharedMap());
@@ -1238,45 +1252,19 @@ AliFemtoTrack *AliFemtoEventReaderAOD::CopyAODtoFemtoTrack(AliAODTrack *tAodTrac
   float bfield = 5 * fMagFieldSign;
 
   GetGlobalPositionAtGlobalRadiiThroughTPC(tAodTrack, bfield, globalPositionsAtRadii);
-  double tpcEntrance[3] = {globalPositionsAtRadii[0][0],
-                           globalPositionsAtRadii[0][1],
-                           globalPositionsAtRadii[0][2]};
-  double **tpcPositions;
-  tpcPositions = new double *[9];
 
-  for (int i = 0; i < 9; i++) {
-    tpcPositions[i] = new double[3];
-  }
-
-  double tpcExit[3] = {globalPositionsAtRadii[8][0],
-                       globalPositionsAtRadii[8][1],
-                       globalPositionsAtRadii[8][2]};
-
-  for (int i = 0; i < 9; i++) {
-    tpcPositions[i][0] = globalPositionsAtRadii[i][0];
-    tpcPositions[i][1] = globalPositionsAtRadii[i][1];
-    tpcPositions[i][2] = globalPositionsAtRadii[i][2];
-  }
+  AliFemtoThreeVector tpcPositions[9];
+  std::copy_n(globalPositionsAtRadii, 9, tpcPositions);
 
   if (fPrimaryVertexCorrectionTPCPoints) {
-    tpcEntrance[0] -= fV1[0];
-    tpcEntrance[1] -= fV1[1];
-    tpcEntrance[2] -= fV1[2];
-
-    tpcExit[0] -= fV1[0];
-    tpcExit[1] -= fV1[1];
-    tpcExit[2] -= fV1[2];
-
     for (int i = 0; i < 9; i++) {
-      tpcPositions[i][0] -= fV1[0];
-      tpcPositions[i][1] -= fV1[1];
-      tpcPositions[i][2] -= fV1[2];
+      tpcPositions[i] -= kOrigin;
     }
   }
 
-  tFemtoTrack->SetNominalTPCEntrancePoint(tpcEntrance);
+  tFemtoTrack->SetNominalTPCEntrancePoint(tpcPositions[0]);
   tFemtoTrack->SetNominalTPCPoints(tpcPositions);
-  tFemtoTrack->SetNominalTPCExitPoint(tpcExit);
+  tFemtoTrack->SetNominalTPCExitPoint(tpcPositions[8]);
 
   if (fShiftPosition > 0.) {
     Float_t posShifted[3];
@@ -1284,20 +1272,8 @@ AliFemtoTrack *AliFemtoEventReaderAOD::CopyAODtoFemtoTrack(AliAODTrack *tAodTrac
     tFemtoTrack->SetNominalTPCPointShifted(posShifted);
   }
 
-  for (int i = 0; i < 9; i++) {
-    delete[] tpcPositions[i];
-  }
-  delete[] tpcPositions;
-
-  int indexes[3];
-  for (int ik = 0; ik < 3; ik++) {
-    indexes[ik] = 0;
-  }
-  tFemtoTrack->SetKinkIndexes(indexes);
-
-  for (int ii = 0; ii < 6; ii++) {
-    tFemtoTrack->SetITSHitOnLayer(ii, tAodTrack->HasPointOnITSLayer(ii));
-  }
+  int kink_indexes[3] = { 0, 0, 0 };
+  tFemtoTrack->SetKinkIndexes(kink_indexes);
 
   //Corrections
 
@@ -2199,13 +2175,17 @@ void AliFemtoEventReaderAOD::CopyPIDtoFemtoTrack(AliAODTrack *tAodTrack, AliFemt
   tFemtoTrack->SetNSigmaTPCA(nsigmaTPCA);
   /****************************************/
 
-  tFemtoTrack->SetTPCchi2(tAodTrack->Chi2perNDF());
-  tFemtoTrack->SetTPCncls(tAodTrack->GetTPCNcls());
-  tFemtoTrack->SetTPCnclsF(tAodTrack->GetTPCNcls());
-
-  tFemtoTrack->SetTPCsignalN(1);
+  tFemtoTrack->SetTPCsignalN(tAodTrack->GetTPCsignalN());
   tFemtoTrack->SetTPCsignalS(1);
   tFemtoTrack->SetTPCsignal(tAodTrack->GetTPCsignal());
+
+  tFemtoTrack->SetITSchi2(tAodTrack->GetITSchi2());
+  tFemtoTrack->SetITSncls(tAodTrack->GetITSNcls());
+
+  for (int ii = 0; ii < 6; ii++) {
+    tFemtoTrack->SetITSHitOnLayer(ii, tAodTrack->HasPointOnITSLayer(ii));
+  }
+
 
   //////  TOF ////////////////////////////////////////////
 
@@ -2339,8 +2319,9 @@ void AliFemtoEventReaderAOD
 
     // extracted radius
     const Float_t radius = Rwanted[radius_index];
+
     // buffer to store position
-    Double_t pos_buffer[3] = {0};
+    Double_t pos_buffer[3] = {0.0, 0.0, 0.0};
 
     // get the global position of the track at this radial location
     bool good = etp.GetXYZatR(radius, bfield, pos_buffer, nullptr);
@@ -2352,9 +2333,7 @@ void AliFemtoEventReaderAOD
     }
 
     // store the global position
-    globalPositionsAtRadii[radius_index][0] = pos_buffer[0];
-    globalPositionsAtRadii[radius_index][1] = pos_buffer[1];
-    globalPositionsAtRadii[radius_index][2] = pos_buffer[2];
+    std::copy_n(pos_buffer, 3, globalPositionsAtRadii[radius_index]);
   }
 
   // Fill any remaining positions with the default value

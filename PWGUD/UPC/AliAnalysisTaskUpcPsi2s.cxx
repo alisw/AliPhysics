@@ -79,9 +79,9 @@ AliAnalysisTaskUpcPsi2s::AliAnalysisTaskUpcPsi2s()
     fEveTree(0),fPt(0), fY(0), fM(0), fDiLeptonM(0), fDiLeptonPt(0), fPIDsigma(0), fChannel(0),
     fListTrig(0),fHistCcup4TriggersPerRun(0), fHistCcup7TriggersPerRun(0), fHistCcup2TriggersPerRun(0),fHistCint1TriggersPerRun(0),fHistCint6TriggersPerRun(0), fHistC0tvxAndCint1TriggersPerRun(0),
     fHistZedTriggersPerRun(0),fHistCvlnTriggersPerRun(0), fHistMBTriggersPerRun(0),fHistCentralTriggersPerRun(0),fHistSemiCentralTriggersPerRun(0),
-    fHistCTest58TriggersPerRun(0),fHistCTest59TriggersPerRun(0),fHistCTest60TriggersPerRun(0),fHistCTest61TriggersPerRun(0),
     fHistCcup8TriggersPerRun(0),fHistCcup9TriggersPerRun(0),fHistCcup10TriggersPerRun(0),fHistCcup11TriggersPerRun(0),fHistCcup12TriggersPerRun(0),
     fHistCcup25TriggersPerRun(0),fHistCcup26TriggersPerRun(0),fHistCcup27TriggersPerRun(0),
+    fHistCcup29TriggersPerRun(0),fHistCcup30TriggersPerRun(0),fHistCcup31TriggersPerRun(0),
     fHistCtrueTriggersPerRun(0),
     fListHist(0),fHistNeventsJPsi(0),fHistTPCsignalJPsi(0),fHistDiLeptonPtJPsi(0),fHistDiElectronMass(0),fHistDiMuonMass(0),fHistDiLeptonMass(0),
     fHistNeventsPsi2s(0),fHistPsi2sMassVsPt(0),fHistPsi2sMassCoherent(0),
@@ -108,9 +108,9 @@ AliAnalysisTaskUpcPsi2s::AliAnalysisTaskUpcPsi2s(const char *name)
     fEveTree(0),fPt(0), fY(0), fM(0), fDiLeptonM(0), fDiLeptonPt(0), fPIDsigma(0), fChannel(0),
     fListTrig(0),fHistCcup4TriggersPerRun(0), fHistCcup7TriggersPerRun(0), fHistCcup2TriggersPerRun(0),fHistCint1TriggersPerRun(0), fHistCint6TriggersPerRun(0), fHistC0tvxAndCint1TriggersPerRun(0),
     fHistZedTriggersPerRun(0),fHistCvlnTriggersPerRun(0), fHistMBTriggersPerRun(0),fHistCentralTriggersPerRun(0),fHistSemiCentralTriggersPerRun(0),
-    fHistCTest58TriggersPerRun(0),fHistCTest59TriggersPerRun(0),fHistCTest60TriggersPerRun(0),fHistCTest61TriggersPerRun(0),
     fHistCcup8TriggersPerRun(0),fHistCcup9TriggersPerRun(0),fHistCcup10TriggersPerRun(0),fHistCcup11TriggersPerRun(0),fHistCcup12TriggersPerRun(0),
     fHistCcup25TriggersPerRun(0),fHistCcup26TriggersPerRun(0),fHistCcup27TriggersPerRun(0),
+    fHistCcup29TriggersPerRun(0),fHistCcup30TriggersPerRun(0),fHistCcup31TriggersPerRun(0),
     fHistCtrueTriggersPerRun(0),
     fListHist(0),fHistNeventsJPsi(0),fHistTPCsignalJPsi(0),fHistDiLeptonPtJPsi(0),fHistDiElectronMass(0),fHistDiMuonMass(0),fHistDiLeptonMass(0),
     fHistNeventsPsi2s(0),fHistPsi2sMassVsPt(0),fHistPsi2sMassCoherent(0),
@@ -354,76 +354,73 @@ void AliAnalysisTaskUpcPsi2s::UserCreateOutputObjects()
   fListTrig = new TList();
   fListTrig ->SetOwner();
   
-  fHistCcup4TriggersPerRun = new TH1D("fHistCcup4TriggersPerRun", "fHistCcup4TriggersPerRun", 50000, 240000.5, 290000.5);
+  fHistCcup4TriggersPerRun = new TH1D("fHistCcup4TriggersPerRun", "fHistCcup4TriggersPerRun", 60000, 240000.5, 300000.5);
   fListTrig->Add(fHistCcup4TriggersPerRun);
   
-  fHistCcup7TriggersPerRun = new TH1D("fHistCcup7TriggersPerRun", "fHistCcup7TriggersPerRun", 50000, 240000.5, 290000.5);
+  fHistCcup7TriggersPerRun = new TH1D("fHistCcup7TriggersPerRun", "fHistCcup7TriggersPerRun", 60000, 240000.5, 300000.5);
   fListTrig->Add(fHistCcup7TriggersPerRun);
     
-  fHistCcup2TriggersPerRun = new TH1D("fHistCcup2TriggersPerRun", "fHistCcup2TriggersPerRun", 50000, 240000.5, 290000.5);
+  fHistCcup2TriggersPerRun = new TH1D("fHistCcup2TriggersPerRun", "fHistCcup2TriggersPerRun", 60000, 240000.5, 300000.5);
   fListTrig->Add(fHistCcup2TriggersPerRun);
   
-  fHistCint1TriggersPerRun = new TH1D("fHistCint1TriggersPerRun", "fHistCint1TriggersPerRun", 50000, 240000.5, 290000.5);
+  fHistCint1TriggersPerRun = new TH1D("fHistCint1TriggersPerRun", "fHistCint1TriggersPerRun", 60000, 240000.5, 300000.5);
   fListTrig->Add(fHistCint1TriggersPerRun);
   
-  fHistCint6TriggersPerRun = new TH1D("fHistCint6TriggersPerRun", "fHistCint6TriggersPerRun", 50000, 240000.5, 290000.5);
+  fHistCint6TriggersPerRun = new TH1D("fHistCint6TriggersPerRun", "fHistCint6TriggersPerRun", 60000, 240000.5, 300000.5);
   fListTrig->Add(fHistCint6TriggersPerRun);
   
-  fHistC0tvxAndCint1TriggersPerRun = new TH1D("fHistC0tvxAndCint1TriggersPerRun", "fHistC0tvxAndCint1TriggersPerRun", 50000, 240000.5, 290000.5);
+  fHistC0tvxAndCint1TriggersPerRun = new TH1D("fHistC0tvxAndCint1TriggersPerRun", "fHistC0tvxAndCint1TriggersPerRun", 60000, 240000.5, 300000.5);
   fListTrig->Add(fHistC0tvxAndCint1TriggersPerRun);
   
-  fHistZedTriggersPerRun = new TH1D("fHistZedTriggersPerRun", "fHistZedTriggersPerRun", 50000, 240000.5, 290000.5);
+  fHistZedTriggersPerRun = new TH1D("fHistZedTriggersPerRun", "fHistZedTriggersPerRun", 60000, 240000.5, 300000.5);
   fListTrig->Add(fHistZedTriggersPerRun);
 
-  fHistCvlnTriggersPerRun = new TH1D("fHistCvlnTriggersPerRun", "fHistCvlnTriggersPerRun", 50000, 240000.5, 290000.5);
+  fHistCvlnTriggersPerRun = new TH1D("fHistCvlnTriggersPerRun", "fHistCvlnTriggersPerRun", 60000, 240000.5, 300000.5);
   fListTrig->Add(fHistCvlnTriggersPerRun);
   
-  fHistMBTriggersPerRun = new TH1D("fHistMBTriggersPerRun", "fHistMBTriggersPerRun", 50000, 240000.5, 290000.5);
+  fHistMBTriggersPerRun = new TH1D("fHistMBTriggersPerRun", "fHistMBTriggersPerRun", 60000, 240000.5, 300000.5);
   fListTrig->Add(fHistMBTriggersPerRun);
   
-  fHistCentralTriggersPerRun = new TH1D("fHistCentralTriggersPerRun", "fHistCentralTriggersPerRun", 50000, 240000.5, 290000.5);
+  fHistCentralTriggersPerRun = new TH1D("fHistCentralTriggersPerRun", "fHistCentralTriggersPerRun", 60000, 240000.5, 300000.5);
   fListTrig->Add(fHistCentralTriggersPerRun);
   
-  fHistSemiCentralTriggersPerRun = new TH1D("fHistSemiCentralTriggersPerRun", "fHistSemiCentralTriggersPerRun", 50000, 240000.5, 290000.5);
+  fHistSemiCentralTriggersPerRun = new TH1D("fHistSemiCentralTriggersPerRun", "fHistSemiCentralTriggersPerRun", 60000, 240000.5, 300000.5);
   fListTrig->Add(fHistSemiCentralTriggersPerRun);
   
-  fHistCTest58TriggersPerRun = new TH1D("fHistCTest58TriggersPerRun", "fHistCTest58TriggersPerRun", 50000, 240000.5, 290000.5);
-  fListTrig->Add(fHistCTest58TriggersPerRun);
-  
-  fHistCTest59TriggersPerRun = new TH1D("fHistCTest59TriggersPerRun", "fHistCTest59TriggersPerRun", 50000, 240000.5, 290000.5);
-  fListTrig->Add(fHistCTest59TriggersPerRun);
-  
-  fHistCTest60TriggersPerRun = new TH1D("fHistCTest60TriggersPerRun", "fHistCTest60TriggersPerRun", 50000, 240000.5, 290000.5);
-  fListTrig->Add(fHistCTest60TriggersPerRun);
-  
-  fHistCTest61TriggersPerRun = new TH1D("fHistCTest61TriggersPerRun", "fHistCTest61TriggersPerRun", 50000, 240000.5, 290000.5);
-  fListTrig->Add(fHistCTest61TriggersPerRun);
-  
-  fHistCcup8TriggersPerRun = new TH1D("fHistCcup8TriggersPerRun", "fHistCcup8TriggersPerRun", 50000, 240000.5, 290000.5);
+  fHistCcup8TriggersPerRun = new TH1D("fHistCcup8TriggersPerRun", "fHistCcup8TriggersPerRun", 60000, 240000.5, 300000.5);
   fListTrig->Add(fHistCcup8TriggersPerRun);
   
-  fHistCcup9TriggersPerRun = new TH1D("fHistCcup9TriggersPerRun", "fHistCcup9TriggersPerRun", 50000, 240000.5, 290000.5);
+  fHistCcup9TriggersPerRun = new TH1D("fHistCcup9TriggersPerRun", "fHistCcup9TriggersPerRun", 60000, 240000.5, 300000.5);
   fListTrig->Add(fHistCcup9TriggersPerRun);
   
-  fHistCcup10TriggersPerRun = new TH1D("fHistCcup10TriggersPerRun", "fHistCcup10TriggersPerRun", 50000, 240000.5, 290000.5);
+  fHistCcup10TriggersPerRun = new TH1D("fHistCcup10TriggersPerRun", "fHistCcup10TriggersPerRun", 60000, 240000.5, 300000.5);
   fListTrig->Add(fHistCcup10TriggersPerRun);
   
-  fHistCcup11TriggersPerRun = new TH1D("fHistCcup11TriggersPerRun", "fHistCcup11TriggersPerRun", 50000, 240000.5, 290000.5);
+  fHistCcup11TriggersPerRun = new TH1D("fHistCcup11TriggersPerRun", "fHistCcup11TriggersPerRun", 60000, 240000.5, 300000.5);
   fListTrig->Add(fHistCcup11TriggersPerRun);
   
-  fHistCcup12TriggersPerRun = new TH1D("fHistCcup12TriggersPerRun", "fHistCcup12TriggersPerRun", 50000, 240000.5, 290000.5);
+  fHistCcup12TriggersPerRun = new TH1D("fHistCcup12TriggersPerRun", "fHistCcup12TriggersPerRun", 60000, 240000.5, 300000.5);
   fListTrig->Add(fHistCcup12TriggersPerRun);
   
-  fHistCcup25TriggersPerRun = new TH1D("fHistCcup25TriggersPerRun", "fHistCcup25TriggersPerRun", 50000, 240000.5, 290000.5);
+  fHistCcup25TriggersPerRun = new TH1D("fHistCcup25TriggersPerRun", "fHistCcup25TriggersPerRun", 60000, 240000.5, 300000.5);
   fListTrig->Add(fHistCcup25TriggersPerRun);
   
-  fHistCcup26TriggersPerRun = new TH1D("fHistCcup26TriggersPerRun", "fHistCcup26TriggersPerRun", 50000, 240000.5, 290000.5);
+  fHistCcup26TriggersPerRun = new TH1D("fHistCcup26TriggersPerRun", "fHistCcup26TriggersPerRun", 60000, 240000.5, 300000.5);
   fListTrig->Add(fHistCcup26TriggersPerRun);
   
-  fHistCcup27TriggersPerRun = new TH1D("fHistCcup27TriggersPerRun", "fHistCcup27TriggersPerRun", 50000, 240000.5, 290000.5);
+  fHistCcup27TriggersPerRun = new TH1D("fHistCcup27TriggersPerRun", "fHistCcup27TriggersPerRun", 60000, 240000.5, 300000.5);
   fListTrig->Add(fHistCcup27TriggersPerRun);
   
-  fHistCtrueTriggersPerRun = new TH1D("fHistCtrueTriggersPerRun", "fHistCtrueTriggersPerRun", 50000, 240000.5, 290000.5);
+  fHistCcup29TriggersPerRun = new TH1D("fHistCcup29TriggersPerRun", "fHistCcup29TriggersPerRun", 60000, 240000.5, 300000.5);
+  fListTrig->Add(fHistCcup29TriggersPerRun);
+  
+  fHistCcup30TriggersPerRun = new TH1D("fHistCcup30TriggersPerRun", "fHistCcup30TriggersPerRun", 60000, 240000.5, 300000.5);
+  fListTrig->Add(fHistCcup30TriggersPerRun);
+  
+  fHistCcup31TriggersPerRun = new TH1D("fHistCcup31TriggersPerRun", "fHistCcup31TriggersPerRun", 60000, 240000.5, 300000.5);
+  fListTrig->Add(fHistCcup31TriggersPerRun);
+
+  fHistCtrueTriggersPerRun = new TH1D("fHistCtrueTriggersPerRun", "fHistCtrueTriggersPerRun", 60000, 240000.5, 300000.5);
   fListTrig->Add(fHistCtrueTriggersPerRun);
   
   fListHist = new TList();
@@ -587,11 +584,6 @@ void AliAnalysisTaskUpcPsi2s::RunAODtrig()
   
   if(trigger.Contains("CINT1-B")) fHistCint1TriggersPerRun->Fill(fRunNum); //CINT1 triggers
   
-  if(trigger.Contains("CTEST58-B")) fHistCTest58TriggersPerRun->Fill(fRunNum); //CTEST triggers
-  if(trigger.Contains("CTEST59-B")) fHistCTest59TriggersPerRun->Fill(fRunNum); //CTEST triggers
-  if(trigger.Contains("CTEST60-B")) fHistCTest60TriggersPerRun->Fill(fRunNum); //CTEST triggers
-  if(trigger.Contains("CTEST61-B")) fHistCTest61TriggersPerRun->Fill(fRunNum); //CTEST triggers
-  
   if(trigger.Contains("CCUP8-B")) fHistCcup8TriggersPerRun->Fill(fRunNum); //CCUP8 triggers
   if(trigger.Contains("CCUP9-B")) fHistCcup9TriggersPerRun->Fill(fRunNum); //CCUP9 triggers
   if(trigger.Contains("CCUP10-B")) fHistCcup10TriggersPerRun->Fill(fRunNum); //CCUP10 triggers
@@ -602,6 +594,18 @@ void AliAnalysisTaskUpcPsi2s::RunAODtrig()
   if(trigger.Contains("CCUP26-B")) fHistCcup26TriggersPerRun->Fill(fRunNum); //CCUP26 triggers
   if(trigger.Contains("CCUP27-B")) fHistCcup27TriggersPerRun->Fill(fRunNum); //CCUP27 triggers
   
+  if(fRunNum>=295881){
+    if(trigger.Contains("CCUP30-B-SPD2-CENTNOTRD")) fHistCcup30TriggersPerRun->Fill(fRunNum); //CCUP30 triggers
+    if(trigger.Contains("CCUP31-B-SPD2-CENTNOTRD")) fHistCcup31TriggersPerRun->Fill(fRunNum); //CCUP31 triggers
+    if(fRunNum>=296594 && trigger.Contains("CCUP29-U-SPD2-CENTNOTRD")) fHistCcup29TriggersPerRun->Fill(fRunNum); //CCUP29 triggers
+    if(fRunNum<296594  && trigger.Contains("CCUP29-B-SPD2-CENTNOTRD")) fHistCcup29TriggersPerRun->Fill(fRunNum); //CCUP29 triggers
+	}
+  else{ 
+	if(trigger.Contains("CCUP29-B-NOPF-CENTNOTRD")) fHistCcup29TriggersPerRun->Fill(fRunNum); //CCUP29 triggers
+	if(trigger.Contains("CCUP30-B-NOPF-CENTNOTRD")) fHistCcup30TriggersPerRun->Fill(fRunNum); //CCUP30 triggers
+	if(trigger.Contains("CCUP31-B-NOPF-CENTNOTRD")) fHistCcup31TriggersPerRun->Fill(fRunNum); //CCUP31 triggers
+	}
+
   if(trigger.Contains("CTRUE-B")) fHistCtrueTriggersPerRun->Fill(fRunNum); //CTRUE triggers
   
   fL0inputs = aod->GetHeader()->GetL0TriggerInputs();
@@ -904,22 +908,22 @@ void AliAnalysisTaskUpcPsi2s::RunAODtree()
   	fTrigger[1]  = trigger.Contains("CCUP2-B"); // *0VBA *0VBC 0SM2 0OM2
   	fTrigger[2]  = trigger.Contains("CCUP7-B"); // *0VBA *0VBC 0STP 0OMU
   	fTrigger[3]  = trigger.Contains("CINT1-B"); //  0VBA || 0VBC || 0SMB
-  	fTrigger[4]  = trigger.Contains("CTEST58-B"); // *0VBA *0VBC *0UBA *0UBC 0SH1
-  	fTrigger[5]  = trigger.Contains("CTEST59-B"); // *0VBA *0VBC *0UBA *0UBC 0STP
-  	fTrigger[6]  = trigger.Contains("CTEST60-B"); // *0VBA *0VBC *0UBA *0UBC 0OM2
-  	fTrigger[7]  = trigger.Contains("CTEST61-B"); // *0VBA *0VBC *0UBA *0UBC 0OMU
-  	fTrigger[8]  = trigger.Contains("CCUP8-B"); //*0VBA *0VBC *0UBA *0UBC 0STP 0OMU
-  	fTrigger[9]  = trigger.Contains("CCUP9-B"); //*0VBA *0VBC *0UBA *0UBC 0STP
-  	fTrigger[10]  = trigger.Contains("CCUP10-B"); //*0VBA *0VBC *0UBA *0UBC 0SH1
-  	fTrigger[11]  = trigger.Contains("CCUP11-B"); //*0UBA *0UBC 0STP 0OMU
-  	fTrigger[12]  = trigger.Contains("CCUP12-B"); //*0UBA *0UBC 0STP
-  	fTrigger[13]  = trigger.Contains("CTRUE-B"); //Unbiased trigger
-	fTrigger[14]  = trigger.Contains("CCUP25-B");//*0VBA *0VBC 0STG 0OM2
-	fTrigger[15]  = trigger.Contains("CCUP26-B");//*0VBA *0VBC 0SH1 
-	fTrigger[16]  = trigger.Contains("CCUP27-B");//*0VBA *0VBC 0STG 
-	fTrigger[17]  = trigger.Contains("CCUP29-B");//*0VBA *0VBC *0UBA *0UBC 0STG
-	fTrigger[18]  = trigger.Contains("CCUP30-B");//*0VBA *0VBC *0UBA *0UBC 0STG 0OM2
-	fTrigger[19]  = trigger.Contains("CCUP31-B");// *0VBA *0VBC *0UBA *0UBC 0STG 0OMU
+  	fTrigger[4]  = trigger.Contains("CCUP8-B"); //*0VBA *0VBC *0UBA *0UBC 0STP 0OMU
+  	fTrigger[5]  = trigger.Contains("CCUP9-B"); //*0VBA *0VBC *0UBA *0UBC 0STP
+  	fTrigger[6]  = trigger.Contains("CCUP10-B"); //*0VBA *0VBC *0UBA *0UBC 0SH1
+  	fTrigger[7]  = trigger.Contains("CCUP11-B"); //*0UBA *0UBC 0STP 0OMU
+  	fTrigger[8]  = trigger.Contains("CCUP12-B"); //*0UBA *0UBC 0STP
+  	fTrigger[9]  = trigger.Contains("CTRUE-B"); //Unbiased trigger
+	fTrigger[10]  = trigger.Contains("CCUP25-B");//*0VBA *0VBC 0STG 0OM2
+	fTrigger[11]  = trigger.Contains("CCUP26-B");//*0VBA *0VBC 0SH1 
+	fTrigger[12]  = trigger.Contains("CCUP27-B");//*0VBA *0VBC 0STG 
+	fTrigger[13]  = trigger.Contains("CCUP29-U-SPD2-CENTNOTRD");//*0VBA *0VBC *0UBA *0UBC 0STG
+	fTrigger[14]  = trigger.Contains("CCUP29-B-SPD2-CENTNOTRD");//*0VBA *0VBC *0UBA *0UBC 0STG
+	fTrigger[15]  = trigger.Contains("CCUP29-B-NOPF-CENTNOTRD");//*0VBA *0VBC *0UBA *0UBC 0STG
+	fTrigger[16]  = trigger.Contains("CCUP30-B-NOPF-CENTNOTRD");//*0VBA *0VBC *0UBA *0UBC 0STG 0OM2
+	fTrigger[17]  = trigger.Contains("CCUP30-B-SPD2-CENTNOTRD");//*0VBA *0VBC *0UBA *0UBC 0STG 0OM2
+	fTrigger[18]  = trigger.Contains("CCUP31-B-NOPF-CENTNOTRD");// *0VBA *0VBC *0UBA *0UBC 0STG 0OMU
+	fTrigger[19]  = trigger.Contains("CCUP31-B-SPD2-CENTNOTRD");// *0VBA *0VBC *0UBA *0UBC 0STG 0OMU
 	}
   if(fTracking == 1){ 
   	fTrigger[0] = trigger.Contains("CCUP14-B"); 
@@ -1364,11 +1368,6 @@ void AliAnalysisTaskUpcPsi2s::RunESDtrig()
   if(trigger.Contains("CCUP2-B")) fHistCcup2TriggersPerRun->Fill(fRunNum); //CCUP2 triggers
   
   if(trigger.Contains("CINT1-B")) fHistCint1TriggersPerRun->Fill(fRunNum); //CINT1 triggers
-  
-  if(trigger.Contains("CTEST58-B")) fHistCTest58TriggersPerRun->Fill(fRunNum); //CTEST triggers
-  if(trigger.Contains("CTEST59-B")) fHistCTest59TriggersPerRun->Fill(fRunNum); //CTEST triggers
-  if(trigger.Contains("CTEST60-B")) fHistCTest60TriggersPerRun->Fill(fRunNum); //CTEST triggers
-  if(trigger.Contains("CTEST61-B")) fHistCTest61TriggersPerRun->Fill(fRunNum); //CTEST triggers
   
   if(trigger.Contains("CCUP8-B")) fHistCcup8TriggersPerRun->Fill(fRunNum); //CCUP8 triggers
   if(trigger.Contains("CCUP9-B")) fHistCcup9TriggersPerRun->Fill(fRunNum); //CCUP9 triggers

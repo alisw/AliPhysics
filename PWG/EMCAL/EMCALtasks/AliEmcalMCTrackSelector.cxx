@@ -1,8 +1,29 @@
-//
-// Class to select particles in MC events.
-//
-// Author: S. Aiola
-
+/**************************************************************************************
+ * Copyright (C) 2012, Copyright Holders of the ALICE Collaboration                   *
+ * All rights reserved.                                                               *
+ *                                                                                    *
+ * Redistribution and use in source and binary forms, with or without                 *
+ * modification, are permitted provided that the following conditions are met:        *
+ *     * Redistributions of source code must retain the above copyright               *
+ *       notice, this list of conditions and the following disclaimer.                *
+ *     * Redistributions in binary form must reproduce the above copyright            *
+ *       notice, this list of conditions and the following disclaimer in the          *
+ *       documentation and/or other materials provided with the distribution.         *
+ *     * Neither the name of the <organization> nor the                               *
+ *       names of its contributors may be used to endorse or promote products         *
+ *       derived from this software without specific prior written permission.        *
+ *                                                                                    *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND    *
+ * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED      *
+ * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE             *
+ * DISCLAIMED. IN NO EVENT SHALL ALICE COLLABORATION BE LIABLE FOR ANY                *
+ * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES         *
+ * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;       *
+ * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND        *
+ * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT         *
+ * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS      *
+ * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.                       *
+ **************************************************************************************/
 #include "AliEmcalMCTrackSelector.h"
 
 #include <iostream>
@@ -21,7 +42,6 @@
 
 ClassImp(AliEmcalMCTrackSelector)
 
-//________________________________________________________________________
 AliEmcalMCTrackSelector::AliEmcalMCTrackSelector() : 
   AliAnalysisTaskSE("AliEmcalMCTrackSelector"),
   fParticlesOutName("MCParticlesSelected"),
@@ -29,6 +49,7 @@ AliEmcalMCTrackSelector::AliEmcalMCTrackSelector() :
   fRejectNK(kFALSE),
   fChargedMC(kFALSE),
   fOnlyHIJING(kFALSE),
+  fRejectPhotonMothers(false),
   fEtaMax(1),
   fParticlesMapName(""),
   fInit(kFALSE),
@@ -40,10 +61,8 @@ AliEmcalMCTrackSelector::AliEmcalMCTrackSelector() :
   fIsESD(kFALSE),
   fDisabled(kFALSE)
 {
-  // Constructor.
 }
 
-//________________________________________________________________________
 AliEmcalMCTrackSelector::AliEmcalMCTrackSelector(const char *name) : 
   AliAnalysisTaskSE(name),
   fParticlesOutName("MCParticlesSelected"),
@@ -51,6 +70,7 @@ AliEmcalMCTrackSelector::AliEmcalMCTrackSelector(const char *name) :
   fRejectNK(kFALSE),
   fChargedMC(kFALSE),
   fOnlyHIJING(kFALSE),
+  fRejectPhotonMothers(false),
   fEtaMax(1),
   fParticlesMapName(""),
   fInit(kFALSE),
@@ -62,32 +82,16 @@ AliEmcalMCTrackSelector::AliEmcalMCTrackSelector(const char *name) :
   fIsESD(kFALSE),
   fDisabled(kFALSE)
 {
-  // Constructor.
 }
 
-//________________________________________________________________________
-AliEmcalMCTrackSelector::~AliEmcalMCTrackSelector()
-{
-  // Destructor.
-}
-
-//________________________________________________________________________
-void AliEmcalMCTrackSelector::UserCreateOutputObjects()
-{
-  // Create my user objects.
-}
-
-//________________________________________________________________________
 void AliEmcalMCTrackSelector::UserExec(Option_t *) 
 {
-  // Main loop, called for each event.
-
   if (fDisabled) return;
 
   if (!fInit) {
     fEvent = InputEvent();
     if (!fEvent) {
-      AliError("Could not retrieve event! Returning");
+      AliErrorStream() << "Could not retrieve event! Returning" << std::endl;
       return;
     }
 
@@ -96,7 +100,7 @@ void AliEmcalMCTrackSelector::UserExec(Option_t *)
 
     TObject *obj = fEvent->FindListObject(fParticlesOutName);
     if (obj) { // the output array is already present in the array!
-      AliError(Form("The output array %s is already present in the event! Task will be disabled.", fParticlesOutName.Data()));
+      AliErrorStream() << "The output array "  << fParticlesOutName <<  " is already present in the event! Task will be disabled." << std::endl;
       fDisabled = kTRUE;
       return;
     }
@@ -110,7 +114,7 @@ void AliEmcalMCTrackSelector::UserExec(Option_t *)
       fParticlesMapName += "_Map";
 
       if (fEvent->FindListObject(fParticlesMapName)) {
-        AliError(Form("The output array map %s is already present in the event! Task will be disabled.", fParticlesMapName.Data()));
+        AliErrorStream() << "The output array map " << fParticlesMapName << " is already present in the event! Task will be disabled." << std::endl;
         fDisabled = kTRUE;
         return;
       }
@@ -122,13 +126,13 @@ void AliEmcalMCTrackSelector::UserExec(Option_t *)
       if (!fIsESD) {
         fParticlesIn = static_cast<TClonesArray*>(InputEvent()->FindListObject(AliAODMCParticle::StdBranchName()));
         if (!fParticlesIn) {
-          AliError("Could not retrieve AOD MC particles! Task will be disabled.");
+          AliErrorStream() << "Could not retrieve AOD MC particles! Task will be disabled." << std::endl;
           fDisabled = kTRUE;
           return;
         }
         TClass *cl = fParticlesIn->GetClass();
         if (!cl->GetBaseClass("AliAODMCParticle")) {
-          AliError(Form("%s: Collection %s does not contain AliAODMCParticle! Task will be disabled.", GetName(), AliAODMCParticle::StdBranchName()));
+          AliErrorStream() << GetName() << ": Collection  " << AliAODMCParticle::StdBranchName() << " %s does not contain AliAODMCParticle! Task will be disabled." << std::endl;
           fDisabled = kTRUE;
           fParticlesIn = 0;
           return;
@@ -138,7 +142,7 @@ void AliEmcalMCTrackSelector::UserExec(Option_t *)
 
     fMC = MCEvent();
     if (!fMC) {
-      AliError("Could not retrieve MC event! Returning");
+      AliErrorStream() << "Could not retrieve MC event! Returning" << std::endl;
       fDisabled = kTRUE;
       return;
     }
@@ -150,10 +154,8 @@ void AliEmcalMCTrackSelector::UserExec(Option_t *)
   else CopyMCParticles(fParticlesIn, fParticlesOut, fParticlesMap);
 }
 
-//________________________________________________________________________
 void AliEmcalMCTrackSelector::ConvertMCParticles(AliMCEvent* mcEvent, TClonesArray* partOut, AliNamedArrayI* partMap)
 {
-  // Convert MC particles in MC AOD articles.
 
   // clear container (normally a null operation as the event should clean it already)
   partOut->Delete();
@@ -187,6 +189,27 @@ void AliEmcalMCTrackSelector::ConvertMCParticles(AliMCEvent* mcEvent, TClonesArr
     if (mcEvent->IsSecondaryFromWeakDecay(iPart)) flag |= AliAODMCParticle::kSecondaryFromWeakDecay;
     if (mcEvent->IsSecondaryFromMaterial(iPart)) flag |= AliAODMCParticle::kSecondaryFromMaterial;
 
+    // Reject particle if is a photon and mother of another photon
+    if (fRejectPhotonMothers) {
+      if(TMath::Abs(part->PdgCode()) == 22){
+        bool hasPhotonDaughter = false;
+        // check if particle has photon daughter
+        if(part->GetDaughterFirst() > -1 && part->GetDaughterLast() > -1) {
+          for(int idaughter = part->GetDaughterFirst(); idaughter <= part->GetDaughterLast(); idaughter++) {
+            AliMCParticle *daughter = static_cast<AliMCParticle *>(mcEvent->GetTrack(idaughter));
+            if(TMath::Abs(daughter->PdgCode()) == 22) {
+              hasPhotonDaughter = true;
+              break;
+            }
+          }
+        }
+        if(hasPhotonDaughter){
+          AliDebugStream(2) << "Found photon which is the mother of another photon, not selecting ..." << std::endl; 
+          continue;
+        } 
+      }
+    }
+
     AliDebugStream(3) << "Particle " << iPart << ": pt = " << part->Pt() << ", PDG = " << part->PdgCode() <<
         ", mother " << part->GetMother() <<
         ", kPrimary? " <<  Bool_t((flag & AliAODMCParticle::kPrimary) != 0) <<
@@ -197,24 +220,25 @@ void AliEmcalMCTrackSelector::ConvertMCParticles(AliMCEvent* mcEvent, TClonesArr
         ", iPart = " << iPart <<
         std::endl;
 
-    AliAODMCParticle *aodPart = new ((*partOut)[nacc]) AliAODMCParticle(part, iPart, flag);
-    aodPart->SetGeneratorIndex(part->GetGeneratorIndex());    
-    aodPart->SetStatus(part->Particle()->GetStatusCode());
-    aodPart->SetMCProcessCode(part->Particle()->GetUniqueID());
+    // Do not put rejected particles on the output container
+    AliAODMCParticle parttmp(part, iPart, flag);
+    parttmp.SetGeneratorIndex(part->GetGeneratorIndex());    
+    parttmp.SetStatus(part->Particle()->GetStatusCode());
+    parttmp.SetMCProcessCode(part->Particle()->GetUniqueID());
 
-    if (!AcceptParticle(aodPart)) continue;    
+    if (!AcceptParticle(&parttmp)) continue;    
 
+    new ((*partOut)[nacc]) AliAODMCParticle(parttmp);
     if (partMap) partMap->AddAt(nacc, iPart);
     nacc++;
   }
 }
 
-//________________________________________________________________________
 void AliEmcalMCTrackSelector::CopyMCParticles(TClonesArray* partIn, TClonesArray* partOut, AliNamedArrayI* partMap)
 {
-  // Convert standard MC AOD particles in a new array, and filter if requested.
 
   if (!partIn) return;
+  AliDebugStream(5) << "Particles in: " << partIn->GetName() << ", out: " << partOut->GetName() << std::endl;
 
   // clear container (normally a null operation as the event should clean it already)
   partOut->Delete();
@@ -227,7 +251,7 @@ void AliEmcalMCTrackSelector::CopyMCParticles(TClonesArray* partIn, TClonesArray
     if (partMap->GetSize() <= Nparticles) partMap->Set(Nparticles*2);
   }
 
-  AliDebug(2, Form("Total number of particles = %d", Nparticles));
+  AliDebugStream(2) << "Total number of particles = " << Nparticles << std::endl;
 
   Int_t nacc = 0;
 
@@ -239,6 +263,27 @@ void AliEmcalMCTrackSelector::CopyMCParticles(TClonesArray* partIn, TClonesArray
 
     if (!AcceptParticle(part)) continue;
 
+    // Reject particle if is a photon and mother of another photon
+    if (fRejectPhotonMothers) {
+      if(TMath::Abs(part->PdgCode()) == 22){
+        bool hasPhotonDaughter = false;
+        // check if particle has photon daughter
+        if(part->GetDaughterFirst() > -1 && part->GetDaughterLast() > -1) {
+          for(int idaughter = part->GetDaughterFirst(); idaughter <= part->GetDaughterLast(); idaughter++) {
+            AliAODMCParticle *daughter = static_cast<AliAODMCParticle *>(partIn->At(idaughter));
+            if(TMath::Abs(daughter->PdgCode()) == 22) {
+              hasPhotonDaughter = true;
+              break;
+            }
+          }
+        }
+        if(hasPhotonDaughter){
+          AliDebugStream(2) << "Found photon which is the mother of another photon, not selecting ..." << std::endl; 
+          continue;
+        } 
+      }
+    }
+
     if (partMap) partMap->AddAt(nacc, iPart);
 
     AliAODMCParticle *newPart = new ((*partOut)[nacc]) AliAODMCParticle(*part);
@@ -246,13 +291,11 @@ void AliEmcalMCTrackSelector::CopyMCParticles(TClonesArray* partIn, TClonesArray
 
     nacc++;
   }
+  AliDebugStream(5) << "Particles in: " << partIn->GetEntries() << ", out: " << partOut->GetEntries() << std::endl;
 }
 
-//________________________________________________________________________
 Bool_t AliEmcalMCTrackSelector::AcceptParticle(AliAODMCParticle* part) const
 {
-  // Determine whether the MC particle is accepted.
-
   if (!part) return kFALSE;
 
   Int_t partPdgCode = TMath::Abs(part->PdgCode());
@@ -270,7 +313,6 @@ Bool_t AliEmcalMCTrackSelector::AcceptParticle(AliAODMCParticle* part) const
   return kTRUE;
 }
 
-//________________________________________________________________________
 AliEmcalMCTrackSelector* AliEmcalMCTrackSelector::AddTaskMCTrackSelector(TString outname, Bool_t nk, Bool_t ch, Double_t etamax, Bool_t physPrim)
 {
   // Get the pointer to the existing analysis manager via the static access method.

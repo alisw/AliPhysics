@@ -2321,8 +2321,8 @@ void AliAnalysisTaskPHOSNeutralMeson::UserExec(Option_t *) {
 			//if(fFillFeedDownHistos) {
 		
 			Int_t daughter[2] = {-1,-1};
-			daughter[0] = mcP->GetFirstDaughter();
-			daughter[1] = mcP->GetLastDaughter();
+			daughter[0] = mcP->GetDaughterFirst();
+			daughter[1] = mcP->GetDaughterLast();
 			
 			
 			// ************************** For not added pi0, check how they decay ***************************
@@ -3520,8 +3520,8 @@ Int_t AliAnalysisTaskPHOSNeutralMeson::GetNDaughtersOfMCParticle(AliMCParticle* 
 	//The default value for first and last daughter are different for AliMCParticle (-1) and AliAODMCParticle (0)
 	
 	Int_t daughter[2] = {-1,-1};
-	daughter[0] = mcP->GetFirstDaughter();
-	daughter[1] = mcP->GetLastDaughter();
+	daughter[0] = mcP->GetDaughterFirst();
+	daughter[1] = mcP->GetDaughterLast();
 	return daughter[1]>0 ? daughter[1]-daughter[0]+1 : (daughter[0]>0 ? 1:0 );
 	
 }
@@ -3531,8 +3531,8 @@ Bool_t AliAnalysisTaskPHOSNeutralMeson::DecayedToGammaGamma(AliMCParticle * mcP,
 	// Returns bool whether particle has exaclty 2 daughters and these daughters are both photons
 
 	Int_t daughter[2] = {-1,-1};
-	daughter[0] = mcP->GetFirstDaughter();
-	daughter[1] = mcP->GetLastDaughter();
+	daughter[0] = mcP->GetDaughterFirst();
+	daughter[1] = mcP->GetDaughterLast();
 	Int_t nDaughters = daughter[1]>0 ? daughter[1]-daughter[0]+1 : (daughter[0]>0 ? 1:0 );
 		  
 	if(nDaughters == 2) {
@@ -3558,8 +3558,8 @@ Bool_t AliAnalysisTaskPHOSNeutralMeson::MCParticleIsPhysicalDecay(AliMCParticle 
 	
 	
 	Int_t daughter[2] = {-1,-1};
-	daughter[0] = mcP->GetFirstDaughter();
-	daughter[1] = mcP->GetLastDaughter();
+	daughter[0] = mcP->GetDaughterFirst();
+	daughter[1] = mcP->GetDaughterLast();
 	Int_t nDaughters = daughter[1]>0 ? daughter[1]-daughter[0]+1 : (daughter[0]>0 ? 1:0 );
 	
 	// default return value is true
@@ -3616,8 +3616,8 @@ void AliAnalysisTaskPHOSNeutralMeson::FillHistoWithDaughterInfoPi0(AliMCParticle
    //fH1Pi0DecayModes->GetXaxis()->SetBinLabel(7,">=4");
 	
 	Int_t daughter[2] = {-1,-1};
-	daughter[0] = mcP->GetFirstDaughter();
-	daughter[1] = mcP->GetLastDaughter();
+	daughter[0] = mcP->GetDaughterFirst();
+	daughter[1] = mcP->GetDaughterLast();
 	Int_t nDaughters = daughter[1]>0 ? daughter[1]-daughter[0]+1 : (daughter[0]>0 ? 1:0 );
 	
 	if(nDaughters == 0) histo->Fill(1);
@@ -3700,8 +3700,8 @@ void AliAnalysisTaskPHOSNeutralMeson::FillDecayGammaHistos(AliMCParticle * mcP, 
 	//fH1TruthPtAddedPi0GammasInPHOS
 	
 	Int_t daughter[2] = {-1,-1};
-	daughter[0] = mcP->GetFirstDaughter();
-	daughter[1] = mcP->GetLastDaughter();
+	daughter[0] = mcP->GetDaughterFirst();
+	daughter[1] = mcP->GetDaughterLast();
 	Int_t nDaughters = daughter[1]>0 ? daughter[1]-daughter[0]+1 : (daughter[0]>0 ? 1:0 );
 		
 	if(nDaughters == 2) {
@@ -3735,16 +3735,16 @@ void AliAnalysisTaskPHOSNeutralMeson::FillDecayGammaHistos(AliMCParticle * mcP, 
 			
 			
 			Int_t grandDaughter[2] = {-1,-1};
-			grandDaughter[0] = dmc->GetFirstDaughter();
-			grandDaughter[1] = dmc->GetLastDaughter();
+			grandDaughter[0] = dmc->GetDaughterFirst();
+			grandDaughter[1] = dmc->GetDaughterLast();
 			Int_t nGrandDaughters = grandDaughter[1]>0 ? grandDaughter[1]-grandDaughter[0]+1 : (grandDaughter[0]>0 ? 1:0 );
 			
 			Bool_t didNotConvertBeforePHOS = kFALSE;
 			
 			if(nGrandDaughters > 0) {
 				//Get the granddaughters
-				const AliMCParticle *gdmc1 = static_cast<const AliMCParticle *>(mcEvent->GetTrack(dmc->GetFirstDaughter()));
-				const AliMCParticle *gdmc2 = static_cast<const AliMCParticle *>(mcEvent->GetTrack(dmc->GetLastDaughter()));
+				const AliMCParticle *gdmc1 = static_cast<const AliMCParticle *>(mcEvent->GetTrack(dmc->GetDaughterFirst()));
+				const AliMCParticle *gdmc2 = static_cast<const AliMCParticle *>(mcEvent->GetTrack(dmc->GetDaughterLast()));
 				Double_t productionR1 = TMath::Sqrt(gdmc1->Xv()*gdmc1->Xv() + gdmc1->Yv()*gdmc1->Yv());
 				fH1DecGammAddPi0ConvR->Fill(productionR1);
 				

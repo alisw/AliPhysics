@@ -226,18 +226,24 @@ AliAnalysisTaskHFJetIPQA* AddTaskHFJetIPQA(
     mgr->AddTask(jetTask);
     // Create containers for input/output
     AliAnalysisDataContainer *cinput1  = mgr->GetCommonInputContainer()  ;
-    TString contname(combinedName);
-    contname += Form("_histos_R%.1f",jetradius);
+    TString contname("");
+    contname += Form("BasicAnalysisHists%.1f",jetradius);
     TString contnamecorr(combinedName);
     contnamecorr += Form("_correlations_R%.1f",jetradius);
+    TString contname2(combinedName);
+    contname2 += Form("_histos_R%.1f",jetradius);
 
     AliAnalysisDataContainer *coutput1 = mgr->CreateContainer(contname.Data(),
                                                               TList::Class(),AliAnalysisManager::kOutputContainer,
                                                               Form("%s", AliAnalysisManager::GetCommonFileName()));
+    AliAnalysisDataContainer *coutput2 = mgr->CreateContainer(contname2.Data(),
+                                                              TList::Class(),AliAnalysisManager::kOutputContainer,
+                                                              Form("%s", AliAnalysisManager::GetCommonFileName()));
     mgr->ConnectInput  (jetTask, 0,  cinput1 );
     mgr->ConnectOutput (jetTask, 1, coutput1 );
+    mgr->ConnectOutput (jetTask, 2, coutput2 );
     
-    
+
     
 
     return jetTask;

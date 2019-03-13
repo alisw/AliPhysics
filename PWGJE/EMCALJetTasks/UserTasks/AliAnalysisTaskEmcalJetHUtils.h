@@ -14,6 +14,8 @@
 #include <string>
 #include <map>
 
+#include "AliEventCuts.h"
+#include "AliYAMLConfiguration.h"
 class AliEmcalJet;
 
 namespace PWGJE {
@@ -34,6 +36,8 @@ class AliAnalysisTaskEmcalJetHUtils {
   static double GetLeadingHadronPt(AliEmcalJet * jet, ELeadingHadronBiasType_t leadingHadronType);
 
   static double RelativeEPAngle(double jetAngle, double epAngle);
+
+  static void ConfigureEventCuts(AliEventCuts & eventCuts, PWG::Tools::AliYAMLConfiguration & yamlConfig, const UInt_t offlineTriggerMask, const std::string & baseName, const std::string & taskName);
 };
 
 } /* namespace EMCALJetTasks */

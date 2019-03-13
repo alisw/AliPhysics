@@ -37,6 +37,7 @@ AliReducedAnalysisJpsi2ee::AliReducedAnalysisJpsi2ee() :
   fOptionLoopOverTracks(kTRUE),
   fOptionRunPrefilter(kTRUE),
   fOptionStoreJpsiCandidates(kFALSE),
+  fFillCaloClusterHistograms(kFALSE),
   fEventCuts(),
   fTrackCuts(),
   fPreFilterTrackCuts(),
@@ -72,6 +73,7 @@ AliReducedAnalysisJpsi2ee::AliReducedAnalysisJpsi2ee(const Char_t* name, const C
   fOptionLoopOverTracks(kTRUE),
   fOptionRunPrefilter(kTRUE),
   fOptionStoreJpsiCandidates(kFALSE),
+  fFillCaloClusterHistograms(kFALSE),
   fEventCuts(),
   fTrackCuts(),
   fPreFilterTrackCuts(),
@@ -251,7 +253,7 @@ void AliReducedAnalysisJpsi2ee::Process() {
         cout << "Event no. " << fEventCounter << endl;
   }
   else {
-    if(fEventCounter%100000==0) 
+    if(fEventCounter%10000==0) 
        cout << "Event no. " << fEventCounter << endl;
   }
   fEventCounter++;
@@ -273,11 +275,18 @@ void AliReducedAnalysisJpsi2ee::Process() {
       AliReducedVarManager::FillEventOnlineTrigger(ibit, fValues);
       fHistosManager->FillHistClass("EventTriggers_BeforeCuts", fValues);
   }
-  
-  
+
   // apply event selection
   if(!IsEventSelected(fEvent)) return;
   
+  // fill calorimeter info histograms before event cuts
+  if(fFillCaloClusterHistograms) {
+    for(Int_t icl=0; icl<eventInfo->GetNCaloClusters(); ++icl) {
+      AliReducedVarManager::FillCaloClusterInfo(eventInfo->GetCaloCluster(icl), fValues);
+      fHistosManager->FillHistClass("CaloClusters", fValues);
+    }
+  }
+
   if(fOptionRunOverMC) {
      fSkipMCEvent = kFALSE;
      FillMCTruthHistograms();

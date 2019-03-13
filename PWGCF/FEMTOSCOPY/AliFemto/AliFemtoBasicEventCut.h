@@ -22,15 +22,28 @@ public:
 
   void SetEventMult(const int& lo,const int& hi);     ///< Set min and max acceptable event multiplicity
   void SetVertZPos(const float& lo, const float& hi); ///< Set min and max acceptable vertex z-coordinate
+  void SetEPVZERO(const float& lo, const float& hi); ///< Set the min and max allowed event reaction plane angle
   void SetAcceptBadVertex(bool b);  ///< Check if ZDC participants is greater than 1.0
-  int NEventsPassed() const;  ///< Number of events passed
-  int NEventsFailed() const;  ///< Number of events failed
-
-  bool GetAcceptBadVertex();
   /* bool GetAcceptOnlyPhysics(); */
   void SetTriggerSelection(int trig);  ///< Set the trigger cluster
 
-  void SetEPVZERO(const float& lo, const float& hi); ///< Set the min and max allowed event reaction plane angle
+  int NEventsPassed() const;  ///< Number of events passed
+  int NEventsFailed() const;  ///< Number of events failed
+
+  std::pair<int, int> GetEventMult() const
+    { return { fEventMult[0], fEventMult[1]}; }
+
+  std::pair<float, float> GetVertZPos() const
+    { return { fVertZPos[0], fVertZPos[1]}; }
+
+  std::pair<float, float> GetPsiEP() const
+    { return { fPsiEP[0], fPsiEP[1]}; }
+
+  bool GetAcceptBadVertex() const
+    { return fAcceptBadVertex; }
+
+  int GetSelectTrigger() const
+    { return fSelectTrigger; }
 
   virtual TList* AppendSettings(TList*, const TString& prefix="") const;
   virtual AliFemtoString Report();
@@ -89,6 +102,11 @@ inline void AliFemtoBasicEventCut::SetTriggerSelection(int trig)
   fSelectTrigger = trig;
 }
 
+inline void AliFemtoBasicEventCut::SetAcceptBadVertex(bool b)
+{
+  fAcceptBadVertex = b;
+}
+
 inline AliFemtoEventCut* AliFemtoBasicEventCut::Clone() const
 {
   AliFemtoBasicEventCut* c = new AliFemtoBasicEventCut(*this);
@@ -121,6 +139,9 @@ inline AliFemtoBasicEventCut& AliFemtoBasicEventCut::operator=(const AliFemtoBas
     fVertZPos[1] = c.fVertZPos[1];
     fPsiEP[0] = c.fPsiEP[0];
     fPsiEP[1] = c.fPsiEP[1];
+
+    fAcceptBadVertex = c.fAcceptBadVertex;
+    fSelectTrigger = c.fSelectTrigger;
   }
 
   return *this;

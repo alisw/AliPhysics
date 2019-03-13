@@ -126,8 +126,8 @@ Bool_t AliCFVertexingHF2Prong::GetGeneratedValuesFromMCParticle(Double_t* vector
 	Double_t vtx2daughter1[3] = {0,0,0};   // secondary vertex from daughter 1
 	fmcPartCandidate->XvYvZv(vtx1);  // cm
 
-	Int_t daughter0 = fmcPartCandidate->GetDaughter(0);
-	Int_t daughter1 = fmcPartCandidate->GetDaughter(1);
+	Int_t daughter0 = fmcPartCandidate->GetDaughterLabel(0);
+	Int_t daughter1 = fmcPartCandidate->GetDaughterLabel(1);
 	AliAODMCParticle* mcPartDaughter0 = dynamic_cast<AliAODMCParticle*>(fmcArray->At(daughter0));
 	AliAODMCParticle* mcPartDaughter1 = dynamic_cast<AliAODMCParticle*>(fmcArray->At(daughter1));
 	if(!mcPartDaughter0 || !mcPartDaughter1) return bGenValues;
@@ -362,8 +362,8 @@ Bool_t AliCFVertexingHF2Prong::CheckMCChannelDecay() const
 	// checking the MC decay channel
 	//
 	Bool_t checkCD = kFALSE;
-	Int_t daughter0 = fmcPartCandidate->GetDaughter(0);
-	Int_t daughter1 = fmcPartCandidate->GetDaughter(1);
+	Int_t daughter0 = fmcPartCandidate->GetDaughterLabel(0);
+	Int_t daughter1 = fmcPartCandidate->GetDaughterLabel(1);
 	AliAODMCParticle* mcPartDaughter0 = dynamic_cast<AliAODMCParticle*>(fmcArray->At(daughter0));
 	AliAODMCParticle* mcPartDaughter1 = dynamic_cast<AliAODMCParticle*>(fmcArray->At(daughter1));
 	

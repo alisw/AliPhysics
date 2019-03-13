@@ -19,20 +19,26 @@
 
 #include <vector>
 
+#include <TRandom3.h>
 class TH1;
 class TH2;
 class TH3;
 class THnSparse;
-class AliEmcalJet;
-class AliEventPoolManager;
-class AliTLorentzVector;
 
+class AliEventPoolManager;
+
+#include "AliYAMLConfiguration.h"
+#include "THistManager.h"
+#include "AliAnalysisTaskEmcalJet.h"
+class AliTLorentzVector;
 class AliEmcalJet;
 class AliJetContainer;
 class AliParticleContainer;
 
-#include "THistManager.h"
-#include "AliAnalysisTaskEmcalJet.h"
+// operator<< has to be forward declared carefully to stay in the global namespace so that it works with CINT.
+// For generally how to keep the operator in the global namespace, See: https://stackoverflow.com/a/38801633
+namespace PWGJE { namespace EMCALJetTasks { class AliAnalysisTaskEmcalJetHCorrelations; } }
+std::ostream & operator<< (std::ostream &in, const PWGJE::EMCALJetTasks::AliAnalysisTaskEmcalJetHCorrelations &myTask);
 
 namespace PWGJE {
 namespace EMCALJetTasks {
@@ -154,6 +160,16 @@ class AliAnalysisTaskEmcalJetHCorrelations : public AliAnalysisTaskEmcalJet {
     const std::string & jetTag = "hybridLevelJets",
     const std::string & correlationsTracksCutsPeriod = "lhc11a");
 
+  // Task configuration
+  void AddConfigurationFile(const std::string & configurationPath, const std::string & configName = "") { fYAMLConfig.AddConfiguration(configurationPath, configName); }
+  bool Initialize();
+
+  // Printing
+  std::string toString() const;
+  friend std::ostream & ::operator<<(std::ostream &in, const AliAnalysisTaskEmcalJetHCorrelations &myTask);
+  void Print(Option_t* opt = "") const;
+  std::ostream & Print(std::ostream &in) const;
+
  protected:
 
   // NOTE: This is not an ideal way to resolve the size of histogram initialization.
@@ -169,12 +185,11 @@ class AliAnalysisTaskEmcalJetHCorrelations : public AliAnalysisTaskEmcalJet {
   };
 
   // EMCal framework functions
-  void                   ExecOnce();
-  Bool_t                 Run();
+  virtual void UserExecOnce();
+  Bool_t Run();
 
   // Utility functions
   AliParticleContainer * CreateParticleOrTrackContainer(const std::string & collectionName) const;
-
   // Determine if a jet has been matched
   bool CheckForMatchedJet(AliJetContainer * jets, AliEmcalJet * jet, const std::string & histName);
   // Apply artificial tracking inefficiency
@@ -200,7 +215,13 @@ class AliAnalysisTaskEmcalJetHCorrelations : public AliAnalysisTaskEmcalJet {
   void                   FillHist(TH1 * hist, Double_t fillValue, Double_t weight = 1.0, Bool_t noCorrection = kFALSE);
   void                   FillHist(THnSparse * hist, Double_t *fillValue, Double_t weight = 1.0, Bool_t noCorrection = kFALSE);
   void                   AccessSetOfYBinValues(TH2D * hist, Int_t xBin, std::vector <Double_t> & yBinsContent, Double_t scaleFactor = -1.0);
-  
+
+  // Configuration
+  void RetrieveAndSetTaskPropertiesFromYAMLConfig();
+
+  // Configuration
+  PWG::Tools::AliYAMLConfiguration fYAMLConfig;   ///< YAML configuration file.
+  bool fConfigurationInitialized;                 ///<  True if the task configuration has been successfully initialized.
   // Jet bias
   Double_t               fTrackBias;               ///< Jet track bias
   Double_t               fClusterBias;             ///< Jet cluster bias
@@ -216,6 +237,7 @@ class AliAnalysisTaskEmcalJetHCorrelations : public AliAnalysisTaskEmcalJet {
   UInt_t                 fMixingEventType;         ///< Event selection for mixed events
   Bool_t                 fDisableFastPartition;    ///< True if task should be disabled for the fast partition, where the EMCal is not included.
   // Efficiency correction
+  TRandom3 fRandom;                               //!<! Random number generator for artificial track inefficiency.
   ESingleTrackEfficiency_t fSingleTrackEfficiencyCorrectionType; ///< Control the efficiency correction. See EffCorrection() for meaning of values.
   Double_t               fArtificialTrackInefficiency; ///< Artificial track inefficiency. Enabled if < 1.0
   // JES correction
@@ -231,7 +253,7 @@ class AliAnalysisTaskEmcalJetHCorrelations : public AliAnalysisTaskEmcalJet {
 
   // Histograms
   THistManager           fHistManager;             ///<  Histogram manager
-  TH1                   *fHistTrackPt;             //!<! Track pt spectrum
+  TH1                   *fHistJetHTrackPt;         //!<! Track pt spectrum
   TH2                   *fHistJetEtaPhi;           //!<! Jet eta-phi distribution
   TH2                   *fHistTrackEtaPhi[7];      //!<! Track eta-phi distribution (the array corresponds to track pt)
   TH2                   *fHistJetHEtaPhi;          //!<! Eta-phi distribution of jets which are in jet-hadron correlations
@@ -258,7 +280,7 @@ class AliAnalysisTaskEmcalJetHCorrelations : public AliAnalysisTaskEmcalJet {
   AliAnalysisTaskEmcalJetHCorrelations(const AliAnalysisTaskEmcalJetHCorrelations&); // not implemented
   AliAnalysisTaskEmcalJetHCorrelations& operator=(const AliAnalysisTaskEmcalJetHCorrelations&); // not implemented
 
-  ClassDef(AliAnalysisTaskEmcalJetHCorrelations, 16);
+  ClassDef(AliAnalysisTaskEmcalJetHCorrelations, 18);
 };
 
 } /* namespace EMCALJetTasks */

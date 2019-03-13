@@ -46,6 +46,7 @@ class AliAnalysisTaskCaloHFEpp : public AliAnalysisTaskSE
 		Bool_t                  IsBdecay(int mpid);
 		TProfile* 		GetEstimatorHistogram(const AliAODEvent *fAOD);
 		TProfile* 		GetEstimatorHistogramMC(const AliAODEvent *fAOD);
+		Double_t      GetCorrectedNtrackletsD(TProfile* estimatorAvg, Double_t uncorrectedNacc, Double_t vtxZ, Double_t refMult);
 
     void                    SetEG1(Bool_t flagEG1) { fEMCEG1= flagEG1;};
     void                    SetEG2(Bool_t flagEG2) { fEMCEG2= flagEG2;};
@@ -129,19 +130,25 @@ class AliAnalysisTaskCaloHFEpp : public AliAnalysisTaskSE
 
 		//==== basic parameters ====
 		TH1F*                   fNevents;
-		TH1F*                   fHist_VertexZ;        //! dummy histogram
-		TH1F*                   fHist_Centrality;        //! dummy histogram
-		TH2F*                   fHist_Mult;        //! dummy histogram
+		TH1F*                   fNDB;
+		TH1F*                   fHist_VertexZ;    
+		TH1F*                   fHist_VertexZ_all;    
+		TH1F*                   fHist_Centrality; 
+		TH2F*                   fHist_Mult;       
 		TH2F*                   fTrigMulti;
-		TH1F*                   fHistEta_track;        //! dummy histogram
-		TH1F*                   fHistPhi_track;        //! dummy histogram
-		TH1F*                   fHistEta_EMcal;        //! dummy histogram
-		TH1F*                   fHistPhi_EMcal;        //! dummy histogram
-		TH2F*                   fHistScatter_EMcal;        //! dummy histogram
-		TH2F*                   fHistScatter_EMcal_aftMatch;        //! dummy histogram
+		TH1F*                   fHistEta_track;   
+		TH1F*                   fHistPhi_track;   
+		TH1F*                   fHistEta_EMcal;   
+		TH1F*                   fHistPhi_EMcal;   
+		TH2F*                   fHistScatter_EMcal;        
+		TH2F*                   fHistScatter_EMcal_aftMatch; 
 		TH2F*                   fHistoNCells;
 		TH2F*                   fM02;
 		TH2F*                   fM20;
+		TH1F*                   fM02_ele;
+		TH1F*                   fM20_ele;
+		TH1F*                   fM02_had;
+		TH1F*                   fM20_had;
 
 				//==== check cut parameters ====
 		TH1F*                   fTPCNcls;
@@ -191,6 +198,12 @@ class AliAnalysisTaskCaloHFEpp : public AliAnalysisTaskSE
 		TH2F*                   fDCAxy_Pt_had;
 		TH2F*                   fDCAxy_Pt_LS;
 		TH2F*                   fDCAxy_Pt_ULS;
+		TH2F*                   fDCAxy_Pt_Dpm;
+		TH2F*                   fDCAxy_Pt_D0;
+		TH2F*                   fDCAxy_Pt_Ds;
+		TH2F*                   fDCAxy_Pt_lambda;
+		TH2F*                   fDCAxy_Pt_B;
+		TH2F*                   fPt_Btoe;
 
 		//==== Trigger or Calorimeter flag ====
     Bool_t                  fEMCEG1;//EMcal Threshold EG1

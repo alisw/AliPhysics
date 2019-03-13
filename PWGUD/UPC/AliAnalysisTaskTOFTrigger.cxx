@@ -75,8 +75,10 @@ AliAnalysisTaskTOFTrigger::AliAnalysisTaskTOFTrigger()
 	hTrackDistribution(0),
 	hFiredMaxiPad(0),
 	hFiredMaxiPadOnlyAround(0),
-	hNotFiredMaxiPad(0),
-	hExtraFiredMaxiPad(0),
+	hNotFiredMaxiPadCls(0),
+	hExtraFiredMaxiPadCls(0),
+	hNotFiredMaxiPadTrk(0),
+	hExtraFiredMaxiPadTrk(0),
 	hTrackPadCorrPhi(0),
 	hTrackPadCorrEta(0),
 	hNoiseMaxiPad(0),
@@ -95,7 +97,8 @@ AliAnalysisTaskTOFTrigger::AliAnalysisTaskTOFTrigger()
 	hTrackPt(0),
 	hNMaxiPadIn(0),
 	hNCrossTracks(0),
-	fIsPass1(kFALSE),
+	hBadMaxiPadMask(0),
+	hTOFHitTime(0),
 	fGeomLoaded(kFALSE),
 	fMaxPt(0),
 	fMinPt(0),
@@ -105,9 +108,9 @@ AliAnalysisTaskTOFTrigger::AliAnalysisTaskTOFTrigger()
 	fUseEventSelection(0),
 	fTrackCutSet(0),
 	fMaxTrackError(0),
+	fMinTOF(0),
+	fMaxTOF(0),
 	fEventCuts(0)
-
-
 {
 
 //Dummy constructor
@@ -116,7 +119,7 @@ AliAnalysisTaskTOFTrigger::AliAnalysisTaskTOFTrigger()
 
 
 //_____________________________________________________________________________
-AliAnalysisTaskTOFTrigger::AliAnalysisTaskTOFTrigger(const char *name,Float_t lowpt,Float_t highpt,Int_t highmult,TString trgcls,Int_t nBCs,Bool_t useEVS,Int_t cutSet,Float_t maxErr)
+AliAnalysisTaskTOFTrigger::AliAnalysisTaskTOFTrigger(const char *name,Float_t lowpt,Float_t highpt,Int_t highmult,TString trgcls,Int_t nBCs,Bool_t useEVS,Int_t cutSet,Float_t maxErr,Float_t mintof,Float_t maxtof)
   : AliAnalysisTaskSE(name),fOutputList(0),fPIDResponse(0),fTrackCuts(0),
 	fTOFmask(0),
 	eff_MaxiPadLTM_All(0),
@@ -136,8 +139,10 @@ AliAnalysisTaskTOFTrigger::AliAnalysisTaskTOFTrigger(const char *name,Float_t lo
 	hTrackDistribution(0),
 	hFiredMaxiPad(0),
 	hFiredMaxiPadOnlyAround(0),
-	hNotFiredMaxiPad(0),
-	hExtraFiredMaxiPad(0),
+	hNotFiredMaxiPadCls(0),
+	hExtraFiredMaxiPadCls(0),
+	hNotFiredMaxiPadTrk(0),
+	hExtraFiredMaxiPadTrk(0),
 	hTrackPadCorrPhi(0),
 	hTrackPadCorrEta(0),
 	hNoiseMaxiPad(0),
@@ -156,7 +161,8 @@ AliAnalysisTaskTOFTrigger::AliAnalysisTaskTOFTrigger(const char *name,Float_t lo
 	hTrackPt(0),
 	hNMaxiPadIn(0),
 	hNCrossTracks(0),
-	fIsPass1(kFALSE),
+	hBadMaxiPadMask(0),
+	hTOFHitTime(0),
 	fGeomLoaded(kFALSE),
 	fMaxPt(highpt),
 	fMinPt(lowpt),
@@ -166,8 +172,9 @@ AliAnalysisTaskTOFTrigger::AliAnalysisTaskTOFTrigger(const char *name,Float_t lo
 	fUseEventSelection(useEVS),
 	fTrackCutSet(cutSet),
 	fMaxTrackError(maxErr),
+	fMinTOF(mintof),
+	fMaxTOF(maxtof),
 	fEventCuts(0)
-
 {
 
   DefineOutput(1, TList::Class());
@@ -250,10 +257,16 @@ void AliAnalysisTaskTOFTrigger::UserCreateOutputObjects()
   fOutputList->Add(hFiredMaxiPad);
   hFiredMaxiPadOnlyAround = new TH2F("hFiredMaxiPadOnlyAround","hFiredMaxiPadOnlyAround",72,0,72,23,0,23);
   fOutputList->Add(hFiredMaxiPadOnlyAround);
-  hNotFiredMaxiPad = new TH2F("hNotFiredMaxiPad","hNotFiredMaxiPad",72,0,72,23,0,23);
-  fOutputList->Add(hNotFiredMaxiPad);
-  hExtraFiredMaxiPad = new TH2F("hExtraFiredMaxiPad","hExtraFiredMaxiPad",72,0,72,23,0,23);
-  fOutputList->Add(hExtraFiredMaxiPad);
+  
+  hNotFiredMaxiPadCls = new TH2F("hNotFiredMaxiPadCls","hNotFiredMaxiPadCls",72,0,72,23,0,23);
+  fOutputList->Add(hNotFiredMaxiPadCls);
+  hExtraFiredMaxiPadCls = new TH2F("hExtraFiredMaxiPadCls","hExtraFiredMaxiPadCls",72,0,72,23,0,23);
+  fOutputList->Add(hExtraFiredMaxiPadCls);
+  hNotFiredMaxiPadTrk = new TH2F("hNotFiredMaxiPadTrk","hNotFiredMaxiPadTrk",72,0,72,23,0,23);
+  fOutputList->Add(hNotFiredMaxiPadTrk);
+  hExtraFiredMaxiPadTrk = new TH2F("hExtraFiredMaxiPadTrk","hExtraFiredMaxiPadTrk",72,0,72,23,0,23);
+  fOutputList->Add(hExtraFiredMaxiPadTrk);
+  
   hTrackPadCorrPhi = new TH2F("hTrackPadCorrPhi","hTrackPadCorrPhi",1440,0,360,72,0,72);
   fOutputList->Add(hTrackPadCorrPhi);
   hTrackPadCorrEta = new TH2F("hTrackPadCorrEta","hTrackPadCorrEta",1000,-1,1,23,0,23);
@@ -292,6 +305,10 @@ void AliAnalysisTaskTOFTrigger::UserCreateOutputObjects()
   fOutputList->Add(hNMaxiPadIn);
   hNCrossTracks = new TH1I("hNCrossTracks","hNCrossTracks",100,0.5,100.5);
   fOutputList->Add(hNCrossTracks);
+  hBadMaxiPadMask = new TH2I("hBadMaxiPadMask","hBadMaxiPadMask",72,0,72,23,0,23);
+  fOutputList->Add(hBadMaxiPadMask);
+  hTOFHitTime = new TH1F("hTOFHitTime","hTOFHitTime",800000,-200000,600000);
+  fOutputList->Add(hTOFHitTime);
   
   if(fUseEventSelection){
   	fEventCuts.AddQAplotsToList(fOutputList);
@@ -309,8 +326,6 @@ void AliAnalysisTaskTOFTrigger::UserExec(Option_t *)
 
 
   TString fileName = ((TTree*) GetInputData(0))->GetCurrentFile()->GetName();
-  if(fileName.Contains("pass1") || fileName.Contains("pass5"))fIsPass1 = kTRUE;
-  else fIsPass1 = kFALSE;
   
   Bool_t fBadMaxiPadMask[23][72];
   if(!fGeomLoaded){
@@ -319,16 +334,18 @@ void AliAnalysisTaskTOFTrigger::UserExec(Option_t *)
 	AliCDBEntry *cdbe = cdb->Get("TRIGGER/TOF/TriggerMask");
         AliTOFTriggerMask *fOCDBmask = (AliTOFTriggerMask *)cdbe->GetObject();
 	
-	UInt_t BadLTMs[11] = {10,12,14,15,47,64,65,66,67,68,69};
-	UInt_t BadMaxiPads[5][2] = {{19,1}, {26,4}, {33,4}, {34,1}, {34,2}};
+	//UInt_t BadLTMs[11] = {10,12,14,15,47,64,65,66,67,68,69};
+	//UInt_t BadMaxiPads[5][2] = {{19,1}, {26,4}, {33,4}, {34,1}, {34,2}};
 	UInt_t fgFromTriggertoDCS[72] = {0,1,4,5, 8, 9,12,13,16,17,20,21,24,25,28,29,32,33,36,37,40,41,44,45,48,49,52,53,56,57,60,61,64,65,68,69,
                                 3,2,7,6,11,10,15,14,19,18,23,22,27,26,31,30,35,34,39,38,43,42,47,46,51,50,55,54,59,58,63,62,67,66,71,70};
 
 	for(Int_t indexLTM=0; indexLTM<72; ++indexLTM) {
     		for(Int_t channelCTTM=0; channelCTTM<23; ++channelCTTM) {
 			fBadMaxiPadMask[channelCTTM][indexLTM] = !fOCDBmask->IsON(fgFromTriggertoDCS[indexLTM],channelCTTM);
-			for(Int_t j = 0; j<11; j++)if(indexLTM == BadLTMs[j])fBadMaxiPadMask[channelCTTM][indexLTM] = 1;
-			for(Int_t j = 0; j<5; j++)if(indexLTM == BadMaxiPads[j][0] && channelCTTM == BadMaxiPads[j][1])fBadMaxiPadMask[channelCTTM][indexLTM] = 1;
+			//for(Int_t j = 0; j<11; j++)if(indexLTM == BadLTMs[j])fBadMaxiPadMask[channelCTTM][indexLTM] = 1;
+			//for(Int_t j = 0; j<5; j++)if(indexLTM == BadMaxiPads[j][0] && channelCTTM == BadMaxiPads[j][1])fBadMaxiPadMask[channelCTTM][indexLTM] = 1;
+			if(fBadMaxiPadMask[channelCTTM][indexLTM])hBadMaxiPadMask->SetBinContent(indexLTM+1,channelCTTM+1,1);
+			else hBadMaxiPadMask->SetBinContent(indexLTM+1,channelCTTM+1,0);
 			}
 		}
 	Int_t nAliveChannels = 0;
@@ -393,7 +410,7 @@ void AliAnalysisTaskTOFTrigger::UserExec(Option_t *)
   if(fClosestIR1 < fMaxBCs && fClosestIR1 != 0)return;
   if(fClosestIR2 < fMaxBCs && fClosestIR2 != 0)return;
 
-  Bool_t isGoodCTRUE = trigger.Contains("CTRUE-B") && !esd->GetHeader()->IsTriggerInputFired("VBA") && !esd->GetHeader()->IsTriggerInputFired("VBC") && !esd->GetHeader()->IsTriggerInputFired("SH2");
+  Bool_t isGoodCTRUE = trigger.Contains("CTRUE-B") && !esd->GetHeader()->IsTriggerInputFired("VBA") && !esd->GetHeader()->IsTriggerInputFired("VBC") && !esd->GetHeader()->IsTriggerInputFired("SMB");
 
   if(isGoodCTRUE)hTriggerCounter->Fill(0);
   if(triggeredEvent)hTriggerCounter->Fill(1);
@@ -419,7 +436,6 @@ void AliAnalysisTaskTOFTrigger::UserExec(Option_t *)
 		}
 	}
 	
-
   Int_t numTracksPerMaxiPad[72][23];
   Int_t numMuonTracksPerMaxiPad[72][23];
   Int_t numElectronTracksPerMaxiPad[72][23];
@@ -430,7 +446,7 @@ void AliAnalysisTaskTOFTrigger::UserExec(Option_t *)
       numElectronTracksPerMaxiPad[indexLTM][channelCTTM] = 0;
     }
   }
-  
+
   TClonesArray* tofClusters = ((AliESDEvent*)fInputEvent)->GetESDTOFClusters();
   
   Int_t nTOFhits = 0;
@@ -452,6 +468,8 @@ void AliAnalysisTaskTOFTrigger::UserExec(Option_t *)
      AliESDTOFCluster* cl = (AliESDTOFCluster*) tofClusters->At(icl);
      for (Int_t ihit=0;ihit<cl->GetNTOFhits();ihit++){
        AliESDTOFHit* hit = (AliESDTOFHit*) cl->GetTOFHit(ihit);
+       hTOFHitTime->Fill(hit->GetTime());
+       if(hit->GetTime() < fMinTOF  || hit->GetTime() > fMaxTOF)continue;
        Int_t channel = hit->GetTOFchannel();
        Int_t trackIndex = (cl->GetNMatchableTracks()==1) ? cl->GetTrackIndex(0) : -1;
        fTOFhits.AddAt(channel,hitCounts);
@@ -480,6 +498,12 @@ void AliAnalysisTaskTOFTrigger::UserExec(Option_t *)
 		UInt_t channelCTTM = indexLTM[1]/2;
     		eff_MaxiPadLTM_Clusters->Fill(fTOFmask->IsON(indexLTM[0],channelCTTM),indexLTM[0],channelCTTM);
 		//cout<<"Track "<<iTrack<<" Trigger pad in LTM "<<indexLTM[0]<<" CTTM "<<channelCTTM<<" Fired = "<<fTOFmask->IsON(indexLTM[0],channelCTTM)<<endl;
+		if(trigger.Contains("CCUP30-B") || trigger.Contains("CCUP31-B")){
+			if(!fTOFmask->IsON(indexLTM[0],channelCTTM) && (fTOFmask->GetNumberMaxiPadOn()< 2))hNotFiredMaxiPadCls->Fill(indexLTM[0],channelCTTM);
+			}
+		if(trigger.Contains("CCUP31-B")){
+			if(fTOFmask->IsON(indexLTM[0],channelCTTM) && (fTOFmask->GetNumberMaxiPadOn()> 6))hExtraFiredMaxiPadCls->Fill(indexLTM[0],channelCTTM);
+			}
 		}
 	}
     
@@ -636,9 +660,12 @@ void AliAnalysisTaskTOFTrigger::UserExec(Option_t *)
 		    hTrackDistribution_El->Fill(trc->Phi()*TMath::RadToDeg(),trc->Eta());
                     numElectronTracksPerMaxiPad[indexLTM[0]][channelCTTM] += 1;
 		    }
-		if(trigger.Contains("CCUP8-B") || trigger.Contains("CCUP4-B")){
-			if(!fTOFmask->IsON(indexLTM[0],channelCTTM) && (fTOFmask->GetNumberMaxiPadOn()< 2))hNotFiredMaxiPad->Fill(indexLTM[0],channelCTTM);
-			if(fTOFmask->IsON(indexLTM[0],channelCTTM) && (fTOFmask->GetNumberMaxiPadOn()> 6))hExtraFiredMaxiPad->Fill(indexLTM[0],channelCTTM);
+		    
+		if(trigger.Contains("CCUP30-B") || trigger.Contains("CCUP31-B")){
+			if(!fTOFmask->IsON(indexLTM[0],channelCTTM) && (fTOFmask->GetNumberMaxiPadOn()< 2))hNotFiredMaxiPadTrk->Fill(indexLTM[0],channelCTTM);
+			}
+		if(trigger.Contains("CCUP31-B")){
+			if(fTOFmask->IsON(indexLTM[0],channelCTTM) && (fTOFmask->GetNumberMaxiPadOn()> 6))hExtraFiredMaxiPadTrk->Fill(indexLTM[0],channelCTTM);
 			}
 		}
      	}
@@ -730,17 +757,4 @@ void AliAnalysisTaskTOFTrigger::GetLTMIndex(const Int_t * const detind, Int_t *i
   if (indexLTM[0]<36) indexLTM[1] = iStrip;
   else                indexLTM[1] = 90-iStrip;
   
-  Int_t reMapPass1[72]={
-       0, 1, 2, 3, 4, 5, 6, 7, 8, 9,
-      10,11,12,13,14,15,16,17,20,19,
-      21,22,23,24,26,25,28,27,29,30,
-      32,31,34,33,36,35,36,35,38,37,
-      40,39,42,41,44,43,46,45,48,47,
-      50,49,52,51,54,55,56,57,58,59,
-      60,61,62,63,64,65,66,67,68,69,
-      70,71
-  };
-
-  if(fIsPass1)indexLTM[0] = reMapPass1[indexLTM[0]];
-
 }

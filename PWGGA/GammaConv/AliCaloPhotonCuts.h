@@ -115,7 +115,8 @@ class AliCaloPhotonCuts : public AliAnalysisCuts {
       k14j4,
       // pp 7 TeV 2011
       k14b7,
-      // pp 2.76 TeV 2011
+      k14k1ab,
+     // pp 2.76 TeV 2011
       k12f1a,
       k12f1b,
       k12i3,
@@ -135,6 +136,7 @@ class AliCaloPhotonCuts : public AliAnalysisCuts {
       k16c3a,
       k16c3b,
       k16c3c,
+      kPPb5T13P4DPMJet,
       // pp 2.76TeV 2013
       k15g2,
       kPP2T13P1JJ,
@@ -160,6 +162,8 @@ class AliCaloPhotonCuts : public AliAnalysisCuts {
       // PbPb 5 TeV 2015
       kPbPb5T15HIJING,
       k16k3b,
+      // PbPb 5 TeV 2018
+      kPbPb5T18HIJING,
       // pp 13 TeV 2016
       kPP13T16P1Pyt8,
       kPP13T16P1Pyt8LowB,
@@ -185,6 +189,7 @@ class AliCaloPhotonCuts : public AliAnalysisCuts {
       k17f3b,
       k17f4a,
       k17f4b,
+      k18f3bc,
       k17g8b,
       k17g8c,
       k18b9b,
@@ -274,25 +279,28 @@ class AliCaloPhotonCuts : public AliAnalysisCuts {
     void        SetCaloIsolationName(TString name)             {fCaloIsolationName = name; return;}
     MCSet       FindEnumForMCSet(TString namePeriod);
 
-    void        ApplyNonLinearity(AliVCluster* cluster, Int_t isMC);
+    void        ApplyNonLinearity(AliVCluster* cluster, Int_t isMC, AliVEvent *event = 0x0);
 
     Float_t     FunctionNL_kPi0MC(Float_t e, Float_t p0, Float_t p1, Float_t p2, Float_t p3, Float_t p4, Float_t p5, Float_t p6);
     Float_t     FunctionNL_PHOSOnlyMC(Float_t e, Float_t p0, Float_t p1, Float_t p2);
 
-    Float_t     FunctionNL_kSDM(Float_t e, Float_t p0, Float_t p1, Float_t p2);
+    Float_t     FunctionNL_kSDM(Float_t e, Float_t p0, Float_t p1, Float_t p2, Float_t p3 = 1.0);
     Float_t     FunctionNL_DPOW(Float_t e, Float_t p0, Float_t p1, Float_t p2, Float_t p3, Float_t p4, Float_t p5);
-    Float_t     FunctionNL_DExp(Float_t e, Float_t p0, Float_t p1, Float_t p2, Float_t p3, Float_t p4, Float_t p5);
+    Float_t     FunctionNL_SPOW(Float_t e, Float_t p0, Float_t p1, Float_t p2);
+    Float_t     FunctionNL_DExp(Float_t e, Float_t p0, Float_t p1, Float_t p2, Float_t p3, Float_t p4, Float_t p5, Float_t p6 = 1.0, Float_t p7 = 1.0);
     //predefined functions
     Float_t     FunctionNL_kPi0MCv1(Float_t e);
     Float_t     FunctionNL_kPi0MCv2(Float_t e);
     Float_t     FunctionNL_kPi0MCv3(Float_t e);
     Float_t     FunctionNL_kPi0MCv5(Float_t e);
     Float_t     FunctionNL_kPi0MCv6(Float_t e);
+    Float_t     FunctionNL_kPi0MCMod(Float_t e, Float_t p0, Float_t p1, Float_t p2, Float_t p3, Float_t p4, Float_t p5, Float_t p6);
     Float_t     FunctionNL_kSDMv5(Float_t e);
     Float_t     FunctionNL_kSDMv6(Float_t e);
     Float_t     FunctionNL_kTestBeamv2(Float_t e);
     Float_t     FunctionNL_kTestBeamv3(Float_t e);
     Float_t     FunctionNL_kTestBeamv4(Float_t e);
+    Float_t     FunctionNL_kTestBeamMod(Float_t e, Float_t p0, Float_t p1, Float_t p2, Float_t p3, Float_t p4, Float_t p5, Float_t p6);
 
     void        InitCutHistograms(TString name="");
     void        SetFillCutHistograms(TString name="")           {if(!fHistograms){InitCutHistograms(name);} return;}
@@ -308,7 +316,8 @@ class AliCaloPhotonCuts : public AliAnalysisCuts {
     void        SetIsPureCaloCut(Int_t merged)                  {fIsPureCalo = merged; return;}
     Int_t       GetIsPureCaloCut()                              {return fIsPureCalo;}
     Int_t       GetNactiveEmcalCells()                          {return fNactiveEmcalCells;}
-
+    Int_t       GetIsConversionRecovery()                       {return fUseRecConv;}
+    Float_t     GetInvMassConversionRecovery()                  {return fMaxMGGRecConv;}
 
     // Cut functions
     Bool_t      AcceptanceCuts(AliVCluster* cluster, AliVEvent *event, Double_t weight);
@@ -339,6 +348,7 @@ class AliCaloPhotonCuts : public AliAnalysisCuts {
     Bool_t      GetIsAcceptedForBasicCounting()                 {return fIsAcceptedForBasic;}
 
     Bool_t      GetDoFlatEnergySubtraction()                    {return fDoFlatEnergySubtraction;}
+    Bool_t      GetDoSecondaryTrackMatching()                   {return fDoSecondaryTrackMatching;}
 
     // modify acceptance via histogram with cellID
     void        SetHistoToModifyAcceptance(TH1S* histAcc)       {fHistoModifyAcc  = histAcc; return;}
@@ -436,6 +446,8 @@ class AliCaloPhotonCuts : public AliAnalysisCuts {
     Bool_t    fUseEtaCut;                               // flag for switching on eta cut
     Double_t  fMinPhiCut;                               // phi cut
     Double_t  fMaxPhiCut;                               // phi cut
+    Double_t  fMinPhiCutDMC;                            // phi cut
+    Double_t  fMaxPhiCutDMC;                            // phi cut
     Bool_t    fUsePhiCut;                               // flag for switching on phi cut
     Double_t  fMinDistanceToBadChannel;                 // minimum distance to bad channel
     Int_t     fUseDistanceToBadChannel;                 // flag for switching on distance to bad channel cut: 0 off, 1 on without corners, 2 on with corners included
@@ -473,8 +485,8 @@ class AliCaloPhotonCuts : public AliAnalysisCuts {
     Double_t  fMaxM20;                                  // maximum M20
     Double_t  fMinM20;                                  // minimum M20
     Bool_t    fUseM20;                                  // flag for switching on M20 cut
-    Double_t  fMaxMGGRecConv;                           // maximum invariant mass below which the 2 clusters are gonna be combined assuming they are from a photon
-    Bool_t    fUseRecConv;                              // flag to switch on conversion recovery
+    Float_t   fMaxMGGRecConv;                           // maximum invariant mass below which the 2 clusters are gonna be combined assuming they are from a photon
+    Int_t     fUseRecConv;                              // flag to switch on conversion recovery
     Double_t  fMaxDispersion;                           // maximum dispersion
     Bool_t    fUseDispersion;                           // flag for switching on dispersion cut
     Int_t     fMinNLM;                                  // minimum number of local maxima in cluster
@@ -486,6 +498,7 @@ class AliCaloPhotonCuts : public AliAnalysisCuts {
     Bool_t    fUseNonLinearity;                         // flag for switching NonLinearity correction
     Int_t     fIsPureCalo;                              // flag for MergedCluster analysis
     Int_t     fNactiveEmcalCells;                       // total number of active emcal cells
+    Bool_t    fDoSecondaryTrackMatching;                // flag to switch on secondary trackmatching
 
     //vector
     std::vector<Int_t> fVectorMatchedClusterIDs;        // vector with cluster IDs that have been matched to tracks in merged cluster analysis
@@ -608,7 +621,7 @@ class AliCaloPhotonCuts : public AliAnalysisCuts {
 
   private:
 
-    ClassDef(AliCaloPhotonCuts,73)
+    ClassDef(AliCaloPhotonCuts,83)
 };
 
 #endif

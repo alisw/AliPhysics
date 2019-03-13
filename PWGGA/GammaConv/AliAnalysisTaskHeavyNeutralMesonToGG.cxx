@@ -1488,9 +1488,9 @@ void AliAnalysisTaskHeavyNeutralMesonToGG::UserExec(Option_t *){
       return;
     }
 
-    if(fInputEvent->IsA()==AliAODEvent::Class()){
-      fInputEvent->InitMagneticField();
-    }
+//     if(fInputEvent->IsA()==AliAODEvent::Class()){
+//       fInputEvent->InitMagneticField();
+//     }
 
     fReaderGammas = fV0Reader->GetReconstructedGammas(); // Gammas from default Cut
 
@@ -2228,8 +2228,8 @@ void AliAnalysisTaskHeavyNeutralMesonToGG::ProcessAODMCParticles(){
 
       // check neutral mesons
       if(((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->MesonIsSelectedAODMC(particle,AODMCTrackArray,((AliConvEventCuts*)fEventCutArray->At(fiCut))->GetEtaShift())){
-        AliAODMCParticle* daughter0 = static_cast<AliAODMCParticle*>(AODMCTrackArray->At(particle->GetDaughter(0)));
-        AliAODMCParticle* daughter1 = static_cast<AliAODMCParticle*>(AODMCTrackArray->At(particle->GetDaughter(1)));
+        AliAODMCParticle* daughter0 = static_cast<AliAODMCParticle*>(AODMCTrackArray->At(particle->GetDaughterLabel(0)));
+        AliAODMCParticle* daughter1 = static_cast<AliAODMCParticle*>(AODMCTrackArray->At(particle->GetDaughterLabel(1)));
         Float_t weighted= 1;
         if(((AliConvEventCuts*)fEventCutArray->At(fiCut))->IsParticleFromBGEvent(i, fMCEvent, fInputEvent)){
           if (particle->Pt()>0.005){

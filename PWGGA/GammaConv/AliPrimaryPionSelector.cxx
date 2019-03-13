@@ -107,9 +107,9 @@ Bool_t AliPrimaryPionSelector::ProcessEvent(AliVEvent *inputEvent,AliMCEvent *mc
 		ProcessESDs();
 	}
 
-	//if(fInputEvent->IsA()==AliAODEvent::Class()){
-	//GetAODConversionGammas();
-	//}
+    if(fInputEvent->IsA()==AliAODEvent::Class()){
+      ProcessAODs();
+    }
 
 
 	return kTRUE;
@@ -121,11 +121,12 @@ Bool_t AliPrimaryPionSelector::ProcessESDs(){
 	AliESDEvent *fESDEvent=dynamic_cast<AliESDEvent*>(fInputEvent);
 	if(fESDEvent){
 		for(Int_t currentTrackIndex=0;currentTrackIndex<fESDEvent->GetNumberOfTracks();currentTrackIndex++){
-			AliESDtrack *fCurrentTrack = (AliESDtrack*)(fESDEvent->GetTrack(currentTrackIndex));
+            AliESDtrack *fCurrentTrack = dynamic_cast<AliESDtrack*> (fESDEvent->GetTrack(currentTrackIndex));
 			if(!fCurrentTrack){
 				printf("Requested Track does not exist");
 				continue;
 			}
+
 			if (  fPionCuts->PionIsSelected( fCurrentTrack ) ) {
 				if( fCurrentTrack->GetSign() > 0.0 ){
 					fPosPionsIndex.push_back(currentTrackIndex);
@@ -138,6 +139,30 @@ Bool_t AliPrimaryPionSelector::ProcessESDs(){
 	return kTRUE;
 }
 
+///________________________________________________________________________
+Bool_t AliPrimaryPionSelector::ProcessAODs(){
+    // process AOD primary pions
+    AliAODEvent *fAODEvent=dynamic_cast<AliAODEvent*>(fInputEvent);
+    if(fAODEvent){
+        for(Int_t currentTrackIndex=0;currentTrackIndex<fAODEvent->GetNumberOfTracks();currentTrackIndex++){
+            AliAODTrack *fCurrentTrack = dynamic_cast<AliAODTrack*> (fAODEvent->GetTrack(currentTrackIndex));
+            if(!fCurrentTrack){
+                printf("Requested Track does not exist");
+                continue;
+            }
+
+            Float_t sign = ( fCurrentTrack ? fCurrentTrack->Charge() : fCurrentTrack->GetSign() );
+            if (  fPionCuts->PionIsSelectedAOD( fCurrentTrack ) ) {
+                if( sign > 0.0 ){
+                    fPosPionsIndex.push_back(currentTrackIndex);
+                } else {
+                    fNegPionsIndex.push_back(currentTrackIndex);
+                }
+            }
+        }
+    }
+    return kTRUE;
+}
 
 //________________________________________________________________________
 void AliPrimaryPionSelector::Terminate(Option_t *)

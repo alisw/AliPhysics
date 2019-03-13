@@ -82,10 +82,10 @@ void Systematics_pp_03to99had(Bool_t useReflected){
     systfitter->SetReferenceBaselineEstimationRange(0.25*TMath::Pi(),0.5*TMath::Pi()); // set the default baseline estimation range
     
     systfitter->AddSystematicMode(AliHFCorrFitSystematics::kTransverse,kTRUE,0.25*TMath::Pi(),0.5*TMath::Pi(),0,AliHFCorrFitter::kModifNSGausPeriodicityFixBeta);  //Generalized gaussian NS //add systematic method (ktrue if is default to compare to, kfalse if is used to estimated the variations)
-    systfitter->AddSystematicMode(AliHFCorrFitSystematics::kTransverse,kFALSE,0.25*TMath::Pi(),0.5*TMath::Pi());
-    systfitter->AddSystematicMode(AliHFCorrFitSystematics::kTransverse,kFALSE,0.25*TMath::Pi(),0.375*TMath::Pi());
-    systfitter->AddSystematicMode(AliHFCorrFitSystematics::kTransverse,kFALSE,0.375*TMath::Pi(),0.5*TMath::Pi());
-    systfitter->AddSystematicMode(AliHFCorrFitSystematics::kTransverse,kFALSE,0.25*TMath::Pi(),0.625*TMath::Pi());
+    systfitter->AddSystematicMode(AliHFCorrFitSystematics::kTransverse,kFALSE,0.25*TMath::Pi(),0.5*TMath::Pi(),0,AliHFCorrFitter::kModifNSGausPeriodicityConstrainedBeta);
+    systfitter->AddSystematicMode(AliHFCorrFitSystematics::kTransverse,kFALSE,0.25*TMath::Pi(),0.375*TMath::Pi(),0,AliHFCorrFitter::kModifNSGausPeriodicityConstrainedBeta);
+    systfitter->AddSystematicMode(AliHFCorrFitSystematics::kTransverse,kFALSE,0.375*TMath::Pi(),0.5*TMath::Pi(),0,AliHFCorrFitter::kModifNSGausPeriodicityConstrainedBeta);
+    systfitter->AddSystematicMode(AliHFCorrFitSystematics::kTransverse,kFALSE,0.25*TMath::Pi(),0.625*TMath::Pi(),0,AliHFCorrFitter::kModifNSGausPeriodicityConstrainedBeta);
     systfitter->AddSystematicMode(AliHFCorrFitSystematics::kTransverse,kFALSE,0.25*TMath::Pi(),0.375*TMath::Pi(),0,AliHFCorrFitter::kModifNSGausPeriodicityFixBeta);
     systfitter->AddSystematicMode(AliHFCorrFitSystematics::kTransverse,kFALSE,0.375*TMath::Pi(),0.5*TMath::Pi(),0,AliHFCorrFitter::kModifNSGausPeriodicityFixBeta);
     systfitter->AddSystematicMode(AliHFCorrFitSystematics::kTransverse,kFALSE,0.25*TMath::Pi(),0.625*TMath::Pi(),0,AliHFCorrFitter::kModifNSGausPeriodicityFixBeta);    
@@ -204,10 +204,10 @@ void Systematics_pp_03to1had(Bool_t useReflected){
     systfitter->SetReferenceBaselineEstimationRange(0.25*TMath::Pi(),0.5*TMath::Pi()); // set the default baseline estimation range
     
     systfitter->AddSystematicMode(AliHFCorrFitSystematics::kTransverse,kTRUE,0.25*TMath::Pi(),0.5*TMath::Pi(),0,AliHFCorrFitter::kModifNSGausPeriodicityFixBeta);  //Generalized gaussian NS //add systematic method (ktrue if is default to compare to, kfalse if is used to estimated the variations)
-    systfitter->AddSystematicMode(AliHFCorrFitSystematics::kTransverse,kFALSE,0.25*TMath::Pi(),0.5*TMath::Pi());
-    systfitter->AddSystematicMode(AliHFCorrFitSystematics::kTransverse,kFALSE,0.25*TMath::Pi(),0.375*TMath::Pi());
-    systfitter->AddSystematicMode(AliHFCorrFitSystematics::kTransverse,kFALSE,0.375*TMath::Pi(),0.5*TMath::Pi());
-    systfitter->AddSystematicMode(AliHFCorrFitSystematics::kTransverse,kFALSE,0.25*TMath::Pi(),0.625*TMath::Pi());
+    systfitter->AddSystematicMode(AliHFCorrFitSystematics::kTransverse,kFALSE,0.25*TMath::Pi(),0.5*TMath::Pi(),0,AliHFCorrFitter::kModifNSGausPeriodicityConstrainedBeta);
+    systfitter->AddSystematicMode(AliHFCorrFitSystematics::kTransverse,kFALSE,0.25*TMath::Pi(),0.375*TMath::Pi(),0,AliHFCorrFitter::kModifNSGausPeriodicityConstrainedBeta);
+    systfitter->AddSystematicMode(AliHFCorrFitSystematics::kTransverse,kFALSE,0.375*TMath::Pi(),0.5*TMath::Pi(),0,AliHFCorrFitter::kModifNSGausPeriodicityConstrainedBeta);
+    systfitter->AddSystematicMode(AliHFCorrFitSystematics::kTransverse,kFALSE,0.25*TMath::Pi(),0.625*TMath::Pi(),0,AliHFCorrFitter::kModifNSGausPeriodicityConstrainedBeta);
     systfitter->AddSystematicMode(AliHFCorrFitSystematics::kTransverse,kFALSE,0.25*TMath::Pi(),0.375*TMath::Pi(),0,AliHFCorrFitter::kModifNSGausPeriodicityFixBeta);
     systfitter->AddSystematicMode(AliHFCorrFitSystematics::kTransverse,kFALSE,0.375*TMath::Pi(),0.5*TMath::Pi(),0,AliHFCorrFitter::kModifNSGausPeriodicityFixBeta);
     systfitter->AddSystematicMode(AliHFCorrFitSystematics::kTransverse,kFALSE,0.25*TMath::Pi(),0.625*TMath::Pi(),0,AliHFCorrFitter::kModifNSGausPeriodicityFixBeta);    
@@ -326,10 +326,10 @@ void Systematics_pp_1to99had(Bool_t useReflected){
     systfitter->SetReferenceBaselineEstimationRange(0.25*TMath::Pi(),0.5*TMath::Pi()); // set the default baseline estimation range
     
     systfitter->AddSystematicMode(AliHFCorrFitSystematics::kTransverse,kTRUE,0.25*TMath::Pi(),0.5*TMath::Pi(),0,AliHFCorrFitter::kModifNSGausPeriodicityFixBeta);  //Generalized gaussian NS //add systematic method (ktrue if is default to compare to, kfalse if is used to estimated the variations)
-    systfitter->AddSystematicMode(AliHFCorrFitSystematics::kTransverse,kFALSE,0.25*TMath::Pi(),0.5*TMath::Pi());
-    systfitter->AddSystematicMode(AliHFCorrFitSystematics::kTransverse,kFALSE,0.25*TMath::Pi(),0.375*TMath::Pi());
-    systfitter->AddSystematicMode(AliHFCorrFitSystematics::kTransverse,kFALSE,0.375*TMath::Pi(),0.5*TMath::Pi());
-    systfitter->AddSystematicMode(AliHFCorrFitSystematics::kTransverse,kFALSE,0.25*TMath::Pi(),0.625*TMath::Pi());
+    systfitter->AddSystematicMode(AliHFCorrFitSystematics::kTransverse,kFALSE,0.25*TMath::Pi(),0.5*TMath::Pi(),0,AliHFCorrFitter::kModifNSGausPeriodicityConstrainedBeta);
+    systfitter->AddSystematicMode(AliHFCorrFitSystematics::kTransverse,kFALSE,0.25*TMath::Pi(),0.375*TMath::Pi(),0,AliHFCorrFitter::kModifNSGausPeriodicityConstrainedBeta);
+    systfitter->AddSystematicMode(AliHFCorrFitSystematics::kTransverse,kFALSE,0.375*TMath::Pi(),0.5*TMath::Pi(),0,AliHFCorrFitter::kModifNSGausPeriodicityConstrainedBeta);
+    systfitter->AddSystematicMode(AliHFCorrFitSystematics::kTransverse,kFALSE,0.25*TMath::Pi(),0.625*TMath::Pi(),0,AliHFCorrFitter::kModifNSGausPeriodicityConstrainedBeta);
     systfitter->AddSystematicMode(AliHFCorrFitSystematics::kTransverse,kFALSE,0.25*TMath::Pi(),0.375*TMath::Pi(),0,AliHFCorrFitter::kModifNSGausPeriodicityFixBeta);
     systfitter->AddSystematicMode(AliHFCorrFitSystematics::kTransverse,kFALSE,0.375*TMath::Pi(),0.5*TMath::Pi(),0,AliHFCorrFitter::kModifNSGausPeriodicityFixBeta);
     systfitter->AddSystematicMode(AliHFCorrFitSystematics::kTransverse,kFALSE,0.25*TMath::Pi(),0.625*TMath::Pi(),0,AliHFCorrFitter::kModifNSGausPeriodicityFixBeta);    
@@ -448,10 +448,10 @@ void Systematics_pp_2to99had(Bool_t useReflected){
     systfitter->SetReferenceBaselineEstimationRange(0.25*TMath::Pi(),0.5*TMath::Pi()); // set the default baseline estimation range
     
     systfitter->AddSystematicMode(AliHFCorrFitSystematics::kTransverse,kTRUE,0.25*TMath::Pi(),0.5*TMath::Pi(),0,AliHFCorrFitter::kModifNSGausPeriodicityFixBeta);  //Generalized gaussian NS //add systematic method (ktrue if is default to compare to, kfalse if is used to estimated the variations)
-    systfitter->AddSystematicMode(AliHFCorrFitSystematics::kTransverse,kFALSE,0.25*TMath::Pi(),0.5*TMath::Pi());
-    systfitter->AddSystematicMode(AliHFCorrFitSystematics::kTransverse,kFALSE,0.25*TMath::Pi(),0.375*TMath::Pi());
-    systfitter->AddSystematicMode(AliHFCorrFitSystematics::kTransverse,kFALSE,0.375*TMath::Pi(),0.5*TMath::Pi());
-    systfitter->AddSystematicMode(AliHFCorrFitSystematics::kTransverse,kFALSE,0.25*TMath::Pi(),0.625*TMath::Pi());
+    systfitter->AddSystematicMode(AliHFCorrFitSystematics::kTransverse,kFALSE,0.25*TMath::Pi(),0.5*TMath::Pi(),0,AliHFCorrFitter::kModifNSGausPeriodicityConstrainedBeta);
+    systfitter->AddSystematicMode(AliHFCorrFitSystematics::kTransverse,kFALSE,0.25*TMath::Pi(),0.375*TMath::Pi(),0,AliHFCorrFitter::kModifNSGausPeriodicityConstrainedBeta);
+    systfitter->AddSystematicMode(AliHFCorrFitSystematics::kTransverse,kFALSE,0.375*TMath::Pi(),0.5*TMath::Pi(),0,AliHFCorrFitter::kModifNSGausPeriodicityConstrainedBeta);
+    systfitter->AddSystematicMode(AliHFCorrFitSystematics::kTransverse,kFALSE,0.25*TMath::Pi(),0.625*TMath::Pi(),0,AliHFCorrFitter::kModifNSGausPeriodicityConstrainedBeta);
     systfitter->AddSystematicMode(AliHFCorrFitSystematics::kTransverse,kFALSE,0.25*TMath::Pi(),0.375*TMath::Pi(),0,AliHFCorrFitter::kModifNSGausPeriodicityFixBeta);
     systfitter->AddSystematicMode(AliHFCorrFitSystematics::kTransverse,kFALSE,0.375*TMath::Pi(),0.5*TMath::Pi(),0,AliHFCorrFitter::kModifNSGausPeriodicityFixBeta);
     systfitter->AddSystematicMode(AliHFCorrFitSystematics::kTransverse,kFALSE,0.25*TMath::Pi(),0.625*TMath::Pi(),0,AliHFCorrFitter::kModifNSGausPeriodicityFixBeta);    
@@ -570,10 +570,10 @@ void Systematics_pp_3to99had(Bool_t useReflected){
     systfitter->SetReferenceBaselineEstimationRange(0.25*TMath::Pi(),0.5*TMath::Pi()); // set the default baseline estimation range
     
     systfitter->AddSystematicMode(AliHFCorrFitSystematics::kTransverse,kTRUE,0.25*TMath::Pi(),0.5*TMath::Pi(),0,AliHFCorrFitter::kModifNSGausPeriodicityFixBeta);  //Generalized gaussian NS //add systematic method (ktrue if is default to compare to, kfalse if is used to estimated the variations)
-    systfitter->AddSystematicMode(AliHFCorrFitSystematics::kTransverse,kFALSE,0.25*TMath::Pi(),0.5*TMath::Pi());
-    systfitter->AddSystematicMode(AliHFCorrFitSystematics::kTransverse,kFALSE,0.25*TMath::Pi(),0.375*TMath::Pi());
-    systfitter->AddSystematicMode(AliHFCorrFitSystematics::kTransverse,kFALSE,0.375*TMath::Pi(),0.5*TMath::Pi());
-    systfitter->AddSystematicMode(AliHFCorrFitSystematics::kTransverse,kFALSE,0.25*TMath::Pi(),0.625*TMath::Pi());
+    systfitter->AddSystematicMode(AliHFCorrFitSystematics::kTransverse,kFALSE,0.25*TMath::Pi(),0.5*TMath::Pi(),0,AliHFCorrFitter::kModifNSGausPeriodicityConstrainedBeta);
+    systfitter->AddSystematicMode(AliHFCorrFitSystematics::kTransverse,kFALSE,0.25*TMath::Pi(),0.375*TMath::Pi(),0,AliHFCorrFitter::kModifNSGausPeriodicityConstrainedBeta);
+    systfitter->AddSystematicMode(AliHFCorrFitSystematics::kTransverse,kFALSE,0.375*TMath::Pi(),0.5*TMath::Pi(),0,AliHFCorrFitter::kModifNSGausPeriodicityConstrainedBeta);
+    systfitter->AddSystematicMode(AliHFCorrFitSystematics::kTransverse,kFALSE,0.25*TMath::Pi(),0.625*TMath::Pi(),0,AliHFCorrFitter::kModifNSGausPeriodicityConstrainedBeta);
     systfitter->AddSystematicMode(AliHFCorrFitSystematics::kTransverse,kFALSE,0.25*TMath::Pi(),0.375*TMath::Pi(),0,AliHFCorrFitter::kModifNSGausPeriodicityFixBeta);
     systfitter->AddSystematicMode(AliHFCorrFitSystematics::kTransverse,kFALSE,0.375*TMath::Pi(),0.5*TMath::Pi(),0,AliHFCorrFitter::kModifNSGausPeriodicityFixBeta);
     systfitter->AddSystematicMode(AliHFCorrFitSystematics::kTransverse,kFALSE,0.25*TMath::Pi(),0.625*TMath::Pi(),0,AliHFCorrFitter::kModifNSGausPeriodicityFixBeta);    
@@ -692,10 +692,10 @@ void Systematics_pp_1to2had(Bool_t useReflected){
     systfitter->SetReferenceBaselineEstimationRange(0.25*TMath::Pi(),0.5*TMath::Pi()); // set the default baseline estimation range
     
     systfitter->AddSystematicMode(AliHFCorrFitSystematics::kTransverse,kTRUE,0.25*TMath::Pi(),0.5*TMath::Pi(),0,AliHFCorrFitter::kModifNSGausPeriodicityFixBeta);  //Generalized gaussian NS //add systematic method (ktrue if is default to compare to, kfalse if is used to estimated the variations)
-    systfitter->AddSystematicMode(AliHFCorrFitSystematics::kTransverse,kFALSE,0.25*TMath::Pi(),0.5*TMath::Pi());
-    systfitter->AddSystematicMode(AliHFCorrFitSystematics::kTransverse,kFALSE,0.25*TMath::Pi(),0.375*TMath::Pi());
-    systfitter->AddSystematicMode(AliHFCorrFitSystematics::kTransverse,kFALSE,0.375*TMath::Pi(),0.5*TMath::Pi());
-    systfitter->AddSystematicMode(AliHFCorrFitSystematics::kTransverse,kFALSE,0.25*TMath::Pi(),0.625*TMath::Pi());
+    systfitter->AddSystematicMode(AliHFCorrFitSystematics::kTransverse,kFALSE,0.25*TMath::Pi(),0.5*TMath::Pi(),0,AliHFCorrFitter::kModifNSGausPeriodicityConstrainedBeta);
+    systfitter->AddSystematicMode(AliHFCorrFitSystematics::kTransverse,kFALSE,0.25*TMath::Pi(),0.375*TMath::Pi(),0,AliHFCorrFitter::kModifNSGausPeriodicityConstrainedBeta);
+    systfitter->AddSystematicMode(AliHFCorrFitSystematics::kTransverse,kFALSE,0.375*TMath::Pi(),0.5*TMath::Pi(),0,AliHFCorrFitter::kModifNSGausPeriodicityConstrainedBeta);
+    systfitter->AddSystematicMode(AliHFCorrFitSystematics::kTransverse,kFALSE,0.25*TMath::Pi(),0.625*TMath::Pi(),0,AliHFCorrFitter::kModifNSGausPeriodicityConstrainedBeta);
     systfitter->AddSystematicMode(AliHFCorrFitSystematics::kTransverse,kFALSE,0.25*TMath::Pi(),0.375*TMath::Pi(),0,AliHFCorrFitter::kModifNSGausPeriodicityFixBeta);
     systfitter->AddSystematicMode(AliHFCorrFitSystematics::kTransverse,kFALSE,0.375*TMath::Pi(),0.5*TMath::Pi(),0,AliHFCorrFitter::kModifNSGausPeriodicityFixBeta);
     systfitter->AddSystematicMode(AliHFCorrFitSystematics::kTransverse,kFALSE,0.25*TMath::Pi(),0.625*TMath::Pi(),0,AliHFCorrFitter::kModifNSGausPeriodicityFixBeta);    
@@ -814,10 +814,10 @@ void Systematics_pp_2to3had(Bool_t useReflected){
     systfitter->SetReferenceBaselineEstimationRange(0.25*TMath::Pi(),0.5*TMath::Pi()); // set the default baseline estimation range
     
     systfitter->AddSystematicMode(AliHFCorrFitSystematics::kTransverse,kTRUE,0.25*TMath::Pi(),0.5*TMath::Pi(),0,AliHFCorrFitter::kModifNSGausPeriodicityFixBeta);  //Generalized gaussian NS //add systematic method (ktrue if is default to compare to, kfalse if is used to estimated the variations)
-    systfitter->AddSystematicMode(AliHFCorrFitSystematics::kTransverse,kFALSE,0.25*TMath::Pi(),0.5*TMath::Pi());
-    systfitter->AddSystematicMode(AliHFCorrFitSystematics::kTransverse,kFALSE,0.25*TMath::Pi(),0.375*TMath::Pi());
-    systfitter->AddSystematicMode(AliHFCorrFitSystematics::kTransverse,kFALSE,0.375*TMath::Pi(),0.5*TMath::Pi());
-    systfitter->AddSystematicMode(AliHFCorrFitSystematics::kTransverse,kFALSE,0.25*TMath::Pi(),0.625*TMath::Pi());
+    systfitter->AddSystematicMode(AliHFCorrFitSystematics::kTransverse,kFALSE,0.25*TMath::Pi(),0.5*TMath::Pi(),0,AliHFCorrFitter::kModifNSGausPeriodicityConstrainedBeta);
+    systfitter->AddSystematicMode(AliHFCorrFitSystematics::kTransverse,kFALSE,0.25*TMath::Pi(),0.375*TMath::Pi(),0,AliHFCorrFitter::kModifNSGausPeriodicityConstrainedBeta);
+    systfitter->AddSystematicMode(AliHFCorrFitSystematics::kTransverse,kFALSE,0.375*TMath::Pi(),0.5*TMath::Pi(),0,AliHFCorrFitter::kModifNSGausPeriodicityConstrainedBeta);
+    systfitter->AddSystematicMode(AliHFCorrFitSystematics::kTransverse,kFALSE,0.25*TMath::Pi(),0.625*TMath::Pi(),0,AliHFCorrFitter::kModifNSGausPeriodicityConstrainedBeta);
     systfitter->AddSystematicMode(AliHFCorrFitSystematics::kTransverse,kFALSE,0.25*TMath::Pi(),0.375*TMath::Pi(),0,AliHFCorrFitter::kModifNSGausPeriodicityFixBeta);
     systfitter->AddSystematicMode(AliHFCorrFitSystematics::kTransverse,kFALSE,0.375*TMath::Pi(),0.5*TMath::Pi(),0,AliHFCorrFitter::kModifNSGausPeriodicityFixBeta);
     systfitter->AddSystematicMode(AliHFCorrFitSystematics::kTransverse,kFALSE,0.25*TMath::Pi(),0.625*TMath::Pi(),0,AliHFCorrFitter::kModifNSGausPeriodicityFixBeta);    
@@ -922,7 +922,7 @@ void SystematicsMC_pp_03to99had(Bool_t useReflected,TString strTemplRootName){
     else if(strTemplRootName.Contains("Perugia2011"))mcCase="Perugia2011";
     else if(strTemplRootName.Contains("Perugia0"))mcCase="Perugia0";
     else if(strTemplRootName.Contains("PYTHIA8"))mcCase="PYTHIA8";
-    else if(strTemplRootName.Contains("Herwig"))mcCase="Herwig";
+    else if(strTemplRootName.Contains("HERWIG"))mcCase="HERWIG";
     else if(strTemplRootName.Contains("POWHEG")){
       mcCase="POWHEG";
       strTemplRootName.Remove(0,2);
@@ -1070,7 +1070,7 @@ void SystematicsMC_pp_1to99had(Bool_t useReflected,TString strTemplRootName){
     else if(strTemplRootName.Contains("Perugia2011"))mcCase="Perugia2011";
     else if(strTemplRootName.Contains("Perugia0"))mcCase="Perugia0";
     else if(strTemplRootName.Contains("PYTHIA8"))mcCase="PYTHIA8";
-    else if(strTemplRootName.Contains("Herwig"))mcCase="Herwig";
+    else if(strTemplRootName.Contains("HERWIG"))mcCase="HERWIG";
     else if(strTemplRootName.Contains("POWHEG")){
       mcCase="POWHEG";
       strTemplRootName.Remove(0,2);
@@ -1218,7 +1218,7 @@ void SystematicsMC_pp_03to1had(Bool_t useReflected,TString strTemplRootName){
     else if(strTemplRootName.Contains("Perugia2011"))mcCase="Perugia2011";
     else if(strTemplRootName.Contains("Perugia0"))mcCase="Perugia0";
     else if(strTemplRootName.Contains("PYTHIA8"))mcCase="PYTHIA8";
-    else if(strTemplRootName.Contains("Herwig"))mcCase="Herwig";
+    else if(strTemplRootName.Contains("HERWIG"))mcCase="HERWIG";
     else if(strTemplRootName.Contains("POWHEG")){
       mcCase="POWHEG";
       strTemplRootName.Remove(0,2);
@@ -1366,7 +1366,7 @@ void SystematicsMC_pp_2to99had(Bool_t useReflected,TString strTemplRootName){
     else if(strTemplRootName.Contains("Perugia2011"))mcCase="Perugia2011";
     else if(strTemplRootName.Contains("Perugia0"))mcCase="Perugia0";
     else if(strTemplRootName.Contains("PYTHIA8"))mcCase="PYTHIA8";
-    else if(strTemplRootName.Contains("Herwig"))mcCase="Herwig";
+    else if(strTemplRootName.Contains("HERWIG"))mcCase="HERWIG";
     else if(strTemplRootName.Contains("POWHEG")){
       mcCase="POWHEG";
       strTemplRootName.Remove(0,2);
@@ -1514,7 +1514,7 @@ void SystematicsMC_pp_3to99had(Bool_t useReflected,TString strTemplRootName){
     else if(strTemplRootName.Contains("Perugia2011"))mcCase="Perugia2011";
     else if(strTemplRootName.Contains("Perugia0"))mcCase="Perugia0";
     else if(strTemplRootName.Contains("PYTHIA8"))mcCase="PYTHIA8";
-    else if(strTemplRootName.Contains("Herwig"))mcCase="Herwig";
+    else if(strTemplRootName.Contains("HERWIG"))mcCase="HERWIG";
     else if(strTemplRootName.Contains("POWHEG")){
       mcCase="POWHEG";
       strTemplRootName.Remove(0,2);
@@ -1662,7 +1662,7 @@ void SystematicsMC_pp_1to2had(Bool_t useReflected,TString strTemplRootName){
     else if(strTemplRootName.Contains("Perugia2011"))mcCase="Perugia2011";
     else if(strTemplRootName.Contains("Perugia0"))mcCase="Perugia0";
     else if(strTemplRootName.Contains("PYTHIA8"))mcCase="PYTHIA8";
-    else if(strTemplRootName.Contains("Herwig"))mcCase="Herwig";
+    else if(strTemplRootName.Contains("HERWIG"))mcCase="HERWIG";
     else if(strTemplRootName.Contains("POWHEG")){
       mcCase="POWHEG";
       strTemplRootName.Remove(0,2);
@@ -1810,7 +1810,7 @@ void SystematicsMC_pp_2to3had(Bool_t useReflected,TString strTemplRootName){
     else if(strTemplRootName.Contains("Perugia2011"))mcCase="Perugia2011";
     else if(strTemplRootName.Contains("Perugia0"))mcCase="Perugia0";
     else if(strTemplRootName.Contains("PYTHIA8"))mcCase="PYTHIA8";
-    else if(strTemplRootName.Contains("Herwig"))mcCase="Herwig";
+    else if(strTemplRootName.Contains("HERWIG"))mcCase="HERWIG";
     else if(strTemplRootName.Contains("POWHEG")){
       mcCase="POWHEG";
       strTemplRootName.Remove(0,2);

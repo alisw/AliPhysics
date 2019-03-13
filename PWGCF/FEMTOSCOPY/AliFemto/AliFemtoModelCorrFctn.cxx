@@ -19,17 +19,18 @@
 #include <TH2D.h>
 
 //_______________________
-AliFemtoModelCorrFctn::AliFemtoModelCorrFctn():
-AliFemtoCorrFctn(),
-  fManager(0),
-  fNumeratorTrue(0),
-  fNumeratorFake(0),
-  fDenominator(0),
-  fNumeratorTrueIdeal(0),
-  fNumeratorFakeIdeal(0),
-  fDenominatorIdeal(0),
-  fQgenQrec(0),
-  fKaonPDG(kFALSE)
+AliFemtoModelCorrFctn::AliFemtoModelCorrFctn()
+  : AliFemtoCorrFctn()
+  , fManager(nullptr)
+  , fNumeratorTrue(nullptr)
+  , fNumeratorFake(nullptr)
+  , fDenominator(nullptr)
+  , fNumeratorTrueIdeal(nullptr)
+  , fNumeratorFakeIdeal(nullptr)
+  , fDenominatorIdeal(nullptr)
+  , fQgenQrec(nullptr)
+  , fKaonPDG(kFALSE)
+  , fFillkT(kFALSE)
 {
   // Default constructor
   fNumeratorTrue = new TH1D("ModelNumTrue","ModelNumTrue",50,0.0,0.5);
@@ -42,10 +43,11 @@ AliFemtoCorrFctn(),
 
   fQgenQrec = new TH2D("QgenQrec","QgenQrec",50,0.0,0.5,50,0.0,0.5);
 
-    for(int i=0;i<fNbbPairs;i++){
-        fkTdists[i] = new TH1D(Form("fkTdists[%i]",i),Form("fkTdists[%i]",i),100,0.0,5.0);
-        fkTdists[i]->Sumw2();
-    }
+  for (int i=0;i<fNbbPairs;i++){
+    auto *name = Form("fkTdists[%i]", i);
+    fkTdists[i] = new TH1D(name, name,100,0.0,5.0);
+    fkTdists[i]->Sumw2();
+  }
 
   fNumeratorTrue->Sumw2();
   fNumeratorFake->Sumw2();
@@ -59,43 +61,52 @@ AliFemtoCorrFctn(),
 
 }
 //_______________________
-AliFemtoModelCorrFctn::AliFemtoModelCorrFctn(const char *title, Int_t aNbins, Double_t aQinvLo, Double_t aQinvHi):
-  AliFemtoCorrFctn(),
-  fManager(0),
-  fNumeratorTrue(0),
-  fNumeratorFake(0),
-  fDenominator(0),
-  fNumeratorTrueIdeal(0),
-  fNumeratorFakeIdeal(0),
-  fDenominatorIdeal(0),
-  fQgenQrec(0),
-  fKaonPDG(kFALSE)
+AliFemtoModelCorrFctn::AliFemtoModelCorrFctn(const char *title,
+                                             Int_t aNbins,
+                                             Double_t aQinvLo,
+                                             Double_t aQinvHi)
+  : AliFemtoCorrFctn()
+  , fManager(nullptr)
+  , fNumeratorTrue(nullptr)
+  , fNumeratorFake(nullptr)
+  , fDenominator(nullptr)
+  , fNumeratorTrueIdeal(nullptr)
+  , fNumeratorFakeIdeal(nullptr)
+  , fDenominatorIdeal(nullptr)
+  , fQgenQrec(nullptr)
+  , fKaonPDG(kFALSE)
+  , fFillkT(kFALSE)
 {
   // Normal constructor
-  char buf[100];
-  snprintf(buf , 100,  "NumTrue%s", title);
+  char *buf;
+  buf = Form("NumTrue%s", title);
   fNumeratorTrue = new TH1D(buf,buf,aNbins,aQinvLo,aQinvHi);
-  snprintf(buf , 100,  "NumFake%s", title);
+
+  buf = Form("NumFake%s", title);
   fNumeratorFake = new TH1D(buf,buf,aNbins,aQinvLo,aQinvHi);
-  snprintf(buf , 100,  "Den%s", title);
+
+  buf = Form("Den%s", title);
   fDenominator = new TH1D(buf,buf,aNbins,aQinvLo,aQinvHi);
 
-  snprintf(buf , 100,  "NumTrueIdeal%s", title);
+  buf = Form("NumTrueIdeal%s", title);
   fNumeratorTrueIdeal = new TH1D(buf,buf,aNbins,aQinvLo,aQinvHi);
-  snprintf(buf , 100,  "NumFakeIdeal%s", title);
+
+  buf = Form("NumFakeIdeal%s", title);
   fNumeratorFakeIdeal = new TH1D(buf,buf,aNbins,aQinvLo,aQinvHi);
-  snprintf(buf , 100,  "DenIdeal%s", title);
+
+  buf = Form("DenIdeal%s", title);
   fDenominatorIdeal = new TH1D(buf,buf,aNbins,aQinvLo,aQinvHi);
 
-  snprintf(buf , 100,  "QgenQrec%s", title);
+  buf = Form("QgenQrec%s", title);
   fQgenQrec = new TH2D(buf,buf,aNbins,aQinvLo,aQinvHi,aNbins,aQinvLo,aQinvHi);
   //test
   //fQgenQrec = new TH2D(buf,buf,aNbins,aQinvLo,aQinvHi,aNbins,-0.05,0.05);
 
-    for(int i=0;i<fNbbPairs;i++){
-        fkTdists[i] = new TH1D(Form("fkTdists[%i]_%s",i,title),Form("fkTdists[%i]_%s",i,title),100,0.0,5.0);
-        fkTdists[i]->Sumw2();
-    }
+  for (int i=0;i<fNbbPairs;i++){
+    const char *name = Form("fkTdists[%i]_%s",i,title);
+    fkTdists[i] = new TH1D(name, name, 100, 0.0, 5.0);
+    fkTdists[i]->Sumw2();
+  }
 
   fNumeratorTrue->Sumw2();
   fNumeratorFake->Sumw2();
@@ -108,113 +119,78 @@ AliFemtoModelCorrFctn::AliFemtoModelCorrFctn(const char *title, Int_t aNbins, Do
   fQgenQrec->Sumw2();
 }
 //_______________________
-AliFemtoModelCorrFctn::AliFemtoModelCorrFctn(const AliFemtoModelCorrFctn& aCorrFctn) :
-  AliFemtoCorrFctn(),
-  fManager(0),
-  fNumeratorTrue(0),
-  fNumeratorFake(0),
-  fDenominator(0),
-  fNumeratorTrueIdeal(0),
-  fNumeratorFakeIdeal(0),
-  fDenominatorIdeal(0),
-  fQgenQrec(0),
-  fKaonPDG(aCorrFctn.fKaonPDG)
+AliFemtoModelCorrFctn::AliFemtoModelCorrFctn(const AliFemtoModelCorrFctn& aCorrFctn)
+  : AliFemtoCorrFctn(aCorrFctn)
+  , fManager(aCorrFctn.fManager)
+  , fNumeratorTrue(nullptr)
+  , fNumeratorFake(nullptr)
+  , fDenominator(nullptr)
+  , fNumeratorTrueIdeal(nullptr)
+  , fNumeratorFakeIdeal(nullptr)
+  , fDenominatorIdeal(nullptr)
+  , fQgenQrec(nullptr)
+  , fKaonPDG(aCorrFctn.fKaonPDG)
+  , fFillkT(aCorrFctn.fFillkT)
 {
   // Copy constructor
-  if (aCorrFctn.fNumeratorTrue)
-    fNumeratorTrue = new TH1D(*(aCorrFctn.fNumeratorTrue));
-  if (aCorrFctn.fNumeratorFake)
-    fNumeratorFake = new TH1D(*(aCorrFctn.fNumeratorFake));
-  if (aCorrFctn.fDenominator)
-    fDenominator = new TH1D(*(aCorrFctn.fDenominator));
+  fNumeratorTrue = new TH1D(*aCorrFctn.fNumeratorTrue);
+  fNumeratorFake = new TH1D(*aCorrFctn.fNumeratorFake);
+  fDenominator = new TH1D(*aCorrFctn.fDenominator);
 
-  if (aCorrFctn.fNumeratorTrueIdeal)
-    fNumeratorTrueIdeal = new TH1D(*(aCorrFctn.fNumeratorTrueIdeal));
-  if (aCorrFctn.fNumeratorFakeIdeal)
-    fNumeratorFakeIdeal = new TH1D(*(aCorrFctn.fNumeratorFakeIdeal));
-  if (aCorrFctn.fDenominatorIdeal)
-    fDenominatorIdeal = new TH1D(*(aCorrFctn.fDenominatorIdeal));
+  fNumeratorTrueIdeal = new TH1D(*aCorrFctn.fNumeratorTrueIdeal);
+  fNumeratorFakeIdeal = new TH1D(*aCorrFctn.fNumeratorFakeIdeal);
+  fDenominatorIdeal = new TH1D(*aCorrFctn.fDenominatorIdeal);
 
-  if (aCorrFctn.fQgenQrec)
-    fQgenQrec = new TH2D(*(aCorrFctn.fQgenQrec));
+  fQgenQrec = new TH2D(*aCorrFctn.fQgenQrec);
 
-    for(int i=0;i<fNbbPairs;i++){
-        if(aCorrFctn.fkTdists[i])
-            fkTdists[i] = aCorrFctn.fkTdists[i];
-    }
-
-  fManager = aCorrFctn.fManager;
+  for (int i=0;i<fNbbPairs;i++) {
+    fkTdists[i] = new TH1D(*aCorrFctn.fkTdists[i]);
+  }
 }
+
 //_______________________
 AliFemtoModelCorrFctn::~AliFemtoModelCorrFctn()
 {
   // Destructor
-  if (fNumeratorTrue) delete fNumeratorTrue;
-  if (fNumeratorFake) delete fNumeratorFake;
-  if (fDenominator) delete fDenominator;
+  delete fNumeratorTrue;
+  delete fNumeratorFake;
+  delete fDenominator;
 
-  if (fNumeratorTrueIdeal) delete fNumeratorTrueIdeal;
-  if (fNumeratorFakeIdeal) delete fNumeratorFakeIdeal;
-  if (fDenominatorIdeal) delete fDenominatorIdeal;
+  delete fNumeratorTrueIdeal;
+  delete fNumeratorFakeIdeal;
+  delete fDenominatorIdeal;
 
-  if (fQgenQrec) delete fQgenQrec;
+  delete fQgenQrec;
 
-    for(int i=0;i<fNbbPairs;i++){
-        if(fkTdists[i]) delete fkTdists[i];
-    }
+  for (int i=0; i<fNbbPairs; i++) {
+    delete fkTdists[i];
+  }
 
 }
 //_______________________
 AliFemtoModelCorrFctn& AliFemtoModelCorrFctn::operator=(const AliFemtoModelCorrFctn& aCorrFctn)
 {
   // Assignment operator
-  if (this == &aCorrFctn)
+  if (this == &aCorrFctn) {
     return *this;
+  }
 
-  delete fNumeratorTrue;
-  fNumeratorTrue = aCorrFctn.fNumeratorTrue
-                 ? new TH1D(*aCorrFctn.fNumeratorTrue)
-                 : nullptr;
+  AliFemtoCorrFctn::operator=(aCorrFctn);
 
-  delete fNumeratorFake;
-  fNumeratorFake = (aCorrFctn.fNumeratorFake)
-                 ? new TH1D(*aCorrFctn.fNumeratorFake)
-                 : nullptr;
+  *fNumeratorTrue = *aCorrFctn.fNumeratorTrue;
+  *fNumeratorFake = *aCorrFctn.fNumeratorFake;
+  *fDenominator = *aCorrFctn.fDenominator;
+  *fQgenQrec = *aCorrFctn.fQgenQrec;
 
-  delete fDenominator;
-  fDenominator = (aCorrFctn.fDenominator)
-               ? new TH1D(*aCorrFctn.fDenominator)
-               : nullptr;
+  for (int i=0; i<fNbbPairs; i++) {
+    *fkTdists[i] = *aCorrFctn.fkTdists[i];
+  }
 
-  delete fQgenQrec;
-  fQgenQrec = (aCorrFctn.fQgenQrec)
-            ? new TH2D(*aCorrFctn.fQgenQrec)
-            : nullptr;
-
-    for(int i=0;i<fNbbPairs;i++){
-        delete fkTdists[i];
-        fkTdists[i] = (aCorrFctn.fkTdists[i])
-        ? new TH1D(*aCorrFctn.fkTdists[i])
-        : nullptr;
-
-    }
-  delete fNumeratorTrueIdeal;
-  fNumeratorTrueIdeal = (aCorrFctn.fNumeratorTrueIdeal)
-                      ? new TH1D(*aCorrFctn.fNumeratorTrueIdeal)
-                      : nullptr;
-
-  delete fNumeratorFakeIdeal;
-  fNumeratorFakeIdeal = (aCorrFctn.fNumeratorFakeIdeal)
-                      ? new TH1D(*aCorrFctn.fNumeratorFakeIdeal)
-                      : nullptr;
-
-  delete fDenominatorIdeal;
-  fDenominatorIdeal = (aCorrFctn.fDenominatorIdeal)
-                    ? new TH1D(*aCorrFctn.fDenominatorIdeal)
-                    : nullptr;
+  *fNumeratorTrueIdeal = *aCorrFctn.fNumeratorTrueIdeal;
+  *fNumeratorFakeIdeal = *aCorrFctn.fNumeratorFakeIdeal;
+  *fDenominatorIdeal = *aCorrFctn.fDenominatorIdeal;
 
   fManager = aCorrFctn.fManager;
-
   fKaonPDG = aCorrFctn.fKaonPDG;
 
   return *this;
@@ -270,42 +246,44 @@ void AliFemtoModelCorrFctn::AddMixedPair(AliFemtoPair* aPair)
     return;
   }
 
+  const Double_t
+    weight = fManager->GetWeight(aPair),
+    qinv = aPair->QInv(),
+    qinv_ideal = GetQinvTrue(aPair);
+
   if(!fKaonPDG) {
-    Double_t weight = fManager->GetWeight(aPair);
-    fNumeratorFake->Fill(aPair->QInv(), weight);
-    fDenominator->Fill(aPair->QInv(), 1.0);
+    fNumeratorFake->Fill(qinv, weight);
+    fDenominator->Fill(qinv, 1.0);
 
-    Double_t tQinvTrue = GetQinvTrue(aPair);
+    fNumeratorFakeIdeal->Fill(qinv_ideal, weight);
+    fDenominatorIdeal->Fill(qinv_ideal, 1.0);
 
-    fNumeratorFakeIdeal->Fill(tQinvTrue, weight);
-    fDenominatorIdeal->Fill(tQinvTrue, 1.0);
+    if (fFillkT) {
+        int pairNumber = GetPairNumber(aPair);
 
-      if(fFillkT)
-      {
-          int pairNumber = GetPairNumber(aPair);
+        if(pairNumber >= 0){
+            if(fkTdists[pairNumber]){
+                fkTdists[pairNumber]->Fill(GetParentsKt(aPair));
+            }
+        }
+    }
 
-          if(pairNumber >= 0){
-              if(fkTdists[pairNumber]){
-                  fkTdists[pairNumber]->Fill(GetParentsKt(aPair));
-              }
-          }
-      }
-    fQgenQrec->Fill(tQinvTrue,aPair->QInv());
+    fQgenQrec->Fill(qinv_ideal, qinv);
   }
   //Special MC analysis for K selected by PDG code -->
   else {
-    Double_t weight = fManager->GetWeight(aPair);
-    AliFemtoTrack *inf1 = (AliFemtoTrack *) aPair->Track1()->Track();
-    AliFemtoTrack *inf2 = (AliFemtoTrack *) aPair->Track2()->Track();
-    Double_t pdg1 = ((AliFemtoModelHiddenInfo*)inf1->GetHiddenInfo())->GetPDGPid();
-    Double_t pdg2 = ((AliFemtoModelHiddenInfo*)inf2->GetHiddenInfo())->GetPDGPid();
+    // AliFemtoTrack *inf1 = (AliFemtoTrack *) aPair->Track1()->Track();
+    // AliFemtoTrack *inf2 = (AliFemtoTrack *) aPair->Track2()->Track();
+    // Double_t pdg1 = ((AliFemtoModelHiddenInfo*)inf1->GetHiddenInfo())->GetPDGPid();
+    // Double_t pdg2 = ((AliFemtoModelHiddenInfo*)inf2->GetHiddenInfo())->GetPDGPid();
     // if((aPair->KT())<0.5)cout<<" Corr Func  pdg1 "<<pdg1<<" pdg2 "<<pdg2<<" qinv "<<aPair->QInv()<< " w "<<weight<<endl;
-    fNumeratorFake->Fill(aPair->QInv(), weight);
-    fDenominator->Fill(aPair->QInv(), 1.0);
-    Double_t tQinvTrue = GetQinvTrue(aPair);
-    if(tQinvTrue>0)fNumeratorFakeIdeal->Fill(tQinvTrue, weight);
-    if(tQinvTrue>0)fDenominatorIdeal->Fill(tQinvTrue, 1.0);
-    if(tQinvTrue>0)fQgenQrec->Fill(tQinvTrue,aPair->QInv());
+    fNumeratorFake->Fill(qinv, weight);
+    fDenominator->Fill(qinv, 1.0);
+    if(qinv_ideal>0) {
+      fNumeratorFakeIdeal->Fill(qinv_ideal, weight);
+      fDenominatorIdeal->Fill(qinv_ideal, 1.0);
+      fQgenQrec->Fill(qinv_ideal, qinv);
+    }
     //test
     //if(tQinvTrue>0)fQgenQrec->Fill(tQinvTrue,tQinvTrue-aPair->QInv());
   }
@@ -316,32 +294,28 @@ Double_t AliFemtoModelCorrFctn::GetQinvTrue(AliFemtoPair* aPair)
 {
   if(!fKaonPDG) {
 
-      AliFemtoParticle *first = (AliFemtoParticle*)aPair->Track1();
-      AliFemtoParticle *second = (AliFemtoParticle*)aPair->Track2();
+      const AliFemtoParticle *first = aPair->Track1(),
+                             *second = aPair->Track2();
 
       if(!first || !second) return -1;
 
-      AliFemtoModelHiddenInfo *inf1 = (AliFemtoModelHiddenInfo*)first->GetHiddenInfo();
-      AliFemtoModelHiddenInfo *inf2 = (AliFemtoModelHiddenInfo*)second->GetHiddenInfo();
+      const AliFemtoModelHiddenInfo *inf1 = (AliFemtoModelHiddenInfo*)first->GetHiddenInfo(),
+                                    *inf2 = (AliFemtoModelHiddenInfo*)second->GetHiddenInfo();
 
       if(!inf1 || !inf2){
 //          cout<<"no hidden info"<<endl;
           return -1;
       }
 
-      AliFemtoLorentzVector fm1;
       AliFemtoThreeVector* temp = inf1->GetTrueMomentum();
-      fm1.SetVect(*temp);
       Double_t am1 = inf1->GetMass();
-      Double_t am2 = inf2->GetMass();
       double ener = TMath::Sqrt(temp->Mag2()+am1*am1);
-      fm1.SetE(ener);
+      AliFemtoLorentzVector fm1(ener, *temp);
 
-      AliFemtoLorentzVector fm2;
-      AliFemtoThreeVector* temp2 =  inf2->GetTrueMomentum();
-      fm2.SetVect(*temp2);
+      AliFemtoThreeVector* temp2 = inf2->GetTrueMomentum();
+      const Double_t am2 = inf2->GetMass();
       ener = TMath::Sqrt(temp2->Mag2()+am2*am2);
-      fm2.SetE(ener);
+      AliFemtoLorentzVector fm2(ener, *temp2);
 
       //std::cout<<" CFModel mass1 mass2 "<<am1<<" "<<am2<<std::endl;
 
@@ -352,8 +326,8 @@ Double_t AliFemtoModelCorrFctn::GetQinvTrue(AliFemtoPair* aPair)
   }
   //Special MC analysis for K selected by PDG code -->
   else {
-      AliFemtoTrack *inf1 = (AliFemtoTrack *) aPair->Track1()->Track();
-  AliFemtoTrack *inf2 = (AliFemtoTrack *) aPair->Track2()->Track();
+    const AliFemtoTrack *inf1 = aPair->Track1()->Track(),
+                        *inf2 = aPair->Track2()->Track();
 
   AliFemtoLorentzVector fm1;
   AliFemtoThreeVector* temp = ((AliFemtoModelHiddenInfo*)inf1->GetHiddenInfo())->GetTrueMomentum();
@@ -500,41 +474,20 @@ double AliFemtoModelCorrFctn::GetParentsKt(AliFemtoPair *pair)
 
 int AliFemtoModelCorrFctn::GetPairNumber(AliFemtoPair *pair)
 {
-    AliFemtoParticle *first = new AliFemtoParticle(*(pair->Track1()));
-    AliFemtoParticle *second = new AliFemtoParticle(*(pair->Track2()));
+    const AliFemtoModelHiddenInfo
+        *info1 = (AliFemtoModelHiddenInfo*)pair->Track1()->GetHiddenInfo(),
+        *info2 = (AliFemtoModelHiddenInfo*)pair->Track2()->GetHiddenInfo();
 
-    if(!first)
-    {
-        if(second) delete second;
-        return -1;
-    }
-    if(!second)
-    {
-        if(first) delete first;
-        return -1;
-    }
-
-    AliFemtoModelHiddenInfo *info1 = (AliFemtoModelHiddenInfo*)first->GetHiddenInfo();
-    AliFemtoModelHiddenInfo *info2 = (AliFemtoModelHiddenInfo*)second->GetHiddenInfo();
-
-    if(!info1 || !info2)
-    {
-        if(first) delete first;
-        if(second) delete second;
+    if (!info1 || !info2) {
         return -1;
     }
 
     int pdg1 = TMath::Abs(info1->GetMotherPdgCode());
     int pdg2 = TMath::Abs(info2->GetMotherPdgCode());
 
-    int tmp;
     if(pdg2 < pdg1){
-        tmp = pdg1;
-        pdg1 = pdg2;
-        pdg2 = tmp;
+        std::swap(pdg1, pdg2);
     }
-
-    delete first;delete second;
 
     if(pdg1 == 2212 && pdg2 == 2212) return 0; // pp
     if(pdg1 == 2212 && pdg2 == 3122) return 1; // pΛ
@@ -560,6 +513,3 @@ int AliFemtoModelCorrFctn::GetPairNumber(AliFemtoPair *pair)
 
     return -1;
 }
-
-
-

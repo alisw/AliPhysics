@@ -14,7 +14,7 @@
 #include <TVector3.h>
 #include <TFile.h>
 #include <TGrid.h>
-#include <TRandom3.h>
+#include <TList.h>
 
 #include <AliAnalysisManager.h>
 #include <AliInputEventHandler.h>
@@ -61,6 +61,8 @@ Double_t AliAnalysisTaskEmcalJetHCorrelations::p50_90G[17] = {0.97041, 0.0813559
  */
 AliAnalysisTaskEmcalJetHCorrelations::AliAnalysisTaskEmcalJetHCorrelations() :
   AliAnalysisTaskEmcalJet("AliAnalysisTaskEmcalJetHCorrelations", kFALSE),
+  fYAMLConfig(),
+  fConfigurationInitialized(false),
   fTrackBias(5),
   fClusterBias(5),
   fDoEventMixing(kFALSE),
@@ -68,6 +70,7 @@ AliAnalysisTaskEmcalJetHCorrelations::AliAnalysisTaskEmcalJetHCorrelations() :
   fPoolMgr(nullptr),
   fTriggerType(AliVEvent::kEMCEJE), fMixingEventType(AliVEvent::kMB | AliVEvent::kCentral | AliVEvent::kSemiCentral),
   fDisableFastPartition(kFALSE),
+  fRandom(0),
   fSingleTrackEfficiencyCorrectionType(AliAnalysisTaskEmcalJetHCorrelations::kEffDisable),
   fArtificialTrackInefficiency(1.0),
   fNoMixedEventJESCorrection(kFALSE),
@@ -78,7 +81,7 @@ AliAnalysisTaskEmcalJetHCorrelations::AliAnalysisTaskEmcalJetHCorrelations() :
   fRequireMatchedPartLevelJet(false),
   fMaxMatchedJetDistance(-1),
   fHistManager(),
-  fHistTrackPt(nullptr),
+  fHistJetHTrackPt(nullptr),
   fHistJetEtaPhi(nullptr),
   fHistJetHEtaPhi(nullptr),
   fhnMixedEvents(nullptr),
@@ -94,6 +97,8 @@ AliAnalysisTaskEmcalJetHCorrelations::AliAnalysisTaskEmcalJetHCorrelations() :
  */
 AliAnalysisTaskEmcalJetHCorrelations::AliAnalysisTaskEmcalJetHCorrelations(const char *name) :
   AliAnalysisTaskEmcalJet(name, kTRUE),
+  fYAMLConfig(),
+  fConfigurationInitialized(false),
   fTrackBias(5),
   fClusterBias(5),
   fDoEventMixing(kFALSE),
@@ -101,6 +106,7 @@ AliAnalysisTaskEmcalJetHCorrelations::AliAnalysisTaskEmcalJetHCorrelations(const
   fPoolMgr(nullptr),
   fTriggerType(AliVEvent::kEMCEJE), fMixingEventType(AliVEvent::kMB | AliVEvent::kCentral | AliVEvent::kSemiCentral),
   fDisableFastPartition(kFALSE),
+  fRandom(0),
   fSingleTrackEfficiencyCorrectionType(AliAnalysisTaskEmcalJetHCorrelations::kEffDisable),
   fArtificialTrackInefficiency(1.0),
   fNoMixedEventJESCorrection(kFALSE),
@@ -111,7 +117,7 @@ AliAnalysisTaskEmcalJetHCorrelations::AliAnalysisTaskEmcalJetHCorrelations(const
   fRequireMatchedPartLevelJet(false),
   fMaxMatchedJetDistance(-1),
   fHistManager(name),
-  fHistTrackPt(nullptr),
+  fHistJetHTrackPt(nullptr),
   fHistJetEtaPhi(nullptr),
   fHistJetHEtaPhi(nullptr),
   fhnMixedEvents(nullptr),
@@ -139,18 +145,90 @@ void AliAnalysisTaskEmcalJetHCorrelations::InitializeArraysToZero()
 }
 
 /**
+ * Initialize task.
+ */
+bool AliAnalysisTaskEmcalJetHCorrelations::Initialize()
+{
+  fConfigurationInitialized = false;
+
+  // Ensure that we have at least one configuration in the YAML config.
+  if (fYAMLConfig.DoesConfigurationExist(0) == false) {
+    // No configurations exist. Return immediately.
+    return fConfigurationInitialized;
+  }
+
+  // Always initialize for streaming purposes
+  fYAMLConfig.Initialize();
+
+  // Setup task based on the properties defined in the YAML config
+  AliDebugStream(2) << "Configuring task from the YAML configuration.\n";
+  RetrieveAndSetTaskPropertiesFromYAMLConfig();
+  AliDebugStream(2) << "Finished configuring via the YAML configuration.\n";
+
+  // Print the results of the initialization
+  // Print outside of the ALICE Log system to ensure that it is always available!
+  std::cout << *this;
+
+  fConfigurationInitialized = true;
+  return fConfigurationInitialized;
+}
+
+/**
+ * Perform task configuration via YAML.
+ */
+void AliAnalysisTaskEmcalJetHCorrelations::RetrieveAndSetTaskPropertiesFromYAMLConfig()
+{
+  // Base class options
+  // Recycle unused embedded events
+  fYAMLConfig.GetProperty("recycleUnusedEmbeddedEventsMode", fRecycleUnusedEmbeddedEventsMode, false);
+  // Task physics (trigger) selection.
+  std::string baseName = "eventCuts";
+  std::vector<std::string> physicsSelection;
+  bool res = fYAMLConfig.GetProperty(std::vector<std::string>({"eventCuts", "physicsSelection"}), physicsSelection, false);
+  if (res) {
+    fOfflineTriggerMask = AliEmcalContainerUtils::DeterminePhysicsSelectionFromYAML(physicsSelection);
+  }
+
+  // Event cuts
+  // If event cuts are enabled (which they exceptionally are by default), then we want to configure them here.
+  // If the event cuts are explicitly disabled, then we invert that value to enable the AliAnylsisTaskEmcal
+  // builtin event selection.
+  bool tempBool;
+  fYAMLConfig.GetProperty({baseName, "enabled"}, tempBool, false);
+  fUseBuiltinEventSelection = !tempBool;
+  if (fUseBuiltinEventSelection == false) {
+    // Need to include the namespace so that AliDebug will work properly...
+    std::string taskName = "PWGJE::EMCALJetTasks::";
+    taskName += GetName();
+    AliAnalysisTaskEmcalJetHUtils::ConfigureEventCuts(fAliEventCuts, fYAMLConfig, fOfflineTriggerMask, baseName, taskName);
+  }
+
+  // General task options
+  baseName = "general";
+  fYAMLConfig.GetProperty({baseName, "nCentBins"}, fNcentBins, false);
+}
+
+/**
  * Perform run independent initializations, such as histograms and the event pool.
  */
-void AliAnalysisTaskEmcalJetHCorrelations::UserCreateOutputObjects() {
-  // Called once 
+void AliAnalysisTaskEmcalJetHCorrelations::UserCreateOutputObjects()
+{
+  // Called once
   AliAnalysisTaskEmcalJet::UserCreateOutputObjects();
 
+  // Check that the task was initialized
+  if (!fConfigurationInitialized) {
+    AliFatal("Task was not initialized. Please ensure that Initialize() was called!");
+  }
+  // Reinitialize the YAML configuration
+  fYAMLConfig.Reinitialize();
+
   // Create histograms
-  fHistTrackPt = new TH1F("fHistTrackPt", "P_{T} distribution", 1000, 0.0, 100.0);
+  fHistJetHTrackPt = new TH1F("fHistJetHTrackPt", "P_{T} distribution", 1000, 0.0, 100.0);
   fHistJetEtaPhi = new TH2F("fHistJetEtaPhi","Jet eta-phi",900,-1.8,1.8,720,-3.2,3.2);
   fHistJetHEtaPhi = new TH2F("fHistJetHEtaPhi","Jet-Hadron deta-dphi",900,-1.8,1.8,720,-1.6,4.8);
 
-  fOutput->Add(fHistTrackPt);
+  fOutput->Add(fHistJetHTrackPt);
   fOutput->Add(fHistJetEtaPhi);
   fOutput->Add(fHistJetHEtaPhi);
 
@@ -172,16 +250,19 @@ void AliAnalysisTaskEmcalJetHCorrelations::UserCreateOutputObjects() {
   }
 
   // Jet matching cuts
-  std::vector<std::string> binLabels = {"noMatch", "matchedJet", "sharedMomentumFraction", "partLevelMatchedJet", "jetDistance", "passedAllCuts"};
-  for (auto histName : std::vector<std::string>({"SameEvent", "MixedEvent"})) {
-    name = std::string("fHistJetMatching") + histName.c_str() + "Cuts";
-    std::string title = std::string("Jets which passed matching jet cuts for ") + histName;
-    auto histMatchedJetCuts = fHistManager.CreateTH1(name, title.c_str(), binLabels.size(), 0, binLabels.size());
-    // Set label names
-    for (unsigned int i = 1; i <= binLabels.size(); i++) {
-      histMatchedJetCuts->GetXaxis()->SetBinLabel(i, binLabels.at(i-1).c_str());
+  // Only need if we actually jet matching
+  if (fRequireMatchedJetWhenEmbedding) {
+    std::vector<std::string> binLabels = {"noMatch", "matchedJet", "sharedMomentumFraction", "partLevelMatchedJet", "jetDistance", "passedAllCuts"};
+    for (auto histName : std::vector<std::string>({"SameEvent", "MixedEvent"})) {
+      name = std::string("fHistJetMatching") + histName.c_str() + "Cuts";
+      std::string title = std::string("Jets which passed matching jet cuts for ") + histName;
+      auto histMatchedJetCuts = fHistManager.CreateTH1(name, title.c_str(), binLabels.size(), 0, binLabels.size());
+      // Set label names
+      for (unsigned int i = 1; i <= binLabels.size(); i++) {
+        histMatchedJetCuts->GetXaxis()->SetBinLabel(i, binLabels.at(i-1).c_str());
+      }
+      histMatchedJetCuts->GetYaxis()->SetTitle("Number of jets");
     }
-    histMatchedJetCuts->GetYaxis()->SetTitle("Number of jets");
   }
 
   UInt_t cifras = 0; // bit coded, see GetDimParams() below 
@@ -246,17 +327,21 @@ void AliAnalysisTaskEmcalJetHCorrelations::UserCreateOutputObjects() {
   }
 
   fPoolMgr = new AliEventPoolManager(poolSize, fNMixingTracks, nEventActivityBins, eventActivityBins, nZVertexBins, zVertexBins);
+
+  // Print pool properties
+  fPoolMgr->Validate();
 }
 
-void AliAnalysisTaskEmcalJetHCorrelations::ExecOnce()
+/**
+ * User specific initializations to perform before the first event.
+ */
+void AliAnalysisTaskEmcalJetHCorrelations::UserExecOnce()
 {
-  if (fArtificialTrackInefficiency < 1.) {
-    if (gRandom) delete gRandom;
-    gRandom = new TRandom3(0);
-  }
+  // Base class.
+  AliAnalysisTaskEmcalJet::UserExecOnce();
 
-  // Call the base class
-  AliAnalysisTaskEmcalJet::ExecOnce();
+  // Ensure that the random number generator is seeded in each job.
+  fRandom.SetSeed(0);
 }
 
 /**
@@ -441,7 +526,7 @@ Bool_t AliAnalysisTaskEmcalJetHCorrelations::Run()
         GetDeltaEtaDeltaPhiDeltaR(track, jet, deltaEta, deltaPhi, deltaR);
 
         // Fill track properties
-        fHistTrackPt->Fill(track.Pt());
+        fHistJetHTrackPt->Fill(track.Pt());
         fHistJetHEtaPhi->Fill(deltaEta, deltaPhi);
 
         // Calculate single particle tracking efficiency for correlations
@@ -647,7 +732,7 @@ bool AliAnalysisTaskEmcalJetHCorrelations::CheckArtificialTrackEfficiency(unsign
     }
     else {
       // Rejet randomly
-      Double_t rnd = gRandom->Rndm();
+      Double_t rnd = fRandom.Rndm();
       if (fArtificialTrackInefficiency < rnd) {
         // Store index so we can reject it again if it is also filled for mixed events
         rejectedTrackIndices.push_back(trackIndex);
@@ -673,7 +758,7 @@ bool AliAnalysisTaskEmcalJetHCorrelations::CheckArtificialTrackEfficiency(unsign
  * with both the EMCal Jet Tagger and the Response Maker, while MatchedJet() will only work with the Response Maker
  * due to the design of the classes.
  *
- * @param[in] jets Jet container corresponding to the matched jet
+ * @param[in] jets Jet container corresponding to the jet to be checked
  * @param[in] jet Jet to be checked
  * @param[in] histName Name of the hist in the hist manager where QA information will be filled
  * @return true if the jet passes the criteria. false otherwise.
@@ -1399,7 +1484,6 @@ AliAnalysisTaskEmcalJetHCorrelations * AliAnalysisTaskEmcalJetHCorrelations::Add
   correlationTask->SetMixedEventTriggerType(mixEvent);
   // Options
   correlationTask->SetNCentBins(5);
-  correlationTask->SetVzRange(-10,10);
   correlationTask->SetDoLessSparseAxes(lessSparseAxes);
   correlationTask->SetDoWiderTrackBin(widerTrackBin);
   // Corrections
@@ -1606,5 +1690,83 @@ AliParticleContainer * AliAnalysisTaskEmcalJetHCorrelations::CreateParticleOrTra
   return partCont;
 }
 
+/**
+ * Prints information about the jet-hadron correlations task.
+ *
+ * @return std::string containing information about the task.
+ */
+std::string AliAnalysisTaskEmcalJetHCorrelations::toString() const
+{
+  std::stringstream tempSS;
+  tempSS << std::boolalpha;
+  tempSS << "Recycle unused embedded events: " << fRecycleUnusedEmbeddedEventsMode << "\n";
+  tempSS << "Jet collections:\n";
+  TIter next(&fJetCollArray);
+  AliJetContainer * jetCont;
+  while ((jetCont = static_cast<AliJetContainer *>(next()))) {
+    tempSS << "\t" << jetCont->GetName() << ": " << jetCont->GetArrayName() << "\n";
+  }
+  tempSS << "Event selection\n";
+  tempSS << "\tUse AliEventCuts: " << !fUseBuiltinEventSelection << "\n";
+  tempSS << "\tTrigger event selection: " << std::bitset<32>(fTriggerType) << "\n";
+  tempSS << "\tMixed event selection: " << std::bitset<32>(fMixingEventType) << "\n";
+  tempSS << "\tEnabled only for non-fast partition: " << fDisableFastPartition << "\n";
+  tempSS << "Jet settings:\n";
+  tempSS << "\tTrack bias: " << fTrackBias << "\n";
+  tempSS << "\tCluster bias: " << fClusterBias << "\n";
+  tempSS << "Event mixing:\n";
+  tempSS << "\tEnabled: " << fDoEventMixing << "\n";
+  tempSS << "\tN mixed tracks: " << fNMixingTracks << "\n";
+  tempSS << "\tMin number of tracks for mixing: " << fMinNTracksMixedEvents << "\n";
+  tempSS << "\tMin number of events for mixing: " << fMinNEventsMixedEvents << "\n";
+  tempSS << "\tNumber of centrality bins for mixing: " << fNCentBinsMixedEvent << "\n";
+  tempSS << "Histogramming options:\n";
+  tempSS << "\tLess sparse axes: " << fDoLessSparseAxes << "\n";
+  tempSS << "\tWider associated track pt bins: " << fDoWiderTrackBin << "\n";
+  tempSS << "Jet matching options for embedding:\n";
+  tempSS << "\tRequire the jet to match to a embedded jets: " << fRequireMatchedJetWhenEmbedding << "\n";
+  tempSS << "\tRequire an additional match to a part level jet: " << fRequireMatchedPartLevelJet << "\n";
+  tempSS << "\tMinimum shared momentum fraction: " << fMinSharedMomentumFraction << "\n";
+  tempSS << "\tMax matched jet distance: " << fMaxMatchedJetDistance << "\n";
+
+  return tempSS.str();
+}
+
+/**
+ * Print jet-hadron correlations task information on an output stream using the string representation provided by
+ * AliAnalysisTaskEmcalJetHCorrelations::toString. Used by operator<<
+ * @param in output stream stream
+ * @return reference to the output stream
+ */
+std::ostream & AliAnalysisTaskEmcalJetHCorrelations::Print(std::ostream & in) const {
+  in << toString();
+  return in;
+}
+
+/**
+ * Print basic jet-hadron correlations task information using the string representation provided by
+ * AliAnalysisTaskEmcalJetHCorrelations::toString
+ *
+ * @param[in] opt Unused
+ */
+void AliAnalysisTaskEmcalJetHCorrelations::Print(Option_t* opt) const
+{
+  Printf("%s", toString().c_str());
+}
+
 } /* namespace EMCALJetTasks */
 } /* namespace PWGJE */
+
+/**
+ * Implementation of the output stream operator for AliAnalysisTaskEmcalJetHCorrelations. Printing
+ * basic jet-hadron correlations task information provided by function toString
+ * @param in output stream
+ * @param myTask Task which will be printed
+ * @return Reference to the output stream
+ */
+std::ostream & operator<<(std::ostream & in, const PWGJE::EMCALJetTasks::AliAnalysisTaskEmcalJetHCorrelations & myTask)
+{
+  std::ostream & result = myTask.Print(in);
+  return result;
+}
+

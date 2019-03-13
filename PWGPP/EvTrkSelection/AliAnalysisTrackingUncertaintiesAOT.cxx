@@ -44,7 +44,6 @@
 #include "AliMCEventHandler.h"
 #include "AliMCEvent.h"
 #include "AliMultSelection.h"
-#include "AliStack.h"
 #include "AliLog.h"
 //
 #include "AliAnalysisTrackingUncertaintiesAOT.h"
@@ -324,7 +323,7 @@ void AliAnalysisTrackingUncertaintiesAOT::UserExec(Option_t *)
   if((maskPhysSel & fTriggerMask)==0) return;
 
   fHistNEvents->Fill(0);
-  AliStack* stack = 0x0;
+  AliMCEvent* mcEvent=0x0;
   if(fMC){
     AliMCEventHandler* eventHandler = dynamic_cast<AliMCEventHandler*> (AliAnalysisManager::GetAnalysisManager()->GetMCtruthEventHandler());
     if (!eventHandler) {
@@ -332,15 +331,9 @@ void AliAnalysisTrackingUncertaintiesAOT::UserExec(Option_t *)
       PostData(1, fListHist);
       return;
     }
-    AliMCEvent* mcEvent = eventHandler->MCEvent();
+    mcEvent = eventHandler->MCEvent();
     if (!mcEvent) {
       AliWarning("ERROR: Could not retrieve MC event");
-      PostData(1, fListHist);
-      return;
-    }
-    stack = mcEvent->Stack();
-    if (!stack) {
-      AliWarning("ERROR: stack not available\n");
       PostData(1, fListHist);
       return;
     }
@@ -364,7 +357,7 @@ void AliAnalysisTrackingUncertaintiesAOT::UserExec(Option_t *)
   //
   // Fill track cut variation histograms
   //
-  ProcessTracks(stack);
+  ProcessTracks(mcEvent);
   //
   // Post output data
   //
@@ -423,7 +416,7 @@ Bool_t AliAnalysisTrackingUncertaintiesAOT::IsEventSelectedInCentrality(AliESDEv
   }
 }
 //________________________________________________________________________
-void AliAnalysisTrackingUncertaintiesAOT::ProcessTracks(AliStack *stack) {
+void AliAnalysisTrackingUncertaintiesAOT::ProcessTracks(AliMCEvent *mcEvent) {
 
   //
   // fill track cut variation histograms - undo cuts step-by-step and fill histograms
@@ -486,20 +479,22 @@ void AliAnalysisTrackingUncertaintiesAOT::ProcessTracks(AliStack *stack) {
     nITS+=track->GetITSNcls();
 
     track->GetImpactParameters(dca, cov);
-    if(fMC){
-      part    = (TParticle*)stack->Particle(TMath::Abs(track->GetLabel()));
-      if(part){
+    if(fMC && mcEvent){
+      Int_t absLabel=TMath::Abs(track->GetLabel());
+      AliMCParticle* mcPart = (AliMCParticle*)mcEvent->GetTrack(absLabel);
+      part = (TParticle*)mcEvent->Particle(absLabel);
+      if(mcPart && part){
         pdgPart = part->GetPDG();
         if(pdgPart){
           code    = pdgPart->PdgCode();
-          if(stack->IsPhysicalPrimary(TMath::Abs(track->GetLabel()))) isph=1;
+          if(mcEvent->IsPhysicalPrimary(TMath::Abs(track->GetLabel()))) isph=1;
           else {
             isph = 0;
             uniqueID = part->GetUniqueID();
           }
-          Int_t indexMoth=part->GetFirstMother();
+          Int_t indexMoth=mcPart->GetMother();
           if(indexMoth>=0){
-            TParticle* moth = stack->Particle(indexMoth);
+            TParticle* moth = mcEvent->Particle(indexMoth);
             Float_t codemoth = TMath::Abs(moth->GetPdgCode());
             mfl = Int_t (codemoth/ TMath::Power(10, Int_t(TMath::Log10(codemoth))));
           }

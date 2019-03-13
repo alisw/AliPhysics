@@ -355,7 +355,9 @@ void AliAnalysisTaskCheckGenKine::UserExec(Option_t *)
   fHistoSelTracks->Fill(nPiKPEta09,nSelTracks);
 
   for (Int_t i=0;i<nParticles;i++){
+    AliMCParticle* mcPart=(AliMCParticle*)mcEvent->GetTrack(i);
     TParticle* part = (TParticle*)mcEvent->Particle(i);
+    if(!mcPart || !part) continue;
     Int_t pdg=part->GetPdgCode();
     Int_t spId=GetSpeciesIndex(pdg);
     if(spId<0) continue;
@@ -379,8 +381,8 @@ void AliAnalysisTaskCheckGenKine::UserExec(Option_t *)
       else if(mcEvent->IsSecondaryFromMaterial(i)) primSec=2;
     }
     fPrimSec[spId]->Fill(primSec,pt,distToVert);
-    Int_t nDau=part->GetNDaughters();
-    Int_t iDau=part->GetFirstDaughter();
+    Int_t nDau=mcPart->GetNDaughters();
+    Int_t iDau=mcPart->GetDaughterFirst();
     if(iDau>=0){
 
       TParticle* firstDau = (TParticle*)mcEvent->Particle(iDau);

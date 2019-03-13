@@ -16,6 +16,8 @@ class TList;
 #include "AliFemtoVertexMultAnalysis.h"
 #include "AliFemtoEventReaderAODMultSelection.h"
 
+#include <TNamed.h>
+
 
 /// \class AliFemtoAnalysisPionPion
 /// \brief A simple analysis for studying femtoscopic systems of
@@ -140,6 +142,9 @@ public:
   template <typename T>
   static AliFemtoConfigObject GetConfigurationOf(const T&);
 
+  static TString make_random_string(const TString &prefix="");
+
+
 protected:
 
   /// The name of this analysis used for identification in the output list
@@ -160,13 +165,10 @@ protected:
 
   /// This is a Monte Carlo analysis
   Bool_t fMCAnalysis;
-
-  /// Saved Configuration
-  AliFemtoConfigObject fConfiguration;
 };
 
 /// \class AliFemtoAnalysisPionPion::AnalysisParams
-struct AliFemtoAnalysisPionPion::AnalysisParams {
+struct AliFemtoAnalysisPionPion::AnalysisParams : public TNamed {
 
   UInt_t vertex_bins;
   Float_t vertex_min,
@@ -195,6 +197,8 @@ struct AliFemtoAnalysisPionPion::AnalysisParams {
 
   /// Default Values
   AnalysisParams();
+
+  ClassDef(AnalysisParams, 1);
 };
 
 /// \class AliFemtoAnalysisPionPion::CutParams
@@ -203,7 +207,10 @@ struct AliFemtoAnalysisPionPion::AnalysisParams {
 ///
 /// The expected way to use this class
 ///
-struct AliFemtoAnalysisPionPion::CutParams {
+struct AliFemtoAnalysisPionPion::CutParams : public TNamed {
+
+  Bool_t cuts_use_attrs;
+
   Bool_t event_use_basic;
 
   // EVENT
@@ -222,6 +229,7 @@ struct AliFemtoAnalysisPionPion::CutParams {
   Int_t event_TriggerSelection;
   Bool_t event_AcceptBadVertex;
   Bool_t event_AcceptOnlyPhysics;
+  Int_t event_zdc_part;
 
   // PION - 1
   Float_t pion_1_PtMin,
@@ -236,16 +244,22 @@ struct AliFemtoAnalysisPionPion::CutParams {
   // Float_t pion_1_NSigmaMin,
   //        pion_1_NSigmaMax;
 
+  ULong_t pion_1_status;
+
   Float_t pion_1_sigma;
 
   Float_t pion_1_max_impact_xy,
           pion_1_max_impact_z,
+          pion_1_min_tpc_chi_ndof,
           pion_1_max_tpc_chi_ndof,
           pion_1_max_its_chi_ndof;
 
   UInt_t pion_1_min_tpc_ncls;
+  UInt_t pion_1_min_its_ncls;
+
   Bool_t pion_1_remove_kinks,
-         pion_1_set_label;
+         pion_1_rm_neg_lbl,
+         pion_1_use_tpctof;
 
   // PION - 2
   Float_t pion_2_PtMin,
@@ -272,21 +286,28 @@ struct AliFemtoAnalysisPionPion::CutParams {
 
 
   // PAIR
+  Bool_t pair_use_avgsep;
   Bool_t pair_TPCOnly;
   // Float_t pair_TPCExitSepMin;
-  // Float_t pair_MinAvgSeparationPos;
+  Float_t pair_min_avgsep;
   // Float_t pair_MinAvgSeparationNeg;
 
   Float_t pair_delta_eta_min,
           pair_delta_phi_min,
           pair_phi_star_radius;
 
+  Float_t pair_ee_min;
 
   Float_t pair_max_share_quality,
           pair_max_share_fraction;
   Bool_t pair_remove_same_label;
   Int_t pair_algorithm;
 
+  /// Default Values
+  CutParams();
+
+
+  ClassDef(CutParams, 0);
 };
 
 template <typename T>
@@ -298,7 +319,7 @@ AliFemtoAnalysisPionPion::GetConfigurationOf(const T &cut)
     return AliFemtoConfigObject("");
   }
   AliFemtoConfigObject::MapValue_t result;
-  result["class"] = "AliFemtoSomething";
+  result["_class"] = "AliFemtoSomething";
 
   return AliFemtoConfigObject(result);
 }
