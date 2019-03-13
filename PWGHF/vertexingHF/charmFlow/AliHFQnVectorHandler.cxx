@@ -955,6 +955,7 @@ bool AliHFQnVectorHandler::OpenInfoCalbration()
         fOADBFile = nullptr;
     }
 
+    TGrid::Connect("alien:///");
     fOADBFile = TFile::Open(fOADBFileName.Data());
 
     if(!fOADBFile){
