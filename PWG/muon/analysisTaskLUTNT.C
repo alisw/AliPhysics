@@ -3,7 +3,7 @@ void analysisTaskLUTNT() {
 
   TChain* chain = new TChain("esdTree");
 
-  TAlienCollection* coll = TAlienCollection::Open("wn.xml");
+  TGridCollection* coll = gGrid->OpenCollection("wn.xml");
 
   TGridResult* result = coll->GetGridResult("",0,0);
   Int_t nFiles = 0;

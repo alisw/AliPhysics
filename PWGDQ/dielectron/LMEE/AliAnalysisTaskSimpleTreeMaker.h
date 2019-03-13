@@ -23,6 +23,7 @@ class AliESDtrackCuts;
 * Created: 05.10.2016                                  *
 * Authors: Aaron Capon      (aaron.capon@cern.ch)      *
 *          Sebastian Lehner (sebastian.lehner@cern.ch) *
+*          Elisa Meninno    (elisa.meninno@cern.ch)    *   
 *                                                      *
 *******************************************************/
 
@@ -30,7 +31,7 @@ class AliESDtrackCuts;
 class AliAnalysisTaskSimpleTreeMaker : public AliAnalysisTaskSE {
 
   public:
-		AliAnalysisTaskSimpleTreeMaker(const char *name);
+  AliAnalysisTaskSimpleTreeMaker(const char *name, Bool_t ExtraDCA = kFALSE);
 		AliAnalysisTaskSimpleTreeMaker();
 		~AliAnalysisTaskSimpleTreeMaker();
 
@@ -136,6 +137,9 @@ class AliAnalysisTaskSimpleTreeMaker : public AliAnalysisTaskSE {
 		void GRIDanalysis(Bool_t answer){
 				fIsGRIDanalysis = answer;
 		}
+		void createDCAbranches(Bool_t answer){
+		  fExtraDCA = answer;
+		}
 		void createV0tree(Bool_t answer){
 				fIsV0tree = answer;
 		}
@@ -225,7 +229,12 @@ class AliAnalysisTaskSimpleTreeMaker : public AliAnalysisTaskSE {
 		TBits tpcSharedMap;
 		Float_t nTPCshared;
 		Float_t chi2TPC;
-		Float_t DCA[2];
+		//DCA
+		Double_t DCA[2];
+		Double_t DCAsigma[2];
+		Double_t DCA3[3];
+		//Double_t DCA3sigma[3];  
+		Double_t DCAXYtest;
 		Int_t nITS;
 		Float_t chi2ITS;
 		Float_t fITSshared;
@@ -288,7 +297,7 @@ class AliAnalysisTaskSimpleTreeMaker : public AliAnalysisTaskSE {
 		Float_t fESigTPCMax; 
 		
 		Bool_t fHasSDD;
-
+		Bool_t fExtraDCA;
 		Bool_t fIsV0tree;
 		TH2F* fArmPlot; //!
 

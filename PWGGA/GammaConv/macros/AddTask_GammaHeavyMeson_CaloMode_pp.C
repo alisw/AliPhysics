@@ -364,6 +364,32 @@ void AddTask_GammaHeavyMeson_CaloMode_pp(
     cuts.AddCutCalo("00010113","2446600040013300000","0163103b00000010"); // INT7
     cuts.AddCutCalo("00062113","2446600040013300000","0163103b00000010"); // PHI7
 
+    // *****************************************************************************************************
+    // 13 TeV pp Run2 - EDC (EMCal + DCal) configurations
+    // *****************************************************************************************************
+
+  } else if (trainConfig == 2020){ // EMCAL+DCAL clusters standard cuts, INT7, NL , std TM, tight timing
+    cuts.AddCutCalo("00010113","4117900067032230000","01631031000000d0"); // INT7 No NL
+    cuts.AddCutCalo("00010113","4117911067032230000","01631031000000d0"); // INT7 NL11
+    cuts.AddCutCalo("00010113","4117912067032230000","01631031000000d0"); // INT7 NL12
+    cuts.AddCutCalo("00010113","4117921067032230000","01631031000000d0"); // INT7 NL21
+    cuts.AddCutCalo("00010113","4117922067032230000","01631031000000d0"); // INT7 NL22
+  } else if (trainConfig == 2021){ // EMCAL+DCAL clusters standard cuts, EG2, NL , std TM, tight timing
+    cuts.AddCutCalo("0008e113","4117900067032230000","01631031000000d0"); // EG2  No NL
+    cuts.AddCutCalo("0008e113","4117911067032230000","01631031000000d0"); // EG2  NL11
+    cuts.AddCutCalo("0008e113","4117912067032230000","01631031000000d0"); // EG2  NL12
+    cuts.AddCutCalo("0008e113","4117921067032230000","01631031000000d0"); // EG2  NL21
+    cuts.AddCutCalo("0008e113","4117922067032230000","01631031000000d0"); // EG2  NL22
+  } else if (trainConfig == 2022){ // EMCAL+DCAL clusters standard cuts, EG1, NL , std TM, tight timing
+    cuts.AddCutCalo("0008d113","4117911067032230000","01631031000000d0"); // EG1  No NL
+    cuts.AddCutCalo("0008d113","4117911067032230000","01631031000000d0"); // EG1  NL11
+    cuts.AddCutCalo("0008d113","4117912067032230000","01631031000000d0"); // EG1  NL12
+    cuts.AddCutCalo("0008d113","4117921067032230000","01631031000000d0"); // EG1  NL21
+    cuts.AddCutCalo("0008d113","4117922067032230000","01631031000000d0"); // EG1  NL22
+  } else if (trainConfig == 2100){ // EMCAL+DCAL clusters, for eta prime
+    cuts.AddCutCalo("00010113","4117911067032230000","01631030000000d0"); // no NL INT7
+    cuts.AddCutCalo("0008e113","4117911067032230000","01631030000000d0"); // no NL EG2
+    cuts.AddCutCalo("0008d113","4117911067032230000","01631030000000d0"); // no NL EG1
   } else {
     Error(Form("HeavyNeutralMesonToGG_%i_%i", mesonRecoMode, trainConfig), "wrong trainConfig variable no cuts have been specified for the configuration");
     return;

@@ -6,7 +6,6 @@
 */
 
 void mergeOfflineTriggerList(const char * inputList){
-  TAlienCollection col;
   AliOfflineTrigger trigger("default", 30,100000000);
   trigger.LoadTriggerList("filteredHighPtV0s.list");
   trigger.LoadTriggerList("filteredMult.list");

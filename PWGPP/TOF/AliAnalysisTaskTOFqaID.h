@@ -36,48 +36,24 @@ class AliAnalysisTaskTOFqaID : public AliAnalysisTaskSE {
   virtual void Terminate(Option_t*);
 
   Int_t GetStripIndex(const Int_t* in);
-  void SetTrackFilter(AliAnalysisFilter* filter)
-  {
-    fTrackFilter = filter;
-    return;
-  };
-  void SetMinPtCut(Float_t minpt)
-  {
-    fMatchingMomCut = minpt;
-    return;
-  }
-  void SetMaxEtaCut(Float_t maxeta)
-  {
-    fMatchingEtaCut = maxeta;
-    return;
-  }
-  void EnableAdvancedCheck(Bool_t enable)
-  {
-    fEnableAdvancedCheck = enable;
-    return;
-  };
-  void EnableChargeSplit(Bool_t enable)
-  {
-    fEnableChargeSplit = enable;
-    return;
-  };
+  void SetTrackFilter(AliAnalysisFilter* filter) { fTrackFilter = filter; };
+  void SetMinPtCut(Float_t minpt) { fMatchingMomCut = minpt; }
+  void SetMaxEtaCut(Float_t maxeta) { fMatchingEtaCut = maxeta; }
+  void EnableAdvancedCheck(Bool_t enable) { fEnableAdvancedCheck = enable; };
+  void EnableChargeSplit(Bool_t enable) { fEnableChargeSplit = enable; };
   void SetExpTimeHistoRange(Float_t min, Float_t max)
   {
     fExpTimeRangeMin = min;
     fExpTimeRangeMax = max;
-    return;
   };
   void SetExpTimeHistoSmallRange(Float_t min, Float_t max)
   {
     fExpTimeSmallRangeMin = min;
     fExpTimeSmallRangeMax = max;
-    return;
   };
-  void SetExpTimeBinWidth(Float_t width)
-  {
-    fExpTimeBinWidth = width;
-    return;
-  };
+  void SetExpTimeBinWidth(Float_t width) { fExpTimeBinWidth = width; };
+  void SetResolutionMinP(Double_t min) { fResolutionMinP = min; };
+  void SetResolutionMaxP(Double_t max) { fResolutionMaxP = max; };
   Bool_t SetSelectMCspecies(Bool_t enableMC, Int_t absPdgCode)
   {
     fIsMC = enableMC;
@@ -85,13 +61,19 @@ class AliAnalysisTaskTOFqaID : public AliAnalysisTaskSE {
     return kTRUE;
   };
   TString GetSpeciesName(Int_t absPdgCode);
-  void HistogramMakeUp(TH1* hist, Color_t color = -1, Int_t markerStyle = -1, TString drawOpt = "", TString newName = "", TString newTitle = "", TString xTitle = "", TString yTitle = "");
+  void HistogramMakeUp(TH1* hist, Color_t color = -1, Int_t markerStyle = -1);
   Double_t GetPhiAtTPCouterRadius(AliESDtrack* track);
   void SetOCDBInfo(const char* cdbLocation, UInt_t runN)
   {
     fOCDBLocation = cdbLocation;
     fRunNumber = runN;
   }
+  void SetVerboseMode(Bool_t verbose = kTRUE) { fVerbose = verbose; };                   // Setter for verbose flag
+  void SetUseTOFT0CalibMode(Bool_t usecalib = kTRUE) { fUseTOFT0CalibMode = usecalib; }; // Setter for TOFT0V1 calib. mode
+
+  // Binning arrays
+  TArrayD fVariableBinsPt;   // array of bins for pt and p
+  TArrayD fVariableBinsMult; // array of bins for multiplicity (e.g. TOF hits)
 
   protected:
   void AddTofBaseHisto(THashList* list, Int_t charge, TString suffix);
@@ -143,9 +125,13 @@ class AliAnalysisTaskTOFqaID : public AliAnalysisTaskSE {
   Int_t fnExpTimeBins;
   Int_t fnExpTimeSmallBins;
 
-  Double_t fMyTimeZeroTOF, fMyTimeZeroTOFsigma;  //timeZero by TOF recomputed
-  Int_t fMyTimeZeroTOFtracks;                    // number of tracks used to recompute TOF_T0
+  TArrayD fMyTimeZeroTOF;                        //timeZero by TOF recomputed one from not calib., the other two for calib. mode
+  TArrayD fMyTimeZeroTOFsigma;                   //timeZero sigma by TOF recomputed
+  TArrayD fMyTimeZeroTOFtracks;                  // number of tracks used to recompute TOF_T0
+  Bool_t fMyTimeZeroTOFstatus;                   // Status of the computed TOF_T0 (kTRUE -> OK, kFALSE -> not OK)
   Bool_t fIsMC;                                  //flag for MC
+  Bool_t fVerbose;                               //Flag for verbose mode
+  Bool_t fUseTOFT0CalibMode;                     // Flag to use AliTOFT0v1 in calibration mode and user mode
   Int_t fSelectedPdg;                            //pdg code of the selected specie (for MC only)
   Double_t fP;                                   //momentum
   Double_t fPt;                                  //transverse momentum
@@ -160,6 +146,8 @@ class AliAnalysisTaskTOFqaID : public AliAnalysisTaskSE {
   TString fOCDBLocation;                         // ocdb path
   AliTOFChannelOnlineStatusArray* fChannelArray; //array of channel status
   AliTOFcalib* fCalib;                           //TOF calibration object
+  Double_t fResolutionMinP;                      //Minimum momentum to compute the TOF resolution
+  Double_t fResolutionMaxP;                      //Maximum momentum to compute the TOF resolution
   //output objects
   THashList* fHlist;         //list of general histos
   THashList* fHlistTimeZero; //list of timeZero related histos
@@ -167,17 +155,16 @@ class AliAnalysisTaskTOFqaID : public AliAnalysisTaskSE {
   THashList* fHlistTRD;      //list of general histos for positive tracks
   THashList* fHlistTrigger;  //list of general histos for TOF trg infos
 
-  static const Int_t fnBinsPt = 300;      // binning for pt and p
-  static const Int_t fnBinsEta = 200;     // binning for eta
-  static const Int_t fnBinsPhi = 72;      // binning for phi and phi_TPCouter
-  static const Double_t fBinsPt[2];       // binning for pt and p - max and min
-  static const Double_t fBinsEta[2];      // binning for eta - max and min
-  static const Double_t fBinsPhi[2];      // binning for phi and phi_TPCouter - max and min
-  Double_t fVariableBinsPt[fnBinsPt + 1]; // array of bins for pt and p
+  static const Int_t fnBinsEta = 200; // binning for eta
+  static const Int_t fnBinsPhi = 72;  // binning for phi and phi_TPCouter
+  static const Int_t fnBinsT0 = 140;  // binning for T0
+  static const Double_t fBinsEta[2];  // binning for eta - max and min
+  static const Double_t fBinsPhi[2];  // binning for phi and phi_TPCouter - max and min
+  static const Double_t fBinsT0[2];   // binning for T0
 
-  void SetPtVariableBinning(); // sets the array with variable binning in p and pT
+  void SetVariableBinning(); // sets the array with variable binning
 
-  ClassDef(AliAnalysisTaskTOFqaID, 6); // example of analysis
+  ClassDef(AliAnalysisTaskTOFqaID, 9); // Analysis for the TOF QA
 };
 
 #endif

@@ -1232,7 +1232,7 @@ void AliAnalysisTaskEmcalJetPerformance::AllocateMatchedJetHistograms()
     nbinsz = 100; minz = 0; maxz = 4.;
     histname = "MatchedJetHistograms/hMatchingDistance";
     title = histname + ";#it{p}_{T}^{det} (GeV/#it{c});#it{p}_{T}^{truth} (GeV/#it{c});R";
-    fHistManager.CreateTH3(histname.Data(), title.Data(), nbinsx, minx, maxx, nbinsy, miny, maxy, nbinsz, minz, maxz);
+    fHistManager.CreateTH3(histname.Data(), title.Data(), nbinsx, minx, maxx, fMaxPt, miny, maxy, nbinsz, minz, maxz);
     
     // Jet matching QA (copied from AliAnalysisTaskEmcalJetHCorrelations.cxx)
     histname = "MatchedJetHistograms/fHistJetMatchingQA";

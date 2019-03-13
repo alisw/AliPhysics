@@ -44,6 +44,7 @@ AliJJetJtTask::AliJJetJtTask() :
   fMCJetTask(NULL),
   fJetTaskName(""),
   fMCJetTaskName(""),
+  fSelector(""),
   fJJetJtAnalysis(0x0),
   fOutput(NULL),
   fCard(NULL),
@@ -73,6 +74,7 @@ AliJJetJtTask::AliJJetJtTask(const char *name, TString inputformat):
   fMCJetTask(NULL),
   fJetTaskName(""),
   fMCJetTaskName(""),
+  fSelector(""),
   fJJetJtAnalysis(0x0),
   fOutput(NULL),
   fCard(NULL),
@@ -105,6 +107,7 @@ AliJJetJtTask::AliJJetJtTask(const AliJJetJtTask& ap) :
   fJetTaskName(ap.fJetTaskName),
   fMCJetTask(ap.fMCJetTask),
   fMCJetTaskName(ap.fMCJetTaskName),
+  fSelector(ap.fSelector),
   fJJetJtAnalysis( ap.fJJetJtAnalysis ),
   fOutput( ap.fOutput ),
   fCard(ap.fCard),
@@ -238,24 +241,29 @@ void AliJJetJtTask::UserExec(Option_t* /*option*/)
   float fcent = -999;
   if(fRunTable->IsHeavyIon() || fRunTable->IsPA()){
     if(fDebug > 6) cout << fRunTable->GetPeriodName() << endl;
-    if(fRunTable->IsPA() && !(fRunTable->GetPeriodName().BeginsWith("LHC13"))){
-      sel = (AliMultSelection*) InputEvent() -> FindListObject("MultSelection");
-      if (sel) {
-        fcent = sel->GetMultiplicityPercentile("V0A");
-      }
-      else{
-        if(fDebug > 2) cout << "Sel not found" << endl;
-      }
+    if(fSelector != ""){
+      fcent = sel->GetMultiplicityPercentile(fSelector);
     }else{
-      AliCentrality *cent = event->GetCentrality();
-      if( ! cent ) return;
-      if(fRunTable->GetPeriodName().BeginsWith("LHC13")){
-        fcent = cent->GetCentralityPercentile("V0A");
+      if(fRunTable->IsPA() && !(fRunTable->GetPeriodName().BeginsWith("LHC13"))){
+        sel = (AliMultSelection*) InputEvent() -> FindListObject("MultSelection");
+        if (sel) {
+          fcent = sel->GetMultiplicityPercentile("V0A");
+        }
+        else{
+          if(fDebug > 2) cout << "Sel not found" << endl;
+        }
       }else{
-        fcent = cent->GetCentralityPercentile("V0M");
+        AliCentrality *cent = event->GetCentrality();
+        if( ! cent ) return;
+        if(fRunTable->GetPeriodName().BeginsWith("LHC13")){
+          fcent = cent->GetCentralityPercentile("V0A");
+        }else{
+          fcent = cent->GetCentralityPercentile("V0M");
+        }
       }
     }
-  } else {
+  }
+  else {
     fcent = -1;
   }
   if(fcent > fCentCut){
@@ -315,7 +323,7 @@ void AliJJetJtTask::UserExec(Option_t* /*option*/)
 /// 
 void AliJJetJtTask::FindDaughters(AliJJet *jet, AliAODMCParticle *track, AliMCParticleContainer *mcTracksCont){
 
-  for(int id = track->GetFirstDaughter(); id <= track->GetLastDaughter() ; id++){
+  for(int id = track->GetDaughterFirst(); id <= track->GetDaughterLast() ; id++){
     AliAODMCParticle *daughter = static_cast<AliAODMCParticle*>(mcTracksCont->GetParticle(id));
     if(daughter->GetNDaughters() > 0){
       FindDaughters(jet,daughter,mcTracksCont);

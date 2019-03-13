@@ -21,7 +21,7 @@ Double_t referencePadHeight=0.44;
 TString strsyst="pPb";
 TString sets[nSets]={"pPb","Perugia0","Perugia2010","Perugia2011","PYTHIA8","POWHEG","EPOS3"};
 TString setsBoost[nSets]={"pPb","Perugia0wBoost","Perugia2010wBoost","Perugia2011wBoost","PYTHIA8wBoost","POWHEG","EPOS3"};
-Bool_t includeset[nSets]={kTRUE,kTRUE,kTRUE,kTRUE,kTRUE,kTRUE,kFALSE};
+Bool_t includeset[nSets]={kTRUE,kFALSE,kFALSE,kTRUE,kTRUE,kTRUE,kFALSE};
 void SetIncludePerugia0(Bool_t incl){
   includeset[1]=incl;
 }
@@ -50,8 +50,8 @@ void SetIncludeAllMCmodels(Bool_t incl=kTRUE){
 }
 const Int_t nmodels=7;// does not matter that they are 6 maximum now; this is used only to define the 2 arrays modelColors and modelMarkerStyle
 Bool_t splitLegendMC=kFALSE;
-Color_t modelColors[nmodels]={kRed+2,kCyan,kGreen+2,kMagenta+1,kBlue,kOrange+1,kViolet};
-Int_t modelMarkerStyle[nmodels]={kOpenSquare,kOpenCircle,kOpenDiamond,3,28,26,33};
+Color_t modelColors[nmodels]={kCyan,kYellow+1,kGreen+2,kViolet,kBlue,kRed,kOrange+1};
+Int_t modelMarkerStyle[nmodels]={4,33,kFullSquare,kFullDiamond,kOpenSquare,kOpenDiamond};
 TString pthadron[nbinAssocpt]={"0.3to99.0","0.3to1.0","1.0to99.0","1.0to2.0","2.0to3.0","3.0to99.0"};
 TString strmesonpt[nbinDpt]={"3to5","5to8","8to16","16to24"};
 TString strmesonMCpt[nbinDpt]={"3To5","5To8","8To16","16To24"};
@@ -489,6 +489,7 @@ void DoComparison_pPb2016VsMCallPanels(){
 	  histo[iset][kassoc][jmes]->SetMarkerColor(4); 
 	  histo[iset][kassoc][jmes]->SetMarkerStyle(21); 
 	  histo[iset][kassoc][jmes]->SetLineColor(4);  
+    histo[iset][kassoc][jmes]->SetLineWidth(1);  
 	  
 	  subtractedhisto[iset][kassoc][jmes] = GetPedestalHistoAndSystAndSubtractPed(iset,kassoc,jmes,histo[iset][kassoc][jmes],err[iset][kassoc][jmes],suberr[iset][kassoc][jmes],"CanvasBaselineVariationTrendPedestal",grbase[iset][kassoc][jmes],grv2[iset][kassoc][jmes]);
 	  Printf("Histo subtrcated obtained");
@@ -497,9 +498,11 @@ void DoComparison_pPb2016VsMCallPanels(){
 	  if(grv2[iset][kassoc][jmes]){
 	    Printf("SHOULD NOT ENTER HERE");
 	    grv2[iset][kassoc][jmes]->SetFillStyle(3002);
-	    grv2[iset][kassoc][jmes]->SetFillColor(kMagenta);  
+	    grv2[iset][kassoc][jmes]->SetFillColor(kMagenta);
+    histo[iset][kassoc][jmes]->SetLineWidth(1);    
 	  }
 	  suberr[iset][kassoc][jmes]->SetLineColor(kBlack);
+    histo[iset][kassoc][jmes]->SetLineWidth(1);  
 	}
 	
 
@@ -657,6 +660,7 @@ void DoComparison_pPb2016VsMCallPanels(){
       //}
       ltscale[0][iassoc][jDpt]->Draw();
       for(Int_t kmod=1;kmod<nSets;kmod++){
+  if(includeset[kmod])subtractedhisto[kmod][iassoc][jDpt]->SetLineWidth(1);        
 	if(includeset[kmod])subtractedhisto[kmod][iassoc][jDpt]->Draw("hist same c");
       }
 //       subtractedhisto[1][iassoc][jDpt]->Draw("hist same c");//Perugia0

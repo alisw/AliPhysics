@@ -206,6 +206,7 @@ AliAnalysisTaskMaterialHistos::AliAnalysisTaskMaterialHistos(const char *name) :
   hMCConversionRRejSmall(NULL),
   hMCConversionRRejLarge(NULL),
   hMCAllGammaPt(NULL),
+  hMCAllGammaWOWeightPt(NULL),
   hMCAllSecondaryGammaPt(NULL),
   hMCSecondaryConvGammaPtR(NULL),
   hMCTrueConversionRPhi(NULL),
@@ -867,8 +868,6 @@ void AliAnalysisTaskMaterialHistos::ProcessMCPhotons(){
       // fill secondary histograms
       TParticle* particle = (TParticle *)fMCEvent->Particle(i);
       if (!particle) continue;
-
-      Int_t isMCFromMBHeader = -1;
 
       if(fMCEvent && ((AliConvEventCuts*)fEventCutArray->At(fiCut))->GetSignalRejection() != 0){
 	Int_t isPosFromMBHeader = ((AliConvEventCuts*)fEventCutArray->At(fiCut))->IsParticleFromBGEvent(i, fMCEvent, fInputEvent);

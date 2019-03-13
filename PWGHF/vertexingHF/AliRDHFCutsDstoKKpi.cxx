@@ -1307,3 +1307,28 @@ Double_t AliRDHFCutsDstoKKpi::ComputeInvMass2(AliAODTrack* track1, AliAODTrack* 
   
   return E12*E12-((px1+px2)*(px1+px2)+(py1+py2)*(py1+py2)+(pz1+pz2)*(pz1+pz2));
 }
+
+void AliRDHFCutsDstoKKpi::PrintAll() const {
+  //
+  // print all cuts values
+  // 
+  AliRDHFCuts::PrintAll();
+  if(fUsed0MeasMinusExpCut){
+    printf("Cuts on d0meas-d0exp:\n");
+    for(Int_t ib=0;ib<fnPtBins;ib++){
+      printf("%f   ",fMaxd0MeasMinusExp[ib]);
+    }
+    printf("\n");
+  }else{
+    printf("No cut on d0meas-d0exp:\n");
+  }
+  if(fUsed0Cut){
+    printf("Cuts on d0:\n");
+    for(Int_t ib=0;ib<fnPtBins;ib++){
+      printf("%f   ",fMaxd0[ib]);
+    }
+    printf("\n");
+  }else{
+    printf("No cut on d0\n");
+  }
+}

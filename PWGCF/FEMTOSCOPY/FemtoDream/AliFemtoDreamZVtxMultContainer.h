@@ -50,6 +50,7 @@ class AliFemtoDreamZVtxMultContainer {
   std::vector<AliFemtoDreamPartContainer> fPartContainer;
   std::vector<int> fPDGParticleSpecies;
   std::vector<unsigned int> fWhichPairs;
+  std::vector<bool> fRejPairs;
   float fDeltaEtaMax;
   float fDeltaPhiMax;
   float fDeltaPhiEtaMax;

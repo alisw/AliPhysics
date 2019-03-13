@@ -1,7 +1,7 @@
 
 // For: Net Lambda fluctuation analysis via traditional method
 // By: Ejiro Naomi Umaka Apr 2018
-// Updated Jan 28
+// Updated Mar 3
 
 
 #include "AliAnalysisManager.h"
@@ -52,7 +52,9 @@ fHistCentrality(0x0),
 f2fHistRecCentVsPtLambda(0x0),
 f2fHistRecCentVsPtAntiLambda(0x0),
 f2fHistInvMassVsPtLambda(0x0),
+f2fHistCentVsInvMassLambda(0x0),
 f2fHistInvMassVsPtAntiLambda(0x0),
+f2fHistCentVsInvMassAntiLambda(0x0),
 f1fHistmassctLambda(0x0),
 f1fHistmassctAntiLambda(0x0),
 f2fHistPtmassctLambda(0x0),
@@ -126,6 +128,12 @@ void AliAnalysisTaskNetLambdaTrad::UserCreateOutputObjects()
     
     f1fHistmassctAntiLambda = new TH1F("f1fHistmassctAntiLambda","#bar{#Lambda} masscut 1D",100,1.1,1.14);
     fListHist->Add(f1fHistmassctAntiLambda);
+    
+    f2fHistCentVsInvMassLambda = new TH2F("f2fHistCentVsInvMassLambda","#Lambda Cent-Mass", xNbins, xBinEdge, 100,1.08,1.16);
+    fListHist->Add(f2fHistCentVsInvMassLambda);
+    
+    f2fHistCentVsInvMassAntiLambda = new TH2F("f2fHistCentVsInvMassAntiLambda","#bar{#Lambda} Cent-Mass", xNbins, xBinEdge, 100,1.08,1.16);
+    fListHist->Add(f2fHistCentVsInvMassAntiLambda);
     
     const Int_t dim = 47; //23 pt bins + 1 cent bin
     Int_t bin[dim]    = { 100,
@@ -227,9 +235,7 @@ void AliAnalysisTaskNetLambdaTrad::UserExec(Option_t *)
     const AliESDVertex *lPrimaryBestESDVtx     = fESD->GetPrimaryVertex();
     Double_t lBestPrimaryVtxPos[3]          = {-100.0, -100.0, -100.0};
     lPrimaryBestESDVtx->GetXYZ( lBestPrimaryVtxPos );
-    
-    
-    
+
     Int_t nV0 = 0;
     Double_t fMinV0Pt = 0.0;
     Double_t fMaxV0Pt = 5.0;
@@ -271,7 +277,7 @@ void AliAnalysisTaskNetLambdaTrad::UserExec(Option_t *)
         V0pt = esdv0->Pt();
         if ((V0pt<fMinV0Pt)||(fMaxV0Pt<V0pt)) continue;
         if(TMath::Abs(lRapLambda)> 0.5 ) continue;
-
+        
         
         ///////////////////////////////////////////////////////////////////////
         
@@ -352,10 +358,12 @@ void AliAnalysisTaskNetLambdaTrad::UserExec(Option_t *)
         if( ontheflystat == 0 )
         {
             
-            if(dcaV0ToVertex < 0.25 && dcaNegToVertex > 0.1 && dcaPosToVertex >  0.05 && TMath::Abs(posprnsg)  <= 3.)
+            if(dcaV0ToVertex < 0.25 && dcaNegToVertex > 0.1 && dcaPosToVertex >  0.05 && TMath::Abs(posprnsg)  <= 2.)
             {
                 f2fHistInvMassVsPtLambda->Fill(invMassLambda,V0pt);
                 f2fHistRecCentVsPtLambda->Fill(fCentrality,V0pt);
+                f2fHistCentVsInvMassLambda->Fill(fCentrality,invMassLambda);
+
                 
                 if(invMassLambda > 1.11 && invMassLambda < 1.122)
                 {
@@ -364,16 +372,17 @@ void AliAnalysisTaskNetLambdaTrad::UserExec(Option_t *)
                     ptCh[iptbin] += 1;
                 }
                 
-                if(invMassLambda > 1.11341197 && invMassLambda < 1.11885) //1sigma
+                if(invMassLambda > 1.09 && invMassLambda < 1.1) //Bproxy
                 {
                     ptChCut[iptbin] += 1;
                 }
                 
             }
-            if(dcaV0ToVertex < 0.25 && dcaNegToVertex > 0.05 && dcaPosToVertex >  0.1 && TMath::Abs(negprnsg)  <= 3.)
+            if(dcaV0ToVertex < 0.25 && dcaNegToVertex > 0.05 && dcaPosToVertex >  0.1 && TMath::Abs(negprnsg)  <= 2.)
             {
                 f2fHistInvMassVsPtAntiLambda->Fill(invMassAntiLambda,V0pt);
                 f2fHistRecCentVsPtAntiLambda->Fill(fCentrality,V0pt);
+                f2fHistCentVsInvMassAntiLambda->Fill(fCentrality,invMassAntiLambda);
                 
                 if(invMassAntiLambda > 1.11 && invMassAntiLambda < 1.122)
                 {
@@ -381,7 +390,7 @@ void AliAnalysisTaskNetLambdaTrad::UserExec(Option_t *)
                     f1fHistmassctAntiLambda->Fill(invMassAntiLambda);
                     ptCh[iptbin+fNptBins] += 1;
                 }
-                if(invMassAntiLambda > 1.11341 && invMassAntiLambda < 1.11887) //1sigma
+                if(invMassAntiLambda > 1.09 && invMassAntiLambda < 1.1) //Bproxy
                 {
                     ptChCut[iptbin+fNptBins] += 1;
                 }

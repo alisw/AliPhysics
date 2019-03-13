@@ -162,8 +162,8 @@ fEtaPhiClusAftSel(0),
 fPtvsDetavsDphi(0),
 fPtvsTrackPtvsDeta(0),
 fPtvsTrackPtvsDphi(0),
-fPtTrackClusRatiovsPt(0),
-fPtTrackClusRatiovsPtWithCPV(0),
+fEOverPvsPt(0),
+fEOverPvsPtWithCPV(0),
 fClusEvsClusT(0),
 fClustEnBefAftNonLin(0),
 fPTbeforeNonLinScaling(0),
@@ -386,8 +386,8 @@ fEtaPhiClusAftSel(0),
 fPtvsDetavsDphi(0),
 fPtvsTrackPtvsDeta(0),
 fPtvsTrackPtvsDphi(0),
-fPtTrackClusRatiovsPt(0),
-fPtTrackClusRatiovsPtWithCPV(0),
+fEOverPvsPt(0),
+fEOverPvsPtWithCPV(0),
 fClusEvsClusT(0),
 fClustEnBefAftNonLin(0),
 fPTbeforeNonLinScaling(0),
@@ -679,17 +679,6 @@ void AliAnalysisTaskEMCALPhotonIsolation::UserCreateOutputObjects(){
           fOutMCTruth->Sumw2();
           fOutput->Add(fOutMCTruth);
 
-          fphietaPhotons = new TH3F ("fDphiDeta_Photons","#Delta#phi vs #Delta#eta Clust-MCpart to check why zero #sigma_{long}^{2} clusters; #eta; #phi", 100, -0.5, 0.5, 200, 1.5, 3.5,60,0.,60.);
-          fphietaPhotons->Sumw2();
-          fOutput->Add(fphietaPhotons);
-
-          fphietaOthers = new TH3F ("fDphiDeta_Others","#Delta#phi vs #Delta#eta Clust-MCpart to check why zero #sigma_{long}^{2} clusters; #eta; #phi", 140, -0.7, 0.7, 220, 0.8, 3.5,60,0.,60.);
-          fphietaOthers->Sumw2();
-          fOutput->Add(fphietaOthers);
-
-          fphietaOthersBis = new TH3F ("fDphiDeta_OthersBis","#Delta#phi vs #Delta#eta Clust-MCpart to check why zero #sigma_{long}^{2} clusters; #eta; #phi", 140, -0.7, 0.7, 220, 0.8, 3.5,60,0.,60.);
-          fphietaOthersBis->Sumw2();
-          fOutput->Add(fphietaOthersBis);
 
           fMCQAdim = sizeof(binsSMC)/sizeof(Int_t);
           const Int_t ndimsMCQA = fMCQAdim;
@@ -718,7 +707,20 @@ void AliAnalysisTaskEMCALPhotonIsolation::UserCreateOutputObjects(){
           fOutput->Add(fTrackResolutionPtMC);
         }
 
-	if(fQA && fWho==1) {
+	if(fQA) {
+          fphietaPhotons = new TH3F ("fDphiDeta_Photons","#Delta#phi vs #Delta#eta Clust-MCpart to check why zero #sigma_{long}^{2} clusters; #eta; #phi", 100, -0.5, 0.5, 200, 1.5, 3.5,60,0.,60.);
+          fphietaPhotons->Sumw2();
+          fOutput->Add(fphietaPhotons);
+	/* Not filled anymore	
+          fphietaOthers = new TH3F ("fDphiDeta_Others","#Delta#phi vs #Delta#eta Clust-MCpart to check why zero #sigma_{long}^{2} clusters; #eta; #phi", 140, -0.7, 0.7, 220, 0.8, 3.5,60,0.,60.);
+          fphietaOthers->Sumw2();
+          fOutput->Add(fphietaOthers);
+
+          fphietaOthersBis = new TH3F ("fDphiDeta_OthersBis","#Delta#phi vs #Delta#eta Clust-MCpart to check why zero #sigma_{long}^{2} clusters; #eta; #phi", 140, -0.7, 0.7, 220, 0.8, 3.5,60,0.,60.);
+          fphietaOthersBis->Sumw2();
+          fOutput->Add(fphietaOthersBis);
+	  */ 
+
 	  fNLM2_NC_Acc = new TH2F("hNLM2_NC_Acc","NLM distribution for *Neutral* Clusters in acceptance",10,0.,10.,100,0.,100.);
 	  fNLM2_NC_Acc->Sumw2();
 	  fOutput->Add(fNLM2_NC_Acc);
@@ -1016,13 +1018,13 @@ void AliAnalysisTaskEMCALPhotonIsolation::UserCreateOutputObjects(){
 	fPtvsTrackPtvsDphi->Sumw2();
 	fOutput->Add(fPtvsTrackPtvsDphi);
 
-	fPtTrackClusRatiovsPt = new TH2F("hPtTrackClusRatiovsPt","Track #it{p}_{T} over cluster #it{p}_{T} vs. cluster #it{p}_{T}", 120, 0., 60., 300, 0., 15.);
-	fPtTrackClusRatiovsPt->Sumw2();
-	fOutput->Add(fPtTrackClusRatiovsPt);
+	fEOverPvsPt = new TH2F("hEOverPvsPt","Cluster #it{E} over track #it{p} vs. cluster #it{p}_{T} BEFORE CPV", 120, 0., 60., 300, 0., 15.);
+	fEOverPvsPt->Sumw2();
+	fOutput->Add(fEOverPvsPt);
 
-	fPtTrackClusRatiovsPtWithCPV = new TH2F("hPtTrackClusRatiovsPt_WithCPV","Cluster #it{p}_{T} over track #it{p}_{T} vs. cluster #it{p}_{T} with CPV applied", 120, 0., 60., 300, 0., 15.);
-	fPtTrackClusRatiovsPtWithCPV->Sumw2();
-	fOutput->Add(fPtTrackClusRatiovsPtWithCPV);
+	fEOverPvsPtWithCPV = new TH2F("hEOverPvsPt_WithCPV","Cluster #it{E} over track #it{p} vs. cluster #it{p}_{T} AFTER CPV", 120, 0., 60., 300, 0., 15.);
+	fEOverPvsPtWithCPV->Sumw2();
+	fOutput->Add(fEOverPvsPtWithCPV);
       }
       break;
     }
@@ -1282,7 +1284,7 @@ void AliAnalysisTaskEMCALPhotonIsolation::UserCreateOutputObjects(){
     fPtTracksVSpTNC_MC->Sumw2();
     fOutput->Add(fPtTracksVSpTNC_MC);
 
-    if(fWho != 2){
+    if(fWho != 2 && fQA){
       fpi0VSclusterVSIsolation = new TH3F ("hpi0VSclusterVSisolation","Energy pi0 vs cluster Energy vs Isolation",95,5.,100.,95,5.,100.,400,0.,100.);
       fpi0VSclusterVSIsolation->SetXTitle("particle (#pi^{0} or #eta) E");
       fpi0VSclusterVSIsolation->SetYTitle("cluster E");
@@ -1940,7 +1942,8 @@ Bool_t AliAnalysisTaskEMCALPhotonIsolation::ClustTrackMatching(AliVCluster *clus
       fPtvsTrackPtvsDeta->Fill(vecClust.Pt(), mt->Pt(), deta);
       fPtvsTrackPtvsDphi->Fill(vecClust.Pt(), mt->Pt(), dphi);
 
-      fPtTrackClusRatiovsPt->Fill(vecClust.Pt(), (mt->Pt()/vecClust.Pt()));
+      fEOverPvsPt->Fill(vecClust.Pt(), clust->GetNonLinCorrEnergy()/mt->P());
+
     }
 
     distCT = TMath::Sqrt(deta*deta+dphi*dphi);
@@ -1968,6 +1971,7 @@ Bool_t AliAnalysisTaskEMCALPhotonIsolation::ClustTrackMatching(AliVCluster *clus
       }
     }
 
+    // Spatial match (and E/p cut if tight values set by the user)
     if(TMath::Abs(dphi) < deltaPhi && TMath::Abs(deta) < deltaEta){
       if(fQA && candidate && fWho != 2){
 	fDeltaETAClusTrackMatch->Fill(deta);
@@ -1975,14 +1979,12 @@ Bool_t AliAnalysisTaskEMCALPhotonIsolation::ClustTrackMatching(AliVCluster *clus
       }
 
       if(candidate && fWho == 2)
-	fPtTrackClusRatiovsPtWithCPV->Fill(vecClust.Pt(), vecClust.Pt()/mt->Pt());
+	fEOverPvsPtWithCPV->Fill(vecClust.Pt(), clust->GetNonLinCorrEnergy()/mt->P());
 
-      matched = kTRUE;
+      // E/p cut (extremely loose by default, 0-2000)
+      if ( (clust->GetNonLinCorrEnergy()/mt->P() >= fEOverPMin) && (clust->GetNonLinCorrEnergy()/mt->P() < fEOverPMax) )
+	matched = kTRUE;
     }
-
-    // E/p cut
-    if ( (clust->GetNonLinCorrEnergy()/mt->P()) > fEOverPMax || (clust->GetNonLinCorrEnergy()/mt->P()) < fEOverPMin )
-      matched = kFALSE;
   }
 
   if(fWho != 2)
@@ -3671,8 +3673,8 @@ void AliAnalysisTaskEMCALPhotonIsolation::LookforParticle(Int_t clusterlabel, Do
             // printf(" of a pi0 or a eta mesons");
           clusterFromPromptPhoton=5;
 
-          Int_t idxdaug1 = momP2Check->GetFirstDaughter();
-          Int_t idxdaug2 = momP2Check->GetLastDaughter();
+          Int_t idxdaug1 = momP2Check->GetDaughterFirst();
+          Int_t idxdaug2 = momP2Check->GetDaughterLast();
 
           if(idxdaug1 == clusterlabel){ // Cluster associated with the 1st daughter? Then look if also the 2nd daughter contributes to the cluster energy
             if(idxdaug2<npart){         // 2nd daughter within List of Particles
@@ -3696,7 +3698,7 @@ void AliAnalysisTaskEMCALPhotonIsolation::LookforParticle(Int_t clusterlabel, Do
             else
               clusterFromPromptPhoton=7; // Contribution from one daughter
           }
-	  if(fWho != 2){
+	  if(fWho != 2 && fQA){
 	    fpi0VSclusterVSIsolation->Fill(momP2Check->E()*TMath::Sin(momP2Check->Theta()), energyCLS, isolation);
 	    fpi0VSclusterVSM02->Fill(momP2Check->E()*TMath::Sin(momP2Check->Theta()), energyCLS,ss);
 	    fpi0VSM02VSIsolation->Fill(momP2Check->E()*TMath::Sin(momP2Check->Theta()), ss, isolation);
@@ -3726,8 +3728,8 @@ void AliAnalysisTaskEMCALPhotonIsolation::LookforParticle(Int_t clusterlabel, Do
         clusterFromPromptPhoton=5; // Cluster created by a photon but not a prompt one
       }
 
-      Int_t firstidx=momP2Check->GetFirstDaughter();
-      Int_t lastidx=momP2Check->GetLastDaughter();
+      Int_t firstidx=momP2Check->GetDaughterFirst();
+      Int_t lastidx=momP2Check->GetDaughterLast();
 
       if(clusterFromPromptPhoton==1){
         if( firstidx == clusterlabel ){ // Cluster associated with the 1st electron? Then look if also the 2nd electron contributes to the cluster energy
@@ -3762,8 +3764,8 @@ void AliAnalysisTaskEMCALPhotonIsolation::LookforParticle(Int_t clusterlabel, Do
         AliAODMCParticle *grandma=static_cast<AliAODMCParticle*>(fAODMCParticles->At(idxgrandma));
 
         if( grandma->GetPdgCode() == 111 || momP2Check->GetPdgCode() == 221 ){ // Add also omega mesons, Lambda barion, neutral Kaons?
-          Int_t idxaunt1 = grandma->GetFirstDaughter();
-          Int_t idxaunt2 = grandma->GetLastDaughter();
+          Int_t idxaunt1 = grandma->GetDaughterFirst();
+          Int_t idxaunt2 = grandma->GetDaughterLast();
 
           if( idxaunt1 ==  mom2checkidx ){ // The 1st daughter of the pi0/eta is the mother of the electron that produced the cluster
                                            // Check if the 2nd pi0/eta daughter contributes to the cluster energy
@@ -3787,9 +3789,11 @@ void AliAnalysisTaskEMCALPhotonIsolation::LookforParticle(Int_t clusterlabel, Do
             else
               clusterFromPromptPhoton=7; // Contribution from one daughter
           }
+	  if(fQA){
 	    fpi0VSclusterVSIsolation->Fill(grandma->E()*TMath::Sin(grandma->Theta()), energyCLS, isolation);
 	    fpi0VSclusterVSM02->Fill(grandma->E()*TMath::Sin(momP2Check->Theta()), energyCLS, ss);
 	    fpi0VSM02VSIsolation->Fill(grandma->E()*TMath::Sin(grandma->Theta()), ss, isolation);
+	  }
         }
         else
           clusterFromPromptPhoton=8; // Undefined
@@ -4980,15 +4984,15 @@ void AliAnalysisTaskEMCALPhotonIsolation::AnalyzeMC(){
     else
       mompdg = pdg;
 
+    if(fWho==2){
     if(mompdg != 22) continue;              // Discard particles whose mother is not a photon
 
-    if(fWho==2){
     fGenPromptPhotonSel->Fill(4.5);
     }
 
     // if(fPythiaHeader->ProcessType() != 201 && fPythiaHeader->ProcessType() != 202) continue; // Discard particles which do not come from prompt photon processes
     // OR
-    if(fmcHeader->GetEventType() != 14 && fmcHeader->GetEventType() != 29) continue; // Discard particles which do not come from prompt photon processes
+    if(fmcHeader->GetEventType() != 14 && fmcHeader->GetEventType() != 29 && fWho == 2) continue; // Discard particles which do not come from prompt photon processes
 
     if(fWho==2){
     fGenPromptPhotonSel->Fill(5.5);
@@ -5041,7 +5045,7 @@ void AliAnalysisTaskEMCALPhotonIsolation::AnalyzeMC(){
     photonlabel = iTr;
     eT = mcpart->E()*(TMath::Sin(mcpart->Theta())); // Transform to transverse Energy
 
-    if(fWho == 1)
+    if(fWho == 1 && fQA)
       fphietaPhotons->Fill(eta,phi,eT);
 
     //Taking out this part of code since it introduces a bias in the efficiency

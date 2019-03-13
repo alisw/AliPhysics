@@ -23,7 +23,6 @@
 
 #include "TGrid.h"
 #include "TGridCollection.h"
-#include "TAlienCollection.h"
 #include "TGridResult.h"
 #include "AliLog.h"
 
@@ -435,7 +434,7 @@ void CreateChain(const Int_t mode, TChain * chain)
     TGrid::Connect("alien://") ;
 
     //Feed Grid with collection file
-    TGridCollection * collection = (TGridCollection*) TAlienCollection::Open(kXML);
+    TGridCollection * collection = gGrid->OpenCollection(kXML);
     if (! collection) {
       printf("%s not found\n", kXML) ; 
       return  ; 

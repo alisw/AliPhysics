@@ -2,24 +2,20 @@
 /// \file AliAnalysisTaskFemtoNu.cxx
 ///
 
-#include "TROOT.h"
-#include "TChain.h"
-#include "TH1.h"
-#include "TCanvas.h"
-#include "TSystem.h"
-#include "TFile.h"
-#include "TInterpreter.h"
-
-#include "AliESDEvent.h"
+#include "AliAnalysisTaskFemtoNu.h"
 
 #include "AliFemtoAnalysis.h"
-#include "AliAnalysisTaskFemtoNu.h"
-#include "AliVHeader.h"
-#include "AliGenEventHeader.h"
-#include "AliGenHijingEventHeader.h"
-#include "AliGenCocktailEventHeader.h"
-
 #include "AliFemtoEventReaderAODMultSelection.h"
+
+#include <TROOT.h>
+#include <TChain.h>
+#include <TH1.h>
+#include <TCanvas.h>
+#include <TSystem.h>
+#include <TFile.h>
+#include <TInterpreter.h>
+
+#include <iostream>
 
 
 const unsigned AliAnalysisTaskFemtoNu::RESULT_STORAGE_OUTPUT_SLOT = 1;
@@ -154,16 +150,163 @@ AliAnalysisTaskFemtoNu::Exec(Option_t *ex)
   // auto *mc_input_handler = mgr->GetMCtruthEventHandler();
 
   // Task making a femtoscopic analysis.
-  if (fOfflineTriggerMask) {
-    Bool_t is_selected = input_handler->IsEventSelected() & fOfflineTriggerMask;
-    if (!is_selected) {
-      if (fVerbose) {
-        cout << "AliAnalysisTaskFemto: is not selected "
-             << input_handler->IsEventSelected() << " != " << fOfflineTriggerMask << "\n";
-      }
-      return;
+  if (fOfflineTriggerMask &&
+      (input_handler->IsEventSelected() & fOfflineTriggerMask) == 0) {
+    if (fVerbose) {
+      std::cout << "AliAnalysisTaskFemto: is not selected "
+                << input_handler->IsEventSelected() << " != "
+                << fOfflineTriggerMask << "\n";
     }
+    return;
   }
+
+  static_cast<AliFemtoEventReaderAODChain*>(fReader)->SetAODSource(fAOD);
 
   fManager->ProcessEvent();
 }
+
+
+AliAnalysisTaskFemtoNu::MacroCfg::MacroCfg()
+  : TNamed("cfg", "MacroCfg")
+  , macro("%%/ConfigNuFemtoAnalysisR6.C")
+  , auto_directory("$ALICE_PHYSICS/PWGCF/FEMTOSCOPY/macros/Train/PionPionFemto")
+  , output_filename(AliAnalysisManager::GetAnalysisManager()->GetCommonFileName())
+  , output_container("PWG2FEMTO")
+  , subwagon_array("")
+  , subwagon_type("centrality")
+{}
+
+
+#include <regex>
+
+
+AliAnalysisTask*
+AliAnalysisTaskFemtoNu::BuildForMacro(TString container,
+                                      TString configuration,
+                                      TString params,
+                                      TString subwagon_suffix)
+{
+  std::cout << "\n\n============== AliAnalysisTaskFemtoNu::BuildForMacro (ROOT6 Only) ===============\n";
+
+  // Get the global analysis manager
+  AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
+  if (!mgr) {
+    std::cerr << "E-AliAnalysisTaskFemtoNu::BuildForMacro:  "
+              << "Could not get the global AliAnalysisManager.\n";
+    return nullptr;
+  }
+
+  MacroCfg cfg;
+
+  bool verbose = kFALSE;
+
+  TObjArray* lines = configuration.Tokenize("\n;");
+
+  TIter next_line(lines);
+  TObject *line_obj = nullptr;
+
+  gDirectory->Add(&cfg);
+
+  while ((line_obj = next_line())) {
+    TObjString *s = static_cast<TObjString*>(line_obj);
+    TString cmd = s->String().Strip(TString::kBoth, ' ');
+    if (cmd.IsWhitespace()) {
+      continue;
+    }
+
+    cmd.ReplaceAll("'", '"');
+
+    std::cmatch cm;
+    {
+      std::regex re(" *subwagon_type *= *\"([^\"]+)\"");
+      if (std::regex_match(cmd.Data(), cm, re)) {
+        cfg.subwagon_type = cm[1].str().c_str();
+        continue;
+      }
+    }
+
+    {
+      std::regex re(" *subwagon_array *= *\"([^\"]+)\"");
+      if (std::regex_match(cmd.Data(), cm, re)) {
+        cfg.subwagon_array = cm[1].str().c_str();
+        std::cout << "ARRAY: " << cfg.subwagon_array << "\n";
+        continue;
+      }
+    }
+
+    // cmd = "static_cast<AliAnalysisTaskFemtoNu::MacroCfg*>(cfg)->" + cmd + ";";
+    // std::cout << "running `" << cmd  << "`\n";
+    // gROOT->ProcessLine(cmd);
+  }
+
+  gDirectory->Remove(&cfg);
+
+  // Replace %% with this directory for convenience
+  cfg.macro.ReplaceAll("%%", cfg.auto_directory);
+
+  // Dealing with subwagons
+  if (!subwagon_suffix.IsWhitespace()) {
+    Int_t index = subwagon_suffix.Atoi();
+    TObjArray *values = cfg.subwagon_array.Tokenize(",");
+    TIter next_value(values);
+    if (values->GetEntries() < index) {
+      std::cerr << "Could not use subwagon-index " << index << " in subwagon_array of only " << values->GetEntries() << " entries\n";
+      return nullptr;
+    }
+    for (int i=0; i<index; ++i) {
+      next_value();
+    }
+    TString ss = ((TObjString*)next_value())->String();
+    params += ";" + cfg.subwagon_type + " = " + ss;
+
+    container += "_" + subwagon_suffix;
+  }
+
+  std::cout << "[AddTaskPionPion]\n"
+               "   container: " << container << "\n"
+               "   output: '" << cfg.output_filename << "'\n"
+               "   macro: '" << cfg.macro << "'\n"
+               "   params: '" << params << "'\n";
+
+  // The analysis config macro for PionPionFemto accepts a single string
+  // argument, which it interprets.
+  // This line escapes some escapable characters (backslash, newline, tab)
+  // and wraps that string in double quotes, ensuring that the interpreter
+  // reads a string when passing to the macro.
+  const TString analysis_params = '"' + params.ReplaceAll("\\", "\\\\")
+                                              .ReplaceAll("\n", "\\n")
+                                              .ReplaceAll("\"", "\\\"")
+                                              .ReplaceAll("\t", "\\t") + '"';
+
+  AliAnalysisTaskFemto *femtotask = new AliAnalysisTaskFemtoNu(
+    container,
+    cfg.macro,
+    analysis_params,
+    verbose
+  );
+
+  mgr->AddTask(femtotask);
+
+  const TString outputfile = cfg.GetFilename();
+  auto *out_container = mgr->CreateContainer(container,
+                                             AliFemtoResultStorage::Class(),
+                                             AliAnalysisManager::kOutputContainer,
+                                             outputfile);
+
+  mgr->ConnectInput(femtotask, 0, mgr->GetCommonInputContainer());
+  mgr->ConnectOutput(femtotask, AliAnalysisTaskFemtoNu::RESULT_STORAGE_OUTPUT_SLOT, out_container);
+
+  // quiet a warning
+  out_container = mgr->CreateContainer(container + "_list",
+                                       TList::Class(),
+                                       AliAnalysisManager::kOutputContainer,
+                                       outputfile);
+  mgr->ConnectOutput(femtotask, 0, out_container);
+
+  std::cout << "============== AddNuTaskPionPion : Done ===============\n\n";
+  return femtotask;
+}
+
+
+AliAnalysisTaskFemtoNu::MacroCfg::~MacroCfg()
+{}

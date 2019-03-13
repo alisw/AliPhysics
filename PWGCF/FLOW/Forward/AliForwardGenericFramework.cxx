@@ -62,6 +62,9 @@ void AliForwardGenericFramework::CumulantsAccumulate(TH2D& dNdetadphi, TList* ou
       if (!fSettings.use_primaries_fwd && !fSettings.esd){
         if (dNdetadphi.GetBinContent(etaBin, 0) == 0 && detType == "forward") break;
       }
+
+
+
       if (fSettings.doNUA){
         // holes in the FMD
         if ((fSettings.nua_mode & fSettings.kFill) && detType == "forward"){
@@ -96,6 +99,16 @@ void AliForwardGenericFramework::CumulantsAccumulate(TH2D& dNdetadphi, TList* ou
 
     if (weight == 0) continue; // || weight > 10.0
     for (Int_t n = 0; n <= 5; n++) {
+      if (doRefFlow && detType == "forward"){
+        if (!fSettings.use_primaries_fwd && n>=2 && n<=4) {
+          Double_t seceta = fSettings.seccorr->GetXaxis()->FindBin(eta);
+          Double_t secvtz = fSettings.seccorr->GetYaxis()->FindBin(zvertex);
+          Double_t secn = fSettings.seccorr->GetZaxis()->FindBin(n-2);
+          weight = weight*fSettings.seccorr->GetBinContent(seceta,secvtz,secn);
+        }
+      }
+
+
       for (Int_t p = 1; p <= 4; p++) {
         Double_t realPart = TMath::Power(weight, p)*TMath::Cos(n*phi);
         Double_t imPart =   TMath::Power(weight, p)*TMath::Sin(n*phi);
@@ -285,11 +298,6 @@ TComplex AliForwardGenericFramework::TwoDiff(int n1, int n2, int refetabin, int 
   TComplex formula =0;
 
   formula = p(n1,1, diffetabin)*Q(n2,1, refetabin) - q(n1+n2,1, diffetabin);
-  if (n1 == 0 && formula.Re()<0){
-    std::cout << "p(0,1, diffetabin) "<<p(0,1, diffetabin) << std::endl;
-    std::cout << "Q(0,1, refetabin) " << Q(0,1, refetabin) << std::endl;
-    std::cout << "q(0,1, diffetabin) " <<q(0,1, diffetabin) << std::endl;
-  }
   return formula;
 }
 

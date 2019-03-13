@@ -34,7 +34,7 @@ class AliHFTreeHandlerDstartoKpipi : public AliHFTreeHandler
     virtual ~AliHFTreeHandlerDstartoKpipi();
 
     virtual TTree* BuildTree(TString name="tree", TString title="tree");
-    virtual bool SetVariables(AliAODRecoDecayHF* cand, float bfield, int masshypo=0, AliPIDResponse *pidrespo=0x0);
+    virtual bool SetVariables(int runnumber, unsigned int eventID, AliAODRecoDecayHF* cand, float bfield, int masshypo=0, AliPIDResponse *pidrespo=0x0);
     virtual void FillTree(); //to be called for each event, not each candidate!
 
   private:
@@ -43,6 +43,7 @@ class AliHFTreeHandlerDstartoKpipi : public AliHFTreeHandler
     vector<float> fCosThetaStar; ///vector of candidate cos theta star
     vector<float> fImpParProd; ///vector of D0 product of impact parameter
     vector<float> fNormd0MeasMinusExp; ///vector of candidate topomatic variable
+    vector<float> fAngleD0dkpPisoft; ///vector of angle between D0 decay plane and soft pion
 
     vector<float> fInvMass_D0; ///vector of candidate invariant mass D0
     vector<float> fPt_D0; ///vector of D0 pt
@@ -51,7 +52,7 @@ class AliHFTreeHandlerDstartoKpipi : public AliHFTreeHandler
     vector<float> fPhi_D0; ///vector of D0 azimuthal angle
 
     /// \cond CLASSIMP
-    ClassDef(AliHFTreeHandlerDstartoKpipi,2); ///
+    ClassDef(AliHFTreeHandlerDstartoKpipi,3); ///
     /// \endcond
 };
 #endif

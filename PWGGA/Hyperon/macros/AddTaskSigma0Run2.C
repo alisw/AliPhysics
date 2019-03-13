@@ -1,4 +1,4 @@
-AliAnalysisTaskSE *AddTaskSigma0Run2(bool isMC = false, bool isHeavyIon = false,
+AliAnalysisTaskSE *AddTaskSigma0Run2(bool isRun1 = false, bool isMC = false, bool isHeavyIon = false,
                                      TString trigger = "kINT7",
                                      const char *cutVariation = "0") {
   TString suffix;
@@ -18,6 +18,11 @@ AliAnalysisTaskSE *AddTaskSigma0Run2(bool isMC = false, bool isHeavyIon = false,
   TString cutnumberPhoton;
   cutnumberPhoton = "00200008400000002280920000";
   TString cutnumberEvent = "00000000";
+  if (suffix == "0") {
+    // Borissov cuts
+    cutnumberPhoton = "00200008400020002282020000";
+    cutnumberEvent = "00000003";
+  }
   TString periodNameV0Reader = "";
   Bool_t enableV0findingEffi = kFALSE;
   Bool_t fillHistos = kTRUE;
@@ -88,6 +93,24 @@ AliAnalysisTaskSE *AddTaskSigma0Run2(bool isMC = false, bool isHeavyIon = false,
   v0Cuts->SetPID(3122);
   v0Cuts->SetPosPID(AliPID::kProton, 2212);
   v0Cuts->SetNegPID(AliPID::kPion, -211);
+  if (suffix == "0") {
+    // Run1 cuts
+    v0Cuts->SetPileUpRejectionMode(AliSigma0V0Cuts::None);
+    v0Cuts->SetV0OnFlyStatus(true);
+    v0Cuts->SetDaughterDCAtoPV(0.06);
+    v0Cuts->SetDaughterDCAMax(1.5);
+    v0Cuts->SetDaughterDCAtoPV(0.06);
+    v0Cuts->SetV0CosPAMin(0.993);
+    v0Cuts->SetV0RadiusMax(220.f);
+    v0Cuts->SetV0RadiusMin(0.5);
+    v0Cuts->SetArmenterosCut(0.01, 0.17, 0.2, 0.9);
+    v0Cuts->SetPIDnSigma(100.f);
+    v0Cuts->SetV0PtMin(0.);
+    v0Cuts->SetK0Rejection(0., 0.);
+    v0Cuts->SetLambdaSelection(1.110, 1.120);
+    v0Cuts->SetTPCclusterMin(0.f);
+    v0Cuts->SetEtaMax(0.9);
+  }
 
   // TEMPORARY FIX TO GET MORE YIELD IN MC
   v0Cuts->SetV0OnFlyStatus(false);
@@ -97,7 +120,24 @@ AliAnalysisTaskSE *AddTaskSigma0Run2(bool isMC = false, bool isHeavyIon = false,
   antiv0Cuts->SetPID(-3122);
   antiv0Cuts->SetPosPID(AliPID::kPion, 211);
   antiv0Cuts->SetNegPID(AliPID::kProton, -2212);
-
+  if (suffix == "0") {
+    // Run1 cuts
+    antiv0Cuts->SetPileUpRejectionMode(AliSigma0V0Cuts::None);
+    antiv0Cuts->SetV0OnFlyStatus(true);
+    antiv0Cuts->SetDaughterDCAtoPV(0.06);
+    antiv0Cuts->SetDaughterDCAMax(1.5);
+    antiv0Cuts->SetDaughterDCAtoPV(0.06);
+    antiv0Cuts->SetV0CosPAMin(0.993);
+    antiv0Cuts->SetV0RadiusMax(220.f);
+    antiv0Cuts->SetV0RadiusMin(0.5);
+    antiv0Cuts->SetArmenterosCut(0.01, 0.17, 0.2, 0.9);
+    antiv0Cuts->SetPIDnSigma(100.f);
+    antiv0Cuts->SetV0PtMin(0.);
+    antiv0Cuts->SetK0Rejection(0., 0.);
+    antiv0Cuts->SetLambdaSelection(1.110, 1.120);
+    antiv0Cuts->SetTPCclusterMin(0.f);
+    antiv0Cuts->SetEtaMax(0.9);
+  }
   // TEMPORARY FIX TO GET MORE YIELD IN MC
   antiv0Cuts->SetV0OnFlyStatus(false);
 
@@ -118,6 +158,9 @@ AliAnalysisTaskSE *AddTaskSigma0Run2(bool isMC = false, bool isHeavyIon = false,
   sigmaCuts->SetPDG(3212, 3122, 22);
   sigmaCuts->SetLambdaCuts(v0Cuts);
   sigmaCuts->SetV0ReaderName(V0ReaderName.Data());
+  if (suffix == "0"){
+  sigmaCuts->SetArmenterosCut(0,0.12,-1,-0.6);
+  }
   if (suffix != "0" && suffix != "999") {
     sigmaCuts->SetLightweight(true);
     sigmaCuts->SetIsSpectrum(false);
@@ -129,6 +172,9 @@ AliAnalysisTaskSE *AddTaskSigma0Run2(bool isMC = false, bool isHeavyIon = false,
   antiSigmaCuts->SetPDG(-3212, -3122, 22);
   antiSigmaCuts->SetLambdaCuts(antiv0Cuts);
   antiSigmaCuts->SetV0ReaderName(V0ReaderName.Data());
+  if (suffix == "0"){
+  antiSigmaCuts->SetArmenterosCut(0,0.12,-1,-0.6);
+  }
   if (suffix != "0" && suffix != "999") {
     antiSigmaCuts->SetLightweight(true);
     antiSigmaCuts->SetIsSpectrum(false);
@@ -140,6 +186,9 @@ AliAnalysisTaskSE *AddTaskSigma0Run2(bool isMC = false, bool isHeavyIon = false,
   } else if (trigger == "kHighMultV0") {
     sigmaCuts->SetMultiplicityMode(AliVEvent::kHighMultV0);
     antiSigmaCuts->SetMultiplicityMode(AliVEvent::kHighMultV0);
+  } else if (trigger == "AliVEvent::kMB") {
+    sigmaCuts->SetMultiplicityMode(AliVEvent::kINT7);
+    antiSigmaCuts->SetMultiplicityMode(AliVEvent::kINT7);
   }
 
   AliAnalysisTaskSigma0Run2 *task =
@@ -158,8 +207,13 @@ AliAnalysisTaskSE *AddTaskSigma0Run2(bool isMC = false, bool isHeavyIon = false,
       task->SelectCollisionCandidates(AliVEvent::kHighMultV0);
       task->SetMultiplicityMode(AliVEvent::kHighMultV0);
     }
+  } else if (trigger == "AliVEvent::kMB") {
+    task->SetTrigger(AliVEvent::kMB);
+    task->SelectCollisionCandidates(AliVEvent::kMB);
+    task->SetMultiplicityMode(AliVEvent::kINT7);
   }
   task->SetV0ReaderName(V0ReaderName.Data());
+  task->SetIsRun1(isRun1);
   task->SetIsHeavyIon(isHeavyIon);
   task->SetIsMC(isMC);
   task->SetV0Cuts(v0Cuts);

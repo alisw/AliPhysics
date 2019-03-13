@@ -1,8 +1,29 @@
-//
-// Jet tagger analysis task.
-//
-// Author: M.Verweij
-
+/************************************************************************************
+ * Copyright (C) 2013, Copyright Holders of the ALICE Collaboration                 *
+ * All rights reserved.                                                             *
+ *                                                                                  *
+ * Redistribution and use in source and binary forms, with or without               *
+ * modification, are permitted provided that the following conditions are met:      *
+ *     * Redistributions of source code must retain the above copyright             *
+ *       notice, this list of conditions and the following disclaimer.              *
+ *     * Redistributions in binary form must reproduce the above copyright          *
+ *       notice, this list of conditions and the following disclaimer in the        *
+ *       documentation and/or other materials provided with the distribution.       *
+ *     * Neither the name of the <organization> nor the                             *
+ *       names of its contributors may be used to endorse or promote products       *
+ *       derived from this software without specific prior written permission.      *
+ *                                                                                  *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND  *
+ * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED    *
+ * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE           *
+ * DISCLAIMED. IN NO EVENT SHALL ALICE COLLABORATION BE LIABLE FOR ANY              *
+ * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES       *
+ * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;     *
+ * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND      *
+ * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT       *
+ * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS    *
+ * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.                     *
+ ************************************************************************************/
 #include <TH1F.h>
 #include <TH2F.h>
 #include <TH3F.h>
@@ -17,7 +38,6 @@
 
 ClassImp(AliAnalysisTaskEmcalJetTagger);
 
-//________________________________________________________________________
 AliAnalysisTaskEmcalJetTagger::AliAnalysisTaskEmcalJetTagger() : 
   AliAnalysisTaskEmcalJet("AliAnalysisTaskEmcalJetTagger", kTRUE),
   fJetTaggingType(kTag),
@@ -30,6 +50,8 @@ AliAnalysisTaskEmcalJetTagger::AliAnalysisTaskEmcalJetTagger() :
   fMatchingDone(0),
   fTypeAcc(3),
   fMaxDist(0.3),
+  fExtraMarginAccBase(0.1),
+  fExtraMarginAccTag(0.1),
   fInit(kFALSE),
   fh3PtJet1VsDeltaEtaDeltaPhi(0),
   fh2PtJet1VsDeltaR(0),
@@ -41,8 +63,6 @@ AliAnalysisTaskEmcalJetTagger::AliAnalysisTaskEmcalJetTagger() :
   fh3PtJetDEtaDPhiConst(0),
   fh3PtJetAreaDRConst(0)
 {
-  // Default constructor.
-
   fh3PtJet1VsDeltaEtaDeltaPhi  = new TH3F*[fNcentBins];
   fh2PtJet1VsDeltaR            = new TH2F*[fNcentBins];
   fh2PtJet2VsFraction          = new TH2F*[fNcentBins];
@@ -64,7 +84,6 @@ AliAnalysisTaskEmcalJetTagger::AliAnalysisTaskEmcalJetTagger() :
   SetMakeGeneralHistograms(kTRUE);
 }
 
-//________________________________________________________________________
 AliAnalysisTaskEmcalJetTagger::AliAnalysisTaskEmcalJetTagger(const char *name) : 
   AliAnalysisTaskEmcalJet(name, kTRUE),  
   fJetTaggingType(kTag),
@@ -77,6 +96,8 @@ AliAnalysisTaskEmcalJetTagger::AliAnalysisTaskEmcalJetTagger(const char *name) :
   fMatchingDone(0),
   fTypeAcc(3),
   fMaxDist(0.3),
+  fExtraMarginAccBase(0.1),
+  fExtraMarginAccTag(0.1),
   fInit(kFALSE),
   fh3PtJet1VsDeltaEtaDeltaPhi(0),
   fh2PtJet1VsDeltaR(0),
@@ -88,8 +109,6 @@ AliAnalysisTaskEmcalJetTagger::AliAnalysisTaskEmcalJetTagger(const char *name) :
   fh3PtJetDEtaDPhiConst(0),
   fh3PtJetAreaDRConst(0)
 {
-  // Standard constructor.
-
   fh3PtJet1VsDeltaEtaDeltaPhi = new TH3F*[fNcentBins];
   fh2PtJet1VsDeltaR           = new TH2F*[fNcentBins];
   fh2PtJet2VsFraction         = new TH2F*[fNcentBins];
@@ -112,17 +131,12 @@ AliAnalysisTaskEmcalJetTagger::AliAnalysisTaskEmcalJetTagger(const char *name) :
   
 }
 
-//________________________________________________________________________
 AliAnalysisTaskEmcalJetTagger::~AliAnalysisTaskEmcalJetTagger()
 {
-  // Destructor.
 }
 
-//________________________________________________________________________
 void AliAnalysisTaskEmcalJetTagger::UserCreateOutputObjects()
 {
-  // Create user output.
-
   AliAnalysisTaskEmcalJet::UserCreateOutputObjects();
 
   Bool_t oldStatus = TH1::AddDirectoryStatus();
@@ -199,8 +213,8 @@ void AliAnalysisTaskEmcalJetTagger::UserCreateOutputObjects()
     for (Int_t i=0; i<fOutput->GetEntries(); ++i) {
       TH1 *h1 = dynamic_cast<TH1*>(fOutput->At(i));
       if (h1){
-	h1->Sumw2();
-	continue;
+	      h1->Sumw2();
+	      continue;
       }
       THnSparse *hn = dynamic_cast<THnSparse*>(fOutput->At(i));
       if(hn)hn->Sumw2();
@@ -211,51 +225,51 @@ void AliAnalysisTaskEmcalJetTagger::UserCreateOutputObjects()
 
   PostData(1, fOutput); // Post data for ALL output slots > 0 here.
 }
-//________________________________________________________________________
 
 void AliAnalysisTaskEmcalJetTagger::Init(){
    
-   if(fInit) return;
+  if(fInit) return;
    
-   AliJetContainer *cont1 = GetJetContainer(fContainerBase);
-   AliJetContainer *cont2 = GetJetContainer(fContainerTag);
-   if(!cont1 || !cont2) AliError("Missing jet container");
+  AliJetContainer *cont1 = GetJetContainer(fContainerBase);
+  AliJetContainer *cont2 = GetJetContainer(fContainerTag);
+  if(!cont1 || !cont2) AliError("Missing jet container");
    
-   // when full azimuth, don't do anything
-   Double_t phiMin1 = cont1->GetJetPhiMin();
-   Double_t phiMin2 = cont2->GetJetPhiMin();
-   Bool_t isZeroTwoPi1 = kFALSE;
-   //check only one side of phi, since the upper bound is not well defined
-   if(phiMin1 > -1.e-6 && phiMin1 < 1.e-6) isZeroTwoPi1 = kTRUE;
-   Bool_t isZeroTwoPi2 = kFALSE;
-   if(phiMin2 > -1.e-6 && phiMin2 < 1.e-6) isZeroTwoPi2 = kTRUE;
+  // when full azimuth, don't do anything
+  Double_t phiMin1 = cont1->GetJetPhiMin();
+  Double_t phiMin2 = cont2->GetJetPhiMin();
+  Bool_t isZeroTwoPi1 = kFALSE;
+  //check only one side of phi, since the upper bound is not well defined
+  if(phiMin1 > -1.e-6 && phiMin1 < 1.e-6) isZeroTwoPi1 = kTRUE;
+  Bool_t isZeroTwoPi2 = kFALSE;
+  if(phiMin2 > -1.e-6 && phiMin2 < 1.e-6) isZeroTwoPi2 = kTRUE;
    
-   if(fTypeAcc==1)
-      cont2->SetJetEtaLimits(cont2->GetJetEtaMin()-0.1,cont2->GetJetEtaMax()+0.1);
-   else if(fTypeAcc==2) {
-      cont2->SetJetEtaLimits(cont2->GetJetEtaMin()-0.1,cont2->GetJetEtaMax()+0.1);
-      if(!isZeroTwoPi2) cont2->SetJetPhiLimits(cont2->GetJetPhiMin()-0.1,cont2->GetJetPhiMax()+0.1);
-   } 
-   else if(fTypeAcc==3) {
-      cont1->SetJetEtaLimits(cont1->GetJetEtaMin()-0.1,cont1->GetJetEtaMax()+0.1);
-      if(!isZeroTwoPi1) cont1->SetJetPhiLimits(cont1->GetJetPhiMin()-0.1,cont1->GetJetPhiMax()+0.1);
-      cont2->SetJetEtaLimits(cont2->GetJetEtaMin()-0.1,cont2->GetJetEtaMax()+0.1);
-      if(!isZeroTwoPi2) cont2->SetJetPhiLimits(cont2->GetJetPhiMin()-0.1,cont2->GetJetPhiMax()+0.1);
-   }
-   fInit = kTRUE;
-   return;
+  switch(fTypeAcc) {
+  case 1:
+    cont2->SetJetEtaLimits(cont2->GetJetEtaMin()-fExtraMarginAccTag,cont2->GetJetEtaMax()+fExtraMarginAccTag);
+    break;
+  case 2:
+    cont2->SetJetEtaLimits(cont2->GetJetEtaMin()-fExtraMarginAccTag,cont2->GetJetEtaMax()+fExtraMarginAccTag);
+    if(!isZeroTwoPi2) cont2->SetJetPhiLimits(cont2->GetJetPhiMin()-fExtraMarginAccTag,cont2->GetJetPhiMax()+fExtraMarginAccTag);
+    break;
+  case 3:
+    cont1->SetJetEtaLimits(cont1->GetJetEtaMin()-fExtraMarginAccBase,cont1->GetJetEtaMax()+fExtraMarginAccBase);
+    if(!isZeroTwoPi1) cont1->SetJetPhiLimits(cont1->GetJetPhiMin()-fExtraMarginAccBase,cont1->GetJetPhiMax()+fExtraMarginAccBase);
+    cont2->SetJetEtaLimits(cont2->GetJetEtaMin()-fExtraMarginAccTag,cont2->GetJetEtaMax()+fExtraMarginAccTag);
+    if(!isZeroTwoPi2) cont2->SetJetPhiLimits(cont2->GetJetPhiMin()-fExtraMarginAccTag,cont2->GetJetPhiMax()+fExtraMarginAccTag);
+    break;
+  default:
+    break;
+  };
+
+  fInit = kTRUE;
+  return;
 }
-//________________________________________________________________________
 Bool_t AliAnalysisTaskEmcalJetTagger::Run()
 {
-  // Run analysis code here, if needed. It will be executed before FillHistograms().
-
   MatchJetsGeo(fContainerBase,fContainerTag,fDebug,fMaxDist,fTypeAcc);
-
   return kTRUE;
 }
 
-//________________________________________________________________________
 Bool_t AliAnalysisTaskEmcalJetTagger::FillHistograms()
 {
   // Fill histograms.
@@ -320,11 +334,7 @@ Bool_t AliAnalysisTaskEmcalJetTagger::FillHistograms()
   return kTRUE;
 }
 
-//________________________________________________________________________
 void AliAnalysisTaskEmcalJetTagger::ResetTagging(const Int_t c) {
-
-  //Reset tagging of container c
-
   for(int i = 0;i<GetNJets(c);i++){
     AliEmcalJet *jet = static_cast<AliEmcalJet*>(GetJetFromArray(i, c));
     if(!jet) continue;
@@ -337,19 +347,8 @@ void AliAnalysisTaskEmcalJetTagger::ResetTagging(const Int_t c) {
   }
 }
 
-//________________________________________________________________________
 void AliAnalysisTaskEmcalJetTagger::MatchJetsGeo(Int_t c1, Int_t c2,
 						 Int_t iDebug, Float_t maxDist, Int_t type, Bool_t bReset) {
-
-  //
-  // Match the full jets to the corresponding charged jets
-  // Translation of AliAnalysisHelperJetTasks::GetClosestJets to AliEmcalJet objects
-  // type: 
-  //         0 = use acceptance cuts of container  
-  //         1 = allow 0.1 one more for c2 in eta 
-  //         2 = allow 0.1 more in eta and phi for c2
-  //         3 = allow 0.1 in eta and phi for both containers
-
   if(c1<0) c1 = fContainerBase;
   if(c2<0) c2 = fContainerTag;
   Init();
@@ -474,19 +473,11 @@ void AliAnalysisTaskEmcalJetTagger::MatchJetsGeo(Int_t c1, Int_t c2,
   fMatchingDone = kTRUE;
 }
 
-//________________________________________________________________________
 Double_t AliAnalysisTaskEmcalJetTagger::GetDeltaPhi(const AliEmcalJet* jet1, const AliEmcalJet* jet2) {
-  //
-  // Calculate azimuthal angle between the axises of the jets
-  //
   return GetDeltaPhi(jet1->Phi(),jet2->Phi());
 }
 
-//________________________________________________________________________
 Double_t AliAnalysisTaskEmcalJetTagger::GetDeltaPhi(Double_t phi1,Double_t phi2) {
-  //
-  // Calculate azimuthal angle between the axises of the jets
-  //
   Double_t dPhi = phi1-phi2;
   if(dPhi <-0.5*TMath::Pi())  dPhi += TMath::TwoPi();
   if(dPhi > 1.5*TMath::Pi())  dPhi -= TMath::TwoPi();
@@ -494,20 +485,14 @@ Double_t AliAnalysisTaskEmcalJetTagger::GetDeltaPhi(Double_t phi1,Double_t phi2)
   return dPhi;
 }
 
-//________________________________________________________________________
 Bool_t AliAnalysisTaskEmcalJetTagger::RetrieveEventObjects() {
-  //
-  // retrieve event objects
-  //
   if (!AliAnalysisTaskEmcalJet::RetrieveEventObjects())
     return kFALSE;
 
   return kTRUE;
 }
 
-//_______________________________________________________________________
 void AliAnalysisTaskEmcalJetTagger::Terminate(Option_t *) 
 {
-  // Called once at the end of the analysis.
 }
 

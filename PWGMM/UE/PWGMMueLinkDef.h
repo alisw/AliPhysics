@@ -2,5 +2,5 @@
 
 //underlying event using transverse spherocity
 #pragma link C++ class AliAnalysisTaskUeSpherocity+;
-
+#pragma link C++ class AliAnalysisTaskUePid+;
 #endif

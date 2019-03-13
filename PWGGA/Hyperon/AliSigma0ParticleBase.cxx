@@ -24,7 +24,8 @@ ClassImp(AliSigma0ParticleBase)
       fDCAz(0.f),
       fDCAr(0.f),
       fUse(true),
-      fPhistar() {
+      fPhistar(),
+      fAveragePhistar(0.f) {
   fP[0] = -0.;
   fP[1] = -0.;
   fP[2] = -0.;
@@ -55,7 +56,8 @@ AliSigma0ParticleBase::AliSigma0ParticleBase(const AliESDtrack *track, int pdg,
       fDCAz(0.f),
       fDCAr(0.f),
       fUse(true),
-      fPhistar() {
+      fPhistar(),
+      fAveragePhistar(0.f) {
   double trackMom[3];
   track->GetPxPyPz(trackMom);
   fP[0] = trackMom[0];
@@ -79,6 +81,17 @@ AliSigma0ParticleBase::AliSigma0ParticleBase(const AliESDtrack *track, int pdg,
   for (int radius = 0; radius < 9; radius++) {
     fPhistar.push_back(ComputePhiStar(track, magneticField, TPCradii[radius]));
   }
+
+  float TPCradiiForAverage[33] = {
+      85.,  90.,  95.,  100., 105., 110., 115., 120., 125., 130., 135.,
+      140., 145., 150., 155., 160., 165., 170., 175., 180., 185., 190.,
+      195., 200., 205., 210., 215., 220., 225., 230., 235., 240., 245.};
+
+  for (int radius = 0; radius < 33; radius++) {
+    fAveragePhistar +=
+        ComputePhiStar(track, magneticField, TPCradiiForAverage[radius]);
+  }
+  fAveragePhistar /= (33.f + 1e-32);
 }
 
 //____________________________________________________________________________________________________
@@ -108,6 +121,7 @@ AliSigma0ParticleBase &AliSigma0ParticleBase::operator=(
   fUse = obj.GetIsUse();
 
   fPhistar = obj.GetPhiStar();
+  fAveragePhistar = obj.GetAveragePhiStar();
 
   return (*this);
 }
@@ -173,7 +187,7 @@ float AliSigma0ParticleBase::ComputePhiStar(const AliESDtrack *track,
                                             const float magneticField,
                                             const float radius) const {
   const float phi0 = track->Phi();  // angle at primary vertex
-  const float pt = track->Pt();
+  const float pt = track->GetTPCInnerParam()->Pt();
   const float charge = track->Charge();
 
   // To use the following equation:

@@ -27,7 +27,6 @@ class THnSparse;
 
 class AliEventPoolManager;
 
-#include "AliEventCuts.h"
 #include "AliYAMLConfiguration.h"
 #include "THistManager.h"
 #include "AliAnalysisTaskEmcalJet.h"
@@ -187,7 +186,6 @@ class AliAnalysisTaskEmcalJetHCorrelations : public AliAnalysisTaskEmcalJet {
 
   // EMCal framework functions
   virtual void UserExecOnce();
-  Bool_t IsEventSelected();
   Bool_t Run();
 
   // Utility functions
@@ -224,9 +222,6 @@ class AliAnalysisTaskEmcalJetHCorrelations : public AliAnalysisTaskEmcalJet {
   // Configuration
   PWG::Tools::AliYAMLConfiguration fYAMLConfig;   ///< YAML configuration file.
   bool fConfigurationInitialized;                 ///<  True if the task configuration has been successfully initialized.
-  // Event cuts
-  AliEventCuts fEventCuts;                        ///<  AliEventCuts to handle event selection.
-  bool fUseAliEventCuts;                          ///<  If true, use AliEventCuts.
   // Jet bias
   Double_t               fTrackBias;               ///< Jet track bias
   Double_t               fClusterBias;             ///< Jet cluster bias
@@ -285,7 +280,7 @@ class AliAnalysisTaskEmcalJetHCorrelations : public AliAnalysisTaskEmcalJet {
   AliAnalysisTaskEmcalJetHCorrelations(const AliAnalysisTaskEmcalJetHCorrelations&); // not implemented
   AliAnalysisTaskEmcalJetHCorrelations& operator=(const AliAnalysisTaskEmcalJetHCorrelations&); // not implemented
 
-  ClassDef(AliAnalysisTaskEmcalJetHCorrelations, 17);
+  ClassDef(AliAnalysisTaskEmcalJetHCorrelations, 18);
 };
 
 } /* namespace EMCALJetTasks */

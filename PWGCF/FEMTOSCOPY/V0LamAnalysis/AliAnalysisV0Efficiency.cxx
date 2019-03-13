@@ -631,8 +631,8 @@ void AliAnalysisV0Efficiency::ExtractOriginalParticles(const AliAODEvent *aEvent
 
 
 
-    const AliAODMCParticle *mcParticlePos = (AliAODMCParticle*)(mcP->At(tPart->GetDaughter(0))),
-                           *mcParticleNeg = (AliAODMCParticle*)(mcP->At(tPart->GetDaughter(1)));
+    const AliAODMCParticle *mcParticlePos = (AliAODMCParticle*)(mcP->At(tPart->GetDaughterLabel(0))),
+                           *mcParticleNeg = (AliAODMCParticle*)(mcP->At(tPart->GetDaughterLabel(1)));
 
     // The daughter info must exist for both
     if(mcParticlePos==NULL || mcParticleNeg==NULL) continue;
@@ -841,8 +841,8 @@ bool AliAnalysisV0Efficiency::V0PassBasicCuts(const AliAODv0* aV0, const AliAODV
 
 
   //Now look at daughter tracks
-  if(!(AliAODTrack*)aV0->GetDaughter(0))                 return false;
-  if(!(AliAODTrack*)aV0->GetDaughter(1))                 return false;
+  if(!(AliAODTrack*)aV0->GetDaughterLabel(0))                 return false;
+  if(!(AliAODTrack*)aV0->GetDaughterLabel(1))                 return false;
 
   // The V0 has passed the most basic track cuts.
   return true;
@@ -1063,8 +1063,8 @@ void AliAnalysisV0Efficiency::ExtractV0FinderParticles(const AliAODEvent *aEvent
 
     bool tIsInjected = false;
 
-    AliAODTrack* daughterTrackPos = (AliAODTrack*)tAODv0->GetDaughter(0);
-    AliAODTrack* daughterTrackNeg = (AliAODTrack*)tAODv0->GetDaughter(1);
+    AliAODTrack* daughterTrackPos = (AliAODTrack*)tAODv0->GetDaughterLabel(0);
+    AliAODTrack* daughterTrackNeg = (AliAODTrack*)tAODv0->GetDaughterLabel(1);
 
     daughterTrackPos->SetAODEvent(aEvent);
     daughterTrackNeg->SetAODEvent(aEvent);

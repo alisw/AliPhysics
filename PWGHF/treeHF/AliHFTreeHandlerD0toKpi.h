@@ -50,7 +50,7 @@ class AliHFTreeHandlerD0toKpi : public AliHFTreeHandler
     virtual ~AliHFTreeHandlerD0toKpi();
 
     virtual TTree* BuildTree(TString name="tree", TString title="tree");
-    virtual bool SetVariables(AliAODRecoDecayHF* cand, float bfiled, int masshypo=0, AliPIDResponse *pidrespo=0x0);
+    virtual bool SetVariables(int runnumber, unsigned int eventID, AliAODRecoDecayHF* cand, float bfiled, int masshypo=0, AliPIDResponse *pidrespo=0x0);
     virtual void FillTree(); //to be called for each event, not each candidate!
     
     void SetIsDzeroDzeroBar(int isSel, int isSelTopo, int isSelPID, int isSelFilt, int isSelTopoFilt, int isSelPIDFilt);
@@ -61,9 +61,11 @@ class AliHFTreeHandlerD0toKpi : public AliHFTreeHandler
     vector<float> fCosThetaStar; /// vector of candidate costhetastar
     vector<float> fImpParProd; /// vector of daughter impact-parameter product
     vector<float> fNormd0MeasMinusExp; ///vector of candidate topomatic variable
+    vector<float> fImpParErrProng[knMaxProngs]; ///vector of error on prongs rphi impact param [cm]
+    vector<float> fNormDecayLength; ///vector of candidate normalised decay length
 
     /// \cond CLASSIMP
-    ClassDef(AliHFTreeHandlerD0toKpi,1); /// 
+    ClassDef(AliHFTreeHandlerD0toKpi,2); /// 
     /// \endcond
 };
 #endif

@@ -253,7 +253,6 @@ private:
     TGraph * fGeant3FlukaAntiLambda;//!
     TGraph * fGeant3FlukaKMinus;//!
     //! \brief cCuts
-    AliEmcalList *fSetup;//
     AliEmcalList *fOutputHist;//
     TCanvas *cCuts; //
     //! \brief fMCArray
@@ -347,7 +346,7 @@ private:
 
 
 
-    ClassDef(AliAnalysisTaskHFJetIPQA, 30)
+    ClassDef(AliAnalysisTaskHFJetIPQA, 31)
 };
 
 #endif

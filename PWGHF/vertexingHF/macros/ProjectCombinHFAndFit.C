@@ -60,7 +60,7 @@ Bool_t useEMwithLS=kTRUE;
 Int_t typeb=2;
 Double_t nsigmaBinCounting=4.;      // defines the mass interval over which the signal is bin counted
 Int_t optBkgBinCount=1;
-Double_t massD;
+Double_t massD=-1.;     // use negative value to use PDG mass
 
 Int_t smoothLS=0;
 
@@ -406,8 +406,10 @@ void ProjectCombinHFAndFit(){
   else if(fileNameMC.Contains("_G4")) suffix.Append("_Geant4MC");
   if(smoothLS!=0) suffix.Append(Form("_smoothLS%d",smoothLS));
 
-  if(meson=="Dplus") massD=TDatabasePDG::Instance()->GetParticle(411)->Mass();
-  else if(meson=="Dzero") massD=TDatabasePDG::Instance()->GetParticle(421)->Mass();
+  if(massD<0){
+    if(meson=="Dplus") massD=TDatabasePDG::Instance()->GetParticle(411)->Mass();
+    else if(meson=="Dzero") massD=TDatabasePDG::Instance()->GetParticle(421)->Mass();
+  }
 
   Int_t nBinsWithFixSig=0;
   Int_t nBinsWithFixMean=0;
@@ -424,11 +426,28 @@ void ProjectCombinHFAndFit(){
     }
   }
 
+  if(gSystem->Exec(Form("ls -l %s > /dev/null 2>&1",fileName.Data())) !=0){
+    printf("File %s with raw data results does not exist -> exiting\n",fileName.Data());
+    return;
+  }
   TFile* fil=new TFile(fileName.Data());
+  if(!fil){
+    printf("File %s with raw data not opened -> exiting\n",fileName.Data());
+    return;
+  }
   TDirectoryFile* df=(TDirectoryFile*)fil->Get(dirName.Data());
-  
+  if(!df){
+    printf("TDirectoryFile %s not found in TFile\n",dirName.Data());
+    fil->ls();
+    return;
+  }
+
   
   AliNormalizationCounter *nC=(AliNormalizationCounter*)df->Get("NormalizationCounter");
+  if(!nC){
+    printf("AliNormalizationCounter object missing -> exiting\n");
+    return;
+  }
   TH1F* hnEv=new TH1F("hEvForNorm","events for normalization",1,0,1);
   printf("Number of Ev. for norm=%d\n",(Int_t)nC->GetNEventsForNorm());
   hnEv->SetBinContent(1,nC->GetNEventsForNorm());
@@ -453,9 +472,20 @@ void ProjectCombinHFAndFit(){
   TH3F* h3drefl=0x0;
   TH3F* h3dmcsig=0x0;
   TH1F* hSigmaMC=0x0;
+  
+  if(gSystem->Exec(Form("ls -l %s > /dev/null 2>&1",fileNameMC.Data())) !=0){
+    printf("File %s with MC results does not exist -> exiting\n",fileNameMC.Data());
+    return;
+  }
   TFile* filMC=new TFile(fileNameMC.Data());
   if(filMC && filMC->IsOpen()){
     TDirectoryFile* dfMC=(TDirectoryFile*)filMC->Get(dirNameMC.Data());
+    if(!dfMC){
+      printf("TDirectoryFile %s not found in TFile for MC\n",dirNameMC.Data());
+      filMC->ls();
+      return;
+    }
+
     TList* lMC=(TList*)dfMC->Get(lstNameMC.Data());
     hSigmaMC=FitMCInvMassSpectra(lMC);
     if(nBinsWithFixSig>0 && !hSigmaMC){

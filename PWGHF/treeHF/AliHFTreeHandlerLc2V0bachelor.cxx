@@ -23,34 +23,50 @@ ClassImp(AliHFTreeHandlerLc2V0bachelor);
 AliHFTreeHandlerLc2V0bachelor::AliHFTreeHandlerLc2V0bachelor():
   AliHFTreeHandler(),
   fImpParProng(),
+  fImpParK0s(),
+  fDecayLengthK0s(),
   fInvMassK0s(),
+  fDCAK0s(),
+  fPtK0s(),
+  fEtaK0s(),
+  fPhiK0s(),
   fcTauK0s(),
   fV0PointingAngle(),
   fCosThetaStar(),
-  fsignd0()
+  fsignd0(),
+  fArmqTOverAlpha(),
+  fCalcSecoVtx(0)
 {
   //
   // Default constructor
   //
 
-  fNProngs = 2; // --> cannot be changed (prong 0 is the bachelor, prong 1 is the K0s)
+  fNProngs = 3; // --> cannot be changed (prong 0 is the bachelor, 1,2 are prongs of the K0s)
 }
 
 //________________________________________________________________
 AliHFTreeHandlerLc2V0bachelor::AliHFTreeHandlerLc2V0bachelor(int PIDopt):
   AliHFTreeHandler(PIDopt),
   fImpParProng(),
+  fImpParK0s(),
+  fDecayLengthK0s(),
   fInvMassK0s(),
+  fDCAK0s(),
+  fPtK0s(),
+  fEtaK0s(),
+  fPhiK0s(),
   fcTauK0s(),
   fV0PointingAngle(),
   fCosThetaStar(),
-  fsignd0()
+  fsignd0(),
+  fArmqTOverAlpha(),
+  fCalcSecoVtx(0)
 {
   //
   // Standard constructor
   //
 
-  fNProngs = 2; // --> cannot be changed
+  fNProngs = 3; // --> cannot be changed (prong 0 is the bachelor, 1,2 are prongs of the K0s)
 }
 
 //________________________________________________________________
@@ -76,57 +92,76 @@ TTree* AliHFTreeHandlerLc2V0bachelor::BuildTree(TString name, TString title)
   AddCommonDmesonVarBranches();
 
   //set Lc variables
-  fTreeVar->Branch("invmassK0s", &fInvMassK0s);
+  fTreeVar->Branch("cos_t_star", &fCosThetaStar);
+  fTreeVar->Branch("signd0", &fsignd0);
+  fTreeVar->Branch("inv_mass_K0s", &fInvMassK0s);
+  fTreeVar->Branch("dca_K0s", &fDCAK0s);
+  fTreeVar->Branch("imp_par_K0s", &fImpParK0s);
+  fTreeVar->Branch("d_len_K0s", &fDecayLengthK0s);
+  fTreeVar->Branch("armenteros_K0s", &fArmqTOverAlpha);
+  fTreeVar->Branch("ctau_K0s", &fcTauK0s);
+  fTreeVar->Branch("cos_p_K0s", &fV0PointingAngle);
+  fTreeVar->Branch("pt_K0s", &fPtK0s);
+  fTreeVar->Branch("eta_K0s", &fEtaK0s);
+  fTreeVar->Branch("phi_K0s", &fPhiK0s);
   for(unsigned int iProng=0; iProng<fNProngs; iProng++){
     fTreeVar->Branch(Form("imp_par_prong%d", iProng), &fImpParProng[iProng]);
   }
-  fTreeVar->Branch("cTauK0s", &fcTauK0s);
-  fTreeVar->Branch("V0PointingAngle", &fV0PointingAngle);
-  fTreeVar->Branch("cosThetaStar", &fCosThetaStar);
-  fTreeVar->Branch("signd0", &fsignd0);
 
   //set single-track variables
   AddSingleTrackBranches();
 
   //set PID variables
-  if(fPidOpt != kNoPID) AddPidBranches(false, false, true, true, true);
+  if(fPidOpt != kNoPID) AddPidBranches(true, false, true, true, true);
 
   return fTreeVar;
 }
 
 //________________________________________________________________
-bool AliHFTreeHandlerLc2V0bachelor::SetVariables(AliAODRecoCascadeHF* cand, float bfield, int masshypo, AliPIDResponse* pidrespo) 
+bool AliHFTreeHandlerLc2V0bachelor::SetVariables(int runnumber, unsigned int eventID, AliAODRecoDecayHF* cand, float bfield, int masshypo, AliPIDResponse* pidrespo) 
 {
   if(!cand) return false;
   if(fFillOnlySignal) { //if fill only signal and not signal candidate, do not store
     if(!(fCandTypeMap&kSignal)) return true;
   }
   fNCandidates++;
-
+  fRunNumber.push_back(runnumber);
+  fEvID.push_back(eventID);
+    
   //topological variables
   //common
   fCandType.push_back(fCandTypeMap);
+  fCandTypeMap=0; //reset candtype
   fPt.push_back(cand->Pt());
   fY.push_back(cand->Y(411));
   fEta.push_back(cand->Eta());
   fPhi.push_back(cand->Phi());
-  fDecayLength.push_back(cand->DecayLength());
-  fDecayLengthXY.push_back(cand->DecayLengthXY());
-  fNormDecayLengthXY.push_back(cand->NormalizedDecayLengthXY());
-  fCosP.push_back(cand->CosPointingAngle());
-  fCosPXY.push_back(cand->CosPointingAngleXY());
-  fImpParXY.push_back(cand->ImpParXY());
-
-  //Lc -> K0sp variables  
-  fInvMass.push_back(((AliAODRecoCascadeHF*)cand)->InvMassLctoK0sP());
-
-  for(unsigned int iProng = 0; iProng < fNProngs; iProng++) {
-    fImpParProng[iProng].push_back(cand->Getd0Prong(iProng));
+  if(fCalcSecoVtx){
+    fDecayLength.push_back(cand->DecayLength());
+    fDecayLengthXY.push_back(cand->DecayLengthXY());
+    fNormDecayLengthXY.push_back(cand->NormalizedDecayLengthXY());
+    fCosP.push_back(cand->CosPointingAngle());
+    fCosPXY.push_back(cand->CosPointingAngleXY());
+    fImpParXY.push_back(cand->ImpParXY());
+    fDCA.push_back(cand->GetDCA());
   }
   
-  AliAODv0 * v0part = ((AliAODRecoCascadeHF*)cand)->Getv0();
-  fInvMassK0s.push_back(v0part->MassK0Short());
+  //Lc -> K0sp variables  
+  fInvMass.push_back(((AliAODRecoCascadeHF*)cand)->InvMassLctoK0sP());
   
+  AliAODv0 * v0part = ((AliAODRecoCascadeHF*)cand)->Getv0();
+  for(unsigned int iProng = 0; iProng < fNProngs; iProng++) {
+    if(iProng==0) fImpParProng[iProng].push_back(cand->Getd0Prong(iProng));
+    else          fImpParProng[iProng].push_back(v0part->Getd0Prong(iProng-1));
+  }
+  fImpParK0s.push_back(cand->Getd0Prong(1));
+  fDecayLengthK0s.push_back(((AliAODRecoCascadeHF*)cand)->DecayLengthV0());
+  fInvMassK0s.push_back(v0part->MassK0Short());
+  fDCAK0s.push_back(v0part->GetDCA());
+  fPtK0s.push_back(v0part->Pt());
+  fEtaK0s.push_back(v0part->Eta());
+  fPhiK0s.push_back(v0part->Phi());
+
   fcTauK0s.push_back(((AliAODRecoCascadeHF*)cand)->DecayLengthV0()*0.497/(v0part->P()));
   fV0PointingAngle.push_back(((AliAODRecoCascadeHF*)cand)->CosV0PointingAngle());
 
@@ -143,7 +178,9 @@ bool AliHFTreeHandlerLc2V0bachelor::SetVariables(AliAODRecoCascadeHF* cand, floa
   Double_t cts = TMath::Cos(vpr.Angle(vlc.Vect()));
   fCosThetaStar.push_back(cts);
 
-  AliAODTrack *bachelor = (AliAODTrack*)cand->GetBachelor();
+  // Sign of d0 proton (different from regular d0)
+  // (from AliRDHFCutsLctoV0)
+  AliAODTrack *bachelor = (AliAODTrack*)((AliAODRecoCascadeHF*)cand)->GetBachelor();
   AliAODVertex *primvert = dynamic_cast<AliAODVertex*>(cand->GetPrimaryVtx());
   Double_t d0z0bach[2], covd0z0bach[3];
   bachelor->PropagateToDCA(primvert, bfield, kVeryBig, d0z0bach, covd0z0bach); // HOW DO WE SET THE B FIELD?; kVeryBig should come from AliExternalTrackParam
@@ -157,17 +194,23 @@ bool AliHFTreeHandlerLc2V0bachelor::SetVariables(AliAODRecoCascadeHF* cand, floa
   if(innerpro<0.) signd0 = -1.;  
   signd0 = signd0*TMath::Abs(d0z0bach[0]);
   fsignd0.push_back(signd0);
-			     
+  
+  //Armenteros qT/|alpha|
+  fArmqTOverAlpha.push_back( v0part->PtArmV0()/TMath::Abs(v0part->AlphaV0()) );
+  
   //single track variables
-  AliAODTrack* prongtracks[2];
-  for(unsigned int iProng = 0; iProng < fNProngs; iProng++) prongtracks[iProng] = (AliAODTrack*)cand->GetDaughter(iProng);
+  AliAODTrack* prongtracks[3];
+  for(unsigned int iProng = 0; iProng < fNProngs; iProng++){
+    if(iProng==0) prongtracks[iProng] = (AliAODTrack*)cand->GetDaughter(iProng);
+    else          prongtracks[iProng] = (AliAODTrack*)v0part->GetDaughter(iProng-1);
+  }
   bool setsingletrack = SetSingleTrackVars(prongtracks);  
   if(!setsingletrack) return false;
 
   //pid variables
   if(fPidOpt == kNoPID) return true;
 
-  bool setpid = SetPidVars(prongtracks, pidrespo, true, true, true, true, true);
+  bool setpid = SetPidVars(prongtracks, pidrespo, true, false, true, true, true);
   if(!setpid) return false;
 
   return true;
@@ -180,11 +223,18 @@ void AliHFTreeHandlerLc2V0bachelor::FillTree() {
   //VERY IMPORTANT: CLEAR ALL VECTORS
   if(!fIsMCGenTree) {
     ResetDmesonCommonVarVectors();
+    fImpParK0s.clear();
+    fDecayLengthK0s.clear();
     fInvMassK0s.clear();
+    fDCAK0s.clear();
+    fPtK0s.clear();
+    fEtaK0s.clear();
+    fPhiK0s.clear();
     fcTauK0s.clear();
     fV0PointingAngle.clear();
     fCosThetaStar.clear();
     fsignd0.clear();
+    fArmqTOverAlpha.clear();
     for(unsigned int iProng = 0; iProng<fNProngs; iProng++) fImpParProng[iProng].clear();
     ResetSingleTrackVarVectors();
     if(fPidOpt != kNoPID) ResetPidVarVectors();

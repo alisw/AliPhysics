@@ -51,6 +51,7 @@ class AliAnalysisHFjetTagHFE : public AliAnalysisTaskEmcalJet {
   void SetInvMassCut0(Double_t InvmassCut) {fInvmassCut = InvmassCut;};
   void SetInvMassCut1(Double_t ptAssocut) {fptAssocut = ptAssocut;};
   void SetMCcorr(Bool_t MCcorr){iMCcorr = MCcorr;};
+  void SetDCApTweight(Bool_t DCApTweight){iDCApTweight = DCApTweight;};
   //void SetEMCalTriggerEG1(Bool_t flagTr1) { fEMCEG1=flagTr1; fEMCEG2=kFALSE;};
   //void SetEMCalTriggerEG2(Bool_t flagTr2) { fEMCEG2=flagTr2; fEMCEG1=kFALSE;};
   void SetEMCalTriggerEG1(Bool_t flagTr1) { fEMCEG1=flagTr1;};
@@ -89,6 +90,7 @@ class AliAnalysisHFjetTagHFE : public AliAnalysisTaskEmcalJet {
     Double_t fptAssocut;  
     Bool_t fmcData;
     Bool_t iMCcorr;
+    Bool_t iDCApTweight;
     Int_t NembMCpi0;
     Int_t NembMCeta;
     Int_t NpureMCproc;
@@ -210,6 +212,7 @@ class AliAnalysisHFjetTagHFE : public AliAnalysisTaskEmcalJet {
   TH2F                        *fEMCClsEtaPhi;
   TH1F                        *fHistBGfrac;
   TH1F                        *fHistBGfracHFEev;
+  TH1F                        *fHistBGrandHFEev;
   TH2D                        *fHistJetEnergyReso;
   TF1                         *fPi0Weight;
   TF1                         *fEtaWeight;

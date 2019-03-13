@@ -137,6 +137,9 @@ AliConversionMesonCuts::AliConversionMesonCuts(const char *name,const char *titl
   fDoConvCaloMixing(kFALSE),
   fDoSectorMixing(kFALSE),
   fDoSectorJetMixing(kFALSE),
+  fDoJetMixing(kFALSE),
+  fDoJetRotateMixing(kFALSE),
+  fDoJetPtMixing(kFALSE),
   fDoSphericityMixing(kFALSE),
   fUseTrackMultiplicityForBG(kFALSE),
   fEnableMinOpeningAngleCut(kTRUE),
@@ -232,6 +235,9 @@ AliConversionMesonCuts::AliConversionMesonCuts(const AliConversionMesonCuts &ref
   fDoConvCaloMixing(ref.fDoConvCaloMixing),
   fDoSectorMixing(ref.fDoSectorMixing),
   fDoSectorJetMixing(ref.fDoSectorJetMixing),
+  fDoJetMixing(ref.fDoJetMixing),
+  fDoJetRotateMixing(ref.fDoJetRotateMixing),
+  fDoJetPtMixing(ref.fDoJetPtMixing),
   fDoSphericityMixing(ref.fDoSphericityMixing),
   fUseTrackMultiplicityForBG(ref.fUseTrackMultiplicityForBG),
   fEnableMinOpeningAngleCut(ref.fEnableMinOpeningAngleCut),
@@ -482,7 +488,7 @@ Bool_t AliConversionMesonCuts::MesonIsSelectedAODMC(AliAODMCParticle *MCMother,T
     if(MCMother->GetNDaughters()!=2)return kFALSE;
 
     for(Int_t i=0;i<2;i++){
-      AliAODMCParticle *MDaughter=static_cast<AliAODMCParticle*>(AODMCArray->At(MCMother->GetDaughter(i)));
+      AliAODMCParticle *MDaughter=static_cast<AliAODMCParticle*>(AODMCArray->At(MCMother->GetDaughterLabel(i)));
       // Is Daughter a Photon?
       if(MDaughter->GetPdgCode()!=22)return kFALSE;
       // Is Photon in Acceptance?
@@ -588,7 +594,7 @@ Bool_t AliConversionMesonCuts::MesonIsSelectedAODMCDalitz(AliAODMCParticle *fMCM
   AliAODMCParticle *electron = 0x0;
   AliAODMCParticle    *gamma = 0x0;
 
-  for(Int_t index= fMCMother->GetFirstDaughter();index<= fMCMother->GetLastDaughter();index++){
+  for(Int_t index= fMCMother->GetDaughterFirst();index<= fMCMother->GetDaughterLast();index++){
     if(index < 0) continue;
     AliAODMCParticle* temp = static_cast<AliAODMCParticle*>(AODMCArray->At(index));
     if (!temp) continue;
@@ -706,7 +712,7 @@ Bool_t AliConversionMesonCuts::MesonIsSelectedAODMCEtaPiPlPiMiGamma(AliAODMCPart
   AliAODMCParticle *negPion = 0x0;
   AliAODMCParticle    *gamma = 0x0;
 
-  for(Int_t index= fMCMother->GetFirstDaughter();index<= fMCMother->GetLastDaughter();index++){
+  for(Int_t index= fMCMother->GetDaughterFirst();index<= fMCMother->GetDaughterLast();index++){
     if(index < 0) continue;
     AliAODMCParticle* temp = static_cast<AliAODMCParticle*>(AODMCArray->At(index));
 
@@ -824,7 +830,7 @@ Bool_t AliConversionMesonCuts::MesonIsSelectedAODMCPiPlPiMiEta(AliAODMCParticle 
   AliAODMCParticle *etaMeson = 0x0;
 
 //   cout << "\n"<< fMCMother->GetPdgCode() << "\n" << endl;
-  for(Int_t index= fMCMother->GetFirstDaughter();index<= fMCMother->GetLastDaughter();index++){
+  for(Int_t index= fMCMother->GetDaughterFirst();index<= fMCMother->GetDaughterLast();index++){
     if(index < 0) continue;
     AliAODMCParticle* temp = static_cast<AliAODMCParticle*>(AODMCArray->At(index));
 //     cout << temp->GetPdgCode() << endl;
@@ -942,7 +948,7 @@ Bool_t AliConversionMesonCuts::MesonIsSelectedAODMCPiPlPiMiPiZero(AliAODMCPartic
   AliAODMCParticle *neutPion = 0x0;
 
 //   cout << "\n"<< fMCMother->GetPdgCode() << "\n" << endl;
-  for(Int_t index= fMCMother->GetFirstDaughter();index<= fMCMother->GetLastDaughter();index++){
+  for(Int_t index= fMCMother->GetDaughterFirst();index<= fMCMother->GetDaughterLast();index++){
     if(index < 0) continue;
     AliAODMCParticle* temp = static_cast<AliAODMCParticle*>(AODMCArray->At(index));
 //     cout << temp->GetPdgCode() << endl;
@@ -1042,7 +1048,7 @@ Bool_t AliConversionMesonCuts::MesonIsSelectedAODMCPiZeroGamma(AliAODMCParticle 
   AliAODMCParticle *gamma = 0x0;
   AliAODMCParticle *pi0 = 0x0;
 
-  for(Int_t index = fMCMother->GetFirstDaughter();index <= fMCMother->GetLastDaughter();index++){
+  for(Int_t index = fMCMother->GetDaughterFirst();index <= fMCMother->GetDaughterLast();index++){
     if(index < 0) continue;
     AliAODMCParticle* temp = static_cast<AliAODMCParticle*>(AODMCArray->At(index));
     switch(temp->GetPdgCode()){
@@ -1188,7 +1194,7 @@ Bool_t AliConversionMesonCuts::MesonIsSelectedAODMCChiC(AliAODMCParticle *fMCMot
 
     //Int_t labeljpsiChiC = -1;
 
-    for(Int_t index= fMCMother->GetFirstDaughter();index<= fMCMother->GetLastDaughter();index++){
+    for(Int_t index= fMCMother->GetDaughterFirst();index<= fMCMother->GetDaughterLast();index++){
       if(index < 0) continue;
       AliAODMCParticle* temp = static_cast<AliAODMCParticle*>(AODMCArray->At(index));
 
@@ -1208,7 +1214,7 @@ Bool_t AliConversionMesonCuts::MesonIsSelectedAODMCChiC(AliAODMCParticle *fMCMot
     if(jpsi->GetNDaughters()!=2)return kFALSE;
 
 
-    for(Int_t index= jpsi->GetFirstDaughter();index<= jpsi->GetLastDaughter();index++){
+    for(Int_t index= jpsi->GetDaughterFirst();index<= jpsi->GetDaughterLast();index++){
       if(index < 0) continue;
       AliAODMCParticle* temp = static_cast<AliAODMCParticle*>(AODMCArray->At(index));
       switch( temp->GetPdgCode() ) {
@@ -2592,6 +2598,34 @@ Bool_t AliConversionMesonCuts::SetBackgroundScheme(Int_t BackgroundScheme){
     fUseTrackMultiplicityForBG  = kFALSE;
     fDoBGProbability            = kFALSE;
     fDoSectorJetMixing          = kTRUE;
+    break;
+  case 20: //k mixed by jet distance
+    fUseRotationMethodInBG      = kFALSE;
+    fUseTrackMultiplicityForBG  = kFALSE;
+    fDoBGProbability            = kFALSE;
+    fDoJetMixing                = kTRUE;
+    break;
+  case 21: //l mixed by jet distance and rotation
+    fUseRotationMethodInBG      = kFALSE;
+    fUseTrackMultiplicityForBG  = kFALSE;
+    fDoBGProbability            = kFALSE;
+    fDoJetMixing                = kTRUE;
+    fDoJetRotateMixing          = kTRUE;
+    break;
+  case 22: //m mixed by jet distance and jet pt
+    fUseRotationMethodInBG      = kFALSE;
+    fUseTrackMultiplicityForBG  = kFALSE;
+    fDoBGProbability            = kFALSE;
+    fDoJetMixing                = kTRUE;
+    fDoJetPtMixing              = kTRUE;
+    break;
+  case 23: //n mixed by jet distance, rotation and jet pt
+    fUseRotationMethodInBG      = kFALSE;
+    fUseTrackMultiplicityForBG  = kFALSE;
+    fDoBGProbability            = kFALSE;
+    fDoJetMixing                = kTRUE;
+    fDoJetRotateMixing          = kTRUE;
+    fDoJetPtMixing              = kTRUE;
     break;
   default:
     cout<<"Warning: BackgroundScheme not defined "<<BackgroundScheme<<endl;

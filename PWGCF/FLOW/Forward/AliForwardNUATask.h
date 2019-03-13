@@ -101,11 +101,17 @@ public:
   TList*                  fOutputList;    //! output list
   TList* fEventList; //!
   TH2D*   centralDist;//!
+  TH2D*   refDist;//!
   TH2D*   forwardDist;//!
+  TH3D* nua_cen; //!
+  TH3D* nua_fmd; //!
+  TH1F* dNdeta;//!
+
+  AliForwardTaskValidation* ev_val; //!
+
   // A class combining all the settings for this analysis
   AliForwardSettings fSettings;
   AliForwardFlowUtil fUtil;
-  Bool_t useEvent;
 
   enum {
     kTPCOnly = 128, // TPC only tracks

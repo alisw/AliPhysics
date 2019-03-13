@@ -141,6 +141,8 @@ set(SRCS
     Tracks/AliAnalysisTaskEmcalJetConstituentQA.cxx
     Tracks/AliAnalysisTaskEmcalJetEnergyScale.cxx
     Tracks/AliAnalysisTaskEmcalJetEnergySpectrum.cxx
+    Tracks/AliAnalysisTaskEmcalResponseOutliers.cxx
+    Tracks/AliAnalysisTaskEmcalOutliersGen.cxx
     Tracks/AliAnalysisTaskEmcalPatchMultCorr.cxx
     Tracks/AliAnalysisTaskEmcalClustersInJets.cxx
     Tracks/AliAnalysisTaskEmcalTriggerCorrelationMC.cxx
@@ -170,6 +172,7 @@ set(SRCS
     UserTasks/AliAnalysisTaskEmcalHJetMass.cxx
     UserTasks/AliAnalysisTaskIDFragmentationFunction.cxx
     UserTasks/AliAnalysisTaskEmcalJetCDF.cxx
+    UserTasks/AliAnalysisTaskEmcalJetCorrection.cxx
     UserTasks/AliAnalysisTaskEmcalJetHadCorQA.cxx
     UserTasks/AliAnalysisTaskEmcalJetHadEPpid.cxx
     UserTasks/AliAnalysisTaskEmcalJetHUtils.cxx
@@ -198,7 +201,6 @@ set(SRCS
     UserTasks/AliAnalysisTaskEmcalTriggerInfoQA.cxx
     UserTasks/AliAnalysisTaskEmcalTriggerTreeWriter.cxx
     UserTasks/AliAnalysisTaskHJetEmbed.cxx
-    UserTasks/AliAnalysisTaskJetExtractor.cxx
     UserTasks/AliAnalysisTaskJetJTJT.cxx
     UserTasks/AliAnalysisTaskJetMassResponseDet.cxx
     UserTasks/AliAnalysisTaskJetMatching.cxx
@@ -255,6 +257,7 @@ if(FASTJET_FOUND)
         UserTasks/AliAnalysisTaskFullppJet.cxx
         UserTasks/AliAnalysisTaskHJetDphi.cxx
         UserTasks/AliAnalysisTaskHJetSpectra.cxx
+        UserTasks/AliAnalysisTaskJetExtractor.cxx
         UserTasks/AliAnalysisTaskJetPP.cxx
         UserTasks/AliAnalysisTaskSVtaskMCFilter.cxx
         UserTasks/AliAnalysisTaskEA.cxx
@@ -270,6 +273,7 @@ if(FASTJET_FOUND)
         Tracks/AliHighPtReconstructionEfficiency.cxx
         Tracks/AliAnalysisTaskTracksInJet.cxx
 	    Tracks/AliAnalysisTaskEmcalJetSubstructureTree.cxx
+        Tracks/AliAnalysisTaskEmcalSoftDropData.cxx
         )
     # Tasks that need both Fastjet and RooUnfold
     if(RooUnfold_FOUND)

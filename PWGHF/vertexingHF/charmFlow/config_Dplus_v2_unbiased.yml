@@ -1,0 +1,31 @@
+InputFile:
+    FileName: 'AnalysisResults.root'
+    Suffix: '_3050VZERO'
+    Meson: 'Dplus'
+    FlowMethod: 'EvShapeEP'
+
+AnalysisOptions:
+    Harmonic: 2
+    qnMin: 0.
+    qnMax: 100.
+    #each element of the lists corresponds to a pT bin
+    PtMin: [ 2, 3, 4, 5, 6, 7, 8, 10, 12, 16, 24 ]    
+    PtMax: [ 3, 4, 5, 6, 7, 8, 10, 12, 16, 24, 36 ]    
+    MassMin: [ 1.7, 1.7, 1.7, 1.7, 1.7, 1.7, 1.7, 1.7, 1.7, 1.7, 1.7 ]    
+    MassMax: [ 2.05, 2.05, 2.05, 2.05, 2.05, 2.05, 2.05, 2.05, 2.05, 2.05, 2.05 ]
+    Rebin: [ 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2 ]
+    BkgFunc: [ 'kExpo', 'kExpo', 'kExpo', 'kExpo', 'kExpo', 'kExpo', 'kExpo', 'kExpo', 'kExpo', 'kExpo', 'kExpo' ]
+    SgnFunc: [ 'kGaus', 'kGaus', 'kGaus', 'kGaus', 'kGaus', 'kGaus', 'kGaus', 'kGaus', 'kGaus', 'kGaus', 'kGaus' ]
+    VnBkgFunc: [ 'kLin', 'kLin', 'kLin', 'kLin', 'kLin', 'kLin', 'kLin', 'kLin', 'kLin', 'kLin', 'kLin' ]
+    IncludeReflections: 0 #0->false, 1->true
+    ReflFileName: "Refl_Templates.root"
+    ReflOpt: "2gaus"
+
+    FitSystematicsOptions: #common for all pT bins
+    Rebin: [ 1, 2, 3, 4, 5 ]
+    MassMin: [ 1.66, 1.68, 1.70, 1.72, 1.74 ]
+    MassMax: [ 1.96, 1.98, 2.00, 2.02, 2.04 ]    
+    BkgFunc: [ 'kExpo', 'kLin', 'kPol2' ]
+    SgnFunc: [ 'kGaus' ]
+    VnBkgFunc: [ 'kLin', 'kPol2' ]
+    MaxRedChi2: 2. #only for histos, ntuple filled with all trials

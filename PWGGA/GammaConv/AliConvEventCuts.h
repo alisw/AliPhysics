@@ -182,10 +182,6 @@ class AliConvEventCuts : public AliAnalysisCuts {
         kLHC15k1a2,       //!< LHC15o low IR firstPhysics
         kLHC15k1a3,       //!< LHC15o low IR firstPhysics
         kLHC16j7,         //!< LHC15o low IR pass4
-        kLHC16g1,         //!< anchored LHC15o pass1 - general purpose
-        kLHC16g1a,        //!< anchored LHC15o pass1 - general purpose 0-10%
-        kLHC16g1b,        //!< anchored LHC15o pass1 - general purpose 10-50%
-        kLHC16g1c,        //!< anchored LHC15o pass1 - general purpose 50-90%
         kLHC16g2,         //!< anchored LHC15o pass1 - general purpose EPOS-LHC
         kLHC16g3,         //!< anchored LHC15o pass1 - general purpose DPMJET
         kLHC16h4,         //!< anchored LHC15o pass1 - injected signals 0-100%
@@ -218,6 +214,10 @@ class AliConvEventCuts : public AliAnalysisCuts {
         kLHC18b11a,       //!< anchored to LHC15o    - gamma-jets Pythia events embedded in HI MC events
         kLHC18b11b,       //!< anchored to LHC15o    - gamma-jets Pythia events embedded in HI MC events
         kLHC18b11c,       //!< anchored to LHC15o    - gamma-jets Pythia events embedded in HI MC events
+        kLHC18e1,         //!< anchored to LHC15o    - general purpose - fixed MC
+        kLHC18e1a,        //!< anchored LHC15o pass1 - general purpose - 0-10%
+        kLHC18e1b,        //!< anchored LHC15o pass1 - general purpose - 10-50%
+        kLHC18e1c,        //!< anchored LHC15o pass1 - general purpose - 50-90%
         kLHC18l8a,        //!< anchored to LHC18qr    - general purpose Pythia8
         kLHC18l8b,        //!< anchored to LHC18qr    - general purpose Pythia8
         kLHC18l8c,        //!< anchored to LHC18qr    - general purpose Pythia8
@@ -435,8 +435,14 @@ class AliConvEventCuts : public AliAnalysisCuts {
                                                                                       fNameDataHistoReweightingGamma = histoDataNameGamma       ;
                                                                                     }
 
+      void    SetMinFacPtHard(Float_t value)                                        { fMinFacPtHard = value                                     ;
+                                                                                      AliInfo(Form("minimum factor between pt hard and jet put to: %2.2f",fMinFacPtHard));
+                                                                                    }
       void    SetMaxFacPtHard(Float_t value)                                        { fMaxFacPtHard = value                                     ;
                                                                                       AliInfo(Form("maximum factor between pt hard and jet put to: %2.2f",fMaxFacPtHard));
+                                                                                    }
+      void    SetMaxFacPtHardSingleParticle(Float_t value)                          { fMaxFacPtHardSingleParticle = value                       ;
+                                                                                      AliInfo(Form("maximum factor between pt hard and pt of pi0 or eta put to: %2.2f",fMaxFacPtHardSingleParticle));
                                                                                     }
       void    SetDebugLevel( Int_t value)                                           { fDebugLevel = value                                       ; }
 
@@ -683,6 +689,7 @@ class AliConvEventCuts : public AliAnalysisCuts {
       // Primary secondary distinction
       Double_t                    fSecProdBoundary;                       ///< 3D radius of production (cm) for primary-secodary distinction
       Float_t                     fMaxPtJetMC;                            ///< maximum jet pt in event
+      Float_t                     fMinFacPtHard;                          ///< minimum factor between maximum jet pt and pt hard generated
       Float_t                     fMaxFacPtHard;                          ///< maximum factor between maximum jet pt and pt hard generated
       Float_t                     fMaxFacPtHardSingleParticle;            ///< maximum factor between maximum single particle pt (pi0/eta) and pt hard generated
       Bool_t                      fMimicTrigger;                          ///< enable trigger mimiking
@@ -698,7 +705,7 @@ class AliConvEventCuts : public AliAnalysisCuts {
   private:
 
       /// \cond CLASSIMP
-      ClassDef(AliConvEventCuts,62)
+      ClassDef(AliConvEventCuts,65)
       /// \endcond
 };
 

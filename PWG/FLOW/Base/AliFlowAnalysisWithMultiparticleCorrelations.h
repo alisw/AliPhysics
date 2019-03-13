@@ -43,6 +43,7 @@ class AliFlowAnalysisWithMultiparticleCorrelations{
   // 4.) Method GetOutputHistograms() and methods called in it;
   // 5.) Setters and getters;
   // 6.) The rest.
+  // TBI test for the workflow
 
   // 0.) Methods called in the constructor:
   virtual void InitializeArraysForControlHistograms(); 

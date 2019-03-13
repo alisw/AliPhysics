@@ -90,7 +90,7 @@ AliAnalysisTaskElectronEfficiencyV2* AddTask_acapon_Efficiency(TString names    
   // Event selection. Is the same for all the different cutsettings
   task->SetEnablePhysicsSelection(kTRUE);
   task->SetTriggerMask(triggerNames);
-  task->SetEventFilter(cutlib->GetEventCuts(LMEECutLib::kAllSpecies)); // All cut sets have same event cuts
+  task->SetEventFilter(cutlib->GetEventCuts()); // All cut sets have same event cuts
 
   Double_t centMin = -99.;
   Double_t centMax = -90.;
@@ -204,12 +204,14 @@ AliAnalysisTaskElectronEfficiencyV2* AddTask_acapon_Efficiency(TString names    
 
   // #########################################################
   // #########################################################
-  // Add MCSignals. Can be set to see differences of:
-  // e.g. secondaries and primaries. or primaries from charm and resonances
-  AddSingleLegMCSignal(task);
-  AddPairMCSignal(task);
+  // Add MCSignals
+  // Add single track signal definition, and return vector used for calculating
+  // efficiencies from non resonant dielectron pairs. E.g use all ULS pairs,
+  // electrons from D or B decays etc
   std::vector<Bool_t> DielectronsPairNotFromSameMother = AddSingleLegMCSignal(task);
   task->AddMCSignalsWhereDielectronPairNotFromSameMother(DielectronsPairNotFromSameMother);
+  // Add standard "same-mother" dielectron pair signal
+  AddPairMCSignal(task);
 
   // #########################################################
   // Adding cutsettings
@@ -224,8 +226,8 @@ AliAnalysisTaskElectronEfficiencyV2* AddTask_acapon_Efficiency(TString names    
     Printf("Successfully added task with cut set: %s\n", cutDefinition);
     // Apply PID post calibration to ITS(0) and TOF(1)
     if(applyPIDcorr){
-      ApplyPIDpostCalibration(task, 0);
-      ApplyPIDpostCalibration(task, 1);
+      ApplyPIDpostCalibration(task, 0, SDDstatus);
+      ApplyPIDpostCalibration(task, 1, SDDstatus);
     }
   }
 

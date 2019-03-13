@@ -72,9 +72,12 @@ AliAnalysisTaskEmcalSoftDropResponse::AliAnalysisTaskEmcalSoftDropResponse():
   fZcut(0.1),
   fBeta(0.),
   fReclusterizer(kCAAlgo),
+  fSampleFraction(1.),
   fUseChargedConstituents(true),
   fUseNeutralConstituents(true),
+  fNameMCParticles("mcparticles"),
   fSampleSplitter(nullptr),
+  fSampleTrimmer(nullptr),
   fPartLevelPtBinning(nullptr),
   fDetLevelPtBinning(nullptr),
   fZgResponse(nullptr),
@@ -97,9 +100,12 @@ AliAnalysisTaskEmcalSoftDropResponse::AliAnalysisTaskEmcalSoftDropResponse(const
   fZcut(0.1),
   fBeta(0.),
   fReclusterizer(kCAAlgo),
+  fSampleFraction(1.),
   fUseChargedConstituents(true),
   fUseNeutralConstituents(true),
+  fNameMCParticles("mcparticles"),
   fSampleSplitter(nullptr),
+  fSampleTrimmer(nullptr),
   fPartLevelPtBinning(nullptr),
   fDetLevelPtBinning(nullptr),
   fZgResponse(nullptr),
@@ -119,12 +125,14 @@ AliAnalysisTaskEmcalSoftDropResponse::~AliAnalysisTaskEmcalSoftDropResponse(){
   if(fPartLevelPtBinning) delete fPartLevelPtBinning;
   if(fDetLevelPtBinning) delete fDetLevelPtBinning;
   if(fSampleSplitter) delete fSampleSplitter;
+  if(fSampleTrimmer) delete fSampleTrimmer;
 }
 
 void AliAnalysisTaskEmcalSoftDropResponse::UserCreateOutputObjects(){
   AliAnalysisTaskEmcalJet::UserCreateOutputObjects();
 
   fSampleSplitter = new TRandom;
+  if(fSampleFraction < 1.) fSampleTrimmer = new TRandom;
 
   if(!fPartLevelPtBinning) fPartLevelPtBinning = GetDefaultPartLevelPtBinning();
   if(!fDetLevelPtBinning) fDetLevelPtBinning = GetDefaultDetLevelPtBinning();
@@ -162,15 +170,37 @@ void AliAnalysisTaskEmcalSoftDropResponse::UserCreateOutputObjects(){
   PostData(1, fOutput);
 }
 
+Bool_t AliAnalysisTaskEmcalSoftDropResponse::CheckMCOutliers() {
+  if(!fMCRejectFilter) return true;
+  if(!(fIsPythia || fIsHerwig)) return true;    // Only relevant for pt-hard production
+  AliDebugStream(1) << "Using custom MC outlier rejection" << std::endl;
+  auto partjets = GetJetContainer("partLevel");
+  if(!partjets) return true;
+
+  // Check whether there is at least one particle level jet with pt above n * event pt-hard
+  auto jetiter = partjets->accepted();
+  auto max = std::max_element(jetiter.begin(), jetiter.end(), [](const AliEmcalJet *lhs, const AliEmcalJet *rhs ) { return lhs->Pt() < rhs->Pt(); });
+  if(max != jetiter.end())  {
+    // At least one jet found with pt > n * pt-hard
+    AliDebugStream(1) << "Found max jet with pt " << (*max)->Pt() << " GeV/c" << std::endl;
+    if((*max)->Pt() > fPtHardAndJetPtFactor * fPtHard) return false;
+  }
+  return true;
+}
+
 bool AliAnalysisTaskEmcalSoftDropResponse::Run(){
   AliJetContainer *partLevelJets = this->GetJetContainer("partLevel"),
                   *detLevelJets = GetJetContainer("detLevel");
   AliClusterContainer *clusters = GetClusterContainer(EMCalTriggerPtAnalysis::AliEmcalAnalysisFactory::ClusterContainerNameFactory(fInputEvent->IsA() == AliAODEvent::Class()));
   AliTrackContainer *tracks = GetTrackContainer(EMCalTriggerPtAnalysis::AliEmcalAnalysisFactory::TrackContainerNameFactory(fInputEvent->IsA() == AliAODEvent::Class()));
-  AliParticleContainer *particles = GetParticleContainer("mcparticles");
+  AliParticleContainer *particles = GetParticleContainer(fNameMCParticles.Data());
   if(!(partLevelJets || detLevelJets)) {
     AliErrorStream() << "Either of the jet containers not found" << std::endl;
     return kFALSE;
+  }
+
+  if(fSampleFraction < 1.) {
+    if(fSampleTrimmer->Uniform() > fSampleFraction) return false;
   }
 
   // get truncations at detector level
@@ -346,7 +376,7 @@ TBinning *AliAnalysisTaskEmcalSoftDropResponse::GetZgBinning() const {
   return binning;
 }
 
-AliAnalysisTaskEmcalSoftDropResponse *AliAnalysisTaskEmcalSoftDropResponse::AddTaskEmcalSoftDropResponse(Double_t jetradius, AliJetContainer::EJetType_t jettype, AliJetContainer::ERecoScheme_t recombinationScheme, const char *trigger) {
+AliAnalysisTaskEmcalSoftDropResponse *AliAnalysisTaskEmcalSoftDropResponse::AddTaskEmcalSoftDropResponse(Double_t jetradius, AliJetContainer::EJetType_t jettype, AliJetContainer::ERecoScheme_t recombinationScheme, const char *namepartcont, const char *trigger) {
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
 
   Bool_t isAOD(kFALSE);
@@ -366,8 +396,11 @@ AliAnalysisTaskEmcalSoftDropResponse *AliAnalysisTaskEmcalSoftDropResponse::AddT
   responsemaker->SelectCollisionCandidates(AliVEvent::kINT7);
   mgr->AddTask(responsemaker);
 
-  AliParticleContainer *particles = responsemaker->AddMCParticleContainer("mcparticles");
+  TString partcontname(namepartcont);
+  if(partcontname == "usedefault") partcontname = "mcparticles";
+  AliParticleContainer *particles = responsemaker->AddMCParticleContainer(partcontname.Data());
   particles->SetMinPt(0.);
+  responsemaker->SetNameMCParticleContainer(partcontname.Data());
 
   AliJetContainer *mcjets = responsemaker->AddJetContainer(
                               jettype,

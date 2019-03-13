@@ -1620,8 +1620,11 @@ void PlotAODtrackQA(TString filename="AnalysisResults.root", TString suffix="QA"
   // K0 pt resolution vs. pt
   const Int_t nPtBinsK0=10;
   Double_t ptbinlimsK0[nPtBinsK0+1]={0.,0.4,0.8,1.2,2.0,3.,4.,5.,6.,8.,10.};
-  TH1F* hSigmaK0AllR=new TH1F("hSigmaK0AllR"," ; p_{T} (GeV/c) ; #sigma_{K0} (MeV/c^{2})",10,ptbinlimsK0);
-  TH1F* hSigmaK0R4=new TH1F("hSigmaK0R4"," ; p_{T} (GeV/c) ; #sigma_{K0} (MeV/c^{2})",10,ptbinlimsK0);
+  TH1F* hSigmaK0AllR=new TH1F("hSigmaK0AllR"," ; p_{T} (GeV/c) ; #sigma_{K0} (MeV/c^{2})",nPtBinsK0,ptbinlimsK0);
+  TH1F* hSigmaK0R4=new TH1F("hSigmaK0R4"," ; p_{T} (GeV/c) ; #sigma_{K0} (MeV/c^{2})",nPtBinsK0,ptbinlimsK0);
+  TH1F* hMassK0AllR=new TH1F("hMassK0AllR"," ; p_{T} (GeV/c) ; #mu_{K0} (GeV/c^{2})",nPtBinsK0,ptbinlimsK0);
+  TH1F* hYieldK0AllR=new TH1F("hYieldK0AllR"," ; p_{T} (GeV/c) ; N_{K0}/event",nPtBinsK0,ptbinlimsK0);
+
   TCanvas* ctmpk0=new TCanvas("ctmpk0","K0s vs. pt R<4",1600,900);
   ctmpk0->Divide(5,4);
   for(Int_t ipt=0; ipt<nPtBinsK0; ipt++){
@@ -1645,11 +1648,28 @@ void PlotAODtrackQA(TString filename="AnalysisResults.root", TString suffix="QA"
     hTmpInvMassK0sAllR->Draw();
     InitFuncAndFit(hTmpInvMassK0sAllR,fmassk0,kTRUE,isMC);
     tpfine->Draw();
+    hMassK0AllR->SetBinContent(ipt+1,fmassk0->GetParameter(4));
+    hMassK0AllR->SetBinError(ipt+1,fmassk0->GetParError(4));
     hSigmaK0AllR->SetBinContent(ipt+1,fmassk0->GetParameter(5)*1000.);
-    hSigmaK0AllR->SetBinError(ipt+1,fmassk0->GetParError(5)*1000.);    
+    hSigmaK0AllR->SetBinError(ipt+1,fmassk0->GetParError(5)*1000.);
+    Double_t yield=fmassk0->GetParameter(3)/hTmpInvMassK0sAllR->GetBinWidth(1)/nSelectedEvents;
+    Double_t eyield=fmassk0->GetParError(3)/hTmpInvMassK0sAllR->GetBinWidth(1)/nSelectedEvents;
+    hYieldK0AllR->SetBinContent(ipt+1,yield);
+    hYieldK0AllR->SetBinError(ipt+1,eyield);
   }
 
-  TCanvas* cResolK0=new TCanvas("cresolK0","K0 width vs pt",800,600);
+  TCanvas* cK0signal=new TCanvas("cK0signal","K0 width and yield vs pt",1600,500);
+  cK0signal->Divide(3,1);
+  cK0signal->cd(1);
+  gPad->SetTickx();
+  gPad->SetTicky();
+  hMassK0AllR->SetMinimum(0.495);
+  hMassK0AllR->SetMaximum(0.500);
+  hMassK0AllR->SetStats(0);
+  hMassK0AllR->SetMarkerStyle(20);
+  hMassK0AllR->SetLineWidth(2);
+  hMassK0AllR->Draw();
+  cK0signal->cd(2);
   gPad->SetTickx();
   gPad->SetTicky();
   hSigmaK0AllR->SetMinimum(0);
@@ -1667,8 +1687,15 @@ void PlotAODtrackQA(TString filename="AnalysisResults.root", TString suffix="QA"
   lk->AddEntry(hSigmaK0AllR,"All decay radii","P")->SetTextColor(hSigmaK0AllR->GetMarkerColor());
   lk->AddEntry(hSigmaK0R4,"R < 4 cm","P")->SetTextColor(hSigmaK0R4->GetMarkerColor());
   lk->Draw();
-  plotFileName=Form("K0s-WidthVsPt.%s",outputForm.Data());
-  cResolK0->SaveAs(plotFileName.Data());
+  cK0signal->cd(3);
+  gPad->SetTickx();
+  gPad->SetTicky();
+  hYieldK0AllR->SetStats(0);
+  hYieldK0AllR->SetMarkerStyle(20);
+  hYieldK0AllR->SetLineWidth(2);
+  hYieldK0AllR->Draw();
+  plotFileName=Form("K0s-SignalVsPt.%s",outputForm.Data());
+  cK0signal->SaveAs(plotFileName.Data());
   if(outputForm=="pdf") pdfFileNames+=Form("%s ",plotFileName.Data());
 
   trtree->Fill();

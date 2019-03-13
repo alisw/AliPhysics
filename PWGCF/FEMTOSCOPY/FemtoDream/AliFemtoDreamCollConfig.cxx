@@ -16,6 +16,7 @@ AliFemtoDreamCollConfig::AliFemtoDreamCollConfig()
       fMomentumResolution(false),
       fPhiEtaBinning(false),
       fdPhidEtaPlots(false),
+      fdPhidEtaPlotsSmallK(false),
       fMixedEventStatistics(true),
       fGetTheControlSampel(false),
       fStravinsky(false),
@@ -31,7 +32,8 @@ AliFemtoDreamCollConfig::AliFemtoDreamCollConfig()
       fMaxK_rel(0),
       fCentBins(0),
       fmTBins(0),
-      fWhichPairs(0),
+      fWhichQAPairs(0),
+      fClosePairRej(0),
       fMixingDepth(0),
       fSpinningDepth(0),
       fkTCentrality(false),
@@ -53,6 +55,7 @@ AliFemtoDreamCollConfig::AliFemtoDreamCollConfig(
       fMomentumResolution(config.fMomentumResolution),
       fPhiEtaBinning(config.fPhiEtaBinning),
       fdPhidEtaPlots(config.fdPhidEtaPlots),
+      fdPhidEtaPlotsSmallK(config.fdPhidEtaPlotsSmallK),
       fMixedEventStatistics(config.fMixedEventStatistics),
       fGetTheControlSampel(config.fGetTheControlSampel),
       fStravinsky(config.fStravinsky),
@@ -68,7 +71,8 @@ AliFemtoDreamCollConfig::AliFemtoDreamCollConfig(
       fMaxK_rel(config.fMaxK_rel),
       fCentBins(config.fCentBins),
       fmTBins(config.fmTBins),
-      fWhichPairs(config.fWhichPairs),
+      fWhichQAPairs(config.fWhichQAPairs),
+      fClosePairRej(config.fClosePairRej),
       fMixingDepth(config.fMixingDepth),
       fSpinningDepth(config.fSpinningDepth),
       fkTCentrality(config.fkTCentrality),
@@ -89,6 +93,7 @@ AliFemtoDreamCollConfig::AliFemtoDreamCollConfig(const char *name,
       fMomentumResolution(false),
       fPhiEtaBinning(false),
       fdPhidEtaPlots(false),
+      fdPhidEtaPlotsSmallK(false),
       fMixedEventStatistics(true),
       fGetTheControlSampel(false),
       fStravinsky(false),
@@ -104,7 +109,8 @@ AliFemtoDreamCollConfig::AliFemtoDreamCollConfig(const char *name,
       fMaxK_rel(nullptr),
       fCentBins(nullptr),
       fmTBins(nullptr),
-      fWhichPairs(nullptr),
+      fWhichQAPairs(nullptr),
+      fClosePairRej(nullptr),
       fMixingDepth(0),
       fSpinningDepth(0),
       fkTCentrality(false),
@@ -121,7 +127,8 @@ AliFemtoDreamCollConfig::AliFemtoDreamCollConfig(const char *name,
   fMaxK_rel = new TNtuple("MaxK_rel", "MaxK_rel", "maxkRel");
   fCentBins = new TNtuple("CentBins", "CentBins", "centBin");
   fmTBins = new TNtuple("mTBins", "mTBins", "mTBin");
-  fWhichPairs = new TNtuple("DoPairs", "DoPairs", "DoPair");
+  fWhichQAPairs = new TNtuple("DoPairs", "DoPairs", "DoPair");
+  fClosePairRej = new TNtuple("PairRej", "RejPairs", "RejPair");
 }
 AliFemtoDreamCollConfig& AliFemtoDreamCollConfig::operator=(
     const AliFemtoDreamCollConfig& config) {
@@ -134,6 +141,7 @@ AliFemtoDreamCollConfig& AliFemtoDreamCollConfig::operator=(
     this->fMomentumResolution = config.fMomentumResolution;
     this->fPhiEtaBinning = config.fPhiEtaBinning;
     this->fdPhidEtaPlots = config.fdPhidEtaPlots;
+    this->fdPhidEtaPlotsSmallK = config.fdPhidEtaPlotsSmallK;
     this->fMixedEventStatistics = config.fMixedEventStatistics;
     this->fGetTheControlSampel = config.fGetTheControlSampel;
     this->fInvMassPairs = config.fInvMassPairs;
@@ -148,7 +156,8 @@ AliFemtoDreamCollConfig& AliFemtoDreamCollConfig::operator=(
     this->fMaxK_rel = config.fMaxK_rel;
     this->fCentBins = config.fCentBins;
     this->fmTBins = config.fmTBins;
-    this->fWhichPairs = config.fWhichPairs;
+    this->fWhichQAPairs = config.fWhichQAPairs;
+    this->fClosePairRej = config.fClosePairRej;
     this->fMixingDepth = config.fMixingDepth;
     this->fSpinningDepth = config.fSpinningDepth;
     this->fkTCentrality = config.fkTCentrality;
@@ -170,7 +179,8 @@ AliFemtoDreamCollConfig::~AliFemtoDreamCollConfig() {
   delete fMaxK_rel;
   delete fCentBins;
   delete fmTBins;
-  delete fWhichPairs;
+  delete fWhichQAPairs;
+  delete fClosePairRej;
 
 }
 
@@ -346,7 +356,7 @@ void AliFemtoDreamCollConfig::SetExtendedQAPairs(std::vector<int> whichPairs) {
   // Lambda candidate).
   // Indices follow the scheme explained in SetNBinsHist.
   for (auto it : whichPairs) {
-    fWhichPairs->Fill(it);
+    fWhichQAPairs->Fill(it);
   }
   //how to select which pairs?
 }
@@ -354,7 +364,7 @@ void AliFemtoDreamCollConfig::SetExtendedQAPairs(std::vector<int> whichPairs) {
 std::vector<unsigned int> AliFemtoDreamCollConfig::GetWhichPairs() {
   std::vector<unsigned int> Pairs;
   float out = 0;
-  if (fWhichPairs->GetEntries() == 0) {
+  if (fWhichQAPairs->GetEntries() == 0) {
     AliWarning("===========================================");
     AliWarning("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
     AliWarning("No Pair QA Specified, setting all to false ");
@@ -363,12 +373,12 @@ std::vector<unsigned int> AliFemtoDreamCollConfig::GetWhichPairs() {
     for (int iQA = 0; iQA < this->GetNParticleCombinations(); ++iQA) {
       Pairs.push_back(0);
     }
-  } else if (fWhichPairs->GetEntries() != this->GetNParticleCombinations()) {
+  } else if (fWhichQAPairs->GetEntries() != this->GetNParticleCombinations()) {
     AliFatal("Not all Pairs have a specified QA Behaviour, terminating \n");
   } else {
-    fWhichPairs->SetBranchAddress("DoPair", &out);
-    for (int iBins = 0; iBins < fWhichPairs->GetEntries(); ++iBins) {
-      fWhichPairs->GetEntry(iBins);
+    fWhichQAPairs->SetBranchAddress("DoPair", &out);
+    for (int iBins = 0; iBins < fWhichQAPairs->GetEntries(); ++iBins) {
+      fWhichQAPairs->GetEntry(iBins);
       Pairs.push_back(TMath::Abs(out));
     }
   }
@@ -407,5 +417,99 @@ std::vector<int> AliFemtoDreamCollConfig::GetStandardPairs() {
   pairs.push_back(0);         // Xi Xi
   pairs.push_back(0);         // Xi barXi
   pairs.push_back(0);         // barXi barXi
+  return pairs;
+}
+
+void AliFemtoDreamCollConfig::SetClosePairRejection(
+    std::vector<bool> whichPairs) {
+  // Decider for if one wants plots like mT, kT, TrackSplitting etc. for a pair
+  // 0 means no, > 0 means yes. In particular for track splitting one can steer
+  // which combinations to check:
+  // 12 for example means: take only the first track from particle 1 of the pair
+  // and check it against the 2 tracks of particle 2 ( if it is for example a v0
+  // Lambda candidate).
+  // Indices follow the scheme explained in SetNBinsHist.
+  for (auto it : whichPairs) {
+    fClosePairRej->Fill(it ? 1 : 0);
+  }
+  //how to select which pairs?
+}
+
+std::vector<bool> AliFemtoDreamCollConfig::GetClosePairRej() {
+  std::vector<bool> Pairs;
+  float out = 0;
+  if (fClosePairRej->GetEntries() == 0) {
+    AliWarning("=========================================================");
+    AliWarning("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
+    AliWarning("!No Close Pair Rejection Specified, setting all to false!");
+    AliWarning("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
+    AliWarning("=========================================================");
+    for (int iRej = 0; iRej < this->GetNParticleCombinations(); ++iRej) {
+      Pairs.push_back(false);
+    }
+  } else if (fClosePairRej->GetEntries() != this->GetNParticleCombinations()) {
+    AliFatal("Not all Pairs have a specified QA Behaviour, terminating \n");
+  } else {
+    fClosePairRej->SetBranchAddress("RejPair", &out);
+    for (int iRej = 0; iRej < fClosePairRej->GetEntries(); ++iRej) {
+      fClosePairRej->GetEntry(iRej);
+      Pairs.push_back(TMath::Abs(out) < 1e-6 ? false : true);
+      std::cout << "Close Pair Rejection for Pair " << iRej << " is "
+                << (TMath::Abs(out) < 1e-6 ? "deactivated" : "activated")
+                << std::endl;
+    }
+  }
+  return Pairs;
+}
+
+std::vector<bool> AliFemtoDreamCollConfig::GetStandardPairRejection() {
+  std::vector<bool> pairs;
+  pairs.push_back(true);        // p p
+  pairs.push_back(true);         // p barp
+  pairs.push_back(false);        // p Lambda
+  pairs.push_back(false);         // p barLambda
+  pairs.push_back(false);         // p Xi
+  pairs.push_back(false);         // p barXi
+  pairs.push_back(true);        // barp barp
+  pairs.push_back(false);         // barp Lambda
+  pairs.push_back(false);        // barp barLambda
+  pairs.push_back(false);         // barp Xi
+  pairs.push_back(false);         // barp barXi
+  pairs.push_back(false);         // Lambda Lambda
+  pairs.push_back(false);         // Lambda barLambda
+  pairs.push_back(false);         // Lambda Xi
+  pairs.push_back(false);         // Lambda barXi
+  pairs.push_back(false);         // barLambda barLamb
+  pairs.push_back(false);         // barLambda Xi
+  pairs.push_back(false);         // barLambda barXi
+  pairs.push_back(false);         // Xi Xi
+  pairs.push_back(false);         // Xi barXi
+  pairs.push_back(false);         // barXi barXi
+  return pairs;
+}
+
+std::vector<bool> AliFemtoDreamCollConfig::GetAllPairRejection() {
+  std::vector<bool> pairs;
+  pairs.push_back(true);        // p p
+  pairs.push_back(true);         // p barp
+  pairs.push_back(true);        // p Lambda
+  pairs.push_back(true);         // p barLambda
+  pairs.push_back(true);         // p Xi
+  pairs.push_back(true);         // p barXi
+  pairs.push_back(true);        // barp barp
+  pairs.push_back(true);         // barp Lambda
+  pairs.push_back(true);        // barp barLambda
+  pairs.push_back(true);         // barp Xi
+  pairs.push_back(true);         // barp barXi
+  pairs.push_back(true);         // Lambda Lambda
+  pairs.push_back(true);         // Lambda barLambda
+  pairs.push_back(true);         // Lambda Xi
+  pairs.push_back(true);         // Lambda barXi
+  pairs.push_back(true);         // barLambda barLamb
+  pairs.push_back(true);         // barLambda Xi
+  pairs.push_back(true);         // barLambda barXi
+  pairs.push_back(true);         // Xi Xi
+  pairs.push_back(true);         // Xi barXi
+  pairs.push_back(true);         // barXi barXi
   return pairs;
 }

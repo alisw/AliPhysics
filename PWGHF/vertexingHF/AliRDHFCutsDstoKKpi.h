@@ -56,6 +56,9 @@ class AliRDHFCutsDstoKKpi : public AliRDHFCuts
   void DisableK0starChannel(){fCheckK0star=kFALSE;}
   Bool_t IsK0starChannelEnabled() const{ return fCheckK0star;}
 
+  const Float_t *Getd0MeasMinusExpCut() const {return fMaxd0MeasMinusExp;} 
+  const Float_t *Getd0Cut() const {return fMaxd0;} 
+
   virtual Int_t PreSelect(TObjArray aodTracks);
 
   enum TrackPIDBit{kTPCPionLess1,kTPCPionMore1Less2,kTPCPionMore2Less3,kTPCPionMore3,
@@ -101,6 +104,8 @@ class AliRDHFCutsDstoKKpi : public AliRDHFCuts
   }
 
   Double_t ComputeInvMass2(AliAODTrack* track1, AliAODTrack* track2, Int_t pdg1, Int_t pdg2);
+
+  virtual void PrintAll() const;
 
  protected:
  

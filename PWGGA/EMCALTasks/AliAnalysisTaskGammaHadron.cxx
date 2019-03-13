@@ -155,12 +155,12 @@ void AliAnalysisTaskGammaHadron::InitArrays()
 	Double_t fArray_G_BinsValue[kNoGammaBins+1] ={5,7,9,11,14,17,20,23,30,60};
 	Double_t fArray_ZT_BinsValue[kNoZtBins+1]   ={0,fZtStep,2*fZtStep,3*fZtStep,4*fZtStep,5*fZtStep,6*fZtStep,20};
 	Double_t fArray_XI_BinsValue[kNoXiBins+1]   ={-10,0,fXiStep,2*fXiStep,3*fXiStep,4*fXiStep,5*fXiStep,6*fXiStep,10};
-	Double_t fArray_HPT_BinsValue[kNoHPtBins+1]   ={0.15,0.5,1.0,1.5,2.0,3.0,4.5,7,10};
+//	Double_t fArray_HPT_BinsValue[kNoHPtBins+1]   ={0.15,0.5,1.0,1.5,2.0,3.0,4.5,7,10};
 
 	memcpy (fArray_G_Bins,  fArray_G_BinsValue,  sizeof (fArray_G_Bins));
 	memcpy (fArray_ZT_Bins, fArray_ZT_BinsValue, sizeof (fArray_ZT_Bins));
 	memcpy (fArray_XI_Bins, fArray_XI_BinsValue, sizeof (fArray_XI_Bins));
-	memcpy (fArray_HPT_Bins, fArray_HPT_BinsValue, sizeof (fArray_HPT_Bins));
+//	memcpy (fArray_HPT_Bins, fArray_HPT_BinsValue, sizeof (fArray_HPT_Bins));
 	//- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 	//   Define vertex and centrality bins for the ME background
 	//- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -537,12 +537,13 @@ void AliAnalysisTaskGammaHadron::UserCreateOutputObjects()
      	maxThn[dimThn] = centBinArray[nCentHistBins];
      	dimThn++;
     }
-		titleThn[dimThn] = "Track p_{T}";
-		nbinsThn[dimThn] = kNoHPtBins;
-		binEdgesThn[dimThn] = fArray_HPT_Bins;
-		minThn[dimThn] = fArray_HPT_Bins[0];
-		maxThn[dimThn] = fArray_HPT_Bins[kNoHPtBins];
-		dimThn++;
+    // Track p_T disabled. No longer necessary.
+		//titleThn[dimThn] = "Track p_{T}";
+		//nbinsThn[dimThn] = kNoHPtBins;
+		//binEdgesThn[dimThn] = fArray_HPT_Bins;
+		//minThn[dimThn] = fArray_HPT_Bins[0];
+		//maxThn[dimThn] = fArray_HPT_Bins[kNoHPtBins];
+		//dimThn++;
 
     if(fPlotQA==0)
     {
@@ -2222,8 +2223,8 @@ void AliAnalysisTaskGammaHadron::FillPi0CandsHist(AliTLorentzVector CaloClusterV
 					if (iLCAPdg == 111) {
 						Int_t nLCADaughters = pLCA->GetNDaughters();
 						if (nLCADaughters == 2) { // 2 Gammas
-							AliAODMCParticle * pDaughter1 = fMCParticles->GetMCParticle(pLCA->GetDaughter(0));
-							AliAODMCParticle * pDaughter2 = fMCParticles->GetMCParticle(pLCA->GetDaughter(0)+1);
+							AliAODMCParticle * pDaughter1 = fMCParticles->GetMCParticle(pLCA->GetDaughterLabel(0));
+							AliAODMCParticle * pDaughter2 = fMCParticles->GetMCParticle(pLCA->GetDaughterLabel(0)+1);
 							if (pDaughter1 && pDaughter2 && pDaughter1->GetPdgCode() == 22 && pDaughter2->GetPdgCode() == 22) {
 								MCMatchStatus = 2;
 								// Check Reconstructed Pi0 DeltaPt and DeltaPhiDeltaEta
@@ -2244,8 +2245,8 @@ void AliAnalysisTaskGammaHadron::FillPi0CandsHist(AliTLorentzVector CaloClusterV
 						// Check daughters  2 gamma, 3 pi0, or 1pi0,1pi+,ipi-
 						Int_t nLCADaughters = pLCA->GetNDaughters();
 						if (nLCADaughters == 2) { // 2 Gammas
-							AliAODMCParticle * pDaughter1 = fMCParticles->GetMCParticle(pLCA->GetDaughter(0));
-							AliAODMCParticle * pDaughter2 = fMCParticles->GetMCParticle(pLCA->GetDaughter(0)+1);
+							AliAODMCParticle * pDaughter1 = fMCParticles->GetMCParticle(pLCA->GetDaughterLabel(0));
+							AliAODMCParticle * pDaughter2 = fMCParticles->GetMCParticle(pLCA->GetDaughterLabel(0)+1);
 							if (pDaughter1 && pDaughter2 && pDaughter1->GetPdgCode() == 22 && pDaughter2->GetPdgCode() == 22) {
 
 								MCMatchStatus = 4;
@@ -2260,9 +2261,9 @@ void AliAnalysisTaskGammaHadron::FillPi0CandsHist(AliTLorentzVector CaloClusterV
 								fHistEtaMCDPhiDEta->Fill(fDeltaPhi,fDeltaEta);
 							}
 						} else if (nLCADaughters == 3) { // 3 pi0 or pi0,pi+,pi-
-							AliAODMCParticle * pDaughter1 = fMCParticles->GetMCParticle(pLCA->GetDaughter(0));
-							AliAODMCParticle * pDaughter2 = fMCParticles->GetMCParticle(pLCA->GetDaughter(0)+1);
-							AliAODMCParticle * pDaughter3 = fMCParticles->GetMCParticle(pLCA->GetDaughter(0)+2);
+							AliAODMCParticle * pDaughter1 = fMCParticles->GetMCParticle(pLCA->GetDaughterLabel(0));
+							AliAODMCParticle * pDaughter2 = fMCParticles->GetMCParticle(pLCA->GetDaughterLabel(0)+1);
+							AliAODMCParticle * pDaughter3 = fMCParticles->GetMCParticle(pLCA->GetDaughterLabel(0)+2);
 							Int_t iPdg1 = pDaughter1->GetPdgCode();
 							Int_t iPdg2 = pDaughter2->GetPdgCode();
 							Int_t iPdg3 = pDaughter3->GetPdgCode();
@@ -2461,7 +2462,7 @@ void AliAnalysisTaskGammaHadron::FillGhHistograms(Int_t identifier,AliTLorentzVe
 	valueArray[5]=zVertex;
 	valueArray[6]=evtPlaneCategory;
 	valueArray[7]=fCent;
-	valueArray[8]=TrackVec->Pt();
+	//valueArray[8]=TrackVec->Pt();
 
 	if(identifier==0 && fPlotQA==0)fCorrVsManyThings  ->Fill(valueArray,Weight);
 

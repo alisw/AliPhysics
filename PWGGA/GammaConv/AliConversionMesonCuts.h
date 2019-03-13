@@ -183,6 +183,9 @@ class AliConversionMesonCuts : public AliAnalysisCuts {
     Bool_t   DoConvCaloMixing(){return fDoConvCaloMixing;}
     Bool_t   DoSectorMixing(){return fDoSectorMixing;}
     Bool_t   DoSectorJetMixing(){return fDoSectorJetMixing;}
+    Bool_t   DoJetMixing(){return fDoJetMixing;}
+    Bool_t   DoJetRotateMixing() {return fDoJetRotateMixing;}
+    Bool_t   DoJetPtMixing() {return fDoJetPtMixing;}
     Bool_t   DoSphericityMixing(){return fDoSphericityMixing;}
     Bool_t   DoJetAnalysis(){return fDoJetAnalysis;}
     Bool_t   DoJetQA(){return fDoJetQA;}
@@ -273,6 +276,9 @@ class AliConversionMesonCuts : public AliAnalysisCuts {
     Bool_t      fDoConvCaloMixing;              ///< flag to use enable convcalo mixing in addition to caloconv mixing
     Bool_t      fDoSectorMixing;                ///< flag to enable Sectormixing for meson bg estimation
     Bool_t      fDoSectorJetMixing;             ///< flag to enable Sectormixing with jets for meson bg estimation
+    Bool_t      fDoJetMixing;                   ///< flag to enable mixing by cluster distance to jet axis
+    Bool_t      fDoJetRotateMixing;             ///< flag to enable mixing by rotating calorimeter
+    Bool_t      fDoJetPtMixing;                 ///< flag to enbale mixing by jet pt bins
     Bool_t      fDoSphericityMixing;            ///< flag to enable Sphericitymixing for meson bg estimation
     Bool_t      fUseTrackMultiplicityForBG;     ///< flag to use track multiplicity for meson bg estimation (else V0 mult)
     Bool_t      fEnableMinOpeningAngleCut;      ///< flag to enable min opening angle cut
@@ -295,7 +301,7 @@ class AliConversionMesonCuts : public AliAnalysisCuts {
   private:
 
     /// \cond CLASSIMP
-    ClassDef(AliConversionMesonCuts,30)
+    ClassDef(AliConversionMesonCuts,32)
     /// \endcond
 };
 

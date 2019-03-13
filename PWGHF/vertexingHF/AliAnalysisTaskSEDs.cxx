@@ -1946,7 +1946,7 @@ Float_t AliAnalysisTaskSEDs::GetTrueImpactParameterDstoPhiPi(const AliAODMCHeade
   }
 
   Int_t nDau = partDs->GetNDaughters();
-  Int_t labelFirstDau = partDs->GetDaughter(0);
+  Int_t labelFirstDau = partDs->GetDaughterLabel(0);
   if (nDau == 2)
   {
     Int_t theDau = 0;
@@ -1972,7 +1972,7 @@ Float_t AliAnalysisTaskSEDs::GetTrueImpactParameterDstoPhiPi(const AliAODMCHeade
         Int_t nDauRes = part->GetNDaughters();
         if (nDauRes == 2)
         {
-          Int_t labelFirstDauRes = part->GetDaughter(0);
+          Int_t labelFirstDauRes = part->GetDaughterLabel(0);
           for (Int_t iDauRes = 0; iDauRes < 2; iDauRes++)
           {
             Int_t indDR = labelFirstDauRes + iDauRes;

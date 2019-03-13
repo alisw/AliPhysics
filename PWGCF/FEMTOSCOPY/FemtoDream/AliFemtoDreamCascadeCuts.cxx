@@ -349,7 +349,7 @@ bool AliFemtoDreamCascadeCuts::isSelected(AliFemtoDreamCascade *casc) {
     }
     if (pass) {
       if (!fMinimalBooking)
-        fHist->FillInvMassPtv0(casc->GetPt(), casc->Getv0Mass());
+        fHist->FillInvMassPtv0(casc->Getv0Pt(), casc->Getv0Mass());
     }
     if (pass && fcutv0Mass) {
       if ((casc->Getv0Mass() < (fv0Mass - fv0Width))

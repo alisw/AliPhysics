@@ -29,7 +29,7 @@ class AliFemtoPairCutMergedFraction : public AliFemtoPairCutAntiGamma {
   virtual bool Pass(const AliFemtoPair* pair);
   virtual AliFemtoString Report();
   virtual TList *ListSettings();
-  virtual AliFemtoPairCut* Clone();
+  virtual AliFemtoPairCut* Clone() const;
 
   void SetDistanceMax(double maxdistance);
   void SetMergedFractionLimit(double fractionlimit);
@@ -53,6 +53,7 @@ class AliFemtoPairCutMergedFraction : public AliFemtoPairCutAntiGamma {
 #endif
 };
 
-inline AliFemtoPairCut* AliFemtoPairCutMergedFraction::Clone() { AliFemtoPairCutMergedFraction* cPairCut = new AliFemtoPairCutMergedFraction(*this); return cPairCut;}
+inline AliFemtoPairCut* AliFemtoPairCutMergedFraction::Clone() const
+  { AliFemtoPairCutMergedFraction* cPairCut = new AliFemtoPairCutMergedFraction(*this); return cPairCut;}
 
 #endif

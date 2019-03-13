@@ -1670,10 +1670,9 @@ void AliHFPtSpectrum::ComputeSystUncertainties(Bool_t combineFeedDown) {
   }else{
     nentries = fgSigmaCorr->GetN();
   }
-
   // Draw all the systematics independently
-//  systematics->DrawErrors(grErrFeeddown);
-    fSystematics->DrawErrors(grErrFeeddown);
+  //  systematics->DrawErrors(grErrFeeddown);
+  fSystematics->DrawErrors(grErrFeeddown);
   // Set the sigma systematic uncertainties
   // possibly combine with the feed-down uncertainties 
   Double_t errylcomb=0., erryhcomb=0;

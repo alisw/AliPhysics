@@ -2403,8 +2403,8 @@ AliAnalysisTaskDmesonJetsSub::EMesonDecayChannel_t AliAnalysisTaskDmesonJetsSub:
 
   if (part->GetNDaughters() == 2) {
 
-    AliAODMCParticle* d1 = static_cast<AliAODMCParticle*>(mcArray->At(part->GetDaughter(0)));
-    AliAODMCParticle* d2 = static_cast<AliAODMCParticle*>(mcArray->At(part->GetDaughter(1)));
+    AliAODMCParticle* d1 = static_cast<AliAODMCParticle*>(mcArray->At(part->GetDaughterLabel(0)));
+    AliAODMCParticle* d2 = static_cast<AliAODMCParticle*>(mcArray->At(part->GetDaughterLabel(1)));
 
     if (!d1 || !d2) {
       return decay;
@@ -3204,7 +3204,7 @@ void AliAnalysisTaskDmesonJetsSub::UserCreateOutputObjects()
   }
 
       Int_t dimx   = 10;
-      Int_t nbinsx[10]   = {50,100,10,20,2,2,100,150,100,9};
+      Int_t nbinsx[10]   = {50,100,10,20,2,2,200,150,100,9};
       Double_t minx[10] =  {0,-10,0,0,0,0,0,1.6,0,0};
       Double_t maxx[10]  = {5,10,100,20,2,2,100,2.3,100,0.9};
       TString titlex[10]={"log(1/deltaR)","log(zteta)","jet pt","n","type","flagSubjet","ptD","invmass","frac","abs(eta)"};
@@ -3732,7 +3732,7 @@ void AliAnalysisTaskDmesonJetsSub::FillPartonLevelHistograms()
 
     Bool_t lastInPartonShower = kTRUE;
     Bool_t hadronDaughter = kFALSE;
-    for (Int_t daughterIndex = part.second->GetFirstDaughter(); daughterIndex <= part.second->GetLastDaughter(); daughterIndex++){
+    for (Int_t daughterIndex = part.second->GetDaughterFirst(); daughterIndex <= part.second->GetDaughterLast(); daughterIndex++){
       if (daughterIndex < 0) {
         AliDebugStream(5) << "Could not find daughter index!" << std::endl;
         continue;

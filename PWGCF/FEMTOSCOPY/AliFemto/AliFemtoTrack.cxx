@@ -10,6 +10,7 @@
 #include <algorithm>
 
 
+
 AliFemtoTrack::AliFemtoTrack():
   fCharge(0),
   fPidProbElectron(0.0f),
@@ -102,7 +103,7 @@ AliFemtoTrack::AliFemtoTrack():
   std::fill_n(fKinkIndexes, 3, 0);
   std::fill_n(fVertex, 3, -9999);
   std::fill_n(fHasPointOnITS, 6, kFALSE);
-  std::fill_n(fNominalTpcPoints, 9, AliFemtoThreeVector(0.0));
+  std::fill_n(fNominalTpcPoints, 9, AliFemtoThreeVector(-9999, -9999, -9999));
 }
 
 
@@ -313,34 +314,28 @@ AliFemtoTrack& AliFemtoTrack::operator=(const AliFemtoTrack& aTrack)
               ? aTrack.GetHiddenInfo()->Clone()
               : nullptr;
 
-  if (aTrack.fTrueMomentum != NULL) {
-    if (fTrueMomentum == NULL) {
-      fTrueMomentum = new AliFemtoThreeVector(*aTrack.fTrueMomentum);
-    } else {
-      *fTrueMomentum = *aTrack.fTrueMomentum;
-    }
+  if (aTrack.fTrueMomentum && fTrueMomentum) {
+    *fTrueMomentum = *aTrack.fTrueMomentum;
+  } else if (aTrack.fTrueMomentum) {
+    fTrueMomentum = new AliFemtoThreeVector(*aTrack.fTrueMomentum);
   } else {
     delete fTrueMomentum;
-    fTrueMomentum = NULL;
+    fTrueMomentum = nullptr;
   }
 
-  if (aTrack.fEmissionPoint != NULL) {
-    if (fEmissionPoint == NULL) {
-      fEmissionPoint = new AliFemtoLorentzVector(*aTrack.fEmissionPoint);
-    } else {
-      *fEmissionPoint = *aTrack.fEmissionPoint;
-    }
+  if (aTrack.fEmissionPoint && fEmissionPoint) {
+    *fEmissionPoint = *aTrack.fEmissionPoint;
+  } else if (aTrack.fEmissionPoint) {
+    fEmissionPoint = new AliFemtoLorentzVector(*aTrack.fEmissionPoint);
   } else {
     delete fEmissionPoint;
-    fEmissionPoint = NULL;
+    fEmissionPoint = nullptr;
   }
 
-  if (aTrack.fGlobalEmissionPoint != NULL) {
-    if (fGlobalEmissionPoint == NULL) {
-      fGlobalEmissionPoint = new AliFemtoThreeVector(*aTrack.fGlobalEmissionPoint);
-    } else {
-      *fGlobalEmissionPoint = *aTrack.fGlobalEmissionPoint;
-    }
+  if (aTrack.fGlobalEmissionPoint && fGlobalEmissionPoint) {
+    *fGlobalEmissionPoint = *aTrack.fGlobalEmissionPoint;
+  } else if (aTrack.fGlobalEmissionPoint) {
+    fGlobalEmissionPoint = new AliFemtoThreeVector(*aTrack.fGlobalEmissionPoint);
   } else {
     delete fGlobalEmissionPoint;
     fGlobalEmissionPoint = NULL;
@@ -632,6 +627,10 @@ void AliFemtoTrack::SetNominalTPCEntrancePoint(double *aXTPC)
   fNominalTpcEntrancePoint.SetZ(aXTPC[2]);
 }
 
+void AliFemtoTrack::SetNominalTPCPoints(const AliFemtoThreeVector* const points)
+{
+  std::copy_n(points, 9, fNominalTpcPoints);
+}
 void AliFemtoTrack::SetNominalTPCPoints(double **aXTPC)
 {
   // Store the nominal TPC points

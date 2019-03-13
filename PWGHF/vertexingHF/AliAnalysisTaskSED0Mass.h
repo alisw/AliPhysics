@@ -4,7 +4,7 @@
 /* Copyright(c) 1998-2009, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
 
-/* $Id$ */ 
+/* $Id$ */
 
 ///*************************************************************************
 /// \class Class AliAnalysisTaskSED0Mass
@@ -25,6 +25,7 @@
 #include "AliAnalysisTaskSE.h"
 #include "AliRDHFCutsD0toKpi.h"
 #include "AliNormalizationCounter.h"
+#include "AliEventCuts.h"
 
 class AliAODEvent;
 
@@ -73,6 +74,19 @@ class AliAnalysisTaskSED0Mass : public AliAnalysisTaskSE
   void SetPileupRejectionVZEROTPCout(Bool_t flag) {fEnablePileupRejVZEROTPCout=flag;}
   void SetFillSubSampleHist(Bool_t flag) {fFillSubSampleHist=flag;}
 
+  void SetEnableCentralityCorrCutsPbPb(Bool_t flag=kFALSE, Int_t year=2018) {
+    fEnableCentralityCorrCuts=flag;
+    if(year==2015) {
+      fEventCuts.SetupLHC15o();
+      fEventCuts.SetManualMode();
+    }else if(year==2018){
+      fEventCuts.SetupPbPb2018();
+      fEventCuts.SetManualMode();
+    }else{
+      fEventCuts.SetupRun2PbPb();
+    }
+  }
+
 
   Bool_t GetCutOnDistr() const {return fCutOnDistr;}
   Bool_t GetUsePid4Distr() const {return fUsePid4Distr;}
@@ -92,7 +106,7 @@ class AliAnalysisTaskSED0Mass : public AliAnalysisTaskSE
  private:
 
   AliAnalysisTaskSED0Mass(const AliAnalysisTaskSED0Mass &source);
-  AliAnalysisTaskSED0Mass& operator=(const AliAnalysisTaskSED0Mass& source); 
+  AliAnalysisTaskSED0Mass& operator=(const AliAnalysisTaskSED0Mass& source);
   void	   DrawDetSignal(AliAODRecoDecayHF2Prong *part, TList *ListDetSignal);
 
   void     FillMassHists(AliAODRecoDecayHF2Prong *part, TClonesArray *arrMC, AliAODMCHeader *mcHeader, AliRDHFCutsD0toKpi *cuts, TList *listout);
@@ -111,6 +125,8 @@ class AliAnalysisTaskSED0Mass : public AliAnalysisTaskSE
   THnSparseF *fMCAccBFeed;        //!<!histo for StepMCAcc for D0 FD (pt,y,ptB)
   Bool_t fStepMCAcc;              // flag to activate histos for StepMCAcc
   AliRDHFCutsD0toKpi *fCuts;      //  Cuts - sent to output slot 4
+  Bool_t    fEnableCentralityCorrCuts; /// flag to enable centrality correlation event cuts
+  AliEventCuts  fEventCuts;       // Event cut object for centrality correlation event cuts
   THnSparseF *fHistMassPtImpParTC[5];   //!<! histograms for impact paramter studies
   Int_t     fArray;               ///  can be D0 or Like Sign candidates
   Bool_t    fReadMC;              ///  flag for MC array: kTRUE = read it, kFALSE = do not read it
@@ -140,7 +156,7 @@ class AliAnalysisTaskSED0Mass : public AliAnalysisTaskSE
   Bool_t	fPIDCheck;			/// flag to decide whether to fill "PID = x" bins in fNentrie
   Bool_t    fDrawDetSignal;		/// flag to decide whether to draw the TPC dE/dx and TOF signal before/after PID
   Bool_t fUseQuarkTagInKine;            // flag for quark/hadron level identification of prompt and feeddown
-  Bool_t fFillSparses;                  // flag to activate THnSparse 
+  Bool_t fFillSparses;                  // flag to activate THnSparse
   THnSparseF *fhStudyImpParSingleTrackSign; //!<! sparse with imp par residual cuts for MC
   THnSparseF *fhStudyImpParSingleTrackCand;  //!<! sparse with imp par residual cuts for Data
   THnSparseF *fhStudyImpParSingleTrackFd;   //!<! sparse with imp par residual cuts for MC
@@ -155,4 +171,3 @@ class AliAnalysisTaskSED0Mass : public AliAnalysisTaskSE
 };
 
 #endif
-

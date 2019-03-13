@@ -55,24 +55,31 @@ class AliForwardSettings : public TObject {
 
   TH3F* nuacentral;
   TH3F* nuaforward;
+  TH3F* seccorr;
 
   bool doNUA;
 
   Double_t gap;
-
+  Double_t maxpt;
+  Double_t minpt;
   Bool_t mc;
   Bool_t esd;
 
   Int_t tracktype;
   UShort_t nua_mode;
+  UShort_t ref_mode;
   Bool_t useTPC;
   Bool_t useSPD;
+  Bool_t useITS;
   Bool_t use_primaries;
   Bool_t use_primaries_cen;
   Bool_t use_primaries_fwd;
+  Bool_t useEventcuts;
   Bool_t etagap;
   Bool_t makeFakeHoles;
-
+  Int_t fnoClusters;
+  Double_t fCutChargedDCAxyMax;
+  Double_t fCutChargedDCAzMax;
   TString centrality_estimator;
   // return true if good event
 
@@ -97,6 +104,13 @@ class AliForwardSettings : public TObject {
     kNormal   = 0x0001, // Standard QC{2} and QC{4} calculations
     kFill  = 0x0002, // QC{2} w/ an eta-gap
     kInterpolate    = 0x0004, // 3 correlator method for QC{2} w/ an eta-gap
+  };
+
+  enum {
+    kSPDref   = 0x0001, // Standard QC{2} and QC{4} calculations
+    kITSref  = 0x0002, // QC{2} w/ an eta-gap
+    kTPCref    = 0x0003, // 3 correlator method for QC{2} w/ an eta-gap
+    kFMDref = 0x0004
   };
 
   enum {
