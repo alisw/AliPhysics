@@ -141,7 +141,7 @@ AliAnalysisTaskSE *AddTaskSigma0Run2(bool isRun1 = false, bool isMC = false, boo
   // TEMPORARY FIX TO GET MORE YIELD IN MC
   antiv0Cuts->SetV0OnFlyStatus(false);
 
-  if (suffix != "0") {
+  if (suffix != "0" && suffix != "1") {
     v0Cuts->SetLightweight(true);
     antiv0Cuts->SetLightweight(true);
   }
@@ -161,7 +161,7 @@ AliAnalysisTaskSE *AddTaskSigma0Run2(bool isRun1 = false, bool isMC = false, boo
   if (suffix == "0"){
   sigmaCuts->SetArmenterosCut(0,0.12,-1,-0.6);
   }
-  if (suffix != "0" && suffix != "999") {
+  if (suffix != "0" && suffix != "999" && suffix != "1") {
     sigmaCuts->SetLightweight(true);
     sigmaCuts->SetIsSpectrum(false);
   }
@@ -175,7 +175,7 @@ AliAnalysisTaskSE *AddTaskSigma0Run2(bool isRun1 = false, bool isMC = false, boo
   if (suffix == "0"){
   antiSigmaCuts->SetArmenterosCut(0,0.12,-1,-0.6);
   }
-  if (suffix != "0" && suffix != "999") {
+  if (suffix != "0" && suffix != "999" && suffix != "1") {
     antiSigmaCuts->SetLightweight(true);
     antiSigmaCuts->SetIsSpectrum(false);
   }
@@ -221,7 +221,7 @@ AliAnalysisTaskSE *AddTaskSigma0Run2(bool isRun1 = false, bool isMC = false, boo
   task->SetSigmaCuts(sigmaCuts);
   task->SetAntiSigmaCuts(antiSigmaCuts);
 
-  if (suffix != "0" && suffix != "999") {
+  if (suffix != "0" && suffix != "999" && suffix != "1") {
     task->SetLightweight(true);
   }
 
