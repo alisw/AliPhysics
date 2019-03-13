@@ -17,6 +17,8 @@
 // S. Trogolo, stefano.trogolo@cern.ch
 ///////////////////////////////////////////////////////////////////////////////////////
 
+#include <TGrid.h>
+
 #include "AliHFQnVectorHandler.h"
 #include "AliAODVertex.h"
 #include "AliOADBContainer.h"
@@ -955,6 +957,9 @@ bool AliHFQnVectorHandler::OpenInfoCalbration()
         fOADBFile = nullptr;
     }
 
+    if (!gGrid) {
+        TGrid::Connect("alien://");
+    }
     fOADBFile = TFile::Open(fOADBFileName.Data());
 
     if(!fOADBFile){
