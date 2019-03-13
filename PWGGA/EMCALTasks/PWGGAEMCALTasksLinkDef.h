@@ -52,4 +52,11 @@
 #pragma link C++ class ClusterMCStatStruct+;
 #pragma link C++ class ClusterpiMCStatStruct+;
 
+#pragma link C++ class AliCLTask+;
+#pragma link C++ class  CLInfo+;
+#pragma link C++ class  CLPart+;
+#pragma link C++ class  CLTrack+;
+#pragma link C++ class  CLMCpart+;
+#pragma link C++ class  CLClus+;
+
 #endif
