@@ -17,6 +17,8 @@
 // S. Trogolo, stefano.trogolo@cern.ch
 ///////////////////////////////////////////////////////////////////////////////////////
 
+#include <TGrid.h>
+
 #include "AliHFQnVectorHandler.h"
 #include "AliAODVertex.h"
 #include "AliOADBContainer.h"
