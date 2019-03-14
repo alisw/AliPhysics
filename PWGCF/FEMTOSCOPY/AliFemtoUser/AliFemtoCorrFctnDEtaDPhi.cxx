@@ -543,8 +543,8 @@ void AliFemtoCorrFctnDEtaDPhi::SetDoPtAnalysis(int do2d)
   fPtSumDist->Sumw2();
 
   // set up numerator
-  char tTitNumDPhiPt[101] = "NumDPhiPt";
-  strncat(tTitNumDPhiPt,title, 100);
+  //char tTitNumDPhiPt[101] = "NumDPhiPt";
+  //strncat(tTitNumDPhiPt,title, 100);
   
   
 
