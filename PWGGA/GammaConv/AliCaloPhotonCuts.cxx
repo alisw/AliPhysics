@@ -3620,7 +3620,6 @@ void AliCaloPhotonCuts::MatchTracksToClusters(AliVEvent* event, Double_t weight,
           if(fHistClusterdEtadPtAfterQA) fHistClusterdEtadPtAfterQA->Fill(dEta,inTrack->Pt());
           if(fHistClusterdPhidPtAfterQA) fHistClusterdPhidPtAfterQA->Fill(dPhi,inTrack->Pt());
         }
-        if(arrClustersMatch) delete cluster;
         if(!fUseTMMIPsubtraction) break;
       } else if(isEMCalOnly){
         if(fHistDistanceTrackToClusterAfterQA)fHistDistanceTrackToClusterAfterQA->Fill(TMath::Sqrt(dR2), weight);
@@ -5853,7 +5852,7 @@ void AliCaloPhotonCuts::ApplyNonLinearity(AliVCluster* cluster, Int_t isMC, AliV
       label_case_18:
       if(isMC>0){
          // pp 5 TeV LHC15n+LHC17pq anchored MCs combined
-         if( fCurrentMC==k17l3b || fCurrentMC==k18j2 ||  fCurrentMC==k17e2 || fCurrentMC == k18j3 || fCurrentMC == k18b8) {
+         if( fCurrentMC==k17l3b || fCurrentMC==k18j2 ||  fCurrentMC==k17e2 || fCurrentMC == k18j3 || fCurrentMC == k16h3 || fCurrentMC == k18b8) {
           if(fClusterType==4){
             energy /= (FunctionNL_kSDM(energy, 0.94723, -3.44986, -0.483821));
           }

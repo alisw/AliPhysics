@@ -166,8 +166,6 @@ class AliTPCcalibResidualPID : public AliAnalysisTaskSE {
   static Double_t fgCutNcr;  // Cut variable for TPCCutMIGeo concerning num crossed rows
   static Double_t fgCutNcl;  // Cut variable for TPCCutMIGeo concerning num clusters
   
-    AliAnalysisUtils *fAnaUtils; //! Object to use analysis utils like pile-up rejection
-  
   static Double_t Lund(Double_t* xx, Double_t* par);
   static Double_t SaturatedLund(Double_t* xx, Double_t* par);
   static Double_t Aleph(Double_t* xx, Double_t* par);
@@ -204,6 +202,7 @@ class AliTPCcalibResidualPID : public AliAnalysisTaskSE {
   Double_t fZvtxCutEvent;  // Vertex z cut for the event (cm)
   
   AliESDv0KineCuts *fV0KineCuts;       //! ESD V0 kine cuts
+  AliAnalysisUtils *fAnaUtils; //! Object to use analysis utils like pile-up rejection
   Bool_t fCutOnProdRadiusForV0el;      // Cut on production radius for V0 electrons
   Int_t fNumTagsStored;     // Number of entries of fV0tags
   Char_t* fV0tags;         //! Pointer to array with tags for identified particles from V0 decays

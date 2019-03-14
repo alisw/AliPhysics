@@ -1,5 +1,5 @@
 AliAnalysisTaskSE *AddTaskSigma0Femto(bool isMC = false, bool MomRes = false,
-                                      bool etaPhiPlotsAtTPCRadii = false,
+                                      bool fullBlastQA = false,
                                       TString trigger = "kINT7",
                                       const char *cutVariation = "0") {
   TString suffix = TString::Format("%s", cutVariation);
@@ -386,8 +386,10 @@ AliAnalysisTaskSE *AddTaskSigma0Femto(bool isMC = false, bool MomRes = false,
     config->SetClosePairRejection(closeRejection);
   }
 
-  if (suffix == "0" && etaPhiPlotsAtTPCRadii) {
+  if (suffix == "0" && fullBlastQA) {
     config->SetPhiEtaBinnign(true);
+    config->SetkTBinning(true);
+    config->SetmTBinning(true);
   }
   config->SetdPhidEtaPlots(false);
   config->SetPDGCodes(PDGParticles);

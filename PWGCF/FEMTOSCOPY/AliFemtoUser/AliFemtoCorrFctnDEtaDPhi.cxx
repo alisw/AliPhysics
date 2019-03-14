@@ -59,9 +59,16 @@ AliFemtoCorrFctnDEtaDPhi::AliFemtoCorrFctnDEtaDPhi(const char* title, const int&
   auto tTitDenD = "DenDPhiDEta" + suffix;
   fDPhiDEtaDenominator = new TH2D(tTitDenD,title,aPhiBins,fphiL,fphiT,aEtaBins,-2.0,2.0);
 
-  auto tTitNum = "PtSumDist" + suffix;
-  fPtSumDist = new TH1D(tTitNum,title,200,0,10);
-  fPtSumDist->Sumw2();
+
+
+  
+  // set up numerator
+  //char tTitNumDPhi[101] = "NumDPhi";
+  //strncat(tTitNumDPhi,title, 100);
+
+  //auto tTitNum = "PtSumDist" + suffix;
+  //fPtSumDist = new TH1D(tTitNum,title,200,0,10);
+  //fPtSumDist->Sumw2();
 
   auto tTitNumDPhi = "NumDPhi" + suffix;
   fDPhiNumerator = new TH1D(tTitNumDPhi,title,aPhiBins*2,-0.5*TMath::Pi(),1.5*TMath::Pi());
@@ -163,7 +170,7 @@ AliFemtoCorrFctnDEtaDPhi::~AliFemtoCorrFctnDEtaDPhi(){
 
   delete fDPhiDEtaNumerator;
   delete fDPhiDEtaDenominator;
-  delete fPtSumDist;
+ 
 
 
   delete fDPhiNumerator;
@@ -171,6 +178,7 @@ AliFemtoCorrFctnDEtaDPhi::~AliFemtoCorrFctnDEtaDPhi(){
   delete fDCosNumerator;
   delete fDCosDenominator;
   if (fDoPtAnalysis) {
+    delete fPtSumDist;
     delete fDPhiPtNumerator;
     delete fDPhiPtDenominator;
     delete fDCosPtNumerator;
@@ -337,7 +345,7 @@ void AliFemtoCorrFctnDEtaDPhi::AddRealPair( AliFemtoPair* pair){
   double pt1 = TMath::Hypot(px1, py1);
   double pt2 = TMath::Hypot(px2, py2);
   //   double ptmin = pt1>pt2 ? pt2 : pt1;
-  fPtSumDist->Fill(pt1+pt2);
+  
 
   //   double cosphi = (px1*px2 + py1*py2 + pz1*pz2)/
   //   sqrt((px1*px1 + py1*py1 + pz1*pz1)*(px2*px2 + py2*py2 + pz2*pz2));
@@ -354,6 +362,7 @@ void AliFemtoCorrFctnDEtaDPhi::AddRealPair( AliFemtoPair* pair){
     double yt1 = TMath::Log(sqrt(1+(pt1/PionMass)*(pt1/PionMass))+(pt1/PionMass));
     double yt2 = TMath::Log(sqrt(1+(pt2/PionMass)*(pt2/PionMass))+(pt2/PionMass));
     fYtYtNumerator->Fill(yt1,yt2);
+	fPtSumDist->Fill(pt1+pt2);
 
   }
 
@@ -527,8 +536,20 @@ void AliFemtoCorrFctnDEtaDPhi::SetDoPtAnalysis(int do2d)
   const char *title = fDPhiDEtaNumerator->GetTitle();
 
   TString suffix = title;
+  
+  char tTitNum[101] = "PtSumDist";
+  strncat(tTitNum,title, 100);
+  fPtSumDist = new TH1D(tTitNum,title,200,0,10);
+  fPtSumDist->Sumw2();
+
+  // set up numerator
+  //char tTitNumDPhiPt[101] = "NumDPhiPt";
+  //strncat(tTitNumDPhiPt,title, 100);
+  
+  
 
   auto tTitNumDPhiPt = "NumDPhiPt" + suffix;
+  ////
   fDPhiPtNumerator = new TH2D(tTitNumDPhiPt,title,aPhiBins*2,-0.5*TMath::Pi(),3./2.*TMath::Pi(), 30, 0.0, 3.0);
   auto tTitDenDPhiPt = "DenDPhiPt" + suffix;
   fDPhiPtDenominator = new TH2D(tTitDenDPhiPt,title,aPhiBins*2,-0.5*TMath::Pi(),3./2.*TMath::Pi(), 30, 0.0, 3.0);
