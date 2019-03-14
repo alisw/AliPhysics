@@ -529,7 +529,7 @@ void AliAnalysisTaskNetLambdaIdent::UserExec(Option_t *){
 	      phi = mctrack->Phi();
 	      nd = mctrack->GetNDaughters();
 	      fd = mctrack->GetDaughterFirst();
-	      ld = mctrack->GetDaughterFirst();
+	      ld = mctrack->GetDaughterLast();
 	    }
 	  else // esd
 	    {
