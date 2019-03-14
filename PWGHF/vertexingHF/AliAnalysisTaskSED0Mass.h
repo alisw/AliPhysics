@@ -76,10 +76,7 @@ class AliAnalysisTaskSED0Mass : public AliAnalysisTaskSE
 
   void SetEnableCentralityCorrCutsPbPb(Bool_t flag=kFALSE, Int_t year=2018) {
     fEnableCentralityCorrCuts=flag;
-    if(year==2015) {
-      fEventCuts.SetupLHC15o();
-      fEventCuts.SetManualMode();
-    }else if(year==2018){
+    if(year==2018){
       fEventCuts.SetupPbPb2018();
       fEventCuts.SetManualMode();
     }else{
