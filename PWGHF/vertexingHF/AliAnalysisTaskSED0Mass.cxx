@@ -111,7 +111,10 @@ AliAnalysisTaskSED0Mass::AliAnalysisTaskSED0Mass():
   fDetSignal(0),
   fhMultVZEROTPCoutTrackCorrNoCut(0x0),
   fhMultVZEROTPCoutTrackCorr(0x0),
-  fEnablePileupRejVZEROTPCout(kFALSE)
+  fEnablePileupRejVZEROTPCout(kFALSE),
+  fhMultVZEROTPCclustersCorrNoCut(0x0),
+  fhMultVZEROTPCclustersCorr(0x0),
+  fEnablePileupRejVZEROTPCcls(kFALSE)
 {
   /// Default constructor
   for(Int_t ih=0; ih<5; ih++) fHistMassPtImpParTC[ih]=0x0;
@@ -165,7 +168,10 @@ AliAnalysisTaskSED0Mass::AliAnalysisTaskSED0Mass(const char *name,AliRDHFCutsD0t
   fDetSignal(0),
   fhMultVZEROTPCoutTrackCorrNoCut(0x0),
   fhMultVZEROTPCoutTrackCorr(0x0),
-  fEnablePileupRejVZEROTPCout(kFALSE)
+  fEnablePileupRejVZEROTPCout(kFALSE),
+  fhMultVZEROTPCclustersCorrNoCut(0x0),
+  fhMultVZEROTPCclustersCorr(0x0),
+  fEnablePileupRejVZEROTPCcls(kFALSE)
 {
   /// Default constructor
 
@@ -249,6 +255,16 @@ AliAnalysisTaskSED0Mass::~AliAnalysisTaskSED0Mass()
   if (fhMultVZEROTPCoutTrackCorr) {
     delete fhMultVZEROTPCoutTrackCorr;
     fhMultVZEROTPCoutTrackCorr = 0;
+  }
+
+  if(fhMultVZEROTPCclustersCorrNoCut){
+    delete fhMultVZEROTPCclustersCorrNoCut;
+    fhMultVZEROTPCclustersCorrNoCut = 0;
+  }
+
+  if(fhMultVZEROTPCclustersCorr){
+      delete fhMultVZEROTPCclustersCorr;
+      fhMultVZEROTPCclustersCorr = 0;
   }
 
 }
@@ -1067,6 +1083,10 @@ void AliAnalysisTaskSED0Mass::UserCreateOutputObjects()
   fDistr->Add(fhMultVZEROTPCoutTrackCorrNoCut);
   fDistr->Add(fhMultVZEROTPCoutTrackCorr);
 
+  fhMultVZEROTPCclustersCorrNoCut = new TH2F("fhMultVZEROTPCclustersCorrNoCut","; n^{o} TPC clusters; VZERO multiplicity", 1000,0.,10000.,6000,0.,60000.);
+  fhMultVZEROTPCclustersCorr = new TH2F("fhMultVZEROTPCclustersCorr","; n^{o} TPC clusters; VZERO multiplicity", 1000,0.,10000.,6000,0.,60000.);
+  fDistr->Add(fhMultVZEROTPCclustersCorrNoCut);
+  fDistr->Add(fhMultVZEROTPCclustersCorr);
 
   if(fEnableCentralityCorrCuts){
     fEventCuts.AddQAplotsToList(fDetSignal,true);
@@ -1176,6 +1196,7 @@ void AliAnalysisTaskSED0Mass::UserExec(Option_t */*option*/)
   //printf("VERTEX Z %f %f\n",vtx1->GetZ(),mcHeader->GetVtxZ());
 
   Int_t nTPCout=0;
+  Int_t nTPCcls=aod->GetNumberOfTPCClusters();
   Float_t mTotV0=0;
   AliAODVZERO* v0data=(AliAODVZERO*)((AliAODEvent*)aod)->GetVZEROData();
   Float_t mTotV0A=v0data->GetMTotV0A();
@@ -1195,6 +1216,13 @@ void AliAnalysisTaskSED0Mass::UserExec(Option_t */*option*/)
   if(fEnablePileupRejVZEROTPCout){
     if(mTotV0<mV0Cut) return;
   }
+
+  if(fhMultVZEROTPCclustersCorrNoCut) fhMultVZEROTPCclustersCorrNoCut->Fill(nTPCcls,mTotV0);
+  Float_t mV0TPCclsCut=-2000.+(0.013*nTPCcls)+(1.25e-9*nTPCcls*nTPCcls);
+  if(fEnablePileupRejVZEROTPCcls){
+    if(mTotV0<mV0TPCclsCut) return;
+  }
+  if(fhMultVZEROTPCclustersCorr) fhMultVZEROTPCclustersCorr->Fill(nTPCcls,mTotV0);
 
   //histogram filled with 1 for every AOD
   fNentries->Fill(0);
@@ -2712,7 +2740,7 @@ Float_t AliAnalysisTaskSED0Mass::GetTrueImpactParameter(AliAODMCHeader *mcHeader
   }
 
   //  Int_t nDau=partD0->GetNDaughters();
-  Int_t labelFirstDau = partD0->GetDaughterLabel(0); 
+  Int_t labelFirstDau = partD0->GetDaughterLabel(0);
 
   for(Int_t iDau=0; iDau<2; iDau++){
     Int_t ind = labelFirstDau+iDau;
