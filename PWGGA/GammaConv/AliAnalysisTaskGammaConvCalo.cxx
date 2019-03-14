@@ -6185,7 +6185,7 @@ void AliAnalysisTaskGammaConvCalo::CalculateBackground(){
   }else if(((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->DoJetMixing()){
     if(fDoJetAnalysis){
       for(Int_t iCurrent=0;iCurrent<fClusterCandidates->GetEntries();iCurrent++){
-        AliAODConversionPhoton currentEventGoodV0 = *(AliAODConversionPhoton*)(fGammaCandidates->At(iCurrent));
+        AliAODConversionPhoton currentEventGoodV0 = *(AliAODConversionPhoton*)(fClusterCandidates->At(iCurrent));
         if(fConvJetReader->GetNJets()>0){
           fVectorJetEta = fConvJetReader->GetVectorJetEta();
           fVectorJetPhi = fConvJetReader->GetVectorJetPhi();
