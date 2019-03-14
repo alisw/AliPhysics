@@ -105,9 +105,9 @@ void AliAnalysisTaskEmcalJetEnergySpectrum::UserCreateOutputObjects(){
   if(!fUserPtBinning.GetSize()) {
     // binning not set. apply default binning
     AliInfoStream() << "Using default pt binning";
-    fUserPtBinning.Set(201);
+    fUserPtBinning.Set(301);
     double current(0.);
-    for(int istep = 0; istep < 201; istep++) {
+    for(int istep = 0; istep < 301; istep++) {
       fUserPtBinning[istep] = current;
       current += 1; 
     }
@@ -361,6 +361,7 @@ AliAnalysisTaskEmcalJetEnergySpectrum *AliAnalysisTaskEmcalJetEnergySpectrum::Ad
     case AliJetContainer::kChargedJet:  jettypestring = "ChargedJets"; acctype = AliJetContainer::kTPCfid; break;
     case AliJetContainer::kFullJet:     jettypestring = "FullJets";    acctype = AliJetContainer::kEMCALfid; break;
     case AliJetContainer::kNeutralJet:  jettypestring = "NeutralJets"; acctype = AliJetContainer::kEMCALfid; break;
+    case AliJetContainer::kUndefinedJetType: break;
   };
 
   std::stringstream tag, outfilename;
