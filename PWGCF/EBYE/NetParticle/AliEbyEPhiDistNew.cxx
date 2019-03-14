@@ -693,7 +693,7 @@ void AliEbyEPhiDistNew::UserExec( Option_t * ){
 
   }
  
-  if( fCentrality < 40 || fCentrality >= 50 ) return;
+  if( fCentrality < 20 || fCentrality >= 30 ) return;
 
   fHistCent->Fill(fCentrality);
 
