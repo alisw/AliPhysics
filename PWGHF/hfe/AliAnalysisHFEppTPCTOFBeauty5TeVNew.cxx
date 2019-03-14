@@ -284,6 +284,13 @@ AliAnalysisHFEppTPCTOFBeauty5TeVNew::AliAnalysisHFEppTPCTOFBeauty5TeVNew(const c
 ,fPtBeautyReconstructedTracksPID(0)
 ,fPtBeautyReconstructedTracksPIDTPC(0)
 ,fPtBeautyReconstructedTracksPIDTOF(0)
+,fPtCharmGenerated(0)
+,fPtCharmReconstructedAll(0)
+,fPtCharmReconstructedTracks(0)
+,fPtCharmReconstructedTracksPID(0)
+,fPtCharmReconstructedTracksPIDTPC(0)
+,fPtCharmReconstructedTracksPIDTOF(0)
+
 ,hPtLambdaC(0)
 ,hPtD0(0)
 
@@ -541,6 +548,13 @@ AliAnalysisHFEppTPCTOFBeauty5TeVNew::AliAnalysisHFEppTPCTOFBeauty5TeVNew()
 ,fPtBeautyReconstructedTracksPID(0)
 ,fPtBeautyReconstructedTracksPIDTPC(0)
 ,fPtBeautyReconstructedTracksPIDTOF(0)
+,fPtCharmGenerated(0)
+,fPtCharmReconstructedAll(0)
+,fPtCharmReconstructedTracks(0)
+,fPtCharmReconstructedTracksPID(0)
+,fPtCharmReconstructedTracksPIDTPC(0)
+,fPtCharmReconstructedTracksPIDTOF(0)
+
 ,hPtLambdaC(0)
 ,hPtD0(0)
 
@@ -1074,6 +1088,9 @@ void AliAnalysisHFEppTPCTOFBeauty5TeVNew::UserCreateOutputObjects()
     fPtBeautyGenerated = new TH1F("fPtBeautyGenerated","; p_{T} [GeV/c]; Count",32,ptbinning);
     fOutputList->Add(fPtBeautyGenerated);
     
+    fPtCharmGenerated = new TH1F("fPtCharmGenerated","; p_{T} [GeV/c]; Count",32,ptbinning);
+    fOutputList->Add(fPtCharmGenerated);
+    
     fPtGeneratedBmesons = new TH1F("fPtGeneratedBmesons","; p_{T} [GeV/c]; Count",1000,0,200);
     fOutputList->Add(fPtGeneratedBmesons);
    
@@ -1091,6 +1108,21 @@ void AliAnalysisHFEppTPCTOFBeauty5TeVNew::UserCreateOutputObjects()
     
     fPtBeautyReconstructedTracksPIDTOF = new TH1F("fPtBeautyReconstructedTracksPIDTOF","; p_{T} [GeV/c]; Count",32,ptbinning);
     fOutputList->Add(fPtBeautyReconstructedTracksPIDTOF);
+    
+    fPtCharmReconstructedAll = new TH1F("fPtCharmReconstructedAll","; p_{T} [GeV/c]; Count",32,ptbinning);
+    fOutputList->Add(fPtCharmReconstructedAll);
+    
+    fPtCharmReconstructedTracks = new TH1F("fPtCharmReconstructedTracks","; p_{T} [GeV/c]; Count",32,ptbinning);
+    fOutputList->Add(fPtCharmReconstructedTracks);
+    
+    fPtCharmReconstructedTracksPID = new TH1F("fPtCharmReconstructedTracksPID","; p_{T} [GeV/c]; Count",32,ptbinning);
+    fOutputList->Add(fPtCharmReconstructedTracksPID);
+    
+    fPtCharmReconstructedTracksPIDTPC = new TH1F("fPtCharmReconstructedTracksPIDTPC","; p_{T} [GeV/c]; Count",32,ptbinning);
+    fOutputList->Add(fPtCharmReconstructedTracksPIDTPC);
+    
+    fPtCharmReconstructedTracksPIDTOF = new TH1F("fPtCharmReconstructedTracksPIDTOF","; p_{T} [GeV/c]; Count",32,ptbinning);
+    fOutputList->Add(fPtCharmReconstructedTracksPIDTOF);
     
       
     ///THnSparse to store DCA of different particle species in MC-------------
@@ -1432,6 +1464,10 @@ void AliAnalysisHFEppTPCTOFBeauty5TeVNew::UserExec(Option_t *)
 					fPtBeautyGenerated->Fill(fMCparticle->Pt());
                     //cout<<iMC<<endl;
 				}
+				if(fIsFromD){
+					fPtCharmGenerated->Fill(fMCparticle->Pt());
+                    //cout<<iMC<<endl;
+				}
 				
 			}
 			///----------------------------------------------------  
@@ -1469,15 +1505,7 @@ void AliAnalysisHFEppTPCTOFBeauty5TeVNew::UserExec(Option_t *)
         fPhi = track->Phi();
         fP = TMath::Sqrt((track->Pt())*(track->Pt()) + (track->Pz())*(track->Pz()));
         
-        if(fPt <=2.0 ){
-        ftofPIDmincut = -2;
-        ftofPIDmaxcut = 2;
-        }
-        else{
-        ftofPIDmincut = -3;
-        ftofPIDmaxcut = 3;
-        }
-        
+ 
         fITSnClus =  track->GetNumberOfITSClusters();
         fTPCnClus =  track->GetNumberOfTPCClusters();
         
@@ -1515,6 +1543,10 @@ void AliAnalysisHFEppTPCTOFBeauty5TeVNew::UserExec(Option_t *)
 			if(IsHFEMC){
 				if(fIsFromMesonB || fIsFromBarionB || fIsFromBarionBD || fIsFromMesonBD){
 					fPtBeautyReconstructedAll->Fill(fPt);
+					//cout<<"reconstructed by track cut"<<endl;
+				}
+				if(fIsFromD){
+					fPtCharmReconstructedAll->Fill(fPt);
 					//cout<<"reconstructed by track cut"<<endl;
 				}
 			}
@@ -1565,6 +1597,10 @@ void AliAnalysisHFEppTPCTOFBeauty5TeVNew::UserExec(Option_t *)
 			if(IsHFEMC){
 				if(fIsFromMesonB || fIsFromBarionB || fIsFromBarionBD || fIsFromMesonBD){
 					fPtBeautyReconstructedTracks->Fill(fPt);
+					//cout<<"reconstructed by track cut"<<endl;
+				}
+				if(fIsFromD){
+					fPtCharmReconstructedTracks->Fill(fPt);
 					//cout<<"reconstructed by track cut"<<endl;
 				}
 			}
@@ -1874,6 +1910,9 @@ void AliAnalysisHFEppTPCTOFBeauty5TeVNew::UserExec(Option_t *)
 					if(fIsFromMesonB || fIsFromBarionB || fIsFromBarionBD || fIsFromMesonBD){
 						fPtBeautyReconstructedTracksPIDTPC->Fill(fPt);
 					}
+					if(fIsFromD){
+						fPtCharmReconstructedTracksPIDTPC->Fill(fPt);
+					}
 				}
 			}
 			///----------------------------------------------------
@@ -1886,6 +1925,9 @@ void AliAnalysisHFEppTPCTOFBeauty5TeVNew::UserExec(Option_t *)
 				if(IsHFEMC){
 					if(fIsFromMesonB || fIsFromBarionB || fIsFromBarionBD || fIsFromMesonBD){
 						fPtBeautyReconstructedTracksPIDTOF->Fill(fPt);
+					}
+					if(fIsFromD){
+						fPtCharmReconstructedTracksPIDTOF->Fill(fPt);
 					}
 				}
 			}
@@ -1951,6 +1993,9 @@ void AliAnalysisHFEppTPCTOFBeauty5TeVNew::UserExec(Option_t *)
 			if(IsHFEMC){
 				if(fIsFromMesonB || fIsFromBarionB || fIsFromBarionBD || fIsFromMesonBD){
 					fPtBeautyReconstructedTracksPID->Fill(fPt);
+				}
+				if(fIsFromD){
+					fPtCharmReconstructedTracksPID->Fill(fPt);
 				}
 			}
 		}
@@ -2401,7 +2446,7 @@ void AliAnalysisHFEppTPCTOFBeauty5TeVNew::InvMassCheckData(int itrack, AliVTrack
         //Some cuts on the associated track
         //if(ptAsso < 0.3) continue;
         if(ptAsso < 0.1) continue;
-        if(trackAsso->Eta()<-0.9 || trackAsso->Eta()>0.9) continue;
+        if(trackAsso->Eta()<=-0.9 || trackAsso->Eta()>=0.9) continue;
         if(nsigmaAsso < -3 || nsigmaAsso > 3) continue;
         //if(nsigmaAsso < fMinNSigAssoCut || nsigmaAsso > 3) continue;
         
@@ -2412,7 +2457,8 @@ void AliAnalysisHFEppTPCTOFBeauty5TeVNew::InvMassCheckData(int itrack, AliVTrack
 	fExtraCuts->SetRecEventInfo(fAOD);
 	
         fExtraCuts->GetHFEImpactParameters(trackAsso, d0z0Asso, covAsso);
-              
+        fExtraCuts->SetRequireITSpixel(AliHFEextraCuts::kAny); 
+        fExtraCuts->SetClusterRatioTPC(0.6, AliHFEextraCuts::kFoundOverFindable);    
        // if(trackAsso->PropagateToDCA(pVtx, fAOD->GetMagneticField(), 20., d0z0Asso, covAsso))
             if(TMath::Abs(d0z0Asso[0]) > DCAxyCut || TMath::Abs(d0z0Asso[1]) > DCAzCut) continue;
         
@@ -2501,7 +2547,7 @@ void AliAnalysisHFEppTPCTOFBeauty5TeVNew::InvMassCheckMC(int itrack, AliVTrack *
         
         //Some cuts on the associated track
         if(ptAsso < 0.1) continue;
-        if(trackAsso->Eta()<-0.9 || trackAsso->Eta()>0.9) continue;
+        if(trackAsso->Eta()<=-0.9 || trackAsso->Eta()>=0.9) continue;
         if(nsigmaAsso < -3 || nsigmaAsso > 3) continue;
         
          if(!fExtraCuts){
@@ -2511,7 +2557,8 @@ void AliAnalysisHFEppTPCTOFBeauty5TeVNew::InvMassCheckMC(int itrack, AliVTrack *
 	fExtraCuts->SetRecEventInfo(fAOD);
 	
         fExtraCuts->GetHFEImpactParameters(trackAsso, d0z0Asso, covAsso);
-              
+        fExtraCuts->SetRequireITSpixel(AliHFEextraCuts::kAny); 
+        fExtraCuts->SetClusterRatioTPC(0.6, AliHFEextraCuts::kFoundOverFindable);    
        // if(trackAsso->PropagateToDCA(pVtx, fAOD->GetMagneticField(), 20., d0z0Asso, covAsso))
             if(TMath::Abs(d0z0Asso[0]) > DCAxyCut || TMath::Abs(d0z0Asso[1]) > DCAzCut) continue;
         
