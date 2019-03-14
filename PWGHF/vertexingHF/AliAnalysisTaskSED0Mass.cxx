@@ -1219,7 +1219,7 @@ void AliAnalysisTaskSED0Mass::UserExec(Option_t */*option*/)
 
   if(fhMultVZEROTPCclustersCorrNoCut) fhMultVZEROTPCclustersCorrNoCut->Fill(nTPCcls,mTotV0);
   Float_t mV0TPCclsCut=-2000.+(0.013*nTPCcls)+(1.25e-9*nTPCcls*nTPCcls);
-  if(fEnablePileupRejVZEROTPCcls){
+  if(fEnablePileupRejVZEROTPCcls){ // this pile-up rejection is specific for 2018 Pb-Pb analysis
     if(mTotV0<mV0TPCclsCut) return;
   }
   if(fhMultVZEROTPCclustersCorr) fhMultVZEROTPCclustersCorr->Fill(nTPCcls,mTotV0);
