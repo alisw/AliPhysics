@@ -1216,19 +1216,17 @@ void AliAnalysisTaskParticleEff::UserExec(Option_t *)
     else if(fPidMethod==kNSigmaNoDoubleCounting){
       //******** Without double counting *******************
       double nSigmaPIDPi = 0, nSigmaPIDK = 0, nSigmaPIDP = 0;
-      nSigmaPIDPi = IsPionNSigma(track->Pt(),nSigmaTPCPi, nSigmaTOFPi, tTofSig-pidTime[2]);
-      nSigmaPIDK = IsKaonNSigma(track->Pt(),nSigmaTPCK, nSigmaTOFK, tTofSig-pidTime[3]);
-      nSigmaPIDP = IsProtonNSigma(track->Pt(),nSigmaTPCP, nSigmaTOFP, tTofSig-pidTime[4]);
       if(track->Pt()<0.5){
 	nSigmaPIDPi = abs(nSigmaTPCPi);
 	nSigmaPIDK  = abs(nSigmaTPCK);
 	nSigmaPIDP  = abs(nSigmaTPCP);
       }
       else{
-	nSigmaPIDPi = TMath::Hypot(nSigmaTOFPi, nSigmaTPCPi);
-	nSigmaPIDK= TMath::Hypot(nSigmaTOFK, nSigmaTPCK);
-	nSigmaPIDP= TMath::Hypot(nSigmaTOFP, nSigmaTPCP);
+	nSigmaPIDPi = TMath::Hypot(nSigmaTPCPi,nSigmaTOFPi);
+	nSigmaPIDK= TMath::Hypot(nSigmaTPCK,nSigmaTOFK);
+	nSigmaPIDP= TMath::Hypot(nSigmaTPCP,nSigmaTOFP);
       }
+      
       if(nSigmaPIDPi<nSigmaPIDK && nSigmaPIDPi<nSigmaPIDP){
 	isPionNsigma = nSigmaPIDPi;
       }
