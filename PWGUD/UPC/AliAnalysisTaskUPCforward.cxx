@@ -149,7 +149,9 @@ AliAnalysisTaskUPCforward::AliAnalysisTaskUPCforward()
       fInvariantMassDistributionIncoherentZNCanyZNAzeroH(0),
       fInvariantMassDistributionIncoherentZNCanyZNAanyH(0),
       fAngularDistribOfPositiveMuonRestFrameJPsiH(0),
-      fAngularDistribOfNegativeMuonRestFrameJPsiH(0)
+      fAngularDistribOfNegativeMuonRestFrameJPsiH(0),
+      fCheckHelicityRestFrameJPsiH(0),
+      fThetaDistribOfPositiveMuonRestFrameJPsiRapidityBinH{ 0, 0, 0, 0, 0, 0, 0, 0}
 {
     // default constructor, don't allocate memory here!
     // this is used by root for IO purposes, it needs to remain empty
@@ -230,7 +232,9 @@ AliAnalysisTaskUPCforward::AliAnalysisTaskUPCforward(const char* name)
       fInvariantMassDistributionIncoherentZNCanyZNAzeroH(0),
       fInvariantMassDistributionIncoherentZNCanyZNAanyH(0),
       fAngularDistribOfPositiveMuonRestFrameJPsiH(0),
-      fAngularDistribOfNegativeMuonRestFrameJPsiH(0)
+      fAngularDistribOfNegativeMuonRestFrameJPsiH(0),
+      fCheckHelicityRestFrameJPsiH(0),
+      fThetaDistribOfPositiveMuonRestFrameJPsiRapidityBinH{ 0, 0, 0, 0, 0, 0, 0, 0}
 {
     FillGoodRunVector(fVectorGoodRunNumbers);
 
@@ -495,6 +499,17 @@ void AliAnalysisTaskUPCforward::UserCreateOutputObjects()
   fAngularDistribOfNegativeMuonRestFrameJPsiH = new TH1F("fAngularDistribOfNegativeMuonRestFrameJPsiH", "fAngularDistribOfNegativeMuonRestFrameJPsiH", 1000, -1., 1.);
   fOutputList->Add(fAngularDistribOfNegativeMuonRestFrameJPsiH);
 
+  fCheckHelicityRestFrameJPsiH = new TH1F("fCheckHelicityRestFrameJPsiH", "fCheckHelicityRestFrameJPsiH", 100000, -50., 50.);
+  fOutputList->Add(fCheckHelicityRestFrameJPsiH);
+
+  for(Int_t iRapidityBin = 0; iRapidityBin < 8; iRapidityBin++ ){
+    fThetaDistribOfPositiveMuonRestFrameJPsiRapidityBinH[iRapidityBin] = new TH1F(
+                Form("fThetaDistribOfPositiveMuonRestFrameJPsiRapidityBinH_%d", iRapidityBin),
+                Form("fThetaDistribOfPositiveMuonRestFrameJPsiRapidityBinH_%d", iRapidityBin),
+                1000, -1., 1.
+              );
+    fOutputList->Add(fThetaDistribOfPositiveMuonRestFrameJPsiRapidityBinH[iRapidityBin]);
+  }
 
   //_______________________________
   // - End of the function
@@ -1098,7 +1113,7 @@ void AliAnalysisTaskUPCforward::UserExec(Option_t *)
           if ( calibrated == 0 ) fZNCEnergyUncalibratedH->Fill(fZNCEnergy);
           if ( calibrated == 1 ) fZNCEnergyCalibratedH  ->Fill(fZNCEnergy);
 
-          /* - Now this offers the oppurtunity to do differential mass studies.
+             - Now this offers the oppurtunity to do differential mass studies.
              - This can be seen here. When we try to do everything while cutting
              - on the ZNC energy.
              -
@@ -1225,9 +1240,32 @@ void AliAnalysisTaskUPCforward::UserExec(Option_t *)
     Double_t dotProductMuonJPsi     = muonsCopyVector.Dot(possibleJPsiCopyVector);
     cosThetaMuonsRestFrame[iAngle]  = dotProductMuonJPsi/( muonsCopyVector.Mag() * possibleJPsiCopyVector.Mag() );
   }
-  fAngularDistribOfPositiveMuonRestFrameJPsiH->Fill(cosThetaMuonsRestFrame[0]);
-  fAngularDistribOfNegativeMuonRestFrameJPsiH->Fill(cosThetaMuonsRestFrame[1]);
-
+  /* - If we are in the J/Psi peak, hence 2.8 < M < 3.3 GeV/c, AND if we are
+     - in the coherent regime, so if the Pt < 0.25 GeV/c, we fill the plots.
+     -
+     - In the following note that the rapidity is well computed, so we are
+     - dealing with negative values... -4.0 < Y < -2.5 !!!
+     -
+   */
+  if ( (possibleJPsiCopy.Mag() > 2.8) && (possibleJPsiCopy.Mag() < 3.3) && (possibleJPsiCopy.Pt() < 0.25) ) {
+    fAngularDistribOfPositiveMuonRestFrameJPsiH->Fill(cosThetaMuonsRestFrame[0]);
+    fAngularDistribOfNegativeMuonRestFrameJPsiH->Fill(cosThetaMuonsRestFrame[1]);
+    fCheckHelicityRestFrameJPsiH->Fill( muonsCopy[0].Dot(muonsCopy[1]) );
+    /* - Now we are filling in terms of rapidity...
+       - The easiest way to do so I have envisioned is to simply
+       - check everytime if we are below the following threshold
+       - in a consecutive sense. This means that if we have not passed
+       - the previous check we are at least above it.
+       - This readily defines the rapidity bin.
+       -
+       */
+    for(Int_t iRapidityBin = 0; iRapidityBin < 8; iRapidityBin++){
+        if( (possibleJPsiCopy.Rapidity() + 4) < 1.5*(iRapidityBin + 1)/8 ){
+          fThetaDistribOfPositiveMuonRestFrameJPsiRapidityBinH[iRapidityBin]->Fill(cosThetaMuonsRestFrame[0]);
+          break;
+        }
+    }
+  }
 
   // post the data
   PostData(1, fOutputList);

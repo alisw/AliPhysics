@@ -98,9 +98,6 @@ class AliAnalysisTaskUPCforward : public AliAnalysisTaskSE
         AliMuonTrackCuts*       fMuonTrackCuts;
 
 
-
-        // Bool_t                  CheckIfPassedCuts(vector<>)
-
     protected:
 
                                 /// The input events for the analysis.
@@ -133,13 +130,12 @@ class AliAnalysisTaskUPCforward : public AliAnalysisTaskSE
                                  * As far as I understand, it should be the
                                  * pseudorapidity distribution of the many muons.
                                  */
-	      TH1F*                   fEtaMuonH;          //!
+        TH1F*                   fEtaMuonH;          //!
 
                                 /**
                                  *
                                  */
-	      TH1F*                   fRAbsMuonH;         //!
-
+        TH1F*                   fRAbsMuonH;         //!
 
                                 /**
                                  * This histogram records the invariant mass
@@ -484,6 +480,23 @@ class AliAnalysisTaskUPCforward : public AliAnalysisTaskSE
                                  * the polarization of the J/Psi!
                                  */
         TH1F*                   fAngularDistribOfNegativeMuonRestFrameJPsiH;
+
+                                /**
+                                 * This histogram represents the check over
+                                 * the helicity of the J/Psi. It should be flat
+                                 * if I remember well enough!
+                                 */
+        TH1F*                   fCheckHelicityRestFrameJPsiH;
+
+                                /**
+                                 * This histogram shows the angular distribution
+                                 * of the positive muon in the rest frame of the
+                                 * J/Psi. This histogram is needed to evaluate
+                                 * the polarization of the J/Psi! Divided in
+                                 * psudorapidity bins... 8??
+                                 */
+        TH1F*                   fThetaDistribOfPositiveMuonRestFrameJPsiRapidityBinH[8];
+
 
 
         // END DIFFERENTIAL NEUTRON EMISSION PLOTS
