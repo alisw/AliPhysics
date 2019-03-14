@@ -1471,15 +1471,15 @@ void AliAnalysisTaskGammaCalo::UserCreateOutputObjects(){
         fHistoTrueMultiplicityvsRecMultiplicity[iCut]->GetXaxis()->SetTitle("N_{true}");
         fHistoTrueMultiplicityvsRecMultiplicity[iCut]->GetYaxis()->SetTitle("N_{rec.}");
         fESDList[iCut]->Add(fHistoTrueMultiplicityvsRecMultiplicity[iCut]);
-        fHistoPionSpectrum[iCut]     = new TH1F("Charged pion spectrum", "Charged pion spectrum", 20, 0, 20);
+        fHistoPionSpectrum[iCut]     = new TH1F("Charged pion spectrum", "Charged pion spectrum", 200, 0, 20);
         fHistoPionSpectrum[iCut]->GetXaxis()->SetTitle("p_{T} (GeV/c)");
         fHistoPionSpectrum[iCut]->GetYaxis()->SetTitle("Number of charged pions");
         fESDList[iCut]->Add(fHistoPionSpectrum[iCut]);
-        fHistoProtonSpectrum[iCut]     = new TH1F("Proton spectrum", "Proton spectrum", 20, 0, 20);
+        fHistoProtonSpectrum[iCut]     = new TH1F("Proton spectrum", "Proton spectrum", 200, 0, 20);
         fHistoProtonSpectrum[iCut]->GetXaxis()->SetTitle("p_{T} (GeV/c)");
         fHistoProtonSpectrum[iCut]->GetYaxis()->SetTitle("Number of Protons");
         fESDList[iCut]->Add(fHistoProtonSpectrum[iCut]);
-        fHistoKaonSpectrum[iCut]     = new TH1F("Charged kaon spectrum", "Charged kaon spectrum", 20, 0, 20);
+        fHistoKaonSpectrum[iCut]     = new TH1F("Charged kaon spectrum", "Charged kaon spectrum", 200, 0, 20);
         fHistoKaonSpectrum[iCut]->GetXaxis()->SetTitle("p_{T} (GeV/c)");
         fHistoKaonSpectrum[iCut]->GetYaxis()->SetTitle("Number of charged kaons");
         fESDList[iCut]->Add(fHistoKaonSpectrum[iCut]);
