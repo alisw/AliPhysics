@@ -3568,8 +3568,8 @@ void AliHFSystErr::InitDplustoKpipi2016pPb0100(){
 
   // PID efficiency (from PID/noPID)
   fPIDEff = new TH1F("fPIDEff","fPIDEff",36,0,36);
-
-  for(Int_t i=1;i<=36;i++) fPIDEff->SetBinContent(i,0.0); //
+  fPIDEff->SetBinContent(2,0.015); //
+  for(Int_t i=3;i<=36;i++) fPIDEff->SetBinContent(i,0.0); //
 
   // MC dN/dpt
   fMCPtShape = new TH1F("fMCPtShape","fMCPtShape",36,0,36);
@@ -3615,7 +3615,7 @@ void AliHFSystErr::InitDplustoKpipi2016pPb5TeV_finebins(){
   // Raw yield extraction
 
   fRawYield = new TH1F("fRawYield","fRawYield",20,xbins);//
-  fRawYield->SetBinContent(1,0.010);//1-1.5
+  fRawYield->SetBinContent(1,0.10);//1-1.5
   fRawYield->SetBinContent(2,0.05);//1.5-2
   fRawYield->SetBinContent(3,0.02);// 2-2.5
   fRawYield->SetBinContent(4,0.02);// 2.5-3 
@@ -3641,7 +3641,7 @@ void AliHFSystErr::InitDplustoKpipi2016pPb5TeV_finebins(){
 
   // MC dN/dpt
   fMCPtShape = new TH1F("fMCPtShape","fMCPtShape",20,xbins);
-   for(Int_t i=1;i<=20;i++) fMCPtShape->SetBinContent(i,0);
+  for(Int_t i=1;i<=20;i++) fMCPtShape->SetBinContent(i,0);
 
   // particle-antiparticle
   //  fPartAntipart = new TH1F("fPartAntipart","fPartAntipart",24,0,24);
