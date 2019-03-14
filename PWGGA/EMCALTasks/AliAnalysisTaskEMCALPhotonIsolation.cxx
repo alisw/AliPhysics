@@ -166,6 +166,7 @@ fEOverPvsPt(0),
 fEOverPvsPtWithCPV(0),
 fClusEvsClusT(0),
 fClustEnBefAftNonLin(0),
+fNCellsPerCluster(0),
 fPTbeforeNonLinScaling(0),
 fPT(0),
 fE(0),
@@ -251,6 +252,8 @@ fPhiTracksVSclustPt(0),
 fEtaTracksVSclustPt(0),
 fTracksPhiVsPt(0),
 fTracksEtaVsPt(0),
+fEtaPhiSPDRefit(0),
+fEtaPhiNoSPDRefit(0), 
 fTrackResolutionPtMC(0),
 fVzBeforecut(0),
 fOutputTHnS(0),
@@ -390,6 +393,7 @@ fEOverPvsPt(0),
 fEOverPvsPtWithCPV(0),
 fClusEvsClusT(0),
 fClustEnBefAftNonLin(0),
+fNCellsPerCluster(0),
 fPTbeforeNonLinScaling(0),
 fPT(0),
 fE(0),
@@ -475,6 +479,8 @@ fPhiTracksVSclustPt(0),
 fEtaTracksVSclustPt(0),
 fTracksPhiVsPt(0),
 fTracksEtaVsPt(0),
+fEtaPhiSPDRefit(0),
+fEtaPhiNoSPDRefit(0), 
 fTrackResolutionPtMC(0),
 fVzBeforecut(0),
 fOutputTHnS(0),
@@ -1167,7 +1173,6 @@ void AliAnalysisTaskEMCALPhotonIsolation::UserCreateOutputObjects(){
     // fEtaPhiClusAftSel->Sumw2();
   fOutput->Add(fEtaPhiClusAftSel);
 
-
   if(fWho != 2){
     fSPDclustVsSPDtracklets = new TH2F("hSPDclustVsSPDtracklets","Number of SPD clusters VS number of SPD tracklets in events with |Zvtx| < 10",100,0,200,250,0,1000);
     fSPDclustVsSPDtracklets->Sumw2();
@@ -1189,6 +1194,11 @@ void AliAnalysisTaskEMCALPhotonIsolation::UserCreateOutputObjects(){
   fClustEnBefAftNonLin->SetYTitle("Non-lin. corr. #it{E} (GeV)");
   fClustEnBefAftNonLin->Sumw2();
   fOutput->Add(fClustEnBefAftNonLin);
+
+  fNCellsPerCluster = new TH2F ("hNCellsPerCluster","Number of cells per cluster vs energy", 200, 0., 100., 200, 0., 100.); 
+  fNCellsPerCluster->SetXTitle("#it{E} (GeV)");
+  fNCellsPerCluster->SetYTitle("#it{n}_{cells}");
+  fOutput->Add(fNCellsPerCluster);
 
   fPT = new TH1F("hPt_NC","#it{p}_{T} distribution for clusters before candidate selection",100,0.,100.);
   fPT->Sumw2();
@@ -1255,13 +1265,23 @@ void AliAnalysisTaskEMCALPhotonIsolation::UserCreateOutputObjects(){
     fOutput->Add(fEtaTracksVSclustPt);
   }
 
-  fTracksPhiVsPt = new TH2F("hTracksPhiVsPt", "Tracks #varphi vs #it{p}_{T}", 40, 0., 40., 100, 0., TMath::TwoPi());
+  fTracksPhiVsPt = new TH2F("hTracksPhiVsPt", "Tracks #varphi vs #it{p}_{T}", 40, 0., 40., 200, 0., TMath::TwoPi());
   fTracksPhiVsPt->Sumw2();
   fOutput->Add(fTracksPhiVsPt);
 
-  fTracksEtaVsPt = new TH2F("hTracksEtaVsPt", "Tracks #eta vs #it{p}_{T}", 40, 0., 40., 90, -0.9, 0.9);
+  fTracksEtaVsPt = new TH2F("hTracksEtaVsPt", "Tracks #eta vs #it{p}_{T}", 40, 0., 40., 180, -0.9, 0.9);
   fTracksEtaVsPt->Sumw2();
   fOutput->Add(fTracksEtaVsPt);
+
+  fEtaPhiSPDRefit = new TH2F ("hEtaPhiSPDRefit","#eta vs #varphi of tracks with SPD and ITS refit", 180, -0.9, 0.9, 200, 0., TMath::TwoPi());
+  fEtaPhiSPDRefit->SetXTitle("#eta");
+  fEtaPhiSPDRefit->SetYTitle("#varphi (rad)");
+  fOutput->Add(fEtaPhiSPDRefit);
+
+  fEtaPhiNoSPDRefit = new TH2F ("hEtaPhiNoSPDRefit","#eta vs #varphi of tracks without SPD and with ITS refit", 180, -0.9, 0.9, 200, 0., TMath::TwoPi());
+  fEtaPhiNoSPDRefit->SetXTitle("#eta");
+  fEtaPhiNoSPDRefit->SetYTitle("#varphi (rad)");
+  fOutput->Add(fEtaPhiNoSPDRefit);
 
   if(fWho != 2){
     fCTdistVSpTNC = new TH2F ("hDistanceC_TrackVSpT","Distance between Neutral Clust and closest Track vs pT Candidate",70,0.,70.,210,-0.1,2.);
@@ -1383,6 +1403,8 @@ Bool_t AliAnalysisTaskEMCALPhotonIsolation::SelectCandidate(AliVCluster *coi)
 
   fPtaftTime->Fill(vecCOI.Pt());
   fCutFlowClusters->Fill(2.5);
+
+  fNCellsPerCluster->Fill(vecCOI.E(), coi->GetNCells());
 
   if((coi->GetNCells() < 2))
     return kFALSE;
@@ -1671,6 +1693,26 @@ Bool_t AliAnalysisTaskEMCALPhotonIsolation::Run()
 	}
 	fTracksPhiVsPt->Fill(tr->Pt(),tr->Phi());
 	fTracksEtaVsPt->Fill(tr->Pt(),tr->Eta());
+
+	// Extracting the SPD status of hybrid tracks
+	Bool_t        bITSRefit    = (tr->GetStatus() & AliVTrack::kITSrefit) == AliVTrack::kITSrefit;
+	Bool_t        bConstrained = kFALSE;
+
+	AliAODTrack * aodTrack     = dynamic_cast<AliAODTrack*>(tr);
+	AliESDtrack * esdTrack     = dynamic_cast<AliESDtrack*>(tr);
+	if      (aodTrack) bConstrained = aodTrack->IsGlobalConstrained();
+	else if (esdTrack) bConstrained = (!esdTrack->HasPointOnITSLayer(0) && !esdTrack->HasPointOnITSLayer(1));
+
+	if (bConstrained) {      
+	  if (bITSRefit)
+	    fEtaPhiNoSPDRefit->Fill(tr->Eta(), tr->Phi());
+	}
+	else {
+	  if (bITSRefit)
+	    fEtaPhiSPDRefit->Fill(tr->Eta(), tr->Phi());
+	}
+	// Extracting the SPD status of hybrid tracks (end)
+
       }
 
       FillGeneralHistograms(coi,vecCOI,index);
@@ -1734,6 +1776,26 @@ Bool_t AliAnalysisTaskEMCALPhotonIsolation::Run()
 	  }
 	  fTracksPhiVsPt->Fill(tr->Pt(),tr->Phi());
 	  fTracksEtaVsPt->Fill(tr->Pt(),tr->Eta());
+
+	  // Extracting the SPD status of hybrid tracks
+	  Bool_t        bITSRefit    = (tr->GetStatus() & AliVTrack::kITSrefit) == AliVTrack::kITSrefit;
+	  Bool_t        bConstrained = kFALSE;
+
+	  AliAODTrack * aodTrack     = dynamic_cast<AliAODTrack*>(tr);
+	  AliESDtrack * esdTrack     = dynamic_cast<AliESDtrack*>(tr);
+	  if      (aodTrack) bConstrained = aodTrack->IsGlobalConstrained();
+	  else if (esdTrack) bConstrained = (!esdTrack->HasPointOnITSLayer(0) && !esdTrack->HasPointOnITSLayer(1));
+
+	  if (bConstrained) {      
+	    if (bITSRefit)
+	      fEtaPhiNoSPDRefit->Fill(tr->Eta(), tr->Phi());
+	  }
+	  else {
+	    if (bITSRefit)
+	      fEtaPhiSPDRefit->Fill(tr->Eta(), tr->Phi());
+	  }
+	  // Extracting the SPD status of hybrid tracks (end)
+
 	}
 
 	FillGeneralHistograms(coi,vecCOI,index);

@@ -301,6 +301,7 @@ class AliAnalysisTaskEMCALPhotonIsolation: public AliAnalysisTaskEmcal {
   TH2F                       * fEOverPvsPtWithCPV;              ///<  Cluster E over track p vs. cluster pT after CPV
   TH2F                       * fClusEvsClusT;                   //!<! Cluster Energy vs Cluster Time ---QA
   TH2F                       * fClustEnBefAftNonLin;            //!<! Cluster Energy before/after non-linearity correction
+  TH2F                       * fNCellsPerCluster;               //!<! Number of cells per cluster vs energy
   TH1F                       * fPTbeforeNonLinScaling;          //!<! Pt distribution (before non-lin scaling in MC, when applied)
   TH1F                       * fPT;                             //!<! Pt distribution
   TH1F                       * fE;                              //!<! E distribution
@@ -386,6 +387,8 @@ class AliAnalysisTaskEMCALPhotonIsolation: public AliAnalysisTaskEmcal {
   TH2F                       * fEtaTracksVSclustPt;             //!<!
   TH2F                       * fTracksPhiVsPt;                  //!<!
   TH2F                       * fTracksEtaVsPt;                  //!<!
+  TH2F                       * fEtaPhiSPDRefit;                 //!<!
+  TH2F                       * fEtaPhiNoSPDRefit;               //!<!
   TH2F                       * fTrackResolutionPtMC;            //!<!
   TH1F                       * fVzBeforecut;                    //!<!
   
