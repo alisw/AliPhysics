@@ -72,14 +72,12 @@ class AliAnalysisTaskSED0Mass : public AliAnalysisTaskSE
   void SetUseQuarkLevelTag(Bool_t opt){fUseQuarkTagInKine=opt;}
   void SetAODMismatchProtection(Int_t opt=1) {fAODProtection=opt;}
   void SetPileupRejectionVZEROTPCout(Bool_t flag) {fEnablePileupRejVZEROTPCout=flag;}
+  void SetPileupRejectionVZEROTPCcls(Bool_t flag) {fEnablePileupRejVZEROTPCcls=flag;}
   void SetFillSubSampleHist(Bool_t flag) {fFillSubSampleHist=flag;}
 
   void SetEnableCentralityCorrCutsPbPb(Bool_t flag=kFALSE, Int_t year=2018) {
     fEnableCentralityCorrCuts=flag;
-    if(year==2015) {
-      fEventCuts.SetupLHC15o();
-      fEventCuts.SetManualMode();
-    }else if(year==2018){
+    if(year==2018){
       fEventCuts.SetupPbPb2018();
       fEventCuts.SetManualMode();
     }else{
@@ -164,6 +162,10 @@ class AliAnalysisTaskSED0Mass : public AliAnalysisTaskSE
   TH2F *fhMultVZEROTPCoutTrackCorrNoCut;  //!<!
   TH2F *fhMultVZEROTPCoutTrackCorr;  //!<!
   Bool_t    fEnablePileupRejVZEROTPCout;
+  TH2F *fhMultVZEROTPCclustersCorrNoCut;  //!<!
+  TH2F *fhMultVZEROTPCclustersCorr;  //!<!
+  Bool_t    fEnablePileupRejVZEROTPCcls;
+
 
   /// \cond CLASSIMP
   ClassDef(AliAnalysisTaskSED0Mass,24); /// AliAnalysisTaskSE for D0->Kpi
