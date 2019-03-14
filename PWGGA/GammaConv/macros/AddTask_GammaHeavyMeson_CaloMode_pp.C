@@ -396,6 +396,9 @@ void AddTask_GammaHeavyMeson_CaloMode_pp(
   } else if (trainConfig == 901){ // PHOS clusters with larger acceptance
     cuts.AddCutCalo("00010113","2446600040013300000","0163103b00000010"); // INT7
     cuts.AddCutCalo("00062113","2446600040013300000","0163103b00000010"); // PHI7
+  } else if (trainConfig == 902){ // PHOS for eta prime
+    cuts.AddCutCalo("00010113","2446600043013300000","01631030000000d0"); // INT7
+    cuts.AddCutCalo("00062113","2446600043013300000","01631030000000d0"); // PHI7
 
     // *****************************************************************************************************
     // 13 TeV pp Run2 - EDC (EMCal + DCal) configurations

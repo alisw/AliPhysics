@@ -250,7 +250,9 @@ void AddTask_GammaHeavyMeson_ConvMode_pp(
   } else if (trainConfig == 406) {
     cuts.AddCutPCM("00010113", "00200009227300008250404000", "0163103000000000","1111100067032220000"); //INT7
     cuts.AddCutPCM("00010113", "00200009227300008250404000", "0163103b00000000","1111100067032220000"); //INT7
-
+  }  else if (trainConfig == 407) { //for eta prime
+    cuts.AddCutPCM("00010113", "00200009227300008250404000", "01631030000000d0"); //INT7
+  
   } else {
     Error(Form("HeavyNeutralMesonToGG_%i",trainConfig), "wrong trainConfig variable no cuts have been specified for the configuration");
     return;
