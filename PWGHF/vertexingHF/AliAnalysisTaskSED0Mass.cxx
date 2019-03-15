@@ -1329,6 +1329,11 @@ void AliAnalysisTaskSED0Mass::UserExec(Option_t */*option*/)
 
   fEventCounter++;
 
+  if(fSys==1 && (fWriteProtosgnVar || fWriteVariableTree)){
+    if(!fUseRejectionMethod) AliFatal("FATAL: Fill candidates variables in Pb-Pb w/o Rejection Method --> ACTIVATE IT!");
+    if(fUseRejectionMethod) AliWarning("WARNING: Fill candidates variables in Pb-Pb with Rejection Method --> Check a proper rejection factor is used!");
+  }
+
   // loop over candidates
   Int_t nInD0toKpi = inputArray->GetEntriesFast();
   if(fDebug>2) printf("Number of D0->Kpi: %d\n",nInD0toKpi);
@@ -2624,6 +2629,9 @@ void AliAnalysisTaskSED0Mass::FillCandVariables(AliAODEvent *aodev, AliAODRecoDe
     }
 
     //assignment candidate flag: 0-->D0; 1-->D0bar; 2-->D0 and D0bar
+
+    if(!fUsedMassWindow) AliWarning("WARNING: Mass window selection NOT used!");
+
     if(isD0sel && !isD0barsel){
       if (fUsedMassWindow && (invmassD0 < 1.7 || invmassD0 > 2.1)) return;
       selCand = 0;
