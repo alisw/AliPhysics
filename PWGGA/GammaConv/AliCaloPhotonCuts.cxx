@@ -6440,9 +6440,11 @@ void AliCaloPhotonCuts::ApplyNonLinearity(AliVCluster* cluster, Int_t isMC, AliV
           energy *= FunctionNL_kPi0MCMod(energy, 1.004055, 1.009121, 0.083153, 1.444362, 0.100294, 416.897753, 324.246101);
           if( fCurrentMC==k18f3bc || fCurrentMC==k18b9b || fCurrentMC==k18b9c ) {
             if(fClusterType==1  || (fClusterType == 4 && !isDCal)){
-              energy /= FunctionNL_DPOW(energy, 0.9952456542, 0.0138341175, -1.2855539410, 1.0092843163, 0.0123126175, -4.1691957278 );
+              energy /= FunctionNL_DPOW(energy, 0.9952456542, 0.0138341175,  -1.2855539410, 1.0092843163, 0.0123126175, -4.1691957278);
+              energy /= FunctionNL_DExp(energy, 1.0108067622, 3.7654440410, -13.6062772214, 1.0733438107, 0.0784398968, -2.5492190281) ;
             } else if (fClusterType==3 || (fClusterType == 4 && isDCal)){
               energy /= FunctionNL_DExp(energy, 0.9968158185, 15.1688406741, 3.6964381952, 1.0242323030, 0.1955714892, -3.8051558657) ;
+              energy /= FunctionNL_DExp(energy, 1.0108067622, 3.7654440410, -13.6062772214, 1.0733438107, 0.0784398968, -2.5492190281) ;
             }
           } else fPeriodNameAvailable = kFALSE;
         }
