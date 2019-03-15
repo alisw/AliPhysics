@@ -167,6 +167,8 @@ AliAnalysisTaskUPCforwardMC::AliAnalysisTaskUPCforwardMC()
       fBGCFlagsAD(0),
       fVectorCosThetaGenerated(0),
       fVectorCosThetaReconstructed(0),
+      fCosThetaGeneratedHelicityFrame(0),
+      fCosThetaReconHelicityFrame(0),
       fCounterUPCevent(0),
       fBinMigrationHelicityH(0),
       fCheckHelicityRestFrameJPsiH(0),
@@ -264,6 +266,8 @@ AliAnalysisTaskUPCforwardMC::AliAnalysisTaskUPCforwardMC( const char* name )
       fBGCFlagsAD(0),
       fVectorCosThetaGenerated(0),
       fVectorCosThetaReconstructed(0),
+      fCosThetaGeneratedHelicityFrame(0),
+      fCosThetaReconHelicityFrame(0),
       fCounterUPCevent(0),
       fBinMigrationHelicityH(0),
       fCheckHelicityRestFrameJPsiH(0),
@@ -1000,15 +1004,24 @@ void AliAnalysisTaskUPCforwardMC::UserExec(Option_t *)
     }
   }
 
-  fVectorCosThetaReconstructed.push_back(cosThetaMuonsRestFrame[0]);
+  // fVectorCosThetaReconstructed.push_back(cosThetaMuonsRestFrame[0]);
+  fCosThetaReconHelicityFrame = cosThetaMuonsRestFrame[0];
   /* - Mind that it could generate segmentation fault without
      - fCounterUPCevent-1, because we are incrementing the counter right after
      - it processes the MC events at Generated level...
      -
+     - Comparing old version with vector (unusable on MC due to the huge
+     - vector size) to the new easier on resources...
+     -
    */
-  if ( fVectorCosThetaGenerated.at(fCounterUPCevent-1) && cosThetaMuonsRestFrame[0] ) {
-        fBinMigrationHelicityH->Fill( fVectorCosThetaGenerated.at(fCounterUPCevent-1),
-                                      cosThetaMuonsRestFrame[0]
+  // if ( fVectorCosThetaGenerated.at(fCounterUPCevent-1) && cosThetaMuonsRestFrame[0] ) {
+  //       fBinMigrationHelicityH->Fill( fVectorCosThetaGenerated.at(fCounterUPCevent-1),
+  //                                     cosThetaMuonsRestFrame[0]
+  //                                   );
+  // }
+  if ( fCosThetaReconHelicityFrame ) {
+        fBinMigrationHelicityH->Fill( fCosThetaGeneratedHelicityFrame,
+                                      fCosThetaReconHelicityFrame
                                     );
   }
 
@@ -1166,7 +1179,8 @@ void AliAnalysisTaskUPCforwardMC::ProcessMCParticles(AliMCEvent* fMCEventArg)
                    */
                   fMCthetaDistribOfPositiveMuonRestFrameJPsiGeneratedTruthH->Fill(cosThetaMuonsRestFrameMC[0]);
                   fMCthetaDistribOfNegativeMuonRestFrameJPsiGeneratedTruthH->Fill(cosThetaMuonsRestFrameMC[1]);
-                  fVectorCosThetaGenerated.push_back(cosThetaMuonsRestFrameMC[0]);
+                  // fVectorCosThetaGenerated.push_back(cosThetaMuonsRestFrameMC[0]);
+                  fCosThetaGeneratedHelicityFrame = cosThetaMuonsRestFrameMC[0];
                   /* - Now we are filling in terms of rapidity...
                      - The easiest way to do so I have envisioned is to simply
                      - check everytime if we are below the following threshold
@@ -1184,7 +1198,8 @@ void AliAnalysisTaskUPCforwardMC::ProcessMCParticles(AliMCEvent* fMCEventArg)
           } else  {
                   fMCthetaDistribOfNegativeMuonRestFrameJPsiGeneratedTruthH->Fill(cosThetaMuonsRestFrameMC[0]);
                   fMCthetaDistribOfPositiveMuonRestFrameJPsiGeneratedTruthH->Fill(cosThetaMuonsRestFrameMC[1]);
-                  fVectorCosThetaGenerated.push_back(cosThetaMuonsRestFrameMC[1]);
+                  // fVectorCosThetaGenerated.push_back(cosThetaMuonsRestFrameMC[1]);
+                  fCosThetaGeneratedHelicityFrame = cosThetaMuonsRestFrameMC[1];
                   /* - Now we are filling in terms of rapidity...
                      - The easiest way to do so I have envisioned is to simply
                      - check everytime if we are below the following threshold

@@ -429,6 +429,40 @@ class AliAnalysisTaskUPCforwardMC : public AliAnalysisTaskSE
         std::vector<Double_t>   fVectorCosThetaReconstructed;           //!
 
                                 /**
+                                 * This is the GENERATED
+                                 * value of the cos(theta) in the HELICITY
+                                 * frame. It should be
+                                 * needed for the "bin migration" study...
+                                 * As far as I can imagine, in each event there
+                                 * should only be a single J/Psi because these
+                                 * are all UPC events, as such I should record
+                                 * all possible values for cos(theta) and plot
+                                 * only when the corresponding J/Psi falls
+                                 * inside the detector acceptance...
+                                 * The resulting plot should be TH2F and be like
+                                 * a lego plot. See for an example:
+                                 *https://www.researchgate.net/figure/The-migration-matrix-for-leading-p-jet-T-Element-i-j-is-the-probability-for-a-particle_fig1_222896619
+                                 */
+        Double_t                fCosThetaGeneratedHelicityFrame;           //!
+
+                                /**
+                                 * This is the RECONSTRUCTED
+                                 * value of the cos(theta) in the HELICITY
+                                 * frame. It should be
+                                 * needed for the "bin migration" study...
+                                 * As far as I can imagine, in each event there
+                                 * should only be a single J/Psi because these
+                                 * are all UPC events, as such I should record
+                                 * all possible values for cos(theta) and plot
+                                 * only when the corresponding J/Psi falls
+                                 * inside the detector acceptance...
+                                 * The resulting plot should be TH2F and be like
+                                 * a lego plot. See for an example:
+                                 *https://www.researchgate.net/figure/The-migration-matrix-for-leading-p-jet-T-Element-i-j-is-the-probability-for-a-particle_fig1_222896619
+                                 */
+        Double_t                fCosThetaReconHelicityFrame;           //!
+
+                                /**
                                  * Counter for the UPC events to access vectors.
                                  * The only thing that matters is a counter to
                                  * give me the proper value of the vector for
@@ -535,7 +569,7 @@ class AliAnalysisTaskUPCforwardMC : public AliAnalysisTaskSE
          * If I happen to encounter it again in the future, I will make sure to
          * record it!
          */
-        ClassDef(AliAnalysisTaskUPCforwardMC, 1);
+        ClassDef(AliAnalysisTaskUPCforwardMC, 2);
 };
 
 #endif
