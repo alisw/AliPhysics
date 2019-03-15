@@ -47,6 +47,8 @@
 #pragma link C++ class AliAnalysisTaskSignalLoss+;
 #pragma link C++ class RLightNucleus+;
 #pragma link C++ class SLightNucleus+;
+/// * Triton
+#pragma link C++ class AliAnalysisTaskTritonVsMultiplicity_PbPb+;
 /// * ReducedTreeNuclei
 #pragma link C++ class AliAnalysisTaskReducedTreeNuclei+;
 /// * Nucleipp
