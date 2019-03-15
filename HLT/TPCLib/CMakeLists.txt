@@ -36,6 +36,7 @@ else()
                         ${AliRoot_SOURCE_DIR}/GPU/GPUTracking/DataCompression
                         ${AliRoot_SOURCE_DIR}/GPU/TPCFastTransformation)
     add_definitions(-DHAVE_ALIGPU)
+    add_definitions(-DGPUCA_ALIROOT_LIB)
     set(LIBDEPS ${LIBDEPS} GPUTracking)
     set(LIBDEPS ${LIBDEPS} AliTPCFastTransformation)
 endif()

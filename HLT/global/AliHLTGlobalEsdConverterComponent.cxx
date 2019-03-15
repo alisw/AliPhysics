@@ -74,7 +74,7 @@
 #include "GPUTRDTrackData.h"
 #include "GPUTRDTrackPoint.h"
 #include "GPUTRDInterfaces.h"
-using namespace o2::gpu;
+using namespace GPUCA_NAMESPACE::gpu;
 #endif
 #include "AliHLTITSTrackPoint.h"
 #include "AliGRPManager.h"

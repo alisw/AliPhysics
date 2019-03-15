@@ -79,7 +79,7 @@
 #include "AliHLTITSClusterDataFormat.h"
 #include "AliHLTCDHWrapper.h"
 
-using namespace o2::gpu;
+using namespace GPUCA_NAMESPACE::gpu;
 
 /** ROOT macro for the implementation of ROOT specific class methods */
 ClassImp(AliHLTGlobalPromptRecoQAComponent)
