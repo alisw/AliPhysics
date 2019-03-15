@@ -69,7 +69,7 @@ class AliAnalysisTaskXi1530 : public AliAnalysisTaskSE {
     void SetnMix(Int_t nMix) { fnMix = nMix; }
     void SetHighMult(Bool_t highmult) { IsHighMult = highmult; }
     void SetIsPrimaryMC(Bool_t isprimarymc) { IsPrimaryMC = isprimarymc; }
-
+    void SetNoQA(Bool_t noQA) { fQA = noQA; }
     // Set Functions for the cut study & Systematic study
     void SetTPCNsigXi1530PionCut(Int_t fSysOption, Double_t nXi1530PionCut) {
         if (fSysOption == 0)
@@ -332,6 +332,7 @@ class AliAnalysisTaskXi1530 : public AliAnalysisTaskSE {
     Bool_t IsINEL0True = kFALSE;
     Bool_t IsHighMult = kFALSE;
     Bool_t IsPrimaryMC = kTRUE;
+    Bool_t fQA = kTRUE;
     THistManager* fHistos = nullptr;   //!
     TClonesArray* fMCArray = nullptr;  //!
     AliStack* fMCStack = nullptr;      //!
@@ -341,16 +342,19 @@ class AliAnalysisTaskXi1530 : public AliAnalysisTaskSE {
     Double_t PVy = 999;
     Double_t PVz = 999;
     Double_t bField = 999;
-    ClassDef(AliAnalysisTaskXi1530, 9);
+    ClassDef(AliAnalysisTaskXi1530, 10);
     // 1: Frist version
     // 2: Add Track cut2 for the Xi daughter particles
     // 3: Add FillMixingPool function
     // 4: Add Cut parameters to header and add "Set" fuction for cut
-    // study&Systematic study 5: include AliAnalysisTaskSE.h to avoid compile
-    // problem. 6: Add IsPrimaryMC option for MC study 7: Add Systematics option
-    // for systematics study 8: Change default systmatics on TPC PID for Xi
-    // daughter, Add Setter function for that. 9: Hot fix for the AliPhysics
-    // building
+    // study&Systematic study
+    // 5: include AliAnalysisTaskSE.h to avoid compile problem.
+    // 6: Add IsPrimaryMC option for MC study
+    // 7: Add Systematics option for systematics study
+    // 8: Change default systmatics on TPC PID for Xi daughter,
+    // Add Setter function for that.
+    // 9: Hot fix for the AliPhysics building
+    // 10: Add NoQA option to reduce output file size
 };
 
 #endif
