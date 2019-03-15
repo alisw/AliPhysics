@@ -105,6 +105,8 @@ AliAnalysisTaskSED0Mass::AliAnalysisTaskSED0Mass():
   fDrawDetSignal(kFALSE),
   fUseQuarkTagInKine(kTRUE),
   fFillSparses(0),
+  fUseRejectionMethod(kFALSE),
+  fRejectionFactor(0.01),
   fhStudyImpParSingleTrackSign(0),
   fhStudyImpParSingleTrackCand(0),
   fhStudyImpParSingleTrackFd(0),
@@ -162,6 +164,8 @@ AliAnalysisTaskSED0Mass::AliAnalysisTaskSED0Mass(const char *name,AliRDHFCutsD0t
   fDrawDetSignal(kFALSE),
   fUseQuarkTagInKine(kTRUE),
   fFillSparses(0),
+  fUseRejectionMethod(kFALSE),
+  fRejectionFactor(0.01),
   fhStudyImpParSingleTrackSign(0),
   fhStudyImpParSingleTrackCand(0),
   fhStudyImpParSingleTrackFd(0),
@@ -1334,36 +1338,43 @@ void AliAnalysisTaskSED0Mass::UserExec(Option_t */*option*/)
       Int_t ptbin=fCuts->PtBin(d->Pt());
       if(ptbin==-1) {fNentries->Fill(4); continue;} //out of bounds
       fIsSelectedCandidate=fCuts->IsSelected(d,AliRDHFCuts::kAll,aod); //selected
-      if(fFillVarHists) {
-	//if(!fCutOnDistr || (fCutOnDistr && fIsSelectedCandidate)) {
-	fDaughterTracks.AddAt((AliAODTrack*)d->GetDaughter(0),0);
-	fDaughterTracks.AddAt((AliAODTrack*)d->GetDaughter(1),1);
-	//check daughters
-	if(!fDaughterTracks.UncheckedAt(0) || !fDaughterTracks.UncheckedAt(1)) {
-	  AliDebug(1,"at least one daughter not found!");
-	  fNentries->Fill(5);
-	  fDaughterTracks.Clear();
-	  continue;
-	}
-	//}
-	FillVarHists(aod,d,mcArray,fCuts,fDistr);
+
+      if(fUseRejectionMethod){
+        if ((d->Pt() * 1000.) - (Int_t)(d->Pt() * 1000) > fRejectionFactor) 
+        continue;
       }
 
-      if (fDrawDetSignal) {
-	DrawDetSignal(d, fDetSignal);
+      if(fFillVarHists) {
+        //if(!fCutOnDistr || (fCutOnDistr && fIsSelectedCandidate)) {
+        fDaughterTracks.AddAt((AliAODTrack*)d->GetDaughter(0),0);
+	      fDaughterTracks.AddAt((AliAODTrack*)d->GetDaughter(1),1);
+	      //check daughters
+	      if(!fDaughterTracks.UncheckedAt(0) || !fDaughterTracks.UncheckedAt(1)) {
+	      AliDebug(1,"at least one daughter not found!");
+	      fNentries->Fill(5);
+	      fDaughterTracks.Clear();
+	      continue;
       }
+	    //}
+	    FillVarHists(aod,d,mcArray,fCuts,fDistr);
+    }
+
+      if (fDrawDetSignal) {
+        DrawDetSignal(d, fDetSignal);
+      }
+
+
+
       FillMassHists(d,mcArray,mcHeader,fCuts,fOutputMass);
       if(fFillSparses) NormIPvar(aod, d,mcArray);
       if (fPIDCheck) {
-	Int_t isSelectedPIDfill = 3;
-	if (!fReadMC || (fReadMC && fUsePid4Distr)) isSelectedPIDfill = fCuts->IsSelectedPID(d); //0 rejected,1 D0,2 Dobar, 3 both
-
-	if (isSelectedPIDfill == 0)fNentries->Fill(7);
-	if (isSelectedPIDfill == 1)fNentries->Fill(8);
-	if (isSelectedPIDfill == 2)fNentries->Fill(9);
-	if (isSelectedPIDfill == 3)fNentries->Fill(10);
+        Int_t isSelectedPIDfill = 3;
+	      if (!fReadMC || (fReadMC && fUsePid4Distr)) isSelectedPIDfill = fCuts->IsSelectedPID(d); //0 rejected,1 D0,2 Dobar, 3 both
+	      if (isSelectedPIDfill == 0)fNentries->Fill(7);
+        if (isSelectedPIDfill == 1)fNentries->Fill(8);
+	      if (isSelectedPIDfill == 2)fNentries->Fill(9);
+	      if (isSelectedPIDfill == 3)fNentries->Fill(10);
       }
-
     }
 
     fDaughterTracks.Clear();
@@ -2261,8 +2272,8 @@ void AliAnalysisTaskSED0Mass::FillMassHists(AliAODRecoDecayHF2Prong *part, TClon
   if (fCuts->GetCombPID() && (fCuts->GetBayesianStrategy() == AliRDHFCutsD0toKpi::kBayesWeight || fCuts->GetBayesianStrategy() == AliRDHFCutsD0toKpi::kBayesWeightNoFilter)) {
     weigD0=fCuts->GetWeightsNegative()[AliPID::kKaon] * fCuts->GetWeightsPositive()[AliPID::kPion];
     weigD0bar=fCuts->GetWeightsPositive()[AliPID::kKaon] * fCuts->GetWeightsNegative()[AliPID::kPion];
-    if (weigD0 > 1.0 || weigD0 < 0.) {weigD0 = 0.;}
-    if (weigD0bar > 1.0 || weigD0bar < 0.) {weigD0bar = 0.;} //Prevents filling with weight > 1, or < 0
+    if (weigD0 < 0. || weigD0 > 1.0) {weigD0 = 0.;}
+    if (weigD0bar < 0. || weigD0bar > 1.0) {weigD0bar = 0.;} //Prevents filling with weight > 1, or < 0
   }
 
   //count candidates selected by cuts
