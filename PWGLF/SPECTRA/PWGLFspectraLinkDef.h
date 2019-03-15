@@ -21,6 +21,7 @@
 #pragma link C++ class AlidNdPtEfficiency+;
 #pragma link C++ class AlidNdPtEventCuts+;
 #pragma link C++ class AlidNdPtTask+;
+#pragma link C++ class AlidNdPtHelper+;
 #pragma link C++ class AlidNdPtTools+;
 #pragma link C++ class AliAnalysisTaskMKBase+;
 #pragma link C++ class AliAnalysisTaskMKTest+;
