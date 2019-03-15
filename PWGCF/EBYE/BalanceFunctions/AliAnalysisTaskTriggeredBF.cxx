@@ -36,6 +36,7 @@
 #include "AliAnalysisTaskTriggeredBF.h"
 #include "AliBalanceTriggered.h"
 
+#include <random>
 
 // Analysis task for the TriggeredBF code
 // Authors: Panos.Christakoglou@nikhef.nl, m.weber@cern.ch
@@ -1068,7 +1069,9 @@ TObjArray* AliAnalysisTaskTriggeredBF::GetShuffledTracks(TObjArray *tracks){
     chargeVector->push_back(track->Charge());
   }  
  
-  random_shuffle(chargeVector->begin(), chargeVector->end());
+  std::random_device rd;
+  std::default_random_engine engine{rd()};
+  std::shuffle(chargeVector->begin(), chargeVector->end(), engine);
   
   for(Int_t i = 0; i < tracks->GetEntriesFast(); i++){
     AliVParticle* track = (AliVParticle*) tracks->At(i);

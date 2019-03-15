@@ -51,6 +51,7 @@
 #include "AliAnalysisTaskTriggeredBF.h"
 #include "TFile.h"
 #include <iostream>
+#include <random>
 
 
 // Analysis task for the BF vs Psi code
@@ -4170,7 +4171,9 @@ TObjArray* AliAnalysisTaskBFPsi::GetShuffledTracks(TObjArray *tracks, Double_t g
   Int_t gRun = GetIndexRun(event->GetRunNumber());
   Int_t gCentrIndex = GetIndexCentrality(gCentrality);
  
-  random_shuffle(chargeVector->begin(), chargeVector->end());
+  std::random_device rd;
+  std::default_random_engine engine{rd()};
+  std::shuffle(chargeVector->begin(), chargeVector->end(), engine);
   
   for(Int_t i = 0; i < tracks->GetEntriesFast(); i++){
     AliVParticle* track = (AliVParticle*) tracks->At(i);
