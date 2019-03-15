@@ -990,7 +990,9 @@ void AliAnalysisTaskHeavyNeutralMesonToGG::UserCreateOutputObjects(){
     if (fIsMC > 1){
       fHistoMotherInvMassPt[iCut]->Sumw2();
       fHistoMotherBackInvMassPt[iCut]->Sumw2();
-      if (fHistoMotherMatchedInvMassPt[iCut]) fHistoMotherMatchedInvMassPt[iCut]->Sumw2();
+      if(!fDoLightOutput && fMesonRecoMode == 1){
+        if (fHistoMotherMatchedInvMassPt[iCut]) fHistoMotherMatchedInvMassPt[iCut]->Sumw2();
+      }
     }
 
     if (fDoMesonQA > 0 ){
@@ -1217,8 +1219,10 @@ void AliAnalysisTaskHeavyNeutralMesonToGG::UserCreateOutputObjects(){
             fHistoDoubleCountTrueConvGammaRPt[iCut]->Sumw2();
             fHistoMultipleCountTrueConvGamma[iCut]->Sumw2();
           }
-          if (fMesonRecoMode > 0 || fEnableClusterCutsForTrigger){
+          if (fMesonRecoMode < 2 || fEnableClusterCutsForTrigger){
             fHistoTruePrimaryConvGammaPt[iCut]->Sumw2();
+          }
+          if (fMesonRecoMode > 0 || fEnableClusterCutsForTrigger){
             fHistoTruePrimaryClusGammaPt[iCut]->Sumw2();
             fHistoTrueNLabelsInClusPt[iCut]->Sumw2();
             fHistoTrueClusConvGammaPt[iCut]->Sumw2();
@@ -2613,7 +2617,9 @@ void AliAnalysisTaskHeavyNeutralMesonToGG::CalculateMesonCandidates(){
 
           if((((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->MesonIsSelected(mesonCand,kTRUE,((AliConvEventCuts*)fEventCutArray->At(fiCut))->GetEtaShift()))){
             if (matched){
-              if(fHistoMotherMatchedInvMassPt[fiCut]) fHistoMotherMatchedInvMassPt[fiCut]->Fill(mesonCand->M(),mesonCand->Pt(),fWeightJetJetMC);
+              if(!fDoLightOutput && fMesonRecoMode == 1){
+                if(fHistoMotherMatchedInvMassPt[fiCut]) fHistoMotherMatchedInvMassPt[fiCut]->Fill(mesonCand->M(),mesonCand->Pt(),fWeightJetJetMC);
+              }
             }else {
               if (!gamma0->GetUseForMesonPair() || !gamma1->GetUseForMesonPair()){
                 fHistoMotherInvMassRejected[fiCut]->Fill(mesonCand->M());
