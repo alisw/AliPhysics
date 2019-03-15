@@ -204,9 +204,9 @@ AliESDtrackCuts* AlidNdPtTools::CreateESDtrackCuts(const char* option)
     TString o(option);
     o.ToLower();
     // as default use the cuts with geometric length cut
-    if ( (o.EqualTo("")) || (o.EqualTo("default")) ) { o = "TPCITSgeo"; }
+    if ( (o.EqualTo("")) || (o.EqualTo("default")) ) { o = "tpcitsgeo"; }
     
-    if (o.EqualTo("TPCITSgeo")) {
+    if (o.EqualTo("tpcitsgeo")) {
         cuts = new AliESDtrackCuts("default TPCITS with geo L cut");
         cuts->SetRequireTPCRefit(kTRUE);    
         cuts->SetMinRatioCrossedRowsOverFindableClustersTPC(0.8);
@@ -228,13 +228,12 @@ AliESDtrackCuts* AlidNdPtTools::CreateESDtrackCuts(const char* option)
         cuts->SetCutGeoNcrNcl(3,130,1.5,0.85,0.7);
         cuts->SetEtaRange(-0.8,0.8);
         
-    } else if (o.EqualTo("TPCITSgeoNoDCAr")) {
+    } else if (o.EqualTo("tpcitsgeonodcar")) {
         cuts = new AliESDtrackCuts("default TPCITS with geo L cut without DCAr");
         cuts->SetRequireTPCRefit(kTRUE);    
         cuts->SetMinRatioCrossedRowsOverFindableClustersTPC(0.8);
         cuts->SetMaxChi2PerClusterTPC(4);
-        cuts->SetMaxFractionSharedTPCClusters(0.4);
-        cuts->SetMaxDCAToVertexXY(3.0);
+        cuts->SetMaxFractionSharedTPCClusters(0.4);        
         cuts->SetRequireITSRefit(kTRUE);
         cuts->SetClusterRequirementITS(AliESDtrackCuts::kSPD,AliESDtrackCuts::kAny);
         cuts->SetMaxChi2PerClusterITS(36.);
@@ -248,7 +247,7 @@ AliESDtrackCuts* AlidNdPtTools::CreateESDtrackCuts(const char* option)
         cuts->SetCutGeoNcrNcl(3,130,1.5,0.85,0.7);
         cuts->SetEtaRange(-0.8,0.8);
         
-    } else if (o.EqualTo("TPConlyGeo")) { 
+    } else if (o.EqualTo("tpcgeo")) { 
         cuts = new AliESDtrackCuts("TPConly with geo L");
         cuts->SetRequireTPCRefit(kTRUE);
         cuts->SetAcceptKinkDaughters(kFALSE);
@@ -259,7 +258,19 @@ AliESDtrackCuts* AlidNdPtTools::CreateESDtrackCuts(const char* option)
         cuts->SetMaxDCAToVertexXY(3);
         // Geometrical-Length Cut
         cuts->SetCutGeoNcrNcl(3,130,1.5,0.85,0.7);
-    } else if (o.EqualTo("TPCgeo+ITShit")) { 
+        
+    } else if (o.EqualTo("tpcgeonodcar")) { 
+        cuts = new AliESDtrackCuts("TPConly with geo L without DCAr");
+        cuts->SetRequireTPCRefit(kTRUE);
+        cuts->SetAcceptKinkDaughters(kFALSE);
+        cuts->SetMinRatioCrossedRowsOverFindableClustersTPC(0.8);
+        cuts->SetMaxChi2PerClusterTPC(4);
+        cuts->SetMaxFractionSharedTPCClusters(0.4);
+        cuts->SetMaxDCAToVertexZ(3);        
+        // Geometrical-Length Cut
+        cuts->SetCutGeoNcrNcl(3,130,1.5,0.85,0.7);    
+        
+    } else if (o.EqualTo("tpcgeo+itshit")) { 
         cuts = new AliESDtrackCuts("TPConly with geo L + hit in ITS");
         cuts->SetRequireTPCRefit(kTRUE);
         cuts->SetAcceptKinkDaughters(kFALSE);
@@ -273,7 +284,7 @@ AliESDtrackCuts* AlidNdPtTools::CreateESDtrackCuts(const char* option)
         // its hit
         cuts->SetMinNClustersITS(1);
         
-    } else if (o.EqualTo("TPCgeo+ITSrefit")) { 
+    } else if (o.EqualTo("tpcgeo+itsrefit")) { 
         cuts = new AliESDtrackCuts("TPC with geo L + ITSrefit");
         cuts->SetRequireTPCRefit(kTRUE);
         cuts->SetAcceptKinkDaughters(kFALSE);
@@ -287,7 +298,7 @@ AliESDtrackCuts* AlidNdPtTools::CreateESDtrackCuts(const char* option)
         // its refit
         cuts->SetRequireITSRefit(kTRUE);
         
-    } else if (o.EqualTo("TPCgeo+SPDhit")) { 
+    } else if (o.EqualTo("tpcgeo+spdhit")) { 
         cuts = new AliESDtrackCuts("TPC with geo L + hit in SPD");
         cuts->SetRequireTPCRefit(kTRUE);
         cuts->SetAcceptKinkDaughters(kFALSE);
@@ -301,7 +312,7 @@ AliESDtrackCuts* AlidNdPtTools::CreateESDtrackCuts(const char* option)
         // spd hit
         cuts->SetClusterRequirementITS(AliESDtrackCuts::kSPD,AliESDtrackCuts::kAny);
         
-    }  else if (o.EqualTo("TPCgeo+ITSrefit+SPDhit")) { 
+    }  else if (o.EqualTo("tpcgeo+itsrefit+spdhit") || o.EqualTo("tpcgeo+itsrefit+spdhit")) { 
         cuts = new AliESDtrackCuts("TPC with geo L + ITSrefit + hit in SPD");
         cuts->SetRequireTPCRefit(kTRUE);
         cuts->SetAcceptKinkDaughters(kFALSE);

@@ -26,6 +26,7 @@ class AlidNdPtTools : public TObject
         static void            Log(TH1D* h, const char* name) { if (h) h->Fill(name,1); }
         
         static AliESDtrackCuts* CreateESDtrackCuts(const char* option); // options
+        
 
     private:
         static THnSparseD*      fSparseTmp;     //! temporary histogram
