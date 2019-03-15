@@ -13,7 +13,7 @@ class AliESDtools : public TNamed
   AliESDtools();
   void Init(TTree* tree);
   void SetStreamer(TTreeSRedirector *streamer){fStreamer=streamer;}
-  static Double_t LoadESD(Int_t entry, Int_t verbose);
+  static Double_t LoadESD(Int_t entry, Int_t verbose=0);
   /// caching
   Int_t  CacheTPCEventInformation();
   Int_t CalculateEventVariables();
