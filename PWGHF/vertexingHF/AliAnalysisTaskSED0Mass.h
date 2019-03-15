@@ -68,6 +68,8 @@ class AliAnalysisTaskSED0Mass : public AliAnalysisTaskSE
   void SetRejectSDDClusters(Bool_t flag) { fIsRejectSDDClusters=flag; }
   void SetUseSelectionBit(Bool_t flag) { fUseSelectionBit=flag; }
   void SetWriteVariableTree(Bool_t flag) { fWriteVariableTree=flag; }
+  void SetWriteProtosgnVar(Bool_t flag) { fWriteProtosgnVar=flag; }
+  void SetUseMassWindow(Bool_t flag) { fUsedMassWindow=flag; }
   void SetDrawDetSignal(Bool_t flag) { fDrawDetSignal=flag; }
   void SetPIDCheck(Bool_t flag) { fPIDCheck=flag; }
   void SetUseQuarkLevelTag(Bool_t opt){fUseQuarkTagInKine=opt;}
@@ -110,10 +112,12 @@ class AliAnalysisTaskSED0Mass : public AliAnalysisTaskSE
 
   void     FillMassHists(AliAODRecoDecayHF2Prong *part, TClonesArray *arrMC, AliAODMCHeader *mcHeader, AliRDHFCutsD0toKpi *cuts, TList *listout);
   void     FillVarHists(AliAODEvent *aodev,AliAODRecoDecayHF2Prong *part, TClonesArray *arrMC, AliRDHFCutsD0toKpi *cuts, TList *listout);
+  void     FillCandVariables(AliAODEvent *aodev, AliAODRecoDecayHF2Prong *part, TClonesArray *arrMC, AliAODMCHeader *mcHeader, AliRDHFCutsD0toKpi *cuts);
   AliAODVertex* GetPrimaryVtxSkipped(AliAODEvent *aodev);
   void CreateImpactParameterHistos();
   Int_t CheckOrigin(TClonesArray* arrayMC, AliAODMCParticle *mcPartCandidate) const;
   Float_t GetTrueImpactParameter(AliAODMCHeader *mcHeader, TClonesArray* arrayMC, AliAODMCParticle *partD0) const ;
+  Float_t ComputeTopomatic(AliAODEvent *aodev,AliAODRecoDecayHF2Prong *part);
 
   TList    *fOutputMass;          //!<! list send on output slot 1
   TList    *fOutputMassPt;        //!<! list send on output slot 6
@@ -152,7 +156,9 @@ class AliAnalysisTaskSED0Mass : public AliAnalysisTaskSE
   Bool_t    fWriteVariableTree;       /// flag to decide whether to write the candidate variables on a tree variables
   TTree    *fVariablesTree;           //!<! tree of the candidate variables after track selection on output slot 7
   Double_t *fCandidateVariables;      //!<!  variables to be written to the tree
-  Bool_t	fPIDCheck;			/// flag to decide whether to fill "PID = x" bins in fNentrie
+  Bool_t    fWriteProtosgnVar;        /// flag to decide whether to write the selected candidates variables on a tree for cut optimization
+  Bool_t    fUsedMassWindow;          /// flag to activate the mass window selection for output size reduction
+  Bool_t	  fPIDCheck;			/// flag to decide whether to fill "PID = x" bins in fNentrie
   Bool_t    fDrawDetSignal;		/// flag to decide whether to draw the TPC dE/dx and TOF signal before/after PID
   Bool_t    fUseQuarkTagInKine;            // flag for quark/hadron level identification of prompt and feeddown
   Bool_t    fFillSparses;                  // flag to activate THnSparse

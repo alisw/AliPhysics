@@ -101,6 +101,8 @@ AliAnalysisTaskSED0Mass::AliAnalysisTaskSED0Mass():
   fWriteVariableTree(kFALSE),
   fVariablesTree(0),
   fCandidateVariables(),
+  fWriteProtosgnVar(kFALSE),
+  fUsedMassWindow(kFALSE),
   fPIDCheck(kFALSE),
   fDrawDetSignal(kFALSE),
   fUseQuarkTagInKine(kTRUE),
@@ -160,6 +162,8 @@ AliAnalysisTaskSED0Mass::AliAnalysisTaskSED0Mass(const char *name,AliRDHFCutsD0t
   fWriteVariableTree(kFALSE),
   fVariablesTree(0),
   fCandidateVariables(),
+  fWriteProtosgnVar(kFALSE),
+  fUsedMassWindow(kFALSE),
   fPIDCheck(kFALSE),
   fDrawDetSignal(kFALSE),
   fUseQuarkTagInKine(kTRUE),
@@ -1042,27 +1046,60 @@ void AliAnalysisTaskSED0Mass::UserCreateOutputObjects()
   //
   nameoutput = GetOutputSlot(7)->GetContainer()->GetName();
   fVariablesTree = new TTree(nameoutput,"Candidates variables tree");
-  Int_t nVar = 15;
-  fCandidateVariables = new Double_t [nVar];
-  TString * fCandidateVariableNames = new TString[nVar];
-  fCandidateVariableNames[0] = "massD0";
-  fCandidateVariableNames[1] = "massD0bar";
-  fCandidateVariableNames[2] = "pt";
-  fCandidateVariableNames[3] = "dca";
-  fCandidateVariableNames[4] = "costhsD0";
-  fCandidateVariableNames[5] = "costhsD0bar";
-  fCandidateVariableNames[6] = "ptk";
-  fCandidateVariableNames[7] = "ptpi";
-  fCandidateVariableNames[8] = "d0k";
-  fCandidateVariableNames[9] = "d0pi";
-  fCandidateVariableNames[10] = "d0xd0";
-  fCandidateVariableNames[11] = "costhp";
-  fCandidateVariableNames[12] = "costhpxy";
-  fCandidateVariableNames[13] = "lxy";
-  fCandidateVariableNames[14] = "specialcuts";
-  for(Int_t ivar=0; ivar<nVar; ivar++){
-    fVariablesTree->Branch(fCandidateVariableNames[ivar].Data(),&fCandidateVariables[ivar],Form("%s/d",fCandidateVariableNames[ivar].Data()));
+  if(fWriteVariableTree && fWriteProtosgnVar){
+    AliFatal("FATAL_ERROR: Writing candidate variables both with and without --> CHOOSE ONE OF THE TWO OPTIONS!");
   }
+  Int_t nVar = 15;
+  TString * fCandidateVariableNames = 0x0;
+  if(fWriteVariableTree){
+    fCandidateVariables = new Double_t [nVar];
+    fCandidateVariableNames = new TString[nVar];
+
+    fCandidateVariableNames[0] = "massD0";
+    fCandidateVariableNames[1] = "massD0bar";
+    fCandidateVariableNames[2] = "pt";
+    fCandidateVariableNames[3] = "dca";
+    fCandidateVariableNames[4] = "costhsD0";
+    fCandidateVariableNames[5] = "costhsD0bar";
+    fCandidateVariableNames[6] = "ptk";
+    fCandidateVariableNames[7] = "ptpi";
+    fCandidateVariableNames[8] = "d0k";
+    fCandidateVariableNames[9] = "d0pi";
+    fCandidateVariableNames[10] = "d0xd0";
+    fCandidateVariableNames[11] = "costhp";
+    fCandidateVariableNames[12] = "costhpxy";
+    fCandidateVariableNames[13] = "lxy";
+    fCandidateVariableNames[14] = "specialcuts";
+    for(Int_t ivar=0; ivar<nVar; ivar++){
+      fVariablesTree->Branch(fCandidateVariableNames[ivar].Data(),&fCandidateVariables[ivar],Form("%s/d",fCandidateVariableNames[ivar].Data()));
+    }
+  }
+  if(fWriteProtosgnVar){
+    nVar = 16;
+    fCandidateVariables = new Double_t [nVar];
+    fCandidateVariableNames = new TString[nVar];
+
+    fCandidateVariableNames[0] = "massD0";
+    fCandidateVariableNames[1] = "massD0bar";
+    fCandidateVariableNames[2] = "pt";
+    fCandidateVariableNames[3] = "dca";
+    fCandidateVariableNames[4] = "costhsD0";
+    fCandidateVariableNames[5] = "costhsD0bar";
+    fCandidateVariableNames[6] = "ptk";
+    fCandidateVariableNames[7] = "ptpi";
+    fCandidateVariableNames[8] = "d0k";
+    fCandidateVariableNames[9] = "d0pi";
+    fCandidateVariableNames[10] = "costhp";
+    fCandidateVariableNames[11] = "costhpxy";
+    fCandidateVariableNames[12] = "lxy";
+    fCandidateVariableNames[13] = "specialcuts";
+    fCandidateVariableNames[14] = "topomatic";
+    fCandidateVariableNames[15] = "candidatetype"; //0 = D0 only; 1 = D0bar only; 2 = D0 and D0bar
+    for(Int_t ivar=0; ivar<nVar; ivar++){
+      fVariablesTree->Branch(fCandidateVariableNames[ivar].Data(),&fCandidateVariables[ivar],Form("%s/d",fCandidateVariableNames[ivar].Data()));
+    }
+  }
+
 
 
   //
@@ -1340,7 +1377,7 @@ void AliAnalysisTaskSED0Mass::UserExec(Option_t */*option*/)
       fIsSelectedCandidate=fCuts->IsSelected(d,AliRDHFCuts::kAll,aod); //selected
 
       if(fUseRejectionMethod){
-        if ((d->Pt() * 1000.) - (Int_t)(d->Pt() * 1000) > fRejectionFactor) 
+        if ((d->Pt() * 1000.) - (Int_t)(d->Pt() * 1000) > fRejectionFactor)
         continue;
       }
 
@@ -1363,9 +1400,8 @@ void AliAnalysisTaskSED0Mass::UserExec(Option_t */*option*/)
         DrawDetSignal(d, fDetSignal);
       }
 
-
-
       FillMassHists(d,mcArray,mcHeader,fCuts,fOutputMass);
+      FillCandVariables(aod,d,mcArray,mcHeader,fCuts);
       if(fFillSparses) NormIPvar(aod, d,mcArray);
       if (fPIDCheck) {
         Int_t isSelectedPIDfill = 3;
@@ -2189,28 +2225,6 @@ void AliAnalysisTaskSED0Mass::FillMassHists(AliAODRecoDecayHF2Prong *part, TClon
 
   //cout<<"is selected = "<<fIsSelectedCandidate<<endl;
 
-  // Fill candidate variable Tree (track selection, no candidate selection)
-  if( fWriteVariableTree && !part->HasBadDaughters()
-      && fCuts->AreDaughtersSelected(part) && fCuts->IsSelectedPID(part) ){
-    fCandidateVariables[0] = part->InvMassD0();
-    fCandidateVariables[1] = part->InvMassD0bar();
-    fCandidateVariables[2] = part->Pt();
-    fCandidateVariables[3] = part->GetDCA();
-    Double_t ctsD0=0. ,ctsD0bar=0.; part->CosThetaStarD0(ctsD0,ctsD0bar);
-    fCandidateVariables[4] = ctsD0;
-    fCandidateVariables[5] = ctsD0bar;
-    fCandidateVariables[6] = part->Pt2Prong(0);
-    fCandidateVariables[7] = part->Pt2Prong(1);
-    fCandidateVariables[8] = part->Getd0Prong(0);
-    fCandidateVariables[9] = part->Getd0Prong(1);
-    fCandidateVariables[10] = part->Prodd0d0();
-    fCandidateVariables[11] = part->CosPointingAngle();
-    fCandidateVariables[12] = part->CosPointingAngleXY();
-    fCandidateVariables[13] = part->NormalizedDecayLengthXY();
-    fCandidateVariables[14] = fCuts->IsSelectedSpecialCuts(part);
-    fVariablesTree->Fill();
-  }
-
   //cout<<"check cuts = "<<endl;
   //cuts->PrintAll();
   if (!fIsSelectedCandidate){
@@ -2518,6 +2532,133 @@ void AliAnalysisTaskSED0Mass::FillMassHists(AliAODRecoDecayHF2Prong *part, TClon
 }
 
 //__________________________________________________________________________
+void AliAnalysisTaskSED0Mass::FillCandVariables(AliAODEvent *aodev, AliAODRecoDecayHF2Prong *part, TClonesArray *arrMC, AliAODMCHeader *mcHeader, AliRDHFCutsD0toKpi *cuts){
+  // Fill candidate variables for cut study
+
+  if(fWriteVariableTree && fWriteProtosgnVar){
+    AliFatal("FATAL_ERROR: Writing candidate variables both with and without --> CHOOSE ONE OF THE TWO OPTIONS!");
+  }
+
+  // Fill candidate variable Tree (track selection, no candidate selection)
+  if( fWriteVariableTree && !part->HasBadDaughters()
+   && fCuts->AreDaughtersSelected(part) && fCuts->IsSelectedPID(part) ){ //for backward compatibility
+    fCandidateVariables[0] = part->InvMassD0();
+    fCandidateVariables[1] = part->InvMassD0bar();
+    fCandidateVariables[2] = part->Pt();
+    fCandidateVariables[3] = part->GetDCA();
+    Double_t ctsD0=0. ,ctsD0bar=0.; part->CosThetaStarD0(ctsD0,ctsD0bar);
+    fCandidateVariables[4] = ctsD0;
+    fCandidateVariables[5] = ctsD0bar;
+    fCandidateVariables[6] = part->Pt2Prong(0);
+    fCandidateVariables[7] = part->Pt2Prong(1);
+    fCandidateVariables[8] = part->Getd0Prong(0);
+    fCandidateVariables[9] = part->Getd0Prong(1);
+    fCandidateVariables[10] = part->Prodd0d0();
+    fCandidateVariables[11] = part->CosPointingAngle();
+    fCandidateVariables[12] = part->CosPointingAngleXY();
+    fCandidateVariables[13] = part->NormalizedDecayLengthXY();
+    fCandidateVariables[14] = fCuts->IsSelectedSpecialCuts(part);
+    fVariablesTree->Fill();
+  }
+
+  // Fill candidate variable Tree (with candidate selection)
+  Double_t mPDG = TDatabasePDG::Instance()->GetParticle(421)->Mass();
+  Int_t pdgDgD0toKpi[2]={321,211};
+  Int_t labD0=-1;
+  Bool_t isPrimary=kTRUE;
+  if (fReadMC) labD0 = part->MatchToMC(421,arrMC,2,pdgDgD0toKpi); //return MC particle label if the array corresponds to a D0, -1 if not (cf. AliAODRecoDecay.cxx)
+
+  if (!fIsSelectedCandidate) {
+    return;
+  }
+
+  if (fDebug > 2) cout << "Candidate selected" << endl;
+
+  Float_t invmassD0, invmassD0bar = 0;
+  Bool_t isD0sel = false;
+  Bool_t isD0barsel = false;
+  Int_t selCand = 999.; // flag to store how the candidate is selected (0 = D0 only; 1 = D0bar only; 2 = D0 and D0bar)
+
+  if(fWriteProtosgnVar){ //write candidate variables for proto-significance study
+    if ((fIsSelectedCandidate == 1 || fIsSelectedCandidate == 3) && fFillOnlyD0D0bar < 2){ //D0
+      isD0sel = true;
+      if (fReadMC) {
+        if (labD0 >= 0) {
+          if (fArray == 1)  cout << "LS signal ERROR" << endl;
+          AliAODMCParticle *partD0 = (AliAODMCParticle *)arrMC->At(labD0);
+          Int_t pdgD0 = partD0->GetPdgCode();
+          if (AliVertexingHFUtils::CheckOrigin(arrMC, partD0, fUseQuarkTagInKine) == 5) isPrimary = kFALSE;
+          if (pdgD0 == 421) { // D0
+            if (fDebug > 2)  cout << "MC: D0 candidate" << endl;
+          } else { // it was a D0bar
+            if (fDebug > 2)  cout << "MC: D0bar candidate selected as D0 --> reflection" << endl;
+          }
+        } else { // background
+          if (fDebug > 2)  cout << "Combinatorial background" << endl;
+        }
+      } else {
+        invmassD0 = part->InvMassD0();
+      }
+    }
+
+    if(fIsSelectedCandidate > 1 && (fFillOnlyD0D0bar == 0 || fFillOnlyD0D0bar == 2)){ //D0bar
+      isD0barsel=true;
+      if (fReadMC) {
+        if (labD0 >= 0){
+          if (fArray == 1) cout << "LS signal ERROR" << endl;
+          AliAODMCParticle *partD0 = (AliAODMCParticle *)arrMC->At(labD0);
+          Int_t pdgD0 = partD0->GetPdgCode();
+          if (AliVertexingHFUtils::CheckOrigin(arrMC, partD0,fUseQuarkTagInKine) == 5) isPrimary = kFALSE;
+          if (pdgD0 == -421) { // D0bar
+            if (fDebug > 2)  cout << "MC: D0bar candidate" << endl;
+          } else {
+            if (fDebug > 2)  cout << "MC: D0 candidate selected as D0bar --> reflection" << endl;
+          }
+        } else {
+          // background or LS
+          if (fDebug > 2)  cout << "Combinatorial background" << endl;
+        }
+      } else {
+        invmassD0bar = part->InvMassD0bar();
+      }
+    }
+
+    //assignment candidate flag: 0-->D0; 1-->D0bar; 2-->D0 and D0bar
+    if(isD0sel && !isD0barsel){
+      if (fUsedMassWindow && (invmassD0 < 1.7 || invmassD0 > 2.1)) return;
+      selCand = 0;
+    }else if(!isD0sel && isD0barsel){
+      if (fUsedMassWindow && (invmassD0bar < 1.7 || invmassD0bar > 2.1)) return;
+      selCand = 1;
+    }else if(isD0sel && isD0barsel){
+      if (fUsedMassWindow && (invmassD0bar < 1.7 || invmassD0bar > 2.1) && (invmassD0 < 1.7 || invmassD0 > 2.1)) return;
+      selCand = 2;
+    }
+
+    fCandidateVariables[0] = invmassD0;
+    fCandidateVariables[1] = invmassD0bar;
+    fCandidateVariables[2] = part->Pt();
+    fCandidateVariables[3] = part->GetDCA();
+    Double_t ctsD0 = 0., ctsD0bar = 0.;
+    part->CosThetaStarD0(ctsD0, ctsD0bar);
+    fCandidateVariables[4] = ctsD0;
+    fCandidateVariables[5] = ctsD0bar;
+    fCandidateVariables[6] = part->Pt2Prong(0);
+    fCandidateVariables[7] = part->Pt2Prong(1);
+    fCandidateVariables[8] = part->Getd0Prong(0);
+    fCandidateVariables[9] = part->Getd0Prong(1);
+    fCandidateVariables[10] = part->CosPointingAngle();
+    fCandidateVariables[11] = part->CosPointingAngleXY();
+    fCandidateVariables[12] = part->NormalizedDecayLengthXY();
+    fCandidateVariables[13] = fCuts->IsSelectedSpecialCuts(part);
+    fCandidateVariables[14] = ComputeTopomatic(aodev, part);
+    fCandidateVariables[15] = selCand;
+    fVariablesTree->Fill();
+
+  }
+}
+
+//__________________________________________________________________________
 AliAODVertex* AliAnalysisTaskSED0Mass::GetPrimaryVtxSkipped(AliAODEvent *aodev){
   /// Calculate the primary vertex w/o the daughter tracks of the candidate
 
@@ -2773,6 +2914,24 @@ Float_t AliAnalysisTaskSED0Mass::GetTrueImpactParameter(AliAODMCHeader *mcHeader
   AliAODRecoDecayHF aodDzeroMC(vtxTrue,origD,2,charge,pXdauTrue,pYdauTrue,pZdauTrue,d0dummy);
   return aodDzeroMC.ImpParXY();
 
+}
+
+//_________________________________________________________________________________________________
+Float_t AliAnalysisTaskSED0Mass::ComputeTopomatic(AliAODEvent *aod, AliAODRecoDecayHF2Prong *part) {
+  Float_t dd0max = 0.;
+  for (Int_t ipr = 0; ipr < 2; ipr++) {
+    Double_t diffIP, errdiffIP;
+    part->Getd0MeasMinusExpProng(ipr, aod->GetMagneticField(), diffIP,
+                                 errdiffIP);
+    Double_t normdd0 = 0.;
+    if (errdiffIP > 0.)
+      normdd0 = diffIP / errdiffIP;
+    if (ipr == 0)
+      dd0max = normdd0;
+    else if (TMath::Abs(normdd0) > TMath::Abs(dd0max))
+      dd0max = normdd0;
+  }
+  return TMath::Abs(dd0max);
 }
 
 //_________________________________________________________________________________________________
