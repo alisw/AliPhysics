@@ -316,7 +316,7 @@ public:
     kDeltaPhiRandomRP,        //delta phi of the pair
 
     kPairPlaneMagInPro,      // Inner Product of strong magnetic field and ee plane
-    kPairPlaneMagInProTPC,   // Inner Product of strong magnetic field and ee plane (from TPC correction framework)
+    kPairPlaneMagInProZDC,   // Inner Product of strong magnetic field and ee plane (from Qn correction framework - ZDC)
     kCos2PhiCS,              // Cosine of 2*phi in mother's rest frame in the Collins-Soper picture
     kCosTilPhiCS,            // Shifted phi depending on kThetaCS
     kCosPhiH2,               // cosine of pair phi for 2nd harmonic
@@ -2430,8 +2430,8 @@ inline void AliDielectronVarManager::FillVarDielectronPair(const AliDielectronPa
     values[AliDielectronVarManager::kQnSPDrpH2FlowSPV2]    = uDielectronSP * qVec2SPD;
   }
 
-  // calculate inner Product of strong magnetic field (from TPC event plane, correction framework) and ee plane
-  if(Req(kPairPlaneMagInProTPC)) values[AliDielectronVarManager::kPairPlaneMagInProTPC] = pair->PairPlaneMagInnerProduct(values[AliDielectronVarManager::kQnTPCrpH2]);
+  // calculate inner Product of strong magnetic field (from ZDC 1st order event plane, correction framework) and ee plane
+  if(Req(kPairPlaneMagInProZDC)) values[AliDielectronVarManager::kPairPlaneMagInProZDC] = pair->PairPlaneMagInnerProduct(values[AliDielectronVarManager::kQnZDCCrpH1]);
 
 
 
