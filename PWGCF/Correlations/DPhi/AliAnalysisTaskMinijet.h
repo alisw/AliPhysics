@@ -14,6 +14,7 @@ class THnSparse;
 class AliESDtrackCuts;
 
 #include "AliAnalysisTaskSE.h"
+#include "AliAnalysisUtils.h"
 #include <vector>
 
 class AliAnalysisTaskMinijet : public AliAnalysisTaskSE {
@@ -43,8 +44,8 @@ class AliAnalysisTaskMinijet : public AliAnalysisTaskSE {
   void         SetCorrStrangeness(Bool_t corrStrangeness)            {fCorrStrangeness = corrStrangeness;}
   void         SetThreeParticleCorrelation(Bool_t threeParticleCorr) {fThreeParticleCorr = threeParticleCorr;}
   void         SetRejectCorrupted(Bool_t rejectChunks, Int_t nTPC)   {fRejectChunks = rejectChunks; fNTPC = nTPC;}
-
-    void         SetCentralityMethod(TString centralityMethod)                   {fCentralityMethod = centralityMethod;}
+  void         SetCentralityMethod(TString centralityMethod)         {fCentralityMethod = centralityMethod;}
+  void         SetAnalysisUtils(AliAnalysisUtils* utils)             {fAnalysisUtils = utils; }
     
     
  private:
@@ -188,7 +189,9 @@ class AliAnalysisTaskMinijet : public AliAnalysisTaskSE {
   TH1F       * fDPhiEventAxis[8];           // delta phi of associate tracks to event axis
   TH2F       * fDPhi1DPhi2[8];              // dPhi1 versus dPhi2: three particle correlation test
     
-    TString fCentralityMethod;        //centrality pA
+  AliAnalysisUtils* fAnalysisUtils;         // for pile up suppression
+
+  TString fCentralityMethod;        //centrality pA
  
   AliAnalysisTaskMinijet(const AliAnalysisTaskMinijet&); // not implemented
   AliAnalysisTaskMinijet& operator=(const AliAnalysisTaskMinijet&); // not implemented
