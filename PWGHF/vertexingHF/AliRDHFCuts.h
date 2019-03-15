@@ -25,6 +25,7 @@ class AliAODRecoDecayHF;
 class AliESDVertex;
 class TF1;
 class TFormula;
+class AliEventCuts;
 
 class AliRDHFCuts : public AliAnalysisCuts 
 {
@@ -34,7 +35,7 @@ class AliRDHFCuts : public AliAnalysisCuts
   enum ESelLevel {kAll,kTracks,kPID,kCandidate};
   enum EPileup {kNoPileupSelection,kRejectPileupEvent,kRejectTracksFromPileupVertex,kRejectMVPileupEvent};
   enum ESele {kD0toKpiCuts,kD0toKpiPID,kD0fromDstarCuts,kD0fromDstarPID,kDplusCuts,kDplusPID,kDsCuts,kDsPID,kLcCuts,kLcPID,kDstarCuts,kDstarPID,kLctoV0Cuts,kDplustoK0sCuts,kDstoK0sCuts};
-  enum ERejBits {kNotSelTrigger,kNoVertex,kTooFewVtxContrib,kZVtxOutFid,kPileup,kOutsideCentrality,kPhysicsSelection,kBadSPDVertex,kZVtxSPDOutFid,kCentralityFlattening,kBadTrackV0Correl,kMismatchOldNewCentrality,kBadTrackVertex};
+  enum ERejBits {kNotSelTrigger,kNoVertex,kTooFewVtxContrib,kZVtxOutFid,kPileup,kOutsideCentrality,kPhysicsSelection,kBadSPDVertex,kZVtxSPDOutFid,kCentralityFlattening,kBadTrackV0Correl,kMismatchOldNewCentrality,kBadTrackVertex,kBadCentrEstimCorrel};
   enum EV0sel  {kAllV0s = 0, kOnlyOfflineV0s = 1, kOnlyOnTheFlyV0s = 2};
 
   AliRDHFCuts(const Char_t* name="RDHFCuts", const Char_t* title="");
@@ -196,6 +197,11 @@ class AliRDHFCuts : public AliAnalysisCuts
     if(opt>=0 && opt<=3) fCutOnzVertexSPD=opt;
     else AliError("Wrong option for cut on zVertexSPD");
   }
+
+  void SetUseCentralityCorrelationCuts(Bool_t opt){fApplyCentralityCorrCuts=opt;}
+  void SetUsePbPbOutOfBunchPileupCut(Int_t opt){fApplyPbPbOutOfBunchPileupCuts=opt;}
+  AliEventCuts* GetAliEventCuts() const { return fAliEventCuts;}
+  
   void SetTriggerClass(TString trclass0, TString trclass1="") {fTriggerClass[0]=trclass0; fTriggerClass[1]=trclass1;} 
   void ApplySPDDeadPbPb2011(){fApplySPDDeadPbPb2011=kTRUE;}
   void ApplySPDMisalignedCutPP2012(){fApplySPDMisalignedPP2012=kTRUE;}
@@ -348,6 +354,9 @@ class AliRDHFCuts : public AliAnalysisCuts
   Bool_t IsEventRejectedDueToTRKV0CentralityCorrel() const {
     return fEvRejectionBits&(1<<kBadTrackV0Correl);
   }
+  Bool_t IsEventRejectedDueToCentralityEstimCorrel() const {
+    return fEvRejectionBits&(1<<kBadCentrEstimCorrel);
+  }
   Bool_t IsEventRejectedDueToBadTrackVertex() const {
     return fEvRejectionBits&(1<<kBadTrackVertex);
   }
@@ -492,8 +501,12 @@ class AliRDHFCuts : public AliAnalysisCuts
   Bool_t fUseTPCtrackCutsOnThisDaughter; ///flag to apply TPC track quality cuts on specific D-meson daughter (used for different strategies for soft pion and D0daughters from Dstar decay)
   Bool_t fApplyZcutOnSPDvtx; //flag to apply the cut on |Zvtx| > X cm using the z coordinate of the SPD vertex
   Int_t fUsePreselect;  /// flag that defines whether the PreSelect method has to be used: note that it is up to the task user to call it. This flag is mainly for bookkeeping
+  AliEventCuts* fAliEventCuts;   /// AliEventCuts object used in Pb-Pb for cuts on correlations and out-of-bunch pileup
+  Bool_t fApplyCentralityCorrCuts; /// swicth to enable/disable cuts on centrality correlations
+  Int_t fApplyPbPbOutOfBunchPileupCuts; /// switch for additional correlation cuts for out-of-bunch pileup (0=no cut, 1=AliEVentCuts, 2=Ionut cut vs. nTPC cls)
+  
   /// \cond CLASSIMP    
-  ClassDef(AliRDHFCuts,45);  /// base class for cuts on AOD reconstructed heavy-flavour decays
+  ClassDef(AliRDHFCuts,46);  /// base class for cuts on AOD reconstructed heavy-flavour decays
   /// \endcond
 };
 
