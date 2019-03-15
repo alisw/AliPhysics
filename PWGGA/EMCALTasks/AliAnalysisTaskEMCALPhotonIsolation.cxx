@@ -165,7 +165,6 @@ fPtvsTrackPtvsDphi(0),
 fEOverPvsPt(0),
 fEOverPvsPtWithCPV(0),
 fClusEvsClusT(0),
-fClustEnBefAftNonLin(0),
 fNCellsPerCluster(0),
 fPTbeforeNonLinScaling(0),
 fPT(0),
@@ -223,6 +222,7 @@ fTestIndex(0),
 fTestIndexE(0),
 fTestLocalIndexE(0),
 fTestEnergyCone(0),
+fPtVsConeVsUE(0),
 fEtaBandVsConeArea(0),
 fPtVsConeVsEtaBand(0),
 fPtVsNormConeVsNormPhiBand(0),
@@ -234,8 +234,6 @@ fInvMassM02iso(0),
 fInvMassM02noiso(0),
 fPtvsM02vsSum(0),
 fPtvsM02vsSumUE(0),
-fTrackMultvsSumChargedvsUE(0),
-fTrackMultvsPt(0),
 fTracksConeEtaPt(0),
 fTracksConeEtaM02(0),
 fHistXsection(0),
@@ -392,7 +390,6 @@ fPtvsTrackPtvsDphi(0),
 fEOverPvsPt(0),
 fEOverPvsPtWithCPV(0),
 fClusEvsClusT(0),
-fClustEnBefAftNonLin(0),
 fNCellsPerCluster(0),
 fPTbeforeNonLinScaling(0),
 fPT(0),
@@ -450,6 +447,7 @@ fTestIndex(0),
 fTestIndexE(0),
 fTestLocalIndexE(0),
 fTestEnergyCone(0),
+fPtVsConeVsUE(0),
 fEtaBandVsConeArea(0),
 fPtVsConeVsEtaBand(0),
 fPtVsNormConeVsNormPhiBand(0),
@@ -461,8 +459,6 @@ fInvMassM02iso(0),
 fInvMassM02noiso(0),
 fPtvsM02vsSum(0),
 fPtvsM02vsSumUE(0),
-fTrackMultvsSumChargedvsUE(0),
-fTrackMultvsPt(0),
 fTracksConeEtaPt(0),
 fTracksConeEtaM02(0),
 fHistXsection(0),
@@ -961,14 +957,6 @@ void AliAnalysisTaskEMCALPhotonIsolation::UserCreateOutputObjects(){
 	//   fPtvsM02noiso->SetYTitle("#sigma_{long}^{2}");
 	//   fOutput->Add(fPtvsM02noiso);
 
-	//   fTrackMultvsSumChargedvsUE = new TH3F("hTrackMultvsSumChargedvsUE","Track Multiplicity vs  #Sigma E_{T}^{iso cone} vs UE charged",100,0.,100.,200,-10.,90.,100,0.,100.);
-	//   fTrackMultvsSumChargedvsUE->Sumw2();
-	//   fOutput->Add(fTrackMultvsSumChargedvsUE);
-
-	//   fTrackMultvsPt = new TH2F("hTrackMultvsPt","Track Multiplicity vs  #it{p}_{T}-UE distribution for clusters",100,0.,100.,200,0.,100.);
-	//   fTrackMultvsPt->Sumw2();
-	//   fOutput->Add(fTrackMultvsPt);
-
 	//   fEtaPhiClusVsPtUETrackCside = new TH3F ("hEtaVsPhiVsPtUETrack_Cside", "#eta vs. #varphi vs. #Sigma #it{p}_{T}^{track, UE} (tracks in C side) for clusters with 14 < #it{E}_{T} < 16 GeV", netabins, etamin, etamax, nphibins, phimin, phimax, 60, 0., 30.);
 	//   fEtaPhiClusVsPtUETrackCside->Sumw2();
 	//   fOutput->Add(fEtaPhiClusVsPtUETrackCside);
@@ -1024,13 +1012,15 @@ void AliAnalysisTaskEMCALPhotonIsolation::UserCreateOutputObjects(){
 	fPtvsTrackPtvsDphi->Sumw2();
 	fOutput->Add(fPtvsTrackPtvsDphi);
 
-	fEOverPvsPt = new TH2F("hEOverPvsPt","Cluster #it{E} over track #it{p} vs. cluster #it{p}_{T} BEFORE CPV", 120, 0., 60., 300, 0., 15.);
-	fEOverPvsPt->Sumw2();
-	fOutput->Add(fEOverPvsPt);
+	if(fQA){
+	  fEOverPvsPt = new TH2F("hEOverPvsPt","Cluster #it{E} over track #it{p} vs. cluster #it{p}_{T} BEFORE CPV", 120, 0., 60., 300, 0., 15.);
+	  fEOverPvsPt->Sumw2();
+	  fOutput->Add(fEOverPvsPt);
 
-	fEOverPvsPtWithCPV = new TH2F("hEOverPvsPt_WithCPV","Cluster #it{E} over track #it{p} vs. cluster #it{p}_{T} AFTER CPV", 120, 0., 60., 300, 0., 15.);
-	fEOverPvsPtWithCPV->Sumw2();
-	fOutput->Add(fEOverPvsPtWithCPV);
+	  fEOverPvsPtWithCPV = new TH2F("hEOverPvsPt_WithCPV","Cluster #it{E} over track #it{p} vs. cluster #it{p}_{T} AFTER CPV", 120, 0., 60., 300, 0., 15.);
+	  fEOverPvsPtWithCPV->Sumw2();
+	  fOutput->Add(fEOverPvsPtWithCPV);
+	}
       }
       break;
     }
@@ -1183,24 +1173,18 @@ void AliAnalysisTaskEMCALPhotonIsolation::UserCreateOutputObjects(){
     fOutput->Add(fnPUevents);
   }
 
-  fClusEvsClusT = new TH2F("fClustTimeVSClustEn", "Distribution of cluster Time as a function of the cluster Energy", 70, 0., 70., 120, -40., 80.);
-  fClusEvsClusT->SetXTitle("E_{T,clus} (GeV/c)    ");
-  fClusEvsClusT->SetYTitle("Time_{clus} (ns)    ");
+  fClusEvsClusT = new TH2F("fClustTimeVSClustEn", "Cluster time vs. cluster #it{p}_{T}", 200, 0., 100., 320, -80., 80.);
+  fClusEvsClusT->SetXTitle("#it{p}_{T} (GeV/c)");
+  fClusEvsClusT->SetYTitle("Time_{clus} (ns)");
   fClusEvsClusT->Sumw2();
   fOutput->Add(fClusEvsClusT);
-
-  fClustEnBefAftNonLin = new TH2F("fClustEnBefAftNonLin", "Cluster energy, non-linearity correction vs. raw", 100, 0., 100., 100, 0., 100.);
-  fClustEnBefAftNonLin->SetXTitle("Raw #it{E} (GeV)");
-  fClustEnBefAftNonLin->SetYTitle("Non-lin. corr. #it{E} (GeV)");
-  fClustEnBefAftNonLin->Sumw2();
-  fOutput->Add(fClustEnBefAftNonLin);
 
   fNCellsPerCluster = new TH2F ("hNCellsPerCluster","Number of cells per cluster vs energy", 200, 0., 100., 200, 0., 100.); 
   fNCellsPerCluster->SetXTitle("#it{E} (GeV)");
   fNCellsPerCluster->SetYTitle("#it{n}_{cells}");
   fOutput->Add(fNCellsPerCluster);
 
-  fPT = new TH1F("hPt_NC","#it{p}_{T} distribution for clusters before candidate selection",100,0.,100.);
+  fPT = new TH1F("hPt_NC","#it{p}_{T} distribution for clusters before candidate selection",200,0.,100.);
   fPT->Sumw2();
   fOutput->Add(fPT);
 
@@ -1228,28 +1212,33 @@ void AliAnalysisTaskEMCALPhotonIsolation::UserCreateOutputObjects(){
   fPtaftFC->Sumw2();
   fOutput->Add(fPtaftFC);
 
-  // if(fWho != 2){
-    fTestEnergyCone = new TH3F("hTestEnergyConeVSpT","Test energy clusters and tracks in cone",200,0.,100.,250,0.,100.,250,0.,100.);
-    fTestEnergyCone->SetXTitle("#it{p}_{T}^{cluster}");
-    fTestEnergyCone->SetYTitle("#sum^{cone} #it{p}_{T}^{cluster}");
-    fTestEnergyCone->SetZTitle("#sum^{cone} #it{p}_{T}^{track}");
-    fTestEnergyCone->Sumw2();
-    fOutput->Add(fTestEnergyCone);
-  // }
+  fTestEnergyCone = new TH3F("hTestEnergyConeVSpT","Test energy clusters and tracks in cone",200,0.,100.,250,0.,100.,250,0.,100.);
+  fTestEnergyCone->SetXTitle("#it{p}_{T}^{cluster}");
+  fTestEnergyCone->SetYTitle("#sum^{cone} #it{p}_{T}^{cluster}");
+  fTestEnergyCone->SetZTitle("#sum^{cone} #it{p}_{T}^{track}");
+  fTestEnergyCone->Sumw2();
+  fOutput->Add(fTestEnergyCone);
 
-    // fTracksConeEtaPt = new TH3F("hTracksConeEtaPt","#Sigma vs #eta vs E_{T}",200,0.,100.,320,-0.8,0.8,200,0.,100.);
-    // fTracksConeEtaPt->Sumw2();
-    // fOutput->Add(fTracksConeEtaPt);
+  fPtVsConeVsUE = new TH3F("hPtVsConeVsUE","Total energy in cone (before area norm) vs. total UE energy (before area norm) vs. cluster #it{p}_{T}",200,0.,100.,250,0.,100.,250,0.,100.);
+  fPtVsConeVsUE->SetXTitle("#it{p}_{T}^{cluster}");
+  fPtVsConeVsUE->SetYTitle("#it{p}_{T}^{iso}");
+  fPtVsConeVsUE->SetZTitle("#it{p}_{T}^{UE}");
+  fPtVsConeVsUE->Sumw2();
+  fOutput->Add(fPtVsConeVsUE);
 
-    // fTracksConeEtaM02 = new TH3F("hTracksConeEtaM02","#Sigma vs #eta vs #sigma_{long}^{2}",200,0.,100.,320,-0.8,0.8,500,0.,5.);
-    // fTracksConeEtaM02->Sumw2();
-    // fOutput->Add(fTracksConeEtaM02);
+  // fTracksConeEtaPt = new TH3F("hTracksConeEtaPt","#Sigma vs #eta vs E_{T}",200,0.,100.,320,-0.8,0.8,200,0.,100.);
+  // fTracksConeEtaPt->Sumw2();
+  // fOutput->Add(fTracksConeEtaPt);
 
-    // fphietaPhotons = new TH3F("hphietaPhotons","Test eta phi photons MC",250,-0.8,0.8, 250, 1.2, 3.4,200,0.,1.);
-    // fOutput->Add(fphietaPhotons);
+  // fTracksConeEtaM02 = new TH3F("hTracksConeEtaM02","#Sigma vs #eta vs #sigma_{long}^{2}",200,0.,100.,320,-0.8,0.8,500,0.,5.);
+  // fTracksConeEtaM02->Sumw2();
+  // fOutput->Add(fTracksConeEtaM02);
 
-    // fphietaOthers = new TH3F("hphietaOthers","Test eta phi others",250,-0.8,0.8, 250, 1.2, 3.4,200,0.,1.);
-    // fOutput->Add(fphietaOthers);
+  // fphietaPhotons = new TH3F("hphietaPhotons","Test eta phi photons MC",250,-0.8,0.8, 250, 1.2, 3.4,200,0.,1.);
+  // fOutput->Add(fphietaPhotons);
+
+  // fphietaOthers = new TH3F("hphietaOthers","Test eta phi others",250,-0.8,0.8, 250, 1.2, 3.4,200,0.,1.);
+  // fOutput->Add(fphietaOthers);
 
   fPtTracksVSpTNC = new TH2F ("hTrackPtSpecVSpT","Charged Particle spectrum vs pT Candidate",70,0.,70.,100,0.,20.);
   fPtTracksVSpTNC->Sumw2();
@@ -1265,13 +1254,15 @@ void AliAnalysisTaskEMCALPhotonIsolation::UserCreateOutputObjects(){
     fOutput->Add(fEtaTracksVSclustPt);
   }
 
-  fTracksPhiVsPt = new TH2F("hTracksPhiVsPt", "Tracks #varphi vs #it{p}_{T}", 40, 0., 40., 200, 0., TMath::TwoPi());
-  fTracksPhiVsPt->Sumw2();
-  fOutput->Add(fTracksPhiVsPt);
+  if(fQA){
+    fTracksPhiVsPt = new TH2F("hTracksPhiVsPt", "Tracks #varphi vs #it{p}_{T}", 40, 0., 40., 200, 0., TMath::TwoPi());
+    fTracksPhiVsPt->Sumw2();
+    fOutput->Add(fTracksPhiVsPt);
 
-  fTracksEtaVsPt = new TH2F("hTracksEtaVsPt", "Tracks #eta vs #it{p}_{T}", 40, 0., 40., 180, -0.9, 0.9);
-  fTracksEtaVsPt->Sumw2();
-  fOutput->Add(fTracksEtaVsPt);
+    fTracksEtaVsPt = new TH2F("hTracksEtaVsPt", "Tracks #eta vs #it{p}_{T}", 40, 0., 40., 180, -0.9, 0.9);
+    fTracksEtaVsPt->Sumw2();
+    fOutput->Add(fTracksEtaVsPt);
+  }
 
   fEtaPhiSPDRefit = new TH2F ("hEtaPhiSPDRefit","#eta vs #varphi of tracks with SPD and ITS refit", 180, -0.9, 0.9, 200, 0., TMath::TwoPi());
   fEtaPhiSPDRefit->SetXTitle("#eta");
@@ -1686,13 +1677,16 @@ Bool_t AliAnalysisTaskEMCALPhotonIsolation::Run()
 	  AliError("No track found");
 	  return kFALSE;
 	}
+
 	fPtTracksVSpTNC->Fill(vecCOI.Pt(),tr->Pt());
 	if(fWho != 2){
 	  fPhiTracksVSclustPt->Fill(vecCOI.Pt(),tr->Phi());
 	  fEtaTracksVSclustPt->Fill(vecCOI.Pt(),tr->Eta());
 	}
-	fTracksPhiVsPt->Fill(tr->Pt(),tr->Phi());
-	fTracksEtaVsPt->Fill(tr->Pt(),tr->Eta());
+	if(fQA){
+	  fTracksPhiVsPt->Fill(tr->Pt(),tr->Phi());
+	  fTracksEtaVsPt->Fill(tr->Pt(),tr->Eta());
+	}
 
 	// Extracting the SPD status of hybrid tracks
 	Bool_t        bITSRefit    = (tr->GetStatus() & AliVTrack::kITSrefit) == AliVTrack::kITSrefit;
@@ -1750,9 +1744,6 @@ Bool_t AliAnalysisTaskEMCALPhotonIsolation::Run()
 
       fPT->Fill(vecCOI.Pt());
 
-      // Check non-linearity effect
-      fClustEnBefAftNonLin->Fill(coi->E(), coi->GetNonLinCorrEnergy());
-
       if(fQA)
 	FillQAHistograms(coi,vecCOI);
 
@@ -1769,13 +1760,16 @@ Bool_t AliAnalysisTaskEMCALPhotonIsolation::Run()
 	    AliError("No track found");
 	    return kFALSE;
 	  }
+
 	  fPtTracksVSpTNC->Fill(vecCOI.Pt(),tr->Pt());
 	  if(fWho != 2){
 	    fPhiTracksVSclustPt->Fill(vecCOI.Pt(),tr->Phi());
 	    fEtaTracksVSclustPt->Fill(vecCOI.Pt(),tr->Eta());
 	  }
-	  fTracksPhiVsPt->Fill(tr->Pt(),tr->Phi());
-	  fTracksEtaVsPt->Fill(tr->Pt(),tr->Eta());
+	  if(fQA){
+	    fTracksPhiVsPt->Fill(tr->Pt(),tr->Phi());
+	    fTracksEtaVsPt->Fill(tr->Pt(),tr->Eta());
+	  }
 
 	  // Extracting the SPD status of hybrid tracks
 	  Bool_t        bITSRefit    = (tr->GetStatus() & AliVTrack::kITSrefit) == AliVTrack::kITSrefit;
@@ -1998,14 +1992,13 @@ Bool_t AliAnalysisTaskEMCALPhotonIsolation::ClustTrackMatching(AliVCluster *clus
     }
 
     if(candidate && fWho == 2){
-      if(fQA)
+      if(fQA){
 	fPtvsDetavsDphi->Fill(vecClust.Pt(), deta, dphi);
+	fEOverPvsPt->Fill(vecClust.Pt(), clust->GetNonLinCorrEnergy()/mt->P());
+      }
 
       fPtvsTrackPtvsDeta->Fill(vecClust.Pt(), mt->Pt(), deta);
       fPtvsTrackPtvsDphi->Fill(vecClust.Pt(), mt->Pt(), dphi);
-
-      fEOverPvsPt->Fill(vecClust.Pt(), clust->GetNonLinCorrEnergy()/mt->P());
-
     }
 
     distCT = TMath::Sqrt(deta*deta+dphi*dphi);
@@ -2040,7 +2033,7 @@ Bool_t AliAnalysisTaskEMCALPhotonIsolation::ClustTrackMatching(AliVCluster *clus
 	fDeltaPHIClusTrackMatch->Fill(dphi);
       }
 
-      if(candidate && fWho == 2)
+      if(candidate && fWho == 2 && fQA)
 	fEOverPvsPtWithCPV->Fill(vecClust.Pt(), clust->GetNonLinCorrEnergy()/mt->P());
 
       // E/p cut (extremely loose by default, 0-2000)
@@ -2720,8 +2713,7 @@ void AliAnalysisTaskEMCALPhotonIsolation::EtIsoClusPhiBand(TLorentzVector c, Dou
     }
   } // End of tracks loop
 
-  // if(fWho != 2)
-    fTestEnergyCone->Fill(c.Pt(),sumEnergyConeClus,sumpTConeCharged);
+  fTestEnergyCone->Fill(c.Pt(),sumEnergyConeClus,sumpTConeCharged);
 
   if(fQA && c.Pt()>14. && c.Pt()<16. && fWho == 2){
     fEtaPhiClusVsEtIsoClus->Fill(c.Eta(),c.Phi(),sumEnergyConeClus);
@@ -2733,11 +2725,6 @@ void AliAnalysisTaskEMCALPhotonIsolation::EtIsoClusPhiBand(TLorentzVector c, Dou
     fEtVSM02VSEisoclust->Fill(c.Pt(),m02candidate,sumEnergyConeClus);
   }
 
-  // if(fWho==2){
-  //   fTrackMultvsSumChargedvsUE->Fill(iTracksCone,sumpTConeCharged, sumpTPhiBandTracks);
-  //   fTrackMultvsPt->Fill(iTracksCone,c.Pt());
-  // }
-
   if      (fIsoMethod==1) {
     ptIso       = sumEnergyConeClus + sumpTConeCharged;
     phiBandclus = sumEnergyPhiBandClus + sumpTPhiBandTracks;
@@ -2746,6 +2733,8 @@ void AliAnalysisTaskEMCALPhotonIsolation::EtIsoClusPhiBand(TLorentzVector c, Dou
     ptIso       = sumEnergyConeClus;
     phiBandclus = sumEnergyPhiBandClus;
   }
+
+  fPtVsConeVsUE->Fill(c.Pt(), ptIso, phiBandclus);
 
   Double_t isoConeArea = 0.; // Cluster (eta, phi)-dependent cone area
   Double_t phiBandArea = 0.; // Cluster phi-dependent eta-band area
@@ -2925,27 +2914,18 @@ void AliAnalysisTaskEMCALPhotonIsolation::EtIsoClusEtaBand(TLorentzVector c, Dou
       }
     }
   } // End of tracks loop
-
-  // if(fWho != 2)
-    fTestEnergyCone->Fill(c.Pt(), sumEnergyConeClus, sumpTConeCharged);
+  
+  fTestEnergyCone->Fill(c.Pt(), sumEnergyConeClus, sumpTConeCharged);
 
   if(fQA && c.Pt()>14. && c.Pt()<16. && fWho == 2){
     fEtaPhiClusVsEtIsoClus->Fill(c.Eta(),c.Phi(),sumEnergyConeClus);
     fEtaPhiClusVsPtIsoTrack->Fill(c.Eta(),c.Phi(),sumpTConeCharged);
-
-    //   fEtaPhiClusVsPtUETrackCside->Fill(c.Eta(),c.Phi(),sumpTEtaBandTracks_Cside);
-    //   fEtaPhiClusVsPtUETrackAside->Fill(c.Eta(),c.Phi(),sumpTEtaBandTracks_Aside);
   }
 
   if(fIsoMethod==1 && fQA && fWho != 2){
     fEtVSM02VSPisotrack->Fill(c.Pt(),m02candidate,sumpTConeCharged);
     fEtVSM02VSEisoclust->Fill(c.Pt(),m02candidate,sumEnergyConeClus);
   }
-
-  // if(fWho==2){
-  //   fTrackMultvsSumChargedvsUE->Fill(iTracksCone,sumpTConeCharged, sumpTEtaBandTracks);
-  //   fTrackMultvsPt->Fill(iTracksCone,c.Pt());
-  // }
 
   if      (fIsoMethod==1) {
     ptIso       = sumEnergyConeClus    + sumpTConeCharged;
@@ -2955,6 +2935,8 @@ void AliAnalysisTaskEMCALPhotonIsolation::EtIsoClusEtaBand(TLorentzVector c, Dou
     ptIso       = sumEnergyConeClus;
     etaBandclus = sumEnergyEtaBandClus;
   }
+
+  fPtVsConeVsUE->Fill(c.Pt(), ptIso, etaBandclus);
 
   if(fWho == 2 && !fAreasPerEvent)
     fPtVsConeVsEtaBand->Fill(c.Pt(), ptIso, etaBandclus);
@@ -3141,6 +3123,8 @@ void AliAnalysisTaskEMCALPhotonIsolation::EtIsoClusExtraOrthCones(TLorentzVector
   ptIso = sumEnergyConeClus + sumpTConeCharged;
   cones = fExtraPerpConesFactor*sumpTPerpConeTrack; // Scaling charged-only UE to neutral + charged UE
 
+  fPtVsConeVsUE->Fill(c.Pt(), ptIso, cones);
+
   Double_t isoConeArea   = 0.; // Cluster (eta, phi)-dependent cone area
   Double_t perpConesArea = 0.; // Cluster (eta, phi)-dependent perpendicular cones area
 
@@ -3248,11 +3232,6 @@ void AliAnalysisTaskEMCALPhotonIsolation::PtIsoTrackPhiBand(TLorentzVector c, Do
       }
     }
   }
-
-  // if(fWho==2){
-  //   fTrackMultvsSumChargedvsUE->Fill(iTracksCone,sumpTConeCharged,sumpTPhiBandTrack);
-  //   fTrackMultvsPt->Fill(iTracksCone,c.Pt());
-  // }
 
   ptIso        = sumpTConeCharged;
   phiBandtrack = sumpTPhiBandTrack;
@@ -3366,11 +3345,6 @@ void AliAnalysisTaskEMCALPhotonIsolation::PtIsoTrackEtaBand(TLorentzVector c, Do
     }
   }
 
-  // if(fWho==2){
-  //   fTrackMultvsSumChargedvsUE->Fill(iTracksCone,sumpTConeCharged, sumpTEtaBandTrack,sumpTEtaBandTrack);
-  //   fTrackMultvsPt->Fill(iTracksCone,c.Pt());
-  // }
-
   ptIso        = sumpTConeCharged;
   etaBandtrack = sumpTEtaBandTrack;
 
@@ -3474,10 +3448,6 @@ void AliAnalysisTaskEMCALPhotonIsolation::PtIsoTrackOrthCones(TLorentzVector c, 
         sumpTPerpConeTrack += eTrack->Pt();
     }
   }
-  // if(fWho==2){
-  //   fTrackMultvsSumChargedvsUE->Fill(iTracksCone,sumpTConeCharged,sumpTPerpConeTrack );
-  //   fTrackMultvsPt->Fill(iTracksCone,c.Pt());
-  // }
 
   ptIso = sumpTConeCharged;
   cones = sumpTPerpConeTrack;
@@ -3567,11 +3537,6 @@ void AliAnalysisTaskEMCALPhotonIsolation::PtIsoTrackFullTPC(TLorentzVector c, Do
       iTracksCone++;
     }
   }
-
-  // if(fWho==2){
-  //   fTrackMultvsSumChargedvsUE->Fill(iTracksCone,sumpTConeCharged, sumpTTPCexceptB2B);
-  //   fTrackMultvsPt->Fill(iTracksCone,c.Pt());
-  // }
 
   ptIso = sumpTConeCharged;
   full = sumpTTPCexceptB2B;
