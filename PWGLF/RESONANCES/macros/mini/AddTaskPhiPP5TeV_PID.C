@@ -104,8 +104,15 @@ AliRsnMiniAnalysisTask * AddTaskPhiPP5TeV_PID
   // create the task and configure 
   TString taskName=Form("phi%s%s_%i%i",(isPP? "pp" : "PbPb"),(isMC ? "MC" : "Data"),(Int_t)cutKaCandidate);
   AliRsnMiniAnalysisTask* task=new AliRsnMiniAnalysisTask(taskName.Data(),isMC);
-  if(evtCutSetID==eventCutSet::kSpecial4 || evtCutSetID==eventCutSet::kSpecial5) task->UseESDTriggerMask(triggerMask); //ESD ****** check this *****
-  if(evtCutSetID!=eventCutSet::kNoEvtSel && evtCutSetID!=eventCutSet::kSpecial3 && evtCutSetID!=eventCutSet::kSpecial4 && evtCutSetID!=eventCutSet::kSpecial6) task->SelectCollisionCandidates(triggerMask); //AOD
+  //if(evtCutSetID==eventCutSet::kSpecial4 || evtCutSetID==eventCutSet::kSpecial5) task->UseESDTriggerMask(triggerMask); //ESD ****** check this *****
+  if (Sphero)
+    {
+      if(evtCutSetID!=eventCutSet::kNoEvtSel && evtCutSetID!=eventCutSet::kSpecial3 && evtCutSetID!=eventCutSet::kSpecial4 && evtCutSetID!=eventCutSet::kSpecial6)task->UseESDTriggerMask(triggerMask); //ESD                                                                                             
+    }
+  else
+    {
+      if(evtCutSetID!=eventCutSet::kNoEvtSel && evtCutSetID!=eventCutSet::kSpecial3 && evtCutSetID!=eventCutSet::kSpecial4 && evtCutSetID!=eventCutSet::kSpecial6) task->SelectCollisionCandidates(triggerMask); //AOD                                                                                       
+    }
 
   if(isPP){
     if(MultBins==1) task->UseMultiplicity("AliMultSelection_V0M");
@@ -199,9 +206,9 @@ AliRsnMiniAnalysisTask * AddTaskPhiPP5TeV_PID
   task->SetEventQAHist("multicent",hmc);//plugs this histogram into the fHAEventMultiCent data member
 
   //Spherocity
-  if (Sphero) AliRsnMiniAnalysisTask::SetComputeSpherocity();
+  //if (Sphero) AliRsnMiniAnalysisTask::SetComputeSpherocity();
 
-  TH2F* hsp=new TH2F("hSpherocityVsCent","",110,0.,110., 100.,0.,1.);
+  TH2F* hsp=new TH2F("hSpherocityVsCent","",110,0.,110., 1000.,0.,1.);
   task->SetEventQAHist("spherocitycent",hsp);//plugs this histogram into the fHASpherocityCent data member
 
   // -- PAIR CUTS (common to all resonances) ------------------------------------------------------
