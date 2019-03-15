@@ -25,6 +25,7 @@
 
 class TClonesArray;
 class THistManager;
+class AliEMCALGeometry;
 //class TH1;
 //class TH2;
 //class TH3;
@@ -36,6 +37,7 @@ class TString;
 
 #include "THistManager.h"
 #include "AliAnalysisTaskEmcal.h"
+#include "AliEMCALGeometry.h"
 
 /**
  * \class AliEmcalTriggerSimQATask
@@ -66,6 +68,7 @@ class AliEmcalTriggerSimQATask : public AliAnalysisTaskEmcal {
   static AliEmcalTriggerSimQATask * AddTaskEmcalTriggerSimQA();
 
   void SetMinAmplitude(Int_t m)             { fMinAmplitude = m; }
+  void SetMinClusterEnergy(Float_t m)       { fMinClusterEnergy = m; }
 
 
  protected:
@@ -84,6 +87,7 @@ class AliEmcalTriggerSimQATask : public AliAnalysisTaskEmcal {
   TClonesArray                             *fTriggerPatches;             //!<! trigger array in
 
   Int_t                                     fMinAmplitude;               ///< Minimum trigger patch amplitude
+  Float_t                                   fMinClusterEnergy;           ///< Minimum cluster energy
   Float_t                                   fPtBinWidth;                 ///< Histogram pt bin width
   Float_t                                   fMaxPt;                      ///< Histogram pt limit
 
@@ -94,7 +98,9 @@ class AliEmcalTriggerSimQATask : public AliAnalysisTaskEmcal {
 
   void                                      DoPatchLoop();               // Loop over patches, determine trigger condition
   void                                      FillPatchHistograms(AliEMCALTriggerPatchInfo * patch,Int_t i);               // Fill histograms with patch information
+  Int_t                                     GeneratePatchTriggerBits(AliEMCALTriggerPatchInfo * patch);               // Generate a trigger bits int for a single patch
   void                                      DoClusterLoop();             // Loop over clusters, fill histograms
+  void                                      MatchClusterToPatches(AliVCluster * cluster); // Match cluster to trigger patches, fill histos
 
  private:
   AliEmcalTriggerSimQATask(const AliEmcalTriggerSimQATask&);            // not implemented
