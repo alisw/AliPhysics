@@ -35,10 +35,8 @@ include_directories(${ROOT_INCLUDE_DIRS}
 
 # Sources - alphabetical order
 set(SRCS
-  ChargedHadrons/MultDepSpec/AliMultDepSpecAnalysisTask.cxx
-  ChargedHadrons/dNdPt/AlidNdPtHelper.cxx
+  ChargedHadrons/MultDepSpec/AliMultDepSpecAnalysisTask.cxx  
   ChargedHadrons/dNdPt/AliMeanPtAnalysisTask.cxx
-  
   ChargedHadrons/dNdPt/AliAnalysisTaskCutTest.cxx
   ChargedHadrons/dNdPt/AlidNdPtUnifiedAnalysisTask.cxx
   ChargedHadrons/dNdPt/MeanPtRaw/AliAnalysisTaskMeanPtRaw.cxx
@@ -58,6 +56,10 @@ set(SRCS
   ChargedHadrons/dNdPt/AlidNdPtHelper.cxx
   ChargedHadrons/dNdPt/AlidNdPtTask.cxx
   ChargedHadrons/dNdPt/AlidNdPtTools.cxx
+  ChargedHadrons/dNdPt/AliAnalysisTaskMKBase.cxx
+  ChargedHadrons/dNdPt/AliAnalysisTaskMKTest.cxx
+  ChargedHadrons/dNdPt/AliAnalysisTaskTPCMatchEff.cxx
+  ChargedHadrons/dNdPt/AliAnalysisTaskDCArStudy.cxx
   ChargedHadrons/dNdPt/AlidNdPtTrackDumpTask.cxx
   ChargedHadrons/dNdPt/AliPtResolAnalysis.cxx
   ChargedHadrons/dNdPt/AliPtResolAnalysisPbPb.cxx
