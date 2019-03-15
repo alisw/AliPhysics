@@ -30,8 +30,8 @@ public:
   void SetExcludeEtaPhiRange2(Float_t etaMin, Float_t etaMax, Float_t phiMin, Float_t phiMax)
   	{ fExcludeMinEta2 = etaMin; fExcludeMaxEta2 = etaMax; fExcludeMinPhi2 = phiMin; fExcludeMaxPhi2 = phiMax; fCheckRange=kTRUE; }  	
 
-  void SetMaxDCAr(Float_t max) { fMaxDCAr=max;}
-  void SetMaxDCAz(Float_t max) { fMaxDCAz=max;}
+  void SetMaxDCAr(Float_t max=100) { fMaxDCAr=max;}
+  void SetMaxDCAz(Float_t max=100) { fMaxDCAz=max;}
 
   // getters 
   Float_t GetMinEta() const {return fMinEta;}
