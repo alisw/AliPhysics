@@ -1427,7 +1427,7 @@ void AliAnalysisTaskXi1530::FillMCinput(AliStack* fMCStack, Bool_t PS) {
             continue;
         if (IsPrimaryMC && !mcInputTrack->IsPrimary())
             continue;
-        fHistos->FillTH1("hMC_generated_Y", mcInputTrack->Y());
+        if(fQA) fHistos->FillTH1("hMC_generated_Y", mcInputTrack->Y());
 
         // Y cut
         if (fabs(mcInputTrack->Y()) > fXi1530RapidityCut)
