@@ -65,7 +65,8 @@ AliMCEvent::AliMCEvent():
     fExternal(0),
     fTopEvent(0),
     fVertex(0),
-    fNBG(-1)
+    fNBG(-1),
+    fBGEventReused(0)
 {
     // Default constructor
   fTopEvent = this;
@@ -91,7 +92,8 @@ AliMCEvent::AliMCEvent(const AliMCEvent& mcEvnt) :
     fExternal(0),
     fTopEvent(mcEvnt.fTopEvent),
     fVertex(mcEvnt.fVertex),
-    fNBG(mcEvnt.fNBG)
+    fNBG(mcEvnt.fNBG),
+    fBGEventReused(mcEvnt.fBGEventReused)
 { 
 // Copy constructor
 }
@@ -262,6 +264,7 @@ void AliMCEvent::FinishEvent()
     delete fSubsidiaryEvents;
     fSubsidiaryEvents = 0;
     fNBG = -1;
+    fBGEventReused = 0;
 }
 
 
@@ -532,7 +535,11 @@ Bool_t AliMCEvent::IsFromSubsidiaryEvent(int id) const
     AliMCEvent* mc;
     FindIndexAndEvent(id, mc);
     if (mc != fSubsidiaryEvents->At(0)) return kTRUE;
-  } 
+  }
+  if (!fAODMCHeader) { // for the AOD need to check the particle itself
+    return GetTrack(id)->IsFromSubsidiaryEvent();
+  }
+  
   return kFALSE;
 }
 
@@ -608,6 +615,11 @@ AliVParticle* AliMCEvent::GetTrack(Int_t i) const
       mcParticle = new ((*fMCParticles)[nentries]) AliMCParticle(particle, rarray, i);
       fMCParticleMap->AddAt(mcParticle, i);
       if (mcParticle) {
+	// in case of embedding flag if it is from the underlying event
+	if (fTopEvent && fTopEvent->fSubsidiaryEvents && (fTopEvent->fSubsidiaryEvents->At(0)!= this) ) {
+	  mcParticle->SetFromSubsidiaryEvent(kTRUE);
+	}
+	
 	TParticle* part = mcParticle->Particle();
 	Int_t imo  = part->GetFirstMother();
 	Int_t id1  = part->GetFirstDaughter();
@@ -987,8 +999,8 @@ void AliMCEvent::AssignGeneratorIndex() {
 	  break;
 	}
 	part->SetGeneratorIndex(i);
-	Int_t dmin = part->GetFirstDaughter();
-	Int_t dmax = part->GetLastDaughter();
+	Int_t dmin = part->GetDaughterFirst();
+	Int_t dmax = part->GetDaughterLast();
 	if (dmin == -1) continue;
 	AssignGeneratorIndex(i, dmin, dmax);
       } 
@@ -1000,8 +1012,8 @@ void AliMCEvent::AssignGeneratorIndex(Int_t index, Int_t dmin, Int_t dmax) {
   for (Int_t k = dmin; k <= dmax; k++) {
     AliVParticle* dpart = fTopEvent->GetTrack(k);
     dpart->SetGeneratorIndex(index);
-    Int_t d1 = dpart->GetFirstDaughter();
-    Int_t d2 = dpart->GetLastDaughter();
+    Int_t d1 = dpart->GetDaughterFirst();
+    Int_t d2 = dpart->GetDaughterLast();
     if (d1 > -1) {
       AssignGeneratorIndex(index, d1, d2);
     }
@@ -1091,6 +1103,39 @@ TParticle* AliMCEvent::Particle(int i) const
   const AliMCParticle* mcpart = (const AliMCParticle*)GetTrack(i);
   return mcpart ? mcpart->Particle() : 0;
 }
+
+AliMCParticle* AliMCEvent::MotherOfParticle(int i) const
+{
+  // extract mother Particle from the MCTrack with global index i
+  Int_t labmoth=GetLabelOfParticleMother(i);
+  AliMCParticle* mothpart = (AliMCParticle*)GetTrack(labmoth);
+  return mothpart;
+}
+
+Int_t AliMCEvent::GetLabelOfParticleMother(int i) const
+{
+  // return index of the mother of particle i
+  const AliMCParticle* mcpart = (const AliMCParticle*)GetTrack(i);
+  Int_t labmoth=mcpart->GetMother();
+  return labmoth;
+}
+
+Int_t AliMCEvent::GetLabelOfParticleFirstDaughter(int i) const
+{
+  // return index of the first daughter of particle i
+  const AliMCParticle* mcpart = (const AliMCParticle*)GetTrack(i);
+  Int_t labdau=mcpart->GetDaughterFirst();
+  return labdau;
+}
+
+Int_t AliMCEvent::GetLabelOfParticleLastDaughter(int i) const
+{
+  // return index of the last daughter of particle i
+  const AliMCParticle* mcpart = (const AliMCParticle*)GetTrack(i);
+  Int_t labdau=mcpart->GetDaughterLast();
+  return labdau;
+}
+
 
 Int_t AliMCEvent::Raw2MergedLabel(int lbRaw) const
 {

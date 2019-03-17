@@ -1077,6 +1077,14 @@ Bool_t AliStack::IsPhysicalPrimary(Int_t index, Bool_t useInEmbedding)
 	if (TMath::Abs(ppm->GetPdgCode()) == 130) return kFALSE;
       }
       // <-
+      // check for direct photon in parton shower
+      // ->
+      Int_t ipd = p->GetFirstDaughter();
+      if (pdg == 22 && ipd > -1) {
+	TParticle* ppd  = Particle(ipd, useInEmbedding); 
+	if (ppd->GetPdgCode() == 22) return kFALSE;
+      }
+      // <-
 	return kTRUE;
     } else {
 //

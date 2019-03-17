@@ -71,21 +71,21 @@ class AliAODMCParticle: public AliVParticle {
     // 
     virtual Double_t GetCalcMass() const;
     virtual void  SetDaughter(Int_t i,Int_t id){if(i<2)fDaughter[i] = id;}
-    virtual Int_t GetDaughter(Int_t i) const {if(i<2)return fDaughter[i];else return -1;}
-    virtual Int_t GetDaughterLabel(Int_t i) const { return GetDaughter(i); }
+    virtual Int_t GetDaughterLabel(Int_t i) const { return i ? fDaughter[1] : fDaughter[0];}
     virtual Int_t GetNDaughters  () const { return fDaughter[1]>0 ? fDaughter[1]-fDaughter[0]+1 : (fDaughter[0]>0 ? 1:0 ) ;}
     virtual void  SetMother(Int_t im){fMother = im;}
     virtual Int_t GetMother() const {return fMother;}
 
-    virtual Int_t   GetFirstDaughter()   const {return fDaughter[0];}
-    virtual Int_t   GetLastDaughter()    const {return fDaughter[1];}
+    virtual Int_t   GetDaughterFirst()   const {return fDaughter[0];}
+    virtual Int_t   GetDaughterLast()    const {return fDaughter[1];}
 
     virtual void Print(const Option_t *opt = "") const;
     virtual Int_t GetPdgCode() const { return fPdgCode;}
     virtual Int_t PdgCode()    const { return GetPdgCode();}
     virtual void    SetGeneratorIndex(Short_t i) {fGeneratorIndex = i;}
     virtual Short_t GetGeneratorIndex() const {return fGeneratorIndex;}
-    enum { kPrimary = 1<<0, kPhysicalPrim = 1<<1, kSecondaryFromWeakDecay = 1<<2, kSecondaryFromMaterial = 1 <<3}; // use only the first 8bits!
+    enum { kPrimary = 1<<0, kPhysicalPrim = 1<<1, kSecondaryFromWeakDecay = 1<<2, kSecondaryFromMaterial = 1 <<3,
+	   kFromSubsidiary = 1<<4 }; // use only the first 8bits!
     virtual void SetFlag(UInt_t flag){fFlag = flag;} // carefull flag encodes three different types of information 
     virtual UInt_t GetFlag() const {return fFlag;}
 
@@ -131,6 +131,11 @@ class AliAODMCParticle: public AliVParticle {
     } 
     Bool_t IsSecondaryFromMaterial() const {return ((fFlag&kSecondaryFromMaterial)==kSecondaryFromMaterial);} 
 
+    virtual void   SetFromSubsidiaryEvent(Bool_t b = kTRUE){
+      if(b)fFlag |= kFromSubsidiary;
+      else fFlag &= ~kFromSubsidiary;
+    }
+    virtual Bool_t IsFromSubsidiaryEvent() const {return ((fFlag&kFromSubsidiary)==kFromSubsidiary);} 
 
     void SetMCProcessCode(UInt_t mcProcess){
       if(mcProcess>1<<7)return; // should not be larger than 46 (see TMCProcess) allow up to 128

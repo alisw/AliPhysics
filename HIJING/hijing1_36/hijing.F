@@ -258,6 +258,7 @@ c
 	SX=SQRT(1.0-CX*CX)
 C		********choose theta from uniform cos(theta) distr
 	PHI=RLU_HIJING(0)*2.0*HIPR1(40)
+        PHIRP = PHI
 C		********chose phi form uniform phi distr 0 to 2*pi
 	YT(1,KT)=R*SX*COS(PHI)
 	YT(2,KT)=R*SX*SIN(PHI)

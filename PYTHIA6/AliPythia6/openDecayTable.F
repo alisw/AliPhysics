@@ -10,26 +10,42 @@
       INTEGER LUN
       CHARACTER*1000 FILNAM
       CHARACTER*1000 CHROOT
-      CHROOT=' '
-      CALL GETENVF('ALICE_ROOT',CHROOT)
-      LNROOT = LNBLNK(CHROOT)
-      IF(LNROOT.LE.0) THEN
-         FILNAM='decaytable.dat'
-      ELSE
-         FILNAM=CHROOT(1:LNROOT)//'/data/decaytable.dat'
-      ENDIF
+      FILNAM='decaytable.dat'
       INQUIRE(FILE=FILNAM,EXIST=EXISTS)
       IF(.NOT.EXISTS) THEN
          PRINT*,'***********************************'
          PRINT*,'*        OpenDecayTable           *'
          PRINT*,'*        ---------------          *'
-         PRINT*,'*   File DECAYTABLE.DAT not found *'
-         PRINT*,'*         Program STOP            *'
-         PRINT*,'*   Check ALICE_ROOT environment  *'
-         PRINT*,'*           variable              *'
+         PRINT*,'*   USE ALIROOT decaytable        *'
          PRINT*,'***********************************'
-         STOP
+         CHROOT=' '
+         CALL GETENVF('ALICE_ROOT',CHROOT)
+         LNROOT = LNBLNK(CHROOT)
+         IF(LNROOT.LE.0) THEN
+            FILNAM='decaytable.dat'
+         ELSE
+            FILNAM=CHROOT(1:LNROOT)//'/data/decaytable.dat'
+         ENDIF
+         INQUIRE(FILE=FILNAM,EXIST=EXISTS)
+         IF(.NOT.EXISTS) THEN
+            PRINT*,'***********************************'
+            PRINT*,'*        OpenDecayTable           *'
+            PRINT*,'*        ---------------          *'
+            PRINT*,'*   File DECAYTABLE.DAT not found *'
+            PRINT*,'*         Program STOP            *'
+            PRINT*,'*   Check ALICE_ROOT environment  *'
+            PRINT*,'*           variable              *'
+            PRINT*,'***********************************'
+            STOP
+         ENDIF
+      ELSE
+         PRINT*,'***********************************'
+         PRINT*,'*        OpenDecayTable           *'
+         PRINT*,'*        ---------------          *'
+         PRINT*,'*   USE LOCAL decaytable in PWD   *'
+         PRINT*,'***********************************'
       ENDIF
+      
 #ifdef __GFORTRAN__
       OPEN(LUN,FILE=FILNAM,STATUS='OLD',ACTION='READ')
 #else

@@ -29,7 +29,7 @@ def make(dataType,origin,payloadSize):
 def dump(header):
   magic = struct.unpack("<4s", header[0:4])
   if magic[0]=="O2O2":
-    unpacked = struct.unpack(O2fmtString,header)
+    unpacked = struct.unpack(O2fmtString,header[0:80])
     print unpacked
   else:
     print ""

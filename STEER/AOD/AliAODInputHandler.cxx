@@ -140,6 +140,7 @@ Bool_t AliAODInputHandler::BeginEvent(Long64_t entry)
       if (!fMCEvent) fMCEvent = new AliMCEvent();
       fMCEvent->SetExternalHeader(mcHeader);
       fMCEvent->SetParticleArray(mcParticles);
+      fMCEvent->SetBGEventReused(mcHeader->GetBGEventReused());
     }
 
     // When merging, get current event number from GetReadEntry(), 

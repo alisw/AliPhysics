@@ -73,9 +73,10 @@ const Float_t AliTPCDcalibRes::kTPCRowDX[AliTPCDcalibRes::kNPadRows] = { // pad-
 };
 
 
-AliTPCDcalibRes* AliTPCDcalibRes::fgUsedInstance    = 0;
-AliTPCDcalibRes* AliTPCDcalibRes::fgUsedInstanceExt = 0;
-
+AliTPCDcalibRes* AliTPCDcalibRes::fgUsedInstance    = 0;  // source map to parameterize
+AliTPCDcalibRes* AliTPCDcalibRes::fgUsedInstanceExt = 0;  // optional additional source map to morph with the main one during parameterization
+TF1* AliTPCDcalibRes::fgMorphingFunctionXZY = 0;  // optional function: TF1(x) or TF2(x,z/x) or TF3(x, z/x, y/x) to get weights for morphing of 2 maps
+Bool_t AliTPCDcalibRes::fgUseChebForTraining = kFALSE; // optional flag to use existing Cheb params for training (instead of the smoothed raw values)
 
 ClassImp(AliTPCDcalibRes)
 
@@ -3950,25 +3951,42 @@ void AliTPCDcalibRes::CreateCorrectionObject()
     }
   }
   //
+  if (AliTPCDcalibRes::GetUseChebForTraining()) {
+    AliInfo("Attention: using ChebCorr object for training");
+
+    if (!fChebCorr) {
+      AliError("Non-existing ChebCorr object requested for training"); 
+      create = kFALSE;    
+    }
+    else fChebCorr->Init();
+
+    if (AliTPCDcalibRes::GetUsedInstanceExt() && !AliTPCDcalibRes::GetUsedInstanceExt()->GetChebCorrObject()) {
+      AliError("Non-existing ChebCorr object of Exra map requested for training"); 
+      create = kFALSE;    
+    }
+    else ((AliTPCChebCorr*)AliTPCDcalibRes::GetUsedInstanceExt()->GetChebCorrObject())->Init();
+    
+  }
+
+  //
   if (!create) {
     AliError("ATTENTION: MAP WILL NOT BE CREATED");
     return;
   }
   //
-  delete fChebCorr; fChebCorr = 0;
   TString name = Form("run%d_%lld_%lld",fRun,fTMin,fTMax);
-  fChebCorr = new AliTPCChebCorr(name.Data(),name.Data(),
-				 fChebPhiSlicePerSector,fChebZSlicePerSide,1.0f);
-  fChebCorr->SetUseFloatPrec(kFALSE);
-  fChebCorr->SetRun(fRun);
-  fChebCorr->SetTimeStampStart(fTMin);
-  fChebCorr->SetTimeStampEnd(fTMax);
-  fChebCorr->SetTimeDependent(kFALSE);
-  fChebCorr->SetUseZ2R(kTRUE);
+  AliTPCChebCorr* chebCorrN = new AliTPCChebCorr(name.Data(),name.Data(),
+						 fChebPhiSlicePerSector,fChebZSlicePerSide,1.0f);
+  chebCorrN->SetUseFloatPrec(kFALSE);
+  chebCorrN->SetRun(fRun);
+  chebCorrN->SetTimeStampStart(fTMin);
+  chebCorrN->SetTimeStampEnd(fTMax);
+  chebCorrN->SetTimeDependent(kFALSE);
+  chebCorrN->SetUseZ2R(kTRUE);
   //
-  if      (fBz> 0.01) fChebCorr->SetFieldType(AliTPCChebCorr::kFieldPos);
-  else if (fBz<-0.01) fChebCorr->SetFieldType(AliTPCChebCorr::kFieldNeg);
-  else                fChebCorr->SetFieldType(AliTPCChebCorr::kFieldZero);
+  if      (fBz> 0.01) chebCorrN->SetFieldType(AliTPCChebCorr::kFieldPos);
+  else if (fBz<-0.01) chebCorrN->SetFieldType(AliTPCChebCorr::kFieldNeg);
+  else                chebCorrN->SetFieldType(AliTPCChebCorr::kFieldZero);
   // Note: to create universal map, set manually SetFieldType(AliTPCChebCorr::kFieldAny)
 
   SetUsedInstance(this);
@@ -3987,15 +4005,18 @@ void AliTPCDcalibRes::CreateCorrectionObject()
       AliInfoF("Nnodes for Cheb.%4s segmentation in %4s is set to %2d",kResName[i],kVoxName[kVoxZ],nbZauto);
     }
   }
-  fChebCorr->Parameterize(trainCorr,kResDim,npCheb,fChebPrecD);
+  chebCorrN->Parameterize(trainCorr,kResDim,npCheb,fChebPrecD);
   //
   // register tracks rate for lumi weighting
-  fChebCorr->SetTracksRate(ExtractTrackRate());
+  chebCorrN->SetTracksRate(ExtractTrackRate());
   //
   // calculate weighted lumi
   if (!fLumiCTPGraph) fLumiCTPGraph = AliLumiTools::GetLumiFromCTP(fRun);
-  fLumiCOG = fChebCorr->GetLuminosityCOG(fLumiCTPGraph);
-  fChebCorr->SetLumiInfo(fLumiCOG);
+  fLumiCOG = chebCorrN->GetLuminosityCOG(fLumiCTPGraph);
+  chebCorrN->SetLumiInfo(fLumiCOG);
+
+  delete fChebCorr;
+  fChebCorr = chebCorrN;
   //
   AliSysInfo::AddStamp("CreateCorrectionObject",1,0,0,0);
 }
@@ -4408,15 +4429,30 @@ void trainCorr(int row, float* tzLoc, float* corrLoc)
   float y2x = tzLoc[0];
   float z2x = tzLoc[1];
   //
-  Bool_t res = calib->GetSmoothEstimate(sector, x, y2x, z2x, 0xff, dist);
-  if (!res) { printf("Failed to evaluate smooth distortion\n"); exit(1); }
+  Bool_t res = kFALSE;
+  if (AliTPCDcalibRes::GetUseChebForTraining()) {
+    calib->GetChebCorrObject()->Eval(sector,row, tzLoc, dist);
+  }
+  else {
+    res = calib->GetSmoothEstimate(sector, x, y2x, z2x, 0xff, dist);
+    if (!res) { printf("Failed to evaluate smooth distortion\n"); exit(1); }
+  }
   //
   //check if extra instance was not set, in this case, average over 2
   if (calibExt) {
     float distExt[AliTPCDcalibRes::kResDim] = {0};
-    res = calibExt->GetSmoothEstimate(sector, x, y2x, z2x, 0xff, distExt);
-    if (!res) { printf("Failed to evaluate smooth distortion for Extra param\n"); exit(1); }
-    for (int i=AliTPCDcalibRes::kResDim;i--;) dist[i] = 0.5*(dist[i]+distExt[i]);
+    if (AliTPCDcalibRes::GetUseChebForTraining()) {
+      calibExt->GetChebCorrObject()->Eval(sector,row, tzLoc, distExt);
+    }
+    else {
+      res = calibExt->GetSmoothEstimate(sector, x, y2x, z2x, 0xff, distExt);
+      if (!res) { printf("Failed to evaluate smooth distortion for Extra param\n"); exit(1); }
+    }
+    double wThis = 0.5;
+    if (AliTPCDcalibRes::GetMorphingFunctionXZY()) {
+      wThis = AliTPCDcalibRes::GetMorphingFunctionXZY()->Eval(x, z2x, y2x);
+    }
+    for (int i=AliTPCDcalibRes::kResDim;i--;) dist[i] = wThis*dist[i] + (1.-wThis)*distExt[i];
   }
   //
   for (int i=0;i<AliTPCDcalibRes::kResDim;i++) corrLoc[i] = dist[i];
@@ -4464,31 +4500,50 @@ void trainDist(int xslice, float* tzLoc, float distLoc[AliTPCDcalibRes::kResDim]
   AliTPCDcalibRes *calib = AliTPCDcalibRes::GetUsedInstance(), 
     *calibExt = AliTPCDcalibRes::GetUsedInstanceExt();
   //
-  Bool_t ignore = kFALSE;
-  int xbinCorr = calib->GetXBin(xyzPrim[AliTPCDcalibRes::kResX]);
-  if (calib->GetXBinIgnored(sector,xbinCorr)) { // find 1st valid x-slice in correction param
-    int xValUp,xValDn, xSubst = 1;
-    for (xValDn=xbinCorr;xValDn--;) if (!calib->GetXBinIgnored(sector,xValDn)) break;
-    for (xValUp=xbinCorr+1;xValUp<calib->GetNXBins();xValUp++) if (!calib->GetXBinIgnored(sector,xValUp)) break;    
+  if (!AliTPCDcalibRes::GetUseChebForTraining()) {
+    Bool_t ignore = kFALSE;
+    int xbinCorr = calib->GetXBin(xyzPrim[AliTPCDcalibRes::kResX]);
+    if (calib->GetXBinIgnored(sector,xbinCorr)) { // find 1st valid x-slice in correction param
+      int xValUp,xValDn, xSubst = 1;
+      for (xValDn=xbinCorr;xValDn--;) if (!calib->GetXBinIgnored(sector,xValDn)) break;
+      for (xValUp=xbinCorr+1;xValUp<calib->GetNXBins();xValUp++) if (!calib->GetXBinIgnored(sector,xValUp)) break;    
+      //
+      if (xValDn<0 && xValUp>=calib->GetNXBins()) return; // ignore
+      //
+      float dstDn = xValDn<0 ? 1e6 : TMath::Abs(calib->GetX(xValDn) - xyzPrim[AliTPCDcalibRes::kResX]);
+      float dstUp = xValUp>=calib->GetNXBins() ? 1e6 : TMath::Abs(calib->GetX(xValUp) - xyzPrim[AliTPCDcalibRes::kResX]);
+      // redefine query X to closest valid slice
+      xyzPrim[AliTPCDcalibRes::kResX] = dstDn<dstUp ? calib->GetX(xValDn) : calib->GetX(xValUp);
+      //
+    }
     //
-    if (xValDn<0 && xValUp>=calib->GetNXBins()) return; // ignore
-    //
-    float dstDn = xValDn<0 ? 1e6 : TMath::Abs(calib->GetX(xValDn) - xyzPrim[AliTPCDcalibRes::kResX]);
-    float dstUp = xValUp>=calib->GetNXBins() ? 1e6 : TMath::Abs(calib->GetX(xValUp) - xyzPrim[AliTPCDcalibRes::kResX]);
-    // redefine query X to closed valid slice
-    xyzPrim[AliTPCDcalibRes::kResX] = dstDn<dstUp ? calib->GetX(xValDn) : calib->GetX(xValUp);
-    //
+    calib->InvertCorrection(sector, xyzPrim, xyzCl); // calculate inverse distortion
   }
-  //
-  calib->InvertCorrection(sector, xyzPrim, xyzCl); // calculate inverse distortion
+  else {
+    calib->GetChebDistObject()->Eval(sector, xyzPrim[AliTPCDcalibRes::kResX], tzLoc[0], tzLoc[1], xyzCl);
+  }
 
   if (calibExt) { // if ext is provided, average between the current and ext
     float xyzClExt[AliTPCDcalibRes::kResDim] = {0};
-    calibExt->InvertCorrection(sector, xyzPrim, xyzClExt); // calculate inverse distortion 
-    for (int i=AliTPCDcalibRes::kResDim;i--;) xyzCl[i] = 0.5*(xyzCl[i]+xyzClExt[i]);
+    if (!AliTPCDcalibRes::GetUseChebForTraining()) {    
+      calibExt->InvertCorrection(sector, xyzPrim, xyzClExt); // calculate inverse distortion
+    }
+    else {
+      calibExt->GetChebDistObject()->Eval(sector, xyzPrim[AliTPCDcalibRes::kResX], tzLoc[0], tzLoc[1], xyzClExt);
+    }
+    double wThis = 0.5;
+    if (AliTPCDcalibRes::GetMorphingFunctionXZY()) {
+      wThis = AliTPCDcalibRes::GetMorphingFunctionXZY()->Eval(xyzPrim[AliTPCDcalibRes::kResX], tzLoc[1], tzLoc[0]);
+    }
+    for (int i=AliTPCDcalibRes::kResDim;i--;) xyzCl[i] = wThis*xyzCl[i] + (1.-wThis)*xyzClExt[i];
   }
-
-  for (int j=AliTPCDcalibRes::kResDimG;j--;) distLoc[j] = xyzCl[j]-xyzPrim[j];
+  
+  if (AliTPCDcalibRes::GetUseChebForTraining()) {
+    for (int j=AliTPCDcalibRes::kResDimG;j--;) distLoc[j] = xyzCl[j];
+  }
+  else {
+    for (int j=AliTPCDcalibRes::kResDimG;j--;) distLoc[j] = xyzCl[j]-xyzPrim[j];
+  }
   distLoc[AliTPCDcalibRes::kResD] = xyzCl[AliTPCDcalibRes::kResD];
   //
 }
@@ -4509,24 +4564,40 @@ void AliTPCDcalibRes::CreateDistortionObject()
     }
   }
   //
+  if (AliTPCDcalibRes::GetUseChebForTraining()) {
+    AliInfo("Attention: using ChebDist object for training");
+
+    if (!fChebDist) {
+      AliError("Non-existing ChebDist object requested for training"); 
+      create = kFALSE;    
+    }
+    else fChebDist->Init();
+  
+    if (AliTPCDcalibRes::GetUsedInstanceExt() && !AliTPCDcalibRes::GetUsedInstanceExt()->GetChebDistObject()) {
+      AliError("Non-existing ChebDist object of Exra map requested for training"); 
+      create = kFALSE;    
+    }
+    else ((AliTPCChebDist*)AliTPCDcalibRes::GetUsedInstanceExt()->GetChebDistObject())->Init();
+  }
+  //
   if (!create) {
     AliError("ATTENTION: MAP WILL NOT BE CREATED");
     return;
   }
   TString name = Form("run%d_%lld_%lld_InvDist",fRun,fTMin,fTMax);
-  delete fChebDist; fChebDist = 0;
-  fChebDist = new AliTPCChebDist(name.Data(),name.Data(),fChebPhiSlicePerSector,fChebZSlicePerSide,1.0f);
-  fChebDist->SetUseFloatPrec(kFALSE);
-  fChebDist->SetRun(fRun);
-  fChebDist->SetTimeStampStart(fTMin);
-  fChebDist->SetTimeStampEnd(fTMax);
-  fChebDist->SetTimeDependent(kFALSE);
-  fChebDist->SetUseZ2R(kTRUE);
-  SetDistDest(fChebDist);
+
+  AliTPCChebDist* chebDistN = new AliTPCChebDist(name.Data(),name.Data(),fChebPhiSlicePerSector,fChebZSlicePerSide,1.0f);
+  chebDistN->SetUseFloatPrec(kFALSE);
+  chebDistN->SetRun(fRun);
+  chebDistN->SetTimeStampStart(fTMin);
+  chebDistN->SetTimeStampEnd(fTMax);
+  chebDistN->SetTimeDependent(kFALSE);
+  chebDistN->SetUseZ2R(kTRUE);
+  SetDistDest(chebDistN);
   //
-  if      (fBz> 0.01) fChebDist->SetFieldType(AliTPCChebCorr::kFieldPos);
-  else if (fBz<-0.01) fChebDist->SetFieldType(AliTPCChebCorr::kFieldNeg);
-  else                fChebDist->SetFieldType(AliTPCChebCorr::kFieldZero);
+  if      (fBz> 0.01) chebDistN->SetFieldType(AliTPCChebCorr::kFieldPos);
+  else if (fBz<-0.01) chebDistN->SetFieldType(AliTPCChebCorr::kFieldNeg);
+  else                chebDistN->SetFieldType(AliTPCChebCorr::kFieldZero);
   // Note: to create universal map, set manually SetFieldType(AliTPCChebCorr::kFieldAny)
 
   SetUsedInstance(this);
@@ -4545,17 +4616,21 @@ void AliTPCDcalibRes::CreateDistortionObject()
       AliInfoF("Nnodes for Cheb.%4s segmentation in %4s is set to %2d",kResName[i],kVoxName[kVoxZ],nbZauto);
     }
   }
-  fChebDist->Parameterize(trainDist,kResDim,npCheb,fChebPrecD);
+  chebDistN->Parameterize(trainDist,kResDim,npCheb,fChebPrecD);
   //
   // register tracks rate for lumi weighting
-  fChebDist->SetTracksRate(ExtractTrackRate());
+  chebDistN->SetTracksRate(ExtractTrackRate());
   //
   // store ratio of dndeta to pp@13TeV
   float rat2pp = AliLumiTools::GetScaleDnDeta2pp13TeV(fRun);
-  fChebDist->SetScaleDnDeta2pp13TeV(rat2pp);
+  chebDistN->SetScaleDnDeta2pp13TeV(rat2pp);
   if (!fLumiCTPGraph) fLumiCTPGraph = AliLumiTools::GetLumiFromCTP(fRun);
-  fLumiCOG = fChebDist->GetLuminosityCOG(fLumiCTPGraph);
-  fChebDist->SetLumiInfo(fLumiCOG);
+  fLumiCOG = chebDistN->GetLuminosityCOG(fLumiCTPGraph);
+  chebDistN->SetLumiInfo(fLumiCOG);
+
+  delete fChebDist;
+  fChebDist = chebDistN;
+
   AliSysInfo::AddStamp("CreateDistortionObject",1,0,0,0);
 }
 
@@ -4643,4 +4718,15 @@ void AliTPCDcalibRes::WriteDistCorTestTree(int nx, int nphi2sect,int nzside)
   delete resTree;
   flOut->Close();
   delete flOut;
+}
+
+void AliTPCDcalibRes::SetMorphingFunctionXZY(TF1* fun)
+{
+  if (!fun) {
+    fgMorphingFunctionXZY = 0;
+    return;
+  }
+  AliInfoClass("Imposing function for morphing 2 parameterizations");
+  fun->Print();
+  fgMorphingFunctionXZY = fun;
 }

@@ -68,6 +68,7 @@ AliMCEventHandler::AliMCEventHandler() :
     fEventsPerFile(0),
     fReadTR(kTRUE),
     fInitOk(kFALSE),
+    fReusedBG(0),
     fSubsidiaryHandlers(0),
     fEventsInContainer(0),
     fPreReadMode(kLmPreRead), // was kNoPreRead
@@ -103,6 +104,7 @@ AliMCEventHandler::AliMCEventHandler(const char* name, const char* title) :
     fEventsPerFile(0),
     fReadTR(kTRUE),
     fInitOk(kFALSE),
+    fReusedBG(0),
     fSubsidiaryHandlers(0),
     fEventsInContainer(0),
     fPreReadMode(kLmPreRead), // was kNoPreRead
@@ -152,7 +154,7 @@ Bool_t AliMCEventHandler::Init(Option_t* opt)
       embBKGPaths->Print();
       for (int ib=0;ib<embBKGPaths->GetEntriesFast();ib++) {
 	TObjString* objstr = (TObjString*)embBKGPaths->At(ib);
-	TString pth = objstr->GetName();
+	TString pth = gSystem->DirName( objstr->GetName() );
 	if (objstr->TestBit(AliStack::GetEmbeddingRawBit())) {
 	  AliInfoF("Backround from %s flagged is as RAW, skip MCEvent creation",pth.Data());
 	  continue;
@@ -373,8 +375,11 @@ Bool_t AliMCEventHandler::BeginEvent(Long64_t entry)
     if (fSubsidiaryHandlers) {
       // RS: event ID's are not necessarily the same: bg event may repeat for multiple signal events
       int repFactor = fMCEvent->Header()->GetSgPerBgEmbedded();
-      if (repFactor>0) entry /= repFactor; //RS bg entry corresponding to signal one
-
+      if (repFactor>0) {
+	fReusedBG = entry%repFactor; // is this the 1st read of the BG event?
+	fMCEvent->SetBGEventReused(fReusedBG);
+	entry /= repFactor; //RS bg entry corresponding to signal one
+      }
       TIter next(fSubsidiaryHandlers);
 	AliMCEventHandler *handler;
 	while((handler = (AliMCEventHandler*)next())) {

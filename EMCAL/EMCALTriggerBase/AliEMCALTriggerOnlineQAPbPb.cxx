@@ -21,16 +21,20 @@
 #include <cstring>
 #include <iostream>
 
+#include <TArrayD.h>
 #include <TH1D.h>
 #include <TH2D.h>
 #include <TH3D.h>
+#include <THnSparse.h>
 #include <TProfile.h>
 #include <TObjString.h>
 #include <TObjArray.h>
 
+#include "AliEMCALGeometry.h"
 #include "AliEMCALTriggerPatchInfo.h"
 #include "AliEMCALTriggerFastOR.h"
 #include "AliLog.h"
+#include "AliVCaloCells.h"
 
 #include "AliEMCALTriggerConstants.h"
 
@@ -48,6 +52,7 @@ ClassImp(AliEMCALTriggerOnlineQAPbPb)
 AliEMCALTriggerOnlineQAPbPb::AliEMCALTriggerOnlineQAPbPb():
   AliEMCALTriggerQA(),
   fBkgPatchType(kTMEMCalBkg),
+  fEnableEnergyCorrelationSM(kFALSE),
   fHistos(0)
 {
   for (Int_t i = 0; i < 3; i++) {
@@ -88,6 +93,7 @@ AliEMCALTriggerOnlineQAPbPb::AliEMCALTriggerOnlineQAPbPb():
 AliEMCALTriggerOnlineQAPbPb::AliEMCALTriggerOnlineQAPbPb(const char* name):
   AliEMCALTriggerQA(name),
   fBkgPatchType(kTMEMCalBkg),
+  fEnableEnergyCorrelationSM(kFALSE),
   fHistos(0)
 {
   for (Int_t i = 0; i < 3; i++) {
@@ -128,6 +134,7 @@ AliEMCALTriggerOnlineQAPbPb::AliEMCALTriggerOnlineQAPbPb(const char* name):
 AliEMCALTriggerOnlineQAPbPb::AliEMCALTriggerOnlineQAPbPb(const AliEMCALTriggerOnlineQAPbPb& triggerQA) :
   AliEMCALTriggerQA(triggerQA),
   fBkgPatchType(triggerQA.fBkgPatchType),
+  fEnableEnergyCorrelationSM(triggerQA.fEnableEnergyCorrelationSM),
   fHistos(0)
 {
   for (Int_t i = 0; i < 3; i++) {
@@ -199,6 +206,22 @@ void AliEMCALTriggerOnlineQAPbPb::Init()
   hname = Form("EMCTRQA_histFastORL1AmpVsL0Amp");
   htitle = Form("EMCTRQA_histFastORL1AmpVsL0Amp;L0 amplitude;L1 time sum;entries");
   CreateTH2(hname, htitle, 64, 0, 2048, 64, 0, 2048);
+
+  hname = "EMCTRQA_histCellAmpVsFastORL1Amp";
+  htitle = "EMCTRQA_histCellAmpVsFastORL1Amp;FastOR L1 amplitude;2x2 cell sum energy (GeV)";
+  CreateTH2(hname, htitle, 1024/fADCperBin, 0, 1024, 1024/fADCperBin, 0, 80);
+
+  if(fEnableEnergyCorrelationSM){
+    hname = "EMCTRQA_histCellAmpVsFastORL1AmpSM";
+    htitle = "EMCTRQA_histCellAmpVsFastORL1AmpSM;SM; FastOR L1 amplitude;2x2 cell sum energy (GeV)";
+    TArrayD smbinning(22), energybinning(201);
+    int ibin(0);
+    for(double b = -1.5; b <= 19.5; b+=1) smbinning[ibin++] = b;
+    ibin = 0;
+    for(double b = 0.; b < 20.1; b += 0.1) energybinning[ibin++] = b;
+    const TArrayD histsmbinning[3] = {smbinning, energybinning, energybinning};
+    CreateTHnSparse(hname, htitle, 3, histsmbinning);
+  }
 
   for (Int_t itype = 0; itype < 3; itype++) {
     if (!IsPatchTypeEnabled(itype, EMCALTrigger::kTMEMCalBkg)) continue;
@@ -422,9 +445,40 @@ void AliEMCALTriggerOnlineQAPbPb::ProcessBkgPatch(const AliEMCALTriggerPatchInfo
  * Process a FastOR, filling relevant histograms.
  * \param fastor Pointer to a valid trigger FastOR
  */
-void AliEMCALTriggerOnlineQAPbPb::ProcessFastor(const AliEMCALTriggerFastOR* fastor, AliVCaloCells* /*cells*/)
+void AliEMCALTriggerOnlineQAPbPb::ProcessFastor(const AliEMCALTriggerFastOR* fastor, AliVCaloCells* cells)
 {
   TString hname;
+
+  Double_t offlineAmp = 0;
+  Int_t nTRU = -1;
+  Int_t nADC = -1;
+  Int_t iSM  = -1;
+  Int_t iEta = -1;
+  Int_t iPhi = -1;
+
+  if (fGeom) {
+    fGeom->GetPositionInSMFromAbsFastORIndex(fastor->GetAbsId(), iSM, iEta, iPhi);
+
+    Int_t idx[4] = {-1};
+    fGeom->GetCellIndexFromFastORIndex(fastor->GetAbsId(), idx);
+    fGeom->GetTRUFromAbsFastORIndex(fastor->GetAbsId(), nTRU, nADC);
+
+    if (nTRU >= 48 || nTRU < 0 ||
+        nTRU == 34 || nTRU == 35 ||
+        nTRU == 40 || nTRU == 41 ||
+        nTRU == 46 || nTRU == 47) {
+      if (fastor->GetL0Amp() > 0) AliError(Form("FastOR with abs ID %d (amp = %u) and TRU number %d: this TRU does not exist!!", fastor->GetAbsId(), fastor->GetL0Amp(), nTRU));
+      return;
+    }
+
+    if (idx[0] >= 0) {
+      if (cells) {
+        for (Int_t i = 0; i < 4; i++) {
+          offlineAmp += cells->GetCellAmplitude(idx[i]);
+        }
+      }
+    }
+  }
 
   if (fastor->GetL0Amp() > 0) {
     hname = Form("EMCTRQA_histFastORL0");
@@ -453,6 +507,15 @@ void AliEMCALTriggerOnlineQAPbPb::ProcessFastor(const AliEMCALTriggerFastOR* fas
 
     hname = Form("EMCTRQA_histFastORL1Mean");
     FillTProfile(hname, fastor->GetAbsId(), fastor->GetL1Amp());
+    
+    hname = "EMCTRQA_histCellAmpVsFastORL1Amp";
+    FillTH2(hname, fastor->GetL1Amp(), offlineAmp);
+
+    if(fEnableEnergyCorrelationSM){
+      double point[3] = {static_cast<double>(iSM), fastor->GetL1Amp() * EMCALTrigger::kEMCL1ADCtoGeV , offlineAmp};
+      hname = "EMCTRQA_histCellAmpVsFastORL1AmpSM";
+      FillTHnSparse(hname, point);
+    }
 
     if (fastor->GetL1Amp() > fFastorL1Th) {
       hname = Form("EMCTRQA_histLargeAmpFastORL1");
@@ -580,6 +643,28 @@ void AliEMCALTriggerOnlineQAPbPb::CreateTProfile(const char *name, const char *t
     return;
   }
   TProfile* hist = new TProfile(name, title, nbins, xmin, xmax);
+  fHistos->Add(hist);
+}
+
+//______________________________________________________________________________
+void AliEMCALTriggerOnlineQAPbPb::CreateTHnSparse(const char *name, const char *title, int ndim, const TArrayD *binnings){
+  /*
+   * Create a new THnSparse within the container.
+   *
+   * @param name: Name of the histogram
+   * @param title: Title of the histogram
+   * @param ndim: number of dimensions
+   * @param binnings: axis binnings
+   * Raises fatals in case the object is attempted to be duplicated
+   */
+  if (fHistos->FindObject(name)) {
+    Fatal("AliEMCALTriggerQA::CreateTProfile", "Object %s already exists", name);
+    return;
+  }
+  TArrayI nbins(ndim);
+  for(int i = 0; i < ndim; i++) nbins[i] = binnings[i].GetSize()-1;
+  THnSparse *hist = new THnSparseD(name, title, ndim, nbins.GetArray());
+  for(int i = 0; i < ndim; i++) hist->GetAxis(i)->Set(binnings[i].GetSize()-1, binnings[i].GetArray());
   fHistos->Add(hist);
 }
 
@@ -731,6 +816,25 @@ void AliEMCALTriggerOnlineQAPbPb::FillTH3(const char* name, double x, double y, 
     return;
   }
   hist->Fill(x, y, z, weight);
+}
+
+//______________________________________________________________________________
+void AliEMCALTriggerOnlineQAPbPb::FillTHnSparse(const char* name, double *point, double weight)
+{
+  /*
+   * Fill a THnSparse histogram within the container.
+   *
+   * @param name: Name of the histogram
+   * @param point: Point data
+   * Raises fatals in case the histogram is not found
+   */
+
+  THnSparse *hist = dynamic_cast<THnSparse*>(fHistos->FindObject(name));
+  if (!hist) {
+    Fatal("AliEMCALTriggerQA::FillTH3", "Histogram %s not found", name);
+    return;
+  }
+  hist->Fill(point, weight);
 }
 
 //______________________________________________________________________________

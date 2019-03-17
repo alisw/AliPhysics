@@ -58,7 +58,15 @@ public:
   virtual    void  DisableStructuresSideC() { fADCstruct = kFALSE; }
   virtual    void  DisableStructuresSideA() { fADAstruct = kFALSE; }
   virtual    void  KeepHistory() { fKeepHistory = kTRUE; }
-
+  // Added option to enable/disable PMT Shield and OldAD
+private:
+  Bool_t fEnabledPmtShldADA; //!
+  Bool_t fEnabledOldADA    ; //!
+public:
+  virtual    void  ParseYear();
+  virtual    void  EnablePmtShieldingADA(const Bool_t flag) { fEnabledPmtShldADA = flag; }
+  virtual    void  EnableOldADA         (const Bool_t flag) { fEnabledOldADA     = flag; }
+  //
   enum ADCPosition_t { kADCInTunnel, kADCInCavern, kADCInBoth};
 
 protected:

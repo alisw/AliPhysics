@@ -278,6 +278,7 @@ int AliHLTTPCAgent::CreateConfigurations(AliHLTConfigurationHandler* handler,
     // since the track model block can not be identified with a partition. Have to duplicate the
     // configuration of the compression component
     handler->CreateConfiguration("TPC-compression-emulation", "TPCDataCompressor", compressorInput.Data(), "-mode 1");
+    handler->CreateConfiguration("TPC-compression-only", "TPCDataCompressor", compressorInput.Data(), "");
 
     if (compressorInput.Length()>0) compressorInput+=" ";
     compressorInput+="TPC-globalmerger";

@@ -15,6 +15,7 @@
 #include "AliEMCALTriggerQA.h"
 
 class AliEMCALTriggerPatchInfo;
+class TArrayD;
 class THashList;
 class TObjArray;
 class AliEMCALTriggerFastOR;
@@ -48,11 +49,13 @@ public:
   void   GetDCalMedian(Double_t median[3])  const { memcpy(median, fMedianDCal, sizeof(Double_t)*3) ; }
   void   GetEMCalBkg(Double_t bkg[3])       const { memcpy(bkg, fBkgEMCal, sizeof(Double_t)*3)      ; }
   void   GetDCalBkg(Double_t bkg[3])        const { memcpy(bkg, fBkgDCal, sizeof(Double_t)*3)       ; }
+  void   SetEnableEnergyCorrelationSM(Bool_t doEnable) { fEnableEnergyCorrelationSM = doEnable; }
 
   TCollection* GetListOfHistograms()  { return fHistos; }
 
 protected:
   Int_t                   fBkgPatchType;                ///< Background patch type
+  Bool_t                  fEnableEnergyCorrelationSM;   ///< Enable STU-FEE energy correlation plot per supermodule        
 
   TArrayI                 fBkgADCAmpEMCal[3];           //!<! ADC EMCal amplitudes (0=online, 1=offline) of background patches (will be reset each event)
   Int_t                   fNBkgPatchesEMCal[3];         //!<! Number of processed background patches (will be reset each event)
@@ -69,6 +72,7 @@ protected:
 
 private:
   void CreateTProfile(const char *name, const char *title, int nbins, double xmin, double xmax);
+  void CreateTHnSparse(const char *name, const char *title, int ndim, const TArrayD *binnings);
   void CreateTH1(const char *name, const char *title, int nbins, double xmin, double xmax);
   void CreateTH2(const char *name, const char *title, int nbinsx, double xmin, double xmax, int nbinsy, double ymin, double ymax);
   void CreateTH3(const char *name, const char *title, int nbinsx, double xmin, double xmax, int nbinsy, double ymin, double ymax, int nbinsz, double zmin, double zmax);
@@ -76,6 +80,7 @@ private:
   void FillTH1(const char *hname, double x, double weight = 1.);
   void FillTH2(const char *hname, double x, double y, double weight = 1.);
   void FillTH3(const char *hname, double x, double y, double z, double weight = 1.);
+  void FillTHnSparse(const char *hname, double *point, double weight = 1.);
 
   TObject *FindObject(const char *name) const;
   virtual TObject *FindObject(const TObject *obj) const;
@@ -83,7 +88,7 @@ private:
   AliEMCALTriggerOnlineQAPbPb &operator=(const AliEMCALTriggerOnlineQAPbPb &);
 
   /// \cond CLASSIMP
-  ClassDef(AliEMCALTriggerOnlineQAPbPb, 1);
+  ClassDef(AliEMCALTriggerOnlineQAPbPb, 2);
   /// \endcond
 };
 

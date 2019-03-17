@@ -42,6 +42,7 @@ set(SRCS
     AliRawReaderMemory.cxx
     AliRawReaderRoot.cxx
     AliVMERawStream.cxx
+    AliReshuffleRawTreeHelper.cxx
    )
 
 # Headers from sources

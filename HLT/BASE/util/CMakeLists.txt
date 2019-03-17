@@ -132,6 +132,8 @@ if(ZEROMQ_FOUND)
                       ${ZEROMQ_INCLUDE_DIR}
                       )
 
+  add_executable(ZMQESDserver ZMQESDserver.cxx)
+  target_link_libraries(ZMQESDserver HLTbase AliHLTGlobal AliZMQhelpers RAWDatabase Geom Graf MathCore Net Tree EG Gpad Matrix Minuit Physics VMC Thread STEERBase XMLParser Graf3d RIO Hist Core pthread)
   add_executable(ZMQfileProxy ZMQfileProxy.cxx)
   target_link_libraries(ZMQfileProxy HLTbase AliHLTGlobal AliZMQhelpers RAWDatabase Geom Graf MathCore Net Tree EG Gpad Matrix Minuit Physics VMC Thread STEERBase XMLParser Graf3d RIO Hist Core)
   add_executable(ZMQROOTmerger ZMQROOTmerger.cxx)
@@ -153,6 +155,6 @@ if(ZEROMQ_FOUND)
   target_link_libraries(ZMQexample HLTbase AliHLTGlobal AliZMQhelpers RAWDatabase Geom Graf MathCore Net Tree EG Gpad Matrix Minuit Physics VMC Thread STEERBase XMLParser Graf3d RIO Hist Core)
   
   # Installation of 
-  install(TARGETS ZMQexample ZMQfileProxy ZMQROOTmerger ZMQROOTprocessor ZMQhistSource ZMQproxy ZMQHLTchain RUNTIME DESTINATION bin)
+  install(TARGETS ZMQexample ZMQfileProxy ZMQROOTmerger ZMQROOTprocessor ZMQhistSource ZMQproxy ZMQHLTchain ZMQESDserver RUNTIME DESTINATION bin)
   install(PROGRAMS ZMQmonitor.py o2header.py DESTINATION bin)
 endif(ZEROMQ_FOUND)

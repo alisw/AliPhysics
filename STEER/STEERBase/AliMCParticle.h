@@ -19,14 +19,15 @@
 #include "AliVParticle.h"
 #include "AliStack.h"
 
+
 class AliMCParticle: public AliVParticle {
 public:
+  enum {kFromSubsidiary = BIT(23)};
     AliMCParticle();
     AliMCParticle(TParticle* part, TObjArray* rarray = 0, Int_t label=-1);
     virtual ~AliMCParticle();
     AliMCParticle(const AliMCParticle& mcPart); 
     AliMCParticle& operator=(const AliMCParticle& mcPart);
-    
     // Kinematics
     virtual Double_t Px()        const;
     virtual Double_t Py()        const;
@@ -74,10 +75,10 @@ public:
     Float_t  GetTPCTrackLength(Float_t bz, Float_t ptmin, Int_t &counter, Float_t deadWidth, Float_t zMax=230. );
     // Navigation
     virtual Int_t GetMother()       const {return fMother;}
-    Int_t GetFirstDaughter()        const {return fFirstDaughter;}
-    Int_t GetLastDaughter()         const {return fLastDaughter;}
-    Int_t GetDaughterLabel(Int_t i) const {return fParticle->GetDaughter(i) ;}
-    Int_t GetNDaughters()           const {return fParticle->GetNDaughters();}
+    Int_t GetDaughterFirst()        const {return fFirstDaughter;}
+    Int_t GetDaughterLast()         const {return fLastDaughter;}
+    Int_t GetDaughterLabel(Int_t i) const {return i ? fLastDaughter : fFirstDaughter;}
+    Int_t GetNDaughters()           const {return fLastDaughter>0 ? fLastDaughter - fFirstDaughter + 1 : 0;}
     
     void  SetMother(Int_t idx)        {fMother        = idx;}
     void  SetFirstDaughter(Int_t idx) {fFirstDaughter = idx;}
@@ -92,6 +93,9 @@ public:
     Bool_t     IsSecondaryFromWeakDecay() const {return fStack->IsSecondaryFromWeakDecay(fLabel);}
     Bool_t     IsSecondaryFromMaterial()  const {return fStack->IsSecondaryFromMaterial(fLabel);}
 
+    virtual Bool_t IsFromSubsidiaryEvent() const {return TestBit(kFromSubsidiary);}
+    virtual void   SetFromSubsidiaryEvent(Bool_t v) {SetBit(kFromSubsidiary,v);}
+    
  private:
     TParticle *fParticle;             // The wrapped TParticle
     TObjArray *fTrackReferences;      // Array to track references

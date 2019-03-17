@@ -2708,7 +2708,8 @@ Bool_t AliITStrackerMI::RefitAt(Double_t xx,AliITStrackMI *track,
        }
        if (cci>=0) {
 	 track->SetExtraCluster(ilayer,(ilayer<<28)+cci);
-	 track->SetExtraModule(ilayer,idetExtra);
+	 //track->SetExtraModule(ilayer,idetExtra);
+	 track->SetModuleIndexInfo(ilayer+AliITSgeomTGeo::kNLayers, idetExtra);
        }
      } // end search for extra clusters in overlapped modules
      

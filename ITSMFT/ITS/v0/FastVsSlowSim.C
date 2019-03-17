@@ -18,7 +18,6 @@
 #include "AliFMDDigit.h"
 #include "AliTPCAltroMapping.h"
 #include "AliTriggerConfiguration.h"
-#include "TAlienCollection.h"
 #include "AliTriggerClass.h"
 #include "TGrid.h"
 #include "TPRegexp.h"

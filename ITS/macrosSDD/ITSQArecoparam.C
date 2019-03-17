@@ -1,6 +1,5 @@
 #if !defined(__CINT__) || defined(__MAKECINT__)
 #include <TFile.h>
-#include <TAlienFile.h>
 #include <TSystem.h>
 #include <TGrid.h>
 #include <TGridResult.h>

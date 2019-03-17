@@ -231,7 +231,6 @@ TParticle* AliGenReadersEMD::NextParticle()
     TParticle* particle = new TParticle(pdgCode, 0, -1, -1, -1, -1,
     	p[0], p[1], p[2], p[3], 0., 0., 0., 0.);
     if((p[0]*p[0]+p[1]*p[1]+p[2]*p[2])>1e-5) particle->SetBit(kTransportBit);
-    fNcurrent++;
     fNparticle++;
     return particle;
 }

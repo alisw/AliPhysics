@@ -103,6 +103,11 @@ public:
   
     TParticle* ParticleFromStack(Int_t i) const;
     TParticle* Particle(int i) const;
+    AliMCParticle* MotherOfParticle(int i) const;
+    Int_t GetLabelOfParticleMother(int i) const;
+    Int_t GetLabelOfParticleFirstDaughter(int i) const;
+    Int_t GetLabelOfParticleLastDaughter(int i) const;
+
     // Vertex
     using AliVEvent::GetPrimaryVertex;
     virtual const AliVVertex *GetPrimaryVertex() const;
@@ -170,6 +175,9 @@ public:
 
   static AliMCParticle *GetDummyTrack();
   
+  Int_t GetBGEventReused()                  const {return fBGEventReused;}
+  void  SetBGEventReused(int n)                   {fBGEventReused = n;}  
+
 private:
     virtual void      ReorderAndExpandTreeTR();
 
@@ -201,8 +209,9 @@ private:
     static   Int_t        fgkBgLabelOffset;  // Standard branch name    
     mutable  AliVVertex*  fVertex;           // MC Vertex
     Int_t             fNBG;              //! Background particles in current event
-    
-    ClassDef(AliMCEvent, 2)              // AliVEvent realisation for MC data
+    Int_t             fBGEventReused;    // In case of embedding counts how many time currebt BKG event was used
+  
+    ClassDef(AliMCEvent, 3)              // AliVEvent realisation for MC data
 };
 
 

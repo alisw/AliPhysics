@@ -73,6 +73,7 @@ public:
     Int_t       GetParticleAndTR(Int_t i, TParticle*& particle, TClonesArray*& trefs);
     void        DrawCheck(Int_t i, Int_t search=0);
     Bool_t      InitOk() const {return fInitOk;}
+    Int_t       GetBGEventReused() const {return fReusedBG;}
     // Label manipulation
     void   SelectParticle(Int_t i);
     Bool_t IsParticleSelected(Int_t i);
@@ -104,6 +105,7 @@ private:
     Int_t                  fEventsPerFile;      //! Number of events per file
     Bool_t                 fReadTR;             // determines if TR shall be read
     Bool_t                 fInitOk;             // Initialization ok
+    Int_t                  fReusedBG;           //! Flag reusing of BG event in case of embedding 
     TList                 *fSubsidiaryHandlers; //! List of subsidiary MC handlers (for example for Background)
     Int_t                  fEventsInContainer;  //! Number of events in container class
     PreReadMode_t          fPreReadMode;        // Pre reading mode

@@ -57,6 +57,7 @@
 
 #include <TH2F.h>
 #include <TCanvas.h>
+#include <TPRegexp.h>
 
 // --- AliRoot header files ---
 
@@ -81,9 +82,36 @@ const Double_t AliADv1::kZbegCoil     = 1959.4 ;  // Begining of compensator coi
 const char * AliADv1::s_where[] = {
   "kCSideFiberNearWLSTop", "kCSideFiberNearWLSBot", "kCSideFiberPmtTop", "kCSideFiberPmtBot", 
   "kASideFiberShort", "kASideFiberLong" }; 
+
+//__________________________________________________________________
+void AliADv1::ParseYear()
+{
+  TPMERegexp re("year=(\\d\\d\\d\\d)", "g");
+  const TString t = GetTitle();
+  const Int_t nmt = re.Match(t);
+
+  if (nmt!=2) {
+    Printf("AliADv1::ParseYear(): year=YYYY not found in title");
+    return;
+  }
+
+  const Int_t year = re[1].Atoi();
+  if (year<2015) {
+    Printf("AliADv1::ParseYear(): AD did not exist before 2015");
+    // exit(1);
+    return;
+  }
+
+  Printf("AliADv1::ParseYear(): year=%d", year);
+  if (year<2017) EnablePmtShieldingADA(0);
+  else           EnablePmtShieldingADA(1);
+}
+
 //__________________________________________________________________
 AliADv1::AliADv1()
   : AliAD()
+  , fEnabledPmtShldADA(kTRUE) //!
+  , fEnabledOldADA    (kTRUE) //!
   , fADCstruct(kTRUE)
   , fADAstruct(kTRUE)
   , fADCPosition(kADCInTunnel)
@@ -101,6 +129,8 @@ AliADv1::AliADv1()
 //_____________________________________________________________________________
 AliADv1::AliADv1(const char *name, const char *title)
   : AliAD(name, title)
+  , fEnabledPmtShldADA(kTRUE) //!
+  , fEnabledOldADA    (kTRUE) //!
   , fADCstruct(kTRUE)
   , fADAstruct(kTRUE)
   , fADCPosition(kADCInTunnel)
@@ -112,6 +142,11 @@ AliADv1::AliADv1(const char *name, const char *title)
   , fADAPhotoCathodeEfficiency(0.18)
   , fKeepHistory(kFALSE)
 {
+  //
+  // Parse title
+  //
+  ParseYear();
+
   // AliModule* pipe = gAlice->GetModule("PIPE");
   // if( (!pipe) ) {
   //   Error("Constructor","AD needs PIPE!!!\n");
@@ -1447,10 +1482,11 @@ void AliADv1::CreateAD()
   // TGeoVolume         * voSupportZEM           = CreateSupportZEM(); 
   TGeoVolumeAssembly * voBLM                  = CreateBLM(); 
   TGeoVolumeAssembly * voVacuumChamberSupport = CreateVacuumChamberSupport();
-  TGeoVolumeAssembly * voShield               = CreateADAShielding();
+  TGeoVolumeAssembly * voShield               = (fEnabledPmtShldADA) ? CreateADAShielding() : NULL;
   TGeoVolume         * voWarmModuleSupport    = CreateWarmModuleSupport();
   TGeoVolume         * voPumpAfterMagnet      = CreatePump();
-  TGeoVolume         * voOldADA               = CreateOldADA();
+  TGeoVolume         * voOldADA               = (fEnabledOldADA) ? CreateOldADA() : NULL;
+	
   //
   // FINAL ASSEMBLY 
   //
@@ -1469,12 +1505,12 @@ void AliADv1::CreateAD()
   vADAstruct->AddNode(voADsuppIBeamV        , 2 , new TGeoCombiTrans (   0. , -36.5-9.6-(81.8-9.6)/2.0, 294.0 + 1295.47+9.6/2.0, Rx90   )  );
   vADAstruct->AddNode(voVacuumChamberSupport, 1 , new TGeoTranslation(   0. ,   0.0 , 1075.+125.         ));
   vADAstruct->AddNode(voVacuumChamberSupport, 2 , new TGeoCombiTrans (   0. ,   0.0 , 1075.-125. , Ry180 ));
-  vADAstruct->AddNode(voShield              , 1 , new TGeoTranslation(   0. ,   0.0 , 1665.5             ));
+  if (fEnabledPmtShldADA) vADAstruct->AddNode(voShield              , 1 , new TGeoTranslation(   0. ,   0.0 , 1665.5             ));
   vADAstruct->AddNode(voBLM                 , 1 , new TGeoTranslation(  12.5,   0.0 , 1459.80 )  );
   vADAstruct->AddNode(voBLMsupport          , 1 , new TGeoTranslation(  12.5, -21.5 , 1459.80 )  );
   // vADAstruct->AddNode(voSupportZEM          , 1 , new TGeoTranslation(   0. ,   0.0 ,  804.50 )  );
   vADAstruct->AddNode(voWarmModuleSupport   , 1 , new TGeoTranslation(   0.0,-100.5 ,  882.80 ));
-  vADAstruct->AddNode(voOldADA              , 1 , new TGeoTranslation(   0.0,   0.0 ,  561.00 ));
+  if (fEnabledOldADA    ) vADAstruct->AddNode(voOldADA              , 1 , new TGeoTranslation(   0.0,   0.0 ,  561.00 ));
   vADAstruct->AddNode(voPumpAfterMagnet     , 1 , new TGeoCombiTrans (   0.0,-(8.0+3.6) , 1260.00 , Rx90));
 
   if (fADCstruct) {
