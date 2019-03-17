@@ -2587,7 +2587,8 @@ void AliAnalysisHFEppTPCTOFBeauty5TeVNew::UserExec(Option_t *)
     Int_t MassCorrect;
     Bool_t fFlagLS=kFALSE, fFlagULS=kFALSE;
     Int_t Nuls=0, Nls=0;
-
+    AliAODMCParticle *fMCparticleAsso = 0;
+    AliAODMCParticle *fMCparticleMotherAsso = 0;
     Int_t ntracks = fAOD->GetNumberOfTracks();
     for (int jtrack=0; jtrack<ntracks; jtrack++) {
       if (jtrack==itrack) {continue;} //asso track != selected track
@@ -2659,6 +2660,7 @@ void AliAnalysisHFEppTPCTOFBeauty5TeVNew::UserExec(Option_t *)
       if(fFlagULS && mass<0.14) Nuls++;
 
       fMCparticle = (AliAODMCParticle*) fMCarray->At(TMath::Abs(track->GetLabel()));
+      fMCparticleAsso = (AliAODMCParticle*) fMCarray->At(TMath::Abs(trackAsso->GetLabel()));
       Int_t pdg = fMCparticle->GetPdgCode();
       ///Is electron:
       if(TMath::Abs(pdg) != 11) continue;
@@ -2672,10 +2674,11 @@ void AliAnalysisHFEppTPCTOFBeauty5TeVNew::UserExec(Option_t *)
       }else if(fFlagLS && mass<0.14 && track->Pt()>0.5){
         fMCLSdcaBelow->Fill(track->Pt(),d0z0[0]*track->Charge()*MagSign);
       }
-
-      if (fFlagULS && mass<0.14) {
+      fMCparticleMother = (AliAODMCParticle*) fMCarray->At(fMCparticle->GetMother());
+      fMCparticleMotherAsso = (AliAODMCParticle*) fMCarray->At(fMCparticleAsso->GetMother());
+      if ((fMCparticleMother->GetLabel() == fMCparticleMotherAsso->GetLabel()) && fFlagULS && mass<0.14) {
         // kFlagReco = kTRUE;
-        fMCparticleMother = (AliAODMCParticle*) fMCarray->At(fMCparticle->GetMother());
+        
         Int_t pdg_mother = -999;
         Int_t pdg_gmother = -999;
         Int_t pdg_ggmother = -999;
@@ -3029,7 +3032,9 @@ void AliAnalysisHFEppTPCTOFBeauty5TeVNew::InvMassCheckMCNew(int itrack, AliVTrac
     Double_t WeightEtaMB = -999.0, WeightEtaEnh=-999.0;
     
     AliAODMCParticle *MCPart = 0;
+    AliAODMCParticle *MCPartAsso = 0;
     AliAODMCParticle *MCPartMom = 0;
+    AliAODMCParticle *fMCparticleMotherAsso = 0;
     AliAODMCParticle *MCPartGMom = 0;
     AliAODMCParticle *MCPartGGMom = 0;
     AliAODMCParticle *MCPartGGGMom = 0;
@@ -3105,10 +3110,13 @@ void AliAnalysisHFEppTPCTOFBeauty5TeVNew::InvMassCheckMCNew(int itrack, AliVTrac
         
         if(fFlagLS && mass<0.14) Nls++;
         if(fFlagULS && mass<0.14) Nuls++;
-        
-        if (fFlagULS && mass<0.14) {
+        MCPart = (AliAODMCParticle*) fMCarray->At(TMath::Abs(track->GetLabel()));
+        MCPartAsso = (AliAODMCParticle*) fMCarray->At(TMath::Abs(trackAsso->GetLabel()));
+        fMCparticleMother = (AliAODMCParticle*) fMCarray->At(MCPart->GetMother());
+        fMCparticleMotherAsso = (AliAODMCParticle*) fMCarray->At(MCPartAsso->GetMother());
+        if ((fMCparticleMother->GetLabel() == fMCparticleMotherAsso->GetLabel()) && fFlagULS && mass<0.14) {
             
-            MCPart = (AliAODMCParticle*) fMCarray->At(TMath::Abs(track->GetLabel()));
+            
             Int_t TrackPDG = TMath::Abs(MCPart->GetPdgCode());
             if(TrackPDG == 11){
                 
