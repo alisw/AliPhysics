@@ -120,7 +120,7 @@ ptmaxname.Form("%d",(int)(maxpt*10));
   task->ConnectInput(1,valid);
 
   AliAnalysisDataContainer *coutput_recon =
-  mgr->CreateContainer(combName,
+  mgr->CreateContainer(suffix, //combName
    TList::Class(),
    AliAnalysisManager::kOutputContainer,
    mgr->GetCommonFileName());

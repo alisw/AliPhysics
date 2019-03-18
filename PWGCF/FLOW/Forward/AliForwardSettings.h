@@ -55,7 +55,8 @@ class AliForwardSettings : public TObject {
 
   TH3F* nuacentral;
   TH3F* nuaforward;
-  TH3F* seccorr;
+  TH3F* seccorr_fwd;
+  TH3F* seccorr_cen;
 
   bool doNUA;
 
@@ -80,6 +81,7 @@ class AliForwardSettings : public TObject {
   Int_t fnoClusters;
   Double_t fCutChargedDCAxyMax;
   Double_t fCutChargedDCAzMax;
+  Bool_t doPt;
   TString centrality_estimator;
   // return true if good event
 
@@ -109,8 +111,8 @@ class AliForwardSettings : public TObject {
   enum {
     kSPDref   = 0x0001, // Standard QC{2} and QC{4} calculations
     kITSref  = 0x0002, // QC{2} w/ an eta-gap
-    kTPCref    = 0x0003, // 3 correlator method for QC{2} w/ an eta-gap
-    kFMDref = 0x0004
+    kTPCref    = 0x0004, // 3 correlator method for QC{2} w/ an eta-gap
+    kFMDref = 0x0008
   };
 
   enum {
