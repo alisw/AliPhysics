@@ -1060,6 +1060,10 @@ Bool_t AliDalitzElectronCuts::SetTPCdEdxCutPionLine(Int_t pidedxSigmaCut) {
       fPIDnSigmaAbovePionLineTPC=3.0;
       fPIDnSigmaAbovePionLineTPCHighPt=1.0;
       break;
+    case 12:  // c
+      fPIDnSigmaAbovePionLineTPC=2.0;
+      fPIDnSigmaAbovePionLineTPCHighPt=0.5;
+      break;
     default:
       cout<<"Warning: pidedxSigmaCut not defined "<<pidedxSigmaCut<<endl;
       return kFALSE;
