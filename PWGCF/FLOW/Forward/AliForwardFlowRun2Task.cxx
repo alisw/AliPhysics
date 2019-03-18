@@ -196,60 +196,28 @@ void AliForwardFlowRun2Task::UserExec(Option_t *)
   fUtil.fevent = fInputEvent;
   fUtil.fSettings = fSettings;
 
-  Double_t centralEtaMin,centralEtaMax,refEtaMin,refEtaMax;
-  Int_t centralEtaBins, centralPhiBins, refEtaBins, refPhiBins;  
-
   // Make centralDist
-  if (fSettings.useSPD) {
-    centralEtaMin = -2.5;
-    centralEtaMax = 2.5;
-    centralEtaBins = 400;
-    centralPhiBins = 400;
-  }
-  else if (fSettings.useITS) {
-    centralEtaMin = -4;
-    centralEtaMax = 6;
-    centralEtaBins = 200;
-    centralPhiBins = 20;
-  }
-  else { //useTPC
-    centralEtaMin = -1.5;
-    centralEtaMax = 1.5; 
-    centralEtaBins = 400;
-    centralPhiBins = 400;
-  }
+  Int_t   centralEtaBins = (fSettings.useITS ? 200 : 400);
+  Int_t   centralPhiBins = (fSettings.useITS ? 20 : 400);
+  Double_t centralEtaMin = (fSettings.useSPD ? -2.5 : fSettings.useITS ? -4 : -1.5);
+  Double_t centralEtaMax = (fSettings.useSPD ? 2.5 : fSettings.useITS ? 6 : 1.5);
+
   // Make refDist
-  if (fSettings.ref_mode & fSettings.kSPDref){
-    refEtaMin = -2.5;
-    refEtaMax = 2.5;
-    refEtaBins = 400;
-    refPhiBins = 400;
-  } 
-  else if (fSettings.ref_mode & fSettings.kITSref) {
-    refEtaMin = -4;
-    refEtaMax = 6;
-    refEtaBins = 200;
-    refPhiBins = 20;
-  }
-  else if (fSettings.ref_mode & fSettings.kFMDref) {
-    refEtaMin = -4;
-    refEtaMax = 6;
-    refEtaBins = 200;
-    refPhiBins = 20;
-  }
-  else { //kTPCref
-    refEtaMin = -1.5;
-    refEtaMax = 1.5;
-    refEtaBins = 400;
-    refPhiBins = 400;
-  }
+  Int_t   refEtaBins = (((fSettings.ref_mode & fSettings.kITSref) || (fSettings.ref_mode & fSettings.kFMDref)) ? 200 : 400);
+  Int_t   refPhiBins = (((fSettings.ref_mode & fSettings.kITSref) || (fSettings.ref_mode & fSettings.kFMDref)) ? 20  : 400);
+  Double_t refEtaMin = ((fSettings.ref_mode & fSettings.kSPDref) ? -2.5 
+                           : ((fSettings.ref_mode & fSettings.kITSref) || (fSettings.ref_mode & fSettings.kFMDref)) ? -4 
+                           : -1.5);
+  Double_t refEtaMax = ((fSettings.ref_mode & fSettings.kSPDref) ?  2.5 
+                           : ((fSettings.ref_mode & fSettings.kITSref) || (fSettings.ref_mode & fSettings.kFMDref)) ? 6 
+                           : 1.5);
+
 
   TH2D centralDist_tmp = TH2D("c","",centralEtaBins,centralEtaMin,centralEtaMax,centralPhiBins,0,2*TMath::Pi());
   centralDist_tmp.SetDirectory(0);
 
-  TH2D refDist_tmp = TH2D("c","",refEtaBins,refEtaMin,refEtaMax,refPhiBins,0,2*TMath::Pi());
+  TH2D refDist_tmp = TH2D("r","",refEtaBins,refEtaMin,refEtaMax,refPhiBins,0,2*TMath::Pi());
   refDist_tmp.SetDirectory(0);
-
 
   TH2D forwardTrRef  ("ft","",200,-4,6,20,0,TMath::TwoPi());
   TH2D forwardPrim  ("fp","",400,-4,6,400,0,TMath::TwoPi());
