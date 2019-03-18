@@ -266,27 +266,27 @@ AliAnalysisTaskSE* AddTaskFemtoDream(bool isMC = false, bool isESD = false,
   ZVtxBins.push_back(10);
   std::vector<int> NBins;
   if (fineBinning) {
-    NBins.push_back(750);  // p p
-    NBins.push_back(750);  // p barp
-    NBins.push_back(750);  // p Lambda
-    NBins.push_back(750);  // p barLambda
-    NBins.push_back(750);  // p Xi
-    NBins.push_back(750);  // p barXi
-    NBins.push_back(750);  // barp barp
-    NBins.push_back(750);  // barp Lambda
-    NBins.push_back(750);  // barp barLambda
-    NBins.push_back(750);  // barp Xi
-    NBins.push_back(750);  // barp barXi
-    NBins.push_back(750);  // Lambda Lambda
-    NBins.push_back(750);  // Lambda barLambda
-    NBins.push_back(750);  // Lambda Xi
-    NBins.push_back(750);  // Lambda barXi
-    NBins.push_back(750);  // barLambda barLambda
-    NBins.push_back(750);  // barLambda Xi
-    NBins.push_back(750);  // barLambda barXi
-    NBins.push_back(750);  // Xi Xi
-    NBins.push_back(750);  // Xi barXi
-    NBins.push_back(750);  // barXi barXi
+    NBins.push_back(1500);  // p p
+    NBins.push_back(150);  // p barp
+    NBins.push_back(1500);  // p Lambda
+    NBins.push_back(150);  // p barLambda
+    NBins.push_back(1500);  // p Xi
+    NBins.push_back(150);  // p barXi
+    NBins.push_back(1500);  // barp barp
+    NBins.push_back(150);  // barp Lambda
+    NBins.push_back(1500);  // barp barLambda
+    NBins.push_back(150);  // barp Xi
+    NBins.push_back(1500);  // barp barXi
+    NBins.push_back(1500);  // Lambda Lambda
+    NBins.push_back(150);  // Lambda barLambda
+    NBins.push_back(150);  // Lambda Xi
+    NBins.push_back(150);  // Lambda barXi
+    NBins.push_back(1500);  // barLambda barLambda
+    NBins.push_back(150);  // barLambda Xi
+    NBins.push_back(150);  // barLambda barXi
+    NBins.push_back(150);  // Xi Xi
+    NBins.push_back(150);  // Xi barXi
+    NBins.push_back(150);  // barXi barXi
   } else {  //standard binning Run1
     NBins.push_back(750);  // p p
     NBins.push_back(750);  // p barp
@@ -333,27 +333,27 @@ AliAnalysisTaskSE* AddTaskFemtoDream(bool isMC = false, bool isESD = false,
   kMin.push_back(0.);
   kMin.push_back(0.);
   std::vector<float> kMax;
-  kMax.push_back(3.);
-  kMax.push_back(3.);
-  kMax.push_back(3.);
-  kMax.push_back(3.);
-  kMax.push_back(3.);
-  kMax.push_back(3.);
-  kMax.push_back(3.);
-  kMax.push_back(3.);
-  kMax.push_back(3.);
-  kMax.push_back(3.);
-  kMax.push_back(3.);
-  kMax.push_back(3.);
-  kMax.push_back(3.);
-  kMax.push_back(3.);
-  kMax.push_back(3.);
-  kMax.push_back(3.);
-  kMax.push_back(3.);
-  kMax.push_back(3.);
-  kMax.push_back(3.);
-  kMax.push_back(3.);
-  kMax.push_back(3.);
+  kMax.push_back(6.);      // p p
+  kMax.push_back(3.);      // p barp
+  kMax.push_back(6.);      // p Lambda
+  kMax.push_back(3.);      // p barLambda
+  kMax.push_back(6.);      // p Xi
+  kMax.push_back(3.);      // p barXi
+  kMax.push_back(6.);      // barp barp
+  kMax.push_back(3.);      // barp Lambda
+  kMax.push_back(6.);      // barp barLambda
+  kMax.push_back(3.);      // barp Xi
+  kMax.push_back(6.);      // barp barXi
+  kMax.push_back(6.);      // Lambda Lambda
+  kMax.push_back(3.);      // Lambda barLambda
+  kMax.push_back(3.);      // Lambda Xi
+  kMax.push_back(3.);      // Lambda barXi
+  kMax.push_back(6.);      // barLambda barLambda
+  kMax.push_back(3.);      // barLambda Xi
+  kMax.push_back(3.);      // barLambda barXi
+  kMax.push_back(3.);      // Xi Xi
+  kMax.push_back(3.);      // Xi barXi
+  kMax.push_back(3.);      // barXi barXi
   AliFemtoDreamCollConfig *config = new AliFemtoDreamCollConfig("Femto",
                                                                 "Femto");
   if (notpp) {
