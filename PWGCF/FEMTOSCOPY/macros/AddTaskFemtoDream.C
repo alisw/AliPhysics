@@ -1,8 +1,8 @@
 #include "TROOT.h"
 #include "TSystem.h"
 AliAnalysisTaskSE* AddTaskFemtoDream(bool isMC = false, bool isESD = false,
-                                     TString CentEst = "kInt7",
-                                     bool notpp = true,  //1
+                                     TString CentEst = "kInt7", bool notpp =
+                                         true,  //1
                                      bool DCAPlots = false,  //2
                                      bool CPAPlots = false,  //3
                                      bool MomReso = false,  //4
@@ -22,9 +22,9 @@ AliAnalysisTaskSE* AddTaskFemtoDream(bool isMC = false, bool isESD = false,
                                      bool DEtadPhiAllPairs = false,  // 18
                                      int SphericityRange = 0,  // 19
                                      bool excludeUnwantedPairs = false,  //20
-                                     bool stricterPileUpRej = false,//21
+                                     bool stricterPileUpRej = false,  //21
                                      float dPhidEta = 0.01)  //22
-    {
+                                     {
   // 1    2     3     4     5     6     7    8    9      10   11     12   13    14    15    16   17
   //true,true,false,false,false,false,false,true,false,false,true,false,true,false,false,false,true
   bool PileUpRej = true;  //8
@@ -229,12 +229,19 @@ AliAnalysisTaskSE* AddTaskFemtoDream(bool isMC = false, bool isESD = false,
   AntiCascadeCuts->SetPDGCodeBach(-211);
 
   if (RunNumberQA) {
-    if (!notpp) {  //works for pPb
-      v0Cuts->SetRunNumberQA(265309, 267167);
-      Antiv0Cuts->SetRunNumberQA(265309, 267167);
-      CascadeCuts->SetRunNumberQA(265309, 267167);
-      AntiCascadeCuts->SetRunNumberQA(265309, 267167);
-    } else {
+    if (!notpp) {
+      if (CentEst == "kHM") { //works for pp HM
+        v0Cuts->SetRunNumberQA(252234, 294926);
+        Antiv0Cuts->SetRunNumberQA(252234, 294926);
+        CascadeCuts->SetRunNumberQA(252234, 294926);
+        AntiCascadeCuts->SetRunNumberQA(252234, 294926);
+      } else { //works for pPb
+        v0Cuts->SetRunNumberQA(265309, 267167);
+        Antiv0Cuts->SetRunNumberQA(265309, 267167);
+        CascadeCuts->SetRunNumberQA(265309, 267167);
+        AntiCascadeCuts->SetRunNumberQA(265309, 267167);
+      }
+    } else { // works for pp MB
       v0Cuts->SetRunNumberQA(252234, 294926);
       Antiv0Cuts->SetRunNumberQA(252234, 294926);
       CascadeCuts->SetRunNumberQA(252234, 294926);
@@ -705,4 +712,4 @@ AliAnalysisTaskSE* AddTaskFemtoDream(bool isMC = false, bool isESD = false,
   }
   return task;
 }
-
+œ
