@@ -229,7 +229,7 @@ AliAnalysisTaskSE* AddTaskFemtoDream(bool isMC = false, bool isESD = false,
   AntiCascadeCuts->SetPDGCodeBach(-211);
 
   if (RunNumberQA) {
-    if (!notpp) {
+    if (notpp) {
       if (CentEst == "kHM") { //works for pp HM
         v0Cuts->SetRunNumberQA(252234, 294926);
         Antiv0Cuts->SetRunNumberQA(252234, 294926);
