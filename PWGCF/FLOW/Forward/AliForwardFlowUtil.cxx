@@ -62,120 +62,113 @@ fStored(0)
 {
 }
 
-void AliForwardFlowUtil::FillData(TH2D*& refDist, TH2D*& centralDist, TH2D*& forwardDist){
-    if (!fSettings.mc) {
-      AliAODEvent* aodevent = dynamic_cast<AliAODEvent*>(fevent);
-      this->fAODevent = aodevent;
-      AliAODForwardMult* aodfmult = static_cast<AliAODForwardMult*>(aodevent->FindListObject("Forward"));
-      forwardDist = &aodfmult->GetHistogram();
-      for (Int_t etaBin = 1; etaBin <= forwardDist->GetNbinsX(); etaBin++) {
-        for (Int_t phiBin = 1; phiBin <= forwardDist->GetNbinsX(); phiBin++) {
-          if (dodNdeta) dNdeta->Fill(forwardDist->GetXaxis()->GetBinCenter(etaBin),forwardDist->GetBinContent(etaBin, phiBin));
-        }
-      }
+void AliForwardFlowUtil::FillData(TH2D*& refDist, TH2D*& centralDist, TH2D*& forwardDist)
+{
+  if (!fSettings.mc) {
+    AliAODEvent* aodevent = dynamic_cast<AliAODEvent*>(fevent);
+    this->fAODevent = aodevent;
+      
+    // Fill forwardDist
+    FillFromForwardClusters(forwardDist);
+      
+    // Fill centralDist
+    if (fSettings.useSPD) this->FillFromTracklets(centralDist);
+    else if (fSettings.useITS) this->FillFromCentralClusters(centralDist);
+    else  this->FillFromTracks(centralDist, fSettings.tracktype); //(fSettings.useTPC)
 
-        if (fSettings.ref_mode && fSettings.kSPDref) this->FillFromTracklets(refDist);
-        else if (fSettings.ref_mode && fSettings.kITSref) this->FillFromCentralClusters(refDist);
-        else if (fSettings.ref_mode && fSettings.kFMDref) {
-          AliAODForwardMult* aodfmult = static_cast<AliAODForwardMult*>(aodevent->FindListObject("Forward"));
-          refDist = &aodfmult->GetHistogram();
-        }
-        else {
-          this->minpt = 0.2;
-          this->maxpt = 5;
-          this->FillFromTracks(refDist, fSettings.tracktype);
-          this->minpt = fSettings.minpt;
-          this->maxpt = fSettings.maxpt;
-        }
-
-      if (fSettings.useSPD)      this->FillFromTracklets(centralDist);
-      else if (fSettings.useITS) this->FillFromCentralClusters(refDist);
-      else                       this->FillFromTracks(centralDist, fSettings.tracktype);
-    }
+    // Fill refDist
+    if (fSettings.ref_mode & fSettings.kSPDref)      this->FillFromTracklets(refDist);
+    else if (fSettings.ref_mode & fSettings.kITSref) this->FillFromCentralClusters(refDist);
+    else if (fSettings.ref_mode & fSettings.kFMDref) this->FillFromForwardClusters(refDist); 
     else {
-
-      this->mc = kTRUE;
-      Float_t zvertex = this->GetZ();
-
-      if(!fMCevent)
-        throw std::runtime_error("Not MC as expected");
-
-      if (fSettings.esd){
-
-        if (fSettings.useITS){
-          if (!fSettings.use_primaries_cen) this->FillFromTrackrefsITS(centralDist);
-          else this->FillFromPrimaries(centralDist);
-          
-          if (fSettings.use_primaries_fwd) this->FillFromPrimariesFwd(forwardDist);
-          else this->FillFromTrackrefs(forwardDist);
-        }
-
-
-        else{
-
-          if (fSettings.use_primaries_cen && fSettings.use_primaries_fwd){
-            this->FillFromPrimaries(centralDist, forwardDist);
-          }
-          else if (!fSettings.use_primaries_cen && !fSettings.use_primaries_fwd){
-            this->FillFromTrackrefs(centralDist, forwardDist);
-          }
-          else if (fSettings.use_primaries_cen && !fSettings.use_primaries_fwd){
-            this->FillFromPrimaries(centralDist);
-            this->FillFromTrackrefs(forwardDist);
-          }
-          else if (!fSettings.use_primaries_cen && fSettings.use_primaries_fwd){
-            this->FillFromTrackrefs(centralDist);
-            this->FillFromPrimaries(forwardDist);
-          }
-        }
-
-
-        if (fSettings.ref_mode && fSettings.kFMDref) {
-          if (fSettings.use_primaries_fwd) this->FillFromPrimariesFwd(refDist);
-          else this->FillFromTrackrefs(refDist);
-        }
-        else {
-          if (fSettings.use_primaries_cen) this->FillFromPrimaries(refDist);
-          else this->FillFromTrackrefsITS(refDist);
-        }
-      }
-      else{ // AOD
-
-        if (fSettings.use_primaries_cen && fSettings.use_primaries_fwd){ //prim central and forward
-          if (fSettings.maxpt < 5.0) {
-            this->minpt = 0.2;
-            this->maxpt = 5.0;
-            this->FillFromPrimariesAOD(refDist);
-            this->minpt = fSettings.minpt;
-            this->maxpt = fSettings.maxpt;
-          }
-
-          this->FillFromPrimariesAOD(centralDist, forwardDist);
-        }
-        else if (fSettings.use_primaries_cen && !fSettings.use_primaries_fwd){ //prim central, AOD forward
-          if (fSettings.maxpt < 5.0) {
-            this->minpt = 0.2;
-            this->maxpt = 5.0;
-            this->FillFromPrimariesAOD(refDist);
-            this->minpt = fSettings.minpt;
-            this->maxpt = fSettings.maxpt;
-          }
-
-          this->FillFromPrimariesAOD(centralDist);
-          AliAODEvent* aodevent = dynamic_cast<AliAODEvent*>(fevent);
-
-          AliAODForwardMult* aodfmult = static_cast<AliAODForwardMult*>(aodevent->FindListObject("Forward"));
-          forwardDist = &aodfmult->GetHistogram();
-
-          for (Int_t etaBin = 1; etaBin <= forwardDist->GetNbinsX(); etaBin++) {
-            for (Int_t phiBin = 1; phiBin <= forwardDist->GetNbinsX(); phiBin++) {
-              if (dodNdeta) dNdeta->Fill(forwardDist->GetXaxis()->GetBinCenter(etaBin),forwardDist->GetBinContent(etaBin, phiBin));
-            }
-          }
-        }
-      }
+      this->minpt = 0.2;
+      this->maxpt = 5;
+      this->FillFromTracks(refDist, fSettings.tracktype);
+      this->minpt = fSettings.minpt;
+      this->maxpt = fSettings.maxpt;
     }
+  }
+  else {
+    this->mc = kTRUE;
+    if(!fMCevent)
+      throw std::runtime_error("Not MC as expected");
+
+    if (fSettings.esd){
+      // Fill forwardDist
+      if (fSettings.use_primaries_fwd) this->FillFromPrimariesFMD(forwardDist);
+      else this->FillFromTrackrefsFMD(forwardDist);
+      
+      // Fill centralDist
+      if (fSettings.useITS){
+        if (!fSettings.use_primaries_cen) this->FillFromTrackrefsITS(centralDist);
+        else this->FillFromPrimariesITS(centralDist);
+      }
+      else if (fSettings.useSPD && fSettings.use_primaries_cen) this->FillFromPrimariesSPD(centralDist);
+      else if (fSettings.useTPC && fSettings.use_primaries_cen) this->FillFromPrimariesTPC(centralDist);
+      else std::cout << "No valid central detector chosen." << std::endl;
+
+      // Fill refDist
+      if (fSettings.ref_mode & fSettings.kITSref){
+        if (!fSettings.use_primaries_cen) this->FillFromTrackrefsITS(refDist);
+        else this->FillFromPrimariesITS(refDist);
+      }
+      else if (fSettings.ref_mode & fSettings.kSPDref && fSettings.use_primaries_cen) this->FillFromPrimariesSPD(centralDist);
+      else if (fSettings.ref_mode & fSettings.kTPCref && fSettings.use_primaries_cen) {
+        this->minpt = 0.2;
+        this->maxpt = 5;
+        this->FillFromPrimariesTPC(refDist);
+        this->minpt = fSettings.minpt;
+        this->maxpt = fSettings.maxpt;
+      }
+      else std::cout << "No valid reference detector chosen." << std::endl;
+    }
+    else { // AOD
+
+      // Fill forwardDist
+      if (fSettings.use_primaries_fwd) this->FillFromPrimariesAODFMD(forwardDist);
+      else this->FillFromForwardClusters(forwardDist);
+
+      // Fill centralDist
+      if (fSettings.useITS) {
+        if (!fSettings.use_primaries_cen) this->FillFromCentralClusters(centralDist);
+        else this->FillFromPrimariesAODITS(centralDist);
+      }
+      else if (fSettings.useSPD) {
+        if (fSettings.use_primaries_cen) this->FillFromPrimariesAODSPD(centralDist); 
+        else this->FillFromTracklets(centralDist);
+      }
+      else if (fSettings.useTPC){
+        if (fSettings.use_primaries_cen) this->FillFromPrimariesAODTPC(centralDist); 
+        else this->FillFromTracks(centralDist, fSettings.tracktype);
+      }
+      else std::cout << "No valid central detector chosen." << std::endl;
+
+      // Fill refDist
+      if (fSettings.ref_mode & fSettings.kFMDref) {
+        if (!fSettings.use_primaries_fwd) this->FillFromForwardClusters(refDist);
+        else this->FillFromPrimariesAODFMD(refDist);
+      }
+      else if (fSettings.ref_mode & fSettings.kITSref) {
+        if (!fSettings.use_primaries_cen) this->FillFromCentralClusters(refDist);
+        else this->FillFromPrimariesAODITS(refDist);
+      }
+      else if (fSettings.ref_mode & fSettings.kSPDref) {
+        if (fSettings.use_primaries_cen) this->FillFromPrimariesAODSPD(refDist);
+        else this->FillFromTracklets(refDist);
+      }
+      else if (fSettings.ref_mode & fSettings.kTPCref) {
+        this->minpt = 0.2;
+        this->maxpt = 5;
+        if (fSettings.use_primaries_cen) this->FillFromPrimariesAODTPC(refDist);
+        else this->FillFromTracks(refDist, fSettings.tracktype);
+        this->minpt = fSettings.minpt;
+        this->maxpt = fSettings.maxpt;
+      }
+      else std::cout << "No valid reference detector chosen." << std::endl;
+    }
+  }
 }
+
 
 
 
@@ -186,76 +179,9 @@ Double_t AliForwardFlowUtil::GetZ(){
 
 
 Double_t AliForwardFlowUtil::GetCentrality(TString centrality_estimator){
-  // Get MultSelection
-/*
-  std::cout << std::boolalpha << fSettings.mc << std::endl;
-  if (fSettings.mc)  {
-    AliMultSelection* MultSelection  = (AliMultSelection*)fMCevent->FindListObject("MultSelection");
-    return MultSelection->GetMultiplicityPercentile(centrality_estimator);
-  }
-  else {
-    AliMultSelection* MultSelection  = (AliMultSelection*)fAODevent->FindListObject("MultSelection");
-    return MultSelection->GetMultiplicityPercentile(centrality_estimator);
-  }
-*/
   AliMultSelection *MultSelection;
-//if (!fSettings.esd && !fSettings.mc) MultSelection  = (AliMultSelection*)fAODevent->FindListObject("MultSelection");
-MultSelection  = (AliMultSelection*)fevent->FindListObject("MultSelection");
-return MultSelection->GetMultiplicityPercentile(centrality_estimator);
-}
-
-
-void AliForwardFlowUtil::FillFromTrackrefs(TH2D*& cen, TH2D*& fwd) const
-{
-
-  Int_t nTracks = fMCevent->Stack()->GetNtrack();
-
-  for (Int_t iTr = 0; iTr < nTracks; iTr++) {
-      AliMCParticle* p = static_cast< AliMCParticle* >(fMCevent->GetTrack(iTr));
-    if (p->Charge() == 0) continue;
-
-    for (Int_t iTrRef = 0; iTrRef < p->GetNumberOfTrackReferences(); iTrRef++) {
-      AliTrackReference* ref = p->GetTrackReference(iTrRef);
-      // Check hit on FMD
-      if (!ref) continue;
-      if (AliTrackReference::kTPC == ref->DetectorId()){
-        Double_t x      = ref->X() - fMCevent->GetPrimaryVertex()->GetX();
-        Double_t y      = ref->Y() - fMCevent->GetPrimaryVertex()->GetY();
-        Double_t z      = ref->Z() - fMCevent->GetPrimaryVertex()->GetZ();
-        Double_t rr     = TMath::Sqrt(x * x + y * y);
-        Double_t thetaR = TMath::ATan2(rr, z);
-        Double_t phiR   = TMath::ATan2(y,x);
-
-        if (phiR < 0) {
-          phiR += 2*TMath::Pi();
-        }
-        if (thetaR < 0) {
-          thetaR += 2*TMath::Pi();
-        }
-        cen->Fill(-TMath::Log(TMath::Tan(thetaR / 2)),phiR);
-        if (dodNdeta) dNdeta->Fill(-TMath::Log(TMath::Tan(thetaR / 2)),1);
-
-      }
-      else if (AliTrackReference::kFMD == ref->DetectorId()) {
-        Double_t x      = ref->X() - fMCevent->GetPrimaryVertex()->GetX();
-        Double_t y      = ref->Y() - fMCevent->GetPrimaryVertex()->GetY();
-        Double_t z      = ref->Z() - fMCevent->GetPrimaryVertex()->GetZ();
-        Double_t rr     = TMath::Sqrt(x * x + y * y);
-        Double_t thetaR = TMath::ATan2(rr, z);
-        Double_t phiR   = TMath::ATan2(y,x);
-
-        if (phiR < 0) {
-          phiR += 2*TMath::Pi();
-        }
-        if (thetaR < 0) {
-          thetaR += 2*TMath::Pi();
-        }
-        fwd->Fill(-TMath::Log(TMath::Tan(thetaR / 2)),phiR);
-        if (dodNdeta) dNdeta->Fill(-TMath::Log(TMath::Tan(thetaR / 2)),1);
-
-      }
-    }
-  }
+  MultSelection  = (AliMultSelection*)fevent->FindListObject("MultSelection");
+  return MultSelection->GetMultiplicityPercentile(centrality_estimator);
 }
 
 
@@ -282,8 +208,7 @@ void AliForwardFlowUtil::FillFromTrackrefsITS(TH2D*& fwd)
   } // Loop over tracks
 }
 
-
-void AliForwardFlowUtil::FillFromTrackrefs(TH2D*& fwd)
+void AliForwardFlowUtil::FillFromTrackrefsFMD(TH2D*& fwd) 
 {
   Int_t nTracks   = fMCevent->GetNumberOfTracks();// stack->GetNtrack();
 
@@ -387,7 +312,7 @@ AliForwardFlowUtil::ProcessTrackITS(AliMCParticle* particle,
           Double_t eta_tr_spd = etaPhi_spd[0];
 
           cen->Fill(eta_tr_spd,phi_tr_spd,1);
-          if (dodNdeta) dNdeta->Fill(eta_tr_spd,1);
+          // if (dodNdeta) dNdeta->Fill(eta_tr_spd,1);
         }
       }
     }
@@ -572,7 +497,7 @@ AliForwardFlowUtil::StoreParticle(AliMCParticle*       particle,
   Double_t eta_tr = etaPhi[0];
 
   fwd->Fill(eta_tr,phi_tr,1);
-  if (dodNdeta) dNdeta->Fill(eta_tr,1);
+  // if (dodNdeta) dNdeta->Fill(eta_tr,1);
 
   return;
 }
@@ -609,9 +534,9 @@ AliForwardFlowUtil::State::Clear(Bool_t alsoCount)
   if (alsoCount) count = 0;
 }
 
-void AliForwardFlowUtil::FillFromPrimariesAOD(TH2D*& cen) const
+void AliForwardFlowUtil::FillFromPrimariesAODTPC(TH2D*& cen) const
 {
-    Int_t nTracksMC = fMCevent->GetNumberOfTracks();
+  Int_t nTracksMC = fMCevent->GetNumberOfTracks();
   for (Int_t iTr = 0; iTr < nTracksMC; iTr++) {
     AliAODMCParticle* p = static_cast< AliAODMCParticle* >(fMCevent->GetTrack(iTr));
     if (!p->IsPhysicalPrimary()) continue;
@@ -621,13 +546,45 @@ void AliForwardFlowUtil::FillFromPrimariesAOD(TH2D*& cen) const
     if (TMath::Abs(eta) < 1.1) {
       if (p->Pt()>=this->minpt && p->Pt()<=this->maxpt){
         cen->Fill(eta,p->Phi(),1);
-        if (dodNdeta) dNdeta->Fill(eta,1);
+        // if (dodNdeta) dNdeta->Fill(eta,1);
       }
     }
   }
 }
 
 
+
+void AliForwardFlowUtil::FillFromPrimariesAODSPD(TH2D*& cen) const
+{
+  Int_t nTracksMC = fMCevent->GetNumberOfTracks();
+  for (Int_t iTr = 0; iTr < nTracksMC; iTr++) {
+    AliAODMCParticle* p = static_cast< AliAODMCParticle* >(fMCevent->GetTrack(iTr));
+    if (!p->IsPhysicalPrimary()) continue;
+    if (p->Charge() == 0) continue;
+
+    Double_t eta = p->Eta();
+    if (TMath::Abs(eta) < 1.7 && p->Pt() >= 0.05) {
+        cen->Fill(eta,p->Phi(),1);
+        // if (dodNdeta) dNdeta->Fill(eta,1);
+    }
+  }
+}
+
+void AliForwardFlowUtil::FillFromPrimariesAODITS(TH2D*& cen) const
+{
+  Int_t nTracksMC = fMCevent->GetNumberOfTracks();
+  for (Int_t iTr = 0; iTr < nTracksMC; iTr++) {
+    AliAODMCParticle* p = static_cast< AliAODMCParticle* >(fMCevent->GetTrack(iTr));
+    if (!p->IsPhysicalPrimary()) continue;
+    if (p->Charge() == 0) continue;
+
+    Double_t eta = p->Eta();
+    if (TMath::Abs(eta) < 1.7) {
+        cen->Fill(eta,p->Phi(),1);
+        // if (dodNdeta) dNdeta->Fill(eta,1);
+    }
+  }
+}
 
 void AliForwardFlowUtil::GetTrackRefEtaPhi(AliMCParticle* p, Double_t* etaPhi) {
   AliTrackReference* ref = 0x0;
@@ -662,71 +619,9 @@ void AliForwardFlowUtil::GetTrackRefEtaPhi(AliMCParticle* p, Double_t* etaPhi) {
   }
   etaPhi[0] = -TMath::Log(TMath::Tan(thetaR / 2));
   etaPhi[1] = phiR;
-  // cout << x << " " << y << " " << z << endl << endl;
-  // cout << etaPhi[0] - p->Eta() << " " << etaPhi[1] - p->Phi() << " "
-  //      << this->GetDaughters(p).size() << " "
-  //      << p->PdgCode() << " "
-  //      << endl;
 }
 
-void AliForwardFlowUtil::FillFromPrimaries(TH2D*& cen) const
-{
-  Int_t nTracksMC = fMCevent->GetNumberOfTracks();
-
-  if (fSettings.useITS){
-    for (Int_t iTr = 0; iTr < nTracksMC; iTr++) {
-      AliMCParticle* p = static_cast< AliMCParticle* >(fMCevent->GetTrack(iTr));
-      if (!p->IsPhysicalPrimary()) continue;
-      if (p->Charge() == 0) continue;
-
-      Double_t eta = p->Eta();
-      if (TMath::Abs(eta) < 1.7) {
-          cen->Fill(eta,p->Phi(),1);
-          if (dodNdeta) dNdeta->Fill(eta,1);
-      }
-    }
-  }
-
-  if (fSettings.useTPC){
-    for (Int_t iTr = 0; iTr < nTracksMC; iTr++) {
-      AliMCParticle* p = static_cast< AliMCParticle* >(fMCevent->GetTrack(iTr));
-      if (!p->IsPhysicalPrimary()) continue;
-      if (p->Charge() == 0) continue;
-
-      Double_t eta = p->Eta();
-      if (TMath::Abs(eta) < 1.1) {
-        if (p->Pt()>=this->minpt && p->Pt()<=this->maxpt){
-          cen->Fill(eta,p->Phi(),1);
-          if (dodNdeta) dNdeta->Fill(eta,1);
-        }
-      }
-    }
-  }
-}
-
-
-void AliForwardFlowUtil::FillFromPrimariesFwd(TH2D*& fwd) const
-{
-  Int_t nTracksMC = fMCevent->GetNumberOfTracks();
-
-  for (Int_t iTr = 0; iTr < nTracksMC; iTr++) {
-    AliMCParticle* p = static_cast< AliMCParticle* >(fMCevent->GetTrack(iTr));
-    if (!p->IsPhysicalPrimary()) continue;
-    if (p->Charge() == 0) continue;
-
-    Double_t eta = p->Eta();
-    if (eta < 5 /*fwd->GetXaxis()-GetXmax()*/ && eta > -3.5 /*fwd->GetXaxis()-GetXmin()*/) {
-      if (TMath::Abs(eta) >= 1.7){
-        fwd->Fill(eta,p->Phi(),1);
-        if (dodNdeta) dNdeta->Fill(eta,1);
-      }
-    }
-  }
-}
-
-
-
-void AliForwardFlowUtil::FillFromPrimaries(TH2D*& cen, TH2D*& fwd) const
+void AliForwardFlowUtil::FillFromPrimariesTPC(TH2D*& cen) const
 {
   Int_t nTracksMC = fMCevent->GetNumberOfTracks();
 
@@ -739,20 +634,73 @@ void AliForwardFlowUtil::FillFromPrimaries(TH2D*& cen, TH2D*& fwd) const
     if (TMath::Abs(eta) < 1.1) {
       if (p->Pt()>=this->minpt && p->Pt()<=this->maxpt){
         cen->Fill(eta,p->Phi(),1);
-        if (dodNdeta) dNdeta->Fill(eta,1);
-      }
-    }
-    if (eta < 5 /*fwd->GetXaxis()-GetXmax()*/ && eta > -3.5 /*fwd->GetXaxis()-GetXmin()*/) {
-      if (TMath::Abs(eta) >= 1.7){
-        fwd->Fill(eta,p->Phi(),1);
-        if (dodNdeta) dNdeta->Fill(eta,1);
+        // if (dodNdeta) dNdeta->Fill(eta,1);
       }
     }
   }
 }
 
 
-void AliForwardFlowUtil::FillFromPrimariesAOD(TH2D*& cen, TH2D*& fwd) const
+
+void AliForwardFlowUtil::FillFromPrimariesSPD(TH2D*& cen) const
+{
+  Int_t nTracksMC = fMCevent->GetNumberOfTracks();
+
+  for (Int_t iTr = 0; iTr < nTracksMC; iTr++) {
+    AliMCParticle* p = static_cast< AliMCParticle* >(fMCevent->GetTrack(iTr));
+    if (!p->IsPhysicalPrimary()) continue;
+    if (p->Charge() == 0) continue;
+
+    Double_t eta = p->Eta();
+    if (TMath::Abs(eta) < 1.7) {
+      if (p->Pt()>=0.05){
+        cen->Fill(eta,p->Phi(),1);
+        // if (dodNdeta) dNdeta->Fill(eta,1);
+      }
+    }
+  }
+}
+
+
+
+void AliForwardFlowUtil::FillFromPrimariesITS(TH2D*& cen) const
+{
+  Int_t nTracksMC = fMCevent->GetNumberOfTracks();
+
+  for (Int_t iTr = 0; iTr < nTracksMC; iTr++) {
+    AliMCParticle* p = static_cast< AliMCParticle* >(fMCevent->GetTrack(iTr));
+    if (!p->IsPhysicalPrimary()) continue;
+    if (p->Charge() == 0) continue;
+
+    Double_t eta = p->Eta();
+    if (TMath::Abs(eta) < 1.7) {
+        cen->Fill(eta,p->Phi(),1);
+        // if (dodNdeta) dNdeta->Fill(eta,1);
+    }
+  } 
+}
+
+void AliForwardFlowUtil::FillFromPrimariesFMD(TH2D*& fwd) const
+{
+  Int_t nTracksMC = fMCevent->GetNumberOfTracks();
+
+  for (Int_t iTr = 0; iTr < nTracksMC; iTr++) {
+    AliMCParticle* p = static_cast< AliMCParticle* >(fMCevent->GetTrack(iTr));
+    if (!p->IsPhysicalPrimary()) continue;
+    if (p->Charge() == 0) continue;
+
+    Double_t eta = p->Eta();
+    if (eta < 5 /*fwd->GetXaxis()-GetXmax()*/ && eta > -3.5 /*fwd->GetXaxis()-GetXmin()*/) {
+      if (TMath::Abs(eta) >= 1.7){
+        fwd->Fill(eta,p->Phi(),1);
+        // if (dodNdeta) dNdeta->Fill(eta,1);
+      }
+    }
+  }
+}
+
+
+void AliForwardFlowUtil::FillFromPrimariesAODFMD(TH2D*& fwd) const
 {
   Int_t nTracksMC = fMCevent->GetNumberOfTracks();
 
@@ -761,17 +709,10 @@ void AliForwardFlowUtil::FillFromPrimariesAOD(TH2D*& cen, TH2D*& fwd) const
     if (!p->IsPhysicalPrimary()) continue;
     if (p->Charge() == 0) continue;
 
-    Double_t eta = p->Eta();
-    if (TMath::Abs(eta) < 1.1) {
-      if (p->Pt()>=this->minpt && p->Pt()<=this->maxpt){
-        cen->Fill(eta,p->Phi(),1);
-        if (dodNdeta) dNdeta->Fill(eta,1);
-      }
-    }
-    if (eta < 5 /*fwd->GetXaxis()-GetXmax()*/ && eta > -3.5 /*fwd->GetXaxis()-GetXmin()*/) {
-      if (TMath::Abs(eta) >= 1.7){
-        fwd->Fill(eta,p->Phi(),1);
-        if (dodNdeta) dNdeta->Fill(eta,1);
+    if (p->Eta() < 5 /*fwd->GetXaxis()-GetXmax()*/ && p->Eta() > -3.5 /*fwd->GetXaxis()-GetXmin()*/) {
+      if (TMath::Abs(p->Eta()) >= 1.7){
+        fwd->Fill(p->Eta(),p->Phi(),1);
+        // if (dodNdeta) dNdeta->Fill(p->Eta(),1);
       }
     }
   }
@@ -783,7 +724,7 @@ void AliForwardFlowUtil::FillFromTracklets(TH2D*& cen) const {
 
   for (Int_t i = 0; i < aodTracklets->GetNumberOfTracklets(); i++) {
     cen->Fill(aodTracklets->GetEta(i),aodTracklets->GetPhi(i), 1);
-    if (dodNdeta) dNdeta->Fill(aodTracklets->GetEta(i),1);
+    // if (dodNdeta) dNdeta->Fill(aodTracklets->GetEta(i),1);
   }
 }
 
@@ -791,6 +732,22 @@ void AliForwardFlowUtil::FillFromTracklets(TH2D*& cen) const {
 void AliForwardFlowUtil::FillFromCentralClusters(TH2D*& cen) const {
   AliAODCentralMult* aodcmult = static_cast<AliAODCentralMult*>(fAODevent->FindListObject("CentralClusters"));
   cen = &aodcmult->GetHistogram();
+  // for (Int_t etaBin = 1; etaBin <= cen->GetNbinsX(); etaBin++) {
+  //   for (Int_t phiBin = 1; phiBin <= cen->GetNbinsX(); phiBin++) {
+  //     // if (dodNdeta) dNdeta->Fill(cen->GetXaxis()->GetBinCenter(etaBin),cen->GetBinContent(etaBin, phiBin));
+  //   }
+  // }
+}
+
+void AliForwardFlowUtil::FillFromForwardClusters(TH2D*& fwd) const {
+  AliAODForwardMult* aodfmult = static_cast<AliAODForwardMult*>(fAODevent->FindListObject("Forward"));
+  fwd = &aodfmult->GetHistogram();
+
+  // for (Int_t etaBin = 1; etaBin <= fwd->GetNbinsX(); etaBin++) {
+  //   for (Int_t phiBin = 1; phiBin <= fwd->GetNbinsX(); phiBin++) {
+  //     // if (dodNdeta) dNdeta->Fill(fwd->GetXaxis()->GetBinCenter(etaBin),fwd->GetBinContent(etaBin, phiBin));
+  //   }
+  // }
 }
 
 void AliForwardFlowUtil::FillFromTracks(TH2D*& cen, UInt_t tracktype) const {
@@ -820,112 +777,7 @@ void AliForwardFlowUtil::FillFromTracks(TH2D*& cen, UInt_t tracktype) const {
 
       if (track->Pt() >= this->minpt && track->Pt() <= this->maxpt){
         cen->Fill(track->Eta(),track->Phi(), 1);
-        if (dodNdeta) dNdeta->Fill(track->Eta(),1);
-      }
-    }
-  }
-}
-
-
-
-void AliForwardFlowUtil::FillFromTrackrefs(TH3D*& cen, TH3D*& fwd, Double_t zvertex) const
-{
-  Int_t nTracks = fMCevent->Stack()->GetNtrack();
-
-  for (Int_t iTr = 0; iTr < nTracks; iTr++) {
-      AliMCParticle* p = static_cast< AliMCParticle* >(fMCevent->GetTrack(iTr));
-    if (p->Charge() == 0) continue;
-
-    for (Int_t iTrRef = 0; iTrRef < p->GetNumberOfTrackReferences(); iTrRef++) {
-      AliTrackReference* ref = p->GetTrackReference(iTrRef);
-      // Check hit on FMD
-      if (!ref) continue;
-      if (AliTrackReference::kTPC == ref->DetectorId()){
-        Double_t x      = ref->X() - fMCevent->GetPrimaryVertex()->GetX();
-        Double_t y      = ref->Y() - fMCevent->GetPrimaryVertex()->GetY();
-        Double_t z      = ref->Z() - fMCevent->GetPrimaryVertex()->GetZ();
-        Double_t rr     = TMath::Sqrt(x * x + y * y);
-        Double_t thetaR = TMath::ATan2(rr, z);
-        Double_t phiR   = TMath::ATan2(y,x);
-
-        if (phiR < 0) {
-          phiR += 2*TMath::Pi();
-        }
-        if (thetaR < 0) {
-          thetaR += 2*TMath::Pi();
-        }
-        cen->Fill(-TMath::Log(TMath::Tan(thetaR / 2)),phiR, zvertex);
-        if (dodNdeta) dNdeta->Fill(-TMath::Log(TMath::Tan(thetaR / 2)),1);
-
-      }
-      else if (AliTrackReference::kFMD == ref->DetectorId()) {
-        Double_t x      = ref->X() - fMCevent->GetPrimaryVertex()->GetX();
-        Double_t y      = ref->Y() - fMCevent->GetPrimaryVertex()->GetY();
-        Double_t z      = ref->Z() - fMCevent->GetPrimaryVertex()->GetZ();
-        Double_t rr     = TMath::Sqrt(x * x + y * y);
-        Double_t thetaR = TMath::ATan2(rr, z);
-        Double_t phiR   = TMath::ATan2(y,x);
-
-        if (phiR < 0) {
-          phiR += 2*TMath::Pi();
-        }
-        if (thetaR < 0) {
-          thetaR += 2*TMath::Pi();
-        }
-        fwd->Fill(-TMath::Log(TMath::Tan(thetaR / 2)),phiR, zvertex);
-        if (dodNdeta) dNdeta->Fill(-TMath::Log(TMath::Tan(thetaR / 2)),1);
-      }
-    }
-  }
-}
-
-
-void AliForwardFlowUtil::FillFromPrimaries(TH3D*& cen, TH3D*& fwd, Double_t zvertex) const
-{
-  Int_t nTracksMC = fMCevent->GetNumberOfTracks();
-
-  for (Int_t iTr = 0; iTr < nTracksMC; iTr++) {
-    AliMCParticle* p = static_cast< AliMCParticle* >(fMCevent->GetTrack(iTr));
-    if (!p->IsPhysicalPrimary()) continue;
-    if (p->Charge() == 0) continue;
-
-    Double_t eta = p->Eta();
-    if (TMath::Abs(eta) < 1.1) {
-      if (p->Pt()>=this->minpt && p->Pt()<=this->maxpt){
-        cen->Fill(eta,p->Phi(),zvertex,1);
-        if (dodNdeta) dNdeta->Fill(eta,1);
-      }
-    }
-    if (eta < 5 /*fwd->GetXaxis()-GetXmax()*/ && eta > -3.5 /*fwd->GetXaxis()-GetXmin()*/) {
-      if (TMath::Abs(eta) >= 1.7){
-        fwd->Fill(eta,p->Phi(),zvertex,1);
-        if (dodNdeta) dNdeta->Fill(eta,1);
-      }
-    }
-  }
-}
-
-
-void AliForwardFlowUtil::FillFromTracklets(TH3D*& cen, Double_t zvertex) const {
-  AliAODTracklets* aodTracklets = fAODevent->GetTracklets();
-
-  for (Int_t i = 0; i < aodTracklets->GetNumberOfTracklets(); i++) {
-    cen->Fill(aodTracklets->GetEta(i),aodTracklets->GetPhi(i),zvertex, 1);
-    if (dodNdeta) dNdeta->Fill(aodTracklets->GetEta(i),1);
-  }
-}
-
-
-void AliForwardFlowUtil::FillFromTracks(TH3D*& cen, Int_t tracktype, Double_t zvertex) const {
-  Int_t  iTracks(fevent->GetNumberOfTracks());
-  for(Int_t i(0); i < iTracks; i++) {
-
-  // loop  over  all  the  tracks
-    AliAODTrack* track = static_cast<AliAODTrack *>(fAODevent->GetTrack(i));
-    if (track->TestFilterBit(tracktype)){
-      if (track->Pt() >= this->minpt && track->Pt() <= this->maxpt){
-        cen->Fill(track->Eta(),track->Phi(), zvertex, 1);
-        if (dodNdeta) dNdeta->Fill(track->Eta(),1);
+        // if (dodNdeta) dNdeta->Fill(track->Eta(),1);
       }
     }
   }

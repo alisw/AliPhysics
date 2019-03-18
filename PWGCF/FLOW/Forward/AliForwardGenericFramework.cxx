@@ -82,8 +82,6 @@ void AliForwardGenericFramework::CumulantsAccumulate(TH2D& dNdetadphi, TList* ou
           Double_t nuaeta = fSettings.nuacentral->GetXaxis()->FindBin(eta);
           Double_t nuaphi = fSettings.nuacentral->GetYaxis()->FindBin(phi);
           Double_t nuavtz = fSettings.nuacentral->GetZaxis()->FindBin(zvertex);
-          //if (fSettings.nuacentral->GetBinContent(nuaeta,nuaphi,nuavtz) > 10) weight = 0;
-          //else
           weight = weight*fSettings.nuacentral->GetBinContent(nuaeta,nuaphi,nuavtz);
         }
 
@@ -91,20 +89,31 @@ void AliForwardGenericFramework::CumulantsAccumulate(TH2D& dNdetadphi, TList* ou
           Double_t nuaeta = fSettings.nuaforward->GetXaxis()->FindBin(eta);
           Double_t nuaphi = fSettings.nuaforward->GetYaxis()->FindBin(phi);
           Double_t nuavtz = fSettings.nuaforward->GetZaxis()->FindBin(zvertex);
-          //if (fSettings.nuaforward->GetBinContent(nuaeta,nuaphi,nuavtz) > 10) weight = 0;
-          //else
           weight = weight*fSettings.nuaforward->GetBinContent(nuaeta,nuaphi,nuavtz);
         }
       }
 
-    if (weight == 0) continue; // || weight > 10.0
+    if (weight == 0) continue; 
     for (Int_t n = 0; n <= 5; n++) {
-      if (doRefFlow && detType == "forward"){
+      if (doRefFlow && (fSettings.ref_mode & fSettings.kFMDref)){
         if (!fSettings.use_primaries_fwd && n>=2 && n<=4) {
-          Double_t seceta = fSettings.seccorr->GetXaxis()->FindBin(eta);
-          Double_t secvtz = fSettings.seccorr->GetYaxis()->FindBin(zvertex);
-          Double_t secn = fSettings.seccorr->GetZaxis()->FindBin(n-2);
-          weight = weight*fSettings.seccorr->GetBinContent(seceta,secvtz,secn);
+          Double_t seceta = fSettings.seccorr_fwd->GetXaxis()->FindBin(eta);
+          std::cout << "seceta " <<seceta << std::endl;
+
+          Double_t secvtz = fSettings.seccorr_fwd->GetYaxis()->FindBin(zvertex);
+          std::cout << "secvtz " << secvtz << std::endl;
+          Double_t secn = fSettings.seccorr_fwd->GetZaxis()->FindBin(n-2);
+          std::cout << "secn " << secn << std::endl;
+          std::cout << fSettings.seccorr_fwd->GetBinContent(seceta,secvtz,secn) << std::endl;
+          weight = weight*fSettings.seccorr_fwd->GetBinContent(seceta,secvtz,secn);
+        }
+      }
+      if (doRefFlow && (fSettings.ref_mode & fSettings.kITSref)){
+        if (!fSettings.use_primaries_cen && n>=2 && n<=4) {
+          Double_t seceta = fSettings.seccorr_cen->GetXaxis()->FindBin(eta);
+          Double_t secvtz = fSettings.seccorr_cen->GetYaxis()->FindBin(zvertex);
+          Double_t secn = fSettings.seccorr_cen->GetZaxis()->FindBin(n-2);
+          weight = weight*fSettings.seccorr_cen->GetBinContent(seceta,secvtz,secn);
         }
       }
 

@@ -193,16 +193,63 @@ void AliForwardFlowRun2Task::UserExec(Option_t *)
   }
   if (fSettings.mc) fUtil.fMCevent = this->MCEvent();
 
-
-
   fUtil.fevent = fInputEvent;
   fUtil.fSettings = fSettings;
 
-  Double_t centralEta = (fSettings.useSPD ? 2.5 : 1.5);
-  TH2D centralDist_tmp = TH2D("c","",400,-centralEta,centralEta,400,0,2*TMath::Pi());
+  Double_t centralEtaMin,centralEtaMax,refEtaMin,refEtaMax;
+  Int_t centralEtaBins, centralPhiBins, refEtaBins, refPhiBins;  
+
+  // Make centralDist
+  if (fSettings.useSPD) {
+    centralEtaMin = -2.5;
+    centralEtaMax = 2.5;
+    centralEtaBins = 400;
+    centralPhiBins = 400;
+  }
+  else if (fSettings.useITS) {
+    centralEtaMin = -4;
+    centralEtaMax = 6;
+    centralEtaBins = 200;
+    centralPhiBins = 20;
+  }
+  else { //useTPC
+    centralEtaMin = -1.5;
+    centralEtaMax = 1.5; 
+    centralEtaBins = 400;
+    centralPhiBins = 400;
+  }
+  // Make refDist
+  if (fSettings.ref_mode & fSettings.kSPDref){
+    refEtaMin = -2.5;
+    refEtaMax = 2.5;
+    refEtaBins = 400;
+    refPhiBins = 400;
+  } 
+  else if (fSettings.ref_mode & fSettings.kITSref) {
+    refEtaMin = -4;
+    refEtaMax = 6;
+    refEtaBins = 200;
+    refPhiBins = 20;
+  }
+  else if (fSettings.ref_mode & fSettings.kFMDref) {
+    refEtaMin = -4;
+    refEtaMax = 6;
+    refEtaBins = 200;
+    refPhiBins = 20;
+  }
+  else { //kTPCref
+    refEtaMin = -1.5;
+    refEtaMax = 1.5;
+    refEtaBins = 400;
+    refPhiBins = 400;
+  }
+
+  TH2D centralDist_tmp = TH2D("c","",centralEtaBins,centralEtaMin,centralEtaMax,centralPhiBins,0,2*TMath::Pi());
   centralDist_tmp.SetDirectory(0);
-  TH2D refDist_tmp = TH2D("c","",400,-centralEta,centralEta,400,0,2*TMath::Pi());
+
+  TH2D refDist_tmp = TH2D("c","",refEtaBins,refEtaMin,refEtaMax,refPhiBins,0,2*TMath::Pi());
   refDist_tmp.SetDirectory(0);
+
 
   TH2D forwardTrRef  ("ft","",200,-4,6,20,0,TMath::TwoPi());
   TH2D forwardPrim  ("fp","",400,-4,6,400,0,TMath::TwoPi());
@@ -223,7 +270,6 @@ void AliForwardFlowRun2Task::UserExec(Option_t *)
   fUtil.FillData(refDist,centralDist,forwardDist);
 
 
-
   Double_t zvertex = fUtil.GetZ();
   Double_t cent = fUtil.GetCentrality(fSettings.centrality_estimator);
 
@@ -237,19 +283,9 @@ void AliForwardFlowRun2Task::UserExec(Option_t *)
     AliForwardGenericFramework calculator = AliForwardGenericFramework();
     calculator.fSettings = fSettings;
 
-    if (fSettings.maxpt < 5){
-      calculator.CumulantsAccumulate(*refDist, fOutputList, cent, zvertex,"central",true,false);
-      calculator.CumulantsAccumulate(*centralDist, fOutputList, cent, zvertex,"central",false,true);
-      calculator.CumulantsAccumulate(*forwardDist, fOutputList, cent, zvertex,"forward",false,true);
-    }
-    if (fSettings.gap > 1.5){
-      calculator.CumulantsAccumulate(*forwardDist, fOutputList, cent, zvertex,"forward",true,true);
-      calculator.CumulantsAccumulate(*centralDist, fOutputList, cent, zvertex,"central",false,true);
-    }
-    else{
-      calculator.CumulantsAccumulate(*centralDist, fOutputList, cent, zvertex,"central",true,true);
-      calculator.CumulantsAccumulate(*forwardDist, fOutputList, cent, zvertex,"forward",false,true);
-    }
+    calculator.CumulantsAccumulate(*refDist, fOutputList, cent, zvertex,"central",true,false);
+    calculator.CumulantsAccumulate(*centralDist, fOutputList, cent, zvertex,"central",false,true);
+    calculator.CumulantsAccumulate(*forwardDist, fOutputList, cent, zvertex,"forward",false,true);
 
     calculator.saveEvent(fOutputList, cent, zvertex,  randomInt);
     calculator.reset();

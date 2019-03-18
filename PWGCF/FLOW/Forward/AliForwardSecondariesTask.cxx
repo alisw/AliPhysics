@@ -75,7 +75,7 @@ AliForwardSecondariesTask::AliForwardSecondariesTask() : AliAnalysisTaskSE(),
   fRandom(0),
   fTrackDensity(),
   fState(),
-  fMaxConsequtiveStrips(3),
+  fMaxConsequtiveStrips(2),
   fLowCutvalue(0),
   fTrackGammaToPi0(true),
   fSettings(),
@@ -110,7 +110,7 @@ AliForwardSecondariesTask::AliForwardSecondariesTask() : AliAnalysisTaskSE(),
   fDeltaList(0),
   fTrackDensity(),
   fState(),
-  fMaxConsequtiveStrips(3),
+  fMaxConsequtiveStrips(2),
   fLowCutvalue(0),
   fTrackGammaToPi0(true),
   fRandom(0),
@@ -163,7 +163,7 @@ AliForwardSecondariesTask::AliForwardSecondariesTask() : AliAnalysisTaskSE(),
     fDeltaList = new TList();
     fDeltaList->SetName("Delta");
     Int_t phibins = 4000;
-    Int_t etabins = 24;
+    Int_t etabins = 50;
     fSettings.fnoSamples = 1;
     fSettings.fCentBins = 5;
     Int_t bins_phi_eta[5] = {fSettings.fnoSamples, fSettings.fNZvtxBins, phibins, fSettings.fCentBins, etabins} ;
