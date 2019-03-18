@@ -54,9 +54,10 @@ void HFPtSpectrum ( Int_t decayChan=kDplusKpipi,
 		    const char *efffilename="Efficiencies.root",
 		    const char *recofilename="Reconstructed.root",
 		    const char *recohistoname="hRawSpectrumD0",
+		    const char *nevhistoname="hNEvents",
 		    const char *outfilename="HFPtSpectrum.root",
 		    Int_t fdMethod=kNb,
-		    Double_t nevents=1.0,
+		    Double_t nevents=1.0, // overriden by nevhistoname
 		    Double_t sigma=1.0, // sigma[pb]
 		    Bool_t isParticlePlusAntiParticleYield=true,
 		    Int_t cc=kpp7,
@@ -338,6 +339,13 @@ void HFPtSpectrum ( Int_t decayChan=kDplusKpipi,
   }
   hRECpt = (TH1D*)recofile->Get(recohistoname);
   hRECpt->SetNameTitle("hRECpt","Reconstructed spectra");
+  TH1F* hNorm=(TH1F*)recofile->Get(nevhistoname);
+  if(hNorm){
+    nevents=hNorm->GetBinContent(1);
+  }else{
+    printf("Histogram with number of events for norm not found in raw yiled file\n");
+    printf("  nevents = %.0f will be used\n",nevents);
+  }
   //
   // Read the file of the EP resolution correction
   TFile *EPf=0;
