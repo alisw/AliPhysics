@@ -129,7 +129,8 @@ void HFPtSpectrumRaa(const char *ppfile="HFPtSpectrum_D0Kpi_method2_rebinnedth_2
   //
   // Defining the TAB values for the given centrality class
   //
-  Double_t Tab = 1., TabSyst = 0., A=207.2, B=207.2;
+  Double_t Tab = 1., TabSyst = 0., A=208, B=208;
+  // the isotope of Pb that is accelerated in LHC is 208Pb
   if ( Energy!=k276 && Energy!=k5dot023) {
     printf("\n The Tab values for this cms energy have not yet been implemented, please do it ! \n");
     return;
@@ -189,7 +190,7 @@ void HFPtSpectrumRaa(const char *ppfile="HFPtSpectrum_D0Kpi_method2_rebinnedth_2
   // https://twiki.cern.ch/twiki/bin/viewauth/ALICE/PACentStudies#Glauber_Calculations_with_sigma
   if( cc == kpPb0100 ){
     Tab = 0.098334; TabSyst = 0.0070679;
-    A=207.2; B=1.;
+    A=208; B=1.;
   }
   else if( ccestimator == kV0A ){
     if ( cc == kpPb020 ) {
