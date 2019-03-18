@@ -462,8 +462,9 @@ void AliAnalysisTaskSECharmHadronvn::UserExec(Option_t */*option*/)
     // Post the data already here
     PostData(1,fOutput);
 
-    TClonesArray *arrayProng = nullptr;
+    TClonesArray *arrayProng = nullptr, *arrayD0toKpi = nullptr;
     int absPdgMom=0;
+    int nDau=0;
     if(!fAOD && AODEvent() && IsStandardAOD()) {
         // In case there is an AOD handler writing a standard AOD, use the AOD
         // event in memory rather than the input (ESD) event.
@@ -479,18 +480,23 @@ void AliAnalysisTaskSECharmHadronvn::UserExec(Option_t */*option*/)
             switch(fDecChannel) {
                 case kDplustoKpipi:
                     absPdgMom=411;
+                    nDau=3;
                     arrayProng=(TClonesArray*)aodFromExt->GetList()->FindObject("Charm3Prong");
                 break;
                 case kD0toKpi:
                     absPdgMom=421;
+                    nDau=2;
                     arrayProng=(TClonesArray*)aodFromExt->GetList()->FindObject("D0toKpi");
                 break;
                 case kDstartoKpipi:
                     absPdgMom=413;
+                    nDau=3;
                     arrayProng=(TClonesArray*)aodFromExt->GetList()->FindObject("Dstar");
+                    arrayD0toKpi=(TClonesArray*)aodFromExt->GetList()->FindObject("D0toKpi");
                 break;
                 case kDstoKKpi:
                     absPdgMom=431;
+                    nDau=3;
                     arrayProng=(TClonesArray*)aodFromExt->GetList()->FindObject("Charm3Prong");
                 break;
             }
@@ -509,6 +515,7 @@ void AliAnalysisTaskSECharmHadronvn::UserExec(Option_t */*option*/)
             case kDstartoKpipi:
                 absPdgMom=413;
                 arrayProng=(TClonesArray*)fAOD->GetList()->FindObject("Dstar");
+                arrayD0toKpi=(TClonesArray*)fAOD->GetList()->FindObject("D0toKpi");
             break;
             case kDstoKKpi:
                 absPdgMom=431;
@@ -517,7 +524,7 @@ void AliAnalysisTaskSECharmHadronvn::UserExec(Option_t */*option*/)
         }
     }
 
-    if(!fAOD || !arrayProng) {
+    if(!fAOD || !arrayProng || (!arrayD0toKpi && fDecChannel==kDstartoKpipi)) {
         AliError("AliAnalysisTaskSECharmHadronvn::UserExec:Branch not found!\n");
         return;
     }
@@ -578,7 +585,8 @@ void AliAnalysisTaskSECharmHadronvn::UserExec(Option_t */*option*/)
         }
     }
     else { //create a new handler if not found in tender task
-        HFQnVectorHandler = new AliHFQnVectorHandler(AliHFQnVectorHandler::kQnFrameworkCalib,AliHFQnVectorHandler::kQoverM,fHarmonic,"");
+        AliWarning("Qn-vector tender task not found! Create a new one");
+        HFQnVectorHandler = new AliHFQnVectorHandler(fCalibType,fNormMethod,fHarmonic,fOADBFileName);
         HFQnVectorHandler->SetAODEvent(fAOD);
         HFQnVectorHandler->ComputeCalibratedQnVectorTPC();
         HFQnVectorHandler->ComputeCalibratedQnVectorV0();
@@ -703,12 +711,43 @@ void AliAnalysisTaskSECharmHadronvn::UserExec(Option_t */*option*/)
     }
 
     //Loop on D candidates
-    AliAODRecoDecayHF *d = nullptr;
+    AliAODRecoDecayHF *d = nullptr; 
+    AliAODRecoDecayHF2Prong *dD0 = nullptr;
     int nCand = arrayProng->GetEntriesFast();
     int nSelCand = 0;
     AliAnalysisVertexingHF *vHF = new AliAnalysisVertexingHF();
     for (int iCand = 0; iCand < nCand; iCand++) {
         d = dynamic_cast<AliAODRecoDecayHF*>(arrayProng->UncheckedAt(iCand));
+
+        if(fDecChannel==kDstartoKpipi) {
+            if(d->GetIsFilled()<1)
+                dD0 = dynamic_cast<AliAODRecoDecayHF2Prong*>(arrayD0toKpi->At(d->GetProngID(1)));
+            else
+                dD0 = (dynamic_cast<AliAODRecoCascadeHF*>(d))->Get2Prong();
+        }
+
+        //Preselection to speed up task
+        TObjArray arrDauTracks(nDau);
+        AliAODTrack *track = nullptr;
+        if(fDecChannel!=kDstartoKpipi) {
+            for(int iDau=0; iDau<nDau; iDau++){
+                AliAODTrack *track = vHF->GetProng(fAOD,d,iDau);
+                arrDauTracks.AddAt(track,iDau);
+            }
+        }
+        else {
+            for(int iDau=0; iDau<nDau; iDau++){
+                if(iDau == 0) 
+                    track=vHF->GetProng(fAOD,d,iDau); //soft pion
+                else
+                    track=vHF->GetProng(fAOD,dD0,iDau-1); //D0 daughters
+                arrDauTracks.AddAt(track,iDau);
+            }
+        }
+        if(!fRDCuts->PreSelect(arrDauTracks)){
+            continue;
+        }
+        
         bool isSelBit=true;
         switch(fDecChannel) {
             case kDplustoKpipi:
@@ -794,7 +833,11 @@ void AliAnalysisTaskSECharmHadronvn::UserExec(Option_t */*option*/)
     fHistCandVsCent->Fill(evCentr,nSelCand);
 
     delete vHF;
-    if(!isHandlerFound) delete HFQnVectorHandler; // if not found in the tender task, allocated memory with new --> to be deleted
+    vHF = nullptr;
+    if(!isHandlerFound) { // if not found in the tender task, allocated memory with new --> to be deleted
+        delete HFQnVectorHandler; 
+        HFQnVectorHandler = nullptr;
+    }
 
     PostData(1,fOutput);
     return;
