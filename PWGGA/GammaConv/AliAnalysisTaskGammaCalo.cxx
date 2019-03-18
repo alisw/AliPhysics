@@ -5091,9 +5091,11 @@ void AliAnalysisTaskGammaCalo::CalculatePi0Candidates(){
                           }
                           if(fVectorJetPt.at(i) > 10){
                             fHistoUnfoldingAsData[fiCut]->Fill(pi0cand->M(),pi0cand->Pt(), tempPi0CandWeight);
-                          }if(fVectorJetPt.at(i) < 10 && fTrueVectorJetPt.at(match) > 10){
+                          }
+                          if(fVectorJetPt.at(i) < 10 && fTrueVectorJetPt.at(match) > 10){
                             fHistoUnfoldingMissed[fiCut]->Fill(pi0cand->M(),pi0cand->Pt(), tempPi0CandWeight);
-                          }if(fVectorJetPt.at(i) > 10 && fTrueVectorJetPt.at(match) < 10){
+                          }
+                          if(fVectorJetPt.at(i) > 10 && fTrueVectorJetPt.at(match) < 10){
                             fHistoUnfoldingReject[fiCut]->Fill(pi0cand->M(),pi0cand->Pt(), tempPi0CandWeight);
                           }
                           fTrueVectorJetPt.clear();
