@@ -18,11 +18,11 @@ AliAnalysisTaskRidge* AddTaskRidge(
 	AliAnalysisDataContainer *coutputRidge = mgr->CreateContainer(Form("%s_%s",taskname,option),
 		TList::Class(), AliAnalysisManager::kOutputContainer,"AnalysisResults.root");
 
-//	std::ifstream feff;
-  //      feff.open("alien:///alice/cern.ch/user/j/junlee/efficiency_ridge/TrackEfficiency_16.txt");
 
 	TGrid::Connect("alien://");
-	taskRidge->SetEfficiencyFile("/alien///alice/cern.ch/user/j/junlee/Efficiency_RIDGE/EffOut.root");
+	taskRidge->SetEfficiencyFile("/alien/alice/cern.ch/user/j/junlee/Efficiency_RIDGE/EffOut.root");
+//foption.Contains("AOD"))
+//	taskRidge->SetEfficiencyFile("/alice/cern.ch/user/j/junlee/Efficiency_RIDGE/EffOut.root");
 
 	mgr->ConnectInput(taskRidge, 0, cinput);
 	mgr->ConnectOutput(taskRidge,1,mgr->CreateContainer(Form("output%s",suffix), TList::Class(), AliAnalysisManager::kOutputContainer,"AnalysisResults.root"));

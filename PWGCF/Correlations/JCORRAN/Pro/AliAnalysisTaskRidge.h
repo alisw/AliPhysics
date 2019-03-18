@@ -85,7 +85,7 @@ class AliAnalysisTaskRidge : public AliAnalysisTaskSE {
         void SetOption(char * option) {fOption = option;}
         void SetFilterBit(UInt_t filterbit) {fFilterBit = filterbit;}
 //	void SetEfficiencyFile(char* fname) { fefficiencyFile = new TFile(fname,"read"); }
-	void SetEfficiencyFile(char* fname) { fefficiencyFile = TFile::Open(fname); }
+	void SetEfficiencyFile(char* fname) { fefficiencyFile = TFile::Open(fname,"read"); }
 
     
         Bool_t  GoodTracksSelection(int trk);
@@ -141,7 +141,8 @@ class AliAnalysisTaskRidge : public AliAnalysisTaskSE {
       
         TString                         fOption;
         TList*                          fOutput=nullptr; //!
-	TFile*				fefficiencyFile=nullptr;
+	TFile*				fefficiencyFile=nullptr; 
+//	TFile*				fefficiencyFile;
 
         AliTriggerAnalysis*             fTrigger=nullptr; //!
         AliESDtrackCuts*                fTrackCuts=nullptr; //!

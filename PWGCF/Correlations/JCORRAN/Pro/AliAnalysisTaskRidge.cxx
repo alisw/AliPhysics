@@ -263,10 +263,11 @@ void AliAnalysisTaskRidge::UserCreateOutputObjects()
                         Eff.push_back(elem);
                 }
 	}
+	if( fOption.Contains("GRID") ){
+		TGrid::Connect("alien://");
+		fefficiencyFile = TFile::Open("alien:///alice/cern.ch/user/j/junlee/Efficiency_RIDGE/EffOut.root","read");
+	}
 /*
-	TGrid::Connect("alien:");
-	TFile* fefficiencyFile = TFile::Open("alien:///alice/cern.ch/user/j/junlee/Efficiency_RIDGE/EffOut.root");
-
 	TH1D* hEfficiencyHist;
 	if( !fefficiencyFile ){
 		cout << "No Eff file " << endl;
@@ -319,9 +320,12 @@ void AliAnalysisTaskRidge::Exec(Option_t* )
 
 	if( fOption.Contains("MC") ){ IsMC = kTRUE; }
 
+
 	if( IsFirstEvent ){
 		runnumber = fEvt->GetRunNumber();
         	fRunTable = new AliAnalysisTaskRidgeRunTable(runnumber);
+
+//		if( !fefficiencyFile ) return;
 
 		     if( runnumber >= 252235 && runnumber <= 252330 ) Period = "LHC16d";
 		else if( runnumber >= 253437 && runnumber <= 253591 ) Period = "LHC16e";
@@ -366,9 +370,6 @@ void AliAnalysisTaskRidge::Exec(Option_t* )
 
 		cout << "Period : " << Period << endl;
 
-		TGrid::Connect("alien:");
-//		TFile* fefficiencyFile = TFile::Open("alien:///alice/cern.ch/user/j/junlee/Efficiency_RIDGE/EffOut.root");
-//		fefficiencyFile = TFile::Open("alien:///alice/cern.ch/user/j/junlee/Efficiency_RIDGE/EffOut.root");
 		TH1D* hEfficiencyHist;
 		if( !fefficiencyFile ){
                 	cout << "No Eff file " << endl;
@@ -380,6 +381,7 @@ void AliAnalysisTaskRidge::Exec(Option_t* )
 		}
         	if( fefficiencyFile ){
         	        cout << "Eff found " << endl;
+
         	        if( fOption.Contains("Glb") ) hEfficiencyHist = (TH1D*)fefficiencyFile->Get(Form("%s_Glb8cm",Period.Data()));
         	        else if( fOption.Contains("GlbSDD") ) hEfficiencyHist = (TH1D*)fefficiencyFile->Get(Form("%s_GlbSDD8cm",Period.Data()));
         	        else if( fOption.Contains("TightVtx") ) hEfficiencyHist = (TH1D*)fefficiencyFile->Get(Form("%s_Hyb6cm",Period.Data()));
@@ -406,6 +408,12 @@ void AliAnalysisTaskRidge::Exec(Option_t* )
 					for(int j=0;j<fEff_neta_step;j++){
 						Eff[i][j] = 1.0;
 					}
+				}
+			}
+
+			for(int i=0;i<fEff_npT_step;i++){
+				for(int j=0;j<fEff_neta_step;j++){
+					cout << Eff[i][j] << endl;
 				}
 			}
 	        }
@@ -438,13 +446,13 @@ void AliAnalysisTaskRidge::Exec(Option_t* )
         if( IsMC ){
                 AliAODMCHeader *cHeaderAOD  = dynamic_cast<AliAODMCHeader*>
                         (fEvt->FindListObject(AliAODMCHeader::StdBranchName()));
-                fZ_gen = cHeaderAOD -> GetVtxZ();
+                if( cHeaderAOD ) fZ_gen = cHeaderAOD -> GetVtxZ();
         }
 
 
 	if( fOption.Contains("TightVtx") ) AbsZmax = 6.0;
 	if( fOption.Contains("LooseVtx") ) AbsZmax = 10.0;
-
+	if( fOption.Contains("MixingSyst") ) bookingsize = 15;
 	
 	Bool_t IsTriggered = kFALSE;
 	Bool_t IsNotPileup = kFALSE;
@@ -466,9 +474,9 @@ void AliAnalysisTaskRidge::Exec(Option_t* )
 	}
 	if( IsMC ){
                 IsTriggered = inputHandler -> IsEventSelected() & AliVEvent::kINT7;
-                if( fOption.Contains("HighMult") ){
-                        IsTriggered = inputHandler -> IsEventSelected() & AliVEvent::kHighMultV0;
-                }
+//                if( fOption.Contains("HighMult") ){
+//                        IsTriggered = inputHandler -> IsEventSelected() & AliVEvent::kHighMultV0;
+//                }
         }        
 //***********************************************
 
@@ -479,6 +487,8 @@ void AliAnalysisTaskRidge::Exec(Option_t* )
 	else if( !fRunTable->IsPP() ) IsNotPileup = kTRUE;
 	else if( !IsMC && fRunTable->IsPP() && !event->IsPileupFromSPDInMultBins() ) IsNotPileup = kTRUE;
 	if( fOption.Contains("PileupTest") ){ IsNotPileup = kTRUE; }
+	if( fOption.Contains("PileupMV") ){ IsNotPileup = sel->GetThisEventIsNotPileupMV(); }
+
 //*********************************************
 
 
@@ -515,7 +525,7 @@ void AliAnalysisTaskRidge::Exec(Option_t* )
 	                        IsSelectedFromAliMultSelectionForSysZ = kTRUE;
 	                }
 	        }
-		if( fOption.Contains("PileupTest") ){
+		if( fOption.Contains("PileupTest") || fOption.Contains("PileupMV") ){
 			if( sel->GetThisEventHasNoInconsistentVertices() &&
 			sel->GetThisEventPassesTrackletVsCluster() ){
 				IsSelectedFromAliMultSelection = kTRUE;
