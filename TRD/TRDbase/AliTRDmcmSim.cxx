@@ -166,8 +166,9 @@ void AliTRDmcmSim::Init( Int_t det, Int_t robPos, Int_t mcmPos, Bool_t /* newEve
 
     // tracklet calculation
     fFitReg = new FitReg_t[AliTRDfeeParam::GetNadcMcm()];
+    memset(fFitReg, 0, AliTRDfeeParam::GetNadcMcm()*sizeof( AliTRDfeeParam::GetNadcMcm() ) );
     fTrackletArray = new TClonesArray("AliTRDtrackletMCM", fgkMaxTracklets);
-
+    
     fMCMT = new UInt_t[fgkMaxTracklets];
   }
 
