@@ -1,8 +1,9 @@
-AliAnalysisTaskPP13 * AddAnalysisTaskPP(
+AliAnalysisTaskPP13 * AddAnalysisAcceptanceTaskPP(
 	Bool_t isMC = kFALSE,
 	TString description = "",
 	TString suff = "",
-	Int_t minDistanceMaximum = 4 
+	Int_t minDistanceMaximum = 4,
+	Float_t scale = 1 // Scale parameter in cm
 )
 {
 	AliAnalysisManager * manager = AliAnalysisManager::GetAnalysisManager();
@@ -12,18 +13,18 @@ AliAnalysisTaskPP13 * AddAnalysisTaskPP(
 	TList * selections = new TList();
 
 	AliPP13SelectionWeights & data_weights = AliPP13SelectionWeights::Init(AliPP13SelectionWeights::kData);
-	for(Int_t i = 0; i < minDistanceMaximum; ++i)
+	for (Int_t i = 0; i < minDistanceMaximum; ++i)
 	{
 		AliPP13ClusterCuts cuts_pi0 = AliPP13ClusterCuts::GetClusterCuts();
-		cuts_pi0.fMinimalDistance = i;
+		cuts_pi0.fMinimalDistance = i * scale;
 
 		AliPP13ClusterCuts cuts_eta = AliPP13ClusterCuts::GetClusterCuts();
 		cuts_eta.fAsymmetryCut = 0.7;
-		cuts_eta.fMinimalDistance = i;
+		cuts_eta.fMinimalDistance = i * scale;
 
 		// TODO: Add plain selections
-		selections->Add(new AliPP13SpectrumSelection(Format("Phys%s", i), "Physics Selection", cuts_pi0, &data_weights));
-		selections->Add(new AliPP13SpectrumSelection(Format("Eta%s", i), "Physics Selection for eta meson", cuts_eta, &data_weights));
+		selections->Add(new AliPP13SpectrumSelection(Form("Phys%d", i), "Physics Selection", cuts_pi0, &data_weights));
+		selections->Add(new AliPP13SpectrumSelection(Form("Eta%d", i), "Physics Selection for eta meson", cuts_eta, &data_weights));
 	}
 	delete &data_weights;
 
@@ -40,11 +41,11 @@ AliAnalysisTaskPP13 * AddAnalysisTaskPP(
 		cout << fSel->GetTitle() << endl;
 
 		coutput = manager->CreateContainer(
-			fSel->GetName() + suff,
-			TList::Class(),
-			AliAnalysisManager::kOutputContainer,
-			AliAnalysisManager::GetCommonFileName()
-		);
+					  fSel->GetName() + suff,
+					  TList::Class(),
+					  AliAnalysisManager::kOutputContainer,
+					  AliAnalysisManager::GetCommonFileName()
+				  );
 
 		manager->ConnectOutput(task, i + 1, coutput);
 	}
