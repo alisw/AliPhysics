@@ -304,7 +304,8 @@ void AliAnalysisTaskCheckEvSel::UserExec(Option_t */*option*/){
 
   Bool_t isEvSel=fAnalysisCuts->IsEventSelected(aod);
   Int_t wrej=fAnalysisCuts->GetWhyRejection();
-  Double_t centr=fAnalysisCuts->GetCentrality(aod,AliRDHFCuts::kCentZNA);
+  Double_t centr=fAnalysisCuts->GetCentrality(aod,AliRDHFCuts::kCentV0M);
+  if(fSystem==2) centr=fAnalysisCuts->GetCentrality(aod,AliRDHFCuts::kCentZNA);// p-Pb
   const AliVVertex *vertex = aod->GetPrimaryVertex();
   const AliVVertex *vertexSPD = aod->GetPrimaryVertexSPD();
   Double_t ntrkl = AliVertexingHFUtils::GetNumberOfTrackletsInEtaRange(aod,-1.,1.); 
