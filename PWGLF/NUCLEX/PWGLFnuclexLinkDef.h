@@ -76,6 +76,7 @@
 #pragma link C++ class AliReducedHypTritTrack+;
 #pragma link C++ class AliReducedHypTritEvent+;
 #pragma link C++ class AliAnalysisTaskHypCrossCheck+;
+#pragma link C++ class AliAnalysisTaskHyperTriton2He3piML+;
 
 /// * Hyp3body
 #pragma link C++ class AliAnalysisTaskHypertriton3+;
