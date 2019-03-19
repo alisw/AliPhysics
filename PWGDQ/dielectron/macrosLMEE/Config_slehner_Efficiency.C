@@ -14,8 +14,7 @@ void Config_slehner_Efficiency(AliAnalysisTaskElectronEfficiencyV2 *task,  Bool_
   Int_t PIDCut=0;
   Int_t MVACut=0;
   
-//  for(int glcut = 0; glcut <=20; ++glcut){
-  for(int glcut = 0; glcut <=1; ++glcut){
+  for(int glcut = 0; glcut <=20; ++glcut){
     ////////DEFINE THE CUTS AS FUNCTION OF GLCUT//////
     if(glcut>0 && glcut<11) continue;
     PIDCut=glcut;

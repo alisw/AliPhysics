@@ -678,7 +678,7 @@ Int_t AliAnalysisTaskMLTreeMaker::GetAcceptedTracks(AliVEvent *event, Double_t g
         }
         else{
           fQAHist->Fill("After MC check",1); 
-          if(CheckGenerator(TMath::Abs(track->GetLabel()))<0) continue;
+//          if(CheckGenerator(TMath::Abs(track->GetLabel()))<0) continue;
           }
 
         }
