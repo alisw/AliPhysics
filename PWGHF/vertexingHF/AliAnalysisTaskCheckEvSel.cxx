@@ -382,7 +382,7 @@ void AliAnalysisTaskCheckEvSel::UserExec(Option_t */*option*/){
       else binToFill=7;
     }else{
       if(fAnalysisCuts->IsEventRejectedDueToNotRecoVertex() || fAnalysisCuts->IsEventRejectedDueToVertexContributors() || fAnalysisCuts->IsEventRejectedDueToBadTrackVertex()){
-	if(fAnalysisCuts->IsEventRejectedDueToNotRecoVertex()) binToFill=9;
+	if(fAnalysisCuts->IsEventRejectedDueToNotRecoVertex()) binToFill=8;
 	if(fAnalysisCuts->IsEventRejectedDueToVertexContributors()) binToFill=9;
 	if(fAnalysisCuts->IsEventRejectedDueToBadTrackVertex()) binToFill=10;
       }else{
