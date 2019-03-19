@@ -173,7 +173,15 @@ AliAnalysisTaskUPCforwardMC::AliAnalysisTaskUPCforwardMC()
       fBinMigrationHelicityH(0),
       fCheckHelicityRestFrameJPsiH(0),
       fThetaDistribOfPositiveMuonRestFrameJPsiRapidityBinH{ 0, 0, 0, 0, 0, 0, 0, 0},
-      fMCthetaDistribOfPositiveMuonRestFrameJPsiGeneratedTruthRapidityBinH{ 0, 0, 0, 0, 0, 0, 0, 0}
+      fMCthetaDistribOfPositiveMuonRestFrameJPsiGeneratedTruthRapidityBinH{ 0, 0, 0, 0, 0, 0, 0, 0},
+      fCosThetaHelicityFrameJPsiH(0),
+      fCosThetaCollinsSoperFrameJPsiH(0),
+      fPhiHelicityFrameJPsiH(0),
+      fPhiCollinsSoperFrameJPsiH(0),
+      fMCCosThetaHelicityFrameJPsiH(0),
+      fMCCosThetaCollinsSoperFrameJPsiH(0),
+      fMCPhiHelicityFrameJPsiH(0),
+      fMCPhiCollinsSoperFrameJPsiH(0)
 {
     // default constructor, don't allocate memory here!
     // this is used by root for IO purposes, it needs to remain empty
@@ -272,7 +280,15 @@ AliAnalysisTaskUPCforwardMC::AliAnalysisTaskUPCforwardMC( const char* name )
       fBinMigrationHelicityH(0),
       fCheckHelicityRestFrameJPsiH(0),
       fThetaDistribOfPositiveMuonRestFrameJPsiRapidityBinH{ 0, 0, 0, 0, 0, 0, 0, 0},
-      fMCthetaDistribOfPositiveMuonRestFrameJPsiGeneratedTruthRapidityBinH{ 0, 0, 0, 0, 0, 0, 0, 0}
+      fMCthetaDistribOfPositiveMuonRestFrameJPsiGeneratedTruthRapidityBinH{ 0, 0, 0, 0, 0, 0, 0, 0},
+      fCosThetaHelicityFrameJPsiH(0),
+      fCosThetaCollinsSoperFrameJPsiH(0),
+      fPhiHelicityFrameJPsiH(0),
+      fPhiCollinsSoperFrameJPsiH(0),
+      fMCCosThetaHelicityFrameJPsiH(0),
+      fMCCosThetaCollinsSoperFrameJPsiH(0),
+      fMCPhiHelicityFrameJPsiH(0),
+      fMCPhiCollinsSoperFrameJPsiH(0)
 {
     FillGoodRunVector(fVectorGoodRunNumbers);
 
@@ -527,6 +543,30 @@ void AliAnalysisTaskUPCforwardMC::UserCreateOutputObjects()
     fOutputList->Add(fMCthetaDistribOfPositiveMuonRestFrameJPsiGeneratedTruthRapidityBinH[iRapidityBin]);
 
   }
+
+  fCosThetaHelicityFrameJPsiH = new TH1F("fCosThetaHelicityFrameJPsiH", "fCosThetaHelicityFrameJPsiH", 1000, -1., 1.);
+  fOutputList->Add(fCosThetaHelicityFrameJPsiH);
+
+  fCosThetaCollinsSoperFrameJPsiH = new TH1F("fCosThetaCollinsSoperFrameJPsiH", "fCosThetaCollinsSoperFrameJPsiH", 1000, -1., 1.);
+  fOutputList->Add(fCosThetaCollinsSoperFrameJPsiH);
+
+  fPhiHelicityFrameJPsiH = new TH1F("fPhiHelicityFrameJPsiH", "fPhiHelicityFrameJPsiH", 10000, -10., 10.);
+  fOutputList->Add(fPhiHelicityFrameJPsiH);
+
+  fPhiCollinsSoperFrameJPsiH = new TH1F("fPhiCollinsSoperFrameJPsiH", "fPhiCollinsSoperFrameJPsiH", 10000, -10., 10.);
+  fOutputList->Add(fPhiCollinsSoperFrameJPsiH);
+
+  fMCCosThetaHelicityFrameJPsiH = new TH1F("fMCCosThetaHelicityFrameJPsiH", "fMCCosThetaHelicityFrameJPsiH", 1000, -1., 1.);
+  fOutputList->Add(fMCCosThetaHelicityFrameJPsiH);
+
+  fMCCosThetaCollinsSoperFrameJPsiH = new TH1F("fMCCosThetaCollinsSoperFrameJPsiH", "fMCCosThetaCollinsSoperFrameJPsiH", 1000, -1., 1.);
+  fOutputList->Add(fMCCosThetaCollinsSoperFrameJPsiH);
+
+  fMCPhiHelicityFrameJPsiH = new TH1F("fMCPhiHelicityFrameJPsiH", "fMCPhiHelicityFrameJPsiH", 10000, -10., 10.);
+  fOutputList->Add(fMCPhiHelicityFrameJPsiH);
+
+  fMCPhiCollinsSoperFrameJPsiH = new TH1F("fMCPhiCollinsSoperFrameJPsiH", "fMCPhiCollinsSoperFrameJPsiH", 10000, -10., 10.);
+  fOutputList->Add(fMCPhiCollinsSoperFrameJPsiH);
 
   //_______________________________
   // - End of the function
@@ -952,6 +992,7 @@ void AliAnalysisTaskUPCforwardMC::UserExec(Option_t *)
      - This is useful for the histograms...
    */
   TLorentzVector muonsCopy[2];
+  TLorentzVector muonsCopy2[2];
   TLorentzVector possibleJPsiCopy;
   if( chargeOfMuons[0] > 0 ){
     muonsCopy[0]     = muons[0];
@@ -960,6 +1001,8 @@ void AliAnalysisTaskUPCforwardMC::UserExec(Option_t *)
     muonsCopy[0]     = muons[1];
     muonsCopy[1]     = muons[0];
   }
+  muonsCopy2[0]      = muonsCopy[0];
+  muonsCopy2[1]      = muonsCopy[1];
   possibleJPsiCopy = possibleJPsi;
   for( Int_t iBoosting = 0; iBoosting < 2; iBoosting++ ) {
     // TLorentzVector boostBack = -(possibleJPsiCopy).BoostVector();
@@ -988,6 +1031,30 @@ void AliAnalysisTaskUPCforwardMC::UserExec(Option_t *)
     fAngularDistribOfPositiveMuonRestFrameJPsiH->Fill(cosThetaMuonsRestFrame[0]);
     fAngularDistribOfNegativeMuonRestFrameJPsiH->Fill(cosThetaMuonsRestFrame[1]);
     fCheckHelicityRestFrameJPsiH->Fill( muonsCopy[0].Dot(muonsCopy[1]) );
+
+    /* - New part: filling all possible histograms!
+       -
+     */
+    fCosThetaHelicityFrameJPsiH->Fill( CosThetaHelicityFrame( muonsCopy2[0],
+                                                              muonsCopy2[1],
+                                                              possibleJPsiCopy
+                                                              )
+                                                            );
+    fCosThetaCollinsSoperFrameJPsiH->Fill( CosThetaCollinsSoper( muonsCopy2[0],
+                                                                 muonsCopy2[1],
+                                                                 possibleJPsiCopy
+                                                                 )
+                                                               );
+    fPhiHelicityFrameJPsiH->Fill( CosPhiHelicityFrame( muonsCopy2[0],
+                                                       muonsCopy2[1],
+                                                       possibleJPsiCopy
+                                                       )
+                                                     );
+    fPhiCollinsSoperFrameJPsiH->Fill( CosPhiCollinsSoper( muonsCopy2[0],
+                                                          muonsCopy2[1],
+                                                          possibleJPsiCopy
+                                                          )
+                                                        );
     /* - Now we are filling in terms of rapidity...
        - The easiest way to do so I have envisioned is to simply
        - check everytime if we are below the following threshold
@@ -1146,6 +1213,9 @@ void AliAnalysisTaskUPCforwardMC::ProcessMCParticles(AliMCEvent* fMCEventArg)
        -
      */
     if( charge[0] != charge[1] ) {
+      TLorentzVector muonsMCcopy[2];
+      muonsMCcopy[0] = muonsMC[0];
+      muonsMCcopy[1] = muonsMC[1];
       for( Int_t iMuonsMC = 0; iMuonsMC < 2; iMuonsMC++ ) {
         possibleJPsiMC+=muonsMC[iMuonsMC];
         fMCphiDimuonGeneratedTruthH           ->Fill(phi[iMuonsMC]);
@@ -1181,6 +1251,29 @@ void AliAnalysisTaskUPCforwardMC::ProcessMCParticles(AliMCEvent* fMCEventArg)
                   fMCthetaDistribOfNegativeMuonRestFrameJPsiGeneratedTruthH->Fill(cosThetaMuonsRestFrameMC[1]);
                   // fVectorCosThetaGenerated.push_back(cosThetaMuonsRestFrameMC[0]);
                   fCosThetaGeneratedHelicityFrame = cosThetaMuonsRestFrameMC[0];
+                  /* - New part: filling all possible histograms!
+                     -
+                   */
+                  fMCCosThetaHelicityFrameJPsiH->Fill( CosThetaHelicityFrame( muonsMCcopy[0],
+                                                                              muonsMCcopy[1],
+                                                                              possibleJPsiMC
+                                                                              )
+                                                                            );
+                  fMCCosThetaCollinsSoperFrameJPsiH->Fill( CosThetaCollinsSoper( muonsMCcopy[0],
+                                                                                 muonsMCcopy[1],
+                                                                                 possibleJPsiMC
+                                                                                 )
+                                                                               );
+                  fMCPhiHelicityFrameJPsiH->Fill( CosPhiHelicityFrame( muonsMCcopy[0],
+                                                                       muonsMCcopy[1],
+                                                                       possibleJPsiMC
+                                                                       )
+                                                                     );
+                  fMCPhiCollinsSoperFrameJPsiH->Fill( CosPhiCollinsSoper( muonsMCcopy[0],
+                                                                          muonsMCcopy[1],
+                                                                          possibleJPsiMC
+                                                                          )
+                                                                        );
                   /* - Now we are filling in terms of rapidity...
                      - The easiest way to do so I have envisioned is to simply
                      - check everytime if we are below the following threshold
@@ -1200,6 +1293,29 @@ void AliAnalysisTaskUPCforwardMC::ProcessMCParticles(AliMCEvent* fMCEventArg)
                   fMCthetaDistribOfPositiveMuonRestFrameJPsiGeneratedTruthH->Fill(cosThetaMuonsRestFrameMC[1]);
                   // fVectorCosThetaGenerated.push_back(cosThetaMuonsRestFrameMC[1]);
                   fCosThetaGeneratedHelicityFrame = cosThetaMuonsRestFrameMC[1];
+                  /* - New part: filling all possible histograms!
+                     -
+                   */
+                  fMCCosThetaHelicityFrameJPsiH->Fill( CosThetaHelicityFrame( muonsMCcopy[1],
+                                                                              muonsMCcopy[0],
+                                                                              possibleJPsiMC
+                                                                              )
+                                                                            );
+                  fMCCosThetaCollinsSoperFrameJPsiH->Fill( CosThetaCollinsSoper( muonsMCcopy[1],
+                                                                                 muonsMCcopy[0],
+                                                                                 possibleJPsiMC
+                                                                                 )
+                                                                               );
+                  fMCPhiHelicityFrameJPsiH->Fill( CosPhiHelicityFrame( muonsMCcopy[1],
+                                                                       muonsMCcopy[0],
+                                                                       possibleJPsiMC
+                                                                       )
+                                                                     );
+                  fMCPhiCollinsSoperFrameJPsiH->Fill( CosPhiCollinsSoper( muonsMCcopy[1],
+                                                                          muonsMCcopy[0],
+                                                                          possibleJPsiMC
+                                                                          )
+                                                                        );
                   /* - Now we are filling in terms of rapidity...
                      - The easiest way to do so I have envisioned is to simply
                      - check everytime if we are below the following threshold
@@ -1220,6 +1336,207 @@ void AliAnalysisTaskUPCforwardMC::ProcessMCParticles(AliMCEvent* fMCEventArg)
     }
   }
 
+}
+//_____________________________________________________________________________
+/* - The following are code snippets adapted from the AliAODDimuon class.
+   - The problem is that that class was adapted specifically for the
+   - inclusive people's analysis, hence it is not fit for the UPC...
+   -
+ */
+Double_t AliAnalysisTaskUPCforwardMC::CosThetaCollinsSoper( TLorentzVector muonPositive,
+                                                            TLorentzVector muonNegative,
+                                                            TLorentzVector possibleJPsi )
+{
+  /* - This function computes the Collins-Soper cos(theta) for the
+     - helicity of the J/Psi.
+     - The idea should be to get back to a reference frame where it
+     - is easier to compute and to define the proper z-axis.
+     -
+   */
+
+  /* - Half of the energy per pair of the colliding nucleons.
+     -
+   */
+  Double_t HalfSqrtSnn   = 2510.;
+  Double_t MassOfLead208 = 193.6823;
+  Double_t MomentumBeam  = TMath::Sqrt( HalfSqrtSnn*HalfSqrtSnn*208*208 - MassOfLead208*MassOfLead208 );
+  /* - Fill the Lorentz vector for projectile and target.
+     - For the moment we do not consider the crossing angle.
+     - Projectile runs towards the MUON arm.
+     -
+   */
+  TLorentzVector pProjCM(0.,0., -MomentumBeam, HalfSqrtSnn*208); // projectile
+  TLorentzVector pTargCM(0.,0.,  MomentumBeam, HalfSqrtSnn*208); // target
+  /* - Translate the dimuon parameters in the dimuon rest frame
+     -
+   */
+  TVector3       beta      = ( -1./possibleJPsi.E() ) * possibleJPsi.Vect();
+  TLorentzVector pMu1Dimu  = muonPositive;
+  TLorentzVector pMu2Dimu  = muonNegative;
+  TLorentzVector pProjDimu = pProjCM;
+  TLorentzVector pTargDimu = pTargCM;
+  pMu1Dimu.Boost(beta);
+  pMu2Dimu.Boost(beta);
+  pProjDimu.Boost(beta);
+  pTargDimu.Boost(beta);
+  /* - Determine the z axis for the CS angle.
+     -
+   */
+  TVector3 zaxisCS=(((pProjDimu.Vect()).Unit())-((pTargDimu.Vect()).Unit())).Unit();
+  /* - Determine the CS angle (angle between mu+ and the z axis defined above)
+     -
+   */
+  Double_t CosThetaCS = zaxisCS.Dot((pMu1Dimu.Vect()).Unit());
+  return   CosThetaCS;
+}
+//_____________________________________________________________________________
+Double_t AliAnalysisTaskUPCforwardMC::CosThetaHelicityFrame( TLorentzVector muonPositive,
+                                                             TLorentzVector muonNegative,
+                                                             TLorentzVector possibleJPsi )
+{
+  /* - This function computes the Helicity cos(theta) for the
+     - helicity of the J/Psi.
+     - The idea should be to get back to a reference frame where it
+     - is easier to compute and to define the proper z-axis.
+     -
+   */
+
+  /* - Half of the energy per pair of the colliding nucleons.
+     -
+   */
+  Double_t HalfSqrtSnn   = 2510.;
+  Double_t MassOfLead208 = 193.6823;
+  Double_t MomentumBeam  = TMath::Sqrt( HalfSqrtSnn*HalfSqrtSnn*208*208 - MassOfLead208*MassOfLead208 );
+  /* - Fill the Lorentz vector for projectile and target.
+     - For the moment we do not consider the crossing angle.
+     - Projectile runs towards the MUON arm.
+     -
+   */
+  TLorentzVector pProjCM(0.,0., -MomentumBeam, HalfSqrtSnn*208); // projectile
+  TLorentzVector pTargCM(0.,0.,  MomentumBeam, HalfSqrtSnn*208); // target
+  /* - Translate the dimuon parameters in the dimuon rest frame
+     -
+   */
+  TVector3       beta      = ( -1./possibleJPsi.E() ) * possibleJPsi.Vect();
+  TLorentzVector pMu1Dimu  = muonPositive;
+  TLorentzVector pMu2Dimu  = muonNegative;
+  TLorentzVector pProjDimu = pProjCM;
+  TLorentzVector pTargDimu = pTargCM;
+  pMu1Dimu.Boost(beta);
+  pMu2Dimu.Boost(beta);
+  pProjDimu.Boost(beta);
+  pTargDimu.Boost(beta);
+  //
+  // --- Determine the z axis for the calculation of the polarization angle
+  // (i.e. the direction of the dimuon in the CM system)
+  //
+  TVector3 zaxis = (possibleJPsi.Vect()).Unit();
+  /* - Determine the He angle (angle between mu+ and the z axis defined above)
+     -
+   */
+  Double_t CosThetaHE = zaxis.Dot((pMu1Dimu.Vect()).Unit());
+  return   CosThetaHE;
+
+}
+//_____________________________________________________________________________
+Double_t AliAnalysisTaskUPCforwardMC::CosPhiCollinsSoper( TLorentzVector muonPositive,
+                                                          TLorentzVector muonNegative,
+                                                          TLorentzVector possibleJPsi )
+{
+  /* - This function computes the Collins-Soper PHI for the
+     - helicity of the J/Psi.
+     - The idea should be to get back to a reference frame where it
+     - is easier to compute and to define the proper z-axis.
+     -
+   */
+
+  /* - Half of the energy per pair of the colliding nucleons.
+     -
+   */
+  Double_t HalfSqrtSnn   = 2510.;
+  Double_t MassOfLead208 = 193.6823;
+  Double_t MomentumBeam  = TMath::Sqrt( HalfSqrtSnn*HalfSqrtSnn*208*208 - MassOfLead208*MassOfLead208 );
+  /* - Fill the Lorentz vector for projectile and target.
+     - For the moment we do not consider the crossing angle.
+     - Projectile runs towards the MUON arm.
+     -
+   */
+  TLorentzVector pProjCM(0.,0., -MomentumBeam, HalfSqrtSnn*208); // projectile
+  TLorentzVector pTargCM(0.,0.,  MomentumBeam, HalfSqrtSnn*208); // target
+  /* - Translate the dimuon parameters in the dimuon rest frame
+     -
+   */
+  TVector3       beta      = ( -1./possibleJPsi.E() ) * possibleJPsi.Vect();
+  TLorentzVector pMu1Dimu  = muonPositive;
+  TLorentzVector pMu2Dimu  = muonNegative;
+  TLorentzVector pProjDimu = pProjCM;
+  TLorentzVector pTargDimu = pTargCM;
+  pMu1Dimu.Boost(beta);
+  pMu2Dimu.Boost(beta);
+  pProjDimu.Boost(beta);
+  pTargDimu.Boost(beta);
+  /* - Determine the z axis for the CS angle.
+     -
+   */
+  TVector3 zaxisCS=(((pProjDimu.Vect()).Unit())-((pTargDimu.Vect()).Unit())).Unit();
+  //
+  // --- Determine the CS angle (angle between mu+ and the z axis defined above)
+  //
+  TVector3 yaxisCS=(((pProjDimu.Vect()).Unit()).Cross((pTargDimu.Vect()).Unit())).Unit();
+  TVector3 xaxisCS=(yaxisCS.Cross(zaxisCS)).Unit();
+
+  Double_t phi = TMath::ATan2((pMu1Dimu.Vect()).Dot(yaxisCS),((pMu1Dimu.Vect()).Dot(xaxisCS)));
+  return   phi;
+}
+//_____________________________________________________________________________
+Double_t AliAnalysisTaskUPCforwardMC::CosPhiHelicityFrame(  TLorentzVector muonPositive,
+                                                            TLorentzVector muonNegative,
+                                                            TLorentzVector possibleJPsi )
+{
+  /* - This function computes the helicity phi for the
+     - helicity of the J/Psi.
+     - The idea should be to get back to a reference frame where it
+     - is easier to compute and to define the proper z-axis.
+     -
+   */
+
+  /* - Half of the energy per pair of the colliding nucleons.
+     -
+  */
+  Double_t HalfSqrtSnn   = 2510.;
+  Double_t MassOfLead208 = 193.6823;
+  Double_t MomentumBeam  = TMath::Sqrt( HalfSqrtSnn*HalfSqrtSnn*208*208 - MassOfLead208*MassOfLead208 );
+  /* - Fill the Lorentz vector for projectile and target.
+     - For the moment we do not consider the crossing angle.
+     - Projectile runs towards the MUON arm.
+     -
+   */
+  TLorentzVector pProjCM(0.,0., -MomentumBeam, HalfSqrtSnn*208); // projectile
+  TLorentzVector pTargCM(0.,0.,  MomentumBeam, HalfSqrtSnn*208); // target
+  /* - Translate the dimuon parameters in the dimuon rest frame
+     -
+   */
+  TVector3       beta      = ( -1./possibleJPsi.E() ) * possibleJPsi.Vect();
+  TLorentzVector pMu1Dimu  = muonPositive;
+  TLorentzVector pMu2Dimu  = muonNegative;
+  TLorentzVector pProjDimu = pProjCM;
+  TLorentzVector pTargDimu = pTargCM;
+  pMu1Dimu.Boost(beta);
+  pMu2Dimu.Boost(beta);
+  pProjDimu.Boost(beta);
+  pTargDimu.Boost(beta);
+  //
+  // --- Determine the z axis for the calculation of the polarization angle
+  // (i.e. the direction of the dimuon in the CM system)
+  //
+  TVector3 zaxis = (possibleJPsi.Vect()).Unit();
+  TVector3 yaxis = ((pProjDimu.Vect()).Cross(pTargDimu.Vect())).Unit();
+  TVector3 xaxis = (yaxis.Cross(zaxis)).Unit();
+  //
+  // --- Calculation of the azimuthal angle (Helicity)
+  //
+  Double_t phi = TMath::ATan2((pMu1Dimu.Vect()).Dot(yaxis),(pMu1Dimu.Vect()).Dot(xaxis));
+  return   phi;
 }
 //_____________________________________________________________________________
 void AliAnalysisTaskUPCforwardMC::Terminate(Option_t *)

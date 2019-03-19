@@ -108,6 +108,42 @@ class AliAnalysisTaskUPCforwardMC : public AliAnalysisTaskSE
         void                    ProcessMCParticles(AliMCEvent* fMCEvent);
 
                                 /**
+                                 * This function computes the cos(theta) in the
+                                 * Collins-Soper frame for the helicity
+                                 * analysis.
+                                 */
+        Double_t                CosThetaCollinsSoper( TLorentzVector muonPositive,
+                                                      TLorentzVector muonNegative,
+                                                      TLorentzVector possibleJPsi );
+
+                                /**
+                                 * This function computes the cos(theta) in the
+                                 * Helicity frame for the helicity
+                                 * analysis.
+                                 */
+        Double_t                CosThetaHelicityFrame( TLorentzVector muonPositive,
+                                                       TLorentzVector muonNegative,
+                                                       TLorentzVector possibleJPsi );
+
+                                /**
+                                 * This function computes the cos(phi) in the
+                                 * Collins-Soper frame for the helicity
+                                 * analysis.
+                                 */
+        Double_t                CosPhiCollinsSoper( TLorentzVector muonPositive,
+                                                    TLorentzVector muonNegative,
+                                                    TLorentzVector possibleJPsi );
+
+                                /**
+                                 * This function computes the cos(phi) in the
+                                 * Helicity frame for the helicity
+                                 * analysis.
+                                 */
+        Double_t                CosPhiHelicityFrame( TLorentzVector muonPositive,
+                                                     TLorentzVector muonNegative,
+                                                     TLorentzVector possibleJPsi );
+
+                                /**
                                  * Use the class as a data member. It contains
                                  * the cuts for the muon track.
                                  */
@@ -479,14 +515,64 @@ class AliAnalysisTaskUPCforwardMC : public AliAnalysisTaskSE
                                  */
         TH2F*                   fBinMigrationHelicityH;           //!
 
-
-
-
-
-
-
-
         //_______________________________
+        // HELICITY AND COLLINS-SOPER
+
+                                /**
+                                 * This histogram shows the angular distribution
+                                 * of the positive muon in the HELICITY frame.
+                                 * COS(THETA) distribution.
+                                 */
+        TH1F*                   fCosThetaHelicityFrameJPsiH;
+
+                                /**
+                                 * This histogram shows the angular distribution
+                                 * of the positive muon in the HELICITY frame.
+                                 * PHI distribution.
+                                 */
+        TH1F*                   fPhiHelicityFrameJPsiH;
+
+                                /**
+                                 * This histogram shows the angular distribution
+                                 * of the positive muon in the COLLINS-SOPER
+                                 * frame.  COS(THETA) distribution.
+                                 */
+        TH1F*                   fCosThetaCollinsSoperFrameJPsiH;
+
+                                /**
+                                 * This histogram shows the angular distribution
+                                 * of the positive muon in the COLLINS-SOPER
+                                 * frame. PHI distribution.
+                                 */
+        TH1F*                   fPhiCollinsSoperFrameJPsiH;
+
+                                /**
+                                 * This histogram shows the angular distribution
+                                 * of the positive muon in the HELICITY frame.
+                                 * COS(THETA) distribution. GENERATED
+                                 */
+        TH1F*                   fMCCosThetaHelicityFrameJPsiH;
+
+                                /**
+                                 * This histogram shows the angular distribution
+                                 * of the positive muon in the HELICITY frame.
+                                 * PHI distribution. GENERATED
+                                 */
+        TH1F*                   fMCPhiHelicityFrameJPsiH;
+
+                                /**
+                                 * This histogram shows the angular distribution
+                                 * of the positive muon in the COLLINS-SOPER
+                                 * frame.  COS(THETA) distribution. GENERATED
+                                 */
+        TH1F*                   fMCCosThetaCollinsSoperFrameJPsiH;
+
+                                /**
+                                 * This histogram shows the angular distribution
+                                 * of the positive muon in the COLLINS-SOPER
+                                 * frame. PHI distribution. GENERATED
+                                 */
+        TH1F*                   fMCPhiCollinsSoperFrameJPsiH;
 
         //_______________________________
         // CUTS
@@ -569,7 +655,7 @@ class AliAnalysisTaskUPCforwardMC : public AliAnalysisTaskSE
          * If I happen to encounter it again in the future, I will make sure to
          * record it!
          */
-        ClassDef(AliAnalysisTaskUPCforwardMC, 2);
+        ClassDef(AliAnalysisTaskUPCforwardMC, 3);
 };
 
 #endif
