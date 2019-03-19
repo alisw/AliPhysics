@@ -1140,6 +1140,20 @@ void AliRDHFCutsLctoV0::CheckPID(AliAODTrack *bachelor,
     isBachelorID4 = isBachelorID2;
 
     break;
+          
+  case 11:
+  //TOF || TPC (a la' Andrea R.)
+  // convention:
+  // for the single detectors: -1 = kFALSE, 1 = kTRUE, 0 = compatible
+  // the method returns the sum of the response of the 2 detectors
+    Int_t isProton=fPidHF->MakeRawPid(bachelor, AliPID::kProton);
+    Int_t isPion=fPidHF->MakeRawPid(bachelor, AliPID::kPion);
+    if(isProton<0) isBachelorID1 = kFALSE;
+    else isBachelorID1 = kTRUE;
+    if(isPion<0) isBachelorID2 = kFALSE;
+    else isBachelorID2 = kTRUE;
+    isBachelorID4 = isBachelorID2;
+    break;
 
   }
 
