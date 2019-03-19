@@ -451,7 +451,8 @@ void AliAnalysisTaskMLTreeMaker::UserCreateOutputObjects() {
   TH1::AddDirectory(oldStatus);
   
   if(hasMC){
-  TString generatorName = "Hijing_0;pizero_1;eta_2;etaprime_3;rho_4;omega_5;phi_6;jpsi_7;Pythia CC_8;Pythia BB_8;Pythia B_8";
+  TString generatorName = "Starlight_0";
+//  TString generatorName = "Hijing_0;pizero_1;eta_2;etaprime_3;rho_4;omega_5;phi_6;jpsi_7;Pythia CC_8;Pythia BB_8;Pythia B_8";
  
 
   TObjArray arr = *(generatorName.Tokenize(";"));
@@ -677,13 +678,12 @@ Int_t AliAnalysisTaskMLTreeMaker::GetAcceptedTracks(AliVEvent *event, Double_t g
         }
         else{
           fQAHist->Fill("After MC check",1); 
-//          Rej=kFALSE;
-//          if(!(CheckGenerator(TMath::Abs(track->GetLabel())))) Rej=kTRUE;
+          if(CheckGenerator(TMath::Abs(track->GetLabel()))<0) continue;
           }
 
         }
 
-      fQAHist->Fill("Tracks aft MC, bef tr cuts",1); 
+      fQAHist->Fill("Tracks aft MC Gen, bef tr cuts",1); 
       
     UInt_t selectedMask = (1 << filter->GetCuts()->GetEntries()) - 1;
     if (selectedMask != (filter->IsSelected((AliVParticle*) track))) {
@@ -1013,10 +1013,12 @@ int AliAnalysisTaskMLTreeMaker::CheckGenerator(Int_t trackID){     //check if th
 
     for ( int i = 0; i < fGeneratorHashs.size(); ++i){
       // std::cout << genname.Hash() << " " << fGeneratorHashs[i] << std::endl;
-      if (genname.Hash() == fGeneratorHashs[i]) return i;
-
+      if (genname.Hash() == fGeneratorHashs[i]){ 
+//        std::cout <<"GenName acc: "<< genname << std::endl;
+        return i;
+      }
     }
-    std::cout << genname << std::endl;
+//    std::cout <<"GenName rejected: "<< genname << std::endl;
     return -3;
   }
   return -4; // should not happen
