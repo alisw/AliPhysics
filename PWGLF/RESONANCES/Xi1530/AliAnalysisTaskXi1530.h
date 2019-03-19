@@ -14,8 +14,8 @@
 class AliAnalysisTask;
 class AliESDtrackCuts;
 class AliESDEvent;
+class AliMCEvent;
 class AliAODEvent;
-class AliStack;
 class AliPIDResponse;
 class AliPIDCombined;
 class THistManager;
@@ -212,8 +212,8 @@ class AliAnalysisTaskXi1530 : public AliAnalysisTaskSE {
     Bool_t IsMCEventTrueINEL0();
     Bool_t IsTrueXi1530(AliESDcascade* Xi, AliVTrack* pion);
     Bool_t IsTrueXi(AliESDcascade* Xi);
-    void FillMCinput(AliStack* fMCStack, Bool_t PS);
-    void FillMCinputdXi(AliStack* fMCStack, Bool_t PS);
+    void FillMCinput(AliMCEvent* fMCEvent, Bool_t PS);
+    void FillMCinputdXi(AliMCEvent* fMCEvent, Bool_t PS);
     void FillTrackToEventPool();
 
     TAxis AxisFix(TString name, int nbin, Double_t xmin, Double_t xmax);
@@ -335,14 +335,14 @@ class AliAnalysisTaskXi1530 : public AliAnalysisTaskSE {
     Bool_t fQA = kTRUE;
     THistManager* fHistos = nullptr;   //!
     TClonesArray* fMCArray = nullptr;  //!
-    AliStack* fMCStack = nullptr;      //!
+    AliMCEvent* fMCEvent = nullptr;    //!
     Int_t fNTracks = 0;
     Int_t fNCascade = 0;
     Double_t PVx = 999;
     Double_t PVy = 999;
     Double_t PVz = 999;
     Double_t bField = 999;
-    ClassDef(AliAnalysisTaskXi1530, 10);
+    ClassDef(AliAnalysisTaskXi1530, 11);
     // 1: Frist version
     // 2: Add Track cut2 for the Xi daughter particles
     // 3: Add FillMixingPool function
@@ -355,6 +355,7 @@ class AliAnalysisTaskXi1530 : public AliAnalysisTaskSE {
     // Add Setter function for that.
     // 9: Hot fix for the AliPhysics building
     // 10: Add NoQA option to reduce output file size
+    // 11: Not using AliStack informed by DPG and BTG coordination
 };
 
 #endif
