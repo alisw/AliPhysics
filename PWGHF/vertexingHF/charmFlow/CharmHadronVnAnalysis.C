@@ -46,7 +46,7 @@ void CharmHadronVnAnalysis(string cfgFileName);
 TH1D* ComputeEPresolution(double &resol, double &resolunc, TH3F *hDeltaPsiVsqnVsCentr[3], int harmonic, double qnmin, double qnmax);
 TH1D* ComputeSPresolution(double &resol, double &resolunc, TH3F *hQiVsqnVsCentr[3], int harmonic, double qnmin, double qnmax);
 void GetInOutOfPlaneInvMassHistos(THnSparseF *sparse, TH1F *&hInvMassInPlane, TH1F *&hInvMassOutOfPlane, int harmonic, double qnmin, double qnmax, double ptmin, double ptmax);
-TH1F* GetFuncPhiVsMassHistos(THnSparseF* sparse, TString histoname, int iAxis, double qnmin, double qnmax, double ptmin, double ptmax, double massrebin, double resol);
+TH1F* GetFuncPhiVsMassHistos(THnSparseF* sparse, TString histoname, int iAxis, double qnmin, double qnmax, double ptmin, double ptmax, double massrebin, bool useVarMassBinning, vector<double> VnVsMassBins, double resol);
 float GetAveragePtInRange(float &averagePtUnc, THnSparseF *sparse, double qnmin, double qnmax, double ptmin, double ptmax, int bkgfunc, int sgnfunc, bool useRefl, TH1F* hMCRefl, double SoverR, string reflopt, int meson);
 double ComputeEPvn(double &vnunc, double nIn, double nInUnc, double nOut, double nOutUnc, double resol, double corr = 0.);
 void ApplySelection(THnSparseF *sparse, int axisnum, double min, double max);
@@ -86,7 +86,10 @@ void CharmHadronVnAnalysis(string cfgFileName) {
     vector<string> sBkgFunc = config["AnalysisOptions"]["BkgFunc"].as<vector<string>>();
     vector<string> sSgnFunc = config["AnalysisOptions"]["SgnFunc"].as<vector<string>>();
     vector<string> sVnBkgFunc = config["AnalysisOptions"]["VnBkgFunc"].as<vector<string>>();
-
+    int fixMeanVnVsMassFit = config["AnalysisOptions"]["FixMeanVnVsMassFit"].as<int>();
+    int fixSigmaVnVsMassFit = config["AnalysisOptions"]["FixSigmaVnVsMassFit"].as<int>();
+    bool useVarMassBinning = static_cast<bool>(config["AnalysisOptions"]["UseVarMassBinning"].as<int>());
+    vector<double> VnVsMassBins = config["AnalysisOptions"]["VnVsMassBins"].as<vector<double>>();
     bool useRefl = static_cast<bool>(config["AnalysisOptions"]["IncludeReflections"].as<int>());
     string reflFileName = config["AnalysisOptions"]["ReflFileName"].as<string>();
     string reflopt = config["AnalysisOptions"]["ReflOpt"].as<string>();
@@ -319,7 +322,7 @@ void CharmHadronVnAnalysis(string cfgFileName) {
             GetInOutOfPlaneInvMassHistos(sMassVsPtVsPhiVsCentrVsqn, hInvMass[0][iPt], hInvMass[1][iPt], harmonic, qnmin, qnmax, PtMin[iPt], PtMax[iPt]);
         }        
         else if(flowmethod==AliAnalysisTaskSECharmHadronvn::kEPVsMass || flowmethod==AliAnalysisTaskSECharmHadronvn::kEvShapeEPVsMass || flowmethod==AliAnalysisTaskSECharmHadronvn::kSP || flowmethod==AliAnalysisTaskSECharmHadronvn::kEvShapeSP) {
-            hVnVsMass[iPt] = GetFuncPhiVsMassHistos(sMassVsPtVsPhiVsCentrVsqn, Form("hVnVsMass_%d",iPt), 2, qnmin, qnmax, PtMin[iPt], PtMax[iPt], Rebin[iPt], resol);
+            hVnVsMass[iPt] = GetFuncPhiVsMassHistos(sMassVsPtVsPhiVsCentrVsqn, Form("hVnVsMass_%d",iPt), 2, qnmin, qnmax, PtMin[iPt], PtMax[iPt], Rebin[iPt], useVarMassBinning, VnVsMassBins, resol);
             if(flowmethod==AliAnalysisTaskSECharmHadronvn::kEPVsMass || flowmethod==AliAnalysisTaskSECharmHadronvn::kEvShapeEPVsMass)
                 hVnVsMass[iPt]->SetTitle(Form(";%s;<cos(%d#Delta#varphi)> / #it{R}_{%d}",hInvMassInt[iPt]->GetXaxis()->GetTitle(),harmonic,harmonic));
             else if(flowmethod==AliAnalysisTaskSECharmHadronvn::kSP || flowmethod==AliAnalysisTaskSECharmHadronvn::kEvShapeSP)
@@ -327,8 +330,8 @@ void CharmHadronVnAnalysis(string cfgFileName) {
         }
 
         if(flowmethod==AliAnalysisTaskSECharmHadronvn::kEPVsMass || flowmethod==AliAnalysisTaskSECharmHadronvn::kEvShapeEPVsMass || flowmethod==AliAnalysisTaskSECharmHadronvn::kEP || flowmethod==AliAnalysisTaskSECharmHadronvn::kEvShapeEP) {
-            hCosnPhiDVsMass[iPt] = GetFuncPhiVsMassHistos(sMassVsPtVsPhiVsCentrVsqn, Form("hCosnPhiDVsMass_%d",iPt), 3, qnmin, qnmax, PtMin[iPt], PtMax[iPt], Rebin[iPt], resol);
-            hSinnPhiDVsMass[iPt] = GetFuncPhiVsMassHistos(sMassVsPtVsPhiVsCentrVsqn, Form("hSinnPhiDVsMass_%d",iPt), 4, qnmin, qnmax, PtMin[iPt], PtMax[iPt], Rebin[iPt], resol);
+            hCosnPhiDVsMass[iPt] = GetFuncPhiVsMassHistos(sMassVsPtVsPhiVsCentrVsqn, Form("hCosnPhiDVsMass_%d",iPt), 3, qnmin, qnmax, PtMin[iPt], PtMax[iPt], Rebin[iPt], useVarMassBinning, VnVsMassBins, resol);
+            hSinnPhiDVsMass[iPt] = GetFuncPhiVsMassHistos(sMassVsPtVsPhiVsCentrVsqn, Form("hSinnPhiDVsMass_%d",iPt), 4, qnmin, qnmax, PtMin[iPt], PtMax[iPt], Rebin[iPt], useVarMassBinning, VnVsMassBins, resol);
             hCosnPhiDVsMass[iPt]->SetTitle(Form(";%s;<cos(%d#varphi_{D})> / #it{R}_{%d}",hInvMassInt[iPt]->GetXaxis()->GetTitle(),harmonic,harmonic));
             hSinnPhiDVsMass[iPt]->SetTitle(Form(";%s;<sin(%d#varphi_{D})> / #it{R}_{%d}",hInvMassInt[iPt]->GetXaxis()->GetTitle(),harmonic,harmonic));
         }
@@ -436,8 +439,8 @@ void CharmHadronVnAnalysis(string cfgFileName) {
         else {
             vnvsmassfitter[iPt] = new AliHFVnVsMassFitter(hInvMassInt[iPt],hVnVsMass[iPt],MassMin[iPt],MassMax[iPt],BkgFunc,SgnFunc,VnBkgFunc);
             vnvsmassfitter[iPt]->SetHarmonic(harmonic);
-            vnvsmassfitter[iPt]->SetInitialGaussianMean(massD,1);
-            vnvsmassfitter[iPt]->SetInitialGaussianSigma(hSigmaInt->GetBinContent(iPt+1)/1000,2);
+            vnvsmassfitter[iPt]->SetInitialGaussianMean(massD,fixMeanVnVsMassFit);
+            vnvsmassfitter[iPt]->SetInitialGaussianSigma(hSigmaInt->GetBinContent(iPt+1)/1000,fixSigmaVnVsMassFit);
             if(meson==AliAnalysisTaskSECharmHadronvn::kDstoKKpi)
                 vnvsmassfitter[iPt]->IncludeSecondGausPeak(massDplus,false,0.08,false,false);
             if(useRefl) {
@@ -484,8 +487,8 @@ void CharmHadronVnAnalysis(string cfgFileName) {
         if(flowmethod==AliAnalysisTaskSECharmHadronvn::kEP || flowmethod==AliAnalysisTaskSECharmHadronvn::kEvShapeEP || flowmethod==AliAnalysisTaskSECharmHadronvn::kEPVsMass || flowmethod==AliAnalysisTaskSECharmHadronvn::kEvShapeEPVsMass) {
             cosnphiDvsmassfitter[iPt] = new AliHFVnVsMassFitter(hInvMassInt[iPt],hCosnPhiDVsMass[iPt],MassMin[iPt],MassMax[iPt],BkgFunc,SgnFunc,VnBkgFunc);
             cosnphiDvsmassfitter[iPt]->SetHarmonic(harmonic);
-            cosnphiDvsmassfitter[iPt]->SetInitialGaussianMean(massD,1);
-            cosnphiDvsmassfitter[iPt]->SetInitialGaussianSigma(hSigmaInt->GetBinContent(iPt+1)/1000,2);
+            cosnphiDvsmassfitter[iPt]->SetInitialGaussianMean(massD,fixMeanVnVsMassFit);
+            cosnphiDvsmassfitter[iPt]->SetInitialGaussianSigma(hSigmaInt->GetBinContent(iPt+1)/1000,fixSigmaVnVsMassFit);
             if(useRefl) {
                 cosnphiDvsmassfitter[iPt]->SetTemplateReflections(hMCRefl[iPt],reflopt,MassMin[iPt],MassMax[iPt]);
                 cosnphiDvsmassfitter[iPt]->SetFixReflOverS(SoverR);
@@ -496,8 +499,8 @@ void CharmHadronVnAnalysis(string cfgFileName) {
             cosnphiDvsmassfitter[iPt]->SimultaneusFit(false);
             sinnphiDvsmassfitter[iPt] = new AliHFVnVsMassFitter(hInvMassInt[iPt],hSinnPhiDVsMass[iPt],MassMin[iPt],MassMax[iPt],BkgFunc,SgnFunc,VnBkgFunc);
             sinnphiDvsmassfitter[iPt]->SetHarmonic(harmonic);
-            sinnphiDvsmassfitter[iPt]->SetInitialGaussianMean(massD,1);
-            sinnphiDvsmassfitter[iPt]->SetInitialGaussianSigma(hSigmaInt->GetBinContent(iPt+1)/1000,2); 
+            sinnphiDvsmassfitter[iPt]->SetInitialGaussianMean(massD,fixMeanVnVsMassFit);
+            sinnphiDvsmassfitter[iPt]->SetInitialGaussianSigma(hSigmaInt->GetBinContent(iPt+1)/1000,fixSigmaVnVsMassFit); 
             if(useRefl) {
                 sinnphiDvsmassfitter[iPt]->SetTemplateReflections(hMCRefl[iPt],reflopt,MassMin[iPt],MassMax[iPt]);
                 sinnphiDvsmassfitter[iPt]->SetFixReflOverS(SoverR);
@@ -931,16 +934,22 @@ void GetInOutOfPlaneInvMassHistos(THnSparseF *sparse, TH1F *&hInvMassInPlane, TH
 
 //___________________________________________________________________________________//
 //method that returns <f(phi)> / R vs. mass histo
-TH1F* GetFuncPhiVsMassHistos(THnSparseF* sparse, TString histoname, int iAxis, double qnmin, double qnmax, double ptmin, double ptmax, double massrebin, double resol) {
+TH1F* GetFuncPhiVsMassHistos(THnSparseF* sparse, TString histoname, int iAxis, double qnmin, double qnmax, double ptmin, double ptmax, double massrebin, bool useVarMassBinning, vector<double> VnVsMassBins, double resol) {
 
     ApplySelection(sparse,1,ptmin,ptmax);
     ApplySelection(sparse,8,qnmin,qnmax);
 
     TH2F* hFuncPhiVsMass2D = reinterpret_cast<TH2F*>(sparse->Projection(0,iAxis));
-    TProfile* hProfileFuncPhiVsMass = static_cast<TProfile*>(hFuncPhiVsMass2D->ProfileY("hFuncPhiVsMass2D"));
-    //TODO: variable mass bin width
-    hProfileFuncPhiVsMass->Rebin(massrebin);
-    TH1F* hFuncPhiVsMass = reinterpret_cast<TH1F*>(hProfileFuncPhiVsMass->ProjectionX(histoname.Data()));
+    TProfile* hProfileFuncPhiVsMass = static_cast<TProfile*>(hFuncPhiVsMass2D->ProfileY("hProfileFuncPhiVsMass"));
+    TProfile* hProfileFuncPhiVsMassReb = NULL;
+    if(!useVarMassBinning) {
+        hProfileFuncPhiVsMassReb = static_cast<TProfile*>(hProfileFuncPhiVsMass->Clone("hProfileFuncPhiVsMassReb"));
+        hProfileFuncPhiVsMassReb->Rebin(massrebin);
+    }
+    else {
+        hProfileFuncPhiVsMassReb = static_cast<TProfile*>(hProfileFuncPhiVsMass->Rebin(VnVsMassBins.size()-1, "hProfileFuncPhiVsMassReb", VnVsMassBins.data()));    
+    }    
+    TH1F* hFuncPhiVsMass = reinterpret_cast<TH1F*>(hProfileFuncPhiVsMassReb->ProjectionX(histoname.Data()));
     hFuncPhiVsMass->Scale(1./resol);
     hFuncPhiVsMass->GetXaxis()->SetTitleOffset(1.1);
 
@@ -948,6 +957,8 @@ TH1F* GetFuncPhiVsMassHistos(THnSparseF* sparse, TString histoname, int iAxis, d
     hFuncPhiVsMass2D = NULL;
     delete hProfileFuncPhiVsMass;
     hProfileFuncPhiVsMass = NULL;
+    delete hProfileFuncPhiVsMassReb;
+    hProfileFuncPhiVsMassReb = NULL;
 
     ResetAxes(sparse);
 
