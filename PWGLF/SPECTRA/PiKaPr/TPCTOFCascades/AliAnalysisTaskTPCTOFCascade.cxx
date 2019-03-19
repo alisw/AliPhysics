@@ -815,7 +815,8 @@ AliAnalysisTaskTPCTOFCascade::UserExec(Option_t *option)
     for (Int_t ipart = 0; ipart < nPrimaries; ipart++) {
       Bool_t OWSave=kFALSE; //Overwrite save -- used to add other particle than primaries
       /* get particle */
-      particle = fMCEvent->Particle(ipart);//((AliMCParticle*)fMCEvent->GetTrack(ipart))->Particle();//fMCStack->Particle(ipart);
+      //particle = fMCEvent->Particle(ipart);//((AliMCParticle*)fMCEvent->GetTrack(ipart))->Particle();//fMCStack->Particle(ipart);
+      particle = fMCEvent->GetTrack(ipart);
       if (!particle) continue;
       /* get particlePDG */
       particlePDG = particle->GetPDG();
