@@ -40,7 +40,6 @@
 #include "AliRDHFCutsDStartoKpipi.h"
 #include "AliRDHFCutsD0toKpi.h"
 
-#include "AliAnalysisVertexingHF.h"
 #include "AliMultSelection.h"
 #include "AliVertexingHFUtils.h"
 

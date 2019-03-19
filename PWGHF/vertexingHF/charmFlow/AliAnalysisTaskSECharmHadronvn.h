@@ -29,6 +29,7 @@
 #include "AliRDHFCuts.h"
 #include "AliAODEvent.h"
 #include "AliHFQnVectorHandler.h"
+#include "AliAnalysisVertexingHF.h"
 
 class AliAnalysisTaskSECharmHadronvn : public AliAnalysisTaskSE
 {
