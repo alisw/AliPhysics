@@ -239,7 +239,7 @@ void AliTPCDigitizer::DigitizeFast(Option_t* option)
       }
       tree->GetUserInfo()->Add(new TParameter<float>(phname,ph->GetVal()));
 	      //
-      if (treear->GetIndex()==0)  
+      if (treear->GetTreeIndex()==0)  
 	treear->BuildIndex("fSegmentID","fSegmentID");
       treear->GetBranch("Segment")->SetAddress(&digarr[i1]);
     }
@@ -380,7 +380,11 @@ void AliTPCDigitizer::DigitizeFast(Option_t* option)
   //fDigInput->GetTreeDTPC()->Write(0,TObject::kOverwrite);
   
   delete digrow;     
-  for (Int_t i1=0;i1<nInputs; i1++) delete digarr[i1];
+  for (Int_t i1=0;i1<nInputs; i1++) {
+    rl = AliRunLoader::GetRunLoader(fDigInput->GetInputFolderName(i1));
+    rl->GetLoader("TPCLoader")->TreeS()->GetBranch("Segment")->ResetAddress();
+    delete digarr[i1];
+  }
   delete []masks;
   delete []pdig;
   delete []ptr;
@@ -756,13 +760,11 @@ void AliTPCDigitizer::DigitizeWithTailAndCrossTalk(Option_t* option)
     }
     tree->GetUserInfo()->Add(new TParameter<float>(phname,ph->GetVal()));
     //
-    if (treear->GetIndex()==0)
+    if (treear->GetTreeIndex()==0) {
       treear->BuildIndex("fSegmentID","fSegmentID");
+    }
     treear->GetBranch("Segment")->SetAddress(&digarr[i1]);
   }
-
-
-
 
   //
   // zero supp, take gain and noise map of TPC from OCDB 
@@ -799,7 +801,7 @@ void AliTPCDigitizer::DigitizeWithTailAndCrossTalk(Option_t* option)
     for (Int_t ires = 0;ires<20;ires++) timeResArr->AddAt(graphRes[ires],ires);
     timeResFunc.AddAt(timeResArr,isec); // Fill all trfs into a single TObjArray 
     nIonTailBins = graphRes[3]->GetN();
-    delete trfIndexArr;
+    delete[] trfIndexArr;
   }
 
   //
@@ -1169,7 +1171,11 @@ void AliTPCDigitizer::DigitizeWithTailAndCrossTalk(Option_t* option)
   //fDigInput->GetTreeDTPC()->Write(0,TObject::kOverwrite);
 
   delete digrow;
-  for (Int_t i1=0;i1<nInputs; i1++) delete digarr[i1];
+  for (Int_t i1=0;i1<nInputs; i1++) {
+    rl = AliRunLoader::GetRunLoader(fDigInput->GetInputFolderName(i1));
+    rl->GetLoader("TPCLoader")->TreeS()->GetBranch("Segment")->ResetAddress();
+    delete digarr[i1];
+  }
   delete []masks;
   delete []pdig;
   delete []ptr;

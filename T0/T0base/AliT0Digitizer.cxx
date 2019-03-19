@@ -129,6 +129,7 @@ AliT0Digitizer::AliT0Digitizer(AliDigitizationInput* digInput)
       Double_t *yq = grq->GetY();
       Double_t *x1q = new Double_t[npq];
       Double_t *y1q = new Double_t[npq];
+      x1q[0] = y1q[0] = 0.;
       for (Int_t ii=1; ii<npq; ii++) {
 	y1q[ii]=yq[ii-1]; 
 	x1q[ii]=xq[ii-1];
