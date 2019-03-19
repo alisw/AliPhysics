@@ -50,6 +50,7 @@ set(SRCS
   Hypernuclei/Hyp2Body/AliAnalysisTaskHypTritEventTree.cxx
   Hypernuclei/Hyp2Body/AliReducedHypTritEvent.cxx
   Hypernuclei/Hyp2Body/AliAnalysisTaskHypCrossCheck.cxx
+  Hypernuclei/Hyp2Body/AliAnalysisTaskHyperTriton2He3piML.cxx
   Hypernuclei/Hyp3Body/AliAnalysisTaskHypertriton3.cxx
   Hypernuclei/Hyp3Body/AliAnalysisTaskHypertriton3Dev.cxx
   Hypernuclei/Hyp3Body/AliAnalysisTaskHypertriton3AOD.cxx
