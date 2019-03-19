@@ -42,6 +42,8 @@
 #include "TPDGCode.h"
 #include "TDatabasePDG.h"
 #include "AliAODMCParticle.h"
+#include "AliDalitzAODESDMC.h"
+#include "AliDalitzEventMC.h"
 
 class iostream;
 
@@ -502,6 +504,37 @@ Bool_t AliConversionMesonCuts::MesonIsSelectedAODMC(AliAODMCParticle *MCMother,T
 }
 
 //________________________________________________________________________
+Bool_t AliConversionMesonCuts::MesonIsSelectedMCAODESD(AliDalitzAODESDMC *fMCMother,AliDalitzEventMC *mcEvent, Double_t fRapidityShift){
+// Returns true for all pions within acceptance cuts for decay into 2 photons
+// If bMCDaughtersInAcceptance is selected, it requires in addition that both daughter photons are within acceptance cuts
+    if(!mcEvent)return kFALSE;
+
+    if(fMCMother->GetPdgCodeG()==111 || fMCMother->GetPdgCodeG()==221 || fMCMother->GetPdgCodeG()==331 ){
+        if(fMCMother->GetRatioVxyG()>fMaxR)  return kFALSE; // cuts on distance from collision point
+        Double_t rapidity = 10.;
+        if(fMCMother->EnergyG() - fMCMother->PzG() == 0 || fMCMother->EnergyG() + fMCMother->PzG() == 0){
+            rapidity=8.-fRapidityShift;
+        } else{
+            rapidity = 0.5*(TMath::Log((fMCMother->EnergyG()+fMCMother->PzG()) / (fMCMother->EnergyG()-fMCMother->PzG())))-fRapidityShift;
+        }
+
+        // Rapidity Cut
+        if(TMath::Abs(rapidity)>fRapidityCutMeson)return kFALSE;
+
+        // min Pt Cut
+        if(fDoMinPtCut && (fMCMother->PtG() < fMinPt)) return kFALSE;
+
+        // Select only -> 2y decay channel
+        if(fMCMother->GetNDaughtersG()!=2)return kFALSE;
+        if((fMCMother->GetLastDaughterG()<0) || (fMCMother->GetFirstDaughterG()<0)) return kFALSE;
+            AliDalitzAODESDMC *MDaughter0=mcEvent->Particle(fMCMother->GetFirstDaughterG());
+            AliDalitzAODESDMC *MDaughter1=mcEvent->Particle(fMCMother->GetLastDaughterG());
+        if ((MDaughter0->GetPdgCodeG()!=22) || (MDaughter1->GetPdgCodeG()!=22)) return kFALSE;
+            return kTRUE;
+    }
+    return kFALSE;
+}
+//________________________________________________________________________
 Bool_t AliConversionMesonCuts::MesonIsSelectedMCDalitz(TParticle *fMCMother,AliMCEvent *mcEvent, Int_t &labelelectron, Int_t &labelpositron, Int_t &labelgamma, Double_t fRapidityShift){
 
   // Returns true for all pions within acceptance cuts for decay into 2 photons
@@ -619,6 +652,60 @@ Bool_t AliConversionMesonCuts::MesonIsSelectedAODMCDalitz(AliAODMCParticle *fMCM
   return kFALSE;
 }
 
+//________________________________________________________________________
+ Bool_t AliConversionMesonCuts::MesonIsSelectedMCDalitzAODESD(AliDalitzAODESDMC *fMCMother,AliDalitzEventMC *mcEvent, Int_t &labelelectron, Int_t &labelpositron, Int_t &labelgamma, Double_t fRapidityShift){
+// Returns true for all pions within acceptance cuts for decay into 2 photons
+// If bMCDaughtersInAcceptance is selected, it requires in addition that both daughter photons are within acceptance cuts
+    if( !mcEvent )return kFALSE;
+
+    if(  fMCMother->GetPdgCodeG() != 111 && fMCMother->GetPdgCodeG() != 221 && fMCMother->GetPdgCodeG() != 331) return kFALSE;
+
+    if(  fMCMother->GetRatioVxyG()>fMaxR ) return kFALSE; // cuts on distance from collision point
+
+    Double_t rapidity = 10.;
+
+    if( fMCMother->EnergyG() - fMCMother->PzG() == 0 || fMCMother->EnergyG() + fMCMother->PzG() == 0 ){
+        rapidity=8.-fRapidityShift;
+    }
+    else{
+        rapidity = 0.5*(TMath::Log((fMCMother->EnergyG()+fMCMother->PzG()) / (fMCMother->EnergyG()-fMCMother->PzG())))-fRapidityShift;
+    }
+
+    // Rapidity Cut
+    if( TMath::Abs(rapidity) > fRapidityCutMeson )return kFALSE;
+
+    // min Pt Cut
+    if(fDoMinPtCut && (fMCMother->PtG() < fMinPt)) return kFALSE;
+
+    // Select only -> Dalitz decay channel
+    if( fMCMother->GetNDaughtersG() != 3 )return kFALSE;
+
+    AliDalitzAODESDMC *positron = 0x0;
+    AliDalitzAODESDMC *electron = 0x0;
+    AliDalitzAODESDMC    *gamma = 0x0;
+
+    for(Int_t index= fMCMother->GetFirstDaughterG();index<= fMCMother->GetLastDaughterG();index++){
+        if(index < 0) continue;
+        AliDalitzAODESDMC* temp = mcEvent->Particle(index);
+        //TParticle* temp = (TParticle*)mcEvent->Particle( index );
+        switch( temp->GetPdgCodeG() ) {
+        case ::kPositron:
+            positron      =  temp;
+            labelpositron = index;
+            break;
+        case ::kElectron:
+            electron      =  temp;
+            labelelectron = index;
+            break;
+        case ::kGamma:
+            gamma         =  temp;
+            labelgamma    = index;
+            break;
+        }
+    }
+    if( positron && electron && gamma) return kTRUE;
+    return kFALSE;
+}
 //________________________________________________________________________
 Bool_t AliConversionMesonCuts::MesonIsSelectedMCEtaPiPlPiMiGamma(TParticle *fMCMother,AliMCEvent *mcEvent, Int_t &labelNegPion, Int_t &labelPosPion, Int_t &labelGamma, Double_t fRapidityShift){
 
@@ -1234,6 +1321,80 @@ Bool_t AliConversionMesonCuts::MesonIsSelectedAODMCChiC(AliAODMCParticle *fMCMot
   return kFALSE;
 }
 
+//________________________________________________________________________
+Bool_t AliConversionMesonCuts::MesonIsSelectedMCChiCAODESD(AliDalitzAODESDMC *fMCMother,AliDalitzEventMC *mcEvent,Int_t & labelelectronChiC, Int_t & labelpositronChiC, Int_t & labelgammaChiC, Double_t fRapidityShift){
+// Returns true for all ChiC within acceptance cuts for decay into JPsi + gamma -> e+ + e- + gamma
+// If bMCDaughtersInAcceptance is selected, it requires in addition that both daughter photons are within acceptance cuts
+    if(!mcEvent)return kFALSE;
+    // if(fMCMother->GetPdgCode()==20443 ){
+    //    return kFALSE;
+    // }
+    if(fMCMother->GetPdgCodeG()==10441 || fMCMother->GetPdgCodeG()==10443 || fMCMother->GetPdgCodeG()==445 ){
+        if(fMCMother->GetRatioVxyG()>fMaxR)  return kFALSE; // cuts on distance from collision point
+
+        Double_t rapidity = 10.;
+        if(fMCMother->EnergyG() - fMCMother->PzG() == 0 || fMCMother->EnergyG() + fMCMother->PzG() == 0){
+            rapidity=8.-fRapidityShift;
+        }
+        else{
+            rapidity = 0.5*(TMath::Log((fMCMother->EnergyG()+fMCMother->PzG()) / (fMCMother->EnergyG()-fMCMother->PzG())))-fRapidityShift;
+        }
+
+        // Rapidity Cut
+        if(TMath::Abs(rapidity)>fRapidityCutMeson)return kFALSE;
+
+        // min Pt Cut
+        if(fDoMinPtCut && (fMCMother->PtG() < fMinPt)) return kFALSE;
+
+        // Select only -> ChiC radiative (JPsi+gamma) decay channel
+        if(fMCMother->GetNDaughtersG()!=2)return kFALSE;
+
+            AliDalitzAODESDMC *jpsi   = 0x0;
+            AliDalitzAODESDMC *gamma   = 0x0;
+            AliDalitzAODESDMC *positron = 0x0;
+            AliDalitzAODESDMC *electron = 0x0;
+
+        //Int_t labeljpsiChiC = -1;
+
+        for(Int_t index= fMCMother->GetFirstDaughterG();index<= fMCMother->GetLastDaughterG();index++){
+            if(index < 0) continue;
+            AliDalitzAODESDMC* temp = mcEvent->Particle(index);
+            //TParticle* temp = (TParticle*)mcEvent->Particle( index );
+
+            switch( temp->GetPdgCodeG() ) {
+            case 443:
+                jpsi =  temp;
+                //labeljpsiChiC = index;
+                break;
+            case 22:
+            gamma    =  temp;
+            labelgammaChiC = index;
+            break;
+            }
+        }
+    if ( !jpsi || ! gamma) return kFALSE;
+    if(jpsi->GetNDaughtersG()!=2)return kFALSE;
+
+    for(Int_t index= jpsi->GetFirstDaughterG();index<= jpsi->GetLastDaughterG();index++){
+        if(index < 0) continue;
+        AliDalitzAODESDMC* temp = mcEvent->Particle(index);
+        //TParticle* temp = (TParticle*)mcEvent->Particle( index );
+        switch( temp->GetPdgCodeG() ) {
+        case -11:
+            electron =  temp;
+            labelelectronChiC = index;
+        break;
+        case 11:
+            positron =  temp;
+            labelpositronChiC = index;
+        break;
+        }
+    }
+    if( !electron || !positron) return kFALSE;
+    if( positron && electron && gamma) return kTRUE;
+    }
+    return kFALSE;
+}
 //________________________________________________________________________
 Bool_t AliConversionMesonCuts::MesonIsSelected(AliAODConversionMother *pi0,Bool_t IsSignal, Double_t fRapidityShift, Int_t leadingCellID1, Int_t leadingCellID2)
 {
