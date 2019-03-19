@@ -442,16 +442,16 @@ void AliHFQnVectorHandler::GetEventPlaneAngleV0(double &EvPlaneFullV0, double &E
 }
 
 //________________________________________________________________
-void AliHFQnVectorHandler::RemoveTracksFromQnTPC(vector<AliAODTrack*> trToRem, double QnVecFullTPC[2], double QnVecPosTPC[2], double QnVecNegTPC[2], bool getUnNormalised) 
+void AliHFQnVectorHandler::RemoveTracksFromQnTPC(vector<AliAODTrack*> trToRem, double QnVecFullTPC[2], double QnVecPosTPC[2], double QnVecNegTPC[2], double &multFullTPC, double &multPosTPC, double &multNegTPC, bool getUnNormalised) 
 {
     for(int iComp=0; iComp<2; iComp++) {
         QnVecFullTPC[iComp] = fQnVecFullTPC[iComp];
         QnVecPosTPC[iComp]  = fQnVecPosTPC[iComp];
         QnVecNegTPC[iComp]  = fQnVecNegTPC[iComp];
     }
-    double multFullTPC = fMultFullTPC;
-    double multPosTPC = fMultPosTPC;
-    double multNegTPC = fMultNegTPC;
+    multFullTPC = fMultFullTPC;
+    multPosTPC = fMultPosTPC;
+    multNegTPC = fMultNegTPC;
 
     TBits posIDsAfterRem(fUsedTrackPosIDs);
     TBits negIDsAfterRem(fUsedTrackNegIDs);
@@ -486,7 +486,6 @@ void AliHFQnVectorHandler::RemoveTracksFromQnTPC(vector<AliAODTrack*> trToRem, d
                 negIDsAfterRem.ResetBitNumber(TMath::Abs(trID));
         }
     }
-
     else if(fCalibType==kQnFrameworkCalib) {
 
         TString detTPCConfName[3] = {"TPC","TPCPosEta","TPCNegEta"};
