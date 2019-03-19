@@ -57,9 +57,11 @@ public:
   ///
   void AddKtRanges(const float data[], float stop_at = -1.0);
 
-  /// Add low-high kt ranges in vector
-  template <typename T>
-  void AddKtRanges(const T &start, const T &stop);
+  // /// Add low-high kt ranges in vector
+  // template <typename T>
+  // void AddKtRanges(const T &start, const T &stop);
+  void AddKtRanges(const std::vector<std::pair<float, float>>::const_iterator start,
+                   const std::vector<std::pair<float, float>>::const_iterator stop);
 
   /// Add low-high kt ranges in vector
   void AddKtRanges(const std::vector<std::pair<float, float>> &data)
@@ -129,10 +131,17 @@ protected:
 
   // std::vector<std::pair<std::pair<Float_t, Float_t>, A >> fRanges;
 
+/*
 template <typename T>
 void AliFemtoKtBinnedCorrFunc::AddKtRanges(const T &start, const T &stop)
+*/
+inline
+void AliFemtoKtBinnedCorrFunc::AddKtRanges(
+  const std::vector<std::pair<float, float>>::const_iterator start,
+  const std::vector<std::pair<float, float>>::const_iterator stop)
 {
-  for (auto it = start; it != stop; ++it) {
+  std::vector<std::pair<float, float>>::const_iterator it = start;
+  for (; it != stop; ++it) {
     AddKtRange(it->first, it->second);
   }
 }
