@@ -100,6 +100,11 @@ set(SRCS
     AliV0ReaderV1.cxx
     AliConversionCutHandler.cxx
     AliCutHandlerPCM.cxx
+    AliDalitzData.cxx
+    AliDalitzAODESD.cxx
+    AliDalitzAODESDMC.cxx
+    AliDalitzEventMC.cxx
+
    )
 
 # Headers from sources
