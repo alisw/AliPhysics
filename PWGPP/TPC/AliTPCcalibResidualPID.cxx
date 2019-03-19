@@ -303,7 +303,9 @@ void AliTPCcalibResidualPID::UserCreateOutputObjects()
 
   // V0 Kine cuts 
   fV0KineCuts = new AliESDv0KineCuts;
-  fV0KineCuts->SetGammaCutChi2NDF(5.);
+  fV0KineCuts->SetGammaCutChi2NDF(5.);  
+  
+  fAnaUtils = new AliAnalysisUtils();
 
   if (fCutOnProdRadiusForV0el) {
     // Only accept V0el with prod. radius within 45 cm -> PID will by systematically biased for larger values!
@@ -433,8 +435,6 @@ void AliTPCcalibResidualPID::UserCreateOutputObjects()
     fTreeV0Pr->Branch("distance_nb", &fTree_distance_nb);
     fTreeV0Pr->Branch("distance_vs", &fTree_distance_vs);
   }
-  
-  fAnaUtils = new AliAnalysisUtils();
 
   PostData(1,fOutputContainer);
   if (fWriteAdditionalOutput) {
@@ -506,7 +506,7 @@ void AliTPCcalibResidualPID::Process(AliESDEvent *const esdEvent, AliMCEvent *co
     return;
   }
 
-  if (!fPIDResponse || !fV0KineCuts || fAnaUtils) {
+  if (!fPIDResponse || !fV0KineCuts || !fAnaUtils) {
     Printf("ERROR: No PIDresponse, v0KineCuts or AliAnalysisUtils!");
     return;
   }
