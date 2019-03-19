@@ -23,7 +23,7 @@
 //  author: Bong-Hwi Lim (bong-hwi.lim@cern.ch)
 //        , Beomkyu  KIM (kimb@cern.ch)
 //
-//  Last Modified Date: 2019/03/15
+//  Last Modified Date: 2019/03/19
 //
 ////////////////////////////////////////////////////////////////////////////
 
@@ -42,7 +42,9 @@
 #include "AliPPVsMultUtils.h"
 #include "AliVertex.h"
 #include "TChain.h"
+#include "TDatabasePDG.h"
 #include "TFile.h"
+#include "TParticlePDG.h"
 #include "TSystem.h"
 
 // from header
@@ -50,9 +52,9 @@
 #include "AliAnalysisTask.h"
 #include "AliESDEvent.h"
 #include "AliESDtrackCuts.h"
+#include "AliMCEvent.h"
 #include "AliPIDCombined.h"
 #include "AliPIDResponse.h"
-#include "AliStack.h"
 #include "THistManager.h"
 //
 
@@ -425,7 +427,7 @@ void AliAnalysisTaskXi1530::UserExec(Option_t*) {
     // Preparation for MC ---------------------------------------------------
     if (IsMC) {
         if (fEvt->IsA() == AliESDEvent::Class()) {
-            fMCStack = MCEvent()->Stack();
+            fMCEvent = MCEvent();
             IsINEL0True = IsMCEventTrueINEL0();
         }  // ESD Case
         else {
@@ -600,8 +602,8 @@ void AliAnalysisTaskXi1530::UserExec(Option_t*) {
 
     // Signal Loss Correction -----------------------------------------------
     if (IsMC && IsSelectedTrig) {
-        FillMCinput(fMCStack, kFALSE);
-        FillMCinputdXi(fMCStack, kFALSE);
+        FillMCinput(fMCEvent, kFALSE);
+        FillMCinputdXi(fMCEvent, kFALSE);
     }
     // ----------------------------------------------------------------------
 
@@ -621,10 +623,10 @@ void AliAnalysisTaskXi1530::UserExec(Option_t*) {
         }
         if (IsMC) {
             FillMCinput(
-                fMCStack,
+                fMCEvent,
                 kTRUE);  // Note that MC input Event is filled at this moment.
             FillMCinputdXi(
-                fMCStack,
+                fMCEvent,
                 kTRUE);  // Note that MC input Event is filled at this moment.
         }
         if (this->GoodTracksSelection()  // If Good track
@@ -1415,10 +1417,11 @@ Double_t AliAnalysisTaskXi1530::GetMultiplicty(AliVEvent* fEvt) {
     }
     return fCenttemp;
 }
-void AliAnalysisTaskXi1530::FillMCinput(AliStack* fMCStack, Bool_t PS) {
+void AliAnalysisTaskXi1530::FillMCinput(AliMCEvent* fMCEvent, Bool_t PS) {
     // Fill MC input Xi1530 histogram
-    for (Int_t it = 0; it < fMCStack->GetNprimary(); it++) {
-        TParticle* mcInputTrack = (TParticle*)fMCStack->Particle(it);
+    for (Int_t it = 0; it < fMCEvent->GetNumberOfPrimaries(); it++) {
+        TParticle* mcInputTrack =
+            (TParticle*)fMCEvent->GetTrack(it)->Particle();
         if (!mcInputTrack) {
             Error("UserExec", "Could not receive MC track %d", it);
             continue;
@@ -1427,7 +1430,8 @@ void AliAnalysisTaskXi1530::FillMCinput(AliStack* fMCStack, Bool_t PS) {
             continue;
         if (IsPrimaryMC && !mcInputTrack->IsPrimary())
             continue;
-        if(fQA) fHistos->FillTH1("hMC_generated_Y", mcInputTrack->Y());
+        if (fQA)
+            fHistos->FillTH1("hMC_generated_Y", mcInputTrack->Y());
 
         // Y cut
         if (fabs(mcInputTrack->Y()) > fXi1530RapidityCut)
@@ -1444,10 +1448,12 @@ void AliAnalysisTaskXi1530::FillMCinput(AliStack* fMCStack, Bool_t PS) {
                                        mcInputTrack->GetCalcMass()});
     }
 }
-void AliAnalysisTaskXi1530::FillMCinputdXi(AliStack* fMCStack, Bool_t PS) {
+void AliAnalysisTaskXi1530::FillMCinputdXi(AliMCEvent* fMCEvent,
+                                               Bool_t PS) {
     // Fill MC input Xi1530 histogram
-    for (Int_t it = 0; it < fMCStack->GetNprimary(); it++) {
-        TParticle* mcInputTrack = (TParticle*)fMCStack->Particle(it);
+    for (Int_t it = 0; it < fMCEvent->GetNumberOfPrimaries(); it++) {
+        TParticle* mcInputTrack =
+            (TParticle*)fMCEvent->GetTrack(it)->Particle();
         if (!mcInputTrack) {
             Error("UserExec", "Could not receive MC track %d", it);
             continue;
@@ -1557,15 +1563,14 @@ Bool_t AliAnalysisTaskXi1530::IsMCEventTrueINEL0() {
     // From
     // AliPhysics/PWGLF/SPECTRA/ChargedHadrons/dNdPtVsMultpp/AliAnalysisTaskPPvsMultINEL0.cxx
     // Original author: Sergio Iga
-
     Bool_t isINEL0 = kFALSE;
-    for (int iT = 0; iT < fMCStack->GetNtrack(); iT++) {
-        TParticle* mcParticle = fMCStack->Particle(iT);
+    for (int iT = 0; iT < fMCEvent->GetNumberOfTracks(); iT++) {
+        TParticle* mcParticle = (TParticle*)fMCEvent->GetTrack(iT)->Particle();
         if (!mcParticle) {
             AliInfo("no mcParticle");
             continue;
         }
-        if (!fMCStack->IsPhysicalPrimary(iT))
+        if (!fMCEvent->IsPhysicalPrimary(iT))
             continue;
         if (!(mcParticle->Pt() > 0.0))
             continue;
@@ -1596,7 +1601,7 @@ Bool_t AliAnalysisTaskXi1530::IsTrueXi1530(AliESDcascade* Xi,
         ((AliESDEvent*)fEvt)->GetTrack(TMath::Abs(Xi->GetBindex()));
 
     TParticle* MCXiD2esd =
-        (TParticle*)fMCStack->Particle(abs(bTrackXi->GetLabel()));
+        (TParticle*)fMCEvent->GetTrack(abs(bTrackXi->GetLabel()))->Particle();
     TParticle* MCLamD1esd;
     TParticle* MCLamD2esd;
     TParticle* MCLamesd;
@@ -1605,8 +1610,10 @@ Bool_t AliAnalysisTaskXi1530::IsTrueXi1530(AliESDcascade* Xi,
     TParticle* MCXiStarD2esd;
 
     if (abs(MCXiD2esd->GetPdgCode()) == kPionCode) {  // D2esd->pion
-        MCLamD1esd = (TParticle*)fMCStack->Particle(abs(pTrackXi->GetLabel()));
-        MCLamD2esd = (TParticle*)fMCStack->Particle(abs(nTrackXi->GetLabel()));
+        MCLamD1esd = (TParticle*)fMCEvent->GetTrack(abs(pTrackXi->GetLabel()))
+                         ->Particle();
+        MCLamD2esd = (TParticle*)fMCEvent->GetTrack(abs(nTrackXi->GetLabel()))
+                         ->Particle();
         if (MCLamD1esd->GetMother(0) ==
             MCLamD2esd->GetMother(0)) {  // Same mother(lambda)
             if ((abs(MCLamD1esd->GetPdgCode()) == kProtonCode &&
@@ -1614,24 +1621,30 @@ Bool_t AliAnalysisTaskXi1530::IsTrueXi1530(AliESDcascade* Xi,
                 (abs(MCLamD1esd->GetPdgCode()) == kPionCode &&
                  abs(MCLamD2esd->GetPdgCode()) ==
                      kProtonCode)) {  // Lamda daugthers check #1
-                MCLamesd = (TParticle*)fMCStack->Particle(
-                    abs(MCLamD1esd->GetMother(0)));
+                MCLamesd = (TParticle*)fMCEvent
+                               ->GetTrack(abs(MCLamD1esd->GetMother(0)))
+                               ->Particle();
                 if (abs(MCLamesd->GetPdgCode()) ==
                     kLambdaCode) {  // Lambda check
                     if (MCLamesd->GetMother(0) ==
                         MCXiD2esd->GetMother(
                             0)) {  // Lambda+pion(D2esd) mother check
-                        MCXiesd = (TParticle*)fMCStack->Particle(
-                            abs(MCLamesd->GetMother(0)));
+                        MCXiesd = (TParticle*)fMCEvent
+                                      ->GetTrack(abs(MCLamesd->GetMother(0)))
+                                      ->Particle();
                         if (abs(MCXiesd->GetPdgCode()) ==
                             kXiCode) {  // Xi Check
-                            MCXiStarD2esd = (TParticle*)fMCStack->Particle(
-                                abs(pion->GetLabel()));
+                            MCXiStarD2esd =
+                                (TParticle*)fMCEvent
+                                    ->GetTrack(abs(pion->GetLabel()))
+                                    ->Particle();
                             if (MCXiesd->GetMother(0) ==
                                 MCXiStarD2esd->GetMother(
                                     0)) {  // Xi+pion mother check
-                                MCXiStaresd = (TParticle*)fMCStack->Particle(
-                                    abs(MCXiesd->GetMother(0)));
+                                MCXiStaresd =
+                                    (TParticle*)fMCEvent
+                                        ->GetTrack(abs(MCXiesd->GetMother(0)))
+                                        ->Particle();
                                 if (abs(MCXiStaresd->GetPdgCode()) ==
                                     kXiStarCode) {  // Xi1530 check
                                     if (IsPrimaryMC) {
@@ -1666,15 +1679,17 @@ Bool_t AliAnalysisTaskXi1530::IsTrueXi(AliESDcascade* Xi) {
         ((AliESDEvent*)fEvt)->GetTrack(TMath::Abs(Xi->GetBindex()));
 
     TParticle* MCXiD2esd =
-        (TParticle*)fMCStack->Particle(abs(bTrackXi->GetLabel()));
+        (TParticle*)fMCEvent->GetTrack(abs(bTrackXi->GetLabel()))->Particle();
     TParticle* MCLamD1esd;
     TParticle* MCLamD2esd;
     TParticle* MCLamesd;
     TParticle* MCXiesd;
 
     if (abs(MCXiD2esd->GetPdgCode()) == kPionCode) {  // D2esd->pion
-        MCLamD1esd = (TParticle*)fMCStack->Particle(abs(pTrackXi->GetLabel()));
-        MCLamD2esd = (TParticle*)fMCStack->Particle(abs(nTrackXi->GetLabel()));
+        MCLamD1esd = (TParticle*)fMCEvent->GetTrack(abs(pTrackXi->GetLabel()))
+                         ->Particle();
+        MCLamD2esd = (TParticle*)fMCEvent->GetTrack(abs(nTrackXi->GetLabel()))
+                         ->Particle();
         if (MCLamD1esd->GetMother(0) ==
             MCLamD2esd->GetMother(0)) {  // Same mother(lambda)
             if ((abs(MCLamD1esd->GetPdgCode()) == kProtonCode &&
@@ -1682,15 +1697,17 @@ Bool_t AliAnalysisTaskXi1530::IsTrueXi(AliESDcascade* Xi) {
                 (abs(MCLamD1esd->GetPdgCode()) == kPionCode &&
                  abs(MCLamD2esd->GetPdgCode()) ==
                      kProtonCode)) {  // Lamda daugthers check #1
-                MCLamesd = (TParticle*)fMCStack->Particle(
-                    abs(MCLamD1esd->GetMother(0)));
+                MCLamesd = (TParticle*)fMCEvent
+                               ->GetTrack(abs(MCLamD1esd->GetMother(0)))
+                               ->Particle();
                 if (abs(MCLamesd->GetPdgCode()) ==
                     kLambdaCode) {  // Lambda check
                     if (MCLamesd->GetMother(0) ==
                         MCXiD2esd->GetMother(
                             0)) {  // Lambda+pion(D2esd) mother check
-                        MCXiesd = (TParticle*)fMCStack->Particle(
-                            abs(MCLamesd->GetMother(0)));
+                        MCXiesd = (TParticle*)fMCEvent
+                                      ->GetTrack(abs(MCLamesd->GetMother(0)))
+                                      ->Particle();
                         if (abs(MCXiesd->GetPdgCode()) ==
                             kXiCode) {  // Xi Check
                             TrueXi = kTRUE;

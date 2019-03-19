@@ -7502,8 +7502,10 @@ void AliAnalysisTaskStrangenessVsMultiplicityMCRun2::AddStandardCascadeConfigura
 //        lCascadeResult[lN]->SetCutDCACascadeToPV        ( lcuts[i][1][14] ) ;
         //Track Quality
         lCascadeResult[lN]->SetCutMinTrackLength        ( lcuts[i][1][11] ) ;
-        lCascadeResult[lN]->SetCutLeastNumberOfClusters( -1 );
-        lCascadeResult[lN]->SetCutLeastNumberOfCrossedRows( lcuts[i][1][15] );
+        
+        //Use Nclusters = Ncrossedrows cuts
+        lCascadeResult[lN]->SetCutLeastNumberOfClusters   ( lcuts[i][1][15] ); //not a typo: 15
+        lCascadeResult[lN]->SetCutLeastNumberOfCrossedRows( lcuts[i][1][15] ); //not a typo: 15
         lCascadeResult[lN]->SetCutMinCrossedRowsOverLength( lcuts[i][1][16] );
         
         //Parametric angle cut initializations
@@ -7571,7 +7573,8 @@ void AliAnalysisTaskStrangenessVsMultiplicityMCRun2::AddStandardCascadeConfigura
 //            lCascadeResult[lN]->SetCutDCACascadeToPV        ( lcuts[i][1][14] ) ;
             //Track Quality
             lCascadeResult[lN]->SetCutMinTrackLength        ( lcuts[i][1][11] ) ;
-            lCascadeResult[lN]->SetCutLeastNumberOfClusters( -1 );
+            //lCascadeResult[lN]->SetCutLeastNumberOfClusters( -1 );
+            lCascadeResult[lN]->SetCutLeastNumberOfClusters   ( lcuts[i][1][15] );
             lCascadeResult[lN]->SetCutLeastNumberOfCrossedRows( lcuts[i][1][15] );
             lCascadeResult[lN]->SetCutMinCrossedRowsOverLength( lcuts[i][1][16] );
             
@@ -7808,7 +7811,10 @@ void AliAnalysisTaskStrangenessVsMultiplicityMCRun2::AddStandardCascadeConfigura
                 if(iCut == 12 ) lCascadeResult[lN]->SetCutTPCdEdx               ( lcuts[i][0][iCut] ) ;
                 if(iCut == 13 ) lCascadeResult[lN]->SetCutXiRejection           ( lcuts[i][0][iCut] ) ;
                 if(iCut == 14 ) lCascadeResult[lN]->SetCutDCACascadeToPV        ( lcuts[i][0][iCut] ) ;
-                if(iCut == 15 ) lCascadeResult[lN]->SetCutLeastNumberOfCrossedRows( lcuts[i][0][iCut] );
+                if(iCut == 15 ) {
+                    lCascadeResult[lN]->SetCutLeastNumberOfClusters   ( lcuts[i][0][iCut] );
+                    lCascadeResult[lN]->SetCutLeastNumberOfCrossedRows( lcuts[i][0][iCut] );
+                }
                 if(iCut == 16)  lCascadeResult[lN]->SetCutMinCrossedRowsOverLength( lcuts[i][0][iCut] );
                 
                 //Print this variation, add to pool
@@ -7841,7 +7847,10 @@ void AliAnalysisTaskStrangenessVsMultiplicityMCRun2::AddStandardCascadeConfigura
                 if(iCut == 12 ) lCascadeResult[lN]->SetCutTPCdEdx               ( lcuts[i][2][iCut] ) ;
                 if(iCut == 13 ) lCascadeResult[lN]->SetCutXiRejection           ( lcuts[i][2][iCut] ) ;
                 if(iCut == 14 ) lCascadeResult[lN]->SetCutDCACascadeToPV        ( lcuts[i][2][iCut] ) ;
-                if(iCut == 15 ) lCascadeResult[lN]->SetCutLeastNumberOfCrossedRows( lcuts[i][2][iCut] );
+                if(iCut == 15 ) {
+                    lCascadeResult[lN]->SetCutLeastNumberOfClusters   ( lcuts[i][0][iCut] );
+                    lCascadeResult[lN]->SetCutLeastNumberOfCrossedRows( lcuts[i][0][iCut] );
+                }
                 if(iCut == 16)  lCascadeResult[lN]->SetCutMinCrossedRowsOverLength( lcuts[i][2][iCut] );
                 
                 //Print this variation, add to pool
