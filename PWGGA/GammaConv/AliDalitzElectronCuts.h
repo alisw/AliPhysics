@@ -15,6 +15,10 @@
 #include "AliAnalysisCuts.h"
 #include "AliESDtrackCuts.h"
 #include "TH1F.h"
+#include "AliDalitzData.h"
+#include "AliDalitzAODESD.h"
+#include "AliDalitzEventMC.h"
+#include "AliDalitzAODESDMC.h"
 
 class AliESDEvent;
 class AliAODEvent;
@@ -91,8 +95,10 @@ class AliDalitzElectronCuts : public AliAnalysisCuts {
 
     // Cut Selection
   Bool_t ElectronIsSelectedMC(Int_t labelParticle,AliMCEvent *mcEvent);
-  Bool_t TrackIsSelected(AliESDtrack* lTrack);
+  Bool_t ElectronIsSelectedMC(Int_t labelParticle,AliMCEvent *mcEvent, AliDalitzEventMC *mcAODESDEvent);
+  Bool_t TrackIsSelected(AliDalitzAODESD* lTrack);
   Bool_t ElectronIsSelected(AliESDtrack* lTrack);
+  Bool_t ElectronIsSelected(AliDalitzAODESD* lTrack);
   void InitAODpidUtil(Int_t type);
   static AliDalitzElectronCuts * GetStandardCuts2010PbPb();
   static AliDalitzElectronCuts * GetStandardCuts2010pp();
@@ -102,7 +108,7 @@ class AliDalitzElectronCuts : public AliAnalysisCuts {
   AliPIDResponse * GetPIDResponse() { return fPIDResponse;}
 
   void PrintCuts();
-
+  Bool_t AcceptedAODESDTrack(AliDalitzAODESD* aliaodtrack);
   void InitCutHistograms(TString name="",Bool_t preCut = kTRUE,TString cutName="");
   void SetFillCutHistograms(TString name="",Bool_t preCut = kTRUE,TString cutName=""){if(!fHistograms){InitCutHistograms(name,preCut,cutName);};}
   TList *GetCutHistograms(){return fHistograms;}
@@ -151,7 +157,7 @@ class AliDalitzElectronCuts : public AliAnalysisCuts {
   Double_t GetPsiPairCut(){ return fPsiPairCut; }
   Double_t DoRejectSharedElecGamma(){ return fDoRejectSharedElecGamma;}
   Double_t DoPsiPairCut(){return fDoPsiPairCut;}
-  Double_t GetNFindableClustersTPC(AliESDtrack* lTrack);
+  Double_t GetNFindableClustersTPC(AliDalitzAODESD* lTrack);
   Bool_t   DoMassCut(){return  fDoMassCut;}
   Bool_t   DoMassMinCut(){return fDoMassMinCut;}
   Double_t GetMassCutLowPt(){return fMassCutLowPt;}
@@ -178,6 +184,9 @@ class AliDalitzElectronCuts : public AliAnalysisCuts {
   Double_t fPsiPairCut;
   Double_t fDeltaPhiCutMin;
   Double_t fDeltaPhiCutMax;
+  Double_t fMaxDCAVertexz;
+  Double_t fMaxDCAVertexxy;
+  TString fDCAVertexPt;//Conversion from coordenates to momentum.
   Double_t fMinClsTPC; // minimum clusters in the TPC
   Double_t fMinClsTPCToF; // minimum clusters to findable clusters
   Bool_t   fDodEdxSigmaITSCut; // flag to use the dEdxCut ITS based on sigmas
@@ -207,6 +216,7 @@ class AliDalitzElectronCuts : public AliAnalysisCuts {
 
   Bool_t   fUseCorrectedTPCClsInfo; // flag to use corrected tpc cl info
   Bool_t   fUseCrossedRows;  //UseCrossedRows 2011
+  Int_t    fITSCut;
   Bool_t   fUseTOFpid; // flag to use tof pid
   Bool_t   fRequireTOF; //flg to analyze only tracks with TOF signal
   Bool_t   fDoMassCut;
