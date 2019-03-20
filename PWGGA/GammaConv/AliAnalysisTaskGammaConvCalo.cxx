@@ -343,6 +343,9 @@ AliAnalysisTaskGammaConvCalo::AliAnalysisTaskGammaConvCalo(): AliAnalysisTaskSE(
   fHistoMotherEtainJetPtY(NULL),
   fHistoMotherPi0inJetPtPhi(NULL),
   fHistoMotherEtainJetPtPhi(NULL),
+  fHistoUnfoldingAsData(NULL),
+  fHistoUnfoldingMissed(NULL),
+  fHistoUnfoldingReject(NULL),
   fVectorJetPt(0),
   fVectorJetPx(0),
   fVectorJetPy(0),
@@ -358,11 +361,6 @@ AliAnalysisTaskGammaConvCalo::AliAnalysisTaskGammaConvCalo(): AliAnalysisTaskSE(
   fTrueVectorJetEta(0),
   fTrueVectorJetPhi(0),
   fTrueVectorJetNChargPart(0),
-  tTreeJetPi0Correlations(NULL),
-  fJetPt(0),
-  fTrueJetPt(0),
-  fPi0Pt(0),
-  fPi0InvMass(0),
   fVectorRecTruePi0s(0),
   fVectorRecTrueEtas(0),
   fHistoDoubleCountTruePi0InvMassPt(NULL),
@@ -721,6 +719,9 @@ AliAnalysisTaskGammaConvCalo::AliAnalysisTaskGammaConvCalo(const char *name):
   fHistoMotherEtainJetPtY(NULL),
   fHistoMotherPi0inJetPtPhi(NULL),
   fHistoMotherEtainJetPtPhi(NULL),
+  fHistoUnfoldingAsData(NULL),
+  fHistoUnfoldingMissed(NULL),
+  fHistoUnfoldingReject(NULL),
   fVectorJetPt(0),
   fVectorJetPx(0),
   fVectorJetPy(0),
@@ -736,11 +737,6 @@ AliAnalysisTaskGammaConvCalo::AliAnalysisTaskGammaConvCalo(const char *name):
   fTrueVectorJetEta(0),
   fTrueVectorJetPhi(0),
   fTrueVectorJetNChargPart(0),
-  tTreeJetPi0Correlations(NULL),
-  fJetPt(0),
-  fTrueJetPt(0),
-  fPi0Pt(0),
-  fPi0InvMass(0),
   fVectorRecTruePi0s(0),
   fVectorRecTrueEtas(0),
   fHistoDoubleCountTruePi0InvMassPt(NULL),
@@ -1919,10 +1915,15 @@ void AliAnalysisTaskGammaConvCalo::UserCreateOutputObjects(){
       fHistoMCEtainJetGenerated               = new TH1F*[fnCuts];
       fHistoMotherEtainJetPtY                 = new TH2F*[fnCuts];
       fHistoMotherEtainJetPtPhi               = new TH2F*[fnCuts];
-      if(fDoJetQA){
-        tTreeJetPi0Correlations                      = new TTree*[fnCuts];
-      }
     }
+    if(fDoJetQA){
+        if(fDoLightOutput){
+          fTrueJetHistograms                           = new TList*[fnCuts];
+        }
+        fHistoUnfoldingAsData                          = new TH2F*[fnCuts];
+        fHistoUnfoldingMissed                          = new TH2F*[fnCuts];
+        fHistoUnfoldingReject                          = new TH2F*[fnCuts];
+      }
 
     for(Int_t iCut = 0; iCut<fnCuts;iCut++){
       TString cutstringEvent    = ((AliConvEventCuts*)fEventCutArray->At(iCut))->GetCutNumber();
@@ -2199,14 +2200,20 @@ void AliAnalysisTaskGammaConvCalo::UserCreateOutputObjects(){
         fTrueJetHistograms[iCut]->Add(fHistoMotherEtainJetPtY[iCut]);
         fHistoMotherEtainJetPtPhi[iCut] = new TH2F("ESD_MotherEtainJet_Pt_Phi", "ESD_MotherEtainJet_Pt_Phi", nBinsQAPt, arrQAPtBinning, 150, 0, 6.5);
         fTrueJetHistograms[iCut]->Add(fHistoMotherEtainJetPtPhi[iCut]);
-        if(fDoJetQA){
-          tTreeJetPi0Correlations[iCut] = new TTree("Jet_Pi0_Correlations", "Jet_Pi0_Correlations");
-          tTreeJetPi0Correlations[iCut]->Branch("JetPt",&fJetPt,"fJetPt/F");
-          tTreeJetPi0Correlations[iCut]->Branch("TrueJetPt",&fTrueJetPt,"fTrueJetPt/F");
-          tTreeJetPi0Correlations[iCut]->Branch("Pi0Pt",&fPi0Pt,"fPi0Pt/F");
-          tTreeJetPi0Correlations[iCut]->Branch("Pi0InvMass",&fPi0InvMass,"fPi0InvMass/F");
-          fTrueJetHistograms[iCut]->Add(tTreeJetPi0Correlations[iCut]);
+      }
+      if(fDoJetQA){
+        if(fDoLightOutput){
+          fTrueJetHistograms[iCut] = new TList();
+          fTrueJetHistograms[iCut]->SetName(Form("%s_%s_%s_%s True Jet histograms", cutstringEvent.Data(),cutstringPhoton.Data(),cutstringCalo.Data(),cutstringMeson.Data()));
+          fTrueJetHistograms[iCut]->SetOwner(kTRUE);
+          fCutFolder[iCut]->Add(fTrueJetHistograms[iCut]);
         }
+        fHistoUnfoldingAsData[iCut]      = new TH2F("Unfolding_AsData", "Unfolding_AsData", nBinsMinv, 0, maxMinv, nBinsPt, arrPtBinning);
+        fTrueJetHistograms[iCut]->Add(fHistoUnfoldingAsData[iCut]);
+        fHistoUnfoldingMissed[iCut]      = new TH2F("Unfolding_Missed", "Unfolding_Missed", nBinsMinv, 0, maxMinv, nBinsPt, arrPtBinning);
+        fTrueJetHistograms[iCut]->Add(fHistoUnfoldingMissed[iCut]);
+        fHistoUnfoldingReject[iCut]      = new TH2F("Unfolding_Reject", "Unfolding_Reject", nBinsMinv, 0, maxMinv, nBinsPt, arrPtBinning);
+        fTrueJetHistograms[iCut]->Add(fHistoUnfoldingReject[iCut]);
       }
 
       if(!fDoLightOutput){
@@ -4909,12 +4916,15 @@ void AliAnalysisTaskGammaConvCalo::CalculatePi0Candidates(){
                                 match = j;
                               }
                             }
-                            fJetPt = fVectorJetPt.at(i);
-                            fTrueJetPt = fTrueVectorJetPt.at(match);
-                            fPi0Pt = pi0cand->Pt();
-                            fPi0InvMass = pi0cand->M();
-                            tTreeJetPi0Correlations[fiCut]->Fill();
-
+                            if(fVectorJetPt.at(i) > 10){
+                              fHistoUnfoldingAsData[fiCut]->Fill(pi0cand->M(),pi0cand->Pt(),fWeightJetJetMC);
+                            }
+                            if(fVectorJetPt.at(i) < 10 && fTrueVectorJetPt.at(match) > 10){
+                              fHistoUnfoldingMissed[fiCut]->Fill(pi0cand->M(),pi0cand->Pt(),fWeightJetJetMC);
+                            }
+                            if(fVectorJetPt.at(i) > 10 && fTrueVectorJetPt.at(match) < 10){
+                              fHistoUnfoldingReject[fiCut]->Fill(pi0cand->M(),pi0cand->Pt(),fWeightJetJetMC);
+                            }
                             fTrueVectorJetPt.clear();
                             fTrueVectorJetEta.clear();
                             fTrueVectorJetPhi.clear();
