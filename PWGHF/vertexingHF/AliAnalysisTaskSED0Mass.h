@@ -75,7 +75,7 @@ class AliAnalysisTaskSED0Mass : public AliAnalysisTaskSE
   void SetUseQuarkLevelTag(Bool_t opt){fUseQuarkTagInKine=opt;}
   void SetAODMismatchProtection(Int_t opt=1) {fAODProtection=opt;}
   void SetPileupRejectionVZEROTPCout(Bool_t flag) {fEnablePileupRejVZEROTPCout=flag;}
-  void SetPileupRejectionVZEROTPCcls(Bool_t flag) {fEnablePileupRejVZEROTPCcls=flag;}
+  void SetPileupRejectionVZEROTPCcls(Bool_t flag, Bool_t rejpileup) {fEnablePileupRejVZEROTPCcls=flag; fRejectOutOfBunchPileUp=rejpileup;}
   void SetFillSubSampleHist(Bool_t flag) {fFillSubSampleHist=flag;}
 
   void SetEnableCentralityCorrCutsPbPb(Bool_t flag=kFALSE, Int_t year=2018) {
@@ -174,6 +174,7 @@ class AliAnalysisTaskSED0Mass : public AliAnalysisTaskSE
   TH2F *fhMultVZEROTPCclustersCorrNoCut;  //!<!
   TH2F *fhMultVZEROTPCclustersCorr;  //!<!
   Bool_t    fEnablePileupRejVZEROTPCcls;
+  Bool_t    fRejectOutOfBunchPileUp;  //!<!
 
 
   /// \cond CLASSIMP

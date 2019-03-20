@@ -118,7 +118,8 @@ AliAnalysisTaskSED0Mass::AliAnalysisTaskSED0Mass():
   fEnablePileupRejVZEROTPCout(kFALSE),
   fhMultVZEROTPCclustersCorrNoCut(0x0),
   fhMultVZEROTPCclustersCorr(0x0),
-  fEnablePileupRejVZEROTPCcls(kFALSE)
+  fEnablePileupRejVZEROTPCcls(kFALSE),
+  fRejectOutOfBunchPileUp(kFALSE)
 {
   /// Default constructor
   for(Int_t ih=0; ih<5; ih++) fHistMassPtImpParTC[ih]=0x0;
@@ -179,7 +180,8 @@ AliAnalysisTaskSED0Mass::AliAnalysisTaskSED0Mass(const char *name,AliRDHFCutsD0t
   fEnablePileupRejVZEROTPCout(kFALSE),
   fhMultVZEROTPCclustersCorrNoCut(0x0),
   fhMultVZEROTPCclustersCorr(0x0),
-  fEnablePileupRejVZEROTPCcls(kFALSE)
+  fEnablePileupRejVZEROTPCcls(kFALSE),
+  fRejectOutOfBunchPileUp(kFALSE)
 {
   /// Default constructor
 
@@ -1261,7 +1263,8 @@ void AliAnalysisTaskSED0Mass::UserExec(Option_t */*option*/)
   if(fhMultVZEROTPCclustersCorrNoCut) fhMultVZEROTPCclustersCorrNoCut->Fill(nTPCcls,mTotV0);
   Float_t mV0TPCclsCut=-2000.+(0.013*nTPCcls)+(1.25e-9*nTPCcls*nTPCcls);
   if(fEnablePileupRejVZEROTPCcls){ // this pile-up rejection is specific for 2018 Pb-Pb analysis
-    if(mTotV0<mV0TPCclsCut) return;
+    if(fRejectOutOfBunchPileUp && mTotV0<mV0TPCclsCut) return;
+    else if(!fRejectOutOfBunchPileUp && mTotV0>mV0TPCclsCut) return; //keep only out-of-bunch pile-up events
   }
   if(fhMultVZEROTPCclustersCorr) fhMultVZEROTPCclustersCorr->Fill(nTPCcls,mTotV0);
 
