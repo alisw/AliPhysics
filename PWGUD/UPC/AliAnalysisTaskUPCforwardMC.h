@@ -655,7 +655,7 @@ class AliAnalysisTaskUPCforwardMC : public AliAnalysisTaskSE
          * If I happen to encounter it again in the future, I will make sure to
          * record it!
          */
-        ClassDef(AliAnalysisTaskUPCforwardMC, 3);
+        ClassDef(AliAnalysisTaskUPCforwardMC, 4);
 };
 
 #endif

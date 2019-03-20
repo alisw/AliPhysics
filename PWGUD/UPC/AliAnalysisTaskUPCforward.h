@@ -237,11 +237,19 @@ class AliAnalysisTaskUPCforward : public AliAnalysisTaskSE
                                  */
         TH1F*                   fZNAEnergyAgainstEntriesH;         //!
 
+                                /**
+                                 * This histogram records the energy distri-
+                                 * bution of the neutron ZDC. BEFORE timing
+                                 * selection.
+                                 */
+        TH1F*                   fZNCEnergyBeforeTimingSelectionH;         //!
 
-
-
-
-
+                                /**
+                                 * This histogram records the energy distri-
+                                 * bution of the neutron ZDC. BEFORE timing
+                                 * selection.
+                                 */
+        TH1F*                   fZNAEnergyBeforeTimingSelectionH;         //!
 
                                 /**
                                  * This histogram records the energy distri-
@@ -629,7 +637,7 @@ class AliAnalysisTaskUPCforward : public AliAnalysisTaskSE
          * If I happen to encounter it again in the future, I will make sure to
          * record it!
          */
-        ClassDef(AliAnalysisTaskUPCforward, 3);
+        ClassDef(AliAnalysisTaskUPCforward, 4);
 };
 
 #endif
