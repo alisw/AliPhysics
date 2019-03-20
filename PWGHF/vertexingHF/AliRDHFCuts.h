@@ -200,8 +200,10 @@ class AliRDHFCuts : public AliAnalysisCuts
 
   void SetUseCentralityCorrelationCuts(Bool_t opt){fApplyCentralityCorrCuts=opt;}
   void SetUsePbPbOutOfBunchPileupCut(Int_t opt){fApplyPbPbOutOfBunchPileupCuts=opt;}
-  AliEventCuts* GetAliEventCuts() const { return fAliEventCuts;}
+  void SetUseAliEventCuts(){fUseAliEventCuts=kTRUE;}
   
+  AliEventCuts* GetAliEventCuts() const { return fAliEventCuts;}
+
   void SetTriggerClass(TString trclass0, TString trclass1="") {fTriggerClass[0]=trclass0; fTriggerClass[1]=trclass1;} 
   void ApplySPDDeadPbPb2011(){fApplySPDDeadPbPb2011=kTRUE;}
   void ApplySPDMisalignedCutPP2012(){fApplySPDMisalignedPP2012=kTRUE;}
@@ -307,6 +309,7 @@ class AliRDHFCuts : public AliAnalysisCuts
   Int_t  IsEventSelectedInCentrality(AliVEvent *event);
   Bool_t IsEventSelectedForCentrFlattening(Float_t centvalue);
   Bool_t IsEventSelected(AliVEvent *event);
+  Bool_t IsEventSelectedWithAliEventCuts(AliVEvent *event);
   Bool_t AreDaughtersSelected(AliAODRecoDecayHF *rd, const AliAODEvent* aod=0x0) const;
   Bool_t IsDaughterSelected(AliAODTrack *track,const AliESDVertex *primary,AliESDtrackCuts *cuts, const AliAODEvent* aod=0x0) const;
   virtual Int_t IsSelectedPID(AliAODRecoDecayHF * /*rd*/) {return 1;}
@@ -504,9 +507,10 @@ class AliRDHFCuts : public AliAnalysisCuts
   AliEventCuts* fAliEventCuts;   /// AliEventCuts object used in Pb-Pb for cuts on correlations and out-of-bunch pileup
   Bool_t fApplyCentralityCorrCuts; /// swicth to enable/disable cuts on centrality correlations
   Int_t fApplyPbPbOutOfBunchPileupCuts; /// switch for additional correlation cuts for out-of-bunch pileup (0=no cut, 1=AliEVentCuts, 2=Ionut cut vs. nTPC cls)
+  Bool_t fUseAliEventCuts;  /// flag for using AliEventCuts 
   
   /// \cond CLASSIMP    
-  ClassDef(AliRDHFCuts,46);  /// base class for cuts on AOD reconstructed heavy-flavour decays
+  ClassDef(AliRDHFCuts,47);  /// base class for cuts on AOD reconstructed heavy-flavour decays
   /// \endcond
 };
 
