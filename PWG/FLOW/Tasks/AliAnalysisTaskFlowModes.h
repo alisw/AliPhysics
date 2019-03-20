@@ -94,7 +94,7 @@ class AliAnalysisTaskFlowModes : public AliAnalysisTaskSE
     void                    SetPIDNumSigmasProtonMax(Double_t numSigmas) { fCutPIDnSigmaProtonMax = numSigmas; }
     void                    SetPIDNumSigmasCombinedNoTOFrejection(Bool_t reject = kTRUE) { fCutPIDnSigmaCombinedNoTOFrejection = reject; }
     void                    SetPIDnsigmaCombination(Int_t Comb =2){fPIDnsigmaCombination = Comb;}
-    void		    SetExtraPileUpCut(){fExtraPileUp = kTRUE;}
+    void		                SetExtraPileUpCut(){fExtraPileUp = kTRUE;}
     void                    SetPositivelyChargedRef(Bool_t Pos=kFALSE){fPositivelyChargedRef = Pos;}
     void                    SetNegativelyChargedRef(Bool_t Neg=kFALSE){fNegativelyChargedRef = Neg;}
     void                    SetPositivelyChargedPOI(Bool_t Pos=kFALSE){fPositivelyChargedPOI = Pos;}

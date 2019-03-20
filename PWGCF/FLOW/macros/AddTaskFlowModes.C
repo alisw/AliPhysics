@@ -46,6 +46,7 @@ AliAnalysisTaskFlowModes* AddTaskFlowModes(TString name = "FlowHarmonics",
     task1->SetFillQAhistos(kTRUE);
     task1->SetProcessCharged(kTRUE);
     // PID selection
+    task1->SetPIDNumSigmasCombinedNoTOFrejection(kTRUE);
     task1->SetProcessPID(kTRUE,PIDbayesian);
     task1->SetPIDnsigmaCombination(PIDComb); // applies PIDnsigma combination 2 out of the 3 possible combinations.
     task1->SetPIDUseAntiProtonOnly(AntiProtonOnly);
@@ -53,7 +54,6 @@ AliAnalysisTaskFlowModes* AddTaskFlowModes(TString name = "FlowHarmonics",
     task1->SetPIDNumSigmasKaonMax(3);
     task1->SetPIDNumSigmasProtonMax(3);
     if(PIDbayesian) task1->SetBayesianProbability(PIDprob);
-    
 
 
     // Flow
