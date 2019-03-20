@@ -411,7 +411,7 @@ void AliAnalysisTaskHyperTriton2He3piML::UserExec(Option_t *)
     fRHyperTriton.push_back(v0part);
 
     fHistNsigmaPi->Fill(piTrack->Pt(), v0part.fTPCnSigmaPi);
-    fHistNsigmaHe3->Fill(piTrack->Pt(), v0part.fTPCnSigmaHe3);
+    fHistNsigmaHe3->Fill(he3Track->Pt(), v0part.fTPCnSigmaHe3);
     fHistInvMass->Fill(hyperVector.Pt(), hyperVector.M());
   }
 
