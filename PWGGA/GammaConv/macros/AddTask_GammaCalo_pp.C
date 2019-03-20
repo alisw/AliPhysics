@@ -1439,8 +1439,9 @@ void AddTask_GammaCalo_pp(
     cuts.AddCutCalo("00010113","411770007l032230000","2l631031000000d0"); // INT7 - NO NL
     cuts.AddCutCalo("00010113","411770607l032230000","2l631031000000d0"); // INT7 - TB NL
     cuts.AddCutCalo("00010113","411771107l032230000","2l631031000000d0"); // Standard EDC
- } else if (trainConfig == 913){ //Jet QA
-    cuts.AddCutCalo("00010113","411770607l032230000","3l631031000000d0"); // Jet QA for EMXAL+DCAL
+ } else if (trainConfig == 913){ //// Jet QA for EMCAL+DCAL and PHOS
+    cuts.AddCutCalo("00010113","411771107l032230000","3l631031000000d0"); // Standard EDC
+    cuts.AddCutCalo("00010113","2446651044012300000","3163103100000010"); // PHOS
  } else if (trainConfig == 914){ //PHOS+JETS
     cuts.AddCutCalo("00010113","2446651044012300000","2163103100000010"); //
 
