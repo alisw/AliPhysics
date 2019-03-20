@@ -136,7 +136,7 @@ void AliCLTask::UserExec(Option_t *option)
     }
     CLTrack *myt = (CLTrack*)fMyTracks->ConstructedAt(newcl++);
     myt->fPt       = pt;
-    myt->fPhi      = track->Phi();
+    myt->fPhi      = TVector2::Phi_0_2pi(track->Phi());
     myt->fEta      = track->Eta();
     myt->fCh       = track->Charge();
     myt->fIsGlobal = track->IsGlobalConstrained();
@@ -168,7 +168,7 @@ void AliCLTask::UserExec(Option_t *option)
     CLClus *myc = (CLClus*)fMyClus->ConstructedAt(newcl++);
     myc->fPt = clusterVec.Pt();
     myc->fEta = clusterVec.Eta();
-    myc->fPhi = clusterVec.Phi();
+    myc->fPhi = TVector2::Phi_0_2pi(clusterVec.Phi());
     myc->fM02 = clus->GetM02();
     if (fDoClust) {
       Int_t nMax     = -1;
@@ -197,12 +197,15 @@ void AliCLTask::UserExec(Option_t *option)
     const Int_t n = mcarr->GetEntries();
     for (Int_t i=0,newcl=0;i<n;++i) {
       AliAODMCParticle *p = static_cast<AliAODMCParticle*>(mcarr->At(i));
+      Double_t eta = p->Eta();
+      if (TMath::Abs(eta)>1)
+	continue;
       Int_t apg = TMath::Abs(p->PdgCode()); 
       if (apg==1000010020) {
 	CLMCpart *myp = (CLMCpart*)fMyParts->ConstructedAt(newcl++);
 	myp->fPt     = p->Pt();
-	myp->fEta    = p->Eta();
-	myp->fPhi    = p->Pt();
+	myp->fEta    = eta;
+	myp->fPhi    = TVector2::Phi_0_2pi(p->Phi());
 	myp->fId     = p->PdgCode();
         myp->fIsPrim = p->IsPhysicalPrimary();
       }
@@ -251,6 +254,9 @@ void AliCLTask::UserCreateOutputObjects()
   fPidCalo = new AliCaloPID;
   fPidCalo->Print("");
   fCaloUtils = new AliCalorimeterUtils;
+  fCaloUtils->SetEMCALGeometryName("EMCAL_COMPLETE12SMV1_DCAL_8SM");
+  fCaloUtils->InitEMCALGeometry();
+  fCaloUtils->SetImportGeometryFromFile(0);
   fCaloUtils->Print("");
 
   fEventCuts = new AliEventCuts;
