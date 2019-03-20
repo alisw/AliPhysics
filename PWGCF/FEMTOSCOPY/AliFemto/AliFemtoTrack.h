@@ -54,6 +54,7 @@ public:
   float Cdz() const;
   float Czz() const;
 
+  float ITSchi2perNDF() const;
   float ITSchi2() const;
   int   ITSncls() const;
   float TPCchi2() const;
@@ -446,9 +447,14 @@ inline double AliFemtoTrack::Zvtx() const { return fZvtx;}
 
 inline float AliFemtoTrack::TPCchi2perNDF() const
 {
-  Int_t ndof = 2 * TPCncls() - 5;
-  return ndof > 0 ? fTPCchi2 / ndof : 9999;
+  Int_t ndof = 2 * fTPCncls - 5;
+  return __builtin_expect(ndof > 0, 1) ? fTPCchi2 / ndof : 9999;
 }
 
+inline float AliFemtoTrack::ITSchi2perNDF() const
+{
+  Int_t ndof = 2 * fITSncls - 5;
+  return __builtin_expect(ndof > 0, 1) ? fITSchi2 / ndof : 9999;
+}
 
 #endif
