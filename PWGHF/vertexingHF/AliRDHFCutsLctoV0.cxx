@@ -1151,9 +1151,9 @@ void AliRDHFCutsLctoV0::CheckPID(AliAODTrack *bachelor,
     isBachelorID4 = isBachelorID2;
     break;
 
-  case 11:
+  case 12:
 
-    // identify bachelor
+    // identify bachelor with an N-sigma cut
     nTOFsigmas = -999;
     tofID = fPidHF->GetnSigmaTOF(bachelor,4,nTOFsigmas);
     nTPCsigmas = -999;
