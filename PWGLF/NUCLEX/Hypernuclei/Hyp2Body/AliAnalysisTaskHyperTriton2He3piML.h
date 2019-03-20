@@ -88,6 +88,8 @@ class AliAnalysisTaskHyperTriton2He3piML : public AliAnalysisTaskSE {
   void SetMinPt(float lMinPt) { fMinPtToSave = lMinPt; }
   void SetMaxPt(float lMaxPt) { fMaxPtToSave = lMaxPt; }
 
+  void SetMinPtHe3(float min) { fMinHe3pt = min; }
+
   void SetCustomBetheBloch(float resolution, const float bethe[5]);
 
   void SetMaxTPCsigmas(float pi, float he3) {
@@ -119,6 +121,7 @@ class AliAnalysisTaskHyperTriton2He3piML : public AliAnalysisTaskSE {
   float fMaxPtToSave;  // maximum pt
   float fMaxTPCpiSigma;
   float fMaxTPChe3Sigma;
+  float fMinHe3pt;
 
   std::vector<SHyperTritonHe3pi> fSHyperTriton;
   std::vector<RHyperTritonHe3pi> fRHyperTriton;

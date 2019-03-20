@@ -83,6 +83,7 @@ AliAnalysisTaskHyperTriton2He3piML::AliAnalysisTaskHyperTriton2He3piML(
       fMaxPtToSave{100},
       fMaxTPCpiSigma{10.},
       fMaxTPChe3Sigma{10.},
+      fMinHe3pt{0.},
       fSHyperTriton{},
       fRHyperTriton{},
       fRCollision{}
@@ -313,6 +314,9 @@ void AliAnalysisTaskHyperTriton2He3piML::UserExec(Option_t *)
 
     AliESDtrack *he3Track = aHyperTriton ? nTrack : pTrack;
     AliESDtrack *piTrack = he3Track == nTrack ? pTrack : nTrack;
+
+    if (he3Track->Pt() * 2 < fMinHe3pt)
+      continue;
 
     double pP[3]{0.0}, nP[3]{0.0};
     v0->GetPPxPyPz(pP[0], pP[1], pP[2]);
