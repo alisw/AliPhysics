@@ -90,7 +90,7 @@ class AliAnalysisTaskHyperTriton2He3piML : public AliAnalysisTaskSE {
 
   void SetCustomBetheBloch(float resolution, const float bethe[5]);
 
-  void SetMaxTPCsigmas(float pi, float proton, float he3) {
+  void SetMaxTPCsigmas(float pi, float he3) {
     fMaxTPCpiSigma = pi;
     fMaxTPChe3Sigma = he3;
   }
