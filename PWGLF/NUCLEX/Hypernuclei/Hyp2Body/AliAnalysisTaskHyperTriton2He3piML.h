@@ -88,6 +88,8 @@ class AliAnalysisTaskHyperTriton2He3piML : public AliAnalysisTaskSE {
   void SetMinPt(float lMinPt) { fMinPtToSave = lMinPt; }
   void SetMaxPt(float lMaxPt) { fMaxPtToSave = lMaxPt; }
 
+  void SetMinPtHe3(float min) { fMinHe3pt = min; }
+
   void SetCustomBetheBloch(float resolution, const float bethe[5]);
 
   void SetMaxTPCsigmas(float pi, float he3) {
@@ -112,13 +114,14 @@ class AliAnalysisTaskHyperTriton2He3piML : public AliAnalysisTaskSE {
 
   /// Control histograms to monitor the filtering
   TH2D* fHistNsigmaHe3;          //! # sigma TPC proton for the positive prong
-  TH2D* fHistNsigmaPion;         //! # sigma TPC pion for the negative prong
+  TH2D* fHistNsigmaPi;           //! # sigma TPC pion for the negative prong
   TH2D* fHistInvMass;            //! # Invariant mass histogram
 
   float fMinPtToSave;  // minimum pt
   float fMaxPtToSave;  // maximum pt
   float fMaxTPCpiSigma;
   float fMaxTPChe3Sigma;
+  float fMinHe3pt;
 
   std::vector<SHyperTritonHe3pi> fSHyperTriton;
   std::vector<RHyperTritonHe3pi> fRHyperTriton;
