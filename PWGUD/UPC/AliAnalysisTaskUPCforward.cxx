@@ -92,6 +92,8 @@ AliAnalysisTaskUPCforward::AliAnalysisTaskUPCforward()
       fDimuonPtDistributionH(0),
       fZNCEnergyAgainstEntriesH(0),
       fZNAEnergyAgainstEntriesH(0),
+      fZNCEnergyBeforeTimingSelectionH(0),
+      fZNAEnergyBeforeTimingSelectionH(0),
       fZNCEnergyCalibratedH(0),
       fZNAEnergyCalibratedH(0),
       fZNCEnergyUncalibratedH(0),
@@ -179,6 +181,8 @@ AliAnalysisTaskUPCforward::AliAnalysisTaskUPCforward(const char* name)
       fDimuonPtDistributionH(0),
       fZNCEnergyAgainstEntriesH(0),
       fZNAEnergyAgainstEntriesH(0),
+      fZNCEnergyBeforeTimingSelectionH(0),
+      fZNAEnergyBeforeTimingSelectionH(0),
       fZNCEnergyCalibratedH(0),
       fZNAEnergyCalibratedH(0),
       fZNCEnergyUncalibratedH(0),
@@ -305,8 +309,29 @@ void AliAnalysisTaskUPCforward::FillGoodRunVector(std::vector<Int_t> &fVectorGoo
                                          297452, 297479, 297481, 297483, 297512, 297537,
                                          297540, 297541, 297542, 297544, 297558, 297588,
                                          297590, 297595, 297623, 297624 };
+  /* - This good run number list has been taken from the analysis
+     - note of Kay's talk for DIS 2017, see:
+     - https://alice-notes.web.cern.ch/system/files/notes/analysis/596/2017-Feb-08-analysis_note-2017-Feb-08-analysis-note.pdf
+     -
+   */
+  Int_t listOfGoodRunNumbersLHC15o[] = { 244918, 244980, 244982, 244983, 245064, 245066, 245068, 245145, 245146, 245151,
+                                         245152, 245231, 245232, 245233, 245253, 245259, 245343, 245345, 245346, 245347,
+                                         245353, 245401, 245407, 245409, 245410, 245446, 245450, 245496, 245501, 245504,
+                                         245505, 245507, 245535, 245540, 245542, 245543, 245554, 245683, 245692, 245700,
+                                         245705, 245729, 245731, 245738, 245752, 245759, 245766, 245775, 245785, 245793,
+                                         245829, 245831, 245833, 245949, 245952, 245954, 245963, 245996, 246001, 246003,
+                                         246012, 246036, 246037, 246042, 246048, 246049, 246053, 246087, 246089, 246113,
+                                         246115, 246148, 246151, 246152, 246153, 246178, 246181, 246182, 246217, 246220,
+                                         246222, 246225, 246272, 246275, 246276, 246390, 246391, 246392, 246424, 246428,
+                                         246431, 246433, 246434, 246487, 246488, 246493, 246495, 246675, 246676, 246750,
+                                         246751, 246755, 246757, 246758, 246759, 246760, 246763, 246765, 246804, 246805,
+                                         246806, 246807, 246808, 246809, 246844, 246845, 246846, 246847, 246851, 246855,
+                                         246859, 246864, 246865, 246867, 246871, 246930, 246937, 246942, 246945, 246948,
+                                         246949, 246980, 246982, 246984, 246989, 246991, 246994
+                                       };
   Int_t sizeOfLHC18q = 0;
   Int_t sizeOfLHC18r = 0;
+  Int_t sizeOfLHC15o = 0;
   for ( Int_t GoodRunNumberLHC18q : listOfGoodRunNumbersLHC18q ) {
         fVectorGoodRunNumbers.push_back(GoodRunNumberLHC18q);
         sizeOfLHC18q++;
@@ -315,6 +340,10 @@ void AliAnalysisTaskUPCforward::FillGoodRunVector(std::vector<Int_t> &fVectorGoo
         fVectorGoodRunNumbers.push_back(GoodRunNumberLHC18r);
         sizeOfLHC18r++;
   }
+  for ( Int_t GoodRunNumberLHC15o : listOfGoodRunNumbersLHC15o ) {
+        fVectorGoodRunNumbers.push_back(GoodRunNumberLHC15o);
+        sizeOfLHC15o++;
+  }
   cout << std::endl << "LHC18q GOOD RUNS:  " << std::endl;
   for ( Int_t i = 0; i < sizeOfLHC18q; i++ ) {
         cout << fVectorGoodRunNumbers.at(i) << ",   number: " << i << std::endl;
@@ -322,6 +351,10 @@ void AliAnalysisTaskUPCforward::FillGoodRunVector(std::vector<Int_t> &fVectorGoo
   cout << std::endl << "LHC18r GOOD RUNS:  " << std::endl;
   for ( Int_t i = sizeOfLHC18q; i < sizeOfLHC18q + sizeOfLHC18r; i++ ) {
         cout << fVectorGoodRunNumbers.at(i) << ",   number: " << (i-sizeOfLHC18q) << std::endl;
+  }
+  cout << std::endl << "LHC15o GOOD RUNS:  " << std::endl;
+  for ( Int_t i = sizeOfLHC18q + sizeOfLHC18r; i < sizeOfLHC18q + sizeOfLHC18r + sizeOfLHC15o; i++ ) {
+        cout << fVectorGoodRunNumbers.at(i) << ",   number: " << (i-sizeOfLHC18q-sizeOfLHC18r) << std::endl;
   }
 }
 //_____________________________________________________________________________
@@ -406,6 +439,12 @@ void AliAnalysisTaskUPCforward::UserCreateOutputObjects()
 
   fZNAEnergyAgainstEntriesH = new TH1F("fZNAEnergyAgainstEntriesH", "fZNAEnergyAgainstEntriesH", 20000, -10000, 40000);
   fOutputList->Add(fZNAEnergyAgainstEntriesH);
+
+  fZNCEnergyBeforeTimingSelectionH = new TH1F("fZNCEnergyBeforeTimingSelectionH", "fZNCEnergyBeforeTimingSelectionH", 20000, -10000, 40000);
+  fOutputList->Add(fZNCEnergyBeforeTimingSelectionH);
+
+  fZNAEnergyBeforeTimingSelectionH = new TH1F("fZNAEnergyBeforeTimingSelectionH", "fZNAEnergyBeforeTimingSelectionH", 20000, -10000, 40000);
+  fOutputList->Add(fZNAEnergyBeforeTimingSelectionH);
 
   fZNCEnergyCalibratedH = new TH1F("fZNCEnergyCalibratedH", "fZNCEnergyCalibratedH", 20000, -10000, 40000);
   fOutputList->Add(fZNCEnergyCalibratedH);
@@ -1122,11 +1161,13 @@ void AliAnalysisTaskUPCforward::UserExec(Option_t *)
     if ( calibrated == 0 ) fZNCEnergyUncalibratedH->Fill(fZNCEnergy);
     if ( calibrated == 1 ) fZNCEnergyCalibratedH  ->Fill(fZNCEnergy);
   }
+  fZNCEnergyBeforeTimingSelectionH->Fill(fZNCEnergy);
   if ( isZNAfired != 0 ) {
     fZNAEnergyAgainstEntriesH->Fill(fZNAEnergy);
     if ( calibrated == 0 ) fZNAEnergyUncalibratedH->Fill(fZNAEnergy);
     if ( calibrated == 1 ) fZNAEnergyCalibratedH  ->Fill(fZNAEnergy);
   }
+  fZNAEnergyBeforeTimingSelectionH->Fill(fZNAEnergy);
 
   /*
   fZNCTimeAgainstEntriesH->Fill(fZNCTime);
