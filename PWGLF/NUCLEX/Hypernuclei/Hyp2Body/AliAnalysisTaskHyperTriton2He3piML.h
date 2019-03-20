@@ -7,6 +7,7 @@ class TH2D;
 class TList;
 class TTree;
 
+#include <TString.h>
 #include <string>
 #include <vector>
 
@@ -80,6 +81,8 @@ class AliAnalysisTaskHyperTriton2He3piML : public AliAnalysisTaskSE {
   virtual void UserExec(Option_t* option);
   virtual void Terminate(Option_t*);
 
+  static AliAnalysisTaskHyperTriton2He3piML* AddTask(bool isMC = false, TString suffix = "");
+
   void SetUseOnTheFlyV0s(bool toogle = true) { fUseOnTheFly = toogle; }
 
   void SetMinPt(float lMinPt) { fMinPtToSave = lMinPt; }
@@ -87,7 +90,7 @@ class AliAnalysisTaskHyperTriton2He3piML : public AliAnalysisTaskSE {
 
   void SetCustomBetheBloch(float resolution, const float bethe[5]);
 
-  void SetMaxTPCsigmas(float pi, float proton, float he3) {
+  void SetMaxTPCsigmas(float pi, float he3) {
     fMaxTPCpiSigma = pi;
     fMaxTPChe3Sigma = he3;
   }

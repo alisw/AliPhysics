@@ -22,6 +22,8 @@
 #include "AliPIDResponse.h"
 #include "AliVVertex.h"
 
+#include "AliAnalysisDataContainer.h"
+
 using std::cout;
 using std::endl;
 
@@ -422,4 +424,38 @@ void AliAnalysisTaskHyperTriton2He3piML::SetCustomBetheBloch(float res, const fl
   fUseCustomBethe = true;
   fCustomResolution = res;
   std::copy(bethe, bethe + 5, fCustomBethe);
+}
+
+AliAnalysisTaskHyperTriton2He3piML* AliAnalysisTaskHyperTriton2He3piML::AddTask(bool isMC, TString suffix) {
+    // Get the current analysis manager
+  AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
+  if (!mgr) {
+    ::Error("AddTaskHyperTriton2BodyML", "No analysis manager found.");
+    return nullptr;
+  }
+
+  // Check the analysis type using the event handlers connected to the analysis
+  // manager.
+  if (!mgr->GetInputEventHandler()) {
+    ::Error("AddTaskHyperTriton2BodyML", "This task requires an input event handler");
+    return nullptr;
+  }
+
+  TString tskname = "AliAnalysisTaskHyperTriton2He3piML";
+  tskname.Append(suffix.Data());
+  AliAnalysisTaskHyperTriton2He3piML *task = new AliAnalysisTaskHyperTriton2He3piML(isMC, tskname.Data());
+
+  AliAnalysisDataContainer *coutput1 = mgr->CreateContainer(
+      Form("%s_summary", tskname.Data()), TList::Class(),
+      AliAnalysisManager::kOutputContainer, "AnalysisResults.root");
+
+  AliAnalysisDataContainer *coutput2 =
+      mgr->CreateContainer(Form("HyperTritonTree%s", suffix.Data()), TTree::Class(),
+                           AliAnalysisManager::kOutputContainer, Form("HyperTritonTree.root:%s",suffix.Data()));
+  coutput2->SetSpecialOutput();
+
+  mgr->ConnectInput(task, 0, mgr->GetCommonInputContainer());
+  mgr->ConnectOutput(task, 1, coutput1);
+  mgr->ConnectOutput(task, 2, coutput2);
+  return task;
 }
