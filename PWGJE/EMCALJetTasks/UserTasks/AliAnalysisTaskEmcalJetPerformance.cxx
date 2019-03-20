@@ -1139,8 +1139,6 @@ void AliAnalysisTaskEmcalJetPerformance::AllocateMatchedJetHistograms()
 {
   TString histname;
   Double_t jetR=0;
-  AliJetContainer* jets = 0;
-  TIter nextJetColl(&fJetCollArray);
   auto jetCont1 = GetJetContainer(0);
   jetR     = jetCont1->GetJetRadius();
 
@@ -1161,7 +1159,7 @@ void AliAnalysisTaskEmcalJetPerformance::AllocateMatchedJetHistograms()
       nCentBins=1;
     }
     TString titleThn[6]= {"#it{p}_{T}^{truth} (GeV/#it{c})", "#it{p}_{T,corr}^{det} (GeV/#it{c})", "#Delta#it{R}", "shared mom fraction" ,"angularity", "Centrality (%)"};
-    Int_t nbinsThn[6]  = {fMaxPt, fMaxPt, 15, 100, 100, nCentBins};
+    Int_t nbinsThn[6]  = {(Int_t)fMaxPt, (Int_t)fMaxPt, 15, 100, 100, nCentBins};
     Double_t minThn[6] = {0., 0., 0., 0.,0., 0.};
     Double_t maxThn[6] = {fMaxPt, fMaxPt, 1.5*jetR, 1, jetR, 100};
     histname = "MatchedJetHistograms/hResponseMatrixEMCalDiff";
