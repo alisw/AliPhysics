@@ -77,7 +77,7 @@ AliAnalysisTaskHyperTriton2He3piML::AliAnalysisTaskHyperTriton2He3piML(
       fCustomBethe{0.f, 0.f, 0.f, 0.f, 0.f},
       fCustomResolution{1.f},
       fHistNsigmaHe3{nullptr},
-      fHistNsigmaPion{nullptr},
+      fHistNsigmaPi{nullptr},
       fHistInvMass{nullptr},
       fMinPtToSave{0.1},
       fMaxPtToSave{100},
@@ -126,14 +126,14 @@ void AliAnalysisTaskHyperTriton2He3piML::UserCreateOutputObjects()
   fListHist->SetOwner();
   fEventCuts.AddQAplotsToList(fListHist);
 
-  fHistNsigmaPion =
-      new TH2D("fHistNsigmaPosPion", ";#it{p}_{T} (GeV/#it{c});n_{#sigma} TPC Pion; Counts", 100, 0, 10, 20, 0, 10);
+  fHistNsigmaPi =
+      new TH2D("fHistNsigmaPi", ";#it{p}_{T} (GeV/#it{c});n_{#sigma} TPC Pion; Counts", 100, 0, 10, 80, -5, 5);
   fHistNsigmaHe3 =
-      new TH2D("fHistNsigmaNegHe3", ";#it{p}_{T} (GeV/#it{c});n_{#sigma} TPC ^{3}He; Counts", 100, 0, 10, 20, 0, 10);
+      new TH2D("fHistNsigmaHe3", ";#it{p}_{T} (GeV/#it{c});n_{#sigma} TPC ^{3}He; Counts", 100, 0, 10, 80, -5, 5);
   fHistInvMass =
       new TH2D("fHistInvMass", ";#it{p}_{T} (GeV/#it{c});Invariant Mass(GeV/#it{c^2}); Counts", 100, 0, 10, 30, 2.96, 3.05);
 
-  fListHist->Add(fHistNsigmaPion);
+  fListHist->Add(fHistNsigmaPi);
   fListHist->Add(fHistNsigmaHe3);
   fListHist->Add(fHistInvMass);
 
@@ -406,7 +406,7 @@ void AliAnalysisTaskHyperTriton2He3piML::UserExec(Option_t *)
     v0part.fMatter = (pTrack == he3Track);
     fRHyperTriton.push_back(v0part);
 
-    fHistNsigmaPion->Fill(piTrack->Pt(), v0part.fTPCnSigmaPi);
+    fHistNsigmaPi->Fill(piTrack->Pt(), v0part.fTPCnSigmaPi);
     fHistNsigmaHe3->Fill(piTrack->Pt(), v0part.fTPCnSigmaHe3);
     fHistInvMass->Fill(hyperVector.Pt(), hyperVector.M());
   }

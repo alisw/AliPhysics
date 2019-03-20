@@ -112,7 +112,7 @@ class AliAnalysisTaskHyperTriton2He3piML : public AliAnalysisTaskSE {
 
   /// Control histograms to monitor the filtering
   TH2D* fHistNsigmaHe3;          //! # sigma TPC proton for the positive prong
-  TH2D* fHistNsigmaPion;         //! # sigma TPC pion for the negative prong
+  TH2D* fHistNsigmaPi;           //! # sigma TPC pion for the negative prong
   TH2D* fHistInvMass;            //! # Invariant mass histogram
 
   float fMinPtToSave;  // minimum pt
