@@ -7,6 +7,7 @@ class TH2D;
 class TList;
 class TTree;
 
+#include <TString.h>
 #include <string>
 #include <vector>
 
@@ -79,6 +80,8 @@ class AliAnalysisTaskHyperTriton2He3piML : public AliAnalysisTaskSE {
   virtual void UserCreateOutputObjects();
   virtual void UserExec(Option_t* option);
   virtual void Terminate(Option_t*);
+
+  static AliAnalysisTaskHyperTriton2He3piML* AddTask(bool isMC = false, TString suffix = "");
 
   void SetUseOnTheFlyV0s(bool toogle = true) { fUseOnTheFly = toogle; }
 
