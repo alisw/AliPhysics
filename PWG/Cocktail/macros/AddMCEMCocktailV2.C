@@ -26,7 +26,8 @@ AliGenerator* AddMCEMCocktailV2(
   Bool_t useYWeights          = 0,
   TString paramV2FileDir      = "",
   Bool_t toFixEP              = 0,
-  Double_t yGenRange          = 1.0
+  Double_t yGenRange          = 1.0,
+  Bool_t useLMeeDecaytable    = kFALSE
 )
 {
   // collisions systems defined:
@@ -47,6 +48,16 @@ AliGenerator* AddMCEMCocktailV2(
 
   // Create and Initialize Generator
   AliGenEMCocktailV2 *gener     = new AliGenEMCocktailV2();
+
+  //=======================================================================
+  // Copy LMee decaytable to local directory if requested
+  if(useLMeeDecaytable){
+    Printf("AddMCEMCocktailV2: Use local decaytable");
+    Printf("cp $ALICE_PHYSICS/PWG/Cocktail/decaytables/decaytable_LMee.dat ./decaytable.dat");
+    gSystem->Exec(Form("cp $ALICE_PHYSICS/PWG/Cocktail/decaytables/decaytable_LMee.dat ./decaytable.dat"));
+    gSystem->Exec("pwd");
+    gSystem->Exec("ls -ltrh");
+  }
 
   //=======================================================================
   // Set External decayer
