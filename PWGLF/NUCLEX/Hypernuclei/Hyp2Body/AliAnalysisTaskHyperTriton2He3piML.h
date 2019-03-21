@@ -69,6 +69,18 @@ struct SHyperTritonHe3pi {
   float fPyPi;
   float fPzPi;
   bool  fFake;
+  bool  fNegativeLabels;
+};
+
+struct SGenericV0 { /// For the other V0s that are reconstructed
+  int   fRecoIndex;
+  int   fPdgCode;
+  float fDecayX;
+  float fDecayY;
+  float fDecayZ;
+  float fPx;
+  float fPy;
+  float fPz;
 };
 
 class AliAnalysisTaskHyperTriton2He3piML : public AliAnalysisTaskSE {
@@ -98,6 +110,7 @@ class AliAnalysisTaskHyperTriton2He3piML : public AliAnalysisTaskSE {
   }
 
   AliEventCuts fEventCuts;  /// Event cuts class
+  bool fFillGenericV0s;
 
  private:
   TList* fListHist;  //! List of Cascade histograms
@@ -124,6 +137,7 @@ class AliAnalysisTaskHyperTriton2He3piML : public AliAnalysisTaskSE {
   float fMinHe3pt;
 
   std::vector<SHyperTritonHe3pi> fSHyperTriton;
+  std::vector<SGenericV0> fSGenericV0;
   std::vector<RHyperTritonHe3pi> fRHyperTriton;
   RCollision fRCollision;
 

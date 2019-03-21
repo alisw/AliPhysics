@@ -34,7 +34,7 @@ namespace
 constexpr double Sq(double x) { return x * x; }
 constexpr float kEps = 1.e-6;
 
-int ComputeMother(AliMCEvent *mcEvent, const AliESDtrack *one, const AliESDtrack *two)
+bool ComputeMother(AliMCEvent *mcEvent, const AliESDtrack *one, const AliESDtrack *two, int& label)
 {
   int labOne = std::abs(one->GetLabel());
   int labTwo = std::abs(two->GetLabel());
@@ -43,21 +43,18 @@ int ComputeMother(AliMCEvent *mcEvent, const AliESDtrack *one, const AliESDtrack
       mcEvent->IsPhysicalPrimary(labTwo) ||
       mcEvent->IsSecondaryFromMaterial(labOne) ||
       mcEvent->IsSecondaryFromMaterial(labTwo))
-    return -1;
+    return false;
   else
   {
     AliVParticle *partOne = mcEvent->GetTrack(labOne);
     AliVParticle *partTwo = mcEvent->GetTrack(labTwo);
     if (partOne->GetMother() != partTwo->GetMother())
-    {
-      return -1;
-    }
+      return false;
     else
     {
-      if (one->GetLabel() * two->GetLabel() >= 0)
-        return partTwo->GetMother();
-      else
-        return -partTwo->GetMother();
+      int coef = one->GetLabel() < 0 || two->GetLabel() < 0 ? -1 : 1;
+      label = coef * partTwo->GetMother();
+      return true;
     }
   }
 }
@@ -68,6 +65,7 @@ AliAnalysisTaskHyperTriton2He3piML::AliAnalysisTaskHyperTriton2He3piML(
     bool mc, std::string name)
     : AliAnalysisTaskSE(name.data()),
       fEventCuts{},
+      fFillGenericV0s{true},
       fListHist{nullptr},
       fTreeV0{nullptr},
       fPIDResponse{nullptr},
@@ -85,6 +83,7 @@ AliAnalysisTaskHyperTriton2He3piML::AliAnalysisTaskHyperTriton2He3piML(
       fMaxTPChe3Sigma{10.},
       fMinHe3pt{0.},
       fSHyperTriton{},
+      fSGenericV0{},
       fRHyperTriton{},
       fRCollision{}
 {
@@ -120,8 +119,11 @@ void AliAnalysisTaskHyperTriton2He3piML::UserCreateOutputObjects()
   fTreeV0->Branch("RCollision", &fRCollision);
   fTreeV0->Branch("RHyperTriton", &fRHyperTriton);
 
-  if (man->GetMCtruthEventHandler())
+  if (man->GetMCtruthEventHandler()) {
     fTreeV0->Branch("SHyperTriton", &fSHyperTriton);
+    if (fFillGenericV0s)
+      fTreeV0->Branch("SGenericV0", &fSGenericV0);
+  }
 
   fListHist = new TList();
   fListHist->SetOwner();
@@ -180,6 +182,7 @@ void AliAnalysisTaskHyperTriton2He3piML::UserExec(Option_t *)
   if (fMC)
   {
     fSHyperTriton.clear();
+    fSGenericV0.clear();
     for (int ilab = 0; ilab < mcEvent->GetNumberOfTracks(); ilab++)
     { // This is the begining of the loop on tracks
       AliVParticle *part = mcEvent->GetTrack(ilab);
@@ -219,9 +222,9 @@ void AliAnalysisTaskHyperTriton2He3piML::UserExec(Option_t *)
 
         SHyperTritonHe3pi v0part;
         v0part.fPdgCode = currentPDG;
-        v0part.fDecayX = sVtx[0];
-        v0part.fDecayY = sVtx[1];
-        v0part.fDecayZ = sVtx[2];
+        v0part.fDecayX = sVtx[0] - part->Xv();
+        v0part.fDecayY = sVtx[1] - part->Yv();
+        v0part.fDecayZ = sVtx[2] - part->Zv();
         v0part.fPxHe3 = he3->Px();
         v0part.fPyHe3 = he3->Py();
         v0part.fPzHe3 = he3->Pz();
@@ -230,6 +233,7 @@ void AliAnalysisTaskHyperTriton2He3piML::UserExec(Option_t *)
         v0part.fPzPi = pi->Pz();
         v0part.fFake = true;
         v0part.fRecoIndex = -1;
+        v0part.fNegativeLabels = true;
         mcMap[ilab] = fSHyperTriton.size();
         fSHyperTriton.push_back(v0part);
       }
@@ -370,14 +374,41 @@ void AliAnalysisTaskHyperTriton2He3piML::UserExec(Option_t *)
     int ilab = -1;
     if (fMC)
     {
-      ilab = std::abs(ComputeMother(mcEvent, he3Track, piTrack));
-      AliVParticle *part = mcEvent->GetTrack(ilab);
-      if (part)
-      {
-        if (std::abs(part->PdgCode()) == 1010010030)
+      int label = 0;
+      if (ComputeMother(mcEvent, he3Track, piTrack, label)) {
+        ilab = std::abs(label);
+        AliVParticle *part = mcEvent->GetTrack(ilab);
+        if (part)
         {
-          fSHyperTriton[mcMap[ilab]].fRecoIndex = (fRHyperTriton.size());
-          fSHyperTriton[mcMap[ilab]].fFake = false;
+          if (std::abs(part->PdgCode()) == 1010010030)
+          {
+            fSHyperTriton[mcMap[ilab]].fRecoIndex = (fRHyperTriton.size());
+            fSHyperTriton[mcMap[ilab]].fFake = false;
+            fSHyperTriton[mcMap[ilab]].fNegativeLabels = (label < 0);
+          } else {
+            SGenericV0 genV0;
+            genV0.fRecoIndex = fRHyperTriton.size();
+            genV0.fPdgCode = part->PdgCode();
+            double sVtx[3]{0.0,0.0,0.0};
+            for (int iD = part->GetDaughterFirst(); iD <= part->GetDaughterLast(); ++iD)
+            {
+              AliVParticle *dau = mcEvent->GetTrack(iD);
+              if (mcEvent->IsSecondaryFromWeakDecay(iD) && dau)
+              {
+                sVtx[0] = dau->Xv();
+                sVtx[1] = dau->Yv();
+                sVtx[2] = dau->Zv();
+                break;
+              }
+            }
+            genV0.fDecayX = sVtx[0] - part->Xv();
+            genV0.fDecayY = sVtx[1] - part->Yv();
+            genV0.fDecayZ = sVtx[2] - part->Zv();
+            genV0.fPx = part->Px();
+            genV0.fPy = part->Py();
+            genV0.fPz = part->Pz();
+            fSGenericV0.push_back(genV0);
+          }
         }
       }
     }
