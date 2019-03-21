@@ -59,7 +59,10 @@ using std::pair;
 ClassImp(AliAnalysisTaskHFJetIPQA)
 
 AliAnalysisTaskHFJetIPQA::AliAnalysisTaskHFJetIPQA():
-AliAnalysisTaskEmcalJet(),fHistManager(),
+AliAnalysisTaskEmcalJet(),
+fh1dEventRejectionRDHFCuts(nullptr),
+fh1dTracksAccepeted(nullptr),
+fHistManager(),
 fEventVertex(nullptr),
 fPidResponse(nullptr),
 fRunSmearing(kFALSE),
@@ -134,7 +137,10 @@ fTREE_pt(-1.)
     DefineOutput(1,  AliEmcalList::Class()) ;
 }
 AliAnalysisTaskHFJetIPQA::AliAnalysisTaskHFJetIPQA(const char *name):
-AliAnalysisTaskEmcalJet(name, kTRUE),fHistManager(name),
+AliAnalysisTaskEmcalJet(name, kTRUE),
+fh1dEventRejectionRDHFCuts(nullptr),
+fh1dTracksAccepeted(nullptr),
+fHistManager(name),
 fEventVertex(nullptr),
 fPidResponse(nullptr),
 fRunSmearing(kFALSE),
@@ -566,6 +572,7 @@ Bool_t AliAnalysisTaskHFJetIPQA::Run(){
                 FillHist("fh1dJetRecEtaPhiAccepted",jetrec->Eta(),jetrec->Phi(), 1);   //this->fXsectionWeightingFactor );
                 FillHist("fh1dJetRecPtAccepted",jetpt, 1);  //this->fXsectionWeightingFactor );
                 if(fIsPythia){
+
                     if(jetflavour==0)     FillHist("fh1dJetRecPtUnidentifiedAccepted",jetpt,1);  //this->fXsectionWeightingFactor );
                     else if(jetflavour==1)FillHist("fh1dJetRecPtudsgAccepted",        jetpt,1);  //this->fXsectionWeightingFactor );
                     else if(jetflavour==2)FillHist("fh1dJetRecPtcAccepted",           jetpt,1);  //this->fXsectionWeightingFactor );
@@ -1304,50 +1311,49 @@ void AliAnalysisTaskHFJetIPQA::UserCreateOutputObjects(){
 */
 
   //General Information
-  TH1D * h = (TH1D*)AddHistogramm("fh1dEventRejectionRDHFCuts","fh1dEventRejectionRDHFCuts;reason;count",12,0,12);
-  h->GetXaxis()->SetBinLabel(1,"Event accepted");
-  h->GetXaxis()->SetBinLabel(2,"Event rejected");
-  h->GetXaxis()->SetBinLabel(3,"Wrong physics selection");
-  h->GetXaxis()->SetBinLabel(4,"No vertex");
-  h->GetXaxis()->SetBinLabel(5,"No contributors");
-  h->GetXaxis()->SetBinLabel(6,"Less than 10 contributors");
-  h->GetXaxis()->SetBinLabel(7,">10cm vertex Z distance");
-  h->GetXaxis()->SetBinLabel(8,"Bad diamond X distance");
-  h->GetXaxis()->SetBinLabel(9,"Bad diamond Y distance");
-  h->GetXaxis()->SetBinLabel(10,"Bad diamond Z distance");
-  h->GetXaxis()->SetBinLabel(11,"Chi2 vtx >1.5 ");
-  AddHistogramm("fh1dTracksAccepeted","# tracks before/after cuts;;",3,0,3);
-  fHistManager.CreateTH1("fh1dEventsAcceptedInRun","fh1dEventsAcceptedInRun;Events Accepted;count",1,0,1,"s");
+  /*fh1dEventRejectionRDHFCuts = (TH1D*)AddHistogramm("fh1dEventRejectionRDHFCuts","fh1dEventRejectionRDHFCuts;reason;count",12,0,12);
+  fh1dEventRejectionRDHFCuts->GetXaxis()->SetBinLabel(1,"Event accepted");
+  fh1dEventRejectionRDHFCuts->GetXaxis()->SetBinLabel(2,"Event rejected");
+  fh1dEventRejectionRDHFCuts->GetXaxis()->SetBinLabel(3,"Wrong physics selection");
+  fh1dEventRejectionRDHFCuts->GetXaxis()->SetBinLabel(4,"No vertex");
+  fh1dEventRejectionRDHFCuts->GetXaxis()->SetBinLabel(5,"No contributors");
+  fh1dEventRejectionRDHFCuts->GetXaxis()->SetBinLabel(6,"Less than 10 contributors");
+  fh1dEventRejectionRDHFCuts->GetXaxis()->SetBinLabel(7,">10cm vertex Z distance");
+  fh1dEventRejectionRDHFCuts->GetXaxis()->SetBinLabel(8,"Bad diamond X distance");
+  fh1dEventRejectionRDHFCuts->GetXaxis()->SetBinLabel(9,"Bad diamond Y distance");
+  fh1dEventRejectionRDHFCuts->GetXaxis()->SetBinLabel(10,"Bad diamond Z distance");
+  fh1dEventRejectionRDHFCuts->GetXaxis()->SetBinLabel(11,"Chi2 vtx >1.5 ");*/
+  //AddHistogramm("fh1dTracksAccepeted","# tracks before/after cuts;;",3,0,3);
 
-  TH1D * h1 = GetHist1D("fh1dTracksAccepeted");
-  h1->GetXaxis()->SetBinLabel(1,"total");
-  h1->GetXaxis()->SetBinLabel(2,"accepted");
-  h1->GetXaxis()->SetBinLabel(3,"rejected");
+  fh1dTracksAccepeted =(TH1D*)AddHistogramm("fh1dTracksAccepeted","# tracks before/after cuts;;",3,0,3);
+  fh1dTracksAccepeted->GetXaxis()->SetBinLabel(1,"total");
+  fh1dTracksAccepeted->GetXaxis()->SetBinLabel(2,"accepted");
+  fh1dTracksAccepeted->GetXaxis()->SetBinLabel(3,"rejected");
 
   //Histograms for vertexing factor quicktest
-  fHistManager.CreateTH1("fh1dVERTEXFACTOR_VERTEXZ_FULL","fh1dVERTEXFACTOR_VERTEXZ_FULL;;",400,-100,100,"s");
-  fHistManager.CreateTH1("fh1dVERTEXFACTOR_VERTEXZ_10CM","fh1dVERTEXFACTOR_VERTEXZ_10CM;",400,-100,100,"s");
+  //fHistManager.CreateTH1("fh1dVERTEXFACTOR_VERTEXZ_FULL","fh1dVERTEXFACTOR_VERTEXZ_FULL;;",400,-100,100,"s");
+  //fHistManager.CreateTH1("fh1dVERTEXFACTOR_VERTEXZ_10CM","fh1dVERTEXFACTOR_VERTEXZ_10CM;",400,-100,100,"s");
 
-  TH1D * hvt = (TH1D*)AddHistogramm("fh1dVERTEXFACTOR_EVENTS","fh1dVERTEXFACTOR_EVENTS;;",3,0,3);
-  hvt->GetXaxis()->SetBinLabel(1,"Event in");
-  hvt->GetXaxis()->SetBinLabel(2,"Event kMB");
-  hvt->GetXaxis()->SetBinLabel(3,"Event kMB with Vertex");
+  //TH1D * hvt = (TH1D*)AddHistogramm("fh1dVERTEXFACTOR_EVENTS","fh1dVERTEXFACTOR_EVENTS;;",3,0,3);
+  //hvt->GetXaxis()->SetBinLabel(1,"Event in");
+  //hvt->GetXaxis()->SetBinLabel(2,"Event kMB");
+  //hvt->GetXaxis()->SetBinLabel(3,"Event kMB with Vertex");
 
-  fHistManager.CreateTH1("fh1dNoParticlesPerEvent","fh1dNoParticlesvsEvent;#;No Particles/Event",5000, 0, 5000);
-  fHistManager.CreateTH1("fh1dNoJetsPerEvent","fh1dNoJetsPerEvent;#;No Jets/Event",400, 0, 100);
-
+  fHistManager.CreateTH1("fh1dNoParticlesPerEvent","fh1dNoParticlesvsEvent;#;No Particles/Event",5000, 0, 5000,"s");
+  fHistManager.CreateTH1("fh1dNoJetsPerEvent","fh1dNoJetsPerEvent;#;No Jets/Event",400, 0, 100,"s");
+  fHistManager.CreateTH1("fh1dEventsAcceptedInRun","fh1dEventsAcceptedInRun;Events Accepted;count",1,0,1,"s");
 
   //In-Out of jet particle composition in pythia events
-  if(fIsPythia){
+  /*if(fIsPythia){
     fHistManager.CreateTH2("fh2dParticleSpectra_InCone","fh2dParticleSpectra_InCone ;species i;p_t particle (GeV/c)",22,0,22,200,0,50,"s");
     fHistManager.CreateTH2("fh2dParticleSpectra_InCone_bjet","fh2dParticleSpectra_InCone_bjet ;species i;p_t particle (GeV/c)",22,0,22,200,0,50,"s");
     fHistManager.CreateTH2("fh2dParticleSpectra_InCone_cjet","fh2dParticleSpectra_InCone_cjet ;species i;p_t particle (GeV/c)",22,0,22,200,0,50,"s");
     fHistManager.CreateTH2("fh2dParticleSpectra_InCone_lfjet","fh2dParticleSpectra_InCone_lfjet ;species i;p_t particle (GeV/c)",22,0,22,200,0,50,"s");
     fHistManager.CreateTH2("fh2dParticleSpectra_OutOfCone","fh2dParticleSpectra_OutOfCone ;species i;p_t particle (GeV/c)",22,0,22,200,0,50,"s");
     fHistManager.CreateTH2("fh2dParticleSpectra_Event","fh2dParticleSpectra_Event ;species i;p_t particle (GeV/c)",22,0,22,200,0,50,"s");
-  }
+  }*/
   //MC weights
-  fHistManager.CreateTH2("fh2dNMCWeightSpeciesPerJetPtN1_IP_all","fh2dNMCWeightSpeciesPerJetPtN1_all (N used weights) ;species i;pt",22,0,22,150,0,150,"s");
+  /*fHistManager.CreateTH2("fh2dNMCWeightSpeciesPerJetPtN1_IP_all","fh2dNMCWeightSpeciesPerJetPtN1_all (N used weights) ;species i;pt",22,0,22,150,0,150,"s");
   fHistManager.CreateTH2("fh2dNMCWeightSpeciesPerJetPtN1_IP_b","fh2dNMCWeightSpeciesPerJetPtN1_b (N used weights) ;species i;pt",22,0,22,150,0,150,"s");
   fHistManager.CreateTH2("fh2dNMCWeightSpeciesPerJetPtN1_IP_c","fh2dNMCWeightSpeciesPerJetPtN1_c (N used weights) ;species i;pt",22,0,22,150,0,150,"s");
   fHistManager.CreateTH2("fh2dNMCWeightSpeciesPerJetPtN1_IP_lf","fh2dNMCWeightSpeciesPerJetPtN1_lf (N used weights) ;species i;pt",22,0,22,150,0,150,"s");
@@ -1370,10 +1376,10 @@ void AliAnalysisTaskHFJetIPQA::UserCreateOutputObjects(){
   fHistManager.CreateTH2("fh2dNMCWeightSpeciesPerJetPtN3_SIP_all","fh2dNMCWeightSpeciesPerJetPtN3_all (N used weights) ;species i;pt",22,0,22,150,0,150,"s");
   fHistManager.CreateTH2("fh2dNMCWeightSpeciesPerJetPtN3_SIP_b","fh2dNMCWeightSpeciesPerJetPtN3_b (N used weights) ;species i;pt",22,0,22,150,0,150,"s");
   fHistManager.CreateTH2("fh2dNMCWeightSpeciesPerJetPtN3_SIP_c","fh2dNMCWeightSpeciesPerJetPtN3_c (N used weights) ;species i;pt",22,0,22,150,0,150,"s");
-  fHistManager.CreateTH2("fh2dNMCWeightSpeciesPerJetPtN3_SIP_lf","fh2dNMCWeightSpeciesPerJetPtN3_lf (N used weights) ;species i;pt",22,0,22,150,0,150,"s");
+  fHistManager.CreateTH2("fh2dNMCWeightSpeciesPerJetPtN3_SIP_lf","fh2dNMCWeightSpeciesPerJetPtN3_lf (N used weights) ;species i;pt",22,0,22,150,0,150,"s");*/
                                                             
   //Check N1N2N3 correlations
-  if(fUseTreeForCorrelations){
+  /*if(fUseTreeForCorrelations){
     Printf("Adding Tree to output file");
     OpenFile(1);
     fCorrelationCrossCheck = new TTree("fCorrelationCrossCheck","fCorrelationCrossCheck");
@@ -1382,9 +1388,9 @@ void AliAnalysisTaskHFJetIPQA::UserCreateOutputObjects(){
     fCorrelationCrossCheck->Branch("n3",&fTREE_n3,"pz/F");
     fCorrelationCrossCheck->Branch("pt",&fTREE_pt,"pz/F");
     fOutput->Add(fCorrelationCrossCheck);
-  }
+  }*/
 
-  if (fFillCorrelations && !fUseTreeForCorrelations){
+  /*if (fFillCorrelations && !fUseTreeForCorrelations){
     fHistManager.CreateTH2("fh2dInclusiveCorrelationN1N2","fh2dInclusiveCorrelationN1N2 ;N1 impact parameter xy (cm);N2impact parameter xy (cm)",1000,-50,50,1000,-50,50,"s");
     fHistManager.CreateTH2("fh2dInclusiveCorrelationN1N3","fh2dInclusiveCorrelationN1N3 ;N1 impact parameter xy (cm);N3impact parameter xy (cm)",1000,-50,50,1000,-50,50,"s");
     fHistManager.CreateTH2("fh2dInclusiveCorrelationN2N3","fh2dInclusiveCorrelationN2N3 ;N2 impact parameter xy (cm);N3impact parameter xy (cm)",1000,-50,50,1000,-50,50,"s");
@@ -1409,10 +1415,10 @@ void AliAnalysisTaskHFJetIPQA::UserCreateOutputObjects(){
     fHistManager.CreateTH2("fh2dGreater30_100GeVCorrelationN1N2mix","fh2dGreater30_100GeVCorrelationN1N2mix ;N1 impact parameter xy (cm);N2impact parameter xy (cm)",1000,-50,50,1000,-50,50,"s");
     fHistManager.CreateTH2("fh2dGreater30_100GeVCorrelationN1N3mix","fh2dGreater30_100GeVCorrelationN1N3mix ;N1 impact parameter xy (cm);N3impact parameter xy (cm)",1000,-50,50,1000,-50,50,"s");
     fHistManager.CreateTH2("fh2dGreater30_100GeVCorrelationN2N3mix","fh2dGreater30_100GeVCorrelationN2N3mix ;N2 impact parameter xy (cm);N3impact parameter xy (cm)",1000,-50,50,1000,-50,50,"s");
-  }
+  }*/
 
     //Track Impact Parameter Distributions
-    fHistManager.CreateTH1("fh1dPtHardMonitor","fh1dPtHardMonitor;ptHard;",500,0,250,"s");
+    /*fHistManager.CreateTH1("fh1dPtHardMonitor","fh1dPtHardMonitor;ptHard;",500,0,250,"s");
     fHistManager.CreateTH2("fh2dTracksImpParXY","radial imp. parameter ;impact parameter xy (cm);a.u.",2000,lowIPxy,highIPxy,500,0,100.,"s");
     fHistManager.CreateTH2("fh2dTracksImpParXYZ","XYZ imp. parameter ;impact parameter xy (cm);a.u.",2000,-1,1,500,0,100.,"s");
     fHistManager.CreateTH2("fh2dTracksImpParXYZSignificance","XYZ imp. parameter ;impact parameter xy (cm);a.u.",2000,-30,30,500,0,100.,"s");
@@ -1422,7 +1428,7 @@ void AliAnalysisTaskHFJetIPQA::UserCreateOutputObjects(){
     fHistManager.CreateTH1("fh1dTracksImpParXY","2d imp. parameter ;impact parameter 2d (cm);a.u.",400,-0.2,0.2,"s");
     fHistManager.CreateTH1("fh1dTracksImpParXYZ","3d imp. parameter ;impact parameter 3d (cm);a.u.",2000,0,1.,"s");
     fHistManager.CreateTH1("fh1dTracksImpParXYSignificance","radial imp. parameter ;impact parameter xy significance;a.u.",200,-30,30,"s");
-    fHistManager.CreateTH1 ("fh1dTracksImpParXYZSignificance","3d imp. parameter ;impact parameter 3d significance;a.u.",2000,0.,100.,"s");
+    fHistManager.CreateTH1 ("fh1dTracksImpParXYZSignificance","3d imp. parameter ;impact parameter 3d significance;a.u.",2000,0.,100.,"s");*/
 
     //General Jet Properties
     fHistManager.CreateTH2("fh1dJetRecEtaPhiAccepted","detector level jet;#eta;phi",1,-0.5,0.5,1,0.,TMath::TwoPi(),"s");
@@ -1438,7 +1444,7 @@ void AliAnalysisTaskHFJetIPQA::UserCreateOutputObjects(){
 
     //IP Distributions for different species for different numbers of ITShits
     if (fIsPythia){
-      fHistManager.CreateTH2("fh2dJetSignedImpParXYSignificanceudg_light_resfunction_6ITShits", "fh2dJetSignedImpParXYSignificanceudg_light_resfunction_6ITShits;pt (GeV/c); count",200,0,100,500,-30,0,"s");
+    /*  fHistManager.CreateTH2("fh2dJetSignedImpParXYSignificanceudg_light_resfunction_6ITShits", "fh2dJetSignedImpParXYSignificanceudg_light_resfunction_6ITShits;pt (GeV/c); count",200,0,100,500,-30,0,"s");
       fHistManager.CreateTH2("fh2dJetSignedImpParXYZSignificanceudg_light_resfunction_6ITShits","fh2dJetSignedImpParXYZSignificanceudg_light_resfunction_6ITShits;pt (GeV/c); count",200,0,100,500,-30,0,"s");
       fHistManager.CreateTH2("fh2dJetSignedImpParXYSignificanceudg_light_resfunction_5ITShits", "fh2dJetSignedImpParXYSignificanceudg_light_resfunction_5ITShits;pt (GeV/c); count",200,0,100,500,-30,0,"s");
       fHistManager.CreateTH2("fh2dJetSignedImpParXYZSignificanceudg_light_resfunction_5ITShits","fh2dJetSignedImpParXYZSignificanceudg_light_resfunction_5ITShits;pt (GeV/c); count",200,0,100,500,-30,0,"s");
@@ -1566,15 +1572,15 @@ void AliAnalysisTaskHFJetIPQA::UserCreateOutputObjects(){
          fHistManager.CreateTH1("fh1dJetRecPt_0_9JP_all_Accepted","detector level jets;pt (GeV/c); count",500,0,250,"s");
          fHistManager.CreateTH1("fh1dJetRecPt_0_95JP_all_Accepted","detector level jets;pt (GeV/c); count",500,0,250,"s");
        }//EndDoJetProb
-
+*/
      //MC Impact Parameter Correction
-     fHistManager.CreateTH2("fh2dTracksImpParXY_McCorr","radial imp. parameter (after correction);impact parameter xy (cm);a.u.",2000,-1,1,500,0,100,"s");
+    /* fHistManager.CreateTH2("fh2dTracksImpParXY_McCorr","radial imp. parameter (after correction);impact parameter xy (cm);a.u.",2000,-1,1,500,0,100,"s");
      fHistManager.CreateTH1("fh1dTracksImpParXY_McCorr","radial imp. parameter (after correction);impact parameter xy (cm);a.u.",400,-0.2,0.2,"s");
      fHistManager.CreateTH1("fh1dTracksImpParXYZ_McCorr","3d imp. parameter (after correction);impact parameter 3d (cm);a.u.",2000,0,100.,"s");
      fHistManager.CreateTH2("fh2dTracksImpParXYZ_McCorr","XYZ imp. parameter ;impact parameter xy (cm);a.u.",2000,-1,1,500,0,100.,"s");
      fHistManager.CreateTH2("fh2dTracksImpParXYZSignificance_McCorr","XYZ imp. parameter ;impact parameter xy (cm);a.u.",2000,-30,30,500,0,100.,"s");
      fHistManager.CreateTH1("fh1dTracksImpParXYSignificance_McCorr","radial imp. parameter (after correction);impact parameter xy significance;a.u.",2000,-30,30.,"s");
-     fHistManager.CreateTH1("fh1dTracksImpParXYZSignificance_McCorr","3d imp. parameter (after correction);impact parameter 3d significance;a.u.",2000,0.,100.,"s");
+     fHistManager.CreateTH1("fh1dTracksImpParXYZSignificance_McCorr","3d imp. parameter (after correction);impact parameter 3d significance;a.u.",2000,0.,100.,"s");*/
 
      //MC General Information
      fHistManager.CreateTH1("fh1dJetGenPt","generator level jets;pt (GeV/c); count",250,0,250,"s");
@@ -1655,7 +1661,7 @@ void AliAnalysisTaskHFJetIPQA::UserCreateOutputObjects(){
                   fHistManager.CreateTH2(Form("%s%s%s%s%s%s",base,dim[id],typ[it],flavour[ifl],ordpar[io],special[is]),
                                 Form("%s%s%s%s%s%s;;",base,dim[id],typ[it],flavour[ifl],ordpar[io],special[is]),
                                 ptbins,ptlow,pthigh,ipbins,iplow,iphigh,"s");
-                  printf("Generating%s%s%s%s%s%s",base,dim[id],typ[it],flavour[ifl],ordpar[io],special[is]);
+                  //printf("Generating%s%s%s%s%s%s",base,dim[id],typ[it],flavour[ifl],ordpar[io],special[is]);
 
                   }
               }
@@ -1675,7 +1681,6 @@ void AliAnalysisTaskHFJetIPQA::PrintSettings(){
     //Documentation Canvas
     Printf("Adding Cut Canvas to output file");
     cCuts=new TCanvas("Cuts","Cuts",800,800);
-    fOutput->Add(cCuts);
 
     cCuts->cd();
     //TPaveText* pJetCuts=new TPaveText(0.05,0.64,0.95, 0.95);
@@ -1739,6 +1744,8 @@ void AliAnalysisTaskHFJetIPQA::PrintSettings(){
     pCorrections->AddText(Form("Underlying Event Subtraction:%i", fDoUnderlyingEventSub));
     pCorrections->AddText(Form("Do Flavour Matching: %i", fDoFlavourMatching));
     pCorrections->Draw();
+    //fOutput->Add(cCuts);
+
 }
 
 //NotInUse
@@ -2820,6 +2827,7 @@ Bool_t AliAnalysisTaskHFJetIPQA::IsSelectionParticleOmegaXiSigmaP( AliVParticle 
         }
 
         if(fDoFlavourMatching){
+
           for(UInt_t i = 0; i < jet->GetNumberOfTracks(); i++) {//start trackloop jet
             vp = static_cast<AliVParticle*>(jet->Track(i));
             if (!vp){
@@ -2855,9 +2863,8 @@ Bool_t AliAnalysisTaskHFJetIPQA::IsSelectionParticleOmegaXiSigmaP( AliVParticle 
                     Double_t dphi = phijet-phi;
                     dphi = TVector2::Phi_mpi_pi(dphi);
                     Double_t  d = sqrt(deta * deta + dphi * dphi);
-                  //   printf("LINE %i, deta%f, dphi%f, d=%f, fDoFlavourMatching=%i\n",__LINE__, deta,dphi,d,fDoFlavourMatching);
                     if(!fDoFlavourMatching) {
-                      if(!((part->GetStatus()==11) ||(part->GetStatus()==12))) continue;
+                      //if(!((part->GetStatus()==11) ||(part->GetStatus()==12))) continue;
                       if(d > radius) continue;
                       kJetOrigin=pdg;
                     }
@@ -3386,6 +3393,43 @@ Double_t AliAnalysisTaskHFJetIPQA::CalculatePSTrackPID(Double_t sign, Double_t s
 
 
 void AliAnalysisTaskHFJetIPQA::Terminate(Option_t *){
+
+
+    /*TIterator* iter = fOutput->MakeIterator();
+    TObject* obj;
+    Int_t count =0;
+    while ((obj = iter->Next())) {
+      printf("Name of object:%s\n",obj->GetName());
+      if (obj->InheritsFrom("TH1D")) {
+        TH1D *h=(TH1D*)obj;
+        printf("Inheriting... %p with entries=%f\n", obj,h->GetEntries());
+      }
+      else{
+        if(obj->InheritsFrom("TH2D")){
+            TH2D *h2=(TH2D*)obj;
+            printf("Inheriting... %p with entries=%f\n", obj,h2->GetEntries());
+        }
+        else{
+          if(obj->InheritsFrom("TH1F")){
+              TH1F *h3=(TH1F*)obj;
+              printf("Inheriting... %p with entries=%f\n", obj,h3->GetEntries());
+          }
+          else{
+            if(obj->InheritsFrom("TH2F")){
+                TH2F *h4=(TH2F*)obj;
+                printf("Inheriting... %p with entries=%f\n", obj,h4->GetEntries());
+            }
+            else{
+          printf("Strange! \n");
+          obj->Dump();
+            }
+          }
+        }
+      }
+      count++;
+    }*/
+    //printf("Overall %i objects in AliEmcalList\n",count);
+
     printf("\n*********************************\n");
     printf("Corrections:\n");
     printf("    MC Corrections (Data/MC+Fluka):%i\n",fDoMCCorrection);

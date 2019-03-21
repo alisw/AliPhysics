@@ -185,6 +185,10 @@ public:
     void setFFillCorrelations(const Bool_t &value);
     virtual void SetPtHardBin(Int_t b){ fSelectPtHardBin = b;}
 
+protected:
+    TH1D *fh1dEventRejectionRDHFCuts; //!
+    TH1D *fh1dTracksAccepeted; //!
+
 private:
     THistManager         fHistManager    ;///< Histogram manager
     const AliAODVertex * fEventVertex;//!
