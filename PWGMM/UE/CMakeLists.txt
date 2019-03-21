@@ -32,6 +32,7 @@ include_directories(${ROOT_INCLUDE_DIRS}
 set(SRCS
   UeSpherocity/AliAnalysisTaskUeSpherocity.cxx
   UePid/AliAnalysisTaskUePid.cxx
+  UeMultDep/AliAnalysisTaskUeMultDep.cxx	
 )
 
 # Headers from sources
@@ -94,3 +95,4 @@ install(FILES ${HDRS} DESTINATION include)
 # install macros
 install(DIRECTORY UeSpherocity DESTINATION  PWGMM/UE)
 install(DIRECTORY UePid DESTINATION  PWGMM/UE)
+install(DIRECTORY UeMultDep DESTINATION  PWGMM/UE)	
