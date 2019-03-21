@@ -52,6 +52,7 @@ AliAnalysisTaskCheckEvSel::AliAnalysisTaskCheckEvSel():
   fHistNEvents(0x0),
   fHistNEventsVsCent(0x0),
   fHistNEventsVsCL1(0x0),
+  fHistWhyRej(0x0),
   fHistNEventsVsWhyRej(0x0),
   fHistNTrackletsBeforePileup(0x0),
   fHistNTrackletsAfterPileup(0x0),
@@ -91,6 +92,7 @@ AliAnalysisTaskCheckEvSel::AliAnalysisTaskCheckEvSel(Bool_t readMC, Int_t system
   fHistNEvents(0x0),
   fHistNEventsVsCent(0x0),
   fHistNEventsVsCL1(0x0),
+  fHistWhyRej(0x0),
   fHistNEventsVsWhyRej(0x0),
   fHistNTrackletsBeforePileup(0x0),
   fHistNTrackletsAfterPileup(0x0),
@@ -133,6 +135,7 @@ AliAnalysisTaskCheckEvSel::~AliAnalysisTaskCheckEvSel()
     delete fHistNEvents;
     delete fHistNEventsVsCent;
     delete fHistNEventsVsCL1;
+    delete fHistWhyRej;
     delete fHistNEventsVsWhyRej;
     delete fHistNTrackletsBeforePileup;
     delete fHistNTrackletsAfterPileup;
@@ -184,6 +187,8 @@ void AliAnalysisTaskCheckEvSel::UserCreateOutputObjects()
   ConfigureEvSelAxis(fHistNEventsVsCL1->GetXaxis());
   fOutput->Add(fHistNEventsVsCL1);
 
+  fHistWhyRej = new TH1F("hWhyRej"," ; WhyRej",11,-0.5,10.5);
+  fOutput->Add(fHistWhyRej);
   fHistNEventsVsWhyRej = new TH2F("hNEventsVsWhyRej", " ; ; WhyRej ",20,-0.5,19.5,11,-0.5,10.5);
   ConfigureEvSelAxis(fHistNEventsVsWhyRej->GetXaxis());
   fOutput->Add(fHistNEventsVsWhyRej);
@@ -304,7 +309,8 @@ void AliAnalysisTaskCheckEvSel::UserExec(Option_t */*option*/){
 
   Bool_t isEvSel=fAnalysisCuts->IsEventSelected(aod);
   Int_t wrej=fAnalysisCuts->GetWhyRejection();
-  Double_t centr=fAnalysisCuts->GetCentrality(aod,AliRDHFCuts::kCentZNA);
+  Double_t centr=fAnalysisCuts->GetCentrality(aod,AliRDHFCuts::kCentV0M);
+  if(fSystem==2) centr=fAnalysisCuts->GetCentrality(aod,AliRDHFCuts::kCentZNA);// p-Pb
   const AliVVertex *vertex = aod->GetPrimaryVertex();
   const AliVVertex *vertexSPD = aod->GetPrimaryVertexSPD();
   Double_t ntrkl = AliVertexingHFUtils::GetNumberOfTrackletsInEtaRange(aod,-1.,1.); 
@@ -312,6 +318,8 @@ void AliAnalysisTaskCheckEvSel::UserExec(Option_t */*option*/){
   Double_t zvSPD=vertexSPD->GetZ();
   Double_t zvTRK=vertex->GetZ();
 
+  if(!isEvSel)fHistWhyRej->Fill(wrej); 
+    
   if(fEnableVertexNtuple) {
     Float_t wrej4ntuple = (Float_t)wrej;
     if(isEvSel) wrej4ntuple = -1;
@@ -381,7 +389,7 @@ void AliAnalysisTaskCheckEvSel::UserExec(Option_t */*option*/){
       else binToFill=7;
     }else{
       if(fAnalysisCuts->IsEventRejectedDueToNotRecoVertex() || fAnalysisCuts->IsEventRejectedDueToVertexContributors() || fAnalysisCuts->IsEventRejectedDueToBadTrackVertex()){
-	if(fAnalysisCuts->IsEventRejectedDueToNotRecoVertex()) binToFill=9;
+	if(fAnalysisCuts->IsEventRejectedDueToNotRecoVertex()) binToFill=8;
 	if(fAnalysisCuts->IsEventRejectedDueToVertexContributors()) binToFill=9;
 	if(fAnalysisCuts->IsEventRejectedDueToBadTrackVertex()) binToFill=10;
       }else{

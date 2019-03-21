@@ -20,7 +20,7 @@
 //                   drathee@cern.ch | sjena@cern.ch                       //
 //                            Surya Prakash Pathak                         //
 //                       surya.prakash.pathak@cern.ch                      //
-//                         (Last Modified 2019/01/30)                      //
+//                         (Last Modified 2019/03/18)                      //
 //                 Dealing with Wide pT Window Modified to ESDs            //
 //Some parts of the code are taken from J. Thaeder/ M. Weber NetParticle analysis code//
 //=========================================================================//
@@ -623,7 +623,6 @@ void AliEbyEPhiDistNew::UserExec( Option_t * ){
   }
   
   fEventCounter->Fill(1);
-    cout << " I am in fill 1" << endl;
     
     if(!fInputHandler)
         fInputHandler = dynamic_cast<AliVEventHandler *>(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler());
@@ -651,7 +650,6 @@ void AliEbyEPhiDistNew::UserExec( Option_t * ){
     if(!fIsMC){
     
     if(fRun == "LHC15o"){
-        cout << " I am in frun = lhc15o" << endl;
         if(!fEventCuts->AcceptEvent(fVevent)){
             LocalPost(); return;
         }
@@ -698,14 +696,11 @@ void AliEbyEPhiDistNew::UserExec( Option_t * ){
   fHistCent->Fill(fCentrality);
 
   fEventCounter->Fill(2);
-    cout << " I am in fill 2" << endl;
   
   //---------- Initiate MC
   if (fIsMC){
-      cout << " I am here inside initiate MC " << endl;
     fMCEvent = NULL;
     fEventCounter->Fill(8);
-      cout << " I am in fill 8" << endl;
     if(fIsAOD) {
       fArrayMC = NULL;
       fArrayMC = dynamic_cast<TClonesArray*>(fVevent->FindListObject(AliAODMCParticle::StdBranchName()));
@@ -736,7 +731,6 @@ void AliEbyEPhiDistNew::UserExec( Option_t * ){
   //----------
   
   fEventCounter->Fill(3);
-    cout << "I am in fill 3" << endl;
   fNTracks  = fVevent->GetNumberOfTracks();
 
   Int_t iTracks = 0;
@@ -804,7 +798,6 @@ void AliEbyEPhiDistNew::UserExec( Option_t * ){
     // - MC Loop for Physical Primary -
     //--------------------------------- 
     if (fIsMC) {
-      cout << "I am inside MC loop for physical primary" << endl;
       Int_t label  = TMath::Abs(track->GetLabel()); 
       
       Bool_t isPhysicalPrimary        = 0;

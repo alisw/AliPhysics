@@ -250,6 +250,36 @@ AliAnalysisTaskSE *AddTaskSigma0Femto(bool isMC = false, bool MomRes = false,
     antiSigmaCuts->SetLightweight(true);
   }
 
+  // vary the sidebands
+  if (suffix == "33") {
+    sigmaCuts->SetSigmaSideband(0.01, 0.075);
+    antiSigmaCuts->SetSigmaSideband(0.01, 0.075);
+  } else if (suffix == "34") {
+    sigmaCuts->SetSigmaSideband(0.01, 0.1);
+    antiSigmaCuts->SetSigmaSideband(0.01, 0.1);
+  } else if (suffix == "35") {
+    sigmaCuts->SetSigmaSideband(0.025, 0.05);
+    antiSigmaCuts->SetSigmaSideband(0.025, 0.05);
+  } else if (suffix == "36") {
+    sigmaCuts->SetSigmaSideband(0.025, 0.075);
+    antiSigmaCuts->SetSigmaSideband(0.025, 0.075);
+  } else if (suffix == "37") {
+    sigmaCuts->SetSigmaSideband(0.025, 0.1);
+    antiSigmaCuts->SetSigmaSideband(0.025, 0.1);
+  } else if (suffix == "38") {
+    sigmaCuts->SetSigmaSideband(0.005, 0.025);
+    antiSigmaCuts->SetSigmaSideband(0.005, 0.025);
+  } else if (suffix == "39") {
+    sigmaCuts->SetSigmaSideband(0.005, 0.05);
+    antiSigmaCuts->SetSigmaSideband(0.005, 0.05);
+  } else if (suffix == "40") {
+    sigmaCuts->SetSigmaSideband(0.005, 0.075);
+    antiSigmaCuts->SetSigmaSideband(0.005, 0.075);
+  } else if (suffix == "41") {
+    sigmaCuts->SetSigmaSideband(0.005, 0.1);
+    antiSigmaCuts->SetSigmaSideband(0.005, 0.1);
+  }
+
   if (trigger == "kINT7") {
     sigmaCuts->SetMultiplicityMode(AliVEvent::kINT7);
     antiSigmaCuts->SetMultiplicityMode(AliVEvent::kINT7);

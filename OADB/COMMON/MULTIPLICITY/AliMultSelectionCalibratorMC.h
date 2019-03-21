@@ -58,7 +58,7 @@ public:
     void SetupStandardInput();
     
     //Switch to configure <Ntracklet> fit type
-    void SetUseQuadraticMapping(Bool_t lOpt){ fkUseQuadraticMapping=lOpt; } 
+    void SetUseQuadraticMapping(Bool_t lOpt){ fkUseQuadraticMapping=lOpt; }
     
     //Master Function in this Class: To be called once filenames are set
     Bool_t Calibrate();

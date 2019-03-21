@@ -996,28 +996,7 @@ Bool_t AliDptDptCorrelations::ProcessTrack(Int_t trkId, AliVTrack *trk) {
 /// \param trkId the external particle Id
 /// \param part the passed particle
 /// \return kTRUE if the particle is properly handled kFALSE otherwise
-Bool_t AliDptDptCorrelations::ProcessTrack(Int_t trkId, TParticle *part) {
-
-  if (fUseSimulation) {
-    return kFALSE;
-  }
-  else
-    if (part->GetPDG()->Charge() != 0) {
-      return ProcessTrack(trkId, (part->GetPDG()->Charge() > 0) ? 1 : -1, Float_t(part->Pt()), Float_t(part->Eta()), Float_t(part->Phi()));
-    }
-    else {
-      return kFALSE;
-    }
-}
-
-
-/// \brief process a true particle and store its parameters if feasible
-///
-/// If simulation is orderd the track is discarded and kFALSE is returned
-/// \param trkId the external particle Id
-/// \param part the passed particle
-/// \return kTRUE if the particle is properly handled kFALSE otherwise
-Bool_t AliDptDptCorrelations::ProcessTrack(Int_t trkId, AliAODMCParticle *part) {
+Bool_t AliDptDptCorrelations::ProcessTrack(Int_t trkId, AliVParticle *part) {
 
   if (fUseSimulation) {
     return kFALSE;

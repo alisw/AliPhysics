@@ -1179,7 +1179,7 @@ void AliAnalysisTaskEMCALPhotonIsolation::UserCreateOutputObjects(){
   fClusEvsClusT->Sumw2();
   fOutput->Add(fClusEvsClusT);
 
-  fNCellsPerCluster = new TH2F ("hNCellsPerCluster","Number of cells per cluster vs energy", 200, 0., 100., 200, 0., 100.); 
+  fNCellsPerCluster = new TH2F ("hNCellsPerCluster","Number of cells per cluster vs energy", 200, 0., 100., 100, 0., 100.); 
   fNCellsPerCluster->SetXTitle("#it{E} (GeV)");
   fNCellsPerCluster->SetYTitle("#it{n}_{cells}");
   fOutput->Add(fNCellsPerCluster);

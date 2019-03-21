@@ -41,6 +41,7 @@
 #include "AliVVZERO.h"
 #include <algorithm>
 #include <fstream>
+#include <random>
 
 const Double_t pi = TMath::Pi();
 
@@ -995,8 +996,9 @@ void AliAnalysisTaskRidge::FillTracks(){
 		}
 	}
 
-
-	std::random_shuffle ( goodtrackindices.begin(), goodtrackindices.end() );
+	std::random_device rd;
+	std::default_random_engine engine{rd()};
+	std::shuffle ( goodtrackindices.begin(), goodtrackindices.end(), engine );
 
 
 	double MaxPhi=0;
@@ -1370,7 +1372,9 @@ void AliAnalysisTaskRidge::FillTracklets(){
 	}
 
 	//eta is in ordering, so detaleta is always negative. solution -> Shuffle
-	std::random_shuffle ( goodtrackindices.begin(), goodtrackindices.end() );
+	std::random_device rd;
+	std::default_random_engine engine{rd()};
+	std::shuffle ( goodtrackindices.begin(), goodtrackindices.end(), engine );
 
 	fMultiplicity = fEvt -> GetMultiplicity();
 	const UInt_t ntracks = goodtrackindices.size();

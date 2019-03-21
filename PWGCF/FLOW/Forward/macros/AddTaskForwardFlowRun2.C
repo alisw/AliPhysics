@@ -19,7 +19,7 @@
  *
  * @ingroup pwglf_forward_flow
  */
-AliAnalysisTaskSE* AddTaskForwardFlowRun2( bool doNUA, bool makeFakeHoles, TString nua_file, UShort_t nua_mode, bool doetagap, Double_t gap, bool mc,  bool esd,bool prim_cen,bool prim_fwd , UInt_t tracktype, TString centrality,Double_t minpt,Double_t maxpt,TString sec_file,TString suffix)
+AliAnalysisTaskSE* AddTaskForwardFlowRun2( bool doNUA, bool makeFakeHoles, TString nua_file, UShort_t nua_mode, bool doetagap, Double_t gap, bool mc,  bool esd,bool prim_cen,bool prim_fwd , UInt_t tracktype, TString centrality,Double_t minpt,Double_t maxpt,TString sec_file_cen,TString sec_file_fwd,TString suffix)
 {
   std::cout << "______________________________________________________________________________" << std::endl;
 
@@ -133,12 +133,21 @@ AliAnalysisTaskSE* AddTaskForwardFlowRun2( bool doNUA, bool makeFakeHoles, TStri
     file->Close();
   }
 
-  if (task->fSettings.gap > 1.5){
-    TFile *file1 = new TFile(sec_file);
+  if (sec_file_fwd != ""){
+    TFile *file1 = new TFile(sec_file_fwd);
 
-    file1->GetObject("seccorr", task->fSettings.seccorr);
-    task->fSettings.seccorr->SetDirectory(0);
+    file1->GetObject("correction", task->fSettings.seccorr_fwd);
+    task->fSettings.seccorr_fwd->SetDirectory(0);
     file1->Close();
+  }
+
+
+  if (sec_file_cen != ""){
+    TFile *file2 = new TFile(sec_file_cen);
+
+    file2->GetObject("correction", task->fSettings.seccorr_cen);
+    task->fSettings.seccorr_cen->SetDirectory(0);
+    file2->Close();
   }
 
   resName += "_" + centrality;
@@ -152,7 +161,7 @@ AliAnalysisTaskSE* AddTaskForwardFlowRun2( bool doNUA, bool makeFakeHoles, TStri
   std::cout << "______________________________________________________________________________" << std::endl;
 
   AliAnalysisDataContainer *coutput_recon =
-  mgr->CreateContainer(combName,
+  mgr->CreateContainer(suffix,//combName,
    TList::Class(),
    AliAnalysisManager::kOutputContainer,
    mgr->GetCommonFileName());

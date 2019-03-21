@@ -92,6 +92,42 @@ class AliAnalysisTaskUPCforward : public AliAnalysisTaskSE
         void                    FillGoodRunVector(std::vector<Int_t> &fVectorGoodRunNumbers);
 
                                 /**
+                                 * This function computes the cos(theta) in the
+                                 * Collins-Soper frame for the helicity
+                                 * analysis.
+                                 */
+        Double_t                CosThetaCollinsSoper( TLorentzVector muonPositive,
+                                                      TLorentzVector muonNegative,
+                                                      TLorentzVector possibleJPsi );
+
+                                /**
+                                 * This function computes the cos(theta) in the
+                                 * Helicity frame for the helicity
+                                 * analysis.
+                                 */
+        Double_t                CosThetaHelicityFrame( TLorentzVector muonPositive,
+                                                       TLorentzVector muonNegative,
+                                                       TLorentzVector possibleJPsi );
+
+                                /**
+                                 * This function computes the cos(phi) in the
+                                 * Collins-Soper frame for the helicity
+                                 * analysis.
+                                 */
+        Double_t                CosPhiCollinsSoper( TLorentzVector muonPositive,
+                                                    TLorentzVector muonNegative,
+                                                    TLorentzVector possibleJPsi );
+
+                                /**
+                                 * This function computes the cos(phi) in the
+                                 * Helicity frame for the helicity
+                                 * analysis.
+                                 */
+        Double_t                CosPhiHelicityFrame( TLorentzVector muonPositive,
+                                                     TLorentzVector muonNegative,
+                                                     TLorentzVector possibleJPsi );
+
+                                /**
                                  * Use the class as a data member. It contains
                                  * the cuts for the muon track.
                                  */
@@ -201,11 +237,19 @@ class AliAnalysisTaskUPCforward : public AliAnalysisTaskSE
                                  */
         TH1F*                   fZNAEnergyAgainstEntriesH;         //!
 
+                                /**
+                                 * This histogram records the energy distri-
+                                 * bution of the neutron ZDC. BEFORE timing
+                                 * selection.
+                                 */
+        TH1F*                   fZNCEnergyBeforeTimingSelectionH;         //!
 
-
-
-
-
+                                /**
+                                 * This histogram records the energy distri-
+                                 * bution of the neutron ZDC. BEFORE timing
+                                 * selection.
+                                 */
+        TH1F*                   fZNAEnergyBeforeTimingSelectionH;         //!
 
                                 /**
                                  * This histogram records the energy distri-
@@ -503,6 +547,37 @@ class AliAnalysisTaskUPCforward : public AliAnalysisTaskSE
         //_______________________________
 
         //_______________________________
+        // HELICITY AND COLLINS-SOPER
+
+                                /**
+                                 * This histogram shows the angular distribution
+                                 * of the positive muon in the HELICITY frame.
+                                 * COS(THETA) distribution.
+                                 */
+        TH1F*                   fCosThetaHelicityFrameJPsiH;
+
+                                /**
+                                 * This histogram shows the angular distribution
+                                 * of the positive muon in the HELICITY frame.
+                                 * PHI distribution.
+                                 */
+        TH1F*                   fPhiHelicityFrameJPsiH;
+
+                                /**
+                                 * This histogram shows the angular distribution
+                                 * of the positive muon in the COLLINS-SOPER
+                                 * frame.  COS(THETA) distribution.
+                                 */
+        TH1F*                   fCosThetaCollinsSoperFrameJPsiH;
+
+                                /**
+                                 * This histogram shows the angular distribution
+                                 * of the positive muon in the COLLINS-SOPER
+                                 * frame. PHI distribution.
+                                 */
+        TH1F*                   fPhiCollinsSoperFrameJPsiH;
+
+        //_______________________________
         // CUTS
         /*
          * The following is all the possible checks for the event selections
@@ -562,7 +637,7 @@ class AliAnalysisTaskUPCforward : public AliAnalysisTaskSE
          * If I happen to encounter it again in the future, I will make sure to
          * record it!
          */
-        ClassDef(AliAnalysisTaskUPCforward, 2);
+        ClassDef(AliAnalysisTaskUPCforward, 4);
 };
 
 #endif

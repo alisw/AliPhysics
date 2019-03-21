@@ -410,6 +410,18 @@ void AddTask_GammaHeavyMeson_MixedMode_pp(
     cuts.AddCutPCMCalo("00062113","00200009327000008250400000","2446600000013300000","0163103b00000010"); // QA
     cuts.AddCutPCMCalo("00062113","00200009327000008250400000","2446600040013300000","0163103b00000010"); // QA, 100ns timing
     cuts.AddCutPCMCalo("00062113","00200009327000008250400000","2446600043013300000","0163103b00000010"); // QA, 100ns timing, TM on with default EMC params
+  } else if (trainConfig == 904){ // for eta prime
+    cuts.AddCutPCMCalo("00010113","00200009327000008250400000","2446600043013300000","01631030000000d0"); // INT7
+    cuts.AddCutPCMCalo("00062113","00200009327000008250400000","2446600043013300000","01631030000000d0"); // PHI7
+  
+
+  // *********************************************************************************************************
+  // 13 TeV  pp Run2 - EDC configurations
+  // *********************************************************************************************************
+  } else if (trainConfig == 1000){ // EMCAL + DCal clusters
+    cuts.AddCutPCMCalo("00010113","00200009327000008250400000","4117911067032230000","01631030000000d0"); //INT7
+    cuts.AddCutPCMCalo("0008e113","00200009327000008250400000","4117911067032230000","01631030000000d0"); //EG2
+    cuts.AddCutPCMCalo("0008d113","00200009327000008250400000","4117911067032230000","01631030000000d0"); //EG1
 
   } else {
     Error(Form("HeavyNeutralMesonToGG_%i",trainConfig), "wrong trainConfig variable no cuts have been specified for the configuration");

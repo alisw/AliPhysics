@@ -3156,8 +3156,8 @@ void CompareFitResults_Ratios_NS_1() {
                     Double_t errH = yvalDa[ip]/yvalMCref[ip]*(TMath::Sqrt((eyvalDaH[ip]/yvalDa[ip])*(eyvalDaH[ip]/yvalDa[ip])+(eyvalMCref[ip]/yvalMCref[ip])*(eyvalMCref[ip]/yvalMCref[ip])));
                     grDataRat->SetPoint(ip,xval[ip],yvalDa[ip]/yvalMCref[ip]);
                     grDataRat->SetPointError(ip,exval[ip],exval[ip],errL,errH);
-                    Double_t errv2L = yvalv2[ip]/yvalMCref[ip]*(TMath::Sqrt((eyvalv2L[ip]/yvalv2[ip])*(eyvalv2L[ip]/yvalv2[ip])+(eyvalMCref[ip]/yvalMCref[ip])*(eyvalMCref[ip]/yvalMCref[ip])));
-                    Double_t errv2H = yvalv2[ip]/yvalMCref[ip]*(TMath::Sqrt((eyvalv2H[ip]/yvalv2[ip])*(eyvalv2H[ip]/yvalv2[ip])+(eyvalMCref[ip]/yvalMCref[ip])*(eyvalMCref[ip]/yvalMCref[ip])));
+                    Double_t errv2L = eyvalv2L[ip]/yvalMCref[ip]; //simple propagation of error times constant (ie 1/MC val), since there's no error on MC v2
+                    Double_t errv2H = eyvalv2H[ip]/yvalMCref[ip]; //simple propagation of error times constant (ie 1/MC val), since there's no error on MC v2
                     grv2uncRat->SetPoint(ip,xval[ip],yvalv2[ip]/yvalMCref[ip]);
                     grv2uncRat->SetPointError(ip,exval[ip],exval[ip],errv2L,errv2H);
                 }
@@ -3266,7 +3266,10 @@ void CompareFitResults_Ratios_NS_2() {
                 Double_t *yvalv2 = grv2unc->GetY();
                 Double_t *eyvalv2L = grv2unc->GetEYlow();                       
                 Double_t *eyvalv2H = grv2unc->GetEYhigh();                    
-
+printf("PAD %d: v2 x = %f, %f, %f, %f\n",i,xvalv2[0],xvalv2[1],xvalv2[2],xvalv2[3]);
+printf("PAD %d: v2 y = %f, %f, %f, %f\n",i,yvalv2[0],yvalv2[1],yvalv2[2],yvalv2[3]);
+printf("PAD %d: v2 eyl = %f, %f, %f, %f\n",i,eyvalv2L[0],eyvalv2L[1],eyvalv2L[2],eyvalv2L[3]);
+printf("PAD %d: v2 eyh = %f, %f, %f, %f\n",i,eyvalv2H[0],eyvalv2H[1],eyvalv2H[2],eyvalv2H[3]);
                 for(int k=0;k<nmodelsOn;k++) {
                         if(k==modRef) continue;
                         TH1D *hMod = (TH1D*)pad->GetListOfPrimitives()->At(5+k*2);
@@ -3305,21 +3308,24 @@ void CompareFitResults_Ratios_NS_2() {
                       Double_t errH = yvalDa[ip]/yvalMCref[ip]*(TMath::Sqrt((eyvalDaH[ip]/yvalDa[ip])*(eyvalDaH[ip]/yvalDa[ip])+(eyvalMCref[ip]/yvalMCref[ip])*(eyvalMCref[ip]/yvalMCref[ip])));
                       grDataRat->SetPoint(ip,xval[ip],yvalDa[ip]/yvalMCref[ip]);
                       grDataRat->SetPointError(ip,exval[ip],exval[ip],errL,errH);
-                      Double_t errv2L = yvalv2[ip]/yvalMCref[ip]*(TMath::Sqrt((eyvalv2L[ip]/yvalv2[ip])*(eyvalv2L[ip]/yvalv2[ip])+(eyvalMCref[ip]/yvalMCref[ip])*(eyvalMCref[ip]/yvalMCref[ip])));
-                      Double_t errv2H = yvalv2[ip]/yvalMCref[ip]*(TMath::Sqrt((eyvalv2H[ip]/yvalv2[ip])*(eyvalv2H[ip]/yvalv2[ip])+(eyvalMCref[ip]/yvalMCref[ip])*(eyvalMCref[ip]/yvalMCref[ip])));
+                      Double_t errv2L = eyvalv2L[ip]/yvalMCref[ip]; //simple propagation of error times constant (ie 1/MC val), since there's no error on MC v2
+                      Double_t errv2H = eyvalv2H[ip]/yvalMCref[ip]; //simple propagation of error times constant (ie 1/MC val), since there's no error on MC v2
                       grv2uncRat->SetPoint(ip,xval[ip],yvalv2[ip]/yvalMCref[ip]);
                       grv2uncRat->SetPointError(ip,exval[ip],exval[ip],errv2L,errv2H);
                     }                
                 }
                 else {  //this for ad hoc points removal!
-                    for(int ip=0;ip<grModRef->GetN();ip++) {                  
+                    for(int ip=0;ip<grModRef->GetN();ip++) {        
+                      if(xvalDa[ip]>24 || xvalDa[ip]<0.1) continue;
+printf("NELLA PAD %d: x(dati0) = %f, (v20) = %f, x(MC0) = %f\n",i,xvalDa[0],xvalv2[0],xval[0]);          
                       Double_t errL = yvalDa[ip]/yvalMCref[ip+1]*(TMath::Sqrt((eyvalDaL[ip]/yvalDa[ip])*(eyvalDaL[ip]/yvalDa[ip])+(eyvalMCref[ip+1]/yvalMCref[ip+1])*(eyvalMCref[ip+1]/yvalMCref[ip+1])));
                       Double_t errH = yvalDa[ip]/yvalMCref[ip+1]*(TMath::Sqrt((eyvalDaH[ip]/yvalDa[ip])*(eyvalDaH[ip]/yvalDa[ip])+(eyvalMCref[ip+1]/yvalMCref[ip+1])*(eyvalMCref[ip+1]/yvalMCref[ip+1])));
                       grDataRat->SetPoint(ip,xval[ip+1],yvalDa[ip]/yvalMCref[ip+1]);
                       grDataRat->SetPointError(ip,exval[ip+1],exval[ip+1],errL,errH);
-                      Double_t errv2L = yvalv2[ip]/yvalMCref[ip+1]*(TMath::Sqrt((eyvalv2L[ip]/yvalv2[ip])*(eyvalv2L[ip]/yvalv2[ip])+(eyvalMCref[ip+1]/yvalMCref[ip+1])*(eyvalMCref[ip+1]/yvalMCref[ip+1])));
-                      Double_t errv2H = yvalv2[ip]/yvalMCref[ip+1]*(TMath::Sqrt((eyvalv2H[ip]/yvalv2[ip])*(eyvalv2H[ip]/yvalv2[ip])+(eyvalMCref[ip+1]/yvalMCref[ip+1])*(eyvalMCref[ip+1]/yvalMCref[ip+1])));
-                      grv2uncRat->SetPoint(ip,xval[ip+1],yvalv2[ip+1]/yvalMCref[ip]);
+                      Double_t errv2L = eyvalv2L[ip]/yvalMCref[ip+1]; //simple propagation of error times constant (ie 1/MC val), since there's no error on MC v2
+                      Double_t errv2H = eyvalv2H[ip]/yvalMCref[ip+1]; //simple propagation of error times constant (ie 1/MC val), since there's no error on MC v2
+printf("...x = %f, errRatv2L = %f, errRatv2H = %f\n",xvalDa[0],errv2L,errv2H);                      
+                      grv2uncRat->SetPoint(ip,xval[ip+1],yvalv2[ip]/yvalMCref[ip+1]);
                       grv2uncRat->SetPointError(ip,exval[ip+1],exval[ip+1],errv2L,errv2H);                    
                     }
                 }
@@ -3455,8 +3461,8 @@ void CompareFitResults_Ratios_AS_1() {
                     Double_t errH = yvalDa[ip]/yvalMCref[ip]*(TMath::Sqrt((eyvalDaH[ip]/yvalDa[ip])*(eyvalDaH[ip]/yvalDa[ip])+(eyvalMCref[ip]/yvalMCref[ip])*(eyvalMCref[ip]/yvalMCref[ip])));
                     grDataRat->SetPoint(ip,xval[ip],yvalDa[ip]/yvalMCref[ip]);
                     grDataRat->SetPointError(ip,exval[ip],exval[ip],errL,errH);
-                    Double_t errv2L = yvalv2[ip]/yvalMCref[ip]*(TMath::Sqrt((eyvalv2L[ip]/yvalv2[ip])*(eyvalv2L[ip]/yvalv2[ip])+(eyvalMCref[ip]/yvalMCref[ip])*(eyvalMCref[ip]/yvalMCref[ip])));
-                    Double_t errv2H = yvalv2[ip]/yvalMCref[ip]*(TMath::Sqrt((eyvalv2H[ip]/yvalv2[ip])*(eyvalv2H[ip]/yvalv2[ip])+(eyvalMCref[ip]/yvalMCref[ip])*(eyvalMCref[ip]/yvalMCref[ip])));
+                    Double_t errv2L = eyvalv2L[ip]/yvalMCref[ip]; //simple propagation of error times constant (ie 1/MC val), since there's no error on MC v2
+                    Double_t errv2H = eyvalv2H[ip]/yvalMCref[ip]; //simple propagation of error times constant (ie 1/MC val), since there's no error on MC v2
                     grv2uncRat->SetPoint(ip,xval[ip],yvalv2[ip]/yvalMCref[ip]);
                     grv2uncRat->SetPointError(ip,exval[ip],exval[ip],errv2L,errv2H);
                 }
@@ -3592,8 +3598,8 @@ void CompareFitResults_Ratios_AS_2() {
                     Double_t errH = yvalDa[ip]/yvalMCref[ip]*(TMath::Sqrt((eyvalDaH[ip]/yvalDa[ip])*(eyvalDaH[ip]/yvalDa[ip])+(eyvalMCref[ip]/yvalMCref[ip])*(eyvalMCref[ip]/yvalMCref[ip])));
                     grDataRat->SetPoint(ip,xval[ip],yvalDa[ip]/yvalMCref[ip]);
                     grDataRat->SetPointError(ip,exval[ip],exval[ip],errL,errH);
-                    Double_t errv2L = yvalv2[ip]/yvalMCref[ip]*(TMath::Sqrt((eyvalv2L[ip]/yvalv2[ip])*(eyvalv2L[ip]/yvalv2[ip])+(eyvalMCref[ip]/yvalMCref[ip])*(eyvalMCref[ip]/yvalMCref[ip])));
-                    Double_t errv2H = yvalv2[ip]/yvalMCref[ip]*(TMath::Sqrt((eyvalv2H[ip]/yvalv2[ip])*(eyvalv2H[ip]/yvalv2[ip])+(eyvalMCref[ip]/yvalMCref[ip])*(eyvalMCref[ip]/yvalMCref[ip])));
+                    Double_t errv2L = eyvalv2L[ip]/yvalMCref[ip]; //simple propagation of error times constant (ie 1/MC val), since there's no error on MC v2
+                    Double_t errv2H = eyvalv2H[ip]/yvalMCref[ip]; //simple propagation of error times constant (ie 1/MC val), since there's no error on MC v2
                     grv2uncRat->SetPoint(ip,xval[ip],yvalv2[ip]/yvalMCref[ip]);
                     grv2uncRat->SetPointError(ip,exval[ip],exval[ip],errv2L,errv2H);
                 }

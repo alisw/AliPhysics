@@ -198,7 +198,8 @@ void CharmHadronVnFitSystematics(string cfgFileName, string refFileName, int ref
     SetHistoStyle(hResolCentrInt,kRed,kOpenSquare);
 
     //TNtuple for multi-trial
-    TFile outFile(Form("FitSystematics_%sv%d_%s_q%d_%0.f-%0.f.root",mesonname.data(),harmonic,flowmethodname.data(),harmonic,qnmin,qnmax),"recreate");
+    string outputdir = config["OutputDir"]["FitSystematics"].as<string>();
+    TFile outFile(Form("%s/FitSystematics_%sv%d_%s_q%d_%0.f-%0.f.root",outputdir.data(),mesonname.data(),harmonic,flowmethodname.data(),harmonic,qnmin,qnmax),"recreate");
     TString vars = "";
     if(flowmethod==AliAnalysisTaskSECharmHadronvn::kEP || flowmethod==AliAnalysisTaskSECharmHadronvn::kEvShapeEP) 
         vars = "PtMin:PtMax:PtCent:PtCentUnc:FitType:BinWidth:MassMin:MassMax:SgnFunc:BkgFunc:RawYieldInPlane:RawYieldOutOfPlane:RawYieldInPlaneUnc:RawYieldOutOfPlaneUnc:MeanInPlane:MeanOutOfPlane:MeanInPlaneUnc:MeanOutOfPlaneUnc:SigmaInPlane:SigmaOutOfPlane:SigmaInPlaneUnc:SigmaOutOfPlaneUnc:RedChi2InPlane:RedChi2OutOfPlane:vn:vnUnc:qnMin:qnMax:TrialNo";
@@ -612,7 +613,7 @@ void CharmHadronVnFitSystematics(string cfgFileName, string refFileName, int ref
         latFixSigma[iPt] = BuildTLatex(kBlack,42,0.04);
         latBinCount[iPt] = BuildTLatex(kGreen+2,42,0.04);
 
-        cVnRes->cd(iPt+1)->DrawFrame(-0.5,0.,0.5,iTrial/4,Form("%0.1f < #it{p}_{T} < %0.1f GeV/#it{c};#it{v}_{%d}-#it{v}_{%d}^{ref}{%s};Entries",PtMin[iPt],PtMax[iPt],harmonic,harmonic,v2measname.Data()));
+        cVnRes->cd(iPt+1)->DrawFrame(-0.5,0.,0.5,iTrial/2,Form("%0.1f < #it{p}_{T} < %0.1f GeV/#it{c};#it{v}_{%d}-#it{v}_{%d}^{ref}{%s};Entries",PtMin[iPt],PtMax[iPt],harmonic,harmonic,v2measname.Data()));
         hVnResSimFit[iPt]->Draw("same");
         latSimFit[iPt]->DrawLatex(0.2,0.8,Form("RMS = %0.3f",hVnResSimFit[iPt]->GetRMS()));
         latSimFit[iPt]->DrawLatex(0.2,0.75,Form("mean = %0.3f",hVnResSimFit[iPt]->GetMean()));
@@ -639,7 +640,7 @@ void CharmHadronVnFitSystematics(string cfgFileName, string refFileName, int ref
     TCanvas* cSyst = new TCanvas("cSyst","",1920,1080);
     DivideCanvas(cSyst,nPtBins);
     for(unsigned int iPt=0; iPt<nPtBins; iPt++) {
-        hFrameSyst[iPt] = new TH2F(Form("hFrameSyst_Pt%d",iPt),Form("%0.1f < #it{p}_{T} < %0.1f GeV/#it{c};;Mean #pm RMS #it{v}_{%d}-#it{v}_{%d}^{ref}{%s}",PtMin[iPt],PtMax[iPt],harmonic,harmonic,v2measname.Data()),4,0.5,4.5,1,-0.25,0.25); 
+        hFrameSyst[iPt] = new TH2F(Form("hFrameSyst_Pt%d",iPt),Form("%0.1f < #it{p}_{T} < %0.1f GeV/#it{c};;Mean #pm RMS #it{v}_{%d}-#it{v}_{%d}^{ref}{%s}",PtMin[iPt],PtMax[iPt],harmonic,harmonic,v2measname.Data()),4,0.5,4.5,1,-0.1,0.1); 
         hFrameSyst[iPt]->SetDirectory(0);
         hFrameSyst[iPt]->GetXaxis()->SetBinLabel(1,"Simultaneus Fit");
         hFrameSyst[iPt]->GetXaxis()->SetBinLabel(2,"Free Sigma");
@@ -668,9 +669,9 @@ void CharmHadronVnFitSystematics(string cfgFileName, string refFileName, int ref
     }
 
     //output files
-    cSyst->SaveAs(Form("FitSystematics_%sv%d_%s_q%d_%0.f-%0.f.pdf",mesonname.data(),harmonic,flowmethodname.data(),harmonic,qnmin,qnmax),"recreate");
-    cVnRes->SaveAs(Form("FitSystematics_%sv%d_ResDistr_%s_q%d_%0.f-%0.f.pdf",mesonname.data(),harmonic,flowmethodname.data(),harmonic,qnmin,qnmax),"recreate");
-    cVnVsTrial->SaveAs(Form("FitSystematics_%sv%d_VsTrial_%s_q%d_%0.f-%0.f.pdf",mesonname.data(),harmonic,flowmethodname.data(),harmonic,qnmin,qnmax),"recreate");
+    cSyst->SaveAs(Form("%s/FitSystematics_%sv%d_%s_q%d_%0.f-%0.f.pdf",outputdir.data(),mesonname.data(),harmonic,flowmethodname.data(),harmonic,qnmin,qnmax),"recreate");
+    cVnRes->SaveAs(Form("%s/FitSystematics_%sv%d_ResDistr_%s_q%d_%0.f-%0.f.pdf",outputdir.data(),mesonname.data(),harmonic,flowmethodname.data(),harmonic,qnmin,qnmax),"recreate");
+    cVnVsTrial->SaveAs(Form("%s/FitSystematics_%sv%d_VsTrial_%s_q%d_%0.f-%0.f.pdf",outputdir.data(),mesonname.data(),harmonic,flowmethodname.data(),harmonic,qnmin,qnmax),"recreate");
 
     outFile.cd();
     multiTrialNtuple->Write();

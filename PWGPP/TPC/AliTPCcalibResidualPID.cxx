@@ -434,7 +434,7 @@ void AliTPCcalibResidualPID::UserCreateOutputObjects()
     fTreeV0Pr->Branch("distance_vs", &fTree_distance_vs);
   }
   
-  fAnaUtils = new AliAnalysisUtils;
+  fAnaUtils = new AliAnalysisUtils();
 
   PostData(1,fOutputContainer);
   if (fWriteAdditionalOutput) {

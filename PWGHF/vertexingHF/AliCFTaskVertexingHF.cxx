@@ -803,6 +803,11 @@ void AliCFTaskVertexingHF::UserExec(Option_t *)
     trackCuts[0]=fCuts->GetTrackCuts();
     trackCuts[1]=fCuts->GetTrackCutsV0daughters();
     trackCuts[2]=fCuts->GetTrackCutsV0daughters();
+    if (fUseCascadeTaskForLctoV0bachelor){ // the bachelor is prong 2 in this case
+      trackCuts[2]=fCuts->GetTrackCuts();
+      trackCuts[0]=fCuts->GetTrackCutsV0daughters();
+      trackCuts[1]=fCuts->GetTrackCutsV0daughters();
+    }
   }
   else {
     for (Int_t iProng = 0; iProng<cfVtxHF->GetNProngs(); iProng++){
