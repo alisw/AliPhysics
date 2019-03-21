@@ -309,6 +309,8 @@ class AliReducedVarManager : public TObject {
     kNtracksEventPlane, // number of tracks used for event plane                
     kNCaloClusters,     // number of calorimeter clusters
     kNTPCclusters,    // number of TPC clusters
+    kNTPCclustersFromPileup,            // number of TPC clusters minus the expected TPC clusters if no pileup is present
+    kNTPCclustersFromPileupRelative,    // number of TPC clusters minus the expected TPC clusters w/o pileup relative to the TPC clusters w/o pileup 
     kMultiplicity,
     kSPDntracklets = kMultiplicity,
     kSPDntracklets08,

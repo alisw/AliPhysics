@@ -348,6 +348,10 @@ void AliReducedVarManager::SetVariableDependencies() {
     fgUsedVars[kPt]               = kTRUE;
     fgUsedVars[kPairDcaXYSqrt]    = kTRUE;
   }
+  if(fgUsedVars[kNTPCclustersFromPileupRelative]) {
+    fgUsedVars[kNTPCclusters] = kTRUE;
+    fgUsedVars[kNTPCclustersFromPileup] = kTRUE;
+  }
 }
 
 //__________________________________________________________________
@@ -770,9 +774,20 @@ void AliReducedVarManager::FillEventInfo(BASEEVENT* baseEvent, Float_t* values, 
   }
   
   fgUsedVars[kNTracksTPCoutFromPileup] = kTRUE;
-  if(values[kVZEROTotalMult]>0.0)
-     values[kNTracksTPCoutFromPileup] = values[kNTracksPerTrackingStatus+kTPCout] - (-2.55+TMath::Sqrt(2.55*2.55+4.0e-5*values[kVZEROTotalMult])) / 2.0e-5;
+  if(values[kVZEROTotalMultFromChannels]>0.0)
+     values[kNTracksTPCoutFromPileup] = 0.0;
   else fgUsedVars[kNTracksTPCoutFromPileup] = kFALSE;
+  
+  Float_t tpcClustersExpectationWOpileup = 0.001;
+  if(fgUsedVars[kNTPCclustersFromPileup] && values[kVZEROTotalMultFromChannels]>0.0) {
+     tpcClustersExpectationWOpileup = (-0.0132+TMath::Sqrt(0.0132*0.0132-4.0*(-200.0-values[kVZEROTotalMultFromChannels])*1.4e-9))/2.0/1.4e-9;
+     values[kNTPCclustersFromPileup] = values[kNTPCclusters] - tpcClustersExpectationWOpileup;
+  }
+  else 
+     values[kNTPCclustersFromPileup] = 0.0;
+  
+  if(fgUsedVars[kNTPCclustersFromPileupRelative] && values[kNTPCclusters]>0.0)
+     values[kNTPCclustersFromPileupRelative] = values[kNTPCclustersFromPileup] / tpcClustersExpectationWOpileup;
   
   if(fgUsedVars[kVZEROQvecX+0*6+1] || fgUsedVars[kVZEROQvecY+0*6+1] || fgUsedVars[kVZERORP+0*6+1]) {
     Double_t qvecVZEROA[EVENTPLANE::fgkNMaxHarmonics][2] = {{0.0}};
@@ -2513,8 +2528,10 @@ void AliReducedVarManager::SetDefaultVarNames() {
   fgVariableNames[kNtracksSubEvRight]           = "No.tracks sub-event right";       fgVariableUnits[kNtracksSubEvRight]      = "";  
   fgVariableNames[kNtracksEventPlane]           = "No.tracks";                       fgVariableUnits[kNtracksEventPlane]      = "";  
   fgVariableNames[kNCaloClusters]               = "No.calorimeter clusters";         fgVariableUnits[kNCaloClusters]          = "";
-  fgVariableNames[kNTPCclusters]                = "No. TPC clusters";                  fgVariableUnits[kNTPCclusters]  = "";
-
+  fgVariableNames[kNTPCclusters]                = "No. TPC clusters";                fgVariableUnits[kNTPCclusters]  = "";
+  fgVariableNames[kNTPCclustersFromPileup]      = "No. TPC clusters above expectation w/o pileup"; fgVariableUnits[kNTPCclustersFromPileup] = "";
+  fgVariableNames[kNTPCclustersFromPileupRelative] = "Relative no. TPC clusters above expectation w/o pileup"; fgVariableUnits[kNTPCclustersFromPileupRelative] = "";
+  
   TString multEstimators[kNMultiplicityEstimators] = {
     "SPDntracklets10",
     "SPDntracklets08",
