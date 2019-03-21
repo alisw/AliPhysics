@@ -174,11 +174,11 @@ class AliAnalysisTaskSED0Mass : public AliAnalysisTaskSE
   TH2F *fhMultVZEROTPCclustersCorrNoCut;  //!<!
   TH2F *fhMultVZEROTPCclustersCorr;  //!<!
   Bool_t    fEnablePileupRejVZEROTPCcls;
-  Bool_t    fRejectOutOfBunchPileUp;  //!<!
+  Bool_t    fRejectOutOfBunchPileUp;
 
 
   /// \cond CLASSIMP
-  ClassDef(AliAnalysisTaskSED0Mass,25); /// AliAnalysisTaskSE for D0->Kpi
+  ClassDef(AliAnalysisTaskSED0Mass,26); /// AliAnalysisTaskSE for D0->Kpi
   /// \endcond
 };
 
