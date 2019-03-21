@@ -219,9 +219,9 @@ void AliAnalysisTaskHyperTriton2He3piML::UserExec(Option_t *)
 
         SHyperTritonHe3pi v0part;
         v0part.fPdgCode = currentPDG;
-        v0part.fDecayX = sVtx[0];
-        v0part.fDecayY = sVtx[1];
-        v0part.fDecayZ = sVtx[2];
+        v0part.fDecayX = sVtx[0] - part->Xv();
+        v0part.fDecayY = sVtx[1] - part->Yv();
+        v0part.fDecayZ = sVtx[2] - part->Zv();
         v0part.fPxHe3 = he3->Px();
         v0part.fPyHe3 = he3->Py();
         v0part.fPzHe3 = he3->Pz();
