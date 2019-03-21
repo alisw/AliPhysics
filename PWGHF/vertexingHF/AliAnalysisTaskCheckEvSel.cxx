@@ -72,6 +72,7 @@ AliAnalysisTaskCheckEvSel::AliAnalysisTaskCheckEvSel():
   fHistZVertexSPDBadTrackVert(0x0),
   fNtupleZvtxDistVsWhyRej(0x0),
   fEnableVertexNtuple(kFALSE),
+  fUseAliEventCuts(kFALSE),
   fCounter(0),
   fAnalysisCuts(0x0)
 {
@@ -112,6 +113,7 @@ AliAnalysisTaskCheckEvSel::AliAnalysisTaskCheckEvSel(Bool_t readMC, Int_t system
   fHistZVertexSPDBadTrackVert(0x0),
   fNtupleZvtxDistVsWhyRej(0x0),
   fEnableVertexNtuple(kFALSE),
+  fUseAliEventCuts(kFALSE),
   fCounter(0),
   fAnalysisCuts(cuts)
 {
@@ -308,6 +310,7 @@ void AliAnalysisTaskCheckEvSel::UserExec(Option_t */*option*/){
   // Post the data already here
 
   Bool_t isEvSel=fAnalysisCuts->IsEventSelected(aod);
+  if(fUseAliEventCuts) isEvSel=fAnalysisCuts->IsEventSelectedWithAliEventCuts(aod);
   Int_t wrej=fAnalysisCuts->GetWhyRejection();
   Double_t centr=fAnalysisCuts->GetCentrality(aod,AliRDHFCuts::kCentV0M);
   if(fSystem==2) centr=fAnalysisCuts->GetCentrality(aod,AliRDHFCuts::kCentZNA);// p-Pb
