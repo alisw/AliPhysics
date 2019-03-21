@@ -139,6 +139,8 @@ void AliAnalysisTaskInclusivef0f2::UserCreateOutputObjects()
  binType = AxisStr("Type",{"PN","PP","NN"});
 
  binMass = AxisFix("Mass",1000,0,5);
+ if( fOption.Contains("Fine") ) binMass = AxisFix("Mass",100000,0,5);
+
 
  binCharge = AxisFix("Charge",3,-1.5,1.5);
 
@@ -335,7 +337,7 @@ void AliAnalysisTaskInclusivef0f2::UserExec(Option_t *option)
  double v0amplitude=0;
  for(int i=0;i<64;i++){ v0amplitude += lVV0->GetMultiplicity(i); }
  fMultiplicity = fEvt -> GetMultiplicity();
-
+ if( fOption.Contains("MC") ) IsMC = kTRUE;
 
 // const AliVVertex* trackVtx = fEvt->GetPrimaryVertexTPC(); //for ESD
  const AliVVertex* trackVtx = fEvt->GetPrimaryVertex();
@@ -580,7 +582,8 @@ void AliAnalysisTaskInclusivef0f2::UserExec(Option_t *option)
                 fMCArray = (TClonesArray*) fEvt->FindListObject("mcparticles");
                 AliAODMCHeader *cHeaderAOD  = dynamic_cast<AliAODMCHeader*>
                         (fEvt->FindListObject(AliAODMCHeader::StdBranchName()));
-                const Int_t nTracksMC = fMCArray->GetEntriesFast();
+//                const Int_t nTracksMC = fMCArray->GetEntriesFast();
+		const Int_t nTracksMC = fMCArray->GetEntries();  
                 for(Int_t iTracks = 0; iTracks < nTracksMC; iTracks++){
                         AliAODMCParticle* trackMC = dynamic_cast<AliAODMCParticle*>(fMCArray->At(iTracks));
                         if( !trackMC ) continue;

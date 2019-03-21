@@ -10,7 +10,7 @@ AliAnalysisTaskInclusivef0f2* AddTaskInclusivef0f2(
 
 	AliAnalysisTaskInclusivef0f2* taskInclusivef0f2 =
 		new AliAnalysisTaskInclusivef0f2(taskname, Form("%s_%s",taskname,option) );
-	taskInclusivef0f2 -> SetIsMC(0);
+//	taskInclusivef0f2 -> SetIsMC(1);
 	if( !taskInclusivef0f2 ) return 0x0;
 
 	mgr->AddTask(taskInclusivef0f2);

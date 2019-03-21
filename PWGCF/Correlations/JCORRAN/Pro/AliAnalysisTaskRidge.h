@@ -86,8 +86,8 @@ class AliAnalysisTaskRidge : public AliAnalysisTaskSE {
         void SetFilterBit(UInt_t filterbit) {fFilterBit = filterbit;}
 //	void SetEfficiencyFile(char* fname) { fefficiencyFile = new TFile(fname,"read"); }
 	void SetEfficiencyFile(char* fname) { fefficiencyFile = TFile::Open(fname,"read"); }
+	void SetEfficiency3DFile(char* fname) { fefficiency3DFile = TFile::Open(fname,"read"); }
 
-    
         Bool_t  GoodTracksSelection(int trk);
         Bool_t  GoodTrackletSelection();
 	Bool_t  GoodTracksSelectionMC();
@@ -142,6 +142,7 @@ class AliAnalysisTaskRidge : public AliAnalysisTaskSE {
         TString                         fOption;
         TList*                          fOutput=nullptr; //!
 	TFile*				fefficiencyFile=nullptr; 
+	TFile*				fefficiency3DFile=nullptr;
 //	TFile*				fefficiencyFile;
 
         AliTriggerAnalysis*             fTrigger=nullptr; //!
@@ -202,6 +203,8 @@ class AliAnalysisTaskRidge : public AliAnalysisTaskSE {
         AliVMultiplicity*               fMultiplicity=nullptr;//!
 	Int_t				bookingsizeMC = 7;
 	std::vector< std::vector< double > > Eff;
+	std::vector< std::vector< std::vector< double > > > Eff3D;
+
 	Double1D EffpT;
 
 	Int_t fEff_npT_step = 40;
@@ -213,6 +216,8 @@ class AliAnalysisTaskRidge : public AliAnalysisTaskSE {
 	Double_t fEff_eta_min = -0.9;
 	Double_t fEff_eta_max = 0.9;
 	Double_t fEff_eta_l = 0.1;
+
+	Int_t fEff_nphi_step = 18;
 
         Int_t ITS_fEff_neta_step = 26;
         Double_t ITS_fEff_eta_min = -1.3;
