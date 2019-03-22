@@ -230,8 +230,9 @@ void AliTPCPIDEtaTree::UserExec(Option_t *)
     Printf("ERROR: fESD not available");
     return;
   }
-  
-  fMC = dynamic_cast<AliMCEvent*>(MCEvent());
+
+  if (GetIsPileUp(fESD, kPileUpRejectionSPD))
+  return;
   
   if (!fPIDResponse || !fV0KineCuts)
     return;
@@ -247,6 +248,8 @@ void AliTPCPIDEtaTree::UserExec(Option_t *)
   
   if(primaryVertex->GetNContributors() <= 0) 
     return;
+    
+  fMC = dynamic_cast<AliMCEvent*>(MCEvent());
   
   fMultiplicity = fESD->GetNumberOfESDTracks(); 
     

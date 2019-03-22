@@ -10,6 +10,8 @@
 #pragma link C++ class AliAnalysisTaskUpcPhi+;
 #pragma link C++ class AliAnalysisTaskUpcRho0+;
 #pragma link C++ class AliAnalysisTaskUpcTree+;
+#pragma link C++ class AliAnalysisTaskUPCforward+;
+#pragma link C++ class AliAnalysisTaskUPCforwardMC+;
 #pragma link C++ class AliUPCTrack+;
 #pragma link C++ class AliUPCMuonTrack+;
 #pragma link C++ class AliUPCEvent+;
@@ -21,5 +23,5 @@
 #pragma link C++ class AliAnalysisTaskTransTask+;
 #pragma link C++ class AliAnalysisTaskTOFTrigger+;
 #pragma link C++ class AliAnalysisTaskZDCTree+;
-
+#pragma link C++ class AliAnalysisTaskUPCPhiTest+;
 #endif

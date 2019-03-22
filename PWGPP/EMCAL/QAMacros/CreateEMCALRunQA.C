@@ -44,6 +44,7 @@ TH2F* FormatRunHisto(TH2F* aHisto, const char* title, const char* YTitle="");
 TH2D* FormatRunHisto2D(TH2D* aHisto, const char* title, const char* YTitle="");
 
 TH2F* HistoPerMod(TH2F* name, const char* title);
+TH2F* HistoPerMod2(TH2F* name, const char* title);
 TH2*  AutoZoom(TH2* H, Option_t* aType="all", Int_t EntryMin=0);
 int   FindNumberOfSM(TFile* f, TString fTrigger, TString period);
 
@@ -711,16 +712,18 @@ Int_t DrawRun(const Long_t  run, TString period, TString pass, TString fTrigger,
     mod3=1;
   c5->Divide(3, (nSM/3)+mod3);
 
+
+ 
   for(int ism = 0; ism < nSM; ism++){
     c5->cd(ism+1);
     gPad->SetLogz();
 
-    if(TString(Form("Nb cells per clus%s Mod %d", legend, ism)).Length() > 60){
+    if(TString(Form("Nb cells per clus%s Mod %d", legend, ism)).Length() > 100){
       Error(__FUNCTION__, "Title too long!");
       return -6;
     }
 
-    AutoZoom(HistoPerMod((TH2F*)outputList->FindObject(Form("EMCAL_hNCellsPerCluster_Mod%i", ism)), Form("Nb of cells per cluster%s Mod %d", legend, ism)), "all", 1)->DrawCopy("colz");
+    AutoZoom(HistoPerMod((TH2F*)outputList->FindObject(Form("EMCAL_hNCellsPerCluster_Mod%i", ism)), Form("Nb of cells per cluster Mod %i", ism)), "all", 1)->DrawCopy("colz");
   }
 
   outfilename =  QAPATH + "CellsperClusterSM" + fTrigger(r) + ".pdf";
@@ -732,6 +735,79 @@ Int_t DrawRun(const Long_t  run, TString period, TString pass, TString fTrigger,
     c5->SaveAs(outfilename2);
   c5->Write();
   delete c5;
+
+ TCanvas* c5b = new TCanvas("NSumClusEclus", "Nb of clus vs Sum E clus for each SM", 600, 600);
+  c5b->SetLogz();
+  c5b->SetFillColor(0);
+  c5b->SetBorderSize(0);
+  c5b->SetFrameBorderMode(0);
+
+  Bool_t mod3b=0;
+  if(nSM%3)
+    mod3b=1;
+  c5b->Divide(3, (nSM/3)+mod3b);
+
+  for(int ism = 0; ism < nSM; ism++){
+    c5b->cd(ism+1);
+    gPad->SetLogz();
+
+    if(TString(Form("nclus vs Eclus sum per %s Mod %d", legend, ism)).Length() > 100){
+      Error(__FUNCTION__, "Title too long!");
+      return -6;
+    }
+
+
+  AutoZoom(HistoPerMod((TH2F*)outputList->FindObject(Form("EMCAL_hNClustersSumEnergy_Mod%i", ism)), Form("nclus vs Eclus sum per Mod %i", ism)), "all", 1)->DrawCopy("colz");
+  }
+
+  outfilename =  QAPATH + "nClusSumEsperSM" + fTrigger(r) + ".pdf";
+  outfilename2 = QAPATH + "nClusSumEsperSM" + fTrigger(r) + ".png";
+
+  if(SavePlots==2)
+    c5b->SaveAs(outfilename);
+  if(SavePlots)
+    c5b->SaveAs(outfilename2);
+  c5b->Write();
+  delete c5b;
+
+ TCanvas* c5c = new TCanvas("SumCell E vs V0", "Sum E cell vs V0 for each SM", 600, 600);
+  c5c->SetLogz();
+  c5c->SetFillColor(0);
+  c5c->SetBorderSize(0);
+  c5c->SetFrameBorderMode(0);
+
+  Bool_t mod3c=0;
+  if(nSM%3)
+    mod3c=01;
+  c5c->Divide(3, (nSM/3)+mod3c);
+
+  for(int ism = 0; ism < nSM; ism++){
+    c5c->cd(ism+1);
+    gPad->SetLogz();
+
+    if(TString(Form("V0 vs Ecell sum per Mod %d", legend, ism)).Length() > 100){
+      Error(__FUNCTION__, "Title too long!");
+      return -6;
+    }
+
+   
+   AutoZoom(HistoPerMod2((TH2F*)outputList->FindObject(Form("EMCAL_hCaloV0SECells_Mod%i", ism)), Form("V0 vs Ecell sum per Mod %i", ism)), "all", 1)->DrawCopy("colz");
+  }
+  
+
+  outfilename =  QAPATH + "V0CellSumEsperSM" + fTrigger(r) + ".pdf";
+  outfilename2 = QAPATH + "V0CellSumEsperSM" + fTrigger(r) + ".png";
+
+  if(SavePlots==2)
+    c5c->SaveAs(outfilename);
+  if(SavePlots)
+    c5c->SaveAs(outfilename2);
+  c5c->Write();
+  delete c5c;
+
+
+
+
   if(outputList)
     outputList->Delete();
 
@@ -2115,6 +2191,30 @@ TH2F* HistoPerMod(TH2F* hTmpPerMod, const char* title){
   hTmpPerMod->GetYaxis()->SetTitleSize(0.05);
   hTmpPerMod->GetYaxis()->SetLabelSize(0.06);
   hTmpPerMod->GetZaxis()->SetLabelSize(0.04);
+
+  return hTmpPerMod;
+
+}
+//--------------------------------------------------------------------------------------------------------------
+TH2F* HistoPerMod2(TH2F* hTmpPerMod, const char* title){
+
+  if(!hTmpPerMod){
+    Error(__FUNCTION__, Form("The histogram with title \"%s\" was not found!", title));
+    return new TH2F();
+  }
+
+  hTmpPerMod->SetStats(kFALSE);
+  hTmpPerMod->SetTitle(title);
+  hTmpPerMod->SetTitleSize(0.1);
+  hTmpPerMod->GetXaxis()->SetTitleOffset(1.1);
+  hTmpPerMod->GetXaxis()->SetTitleSize(0.05);
+  hTmpPerMod->GetXaxis()->SetLabelSize(0.06);
+  hTmpPerMod->GetYaxis()->SetTitleOffset(1.1);
+  hTmpPerMod->GetYaxis()->SetTitleSize(0.05);
+  hTmpPerMod->GetYaxis()->SetLabelSize(0.06);
+  hTmpPerMod->GetZaxis()->SetLabelSize(0.04);
+  hTmpPerMod->RebinX(4);
+  hTmpPerMod->Rebin(2);
 
   return hTmpPerMod;
 

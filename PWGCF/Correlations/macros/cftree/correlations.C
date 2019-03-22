@@ -9,7 +9,6 @@
 #include "Pool.h"
 #include "fstream"
 
-#include "TAlienCollection.h"
 #include "TGrid.h"
 #include "utils.h"
 #include "env.h"

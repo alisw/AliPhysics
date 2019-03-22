@@ -54,9 +54,16 @@ public:
   float Cdz() const;
   float Czz() const;
 
+  float ITSchi2perNDF() const;
   float ITSchi2() const;
   int   ITSncls() const;
   float TPCchi2() const;
+
+  /// Calculate reduced chi-squared (χ²/NDoF) for TPC
+  ///
+  /// Calculation comes from AliAODTrack::GetTPCchi2perNDF
+  ///
+  float TPCchi2perNDF() const;
   int   TPCncls() const;
   short TPCnclsF() const;
   float TPCsignal() const;
@@ -221,6 +228,7 @@ public:
   void SetNominalTPCEntrancePoint(const AliFemtoThreeVector& aXTPC);
   void SetNominalTPCEntrancePoint(double *aXTPC);
 
+  void SetNominalTPCPoints(const AliFemtoThreeVector * const);
   void SetNominalTPCPoints(double **aXTPC);
 
   void SetNominalTPCExitPoint(const AliFemtoThreeVector& aXTPC);
@@ -348,7 +356,7 @@ public:
   short fTPCnclsF;        ///< number of findable clusters in the TPC
   float fTPCsignal;       ///< dEdx TPC value
   short fTPCsignalN;      ///< number of points used for dEdx
-  float fTPCsignalS;      ///< RMS of dEdx measurement
+  float fTPCsignalS;      ///< RMS of dEdx measurement (not used in AOD files)
 
   float fVTOF;            ///< v=length/TOF
   float fNSigmaTPCPi;     ///< nsigma TPC for pion
@@ -434,9 +442,19 @@ inline float AliFemtoTrack::PidProbPion() const {return fPidProbPion;}
 inline float AliFemtoTrack::PidProbKaon() const {return fPidProbKaon;}
 inline float AliFemtoTrack::PidProbProton() const {return fPidProbProton;}
 inline float AliFemtoTrack::PidProbMuon() const {return fPidProbMuon;}
-inline int AliFemtoTrack::Multiplicity() const{ return fMultiplicity;}
-inline double AliFemtoTrack::Zvtx() const{  return fZvtx;}
+inline int AliFemtoTrack::Multiplicity() const { return fMultiplicity;}
+inline double AliFemtoTrack::Zvtx() const { return fZvtx;}
 
+inline float AliFemtoTrack::TPCchi2perNDF() const
+{
+  Int_t ndof = 2 * fTPCncls - 5;
+  return __builtin_expect(ndof > 0, 1) ? fTPCchi2 / ndof : 9999;
+}
 
+inline float AliFemtoTrack::ITSchi2perNDF() const
+{
+  Int_t ndof = 2 * fITSncls - 5;
+  return __builtin_expect(ndof > 0, 1) ? fITSchi2 / ndof : 9999;
+}
 
 #endif

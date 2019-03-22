@@ -39,6 +39,8 @@ void AddTask_GammaConvNeutralMesonPiPlPiMiNeutralMeson_CaloMode_pp(
   ) {
 
   //parse additionalTrainConfig flag
+  Int_t trackMatcherRunningMode = 0; // CaloTrackMatcher running mode
+
   TObjArray *rAddConfigArr = additionalTrainConfig.Tokenize("_");
   if(rAddConfigArr->GetEntries()<1){std::cout << "ERROR during parsing of additionalTrainConfig String '" << additionalTrainConfig.Data() << "'" << std::endl; return;}
   TObjString* rAdditionalTrainConfig;
@@ -47,7 +49,12 @@ void AddTask_GammaConvNeutralMesonPiPlPiMiNeutralMeson_CaloMode_pp(
     else{
       TObjString* temp = (TObjString*) rAddConfigArr->At(i);
       TString tempStr = temp->GetString();
-      std::cout << "INFO: nothing to do, no definition available!" << std::endl;
+      if(tempStr.BeginsWith("TM")){
+        TString tempType = tempStr;
+        tempType.Replace(0,2,"");
+        trackMatcherRunningMode = tempType.Atoi();
+        cout << Form("INFO: AddTask_GammaConvNeutralMesonPiPlPiMiPiZero_CaloMode_pp will use running mode '%i' for the TrackMatcher!",trackMatcherRunningMode) << endl;
+      }
     }
   }
   TString sAdditionalTrainConfig = rAdditionalTrainConfig->GetString();
@@ -115,6 +122,8 @@ void AddTask_GammaConvNeutralMesonPiPlPiMiNeutralMeson_CaloMode_pp(
   task->SetV0ReaderName(V0ReaderName);
   if(runLightOutput>1) task->SetLightOutput(kTRUE);
   task->SetTolerance(tolerance);
+  task->SetTrackMatcherRunningMode(trackMatcherRunningMode);
+
 
   AliCutHandlerPCM cuts(13);
 
@@ -200,7 +209,10 @@ void AddTask_GammaConvNeutralMesonPiPlPiMiNeutralMeson_CaloMode_pp(
     cuts.AddCutHeavyMesonCalo("00052113","1111111047032230000","32c010708","0103603700000000","0153503000000000"); // EMC7
     cuts.AddCutHeavyMesonCalo("00085113","1111111047032230000","32c010708","0103603700000000","0153503000000000"); // EG2
     cuts.AddCutHeavyMesonCalo("00083113","1111111047032230000","32c010708","0103603700000000","0153503000000000"); // EG1
-
+    // EMCal LHC11 pp 7TeV
+  } else if( trainConfig == 115){ // with TPC refit + ITS requirement
+    cuts.AddCutHeavyMesonCalo("00010113","1111111057032230000","32c010708","0103603700000000","0153503000000000"); // INT7
+    cuts.AddCutHeavyMesonCalo("00052113","1111111057032230000","32c010708","0103603700000000","0153503000000000"); // EMC7
     // ---------------------------------
     // systematic studies 7 TeV (EMCal)
     // ---------------------------------
@@ -342,13 +354,17 @@ void AddTask_GammaConvNeutralMesonPiPlPiMiNeutralMeson_CaloMode_pp(
     cuts.AddCutHeavyMesonCalo("00000113","2444411043012300000","302010708","0103603n00000000","0153505000000000"); // 0-0.75
     cuts.AddCutHeavyMesonCalo("00000113","2444411043012300000","302010708","0103603n00000000","0153500000000000"); // 0-0.7
     // PHOS pp 5 TeV
-  } else if(trainConfig == 170)  { // Standard PHOS  with TPC refit + ITS requirement
+  } else if(trainConfig == 190)  { // Standard PHOS  with TPC refit + ITS requirement
     cuts.AddCutHeavyMesonCalo("00010113","2444411043012300000","32c010708","0103603n00000000","0153503000000000"); // INT7
     cuts.AddCutHeavyMesonCalo("00062113","2444411043012300000","32c010708","0103603n00000000","0153503000000000"); // PHI7
     // PHOS pp 13 TeV
-  } else if(trainConfig == 180)  { // Standard PHOS  with TPC refit + ITS requirement
+  } else if(trainConfig == 191)  { // Standard PHOS  with TPC refit + ITS requirement
     cuts.AddCutHeavyMesonCalo("00010113","2444411043012300000","32c010708","0103603n00000000","0153503000000000"); // INT7
     cuts.AddCutHeavyMesonCalo("00062113","2444411043012300000","32c010708","0103603n00000000","0153503000000000"); // PHI7
+    // PHOS LHC11 pp 7 TeV
+  } else if(trainConfig == 195)  { // with TPC refit + ITS requirement
+    cuts.AddCutHeavyMesonCalo("00010113","2444400053012300000","32c010708","0103603n00000000","0153503000000000"); // INT7
+    cuts.AddCutHeavyMesonCalo("00062113","2444400053012300000","32c010708","0103603n00000000","0153503000000000"); // PHI7
   // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
   // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
   //                                          ETA PRIME MESON
@@ -451,9 +467,9 @@ void AddTask_GammaConvNeutralMesonPiPlPiMiNeutralMeson_CaloMode_pp(
     //create AliCaloTrackMatcher instance, if there is none present
     TString caloCutPos = cuts.GetClusterCut(i);
     caloCutPos.Resize(1);
-    TString TrackMatcherName = Form("CaloTrackMatcher_%s",caloCutPos.Data());
+    TString TrackMatcherName = Form("CaloTrackMatcher_%s_%i",caloCutPos.Data(),trackMatcherRunningMode);
     if( !(AliCaloTrackMatcher*)mgr->GetTask(TrackMatcherName.Data()) ){
-      AliCaloTrackMatcher* fTrackMatcher = new AliCaloTrackMatcher(TrackMatcherName.Data(),caloCutPos.Atoi());
+      AliCaloTrackMatcher* fTrackMatcher = new AliCaloTrackMatcher(TrackMatcherName.Data(),caloCutPos.Atoi(),trackMatcherRunningMode);
       fTrackMatcher->SetV0ReaderName(V0ReaderName);
       mgr->AddTask(fTrackMatcher);
       mgr->ConnectInput(fTrackMatcher,0,cinput);

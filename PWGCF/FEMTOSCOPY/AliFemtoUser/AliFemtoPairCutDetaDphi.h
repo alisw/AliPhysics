@@ -303,16 +303,17 @@ Float_t AliFemtoPairCutDetaDphi::CalculateDEtaStar(
   const AliFemtoThreeVector& b,
   const Double_t radius_in_meters)
 {
-  const double PI_OVER_2 = TMath::Pi() / 2.0,
-               RADIUS_CM = radius_in_meters * 100.0;
+  const double
+    PI_OVER_2 = TMath::Pi() / 2.0,
+    RADIUS_CM = radius_in_meters * 100.0,
 
-  const double thetas1 = PI_OVER_2 - TMath::ATan(a.z() / RADIUS_CM),
-               thetas2 = PI_OVER_2 - TMath::ATan(b.z() / RADIUS_CM);
+    thetas1 = PI_OVER_2 - TMath::ATan(a.z() / RADIUS_CM),
+    thetas2 = PI_OVER_2 - TMath::ATan(b.z() / RADIUS_CM),
 
-  const double etas1 = -TMath::Log( TMath::Tan(thetas1 / 2.0) ),
-               etas2 = -TMath::Log( TMath::Tan(thetas2 / 2.0) );
+    etas1 = -TMath::Log( TMath::Tan(thetas1 / 2.0) ),
+    etas2 = -TMath::Log( TMath::Tan(thetas2 / 2.0) ),
 
-  const double delta_eta_star = TMath::Abs(etas1 - etas2);
+    delta_eta_star = TMath::Abs(etas1 - etas2);
 
   return delta_eta_star;
 }
@@ -338,15 +339,16 @@ Float_t AliFemtoPairCutDetaDphi::CalculateDPhiStar(
   //                 ~ 0.3 [e] [Tesla] [Meters] / [GeV/c]
   //
 
-  const Double_t unit_factor = 0.299792458;
+  const double
+    UNIT_FACTOR = 0.299792458,
 
-  const Double_t phi_a = p_a.Phi(),
-                 phi_b = p_b.Phi(),
+    phi_a = p_a.Phi(),
+    phi_b = p_b.Phi(),
 
-                 prefix = -0.5 * unit_factor * magnetic_field * radius_in_meters,
+    prefix = -0.5 * UNIT_FACTOR * magnetic_field * radius_in_meters,
 
-                 shift_a = TMath::ASin(prefix * charge_a / p_a.Perp()),
-                 shift_b = TMath::ASin(prefix * charge_b / p_b.Perp());
+    shift_a = TMath::ASin(prefix * charge_a / p_a.Perp()),
+    shift_b = TMath::ASin(prefix * charge_b / p_b.Perp());
 
   const Double_t delta_phi_star = (phi_b + shift_b) - (phi_a + shift_a);
 

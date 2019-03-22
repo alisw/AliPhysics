@@ -219,14 +219,17 @@ class AliBalancePsi : public TObject {
   TH3D *GetQAHistConversionafter() {return fHistConversionafter;}
   TH2D *GetQAHistPsiMinusPhi() {return fHistPsiMinusPhi;}
   TH3D *GetQAHistResonancesBefore() {return fHistResonancesBefore;}
+  TH3D *GetQAHistResonancesPhiBefore() {return fHistResonancesPhiBefore;}
   TH3D *GetQAHistResonancesRho() {return fHistResonancesRho;}
   TH3D *GetQAHistResonancesK0() {return fHistResonancesK0;}
   TH3D *GetQAHistResonancesLambda() {return fHistResonancesLambda;}
+  TH3D *GetQAHistResonancesPhi() {return fHistResonancesPhi;}
   TH3D *GetQAHistQbefore() {return fHistQbefore;}
   TH3D *GetQAHistQafter() {return fHistQafter;}
 
   void UseMomentumOrdering(Bool_t momentumOrdering = kTRUE) {fMomentumOrdering = momentumOrdering;}
   void UseResonancesCut() {fResonancesCut = kTRUE;}
+  void UsePhiResonanceCut() {fResonancePhiCut = kTRUE;}
   void UseHBTCut(Double_t setHBTCutValue = 0.02) {
     fHBTCut = kTRUE; fHBTCutValue = setHBTCutValue;}
   void UseSameLabelMCCut() {fSameLabelMCCut = kTRUE;}
@@ -270,9 +273,11 @@ class AliBalancePsi : public TObject {
   TH3D *fHistConversionafter; // 3D histogram (Deta,Dphi,Invmass) before Conversion cuts
   TH2D *fHistPsiMinusPhi;// psi - phi QA histogram
   TH3D *fHistResonancesBefore; // 3D histogram (Deta,Dphi,Invmass) before resonance cuts
+  TH3D *fHistResonancesPhiBefore; // 3D histogram (Deta,Dphi,Invmass) before phi resonance cut
   TH3D *fHistResonancesRho;    // 3D histogram (Deta,Dphi,Invmass) after removing rho 
   TH3D *fHistResonancesK0;     // 3D histogram (Deta,Dphi,Invmass) after removing rho, K0 
   TH3D *fHistResonancesLambda; // 3D histogram (Deta,Dphi,Invmass) after removing rho, K0, and Lambda
+  TH3D *fHistResonancesPhi;// 3D histogram (Deta,Dphi,Invmass) after removing phi
   TH3D *fHistQbefore; // Delta Eta vs. Delta Phi before cut on momentum difference
   TH3D *fHistQafter; // Delta Eta vs. Delta Phi after cut on momentum difference
 
@@ -281,6 +286,7 @@ class AliBalancePsi : public TObject {
 
   Bool_t fMomentumOrdering;//use momentum ordering pT,trig > pT,assoc (default = kTRUE)
   Bool_t fResonancesCut;//resonances cut
+  Bool_t fResonancePhiCut;//phi resonance cut
   Bool_t fHBTCut;//cut for two-track efficiency (like HBT group)
   Double_t fHBTCutValue;// value for two-track efficiency cut (default = 0.02 from dphicorrelations)
   Bool_t fSameLabelMCCut; //apply cut to exclude particles reconstructed as two but with same MC label kFALSE as default
@@ -296,7 +302,7 @@ class AliBalancePsi : public TObject {
 
   AliBalancePsi & operator=(const AliBalancePsi & ) {return *this;}
 
-  ClassDef(AliBalancePsi, 3)
+  ClassDef(AliBalancePsi, 4)
 };
 
 #endif

@@ -195,7 +195,7 @@ void AliAnalysisTaskdStar::UserExec(Option_t *) {
     if (pdg == 900010020) {
       FourVector_t moth_vec = {0.f,0.f,0.f,0.f};
       for(int iD=0; iD<3; iD++){
-        const int daughter_id = part->GetDaughter(0)+iD;
+        const int daughter_id = part->GetDaughterLabel(0)+iD;
         AliAODMCParticle *daughter_part = (AliAODMCParticle*)stack->At(TMath::Abs(daughter_id));
         FourVector_t tmp_vec = {(float)daughter_part->Pt(),(float)daughter_part->Eta(),(float)daughter_part->Phi(),(float)daughter_part->M()};
         moth_vec+=tmp_vec;

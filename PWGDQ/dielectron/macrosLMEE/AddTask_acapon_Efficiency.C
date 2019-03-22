@@ -133,18 +133,19 @@ AliAnalysisTaskElectronEfficiencyV2* AddTask_acapon_Efficiency(TString names    
   /* task->SetPairPtBinsLinear(minPairPtBin, maxPairPtBin, stepsPairPtBin); */
 
   // Use non linear binning for mass and pair pt
-  Double_t massBinsArr[] = {0., 0.01, 0.02, 0.03, 0.04, 0.05, 0.06, 0.07, 0.08,
-                            0.09, 0.1, 0.14, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8,
-                            0.95, 1.05, 1.25, 1.5, 1.75, 2.0, 2.25, 2.5, 2.75,
-                            2.9, 3.0, 3.05, 3.1, 3.3, 3.8, 5.00};
+  Double_t massBinsArr[] = {0.00, 0.02, 0.04, 0.10, 0.14, 0.18, 0.24, 0.28, 0.34, 0.38,
+                            0.44, 0.50, 0.60, 0.70, 0.76, 0.80, 0.86, 0.90, 0.96, 1.00,
+                            1.04, 1.10, 1.40, 1.70, 2.00, 2.40, 2.70, 2.80, 2.90, 3.00,
+                            3.10, 3.30, 3.50, 4.00, 5.00};
   // Mass bins from Run 1 (Theo's analysis)
   Double_t massBinsRun1arr[] = {0.0, 0.05, 0.1, 0.15, 0.2, 0.3, 0.4, 0.47, 0.62, 0.7,
                                 0.77, 0.8, 0.9, 0.95, 0.99, 1.02, 1.03, 1.1, 1.4, 1.7,
                                 2, 2.3, 2.6, 2.8, 2.9, 3, 3.04, 3.08, 3.1, 3.12, 3.2,
-                                3.5};
+                                3.5, 5.00};
   std::vector<Double_t> massBins;
   if(!useRun1binning){
     for(Int_t j = 0; j < sizeof(massBinsArr)/sizeof(massBinsArr[0]); j++){
+      std::cout << "Bin: " << j << ": " << massBinsArr[j] << std::endl;
       massBins.push_back(massBinsArr[j]);
     }
   }else{
@@ -155,11 +156,14 @@ AliAnalysisTaskElectronEfficiencyV2* AddTask_acapon_Efficiency(TString names    
   task->SetMassBins(massBins);
 
 
-  Double_t pairPtBinsArr[] = {0.00, 0.05, 0.10, 0.15, 0.20, 0.25, 0.30, 0.35, 0.40, 0.45,
-                              0.50, 0.55, 0.60, 0.65, 0.70, 0.75, 0.80, 0.85, 0.90, 0.95,
-                              1.00, 1.20, 1.40, 1.60, 1.80, 2.00, 2.20, 2.40, 2.60, 2.80,
-                              3.00, 3.20, 3.40, 3.60, 3.80, 4.00, 4.20, 4.40, 4.60, 4.80,
-                              5.00, 6.00, 7.00, 8.00};
+  Double_t pairPtBinsArr[] = {0.00, 0.05, 0.10, 0.15, 0.20, 0.25, 0.30, 0.35,
+                              0.40, 0.45, 0.50, 0.55, 0.60, 0.65, 0.70, 0.75,
+                              0.80, 0.85, 0.90, 0.95, 1.00, 1.10, 1.20, 1.30,
+                              1.40, 1.50, 1.60, 1.70, 1.80, 1.90, 2.00, 2.10,
+                              2.20, 2.30, 2.40, 2.50, 2.60, 2.70, 2.80, 2.90,
+                              3.00, 3.10, 3.20, 3.30, 3.40, 3.50, 3.60, 3.70,
+                              3.80, 3.90, 4.00, 4.10, 4.20, 4.30, 4.40, 4.50,
+                              5.00, 5.50, 6.00, 6.50, 7.00, 8.00, 10.0};
   std::vector<Double_t> pairPtBins;
   for(Int_t k = 0; k < sizeof(pairPtBinsArr)/sizeof(pairPtBinsArr[0]); k++){
     pairPtBins.push_back(pairPtBinsArr[k]);
@@ -204,12 +208,14 @@ AliAnalysisTaskElectronEfficiencyV2* AddTask_acapon_Efficiency(TString names    
 
   // #########################################################
   // #########################################################
-  // Add MCSignals. Can be set to see differences of:
-  // e.g. secondaries and primaries. or primaries from charm and resonances
-  AddSingleLegMCSignal(task);
-  AddPairMCSignal(task);
+  // Add MCSignals
+  // Add single track signal definition, and return vector used for calculating
+  // efficiencies from non resonant dielectron pairs. E.g use all ULS pairs,
+  // electrons from D or B decays etc
   std::vector<Bool_t> DielectronsPairNotFromSameMother = AddSingleLegMCSignal(task);
   task->AddMCSignalsWhereDielectronPairNotFromSameMother(DielectronsPairNotFromSameMother);
+  // Add standard "same-mother" dielectron pair signal
+  AddPairMCSignal(task);
 
   // #########################################################
   // Adding cutsettings

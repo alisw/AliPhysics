@@ -76,6 +76,8 @@ public:
     //Setter for the PID cuts (TPC and TOF)
     void SetPIDCuts(Float_t tpcPIDmincut, Float_t tpcPIDmaxcut, Float_t tofPIDmincut, Float_t tofPIDmaxcut);
     
+     
+    
     //Setter for the Eta cut
     void SetEtaCut(Float_t EtaMin, Float_t EtaMax);
     
@@ -247,6 +249,7 @@ private:
     TH2F                *fTPCnsigma_TOFnsigma2;//!
     TH2F                *fTPCnsigma_TOFnsigma3;//!
     TH2F                *fTPCnsigma_p_after_tof;//!
+    TH2F                *fTPCnsigma_proton_p_after_tof;//!
     TH2F                *fTPCnsigma_p_after_tof_p;//!
     TH2F                *fTPCnsigma_p_after_tof_pion;//!
     TH2F                *fTPCnsigma_p_after_tof_k;//!
@@ -305,6 +308,9 @@ private:
     TH1F                *hCharmMotherPt_corr2;//! pt of mothers of eletrons from mesons D weighted
 	
 	TH2F                *hBeautyMotherPt;//!
+	TH2F 		    *hDCAPtProtons;//!
+	TH2F 		    *hDCAPtProtons2;//!
+	TH2F 		    *hDCAPtProtons3;//!
 	TH2F                *hBeautyMotherPt2Daft;//!
 	TH1F                *hBeautyMotherPtbef;//!
 	TH1F                *hBeautyMotherPtaft;//!
@@ -375,7 +381,8 @@ private:
     Float_t				ftofPIDmaxcut;
     Float_t				fEtaMin;
     Float_t				fEtaMax;
-    
+    Int_t 				TOFcut;
+   
 	Int_t	            fNTotMCpart; //! N of total MC particles produced by generator
     Int_t               fNpureMC;//! N of particles from main generator (Hijing/Pythia)
     Int_t               fNembMCpi0; //! N > fNembMCpi0 = particles from pi0 generator

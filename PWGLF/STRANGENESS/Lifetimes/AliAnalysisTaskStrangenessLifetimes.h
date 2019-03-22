@@ -42,6 +42,8 @@ class AliAnalysisTaskStrangenessLifetimes : public AliAnalysisTaskSE {
   void SetMinPt(float lMinPt) { fMinPtToSave = lMinPt; }
   void SetMaxPt(float lMaxPt) { fMaxPtToSave = lMaxPt; }
 
+  void SetCustomBetheBloch(float resolution, const float bethe[5]);
+
   void SetMaxTPCsigmas(float pi, float proton, float he3) {
     fMaxTPCpionSigma = pi;
     fMaxTPCprotonSigma = proton;
@@ -68,6 +70,10 @@ class AliAnalysisTaskStrangenessLifetimes : public AliAnalysisTaskSE {
   bool fMC;
   float fDownscale;
   bool fUseOnTheFly;
+
+  bool  fUseCustomBethe;
+  float fCustomBethe[5];
+  float fCustomResolution;
 
   /// Control histograms to monitor the filtering
   TH1D* fHistMCct[2];               //! MC ct
@@ -97,6 +103,7 @@ class AliAnalysisTaskStrangenessLifetimes : public AliAnalysisTaskSE {
   TH1D* fHistEtaNeg;                //! Pseudorapidity of the negative prong
   TH2D* fHistArmenteros;            //! Pseudorapidity of the negative prong
   TH1D* fHistNsigmaPosHe;           //!
+  TH1D* fHistNsigmaNegHe;           //!
   TH2D* fHistdEdxVsPt;              //!
   TH2D* fHistCtAnalysis;            //!  
   TH1D* fHistNhyp;                  //!

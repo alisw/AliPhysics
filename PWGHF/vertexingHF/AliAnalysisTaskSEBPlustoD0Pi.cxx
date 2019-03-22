@@ -1667,20 +1667,20 @@ void AliAnalysisTaskSEBPlustoD0Pi::BPlustoD0PiSignalTracksInMC(TClonesArray * mc
       {
         for (Int_t iDaughterBPlus = 0; iDaughterBPlus < 2; iDaughterBPlus++)
         {
-          AliAODMCParticle* daughterBPlus = (AliAODMCParticle*)mcTrackArray->At(mcTrackParticle->GetDaughter(iDaughterBPlus));
+          AliAODMCParticle* daughterBPlus = (AliAODMCParticle*)mcTrackArray->At(mcTrackParticle->GetDaughterLabel(iDaughterBPlus));
           if (!daughterBPlus) break;
           Int_t pdgCodeDaughterBPlus = TMath::Abs(daughterBPlus->GetPdgCode());
 
           if (pdgCodeDaughterBPlus == 211) //if the track is a pion we save its monte carlo label
           {
-            mcLabelPionBPlus = mcTrackParticle->GetDaughter(iDaughterBPlus);
+            mcLabelPionBPlus = mcTrackParticle->GetDaughterLabel(iDaughterBPlus);
             mcPionBPlusPresent = kTRUE;
             ptMC[1] = daughterBPlus->Pt();
             yMC[1] = daughterBPlus->Y();
             pseudoYMC[1] = daughterBPlus->Eta();
           } else if (pdgCodeDaughterBPlus == 421) //if the track is a D0 we look at its daughters
           {
-            mcLabelD0 = mcTrackParticle->GetDaughter(iDaughterBPlus);
+            mcLabelD0 = mcTrackParticle->GetDaughterLabel(iDaughterBPlus);
             Int_t nDaughterD0 = daughterBPlus->GetNDaughters();
             ptMC[2] = daughterBPlus->Pt();
             yMC[2] = daughterBPlus->Y();
@@ -1690,12 +1690,12 @@ void AliAnalysisTaskSEBPlustoD0Pi::BPlustoD0PiSignalTracksInMC(TClonesArray * mc
             {
               for (Int_t iDaughterD0 = 0; iDaughterD0 < 2; iDaughterD0++)
               {
-                AliAODMCParticle* daughterD0 = (AliAODMCParticle*)mcTrackArray->At(daughterBPlus->GetDaughter(iDaughterD0));
+                AliAODMCParticle* daughterD0 = (AliAODMCParticle*)mcTrackArray->At(daughterBPlus->GetDaughterLabel(iDaughterD0));
                 if (!daughterD0) break;
                 Int_t pdgCodeDaughterD0 = TMath::Abs(daughterD0->GetPdgCode());
                 if (pdgCodeDaughterD0 == 211) //if the track is a pion we save its monte carlo label
                 {
-                  mcLabelPionD0 = daughterBPlus->GetDaughter(iDaughterD0);
+                  mcLabelPionD0 = daughterBPlus->GetDaughterLabel(iDaughterD0);
                   ptMC[3] = daughterD0->Pt();
                   yMC[3] = daughterD0->Y();
                   pseudoYMC[3] = daughterD0->Eta();

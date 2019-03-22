@@ -3347,8 +3347,8 @@ Int_t AliAnalysisTaskSELc2V0bachelor::SearchLcDaughter(TClonesArray *arrayMC, In
     return indexToBeReturned;
   }
 
-  Int_t index1=searchLc->GetDaughter(0);
-  Int_t index2=searchLc->GetDaughter(1);
+  Int_t index1=searchLc->GetDaughterLabel(0);
+  Int_t index2=searchLc->GetDaughterLabel(1);
   if (index1<=0 || index2<=0) {
     return -999;
   }
@@ -3369,8 +3369,8 @@ Int_t AliAnalysisTaskSELc2V0bachelor::SearchLcDaughter(TClonesArray *arrayMC, In
   }
 
   if (daughPdg1==pdgK0 || daughPdg1==pdgLambda) {
-    index1=searchLc->GetDaughter(1);
-    index2=searchLc->GetDaughter(0);
+    index1=searchLc->GetDaughterLabel(1);
+    index2=searchLc->GetDaughterLabel(0);
   }
   daugh1 = dynamic_cast<AliAODMCParticle*>(arrayMC->At(index1));
   daugh2 = dynamic_cast<AliAODMCParticle*>(arrayMC->At(index2));
@@ -3387,7 +3387,7 @@ Int_t AliAnalysisTaskSELc2V0bachelor::SearchLcDaughter(TClonesArray *arrayMC, In
     Int_t nDaughK0 = daugh2->GetNDaughters();
     if (nDaughK0!=1) return -999;
 
-    Int_t indexK0daugh=daugh2->GetDaughter(0);
+    Int_t indexK0daugh=daugh2->GetDaughterLabel(0);
     if (indexK0daugh<=0) return -999;
 
     AliAODMCParticle *daughK0 = dynamic_cast<AliAODMCParticle*>(arrayMC->At(indexK0daugh));
@@ -3409,8 +3409,8 @@ Int_t AliAnalysisTaskSELc2V0bachelor::SearchLcDaughter(TClonesArray *arrayMC, In
       return indexToBeReturned;
     }
 
-    index1=daughK0->GetDaughter(0);
-    index2=daughK0->GetDaughter(1);
+    index1=daughK0->GetDaughterLabel(0);
+    index2=daughK0->GetDaughterLabel(1);
     if(index1<=0 || index2<=0) {
       return -999;
     }
@@ -3443,8 +3443,8 @@ Int_t AliAnalysisTaskSELc2V0bachelor::SearchLcDaughter(TClonesArray *arrayMC, In
       return indexToBeReturned;
     }
 
-    index1=daugh2->GetDaughter(0);
-    index2=daugh2->GetDaughter(1);
+    index1=daugh2->GetDaughterLabel(0);
+    index2=daugh2->GetDaughterLabel(1);
     if(index1<=0 || index2<=0) {
       return -999;
     }
@@ -3994,30 +3994,30 @@ void AliAnalysisTaskSELc2V0bachelor::FillTheTree(AliAODRecoCascadeHF *part, AliR
 	Int_t mcLabel0 = part->MatchToMC(pdgCand0,pdgDgLctoV0bachelor0[1],pdgDgLctoV0bachelor0,pdgDgV0toDaughters0,mcArray,kTRUE);
 	AliAODMCParticle *partLc = dynamic_cast<AliAODMCParticle*>(mcArray->At(mcLabel0));
 	if(partLc){
-	  AliAODMCParticle *partLcDaug0 = dynamic_cast<AliAODMCParticle*>(mcArray->At(partLc->GetDaughter(0)));
+	  AliAODMCParticle *partLcDaug0 = dynamic_cast<AliAODMCParticle*>(mcArray->At(partLc->GetDaughterLabel(0)));
 	  if(partLcDaug0){
 	    xLcMC=partLcDaug0->Xv(), yLcMC=partLcDaug0->Yv(), zLcMC=partLcDaug0->Zv();
 	  }
 	}
       } else if (isLc2LBarpi || isLc2Lpi) {
 	AliAODMCParticle *partLc = dynamic_cast<AliAODMCParticle*>(mcArray->At(mcLabel));
-	AliAODMCParticle *partLcDaug0 = dynamic_cast<AliAODMCParticle*>(mcArray->At(partLc->GetDaughter(0)));
+	AliAODMCParticle *partLcDaug0 = dynamic_cast<AliAODMCParticle*>(mcArray->At(partLc->GetDaughterLabel(0)));
 	xLcMC=partLcDaug0->Xv(), yLcMC=partLcDaug0->Yv(), zLcMC=partLcDaug0->Zv();
       } else if (isDp2K0Spi) {
 	AliAODMCParticle *partLc = dynamic_cast<AliAODMCParticle*>(mcArray->At(mcLabel2));
-	AliAODMCParticle *partLcDaug0 = dynamic_cast<AliAODMCParticle*>(mcArray->At(partLc->GetDaughter(0)));
+	AliAODMCParticle *partLcDaug0 = dynamic_cast<AliAODMCParticle*>(mcArray->At(partLc->GetDaughterLabel(0)));
 	xLcMC=partLcDaug0->Xv(), yLcMC=partLcDaug0->Yv(), zLcMC=partLcDaug0->Zv();
       } else if (isDs2K0SK) {
 	AliAODMCParticle *partLc = dynamic_cast<AliAODMCParticle*>(mcArray->At(mcLabel3));
-	AliAODMCParticle *partLcDaug0 = dynamic_cast<AliAODMCParticle*>(mcArray->At(partLc->GetDaughter(0)));
+	AliAODMCParticle *partLcDaug0 = dynamic_cast<AliAODMCParticle*>(mcArray->At(partLc->GetDaughterLabel(0)));
 	xLcMC=partLcDaug0->Xv(), yLcMC=partLcDaug0->Yv(), zLcMC=partLcDaug0->Zv();
       } else if (isKstar12K0Spi) {
 	AliAODMCParticle *partLc = dynamic_cast<AliAODMCParticle*>(mcArray->At(mcLabel4));
-	AliAODMCParticle *partLcDaug0 = dynamic_cast<AliAODMCParticle*>(mcArray->At(partLc->GetDaughter(0)));
+	AliAODMCParticle *partLcDaug0 = dynamic_cast<AliAODMCParticle*>(mcArray->At(partLc->GetDaughterLabel(0)));
 	xLcMC=partLcDaug0->Xv(), yLcMC=partLcDaug0->Yv(), zLcMC=partLcDaug0->Zv();
       } else if (isKstar22K0Spi) {
 	AliAODMCParticle *partLc = dynamic_cast<AliAODMCParticle*>(mcArray->At(mcLabel5));
-	AliAODMCParticle *partLcDaug0 = dynamic_cast<AliAODMCParticle*>(mcArray->At(partLc->GetDaughter(0)));
+	AliAODMCParticle *partLcDaug0 = dynamic_cast<AliAODMCParticle*>(mcArray->At(partLc->GetDaughterLabel(0)));
 	xLcMC=partLcDaug0->Xv(), yLcMC=partLcDaug0->Yv(), zLcMC=partLcDaug0->Zv();
       }
 
@@ -4722,12 +4722,12 @@ Int_t AliAnalysisTaskSELc2V0bachelor::MatchToMClabelC(AliAODRecoCascadeHF *candi
 
   AliAODMCParticle*partLc = dynamic_cast<AliAODMCParticle*>(mcArray->At(indexMotherK0));
   if (!partLc) return -1;
-  Int_t ndg2 = partLc->GetDaughter(1)-partLc->GetDaughter(0)+1;
+  Int_t ndg2 = partLc->GetDaughterLabel(1)-partLc->GetDaughterLabel(0)+1;
   if (ndg2==2) return -1;
 
   TString stringaCheck = Form(">>>>>>>> %d -> ",partLc->GetPdgCode());
   for(Int_t ii=0; ii<ndg2; ii++) {
-    AliAODMCParticle* partDau=(AliAODMCParticle*)(mcArray->At(partLc->GetDaughter(0)+ii));
+    AliAODMCParticle* partDau=(AliAODMCParticle*)(mcArray->At(partLc->GetDaughterLabel(0)+ii));
     stringaCheck.Append(Form("  %d",partDau->GetPdgCode()));
   }
   //printf("%s \n",stringaCheck.Data());
