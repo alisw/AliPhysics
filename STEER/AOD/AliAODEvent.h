@@ -267,8 +267,10 @@ class AliAODEvent : public AliVEvent {
     {new((*fJets)[fJets->GetEntriesFast()]) AliAODJet(*vtx); return fJets->GetEntriesFast()-1;}
 
   // -- Tracklets
-  AliAODTracklets *GetTracklets() const { return fTracklets; }  
-  AliAODTracklets *GetMultiplicity() const {return GetTracklets();}
+  using AliVEvent::GetMultiplicity;
+  AliAODTracklets *GetTracklets() const { return fTracklets; }
+  virtual AliAODTracklets *GetMultiplicity() const { return GetTracklets(); }
+
   // -- Calorimeter Cells
   AliAODCaloCells *GetEMCALCells() const { return fEmcalCells; }
   AliAODCaloCells *GetPHOSCells() const { return fPhosCells; }
@@ -328,9 +330,10 @@ class AliAODEvent : public AliVEvent {
   AliAODTZERO *GetTZEROData() const { return fAODTZERO; }
   Double32_t GetT0TOF(Int_t icase) const { return fAODTZERO?fAODTZERO->GetT0TOF(icase):999999;}
   const Double32_t * GetT0TOF() const { return fAODTZERO?fAODTZERO->GetT0TOF():0x0;}
- 
-  // VZERO 
-  AliAODVZERO *GetVZEROData() const { return fAODVZERO; }
+
+  // VZERO
+  using AliVEvent::GetVZEROData;
+  virtual AliAODVZERO *GetVZEROData() const { return fAODVZERO; }
   virtual const Float_t* GetVZEROEqFactors() const {return fHeader?fHeader->GetVZEROEqFactors():0x0;}
   virtual Float_t        GetVZEROEqMultiplicity(Int_t i) const;
   virtual void   SetVZEROEqFactors(Float_t factors[64]) const {
