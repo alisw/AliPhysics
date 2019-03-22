@@ -186,6 +186,7 @@ class AliAnalysisTaskGammaCaloMerged : public AliAnalysisTaskSE {
     TH2F**                  fHistoTrueClusMultiplePi0PtvsM02;                   //!
     TH2F**                  fHistoTrueClusPi0DalitzPtvsM02;                     //!
     TH2F**                  fHistoTrueClusPrimPi0PtvsM02;                       //!
+    TH2F**                  fHistoTrueClusMultiplePrimPi0PtvsM02;               //!
     TH2F**                  fHistoTrueClusSecPi0PtvsM02;                        //!
     TH2F**                  fHistoTrueClusSecPi0FromK0sPtvsM02;                 //!
     TH2F**                  fHistoTrueClusSecPi0FromK0lPtvsM02;                 //!
