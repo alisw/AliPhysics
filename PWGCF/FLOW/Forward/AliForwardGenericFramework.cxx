@@ -98,13 +98,8 @@ void AliForwardGenericFramework::CumulantsAccumulate(TH2D& dNdetadphi, TList* ou
       if (doRefFlow && (fSettings.ref_mode & fSettings.kFMDref)){
         if (!fSettings.use_primaries_fwd && n>=2 && n<=4) {
           Double_t seceta = fSettings.seccorr_fwd->GetXaxis()->FindBin(eta);
-          std::cout << "seceta " <<seceta << std::endl;
-
           Double_t secvtz = fSettings.seccorr_fwd->GetYaxis()->FindBin(zvertex);
-          std::cout << "secvtz " << secvtz << std::endl;
           Double_t secn = fSettings.seccorr_fwd->GetZaxis()->FindBin(n-2);
-          std::cout << "secn " << secn << std::endl;
-          std::cout << fSettings.seccorr_fwd->GetBinContent(seceta,secvtz,secn) << std::endl;
           weight = weight*fSettings.seccorr_fwd->GetBinContent(seceta,secvtz,secn);
         }
       }
@@ -159,7 +154,7 @@ void AliForwardGenericFramework::CumulantsAccumulate(TH2D& dNdetadphi, TList* ou
 
 
 
-void AliForwardGenericFramework::saveEvent(TList* outputList, double cent, double zvertex,UInt_t r){
+void AliForwardGenericFramework::saveEvent(TList* outputList, double cent, double zvertex,UInt_t r, Int_t ptn){
   TList* analysisList = static_cast<TList*>(outputList->FindObject("Analysis"));
   TList* refList = static_cast<TList*>(analysisList->FindObject("Reference"));
   TList* autoList = static_cast<TList*>(analysisList->FindObject("AutoCorrection"));
@@ -176,8 +171,8 @@ void AliForwardGenericFramework::saveEvent(TList* outputList, double cent, doubl
   for (Int_t n = 2; n <= 5; n++) {
     Int_t prevRefEtaBin = kTRUE;
 
-    cumuRef = static_cast<THnD*>(refList->FindObject(Form("cumuRef_v%d", n)));
-    cumuDiff = static_cast<THnD*>(difList->FindObject(Form("cumuDiff_v%d", n)));
+    cumuRef = static_cast<THnD*>(refList->FindObject(Form("cumuRef_v%d_pt%d", n,ptn)));
+    cumuDiff = static_cast<THnD*>(difList->FindObject(Form("cumuDiff_v%d_pt%d", n,ptn)));
 
     for (Int_t etaBin = 1; etaBin <= fpvector->GetAxis(3)->GetNbins(); etaBin++) {
       Double_t eta = fpvector->GetAxis(3)->GetBinCenter(etaBin);
