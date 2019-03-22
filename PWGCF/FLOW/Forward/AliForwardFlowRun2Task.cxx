@@ -145,24 +145,27 @@ void AliForwardFlowRun2Task::UserCreateOutputObjects()
 
     static_cast<TList*>(fAnalysisList->At(2))->Add(new THnD("fQcorrfactor", "fQcorrfactor", dimensions, rbins, xmin, xmax)); //(eta, n)
     static_cast<TList*>(fAnalysisList->At(2))->Add(new THnD("fpcorrfactor","fpcorrfactor", dimensions, dbins, xmin, xmax)); //(eta, n)
+    Int_t ptnmax =  (fSettings.doPt ? 10 : 1);
 
     // create a THn for each harmonic
     for (Int_t n = 2; n <= fMaxMoment; n++) {
+      for (Int_t ptn = 0; ptn <= ptnmax; ptn++){
 
-      static_cast<TList*>(fAnalysisList->At(0))->Add(new THnD(Form("cumuRef_v%d", n), Form("cumuRef_v%d", n), dimensions, rbins, xmin, xmax));
-      static_cast<TList*>(fAnalysisList->At(1))->Add(new THnD(Form("cumuDiff_v%d", n),Form("cumuDiff_%d", n), dimensions, dbins, xmin, xmax));
-      // The THn has dimensions [random samples, vertex position, eta, centrality, kind of variable to store]
-      // set names
-      static_cast<THnD*>(static_cast<TList*>(fAnalysisList->At(0))   ->FindObject(Form("cumuRef_v%d", n)))->GetAxis(0)->SetName("samples");
-      static_cast<THnD*>(static_cast<TList*>(fAnalysisList->At(0))   ->FindObject(Form("cumuRef_v%d", n)))->GetAxis(1)->SetName("vertex");
-      static_cast<THnD*>(static_cast<TList*>(fAnalysisList->At(0))   ->FindObject(Form("cumuRef_v%d", n)))->GetAxis(2)->SetName("eta");
-      static_cast<THnD*>(static_cast<TList*>(fAnalysisList->At(0))   ->FindObject(Form("cumuRef_v%d", n)))->GetAxis(3)->SetName("cent");
-      static_cast<THnD*>(static_cast<TList*>(fAnalysisList->At(0))   ->FindObject(Form("cumuRef_v%d", n)))->GetAxis(4)->SetName("identifier");
-      static_cast<THnD*>(static_cast<TList*>(fAnalysisList->At(1))   ->FindObject(Form("cumuDiff_v%d", n)))->GetAxis(0)->SetName("samples");
-      static_cast<THnD*>(static_cast<TList*>(fAnalysisList->At(1))   ->FindObject(Form("cumuDiff_v%d", n)))->GetAxis(1)->SetName("vertex");
-      static_cast<THnD*>(static_cast<TList*>(fAnalysisList->At(1))   ->FindObject(Form("cumuDiff_v%d", n)))->GetAxis(2)->SetName("eta");
-      static_cast<THnD*>(static_cast<TList*>(fAnalysisList->At(1))   ->FindObject(Form("cumuDiff_v%d", n)))->GetAxis(3)->SetName("cent");
-      static_cast<THnD*>(static_cast<TList*>(fAnalysisList->At(1))   ->FindObject(Form("cumuDiff_v%d", n)))->GetAxis(4)->SetName("identifier");
+        static_cast<TList*>(fAnalysisList->At(0))->Add(new THnD(Form("cumuRef_v%d_pt%d", n,ptn), Form("cumuRef_v%d_pt%d", n,ptn), dimensions, rbins, xmin, xmax));
+        static_cast<TList*>(fAnalysisList->At(1))->Add(new THnD(Form("cumuDiff_v%d_pt%d", n,ptn),Form("cumuDiff_%d_pt%d", n,ptn), dimensions, dbins, xmin, xmax));
+        // The THn has dimensions [random samples, vertex position, eta, centrality, kind of variable to store]
+        // set names
+        static_cast<THnD*>(static_cast<TList*>(fAnalysisList->At(0))   ->FindObject(Form("cumuRef_v%d_pt%d", n,ptn)))->GetAxis(0)->SetName("samples");
+        static_cast<THnD*>(static_cast<TList*>(fAnalysisList->At(0))   ->FindObject(Form("cumuRef_v%d_pt%d", n,ptn)))->GetAxis(1)->SetName("vertex");
+        static_cast<THnD*>(static_cast<TList*>(fAnalysisList->At(0))   ->FindObject(Form("cumuRef_v%d_pt%d", n,ptn)))->GetAxis(2)->SetName("eta");
+        static_cast<THnD*>(static_cast<TList*>(fAnalysisList->At(0))   ->FindObject(Form("cumuRef_v%d_pt%d", n,ptn)))->GetAxis(3)->SetName("cent");
+        static_cast<THnD*>(static_cast<TList*>(fAnalysisList->At(0))   ->FindObject(Form("cumuRef_v%d_pt%d", n,ptn)))->GetAxis(4)->SetName("identifier");
+        static_cast<THnD*>(static_cast<TList*>(fAnalysisList->At(1))   ->FindObject(Form("cumuDiff_v%d_pt%d", n,ptn)))->GetAxis(0)->SetName("samples");
+        static_cast<THnD*>(static_cast<TList*>(fAnalysisList->At(1))   ->FindObject(Form("cumuDiff_v%d_pt%d", n,ptn)))->GetAxis(1)->SetName("vertex");
+        static_cast<THnD*>(static_cast<TList*>(fAnalysisList->At(1))   ->FindObject(Form("cumuDiff_v%d_pt%d", n,ptn)))->GetAxis(2)->SetName("eta");
+        static_cast<THnD*>(static_cast<TList*>(fAnalysisList->At(1))   ->FindObject(Form("cumuDiff_v%d_pt%d", n,ptn)))->GetAxis(3)->SetName("cent");
+        static_cast<THnD*>(static_cast<TList*>(fAnalysisList->At(1))   ->FindObject(Form("cumuDiff_v%d_pt%d", n,ptn)))->GetAxis(4)->SetName("identifier");
+      }
     }
 
     PostData(1, fOutputList);
@@ -243,21 +246,40 @@ void AliForwardFlowRun2Task::UserExec(Option_t *)
 
   if (fSettings.makeFakeHoles) fUtil.MakeFakeHoles(*forwardDist);
 
+  static_cast<TH1D*>(fEventList->FindObject("Centrality"))->Fill(cent);
+  static_cast<TH1D*>(fEventList->FindObject("Vertex"))->Fill(zvertex);
+  AliForwardGenericFramework calculator = AliForwardGenericFramework();
+  calculator.fSettings = fSettings;
+
+  calculator.CumulantsAccumulate(*refDist, fOutputList, cent, zvertex,"central",true,false);
+  calculator.CumulantsAccumulate(*centralDist, fOutputList, cent, zvertex,"central",false,true);  
+  calculator.CumulantsAccumulate(*forwardDist, fOutputList, cent, zvertex,"forward",false,true);
+
+  Int_t ptnmax =  (fSettings.doPt ? 10 : 1);
+
+  TH1F pthist = TH1F("pthist", "", ptnmax, fSettings.minpt, fSettings.maxpt);
+
+  for (Int_t ptn = 0; ptn <=ptnmax; ptn ++ ){
+    
+    fUtil.fSettings.minpt = pthist.GetXaxis()->GetBinLowEdge(ptn+1);
+    fUtil.fSettings.maxpt = pthist.GetXaxis()->GetBinUpEdge(ptn+1);
+
+    centralDist->Reset();
+
+    // Fill centralDist
+    if (fSettings.useSPD) fUtil.FillFromTracklets(centralDist);
+    else  fUtil.FillFromTracks(centralDist, fSettings.tracktype); //(fSettings.useTPC)
+
     UInt_t randomInt = fRandom.Integer(fSettings.fnoSamples);
 
-    static_cast<TH1D*>(fEventList->FindObject("Centrality"))->Fill(cent);
-    static_cast<TH1D*>(fEventList->FindObject("Vertex"))->Fill(zvertex);
+    calculator.CumulantsAccumulate(*centralDist, fOutputList, cent, zvertex,"central",false,true);  
+    calculator.saveEvent(fOutputList, cent, zvertex,  randomInt, ptn);    
+    calculator.fpvector->Reset();
+  }
 
-    AliForwardGenericFramework calculator = AliForwardGenericFramework();
-    calculator.fSettings = fSettings;
+  calculator.reset();
 
-    calculator.CumulantsAccumulate(*refDist, fOutputList, cent, zvertex,"central",true,false);
-    calculator.CumulantsAccumulate(*centralDist, fOutputList, cent, zvertex,"central",false,true);
-    calculator.CumulantsAccumulate(*forwardDist, fOutputList, cent, zvertex,"forward",false,true);
-
-    calculator.saveEvent(fOutputList, cent, zvertex,  randomInt);
-    calculator.reset();
-    PostData(1, fOutputList);
+  PostData(1, fOutputList);
   return;
 }
 

@@ -45,6 +45,6 @@ AliForwardSettings::AliForwardSettings() :
   fnoClusters(70),
   fCutChargedDCAxyMax(0.),
   fCutChargedDCAzMax(0.),
-  doPt(kFALSE)
+  doPt(kTRUE)
 {
 }

@@ -162,16 +162,16 @@ AliForwardSecondariesTask::AliForwardSecondariesTask() : AliAnalysisTaskSE(),
 
     fDeltaList = new TList();
     fDeltaList->SetName("Delta");
-    Int_t phibins = 4000;
+    Int_t phibins = 20;
     Int_t etabins = 50;
     fSettings.fnoSamples = 1;
     fSettings.fCentBins = 5;
     Int_t bins_phi_eta[5] = {fSettings.fnoSamples, fSettings.fNZvtxBins, phibins, fSettings.fCentBins, etabins} ;
-    Double_t xmin_phi_eta[5] = {0,fSettings.fZVtxAcceptanceLowEdge, -TMath::Pi(), 0, -6};
+    Double_t xmin_phi_eta[5] = {0,fSettings.fZVtxAcceptanceLowEdge, -TMath::Pi(), 0, -4};
     Double_t xmax_phi_eta[5] = {10,fSettings.fZVtxAcceptanceUpEdge, TMath::Pi(), 100, 6}; //
 
     Int_t bins_phi_eta_spd[5] = {fSettings.fnoSamples, fSettings.fNZvtxBins, phibins, 1, etabins} ;
-    Double_t xmin_phi_eta_spd[5] = {0,fSettings.fZVtxAcceptanceLowEdge, -TMath::Pi(), 0, -6};
+    Double_t xmin_phi_eta_spd[5] = {0,fSettings.fZVtxAcceptanceLowEdge, -TMath::Pi(), 0, -4};
     Double_t xmax_phi_eta_spd[5] = {10,fSettings.fZVtxAcceptanceUpEdge, TMath::Pi(), 100, 6}; //
 
     Int_t dimensions = 5;
@@ -790,42 +790,6 @@ Bool_t AliForwardSecondariesTask::IsRedefinedPhysicalPrimary(AliMCParticle* p) {
   return isPPStandardDef;
 }
 
-std::vector< AliMCParticle* > AliForwardSecondariesTask::GetDaughters(AliMCParticle* p) {
-  AliMCEvent* event = this->MCEvent();
-  std::vector< AliMCParticle* > daughters;
-  // Find the decays ("edges") leading downstream from this particle ("vertex")
-  AliMCParticle* daughterFirst =
-    static_cast< AliMCParticle* >(event->GetTrack(p->GetFirstDaughter()));
-  // p's mother does not have daughters (p == mother)
-  if (!daughterFirst) {
-    return daughters;
-  }
-  AliMCParticle* daughterLast =
-    static_cast< AliMCParticle* >(event->GetTrack(p->GetLastDaughter()));
-  // We only have one daughter
-  if (!daughterLast) {
-    daughterLast = daughterFirst;
-  }
-  // Perform depth-first-search in decay chain for hits on FMD
-  for (Int_t iDaughter = daughterFirst->GetLabel(); iDaughter <= daughterLast->GetLabel(); iDaughter++){
-    AliMCParticle* daughter  = static_cast< AliMCParticle* >(event->GetTrack(iDaughter));
-    daughters.push_back(daughter);
-  }
-  return daughters;
-}
-
-Int_t AliForwardSecondariesTask::ParticleProducedNHitsOnFMD(AliMCParticle* p) {
-  // "Explore" the current particle (Graph theory wise)
-  Int_t counter = fUtil.IsHitFMD(p) ? 1 : 0;
-
-  // Find the decays ("edges") leading downstream from this particle ("vertex")
-  // Perform depth-first-search in decay chain for hits on FMD
-  for (auto daughter : this->GetDaughters(p)){
-    counter += ParticleProducedNHitsOnFMD(daughter);
-  }
-  return counter;
-}
-
 
 AliMCParticle* AliForwardSecondariesTask::GetIncidentParticleFromFirstMaterialInteraction(AliMCParticle* p) {
   AliMCEvent* event = this->MCEvent();
@@ -911,11 +875,6 @@ void AliForwardSecondariesTask::GetTrackRefEtaPhi(AliTrackReference* ref, Double
   }
   etaPhi[0] = -TMath::Log(TMath::Tan(thetaR / 2));
   etaPhi[1] = phiR;
-  // cout << x << " " << y << " " << z << endl << endl;
-  // cout << etaPhi[0] - p->Eta() << " " << etaPhi[1] - p->Phi() << " "
-  //      << this->GetDaughters(p).size() << " "
-  //      << p->PdgCode() << " "
-  //      << endl;
 }
 
 void AliForwardSecondariesTask::GetTrackRefEtaPhi(AliMCParticle* p, Double_t* etaPhi) {
@@ -951,11 +910,6 @@ void AliForwardSecondariesTask::GetTrackRefEtaPhi(AliMCParticle* p, Double_t* et
   }
   etaPhi[0] = -TMath::Log(TMath::Tan(thetaR / 2));
   etaPhi[1] = phiR;
-  // cout << x << " " << y << " " << z << endl << endl;
-  // cout << etaPhi[0] - p->Eta() << " " << etaPhi[1] - p->Phi() << " "
-  //      << this->GetDaughters(p).size() << " "
-  //      << p->PdgCode() << " "
-  //      << endl;
 }
 
 Int_t AliForwardSecondariesTask::GetOriginType(AliMCParticle *p) {
