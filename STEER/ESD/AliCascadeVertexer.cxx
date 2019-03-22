@@ -280,12 +280,12 @@ Double_t AliCascadeVertexer::PropagateToDCACurvedBachelor(AliESDv0 *v, AliExtern
   // assumes that bachelor track is not straight
   // algorithm based on AliExternalTrackParam::GetDCA with zero curvature track
   //--------------------------------------------------------------------
-  Double_t alpha=t->GetAlpha(), cs1=TMath::Cos(alpha), sn1=TMath::Sin(alpha);
+  // Double_t alpha=t->GetAlpha(), cs1=TMath::Cos(alpha), sn1=TMath::Sin(alpha);
   Double_t r[3]; t->GetXYZ(r);
-  Double_t x1=r[0], y1=r[1], z1=r[2];
+  // Double_t x1=r[0], y1=r[1], z1=r[2];
   Double_t p[3]; t->GetPxPyPz(p);
-  Double_t px1=p[0], py1=p[1], pz1=p[2];
-  
+  // Double_t px1=p[0], py1=p[1], pz1=p[2];
+
   Double_t x2,y2,z2;     // position and momentum of V0
   Double_t px2,py2,pz2;
   
