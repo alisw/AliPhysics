@@ -82,6 +82,7 @@ AliAnalysisTaskHyperTriton2He3piML::AliAnalysisTaskHyperTriton2He3piML(
       fMaxTPCpiSigma{10.},
       fMaxTPChe3Sigma{10.},
       fMinHe3pt{0.},
+      fMinTPCclusters{50},
       fSHyperTriton{},
       fSGenericV0{},
       fRHyperTriton{},
@@ -241,6 +242,14 @@ void AliAnalysisTaskHyperTriton2He3piML::UserExec(Option_t *)
   }
 
   fRHyperTriton.clear();
+
+  auto customNsigma = [this](double mom, double sig) -> double {
+    const float bg = mom / AliPID::ParticleMass(AliPID::kHe3);
+    const float *p = fCustomBethe;
+    const float expS = AliExternalTrackParam::BetheBlochAleph(bg, p[0], p[1], p[2], p[3], p[4]);
+    return (sig - expS) / (fCustomResolution * expS);
+  };
+
   for (int iV0 = 0; iV0 < esdEvent->GetNumberOfV0s();
        iV0++)
   { // This is the begining of the V0 loop (we analyse only offline
@@ -287,6 +296,10 @@ void AliAnalysisTaskHyperTriton2He3piML::UserExec(Option_t *)
     // Findable cluster s > 0 condition
     if (pTrack->GetTPCNclsF() <= 0 || nTrack->GetTPCNclsF() <= 0)
       continue;
+    
+    if ((pTrack->GetTPCClusterInfo(2, 1) < fMinTPCclusters) ||
+        (nTrack->GetTPCClusterInfo(2, 1) < fMinTPCclusters))
+      continue;
 
     // Official means of acquiring N-sigmas
     float nSigmaPosPi = fPIDResponse->NumberOfSigmasTPC(pTrack, AliPID::kPion);
@@ -296,13 +309,8 @@ void AliAnalysisTaskHyperTriton2He3piML::UserExec(Option_t *)
 
     if (fUseCustomBethe)
     {
-      const float nbetaGamma = nTrack->GetTPCmomentum() / AliPID::ParticleMass(AliPID::kHe3);
-      const float pbetaGamma = pTrack->GetTPCmomentum() / AliPID::ParticleMass(AliPID::kHe3);
-      const float *pars = fCustomBethe;
-      const float nExpSignal = AliExternalTrackParam::BetheBlochAleph(nbetaGamma, pars[0], pars[1], pars[2], pars[3], pars[4]);
-      const float pExpSignal = AliExternalTrackParam::BetheBlochAleph(pbetaGamma, pars[0], pars[1], pars[2], pars[3], pars[4]);
-      nSigmaNegHe3 = (nTrack->GetTPCsignal() - nExpSignal) / (fCustomResolution * nExpSignal);
-      nSigmaPosHe3 = (pTrack->GetTPCsignal() - pExpSignal) / (fCustomResolution * pExpSignal);
+      nSigmaNegHe3 = customNsigma(nTrack->GetTPCmomentum(),nTrack->GetTPCsignal());
+      nSigmaPosHe3 = customNsigma(pTrack->GetTPCmomentum(),pTrack->GetTPCsignal());
     }
 
     const float nSigmaNegAbsHe3 = std::abs(nSigmaNegHe3);
@@ -338,7 +346,7 @@ void AliAnalysisTaskHyperTriton2He3piML::UserExec(Option_t *)
     if ((v0Pt < fMinPtToSave) || (fMaxPtToSave < v0Pt))
       continue;
 
-    if (hyperVector.M() < 2.8|| hyperVector.M() > 3.2)
+    if (hyperVector.M() < 2.9|| hyperVector.M() > 3.2)
       continue;
     // Track quality cuts
 
@@ -347,10 +355,6 @@ void AliAnalysisTaskHyperTriton2He3piML::UserExec(Option_t *)
     he3Track->GetImpactParameters(he3B, bCov);
     const float he3DCA = std::hypot(he3B[0], he3B[1]);
     const float piDCA = std::hypot(piB[0], piB[1]);
-
-    if ((pTrack->GetTPCClusterInfo(2, 1) < 70) ||
-        (nTrack->GetTPCClusterInfo(2, 1) < 70))
-      continue;
 
     unsigned char posXedRows = pTrack->GetTPCClusterInfo(2, 1);
     unsigned char negXedRows = nTrack->GetTPCClusterInfo(2, 1);
@@ -426,6 +430,8 @@ void AliAnalysisTaskHyperTriton2He3piML::UserExec(Option_t *)
     v0part.fPxPi = piVector.Px();
     v0part.fPyPi = piVector.Py();
     v0part.fPzPi = piVector.Pz();
+    v0part.fTPCmomHe3 = he3Track->GetTPCmomentum();
+    v0part.fTPCmomPi = piTrack->GetTPCmomentum();
     v0part.fDcaHe32PrimaryVertex = he3DCA;
     v0part.fDcaPi2PrimaryVertex = piDCA;
     v0part.fDcaV0daughters = v0->GetDcaV0Daughters();
@@ -434,11 +440,14 @@ void AliAnalysisTaskHyperTriton2He3piML::UserExec(Option_t *)
     v0part.fTPCnSigmaHe3 = (pTrack == he3Track) ? nSigmaPosHe3 : nSigmaNegHe3;
     v0part.fTPCnSigmaPi = (pTrack == piTrack) ? nSigmaPosPi : nSigmaNegPi;
     v0part.fLeastNxedRows = minXedRows;
-    v0part.fLeastNpidClusters = pTrack->GetTPCsignalN() > nTrack->GetTPCsignalN() ? nTrack->GetTPCsignalN() : pTrack->GetTPCsignalN();
+    v0part.fNpidClustersHe3 = he3Track->GetTPCsignalN();
+    v0part.fNpidClustersPi = piTrack->GetTPCsignalN();
+    v0part.fTPCsignalHe3 = he3Track->GetTPCsignal();
+    v0part.fTPCsignalPi = piTrack->GetTPCsignal();
     v0part.fITSrefitHe3 = he3Track->GetStatus() & AliESDtrack::kITSrefit;
     v0part.fITSrefitPi = piTrack->GetStatus() & AliESDtrack::kITSrefit;
-    v0part.fSPDanyHe3 = he3Track->HasPointOnITSLayer(0) || he3Track->HasPointOnITSLayer(1);
-    v0part.fSPDanyPi = piTrack->HasPointOnITSLayer(0) || piTrack->HasPointOnITSLayer(1);
+    v0part.fITSclusHe3= he3Track->GetITSClusterMap();
+    v0part.fITSclusPi = piTrack->GetITSClusterMap();
     v0part.fMatter = (pTrack == he3Track);
     fRHyperTriton.push_back(v0part);
 
