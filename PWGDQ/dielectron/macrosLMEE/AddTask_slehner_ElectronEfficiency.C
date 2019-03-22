@@ -59,7 +59,8 @@ AliAnalysisTaskElectronEfficiencyV2* AddTask_slehner_ElectronEfficiency(
     if(genGroup&1<<0) generators+= "Hijing_0;";
     if(genGroup&1<<1) generators+= "pizero_1;eta_2;etaprime_3;rho_4;omega_5;phi_6;jpsi_7;";
     if(genGroup&1<<2) generators+= "Pythia CC_8;Pythia BB_8;Pythia B_8";
-    if(genGroup&1<<3) generators+= "Starlight_0";
+    if(genGroup&1<<3) generators+= "Starlight_0;";
+    if(genGroup&1<<4) generators+= "Hijing_1;";
     cout<<"Efficiency based on MC generators: "<<generators<<endl;
     TString generatorsPair=generators;
     task->SetGeneratorMCSignalName(generatorsPair);

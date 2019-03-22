@@ -451,10 +451,7 @@ void AliAnalysisTaskMLTreeMaker::UserCreateOutputObjects() {
   TH1::AddDirectory(oldStatus);
   
   if(hasMC){
-  TString generatorName = "Starlight_0";
-//  TString generatorName = "Hijing_0;pizero_1;eta_2;etaprime_3;rho_4;omega_5;phi_6;jpsi_7;Pythia CC_8;Pythia BB_8;Pythia B_8";
- 
-
+    TString generatorName = "Hijing_0;pizero_1;eta_2;etaprime_3;rho_4;omega_5;phi_6;jpsi_7;Pythia CC_8;Pythia BB_8;Pythia B_8;Starlight_0;Hijing_1;";
   TObjArray arr = *(generatorName.Tokenize(";"));
   std::cout << "Used Generators: " << std::endl;
   for (int i = 0; i < arr.GetEntries(); ++i){
