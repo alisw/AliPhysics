@@ -95,6 +95,8 @@ void AliForwardGenericFramework::CumulantsAccumulate(TH2D& dNdetadphi, TList* ou
 
     if (weight == 0) continue; 
     for (Int_t n = 0; n <= 5; n++) {
+
+      /*
       if (doRefFlow && (fSettings.ref_mode & fSettings.kFMDref)){
         if (!fSettings.use_primaries_fwd && n>=2 && n<=4) {
           Double_t seceta = fSettings.seccorr_fwd->GetXaxis()->FindBin(eta);
@@ -111,6 +113,7 @@ void AliForwardGenericFramework::CumulantsAccumulate(TH2D& dNdetadphi, TList* ou
           weight = weight*fSettings.seccorr_cen->GetBinContent(seceta,secvtz,secn);
         }
       }
+      */
 
 
       for (Int_t p = 1; p <= 4; p++) {
