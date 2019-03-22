@@ -29,6 +29,7 @@ class AliEventplane;
 class AliStack;
 class AliHeader;
 class AliGenEventHeader;
+class AliGenCocktailEventHeader;
 
 class TClonesArray;
 class TList;
@@ -202,6 +203,7 @@ private:
     Int_t             fNprimaries;       // Number of primaries
     Int_t             fNparticles;       // Number of particles
     TList            *fSubsidiaryEvents; // List of possible subsidiary events (for example merged underlying event)
+    AliGenCocktailEventHeader* fCombinedEvenHeader; //! cocktail from headers of subsidiary events (if any)
     Int_t             fPrimaryOffset;    // Offset for primaries
     Int_t             fSecondaryOffset;  // Offset for secondaries
     Bool_t            fExternal;         // True if external particle array
@@ -211,7 +213,7 @@ private:
     Int_t             fNBG;              //! Background particles in current event
     Int_t             fBGEventReused;    // In case of embedding counts how many time currebt BKG event was used
   
-    ClassDef(AliMCEvent, 3)              // AliVEvent realisation for MC data
+    ClassDef(AliMCEvent, 4)              // AliVEvent realisation for MC data
 };
 
 
