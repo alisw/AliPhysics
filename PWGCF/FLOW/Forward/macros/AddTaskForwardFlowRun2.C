@@ -41,7 +41,7 @@ AliAnalysisTaskSE* AddTaskForwardFlowRun2( bool doNUA, bool makeFakeHoles, TStri
     task->fSettings.fNRefEtaBins = 1;
     task->fSettings.gap = gap;
     resName += "_etagap";
-    resName += std::to_string((int)(10*gap));
+//    resName += std::to_string((int)(10*gap));
 
     //resName += std::to_string(gap);
   }
@@ -99,11 +99,11 @@ AliAnalysisTaskSE* AddTaskForwardFlowRun2( bool doNUA, bool makeFakeHoles, TStri
 
   task->fSettings.minpt = minpt;
   resName += "_minpt";
-  resName += std::to_string((int)(minpt*10));
+  //resName += std::to_string((int)(minpt*10));
 
   task->fSettings.maxpt = maxpt;
   resName += "_maxpt";
-  resName += std::to_string((int)(maxpt*10));
+  //resName += std::to_string((int)(maxpt*10));
 
   task->fSettings.doNUA = doNUA;
   if (task->fSettings.doNUA){
@@ -154,7 +154,7 @@ AliAnalysisTaskSE* AddTaskForwardFlowRun2( bool doNUA, bool makeFakeHoles, TStri
   if (mc) resName += "_mc";
 
   task->fSettings.centrality_estimator = centrality; // "V0M";// RefMult08; // "V0M" // "SPDTracklets";
-   TString combName = resName + '_' + suffix;
+   TString combName = suffix;
 
   std::cout << "Container name: " << combName << std::endl;
   //resName = "hej";
