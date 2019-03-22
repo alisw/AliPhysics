@@ -321,7 +321,7 @@ class AliAnalysisTaskSELc2V0bachelorTMVAApp : public AliAnalysisTaskSE
   Bool_t fDebugHistograms;             /// flag to decide whether or not to have extra histograms (useful mainly for debug)
   
   /// \cond CLASSIMP    
-  ClassDef(AliAnalysisTaskSELc2V0bachelorTMVAApp, 1); /// class for Lc->p K0
+  ClassDef(AliAnalysisTaskSELc2V0bachelorTMVAApp, 2); /// class for Lc->p K0
   /// \endcond    
 };
 
