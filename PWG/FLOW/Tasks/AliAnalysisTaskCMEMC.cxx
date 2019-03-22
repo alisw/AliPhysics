@@ -1097,10 +1097,11 @@ void AliAnalysisTaskCMEMC::UserCreateOutputObjects()
 
 
 
-
-
-  fCentDistBefore = new TH1F("fCentDistBefore","no Cut; Cent (%); Events ",100,0,100);
+  fCentDistBefore = new TH1F("fMultDistMC","Mult Dist; Events ",2000,0,4000);
   fListHist->Add(fCentDistBefore);
+
+  //fCentDistBefore = new TH1F("fCentDistBefore","no Cut; Cent (%); Events ",100,0,100);
+  //fListHist->Add(fCentDistBefore);
 
   fCentDistAfter = new TH1F("fCentDistAfter","with Cut; Cent (%); Events ",100,0,100);
   fListHist->Add(fCentDistAfter);
@@ -1442,7 +1443,7 @@ void AliAnalysisTaskCMEMC::UserExec(Option_t*) {
   fHistEventCount->Fill(stepCount); //4
   stepCount++;
 
-  fCentDistBefore->Fill(centrality);
+  //fCentDistBefore->Fill(centrality);
   
 
   
@@ -2451,9 +2452,9 @@ void AliAnalysisTaskCMEMC::UserExec(Option_t*) {
 
       if(i==j) continue; 
 
-      dPhi2 = PhiMCtrack[i];
-      dEta2 = EtaMCtrack[i];
-      gCharge2 = ChMCtrack[i];
+      dPhi2 = PhiMCtrack[j];
+      dEta2 = EtaMCtrack[j];
+      gCharge2 = ChMCtrack[j];
 
       //'newQnb' should be restored to 1st track removed value;
       newQx2b = newQx2;
@@ -2499,6 +2500,7 @@ void AliAnalysisTaskCMEMC::UserExec(Option_t*) {
   }//i-loop
 
 
+  fCentDistBefore->Fill(iLoop);
 
   // cout<<"track for nested loop: "<<iLoop<<"\t MQP = "<<MQP<<"\t MQN = "<<MQN<<"\t centrality = "<<centrality<<endl;
   
