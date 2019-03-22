@@ -20,7 +20,7 @@
 //                   drathee@cern.ch | sjena@cern.ch                       //
 //                            Surya Prakash Pathak                         //
 //                       surya.prakash.pathak@cern.ch                      //
-//                         (Last Modified 2019/03/18)                      //
+//                         (Last Modified 2019/03/22)                      //
 //                 Dealing with Wide pT Window Modified to ESDs            //
 //Some parts of the code are taken from J. Thaeder/ M. Weber NetParticle analysis code//
 //=========================================================================//
@@ -295,9 +295,10 @@ void AliEbyEPhiDistNew::UserCreateOutputObjects(){
     if (!fPIDResponse){
         AliError("No PID response task found !!");
     }
+    if(!fIsMC){
     if (fRun == "LHC15o"){
         fEventCuts = new AliEventCuts();
-    }
+    }}
   
   fThnList = new TList();
   fThnList->SetOwner(kTRUE);
