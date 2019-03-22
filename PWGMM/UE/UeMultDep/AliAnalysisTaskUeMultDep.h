@@ -84,13 +84,32 @@ class AliAnalysisTaskUeMultDep : public AliAnalysisTaskSE {
 		TH2D * hpTvsV0Mmult;
 		TH2D * hpTLvsV0Mmult;
 		TH2D * hRefMultvsV0Mmult;
+		
 		TH3D * hpTvsV0MmultvsRefMult08;
 		TH3D * hpTLvsV0MmultvsRefMult08;
-		TH3D * hpTLvsRefMult08vsDphi;
-		TH3D * hpTLvsV0MmultvsDphi;
 		
-		THnSparseD * hptLvsv0MvsRefMultvsDphivsDeta;       //
-
+		TH3D * hpTLvsRefMult08vsDphi;
+		TH3D * hpTLvsRefMult08vsNch;
+		TH3D * hpTLvsRefMult08vsNchNS;
+		TH3D * hpTLvsRefMult08vsNchAS;
+		TH3D * hpTLvsRefMult08vsNchTS;
+		
+		TH3D * hpTLvsV0MmultvsDphi;
+		TH3D * hpTLvsV0MmultvsNch;
+		TH3D * hpTLvsV0MmultvsNchNS;
+		TH3D * hpTLvsV0MmultvsNchAS;
+		TH3D * hpTLvsV0MmultvsNchTS;
+		
+		TH3D * hpTvspTLvsRefMult08;
+		TH3D * hpTvspTLvsRefMult08NS;
+		TH3D * hpTvspTLvsRefMult08AS;
+		TH3D * hpTvspTLvsRefMult08TS;
+		
+		TH3D * hpTvspTLvsV0Mmult;
+		TH3D * hpTvspTLvsV0MmultNS;
+		TH3D * hpTvspTLvsV0MmultAS;
+		TH3D * hpTvspTLvsV0MmultTS;
+		
 		Double_t ftrackmult08;       //       
 		Double_t fv0mpercentile;     //
 
