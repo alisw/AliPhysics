@@ -154,7 +154,7 @@ AliAnalysisTaskSE* AddTaskForwardFlowRun2( bool doNUA, bool makeFakeHoles, TStri
   if (mc) resName += "_mc";
 
   task->fSettings.centrality_estimator = centrality; // "V0M";// RefMult08; // "V0M" // "SPDTracklets";
-   TString combName = resName + '_' + suffix;
+   TString combName = suffix;
 
   std::cout << "Container name: " << combName << std::endl;
   //resName = "hej";
