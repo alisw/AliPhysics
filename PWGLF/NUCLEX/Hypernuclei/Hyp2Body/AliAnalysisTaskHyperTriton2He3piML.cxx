@@ -77,6 +77,7 @@ AliAnalysisTaskHyperTriton2He3piML::AliAnalysisTaskHyperTriton2He3piML(
       fHistNsigmaHe3{nullptr},
       fHistNsigmaPi{nullptr},
       fHistInvMass{nullptr},
+      fHistTPCdEdx{nullptr},
       fMinPtToSave{0.1},
       fMaxPtToSave{100},
       fMaxTPCpiSigma{10.},
@@ -137,9 +138,14 @@ void AliAnalysisTaskHyperTriton2He3piML::UserCreateOutputObjects()
   fHistInvMass =
       new TH2D("fHistInvMass", ";#it{p}_{T} (GeV/#it{c});Invariant Mass(GeV/#it{c^2}); Counts", 100, 0, 10, 30, 2.96, 3.05);
 
+  fHistTPCdEdx[0] = new TH2D("fHistTPCdEdxPos", ";#it{p} (GeV/#it{c}); dE/dx; Counts", 256, 0, 10.24, 4096, 0, 2048);
+  fHistTPCdEdx[1] = new TH2D("fHistTPCdEdxNeg", ";#it{p} (GeV/#it{c}); dE/dx; Counts", 256, 0, 10.24, 4096, 0, 2048);
+
   fListHist->Add(fHistNsigmaPi);
   fListHist->Add(fHistNsigmaHe3);
   fListHist->Add(fHistInvMass);
+  fListHist->Add(fHistTPCdEdx[0]);
+  fListHist->Add(fHistTPCdEdx[1]);
 
   PostData(1, fListHist);
   PostData(2, fTreeV0);
@@ -319,6 +325,9 @@ void AliAnalysisTaskHyperTriton2He3piML::UserExec(Option_t *)
     const float nSigmaPosAbsPi = std::abs(nSigmaPosPi);
 
     /// Skip V0 not involving (anti-)He3 candidates
+
+    fHistTPCdEdx[0]->Fill(pTrack->GetTPCmomentum(),pTrack->GetTPCsignal());
+    fHistTPCdEdx[1]->Fill(nTrack->GetTPCmomentum(),nTrack->GetTPCsignal());
 
     bool mHyperTriton = nSigmaPosAbsHe3 < fMaxTPChe3Sigma && nSigmaNegAbsPi < fMaxTPCpiSigma;
     bool aHyperTriton = nSigmaNegAbsHe3 < fMaxTPChe3Sigma && nSigmaPosAbsPi < fMaxTPCpiSigma;

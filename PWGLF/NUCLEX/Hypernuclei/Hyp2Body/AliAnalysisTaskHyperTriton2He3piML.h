@@ -138,6 +138,7 @@ class AliAnalysisTaskHyperTriton2He3piML : public AliAnalysisTaskSE {
   TH2D* fHistNsigmaHe3;          //! # sigma TPC proton for the positive prong
   TH2D* fHistNsigmaPi;           //! # sigma TPC pion for the negative prong
   TH2D* fHistInvMass;            //! # Invariant mass histogram
+  TH2D* fHistTPCdEdx[2];         //! # TPC dE/dx for V0s
 
   float fMinPtToSave;  // minimum pt
   float fMaxPtToSave;  // maximum pt
