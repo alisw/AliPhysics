@@ -3,9 +3,7 @@
      Please report bugs to: amishra@cern.ch / aditya.mishra@correo.nucleares.unam.mx 
      First version: 07/03/2019
 
-     Calibration factors of dE/dx were provided by Omar Vazquez (Lund University)
-
-*/
+ */
 
 #include "AliAnalysisTaskUeMultDep.h"
 
