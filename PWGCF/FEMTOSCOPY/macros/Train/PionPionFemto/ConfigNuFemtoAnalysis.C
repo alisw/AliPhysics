@@ -133,7 +133,7 @@ AliFemtoManager*
 ConfigFemtoAnalysis(const AliFemtoConfigObject& cfg)
 {
   AliFemtoConfigObject evreader_cfg = AliFemtoConfigObject::BuildMap()
-    ("class", "AliFemtoEventReaderAODMultSelection")
+    ("_class", "AliFemtoEventReaderAODMultSelection")
     ("filter_bit", 7)
     ("epvzero", true)
     ("dca_globaltrack", true)

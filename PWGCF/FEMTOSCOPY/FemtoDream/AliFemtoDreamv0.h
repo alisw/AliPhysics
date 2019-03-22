@@ -22,6 +22,8 @@ class AliFemtoDreamv0 : public AliFemtoDreamBasePart {
   void Setv0(AliAODEvent *evt, AliAODv0 *v0, const int multiplicity = -1);
   void Setv0(AliESDEvent *evt, AliMCEvent *mcEvent, AliESDv0 *v0,
              const int multiplicity = -1);
+  void Setv0(const AliFemtoDreamBasePart &posDaughter, const float posMass,
+             const AliFemtoDreamBasePart &negDaughter, const float negMass);
   bool GetOnlinev0() const {
     return fOnlinev0;
   }

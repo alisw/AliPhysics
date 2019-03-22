@@ -130,6 +130,7 @@ AliAnalysisTaskGammaCaloMerged::AliAnalysisTaskGammaCaloMerged(): AliAnalysisTas
   fHistoMCAllGammaPt(NULL),
   fHistoTrueClusMergedPtvsM02(NULL),
   fHistoTrueClusPi0PtvsM02(NULL),
+  fHistoTrueClusMultiplePi0PtvsM02(NULL),
   fHistoTrueClusPi0DalitzPtvsM02(NULL),
   fHistoTrueClusPrimPi0PtvsM02(NULL),
   fHistoTrueClusSecPi0PtvsM02(NULL),
@@ -289,6 +290,7 @@ AliAnalysisTaskGammaCaloMerged::AliAnalysisTaskGammaCaloMerged(const char *name)
   fHistoMCAllGammaPt(NULL),
   fHistoTrueClusMergedPtvsM02(NULL),
   fHistoTrueClusPi0PtvsM02(NULL),
+  fHistoTrueClusMultiplePi0PtvsM02(NULL),
   fHistoTrueClusPi0DalitzPtvsM02(NULL),
   fHistoTrueClusPrimPi0PtvsM02(NULL),
   fHistoTrueClusSecPi0PtvsM02(NULL),
@@ -428,6 +430,7 @@ void AliAnalysisTaskGammaCaloMerged::UserCreateOutputObjects(){
     startPtLog                                = 20;
     endPtLog                                  = 70;
   } else if (((AliConvEventCuts*)fV0Reader->GetEventCuts())->GetEnergyEnum() == AliConvEventCuts::k5TeV ||
+             ((AliConvEventCuts*)fV0Reader->GetEventCuts())->GetEnergyEnum() == AliConvEventCuts::k7TeV ||
              ((AliConvEventCuts*)fV0Reader->GetEventCuts())->GetEnergyEnum() == AliConvEventCuts::k8TeV ||
              ((AliConvEventCuts*)fV0Reader->GetEventCuts())->GetEnergyEnum() == AliConvEventCuts::k13TeV ||
              ((AliConvEventCuts*)fV0Reader->GetEventCuts())->GetEnergyEnum() == AliConvEventCuts::kpPb8TeV ||
@@ -772,12 +775,14 @@ void AliAnalysisTaskGammaCaloMerged::UserCreateOutputObjects(){
       fHistoMCEtaDalitzWOEvtWeightInAccPt         = new TH1F*[fnCuts];
     }
     if (fIsMC == 2){
-      if (GetSelectedMesonID() != 2)
+      if (GetSelectedMesonID() != 2){
         fHistoMCPi0WOEvtWeightPt                  = new TH1F*[fnCuts];
         fHistoMCPi0DalitzWOEvtWeightPt            = new TH1F*[fnCuts];
-      if (GetSelectedMesonID() != 1)
+      }
+      if (GetSelectedMesonID() != 1){
         fHistoMCEtaWOEvtWeightPt                  = new TH1F*[fnCuts];
         fHistoMCEtaDalitzWOEvtWeightPt            = new TH1F*[fnCuts];
+      }
       if (fDoMesonQA > 0){
         if (GetSelectedMesonID() != 2)
           fHistoMCPi0PtJetPt                      = new TH2F*[fnCuts];
@@ -788,7 +793,8 @@ void AliAnalysisTaskGammaCaloMerged::UserCreateOutputObjects(){
 
     fHistoTrueClusMergedPtvsM02                   = new TH2F*[fnCuts];
     fHistoTrueClusPi0PtvsM02                      = new TH2F*[fnCuts];
-    fHistoTrueClusPi0DalitzPtvsM02                      = new TH2F*[fnCuts];
+    fHistoTrueClusMultiplePi0PtvsM02              = new TH2F*[fnCuts];
+    fHistoTrueClusPi0DalitzPtvsM02                = new TH2F*[fnCuts];
     if (GetSelectedMesonID() < 2){
       fHistoTrueClusPrimPi0PtvsM02                = new TH2F*[fnCuts];
       fHistoTrueClusSecPi0PtvsM02                 = new TH2F*[fnCuts];
@@ -999,6 +1005,8 @@ void AliAnalysisTaskGammaCaloMerged::UserCreateOutputObjects(){
       fTrueList[iCut]->Add(fHistoTrueClusMergedPtvsM02[iCut]);
       fHistoTrueClusPi0PtvsM02 [iCut]               = new TH2F("ESD_TrueClusFromPi0_Pt_M02","ESD_TrueClusFromPi0_Pt_M02",ptBins, arrPtBinning,showerShapeBins, startShowerShape, endShowerShape);
       fTrueList[iCut]->Add(fHistoTrueClusPi0PtvsM02[iCut]);
+      fHistoTrueClusMultiplePi0PtvsM02 [iCut]       = new TH2F("ESD_TrueClusFromMultiplePi0_Pt_M02","ESD_TrueClusFromMultiplePi0_Pt_M02",ptBins, arrPtBinning,showerShapeBins, startShowerShape, endShowerShape);
+      fTrueList[iCut]->Add(fHistoTrueClusMultiplePi0PtvsM02[iCut]);
       fHistoTrueClusPi0DalitzPtvsM02 [iCut]         = new TH2F("ESD_TrueClusFromPi0Dalitz_Pt_M02","ESD_TrueClusFromPi0Dalitz_Pt_M02",ptBins, arrPtBinning,showerShapeBins, startShowerShape, endShowerShape);
       fTrueList[iCut]->Add(fHistoTrueClusPi0DalitzPtvsM02[iCut]);
       fHistoTrueClusEtaPtvsM02[iCut]                = new TH2F("ESD_TrueClusFromEta_Pt_M02","ESD_TrueClusFromEta_Pt_M02",ptBins, arrPtBinning,showerShapeBins, startShowerShape, endShowerShape);
@@ -1137,6 +1145,7 @@ void AliAnalysisTaskGammaCaloMerged::UserCreateOutputObjects(){
       if (fIsMC == 2){
         fHistoTrueClusMergedPtvsM02[iCut]->Sumw2();
         fHistoTrueClusPi0PtvsM02[iCut]->Sumw2();
+        fHistoTrueClusMultiplePi0PtvsM02[iCut]->Sumw2();
         fHistoTrueClusPi0DalitzPtvsM02[iCut]->Sumw2();
         fHistoTrueClusEtaPtvsM02[iCut]->Sumw2();
         fHistoTrueClusEtaDalitzPtvsM02[iCut]->Sumw2();
@@ -1209,10 +1218,6 @@ void AliAnalysisTaskGammaCaloMerged::UserCreateOutputObjects(){
 
   }
 
-  if(fV0Reader)
-    if((AliConversionPhotonCuts*)fV0Reader->GetConversionCuts())
-      if(((AliConversionPhotonCuts*)fV0Reader->GetConversionCuts())->GetCutHistograms())
-        fOutputContainer->Add(((AliConversionPhotonCuts*)fV0Reader->GetConversionCuts())->GetCutHistograms());
   if(fV0Reader)
     if((AliConvEventCuts*)fV0Reader->GetEventCuts())
       if(((AliConvEventCuts*)fV0Reader->GetEventCuts())->GetCutHistograms())
@@ -1778,7 +1783,7 @@ void AliAnalysisTaskGammaCaloMerged::ProcessTrueClusterCandidates(AliAODConversi
     return;
   }
   Int_t pdgCodeParticle             = Photon->GetPdgCode();
-  TrueClusterCandidate->SetCaloPhotonMCFlags(fMCEvent, fEnableSortForClusMC);
+  TrueClusterCandidate->SetCaloPhotonMCFlags(fMCEvent, fEnableSortForClusMC, kTRUE);
   if (TrueClusterCandidate->GetNCaloPhotonMCLabels()>0 && fEnableDetailedPrintOut){
     cout << endl << endl << "Cluster energy: " << TrueClusterCandidate->E() << endl;;
     TrueClusterCandidate->PrintCaloMCLabelsAndInfo(fMCEvent);
@@ -1798,7 +1803,7 @@ void AliAnalysisTaskGammaCaloMerged::ProcessTrueClusterCandidates(AliAODConversi
         clusterClass    = 1;
         motherLab       = TrueClusterCandidate->GetCaloPhotonMotherMCLabel(0);
     } else if (TrueClusterCandidate->GetNCaloPhotonMotherMCLabels()> 0){
-//       cout << TrueClusterCandidate->GetCaloPhotonMotherMCLabel(0) << endl;
+      // cout << TrueClusterCandidate->GetCaloPhotonMotherMCLabel(0) << endl;
       if (TrueClusterCandidate->IsLargestComponentElectron() || TrueClusterCandidate->IsLargestComponentPhoton()){
         if (TrueClusterCandidate->GetCaloPhotonMotherMCLabel(0) > -1 && (fMCEvent->Particle(TrueClusterCandidate->GetCaloPhotonMotherMCLabel(0))->GetPdgCode() == 111 || fMCEvent->Particle(TrueClusterCandidate->GetCaloPhotonMotherMCLabel(0))->GetPdgCode() == 221) ){
           if ( TrueClusterCandidate->IsConversion() && !TrueClusterCandidate->IsConversionFullyContained() ){
@@ -1888,6 +1893,11 @@ void AliAnalysisTaskGammaCaloMerged::ProcessTrueClusterCandidates(AliAODConversi
       // deal with pi0 only
       if (motherPDG == 111){
         fHistoTrueClusPi0PtvsM02[fiCut]->Fill(TrueClusterCandidate->Pt(), m02, tempClusterWeight);
+        if(TrueClusterCandidate->GetNNeutralPionMCLabels()>1){
+          for(Int_t npion = 1; npion < TrueClusterCandidate->GetNNeutralPionMCLabels(); npion++){
+            fHistoTrueClusMultiplePi0PtvsM02[fiCut]->Fill(TrueClusterCandidate->Pt(), m02, tempClusterWeight);
+          }
+        }
         if (CheckVectorForDoubleCount(fVectorDoubleCountTruePi0s,motherLab)){
           fHistoDoubleCountTruePi0PtvsM02[fiCut]->Fill(TrueClusterCandidate->Pt(), m02, tempClusterWeight);
           if (!isPrimary)
@@ -2077,7 +2087,6 @@ void AliAnalysisTaskGammaCaloMerged::ProcessTrueClusterCandidatesAOD(AliAODConve
   }
 
   if(Photon == NULL){
-  //    cout << "no photon" << endl;
     return;
   }
 
@@ -2088,7 +2097,7 @@ void AliAnalysisTaskGammaCaloMerged::ProcessTrueClusterCandidatesAOD(AliAODConve
     return;
   }
   Int_t pdgCodeParticle             = Photon->GetPdgCode();
-  TrueClusterCandidate->SetCaloPhotonMCFlagsAOD(fInputEvent, fEnableSortForClusMC);
+  TrueClusterCandidate->SetCaloPhotonMCFlagsAOD(fInputEvent, fEnableSortForClusMC, kTRUE);
   if (TrueClusterCandidate->GetNCaloPhotonMCLabels()>0 && fEnableDetailedPrintOut){
     cout << endl << endl << "Cluster energy: " << TrueClusterCandidate->E() << endl;;
     //TrueClusterCandidate->PrintCaloMCLabelsAndInfo(fMCEvent);
@@ -2199,6 +2208,11 @@ void AliAnalysisTaskGammaCaloMerged::ProcessTrueClusterCandidatesAOD(AliAODConve
       // deal with pi0 only
       if (motherPDG == 111){
         fHistoTrueClusPi0PtvsM02[fiCut]->Fill(TrueClusterCandidate->Pt(), m02, tempClusterWeight);
+        if(TrueClusterCandidate->GetNNeutralPionMCLabels()>1){
+          for(Int_t npion = 1; npion < TrueClusterCandidate->GetNNeutralPionMCLabels(); npion++){
+            fHistoTrueClusMultiplePi0PtvsM02[fiCut]->Fill(TrueClusterCandidate->Pt(), m02, tempClusterWeight);
+          }
+        }
         if (CheckVectorForDoubleCount(fVectorDoubleCountTruePi0s,motherLab)){
           fHistoDoubleCountTruePi0PtvsM02[fiCut]->Fill(TrueClusterCandidate->Pt(), m02, tempClusterWeight);
           if (!isPrimary)
@@ -2711,8 +2725,8 @@ void AliAnalysisTaskGammaCaloMerged::ProcessAODMCParticles()
       // check if particle is pi0/eta from di-photon decay
       if(((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))
         ->MesonIsSelectedAODMC(particle,AODMCTrackArray,((AliConvEventCuts*)fEventCutArray->At(fiCut))->GetEtaShift())){
-        AliAODMCParticle* daughter0 = static_cast<AliAODMCParticle*>(AODMCTrackArray->At(particle->GetDaughter(0)));
-        AliAODMCParticle* daughter1 = static_cast<AliAODMCParticle*>(AODMCTrackArray->At(particle->GetDaughter(1)));
+        AliAODMCParticle* daughter0 = static_cast<AliAODMCParticle*>(AODMCTrackArray->At(particle->GetDaughterLabel(0)));
+        AliAODMCParticle* daughter1 = static_cast<AliAODMCParticle*>(AODMCTrackArray->At(particle->GetDaughterLabel(1)));
 
         Float_t weighted= 1;
         if(((AliConvEventCuts*)fEventCutArray->At(fiCut))->IsParticleFromBGEvent(i, fMCEvent, fInputEvent)){
@@ -2825,8 +2839,8 @@ void AliAnalysisTaskGammaCaloMerged::ProcessAODMCParticles()
       // check if particle is pi0 from di-photon decay
       if(((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))
         ->MesonIsSelectedAODMC(particle,AODMCTrackArray,((AliConvEventCuts*)fEventCutArray->At(fiCut))->GetEtaShift())){
-        AliAODMCParticle* daughter0 = static_cast<AliAODMCParticle*>(AODMCTrackArray->At(particle->GetDaughter(0)));
-        AliAODMCParticle* daughter1 = static_cast<AliAODMCParticle*>(AODMCTrackArray->At(particle->GetDaughter(1)));
+        AliAODMCParticle* daughter0 = static_cast<AliAODMCParticle*>(AODMCTrackArray->At(particle->GetDaughterLabel(0)));
+        AliAODMCParticle* daughter1 = static_cast<AliAODMCParticle*>(AODMCTrackArray->At(particle->GetDaughterLabel(1)));
         AliAODMCParticle* mother     = NULL;
         Int_t motherPDG       = -1000000;
         if (particle->GetMother() > -1){

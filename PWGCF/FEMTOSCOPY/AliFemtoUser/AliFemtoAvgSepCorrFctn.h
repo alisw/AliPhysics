@@ -97,6 +97,8 @@ public:
   void SetPairType(AliFemtoPairType pairtype);
 
 private:
+  AliFemtoPairType fPairType;
+
   //2 tracks
   TH1D *fNumerator;          ///< numerator - real pairs
   TH1D *fDenominator;        ///< denominator - mixed pairs
@@ -127,7 +129,7 @@ private:
   //Xi + V0
   //In addition to fNumeratorPosPos, fDenominatorPosPos,
   //fNumeratorPosNeg, fDenominatorPosNeg, fNumeratorNegPos, fDenominatorNegPos,
-  //fNumeratorNegNeg, fDenominatorNegNeg, the kXiV0 case also needs histograms 
+  //fNumeratorNegNeg, fDenominatorNegNeg, the kXiV0 case also needs histograms
   //for average separation between bachelor pion and Xi's V0 daughters
   TH1D *fNumeratorBacPos;       ///< numerator - real pairs
   TH1D *fDenominatorBacPos;     ///< denominator - mixed pairs
@@ -135,12 +137,6 @@ private:
   TH1D *fDenominatorBacNeg;     ///< denominator - mixed pairs
 
   TH1D *fRatio;              ///< ratio - correlation function
-  AliFemtoPairType fPairType;
-
-
-#ifdef __ROOT__
-  ClassDef(AliFemtoAvgSepCorrFctn, 1)
-#endif
 };
 
 inline  TH1D *AliFemtoAvgSepCorrFctn::Numerator()

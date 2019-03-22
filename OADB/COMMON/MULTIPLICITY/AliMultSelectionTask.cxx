@@ -196,6 +196,7 @@ fMC_NchEta05(0),
 fMC_NchEta08(0),
 fMC_NchEta10(0),
 fMC_NchEta14(0),
+fMC_b(0),
 
 //Histos
 fHistEventCounter(0),
@@ -347,6 +348,7 @@ fMC_NchEta05(0),
 fMC_NchEta08(0),
 fMC_NchEta10(0),
 fMC_NchEta14(0),
+fMC_b(0),
 
 //Histos
 fHistEventCounter(0),
@@ -577,6 +579,7 @@ void AliMultSelectionTask::UserCreateOutputObjects()
     fMC_NchEta10->SetIsInteger(kTRUE);
     fMC_NchEta14 =         new AliMultVariable("fMC_NchEta14");
     fMC_NchEta14->SetIsInteger(kTRUE);
+    fMC_b =         new AliMultVariable("fMC_b");
     
     //Add to AliMultInput Object, will later bind to TTree object in a loop
     fInput->AddVariable( fAmplitude_V0A );
@@ -640,6 +643,7 @@ void AliMultSelectionTask::UserCreateOutputObjects()
         fInput->AddVariable( fMC_NchEta08 );
         fInput->AddVariable( fMC_NchEta10 );
         fInput->AddVariable( fMC_NchEta14 );
+        fInput->AddVariable( fMC_b );
     }
     
     //Add Monte Carlo AliMultVariables for MC selection
@@ -1061,6 +1065,7 @@ void AliMultSelectionTask::UserExec(Option_t *)
     fMC_NchEta05->SetValueInteger(-1);
     fMC_NchEta08->SetValueInteger(-1);
     fMC_NchEta10->SetValueInteger(-1);
+    fMC_b->SetValue(-1);
     Float_t npartINELgtONE = -1.;
     
     // Connect to the InputEvent
@@ -1124,6 +1129,7 @@ void AliMultSelectionTask::UserExec(Option_t *)
     fMC_NchEta05->SetValueInteger(0);
     fMC_NchEta08->SetValueInteger(0);
     fMC_NchEta10->SetValueInteger(0);
+    fMC_b->SetValueInteger(0);
     
     if ( fkDebugIsMC ) {
         AliAnalysisManager* anMan = AliAnalysisManager::GetAnalysisManager();
@@ -1151,10 +1157,12 @@ void AliMultSelectionTask::UserExec(Option_t *)
                 dpmHeader = (AliGenDPMjetEventHeader*)mcGenH;
             }
             if(hHijing)   {
+                fMC_b -> SetValue( hHijing->ImpactParameter() );
                 fMC_NPart ->SetValueInteger( hHijing->ProjectileParticipants()+hHijing->TargetParticipants() );
                 fMC_NColl ->SetValueInteger( hHijing->NN()+hHijing->NNw()+hHijing->NwN()+hHijing->NwNw() );
             }
             if(dpmHeader) {
+                fMC_b -> SetValue( hHijing->ImpactParameter() );
                 fMC_NPart ->SetValueInteger( dpmHeader->ProjectileParticipants()+dpmHeader->TargetParticipants());
                 fMC_NColl ->SetValueInteger( dpmHeader->NN()+dpmHeader->NNw()+dpmHeader->NwN()+dpmHeader->NwNw());
             }
@@ -1209,6 +1217,7 @@ void AliMultSelectionTask::UserExec(Option_t *)
             fMC_NchEta05->SetValueInteger(lCounter_NchEta05);
             fMC_NchEta08->SetValueInteger(lCounter_NchEta08);
             fMC_NchEta10->SetValueInteger(lCounter_NchEta10);
+            fMC_NchEta14->SetValueInteger(lCounter_NchEta14);
             fNPartINELgtONE->SetValue(npartINELgtONE);
         }
     }
@@ -2580,13 +2589,17 @@ Bool_t AliMultSelectionTask::PassesTrackletVsCluster(AliVEvent* event)
 //______________________________________________________________________
 Bool_t AliMultSelectionTask::HasGoodVertex2016(AliVEvent* event)
 {
+    if(!event) return kFALSE;
     //Good Vertex according to criteria discussed on the 05th October 2016
     //Adaptation (virtual classes) of snippet from:
     // https://indico.cern.ch/event/489471/contributions/2320075/attachments/1348724/2034963/DPG_PF_20161005.pdf
     
     Bool_t lReturnValue = kTRUE; //optimisitc: good until proven otherwise
+    
     const AliVVertex* vtTrc = event->GetPrimaryVertex();
+    if(!vtTrc) return kFALSE;
     const AliVVertex* vtSPD = event->GetPrimaryVertexSPD();
+    if(!vtSPD) return kFALSE;
     if (vtTrc->GetNContributors()<2 || vtSPD->GetNContributors()<1) lReturnValue = kFALSE;// one of vertices is missing
     double covTrc[6],covSPD[6];
     vtTrc->GetCovarianceMatrix(covTrc);

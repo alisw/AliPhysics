@@ -51,6 +51,7 @@
 #pragma link C++ class AliAnalysisTaskK0toPi0Pi0+;
 #pragma link C++ class AliAnalysisTaskGammaConvDtrue+;
 #pragma link C++ class AliAnalysisTaskGammaTriggerQA+;
+#pragma link C++ class AliAnalysisTaskConvCaloCalibration+;
 
 // Old tasks
 #pragma link C++ class AliAnalysisTaskGCPartToPWG4Part+;

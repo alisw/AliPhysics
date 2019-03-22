@@ -1,6 +1,6 @@
 #include "AliGFWCuts.h"
 const Int_t AliGFWCuts::fNTrackFlags=9;
-const Int_t AliGFWCuts::fNEventFlags=6;
+const Int_t AliGFWCuts::fNEventFlags=8;
 AliGFWCuts::AliGFWCuts():
   fSystFlag(0),
   fFilterBit(96),
@@ -16,8 +16,8 @@ AliGFWCuts::~AliGFWCuts() {
 };
 Int_t AliGFWCuts::AcceptTrack(AliAODTrack* l_Tr, Double_t* l_DCA, Int_t BitShift) {
   if(TMath::Abs(l_Tr->Eta())>fEta) return 0;
-  if(l_Tr->Pt()<0.2) return 0;
-  if(l_Tr->Pt()>20) return 0;
+  if(l_Tr->Pt()<0.3) return 0;
+  if(l_Tr->Pt()>3) return 0;
   if(!l_Tr->TestFilterBit(fFilterBit)) return 0;
   if(fFilterBit!=2) {//Check is not valid for ITSsa tracks
     if(l_Tr->GetTPCNclsF()<fTPCNcls) return 0;
@@ -37,8 +37,8 @@ Int_t AliGFWCuts::AcceptTrack(AliAODTrack* l_Tr, Double_t* l_DCA, Int_t BitShift
 
 Int_t AliGFWCuts::AcceptParticle(AliVParticle *l_Pa, Int_t BitShift) {
   if(TMath::Abs(l_Pa->Eta())>fEta) return 0;
-  if(l_Pa->Pt()<0.2) return 0;
-  if(l_Pa->Pt()>20) return 0;
+  if(l_Pa->Pt()<0.3) return 0;
+  if(l_Pa->Pt()>3) return 0;
   // if(!l_Pa->IsMCPrimary()) return 0; //Not sure if I need this one here?
   return 1<<BitShift;
 };
@@ -141,6 +141,14 @@ void AliGFWCuts::SetupEventCuts(Int_t sysflag) {
     printf("Warning! Event flag %i (syst. flag %i), PU cuts: make sure proper PU cuts are used in the task!\n",sysflag, sysflag+fNTrackFlags);
     fRequiresExtraWeight=kTRUE;
     break;
+  case 7:
+    printf("Warning! Event flag %i (syst. flag %i), magnetic field configuration ++: no cuts here, please make sure the proper runlist is used!\n",sysflag,sysflag+fNTrackFlags);
+    fRequiresExtraWeight=kFALSE;
+    break;
+  case 8:
+    printf("Warning! Event flag %i (syst. flag %i), magnetic field configuration --: no cuts here, please make sure the proper runlist is used!\n",sysflag,sysflag+fNTrackFlags);
+    fRequiresExtraWeight=kFALSE;
+    break;
   default:
     break;
   };
@@ -207,6 +215,13 @@ TString* AliGFWCuts::GetEventFlagDescriptor(Int_t sysflag) {
     break;
   case 6:
     retstr->Append("PU cut 1500");
+    break;
+  case 7:
+    retstr->Append("MF ++");
+    break;
+  case 8:
+    retstr->Append("MF --");
+    break;
   default:
     break;
   };

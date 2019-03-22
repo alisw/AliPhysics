@@ -88,6 +88,30 @@ void AliFemtoDreamv0::Setv0(AliESDEvent *evt, AliMCEvent *mcEvent, AliESDv0 *v0,
 //    }
 }
 
+void AliFemtoDreamv0::Setv0(const AliFemtoDreamBasePart &posDaughter,
+                            const float posMass,
+                            const AliFemtoDreamBasePart &negDaughter,
+                            const float negMass) {
+  Reset();
+  SetEventMultiplicity(posDaughter.GetEventMultiplicity());
+  fIsReset = false;
+
+  float posP[3], negP[3];
+  posDaughter.GetMomentum().GetXYZ(posP);
+  negDaughter.GetMomentum().GetXYZ(negP);
+  TLorentzVector trackPos, trackNeg;
+  trackPos.SetXYZM(posP[0], posP[1], posP[2], posMass);
+  trackNeg.SetXYZM(negP[0], negP[1], negP[2], negMass);
+  TLorentzVector trackSum = trackPos + trackNeg;
+  this->SetPt(trackSum.Pt());
+  this->SetMomentum(trackSum.Px(), trackSum.Py(), trackSum.Pz());
+  this->SetEta(trackSum.Eta());
+  this->SetPhi(trackSum.Phi());
+  this->SetTheta(trackSum.Theta());
+  this->Setv0Mass(trackSum.M());
+  this->fIsSet = true;
+}
+
 void AliFemtoDreamv0::SetDaughter(AliAODv0 *v0) {
   if (v0->GetPosID() >= fTrackBufferSize
       || v0->GetNegID() >= fTrackBufferSize) {

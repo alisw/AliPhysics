@@ -12,8 +12,7 @@
 
 #include <TH1F.h>
 #include <TH2F.h>
-#include <TParticle.h>
-#include "AliStack.h"
+#include "AliVParticle.h"
 #include "AliVEvent.h"
 #include "AliVTrack.h"
 #include "AliAnalysisManager.h"
@@ -340,7 +339,7 @@ Bool_t AliCSPIDCuts::IsTrueTrackAccepted(Int_t itrk) {
 
   if (fgIsESD) {
     /* get the associated particle */
-    TParticle *particle = fgMCHandler->MCEvent()->Particle(itrk);
+    AliVParticle *particle = fgMCHandler->MCEvent()->GetTrack(itrk);
 
     /* just to be sure */
     if (particle == NULL) return kFALSE;
@@ -360,7 +359,7 @@ Bool_t AliCSPIDCuts::IsTrueTrackAccepted(Int_t itrk) {
   }
   else {
     /* get the associated particle */
-    AliAODMCParticle *particle = (AliAODMCParticle *) fgMCArray->At(itrk);
+    AliVParticle *particle = (AliVParticle *) fgMCArray->At(itrk);
 
     /* just to be sure */
     if (particle == NULL) return kFALSE;
@@ -387,12 +386,12 @@ Bool_t AliCSPIDCuts::IsTrueTrackAccepted(Int_t itrk) {
 AliPID::EParticleType AliCSPIDCuts::GetTrueSpecies(AliVTrack *trk) {
 
   if (fgIsESD) {
-    TParticle *particle = fgMCHandler->MCEvent()->Particle(TMath::Abs(trk->GetLabel()));
+    AliVParticle *particle = fgMCHandler->MCEvent()->GetTrack(TMath::Abs(trk->GetLabel()));
     return GetTrueSpecies(particle);
   }
   else {
     /* get the associated particle */
-    AliAODMCParticle *particle = (AliAODMCParticle *) fgMCArray->At(TMath::Abs(trk->GetLabel()));
+    AliVParticle *particle = (AliVParticle *) fgMCArray->At(TMath::Abs(trk->GetLabel()));
     return GetTrueSpecies(particle);
   }
 }
@@ -400,40 +399,9 @@ AliPID::EParticleType AliCSPIDCuts::GetTrueSpecies(AliVTrack *trk) {
 /// Get the true species associated to a true particle
 /// \param par the true particle
 /// \return the ID of the particle species
-AliPID::EParticleType AliCSPIDCuts::GetTrueSpecies(TParticle *par) {
+AliPID::EParticleType AliCSPIDCuts::GetTrueSpecies(AliVParticle *par) {
 
-  switch(par->GetPdgCode()) {
-  case ::kPositron:
-  case ::kElectron:
-    return AliPID::kElectron;
-    break;
-  case ::kProton:
-  case ::kProtonBar:
-    return AliPID::kProton;
-    break;
-  case ::kMuonPlus:
-  case ::kMuonMinus:
-    return AliPID::kMuon;
-    break;
-  case ::kPiPlus:
-  case ::kPiMinus:
-    return AliPID::kPion;
-    break;
-  case ::kKPlus:
-  case ::kKMinus:
-    return AliPID::kKaon;
-    break;
-  default:
-    return AliPID::kUnknown;
-  }
-}
-
-/// Get the true species associated to a true particle
-/// \param par the true particle
-/// \return the ID of the particle species
-AliPID::EParticleType AliCSPIDCuts::GetTrueSpecies(AliAODMCParticle *par) {
-
-  switch(par->GetPdgCode()) {
+  switch(par->PdgCode()) {
   case ::kPositron:
   case ::kElectron:
     return AliPID::kElectron;

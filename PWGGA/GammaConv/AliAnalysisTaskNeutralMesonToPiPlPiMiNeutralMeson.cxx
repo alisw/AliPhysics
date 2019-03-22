@@ -15,6 +15,7 @@
 
 //
 
+#include <memory>
 #include <vector>
 #include "TParticle.h"
 #include "TPDGCode.h"
@@ -266,6 +267,7 @@ AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::AliAnalysisTaskNeutralMesonTo
   fNDMRecoMode(0),
   fTolerance(-1),
   fWeightJetJetMC(1.),
+  fTrackMatcherRunningMode(0),
   fMCEventPos(),
   fMCEventNeg(),
   fESDArrayPos(),
@@ -487,6 +489,7 @@ AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::AliAnalysisTaskNeutralMesonTo
   fNDMRecoMode(0),
   fTolerance(-1),
   fWeightJetJetMC(1.),
+  fTrackMatcherRunningMode(0),
   fMCEventPos(),
   fMCEventNeg(),
   fESDArrayPos(),
@@ -504,46 +507,41 @@ AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::~AliAnalysisTaskNeutralMesonT
   cout<<"Destructor"<<endl;
   if(fGoodConvGammas){
     delete fGoodConvGammas;
-    fGoodConvGammas = 0x0;
   }
   if(fClusterCandidates){
     delete fClusterCandidates;
-    fClusterCandidates = 0x0;
   }
 
   if(fNeutralDecayParticleCandidates){
     delete fNeutralDecayParticleCandidates;
-    fNeutralDecayParticleCandidates = 0x0;
   }
 
   if(fNeutralDecayParticleSidebandCandidates){
     delete fNeutralDecayParticleSidebandCandidates;
-    fNeutralDecayParticleSidebandCandidates = 0x0;
   }
 
   if(fPosPionCandidates){
     delete fPosPionCandidates;
-    fPosPionCandidates = 0x0;
   }
 
   if(fNegPionCandidates){
     delete fNegPionCandidates;
-    fNegPionCandidates = 0x0;
   }
 
   if(fGoodVirtualParticles){
     delete fGoodVirtualParticles;
-    fGoodVirtualParticles = 0x0;
   }
 
   if(fBGHandlerPiPl){
+    for(int icut = 0; icut < fnCuts; icut++)
+      delete fBGHandlerPiPl[icut];
     delete[] fBGHandlerPiPl;
-    fBGHandlerPiPl = 0x0;
   }
 
   if(fBGHandlerPiMi){
+    for(int icut = 0; icut < fnCuts; icut++)
+      delete fBGHandlerPiMi[icut];
     delete[] fBGHandlerPiMi;
-    fBGHandlerPiMi = 0x0;
   }
 }
 //___________________________________________________________
@@ -1731,8 +1729,8 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::UserCreateOutputObjects(
   }
 
   for(Int_t iMatcherTask = 0; iMatcherTask < 3; iMatcherTask++){
-    AliCaloTrackMatcher* temp = (AliCaloTrackMatcher*) (AliAnalysisManager::GetAnalysisManager()->GetTask(Form("CaloTrackMatcher_%i",iMatcherTask)));
-    if(temp) fOutputContainer->Add(temp->GetCaloTrackMatcherHistograms());
+    AliCaloTrackMatcher* temp = (AliCaloTrackMatcher*) (AliAnalysisManager::GetAnalysisManager()->GetTask(Form("CaloTrackMatcher_%i_%i",iMatcherTask,fTrackMatcherRunningMode)));
+    if(temp && (!fDoLightOutput)) fOutputContainer->Add(temp->GetCaloTrackMatcherHistograms());
   }
 
   fPionSelector=(AliPrimaryPionSelector*)AliAnalysisManager::GetAnalysisManager()->GetTask("PionSelector");
@@ -1996,22 +1994,22 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::ProcessCaloPhotonCandida
   // Loop over EMCal clusters
   for(Long_t i = 0; i < nclus; i++){
 
-    AliVCluster* clus = nullptr;
-    if(fInputEvent->IsA()==AliESDEvent::Class()) clus = new AliESDCaloCluster(*(AliESDCaloCluster*)fInputEvent->GetCaloCluster(i));
-    else if(fInputEvent->IsA()==AliAODEvent::Class()) clus = new AliAODCaloCluster(*(AliAODCaloCluster*)fInputEvent->GetCaloCluster(i));
+    std::unique_ptr<AliVCluster> clus;
+    if(fInputEvent->IsA()==AliESDEvent::Class()) clus = std::unique_ptr<AliVCluster>(new AliESDCaloCluster(*(AliESDCaloCluster*)fInputEvent->GetCaloCluster(i)));
+    else if(fInputEvent->IsA()==AliAODEvent::Class()) clus = std::unique_ptr<AliVCluster>(new AliAODCaloCluster(*(AliAODCaloCluster*)fInputEvent->GetCaloCluster(i)));
 
     if (!clus) continue;
-    if(!((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->ClusterIsSelected(clus,fInputEvent,fMCEvent,fIsMC,1.,i)){ delete clus; continue;}
+    if(!((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->ClusterIsSelected(clus.get(),fInputEvent,fMCEvent,fIsMC,1.,i))  continue;
     // TLorentzvector with cluster
     TLorentzVector clusterVector;
     clus->GetMomentum(clusterVector,vertex);
 
-    TLorentzVector* tmpvec = new TLorentzVector();
-    tmpvec->SetPxPyPzE(clusterVector.Px(),clusterVector.Py(),clusterVector.Pz(),clusterVector.E());
+    TLorentzVector tmpvec;
+    tmpvec.SetPxPyPzE(clusterVector.Px(),clusterVector.Py(),clusterVector.Pz(),clusterVector.E());
 
     // convert to AODConversionPhoton
-    AliAODConversionPhoton *PhotonCandidate=new AliAODConversionPhoton(tmpvec);
-    if(!PhotonCandidate){ delete clus; delete tmpvec; continue;}
+    AliAODConversionPhoton *PhotonCandidate=new AliAODConversionPhoton(&tmpvec);
+    if(!PhotonCandidate) continue;
 
     // Flag Photon as CaloPhoton
     PhotonCandidate->SetIsCaloPhoton();
@@ -2040,17 +2038,13 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::ProcessCaloPhotonCandida
     fClusterCandidates->Add(PhotonCandidate); // if no second loop is required add to events good gammas
 
     if(fIsMC){
-       if(fInputEvent->IsA()==AliESDEvent::Class()){
-         ProcessTrueCaloPhotonCandidates(PhotonCandidate);
-        } else {
-         ProcessTrueCaloPhotonCandidatesAOD(PhotonCandidate);
-        }
+      if(fInputEvent->IsA()==AliESDEvent::Class()){
+        ProcessTrueCaloPhotonCandidates(PhotonCandidate);
+      } else {
+        ProcessTrueCaloPhotonCandidatesAOD(PhotonCandidate);
+      }
     }
-
-    delete clus;
-    delete tmpvec;
   }
-
 }
 
 //________________________________________________________________________
@@ -2426,11 +2420,9 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::ProcessNeutralDecayMeson
             }
           } else{
             delete NDMcand;
-            NDMcand=0x0;
           }
-        }else{
+        } else{
           delete NDMcand;
-          NDMcand=0x0;
         }
       }
     }
@@ -2495,11 +2487,9 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::ProcessNeutralPionCandid
             }
           }else {
             delete NDMcand;
-            NDMcand=0x0;
           }
         } else{
           delete NDMcand;
-          NDMcand=0x0;
         }
       }
     }
@@ -3177,7 +3167,7 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::ProcessPionCandidates(){
   vector<Int_t> lGoodNegPionIndexPrev(0);
   vector<Int_t> lGoodPosPionIndexPrev(0);
 
-    for(UInt_t i = 0; i < fSelectorNegPionIndex.size(); i++){
+  for(UInt_t i = 0; i < fSelectorNegPionIndex.size(); i++){
 
     AliESDtrack* negPionCandidate =dynamic_cast<AliESDtrack*>(fInputEvent->GetTrack(fSelectorNegPionIndex[i]));
     if(! ((AliPrimaryPionCuts*)fPionCutArray->At(fiCut))->PionIsSelected(negPionCandidate) ) continue;
@@ -3401,7 +3391,6 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::ProcessPionCandidates(){
           }
         }else{
           delete vParticle;
-          vParticle=0x0;
         }
       } else {
         fGoodVirtualParticles->Add( vParticle );
@@ -3484,7 +3473,7 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::ProcessPionCandidatesAOD
      AODMCTrackArray = dynamic_cast<TClonesArray*>(fInputEvent->FindListObject(AliAODMCParticle::StdBranchName()));
   }
 
-    for(UInt_t i = 0; i < fSelectorNegPionIndex.size(); i++){
+  for(UInt_t i = 0; i < fSelectorNegPionIndex.size(); i++){
 
     AliAODTrack* negPionCandidate =dynamic_cast<AliAODTrack*>(fInputEvent->GetTrack(fSelectorNegPionIndex[i]));
     if(! ((AliPrimaryPionCuts*)fPionCutArray->At(fiCut))->PionIsSelectedAOD(negPionCandidate) ) continue;
@@ -3772,7 +3761,6 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::ProcessPionCandidatesAOD
       }
 
       delete virtualPhoton;
-      virtualPhoton=NULL;
     }
   }
 }
@@ -3845,11 +3833,11 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::ProcessMCParticles(){
                 bool reconstructible(true);
                 if(!((AliPrimaryPionCuts*)fPionCutArray->At(fiCut))->PionIsSelectedMC(indexpiminus,fMCEvent)) reconstructible = false;
                 if(!((AliPrimaryPionCuts*)fPionCutArray->At(fiCut))->PionIsSelectedMC(indexpiplus,fMCEvent)) reconstructible = false;
-                if(neutralMeson->GetNDaughters() != 3) {
+                if(neutralMeson->GetNDaughters() == 3) {
                   // exclude Dalitz-decays
                   reconstructible = false;
                 } else {
-                  AliVParticle *photon1 = fMCEvent->GetTrack(neutralMeson->GetFirstDaughter()), *photon2 = fMCEvent->GetTrack(neutralMeson->GetLastDaughter());
+                  AliVParticle *photon1 = fMCEvent->GetTrack(neutralMeson->GetDaughterFirst()), *photon2 = fMCEvent->GetTrack(neutralMeson->GetDaughterLast());
                   if(!(photon1 && photon2)) reconstructible = false;
                   else {
                     switch(fNDMRecoMode) {
@@ -4095,7 +4083,7 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::ProcessAODMCParticles(){
               if(particle->GetNDaughters() == 3){
                 AliAODMCParticle *neutralMeson(nullptr), *piplus(nullptr), *piminus(nullptr);
                 Int_t indexpiplus(-1), indexpiminus(-1);
-                for(int idaug = particle->GetFirstDaughter(); idaug <= particle->GetLastDaughter(); idaug++) {
+                for(int idaug = particle->GetDaughterFirst(); idaug <= particle->GetDaughterLast(); idaug++) {
                   AliAODMCParticle *daughter = static_cast<AliAODMCParticle *>(AODMCTrackArray->At(idaug));
                   if(daughter->PdgCode() == kPiPlus){
                     piplus = daughter;
@@ -4130,12 +4118,12 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::ProcessAODMCParticles(){
                   bool reconstructible(true);
                   if(!((AliPrimaryPionCuts*)fPionCutArray->At(fiCut))->PionIsSelectedAODMC(indexpiminus,AODMCTrackArray)) reconstructible = false;
                   if(!((AliPrimaryPionCuts*)fPionCutArray->At(fiCut))->PionIsSelectedAODMC(indexpiplus,AODMCTrackArray)) reconstructible = false;
-                  if(neutralMeson->GetNDaughters() != 3) {
+                  if(neutralMeson->GetNDaughters() == 3) {
                     // exclude Dalitz-decays
                     reconstructible = false;
                   } else {
-                    AliAODMCParticle *photon1 = static_cast<AliAODMCParticle *>(AODMCTrackArray->At(neutralMeson->GetFirstDaughter())), 
-                                     *photon2 = static_cast<AliAODMCParticle *>(AODMCTrackArray->At(neutralMeson->GetLastDaughter()));
+                    AliAODMCParticle *photon1 = static_cast<AliAODMCParticle *>(AODMCTrackArray->At(neutralMeson->GetDaughterFirst())), 
+                                     *photon2 = static_cast<AliAODMCParticle *>(AODMCTrackArray->At(neutralMeson->GetDaughterLast()));
                     if(!(photon1 && photon2)) reconstructible = false;
                     else {
                       switch(fNDMRecoMode) {
@@ -4183,21 +4171,46 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::ProcessAODMCParticles(){
               }
             }
           }
-            // find MC photons
-            if (fNDMRecoMode < 2 ){
-              if(((AliConversionPhotonCuts*)fGammaCutArray->At(fiCut))->PhotonIsSelectedAODMC(particle,AODMCTrackArray,kFALSE)){
-                fHistoMCAllGammaPt[fiCut]->Fill(particle->Pt(), fWeightJetJetMC); // All MC Gamma
-                if(particle->GetMother() >-1){
-                  AliAODMCParticle *particleNDM = static_cast<AliAODMCParticle *>(AODMCTrackArray->At(particle->GetMother()));
+          // find MC photons
+          if (fNDMRecoMode < 2 ){
+            if(((AliConversionPhotonCuts*)fGammaCutArray->At(fiCut))->PhotonIsSelectedAODMC(particle,AODMCTrackArray,kFALSE)){
+              fHistoMCAllGammaPt[fiCut]->Fill(particle->Pt(), fWeightJetJetMC); // All MC Gamma
+              if(particle->GetMother() >-1){
+                AliAODMCParticle *particleNDM = static_cast<AliAODMCParticle *>(AODMCTrackArray->At(particle->GetMother()));
+                fHistoMCAllMesonPt[fiCut]->Fill(particleNDM->Pt(), fWeightJetJetMC);
+                fHistoMCAllMesonEta[fiCut]->Fill(particleNDM->Eta(), fWeightJetJetMC);
+                fHistoMCAllMesonPhi[fiCut]->Fill(TVector2::Phi_0_2pi(particleNDM->Phi()), fWeightJetJetMC);
+                if ((static_cast<AliAODMCParticle*>(AODMCTrackArray->At(particle->GetMother())))->GetPdgCode() ==fPDGCodeNDM){
+                  if ((static_cast<AliAODMCParticle*>(AODMCTrackArray->At(particle->GetMother())))->GetMother() > -1){
+                    if ( (static_cast<AliAODMCParticle*>(AODMCTrackArray->At( (static_cast<AliAODMCParticle*>(AODMCTrackArray->At(particle->GetMother())))->GetMother() )))->GetPdgCode() == fPDGCodeAnalyzedMeson ){
+                      if ( (static_cast<AliAODMCParticle*>(AODMCTrackArray->At( (static_cast<AliAODMCParticle*>(AODMCTrackArray->At(particle->GetMother())))->GetMother() )))->GetNDaughters() ==3 ) {
+                        fHistoMCGammaFromNeutralMesonPt[fiCut]->Fill(particle->Pt(), fWeightJetJetMC); // All photons from eta or omega via pi0
+                        fHistoMCMesonFromNeutralMesonPt[fiCut]->Fill(particleNDM->Pt(), fWeightJetJetMC);   // ALl meson mothers (pi0/eta) from analyzed heavy meson
+                        fHistoMCMesonFromNeutralMesonEta[fiCut]->Fill(particleNDM->Eta(), fWeightJetJetMC);   // All meson mothers (pi0/eta) from analyzed heavy meson
+                        fHistoMCMesonFromNeutralMesonPhi[fiCut]->Fill(TVector2::Phi_0_2pi(particleNDM->Phi()), fWeightJetJetMC);   // All meson mothers (pi0/eta) from analyzed heavy meson
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          } else if (fNDMRecoMode == 2){
+            if(((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->ClusterIsSelectedAODMC(particle,AODMCTrackArray)){
+              fHistoMCAllGammaPt[fiCut]->Fill(particle->Pt(), fWeightJetJetMC); // All MC Gamma
+              if(particle->GetMother() >-1){
+                AliAODMCParticle *particleNDM = static_cast<AliAODMCParticle *>(AODMCTrackArray->At(particle->GetMother()));
+                if(fDoMesonQA > 0){
                   fHistoMCAllMesonPt[fiCut]->Fill(particleNDM->Pt(), fWeightJetJetMC);
                   fHistoMCAllMesonEta[fiCut]->Fill(particleNDM->Eta(), fWeightJetJetMC);
                   fHistoMCAllMesonPhi[fiCut]->Fill(TVector2::Phi_0_2pi(particleNDM->Phi()), fWeightJetJetMC);
-                  if ((static_cast<AliAODMCParticle*>(AODMCTrackArray->At(particle->GetMother())))->GetPdgCode() ==fPDGCodeNDM){
-                    if ((static_cast<AliAODMCParticle*>(AODMCTrackArray->At(particle->GetMother())))->GetMother() > -1){
-                      if ( (static_cast<AliAODMCParticle*>(AODMCTrackArray->At( (static_cast<AliAODMCParticle*>(AODMCTrackArray->At(particle->GetMother())))->GetMother() )))->GetPdgCode() == fPDGCodeAnalyzedMeson ){
-                        if ( (static_cast<AliAODMCParticle*>(AODMCTrackArray->At( (static_cast<AliAODMCParticle*>(AODMCTrackArray->At(particle->GetMother())))->GetMother() )))->GetNDaughters() ==3 ) {
-                          fHistoMCGammaFromNeutralMesonPt[fiCut]->Fill(particle->Pt(), fWeightJetJetMC); // All photons from eta or omega via pi0
-                          fHistoMCMesonFromNeutralMesonPt[fiCut]->Fill(particleNDM->Pt(), fWeightJetJetMC);   // ALl meson mothers (pi0/eta) from analyzed heavy meson
+                }
+                if ( (static_cast<AliAODMCParticle*>(AODMCTrackArray->At(particle->GetMother())))->GetPdgCode() == fPDGCodeNDM){
+                  if ((static_cast<AliAODMCParticle*>(AODMCTrackArray->At(particle->GetMother())))->GetMother() > -1){
+                    if ( (static_cast<AliAODMCParticle*>(AODMCTrackArray->At( (static_cast<AliAODMCParticle*>(AODMCTrackArray->At(particle->GetMother())))->GetMother() )))->GetPdgCode() == fPDGCodeAnalyzedMeson ){
+                      if ( (static_cast<AliAODMCParticle*>(AODMCTrackArray->At( (static_cast<AliAODMCParticle*>(AODMCTrackArray->At(particle->GetMother())))->GetMother() )))->GetNDaughters() ==3 ) {
+                        fHistoMCGammaFromNeutralMesonPt[fiCut]->Fill(particle->Pt(), fWeightJetJetMC); // All photons from analyzed meson via pi0 or eta from decay
+                        if(fDoMesonQA > 0){
+                          fHistoMCMesonFromNeutralMesonPt[fiCut]->Fill(particleNDM->Pt(), fWeightJetJetMC);   // All meson mothers (pi0/eta) from analyzed heavy meson
                           fHistoMCMesonFromNeutralMesonEta[fiCut]->Fill(particleNDM->Eta(), fWeightJetJetMC);   // All meson mothers (pi0/eta) from analyzed heavy meson
                           fHistoMCMesonFromNeutralMesonPhi[fiCut]->Fill(TVector2::Phi_0_2pi(particleNDM->Phi()), fWeightJetJetMC);   // All meson mothers (pi0/eta) from analyzed heavy meson
                         }
@@ -4206,72 +4219,47 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::ProcessAODMCParticles(){
                   }
                 }
               }
-            } else if (fNDMRecoMode == 2){
-              if(((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->ClusterIsSelectedAODMC(particle,AODMCTrackArray)){
-                fHistoMCAllGammaPt[fiCut]->Fill(particle->Pt(), fWeightJetJetMC); // All MC Gamma
-                if(particle->GetMother() >-1){
-                  AliAODMCParticle *particleNDM = static_cast<AliAODMCParticle *>(AODMCTrackArray->At(particle->GetMother()));
+            }
+          }
+          if (fNDMRecoMode < 2){
+            if (((AliConversionPhotonCuts*)fGammaCutArray->At(fiCut))->PhotonIsSelectedAODMC(particle,AODMCTrackArray,kTRUE)){
+              fHistoMCConvGammaPt[fiCut]->Fill(particle->Pt(), fWeightJetJetMC);
+            } // Converted MC Gamma
+          }
+          if(((AliPrimaryPionCuts*)fPionCutArray->At(fiCut))->PionIsSelectedAODMC(i,AODMCTrackArray)){
+            if( particle->GetPdgCode() == 211){
+              fHistoMCAllPosPionsPt[fiCut]->Fill(particle->Pt(), fWeightJetJetMC); // All pos pions
+              if(fDoMesonQA > 0){
+                fHistoMCAllPosPionsEta[fiCut]->Fill(particle->Eta(), fWeightJetJetMC); // All pos pions
+                fHistoMCAllPosPionsPhi[fiCut]->Fill(TVector2::Phi_0_2pi(particle->Phi()), fWeightJetJetMC); // All pos pions
+              }
+              if(particle->GetMother() >-1){
+                if ( (static_cast<AliAODMCParticle*>(AODMCTrackArray->At(particle->GetMother())))->GetPdgCode() ==fPDGCodeAnalyzedMeson){
+                  fHistoMCPosPionsFromNeutralMesonPt[fiCut]->Fill(particle->Pt(), fWeightJetJetMC); // All pos from neutral heavy meson (omega, eta OR eta prime)
                   if(fDoMesonQA > 0){
-                    fHistoMCAllMesonPt[fiCut]->Fill(particleNDM->Pt(), fWeightJetJetMC);
-                    fHistoMCAllMesonEta[fiCut]->Fill(particleNDM->Eta(), fWeightJetJetMC);
-                    fHistoMCAllMesonPhi[fiCut]->Fill(TVector2::Phi_0_2pi(particleNDM->Phi()), fWeightJetJetMC);
-                  }
-                  if ( (static_cast<AliAODMCParticle*>(AODMCTrackArray->At(particle->GetMother())))->GetPdgCode() == fPDGCodeNDM){
-                    if ((static_cast<AliAODMCParticle*>(AODMCTrackArray->At(particle->GetMother())))->GetMother() > -1){
-                      if ( (static_cast<AliAODMCParticle*>(AODMCTrackArray->At( (static_cast<AliAODMCParticle*>(AODMCTrackArray->At(particle->GetMother())))->GetMother() )))->GetPdgCode() == fPDGCodeAnalyzedMeson ){
-                        if ( (static_cast<AliAODMCParticle*>(AODMCTrackArray->At( (static_cast<AliAODMCParticle*>(AODMCTrackArray->At(particle->GetMother())))->GetMother() )))->GetNDaughters() ==3 ) {
-                          fHistoMCGammaFromNeutralMesonPt[fiCut]->Fill(particle->Pt(), fWeightJetJetMC); // All photons from analyzed meson via pi0 or eta from decay
-                          if(fDoMesonQA > 0){
-                            fHistoMCMesonFromNeutralMesonPt[fiCut]->Fill(particleNDM->Pt(), fWeightJetJetMC);   // All meson mothers (pi0/eta) from analyzed heavy meson
-                            fHistoMCMesonFromNeutralMesonEta[fiCut]->Fill(particleNDM->Eta(), fWeightJetJetMC);   // All meson mothers (pi0/eta) from analyzed heavy meson
-                            fHistoMCMesonFromNeutralMesonPhi[fiCut]->Fill(TVector2::Phi_0_2pi(particleNDM->Phi()), fWeightJetJetMC);   // All meson mothers (pi0/eta) from analyzed heavy meson
-                          }
-                        }
-                      }
-                    }
+                    fHistoMCPosPionsFromNeutralMesonEta[fiCut]->Fill(particle->Eta(), fWeightJetJetMC); // All pos from neutral heavy meson (omega, eta OR eta prime)
+                    fHistoMCPosPionsFromNeutralMesonPhi[fiCut]->Fill(TVector2::Phi_0_2pi(particle->Phi()), fWeightJetJetMC); // All pos from neutral heavy meson (omega, eta OR eta prime)
                   }
                 }
               }
             }
-            if (fNDMRecoMode < 2){
-              if (((AliConversionPhotonCuts*)fGammaCutArray->At(fiCut))->PhotonIsSelectedAODMC(particle,AODMCTrackArray,kTRUE)){
-                fHistoMCConvGammaPt[fiCut]->Fill(particle->Pt(), fWeightJetJetMC);
-              } // Converted MC Gamma
-            }
-            if(((AliPrimaryPionCuts*)fPionCutArray->At(fiCut))->PionIsSelectedAODMC(i,AODMCTrackArray)){
-              if( particle->GetPdgCode() == 211){
-                fHistoMCAllPosPionsPt[fiCut]->Fill(particle->Pt(), fWeightJetJetMC); // All pos pions
-                if(fDoMesonQA > 0){
-                  fHistoMCAllPosPionsEta[fiCut]->Fill(particle->Eta(), fWeightJetJetMC); // All pos pions
-                  fHistoMCAllPosPionsPhi[fiCut]->Fill(TVector2::Phi_0_2pi(particle->Phi()), fWeightJetJetMC); // All pos pions
-                }
-                if(particle->GetMother() >-1){
-                  if ( (static_cast<AliAODMCParticle*>(AODMCTrackArray->At(particle->GetMother())))->GetPdgCode() ==fPDGCodeAnalyzedMeson){
-                    fHistoMCPosPionsFromNeutralMesonPt[fiCut]->Fill(particle->Pt(), fWeightJetJetMC); // All pos from neutral heavy meson (omega, eta OR eta prime)
-                    if(fDoMesonQA > 0){
-                      fHistoMCPosPionsFromNeutralMesonEta[fiCut]->Fill(particle->Eta(), fWeightJetJetMC); // All pos from neutral heavy meson (omega, eta OR eta prime)
-                      fHistoMCPosPionsFromNeutralMesonPhi[fiCut]->Fill(TVector2::Phi_0_2pi(particle->Phi()), fWeightJetJetMC); // All pos from neutral heavy meson (omega, eta OR eta prime)
-                    }
-                  }
-                }
+            if( particle->GetPdgCode() == -211){
+              fHistoMCAllNegPionsPt[fiCut]->Fill(particle->Pt(), fWeightJetJetMC); // All neg pions
+              if(fDoMesonQA){
+                fHistoMCAllNegPionsEta[fiCut]->Fill(particle->Eta(), fWeightJetJetMC); // All neg pions
+                fHistoMCAllNegPionsPhi[fiCut]->Fill(TVector2::Phi_0_2pi(particle->Phi()), fWeightJetJetMC); // All neg pions
               }
-              if( particle->GetPdgCode() == -211){
-                fHistoMCAllNegPionsPt[fiCut]->Fill(particle->Pt(), fWeightJetJetMC); // All neg pions
-                if(fDoMesonQA){
-                  fHistoMCAllNegPionsEta[fiCut]->Fill(particle->Eta(), fWeightJetJetMC); // All neg pions
-                  fHistoMCAllNegPionsPhi[fiCut]->Fill(TVector2::Phi_0_2pi(particle->Phi()), fWeightJetJetMC); // All neg pions
-                }
-                if(particle->GetMother() >-1){
-                  if ((static_cast<AliAODMCParticle*>(AODMCTrackArray->At(particle->GetMother())))->GetPdgCode() ==fPDGCodeAnalyzedMeson) {
-                    fHistoMCNegPionsFromNeutralMesonPt[fiCut]->Fill(particle->Pt(), fWeightJetJetMC); // All pos from neutral heavy meson (omega, eta OR eta prime)
-                    if(fDoMesonQA > 0) {
-                      fHistoMCNegPionsFromNeutralMesonEta[fiCut]->Fill(particle->Eta(), fWeightJetJetMC); // All pos from neutral heavy meson (omega, eta OR eta prime)
-                      fHistoMCNegPionsFromNeutralMesonPhi[fiCut]->Fill(TVector2::Phi_0_2pi(particle->Phi()), fWeightJetJetMC); // All pos from neutral heavy meson (omega, eta OR eta prime)
-                    }
+              if(particle->GetMother() >-1){
+                if ((static_cast<AliAODMCParticle*>(AODMCTrackArray->At(particle->GetMother())))->GetPdgCode() ==fPDGCodeAnalyzedMeson) {
+                  fHistoMCNegPionsFromNeutralMesonPt[fiCut]->Fill(particle->Pt(), fWeightJetJetMC); // All pos from neutral heavy meson (omega, eta OR eta prime)
+                  if(fDoMesonQA > 0) {
+                    fHistoMCNegPionsFromNeutralMesonEta[fiCut]->Fill(particle->Eta(), fWeightJetJetMC); // All pos from neutral heavy meson (omega, eta OR eta prime)
+                    fHistoMCNegPionsFromNeutralMesonPhi[fiCut]->Fill(TVector2::Phi_0_2pi(particle->Phi()), fWeightJetJetMC); // All pos from neutral heavy meson (omega, eta OR eta prime)
                   }
                 }
               }
             }
+          }
         }
 
         // \eta -> pi+ pi- \gamma
@@ -4292,9 +4280,9 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::ProcessAODMCParticles(){
 
           if(labelNDM>-1){
             AliAODMCParticle* particleNDM    = static_cast<AliAODMCParticle*>(AODMCTrackArray->At(labelNDM));
-            if(particleNDM->GetDaughter(0)>-1 && particleNDM->GetDaughter(1)>-1){
-              AliAODMCParticle *gamma1 = static_cast<AliAODMCParticle*>(AODMCTrackArray->At(particleNDM->GetDaughter(0)));
-              AliAODMCParticle *gamma2 = static_cast<AliAODMCParticle*>(AODMCTrackArray->At(particleNDM->GetDaughter(1)));
+            if(particleNDM->GetDaughterLabel(0)>-1 && particleNDM->GetDaughterLabel(1)>-1){
+              AliAODMCParticle *gamma1 = static_cast<AliAODMCParticle*>(AODMCTrackArray->At(particleNDM->GetDaughterLabel(0)));
+              AliAODMCParticle *gamma2 = static_cast<AliAODMCParticle*>(AODMCTrackArray->At(particleNDM->GetDaughterLabel(1)));
               AliAODMCParticle *negpion = static_cast<AliAODMCParticle*>(AODMCTrackArray->At(labelNegPion));
               AliAODMCParticle *pospion = static_cast<AliAODMCParticle*>(AODMCTrackArray->At(labelPosPion));
               Bool_t kDaughter0IsPrim = ((AliConvEventCuts*)fEventCutArray->At(fiCut))->IsConversionPrimaryAOD( fInputEvent, gamma1, mcProdVtxX, mcProdVtxY, mcProdVtxZ);
@@ -5373,7 +5361,7 @@ Bool_t AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::IsPiPlPiMiPiZeroDecayA
   AliAODMCParticle *negPion = 0x0;
   AliAODMCParticle *neutPion    = 0x0;
 
-  for(Int_t index= fMCMother->GetFirstDaughter();index<= fMCMother->GetLastDaughter();index++){
+  for(Int_t index= fMCMother->GetDaughterFirst();index<= fMCMother->GetDaughterLast();index++){
     if(index<0) continue;
     AliAODMCParticle* temp =  static_cast<AliAODMCParticle*>(trackArray->At( index ));
 
@@ -5435,7 +5423,7 @@ Bool_t AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::IsPiPlPiMiEtaDecayAOD(
   AliAODMCParticle *negPion  = 0x0;
   AliAODMCParticle *etaMeson = 0x0;
 
-  for(Int_t index= fMCMother->GetFirstDaughter();index<= fMCMother->GetLastDaughter();index++){
+  for(Int_t index= fMCMother->GetDaughterFirst();index<= fMCMother->GetDaughterLast();index++){
     if(index<0) continue;
     AliAODMCParticle * temp =static_cast<AliAODMCParticle*>(trackArray->At( index ));
 

@@ -72,7 +72,9 @@ AliHFTreeHandler::AliHFTreeHandler():
   fFillOnlySignal(false),
   fIsMCGenTree(false),
   fDauInAccFlag(false),
-  fDauInAcceptance()
+  fDauInAcceptance(),
+  fEvID(),
+  fRunNumber()
 {
   //
   // Default constructor
@@ -121,7 +123,9 @@ AliHFTreeHandler::AliHFTreeHandler(int PIDopt):
   fFillOnlySignal(false),
   fIsMCGenTree(false),
   fDauInAccFlag(false),
-  fDauInAcceptance()
+  fDauInAcceptance(),
+  fEvID(),
+  fRunNumber()
 {
   //
   // Standard constructor
@@ -148,7 +152,8 @@ TTree* AliHFTreeHandler::BuildTreeMCGen(TString name, TString title) {
     fTreeVar=0x0;
   }
   fTreeVar = new TTree(name.Data(),title.Data());
-
+  fTreeVar->Branch("run_number",&fRunNumber);
+  fTreeVar->Branch("ev_id",&fEvID);
   fTreeVar->Branch("n_cand",&fNCandidates);
   fTreeVar->Branch("cand_type",&fCandType);
   fTreeVar->Branch("pt_cand",&fPt);
@@ -161,13 +166,15 @@ TTree* AliHFTreeHandler::BuildTreeMCGen(TString name, TString title) {
 }
 
 //________________________________________________________________
-bool AliHFTreeHandler::SetMCGenVariables(AliAODMCParticle* mcpart) {
+bool AliHFTreeHandler::SetMCGenVariables(int runnumber, unsigned int eventID, AliAODMCParticle* mcpart) {
 
   if(!mcpart) return false;
   if(!(fCandTypeMap&kSignal)) return true; // fill only signal in the generated
 
   fNCandidates++;
 
+  fRunNumber.push_back(runnumber);
+  fEvID.push_back(eventID);
   fCandType.push_back(fCandTypeMap);
   fPt.push_back(mcpart->Pt());
   fY.push_back(mcpart->Y());
@@ -196,6 +203,8 @@ void AliHFTreeHandler::SetCandidateType(bool issignal, bool isbkg, bool isprompt
 //________________________________________________________________
 void AliHFTreeHandler::AddCommonDmesonVarBranches() {
 
+  fTreeVar->Branch("run_number",&fRunNumber);
+  fTreeVar->Branch("ev_id",&fEvID);
   fTreeVar->Branch("n_cand",&fNCandidates);
   fTreeVar->Branch("cand_type",&fCandType);
   fTreeVar->Branch("inv_mass",&fInvMass);
@@ -486,6 +495,8 @@ bool AliHFTreeHandler::SetPidVars(AliAODTrack* prongtracks[], AliPIDResponse* pi
 //________________________________________________________________
 void AliHFTreeHandler::ResetDmesonCommonVarVectors() {
   
+  fRunNumber.clear();
+  fEvID.clear();
   fCandType.clear();
   fInvMass.clear();
   fPt.clear();
@@ -504,6 +515,8 @@ void AliHFTreeHandler::ResetDmesonCommonVarVectors() {
 //________________________________________________________________
 void AliHFTreeHandler::ResetMCGenVectors() {
   
+  fRunNumber.clear();
+  fEvID.clear();
   fCandType.clear();
   fInvMass.clear();
   fPt.clear();

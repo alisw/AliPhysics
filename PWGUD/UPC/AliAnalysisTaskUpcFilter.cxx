@@ -628,8 +628,8 @@ void AliAnalysisTaskUpcFilter::RunAODMC(TClonesArray *arrayMC, AliAODMCHeader *h
     part->SetStatusCode(aodmc->GetStatus());
     part->SetUniqueID(imc);
     part->SetFirstMother(aodmc->GetMother());
-    part->SetFirstDaughter(aodmc->GetFirstDaughter());
-    part->SetLastDaughter(aodmc->GetLastDaughter());
+    part->SetFirstDaughter(aodmc->GetDaughterFirst());
+    part->SetLastDaughter(aodmc->GetDaughterLast());
  
   }//loop over mc particles
 
@@ -870,7 +870,7 @@ void AliAnalysisTaskUpcFilter::RunESDMC()
     part->SetMomentum(esdmc->Px(), esdmc->Py(), esdmc->Pz(), esdmc->E());
     part->SetProductionVertex(esdmc->Xv(), esdmc->Yv(), esdmc->Zv(), 0.);
     part->SetFirstMother(esdmc->GetMother());
-    part->SetLastDaughter(esdmc->GetLastDaughter()-esdmc->GetFirstDaughter()+1);
+    part->SetLastDaughter(esdmc->GetDaughterLast()-esdmc->GetDaughterFirst()+1);
     part->SetPdgCode(esdmc->PdgCode());
     part->SetUniqueID(imc);
   }//loop over mc particles

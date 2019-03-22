@@ -20,9 +20,10 @@
 // S. Trogolo, stefano.trogolo@cern.ch
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 
-#include <TH1.h>
+#include <TH1F.h>
 #include <TList.h>
 #include <TString.h>
+#include <TMath.h>
 
 #include "AliAnalysisTaskSE.h"
 #include "AliVEvent.h"

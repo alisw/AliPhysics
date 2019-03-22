@@ -1591,6 +1591,7 @@ TH2D* AliDhCorrelationExtraction::GetCorrelHistoDzero(Int_t SEorME, Int_t SorSB,
   } else if (SorSB==kSideb) { //here also the value of fSignSingleBin has influence, due to the fSpeed options:
      if(fSignSingleBin) {  //in this case (fSpeed==2 in the task), also the SB region is automatically compressed in only one bin, the 2nd!
         h3D->GetXaxis()->SetRange(2,2); //...and so we just take bin2!
+        h2D = (TH2D*)h3D->Project3D("yz"); 
      } else { //the standard approach (i.e. either fSpeed==0, meaning all bins for DB, or fSpeed==1, meaning one bin for LSB, one for RSB)
       TH3D* h3Da = (TH3D*)h3D->Clone(Form("%s_sb2",h3D->GetName()));
       if(!fSBSingleBin) {
@@ -2166,8 +2167,8 @@ void AliDhCorrelationExtraction::GetSBScalingFactor(Int_t i, TH1F* &histo) {
      if(!check) {
         printf("Error! Signal region passed from outside and not matching mass bin edges! Results will be biased, you shall exit...\n");
         getchar();
+        return;
      }
-     return;
   }
 
   switch(fSBscaling) {

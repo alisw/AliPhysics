@@ -51,6 +51,7 @@
 #include "AliAnalysisTaskTriggeredBF.h"
 #include "TFile.h"
 #include <iostream>
+#include <random>
 
 
 // Analysis task for the BF vs Psi code
@@ -207,10 +208,15 @@ AliAnalysisTaskBFPsi::AliAnalysisTaskBFPsi(const char *name)
   fUseMCforKinematics(kFALSE),
   fRebinCorrHistos(kFALSE),
   fUseAdditionalVtxCuts(kFALSE),
-  fUseOutOfBunchPileUpCutsLHC15o(kFALSE),
-  fUseOutOfBunchPileUpCutsLHC15oJpsi(kFALSE),
+  fCheckOutOfBunchPileUp(kFALSE),
+  fUseOOBPileUpCutsLHC15o(kFALSE),
   fPileupLHC15oSlope(3.38),
   fPileupLHC15oOffset(15000),
+  fUseOOBPileUpCutsLHC15oJpsi(kFALSE),
+  fUseOOBPileUpCutsLHC18nTPCclus(kFALSE),
+  fOOBLHC18Slope(2000.0),
+  fOOBLHC18Par1(0.013),
+  fOOBLHC18Par2(1.25e-9),
   fDetailedTracksQA(kFALSE),
   fVxMax(0.8),
   fVyMax(0.8),
@@ -258,6 +264,10 @@ AliAnalysisTaskBFPsi::AliAnalysisTaskBFPsi(const char *name)
   fHistGlobalvsESDAfterPileUpCuts(0),
   fHistV0MvsTPCoutBeforePileUpCuts(0), 
   fHistV0MvsTPCoutAfterPileUpCuts(0),
+  fHistV0MvsnTPCclusBeforePileUpCuts(0),
+  fHistV0MvsnTPCclusAfterPileUpCuts(0),
+  fHistCentrBeforePileUpCuts(0),
+  fHistCentrAfterPileUpCuts(0),
   fUtils(0) {
   // Constructor
   // Define input and output slots here
@@ -631,6 +641,19 @@ void AliAnalysisTaskBFPsi::UserCreateOutputObjects() {
     fList->Add(fHistV0MvsTPCoutBeforePileUpCuts);
     fList->Add(fHistV0MvsTPCoutAfterPileUpCuts);
 
+     fHistV0MvsnTPCclusBeforePileUpCuts = new TH2F("fHistV0MvsnTPCclusBeforePileUpCuts","V0M amplitude vs nTPC cluster; nTPCClus; V0M amplitude;",1000,0,1E7,1000,0,60000);
+  fHistV0MvsnTPCclusAfterPileUpCuts = new TH2F("fHistV0MvsnTPCclusAfterPileUpCuts","V0M amplitude vs nTPC cluster; nTPCClus; V0M amplitude;",1000,0,1E7,1000,0,60000);
+
+    fList->Add(fHistV0MvsnTPCclusBeforePileUpCuts);
+    fList->Add(fHistV0MvsnTPCclusAfterPileUpCuts);
+    
+    
+    fHistCentrBeforePileUpCuts = new TH1F("fHistCentrBeforePileUpCuts","V0M centrality",101,0,101);
+    fHistCentrAfterPileUpCuts = new TH1F("fHistCentrAfterPileUpCuts","V0M centrality",101,0,101);
+    
+    fList->Add(fHistCentrBeforePileUpCuts);
+    fList->Add(fHistCentrAfterPileUpCuts);
+
   // Balance function histograms
   // Initialize histograms if not done yet (including the custom binning)
   if(!fBalance->GetHistNp()){
@@ -674,9 +697,11 @@ void AliAnalysisTaskBFPsi::UserCreateOutputObjects() {
   fList->Add(fBalance->GetQAHistConversionafter());
   fList->Add(fBalance->GetQAHistPsiMinusPhi());
   fList->Add(fBalance->GetQAHistResonancesBefore());
+  fList->Add(fBalance->GetQAHistResonancesPhiBefore());
   fList->Add(fBalance->GetQAHistResonancesRho());
   fList->Add(fBalance->GetQAHistResonancesK0());
   fList->Add(fBalance->GetQAHistResonancesLambda());
+  fList->Add(fBalance->GetQAHistResonancesPhi()); 
   fList->Add(fBalance->GetQAHistQbefore());
   fList->Add(fBalance->GetQAHistQafter());
 
@@ -1264,6 +1289,89 @@ Double_t AliAnalysisTaskBFPsi::IsEventAccepted(AliVEvent *event){
     fHistEventStats->Fill(7,gRefMultiplicity); 
   }
 
+  if (fCheckOutOfBunchPileUp){
+    AliMultSelection *multSelection = (AliMultSelection*) event->FindListObject("MultSelection");
+    
+    if (fUseOOBPileUpCutsLHC15o) { //Out of bunch pile up cut based on ESD vs TPC tracks
+      if (TMath::Abs(multSelection->GetMultiplicityPercentile("V0M") - multSelection->GetMultiplicityPercentile("CL1")) > 7.5) {
+	fHistEventStats->Fill(9, -1);
+	return -1;
+      }
+      const Int_t nTracks = event->GetNumberOfTracks();
+      Int_t multEsd = ((AliAODHeader*)event->GetHeader())->GetNumberOfESDTracks();
+      fHistGlobalvsESDBeforePileUpCuts->Fill(nTracks,multEsd);
+      fHistCentrBeforePileUpCuts->Fill(multSelection->GetMultiplicityPercentile("V0M"));
+      
+      Int_t multTPC = 0;
+      for (Int_t it = 0; it < nTracks; it++) {
+	AliAODTrack* AODTrk = (AliAODTrack*)event->GetTrack(it);
+	if (!AODTrk){ delete AODTrk; continue; }
+	if (AODTrk->TestFilterBit(128)) {multTPC++;}
+      } // end of for (Int_t it = 0; it < nTracks; it++)
+      
+      if ((multEsd - fPileupLHC15oSlope*multTPC) > fPileupLHC15oOffset) return -1;
+      fHistGlobalvsESDAfterPileUpCuts->Fill(nTracks,multEsd);
+      fHistCentrAfterPileUpCuts->Fill(multSelection->GetMultiplicityPercentile("V0M"));
+      
+    }
+    
+    if (fUseOOBPileUpCutsLHC15oJpsi) {//Out of bunch pile up cut based on V0mult vs TPC out tracks
+      
+      if (TMath::Abs(multSelection->GetMultiplicityPercentile("V0M") - multSelection->GetMultiplicityPercentile("CL1")) > 7.5) {
+	fHistEventStats->Fill(9, -1);
+	return -1;
+      }
+      
+      Int_t ntrkTPCout = 0;
+      for (int it = 0; it < event->GetNumberOfTracks(); it++) {
+	AliAODTrack* AODTrk = (AliAODTrack*)event->GetTrack(it);
+	if ((AODTrk->GetStatus() & AliAODTrack::kTPCout) && AODTrk->GetID() > 0)
+	    ntrkTPCout++;
+      }
+      
+      Double_t multVZERO =0; 
+      AliVVZERO *vzero = (AliVVZERO*)event->GetVZEROData();
+	if(vzero) {
+	  for(int ich=0; ich < 64; ich++)
+	    multVZERO += vzero->GetMultiplicity(ich);
+	}
+	
+	fHistV0MvsTPCoutBeforePileUpCuts->Fill(ntrkTPCout, multVZERO);
+	fHistCentrBeforePileUpCuts->Fill(multSelection->GetMultiplicityPercentile("V0M"));
+	
+	if (multVZERO < (-2200 + 2.5*ntrkTPCout + 1.2e-5*ntrkTPCout*ntrkTPCout))  {
+	  fHistEventStats->Fill(9, -1);
+	  return -1;
+	}
+	fHistV0MvsTPCoutAfterPileUpCuts->Fill(ntrkTPCout, multVZERO);
+	fHistCentrAfterPileUpCuts->Fill(multSelection->GetMultiplicityPercentile("V0M"));
+    }
+
+    if (fUseOOBPileUpCutsLHC18nTPCclus) {//Out of bunch pile up cut based on V0mult vs TPC out tracks
+      
+      Double_t multVZERO =0; 
+      AliVVZERO *vzero = (AliVVZERO*)event->GetVZEROData();
+      if(vzero) {
+	for(int ich=0; ich < 64; ich++)
+	  multVZERO += vzero->GetMultiplicity(ich);
+      }
+
+      Int_t nTPCclus = ((AliAODHeader*)event->GetHeader())->GetNumberOfTPCClusters();
+      fHistV0MvsnTPCclusBeforePileUpCuts->Fill(nTPCclus, multVZERO);
+      fHistCentrBeforePileUpCuts->Fill(multSelection->GetMultiplicityPercentile("V0M"));
+      
+      if (multVZERO < (-fOOBLHC18Slope + fOOBLHC18Par1*nTPCclus + fOOBLHC18Par2*nTPCclus*nTPCclus)) {
+	fHistEventStats->Fill(9, -1);
+	return -1 ;
+      }
+      
+      fHistV0MvsnTPCclusAfterPileUpCuts->Fill(nTPCclus, multVZERO);
+      fHistCentrAfterPileUpCuts->Fill(multSelection->GetMultiplicityPercentile("V0M"));
+      
+    }
+    
+  }
+  
   
   // Event trigger bits
   fHistTriggerStats->Fill(((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected());
@@ -1512,57 +1620,6 @@ Double_t AliAnalysisTaskBFPsi::GetRefMultiOrCentrality(AliVEvent *event){
       fHistMultiplicity->Fill(gMultiplicity);
       fHistMultvsPercent->Fill(gMultiplicity, gCentrality);
 
-      if (fUseOutOfBunchPileUpCutsLHC15o) {	
-	if (TMath::Abs(multSelection->GetMultiplicityPercentile("V0M") - multSelection->GetMultiplicityPercentile("CL1")) > 7.5) {
-	  fHistEventStats->Fill(9, -1);
-	  return -1;
-	}
-	const Int_t nTracks = event->GetNumberOfTracks();
-	Int_t multEsd = ((AliAODHeader*)event->GetHeader())->GetNumberOfESDTracks();
-	fHistGlobalvsESDBeforePileUpCuts->Fill(nTracks,multEsd);
-	Int_t multTPC = 0;
-	for (Int_t it = 0; it < nTracks; it++) {
-	  AliAODTrack* AODTrk = (AliAODTrack*)event->GetTrack(it);
-	  if (!AODTrk){ delete AODTrk; continue; }
-	  if (AODTrk->TestFilterBit(128)) {multTPC++;}
-	} // end of for (Int_t it = 0; it < nTracks; it++)
-	
-	if ((multEsd - fPileupLHC15oSlope*multTPC) > fPileupLHC15oOffset) return -1;
-	fHistGlobalvsESDAfterPileUpCuts->Fill(nTracks,multEsd);
-      }
-
-      if (fUseOutOfBunchPileUpCutsLHC15oJpsi) {
-
-	if (TMath::Abs(multSelection->GetMultiplicityPercentile("V0M") - multSelection->GetMultiplicityPercentile("CL1")) > 7.5) {
-	  fHistEventStats->Fill(9, -1);
-	  return -1;
-	}
-	
-	Int_t ntrkTPCout = 0;
-	 for (int it = 0; it < event->GetNumberOfTracks(); it++) {
-	   AliAODTrack* AODTrk = (AliAODTrack*)event->GetTrack(it);
-	   if ((AODTrk->GetStatus() & AliAODTrack::kTPCout) && AODTrk->GetID() > 0)
-	     ntrkTPCout++;
-	 }
-	 
-	 Double_t multVZERO =0; 
-	 AliVVZERO *vzero = (AliVVZERO*)event->GetVZEROData();
-	 if(vzero) {
-	   for(int ich=0; ich < 64; ich++)
-	     multVZERO += vzero->GetMultiplicity(ich);
-	 }
-	 
-	 
-	 fHistV0MvsTPCoutBeforePileUpCuts->Fill(ntrkTPCout, multVZERO);
-	 
-	 if (multVZERO < (-2200 + 2.5*ntrkTPCout + 1.2e-5*ntrkTPCout*ntrkTPCout))  {
-	   fHistEventStats->Fill(9, -1);
-	   return -1;
-	 }
-	 fHistV0MvsTPCoutAfterPileUpCuts->Fill(ntrkTPCout, multVZERO);
-	 
-      }     
-      
       fHistCL1vsVZEROPercentile->Fill(multSelection->GetMultiplicityPercentile("V0M"),multSelection->GetMultiplicityPercentile("CL1"));
       
       if(multSelection->GetEstimator("RefMult08"))
@@ -1642,57 +1699,7 @@ Double_t AliAnalysisTaskBFPsi::GetRefMultiOrCentrality(AliVEvent *event){
 	  
 	  // Centrality estimator USED   ++++++++++++++++++++++++++++++
 	  fHistCentStatsUsed->Fill(0.,gCentrality);
-	  
-	  if (fUseOutOfBunchPileUpCutsLHC15o) {
-	    if (TMath::Abs(multSelection->GetMultiplicityPercentile("V0M") - multSelection->GetMultiplicityPercentile("CL1")) > 7.5) {
-	      fHistEventStats->Fill(9, -1);
-	      return -1;
-	    }
-	    const Int_t nTracks = event->GetNumberOfTracks();
-	    Int_t multEsd = ((AliAODHeader*)event->GetHeader())->GetNumberOfESDTracks();
-	    Int_t multTPC = 0;
-	    for (Int_t it = 0; it < nTracks; it++) {
-	      AliAODTrack* AODTrk = (AliAODTrack*)event->GetTrack(it);
-	      if (!AODTrk){ delete AODTrk; continue; }
-	      if (AODTrk->TestFilterBit(128)) {multTPC++;}
-	    } // end of for (Int_t it = 0; it < nTracks; it++)
-	    
-	    if ((multEsd - 3.38*multTPC) > 15000) {
-	      fHistEventStats->Fill(10, -1);
-	      return -1;
-	    }
-	  }
-
-	  if (fUseOutOfBunchPileUpCutsLHC15oJpsi) {
-	    
-	    if (TMath::Abs(multSelection->GetMultiplicityPercentile("V0M") - multSelection->GetMultiplicityPercentile("CL1")) > 7.5) {
-	      fHistEventStats->Fill(9, -1);
-	      return -1;
-	    }
-	    Int_t ntrkTPCout = 0;
-	    for (int it = 0; it < event->GetNumberOfTracks(); it++) {
-	      AliAODTrack* AODTrk = (AliAODTrack*)event->GetTrack(it);
-	      if ((AODTrk->GetStatus() & AliAODTrack::kTPCout) && AODTrk->GetID() > 0)
-		ntrkTPCout++;
-	    }
-	    
-	    Double_t multVZERO =0; 
-	    AliVVZERO *vzero = (AliVVZERO*)event->GetVZEROData();
-	    if(vzero) {
-	      for(int ich=0; ich < 64; ich++)
-		multVZERO += vzero->GetMultiplicity(ich);
-	    }
-	    
-	    
-	    fHistV0MvsTPCoutBeforePileUpCuts->Fill(ntrkTPCout, multVZERO);
-	    
-	    if (multVZERO < (-2200 + 2.5*ntrkTPCout + 1.2e-5*ntrkTPCout*ntrkTPCout))  {
-	      fHistEventStats->Fill(9, -1);
-	      return -1;
-	    }
-	    fHistV0MvsTPCoutAfterPileUpCuts->Fill(ntrkTPCout, multVZERO);
-	  }
-	    
+	 
 	  fHistCL1vsVZEROPercentile->Fill(multSelection->GetMultiplicityPercentile("V0M"),multSelection->GetMultiplicityPercentile("CL1"));
 	  if(multSelection->GetEstimator("RefMult08"))
 	    fHistTPCvsVZEROMultiplicity->Fill( multSelection->GetEstimator("V0M")->GetValue(),multSelection->GetEstimator("RefMult08")->GetValue());
@@ -3827,12 +3834,12 @@ TObjArray* AliAnalysisTaskBFPsi::GetAcceptedTracks(AliVEvent *event, Double_t gC
 	if(fExcludeParticlesExtra){
 
 	  //exclude particles that are primary and have primary daughters
-	  if(track->GetFirstDaughter()!=-1){
-	    if(gMCEvent->IsPhysicalPrimary(track->GetFirstDaughter()))
+	  if(track->GetDaughterFirst()!=-1){
+	    if(gMCEvent->IsPhysicalPrimary(track->GetDaughterFirst()))
 	      continue;
 	  }
-	  if(track->GetLastDaughter()!=-1){
-	    if(gMCEvent->IsPhysicalPrimary(track->GetLastDaughter()))
+	  if(track->GetDaughterLast()!=-1){
+	    if(gMCEvent->IsPhysicalPrimary(track->GetDaughterLast()))
 	      continue;
 	  }
 	}
@@ -4164,7 +4171,9 @@ TObjArray* AliAnalysisTaskBFPsi::GetShuffledTracks(TObjArray *tracks, Double_t g
   Int_t gRun = GetIndexRun(event->GetRunNumber());
   Int_t gCentrIndex = GetIndexCentrality(gCentrality);
  
-  random_shuffle(chargeVector->begin(), chargeVector->end());
+  std::random_device rd;
+  std::default_random_engine engine{rd()};
+  std::shuffle(chargeVector->begin(), chargeVector->end(), engine);
   
   for(Int_t i = 0; i < tracks->GetEntriesFast(); i++){
     AliVParticle* track = (AliVParticle*) tracks->At(i);

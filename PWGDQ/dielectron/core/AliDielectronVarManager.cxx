@@ -53,7 +53,7 @@ const char* AliDielectronVarManager::fgkParticleNames[AliDielectronVarManager::k
   {"NclsITS",                "N_{cls}^{ITS}",                                      ""},
   {"ITSFakeFlag",            "ITS Fake Flag",                                      ""},
   {"ITSchi2PerCluster",      "#chi^{2}/^{}N_{cls}^{ITS}",                          ""},
-  {"ITSchi2",                "#chi^{2}_{ITS}",                                     ""}, 
+  {"ITSchi2",                "#chi^{2}_{ITS}",                                     ""},
   {"Globalchi2PerNDF",       "Global #chi^{2}/^{}NDF",                             ""},
   {"NclsTPC",                "N_{cls}^{TPC}",                                      ""},
   {"NclsSTPC",               "N_{shar.cls}^{TPC}",                                 ""},
@@ -240,6 +240,7 @@ const char* AliDielectronVarManager::fgkParticleNames[AliDielectronVarManager::k
   {"DeltaPhiRandomRP",       "#Delta #Phi_{RanRP}",                                ""},
 
   {"PairPlaneMagInPro",      "cos(#Phi)"                                           ""},
+  {"PairPlaneMagInProZDC",   "cos(#Phi)^{ZDC}"                                     ""},
 
   {"Cos2PhiCS",              "cos(2#phi_{CS})",                                    ""},
   {"CosTilPhiCS",            "cos(#phi_{CS})",                                     ""},
@@ -284,11 +285,21 @@ const char* AliDielectronVarManager::fgkParticleNames[AliDielectronVarManager::k
   {"Leg1DCAsigXY",          "#it{dca}_{xy}^{leg1}",                               "(#sigma)"},
   {"Leg1DCAabsXY",          "#it{dca}_{xy}^{leg1}",                               "(cm)"},
   {"Leg1resXY",             "#Delta #it{dca}_{xy}^{leg1}",                        ""},
+  {"Leg1DCAsigXYZ",          "#it{dca}_{xyz}^{leg1}",                               "(#sigma)"},
+  {"Leg1DCAabsXYZ",          "#it{dca}_{xyz}^{leg1}",                               "(cm)"},
+  {"Leg2DCAsigXY",          "#it{dca}_{xy}^{leg2}",                               "(#sigma)"},
+  {"Leg2DCAabsXY",          "#it{dca}_{xy}^{leg2}",                               "(cm)"},
+  {"Leg2resXY",             "#Delta #it{dca}_{xy}^{leg2}",                        ""},
+  {"Leg2DCAsigXYZ",          "#it{dca}_{xyz}^{leg2}",                               "(#sigma)"},
+  {"Leg2DCAabsXYZ",          "#it{dca}_{xyz}^{leg2}",                               "(cm)"},
+
   //pair dca variables
   {"PairDCAsigXY",          "#it{dca}_{xy}",                                      "(#sigma)"},
   {"PairDCAsigZ",           "#it{dca}_{z}",                                       "(#sigma)"},
+  {"PairDCAsigXYZ",          "#it{dca}_{xyz}",                                    "(#sigma)"},
   {"PairDCAabsXY",          "#it{dca}_{xy}",                                      "(cm)"},
   {"PairDCAabsZ",           "#it{dca}_{z}",                                       "(cm)"},
+  {"PairDCAabsXYZ",         "#it{dca}_{xyz}",                                     "(cm)"},
   {"PairLinDCAsigXY",       "#it{dca}_{xy} (lin.)",                               "(#sigma)"},
   {"PairLinDCAsigZ",        "#it{dca}_{z} (lin.)",                                "(#sigma)"},
   {"PairLinDCAabsXY",       "#it{dca}_{xy} (lin.)",                               "(cm)"},
@@ -491,7 +502,8 @@ const char* AliDielectronVarManager::fgkParticleNames[AliDielectronVarManager::k
   {"QnFMDCrpH2",               "#Psi^{FMDC}",                               ""},
   {"QnFMDCxH2",                "Q_{x}^{FMDC}",                              ""},
   {"QnFMDCyH2",                "Q_{y}^{FMDC}",                              ""},
-
+  {"QnZDCArpH2", "", ""},
+  {"QnZDCCrpH2", "", ""},
   {"QnTPC_V0ADiffH2",          "cos(2(#Psi^{TPC}-#Psi^{V0A}))",             ""},
   {"QnTPC_V0CDiffH2",          "cos(2(#Psi^{TPC}-#Psi^{V0C}))",             ""},
   {"QnTPC_SPDDiffH2",          "cos(2(#Psi^{TPC}-#Psi^{SPD}))",             ""},

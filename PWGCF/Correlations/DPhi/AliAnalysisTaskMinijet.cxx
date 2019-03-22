@@ -105,6 +105,7 @@ AliAnalysisTaskMinijet::AliAnalysisTaskMinijet(const char *name)
     fChargedPi0(0),
     fVertexCheck(0),
     fPropagateDca(0),
+    fAnalysisUtils(0),
     fCentralityMethod("")
 {
     
@@ -1968,7 +1969,10 @@ Bool_t AliAnalysisTaskMinijet::CheckEvent(const Bool_t recVertex)
         
         //rec
         if(recVertex==true){
-            if(fESDEvent->IsPileupFromSPD(3,0,8))return false;
+            if (fAnalysisUtils && fAnalysisUtils->IsPileUpMV(fESDEvent)) {
+              fEventStat->Fill(9);
+              return false;
+            }
             
             //rec vertex
             const AliESDVertex*	vertexESDg   = fESDEvent->GetPrimaryVertex(); // uses track or SPD vertexer
@@ -2013,7 +2017,11 @@ Bool_t AliAnalysisTaskMinijet::CheckEvent(const Bool_t recVertex)
         
         //rec
         if(recVertex==true){
-            if(fAODEvent->IsPileupFromSPD(3,0.8)) return false;
+            // pile up
+            if (fAnalysisUtils && fAnalysisUtils->IsPileUpMV(fAODEvent)) {
+              fEventStat->Fill(9);
+              return false;
+            }
             
             AliAODVertex*	vertex= (AliAODVertex*)fAODEvent->GetPrimaryVertex();
             if(!vertex) return false;

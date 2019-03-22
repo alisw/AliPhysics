@@ -20,16 +20,33 @@ using std::vector;
 class AliHFTreeHandlerLc2V0bachelor : public AliHFTreeHandler
 {
   public:
+
+    //Standard kSelected of AliHFTreeHandler is Lc->pK0s, but keep possibility to enable also Lc->Lpi (and charge conjugate together)
+    enum isLctoLpi {
+      kLctoLpi       = BIT(11),
+      kLcTopotoLpi   = BIT(12),
+      kLcPIDtoLpi    = BIT(13),
+    };
+
     AliHFTreeHandlerLc2V0bachelor();
     AliHFTreeHandlerLc2V0bachelor(int PIDopt);
 
     virtual ~AliHFTreeHandlerLc2V0bachelor();
 
     virtual TTree* BuildTree(TString name = "tree", TString title = "tree");
-    virtual bool SetVariables(AliAODRecoDecayHF* cand, float bfield, int masshypo = 0, AliPIDResponse* pidrespo = 0x0);
+    virtual bool SetVariables(int runnumber, unsigned int eventID, AliAODRecoDecayHF* cand, float bfield, int masshypo = 0, AliPIDResponse* pidrespo = 0x0);
     virtual void FillTree();
 
     void SetCalcSecoVtx(int opt) {fCalcSecoVtx=opt;}
+
+    void SetIsLctoLpi(int isSeltoLpi, int isSelTopotoLpi, int isSelPIDtoLpi) {
+      if(isSeltoLpi) fCandTypeMap |= kLctoLpi;
+      else fCandTypeMap &= ~kLctoLpi;
+      if(isSelTopotoLpi) fCandTypeMap |= kLcTopotoLpi;
+      else fCandTypeMap &= ~kLcTopotoLpi;
+      if(isSelPIDtoLpi) fCandTypeMap |= kLcPIDtoLpi;
+      else fCandTypeMap &= ~kLcPIDtoLpi;
+    }
 
   private:
 

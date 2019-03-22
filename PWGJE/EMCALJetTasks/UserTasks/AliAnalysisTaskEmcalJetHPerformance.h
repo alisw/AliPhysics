@@ -13,7 +13,7 @@
 
 class AliJetContainer;
 class AliEmcalJet;
-#include "AliEventCuts.h"
+class AliVCaloCells;
 #include "THistManager.h"
 #include "AliYAMLConfiguration.h"
 #include "AliAnalysisTaskEmcalJet.h"
@@ -70,7 +70,6 @@ class AliAnalysisTaskEmcalJetHPerformance : public AliAnalysisTaskEmcalJet {
 
  private:
 
-  Bool_t IsEventSelected();
   Bool_t Run();
 
   // Configuration
@@ -81,6 +80,11 @@ class AliAnalysisTaskEmcalJetHPerformance : public AliAnalysisTaskEmcalJet {
   void SetupQAHists();
   void QAHists();
   void FillQAHists();
+  // Cell QA
+  void SetupCellQAHistsWithPrefix(const std::string & prefix);
+  void SetupCellQAHists();
+  void FillCellQAHists(const std::string & prefix, AliVCaloCells * cells);
+  void FillCellQAHists();
 
   // Response matrix functions
   void SetupResponseMatrixHists();
@@ -91,19 +95,19 @@ class AliAnalysisTaskEmcalJetHPerformance : public AliAnalysisTaskEmcalJet {
   // Basic configuration
   PWG::Tools::AliYAMLConfiguration fYAMLConfig; ///< YAML configuration file.
   bool fConfigurationInitialized;     ///<  True if the task configuration has been successfully initialized.
-  AliEventCuts fEventCuts;            ///<  AliEventCuts to handle event selection.
 
   // Histograms
   THistManager fHistManager;          ///<  Histogram manager.
   AliEmcalEmbeddingQA fEmbeddingQA;   //!<! Embedding QA hists (will only be added if embedding).
 
   // Configuration options
-  bool fUseAliEventCuts;              ///<  If true, use AliEventCuts for event selection instead of IsEventSelected.
   bool fCreateQAHists;                ///<  If true, create QA histograms.
   bool fCreateResponseMatrix;         ///<  If true, create a response matrix with the available jet collections.
 
   // QA variables
   std::string fEmbeddedCellsName;     ///<  Set the embedded cells collection name
+  UInt_t fPreviousEventTrigger;       ///<  Physics selection (offline trigger) of the previous event for determine why a small unumber of embedded event are double counted.
+  bool fPreviousEmbeddedEventSelected;///<  True if the previous embedded event was selected. Used to determine why a small unumber of embedded event are double counted.
 
   // Response matrix variables
   // Response matrix fill map
@@ -118,7 +122,7 @@ class AliAnalysisTaskEmcalJetHPerformance : public AliAnalysisTaskEmcalJet {
   double fMinFractionShared;             ///<  Minimum fraction of shared jet pt required for matching a hybrid jet to detector level
   AliAnalysisTaskEmcalJetHUtils::ELeadingHadronBiasType_t fLeadingHadronBiasType; ///<  Leading hadron in jet bias type (either charged, neutral, or both)
 
-  ClassDef(AliAnalysisTaskEmcalJetHPerformance, 2);
+  ClassDef(AliAnalysisTaskEmcalJetHPerformance, 4);
 };
 
 } /* namespace EMCALJetTasks */

@@ -36,7 +36,7 @@ void AddTask_GammaConvCalo_pPb(
   Bool_t    enableTHnSparse               = kFALSE,   // switch on THNsparse
   Bool_t    enableTriggerMimicking        = kFALSE,   // enable trigger mimicking
   Bool_t    enableTriggerOverlapRej       = kFALSE,   // enable trigger overlap rejection
-  Float_t   maxFacPtHard                  = 3.,       // maximum factor between hardest jet and ptHard generated
+  TString   settingMaxFacPtHard           = "3.",       // maximum factor between hardest jet and ptHard generated
   Int_t     debugLevel                    = 0,        // introducing debug levels for grid running
   // settings for weights
   // FPTW:fileNamePtWeights, FMUW:fileNameMultWeights, separate with ;
@@ -97,6 +97,38 @@ void AddTask_GammaConvCalo_pPb(
   if(strLocalDebugFlag.Atoi()>0)
     localDebugFlag = strLocalDebugFlag.Atoi();
 
+  TObjArray *rmaxFacPtHardSetting = settingMaxFacPtHard.Tokenize("_");
+  if(rmaxFacPtHardSetting->GetEntries()<1){cout << "ERROR: AddTask_GammaConvCalo_pPb during parsing of settingMaxFacPtHard String '" << settingMaxFacPtHard.Data() << "'" << endl; return;}
+  Bool_t fMinPtHardSet        = kFALSE;
+  Double_t minFacPtHard       = -1;
+  Bool_t fMaxPtHardSet        = kFALSE;
+  Double_t maxFacPtHard       = 100;
+  Bool_t fSingleMaxPtHardSet  = kFALSE;
+  Double_t maxFacPtHardSingle = 100;
+  for(Int_t i = 0; i<rmaxFacPtHardSetting->GetEntries() ; i++){
+    TObjString* tempObjStrPtHardSetting     = (TObjString*) rmaxFacPtHardSetting->At(i);
+    TString strTempSetting                  = tempObjStrPtHardSetting->GetString();
+    if(strTempSetting.BeginsWith("MINPTHFAC:")){
+      strTempSetting.Replace(0,10,"");
+      minFacPtHard               = strTempSetting.Atof();
+      cout << "running with min pT hard jet fraction of: " << minFacPtHard << endl;
+      fMinPtHardSet        = kTRUE;
+    } else if(strTempSetting.BeginsWith("MAXPTHFAC:")){
+      strTempSetting.Replace(0,10,"");
+      maxFacPtHard               = strTempSetting.Atof();
+      cout << "running with max pT hard jet fraction of: " << maxFacPtHard << endl;
+      fMaxPtHardSet        = kTRUE;
+    } else if(strTempSetting.BeginsWith("MAXPTHFACSINGLE:")){
+      strTempSetting.Replace(0,16,"");
+      maxFacPtHardSingle         = strTempSetting.Atof();
+      cout << "running with max single particle pT hard fraction of: " << maxFacPtHardSingle << endl;
+      fSingleMaxPtHardSet        = kTRUE;
+    } else if(rmaxFacPtHardSetting->GetEntries()==1 && strTempSetting.Atof()>0){
+      maxFacPtHard               = strTempSetting.Atof();
+      cout << "running with max pT hard jet fraction of: " << maxFacPtHard << endl;
+      fMaxPtHardSet        = kTRUE;
+    }
+  }
 
   Int_t isHeavyIon = 2;
 
@@ -1212,6 +1244,7 @@ void AddTask_GammaConvCalo_pPb(
     cuts.AddCutPCMCalo("80010113","00200009327000008250400000","24466000a1012200000","0h63103100000010"); // PHOS group standard, -12.5, 13ns
 
   } else if (trainConfig == 502) {  // PHOS  INT7 with cents
+    cuts.AddCutPCMCalo("80010113","00200009327000008250400000","2446600051012200000","0h63103100000010"); // non lin 0-100%
     cuts.AddCutPCMCalo("80110113","00200009327000008250400000","2446600051012200000","0h63103100000010"); // non lin 0-10%
     cuts.AddCutPCMCalo("81210113","00200009327000008250400000","2446600051012200000","0h63103100000010"); // non lin 10-20%
     cuts.AddCutPCMCalo("82410113","00200009327000008250400000","2446600051012200000","0h63103100000010"); // non lin 20-40%
@@ -1219,6 +1252,7 @@ void AddTask_GammaConvCalo_pPb(
     cuts.AddCutPCMCalo("86810113","00200009327000008250400000","2446600051012200000","0h63103100000010"); // non lin 60-80%
     cuts.AddCutPCMCalo("88010113","00200009327000008250400000","2446600051012200000","0h63103100000010"); // non lin 80-100%
   } else if (trainConfig == 503) {  // PHOS  INT7 with cents
+    cuts.AddCutPCMCalo("80010113","00200009327000008250400000","2446600051012200000","0h63103100000010"); // non lin 0-100%
     cuts.AddCutPCMCalo("80210113","00200009327000008250400000","2446600051012200000","0h63103100000010"); // non lin 0-10%
     cuts.AddCutPCMCalo("86010113","00200009327000008250400000","2446600051012200000","0h63103100000010"); // non lin 10-20%
     cuts.AddCutPCMCalo("a0110113","00200009327000008250400000","2446600051012200000","0h63103100000010"); // non lin 0-5%
@@ -1275,7 +1309,54 @@ void AddTask_GammaConvCalo_pPb(
     cuts.AddCutPCMCalo("86010113","00200009327000008250400000","2446641054012200000","0h63103100000010"); //
     cuts.AddCutPCMCalo("a0110113","00200009327000008250400000","2446641054012200000","0h63103100000010"); //
     cuts.AddCutPCMCalo("a1210113","00200009327000008250400000","2446641054012200000","0h63103100000010"); //
-    
+
+  //PCM-PHOS run 2 MB systematics
+  } else if(trainConfig == 530){//dEdx e-line variation and dE/dx pi-line variation
+    cuts.AddCutPCMCalo("80010113","00200009127000008250400000","2446641054012200000","0h63103100000010"); //-5 < sigma < 5
+    cuts.AddCutPCMCalo("80010113","00200009227000008250400000","2446641054012200000","0h63103100000010"); //-3 < sigma < 5
+    cuts.AddCutPCMCalo("80010113","00200009327400008250400000","2446641054012200000","0h63103100000010"); //1, -10, 0.4, 3
+    cuts.AddCutPCMCalo("80010113","00200009367400008250400000","2446641054012200000","0h63103100000010"); //2, 0.5, 0.4, 3
+  } else if(trainConfig == 531){//dE/dx pi-line variation and single pT variation and 2D triangular chi2 and psi pair
+    cuts.AddCutPCMCalo("80010113","00200009317400008250400000","2446641054012200000","0h63103100000010"); //0, -10, 0.4, 3
+    cuts.AddCutPCMCalo("80010113","00200049327000008250400000","2446641054012200000","0h63103100000010"); //single pT 0.075 GeV/c
+    cuts.AddCutPCMCalo("80010113","00200019327000008250400000","2446641054012200000","0h63103100000010"); //single pT 0.1   GeV/c
+    cuts.AddCutPCMCalo("80010113","00200009327000008850400000","2446641054012200000","0h63103100000010"); //20 & 0.1
+  } else if(trainConfig == 532){//2D triangular chi2 and psi pair
+    cuts.AddCutPCMCalo("80010113","00200009327000008260400000","2446641054012200000","0h63103100000010"); //30 & 0.05
+    cuts.AddCutPCMCalo("80010113","00200009327000008860400000","2446641054012200000","0h63103100000010"); //20 & 0.05
+    cuts.AddCutPCMCalo("80010113","00200009327000008280400000","2446641054012200000","0h63103100000010"); //30 & 0.2
+    cuts.AddCutPCMCalo("80010113","00200009327000008880400000","2446641054012200000","0h63103100000010"); //20 & 0.2
+  } else if(trainConfig == 533){//min TPC clusters and //elliptic cut Qt and alpha
+    cuts.AddCutPCMCalo("80010113","00200000327000008250400000","2446641054012200000","0h63103100000010"); //0
+    cuts.AddCutPCMCalo("80010113","00200008327000008250400000","2446641054012200000","0h63103100000010"); //0.35
+    cuts.AddCutPCMCalo("80010113","00200009327000009250400000","2446641054012200000","0h63103100000010"); // qT 0.03 no quadratic
+    cuts.AddCutPCMCalo("80010113","00200009327000003250400000","2446641054012200000","0h63103100000010"); // qT 0.05 y  quadratic
+  } else if(trainConfig == 534){// and min phi max phi and NL variations
+    cuts.AddCutPCMCalo("80010113","00209909327000008250400000","2446641054012200000","0h63103100000010"); //4.54 > phi > 5.59
+    cuts.AddCutPCMCalo("80010113","00200009327000008250400000","2446642054012200000","0h63103100000010"); // PHOS calo NL
+    cuts.AddCutPCMCalo("80010113","00200009327000008250400000","2446652054012200000","0h63103100000010"); // PHOS calo NL
+    cuts.AddCutPCMCalo("80010113","00200009327000008250400000","2446601054012200000","0h63103100000010"); // PHOS people NL
+  } else if(trainConfig == 535){ // first set of variations CLUSTER
+    cuts.AddCutPCMCalo("80010113","00200009327000008250400000","2446641054072200000","0h63103100000010"); // min energy 0.2 GeV
+    cuts.AddCutPCMCalo("80010113","00200009327000008250400000","2446641054082200000","0h63103100000010"); // min energy 0.4 GeV
+    cuts.AddCutPCMCalo("80010113","00200009327000008250400000","2446641054022200000","0h63103100000010"); // min energy 0.5 GeV
+  } else if(trainConfig == 536){ // second set of variations CLUSTER
+    cuts.AddCutPCMCalo("80010113","00200009327000008250400000","2446641054012270000","0h63103100000010"); // min/max M02  0.1<M<1
+    cuts.AddCutPCMCalo("80010113","00200009327000008250400000","2446641054012280000","0h63103100000010"); // min/max M02  0.1<M<1
+    cuts.AddCutPCMCalo("80010113","00200009327000008250400000","2446641054013200000","0h63103100000010"); // min number 2 cells
+    cuts.AddCutPCMCalo("80010113","00200009327000008250400000","2446641054014200000","0h63103100000010"); // min number 4 cells
+  } else if(trainConfig == 537){ // MESON
+    cuts.AddCutPCMCalo("80010113","00200009327000008250400000","2446641054012200000","0h63403100000010"); // rapidity variation  y<0.5
+    cuts.AddCutPCMCalo("80010113","00200009327000008250400000","2446641054012200000","0h63803100000010"); // rapidity variation  y<0.25
+    cuts.AddCutPCMCalo("80010113","00200009327000008250400000","2446641054012200000","0h63106100000010"); // alpha meson variation 1 0<alpha<0.8
+    cuts.AddCutPCMCalo("80010113","00200009327000008250400000","2446641054012200000","0h63105100000010"); // alpha meson variation 2 0<alpha<0.75
+  } else if(trainConfig == 538){ // fourth set of variations
+    cuts.AddCutPCMCalo("80010113","00200009327000008250400000","2446641051012200000","0h63103100000010"); // tm variation
+    cuts.AddCutPCMCalo("80010113","00200009327000008250400000","2446641055012200000","0h63103100000010"); // tm variation
+    cuts.AddCutPCMCalo("80010113","00200009327000008250400000","2446641056012200000","0h63103100000010"); // tm variation
+    cuts.AddCutPCMCalo("80010113","00200009327000008250400000","2446641054012200000","0h63103100000000"); // min opening angle 0    -> open
+    cuts.AddCutPCMCalo("80010113","00200009327000008250400000","2446641054012200000","0h63103100000030"); // min opening angle 0.01 -> 2 cell diag
+
   // ===============================================================================================
   // Run 2 data PHOS clusters 8TeV
   // ===============================================================================================
@@ -2001,8 +2082,12 @@ void AddTask_GammaConvCalo_pPb(
 
     analysisEventCuts[i]->SetTriggerMimicking(enableTriggerMimicking);
     analysisEventCuts[i]->SetTriggerOverlapRejecion(enableTriggerOverlapRej);
-    analysisEventCuts[i]->SetMaxFacPtHard(maxFacPtHard);
-    analysisEventCuts[i]->SetV0ReaderName(V0ReaderName);
+    if(fMinPtHardSet)
+      analysisEventCuts[i]->SetMinFacPtHard(minFacPtHard);
+    if(fMaxPtHardSet)
+      analysisEventCuts[i]->SetMaxFacPtHard(maxFacPtHard);
+    if(fSingleMaxPtHardSet)
+      analysisEventCuts[i]->SetMaxFacPtHardSingleParticle(maxFacPtHardSingle);    analysisEventCuts[i]->SetV0ReaderName(V0ReaderName);
     analysisEventCuts[i]->SetCorrectionTaskSetting(corrTaskSetting);
     if (periodNameV0Reader.CompareTo("") != 0) analysisEventCuts[i]->SetPeriodEnum(periodNameV0Reader);
     if (enableLightOutput > 0) analysisEventCuts[i]->SetLightOutput(kTRUE);

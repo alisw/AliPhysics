@@ -44,7 +44,6 @@
 #include <TError.h>
 #include <TChain.h>
 #include <TGrid.h>
-#include <TAlienCollection.h>
 #include <TGridCollection.h>
 #include <TGridResult.h>
 #include <TGeoGlobalMagField.h>

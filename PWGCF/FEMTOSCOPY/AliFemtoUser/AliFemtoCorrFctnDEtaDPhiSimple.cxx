@@ -332,14 +332,17 @@ void AddPair(const AliFemtoPair &pair,
 
     if (hInfo1 && hInfo2) {
 
-      const AliFemtoThreeVector &v1 = *hInfo1->GetTrueMomentum(),
-                                &v2 = *hInfo2->GetTrueMomentum();
+      const AliFemtoThreeVector
+        &v1 = *hInfo1->GetTrueMomentum(),
+        &v2 = *hInfo2->GetTrueMomentum();
 
-      const double dhphi = calc_delta_phi(v1, v2),
-                   dheta = v1.PseudoRapidity() - v2.PseudoRapidity();
+      const double
+        dhphi = calc_delta_phi(v1, v2),
+        dheta = v1.PseudoRapidity() - v2.PseudoRapidity();
 
-      const int origin_1 = hInfo1->GetOrigin(),
-                origin_2 = hInfo2->GetOrigin();
+      const int
+        origin_1 = hInfo1->GetOrigin(),
+        origin_2 = hInfo2->GetOrigin();
 
       mc_hist->Fill(dhphi, dheta);
       if (origin_1 == 0 && origin_2 == 0) {

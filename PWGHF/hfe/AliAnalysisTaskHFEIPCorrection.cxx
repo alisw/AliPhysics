@@ -46,7 +46,7 @@ ClassImp(AliAnalysisTaskHFEIPCorrection)
 
 //________________________________________________________________________
 AliAnalysisTaskHFEIPCorrection::AliAnalysisTaskHFEIPCorrection()
-  : AliAnalysisTaskSE(), fAOD(0), fOutputContainer(0), EP2040(0), EP2040Corrected(0), EP2040V0A(0), EP2040V0C(0), TPCnSigma(0), EPCent(0), EPCentCorrected(0), EPCentV0A(0), EPCentV0C(0), DeltaPhi(0), fExtraCuts(0), fIPData(0), fpTIP2040IP(0), fpTIP2040OOP(0), fpTIP3050IP(0), fpTIP3050OOP(0), EventSelectionSteps(0), fPionV0pTRNoCuts(0), fPionV0pTRWithCuts(0), fAODV0Cuts(0), fPionV0pTTPC(0), fPionV0pTTPCWithCuts(0), fDCARegionRun(0), fDCAPhiZHadrons(0), fDCAPhiZHadronsC(0), fDCAPhiZHadronsC2(0), fDCAPhiZHadrons2nd(0), fpTPhiZHadrons(0), fDCAPhipTHadrons(0), fDCAPhipTHadronsC(0), fDCAPhipTHadronsC2(0), fDCAWErrHadrons(0), fDCAHadronsFineBins(0), fDCAKaons(0), fDCAWErrKaons(0), fDCAKaonsFineBins(0), fDCAvsCorrected(0)
+  : AliAnalysisTaskSE(), fAOD(0), fOutputContainer(0), EP2040(0), EP2040Corrected(0), EP2040V0A(0), EP2040V0C(0), TPCnSigma(0), EPCent(0), EPCentCorrected(0), EPCentV0A(0), EPCentV0C(0), DeltaPhi(0), fExtraCuts(0), fIPData(0), fpTIP2040IP(0), fpTIP2040OOP(0), fpTIP3050IP(0), fpTIP3050OOP(0), EventSelectionSteps(0), fPionV0pTRNoCuts(0), fPionV0pTRWithCuts(0), fAODV0Cuts(0), fPionV0pTTPC(0), fPionV0pTTPCWithCuts(0), fDCARegionRun(0), fDCAPhiZHadrons(0), fDCAPhiZHadronsEarlyRuns(0), fDCAPhiZHadronsLateRuns(0), fDCAPhiZHadronsC(0), fDCAPhipTHadrons(0), fDCAPhipTHadronsEarlyRuns(0), fDCAPhipTHadronsLateRuns(0), fDCAPhipTHadronsC(0), fDCAPhiZKaons(0), fDCAPhiZKaonsC(0), fDCAPhipTKaons(0), fDCAPhipTKaonsC(0), fpTPhiZHadrons(0), fDCAWErrHadrons(0), fDCAHadronsFineBins(0), fDCAKaons(0), fDCAWErrKaons(0), fDCAKaonsFineBins(0)
 {
   // default Constructor
   // Define input and output slots here
@@ -75,7 +75,7 @@ AliAnalysisTaskHFEIPCorrection::AliAnalysisTaskHFEIPCorrection()
 
 //________________________________________________________________________
 AliAnalysisTaskHFEIPCorrection::AliAnalysisTaskHFEIPCorrection(const char *name)
-  : AliAnalysisTaskSE(name), fAOD(0), fOutputContainer(0), EP2040(0), EP2040Corrected(0), EP2040V0A(0), EP2040V0C(0), TPCnSigma(0), EPCent(0), EPCentCorrected(0), EPCentV0A(0), EPCentV0C(0), DeltaPhi(0), fExtraCuts(0), fIPData(0), fpTIP2040IP(0), fpTIP2040OOP(0), fpTIP3050IP(0), fpTIP3050OOP(0), EventSelectionSteps(0), fPionV0pTRNoCuts(0), fPionV0pTRWithCuts(0), fAODV0Cuts(0), fPionV0pTTPC(0), fPionV0pTTPCWithCuts(0), fDCARegionRun(0), fDCAPhiZHadrons(0), fDCAPhiZHadronsC(0), fDCAPhiZHadronsC2(0), fDCAPhiZHadrons2nd(0), fpTPhiZHadrons(0), fDCAPhipTHadrons(0), fDCAPhipTHadronsC(0), fDCAPhipTHadronsC2(0), fDCAWErrHadrons(0), fDCAHadronsFineBins(0), fDCAKaons(0), fDCAWErrKaons(0), fDCAKaonsFineBins(0), fDCAvsCorrected(0)
+  : AliAnalysisTaskSE(name), fAOD(0), fOutputContainer(0), EP2040(0), EP2040Corrected(0), EP2040V0A(0), EP2040V0C(0), TPCnSigma(0), EPCent(0), EPCentCorrected(0), EPCentV0A(0), EPCentV0C(0), DeltaPhi(0), fExtraCuts(0), fIPData(0), fpTIP2040IP(0), fpTIP2040OOP(0), fpTIP3050IP(0), fpTIP3050OOP(0), EventSelectionSteps(0), fPionV0pTRNoCuts(0), fPionV0pTRWithCuts(0), fAODV0Cuts(0), fPionV0pTTPC(0), fPionV0pTTPCWithCuts(0), fDCARegionRun(0), fDCAPhiZHadrons(0), fDCAPhiZHadronsEarlyRuns(0), fDCAPhiZHadronsLateRuns(0), fDCAPhiZHadronsC(0), fDCAPhipTHadrons(0), fDCAPhipTHadronsEarlyRuns(0), fDCAPhipTHadronsLateRuns(0), fDCAPhipTHadronsC(0), fDCAPhiZKaons(0), fDCAPhiZKaonsC(0), fDCAPhipTKaons(0), fDCAPhipTKaonsC(0), fpTPhiZHadrons(0), fDCAWErrHadrons(0), fDCAHadronsFineBins(0), fDCAKaons(0), fDCAWErrKaons(0), fDCAKaonsFineBins(0)
 {
   // HFE cuts
     /*hfetrackCuts = new AliHFEcuts("V0trackCuts", "Track Cuts for tagged track Analysis");
@@ -148,20 +148,24 @@ void AliAnalysisTaskHFEIPCorrection::UserCreateOutputObjects()
     EventSelectionSteps = new TH1D(Form("EventSelectionSteps"),Form("EventSelectionSteps"), 10, -0.5, 9.5);
 
     fDCARegionRun = new TH3D(Form("fDCARegionRun"),Form("fDCARegionRun"), 400, -0.05, 0.05, 5, 0.5, 5.5, 183, 0.5, 183.5);
-    fDCAPhiZHadrons = new TH3D(Form("fDCAPhiZHadrons"),Form("fDCAPhiZHadrons"), 40, 0., 2.*3.14159, 400, -0.05, 0.05, 12, -12., 12.);
-    fDCAPhiZHadronsC = new TH3D(Form("fDCAPhiZHadronsC"),Form("fDCAPhiZHadronsC"), 40, 0., 2.*3.14159, 400, -0.05, 0.05, 12, -12., 12.);
-    fDCAPhiZHadronsC2 = new TH3D(Form("fDCAPhiZHadronsC2"),Form("fDCAPhiZHadronsC2"), 40, 0., 2.*3.14159, 400, -0.05, 0.05, 12, -12., 12.);
-    fDCAPhiZHadrons2nd = new TH3D(Form("fDCAPhiZHadrons2nd"),Form("fDCAPhiZHadrons2nd"), 40, 0., 2.*3.14159, 400, -0.05, 0.05, 12, -12., 12.);
     fpTPhiZHadrons = new TH3D(Form("fpTPhiZHadrons"),Form("fpTPhiZHadrons"), 40, 0., 2.*3.14159, 40, 0., 10., 12, -12., 12.);
+    fDCAPhiZHadrons = new TH3D(Form("fDCAPhiZHadrons"),Form("fDCAPhiZHadrons"), 40, 0., 2.*3.14159, 400, -0.05, 0.05, 12, -12., 12.);
+    fDCAPhiZHadronsEarlyRuns = new TH3D(Form("fDCAPhiZHadronsEarlyRuns"),Form("fDCAPhiZHadronsEarlyRuns"), 40, 0., 2.*3.14159, 400, -0.05, 0.05, 12, -12., 12.);
+    fDCAPhiZHadronsLateRuns = new TH3D(Form("fDCAPhiZHadronsLateRuns"),Form("fDCAPhiZHadronsLateRuns"), 40, 0., 2.*3.14159, 400, -0.05, 0.05, 12, -12., 12.);
+    fDCAPhiZHadronsC = new TH3D(Form("fDCAPhiZHadronsC"),Form("fDCAPhiZHadronsC"), 40, 0., 2.*3.14159, 400, -0.05, 0.05, 12, -12., 12.);
     fDCAPhipTHadrons = new TH3D(Form("fDCAPhipTHadrons"),Form("fDCAPhipTHadrons"), 400, -0.05, 0.05, 40, 0., 2.*3.14159, 40, 0., 10.);
+    fDCAPhipTHadronsEarlyRuns = new TH3D(Form("fDCAPhipTHadronsEarlyRuns"),Form("fDCAPhipTHadronsEarlyRuns"), 400, -0.05, 0.05, 40, 0., 2.*3.14159, 40, 0., 10.);
+    fDCAPhipTHadronsLateRuns = new TH3D(Form("fDCAPhipTHadronsLateRuns"),Form("fDCAPhipTHadronsLateRuns"), 400, -0.05, 0.05, 40, 0., 2.*3.14159, 40, 0., 10.);
     fDCAPhipTHadronsC = new TH3D(Form("fDCAPhipTHadronsC"),Form("fDCAPhipTHadronsC"), 400, -0.05, 0.05, 40, 0., 2.*3.14159, 40, 0., 10.);
-    fDCAPhipTHadronsC2 = new TH3D(Form("fDCAPhipTHadronsC2"),Form("fDCAPhipTHadronsC2"), 400, -0.05, 0.05, 40, 0., 2.*3.14159, 40, 0., 10.);
+    fDCAPhiZKaons = new TH3D(Form("fDCAPhiZKaons"),Form("fDCAPhiZKaons"), 40, 0., 2.*3.14159, 400, -0.05, 0.05, 12, -12., 12.);
+    fDCAPhiZKaonsC = new TH3D(Form("fDCAPhiZKaonsC"),Form("fDCAPhiZKaonsC"), 40, 0., 2.*3.14159, 400, -0.05, 0.05, 12, -12., 12.);
+    fDCAPhipTKaons = new TH3D(Form("fDCAPhipTKaons"),Form("fDCAPhipTKaons"), 400, -0.05, 0.05, 40, 0., 2.*3.14159, 40, 0., 10.);
+    fDCAPhipTKaonsC = new TH3D(Form("fDCAPhipTKaonsC"),Form("fDCAPhipTKaonsC"), 400, -0.05, 0.05, 40, 0., 2.*3.14159, 40, 0., 10.);
     fDCAWErrHadrons = new TH3D(Form("fDCAWErrHadrons"),Form("fDCAWErrHadrons"), 80, 0., 10., 400, -0.2, 0.2, 100, 0.0, 0.01);
     fDCAHadronsFineBins = new TH3D(Form("fDCAHadronsFineBins"),Form("fDCAHadronsFineBins"), 80, 0., 10., 400, -0.2, 0.2, 10, 0., 100.);
     fDCAKaons = new TH2D(Form("fDCAKaons"),Form("fDCAKaons"), 18, ptbinningX, 400, -0.2, 0.2);
     fDCAWErrKaons = new TH3D(Form("fDCAWErrKaons"),Form("fDCAWErrKaons"), 80, 0., 10., 400, -0.2, 0.2, 100, 0.0, 0.01);
     fDCAKaonsFineBins = new TH3D(Form("fDCAKaonsFineBins"),Form("fDCAKaonsFineBins"), 80, 0., 10., 400, -0.2, 0.2, 10, 0., 100.);
-    fDCAvsCorrected = new TH2D(Form("fDCAvsCorrected"),Form("fDCAvsCorrected"), 200, -0.03, 0.03, 200, -0.03, 0.03);
     
     fExtraCuts = new AliHFEextraCuts("hfeExtraCuts","HFE Extra Cuts");
     fAODV0Cuts = new AliAODv0KineCuts();
@@ -191,19 +195,23 @@ void AliAnalysisTaskHFEIPCorrection::UserCreateOutputObjects()
     fOutputContainer->Add(EventSelectionSteps);
     fOutputContainer->Add(fDCARegionRun);
     fOutputContainer->Add(fDCAPhiZHadrons);
+    fOutputContainer->Add(fDCAPhiZHadronsEarlyRuns);
+    fOutputContainer->Add(fDCAPhiZHadronsLateRuns);
     fOutputContainer->Add(fDCAPhiZHadronsC);
-    fOutputContainer->Add(fDCAPhiZHadronsC2);
-    fOutputContainer->Add(fDCAPhiZHadrons2nd);
-    fOutputContainer->Add(fpTPhiZHadrons);
     fOutputContainer->Add(fDCAPhipTHadrons);
+    fOutputContainer->Add(fDCAPhipTHadronsEarlyRuns);
+    fOutputContainer->Add(fDCAPhipTHadronsLateRuns);
     fOutputContainer->Add(fDCAPhipTHadronsC);
-    fOutputContainer->Add(fDCAPhipTHadronsC2);
+    fOutputContainer->Add(fDCAPhiZKaons);
+    fOutputContainer->Add(fDCAPhiZKaonsC);
+    fOutputContainer->Add(fDCAPhipTKaons);
+    fOutputContainer->Add(fDCAPhipTKaonsC);
+    fOutputContainer->Add(fpTPhiZHadrons);
     fOutputContainer->Add(fDCAWErrHadrons);
     fOutputContainer->Add(fDCAHadronsFineBins);
     fOutputContainer->Add(fDCAKaons);
     fOutputContainer->Add(fDCAWErrKaons);
     fOutputContainer->Add(fDCAKaonsFineBins);
-    fOutputContainer->Add(fDCAvsCorrected);
 
     PostData(1, fOutputContainer);
     
@@ -389,7 +397,7 @@ void AliAnalysisTaskHFEIPCorrection::GetTrackImpactParameter(AliAODEvent *aodEve
   dcaxy = dcaD[0];
 }
 
-void AliAnalysisTaskHFEIPCorrection::GetCorrectedImpactParameter(AliAODTrack *track, Double_t primVertexZ, Double_t &dcaxy)
+void AliAnalysisTaskHFEIPCorrection::GetCorrectedImpactParameter(AliAODEvent *aodEvent, AliAODTrack *track, Double_t primVertexZ, Double_t &dcaxy)
 {
   // primVertexZ is the z Position of the primary vertex
   // Using 40 phi bins, 12 z bins (-12 to +12 cm) and smooth pT correction
@@ -400,50 +408,95 @@ void AliAnalysisTaskHFEIPCorrection::GetCorrectedImpactParameter(AliAODTrack *tr
   double oldIP, dcaErr;
   fExtraCuts->GetHFEImpactParameters((AliVTrack *)track,oldIP,dcaErr);
     
-  double correctionMatrix[40][12] = {
-  { 0.000282 , -0.000227 , 0.000402 , -6.42e-05 , -0.000242 , -0.000356 , -0.000262 , -0.00021 , -0.000715 , -0.000565 , -0.000648 , -0.000761 },
-  { 0.000421 , 0.000477 , -0.000102 , -0.000113 , -0.000104 , -0.000293 , -0.000179 , 0.000147 , -1.83e-05 , -5.21e-05 , -0.000121 , -0.000278 },
-  { 0.000863 , 0.000673 , 0.000415 , 0.000274 , 0.000308 , -6.39e-05 , 0.000325 , 0.000224 , 0.000298 , 0.00082 , 0.000559 , 0.000102 },
-  { 0.000879 , 0.000633 , 0.000367 , 0.000184 , 0.000104 , -2.96e-07 , 0.000388 , 0.000921 , 0.000851 , 0.000652 , 0.000803 , 0.000146 },
-  { -0.000574 , -0.000638 , -0.000881 , -0.000655 , -0.000316 , -0.000386 , 0.00055 , 0.00042 , 0.000497 , 0.000866 , 0.000479 , 0.000237 },
-  { -0.000856 , -0.000353 , -0.000599 , -0.000615 , -0.000297 , -0.000407 , 0.000165 , 0.000986 , 0.00086 , 0.000697 , 0.00057 , 8.85e-05 },
-  { 0.000385 , 0.000558 , 0.000624 , 0.000267 , 0.000137 , -8.53e-05 , -0.00304 , -0.00281 , -0.00237 , -0.00267 , -0.00212 , -0.00201 },
-  { 0.000115 , 0.000256 , -0.000154 , 0.000274 , 0.000809 , 3.29e-06 , -0.00459 , -0.00541 , -0.00498 , -0.00471 , -0.00384 , -0.00318 },
-  { -0.000358 , -5.75e-05 , -0.0011 , -0.000182 , 0.00044 , -0.000504 , -0.00215 , -0.00243 , -0.00262 , -0.00289 , -0.00203 , -0.00149 },
-  { 0 , 0 , 0 , 0 , 0 , 0.00161 , 0.00131 , 0.0014 , 0.00131 , 0.000964 , 0.000752 , 0.000883 },
-  { 0 , 0 , 0 , 0 , 0 , 0.000754 , 0.000305 , 0.000778 , 0.000645 , 0.000356 , 0.000827 , 0.000366 },
-  { 0 , 0 , 0 , 0 , 0 , 0.000307 , -0.000151 , 0.000491 , 0.000437 , 0.00028 , 0.000803 , 0.000594 },
-  { 0 , 0 , 0 , 0 , 0 , -0.000132 , -0.000395 , 0.000656 , 0.000668 , 3.55e-05 , 0.000759 , 0.000789 },
-  { 0 , 0 , 0 , 0 , 0 , -0.00119 , -0.00106 , -0.00049 , -0.000364 , -0.000216 , 0.000302 , 0.000324 },
-  { 0 , 0.0126 , 0.0115 , 0.0123 , 0.0136 , 0.00968 , -0.00106 , -0.000168 , -0.000155 , -0.000705 , 2.18e-05 , -0.000317 },
-  { 0.000674 , 0.000879 , 0.000719 , 0.000805 , 0.00116 , 0.00102 , 0.000206 , 0.000692 , 0.000293 , -2.6e-05 , 0.000829 , 0.000428 },
-  { 0.000889 , 0.00113 , 0.000817 , 0.000894 , 0.000999 , 0.000636 , -0.000117 , 0.000528 , 0.000339 , -0.000119 , 0.000381 , 0.000298 },
-  { 0.000872 , 0.000899 , 0.000515 , 0.000672 , 0.000904 , 0.000564 , 0.00125 , 0.00283 , 0.0028 , 0.00287 , 0.00268 , 0.00162 },
-  { 0.00029 , 0.000905 , -0.000312 , 0.000636 , 0.000714 , 0.000135 , 2.45e-05 , 0.00222 , 0.00226 , 0.00172 , 0.00181 , 0.00161 },
-  { 0.000591 , 0.00127 , 0.000893 , 0.000979 , 0.000803 , 0.000464 , 0.000324 , 0.000737 , 0.000505 , 0.000277 , 0.000441 , 0.000405 },
-  { 0.000941 , 0.00101 , 0.000617 , 0.00085 , 0.000619 , 0.000551 , 0.000364 , 0.000229 , 0.000328 , -2.29e-05 , 0.000284 , 0.000372 },
-  { -0.0017 , -0.00181 , -0.00224 , -0.00248 , -0.00283 , -0.00306 , -0.00364 , -0.00398 , -0.00349 , -0.00282 , -0.0025 , -0.0026 },
-  { -0.00175 , -0.00173 , -0.00232 , -0.00253 , -0.00326 , -0.00328 , -0.00404 , -0.00388 , -0.00418 , -0.00391 , -0.00352 , -0.00311 },
-  { -0.000551 , -0.0005 , -0.000489 , -0.000495 , -0.00059 , -0.000369 , 6.83e-05 , 0 , 0 , 0 , 0 , 0 },
-  { -0.000858 , -0.000756 , -0.0012 , -0.001 , -0.000262 , -0.00121 , -0.00133 , -0.00186 , -0.00222 , -0.00169 , -0.00115 , -0.000857 },
-  { -0.00221 , -0.00167 , -0.00176 , -0.00186 , -0.00186 , -0.00198 , -0.00192 , -0.00146 , -0.00157 , -0.00164 , -0.00152 , -0.000787 },
-  { -0.00146 , -0.00169 , -0.00248 , -0.0024 , -0.00253 , -0.00249 , -0.00111 , -0.00153 , -0.00175 , -0.00126 , -0.00143 , -0.000942 },
-  { 0 , 0 , 0 , 0 , 0 , 0 , -0.00113 , -0.00132 , -0.00143 , -0.00147 , -0.0013 , -0.00125 },
-  { 0.0016 , 0.000813 , 0.00113 , 0.00141 , 0.000816 , 0.000618 , 0.000258 , -0.000228 , -0.000502 , 3.33e-05 , -0.00053 , -0.000589 },
-  { -0.000203 , 0.001 , 0.000475 , 0.000464 , 0.00106 , 0.000523 , -0.000281 , 0.000132 , -2.44e-05 , -0.000762 , -0.000489 , -6.63e-05 },
-  { 0.000707 , 0.00201 , 0.00207 , 0.00147 , 0.00181 , 0.00265 , -9.27e-05 , -0.000863 , -0.000497 , -0.00028 , -0.000821 , 7.88e-05 },
-  { 0.00133 , 0.00155 , 0.00136 , 0.00136 , 0.00155 , 0.00139 , -0.000212 , -0.000295 , -0.00067 , -0.000596 , 0.000263 , -0.000287 },
-  { 0.000444 , 0.000197 , 0.000446 , 5.43e-05 , -0.000232 , -0.000543 , -0.00094 , -0.000797 , -0.000624 , -0.000737 , -0.000781 , -0.000657 },
-  { 0.000157 , 0.000202 , -0.000169 , -0.000444 , -0.000434 , -0.000902 , -0.0015 , -0.00141 , -0.00154 , -0.00147 , -0.00141 , -0.00116 },
-  { 0.000945 , 0.000666 , 0.000954 , 0.000526 , 0.000714 , 0.000461 , 0.00105 , 0 , 0 , 0 , 0 , 0 },
-  { 0.000543 , 0.00043 , 0.000527 , 0.00033 , 0.000586 , 0.000737 , 0.00065 , 0.000351 , -0.000478 , -0.00115 , 2.38e-05 , -0.000237 },
-  { -0.000644 , -0.000751 , -0.000288 , -0.000726 , -0.000879 , -0.000496 , -0.000765 , -0.000472 , -0.000507 , -0.000369 , -0.000369 , -0.000609 },
-  { -0.00107 , -0.00082 , -0.000995 , -0.000987 , -0.000978 , -0.00113 , -0.000399 , -8.63e-05 , -8.52e-06 , 0.000562 , 0.000521 , 0.000368 },
-  { -0.0009 , -0.000544 , -0.000525 , -0.000643 , -0.000497 , -0.000681 , 0.000283 , 0.000284 , 0.000252 , 0.000792 , 0.00084 , 0.000589 },
-  { -0.00091 , -0.000822 , -0.000716 , -0.000655 , -0.000486 , -0.000996 , -0.000367 , -1.48e-05 , -0.0009 , -0.000892 , -0.000219 , -0.000516 }
-  }; // Hardcoded, 15o correction matrix for the amplitude parameter of the correction function, bins are [phibin][zbin]
+  double correctionMatrixEarlyRuns[40][12] = {
+{ -0.000683 , -0.00104 , -0.000436 , -0.000785 , -0.001 , -0.00117 , -0.00103 , -0.000972 , -0.00149 , -0.0014 , -0.00147 , -0.00158 },
+{ -0.000429 , -0.000331 , -0.000925 , -0.00097 , -0.000927 , -0.00109 , -0.00088 , -0.000629 , -0.000606 , -0.000768 , -0.000875 , -0.000799 },
+{ 9.07e-05 , -0.000232 , -0.000481 , -0.000671 , -0.000605 , -0.000969 , -0.000581 , -0.000624 , -0.000443 , 0.000108 , -0.000173 , -0.00068 },
+{ -0.000188 , -0.000327 , -0.000773 , -0.00087 , -0.00092 , -0.000998 , -0.000481 , 9.87e-05 , 1.33e-05 , -0.000173 , -5.06e-05 , -0.000686 },
+{ -0.00151 , -0.00167 , -0.00194 , -0.00157 , -0.00123 , -0.00122 , -0.000314 , -0.00038 , -0.000235 , 0.000169 , -0.000415 , -0.000513 },
+{ -0.00181 , -0.00122 , -0.00145 , -0.00142 , -0.00114 , -0.00115 , -0.000569 , 0.000239 , 0.000207 , -5e-05 , -0.000104 , -0.000634 },
+{ -0.000947 , -0.000512 , -0.000538 , -0.000851 , -0.000932 , -0.00113 , -0.00405 , -0.00372 , -0.00334 , -0.00351 , -0.00297 , -0.00292 },
+{ -0.000949 , -0.000806 , -0.00121 , -0.000865 , -0.000237 , -0.001 , -0.00561 , -0.00621 , -0.00594 , -0.00551 , -0.00464 , -0.004 },
+{ -0.00142 , -0.00111 , -0.00216 , -0.00132 , -0.000642 , -0.00153 , -0.00284 , -0.00295 , -0.00314 , -0.00349 , -0.00267 , -0.00226 },
+{ 0 , 0 , 0 , 0 , 0 , 0.00153 , 0.000849 , 0.000952 , 0.000799 , 0.000527 , 0.000224 , 0.000269 },
+{ 0 , 0 , 0 , 0 , 0 , 0.000431 , -0.000211 , 0.000241 , 0.00019 , -9.1e-05 , 0.000373 , -0.000161 },
+{ 0 , 0 , 0 , 0 , 0 , -0.000518 , -0.000786 , -0.000138 , -0.000261 , -0.000291 , 0.000237 , -9.44e-05 },
+{ 0 , 0 , 0 , 0 , 0 , -0.000486 , -0.000984 , 1.7e-05 , 0.000154 , -0.0004 , 0.000312 , 0.000181 },
+{ 0 , 0 , 0 , 0 , 0 , -0.000825 , -0.00171 , -0.0012 , -0.00113 , -0.000976 , -0.000555 , -0.000574 },
+{ 0.00528 , 0.00546 , 0.00561 , 0.0053 , 0.00782 , 0.00596 , -0.00188 , -0.00094 , -0.000935 , -0.00146 , -0.000619 , -0.00122 },
+{ -0.000379 , -0.000128 , -0.000382 , -0.000331 , 0.000108 , 7.47e-06 , -0.000598 , -9.11e-06 , -0.000398 , -0.000601 , 5.74e-05 , -0.000298 },
+{ 4.06e-05 , 0.000116 , -0.000144 , -0.00012 , -9.49e-06 , -0.000392 , -0.000871 , -0.000249 , -0.00042 , -0.000808 , -0.000448 , -0.000573 },
+{ -0.000487 , -0.000342 , -0.000591 , -0.000453 , -0.000259 , -0.000576 , 5.04e-05 , 0.00179 , 0.00162 , 0.00171 , 0.00157 , 0.000738 },
+{ -0.000837 , -0.000198 , -0.00133 , -0.000705 , -0.000506 , -0.000963 , -0.00114 , 0.00114 , 0.0012 , 0.000515 , 0.000815 , 0.000431 },
+{ -0.000696 , -8.76e-05 , -0.000227 , -0.000296 , -0.000356 , -0.000756 , -0.000786 , -0.000473 , -0.000626 , -0.00091 , -0.000828 , -0.000739 },
+{ -0.000317 , -0.000368 , -0.000625 , -0.00042 , -0.000556 , -0.000786 , -0.000867 , -0.001 , -0.000915 , -0.00108 , -0.000911 , -0.000861 },
+{ -0.00264 , -0.00284 , -0.00345 , -0.00373 , -0.00395 , -0.00415 , -0.00475 , -0.00518 , -0.00455 , -0.00389 , -0.00374 , -0.00383 },
+{ -0.003 , -0.00298 , -0.00348 , -0.00363 , -0.00436 , -0.00443 , -0.00512 , -0.00489 , -0.00516 , -0.00505 , -0.00461 , -0.00453 },
+{ -0.00201 , -0.00196 , -0.00182 , -0.00186 , -0.00201 , -0.00184 , -0.00139 , 0 , 0 , 0 , 0 , 0 },
+{ -0.00226 , -0.0022 , -0.00268 , -0.00234 , -0.00166 , -0.00256 , -0.00262 , -0.00311 , -0.00336 , -0.00292 , -0.00268 , -0.00203 },
+{ -0.00359 , -0.00288 , -0.00304 , -0.0031 , -0.00305 , -0.00314 , -0.0031 , -0.0027 , -0.0028 , -0.00293 , -0.00291 , -0.00201 },
+{ -0.00257 , -0.0031 , -0.00341 , -0.00355 , -0.00353 , -0.00368 , -0.00232 , -0.00279 , -0.00294 , -0.00252 , -0.00274 , -0.00221 },
+{ 0 , 0 , 0 , 0 , 0 , 0 , -0.00229 , -0.0025 , -0.00262 , -0.00274 , -0.00266 , -0.0024 },
+{ 0.000774 , -0.000295 , -5.94e-05 , 0.000142 , -0.000405 , -0.000619 , -0.0011 , -0.00163 , -0.0019 , -0.0014 , -0.00187 , -0.00209 },
+{ -0.00156 , -0.000174 , -0.000509 , -0.000816 , -0.000144 , -0.000683 , -0.00159 , -0.00121 , -0.00134 , -0.00222 , -0.00196 , -0.00176 },
+{ -0.00022 , 0.00105 , 0.00124 , 0.000443 , 0.000713 , 0.00162 , -0.00128 , -0.00204 , -0.00173 , -0.00154 , -0.00213 , -0.0013 },
+{ 0.000455 , 0.000776 , 0.000464 , 0.000417 , 0.000714 , 0.00041 , -0.00131 , -0.00149 , -0.0019 , -0.00193 , -0.000986 , -0.00151 },
+{ -0.000248 , -0.000424 , -0.000149 , -0.000592 , -0.00101 , -0.00134 , -0.0018 , -0.00161 , -0.00156 , -0.00167 , -0.00185 , -0.0019 },
+{ -4.59e-05 , -0.000561 , -0.000717 , -0.000926 , -0.00118 , -0.00157 , -0.00227 , -0.0022 , -0.00251 , -0.00231 , -0.00231 , -0.00205 },
+{ 0.000267 , 5.08e-05 , 0.000296 , -0.000128 , -1.75e-05 , -0.000261 , 0.000354 , 0 , 0 , 0 , 0 , 0 },
+{ -0.000259 , -0.000225 , -0.000134 , -0.000399 , -0.00022 , 5.61e-05 , 1.45e-05 , -0.000399 , -0.00145 , -0.00201 , -0.000793 , -0.00092 },
+{ -0.00117 , -0.00129 , -0.000751 , -0.00122 , -0.00143 , -0.00104 , -0.00138 , -0.00108 , -0.00121 , -0.00102 , -0.000913 , -0.00132 },
+{ -0.00186 , -0.00166 , -0.00158 , -0.00174 , -0.00167 , -0.0019 , -0.00102 , -0.000805 , -0.000779 , -0.000263 , -0.000164 , -0.000461 },
+{ -0.00151 , -0.00135 , -0.0013 , -0.00134 , -0.00132 , -0.00143 , -0.000603 , -0.000576 , -0.000571 , -7.53e-05 , -4.39e-05 , -0.000317 },
+{ -0.00166 , -0.00161 , -0.00148 , -0.00148 , -0.00129 , -0.00169 , -0.00119 , -0.00086 , -0.00172 , -0.0018 , -0.00125 , -0.00151 }
+}; // Hardcoded, 15o correction matrix for the amplitude parameter of the correction function, bins are [phibin][zbin]
+
+double correctionMatrixLateRuns[40][12] = {
+{ 0.000114 , -8.83e-05 , 0.000528 , -8.9e-05 , -0.00022 , -0.000357 , -0.000213 , -0.000163 , -0.000792 , -0.000666 , -0.000543 , -0.000764 },
+{ 0.000446 , 0.000558 , -7.86e-05 , -0.000105 , -9.73e-05 , -0.000263 , -0.000173 , 0.000129 , -4.93e-05 , -6.08e-05 , -0.000176 , -0.00029 },
+{ 0.000953 , 0.000763 , 0.000427 , 0.000145 , 0.000363 , -2.55e-05 , 0.000359 , 0.000305 , 0.000352 , 0.000879 , 0.000528 , 6.47e-05 },
+{ 0.00088 , 0.000752 , 0.000357 , 0.000185 , 0.000142 , 1.42e-06 , 0.000368 , 0.000811 , 0.000901 , 0.000543 , 0.000828 , 0.000172 },
+{ -0.000738 , -0.000591 , -0.000974 , -0.000571 , -0.000404 , -0.000397 , 0.000505 , 0.000376 , 0.00053 , 0.000898 , 0.00044 , 6.72e-05 },
+{ -0.000963 , -0.000277 , -0.000583 , -0.000642 , -0.000338 , -0.000361 , 0.000167 , 0.00103 , 0.000815 , 0.00071 , 0.000591 , 0.000152 },
+{ 0.000426 , 0.000499 , 0.000576 , 0.000281 , 0.00011 , -5.69e-05 , -0.00305 , -0.0028 , -0.00235 , -0.00273 , -0.00219 , -0.00196 },
+{ 0.000178 , 0.000189 , -0.000147 , 0.000163 , 0.00077 , 1.37e-05 , -0.00465 , -0.00543 , -0.00505 , -0.0047 , -0.00394 , -0.00305 },
+{ -0.000225 , -0.000128 , -0.000944 , -0.000217 , 0.000501 , -0.000481 , -0.00216 , -0.00246 , -0.00255 , -0.00293 , -0.00197 , -0.00162 },
+{ 0 , 0 , 0 , 0 , 0 , 0.00143 , 0.00135 , 0.00139 , 0.00132 , 0.000918 , 0.000703 , 0.000998 },
+{ 0 , 0 , 0 , 0 , 0 , 0.000747 , 0.000278 , 0.000759 , 0.000592 , 0.000288 , 0.000902 , 0.000388 },
+{ 0 , 0 , 0 , 0 , 0 , 0.000283 , -0.000195 , 0.000452 , 0.000454 , 0.000362 , 0.000776 , 0.000565 },
+{ 0 , 0 , 0 , 0 , 0 , -9.02e-05 , -0.000432 , 0.000709 , 0.000771 , 3.08e-06 , 0.000861 , 0.000676 },
+{ 0 , 0 , 0 , 0 , 0 , -0.00115 , -0.00114 , -0.000507 , -0.000299 , -0.000238 , 0.00016 , 0.000344 },
+{ 0 , 0 , 0.0104 , 0.0109 , 0.0154 , 0 , -0.00107 , -0.000138 , -0.000275 , -0.000841 , 0.0001 , -0.000255 },
+{ 0.000763 , 0.001 , 0.000771 , 0.000781 , 0.00131 , 0.00108 , 0.000179 , 0.000676 , 0.00026 , -8.63e-05 , 0.000926 , 0.000429 },
+{ 0.000838 , 0.00111 , 0.000807 , 0.000881 , 0.000947 , 0.00062 , -9.65e-05 , 0.000507 , 0.000344 , -0.000205 , 0.000252 , 0.000238 },
+{ 0.000909 , 0.000858 , 0.000463 , 0.000592 , 0.000875 , 0.000575 , 0.00113 , 0.00277 , 0.00287 , 0.00287 , 0.00259 , 0.00146 },
+{ 5.73e-05 , 0.000894 , -0.000269 , 0.000742 , 0.00078 , 9.85e-05 , 5.43e-05 , 0.00232 , 0.00233 , 0.00171 , 0.00188 , 0.00161 },
+{ 0.000354 , 0.00126 , 0.000932 , 0.000969 , 0.000791 , 0.000384 , 0.000298 , 0.000732 , 0.000442 , 0.000268 , 0.000245 , 0.000317 },
+{ 0.000907 , 0.00114 , 0.000664 , 0.000916 , 0.000624 , 0.000659 , 0.000404 , 0.000142 , 0.000299 , -1.87e-05 , 0.000312 , 0.000397 },
+{ -0.0021 , -0.00186 , -0.00232 , -0.00254 , -0.00282 , -0.00313 , -0.00368 , -0.00414 , -0.0035 , -0.00277 , -0.00258 , -0.00275 },
+{ -0.00185 , -0.00184 , -0.00238 , -0.00253 , -0.00328 , -0.00332 , -0.00405 , -0.00389 , -0.00411 , -0.00388 , -0.00347 , -0.00355 },
+{ -0.000455 , -0.000429 , -0.00048 , -0.000618 , -0.000634 , -0.000348 , 0.00017 , 0 , 0 , 0 , 0 , 0 },
+{ -0.000758 , -0.000642 , -0.00118 , -0.00106 , -0.000257 , -0.00116 , -0.00131 , -0.00208 , -0.00211 , -0.00167 , -0.00139 , -0.000702 },
+{ -0.0021 , -0.00156 , -0.00168 , -0.00185 , -0.00194 , -0.002 , -0.00184 , -0.0015 , -0.0015 , -0.00154 , -0.00159 , -0.000732 },
+{ -0.00126 , -0.00168 , -0.00245 , -0.00245 , -0.00266 , -0.00241 , -0.00103 , -0.00156 , -0.00185 , -0.00119 , -0.00135 , -0.000824 },
+{ 0 , 0 , 0 , 0 , 0 , 0 , -0.00114 , -0.0013 , -0.00144 , -0.00147 , -0.00133 , -0.00124 },
+{ 0.00153 , 0.000797 , 0.00115 , 0.00136 , 0.000833 , 0.000597 , 0.000257 , -0.000188 , -0.000506 , -0.000139 , -0.000359 , -0.00043 },
+{ -0.000104 , 0.000889 , 0.000451 , 0.000561 , 0.0011 , 0.000489 , -0.000186 , 0.000132 , -9.97e-05 , -0.000682 , -0.000475 , -3.75e-07 },
+{ 0.000518 , 0.00193 , 0.00214 , 0.00138 , 0.00169 , 0.00273 , -7.75e-05 , -0.000903 , -0.000568 , -0.00031 , -0.000771 , 7.98e-05 },
+{ 0.00112 , 0.0013 , 0.00135 , 0.0014 , 0.00151 , 0.00137 , -0.00021 , -0.000277 , -0.000672 , -0.000424 , 0.000329 , -4.97e-05 },
+{ 0.000295 , 8.55e-05 , 0.000501 , 5.88e-06 , -0.000251 , -0.000605 , -0.000998 , -0.00077 , -0.000605 , -0.00068 , -0.000894 , -0.000468 },
+{ -4.39e-05 , 9.05e-05 , -0.000151 , -0.000384 , -0.000385 , -0.000908 , -0.00145 , -0.00138 , -0.00154 , -0.00148 , -0.00141 , -0.00108 },
+{ 0.000924 , 0.000762 , 0.00087 , 0.000478 , 0.000699 , 0.000349 , 0.00135 , 0 , 0 , 0 , 0 , 0 },
+{ 0.000534 , 0.000273 , 0.000512 , 0.000367 , 0.000547 , 0.000747 , 0.000785 , 0.00025 , -0.00042 , -0.000993 , -0.000249 , -0.000247 },
+{ -0.000631 , -0.000784 , -0.000278 , -0.000822 , -0.00087 , -0.000478 , -0.00085 , -0.000419 , -0.000445 , -0.000433 , -0.000376 , -0.000552 },
+{ -0.00109 , -0.000822 , -0.000965 , -0.00104 , -0.000902 , -0.00119 , -0.000429 , -9.94e-05 , -1.34e-05 , 0.000677 , 0.000541 , 0.000417 },
+{ -0.00102 , -0.000594 , -0.000451 , -0.000547 , -0.000505 , -0.000739 , 0.000298 , 0.000266 , 0.000262 , 0.000761 , 0.000835 , 0.000457 },
+{ -0.000854 , -0.000851 , -0.000773 , -0.000646 , -0.000455 , -0.00103 , -0.000426 , -0.0001 , -0.00087 , -0.000856 , -0.000199 , -0.000902 }
+};
+
   Double_t correctedDCA = 1.;
-  if(pt > 0.) correctedDCA = oldIP - correctionMatrix[PhiBin][zBin]*1.22/(1.+1./(0.57+9.8/(pt*pt)));
+  if(aodEvent->GetRunNumber() <= 246276 && pt > 0.) correctedDCA = oldIP - correctionMatrixEarlyRuns[PhiBin][zBin]*1.22/(1.+1./(0.57+9.8/(pt*pt)));
+  if(aodEvent->GetRunNumber() > 246276 && pt > 0.) correctedDCA = oldIP - correctionMatrixLateRuns[PhiBin][zBin]*1.22/(1.+1./(0.57+9.8/(pt*pt)));
   dcaxy = correctedDCA;
 }
 
@@ -623,29 +676,43 @@ if(!MultSelection){
         if((PassesPionPID(track, pid) || PassesKaonPID(track, pid)) && track->Pt() > 0.5) // To avoid calling the IP calculation for all tracks
         {
           fExtraCuts->GetHFEImpactParameters((AliVTrack *)track,dcaxyD,dcaErr);
-          GetTrackImpactParameter(aodEvent, track, correctedVertex, dcaxyC);
+          //GetTrackImpactParameter(aodEvent, track, correctedVertex, dcaxyC);
           IP = dcaxyD*track->Charge()*TMath::Sign(1.,aodEvent->GetMagneticField());
-          GetCorrectedImpactParameter(track, vtx[2], IPCorrected);
+          GetCorrectedImpactParameter(aodEvent, track, vtx[2], IPCorrected);
           if(PassesPionPID(track, pid))
           {
             if(centrality>=0.0 && centrality<=80.0 && track->Pt()>1.)
             {
-              if(track->Pt()>3. && IsInMisalignedRegion(track, vtx[2])>0) fDCAvsCorrected->Fill(dcaxyD, dcaxyC);
               fDCAPhiZHadrons->Fill(track->Phi(), dcaxyD, vtx[2]+4.5*TMath::Tan(TMath::Pi()/2.-2.*TMath::ATan(TMath::Exp(-track->Eta()))));
-              fDCAPhiZHadronsC->Fill(track->Phi(), dcaxyC, vtx[2]+4.5*TMath::Tan(TMath::Pi()/2.-2.*TMath::ATan(TMath::Exp(-track->Eta()))));
-              fDCAPhiZHadronsC2->Fill(track->Phi(), IPCorrected, vtx[2]+4.5*TMath::Tan(TMath::Pi()/2.-2.*TMath::ATan(TMath::Exp(-track->Eta()))));
-              fDCAPhiZHadrons2nd->Fill(track->Phi(), dcaxyD, vtx[2]+7.*TMath::Tan(TMath::Pi()/2.-2.*TMath::ATan(TMath::Exp(-track->Eta()))));
+              if(aodEvent->GetRunNumber() <= 246276) fDCAPhiZHadronsEarlyRuns->Fill(track->Phi(), dcaxyD, vtx[2]+4.5*TMath::Tan(TMath::Pi()/2.-2.*TMath::ATan(TMath::Exp(-track->Eta()))));
+              else  fDCAPhiZHadronsLateRuns->Fill(track->Phi(), dcaxyD, vtx[2]+4.5*TMath::Tan(TMath::Pi()/2.-2.*TMath::ATan(TMath::Exp(-track->Eta()))));
+              fDCAPhiZHadronsC->Fill(track->Phi(), IPCorrected, vtx[2]+4.5*TMath::Tan(TMath::Pi()/2.-2.*TMath::ATan(TMath::Exp(-track->Eta()))));
               if(IsInMisalignedRegion(track, vtx[2])>0)fDCARegionRun->Fill(dcaxyD, IsInMisalignedRegion(track, vtx[2]) ,RunBin);
+              else fDCARegionRun->Fill(dcaxyD, 5 ,RunBin);
             }
-            if(centrality>=0.0 && centrality<=80.0 && track->Pt()>0.5) fpTPhiZHadrons->Fill(track->Phi(), track->Pt(), vtx[2]+7.*TMath::Tan(TMath::Pi()/2.-2.*TMath::ATan(TMath::Exp(-track->Eta()))));
-            if(centrality>=0.0 && centrality<=80.0 && track->Pt()>0.5) fDCAPhipTHadrons->Fill(dcaxyD, track->Phi(), track->Pt());
-            if(centrality>=0.0 && centrality<=80.0 && track->Pt()>0.5) fDCAPhipTHadronsC->Fill(dcaxyC, track->Phi(), track->Pt());
-            if(centrality>=0.0 && centrality<=80.0 && track->Pt()>0.5) fDCAPhipTHadronsC2->Fill(IPCorrected, track->Phi(), track->Pt());
+            if(centrality>=0.0 && centrality<=80.0 && track->Pt()>0.5)
+            {
+              fpTPhiZHadrons->Fill(track->Phi(), track->Pt(), vtx[2]+7.*TMath::Tan(TMath::Pi()/2.-2.*TMath::ATan(TMath::Exp(-track->Eta()))));
+              if(aodEvent->GetRunNumber() <= 246276) fDCAPhipTHadronsEarlyRuns->Fill(dcaxyD, track->Phi(), track->Pt());
+              else  fDCAPhipTHadronsLateRuns->Fill(dcaxyD, track->Phi(), track->Pt());
+              fDCAPhipTHadrons->Fill(dcaxyD, track->Phi(), track->Pt());
+              fDCAPhipTHadronsC->Fill(IPCorrected, track->Phi(), track->Pt());
+            }
             if(centrality>=20.0 && centrality<=50.0) fDCAWErrHadrons->Fill(track->Pt(), IP, dcaxyD/dcaErr);
             fDCAHadronsFineBins->Fill(track->Pt(), IP, centrality);
           }
           if(PassesKaonPID(track, pid))
           {
+            if(centrality>=0.0 && centrality<=80.0 && track->Pt()>1.)
+            {
+              fDCAPhiZKaons->Fill(track->Phi(), dcaxyD, vtx[2]+4.5*TMath::Tan(TMath::Pi()/2.-2.*TMath::ATan(TMath::Exp(-track->Eta()))));
+              fDCAPhiZKaonsC->Fill(track->Phi(), IPCorrected, vtx[2]+4.5*TMath::Tan(TMath::Pi()/2.-2.*TMath::ATan(TMath::Exp(-track->Eta()))));
+            }
+            if(centrality>=0.0 && centrality<=80.0 && track->Pt()>0.5)
+            {
+              fDCAPhipTKaons->Fill(dcaxyD, track->Phi(), track->Pt());
+              fDCAPhipTKaonsC->Fill(IPCorrected, track->Phi(), track->Pt());
+            }
             if(centrality>=20.0 && centrality<=50.0) fDCAKaons->Fill(track->Pt(), IP);
             if(centrality>=20.0 && centrality<=50.0) fDCAWErrKaons->Fill(track->Pt(), IP, dcaxyD/dcaErr);
             fDCAKaonsFineBins->Fill(track->Pt(), IP, centrality);
