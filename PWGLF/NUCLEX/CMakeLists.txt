@@ -91,6 +91,13 @@ set(SRCS
   Utils/NucleiSkimAOD/AliAnalysisTaskNucleiSkimAOD.cxx
   )
 
+if(ROOT_VERSION_MAJOR EQUAL 6)
+	 set(SRCS
+		  ${SRCS}
+				  Hypernuclei/NewHyp3Body/selector/AliSelectorFindableHyperTriton3Body.cxx
+						  )
+	  endif()
+
 # Headers from sources
 string(REPLACE ".cxx" ".h" HDRS "${SRCS}")
 

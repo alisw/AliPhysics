@@ -89,6 +89,11 @@
 #pragma link C++ class AliAnalysisTaskHypertriton3Dev+;
 #pragma link C++ class AliAnalysisTaskHypertriton3AOD+;
 
+/// Hypertriton Selector
+#ifdef __CLING__
+#pragma link C++ class AliSelectorFindableHyperTriton3Body+;
+#endif
+
 /// * VertexerHyp3Body
 #pragma link C++ class AliVertexerHyperTriton3Body+;
 
