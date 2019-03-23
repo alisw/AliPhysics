@@ -54,6 +54,7 @@ set(SRCS
   Hypernuclei/Hyp3Body/AliAnalysisTaskHypertriton3.cxx
   Hypernuclei/Hyp3Body/AliAnalysisTaskHypertriton3Dev.cxx
   Hypernuclei/Hyp3Body/AliAnalysisTaskHypertriton3AOD.cxx
+  Hypernuclei/NewHyp3Body/AliAnalysisTaskHypertriton3New.cxx
   Hypernuclei/Vertexer3Body/AliVertexerHyperTriton3Body.cxx
   Nuclei/Absorption/AliAnalysisTaskDeuteronAbsorption.cxx
   Nuclei/DeltaMasses/AliAnalysisNucleiMass.cxx
@@ -90,6 +91,13 @@ set(SRCS
   Utils/CODEX/AliAnalysisCODEXtask.cxx
   Utils/NucleiSkimAOD/AliAnalysisTaskNucleiSkimAOD.cxx
   )
+
+if(ROOT_VERSION_MAJOR EQUAL 6)
+	 set(SRCS
+		  ${SRCS}
+				  Hypernuclei/NewHyp3Body/selector/AliSelectorFindableHyperTriton3Body.cxx
+						  )
+	  endif()
 
 # Headers from sources
 string(REPLACE ".cxx" ".h" HDRS "${SRCS}")
