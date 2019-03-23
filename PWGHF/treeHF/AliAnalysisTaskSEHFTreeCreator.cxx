@@ -182,6 +182,8 @@ fJetCollArray(),
 fRhoName(),
 fRho(0),
 fRhoVal(0),
+fFillJetConstituents(false),
+fFillPtCorr(false),
 fFillPtUncorr(false),
 fFillArea(true),
 fFillNConstituents(true),
@@ -189,7 +191,8 @@ fFillZLeading(true),
 fFillRadialMoment(true),
 fFillpTD(true),
 fFillMass(true),
-fFillMatchingJetID(false)
+fFillMatchingJetID(false),
+fMinJetPtCorr(0.)
 {
 
 /// Default constructor
@@ -294,6 +297,8 @@ fJetCollArray(),
 fRhoName(),
 fRho(0),
 fRhoVal(0),
+fFillJetConstituents(false),
+fFillPtCorr(false),
 fFillPtUncorr(false),
 fFillArea(true),
 fFillNConstituents(true),
@@ -301,7 +306,8 @@ fFillZLeading(true),
 fFillRadialMoment(true),
 fFillpTD(true),
 fFillMass(true),
-fFillMatchingJetID(false)
+fFillMatchingJetID(false),
+fMinJetPtCorr(0.)
 {
     /// Standard constructor
   
@@ -830,7 +836,10 @@ void AliAnalysisTaskSEHFTreeCreator::UserCreateOutputObjects()
         // Create jet tree handlers and configure them
         fTreeHandlerJet.push_back(new AliJetTreeHandler());
         fTreeHandlerJet.at(i)->SetJetContainer(GetJetContainer(i));
+        fTreeHandlerJet.at(i)->SetMinJetPtCorr(fMinJetPtCorr);
         
+        fTreeHandlerJet.at(i)->SetFillJetConstituents(fFillJetConstituents);
+        fTreeHandlerJet.at(i)->SetFillPtCorr(fFillPtCorr);
         fTreeHandlerJet.at(i)->SetFillPtUncorr(fFillPtUncorr);
         fTreeHandlerJet.at(i)->SetFillArea(fFillArea);
         fTreeHandlerJet.at(i)->SetFillNConstituents(fFillNConstituents);
