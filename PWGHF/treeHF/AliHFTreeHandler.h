@@ -78,7 +78,15 @@ class AliHFTreeHandler : public TObject
     TTree* BuildTreeMCGen(TString name, TString title);
     bool SetMCGenVariables(int runnumber, unsigned int eventID, AliAODMCParticle* mcpart);
 
-    void FillTree() {fTreeVar->Fill(); fCandType=0;} //to be called for each candidate!
+    void FillTree() { //to be called for each candidate!
+      if(fFillOnlySignal && !(fCandType&kSignal)) { //if fill only signal and not signal candidate, do not store 
+        fCandType=0;
+      }
+      else {      
+        fTreeVar->Fill(); 
+        fCandType=0;
+      }
+    } 
     
     //common methods
     void SetOptPID(int PIDopt) {fPidOpt=PIDopt;}
