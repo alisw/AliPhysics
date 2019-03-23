@@ -40,7 +40,7 @@ void AliJRunTable::Init(){
     SetPeriodInformation( kLHC10h, "LHC10h", kPbPb, kRE, 2760, 136851, 139517, "LHC11a10a_bis" );
     SetPeriodInformation( kLHC11h, "LHC11h", kPbPb, kRE, 2760, 167813, 170595, "LHC12a17" );
     SetPeriodInformation( kLHC15o, "LHC15o", kPbPb, kRE, 5020, 244640, 247173, "LHC16g" ); // HIJING MB 16g1
-	SetPeriodInformation( kLHC18r, "LHC18r", kPbPb, kRE, 5020, 297624, 296690, "LHC18r" );
+	SetPeriodInformation( kLHC18r, "LHC18r", kPbPb, kRE, 5020, 296690, 297624, "LHC18r" );
 	SetPeriodInformation( kLHC18q_uncalib, "LHC18q", kPbPb, kRE, 5020, 295581, 296068, "LHC16g" );
 
     //LHC11a
