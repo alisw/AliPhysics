@@ -557,10 +557,15 @@ void AliReducedVarManager::FillEventInfo(BASEEVENT* baseEvent, Float_t* values, 
   values[kVtxYspd]              = event->VertexSPD(1);
   values[kVtxZspd]              = event->VertexSPD(2);
   values[kNVtxSPDContributors]  = event->VertexSPDContributors();
-  
   if(fgUsedVars[kDeltaVtxZ]) values[kDeltaVtxZ] = values[kVtxZ] - values[kVtxZtpc];
   if(fgUsedVars[kDeltaVtxZspd]) values[kDeltaVtxZspd] = values[kVtxZ] - values[kVtxZspd];
-  
+  values[kTPCpileupZAC]         = event->TPCpileupZ();
+  values[kTPCpileupZA]          = event->TPCpileupZ(1);
+  values[kTPCpileupZC]          = event->TPCpileupZ(2);
+  values[kTPCpileupContributorsAC] = event->TPCpileupContributors();
+  values[kTPCpileupContributorsA]  = event->TPCpileupContributors(1);
+  values[kTPCpileupContributorsC]  = event->TPCpileupContributors(2);
+    
   for(Int_t iflag=0;iflag<32;++iflag) 
     values[kNTracksPerTrackingStatus+iflag] = event->TracksPerTrackingFlag(iflag);
   values[kNTracksPerTrackingStatus+kTPCout] = event->TracksWithTPCout();
@@ -2471,7 +2476,13 @@ void AliReducedVarManager::SetDefaultVarNames() {
   fgVariableNames[kVtxXspd]              = "Vtx X SPD";                       fgVariableUnits[kVtxXspd]              = "cm";
   fgVariableNames[kVtxYspd]              = "Vtx Y SPD";                       fgVariableUnits[kVtxYspd]              = "cm";
   fgVariableNames[kVtxZspd]              = "Vtx Z SPD";                       fgVariableUnits[kVtxZspd]              = "cm";
-  fgVariableNames[kDeltaVtxZspd]            = "#Delta Z (global-SPD)";                        fgVariableUnits[kDeltaVtxZspd]            = "cm";
+  fgVariableNames[kDeltaVtxZspd]         = "#Delta Z (global-SPD)";           fgVariableUnits[kDeltaVtxZspd]         = "cm";
+  fgVariableNames[kTPCpileupZAC]         = "TPC pileup Z from A&C sides";     fgVariableUnits[kTPCpileupZAC]         = "cm";
+  fgVariableNames[kTPCpileupZA]          = "TPC pileup Z from A side";        fgVariableUnits[kTPCpileupZA]          = "cm";
+  fgVariableNames[kTPCpileupZC]          = "TPC pileup Z from C side";        fgVariableUnits[kTPCpileupZC]          = "cm";
+  fgVariableNames[kTPCpileupContributorsAC] = "TPC pileup n-contributors from A&C sides"; fgVariableUnits[kTPCpileupContributorsAC] = "";
+  fgVariableNames[kTPCpileupContributorsA]  = "TPC pileup n-contributors from A side"; fgVariableUnits[kTPCpileupContributorsA] = "";
+  fgVariableNames[kTPCpileupContributorsC]  = "TPC pileup n-contributors from C side"; fgVariableUnits[kTPCpileupContributorsC] = "";
   for(Int_t iflag=0; iflag<kNTrackingStatus; ++iflag) {
     fgVariableNames[kNTracksPerTrackingStatus+iflag] = Form("Tracks with %s on", fgkTrackingStatusNames[iflag]); 
     fgVariableUnits[kNTracksPerTrackingStatus+iflag] = ""; 

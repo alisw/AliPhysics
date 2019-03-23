@@ -256,6 +256,12 @@ class AliReducedVarManager : public TObject {
     kVtxYspd,           // vtx Y from spd
     kVtxZspd,           // vtx Z from spd
     kDeltaVtxZspd,         // vtxZ - vtxZspd
+    kTPCpileupZAC,      // TPC pileup event Z from A&C sides  
+    kTPCpileupZA,       // TPC pileup event Z from A side
+    kTPCpileupZC,       // TPC pileup event Z from C side
+    kTPCpileupContributorsAC,    // TPC pileup event contributors from A&C sides
+    kTPCpileupContributorsA,     // TPC pileup event contributors from A side
+    kTPCpileupContributorsC,     // TPC pileup event contributors from C side
     kNTracksPerTrackingStatus,  // number of tracks with a given tracking flag
     kNTracksTPCoutVsITSout=kNTracksPerTrackingStatus+kNTrackingStatus,   //  TPCout/ITSout
     kNTracksTRDoutVsITSout,                              //  TRDout/ITSout
