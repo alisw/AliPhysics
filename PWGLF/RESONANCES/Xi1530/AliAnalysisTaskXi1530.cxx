@@ -23,7 +23,7 @@
 //  author: Bong-Hwi Lim (bong-hwi.lim@cern.ch)
 //        , Beomkyu  KIM (kimb@cern.ch)
 //
-//  Last Modified Date: 2019/03/19
+//  Last Modified Date: 2019/03/24
 //
 ////////////////////////////////////////////////////////////////////////////
 
@@ -904,8 +904,8 @@ Bool_t AliAnalysisTaskXi1530::GoodCascadeSelection() {
             Xicandidate->GetXYZcascade(cX, cY, cZ);
             if (fQA)
                 fHistos->FillTH2("hXi_Rxy", cX, cY);
-            // if(sqrt( pow(cX,2) + pow(cY,2) ) > 100) StandardXi=kFALSE; // NOT
-            // USING
+            if ((sqrt(pow(cX, 2) + pow(cY, 2)) > 12) && fExoticFinder)
+                StandardXi = kFALSE;  // NOT USING in normal mode
 
             // After selection above
             if (StandardXi) {  // Save only the Xi is good candidate
@@ -1200,6 +1200,13 @@ void AliAnalysisTaskXi1530::FillTracks() {
                 AliVertex* XiStarVtx = new AliVertex(PiX, 0, 0);
                 if (!(fXiTrack->PropagateToDCA(XiStarVtx, bField, 3)))
                     continue;
+
+                // Opening Angle - Not using in normal mode
+                if(fExoticFinder){
+                    Double_t angle = temp1.Angle(temp2.Vect());
+                    if (angle < 0.785) // 45 degree
+                        continue;
+                }
 
                 auto sign = kAllType;
                 if ((Xicandidate->Charge() == -1 && track1->Charge() == +1) ||
