@@ -59,7 +59,7 @@ sharedParameters:
 CellEnergy:                                         # Cell Energy correction component
     enabled: false                                  # Whether to enable the task
     createHistos: false                             # Whether the task should create output histograms
-    enableRun2TempCalib: false                      # Whether the temperature calibration should be done for Run2
+    enableNewTempCalib: false                       # Whether the new temperature calibration parmeters should be used (available for Run1 and Run2)
     customRecalibFilePath: ""                       # Full path including .root file for custom recalibration object
     cellsNames:                                     # Names of the cells input objects which should be attached to the correction
         - defaultCells                              # This object is defined above in the cells section of the input objects

@@ -161,6 +161,7 @@ void AliMEStender::UserCreateOutputObjects()
   case AliMESconfigTender::kStandardITSTPCTrackCuts2010:
     lTrackCuts = new AliESDtrackCuts("std10TC", "Standard 2010");
     lTrackCuts = AliESDtrackCuts::GetStandardITSTPCTrackCuts2010(kTRUE,0);
+    // lTrackCuts = AliESDtrackCuts::GetStandardITSTPCTrackCuts2011(kTRUE,0);
     fTrackFilter->AddCuts(lTrackCuts);
     break;
   case AliMESconfigTender::kNoTC:
@@ -267,6 +268,7 @@ void AliMEStender::UserExec(Option_t */*opt*/)
   // TRIGGER SELECTION
   // MB & HM triggers
   Bool_t triggerMB = (inputHandler->IsEventSelected()& AliVEvent::kMB),
+  // Bool_t triggerMB = (inputHandler->IsEventSelected()& AliVEvent::kINT7),
          triggerHM = (inputHandler->IsEventSelected()& AliVEvent::kHighMult);
   if(!triggerHM && !triggerMB){
     AliDebug(2, "Miss trigger");

@@ -103,6 +103,7 @@
 #pragma link C++ class  AliAnalysisTaskFlowITSTPCTOFQCSP+;
 #pragma link C++ class  AliAnalysisTaskHFEIPDistribution+;
 #pragma link C++ class  AliAnalysisTaskHFEBeautyMCTemplates+;
+#pragma link C++ class  AliAnalysisTaskHFEBeautyMCTemplatesRun2+;
 #pragma link C++ class  AliAnalysisTaskHFEIPCorrection+;
 #pragma link C++ class  AliAnalysisTaskHFEMulti+;
 #pragma link C++ class  AliAnalysisTaskHFEMultiplicity+;
@@ -122,6 +123,7 @@
 #pragma link C++ class  AliAnalysisHFETPCTOFNew+;
 #pragma link C++ class  AliAnalysisHFETPCTOFBeauty+;
 #pragma link C++ class  AliAnalysisHFEppTPCTOFBeauty+;
+#pragma link C++ class  AliAnalysisHFEppTPCTOFBeauty5TeVNew+;
 
 #pragma link C++ class  AliAnalysisTaskHFEmultTPCTOF+;
 #endif

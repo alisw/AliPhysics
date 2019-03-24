@@ -4588,7 +4588,7 @@ void AliAnalysisTaskLambdaOverK0sJets::UserExec(Option_t *)
         if ( ( p0->GetStatus() == 21 ) ||
 	     ( (p0->GetPdgCode() == 443) &&
 	       (p0->GetMother() == -1)   &&
-	       (p0->GetDaughter(0) ==  (iTrkMC+1))) ) {
+	       (p0->GetDaughterLabel(0) ==  (iTrkMC+1))) ) {
 	  fEndOfHijingEvent = iTrkMC; 
         }
       }
@@ -4657,8 +4657,8 @@ void AliAnalysisTaskLambdaOverK0sJets::UserExec(Option_t *)
       if (iCurrentMother == -1) { lPdgCurrentMother = 0;}
       else { lPdgCurrentMother = pCurrentMother->GetPdgCode(); }
 
-      Int_t id0  = p0->GetDaughter(0);
-      Int_t id1  = p0->GetDaughter(1);
+      Int_t id0  = p0->GetDaughterLabel(0);
+      Int_t id1  = p0->GetDaughterLabel(1);
     
       //if ( id0 ==  id1 ) continue;
       if ( (id0 < 0 || id1 < 0) ||

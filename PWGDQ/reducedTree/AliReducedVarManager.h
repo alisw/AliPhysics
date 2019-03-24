@@ -256,8 +256,15 @@ class AliReducedVarManager : public TObject {
     kVtxYspd,           // vtx Y from spd
     kVtxZspd,           // vtx Z from spd
     kDeltaVtxZspd,         // vtxZ - vtxZspd
+    kTPCpileupZAC,      // TPC pileup event Z from A&C sides  
+    kTPCpileupZA,       // TPC pileup event Z from A side
+    kTPCpileupZC,       // TPC pileup event Z from C side
+    kTPCpileupContributorsAC,    // TPC pileup event contributors from A&C sides
+    kTPCpileupContributorsA,     // TPC pileup event contributors from A side
+    kTPCpileupContributorsC,     // TPC pileup event contributors from C side
     kNTracksPerTrackingStatus,  // number of tracks with a given tracking flag
-    kNTracksTPCoutVsITSout=kNTracksPerTrackingStatus+kNTrackingStatus,   //  TPCout/ITSout
+    kNTracksTPCoutBeforeClean=kNTracksPerTrackingStatus+kNTrackingStatus,      // TPCout tracks before ESD cleaning
+    kNTracksTPCoutVsITSout,                              //  TPCout/ITSout
     kNTracksTRDoutVsITSout,                              //  TRDout/ITSout
     kNTracksTOFoutVsITSout,                              //  TOFout/ITSout
     kNTracksTRDoutVsTPCout,                              //  TRDout/TPCout
@@ -309,6 +316,8 @@ class AliReducedVarManager : public TObject {
     kNtracksEventPlane, // number of tracks used for event plane                
     kNCaloClusters,     // number of calorimeter clusters
     kNTPCclusters,    // number of TPC clusters
+    kNTPCclustersFromPileup,            // number of TPC clusters minus the expected TPC clusters if no pileup is present
+    kNTPCclustersFromPileupRelative,    // number of TPC clusters minus the expected TPC clusters w/o pileup relative to the TPC clusters w/o pileup 
     kMultiplicity,
     kSPDntracklets = kMultiplicity,
     kSPDntracklets08,
@@ -333,8 +342,9 @@ class AliReducedVarManager : public TObject {
     // VZERO event plane related variables
     kVZEROAemptyChannels,  // Number of empty VZERO channels in A side          
     kVZEROCemptyChannels,  // Number of empty VZERO channels in C side          
-    kVZEROChannelMult,                        // VZERO multiplicity per channel           
-    kVZEROChannelEta = kVZEROChannelMult+64,  // pseudo-rapidity of a VZERO channel       
+    kVZEROChannelMult,                        // VZERO multiplicity per channel 
+    kVZEROChannelMultCalib=kVZEROChannelMult+64,                   // VZERO multiplicity per channel calibrated
+    kVZEROChannelEta = kVZEROChannelMultCalib+64,  // pseudo-rapidity of a VZERO channel       
     kVZEROQvecX      = kVZEROChannelEta+64,   // Q-vector components for harmonics 1-6 and  
     kVZEROQvecY      = kVZEROQvecX+6*3,        //  6- n-harmonics; 3- A,C and A&C options   
     kVZEROQvecMag    = kVZEROQvecY+6*3,       // magnitude of the Q vector
@@ -583,7 +593,8 @@ class AliReducedVarManager : public TObject {
     kTRDpidProbabilitiesLQ2D=kTRDpidProbabilitiesLQ1D+2,
     kEMCALmatchedEnergy=kTRDpidProbabilitiesLQ2D+2,         
     kEMCALmatchedClusterId,
-    kEMCALmatchedEOverP,        
+    kEMCALmatchedEOverP,
+    kEMCALmatchedM02,
     // Calorimeter cluster variables --------------------------------------
     kEMCALclusterEnergy,        
     kEMCALclusterDx,            
@@ -707,6 +718,7 @@ class AliReducedVarManager : public TObject {
   static void SetVZEROCalibrationPath(const Char_t* path);
   static void SetCalibrateVZEROqVector(Bool_t option);
   static void SetRecenterVZEROqVector(Bool_t option);
+  static void SetRecenterTPCqVector(Bool_t option);
   static Int_t GetCorrectedMultiplicity( Int_t estimator = kMultiplicity, Int_t correction = 0, Int_t reference = 0, Int_t smearing = 0 );
   
  private:
@@ -765,13 +777,15 @@ class AliReducedVarManager : public TObject {
   static TString fgVZEROCalibrationPath;       // path to the VZERO calibration histograms
   static TProfile2D* fgAvgVZEROChannelMult[64];       // average multiplicity in VZERO channels vs (vtxZ,centSPD)
   static TProfile2D* fgVZEROqVecRecentering[4];       // (vtxZ,centSPD) maps of the VZERO A and C recentering Qvector offsets
+  static TProfile2D* fgTPCqVecRecentering[2];       // (vtxZ,centV0) maps of the TPC recentering Qvector offsets
   static Bool_t fgOptionCalibrateVZEROqVec;
   static Bool_t fgOptionRecenterVZEROqVec;
+  static Bool_t fgOptionRecenterTPCqVec;
   
   AliReducedVarManager(AliReducedVarManager const&);
   AliReducedVarManager& operator=(AliReducedVarManager const&);  
   
-  ClassDef(AliReducedVarManager, 6);
+  ClassDef(AliReducedVarManager, 7);
 };
 
 #endif

@@ -24,7 +24,8 @@ AliFemtoDreamEvent::AliFemtoDreamEvent()
       fzVtxSPD(0),
       fBField(-99),
       fSPDMult(0),
-      fNSPDCluster(0),
+      fNSPDClusterLy0(0),
+      fNSPDClusterLy1(0),
       fRefMult08(0),
       fV0AMult(0),
       fV0CMult(0),
@@ -52,7 +53,8 @@ AliFemtoDreamEvent::AliFemtoDreamEvent(bool mvPileUp, bool EvtCutQA,
       fzVtxSPD(0),
       fBField(-99),
       fSPDMult(0),
-      fNSPDCluster(0),
+      fNSPDClusterLy0(0),
+      fNSPDClusterLy1(0),
       fRefMult08(0),
       fV0AMult(0),
       fV0CMult(0),
@@ -113,7 +115,8 @@ AliFemtoDreamEvent &AliFemtoDreamEvent::operator=(
   fzVtxSPD = obj.fzVtxSPD;
   fBField = obj.fBField;
   fSPDMult = obj.fSPDMult;
-  fNSPDCluster = obj.fNSPDCluster;
+  fNSPDClusterLy0 = obj.fNSPDClusterLy0;
+  fNSPDClusterLy1 = obj.fNSPDClusterLy1;
   fRefMult08 = obj.fRefMult08;
   fV0AMult = obj.fV0AMult;
   fV0CMult = obj.fV0CMult;
@@ -159,7 +162,8 @@ void AliFemtoDreamEvent::SetEvent(AliAODEvent *evt) {
     this->fPassAliEvtSelection = false;
   }
   this->fSPDMult = CalculateITSMultiplicity(evt);
-  this->fNSPDCluster = evt->GetMultiplicity()->GetNumberOfSPDClusters();
+  this->fNSPDClusterLy0 = evt->GetNumberOfITSClusters(0);
+  this->fNSPDClusterLy1 = evt->GetNumberOfITSClusters(1);
   this->fV0AMult = vZERO->GetMTotV0A();
   this->fV0CMult = vZERO->GetMTotV0C();
   this->fRefMult08 = header->GetRefMultiplicityComb08();
@@ -211,10 +215,14 @@ void AliFemtoDreamEvent::SetEvent(AliESDEvent *evt) {
   //!to do: Check event multiplicity estimation!
   if (evt->GetMultiplicity()) {
     this->fSPDMult = evt->GetMultiplicity()->GetNumberOfTracklets();
-    this->fNSPDCluster = evt->GetMultiplicity()->GetNumberOfITSClusters(0, 1);
+    this->fNSPDClusterLy0 = evt->GetMultiplicity()->GetNumberOfITSClusters(0,
+                                                                           0);
+    this->fNSPDClusterLy1 = evt->GetMultiplicity()->GetNumberOfITSClusters(1,
+                                                                           1);
   } else {
     this->fSPDMult = evt->GetNumberOfITSClusters(1);
-    this->fNSPDCluster = 0;
+    this->fNSPDClusterLy0 = 0;
+    this->fNSPDClusterLy1 = 0;
   }
   this->fRefMult08 = AliESDtrackCuts::GetReferenceMultiplicity(
       evt, AliESDtrackCuts::kTrackletsITSTPC, 0.8, 0);
@@ -274,13 +282,14 @@ int AliFemtoDreamEvent::GetMultiplicity() {
 double AliFemtoDreamEvent::CalculateSphericityEvent(AliAODEvent *evt) {
 //Initializing
   double ptTot = 0.;
-  double s00 = 0.; //elements of the sphericity matrix taken form EPJC72:2124
+  double s00 = 0.;  //elements of the sphericity matrix taken form EPJC72:2124
   double s01 = 0.;
   double s10 = 0.;
   double s11 = 0.;
 
-  int  numOfTracks = evt->GetNumberOfTracks();
-  if(numOfTracks<3) return -9999.;
+  int numOfTracks = evt->GetNumberOfTracks();
+  if (numOfTracks < 3)
+    return -9999.;
 
   int nTracks = 0;
   for (int iTrack = 0; iTrack < numOfTracks; iTrack++) {
@@ -293,42 +302,41 @@ double AliFemtoDreamEvent::CalculateSphericityEvent(AliAODEvent *evt) {
     double pz = aodtrack->Pz();
     double eta = aodtrack->Eta();
 
-    ptTot +=pt;
+    ptTot += pt;
 
-    s00 +=px*px/pt;
-    s01 +=px*py/pt;
-    s10  =s01;
-    s11 +=py*py/pt;
+    s00 += px * px / pt;
+    s01 += px * py / pt;
+    s10 = s01;
+    s11 += py * py / pt;
     nTracks++;
   }
 
   //normalize to total Pt to obtain a linear form:
-  if(ptTot == 0.) return -9999.;
+  if (ptTot == 0.)
+    return -9999.;
   s00 /= ptTot;
   s11 /= ptTot;
   s10 /= ptTot;
 
   //Calculate the trace of the sphericity matrix:
-  double T = s00+s11;
+  double T = s00 + s11;
   //Calculate the determinant of the sphericity matrix:
-  double D = s00*s11 - s10*s10;//S10 = S01
+  double D = s00 * s11 - s10 * s10;  //S10 = S01
 
   //Calculate the eigenvalues of the sphericity matrix:
-  double lambda1 = 0.5*(T + std::sqrt(T*T - 4.*D));
-  double lambda2 = 0.5*(T - std::sqrt(T*T - 4.*D));
+  double lambda1 = 0.5 * (T + std::sqrt(T * T - 4. * D));
+  double lambda2 = 0.5 * (T - std::sqrt(T * T - 4. * D));
 
-  if((lambda1 + lambda2) == 0.) return -9999.;
+  if ((lambda1 + lambda2) == 0.)
+    return -9999.;
 
   double spt = -1.;
 
-  if(lambda2>lambda1)
-    {
-      spt = 2.*lambda1/(lambda1+lambda2);
-    }
-  else
-    {
-      spt = 2.*lambda2/(lambda1+lambda2);
-    }
+  if (lambda2 > lambda1) {
+    spt = 2. * lambda1 / (lambda1 + lambda2);
+  } else {
+    spt = 2. * lambda2 / (lambda1 + lambda2);
+  }
 
   return spt;
 }

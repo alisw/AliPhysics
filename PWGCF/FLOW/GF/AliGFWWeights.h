@@ -31,6 +31,7 @@ class AliGFWWeights: public TNamed
   void ReadAndMerge(const char *filelinks);
   void SetPtBins(Int_t Nbins, Double_t *bins);
   Long64_t Merge(TCollection *collist);
+  void RebinNUA(Int_t nX=1, Int_t nY=2, Int_t nZ=5);
   private:
   Bool_t fDataFilled;
   Bool_t fMCFilled;

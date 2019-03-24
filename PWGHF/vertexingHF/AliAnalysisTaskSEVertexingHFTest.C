@@ -35,7 +35,7 @@ void AliAnalysisTaskSEVertexingHFTest()
     //Fetch files with AliEn :
     const char *collectionfile = "Collection.xml";
     TGrid::Connect("alien://") ;
-    TAlienCollection *coll   = TAlienCollection::Open(collectionfile);
+    TGridCollection *coll   = gGrid->OpenCollection(collectionfile);
     if(inputAOD) { // input AOD
       chain = new TChain("aodTree");
       while(coll->Next()) chain->Add(coll->GetTURL(""));

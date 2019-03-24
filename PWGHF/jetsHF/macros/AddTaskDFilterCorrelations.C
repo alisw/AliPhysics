@@ -1,5 +1,5 @@
 AliAnalysisTaskDJetCorrelations *AddTaskDFilterCorrelations(
-  AliAnalysisTaskSEDmesonsFilterCJ::ECandidateType cand = AliAnalysisTaskSEDmesonsFilterCJ::kDstartoKpipi,
+  AliAnalysisTaskDJetCorrelations::ECandidateType cand = AliAnalysisTaskDJetCorrelations::kDstartoKpipi,
   TString filename = "DStartoKpipiCuts.root",
   Bool_t theMCon = kFALSE,
   Bool_t reco = kTRUE /*must be true if theMCon is false*/,
@@ -91,22 +91,13 @@ AliAnalysisTaskDJetCorrelations *AddTaskDFilterCorrelations(
   if(!jetArrBkgname.IsNull())
   {
       AliParticleContainer *trackContBkg  = taskCorr->AddParticleContainer(trackArrBkgname);
-      if(CorrMethod == AliAnalysisTaskDJetCorrelations::kResponseMatrix)
-      {
-          trackContBkg->SelectPhysicalPrimaries(kTRUE);
-          trackContBkg->SetParticlePtCut(0);
-      }
+     
       AliJetContainer *jetContBkg = taskCorr->AddJetContainer(jetArrBkgname,cutType,R);
       if(jetContBkg) {
           jetContBkg->ConnectParticleContainer(trackContBkg);
           jetContBkg->SetJetPtCut(jptcut);
           jetContBkg->SetPercAreaCut(percjetareacut);
           jetContBkg->SetRhoName(rhonameBkg);
-          if(CorrMethod == AliAnalysisTaskDJetCorrelations::kResponseMatrix)
-          {
-              jetContBkg->SetIsParticleLevel(kTRUE);
-              jetContBkg->SetMaxTrackPt(1000);
-          }
       }
   }
 

@@ -735,7 +735,7 @@ void AliAnalysisTaskReducedTreeMaker::UserExec(Option_t *option)
   //bz for AliKF
   Double_t bz = InputEvent()->GetMagneticField();
   AliKFParticle::SetField( bz );
-
+  
   //Fill event wise information
   fReducedEvent->ClearEvent();
   FillEventInfo();
@@ -745,7 +745,7 @@ void AliAnalysisTaskReducedTreeMaker::UserExec(Option_t *option)
   if(fFillV0Info && isESD) FillV0PairInfo();
   if(fFillV0Info && isAOD) FillV0PairInfoAOD();
   if(fFillTrackInfo) FillTrackInfo();
-     
+  
   if(fWriteTree) {
     Bool_t writeEvent = kFALSE;
     Int_t nTracks = fReducedEvent->fTracks->GetEntries();
@@ -1198,6 +1198,7 @@ void AliAnalysisTaskReducedTreeMaker::FillEventInfo()
     eventInfo->fNTRDtracks    = esdEvent->GetNumberOfTrdTracks();
     eventInfo->fNTRDtracklets = esdEvent->GetNumberOfTrdTracklets();
     eventInfo->fNTPCclusters  = esdEvent->GetNumberOfTPCClusters();
+    eventInfo->fNtracksTPCout = esdEvent->GetNTPCTrackBeforeClean();
     
     for(Int_t ilayer=0; ilayer<2; ++ilayer)
       eventInfo->fSPDFiredChips[ilayer] = esdEvent->GetMultiplicity()->GetNumberOfFiredChips(ilayer);
@@ -1850,9 +1851,13 @@ void AliAnalysisTaskReducedTreeMaker::FillTrackInfo()
   Bool_t usedForV0[4] = {kFALSE}; 
   Bool_t usedForPureV0[4] = {kFALSE};
   Bool_t usedForV0Or = kFALSE;
+  Float_t pileupTrackArrayP[20000];
+  Float_t pileupTrackArrayM[20000];
+  Int_t pileupCounterP = 0, pileupCounterM = 0;
   for(Int_t itrack=0; itrack<ntracks; ++itrack){
      
     AliVParticle *particle=event->GetTrack(itrack);
+    if(!particle) continue;
     if(isESD) {
       esdTrack=static_cast<AliESDtrack*>(particle);
       trackId = esdTrack->GetID();
@@ -1906,7 +1911,7 @@ void AliAnalysisTaskReducedTreeMaker::FillTrackInfo()
             eventInfo->fNtracksPerTrackingFlag[ibit] += 1;
          }
       }
-      if(status & (AliVTrack::kTPCout)) eventInfo->fNtracksTPCout += 1;
+      if(isAOD && (status & AliVTrack::kTPCout)) eventInfo->fNtracksTPCout += 1;
       
       if(fFillEventPlaneInfo) {
          if(!fFlowTrackFilter ||
@@ -1946,6 +1951,17 @@ void AliAnalysisTaskReducedTreeMaker::FillTrackInfo()
       }
     }
     
+    if((isESD && !esdTrack->IsOn(0x1)) || (!isESD && !aodTrack->IsOn(0x1))) {
+      Float_t dcaXY, dcaZ;
+      if(isESD) esdTrack->GetImpactParameters(dcaXY, dcaZ); 
+      if(!isESD) aodTrack->GetImpactParameters(dcaXY, dcaZ);
+      if(TMath::Abs(dcaXY)<3.0 && TMath::Abs(dcaZ)>4.0) {
+         Double_t tgl = particle->Pz() / particle->Pt();
+         if(tgl > 0.1) pileupTrackArrayP[++pileupCounterP] = (isESD ? esdTrack->GetZ() : aodTrack->GetZ());
+         if(tgl < -0.1) pileupTrackArrayM[++pileupCounterM] = (isESD ? esdTrack->GetZ() : aodTrack->GetZ());
+      }
+    }
+    
     // decide whether to write the track in the tree
     Bool_t writeTrack = kFALSE;
     Bool_t trackFilterDecision = kFALSE;
@@ -1960,8 +1976,7 @@ void AliAnalysisTaskReducedTreeMaker::FillTrackInfo()
     }
     if(usedForV0Or) writeTrack = kTRUE;
     if(!writeTrack) continue;
-    //if(!matchedInTRD && !usedForV0Or && fTrackFilter && !fTrackFilter->IsSelected(particle)) continue;
-
+    
     Bool_t fSelectedTrackIsBaseTrack = IsSelectedTrackRequestedBaseTrack(individualFilterDecisions, usedForV0Or);
     TClonesArray& tracks = (fWriteSecondTrackArray && fSelectedTrackIsBaseTrack) ? *(fReducedEvent->fTracks2) : *(fReducedEvent->fTracks);
     AliReducedBaseTrack* reducedParticle = NULL;
@@ -2158,7 +2173,9 @@ void AliAnalysisTaskReducedTreeMaker::FillTrackInfo()
 
       if(esdTrack->IsEMCAL()) trackInfo->fCaloClusterId = esdTrack->GetEMCALcluster();
       if(esdTrack->IsPHOS()) trackInfo->fCaloClusterId = esdTrack->GetPHOScluster();
-      
+      // NOTE: extrapolation depends on radius and PHOS radius differs slightly from EMCal radius
+      if (esdTrack->IsExtrapolatedToEMCAL()) trackInfo->fMomentumOnCalo = esdTrack->GetTrackPOnEMCal();
+
       Double_t xyz[3], pxpypz[3];
       Double_t covMat[21];
       esdTrack->GetXYZ(xyz);
@@ -2257,7 +2274,9 @@ void AliAnalysisTaskReducedTreeMaker::FillTrackInfo()
       
       if(aodTrack->IsEMCAL()) trackInfo->fCaloClusterId = aodTrack->GetEMCALcluster();
       if(aodTrack->IsPHOS()) trackInfo->fCaloClusterId = aodTrack->GetPHOScluster();
-      
+      // NOTE: extrapolation depends on radius and PHOS radius differs slightly from EMCal radius
+      if (aodTrack->IsExtrapolatedToEMCAL()) trackInfo->fMomentumOnCalo = aodTrack->GetTrackPOnEMCal();
+
       Double_t xyz[3], pxpypz[3];
       Double_t covMat[21];
       aodTrack->GetXYZ(xyz);
@@ -2307,18 +2326,19 @@ void AliAnalysisTaskReducedTreeMaker::FillTrackInfo()
             }
          }
       }
-      
-      
-      
     }  // end if(isAOD)
 
     fReducedEvent->fNtracks[1] += 1;
-  }
+  }  // end loop over tracks
     
   AliReducedEventInfo* eventInfo = NULL; 
   if(fTreeWritingOption==kFullEventsWithBaseTracks || fTreeWritingOption==kFullEventsWithFullTracks) {
      eventInfo = dynamic_cast<AliReducedEventInfo*>(fReducedEvent);
      eventInfo->SetEventPlane(evPlane);
+     eventInfo->fTPCpileupZ[0] = (pileupCounterP>0 ? TMath::Median(pileupCounterP, pileupTrackArrayP) : 0.0);
+     eventInfo->fTPCpileupZ[1] = (pileupCounterM>0 ? -1.0*TMath::Median(pileupCounterM, pileupTrackArrayM) : 0.0);
+     eventInfo->fTPCpileupContributors[0] = pileupCounterP;
+     eventInfo->fTPCpileupContributors[1] = pileupCounterM;
   }
 }
 

@@ -12,11 +12,49 @@
 #include "AliFemtoModelManager.h"
 #include "AliFemtoModelCorrFctn.h"
 
+/// \class AliFemtoModelCorrFctnDEtaDPhiAK
+/// \brief Correlation Function solving problems
+///
 class AliFemtoModelCorrFctnDEtaDPhiAK : public AliFemtoModelCorrFctn {
 public:
 
+  /// Builder-pattern struct
+  struct Params {
+    TString suffix;
+    UInt_t nbins_phi,
+           nbins_eta;
+
+    Params()
+      : suffix("")
+      , nbins_phi(50)
+      , nbins_eta(50)
+      { }
+
+    AliFemtoModelCorrFctnDEtaDPhiAK*
+    into_ptr() const
+      { return new AliFemtoModelCorrFctnDEtaDPhiAK(*this); }
+
+    operator AliFemtoModelCorrFctnDEtaDPhiAK() const
+      { return AliFemtoModelCorrFctnDEtaDPhiAK(*this); }
+
+    AliFemtoModelCorrFctnDEtaDPhiAK
+    into() const
+      { return AliFemtoModelCorrFctnDEtaDPhiAK(*this); }
+
+    #define IMPL_SETTER(__name, __type, __dest) \
+      Params __name(const __type &p) \
+        { Params res(*this); res. __dest = p; return res; }
+
+    IMPL_SETTER(Suffix, char*, suffix);
+    IMPL_SETTER(NBinsPhi, UInt_t, nbins_phi);
+    IMPL_SETTER(NBinsEta, UInt_t, nbins_eta);
+
+    #undef IMPL_SETTER
+  };
+
   /// Construct with name suffix and bin-count
   AliFemtoModelCorrFctnDEtaDPhiAK(const char* suffix, const UInt_t phibins, const UInt_t etabins);
+  AliFemtoModelCorrFctnDEtaDPhiAK(const Params &);
   AliFemtoModelCorrFctnDEtaDPhiAK(const AliFemtoModelCorrFctnDEtaDPhiAK&);
   virtual ~AliFemtoModelCorrFctnDEtaDPhiAK();
 
@@ -60,10 +98,6 @@ protected:
 
   TH2D *fDCosPtNumerator;        //< Numerator of colinearity correlation vs. Pt min
   TH2D *fDCosPtDenominator;      //< Denominator of colinearity correlation vs. Pt min
-
-#ifdef __ROOT__
-  ClassDef(AliFemtoModelCorrFctnDEtaDPhiAK, 1)
-#endif
 };
 
 

@@ -13,8 +13,7 @@
 class TH1F;
 class TH2F;
 class AliVTrack;
-class TParticle;
-class AliAODMCParticle;
+class AliVParticle;
 class AliPIDResponse;
 
 /// \class AliCSPIDCuts
@@ -85,8 +84,7 @@ public:
   virtual Bool_t                     IsTrueTrackAccepted(Int_t itrk);
 
   static AliPID::EParticleType       GetTrueSpecies(AliVTrack *trk);
-  static AliPID::EParticleType       GetTrueSpecies(TParticle *par);
-  static AliPID::EParticleType       GetTrueSpecies(AliAODMCParticle *par);
+  static AliPID::EParticleType       GetTrueSpecies(AliVParticle *par);
 
 private:
   void                               DefineHistograms();

@@ -1,4 +1,4 @@
-AliAnalysisTaskTOFTrigger *AddTaskTOFTrigger(const char *name,Float_t lowpt,Float_t highpt,Float_t highmult,TString trgcls,Int_t nBCs,Bool_t useEVS,Int_t cutSet, Float_t maxErr, const char* suffix = ""){
+AliAnalysisTaskTOFTrigger *AddTaskTOFTrigger(const char *name,Float_t lowpt,Float_t highpt,Float_t highmult,TString trgcls,Int_t nBCs,Bool_t useEVS,Int_t cutSet, Float_t maxErr, Float_t mintof,Float_t maxtof, const char* suffix = ""){
 
   
   //--- get the current analysis manager ---//
@@ -19,7 +19,7 @@ AliAnalysisTaskTOFTrigger *AddTaskTOFTrigger(const char *name,Float_t lowpt,Floa
   combinedName.Form("%s%s",name,suffix);
    	  
   // Create tasks
-  AliAnalysisTaskTOFTrigger *task = new AliAnalysisTaskTOFTrigger(name,lowpt,highpt,highmult,trgcls,nBCs,useEVS,cutSet,maxErr);
+  AliAnalysisTaskTOFTrigger *task = new AliAnalysisTaskTOFTrigger(name,lowpt,highpt,highmult,trgcls,nBCs,useEVS,cutSet,maxErr,mintof,maxtof);
   mgr->AddTask(task);
 
 

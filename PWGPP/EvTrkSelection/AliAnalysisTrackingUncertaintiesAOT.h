@@ -47,7 +47,7 @@ class AliAnalysisTrackingUncertaintiesAOT : public AliAnalysisTaskSE {
   virtual void   UserExec(Option_t *option);
   virtual void   Terminate(Option_t *);
     
-  void           ProcessTracks(AliStack *stack);
+  void           ProcessTracks(AliMCEvent *mcEvent);
     
   void           SetESDtrackCuts(AliESDtrackCuts * trackCuts){fESDtrackCuts = trackCuts;}
   void           InitializeTrackCutHistograms();

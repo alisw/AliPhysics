@@ -751,6 +751,7 @@ void AliFemtoV0TrackCut::SetInvMassReject(AliFemtoV0Type aV0Type, double aInvMas
       break;
 
     case kAll:
+    case kLambdaMC:
     case kAntiLambdaMC:
     case kK0sMC:
       break;
@@ -764,7 +765,10 @@ void AliFemtoV0TrackCut::SetBuildMisIDHistograms(bool aBuild)
   if(fBuildMisIDHistograms) SetDefaultMisIDHistos();
 }
 
-void AliFemtoV0TrackCut::SetMisIDHisto(AliFemtoV0Type aMisIDV0Type, const int& nbins, const float& aInvMassMin, const float& aInvMassMax)
+void AliFemtoV0TrackCut::SetMisIDHisto(AliFemtoV0Type aMisIDV0Type,
+                                       const int& nbins,
+                                       const float& aInvMassMin,
+                                       const float& aInvMassMax)
 {
   TString tTitle1, tTitle2, tTitle3, tTitle;
   tTitle2 = TString("OfMisID");
@@ -782,6 +786,7 @@ void AliFemtoV0TrackCut::SetMisIDHisto(AliFemtoV0Type aMisIDV0Type, const int& n
       break;
 
     case kAll:
+    case kLambdaMC:
     case kAntiLambdaMC:
     case kK0sMC:
       break;
@@ -809,6 +814,7 @@ void AliFemtoV0TrackCut::SetMisIDHisto(AliFemtoV0Type aMisIDV0Type, const int& n
       break;
 
     case kAll:
+    case kLambdaMC:
     case kAntiLambdaMC:
     case kK0sMC:
       break;
@@ -836,10 +842,12 @@ void AliFemtoV0TrackCut::SetDefaultMisIDHistos()
       break;
 
     case kAll:
+    case kLambdaMC:
     case kAntiLambdaMC:
     case kK0sMC:
       break;
   }
+
 }
 
 TObjArray *AliFemtoV0TrackCut::GetMisIDHistos()
@@ -870,6 +878,7 @@ TObjArray *AliFemtoV0TrackCut::GetMisIDHistos()
       break;
 
     case kAll:
+    case kLambdaMC:
     case kAntiLambdaMC:
     case kK0sMC:
       break;

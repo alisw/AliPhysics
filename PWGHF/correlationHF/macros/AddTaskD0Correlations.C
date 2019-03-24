@@ -111,7 +111,6 @@ AliAnalysisTaskSED0Correlations *AddTaskD0Correlations(Bool_t readMC=kFALSE, Boo
 	RDHFD0Corrs->SetMaxCentrality(maxC);
       }
       if(flagAOD049)RDHFD0Corrs->SetUseAOD049(kTRUE);
-      RDHFD0Corrs->SetUseCentrality(AliRDHFCuts::kCentV0M);
     }
   }
   else {
@@ -123,7 +122,7 @@ AliAnalysisTaskSED0Correlations *AddTaskD0Correlations(Bool_t readMC=kFALSE, Boo
     if(flagAOD049)RDHFD0Corrs->SetUseAOD049(kTRUE);
     if(minC!=0 || maxC!=0) { //if centrality 0 and 0 leave the values in the cut object
       RDHFD0Corrs->SetMinCentrality(minC);
-      RDHFD0Corrs->SetMaxCentrality(maxC);
+      RDHFD0Corrs->SetMaxCentrality(maxC); //****you need to define the estimator in the cut file, though!!!****
     } 
   }
 

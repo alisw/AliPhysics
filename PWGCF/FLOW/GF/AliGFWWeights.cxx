@@ -117,6 +117,14 @@ void AliGFWWeights::MCToEfficiency() {
   };
   fW_mcgen->Clear();
 };
+void AliGFWWeights::RebinNUA(Int_t nX, Int_t nY, Int_t nZ) {
+  if(fW_data->GetEntries()<1) return;
+  for(Int_t i=0;i<fW_data->GetEntries();i++) {
+    ((TH3D*)fW_data->At(i))->RebinX(nX);
+    ((TH3D*)fW_data->At(i))->RebinY(nY);
+    ((TH3D*)fW_data->At(i))->RebinZ(nZ);
+  };
+};
 void AliGFWWeights::CreateNUA(Bool_t IntegrateOverCentAndPt) {
   if(!IntegrateOverCentAndPt) {
     printf("Method is outdated! NUA is integrated over centrality and pT. Quit now, or the behaviour will be bad\n");

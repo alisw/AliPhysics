@@ -4647,8 +4647,8 @@ Bool_t AliAnalysisTaskPHOSPi0EtaToGammaGamma::Are2GammasInPHOSAcceptance(Int_t i
   if(!fMCArrayAOD) return kFALSE;
   AliAODMCParticle *p = (AliAODMCParticle*)fMCArrayAOD->At(id);
  
-  Int_t id0 = p->GetDaughter(0);
-  Int_t id1 = p->GetDaughter(1);
+  Int_t id0 = p->GetDaughterLabel(0);
+  Int_t id1 = p->GetDaughterLabel(1);
 
   if(id0 < 0 || id1 < 0) return kFALSE;
  

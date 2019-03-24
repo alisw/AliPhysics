@@ -114,6 +114,7 @@ class AliDielectronSignalMC : public TNamed {
   void SetCheckStackForPDG(Bool_t checkStack=kTRUE)                {fCheckStackForPDG = checkStack;}
   void SetPDGforStack(Int_t stackPDG)                              {fStackPDG = stackPDG;}
   void SetCheckUnlikeSign(Bool_t checkULS)                         {fCheckUnlikeSign = checkULS;}
+  void SetCheckCorrelatedHF(Bool_t checkHFcorr)                    {fCheckCorrelatedHF = checkHFcorr;}
   void SetCheckLikeSign(Bool_t checkLSpp,Bool_t checkLSmm)         {fCheckLikeSignPP = checkLSpp; fCheckLikeSignMM = checkLSmm;}
 
   Int_t GetLegPDG(Int_t branch)                        const {return (branch==1 ? fLeg1 : fLeg2);}
@@ -140,6 +141,7 @@ class AliDielectronSignalMC : public TNamed {
   Bool_t GetCheckUnlikeSign()                          const {return fCheckUnlikeSign;}
   Bool_t GetCheckLikeSignPP()                          const {return fCheckLikeSignPP;}
   Bool_t GetCheckLikeSignMM()                          const {return fCheckLikeSignMM;}
+  Bool_t GetCheckCorrelatedHF()                        const {return fCheckCorrelatedHF;}
 
   static AliDielectronSignalMC* GetJpsiMCsignalDef(EJpsiSignals kSignal);
   static const char* GetJpsiMCsignalDefName(EJpsiSignals kSignal) {return fgkJpsiSignals[kSignal];}
@@ -198,12 +200,14 @@ class AliDielectronSignalMC : public TNamed {
   TMCProcess fGEANTProcess;           // GEANT process ID (see roots TMCProcess)
   EJpsiRadiativ fJpsiRadiative;       // check for J/psi radiative decay
 
+  Bool_t fCheckCorrelatedHF;            // check if tracks are closed first mother for correlated charm/beauty in Hijing
+
   Bool_t fCheckStackForPDG;             // check whole stack to exclude a pdg code to get rid of B feeddown in D sample
   Bool_t fFillPureMCStep;             // check and fill the pure MC step
 
   const static char *fgkJpsiSignals[EJpsiSignals::kEnd];
 
-  ClassDef(AliDielectronSignalMC,4);
+  ClassDef(AliDielectronSignalMC,5);
 };
 
 #endif

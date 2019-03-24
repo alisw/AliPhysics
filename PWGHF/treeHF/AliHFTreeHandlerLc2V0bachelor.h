@@ -15,42 +15,55 @@
 
 #include "AliHFTreeHandler.h"
 
-using std::vector;
-
 class AliHFTreeHandlerLc2V0bachelor : public AliHFTreeHandler
 {
   public:
+
+    //Standard kSelected of AliHFTreeHandler is Lc->pK0s, but keep possibility to enable also Lc->Lpi (and charge conjugate together)
+    enum isLctoLpi {
+      kLctoLpi       = BIT(11),
+      kLcTopotoLpi   = BIT(12),
+      kLcPIDtoLpi    = BIT(13),
+    };
+
     AliHFTreeHandlerLc2V0bachelor();
     AliHFTreeHandlerLc2V0bachelor(int PIDopt);
 
     virtual ~AliHFTreeHandlerLc2V0bachelor();
 
     virtual TTree* BuildTree(TString name = "tree", TString title = "tree");
-    virtual bool SetVariables(AliAODRecoDecayHF* cand, float bfield, int masshypo = 0, AliPIDResponse* pidrespo = 0x0);
-    virtual void FillTree();
+    virtual bool SetVariables(int runnumber, unsigned int eventID, AliAODRecoDecayHF* cand, float bfield, int masshypo = 0, AliPIDResponse* pidrespo = nullptr);
 
     void SetCalcSecoVtx(int opt) {fCalcSecoVtx=opt;}
 
+    void SetIsLctoLpi(int isSeltoLpi, int isSelTopotoLpi, int isSelPIDtoLpi) {
+      if(isSeltoLpi) fCandType |= kLctoLpi;
+      else fCandType &= ~kLctoLpi;
+      if(isSelTopotoLpi) fCandType |= kLcTopotoLpi;
+      else fCandType &= ~kLcTopotoLpi;
+      if(isSelPIDtoLpi) fCandType |= kLcPIDtoLpi;
+      else fCandType &= ~kLcPIDtoLpi;
+    }
+
   private:
 
-    vector<float> fImpParProng[knMaxProngs]; ///vectors of prong impact parameter
-    vector<float> fImpParK0s; /// vector of impact parameter K0s
-    vector<float> fDecayLengthK0s; /// vector of decay length K0s
-    vector<float> fInvMassK0s; /// invariant mass of K0s
-    vector<float> fDCAK0s; ///vector of DCA K0s prongs
-    vector<float> fPtK0s; ///vector of K0s pt
-    vector<float> fEtaK0s; ///vector of K0s pseudorapidity
-    vector<float> fPhiK0s; ///vector of K0s azimuthal angle
-    vector<float> fcTauK0s; /// vector of cTau of the K0s
-    vector<float> fV0PointingAngle; ///vector of K0s pointing angle
-    vector<float> fCosThetaStar; ///vector of cos theta star (proton - Lc)
-    vector<float> fsignd0; //vector of signed d0 proton (different from standard d0)
-    vector<float> fArmqTOverAlpha; ///vector of Armenteros qT/|alpha| of the K0s
+    float fImpParProng[knMaxProngs]; ///prong impact parameter
+    float fImpParK0s; /// impact parameter K0s
+    float fDecayLengthK0s; /// decay length K0s
+    float fInvMassK0s; /// invariant mass of K0s
+    float fDCAK0s; ///DCA K0s prongs
+    float fPtK0s; ///K0s pt
+    float fEtaK0s; ///K0s pseudorapidity
+    float fPhiK0s; ///K0s azimuthal angle
+    float fcTauK0s; /// cTau of the K0s
+    float fV0PointingAngle; ///K0s pointing angle
+    float fCosThetaStar; ///cos theta star (proton - Lc)
+    float fsignd0; //signed d0 proton (different from standard d0)
+    float fArmqTOverAlpha; ///Armenteros qT/|alpha| of the K0s
     int fCalcSecoVtx; /// flag to calculate secondary vertex for Lc (if false, CommonDmesonVarBranches are not filled)
 
     /// \cond CLASSIMP
-    ClassDef(AliHFTreeHandlerLc2V0bachelor, 2); ///
+    ClassDef(AliHFTreeHandlerLc2V0bachelor, 3); ///
     /// \endcond
 };
-
 #endif

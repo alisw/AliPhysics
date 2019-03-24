@@ -45,9 +45,6 @@ public:
   virtual AliFemtoString Report() = 0;              ///< user-written method to return string describing cuts
   virtual TList *ListSettings() = 0;                ///< Return a TList of settings
 
-  virtual void EventBegin(const AliFemtoEvent* aEvent);
-  virtual void EventEnd(const AliFemtoEvent* aEvent);
-
   /// the following allows "back-pointing" from the CorrFctn to the "parent" Analysis
   AliFemtoAnalysis* HbtAnalysis(){return fyAnalysis;};
   void SetAnalysis(AliFemtoAnalysis* aAnalysis);    ///< Set back-pointer to Analysis
@@ -69,9 +66,5 @@ inline AliFemtoPairCut::~AliFemtoPairCut(){ /* no-op */ }
 
 inline void AliFemtoPairCut::SetAnalysis(AliFemtoAnalysis* analysis) { fyAnalysis = analysis; }
 inline AliFemtoPairCut& AliFemtoPairCut::operator=(const AliFemtoPairCut &aCut) { if (this == &aCut) return *this; fyAnalysis = aCut.fyAnalysis; return *this; }
-
-inline void AliFemtoPairCut::EventBegin(const AliFemtoEvent* /* aEvent */ ) { /* no-op */ }
-
-inline void AliFemtoPairCut::EventEnd(const AliFemtoEvent* /* aEvent */ ) { /* no-op */ }
 
 #endif
