@@ -1198,6 +1198,7 @@ void AliAnalysisTaskReducedTreeMaker::FillEventInfo()
     eventInfo->fNTRDtracks    = esdEvent->GetNumberOfTrdTracks();
     eventInfo->fNTRDtracklets = esdEvent->GetNumberOfTrdTracklets();
     eventInfo->fNTPCclusters  = esdEvent->GetNumberOfTPCClusters();
+    eventInfo->fNtracksTPCout = esdEvent->GetNTPCTrackBeforeClean();
     
     for(Int_t ilayer=0; ilayer<2; ++ilayer)
       eventInfo->fSPDFiredChips[ilayer] = esdEvent->GetMultiplicity()->GetNumberOfFiredChips(ilayer);
@@ -1910,7 +1911,7 @@ void AliAnalysisTaskReducedTreeMaker::FillTrackInfo()
             eventInfo->fNtracksPerTrackingFlag[ibit] += 1;
          }
       }
-      if(status & (AliVTrack::kTPCout)) eventInfo->fNtracksTPCout += 1;
+      if(isAOD && (status & AliVTrack::kTPCout)) eventInfo->fNtracksTPCout += 1;
       
       if(fFillEventPlaneInfo) {
          if(!fFlowTrackFilter ||
@@ -1954,7 +1955,7 @@ void AliAnalysisTaskReducedTreeMaker::FillTrackInfo()
       Float_t dcaXY, dcaZ;
       if(isESD) esdTrack->GetImpactParameters(dcaXY, dcaZ); 
       if(!isESD) aodTrack->GetImpactParameters(dcaXY, dcaZ);
-      if(dcaXY<3.0 && dcaZ>4.0) {
+      if(TMath::Abs(dcaXY)<3.0 && TMath::Abs(dcaZ)>4.0) {
          Double_t tgl = particle->Pz() / particle->Pt();
          if(tgl > 0.1) pileupTrackArrayP[++pileupCounterP] = (isESD ? esdTrack->GetZ() : aodTrack->GetZ());
          if(tgl < -0.1) pileupTrackArrayM[++pileupCounterM] = (isESD ? esdTrack->GetZ() : aodTrack->GetZ());
