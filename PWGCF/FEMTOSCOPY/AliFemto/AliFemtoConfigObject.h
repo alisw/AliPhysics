@@ -615,6 +615,9 @@ public:
     IMPL_POP_ITEM(pair_of_floats, pop_range);
     IMPL_POP_ITEM(pair_of_ints, pop_range);
 
+    StringValue_t pop_str(const Key_t &key, const char* _default)
+      { StringValue_t res(_default); pop_and_load(key, res); return res; }
+
   #undef IMPL_POP_ITEM
 
 

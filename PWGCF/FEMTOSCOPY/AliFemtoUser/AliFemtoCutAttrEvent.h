@@ -263,7 +263,8 @@ public:
     }
 
   virtual void AppendSettings(TCollection &) const = 0;
-  virtual ~AliFemtoEventCutAttr() = 0;
+  virtual ~AliFemtoEventCutAttr()
+    {}
 };
 
 

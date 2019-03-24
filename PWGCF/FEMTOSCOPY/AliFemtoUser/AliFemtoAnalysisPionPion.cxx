@@ -49,21 +49,33 @@
 static const double PionMass = 0.13956995;
 static const int UNKNOWN_CHARGE = -9999;
 
+
 template<>
 struct Configuration<AliFemtoAnalysisPionPion> {
-    int foo;
 
-    Configuration()
-    : foo(123)
-    {}
+  TString name;
+  AliFemtoAnalysisPionPion::AnalysisParams analysis_params;
+  AliFemtoAnalysisPionPion::CutParams cut_params;
 
-    Configuration(AliFemtoConfigObject cfg):
-      Configuration()
+  Configuration()
+    : name("PionFemtoAnalysis")
+    , analysis_params()
+    , cut_params()
     {
-      cfg.pop_and_load("foo", foo);
     }
 
-    operator AliFemtoAnalysisPionPion*() const {
+  Configuration(AliFemtoConfigObject cfg)
+    : name(cfg.pop_str("name", "PionFemtoAnalysis"))
+    , analysis_params()
+    , cut_params()
+    {
+    }
+
+  operator AliFemtoAnalysisPionPion*() const
+    {
+      auto *a = new AliFemtoAnalysisPionPion(name.Data(),
+                                             analysis_params,
+                                             cut_params);
       return nullptr;
     }
 };

@@ -889,7 +889,8 @@ public:
     }
 
   virtual void AppendSettings(TCollection &, TString prefix="") const = 0;
-  virtual ~AliFemtoTrackCutAttr() = 0;
+  virtual ~AliFemtoTrackCutAttr()
+    {}
 };
 
 
