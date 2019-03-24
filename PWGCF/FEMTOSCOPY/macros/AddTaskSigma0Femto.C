@@ -1,5 +1,5 @@
 AliAnalysisTaskSE *AddTaskSigma0Femto(bool isMC = false, bool MomRes = false,
-                                      bool etaPhiPlotsAtTPCRadii = false,
+                                      bool fullBlastQA = false,
                                       TString trigger = "kINT7",
                                       const char *cutVariation = "0") {
   TString suffix = TString::Format("%s", cutVariation);
@@ -250,6 +250,36 @@ AliAnalysisTaskSE *AddTaskSigma0Femto(bool isMC = false, bool MomRes = false,
     antiSigmaCuts->SetLightweight(true);
   }
 
+  // vary the sidebands
+  if (suffix == "33") {
+    sigmaCuts->SetSigmaSideband(0.01, 0.075);
+    antiSigmaCuts->SetSigmaSideband(0.01, 0.075);
+  } else if (suffix == "34") {
+    sigmaCuts->SetSigmaSideband(0.01, 0.1);
+    antiSigmaCuts->SetSigmaSideband(0.01, 0.1);
+  } else if (suffix == "35") {
+    sigmaCuts->SetSigmaSideband(0.025, 0.05);
+    antiSigmaCuts->SetSigmaSideband(0.025, 0.05);
+  } else if (suffix == "36") {
+    sigmaCuts->SetSigmaSideband(0.025, 0.075);
+    antiSigmaCuts->SetSigmaSideband(0.025, 0.075);
+  } else if (suffix == "37") {
+    sigmaCuts->SetSigmaSideband(0.025, 0.1);
+    antiSigmaCuts->SetSigmaSideband(0.025, 0.1);
+  } else if (suffix == "38") {
+    sigmaCuts->SetSigmaSideband(0.005, 0.025);
+    antiSigmaCuts->SetSigmaSideband(0.005, 0.025);
+  } else if (suffix == "39") {
+    sigmaCuts->SetSigmaSideband(0.005, 0.05);
+    antiSigmaCuts->SetSigmaSideband(0.005, 0.05);
+  } else if (suffix == "40") {
+    sigmaCuts->SetSigmaSideband(0.005, 0.075);
+    antiSigmaCuts->SetSigmaSideband(0.005, 0.075);
+  } else if (suffix == "41") {
+    sigmaCuts->SetSigmaSideband(0.005, 0.1);
+    antiSigmaCuts->SetSigmaSideband(0.005, 0.1);
+  }
+
   if (trigger == "kINT7") {
     sigmaCuts->SetMultiplicityMode(AliVEvent::kINT7);
     antiSigmaCuts->SetMultiplicityMode(AliVEvent::kINT7);
@@ -386,8 +416,10 @@ AliAnalysisTaskSE *AddTaskSigma0Femto(bool isMC = false, bool MomRes = false,
     config->SetClosePairRejection(closeRejection);
   }
 
-  if (suffix == "0" && etaPhiPlotsAtTPCRadii) {
+  if (suffix == "0" && fullBlastQA) {
     config->SetPhiEtaBinnign(true);
+    config->SetkTBinning(true);
+    config->SetmTBinning(true);
   }
   config->SetdPhidEtaPlots(false);
   config->SetPDGCodes(PDGParticles);
@@ -506,7 +538,7 @@ AliAnalysisTaskSE *AddTaskSigma0Femto(bool isMC = false, bool MomRes = false,
   mgr->ConnectOutput(task, 8, coutputSigmaCuts);
 
   TString AntiSigmaCutsName =
-      Form("%sAntiSigmaCuts%s", addon.Data(), suffix.Data());
+      Form("%sAntiSigma0Cuts%s", addon.Data(), suffix.Data());
   AliAnalysisDataContainer *coutputAntiSigmaCuts = mgr->CreateContainer(
       AntiSigmaCutsName.Data(), TList::Class(),
       AliAnalysisManager::kOutputContainer,
@@ -537,11 +569,11 @@ AliAnalysisTaskSE *AddTaskSigma0Femto(bool isMC = false, bool MomRes = false,
     mgr->ConnectOutput(task, 12, coutputTrkCutsMC);
 
     TString AntiTrkCutsMCName =
-        Form("%sTrackCutsMC%s", addon.Data(), suffix.Data());
-    AliAnalysisDataContainer *coutputAntiTrkCutsMC =
-        mgr->CreateContainer(TrkCutsMCName.Data(), TList::Class(),
-                             AliAnalysisManager::kOutputContainer,
-                             Form("%s:%s", file.Data(), TrkCutsMCName.Data()));
+        Form("%sAntiTrackCutsMC%s", addon.Data(), suffix.Data());
+    AliAnalysisDataContainer *coutputAntiTrkCutsMC = mgr->CreateContainer(
+        AntiTrkCutsMCName.Data(), TList::Class(),
+        AliAnalysisManager::kOutputContainer,
+        Form("%s:%s", file.Data(), AntiTrkCutsMCName.Data()));
     mgr->ConnectOutput(task, 13, coutputAntiTrkCutsMC);
   }
 

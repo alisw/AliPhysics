@@ -104,14 +104,6 @@ ClassImp(AliSigma0PhotonMotherCuts)
       fHistMCTruthPtYHighMult(nullptr),
       fHistMCTruthDaughterPtYHighMult(nullptr),
       fHistMCTruthDaughterPtYAcceptHighMult(nullptr),
-      fHistMCTrueSigmaLambdaPtCorr(nullptr),
-      fHistMCTrueSigmaPhotonPtCorr(nullptr),
-      fHistMCTrueSigmaLambdaPCorr(nullptr),
-      fHistMCTrueSigmaPhotonPCorr(nullptr),
-      fHistMCBkgSigmaLambdaPtCorr(nullptr),
-      fHistMCBkgSigmaPhotonPtCorr(nullptr),
-      fHistMCBkgSigmaLambdaPCorr(nullptr),
-      fHistMCBkgSigmaPhotonPCorr(nullptr),
       fHistMCV0Pt(nullptr),
       fHistMCV0Mass(nullptr),
       fHistMCV0Mother(nullptr),
@@ -216,14 +208,6 @@ AliSigma0PhotonMotherCuts::AliSigma0PhotonMotherCuts(
       fHistMCTruthPtYHighMult(nullptr),
       fHistMCTruthDaughterPtYHighMult(nullptr),
       fHistMCTruthDaughterPtYAcceptHighMult(nullptr),
-      fHistMCTrueSigmaLambdaPtCorr(nullptr),
-      fHistMCTrueSigmaPhotonPtCorr(nullptr),
-      fHistMCTrueSigmaLambdaPCorr(nullptr),
-      fHistMCTrueSigmaPhotonPCorr(nullptr),
-      fHistMCBkgSigmaLambdaPtCorr(nullptr),
-      fHistMCBkgSigmaPhotonPtCorr(nullptr),
-      fHistMCBkgSigmaLambdaPCorr(nullptr),
-      fHistMCBkgSigmaPhotonPCorr(nullptr),
       fHistMCV0Pt(nullptr),
       fHistMCV0Mass(nullptr),
       fHistMCV0Mother(nullptr),
@@ -242,8 +226,7 @@ AliSigma0PhotonMotherCuts &AliSigma0PhotonMotherCuts::operator=(
 //____________________________________________________________________________________________________
 AliSigma0PhotonMotherCuts *AliSigma0PhotonMotherCuts::DefaultCuts() {
   AliSigma0PhotonMotherCuts *photonMotherCuts = new AliSigma0PhotonMotherCuts();
-  photonMotherCuts->SetPhotonMaxPt(2);
-  photonMotherCuts->SetArmenterosCut(0, 0.12, -1, -0.6);
+  photonMotherCuts->SetSigmaMassPt(true);
   return photonMotherCuts;
 }
 
@@ -627,18 +610,6 @@ void AliSigma0PhotonMotherCuts::SigmaToLambdaGamma(
           fHistSigmaPhotonPtCorr->Fill(pT, photon.GetPt());
           fHistSigmaLambdaPCorr->Fill(sigma.GetP(), lambda.GetP());
           fHistSigmaPhotonPCorr->Fill(sigma.GetP(), photon.GetP());
-
-          if (fIsMC && label > 0) {
-            fHistMCTrueSigmaLambdaPtCorr->Fill(pT, lambda.GetPt());
-            fHistMCTrueSigmaPhotonPtCorr->Fill(pT, photon.GetPt());
-            fHistMCTrueSigmaLambdaPCorr->Fill(sigma.GetP(), lambda.GetP());
-            fHistMCTrueSigmaPhotonPCorr->Fill(sigma.GetP(), photon.GetP());
-          } else if (fIsMC && label <= 0) {
-            fHistMCBkgSigmaLambdaPtCorr->Fill(pT, lambda.GetPt());
-            fHistMCBkgSigmaPhotonPtCorr->Fill(pT, photon.GetPt());
-            fHistMCBkgSigmaLambdaPCorr->Fill(sigma.GetP(), lambda.GetP());
-            fHistMCBkgSigmaPhotonPCorr->Fill(sigma.GetP(), photon.GetP());
-          }
         }
         ++nSigma;
       }
@@ -937,26 +908,29 @@ void AliSigma0PhotonMotherCuts::ProcessMC() const {
     if (TMath::Abs(mcParticle->Y()) <= fRapidityMax) {
       fHistMCTruthPt->Fill(mcParticle->Pt());
     }
-    if (multBin >= 0 && TMath::Abs(mcParticle->Y()) <= fRapidityMax) {
-      fHistMCTruthPtMult[multBin]->Fill(mcParticle->Pt());
-    }
+    if (fIsSpectrumAnalysis) {
+      if (multBin >= 0 && TMath::Abs(mcParticle->Y()) <= fRapidityMax) {
+        fHistMCTruthPtMult[multBin]->Fill(mcParticle->Pt());
+      }
 
-    fHistMCTruthPtY->Fill(mcParticle->Y(), mcParticle->Pt());
-    if (lPercentile < fMCHighMultThreshold) {
-      fHistMCTruthPtYHighMult->Fill(mcParticle->Y(), mcParticle->Pt());
-    }
+      fHistMCTruthPtY->Fill(mcParticle->Y(), mcParticle->Pt());
+      if (lPercentile < fMCHighMultThreshold) {
+        fHistMCTruthPtYHighMult->Fill(mcParticle->Y(), mcParticle->Pt());
+      }
 
-    if (!CheckDaughters(mcParticle)) continue;
-    fHistMCTruthDaughterPtY->Fill(mcParticle->Y(), mcParticle->Pt());
-    if (lPercentile < fMCHighMultThreshold) {
-      fHistMCTruthDaughterPtYHighMult->Fill(mcParticle->Y(), mcParticle->Pt());
-    }
+      if (!CheckDaughters(mcParticle)) continue;
+      fHistMCTruthDaughterPtY->Fill(mcParticle->Y(), mcParticle->Pt());
+      if (lPercentile < fMCHighMultThreshold) {
+        fHistMCTruthDaughterPtYHighMult->Fill(mcParticle->Y(),
+                                              mcParticle->Pt());
+      }
 
-    if (!CheckDaughtersInAcceptance(mcParticle)) continue;
-    fHistMCTruthDaughterPtYAccept->Fill(mcParticle->Y(), mcParticle->Pt());
-    if (lPercentile < fMCHighMultThreshold) {
-      fHistMCTruthDaughterPtYAcceptHighMult->Fill(mcParticle->Y(),
-                                                  mcParticle->Pt());
+      if (!CheckDaughtersInAcceptance(mcParticle)) continue;
+      fHistMCTruthDaughterPtYAccept->Fill(mcParticle->Y(), mcParticle->Pt());
+      if (lPercentile < fMCHighMultThreshold) {
+        fHistMCTruthDaughterPtYAcceptHighMult->Fill(mcParticle->Y(),
+                                                    mcParticle->Pt());
+      }
     }
   }
 }
@@ -969,8 +943,8 @@ bool AliSigma0PhotonMotherCuts::CheckDaughters(
 
   if (particle->GetNDaughters() != 2) return false;
 
-  for (int daughterIndex = particle->GetFirstDaughter();
-       daughterIndex <= particle->GetLastDaughter(); ++daughterIndex) {
+  for (int daughterIndex = particle->GetDaughterFirst();
+       daughterIndex <= particle->GetDaughterLast(); ++daughterIndex) {
     if (daughterIndex < 0) continue;
     AliMCParticle *tmpDaughter =
         static_cast<AliMCParticle *>(fMCEvent->GetTrack(daughterIndex));
@@ -997,8 +971,8 @@ bool AliSigma0PhotonMotherCuts::CheckDaughtersInAcceptance(
 
   if (particle->GetNDaughters() != 2) return false;
 
-  for (int daughterIndex = particle->GetFirstDaughter();
-       daughterIndex <= particle->GetLastDaughter(); ++daughterIndex) {
+  for (int daughterIndex = particle->GetDaughterFirst();
+       daughterIndex <= particle->GetDaughterLast(); ++daughterIndex) {
     if (daughterIndex < 0) continue;
     AliMCParticle *tmpDaughter =
         static_cast<AliMCParticle *>(fMCEvent->GetTrack(daughterIndex));
@@ -1389,34 +1363,43 @@ void AliSigma0PhotonMotherCuts::InitCutHistograms(TString appendix) {
                               "; #it{p}_{T} (GeV/#it{c}); Entries", 100, 0, 10);
     fHistogramsMC->Add(fHistMCTruthPt);
 
-    for (int i = 0; i < static_cast<int>(multBinsUp.size()); ++i) {
-      fHistMCTruthPtMult[i] =
-          new TH1F(TString::Format("fHistMCTruthPtMult%i", i),
-                   TString::Format(
-                       "V0M: %.2f - %.2f %%; #it{p}_{T} (GeV/#it{c}); Entries",
-                       multBinsLow[i], multBinsUp[i]),
-                   100, 0, 10);
-      fHistogramsMC->Add(fHistMCTruthPtMult[i]);
-    }
+    if (fIsSpectrumAnalysis) {
+      for (int i = 0; i < static_cast<int>(multBinsUp.size()); ++i) {
+        fHistMCTruthPtMult[i] = new TH1F(
+            TString::Format("fHistMCTruthPtMult%i", i),
+            TString::Format(
+                "V0M: %.2f - %.2f %%; #it{p}_{T} (GeV/#it{c}); Entries",
+                multBinsLow[i], multBinsUp[i]),
+            100, 0, 10);
+        fHistogramsMC->Add(fHistMCTruthPtMult[i]);
+      }
 
-    fHistMCTruthPtY =
-        new TH2F("fHistMCTruthPtY", "; y; #it{p}_{T} (GeV/#it{c})", 100, -5, 5,
-                 100, 0, 10);
-    fHistMCTruthDaughterPtY =
-        new TH2F("fHistMCTruthDaughterPtY", "; y; #it{p}_{T} (GeV/#it{c})", 200,
-                 -10, 10, 100, 0, 10);
-    fHistMCTruthDaughterPtYAccept =
-        new TH2F("fHistMCTruthDaughterPtYAccept",
-                 "; y; #it{p}_{T} (GeV/#it{c})", 200, -10, 10, 100, 0, 10);
-    fHistMCTruthPtYHighMult =
-        new TH2F("fHistMCTruthPtYHighMult", "; y; #it{p}_{T} (GeV/#it{c})", 200,
-                 -10, 10, 100, 0, 10);
-    fHistMCTruthDaughterPtYHighMult =
-        new TH2F("fHistMCTruthDaughterPtYHighMult",
-                 "; y; #it{p}_{T} (GeV/#it{c})", 200, -10, 10, 100, 0, 10);
-    fHistMCTruthDaughterPtYAcceptHighMult =
-        new TH2F("fHistMCTruthDaughterPtYAcceptHighMult",
-                 "; y; #it{p}_{T} (GeV/#it{c})", 200, -10, 10, 100, 0, 10);
+      fHistMCTruthPtY =
+          new TH2F("fHistMCTruthPtY", "; y; #it{p}_{T} (GeV/#it{c})", 100, -5,
+                   5, 100, 0, 10);
+      fHistMCTruthDaughterPtY =
+          new TH2F("fHistMCTruthDaughterPtY", "; y; #it{p}_{T} (GeV/#it{c})",
+                   200, -10, 10, 100, 0, 10);
+      fHistMCTruthDaughterPtYAccept =
+          new TH2F("fHistMCTruthDaughterPtYAccept",
+                   "; y; #it{p}_{T} (GeV/#it{c})", 200, -10, 10, 100, 0, 10);
+      fHistMCTruthPtYHighMult =
+          new TH2F("fHistMCTruthPtYHighMult", "; y; #it{p}_{T} (GeV/#it{c})",
+                   200, -10, 10, 100, 0, 10);
+      fHistMCTruthDaughterPtYHighMult =
+          new TH2F("fHistMCTruthDaughterPtYHighMult",
+                   "; y; #it{p}_{T} (GeV/#it{c})", 200, -10, 10, 100, 0, 10);
+      fHistMCTruthDaughterPtYAcceptHighMult =
+          new TH2F("fHistMCTruthDaughterPtYAcceptHighMult",
+                   "; y; #it{p}_{T} (GeV/#it{c})", 200, -10, 10, 100, 0, 10);
+
+      fHistogramsMC->Add(fHistMCTruthPtY);
+      fHistogramsMC->Add(fHistMCTruthDaughterPtY);
+      fHistogramsMC->Add(fHistMCTruthDaughterPtYAccept);
+      fHistogramsMC->Add(fHistMCTruthPtYHighMult);
+      fHistogramsMC->Add(fHistMCTruthDaughterPtYHighMult);
+      fHistogramsMC->Add(fHistMCTruthDaughterPtYAcceptHighMult);
+    }
 
     fHistMCV0Pt = new TH1F("fHistMCV0Pt",
                            "; #it{p}_{T} #Lambda#gamma (GeV/#it{c}); Entries",
@@ -1428,43 +1411,6 @@ void AliSigma0PhotonMotherCuts::InitCutHistograms(TString appendix) {
     fHistogramsMC->Add(fHistMCV0Mass);
 
     if (!fIsLightweight) {
-      fHistMCTrueSigmaLambdaPtCorr =
-          new TH2F("fHistMCTrueSigmaLambdaPtCorr",
-                   "; #Sigma^{0} #it{p}_{T} (GeV/#it{c}; "
-                   "#Lambda #it{p}_{T} (GeV/#it{c}",
-                   250, 0, 10, 250, 0, 10);
-      fHistMCTrueSigmaPhotonPtCorr =
-          new TH2F("fHistMCTrueSigmaPhotonPtCorr",
-                   "; #Sigma^{0} #it{p}_{T} (GeV/#it{c}; "
-                   "#gamma #it{p}_{T} (GeV/#it{c}",
-                   250, 0, 10, 250, 0, 10);
-      fHistMCTrueSigmaLambdaPCorr = new TH2F("fHistMCTrueSigmaLambdaPCorr",
-                                             "; #Sigma^{0} #it{p} (GeV/#it{c}; "
-                                             "#Lambda #it{p} (GeV/#it{c}",
-                                             250, 0, 10, 250, 0, 10);
-      fHistMCTrueSigmaPhotonPCorr = new TH2F("fHistMCTrueSigmaPhotonPCorr",
-                                             "; #Sigma^{0} #it{p} (GeV/#it{c}; "
-                                             "#gamma #it{p} (GeV/#it{c}",
-                                             250, 0, 10, 250, 0, 10);
-      fHistMCBkgSigmaLambdaPtCorr =
-          new TH2F("fHistMCBkgSigmaLambdaPtCorr",
-                   "; #Sigma^{0} #it{p}_{T} (GeV/#it{c}; "
-                   "#Lambda #it{p}_{T} (GeV/#it{c}",
-                   250, 0, 10, 250, 0, 10);
-      fHistMCBkgSigmaPhotonPtCorr =
-          new TH2F("fHistMCBkgSigmaPhotonPtCorr",
-                   "; #Sigma^{0} #it{p}_{T} (GeV/#it{c}; "
-                   "#gamma #it{p}_{T} (GeV/#it{c}",
-                   250, 0, 10, 250, 0, 10);
-      fHistMCBkgSigmaLambdaPCorr = new TH2F("fHistMCBkgSigmaLambdaPCorr",
-                                            "; #Sigma^{0} #it{p} (GeV/#it{c}; "
-                                            "#Lambda #it{p} (GeV/#it{c}",
-                                            250, 0, 10, 250, 0, 10);
-      fHistMCBkgSigmaPhotonPCorr = new TH2F("fHistMCBkgSigmaPhotonPCorr",
-                                            "; #Sigma^{0} #it{p} (GeV/#it{c}; "
-                                            "#gamma #it{p} (GeV/#it{c}",
-                                            250, 0, 10, 250, 0, 10);
-
       fHistMCV0Mother =
           new TH2F("fHistMCV0Mother",
                    "; M_{#Lambda#gamma} (GeV/#it{c}^{2}); PDG code mother", 250,
@@ -1478,20 +1424,6 @@ void AliSigma0PhotonMotherCuts::InitCutHistograms(TString appendix) {
                    "; PDG code #Lambda mother; PDG code #gamma mother", 4000, 0,
                    4000, 4000, 0, 4000);
 
-      fHistogramsMC->Add(fHistMCTruthPtY);
-      fHistogramsMC->Add(fHistMCTruthDaughterPtY);
-      fHistogramsMC->Add(fHistMCTruthDaughterPtYAccept);
-      fHistogramsMC->Add(fHistMCTruthPtYHighMult);
-      fHistogramsMC->Add(fHistMCTruthDaughterPtYHighMult);
-      fHistogramsMC->Add(fHistMCTruthDaughterPtYAcceptHighMult);
-      fHistogramsMC->Add(fHistMCTrueSigmaLambdaPtCorr);
-      fHistogramsMC->Add(fHistMCTrueSigmaPhotonPtCorr);
-      fHistogramsMC->Add(fHistMCTrueSigmaLambdaPCorr);
-      fHistogramsMC->Add(fHistMCTrueSigmaPhotonPCorr);
-      fHistogramsMC->Add(fHistMCBkgSigmaLambdaPtCorr);
-      fHistogramsMC->Add(fHistMCBkgSigmaPhotonPtCorr);
-      fHistogramsMC->Add(fHistMCBkgSigmaLambdaPCorr);
-      fHistogramsMC->Add(fHistMCBkgSigmaPhotonPCorr);
       fHistogramsMC->Add(fHistMCV0Mother);
       fHistogramsMC->Add(fHistMCV0Check);
       fHistogramsMC->Add(fHistMCV0MotherCheck);

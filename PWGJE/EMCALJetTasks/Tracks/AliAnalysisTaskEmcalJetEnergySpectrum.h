@@ -72,7 +72,7 @@ public:
   void SetRequestTriggerClusters(bool doRequest) { fRequestTriggerClusters = doRequest; }
   void SetCentralityEstimator(const char *centest) { fCentralityEstimator = centest; }
 
-  static AliAnalysisTaskEmcalJetEnergySpectrum *AddTaskJetEnergySpectrum(Bool_t isMC, AliJetContainer::EJetType_t jettype, double radius, const char *namepartcont, const char *trigger, const char *suffix = "");
+  static AliAnalysisTaskEmcalJetEnergySpectrum *AddTaskJetEnergySpectrum(Bool_t isMC, AliJetContainer::EJetType_t jettype, AliJetContainer::ERecoScheme_t recoscheme, double radius, const char *namepartcont, const char *trigger, const char *suffix = "");
 
 protected:
   virtual void UserCreateOutputObjects();

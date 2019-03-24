@@ -558,8 +558,8 @@ Bool_t AliAnalysisTaskGFWFlow::AcceptParticle(AliVParticle *mpa) {
   if(!mpa->IsPhysicalPrimary()) return kFALSE;
   if(mpa->Charge()==0) return kFALSE;
   if(TMath::Abs(mpa->Eta())>0.8) return kFALSE;
-  if(mpa->Pt()<0.2) return kFALSE;
-  if(mpa->Pt()>20) return kFALSE;
+  if(mpa->Pt()<0.3) return kFALSE;
+  if(mpa->Pt()>3) return kFALSE;
   return kTRUE;
 };
 Int_t AliAnalysisTaskGFWFlow::GetVtxBit(AliAODEvent *mev) {

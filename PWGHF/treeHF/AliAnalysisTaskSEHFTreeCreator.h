@@ -96,6 +96,9 @@ public:
     void SetPIDoptLc2V0bachelorTree(Int_t opt){fPIDoptLc2V0bachelor=opt;}
     void SetFillMCGenTrees(Bool_t fillMCgen) {fFillMCGenTrees=fillMCgen;}
   
+    void SetMinJetPtCorr(double pt) { fMinJetPtCorr = pt; }
+    void SetFillJetConstituents(bool b) { fFillJetConstituents = b; }
+    void SetFillPtCorr(bool b) { fFillPtCorr = b; }
     void SetFillPtUncorr(bool b) { fFillPtUncorr = b; }
     void SetFillArea(bool b) { fFillArea = b; }
     void SetFillNConstituents(bool b) { fFillNConstituents = b; }
@@ -266,7 +269,13 @@ private:
     AliRhoParameter        *fRho;                                  //!<! event rho
     Double_t                fRhoVal;                               //!<! event rho value
   
-    // Flags specifying what info to fill to the tree
+    // Flags specifying what info to fill to the tree:
+  
+    // If fFillTrackConstituents is true, then *only* store constituent info.
+    bool                    fFillJetConstituents;                  ///< Store pT,eta,phi of all tracks inside the jet
+  
+    // If fFillTrackConstituents is false, then fill according to the below flags.
+    bool                    fFillPtCorr;                           ///< Pt of the jet (GeV/c) (background subtracted)
     bool                    fFillPtUncorr;                         ///< Pt of the jet (GeV/c) (not background subtracted)
     bool                    fFillArea;                             ///< Area
     bool                    fFillNConstituents;                    ///< N constituents
@@ -276,8 +285,10 @@ private:
     bool                    fFillMass;                             ///< Mass
     bool                    fFillMatchingJetID;                    ///< jet matching
   
+    double                  fMinJetPtCorr;                         ///< Min jet Pt (background subtracted) to fill jet into tree
+  
     /// \cond CLASSIMP
-    ClassDef(AliAnalysisTaskSEHFTreeCreator,10);
+    ClassDef(AliAnalysisTaskSEHFTreeCreator,11);
     /// \endcond
 };
 

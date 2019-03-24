@@ -221,7 +221,7 @@ void AliAnalysisTaskCheckGenKine::UserCreateOutputObjects() {
     fNumOfDau[j]->GetYaxis()->SetBinLabel(4,"From transport, decay transport");
     fNumOfDau[j]->GetYaxis()->SetBinLabel(5,"From transport, interaction transport");
     fNumOfDau[j]->GetYaxis()->SetBinLabel(6,"Ohter");
-    fDecLen[j] = new TH2F(TString::Format("hDecLen%s",pname.Data())," ; p_{T} (GeV/c) ; decay length (cm)",100,0.,20.,100,0.,10.);
+    fDecLen[j] = new TH2F(TString::Format("hDecLen%s",pname.Data())," ; p (GeV/c) ; decay length (cm)",100,0.,20.,200,0.,20.);
     fMassDiff[j] = new TH2F(TString::Format("hMassDiff%s",pname.Data())," ; (M_{mother} - M_{daughters})/ M_{mother}",101,-0.0505,0.0505,3,-0.5,2.5);
     fMomDiff[j] = new TH2F(TString::Format("hMomDiff%s",pname.Data())," ; (p_{mother} - p_{daughters})/ p_{mother}",101,-0.0505,0.0505,3,-0.5,2.5);
 
@@ -382,7 +382,7 @@ void AliAnalysisTaskCheckGenKine::UserExec(Option_t *)
     }
     fPrimSec[spId]->Fill(primSec,pt,distToVert);
     Int_t nDau=mcPart->GetNDaughters();
-    Int_t iDau=mcPart->GetFirstDaughter();
+    Int_t iDau=mcPart->GetDaughterFirst();
     if(iDau>=0){
 
       TParticle* firstDau = (TParticle*)mcEvent->Particle(iDau);
@@ -424,7 +424,7 @@ void AliAnalysisTaskCheckGenKine::UserExec(Option_t *)
       Double_t mDiff=(mass-invMass)/mass;
       fMassDiff[spId]->Fill(mDiff,dauOrig);
       fMomDiff[spId]->Fill(pDiff,dauOrig);
-      if(primSec==0) fDecLen[spId]->Fill(pt,decLen);
+      if(primSec==0) fDecLen[spId]->Fill(mom,decLen);
     }
   }
 

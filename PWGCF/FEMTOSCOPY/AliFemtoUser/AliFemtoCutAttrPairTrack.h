@@ -266,6 +266,49 @@ struct PairCutTrackAttrDetaDphiStar {
 };
 
 
+/// \class PairCutTrackAttrDetaDphi
+/// \brief A pair cut which cuts on the Δη Δφ of the pair.
+///
+struct PairCutTrackAttrDetaDphi {
+
+  double min_delta_eta;
+  double min_delta_phi;
+
+  bool Pass(const AliFemtoTrack &track1, const AliFemtoTrack &track2)
+    {
+      const auto
+        &p1 = track1.P(),
+        &p2 = track2.P();
+
+      const double
+        deta = p1.PseudoRapidity() - p1.PseudoRapidity(),
+        dphi = p1.Phi() - p2.Phi();
+
+      return min_delta_eta <= std::abs(deta)
+          && min_delta_phi <= std::abs(dphi);
+    }
+
+  PairCutTrackAttrDetaDphi()
+    : min_delta_eta(0.0)
+    , min_delta_phi(0.0)
+    {}
+
+  PairCutTrackAttrDetaDphi(AliFemtoConfigObject &cfg)
+    : min_delta_eta(cfg.pop_float("min_delta_eta", 0.0))
+    , min_delta_phi(cfg.pop_float("min_delta_phi", 0.0))
+    {}
+
+  void FillConfiguration(AliFemtoConfigObject &cfg) const
+    {
+      cfg.Update(AliFemtoConfigObject::BuildMap()
+                 ("min_delta_eta", min_delta_eta)
+                 ("min_delta_phi", min_delta_phi));
+    }
+
+  virtual ~PairCutTrackAttrDetaDphi() = 0;
+};
+
+
 /// Remove pairs of tracks with the same particle
 struct PairCutTrackAttrSameLabel {
 

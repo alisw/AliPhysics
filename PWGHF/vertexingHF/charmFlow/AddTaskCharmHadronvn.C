@@ -11,9 +11,9 @@ AliAnalysisTaskSECharmHadronvn *AddTaskCharmHadronvn(TString tenderTaskName = "H
                                                     float maxC=50.,
                                                     int calibType=AliHFQnVectorHandler::kQnFrameworkCalib/*kQnCalib*/, 
                                                     TString OADBfilename="", 
-                                                    int normMethod=AliHFQnVectorHandler::kQoverM/*"kQoverQlength","kQoverSqrtM"*/,
-                                                    AliAnalysisTaskSECharmHadronvn::FlowMethod meth=AliAnalysisTaskSECharmHadronvn::kEP/*kSP,kEvShape*/, 
-                                                    AliAnalysisTaskSECharmHadronvn::q2Method q2meth=AliAnalysisTaskSECharmHadronvn::kq2TPC/*kq2PosTPC,kq2NegTPC,kq2VZERO,kq2VZEROA,kq2VZEROC}*/, 
+                                                    int normMethod=AliHFQnVectorHandler::kQoverM/*kQoverQlength,kQoverSqrtM,kNone*/,
+                                                    AliAnalysisTaskSECharmHadronvn::FlowMethod meth=AliAnalysisTaskSECharmHadronvn::kEP/*kSP,kEvShapeEP,kEPVsMass,kEvShapeEPVsMass*/, 
+                                                    AliAnalysisTaskSECharmHadronvn::q2Method q2meth=AliAnalysisTaskSECharmHadronvn::kq2TPC/*kq2PosTPC,kq2NegTPC,kq2VZERO,kq2VZEROA,kq2VZEROC*/, 
                                                     int useAODProtection=1)
 {
     //
@@ -23,19 +23,29 @@ AliAnalysisTaskSECharmHadronvn *AddTaskCharmHadronvn(TString tenderTaskName = "H
     //============================================================================
     AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
     if (!mgr) {
-        ::Error("AddTaskCharmHadronvn", "No analysis manager to connect to.");
+        ::Error("AliAnalysisTaskSECharmHadronvn", "No analysis manager to connect to.");
         return NULL;
     }
-    
+    if (!mgr->GetInputEventHandler()) {
+        ::Error("AliAnalysisTaskSECharmHadronvn", "This task requires an input event handler");
+        return NULL;
+    }
+    TString type = mgr->GetInputEventHandler()->GetDataType(); // can be "ESD" or "AOD"
+    if(type.Contains("ESD")){
+        ::Error("AliAnalysisTaskSECharmHadronvn", "This task requires to run on AOD");
+        return NULL;
+    }
+
     bool stdcuts=kFALSE;
     TFile* filecuts;
     if( filename.EqualTo("") ) {
         stdcuts=kTRUE;
-    } else {
+    } 
+    else {
         filecuts=TFile::Open(filename.Data());
         if(!filecuts ||(filecuts&& !filecuts->IsOpen())){
-        Printf("FATAL: Input file not found : check your cut object");
-        return NULL;
+            Printf("FATAL: Input file not found : check your cut object");
+            return NULL;
         }
     }
     
@@ -128,6 +138,10 @@ AliAnalysisTaskSECharmHadronvn *AddTaskCharmHadronvn(TString tenderTaskName = "H
         suffix+="_EvShapeEP";
     } else if(meth==AliAnalysisTaskSECharmHadronvn::kEvShapeSP) {
         suffix+="_EvShapeSP";
+    } else if(meth==AliAnalysisTaskSECharmHadronvn::kEPVsMass) {
+        suffix+="_EPVsMass";
+    } else if(meth==AliAnalysisTaskSECharmHadronvn::kEvShapeEPVsMass) {
+        suffix+="_EvShapeEPVsMass";
     }
     mgr->AddTask(vnTask);
         

@@ -53,6 +53,7 @@ AliFemtoPair::AliFemtoPair():
   // Default constructor
   SetDefaultHalfFieldMergingPar();
   std::fill_n(fAverageSeparations, 4, NAN);
+  std::fill_n(fFemtoWeightCache, 3, std::make_pair(0, NAN));
 }
 
 AliFemtoPair::AliFemtoPair(AliFemtoParticle* a, AliFemtoParticle* b):
@@ -92,6 +93,7 @@ AliFemtoPair::AliFemtoPair(AliFemtoParticle* a, AliFemtoParticle* b):
   // Construct a pair from two particles
   SetDefaultHalfFieldMergingPar();
   std::fill_n(fAverageSeparations, 4, NAN);
+  std::fill_n(fFemtoWeightCache, 3, std::make_pair(0, NAN));
 }
 
 void AliFemtoPair::SetDefaultHalfFieldMergingPar()

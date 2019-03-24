@@ -7,12 +7,12 @@
 #ifndef ALIFEMTOCONFIGOBJECT_H
 #define ALIFEMTOCONFIGOBJECT_H
 
-#include <Rtypes.h>
 #include <map>
 #include <list>
 #include <string>
 #include <vector>
 #include <ostream>
+#include <utility>
 #include <iostream>
 #include <iterator>
 
@@ -488,6 +488,8 @@ public:
 
   #undef IMPL_GET
 
+  #if __cplusplus < 201103L
+
   #define IMPL_INSERT(__value_type, _ignored, __ignored)       \
     void insert(const Key_t &key, const __value_type &value) { \
       if (!is_map()) { return; }                               \
@@ -498,6 +500,20 @@ public:
       if (!is_map()) { return; }                                 \
       fValueMap[key] = static_cast<__stored_type>(value); }
 
+  #else
+
+  #define IMPL_INSERT(__value_type, _ignored, __ignored)       \
+    void insert(const Key_t &key, const __value_type &value) { \
+      if (!is_map()) { return; }                               \
+      fValueMap.emplace(key, value); }
+
+  #define IMPL_CASTED_INSERT(__value_type, __stored_type, _)     \
+    void insert(const Key_t &key, const __value_type &value) {   \
+      if (!is_map()) { return; }                                 \
+      fValueMap.emplace(key, static_cast<__stored_type>(value)); }
+
+  #endif
+
     FORWARD_STANDARD_TYPES(IMPL_INSERT);
 
     IMPL_INSERT(pair_of_floats, kRANGE, fValueRange);
@@ -505,14 +521,10 @@ public:
     IMPL_INSERT(int, kINT, fValueInt);
     IMPL_INSERT(Float_t, kFLOAT, fValueFloat);
     IMPL_INSERT(TString, kSTRING, fValueString);
+    IMPL_INSERT(AliFemtoConfigObject, void, void);
 
     IMPL_CASTED_INSERT(ULong_t, IntValue_t, 0);
     IMPL_CASTED_INSERT(ULong64_t, IntValue_t, 0);
-
-    void insert(const Key_t &key, const AliFemtoConfigObject &obj) {
-      if (!is_map()) { return; }
-      fValueMap[key] = obj;
-    }
 
   #undef IMPL_INSERT
   #undef IMPL_CASTED_INSERT
@@ -557,7 +569,13 @@ public:
   /// or pointer to ConfigObject constructed from default if not
   /// found or not a struct.
   template <typename ReturnType>
-  AliFemtoConfigObject* pop(const Key_t &key, const ReturnType &default_);
+  AliFemtoConfigObject* pop(const Key_t &key, const ReturnType &default_)
+    {
+      if (auto *obj = pop(key)) {
+        return obj;
+      }
+      return new AliFemtoConfigObject(default_);
+    }
 
 
   /// If object is map and key is present, returns pointer to subobject
@@ -596,6 +614,9 @@ public:
     IMPL_POP_ITEM(RangeValue_t, pop_range);
     IMPL_POP_ITEM(pair_of_floats, pop_range);
     IMPL_POP_ITEM(pair_of_ints, pop_range);
+
+    StringValue_t pop_str(const Key_t &key, const char* _default)
+      { StringValue_t res(_default); pop_and_load(key, res); return res; }
 
   #undef IMPL_POP_ITEM
 
@@ -1294,17 +1315,6 @@ AliFemtoConfigObject& AliFemtoConfigObject::operator=(AliFemtoConfigObject &&rhs
 }
 
 #endif // move-semantics
-
-
-template <typename ReturnType>
-AliFemtoConfigObject* AliFemtoConfigObject::pop(const Key_t &key, const ReturnType &default_)
-{
-  if (auto *obj = pop(key)) {
-    return obj;
-  }
-  return new AliFemtoConfigObject(default_);
-}
-
 
 /*
 template <>

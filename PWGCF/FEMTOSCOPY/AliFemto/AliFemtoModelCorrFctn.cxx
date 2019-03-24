@@ -19,17 +19,17 @@
 #include <TH2D.h>
 
 //_______________________
-AliFemtoModelCorrFctn::AliFemtoModelCorrFctn():
-AliFemtoCorrFctn(),
-  fManager(0),
-  fNumeratorTrue(0),
-  fNumeratorFake(0),
-  fDenominator(0),
-  fNumeratorTrueIdeal(0),
-  fNumeratorFakeIdeal(0),
-  fDenominatorIdeal(0),
-  fQgenQrec(0),
-  fKaonPDG(kFALSE)
+AliFemtoModelCorrFctn::AliFemtoModelCorrFctn()
+  : AliFemtoCorrFctn()
+  , fManager(nullptr)
+  , fNumeratorTrue(nullptr)
+  , fNumeratorFake(nullptr)
+  , fDenominator(nullptr)
+  , fNumeratorTrueIdeal(nullptr)
+  , fNumeratorFakeIdeal(nullptr)
+  , fDenominatorIdeal(nullptr)
+  , fQgenQrec(nullptr)
+  , fKaonPDG(kFALSE)
   , fFillkT(kFALSE)
 {
   // Default constructor
@@ -61,17 +61,20 @@ AliFemtoCorrFctn(),
 
 }
 //_______________________
-AliFemtoModelCorrFctn::AliFemtoModelCorrFctn(const char *title, Int_t aNbins, Double_t aQinvLo, Double_t aQinvHi):
-  AliFemtoCorrFctn(),
-  fManager(0),
-  fNumeratorTrue(0),
-  fNumeratorFake(0),
-  fDenominator(0),
-  fNumeratorTrueIdeal(0),
-  fNumeratorFakeIdeal(0),
-  fDenominatorIdeal(0),
-  fQgenQrec(0),
-  fKaonPDG(kFALSE)
+AliFemtoModelCorrFctn::AliFemtoModelCorrFctn(const char *title,
+                                             Int_t aNbins,
+                                             Double_t aQinvLo,
+                                             Double_t aQinvHi)
+  : AliFemtoCorrFctn()
+  , fManager(nullptr)
+  , fNumeratorTrue(nullptr)
+  , fNumeratorFake(nullptr)
+  , fDenominator(nullptr)
+  , fNumeratorTrueIdeal(nullptr)
+  , fNumeratorFakeIdeal(nullptr)
+  , fDenominatorIdeal(nullptr)
+  , fQgenQrec(nullptr)
+  , fKaonPDG(kFALSE)
   , fFillkT(kFALSE)
 {
   // Normal constructor
@@ -116,27 +119,27 @@ AliFemtoModelCorrFctn::AliFemtoModelCorrFctn(const char *title, Int_t aNbins, Do
   fQgenQrec->Sumw2();
 }
 //_______________________
-AliFemtoModelCorrFctn::AliFemtoModelCorrFctn(const AliFemtoModelCorrFctn& aCorrFctn) :
-  AliFemtoCorrFctn(),
-  fManager(aCorrFctn.fManager),
-  fNumeratorTrue(0),
-  fNumeratorFake(0),
-  fDenominator(0),
-  fNumeratorTrueIdeal(0),
-  fNumeratorFakeIdeal(0),
-  fDenominatorIdeal(0),
-  fQgenQrec(0),
-  fKaonPDG(aCorrFctn.fKaonPDG)
+AliFemtoModelCorrFctn::AliFemtoModelCorrFctn(const AliFemtoModelCorrFctn& aCorrFctn)
+  : AliFemtoCorrFctn(aCorrFctn)
+  , fManager(aCorrFctn.fManager)
+  , fNumeratorTrue(nullptr)
+  , fNumeratorFake(nullptr)
+  , fDenominator(nullptr)
+  , fNumeratorTrueIdeal(nullptr)
+  , fNumeratorFakeIdeal(nullptr)
+  , fDenominatorIdeal(nullptr)
+  , fQgenQrec(nullptr)
+  , fKaonPDG(aCorrFctn.fKaonPDG)
   , fFillkT(aCorrFctn.fFillkT)
 {
   // Copy constructor
-  fNumeratorTrue = new TH1D(*(aCorrFctn.fNumeratorTrue));
-  fNumeratorFake = new TH1D(*(aCorrFctn.fNumeratorFake));
-  fDenominator = new TH1D(*(aCorrFctn.fDenominator));
+  fNumeratorTrue = new TH1D(*aCorrFctn.fNumeratorTrue);
+  fNumeratorFake = new TH1D(*aCorrFctn.fNumeratorFake);
+  fDenominator = new TH1D(*aCorrFctn.fDenominator);
 
-  fNumeratorTrueIdeal = new TH1D(*(aCorrFctn.fNumeratorTrueIdeal));
-  fNumeratorFakeIdeal = new TH1D(*(aCorrFctn.fNumeratorFakeIdeal));
-  fDenominatorIdeal = new TH1D(*(aCorrFctn.fDenominatorIdeal));
+  fNumeratorTrueIdeal = new TH1D(*aCorrFctn.fNumeratorTrueIdeal);
+  fNumeratorFakeIdeal = new TH1D(*aCorrFctn.fNumeratorFakeIdeal);
+  fDenominatorIdeal = new TH1D(*aCorrFctn.fDenominatorIdeal);
 
   fQgenQrec = new TH2D(*aCorrFctn.fQgenQrec);
 

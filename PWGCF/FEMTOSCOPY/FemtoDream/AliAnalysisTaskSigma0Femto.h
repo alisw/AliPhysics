@@ -58,9 +58,6 @@ class AliAnalysisTaskSigma0Femto : public AliAnalysisTaskSE {
   void CastToVector(std::vector<AliSigma0ParticlePhotonMother> &sigmaContainer,
                     std::vector<AliFemtoDreamBasePart> &particles,
                     const AliMCEvent *mcEvent);
-  void CastToVector(std::vector<AliSigma0ParticleV0> &container,
-                    std::vector<AliFemtoDreamBasePart> &particles,
-                    const AliMCEvent *mcEvent);
   void FillTriggerHisto(TH1F *histo);
 
  private:
@@ -76,6 +73,8 @@ class AliAnalysisTaskSigma0Femto : public AliAnalysisTaskSE {
   AliSigma0V0Cuts *fPhotonQA;                 //
   AliSigma0PhotonMotherCuts *fSigmaCuts;      //
   AliSigma0PhotonMotherCuts *fAntiSigmaCuts;  //
+
+  TRandom3 *fRandom;  //!
 
   AliFemtoDreamEvent *fEvent;                        //!
   AliFemtoDreamEventCuts *fEvtCuts;                  //
@@ -109,6 +108,6 @@ class AliAnalysisTaskSigma0Femto : public AliAnalysisTaskSE {
   TList *fResultList;              //!
   TList *fResultQAList;            //!
 
-  ClassDef(AliAnalysisTaskSigma0Femto, 14)
+  ClassDef(AliAnalysisTaskSigma0Femto, 15)
 };
 #endif

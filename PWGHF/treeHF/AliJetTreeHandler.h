@@ -56,6 +56,9 @@ class AliJetTreeHandler : public TObject
   
     // Setters
     void SetJetContainer(AliJetContainer* jetCont) { fJetContainer = jetCont; }
+    void SetMinJetPtCorr(double pt) { fMinJetPtCorr = pt; }
+    void SetFillJetConstituents(bool b) { fFillTrackConstituents = b; }
+    void SetFillPtCorr(bool b) { fFillPtCorr = b; }
     void SetFillPtUncorr(bool b) { fFillPtUncorr = b; }
     void SetFillArea(bool b) { fFillArea = b; }
     void SetFillNConstituents(bool b) { fFillNConstituents = b; }
@@ -77,7 +80,13 @@ class AliJetTreeHandler : public TObject
     TTree*                       fTreeVar;                 ///< Tree with compressed jet objects
     AliJetContainer*             fJetContainer;            //!<! Jet container for this tree
   
-    // Flags specifying what info to fill to the tree
+    // Flags specifying what info to fill to the tree:
+  
+    // If fFillTrackConstituents is true, then *only* store constituent info.
+    bool                         fFillTrackConstituents;   ///< Store pT,eta,phi of all tracks inside the jet
+  
+    // If fFillTrackConstituents is false, then fill according to the below flags.
+    bool                         fFillPtCorr;              ///< Pt of the jet (GeV/c) (background subtracted)
     bool                         fFillPtUncorr;            ///< Pt of the jet (GeV/c) (not background subtracted)
     bool                         fFillArea;                ///< Area
     bool                         fFillNConstituents;       ///< N constituents
@@ -86,12 +95,27 @@ class AliJetTreeHandler : public TObject
     bool                         fFillpTD;                 ///< pT,D
     bool                         fFillMass;                ///< Mass
     bool                         fFillMatchingJetID;       ///< jet matching
+  
+    double                       fMinJetPtCorr;            ///< Min jet Pt (background subtracted) to fill jet into tree
 
     // Jet parameters to be stored in the tree.
-    // Each branch in the tree consists of a vector of a given variable,
-    // where the i^th entry in the vector corresponds to the i^th jet.
+    // There are two alternate methods:
+    //   (1) Each branch in the tree consists of a vector of a given variable,
+    //       where fJetIndex[i] stores the number of tracks in jet i, and the remaining
+    //       vectors store a flat list of track quantities for all jets.
+    //   (2) Each branch in the tree consists of a vector of a given variable,
+    //       where the i^th entry in the vector corresponds to the i^th jet.
   
-    // Basic jet quantities (always filled)
+    // (1)
+    // Jet constituent quantities.
+    // Track info saved for all jets in a flat vector, as well as fNTracks specifying what position the jet starts at. In Pb-Pb, we will also save fPtCorr, since there is background subtraction.
+    std::vector<unsigned short int>   fNTracks;                  //!<! Number of tracks in a jet
+    std::vector<float>                fTrackPt;                  //!<! Pt of track
+    std::vector<float>                fTrackEta;                 //!<! Eta of track
+    std::vector<float>                fTrackPhi;                 //!<! Phi of track (0 < phi < 2pi)
+  
+    // (2)
+    // Basic jet quantities
     std::vector<float>           fPtCorr;                  //!<! Pt of the jet after subtracting average background
     std::vector<float>           fEta;                     //!<! Eta of the jet
     std::vector<float>           fPhi;                     //!<! Phi of the jet (0 < phi < 2pi)
@@ -108,10 +132,10 @@ class AliJetTreeHandler : public TObject
     std::vector<float>           fMass;                    //!<! Jet mass (not background subtracted)
 
     // Jet matching
-    std::vector<float>           fMatchedJetID;            //!<! Index of matched jet in the matching container's std::vectors
+    std::vector<short int>       fMatchedJetID;            //!<! Index of matched jet in the matching container's std::vectors
   
   /// \cond CLASSIMP
-  ClassDef(AliJetTreeHandler,1); ///
+  ClassDef(AliJetTreeHandler,2); ///
   /// \endcond
 };
 

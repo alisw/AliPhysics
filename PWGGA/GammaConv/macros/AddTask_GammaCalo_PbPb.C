@@ -36,7 +36,7 @@ void AddTask_GammaCalo_PbPb(
   Bool_t    enableTHnSparse               = kFALSE,   // switch on THNsparse
   Bool_t    enableTriggerMimicking        = kFALSE,   // enable trigger mimicking
   Bool_t    enableHeaderOverlap           = kTRUE,   // enable trigger overlap rejection
-  Float_t   maxFacPtHard                  = 3.,       // maximum factor between hardest jet and ptHard generated
+  TString   settingMaxFacPtHard           = "3.",       // maximum factor between hardest jet and ptHard generated
   Int_t     debugLevel                    = 0,        // introducing debug levels for grid running
   // settings for weights
   // FPTW:fileNamePtWeights, FMUW:fileNameMultWeights, FCEF:fileNameCentFlattening, separate with ;
@@ -99,6 +99,40 @@ void AddTask_GammaCalo_PbPb(
   TString strLocalDebugFlag              = cuts.GetSpecialSettingFromAddConfig(additionalTrainConfig, "LOCALDEBUGFLAG", "", addTaskName);
   if(strLocalDebugFlag.Atoi()>0)
     localDebugFlag = strLocalDebugFlag.Atoi();
+
+  TObjArray *rmaxFacPtHardSetting = settingMaxFacPtHard.Tokenize("_");
+  if(rmaxFacPtHardSetting->GetEntries()<1){cout << "ERROR: AddTask_GammaCalo_PbPb during parsing of settingMaxFacPtHard String '" << settingMaxFacPtHard.Data() << "'" << endl; return;}
+  Bool_t fMinPtHardSet        = kFALSE;
+  Double_t minFacPtHard       = -1;
+  Bool_t fMaxPtHardSet        = kFALSE;
+  Double_t maxFacPtHard       = 100;
+  Bool_t fSingleMaxPtHardSet  = kFALSE;
+  Double_t maxFacPtHardSingle = 100;
+  for(Int_t i = 0; i<rmaxFacPtHardSetting->GetEntries() ; i++){
+    TObjString* tempObjStrPtHardSetting     = (TObjString*) rmaxFacPtHardSetting->At(i);
+    TString strTempSetting                  = tempObjStrPtHardSetting->GetString();
+    if(strTempSetting.BeginsWith("MINPTHFAC:")){
+      strTempSetting.Replace(0,10,"");
+      minFacPtHard               = strTempSetting.Atof();
+      cout << "running with min pT hard jet fraction of: " << minFacPtHard << endl;
+      fMinPtHardSet        = kTRUE;
+    } else if(strTempSetting.BeginsWith("MAXPTHFAC:")){
+      strTempSetting.Replace(0,10,"");
+      maxFacPtHard               = strTempSetting.Atof();
+      cout << "running with max pT hard jet fraction of: " << maxFacPtHard << endl;
+      fMaxPtHardSet        = kTRUE;
+    } else if(strTempSetting.BeginsWith("MAXPTHFACSINGLE:")){
+      strTempSetting.Replace(0,16,"");
+      maxFacPtHardSingle         = strTempSetting.Atof();
+      cout << "running with max single particle pT hard fraction of: " << maxFacPtHardSingle << endl;
+      fSingleMaxPtHardSet        = kTRUE;
+    } else if(rmaxFacPtHardSetting->GetEntries()==1 && strTempSetting.Atof()>0){
+      maxFacPtHard               = strTempSetting.Atof();
+      cout << "running with max pT hard jet fraction of: " << maxFacPtHard << endl;
+      fMaxPtHardSet        = kTRUE;
+    }
+  }
+
 
   Int_t isHeavyIon = 1;
 
@@ -1250,6 +1284,52 @@ void AddTask_GammaCalo_PbPb(
     cuts.AddCutCalo("18983013","1111100057032230000","01631031000000d0"); // 80-90
     cuts.AddCutCalo("16883013","1111100057032230000","01631031000000d0"); // 60-80
 
+  //EG2 + DG2
+  } else if (trainConfig == 710){ // EMCAL + DCal clusters - 20190301
+    cuts.AddCutCalo("1248ea13","411798305k032220000","01631031000000d0"); //
+    cuts.AddCutCalo("1258ea13","411798305k032220000","01631031000000d0"); //
+    cuts.AddCutCalo("1468ea13","411798305k032220000","01631031000000d0"); //
+    cuts.AddCutCalo("1688ea13","411798305k032220000","01631031000000d0"); //
+  } else if (trainConfig == 711){ // EMCAL + DCal clusters - 20190301
+    cuts.AddCutCalo("1018ea13","411798305k0a2220000","01631061000000d0"); //
+    cuts.AddCutCalo("1128ea13","411798305k0b2220000","01631061000000d0"); //
+  //EG1 + DG1
+  } else if (trainConfig == 712){ // EMCAL + DCal clusters - 20190301
+    cuts.AddCutCalo("1248da13","411798305k032220000","01631031000000d0"); //
+    cuts.AddCutCalo("1258da13","411798305k032220000","01631031000000d0"); //
+    cuts.AddCutCalo("1468da13","411798305k032220000","01631031000000d0"); //
+    cuts.AddCutCalo("1688da13","411798305k032220000","01631031000000d0"); //
+  } else if (trainConfig == 713){ // EMCAL + DCal clusters - 20190301
+    cuts.AddCutCalo("1018da13","411798305k0a2220000","01631061000000d0"); //
+    cuts.AddCutCalo("1128da13","411798305k0b2220000","01631061000000d0"); //
+  //EJ1 + DJ1
+  } else if (trainConfig == 714){ // EMCAL + DCal clusters - 20190301
+    cuts.AddCutCalo("1249ba13","411798305k032220000","01631031000000d0"); //
+    cuts.AddCutCalo("1259ba13","411798305k032220000","01631031000000d0"); //
+    cuts.AddCutCalo("1469ba13","411798305k032220000","01631031000000d0"); //
+    cuts.AddCutCalo("1689ba13","411798305k032220000","01631031000000d0"); //
+  } else if (trainConfig == 715){ // EMCAL + DCal clusters - 20190301
+    cuts.AddCutCalo("1019ba13","411798305k0a2220000","01631061000000d0"); //
+    cuts.AddCutCalo("1129ba13","411798305k0b2220000","01631061000000d0"); //
+  //EJ2 + DJ2
+  } else if (trainConfig == 716){ // EMCAL + DCal clusters - 20190301
+    cuts.AddCutCalo("1249ca13","411798305k032220000","01631031000000d0"); //
+    cuts.AddCutCalo("1259ca13","411798305k032220000","01631031000000d0"); //
+    cuts.AddCutCalo("1469ca13","411798305k032220000","01631031000000d0"); //
+    cuts.AddCutCalo("1689ca13","411798305k032220000","01631031000000d0"); //
+  } else if (trainConfig == 717){ // EMCAL + DCal clusters - 20190301
+    cuts.AddCutCalo("1019ca13","411798305k0a2220000","01631061000000d0"); //
+    cuts.AddCutCalo("1129ca13","411798305k0b2220000","01631061000000d0"); //
+  //EMC7 + DMC7
+  } else if (trainConfig == 718){ // EMCAL + DCal clusters - 20190301
+    cuts.AddCutCalo("12457a13","411798305k032220000","01631031000000d0"); //
+    cuts.AddCutCalo("12557a13","411798305k032220000","01631031000000d0"); //
+    cuts.AddCutCalo("14657a13","411798305k032220000","01631031000000d0"); //
+    cuts.AddCutCalo("16857a13","411798305k032220000","01631031000000d0"); //
+  } else if (trainConfig == 719){ // EMCAL + DCal clusters - 20190301
+    cuts.AddCutCalo("10157a13","411798305k0a2220000","01631061000000d0"); //
+    cuts.AddCutCalo("11257a13","411798305k0b2220000","01631061000000d0"); //
+
   // **********************************************************************************************************
   // ***************************** EMC configurations PbPb run 2 2018 *****************************************
   // **********************************************************************************************************
@@ -1477,6 +1557,12 @@ void AddTask_GammaCalo_PbPb(
 
     analysisEventCuts[i]->SetDebugLevel(0);
     analysisEventCuts[i]->SetLightOutput(enableLightOutput);
+    if(fMinPtHardSet)
+      analysisEventCuts[i]->SetMinFacPtHard(minFacPtHard);
+    if(fMaxPtHardSet)
+      analysisEventCuts[i]->SetMaxFacPtHard(maxFacPtHard);
+    if(fSingleMaxPtHardSet)
+      analysisEventCuts[i]->SetMaxFacPtHardSingleParticle(maxFacPtHardSingle);
     analysisEventCuts[i]->InitializeCutsFromCutString((cuts.GetEventCut(i)).Data());
     EventCutList->Add(analysisEventCuts[i]);
     analysisEventCuts[i]->SetCorrectionTaskSetting(corrTaskSetting);

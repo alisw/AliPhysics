@@ -126,6 +126,11 @@ public:
     
     void InvMassCheckData(int itrack, AliVTrack *track, Double_t *d0z0, Int_t MagSign);
     void InvMassCheckMC(int itrack, AliVTrack *track, Double_t *d0z0, Int_t MagSign);
+    void InvMassCheckMCDenom(AliVTrack *track);
+    
+    void InvMassCheckMCDenomNew(AliVTrack *track);
+    void InvMassCheckMCNew(int itrack, AliVTrack *track, Double_t *d0z0, Int_t MagSign);
+
     //Getters
     AliHFEpid *GetPID() const {return fPID;};
     //______________________________________________________________________
@@ -342,6 +347,10 @@ private:
 	TH2F 		    *hDCAPtProtons;//!
 	TH2F 		    *hDCAPtProtons2;//!
 	TH2F 		    *hDCAPtProtons3;//!
+        TH1F                *hPtElectrons;//!
+        TH1F                *hPtHadrons;//!
+        TH1F                *hDCAElectrons;//!
+        TH1F                *hDCAHadrons;//!
 	TH2F                *hBeautyMotherPt2Daft;//!
 	TH1F                *hBeautyMotherPtbef;//!
 	TH1F                *hBeautyMotherPtaft;//!
@@ -367,6 +376,26 @@ private:
         TH1F				*fMCEnhPtElePi0GeneratedAft;//!
         TH1F				*fMCEnhPtEleEtaGeneratedAft;//!
 
+    TH1F                *fRealInclsElecPt;//!
+    TH1F                *fPtElePi0GeneratedAft_NewNoWeight;//!
+    TH1F                *fPtElePi0EtaGeneratedAft_NewNoWeight;//!
+    TH1F                *fMCMBPtElePi0EtaGeneratedAft_New;//!
+    TH1F                *fMCEnhPtElePi0EtaGeneratedAft_New;//!
+    TH1F                *fMCMBPtElePi0GeneratedAft_New;//!
+    TH1F                *fMCEnhPtElePi0GeneratedAft_New;//!
+    TH1F                *fPtEleEtaGeneratedAft_NewNoWeight;//!
+    TH1F                *fMCMBPtEleEtaGeneratedAft_New;//!
+    TH1F                *fMCEnhPtEleEtaGeneratedAft_New;//!
+    
+    TH1F                *fPtElePi0FoundAft_NewNoWeight;//!
+    TH1F                *fPtElePi0EtaFoundAft_NewNoWeight;//!
+    TH1F                *fMCMBPtElePi0EtaFoundAft_New;//!
+    TH1F                *fMCEnhPtElePi0EtaFoundAft_New;//!
+    TH1F                *fMCMBPtElePi0FoundAft_New;//!
+    TH1F                *fMCEnhPtElePi0FoundAft_New;//!
+    TH1F                *fPtEleEtaFoundAft_NewNoWeight;//!
+    TH1F                *fMCMBPtEleEtaFoundAft_New;//!
+    TH1F                *fMCEnhPtEleEtaFoundAft_New;//!
         
     TH2F				*hCharmMotherPt_vsElecPt;//!
     TH2F				*hElecPt_vsCharmMotherPt;//!

@@ -367,6 +367,8 @@ class AliAnalysisTaskGammaCalo : public AliAnalysisTaskSE {
     TTree**               tTreeSphericity;                                      //! array of trees with sphericity correlations
     Float_t               fRecSph;                                              //! Reconstructed sphericity
     Float_t               fTrueSph;                                             //! True Sphericity
+    Float_t               fPi0Pt;
+    Float_t               fPi0InvMass;
 
     TH1F**                 fHistoPtJet;                                          // Histogram of Jet Pt
     TH1F**                 fHistoJetEta;                                         // Histogram of Jet Eta
@@ -437,6 +439,9 @@ class AliAnalysisTaskGammaCalo : public AliAnalysisTaskSE {
     TH1F**                 fEnergyRatioGamma1Helped;                             // Histogram with energy of photon when it is helped by other particles
     TH1F**                 fEnergyRatioGamma1HelpedinJets;                       // Histogram with energy of photon when it is helped by other particles in jets
     TH2F**                 fClusterEtaPhiJets;                                   // Histogram of phi and eta distribution of clusters in jets
+    TH2F**                 fHistoUnfoldingAsData;                                // Histogram to use for jet pi0 unfolding
+    TH2F**                 fHistoUnfoldingMissed;                                // Histogram to use for jet pi0 unfolding
+    TH2F**                 fHistoUnfoldingReject;                                // Histogram to use for jet pi0 unfolding
 
     vector<Double_t>      fVectorJetPt;                                         // Vector of JetPt
     vector<Double_t>      fVectorJetPx;                                         // Vector of JetPx
@@ -492,13 +497,6 @@ class AliAnalysisTaskGammaCalo : public AliAnalysisTaskSE {
     Float_t               fClusterIsoSumClusterEt;                              //! sum of Et of clusters within R<0.2
     Float_t               fClusterIsoSumTrackEt;                                //! sum of Et of tracks within R<0.2
 
-    //tree for Jet-pi0 correlation studies
-    TTree**               tTreeJetPi0Correlations;
-    Float_t               fJetPt;                                               //! pt of pi0-tagged jet
-    Float_t               fTrueJetPt;                                           //! true pt of pi0-tagged jet
-    Float_t               fPi0Pt;                                               //! pt of pi0 inside jet
-    Float_t               fPi0InvMass;                                          //! mass of pi0 inside jet
-
     // hists for nonlineartiy calibration
 //    TH2F**                fHistoTruePi0NonLinearity;                            //! E_truth/E_rec vs E_rec for TruePi0s
 //    TH2F**                fHistoTrueEtaNonLinearity;                            //! E_truth/E_rec vs E_rec for TrueEtas
@@ -540,7 +538,7 @@ class AliAnalysisTaskGammaCalo : public AliAnalysisTaskSE {
     AliAnalysisTaskGammaCalo(const AliAnalysisTaskGammaCalo&);                  // Prevent copy-construction
     AliAnalysisTaskGammaCalo &operator=(const AliAnalysisTaskGammaCalo&);       // Prevent assignment
 
-    ClassDef(AliAnalysisTaskGammaCalo, 66);
+    ClassDef(AliAnalysisTaskGammaCalo, 67);
 };
 
 #endif

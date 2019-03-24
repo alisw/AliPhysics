@@ -34,6 +34,7 @@ AliEmcalTriggerSimQATask::AliEmcalTriggerSimQATask() : AliAnalysisTaskEmcal(),
 fTriggerPatchesName("EmcalTriggers"),
 fTriggerPatches(0),
 fMinAmplitude(0),
+fMinClusterEnergy(3.),
 fPtBinWidth(0.5),
 fMaxPt(120),
 fEventTriggerBits(0x0),
@@ -48,6 +49,7 @@ AliEmcalTriggerSimQATask::AliEmcalTriggerSimQATask(const char *name) : AliAnalys
 fTriggerPatchesName("EmcalTriggers"),
 fTriggerPatches(0),
 fMinAmplitude(0),
+fMinClusterEnergy(3.),
 fPtBinWidth(0.5),
 fMaxPt(120),
 fEventTriggerBits(0x0),
@@ -90,10 +92,16 @@ void AliEmcalTriggerSimQATask::UserCreateOutputObjects() {
 
   Double_t fMinEta = -0.7;
   Double_t fMaxEta = 0.7;
+  Double_t fMinDeltaEta = -1.4;
+  Double_t fMaxDeltaEta = 1.4;
   Double_t fMinPhi = 0;
   Double_t fMaxPhi = 2*TMath::Pi();
+  Double_t fMinDeltaPhi = -TMath::Pi();
+  Double_t fMaxDeltaPhi = TMath::Pi();
   Int_t nEtaBins = 96;
   Int_t nPhiBins = 208;
+  Int_t nDeltaEtaBins = 192;
+  Int_t nDeltaPhiBins = 416;
 
   Double_t fMinCol = 0;
   Double_t fMaxCol = 48;
@@ -103,8 +111,10 @@ void AliEmcalTriggerSimQATask::UserCreateOutputObjects() {
   Int_t nRow = 104;
 
   Double_t fMaxADCValue = 1024;
-  Double_t nADCBins = 512;
+  Int_t nADCBins = 512;
 
+  Int_t nSmallADCBins = 128;
+  Int_t nSmallEBins   = 100;
 
   // Hist for counting clusters
   fHistManager.CreateTH1("NClusters","NClusters;N_{cluster}; counts",300,0,300);
@@ -150,6 +160,42 @@ void AliEmcalTriggerSimQATask::UserCreateOutputObjects() {
     title = histname + ";#eta_{patch};#phi_{patch};counts";
     fHistManager.CreateTH2(histname.Data(),title.Data(),nEtaBins,fMinEta,fMaxEta,nPhiBins,fMinPhi,fMaxPhi);
   }
+
+  // Patch Cluster Matching Histograms
+  Int_t nTRU = 0;
+  if (!fGeom) {
+    AliError("Geometry not found. Initializing...");
+    fGeom = AliEMCALGeometry::GetInstance(AliEMCALGeometry::GetDefaultGeometryName());
+    if (!fGeom) {
+      AliError("Geometry instance could not be found. Assuming 52 TRU.");
+      nTRU = 52;
+    } else {
+      nTRU = fGeom->GetNTotalTRU();
+    }
+  } else {
+    nTRU = fGeom->GetNTotalTRU();
+  }
+
+  // Patch Cluster Delta Eta, per TRU
+  for (Int_t i = 1; i < kNTriggerTypes; i++) {
+    histname = TString::Format("fHistClusPatchDEtaTRU_Trig_%s",fTriggerNames[i].Data());
+    title = histname + ";#Delta#eta_{cluster-patch};TRU;counts";
+    fHistManager.CreateTH2(histname.Data(),title.Data(),nDeltaEtaBins,fMinDeltaEta,fMaxDeltaEta,nTRU,0,nTRU);
+  }
+  // Patch Cluster Delta Phi, per TRU
+  for (Int_t i = 1; i < kNTriggerTypes; i++) {
+    histname = TString::Format("fHistClusPatchDPhiTRU_Trig_%s",fTriggerNames[i].Data());
+    title = histname + ";#Delta#phi_{cluster-patch};TRU;counts";
+    fHistManager.CreateTH2(histname.Data(),title.Data(),nDeltaPhiBins,fMinDeltaPhi,fMaxDeltaPhi,nTRU,0,nTRU);
+  }
+
+  // Patch Cluster Energy, per TRU
+  for (Int_t i = 1; i < kNTriggerTypes; i++) {
+    histname = TString::Format("fHistClusEnergyPatchAmpTRU_Trig_%s",fTriggerNames[i].Data());
+    title = histname + ";E_{clus} (GeV);E_{patch} (ADC);TRU;counts";
+    fHistManager.CreateTH3(histname.Data(),title.Data(),nSmallEBins,0,fMaxPt,nSmallADCBins,0,fMaxADCValue,nTRU,0,nTRU);
+  }
+
 
   fOutput->Add(fHistManager.GetListOfHistograms());
 }
@@ -219,6 +265,37 @@ AliEmcalTriggerSimQATask * AliEmcalTriggerSimQATask::AddTaskEmcalTriggerSimQA() 
   return eTask;
 }
 
+Int_t AliEmcalTriggerSimQATask::GeneratePatchTriggerBits(AliEMCALTriggerPatchInfo * patch) {
+
+  Int_t fPatchTriggerBits = 0x0;
+
+  Bool_t fIsDCal = patch->IsDCalPHOS();
+  // In Trigger Types array, DCal Triggers are 1 more than the EMCal Trigger type
+  Int_t fTriggerInt = 0;
+
+  if (patch->IsLevel0()) {
+    fTriggerInt = kEL0 + fIsDCal;
+    fPatchTriggerBits |= 0x1 << fTriggerInt;
+  }
+  if (patch->IsGammaHigh()) {
+    fTriggerInt = kEG1 + fIsDCal;
+    fPatchTriggerBits |= 0x1 << fTriggerInt;
+  }
+  if (patch->IsGammaLow()) {
+    fTriggerInt = kEG2 + fIsDCal;
+    fPatchTriggerBits |= 0x1 << fTriggerInt;
+  }
+  if (patch->IsJetHigh()) {
+    fTriggerInt = kEJ1 + fIsDCal;
+    fPatchTriggerBits |= 0x1 << fTriggerInt;
+  }
+  if (patch->IsJetLow()) {
+    fTriggerInt = kEJ2 + fIsDCal;
+    fPatchTriggerBits |= 0x1 << fTriggerInt;
+  }
+  return fPatchTriggerBits;
+}
+
 void AliEmcalTriggerSimQATask::DoPatchLoop() {
   fEventTriggerBits = 0x0; // Reset
   fTriggerPatches = dynamic_cast<TClonesArray*>(InputEvent()->FindListObject(fTriggerPatchesName));
@@ -285,6 +362,7 @@ void AliEmcalTriggerSimQATask::DoClusterLoop() {
   for (Int_t i = 0; i < nClusters; i++) {
     AliVCluster * cluster = (AliVCluster *) clusters->GetAcceptCluster(i);
     if (!cluster) continue;
+    MatchClusterToPatches(cluster);
     for (Int_t j = 0; j < kNTriggerTypes; j++) {
       // Check if this event had this trigger
       if (fTriggerTypes[j] < 0) {
@@ -315,4 +393,88 @@ void AliEmcalTriggerSimQATask::DoClusterLoop() {
     }
   }
 }
+
+void AliEmcalTriggerSimQATask::MatchClusterToPatches(AliVCluster * cluster) {
+  if (!fTriggerPatches) return;
+  if (!fGeom) return; // Can't run this without geometry
+  AliClusterContainer * clusters = GetClusterContainer(0);
+  if (!clusters) {
+    AliError("Cluster Container Not Found");
+    return ;
+  }
+
+  Int_t nPatches = fTriggerPatches->GetEntries();
+  for (Int_t i = 0; i < nPatches; i++) {
+    AliEMCALTriggerPatchInfo* patch = static_cast<AliEMCALTriggerPatchInfo*>(fTriggerPatches->At(i));
+    if (!patch) continue;
+    if (patch->GetADCAmp() < fMinAmplitude) continue;
+    if (cluster->E() < fMinClusterEnergy) continue;
+
+    TLorentzVector vCluster; // Cluster Vector
+    clusters->GetMomentum(vCluster,cluster);
+
+    // Cluster, Patch centers
+    Float_t ClusterPhi = vCluster.Phi();
+    Float_t ClusterEta = vCluster.Eta();
+    Float_t PatchPhi   = patch->GetPhiGeo();
+    Float_t PatchEta   = patch->GetEtaGeo();
+
+    Float_t DeltaPhi = fmod(ClusterPhi - PatchPhi,2*TMath::Pi());
+    if (DeltaPhi >= TMath::Pi()) DeltaPhi -= 2*TMath::Pi();
+    Float_t DeltaEta = ClusterEta - PatchEta;
+
+    // Getting TRU info based on patch corner
+    Int_t PatchRow = patch->GetRowStart();
+    Int_t PatchCol = patch->GetColStart();
+
+    Int_t fAbsId = -1;
+    if (!fGeom->GetAbsFastORIndexFromPositionInEMCAL(PatchCol,PatchRow, fAbsId)) {
+      AliError("Could not find FastOR index from position");
+    }
+    Int_t iTRU = -1;
+    Int_t iADC = -1;
+    if (!fGeom->GetTRUFromAbsFastORIndex(fAbsId, iTRU, iADC)) {
+      AliError(Form("Mapping mismatch: could not find TRU from FastOR Id %d",fAbsId));
+    }
+
+    Int_t iTriggerClass = GeneratePatchTriggerBits(patch);
+
+    if (iTriggerClass != 0) {
+      for (Int_t i = 1; i < kNTriggerTypes; i++) {
+        if (!(iTriggerClass & (0x1 << fTriggerTypes[i]))) continue;
+
+        // Fill These histograms for all pairs:
+        TString histName = TString::Format("fHistClusPatchDEtaTRU_Trig_%s",fTriggerNames[i].Data());
+        fHistManager.FillTH2(histName,DeltaEta,iTRU);
+
+        histName = TString::Format("fHistClusPatchDPhiTRU_Trig_%s",fTriggerNames[i].Data());
+        fHistManager.FillTH2(histName,DeltaPhi,iTRU);
+      }
+    }
+
+    // Match Method 1
+    // Check Delta R between patch cluster
+
+    // Match Method 2
+    // Check if Cluster Center is in Patch
+    Float_t PatchPhiMin = patch->GetPhiMin();
+    Float_t PatchPhiMax = patch->GetPhiMax();
+    Float_t PatchEtaMin = patch->GetEtaMin();
+    Float_t PatchEtaMax = patch->GetEtaMax();
+
+    if ((PatchPhiMin <= ClusterPhi) && (ClusterPhi <= PatchPhiMax)) {
+      if ((PatchEtaMin <= ClusterEta) && (ClusterEta <= PatchEtaMax)) {
+        // Patch Cluster Matched
+        if (iTriggerClass != 0) {
+          for (Int_t i = 1; i < kNTriggerTypes; i++) {
+            if (!(iTriggerClass & (0x1 << fTriggerTypes[i]))) continue;
+            TString sHistName = TString::Format("fHistClusEnergyPatchAmpTRU_Trig_%s",fTriggerNames[i].Data());
+            fHistManager.FillTH3(sHistName,cluster->E(),patch->GetADCAmp(),iTRU);
+          }
+        }
+      }
+    }
+  }
+}
+
 

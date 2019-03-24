@@ -1439,8 +1439,8 @@ void AliAnalysisTaskElectronEfficiencyV2::CheckIfFromMotherWithDielectronAsDaugh
       if (part.isMCSignal[k] == true && fDielectronPairNotFromSameMother[k] == true){
         AliAODMCParticle* mother = dynamic_cast<AliAODMCParticle*> (fMC->GetTrack(part.GetMotherID()));
         // int number_of_daugthers = mother->GetNDaughters() ;
-        int LabelFirstDaughter = mother->GetFirstDaughter();
-        int LabelLastDaughter = mother->GetLastDaughter();
+        int LabelFirstDaughter = mother->GetDaughterFirst();
+        int LabelLastDaughter = mother->GetDaughterLast();
         // std::cout << "number_of_daughters = " << number_of_daugthers << "  first_daugther = " << LabelFirstDaughter << "  last_daugther = " << LabelLastDaughter << std::endl;
 
         bool ele_from_same_mother = false;

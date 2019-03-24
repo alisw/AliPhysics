@@ -83,14 +83,14 @@ class AliAnalysisTaskUPCforwardMC : public AliAnalysisTaskSE
                                  * parameters at each new runs. Sets the run
                                  * number for the successive cuts.
                                  */
-        virtual void   			    NotifyRun();
+        virtual void            NotifyRun();
 
                                 /**
                                  * This will fill the vector containing the good
                                  * run numbers. For now this function will be
                                  * inside the constructor of the class.
                                  */
-        void   			            FillGoodRunVector(std::vector<Int_t> &fVectorGoodRunNumbers);
+        void                    FillGoodRunVector(std::vector<Int_t> &fVectorGoodRunNumbers);
 
                                 /**
                                  * This function substitutes the roel of the
@@ -108,14 +108,47 @@ class AliAnalysisTaskUPCforwardMC : public AliAnalysisTaskSE
         void                    ProcessMCParticles(AliMCEvent* fMCEvent);
 
                                 /**
+                                 * This function computes the cos(theta) in the
+                                 * Collins-Soper frame for the helicity
+                                 * analysis.
+                                 */
+        Double_t                CosThetaCollinsSoper( TLorentzVector muonPositive,
+                                                      TLorentzVector muonNegative,
+                                                      TLorentzVector possibleJPsi );
+
+                                /**
+                                 * This function computes the cos(theta) in the
+                                 * Helicity frame for the helicity
+                                 * analysis.
+                                 */
+        Double_t                CosThetaHelicityFrame( TLorentzVector muonPositive,
+                                                       TLorentzVector muonNegative,
+                                                       TLorentzVector possibleJPsi );
+
+                                /**
+                                 * This function computes the cos(phi) in the
+                                 * Collins-Soper frame for the helicity
+                                 * analysis.
+                                 */
+        Double_t                CosPhiCollinsSoper( TLorentzVector muonPositive,
+                                                    TLorentzVector muonNegative,
+                                                    TLorentzVector possibleJPsi );
+
+                                /**
+                                 * This function computes the cos(phi) in the
+                                 * Helicity frame for the helicity
+                                 * analysis.
+                                 */
+        Double_t                CosPhiHelicityFrame( TLorentzVector muonPositive,
+                                                     TLorentzVector muonNegative,
+                                                     TLorentzVector possibleJPsi );
+
+                                /**
                                  * Use the class as a data member. It contains
                                  * the cuts for the muon track.
                                  */
-        AliMuonTrackCuts* 		  fMuonTrackCuts;
+        AliMuonTrackCuts*       fMuonTrackCuts;
 
-
-
-        // Bool_t                  CheckIfPassedCuts(vector<>)
 
     private:
 
@@ -155,12 +188,12 @@ class AliAnalysisTaskUPCforwardMC : public AliAnalysisTaskSE
                                  * As far as I understand, it should be the
                                  * pseudorapidity distribution of the many muons.
                                  */
-	      TH1F*                   fEtaMuonH;          //!
+        TH1F*                   fEtaMuonH;          //!
 
                                 /**
                                  *
                                  */
-	      TH1F*                   fRAbsMuonH;         //!
+        TH1F*                   fRAbsMuonH;         //!
 
                                 /**
                                  * This histogram records the invariant mass
@@ -203,6 +236,14 @@ class AliAnalysisTaskUPCforwardMC : public AliAnalysisTaskSE
                                  * of the dimuon pairs.
                                  */
         TH1F*                   fDimuonPtDistributionH;         //!
+
+                                /**
+                                 * This histogram records the pt-ditribution
+                                 * of the dimuon pairs. This is the template
+                                 * to be used for the Pt-distribution fit.
+                                 */
+        TH1F*                   fTemplatePtDistributionH;         //!
+
 
                                 /**
                                  * This histogram records the invariant mass
@@ -249,7 +290,7 @@ class AliAnalysisTaskUPCforwardMC : public AliAnalysisTaskSE
                                  * J/Psi. This histogram is needed to evaluate
                                  * the polarization of the J/Psi!
                                  */
-        TH1F*                   fAngularDistribOfPositiveMuonRestFrameJPsiH;
+        TH1F*                   fAngularDistribOfPositiveMuonRestFrameJPsiH;      //!
 
                                 /**
                                  * This histogram shows the angular distribution
@@ -257,7 +298,24 @@ class AliAnalysisTaskUPCforwardMC : public AliAnalysisTaskSE
                                  * J/Psi. This histogram is needed to evaluate
                                  * the polarization of the J/Psi!
                                  */
-        TH1F*                   fAngularDistribOfNegativeMuonRestFrameJPsiH;
+        TH1F*                   fAngularDistribOfNegativeMuonRestFrameJPsiH;      //!
+
+                                /**
+                                 * This histogram represents the check over
+                                 * the helicity of the J/Psi. It should be flat
+                                 * if I remember well enough!
+                                 */
+        TH1F*                   fCheckHelicityRestFrameJPsiH;
+
+                                /**
+                                 * This histogram shows the angular distribution
+                                 * of the positive muon in the rest frame of the
+                                 * J/Psi. This histogram is needed to evaluate
+                                 * the polarization of the J/Psi! Divided in
+                                 * psudorapidity bins... 8??
+                                 */
+        TH1F*                   fThetaDistribOfPositiveMuonRestFrameJPsiRapidityBinH[8];
+
 
         //_______________________________
         // MC TRUTH PLOTS
@@ -265,69 +323,69 @@ class AliAnalysisTaskUPCforwardMC : public AliAnalysisTaskSE
                                  * This histogram records the pdgCodes of all
                                  * the MC GENERATED particles...
                                  */
-        TH1F*                   fMCpdgCodesH;
+        TH1F*                   fMCpdgCodesH;           //!
 
                                 /**
                                  * This histogram records the pdgCodes of all
                                  * the MC GENERATED PRIMARY particles...
                                  */
-        TH1F*                   fMCpdgCodesOnlyPrimaryH;
+        TH1F*                   fMCpdgCodesOnlyPrimaryH;           //!
 
         // MC TRUTH GENERATED FEATURES
                                 /**
                                  * This histogram records the PHI of all
                                  * the MC GENERATED particles...
                                  */
-        TH1F*                   fMCphiGeneratedTruthH;
+        TH1F*                   fMCphiGeneratedTruthH;           //!
 
                                 /**
                                  * This histogram records the ETA of all
                                  * the MC GENERATED PRIMARY particles...
                                  */
-        TH1F*                   fMCetaGeneratedTruthH;
+        TH1F*                   fMCetaGeneratedTruthH;           //!
 
                                 /**
                                  * This histogram records the PSEUDORAPIDITY of
                                  * all the MC GENERATED PRIMARY particles...
                                  */
-        TH1F*                   fMCpseudorapidityGeneratedTruthH;
+        TH1F*                   fMCpseudorapidityGeneratedTruthH;           //!
 
                                 /**
                                  * This histogram records the Pt of all
                                  * the MC GENERATED particles...
                                  */
-        TH1F*                   fMCptGeneratedTruthH;
+        TH1F*                   fMCptGeneratedTruthH;           //!
 
         // MC TRUTH GENERATED DIMUONS FEATURES
                                 /**
                                  * This histogram records the PHI of all
                                  * the MC GENERATED muons of the J/Psi...
                                  */
-        TH1F*                   fMCphiDimuonGeneratedTruthH;
+        TH1F*                   fMCphiDimuonGeneratedTruthH;           //!
 
                                 /**
                                  * This histogram records the ETA of all
                                  * the MC GENERATED muons of the J/Psi...
                                  */
-        TH1F*                   fMCetaDimuonGeneratedTruthH;
+        TH1F*                   fMCetaDimuonGeneratedTruthH;           //!
 
                                 /**
                                  * This histogram records the PSEUDORAPIDITY of
                                  * all the MC GENERATED muons of the J/Psi...
                                  */
-        TH1F*                   fMCpseudorapidityDimuonGeneratedTruthH;
+        TH1F*                   fMCpseudorapidityDimuonGeneratedTruthH;           //!
 
                                 /**
                                  * This histogram records the Pt of all
                                  * the MC GENERATED muons of the J/Psi...
                                  */
-        TH1F*                   fMCptDimuonGeneratedTruthSingleMuonsH;
+        TH1F*                   fMCptDimuonGeneratedTruthSingleMuonsH;           //!
 
                                 /**
                                  * This histogram records the Pt of all
                                  * the MC GENERATED J/Psi.
                                  */
-        TH1F*                   fMCptDimuonGeneratedTruthH;
+        TH1F*                   fMCptDimuonGeneratedTruthH;           //!
 
 
 
@@ -339,14 +397,14 @@ class AliAnalysisTaskUPCforwardMC : public AliAnalysisTaskSE
                                  * before EVENT and TRACK selection for the MC
                                  * (aka GENERATED).
                                  */
-        TH1F*                   fMCinvariantMassDistrJPsiGeneratedTruthH;
+        TH1F*                   fMCinvariantMassDistrJPsiGeneratedTruthH;           //!
 
                                 /**
                                  * Invariant Mass Distribution of the J/Psi
                                  * after EVENT and TRACK selection for the MC
                                  * WITH MC TRUTH.
                                  */
-        TH1F*                   fMCinvariantMassDistrJPsiAfterEvtAndTrkSelectionTruthH;
+        TH1F*                   fMCinvariantMassDistrJPsiAfterEvtAndTrkSelectionTruthH;           //!
 
                                 /**
                                  * This histogram shows the angular distribution
@@ -354,7 +412,7 @@ class AliAnalysisTaskUPCforwardMC : public AliAnalysisTaskSE
                                  * J/Psi. This histogram is needed to evaluate
                                  * the polarization of the J/Psi!
                                  */
-        TH1F*                   fMCthetaDistribOfPositiveMuonRestFrameJPsiGeneratedTruthH;
+        TH1F*                   fMCthetaDistribOfPositiveMuonRestFrameJPsiGeneratedTruthH;           //!
 
                                 /**
                                  * This histogram shows the angular distribution
@@ -362,13 +420,159 @@ class AliAnalysisTaskUPCforwardMC : public AliAnalysisTaskSE
                                  * J/Psi. This histogram is needed to evaluate
                                  * the polarization of the J/Psi!
                                  */
-        TH1F*                   fMCthetaDistribOfNegativeMuonRestFrameJPsiGeneratedTruthH;
+        TH1F*                   fMCthetaDistribOfNegativeMuonRestFrameJPsiGeneratedTruthH;           //!
 
+                                /**
+                                 * This histogram shows the angular distribution
+                                 * of the positive muon in the rest frame of the
+                                 * J/Psi. This histogram is needed to evaluate
+                                 * the polarization of the J/Psi! Divided in
+                                 * psudorapidity bins... 8??
+                                 */
+        TH1F*                   fMCthetaDistribOfPositiveMuonRestFrameJPsiGeneratedTruthRapidityBinH[8];
 
+                                /**
+                                 * This is the vector containing the GENERATED
+                                 * values of the cos(theta). It should be
+                                 * needed for the "bin migration" study...
+                                 * As far as I can imagine, in each event there
+                                 * should only be a single J/Psi because these
+                                 * are all UPC events, as such I should record
+                                 * all possible values for cos(theta) and plot
+                                 * only when the corresponding J/Psi falls
+                                 * inside the detector acceptance...
+                                 * The resulting plot should be TH2F and be like
+                                 * a lego plot. See for an example:
+                                 *https://www.researchgate.net/figure/The-migration-matrix-for-leading-p-jet-T-Element-i-j-is-the-probability-for-a-particle_fig1_222896619
+                                 */
+        std::vector<Double_t>   fVectorCosThetaGenerated;           //!
 
+                                /**
+                                 * This is the vector containing the
+                                 * RECONSTRUCTED
+                                 * values of the cos(theta). It should be
+                                 * needed for the "bin migration" study...
+                                 * Actually if I fill everytime the TH2F
+                                 * as soon as I compute the cos(theta)
+                                 * there should be no real need for it...
+                                 * The only thing that matters is a counter to
+                                 * give me the proper value of the vector for
+                                 * the generated value I should consider inside
+                                 * the vector of the GENERATED level.
+                                 * It is important to remember there is at MOST
+                                 * a single J/Psi for UPC event!!!
+                                 */
+        std::vector<Double_t>   fVectorCosThetaReconstructed;           //!
 
+                                /**
+                                 * This is the GENERATED
+                                 * value of the cos(theta) in the HELICITY
+                                 * frame. It should be
+                                 * needed for the "bin migration" study...
+                                 * As far as I can imagine, in each event there
+                                 * should only be a single J/Psi because these
+                                 * are all UPC events, as such I should record
+                                 * all possible values for cos(theta) and plot
+                                 * only when the corresponding J/Psi falls
+                                 * inside the detector acceptance...
+                                 * The resulting plot should be TH2F and be like
+                                 * a lego plot. See for an example:
+                                 *https://www.researchgate.net/figure/The-migration-matrix-for-leading-p-jet-T-Element-i-j-is-the-probability-for-a-particle_fig1_222896619
+                                 */
+        Double_t                fCosThetaGeneratedHelicityFrame;           //!
+
+                                /**
+                                 * This is the RECONSTRUCTED
+                                 * value of the cos(theta) in the HELICITY
+                                 * frame. It should be
+                                 * needed for the "bin migration" study...
+                                 * As far as I can imagine, in each event there
+                                 * should only be a single J/Psi because these
+                                 * are all UPC events, as such I should record
+                                 * all possible values for cos(theta) and plot
+                                 * only when the corresponding J/Psi falls
+                                 * inside the detector acceptance...
+                                 * The resulting plot should be TH2F and be like
+                                 * a lego plot. See for an example:
+                                 *https://www.researchgate.net/figure/The-migration-matrix-for-leading-p-jet-T-Element-i-j-is-the-probability-for-a-particle_fig1_222896619
+                                 */
+        Double_t                fCosThetaReconHelicityFrame;           //!
+
+                                /**
+                                 * Counter for the UPC events to access vectors.
+                                 * The only thing that matters is a counter to
+                                 * give me the proper value of the vector for
+                                 * the generated value I should consider inside
+                                 * the vector of the GENERATED level.
+                                 * It is important to remember there is at MOST
+                                 * a single J/Psi for UPC event!!!
+                                 */
+        Int_t                   fCounterUPCevent;           //!
+
+                                /**
+                                 * This histogram shows the bin migration for
+                                 * the helicity Analysis...
+                                 */
+        TH2F*                   fBinMigrationHelicityH;           //!
 
         //_______________________________
+        // HELICITY AND COLLINS-SOPER
+
+                                /**
+                                 * This histogram shows the angular distribution
+                                 * of the positive muon in the HELICITY frame.
+                                 * COS(THETA) distribution.
+                                 */
+        TH1F*                   fCosThetaHelicityFrameJPsiH;
+
+                                /**
+                                 * This histogram shows the angular distribution
+                                 * of the positive muon in the HELICITY frame.
+                                 * PHI distribution.
+                                 */
+        TH1F*                   fPhiHelicityFrameJPsiH;
+
+                                /**
+                                 * This histogram shows the angular distribution
+                                 * of the positive muon in the COLLINS-SOPER
+                                 * frame.  COS(THETA) distribution.
+                                 */
+        TH1F*                   fCosThetaCollinsSoperFrameJPsiH;
+
+                                /**
+                                 * This histogram shows the angular distribution
+                                 * of the positive muon in the COLLINS-SOPER
+                                 * frame. PHI distribution.
+                                 */
+        TH1F*                   fPhiCollinsSoperFrameJPsiH;
+
+                                /**
+                                 * This histogram shows the angular distribution
+                                 * of the positive muon in the HELICITY frame.
+                                 * COS(THETA) distribution. GENERATED
+                                 */
+        TH1F*                   fMCCosThetaHelicityFrameJPsiH;
+
+                                /**
+                                 * This histogram shows the angular distribution
+                                 * of the positive muon in the HELICITY frame.
+                                 * PHI distribution. GENERATED
+                                 */
+        TH1F*                   fMCPhiHelicityFrameJPsiH;
+
+                                /**
+                                 * This histogram shows the angular distribution
+                                 * of the positive muon in the COLLINS-SOPER
+                                 * frame.  COS(THETA) distribution. GENERATED
+                                 */
+        TH1F*                   fMCCosThetaCollinsSoperFrameJPsiH;
+
+                                /**
+                                 * This histogram shows the angular distribution
+                                 * of the positive muon in the COLLINS-SOPER
+                                 * frame. PHI distribution. GENERATED
+                                 */
+        TH1F*                   fMCPhiCollinsSoperFrameJPsiH;
 
         //_______________________________
         // CUTS
@@ -451,7 +655,7 @@ class AliAnalysisTaskUPCforwardMC : public AliAnalysisTaskSE
          * If I happen to encounter it again in the future, I will make sure to
          * record it!
          */
-        ClassDef(AliAnalysisTaskUPCforwardMC, 1);
+        ClassDef(AliAnalysisTaskUPCforwardMC, 4);
 };
 
 #endif

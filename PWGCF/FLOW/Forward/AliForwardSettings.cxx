@@ -21,7 +21,8 @@ AliForwardSettings::AliForwardSettings() :
   fCentBins(10),
   nuacentral(),
   nuaforward(),
-  seccorr(),
+  seccorr_fwd(),
+  seccorr_cen(),
   doNUA(false),
   gap(0.0),
   minpt(0.2),
@@ -43,6 +44,7 @@ AliForwardSettings::AliForwardSettings() :
   makeFakeHoles(kFALSE),
   fnoClusters(70),
   fCutChargedDCAxyMax(0.),
-  fCutChargedDCAzMax(0.)
+  fCutChargedDCAzMax(0.),
+  doPt(kTRUE)
 {
 }

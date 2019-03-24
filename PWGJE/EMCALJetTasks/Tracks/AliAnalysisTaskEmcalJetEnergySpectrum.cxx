@@ -105,9 +105,9 @@ void AliAnalysisTaskEmcalJetEnergySpectrum::UserCreateOutputObjects(){
   if(!fUserPtBinning.GetSize()) {
     // binning not set. apply default binning
     AliInfoStream() << "Using default pt binning";
-    fUserPtBinning.Set(201);
+    fUserPtBinning.Set(301);
     double current(0.);
-    for(int istep = 0; istep < 201; istep++) {
+    for(int istep = 0; istep < 301; istep++) {
       fUserPtBinning[istep] = current;
       current += 1; 
     }
@@ -337,7 +337,7 @@ bool AliAnalysisTaskEmcalJetEnergySpectrum::IsSelectEmcalTriggers(const std::str
 }
 
 
-AliAnalysisTaskEmcalJetEnergySpectrum *AliAnalysisTaskEmcalJetEnergySpectrum::AddTaskJetEnergySpectrum(Bool_t isMC, AliJetContainer::EJetType_t jettype, double radius, const char *namepartcont, const char *trigger, const char *suffix){
+AliAnalysisTaskEmcalJetEnergySpectrum *AliAnalysisTaskEmcalJetEnergySpectrum::AddTaskJetEnergySpectrum(Bool_t isMC, AliJetContainer::EJetType_t jettype, AliJetContainer::ERecoScheme_t recoscheme, double radius, const char *namepartcont, const char *trigger, const char *suffix){
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
   if(!mgr) {
     std::cerr << "Analysis manager not initialized" << std::endl;
@@ -361,6 +361,7 @@ AliAnalysisTaskEmcalJetEnergySpectrum *AliAnalysisTaskEmcalJetEnergySpectrum::Ad
     case AliJetContainer::kChargedJet:  jettypestring = "ChargedJets"; acctype = AliJetContainer::kTPCfid; break;
     case AliJetContainer::kFullJet:     jettypestring = "FullJets";    acctype = AliJetContainer::kEMCALfid; break;
     case AliJetContainer::kNeutralJet:  jettypestring = "NeutralJets"; acctype = AliJetContainer::kEMCALfid; break;
+    case AliJetContainer::kUndefinedJetType: break;
   };
 
   std::stringstream tag, outfilename;
@@ -398,7 +399,7 @@ AliAnalysisTaskEmcalJetEnergySpectrum *AliAnalysisTaskEmcalJetEnergySpectrum::Ad
 
 
   // Create proper jet container
-  auto jetcont = task->AddJetContainer(jettype, AliJetContainer::antikt_algorithm, AliJetContainer::E_scheme, radius, acctype, tracks, clusters);
+  auto jetcont = task->AddJetContainer(jettype, AliJetContainer::antikt_algorithm, recoscheme, radius, acctype, tracks, clusters);
   jetcont->SetName("datajets");
   task->SetNameJetContainer("datajets");
   std::cout << "Adding jet container with underlying array:" << jetcont->GetArrayName() << std::endl;
@@ -410,7 +411,7 @@ AliAnalysisTaskEmcalJetEnergySpectrum *AliAnalysisTaskEmcalJetEnergySpectrum::Ad
     auto partcont = task->AddMCParticleContainer(partcontname.Data());
     partcont->SetMinPt(0.);
     
-    auto pjcont = task->AddJetContainer(jettype, AliJetContainer::antikt_algorithm, AliJetContainer::E_scheme, radius, AliJetContainer::kTPCfid, partcont, nullptr);
+    auto pjcont = task->AddJetContainer(jettype, AliJetContainer::antikt_algorithm, recoscheme, radius, AliJetContainer::kTPCfid, partcont, nullptr);
     pjcont->SetName("partjets");
     pjcont->SetMinPt(0);
     pjcont->SetMaxTrackPt(1000.);

@@ -51,6 +51,7 @@
 #include "AliAnalysisTaskTriggeredBF.h"
 #include "TFile.h"
 #include <iostream>
+#include <random>
 
 
 // Analysis task for the BF vs Psi code
@@ -3833,12 +3834,12 @@ TObjArray* AliAnalysisTaskBFPsi::GetAcceptedTracks(AliVEvent *event, Double_t gC
 	if(fExcludeParticlesExtra){
 
 	  //exclude particles that are primary and have primary daughters
-	  if(track->GetFirstDaughter()!=-1){
-	    if(gMCEvent->IsPhysicalPrimary(track->GetFirstDaughter()))
+	  if(track->GetDaughterFirst()!=-1){
+	    if(gMCEvent->IsPhysicalPrimary(track->GetDaughterFirst()))
 	      continue;
 	  }
-	  if(track->GetLastDaughter()!=-1){
-	    if(gMCEvent->IsPhysicalPrimary(track->GetLastDaughter()))
+	  if(track->GetDaughterLast()!=-1){
+	    if(gMCEvent->IsPhysicalPrimary(track->GetDaughterLast()))
 	      continue;
 	  }
 	}
@@ -4170,7 +4171,9 @@ TObjArray* AliAnalysisTaskBFPsi::GetShuffledTracks(TObjArray *tracks, Double_t g
   Int_t gRun = GetIndexRun(event->GetRunNumber());
   Int_t gCentrIndex = GetIndexCentrality(gCentrality);
  
-  random_shuffle(chargeVector->begin(), chargeVector->end());
+  std::random_device rd;
+  std::default_random_engine engine{rd()};
+  std::shuffle(chargeVector->begin(), chargeVector->end(), engine);
   
   for(Int_t i = 0; i < tracks->GetEntriesFast(); i++){
     AliVParticle* track = (AliVParticle*) tracks->At(i);

@@ -10,6 +10,7 @@ class TH2;
 class TTree;
 class TList;
 class TFile;
+class AliTOFTriggerMask;
 
 #include "AliAnalysisTaskSE.h"
 
@@ -69,11 +70,12 @@ class AliAnalysisTaskUpcNano_MB : public AliAnalysisTaskSE {
   TFile *fSPDfile;
   TH1D *hBCmod4;
   TH2D *hSPDeff;
+  AliTOFTriggerMask *fTOFmask;
   
   AliAnalysisTaskUpcNano_MB(const AliAnalysisTaskUpcNano_MB&); //not implemented
   AliAnalysisTaskUpcNano_MB& operator =(const AliAnalysisTaskUpcNano_MB&); //not implemented
   
-  ClassDef(AliAnalysisTaskUpcNano_MB, 21); 
+  ClassDef(AliAnalysisTaskUpcNano_MB, 22); 
 };
 
 #endif

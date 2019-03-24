@@ -7,6 +7,7 @@
 #include <map>
 #include <vector>
 #include <iostream>
+#include <bitset>
 
 #include <TObject.h>
 #include <TCollection.h>
@@ -14,6 +15,7 @@
 #include <THnSparse.h>
 
 #include <AliAnalysisManager.h>
+#include <AliInputEventHandler.h>
 #include <AliLog.h>
 
 #include "yaml-cpp/yaml.h"
@@ -43,6 +45,8 @@ AliAnalysisTaskEmcalJetHPerformance::AliAnalysisTaskEmcalJetHPerformance():
   fCreateQAHists(false),
   fCreateResponseMatrix(false),
   fEmbeddedCellsName("emcalCells"),
+  fPreviousEventTrigger(0),
+  fPreviousEmbeddedEventSelected(false),
   fResponseMatrixFillMap(),
   fResponseFromThreeJetCollections(true),
   fMinFractionShared(0.),
@@ -62,6 +66,8 @@ AliAnalysisTaskEmcalJetHPerformance::AliAnalysisTaskEmcalJetHPerformance(const c
   fCreateQAHists(false),
   fCreateResponseMatrix(false),
   fEmbeddedCellsName("emcalCells"),
+  fPreviousEventTrigger(0),
+  fPreviousEmbeddedEventSelected(false),
   fResponseMatrixFillMap(),
   fResponseFromThreeJetCollections(true),
   fMinFractionShared(0.),
@@ -298,6 +304,17 @@ void AliAnalysisTaskEmcalJetHPerformance::SetupCellQAHistsWithPrefix(const std::
   title = name + ";\\mathrm{N}_{\\mathrm{cell}};counts";
   fHistManager.CreateTH1(name.c_str(), title.c_str(), 20000, 0, 20000);
 
+  // Histograms for embedding QA which use the cell timing to determine whether the
+  // embedded event has been double corrected.
+  if (prefix.find("embedding") != std::string::npos) {
+    name = prefix + "/fHistEmbeddedEventUsed";
+    title = name + ";Embedded event used";
+    fHistManager.CreateTH1(name.c_str(), title.c_str(), 2, 0, 2);
+
+    name = prefix + "/fHistInternalEventSelection";
+    title = name + ";Embedded event used;Trigger bit";
+    fHistManager.CreateTH2(name.c_str(), title.c_str(), 2, 0, 2, 32, -0.5, 31.5);
+  }
 }
 
 /**
@@ -448,7 +465,7 @@ void AliAnalysisTaskEmcalJetHPerformance::QAHists()
  */
 void AliAnalysisTaskEmcalJetHPerformance::FillCellQAHists(const std::string & prefix, AliVCaloCells * cells)
 {
-  AliDebugStream(4) << "Storing cells with prefix \"" << prefix << "\". N cells:" << cells->GetNumberOfCells() << "\n";
+  AliDebugStream(4) << "Storing cells with prefix \"" << prefix << "\". N cells: " << cells->GetNumberOfCells() << "\n";
   short absId = -1;
   double eCell = 0;
   double tCell = 0;
@@ -458,6 +475,8 @@ void AliAnalysisTaskEmcalJetHPerformance::FillCellQAHists(const std::string & pr
   std::string energyName = prefix + "/fHistCellEnergy";
   std::string timeName = prefix + "/fHistCellTime";
   std::string idName = prefix + "/fHistCellID";
+  bool embeddedCellWithLateCellTime = false;
+  bool fillingEmbeddedCells = (prefix.find("embedding") != std::string::npos);
   for (unsigned int iCell = 0; iCell < cells->GetNumberOfCells(); iCell++) {
     cells->GetCell(iCell, absId, eCell, tCell, mcLabel, eFrac);
 
@@ -466,6 +485,39 @@ void AliAnalysisTaskEmcalJetHPerformance::FillCellQAHists(const std::string & pr
     fHistManager.FillTH1(energyName.c_str(), eCell);
     fHistManager.FillTH1(timeName.c_str(), tCell);
     fHistManager.FillTH1(idName.c_str(), absId);
+
+    // We will record the event selection if the time is less than -400 ns
+    // This corresponds to a doubly corrected embedded event, which shouldn't be possible, and therefore
+    // indicates that something has gone awry
+    // NOTE: We must also require that the time is greater than -1 because apparently some uncalibrated cells
+    //       will report their time as -1. We don't want to include those cells.
+    if (tCell < -400e-9 && tCell > -1 && fillingEmbeddedCells) {
+      embeddedCellWithLateCellTime = true;
+    }
+  }
+
+  // If we have one embedded cell with late cell time, then we want to fill out the QA to
+  // help identify the event.
+  std::string embeddedEventUsed = prefix + "/fHistEmbeddedEventUsed";
+  std::string embeddedInteranlEventSelection = prefix + "/fHistInternalEventSelection";
+  if (embeddedCellWithLateCellTime)
+  {
+    auto embeddingInstance = AliAnalysisTaskEmcalEmbeddingHelper::GetInstance();
+    if (embeddingInstance) {
+      fHistManager.FillTH1(embeddedEventUsed.c_str(),
+                 static_cast<double>(fPreviousEmbeddedEventSelected));
+
+      // Determine the physics selection. This isn't quite a perfect way to store it, as it mingles the
+      // selections between different events. But it is simple, which will let us investigate quickly.
+      // Plus, it's a reasonable bet that the event selection when be the same when it goes wrong.
+      std::bitset<sizeof(UInt_t) * 8> testBits = fPreviousEventTrigger;
+      for (unsigned int i = 0; i < 32; i++) {
+        if (testBits.test(i)) {
+          fHistManager.FillTH2(embeddedInteranlEventSelection.c_str(),
+                     static_cast<double>(fPreviousEmbeddedEventSelected), i);
+        }
+      }
+    }
   }
 
   std::string nCellsName = prefix + "/fHistNCells";
@@ -501,15 +553,6 @@ void AliAnalysisTaskEmcalJetHPerformance::FillCellQAHists()
 void AliAnalysisTaskEmcalJetHPerformance::FillQAHists()
 {
   FillCellQAHists();
-  // Embedded cells
-  // Need to be retrieved manually since the base class only retrieves the cells in the internal event.
-  auto embeddingInstance = AliAnalysisTaskEmcalEmbeddingHelper::GetInstance();
-  if (embeddingInstance) {
-    auto embeddedCells = dynamic_cast<AliVCaloCells*>(
-     embeddingInstance->GetExternalEvent()->FindListObject(fEmbeddedCellsName.c_str()));
-    if (embeddedCells) {
-    }
-  }
 
   // Clusters
   AliClusterContainer* clusCont = 0;
@@ -532,6 +575,16 @@ void AliAnalysisTaskEmcalJetHPerformance::FillQAHists()
     {
       fHistManager.FillTH1(TString::Format("QA/%s/fHistJetPt", jetCont->GetName()), jet->Pt());
     }
+  }
+
+  // Update the previous event trigger to the current event trigger so that it is available next event.
+  // This is stored for keeping track of when embedded events are double corrected.
+  // This must be updated after filling the relevant hists above!
+  fPreviousEventTrigger =
+   ((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected();
+  auto embeddingInstance = AliAnalysisTaskEmcalEmbeddingHelper::GetInstance();
+  if (embeddingInstance) {
+    fPreviousEmbeddedEventSelected = embeddingInstance->EmbeddedEventUsed();
   }
 }
 
@@ -559,11 +612,15 @@ void AliAnalysisTaskEmcalJetHPerformance::ResponseMatrix()
   // Handle matching of jets.
   for (auto jet1 : jetsHybrid->accepted())
   {
+    AliDebugStream(4) << "jet1: " << jet1->toString() << "\n";
+    AliDebugStream(4) << "jet1 address: " << jet1 << "\n";
+
     // Get jet the det level jet from the hybrid jet
     AliEmcalJet * jet2 = jet1->ClosestJet();
     if(!jet2) continue;
 
     AliDebugStream(4) << "jet2: " << jet2->toString() << "\n";
+    AliDebugStream(4) << "jet2 address: " << jet2 << "\n";
 
     // Check shared fraction
     double sharedFraction = jetsHybrid->GetFractionSharedPt(jet1);
@@ -593,6 +650,7 @@ void AliAnalysisTaskEmcalJetHPerformance::ResponseMatrix()
       }
 
       AliDebugStream(4) << "jet3: " << jet3->toString() << "\n";
+      AliDebugStream(4) << "jet3 address: " << jet3 << "\n";
 
       // Use for the response
       AliDebugStream(4) << "Using part level jet for response\n";

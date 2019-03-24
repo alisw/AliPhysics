@@ -14,7 +14,15 @@
 
 #include <utility>
 #include <cmath>
+#include <algorithm>
 
+#if __cplusplus < 201103L
+namespace std {
+ typedef long long intptr_t;
+}
+#else
+#include <cstdint>
+#endif
 
 #include "AliFemtoParticle.h"
 #include "AliFemtoTypes.h"
@@ -175,6 +183,24 @@ public:
   double	GetPairAngleEP() const;
   void		SetPairAngleEP(double x) {fPairAngleEP = x;}
 
+  /// Read cached femto-weight value created from weight-generator
+  /// located at 'ptr'
+  ///
+  /// If no cached value present, return -1
+  ///
+  double LookupFemtoWeightCache(std::intptr_t key) const;
+  double LookupFemtoWeightCache(const void *ptr) const
+    { return LookupFemtoWeightCache(reinterpret_cast<std::intptr_t>(ptr)); }
+
+  /// Push a cacluated femto-weight value into the cache
+  void AddWeightToCache(std::intptr_t key, double value);
+  void AddWeightToCache(const void *ptr, double value)
+    { AddWeightToCache(reinterpret_cast<std::intptr_t>(ptr), value); }
+
+
+  /// Remove all values from cache
+  void ClearWeightCache();
+
   static bool IsPointUnset(const AliFemtoThreeVector &v)
     { return v.x() < -9000.0 && v.y() < -9000.0 && v.z() < -9000.0; }
 
@@ -240,6 +266,10 @@ private:
   /// Used to store the average separations of tracks
   mutable double fAverageSeparations[4];
 
+  /// Cache for re-using MC-generated weights
+  /// First item in pair is pointer to weight, second is the weight
+  mutable std::pair<std::intptr_t, double> fFemtoWeightCache[3];
+
   static double fgMaxDuInner; // Minimum cluster separation in x in inner TPC padrow
   static double fgMaxDzInner; // Minimum cluster separation in z in inner TPC padrow
   static double fgMaxDuOuter; // Minimum cluster separation in x in outer TPC padrow
@@ -273,6 +303,7 @@ inline void AliFemtoPair::ResetParCalculated(){
   fMergingParNotCalculatedV0NegV0Neg=1;
 
   std::fill_n(fAverageSeparations, 4, NAN);
+  ClearWeightCache();
 }
 
 inline void AliFemtoPair::SetTrack1(const AliFemtoParticle* trkPtr){
@@ -305,7 +336,7 @@ inline double AliFemtoPair::KStar() const{
 }
 inline double AliFemtoPair::QInv() const {
   AliFemtoLorentzVector tDiff = (fTrack1->FourMomentum()-fTrack2->FourMomentum());
-  return ( -1.* tDiff.m());
+  return -tDiff.m();
 }
 
 // Fabrice private <<<
@@ -358,6 +389,46 @@ inline double AliFemtoPair::GetClosestRowAtDCA() const {
 inline double AliFemtoPair::GetWeightedAvSep() const {
   if(fMergingParNotCalculated) CalcMergingPar();
   return fWeightedAvSep;
+}
+
+inline void AliFemtoPair::AddWeightToCache(std::intptr_t key, double val)
+{
+  static const size_t N = 3;  // length of fFemtoWeightCache
+
+  size_t i = 0;
+  for (; i < N-1; ++i) {
+    const std::intptr_t &k = fFemtoWeightCache[i].first;
+    if (k == 0 || k == key) {
+        break;
+    }
+  }
+
+  // shift-right
+  for (size_t j=i; j>0; --j) {
+    fFemtoWeightCache[j] = fFemtoWeightCache[j-1];
+  }
+
+  fFemtoWeightCache[0] = std::make_pair(key, val);
+}
+
+inline double AliFemtoPair::LookupFemtoWeightCache(std::intptr_t key) const
+{
+  for (auto it = std::begin(fFemtoWeightCache);
+       it != std::end(fFemtoWeightCache);
+       ++it) {
+    if (it->first == key) {
+      return it->second;
+    }
+  }
+  return NAN;
+}
+
+
+inline void AliFemtoPair::ClearWeightCache()
+{
+  std::fill(std::begin(fFemtoWeightCache),
+            std::end(fFemtoWeightCache),
+            std::make_pair(0, NAN));
 }
 
 

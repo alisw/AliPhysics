@@ -497,11 +497,11 @@ AliAnalysisTaskSE* AddTaskFemtoDreamSysVar(bool isMC = false,
   config->SetUseEventMixing(eventMixing);
   config->SetUsePhiSpinning(phiSpin);
 
-  config->SetDeltaEtaMax(0.012);
-  config->SetDeltaPhiMax(0.012);
+  config->SetDeltaEtaMax(0.010);
+  config->SetDeltaPhiMax(0.010);
   if (suffix == "43") {
-    config->SetDeltaEtaMax(0.013);
-    config->SetDeltaPhiMax(0.013) ;
+    config->SetDeltaEtaMax(0.012);
+    config->SetDeltaPhiMax(0.012) ;
   } else if (suffix == "44") {
     config->SetDeltaEtaMax(0.014);
     config->SetDeltaPhiMax(0.014);

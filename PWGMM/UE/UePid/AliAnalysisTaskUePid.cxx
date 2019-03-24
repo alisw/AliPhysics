@@ -713,12 +713,12 @@ void AliAnalysisTaskUePid::MakeAnalysis( Double_t etaCut ){
 		}
 		else if(TMath::Abs(DPhi-pi)<pi/3.0){
 			mult_as++;
-			pt_as++;
+			pt_as+=pt;
 			hDphiAS->Fill(DPhi);
 		}
 		else{
 			mult_ts++;
-			pt_ts++;
+			pt_ts+=pt;
 			hDphiTS->Fill(DPhi);
 		}
 

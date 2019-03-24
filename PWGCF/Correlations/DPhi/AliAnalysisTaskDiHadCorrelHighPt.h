@@ -73,6 +73,16 @@ class AliAnalysisTaskDiHadCorrelHighPt : public AliAnalysisTaskSE
         void                    SetLifeTimeCutLamda(Double_t rej) { fMassRejectCutLam = rej; }
         void                    SetEventPileUpCut(Bool_t cut) { fRejectEventPileUp = cut; }
         void                    SetTrackPileUpCut(Bool_t cut) { fRejectTrackPileUp = cut; }
+        void                    SetTrackPileUpTOFCut(Bool_t cut) { fRejectTOF = cut; }
+        void                    SetV0PileUpCut(Bool_t cut) { fRejectV0PileUp = cut; }
+        void                    SetMultiplicityEstimator(TString est) { fMultEstimator = est; }
+        void                    SetCorrelationsGen(Bool_t correl) { fCorrelationsGen = correl; }
+        void                    SetCorrelationsV0h(Bool_t correl) { fV0hCorr = correl; }
+        void                    SetCorrelationshh(Bool_t correl) { fhhCorr = correl; }
+        void                    SetCorrelationshV0(Bool_t correl) { fhV0Corr = correl; }
+        void                    SetFilterBit (Int_t filter) { fFilterBit = filter; }
+        void                    SetRemoveHadronsFromV0 (Bool_t rem) { fRemoveHadrFromV0 = rem; }
+        void                    SetRemoveLamhFromCascade (Bool_t rem) { fRemoveLamhFromCascade = rem; }
     
         AliEventCuts            fAliEventCuts;
     
@@ -117,7 +127,7 @@ class AliAnalysisTaskDiHadCorrelHighPt : public AliAnalysisTaskSE
         Double_t                      fMassRejectCutK0; // V0 competing rejection for K0
         Double_t                      fMassRejectCutLam;// V0 competing rejection for Lambdas and AntiLambdas
         Bool_t                        fRejectEventPileUp; // enable to use Pile-up cuts
-        Bool_t                        fRejectTrackPileUp; // enable to use Bunch-Of Pile-up cuts
+        Bool_t                        fRejectTrackPileUp; // enable to use Bunch-Of Pile-up cuts for tracks
 
         THnSparse*              fHistKorelacieMCrec; //!  
         THnSparse*              fHistNumberOfTriggersGen;  //!
@@ -153,11 +163,21 @@ class AliAnalysisTaskDiHadCorrelHighPt : public AliAnalysisTaskSE
         TH1F *                  fHistMultiplicityALam;//!
         TH2F *                  fHitsNTracks;//!
         THnSparse *             fHistPhiEta;//!
+        Bool_t                  fRejectTOF; // enable to use Bunch-Of Pile-up cuts for tracks using TOF
+        Bool_t                  fRejectV0PileUp;// enable to use Bunch-Of Pile-up cuts for V0
+        TString                 fMultEstimator; // enable to change the Multiplicity estimator
+        Bool_t                  fCorrelationsGen; // enable to compute the correlation function from generated MC particles
+        Bool_t                  fV0hCorr; // enable to run V0-h correlations separately
+        Bool_t                  fhhCorr; // enable to run h-h correlations separately
+        Bool_t                  fhV0Corr; // enable to run h-V0 correlations separately
+        Int_t                   fFilterBit; // enable to vary filter bit for systematic studies
+        Bool_t                  fRemoveLamhFromCascade; // enable to remove hh corelations, which are from the same V0
+        Bool_t                  fRemoveHadrFromV0; // enable to remove Lamh corelations, which are from the same cascade
 
         AliAnalysisTaskDiHadCorrelHighPt(const AliAnalysisTaskDiHadCorrelHighPt&); // not implemented
         AliAnalysisTaskDiHadCorrelHighPt& operator=(const AliAnalysisTaskDiHadCorrelHighPt&); // not implemented
 
-        ClassDef(AliAnalysisTaskDiHadCorrelHighPt, 11);
+        ClassDef(AliAnalysisTaskDiHadCorrelHighPt, 13);
 };
 
 class AliV0ChParticle : public AliVParticle
@@ -167,12 +187,20 @@ class AliV0ChParticle : public AliVParticle
         : fEta(eta), fPhi(phi), fpT(pt), fCandidate(candidate), fRecStatus(status), fMass(mass)
       {
       }
-      AliV0ChParticle(Float_t eta, Float_t phi, Float_t pt, Short_t candidate, Int_t label, Bool_t status)
-        : fEta(eta), fPhi(phi), fpT(pt), fCandidate(candidate), fLabel(label), fRecStatus(status)
+      AliV0ChParticle(Float_t eta, Float_t phi, Float_t pt, Short_t candidate, Int_t label)
+        : fEta(eta), fPhi(phi), fpT(pt), fCandidate(candidate), fLabel(label)
       {
       }
-    AliV0ChParticle(Float_t eta, Float_t phi, Float_t pt, Short_t candidate, Int_t label,Int_t iDh, Bool_t status)
-    : fEta(eta), fPhi(phi), fpT(pt), fCandidate(candidate), fLabel(label), fIDh(iDh), fRecStatus(status)
+    AliV0ChParticle(Float_t eta, Float_t phi, Float_t pt, Short_t candidate, Int_t label,Int_t iDh)
+    : fEta(eta), fPhi(phi), fpT(pt), fCandidate(candidate), fLabel(label), fIDh(iDh)
+    {
+    }
+    AliV0ChParticle(Float_t eta, Float_t phi, Float_t pt, Short_t candidate, Int_t label,Short_t charge, Double_t pz, Double_t energ)
+    : fEta(eta), fPhi(phi), fpT(pt), fCandidate(candidate), fLabel(label), fCharge(charge), fPz(pz), fEnergie(energ)
+    {
+    }
+    AliV0ChParticle(Float_t eta, Float_t phi, Float_t pt, Short_t candidate, Int_t label,Int_t iDh,Short_t charge, Double_t pz, Double_t energ)
+    : fEta(eta), fPhi(phi), fpT(pt), fCandidate(candidate), fLabel(label), fIDh(iDh), fPz(pz), fEnergie(energ)
     {
     }
     AliV0ChParticle(Float_t eta, Float_t phi, Float_t pt, Short_t candidate, Int_t label,Int_t idpos, Int_t idneg, Bool_t status,Double_t mass)
@@ -218,6 +246,9 @@ class AliV0ChParticle : public AliVParticle
     Int_t   GetIDNeg()            const { return fIDneg; }
     Bool_t  GetRecStatus()        const { return fRecStatus; }
     Double_t GetMass()            const { return fMass; }
+    Short_t GetCharge()           const { return fCharge; }
+    Double_t GetPz()              const { return fPz; }
+    Double_t GetEnergie()         const { return fEnergie; }
   
       private:
       Double_t fEta;      // eta
@@ -230,8 +261,11 @@ class AliV0ChParticle : public AliVParticle
       Int_t fIDneg;   // Label of negative charged daughter
       Bool_t fRecStatus;   // reconstruction status
       Double_t fMass; // mass
+      Short_t fCharge; // charge of the track
+      Double_t fPz; //pZ
+      Double_t fEnergie; //E
   
-      ClassDef( AliV0ChParticle, 2) // class required for correlatios calculation and event mixing
+      ClassDef( AliV0ChParticle, 3) // class required for correlatios calculation and event mixing
  };
 
 #endif

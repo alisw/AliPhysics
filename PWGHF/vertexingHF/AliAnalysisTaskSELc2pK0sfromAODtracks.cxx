@@ -2184,9 +2184,9 @@ Bool_t AliAnalysisTaskSELc2pK0sfromAODtracks::MakeMCAnalysis(TClonesArray *mcArr
 			Bool_t k0s_flag = kFALSE;
 			AliAODMCParticle *mcepart = 0;
 			AliAODMCParticle *mcv0part = 0;
-			Int_t ndau = mcpart->GetLastDaughter()-mcpart->GetFirstDaughter()+1;
+			Int_t ndau = mcpart->GetDaughterLast()-mcpart->GetDaughterFirst()+1;
 			if(ndau==2){
-				for(Int_t idau=mcpart->GetFirstDaughter();idau<mcpart->GetLastDaughter()+1;idau++)
+				for(Int_t idau=mcpart->GetDaughterFirst();idau<mcpart->GetDaughterLast()+1;idau++)
 				{
 					if(idau<0) break;
 					AliAODMCParticle *mcdau = (AliAODMCParticle*) mcArray->At(idau);

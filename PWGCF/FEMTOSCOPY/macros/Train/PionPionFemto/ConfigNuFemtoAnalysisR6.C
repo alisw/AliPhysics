@@ -9,8 +9,6 @@
 #error "This file requires use of the c++11 standard (ROOT6)"
 #endif
 
-#if !defined(__CINT__) && !defined(__CLING__)
-
 #include "AliFemtoAnalysisPionPion.h"
 
 #include "AliFemtoManager.h"
@@ -28,6 +26,7 @@
 #include "AliFemtoCorrFctnDEtaDPhiStar.h"
 
 #include "AliFemtoAvgSepCorrFctn.h"
+#include "AliFemtoShareQualityCorrFctn.h"
 #include "AliFemtoCorrFctnDPhiStarDEta.h"
 #include "AliFemtoQinvCorrFctn.h"
 #include "AliFemtoModelWeightGeneratorBasic.h"
@@ -55,7 +54,6 @@
 #include <TNamed.h>
 #include <random>
 
-#endif
 
 using AFAPP = AliFemtoAnalysisPionPion;
 
@@ -144,6 +142,8 @@ struct MacroParams : public TNamed {
   bool do_kt_trueq3d_cf { false };
   bool do_trueq3dbp_cf { false };
   bool do_kt_trueq3dbp_cf { false };
+
+  bool do_sharequality_cf { false };
 
   bool do_truedetadphi_cf { false };
   bool do_kt_truedetadphi_cf { false };
@@ -314,12 +314,24 @@ ConfigFemtoAnalysis(const TString& param_str="")
 
       analysis->AddStanardCutMonitors();
 
+      const float QINV_MIN_VAL = 0.0,
+                  QINV_MAX_VAL = macro_config.qinv_max_GeV;
+
+      const int QINV_BIN_COUNT = TMath::Abs((QINV_MAX_VAL - QINV_MIN_VAL) * 1000 / macro_config.qinv_bin_size_MeV);
+
+
       if (macro_config.do_avg_sep_cf) {
         auto *avgsep_cf = new AliFemtoAvgSepCorrFctn("AvgSep",
                                                      macro_config.avgsep_nbins,
                                                      0.0, macro_config.avgsep_max);
         avgsep_cf->SetPairType(AliFemtoAvgSepCorrFctn::kTracks);
         analysis->AddCorrFctn(avgsep_cf);
+      }
+
+      if (macro_config.do_sharequality_cf) {
+        auto *cf = new AliFemtoShareQualityCorrFctn("",
+                                                    QINV_BIN_COUNT, QINV_MIN_VAL, QINV_MAX_VAL);
+        analysis->AddCorrFctn(cf);
       }
 
       if (macro_config.do_kt_avg_sep_cf) {
@@ -347,11 +359,6 @@ ConfigFemtoAnalysis(const TString& param_str="")
         deta_dphi_cf->SetMagneticFieldSign(1);
         analysis->AddCorrFctn(deta_dphi_cf);
       }
-
-      const float QINV_MIN_VAL = 0.0,
-                  QINV_MAX_VAL = macro_config.qinv_max_GeV;
-
-      const int QINV_BIN_COUNT = TMath::Abs((QINV_MAX_VAL - QINV_MIN_VAL) * 1000 / macro_config.qinv_bin_size_MeV);
 
       if (macro_config.do_qinv_cf) {
         AliFemtoCorrFctn *qinv_cf = new AliFemtoQinvCorrFctn("_qinv", QINV_BIN_COUNT, QINV_MIN_VAL, QINV_MAX_VAL);
@@ -403,6 +410,7 @@ ConfigFemtoAnalysis(const TString& param_str="")
 
       if (macro_config.do_kt_trueq_cf) {
         AliFemtoModelCorrFctn *cf = new AliFemtoModelCorrFctnTrueQ("", QINV_BIN_COUNT, QINV_MIN_VAL, QINV_MAX_VAL);
+        cf->ConnectToManager(model_manager);
         auto *kt_qinv_cfs = new AliFemtoKtBinnedCorrFunc("KT_TrueQ", cf);
 
         for (size_t kt_idx=0; kt_idx < macro_config.kt_ranges.size(); kt_idx += 2) {

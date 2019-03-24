@@ -1606,7 +1606,7 @@ TCanvas* CompareDatatoModels(Int_t collsystem,Int_t binass,Int_t quantity,TPad *
       grMC[kmc]->SetLineColor(modelColors[kmc]);
       grMC[kmc]->SetLineWidth(1);
       grMC[kmc]->SetMarkerStyle(modelMarkerStyle[kmc]);
-      grMC[kmc]->SetFillStyle(3001+kmc);
+      grMC[kmc]->SetFillStyle(0);//3001+kmc);
       grMC[kmc]->SetFillColor(modelColors[kmc]);
       grMC[kmc]->SetMarkerSize(markersizeMC);
       if(drawSystMC){
@@ -2488,7 +2488,7 @@ void CompareFitResults_Ratios_NS_1() {
                   hModRat[k]->SetBinContent(7,-99);
                   hModRat[k]->SetBinError(7,-99);
                   hModRat[k]->DrawCopy("same");
-                  grModRat[k]->SetFillStyle(1);
+                  grModRat[k]->SetFillStyle(0);
                   grModRat[k]->SetMarkerStyle(modelMarkerStyleRatio[k]);
                   grModRat[k]->Draw("E2");
                 }
@@ -2612,7 +2612,7 @@ void CompareFitResults_Ratios_NS_2() {
                   hModRat[k]->SetBinContent(7,-99);
                   hModRat[k]->SetBinError(7,-99);
                   hModRat[k]->DrawCopy("same");
-                  grModRat[k]->SetFillStyle(1);
+                  grModRat[k]->SetFillStyle(0);
                   grModRat[k]->SetMarkerStyle(modelMarkerStyleRatio[k]);
                   grModRat[k]->Draw("E2");
                 }
@@ -2744,7 +2744,7 @@ void CompareFitResults_Ratios_AS_1() {
                   hModRat[k]->SetBinContent(7,-99);
                   hModRat[k]->SetBinError(7,-99);
                   hModRat[k]->DrawCopy("same");
-                  grModRat[k]->SetFillStyle(1);
+                  grModRat[k]->SetFillStyle(0);
                   grModRat[k]->SetMarkerStyle(modelMarkerStyleRatio[k]);
                   grModRat[k]->Draw("E2");
                 }
@@ -2879,7 +2879,7 @@ void CompareFitResults_Ratios_AS_2() {
                   hModRat[k]->SetBinContent(7,-99);
                   hModRat[k]->SetBinError(7,-99);
                   hModRat[k]->DrawCopy("same");
-                  grModRat[k]->SetFillStyle(1);
+                  grModRat[k]->SetFillStyle(0);
                   grModRat[k]->SetMarkerStyle(modelMarkerStyleRatio[k]);
                   grModRat[k]->Draw("E2");
                 }

@@ -591,7 +591,7 @@ void AliAnalysisTaskSEXicZero2XiPifromAODtracks::MakeAnalysis(AliAODEvent *aodEv
 	      }
 	    }
 	    isXic=kTRUE;
-	    for(Int_t idau=mcxic->GetFirstDaughter();idau<mcxic->GetLastDaughter()+1;idau++)
+	    for(Int_t idau=mcxic->GetDaughterFirst();idau<mcxic->GetDaughterLast()+1;idau++)
 	      {
 		//cout<<idau<<endl;
 		if(idau<0) break;

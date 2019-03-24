@@ -29,6 +29,7 @@
 #include "AliRDHFCuts.h"
 #include "AliAODEvent.h"
 #include "AliHFQnVectorHandler.h"
+#include "AliAnalysisVertexingHF.h"
 
 class AliAnalysisTaskSECharmHadronvn : public AliAnalysisTaskSE
 {
@@ -36,7 +37,7 @@ class AliAnalysisTaskSECharmHadronvn : public AliAnalysisTaskSE
 
     enum DecChannel{kDplustoKpipi,kD0toKpi,kDstartoKpipi,kDstoKKpi}; //more particles can be added
     enum EventPlaneMeth{kTPC,kTPCVZERO,kVZERO,kVZEROA,kVZEROC,kPosTPCVZERO,kNegTPCVZERO}; //Event plane to be calculated in the task
-    enum FlowMethod{kEP,kSP,kEvShapeEP,kEvShapeSP}; // Event Plane, Scalar Product or Event Shape Engeneering methods
+    enum FlowMethod{kEP,kSP,kEvShapeEP,kEvShapeSP,kEPVsMass,kEvShapeEPVsMass}; // Event Plane, Scalar Product or Event Shape Engeneering methods
     enum q2Method{kq2TPC,kq2PosTPC,kq2NegTPC,kq2VZERO,kq2VZEROA,kq2VZEROC}; // qn for Event Shape to be calculated in the task
     enum EventPlaneDet{kNone=-1,kFullTPC,kPosTPC,kNegTPC,kFullV0,kV0A,kV0C};
 
@@ -45,37 +46,41 @@ class AliAnalysisTaskSECharmHadronvn : public AliAnalysisTaskSE
 
     virtual ~AliAnalysisTaskSECharmHadronvn();
 
-    void SetTenderTaskName(TString name)                        {fTenderTaskName = name;}
-    void SetAODMismatchProtection(int opt=1)                    {fAODProtection = opt;}
+    void SetTenderTaskName(TString name)                              {fTenderTaskName = name;}
+    void SetAODMismatchProtection(int opt=1)                          {fAODProtection = opt;}
 
-    void SetHarmonic(int harmonic)                              {fHarmonic = harmonic;}
-    void SetCalibrationType(int calibtype)                      {fCalibType = calibtype;}
-    void SetNormMethod(int norm)                                {fNormMethod = norm;}
-    void SetOADBFileName(TString filename)                      {fOADBFileName = filename;}
+    void SetHarmonic(int harmonic)                                    {fHarmonic = harmonic;}
+    void SetCalibrationType(int calibtype)                            {fCalibType = calibtype;}
+    void SetNormMethod(int norm)                                      {fNormMethod = norm;}
+    void SetOADBFileName(TString filename)                            {fOADBFileName = filename;}
 
-    void SetFlowMethod(int meth)                                {fFlowMethod = meth;}
-    void SetEventPlaneDetector(int det)                         {fEvPlaneDet = det;}
-    void SetSubEventDetectors(int detsubA, int detsubB)         {fSubEvDetA = detsubA; fSubEvDetB = detsubB;}
+    void SetFlowMethod(int meth)                                      {fFlowMethod = meth;}
+    void SetEventPlaneDetector(int det)                               {fEvPlaneDet = det;}
+    void SetSubEventDetectors(int detsubA, int detsubB)               {fSubEvDetA = detsubA; fSubEvDetB = detsubB;}
     void SetQnVectorDetConf(int detconf);
-    void SetTPCEPOnly()                                         {SetQnVectorDetConf(kTPC);}
-    void SetVZEROEP()                                           {SetQnVectorDetConf(kVZERO);}
-    void SetVZEROAEP()                                          {SetQnVectorDetConf(kVZEROA);}
-    void SetVZEROCEP()                                          {SetQnVectorDetConf(kVZEROC);}
-    void SetTPCEP()                                             {SetQnVectorDetConf(kTPCVZERO);}
-    void SetqnMethod(int qnmethod)                              {fqnMeth = qnmethod;}
-    void SetScalProdLimit(double limit=0.3)                     {limit < 1. ? fScalProdLimit = limit : fScalProdLimit = 1.;}
+    void SetTPCEPOnly()                                               {SetQnVectorDetConf(kTPC);}
+    void SetVZEROEP()                                                 {SetQnVectorDetConf(kVZERO);}
+    void SetVZEROAEP()                                                {SetQnVectorDetConf(kVZEROA);}
+    void SetVZEROCEP()                                                {SetQnVectorDetConf(kVZEROC);}
+    void SetTPCEP()                                                   {SetQnVectorDetConf(kTPCVZERO);}
+    void SetqnMethod(int qnmethod)                                    {fqnMeth = qnmethod;}
+    void SetScalProdLimit(double limit=0.3)                           {limit < 1. ? fScalProdLimit = limit : fScalProdLimit = 1.;}
     void SetqnPercentileSelection(TString splinesfilepath);
 
-    void SetMinCentrality(float mincentr)                       {fMinCentr = mincentr;}
-    void SetMaxCentrality(float maxcentr)                       {fMaxCentr = maxcentr;}
+    void SetMinCentrality(float mincentr)                             {fMinCentr = mincentr;}
+    void SetMaxCentrality(float maxcentr)                             {fMaxCentr = maxcentr;}
 
-    void SetDecayChannel(int decaychannel)                      {fDecChannel = decaychannel;}
+    void SetDecayChannel(int decaychannel)                            {fDecChannel = decaychannel;}
     void SetMassLimits(float range,int pdg);
     void SetMassLimits(float lowlimit, float uplimit);
-    void SetNMassBins(int nbins)                                {fNMassBins = nbins;}
-    float GetUpperMassLimit() const                             {return fUpmasslimit;}
-    float GetLowerMassLimit() const                             {return fLowmasslimit;}
-    int GetNMassBins() const                                    {return fNMassBins;}
+    void SetNMassBins(int nbins)                                      {fNMassBins = nbins;}
+    float GetUpperMassLimit() const                                   {return fUpmasslimit;}
+    float GetLowerMassLimit() const                                   {return fLowmasslimit;}
+    int GetNMassBins() const                                          {return fNMassBins;}
+
+    void SetTPCHalvesEtaGap(double etagap = 0.2)                      {fEtaGapInTPCHalves=etagap;}                             
+    void RemoveDauTracksFromqn(int removedau=1, bool remsoftpi=false) {fRemoveDauFromqn=removedau; fRemoveSoftPion=remsoftpi;}
+    void SetRandomDownsamplFromqn(double fractokeep = 0.5)            {fEnableDownsamplqn=true; fFracToKeepDownSamplqn=fractokeep;}
 
     // Implementation of interface methods
     virtual void UserCreateOutputObjects();
@@ -88,6 +93,8 @@ class AliAnalysisTaskSECharmHadronvn : public AliAnalysisTaskSE
     double GetDeltaPsiSubInRange(double psi1, double psi2);
     void CalculateInvMasses(AliAODRecoDecayHF* d,float* &masses,int& nmasses);
     void GetMainQnVectorInfo(double &mainPsin, double &mainMultQn, double mainQn[2], double &SubAPsin, double &SubAMultQn, double SubAQn[2], double &SubBPsin, double &SubBMultQn, double SubBQn[2], AliHFQnVectorHandler* HFQnVectorHandler);
+    void GetDaughterTracksToRemove(AliAODRecoDecayHF* d, int nDau, vector<AliAODTrack*> &trackstoremove);
+    int IsCandidateSelected(AliAODRecoDecayHF *&d, int nDau, int absPdgMom, AliAnalysisVertexingHF *vHF, AliAODRecoDecayHF2Prong *dD0);
 
     AliAODEvent* fAOD;                      /// AOD event
 
@@ -129,7 +136,13 @@ class AliAnalysisTaskSECharmHadronvn : public AliAnalysisTaskSE
     float fUpmasslimit;                     /// upper inv mass limit for histos
     int fNMassBins;                         /// number of bins in the mass histograms
     
-    ClassDef(AliAnalysisTaskSECharmHadronvn,1); // AliAnalysisTaskSE for the HF vn analysis
+    double fEtaGapInTPCHalves;              /// eta gap between TPC subevents
+    int fRemoveDauFromqn;                   /// flag to enable removal of D-meson daughter tracks from qn (1->remove single cand, 2->remove all cand of the analysed event)
+    bool fRemoveSoftPion;                   /// flag to enable removal of soft pion too (only D*)
+    bool fEnableDownsamplqn;                /// flag to enable random downsampling for qn
+    double fFracToKeepDownSamplqn;          /// fraction of tracks to keep in qn with random downsampling 
+
+    ClassDef(AliAnalysisTaskSECharmHadronvn,2); // AliAnalysisTaskSE for the HF vn analysis
 };
 
 #endif

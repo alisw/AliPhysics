@@ -316,7 +316,7 @@ public:
     kDeltaPhiRandomRP,        //delta phi of the pair
 
     kPairPlaneMagInPro,      // Inner Product of strong magnetic field and ee plane
-    kPairPlaneMagInProTPC,   // Inner Product of strong magnetic field and ee plane (from TPC correction framework)
+    kPairPlaneMagInProZDC,   // Inner Product of strong magnetic field and ee plane (from Qn correction framework - ZDC)
     kCos2PhiCS,              // Cosine of 2*phi in mother's rest frame in the Collins-Soper picture
     kCosTilPhiCS,            // Shifted phi depending on kThetaCS
     kCosPhiH2,               // cosine of pair phi for 2nd harmonic
@@ -2080,10 +2080,12 @@ inline void AliDielectronVarManager::FillVarDielectronPair(const AliDielectronPa
         Double_t dcaSig1[2]    = {-999.,-999.};      // xy,z sigma values
         Double_t dcaRes1[3]    = {-999.,-999.,-999.};// Covariance matrix
 
+
         ////// second daughter
         Double_t dca2[2]       = {-999.,-999.};      // xy,z absolute values
         Double_t dcaSig2[2]    = {-999.,-999.};      // xy,z sigma values
         Double_t dcaRes2[3]    = {-999.,-999.,-999.};// Covariance matrix
+
 
         if (isESD) {
           // 'Float_t' needed for 'virtual void AliESDtrack::GetImpactParameters(Float_t p[2], Float_t cov[3]) const'
@@ -2117,12 +2119,30 @@ inline void AliDielectronVarManager::FillVarDielectronPair(const AliDielectronPa
         //if(dcaResTPC2[0]>0.) dcaSigTPC2[0] = dcaTPC2[0]/TMath::Sqrt(dcaResTPC2[0]);
         //if(dcaResTPC2[2]>0.) dcaSigTPC2[1] = dcaTPC2[1]/TMath::Sqrt(dcaResTPC2[2]);
 
+	// DCAxyz in sigma
+	Double_t tmp_leg1dcaXYZsig = -1.;
+	Double_t tmp_leg2dcaXYZsig = -1.;
+	Double_t chi22 = -1.;
+	Double_t chi21 = -1.;
+	Double_t det2  = -1.;                // Determinant of covariance matrix
+	Double_t det1  = -1.;                // Determinant of covariance matrix
+	det1 = dcaRes1[0]*dcaRes1[2] - dcaRes1[1]*dcaRes1[1];
+	det2 = dcaRes2[0]*dcaRes2[2] - dcaRes2[1]*dcaRes2[1];
+	if(det1>1e-9) {
+	  chi21 = (dca1[0]*dca1[0]*dcaRes1[2] + dca1[1]*dca1[1]*dcaRes1[0] - 2*dca1[0]*dca1[1]*dcaRes1[1])/det1;
+	  tmp_leg1dcaXYZsig = TMath::Sqrt(TMath::Abs(chi21));
+	}
+	if(det2>1e-9) {
+	  chi22 = (dca2[0]*dca2[0]*dcaRes2[2] + dca2[1]*dca2[1]*dcaRes2[0] - 2*dca2[0]*dca2[1]*dcaRes2[1])/det2;
+	  tmp_leg2dcaXYZsig = TMath::Sqrt(TMath::Abs(chi22));
+	}
+
+	
         // set first daughter variables for cross-checks
         values[AliDielectronVarManager::kLeg1DCAabsXY]   = dca1[0];
         values[AliDielectronVarManager::kLeg1DCAsigXY]   = dcaSig1[0];
         values[AliDielectronVarManager::kLeg1DCAresXY]   = dcaRes1[0];
-        Double_t tmp_leg1dcaXYZabs = TMath::Sqrt(dca1[0]*dca1[0] + dca1[1]*dca1[1]);
-        Double_t tmp_leg1dcaXYZsig = TMath::Sqrt(dcaSig1[0]*dcaSig1[0] + dcaSig1[1]*dcaSig1[1]);
+        Double_t tmp_leg1dcaXYZabs = TMath::Sqrt(dca1[0]*dca1[0] + dca1[1]*dca1[1]); // keep this for the moment
         values[AliDielectronVarManager::kLeg1DCAabsXYZ]  = tmp_leg1dcaXYZabs;
         values[AliDielectronVarManager::kLeg1DCAsigXYZ]  = tmp_leg1dcaXYZsig;
 
@@ -2130,7 +2150,6 @@ inline void AliDielectronVarManager::FillVarDielectronPair(const AliDielectronPa
         values[AliDielectronVarManager::kLeg2DCAsigXY]   = dcaSig2[0];
         values[AliDielectronVarManager::kLeg2DCAresXY]   = dcaRes2[0];
         Double_t tmp_leg2dcaXYZabs   = TMath::Sqrt(dca2[0]*dca2[0] + dca2[1]*dca2[1]);
-        Double_t tmp_leg2dcaXYZsig   = TMath::Sqrt(dcaSig2[0]*dcaSig2[0] + dcaSig2[1]*dcaSig2[1]);
         values[AliDielectronVarManager::kLeg2DCAabsXYZ]  = tmp_leg2dcaXYZabs;
         values[AliDielectronVarManager::kLeg2DCAsigXYZ]  = tmp_leg2dcaXYZsig;
 
@@ -2141,7 +2160,7 @@ inline void AliDielectronVarManager::FillVarDielectronPair(const AliDielectronPa
         values[AliDielectronVarManager::kPairDCAsigXY]       = TMath::Sqrt( (dcaSig1[0]*dcaSig1[0] + dcaSig2[0]*dcaSig2[0]) / 2 );
         values[AliDielectronVarManager::kPairDCAsigZ]        = TMath::Sqrt( (dcaSig1[1]*dcaSig1[1] + dcaSig2[1]*dcaSig2[1]) / 2 );
         values[AliDielectronVarManager::kPairDCAabsXYZ]      = TMath::Sqrt( (tmp_leg1dcaXYZabs*tmp_leg1dcaXYZabs + tmp_leg2dcaXYZabs*tmp_leg2dcaXYZabs) / 2 );
-        values[AliDielectronVarManager::kPairDCAsigXYZ]      = TMath::Sqrt( (tmp_leg1dcaXYZsig*tmp_leg1dcaXYZsig + tmp_leg2dcaXYZsig*tmp_leg2dcaXYZsig) / 2 );
+        if(tmp_leg1dcaXYZsig>0. && tmp_leg2dcaXYZsig > 0.) values[AliDielectronVarManager::kPairDCAsigXYZ]      = TMath::Sqrt( (tmp_leg1dcaXYZsig*tmp_leg1dcaXYZsig + tmp_leg2dcaXYZsig*tmp_leg2dcaXYZsig) / 2 );
 
         // linear summation
         values[AliDielectronVarManager::kPairLinDCAabsXY]    = (TMath::Abs(dca1[0]) + TMath::Abs(dca2[0])) / 2;
@@ -2411,8 +2430,8 @@ inline void AliDielectronVarManager::FillVarDielectronPair(const AliDielectronPa
     values[AliDielectronVarManager::kQnSPDrpH2FlowSPV2]    = uDielectronSP * qVec2SPD;
   }
 
-  // calculate inner Product of strong magnetic field (from TPC event plane, correction framework) and ee plane
-  if(Req(kPairPlaneMagInProTPC)) values[AliDielectronVarManager::kPairPlaneMagInProTPC] = pair->PairPlaneMagInnerProduct(values[AliDielectronVarManager::kQnTPCrpH2]);
+  // calculate inner Product of strong magnetic field (from ZDC 1st order event plane, correction framework) and ee plane
+  if(Req(kPairPlaneMagInProZDC)) values[AliDielectronVarManager::kPairPlaneMagInProZDC] = pair->PairPlaneMagInnerProduct(values[AliDielectronVarManager::kQnZDCCrpH1]);
 
 
 

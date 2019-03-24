@@ -2787,8 +2787,8 @@ Bool_t AliAnalysisTaskElectronEfficiency::CheckInvariantMassSM(AliMCEvent* mcEve
     printf("No mother for MC particle\n");
     return kFALSE;
   }
-  int k1 = motherpart->GetFirstDaughter();
-  int k2 = motherpart->GetLastDaughter();
+  int k1 = motherpart->GetDaughterFirst();
+  int k2 = motherpart->GetDaughterLast();
  
 
   //

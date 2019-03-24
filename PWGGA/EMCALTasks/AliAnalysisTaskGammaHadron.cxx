@@ -2223,8 +2223,8 @@ void AliAnalysisTaskGammaHadron::FillPi0CandsHist(AliTLorentzVector CaloClusterV
 					if (iLCAPdg == 111) {
 						Int_t nLCADaughters = pLCA->GetNDaughters();
 						if (nLCADaughters == 2) { // 2 Gammas
-							AliAODMCParticle * pDaughter1 = fMCParticles->GetMCParticle(pLCA->GetDaughter(0));
-							AliAODMCParticle * pDaughter2 = fMCParticles->GetMCParticle(pLCA->GetDaughter(0)+1);
+							AliAODMCParticle * pDaughter1 = fMCParticles->GetMCParticle(pLCA->GetDaughterLabel(0));
+							AliAODMCParticle * pDaughter2 = fMCParticles->GetMCParticle(pLCA->GetDaughterLabel(0)+1);
 							if (pDaughter1 && pDaughter2 && pDaughter1->GetPdgCode() == 22 && pDaughter2->GetPdgCode() == 22) {
 								MCMatchStatus = 2;
 								// Check Reconstructed Pi0 DeltaPt and DeltaPhiDeltaEta
@@ -2245,8 +2245,8 @@ void AliAnalysisTaskGammaHadron::FillPi0CandsHist(AliTLorentzVector CaloClusterV
 						// Check daughters  2 gamma, 3 pi0, or 1pi0,1pi+,ipi-
 						Int_t nLCADaughters = pLCA->GetNDaughters();
 						if (nLCADaughters == 2) { // 2 Gammas
-							AliAODMCParticle * pDaughter1 = fMCParticles->GetMCParticle(pLCA->GetDaughter(0));
-							AliAODMCParticle * pDaughter2 = fMCParticles->GetMCParticle(pLCA->GetDaughter(0)+1);
+							AliAODMCParticle * pDaughter1 = fMCParticles->GetMCParticle(pLCA->GetDaughterLabel(0));
+							AliAODMCParticle * pDaughter2 = fMCParticles->GetMCParticle(pLCA->GetDaughterLabel(0)+1);
 							if (pDaughter1 && pDaughter2 && pDaughter1->GetPdgCode() == 22 && pDaughter2->GetPdgCode() == 22) {
 
 								MCMatchStatus = 4;
@@ -2261,9 +2261,9 @@ void AliAnalysisTaskGammaHadron::FillPi0CandsHist(AliTLorentzVector CaloClusterV
 								fHistEtaMCDPhiDEta->Fill(fDeltaPhi,fDeltaEta);
 							}
 						} else if (nLCADaughters == 3) { // 3 pi0 or pi0,pi+,pi-
-							AliAODMCParticle * pDaughter1 = fMCParticles->GetMCParticle(pLCA->GetDaughter(0));
-							AliAODMCParticle * pDaughter2 = fMCParticles->GetMCParticle(pLCA->GetDaughter(0)+1);
-							AliAODMCParticle * pDaughter3 = fMCParticles->GetMCParticle(pLCA->GetDaughter(0)+2);
+							AliAODMCParticle * pDaughter1 = fMCParticles->GetMCParticle(pLCA->GetDaughterLabel(0));
+							AliAODMCParticle * pDaughter2 = fMCParticles->GetMCParticle(pLCA->GetDaughterLabel(0)+1);
+							AliAODMCParticle * pDaughter3 = fMCParticles->GetMCParticle(pLCA->GetDaughterLabel(0)+2);
 							Int_t iPdg1 = pDaughter1->GetPdgCode();
 							Int_t iPdg2 = pDaughter2->GetPdgCode();
 							Int_t iPdg3 = pDaughter3->GetPdgCode();

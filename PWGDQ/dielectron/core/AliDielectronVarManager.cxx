@@ -240,7 +240,7 @@ const char* AliDielectronVarManager::fgkParticleNames[AliDielectronVarManager::k
   {"DeltaPhiRandomRP",       "#Delta #Phi_{RanRP}",                                ""},
 
   {"PairPlaneMagInPro",      "cos(#Phi)"                                           ""},
-  {"PairPlaneMagInProTPC",      "cos(#Phi)^{TPC}"                                           ""},
+  {"PairPlaneMagInProZDC",   "cos(#Phi)^{ZDC}"                                     ""},
 
   {"Cos2PhiCS",              "cos(2#phi_{CS})",                                    ""},
   {"CosTilPhiCS",            "cos(#phi_{CS})",                                     ""},

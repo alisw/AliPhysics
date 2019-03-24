@@ -2188,22 +2188,25 @@ void AliAnalysisTaskStrEffStudy::UserExec(Option_t *)
 
     //_________________________________________________________
     //Step 1: establish list of tracks coming from des
-    for (Long_t iTrack = 0; iTrack < lNTracks; iTrack++){
+    for(Long_t iTrack = 0; iTrack < lNTracks; iTrack++){
         AliESDtrack *esdTrack = lESDevent->GetTrack(iTrack);
         if (!esdTrack) continue;
         /// The minimal TPC/ITS reconstruction criteria must be statisfied
         if (((esdTrack->GetStatus() & AliVTrack::kTPCrefit) == 0 &&
              (esdTrack->GetStatus() & AliVTrack::kITSrefit) == 0) ||
-              esdTrack->GetKinkIndex(0) > 0) continue;
-        Int_t lLabel = (Int_t) TMath::Abs(esdTrack->GetLabel());
-        TParticle* lParticle = lMCstack->Particle(lLabel);
+            esdTrack->GetKinkIndex(0) > 0)
+            continue;
+        Int_t lLabel = (Int_t) TMath::Abs( esdTrack->GetLabel() );
+        TParticle* lParticle = lMCevent->Particle( lLabel );
+        const int pdgAbs = std::abs(lParticle->GetPdgCode());
 
         Int_t lLabelMother = lParticle->GetFirstMother();
         if (lLabelMother < 0) continue;
 
         if (!lMCevent->IsPhysicalPrimary(lLabelMother)) continue;
 
-        TParticle *lParticleMother = lMCstack->Particle(lLabelMother);
+        TParticle *lParticleMother = lMCevent->Particle( lLabelMother );
+
         Int_t lParticleMotherPDG = lParticleMother->GetPdgCode();
         if (std::abs(lParticleMotherPDG) != 1010010030) continue;
         int lNDaughters = lRemoveDeltaRayFromDaughters(lMCevent, lParticleMother);
@@ -2239,14 +2242,14 @@ void AliAnalysisTaskStrEffStudy::UserExec(Option_t *)
                 if (lTrackOfInterest[iTrack].motherId != lTrackOfInterest[jTrack].motherId) continue;
                 Int_t pdg2 = lTrackOfInterest[jTrack].particle->GetPdgCode();
                 index[1] = {pdg2, jTrack};
-                /// Reject pairs of clone tracks, chapter 1
-                if (std::abs(pdg2) == std::abs(pdg1)) continue;
                 for (size_t zTrack = jTrack+1; zTrack < lTrackOfInterest.size(); zTrack++) {
                     if(lTrackOfInterest[iTrack].motherId != lTrackOfInterest[zTrack].motherId) continue;
+                    /// Reject all the triplets with +++ and ---
+                    if (lTrackOfInterest[iTrack].track->GetSign() == lTrackOfInterest[jTrack].track->GetSign() &&
+                        lTrackOfInterest[iTrack].track->GetSign() == lTrackOfInterest[zTrack].track->GetSign())
+                        continue;
                     Int_t pdg3 = lTrackOfInterest[zTrack].particle->GetPdgCode();
                     index[2] = {pdg3, zTrack};
-                    /// Reject pairs of clone tracks, chapter 2
-                    if (std::abs(pdg3) == std::abs(pdg1) || std::abs(pdg3) == std::abs(pdg2)) continue;
                     std::sort(index.begin(),index.end(),[](const std::pair<int,int> & a, const std::pair<int,int> & b)
                     {
                         return std::abs(a.first) > std::abs(b.first);
@@ -2272,35 +2275,31 @@ void AliAnalysisTaskStrEffStudy::UserExec(Option_t *)
         //____________________________________________________________________________
         // Step 3: checks on the candidate vector
         for (size_t iCand = 0; iCand < candidate.size(); iCand++) {
-            Short_t deu_c = candidate[iCand].track_deu->Charge();
-            Short_t p_c   = candidate[iCand].track_p->Charge();
-            Short_t pi_c  = candidate[iCand].track_pi->Charge();
-            if ((deu_c == p_c) && (deu_c != pi_c)) {
-                fTreeHyp3BodyVarTracks[0] = candidate[iCand].track_deu;
-                fTreeHyp3BodyVarTracks[1] = candidate[iCand].track_p;
-                fTreeHyp3BodyVarTracks[2] = candidate[iCand].track_pi;
-                fTreeHyp3BodyVarPDGcodes[0] = candidate[iCand].part1->GetPdgCode();
-                fTreeHyp3BodyVarPDGcodes[1] = candidate[iCand].part2->GetPdgCode();
-                fTreeHyp3BodyVarPDGcodes[2] = candidate[iCand].part3->GetPdgCode();
 
-                TParticle* lHyperTriton = candidate[iCand].mother;
-                fTreeHyp3BodyVarTruePx = lHyperTriton->Px();
-                fTreeHyp3BodyVarTruePy = lHyperTriton->Py();
-                fTreeHyp3BodyVarTruePz = lHyperTriton->Pz();
+            fTreeHyp3BodyVarTracks[0] = candidate[iCand].track_deu;
+            fTreeHyp3BodyVarTracks[1] = candidate[iCand].track_p;
+            fTreeHyp3BodyVarTracks[2] = candidate[iCand].track_pi;
+            fTreeHyp3BodyVarPDGcodes[0] = candidate[iCand].part1->GetPdgCode();
+            fTreeHyp3BodyVarPDGcodes[1] = candidate[iCand].part2->GetPdgCode();
+            fTreeHyp3BodyVarPDGcodes[2] = candidate[iCand].part3->GetPdgCode();
 
-                TParticle* prong = candidate[iCand].part1;
-                fTreeHyp3BodyVarDecayVx = prong->Vx();
-                fTreeHyp3BodyVarDecayVy = prong->Vy();
-                fTreeHyp3BodyVarDecayVz = prong->Vz();
-                fTreeHyp3BodyVarDecayT =  prong->T();
+            TParticle* lHyperTriton = candidate[iCand].mother;
+            fTreeHyp3BodyVarTruePx = lHyperTriton->Px();
+            fTreeHyp3BodyVarTruePy = lHyperTriton->Py();
+            fTreeHyp3BodyVarTruePz = lHyperTriton->Pz();
 
-                fTreeHyp3BodyVarMotherId = candidate[iCand].motherId;
-                if (lNewEvent) {
-                    fTreeHyp3BodyVarMotherId *= -1;
-                    lNewEvent = false;
-                }
-                fTreeHyperTriton3Body->Fill();
+            TParticle* prong = candidate[iCand].part1;
+            fTreeHyp3BodyVarDecayVx = prong->Vx();
+            fTreeHyp3BodyVarDecayVy = prong->Vy();
+            fTreeHyp3BodyVarDecayVz = prong->Vz();
+            fTreeHyp3BodyVarDecayT =  prong->T();
+
+            fTreeHyp3BodyVarMotherId = candidate[iCand].motherId;
+            if (lNewEvent) {
+                fTreeHyp3BodyVarMotherId *= -1;
+                lNewEvent = false;
             }
+            fTreeHyperTriton3Body->Fill();
         }
     }
 

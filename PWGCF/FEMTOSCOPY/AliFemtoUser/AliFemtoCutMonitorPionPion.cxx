@@ -225,6 +225,7 @@ AliFemtoCutMonitorPionPion::Pion::Pion(const bool passing,
                                        const bool is_mc_analysis,
                                        const bool suffix_output):
   AliFemtoCutMonitor()
+  , fAllowCharge(0)
   , fYPt(nullptr)
   , fPtPhi(nullptr)
   , fEtaPhi(nullptr)
@@ -279,13 +280,13 @@ AliFemtoCutMonitorPionPion::Pion::Pion(const bool passing,
   fChi2Tpc = new TH1F(
     hist_name("Chi2Tpc"),
     hist_title("#chi^{2} / N_{cls} TPC", "TPC"),
-    144, 0.0, 0.1
+    144, 0.0, 3.0
   );
 
   fChiTpcIts = new TH2F(
     "ChiTpcIts" + pf,
     TString::Format(title_format,
-                    "#chi^{2} / N_{cls} TPC vs ITS",
+                    "#chi^{2} / N_{DoF} TPC vs ITS",
                     "TPC; ITS;"),
     144, 0.0, 6.1,
     144, 0.0, 7.1);
@@ -419,6 +420,7 @@ AliFemtoCutMonitorPionPion::Pion::Pion(const bool passing,
 
 AliFemtoCutMonitorPionPion::Pion::Pion(const Pion &orig):
   AliFemtoCutMonitor()
+  , fAllowCharge(orig.fAllowCharge)
   , fYPt(static_cast<TH2F*>(orig.fYPt->Clone()))
   , fPtPhi(static_cast<TH2F*>(orig.fPtPhi->Clone()))
   , fEtaPhi(static_cast<TH2F*>(orig.fEtaPhi->Clone()))
@@ -464,6 +466,10 @@ AliFemtoCutMonitorPionPion::Pion::GetOutputList()
 
 void AliFemtoCutMonitorPionPion::Pion::Fill(const AliFemtoTrack* track)
 {
+  if (fAllowCharge && fAllowCharge != track->Charge()) {
+    return;
+  }
+
   const float pz = track->P().z(),
               pt = track->Pt(),
                p = track->P().Mag(),
@@ -477,13 +483,13 @@ void AliFemtoCutMonitorPionPion::Pion::Fill(const AliFemtoTrack* track)
               TPC_ncls = track->TPCncls();
 
   if (fMC_mass) {
-    const AliFemtoModelHiddenInfo *mc = dynamic_cast<const AliFemtoModelHiddenInfo*>(track->GetHiddenInfo());
+    const auto &mc = static_cast<const AliFemtoModelHiddenInfo&>(*track->GetHiddenInfo());
 
-    fMC_mass->Fill(mc->GetMass());
-    fMC_pt->Fill(pt, mc->GetTrueMomentum()->Perp());
+    fMC_mass->Fill(mc.GetMass());
+    fMC_pt->Fill(pt, mc.GetTrueMomentum()->Perp());
 
-    auto pdg_code = mc->GetPDGPid(),
-         pdg_code_parent = mc->GetMotherPdgCode();
+    auto pdg_code = mc.GetPDGPid(),
+         pdg_code_parent = mc.GetMotherPdgCode();
 
     const auto type_location = std::find(codes.begin(), codes.end(), pdg_code);
     const Int_t type_bin = type_location == codes.end()
@@ -513,8 +519,7 @@ void AliFemtoCutMonitorPionPion::Pion::Fill(const AliFemtoTrack* track)
   fNsigTpc->Fill(p, track->NSigmaTPCPi());
   fChi2Tpc->Fill(TPC_ncls > 0 ? track->TPCchi2() / TPC_ncls : -1.0);
 
-  fChiTpcIts->Fill(track->TPCchi2perNDF(),
-                    (ITS_ncls > 0) ? track->ITSchi2() / ITS_ncls : -1.0);
+  fChiTpcIts->Fill(track->TPCchi2perNDF(), track->ITSchi2perNDF());
 
   fImpact->Fill(track->ImpactZ(), track->ImpactD());
 }

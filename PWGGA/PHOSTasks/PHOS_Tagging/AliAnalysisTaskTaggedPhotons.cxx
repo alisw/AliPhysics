@@ -330,7 +330,7 @@ void AliAnalysisTaskTaggedPhotons::UserCreateOutputObjects()
   snprintf(cPID[6],6,"Both2"); 
   snprintf(cPID[7],6,"Both3"); 
   
-  fNPID=8 ;
+  fNPID=4 ;  //Extend to 8 to look at PID cuts systematics
   
   Int_t nPt=70;
   Double_t ptBins[71]={0.,0.1,0.2,0.3,0.4, 0.5,0.6,0.7,0.8,0.9, 1.0,1.1,1.2,1.3,1.4, 1.5,1.6,1.7,1.8,1.9, 2.0,2.2,2.4,2.6,2.8, 
@@ -509,16 +509,7 @@ void AliAnalysisTaskTaggedPhotons::UserCreateOutputObjects()
   
   
   if(fIsMC){
-      
-      fOutputContainer->Add(new TH1F("hMCConversionRadius","Clusters without label",600,0.,600.)) ;
-      fOutputContainer->Add(new TH2F("hMCRecPi0Vtx","Secondary pi0s",100,0.,10.,600,0.,600.)) ;
-      fOutputContainer->Add(new TH2F("hMCRecEtaVtx","Secondary etas",100,0.,10.,600,0.,600.)) ;
-      fOutputContainer->Add(new TH2F("hMCRecOmegaVtx","Secondary etas",100,0.,10.,600,0.,600.)) ;
-      fOutputContainer->Add(new TH2F("hMCRecEtaprVtx","Secondary etas",100,0.,10.,600,0.,600.)) ;
-      fOutputContainer->Add(new TH2F("hMCRecK0sVtx","Secondary K0s",100,0.,10.,600,0.,600.)) ;
-      fOutputContainer->Add(new TH2F("hMCRecK0lVtx","Secondary K0l",100,0.,10.,600,0.,600.)) ;
-      fOutputContainer->Add(new TH2F("hMCGammaPi0MisConvR","Converted photons",400,0.,40.,600,0.,600.)) ;
-      
+            
       for(Int_t mod=1; mod<5; mod++){
         fOutputContainer->Add(new TH1F(Form("hMCMinBiasPhot%d",mod),"MinBias photons",500,0.,50.)) ;
         fOutputContainer->Add(new TH1F(Form("hMCMinBiasPhotMap%d",mod),"MinBias photons in trigger area",500,0.,50.)) ;
@@ -1119,10 +1110,10 @@ void AliAnalysisTaskTaggedPhotons::FillMCHistos(){
 	if(grandParentPDG==111){
 	  //First find which daughter is our cluster
           //iparent - index of curent photon	  
-	  Int_t ipartner=grandParent->GetDaughter(0) ;
+	  Int_t ipartner=grandParent->GetDaughterLabel(0) ;
 	  if(ipartner==iparent){//look for other
   	    if(grandParent->GetNDaughters()>1){
-	      ipartner=grandParent->GetDaughter(1);  
+	      ipartner=grandParent->GetDaughterLabel(1);  
 	    }
 	    else{
 	      ipartner=-1 ;
@@ -1251,7 +1242,7 @@ void AliAnalysisTaskTaggedPhotons::FillMCHistos(){
                 if(!isPartnerLost){
 		  //this photon is converted before it is registered
 		  if(partner->GetNDaughters()>0){
-		    AliAODMCParticle* tmpP=(AliAODMCParticle*)fStack->At(partner->GetDaughter(0));
+		    AliAODMCParticle* tmpP=(AliAODMCParticle*)fStack->At(partner->GetDaughterLabel(0));
 		    if(tmpP->Xv()*tmpP->Xv()+tmpP->Yv()*tmpP->Yv()<450.*450.){  
 		      FillPIDHistograms("hMCDecWMisPartnConv",p) ;  //Spectrum of tagged with missed partner
 		      isPartnerLost=kTRUE;

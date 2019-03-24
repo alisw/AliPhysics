@@ -145,6 +145,7 @@ private:
 
   TList   *fOutput; //!<! list send on output slot 0
   TH1F *fHistNEvents;         //!<!hist. for No. of events
+  TH2F *fHistEventMultCent;     //!<!hist. for evnt Mult vs. centrality
   TH2F *fHistEventMultZv;       //!<!hist. of evnt Mult vs. Zv for all events
   TH2F *fHistEventMultZvEvSel;  //!<!hist. of evnt Mult vs. Zv for selected ev
   TH1F *fHistTrackStatus;     //!<!hist. of status of tracks
@@ -242,7 +243,7 @@ private:
   TObjArray* fPionTracks; /// array of pion-compatible tracks (TLorentzVectors)
 
   /// \cond CLASSIMP
-  ClassDef(AliAnalysisTaskCombinHF,15); /// D0D+ task from AOD tracks
+  ClassDef(AliAnalysisTaskCombinHF,16); /// D0D+ task from AOD tracks
   /// \endcond
 };
 

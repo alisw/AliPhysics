@@ -552,8 +552,8 @@ Bool_t AliDielectronMC::IsMCMotherToEE(const AliVParticle *particle, Int_t pdgMo
   }
   //check pdg code
   if (particle->PdgCode()!=pdgMother) return kFALSE;
-  Int_t ifirst = particle->GetFirstDaughter();
-  Int_t ilast  = particle->GetLastDaughter();
+  Int_t ifirst = particle->GetDaughterFirst();
+  Int_t ilast  = particle->GetDaughterLast();
 
   //check number of daughters
   if ((ilast-ifirst)!=1) return kFALSE;
@@ -583,8 +583,8 @@ Bool_t AliDielectronMC::IsMCMotherToEEesd(const AliMCParticle *particle, Int_t p
 
   //check pdg code
   if (particle->PdgCode()!=pdgMother) return kFALSE;
-  Int_t ifirst = particle->GetFirstDaughter();
-  Int_t ilast  = particle->GetLastDaughter();
+  Int_t ifirst = particle->GetDaughterFirst();
+  Int_t ilast  = particle->GetDaughterLast();
 
   //check number of daughters
   if ((ilast-ifirst)!=1) return kFALSE;
@@ -615,8 +615,8 @@ Bool_t AliDielectronMC::IsMCMotherToEEaod(const AliAODMCParticle *particle, Int_
   if (particle->GetPdgCode()!=pdgMother) return kFALSE;
   if (particle->GetNDaughters()!=2) return kFALSE;
 
-  Int_t ifirst = particle->GetFirstDaughter();
-  Int_t ilast  = particle->GetLastDaughter();
+  Int_t ifirst = particle->GetDaughterFirst();
+  Int_t ilast  = particle->GetDaughterLast();
 
   //check number of daughters
   if ((ilast-ifirst)!=1) return kFALSE;
@@ -744,8 +744,8 @@ void AliDielectronMC::GetDaughters(const TObject *mother, AliVParticle* &d1, Ali
     return;
   }
   AliVParticle *mcMother = (AliVParticle*) mother;
-  lblD1 = mcMother->GetFirstDaughter();
-  lblD2 = mcMother->GetLastDaughter();
+  lblD1 = mcMother->GetDaughterFirst();
+  lblD2 = mcMother->GetDaughterLast();
   d1 = fMCEvent->GetTrack(lblD1);
   d2 = fMCEvent->GetTrack(lblD2);
 
@@ -1535,15 +1535,15 @@ Bool_t AliDielectronMC::CheckIsRadiative(Int_t label) const
     const Int_t nd=mother->GetNDaughters();
     if (nd==2) return kFALSE;
     for (Int_t i=2; i<nd; ++i)
-      if (GetMCTrackFromMCEvent(mother->GetDaughter(0)+i)->PdgCode()!=22) return kFALSE; //last daughter is photon
+      if (GetMCTrackFromMCEvent(mother->GetDaughterLabel(0)+i)->PdgCode()!=22) return kFALSE; //last daughter is photon
   } else if(fAnaType==kESD) {
     if (!fMCEvent) return kFALSE;
     AliMCParticle *mother=static_cast<AliMCParticle*>(GetMCTrackFromMCEvent(label));
     if (!mother) return kFALSE;
-    const Int_t nd=(mother->GetLastDaughter()-mother->GetFirstDaughter()+1);
+    const Int_t nd=(mother->GetDaughterLast()-mother->GetDaughterFirst()+1);
     if (nd==2) return kFALSE;
     for (Int_t i=2; i<nd; ++i)
-      if (GetMCTrackFromMCEvent(mother->GetFirstDaughter()+i)->PdgCode()!=22) return kFALSE; //last daughters are photons
+      if (GetMCTrackFromMCEvent(mother->GetDaughterFirst()+i)->PdgCode()!=22) return kFALSE; //last daughters are photons
   }
   return kTRUE;
 }
@@ -2135,11 +2135,11 @@ Bool_t AliDielectronMC::CompareDaughterPDG(Int_t labelM, Int_t reqPDG, Bool_t PD
   //Get Mother from label
   AliMCParticle *mother=static_cast<AliMCParticle*>(GetMCTrackFromMCEvent(labelM));
   //Get number auf daughters, so you can go through them
-  const Int_t nd=(mother->GetLastDaughter()-mother->GetFirstDaughter()+1);
+  const Int_t nd=(mother->GetDaughterLast()-mother->GetDaughterFirst()+1);
   //Loop over daughters and get stop loop if PDG is found.
   for (Int_t i=0; i<nd; ++i) {
     //Go through the daughters, set result true and break if PDG code fits
-    if (ComparePDG((GetMCTrackFromMCEvent(mother->GetFirstDaughter()+i)->PdgCode()),reqPDG,kFALSE,CheckBothChargesDaughter)) {
+    if (ComparePDG((GetMCTrackFromMCEvent(mother->GetDaughterFirst()+i)->PdgCode()),reqPDG,kFALSE,CheckBothChargesDaughter)) {
       result = kTRUE;
       break;
     }
@@ -2276,7 +2276,7 @@ Bool_t AliDielectronMC::LoadHFPairs()
 
     if(pdg_parta==4 || pdg_parta==5){
       //The quark is requested to create a B or D hadron -> Must have a daughter
-      if(!(cand->GetFirstDaughter()>-1)){
+      if(!(cand->GetDaughterFirst()>-1)){
 	//childless quark to be linked!
 	if(pdg_part==4) quarktmp[0][0]=i;
 	else if(pdg_part==-4) quarktmp[0][1]=i;
@@ -2287,7 +2287,7 @@ Bool_t AliDielectronMC::LoadHFPairs()
 
       //Check if the quark is the one leading to the hadron
       Bool_t isHFprim(kTRUE);
-      for(Int_t idau=cand->GetFirstDaughter();idau<=cand->GetLastDaughter();idau++){
+      for(Int_t idau=cand->GetDaughterFirst();idau<=cand->GetDaughterLast();idau++){
 	if(fMCEvent->GetTrack(idau)->PdgCode()==pdg_part){
 	  isHFprim=kFALSE;
 	  break;

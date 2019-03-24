@@ -137,17 +137,9 @@ void LMEECutLib::SetEtaCorrectionITS(AliDielectron *die, Int_t corrXdim, Int_t c
   TString localPath = "/home/aaron/Data/diElec_framework_output/PIDcalibration/";
   TString fileName = "outputITS";
   if(hasMC){
-    if(wSDD == kTRUE){
-      fileName.Append("_MC.root");
-    }else{
-      fileName.Append("_woSDD_MC.root");
-    }
+    fileName.Append("_MC.root");
   }else{
-    if(wSDD == kTRUE){
-      fileName.Append(".root");
-    }else{
-      fileName.Append("_woSDD.root");
-    }
+    fileName.Append(".root");
   }
 
   TFile* inFile = TFile::Open(localPath+fileName);
@@ -328,17 +320,9 @@ TH3D LMEECutLib::SetEtaCorrectionITSTTree( Int_t corrXdim, Int_t corrYdim, Int_t
   TString localPath = "/home/aaron/Data/diElec_framework_output/PIDcalibration/";
   TString fileName = "outputITS";
   if(hasMC){
-    if(wSDD == kTRUE){
-      fileName.Append("_MC.root");
-    }else{
-      fileName.Append("_woSDD_MC.root");
-    }
+    fileName.Append("_MC.root");
   }else{
-    if(wSDD == kTRUE){
-      fileName.Append(".root");
-    }else{
-      fileName.Append("_woSDD.root");
-    }
+    fileName.Append(".root");
   }
 
   TFile* inFile = TFile::Open(localPath+fileName);

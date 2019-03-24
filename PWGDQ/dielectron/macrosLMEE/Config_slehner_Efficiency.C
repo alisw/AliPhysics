@@ -1,9 +1,9 @@
 //TString generatorNameForMCSignal  = "pizero_1;eta_2;etaprime_3;rho_4;omega_5;phi_6;jpsi_7";
-TString generatorNameForMCSignal  = "Hijing_0;pizero_1;eta_2;etaprime_3;rho_4;omega_5;phi_6;jpsi_7;Pythia CC_8;Pythia BB_8;Pythia B_8";
+//TString generatorNameForMCSignal  = "Hijing_0;pizero_1;eta_2;etaprime_3;rho_4;omega_5;phi_6;jpsi_7;Pythia CC_8;Pythia BB_8;Pythia B_8";
 //TString generatorNameForMCSignal  = "Pythia CC_1;Pythia BB_1;Pythia B_1;Jpsi2ee_1;B2JPsi2ee_1";
 // TString generatorNameForMCSignal  = "Hijing_0;pizero_1;eta_2;etaprime_3;rho_4;omega_5;phi_6;jpsi_7";
  
-TString generatorNameForULSSignal = "Hijing_0;pizero_1;eta_2;etaprime_3;rho_4;omega_5;phi_6;jpsi_7;Pythia CC_8;Pythia BB_8;Pythia B_8";
+//TString generatorNameForULSSignal = "Hijing_0;pizero_1;eta_2;etaprime_3;rho_4;omega_5;phi_6;jpsi_7;Pythia CC_8;Pythia BB_8;Pythia B_8";
 //TString generatorNameForULSSignal = "Hijing_0;pizero_1;eta_2;etaprime_3;rho_4;omega_5;phi_6;jpsi_7";
 
 
@@ -14,7 +14,8 @@ void Config_slehner_Efficiency(AliAnalysisTaskElectronEfficiencyV2 *task,  Bool_
   Int_t PIDCut=0;
   Int_t MVACut=0;
   
-  for(int glcut = 0; glcut <=20; ++glcut){
+//  for(int glcut = 0; glcut <=20; ++glcut){
+  for(int glcut = 0; glcut <=1; ++glcut){
     ////////DEFINE THE CUTS AS FUNCTION OF GLCUT//////
     if(glcut>0 && glcut<11) continue;
     PIDCut=glcut;
@@ -25,7 +26,7 @@ void Config_slehner_Efficiency(AliAnalysisTaskElectronEfficiencyV2 *task,  Bool_
     }
 }
 
-Bool_t setGens=kFALSE;  //decides if generator to be used are set (e.g. for LHC18b5a) or not (e.g. LHC16g1)
+Bool_t setGens=kTRUE;  //decides if generator to be used are set (e.g. for LHC18b5a) or not (e.g. LHC16g1)
 
 Bool_t SetTPCCorrection = kTRUE;
 Bool_t SetITSCorrection = kTRUE;

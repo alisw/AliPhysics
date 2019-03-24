@@ -1,7 +1,6 @@
 
 // For: Net Lambda fluctuation analysis via traditional method
 // By: Ejiro Umaka Apr 2018
-//update Mar 2019
 
 #ifndef AliAnalysisTaskNetLambdaTrad_h
 #define AliAnalysisTaskNetLambdaTrad_h
@@ -26,6 +25,9 @@ public:
     virtual ~AliAnalysisTaskNetLambdaTrad(){};
     virtual void UserCreateOutputObjects();
     virtual void UserExec(Option_t *option);
+    
+    void SetIsMC(Bool_t val){fIsMC = val;};
+    Bool_t GetIsMC(){return fIsMC;};
     void SetEventSelection(UInt_t val) {fEvSel = val;}
     
 protected:
@@ -36,44 +38,122 @@ protected:
     AliPIDResponse* fPIDResponse;
     AliEventCuts fEventCuts;
     TList* fListHist;
-    TTree* fTreeV0;
     
     TH1D*  fHistEventCounter;
     TH1D*  fHistCentrality;
     
-    TH2F*  f2fHistRecCentVsPtLambda;
-    TH2F*  f2fHistRecCentVsPtAntiLambda;
-    TH2F*  f2fHistInvMassVsPtLambda;
-    TH2F*  f2fHistInvMassVsPtAntiLambda;
-    TH1F*  f1fHistmassctLambda;
-    TH1F*  f1fHistmassctAntiLambda;
-    TH2F*  f2fHistPtmassctLambda;
-    TH2F* f2fHistPtmassctAntiLambda;
-    TH2F* f2fHistCentVsInvMassLambda;
-    TH2F* f2fHistCentVsInvMassAntiLambda;
+    TH2F*  f2fHistGenCentVsPtLambda;
+    TH2F*  f2fHistGenCentVsPtAntiLambda;
+    TH2F*  f2fHistXiPlus;
+    TH2F*  f2fHistXiMinus;
+    TH2F*  f2fHistLRecstat;
+    TH2F*  f2fHistARecstat;
+    TH2F*  f2fHistLGenstat;
+    TH2F*  f2fHistAGenstat;
 
+    TH2F*  f2fHistRecPrimariesCentVsPtLambdaFour;
+    TH2F*  f2fHistRecPrimariesCentVsPtAntiLambdaFour;
+    TH2F*  f2fHistRecPrimariesCentVsPtLambdaThree;
+    TH2F*  f2fHistRecPrimariesCentVsPtAntiLambdaThree;
+    TH2F*  f2fHistRecPrimariesCentVsPtLambdaTwo;
+    TH2F*  f2fHistRecPrimariesCentVsPtAntiLambdaTwo;
+    TH2F*  f2fHistRecPrimariesCentVsPtLambdaOne;
+    TH2F*  f2fHistRecPrimariesCentVsPtAntiLambdaOne;
     
+    TH2F*  f2fHistRecPrimariesCentVsPtLambdaFourSigthree;
+    TH2F*  f2fHistRecPrimariesCentVsPtAntiLambdaFourSigthree;
+    TH2F*  f2fHistRecPrimariesCentVsPtLambdaThreeSigthree;
+    TH2F*  f2fHistRecPrimariesCentVsPtAntiLambdaThreeSigthree;
+    TH2F*  f2fHistRecPrimariesCentVsPtLambdaTwoSigthree;
+    TH2F*  f2fHistRecPrimariesCentVsPtAntiLambdaTwoSigthree;
+    TH2F*  f2fHistRecPrimariesCentVsPtLambdaOneSigthree;
+    TH2F*  f2fHistRecPrimariesCentVsPtAntiLambdaOneSigthree;
+    
+    TH2F*  f2fHistLambdaMisIdFour;
+    TH2F*  f2fHistAntiLambdaMisIdFour;
+    TH2F*  f2fHistLambdaMisIdThree;
+    TH2F*  f2fHistAntiLambdaMisIdThree;
+    TH2F*  f2fHistLambdaMisIdTwo;
+    TH2F*  f2fHistAntiLambdaMisIdTwo;
+    TH2F*  f2fHistLambdaMisIdOne;
+    TH2F*  f2fHistAntiLambdaMisIdOne;
+    
+    TH2F*  f2fHistLambdaMisIdFourSigthree;
+    TH2F*  f2fHistAntiLambdaMisIdFourSigthree;
+    TH2F*  f2fHistLambdaMisIdThreeSigthree;
+    TH2F*  f2fHistAntiLambdaMisIdThreeSigthree;
+    TH2F*  f2fHistLambdaMisIdTwoSigthree;
+    TH2F*  f2fHistAntiLambdaMisIdTwoSigthree;
+    TH2F*  f2fHistLambdaMisIdOneSigthree;
+    TH2F*  f2fHistAntiLambdaMisIdOneSigthree;
+
+    TH3F*  f3fHistLambdafromXiFour;
+    TH3F*  f3fHistAntiLambdafromXiFour;
+    TH3F*  f3fHistLambdafromXiThree;
+    TH3F*  f3fHistAntiLambdafromXiThree;
+    TH3F*  f3fHistLambdafromXiTwo;
+    TH3F*  f3fHistAntiLambdafromXiTwo;
+    TH3F*  f3fHistLambdafromXiOne;
+    TH3F*  f3fHistAntiLambdafromXiOne;
+    
+    TH3F*  f3fHistLambdafromXiFourSigthree;
+    TH3F*  f3fHistAntiLambdafromXiFourSigthree;
+    TH3F*  f3fHistLambdafromXiThreeSigthree;
+    TH3F*  f3fHistAntiLambdafromXiThreeSigthree;
+    TH3F*  f3fHistLambdafromXiTwoSigthree;
+    TH3F*  f3fHistAntiLambdafromXiTwoSigthree;
+    TH3F*  f3fHistLambdafromXiOneSigthree;
+    TH3F*  f3fHistAntiLambdafromXiOneSigthree;
+    
+    
+    TH3F*  f3fHistCentInvMassVsPtLambdaRecFour;
+    TH3F*  f3fHistCentInvMassVsPtAntiLambdaRecFour;
+    TH3F*  f3fHistCentInvMassVsPtLambdaRecThree;
+    TH3F*  f3fHistCentInvMassVsPtAntiLambdaRecThree;
+    TH3F*  f3fHistCentInvMassVsPtLambdaRecTwo;
+    TH3F*  f3fHistCentInvMassVsPtAntiLambdaRecTwo;
+    TH3F*  f3fHistCentInvMassVsPtLambdaRecOne;
+    TH3F*  f3fHistCentInvMassVsPtAntiLambdaRecOne;
+    
+    TH3F*  f3fHistCentInvMassVsPtLambdaRecFourSigthree;
+    TH3F*  f3fHistCentInvMassVsPtAntiLambdaRecFourSigthree;
+    TH3F*  f3fHistCentInvMassVsPtLambdaRecThreeSigthree;
+    TH3F*  f3fHistCentInvMassVsPtAntiLambdaRecThreeSigthree;
+    TH3F*  f3fHistCentInvMassVsPtLambdaRecTwoSigthree;
+    TH3F*  f3fHistCentInvMassVsPtAntiLambdaRecTwoSigthree;
+    TH3F*  f3fHistCentInvMassVsPtLambdaRecOneSigthree;
+    TH3F*  f3fHistCentInvMassVsPtAntiLambdaRecOneSigthree;
+    
+
     Float_t fCentrality;
+    Int_t fTreeVariablePID;
+    Int_t fTreeVariablePIDParent;
+    Int_t fTreeVariablePIDPositive;
+    Int_t fTreeVariablePIDNegative;
+    Int_t fTreeVariablePrimaryStatusMother;
     
     Int_t fTreeVariableLeastNbrCrossedRows;
     Float_t fTreeVariableLeastRatioCrossedRowsOverFindable;
-    
-    Float_t fTreeVariableInvMassLambda;
-    Float_t fTreeVariableInvMassAntiLambda;
-    Float_t fTreeVariableDcaV0Daughters;
-    Float_t fTreeVariableDcaV0ToPrimVertex;
-    Float_t fTreeVariableDcaPosToPrimVertex;
-    Float_t fTreeVariableDcaNegToPrimVertex;
-    Float_t fTreeVariableNsigmaPosProton;
-    Float_t fTreeVariableNsigmaNegProton;
-    Float_t fTreeVariableCentrality;
-    
+
+    Bool_t fIsMC;
     UInt_t fEvSel;
     Int_t  fNptBins;
     
-    THnSparse *fPtBinNplusNminusChALL;
-    THnSparse *fPtBinNplusNminusChCut;
+    THnSparse *fPtBinNplusNminusChTruth;
+    THnSparse *fPtBinNplusNminusChTagFour;
+    THnSparse *fPtBinNplusNminusChTagThree;
+    THnSparse *fPtBinNplusNminusChTagTwo;
+    THnSparse *fPtBinNplusNminusChTagOne;
+    
+    THnSparse *fPtBinNplusNminusChTagFourSigThree;
+    THnSparse *fPtBinNplusNminusChTagThreeSigThree;
+    THnSparse *fPtBinNplusNminusChTagTwoSigThree;
+    THnSparse *fPtBinNplusNminusChTagOneSigThree;
+    
     Int_t    GetPtBin(Double_t pt);
+    
+    
+    
     
     ClassDef(AliAnalysisTaskNetLambdaTrad,5);
 };

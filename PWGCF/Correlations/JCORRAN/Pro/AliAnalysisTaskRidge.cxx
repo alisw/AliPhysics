@@ -40,6 +40,7 @@
 #include "AliVVZERO.h"
 #include <algorithm>
 #include <fstream>
+#include <random>
 
 const Double_t pi = TMath::Pi();
 
@@ -317,6 +318,8 @@ void AliAnalysisTaskRidge::Exec(Option_t* )
 		: fEvt = dynamic_cast<AliAODEvent*>(event);
 	if( !fEvt ) return;
 
+	if( fOption.Contains("MC") ){ IsMC = kTRUE; }
+
 	if( IsFirstEvent ){
 		runnumber = fEvt->GetRunNumber();
         	fRunTable = new AliAnalysisTaskRidgeRunTable(runnumber);
@@ -384,8 +387,11 @@ void AliAnalysisTaskRidge::Exec(Option_t* )
         	        else if( fOption.Contains("LooseVtx") ) hEfficiencyHist = (TH1D*)fefficiencyFile->Get(Form("%s_Hyb10cm",Period.Data()));
         	        else{ hEfficiencyHist = (TH1D*)fefficiencyFile->Get(Form("%s_Hyb8cm",Period.Data())); }
 	
-	                if( !hEfficiencyHist ) hEfficiencyHist = (TH1D*)fefficiencyFile->Get("Hyb8cm");
+	                if( !hEfficiencyHist ){ hEfficiencyHist = (TH1D*)fefficiencyFile->Get("LHC16l_Hyb8cm"); }
 			if( !hEfficiencyHist ){ cout << "No efficiency histogram" << endl;}
+
+			if( fOption.Contains("MC") ){ hEfficiencyHist = (TH1D*)fefficiencyFile->Get("LHC16l_Hyb8cm"); }
+			if( hEfficiencyHist ){ cout << "LHC16l_Hyb8cm" << endl; }
 
 			if( hEfficiencyHist ){
 	                	for(int i=0;i<fEff_npT_step;i++){
@@ -411,7 +417,6 @@ void AliAnalysisTaskRidge::Exec(Option_t* )
 	
 	fCent = 200;
 	fZ = 0.0;
-	if( fOption.Contains("MC") ){ IsMC = kTRUE; }
 
 	AliInputEventHandler* inputHandler;
 	inputHandler = (AliInputEventHandler*)
@@ -514,7 +519,7 @@ void AliAnalysisTaskRidge::Exec(Option_t* )
 		if( fOption.Contains("PileupTest") ){
 			if( sel->GetThisEventHasNoInconsistentVertices() &&
 			sel->GetThisEventPassesTrackletVsCluster() ){
-
+				IsSelectedFromAliMultSelection = kTRUE;
 			}
 		}
 	}
@@ -653,7 +658,9 @@ Bool_t AliAnalysisTaskRidge::GoodTracksSelection(int trk){
 			track = (AliAODTrack*) fEvt ->GetTrack(it);
 			if (!track) continue;
 
-			if( ! ((AliAODTrack*) track)->TestFilterBit(fFilterBit)) continue; //for hybrid
+			if( trk < 2.5 ){ if( ! ((AliAODTrack*) track)->TestFilterBit(fFilterBit)) continue; } //for hybrid
+			else if( trk > 2.5 ){ if( ! ((AliAODTrack*) track)->TestFilterMask(fFilterBit)) continue; } //for global
+
 
                         if( IsMC && fabs( dynamic_cast<AliAODMCHeader*>(fEvt->FindListObject(AliAODMCHeader::StdBranchName()))->GetVtxZ() ) < 10 ){
                                 if( track->GetLabel()>-1 && dynamic_cast<AliAODMCParticle*>(fMCArray->At( track->GetLabel() ))->IsPhysicalPrimary() ){
@@ -889,8 +896,9 @@ void AliAnalysisTaskRidge::FillTracks(){
 		}
 	}
 
-
-	std::random_shuffle ( goodtrackindices.begin(), goodtrackindices.end() );
+	std::random_device rd;
+	std::default_random_engine engine{rd()};
+	std::shuffle ( goodtrackindices.begin(), goodtrackindices.end(), engine );
 
 
 	double MaxPhi=0;
@@ -1239,7 +1247,9 @@ void AliAnalysisTaskRidge::FillTracklets(){
 	}
 
 	//eta is in ordering, so detaleta is always negative. solution -> Shuffle
-	std::random_shuffle ( goodtrackindices.begin(), goodtrackindices.end() );
+	std::random_device rd;
+	std::default_random_engine engine{rd()};
+	std::shuffle ( goodtrackindices.begin(), goodtrackindices.end(), engine );
 
 	fMultiplicity = fEvt -> GetMultiplicity();
 	const UInt_t ntracks = goodtrackindices.size();

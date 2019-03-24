@@ -31,7 +31,7 @@ AliAnalysisTaskHFSubstructure* AddTaskHFSubstructure(const char * ntracksData,
     wagonName2 = Form("AliAnalysisTaskHFSubstructure_%s_TC%sTree",ntracksData,tag.Data());
     wagonName3 = Form("AliAnalysisTaskHFSubstructure_%s_TC%sTreeSplittings",ntracksData,tag.Data());
   }
-  if (jetShapeType == AliAnalysisTaskHFSubstructure::kDetSignal || jetShapeType == AliAnalysisTaskHFSubstructure::kDetBackground || jetShapeType == AliAnalysisTaskHFSubstructure::kDetReflection || jetShapeType == AliAnalysisTaskHFSubstructure::kTrueDet){
+  if (jetShapeType == AliAnalysisTaskHFSubstructure::kDetSignal || jetShapeType == AliAnalysisTaskHFSubstructure::kDetBackground || jetShapeType == AliAnalysisTaskHFSubstructure::kDetReflection || jetShapeType == AliAnalysisTaskHFSubstructure::kTrueDet || jetShapeType == AliAnalysisTaskHFSubstructure::kDet){
     wagonName1 = Form("AliAnalysisTaskHFSubstructure_%s_TC%s",ntracksDet,tag.Data());
     wagonName2 = Form("AliAnalysisTaskHFSubstructure_%s_TC%sTree",ntracksDet,tag.Data());
     wagonName3 = Form("AliAnalysisTaskHFSubstructure_%s_TC%sTreeSplittings",ntracksDet,tag.Data());
@@ -59,7 +59,7 @@ AliAnalysisTaskHFSubstructure* AddTaskHFSubstructure(const char * ntracksData,
     AliHFTrackContainer* trackContData = new AliHFTrackContainer(ntracksData);
     task->AdoptParticleContainer(trackContData);
   }
-  else if (jetShapeType == AliAnalysisTaskHFSubstructure::kDetSignal || jetShapeType == AliAnalysisTaskHFSubstructure::kDetBackground || jetShapeType == AliAnalysisTaskHFSubstructure::kDetReflection || jetShapeType == AliAnalysisTaskHFSubstructure::kTrueDet){
+  else if (jetShapeType == AliAnalysisTaskHFSubstructure::kDetSignal || jetShapeType == AliAnalysisTaskHFSubstructure::kDetBackground || jetShapeType == AliAnalysisTaskHFSubstructure::kDetReflection || jetShapeType == AliAnalysisTaskHFSubstructure::kTrueDet || jetShapeType == AliAnalysisTaskHFSubstructure::kDet){
     AliHFTrackContainer* trackContDet = new AliHFTrackContainer(ntracksDet);
     task->AdoptParticleContainer(trackContDet);
     AliMCParticleContainer* trackContTrue = new AliHFAODMCParticleContainer(ntracksTrue);
@@ -137,6 +137,12 @@ AliAnalysisTaskHFSubstructure* AddTaskHFSubstructure(const char * ntracksData,
     contName1 += "_DataInclusive";
     contName2 += "_DataInclusive";
     contName3 += "_DataInclusive";
+  }
+
+  if (jetShapeType == AliAnalysisTaskHFSubstructure::kDet){
+    contName1 += "_Det";
+    contName2 += "_Det";
+    contName3 += "_Det";
   }
 
 

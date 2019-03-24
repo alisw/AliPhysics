@@ -20,6 +20,8 @@
 // S. Trogolo, stefano.trogolo@cern.ch
 ///////////////////////////////////////////////////////////////////////////////////////
 
+#include <TMath.h>
+#include <TFile.h>
 #include <TBits.h>
 #include <TH1D.h>
 #include <TString.h>
@@ -86,7 +88,7 @@ class AliHFQnVectorHandler : public TObject
     void GetEventPlaneAngleTPC(double &EvPlaneFullTPC, double &EvPlanePosTPC, double &EvPlaneNegTPC);
     void GetEventPlaneAngleV0(double &EvPlaneFullV0, double &EvPlaneV0A, double &EvPlaneV0C);
 
-    void RemoveTracksFromQnTPC(vector<AliAODTrack*> trToRem, double QnVecFullTPC[2], double QnVecPosTPC[2], double QnVecNegTPC[2], bool getUnNormalised=false);
+    void RemoveTracksFromQnTPC(vector<AliAODTrack*> trToRem, double QnVecFullTPC[2], double QnVecPosTPC[2], double QnVecNegTPC[2], double &multFullTPC, double &multPosTPC, double &multNegTPC, bool getUnNormalised=false); 
 
   private:  
 

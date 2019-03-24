@@ -158,9 +158,12 @@ class AliAnalysisTaskEmcalJetTagger : public AliAnalysisTaskEmcalJet {
    * 
    * Possible acceptance types:
    *   * 0 = use acceptance cuts of container  
-   *   * 1 = allow 0.1 one more for c2 in eta 
-   *   * 2 = allow 0.1 more in eta and phi for c2
-   *   * 3 = allow 0.1 in eta and phi for both containers
+   *   * 1 = allow extra margin (default: 0.1) one more for c2 in eta 
+   *   * 2 = allow extra margin (default: 0.1) more in eta and phi for c2
+   *   * 3 = allow extra margin (default: 0.1) in eta and phi for both containers
+   * Use AliAnalysisTaskEmcalJetTagger::SetExtraMargin to define the margin size 
+   * (absolute values).
+   * 
    * @param[in] type Acceptance type
    */
   void SetTypeAcceptance(Int_t type)                            { fTypeAcc = type; /*see Init()*/}
@@ -173,6 +176,25 @@ class AliAnalysisTaskEmcalJetTagger : public AliAnalysisTaskEmcalJet {
    * @param[in] dist Maximum distance allowed for the tag jet and the matched jets
    */
   void SetMaxDistance(Double_t dist)                            { fMaxDist = dist; }
+
+  /**
+   * @brief Set extra margin for jet acceptance in eta and phi for both the base and the tag jet container 
+   * @param marginbase Size of the extra margin in eta and phi for the base jet container (absolute value)
+   * @param margintag Size of the extra margin in eta and phi for the tag jet container (absolute value)
+   */
+  void SetExtraMargins(Double_t marginbase, Double_t margintag) { fExtraMarginAccBase = marginbase; fExtraMarginAccTag = margintag; }
+
+  /**
+   * @brief Set extra margin for jet acceptance in eta and phi for both the base and the tag jet container 
+   * @param extramargin Size of the extra margin in eta and phi for the tag jet container (absolute value)
+   */
+  void SetExtraMarginTag(Double_t extramargin)                  { fExtraMarginAccTag = extramargin; }
+
+  /**
+   * @brief Set extra margin for jet acceptance in eta and phi for both the base and the tag jet container 
+   * @param extramargin Size of the extra margin in eta and phi for the tag jet container (absolute value)
+   */
+  void SetExtraMarginBase(Double_t extramargin)                 { fExtraMarginAccBase = extramargin; }
   
   void SetSpecialParticleContainer(Int_t contnumb)              { fSpecPartContTag = contnumb; }
  protected:
@@ -257,6 +279,8 @@ class AliAnalysisTaskEmcalJetTagger : public AliAnalysisTaskEmcalJet {
   Bool_t                              fMatchingDone;               ///< flag to indicate if matching is done or not
   Int_t                               fTypeAcc;                    ///< acceptance cut for the jet containers, see method MatchJetsGeo in .cxx for possibilities
   Double_t                            fMaxDist;                    ///< distance allowed for two jets to match
+  Double_t                            fExtraMarginAccBase;         ///< Extra margin to be added to the acceptance for the different acceptance types (base jet container)
+  Double_t                            fExtraMarginAccTag;          ///< Extra margin to be added to the acceptance for the different acceptance types (tag jet container)
   Bool_t                              fInit;                       ///< true when the containers are initialized
   TH3F                                **fh3PtJet1VsDeltaEtaDeltaPhi; //!<! pt jet 1 vs deta vs dphi
   TH2F                                **fh2PtJet1VsDeltaR;         //!<! pt jet 1 vs dR

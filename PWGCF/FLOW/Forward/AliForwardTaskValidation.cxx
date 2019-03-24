@@ -330,27 +330,16 @@ void AliForwardTaskValidation::UserExec(Option_t *)
   if (fSettings.mc) fUtil.fMCevent = this->MCEvent();
   if (!fSettings.esd) fUtil.fAODevent = dynamic_cast<AliAODEvent*>(this->InputEvent());
 
-
-
-  //std::cout << fSettings.use_primaries_fwd << std::endl;
   fUtil.fSettings = this->fSettings;
 
+  TH2D forwardTrRef  ("ft","",200,-4,6,20,0,TMath::TwoPi());
+  forwardTrRef.SetDirectory(0);
+  forwardDist = &forwardTrRef;
 
+  if (!fSettings.esd) fUtil.FillFromForwardClusters(forwardDist);
+  else fUtil.FillFromTrackrefsFMD(forwardDist);
 
-    TH2D forwardTrRef  ("ft","",200,-4,6,20,0,TMath::TwoPi());
-    forwardTrRef.SetDirectory(0);
-    forwardDist = &forwardTrRef;
-
-    if (!fSettings.esd) {
-      AliAODForwardMult* aodfmult = static_cast<AliAODForwardMult*>(InputEvent()->FindListObject("Forward"));
-      forwardDist = &aodfmult->GetHistogram();
-    }
-    else {
-      fUtil.FillFromTrackrefs(forwardDist);
-    }
-    forwardDist->SetDirectory(0);
-
-
+  forwardDist->SetDirectory(0);
 
   if (fSettings.useEventcuts){
   for (UInt_t idx = 0; idx < this->fEventValidators.size(); idx++) {
@@ -755,6 +744,7 @@ AliForwardTaskValidation::Tracks AliForwardTaskValidation::GetMCTruthTracks() {
 
 
 Bool_t AliForwardTaskValidation::HasValidFMD(){
+  return kTRUE;
   AliMultSelection *MultSelection = dynamic_cast< AliMultSelection* >(InputEvent()->FindListObject("MultSelection"));
 
   //AliMultSelection *MultSelection = (AliMultSelection*)fInputEvent->FindListObject("MultSelection");

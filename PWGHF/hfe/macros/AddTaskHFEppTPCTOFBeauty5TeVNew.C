@@ -156,31 +156,33 @@ AliAnalysisHFEppTPCTOFBeauty5TeVNew* ConfigHFEppTPCTOFBeauty5TeVNew(Bool_t isMCc
    
    //
    TString filenameMB = "nonHFEcorrect_pp5_new_BeautyMB_correct.root";
+   //TFile *weightFileMB = TFile::Open(Form("%s", filenameMB.Data()));
    TFile *weightFileMB = TFile::Open(Form("$ALICE_PHYSICS/PWGHF/hfe/macros/%s", filenameMB.Data()));
   // TFile *weightFileMB = TFile::Open(Form("/home/sudhir/alicodes/Beauty_5_TeV/TASKS_BEAUTY_Sudhir/A_NewPhotonicTask_ForBeauty/Weights/MacroAndSpectra/%s", filenameMB.Data()));
    TGraphErrors *hWPiMB = (TGraphErrors*)weightFileMB->Get("hRatio_17l3b_d1_pion");  // I guess these are charged pion weights
    TGraphErrors *hWEtaMB = (TGraphErrors*)weightFileMB->Get("hRatio_17l3b_d1_eta");
    
-   TString filenameEnh = "nonHFEcorrect_pp5_new_BeautyEnh_correct.root";
+   TString filenameEnh = "nonHFEcorrect_pp5_New.root";
+   //TFile *weightFileEnh = TFile::Open(Form("%s", filenameEnh.Data()));
    TFile *weightFileEnh = TFile::Open(Form("$ALICE_PHYSICS/PWGHF/hfe/macros/%s", filenameEnh.Data()));
   // TFile *weightFileEnh = TFile::Open(Form("/home/sudhir/alicodes/Beauty_5_TeV/TASKS_BEAUTY_Sudhir/A_NewPhotonicTask_ForBeauty/Weights/MacroAndSpectra/%s", filenameEnh.Data()));
-   TGraphErrors *hWPiEnh = (TGraphErrors*)weightFileEnh->Get("hRatio_17l3b_d1_pion");  // I guess these are charged pion weights
-   TGraphErrors *hWEtaEnh = (TGraphErrors*)weightFileEnh->Get("hRatio_17l3b_d1_eta");
+   //TGraphErrors *hWPiEnh = (TGraphErrors*)weightFileEnh->Get("hRatio_17l3b_d1_pion");  // I guess these are charged pion weights
+  // TGraphErrors *hWEtaEnh = (TGraphErrors*)weightFileEnh->Get("hRatio_17l3b_d1_eta");
    
    //TH1F *hRatioPi0 = (TH1F*)weightFile->Get("hRatio_17l4b_pion");  // I guess these are charged pion weights
    //TH1F *hRatioEta = (TH1F*)weightFile->Get("hRatio_17l4b_eta");
    
-   /*
-   TH1F *hRatioPi0 = (TH1F*)weightFile->Get("hRatio_17l4b_neutral_pion");
-   TH1F *hRatioEta = (TH1F*)weightFile->Get("hRatio_17l4b_neutral_eta");*/
-  /* TGraphErrors *hWPi = new TGraphErrors(hRatioPi0);
-   hWPi->GetXaxis()->SetTitle(hRatioPi0->GetXaxis()->GetTitle());
-   hWPi->GetYaxis()->SetTitle(hRatioPi0->GetYaxis()->GetTitle());
+   
+   TH1F *hRatioPi0 = (TH1F*)weightFileEnh->Get("hRatio_17l4b_neutral_pion");
+   TH1F *hRatioEta = (TH1F*)weightFileEnh->Get("hRatio_17l4b_neutral_eta");
+   TGraphErrors *hWPiEnh = new TGraphErrors(hRatioPi0);
+   hWPiEnh->GetXaxis()->SetTitle(hRatioPi0->GetXaxis()->GetTitle());
+   hWPiEnh->GetYaxis()->SetTitle(hRatioPi0->GetYaxis()->GetTitle());
     
-   TGraphErrors *hWEta = new TGraphErrors(hRatioEta);
-   hWEta->GetXaxis()->SetTitle(hRatioEta->GetXaxis()->GetTitle());
-   hWEta->GetYaxis()->SetTitle(hRatioEta->GetYaxis()->GetTitle());
-*/
+   TGraphErrors *hWEtaEnh = new TGraphErrors(hRatioEta);
+   hWEtaEnh->GetXaxis()->SetTitle(hRatioEta->GetXaxis()->GetTitle());
+   hWEtaEnh->GetYaxis()->SetTitle(hRatioEta->GetYaxis()->GetTitle());
+
    task->SetPi0WeightMB(hWPiMB);
    task->SetEtaWeightMB(hWEtaMB);
    task->SetPi0WeightEnh(hWPiEnh);

@@ -83,7 +83,8 @@ AliAnalysisTaskUpcNano_MB::AliAnalysisTaskUpcNano_MB()
 	hTriggerCounter(0),
 	fSPDfile(0),
   	hBCmod4(0),
-  	hSPDeff(0) 
+  	hSPDeff(0),
+	fTOFmask(0) 
 	
 
 {
@@ -117,7 +118,8 @@ AliAnalysisTaskUpcNano_MB::AliAnalysisTaskUpcNano_MB(const char *name)
 	hTriggerCounter(0),
 	fSPDfile(0),
   	hBCmod4(0),
-  	hSPDeff(0) 
+  	hSPDeff(0),
+	fTOFmask(0) 
 
 {
   for(Int_t i = 0; i<10; i++) fTriggerInputsMC[i] = kFALSE;
@@ -181,6 +183,7 @@ AliAnalysisManager *man = AliAnalysisManager::GetAnalysisManager();
   fTreeJPsi ->Branch("fInEtaRec", &fInEtaRec, "fInEtaRec/O");
   if(isMC){
 	fTreeJPsi ->Branch("fTriggerInputsMC", &fTriggerInputsMC[0], "fTriggerInputsMC[11]/O");
+	fTreeJPsi ->Branch("fTOFmask", &fTOFmask);
 	}
   fOutputList->Add(fTreeJPsi);
   
@@ -215,7 +218,10 @@ AliAnalysisManager *man = AliAnalysisManager::GetAnalysisManager();
   fTreeRho ->Branch("fInEtaRec", &fInEtaRec, "fInEtaRec/O");
   fTreeRho ->Branch("fTriggers", &fTriggers, "fTriggers[8]/O");
   
-  if(isMC) fTreeRho ->Branch("fTriggerInputsMC", &fTriggerInputsMC[0], "fTriggerInputsMC[11]/O");
+  if(isMC){ 
+    fTreeRho ->Branch("fTriggerInputsMC", &fTriggerInputsMC[0], "fTriggerInputsMC[11]/O");
+    fTreeRho ->Branch("fTOFmask", &fTOFmask);
+    }
   fOutputList->Add(fTreeRho);
 
   fTreePsi2s = new TTree("fTreePsi2s", "fTreePsi2s");
@@ -233,8 +239,9 @@ AliAnalysisManager *man = AliAnalysisManager::GetAnalysisManager();
   fTreePsi2s ->Branch("fPIDsigma", &fPIDsigma,"fPIDsigma/F");
   fTreePsi2s ->Branch("fRunNumber", &fRunNumber, "fRunNumber/I");
   if(isMC){ 
-  	fTreePsi2s ->Branch("fTriggerInputsMC", &fTriggerInputsMC[0], "fTriggerInputsMC[11]/O");
-	}
+    fTreePsi2s ->Branch("fTriggerInputsMC", &fTriggerInputsMC[0], "fTriggerInputsMC[11]/O");
+    fTreePsi2s ->Branch("fTOFmask", &fTOFmask);
+    }
   fOutputList->Add(fTreePsi2s);
     
   fTreeGen = new TTree("fTreeGen", "fTreeGen");
@@ -703,8 +710,31 @@ void AliAnalysisTaskUpcNano_MB::RunMC(AliVEvent *fEvent)
   fTriggerInputsMC[1] = fTriggerVZERO & (1 << 13); //0VBC VZERO C
   fTriggerInputsMC[2] = fTriggerAD & (1 << 12);   //0UBA ADA
   fTriggerInputsMC[3] = fTriggerAD & (1 << 13);   //0UBC ADC
-  fTriggerInputsMC[4] = fL0inputs & (1 << 22);  //0OMU TOF two hits with topology
-  fTriggerInputsMC[5] = fL0inputs & (1 << 19);	//0OM2 TOF two hits
+  //fTriggerInputsMC[4] = fL0inputs & (1 << 22);  //0OMU TOF two hits with topology
+  //fTriggerInputsMC[5] = fL0inputs & (1 << 19);	//0OM2 TOF two hits
+  
+  
+  const AliTOFHeader *tofH = fEvent->GetTOFHeader();
+  fTOFmask = tofH->GetTriggerMask();
+  
+  Bool_t firedMaxiPhi[36] = {0};
+  Int_t NfiredMaxiPads = 0;
+ 
+  for(Int_t ltm=0;ltm<72;ltm++){
+    Int_t ip = ltm%36;
+    for(Int_t cttm=0;cttm<23;cttm++){
+      if(fTOFmask->IsON(ltm,cttm)){
+    	firedMaxiPhi[ip] = kTRUE;
+    	NfiredMaxiPads++;
+    	}
+      }
+    }
+  Bool_t offlineOMU = kFALSE;
+  for(Int_t ip=0;ip<18;ip++)if(firedMaxiPhi[ip] && (firedMaxiPhi[ip+15]||firedMaxiPhi[ip+16]||firedMaxiPhi[ip+17]||firedMaxiPhi[ip+18]))offlineOMU = kTRUE;
+  if(NfiredMaxiPads>6)offlineOMU = kFALSE;
+
+  if(offlineOMU)fTriggerInputsMC[4] = kTRUE;  //0OMU TOF two hits with topology
+  if(NfiredMaxiPads >= 2)fTriggerInputsMC[5] = kTRUE;	//0OM2 TOF two hits
   		
 		
   const Int_t bcMod4 = TMath::Nint(hBCmod4->GetRandom());			

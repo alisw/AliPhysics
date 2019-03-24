@@ -5,24 +5,21 @@
 Bool_t DefineCutsTaskpp(AliAnalysisTaskHFJetIPQA *task, Float_t minC, Float_t maxC)
 {
     // define cuts for task
-    AliRDHFJetsCuts *cuts=task->GetJetCutsHF();
+    AliRDHFJetsCuts *cuts=new AliRDHFJetsCuts();
     // jets
-    //cuts->SetJetRadius(0.4); // this cut does nothing
-    cuts->SetMaxEtaJet(0.5);//0.9-R
     cuts->SetMinPtJet(5.);
     cuts->SetMaxPtJet(250.);
     // Set centrality
-    cuts->SetMinCentrality(minC);
-    cuts->SetMaxCentrality(maxC);
-    cuts->SetUsePhysicsSelection(kFALSE);
-    cuts->SetOptPileup(1);
-    cuts->ConfigurePileupCuts(5,0.8);
+    //cuts->SetMinCentrality(minC);
+    //cuts->SetMaxCentrality(maxC);
+    //cuts->SetUsePhysicsSelection(kFALSE);
+    //cuts->SetOptPileup(1);
+    //cuts->ConfigurePileupCuts(5,0.8);
     cuts->SetTriggerClass("");
     cuts->SetTriggerMask(AliVEvent::kINT7);
     cuts->PrintAll();
-    cuts->PrintTrigger();
     // pPb minbias only
-
+    task->SetJetCuts(cuts);
     return kTRUE;
 }
 
@@ -41,6 +38,7 @@ AliAnalysisTaskHFJetIPQA* AddTaskHFJetIPQA(
                                            const char * type = "TPC",
                                            const char *taskname           = "AliAnalysisTaskEmcalJetBJetTaggingIP",
                                            const char *njetsMC              = "Jets",
+                                           const char *ntracksMC            = "tracksMC",
                                            const char *nrhoMC               = "RhoMC",
                                            TString PathToWeights = 	"alien:///alice/cern.ch/user/k/kgarner/Weights_18_07_18.root",
                                           // TString PathToRunwiseCorrectionParameters = "alien:///alice/cern.ch/user/l/lfeldkam/MeanSigmaImpParFactors.root",
@@ -157,6 +155,7 @@ AliAnalysisTaskHFJetIPQA* AddTaskHFJetIPQA(
     //==============================================================================
     Printf("%s :: Setting up input containers.",taskname);
     AliParticleContainer *trackCont  = jetTask->AddParticleContainer(ntracks);
+    AliParticleContainer *trackContMC  = jetTask->AddParticleContainer(ntracksMC);
     AliClusterContainer *clusterCont = jetTask->AddClusterContainer(nclusters);
     TString strType(type);
     AliJetContainer *jetCont = jetTask->AddJetContainer(njets,strType,jetradius);
@@ -173,6 +172,7 @@ AliAnalysisTaskHFJetIPQA* AddTaskHFJetIPQA(
         
         if(jetContMC) {
             jetContMC->SetRhoName(nrhoMC);
+            jetContMC->ConnectParticleContainer(trackContMC);
             jetContMC->SetIsParticleLevel(kTRUE);
             jetContMC->SetMaxTrackPt(1000);
         }
@@ -234,14 +234,14 @@ AliAnalysisTaskHFJetIPQA* AddTaskHFJetIPQA(
     contname2 += Form("_histos_R%.1f",jetradius);
 
     AliAnalysisDataContainer *coutput1 = mgr->CreateContainer(contname.Data(),
-                                                              TList::Class(),AliAnalysisManager::kOutputContainer,
+                                                              AliEmcalList::Class(),AliAnalysisManager::kOutputContainer,
                                                               Form("%s", AliAnalysisManager::GetCommonFileName()));
-    AliAnalysisDataContainer *coutput2 = mgr->CreateContainer(contname2.Data(),
+    /*AliAnalysisDataContainer *coutput2 = mgr->CreateContainer(contname2.Data(),
                                                               TList::Class(),AliAnalysisManager::kOutputContainer,
-                                                              Form("%s", AliAnalysisManager::GetCommonFileName()));
+                                                              Form("%s", AliAnalysisManager::GetCommonFileName()));*/
     mgr->ConnectInput  (jetTask, 0,  cinput1 );
     mgr->ConnectOutput (jetTask, 1, coutput1 );
-    mgr->ConnectOutput (jetTask, 2, coutput2 );
+   // mgr->ConnectOutput (jetTask, 2, coutput2 );
     
 
     

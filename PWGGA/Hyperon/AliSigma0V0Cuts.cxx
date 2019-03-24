@@ -474,10 +474,6 @@ void AliSigma0V0Cuts::SelectV0(AliVEvent *inputEvent, AliMCEvent *mcEvent) {
 
     if (fIsMC) {
       int label = v0Candidate.MatchToMC(fMCEvent, fPID, {{fPosPDG, fNegPDG}});
-      if (label < 0) {
-        // no mc info assigned to this track - don't use it
-        v0Candidate.SetUse(false);
-      }
 
       AliMCParticle *mcParticle =
           static_cast<AliMCParticle *>(fMCEvent->GetTrack(label));
@@ -1516,8 +1512,8 @@ bool AliSigma0V0Cuts::CheckDaughters(const AliMCParticle *particle) const {
 
   if (particle->GetNDaughters() != 2) return false;
 
-  for (int daughterIndex = particle->GetFirstDaughter();
-       daughterIndex <= particle->GetLastDaughter(); ++daughterIndex) {
+  for (int daughterIndex = particle->GetDaughterFirst();
+       daughterIndex <= particle->GetDaughterLast(); ++daughterIndex) {
     if (daughterIndex < 0) continue;
     AliMCParticle *tmpDaughter =
         static_cast<AliMCParticle *>(fMCEvent->GetTrack(daughterIndex));
@@ -1547,8 +1543,8 @@ bool AliSigma0V0Cuts::CheckDaughtersInAcceptance(
 
   if (particle->GetNDaughters() != 2) return false;
 
-  for (int daughterIndex = particle->GetFirstDaughter();
-       daughterIndex <= particle->GetLastDaughter(); ++daughterIndex) {
+  for (int daughterIndex = particle->GetDaughterFirst();
+       daughterIndex <= particle->GetDaughterLast(); ++daughterIndex) {
     if (daughterIndex < 0) continue;
     AliMCParticle *tmpDaughter =
         static_cast<AliMCParticle *>(fMCEvent->GetTrack(daughterIndex));
