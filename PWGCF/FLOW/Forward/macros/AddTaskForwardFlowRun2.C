@@ -112,7 +112,7 @@ AliAnalysisTaskSE* AddTaskForwardFlowRun2( bool doNUA, bool makeFakeHoles, TStri
     if (nua_mode == AliForwardSettings::kNormal)
       resName += "_NUA_normal";
 
-    task->fSettings.nua_mode = nua_mode; // "V0M";// RefMult08; // "V0M" // "SPDTracklets";
+    task->fSettings.nua_mode = nua_mode; 
 
     file->GetObject("nuacentral", task->fSettings.nuacentral);
     task->fSettings.nuacentral->SetDirectory(0);
@@ -152,7 +152,6 @@ AliAnalysisTaskSE* AddTaskForwardFlowRun2( bool doNUA, bool makeFakeHoles, TStri
    TString combName = suffix;
 
   std::cout << "Container name: " << combName << std::endl;
-  //resName = "hej";
   std::cout << "______________________________________________________________________________" << std::endl;
 
   AliAnalysisDataContainer *coutput_recon =
