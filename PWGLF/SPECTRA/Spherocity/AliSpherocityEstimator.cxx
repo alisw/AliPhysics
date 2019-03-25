@@ -10,9 +10,10 @@ ClassImp(AliSpherocityEstimator)
 AliSpherocityEstimator::AliSpherocityEstimator():
   TNamed(),
   fSphTrackCuts(0),
-  fAODFilterBit(128), //TPCOnly by default
+  fAODFilterBit(1), //TPCOnly by default
   fMinMulti(10),
   fTrackMulti(0),
+  fMinPt(0.15),
   fOnAODs(kFALSE)
 {
   fSphTrackCuts = AliESDtrackCuts::GetStandardTPCOnlyTrackCuts();
