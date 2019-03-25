@@ -1414,6 +1414,8 @@ void AddTask_GammaCalo_pPb(
     cuts.AddCutCalo("80010113","2446641151083200000","0163103100000010"); // dist to bad channel: 1, Ncells: 3, min energy 400 MeV
     cuts.AddCutCalo("80010113","2446641151012200000","0163103100000010"); // dist to bad channel: 1, Ncells: 2, min energy 300 MeV
     cuts.AddCutCalo("80010113","2446641151082200000","0163103100000010"); // dist to bad channel: 1, Ncells: 2, min energy 400 MeV
+  } else if (trainConfig == 520) {  // JJ MC
+    cuts.AddCutCalo("80010123","2446642051012200000","0163103100000010"); // standard
 
   // Variations for systematics
   } else if (trainConfig == 530) { // NL variations (standard: 42 PHOS ML)
