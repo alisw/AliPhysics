@@ -1512,9 +1512,9 @@ void InitHistograms(AliDielectron *die, Int_t cutDefinition)
 			AliDielectronVarManager::kM, AliDielectronVarManager::kQnTPCrpH2);
   
   histos->UserHistogram("Pair", 
-			"InvMass_PairPlaneMagInProTPC","Inv.Mass:PairPlaneMagInProTPC;Inv. Mass (GeV/c^{2}); kPairPlaneMagInProTPC",
+			"InvMass_PairPlaneMagInProTPC","Inv.Mass:PairPlaneMagInProTPC;Inv. Mass (GeV/c^{2}); kPairPlaneMagInProZDC",
 			500,0.,5.,200,-1,1,
-			AliDielectronVarManager::kM, AliDielectronVarManager::kPairPlaneMagInProTPC);
+			AliDielectronVarManager::kM, AliDielectronVarManager::kPairPlaneMagInProZDC);
   
   histos->UserHistogram("Pair", 
 			"InvMass_QnTPCDelta","Inv.Mass:QnTPC;Inv. Mass (GeV/c^{2}); kQnDeltaPhiTPCrpH2",
