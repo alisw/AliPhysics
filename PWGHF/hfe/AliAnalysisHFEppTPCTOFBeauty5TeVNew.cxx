@@ -3060,8 +3060,8 @@ void AliAnalysisHFEppTPCTOFBeauty5TeVNew::InvMassCheckMCNew(int itrack, AliVTrac
         if(!trackAsso) continue;
         if(!atrackAsso->TestFilterMask(AliAODTrack::kTrkTPCOnly)) continue;
         //if(trackAsso->GetTPCNcls() < 60) continue;  // TPC and TPCPID cls check GetTPCSignal() or GetTPCSignalN()
-        if(trackAsso->GetTPCNcls() < 60 && trackAsso->GetTPCsignalN() < 60 ) continue;  // TPC and TPCPID cls check GetTPCSignal() or GetTPCSignalN()
-        if(atrackAsso->GetITSNcls() < 2) continue;
+        if(trackAsso->GetTPCNcls() < 60/* && trackAsso->GetTPCsignalN() < 60*/ ) continue;  // TPC and TPCPID cls check GetTPCSignal() or GetTPCSignalN()
+       // if(atrackAsso->GetITSNcls() < 2) continue;
 
 	nsigmaAsso = fPidResponse->NumberOfSigmasTPC(trackAsso, AliPID::kElectron);
         ptAsso = trackAsso->Pt();
@@ -3072,7 +3072,7 @@ void AliAnalysisHFEppTPCTOFBeauty5TeVNew::InvMassCheckMCNew(int itrack, AliVTrac
         if(trackAsso->Eta()<=-0.9 || trackAsso->Eta()>=0.9) continue;
         if(nsigmaAsso < -3 || nsigmaAsso > 3) continue;
         if((!(trackAsso->GetStatus()&AliESDtrack::kITSrefit)|| (!(trackAsso->GetStatus()&AliESDtrack::kTPCrefit)))) continue;
- 	if(!fExtraCuts){
+ 	/*if(!fExtraCuts){
         fExtraCuts = new AliHFEextraCuts("hfeExtraCuts","HFE Extra Cuts");
         }
 
@@ -3083,7 +3083,7 @@ void AliAnalysisHFEppTPCTOFBeauty5TeVNew::InvMassCheckMCNew(int itrack, AliVTrac
         fExtraCuts->SetClusterRatioTPC(0.6, AliHFEextraCuts::kFoundOverFindable);
         // if(trackAsso->PropagateToDCA(pVtx, fAOD->GetMagneticField(), 20., d0z0Asso, covAsso))
         if(TMath::Abs(d0z0Asso[0]) > DCAxyCut || TMath::Abs(d0z0Asso[1]) > DCAzCut) continue;
-      
+      */
       
         if(charge>0) fPDGe1 = -11; //-11 in PDG is for positron, just to be confusing
         if(chargeAsso>0) fPDGe2 = -11;
