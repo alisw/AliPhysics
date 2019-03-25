@@ -7,10 +7,10 @@ R__ADD_INCLUDE_PATH($ALICE_PHYSICS)
 #include <PWGLF/RESONANCES/macros/mini/AddMonitorOutput.C>
 #endif
 
-Bool_t ConfigF0(AliRsnMiniAnalysisTask *task, 
-		Bool_t                 isMC, 
+Bool_t ConfigF0(AliRsnMiniAnalysisTask *task = 0x0, 
+		Bool_t                 isMC = kFALSE, 
 		AliPIDResponse::EBeamType collSys = AliPIDResponse::kPP, //=0, kPPB=1, kPBPB=2
-		AliRsnCutSet           *cutsPair,             //cuts on the pair
+		AliRsnCutSet           *cutsPair = 0x0,             //cuts on the pair
 		Bool_t                 enaMultSel = kTRUE,    //enable multiplicity axis
       		Float_t                masslow = 0.3,         //inv mass axis low edge 
 		Float_t                massup = 1.3,          //inv mass axis upper edge 
