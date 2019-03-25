@@ -244,7 +244,7 @@ TList* AliAnalysisTaskSEHFTenderQnVectors::GetSplineForqnPercentileList(int det)
         return fSplineListqnPercTPC[det];
     }
     else if(det>=kFullV0 && det<=kV0C) {
-        return fSplineListqnPercV0[det];
+        return fSplineListqnPercV0[det-3];
     }
     else {
         AliWarning("Spline List not found!");
