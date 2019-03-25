@@ -27,17 +27,22 @@ class TParticle;
 class AliAODMCParticle;
 
 
-class AliDalitzAODESDMC{
+class AliDalitzAODESDMC: public TObject{
 public:
     
-    AliDalitzAODESDMC(TParticle* ltparticle){
+    AliDalitzAODESDMC(TParticle* ltparticle):
+        TObject()
+    {
         fIsESDMC=kTRUE;
         tparticle=ltparticle;
     };
-        AliDalitzAODESDMC(AliAODMCParticle* laliaodmcparticle){
+    AliDalitzAODESDMC(AliAODMCParticle* laliaodmcparticle):
+        TObject()
+    {
         fIsESDMC=kFALSE;
         aliaodmcparticle=laliaodmcparticle;
     };
+    virtual ~AliDalitzAODESDMC() {}
     Int_t GetMotherG();
     Int_t GetFirstDaughterG();
     Int_t GetLastDaughterG();

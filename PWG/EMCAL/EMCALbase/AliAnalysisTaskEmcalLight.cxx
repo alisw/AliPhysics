@@ -276,7 +276,7 @@ void AliAnalysisTaskEmcalLight::UserCreateOutputObjects()
   if (mgr) {
     AliVEventHandler *evhand = mgr->GetInputEventHandler();
     if (evhand) {
-      if (evhand->InheritsFrom("AliESDInputHandler")) {
+      if (evhand->InheritsFrom("AliESDInputHandler") || evhand->InheritsFrom("AliDummyHandler")) {
         fDataType = kESD;
       }
       else {
