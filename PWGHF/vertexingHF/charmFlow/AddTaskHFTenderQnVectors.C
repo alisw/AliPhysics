@@ -3,7 +3,8 @@ AliAnalysisTaskSEHFTenderQnVectors* AddTaskHFTenderQnVectors(TString taskname = 
                                                              int harmonic = 2, 
                                                              int normmethod = 1,//AliHFQnVectorHandler::kQoverM,
                                                              int calibType = 0,//AliHFQnVectorHandler::kQnCalib, 
-                                                             TString AODBfileName = "")
+                                                             TString AODBfileName = "",
+                                                             TString qnSplineFileName = "")
 {
     AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
     if (!mgr) {
@@ -24,6 +25,7 @@ AliAnalysisTaskSEHFTenderQnVectors* AddTaskHFTenderQnVectors(TString taskname = 
     //========= Add task for standard analysis to the ANALYSIS manager ====
     AliAnalysisTaskSEHFTenderQnVectors *task = new AliAnalysisTaskSEHFTenderQnVectors(taskname.Data(),harmonic,calibType,AODBfileName);
     task->SetNormalisationMethod(normmethod);
+    if(qnSplineFileName!="") task->LoadSplinesForqnPercentile(qnSplineFileName);
     mgr->AddTask(task);
 
     TString outputfile = AliAnalysisManager::GetCommonFileName();
@@ -33,9 +35,11 @@ AliAnalysisTaskSEHFTenderQnVectors* AddTaskHFTenderQnVectors(TString taskname = 
     AliAnalysisDataContainer *cinput = mgr->CreateContainer(Form("cinputQnVectorTender%s",outputSuffix.Data()),TChain::Class(),AliAnalysisManager::kInputContainer);
     //define output containers
     AliAnalysisDataContainer *coutput = mgr->CreateContainer(Form("coutputQnVectorTender%s",outputSuffix.Data()), TList::Class(),AliAnalysisManager::kOutputContainer,outputfile.Data());
+    AliAnalysisDataContainer *coutputphidistr = mgr->CreateContainer(Form("coutputQnVectorTenderPhiDistr%s",outputSuffix.Data()), TList::Class(),AliAnalysisManager::kOutputContainer,outputfile.Data());
 
     //connect containers
     mgr->ConnectInput(task,0,mgr->GetCommonInputContainer());
     mgr->ConnectOutput(task, 1, coutput);
+    mgr->ConnectOutput(task, 2, coutputphidistr);
     return task;
 }

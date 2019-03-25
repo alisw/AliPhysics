@@ -23,6 +23,7 @@
 #include <TDatabasePDG.h>
 #include <TAxis.h>
 #include <TSpline.h>
+#include <TGrid.h>
 
 #include <AliLog.h>
 #include "AliAnalysisManager.h"
@@ -75,6 +76,8 @@ AliAnalysisTaskSE(),
     fqnMeth(kq2TPC),
     fScalProdLimit(0.4),
     fPercentileqn(false),
+    fqnSplineFileName(""),
+    fLoadedSplines(false),
     fDecChannel(kD0toKpi),
     fLowmasslimit(1.669),
     fUpmasslimit(2.069),
@@ -123,6 +126,8 @@ AliAnalysisTaskSECharmHadronvn::AliAnalysisTaskSECharmHadronvn(const char *name,
     fqnMeth(kq2TPC),
     fScalProdLimit(0.4),
     fPercentileqn(false),
+    fqnSplineFileName(""),
+    fLoadedSplines(false),
     fDecChannel(decaychannel),
     fLowmasslimit(1.669),
     fUpmasslimit(2.069),
@@ -205,7 +210,7 @@ AliAnalysisTaskSECharmHadronvn::~AliAnalysisTaskSECharmHadronvn()
     delete fRDCuts;
 
     for(int iDet=0; iDet<6; iDet++) {
-        if(fqnSplinesList[iDet]) delete fqnSplinesList[iDet];
+        if(fqnSplinesList[iDet] && fLoadedSplines) delete fqnSplinesList[iDet];
     }
 }
 
@@ -576,6 +581,12 @@ void AliAnalysisTaskSECharmHadronvn::UserExec(Option_t */*option*/)
     AliAnalysisTaskSEHFTenderQnVectors *HFQnVectorTask = dynamic_cast<AliAnalysisTaskSEHFTenderQnVectors*>(AliAnalysisManager::GetAnalysisManager()->GetTask(fTenderTaskName.Data()));
     if(HFQnVectorTask) {
         HFQnVectorHandler = HFQnVectorTask->GetQnVectorHandler();
+        
+        if(fPercentileqn && !fqnSplinesList[0]) {
+            for(int iDet=0; iDet<6; iDet++) {
+                fqnSplinesList[iDet] = dynamic_cast<TList*>(HFQnVectorTask->GetSplineForqnPercentileList(iDet));
+            }
+        }
     }
 
     if(HFQnVectorHandler) {
@@ -603,6 +614,10 @@ void AliAnalysisTaskSECharmHadronvn::UserExec(Option_t */*option*/)
         HFQnVectorHandler->SetAODEvent(fAOD);
         HFQnVectorHandler->ComputeCalibratedQnVectorTPC();
         HFQnVectorHandler->ComputeCalibratedQnVectorV0();
+    }
+
+    if(fPercentileqn && !fqnSplinesList[0]) { //probably qn splines not found in tender task, let's load them here 
+        fLoadedSplines=LoadSplinesForqnPercentile();
     }
 
     double QnFullTPC[2], QnPosTPC[2], QnNegTPC[2];
@@ -946,27 +961,6 @@ void AliAnalysisTaskSECharmHadronvn::SetQnVectorDetConf(int detconf)
 }
 
 //________________________________________________________________________
-void AliAnalysisTaskSECharmHadronvn::SetqnPercentileSelection(TString splinesfilepath) 
-{
-    // set usage of qn percentiles and load splines
-
-    fPercentileqn=true;
-    TString listname[6] = {"SplineListq2TPC", "SplineListq2TPCPosEta", "SplineListq2TPCNegEta", "SplineListq2V0", "SplineListq2V0A", "SplineListq2V0C"};
-    
-    TFile* splinesfile = TFile::Open(splinesfilepath.Data());
-    if(!splinesfile) 
-        AliFatal("File with splines for qn percentiles not found!");
-    
-    for(int iDet=0; iDet<6; iDet++) {
-        fqnSplinesList[iDet] = (TList*)splinesfile->Get(listname[iDet].Data());
-        if(!fqnSplinesList[iDet]) 
-            AliFatal("TList with splines for qn percentiles not found in the spline file!");
-        fqnSplinesList[iDet]->SetOwner();
-    }
-    splinesfile->Close();
-}
-
-//________________________________________________________________________
 double AliAnalysisTaskSECharmHadronvn::GetPhiInRange(double phi)
 {
     // Sets the phi angle in the range [0,2*pi/harmonic]
@@ -1269,4 +1263,33 @@ int AliAnalysisTaskSECharmHadronvn::IsCandidateSelected(AliAODRecoDecayHF *&d, i
     if(!isFidAcc) return 0;
 
     return isSelected;
+}
+
+//________________________________________________________________________
+bool AliAnalysisTaskSECharmHadronvn::LoadSplinesForqnPercentile() 
+{
+    // load splines from file
+
+    TString listname[6] = {"SplineListq2TPC", "SplineListq2TPCPosEta", "SplineListq2TPCNegEta", "SplineListq2V0", "SplineListq2V0A", "SplineListq2V0C"};
+    
+    if (!gGrid) {
+        TGrid::Connect("alien://");
+    }
+    TFile* splinesfile = TFile::Open(fqnSplineFileName.Data());
+    if(!splinesfile) {
+        AliFatal("File with splines for qn percentiles not found!");
+        return false;
+    }
+
+    for(int iDet=0; iDet<6; iDet++) {
+        fqnSplinesList[iDet] = (TList*)splinesfile->Get(listname[iDet].Data());
+        if(!fqnSplinesList[iDet]) {
+            AliFatal("TList with splines for qn percentiles not found in the spline file!");
+            return false;
+        }
+        fqnSplinesList[iDet]->SetOwner();
+    }
+    splinesfile->Close();
+
+    return true;
 }
