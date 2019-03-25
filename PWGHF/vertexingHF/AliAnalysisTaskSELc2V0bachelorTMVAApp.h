@@ -187,7 +187,9 @@ class AliAnalysisTaskSELc2V0bachelorTMVAApp : public AliAnalysisTaskSE
   TH1F* fHistoCentrality;             //!<! histogram with centrality from AliRDHFCuts
   TH1F* fHistoEvents;                 //!<! histogram with number of events analyzed
   TH1F* fHistoTracklets_1;            //!<! histogram with number of tracklets in the event in eta [-1, 1]
+  TH2F* fHistoTracklets_1_cent;       //!<! histogram with number of tracklets in the event in eta [-1, 1] vs centrality
   TH1F* fHistoTracklets_All;          //!<! histogram with number of tracklets in the event in eta [-999, 999]
+  TH2F* fHistoTracklets_All_cent;     //!<! histogram with number of tracklets in the event in eta [-999, 999] vs centrality
   TH1F* fHistoLc;                     //!<! histogram with number of Lc
   TH1F* fHistoLcOnTheFly;             //!<! histogram with number of Lc with on-the-fly V0
   Bool_t fFillOnlySgn;                /// flag to fill only signal (speeding up processing)

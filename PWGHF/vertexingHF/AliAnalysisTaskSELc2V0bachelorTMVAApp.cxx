@@ -105,7 +105,9 @@ AliAnalysisTaskSELc2V0bachelorTMVAApp::AliAnalysisTaskSELc2V0bachelorTMVAApp():
   fHistoCentrality(0),
   fHistoEvents(0),
   fHistoTracklets_1(0),
+  fHistoTracklets_1_cent(0),
   fHistoTracklets_All(0),
+  fHistoTracklets_All_cent(0),
   fHistoLc(0),
   fHistoLcOnTheFly(0),
   fFillOnlySgn(kFALSE),
@@ -238,7 +240,9 @@ AliAnalysisTaskSELc2V0bachelorTMVAApp::AliAnalysisTaskSELc2V0bachelorTMVAApp(con
   fHistoCentrality(0),
   fHistoEvents(0),
   fHistoTracklets_1(0),
+  fHistoTracklets_1_cent(0),
   fHistoTracklets_All(0),
+  fHistoTracklets_All_cent(0),
   fHistoLc(0),
   fHistoLcOnTheFly(0),
   fFillOnlySgn(kFALSE),
@@ -617,7 +621,9 @@ void AliAnalysisTaskSELc2V0bachelorTMVAApp::UserCreateOutputObjects() {
   }
 
   fHistoTracklets_1 = new TH1F("fHistoTracklets_1", "fHistoTracklets_1", 1000, 0, 5000);
+  fHistoTracklets_1_cent = new TH2F("fHistoTracklets_1_cent", "fHistoTracklets_1_cent; centrality; SPD tracklets [-1, 1]", 100., 0., 100., 1000, 0, 5000);
   fHistoTracklets_All = new TH1F("fHistoTracklets_All", "fHistoTracklets_All", 1000, 0, 5000);
+  fHistoTracklets_All_cent = new TH2F("fHistoTracklets_All_cent", "fHistoTracklets_All_cent; centrality; SPD tracklets [-999, 999]", 100, 0., 100., 1000, 0, 5000);
 
   fHistoLc = new TH1F("fHistoLc", "fHistoLc", 2, -0.5, 1.5);
 
@@ -706,7 +712,9 @@ void AliAnalysisTaskSELc2V0bachelorTMVAApp::UserCreateOutputObjects() {
   
   fOutput->Add(fHistoEvents);
   fOutput->Add(fHistoTracklets_1);
+  fOutput->Add(fHistoTracklets_1_cent);
   fOutput->Add(fHistoTracklets_All);
+  fOutput->Add(fHistoTracklets_All_cent);
   fOutput->Add(fHistoLc);
   fOutput->Add(fHistoLcOnTheFly);
   fOutput->Add(fHistoLcBeforeCuts);
@@ -1057,6 +1065,8 @@ void AliAnalysisTaskSELc2V0bachelorTMVAApp::UserExec(Option_t *)
 
   fHistoTracklets_1->Fill(fNTracklets_1);
   fHistoTracklets_All->Fill(fNTracklets_All);
+  fHistoTracklets_1_cent->Fill(fCentrality, fNTracklets_1);
+  fHistoTracklets_All_cent->Fill(fCentrality, fNTracklets_All);
 
   fHistoCentrality->Fill(fCentrality);
     
