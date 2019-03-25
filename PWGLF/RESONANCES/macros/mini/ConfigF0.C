@@ -55,8 +55,8 @@ Bool_t ConfigF0(AliRsnMiniAnalysisTask *task,
 #ifdef __CINT__
    gROOT->LoadMacro("$ALICE_PHYSICS/PWGLF/RESONANCES/macros/mini/AddMonitorOutput.C");
 #endif
-    AddMonitorOutput(isMC, cutSetQuality->GetMonitorOutput(), monitorOpt.Data());
-    AddMonitorOutput(isMC, cutSetPi->GetMonitorOutput(), monitorOpt.Data());
+    AddMonitorOutput(isMC, cutSetQuality->GetMonitorOutput(), monitorOpt.Data(), 0);
+    AddMonitorOutput(isMC, cutSetPi->GetMonitorOutput(), monitorOpt.Data(), 0);
   }  
 
   //-----------------------
@@ -104,7 +104,7 @@ Bool_t ConfigF0(AliRsnMiniAnalysisTask *task,
   Char_t bgTemplateC1[7] = {'+', '+', '+', '+', '+', '+', '+'};
   Char_t bgTemplateC2[7] = {'-', '-', '-', '-', '-', '-', '-'};
   Int_t bgTemplatePDG[7] = {113, 223, 313, -313, 310, 333, 225};
-  Int_t bgTemplateM[7]   = {775.26, 8.49, 891.66, 891.66, 497.611, 1019.461, 1275.5};
+  Double_t bgTemplateM[7]   = {775.26, 8.49, 891.66, 891.66, 497.611, 1019.461, 1275.5};
   RSNPID bgID1[7] = {AliRsnDaughter::kPion, AliRsnDaughter::kPion,AliRsnDaughter::kKaon, AliRsnDaughter::kPion, AliRsnDaughter::kPion, AliRsnDaughter::kKaon, AliRsnDaughter::kPion};
   RSNPID bgID2[7] = {AliRsnDaughter::kPion, AliRsnDaughter::kPion,AliRsnDaughter::kPion, AliRsnDaughter::kKaon, AliRsnDaughter::kPion, AliRsnDaughter::kKaon, AliRsnDaughter::kPion};
 
