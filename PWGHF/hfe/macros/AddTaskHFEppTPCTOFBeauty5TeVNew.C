@@ -155,7 +155,7 @@ AliAnalysisHFEppTPCTOFBeauty5TeVNew* ConfigHFEppTPCTOFBeauty5TeVNew(Bool_t isMCc
 ///home/sudhir/alicodes/Beauty_5_TeV/TASKS_BEAUTY_Sudhir/A_NewPhotonicTask_ForBeauty/Weights/MacroAndSpectra/nonHFEcorrect_pp5_new_BeautyMB_correct.root
    
    //
-   TString filenameMB = "nonHFEcorrect_pp5_new_BeautyMB_correct.root";
+   TString filenameMB = "nonHFEcorrect_pp5_new_BeautyMB_correct_chpions.root";
    //TFile *weightFileMB = TFile::Open(Form("%s", filenameMB.Data()));
    TFile *weightFileMB = TFile::Open(Form("$ALICE_PHYSICS/PWGHF/hfe/macros/%s", filenameMB.Data()));
   // TFile *weightFileMB = TFile::Open(Form("/home/sudhir/alicodes/Beauty_5_TeV/TASKS_BEAUTY_Sudhir/A_NewPhotonicTask_ForBeauty/Weights/MacroAndSpectra/%s", filenameMB.Data()));
@@ -173,8 +173,8 @@ AliAnalysisHFEppTPCTOFBeauty5TeVNew* ConfigHFEppTPCTOFBeauty5TeVNew(Bool_t isMCc
    //TH1F *hRatioEta = (TH1F*)weightFile->Get("hRatio_17l4b_eta");
    
    
-   TH1F *hRatioPi0 = (TH1F*)weightFileEnh->Get("hRatio_17l4b_neutral_pion");
-   TH1F *hRatioEta = (TH1F*)weightFileEnh->Get("hRatio_17l4b_neutral_eta");
+   TH1F *hRatioPi0 = (TH1F*)weightFileEnh->Get("hRatio_17l4b_pion");
+   TH1F *hRatioEta = (TH1F*)weightFileEnh->Get("hRatio_17l4b_eta");
    TGraphErrors *hWPiEnh = new TGraphErrors(hRatioPi0);
    hWPiEnh->GetXaxis()->SetTitle(hRatioPi0->GetXaxis()->GetTitle());
    hWPiEnh->GetYaxis()->SetTitle(hRatioPi0->GetYaxis()->GetTitle());
@@ -191,7 +191,10 @@ AliAnalysisHFEppTPCTOFBeauty5TeVNew* ConfigHFEppTPCTOFBeauty5TeVNew(Bool_t isMCc
    
    // Function for obtaining the Hadron Contamination 
     
-   		TF1 *fHadCont = new TF1("fHadCont","5.00674e+00*TMath::Landau(x[0],1.03540e+01,2.60371e+00) + 5.67850e-02*TMath::Gaus(x[0], 1.00000e+00, 9.25799e-02)",1.0,10.0);  
+   		//TF1 *fHadCont = new TF1("fHadCont","5.00674e+00*TMath::Landau(x[0],1.03540e+01,2.60371e+00) + 5.67850e-02*TMath::Gaus(x[0], 1.00000e+00, 9.25799e-02)",1.0,10.0);  // for -1 to 3 nSigma
+   		
+   		TF1 *fHadCont = new TF1("fHadCont","5.23482e+00*TMath::Landau(x[0],1.34153e+01,3.32307e+00) + 4.35919e-02*TMath::Gaus(x[0], 1.00000e+00, 7.63529e-02)",1.0,10.0);  // for -0.5 to 3 nSigma
+   		 
 		task->SetHCFunction(fHadCont);
     
     if(isMCc){
