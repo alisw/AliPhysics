@@ -437,7 +437,7 @@ void AliAnalysisTaskSECharmHadronvn::UserCreateOutputObjects()
     int nbins[naxes]     = {fNMassBins, nptbins, ndeltaphibins, nfphibins, nfphibins, nphibins, ncentbins, nNtrkBins, nqnbins};
     double xmin[naxes]   = {fLowmasslimit, ptmin, mindeltaphi, fphimin, fphimin, phimin, fMinCentr, Ntrkmin, qnmin};
     double xmax[naxes]   = {fUpmasslimit, ptmax, maxdeltaphi, fphimax, fphimax, phimax, fMaxCentr, Ntrkmax, qnmax};
-    TString axTit[naxes] = {massaxisname, "#it{p}_{T} (GeV/#it{c})", deltaphiname.Data(), "Cos(n#varphi_{D})", "Sin(n#varphi_{D})", "#varphi_{D}", "Centrality (%)", "N_{tracklets}", qnaxisnamefill};
+    TString axTit[naxes] = {massaxisname, "#it{p}_{T} (GeV/#it{c})", deltaphiname.Data(), Form("Cos(%d#varphi_{D})",fHarmonic), Form("Sin(%d#varphi_{D})",fHarmonic), "#varphi_{D}", "Centrality (%)", "#it{N}_{tracklets}", qnaxisnamefill};
 
     fHistMassPtPhiqnCentr = new THnSparseF("fHistMassPtPhiqnCentr",Form("InvMass vs. #it{p}_{T} vs. %s vs. centr vs. #it{q}_{%d} ",deltaphiname.Data(),fHarmonic),naxes,nbins,xmin,xmax);
 
