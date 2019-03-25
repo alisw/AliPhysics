@@ -75,7 +75,6 @@ Double_t AliSpherocityEstimator::GetSpherocity(AliVEvent *inevent) {
       if((track->GetStatus()&AliVTrack::kITSrefit)!=AliVTrack::kITSrefit) continue;
       if((track->GetStatus()&AliVTrack::kTPCrefit)!=AliVTrack::kTPCrefit) continue;
     } else if(!fSphTrackCuts->AcceptTrack((AliESDtrack*)track)) continue;
-    printf("\n");
     Double_t pt = track->Pt();
     if(pt<fMinPt) continue;
     sumpt+=pt;
