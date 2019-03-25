@@ -632,7 +632,7 @@ void AliHFQnVectorHandler::EnablePhiDistrHistos()
             delete fPhiVsCentrTPC[iHisto];
             fPhiVsCentrTPC[iHisto]=nullptr;
         }
-        fPhiVsCentrTPC[iHisto] = new TH2F(Form("fPhiVsCentrTPC%s",histonames[iHisto].Data()),";centrality (%%);#varphi;Entries",10,0.,100.,180,0.,2*TMath::Pi());
+        fPhiVsCentrTPC[iHisto] = new TH2F(Form("fPhiVsCentrTPC%s",histonames[iHisto].Data()),";centrality (%);#varphi;Entries",10,0.,100.,180,0.,2*TMath::Pi());
     }
 }
 
