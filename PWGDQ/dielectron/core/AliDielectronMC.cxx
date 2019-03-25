@@ -775,12 +775,13 @@ Int_t AliDielectronMC::GetFirstMothersLabelInChain(Int_t daughterLabel) const {
 
   Int_t labelfirstmother = -1;
   Int_t firstMotherIndex = GetMCTrackFromMCEvent(daughterLabel)->GetMother(); // get label of the mother
- 
+  
   while(firstMotherIndex>0){
     labelfirstmother = firstMotherIndex;
     firstMotherIndex = GetMCTrackFromMCEvent(labelfirstmother)->GetMother(); // get label of mother of mother....
   }
 
+  if(firstMotherIndex==0) labelfirstmother = firstMotherIndex; // In case of PYTHIA first mother is 0 or 1 but should not happen in Hijing
   // labelfirstmother is -1 if particle has no mother (primary) or equaled to the very first primary particle in the chain
   return labelfirstmother;
 
@@ -791,12 +792,13 @@ Int_t AliDielectronMC::GetMinLabelParticlePrimaryAround(Int_t label) const {
   //  Get the label of the last primary particle around the primary particle at the label
   //  NOTE: for tracks, the absolute label should be passed
   //
+
   if(label<0) return -1;
   if (!fMCEvent) return -1;
-
+  
   Int_t labelminfirstMother = label; // start at the particle label
   // get label of the mother: should be -1 since we assume that this is the first mother in the chain
-  Int_t firstMotherIndex = GetMCTrackFromMCEvent(label)->GetMother(); 
+  Int_t firstMotherIndex = GetMCTrackFromMCEvent(label)->GetMother();
   if(firstMotherIndex>-1) return -1;
   
   while(firstMotherIndex<0){
@@ -825,7 +827,7 @@ Int_t AliDielectronMC::GetMaxLabelParticlePrimaryAround(Int_t label) const {
 
   Int_t labelmaxfirstMother = label; // start at the particle label
   // get label of the mother: should be -1 since we assume that this is the first mother in the chain
-  Int_t firstMotherIndex = GetMCTrackFromMCEvent(label)->GetMother(); 
+  Int_t firstMotherIndex = GetMCTrackFromMCEvent(label)->GetMother();
   if(firstMotherIndex>-1) return -1;
   
   while(firstMotherIndex<0){
@@ -1768,7 +1770,7 @@ Bool_t AliDielectronMC::IsMCTruth(const AliDielectronPair* pair, const AliDielec
     if(labelfirstmother1==-1 || labelminfirstmother1==-1 || labelmaxfirstmother1==-1) correlated = kFALSE; // security
     if(labelfirstmother2==-1 || labelminfirstmother2==-1 || labelmaxfirstmother2==-1) correlated = kFALSE; // security
     if(labelfirstmother1<labelminfirstmother2 || labelfirstmother1>labelmaxfirstmother2) correlated = kFALSE;
-    if(labelfirstmother2<labelminfirstmother1 || labelfirstmother2>labelmaxfirstmother1) correlated = kFALSE;   
+    if(labelfirstmother2<labelminfirstmother1 || labelfirstmother2>labelmaxfirstmother1) correlated = kFALSE;
   }
     
   // check if a mother is also a grandmother
