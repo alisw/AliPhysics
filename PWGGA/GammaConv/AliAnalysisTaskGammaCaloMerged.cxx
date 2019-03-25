@@ -1920,17 +1920,29 @@ void AliAnalysisTaskGammaCaloMerged::ProcessTrueClusterCandidates(AliAODConversi
       // deal with pi0 only
       if (motherPDG == 111){
         fHistoTrueClusPi0PtvsM02[fiCut]->Fill(TrueClusterCandidate->Pt(), m02, tempClusterWeight);
-        if(TrueClusterCandidate->GetNNeutralPionMCLabels()>1){
-          for(Int_t npion = 1; npion < TrueClusterCandidate->GetNNeutralPionMCLabels(); npion++){
-            fHistoTrueClusMultiplePi0PtvsM02[fiCut]->Fill(TrueClusterCandidate->Pt(), m02, tempClusterWeight);
-          }
-        }
-        fHistoNTrueMultiplePi0vsPt[fiCut]->Fill(TrueClusterCandidate->Pt(),TrueClusterCandidate->GetNNeutralPionMCLabels(), tempClusterWeight);
         if (CheckVectorForDoubleCount(fVectorDoubleCountTruePi0s,motherLab)){
           fHistoDoubleCountTruePi0PtvsM02[fiCut]->Fill(TrueClusterCandidate->Pt(), m02, tempClusterWeight);
           if (!isPrimary)
             fHistoDoubleCountTrueSecPi0Pt[fiCut]->Fill(TrueClusterCandidate->Pt(), tempClusterWeight);
         }
+
+        // Treatment of multiple pi0 in cluster (filling of true candidates, amount of pions and double counting)
+        if(TrueClusterCandidate->GetNNeutralPionMCLabels()>1){
+          for(Int_t npion = 0; npion < TrueClusterCandidate->GetNNeutralPionMCLabels(); npion++){
+            // fill multiple true pions in same cluster
+            if(npion>0) fHistoTrueClusMultiplePi0PtvsM02[fiCut]->Fill(TrueClusterCandidate->Pt(), m02, tempClusterWeight);
+
+            // check MC labels for double counting (each particle should only be reconstructed once)
+            if (CheckVectorForDoubleCount(fVectorDoubleCountTrueMultilePi0s,TrueClusterCandidate->GetNeutralPionMCLabel(npion))){
+              fHistoDoubleCountTrueMultiplePi0PtvsM02[fiCut]->Fill(TrueClusterCandidate->Pt(), m02, tempClusterWeight);
+
+              // check if particle is not a primary -> secondary particle
+              if(((AliConvEventCuts*)fEventCutArray->At(fiCut))->IsConversionPrimaryESD( fMCEvent, TrueClusterCandidate->GetNeutralPionMCLabel(npion), mcProdVtxX, mcProdVtxY, mcProdVtxZ)) // check if pion is primary
+                fHistoDoubleCountTrueMultipleSecPi0Pt[fiCut]->Fill(TrueClusterCandidate->Pt(), tempClusterWeight);
+            }
+          }
+        }
+        fHistoNTrueMultiplePi0vsPt[fiCut]->Fill(TrueClusterCandidate->Pt(),TrueClusterCandidate->GetNNeutralPionMCLabels(), tempClusterWeight);
 
 
         if (TrueClusterCandidate->IsDalitz()){
@@ -1955,7 +1967,7 @@ void AliAnalysisTaskGammaCaloMerged::ProcessTrueClusterCandidates(AliAODConversi
               }
             }
             if (fDoMesonQA > 1) fHistoTrueClusPrimPi0InvMassvsPt[fiCut]->Fill(mesoncand->M(),TrueClusterCandidate->Pt(), tempClusterWeight);
-            if (fDoMesonQA > 0){
+            if (fDoMesonQA > 0 && mother->Pt()>0){
               if (clusterClass == 1 && TrueClusterCandidate->IsMerged())
                 fHistoTruePrimaryPi0PureMergedMCPtResolPt[fiCut]->Fill(mother->Pt(),(TrueClusterCandidate->Pt()-mother->Pt())/mother->Pt(),tempClusterWeight);
               else if (clusterClass == 1 && TrueClusterCandidate->IsMergedPartConv())
@@ -1967,7 +1979,7 @@ void AliAnalysisTaskGammaCaloMerged::ProcessTrueClusterCandidates(AliAODConversi
             }
           } else {
             fHistoTrueClusSecPi0PtvsM02[fiCut]->Fill(TrueClusterCandidate->Pt(), m02, tempClusterWeight);
-            if (fDoMesonQA > 0){
+            if (fDoMesonQA > 0 && mother->Pt()>0){
               fHistoTrueSecondaryPi0MCPtResolPt[fiCut]->Fill(mother->Pt(),(TrueClusterCandidate->Pt()-mother->Pt())/mother->Pt(),tempClusterWeight);
             }
             Int_t grandMaLab = mother->GetMother(0);
@@ -1996,7 +2008,8 @@ void AliAnalysisTaskGammaCaloMerged::ProcessTrueClusterCandidates(AliAODConversi
           if ( fDoMesonQA > 0 && GetSelectedMesonID() != 1 ){
             fHistoTrueEtaPtY[fiCut]->Fill(TrueClusterCandidate->Pt(),mesoncand->Rapidity()-((AliConvEventCuts*)fEventCutArray->At(fiCut))->GetEtaShift(), tempClusterWeight);
             fHistoTrueEtaPtAlpha[fiCut]->Fill(TrueClusterCandidate->Pt(),TMath::Abs(mesoncand->GetAlpha()), tempClusterWeight);
-            fHistoTruePrimaryEtaMCPtResolPt[fiCut]->Fill(mother->Pt(),(TrueClusterCandidate->Pt()-mother->Pt())/mother->Pt(),tempClusterWeight);
+            if( mother->Pt()>0)
+              fHistoTruePrimaryEtaMCPtResolPt[fiCut]->Fill(mother->Pt(),(TrueClusterCandidate->Pt()-mother->Pt())/mother->Pt(),tempClusterWeight);
           }
       } else {
         fHistoTrueMergedMissedPDG[fiCut]->Fill(motherPDG, tempClusterWeight);
