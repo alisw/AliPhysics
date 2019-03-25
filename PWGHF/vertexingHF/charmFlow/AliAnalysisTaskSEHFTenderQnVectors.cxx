@@ -48,6 +48,8 @@ AliAnalysisTaskSEHFTenderQnVectors::AliAnalysisTaskSEHFTenderQnVectors() :
     for(int iDet=0; iDet<3; iDet++) {
         fHistEventPlaneTPC[iDet] = nullptr;
         fHistEventPlaneV0[iDet] = nullptr;
+        fSplineListqnPercTPC[iDet] = nullptr;
+        fSplineListqnPercV0[iDet] = nullptr;                       
     }
 }
 
@@ -72,6 +74,8 @@ AliAnalysisTaskSEHFTenderQnVectors::AliAnalysisTaskSEHFTenderQnVectors(const cha
     for(int iDet=0; iDet<3; iDet++) {
         fHistEventPlaneTPC[iDet] = nullptr;
         fHistEventPlaneV0[iDet] = nullptr;
+        fSplineListqnPercTPC[iDet] = nullptr;
+        fSplineListqnPercV0[iDet] = nullptr;                       
     }
     
     DefineInput(0, TChain::Class());
@@ -90,6 +94,8 @@ AliAnalysisTaskSEHFTenderQnVectors::~AliAnalysisTaskSEHFTenderQnVectors()
         for(int iDet=0; iDet<3; iDet++) {
             delete fHistEventPlaneTPC[iDet];
             delete fHistEventPlaneV0[iDet];
+            if(fSplineListqnPercTPC[iDet]) delete fSplineListqnPercTPC[iDet];
+            if(fSplineListqnPercV0[iDet]) delete fSplineListqnPercV0[iDet];
         }
         delete fOutputList;
     }
@@ -201,4 +207,45 @@ void AliAnalysisTaskSEHFTenderQnVectors::UserExec(Option_t */*option*/)
     
     // Post output data
     PostData(1, fOutputList);
+}
+
+//________________________________________________________________________
+TList* AliAnalysisTaskSEHFTenderQnVectors::GetSplineForqnPercentileList(int det) const
+{
+    if(det<=kNegTPC) {
+        return fSplineListqnPercTPC[det];
+    }
+    else if(det>=kFullV0 && det<=kV0C) {
+        return fSplineListqnPercV0[det];
+    }
+    else {
+        AliWarning("Spline List not found!");
+        return nullptr;
+    }
+}              
+
+//________________________________________________________________________
+void AliAnalysisTaskSEHFTenderQnVectors::LoadSplinesForqnPercentile(TString splinesfilepath) 
+{
+    // load splines for qn percentiles
+
+    TString listnameTPC[3] = {"SplineListq2TPC", "SplineListq2TPCPosEta", "SplineListq2TPCNegEta"};
+    TString listnameV0[3] = {"SplineListq2V0", "SplineListq2V0A", "SplineListq2V0C"};
+    
+    TFile* splinesfile = TFile::Open(splinesfilepath.Data());
+    if(!splinesfile) 
+        AliFatal("File with splines for qn percentiles not found!");
+    
+    for(int iDet=0; iDet<3; iDet++) {
+        fSplineListqnPercTPC[iDet] = (TList*)splinesfile->Get(listnameTPC[iDet].Data());
+        if(!fSplineListqnPercTPC[iDet]) 
+            AliFatal("TList with splines for qnTPC percentiles not found in the spline file!");
+        fSplineListqnPercV0[iDet] = (TList*)splinesfile->Get(listnameV0[iDet].Data());
+        if(!fSplineListqnPercV0[iDet]) 
+            AliFatal("TList with splines for qnV0 percentiles not found in the spline file!");
+
+        fSplineListqnPercTPC[iDet]->SetOwner();
+        fSplineListqnPercV0[iDet]->SetOwner();
+    }
+    splinesfile->Close();
 }

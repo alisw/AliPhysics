@@ -36,6 +36,8 @@ class AliAnalysisTaskSEHFTenderQnVectors : public AliAnalysisTaskSE {
   
 public:
 
+    enum Det{kFullTPC,kPosTPC,kNegTPC,kFullV0,kV0A,kV0C};
+ 
     AliAnalysisTaskSEHFTenderQnVectors();
     AliAnalysisTaskSEHFTenderQnVectors(const char *name, int harmonic, int calibType, TString oadbFileName);
     virtual ~AliAnalysisTaskSEHFTenderQnVectors();
@@ -43,11 +45,13 @@ public:
     virtual void UserCreateOutputObjects();
     virtual void UserExec(Option_t *option);
 
-    AliHFQnVectorHandler* GetQnVectorHandler() const                            {return fHFQnVecHandler;}
-    void SetUseAODBCalibrations(TString oadbFileName)                           {fOADBFileName = oadbFileName; fCalibType = AliHFQnVectorHandler::kQnCalib;}
-    void SetUseQnFrameworkCalibrations()                                        {fCalibType = AliHFQnVectorHandler::kQnFrameworkCalib;}
-    void SetNormalisationMethod(int normmethod)                                 {fNormMethod = normmethod;}
-    void SetTriggerInfo(TString trigClass, unsigned long long mask=0)           {fTriggerClass = trigClass; fTriggerMask = mask;}
+    AliHFQnVectorHandler* GetQnVectorHandler() const                                                     {return fHFQnVecHandler;}
+    TList* GetSplineForqnPercentileList(int det=kFullTPC) const;                                                       
+    void SetUseAODBCalibrations(TString oadbFileName)                                                    {fOADBFileName = oadbFileName; fCalibType = AliHFQnVectorHandler::kQnCalib;}
+    void SetUseQnFrameworkCalibrations()                                                                 {fCalibType = AliHFQnVectorHandler::kQnFrameworkCalib;}
+    void SetNormalisationMethod(int normmethod)                                                          {fNormMethod = normmethod;}
+    void SetTriggerInfo(TString trigClass, unsigned long long mask=0)                                    {fTriggerClass = trigClass; fTriggerMask = mask;}
+    void LoadSplinesForqnPercentile(TString splinesfilepath);
 
 private:
 
@@ -67,11 +71,14 @@ private:
 
     TString fOADBFileName;                           /// OADB input file name
 
+    TList* fSplineListqnPercTPC[3];                  /// Splines for qn percentile calibration for TPC 
+    TList* fSplineListqnPercV0[3];                   /// Splines for qn percentile calibration for V0 
+
     AliAODEvent* fAOD;                               /// AOD event
     TString fTriggerClass;                           /// trigger class
     unsigned long long fTriggerMask;                 /// trigger mask
 
-    ClassDef(AliAnalysisTaskSEHFTenderQnVectors, 1);
+    ClassDef(AliAnalysisTaskSEHFTenderQnVectors, 2);
 };
 
 #endif
