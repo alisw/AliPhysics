@@ -271,11 +271,11 @@ AliAnalysisTaskSE* AddTaskFemtoDreamSysVar(bool isMC = false,
     AntiXiPosCuts->SetPID(AliPID::kPion, 999, 4.5);
     AntiXiBachCuts->SetPID(AliPID::kPion, 999, 4.5);
   } else if (suffix == "41") {
-    CascadeCuts->SetPtRangeXi(0.4, 999.5);
-    AntiCascadeCuts->SetPtRangeXi(0.4, 999.5);
-  } else if (suffix == "42") {
     CascadeCuts->SetPtRangeXi(0.8, 999.5);
     AntiCascadeCuts->SetPtRangeXi(0.8, 999.5);
+  } else if (suffix == "42") {
+    CascadeCuts->SetPtRangeXi(1.2, 999.5);
+    AntiCascadeCuts->SetPtRangeXi(1.2, 999.5);
 
     //wide wariation
   } else if (suffix == "101") {
