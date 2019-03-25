@@ -66,6 +66,7 @@ AliHFQnVectorHandler::AliHFQnVectorHandler():
     fCalibObjRun(-9999),
     fHistMultV0(nullptr),
     fWeightsTPC(nullptr),
+    fEnablePhiDistrHistos(false),
     fQnVectorTask(nullptr),
     fQnVectorMgr(nullptr)
 {
@@ -94,6 +95,9 @@ AliHFQnVectorHandler::AliHFQnVectorHandler():
         fQx2sV0C[iZvtx] = nullptr;
         fQy2sV0C[iZvtx] = nullptr;  
     }
+
+    fPhiVsCentrTPC[0]=nullptr;
+    fPhiVsCentrTPC[1]=nullptr;
 }
 
 //________________________________________________________________
@@ -131,6 +135,7 @@ AliHFQnVectorHandler::AliHFQnVectorHandler(int calibType, int normMeth, int harm
     fCalibObjRun(-9999),
     fHistMultV0(nullptr),
     fWeightsTPC(nullptr),
+    fEnablePhiDistrHistos(false),
     fQnVectorTask(nullptr),
     fQnVectorMgr(nullptr)
 {
@@ -159,6 +164,9 @@ AliHFQnVectorHandler::AliHFQnVectorHandler(int calibType, int normMeth, int harm
         fQx2sV0C[iZvtx] = nullptr;
         fQy2sV0C[iZvtx] = nullptr;  
     }
+
+    fPhiVsCentrTPC[0]=nullptr;
+    fPhiVsCentrTPC[1]=nullptr;
 }
 
 //________________________________________________________________
@@ -167,6 +175,8 @@ AliHFQnVectorHandler::~AliHFQnVectorHandler()
     //
     // Standard destructor
     //
+    if(fPhiVsCentrTPC[0]) delete fPhiVsCentrTPC[0];
+    if(fPhiVsCentrTPC[1]) delete fPhiVsCentrTPC[1];
 }
 
 //________________________________________________________________
@@ -613,6 +623,20 @@ void AliHFQnVectorHandler::RemoveTracksFromQnTPC(vector<AliAODTrack*> trToRem, d
 }
 
 //________________________________________________________________
+void AliHFQnVectorHandler::EnablePhiDistrHistos() 
+{
+    fEnablePhiDistrHistos=true;
+    TString histonames[2] = {"TPCPosEta","TPCNegEta"};
+    for(int iHisto=0; iHisto<2; iHisto++) {
+        if(fPhiVsCentrTPC[iHisto]) {
+            delete fPhiVsCentrTPC[iHisto];
+            fPhiVsCentrTPC[iHisto]=nullptr;
+        }
+        fPhiVsCentrTPC[iHisto] = new TH2F(Form("fPhiVsCentrTPC%s",histonames[iHisto].Data()),";centrality (%%);#varphi;Entries",10,0.,100.,180,0.,2*TMath::Pi());
+    }
+}
+
+//________________________________________________________________
 void AliHFQnVectorHandler::ComputeQvecQnFrameworkTPC() 
 {
     if(!fQnVectorTask || !fQnVectorMgr) {
@@ -830,6 +854,12 @@ void AliHFQnVectorHandler::ComputeQvecTPC()
     fUsedTrackPosIDs.ResetAllBits();
     fUsedTrackNegIDs.ResetAllBits();
     
+    //reset phi distributions
+    if(fEnablePhiDistrHistos) {
+        fPhiVsCentrTPC[0]->Reset();
+        fPhiVsCentrTPC[1]->Reset();
+    }
+
     int nTracks=fAODEvent->GetNumberOfTracks();
     for(int iTrack=0; iTrack<nTracks; iTrack++){
         AliAODTrack* track=dynamic_cast<AliAODTrack*>(fAODEvent->GetTrack(iTrack));
@@ -850,11 +880,15 @@ void AliHFQnVectorHandler::ComputeQvecTPC()
             fQnVecPosTPC[0] += qx;
             fQnVecPosTPC[1] += qy;
             fMultPosTPC     += 1;
+            if(fEnablePhiDistrHistos && fPhiVsCentrTPC[0])
+                fPhiVsCentrTPC[0]->Fill(fCentrality,phi);
         }
         else {
             fQnVecNegTPC[0] += qx;
             fQnVecNegTPC[1] += qy;
             fMultNegTPC     += 1;
+            if(fEnablePhiDistrHistos && fPhiVsCentrTPC[1])
+                fPhiVsCentrTPC[1]->Fill(fCentrality,phi);
         }
     }
 

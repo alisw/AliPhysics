@@ -75,6 +75,9 @@ private:
     TList* fSplineListqnPercV0[3];                   /// Splines for qn percentile calibration for V0 
 
     AliAODEvent* fAOD;                               /// AOD event
+    int fPrevEventRun;                               /// run number of event previously analysed
+    TList *fPhiVsCentrDistr;                         // !<! output list of phi vs. centr TH2 of selected TPC tracks in eta>0 and eta<0
+
     TString fTriggerClass;                           /// trigger class
     unsigned long long fTriggerMask;                 /// trigger mask
 

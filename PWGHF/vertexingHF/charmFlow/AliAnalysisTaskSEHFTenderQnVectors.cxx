@@ -39,6 +39,8 @@ AliAnalysisTaskSEHFTenderQnVectors::AliAnalysisTaskSEHFTenderQnVectors() :
     fNormMethod(AliHFQnVectorHandler::kQoverM),
     fOADBFileName(""),
     fAOD(nullptr),
+    fPrevEventRun(-1),
+    fPhiVsCentrDistr(nullptr),
     fTriggerClass(""),
     fTriggerMask(AliVEvent::kAny)
 {
@@ -65,6 +67,8 @@ AliAnalysisTaskSEHFTenderQnVectors::AliAnalysisTaskSEHFTenderQnVectors(const cha
     fNormMethod(AliHFQnVectorHandler::kQoverSqrtM),
     fOADBFileName(oadbFileName),
     fAOD(nullptr),
+    fPrevEventRun(-1),
+    fPhiVsCentrDistr(nullptr),
     fTriggerClass(""),
     fTriggerMask(AliVEvent::kAny)
 {
@@ -80,6 +84,7 @@ AliAnalysisTaskSEHFTenderQnVectors::AliAnalysisTaskSEHFTenderQnVectors(const cha
     
     DefineInput(0, TChain::Class());
     DefineOutput(1, TList::Class());
+    DefineOutput(2, TList::Class());
 }
 
 //________________________________________________________________________
@@ -100,12 +105,14 @@ AliAnalysisTaskSEHFTenderQnVectors::~AliAnalysisTaskSEHFTenderQnVectors()
         delete fOutputList;
     }
     if(fHFQnVecHandler) delete fHFQnVecHandler;
+    if(fPhiVsCentrDistr) delete fPhiVsCentrDistr;
 }
 
 //________________________________________________________________________
 void AliAnalysisTaskSEHFTenderQnVectors::UserCreateOutputObjects()
 {
     fHFQnVecHandler = new AliHFQnVectorHandler(fCalibType,fNormMethod,fHarmonic,fOADBFileName);
+    fHFQnVecHandler->EnablePhiDistrHistos();
 
     fOutputList = new TList();
     fOutputList->SetOwner(true);
@@ -131,8 +138,12 @@ void AliAnalysisTaskSEHFTenderQnVectors::UserCreateOutputObjects()
         fOutputList->Add(fHistEventPlaneV0[iDet]);
     }
 
+    fPhiVsCentrDistr = new TList();
+    fPhiVsCentrDistr->SetOwner(true);
+
     // post data
     PostData(1, fOutputList);
+    PostData(2, fPhiVsCentrDistr);
 }
 
 //________________________________________________________________________
@@ -204,9 +215,26 @@ void AliAnalysisTaskSEHFTenderQnVectors::UserExec(Option_t */*option*/)
     fHistEventPlaneV0[0]->Fill(PsinFullV0);
     fHistEventPlaneV0[1]->Fill(PsinV0A);
     fHistEventPlaneV0[2]->Fill(PsinV0C);
-    
+
+    TH2F* hPhiPosEta = fHFQnVecHandler->GetPhiDistrHistosTPCPosEta();
+    TH2F* hPhiNegEta = fHFQnVecHandler->GetPhiDistrHistosTPCNegEta();
+
+    if(fPrevEventRun!=fAOD->GetRunNumber()) {
+        if(hPhiPosEta) fPhiVsCentrDistr->Add((TH2F*)hPhiPosEta->Clone(Form("%s_%d",hPhiPosEta->GetName(),fAOD->GetRunNumber())));
+        if(hPhiNegEta) fPhiVsCentrDistr->Add((TH2F*)hPhiNegEta->Clone(Form("%s_%d",hPhiNegEta->GetName(),fAOD->GetRunNumber())));
+    }
+    else {
+        TH2F* hPhiPosEtaLast = (TH2F*)fPhiVsCentrDistr->FindObject(Form("%s_%d",hPhiPosEta->GetName(),fAOD->GetRunNumber()));
+        hPhiPosEtaLast->Add(hPhiPosEta);
+        TH2F* hPhiNegEtaLast = (TH2F*)fPhiVsCentrDistr->FindObject(Form("%s_%d",hPhiNegEta->GetName(),fAOD->GetRunNumber()));
+        hPhiNegEtaLast->Add(hPhiNegEta);
+    }
+
+    fPrevEventRun = fAOD->GetRunNumber();
+
     // Post output data
     PostData(1, fOutputList);
+    PostData(2, fPhiVsCentrDistr);
 }
 
 //________________________________________________________________________
