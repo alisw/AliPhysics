@@ -1669,12 +1669,13 @@ void AliReducedVarManager::FillTrackInfo(BASETRACK* p, Float_t* values) {
   values[kTRDGTUPID]         = pinfo->TRDGTUPID();
 
 
-  if(fgUsedVars[kEMCALmatchedEnergy] || fgUsedVars[kEMCALmatchedEOverP] || fgUsedVars[kEMCALmatchedM02]) {
+  if(fgUsedVars[kEMCALmatchedEnergy] || fgUsedVars[kEMCALmatchedEOverP] || fgUsedVars[kEMCALmatchedM02] || fgUsedVars[kEMCALmatchedM20]) {
     values[kEMCALmatchedClusterId] = pinfo->CaloClusterId();
     if(fgEvent && (fgEvent->IsA()==EVENT::Class())){
       CLUSTER* cluster = ((EVENT*)fgEvent)->GetCaloCluster(pinfo->CaloClusterId());
       values[kEMCALmatchedEnergy] = (cluster ? cluster->Energy() : -999.0);
       values[kEMCALmatchedM02]    = (cluster ? cluster->M02() : -999.0);
+      values[kEMCALmatchedM20]    = (cluster ? cluster->M20() : -999.0);
       Float_t               mom = 0.0;
       if (pinfo->PonCalo()) mom = pinfo->PonCalo();
       else                  mom = pinfo->P();
@@ -2255,6 +2256,44 @@ void AliReducedVarManager::FillCorrelationInfo(BASETRACK* trig, BASETRACK* assoc
   if(fgUsedVars[kAssociatedPt]) values[kAssociatedPt] = assoc->Pt();
   if(fgUsedVars[kAssociatedEta]) values[kAssociatedEta] = assoc->Eta();
   if(fgUsedVars[kAssociatedPhi]) values[kAssociatedPhi] = assoc->Phi();
+
+  // values after boost of hadrons to pair rest frame
+  // NOTE: Are the boosted quantities reasonable?
+  if (trig->IsA()==PAIR::Class() &&
+      (fgUsedVars[kDeltaPhiBoosted] || fgUsedVars[kDeltaPhiSymBoosted] || fgUsedVars[kDeltaThetaBoosted] || fgUsedVars[kDeltaEtaBoosted] ||
+       fgUsedVars[kDeltaEtaAbsBoosted] || fgUsedVars[kAssociatedPtBoosted] || fgUsedVars[kAssociatedEtaBoosted] || fgUsedVars[kAssociatedPhiBoosted])) {
+
+    // get boost vector
+    TLorentzVector trigVec;
+    trigVec.SetPtEtaPhiM(trig->Pt(), trig->Eta(), trig->Phi(), ((PAIR*)trig)->Mass());
+    TVector3 boostVec = trigVec.BoostVector();
+
+    // fill TLorentzVector for associated track
+    TLorentzVector assocVec;
+    assocVec.SetPtEtaPhiM(assoc->Pt(), assoc->Eta(), assoc->Phi(), 0.13957061); // NOTE: pion mass from PDG
+    assocVec.Boost(-boostVec);
+
+    if(fgUsedVars[kAssociatedPtBoosted]) values[kAssociatedPtBoosted] = assocVec.Pt();
+    if(fgUsedVars[kAssociatedEtaBoosted]) values[kAssociatedEtaBoosted] = assocVec.Eta();
+    if(fgUsedVars[kAssociatedPhiBoosted]) values[kAssociatedPhiBoosted] = assocVec.Phi();
+
+    if(fgUsedVars[kDeltaPhiBoosted]) {
+      Double_t delta = trig->Phi() - assocVec.Phi();
+      if(delta>3.0/2.0*TMath::Pi()) delta -= 2.0*TMath::Pi();
+      if(delta<-0.5*TMath::Pi()) delta += 2.0*TMath::Pi();
+      values[kDeltaPhiBoosted] = delta;
+    }
+    if(fgUsedVars[kDeltaPhiSymBoosted]) {
+      Double_t delta = TMath::Abs(trig->Phi() - assocVec.Phi());
+      if(delta>TMath::Pi()) delta = 2*TMath::Pi()-delta;
+      values[kDeltaPhiSymBoosted] = delta;
+    }
+
+    if(fgUsedVars[kDeltaThetaBoosted]) values[kDeltaThetaBoosted] = trig->Theta() - assocVec.Theta();
+
+    if(fgUsedVars[kDeltaEtaBoosted])     values[kDeltaEtaBoosted]     = trig->Eta() - assocVec.Eta();
+    if(fgUsedVars[kDeltaEtaAbsBoosted])  values[kDeltaEtaAbsBoosted]  = TMath::Abs(trig->Eta() - assocVec.Eta());
+  }
 
   if(fgUsedVars[kDeltaPhi]) {
     Double_t delta = trig->Phi() - assoc->Phi();
@@ -3047,6 +3086,7 @@ void AliReducedVarManager::SetDefaultVarNames() {
   fgVariableNames[kEMCALmatchedClusterId] = "matched Calo cluster id"; fgVariableUnits[kEMCALmatchedClusterId] = "";
   fgVariableNames[kEMCALmatchedEOverP]    = "Calo E/p";                fgVariableUnits[kEMCALmatchedEOverP] = "";  
   fgVariableNames[kEMCALmatchedM02]       = "Calo M02";                fgVariableUnits[kEMCALmatchedM02] = "";
+  fgVariableNames[kEMCALmatchedM20]       = "Calo M20";                fgVariableUnits[kEMCALmatchedM20] = "";
   fgVariableNames[kEMCALclusterEnergy]    = "Calo cls. energy";        fgVariableUnits[kEMCALclusterEnergy] = "GeV";
   fgVariableNames[kEMCALclusterDx]        = "Calo cls. dx";            fgVariableUnits[kEMCALclusterDx] = "";  
   fgVariableNames[kEMCALclusterDz]        = "Calo cls. dz";            fgVariableUnits[kEMCALclusterDz] = "";  
@@ -3056,17 +3096,25 @@ void AliReducedVarManager::SetDefaultVarNames() {
   fgVariableNames[kEMCALdispersion]       = "Cluster dispersion";      fgVariableUnits[kEMCALdispersion] = "";  
   fgVariableNames[kTrackingFlag] = "Tracking flag";  fgVariableUnits[kTrackingFlag] = "";  
   fgVariableNames[kTrackingStatus] = "Tracking status";  fgVariableUnits[kTrackingStatus] = "";  
-  fgVariableNames[kDeltaPhi]      = "#Delta #varphi";             fgVariableUnits[kDeltaPhi]      = "rad.";
-  fgVariableNames[kDeltaPhiSym]   = "#Delta #varphi";             fgVariableUnits[kDeltaPhiSym]   = "rad.";
-  fgVariableNames[kDeltaTheta]    = "#Delta #theta";              fgVariableUnits[kDeltaTheta]    = "rad.";
-  fgVariableNames[kDeltaEta]      = "#Delta #eta";                fgVariableUnits[kDeltaEta]      = "";
-  fgVariableNames[kDeltaEtaAbs]   = "|#Delta #eta|";              fgVariableUnits[kDeltaEtaAbs]   = "";
-  fgVariableNames[kTriggerPt]     = "p_{T} trigger particle";     fgVariableUnits[kTriggerPt]     = "GeV/c";
-  fgVariableNames[kTriggerRap]    = "#it{y} trigger particle";    fgVariableUnits[kTriggerRap]    = "";
-  fgVariableNames[kTriggerRapAbs] = "|#it{y}| trigger particle";  fgVariableUnits[kTriggerRapAbs] = "";
-  fgVariableNames[kAssociatedPt]  = "p_{T} associated particle";  fgVariableUnits[kAssociatedPt]  = "GeV/c";
-  fgVariableNames[kAssociatedEta] = "#eta associated particle";   fgVariableUnits[kAssociatedEta] = "";
-  fgVariableNames[kAssociatedPhi] = "#varphi associated particle";fgVariableUnits[kAssociatedPhi] = "rad.";
+  fgVariableNames[kDeltaPhi]              = "#Delta #varphi";             fgVariableUnits[kDeltaPhi]              = "rad.";
+  fgVariableNames[kDeltaPhiBoosted]       = "#Delta #varphi";             fgVariableUnits[kDeltaPhiBoosted]       = "rad.";
+  fgVariableNames[kDeltaPhiSym]           = "#Delta #varphi";             fgVariableUnits[kDeltaPhiSym]           = "rad.";
+  fgVariableNames[kDeltaPhiSymBoosted]    = "#Delta #varphi";             fgVariableUnits[kDeltaPhiSymBoosted]    = "rad.";
+  fgVariableNames[kDeltaTheta]            = "#Delta #theta";              fgVariableUnits[kDeltaTheta]            = "rad.";
+  fgVariableNames[kDeltaThetaBoosted]     = "#Delta #theta";              fgVariableUnits[kDeltaThetaBoosted]     = "rad.";
+  fgVariableNames[kDeltaEta]              = "#Delta #eta";                fgVariableUnits[kDeltaEta]              = "";
+  fgVariableNames[kDeltaEtaBoosted]       = "#Delta #eta";                fgVariableUnits[kDeltaEtaBoosted]       = "";
+  fgVariableNames[kDeltaEtaAbs]           = "|#Delta #eta|";              fgVariableUnits[kDeltaEtaAbs]           = "";
+  fgVariableNames[kDeltaEtaAbsBoosted]    = "|#Delta #eta|";              fgVariableUnits[kDeltaEtaAbsBoosted]    = "";
+  fgVariableNames[kTriggerPt]             = "p_{T} trigger particle";     fgVariableUnits[kTriggerPt]             = "GeV/c";
+  fgVariableNames[kTriggerRap]            = "#it{y} trigger particle";    fgVariableUnits[kTriggerRap]            = "";
+  fgVariableNames[kTriggerRapAbs]         = "|#it{y}| trigger particle";  fgVariableUnits[kTriggerRapAbs]         = "";
+  fgVariableNames[kAssociatedPt]          = "p_{T} associated particle";  fgVariableUnits[kAssociatedPt]          = "GeV/c";
+  fgVariableNames[kAssociatedPtBoosted]   = "p_{T} associated particle";  fgVariableUnits[kAssociatedPtBoosted]   = "GeV/c";
+  fgVariableNames[kAssociatedEta]         = "#eta associated particle";   fgVariableUnits[kAssociatedEta]         = "";
+  fgVariableNames[kAssociatedEtaBoosted]  = "#eta associated particle";   fgVariableUnits[kAssociatedEtaBoosted]  = "";
+  fgVariableNames[kAssociatedPhi]         = "#varphi associated particle";fgVariableUnits[kAssociatedPhi]         = "rad.";
+  fgVariableNames[kAssociatedPhiBoosted]  = "#varphi associated particle";fgVariableUnits[kAssociatedPhiBoosted]  = "rad.";
 }
 
 
