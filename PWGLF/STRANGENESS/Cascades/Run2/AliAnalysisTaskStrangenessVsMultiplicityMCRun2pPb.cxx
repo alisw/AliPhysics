@@ -2504,7 +2504,7 @@ void AliAnalysisTaskStrangenessVsMultiplicityMCRun2pPb::UserExec(Option_t *)
         
         fTreeCascVarBachIsKink=kFALSE;
         fTreeCascVarPosIsKink=kFALSE;
-        
+        fTreeCascVarNegIsKink=kFALSE;
         
         // - 1st part of initialisation : variables needed to store AliESDCascade data members
         Double_t lEffMassXi      = 0. ;
