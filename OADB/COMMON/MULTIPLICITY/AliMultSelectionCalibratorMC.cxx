@@ -823,9 +823,10 @@ Bool_t AliMultSelectionCalibratorMC::Calibrate() {
                      */
                     
                     //lTempDef = Form(TMath::Power(( (Amc + Bmc * TMath::Power(xmc,Cmc)) - Adata )/Bdata, 1./Cdata),
-                    lTempDef = Form("TMath::Power(( (%.10f + %.10f * TMath::Power(x,%.10f)) - %.10f )/%.10f, 1./%.10f)",
+                    lTempDef = Form("TMath::Power(( (%.10f + %.10f * TMath::Power(%s,%.10f)) - %.10f )/%.10f, 1./%.10f)",
                                     fitmc[iRun][iEst]->GetParameter(0),
                                     fitmc[iRun][iEst]->GetParameter(1),
+                                    lTempDef.Data(),
                                     fitmc[iRun][iEst]->GetParameter(2),
                                     fitdata[iRun][iEst]->GetParameter(0),
                                     fitdata[iRun][iEst]->GetParameter(1),
@@ -891,10 +892,10 @@ Bool_t AliMultSelectionCalibratorMC::Calibrate() {
                          xdata = TMath::Power(( Amc + Bmc * TMath::Power(xmc,Cmc) - Adata )/Bdata, 1./Cdata);
                          */
                         
-                        //lTempDef = Form(TMath::Power(( (Amc + Bmc * TMath::Power(xmc,Cmc)) - Adata )/Bdata, 1./Cdata),
-                        lTempDef = Form("TMath::Power(( (%.10f + %.10f * TMath::Power(x,%.10f)) - %.10f )/%.10f, 1./%.10f)",
+                        lTempDef = Form("TMath::Power(( (%.10f + %.10f * TMath::Power(%s,%.10f)) - %.10f )/%.10f, 1./%.10f)",
                                         fitmc[iRun][iEst]->GetParameter(0),
                                         fitmc[iRun][iEst]->GetParameter(1),
+                                        lTempDef.Data(),
                                         fitmc[iRun][iEst]->GetParameter(2),
                                         fitdata[iRun][iEst]->GetParameter(0),
                                         fitdata[iRun][iEst]->GetParameter(1),
