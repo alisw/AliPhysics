@@ -123,7 +123,7 @@ fkRevertexAllEvents(kTRUE),
 //Flags for both V0+cascade vertexer
 fkPreselectDedx ( kFALSE ),
 fkPreselectDedxLambda ( kFALSE ),
-fkExtraCleanup    ( kFALSE ), //extra cleanup: eta, etc
+fkExtraCleanup    ( kTRUE ), //extra cleanup: eta, etc
 //________________________________________________
 //Flags for V0 vertexer
 fkRunV0Vertexer (kFALSE),
@@ -183,7 +183,7 @@ fkRevertexAllEvents(kTRUE),
 //Flags for both V0+cascade vertexer
 fkPreselectDedx ( kFALSE ),
 fkPreselectDedxLambda ( kFALSE ),
-fkExtraCleanup    ( kFALSE ), //extra cleanup: eta, etc
+fkExtraCleanup    ( kTRUE ), //extra cleanup: eta, etc
 //________________________________________________
 //Flags for V0 vertexer
 fkRunV0Vertexer (kFALSE),
@@ -229,17 +229,17 @@ fHistV0Statistics(0)
     //Re-vertex: Will only apply for cascade candidates
     
     fV0VertexerSels[0] =  33.  ;  // max allowed chi2
-    fV0VertexerSels[1] =   0.02;  // min allowed impact parameter for the 1st daughter (LHC09a4 : 0.05)
-    fV0VertexerSels[2] =   0.02;  // min allowed impact parameter for the 2nd daughter (LHC09a4 : 0.05)
+    fV0VertexerSels[1] =   0.1;  // min allowed impact parameter for the 1st daughter (LHC09a4 : 0.05)
+    fV0VertexerSels[2] =   0.1;  // min allowed impact parameter for the 2nd daughter (LHC09a4 : 0.05)
     fV0VertexerSels[3] =   2.0 ;  // max allowed DCA between the daughter tracks       (LHC09a4 : 0.5)
     fV0VertexerSels[4] =   0.95;  // min allowed cosine of V0's pointing angle         (LHC09a4 : 0.99)
     fV0VertexerSels[5] =   1.0 ;  // min radius of the fiducial volume                 (LHC09a4 : 0.2)
     fV0VertexerSels[6] = 200.  ;  // max radius of the fiducial volume                 (LHC09a4 : 100.0)
     
     fCascadeVertexerSels[0] =  33.   ;  // max allowed chi2 (same as PDC07)
-    fCascadeVertexerSels[1] =   0.05 ;  // min allowed V0 impact parameter                    (PDC07 : 0.05   / LHC09a4 : 0.025 )
-    fCascadeVertexerSels[2] =   0.010;  // "window" around the Lambda mass                    (PDC07 : 0.008  / LHC09a4 : 0.010 )
-    fCascadeVertexerSels[3] =   0.03 ;  // min allowed bachelor's impact parameter            (PDC07 : 0.035  / LHC09a4 : 0.025 )
+    fCascadeVertexerSels[1] =   0.1 ;  // min allowed V0 impact parameter                    (PDC07 : 0.05   / LHC09a4 : 0.025 )
+    fCascadeVertexerSels[2] =   0.008;  // "window" around the Lambda mass                    (PDC07 : 0.008  / LHC09a4 : 0.010 )
+    fCascadeVertexerSels[3] =   0.1 ;  // min allowed bachelor's impact parameter            (PDC07 : 0.035  / LHC09a4 : 0.025 )
     fCascadeVertexerSels[4] =   2.0  ;  // max allowed DCA between the V0 and the bachelor    (PDC07 : 0.1    / LHC09a4 : 0.2   )
     fCascadeVertexerSels[5] =   0.95 ;  // min allowed cosine of the cascade pointing angle   (PDC07 : 0.9985 / LHC09a4 : 0.998 )
     fCascadeVertexerSels[6] =   0.4  ;  // min radius of the fiducial volume                  (PDC07 : 0.9    / LHC09a4 : 0.2   )
