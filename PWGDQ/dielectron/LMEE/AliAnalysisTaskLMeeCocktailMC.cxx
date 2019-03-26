@@ -156,7 +156,8 @@ AliAnalysisTaskLMeeCocktailMC::AliAnalysisTaskLMeeCocktailMC(): AliAnalysisTaskS
   fParticleListNames(NULL),
   fIsMC(1),
   fMaxEta(2),
-  fMinPt(2),
+  fMinPt(0),
+  fMaxPt(1000),
   fWriteTTree(2),
   fcollisionSystem(2),
   fResolType(2),
@@ -270,7 +271,8 @@ AliAnalysisTaskLMeeCocktailMC::AliAnalysisTaskLMeeCocktailMC(const char *name):
   fParticleListNames(NULL),
   fIsMC(1),
   fMaxEta(2),
-  fMinPt(2),
+  fMinPt(0),
+  fMaxPt(1000),
   fWriteTTree(2),
   fcollisionSystem(2),
   fResolType(2),
@@ -716,7 +718,7 @@ void AliAnalysisTaskLMeeCocktailMC::ProcessMCParticles(){
      if(dielectron_ch==0) fULS_orig->Fill(dielectron.M(),dielectron.Pt(),dielectron_weight);
      if(dielectron_ch>0) fLSpp_orig->Fill(dielectron.M(),dielectron.Pt(),dielectron_weight);
      if(dielectron_ch<0) fLSmm_orig->Fill(dielectron.M(),dielectron.Pt(),dielectron_weight);
-     if(e.Pt()>fMinPt&&eBuff.at(jj).Pt()>fMinPt&&TMath::Abs(e.Eta())<fMaxEta&&TMath::Abs(eBuff.at(jj).Eta())<fMaxEta){
+     if(e.Pt()>fMinPt&&eBuff.at(jj).Pt()>fMinPt&&e.Pt()<fMaxPt&&eBuff.at(jj).Pt()<fMaxPt&&TMath::Abs(e.Eta())<fMaxEta&&TMath::Abs(eBuff.at(jj).Eta())<fMaxEta){
       if(dielectron_ch==0) fULS->Fill(dielectron.M(),dielectron.Pt(),dielectron_weight);
       if(dielectron_ch>0) fLSpp->Fill(dielectron.M(),dielectron.Pt(),dielectron_weight);
       if(dielectron_ch<0) fLSmm->Fill(dielectron.M(),dielectron.Pt(),dielectron_weight);
@@ -885,6 +887,7 @@ void AliAnalysisTaskLMeeCocktailMC::ProcessMCParticles(){
         if(particle2->GetPdgCode()>0) { dau2=ApplyResolution(dau2,-1,fResolType); }else{ dau2=ApplyResolution(dau2,1,fResolType);};
         fpass=kTRUE;
         if(dau1.Pt()<fMinPt||dau2.Pt()<fMinPt) fpass=kFALSE; //leg pT cut
+        if(dau1.Pt()>fMaxPt||dau2.Pt()>fMaxPt) fpass=kFALSE; //leg pT cut
         if(TMath::Abs(dau1.Eta())>fMaxEta||TMath::Abs(dau2.Eta())>fMaxEta) fpass=kFALSE;
 
         //get the pair DCA (based in smeared pT)
@@ -1038,6 +1041,7 @@ void AliAnalysisTaskLMeeCocktailMC::ProcessMCParticles(){
         dau2=ApplyResolution(dau2,-1,fResolType);
         fpass=kTRUE;
         if(dau1.Pt()<fMinPt||dau2.Pt()<fMinPt) fpass=kFALSE; //leg pT cut
+        if(dau1.Pt()>fMaxPt||dau2.Pt()>fMaxPt) fpass=kFALSE; //leg pT cut
         if(TMath::Abs(dau1.Eta())>fMaxEta||TMath::Abs(dau2.Eta())>fMaxEta) fpass=kFALSE;
 
         //get the pair DCA (based in smeared pT) -> no DCA for virtual photon for the moment
