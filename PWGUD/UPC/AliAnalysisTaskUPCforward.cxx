@@ -580,38 +580,38 @@ void AliAnalysisTaskUPCforward::UserCreateOutputObjects()
 
   for(Int_t iRapidityBin = 0; iRapidityBin < 8; iRapidityBin++ ){
     fCosThetaHelicityFrameJPsiRapidityBinsH[iRapidityBin] = new TH1F(
-                Form("fCosThetaHelicityFrameJPsiH_%d", iRapidityBin),
-                Form("fCosThetaHelicityFrameJPsiH_%d", iRapidityBin),
+                Form("fCosThetaHelicityFrameJPsiRapidityBinsH_%d", iRapidityBin),
+                Form("fCosThetaHelicityFrameJPsiRapidityBinsH_%d", iRapidityBin),
                 1000, -1., 1.
               );
     fOutputList->Add(fCosThetaHelicityFrameJPsiRapidityBinsH[iRapidityBin]);
   }
 
   for(Int_t iRapidityBin = 0; iRapidityBin < 8; iRapidityBin++ ){
-    fCosThetaCollinsSoperFrameJPsiH[iRapidityBin] = new TH1F(
-                Form("fCosThetaCollinsSoperFrameJPsiH_%d", iRapidityBin),
-                Form("fCosThetaCollinsSoperFrameJPsiH_%d", iRapidityBin),
+    fCosThetaCollinsSoperFrameJPsiRapidityBinsH[iRapidityBin] = new TH1F(
+                Form("fCosThetaCollinsSoperFrameJPsiRapidityBinsH_%d", iRapidityBin),
+                Form("fCosThetaCollinsSoperFrameJPsiRapidityBinsH_%d", iRapidityBin),
                 1000, -1., 1.
               );
-    fOutputList->Add(fCosThetaCollinsSoperFrameJPsiH[iRapidityBin]);
+    fOutputList->Add(fCosThetaCollinsSoperFrameJPsiRapidityBinsH[iRapidityBin]);
   }
 
   for(Int_t iRapidityBin = 0; iRapidityBin < 8; iRapidityBin++ ){
-    fPhiHelicityFrameJPsiH[iRapidityBin] = new TH1F(
-                Form("fPhiHelicityFrameJPsiH_%d", iRapidityBin),
-                Form("fPhiHelicityFrameJPsiH_%d", iRapidityBin),
+    fPhiHelicityFrameJPsiRapidityBinsH[iRapidityBin] = new TH1F(
+                Form("fPhiHelicityFrameJPsiRapidityBinsH_%d", iRapidityBin),
+                Form("fPhiHelicityFrameJPsiRapidityBinsH_%d", iRapidityBin),
                 10000, -10., 10.
               );
-    fOutputList->Add(fPhiHelicityFrameJPsiH[iRapidityBin]);
+    fOutputList->Add(fPhiHelicityFrameJPsiRapidityBinsH[iRapidityBin]);
   }
 
   for(Int_t iRapidityBin = 0; iRapidityBin < 8; iRapidityBin++ ){
-    fPhiCollinsSoperFrameJPsiH[iRapidityBin] = new TH1F(
-                Form("fPhiCollinsSoperFrameJPsiH_%d", iRapidityBin),
-                Form("fPhiCollinsSoperFrameJPsiH_%d", iRapidityBin),
+    fPhiCollinsSoperFrameJPsiRapidityBinsH[iRapidityBin] = new TH1F(
+                Form("fPhiCollinsSoperFrameJPsiRapidityBinsH_%d", iRapidityBin),
+                Form("fPhiCollinsSoperFrameJPsiRapidityBinsH_%d", iRapidityBin),
                 10000, -10., 10.
               );
-    fOutputList->Add(fPhiCollinsSoperFrameJPsiH[iRapidityBin]);
+    fOutputList->Add(fPhiCollinsSoperFrameJPsiRapidityBinsH[iRapidityBin]);
   }
 
   //_______________________________
@@ -1408,6 +1408,29 @@ void AliAnalysisTaskUPCforward::UserExec(Option_t *)
     for(Int_t iRapidityBin = 0; iRapidityBin < 8; iRapidityBin++){
         if( (possibleJPsiCopy.Rapidity() + 4) < 1.5*(iRapidityBin + 1)/8 ){
           fThetaDistribOfPositiveMuonRestFrameJPsiRapidityBinH[iRapidityBin]->Fill(cosThetaMuonsRestFrame[0]);
+          /* - New part: filling all possible histograms!
+             -
+           */
+          fCosThetaHelicityFrameJPsiRapidityBinsH[iRapidityBin]->Fill( CosThetaHelicityFrame( muonsCopy2[0],
+                                                                                              muonsCopy2[1],
+                                                                                              possibleJPsiCopy
+                                                                                              )
+                                                                                           );
+          fCosThetaCollinsSoperFrameJPsiRapidityBinsH[iRapidityBin]->Fill( CosThetaCollinsSoper( muonsCopy2[0],
+                                                                                                 muonsCopy2[1],
+                                                                                                 possibleJPsiCopy
+                                                                                                 )
+                                                                                               );
+          fPhiHelicityFrameJPsiRapidityBinsH[iRapidityBin]->Fill( CosPhiHelicityFrame( muonsCopy2[0],
+                                                                                       muonsCopy2[1],
+                                                                                       possibleJPsiCopy
+                                                                                       )
+                                                                                     );
+          fPhiCollinsSoperFrameJPsiRapidityBinsH[iRapidityBin]->Fill( CosPhiCollinsSoper( muonsCopy2[0],
+                                                                                          muonsCopy2[1],
+                                                                                          possibleJPsiCopy
+                                                                                          )
+                                                                                        );
           break;
         }
     }
