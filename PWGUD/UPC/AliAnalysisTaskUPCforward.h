@@ -577,6 +577,39 @@ class AliAnalysisTaskUPCforward : public AliAnalysisTaskSE
                                  */
         TH1F*                   fPhiCollinsSoperFrameJPsiH;
 
+                                /**
+                                 * This histogram shows the angular distribution
+                                 * of the positive muon in the HELICITY frame.
+                                 * COS(THETA) distribution. Divided per
+                                 * rapidity bins.
+                                 */
+        TH1F*                   fCosThetaHelicityFrameJPsiRapidityBinsH[8];
+
+                                /**
+                                 * This histogram shows the angular distribution
+                                 * of the positive muon in the HELICITY frame.
+                                 * PHI distribution. Divided per
+                                 * rapidity bins.
+                                 */
+        TH1F*                   fPhiHelicityFrameJPsiRapidityBinsH[8];
+
+                                /**
+                                 * This histogram shows the angular distribution
+                                 * of the positive muon in the COLLINS-SOPER
+                                 * frame.  COS(THETA) distribution. Divided per
+                                 * rapidity bins.
+                                 */
+        TH1F*                   fCosThetaCollinsSoperFrameJPsiRapidityBinsH[8];
+
+                                /**
+                                 * This histogram shows the angular distribution
+                                 * of the positive muon in the COLLINS-SOPER
+                                 * frame. PHI distribution. Divided per
+                                 * rapidity bins.
+                                 */
+        TH1F*                   fPhiCollinsSoperFrameJPsiRapidityBinsH[8];
+
+
         //_______________________________
         // CUTS
         /*
@@ -637,7 +670,7 @@ class AliAnalysisTaskUPCforward : public AliAnalysisTaskSE
          * If I happen to encounter it again in the future, I will make sure to
          * record it!
          */
-        ClassDef(AliAnalysisTaskUPCforward, 4);
+        ClassDef(AliAnalysisTaskUPCforward, 5);
 };
 
 #endif
