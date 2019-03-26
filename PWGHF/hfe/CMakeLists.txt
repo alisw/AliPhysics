@@ -134,6 +134,7 @@ set(SRCS
   AliAnalysisTaskCaloHFEpPbRun2.cxx
   AliAnalysisTaskHFEmultTPCTOF.cxx
   AliAnalysisTaskCaloHFEpp.cxx
+  AliAnalysisTaskHFEBESpectraEMC.cxx
   )
 
 # Headers from sources
