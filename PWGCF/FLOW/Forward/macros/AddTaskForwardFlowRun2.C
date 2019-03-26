@@ -27,7 +27,7 @@ AliAnalysisTaskSE* AddTaskForwardFlowRun2( bool doNUA, bool makeFakeHoles,
                                           UInt_t tracktype, TString centrality,
                                           Double_t minpt,Double_t maxpt,
                                           TString sec_file_cen,TString sec_file_fwd,
-                                          TString name, TString suffix)
+                                          TString name1, TString suffix)
 {
   std::cout << "______________________________________________________________________________" << std::endl;
 
