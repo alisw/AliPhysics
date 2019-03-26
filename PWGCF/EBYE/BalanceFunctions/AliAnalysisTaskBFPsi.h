@@ -36,7 +36,7 @@ class AliPID;
 class AliAnalysisTaskBFPsi : public AliAnalysisTaskSE {
  public:
   enum etriggerSel{kMB, kCentral15, kCentral18, kINT7, kppHighMult};
-  enum eCorrProcedure{kNoCorr, kDataDrivCorr, kMCCorr};
+  enum eCorrProcedure{kNoCorr, kDataDrivCorr, kMCCorr, kMC1DCorr};
   
   AliAnalysisTaskBFPsi(const char *name = "AliAnalysisTaskBFPsi");
   virtual ~AliAnalysisTaskBFPsi();
