@@ -157,7 +157,11 @@ AliAnalysisTaskUPCforward::AliAnalysisTaskUPCforward()
       fCosThetaHelicityFrameJPsiH(0),
       fCosThetaCollinsSoperFrameJPsiH(0),
       fPhiHelicityFrameJPsiH(0),
-      fPhiCollinsSoperFrameJPsiH(0)
+      fPhiCollinsSoperFrameJPsiH(0),
+      fCosThetaHelicityFrameJPsiRapidityBinsH{ 0, 0, 0, 0, 0, 0, 0, 0},
+      fCosThetaCollinsSoperFrameJPsiRapidityBinsH{ 0, 0, 0, 0, 0, 0, 0, 0},
+      fPhiHelicityFrameJPsiRapidityBinsH{ 0, 0, 0, 0, 0, 0, 0, 0},
+      fPhiCollinsSoperFrameJPsiRapidityBinsH{ 0, 0, 0, 0, 0, 0, 0, 0}
 {
     // default constructor, don't allocate memory here!
     // this is used by root for IO purposes, it needs to remain empty
@@ -246,7 +250,11 @@ AliAnalysisTaskUPCforward::AliAnalysisTaskUPCforward(const char* name)
       fCosThetaHelicityFrameJPsiH(0),
       fCosThetaCollinsSoperFrameJPsiH(0),
       fPhiHelicityFrameJPsiH(0),
-      fPhiCollinsSoperFrameJPsiH(0)
+      fPhiCollinsSoperFrameJPsiH(0),
+      fCosThetaHelicityFrameJPsiRapidityBinsH{ 0, 0, 0, 0, 0, 0, 0, 0},
+      fCosThetaCollinsSoperFrameJPsiRapidityBinsH{ 0, 0, 0, 0, 0, 0, 0, 0},
+      fPhiHelicityFrameJPsiRapidityBinsH{ 0, 0, 0, 0, 0, 0, 0, 0},
+      fPhiCollinsSoperFrameJPsiRapidityBinsH{ 0, 0, 0, 0, 0, 0, 0, 0}
 {
     FillGoodRunVector(fVectorGoodRunNumbers);
 
@@ -569,6 +577,42 @@ void AliAnalysisTaskUPCforward::UserCreateOutputObjects()
 
   fPhiCollinsSoperFrameJPsiH = new TH1F("fPhiCollinsSoperFrameJPsiH", "fPhiCollinsSoperFrameJPsiH", 10000, -10., 10.);
   fOutputList->Add(fPhiCollinsSoperFrameJPsiH);
+
+  for(Int_t iRapidityBin = 0; iRapidityBin < 8; iRapidityBin++ ){
+    fCosThetaHelicityFrameJPsiRapidityBinsH[iRapidityBin] = new TH1F(
+                Form("fCosThetaHelicityFrameJPsiH_%d", iRapidityBin),
+                Form("fCosThetaHelicityFrameJPsiH_%d", iRapidityBin),
+                1000, -1., 1.
+              );
+    fOutputList->Add(fCosThetaHelicityFrameJPsiRapidityBinsH[iRapidityBin]);
+  }
+
+  for(Int_t iRapidityBin = 0; iRapidityBin < 8; iRapidityBin++ ){
+    fCosThetaCollinsSoperFrameJPsiH[iRapidityBin] = new TH1F(
+                Form("fCosThetaCollinsSoperFrameJPsiH_%d", iRapidityBin),
+                Form("fCosThetaCollinsSoperFrameJPsiH_%d", iRapidityBin),
+                1000, -1., 1.
+              );
+    fOutputList->Add(fCosThetaCollinsSoperFrameJPsiH[iRapidityBin]);
+  }
+
+  for(Int_t iRapidityBin = 0; iRapidityBin < 8; iRapidityBin++ ){
+    fPhiHelicityFrameJPsiH[iRapidityBin] = new TH1F(
+                Form("fPhiHelicityFrameJPsiH_%d", iRapidityBin),
+                Form("fPhiHelicityFrameJPsiH_%d", iRapidityBin),
+                10000, -10., 10.
+              );
+    fOutputList->Add(fPhiHelicityFrameJPsiH[iRapidityBin]);
+  }
+
+  for(Int_t iRapidityBin = 0; iRapidityBin < 8; iRapidityBin++ ){
+    fPhiCollinsSoperFrameJPsiH[iRapidityBin] = new TH1F(
+                Form("fPhiCollinsSoperFrameJPsiH_%d", iRapidityBin),
+                Form("fPhiCollinsSoperFrameJPsiH_%d", iRapidityBin),
+                10000, -10., 10.
+              );
+    fOutputList->Add(fPhiCollinsSoperFrameJPsiH[iRapidityBin]);
+  }
 
   //_______________________________
   // - End of the function
