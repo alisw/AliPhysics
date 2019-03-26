@@ -873,8 +873,38 @@ Bool_t AliMultSelectionCalibratorMC::Calibrate() {
                 TString lTempDef;
                 for(Int_t iEst=0; iEst<lNEstimators; iEst++){
                     lTempDef = fselsdef->GetEstimator( iEst )->GetDefinition();
-                    lTempDef.Prepend(Form("%.10f*(",lScaleFactors[iEst][iRun] ));
-                    lTempDef.Append(")"); //don't forget parentheses...
+                    //Construction of estimator re-definition
+                    if(!fkUseQuadraticMapping){
+                        lTempDef.Prepend(Form("%.10f*(",lScaleFactors[iEst][iRun] ));
+                        lTempDef.Append(")"); //don't forget parentheses...
+                    }else{
+                        //Experimental quadratic fit
+                        TString lTemporary = lTempDef.Data();
+                        
+                        /*
+                         //Substitution logic:
+                         xdata = TMath::Power((ydata - Adata)/Bdata, 1./Cdata)
+                         ydata -> ymc = Amc + Bmc * xmc ^ Cmc
+                         
+                         full formula:
+                         
+                         xdata = TMath::Power(( Amc + Bmc * TMath::Power(xmc,Cmc) - Adata )/Bdata, 1./Cdata);
+                         */
+                        
+                        //lTempDef = Form(TMath::Power(( (Amc + Bmc * TMath::Power(xmc,Cmc)) - Adata )/Bdata, 1./Cdata),
+                        lTempDef = Form("TMath::Power(( (%.10f + %.10f * TMath::Power(x,%.10f)) - %.10f )/%.10f, 1./%.10f)",
+                                        fitmc[iRun][iEst]->GetParameter(0),
+                                        fitmc[iRun][iEst]->GetParameter(1),
+                                        fitmc[iRun][iEst]->GetParameter(2),
+                                        fitdata[iRun][iEst]->GetParameter(0),
+                                        fitdata[iRun][iEst]->GetParameter(1),
+                                        fitdata[iRun][iEst]->GetParameter(2));
+                        lTempDef.ReplaceAll("ESTIMATOR",lTemporary.Data());
+                        cout<<"================================================================================"<<endl;
+                        cout<<" Quadratic fit print obtained for estimator "<<fsels->GetEstimator( iEst )->GetName()<<endl;
+                        cout<<lTempDef.Data()<<endl;
+                        cout<<"================================================================================"<<endl;
+                    }
                     
                     //if ZxxFired included in the estimator, ignore it
                     lTempDef.ReplaceAll("fZnaFired", "1");
