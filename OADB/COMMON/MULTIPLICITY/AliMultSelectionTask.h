@@ -130,7 +130,8 @@ public:
     //Calibration mode downscaling for manageable output
     void SetDownscaleFactor ( Double_t lDownscale ) { fDownscaleFactor = lDownscale; }
     
-    void SetOADB ( TString lOADBfilename ); 
+    void SetOADB ( TString lOADBfilename );
+    AliOADBContainer* GetOADB() {return fOADB;}; //for expert manipulation only
     
     // Static method for AddTaskMultSelection
     static AliMultSelectionTask* AddTaskMultSelection ( Bool_t lCalibration = kFALSE, TString lExtraOptions = "", Int_t lNDebugEstimators = 1, TString lContainerAppend = "", const TString lMasterJobSessionFlag = "");
