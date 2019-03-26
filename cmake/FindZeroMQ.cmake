@@ -18,6 +18,7 @@
 #
 # Point to a custom ZeroMQ installation with -DZEROMQ=<path>: in that case, if
 # ZeroMQ is not found or has not the right version, a fatal error is raised.
+# Performs automatic ZeroMQ check in case DISABLE_ZEROMQ is not set.
 #
 # Variables set:
 #
@@ -35,20 +36,18 @@ message(STATUS "Checking for ZeroMQ ${ZEROMQ}")
 
 set(ZEROMQ_FOUND FALSE)
 
-if(ZEROMQ)
-    # ZeroMQ is installed in a custom place
+if(NOT DISABLE_ZEROMQ AND ZEROMQ)
+    # ZeroMQ is installed to a custom place
     find_library(ZEROMQ_LIBRARIES NAMES zmq
                 PATHS ${ZEROMQ}/lib
                 NO_DEFAULT_PATH
-                DOC "Path to libzmq)"
-            )
+                DOC "Path to libzmq)")
     find_path(ZEROMQ_INCLUDE_DIR NAMES zmq.h zmq_utils.h
                 PATHS ${ZEROMQ}/include
                 NO_DEFAULT_PATH
-                DOC "Path to ZeroMQ include header files."
-            )       
-else(ZEROMQ)
-        # Check is the library is installed on the system
+                DOC "Path to ZeroMQ include header files.")
+elseif(NOT DISABLE_ZEROMQ)
+    # Autodetect library from the system
     find_library(ZEROMQ_LIBRARIES NAMES zmq
                 DOC "Path to libzmq)"
             )
@@ -56,7 +55,7 @@ else(ZEROMQ)
     find_path(ZEROMQ_INCLUDE_DIR NAMES zmq_utils.h
                 DOC "Path to ZeroMQ include header files."
             )
-endif(ZEROMQ)
+endif()
 
 mark_as_advanced(ZEROMQ_LIBRARIES ZEROMQ_INCLUDE_DIR)
 
@@ -100,6 +99,8 @@ elseif(ZEROMQ)
 elseif(ZEROMQ_LIBRARIES)
   # ZeroMQ libraries found in system, but headers were not.
   message(STATUS "ZeroMQ headers not found. Please install the development package and the cppzmq interface. Disabling ZeroMQ support.")
+elseif(DISABLE_ZEROMQ)
+  message(STATUS "ZeroMQ explicitly disabled by user.")
 else()
   message(STATUS "ZeroMQ not found. Disabling ZeroMQ support.")
 endif()
