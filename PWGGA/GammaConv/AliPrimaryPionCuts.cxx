@@ -114,7 +114,7 @@ AliPrimaryPionCuts::AliPrimaryPionCuts(const char *name,const char *title) : Ali
 	fCutString=new TObjString((GetCutNumber()).Data());
 
 	// Using standard function for setting Cuts
-	Bool_t selectPrimaries=kFALSE;
+	Bool_t selectPrimaries=kTRUE;
 	if (fEsdTrackCuts==NULL)fEsdTrackCuts = AliESDtrackCuts::GetStandardITSTPCTrackCuts2010(selectPrimaries);
 }
 

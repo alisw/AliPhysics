@@ -104,6 +104,7 @@ AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::AliAnalysisTaskNeutralMesonTo
   fZVertexHNMEvent(-1),
   fPtHNM(-1),
   fPDGMassNDM(-1),
+  fPDGMassChargedPion(-1),
   fPDGCodeNDM(-1),
   fPDGCodeAnalyzedMeson(-1),
   fHistoConvGammaPt(nullptr),
@@ -326,6 +327,7 @@ AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::AliAnalysisTaskNeutralMesonTo
   fZVertexHNMEvent(-1),
   fPtHNM(-1),
   fPDGMassNDM(-1),
+  fPDGMassChargedPion(-1),
   fPDGCodeNDM(-1),
   fPDGCodeAnalyzedMeson(-1),
   fHistoConvGammaPt(nullptr),
@@ -637,6 +639,7 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::UserCreateOutputObjects(
     NameNDMLatex                                      = "#pi^{0}";
     fPDGMassNDM                                       = 0.1349766; // hard coded PDG value to keep results reproducable later
     fPDGCodeNDM                                       = 111; // PDG pi0
+    fPDGMassChargedPion                               = 0.1395706; // hard coded PDG 2018 value to keep results reproducable later
     fPDGCodeAnalyzedMeson                             = 221; // PDG omega
     break;
   case 1: // OMEGA MESON
@@ -655,6 +658,7 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::UserCreateOutputObjects(
     NameNDMLatex                                      = "#pi^{0}";
     fPDGMassNDM                                       = 0.1349766; // hard coded PDG value to keep results reproducable later
     fPDGCodeNDM                                       = 111; // PDG pi0
+    fPDGMassChargedPion                               = 0.1395706; // hard coded PDG 2018 value to keep results reproducable later
     fPDGCodeAnalyzedMeson                             = 223; // PDG omega
     break;
   case 2: // ETA PRIME MESON
@@ -673,6 +677,7 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::UserCreateOutputObjects(
     NameNDMLatex                                      = "#eta";
     fPDGMassNDM                                       = 0.547862; // hard coded PDG value to keep results reproducable later
     fPDGCodeNDM                                       = 221; // PDG value eta
+    fPDGMassChargedPion                               = 0.1395706; // hard coded PDG 2018 value to keep results reproducable later
     fPDGCodeAnalyzedMeson                             = 331; // PDG value eta prime
     break;
   case 3:         // D0 MESON
@@ -693,6 +698,7 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::UserCreateOutputObjects(
     NameNDMLatex                                      = "#pi^{0}";
     fPDGMassNDM                                       = 0.1349766; // hard coded PDG value to keep results reproducable later
     fPDGCodeNDM                                       = 111; // PDG value pi0
+    fPDGMassChargedPion                               = 0.1395706; // hard coded PDG 2018 value to keep results reproducable later
     fPDGCodeAnalyzedMeson                             = 421; // PDG value D0
     break; 
   default:
@@ -3173,11 +3179,12 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::ProcessPionCandidates(){
     if(! ((AliPrimaryPionCuts*)fPionCutArray->At(fiCut))->PionIsSelected(negPionCandidate) ) continue;
     lGoodNegPionIndexPrev.push_back(   fSelectorNegPionIndex[i] );
 
-    TLorentzVector negPionforHandler;
-    negPionforHandler.SetPxPyPzE(negPionCandidate->Px(), negPionCandidate->Py(), negPionCandidate->Pz(), negPionCandidate->E());
-
-    AliAODConversionPhoton *negPionHandler = new AliAODConversionPhoton(&negPionforHandler);
-
+    TLorentzVector* negPionforHandler = new TLorentzVector();
+    negPionforHandler->SetPxPyPzE(negPionCandidate->Px(), negPionCandidate->Py(), negPionCandidate->Pz(), negPionCandidate->E());
+    FixPzVecToMatchPDGInvMass(negPionforHandler);
+    AliAODConversionPhoton *negPionHandler = new AliAODConversionPhoton(negPionforHandler);
+    delete negPionforHandler;
+    
     fNegPionCandidates->Add(negPionHandler);
     if(!fDoLightOutput){
         fHistoNegPionPt[fiCut]->Fill(negPionCandidate->Pt(), fWeightJetJetMC);
@@ -3229,11 +3236,12 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::ProcessPionCandidates(){
     AliESDtrack* posPionCandidate = dynamic_cast<AliESDtrack*>(fInputEvent->GetTrack(fSelectorPosPionIndex[i]));
     if(! ((AliPrimaryPionCuts*)fPionCutArray->At(fiCut))->PionIsSelected(posPionCandidate) ) continue;
     lGoodPosPionIndexPrev.push_back(   fSelectorPosPionIndex[i]  );
-
-    TLorentzVector posPionforHandler;
-    posPionforHandler.SetPxPyPzE(posPionCandidate->Px(), posPionCandidate->Py(), posPionCandidate->Pz(), posPionCandidate->E());
-
-    AliAODConversionPhoton *posPionHandler = new AliAODConversionPhoton(&posPionforHandler);
+    
+    TLorentzVector* posPionforHandler = new TLorentzVector();
+    posPionforHandler->SetPxPyPzE(posPionCandidate->Px(), posPionCandidate->Py(), posPionCandidate->Pz(), posPionCandidate->E());
+    FixPzVecToMatchPDGInvMass(posPionforHandler);
+    AliAODConversionPhoton *posPionHandler = new AliAODConversionPhoton(posPionforHandler);
+    delete posPionforHandler;
 
     fPosPionCandidates->Add(posPionHandler);
     if(!fDoLightOutput){
@@ -3284,13 +3292,13 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::ProcessPionCandidates(){
 
   for(UInt_t i = 0; i < lGoodNegPionIndexPrev.size(); i++){
     AliVTrack* negPionCandidate = dynamic_cast<AliVTrack*>(fInputEvent->GetTrack(lGoodNegPionIndexPrev[i]));
-//    AliESDtrack *negPionCandidate = fInputEvent->GetTrack(lGoodNegPionIndexPrev[i]);
+    
     AliKFParticle negPionCandidateKF( *negPionCandidate->GetConstrainedParam(), 211 );
 
     for(UInt_t j = 0; j < lGoodPosPionIndexPrev.size(); j++){
       AliVTrack *posPionCandidate = dynamic_cast<AliVTrack*>(fInputEvent->GetTrack(lGoodPosPionIndexPrev[j]));
+      
       AliKFParticle posPionCandidateKF( *posPionCandidate->GetConstrainedParam(), 211 );
-
       AliKFConversionPhoton virtualPhoton(negPionCandidateKF,posPionCandidateKF);
       AliKFVertex primaryVertexImproved(*fInputEvent->GetPrimaryVertex());
 			// primaryVertexImproved+=*virtualPhoton;
@@ -3421,7 +3429,7 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::ProcessPionCandidates(){
 
         Float_t bNeg[2];
         Float_t bCovNeg[3];
-        posPionCandidate->GetImpactParameters(bNeg,bCovNeg);
+        negPionCandidate->GetImpactParameters(bNeg,bCovNeg);
         if (bCovNeg[0]<=0 || bCovNeg[2]<=0) {
           AliDebug(1, "Estimated b resolution lower or equal zero!");
           bCovNeg[0]=0; bCovNeg[2]=0;
@@ -3435,7 +3443,7 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::ProcessPionCandidates(){
         if(!fDoLightOutput){
           fHistoNegPionEta[fiCut]->Fill(negPionCandidate->Eta(), fWeightJetJetMC);
           fHistoPosPionEta[fiCut]->Fill(posPionCandidate->Eta(), fWeightJetJetMC);
-
+          
           fHistoNegPionClsTPC[fiCut]->Fill(clsToFNeg,negPionCandidate->Pt(), fWeightJetJetMC);
           fHistoPosPionClsTPC[fiCut]->Fill(clsToFPos,posPionCandidate->Pt(), fWeightJetJetMC);
 
@@ -3479,11 +3487,11 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::ProcessPionCandidatesAOD
     if(! ((AliPrimaryPionCuts*)fPionCutArray->At(fiCut))->PionIsSelectedAOD(negPionCandidate) ) continue;
     lGoodNegPionIndexPrev.push_back(   fSelectorNegPionIndex[i] );
 
-    TLorentzVector negPionforHandler;
-    negPionforHandler.SetPxPyPzE(negPionCandidate->Px(), negPionCandidate->Py(), negPionCandidate->Pz(), negPionCandidate->E());
-
-    AliAODConversionPhoton *negPionHandler = new AliAODConversionPhoton(&negPionforHandler);
-
+    TLorentzVector* negPionforHandler = new TLorentzVector();
+    negPionforHandler->SetPxPyPzE(negPionCandidate->Px(), negPionCandidate->Py(), negPionCandidate->Pz(), negPionCandidate->E());
+    FixPzVecToMatchPDGInvMass(negPionforHandler);
+    AliAODConversionPhoton *negPionHandler = new AliAODConversionPhoton(negPionforHandler);
+    delete negPionforHandler;
     fNegPionCandidates->Add(negPionHandler);
     if(!fDoLightOutput){
         fHistoNegPionPt[fiCut]->Fill(negPionCandidate->Pt(), fWeightJetJetMC);
@@ -3536,10 +3544,11 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::ProcessPionCandidatesAOD
     if(! ((AliPrimaryPionCuts*)fPionCutArray->At(fiCut))->PionIsSelectedAOD(posPionCandidate) ) continue;
     lGoodPosPionIndexPrev.push_back(   fSelectorPosPionIndex[i]  );
 
-    TLorentzVector posPionforHandler;
-    posPionforHandler.SetPxPyPzE(posPionCandidate->Px(), posPionCandidate->Py(), posPionCandidate->Pz(), posPionCandidate->E());
-
-    AliAODConversionPhoton *posPionHandler = new AliAODConversionPhoton(&posPionforHandler);
+    TLorentzVector* posPionforHandler = new TLorentzVector();
+    posPionforHandler->SetPxPyPzE(posPionCandidate->Px(), posPionCandidate->Py(), posPionCandidate->Pz(), posPionCandidate->E());
+    FixPzVecToMatchPDGInvMass(posPionforHandler);
+    AliAODConversionPhoton *posPionHandler = new AliAODConversionPhoton(posPionforHandler);
+    delete posPionforHandler;
 
     fPosPionCandidates->Add(posPionHandler);
     if(!fDoLightOutput){
@@ -3729,7 +3738,7 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::ProcessPionCandidatesAOD
 
         Float_t bNeg[2];
         Float_t bCovNeg[3];
-        posPionCandidate->GetImpactParameters(bNeg,bCovNeg);
+        negPionCandidate->GetImpactParameters(bNeg,bCovNeg);
         if (bCovNeg[0]<=0 || bCovNeg[2]<=0) {
           AliDebug(1, "Estimated b resolution lower or equal zero!");
           bCovNeg[0]=0; bCovNeg[2]=0;
@@ -5197,6 +5206,17 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::FixPzToMatchPDGInvMassND
   Double_t pz = signPz*TMath::Sqrt(TMath::Abs(pow(fPDGMassNDM,2)-pow(energy,2)+pow(px,2)+pow(py,2)));
   particle->SetPxPyPzE(px,py,pz,energy);
 
+  return;
+}
+//________________________________________________________________________
+void AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::FixPzVecToMatchPDGInvMass(TLorentzVector* track) {
+
+  Double_t px = track->Px();
+  Double_t py = track->Py();
+  Int_t signPz = track->Pz()<0?-1:1;
+  Double_t energy = track->E();
+  Double_t pz = signPz*TMath::Sqrt(TMath::Abs(pow(fPDGMassChargedPion,2)-pow(energy,2)+pow(px,2)+pow(py,2)));
+  track->SetPxPyPzE(px,py,pz,energy);
   return;
 }
 

@@ -87,6 +87,7 @@ class AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson: public AliAnalysisTaskS
     void MoveParticleAccordingToVertex(AliAODConversionMother* particle,const AliGammaConversionAODBGHandler::GammaConversionVertex *vertex);
 
     void FixPzToMatchPDGInvMassNDM(AliAODConversionMother* particle);
+    void FixPzVecToMatchPDGInvMass(TLorentzVector* track);
 
     // routines for neutral pion candidates from pure conversion
     void ProcessNeutralDecayMesonCandidatesPureConversions();
@@ -185,6 +186,7 @@ class AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson: public AliAnalysisTaskS
     Float_t                           fZVertexHNMEvent;                                   ///< z position of primary vertex of an event where a true Eta was found
     Float_t                           fPtHNM;                                             ///< pT of a true Eta
     Float_t                           fPDGMassNDM;                                        ///< PDG mass of either pi0 or eta
+    Float_t                           fPDGMassChargedPion;                                        ///< PDG mass of either pi0 or eta
     Int_t                             fPDGCodeNDM;                                        ///< PDG code of either pi0 or eta
     Int_t                             fPDGCodeAnalyzedMeson;                              ///< PDG code of the analyzed heavy netural meson
     // reconstructed particles
