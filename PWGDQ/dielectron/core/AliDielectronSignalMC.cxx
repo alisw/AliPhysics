@@ -122,7 +122,7 @@ AliDielectronSignalMC::AliDielectronSignalMC(const Char_t* name, const Char_t* t
   fGrandMothersRelation(kUndefined),
   fGEANTProcess(kPPrimary),
   fJpsiRadiative(kAll),
-  fCheckCorrelatedHF(kTRUE),
+  fCheckCorrelatedHF(kFALSE),
   fCheckStackForPDG(kFALSE),
   fFillPureMCStep(kFALSE)
 {
