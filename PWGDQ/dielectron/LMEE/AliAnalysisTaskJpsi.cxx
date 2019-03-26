@@ -33,6 +33,7 @@
 #include "TLorentzVector.h"
 // AliRoot includes
 #include "AliAnalysisTaskJpsi.h" // this task
+#include "AliAODMCParticle.h"
 
 
 ClassImp(AliAnalysisTaskJpsi)
@@ -41,9 +42,13 @@ ClassImp(AliAnalysisTaskJpsi)
 AliAnalysisTaskJpsi::AliAnalysisTaskJpsi():
 AliCocktailSmearing(),
   fTree(0x0),  
+  fMotherOld(0x0),  
+  fDaughter1Old(0x0),
+  fDaughter2Old(0x0),
   fMother(0x0),  
   fDaughter1(0x0),
-  fDaughter2(0x0), 
+  fDaughter2(0x0),
+  fOldTree(kTRUE),
   fYmin(-1.),
   fYmax(1.),
   fScaleFunction(0x0),
@@ -123,11 +128,17 @@ void AliAnalysisTaskJpsi::ConnectTree(TTree *tree)
   //
 
   fTree = tree;
-  
-  fTree->SetBranchAddress("mother",&fMother);
-  fTree->SetBranchAddress("daughter1",&fDaughter1);
-  fTree->SetBranchAddress("daughter2",&fDaughter2);
-  
+
+  if(!fOldTree) {
+    fTree->SetBranchAddress("mother",&fMother);
+    fTree->SetBranchAddress("daughter1",&fDaughter1);
+    fTree->SetBranchAddress("daughter2",&fDaughter2);
+  }
+  else {
+    fTree->SetBranchAddress("mother",&fMotherOld);
+    fTree->SetBranchAddress("daughter1",&fDaughter1Old);
+    fTree->SetBranchAddress("daughter2",&fDaughter2Old);
+  }
 }
 //_______________________________________________________________
 void AliAnalysisTaskJpsi::DetermineWeights()
@@ -143,10 +154,18 @@ void AliAnalysisTaskJpsi::DetermineWeights()
 
     if(i % 10000 == 0) Printf("%12d of %12d",i,(Int_t) fTree->GetEntries());
     fTree->GetEntry(i);
-    if(!(fMother&&fDaughter1&&fDaughter2)){ Printf("particle corrupted"); continue; }
-    if(fMother->Y() < fYmin || fMother->Y() > fYmax) continue;
-    fJPsiPt->Fill(fMother->Pt());
-    
+
+    if(!fOldTree){
+      if(!(fMother&&fDaughter1&&fDaughter2)){ Printf("particle corrupted"); continue; }
+      if(fMother->Y() < fYmin || fMother->Y() > fYmax) continue;
+      fJPsiPt->Fill(fMother->Pt());
+    }
+    else {
+      if(!(fMotherOld&&fDaughter1Old&&fDaughter2Old)){ Printf("particle corrupted"); continue; }
+      if(fMotherOld->Y() < fYmin || fMotherOld->Y() > fYmax) continue;
+      fJPsiPt->Fill(fMotherOld->Pt());
+    }
+      
   }
   fJPsiPt->Scale(1./(fYmax-fYmin),"width"); // dN/dydpt
 
@@ -175,10 +194,19 @@ void AliAnalysisTaskJpsi::Fill()
 
     if(i % 10000 == 0) printf("%12d of %12d\n",i,(Int_t) fTree->GetEntries());
     fTree->GetEntry(i);
-    if(!(fMother&&fDaughter1&&fDaughter2)){ printf("particle corrupted\n"); continue; }
-    if(fMother->Y() < fYmin || fMother->Y() > fYmax) continue;
-    Double_t mpt = fMother->Pt();
-
+    Double_t mpt = -1.;
+    if(!fOldTree) {
+      if(!(fMother&&fDaughter1&&fDaughter2)){ printf("particle corrupted\n"); continue; }
+      if(fMother->Y() < fYmin || fMother->Y() > fYmax) continue;
+      mpt = fMother->Pt();
+    }
+    else {
+      if(!(fMotherOld&&fDaughter1Old&&fDaughter2Old)){ printf("particle corrupted\n"); continue; }
+      if(fMotherOld->Y() < fYmin || fMotherOld->Y() > fYmax) continue;
+      mpt = fMotherOld->Pt();
+    }
+    
+    
     //
     // Determine the weight to fit the parametrization assuming forced decay into e+e- and e+e-gamma keeping the right propertion between the two
     //
@@ -200,15 +228,28 @@ void AliAnalysisTaskJpsi::Fill()
     // Variables without bremsstrahlung+momentum resolution
     //
     TLorentzVector ppo_1,ppo_2;
-    fDaughter1->Momentum(ppo_1);
-    fDaughter2->Momentum(ppo_2);
+    if(!fOldTree){
+      fDaughter1->Momentum(ppo_1);
+      fDaughter2->Momentum(ppo_2);
+    } else {
+      fDaughter1Old->Momentum(ppo_1);
+      fDaughter2Old->Momentum(ppo_2);
+    }    
     Double_t mass_o     = (ppo_1 + ppo_2).M();
     Double_t pt_pair_o  = (ppo_1 + ppo_2).Pt();
     //Double_t opAngle_o  = ppo_1.Angle(ppo_2.Vect());
 
     // Charge
-    int pid_1 = fDaughter1->GetPdgCode();
-    int pid_2 = fDaughter2->GetPdgCode();
+    int pid_1 = -999;
+    int pid_2 = -999;
+    if(!fOldTree){
+      pid_1 = fDaughter1->PdgCode();
+      pid_2 = fDaughter2->PdgCode();
+    }
+    else {
+      pid_1 = fDaughter1Old->GetPdgCode();
+      pid_2 = fDaughter2Old->GetPdgCode();
+    }
     Short_t ch_1 = 1;
     if(pid_1>0) ch_1 = -1; // 11 is electron, -11 is positron
     Short_t ch_2 = 1;
@@ -219,9 +260,9 @@ void AliAnalysisTaskJpsi::Fill()
     //
     TLorentzVector pp_1,pp_2;
     if(!GetSmearingOton()) {
-      pp_1 = Smear(fDaughter1);
-      pp_2 = Smear(fDaughter2);
-      SmearOpeningAngle(pp_1, pp_2);
+      printf("Old smearing not supported !!\n");
+      pp_1 = ppo_1;
+      pp_2 = ppo_2;
     } else {
       pp_1 = ApplySmearingOton(ppo_1,ch_1);
       pp_2 = ApplySmearingOton(ppo_2,ch_2);
