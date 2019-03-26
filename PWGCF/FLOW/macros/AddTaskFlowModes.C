@@ -17,7 +17,7 @@ AliAnalysisTaskFlowModes* AddTaskFlowModes(TString name = "FlowHarmonics",
 					   TString MultEstimator = "V0M",
 					   Bool_t PileUp=kFALSE,
 					   Bool_t DoOnlyMixedFlow = kTRUE,
-	                                   Bool_t FillWeights = kFALSE,
+	                                   Bool_t FillWeights = kTRUE,
 					   Bool_t AntiProtonOnly = kFALSE,
 					   Int_t PIDComb = 2,					   
 					   Bool_t PIDbayesian = kFALSE,
@@ -52,6 +52,7 @@ AliAnalysisTaskFlowModes* AddTaskFlowModes(TString name = "FlowHarmonics",
     task1->SetPIDNumSigmasPionMax(3);
     task1->SetPIDNumSigmasKaonMax(3);
     task1->SetPIDNumSigmasProtonMax(3);
+    task1->SetPIDNumSigmasCombinedNoTOFrejection(kTRUE);
     if(PIDbayesian) task1->SetBayesianProbability(PIDprob);
     
 
