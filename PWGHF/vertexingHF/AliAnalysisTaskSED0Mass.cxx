@@ -102,6 +102,7 @@ AliAnalysisTaskSED0Mass::AliAnalysisTaskSED0Mass():
   fVariablesTree(0),
   fCandidateVariables(),
   fWriteProtosgnVar(kFALSE),
+  fSelectTrueD0(kFALSE),
   fUsedMassWindow(kFALSE),
   fPIDCheck(kFALSE),
   fDrawDetSignal(kFALSE),
@@ -164,6 +165,7 @@ AliAnalysisTaskSED0Mass::AliAnalysisTaskSED0Mass(const char *name,AliRDHFCutsD0t
   fVariablesTree(0),
   fCandidateVariables(),
   fWriteProtosgnVar(kFALSE),
+  fSelectTrueD0(kFALSE),
   fUsedMassWindow(kFALSE),
   fPIDCheck(kFALSE),
   fDrawDetSignal(kFALSE),
@@ -1077,7 +1079,8 @@ void AliAnalysisTaskSED0Mass::UserCreateOutputObjects()
     }
   }
   if(fWriteProtosgnVar){
-    nVar = 16;
+    if(fReadMC) nVar = 17;
+    else nVar = 16;
     fCandidateVariables = new Double_t [nVar];
     fCandidateVariableNames = new TString[nVar];
 
@@ -1097,6 +1100,7 @@ void AliAnalysisTaskSED0Mass::UserCreateOutputObjects()
     fCandidateVariableNames[13] = "specialcuts";
     fCandidateVariableNames[14] = "topomatic";
     fCandidateVariableNames[15] = "candidatetype"; //0 = D0 only; 1 = D0bar only; 2 = D0 and D0bar
+    if(fReadMC)fCandidateVariableNames[16] = "ispromptc";
     for(Int_t ivar=0; ivar<nVar; ivar++){
       fVariablesTree->Branch(fCandidateVariableNames[ivar].Data(),&fCandidateVariables[ivar],Form("%s/d",fCandidateVariableNames[ivar].Data()));
     }
@@ -2582,9 +2586,12 @@ void AliAnalysisTaskSED0Mass::FillCandVariables(AliAODEvent *aodev, AliAODRecoDe
 
   if (fDebug > 2) cout << "Candidate selected" << endl;
 
-  Float_t invmassD0, invmassD0bar = 0;
+  Float_t invmassD0 = part->InvMassD0();
+  Float_t invmassD0bar = part->InvMassD0bar();
   Bool_t isD0sel = false;
   Bool_t isD0barsel = false;
+  Bool_t isrealD0 = false;
+  Bool_t isrealD0bar = false;
   Int_t selCand = 999.; // flag to store how the candidate is selected (0 = D0 only; 1 = D0bar only; 2 = D0 and D0bar)
 
   if(fWriteProtosgnVar){ //write candidate variables for proto-significance study
@@ -2598,6 +2605,8 @@ void AliAnalysisTaskSED0Mass::FillCandVariables(AliAODEvent *aodev, AliAODRecoDe
           if (AliVertexingHFUtils::CheckOrigin(arrMC, partD0, fUseQuarkTagInKine) == 5) isPrimary = kFALSE;
           if (pdgD0 == 421) { // D0
             if (fDebug > 2)  cout << "MC: D0 candidate" << endl;
+            isrealD0 = true;
+            if (fUsedMassWindow && (part->InvMassD0() < 1.7 || part->InvMassD0() > 2.1)) invmassD0 = 0;
           } else { // it was a D0bar
             if (fDebug > 2)  cout << "MC: D0bar candidate selected as D0 --> reflection" << endl;
           }
@@ -2605,7 +2614,7 @@ void AliAnalysisTaskSED0Mass::FillCandVariables(AliAODEvent *aodev, AliAODRecoDe
           if (fDebug > 2)  cout << "Combinatorial background" << endl;
         }
       } else {
-        invmassD0 = part->InvMassD0();
+        if (fUsedMassWindow && (part->InvMassD0() < 1.7 || part->InvMassD0() > 2.1)) invmassD0 = 0;
       }
     }
 
@@ -2619,6 +2628,8 @@ void AliAnalysisTaskSED0Mass::FillCandVariables(AliAODEvent *aodev, AliAODRecoDe
           if (AliVertexingHFUtils::CheckOrigin(arrMC, partD0,fUseQuarkTagInKine) == 5) isPrimary = kFALSE;
           if (pdgD0 == -421) { // D0bar
             if (fDebug > 2)  cout << "MC: D0bar candidate" << endl;
+            isrealD0bar = true;
+            if (fUsedMassWindow && (part->InvMassD0bar() < 1.7 || part->InvMassD0bar() > 2.1)) invmassD0bar = 0;
           } else {
             if (fDebug > 2)  cout << "MC: D0 candidate selected as D0bar --> reflection" << endl;
           }
@@ -2627,23 +2638,26 @@ void AliAnalysisTaskSED0Mass::FillCandVariables(AliAODEvent *aodev, AliAODRecoDe
           if (fDebug > 2)  cout << "Combinatorial background" << endl;
         }
       } else {
-        invmassD0bar = part->InvMassD0bar();
+        if (fUsedMassWindow && (part->InvMassD0bar() < 1.7 || part->InvMassD0bar() > 2.1)) invmassD0bar = 0;
       }
     }
 
+    if(!isD0sel && !isD0barsel) return;
     //assignment candidate flag: 0-->D0; 1-->D0bar; 2-->D0 and D0bar
-
     if(!fUsedMassWindow) AliWarning("WARNING: Mass window selection NOT used!");
 
-    if(isD0sel && !isD0barsel){
-      if (fUsedMassWindow && (invmassD0 < 1.7 || invmassD0 > 2.1)) return;
-      selCand = 0;
-    }else if(!isD0sel && isD0barsel){
-      if (fUsedMassWindow && (invmassD0bar < 1.7 || invmassD0bar > 2.1)) return;
-      selCand = 1;
-    }else if(isD0sel && isD0barsel){
-      if (fUsedMassWindow && (invmassD0bar < 1.7 || invmassD0bar > 2.1) && (invmassD0 < 1.7 || invmassD0 > 2.1)) return;
-      selCand = 2;
+    if(fReadMC && fSelectTrueD0){
+      if(!isrealD0 && !isrealD0bar) return;
+      if(isD0sel && isrealD0) selCand = 0;
+      if(isD0barsel && isrealD0bar) selCand = 1;
+    } else {
+      if(isD0sel && !isD0barsel){
+        selCand = 0;
+      }else if(!isD0sel && isD0barsel){
+        selCand = 1;
+      }else if(isD0sel && isD0barsel){
+        selCand = 2;
+      }
     }
 
     fCandidateVariables[0] = invmassD0;
@@ -2664,6 +2678,10 @@ void AliAnalysisTaskSED0Mass::FillCandVariables(AliAODEvent *aodev, AliAODRecoDe
     fCandidateVariables[13] = fCuts->IsSelectedSpecialCuts(part);
     fCandidateVariables[14] = ComputeTopomatic(aodev, part);
     fCandidateVariables[15] = selCand;
+    if(fReadMC){
+      if(isPrimary) fCandidateVariables[16] = 4;
+      else fCandidateVariables[16] = 5;
+    }
     fVariablesTree->Fill();
 
   }
