@@ -1148,11 +1148,18 @@ void AliAnalysisTaskUPCforward::UserExec(Option_t *)
   for(Int_t iZDC = 0; iZDC < 4 ; iZDC++) {
     if ( (isZNAfired == 0) && (fZNATDC[iZDC] > -2.) && (fZNATDC[iZDC] < 2.) ) {
       isZNAfired = kTRUE;
-      fZNATimeAgainstEntriesH->Fill(fZNATDC[iZDC]);
+      /* - After mail with Chiara Oppedisano, it seems like the best way
+         - to proceed is to firstly call the IsZNAfired() and then filling...
+         -
+         - If this doesn't appear in later pulls it is because this
+         - doesn't seem to suit my case...
+         -
+       */
+      if( dataZDC->IsZNAfired() ) fZNATimeAgainstEntriesH->Fill(fZNATDC[iZDC]);
     }
     if ( (isZNCfired == 0) && (fZNCTDC[iZDC] > -2.) && (fZNCTDC[iZDC] < 2.) ) {
       isZNCfired = kTRUE;
-      fZNCTimeAgainstEntriesH->Fill(fZNCTDC[iZDC]);
+      if( dataZDC->IsZNCfired() ) fZNCTimeAgainstEntriesH->Fill(fZNCTDC[iZDC]);
     }
   }
 
@@ -1237,10 +1244,10 @@ void AliAnalysisTaskUPCforward::UserExec(Option_t *)
   if ( isZNAfired != 0 ) {
     if ( isZNCfired != 0 ) {
           /* At any levels, this means |fZNCTime| < 5. */
-          if( fZNCEnergy > -300 ) {
-                      if( fZNCEnergy < 125 ) {
-                                  if( fZNAEnergy > -300 ) {
-                                              if( fZNAEnergy < 125 ) {
+          if( fZNCEnergy > -5000 ) {
+                      if( fZNCEnergy < 1250 ) {
+                                  if( fZNAEnergy > -5000 ) {
+                                              if( fZNAEnergy < 1000 ) {
                                                           if( ptOfTheDimuonPair < 0.25) {
                                                                     fInvariantMassDistributionCoherentZNCzeroZNAzeroH->Fill(possibleJPsi.Mag());
                                                           } else {
@@ -1255,8 +1262,8 @@ void AliAnalysisTaskUPCforward::UserExec(Option_t *)
                                               }
                                   }
                       } else {
-                                  if( fZNAEnergy > -300 ) {
-                                              if( fZNAEnergy < 125 ) {
+                                  if( fZNAEnergy > -5000 ) {
+                                              if( fZNAEnergy < 1000 ) {
                                                           if( ptOfTheDimuonPair < 0.25) {
                                                                     fInvariantMassDistributionCoherentZNCanyZNAzeroH->Fill(possibleJPsi.Mag());
                                                           } else {
