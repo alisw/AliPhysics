@@ -319,6 +319,13 @@ AliFemtoAnalysisPionPion::AliFemtoAnalysisPionPion(const AliFemtoConfigObject &c
   std::cout << "Building AliFemtoAnalysisPionPion from configuration object\n" << cfg.Stringify() << "\n";
   cfg.find_and_load("name", fAnalysisName);
 
+  auto defaults = DefaultConfig();
+
+  SetNumEventsToMix(cfg.get("events_to_mix", 6ull));
+  SetVerboseMode(cfg.get("verbose", false));
+  SetEnablePairMonitors(cfg.get("pair_monitors", true));
+  SetMinSizePartCollection(cfg.get("collection_size_min", 10ull));
+
   CutParams default_params;
 
   AliFemtoConfigObject subcfg;
@@ -780,6 +787,8 @@ TList* AliFemtoAnalysisPionPion::GetOutputList()
     new AliFemtoConfigObject(AliFemtoConfigObject::BuildMap()
               ("_class", "AliFemtoAnalysisPionPion")
               ("is_mc", fMCAnalysis)
+              ("events_to_mix", NumEventsToMix())
+              ("collection_size_min", fMinSizePartCollection)
               ("event_cut", event_cut_cfg)
               ("track_cut", track_cut_cfg)
               ("pair_cut", pair_cut_cfg))
