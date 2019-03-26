@@ -29,7 +29,7 @@ AliForwardSettings::AliForwardSettings() :
   gap(0.0),
   minpt(0.2),
   maxpt(5),
-  mc(kTRUE),
+  mc(kFALSE),
   esd(kFALSE),
   tracktype(kHybrid),
   nua_mode(kNormal),
@@ -38,7 +38,7 @@ AliForwardSettings::AliForwardSettings() :
   useSPD(kFALSE),
   useITS(kFALSE),
   use_primaries(kFALSE),
-  use_primaries_cen(kTRUE),
+  use_primaries_cen(kFALSE),
   use_primaries_fwd(kFALSE),
   useEventcuts(kTRUE),
   centrality_estimator("V0M"),//CL0, V0M
