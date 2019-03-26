@@ -122,7 +122,7 @@ fkRevertexAllEvents(kTRUE),
 //________________________________________________
 //Flags for both V0+cascade vertexer
 fkPreselectDedx ( kFALSE ),
-fkPreselectDedxLambda ( kFALSE ),
+fkPreselectDedxLambda ( kTRUE ),
 fkExtraCleanup    ( kTRUE ), //extra cleanup: eta, etc
 //________________________________________________
 //Flags for V0 vertexer
@@ -182,7 +182,7 @@ fkRevertexAllEvents(kTRUE),
 //________________________________________________
 //Flags for both V0+cascade vertexer
 fkPreselectDedx ( kFALSE ),
-fkPreselectDedxLambda ( kFALSE ),
+fkPreselectDedxLambda ( kTRUE ),
 fkExtraCleanup    ( kTRUE ), //extra cleanup: eta, etc
 //________________________________________________
 //Flags for V0 vertexer

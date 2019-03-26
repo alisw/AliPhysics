@@ -313,9 +313,15 @@ public:
     BuildMap& operator()(const Key_t &key, const char* val) { fMap[key] = StringValue_t(val); return *this; }
 #endif
 
-    operator AliFemtoConfigObject() {
-      return AliFemtoConfigObject(std::move(fMap));
-    }
+    operator AliFemtoConfigObject()
+      { return into(); }
+
+    AliFemtoConfigObject into()
+      { return AliFemtoConfigObject(std::move(fMap)); }
+
+    AliFemtoConfigObject into() const
+      { return AliFemtoConfigObject(fMap); }
+
 
   protected:
     MapValue_t fMap;
