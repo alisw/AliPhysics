@@ -104,10 +104,10 @@ class AliAnalysisDataContainer;
 class AliAnalysisTask : public TTask {
  public:
   enum EAnalysisTaskFlags {
-    kTaskUsed    = BIT(14),
-    kTaskZombie  = BIT(15),
-    kTaskChecked = BIT(16),
-    kTaskPostEventLoop = BIT(17)
+    kTaskUsed           = BIT(14),
+    kTaskZombie         = BIT(15),
+    kTaskChecked        = BIT(16),
+    kTaskPostEventLoop  = BIT(17)
   };
 
   //=====================================================================

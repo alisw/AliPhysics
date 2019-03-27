@@ -54,6 +54,7 @@
 #include "AliSysInfo.h"
 #include "AliAnalysisStatistics.h"
 #include "AliVEvent.h"
+#include "AliDirList.h"
 
 using std::ofstream;
 using std::ios;
@@ -1016,8 +1017,15 @@ void AliAnalysisManager::ImportWrappers(TList *source)
          // Cd to the directory pointed by the container
          TString folder = cont->GetFolderName();
          if (!folder.IsNull()) f->cd(folder);
-         // Try to fetch first an object having the container name.
-         obj = gDirectory->Get(cont->GetName());
+         // Special treatment for a directory list
+         if (cont->IsDirList()) {
+            auto dirlist = AliDirList::CreateFrom(cont->GetName());
+            if (dirlist) dirlist->SetOwner(true);
+            obj = dirlist;
+         }
+         // Try to fetch an object having the container name.
+         if (!obj)
+            obj = gDirectory->Get(cont->GetName());
          if (!obj) {
             Warning("ImportWrappers", "Could not import object of type:%s for container %s in file %s:%s.\n Object will not be available in Terminate(). Try if possible to name the output object as the container (%s) or to embed it in a TList", 
                     cont->GetType()->GetName(), cont->GetName(), filename, cont->GetFolderName(), cont->GetName());
@@ -1202,6 +1210,7 @@ void AliAnalysisManager::Terminate()
          file->cd(dir);
       }  
       if (fDebug > 1) printf("...writing container %s to file %s:%s\n", output->GetName(), file->GetName(), output->GetFolderName());
+      if (output->IsDirList()) (static_cast<AliDirList*>(output->GetData()))->SetName(output->GetName());
       if (output->GetData()->InheritsFrom(TCollection::Class())) {
       // If data is a collection, we set the name of the collection 
       // as the one of the container and we save as a single key.
@@ -1215,8 +1224,8 @@ void AliAnalysisManager::Terminate()
             tree->AutoSave();
          } else {
             output->GetData()->Write();
-         }   
-      }      
+         }
+      }
       if (opwd) opwd->cd();
    }
    gROOT->cd();
