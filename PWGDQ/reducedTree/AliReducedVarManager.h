@@ -356,9 +356,9 @@ class AliReducedVarManager : public TObject {
     kTPCQvecY = kTPCQvecX+6,                                                           
     kTPCRP    = kTPCQvecY+6,                // Event plane using TPC                    
     kTPCRPres = kTPCRP+6,                // Event plane resolution variables sqrt(n*(RPtpc-RPvzeroa)),sqrt(n*(RPtpc-RPvzeroc))
-    kVZEROARPres=kTPCRPres+6;           //event plane resolution using V0A as reference detector 
-    kVZEROCRPres=kVZEROARPres+6;       //event plane resolution using V0C as reference detector
-    kVZEROTPCRPres=kVZEROCRPres+6;    //event plane resolution using tpc as reference detector
+    kVZEROARPres=kTPCRPres+6,           //event plane resolution using V0A as reference detector 
+    kVZEROCRPres=kVZEROARPres+6,       //event plane resolution using V0C as reference detector
+    kVZEROTPCRPres=kVZEROCRPres+6,    //event plane resolution using tpc as reference detector
     
     // Correlations between TPC and VZERO event planes
     kRPXtpcXvzeroa    = kVZEROTPCRPres+6*2,          

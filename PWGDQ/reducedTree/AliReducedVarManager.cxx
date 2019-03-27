@@ -978,17 +978,18 @@ void AliReducedVarManager::FillEventInfo(BASEEVENT* baseEvent, Float_t* values, 
       
       //resolution of V0A, V0C or TPC as reference detector
      if(fgOptionEventRes){
-       values[kVZEROARPres+ih]=values[kVZERORPres + ih]*values[kTPCRPres+0*6+ih]/values[kTPCRPres+1*6+ih]
-       values[kVZEROARPres+ih]=TMath::Sqrt(values[kVZEROARPres+ih]);
-       values[kVZEROARPres+ih]=1./values[kVZEROARPres+ih];
-          
-       values[kVZEROCRPres+ih]=values[kVZERORPres + ih]*values[kTPCRPres+1*6+ih]/values[kTPCRPres+0*6+ih]
-       values[kVZEROCRPres+ih]=TMath::Sqrt(values[kVZEROCRPres+ih]); 
-       values[kVZEROCRPres+ih]=1./values[kVZEROCRPres+ih];
          
-       values[kVZEROTPCRPres+ih]=values[kTPCRPres+0*6 + ih]*values[kTPCRPres+1*6+ih]/values[kVZERORPres+ih]
-       values[kVZEROTPCRPres+ih]=TMath::Sqrt(values[kVZEROTPCRPres+ih]);  
-       values[kVZEROTPCRPres+ih]=1./values[kVZEROTPCRPres+ih];
+         if(values[kTPCRPres+1*6+ih]>0 && values[kTPCRPres+1*6+ih]>0 && values[kTPCRPres+1*6+ih]>0){
+             
+       values[kVZEROARPres+ih] = TMath::Sqrt(values[kTPCRPres+1*6+ih]/(values[kVZERORPres + ih]*values[kTPCRPres+0*6+ih]));
+       values[kVZEROCRPres+ih] = TMath::Sqrt(values[kTPCRPres+0*6+ih]/(values[kVZERORPres + ih]*values[kTPCRPres+1*6+ih]));
+       values[kVZEROTPCRPres+ih] = TMath::Sqrt(values[kVZERORPres+ih]/(values[kTPCRPres+0*6 + ih]*values[kTPCRPres+1*6+ih]));
+             
+        }else{
+       values[kVZEROARPres+ih]=0;
+       values[kVZEROCRPres+ih]=0;
+       values[kVZEROTPCRPres+ih]=0;}
+  
           
        }
      
@@ -2782,6 +2783,12 @@ void AliReducedVarManager::SetDefaultVarNames() {
     fgVariableNames[kVZERORPres+iHarmonic] = Form("#sqrt{%d(#Psi_{%d}^{VZERO-A}-#Psi_{%d}^{VZERO-C})}",
 						    iHarmonic+1,iHarmonic+1,iHarmonic+1);
     fgVariableUnits[kVZERORPres+iHarmonic] = "rad.^{1/2}";
+    fgVariableNames[kVZEROARPres+iHarmonic] = Form("#sqrt{cos(%d(#Psi_{%d}^{VZERO-C}-#Psi_{%d}^{TPC}))/cos(%d(#Psi_{%d}^{VZERO-A}-#Psi_{%d}^{VZERO-C}))*cos(%d(#Psi_{%d}^{VZERO-A}-#Psi_{%d}^{TPC}))}",
+						    iHarmonic+1,iHarmonic+1,iHarmonic+1,iHarmonic+1,iHarmonic+1,iHarmonic+1,iHarmonic+1,iHarmonic+1,iHarmonic+1);
+    fgVariableUnits[kVZEROARPres+iHarmonic] = "rad.^{1/2}";
+    fgVariableNames[kVZEROCRPres+iHarmonic] = Form("#sqrt{cos(%d(#Psi_{%d}^{VZERO-A}-#Psi_{%d}^{TPC}))/cos(%d(#Psi_{%d}^{VZERO-A}-#Psi_{%d}^{VZERO-C}))*cos(%d(#Psi_{%d}^{VZERO-C}-#Psi_{%d}^{TPC}))}",
+						    iHarmonic+1,iHarmonic+1,iHarmonic+1,iHarmonic+1,iHarmonic+1,iHarmonic+1,iHarmonic+1,iHarmonic+1,iHarmonic+1);
+    fgVariableUnits[kVZEROCRPres+iHarmonic] = "rad.^{1/2}";
     fgVariableNames[kVZEROXaXc+iHarmonic] = Form("Q_{x,%d}^{VZERO-A} #times Q_{x,%d}^{VZERO-C}", iHarmonic+1, iHarmonic+1);
     fgVariableUnits[kVZEROXaXc+iHarmonic] = "";
     fgVariableNames[kVZEROXaYa+iHarmonic] = Form("Q_{x,%d}^{VZERO-A} #times Q_{y,%d}^{VZERO-A}", iHarmonic+1, iHarmonic+1);
@@ -2812,9 +2819,9 @@ void AliReducedVarManager::SetDefaultVarNames() {
     fgVariableNames[kTPCRPres+iHarmonic] = Form("#sqrt{%d(#Psi_{%d}^{TPC}-#Psi_{%d}^{VZERO-A})}", 
 						  iHarmonic+1, iHarmonic+1, iHarmonic+1);
     fgVariableUnits[kTPCRPres+iHarmonic] = "rad^{1/2}";
-    fgVariableNames[kTPCRPres+6+iHarmonic] = Form("#sqrt{%d(#Psi_{%d}^{TPC}-#Psi_{%d}^{VZERO-C})}", 
-						  iHarmonic+1, iHarmonic+1, iHarmonic+1);
-    fgVariableUnits[kTPCRPres+6+iHarmonic] = "rad^{1/2}";
+    fgVariableNames[kVZEROTPCRPres+6+iHarmonic] = Form("#sqrt{cos(%d(#Psi_{%d}^{VZERO-A}-#Psi_{%d}^{VZERO-C}))/cos(%d(#Psi_{%d}^{VZERO-A}-#Psi_{%d}^{TPC}))*cos(%d(#Psi_{%d}^{VZERO-A}-#Psi_{%d}^{TPC}))}",
+						    iHarmonic+1,iHarmonic+1,iHarmonic+1,iHarmonic+1,iHarmonic+1,iHarmonic+1,iHarmonic+1,iHarmonic+1,iHarmonic+1);
+    fgVariableUnits[kVZEROTPCRPres+6+iHarmonic] = "rad^{1/2}";
     fgVariableNames[kRPXtpcXvzeroa+iHarmonic] = Form("Q_{x,%d}^{TPC} #times Q_{x,%d}^{VZERO-A}", iHarmonic+1, iHarmonic+1);
     fgVariableUnits[kRPXtpcXvzeroa+iHarmonic] = "";
     fgVariableNames[kRPXtpcXvzeroc+iHarmonic] = Form("Q_{x,%d}^{TPC} #times Q_{x,%d}^{VZERO-C}", iHarmonic+1, iHarmonic+1);
