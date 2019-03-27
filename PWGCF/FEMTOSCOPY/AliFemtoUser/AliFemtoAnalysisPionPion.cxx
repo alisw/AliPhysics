@@ -562,7 +562,7 @@ AliFemtoAnalysisPionPion::BuildEventCut(const AliFemtoAnalysisPionPion::CutParam
     cut->cent_range = {p.event_CentralityMin, p.event_CentralityMax};
     cut->zvert_range = {p.event_VertexZMin, p.event_VertexZMax};
     cut->trigger = p.event_TriggerSelection;
-    cut->min_zdc_participants = p.event_zdc_part;
+    cut->zdc_participants_min = p.event_zdc_part;
 
     return cut;
   }
