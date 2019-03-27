@@ -1,6 +1,5 @@
-#include "/data3/gporebski/alice/AliPhysics/PWGLF/SPECTRA/ChargedHadrons/dNdPt/AlidNdPtUnifiedAnalysisTask.h"
 
-AlidNdPtUnifiedAnalysisTask* AddTask_Unified_pPb(Int_t cutMode, TString controll = "")
+AlidNdPtUnifiedAnalysisTask* AddTask_Unified_pPb(Int_t cutModeLow=123, Int_t cutModeHigh=131, TString controll = "")
 // cut variation for studdy of cut systematics (cutMode == 100 - 119) and Matching Eff (cutMode == 2100 - 2199)
 // controll = "vz10" for vz<10 cut
 {
@@ -18,8 +17,12 @@ AlidNdPtUnifiedAnalysisTask* AddTask_Unified_pPb(Int_t cutMode, TString controll
     TString type = mgr->GetInputEventHandler()->GetDataType(); // can be "ESD" or "AOD"
     Bool_t hasMC=(AliAnalysisManager::GetAnalysisManager()->GetMCtruthEventHandler()!=0x0);
 
+    AlidNdPtUnifiedAnalysisTask* task125 = NULL; 
 
+    for(Int_t cutMode=cutModeLow; cutMode <= cutModeHigh; cutMode++)
+    {
     AlidNdPtUnifiedAnalysisTask *task = new AlidNdPtUnifiedAnalysisTask(Form("AlidNdPtUnifiedAnalysisTask_%d", cutMode));
+    if(cutMode==125) {task125 = task;}
 
     task->SetUseMC(hasMC);
     if(type.Contains("ESD")) task->SetUseESD();
@@ -48,6 +51,7 @@ AlidNdPtUnifiedAnalysisTask* AddTask_Unified_pPb(Int_t cutMode, TString controll
     Double_t* binsPt = new Double_t[82];
     for (int i=0; i<82; i++) {binsPt[i] = bins[i];}
     task->SetBinsPt(ptNbins-1, binsPt);
+    task->SetBinsPtReso(ptNbins-1, binsPt);
 
 
     // y shift -0.465409 only for pPb!!!!
@@ -68,8 +72,6 @@ AlidNdPtUnifiedAnalysisTask* AddTask_Unified_pPb(Int_t cutMode, TString controll
     task->SetSigmaMeanXYZv(1.0,1.0,10.0);
     task->SetZvtx(30.);
     if (controll.Contains("vz10")) task->SetZvtx(10.);
-
-    task->SetEventTriggerRequired(kTRUE);
 
     task->Set2015data(kTRUE);    //only p-Pb 2013!!!
 
@@ -122,15 +124,15 @@ AlidNdPtUnifiedAnalysisTask* AddTask_Unified_pPb(Int_t cutMode, TString controll
         if(cutMode==118){task->SetGeometricalCut(kTRUE,4,130,1.5,0.85,0.7);}	// Make a varaition of cut on the width of the dead zone
         if(cutMode==119){task->SetGeometricalCut(kTRUE,2,130,1.5,0.85,0.7);}	// Make a varaition of cut on the width of the dead zone
 
-        if(cutMode==120){task->SetGeometricalCut(kTRUE,3,130,1.5,0.80,0.65);}       // Make a variation of cut Nc,Ncl  THE EFFECT IS NEGLIGIBLE
-        if(cutMode==121){task->SetGeometricalCut(kTRUE,3,130,1.5,0.9,0.75);}        // Make a variation of cut Nc,Ncl  THE EFFECT IS NEGLIGIBLE
+        if(cutMode==120){task->SetGeometricalCut(kTRUE,3,130,1.5,0.80,0.65);}   // Make a variation of cut Nc,Ncl  THE EFFECT IS NEGLIGIBLE
+        if(cutMode==121){task->SetGeometricalCut(kTRUE,3,130,1.5,0.9,0.75);}    // Make a variation of cut Nc,Ncl  THE EFFECT IS NEGLIGIBLE
 
-        if(cutMode==122){task->SetGeometricalCut(kTRUE,0,130,1.5,0.85,0.7);}	// Make a varaition of cut on the width of the dead zone
+        if(cutMode==122){task->SetGeometricalCut(kTRUE,0,130,1.5,0.85,0.7);}	// Make a variation of cut on the width of the dead zone
         
         // Centrality estimator selection
         if(cutMode==123){task->SetCentralityEstimator(AlidNdPtUnifiedAnalysisTask::WhichCentralityEstimator::kV0A);}   // 
         if(cutMode==124){task->SetCentralityEstimator(AlidNdPtUnifiedAnalysisTask::WhichCentralityEstimator::kV0C);}   // 
-        if(cutMode==125){task->SetCentralityEstimator(AlidNdPtUnifiedAnalysisTask::WhichCentralityEstimator::kV0M);}   // V0M is equal to V0A and V0C combined
+        if(cutMode==125){task->SetCentralityEstimator(AlidNdPtUnifiedAnalysisTask::WhichCentralityEstimator::kV0M);}   // V0M is equal to V0A and V0C combined, equal to cutmode 100
         if(cutMode==126){task->SetCentralityEstimator(AlidNdPtUnifiedAnalysisTask::WhichCentralityEstimator::kCL0);}   // 
         if(cutMode==127){task->SetCentralityEstimator(AlidNdPtUnifiedAnalysisTask::WhichCentralityEstimator::kCL1);}   // 
         if(cutMode==128){task->SetCentralityEstimator(AlidNdPtUnifiedAnalysisTask::WhichCentralityEstimator::kSPDt);}  // 
@@ -186,8 +188,10 @@ AlidNdPtUnifiedAnalysisTask* AddTask_Unified_pPb(Int_t cutMode, TString controll
 
     mgr->ConnectInput(task, 0, cinput);
     mgr->ConnectOutput(task, 1, coutput);
+    }
 
-    return task;
+
+    return task125;
 
 }
 

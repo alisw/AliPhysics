@@ -65,11 +65,6 @@ AliMultDepSpecAnalysisTask* AddTask_mkrueger_MultDepSpec(TString controlstring, 
   }
   if(controlstring.Contains("oldTrigger")){offlineTriggerMask = AliVEvent::kMB;}
 
-  if(controlstring.Contains("largeBins")) {
-    multSteps[0] = 450;   multBinWidth[0] = 10;
-    multSteps[1] = 0;    multBinWidth[1] = 1;
-    multSteps[2] = 0;    multBinWidth[2] = 1;
-  }
 
   // Binning in Multiplicity
   const Int_t nBinsMult = multSteps[0]+ multSteps[1] + multSteps[2] + 1;
