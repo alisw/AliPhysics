@@ -75,7 +75,6 @@
 #include "AliMCEventHandler.h"
 #include "AliMCEvent.h"
 #include "AliStack.h"
-#include "TParticle.h"
 #include "AliLog.h"
 #include "AliAnalysisTaskSE.h"
 #include "TRefArray.h"
@@ -317,13 +316,7 @@ AliAnalysisHFEppTPCTOFBeauty5TeVNew::AliAnalysisHFEppTPCTOFBeauty5TeVNew(const c
 ,fPIDqa(0)
 
   //For MC
-  ,fMCstack(0)
   ,fRejectKinkMother(kTRUE)
-  ,fMCtrack(0)
-  ,fMCtrackMother(0)
-  ,fMCtrackGMother(0)
-  ,fMCtrackGGMother(0)
-  ,fMCtrackGGGMother(0)
   ,fMCarray(0)
   ,fMCheader(0)
   ,fMCparticle(0)
@@ -597,13 +590,7 @@ AliAnalysisHFEppTPCTOFBeauty5TeVNew::AliAnalysisHFEppTPCTOFBeauty5TeVNew()
 ,fPIDqa(0)
 
   //For MC
-  ,fMCstack(0)
   ,fRejectKinkMother(kTRUE)
-  ,fMCtrack(0)
-  ,fMCtrackMother(0)
-  ,fMCtrackGMother(0)
-  ,fMCtrackGGMother(0)
-  ,fMCtrackGGGMother(0)
   ,fMCarray(0)
   ,fMCheader(0)
   ,fMCparticle(0)
@@ -3473,81 +3460,7 @@ void AliAnalysisHFEppTPCTOFBeauty5TeVNew::InvMassCheckMCNew(int itrack, AliVTrac
         }
         //    cout<<fMCparticle->GetMother()<<"   "<<mpdg<<"    "<<gmpdg<<"    "<<ggmpdg<<"    "<<gggmpdg<<endl;
       }
-      else
-      {
-        fMCtrack = fMCstack->Particle(mcIndex);
-
-        pdg = TMath::Abs(fMCtrack->GetPdgCode());
-
-        if(pdg!=11)
-        {
-          fIsHFE1 = kFALSE;
-          fIsHFE2 = kFALSE;
-          fIsNonHFE = kFALSE;
-          fIsFromD = kFALSE;
-          fIsFromBarionB = kFALSE;
-          fIsFromMesonB = kFALSE;
-          fIsFromBarionBD =kFALSE;
-          fIsFromMesonBD = kFALSE;
-          fIsFromPi0 = kFALSE;
-          fIsFromEta = kFALSE;
-          fIsFromGamma = kFALSE;
-          return kFALSE;
-        }
-
-        if(fMCtrack->GetFirstMother()<0)
-        {
-          fIsHFE1 = kFALSE;
-          fIsHFE2 = kFALSE;
-          fIsNonHFE = kFALSE;
-          fIsFromD = kFALSE;
-          fIsFromBarionB = kFALSE;
-          fIsFromMesonB = kFALSE;
-          fIsFromBarionBD =kFALSE;
-          fIsFromMesonBD = kFALSE;
-          fIsFromPi0 = kFALSE;
-          fIsFromEta = kFALSE;
-          fIsFromGamma = kFALSE;
-          return kFALSE;
-        }
-
-        fMCtrackMother = fMCstack->Particle(fMCtrack->GetFirstMother());
-        mpdg = TMath::Abs(fMCtrackMother->GetPdgCode());
-
-        if(fMCtrackMother->GetFirstMother()<0)
-        {
-          gmpdg = 0;
-          ggmpdg = 0;
-          gggmpdg = 0;
-        }
-        else
-        {
-          fMCtrackGMother = fMCstack->Particle(fMCtrackMother->GetFirstMother());
-          gmpdg = TMath::Abs(fMCtrackGMother->GetPdgCode());
-
-          if(fMCtrackGMother->GetFirstMother()<0)
-          {
-            ggmpdg = 0;
-            gggmpdg = 0;
-          }
-          else
-          {
-            fMCtrackGGMother = fMCstack->Particle(fMCtrackGMother->GetFirstMother());
-            ggmpdg = TMath::Abs(fMCtrackGGMother->GetPdgCode());
-
-            if(fMCtrackGGMother->GetFirstMother()<0)
-            {
-              gggmpdg = 0;
-            }
-            else
-            {
-              fMCtrackGGGMother = fMCstack->Particle(fMCtrackGGMother->GetFirstMother());
-              gggmpdg = TMath::Abs(fMCtrackGGGMother->GetPdgCode());
-            }
-          }
-        }
-      }
-
+    
       ///Tag Electron Source
       if(mpdg==111 || mpdg==221 || mpdg==22)
       {
