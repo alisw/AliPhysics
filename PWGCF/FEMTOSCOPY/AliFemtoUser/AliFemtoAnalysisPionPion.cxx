@@ -72,11 +72,14 @@ struct Configuration<AliFemtoAnalysisPionPion> {
     }
 
   operator AliFemtoAnalysisPionPion*() const
+    { return into_ptr(); }
+
+  AliFemtoAnalysisPionPion* into_ptr() const
     {
-      auto *a = new AliFemtoAnalysisPionPion(name.Data(),
-                                             analysis_params,
-                                             cut_params);
-      return nullptr;
+      auto *result = new AliFemtoAnalysisPionPion(name.Data(),
+                                                  analysis_params,
+                                                  cut_params);
+      return result;
     }
 };
 
@@ -204,15 +207,15 @@ struct CutConfig_Pion {
 /// Configuration for the pair
 struct CutConfig_Pair {
   Bool_t use_avgsep = { kTRUE };
-  Float_t min_delta_eta = { 0.0 },
-          min_delta_phi = { 0.0 },
+  Float_t min_delta_eta = { 0.01 },
+          min_delta_phi = { 0.04 },
           phi_star_radius = { 1.2 };
 
   Float_t min_avgsep = { 0.0 };
 
   Float_t ee_min = { 0.0 };
 
-  Float_t max_share_fraction = { 1.0 },
+  Float_t max_share_fraction = { 0.05 },
           max_share_quality = { 1.0 };
 
   Bool_t remove_same_label { kFALSE },
@@ -314,7 +317,14 @@ AliFemtoAnalysisPionPion::AliFemtoAnalysisPionPion(const char *name,
 }
 
 AliFemtoAnalysisPionPion::AliFemtoAnalysisPionPion(const AliFemtoConfigObject &cfg)
-  : AliFemtoAnalysisPionPion()
+  : AliFemtoVertexMultAnalysis(cfg.get("mix_vertex_z_bins", (ULong64_t)1), cfg.get("mix_vertex_z_min", -10.0), cfg.get("mix_vertex_z_max", 10.0),
+                               cfg.get("mix_mult_bins", (ULong64_t)30), cfg.get("mix_mult_min", 0.0), cfg.get("mix_mult_max", 6480.0))
+  , fAnalysisName("AliFemtoAnalysisPionPion")
+  , fPionType_1(kPiPlus)
+  , fPionType_2(kNone)
+  , fGroupOutputObjects(true)
+  , fOutputSettings(false)
+  , fMCAnalysis(false)
 {
   std::cout << "Building AliFemtoAnalysisPionPion from configuration object\n" << cfg.Stringify() << "\n";
   cfg.find_and_load("name", fAnalysisName);
@@ -331,10 +341,10 @@ AliFemtoAnalysisPionPion::AliFemtoAnalysisPionPion(const AliFemtoConfigObject &c
   AliFemtoConfigObject subcfg;
 
   {
-    AliFemtoEventCut *ev_cut = cfg.find_and_load("event_cut", subcfg)
-                             ? ConstructEventCut(subcfg)
-                             : BuildEventCut(default_params);
-    SetEventCut(ev_cut);
+    auto *cut = cfg.find_and_load("event_cut", subcfg)
+              ? ConstructEventCut(subcfg)
+              : BuildEventCut(default_params);
+    SetEventCut(cut);
   }
 
   {
@@ -343,6 +353,15 @@ AliFemtoAnalysisPionPion::AliFemtoAnalysisPionPion(const AliFemtoConfigObject &c
               : BuildPionCut1(default_params);
     SetFirstParticleCut(cut);
     SetSecondParticleCut(cut);  // Identical pions
+    if (auto *c = dynamic_cast<AliFemtoTrackCutPionPionAK*>(cut)) {
+      if (c->charge == -1) {
+        fPionType_1 = kPiMinus;
+      }
+    } else if (auto *c = dynamic_cast<AliFemtoESDTrackCut*>(cut)) {
+      if (c->GetCharge() == -1) {
+        fPionType_1 = kPiMinus;
+      }
+    }
   }
 
   {
@@ -562,7 +581,7 @@ AliFemtoAnalysisPionPion::BuildEventCut(const AliFemtoAnalysisPionPion::CutParam
     cut->cent_range = {p.event_CentralityMin, p.event_CentralityMax};
     cut->zvert_range = {p.event_VertexZMin, p.event_VertexZMax};
     cut->trigger = p.event_TriggerSelection;
-    cut->min_zdc_participants = p.event_zdc_part;
+    cut->zdc_participants_min = p.event_zdc_part;
 
     return cut;
   }
@@ -733,14 +752,38 @@ TList* AliFemtoAnalysisPionPion::GetOutputList()
   TList *outputlist = nullptr;
   TSeqCollection *output = nullptr;
 
+  auto write_configobj = [&] (TCollection *output)
+    {
+      auto event_cut_cfg = GetConfigurationOf(*fEventCut);
+      auto track_cut_cfg = GetConfigurationOf(static_cast<const AliFemtoTrackCut&>(*fFirstParticleCut));
+      auto pair_cut_cfg = GetConfigurationOf(*fPairCut);
+
+      output->Add(
+        new AliFemtoConfigObject(AliFemtoConfigObject::BuildMap()
+                  ("_class", "AliFemtoAnalysisPionPion")
+                  ("is_mc", fMCAnalysis)
+                  ("events_to_mix", NumEventsToMix())
+                  ("collection_size_min", fMinSizePartCollection)
+                  ("mix_vertex_z_bins", fVertexZBins)
+                  ("mix_vertex_z_range", std::make_pair(fVertexZ[0], fVertexZ[1]))
+                  ("mix_mult_bins", fMultBins)
+                  ("mix_mult_range", std::make_pair(fMult[0], fMult[1]))
+                  ("event_cut", event_cut_cfg)
+                  ("track_cut", track_cut_cfg)
+                  ("pair_cut", pair_cut_cfg))
+                );
+    };
+
   // get "standard" outputs - that's what we output
   if (!fGroupOutputObjects) {
     outputlist = AliFemtoVertexMultAnalysis::GetOutputList();
     output = outputlist;
+    write_configobj(output);
   } else {
 
     output = new TObjArray();
     output->SetName(fAnalysisName);
+    write_configobj(output);
 
     if (fEventCut)
     output->Add(GetPassFailOutputList("Event", EventCut()));
@@ -779,20 +822,6 @@ TList* AliFemtoAnalysisPionPion::GetOutputList()
     output->Add(new TObjString(settings));
   }
 
-  auto event_cut_cfg = GetConfigurationOf(*fEventCut);
-  auto track_cut_cfg = GetConfigurationOf(static_cast<const AliFemtoTrackCut&>(*fFirstParticleCut));
-  auto pair_cut_cfg = GetConfigurationOf(*fPairCut);
-
-  output->Add(
-    new AliFemtoConfigObject(AliFemtoConfigObject::BuildMap()
-              ("_class", "AliFemtoAnalysisPionPion")
-              ("is_mc", fMCAnalysis)
-              ("events_to_mix", NumEventsToMix())
-              ("collection_size_min", fMinSizePartCollection)
-              ("event_cut", event_cut_cfg)
-              ("track_cut", track_cut_cfg)
-              ("pair_cut", pair_cut_cfg))
-             );
   return outputlist;
 }
 
