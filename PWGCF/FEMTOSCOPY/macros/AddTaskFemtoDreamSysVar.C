@@ -279,32 +279,32 @@ AliAnalysisTaskSE* AddTaskFemtoDreamSysVar(bool isMC = false,
 
     //wide wariation
   } else if (suffix == "101") {
-    CascadeCuts->SetXiMassRange(1.368, 0.028);
-    AntiCascadeCuts->SetXiMassRange(1.368, 0.028);
+    CascadeCuts->SetXiMassRange(1.360, 0.028);
+    AntiCascadeCuts->SetXiMassRange(1.360, 0.028);
   } else if (suffix == "102") {
-    CascadeCuts->SetXiMassRange(1.282, 0.028);
-    AntiCascadeCuts->SetXiMassRange(1.282, 0.028);
+    CascadeCuts->SetXiMassRange(1.284, 0.028);
+    AntiCascadeCuts->SetXiMassRange(1.284, 0.028);
     //thinner wariation
   } else if (suffix == "103") {
-    CascadeCuts->SetXiMassRange(1.354, 0.014);
-    AntiCascadeCuts->SetXiMassRange(1.354, 0.014);
+    CascadeCuts->SetXiMassRange(1.346, 0.014);
+    AntiCascadeCuts->SetXiMassRange(1.346, 0.014);
   } else if (suffix == "104") {
-    CascadeCuts->SetXiMassRange(1.296, 0.014);
-    AntiCascadeCuts->SetXiMassRange(1.296, 0.014);
+    CascadeCuts->SetXiMassRange(1.298, 0.014);
+    AntiCascadeCuts->SetXiMassRange(1.298, 0.014);
     //Further away from the peak
   } else if (suffix == "105") {
-    CascadeCuts->SetXiMassRange(1.368, 0.014);
-    AntiCascadeCuts->SetXiMassRange(1.368, 0.014);
+    CascadeCuts->SetXiMassRange(1.360, 0.014);
+    AntiCascadeCuts->SetXiMassRange(1.360, 0.014);
   } else if (suffix == "106") {
-    CascadeCuts->SetXiMassRange(1.282, 0.014);
-    AntiCascadeCuts->SetXiMassRange(1.282, 0.014);
+    CascadeCuts->SetXiMassRange(1.284, 0.014);
+    AntiCascadeCuts->SetXiMassRange(1.284, 0.014);
     //furthest away from the peak
   } else if (suffix == "107") {
-    CascadeCuts->SetXiMassRange(1.382, 0.014);
-    AntiCascadeCuts->SetXiMassRange(1.382, 0.014);
+    CascadeCuts->SetXiMassRange(1.374, 0.014);
+    AntiCascadeCuts->SetXiMassRange(1.374, 0.014);
   } else if (suffix == "108") {
-    CascadeCuts->SetXiMassRange(1.268, 0.014);
-    AntiCascadeCuts->SetXiMassRange(1.268, 0.014);
+    CascadeCuts->SetXiMassRange(1.270, 0.014);
+    AntiCascadeCuts->SetXiMassRange(1.270, 0.014);
   }
 
   CascadeCuts->Setv0Negcuts(XiNegCuts);
