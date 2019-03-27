@@ -145,7 +145,7 @@ void AliForwardFlowRun2Task::UserCreateOutputObjects()
 
     static_cast<TList*>(fAnalysisList->At(2))->Add(new THnD("fQcorrfactor", "fQcorrfactor", dimensions, rbins, xmin, xmax)); //(eta, n)
     static_cast<TList*>(fAnalysisList->At(2))->Add(new THnD("fpcorrfactor","fpcorrfactor", dimensions, dbins, xmin, xmax)); //(eta, n)
-    Int_t ptnmax =  (fSettings.doPt ? 10 : 1);
+    Int_t ptnmax =  (fSettings.doPt ? 10 : 0);
 
     // create a THn for each harmonic
     for (Int_t n = 2; n <= fMaxMoment; n++) {
@@ -255,7 +255,7 @@ void AliForwardFlowRun2Task::UserExec(Option_t *)
   calculator.CumulantsAccumulate(*centralDist, fOutputList, cent, zvertex,"central",false,true);  
   calculator.CumulantsAccumulate(*forwardDist, fOutputList, cent, zvertex,"forward",false,true);
 
-  Int_t ptnmax =  (fSettings.doPt ? 10 : 1);
+  Int_t ptnmax =  (fSettings.doPt ? 10 : 0);
 
   TH1F pthist = TH1F("pthist", "", ptnmax, fSettings.minpt, fSettings.maxpt);
 
