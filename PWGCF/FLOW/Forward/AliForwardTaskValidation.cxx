@@ -350,8 +350,8 @@ void AliForwardTaskValidation::UserExec(Option_t *)
     case EventValidation::kIsAODEvent:
       this->fIsValidEvent = this->IsAODEvent(); break;
     case EventValidation::kTrigger:
-      if (this->isMC == kTRUE) this->fIsValidEvent = kTRUE;
-      else this->fIsValidEvent = this->AcceptTrigger(AliVEvent::kINT7);
+      //if (this->isMC == kTRUE) this->fIsValidEvent = kTRUE;
+      this->fIsValidEvent = this->AcceptTrigger(AliVEvent::kINT7);
       break;
     case EventValidation::kHasFMD:
       this->fIsValidEvent = this->HasFMD(); break;

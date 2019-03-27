@@ -252,7 +252,7 @@ void AliForwardFlowRun2Task::UserExec(Option_t *)
   calculator.fSettings = fSettings;
 
   calculator.CumulantsAccumulate(*refDist, fOutputList, cent, zvertex,"central",true,false);
-  calculator.CumulantsAccumulate(*centralDist, fOutputList, cent, zvertex,"central",false,true);  
+  // calculator.CumulantsAccumulate(*centralDist, fOutputList, cent, zvertex,"central",false,true);  
   calculator.CumulantsAccumulate(*forwardDist, fOutputList, cent, zvertex,"forward",false,true);
 
   Int_t ptnmax =  (fSettings.doPt ? 10 : 0);
@@ -267,8 +267,7 @@ void AliForwardFlowRun2Task::UserExec(Option_t *)
     centralDist->Reset();
 
     // Fill centralDist
-    if (fSettings.useSPD) fUtil.FillFromTracklets(centralDist);
-    else  fUtil.FillFromTracks(centralDist, fSettings.tracktype); //(fSettings.useTPC)
+    fUtil.FillDataCentral(centralDist);
 
     UInt_t randomInt = fRandom.Integer(fSettings.fnoSamples);
 
