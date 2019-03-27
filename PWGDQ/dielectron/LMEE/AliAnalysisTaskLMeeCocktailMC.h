@@ -42,7 +42,6 @@ class AliAnalysisTaskLMeeCocktailMC : public AliAnalysisTaskSE {
   protected:
     AliVEvent*            fInputEvent;                // current event
     AliMCEvent*           fMCEvent;                   // corresponding MC event
-    AliStack*             fMCStack;                   // stack belonging to MC event
     TList*                fOutputContainer;           // Output container
     
     Int_t*                fParticleList;              // array with particle Pdg values
