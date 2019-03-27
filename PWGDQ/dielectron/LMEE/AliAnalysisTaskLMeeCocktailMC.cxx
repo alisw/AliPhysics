@@ -57,7 +57,6 @@ AliAnalysisTaskLMeeCocktailMC::AliAnalysisTaskLMeeCocktailMC(): AliAnalysisTaskS
   fOutputContainer(NULL),
   fInputEvent(NULL),
   fMCEvent(NULL),
-  fMCStack(NULL),
   fHistNEvents(NULL),
   fhwEffpT(NULL),
   fhwMultpT(NULL),
@@ -172,7 +171,6 @@ AliAnalysisTaskLMeeCocktailMC::AliAnalysisTaskLMeeCocktailMC(const char *name):
   fOutputContainer(NULL),
   fInputEvent(NULL),
   fMCEvent(NULL),
-  fMCStack(NULL),
   fHistNEvents(NULL),
   fhwEffpT(NULL),
   fhwMultpT(NULL),
@@ -669,12 +667,8 @@ void AliAnalysisTaskLMeeCocktailMC::UserExec(Option_t *)
   if (fIsMC==0) return;
   //cout << "I found an MC header" << endl;
     
-  fMCStack = fMCEvent->Stack();
-  if(fMCStack == NULL) fIsMC = 0;
-  if (fIsMC==0) return;
-  
   fHistNEvents->Fill(0.5);
-  //   cout << "the stack is intact" << endl;
+
   ProcessMCParticles();
 
   PostData(1, fOutputContainer);
@@ -691,19 +685,19 @@ void AliAnalysisTaskLMeeCocktailMC::ProcessMCParticles(){
   Int_t Skip2ndLeg=0;
 
   // Loop over all primary MC particle  
-  for(UInt_t i = 0; i < fMCStack->GetNtrack(); i++) {
+  for(UInt_t i = 0; i < fMCEvent->GetNumberOfTracks(); i++) {
 
    //LS and ULS spectra
    //------------------
-   if(abs(fMCStack->Particle(i)->GetPdgCode())==11){
+   if(abs(fMCEvent->Particle(i)->GetPdgCode())==11){
     //get the electron
     //---------------
     TLorentzVector e,dielectron;
     Char_t ech,dielectron_ch;
     Double_t eweight,dielectron_weight;
-    e.SetPxPyPzE(fMCStack->Particle(i)->Px(),fMCStack->Particle(i)->Py(),fMCStack->Particle(i)->Pz(),fMCStack->Particle(i)->Energy());
-    if(fMCStack->Particle(i)->GetPdgCode()>0) { ech=1.; } else { ech=-1.; };
-    eweight=fMCStack->Particle(i)->GetWeight();
+    e.SetPxPyPzE(fMCEvent->Particle(i)->Px(),fMCEvent->Particle(i)->Py(),fMCEvent->Particle(i)->Pz(),fMCEvent->Particle(i)->Energy());
+    if(fMCEvent->Particle(i)->GetPdgCode()>0) { ech=1.; } else { ech=-1.; };
+    eweight=fMCEvent->Particle(i)->GetWeight();
     //put in the buffer
     //-----------------
     eBuff.push_back(e);
@@ -732,13 +726,13 @@ void AliAnalysisTaskLMeeCocktailMC::ProcessMCParticles(){
     //get the particle
     TParticle* particle         = NULL;
     TParticle* particle2         = NULL;
-    particle                    = (TParticle *)fMCStack->Particle(i);
+    particle                    = (TParticle *)fMCEvent->Particle(i);
     if (!particle) continue;
 
     //get the mother
     Bool_t hasMother            = kFALSE;
     Bool_t particleIsPrimary    = kTRUE;
-    //cout << i << "\t"<< particle->GetMother(0) << endl;
+    //cout << i << "\t"<< particle->Particle(0) << endl;
     if (particle->GetMother(0)>-1){
       hasMother = kTRUE;
       particleIsPrimary = kFALSE;
@@ -746,7 +740,7 @@ void AliAnalysisTaskLMeeCocktailMC::ProcessMCParticles(){
     TParticle* motherParticle   = NULL;
     TParticle* dau3Particle   = NULL;
     fdau3pdg   = 0;
-    if( hasMother ) motherParticle = (TParticle *)fMCStack->Particle(particle->GetMother(0));
+    if( hasMother ) motherParticle = (TParticle *)fMCEvent->Particle(particle->GetMother(0));
     if (motherParticle){
       hasMother                 = kTRUE;
     }else{
@@ -791,15 +785,14 @@ void AliAnalysisTaskLMeeCocktailMC::ProcessMCParticles(){
      if(motherIsPrimary){
 
      //check second leg
-     if(i<fMCStack->GetNtrack()-1) {
-      particle2  = (TParticle *)fMCStack->Particle(i+1);
+     if(i<fMCEvent->GetNumberOfTracks()-1) {
+      particle2  = (TParticle *)fMCEvent->Particle(i+1);
       if(particle2->GetMother(0)==particle->GetMother(0)&&particle->GetMother(1)==-1&&particle2->GetMother(1)==-1){
        Skip2ndLeg=i+1;
 
        TLorentzVector dau1,dau2,ee,ee_orig;
        dau1.SetPxPyPzE(particle->Px(),particle->Py(),particle->Pz(),particle->Energy());
-       dau2.SetPxPyPzE(particle2->Px(),particle2->Py(),particle2->Pz(),particle2->Energy());
-  
+       dau2.SetPxPyPzE(particle2->Px(),particle2->Py(),particle2->Pz(),particle2->Energy());  
        //create dielectron before resolution effects:
        ee=dau1+dau2;
        ee_orig=ee;
@@ -809,7 +802,7 @@ void AliAnalysisTaskLMeeCocktailMC::ProcessMCParticles(){
         if(jj==i||jj==Skip2ndLeg) {
         continue;
        }
-       dau3Particle = (TParticle *)fMCStack->Particle(jj);
+       dau3Particle = (TParticle *)fMCEvent->Particle(jj);
        fdau3pdg= abs(dau3Particle->GetPdgCode());
       }
 
@@ -1001,8 +994,8 @@ void AliAnalysisTaskLMeeCocktailMC::ProcessMCParticles(){
          TLorentzVector *decay1,*decay2;
          decay1 = VPHgen.GetDecay(0);
          decay2 = VPHgen.GetDecay(1);
-         dau1.SetPxPyPzE(decay1->Px(),decay1->Py(),decay1->Pz(),decay1->E());
-         dau2.SetPxPyPzE(decay2->Px(),decay2->Py(),decay2->Pz(),decay2->E());
+         dau1.SetPxPyPzE(decay1->Px(),decay1->Py(),decay1->Pz(),decay1->Energy());
+         dau2.SetPxPyPzE(decay2->Px(),decay2->Py(),decay2->Pz(),decay2->Energy());
 
          //create dielectron before resolution effects:
          ee=dau1+dau2;
