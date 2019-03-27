@@ -255,9 +255,9 @@ void AliForwardFlowRun2Task::UserExec(Option_t *)
   // calculator.CumulantsAccumulate(*centralDist, fOutputList, cent, zvertex,"central",false,true);  
   calculator.CumulantsAccumulate(*forwardDist, fOutputList, cent, zvertex,"forward",false,true);
 
-  Int_t ptnmax =  (fSettings.doPt ? 10 : 0);
+  Int_t ptnmax =  (fSettings.doPt ? 9 : 0);
 
-  TH1F pthist = TH1F("pthist", "", ptnmax, fSettings.minpt, fSettings.maxpt);
+  TH1F pthist = TH1F("pthist", "", ptnmax+1, fSettings.minpt, fSettings.maxpt);
 
   for (Int_t ptn = 0; ptn <=ptnmax; ptn ++ ){
     
