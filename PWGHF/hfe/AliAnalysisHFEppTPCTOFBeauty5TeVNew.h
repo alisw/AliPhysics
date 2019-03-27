@@ -434,13 +434,13 @@ private:
     AliHFEpidQAmanager 	*fPIDqa;				// PID QA manager
     
     //Others
-    AliStack 			*fMCstack;	//!						
+//    AliStack 			*fMCstack;	//!						
     Bool_t              fRejectKinkMother;	//!			
-    TParticle 			*fMCtrack;//!
-    TParticle 			*fMCtrackMother;//!
-    TParticle 			*fMCtrackGMother;//!
-    TParticle 			*fMCtrackGGMother;//!
-    TParticle 			*fMCtrackGGGMother;//!
+//    TParticle 			*fMCtrack;//!
+//    TParticle 			*fMCtrackMother;//!
+//    TParticle 			*fMCtrackGMother;//!
+//    TParticle 			*fMCtrackGGMother;//!
+//    TParticle 			*fMCtrackGGGMother;//!
     TClonesArray 		*fMCarray;//!
     AliAODMCHeader 		*fMCheader;  //!
     AliAODMCParticle 	*fMCparticle; //!
