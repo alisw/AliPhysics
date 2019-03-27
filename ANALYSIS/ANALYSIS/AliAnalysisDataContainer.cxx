@@ -95,6 +95,7 @@ AliAnalysisDataContainer::AliAnalysisDataContainer(const char *name, TClass *typ
 /// Default constructor.
 
    SetTitle(fType->GetName());
+   if (fType->InheritsFrom("AliDirList")) SetDirList(true);
 }
 
 //______________________________________________________________________________
@@ -462,7 +463,9 @@ void AliAnalysisDataContainer::ImportData(AliAnalysisDataWrapper *pack)
       fDataReady = kTRUE;
       // Imported wrappers do not own data anymore (AG 13-11-07)
       pack->SetDeleteData(kFALSE);
-   }   
+      // Imported data is read from file, the container must own it
+      SetDataOwned(true);
+   }
 }      
       
 ClassImp (AliAnalysisDataWrapper)

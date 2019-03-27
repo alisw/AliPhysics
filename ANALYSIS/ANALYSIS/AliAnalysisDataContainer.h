@@ -49,7 +49,8 @@ enum EAnalysisContainerFlags {
    kSpecialOutput = BIT(15),
    kRegisterDataset = BIT(16),
    kExchangeData  = BIT(17),
-   kTouchedFlag   = BIT(18)
+   kTouchedFlag   = BIT(18),
+   kDirList       = BIT(19)
 };     
    AliAnalysisDataContainer();
    AliAnalysisDataContainer(const AliAnalysisDataContainer &cont);
@@ -87,6 +88,7 @@ enum EAnalysisContainerFlags {
    void                      ImportData(AliAnalysisDataWrapper *pack);
    /// Container status checking
    Bool_t                    IsDataReady() const  {return fDataReady;}
+   Bool_t                    IsDirList() const    {return TObject::TestBit(kDirList);}
    Bool_t                    IsExchange() const      {return TObject::TestBit(kExchangeData);}
    Bool_t                    IsPostEventLoop() const {return TObject::TestBit(kPostEventLoop);}
    Bool_t                    IsSpecialOutput() const {return TObject::TestBit(kSpecialOutput);}
@@ -104,7 +106,8 @@ enum EAnalysisContainerFlags {
    void                      PrintContainer(Option_t *option="all", Int_t indent=0) const;
 
 private:
-   void                      SetType(TClass *type) {fType = type;}   
+   void                      SetDirList(Bool_t flag) {TObject::SetBit(kDirList,flag);}
+   void                      SetType(TClass *type) {fType = type;}
 
 protected:
    Bool_t                    fDataReady;  ///< Flag that data is ready

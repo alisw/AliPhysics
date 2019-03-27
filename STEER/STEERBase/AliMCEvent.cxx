@@ -60,6 +60,7 @@ AliMCEvent::AliMCEvent():
     fNprimaries(-1),
     fNparticles(-1),
     fSubsidiaryEvents(0),
+    fCombinedEvenHeader(0),
     fPrimaryOffset(0),
     fSecondaryOffset(0),
     fExternal(0),
@@ -87,6 +88,7 @@ AliMCEvent::AliMCEvent(const AliMCEvent& mcEvnt) :
     fNprimaries(mcEvnt.fNprimaries),
     fNparticles(mcEvnt.fNparticles),
     fSubsidiaryEvents(0),
+    fCombinedEvenHeader(0),
     fPrimaryOffset(0),
     fSecondaryOffset(0),
     fExternal(0),
@@ -111,7 +113,8 @@ AliMCEvent& AliMCEvent::operator=(const AliMCEvent& mcEvnt)
 
 AliMCEvent::~AliMCEvent()
 {
-  if (fSubsidiaryEvents) delete fSubsidiaryEvents;
+  delete fSubsidiaryEvents;
+  delete fCombinedEvenHeader;
 }
 
 void AliMCEvent::ConnectTreeE (TTree* tree)
@@ -263,6 +266,8 @@ void AliMCEvent::FinishEvent()
     fStack      =  0;
     delete fSubsidiaryEvents;
     fSubsidiaryEvents = 0;
+    delete fCombinedEvenHeader;
+    fCombinedEvenHeader = 0;
     fNBG = -1;
     fBGEventReused = 0;
 }
@@ -534,7 +539,7 @@ Bool_t AliMCEvent::IsFromSubsidiaryEvent(int id) const
   if (fSubsidiaryEvents) {
     AliMCEvent* mc;
     FindIndexAndEvent(id, mc);
-    if (mc != fSubsidiaryEvents->At(0)) return kTRUE;
+    if (mc != fSubsidiaryEvents->First()) return kTRUE;
   }
   if (!fAODMCHeader) { // for the AOD need to check the particle itself
     return GetTrack(id)->IsFromSubsidiaryEvent();
@@ -681,7 +686,7 @@ AliGenEventHeader* AliMCEvent::GenEventHeader() const
 {
   if (!fExternal) {
     // ESD
-    return (fHeader->GenEventHeader());
+    return  fCombinedEvenHeader ? fCombinedEvenHeader : fHeader->GenEventHeader();
   } else {
     // AOD
     if (fAODMCHeader) {
@@ -839,28 +844,48 @@ void AliMCEvent::InitEvent()
 {
 //
 // Initialize the subsidiary event structure
-    if (fSubsidiaryEvents) {
-	TIter next(fSubsidiaryEvents);
-	AliMCEvent* evt;
-	fNprimaries = 0;
-	fNparticles = 0;
-	
-	while((evt = (AliMCEvent*)next())) {
-	    fNprimaries += evt->GetNumberOfPrimaries();	
-	    fNparticles += evt->GetNumberOfTracks();    
-	}
-	
-	Int_t ioffp = 0;
-	Int_t ioffs = fNprimaries;
-	next.Reset();
-	
-	while((evt = (AliMCEvent*)next())) {
-	    evt->SetPrimaryOffset(ioffp);
-	    evt->SetSecondaryOffset(ioffs);
-	    ioffp += evt->GetNumberOfPrimaries();
-	    ioffs += (evt->GetNumberOfTracks() - evt->GetNumberOfPrimaries());	    
-	}
+  if (fSubsidiaryEvents) {
+    AliMCEvent* evt;
+    fNprimaries = 0;
+    fNparticles = 0;
+    
+    fCombinedEvenHeader = new AliGenCocktailEventHeader();
+    
+    AliMCEvent* evt0 = (AliMCEvent*)fSubsidiaryEvents->First();
+    AliGenEventHeader* genH = ((AliMCEvent*)fSubsidiaryEvents->First())->GenEventHeader();
+    TArrayF vtx;
+    genH->PrimaryVertex(vtx);
+    fCombinedEvenHeader->SetPrimaryVertex(vtx);
+    
+    TIter next(fSubsidiaryEvents); 
+    while((evt = (AliMCEvent*)next())) {
+      fNprimaries += evt->GetNumberOfPrimaries();	
+      fNparticles += evt->GetNumberOfTracks();
+      //
+      // extend combined gen header
+      AliHeader* headerX = evt->Header();
+      AliGenEventHeader* genHX = headerX->GenEventHeader();
+      fCombinedEvenHeader->SetNProduced( fCombinedEvenHeader->NProduced() +  genHX->NProduced() );
+      
+      if ( genHX->InheritsFrom(AliGenCocktailEventHeader::Class()) ) {
+	TList* cocktHeadersX = ((AliGenCocktailEventHeader*)genHX)->GetHeaders();
+	TIter nxtH(cocktHeadersX);
+	while( (genH=(AliGenEventHeader*)nxtH()) ) fCombinedEvenHeader->AddHeader( genH );
+      }
+      else fCombinedEvenHeader->AddHeader( genHX );
     }
+    
+    Int_t ioffp = 0;
+    Int_t ioffs = fNprimaries;
+    
+    next.Reset();
+    while((evt = (AliMCEvent*)next())) {
+      evt->SetPrimaryOffset(ioffp);
+      evt->SetSecondaryOffset(ioffs);
+      ioffp += evt->GetNumberOfPrimaries();
+      ioffs += (evt->GetNumberOfTracks() - evt->GetNumberOfPrimaries());	    
+    }
+  }
 }
 
 void AliMCEvent::PreReadAll()                              
@@ -908,17 +933,23 @@ Bool_t AliMCEvent::IsFromBGEvent(Int_t index)
     // Checks if a particle is from the background events
     // Works for HIJING inside Cocktail
   if (index >= BgLabelOffset() && !fSubsidiaryEvents) return kTRUE;
+
+  if (!fSubsidiaryEvents) { // this is correct for plane MC only
     if (fNBG == -1) {
-	AliGenCocktailEventHeader* coHeader = 
-	    dynamic_cast<AliGenCocktailEventHeader*> (GenEventHeader());
-	if (!coHeader) return (0);
-	TList* list = coHeader->GetHeaders();
-	AliGenHijingEventHeader* hijingH = dynamic_cast<AliGenHijingEventHeader*>(list->FindObject("Hijing"));
-	if (!hijingH) return (0);
-	fNBG = hijingH->NProduced();
+      AliGenCocktailEventHeader* coHeader = 
+	dynamic_cast<AliGenCocktailEventHeader*> (GenEventHeader());
+      if (!coHeader) return (0);
+      TList* list = coHeader->GetHeaders();
+      AliGenHijingEventHeader* hijingH = dynamic_cast<AliGenHijingEventHeader*>(list->FindObject("Hijing"));
+      if (!hijingH) return (0);
+      fNBG = hijingH->NProduced();
     }
-    
     return (index < fNBG);
+  }
+  else {
+    return IsFromSubsidiaryEvent(index);
+  }
+    
 }
 
 

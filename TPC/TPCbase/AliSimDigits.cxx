@@ -209,9 +209,7 @@ void  AliSimDigits::ExpandTrackBuffer1()
   Int_t all   = fNrows*fNcols;  //total number of digits
   Int_t elems = all*fNlevel;  //length of the buffer
 
-  TArrayI * buf = new TArrayI;
-  Int_t *bufData = (Int_t *) calloc(elems, sizeof(Int_t));
-  buf->Adopt(elems, bufData);
+  TArrayI * buf = new TArrayI(elems);
   fTrIndex->Set(0);
   //
   Int_t level = 0;

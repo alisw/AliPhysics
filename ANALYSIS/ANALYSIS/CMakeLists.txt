@@ -35,6 +35,7 @@ set(SRCS
     AliAnalysisTaskCfg.cxx
     AliAnalysisTask.cxx
     AliXMLParser.cxx
+    AliDirList.cxx
    )
 
 # Headers from sources
