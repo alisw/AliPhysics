@@ -1681,7 +1681,7 @@ void AddTask_GammaConvCalo_pp(
     cuts.AddCutPCMCalo("00010113","00200009327000008250400000","411771107l032230000","2l63103100000010"); // Standard EDC
   } else if ( trainConfig == 2301){ // Jet QA
     cuts.AddCutPCMCalo("00010113","00200009327000008250400000","411771107l032230000","3l63103100000010"); //
-  } else if ( trainConfig == 2301){ // MB for comparison
+  } else if ( trainConfig == 2302){ // MB for comparison
     cuts.AddCutPCMCalo("00010113","00200009327000008250400000","411771107l032230000","0163103100000010"); // Standard EDC
 
   } else {

@@ -1445,9 +1445,9 @@ void AddTask_GammaCalo_pp(
     cuts.AddCutCalo("00010113","2446651044012300000","2163103100000010"); //
  } else if (trainConfig == 915){ //PHOS+JetQA
     cuts.AddCutCalo("00010113","2446651044012300000","3163103100000010"); // PHOS QA
- } else if (trainConfig == 915){ //MB EDC for comparison
+ } else if (trainConfig == 916){ //MB EDC for comparison
     cuts.AddCutCalo("00010113","411771107l032230000","01631031000000d0"); // Standard EDC
- } else if (trainConfig == 916){ //MB PHOS for comparison
+ } else if (trainConfig == 917){ //MB PHOS for comparison
     cuts.AddCutCalo("00010113","2446651044012300000","0163103100000010"); //
 
   } else if (trainConfig == 2000){ // EMCAL+DCAL clusters standard cuts
