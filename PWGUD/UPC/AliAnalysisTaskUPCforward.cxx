@@ -332,7 +332,7 @@ void AliAnalysisTaskUPCforward::FillGoodRunVector(std::vector<Int_t> &fVectorGoo
                                          297415, 297441, 297442, 297446, 297450, 297451,
                                          297452, 297479, 297481, 297483, 297512, 297537,
                                          297540, 297541, 297542, 297544, 297558, 297588,
-                                         297590, 297595, 297623, 297624 };
+                                         297590, 297595/*, 297623, 297624*/ };
   /* - This good run number list has been taken from the analysis
      - note of Kay's talk for DIS 2017, see:
      - https://alice-notes.web.cern.ch/system/files/notes/analysis/596/2017-Feb-08-analysis_note-2017-Feb-08-analysis-note.pdf
