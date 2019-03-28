@@ -949,7 +949,6 @@ void AliAnalysisTaskLMeeCocktailMC::ProcessMCParticles(){
         if(fdectyp<4){ //skip for the moment 4-particle decays
          for(Int_t jj=0;jj<3;jj++){ // fill the different hindex -> particles
           if(hindex[jj]>-1){
-	    Printf("Weights: %f = %f ?",fweight,particle->Particle()->GetWeight());
            fmee_orig[hindex[jj]]->Fill(ee_orig.M(), fweight);
            if(fALTweightType == 1||fALTweightType == 11) {fmotherpT_orig[hindex[jj]]->Fill(fmothermt,fweight);
            }else if(fALTweightType == 2||fALTweightType == 22) {fmotherpT_orig[hindex[jj]]->Fill(fmotherpt,fweight);}
