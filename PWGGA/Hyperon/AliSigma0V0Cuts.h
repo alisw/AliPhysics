@@ -55,7 +55,7 @@ class AliSigma0V0Cuts : public TObject {
   float ComputePhotonMass(const AliESDv0 *v0) const;
   float ComputePhotonMassRefit(const AliESDv0 *v0) const;
   float ComputePsiPair(const AliESDv0 *v0) const;
-  void PhotonQA(AliVEvent *inputEvent, const TClonesArray *photons);
+  void PhotonQA(AliVEvent *inputEvent, AliMCEvent *mcEvent, const TClonesArray *photons);
 
   void SetLightweight(bool isLightweight) { fIsLightweight = isLightweight; }
   void SetCheckCutsMC(bool checkCuts) { fCheckCutsMC = checkCuts; }

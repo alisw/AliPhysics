@@ -1107,7 +1107,7 @@ void AliSigma0V0Cuts::ProcessMC() const {
 }
 
 //____________________________________________________________________________________________________
-void AliSigma0V0Cuts::PhotonQA(AliVEvent *inputEvent,
+void AliSigma0V0Cuts::PhotonQA(AliVEvent *inputEvent, AliMCEvent *mcEvent,
                                const TClonesArray *photons) {
   AliAnalysisManager *man = AliAnalysisManager::GetAnalysisManager();
   AliInputEventHandler *inputHandler =
@@ -1179,6 +1179,21 @@ void AliSigma0V0Cuts::PhotonQA(AliVEvent *inputEvent,
     auto neg =
         (AliESDtrack *)inputEvent->GetTrack(PhotonCandidate->GetLabel2());
     if (!pos || !neg) continue;
+
+    if (fIsMC) {
+      int label = PhotonCandidate->GetMCParticleLabel(mcEvent);
+      if (label > 0) {
+        AliMCParticle *mcParticle =
+            static_cast<AliMCParticle *>(mcEvent->GetTrack(label));
+        if (mcParticle && mcParticle->PdgCode() == fPID) {
+          fHistMCV0Pt->Fill(v0->Pt());
+          const int pdgMother = static_cast<AliMCParticle *>(
+                                    mcEvent->GetTrack(mcParticle->GetMother()))
+                                    ->PdgCode();
+          fHistV0Mother->Fill(v0->Pt(), TMath::Abs(pdgMother));
+        }
+      }
+    }
 
     fHistV0MassPt->Fill(pt, invMass);
 
