@@ -126,6 +126,11 @@ struct PairCutTrackAttrShareQuality {
 
   bool Pass(const AliFemtoTrack &track1, const AliFemtoTrack &track2) const
     {
+      // quick-return if we don't want to cut
+      if (share_fraction_max >= 1.0 && share_quality_max >= 1.0) {
+        return true;
+      }
+
       const std::pair<double, double>
         qual_and_frac = calc_share_quality_fraction(track1, track2);
 
@@ -141,27 +146,6 @@ struct PairCutTrackAttrShareQuality {
   calc_share_quality_fraction(const AliFemtoTrack &track1,
                               const AliFemtoTrack &track2)
     {
-#if false
-      const TBits
-        &tpc_clusters_1 = track1.TPCclusters(),
-        &tpc_sharing_1 = track1.TPCsharing(),
-        &tpc_clusters_2 = track2.TPCclusters(),
-        &tpc_sharing_2 = track2.TPCsharing(),
-
-        cls1_and_cls2 = tpc_clusters_1 & tpc_clusters_2,
-        cls1_xor_cls2 = tpc_clusters_1 ^ tpc_clusters_2,
-        shr1_and_shr2 = tpc_sharing_1 & tpc_sharing_2,
-        not_sharing = ~const_cast<TBits&>(shr1_and_shr2);
-
-      const double
-        cls1_xor_cls2_bits = cls1_xor_cls2.CountBits(),
-        nh = cls1_xor_cls2_bits + 2 * cls1_and_cls2.CountBits(),
-        ns = 2 * (cls1_and_cls2 & shr1_and_shr2).CountBits(),
-        an = cls1_xor_cls2_bits + ns / 2 - (cls1_and_cls2 & not_sharing).CountBits(),
-
-        share_quality = an / nh,
-        share_fraction = ns / nh;
-#else
       Int_t nh = 0;
       Int_t an = 0;
       Int_t ns = 0;
@@ -203,10 +187,9 @@ struct PairCutTrackAttrShareQuality {
       Float_t share_fraction = 0.0;
 
       if (__builtin_expect(nh > 0, 1)) {
-         share_quality = an*1.0/nh;
-         share_fraction = ns*1.0/nh;
+        share_quality = an * 1.0 / nh;
+        share_fraction = ns * 1.0 / nh;
       }
-  #endif
 
       return std::make_pair(share_quality, share_fraction);
     }

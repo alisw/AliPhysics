@@ -663,8 +663,6 @@ AliFemtoAnalysisPionPion::BuildPairCut(const CutParams &p) const
   cut->SetShareFractionMax(p.pair_max_share_fraction);
   cut->SetRemoveSameLabel(p.pair_remove_same_label);
 
-  cut->SetAlternativeAlgorithm(p.pair_algorithm);
-
   return cut;
 }
 
