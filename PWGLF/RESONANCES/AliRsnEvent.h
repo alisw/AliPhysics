@@ -14,7 +14,7 @@
 
 #include "AliLog.h"
 
-#include "AliStack.h"
+//#include "AliStack.h" // old way to read MC
 #include "AliVEvent.h"
 #include "AliMCEvent.h"
 #include "AliESDEvent.h"

@@ -598,6 +598,7 @@ class AliReducedVarManager : public TObject {
     kEMCALmatchedClusterId,
     kEMCALmatchedEOverP,
     kEMCALmatchedM02,
+    kEMCALmatchedM20,
     // Calorimeter cluster variables --------------------------------------
     kEMCALclusterEnergy,        
     kEMCALclusterDx,            
@@ -613,17 +614,25 @@ class AliReducedVarManager : public TObject {
     kTrackMCFlag,
     kTrackMCFlag2,
     // Correlation variables ----------------------------------------------
-    kDeltaPhi,      // shifted to [-pi/2, 3/2 * pi]
-    kDeltaPhiSym,   // shifted to [0, pi]
+    kDeltaPhi,        // shifted to [-pi/2, 3/2 * pi]
+    kDeltaPhiBoosted, // after boost of associated track to trigger rest fram
+    kDeltaPhiSym,     // shifted to [0, pi]
+    kDeltaPhiSymBoosted,
     kDeltaTheta,
+    kDeltaThetaBoosted,
     kDeltaEta,
+    kDeltaEtaBoosted,
     kDeltaEtaAbs,
+    kDeltaEtaAbsBoosted,
     kTriggerPt,       // pt of J/psi candidate
     kTriggerRap,      // rapidity of J/psi candidate
     kTriggerRapAbs,   // absolute rapidity of J/psi candidate
-    kAssociatedPt,    // pt of associated track
-    kAssociatedEta,   // eta of associated track
-    kAssociatedPhi,   // phi of associated track
+    kAssociatedPt,          // pt of associated track
+    kAssociatedPtBoosted,   // pt of associated track, after boost to trigger rest frame
+    kAssociatedEta,         // eta of associated track
+    kAssociatedEtaBoosted,
+    kAssociatedPhi,         // phi of associated track
+    kAssociatedPhiBoosted,
     // TRD GTU online tracks
     kTRDGTUtracklets,   // TRD online track #tracklets
     kTRDGTUlayermask,   // TRD online track hit in layer0 yes/no
@@ -788,7 +797,7 @@ class AliReducedVarManager : public TObject {
   AliReducedVarManager(AliReducedVarManager const&);
   AliReducedVarManager& operator=(AliReducedVarManager const&);  
   
-  ClassDef(AliReducedVarManager, 7);
+  ClassDef(AliReducedVarManager, 8);
 };
 
 #endif

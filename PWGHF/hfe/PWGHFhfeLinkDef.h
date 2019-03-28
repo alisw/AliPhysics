@@ -126,4 +126,5 @@
 #pragma link C++ class  AliAnalysisHFEppTPCTOFBeauty5TeVNew+;
 
 #pragma link C++ class  AliAnalysisTaskHFEmultTPCTOF+;
+#pragma link C++ class  AliAnalysisTaskHFEBESpectraEMC+;
 #endif

@@ -7,10 +7,10 @@ R__ADD_INCLUDE_PATH($ALICE_PHYSICS)
 #include <PWGLF/RESONANCES/macros/mini/AddMonitorOutput.C>
 #endif
 
-Bool_t ConfigF0(AliRsnMiniAnalysisTask *task, 
-		Bool_t                 isMC, 
+Bool_t ConfigF0(AliRsnMiniAnalysisTask *task = 0x0, 
+		Bool_t                 isMC = kFALSE, 
 		AliPIDResponse::EBeamType collSys = AliPIDResponse::kPP, //=0, kPPB=1, kPBPB=2
-		AliRsnCutSet           *cutsPair,             //cuts on the pair
+		AliRsnCutSet           *cutsPair = 0x0,             //cuts on the pair
 		Bool_t                 enaMultSel = kTRUE,    //enable multiplicity axis
       		Float_t                masslow = 0.3,         //inv mass axis low edge 
 		Float_t                massup = 1.3,          //inv mass axis upper edge 
@@ -55,8 +55,8 @@ Bool_t ConfigF0(AliRsnMiniAnalysisTask *task,
 #ifdef __CINT__
    gROOT->LoadMacro("$ALICE_PHYSICS/PWGLF/RESONANCES/macros/mini/AddMonitorOutput.C");
 #endif
-    AddMonitorOutput(isMC, cutSetQuality->GetMonitorOutput(), monitorOpt.Data());
-    AddMonitorOutput(isMC, cutSetPi->GetMonitorOutput(), monitorOpt.Data());
+    AddMonitorOutput(isMC, cutSetQuality->GetMonitorOutput(), monitorOpt.Data(), 0);
+    AddMonitorOutput(isMC, cutSetPi->GetMonitorOutput(), monitorOpt.Data(), 0);
   }  
 
   //-----------------------
@@ -104,7 +104,7 @@ Bool_t ConfigF0(AliRsnMiniAnalysisTask *task,
   Char_t bgTemplateC1[7] = {'+', '+', '+', '+', '+', '+', '+'};
   Char_t bgTemplateC2[7] = {'-', '-', '-', '-', '-', '-', '-'};
   Int_t bgTemplatePDG[7] = {113, 223, 313, -313, 310, 333, 225};
-  Int_t bgTemplateM[7]   = {775.26, 8.49, 891.66, 891.66, 497.611, 1019.461, 1275.5};
+  Double_t bgTemplateM[7]   = {775.26, 8.49, 891.66, 891.66, 497.611, 1019.461, 1275.5};
   RSNPID bgID1[7] = {AliRsnDaughter::kPion, AliRsnDaughter::kPion,AliRsnDaughter::kKaon, AliRsnDaughter::kPion, AliRsnDaughter::kPion, AliRsnDaughter::kKaon, AliRsnDaughter::kPion};
   RSNPID bgID2[7] = {AliRsnDaughter::kPion, AliRsnDaughter::kPion,AliRsnDaughter::kPion, AliRsnDaughter::kKaon, AliRsnDaughter::kPion, AliRsnDaughter::kKaon, AliRsnDaughter::kPion};
 

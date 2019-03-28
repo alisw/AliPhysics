@@ -140,4 +140,4 @@ install(FILES ${HDRS} DESTINATION include)
 
 # Install macros
 install(DIRECTORY macros DESTINATION PWGLF/RESONANCES)
-install(FILES PostProcessing/Xi1530/AddTaskXi1530.C DESTINATION PWGLF/RESONANCES/PostProcessingXi1530)
+install(FILES PostProcessing/Xi1530/AddTaskXi1530.C DESTINATION PWGLF/RESONANCES/PostProcessing/Xi1530)

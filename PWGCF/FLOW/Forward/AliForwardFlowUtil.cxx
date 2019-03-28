@@ -56,7 +56,7 @@ maxpt(5),
 dodNdeta(kTRUE),
 fTrackDensity(),
 fState(),
-fMaxConsequtiveStrips(2),
+fMaxConsequtiveStrips(3),
 fLowCutvalue(0),
 fStored(0)
 {
@@ -170,6 +170,52 @@ void AliForwardFlowUtil::FillData(TH2D*& refDist, TH2D*& centralDist, TH2D*& for
 }
 
 
+
+void AliForwardFlowUtil::FillDataCentral(TH2D*& centralDist)
+{
+  if (!fSettings.mc) {
+    AliAODEvent* aodevent = dynamic_cast<AliAODEvent*>(fevent);
+    this->fAODevent = aodevent;
+      
+    // Fill centralDist
+    if (fSettings.useSPD) this->FillFromTracklets(centralDist);
+    else if (fSettings.useITS) this->FillFromCentralClusters(centralDist);
+    else  this->FillFromTracks(centralDist, fSettings.tracktype); //(fSettings.useTPC)
+  }
+  else {
+    this->mc = kTRUE;
+    if(!fMCevent)
+      throw std::runtime_error("Not MC as expected");
+
+    if (fSettings.esd){
+      
+      // Fill centralDist
+      if (fSettings.useITS){
+        if (!fSettings.use_primaries_cen) this->FillFromTrackrefsITS(centralDist);
+        else this->FillFromPrimariesITS(centralDist);
+      }
+      else if (fSettings.useSPD && fSettings.use_primaries_cen) this->FillFromPrimariesSPD(centralDist);
+      else if (fSettings.useTPC && fSettings.use_primaries_cen) this->FillFromPrimariesTPC(centralDist);
+      else std::cout << "No valid central detector chosen." << std::endl;
+    }
+    else { // AOD
+      // Fill centralDist
+      if (fSettings.useITS) {
+        if (!fSettings.use_primaries_cen) this->FillFromCentralClusters(centralDist);
+        else this->FillFromPrimariesAODITS(centralDist);
+      }
+      else if (fSettings.useSPD) {
+        if (fSettings.use_primaries_cen) this->FillFromPrimariesAODSPD(centralDist); 
+        else this->FillFromTracklets(centralDist);
+      }
+      else if (fSettings.useTPC){
+        if (fSettings.use_primaries_cen) this->FillFromPrimariesAODTPC(centralDist); 
+        else this->FillFromTracks(centralDist, fSettings.tracktype);
+      }
+      else std::cout << "No valid central detector chosen." << std::endl;
+    }
+  }
+}
 
 
 Double_t AliForwardFlowUtil::GetZ(){

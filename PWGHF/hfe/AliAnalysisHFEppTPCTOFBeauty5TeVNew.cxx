@@ -75,7 +75,6 @@
 #include "AliMCEventHandler.h"
 #include "AliMCEvent.h"
 #include "AliStack.h"
-#include "TParticle.h"
 #include "AliLog.h"
 #include "AliAnalysisTaskSE.h"
 #include "TRefArray.h"
@@ -317,13 +316,7 @@ AliAnalysisHFEppTPCTOFBeauty5TeVNew::AliAnalysisHFEppTPCTOFBeauty5TeVNew(const c
 ,fPIDqa(0)
 
   //For MC
-  ,fMCstack(0)
   ,fRejectKinkMother(kTRUE)
-  ,fMCtrack(0)
-  ,fMCtrackMother(0)
-  ,fMCtrackGMother(0)
-  ,fMCtrackGGMother(0)
-  ,fMCtrackGGGMother(0)
   ,fMCarray(0)
   ,fMCheader(0)
   ,fMCparticle(0)
@@ -597,13 +590,7 @@ AliAnalysisHFEppTPCTOFBeauty5TeVNew::AliAnalysisHFEppTPCTOFBeauty5TeVNew()
 ,fPIDqa(0)
 
   //For MC
-  ,fMCstack(0)
   ,fRejectKinkMother(kTRUE)
-  ,fMCtrack(0)
-  ,fMCtrackMother(0)
-  ,fMCtrackGMother(0)
-  ,fMCtrackGGMother(0)
-  ,fMCtrackGGGMother(0)
   ,fMCarray(0)
   ,fMCheader(0)
   ,fMCparticle(0)
@@ -3060,8 +3047,8 @@ void AliAnalysisHFEppTPCTOFBeauty5TeVNew::InvMassCheckMCNew(int itrack, AliVTrac
         if(!trackAsso) continue;
         if(!atrackAsso->TestFilterMask(AliAODTrack::kTrkTPCOnly)) continue;
         //if(trackAsso->GetTPCNcls() < 60) continue;  // TPC and TPCPID cls check GetTPCSignal() or GetTPCSignalN()
-        if(trackAsso->GetTPCNcls() < 60 && trackAsso->GetTPCsignalN() < 60 ) continue;  // TPC and TPCPID cls check GetTPCSignal() or GetTPCSignalN()
-        if(atrackAsso->GetITSNcls() < 2) continue;
+        if(trackAsso->GetTPCNcls() < 60/* && trackAsso->GetTPCsignalN() < 60*/ ) continue;  // TPC and TPCPID cls check GetTPCSignal() or GetTPCSignalN()
+       // if(atrackAsso->GetITSNcls() < 2) continue;
 
 	nsigmaAsso = fPidResponse->NumberOfSigmasTPC(trackAsso, AliPID::kElectron);
         ptAsso = trackAsso->Pt();
@@ -3072,7 +3059,7 @@ void AliAnalysisHFEppTPCTOFBeauty5TeVNew::InvMassCheckMCNew(int itrack, AliVTrac
         if(trackAsso->Eta()<=-0.9 || trackAsso->Eta()>=0.9) continue;
         if(nsigmaAsso < -3 || nsigmaAsso > 3) continue;
         if((!(trackAsso->GetStatus()&AliESDtrack::kITSrefit)|| (!(trackAsso->GetStatus()&AliESDtrack::kTPCrefit)))) continue;
- 	if(!fExtraCuts){
+ 	/*if(!fExtraCuts){
         fExtraCuts = new AliHFEextraCuts("hfeExtraCuts","HFE Extra Cuts");
         }
 
@@ -3083,7 +3070,7 @@ void AliAnalysisHFEppTPCTOFBeauty5TeVNew::InvMassCheckMCNew(int itrack, AliVTrac
         fExtraCuts->SetClusterRatioTPC(0.6, AliHFEextraCuts::kFoundOverFindable);
         // if(trackAsso->PropagateToDCA(pVtx, fAOD->GetMagneticField(), 20., d0z0Asso, covAsso))
         if(TMath::Abs(d0z0Asso[0]) > DCAxyCut || TMath::Abs(d0z0Asso[1]) > DCAzCut) continue;
-      
+      */
       
         if(charge>0) fPDGe1 = -11; //-11 in PDG is for positron, just to be confusing
         if(chargeAsso>0) fPDGe2 = -11;
@@ -3473,81 +3460,7 @@ void AliAnalysisHFEppTPCTOFBeauty5TeVNew::InvMassCheckMCNew(int itrack, AliVTrac
         }
         //    cout<<fMCparticle->GetMother()<<"   "<<mpdg<<"    "<<gmpdg<<"    "<<ggmpdg<<"    "<<gggmpdg<<endl;
       }
-      else
-      {
-        fMCtrack = fMCstack->Particle(mcIndex);
-
-        pdg = TMath::Abs(fMCtrack->GetPdgCode());
-
-        if(pdg!=11)
-        {
-          fIsHFE1 = kFALSE;
-          fIsHFE2 = kFALSE;
-          fIsNonHFE = kFALSE;
-          fIsFromD = kFALSE;
-          fIsFromBarionB = kFALSE;
-          fIsFromMesonB = kFALSE;
-          fIsFromBarionBD =kFALSE;
-          fIsFromMesonBD = kFALSE;
-          fIsFromPi0 = kFALSE;
-          fIsFromEta = kFALSE;
-          fIsFromGamma = kFALSE;
-          return kFALSE;
-        }
-
-        if(fMCtrack->GetFirstMother()<0)
-        {
-          fIsHFE1 = kFALSE;
-          fIsHFE2 = kFALSE;
-          fIsNonHFE = kFALSE;
-          fIsFromD = kFALSE;
-          fIsFromBarionB = kFALSE;
-          fIsFromMesonB = kFALSE;
-          fIsFromBarionBD =kFALSE;
-          fIsFromMesonBD = kFALSE;
-          fIsFromPi0 = kFALSE;
-          fIsFromEta = kFALSE;
-          fIsFromGamma = kFALSE;
-          return kFALSE;
-        }
-
-        fMCtrackMother = fMCstack->Particle(fMCtrack->GetFirstMother());
-        mpdg = TMath::Abs(fMCtrackMother->GetPdgCode());
-
-        if(fMCtrackMother->GetFirstMother()<0)
-        {
-          gmpdg = 0;
-          ggmpdg = 0;
-          gggmpdg = 0;
-        }
-        else
-        {
-          fMCtrackGMother = fMCstack->Particle(fMCtrackMother->GetFirstMother());
-          gmpdg = TMath::Abs(fMCtrackGMother->GetPdgCode());
-
-          if(fMCtrackGMother->GetFirstMother()<0)
-          {
-            ggmpdg = 0;
-            gggmpdg = 0;
-          }
-          else
-          {
-            fMCtrackGGMother = fMCstack->Particle(fMCtrackGMother->GetFirstMother());
-            ggmpdg = TMath::Abs(fMCtrackGGMother->GetPdgCode());
-
-            if(fMCtrackGGMother->GetFirstMother()<0)
-            {
-              gggmpdg = 0;
-            }
-            else
-            {
-              fMCtrackGGGMother = fMCstack->Particle(fMCtrackGGMother->GetFirstMother());
-              gggmpdg = TMath::Abs(fMCtrackGGGMother->GetPdgCode());
-            }
-          }
-        }
-      }
-
+    
       ///Tag Electron Source
       if(mpdg==111 || mpdg==221 || mpdg==22)
       {

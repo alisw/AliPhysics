@@ -157,7 +157,11 @@ AliAnalysisTaskUPCforward::AliAnalysisTaskUPCforward()
       fCosThetaHelicityFrameJPsiH(0),
       fCosThetaCollinsSoperFrameJPsiH(0),
       fPhiHelicityFrameJPsiH(0),
-      fPhiCollinsSoperFrameJPsiH(0)
+      fPhiCollinsSoperFrameJPsiH(0),
+      fCosThetaHelicityFrameJPsiRapidityBinsH{ 0, 0, 0, 0, 0, 0, 0, 0},
+      fCosThetaCollinsSoperFrameJPsiRapidityBinsH{ 0, 0, 0, 0, 0, 0, 0, 0},
+      fPhiHelicityFrameJPsiRapidityBinsH{ 0, 0, 0, 0, 0, 0, 0, 0},
+      fPhiCollinsSoperFrameJPsiRapidityBinsH{ 0, 0, 0, 0, 0, 0, 0, 0}
 {
     // default constructor, don't allocate memory here!
     // this is used by root for IO purposes, it needs to remain empty
@@ -246,7 +250,11 @@ AliAnalysisTaskUPCforward::AliAnalysisTaskUPCforward(const char* name)
       fCosThetaHelicityFrameJPsiH(0),
       fCosThetaCollinsSoperFrameJPsiH(0),
       fPhiHelicityFrameJPsiH(0),
-      fPhiCollinsSoperFrameJPsiH(0)
+      fPhiCollinsSoperFrameJPsiH(0),
+      fCosThetaHelicityFrameJPsiRapidityBinsH{ 0, 0, 0, 0, 0, 0, 0, 0},
+      fCosThetaCollinsSoperFrameJPsiRapidityBinsH{ 0, 0, 0, 0, 0, 0, 0, 0},
+      fPhiHelicityFrameJPsiRapidityBinsH{ 0, 0, 0, 0, 0, 0, 0, 0},
+      fPhiCollinsSoperFrameJPsiRapidityBinsH{ 0, 0, 0, 0, 0, 0, 0, 0}
 {
     FillGoodRunVector(fVectorGoodRunNumbers);
 
@@ -569,6 +577,42 @@ void AliAnalysisTaskUPCforward::UserCreateOutputObjects()
 
   fPhiCollinsSoperFrameJPsiH = new TH1F("fPhiCollinsSoperFrameJPsiH", "fPhiCollinsSoperFrameJPsiH", 10000, -10., 10.);
   fOutputList->Add(fPhiCollinsSoperFrameJPsiH);
+
+  for(Int_t iRapidityBin = 0; iRapidityBin < 8; iRapidityBin++ ){
+    fCosThetaHelicityFrameJPsiRapidityBinsH[iRapidityBin] = new TH1F(
+                Form("fCosThetaHelicityFrameJPsiRapidityBinsH_%d", iRapidityBin),
+                Form("fCosThetaHelicityFrameJPsiRapidityBinsH_%d", iRapidityBin),
+                1000, -1., 1.
+              );
+    fOutputList->Add(fCosThetaHelicityFrameJPsiRapidityBinsH[iRapidityBin]);
+  }
+
+  for(Int_t iRapidityBin = 0; iRapidityBin < 8; iRapidityBin++ ){
+    fCosThetaCollinsSoperFrameJPsiRapidityBinsH[iRapidityBin] = new TH1F(
+                Form("fCosThetaCollinsSoperFrameJPsiRapidityBinsH_%d", iRapidityBin),
+                Form("fCosThetaCollinsSoperFrameJPsiRapidityBinsH_%d", iRapidityBin),
+                1000, -1., 1.
+              );
+    fOutputList->Add(fCosThetaCollinsSoperFrameJPsiRapidityBinsH[iRapidityBin]);
+  }
+
+  for(Int_t iRapidityBin = 0; iRapidityBin < 8; iRapidityBin++ ){
+    fPhiHelicityFrameJPsiRapidityBinsH[iRapidityBin] = new TH1F(
+                Form("fPhiHelicityFrameJPsiRapidityBinsH_%d", iRapidityBin),
+                Form("fPhiHelicityFrameJPsiRapidityBinsH_%d", iRapidityBin),
+                10000, -10., 10.
+              );
+    fOutputList->Add(fPhiHelicityFrameJPsiRapidityBinsH[iRapidityBin]);
+  }
+
+  for(Int_t iRapidityBin = 0; iRapidityBin < 8; iRapidityBin++ ){
+    fPhiCollinsSoperFrameJPsiRapidityBinsH[iRapidityBin] = new TH1F(
+                Form("fPhiCollinsSoperFrameJPsiRapidityBinsH_%d", iRapidityBin),
+                Form("fPhiCollinsSoperFrameJPsiRapidityBinsH_%d", iRapidityBin),
+                10000, -10., 10.
+              );
+    fOutputList->Add(fPhiCollinsSoperFrameJPsiRapidityBinsH[iRapidityBin]);
+  }
 
   //_______________________________
   // - End of the function
@@ -1148,11 +1192,18 @@ void AliAnalysisTaskUPCforward::UserExec(Option_t *)
   for(Int_t iZDC = 0; iZDC < 4 ; iZDC++) {
     if ( (isZNAfired == 0) && (fZNATDC[iZDC] > -2.) && (fZNATDC[iZDC] < 2.) ) {
       isZNAfired = kTRUE;
-      fZNATimeAgainstEntriesH->Fill(fZNATDC[iZDC]);
+      /* - After mail with Chiara Oppedisano, it seems like the best way
+         - to proceed is to firstly call the IsZNAfired() and then filling...
+         -
+         - If this doesn't appear in later pulls it is because this
+         - doesn't seem to suit my case...
+         -
+       */
+      if( dataZDC->IsZNAfired() ) fZNATimeAgainstEntriesH->Fill(fZNATDC[iZDC]);
     }
     if ( (isZNCfired == 0) && (fZNCTDC[iZDC] > -2.) && (fZNCTDC[iZDC] < 2.) ) {
       isZNCfired = kTRUE;
-      fZNCTimeAgainstEntriesH->Fill(fZNCTDC[iZDC]);
+      if( dataZDC->IsZNCfired() ) fZNCTimeAgainstEntriesH->Fill(fZNCTDC[iZDC]);
     }
   }
 
@@ -1237,10 +1288,10 @@ void AliAnalysisTaskUPCforward::UserExec(Option_t *)
   if ( isZNAfired != 0 ) {
     if ( isZNCfired != 0 ) {
           /* At any levels, this means |fZNCTime| < 5. */
-          if( fZNCEnergy > -300 ) {
-                      if( fZNCEnergy < 125 ) {
-                                  if( fZNAEnergy > -300 ) {
-                                              if( fZNAEnergy < 125 ) {
+          if( fZNCEnergy > -5000 ) {
+                      if( fZNCEnergy < 1250 ) {
+                                  if( fZNAEnergy > -5000 ) {
+                                              if( fZNAEnergy < 1000 ) {
                                                           if( ptOfTheDimuonPair < 0.25) {
                                                                     fInvariantMassDistributionCoherentZNCzeroZNAzeroH->Fill(possibleJPsi.Mag());
                                                           } else {
@@ -1255,8 +1306,8 @@ void AliAnalysisTaskUPCforward::UserExec(Option_t *)
                                               }
                                   }
                       } else {
-                                  if( fZNAEnergy > -300 ) {
-                                              if( fZNAEnergy < 125 ) {
+                                  if( fZNAEnergy > -5000 ) {
+                                              if( fZNAEnergy < 1000 ) {
                                                           if( ptOfTheDimuonPair < 0.25) {
                                                                     fInvariantMassDistributionCoherentZNCanyZNAzeroH->Fill(possibleJPsi.Mag());
                                                           } else {
@@ -1357,6 +1408,29 @@ void AliAnalysisTaskUPCforward::UserExec(Option_t *)
     for(Int_t iRapidityBin = 0; iRapidityBin < 8; iRapidityBin++){
         if( (possibleJPsiCopy.Rapidity() + 4) < 1.5*(iRapidityBin + 1)/8 ){
           fThetaDistribOfPositiveMuonRestFrameJPsiRapidityBinH[iRapidityBin]->Fill(cosThetaMuonsRestFrame[0]);
+          /* - New part: filling all possible histograms!
+             -
+           */
+          fCosThetaHelicityFrameJPsiRapidityBinsH[iRapidityBin]->Fill( CosThetaHelicityFrame( muonsCopy2[0],
+                                                                                              muonsCopy2[1],
+                                                                                              possibleJPsiCopy
+                                                                                              )
+                                                                                           );
+          fCosThetaCollinsSoperFrameJPsiRapidityBinsH[iRapidityBin]->Fill( CosThetaCollinsSoper( muonsCopy2[0],
+                                                                                                 muonsCopy2[1],
+                                                                                                 possibleJPsiCopy
+                                                                                                 )
+                                                                                               );
+          fPhiHelicityFrameJPsiRapidityBinsH[iRapidityBin]->Fill( CosPhiHelicityFrame( muonsCopy2[0],
+                                                                                       muonsCopy2[1],
+                                                                                       possibleJPsiCopy
+                                                                                       )
+                                                                                     );
+          fPhiCollinsSoperFrameJPsiRapidityBinsH[iRapidityBin]->Fill( CosPhiCollinsSoper( muonsCopy2[0],
+                                                                                          muonsCopy2[1],
+                                                                                          possibleJPsiCopy
+                                                                                          )
+                                                                                        );
           break;
         }
     }

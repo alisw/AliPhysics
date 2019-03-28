@@ -199,6 +199,12 @@ class AliAnalysisTaskXi1530 : public AliAnalysisTaskSE {
     void SetXiSysTrackCut(Bool_t cutoption) { fsetXiSysTrackCut = cutoption; }
     void SetSystematics(Bool_t fSystematics) { fsetsystematics = fSystematics; }
 
+    void SetExoticFinder(Bool_t exotic) { 
+        fExoticFinder = exotic;
+        fXiMassWindowCut = 0.015;
+        fTPCNsigXi1530PionCut = 1.5;
+        }
+
     Bool_t GoodTracksSelection();
     Bool_t GoodCascadeSelection();
     void FillTracks();
@@ -273,21 +279,21 @@ class AliAnalysisTaskXi1530 : public AliAnalysisTaskSE {
     std::vector<TString> SysCheck;
     TAxis binSystematics;
 
-    Double_t fTPCNsigXi1530PionCut_loose = 4.0;
+    Double_t fTPCNsigXi1530PionCut_loose = 3.5;
     Double_t fTPCNsigXi1530PionCut = 3.0;
-    Double_t fTPCNsigXi1530PionCut_tight = 2.0;
+    Double_t fTPCNsigXi1530PionCut_tight = 2.5;
 
-    Double_t fTPCNsigLambdaProtonCut_loose = 4.0;
+    Double_t fTPCNsigLambdaProtonCut_loose = 3.5;
     Double_t fTPCNsigLambdaProtonCut = 3.0;
-    Double_t fTPCNsigLambdaProtonCut_tight = 2.0;
+    Double_t fTPCNsigLambdaProtonCut_tight = 2.5;
 
-    Double_t fTPCNsigLambdaPionCut_loose = 4.0;
+    Double_t fTPCNsigLambdaPionCut_loose = 3.5;
     Double_t fTPCNsigLambdaPionCut = 3.0;
-    Double_t fTPCNsigLambdaPionCut_tight = 2.0;
+    Double_t fTPCNsigLambdaPionCut_tight = 2.5;
 
-    Double_t fTPCNsigBachelorPionCut_loose = 4.0;
+    Double_t fTPCNsigBachelorPionCut_loose = 3.5;
     Double_t fTPCNsigBachelorPionCut = 3.0;
-    Double_t fTPCNsigBachelorPionCut_tight = 2.0;
+    Double_t fTPCNsigBachelorPionCut_tight = 2.5;
 
     Double_t fXi1530PionEtaCut = 0.8;
     Double_t fXiEtaCut = 0.8;
@@ -298,27 +304,27 @@ class AliAnalysisTaskXi1530 : public AliAnalysisTaskSE {
 
     Double_t fDCADist_LambdaDaughtersCut_loose = 2.0;
     Double_t fDCADist_LambdaDaughtersCut = 1.6;
-    Double_t fDCADist_LambdaDaughtersCut_tight = 1.0;
+    Double_t fDCADist_LambdaDaughtersCut_tight = 1.2;
 
     Double_t fDCADist_XiDaughtersCut_loose = 2.0;
     Double_t fDCADist_XiDaughtersCut = 1.6;
-    Double_t fDCADist_XiDaughtersCut_tight = 1.0;
+    Double_t fDCADist_XiDaughtersCut_tight = 1.2;
 
-    Double_t fDCADist_Lambda_PVCut_loose = 0.11;
+    Double_t fDCADist_Lambda_PVCut_loose = 0.09;
     Double_t fDCADist_Lambda_PVCut = 0.07;
-    Double_t fDCADist_Lambda_PVCut_tight = 0.04;
+    Double_t fDCADist_Lambda_PVCut_tight = 0.05;
 
-    Double_t fV0CosineOfPointingAngleCut_loose = 0.95;
+    Double_t fV0CosineOfPointingAngleCut_loose = 0.96;
     Double_t fV0CosineOfPointingAngleCut = 0.97;
-    Double_t fV0CosineOfPointingAngleCut_tight = 0.99;
+    Double_t fV0CosineOfPointingAngleCut_tight = 0.98;
 
-    Double_t fCascadeCosineOfPointingAngleCut_loose = 0.95;
+    Double_t fCascadeCosineOfPointingAngleCut_loose = 0.96;
     Double_t fCascadeCosineOfPointingAngleCut = 0.97;
-    Double_t fCascadeCosineOfPointingAngleCut_tight = 0.99;
+    Double_t fCascadeCosineOfPointingAngleCut_tight = 0.98;
 
-    Double_t fXiMassWindowCut_loose = 0.009;
+    Double_t fXiMassWindowCut_loose = 0.008;
     Double_t fXiMassWindowCut = 0.007;
-    Double_t fXiMassWindowCut_tight = 0.005;
+    Double_t fXiMassWindowCut_tight = 0.006;
 
     Double_t fXi1530RapidityCut = 0.5;
 
@@ -333,16 +339,17 @@ class AliAnalysisTaskXi1530 : public AliAnalysisTaskSE {
     Bool_t IsHighMult = kFALSE;
     Bool_t IsPrimaryMC = kTRUE;
     Bool_t fQA = kTRUE;
+    Bool_t fExoticFinder = kFALSE;
     THistManager* fHistos = nullptr;   //!
     TClonesArray* fMCArray = nullptr;  //!
-    AliMCEvent* fMCEvent = nullptr;    //!
+    AliMCEvent* fMCEvent = nullptr;      //!
     Int_t fNTracks = 0;
     Int_t fNCascade = 0;
     Double_t PVx = 999;
     Double_t PVy = 999;
     Double_t PVz = 999;
     Double_t bField = 999;
-    ClassDef(AliAnalysisTaskXi1530, 11);
+    ClassDef(AliAnalysisTaskXi1530, 12);
     // 1: Frist version
     // 2: Add Track cut2 for the Xi daughter particles
     // 3: Add FillMixingPool function
@@ -356,6 +363,7 @@ class AliAnalysisTaskXi1530 : public AliAnalysisTaskSE {
     // 9: Hot fix for the AliPhysics building
     // 10: Add NoQA option to reduce output file size
     // 11: Not using AliStack informed by DPG and BTG coordination
+    // 12: Add Exotic option and change default systematic vaule
 };
 
 #endif

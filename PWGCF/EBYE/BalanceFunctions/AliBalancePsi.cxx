@@ -486,7 +486,8 @@ void AliBalancePsi::CalculateBalance(Double_t gReactionPlane,
   Double_t gWidthForRho0 = 0.01;
   Double_t gWidthForK0s = 0.01;
   Double_t gWidthForLambda = 0.006;
-  Double_t gWidthForPhi = 0.031;
+  //Double_t gWidthForPhi = 0.031;
+  Double_t gWidthForPhi = 0.004266;
   Double_t nSigmaRejection = 3.0;
 
   // 1st particle loop
