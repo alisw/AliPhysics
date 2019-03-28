@@ -275,6 +275,35 @@ class AliAnalysisTaskUPCforward : public AliAnalysisTaskSE
                                  */
         TH1F*                   fZNAEnergyUncalibratedH;         //!
 
+                                /**
+                                 * This histogram records the energy distri-
+                                 * bution of the neutron ZDC. CALIBRATED.
+                                 * This is only a trial version for a possible
+                                 * future unified plot with the supposedly
+                                 * not calibrated runs. What happens here is
+                                 * that this plots are filled with the value
+                                 * obtained from the LOW RESOLUTION (HIGH GAIN)
+                                 * getter. This multiplies for 8 times the
+                                 * value obtained fro mnormal getters, and it
+                                 * should provide a better description of the
+                                 * lower part of the ZDC energy spectrum.
+                                 */
+        TH1F*                   fZNCEnergyCalibratedHigherGainH;         //!
+
+                                /**
+                                 * This histogram records the energy distri-
+                                 * bution of the neutron ZDC. CALIBRATED.
+                                 * This is only a trial version for a possible
+                                 * future unified plot with the supposedly
+                                 * not calibrated runs. What happens here is
+                                 * that this plots are filled with the value
+                                 * obtained from the LOW RESOLUTION (HIGH GAIN)
+                                 * getter. This multiplies for 8 times the
+                                 * value obtained fro mnormal getters, and it
+                                 * should provide a better description of the
+                                 * lower part of the ZDC energy spectrum.
+                                 */
+        TH1F*                   fZNAEnergyCalibratedHigherGainH;         //!
 
 
 
@@ -359,17 +388,66 @@ class AliAnalysisTaskUPCforward : public AliAnalysisTaskSE
         TH1F*                   fInvariantMassDistributionIncoherentAtLeastOneNeutronH;//!
 
                                 /**
-                                 * This histogram records the time ditribution
+                                 * This histogram records the time distribution
                                  * of neutron ZDC.
                                  */
         TH1F*                   fZNCTimeAgainstEntriesH;         //!
 
                                 /**
-                                 * This histogram records the time ditribution
+                                 * This histogram records the time distribution
                                  * of neutron ZDC.
                                  */
         TH1F*                   fZNATimeAgainstEntriesH;         //!
 
+                                /**
+                                 * This histogram records the time distribution
+                                 * of neutron ZDC. The timing window here is
+                                 * a bit stricter at -1.<t<1.
+                                 */
+        TH1F*                   fZNCTimeStrictTimeWindowH;         //!
+
+                                /**
+                                 * This histogram records the time distribution
+                                 * of neutron ZDC.The timing window here is
+                                 * a bit stricter at -1.<t<1.
+                                 */
+        TH1F*                   fZNATimeStrictTimeWindowH;         //!
+
+                                /**
+                                 * This histogram records the time distribution
+                                 * of neutron ZDC. No timing selection to check
+                                 * if bunch crossings influence the output.
+                                 */
+        TH1F*                   fZNCTimeWithoutTimingH[4];         //!
+
+                                /**
+                                 * This histogram records the time distribution
+                                 * of neutron ZDC. No timing selection to check
+                                 * if bunch crossings influence the output.
+                                 */
+        TH1F*                   fZNATimeWithoutTimingH[4];         //!
+
+                                /**
+                                 * This histogram records which information
+                                 * I am looking at when I fill the time
+                                 * histogram, and this effect should
+                                 * reflect itself into the energy plots
+                                 * because it shoudl give an indication of
+                                 * what could possibly go wrong in the ZDC
+                                 * analysis. ZNA case.
+                                 */
+        TH1F*                   fCounterZNAH;         //!
+
+                                /**
+                                 * This histogram records which information
+                                 * I am looking at when I fill the time
+                                 * histogram, and this effect should
+                                 * reflect itself into the energy plots
+                                 * because it shoudl give an indication of
+                                 * what could possibly go wrong in the ZDC
+                                 * analysis. ZNC case.
+                                 */
+        TH1F*                   fCounterZNCH;         //!
 
                                 /**
                                  * This histogram records the invariant mass
@@ -670,7 +748,7 @@ class AliAnalysisTaskUPCforward : public AliAnalysisTaskSE
          * If I happen to encounter it again in the future, I will make sure to
          * record it!
          */
-        ClassDef(AliAnalysisTaskUPCforward, 5);
+        ClassDef(AliAnalysisTaskUPCforward, 7);
 };
 
 #endif
