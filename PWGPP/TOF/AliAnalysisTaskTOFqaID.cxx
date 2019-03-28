@@ -1093,7 +1093,7 @@ void AliAnalysisTaskTOFqaID::AddPidHisto(THashList* list, Int_t charge, TString 
   if (labels_arr->GetEntries() != H->GetNbinsY())      \
     AliFatal("Not the right number of labels");        \
   for (Int_t i = 0; i < labels_arr->GetEntries(); i++) \
-    H->GetYaxis()->SetBinLabel(i, labels_arr->At(i)->GetName());
+    H->GetYaxis()->SetBinLabel(i + 1, labels_arr->At(i)->GetName());
 //----------------------------------------------------------------------------------
 void AliAnalysisTaskTOFqaID::AddStartTimeHisto(THashList* list, TString suffix)
 {
@@ -1120,7 +1120,7 @@ void AliAnalysisTaskTOFqaID::AddStartTimeHisto(THashList* list, TString suffix)
   CreateH(hEventV0MeanVsVtx, TH2F, "V0 detector: mean vs vertex ; (V0_{A}-V0_{C})/2 [ns]; (V0_{A}+V0_{C})/2 [ns]; events", 50, -25., 25., 50, -25., 25.);
   HistogramMakeUp(hEventV0MeanVsVtx, kBlack, 1);
 
-  TString labels = "All events,best_t0,fill_t0,tof_t0,T0AC,T0A,T0C";
+  TString labels = "best_t0,fill_t0,tof_t0,T0AC,T0A,T0C";
   TObjArray* labels_arr = labels.Tokenize(",");
 
   CreateH(hStartTime, TH2F, "Start time for each method (mask); start time (ps); method;", fnBinsT0, fBinsT0[0], fBinsT0[1], 6, -1., 5.);
@@ -1141,7 +1141,7 @@ void AliAnalysisTaskTOFqaID::AddStartTimeHisto(THashList* list, TString suffix)
   CreateH(hT0CvsNtrk, TH2F, "Event timeZero estimated by T0C vs. TOF-matching tracks; N_{TOF}; t0 (ps)", GetArrayBinning(fVariableBinsMult), fnBinsT0, fBinsT0[0], fBinsT0[1]);
   HistogramMakeUp(hT0CvsNtrk, kGreen + 2, 1);
 
-  labels = "All events,fill_t0,tof_t0,T0A,T0A & tof_t0,T0C,T0C & tof_t0,T0AC,T0AC & tof_t0";
+  labels = "fill_t0,tof_t0,T0A,T0A & tof_t0,T0C,T0C & tof_t0,T0AC,T0AC & tof_t0";
   labels_arr = labels.Tokenize(",");
   const Double_t startTimeMomBins[13] = { 0.0, 0.3, 0.5, 0.6, 0.7, 0.8, 0.9, 1., 1.2, 1.5, 2., 3., 10. };
   CreateH(hStartTimeMaskMatched, TH2F, "Start Time Mask vs p bin for matched tracks; p(GeV/#it{c});", 12, startTimeMomBins, 8, 0., 8.);
