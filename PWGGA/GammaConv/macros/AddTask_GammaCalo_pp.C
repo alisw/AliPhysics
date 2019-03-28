@@ -1439,12 +1439,16 @@ void AddTask_GammaCalo_pp(
     cuts.AddCutCalo("00010113","411770007l032230000","2l631031000000d0"); // INT7 - NO NL
     cuts.AddCutCalo("00010113","411770607l032230000","2l631031000000d0"); // INT7 - TB NL
     cuts.AddCutCalo("00010113","411771107l032230000","2l631031000000d0"); // Standard EDC
- } else if (trainConfig == 913){ //// Jet QA for EMCAL+DCAL and PHOS
+ } else if (trainConfig == 913){ //// Jet QA for EMCAL+DCAL
     cuts.AddCutCalo("00010113","411771107l032230000","3l631031000000d0"); // Standard EDC
  } else if (trainConfig == 914){ //PHOS+JETS
     cuts.AddCutCalo("00010113","2446651044012300000","2163103100000010"); //
  } else if (trainConfig == 915){ //PHOS+JetQA
     cuts.AddCutCalo("00010113","2446651044012300000","3163103100000010"); // PHOS QA
+ } else if (trainConfig == 916){ //MB EDC for comparison
+    cuts.AddCutCalo("00010113","411771107l032230000","01631031000000d0"); // Standard EDC
+ } else if (trainConfig == 917){ //MB PHOS for comparison
+    cuts.AddCutCalo("00010113","2446651044012300000","0163103100000010"); //
 
   } else if (trainConfig == 2000){ // EMCAL+DCAL clusters standard cuts
     cuts.AddCutCalo("00010113","4117900077032230000","01631031000000d0"); // INT7 - NO NL
