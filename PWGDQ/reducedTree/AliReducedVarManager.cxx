@@ -1735,13 +1735,13 @@ void AliReducedVarManager::FillTrackInfo(BASETRACK* p, Float_t* values) {
     values[kEMCALmatchedClusterId] = pinfo->CaloClusterId();
     if(fgEvent && (fgEvent->IsA()==EVENT::Class())){
       CLUSTER* cluster = ((EVENT*)fgEvent)->GetCaloCluster(pinfo->CaloClusterId());
-      values[kEMCALmatchedEnergy] = (cluster ? cluster->Energy() : -999.0);
-      values[kEMCALmatchedM02]    = (cluster ? cluster->M02() : -999.0);
-      values[kEMCALmatchedM20]    = (cluster ? cluster->M20() : -999.0);
+      values[kEMCALmatchedEnergy] = (cluster ? cluster->Energy() : -9999.);
+      values[kEMCALmatchedM02]    = (cluster ? cluster->M02() : -9999.);
+      values[kEMCALmatchedM20]    = (cluster ? cluster->M20() : -9999.);
       Float_t               mom = 0.0;
       if (pinfo->PonCalo()) mom = pinfo->PonCalo();
       else                  mom = pinfo->P();
-      values[kEMCALmatchedEOverP] = (TMath::Abs(mom)>1.e-8 && cluster ? values[kEMCALmatchedEnergy]/mom : -999.0);
+      values[kEMCALmatchedEOverP] = (TMath::Abs(mom)>1.e-8 && cluster ? values[kEMCALmatchedEnergy]/mom : -9999.);
     }
   }  
 
