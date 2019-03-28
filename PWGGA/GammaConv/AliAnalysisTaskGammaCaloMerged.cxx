@@ -59,6 +59,7 @@
 #include <vector>
 #include <map>
 
+
 ClassImp(AliAnalysisTaskGammaCaloMerged)
 
 //________________________________________________________________________
@@ -113,6 +114,7 @@ AliAnalysisTaskGammaCaloMerged::AliAnalysisTaskGammaCaloMerged(): AliAnalysisTas
   fHistoMCEtaDalitzWOWeightPt(NULL),
   fHistoMCEtaDalitzWOEvtWeightPt(NULL),
   fHistoMCPi0InAccPt(NULL),
+  fHistoMCPi0ReducedInAccPt(NULL),
   fHistoMCEtaInAccPt(NULL),
   fHistoMCPi0WOEvtWeightInAccPt(NULL),
   fHistoMCEtaWOEvtWeightInAccPt(NULL),
@@ -188,6 +190,9 @@ AliAnalysisTaskGammaCaloMerged::AliAnalysisTaskGammaCaloMerged(): AliAnalysisTas
   fHistoDoubleCountTrueMultiplePi0PtvsM02(NULL),
   fHistoDoubleCountTrueMultipleSecPi0Pt(NULL),
   fHistoDoubleCountTrueEtaPtvsM02(NULL),
+  fVectorLabelsLeadingPi0(0),
+  fVectorLabelsMultiplePi0(0),
+  fVectorLabelsMultiplePi0Reduced(0),
   fVectorDoubleCountTruePi0s(0),
   fVectorDoubleCountTrueMultilePi0s(0),
   fVectorDoubleCountTrueEtas(0),
@@ -278,6 +283,7 @@ AliAnalysisTaskGammaCaloMerged::AliAnalysisTaskGammaCaloMerged(const char *name)
   fHistoMCEtaDalitzWOWeightPt(NULL),
   fHistoMCEtaDalitzWOEvtWeightPt(NULL),
   fHistoMCPi0InAccPt(NULL),
+  fHistoMCPi0ReducedInAccPt(NULL),
   fHistoMCEtaInAccPt(NULL),
   fHistoMCPi0WOEvtWeightInAccPt(NULL),
   fHistoMCEtaWOEvtWeightInAccPt(NULL),
@@ -353,6 +359,9 @@ AliAnalysisTaskGammaCaloMerged::AliAnalysisTaskGammaCaloMerged(const char *name)
   fHistoDoubleCountTrueMultiplePi0PtvsM02(NULL),
   fHistoDoubleCountTrueMultipleSecPi0Pt(NULL),
   fHistoDoubleCountTrueEtaPtvsM02(NULL),
+  fVectorLabelsLeadingPi0(0),
+  fVectorLabelsMultiplePi0(0),
+  fVectorLabelsMultiplePi0Reduced(0),
   fVectorDoubleCountTruePi0s(0),
   fVectorDoubleCountTrueMultilePi0s(0),
   fVectorDoubleCountTrueEtas(0),
@@ -767,6 +776,7 @@ void AliAnalysisTaskGammaCaloMerged::UserCreateOutputObjects(){
     if (GetSelectedMesonID() != 2){
       fHistoMCPi0WOWeightPt                       = new TH1F*[fnCuts];
       fHistoMCPi0InAccPt                          = new TH1F*[fnCuts];
+      fHistoMCPi0ReducedInAccPt                   = new TH1F*[fnCuts];
       fHistoMCPi0WOEvtWeightInAccPt               = new TH1F*[fnCuts];
       fHistoMCSecPi0PtvsSource                    = new TH2F*[fnCuts];
       fHistoMCSecPi0InAccPtvsSource               = new TH2F*[fnCuts];
@@ -933,6 +943,9 @@ void AliAnalysisTaskGammaCaloMerged::UserCreateOutputObjects(){
         fHistoMCPi0InAccPt[iCut]                    = new TH1F("MC_Pi0InAcc_Pt","MC_Pi0InAcc_Pt",ptBins, arrPtBinning);
         fHistoMCPi0InAccPt[iCut]->Sumw2();
         fMCList[iCut]->Add(fHistoMCPi0InAccPt[iCut]);
+        fHistoMCPi0ReducedInAccPt[iCut]                    = new TH1F("MC_Pi0InAccMulipleSubtraction_Pt","MC_Pi0InAccMulipleSubtraction_Pt",ptBins, arrPtBinning);
+        fHistoMCPi0ReducedInAccPt[iCut]->Sumw2();
+        fMCList[iCut]->Add(fHistoMCPi0ReducedInAccPt[iCut]);
         fHistoMCPi0DalitzPt[iCut]                   = new TH1F("MC_Pi0Dalitz_Pt","MC_Pi0Dalitz_Pt",ptBins, arrPtBinning);
         fHistoMCPi0DalitzPt[iCut]->Sumw2();
         fMCList[iCut]->Add(fHistoMCPi0DalitzPt[iCut]);
@@ -1460,17 +1473,27 @@ void AliAnalysisTaskGammaCaloMerged::UserExec(Option_t *)
         }
       }
     }
-    if(fIsMC>0){
-      if(fInputEvent->IsA()==AliESDEvent::Class())
-        ProcessMCParticles();
-      if(fInputEvent->IsA()==AliAODEvent::Class())
-        ProcessAODMCParticles();
-    }
+
 
     if (triggered==kFALSE) continue;
 
     // it is in the loop to have the same conversion cut string (used also for MC stuff that should be same for V0 and Cluster)
     ProcessClusters();                      // process calo clusters
+
+    if(fIsMC>0){
+      // create new vector that only contains those pi0s that would be lost due to overlap in the clusters
+      if(fVectorLabelsLeadingPi0.size() > 0){
+        for (std::vector<Int_t>::const_iterator i = fVectorLabelsMultiplePi0.begin(); i != fVectorLabelsMultiplePi0.end(); ++i){
+          // check that the labels from fVectorLabelsMultiplePi0 are not contained in fVectorLabelsLeadingPi0 and fill fVectorLabelsMultiplePi0Reduced
+          CheckVector1ForEntryAndFillVector2(fVectorLabelsLeadingPi0, fVectorLabelsMultiplePi0Reduced, (Int_t)*i);
+        }
+      }
+
+      if(fInputEvent->IsA()==AliESDEvent::Class())
+        ProcessMCParticles();
+      if(fInputEvent->IsA()==AliAODEvent::Class())
+        ProcessAODMCParticles();
+    }
 
     fHistoNClusterCandidates[iCut]->Fill(  fNClusterCandidates,
                         fWeightJetJetMC);
@@ -1481,6 +1504,9 @@ void AliAnalysisTaskGammaCaloMerged::UserExec(Option_t *)
                                 fNClusterCandidates,
                                 fWeightJetJetMC);
 
+    fVectorLabelsLeadingPi0.clear();
+    fVectorLabelsMultiplePi0.clear();
+    fVectorLabelsMultiplePi0Reduced.clear();
     fVectorDoubleCountTruePi0s.clear();
     fVectorDoubleCountTrueMultilePi0s.clear();
     fVectorDoubleCountTrueEtas.clear();
@@ -1504,11 +1530,7 @@ void AliAnalysisTaskGammaCaloMerged::ProcessClusters(){
     nclus = arrClustersProcess->GetEntries();
   }
 
-//   cout << nclus << endl;
-
   if(nclus == 0)  return;
-
-//   cout << "new event with accepted clusters: \t trigger \t" << (((AliConvEventCuts*)fEventCutArray->At(fiCut))->GetSpecialTriggerName()).Data() <<endl;
 
   fNClusterCandidates       = 0;
   fNClusterMergedCandidates = 0;
@@ -1546,6 +1568,8 @@ void AliAnalysisTaskGammaCaloMerged::ProcessClusters(){
 
     if (!clus) continue;
 
+
+
     // Set the jetjet weight to 1 in case the cluster orignated from the minimum bias header
     if (fIsMC>0 && ((AliConvEventCuts*)fEventCutArray->At(fiCut))->GetSignalRejection() == 4){
       if( ((AliConvEventCuts*)fEventCutArray->At(fiCut))->IsParticleFromBGEvent(clus->GetLabelAt(0), fMCEvent, fInputEvent) == 2)
@@ -1557,6 +1581,7 @@ void AliAnalysisTaskGammaCaloMerged::ProcessClusters(){
       delete clus;
       continue;
     }
+
 
     // TLorentzvector with cluster
     TLorentzVector clusterVector;
@@ -1580,18 +1605,18 @@ void AliAnalysisTaskGammaCaloMerged::ProcessClusters(){
     // get MC label
     if(fIsMC> 0){
       Int_t* mclabelsCluster  = clus->GetLabels();
-//       cout << "cluster: " << i << endl;
+      // cout << "cluster: " << i << endl;
       Int_t nValidClusters    = 0;
 
       if (clus->GetNLabels()>0){
         for (Int_t k =0; k< (Int_t)clus->GetNLabels(); k++){
-//           TParticle *dummy    = NULL;
+          // TParticle *dummy    = NULL;
           if (mclabelsCluster[k]>0){
-//             dummy             = fMCEvent->Particle(mclabelsCluster[k]);
-//             if (dummy->R() < 407.0){
+            // dummy             = fMCEvent->Particle(mclabelsCluster[k]);
+            // if (dummy->R() < 407.0){
               if (nValidClusters< 50)PhotonCandidate->SetCaloPhotonMCLabel(nValidClusters,mclabelsCluster[k]);
               nValidClusters++;
-//             }
+            // }
           }
         }
       }
@@ -1755,12 +1780,15 @@ void AliAnalysisTaskGammaCaloMerged::ProcessClusters(){
         fHistoMotherPtAlpha[fiCut]->Fill(PhotonCandidate->Pt(),TMath::Abs(pi0cand->GetAlpha()), tempPhotonWeight);
       }
       if(fIsMC> 0 && PhotonCandidate && PhotonCandidate1 && PhotonCandidate2){
+
+        // PrintFractionsOfMCLabels(clus,fInputEvent,fMCEvent);
+
         if(fInputEvent->IsA()==AliESDEvent::Class())
-          ProcessTrueClusterCandidates(PhotonCandidate, clus->GetM02(), PhotonCandidate1, PhotonCandidate2);
+          ProcessTrueClusterCandidates(PhotonCandidate, clus, PhotonCandidate1, PhotonCandidate2);
         if(fInputEvent->IsA()==AliAODEvent::Class())
-          ProcessTrueClusterCandidatesAOD(PhotonCandidate, clus->GetM02(), PhotonCandidate1, PhotonCandidate2);
+          ProcessTrueClusterCandidatesAOD(PhotonCandidate, clus, PhotonCandidate1, PhotonCandidate2);
       }
-    }
+    } // meson is selected
 
 
 
@@ -1775,16 +1803,15 @@ void AliAnalysisTaskGammaCaloMerged::ProcessClusters(){
     delete clus;
     delete tmpvec;
     delete PhotonCandidate;
-  }
-
+  } // cluster loop
 }
 
 //________________________________________________________________________
-void AliAnalysisTaskGammaCaloMerged::ProcessTrueClusterCandidates(AliAODConversionPhoton *TrueClusterCandidate, Float_t m02,
+void AliAnalysisTaskGammaCaloMerged::ProcessTrueClusterCandidates(AliAODConversionPhoton *TrueClusterCandidate, AliVCluster* cluster,
                                     AliAODConversionPhoton *TrueSubClusterCandidate1,
                                     AliAODConversionPhoton *TrueSubClusterCandidate2)
 {
-
+  Float_t m02 = cluster->GetM02();
   const AliVVertex* primVtxMC   = fMCEvent->GetPrimaryVertex();
   Double_t mcProdVtxX   = primVtxMC->GetX();
   Double_t mcProdVtxY   = primVtxMC->GetY();
@@ -1795,27 +1822,60 @@ void AliAnalysisTaskGammaCaloMerged::ProcessTrueClusterCandidates(AliAODConversi
   if (!TrueClusterCandidate->GetIsCaloPhoton()) AliFatal("CaloPhotonFlag has not been set task will abort");
   if (TrueClusterCandidate->GetCaloPhotonMCLabel(0) < 0) return;
 
-  if (TrueClusterCandidate->GetNCaloPhotonMCLabels()>0) Photon = fMCEvent->Particle(TrueClusterCandidate->GetCaloPhotonMCLabel(0));
-    else return;
-
-  if(Photon == NULL){
-  //    cout << "no photon" << endl;
-    return;
-  }
-
   AliAODConversionMother *mesoncand = new AliAODConversionMother(TrueSubClusterCandidate1,TrueSubClusterCandidate2);
   Bool_t mesonIsSelected            = (((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->MesonIsSelected(mesoncand,kTRUE,((AliConvEventCuts*)fEventCutArray->At(fiCut))->GetEtaShift()));
   if (!mesonIsSelected){
     delete mesoncand;
     return;
   }
-  Int_t pdgCodeParticle             = Photon->GetPdgCode();
-  TrueClusterCandidate->SetCaloPhotonMCFlags(fMCEvent, fEnableSortForClusMC, kTRUE);
+
+  // Setting all MC Flags (IsMerged, etc)
+  TrueClusterCandidate->SetCaloPhotonMCFlags(fMCEvent, fEnableSortForClusMC, kTRUE,cluster);
+
   if (TrueClusterCandidate->GetNCaloPhotonMCLabels()>0 && fEnableDetailedPrintOut){
     cout << endl << endl << "Cluster energy: " << TrueClusterCandidate->E() << endl;;
     TrueClusterCandidate->PrintCaloMCLabelsAndInfo(fMCEvent);
     TrueClusterCandidate->PrintCaloMCFlags();
   }
+
+
+  if (TrueClusterCandidate->GetNCaloPhotonMCLabels()>0){
+    // check if leading pi0 comes not from label 0 in cluster
+    // for this do:
+    // -> check if neutral pions were found in cluster
+    // -> if the leading daughter index is not 0
+    // -> the leading neutral pion has a larger cluster energy fraction than the cluster label 0
+    if( TrueClusterCandidate->GetNNeutralPionMCLabels()>0 && TrueClusterCandidate->GetLeadingNeutralPionDaughterIndex()!=0 && TrueClusterCandidate->GetNeutralPionEnergyFraction(TrueClusterCandidate->GetLeadingNeutralPionIndex())>cluster->GetClusterMCEdepFraction(0)) {
+      // load particle corresponding to largest daughter of leading pi0
+      Photon         = fMCEvent->Particle(TrueClusterCandidate->GetCaloPhotonMCLabel(TrueClusterCandidate->GetLeadingNeutralPionDaughterIndex()));
+      // fill vector with leading pi0 MC label
+      CheckVectorForDoubleCount(fVectorLabelsLeadingPi0,TrueClusterCandidate->GetNeutralPionMCLabel(TrueClusterCandidate->GetLeadingNeutralPionIndex()));
+      // fill vector will ALL pi0 MC labels that are found in the cluster
+      for(Int_t npion = 0; npion < TrueClusterCandidate->GetNNeutralPionMCLabels(); npion++){
+        CheckVectorForDoubleCount(fVectorLabelsMultiplePi0,TrueClusterCandidate->GetNeutralPionMCLabel(npion));
+      }
+    } else {
+      // load particle corresponding to MC label 0 in cluster
+      Photon         = fMCEvent->Particle(TrueClusterCandidate->GetCaloPhotonMCLabel(0));
+      // important check that leading daughter corresponds to the cluster MC label 0
+      if(TrueClusterCandidate->GetLeadingNeutralPionDaughterIndex()==0){
+        // fill vector with leading pi0 MC label
+        CheckVectorForDoubleCount(fVectorLabelsLeadingPi0,TrueClusterCandidate->GetNeutralPionMCLabel(TrueClusterCandidate->GetLeadingNeutralPionIndex()));
+        // fill vector will ALL pi0 MC labels that are found in the cluster
+        for(Int_t npion = 0; npion < TrueClusterCandidate->GetNNeutralPionMCLabels(); npion++){
+          CheckVectorForDoubleCount(fVectorLabelsMultiplePi0,TrueClusterCandidate->GetNeutralPionMCLabel(npion));
+        }
+      }
+    }
+  } else {
+    // return if there are no MC labels in the cluster
+    return;
+  }
+
+  if(Photon == NULL){
+    return;
+  }
+  Int_t pdgCodeParticle             = Photon->GetPdgCode();
 
   if(fIsFromMBHeader && !fIsOverlappingWithOtherHeader){
     Int_t clusterClass    = 0;
@@ -2109,11 +2169,11 @@ void AliAnalysisTaskGammaCaloMerged::ProcessTrueClusterCandidates(AliAODConversi
 }
 
 //________________________________________________________________________
-void AliAnalysisTaskGammaCaloMerged::ProcessTrueClusterCandidatesAOD(AliAODConversionPhoton *TrueClusterCandidate, Float_t m02,
+void AliAnalysisTaskGammaCaloMerged::ProcessTrueClusterCandidatesAOD(AliAODConversionPhoton *TrueClusterCandidate, AliVCluster* cluster,
                                     AliAODConversionPhoton *TrueSubClusterCandidate1,
                                     AliAODConversionPhoton *TrueSubClusterCandidate2)
 {
-
+  Float_t m02 = cluster->GetM02();
   const AliVVertex* primVtxMC   = fMCEvent->GetPrimaryVertex();
   Double_t mcProdVtxX   = primVtxMC->GetX();
   Double_t mcProdVtxY   = primVtxMC->GetY();
@@ -2125,15 +2185,8 @@ void AliAnalysisTaskGammaCaloMerged::ProcessTrueClusterCandidatesAOD(AliAODConve
   if (AODMCTrackArray){
     if (!TrueClusterCandidate->GetIsCaloPhoton()) AliFatal("CaloPhotonFlag has not been set task will abort");
     if (TrueClusterCandidate->GetCaloPhotonMCLabel(0) < 0) return;
-
-    if (TrueClusterCandidate->GetNCaloPhotonMCLabels()>0) Photon = (AliAODMCParticle*) AODMCTrackArray->At(TrueClusterCandidate->GetCaloPhotonMCLabel(0));
-      else return;
   } else {
     AliInfo("AODMCTrackArray could not be loaded");
-    return;
-  }
-
-  if(Photon == NULL){
     return;
   }
 
@@ -2143,13 +2196,53 @@ void AliAnalysisTaskGammaCaloMerged::ProcessTrueClusterCandidatesAOD(AliAODConve
     delete mesoncand;
     return;
   }
-  Int_t pdgCodeParticle             = Photon->GetPdgCode();
-  TrueClusterCandidate->SetCaloPhotonMCFlagsAOD(fInputEvent, fEnableSortForClusMC, kTRUE);
+
+  // Setting all MC Flags (IsMerged, etc)
+  TrueClusterCandidate->SetCaloPhotonMCFlagsAOD(fInputEvent, fEnableSortForClusMC, kTRUE,cluster);
+
   if (TrueClusterCandidate->GetNCaloPhotonMCLabels()>0 && fEnableDetailedPrintOut){
     cout << endl << endl << "Cluster energy: " << TrueClusterCandidate->E() << endl;;
     //TrueClusterCandidate->PrintCaloMCLabelsAndInfo(fMCEvent);
     TrueClusterCandidate->PrintCaloMCFlags();
   }
+
+  if (TrueClusterCandidate->GetNCaloPhotonMCLabels()>0){
+    // check if leading pi0 comes not from label 0 in cluster
+    // for this do:
+    // -> check if neutral pions were found in cluster
+    // -> if the leading daughter index is not 0
+    // -> the leading neutral pion has a larger cluster energy fraction than the cluster label 0
+    if( TrueClusterCandidate->GetNNeutralPionMCLabels()>0 && TrueClusterCandidate->GetLeadingNeutralPionDaughterIndex()!=0 && TrueClusterCandidate->GetNeutralPionEnergyFraction(TrueClusterCandidate->GetLeadingNeutralPionIndex())>cluster->GetClusterMCEdepFraction(0)) {
+      // load particle corresponding to largest daughter of leading pi0
+      Photon         = (AliAODMCParticle*) AODMCTrackArray->At(TrueClusterCandidate->GetCaloPhotonMCLabel(TrueClusterCandidate->GetLeadingNeutralPionDaughterIndex()));
+      // fill vector with leading pi0 MC label
+      CheckVectorForDoubleCount(fVectorLabelsLeadingPi0,TrueClusterCandidate->GetNeutralPionMCLabel(TrueClusterCandidate->GetLeadingNeutralPionIndex()));
+      // fill vector will ALL pi0 MC labels that are found in the cluster
+      for(Int_t npion = 0; npion < TrueClusterCandidate->GetNNeutralPionMCLabels(); npion++){
+        CheckVectorForDoubleCount(fVectorLabelsMultiplePi0,TrueClusterCandidate->GetNeutralPionMCLabel(npion));
+      }
+    } else {
+      // load particle corresponding to MC label 0 in cluster
+      Photon        = (AliAODMCParticle*) AODMCTrackArray->At(TrueClusterCandidate->GetCaloPhotonMCLabel(0));
+      // important check that leading daughter corresponds to the cluster MC label 0
+      if(TrueClusterCandidate->GetLeadingNeutralPionDaughterIndex()==0){
+        // fill vector with leading pi0 MC label
+        CheckVectorForDoubleCount(fVectorLabelsLeadingPi0,TrueClusterCandidate->GetNeutralPionMCLabel(TrueClusterCandidate->GetLeadingNeutralPionIndex()));
+        // fill vector will ALL pi0 MC labels that are found in the cluster
+        for(Int_t npion = 0; npion < TrueClusterCandidate->GetNNeutralPionMCLabels(); npion++){
+          CheckVectorForDoubleCount(fVectorLabelsMultiplePi0,TrueClusterCandidate->GetNeutralPionMCLabel(npion));
+        }
+      }
+    }
+  } else {
+    // return if there are no MC labels in the cluster
+    return;
+  }
+
+  if(Photon == NULL){
+    return;
+  }
+  Int_t pdgCodeParticle             = Photon->GetPdgCode();
 
   if(fIsFromMBHeader && !fIsOverlappingWithOtherHeader){
     Int_t clusterClass    = 0;
@@ -2164,7 +2257,6 @@ void AliAnalysisTaskGammaCaloMerged::ProcessTrueClusterCandidatesAOD(AliAODConve
         clusterClass    = 1;
         motherLab       = TrueClusterCandidate->GetCaloPhotonMotherMCLabel(0);
     } else if (TrueClusterCandidate->GetNCaloPhotonMotherMCLabels()> 0){
-      // cout << TrueClusterCandidate->GetCaloPhotonMotherMCLabel(0) << endl;
       if (TrueClusterCandidate->IsLargestComponentElectron() || TrueClusterCandidate->IsLargestComponentPhoton()){
         if (TrueClusterCandidate->GetCaloPhotonMotherMCLabel(0) > -1 && (((AliAODMCParticle*) AODMCTrackArray->At(TrueClusterCandidate->GetCaloPhotonMotherMCLabel(0)))->GetPdgCode() == 111 || ((AliAODMCParticle*) AODMCTrackArray->At(TrueClusterCandidate->GetCaloPhotonMotherMCLabel(0)))->GetPdgCode() == 221) ){
           if ( TrueClusterCandidate->IsConversion() && !TrueClusterCandidate->IsConversionFullyContained() ){
@@ -2562,6 +2654,9 @@ void AliAnalysisTaskGammaCaloMerged::ProcessMCParticles()
             ((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->ClusterIsSelectedMC(daughter1,fMCEvent) ) ){
           if(particle->GetPdgCode() == 111 && GetSelectedMesonID() != 2){
             fHistoMCPi0InAccPt[fiCut]->Fill(particle->Pt(),weighted* tempParticleWeight); // MC Pi0 with gamma in acc
+            if(std::find(fVectorLabelsMultiplePi0Reduced.begin(), fVectorLabelsMultiplePi0Reduced.end(), i) != fVectorLabelsMultiplePi0Reduced.end()) {
+              fHistoMCPi0ReducedInAccPt[fiCut]->Fill(particle->Pt(),weighted* tempParticleWeight); // MC Pi0 with gamma in acc, ONLY overlapping pi0 in cluster
+            }
             if (fIsMC == 2)fHistoMCPi0WOEvtWeightInAccPt[fiCut]->Fill(particle->Pt()); // MC Pi0 w/o event weights with gamma in acc
           } else if(particle->GetPdgCode() == 221 && GetSelectedMesonID() != 1){
             fHistoMCEtaInAccPt[fiCut]->Fill(particle->Pt(),weighted* tempParticleWeight); // MC Eta with gamma in acc
@@ -2832,6 +2927,9 @@ void AliAnalysisTaskGammaCaloMerged::ProcessAODMCParticles()
             ((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->ClusterIsSelectedAODMC(daughter1,AODMCTrackArray) ) ){
           if(particle->GetPdgCode() == 111 && GetSelectedMesonID() != 2){
             fHistoMCPi0InAccPt[fiCut]->Fill(particle->Pt(),weighted* tempParticleWeight); // MC Pi0 with gamma in acc
+            if(std::find(fVectorLabelsMultiplePi0Reduced.begin(), fVectorLabelsMultiplePi0Reduced.end(), i) != fVectorLabelsMultiplePi0Reduced.end()) {
+              fHistoMCPi0ReducedInAccPt[fiCut]->Fill(particle->Pt(),weighted* tempParticleWeight); // MC Pi0 with gamma in acc, ONLY overlapping pi0 in cluster
+            }
             if (fIsMC == 2)fHistoMCPi0WOEvtWeightInAccPt[fiCut]->Fill(particle->Pt()); // MC Pi0 w/o event weights with gamma in acc
           } else if(particle->GetPdgCode() == 221 && GetSelectedMesonID() != 1){
             fHistoMCEtaInAccPt[fiCut]->Fill(particle->Pt(),weighted* tempParticleWeight); // MC Eta with gamma in acc
@@ -2998,6 +3096,34 @@ Bool_t AliAnalysisTaskGammaCaloMerged::CheckVectorForDoubleCount(vector<Int_t> &
     else{
       vec.push_back(tobechecked);
       return false;
+    }
+  }
+  return false;
+}
+
+//_________________________________________________________________________________
+Bool_t AliAnalysisTaskGammaCaloMerged::CheckVector1ForEntryAndFillVector2(vector<Int_t> vecCheck, vector<Int_t> &vecFill, Int_t tobechecked)
+{
+  if(tobechecked > -1)
+  {
+    vector<Int_t>::iterator itCheck;
+    vector<Int_t>::iterator itFill;
+    // search for entry in vecCheck
+    itCheck = find (vecCheck.begin(), vecCheck.end(), tobechecked);
+    if (itCheck != vecCheck.end()){
+      // entry in vecCheck -> may not be filled in vecFill -> return false
+      return false;
+    } else {
+      // entry NOT in vecCheck -> entry is allowed to be filled in vecFill
+      // check vecFill if entry already exists
+      itFill = find (vecFill.begin(), vecFill.end(), tobechecked);
+      if (itFill != vecFill.end()){
+        // entry already in vecFill -> return false
+      } else {
+        // entry does not yet exist in vecFill -> fill
+        vecFill.push_back(tobechecked);
+       return false;
+      }
     }
   }
   return false;
