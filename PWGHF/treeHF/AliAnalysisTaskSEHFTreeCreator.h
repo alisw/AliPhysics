@@ -62,7 +62,7 @@ public:
 
     
     AliAnalysisTaskSEHFTreeCreator();
-    AliAnalysisTaskSEHFTreeCreator(const char *name,TList *cutsList, int fillNJetTrees);
+    AliAnalysisTaskSEHFTreeCreator(const char *name,TList *cutsList, int fillNJetTrees, bool fillJetConstituentTrees);
     virtual ~AliAnalysisTaskSEHFTreeCreator();
     
     
@@ -97,7 +97,7 @@ public:
     void SetFillMCGenTrees(Bool_t fillMCgen) {fFillMCGenTrees=fillMCgen;}
   
     void SetMinJetPtCorr(double pt) { fMinJetPtCorr = pt; }
-    void SetFillJetConstituents(bool b) { fFillJetConstituents = b; }
+    void SetFillJetEtaPhi(bool b) { fFillJetEtaPhi = b; }
     void SetFillPtCorr(bool b) { fFillPtCorr = b; }
     void SetFillPtUncorr(bool b) { fFillPtUncorr = b; }
     void SetFillArea(bool b) { fFillArea = b; }
@@ -254,27 +254,28 @@ private:
     // Jets
     //-----------------------------------------------------------------------------------------------
   
-    // Tree
+    // Write N jet trees, according to constructor argument. Should match number of jet containers added.
+    // If fFillJetConstituentTrees is true, then also fill N separate trees of jet constituent info.
     Int_t                   fWriteNJetTrees;                       ///< number of jet trees to write
-                                                                   // (should match number of jet containers added)
-    std::vector<TTree*>     fVariablesTreeJet;                     //!<! vector of trees of the candidate variables
+    bool                    fFillJetConstituentTrees;              ///< Store tree of all tracks inside the jet
+  
+    std::vector<TTree*>     fVariablesTreeJet;                     //!<! vector of jet trees
+    std::vector<TTree*>     fVariablesTreeJetConstituent;          //!<! vector of jet constituent trees
+
     std::vector<AliJetTreeHandler*> fTreeHandlerJet;               //!<! vector of handler objects for jet tree
   
     // Jet container and array
     Bool_t                  fLocalInitialized;                     ///< whether or not the task has been already initialized
     TObjArray               fJetCollArray;                         ///< array of jet containers
+    double                  fMinJetPtCorr;                         ///< Min jet Pt (background subtracted) to fill jet into tree
   
     // Jet background subtraction
     TString                 fRhoName;                              ///<  rho name
     AliRhoParameter        *fRho;                                  //!<! event rho
     Double_t                fRhoVal;                               //!<! event rho value
   
-    // Flags specifying what info to fill to the tree:
-  
-    // If fFillTrackConstituents is true, then *only* store constituent info.
-    bool                    fFillJetConstituents;                  ///< Store pT,eta,phi of all tracks inside the jet
-  
-    // If fFillTrackConstituents is false, then fill according to the below flags.
+    // Fill jet tree according to the below flags. By default, it only contains: event id, jet id
+    bool                    fFillJetEtaPhi;                        ///< Jet eta/phi
     bool                    fFillPtCorr;                           ///< Pt of the jet (GeV/c) (background subtracted)
     bool                    fFillPtUncorr;                         ///< Pt of the jet (GeV/c) (not background subtracted)
     bool                    fFillArea;                             ///< Area
@@ -285,10 +286,8 @@ private:
     bool                    fFillMass;                             ///< Mass
     bool                    fFillMatchingJetID;                    ///< jet matching
   
-    double                  fMinJetPtCorr;                         ///< Min jet Pt (background subtracted) to fill jet into tree
-  
     /// \cond CLASSIMP
-    ClassDef(AliAnalysisTaskSEHFTreeCreator,11);
+    ClassDef(AliAnalysisTaskSEHFTreeCreator,12);
     /// \endcond
 };
 
