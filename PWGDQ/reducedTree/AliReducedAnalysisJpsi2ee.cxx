@@ -279,7 +279,7 @@ void AliReducedAnalysisJpsi2ee::Process() {
   // apply event selection
   if(!IsEventSelected(fEvent, fValues)) return;
   
-  // fill calorimeter info histograms before event cuts
+  // fill calorimeter info histograms
   if(fFillCaloClusterHistograms) {
     for(Int_t icl=0; icl<eventInfo->GetNCaloClusters(); ++icl) {
       AliReducedVarManager::FillCaloClusterInfo(eventInfo->GetCaloCluster(icl), fValues);
