@@ -23,7 +23,7 @@
 //  author: Bong-Hwi Lim (bong-hwi.lim@cern.ch)
 //        , Beomkyu  KIM (kimb@cern.ch)
 //
-//  Last Modified Date: 2019/03/24
+//  Last Modified Date: 2019/03/27
 //
 ////////////////////////////////////////////////////////////////////////////
 
@@ -305,6 +305,18 @@ void AliAnalysisTaskXi1530::UserCreateOutputObjects() {
         fHistos->CreateTH1("hTPCPIDsignalBachelorPion_cut", "", 100, -5, 5,
                            "s");
         fHistos->CreateTH1("hTPCPIDsignalXi1530Pion_cut", "", 100, -5, 5, "s");
+        
+        //// Systemtatics
+        //
+        fHistos->CreateTH1("hTPCPIDsignalLambdaProton_loose", "", 100, -5, 5, "s");
+        fHistos->CreateTH1("hTPCPIDsignalLambdaPion_loose", "", 100, -5, 5, "s");
+        fHistos->CreateTH1("hTPCPIDsignalBachelorPion_loose", "", 100, -5, 5, "s");
+        fHistos->CreateTH1("hTPCPIDsignalXi1530Pion_loose", "", 100, -5, 5, "s");
+
+        fHistos->CreateTH1("hTPCPIDsignalLambdaProton_tight", "", 100, -5, 5, "s");
+        fHistos->CreateTH1("hTPCPIDsignalLambdaPion_tight", "", 100, -5, 5, "s");
+        fHistos->CreateTH1("hTPCPIDsignalBachelorPion_tight", "", 100, -5, 5, "s");
+        fHistos->CreateTH1("hTPCPIDsignalXi1530Pion_tight", "", 100, -5, 5, "s");
 
         // D C A
         // between daughters
@@ -315,6 +327,13 @@ void AliAnalysisTaskXi1530::UserCreateOutputObjects() {
         fHistos->CreateTH1("hDCADist_Lambda_BTW_Daughters_cut", "", 300, 0, 3,
                            "s");
         fHistos->CreateTH1("hDCADist_Xi_BTW_Daughters_cut", "", 300, 0, 3, "s");
+        // systematics
+        fHistos->CreateTH1("hDCADist_Lambda_BTW_Daughters_loose", "", 300, 0, 3,
+                           "s");
+        fHistos->CreateTH1("hDCADist_Xi_BTW_Daughters_loose", "", 300, 0, 3, "s");
+        fHistos->CreateTH1("hDCADist_Lambda_BTW_Daughters_tight", "", 300, 0, 3,
+                           "s");
+        fHistos->CreateTH1("hDCADist_Xi_BTW_Daughters_tight", "", 300, 0, 3, "s");
         // to PV
         // before
         fHistos->CreateTH1("hDCADist_lambda_to_PV", "", 500, 0, 5, "s");
@@ -331,6 +350,8 @@ void AliAnalysisTaskXi1530::UserCreateOutputObjects() {
         fHistos->CreateTH1("hDCADist_BachelorPion_to_PV_cut", "", 500, 0, 5,
                            "s");
 
+        fHistos->CreateTH1("hDCADist_lambda_to_PV_loose", "", 500, 0, 5, "s");
+        fHistos->CreateTH1("hDCADist_lambda_to_PV_tight", "", 500, 0, 5, "s");
         // C P A
         // before
         fHistos->CreateTH1("hCosPA_lambda", "", 150, 0.85, 1.0, "s");
@@ -339,9 +360,17 @@ void AliAnalysisTaskXi1530::UserCreateOutputObjects() {
         fHistos->CreateTH1("hCosPA_lambda_cut", "", 150, 0.85, 1.0, "s");
         fHistos->CreateTH1("hCosPA_Xi_cut", "", 150, 0.85, 1.0, "s");
 
+        fHistos->CreateTH1("hCosPA_lambda_loose", "", 150, 0.85, 1.0, "s");
+        fHistos->CreateTH1("hCosPA_Xi_loose", "", 150, 0.85, 1.0, "s");
+        fHistos->CreateTH1("hCosPA_lambda_tight", "", 150, 0.85, 1.0, "s");
+        fHistos->CreateTH1("hCosPA_Xi_tight", "", 150, 0.85, 1.0, "s");
+
         // M a s s   W i n d o w
         fHistos->CreateTH1("hMass_Xi", "", 200, 1.2, 1.4, "s");      // before
         fHistos->CreateTH1("hMass_Xi_cut", "", 200, 1.2, 1.4, "s");  // after
+
+        fHistos->CreateTH1("hMass_Xi_loose", "", 200, 1.2, 1.4, "s");      // before
+        fHistos->CreateTH1("hMass_Xi_tight", "", 200, 1.2, 1.4, "s");      // before
 
         // E t a
         fHistos->CreateTH2("hPhiEta_Xi", "", 180, 0, 2 * pi, 40, -2,
@@ -1092,6 +1121,7 @@ void AliAnalysisTaskXi1530::FillTracks() {
                 if ((SysCheck.at(sys) != "TPCNsigmaXi1530PionLoose") &&
                     (abs(fTPCNSigPion) > fTPCNsigXi1530PionCut))
                     continue;
+                
                 if ((SysCheck.at(sys) == "TPCNsigmaXi1530PionTight") &&
                     (abs(fTPCNSigPion) > fTPCNsigXi1530PionCut_tight))
                     continue;
@@ -1104,7 +1134,7 @@ void AliAnalysisTaskXi1530::FillTracks() {
                     if (abs(fTPCNSigBachelorPion) > fTPCNsigBachelorPionCut)
                         continue;
                 }
-                if (SysCheck.at(sys) != "TPCNsigmaXiTight") {
+                if (SysCheck.at(sys) == "TPCNsigmaXiTight") {
                     if (abs(fTPCNSigProton) > fTPCNsigLambdaProtonCut_tight)
                         continue;
                     if (abs(fTPCNSigLambdaPion) > fTPCNsigLambdaPionCut_tight)
