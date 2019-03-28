@@ -576,7 +576,10 @@ class AliReducedVarManager : public TObject {
     kTPCnclsRatio3,      // TPCCrossedRows/TPCnclsF
     kTPCsignal,         
     kTPCsignalN,
-    kTPCnSig,  
+    kTPCdEdxQmax,                 // dEdx info from Qmax (IROC, medium OROC, long OROC, all OROC)
+    kTPCdEdxQtot=kTPCdEdxQmax+4,  // dEdx info from Qtot (IROC, medium OROC, long OROC, all OROC)
+    kTPCdEdxQmaxOverQtot=kTPCdEdxQtot+4,    // Qmax / Qtot
+    kTPCnSig=kTPCdEdxQmaxOverQtot+4,  
     kTPCnSigCorrected=kTPCnSig+4,
     kTOFbeta=kTPCnSigCorrected+4,
     kTOFtime,
