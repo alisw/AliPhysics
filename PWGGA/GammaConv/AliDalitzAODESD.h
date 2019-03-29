@@ -39,22 +39,25 @@ class AliAODEvent;
 class AliAODtrack;
 
 
+//class AliDalitzAODESD{
 class AliDalitzAODESD : public TObject{
 public:
+        AliDalitzAODESD();
+      // virtual ~AliDalitzAODESD();
     
     AliDalitzAODESD(AliESDtrack* lESDtrack):
         TObject()
-    {
+        {
         fIsESD=kTRUE;
         fESDtrack=lESDtrack;
     };
-    AliDalitzAODESD(AliAODTrack* lAODtrack):
+            AliDalitzAODESD(AliAODTrack* lAODtrack):
         TObject()
     {
         fIsESD=kFALSE;
         fAODtrack=lAODtrack;
     };
-    virtual ~AliDalitzAODESD() {}
+     virtual ~AliDalitzAODESD() {}
     //ESD
      void ComputeImpactParameter();
      void ComputeImpactParameter(const AliVVertex* vx,Double_t bmag);
