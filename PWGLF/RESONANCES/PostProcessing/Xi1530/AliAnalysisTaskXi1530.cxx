@@ -1333,8 +1333,8 @@ void AliAnalysisTaskXi1530::FillTracks() {
                 if (fQA) {
                     if (SysCheck.at(sys) == "DefaultOption") {
                         fHistos->FillTH2("hTPCPIDXi1530Pion_cut",
-                                         track->GetTPCmomentum(),
-                                         track->GetTPCsignal());
+                                         track1->GetTPCmomentum(),
+                                         track1->GetTPCsignal());
                         if (Xicandidate->Charge() ==
                             -1) {  // Xi- has +proton, -pion
                             fHistos->FillTH2("hTPCPIDLambdaProton_cut",
