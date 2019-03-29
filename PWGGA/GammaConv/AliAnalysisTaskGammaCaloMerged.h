@@ -153,6 +153,7 @@ class AliAnalysisTaskGammaCaloMerged : public AliAnalysisTaskSE {
     //histograms for pure MC quantities
     TH1I**                  fHistoMCHeaders;                                    //! array of histos for header names
     TH1F**                  fHistoMCPi0Pt;                                      //! array of histos with weighted pi0, pT
+    TH1F**                  fHistoMCPi0ReducedPt;                               //! array of histos with weighted pi0, pT
     TH1F**                  fHistoMCPi0WOWeightPt;                              //! array of histos with unweighted pi0, pT
     TH1F**                  fHistoMCPi0WOEvtWeightPt;                           //! array of histos without event weights pi0, pT
     TH1F**                  fHistoMCEtaPt;                                      //! array of histos with weighted eta, pT
@@ -184,11 +185,13 @@ class AliAnalysisTaskGammaCaloMerged : public AliAnalysisTaskSE {
     TH1F**                  fHistoMCAllGammaPt;                                 //! array of histos with weighted all gamma
 
     // MC validated cluster histos
+    TH2F**                  fHistoTrueClusEFracFirstLabel;                      //!
     TH2F**                  fHistoTrueClusMergedPtvsM02;                        //!
     TH2F**                  fHistoTrueClusPi0PtvsM02;                           //!
     TH2F**                  fHistoTrueClusMultiplePi0PtvsM02;                   //!
     TH2F**                  fHistoTrueClusPi0DalitzPtvsM02;                     //!
     TH2F**                  fHistoTrueClusPrimPi0PtvsM02;                       //!
+    TH2F**                  fHistoTrueClusPrimPi0PtMCPt;                        //!
     TH2F**                  fHistoTrueClusMultiplePrimPi0PtvsM02;               //!
     TH2F**                  fHistoTrueClusSecPi0PtvsM02;                        //!
     TH2F**                  fHistoTrueClusSecPi0FromK0sPtvsM02;                 //!
