@@ -1160,10 +1160,10 @@ void AliAnalysisTaskXi1530::FillTracks() {
                 // Xi1530Pion DCA zVetex Check
                 Double_t pionZ = abs(track1->GetZ() - fZ);
                 if ((SysCheck.at(sys) != "Xi1530PionZVertexLoose") &&
-                    (pionZ - fZ) > fXi1530PionZVertexCut))
+                    pionZ > fXi1530PionZVertexCut))
                     continue;
                 if ((SysCheck.at(sys) == "Xi1530PionZVertexTight") &&
-                    (pionZ - fZ) > fXi1530PionZVertexCut_tight))
+                    pionZ > fXi1530PionZVertexCut_tight))
                     continue;
 
                 // DCA between daughters Check
