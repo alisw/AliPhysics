@@ -2063,8 +2063,7 @@ void AliEMCALTenderSupply::RecPoints2Clusters(TClonesArray *clus)
     if (parentMult > 0)
     {
       c->SetLabel(parentList, parentMult);
-      if(fSetCellMCLabelFromEdepFrac)
-        c->SetClusterMCEdepFractionFromEdepArray(parentListDE);
+      c->SetClusterMCEdepFractionFromEdepArray(parentListDE);
     }
     
     //
