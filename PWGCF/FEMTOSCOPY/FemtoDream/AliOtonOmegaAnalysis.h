@@ -243,16 +243,19 @@ class AliOtonOmegaAnalysis {
   Float_t fTVx;
   Float_t fTVy;
   Float_t fTVz;
+  Int_t fTMult;
 
 
   const Int_t MAXPROTONS = 150;
   Int_t fTnProton;
   //protons:
   Float_t fTProtonP[150];
+  Float_t fTProtonEta[150];
   Float_t fTProtonPx[150];
   Float_t fTProtonPy[150];
   Float_t fTProtonPz[150];
   Float_t fTProtonPt[150];
+  Float_t fTProtonmT[150];
   Float_t fTProtonTPCmom[150];
   Short_t fTProtonCharge[150];
   Float_t fTProtonDCA[150];
@@ -280,6 +283,7 @@ class AliOtonOmegaAnalysis {
   Float_t fTCascadePy[300];
   Float_t fTCascadePz[300];
   Float_t fTCascadePt[300];
+  Float_t fTCascademT[300];
   Short_t fTCascadeCharge[300];
   Float_t fTCascadeDCA[300];
   Float_t fTCascadeDaughtersDCA[300];

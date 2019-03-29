@@ -64,6 +64,8 @@ class AliAODVertex;
 #include "AliCentrality.h"
 #include "AliPIDResponse.h"
 
+#include "AliMultSelection.h"
+
 #include "AliVTrack.h"
 
 #include "AliESDEvent.h"
@@ -102,6 +104,8 @@ AliAnalysisTaskKPFemto::AliAnalysisTaskKPFemto():AliAnalysisTaskSE(),
   fAnalysisType("AOD"),
   fCollidingSystem("pp"),
   fYear(2015),
+  fHMtrigger(kFALSE),
+  fFilterBit(128),
   fFirstpart(kKaon),
   fSecondpart(kProton),
   fnSigmaTPCPIDfirstParticle(3.),
@@ -211,8 +215,11 @@ AliAnalysisTaskKPFemto::AliAnalysisTaskKPFemto():AliAnalysisTaskSE(),
   fHistSecondTPCdEdxAfter(0),     
   fHistFirstTOFTPCsignalvsptAfter(0), 
   fHistSecondTOFTPCsignalvsptAfter(0), 
-  fHistFirstMassTOFvsPtAfter(0), 
-  fHistSecondMassTOFvsPtAfter(0),  
+ 
+  fHistFirstMassTOFvsPt3sTPC(0), 
+  fHistSecondMassTOFvsPt3sTPC(0),  
+  fHistFirstMassTOFvsPt3sTPC3sTOF(0), 
+  fHistSecondMassTOFvsPt3sTPC3sTOF(0),  
    
    
   fHistSparseSignal(0),  
@@ -247,7 +254,7 @@ AliAnalysisTaskKPFemto::AliAnalysisTaskKPFemto():AliAnalysisTaskSE(),
   tpdgcodeP1(0), 
   tpdgcodeP2(0),
   tKstarGen(0),
-    
+
   fHistTrackBufferOverflow(0),             
   fOutputContainer(NULL)
 
@@ -273,6 +280,8 @@ AliAnalysisTaskKPFemto::AliAnalysisTaskKPFemto(const char *name):
   fAnalysisType("AOD"),
   fCollidingSystem("pp"),
   fYear(2015),
+  fHMtrigger(kFALSE),
+  fFilterBit(128),
   fFirstpart(kKaon),
   fSecondpart(kProton),
   fnSigmaTPCPIDfirstParticle(3.),
@@ -381,8 +390,11 @@ AliAnalysisTaskKPFemto::AliAnalysisTaskKPFemto(const char *name):
   fHistSecondTPCdEdxAfter(0),     
   fHistFirstTOFTPCsignalvsptAfter(0), 
   fHistSecondTOFTPCsignalvsptAfter(0), 
-  fHistFirstMassTOFvsPtAfter(0), 
-  fHistSecondMassTOFvsPtAfter(0),  
+
+  fHistFirstMassTOFvsPt3sTPC(0), 
+  fHistSecondMassTOFvsPt3sTPC(0),  
+  fHistFirstMassTOFvsPt3sTPC3sTOF(0), 
+  fHistSecondMassTOFvsPt3sTPC3sTOF(0),  
   
   fHistSparseSignal(0),  
   fHistSparseBkg(0),      
@@ -582,6 +594,7 @@ void AliAnalysisTaskKPFemto::UserCreateOutputObjects() {
   fHistEventMultiplicity->GetXaxis()->SetBinLabel(8,"Semi-Central Events");
   fHistEventMultiplicity->GetXaxis()->SetBinLabel(9,"MB Events");
   fHistEventMultiplicity->GetXaxis()->SetBinLabel(10,"kInt7 Events");
+  fHistEventMultiplicity->GetXaxis()->SetBinLabel(11,"HM Events");
   fOutputContainer->Add(fHistEventMultiplicity);
 
   hmult = new TH1I("hmult","Multiplicity distribution (after cuts on event)",30000,-100,200);
@@ -701,11 +714,17 @@ void AliAnalysisTaskKPFemto::UserCreateOutputObjects() {
   fOutputContainer->Add(fHistFirstTOFTPCsignalvsptAfter);
   fHistSecondTOFTPCsignalvsptAfter = new TH2F("fHistSecondTOFTPCsignalvsptAfter","fHistSecondTOFTPCsignalvsptAfter",200, 0., 10., 100, 0., 20);
   fOutputContainer->Add(fHistSecondTOFTPCsignalvsptAfter);
+
+  fHistFirstMassTOFvsPt3sTPC       = new TH2F("fHistFirstMassTOFvsPt3sTPC", "fHistFirstMassTOFvsPt3sTPC"  , 200, -2.5, 2.5, 100, 0.0, 10); 
+  fHistSecondMassTOFvsPt3sTPC      = new TH2F("fHistSecondMassTOFvsPt3sTPC", "fHistSecondMassTOFvsPt3sTPC", 200, -2.5, 2.5, 100, 0.0, 10);  
+
+  fHistFirstMassTOFvsPt3sTPC3sTOF  = new TH2F("fHistFirstMassTOFvsPt3sTPC3sTOF", "fHistFirstMassTOFvsPt3sTPC3sTOF"  , 200, -2.5 , 2.5, 100, 0.0, 10); 
+  fHistSecondMassTOFvsPt3sTPC3sTOF = new TH2F("fHistSecondMassTOFvsPt3sTPC3sTOF", "fHistSecondMassTOFvsPt3sTPC3sTOF", 200, -2.5 , 2.5, 100, 0.0, 10);  
  
-  fHistFirstMassTOFvsPtAfter = new TH2F("fHistFirstMassTOFvsPtAfter", "fHistFirstMassTOFvsPtAfter", 200, 0.0, 2.0, 100, 0.0, 20);
-  fOutputContainer->Add(fHistFirstMassTOFvsPtAfter);
-  fHistSecondMassTOFvsPtAfter = new TH2F("fHistSecondMassTOFvsPtAfter", "fHistSecondMassTOFvsPtAfter", 200, 0.0, 2.0, 100, 0.0, 20);
-  fOutputContainer->Add(fHistSecondMassTOFvsPtAfter);
+  fOutputContainer->Add(fHistFirstMassTOFvsPt3sTPC);
+  fOutputContainer->Add(fHistSecondMassTOFvsPt3sTPC);
+  fOutputContainer->Add(fHistFirstMassTOFvsPt3sTPC3sTOF);
+  fOutputContainer->Add(fHistSecondMassTOFvsPt3sTPC3sTOF);
 
   //THNSparse
   // UInt_t dimsparse;
@@ -858,7 +877,8 @@ void AliAnalysisTaskKPFemto::UserExec(Option_t *) {
 
   
   AliVVertex *vertexmain =0x0;
-  AliCentrality* centrality = 0x0;
+  // AliCentrality* centrality = 0x0;
+  AliMultSelection* centrality = 0x0;
   Double_t lBestPrimaryVtxPos[3] = {-100.0, -100.0, -100.0};
 
   fHistEventMultiplicity->Fill(1);
@@ -908,7 +928,7 @@ void AliAnalysisTaskKPFemto::UserExec(Option_t *) {
    
      
     ntracks = fESDevent->GetNumberOfTracks(); 
-    centrality = fESDevent->GetCentrality(); //FIXME : Find out centrality object in pp and pPb
+    //    centrality = fESDevent->GetCentrality(); //FIXME : Find out centrality object in pp and pPb
     
     const AliESDVertex *lPrimaryBestESDVtx = fESDevent->GetPrimaryVertex();
     if (!lPrimaryBestESDVtx){
@@ -942,7 +962,7 @@ void AliAnalysisTaskKPFemto::UserExec(Option_t *) {
       return;
     }
     ntracks = fAODevent->GetNumberOfTracks();
-    centrality = fAODevent->GetCentrality(); //FIXME :  Find out centrality object in pp and pPb
+    //    centrality = fAODevent->GetCentrality(); //FIXME :  Find out centrality object in pp and pPb
    
   
     const AliAODVertex *lPrimaryBestAODVtx = fAODevent->GetPrimaryVertex();
@@ -1008,22 +1028,26 @@ void AliAnalysisTaskKPFemto::UserExec(Option_t *) {
 
   Float_t lcentrality = -99.;
   
-  // AliMultSelection* MultSelection = 0x0;
+  //  AliMultSelection* centrality = 0x0;
+  centrality = (AliMultSelection *) fAODevent->FindListObject("MultSelection");
+  //  cout<<"centrality: "<<centrality<<endl;
 
   if(fCollidingSystem == "PbPb" ){
-    lcentrality = centrality->GetCentralityPercentile("V0M"); //FIXME : Centrality in pp and pPb works the same???
+    //    lcentrality = centrality->GetCentralityPercentile("V0M"); //FIXME : Centrality in pp and pPb works the same???
+    lcentrality = centrality->GetMultiplicityPercentile("V0M"); //FIXME : Centrality in pp and pPb works the same???
     hmult->Fill(lcentrality);
   }
   
   else if(fCollidingSystem == "pPb"){
-    lcentrality = ((AliAODHeader * )fAODevent->GetHeader())->GetRefMultiplicityComb08(); //-->TBChecked
-    // lcentrality = centrality->GetCentralityPercentile("V0A"); //FIXME : Centrality in pp and pPb works the same???
+    //    lcentrality = ((AliAODHeader * )fAODevent->GetHeader())->GetRefMultiplicityComb08(); //-->TBChecked
+    lcentrality = centrality->GetMultiplicityPercentile("V0A"); //FIXME : Now we use Centrality instead of multiplicity? also for p-Pb
     hmult->Fill(lcentrality);
   } 
   
   else if(fCollidingSystem == "pp") {//FIXME : I think up AOD have only refmult as mult estimation
-    lcentrality = ((AliAODHeader * )fAODevent->GetHeader())->GetRefMultiplicityComb08(); //-->RIcambiare
+    // lcentrality = ((AliAODHeader * )fAODevent->GetHeader())->GetRefMultiplicityComb08(); //-->RIcambiare
     //    lcentrality = ((AliAODHeader * )fAODevent->GetHeader())->GetRefMultiplicity(); //run on phojet
+    lcentrality = centrality->GetMultiplicityPercentile("V0M"); //FIXME : Also for pp? Test on kd
     //    cout<<"Centrality: "<<lcentrality<<endl;
     hmult->Fill(lcentrality);
   }
@@ -1054,6 +1078,7 @@ void AliAnalysisTaskKPFemto::UserExec(Option_t *) {
   Bool_t isSelectedSemiCentral = kFALSE;
   Bool_t isSelectedMB          = kFALSE;
   Bool_t isSelectedInt7        = kFALSE;
+  Bool_t isSelectedHM          = kFALSE;
   Bool_t isSelectedAny         = kFALSE;
   Bool_t isSelected            = kFALSE;
  
@@ -1069,12 +1094,17 @@ void AliAnalysisTaskKPFemto::UserExec(Option_t *) {
     isSelectedSemiCentral = (mask & AliVEvent::kSemiCentral);
     isSelectedMB          = (mask & AliVEvent::kMB);
     isSelectedInt7        = (mask & AliVEvent::kINT7);
+    isSelectedHM          = (mask & AliVEvent::kHighMultV0);
     isSelectedAny         = (mask & AliVEvent::kAnyINT);
+    
     if(fYear == 2010 && isSelectedMB )
       isSelected = kTRUE;
-    else
-      if(isSelectedInt7 )
+    else if(fYear != 2010 && fHMtrigger == kFALSE && isSelectedInt7)
 	isSelected = kTRUE;
+    else if(fYear != 2010 && fHMtrigger == kTRUE && isSelectedHM)
+	isSelected = kTRUE;
+    else 
+      isSelected = kFALSE;
   }
   
   else if(fCollidingSystem == "pPb"){
@@ -1098,8 +1128,11 @@ void AliAnalysisTaskKPFemto::UserExec(Option_t *) {
     fHistEventMultiplicity->Fill(9);
   if(isSelectedInt7)
     fHistEventMultiplicity->Fill(10);
+  if(isSelectedHM)
+    fHistEventMultiplicity->Fill(11);
   
-  // cout<<"Trigger mask: "<<fAODevent->GetTriggerMask()<<endl;
+  //  cout<<"Trigger mask: "<<fAODevent->GetTriggerMask()<<" "<<AliVEvent::kHighMultV0<<endl;
+  //  cout<<"Trigger mask: "<<mask<<" "<<AliVEvent::kHighMultV0<<endl;
   // cout<<"Event type  : "<<fAODevent->GetEventType()<<endl;
   // FIXME : event selection to be added.. DONE
 
@@ -1135,7 +1168,7 @@ void AliAnalysisTaskKPFemto::UserExec(Option_t *) {
     
   }
   
-  //  cout<<"nTracks: "<<ntracks<<" centrality "<<lcentrality<<endl;
+  // cout<<"nTracks: "<<ntracks<<" centrality "<<lcentrality<<endl;
   Double_t fSphericityvalue = CalculateSphericityofEvent(fAODevent);
   fHistSphericity->Fill(fSphericityvalue);
   fHistCentrality->Fill(lcentrality);
@@ -1167,11 +1200,11 @@ void AliAnalysisTaskKPFemto::UserExec(Option_t *) {
       break;
     }
   }
-  
+  //CENTRALITY!!
   // ... and centrality    //FIXME : find out how centrality wokrs in AOD in pp and pPb
   int centralityBin=0;
   if(fCollidingSystem == "PbPb" ){
-    if(lcentrality < 5.) centralityBin=19;  // changed <= with < to be consistent with histogram binning, except last bin 
+    if(lcentrality < 5.) centralityBin=19;      // changed <= with < to be consistent with histogram binning, except last bin 
     else if(lcentrality < 10.) centralityBin=18;
     else if(lcentrality < 15.) centralityBin=17;
     else if(lcentrality < 20.) centralityBin=16;
@@ -1194,6 +1227,7 @@ void AliAnalysisTaskKPFemto::UserExec(Option_t *) {
   }
 
   else if(fCollidingSystem == "pp"  || fCollidingSystem == "pPb"){                // FIXME : To be understand if these selections are fine in the current framework
+    /* // This is valid for multiplicity
     if(lcentrality < 4.)        centralityBin=19;  
     else if(lcentrality < 7.)   centralityBin=18;
     else if(lcentrality < 10.)  centralityBin=17;
@@ -1214,9 +1248,22 @@ void AliAnalysisTaskKPFemto::UserExec(Option_t *) {
     else if(lcentrality < 300.) centralityBin=2;   
     else if(lcentrality < 350.) centralityBin=1;
     else if(lcentrality <= 350.)centralityBin=0;
-
+    */
+    // this should be valid for centrality...
+    if(lcentrality < 0.01)       centralityBin=19;  
+    else if(lcentrality < 0.1)   centralityBin=18;
+    else if(lcentrality < 0.5)   centralityBin=17;
+    else if(lcentrality < 1.0)   centralityBin=16;
+    else if(lcentrality < 5.0)   centralityBin=15;
+    else if(lcentrality < 10.)   centralityBin=14;
+    else if(lcentrality < 20.)   centralityBin=13;
+    else if(lcentrality < 30.)   centralityBin=12;
+    else if(lcentrality < 40.)   centralityBin=11;
+    else if(lcentrality < 50.)   centralityBin=10;
+    else if(lcentrality < 70.)   centralityBin=9; 
+    else if(lcentrality <= 100.) centralityBin=8;
   }
-
+  
   if(fkDoSphericity == kFALSE){
     fEventColl[zBin][centralityBin]->FifoShift();
     fEvt = fEventColl[zBin][centralityBin]->fEvt;
@@ -1362,7 +1409,7 @@ void AliAnalysisTaskKPFemto::UserExec(Option_t *) {
     // chi2percl 4 
     // dcatovtx2D kTRUE
 
-    if(!track->TestFilterBit(128))
+    if(!track->TestFilterBit(fFilterBit))
       continue;
 
     // nTPCCrossedRows = track->GetTPCClusterInfo(2, 1); // The method below is equivalent
@@ -1589,7 +1636,7 @@ void AliAnalysisTaskKPFemto::UserExec(Option_t *) {
 	  MCgrammaIDP1  = mcGrandMotherLabel;
 	  MCgrammaPDGP1 = mcGrandMotherPdg;
 
-	  cout<<"1:------------------------------MCmumIDP1: "<<MCmumIDP1<<"   ----------------------------------MCmumPDGP1: "<<MCmumPDGP1<<endl;
+	  // cout<<"1:------------------------------MCmumIDP1: "<<MCmumIDP1<<"   ----------------------------------MCmumPDGP1: "<<MCmumPDGP1<<endl;
 
 	  if (tparticle->IsPhysicalPrimary()){
 	    MCptcCodeP1 = 1;
@@ -1743,6 +1790,14 @@ void AliAnalysisTaskKPFemto::UserExec(Option_t *) {
 	//if (track->Pt()< fMomemtumLimitForTOFPIDfirst)continue; // FIXME : to here 
 	if (probMis > 0.01) continue; 
 	//if (TMath::Sqrt(nsigmaTOFf*nsigmaTOFf+nsigmaTPCf*nsigmaTPCf)> fnSigmaTPCTOFPIDfirstParticle) continue;   // this cleans the TOF corrected time plot vs p      //FIXME : Original line from mariella
+
+	beta = length/(tTOF*2.99792457999999984e-02); 
+	//	cout<<" rack length  "<<length<<" beta "<<beta<<endl; 
+	gamma = 1/TMath::Sqrt(1 - beta*beta);
+	mass = ptot/TMath::Sqrt(gamma*gamma - 1); // using inner TPC mom. as approx.
+	//cout<<"ptc1: "<<length<<" "<<ptot<<" "<<mass<<endl;
+	
+	fHistFirstMassTOFvsPt3sTPC->Fill(mass-fPDGfirst,track->Pt());
 	
 	if (TMath::Abs(nsigmaTOFf)< fnSigmaTPCTOFPIDfirstParticle && tTOF > 0. /*&& length>350*/) {
 
@@ -1751,14 +1806,8 @@ void AliAnalysisTaskKPFemto::UserExec(Option_t *) {
 	    fHistFirstTPCdEdx->Fill(globaltrack->Pt()*charge, globaltrack->GetTPCsignal());
 	  else if(fReadMCTruth == kFALSE)
 	    fHistFirstTPCdEdx->Fill(globaltrack->GetTPCmomentum()*charge, globaltrack->GetTPCsignal());
-
-
-	  beta = length/(tTOF*2.99792457999999984e-02); 
-	  //	cout<<" rack length  "<<length<<" beta "<<beta<<endl; 
-	  gamma = 1/TMath::Sqrt(1 - beta*beta);
-	  mass = ptot/TMath::Sqrt(gamma*gamma - 1); // using inner TPC mom. as approx.
-	  //cout<<"ptc1: "<<length<<" "<<ptot<<" "<<mass<<endl;
-	  fHistFirstMassTOFvsPtAfter->Fill(mass,track->Pt());
+	  
+	  fHistFirstMassTOFvsPt3sTPC3sTOF->Fill(mass-fPDGfirst,track->Pt());
 	  
 	  //------------------ Save first particle information
 	  
@@ -2082,6 +2131,13 @@ void AliAnalysisTaskKPFemto::UserExec(Option_t *) {
 	
 	//	if (TMath::Abs(nsigmaTOFs)> fnSigmaTPCTOFPIDsecondParticle) continue;   // this cleans the TOF corrected time plot vs p     
 	
+	beta = length/(tTOF*2.99792457999999984e-02); 
+	//	cout<<" rack length  "<<length<<" beta "<<beta<<endl; 
+	gamma = 1/TMath::Sqrt(1 - beta*beta);
+	mass = ptot/TMath::Sqrt(gamma*gamma - 1); // using inner TPC mom. as approx.
+	//	  cout<<" TMath::Sqrt(1 - beta*beta) "<< TMath::Sqrt(1 - beta*beta)<<" mass "<<mass<<endl;
+	fHistSecondMassTOFvsPt3sTPC->Fill(mass-fPDGsecond,track->Pt());
+	
 	if (TMath::Abs(nsigmaTOFs)< fnSigmaTPCTOFPIDsecondParticle && tTOF > 0. /*&&length>350*/) {
 	  
 	  if(fReadMCTruth == kTRUE)
@@ -2089,12 +2145,7 @@ void AliAnalysisTaskKPFemto::UserExec(Option_t *) {
 	  else if(fReadMCTruth == kFALSE)
 	    fHistSecondTPCdEdx->Fill(globaltrack->GetTPCmomentum()*charge, globaltrack->GetTPCsignal());
 
-	  beta = length/(tTOF*2.99792457999999984e-02); 
-	  //	cout<<" rack length  "<<length<<" beta "<<beta<<endl; 
-	  gamma = 1/TMath::Sqrt(1 - beta*beta);
-	  mass = ptot/TMath::Sqrt(gamma*gamma - 1); // using inner TPC mom. as approx.
-	  //	  cout<<" TMath::Sqrt(1 - beta*beta) "<< TMath::Sqrt(1 - beta*beta)<<" mass "<<mass<<endl;
-	  fHistSecondMassTOFvsPtAfter->Fill(mass,track->Pt());
+	  fHistSecondMassTOFvsPt3sTPC3sTOF->Fill(mass-fPDGsecond,track->Pt());
 	  
 	  //------------------------------ Save second particle information
 	  fEvt->fReconstructedSecond[sCount].sCharge = charge;
@@ -2537,7 +2588,7 @@ void AliAnalysisTaskKPFemto::DoPairsh1h2 ( const Int_t lcentrality, int fieldsig
 	  tSphericity         = fSphericityvalue;		                      
 	  tGammaCoversionMass = pairMassE;		                              
 	  tDTheta             = dtheta;                                     
-
+  
 	  if(fReadMCTruth == kTRUE){
 	    tMCtruepair    =  isMCvector;		
 	    tMCSameMother  =  sameMother;		

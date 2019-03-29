@@ -88,6 +88,8 @@
 #pragma link C++ class AliFemtoPairOriginMonitor+;
 #pragma link C++ class AliFemtoPairCutAntiGammaAlpha+;
 #pragma link C++ class AliFemtoCorrFctnGammaMonitorAlpha+;
+#pragma link C++ class AliFemtoCorrFctnQLCMS;
+#pragma link C++ class AliFemtoCorrFctnQLCMS::Parameters;
 #pragma link C++ class AliFemtoCorrFctn3DPRF+;
 #pragma link C++ class AliFemtoCorrFctn3DPRF_qosl_q+;
 #pragma link C++ class AliFemtoPairCutRadialDistanceAsymmetric+;

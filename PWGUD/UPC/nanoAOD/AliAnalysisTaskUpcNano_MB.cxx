@@ -42,6 +42,7 @@
 #include "AliTOFTriggerMask.h"
 #include "TObjArray.h"
 #include "AliDataFile.h"
+#include "TString.h"
 
 #include "AliESDEvent.h" 
 #include "AliESDtrack.h" 
@@ -82,6 +83,9 @@ AliAnalysisTaskUpcNano_MB::AliAnalysisTaskUpcNano_MB()
 	hTPCdEdxCorr(0),
 	hTriggerCounter(0),
 	fSPDfile(0),
+	fTOFfile(0),
+	fLoadedRun(-1),
+	hBadMaxiPadMask(0),
   	hBCmod4(0),
   	hSPDeff(0),
 	fTOFmask(0) 
@@ -117,6 +121,9 @@ AliAnalysisTaskUpcNano_MB::AliAnalysisTaskUpcNano_MB(const char *name)
 	hTPCdEdxCorr(0),
 	hTriggerCounter(0),
 	fSPDfile(0),
+	fTOFfile(0),
+	fLoadedRun(-1),
+	hBadMaxiPadMask(0),
   	hBCmod4(0),
   	hSPDeff(0),
 	fTOFmask(0) 
@@ -355,7 +362,16 @@ void AliAnalysisTaskUpcNano_MB::UserExec(Option_t *)
   AliVVZERO *fV0data = fEvent->GetVZEROData();
   AliVAD *fADdata = fEvent->GetADData();
   
-  if(isMC) RunMC(fEvent);
+  if(isMC){
+    if(fRunNumber != fLoadedRun){
+      fTOFfile = AliDataFile::OpenOADB(Form("PWGUD/UPC/TOFMaxiPadMask_Run%d.root",fRunNumber));
+      hBadMaxiPadMask = (TH2I*)fTOFfile->Get("hBadMaxiPadMask");
+      hBadMaxiPadMask->SetDirectory(0);
+      fTOFfile->Close();
+      fLoadedRun = fRunNumber;
+      }
+    RunMC(fEvent);
+    }
   
   for(Int_t i = 0; i<11; i++)if(fTriggerInputsMC[i])fHistMCTriggers->Fill(i+1);
     
@@ -723,14 +739,23 @@ void AliAnalysisTaskUpcNano_MB::RunMC(AliVEvent *fEvent)
   for(Int_t ltm=0;ltm<72;ltm++){
     Int_t ip = ltm%36;
     for(Int_t cttm=0;cttm<23;cttm++){
-      if(fTOFmask->IsON(ltm,cttm)){
+      if(fTOFmask->IsON(ltm,cttm) && hBadMaxiPadMask->GetBinContent(ltm+1,cttm+1)==0){
     	firedMaxiPhi[ip] = kTRUE;
     	NfiredMaxiPads++;
     	}
       }
     }
   Bool_t offlineOMU = kFALSE;
-  for(Int_t ip=0;ip<18;ip++)if(firedMaxiPhi[ip] && (firedMaxiPhi[ip+15]||firedMaxiPhi[ip+16]||firedMaxiPhi[ip+17]||firedMaxiPhi[ip+18]))offlineOMU = kTRUE;
+  for(Int_t ip=0;ip<36;ip++){
+    if(!firedMaxiPhi[ip])continue;
+    for(Int_t jp=ip+1;jp<36;jp++){
+      if(!firedMaxiPhi[jp])continue;
+      Int_t DeSlots = jp-ip;
+      Int_t AntiDeSlots = 36 - DeSlots;
+      if(DeSlots >= 15 && DeSlots <= 18)offlineOMU = kTRUE;
+      else if(AntiDeSlots >= 15 && AntiDeSlots <= 18)offlineOMU = kTRUE;
+      }
+    }
   if(NfiredMaxiPads>6)offlineOMU = kFALSE;
 
   if(offlineOMU)fTriggerInputsMC[4] = kTRUE;  //0OMU TOF two hits with topology
@@ -740,18 +765,18 @@ void AliAnalysisTaskUpcNano_MB::RunMC(AliVEvent *fEvent)
   const Int_t bcMod4 = TMath::Nint(hBCmod4->GetRandom());			
   //SPD inputs
   const AliVMultiplicity *mult = fEvent->GetMultiplicity();
-  Int_t vPhiInner[20]; for (Int_t i=0; i<20; ++i) vPhiInner[i]=0;
-  Int_t vPhiOuter[40]; for (Int_t i=0; i<40; ++i) vPhiOuter[i]=0;
+  Bool_t vPhiInner[20]; for (Int_t i=0; i<20; ++i) vPhiInner[i]=kFALSE;
+  Bool_t vPhiOuter[40]; for (Int_t i=0; i<40; ++i) vPhiOuter[i]=kFALSE;
 
   Int_t nInner(0), nOuter(0);
   for (Int_t i(0); i<1200; ++i) {
     const Double_t eff = hSPDeff->GetBinContent(1+i, 1+bcMod4);
     Bool_t isFired = (mult->TestFastOrFiredChips(i)) && (gRandom->Uniform(0,1) < eff);
     if (i<400) {
-      vPhiInner[i/20] += isFired;
+      if(isFired)vPhiInner[i/20] = kTRUE;
       nInner += isFired;
     } else {
-      vPhiOuter[(i-400)/20] += isFired;
+      if(isFired)vPhiOuter[(i-400)/20] = kTRUE;
       nOuter += isFired;
     }
   }

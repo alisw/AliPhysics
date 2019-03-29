@@ -22,6 +22,8 @@
 #include "AliPIDResponse.h"
 #include "AliVVertex.h"
 
+#include "AliAnalysisDataContainer.h"
+
 using std::cout;
 using std::endl;
 
@@ -32,7 +34,7 @@ namespace
 constexpr double Sq(double x) { return x * x; }
 constexpr float kEps = 1.e-6;
 
-int ComputeMother(AliMCEvent *mcEvent, const AliESDtrack *one, const AliESDtrack *two)
+bool ComputeMother(AliMCEvent *mcEvent, const AliESDtrack *one, const AliESDtrack *two, int& label)
 {
   int labOne = std::abs(one->GetLabel());
   int labTwo = std::abs(two->GetLabel());
@@ -41,21 +43,18 @@ int ComputeMother(AliMCEvent *mcEvent, const AliESDtrack *one, const AliESDtrack
       mcEvent->IsPhysicalPrimary(labTwo) ||
       mcEvent->IsSecondaryFromMaterial(labOne) ||
       mcEvent->IsSecondaryFromMaterial(labTwo))
-    return -1;
+    return false;
   else
   {
     AliVParticle *partOne = mcEvent->GetTrack(labOne);
     AliVParticle *partTwo = mcEvent->GetTrack(labTwo);
     if (partOne->GetMother() != partTwo->GetMother())
-    {
-      return -1;
-    }
+      return false;
     else
     {
-      if (one->GetLabel() * two->GetLabel() >= 0)
-        return partTwo->GetMother();
-      else
-        return -partTwo->GetMother();
+      int coef = one->GetLabel() < 0 || two->GetLabel() < 0 ? -1 : 1;
+      label = coef * partTwo->GetMother();
+      return true;
     }
   }
 }
@@ -66,6 +65,7 @@ AliAnalysisTaskHyperTriton2He3piML::AliAnalysisTaskHyperTriton2He3piML(
     bool mc, std::string name)
     : AliAnalysisTaskSE(name.data()),
       fEventCuts{},
+      fFillGenericV0s{true},
       fListHist{nullptr},
       fTreeV0{nullptr},
       fPIDResponse{nullptr},
@@ -75,13 +75,17 @@ AliAnalysisTaskHyperTriton2He3piML::AliAnalysisTaskHyperTriton2He3piML(
       fCustomBethe{0.f, 0.f, 0.f, 0.f, 0.f},
       fCustomResolution{1.f},
       fHistNsigmaHe3{nullptr},
-      fHistNsigmaPion{nullptr},
+      fHistNsigmaPi{nullptr},
       fHistInvMass{nullptr},
+      fHistTPCdEdx{nullptr},
       fMinPtToSave{0.1},
       fMaxPtToSave{100},
       fMaxTPCpiSigma{10.},
       fMaxTPChe3Sigma{10.},
+      fMinHe3pt{0.},
+      fMinTPCclusters{50},
       fSHyperTriton{},
+      fSGenericV0{},
       fRHyperTriton{},
       fRCollision{}
 {
@@ -117,23 +121,31 @@ void AliAnalysisTaskHyperTriton2He3piML::UserCreateOutputObjects()
   fTreeV0->Branch("RCollision", &fRCollision);
   fTreeV0->Branch("RHyperTriton", &fRHyperTriton);
 
-  if (man->GetMCtruthEventHandler())
+  if (man->GetMCtruthEventHandler()) {
     fTreeV0->Branch("SHyperTriton", &fSHyperTriton);
+    if (fFillGenericV0s)
+      fTreeV0->Branch("SGenericV0", &fSGenericV0);
+  }
 
   fListHist = new TList();
   fListHist->SetOwner();
   fEventCuts.AddQAplotsToList(fListHist);
 
-  fHistNsigmaPion =
-      new TH2D("fHistNsigmaPosPion", ";#it{p}_{T} (GeV/#it{c});n_{#sigma} TPC Pion; Counts", 100, 0, 10, 20, 0, 10);
+  fHistNsigmaPi =
+      new TH2D("fHistNsigmaPi", ";#it{p}_{T} (GeV/#it{c});n_{#sigma} TPC Pion; Counts", 100, 0, 10, 80, -5, 5);
   fHistNsigmaHe3 =
-      new TH2D("fHistNsigmaNegHe3", ";#it{p}_{T} (GeV/#it{c});n_{#sigma} TPC ^{3}He; Counts", 100, 0, 10, 20, 0, 10);
+      new TH2D("fHistNsigmaHe3", ";#it{p}_{T} (GeV/#it{c});n_{#sigma} TPC ^{3}He; Counts", 100, 0, 10, 80, -5, 5);
   fHistInvMass =
       new TH2D("fHistInvMass", ";#it{p}_{T} (GeV/#it{c});Invariant Mass(GeV/#it{c^2}); Counts", 100, 0, 10, 30, 2.96, 3.05);
 
-  fListHist->Add(fHistNsigmaPion);
+  fHistTPCdEdx[0] = new TH2D("fHistTPCdEdxPos", ";#it{p} (GeV/#it{c}); dE/dx; Counts", 256, 0, 10.24, 4096, 0, 2048);
+  fHistTPCdEdx[1] = new TH2D("fHistTPCdEdxNeg", ";#it{p} (GeV/#it{c}); dE/dx; Counts", 256, 0, 10.24, 4096, 0, 2048);
+
+  fListHist->Add(fHistNsigmaPi);
   fListHist->Add(fHistNsigmaHe3);
   fListHist->Add(fHistInvMass);
+  fListHist->Add(fHistTPCdEdx[0]);
+  fListHist->Add(fHistTPCdEdx[1]);
 
   PostData(1, fListHist);
   PostData(2, fTreeV0);
@@ -177,6 +189,7 @@ void AliAnalysisTaskHyperTriton2He3piML::UserExec(Option_t *)
   if (fMC)
   {
     fSHyperTriton.clear();
+    fSGenericV0.clear();
     for (int ilab = 0; ilab < mcEvent->GetNumberOfTracks(); ilab++)
     { // This is the begining of the loop on tracks
       AliVParticle *part = mcEvent->GetTrack(ilab);
@@ -216,9 +229,9 @@ void AliAnalysisTaskHyperTriton2He3piML::UserExec(Option_t *)
 
         SHyperTritonHe3pi v0part;
         v0part.fPdgCode = currentPDG;
-        v0part.fDecayX = sVtx[0];
-        v0part.fDecayY = sVtx[1];
-        v0part.fDecayZ = sVtx[2];
+        v0part.fDecayX = sVtx[0] - part->Xv();
+        v0part.fDecayY = sVtx[1] - part->Yv();
+        v0part.fDecayZ = sVtx[2] - part->Zv();
         v0part.fPxHe3 = he3->Px();
         v0part.fPyHe3 = he3->Py();
         v0part.fPzHe3 = he3->Pz();
@@ -226,6 +239,8 @@ void AliAnalysisTaskHyperTriton2He3piML::UserExec(Option_t *)
         v0part.fPyPi = pi->Py();
         v0part.fPzPi = pi->Pz();
         v0part.fFake = true;
+        v0part.fRecoIndex = -1;
+        v0part.fNegativeLabels = true;
         mcMap[ilab] = fSHyperTriton.size();
         fSHyperTriton.push_back(v0part);
       }
@@ -233,6 +248,14 @@ void AliAnalysisTaskHyperTriton2He3piML::UserExec(Option_t *)
   }
 
   fRHyperTriton.clear();
+
+  auto customNsigma = [this](double mom, double sig) -> double {
+    const float bg = mom / AliPID::ParticleMass(AliPID::kHe3);
+    const float *p = fCustomBethe;
+    const float expS = AliExternalTrackParam::BetheBlochAleph(bg, p[0], p[1], p[2], p[3], p[4]);
+    return (sig - expS) / (fCustomResolution * expS);
+  };
+
   for (int iV0 = 0; iV0 < esdEvent->GetNumberOfV0s();
        iV0++)
   { // This is the begining of the V0 loop (we analyse only offline
@@ -279,6 +302,10 @@ void AliAnalysisTaskHyperTriton2He3piML::UserExec(Option_t *)
     // Findable cluster s > 0 condition
     if (pTrack->GetTPCNclsF() <= 0 || nTrack->GetTPCNclsF() <= 0)
       continue;
+    
+    if ((pTrack->GetTPCClusterInfo(2, 1) < fMinTPCclusters) ||
+        (nTrack->GetTPCClusterInfo(2, 1) < fMinTPCclusters))
+      continue;
 
     // Official means of acquiring N-sigmas
     float nSigmaPosPi = fPIDResponse->NumberOfSigmasTPC(pTrack, AliPID::kPion);
@@ -288,13 +315,8 @@ void AliAnalysisTaskHyperTriton2He3piML::UserExec(Option_t *)
 
     if (fUseCustomBethe)
     {
-      const float nbetaGamma = nTrack->GetTPCmomentum() / AliPID::ParticleMass(AliPID::kHe3);
-      const float pbetaGamma = pTrack->GetTPCmomentum() / AliPID::ParticleMass(AliPID::kHe3);
-      const float *pars = fCustomBethe;
-      const float nExpSignal = AliExternalTrackParam::BetheBlochAleph(nbetaGamma, pars[0], pars[1], pars[2], pars[3], pars[4]);
-      const float pExpSignal = AliExternalTrackParam::BetheBlochAleph(pbetaGamma, pars[0], pars[1], pars[2], pars[3], pars[4]);
-      nSigmaNegHe3 = (nTrack->GetTPCsignal() - nExpSignal) / (fCustomResolution * nExpSignal);
-      nSigmaPosHe3 = (pTrack->GetTPCsignal() - pExpSignal) / (fCustomResolution * pExpSignal);
+      nSigmaNegHe3 = customNsigma(nTrack->GetTPCmomentum(),nTrack->GetTPCsignal());
+      nSigmaPosHe3 = customNsigma(pTrack->GetTPCmomentum(),pTrack->GetTPCsignal());
     }
 
     const float nSigmaNegAbsHe3 = std::abs(nSigmaNegHe3);
@@ -304,6 +326,9 @@ void AliAnalysisTaskHyperTriton2He3piML::UserExec(Option_t *)
 
     /// Skip V0 not involving (anti-)He3 candidates
 
+    fHistTPCdEdx[0]->Fill(pTrack->GetTPCmomentum(),pTrack->GetTPCsignal());
+    fHistTPCdEdx[1]->Fill(nTrack->GetTPCmomentum(),nTrack->GetTPCsignal());
+
     bool mHyperTriton = nSigmaPosAbsHe3 < fMaxTPChe3Sigma && nSigmaNegAbsPi < fMaxTPCpiSigma;
     bool aHyperTriton = nSigmaNegAbsHe3 < fMaxTPChe3Sigma && nSigmaPosAbsPi < fMaxTPCpiSigma;
     if (!mHyperTriton && !aHyperTriton)
@@ -311,6 +336,9 @@ void AliAnalysisTaskHyperTriton2He3piML::UserExec(Option_t *)
 
     AliESDtrack *he3Track = aHyperTriton ? nTrack : pTrack;
     AliESDtrack *piTrack = he3Track == nTrack ? pTrack : nTrack;
+
+    if (he3Track->Pt() * 2 < fMinHe3pt)
+      continue;
 
     double pP[3]{0.0}, nP[3]{0.0};
     v0->GetPPxPyPz(pP[0], pP[1], pP[2]);
@@ -327,7 +355,7 @@ void AliAnalysisTaskHyperTriton2He3piML::UserExec(Option_t *)
     if ((v0Pt < fMinPtToSave) || (fMaxPtToSave < v0Pt))
       continue;
 
-    if (hyperVector.M() < 2.8|| hyperVector.M() > 3.2)
+    if (hyperVector.M() < 2.9|| hyperVector.M() > 3.2)
       continue;
     // Track quality cuts
 
@@ -336,10 +364,6 @@ void AliAnalysisTaskHyperTriton2He3piML::UserExec(Option_t *)
     he3Track->GetImpactParameters(he3B, bCov);
     const float he3DCA = std::hypot(he3B[0], he3B[1]);
     const float piDCA = std::hypot(piB[0], piB[1]);
-
-    if ((pTrack->GetTPCClusterInfo(2, 1) < 70) ||
-        (nTrack->GetTPCClusterInfo(2, 1) < 70))
-      continue;
 
     unsigned char posXedRows = pTrack->GetTPCClusterInfo(2, 1);
     unsigned char negXedRows = nTrack->GetTPCClusterInfo(2, 1);
@@ -363,14 +387,41 @@ void AliAnalysisTaskHyperTriton2He3piML::UserExec(Option_t *)
     int ilab = -1;
     if (fMC)
     {
-      ilab = std::abs(ComputeMother(mcEvent, he3Track, piTrack));
-      AliVParticle *part = mcEvent->GetTrack(ilab);
-      if (part)
-      {
-        if (std::abs(part->PdgCode()) == 1010010030)
+      int label = 0;
+      if (ComputeMother(mcEvent, he3Track, piTrack, label)) {
+        ilab = std::abs(label);
+        AliVParticle *part = mcEvent->GetTrack(ilab);
+        if (part)
         {
-          fSHyperTriton[mcMap[ilab]].fRecoIndex = (fRHyperTriton.size());
-          fSHyperTriton[mcMap[ilab]].fFake = false;
+          if (std::abs(part->PdgCode()) == 1010010030)
+          {
+            fSHyperTriton[mcMap[ilab]].fRecoIndex = (fRHyperTriton.size());
+            fSHyperTriton[mcMap[ilab]].fFake = false;
+            fSHyperTriton[mcMap[ilab]].fNegativeLabels = (label < 0);
+          } else {
+            SGenericV0 genV0;
+            genV0.fRecoIndex = fRHyperTriton.size();
+            genV0.fPdgCode = part->PdgCode();
+            double sVtx[3]{0.0,0.0,0.0};
+            for (int iD = part->GetDaughterFirst(); iD <= part->GetDaughterLast(); ++iD)
+            {
+              AliVParticle *dau = mcEvent->GetTrack(iD);
+              if (mcEvent->IsSecondaryFromWeakDecay(iD) && dau)
+              {
+                sVtx[0] = dau->Xv();
+                sVtx[1] = dau->Yv();
+                sVtx[2] = dau->Zv();
+                break;
+              }
+            }
+            genV0.fDecayX = sVtx[0] - part->Xv();
+            genV0.fDecayY = sVtx[1] - part->Yv();
+            genV0.fDecayZ = sVtx[2] - part->Zv();
+            genV0.fPx = part->Px();
+            genV0.fPy = part->Py();
+            genV0.fPz = part->Pz();
+            fSGenericV0.push_back(genV0);
+          }
         }
       }
     }
@@ -388,6 +439,8 @@ void AliAnalysisTaskHyperTriton2He3piML::UserExec(Option_t *)
     v0part.fPxPi = piVector.Px();
     v0part.fPyPi = piVector.Py();
     v0part.fPzPi = piVector.Pz();
+    v0part.fTPCmomHe3 = he3Track->GetTPCmomentum();
+    v0part.fTPCmomPi = piTrack->GetTPCmomentum();
     v0part.fDcaHe32PrimaryVertex = he3DCA;
     v0part.fDcaPi2PrimaryVertex = piDCA;
     v0part.fDcaV0daughters = v0->GetDcaV0Daughters();
@@ -396,16 +449,19 @@ void AliAnalysisTaskHyperTriton2He3piML::UserExec(Option_t *)
     v0part.fTPCnSigmaHe3 = (pTrack == he3Track) ? nSigmaPosHe3 : nSigmaNegHe3;
     v0part.fTPCnSigmaPi = (pTrack == piTrack) ? nSigmaPosPi : nSigmaNegPi;
     v0part.fLeastNxedRows = minXedRows;
-    v0part.fLeastNpidClusters = pTrack->GetTPCsignalN() > nTrack->GetTPCsignalN() ? nTrack->GetTPCsignalN() : pTrack->GetTPCsignalN();
+    v0part.fNpidClustersHe3 = he3Track->GetTPCsignalN();
+    v0part.fNpidClustersPi = piTrack->GetTPCsignalN();
+    v0part.fTPCsignalHe3 = he3Track->GetTPCsignal();
+    v0part.fTPCsignalPi = piTrack->GetTPCsignal();
     v0part.fITSrefitHe3 = he3Track->GetStatus() & AliESDtrack::kITSrefit;
     v0part.fITSrefitPi = piTrack->GetStatus() & AliESDtrack::kITSrefit;
-    v0part.fSPDanyHe3 = he3Track->HasPointOnITSLayer(0) || he3Track->HasPointOnITSLayer(1);
-    v0part.fSPDanyPi = piTrack->HasPointOnITSLayer(0) || piTrack->HasPointOnITSLayer(1);
+    v0part.fITSclusHe3= he3Track->GetITSClusterMap();
+    v0part.fITSclusPi = piTrack->GetITSClusterMap();
     v0part.fMatter = (pTrack == he3Track);
     fRHyperTriton.push_back(v0part);
 
-    fHistNsigmaPion->Fill(piTrack->Pt(), v0part.fTPCnSigmaPi);
-    fHistNsigmaHe3->Fill(piTrack->Pt(), v0part.fTPCnSigmaHe3);
+    fHistNsigmaPi->Fill(piTrack->Pt(), v0part.fTPCnSigmaPi);
+    fHistNsigmaHe3->Fill(he3Vector.Pt(), v0part.fTPCnSigmaHe3);
     fHistInvMass->Fill(hyperVector.Pt(), hyperVector.M());
   }
 
@@ -422,4 +478,38 @@ void AliAnalysisTaskHyperTriton2He3piML::SetCustomBetheBloch(float res, const fl
   fUseCustomBethe = true;
   fCustomResolution = res;
   std::copy(bethe, bethe + 5, fCustomBethe);
+}
+
+AliAnalysisTaskHyperTriton2He3piML* AliAnalysisTaskHyperTriton2He3piML::AddTask(bool isMC, TString suffix) {
+    // Get the current analysis manager
+  AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
+  if (!mgr) {
+    ::Error("AddTaskHyperTriton2BodyML", "No analysis manager found.");
+    return nullptr;
+  }
+
+  // Check the analysis type using the event handlers connected to the analysis
+  // manager.
+  if (!mgr->GetInputEventHandler()) {
+    ::Error("AddTaskHyperTriton2BodyML", "This task requires an input event handler");
+    return nullptr;
+  }
+
+  TString tskname = "AliAnalysisTaskHyperTriton2He3piML";
+  tskname.Append(suffix.Data());
+  AliAnalysisTaskHyperTriton2He3piML *task = new AliAnalysisTaskHyperTriton2He3piML(isMC, tskname.Data());
+
+  AliAnalysisDataContainer *coutput1 = mgr->CreateContainer(
+      Form("%s_summary", tskname.Data()), TList::Class(),
+      AliAnalysisManager::kOutputContainer, "AnalysisResults.root");
+
+  AliAnalysisDataContainer *coutput2 =
+      mgr->CreateContainer(Form("HyperTritonTree%s", suffix.Data()), TTree::Class(),
+                           AliAnalysisManager::kOutputContainer, Form("HyperTritonTree.root:%s",suffix.Data()));
+  coutput2->SetSpecialOutput();
+
+  mgr->ConnectInput(task, 0, mgr->GetCommonInputContainer());
+  mgr->ConnectOutput(task, 1, coutput1);
+  mgr->ConnectOutput(task, 2, coutput2);
+  return task;
 }

@@ -18,6 +18,7 @@
 #include "TF1.h"
 class TTree;
 class TParticle;
+class AliAODMCParticle;
 class TH1D;
 class TH2D;
 class TList;
@@ -39,6 +40,8 @@ public:
   TList *GetOutputListLow() {return fOutputList_Low;};
   TList *GetOutputListHigh() {return fOutputList_High;};
 
+  void SetOldTree(Bool_t oldTree)  {fOldTree = oldTree;}; 
+
   void SetYmin(Double_t Ymin) {fYmin = Ymin;};
   void SetYmax(Double_t Ymax) {fYmax = Ymax;};
 
@@ -55,9 +58,14 @@ private:
   
 protected:
   TTree*              fTree;    //! tree
-  TParticle*          fMother;     //! mother
-  TParticle*          fDaughter1;  //! daughter 1
-  TParticle*          fDaughter2;  //! daughter 2
+  TParticle*          fMotherOld;     //! mother
+  TParticle*          fDaughter1Old;  //! daughter 1
+  TParticle*          fDaughter2Old;  //! daughter 2
+  AliAODMCParticle*       fMother;     //! mother
+  AliAODMCParticle*       fDaughter1;  //! daughter 1
+  AliAODMCParticle*       fDaughter2;  //! daughter 2
+
+  Bool_t              fOldTree;    // Old format of the tree with TParticle
   
   Double_t            fYmin;       // Ymin for the normalization
   Double_t            fYmax;       // Ymax for the normalization
@@ -91,7 +99,7 @@ protected:
   AliAnalysisTaskJpsi(const AliAnalysisTaskJpsi &c); // not implemented
   AliAnalysisTaskJpsi& operator= (const AliAnalysisTaskJpsi &c); // not implemented
   
-  ClassDef(AliAnalysisTaskJpsi,1)
+  ClassDef(AliAnalysisTaskJpsi,2)
 };
 
 #endif

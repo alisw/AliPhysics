@@ -62,6 +62,8 @@ class AliReducedTrackInfo : public AliReducedBaseTrack {
   Float_t TPCsignal()                      const {return fTPCsignal;}
   UChar_t TPCsignalN()                     const {return fTPCsignalN;}
   Float_t TPCnSig(Int_t specie)            const {return (specie>=0 && specie<=3 ? fTPCnSig[specie] : -999.);}
+  Float_t TPCdEdxInfoQmax(Int_t i)         const {return (i>=0 && i<4 ? fTPCdEdxInfoQmax[i] : -999.);}
+  Float_t TPCdEdxInfoQtot(Int_t i)         const {return (i>=0 && i<4 ? fTPCdEdxInfoQtot[i] : -999.);}
   Float_t TPCchi2()                        const {return fTPCchi2;}
   Float_t TPCActiveLength()         const {return fTPCActiveLength;}
   Float_t TPCGeomLength()       const {return fTPCGeomLength;}
@@ -140,6 +142,8 @@ class AliReducedTrackInfo : public AliReducedBaseTrack {
   Float_t fTPCsignal;          // TPC de/dx
   UChar_t fTPCsignalN;         // TPC no clusters de/dx
   Float_t fTPCnSig[4];         // 0-electron; 1-pion; 2-kaon; 3-proton
+  Float_t fTPCdEdxInfoQmax[4]; // dE/dx info using Qmax, 0 - IROC, 1- medium OROC, 2- long OROC, 3- all OROC
+  Float_t fTPCdEdxInfoQtot[4]; // dE/dx info using Qtot, 0 - IROC, 1- medium OROC, 2- long OROC, 3- all OROC
   Float_t fTPCchi2;            // TPC chi2 / cls
   Float_t fTPCActiveLength;   // track length in active parts of the TPC
   Float_t fTPCGeomLength;   // geometrical track length in the TPC
@@ -184,7 +188,7 @@ class AliReducedTrackInfo : public AliReducedBaseTrack {
 
   AliReducedTrackInfo& operator= (const AliReducedTrackInfo &c);
   
-  ClassDef(AliReducedTrackInfo, 7);
+  ClassDef(AliReducedTrackInfo, 8);
 };
 
 //_______________________________________________________________________________

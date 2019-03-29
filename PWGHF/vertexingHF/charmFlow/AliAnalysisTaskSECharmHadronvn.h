@@ -65,7 +65,7 @@ class AliAnalysisTaskSECharmHadronvn : public AliAnalysisTaskSE
     void SetTPCEP()                                                   {SetQnVectorDetConf(kTPCVZERO);}
     void SetqnMethod(int qnmethod)                                    {fqnMeth = qnmethod;}
     void SetScalProdLimit(double limit=0.3)                           {limit < 1. ? fScalProdLimit = limit : fScalProdLimit = 1.;}
-    void SetqnPercentileSelection(TString splinesfilepath);
+    void SetqnPercentileSelection(TString splinesfilepath)            {fPercentileqn=true; fqnSplineFileName=splinesfilepath;}
 
     void SetMinCentrality(float mincentr)                             {fMinCentr = mincentr;}
     void SetMaxCentrality(float maxcentr)                             {fMaxCentr = maxcentr;}
@@ -95,6 +95,7 @@ class AliAnalysisTaskSECharmHadronvn : public AliAnalysisTaskSE
     void GetMainQnVectorInfo(double &mainPsin, double &mainMultQn, double mainQn[2], double &SubAPsin, double &SubAMultQn, double SubAQn[2], double &SubBPsin, double &SubBMultQn, double SubBQn[2], AliHFQnVectorHandler* HFQnVectorHandler);
     void GetDaughterTracksToRemove(AliAODRecoDecayHF* d, int nDau, vector<AliAODTrack*> &trackstoremove);
     int IsCandidateSelected(AliAODRecoDecayHF *&d, int nDau, int absPdgMom, AliAnalysisVertexingHF *vHF, AliAODRecoDecayHF2Prong *dD0);
+    bool LoadSplinesForqnPercentile();
 
     AliAODEvent* fAOD;                      /// AOD event
 
@@ -120,7 +121,7 @@ class AliAnalysisTaskSECharmHadronvn : public AliAnalysisTaskSE
     int fHarmonic;                          /// flow harmonic
     int fCalibType;                         /// calibration type
     int fNormMethod;                        /// Qn-vector normalisation method
-    TString fOADBFileName;                  /// AODB file name for calibrations (is Qn-framework not used)
+    TString fOADBFileName;                  /// AODB file name for calibrations (if Qn-framework not used)
 
     int fFlowMethod;                        /// method used to compute vn
     int fEvPlaneDet;                        /// detector for event plane
@@ -129,6 +130,8 @@ class AliAnalysisTaskSECharmHadronvn : public AliAnalysisTaskSE
     int fqnMeth;                            /// flag to select qn method
     double fScalProdLimit;                  /// max value for the scalar product histograms
     bool fPercentileqn;                     /// flag to replace qn with its percentile in the histograms
+    TString fqnSplineFileName;              /// qn spline file name for qn percentile calibrations
+    bool fLoadedSplines;                    /// flag to know if splines loaded with task or read from tender task
     TList* fqnSplinesList[6];               /// lists of splines used to compute the qn percentile
 
     int fDecChannel;                        /// decay channel identifier
@@ -142,7 +145,7 @@ class AliAnalysisTaskSECharmHadronvn : public AliAnalysisTaskSE
     bool fEnableDownsamplqn;                /// flag to enable random downsampling for qn
     double fFracToKeepDownSamplqn;          /// fraction of tracks to keep in qn with random downsampling 
 
-    ClassDef(AliAnalysisTaskSECharmHadronvn,2); // AliAnalysisTaskSE for the HF vn analysis
+    ClassDef(AliAnalysisTaskSECharmHadronvn,3); // AliAnalysisTaskSE for the HF vn analysis
 };
 
 #endif

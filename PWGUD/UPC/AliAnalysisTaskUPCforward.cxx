@@ -92,12 +92,22 @@ AliAnalysisTaskUPCforward::AliAnalysisTaskUPCforward()
       fDimuonPtDistributionH(0),
       fZNCEnergyAgainstEntriesH(0),
       fZNAEnergyAgainstEntriesH(0),
+      fZNCEnergyBeforeTimingSelectionH(0),
+      fZNAEnergyBeforeTimingSelectionH(0),
       fZNCEnergyCalibratedH(0),
       fZNAEnergyCalibratedH(0),
       fZNCEnergyUncalibratedH(0),
       fZNAEnergyUncalibratedH(0),
+      fZNCEnergyCalibratedHigherGainH(0),
+      fZNAEnergyCalibratedHigherGainH(0),
       fZNCTimeAgainstEntriesH(0),
       fZNATimeAgainstEntriesH(0),
+      fZNCTimeStrictTimeWindowH(0),
+      fZNATimeStrictTimeWindowH(0),
+      fZNCTimeWithoutTimingH{0, 0, 0, 0},
+      fZNATimeWithoutTimingH{0, 0, 0, 0},
+      fCounterZNCH(0),
+      fCounterZNAH(0),
       fInvariantMassDistributionNoNeutronsH(0),
       fInvariantMassDistributionOneNeutronH(0),
       fInvariantMassDistributionAtLeastOneNeutronH(0),
@@ -155,7 +165,11 @@ AliAnalysisTaskUPCforward::AliAnalysisTaskUPCforward()
       fCosThetaHelicityFrameJPsiH(0),
       fCosThetaCollinsSoperFrameJPsiH(0),
       fPhiHelicityFrameJPsiH(0),
-      fPhiCollinsSoperFrameJPsiH(0)
+      fPhiCollinsSoperFrameJPsiH(0),
+      fCosThetaHelicityFrameJPsiRapidityBinsH{ 0, 0, 0, 0, 0, 0, 0, 0},
+      fCosThetaCollinsSoperFrameJPsiRapidityBinsH{ 0, 0, 0, 0, 0, 0, 0, 0},
+      fPhiHelicityFrameJPsiRapidityBinsH{ 0, 0, 0, 0, 0, 0, 0, 0},
+      fPhiCollinsSoperFrameJPsiRapidityBinsH{ 0, 0, 0, 0, 0, 0, 0, 0}
 {
     // default constructor, don't allocate memory here!
     // this is used by root for IO purposes, it needs to remain empty
@@ -179,12 +193,22 @@ AliAnalysisTaskUPCforward::AliAnalysisTaskUPCforward(const char* name)
       fDimuonPtDistributionH(0),
       fZNCEnergyAgainstEntriesH(0),
       fZNAEnergyAgainstEntriesH(0),
+      fZNCEnergyBeforeTimingSelectionH(0),
+      fZNAEnergyBeforeTimingSelectionH(0),
       fZNCEnergyCalibratedH(0),
       fZNAEnergyCalibratedH(0),
       fZNCEnergyUncalibratedH(0),
       fZNAEnergyUncalibratedH(0),
+      fZNCEnergyCalibratedHigherGainH(0),
+      fZNAEnergyCalibratedHigherGainH(0),
       fZNCTimeAgainstEntriesH(0),
       fZNATimeAgainstEntriesH(0),
+      fZNCTimeStrictTimeWindowH(0),
+      fZNATimeStrictTimeWindowH(0),
+      fZNCTimeWithoutTimingH{0, 0, 0, 0},
+      fZNATimeWithoutTimingH{0, 0, 0, 0},
+      fCounterZNCH(0),
+      fCounterZNAH(0),
       fInvariantMassDistributionNoNeutronsH(0),
       fInvariantMassDistributionOneNeutronH(0),
       fInvariantMassDistributionAtLeastOneNeutronH(0),
@@ -242,7 +266,11 @@ AliAnalysisTaskUPCforward::AliAnalysisTaskUPCforward(const char* name)
       fCosThetaHelicityFrameJPsiH(0),
       fCosThetaCollinsSoperFrameJPsiH(0),
       fPhiHelicityFrameJPsiH(0),
-      fPhiCollinsSoperFrameJPsiH(0)
+      fPhiCollinsSoperFrameJPsiH(0),
+      fCosThetaHelicityFrameJPsiRapidityBinsH{ 0, 0, 0, 0, 0, 0, 0, 0},
+      fCosThetaCollinsSoperFrameJPsiRapidityBinsH{ 0, 0, 0, 0, 0, 0, 0, 0},
+      fPhiHelicityFrameJPsiRapidityBinsH{ 0, 0, 0, 0, 0, 0, 0, 0},
+      fPhiCollinsSoperFrameJPsiRapidityBinsH{ 0, 0, 0, 0, 0, 0, 0, 0}
 {
     FillGoodRunVector(fVectorGoodRunNumbers);
 
@@ -304,9 +332,30 @@ void AliAnalysisTaskUPCforward::FillGoodRunVector(std::vector<Int_t> &fVectorGoo
                                          297415, 297441, 297442, 297446, 297450, 297451,
                                          297452, 297479, 297481, 297483, 297512, 297537,
                                          297540, 297541, 297542, 297544, 297558, 297588,
-                                         297590, 297595, 297623, 297624 };
+                                         297590, 297595/*, 297623, 297624*/ };
+  /* - This good run number list has been taken from the analysis
+     - note of Kay's talk for DIS 2017, see:
+     - https://alice-notes.web.cern.ch/system/files/notes/analysis/596/2017-Feb-08-analysis_note-2017-Feb-08-analysis-note.pdf
+     -
+   */
+  Int_t listOfGoodRunNumbersLHC15o[] = { 244918, 244980, 244982, 244983, 245064, 245066, 245068, 245145, 245146, 245151,
+                                         245152, 245231, 245232, 245233, 245253, 245259, 245343, 245345, 245346, 245347,
+                                         245353, 245401, 245407, 245409, 245410, 245446, 245450, 245496, 245501, 245504,
+                                         245505, 245507, 245535, 245540, 245542, 245543, 245554, 245683, 245692, 245700,
+                                         245705, 245729, 245731, 245738, 245752, 245759, 245766, 245775, 245785, 245793,
+                                         245829, 245831, 245833, 245949, 245952, 245954, 245963, 245996, 246001, 246003,
+                                         246012, 246036, 246037, 246042, 246048, 246049, 246053, 246087, 246089, 246113,
+                                         246115, 246148, 246151, 246152, 246153, 246178, 246181, 246182, 246217, 246220,
+                                         246222, 246225, 246272, 246275, 246276, 246390, 246391, 246392, 246424, 246428,
+                                         246431, 246433, 246434, 246487, 246488, 246493, 246495, 246675, 246676, 246750,
+                                         246751, 246755, 246757, 246758, 246759, 246760, 246763, 246765, 246804, 246805,
+                                         246806, 246807, 246808, 246809, 246844, 246845, 246846, 246847, 246851, 246855,
+                                         246859, 246864, 246865, 246867, 246871, 246930, 246937, 246942, 246945, 246948,
+                                         246949, 246980, 246982, 246984, 246989, 246991, 246994
+                                       };
   Int_t sizeOfLHC18q = 0;
   Int_t sizeOfLHC18r = 0;
+  Int_t sizeOfLHC15o = 0;
   for ( Int_t GoodRunNumberLHC18q : listOfGoodRunNumbersLHC18q ) {
         fVectorGoodRunNumbers.push_back(GoodRunNumberLHC18q);
         sizeOfLHC18q++;
@@ -315,6 +364,10 @@ void AliAnalysisTaskUPCforward::FillGoodRunVector(std::vector<Int_t> &fVectorGoo
         fVectorGoodRunNumbers.push_back(GoodRunNumberLHC18r);
         sizeOfLHC18r++;
   }
+  for ( Int_t GoodRunNumberLHC15o : listOfGoodRunNumbersLHC15o ) {
+        fVectorGoodRunNumbers.push_back(GoodRunNumberLHC15o);
+        sizeOfLHC15o++;
+  }
   cout << std::endl << "LHC18q GOOD RUNS:  " << std::endl;
   for ( Int_t i = 0; i < sizeOfLHC18q; i++ ) {
         cout << fVectorGoodRunNumbers.at(i) << ",   number: " << i << std::endl;
@@ -322,6 +375,10 @@ void AliAnalysisTaskUPCforward::FillGoodRunVector(std::vector<Int_t> &fVectorGoo
   cout << std::endl << "LHC18r GOOD RUNS:  " << std::endl;
   for ( Int_t i = sizeOfLHC18q; i < sizeOfLHC18q + sizeOfLHC18r; i++ ) {
         cout << fVectorGoodRunNumbers.at(i) << ",   number: " << (i-sizeOfLHC18q) << std::endl;
+  }
+  cout << std::endl << "LHC15o GOOD RUNS:  " << std::endl;
+  for ( Int_t i = sizeOfLHC18q + sizeOfLHC18r; i < sizeOfLHC18q + sizeOfLHC18r + sizeOfLHC15o; i++ ) {
+        cout << fVectorGoodRunNumbers.at(i) << ",   number: " << (i-sizeOfLHC18q-sizeOfLHC18r) << std::endl;
   }
 }
 //_____________________________________________________________________________
@@ -407,6 +464,12 @@ void AliAnalysisTaskUPCforward::UserCreateOutputObjects()
   fZNAEnergyAgainstEntriesH = new TH1F("fZNAEnergyAgainstEntriesH", "fZNAEnergyAgainstEntriesH", 20000, -10000, 40000);
   fOutputList->Add(fZNAEnergyAgainstEntriesH);
 
+  fZNCEnergyBeforeTimingSelectionH = new TH1F("fZNCEnergyBeforeTimingSelectionH", "fZNCEnergyBeforeTimingSelectionH", 20000, -10000, 40000);
+  fOutputList->Add(fZNCEnergyBeforeTimingSelectionH);
+
+  fZNAEnergyBeforeTimingSelectionH = new TH1F("fZNAEnergyBeforeTimingSelectionH", "fZNAEnergyBeforeTimingSelectionH", 20000, -10000, 40000);
+  fOutputList->Add(fZNAEnergyBeforeTimingSelectionH);
+
   fZNCEnergyCalibratedH = new TH1F("fZNCEnergyCalibratedH", "fZNCEnergyCalibratedH", 20000, -10000, 40000);
   fOutputList->Add(fZNCEnergyCalibratedH);
 
@@ -419,12 +482,45 @@ void AliAnalysisTaskUPCforward::UserCreateOutputObjects()
   fZNAEnergyUncalibratedH = new TH1F("fZNAEnergyUncalibratedH", "fZNAEnergyUncalibratedH", 20000, -10000, 40000);
   fOutputList->Add(fZNAEnergyUncalibratedH);
 
+  fZNCEnergyCalibratedHigherGainH = new TH1F("fZNCEnergyCalibratedHigherGainH", "fZNCEnergyCalibratedHigherGainH", 20000, -80000, 320000);
+  fOutputList->Add(fZNCEnergyCalibratedHigherGainH);
+
+  fZNAEnergyCalibratedHigherGainH = new TH1F("fZNAEnergyCalibratedHigherGainH", "fZNAEnergyCalibratedHigherGainH", 20000, -80000, 320000);
+  fOutputList->Add(fZNAEnergyCalibratedHigherGainH);
 
   fZNCTimeAgainstEntriesH = new TH1F("fZNCTimeAgainstEntriesH", "fZNCTimeAgainstEntriesH", 6000, -1500, 1500);
   fOutputList->Add(fZNCTimeAgainstEntriesH);
 
   fZNATimeAgainstEntriesH = new TH1F("fZNATimeAgainstEntriesH", "fZNATimeAgainstEntriesH", 6000, -1500, 1500);
   fOutputList->Add(fZNATimeAgainstEntriesH);
+
+  fZNCTimeStrictTimeWindowH = new TH1F("fZNCTimeStrictTimeWindowH", "fZNCTimeStrictTimeWindowH", 6000, -1500, 1500);
+  fOutputList->Add(fZNCTimeStrictTimeWindowH);
+
+  fZNATimeStrictTimeWindowH = new TH1F("fZNATimeStrictTimeWindowH", "fZNATimeStrictTimeWindowH", 6000, -1500, 1500);
+  fOutputList->Add(fZNATimeStrictTimeWindowH);
+
+  for(int iTiming = 0; iTiming < 4; iTiming++) {
+    fZNCTimeWithoutTimingH[iTiming] = new TH1F( Form("fZNCTimeWithoutTimingH_%d", iTiming),
+                                                Form("fZNCTimeWithoutTimingH_%d", iTiming),
+                                                6000, -1500, 1500
+                                               );
+    fOutputList->Add(fZNCTimeWithoutTimingH[iTiming]);
+  }
+
+  for(int iTiming = 0; iTiming < 4; iTiming++) {
+    fZNATimeWithoutTimingH[iTiming] = new TH1F( Form("fZNATimeWithoutTimingH_%d", iTiming),
+                                                Form("fZNATimeWithoutTimingH_%d", iTiming),
+                                                6000, -1500, 1500
+                                               );
+    fOutputList->Add(fZNATimeWithoutTimingH[iTiming]);
+  }
+
+  fCounterZNCH = new TH1F("fCounterZNCH", "fCounterZNCH", 6, -0.5, 5.5);
+  fOutputList->Add(fCounterZNCH);
+
+  fCounterZNAH = new TH1F("fCounterZNAH", "fCounterZNAH", 6, -0.5, 5.5);
+  fOutputList->Add(fCounterZNAH);
 
   fInvariantMassDistributionNoNeutronsH = new TH1F("fInvariantMassDistributionNoNeutronsH", "fInvariantMassDistributionNoNeutronsH", 2000, 0, 20);
   fOutputList->Add(fInvariantMassDistributionNoNeutronsH);
@@ -530,6 +626,42 @@ void AliAnalysisTaskUPCforward::UserCreateOutputObjects()
 
   fPhiCollinsSoperFrameJPsiH = new TH1F("fPhiCollinsSoperFrameJPsiH", "fPhiCollinsSoperFrameJPsiH", 10000, -10., 10.);
   fOutputList->Add(fPhiCollinsSoperFrameJPsiH);
+
+  for(Int_t iRapidityBin = 0; iRapidityBin < 8; iRapidityBin++ ){
+    fCosThetaHelicityFrameJPsiRapidityBinsH[iRapidityBin] = new TH1F(
+                Form("fCosThetaHelicityFrameJPsiRapidityBinsH_%d", iRapidityBin),
+                Form("fCosThetaHelicityFrameJPsiRapidityBinsH_%d", iRapidityBin),
+                1000, -1., 1.
+              );
+    fOutputList->Add(fCosThetaHelicityFrameJPsiRapidityBinsH[iRapidityBin]);
+  }
+
+  for(Int_t iRapidityBin = 0; iRapidityBin < 8; iRapidityBin++ ){
+    fCosThetaCollinsSoperFrameJPsiRapidityBinsH[iRapidityBin] = new TH1F(
+                Form("fCosThetaCollinsSoperFrameJPsiRapidityBinsH_%d", iRapidityBin),
+                Form("fCosThetaCollinsSoperFrameJPsiRapidityBinsH_%d", iRapidityBin),
+                1000, -1., 1.
+              );
+    fOutputList->Add(fCosThetaCollinsSoperFrameJPsiRapidityBinsH[iRapidityBin]);
+  }
+
+  for(Int_t iRapidityBin = 0; iRapidityBin < 8; iRapidityBin++ ){
+    fPhiHelicityFrameJPsiRapidityBinsH[iRapidityBin] = new TH1F(
+                Form("fPhiHelicityFrameJPsiRapidityBinsH_%d", iRapidityBin),
+                Form("fPhiHelicityFrameJPsiRapidityBinsH_%d", iRapidityBin),
+                10000, -10., 10.
+              );
+    fOutputList->Add(fPhiHelicityFrameJPsiRapidityBinsH[iRapidityBin]);
+  }
+
+  for(Int_t iRapidityBin = 0; iRapidityBin < 8; iRapidityBin++ ){
+    fPhiCollinsSoperFrameJPsiRapidityBinsH[iRapidityBin] = new TH1F(
+                Form("fPhiCollinsSoperFrameJPsiRapidityBinsH_%d", iRapidityBin),
+                Form("fPhiCollinsSoperFrameJPsiRapidityBinsH_%d", iRapidityBin),
+                10000, -10., 10.
+              );
+    fOutputList->Add(fPhiCollinsSoperFrameJPsiRapidityBinsH[iRapidityBin]);
+  }
 
   //_______________________________
   // - End of the function
@@ -1096,6 +1228,10 @@ void AliAnalysisTaskUPCforward::UserExec(Option_t *)
    */
   Bool_t isZNAfired = kFALSE;
   Bool_t isZNCfired = kFALSE;
+  Bool_t isZNAfiredStrict = kFALSE;
+  Bool_t isZNCfiredStrict = kFALSE;
+  Int_t  counterZNA = 0;
+  Int_t  counterZNC = 0;
   /* - Note that in C++ the && and || operators "short-circuit". That means that
      - they only evaluate a parameter if required. If the first parameter to &&
      - is false, or the first to || is true, the rest will not be evaluated.
@@ -1109,23 +1245,59 @@ void AliAnalysisTaskUPCforward::UserExec(Option_t *)
   for(Int_t iZDC = 0; iZDC < 4 ; iZDC++) {
     if ( (isZNAfired == 0) && (fZNATDC[iZDC] > -2.) && (fZNATDC[iZDC] < 2.) ) {
       isZNAfired = kTRUE;
-      fZNATimeAgainstEntriesH->Fill(fZNATDC[iZDC]);
+      /* - After mail with Chiara Oppedisano, it seems like the best way
+         - to proceed is to firstly call the IsZNAfired() and then filling...
+         -
+         - If this doesn't appear in later pulls it is because this
+         - doesn't seem to suit my case...
+         -
+       */
+      if( dataZDC->IsZNAfired() ) fZNATimeAgainstEntriesH->Fill(fZNATDC[iZDC]);
+      fCounterZNAH->Fill(counterZNA);
     }
     if ( (isZNCfired == 0) && (fZNCTDC[iZDC] > -2.) && (fZNCTDC[iZDC] < 2.) ) {
       isZNCfired = kTRUE;
-      fZNCTimeAgainstEntriesH->Fill(fZNCTDC[iZDC]);
+      if( dataZDC->IsZNCfired() ) fZNCTimeAgainstEntriesH->Fill(fZNCTDC[iZDC]);
+      fCounterZNCH->Fill(counterZNC);
     }
+    counterZNA++;
+    counterZNC++;
   }
 
   if ( isZNCfired != 0 ) {
     fZNCEnergyAgainstEntriesH->Fill(fZNCEnergy);
     if ( calibrated == 0 ) fZNCEnergyUncalibratedH->Fill(fZNCEnergy);
-    if ( calibrated == 1 ) fZNCEnergyCalibratedH  ->Fill(fZNCEnergy);
+    if ( calibrated == 1 ) {
+      fZNCEnergyCalibratedH          ->Fill( fZNCEnergy );
+      fZNCEnergyCalibratedHigherGainH->Fill( dataZDC->GetZNCTowerEnergyLR()[0] );
+    }
   }
+  fZNCEnergyBeforeTimingSelectionH->Fill(fZNCEnergy);
   if ( isZNAfired != 0 ) {
     fZNAEnergyAgainstEntriesH->Fill(fZNAEnergy);
     if ( calibrated == 0 ) fZNAEnergyUncalibratedH->Fill(fZNAEnergy);
-    if ( calibrated == 1 ) fZNAEnergyCalibratedH  ->Fill(fZNAEnergy);
+    if ( calibrated == 1 ) {
+      fZNAEnergyCalibratedH          ->Fill( fZNAEnergy );
+      fZNAEnergyCalibratedHigherGainH->Fill( dataZDC->GetZNATowerEnergyLR()[0] );
+    }
+  }
+  fZNAEnergyBeforeTimingSelectionH->Fill(fZNAEnergy);
+
+  /* - CHECKS for the timing:
+     - Stricter timing window AND without timing window at all!
+     -
+   */
+  for(Int_t iZDC = 0; iZDC < 4 ; iZDC++) {
+    if ( (isZNAfiredStrict == 0) && (fZNATDC[iZDC] > -1.) && (fZNATDC[iZDC] < 1.) ) {
+      isZNAfiredStrict = kTRUE;
+      if( dataZDC->IsZNAfired() ) fZNATimeStrictTimeWindowH->Fill(fZNATDC[iZDC]);
+    }
+    if ( (isZNCfiredStrict == 0) && (fZNCTDC[iZDC] > -1.) && (fZNCTDC[iZDC] < 1.) ) {
+      isZNCfiredStrict = kTRUE;
+      if( dataZDC->IsZNCfired() ) fZNCTimeStrictTimeWindowH->Fill(fZNCTDC[iZDC]);
+    }
+    fZNATimeWithoutTimingH[iZDC]->Fill(fZNATDC[iZDC]);
+    fZNCTimeWithoutTimingH[iZDC]->Fill(fZNCTDC[iZDC]);
   }
 
   /*
@@ -1193,13 +1365,13 @@ void AliAnalysisTaskUPCforward::UserExec(Option_t *)
    */
   // if( fZNCTime > -5.0 ) {
   //   if( fZNCTime < 5.0 ) {
-  if ( isZNAfired != 0 ) {
-    if ( isZNCfired != 0 ) {
-          /* At any levels, this means |fZNCTime| < 5. */
-          if( fZNCEnergy > -300 ) {
-                      if( fZNCEnergy < 125 ) {
-                                  if( fZNAEnergy > -300 ) {
-                                              if( fZNAEnergy < 125 ) {
+  // if ( isZNAfired != 0 ) {
+  //   if ( isZNCfired != 0 ) {
+          /* At any levels, this means |fZNCTime| < 2. */
+          if( fZNCEnergy > -5000 ) {
+                      if( fZNCEnergy < 1250 ) {
+                                  if( fZNAEnergy > -5000 ) {
+                                              if( fZNAEnergy < 1000 ) {
                                                           if( ptOfTheDimuonPair < 0.25) {
                                                                     fInvariantMassDistributionCoherentZNCzeroZNAzeroH->Fill(possibleJPsi.Mag());
                                                           } else {
@@ -1214,8 +1386,8 @@ void AliAnalysisTaskUPCforward::UserExec(Option_t *)
                                               }
                                   }
                       } else {
-                                  if( fZNAEnergy > -300 ) {
-                                              if( fZNAEnergy < 125 ) {
+                                  if( fZNAEnergy > -5000 ) {
+                                              if( fZNAEnergy < 1000 ) {
                                                           if( ptOfTheDimuonPair < 0.25) {
                                                                     fInvariantMassDistributionCoherentZNCanyZNAzeroH->Fill(possibleJPsi.Mag());
                                                           } else {
@@ -1232,8 +1404,8 @@ void AliAnalysisTaskUPCforward::UserExec(Option_t *)
 
                       }
           }
-    }
-  }
+  //   }
+  // }
 
 
   /* - Filling the J/Psi's polarization plots.
@@ -1316,6 +1488,29 @@ void AliAnalysisTaskUPCforward::UserExec(Option_t *)
     for(Int_t iRapidityBin = 0; iRapidityBin < 8; iRapidityBin++){
         if( (possibleJPsiCopy.Rapidity() + 4) < 1.5*(iRapidityBin + 1)/8 ){
           fThetaDistribOfPositiveMuonRestFrameJPsiRapidityBinH[iRapidityBin]->Fill(cosThetaMuonsRestFrame[0]);
+          /* - New part: filling all possible histograms!
+             -
+           */
+          fCosThetaHelicityFrameJPsiRapidityBinsH[iRapidityBin]->Fill( CosThetaHelicityFrame( muonsCopy2[0],
+                                                                                              muonsCopy2[1],
+                                                                                              possibleJPsiCopy
+                                                                                              )
+                                                                                           );
+          fCosThetaCollinsSoperFrameJPsiRapidityBinsH[iRapidityBin]->Fill( CosThetaCollinsSoper( muonsCopy2[0],
+                                                                                                 muonsCopy2[1],
+                                                                                                 possibleJPsiCopy
+                                                                                                 )
+                                                                                               );
+          fPhiHelicityFrameJPsiRapidityBinsH[iRapidityBin]->Fill( CosPhiHelicityFrame( muonsCopy2[0],
+                                                                                       muonsCopy2[1],
+                                                                                       possibleJPsiCopy
+                                                                                       )
+                                                                                     );
+          fPhiCollinsSoperFrameJPsiRapidityBinsH[iRapidityBin]->Fill( CosPhiCollinsSoper( muonsCopy2[0],
+                                                                                          muonsCopy2[1],
+                                                                                          possibleJPsiCopy
+                                                                                          )
+                                                                                        );
           break;
         }
     }

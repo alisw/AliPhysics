@@ -3006,7 +3006,7 @@ void AliMultSelectionTask::CreateEmptyOADB()
 }
 
 //______________________________________________________________________
-AliMultSelectionTask* AliMultSelectionTask::AddTaskMultSelection ( Bool_t lCalibration, TString lExtraOptions, Int_t lNDebugEstimators, const TString lMasterJobSessionFlag) {
+AliMultSelectionTask* AliMultSelectionTask::AddTaskMultSelection ( Bool_t lCalibration, TString lExtraOptions, Int_t lNDebugEstimators, TString lContainerAppend, const TString lMasterJobSessionFlag) {
     // Creates, configures and attaches to the train a Multiplicity Selection Task
     // Get the pointer to the existing analysis manager via the static access method.
     //==============================================================================
@@ -3039,7 +3039,7 @@ AliMultSelectionTask* AliMultSelectionTask::AddTaskMultSelection ( Bool_t lCalib
 
     Printf("Set OutputFileName : \n %s\n", outputFileName.Data() );
 
-    AliAnalysisDataContainer *coutputList = mgr->CreateContainer("cListMultSelection",
+    AliAnalysisDataContainer *coutputList = mgr->CreateContainer(Form("cListMultSelection%s", lContainerAppend.Data()),
                                                                  TList::Class(),
                                                                  AliAnalysisManager::kOutputContainer,
                                                                  outputFileName );
@@ -3049,7 +3049,7 @@ AliMultSelectionTask* AliMultSelectionTask::AddTaskMultSelection ( Bool_t lCalib
     mgr->ConnectOutput(taskMultSelection, 1, coutputList);
 
     if ( lCalibration ) {
-      AliAnalysisDataContainer *coutputTree = mgr->CreateContainer("cCalibrationTree",
+      AliAnalysisDataContainer *coutputTree = mgr->CreateContainer(Form("cCalibrationTree%s",lContainerAppend.Data()),
                                                                    TTree::Class(),
                                                                    AliAnalysisManager::kOutputContainer,
                                                                    outputFileName );

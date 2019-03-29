@@ -33,7 +33,7 @@
 #include "AliAnalysisTaskSE.h"
 #include "AliMCEvent.h"
 #include "AliVEvent.h"
-#include "AliVParticle.h"
+#include "AliAODMCParticle.h"
 #include "AliInputEventHandler.h"
 
 
@@ -136,24 +136,23 @@ void AlimakeJPsiTree::UserExec(Option_t *)
   
   for(int iparticle=0; iparticle<nparticles;iparticle++){
     
-    AliVParticle *p_particle = fMcEvent->GetTrack(iparticle);
-    TParticle * p = fMcEvent->Particle(iparticle);
-    if (!p || !p_particle) continue;
-    int pdg = TMath::Abs( p->GetPdgCode() );
+    AliAODMCParticle *p = (AliAODMCParticle *) fMcEvent->GetTrack(iparticle);
+    if (!p) continue;
+    int pdg = TMath::Abs( p->PdgCode() );
     //printf("pdg of particles %d\n",pdg);
 
     // find JPsi
     if(pdg==443) {
       fmother = p;
       // loop over daughters
-      int k1 = p->GetFirstDaughter();
-      int k2 = p->GetLastDaughter();
+      int k1 = p->GetDaughterFirst();
+      int k2 = p->GetDaughterLast();
       Bool_t found_positron = kFALSE;
       Bool_t found_electron = kFALSE;
       for(int d=k1; d <= k2; d++) {
 	if(d>0){
-	  TParticle *decay = fMcEvent->Particle(d);
-	  int pdg_daughter = decay->GetPdgCode();
+	  AliAODMCParticle *decay = (AliAODMCParticle *) fMcEvent->GetTrack(d);
+	  int pdg_daughter = decay->PdgCode();
 	  if(fDebug > 1) printf("pdg of daughter %d\n",pdg_daughter);
 	  if(pdg_daughter==11){
 	    // found positron

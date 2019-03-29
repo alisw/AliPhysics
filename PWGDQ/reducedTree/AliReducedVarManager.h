@@ -256,8 +256,15 @@ class AliReducedVarManager : public TObject {
     kVtxYspd,           // vtx Y from spd
     kVtxZspd,           // vtx Z from spd
     kDeltaVtxZspd,         // vtxZ - vtxZspd
+    kTPCpileupZAC,      // TPC pileup event Z from A&C sides  
+    kTPCpileupZA,       // TPC pileup event Z from A side
+    kTPCpileupZC,       // TPC pileup event Z from C side
+    kTPCpileupContributorsAC,    // TPC pileup event contributors from A&C sides
+    kTPCpileupContributorsA,     // TPC pileup event contributors from A side
+    kTPCpileupContributorsC,     // TPC pileup event contributors from C side
     kNTracksPerTrackingStatus,  // number of tracks with a given tracking flag
-    kNTracksTPCoutVsITSout=kNTracksPerTrackingStatus+kNTrackingStatus,   //  TPCout/ITSout
+    kNTracksTPCoutBeforeClean=kNTracksPerTrackingStatus+kNTrackingStatus,      // TPCout tracks before ESD cleaning
+    kNTracksTPCoutVsITSout,                              //  TPCout/ITSout
     kNTracksTRDoutVsITSout,                              //  TRDout/ITSout
     kNTracksTOFoutVsITSout,                              //  TOFout/ITSout
     kNTracksTRDoutVsTPCout,                              //  TRDout/TPCout
@@ -309,6 +316,8 @@ class AliReducedVarManager : public TObject {
     kNtracksEventPlane, // number of tracks used for event plane                
     kNCaloClusters,     // number of calorimeter clusters
     kNTPCclusters,    // number of TPC clusters
+    kNTPCclustersFromPileup,            // number of TPC clusters minus the expected TPC clusters if no pileup is present
+    kNTPCclustersFromPileupRelative,    // number of TPC clusters minus the expected TPC clusters w/o pileup relative to the TPC clusters w/o pileup 
     kMultiplicity,
     kSPDntracklets = kMultiplicity,
     kSPDntracklets08,
@@ -567,7 +576,10 @@ class AliReducedVarManager : public TObject {
     kTPCnclsRatio3,      // TPCCrossedRows/TPCnclsF
     kTPCsignal,         
     kTPCsignalN,
-    kTPCnSig,  
+    kTPCdEdxQmax,                 // dEdx info from Qmax (IROC, medium OROC, long OROC, all OROC)
+    kTPCdEdxQtot=kTPCdEdxQmax+4,  // dEdx info from Qtot (IROC, medium OROC, long OROC, all OROC)
+    kTPCdEdxQmaxOverQtot=kTPCdEdxQtot+4,    // Qmax / Qtot
+    kTPCnSig=kTPCdEdxQmaxOverQtot+4,  
     kTPCnSigCorrected=kTPCnSig+4,
     kTOFbeta=kTPCnSigCorrected+4,
     kTOFtime,
@@ -586,6 +598,7 @@ class AliReducedVarManager : public TObject {
     kEMCALmatchedClusterId,
     kEMCALmatchedEOverP,
     kEMCALmatchedM02,
+    kEMCALmatchedM20,
     // Calorimeter cluster variables --------------------------------------
     kEMCALclusterEnergy,        
     kEMCALclusterDx,            
@@ -601,17 +614,25 @@ class AliReducedVarManager : public TObject {
     kTrackMCFlag,
     kTrackMCFlag2,
     // Correlation variables ----------------------------------------------
-    kDeltaPhi,      // shifted to [-pi/2, 3/2 * pi]
-    kDeltaPhiSym,   // shifted to [0, pi]
+    kDeltaPhi,        // shifted to [-pi/2, 3/2 * pi]
+    kDeltaPhiBoosted, // after boost of associated track to trigger rest fram
+    kDeltaPhiSym,     // shifted to [0, pi]
+    kDeltaPhiSymBoosted,
     kDeltaTheta,
+    kDeltaThetaBoosted,
     kDeltaEta,
+    kDeltaEtaBoosted,
     kDeltaEtaAbs,
+    kDeltaEtaAbsBoosted,
     kTriggerPt,       // pt of J/psi candidate
     kTriggerRap,      // rapidity of J/psi candidate
     kTriggerRapAbs,   // absolute rapidity of J/psi candidate
-    kAssociatedPt,    // pt of associated track
-    kAssociatedEta,   // eta of associated track
-    kAssociatedPhi,   // phi of associated track
+    kAssociatedPt,          // pt of associated track
+    kAssociatedPtBoosted,   // pt of associated track, after boost to trigger rest frame
+    kAssociatedEta,         // eta of associated track
+    kAssociatedEtaBoosted,
+    kAssociatedPhi,         // phi of associated track
+    kAssociatedPhiBoosted,
     // TRD GTU online tracks
     kTRDGTUtracklets,   // TRD online track #tracklets
     kTRDGTUlayermask,   // TRD online track hit in layer0 yes/no
@@ -776,7 +797,7 @@ class AliReducedVarManager : public TObject {
   AliReducedVarManager(AliReducedVarManager const&);
   AliReducedVarManager& operator=(AliReducedVarManager const&);  
   
-  ClassDef(AliReducedVarManager, 7);
+  ClassDef(AliReducedVarManager, 8);
 };
 
 #endif

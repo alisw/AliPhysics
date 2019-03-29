@@ -536,6 +536,12 @@ Bool_t AliMultSelectionCalibratorMC::Calibrate() {
     //Create 2D correlation plots as needed
     TH2F *l2dTrackletVsEstimatorData [1000] [lNEstimators];
     TH2F *l2dTrackletVsEstimatorMC   [1000] [lNEstimators];
+    for(Int_t ii=0; ii<1000; ii++)
+        for(Int_t jj=0; jj<lNEstimators; jj++){
+            l2dTrackletVsEstimatorData[ii][jj] = 0x0;
+            l2dTrackletVsEstimatorMC[ii][jj] = 0x0;
+        }
+    
     cout<<"(5) Creating histograms..."<<endl;
 
     for(Int_t iRun=0; iRun<lNRuns; iRun++) {
@@ -595,9 +601,17 @@ Bool_t AliMultSelectionCalibratorMC::Calibrate() {
     //Prepare 1D fits
     TProfile *profdata[1000][lNEstimators];
     TProfile *profmc[1000][lNEstimators];
-
+    
     TF1 *fitdata[1000][lNEstimators];
     TF1 *fitmc[1000][lNEstimators];
+    
+    for(Int_t ii=0; ii<1000; ii++)
+        for(Int_t jj=0; jj<lNEstimators; jj++){
+            profdata[ii][jj]=0x0;
+            profmc[ii][jj]=0x0;
+            fitdata[ii][jj]=0x0;
+            fitmc[ii][jj]=0x0;
+        }
     
     TString fFormula = "[0]*x";
     
@@ -613,9 +627,16 @@ Bool_t AliMultSelectionCalibratorMC::Calibrate() {
                 lLowestX=fSelection->GetEstimator(iEst)->GetAnchorPoint(); //Remove lowest
             }
             
-            cout<<"At Run "<<lRunNumbers[iRun]<<" ("<<iRun<<"/"<<lNRuns<<"), estimator "<<fSelection->GetEstimator(iEst)->GetName()<<", fit range "<<lMaxEst[iEst][iRun]<<endl;
+            cout<<"---> At Run "<<lRunNumbers[iRun]<<" ("<<iRun<<"/"<<lNRuns<<"), estimator "<<fSelection->GetEstimator(iEst)->GetName()<<", fit range "<<lMaxEst[iEst][iRun]<<endl;
+            if(!l2dTrackletVsEstimatorData[iRun][iEst]) cout<<"Null pointer for l2dTrackletVsEstimatorData"<<endl;
+            if(!l2dTrackletVsEstimatorMC[iRun][iEst]) cout<<"Null pointer for l2dTrackletVsEstimatorMC"<<endl;
+            cout<<"Profdata: setting up..."<<endl;
             profdata[ iRun ][ iEst ] = l2dTrackletVsEstimatorData[iRun][iEst]->ProfileY(Form("profdata_%i_%s",lRunNumbers[iRun],fSelection->GetEstimator(iEst)->GetName() ) ) ;
+            cout<<"Profmc: setting up..."<<endl;
             profmc[ iRun ][ iEst ] = l2dTrackletVsEstimatorMC[iRun][iEst]->ProfileY(Form("profmc_%i_%s",lRunNumbers[iRun],fSelection->GetEstimator(iEst)->GetName() ) ) ;
+            
+            fitdata[iRun][iEst] = new TF1(Form("fitdata_%i_%s",lRunNumbers[iRun],fSelection->GetEstimator(iEst)->GetName() ), fFormula.Data(), lLowestX, lMaxEst[iEst][iRun]);
+            fitmc[iRun][iEst] = new TF1(Form("fitmc_%i_%s",lRunNumbers[iRun],fSelection->GetEstimator(iEst)->GetName() ), fFormula.Data(), lLowestX, lMaxEst[iEst][iRun]);
             
             if(fkUseQuadraticMapping){
                 fitdata[iRun][iEst]->SetParameter(0,0);
@@ -651,10 +672,15 @@ Bool_t AliMultSelectionCalibratorMC::Calibrate() {
             Double_t lIncline   = 1e-3;
             Double_t lInclineMC = 1e-3;
             
+            if( !profdata[iRun][iEst]) cout<<"Null pointer!"<<endl;
+            if( !profmc[iRun][iEst]) cout<<"Null pointer!"<<endl;
             if( TMath::Abs(lAvEst[iEst][iRun])>1e-3 ){
                 lIncline   = profdata[iRun][iEst]->GetBinContent( profdata[iRun][iEst]->FindBin(lAvEst[iEst][iRun]) ) / lAvEst[iEst][iRun];
                 lInclineMC = profmc  [iRun][iEst]->GetBinContent( profmc  [iRun][iEst]->FindBin(lAvEst[iEst][iRun]) ) / lAvEst[iEst][iRun];
             }
+            
+            if( !fitdata[iRun][iEst]) cout<<"Null pointer!"<<endl;
+            if( !fitmc[iRun][iEst]) cout<<"Null pointer!"<<endl;
             
             fitdata[iRun][iEst]->SetParameter(0,lIncline);
             fitmc[iRun][iEst]->SetParameter(0,lIncline);
@@ -797,9 +823,10 @@ Bool_t AliMultSelectionCalibratorMC::Calibrate() {
                      */
                     
                     //lTempDef = Form(TMath::Power(( (Amc + Bmc * TMath::Power(xmc,Cmc)) - Adata )/Bdata, 1./Cdata),
-                    lTempDef = Form("TMath::Power(( (%.10f + %.10f * TMath::Power(x,%.10f)) - %.10f )/%.10f, 1./%.10f)",
+                    lTempDef = Form("TMath::Power(( (%.10f + %.10f * TMath::Power(%s,%.10f)) - %.10f )/%.10f, 1./%.10f)",
                                     fitmc[iRun][iEst]->GetParameter(0),
                                     fitmc[iRun][iEst]->GetParameter(1),
+                                    lTempDef.Data(),
                                     fitmc[iRun][iEst]->GetParameter(2),
                                     fitdata[iRun][iEst]->GetParameter(0),
                                     fitdata[iRun][iEst]->GetParameter(1),
@@ -847,8 +874,38 @@ Bool_t AliMultSelectionCalibratorMC::Calibrate() {
                 TString lTempDef;
                 for(Int_t iEst=0; iEst<lNEstimators; iEst++){
                     lTempDef = fselsdef->GetEstimator( iEst )->GetDefinition();
-                    lTempDef.Prepend(Form("%.10f*(",lScaleFactors[iEst][iRun] ));
-                    lTempDef.Append(")"); //don't forget parentheses...
+                    //Construction of estimator re-definition
+                    if(!fkUseQuadraticMapping){
+                        lTempDef.Prepend(Form("%.10f*(",lScaleFactors[iEst][iRun] ));
+                        lTempDef.Append(")"); //don't forget parentheses...
+                    }else{
+                        //Experimental quadratic fit
+                        TString lTemporary = lTempDef.Data();
+                        
+                        /*
+                         //Substitution logic:
+                         xdata = TMath::Power((ydata - Adata)/Bdata, 1./Cdata)
+                         ydata -> ymc = Amc + Bmc * xmc ^ Cmc
+                         
+                         full formula:
+                         
+                         xdata = TMath::Power(( Amc + Bmc * TMath::Power(xmc,Cmc) - Adata )/Bdata, 1./Cdata);
+                         */
+                        
+                        lTempDef = Form("TMath::Power(( (%.10f + %.10f * TMath::Power(%s,%.10f)) - %.10f )/%.10f, 1./%.10f)",
+                                        fitmc[iRun][iEst]->GetParameter(0),
+                                        fitmc[iRun][iEst]->GetParameter(1),
+                                        lTempDef.Data(),
+                                        fitmc[iRun][iEst]->GetParameter(2),
+                                        fitdata[iRun][iEst]->GetParameter(0),
+                                        fitdata[iRun][iEst]->GetParameter(1),
+                                        fitdata[iRun][iEst]->GetParameter(2));
+                        lTempDef.ReplaceAll("ESTIMATOR",lTemporary.Data());
+                        cout<<"================================================================================"<<endl;
+                        cout<<" Quadratic fit print obtained for estimator "<<fsels->GetEstimator( iEst )->GetName()<<endl;
+                        cout<<lTempDef.Data()<<endl;
+                        cout<<"================================================================================"<<endl;
+                    }
                     
                     //if ZxxFired included in the estimator, ignore it
                     lTempDef.ReplaceAll("fZnaFired", "1");

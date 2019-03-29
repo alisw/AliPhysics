@@ -313,9 +313,15 @@ public:
     BuildMap& operator()(const Key_t &key, const char* val) { fMap[key] = StringValue_t(val); return *this; }
 #endif
 
-    operator AliFemtoConfigObject() {
-      return AliFemtoConfigObject(std::move(fMap));
-    }
+    operator AliFemtoConfigObject()
+      { return into(); }
+
+    AliFemtoConfigObject into()
+      { return AliFemtoConfigObject(std::move(fMap)); }
+
+    AliFemtoConfigObject into() const
+      { return AliFemtoConfigObject(fMap); }
+
 
   protected:
     MapValue_t fMap;
@@ -614,6 +620,9 @@ public:
     IMPL_POP_ITEM(RangeValue_t, pop_range);
     IMPL_POP_ITEM(pair_of_floats, pop_range);
     IMPL_POP_ITEM(pair_of_ints, pop_range);
+
+    StringValue_t pop_str(const Key_t &key, const char* _default)
+      { StringValue_t res(_default); pop_and_load(key, res); return res; }
 
   #undef IMPL_POP_ITEM
 

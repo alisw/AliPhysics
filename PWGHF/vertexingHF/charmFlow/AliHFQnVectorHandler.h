@@ -90,6 +90,10 @@ class AliHFQnVectorHandler : public TObject
 
     void RemoveTracksFromQnTPC(vector<AliAODTrack*> trToRem, double QnVecFullTPC[2], double QnVecPosTPC[2], double QnVecNegTPC[2], double &multFullTPC, double &multPosTPC, double &multNegTPC, bool getUnNormalised=false); 
 
+    void EnablePhiDistrHistos();
+    TH2F* GetPhiDistrHistosTPCPosEta() const {return fPhiVsCentrTPC[0];}
+    TH2F* GetPhiDistrHistosTPCNegEta() const {return fPhiVsCentrTPC[1];}
+
   private:  
 
     //utils methods
@@ -169,13 +173,15 @@ class AliHFQnVectorHandler : public TObject
     TH1D* fQy2sV0C[14];                                        /// sigma Qyn V0C
 
     TH1D* fWeightsTPC;                                         /// Weights for TPC --> to be defined
+    bool fEnablePhiDistrHistos;                                /// Enable phi distribution histos
+    TH2F* fPhiVsCentrTPC[2];                                   /// Phi vs. centr TH2 of selected TPC tracks in eta>0 and eta<0
 
     //data members needed for Qn-framework calibrations
     AliAnalysisTaskFlowVectorCorrections *fQnVectorTask;       /// Qn-framework task
     AliQnCorrectionsManager *fQnVectorMgr;                     /// Qn-framework manager
 
   /// \cond CLASSIMP
-  ClassDef(AliHFQnVectorHandler,1); /// 
+  ClassDef(AliHFQnVectorHandler,2); /// 
   /// \endcond
 };
 

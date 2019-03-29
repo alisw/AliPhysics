@@ -68,6 +68,9 @@ class AliAnalysisTaskUpcNano_MB : public AliAnalysisTaskSE {
   Bool_t fTriggerInputsMC[11], fTriggers[8], fInEtaGen, fInEtaRec;
   
   TFile *fSPDfile;
+  TFile *fTOFfile;
+  Int_t fLoadedRun;
+  TH2I *hBadMaxiPadMask;
   TH1D *hBCmod4;
   TH2D *hSPDeff;
   AliTOFTriggerMask *fTOFmask;
@@ -75,7 +78,7 @@ class AliAnalysisTaskUpcNano_MB : public AliAnalysisTaskSE {
   AliAnalysisTaskUpcNano_MB(const AliAnalysisTaskUpcNano_MB&); //not implemented
   AliAnalysisTaskUpcNano_MB& operator =(const AliAnalysisTaskUpcNano_MB&); //not implemented
   
-  ClassDef(AliAnalysisTaskUpcNano_MB, 22); 
+  ClassDef(AliAnalysisTaskUpcNano_MB, 23); 
 };
 
 #endif

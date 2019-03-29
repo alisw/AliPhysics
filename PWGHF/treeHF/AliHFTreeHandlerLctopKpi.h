@@ -22,9 +22,6 @@
 /////////////////////////////////////////////////////////////
 
 #include "AliHFTreeHandler.h"
-#include <TRandom3.h>
-
-using std::vector;
 
 class AliHFTreeHandlerLctopKpi : public AliHFTreeHandler
 {
@@ -36,20 +33,17 @@ class AliHFTreeHandlerLctopKpi : public AliHFTreeHandler
 
     virtual TTree* BuildTree(TString name="tree", TString title="tree");
     virtual bool SetVariables(int runnumber, unsigned int eventID, AliAODRecoDecayHF* cand, float bfield, int masshypo=0, AliPIDResponse *pidrespo=0x0);
-    virtual void FillTree();
 
   private:
 
-    vector<float> fImpParProng[knMaxProngs]; ///vectors of prong impact parameter
-    vector<float> fSigmaVertex; /// vector of candidate sigma vertex
-    vector<float> fDist12toPrim; /// vector of candidate distance between track 1-2 vertex to primary vertex
-    vector<float> fDist23toPrim; /// vector of candidate distance between track 2-3 vertex to primary vertex
-    vector<float> fNormd0MeasMinusExp; ///vector of candidate topomatic variable
-    TRandom3 *fRandom;
+    float fImpParProng[knMaxProngs]; ///prong impact parameter
+    float fSigmaVertex; ///candidate sigma vertex
+    float fDist12toPrim; ///candidate distance between track 1-2 vertex to primary vertex
+    float fDist23toPrim; ///candidate distance between track 2-3 vertex to primary vertex
+    float fNormd0MeasMinusExp; ///candidate topomatic variable
 
     /// \cond CLASSIMP
-    ClassDef(AliHFTreeHandlerLctopKpi,2); /// 
+    ClassDef(AliHFTreeHandlerLctopKpi,3); /// 
     /// \endcond
 };
-
 #endif

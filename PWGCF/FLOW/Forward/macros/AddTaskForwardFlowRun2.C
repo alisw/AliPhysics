@@ -19,7 +19,15 @@
  *
  * @ingroup pwglf_forward_flow
  */
-AliAnalysisTaskSE* AddTaskForwardFlowRun2( bool doNUA, bool makeFakeHoles, TString nua_file, UShort_t nua_mode, bool doetagap, Double_t gap, bool mc,  bool esd,bool prim_cen,bool prim_fwd , UInt_t tracktype, TString centrality,Double_t minpt,Double_t maxpt,TString sec_file_cen,TString sec_file_fwd,TString suffix)
+AliAnalysisTaskSE* AddTaskForwardFlowRun2( bool doNUA, bool makeFakeHoles, 
+                                          TString nua_file, TString ref_nua_file, 
+                                          UShort_t nua_mode, 
+                                          bool doetagap, Double_t gap, 
+                                          bool mc,  bool esd, bool prim_cen,bool prim_fwd , 
+                                          UInt_t tracktype, TString centrality,
+                                          Double_t minpt,Double_t maxpt,
+                                          TString sec_file_cen,TString sec_file_fwd,
+                                          TString name1, TString suffix)
 {
   std::cout << "______________________________________________________________________________" << std::endl;
 
@@ -41,7 +49,7 @@ AliAnalysisTaskSE* AddTaskForwardFlowRun2( bool doNUA, bool makeFakeHoles, TStri
     task->fSettings.fNRefEtaBins = 1;
     task->fSettings.gap = gap;
     resName += "_etagap";
-    resName += std::to_string((int)(10*gap));
+//    resName += std::to_string((int)(10*gap));
 
     //resName += std::to_string(gap);
   }
@@ -98,24 +106,13 @@ AliAnalysisTaskSE* AddTaskForwardFlowRun2( bool doNUA, bool makeFakeHoles, TStri
 
 
   task->fSettings.minpt = minpt;
-  resName += "_minpt";
-  resName += std::to_string((int)(minpt*10));
-
   task->fSettings.maxpt = maxpt;
-  resName += "_maxpt";
-  resName += std::to_string((int)(maxpt*10));
+  
 
   task->fSettings.doNUA = doNUA;
   if (task->fSettings.doNUA){
-      //TString nua_filepath = std::getenv("NUA_FILE");
-      //if (!nua_filepath) {
-    TString nua_filepath = "/home/thoresen/Documents/PhD/Analysis/nua.root";
-    // std::cerr << "Environment variable 'NUA_FILE' not found (this should be a path to nua.root).\n";
-    // std::cerr << "   Using default value: '" << nua_filepath << "'\n";
-    //}
-    TFile *file;
-    file = new TFile(nua_file);
-
+    TFile *file = new TFile(nua_file);
+    TFile *file_ref = new TFile(ref_nua_file);
 
     if (nua_mode == AliForwardSettings::kInterpolate)
       resName += "_NUA_interpolate";
@@ -124,13 +121,20 @@ AliAnalysisTaskSE* AddTaskForwardFlowRun2( bool doNUA, bool makeFakeHoles, TStri
     if (nua_mode == AliForwardSettings::kNormal)
       resName += "_NUA_normal";
 
-    task->fSettings.nua_mode = nua_mode; // "V0M";// RefMult08; // "V0M" // "SPDTracklets";
+    task->fSettings.nua_mode = nua_mode; 
 
     file->GetObject("nuacentral", task->fSettings.nuacentral);
     task->fSettings.nuacentral->SetDirectory(0);
     file->GetObject("nuaforward", task->fSettings.nuaforward);
     task->fSettings.nuaforward->SetDirectory(0);
     file->Close();
+
+    file_ref->GetObject("nuacentral_ref", task->fSettings.nuacentral_ref);
+    task->fSettings.nuacentral->SetDirectory(0);
+    file_ref->GetObject("nuaforward_ref", task->fSettings.nuaforward_ref);
+    task->fSettings.nuaforward->SetDirectory(0);
+    file_ref->Close();
+
   }
 
   if (sec_file_fwd != ""){
@@ -154,10 +158,9 @@ AliAnalysisTaskSE* AddTaskForwardFlowRun2( bool doNUA, bool makeFakeHoles, TStri
   if (mc) resName += "_mc";
 
   task->fSettings.centrality_estimator = centrality; // "V0M";// RefMult08; // "V0M" // "SPDTracklets";
-   TString combName = resName + '_' + suffix;
+   TString combName = suffix;
 
   std::cout << "Container name: " << combName << std::endl;
-  //resName = "hej";
   std::cout << "______________________________________________________________________________" << std::endl;
 
   AliAnalysisDataContainer *coutput_recon =
@@ -167,8 +170,8 @@ AliAnalysisTaskSE* AddTaskForwardFlowRun2( bool doNUA, bool makeFakeHoles, TStri
    mgr->GetCommonFileName());
 
 
-   AliAnalysisDataContainer* valid = (AliAnalysisDataContainer*)mgr->GetContainers()->FindObject("event_selection_xchange");
-   task->ConnectInput(1,valid);
+  AliAnalysisDataContainer* valid = (AliAnalysisDataContainer*)mgr->GetContainers()->FindObject("event_selection_xchange");
+  task->ConnectInput(1,valid);
 
   mgr->AddTask(task);
   mgr->ConnectInput(task, 0, mgr->GetCommonInputContainer());

@@ -159,24 +159,27 @@ struct EventCutAttrVertexZ {
 /// (default requires at least two 2 participants)
 ///
 struct EventCutAttrZdcParticipants {
-  unsigned int min_zdc_participants;
+  unsigned int zdc_participants_min;
 
   bool Pass(const AliFemtoEvent &ev) const
     {
-      return ev.ZDCParticipants() >= min_zdc_participants;
+      return zdc_participants_min <= ev.ZDCParticipants();
     }
 
   EventCutAttrZdcParticipants()
-    : min_zdc_participants(2)
+    : zdc_participants_min(0)
     {}
 
   EventCutAttrZdcParticipants(AliFemtoConfigObject &cfg)
-    : min_zdc_participants(cfg.pop_uint("min_zdc_participants", 2))
+    : zdc_participants_min(cfg.pop_uint("zdc_participants_min", 0))
     {}
 
   void FillConfiguration(AliFemtoConfigObject &cfg) const
     {
-      cfg.insert("min_zdc_participants", (Long64_t)min_zdc_participants);
+      if (zdc_participants_min == 0) {
+        return;
+      }
+      cfg.insert("zdc_participants_min", (Long64_t)zdc_participants_min);
     }
 
   virtual ~EventCutAttrZdcParticipants() {}
@@ -263,7 +266,8 @@ public:
     }
 
   virtual void AppendSettings(TCollection &) const = 0;
-  virtual ~AliFemtoEventCutAttr() = 0;
+  virtual ~AliFemtoEventCutAttr()
+    {}
 };
 
 

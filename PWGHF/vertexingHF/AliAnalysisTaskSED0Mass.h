@@ -69,13 +69,14 @@ class AliAnalysisTaskSED0Mass : public AliAnalysisTaskSE
   void SetUseSelectionBit(Bool_t flag) { fUseSelectionBit=flag; }
   void SetWriteVariableTree(Bool_t flag) { fWriteVariableTree=flag; }
   void SetWriteProtosgnVar(Bool_t flag) { fWriteProtosgnVar=flag; }
+  void SetSelectTrueD0(Bool_t flag) { fSelectTrueD0 = flag; }
   void SetUseMassWindow(Bool_t flag) { fUsedMassWindow=flag; }
   void SetDrawDetSignal(Bool_t flag) { fDrawDetSignal=flag; }
   void SetPIDCheck(Bool_t flag) { fPIDCheck=flag; }
   void SetUseQuarkLevelTag(Bool_t opt){fUseQuarkTagInKine=opt;}
   void SetAODMismatchProtection(Int_t opt=1) {fAODProtection=opt;}
   void SetPileupRejectionVZEROTPCout(Bool_t flag) {fEnablePileupRejVZEROTPCout=flag;}
-  void SetPileupRejectionVZEROTPCcls(Bool_t flag) {fEnablePileupRejVZEROTPCcls=flag;}
+  void SetPileupRejectionVZEROTPCcls(Bool_t flag, Bool_t rejpileup) {fEnablePileupRejVZEROTPCcls=flag; fRejectOutOfBunchPileUp=rejpileup;}
   void SetFillSubSampleHist(Bool_t flag) {fFillSubSampleHist=flag;}
 
   void SetEnableCentralityCorrCutsPbPb(Bool_t flag=kFALSE, Int_t year=2018) {
@@ -157,6 +158,7 @@ class AliAnalysisTaskSED0Mass : public AliAnalysisTaskSE
   TTree    *fVariablesTree;           //!<! tree of the candidate variables after track selection on output slot 7
   Double_t *fCandidateVariables;      //!<!  variables to be written to the tree
   Bool_t    fWriteProtosgnVar;        /// flag to decide whether to write the selected candidates variables on a tree for cut optimization
+  Bool_t    fSelectTrueD0;            /// flag to decide whether to write only true D0/D0bar
   Bool_t    fUsedMassWindow;          /// flag to activate the mass window selection for output size reduction
   Bool_t	  fPIDCheck;			/// flag to decide whether to fill "PID = x" bins in fNentrie
   Bool_t    fDrawDetSignal;		/// flag to decide whether to draw the TPC dE/dx and TOF signal before/after PID
@@ -174,10 +176,11 @@ class AliAnalysisTaskSED0Mass : public AliAnalysisTaskSE
   TH2F *fhMultVZEROTPCclustersCorrNoCut;  //!<!
   TH2F *fhMultVZEROTPCclustersCorr;  //!<!
   Bool_t    fEnablePileupRejVZEROTPCcls;
+  Bool_t    fRejectOutOfBunchPileUp;
 
 
   /// \cond CLASSIMP
-  ClassDef(AliAnalysisTaskSED0Mass,25); /// AliAnalysisTaskSE for D0->Kpi
+  ClassDef(AliAnalysisTaskSED0Mass,26); /// AliAnalysisTaskSE for D0->Kpi
   /// \endcond
 };
 

@@ -454,6 +454,9 @@ class AliAnalysisTaskGammaConvCalo : public AliAnalysisTaskSE {
     TH2F**                 fHistoMotherEtainJetPtY;                              // Histogram with the rapidity of the validated etas in jets
     TH2F**                 fHistoMotherPi0inJetPtPhi;                            // Histogram with the phi of the validated pi0s in jets
     TH2F**                 fHistoMotherEtainJetPtPhi;                            // Histogram with the phi of the validated etas in jets
+    TH2F**                 fHistoUnfoldingAsData;                                // Histogram to use for jet pi0 unfolding
+    TH2F**                 fHistoUnfoldingMissed;                                // Histogram to use for jet pi0 unfolding
+    TH2F**                 fHistoUnfoldingReject;                                // Histogram to use for jet pi0 unfolding
 
     vector<Double_t>      fVectorJetPt;                                         // Vector of JetPt
     vector<Double_t>      fVectorJetPx;                                         // Vector of JetPx
@@ -470,13 +473,6 @@ class AliAnalysisTaskGammaConvCalo : public AliAnalysisTaskSE {
     vector<Double_t>      fTrueVectorJetEta;                                    // Vector of True JetEta
     vector<Double_t>      fTrueVectorJetPhi;                                    // Vector of True JetPhi
     vector<Double_t>      fTrueVectorJetNChargPart;                             // Vector of number of charged particles in Jet
-
-    //tree for Jet-pi0 correlation studies
-    TTree**               tTreeJetPi0Correlations;
-    Float_t               fJetPt;                                               //! pt of pi0-tagged jet
-    Float_t               fTrueJetPt;                                           //! true pt of pi0-tagged jet
-    Float_t               fPi0Pt;                                               //! pt of pi0 inside jet
-    Float_t               fPi0InvMass;                                          //! mass of pi0 inside jet
 
     // variable to keep track of multiple & missing reco
     vector<Int_t>           fVectorRecTruePi0s;                                 //! array of strings containing the stack position of the reconstructed validated pi0
@@ -563,7 +559,7 @@ class AliAnalysisTaskGammaConvCalo : public AliAnalysisTaskSE {
     AliAnalysisTaskGammaConvCalo(const AliAnalysisTaskGammaConvCalo&); // Prevent copy-construction
     AliAnalysisTaskGammaConvCalo &operator=(const AliAnalysisTaskGammaConvCalo&); // Prevent assignment
 
-    ClassDef(AliAnalysisTaskGammaConvCalo, 48);
+    ClassDef(AliAnalysisTaskGammaConvCalo, 49);
 };
 
 #endif

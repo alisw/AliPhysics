@@ -182,6 +182,8 @@ fJetCollArray(),
 fRhoName(),
 fRho(0),
 fRhoVal(0),
+fFillJetConstituents(false),
+fFillPtCorr(false),
 fFillPtUncorr(false),
 fFillArea(true),
 fFillNConstituents(true),
@@ -189,7 +191,8 @@ fFillZLeading(true),
 fFillRadialMoment(true),
 fFillpTD(true),
 fFillMass(true),
-fFillMatchingJetID(false)
+fFillMatchingJetID(false),
+fMinJetPtCorr(0.)
 {
 
 /// Default constructor
@@ -294,6 +297,8 @@ fJetCollArray(),
 fRhoName(),
 fRho(0),
 fRhoVal(0),
+fFillJetConstituents(false),
+fFillPtCorr(false),
 fFillPtUncorr(false),
 fFillArea(true),
 fFillNConstituents(true),
@@ -301,7 +306,8 @@ fFillZLeading(true),
 fFillRadialMoment(true),
 fFillpTD(true),
 fFillMass(true),
-fFillMatchingJetID(false)
+fFillMatchingJetID(false),
+fMinJetPtCorr(0.)
 {
     /// Standard constructor
   
@@ -830,7 +836,10 @@ void AliAnalysisTaskSEHFTreeCreator::UserCreateOutputObjects()
         // Create jet tree handlers and configure them
         fTreeHandlerJet.push_back(new AliJetTreeHandler());
         fTreeHandlerJet.at(i)->SetJetContainer(GetJetContainer(i));
+        fTreeHandlerJet.at(i)->SetMinJetPtCorr(fMinJetPtCorr);
         
+        fTreeHandlerJet.at(i)->SetFillJetConstituents(fFillJetConstituents);
+        fTreeHandlerJet.at(i)->SetFillPtCorr(fFillPtCorr);
         fTreeHandlerJet.at(i)->SetFillPtUncorr(fFillPtUncorr);
         fTreeHandlerJet.at(i)->SetFillArea(fFillArea);
         fTreeHandlerJet.at(i)->SetFillNConstituents(fFillNConstituents);
@@ -1446,6 +1455,7 @@ void AliAnalysisTaskSEHFTreeCreator::Process2Prong(TClonesArray *array2prong, Al
                         if(!fReadMC || (issignal || isbkg)) {
                             fTreeHandlerD0->SetIsSelectedStd(isSelAnCutsD0, isSelTopoAnCutsD0, isSelPidAnCutsD0, isSelTracksAnCuts);
                             fTreeHandlerD0->SetVariables(fRunNumber,fEventID,d,bfield,masshypo,fPIDresp);
+                            fTreeHandlerD0->FillTree();
                         }
                     }//end D0
                     if (isSelectedFilt>1){//D0bar
@@ -1476,6 +1486,7 @@ void AliAnalysisTaskSEHFTreeCreator::Process2Prong(TClonesArray *array2prong, Al
                         if(!fReadMC || (issignal || isbkg)) {
                             fTreeHandlerD0->SetIsSelectedStd(isSelAnCutsD0bar, isSelTopoAnCutsD0bar, isSelPidAnCutsD0bar, isSelTracksAnCuts);
                             fTreeHandlerD0->SetVariables(fRunNumber,fEventID,d,bfield,masshypo,fPIDresp);
+                            fTreeHandlerD0->FillTree();
                         }
                     }//end D0bar
                     if(recVtx)fFiltCutsD0toKpi->CleanOwnPrimaryVtx(d,aod,origownvtx);
@@ -1609,7 +1620,8 @@ void AliAnalysisTaskSEHFTreeCreator::Process2Prong(TClonesArray *array2prong, Al
                               }
                               fTreeHandlerBplus->SetIsSelectedStd(isSelAnCutsBplus,isSelAnCutsBplus,isSelAnCutsBplus,isSelAnCutsBplus);
                               fTreeHandlerBplus->SetVariables(fRunNumber,fEventID, &trackBPlus, bfield, masshypo, fPIDresp);
-
+                              fTreeHandlerBplus->FillTree();
+                            
                             } // end Bplus is selected filt
                           } // end calculation vertex Bplus
                           
@@ -1626,9 +1638,6 @@ void AliAnalysisTaskSEHFTreeCreator::Process2Prong(TClonesArray *array2prong, Al
         }//end Bplus
 
     }//end loop on candidates
-
-    if(fWriteVariableTreeD0) fTreeHandlerD0->FillTree();
-    if(fWriteVariableTreeBplus) fTreeHandlerBplus->FillTree();
 
     delete vHF;
     return;
@@ -1800,6 +1809,7 @@ void AliAnalysisTaskSEHFTreeCreator::Process3Prong(TClonesArray *array3Prong, Al
                                 if(!fReadMC || (issignal || isbkg)) {
                                     fTreeHandlerDs->SetIsSelectedStd(isSelAnCutsKKpi,isSelAnTopoCutsKKpi,isSelAnPidCutsKKpi,isSelTracksAnCuts);
                                     fTreeHandlerDs->SetVariables(fRunNumber,fEventID,ds,bfield,0,fPIDresp);
+                                    fTreeHandlerDs->FillTree();
                                 }
                             }
                             issignal = kFALSE;
@@ -1827,6 +1837,7 @@ void AliAnalysisTaskSEHFTreeCreator::Process3Prong(TClonesArray *array3Prong, Al
                                 if(!fReadMC || (issignal || isbkg)) {
                                     fTreeHandlerDs->SetIsSelectedStd(isSelAnCutspiKK,isSelAnTopoCutspiKK,isSelAnPidCutspiKK,isSelTracksAnCuts);
                                     fTreeHandlerDs->SetVariables(fRunNumber,fEventID,ds,bfield,1,fPIDresp);
+                                    fTreeHandlerDs->FillTree();
                                 }
                             }
                         }//end fill tree
@@ -1921,6 +1932,7 @@ void AliAnalysisTaskSEHFTreeCreator::Process3Prong(TClonesArray *array3Prong, Al
                     if(!fReadMC || (issignal || isbkg)) {
                         fTreeHandlerDplus->SetIsSelectedStd(isSelAnCuts,isSelAnTopolCuts,isSelAnPidCuts,isSelTracksAnCuts);
                         fTreeHandlerDplus->SetVariables(fRunNumber,fEventID,dplus,bfield,0,fPIDresp);
+                        fTreeHandlerDplus->FillTree();
                     }
                     //end fill tree
                 
@@ -2038,6 +2050,7 @@ void AliAnalysisTaskSEHFTreeCreator::Process3Prong(TClonesArray *array3Prong, Al
                     if(!fReadMC || (issignal || isbkg)) {
                         fTreeHandlerLctopKpi->SetIsSelectedStd(isSelAnCutspKpi,isSelTopopKpi,isSelPIDpKpi,isSelTracksAnCuts);
                         fTreeHandlerLctopKpi->SetVariables(fRunNumber,fEventID,lctopkpi,bfield,1,fPIDresp);
+                        fTreeHandlerLctopKpi->FillTree();
                     }
                   } // end pKpi
                   isPrimary=kFALSE;
@@ -2085,6 +2098,7 @@ void AliAnalysisTaskSEHFTreeCreator::Process3Prong(TClonesArray *array3Prong, Al
                     if(!fReadMC || (issignal || isbkg)) {
                         fTreeHandlerLctopKpi->SetIsSelectedStd(isSelAnCutspiKp,isSelTopopiKp,isSelPIDpiKp,isSelTracksAnCuts);
                         fTreeHandlerLctopKpi->SetVariables(fRunNumber,fEventID,lctopkpi,bfield,2,fPIDresp);
+                        fTreeHandlerLctopKpi->FillTree();
                     }
                   } // end fill piKpi
 
@@ -2103,10 +2117,6 @@ void AliAnalysisTaskSEHFTreeCreator::Process3Prong(TClonesArray *array3Prong, Al
         
     }//end loop on cadidates
     
-    if(fWriteVariableTreeDs) fTreeHandlerDs->FillTree();
-    if(fWriteVariableTreeDplus) fTreeHandlerDplus->FillTree();
-    if(fWriteVariableTreeLctopKpi) fTreeHandlerLctopKpi->FillTree();
-
     delete vHF;
     return;
 }
@@ -2222,6 +2232,7 @@ void AliAnalysisTaskSEHFTreeCreator::ProcessDstar(TClonesArray *arrayDstar, AliA
                     if(!fReadMC || (issignal || isbkg)) {
                         fTreeHandlerDstar->SetIsSelectedStd(isSelAnCuts,isSelAnTopolCuts,isSelAnPidCuts,isSelTracksAnCuts);
                         fTreeHandlerDstar->SetVariables(fRunNumber,fEventID,d,bfield,masshypo,fPIDresp);
+                        fTreeHandlerDstar->FillTree();
                     }
 
                     if(recVtx)fFiltCutsDstartoKpipi->CleanOwnPrimaryVtx(d,aod,origownvtx);
@@ -2234,8 +2245,6 @@ void AliAnalysisTaskSEHFTreeCreator::ProcessDstar(TClonesArray *arrayDstar, AliA
         }//end Dstar
 	}//end loop on candidates
   
-    if(fWriteVariableTreeDstar) fTreeHandlerDstar->FillTree();
-
     delete vHF;
     return;
 }
@@ -2362,6 +2371,7 @@ void AliAnalysisTaskSEHFTreeCreator::ProcessCasc(TClonesArray *arrayCasc, AliAOD
             fTreeHandlerLc2V0bachelor->SetIsSelectedStd(isSelAnCutstopK0s,isSelAnTopolCutstopK0s,isSelAnPidCutstopK0s,isSelTracksAnCuts);
             fTreeHandlerLc2V0bachelor->SetIsLctoLpi(isSelAnCutstoLpi, isSelAnTopolCutstoLpi, isSelAnPidCutstoLpi);
             fTreeHandlerLc2V0bachelor->SetVariables(fRunNumber,fEventID,d,bfield,masshypo,fPIDresp);
+            fTreeHandlerLc2V0bachelor->FillTree();
           }          
           if(recVtx)fFiltCutsLc2V0bachelor->CleanOwnPrimaryVtx(d,aod,origownvtx);
           if(unsetvtx) d->UnsetOwnPrimaryVtx();
@@ -2372,9 +2382,7 @@ void AliAnalysisTaskSEHFTreeCreator::ProcessCasc(TClonesArray *arrayCasc, AliAOD
       }
     }//end Lc2V0bachelor
   }//end loop on candidates
-  
-  if(fWriteVariableTreeLc2V0bachelor) fTreeHandlerLc2V0bachelor->FillTree();
-  
+    
   delete vHF;
   return;
 }
@@ -2417,6 +2425,7 @@ void AliAnalysisTaskSEHFTreeCreator::ProcessMCGen(TClonesArray *arrayMC){
           fTreeHandlerGenDplus->SetDauInAcceptance(isDaugInAcc);
           fTreeHandlerGenDplus->SetCandidateType(kTRUE,kFALSE,isPrimary,isFeeddown,kFALSE);
           fTreeHandlerGenDplus->SetMCGenVariables(fRunNumber,fEventID, mcPart);
+          fTreeHandlerGenDplus->FillTree();
         }
         else if(absPDG == 421 && fWriteVariableTreeD0) {
           deca = AliVertexingHFUtils::CheckD0Decay(arrayMC,mcPart,labDau);
@@ -2425,6 +2434,7 @@ void AliAnalysisTaskSEHFTreeCreator::ProcessMCGen(TClonesArray *arrayMC){
           fTreeHandlerGenD0->SetDauInAcceptance(isDaugInAcc);
           fTreeHandlerGenD0->SetCandidateType(kTRUE,kFALSE,isPrimary,isFeeddown,kFALSE);
           fTreeHandlerGenD0->SetMCGenVariables(fRunNumber,fEventID, mcPart);
+          fTreeHandlerGenD0->FillTree();
         }
         else if(absPDG == 431 && fWriteVariableTreeDs) {
           deca = AliVertexingHFUtils::CheckDsDecay(arrayMC,mcPart,labDau);
@@ -2433,6 +2443,7 @@ void AliAnalysisTaskSEHFTreeCreator::ProcessMCGen(TClonesArray *arrayMC){
           fTreeHandlerGenDs->SetDauInAcceptance(isDaugInAcc);
           fTreeHandlerGenDs->SetCandidateType(kTRUE,kFALSE,isPrimary,isFeeddown,kFALSE);
           fTreeHandlerGenDs->SetMCGenVariables(fRunNumber,fEventID, mcPart);
+          fTreeHandlerGenDs->FillTree();
         }
         if(absPDG == 4122 && fWriteVariableTreeLctopKpi) {
           deca = AliVertexingHFUtils::CheckLcpKpiDecay(arrayMC,mcPart,labDau);
@@ -2441,6 +2452,7 @@ void AliAnalysisTaskSEHFTreeCreator::ProcessMCGen(TClonesArray *arrayMC){
           fTreeHandlerGenLctopKpi->SetDauInAcceptance(isDaugInAcc);
           fTreeHandlerGenLctopKpi->SetCandidateType(kTRUE,kFALSE,isPrimary,isFeeddown,kFALSE);
           fTreeHandlerGenLctopKpi->SetMCGenVariables(fRunNumber,fEventID, mcPart);
+          fTreeHandlerGenLctopKpi->FillTree();
         }
         else if(absPDG == 521 && fWriteVariableTreeBplus) {
           deca = AliVertexingHFUtils::CheckBplusDecay(arrayMC,mcPart,labDau);
@@ -2449,6 +2461,7 @@ void AliAnalysisTaskSEHFTreeCreator::ProcessMCGen(TClonesArray *arrayMC){
           fTreeHandlerGenBplus->SetDauInAcceptance(isDaugInAcc);
           fTreeHandlerGenBplus->SetCandidateType(kTRUE,kFALSE,isPrimary,isFeeddown,kFALSE);
           fTreeHandlerGenBplus->SetMCGenVariables(fRunNumber,fEventID, mcPart);
+          fTreeHandlerGenBplus->FillTree();
         }
         else if(absPDG == 413 && fWriteVariableTreeDstar) {
           deca = AliVertexingHFUtils::CheckDstarDecay(arrayMC,mcPart,labDau);
@@ -2457,6 +2470,7 @@ void AliAnalysisTaskSEHFTreeCreator::ProcessMCGen(TClonesArray *arrayMC){
           fTreeHandlerGenDstar->SetDauInAcceptance(isDaugInAcc);
           fTreeHandlerGenDstar->SetCandidateType(kTRUE,kFALSE,isPrimary,isFeeddown,kFALSE);
           fTreeHandlerGenDstar->SetMCGenVariables(fRunNumber,fEventID, mcPart);
+          fTreeHandlerGenDstar->FillTree();
         }
         else if(absPDG == 4122 && fWriteVariableTreeLc2V0bachelor) {
           deca = AliVertexingHFUtils::CheckLcV0bachelorDecay(arrayMC,mcPart,labDau2);
@@ -2465,17 +2479,10 @@ void AliAnalysisTaskSEHFTreeCreator::ProcessMCGen(TClonesArray *arrayMC){
           fTreeHandlerGenLc2V0bachelor->SetDauInAcceptance(isDaugInAcc);
           fTreeHandlerGenLc2V0bachelor->SetCandidateType(kTRUE,kFALSE,isPrimary,isFeeddown,kFALSE);
           fTreeHandlerGenLc2V0bachelor->SetMCGenVariables(fRunNumber,fEventID, mcPart);
+          fTreeHandlerGenLc2V0bachelor->FillTree();
         }
       }
-    }
-  
-  if(fWriteVariableTreeD0) fTreeHandlerGenD0->FillTree();
-  if(fWriteVariableTreeDs) fTreeHandlerGenDs->FillTree();
-  if(fWriteVariableTreeDplus) fTreeHandlerGenDplus->FillTree();
-  if(fWriteVariableTreeLctopKpi) fTreeHandlerGenLctopKpi->FillTree();
-  if(fWriteVariableTreeBplus) fTreeHandlerGenBplus->FillTree();
-  if(fWriteVariableTreeDstar) fTreeHandlerGenDstar->FillTree();
-  if(fWriteVariableTreeLc2V0bachelor) fTreeHandlerGenLc2V0bachelor->FillTree();
+    }  
 }
 
 //--------------------------------------------------------

@@ -140,9 +140,9 @@ Double_t WrapPi(Double_t phi);
   AliTrackReference* IsHitITS(AliMCParticle* p);
 
   // Get an iterable container of all the daughters of a given particle
-  std::vector< AliMCParticle* > GetDaughters(AliMCParticle* p);
+  //std::vector< AliMCParticle* > GetDaughters(AliMCParticle* p);
   // Get the number of hits which p's chain causes on the FMD
-  Int_t ParticleProducedNHitsOnFMD(AliMCParticle* p);
+  //Int_t ParticleProducedNHitsOnFMD(AliMCParticle* p);
   // Modified IsPhysicalPrimary check to regard pi0s as stable. Nont that this implementation
   // is not "orthogonal" to AliStack::IsFromWeakDecay and AliStack::IsSecondaryFromMaterial
   Bool_t IsRedefinedPhysicalPrimary(AliMCParticle* p);

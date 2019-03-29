@@ -21,6 +21,8 @@ AliForwardSettings::AliForwardSettings() :
   fCentBins(10),
   nuacentral(),
   nuaforward(),
+  nuacentral_ref(),
+  nuaforward_ref(),
   seccorr_fwd(),
   seccorr_cen(),
   doNUA(false),
@@ -39,7 +41,7 @@ AliForwardSettings::AliForwardSettings() :
   use_primaries_cen(kFALSE),
   use_primaries_fwd(kFALSE),
   useEventcuts(kTRUE),
-  centrality_estimator("V0A"),//CL0, V0M
+  centrality_estimator("V0M"),//CL0, V0M
   etagap(kTRUE),
   makeFakeHoles(kFALSE),
   fnoClusters(70),

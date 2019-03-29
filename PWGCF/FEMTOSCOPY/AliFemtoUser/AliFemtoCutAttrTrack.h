@@ -273,9 +273,7 @@ struct TrackCutAttrChi2ITS {
       if (rchi2_its_max < 0) {
         return true;
       }
-      double chi2 = track.ITSncls() > 0
-                  ? track.ITSchi2() / track.ITSncls()
-                  : 9999.0;
+      double chi2 = track.ITSchi2perNDF();
       return rchi2_its_min <= chi2 && chi2 < rchi2_its_max;
     }
 
@@ -891,7 +889,8 @@ public:
     }
 
   virtual void AppendSettings(TCollection &, TString prefix="") const = 0;
-  virtual ~AliFemtoTrackCutAttr() = 0;
+  virtual ~AliFemtoTrackCutAttr()
+    {}
 };
 
 

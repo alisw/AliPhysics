@@ -145,24 +145,27 @@ void AliForwardFlowRun2Task::UserCreateOutputObjects()
 
     static_cast<TList*>(fAnalysisList->At(2))->Add(new THnD("fQcorrfactor", "fQcorrfactor", dimensions, rbins, xmin, xmax)); //(eta, n)
     static_cast<TList*>(fAnalysisList->At(2))->Add(new THnD("fpcorrfactor","fpcorrfactor", dimensions, dbins, xmin, xmax)); //(eta, n)
+    Int_t ptnmax =  (fSettings.doPt ? 10 : 0);
 
     // create a THn for each harmonic
     for (Int_t n = 2; n <= fMaxMoment; n++) {
+      for (Int_t ptn = 0; ptn <= ptnmax; ptn++){
 
-      static_cast<TList*>(fAnalysisList->At(0))->Add(new THnD(Form("cumuRef_v%d", n), Form("cumuRef_v%d", n), dimensions, rbins, xmin, xmax));
-      static_cast<TList*>(fAnalysisList->At(1))->Add(new THnD(Form("cumuDiff_v%d", n),Form("cumuDiff_%d", n), dimensions, dbins, xmin, xmax));
-      // The THn has dimensions [random samples, vertex position, eta, centrality, kind of variable to store]
-      // set names
-      static_cast<THnD*>(static_cast<TList*>(fAnalysisList->At(0))   ->FindObject(Form("cumuRef_v%d", n)))->GetAxis(0)->SetName("samples");
-      static_cast<THnD*>(static_cast<TList*>(fAnalysisList->At(0))   ->FindObject(Form("cumuRef_v%d", n)))->GetAxis(1)->SetName("vertex");
-      static_cast<THnD*>(static_cast<TList*>(fAnalysisList->At(0))   ->FindObject(Form("cumuRef_v%d", n)))->GetAxis(2)->SetName("eta");
-      static_cast<THnD*>(static_cast<TList*>(fAnalysisList->At(0))   ->FindObject(Form("cumuRef_v%d", n)))->GetAxis(3)->SetName("cent");
-      static_cast<THnD*>(static_cast<TList*>(fAnalysisList->At(0))   ->FindObject(Form("cumuRef_v%d", n)))->GetAxis(4)->SetName("identifier");
-      static_cast<THnD*>(static_cast<TList*>(fAnalysisList->At(1))   ->FindObject(Form("cumuDiff_v%d", n)))->GetAxis(0)->SetName("samples");
-      static_cast<THnD*>(static_cast<TList*>(fAnalysisList->At(1))   ->FindObject(Form("cumuDiff_v%d", n)))->GetAxis(1)->SetName("vertex");
-      static_cast<THnD*>(static_cast<TList*>(fAnalysisList->At(1))   ->FindObject(Form("cumuDiff_v%d", n)))->GetAxis(2)->SetName("eta");
-      static_cast<THnD*>(static_cast<TList*>(fAnalysisList->At(1))   ->FindObject(Form("cumuDiff_v%d", n)))->GetAxis(3)->SetName("cent");
-      static_cast<THnD*>(static_cast<TList*>(fAnalysisList->At(1))   ->FindObject(Form("cumuDiff_v%d", n)))->GetAxis(4)->SetName("identifier");
+        static_cast<TList*>(fAnalysisList->At(0))->Add(new THnD(Form("cumuRef_v%d_pt%d", n,ptn), Form("cumuRef_v%d_pt%d", n,ptn), dimensions, rbins, xmin, xmax));
+        static_cast<TList*>(fAnalysisList->At(1))->Add(new THnD(Form("cumuDiff_v%d_pt%d", n,ptn),Form("cumuDiff_%d_pt%d", n,ptn), dimensions, dbins, xmin, xmax));
+        // The THn has dimensions [random samples, vertex position, eta, centrality, kind of variable to store]
+        // set names
+        static_cast<THnD*>(static_cast<TList*>(fAnalysisList->At(0))   ->FindObject(Form("cumuRef_v%d_pt%d", n,ptn)))->GetAxis(0)->SetName("samples");
+        static_cast<THnD*>(static_cast<TList*>(fAnalysisList->At(0))   ->FindObject(Form("cumuRef_v%d_pt%d", n,ptn)))->GetAxis(1)->SetName("vertex");
+        static_cast<THnD*>(static_cast<TList*>(fAnalysisList->At(0))   ->FindObject(Form("cumuRef_v%d_pt%d", n,ptn)))->GetAxis(2)->SetName("eta");
+        static_cast<THnD*>(static_cast<TList*>(fAnalysisList->At(0))   ->FindObject(Form("cumuRef_v%d_pt%d", n,ptn)))->GetAxis(3)->SetName("cent");
+        static_cast<THnD*>(static_cast<TList*>(fAnalysisList->At(0))   ->FindObject(Form("cumuRef_v%d_pt%d", n,ptn)))->GetAxis(4)->SetName("identifier");
+        static_cast<THnD*>(static_cast<TList*>(fAnalysisList->At(1))   ->FindObject(Form("cumuDiff_v%d_pt%d", n,ptn)))->GetAxis(0)->SetName("samples");
+        static_cast<THnD*>(static_cast<TList*>(fAnalysisList->At(1))   ->FindObject(Form("cumuDiff_v%d_pt%d", n,ptn)))->GetAxis(1)->SetName("vertex");
+        static_cast<THnD*>(static_cast<TList*>(fAnalysisList->At(1))   ->FindObject(Form("cumuDiff_v%d_pt%d", n,ptn)))->GetAxis(2)->SetName("eta");
+        static_cast<THnD*>(static_cast<TList*>(fAnalysisList->At(1))   ->FindObject(Form("cumuDiff_v%d_pt%d", n,ptn)))->GetAxis(3)->SetName("cent");
+        static_cast<THnD*>(static_cast<TList*>(fAnalysisList->At(1))   ->FindObject(Form("cumuDiff_v%d_pt%d", n,ptn)))->GetAxis(4)->SetName("identifier");
+      }
     }
 
     PostData(1, fOutputList);
@@ -196,60 +199,28 @@ void AliForwardFlowRun2Task::UserExec(Option_t *)
   fUtil.fevent = fInputEvent;
   fUtil.fSettings = fSettings;
 
-  Double_t centralEtaMin,centralEtaMax,refEtaMin,refEtaMax;
-  Int_t centralEtaBins, centralPhiBins, refEtaBins, refPhiBins;  
-
   // Make centralDist
-  if (fSettings.useSPD) {
-    centralEtaMin = -2.5;
-    centralEtaMax = 2.5;
-    centralEtaBins = 400;
-    centralPhiBins = 400;
-  }
-  else if (fSettings.useITS) {
-    centralEtaMin = -4;
-    centralEtaMax = 6;
-    centralEtaBins = 200;
-    centralPhiBins = 20;
-  }
-  else { //useTPC
-    centralEtaMin = -1.5;
-    centralEtaMax = 1.5; 
-    centralEtaBins = 400;
-    centralPhiBins = 400;
-  }
+  Int_t   centralEtaBins = (fSettings.useITS ? 200 : 400);
+  Int_t   centralPhiBins = (fSettings.useITS ? 20 : 400);
+  Double_t centralEtaMin = (fSettings.useSPD ? -2.5 : fSettings.useITS ? -4 : -1.5);
+  Double_t centralEtaMax = (fSettings.useSPD ? 2.5 : fSettings.useITS ? 6 : 1.5);
+
   // Make refDist
-  if (fSettings.ref_mode & fSettings.kSPDref){
-    refEtaMin = -2.5;
-    refEtaMax = 2.5;
-    refEtaBins = 400;
-    refPhiBins = 400;
-  } 
-  else if (fSettings.ref_mode & fSettings.kITSref) {
-    refEtaMin = -4;
-    refEtaMax = 6;
-    refEtaBins = 200;
-    refPhiBins = 20;
-  }
-  else if (fSettings.ref_mode & fSettings.kFMDref) {
-    refEtaMin = -4;
-    refEtaMax = 6;
-    refEtaBins = 200;
-    refPhiBins = 20;
-  }
-  else { //kTPCref
-    refEtaMin = -1.5;
-    refEtaMax = 1.5;
-    refEtaBins = 400;
-    refPhiBins = 400;
-  }
+  Int_t   refEtaBins = (((fSettings.ref_mode & fSettings.kITSref) || (fSettings.ref_mode & fSettings.kFMDref)) ? 200 : 400);
+  Int_t   refPhiBins = (((fSettings.ref_mode & fSettings.kITSref) || (fSettings.ref_mode & fSettings.kFMDref)) ? 20  : 400);
+  Double_t refEtaMin = ((fSettings.ref_mode & fSettings.kSPDref) ? -2.5 
+                           : ((fSettings.ref_mode & fSettings.kITSref) || (fSettings.ref_mode & fSettings.kFMDref)) ? -4 
+                           : -1.5);
+  Double_t refEtaMax = ((fSettings.ref_mode & fSettings.kSPDref) ?  2.5 
+                           : ((fSettings.ref_mode & fSettings.kITSref) || (fSettings.ref_mode & fSettings.kFMDref)) ? 6 
+                           : 1.5);
+
 
   TH2D centralDist_tmp = TH2D("c","",centralEtaBins,centralEtaMin,centralEtaMax,centralPhiBins,0,2*TMath::Pi());
   centralDist_tmp.SetDirectory(0);
 
-  TH2D refDist_tmp = TH2D("c","",refEtaBins,refEtaMin,refEtaMax,refPhiBins,0,2*TMath::Pi());
+  TH2D refDist_tmp = TH2D("r","",refEtaBins,refEtaMin,refEtaMax,refPhiBins,0,2*TMath::Pi());
   refDist_tmp.SetDirectory(0);
-
 
   TH2D forwardTrRef  ("ft","",200,-4,6,20,0,TMath::TwoPi());
   TH2D forwardPrim  ("fp","",400,-4,6,400,0,TMath::TwoPi());
@@ -275,21 +246,39 @@ void AliForwardFlowRun2Task::UserExec(Option_t *)
 
   if (fSettings.makeFakeHoles) fUtil.MakeFakeHoles(*forwardDist);
 
+  static_cast<TH1D*>(fEventList->FindObject("Centrality"))->Fill(cent);
+  static_cast<TH1D*>(fEventList->FindObject("Vertex"))->Fill(zvertex);
+  AliForwardGenericFramework calculator = AliForwardGenericFramework();
+  calculator.fSettings = fSettings;
+
+  calculator.CumulantsAccumulate(*refDist, fOutputList, cent, zvertex,"central",true,false);
+  // calculator.CumulantsAccumulate(*centralDist, fOutputList, cent, zvertex,"central",false,true);  
+  calculator.CumulantsAccumulate(*forwardDist, fOutputList, cent, zvertex,"forward",false,true);
+
+  Int_t ptnmax =  (fSettings.doPt ? 9 : 0);
+
+  TH1F pthist = TH1F("pthist", "", ptnmax+1, fSettings.minpt, fSettings.maxpt);
+
+  for (Int_t ptn = 0; ptn <=ptnmax; ptn ++ ){
+    
+    fUtil.fSettings.minpt = pthist.GetXaxis()->GetBinLowEdge(ptn+1);
+    fUtil.fSettings.maxpt = pthist.GetXaxis()->GetBinUpEdge(ptn+1);
+
+    centralDist->Reset();
+
+    // Fill centralDist
+    fUtil.FillDataCentral(centralDist);
+
     UInt_t randomInt = fRandom.Integer(fSettings.fnoSamples);
 
-    static_cast<TH1D*>(fEventList->FindObject("Centrality"))->Fill(cent);
-    static_cast<TH1D*>(fEventList->FindObject("Vertex"))->Fill(zvertex);
+    calculator.CumulantsAccumulate(*centralDist, fOutputList, cent, zvertex,"central",false,true);  
+    calculator.saveEvent(fOutputList, cent, zvertex,  randomInt, ptn);    
+    calculator.fpvector->Reset();
+  }
 
-    AliForwardGenericFramework calculator = AliForwardGenericFramework();
-    calculator.fSettings = fSettings;
+  calculator.reset();
 
-    calculator.CumulantsAccumulate(*refDist, fOutputList, cent, zvertex,"central",true,false);
-    calculator.CumulantsAccumulate(*centralDist, fOutputList, cent, zvertex,"central",false,true);
-    calculator.CumulantsAccumulate(*forwardDist, fOutputList, cent, zvertex,"forward",false,true);
-
-    calculator.saveEvent(fOutputList, cent, zvertex,  randomInt);
-    calculator.reset();
-    PostData(1, fOutputList);
+  PostData(1, fOutputList);
   return;
 }
 

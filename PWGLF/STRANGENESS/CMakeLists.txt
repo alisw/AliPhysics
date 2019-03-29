@@ -81,14 +81,8 @@ set(SRCS
   Cascades/Run2/AliAnalysisTaskWeakDecayVertexer.cxx
   Cascades/Run2/AliAnalysisTaskStrEffStudy.cxx
   Cascades/Run2/AliAnalysisTaskMCPredictions.cxx
+  Cascades/Run2/AliAnalysisTaskStrangeCascadesDiscrete.cxx
   )
-
-if(ROOT_VERSION_MAJOR EQUAL 6)
-  set(SRCS
-    ${SRCS}
-    Cascades/Run2/selectors/AliSelectorFindableHyperTriton3Body.cxx
-    )
-endif()
 
 # Headers from sources
 string(REPLACE ".cxx" ".h" HDRS "${SRCS}")

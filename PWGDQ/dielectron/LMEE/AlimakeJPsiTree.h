@@ -17,7 +17,7 @@
 // local files
 class TList;
 class TTree;
-class TParticle;
+class AliAODMCParticle;
 class AliMCEvent;
 class AliInputEventHandler;
 
@@ -43,9 +43,9 @@ protected:
   AliInputEventHandler*    fMcHandler;  //! MC EventHandler
   // Tree
   TTree *ftree;                         //
-  TParticle *fmother;                   //
-  TParticle *fdaughter1;                //
-  TParticle *fdaughter2;                //
+  AliAODMCParticle *fmother;                   //
+  AliAODMCParticle *fdaughter1;                //
+  AliAODMCParticle *fdaughter2;                //
 
   TList     *fOutputList; 
 

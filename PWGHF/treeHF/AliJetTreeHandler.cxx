@@ -48,6 +48,8 @@ AliJetTreeHandler::AliJetTreeHandler():
   TObject(),
   fTreeVar(nullptr),
   fJetContainer(nullptr),
+  fFillTrackConstituents(false),
+  fFillPtCorr(false),
   fFillPtUncorr(false),
   fFillArea(true),
   fFillNConstituents(true),
@@ -56,6 +58,11 @@ AliJetTreeHandler::AliJetTreeHandler():
   fFillpTD(true),
   fFillMass(true),
   fFillMatchingJetID(false),
+  fMinJetPtCorr(0.),
+  fNTracks(),
+  fTrackPt(),
+  fTrackEta(),
+  fTrackPhi(),
   fPtCorr(),
   fEta(),
   fPhi(),
@@ -78,8 +85,7 @@ AliJetTreeHandler::~AliJetTreeHandler()
 }
 
 /**
- * Create jet TTree, with a branch of vectors for each jet variable.
- * There will be one entry in each vector for each jet that is found.
+ * Create jet TTree, with a branch of vectors for each variable (see .h for detailed description).
  */
 //________________________________________________________________
 TTree* AliJetTreeHandler::BuildTree(TString name, TString title)
@@ -91,36 +97,49 @@ TTree* AliJetTreeHandler::BuildTree(TString name, TString title)
   fTreeVar = new TTree(name.Data(),title.Data());
   
   // Create branches for each jet variable
-  fTreeVar->Branch("PtCorr",&fPtCorr);
-  fTreeVar->Branch("Eta",&fEta);
-  fTreeVar->Branch("Phi",&fPhi);
-  
-  if (fFillPtUncorr) {
-    fTreeVar->Branch("PtUncorr",&fPtUncorr);
+
+  if (fFillPtCorr) {
+    fTreeVar->Branch("PtCorr",&fPtCorr);
   }
   
-  if (fFillArea) {
-    fTreeVar->Branch("Area",&fArea);
+  if (fFillTrackConstituents) {
+    fTreeVar->Branch("NTracks",&fNTracks);
+    fTreeVar->Branch("TrackPt",&fTrackPt);
+    fTreeVar->Branch("TrackEta",&fTrackEta);
+    fTreeVar->Branch("TrackPhi",&fTrackPhi);
   }
+  else {
   
-  if (fFillNConstituents) {
-    fTreeVar->Branch("N",&fN);
-  }
-  
-  if (fFillZLeading) {
-    fTreeVar->Branch("ZLeading", &fZLeading);
-  }
-  
-  if (fFillRadialMoment) {
-    fTreeVar->Branch("RadialMoment", &fRadialMoment);
-  }
-  
-  if (fFillpTD) {
-    fTreeVar->Branch("pTD", &fpTD);
-  }
-  
-  if (fFillMass) {
-    fTreeVar->Branch("Mass", &fMass);
+    fTreeVar->Branch("Eta",&fEta);
+    fTreeVar->Branch("Phi",&fPhi);
+    
+    if (fFillPtUncorr) {
+      fTreeVar->Branch("PtUncorr",&fPtUncorr);
+    }
+    
+    if (fFillArea) {
+      fTreeVar->Branch("Area",&fArea);
+    }
+    
+    if (fFillNConstituents) {
+      fTreeVar->Branch("N",&fN);
+    }
+    
+    if (fFillZLeading) {
+      fTreeVar->Branch("ZLeading", &fZLeading);
+    }
+    
+    if (fFillRadialMoment) {
+      fTreeVar->Branch("RadialMoment", &fRadialMoment);
+    }
+    
+    if (fFillpTD) {
+      fTreeVar->Branch("pTD", &fpTD);
+    }
+    
+    if (fFillMass) {
+      fTreeVar->Branch("Mass", &fMass);
+    }
   }
   
   if (fFillMatchingJetID) {
@@ -139,42 +158,72 @@ bool AliJetTreeHandler::SetJetVariables()
 
   for (const auto jet : fJetContainer->accepted()) {
     
-    fPtCorr.push_back(GetJetPt(jet));
-    fEta.push_back(jet->Eta());
-    fPhi.push_back(jet->Phi_0_2pi());
-    
-    if (fFillPtUncorr) {
-      fPtUncorr.push_back(jet->Pt());
+    // Check if jet passes min pt threshold
+    float jetPtCorr = GetJetPt(jet);
+    if (jetPtCorr < fMinJetPtCorr) {
+      continue;
     }
     
-    if (fFillArea) {
-      fArea.push_back(jet->Area());
+    // Fill vectors with jet info
+    
+    if (fFillPtCorr) {
+      fPtCorr.push_back(jetPtCorr);
     }
     
-    if (fFillNConstituents) {
-      fN.push_back(jet->GetNumberOfConstituents());
+    if (fFillTrackConstituents) {
+      
+      unsigned short int nTracks = static_cast<unsigned short int>(jet->GetNumberOfTracks());
+      fNTracks.push_back(nTracks);
+      
+      Double_t jetPtSum = 0;
+      for (int i = 0; i < nTracks; ++i) {
+        
+        AliVParticle* track = jet->Track(i);
+        fTrackPt.push_back(track->Pt());
+        fTrackEta.push_back(track->Eta());
+        fTrackPhi.push_back(TVector2::Phi_0_2pi(track->Phi()));
+        jetPtSum += track->Pt();
+        
+      }
     }
-    
-    if (fFillZLeading) {
-      fZLeading.push_back(fJetContainer->GetZLeadingCharged(jet));
+    else {
+      
+      fEta.push_back(jet->Eta());
+      fPhi.push_back(jet->Phi_0_2pi());
+      
+      if (fFillPtUncorr) {
+        fPtUncorr.push_back(jet->Pt());
+      }
+      
+      if (fFillArea) {
+        fArea.push_back(jet->Area());
+      }
+      
+      if (fFillNConstituents) {
+        fN.push_back(jet->GetNumberOfConstituents());
+      }
+      
+      if (fFillZLeading) {
+        fZLeading.push_back(fJetContainer->GetZLeadingCharged(jet));
+      }
+      
+      if (fFillRadialMoment) {
+        fRadialMoment.push_back(RadialMoment(jet));
+      }
+      
+      if (fFillpTD) {
+        fpTD.push_back(PTD(jet));
+      }
+      
+      if (fFillMass) {
+        fMass.push_back(jet->M());
+      }
     }
-    
-    if (fFillRadialMoment) {
-      fRadialMoment.push_back(RadialMoment(jet));
-    }
-    
-    if (fFillpTD) {
-      fpTD.push_back(PTD(jet));
-    }
-    
-    if (fFillMass) {
-      fMass.push_back(jet->M());
-    }
-    
+      
     // Get matched jet (assumes the matches have been filled by a previous task)
     if (fFillMatchingJetID) {
       
-      int matchedJetLabel = -1;
+      short int matchedJetLabel = -1;
       const AliEmcalJet* matchedJet = jet->ClosestJet();
       if (matchedJet) {
         matchedJetLabel = matchedJet->GetLabel();
@@ -197,36 +246,48 @@ void AliJetTreeHandler::FillTree() {
   fTreeVar->Fill();
   
   // Reset all vectors
-  fPtCorr.clear();
-  fEta.clear();
-  fPhi.clear();
   
-  if (fFillPtUncorr) {
-    fPtUncorr.clear();
+  if (fFillPtCorr) {
+    fPtCorr.clear();
   }
   
-  if (fFillArea) {
-    fArea.clear();
+  if (fFillTrackConstituents) {
+    fNTracks.clear();
+    fTrackPt.clear();
+    fTrackEta.clear();
+    fTrackPhi.clear();
   }
-  
-  if (fFillNConstituents) {
-    fN.clear();
-  }
-  
-  if (fFillZLeading) {
-    fZLeading.clear();
-  }
-  
-  if (fFillRadialMoment) {
-    fRadialMoment.clear();
-  }
-  
-  if (fFillpTD) {
-    fpTD.clear();
-  }
-  
-  if (fFillMass) {
-    fMass.clear();
+  else {
+    fEta.clear();
+    fPhi.clear();
+    
+    if (fFillPtUncorr) {
+      fPtUncorr.clear();
+    }
+    
+    if (fFillArea) {
+      fArea.clear();
+    }
+    
+    if (fFillNConstituents) {
+      fN.clear();
+    }
+    
+    if (fFillZLeading) {
+      fZLeading.clear();
+    }
+    
+    if (fFillRadialMoment) {
+      fRadialMoment.clear();
+    }
+    
+    if (fFillpTD) {
+      fpTD.clear();
+    }
+    
+    if (fFillMass) {
+      fMass.clear();
+    }
   }
   
   if (fFillMatchingJetID) {

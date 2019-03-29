@@ -7,6 +7,7 @@ class TH2D;
 class TList;
 class TTree;
 
+#include <TString.h>
 #include <string>
 #include <vector>
 
@@ -30,6 +31,8 @@ struct RHyperTritonHe3pi {
   float fPxPi;
   float fPyPi;
   float fPzPi;
+  Double32_t fTPCmomHe3;            //[0.0,10.24,8]
+  Double32_t fTPCmomPi;             //[0.0,10.24,8]
   Double32_t fChi2V0;               //[0.0,10.24,8] V0 fit chi2
   Double32_t fDcaHe32PrimaryVertex; //[0.0,0.256,8] DCA of the negative prong to the PV
   Double32_t fDcaPi2PrimaryVertex; //[0.0,0.256,8]  DCA of the positive prong to the PV
@@ -38,12 +41,15 @@ struct RHyperTritonHe3pi {
   Double32_t fMaxChi2PerCluster;    //[0,6.4,8] Max chi2 per cluster in TPC
   Double32_t fTPCnSigmaHe3;         //[-8.0,8.0,6] number of sigmas TPC pion for the positive prong
   Double32_t fTPCnSigmaPi;          //[-8.0,8.0,6] number of sigmas TPC 3He for the positive prong
+  Double32_t fTPCsignalHe3;         //[0.,2048.,12] signal of the He3 track in the TPC
+  Double32_t fTPCsignalPi;          //[0.,2048.,12] signal of the pion track in the TPC
   unsigned char fLeastNxedRows;     // Min number of xed roads
-  unsigned char fLeastNpidClusters; // Min number of PID clusters in TPC
+  unsigned char fNpidClustersHe3;   // Number of PID clusters in TPC He3
+  unsigned char fNpidClustersPi; // Number of PID clusters in TPC Pion
+  unsigned char fITSclusHe3;
+  unsigned char fITSclusPi;
   bool fITSrefitHe3;
   bool fITSrefitPi;
-  bool fSPDanyHe3;
-  bool fSPDanyPi;
   bool fCowboy;
   bool fMatter;
 };
@@ -68,6 +74,18 @@ struct SHyperTritonHe3pi {
   float fPyPi;
   float fPzPi;
   bool  fFake;
+  bool  fNegativeLabels;
+};
+
+struct SGenericV0 { /// For the other V0s that are reconstructed
+  int   fRecoIndex;
+  int   fPdgCode;
+  float fDecayX;
+  float fDecayY;
+  float fDecayZ;
+  float fPx;
+  float fPy;
+  float fPz;
 };
 
 class AliAnalysisTaskHyperTriton2He3piML : public AliAnalysisTaskSE {
@@ -80,19 +98,28 @@ class AliAnalysisTaskHyperTriton2He3piML : public AliAnalysisTaskSE {
   virtual void UserExec(Option_t* option);
   virtual void Terminate(Option_t*);
 
+  static AliAnalysisTaskHyperTriton2He3piML* AddTask(bool isMC = false, TString suffix = "");
+
   void SetUseOnTheFlyV0s(bool toogle = true) { fUseOnTheFly = toogle; }
 
   void SetMinPt(float lMinPt) { fMinPtToSave = lMinPt; }
   void SetMaxPt(float lMaxPt) { fMaxPtToSave = lMaxPt; }
 
+  void SetMinPtHe3(float min) { fMinHe3pt = min; }
+
   void SetCustomBetheBloch(float resolution, const float bethe[5]);
 
-  void SetMaxTPCsigmas(float pi, float proton, float he3) {
+  void SetMaxTPCsigmas(float pi, float he3) {
     fMaxTPCpiSigma = pi;
     fMaxTPChe3Sigma = he3;
   }
 
+  void SetMinTPCcluster(unsigned char minCl) {
+    fMinTPCclusters = minCl;
+  }
+
   AliEventCuts fEventCuts;  /// Event cuts class
+  bool fFillGenericV0s;
 
  private:
   TList* fListHist;  //! List of Cascade histograms
@@ -109,15 +136,19 @@ class AliAnalysisTaskHyperTriton2He3piML : public AliAnalysisTaskSE {
 
   /// Control histograms to monitor the filtering
   TH2D* fHistNsigmaHe3;          //! # sigma TPC proton for the positive prong
-  TH2D* fHistNsigmaPion;         //! # sigma TPC pion for the negative prong
+  TH2D* fHistNsigmaPi;           //! # sigma TPC pion for the negative prong
   TH2D* fHistInvMass;            //! # Invariant mass histogram
+  TH2D* fHistTPCdEdx[2];         //! # TPC dE/dx for V0s
 
   float fMinPtToSave;  // minimum pt
   float fMaxPtToSave;  // maximum pt
   float fMaxTPCpiSigma;
   float fMaxTPChe3Sigma;
+  float fMinHe3pt;
+  unsigned char fMinTPCclusters;
 
   std::vector<SHyperTritonHe3pi> fSHyperTriton;
+  std::vector<SGenericV0> fSGenericV0;
   std::vector<RHyperTritonHe3pi> fRHyperTriton;
   RCollision fRCollision;
 

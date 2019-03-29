@@ -549,6 +549,39 @@ class AliAnalysisTaskUPCforwardMC : public AliAnalysisTaskSE
                                 /**
                                  * This histogram shows the angular distribution
                                  * of the positive muon in the HELICITY frame.
+                                 * COS(THETA) distribution. Divided per
+                                 * rapidity bins. RECONSTRUCTED.
+                                 */
+        TH1F*                   fCosThetaHelicityFrameJPsiRapidityBinsH[8];
+
+                                /**
+                                 * This histogram shows the angular distribution
+                                 * of the positive muon in the HELICITY frame.
+                                 * PHI distribution. Divided per
+                                 * rapidity bins. RECONSTRUCTED.
+                                 */
+        TH1F*                   fPhiHelicityFrameJPsiRapidityBinsH[8];
+
+                                /**
+                                 * This histogram shows the angular distribution
+                                 * of the positive muon in the COLLINS-SOPER
+                                 * frame.  COS(THETA) distribution. Divided per
+                                 * rapidity bins. RECONSTRUCTED.
+                                 */
+        TH1F*                   fCosThetaCollinsSoperFrameJPsiRapidityBinsH[8];
+
+                                /**
+                                 * This histogram shows the angular distribution
+                                 * of the positive muon in the COLLINS-SOPER
+                                 * frame. PHI distribution. Divided per
+                                 * rapidity bins. RECONSTRUCTED.
+                                 */
+        TH1F*                   fPhiCollinsSoperFrameJPsiRapidityBinsH[8];
+
+
+                                /**
+                                 * This histogram shows the angular distribution
+                                 * of the positive muon in the HELICITY frame.
                                  * COS(THETA) distribution. GENERATED
                                  */
         TH1F*                   fMCCosThetaHelicityFrameJPsiH;
@@ -573,6 +606,39 @@ class AliAnalysisTaskUPCforwardMC : public AliAnalysisTaskSE
                                  * frame. PHI distribution. GENERATED
                                  */
         TH1F*                   fMCPhiCollinsSoperFrameJPsiH;
+
+                                /**
+                                 * This histogram shows the angular distribution
+                                 * of the positive muon in the HELICITY frame.
+                                 * COS(THETA) distribution. Divided per
+                                 * rapidity bins. GENERATED.
+                                 */
+        TH1F*                   fMCCosThetaHelicityFrameJPsiRapidityBinsH[8];
+
+                                /**
+                                 * This histogram shows the angular distribution
+                                 * of the positive muon in the HELICITY frame.
+                                 * PHI distribution. Divided per
+                                 * rapidity bins. GENERATED.
+                                 */
+        TH1F*                   fMCPhiHelicityFrameJPsiRapidityBinsH[8];
+
+                                /**
+                                 * This histogram shows the angular distribution
+                                 * of the positive muon in the COLLINS-SOPER
+                                 * frame.  COS(THETA) distribution. Divided per
+                                 * rapidity bins. GENERATED.
+                                 */
+        TH1F*                   fMCCosThetaCollinsSoperFrameJPsiRapidityBinsH[8];
+
+                                /**
+                                 * This histogram shows the angular distribution
+                                 * of the positive muon in the COLLINS-SOPER
+                                 * frame. PHI distribution. Divided per
+                                 * rapidity bins. GENERATED.
+                                 */
+        TH1F*                   fMCPhiCollinsSoperFrameJPsiRapidityBinsH[8];
+
 
         //_______________________________
         // CUTS
@@ -655,7 +721,7 @@ class AliAnalysisTaskUPCforwardMC : public AliAnalysisTaskSE
          * If I happen to encounter it again in the future, I will make sure to
          * record it!
          */
-        ClassDef(AliAnalysisTaskUPCforwardMC, 3);
+        ClassDef(AliAnalysisTaskUPCforwardMC, 5);
 };
 
 #endif

@@ -280,13 +280,13 @@ AliFemtoCutMonitorPionPion::Pion::Pion(const bool passing,
   fChi2Tpc = new TH1F(
     hist_name("Chi2Tpc"),
     hist_title("#chi^{2} / N_{cls} TPC", "TPC"),
-    144, 0.0, 0.1
+    144, 0.0, 3.0
   );
 
   fChiTpcIts = new TH2F(
     "ChiTpcIts" + pf,
     TString::Format(title_format,
-                    "#chi^{2} / N_{cls} TPC vs ITS",
+                    "#chi^{2} / N_{DoF} TPC vs ITS",
                     "TPC; ITS;"),
     144, 0.0, 6.1,
     144, 0.0, 7.1);
@@ -519,8 +519,7 @@ void AliFemtoCutMonitorPionPion::Pion::Fill(const AliFemtoTrack* track)
   fNsigTpc->Fill(p, track->NSigmaTPCPi());
   fChi2Tpc->Fill(TPC_ncls > 0 ? track->TPCchi2() / TPC_ncls : -1.0);
 
-  fChiTpcIts->Fill(track->TPCchi2perNDF(),
-                    (ITS_ncls > 0) ? track->ITSchi2() / ITS_ncls : -1.0);
+  fChiTpcIts->Fill(track->TPCchi2perNDF(), track->ITSchi2perNDF());
 
   fImpact->Fill(track->ImpactZ(), track->ImpactD());
 }

@@ -36,43 +36,64 @@ protected:
     AliPIDResponse* fPIDResponse;
     AliEventCuts fEventCuts;
     TList* fListHist;
-    TTree* fTreeV0;
     
     TH1D*  fHistEventCounter;
     TH1D*  fHistCentrality;
     
-    TH2F*  f2fHistRecCentVsPtLambda;
-    TH2F*  f2fHistRecCentVsPtAntiLambda;
-    TH2F*  f2fHistInvMassVsPtLambda;
-    TH2F*  f2fHistInvMassVsPtAntiLambda;
-    TH1F*  f1fHistmassctLambda;
-    TH1F*  f1fHistmassctAntiLambda;
-    TH2F*  f2fHistPtmassctLambda;
-    TH2F* f2fHistPtmassctAntiLambda;
-    TH2F* f2fHistCentVsInvMassLambda;
-    TH2F* f2fHistCentVsInvMassAntiLambda;
-
     
+    
+    TH3F*  f3fHistCentVsInvMassLambda1point6;
+    TH3F*  f3fHistCentVsInvMassLambda1point0;
+    TH3F*  f3fHistCentVsInvMassLambda0point6;
+    TH3F*  f3fHistCentVsInvMassLambda0point2;
+    
+    TH3F*  f3fHistPtmassctLambda1point6;
+    TH3F*  f3fHistPtmassctLambda1point0;
+    TH3F*  f3fHistPtmassctLambda0point6;
+    TH3F*  f3fHistPtmassctLambda0point2;
+
+    TH3F*  f3fHistPtmassctLambdaPosOpoint2;
+    TH3F*  f3fHistPtmassctLambdaPosOpoint4;
+    TH3F*  f3fHistPtmassctLambdaPosOpoint6;
+    TH3F*  f3fHistPtmassctLambdaPosOpoint8;
+    
+    ///ANTI-LAMBDA
+    TH3F*  f3fHistCentVsInvMassAntiLambda1point6;
+    TH3F*  f3fHistCentVsInvMassAntiLambda1point0;
+    TH3F*  f3fHistCentVsInvMassAntiLambda0point6;
+    TH3F*  f3fHistCentVsInvMassAntiLambda0point2;
+    
+    TH3F*  f3fHistPtmassctAntiLambda1point6;
+    TH3F*  f3fHistPtmassctAntiLambda1point0;
+    TH3F*  f3fHistPtmassctAntiLambda0point6;
+    TH3F*  f3fHistPtmassctAntiLambda0point2;
+    
+    TH3F*  f3fHistPtmassctAntiLambdaPosOpoint2;
+    TH3F*  f3fHistPtmassctAntiLambdaPosOpoint4;
+    TH3F*  f3fHistPtmassctAntiLambdaPosOpoint6;
+    TH3F*  f3fHistPtmassctAntiLambdaPosOpoint8;
+
     Float_t fCentrality;
     
     Int_t fTreeVariableLeastNbrCrossedRows;
     Float_t fTreeVariableLeastRatioCrossedRowsOverFindable;
     
-    Float_t fTreeVariableInvMassLambda;
-    Float_t fTreeVariableInvMassAntiLambda;
-    Float_t fTreeVariableDcaV0Daughters;
-    Float_t fTreeVariableDcaV0ToPrimVertex;
-    Float_t fTreeVariableDcaPosToPrimVertex;
-    Float_t fTreeVariableDcaNegToPrimVertex;
-    Float_t fTreeVariableNsigmaPosProton;
-    Float_t fTreeVariableNsigmaNegProton;
-    Float_t fTreeVariableCentrality;
-    
+  
     UInt_t fEvSel;
     Int_t  fNptBins;
+
     
-    THnSparse *fPtBinNplusNminusChALL;
-    THnSparse *fPtBinNplusNminusChCut;
+    THnSparse *fPtBinNplusNminusChEtaFour;
+    THnSparse *fPtBinNplusNminusChEtaThree;
+    THnSparse *fPtBinNplusNminusChEtaTwo;
+    THnSparse *fPtBinNplusNminusChEtaOne;
+    THnSparse *fPtBinNplusNminusChPosEtaFour;
+    THnSparse *fPtBinNplusNminusChPosEtaThree;
+    THnSparse *fPtBinNplusNminusChPosEtaTwo;
+    THnSparse *fPtBinNplusNminusChPosEtaOne;
+    THnSparse *fPtBinNplusNminusChBproxy;
+
+    
     Int_t    GetPtBin(Double_t pt);
     
     ClassDef(AliAnalysisTaskNetLambdaTrad,5);

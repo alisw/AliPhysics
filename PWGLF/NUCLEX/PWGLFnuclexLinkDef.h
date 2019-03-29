@@ -77,11 +77,25 @@
 #pragma link C++ class AliReducedHypTritEvent+;
 #pragma link C++ class AliAnalysisTaskHypCrossCheck+;
 #pragma link C++ class AliAnalysisTaskHyperTriton2He3piML+;
+#pragma link C++ class RHyperTritonHe3pi+;
+#pragma link C++ class SHyperTritonHe3pi+;
+#pragma link C++ class std::vector<RHyperTritonHe3pi>+;
+#pragma link C++ class std::vector<SHyperTritonHe3pi>+;
+#pragma link C++ class RCollision;
+
 
 /// * Hyp3body
 #pragma link C++ class AliAnalysisTaskHypertriton3+;
 #pragma link C++ class AliAnalysisTaskHypertriton3Dev+;
 #pragma link C++ class AliAnalysisTaskHypertriton3AOD+;
+
+/// * New Hyp3body
+#pragma link C++ class AliAnalysisTaskHypertriton3New+;
+
+/// Hypertriton Selector
+#ifdef __CLING__
+#pragma link C++ class AliSelectorFindableHyperTriton3Body+;
+#endif
 
 /// * VertexerHyp3Body
 #pragma link C++ class AliVertexerHyperTriton3Body+;

@@ -929,14 +929,14 @@ void AliAnalysisTaskBFPsi::SetInputListForNUACorr(TString fileNUA){
   TFile *fNUAFile= TFile::Open(fileNUA.Data(), "READ");
 
   if(!fNUAFile) {
-    Printf(" *** ERROR: NUE file not found! **EXIT** ");
+    AliFatal(" *** ERROR: NUE file not found but requested! **ABORT** ");
     return;
   }
 
   fListNUA = dynamic_cast<TList*>(fNUAFile->Get("fListNUA"));
 
   if(!fListNUA){
-    Printf(" *** ERROR: NUE list not found! **EXIT** ");
+    AliFatal(" *** ERROR: NUE list not found but requested! **ABORT** ");
     return;
   }
   
@@ -983,9 +983,9 @@ Double_t AliAnalysisTaskBFPsi::GetNUACorrection(Int_t gRun, Short_t vCharge, Dou
       nua = fHistNUACorrMinus[gRun]->GetBinContent(fHistNUACorrMinus[gRun]->FindBin(vPhi, vEta, vVz));}
 
   if (nua == 0.) {
-    Printf ("Should not happen : bin content = 0. >> eta: %.2f | phi : %.2f | Vz : %.2f",vEta, vPhi, vVz); 
-    return 1.;}
-  
+    AliFatal(Form("No correction found but correction requested ==> ABORT, bin content = 0.>> eta: %.2f | phi : %.2f | Vz : %.2f",vEta, vPhi, vVz));
+    return 1.;
+  }
   return nua;
   
 }
@@ -996,14 +996,14 @@ void AliAnalysisTaskBFPsi::SetInputListForNUECorr(TString fileNUE){
   TFile *fNUEFile= TFile::Open(fileNUE.Data(), "READ");
 
   if(!fNUEFile) {
-    Printf(" *** ERROR: NUE file not found! **EXIT** ");
+    AliFatal(" *** ERROR: NUE file not but requested! **ABORT** ");
     return;
   }
 
   fListNUE = dynamic_cast<TList*>(fNUEFile->Get("fListNUE"));
 
   if(!fListNUE){
-    Printf(" *** ERROR: NUE list not found! **EXIT** ");
+    AliFatal(" *** ERROR: NUE list not found but requested! **ABORT** ");
     return;
   }
   
@@ -1057,9 +1057,9 @@ Double_t AliAnalysisTaskBFPsi::GetNUECorrection(Int_t gCentralityIndex, Short_t 
   }
   
   if (nue == 0.) {
-    Printf("Should not happen : bin content = 0. >> pT: %.2f | gCentralityIndex : %d",vPt, gCentralityIndex); 
-    return 1.;}
-
+    AliFatal(Form("No correction found but correction requested ==> ABORT, bin content = 0. >> pT: %.2f | gCentralityIndex : %d",vPt, gCentralityIndex));
+    return 1.;
+  }
   return nue;
   
 }
@@ -2675,7 +2675,8 @@ TObjArray* AliAnalysisTaskBFPsi::GetAcceptedTracks(AliVEvent *event, Double_t gC
       //Printf("fCorrProcedure %d, gRun =%d", fCorrProcedure, gRun);
       if (fCorrProcedure != AliAnalysisTaskBFPsi::kNoCorr){
 	if (fCorrProcedure == AliAnalysisTaskBFPsi::kMCCorr) correction = GetTrackbyTrackCorrectionMatrix(vEta, vPhi, vPt, vCharge, gCentrality);
-	else {
+	else if (fCorrProcedure == AliAnalysisTaskBFPsi::kMC1DCorr) correction = GetNUECorrection(gCentrIndex, vCharge, vPt);
+	else if (fCorrProcedure == AliAnalysisTaskBFPsi::kDataDrivCorr) {
 	  if (fUseRapidity) nua = GetNUACorrection(gRun, vCharge, event->GetPrimaryVertex()->GetZ(), vY, vPhi);
 	  else nua = GetNUACorrection(gRun, vCharge, event->GetPrimaryVertex()->GetZ(), vEta, vPhi);
 	  nue = GetNUECorrection(gCentrIndex, vCharge, vPt);
@@ -2819,7 +2820,8 @@ TObjArray* AliAnalysisTaskBFPsi::GetAcceptedTracks(AliVEvent *event, Double_t gC
       
       if (fCorrProcedure != AliAnalysisTaskBFPsi::kNoCorr){
 	if (fCorrProcedure == AliAnalysisTaskBFPsi::kMCCorr) correction = GetTrackbyTrackCorrectionMatrix(vEta, vPhi, vPt, vCharge, gCentrality);
-	else {
+	else if (fCorrProcedure == AliAnalysisTaskBFPsi::kMC1DCorr) correction = GetNUECorrection(gCentrIndex, vCharge, vPt);
+	else if (fCorrProcedure == AliAnalysisTaskBFPsi::kDataDrivCorr) {
 	  if (fUseRapidity) nua = GetNUACorrection(gRun, vCharge, event->GetPrimaryVertex()->GetZ(), vY, vPhi);
 	  else nua = GetNUACorrection(gRun, vCharge, event->GetPrimaryVertex()->GetZ(), vEta, vPhi);
 	  nue = GetNUECorrection(gCentrIndex, vCharge, vPt);
@@ -2959,9 +2961,9 @@ TObjArray* AliAnalysisTaskBFPsi::GetAcceptedTracks(AliVEvent *event, Double_t gC
 	Double_t nua, nue;
 	
 	if (fCorrProcedure != AliAnalysisTaskBFPsi::kNoCorr){
-	  if (fCorrProcedure == AliAnalysisTaskBFPsi::kMCCorr)
-	    correction = GetTrackbyTrackCorrectionMatrix(vEta, vPhi, vPt, vCharge, gCentrality);
-	  else {
+	  if (fCorrProcedure == AliAnalysisTaskBFPsi::kMCCorr)  correction = GetTrackbyTrackCorrectionMatrix(vEta, vPhi, vPt, vCharge, gCentrality);
+	  else if (fCorrProcedure == AliAnalysisTaskBFPsi::kMC1DCorr) correction = GetNUECorrection(gCentrIndex, vCharge, vPt);
+	  else if (fCorrProcedure == AliAnalysisTaskBFPsi::kDataDrivCorr) {
 	    if (fUseRapidity) nua = GetNUACorrection(gRun, vCharge, event->GetPrimaryVertex()->GetZ(), vY, vPhi);
 	    else nua = GetNUACorrection(gRun, vCharge, event->GetPrimaryVertex()->GetZ(), vEta, vPhi);
 	    nue = GetNUECorrection(gCentrIndex, vCharge, vPt);
@@ -3514,7 +3516,8 @@ TObjArray* AliAnalysisTaskBFPsi::GetAcceptedTracks(AliVEvent *event, Double_t gC
       
       if (fCorrProcedure != AliAnalysisTaskBFPsi::kNoCorr){
 	if (fCorrProcedure == AliAnalysisTaskBFPsi::kMCCorr) correction = GetTrackbyTrackCorrectionMatrix(vEta, vPhi, vPt, vCharge, gCentrality);
-	else {
+	else if (fCorrProcedure == AliAnalysisTaskBFPsi::kMC1DCorr) correction = GetNUECorrection(gCentrIndex, vCharge, vPt);
+	else if (fCorrProcedure == AliAnalysisTaskBFPsi::kDataDrivCorr) {
 	  if (fUseRapidity) nua = GetNUACorrection(gRun, vCharge, event->GetPrimaryVertex()->GetZ(), vY, vPhi);
 	  else nua = GetNUACorrection(gRun, vCharge, event->GetPrimaryVertex()->GetZ(), vEta, vPhi);
 	  nue = GetNUECorrection(gCentrIndex, vCharge, vPt);
@@ -3760,7 +3763,8 @@ TObjArray* AliAnalysisTaskBFPsi::GetAcceptedTracks(AliVEvent *event, Double_t gC
       
       if (fCorrProcedure != AliAnalysisTaskBFPsi::kNoCorr){
 	if (fCorrProcedure == AliAnalysisTaskBFPsi::kMCCorr) correction = GetTrackbyTrackCorrectionMatrix(vEta, vPhi, vPt, vCharge, gCentrality);
-	else {
+	else if (fCorrProcedure == AliAnalysisTaskBFPsi::kMC1DCorr) correction = GetNUECorrection(gCentrIndex, vCharge, vPt);
+	else if (fCorrProcedure == AliAnalysisTaskBFPsi::kDataDrivCorr) {
 	  if (fUseRapidity) nua = GetNUACorrection(gRun, vCharge, event->GetPrimaryVertex()->GetZ(), vY, vPhi);
 	  else nua = GetNUACorrection(gRun, vCharge, event->GetPrimaryVertex()->GetZ(), vEta, vPhi);
 	  nue = GetNUECorrection(gCentrIndex, vCharge, vPt);
@@ -4086,7 +4090,8 @@ TObjArray* AliAnalysisTaskBFPsi::GetAcceptedTracks(AliVEvent *event, Double_t gC
 	
 	if (fCorrProcedure != AliAnalysisTaskBFPsi::kNoCorr){
 	  if (fCorrProcedure == AliAnalysisTaskBFPsi::kMCCorr) correction = GetTrackbyTrackCorrectionMatrix(vEta, vPhi, vPt, vCharge, gCentrality);
-	  else {
+	  else if (fCorrProcedure == AliAnalysisTaskBFPsi::kMC1DCorr) correction = GetNUECorrection(gCentrIndex, vCharge, vPt);
+	  else if (fCorrProcedure == AliAnalysisTaskBFPsi::kDataDrivCorr) {
 	    if (fUseRapidity) nua = GetNUACorrection(gRun, vCharge, event->GetPrimaryVertex()->GetZ(), vY, vPhi);
 	    else nua = GetNUACorrection(gRun, vCharge, event->GetPrimaryVertex()->GetZ(), vEta, vPhi);
 	    nue = GetNUECorrection(gCentrIndex, vCharge, vPt);
@@ -4184,7 +4189,8 @@ TObjArray* AliAnalysisTaskBFPsi::GetShuffledTracks(TObjArray *tracks, Double_t g
       
       if (fCorrProcedure != AliAnalysisTaskBFPsi::kNoCorr){
 	if (fCorrProcedure == AliAnalysisTaskBFPsi::kMCCorr) correction = GetTrackbyTrackCorrectionMatrix(track->Eta(), track->Phi(),track->Pt(), chargeVector->at(i), gCentrality);
-	else {
+	else if (fCorrProcedure == AliAnalysisTaskBFPsi::kMC1DCorr) correction = GetNUECorrection(gCentrIndex, chargeVector->at(i), track->Pt());
+	else if (fCorrProcedure == AliAnalysisTaskBFPsi::kDataDrivCorr) {
 	  if (fUseRapidity) nua = GetNUACorrection(gRun, chargeVector->at(i), event->GetPrimaryVertex()->GetZ(),  track->Y(),  track->Phi());
 	  else nua = GetNUACorrection(gRun, chargeVector->at(i), event->GetPrimaryVertex()->GetZ(),  track->Eta(),  track->Phi());
 	  nue = GetNUECorrection(gCentrIndex, chargeVector->at(i), track->Pt());
