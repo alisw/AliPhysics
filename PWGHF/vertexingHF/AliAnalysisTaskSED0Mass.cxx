@@ -2906,7 +2906,7 @@ void AliAnalysisTaskSED0Mass::CreateImpactParameterHistos(){
 Float_t AliAnalysisTaskSED0Mass::GetTrueImpactParameter(AliAODMCHeader *mcHeader, TClonesArray* arrayMC, AliAODMCParticle *partD0) const {
   /// true impact parameter calculation
 
-  printf(" AliAnalysisTaskSED0MassV1::GetTrueImpactParameter() \n");
+  //printf(" AliAnalysisTaskSED0MassV1::GetTrueImpactParameter() \n");
 
   Double_t vtxTrue[3];
   mcHeader->GetVertex(vtxTrue);
