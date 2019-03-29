@@ -90,15 +90,10 @@ void ApplyPIDpostCalibration(AliAnalysisTaskElectronEfficiencyV2* task, Int_t wh
   std::cout << task << std::endl;
 
   std::cout << "starting ApplyPIDpostCalibration()\n";
-  if(whichDet == 0){// ITS
+  if(whichDet == 0 && wSDD){// ITS
     std::cout << "Loading ITS correction" << std::endl;
     TString localPath = "/home/aaron/Data/diElec_framework_output/PIDcalibration/";
-    TString fileName = "outputITS";
-    if(wSDD == kTRUE){
-      fileName.Append("_MC.root");
-    }else{
-      fileName.Append("_woSDD_MC.root");
-    }
+    TString fileName  = "outputITS_MC.root";
 
     TFile* inFile = TFile::Open(localPath+fileName);
     if(!inFile){
