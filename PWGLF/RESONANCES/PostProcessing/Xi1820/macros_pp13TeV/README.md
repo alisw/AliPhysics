@@ -1,3 +1,5 @@
+author: Corey James MYERS (corey.james.myers@cern.ch)
+
 # Postprocessing macros for Xi(1820)- in pp 13TeV #
 
 - cinvmass4.c
@@ -18,7 +20,7 @@ The simplified procedure is as follows: (this is not how the code is structured 
 
 
 1.) Collect background-subtracted histogram from cinvmass4.c that corresponds to specific decay channel, normalization range, background distribution, pt bin, and multiplicity percentile bin.
-2.) Due to the fact that a residual background may be present, a polynomial function is used to fit the residual background while ignoring the signal.
+<br> 2.) Due to the fact that a residual background may be present, a polynomial function is used to fit the residual background while ignoring the signal.
 3.) The polynomial used to fit the residual background is looped though several degrees of polynomial (1st to 4th degree polynomial). This is called the “version” loop.
 4.) The polynomial used to fit the residual background is looped though several fit ranges (1.70-2.0, 1.76-1.9, 1.76-2.0 GeV/c^2). This is called the “range” loop.
 5.) After the residual background is fit with the polynomial (technically also fit with Breit-Wigner + polynomial), the difference between the polynomial fit the background-subtracted histogram is calculated and used to fill another histogram. This histogram would contain only the signal we are looking for. Note the nomenclature for these plots is that the plots before the polynomial subtraction are called “sub” plots, while the plots after the polynomial subtraction are called “linear” plots. 
