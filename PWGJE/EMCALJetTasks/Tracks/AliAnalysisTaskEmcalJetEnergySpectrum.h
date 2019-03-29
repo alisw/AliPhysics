@@ -64,6 +64,7 @@ public:
     fTriggerSelectionString = triggerstring;
   }
   void SetUseDownscaleWeight(bool doUse) { fUseDownscaleWeight = doUse; }
+  void SetUseSumw2(Bool_t doUse) { fUseSumw2 = doUse; }
   void SetUseAliEventCuts(bool doUse) { fUseAliEventCuts = doUse; }
   void SetUseTriggerSelectionForData(bool doUse) { fUseTriggerSelectionForData = doUse; }
   void SetRequireSubsetMB(bool doRequire, ULong_t minbiastrigger = AliVEvent::kAny) { fRequireSubsetMB = doRequire; fMinBiasTrigger = minbiastrigger; }
@@ -103,6 +104,7 @@ private:
   Bool_t                        fRequestTriggerClusters;        ///< Request distinction of trigger clusters
   Bool_t                        fRequestCentrality;             ///< Request centrality
   Bool_t                        fUseAliEventCuts;               ///< Flag switching on AliEventCuts;
+  Bool_t                        fUseSumw2;                      ///< Switch for sumw2 option in THnSparse (should not be used when a downscale weight is applied)
   TString                       fCentralityEstimator;           ///< Centrality estimator
   TArrayD                       fUserPtBinning;                 ///< User-defined pt-binning
 
