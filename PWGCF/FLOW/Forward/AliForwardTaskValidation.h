@@ -17,11 +17,11 @@ class AliForwardTaskValidation : public AliAnalysisTaskSE {
  public:
   AliForwardTaskValidation();
   /// `is_reconstructed` is used to toggle some event selections
-  AliForwardTaskValidation(const char *name, bool mc);
-
+  AliForwardTaskValidation(const char *name);
+  AliForwardTaskValidation(const AliForwardTaskValidation&);
   /// Set up this task. This function acts as the AddTask macro
   /// `is_reconstructed` is passed on to the constructor of this task
-  static AliForwardTaskValidation* ConnectTask(TString name,bool mc, TString suffix);
+  static AliForwardTaskValidation* ConnectTask(TString name, TString suffix);
   /// The Exchange container which is to be accessed by other classes
   AliAnalysisDataContainer* GetExchangeContainter();
   virtual ~AliForwardTaskValidation() {};
@@ -48,7 +48,6 @@ class AliForwardTaskValidation : public AliAnalysisTaskSE {
 
   enum EventValidationMC {
     kNoEventCutMC,
-    kHasMultSelectionMC,
     kHasEntriesFMDMC,
     kHasValidFMDMC,
     kHasPrimariesMC
@@ -124,11 +123,11 @@ class AliForwardTaskValidation : public AliAnalysisTaskSE {
   /// Create QA histograms based on the set validators
   void CreateQAHistograms(TList* outlist);
   /// Histogram showing why an even got discarded to be read from left to right
-  TH1F *fQA_event_discard_flow;
-  TH1F *fQA_event_discard_flow_MC;
+  TH1F *fQA_event_discard_flow;   //!
+  TH1F *fQA_event_discard_flow_MC;//!
 
   /// Histogram showing why a _Track_ was discarded to be read from left to right
-  TH1F *fQA_track_discard_flow;
+  TH1F *fQA_track_discard_flow;//!
 
   // A class applying the recommended event cuts
   AliEventCuts fEventCuts;
@@ -142,14 +141,12 @@ class AliForwardTaskValidation : public AliAnalysisTaskSE {
   /// No checks are done on these tracks and they could be anywhere in the detector!
   TClonesArray* GetAllMCTruthTracksAsTClonesArray();
 
-  /// true if the event is from MC
-  Bool_t isMC;
-
   /// Extra cut on the FMD, rejects events with hot spots in FMD
   Bool_t HasValidFMD();
 
   /// Utils class used by some of the cuts
   AliAnalysisUtils fUtils;
+
   /// Returns alwasy true. Used to have the "all event bin" in the qa histograms
   Bool_t NoCut() {return true;};
   Bool_t HasPrimaries();
@@ -181,21 +178,21 @@ class AliForwardTaskValidation : public AliAnalysisTaskSE {
   Bool_t NotSPDClusterVsTrackletBG() {return !fUtils.IsSPDClusterVsTrackletBG(this->InputEvent());};
 
   // Correlation between FMD and V0s
-  TH2 *fFMDV0;  //!
+  TH2 *fFMDV0;       //!
   TH2 *fFMDV0_post;  //!
-  TH2 *fFMDV0A; //!
+  TH2 *fFMDV0A;      //!
   TH2 *fFMDV0A_post; //!
-  TH2 *fFMDV0C; //!
+  TH2 *fFMDV0C;      //!
   TH2 *fFMDV0C_post; //!
-  TH2 *fOutliers; //!
+  TH2 *fOutliers;    //!
 
 
-  TH2D*   centralDist;//!
-  TH2D*   refDist;//!
-  TH2D*   forwardDist;//!
+  TH2D* centralDist;//!
+  TH2D* refDist;    //!
+  TH2D* forwardDist;//!
 
   AliForwardFlowUtil fUtil;//!
 
-  ClassDef(AliForwardTaskValidation, 2);
+  ClassDef(AliForwardTaskValidation, 1);
 };
 #endif

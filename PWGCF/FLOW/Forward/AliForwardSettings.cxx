@@ -5,12 +5,11 @@
 
 //________________________________________________________________________
 AliForwardSettings::AliForwardSettings() :
-  fDataType(-1),
   fPhiAcceptanceLowEdge(0),
   fPhiAcceptanceUpEdge(2*TMath::Pi()),
+  fNPhiBins(20),
   fEtaLowEdge(-4.0),
   fEtaUpEdge(6.0),
-  fNPhiBins(20),
   fZVtxAcceptanceLowEdge(-10),
   fZVtxAcceptanceUpEdge(10),
   fNZvtxBins(10),
@@ -19,6 +18,7 @@ AliForwardSettings::AliForwardSettings() :
   fNRefEtaBins(1),
   fNDiffEtaBins(50),
   fCentBins(10),
+  fFlowFlags(),
   nuacentral(),
   nuaforward(),
   nuacentral_ref(),

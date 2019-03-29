@@ -62,6 +62,7 @@ AliForwardNUATask::AliForwardNUATask() : AliAnalysisTaskSE(),
   nua_cen(),
   nua_fmd(),
   dNdeta(),
+  ev_val(),
   fSettings(),
   fUtil()
   {
@@ -204,7 +205,7 @@ void AliForwardNUATask::UserExec(Option_t *)
 
   Double_t zvertex = fUtil.GetZ();
 
-  TList* eventList = static_cast<TList*>(fOutputList->FindObject("EventInfo"));
+  //TList* eventList = static_cast<TList*>(fOutputList->FindObject("EventInfo"));
   static_cast<TH1D*>(fEventList->FindObject("Vertex"))->Fill(zvertex);
 
 

@@ -42,9 +42,8 @@ AliForwardGenericFramework::AliForwardGenericFramework()
 //_____________________________________________________________________
 void AliForwardGenericFramework::CumulantsAccumulate(TH2D& dNdetadphi, TList* outputList, double cent, double zvertex, TString detType, Bool_t doRefFlow, Bool_t doDiffFlow)
 {
-  TList* eventList = static_cast<TList*>(outputList->FindObject("EventInfo"));
-  TH2F* fOutliers = static_cast<TH2F*>(eventList->FindObject("hOutliers"));
-  TH1D* fFMDHits = static_cast<TH1D*>(eventList->FindObject("FMDHits"));
+  //TList* eventList = static_cast<TList*>(outputList->FindObject("EventInfo"));
+  //TH1D* fFMDHits = static_cast<TH1D*>(eventList->FindObject("FMDHits"));
 
   for (Int_t etaBin = 1; etaBin <= dNdetadphi.GetNbinsX(); etaBin++) {
 

@@ -21,10 +21,10 @@
  */
  //#include "AliForwardTaskValidation.h"
 
-AliAnalysisTaskSE* AddTaskForwardValidation(TString name,bool mc,TString suffix)
+AliAnalysisTaskSE* AddTaskForwardValidation(TString name,TString suffix)
 {
   std::cout << "AddTaskForwardValidation" << std::endl;
-    AliForwardTaskValidation* task = AliForwardTaskValidation::ConnectTask(name, mc,suffix);
+    AliForwardTaskValidation* task = AliForwardTaskValidation::ConnectTask(name, suffix);
 
   return task;
 }
