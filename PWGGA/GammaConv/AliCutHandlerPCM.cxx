@@ -20,6 +20,9 @@ fValidCutsMeson(kTRUE),
 fValidCutsElectron(kTRUE),
 fValidCutsNDM(kTRUE),
 fValidCutsChargedPion(kTRUE),
+fValidCutsChargedKaon(kTRUE),
+fValidCutsProton(kTRUE),
+fValidCutsDeuteron(kTRUE),
 fEventCutArray(0),
 fPhotonCutArray(0),
 fMesonCutArray(0),
@@ -27,7 +30,10 @@ fClusterCutArray(0),
 fMergedClusterCutArray(0),
 fElectronCutArray(0),
 fNeutralDecayMesonCutArray(0),
-fChargedPionCutArray(0)
+fChargedPionCutArray(0),
+fChargedKaonCutArray(0),
+fProtonCutArray(0),
+fDeuteronCutArray(0)
 {
   fNCuts                     = 0;
   fNMaxCuts                  = 10;
@@ -39,6 +45,11 @@ fChargedPionCutArray(0)
   fElectronCutArray          = new TString[fNMaxCuts];
   fNeutralDecayMesonCutArray = new TString[fNMaxCuts];
   fChargedPionCutArray       = new TString[fNMaxCuts];
+  fChargedKaonCutArray       = new TString[fNMaxCuts];
+  fProtonCutArray            = new TString[fNMaxCuts];
+  fDeuteronCutArray          = new TString[fNMaxCuts];
+
+
   for(Int_t i=0; i<fNMaxCuts; i++) {
     fEventCutArray[i]             = "";
     fPhotonCutArray[i]            = "";
@@ -48,6 +59,9 @@ fChargedPionCutArray(0)
     fElectronCutArray[i]          = "";
     fNeutralDecayMesonCutArray[i] = "";
     fChargedPionCutArray[i]       = "";
+    fChargedKaonCutArray[i]       = "";
+    fProtonCutArray[i]            = "";
+    fDeuteronCutArray[i]          = "";
   }
 }
 
@@ -65,6 +79,9 @@ AliCutHandlerPCM::AliCutHandlerPCM(Int_t nMax) :
   fValidCutsElectron(kTRUE),
   fValidCutsNDM(kTRUE),
   fValidCutsChargedPion(kTRUE),
+  fValidCutsChargedKaon(kTRUE),
+  fValidCutsProton(kTRUE),
+  fValidCutsDeuteron(kTRUE),
   fEventCutArray(0),
   fPhotonCutArray(0),
   fMesonCutArray(0),
@@ -72,7 +89,10 @@ AliCutHandlerPCM::AliCutHandlerPCM(Int_t nMax) :
   fMergedClusterCutArray(0),
   fElectronCutArray(0),
   fNeutralDecayMesonCutArray(0),
-  fChargedPionCutArray(0)
+  fChargedPionCutArray(0),
+  fChargedKaonCutArray(0),
+  fProtonCutArray(0),
+  fDeuteronCutArray(0)
 {
   fNCuts                     = 0;
   fNMaxCuts                  = nMax;
@@ -84,6 +104,10 @@ AliCutHandlerPCM::AliCutHandlerPCM(Int_t nMax) :
   fElectronCutArray          = new TString[fNMaxCuts];
   fNeutralDecayMesonCutArray = new TString[fNMaxCuts];
   fChargedPionCutArray       = new TString[fNMaxCuts];
+  fChargedKaonCutArray       = new TString[fNMaxCuts];
+  fProtonCutArray            = new TString[fNMaxCuts];
+  fDeuteronCutArray          = new TString[fNMaxCuts];
+
 
   for(Int_t i=0; i<fNMaxCuts; i++) {
     fEventCutArray[i]             = "";
@@ -94,6 +118,9 @@ AliCutHandlerPCM::AliCutHandlerPCM(Int_t nMax) :
     fElectronCutArray[i]          = "";
     fNeutralDecayMesonCutArray[i] = "";
     fChargedPionCutArray[i]       = "";
+    fChargedKaonCutArray[i]       = "";
+    fProtonCutArray[i]            = "";
+    fDeuteronCutArray[i]          = "";
   }
 }
 
@@ -334,6 +361,50 @@ void AliCutHandlerPCM::AddCutPCMMaterial(TString eventCut, TString photonCut){
   fNCuts++;
   return;
 }
+void AliCutHandlerPCM::AddCutTrackQA(TString eventCut, TString pionCut, TString kaonCut, TString protonCut, TString deuteronCut){
+  if(fNCuts>=fNMaxCuts) {
+    cout << "ERROR in AliCutHandlerPCM: Exceeded maximum number of cuts!" << endl;
+    fValidCuts = false;
+    return;
+  }
+  if( eventCut.Length()!=8 || pionCut.Length()!=9 || kaonCut.Length()!=9  || protonCut.Length()!=9  || deuteronCut.Length()!=9    ) {
+    cout << "ERROR in AliCutHandlerPCM: Incorrect length of cut string!" << endl;
+    fValidCutsEvent = kFALSE;
+    fValidCutsChargedPion = kFALSE;
+    fValidCutsChargedKaon = kFALSE;
+    fValidCutsProton = kFALSE;
+    fValidCutsDeuteron = kFALSE;
+    fValidCuts      = false;
+    return;
+  }
+  fMode                     = 0;
+  fEventCutArray[fNCuts]    = eventCut;
+  fChargedPionCutArray[fNCuts] = pionCut;
+  fChargedKaonCutArray[fNCuts] = kaonCut;
+  fProtonCutArray[fNCuts] = protonCut;
+  fDeuteronCutArray[fNCuts] = deuteronCut;
+  fNCuts++;
+  return;
+}
+void AliCutHandlerPCM::AddCutTrackQAPion(TString eventCut, TString pionCut){
+  if(fNCuts>=fNMaxCuts) {
+    cout << "ERROR in AliCutHandlerPCM: Exceeded maximum number of cuts!" << endl;
+    fValidCuts = false;
+    return;
+  }
+  if( eventCut.Length()!=8 || pionCut.Length()!=9    ) {
+    cout << "ERROR in AliCutHandlerPCM: Incorrect length of cut string!" << endl;
+    fValidCutsEvent = kFALSE;
+    fValidCutsChargedPion   = kFALSE;
+    fValidCuts      = false;
+    return;
+  }
+  fMode                     = 0;
+  fEventCutArray[fNCuts]    = eventCut;
+  fChargedPionCutArray[fNCuts] = pionCut;
+  fNCuts++;
+  return;
+}
 
 
 
@@ -411,6 +482,30 @@ TString AliCutHandlerPCM::GetPionCut(Int_t i){ // Get charged pion cut
     return fChargedPionCutArray[i];
   else {
     cout<<" ERROR in AliCutHandlerPCM: GetPionCut wrong index i "<<endl;
+    return "";
+  }
+}
+TString AliCutHandlerPCM::GetKaonCut(Int_t i){ // Get charged kaon cut
+  if(fValidCutsChargedKaon&&i<fNMaxCuts&&i>=0)
+    return fChargedKaonCutArray[i];
+  else {
+    cout<<" ERROR in AliCutHandlerPCM: GetKaonCut wrong index i "<<endl;
+    return "";
+  }
+}
+TString AliCutHandlerPCM::GetProtonCut(Int_t i){ // Get  proton cut
+  if(fValidCutsProton&&i<fNMaxCuts&&i>=0)
+    return fProtonCutArray[i];
+  else {
+    cout<<" ERROR in AliCutHandlerPCM: GetProtonCut wrong index i "<<endl;
+    return "";
+  }
+}
+TString AliCutHandlerPCM::GetDeuteronCut(Int_t i){ // Get deuteron cut
+  if(fValidCutsDeuteron&&i<fNMaxCuts&&i>=0)
+    return fDeuteronCutArray[i];
+  else {
+    cout<<" ERROR in AliCutHandlerPCM: GetDeuteronCut wrong index i "<<endl;
     return "";
   }
 }
