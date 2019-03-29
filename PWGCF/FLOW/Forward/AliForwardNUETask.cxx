@@ -160,18 +160,18 @@ void AliForwardNUETask::UserExec(Option_t *)
   // Get detector objects
   AliAODForwardMult* aodfmult = static_cast<AliAODForwardMult*>(fAOD->FindListObject("Forward"));
 
-  TList* eventList = static_cast<TList*>(fOutputList->FindObject("EventInfo"));
+  //TList* eventList = static_cast<TList*>(fOutputList->FindObject("EventInfo"));
   TH2F* nua_fmd = static_cast<TH2F*>(fOutputList->FindObject("NUA_fmd"));
   THnD* nua_tpc = static_cast<THnD*>(fOutputList->FindObject("NUA_tpc"));
   TH2F* nua_spd = static_cast<TH2F*>(fOutputList->FindObject("NUA_spd"));
   TH2F* nua_fmd_prim = static_cast<TH2F*>(fOutputList->FindObject("NUA_fmd_prim"));
   TH3F* nua_tpc_prim = static_cast<TH3F*>(fOutputList->FindObject("NUA_tpc_prim"));
   TH2F* nua_spd_prim = static_cast<TH2F*>(fOutputList->FindObject("NUA_spd_prim"));
-  TH1D* fFMDHits = static_cast<TH1D*>(eventList->FindObject("FMDHits"));
+  //TH1D* fFMDHits = static_cast<TH1D*>(eventList->FindObject("FMDHits"));
 
   Int_t  iTracks(fAOD->GetNumberOfTracks());
-  AliMultSelection *MultSelection = (AliMultSelection*)fInputEvent->FindListObject("MultSelection");
-  Double_t cent = MultSelection->GetMultiplicityPercentile("V0M"); //CL0
+  //AliMultSelection *MultSelection = (AliMultSelection*)fInputEvent->FindListObject("MultSelection");
+  //Double_t cent = MultSelection->GetMultiplicityPercentile("V0M"); //CL0
 
   TH2D& forwarddNdedp = aodfmult->GetHistogram();
   Double_t zvertex = fAOD->GetPrimaryVertex()->GetZ();
@@ -226,7 +226,6 @@ void AliForwardNUETask::UserExec(Option_t *)
 
           if (forwarddNdedp.GetBinContent(etaBin, 0) == 0) break;
 
-          Double_t phi = forwarddNdedp.GetYaxis()->GetBinCenter(phiBin);
           Double_t weight = forwarddNdedp.GetBinContent(etaBin, phiBin);
 
           // If empty, do not fill hist

@@ -58,6 +58,7 @@ fTrackDensity(),
 fState(),
 fMaxConsequtiveStrips(3),
 fLowCutvalue(0),
+fTrackGammaToPi0(false),
 fStored(0)
 {
 }
@@ -236,7 +237,6 @@ void AliForwardFlowUtil::FillFromTrackrefsITS(TH2D*& fwd)
 {
   Int_t nTracks   = fMCevent->GetNumberOfTracks();// stack->GetNtrack();
 
-  Int_t nPrim     = fMCevent->GetNumberOfPrimaries();//fAOD->GetNumberOfPrimaries();
   for (Int_t iTr = 0; iTr < nTracks; iTr++) {
     AliMCParticle* particle =
       static_cast<AliMCParticle*>(fMCevent->GetTrack(iTr));
@@ -244,13 +244,9 @@ void AliForwardFlowUtil::FillFromTrackrefsITS(TH2D*& fwd)
     // Check if this charged and a primary
     if (particle->Charge() == 0) continue;
 
-    Bool_t isPrimary = fMCevent->Stack()->IsPhysicalPrimary(iTr) && iTr < nPrim;
-
-    AliMCParticle* mother = isPrimary ? particle : GetMother(iTr,fMCevent);
-    if (!mother) mother = particle;
     // IF the track corresponds to a primary, pass that as both
     // arguments.
-    ProcessTrackITS(particle, mother, fwd);
+    ProcessTrackITS(particle, fwd);
   } // Loop over tracks
 }
 
@@ -258,7 +254,6 @@ void AliForwardFlowUtil::FillFromTrackrefsFMD(TH2D*& fwd)
 {
   Int_t nTracks   = fMCevent->GetNumberOfTracks();// stack->GetNtrack();
 
-  Int_t nPrim     = fMCevent->GetNumberOfPrimaries();//fAOD->GetNumberOfPrimaries();
   for (Int_t iTr = 0; iTr < nTracks; iTr++) {
     AliMCParticle* particle =
       static_cast<AliMCParticle*>(fMCevent->GetTrack(iTr));
@@ -266,70 +261,21 @@ void AliForwardFlowUtil::FillFromTrackrefsFMD(TH2D*& fwd)
     // Check if this charged and a primary
     if (particle->Charge() == 0) continue;
 
-    Bool_t isPrimary = fMCevent->Stack()->IsPhysicalPrimary(iTr) && iTr < nPrim;
-
-    AliMCParticle* mother = isPrimary ? particle : GetMother(iTr,fMCevent);
-    if (!mother) mother = particle;
     // IF the track corresponds to a primary, pass that as both
     // arguments.
-    ProcessTrack(particle, mother, fwd);
+    ProcessTrack(particle, fwd);
   } // Loop over tracks
-}
-
-
-AliMCParticle*
-AliForwardFlowUtil::GetMother(Int_t iTr, const AliMCEvent* event) const
-{
-  //
-  // Track down primary mother
-  //
-  Int_t                i         = iTr;
-  Bool_t               gammaSeen = false;
-  AliMCParticle* candidate = 0;
-  do {
-    AliMCParticle* p = static_cast<AliMCParticle*>(event->GetTrack(i));
-    if (!p) break;
-    if (gammaSeen && TMath::Abs(p->PdgCode()) == 111)
-      // If we're looking for a mother pi0 of gamma, and we find it
-      // here, we return it - irrespective of whether it's flagged as
-      // a primary or not.
-      return p;
-
-    if (event->IsPhysicalPrimary(i)) {
-      candidate = p;
-      if (fTrackGammaToPi0 && TMath::Abs(p->PdgCode()) == 22)
-	// If we want to track gammas back to a possible pi0, we flag
-	// the gamma seen, and store it as a candidate in case we do
-	// not find a pi0 in the stack
-	gammaSeen = true;
-      else
-	break;
-    }
-
-    // We get here if the current track isn't a primary, or it was a
-    // primary gamma and we want to track back to a pi0.
-    i = p->GetMother();
-  } while (i > 0);
-
-  // Return our candidate (gamma) if we find no mother pi0.  Note, we
-  // should never get here with a null pointer, so we issue a warning
-  // in that case.
-  if (!candidate)
-    AliWarningF("No mother found for track # %d", iTr);
-  return candidate;
 }
 
 
 
 Bool_t
-AliForwardFlowUtil::ProcessTrackITS(AliMCParticle* particle,
-            AliMCParticle* mother,TH2D*& cen)
+AliForwardFlowUtil::ProcessTrackITS(AliMCParticle* particle,TH2D*& cen)
 {
 
   if (!particle) return false;
 
   Int_t              nTrRef = particle->GetNumberOfTrackReferences();
-  AliTrackReference* store  = 0;
 
   BeginTrackRefs();
 
@@ -348,8 +294,6 @@ AliForwardFlowUtil::ProcessTrackITS(AliMCParticle* particle,
       if (ref->R() > 3.5 && ref->R() < 4.5 && TMath::Abs(ref->Z()) < 14.1) {
         if (!fStored){
           fStored = ref;
-          Double_t eta_mother_spd = mother->Eta();
-          Double_t phi_mother_spd = (mother->Phi());//Wrap02pi
 
           Double_t *etaPhi_spd = new Double_t[2];
           this->GetTrackRefEtaPhi(ref, etaPhi_spd);
@@ -363,6 +307,7 @@ AliForwardFlowUtil::ProcessTrackITS(AliMCParticle* particle,
       }
     }
   }
+  return true;
 }
 
 
@@ -395,13 +340,9 @@ void AliForwardFlowUtil::GetTrackRefEtaPhi(AliTrackReference* ref, Double_t* eta
 
 
 Bool_t
-AliForwardFlowUtil::ProcessTrack(AliMCParticle* particle,
-				    AliMCParticle* mother,TH2D*& fwd)
+AliForwardFlowUtil::ProcessTrack(AliMCParticle* particle,TH2D*& fwd)
 {
   // Check the returned particle
-  //
-  // Note: If particle refers to a primary, then particle and mother
-  // refers to the same particle (the address are the same)
   //
   if (!particle) return false;
 
@@ -420,13 +361,13 @@ AliForwardFlowUtil::ProcessTrack(AliMCParticle* particle,
     // Check that we hit an Base element
     if (ref->DetectorId() != AliTrackReference::kFMD) continue;
 
-    AliTrackReference* test = ProcessRef(particle, mother, ref,fwd);
+    AliTrackReference* test = ProcessRef(particle, ref,fwd);
     if (test) store = test;
 
   } // Loop over track references
   if (!store) return true; // Nothing found
 
-  StoreParticle(particle, mother, store,fwd);
+  StoreParticle(particle, store,fwd);
   EndTrackRefs();
 
   return true;
@@ -435,14 +376,9 @@ AliForwardFlowUtil::ProcessTrack(AliMCParticle* particle,
 
 
 AliTrackReference*
-AliForwardFlowUtil::ProcessRef(AliMCParticle*       particle,
-				  AliMCParticle* mother,
-				 AliTrackReference*   ref,TH2D*& fwd)
+AliForwardFlowUtil::ProcessRef(AliMCParticle* particle, AliTrackReference*ref,TH2D*& fwd)
 {
   // Process track references of a track
-  //
-  // Note: If particle refers to a primary, then particle and mother
-  // refers to the same particle (the address are the same)
   //
 
   // Get the detector coordinates
@@ -481,7 +417,7 @@ AliForwardFlowUtil::ProcessRef(AliMCParticle*       particle,
   if (used) {
 
     // Int_t nnT   = TMath::Abs(fState.oldStrip - fState.startStrip) + 1;
-    StoreParticle(particle, mother, fState.longest,fwd);
+    StoreParticle(particle, fState.longest,fwd);
     fState.Clear(false);
   }
 
@@ -500,8 +436,6 @@ AliForwardFlowUtil::ProcessRef(AliMCParticle*       particle,
   fState.oldRing     = r;
   fState.oldSector   = s;
   fState.oldStrip    = t;
-
-
 
   // The longest passage is determined through the angle
   Double_t ang  = GetTrackRefTheta(ref);
@@ -530,12 +464,8 @@ AliForwardFlowUtil::GetTrackRefTheta(const AliTrackReference* ref) const
 
 void
 AliForwardFlowUtil::StoreParticle(AliMCParticle*       particle,
-				     AliMCParticle* mother,
 				     AliTrackReference*   ref,TH2D*& fwd)
 {
-  Double_t eta_mother = mother->Eta();
-  Double_t phi_mother = (mother->Phi());//Wrap02pi
-
   Double_t *etaPhi = new Double_t[2];
   this->GetTrackRefEtaPhi(particle, etaPhi);
 

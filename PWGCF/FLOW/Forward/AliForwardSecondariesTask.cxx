@@ -74,10 +74,6 @@ AliForwardSecondariesTask::AliForwardSecondariesTask() : AliAnalysisTaskSE(),
   fDeltaList(0),
   fRandom(0),
   fTrackDensity(),
-  fState(),
-  fMaxConsequtiveStrips(2),
-  fLowCutvalue(0),
-  fTrackGammaToPi0(true),
   fSettings(),
   fUtil(),
   fMultTOFLowCut(),
@@ -96,7 +92,11 @@ AliForwardSecondariesTask::AliForwardSecondariesTask() : AliAnalysisTaskSE(),
   fPipe(0),
   fEarlyDecay(0),
   phihist(),
-  fStored(0)
+  fStored(0),
+  fState(),
+  fMaxConsequtiveStrips(2),
+  fLowCutvalue(0),
+  fTrackGammaToPi0(true)
   {
   //
   //  Default constructor
@@ -108,12 +108,8 @@ AliForwardSecondariesTask::AliForwardSecondariesTask() : AliAnalysisTaskSE(),
   fOutputList(0),    // output list
   fEventList(0),
   fDeltaList(0),
-  fTrackDensity(),
-  fState(),
-  fMaxConsequtiveStrips(2),
-  fLowCutvalue(0),
-  fTrackGammaToPi0(true),
   fRandom(0),
+  fTrackDensity(),
   fSettings(),
   fUtil(),
   fMultTOFLowCut(),
@@ -132,7 +128,11 @@ AliForwardSecondariesTask::AliForwardSecondariesTask() : AliAnalysisTaskSE(),
   fPipe(0),
   fEarlyDecay(0),
   phihist(),
-  fStored(0)
+  fStored(0),
+  fState(),
+  fMaxConsequtiveStrips(2),
+  fLowCutvalue(0),
+  fTrackGammaToPi0(true)
   {
   //
   //  Constructor
@@ -366,7 +366,6 @@ AliForwardSecondariesTask::ProcessTrack(AliMCParticle* particle,
       if (ref->R() > 3.5 && ref->R() < 4.5 && TMath::Abs(ref->Z()) < 14.1) {
         if (!fStored){
           fStored = ref;
-        Double_t eta_mother_spd = mother->Eta();
         Double_t phi_mother_spd = (mother->Phi());//Wrap02pi
 
         Double_t *etaPhi_spd = new Double_t[2];
@@ -419,7 +418,7 @@ AliForwardSecondariesTask::StoreParticle(AliMCParticle*       particle,
     Char_t   ring;
     AliFMDStripIndex::Unpack(packed,detector,ring,sector,strip);
     TString inner = "I";
-    const Char_t* outer = "O";
+    //const Char_t* outer = "O";
     if (detector == 1){
       v0cent = 10;
     }

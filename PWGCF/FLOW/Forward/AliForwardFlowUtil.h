@@ -61,7 +61,7 @@ class AliForwardFlowUtil : public TObject {
   void FillFromPrimariesAOD(TH2D*& cen, TH2D*& fwd) const;
   void FillFromPrimariesAOD(TH2D*& cen) const;
 
-  Bool_t ProcessTrackITS(AliMCParticle* particle,AliMCParticle* mother,TH2D*& cen);
+  Bool_t ProcessTrackITS(AliMCParticle* particle,TH2D*& cen);
 
   Double_t GetZ();
   Double_t GetCentrality(TString centrality_estimator);
@@ -70,9 +70,7 @@ class AliForwardFlowUtil : public TObject {
   AliTrackReference* IsHitTPC(AliMCParticle* p);
   AliTrackReference* IsHitFMD(AliMCParticle* p);
   void GetTrackRefEtaPhi(AliMCParticle* p, Double_t* etaPhi);
-    void GetTrackRefEtaPhi(AliTrackReference* ref, Double_t* etaPhi);
-
-  AliMCParticle* GetMother(Int_t iTr, const AliMCEvent* event) const;
+  void GetTrackRefEtaPhi(AliTrackReference* ref, Double_t* etaPhi);
 
   void MakeFakeHoles(TH2D& forwarddNdedp);
   AliVEvent* fevent; //!
@@ -81,8 +79,8 @@ class AliForwardFlowUtil : public TObject {
   Bool_t mc; //!
   TH1F* dNdeta; //!
   AliForwardSettings fSettings;
-  Double_t maxpt;//!
   Double_t minpt;//!
+  Double_t maxpt;//!
   Bool_t dodNdeta;//!
   AliFMDMCTrackDensity* fTrackDensity; //!
 
@@ -116,19 +114,15 @@ class AliForwardFlowUtil : public TObject {
   UShort_t fMaxConsequtiveStrips;
   Double_t fLowCutvalue;
   Bool_t            fTrackGammaToPi0;
-  AliTrackReference*  ProcessRef(AliMCParticle*       particle,
-    AliMCParticle* mother,
-    AliTrackReference*   ref,TH2D*& fwd);
+  AliTrackReference*  ProcessRef(AliMCParticle* particle,AliTrackReference* ref,TH2D*& fwd);
 
   void BeginTrackRefs();
   void EndTrackRefs();
 
-  void StoreParticle(AliMCParticle*       particle,
-    AliMCParticle* mother,
-    AliTrackReference*   ref,TH2D*& fwd) ;
+  void StoreParticle(AliMCParticle* particle,AliTrackReference* ref,TH2D*& fwd) ;
 
 
-  Bool_t ProcessTrack(AliMCParticle* particle, AliMCParticle* mother, TH2D*& fwd);
+  Bool_t ProcessTrack(AliMCParticle* particle, TH2D*& fwd);
 
   Double_t GetTrackRefTheta(const AliTrackReference* ref) const;
 

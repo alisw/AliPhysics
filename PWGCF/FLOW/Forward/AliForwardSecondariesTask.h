@@ -159,8 +159,8 @@ Double_t WrapPi(Double_t phi);
   //TList* fDiffList; //!
   TList* fEventList; //!
   TList* fDeltaList; //!
-  AliFMDMCTrackDensity* fTrackDensity; //!
   TRandom fRandom;
+  AliFMDMCTrackDensity* fTrackDensity; //!
 
   // A class combining all the settings for this analysis
   AliForwardSettings fSettings;
