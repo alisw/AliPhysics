@@ -221,7 +221,7 @@ AliAnalysisTaskElectronEfficiencyV2* AddTask_acapon_Efficiency(TString names    
   // Adding cutsettings
   for(Int_t iCut = 0; iCut < nDie; ++iCut){
     TString cutDefinition(arrNames->At(iCut)->GetName());
-    AliAnalysisFilter* filter = SetupTrackCutsAndSettings(cutDefinition);
+    AliAnalysisFilter* filter = SetupTrackCutsAndSettings(cutDefinition, SDDstatus);
     if(!filter){
       std::cout << "Invalid cut setting specified!!" << std::endl;
       return 0x0;
