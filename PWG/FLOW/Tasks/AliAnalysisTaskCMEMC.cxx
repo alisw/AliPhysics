@@ -2342,7 +2342,7 @@ void AliAnalysisTaskCMEMC::UserExec(Option_t*) {
       //labelMCArray.AddAt(iTracks,nMCLabelCounter);
 
       //------------- For v2 and gamma/delta calculation -----------
-      if(dPt1>0.2 && dPt1<5.0){
+      if(dPt1>0.2 && dPt1<10.0){
 
 	dEta1 = mcTrack->Eta();
  
@@ -2360,12 +2360,12 @@ void AliAnalysisTaskCMEMC::UserExec(Option_t*) {
 	    ReQn[h] += TMath::Cos((h+2.)*dPhi1);
 	    ImQn[h] += TMath::Sin((h+2.)*dPhi1);
 	    //TPC Event plane for |n|<0.4
-	    if(TMath::Abs(dEta1)>0){
+	    if(dEta1>0){
 	      QxEPPos[h] += TMath::Cos((h+2.)*dPhi1);
 	      QyEPPos[h] += TMath::Sin((h+2.)*dPhi1);
 	      MEtaPos++;
 	    }
-	    else if(TMath::Abs(dEta1)<0){
+	    else if(dEta1<0){
 	      QxEPNeg[h] += TMath::Cos((h+2.)*dPhi1);
 	      QyEPNeg[h] += TMath::Sin((h+2.)*dPhi1);
 	      MEtaNeg++;
@@ -2485,16 +2485,16 @@ void AliAnalysisTaskCMEMC::UserExec(Option_t*) {
       if(Psi4TPC<0.) Psi4TPC += 2*TMath::Pi()/4.0;
 
       if(gCharge1!=gCharge2){//Unlike Sign
-	fCMEPro[1]->Fill(centrality, TMath::Cos( dPhi1  + dPhi1  - 2*Psi2TPC));
-	fCMEPro[3]->Fill(centrality, TMath::Cos( dPhi1  + 2*dPhi1 - 3*Psi3TPC));
-	fCMEPro[5]->Fill(centrality, TMath::Cos( dPhi1  - 3*dPhi1 + 2*Psi2TPC));
-	fCMEPro[7]->Fill(centrality, TMath::Cos(2*dPhi1 + 2*dPhi1 - 4*Psi4TPC));
+	fCMEPro[1]->Fill(centrality, TMath::Cos( dPhi1  + dPhi2  - 2*Psi2TPC));
+	fCMEPro[3]->Fill(centrality, TMath::Cos( dPhi1  + 2*dPhi2 - 3*Psi3TPC));
+	fCMEPro[5]->Fill(centrality, TMath::Cos( dPhi1  - 3*dPhi2 + 2*Psi2TPC));
+	fCMEPro[7]->Fill(centrality, TMath::Cos(2*dPhi1 + 2*dPhi2 - 4*Psi4TPC));
       } 
       else{ //Like Sign
-	fCMEPro[0]->Fill(centrality, TMath::Cos( dPhi1  + dPhi1 - 2*Psi2TPC));
-	fCMEPro[2]->Fill(centrality, TMath::Cos( dPhi1  + 2*dPhi1 - 3*Psi3TPC));
-	fCMEPro[4]->Fill(centrality, TMath::Cos( dPhi1  - 3*dPhi1 + 2*Psi2TPC));
-	fCMEPro[6]->Fill(centrality, TMath::Cos(2*dPhi1 + 2*dPhi1 - 4*Psi4TPC));
+	fCMEPro[0]->Fill(centrality, TMath::Cos( dPhi1  + dPhi2 - 2*Psi2TPC));
+	fCMEPro[2]->Fill(centrality, TMath::Cos( dPhi1  + 2*dPhi2 - 3*Psi3TPC));
+	fCMEPro[4]->Fill(centrality, TMath::Cos( dPhi1  - 3*dPhi2 + 2*Psi2TPC));
+	fCMEPro[6]->Fill(centrality, TMath::Cos(2*dPhi1 + 2*dPhi2 - 4*Psi4TPC));
       }
     }//j-loop
   }//i-loop
