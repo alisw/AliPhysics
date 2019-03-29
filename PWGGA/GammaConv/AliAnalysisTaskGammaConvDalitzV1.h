@@ -14,11 +14,13 @@
 #include "AliConversionMesonCuts.h"
 #include "AliGammaConversionAODBGHandler.h"
 #include "TProfile2D.h"
+#include <vector>
+#include <memory>
+using  std::unique_ptr;
 #include "AliDalitzAODESD.h"
 #include "AliDalitzData.h"
 #include "AliDalitzAODESDMC.h"
 #include "AliDalitzEventMC.h"
-#include <vector>
 
 class AliVEvent;
 class AliVTrack;
@@ -97,7 +99,7 @@ class AliAnalysisTaskGammaConvDalitzV1: public AliAnalysisTaskSE {
     void UpdateEventByEventData();
     void FillElectronQAHistos(AliAODConversionPhoton *Vgamma) const;
     Double_t GetPsiPair( const AliDalitzAODESD *trackPos, const AliDalitzAODESD *trackNeg ) const;
-    Double_t GetPsiPairMC( AliDalitzAODESDMC *fMCPosParticle, AliDalitzAODESDMC *fMCNegParticle);
+    Double_t GetPsiPairMC( AliDalitzAODESDMC *fMCPosParticle, AliDalitzAODESDMC *fMCNegParticle) const;
 
     Bool_t IsDalitz(AliDalitzAODESDMC *fMCMother) const;
     Bool_t IsPi0DalitzDaughter( Int_t label ) const;
