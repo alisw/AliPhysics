@@ -31,8 +31,6 @@ ClassImp(AliAnalysisTaskHyperTriton2He3piML);
 
 namespace
 {
-constexpr double Sq(double x) { return x * x; }
-constexpr float kEps = 1.e-6;
 
 bool ComputeMother(AliMCEvent *mcEvent, const AliESDtrack *one, const AliESDtrack *two, int& label)
 {
@@ -57,6 +55,13 @@ bool ComputeMother(AliMCEvent *mcEvent, const AliESDtrack *one, const AliESDtrac
       return true;
     }
   }
+}
+
+bool HasTOF(AliVTrack *track) {
+  const bool hasTOFout  = track->GetStatus() & AliVTrack::kTOFout;
+  const bool hasTOFtime = track->GetStatus() & AliVTrack::kTIME;
+  const float len = track->GetIntegratedLength();
+  return hasTOFout && hasTOFtime && (len > 350.);
 }
 
 } // namespace
@@ -373,8 +378,6 @@ void AliAnalysisTaskHyperTriton2He3piML::UserExec(Option_t *)
         nTrack->GetTPCchi2() / (nTrack->GetTPCNcls() + 1.e-16);
     float posXedRowsOverFindable = float(posXedRows) / pTrack->GetTPCNclsF();
     float negXedRowsOverFindable = float(negXedRows) / nTrack->GetTPCNclsF();
-    unsigned char minXedRows =
-        posXedRows < negXedRows ? posXedRows : negXedRows;
     float minXedRowsOverFindable =
         posXedRowsOverFindable < negXedRowsOverFindable
             ? posXedRowsOverFindable
@@ -448,7 +451,8 @@ void AliAnalysisTaskHyperTriton2He3piML::UserExec(Option_t *)
     v0part.fMaxChi2PerCluster = maxChi2PerCluster;
     v0part.fTPCnSigmaHe3 = (pTrack == he3Track) ? nSigmaPosHe3 : nSigmaNegHe3;
     v0part.fTPCnSigmaPi = (pTrack == piTrack) ? nSigmaPosPi : nSigmaNegPi;
-    v0part.fLeastNxedRows = minXedRows;
+    v0part.fTOFnSigmaHe3 = fPIDResponse->NumberOfSigmasTOF(he3Track, AliPID::kHe3);
+    v0part.fTOFnSigmaPi = fPIDResponse->NumberOfSigmasTOF(piTrack, AliPID::kPion);
     v0part.fNpidClustersHe3 = he3Track->GetTPCsignalN();
     v0part.fNpidClustersPi = piTrack->GetTPCsignalN();
     v0part.fTPCsignalHe3 = he3Track->GetTPCsignal();
@@ -457,6 +461,8 @@ void AliAnalysisTaskHyperTriton2He3piML::UserExec(Option_t *)
     v0part.fITSrefitPi = piTrack->GetStatus() & AliESDtrack::kITSrefit;
     v0part.fITSclusHe3= he3Track->GetITSClusterMap();
     v0part.fITSclusPi = piTrack->GetITSClusterMap();
+    v0part.fTOFmatchHe3 = HasTOF(he3Track);
+    v0part.fTOFmatchPi = HasTOF(piTrack);
     v0part.fMatter = (pTrack == he3Track);
     fRHyperTriton.push_back(v0part);
 
