@@ -892,7 +892,9 @@ AliAnalysisCuts* LMEECutLib::GetPIDCuts(Int_t PIDcuts) {
     case kTheoPID:
       cutsPID->AddCut(AliDielectronPID::kTPC,AliPID::kPion,    -100. , 4., 0.0, 100., kTRUE , AliDielectronPID::kRequire    , AliDielectronVarManager::kPt);
       cutsPID->AddCut(AliDielectronPID::kTOF,AliPID::kElectron,  -3. , 3., 0.0, 100., kFALSE, AliDielectronPID::kIfAvailable, AliDielectronVarManager::kPt);
-      cutsPID->AddCut(AliDielectronPID::kITS,AliPID::kElectron,  -4. , 1., 0.0, 100., kFALSE, AliDielectronPID::kRequire    , AliDielectronVarManager::kPt);
+      if(wSDD){
+        cutsPID->AddCut(AliDielectronPID::kITS,AliPID::kElectron,  -4. , 1., 0.0, 100., kFALSE, AliDielectronPID::kRequire    , AliDielectronVarManager::kPt);
+      }
       cutsPID->AddCut(AliDielectronPID::kTPC,AliPID::kElectron,  -1.5, 3., 0.0, 100., kFALSE, AliDielectronPID::kRequire    , AliDielectronVarManager::kPt);
       cuts->AddCut(cutsPID);
       cuts->Print();
@@ -900,7 +902,9 @@ AliAnalysisCuts* LMEECutLib::GetPIDCuts(Int_t PIDcuts) {
     case kTOFreq:
       cutsPID->AddCut(AliDielectronPID::kTPC,AliPID::kPion,    -100. , 4. , 0.0, 100., kTRUE , AliDielectronPID::kRequire   , AliDielectronVarManager::kPt);
       cutsPID->AddCut(AliDielectronPID::kTOF,AliPID::kElectron,  -3. , 3. , 0.0, 100., kFALSE, AliDielectronPID::kRequire   , AliDielectronVarManager::kPt);
-      cutsPID->AddCut(AliDielectronPID::kITS,AliPID::kElectron,  -4. , 1. , 0.0, 100., kFALSE, AliDielectronPID::kRequire   , AliDielectronVarManager::kPt);
+      if(wSDD){
+        cutsPID->AddCut(AliDielectronPID::kITS,AliPID::kElectron,  -4. , 1. , 0.0, 100., kFALSE, AliDielectronPID::kRequire   , AliDielectronVarManager::kPt);
+      }
       cutsPID->AddCut(AliDielectronPID::kTPC,AliPID::kElectron,  -1.5, 3. , 0.0, 100., kFALSE, AliDielectronPID::kRequire   , AliDielectronVarManager::kPt);
       cuts->AddCut(cutsPID);
       cuts->Print();
