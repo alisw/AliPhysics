@@ -2259,7 +2259,7 @@ void AliAnalysisTaskEmcalJetPerformance::FillParticleCompositionJetHistograms(co
       
       // Plot M02 for each particle type
       histname = "JetPerformanceMC/hM02VsContributorTypeJets";
-      Double_t x[4] = {clus->GetM02(), clus->GetNonLinCorrEnergy(), contributorType, jetPt};
+      Double_t x[4] = {clus->GetM02(), clus->GetNonLinCorrEnergy(), static_cast<Double_t>(contributorType), jetPt};
       fHistManager.FillTHnSparse(histname, x);
       
       // If the cluster is a hadron, sum its energy to compute the jet's hadronic calo energy
