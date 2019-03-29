@@ -44,6 +44,10 @@ AliAnalysisTaskXi1530* AddTaskXi1530(const char* taskname = "Xi1530",
         taskXi1530->SetNoQA(kFALSE);  // default: kTRUE
         std::cout << "AliAnaylsisTaskXi1530:: NoQA mode " << std::endl;
     }
+    if (foption.Contains("EXO")) {
+        taskXi1530->SetExoticFinder(kTRUE);  // default: kFALSE
+        std::cout << "AliAnaylsisTaskXi1530:: ExoticFinder mode " << std::endl;
+    }
     taskXi1530->SetnMix(nmix);
 
     if (!taskXi1530)
