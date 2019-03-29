@@ -133,6 +133,9 @@ void LMEECutLib::SetEtaCorrectionTPC(AliDielectron *die, Int_t corrXdim, Int_t c
 // Eta correction for the centroid and width of electron sigmas in the ITS, can be one/two/three-dimensional
 void LMEECutLib::SetEtaCorrectionITS(AliDielectron *die, Int_t corrXdim, Int_t corrYdim, Int_t corrZdim, Bool_t hasMC){
 
+  if(!wSDD){
+    return;
+  }
   std::cout << "starting LMEECutLib::SetEtaCorrectionITS()\n";
   TString localPath = "/home/aaron/Data/diElec_framework_output/PIDcalibration/";
   TString fileName = "outputITS";
