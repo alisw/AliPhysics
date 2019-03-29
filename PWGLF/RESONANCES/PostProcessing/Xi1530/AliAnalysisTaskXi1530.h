@@ -199,11 +199,11 @@ class AliAnalysisTaskXi1530 : public AliAnalysisTaskSE {
     void SetXiSysTrackCut(Bool_t cutoption) { fsetXiSysTrackCut = cutoption; }
     void SetSystematics(Bool_t fSystematics) { fsetsystematics = fSystematics; }
 
-    void SetExoticFinder(Bool_t exotic) { 
+    void SetExoticFinder(Bool_t exotic) {
         fExoticFinder = exotic;
         fXiMassWindowCut = 0.015;
         fTPCNsigXi1530PionCut = 1.5;
-        }
+    }
 
     Bool_t GoodTracksSelection();
     Bool_t GoodCascadeSelection();
@@ -310,9 +310,9 @@ class AliAnalysisTaskXi1530 : public AliAnalysisTaskSE {
     Double_t fDCADist_XiDaughtersCut = 1.6;
     Double_t fDCADist_XiDaughtersCut_tight = 1.2;
 
-    Double_t fDCADist_Lambda_PVCut_loose = 0.09;
+    Double_t fDCADist_Lambda_PVCut_loose = 0.05;
     Double_t fDCADist_Lambda_PVCut = 0.07;
-    Double_t fDCADist_Lambda_PVCut_tight = 0.05;
+    Double_t fDCADist_Lambda_PVCut_tight = 0.09;
 
     Double_t fV0CosineOfPointingAngleCut_loose = 0.96;
     Double_t fV0CosineOfPointingAngleCut = 0.97;
@@ -342,14 +342,14 @@ class AliAnalysisTaskXi1530 : public AliAnalysisTaskSE {
     Bool_t fExoticFinder = kFALSE;
     THistManager* fHistos = nullptr;   //!
     TClonesArray* fMCArray = nullptr;  //!
-    AliMCEvent* fMCEvent = nullptr;      //!
+    AliMCEvent* fMCEvent = nullptr;    //!
     Int_t fNTracks = 0;
     Int_t fNCascade = 0;
     Double_t PVx = 999;
     Double_t PVy = 999;
     Double_t PVz = 999;
     Double_t bField = 999;
-    ClassDef(AliAnalysisTaskXi1530, 12);
+    ClassDef(AliAnalysisTaskXi1530, 13);
     // 1: Frist version
     // 2: Add Track cut2 for the Xi daughter particles
     // 3: Add FillMixingPool function
@@ -364,6 +364,7 @@ class AliAnalysisTaskXi1530 : public AliAnalysisTaskSE {
     // 10: Add NoQA option to reduce output file size
     // 11: Not using AliStack informed by DPG and BTG coordination
     // 12: Add Exotic option and change default systematic vaule
+    // 13: Change Lambda PV Cut default values(reversed)
 };
 
 #endif
