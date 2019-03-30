@@ -137,23 +137,49 @@ void AliEmcalTriggerSimQATask::UserCreateOutputObjects() {
     fHistManager.CreateTH2(histname.Data(),title.Data(),nEtaBins,fMinEta,fMaxEta,nPhiBins,fMinPhi,fMaxPhi);
   }
 
+  // Patch Energy Spectra
   for (Int_t i = 1; i < kNTriggerTypes; i++) {
     histname = TString::Format("fHistPatchEnergy_Trig_%s",fTriggerNames[i].Data());
     title = histname + ";#it{E}_{patch} (GeV); counts";
     fHistManager.CreateTH1(histname.Data(),title.Data(),nPtBins,0,fMaxPt);
   }
-
   for (Int_t i = 1; i < kNTriggerTypes; i++) {
     histname = TString::Format("fHistPatchOnlineADCAmp_Trig_%s",fTriggerNames[i].Data());
     title = histname + ";#it{E}_{patch} (ADC); counts";
     fHistManager.CreateTH1(histname.Data(),title.Data(),nADCBins,0,fMaxADCValue);
   }
 
+  // Patch Energy Spectra vs Col
+  for (Int_t i = 1; i < kNTriggerTypes; i++) {
+    histname = TString::Format("fHistPatchColEnergy_Trig_%s",fTriggerNames[i].Data());
+    title = histname + ";Col;#it{E}_{patch} (ADC); counts";
+    fHistManager.CreateTH2(histname.Data(),title.Data(),nCol,fMinCol,fMaxCol,nPtBins,0,fMaxPt);
+  }
+  for (Int_t i = 1; i < kNTriggerTypes; i++) {
+    histname = TString::Format("fHistPatchColOnlineADCAmp_Trig_%s",fTriggerNames[i].Data());
+    title = histname + ";Col;#it{E}_{patch} (ADC); counts";
+    fHistManager.CreateTH2(histname.Data(),title.Data(),nCol,fMinCol,fMaxCol,nADCBins,0,fMaxADCValue);
+  }
+
+  // Patch Energy Spectra vs Row
+  for (Int_t i = 1; i < kNTriggerTypes; i++) {
+    histname = TString::Format("fHistPatchRowEnergy_Trig_%s",fTriggerNames[i].Data());
+    title = histname + ";Row;#it{E}_{patch} (ADC); counts";
+    fHistManager.CreateTH2(histname.Data(),title.Data(),nRow,fMinRow,fMaxRow,nPtBins,0,fMaxPt);
+  }
+  for (Int_t i = 1; i < kNTriggerTypes; i++) {
+    histname = TString::Format("fHistPatchRowOnlineADCAmp_Trig_%s",fTriggerNames[i].Data());
+    title = histname + ";Row;#it{E}_{patch} (ADC); counts";
+    fHistManager.CreateTH2(histname.Data(),title.Data(),nRow,fMinRow,fMaxRow,nADCBins,0,fMaxADCValue);
+  }
+
+  // Patch Corner Col,Row
   for (Int_t i = 1; i < kNTriggerTypes; i++) {
     histname = TString::Format("fHistPatchColRow_Trig_%s",fTriggerNames[i].Data());
     title = histname + ";Col;Row;counts";
     fHistManager.CreateTH2(histname.Data(),title.Data(),nCol,fMinCol,fMaxCol,nRow,fMinRow,fMaxRow);
   }
+
   // Patch Geometric Centers
   for (Int_t i = 1; i < kNTriggerTypes; i++) {
     histname = TString::Format("fHistPatchEtaPhiGeo_Trig_%s",fTriggerNames[i].Data());
@@ -176,20 +202,45 @@ void AliEmcalTriggerSimQATask::UserCreateOutputObjects() {
     nTRU = fGeom->GetNTotalTRU();
   }
 
-  // Patch Cluster Delta Eta, per TRU
+  // Patch-Cluster Delta Phi vs Cluster Phi
+  for (Int_t i = 1; i < kNTriggerTypes; i++) {
+    histname = TString::Format("fHistClusPhiClusPatchDPhi_Trig_%s",fTriggerNames[i].Data());
+    title = histname + ";#phi_{cluster};#Delta#phi_{cluster-patch};counts";
+    fHistManager.CreateTH2(histname.Data(),title.Data(),nPhiBins,fMinPhi,fMaxPhi,nDeltaPhiBins,fMinDeltaPhi,fMaxDeltaPhi);
+  }
+  // Patch-Cluster Delta Phi vs Cluster Eta
+  for (Int_t i = 1; i < kNTriggerTypes; i++) {
+    histname = TString::Format("fHistClusEtaClusPatchDPhi_Trig_%s",fTriggerNames[i].Data());
+    title = histname + ";#eta_{cluster};#Delta#phi_{cluster-patch};counts";
+    fHistManager.CreateTH2(histname.Data(),title.Data(),nEtaBins,fMinEta,fMaxEta,nDeltaPhiBins,fMinDeltaPhi,fMaxDeltaPhi);
+  }
+  // Patch-Cluster Delta Eta vs Cluster Phi
+  for (Int_t i = 1; i < kNTriggerTypes; i++) {
+    histname = TString::Format("fHistClusPhiClusPatchDEta_Trig_%s",fTriggerNames[i].Data());
+    title = histname + ";#phi_{cluster};#Delta#eta_{cluster-patch};counts";
+    fHistManager.CreateTH2(histname.Data(),title.Data(),nPhiBins,fMinPhi,fMaxPhi,nDeltaEtaBins,fMinDeltaEta,fMaxDeltaEta);
+  }
+  // Patch-Cluster Delta Eta vs Cluster Eta
+  for (Int_t i = 1; i < kNTriggerTypes; i++) {
+    histname = TString::Format("fHistClusEtaClusPatchDEta_Trig_%s",fTriggerNames[i].Data());
+    title = histname + ";#eta_{cluster};#Delta#eta_{cluster-patch};counts";
+    fHistManager.CreateTH2(histname.Data(),title.Data(),nEtaBins,fMinEta,fMaxEta,nDeltaEtaBins,fMinDeltaEta,fMaxDeltaEta);
+  }
+
+  // Patch-Cluster Delta Eta, per TRU
   for (Int_t i = 1; i < kNTriggerTypes; i++) {
     histname = TString::Format("fHistClusPatchDEtaTRU_Trig_%s",fTriggerNames[i].Data());
     title = histname + ";#Delta#eta_{cluster-patch};TRU;counts";
     fHistManager.CreateTH2(histname.Data(),title.Data(),nDeltaEtaBins,fMinDeltaEta,fMaxDeltaEta,nTRU,0,nTRU);
   }
-  // Patch Cluster Delta Phi, per TRU
+  // Patch-Cluster Delta Phi, per TRU
   for (Int_t i = 1; i < kNTriggerTypes; i++) {
     histname = TString::Format("fHistClusPatchDPhiTRU_Trig_%s",fTriggerNames[i].Data());
     title = histname + ";#Delta#phi_{cluster-patch};TRU;counts";
     fHistManager.CreateTH2(histname.Data(),title.Data(),nDeltaPhiBins,fMinDeltaPhi,fMaxDeltaPhi,nTRU,0,nTRU);
   }
 
-  // Patch Cluster Energy, per TRU
+  // Patch-Cluster Energy, per TRU
   for (Int_t i = 1; i < kNTriggerTypes; i++) {
     histname = TString::Format("fHistClusEnergyPatchAmpTRU_Trig_%s",fTriggerNames[i].Data());
     title = histname + ";E_{clus} (GeV);E_{patch} (ADC);TRU;counts";
@@ -340,6 +391,10 @@ void AliEmcalTriggerSimQATask::DoPatchLoop() {
 }
 
 void AliEmcalTriggerSimQATask::FillPatchHistograms(AliEMCALTriggerPatchInfo * patch, Int_t i) {
+  fHistManager.FillTH2(Form("fHistPatchColEnergy_Trig_%s",fTriggerNames[i+1].Data()),patch->GetColStart(),patch->GetPatchE());
+  fHistManager.FillTH2(Form("fHistPatchColOnlineADCAmp_Trig_%s",fTriggerNames[i+1].Data()),patch->GetColStart(),patch->GetADCAmp());
+  fHistManager.FillTH2(Form("fHistPatchRowEnergy_Trig_%s",fTriggerNames[i+1].Data()),patch->GetRowStart(),patch->GetPatchE());
+  fHistManager.FillTH2(Form("fHistPatchRowOnlineADCAmp_Trig_%s",fTriggerNames[i+1].Data()),patch->GetRowStart(),patch->GetADCAmp());
   fHistManager.FillTH1(Form("fHistPatchEnergy_Trig_%s",fTriggerNames[i+1].Data()),patch->GetPatchE());
   fHistManager.FillTH1(Form("fHistPatchOnlineADCAmp_Trig_%s",fTriggerNames[i+1].Data()),patch->GetADCAmp());
   fHistManager.FillTH2(Form("fHistPatchColRow_Trig_%s",fTriggerNames[i+1].Data()),patch->GetColStart(),patch->GetRowStart());
@@ -449,6 +504,15 @@ void AliEmcalTriggerSimQATask::MatchClusterToPatches(AliVCluster * cluster) {
 
         histName = TString::Format("fHistClusPatchDPhiTRU_Trig_%s",fTriggerNames[i].Data());
         fHistManager.FillTH2(histName,DeltaPhi,iTRU);
+
+        histName = TString::Format("fHistClusPhiClusPatchDPhi_Trig_%s",fTriggerNames[i].Data());
+        fHistManager.FillTH2(histName,ClusterPhi,DeltaPhi);
+        histName = TString::Format("fHistClusEtaClusPatchDPhi_Trig_%s",fTriggerNames[i].Data());
+        fHistManager.FillTH2(histName,ClusterEta,DeltaPhi);
+        histName = TString::Format("fHistClusPhiClusPatchDEta_Trig_%s",fTriggerNames[i].Data());
+        fHistManager.FillTH2(histName,ClusterPhi,DeltaEta);
+        histName = TString::Format("fHistClusEtaClusPatchDEta_Trig_%s",fTriggerNames[i].Data());
+        fHistManager.FillTH2(histName,ClusterEta,DeltaEta);
       }
     }
 
