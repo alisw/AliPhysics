@@ -2217,7 +2217,7 @@ TObjArray* AliAnalysisTaskBFPsi::GetAcceptedTracks(AliVEvent *event, Double_t gC
 	      length = aodTrack->GetIntegratedLength();
 	      tof = tofTime*1E-3; // ns		      
 	      if (tof <= 0) {
-		Printf("WARNING: track with negative TOF time found! Skipping this track for PID checks\n");
+		//Printf("WARNING: track with negative TOF time found! Skipping this track for PID checks\n");
 		continue;
 	      }
 	      if (length <= 0){
@@ -2226,7 +2226,7 @@ TObjArray* AliAnalysisTaskBFPsi::GetAcceptedTracks(AliVEvent *event, Double_t gC
 		aodTrack->GetIntegratedTimes(exptime);
 		length = exptime[0]*c*1E-3/0.01; //assume electrons are relativistic (and add all multiplication factors)
 		if (length <= 0){
-		  Printf("WARNING: track with negative length found!Skipping this track for PID checks\n");
+		  //Printf("WARNING: track with negative length found!Skipping this track for PID checks\n");
 		  continue;
 		}
 	      }
@@ -2432,7 +2432,7 @@ TObjArray* AliAnalysisTaskBFPsi::GetAcceptedTracks(AliVEvent *event, Double_t gC
                   length = aodTrack->GetIntegratedLength();
                   tof = tofTime*1E-3; // ns
                   if (tof <= 0) {
-                      Printf("WARNING: track with negative TOF time found! Skipping this track for PID checks\n");
+                      //Printf("WARNING: track with negative TOF time found! Skipping this track for PID checks\n");
                       continue;
                   }
                   if (length <= 0){
@@ -2441,7 +2441,7 @@ TObjArray* AliAnalysisTaskBFPsi::GetAcceptedTracks(AliVEvent *event, Double_t gC
                       aodTrack->GetIntegratedTimes(exptime);
                       length = exptime[0]*c*1E-3/0.01; //assume electrons are relativistic (and add all multiplication factors)
                       if (length <= 0){
-                          Printf("WARNING: track with negative length found!Skipping this track for PID checks\n");
+                          //Printf("WARNING: track with negative length found!Skipping this track for PID checks\n");
                           continue;
                       }
                   }
@@ -3209,7 +3209,7 @@ TObjArray* AliAnalysisTaskBFPsi::GetAcceptedTracks(AliVEvent *event, Double_t gC
                         length = aodTrack->GetIntegratedLength();
                         tof = tofTime*1E-3; // ns
                         if (tof <= 0) {
-                            Printf("WARNING: track with negative TOF time found! Skipping this track for PID checks\n");
+                            //Printf("WARNING: track with negative TOF time found! Skipping this track for PID checks\n");
                             continue;
                         }
                         if (length <= 0){
@@ -3218,7 +3218,7 @@ TObjArray* AliAnalysisTaskBFPsi::GetAcceptedTracks(AliVEvent *event, Double_t gC
                             aodTrack->GetIntegratedTimes(exptime);
                             length = exptime[0]*c*1E-3/0.01; //assume electrons are relativistic (and add all multiplication factors)
                             if (length <= 0){
-                                Printf("WARNING: track with negative length found!Skipping this track for PID checks\n");
+                                //Printf("WARNING: track with negative length found!Skipping this track for PID checks\n");
                                 continue;
                             }
                         }
@@ -3682,11 +3682,11 @@ TObjArray* AliAnalysisTaskBFPsi::GetAcceptedTracks(AliVEvent *event, Double_t gC
 	  tof = tofTime*1E-3; // ns	
 	  
 	  if (tof <= 0) {
-	    Printf("WARNING: track with negative TOF time found! Skipping this track for PID checks\n");
+	    //Printf("WARNING: track with negative TOF time found! Skipping this track for PID checks\n");
 	    continue;
 	  }
 	  if (length <= 0){
-	    Printf("WARNING: track with negative length found!Skipping this track for PID checks\n");
+	    //Printf("WARNING: track with negative length found!Skipping this track for PID checks\n");
 	    continue;
 	  }
 
