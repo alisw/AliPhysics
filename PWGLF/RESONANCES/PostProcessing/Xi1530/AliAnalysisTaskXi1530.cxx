@@ -960,70 +960,8 @@ Bool_t AliAnalysisTaskXi1530::GoodCascadeSelection() {
                                       {(int)kMCReco, (double)fCent,
                                        Xicandidate->Pt(), Xicandidate->M()});
                     }
-
                 fNCascade++;
                 goodcascadeindices.push_back(it);
-
-                // PID QA
-                if (fQA) {
-                    if (Xicandidate->Charge() ==
-                        -1) {  // Xi- has +proton, -pion
-                        fHistos->FillTH2("hTPCPIDLambdaProton_cut",
-                                         pTrackXi->GetTPCmomentum(),
-                                         pTrackXi->GetTPCsignal());
-                        fHistos->FillTH2("hTPCPIDLambdaPion_cut",
-                                         nTrackXi->GetTPCmomentum(),
-                                         nTrackXi->GetTPCsignal());
-                    } else {  // Xi+ has -proton, +pion
-                        fHistos->FillTH2("hTPCPIDLambdaProton_cut",
-                                         nTrackXi->GetTPCmomentum(),
-                                         nTrackXi->GetTPCsignal());
-                        fHistos->FillTH2("hTPCPIDLambdaPion_cut",
-                                         pTrackXi->GetTPCmomentum(),
-                                         pTrackXi->GetTPCsignal());
-                    }
-                    fHistos->FillTH2("hTPCPIDBachelorPion_cut",
-                                     bTrackXi->GetTPCmomentum(),
-                                     bTrackXi->GetTPCsignal());
-
-                    // TPC PID Signal
-                    fHistos->FillTH1("hTPCPIDsignalLambdaProton_cut",
-                                     fTPCNSigProton);
-                    fHistos->FillTH1("hTPCPIDsignalLambdaPion_cut",
-                                     fTPCNSigLambdaPion);
-                    fHistos->FillTH1("hTPCPIDsignalBachelorPion_cut",
-                                     fTPCNSigBachelorPion);
-
-                    // DCA QA
-                    fHistos->FillTH1("hDCADist_Lambda_BTW_Daughters_cut",
-                                     fDCADist_Lambda);
-                    fHistos->FillTH1("hDCADist_Xi_BTW_Daughters_cut",
-                                     fDCADist_Xi);
-                    fHistos->FillTH1("hDCADist_lambda_to_PV_cut",
-                                     fDCADist_Lambda_PV);
-                    fHistos->FillTH1("hDCADist_Xi_to_PV_cut", fDCADist_Xi_PV);
-                    fHistos->FillTH1("hDCADist_LambdaProton_to_PV_cut",
-                                     fDCADist_LambdaProton_PV);
-                    fHistos->FillTH1("hDCADist_LambdaPion_to_PV_cut",
-                                     fDCADist_LambdaPion_PV);
-                    fHistos->FillTH1("hDCADist_BachelorPion_to_PV_cut",
-                                     fDCADist_BachelorPion_PV);
-
-                    // CPA QA
-                    fHistos->FillTH1("hCosPA_lambda_cut", fLambdaCPA);
-                    fHistos->FillTH1("hCosPA_Xi_cut", fXiCPA);
-
-                    // Mass window QA
-                    fHistos->FillTH1("hMass_Xi_cut", fMass_Xi);
-
-                    // Eta
-                    fHistos->FillTH2("hPhiEta_Xi_cut", Xicandidate->Phi(),
-                                     Xicandidate->Eta());
-
-                    // XY Radius
-                    fHistos->FillTH2("hLambda_Rxy_cut", LambdaX, LambdaY);
-                    fHistos->FillTH2("hXi_Rxy_cut", cX, cY);
-                }
             }   // for standard Xi
         }       // ESD case
         else {  // !! NEED TO MODIFY !!
@@ -1160,10 +1098,10 @@ void AliAnalysisTaskXi1530::FillTracks() {
                 // Xi1530Pion DCA zVetex Check
                 Double_t pionZ = abs(track1->GetZ() - fZ);
                 if ((SysCheck.at(sys) != "Xi1530PionZVertexLoose") &&
-                    pionZ > fXi1530PionZVertexCut))
+                    (pionZ > fXi1530PionZVertexCut))
                     continue;
                 if ((SysCheck.at(sys) == "Xi1530PionZVertexTight") &&
-                    pionZ > fXi1530PionZVertexCut_tight))
+                    (pionZ > fXi1530PionZVertexCut_tight))
                     continue;
 
                 // DCA between daughters Check
