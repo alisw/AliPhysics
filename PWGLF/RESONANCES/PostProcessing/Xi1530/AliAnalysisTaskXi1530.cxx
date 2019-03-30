@@ -23,7 +23,7 @@
 //  author: Bong-Hwi Lim (bong-hwi.lim@cern.ch)
 //        , Beomkyu  KIM (kimb@cern.ch)
 //
-//  Last Modified Date: 2019/03/27
+//  Last Modified Date: 2019/03/29
 //
 ////////////////////////////////////////////////////////////////////////////
 
@@ -346,12 +346,14 @@ void AliAnalysisTaskXi1530::UserCreateOutputObjects() {
                            "s");
         // to PV
         // before
+        fHistos->CreateTH1("hDCADist_Xi1530pion_to_PV", "", 300, 0, 3, "s");
         fHistos->CreateTH1("hDCADist_lambda_to_PV", "", 500, 0, 5, "s");
         fHistos->CreateTH1("hDCADist_Xi_to_PV", "", 500, 0, 5, "s");
         fHistos->CreateTH1("hDCADist_LambdaProton_to_PV", "", 500, 0, 5, "s");
         fHistos->CreateTH1("hDCADist_LambdaPion_to_PV", "", 500, 0, 5, "s");
         fHistos->CreateTH1("hDCADist_BachelorPion_to_PV", "", 500, 0, 5, "s");
         // after
+        fHistos->CreateTH1("hDCADist_Xi1530pion_to_PV_cut", "", 300, 0, 3, "s");
         fHistos->CreateTH1("hDCADist_lambda_to_PV_cut", "", 500, 0, 5, "s");
         fHistos->CreateTH1("hDCADist_Xi_to_PV_cut", "", 500, 0, 5, "s");
         fHistos->CreateTH1("hDCADist_LambdaProton_to_PV_cut", "", 500, 0, 5,
@@ -360,6 +362,10 @@ void AliAnalysisTaskXi1530::UserCreateOutputObjects() {
         fHistos->CreateTH1("hDCADist_BachelorPion_to_PV_cut", "", 500, 0, 5,
                            "s");
 
+        fHistos->CreateTH1("hDCADist_Xi1530pion_to_PV_loose", "", 300, 0, 3,
+                           "s");
+        fHistos->CreateTH1("hDCADist_Xi1530pion_to_PV_tight", "", 300, 0, 3,
+                           "s");
         fHistos->CreateTH1("hDCADist_lambda_to_PV_loose", "", 500, 0, 5, "s");
         fHistos->CreateTH1("hDCADist_lambda_to_PV_tight", "", 500, 0, 5, "s");
         // C P A
@@ -725,9 +731,11 @@ Bool_t AliAnalysisTaskXi1530::GoodTracksSelection() {
                 continue;
 
             // Z vertex cut
-            if (abs(track->GetZ() - fZ) > fXi1530PionZVertexCut_loose)
+            Double_t pionZ = abs(track->GetZ() - fZ);
+            if (fQA)
+                fHistos->FillTH1("hDCADist_Xi1530pion_to_PV", pionZ);
+            if (pionZ > fXi1530PionZVertexCut_loose)
                 continue;
-
             // Pion mass window
             // if (fabs(track->M() - pionmass) > 0.007) continue;
 
@@ -952,70 +960,8 @@ Bool_t AliAnalysisTaskXi1530::GoodCascadeSelection() {
                                       {(int)kMCReco, (double)fCent,
                                        Xicandidate->Pt(), Xicandidate->M()});
                     }
-
                 fNCascade++;
                 goodcascadeindices.push_back(it);
-
-                // PID QA
-                if (fQA) {
-                    if (Xicandidate->Charge() ==
-                        -1) {  // Xi- has +proton, -pion
-                        fHistos->FillTH2("hTPCPIDLambdaProton_cut",
-                                         pTrackXi->GetTPCmomentum(),
-                                         pTrackXi->GetTPCsignal());
-                        fHistos->FillTH2("hTPCPIDLambdaPion_cut",
-                                         nTrackXi->GetTPCmomentum(),
-                                         nTrackXi->GetTPCsignal());
-                    } else {  // Xi+ has -proton, +pion
-                        fHistos->FillTH2("hTPCPIDLambdaProton_cut",
-                                         nTrackXi->GetTPCmomentum(),
-                                         nTrackXi->GetTPCsignal());
-                        fHistos->FillTH2("hTPCPIDLambdaPion_cut",
-                                         pTrackXi->GetTPCmomentum(),
-                                         pTrackXi->GetTPCsignal());
-                    }
-                    fHistos->FillTH2("hTPCPIDBachelorPion_cut",
-                                     bTrackXi->GetTPCmomentum(),
-                                     bTrackXi->GetTPCsignal());
-
-                    // TPC PID Signal
-                    fHistos->FillTH1("hTPCPIDsignalLambdaProton_cut",
-                                     fTPCNSigProton);
-                    fHistos->FillTH1("hTPCPIDsignalLambdaPion_cut",
-                                     fTPCNSigLambdaPion);
-                    fHistos->FillTH1("hTPCPIDsignalBachelorPion_cut",
-                                     fTPCNSigBachelorPion);
-
-                    // DCA QA
-                    fHistos->FillTH1("hDCADist_Lambda_BTW_Daughters_cut",
-                                     fDCADist_Lambda);
-                    fHistos->FillTH1("hDCADist_Xi_BTW_Daughters_cut",
-                                     fDCADist_Xi);
-                    fHistos->FillTH1("hDCADist_lambda_to_PV_cut",
-                                     fDCADist_Lambda_PV);
-                    fHistos->FillTH1("hDCADist_Xi_to_PV_cut", fDCADist_Xi_PV);
-                    fHistos->FillTH1("hDCADist_LambdaProton_to_PV_cut",
-                                     fDCADist_LambdaProton_PV);
-                    fHistos->FillTH1("hDCADist_LambdaPion_to_PV_cut",
-                                     fDCADist_LambdaPion_PV);
-                    fHistos->FillTH1("hDCADist_BachelorPion_to_PV_cut",
-                                     fDCADist_BachelorPion_PV);
-
-                    // CPA QA
-                    fHistos->FillTH1("hCosPA_lambda_cut", fLambdaCPA);
-                    fHistos->FillTH1("hCosPA_Xi_cut", fXiCPA);
-
-                    // Mass window QA
-                    fHistos->FillTH1("hMass_Xi_cut", fMass_Xi);
-
-                    // Eta
-                    fHistos->FillTH2("hPhiEta_Xi_cut", Xicandidate->Phi(),
-                                     Xicandidate->Eta());
-
-                    // XY Radius
-                    fHistos->FillTH2("hLambda_Rxy_cut", LambdaX, LambdaY);
-                    fHistos->FillTH2("hXi_Rxy_cut", cX, cY);
-                }
             }   // for standard Xi
         }       // ESD case
         else {  // !! NEED TO MODIFY !!
@@ -1150,11 +1096,12 @@ void AliAnalysisTaskXi1530::FillTracks() {
                 }
 
                 // Xi1530Pion DCA zVetex Check
+                Double_t pionZ = abs(track1->GetZ() - fZ);
                 if ((SysCheck.at(sys) != "Xi1530PionZVertexLoose") &&
-                    (abs(track1->GetZ() - fZ) > fXi1530PionZVertexCut))
+                    (pionZ > fXi1530PionZVertexCut))
                     continue;
                 if ((SysCheck.at(sys) == "Xi1530PionZVertexTight") &&
-                    (abs(track1->GetZ() - fZ) > fXi1530PionZVertexCut_tight))
+                    (pionZ > fXi1530PionZVertexCut_tight))
                     continue;
 
                 // DCA between daughters Check
@@ -1240,7 +1187,7 @@ void AliAnalysisTaskXi1530::FillTracks() {
                 if (fExoticFinder) {
                     Double_t angle = temp1.Angle(temp2.Vect());
                     fHistos->FillTH1("hExoOpenAngle", angle);
-                    if (abs(angle) < 0.0785398)  // 45 degree
+                    if (abs(angle) < 0.0785398)  // 4.5 degree
                         continue;
                 }
 
@@ -1389,7 +1336,8 @@ void AliAnalysisTaskXi1530::FillTracks() {
                         fHistos->FillTH1(
                             "hDCADist_BachelorPion_to_PV_cut",
                             fabs(bTrackXi->GetD(PVx, PVy, bField)));
-
+                        fHistos->FillTH1("hDCADist_Xi1530pion_to_PV_cut",
+                                         pionZ);
                         // CPA QA
                         fHistos->FillTH1("hCosPA_lambda_cut", fLambdaCPA);
                         fHistos->FillTH1("hCosPA_Xi_cut", fXiCPA);
@@ -1434,18 +1382,18 @@ void AliAnalysisTaskXi1530::FillTracks() {
                     }
                     // Xi1530Pion DCA zVetex Check
                     if (SysCheck.at(sys) == "Xi1530PionZVertexLoose")
-                        fHistos->FillTH1("hDCADist_lambda_to_PV_loose",
-                                         abs(track1->GetZ() - fZ));
+                        fHistos->FillTH1("hDCADist_Xi1530pion_to_PV_loose",
+                                         pionZ);
                     if (SysCheck.at(sys) == "Xi1530PionZVertexTight")
-                        fHistos->FillTH1("hDCADist_lambda_to_PV_tight",
-                                         abs(track1->GetZ() - fZ));
+                        fHistos->FillTH1("hDCADist_Xi1530pion_to_PV_tight",
+                                         pionZ);
 
                     // DCA between daughters Check
                     if (SysCheck.at(sys) == "DCADistLambdaDaughtersLoose")
                         fHistos->FillTH1("hDCADist_Lambda_BTW_Daughters_loose",
                                          fDCADist_Lambda);
                     if (SysCheck.at(sys) == "DCADistLambdaDaughtersTight")
-                        fHistos->FillTH1("hDCADist_Xi_BTW_Daughters_tight",
+                        fHistos->FillTH1("hDCADist_Lambda_BTW_Daughters_tight",
                                          fDCADist_Lambda);
                     if (SysCheck.at(sys) == "DCADistXiDaughtersLoose")
                         fHistos->FillTH1("hDCADist_Xi_BTW_Daughters_loose",
@@ -1453,7 +1401,13 @@ void AliAnalysisTaskXi1530::FillTracks() {
                     if (SysCheck.at(sys) == "DCADistXiDaughtersTight")
                         fHistos->FillTH1("hDCADist_Xi_BTW_Daughters_tight",
                                          fDCADist_Xi);
-
+                    // Lambda DCA zVetex Check
+                    if (SysCheck.at(sys) == "DCADistLambdaPVLoose")
+                        fHistos->FillTH1("hDCADist_lambda_to_PV_loose",
+                                         fDCADist_Lambda_PV);
+                    if (SysCheck.at(sys) == "DCADistLambdaPVTight")
+                        fHistos->FillTH1("hDCADist_lambda_to_PV_tight",
+                                         fDCADist_Lambda_PV);
                     // CPA Check
                     if (SysCheck.at(sys) == "V0CosineOfPointingAngleLoose")
                         fHistos->FillTH1("hCosPA_lambda_loose", fLambdaCPA);
