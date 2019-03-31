@@ -20,7 +20,7 @@ class AliGenEvtGen : public AliGenerator {
 
   public:
 
-  typedef enum {kAllPart, kBeautyPart, kCharmPart} DecayOff_t;
+  typedef enum {kAllPart, kHFPart, kBeautyPart, kCharmPart} DecayOff_t;
 
   AliGenEvtGen();
  

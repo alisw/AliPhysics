@@ -118,6 +118,9 @@ void AliGenEvtGen::Generate()
   {
   case kAllPart: 
   break;
+  case kHFPart:
+  if(GetFlavour(pdg)!=4 && GetFlavour(pdg)!=5) continue;
+  break;
   case kBeautyPart:
   if(GetFlavour(pdg)!=5) continue;
   break; 
