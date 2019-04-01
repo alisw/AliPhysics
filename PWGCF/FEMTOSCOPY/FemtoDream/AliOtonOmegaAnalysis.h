@@ -245,6 +245,7 @@ class AliOtonOmegaAnalysis {
   Float_t fTVz;
   Int_t fTMult;
 
+  TRandom3 *frndm;
 
   const Int_t MAXPROTONS = 150;
   Int_t fTnProton;
@@ -258,6 +259,8 @@ class AliOtonOmegaAnalysis {
   Float_t fTProtonmT[150];
   Float_t fTProtonTPCmom[150];
   Short_t fTProtonCharge[150];
+  Float_t fTProtonTPCsp[150];
+  Float_t fTProtonTOFsp[150];
   Float_t fTProtonDCA[150];
   Int_t fTProtonNcl[150];
   Float_t fTProtonCrF[150];
