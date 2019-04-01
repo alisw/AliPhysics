@@ -70,5 +70,5 @@ void filterESD_Tracks()
   chain->Add("AliESDs.root");
 
   Printf("Starting Analysis....");
-  mgr->StartAnalysis("local", chain, 10);
+  mgr->StartAnalysis("local", chain, 1000);
 }
