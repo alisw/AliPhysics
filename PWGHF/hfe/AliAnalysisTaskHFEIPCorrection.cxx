@@ -613,10 +613,10 @@ if(!MultSelection){
 
   if(analyzeEvent)
   {
-      correctedVertex = CorrectVertex(aodEvent, vtx[2]); // created without problematic ITS regions
-      madecorvtx = true;
-      Double_t vtxcorr[3];
-      correctedVertex->GetXYZ(vtxcorr);
+      //correctedVertex = CorrectVertex(aodEvent, vtx[2]); // created without problematic ITS regions
+      //madecorvtx = true;
+      //Double_t vtxcorr[3];
+      //correctedVertex->GetXYZ(vtxcorr);
       vEPa = fInputEvent->GetEventplane();
       Float_t V0PlanePhi = TVector2::Phi_0_2pi(vEPa->CalculateVZEROEventPlane(fInputEvent,10,2,qVx,qVy));
       if(V0PlanePhi>TMath::Pi()) V0PlanePhi -=TMath::Pi();
@@ -657,19 +657,20 @@ if(!MultSelection){
           fExtraCuts->GetImpactParameters((AliVTrack *)track,dcaxy,dcaz);
           fExtraCuts->GetHFEImpactParameters((AliVTrack *)track,dcaxyD,dcaErr);
           IP = dcaxyD*track->Charge()*TMath::Sign(1.,aodEvent->GetMagneticField());
+          GetCorrectedImpactParameter(aodEvent, track, vtx[2], IPCorrected);
           if(centrality>=20.0 && centrality<=50.0) fIPData->Fill(track->Pt(), dcaxyD);
           if(track->Pt() > 0.5)
           {
             DeltaPhi->Fill(DPhi);
-            if(DPhi/2. < TMath::Pi()/4.) // IP
+            if(DPhi < TMath::Pi()/4. || DPhi > TMath::Pi()*3./4.) // IP
             {
-              if(centrality>=20.0 && centrality<=40.0) fpTIP2040IP->Fill(track->Pt(), IP);
-              if(centrality>=30.0 && centrality<=50.0) fpTIP3050IP->Fill(track->Pt(), IP);
+              if(centrality>=20.0 && centrality<=40.0) fpTIP2040IP->Fill(track->Pt(), IPCorrected);
+              if(centrality>=30.0 && centrality<=50.0) fpTIP3050IP->Fill(track->Pt(), IPCorrected);
             }
             else
             {
-              if(centrality>=20.0 && centrality<=40.0) fpTIP2040OOP->Fill(track->Pt(), IP);
-              if(centrality>=30.0 && centrality<=50.0) fpTIP3050OOP->Fill(track->Pt(), IP);
+              if(centrality>=20.0 && centrality<=40.0) fpTIP2040OOP->Fill(track->Pt(), IPCorrected);
+              if(centrality>=30.0 && centrality<=50.0) fpTIP3050OOP->Fill(track->Pt(), IPCorrected);
             }
           }
         }
@@ -746,7 +747,7 @@ if(!MultSelection){
     }
   }
   
-  if(madecorvtx) delete correctedVertex;
+  //if(madecorvtx) delete correctedVertex;
   PostData(1, fOutputContainer);
 }
 

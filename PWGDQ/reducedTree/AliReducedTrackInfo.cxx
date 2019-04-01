@@ -43,6 +43,8 @@ AliReducedTrackInfo::AliReducedTrackInfo() :
   fTPCsignal(0),
   fTPCsignalN(0),
   fTPCnSig(),
+  fTPCdEdxInfoQmax(),
+  fTPCdEdxInfoQtot(),
   fTPCchi2(0.0),
   fTPCActiveLength(0.),
   fTPCGeomLength(0.),
@@ -79,6 +81,7 @@ AliReducedTrackInfo::AliReducedTrackInfo() :
   fDCA[0] = 0.0; fDCA[1]=0.0;
   fTPCDCA[0] = 0.0; fTPCDCA[1]=0.0;
   for(Int_t i=0; i<4; ++i) {fTPCnSig[i]=-999.; fTOFnSig[i]=-999.; fITSnSig[i]=-999.; }
+  for(Int_t i=0; i<4; ++i) {fTPCdEdxInfoQmax[i]=-999.; fTPCdEdxInfoQtot[i]=-999.;}
   fHelixCenter[0] = 0.0; fHelixCenter[1] = 0.0;
   fTRDntracklets[0]=0; fTRDntracklets[1]=0;
   fTRDpid[0]=-999.; fTRDpid[1]=-999.;
@@ -141,6 +144,7 @@ AliReducedTrackInfo::AliReducedTrackInfo(const AliReducedTrackInfo &c) :
    fTRDpid[0]=c.fTRDpid[0]; fTRDpid[1]=c.fTRDpid[1];
    fTRDpidLQ2D[0] = c.fTRDpidLQ2D[0]; fTRDpidLQ2D[1] = c.fTRDpidLQ2D[1];
    for(Int_t i=0; i<4; ++i) {fTPCnSig[i]=c.fTPCnSig[i]; fTOFnSig[i]=c.fTOFnSig[i]; fITSnSig[i]=c.fITSnSig[i];}
+   for(Int_t i=0; i<4; ++i) {fTPCdEdxInfoQmax[i]=c.fTPCdEdxInfoQmax[i]; fTPCdEdxInfoQtot[i]=c.fTPCdEdxInfoQtot[i];}
    for(Int_t i=0;i<6;++i) {fTrackParam[i]=c.fTrackParam[i];}
    for(Int_t i=0;i<21;++i) {fCovMatrix[i]=c.fCovMatrix[i];}
    for(Int_t i=0;i<3;++i) {fMCMom[i]=c.fMCMom[i]; fMCFreezeout[i]=c.fMCFreezeout[i];}

@@ -280,6 +280,7 @@ class AliCaloPhotonCuts : public AliAnalysisCuts {
     MCSet       FindEnumForMCSet(TString namePeriod);
 
     void        ApplyNonLinearity(AliVCluster* cluster, Int_t isMC, AliVEvent *event = 0x0);
+    void        ApplySMWiseEnergyCorrection(AliVCluster* cluster, Int_t isMC, AliVEvent *event = 0x0);
 
     Float_t     FunctionNL_kPi0MC(Float_t e, Float_t p0, Float_t p1, Float_t p2, Float_t p3, Float_t p4, Float_t p5, Float_t p6);
     Float_t     FunctionNL_PHOSOnlyMC(Float_t e, Float_t p0, Float_t p1, Float_t p2);
@@ -621,7 +622,7 @@ class AliCaloPhotonCuts : public AliAnalysisCuts {
 
   private:
 
-    ClassDef(AliCaloPhotonCuts,83)
+    ClassDef(AliCaloPhotonCuts,84)
 };
 
 #endif

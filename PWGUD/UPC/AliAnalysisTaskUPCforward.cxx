@@ -98,8 +98,16 @@ AliAnalysisTaskUPCforward::AliAnalysisTaskUPCforward()
       fZNAEnergyCalibratedH(0),
       fZNCEnergyUncalibratedH(0),
       fZNAEnergyUncalibratedH(0),
+      fZNCEnergyCalibratedHigherGainH(0),
+      fZNAEnergyCalibratedHigherGainH(0),
       fZNCTimeAgainstEntriesH(0),
       fZNATimeAgainstEntriesH(0),
+      fZNCTimeStrictTimeWindowH(0),
+      fZNATimeStrictTimeWindowH(0),
+      fZNCTimeWithoutTimingH{0, 0, 0, 0},
+      fZNATimeWithoutTimingH{0, 0, 0, 0},
+      fCounterZNCH(0),
+      fCounterZNAH(0),
       fInvariantMassDistributionNoNeutronsH(0),
       fInvariantMassDistributionOneNeutronH(0),
       fInvariantMassDistributionAtLeastOneNeutronH(0),
@@ -191,8 +199,16 @@ AliAnalysisTaskUPCforward::AliAnalysisTaskUPCforward(const char* name)
       fZNAEnergyCalibratedH(0),
       fZNCEnergyUncalibratedH(0),
       fZNAEnergyUncalibratedH(0),
+      fZNCEnergyCalibratedHigherGainH(0),
+      fZNAEnergyCalibratedHigherGainH(0),
       fZNCTimeAgainstEntriesH(0),
       fZNATimeAgainstEntriesH(0),
+      fZNCTimeStrictTimeWindowH(0),
+      fZNATimeStrictTimeWindowH(0),
+      fZNCTimeWithoutTimingH{0, 0, 0, 0},
+      fZNATimeWithoutTimingH{0, 0, 0, 0},
+      fCounterZNCH(0),
+      fCounterZNAH(0),
       fInvariantMassDistributionNoNeutronsH(0),
       fInvariantMassDistributionOneNeutronH(0),
       fInvariantMassDistributionAtLeastOneNeutronH(0),
@@ -316,7 +332,7 @@ void AliAnalysisTaskUPCforward::FillGoodRunVector(std::vector<Int_t> &fVectorGoo
                                          297415, 297441, 297442, 297446, 297450, 297451,
                                          297452, 297479, 297481, 297483, 297512, 297537,
                                          297540, 297541, 297542, 297544, 297558, 297588,
-                                         297590, 297595, 297623, 297624 };
+                                         297590, 297595/*, 297623, 297624*/ };
   /* - This good run number list has been taken from the analysis
      - note of Kay's talk for DIS 2017, see:
      - https://alice-notes.web.cern.ch/system/files/notes/analysis/596/2017-Feb-08-analysis_note-2017-Feb-08-analysis-note.pdf
@@ -466,12 +482,45 @@ void AliAnalysisTaskUPCforward::UserCreateOutputObjects()
   fZNAEnergyUncalibratedH = new TH1F("fZNAEnergyUncalibratedH", "fZNAEnergyUncalibratedH", 20000, -10000, 40000);
   fOutputList->Add(fZNAEnergyUncalibratedH);
 
+  fZNCEnergyCalibratedHigherGainH = new TH1F("fZNCEnergyCalibratedHigherGainH", "fZNCEnergyCalibratedHigherGainH", 20000, -80000, 320000);
+  fOutputList->Add(fZNCEnergyCalibratedHigherGainH);
+
+  fZNAEnergyCalibratedHigherGainH = new TH1F("fZNAEnergyCalibratedHigherGainH", "fZNAEnergyCalibratedHigherGainH", 20000, -80000, 320000);
+  fOutputList->Add(fZNAEnergyCalibratedHigherGainH);
 
   fZNCTimeAgainstEntriesH = new TH1F("fZNCTimeAgainstEntriesH", "fZNCTimeAgainstEntriesH", 6000, -1500, 1500);
   fOutputList->Add(fZNCTimeAgainstEntriesH);
 
   fZNATimeAgainstEntriesH = new TH1F("fZNATimeAgainstEntriesH", "fZNATimeAgainstEntriesH", 6000, -1500, 1500);
   fOutputList->Add(fZNATimeAgainstEntriesH);
+
+  fZNCTimeStrictTimeWindowH = new TH1F("fZNCTimeStrictTimeWindowH", "fZNCTimeStrictTimeWindowH", 6000, -1500, 1500);
+  fOutputList->Add(fZNCTimeStrictTimeWindowH);
+
+  fZNATimeStrictTimeWindowH = new TH1F("fZNATimeStrictTimeWindowH", "fZNATimeStrictTimeWindowH", 6000, -1500, 1500);
+  fOutputList->Add(fZNATimeStrictTimeWindowH);
+
+  for(int iTiming = 0; iTiming < 4; iTiming++) {
+    fZNCTimeWithoutTimingH[iTiming] = new TH1F( Form("fZNCTimeWithoutTimingH_%d", iTiming),
+                                                Form("fZNCTimeWithoutTimingH_%d", iTiming),
+                                                6000, -1500, 1500
+                                               );
+    fOutputList->Add(fZNCTimeWithoutTimingH[iTiming]);
+  }
+
+  for(int iTiming = 0; iTiming < 4; iTiming++) {
+    fZNATimeWithoutTimingH[iTiming] = new TH1F( Form("fZNATimeWithoutTimingH_%d", iTiming),
+                                                Form("fZNATimeWithoutTimingH_%d", iTiming),
+                                                6000, -1500, 1500
+                                               );
+    fOutputList->Add(fZNATimeWithoutTimingH[iTiming]);
+  }
+
+  fCounterZNCH = new TH1F("fCounterZNCH", "fCounterZNCH", 6, -0.5, 5.5);
+  fOutputList->Add(fCounterZNCH);
+
+  fCounterZNAH = new TH1F("fCounterZNAH", "fCounterZNAH", 6, -0.5, 5.5);
+  fOutputList->Add(fCounterZNAH);
 
   fInvariantMassDistributionNoNeutronsH = new TH1F("fInvariantMassDistributionNoNeutronsH", "fInvariantMassDistributionNoNeutronsH", 2000, 0, 20);
   fOutputList->Add(fInvariantMassDistributionNoNeutronsH);
@@ -1179,6 +1228,10 @@ void AliAnalysisTaskUPCforward::UserExec(Option_t *)
    */
   Bool_t isZNAfired = kFALSE;
   Bool_t isZNCfired = kFALSE;
+  Bool_t isZNAfiredStrict = kFALSE;
+  Bool_t isZNCfiredStrict = kFALSE;
+  Int_t  counterZNA = 0;
+  Int_t  counterZNC = 0;
   /* - Note that in C++ the && and || operators "short-circuit". That means that
      - they only evaluate a parameter if required. If the first parameter to &&
      - is false, or the first to || is true, the rest will not be evaluated.
@@ -1200,25 +1253,52 @@ void AliAnalysisTaskUPCforward::UserExec(Option_t *)
          -
        */
       if( dataZDC->IsZNAfired() ) fZNATimeAgainstEntriesH->Fill(fZNATDC[iZDC]);
+      fCounterZNAH->Fill(counterZNA);
     }
     if ( (isZNCfired == 0) && (fZNCTDC[iZDC] > -2.) && (fZNCTDC[iZDC] < 2.) ) {
       isZNCfired = kTRUE;
       if( dataZDC->IsZNCfired() ) fZNCTimeAgainstEntriesH->Fill(fZNCTDC[iZDC]);
+      fCounterZNCH->Fill(counterZNC);
     }
+    counterZNA++;
+    counterZNC++;
   }
 
   if ( isZNCfired != 0 ) {
     fZNCEnergyAgainstEntriesH->Fill(fZNCEnergy);
     if ( calibrated == 0 ) fZNCEnergyUncalibratedH->Fill(fZNCEnergy);
-    if ( calibrated == 1 ) fZNCEnergyCalibratedH  ->Fill(fZNCEnergy);
+    if ( calibrated == 1 ) {
+      fZNCEnergyCalibratedH          ->Fill( fZNCEnergy );
+      fZNCEnergyCalibratedHigherGainH->Fill( dataZDC->GetZNCTowerEnergyLR()[0] );
+    }
   }
   fZNCEnergyBeforeTimingSelectionH->Fill(fZNCEnergy);
   if ( isZNAfired != 0 ) {
     fZNAEnergyAgainstEntriesH->Fill(fZNAEnergy);
     if ( calibrated == 0 ) fZNAEnergyUncalibratedH->Fill(fZNAEnergy);
-    if ( calibrated == 1 ) fZNAEnergyCalibratedH  ->Fill(fZNAEnergy);
+    if ( calibrated == 1 ) {
+      fZNAEnergyCalibratedH          ->Fill( fZNAEnergy );
+      fZNAEnergyCalibratedHigherGainH->Fill( dataZDC->GetZNATowerEnergyLR()[0] );
+    }
   }
   fZNAEnergyBeforeTimingSelectionH->Fill(fZNAEnergy);
+
+  /* - CHECKS for the timing:
+     - Stricter timing window AND without timing window at all!
+     -
+   */
+  for(Int_t iZDC = 0; iZDC < 4 ; iZDC++) {
+    if ( (isZNAfiredStrict == 0) && (fZNATDC[iZDC] > -1.) && (fZNATDC[iZDC] < 1.) ) {
+      isZNAfiredStrict = kTRUE;
+      if( dataZDC->IsZNAfired() ) fZNATimeStrictTimeWindowH->Fill(fZNATDC[iZDC]);
+    }
+    if ( (isZNCfiredStrict == 0) && (fZNCTDC[iZDC] > -1.) && (fZNCTDC[iZDC] < 1.) ) {
+      isZNCfiredStrict = kTRUE;
+      if( dataZDC->IsZNCfired() ) fZNCTimeStrictTimeWindowH->Fill(fZNCTDC[iZDC]);
+    }
+    fZNATimeWithoutTimingH[iZDC]->Fill(fZNATDC[iZDC]);
+    fZNCTimeWithoutTimingH[iZDC]->Fill(fZNCTDC[iZDC]);
+  }
 
   /*
   fZNCTimeAgainstEntriesH->Fill(fZNCTime);
@@ -1285,9 +1365,9 @@ void AliAnalysisTaskUPCforward::UserExec(Option_t *)
    */
   // if( fZNCTime > -5.0 ) {
   //   if( fZNCTime < 5.0 ) {
-  if ( isZNAfired != 0 ) {
-    if ( isZNCfired != 0 ) {
-          /* At any levels, this means |fZNCTime| < 5. */
+  // if ( isZNAfired != 0 ) {
+  //   if ( isZNCfired != 0 ) {
+          /* At any levels, this means |fZNCTime| < 2. */
           if( fZNCEnergy > -5000 ) {
                       if( fZNCEnergy < 1250 ) {
                                   if( fZNAEnergy > -5000 ) {
@@ -1324,8 +1404,8 @@ void AliAnalysisTaskUPCforward::UserExec(Option_t *)
 
                       }
           }
-    }
-  }
+  //   }
+  // }
 
 
   /* - Filling the J/Psi's polarization plots.

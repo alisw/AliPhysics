@@ -59,6 +59,7 @@
 #include <AliMultiplicity.h>
 #include <AliAODTracklets.h>
 #include <AliPIDResponse.h>
+#include <AliTPCdEdxInfo.h>
 //#include <AliFlowBayesianPID.h>
 #include <AliMCParticle.h>
 #include <AliAODMCParticle.h>
@@ -1854,6 +1855,7 @@ void AliAnalysisTaskReducedTreeMaker::FillTrackInfo()
   Float_t pileupTrackArrayP[20000];
   Float_t pileupTrackArrayM[20000];
   Int_t pileupCounterP = 0, pileupCounterM = 0;
+  AliTPCdEdxInfo tpcdEdxInfo;
   for(Int_t itrack=0; itrack<ntracks; ++itrack){
      
     AliVParticle *particle=event->GetTrack(itrack);
@@ -2147,6 +2149,13 @@ void AliAnalysisTaskReducedTreeMaker::FillTrackInfo()
         trackInfo->fHelixRadius   = TMath::Abs(1./helixinfo[4]);
       }
       
+      if(esdTrack->GetTPCdEdxInfo(tpcdEdxInfo)) {
+         for(Int_t i=0;i<4;++i) {
+            trackInfo->fTPCdEdxInfoQmax[i] = tpcdEdxInfo.GetSignalMax(i);
+            trackInfo->fTPCdEdxInfoQtot[i] = tpcdEdxInfo.GetSignalTot(i);
+         }
+      }
+      
       trackInfo->fTOFdeltaBC    = esdTrack->GetTOFDeltaBC();
       trackInfo->fTOFdx         = esdTrack->GetTOFsignalDx();
       trackInfo->fTOFdz         = esdTrack->GetTOFsignalDz();
@@ -2258,6 +2267,13 @@ void AliAnalysisTaskReducedTreeMaker::FillTrackInfo()
         trackInfo->fHelixCenter[0]= helixinfo[5]+(TMath::Cos(helixinfo[2])*TMath::Abs(1./helixinfo[4])*copysignf(1.0, InputEvent()->GetMagneticField()*values[AliDielectronVarManager::kCharge]));
         trackInfo->fHelixCenter[1]= helixinfo[0]+(TMath::Sin(helixinfo[2])*TMath::Abs(1./helixinfo[4])*copysignf(1.0, InputEvent()->GetMagneticField()*values[AliDielectronVarManager::kCharge]));
         trackInfo->fHelixRadius   = TMath::Abs(1./helixinfo[4]);
+      }
+      
+      if(aodTrack->GetTPCdEdxInfo(tpcdEdxInfo)) {
+         for(Int_t i=0;i<4;++i) {
+            trackInfo->fTPCdEdxInfoQmax[i] = tpcdEdxInfo.GetSignalMax(i);
+            trackInfo->fTPCdEdxInfoQtot[i] = tpcdEdxInfo.GetSignalTot(i);
+         }
       }
       
       trackInfo->fTOFdz         = aodTrack->GetTOFsignalDz();

@@ -46,34 +46,37 @@ ClassImp(AliJetTreeHandler);
 // Default constructor
 AliJetTreeHandler::AliJetTreeHandler():
   TObject(),
-  fTreeVar(nullptr),
+  fTreeJet(nullptr),
+  fTreeJetConstituent(nullptr),
+  fFillJetConstituentTree(false),
   fJetContainer(nullptr),
-  fFillTrackConstituents(false),
+  fMinJetPtCorr(0.),
+  fFillJetEtaPhi(false),
   fFillPtCorr(false),
   fFillPtUncorr(false),
-  fFillArea(true),
-  fFillNConstituents(true),
-  fFillZLeading(true),
-  fFillRadialMoment(true),
-  fFillpTD(true),
-  fFillMass(true),
+  fFillArea(false),
+  fFillNConstituents(false),
+  fFillZLeading(false),
+  fFillRadialMoment(false),
+  fFillpTD(false),
+  fFillMass(false),
   fFillMatchingJetID(false),
-  fMinJetPtCorr(0.),
-  fNTracks(),
-  fTrackPt(),
-  fTrackEta(),
-  fTrackPhi(),
-  fPtCorr(),
-  fEta(),
-  fPhi(),
-  fPtUncorr(),
-  fArea(),
-  fN(),
-  fZLeading(),
-  fRadialMoment(),
-  fpTD(),
-  fMass(),
-  fMatchedJetID()
+  fTrackPt(-999.),
+  fTrackEta(-999.),
+  fTrackPhi(-999.),
+  fEventID(0),
+  fJetID(999),
+  fPtCorr(-999.),
+  fEta(-999.),
+  fPhi(-999.),
+  fPtUncorr(-999.),
+  fArea(-999.),
+  fN(0),
+  fZLeading(-999.),
+  fRadialMoment(-999.),
+  fpTD(-999.),
+  fMass(-999.),
+  fMatchedJetID(999)
 {
 }
 
@@ -81,233 +84,229 @@ AliJetTreeHandler::AliJetTreeHandler():
 // Destructor
 AliJetTreeHandler::~AliJetTreeHandler()
 {
-  if(fTreeVar) delete fTreeVar;
+  if(fTreeJet) delete fTreeJet;
+  if(fTreeJetConstituent) delete fTreeJetConstituent;
 }
 
 /**
- * Create jet TTree, with a branch of vectors for each variable (see .h for detailed description).
+ * Create jet TTree, with completely flat structure.
  */
 //________________________________________________________________
-TTree* AliJetTreeHandler::BuildTree(TString name, TString title)
+TTree* AliJetTreeHandler::BuildJetTree(TString name, TString title)
 {
-  if(fTreeVar) {
-    delete fTreeVar;
-    fTreeVar=0x0;
+  if(fTreeJet) {
+    delete fTreeJet;
+    fTreeJet=0x0;
   }
-  fTreeVar = new TTree(name.Data(),title.Data());
+  fTreeJet = new TTree(name.Data(),title.Data());
   
   // Create branches for each jet variable
+  
+  fTreeJet->Branch("EventID",&fEventID);
+  fTreeJet->Branch("JetID",&fJetID);
 
+  if (fFillJetEtaPhi) {
+    fTreeJet->Branch("Eta",&fEta);
+    fTreeJet->Branch("Phi",&fPhi);
+  }
+  
   if (fFillPtCorr) {
-    fTreeVar->Branch("PtCorr",&fPtCorr);
+    fTreeJet->Branch("PtCorr",&fPtCorr);
+  }
+
+  if (fFillPtUncorr) {
+    fTreeJet->Branch("PtUncorr",&fPtUncorr);
   }
   
-  if (fFillTrackConstituents) {
-    fTreeVar->Branch("NTracks",&fNTracks);
-    fTreeVar->Branch("TrackPt",&fTrackPt);
-    fTreeVar->Branch("TrackEta",&fTrackEta);
-    fTreeVar->Branch("TrackPhi",&fTrackPhi);
+  if (fFillArea) {
+    fTreeJet->Branch("Area",&fArea);
   }
-  else {
   
-    fTreeVar->Branch("Eta",&fEta);
-    fTreeVar->Branch("Phi",&fPhi);
-    
-    if (fFillPtUncorr) {
-      fTreeVar->Branch("PtUncorr",&fPtUncorr);
-    }
-    
-    if (fFillArea) {
-      fTreeVar->Branch("Area",&fArea);
-    }
-    
-    if (fFillNConstituents) {
-      fTreeVar->Branch("N",&fN);
-    }
-    
-    if (fFillZLeading) {
-      fTreeVar->Branch("ZLeading", &fZLeading);
-    }
-    
-    if (fFillRadialMoment) {
-      fTreeVar->Branch("RadialMoment", &fRadialMoment);
-    }
-    
-    if (fFillpTD) {
-      fTreeVar->Branch("pTD", &fpTD);
-    }
-    
-    if (fFillMass) {
-      fTreeVar->Branch("Mass", &fMass);
-    }
+  if (fFillNConstituents) {
+    fTreeJet->Branch("N",&fN);
+  }
+  
+  if (fFillZLeading) {
+    fTreeJet->Branch("ZLeading", &fZLeading);
+  }
+  
+  if (fFillRadialMoment) {
+    fTreeJet->Branch("RadialMoment", &fRadialMoment);
+  }
+  
+  if (fFillpTD) {
+    fTreeJet->Branch("pTD", &fpTD);
+  }
+  
+  if (fFillMass) {
+    fTreeJet->Branch("Mass", &fMass);
   }
   
   if (fFillMatchingJetID) {
-    fTreeVar->Branch("MatchedJetID", &fMatchedJetID);
+    fTreeJet->Branch("MatchedJetID", &fMatchedJetID);
   }
   
-  return fTreeVar;
+  return fTreeJet;
+}
+
+/**
+ * Create jet TTree, with completely flat structure.
+ */
+//________________________________________________________________
+TTree* AliJetTreeHandler::BuildJetConstituentTree(TString name, TString title)
+{
+  if(fTreeJetConstituent) {
+    delete fTreeJetConstituent;
+    fTreeJetConstituent=0x0;
+  }
+  fTreeJetConstituent = new TTree(name.Data(),title.Data());
+  
+  // Create branches for each jet variable
+  fTreeJetConstituent->Branch("EventID",&fEventID);
+  fTreeJetConstituent->Branch("JetID",&fJetID);
+  fTreeJetConstituent->Branch("TrackPt",&fTrackPt);
+  fTreeJetConstituent->Branch("TrackEta",&fTrackEta);
+  fTreeJetConstituent->Branch("TrackPhi",&fTrackPhi);
+ 
+  return fTreeJetConstituent;
+}
+
+/**
+ * Set tree variables and fill them
+ */
+//________________________________________________________________
+void AliJetTreeHandler::FillTree(unsigned int eventID)
+{
+  
+  fEventID = eventID;
+  
+  for (const auto jet : fJetContainer->accepted()) {
+    
+    // Check if jet passes min pt threshold
+    if (GetJetPt(jet) < fMinJetPtCorr) {
+      continue;
+    }
+    
+    /////////////////////////////////////////////
+    // Fill jet tree
+    
+    // Set jet variables
+    fJetID = jet->GetLabel();
+    SetJetVariables(jet);
+    
+    // Fill jet tree
+    fTreeJet->Fill();
+    
+    /////////////////////////////////////////////
+    // Fill jet constituent tree (if enabled)
+    
+    if (fFillJetConstituentTree) {
+      
+      // Loop through tracks
+      const int nTracks = jet->GetNumberOfTracks();
+      for (int i = 0; i < nTracks; ++i) {
+        
+        // Set jet constituent variables
+        const AliVParticle* track = jet->Track(i);
+        SetJetConstituentVariables(track);
+        
+        // Fill jet constituent tree
+        fTreeJetConstituent->Fill();
+        
+      }
+    }
+    
+  }
+  
 }
 
 /**
  * Set jet tree variables
  */
 //________________________________________________________________
-bool AliJetTreeHandler::SetJetVariables()
+void AliJetTreeHandler::SetJetVariables(const AliEmcalJet* jet)
 {
-
-  for (const auto jet : fJetContainer->accepted()) {
-    
-    // Check if jet passes min pt threshold
-    float jetPtCorr = GetJetPt(jet);
-    if (jetPtCorr < fMinJetPtCorr) {
-      continue;
-    }
-    
-    // Fill vectors with jet info
-    
-    if (fFillPtCorr) {
-      fPtCorr.push_back(jetPtCorr);
-    }
-    
-    if (fFillTrackConstituents) {
-      
-      unsigned short int nTracks = static_cast<unsigned short int>(jet->GetNumberOfTracks());
-      fNTracks.push_back(nTracks);
-      
-      Double_t jetPtSum = 0;
-      for (int i = 0; i < nTracks; ++i) {
-        
-        AliVParticle* track = jet->Track(i);
-        fTrackPt.push_back(track->Pt());
-        fTrackEta.push_back(track->Eta());
-        fTrackPhi.push_back(TVector2::Phi_0_2pi(track->Phi()));
-        jetPtSum += track->Pt();
-        
-      }
-    }
-    else {
-      
-      fEta.push_back(jet->Eta());
-      fPhi.push_back(jet->Phi_0_2pi());
-      
-      if (fFillPtUncorr) {
-        fPtUncorr.push_back(jet->Pt());
-      }
-      
-      if (fFillArea) {
-        fArea.push_back(jet->Area());
-      }
-      
-      if (fFillNConstituents) {
-        fN.push_back(jet->GetNumberOfConstituents());
-      }
-      
-      if (fFillZLeading) {
-        fZLeading.push_back(fJetContainer->GetZLeadingCharged(jet));
-      }
-      
-      if (fFillRadialMoment) {
-        fRadialMoment.push_back(RadialMoment(jet));
-      }
-      
-      if (fFillpTD) {
-        fpTD.push_back(PTD(jet));
-      }
-      
-      if (fFillMass) {
-        fMass.push_back(jet->M());
-      }
-    }
-      
-    // Get matched jet (assumes the matches have been filled by a previous task)
-    if (fFillMatchingJetID) {
-      
-      short int matchedJetLabel = -1;
-      const AliEmcalJet* matchedJet = jet->ClosestJet();
-      if (matchedJet) {
-        matchedJetLabel = matchedJet->GetLabel();
-      }
-      fMatchedJetID.push_back(matchedJetLabel);
-      
-    }
-
+  
+  // Set jet variables
+  if (fFillJetEtaPhi) {
+    fEta = jet->Eta();
+    fPhi = jet->Phi_0_2pi();
   }
-  
-  return true;
-}
-
-/**
- * Fill jet tree, and reset all vectors
- */
-//________________________________________________________________
-void AliJetTreeHandler::FillTree() {
-
-  fTreeVar->Fill();
-  
-  // Reset all vectors
-  
   if (fFillPtCorr) {
-    fPtCorr.clear();
+    fPtCorr = GetJetPt(jet);
+  }
+  if (fFillPtUncorr) {
+    fPtUncorr = jet->Pt();
+  }
+  if (fFillArea) {
+    fArea = jet->Area();
+  }
+  if (fFillNConstituents) {
+    fN = static_cast<unsigned short int>(jet->GetNumberOfConstituents());
+  }
+  if (fFillZLeading) {
+    fZLeading = fJetContainer->GetZLeadingCharged(jet);
+  }
+  if (fFillRadialMoment) {
+    fRadialMoment = RadialMoment(jet);
+  }
+  if (fFillpTD) {
+    fpTD = PTD(jet);
+  }
+  if (fFillMass) {
+    fMass = jet->M();
   }
   
-  if (fFillTrackConstituents) {
-    fNTracks.clear();
-    fTrackPt.clear();
-    fTrackEta.clear();
-    fTrackPhi.clear();
-  }
-  else {
-    fEta.clear();
-    fPhi.clear();
-    
-    if (fFillPtUncorr) {
-      fPtUncorr.clear();
-    }
-    
-    if (fFillArea) {
-      fArea.clear();
-    }
-    
-    if (fFillNConstituents) {
-      fN.clear();
-    }
-    
-    if (fFillZLeading) {
-      fZLeading.clear();
-    }
-    
-    if (fFillRadialMoment) {
-      fRadialMoment.clear();
-    }
-    
-    if (fFillpTD) {
-      fpTD.clear();
-    }
-    
-    if (fFillMass) {
-      fMass.clear();
-    }
-  }
-  
+  // Get matched jet (assumes the matches have been filled by a previous task)
   if (fFillMatchingJetID) {
-    fMatchedJetID.clear();
+    
+    unsigned short int matchedJetLabel = 999;
+    const AliEmcalJet* matchedJet = jet->ClosestJet();
+    if (matchedJet) {
+      matchedJetLabel = static_cast<unsigned short int>(matchedJet->GetLabel());
+    }
+    fMatchedJetID = matchedJetLabel;
+    
   }
+
+}
+
+/**
+* Set jet constituent tree variables
+*/
+//________________________________________________________________
+void AliJetTreeHandler::SetJetConstituentVariables(const AliVParticle* track)
+{
+  
+  fTrackPt = track->Pt();
+  fTrackEta = track->Eta();
+  fTrackPhi = TVector2::Phi_0_2pi(track->Phi());
   
 }
 
 /**
- *  If filling jet matching info (for MC), loop through jets and set fLabel,
- *  which specifies the index of the jet in the tree variable std::vectors.
-
+ * Set Jet ID for accepted jets in each event: 0, 1, 2, ..., N
+ * If jet is not accepted, it will have ID 999.
  */
 //________________________________________________________________
 void AliJetTreeHandler::SetJetLabels()
 {
-  int i = 0;
+  // Reset all labels
   for (auto jet : fJetContainer->accepted()) {
-    jet->SetLabel(i);
-    i++;
+    jet->SetLabel(999);
+  }
+
+  // Assign jet labels
+  unsigned short int jetID = 0;
+  for (auto jet : fJetContainer->accepted()) {
+    
+    // Check if jet passes min pt threshold
+    if (GetJetPt(jet) < fMinJetPtCorr) {
+      continue;
+    }
+    
+    jet->SetLabel(jetID);
+    jetID++;
   }
 }
 

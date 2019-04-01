@@ -2973,6 +2973,10 @@ void AliCaloPhotonCuts::SplitEnergy(Int_t absCellId1, Int_t absCellId2,
   // Correct linearity
   ApplyNonLinearity(cluster1, isMC, event) ;
   ApplyNonLinearity(cluster2, isMC, event) ;
+  if(isMC == 0){
+    ApplySMWiseEnergyCorrection(cluster1, isMC, event);
+    ApplySMWiseEnergyCorrection(cluster2, isMC, event);
+  }
 
   // Initialize EMCAL rec utils if not initialized
   if(!fEMCALInitialized && (fClusterType == 1 || fClusterType == 3 || fClusterType == 4) ) InitializeEMCAL(event);
@@ -3187,6 +3191,9 @@ Bool_t AliCaloPhotonCuts::ClusterIsSelected(AliVCluster *cluster, AliVEvent * ev
       ApplyNonLinearity(cluster,isMC,event);
       if(fHistEnergyOfClusterAfterNL) fHistEnergyOfClusterAfterNL->Fill(cluster->E(),weight);
     }
+  }
+  if(isMC == 0){
+    ApplySMWiseEnergyCorrection(cluster, isMC, event);
   }
 
   // Acceptance Cuts
@@ -5633,33 +5640,6 @@ void AliCaloPhotonCuts::ApplyNonLinearity(AliVCluster* cluster, Int_t isMC, AliV
           if(fClusterType==1) energy /= FunctionNL_kSDM(energy, 0.922912, -2.97895, -0.132756);
           if(fClusterType==2) energy /= FunctionNL_kSDM(energy, 1.00571, -2.03882, -2.12252);
         } else fPeriodNameAvailable = kFALSE;
-      } else if(isMC == 0){         // data; SM wise correction
-        if( fCurrentMC == k16pp13TeV || fCurrentMC == k17pp13TeV){
-          switch (clusterSMID){
-            // values determined on LHC16x & LHC17c
-            case 0: energy/=0.994364; break;
-            case 1: energy/=0.991352; break;
-            case 2: energy/=1.000522; break;
-            case 3: energy/=0.995918; break;
-            case 4: energy/=0.995661; break;
-            case 5: energy/=0.998285; break;
-            case 6: energy/=1.000275; break;
-            case 7: energy/=1.003544; break;
-            case 8: energy/=1.007220; break;
-            case 9: energy/=1.000911; break;
-            case 10: energy/=1.012508; break;
-            case 11: energy/=1.012867; break;
-            case 12: energy/=1.001028; break;
-            case 13: energy/=0.995514; break;
-            case 14: energy/=0.994373; break;
-            case 15: energy/=0.997765; break;
-            case 16: energy/=1.009084; break;
-            case 17: energy/=1.011123; break;
-            case 18: energy/=1.022673; break;
-            case 19: energy/=1.018894; break;
-            default: energy/=1.0; break;
-          }
-        }
       }
       break;
 
@@ -5753,37 +5733,10 @@ void AliCaloPhotonCuts::ApplyNonLinearity(AliVCluster* cluster, Int_t isMC, AliV
           if(fClusterType==1) energy /= FunctionNL_kSDM(energy, 0.957323, -3.55283, -0.57881);
           if(fClusterType==4){
             energy /= FunctionNL_kSDM(energy, 0.955163, -3.4446, -0.696097);
-            energy /= (FunctionNL_DExp(energy, 1.0007479406, 1.0488265741, -2.0954151207, 1.0073665537, 0.8448219665, -2.0929396180));
+            energy /= (FunctionNL_DExp(energy, 0.9965920431, 1.1336074487, -1.8581013134, 1.0073665537, 0.8448219665, -2.0929396180));
           }
 
         } else fPeriodNameAvailable = kFALSE;
-      } else if(isMC == 0){         // data; SM wise correction
-        if( fCurrentMC == k16pp13TeV || fCurrentMC == k17pp13TeV){
-          switch (clusterSMID){
-            // values determined on LHC16x & LHC17c
-            case 0: energy/=0.994364; break;
-            case 1: energy/=0.991352; break;
-            case 2: energy/=1.000522; break;
-            case 3: energy/=0.995918; break;
-            case 4: energy/=0.995661; break;
-            case 5: energy/=0.998285; break;
-            case 6: energy/=1.000275; break;
-            case 7: energy/=1.003544; break;
-            case 8: energy/=1.007220; break;
-            case 9: energy/=1.000911; break;
-            case 10: energy/=1.012508; break;
-            case 11: energy/=1.012867; break;
-            case 12: energy/=1.001028; break;
-            case 13: energy/=0.995514; break;
-            case 14: energy/=0.994373; break;
-            case 15: energy/=0.997765; break;
-            case 16: energy/=1.009084; break;
-            case 17: energy/=1.011123; break;
-            case 18: energy/=1.022673; break;
-            case 19: energy/=1.018894; break;
-            default: energy/=1.0; break;
-          }
-        }
       }
       break;
 
@@ -5996,33 +5949,6 @@ void AliCaloPhotonCuts::ApplyNonLinearity(AliVCluster* cluster, Int_t isMC, AliV
           if(fClusterType==1) energy /= (FunctionNL_DPOW(energy, 1.0496452471, -0.1047424135, -0.2108759639, 1.1740021856, -0.2000000000, -0.1917378883));
           if(fClusterType==2) energy /= (FunctionNL_DPOW(energy, 1.0167588250, 0.0501002307, -0.8336787497, 0.9500009312, 0.0944118922, -0.1043983134));
         } else fPeriodNameAvailable = kFALSE;
-      } else if(isMC == 0){         // data; SM wise correction
-        if( fCurrentMC == k16pp13TeV || fCurrentMC == k17pp13TeV){
-          switch (clusterSMID){
-            // values determined on LHC16x & LHC17c
-            case 0: energy/=0.994364; break;
-            case 1: energy/=0.991352; break;
-            case 2: energy/=1.000522; break;
-            case 3: energy/=0.995918; break;
-            case 4: energy/=0.995661; break;
-            case 5: energy/=0.998285; break;
-            case 6: energy/=1.000275; break;
-            case 7: energy/=1.003544; break;
-            case 8: energy/=1.007220; break;
-            case 9: energy/=1.000911; break;
-            case 10: energy/=1.012508; break;
-            case 11: energy/=1.012867; break;
-            case 12: energy/=1.001028; break;
-            case 13: energy/=0.995514; break;
-            case 14: energy/=0.994373; break;
-            case 15: energy/=0.997765; break;
-            case 16: energy/=1.009084; break;
-            case 17: energy/=1.011123; break;
-            case 18: energy/=1.022673; break;
-            case 19: energy/=1.018894; break;
-            default: energy/=1.0; break;
-          }
-        }
       }
       break;
 
@@ -6104,37 +6030,10 @@ void AliCaloPhotonCuts::ApplyNonLinearity(AliVCluster* cluster, Int_t isMC, AliV
           if(fClusterType==1) energy /= (FunctionNL_DPOW(energy, 1.0187401756, -0.0857332791, -0.5000000000, 1.1585209386, -0.1999999989, -0.2646540338));
           if(fClusterType==4){
             energy /= (FunctionNL_DPOW(energy, 1.0145205998, -0.0860364686, -0.4999999971, 1.0894446295, -0.1383339489, -0.3858694211));
-            energy /= (FunctionNL_DExp(energy, 1.0062815643, 1.0738360908, -1.9144202606, 1.0073665537, 0.8448219665, -2.0929396180));
+            energy /= (FunctionNL_DExp(energy, 1.0029185172, 1.1339145669, -1.8273637507, 1.0073665537, 0.8448219665, -2.0929396180));
           }
 
         } else fPeriodNameAvailable = kFALSE;
-      } else if(isMC == 0){         // data; SM wise correction
-        if( fCurrentMC == k16pp13TeV || fCurrentMC == k17pp13TeV){
-          switch (clusterSMID){
-            // values determined on LHC16x & LHC17c
-            case 0: energy/=0.994364; break;
-            case 1: energy/=0.991352; break;
-            case 2: energy/=1.000522; break;
-            case 3: energy/=0.995918; break;
-            case 4: energy/=0.995661; break;
-            case 5: energy/=0.998285; break;
-            case 6: energy/=1.000275; break;
-            case 7: energy/=1.003544; break;
-            case 8: energy/=1.007220; break;
-            case 9: energy/=1.000911; break;
-            case 10: energy/=1.012508; break;
-            case 11: energy/=1.012867; break;
-            case 12: energy/=1.001028; break;
-            case 13: energy/=0.995514; break;
-            case 14: energy/=0.994373; break;
-            case 15: energy/=0.997765; break;
-            case 16: energy/=1.009084; break;
-            case 17: energy/=1.011123; break;
-            case 18: energy/=1.022673; break;
-            case 19: energy/=1.018894; break;
-            default: energy/=1.0; break;
-          }
-        }
       }
       break;
     // NonLinearity ConvCalo - kTestBeamv3 + shifting MC
@@ -6785,6 +6684,108 @@ void AliCaloPhotonCuts::ApplyNonLinearity(AliVCluster* cluster, Int_t isMC, AliV
     AliFatal(Form("NonLinearity correction not defined for fPeriodName: '%s'! Please check cut number (%d) as well as function AliCaloPhotonCuts::ApplyNonLinearity. Correction failed, returning...",fPeriodName.Data(),fSwitchNonLinearity));
     return;
   }
+
+  cluster->SetE(energy);
+
+  return;
+}
+
+//________________________________________________________________________
+void AliCaloPhotonCuts::ApplySMWiseEnergyCorrection(AliVCluster* cluster, Int_t isMC, AliVEvent *event)
+{
+  if (!cluster) {
+    AliInfo("Cluster pointer null!");
+    return;
+  }
+  Float_t energy = cluster->E();
+
+  Int_t clusterSMID = -1;
+  if(fClusterType == 4 && event){
+    Int_t largestCellIDcluster = FindLargestCellInCluster(cluster,event);
+    if(largestCellIDcluster>-1){
+      Int_t dummycol = -1, dummyrow = -1;
+      clusterSMID = GetModuleNumberAndCellPosition(largestCellIDcluster, dummycol, dummyrow);
+    }
+  }
+  if( fClusterType == 1 || fClusterType == 3|| fClusterType == 4){
+    if (energy < 0.05) {
+      // Clusters with less than 50 MeV or negative are not possible
+      AliInfo(Form("Too Low Cluster energy!, E = %f < 0.05 GeV",energy));
+      return;
+    }
+  } else {
+    if (energy < 0.01) {
+      // Clusters with less than 10 MeV or negative are not possible
+      AliInfo(Form("Too Low Cluster energy!, E = %f < 0.01 GeV",energy));
+      return;
+    }
+  }
+  if(fCurrentMC==kNoMC){
+    AliV0ReaderV1* V0Reader = (AliV0ReaderV1*) AliAnalysisManager::GetAnalysisManager()->GetTask(fV0ReaderName.Data());
+    if( V0Reader == NULL ){
+      AliFatal(Form("No V0Reader called '%s' could be found within AliCaloPhotonCuts::ApplySMWiseEnergyCorrection",fV0ReaderName.Data()));
+      return;
+    }
+    fPeriodName = V0Reader->GetPeriodName();
+    fCurrentMC = FindEnumForMCSet(fPeriodName);
+
+    printf("AliCaloPhotonCuts:Period name has been set to %s, period-enum: %o\n",fPeriodName.Data(),fCurrentMC ) ;
+  }
+
+
+  if(isMC == 0){         // data; SM wise correction
+    if( fCurrentMC == k16pp13TeV || fCurrentMC == k17pp13TeV){
+      switch (clusterSMID){
+        // values determined on LHC16x & LHC17c
+        case 0: energy/=0.994364; break;
+        case 1: energy/=0.991352; break;
+        case 2: energy/=1.000522; break;
+        case 3: energy/=0.995918; break;
+        case 4: energy/=0.995661; break;
+        case 5: energy/=0.998285; break;
+        case 6: energy/=1.000275; break;
+        case 7: energy/=1.003544; break;
+        case 8: energy/=1.007220; break;
+        case 9: energy/=1.000911; break;
+        case 10: energy/=1.012508; break;
+        case 11: energy/=1.012867; break;
+        case 12: energy/=1.001028; break;
+        case 13: energy/=0.995514; break;
+        case 14: energy/=0.994373; break;
+        case 15: energy/=0.997765; break;
+        case 16: energy/=1.009084; break;
+        case 17: energy/=1.011123; break;
+        case 18: energy/=1.007118; break;
+        case 19: energy/=1.018894; break;
+        default: energy/=1.0; break;
+      }
+    } else if(fCurrentMC == k17pp5TeV){
+      switch (clusterSMID){
+        // values determined on LHC17pq
+        case 0: energy/=0.996406; break;
+        case 1: energy/=0.995672; break;
+        case 2: energy/=1.000260; break;
+        case 3: energy/=0.998378; break;
+        case 4: energy/=0.998326; break;
+        case 5: energy/=0.999704; break;
+        case 6: energy/=1.001140; break;
+        case 7: energy/=0.999142; break;
+        case 8: energy/=1.002450; break;
+        case 9: energy/=1.002400; break;
+        case 10: energy/=1.006850; break;
+        case 11: energy/=1.005900; break;
+        case 12: energy/=0.999443; break;
+        case 13: energy/=0.996047; break;
+        case 14: energy/=0.997640; break;
+        case 15: energy/=0.996848; break;
+        case 16: energy/=1.005100; break;
+        case 17: energy/=1.007150; break;
+        case 18: energy/=1.006660; break;
+        case 19: energy/=1.008700; break;
+        default: energy/=1.0; break;
+      }
+    }
+  } 
 
   cluster->SetE(energy);
 

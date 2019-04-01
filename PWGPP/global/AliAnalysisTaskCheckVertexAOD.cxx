@@ -67,7 +67,8 @@ AliAnalysisTaskCheckVertexAOD::AliAnalysisTaskCheckVertexAOD() :
   fHistZtrkVsMult{nullptr},
   fHistXtpcVsMult{nullptr},
   fHistYtpcVsMult{nullptr},
-  fHistZtpcVsMult{nullptr},  
+  fHistZtpcVsMult{nullptr},
+  fHistPrimVtxTypeVsCent{nullptr},
   fHistXspdVsCent{nullptr},
   fHistYspdVsCent{nullptr},
   fHistZspdVsCent{nullptr},
@@ -124,7 +125,8 @@ AliAnalysisTaskCheckVertexAOD::~AliAnalysisTaskCheckVertexAOD(){
     delete fHistZtrkVsMult;
     delete fHistXtpcVsMult;
     delete fHistYtpcVsMult;
-    delete fHistZtpcVsMult;  
+    delete fHistZtpcVsMult;
+    delete fHistPrimVtxTypeVsCent;
     delete fHistXspdVsCent;
     delete fHistYspdVsCent;
     delete fHistZspdVsCent;
@@ -225,6 +227,18 @@ void AliAnalysisTaskCheckVertexAOD::UserCreateOutputObjects() {
   fOutput->Add(fHistYtpcVsMult);
   fOutput->Add(fHistZtpcVsMult);
 
+  fHistPrimVtxTypeVsCent = new TH2F("hPrimVtxTypeVsCent"," V0M centrality ; Vertex Type ; Entries",100,0.,100.,8,0.5,8.5);
+  fHistPrimVtxTypeVsCent->GetYaxis()->SetBinLabel(1,"kPrimaryInvalid");
+  fHistPrimVtxTypeVsCent->GetYaxis()->SetBinLabel(2,"kUndef");
+  fHistPrimVtxTypeVsCent->GetYaxis()->SetBinLabel(3,"TrackVertex");
+  fHistPrimVtxTypeVsCent->GetYaxis()->SetBinLabel(4,"SPD3DVertex");
+  fHistPrimVtxTypeVsCent->GetYaxis()->SetBinLabel(5,"SPDZVertex");
+  fHistPrimVtxTypeVsCent->GetYaxis()->SetBinLabel(6,"kPrimaryTPC");
+  fHistPrimVtxTypeVsCent->GetYaxis()->SetBinLabel(7,"TPCVertex (old AOD)");
+  fHistPrimVtxTypeVsCent->GetYaxis()->SetBinLabel(8,"Other");
+  fOutput->Add(fHistPrimVtxTypeVsCent);
+
+  
   fHistXspdVsCent=new TH2F("hXspdVsCent"," ; V0M centrality ; x_{Vertex} (cm)",100,0.,100.,1000,-1.,1.);
   fHistYspdVsCent=new TH2F("hYspdVsCent"," ; V0M centrality ; y_{Vertex} (cm)",100,0.,100.,1000,-1.,1.);
   fHistZspdVsCent=new TH2F("hZspdVsCent"," ; V0M centrality ; z_{Vertex} (cm)",100,0.,100.,300,-20.,20.);
@@ -337,7 +351,8 @@ void AliAnalysisTaskCheckVertexAOD::UserExec(Option_t *)
   if(multSelection) centr = multSelection->GetMultiplicityPercentile("V0M");
   else AliWarning("AliMultSelection could not be found in the aod event list of objects");
 
-
+  fHistPrimVtxTypeVsCent->Fill(centr,val);
+  
   const AliVVertex* vtSPD = aod->GetPrimaryVertexSPD();
   Int_t ct=0;
   Float_t zt=-999.;

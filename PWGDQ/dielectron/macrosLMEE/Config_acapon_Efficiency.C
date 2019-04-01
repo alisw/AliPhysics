@@ -90,15 +90,10 @@ void ApplyPIDpostCalibration(AliAnalysisTaskElectronEfficiencyV2* task, Int_t wh
   std::cout << task << std::endl;
 
   std::cout << "starting ApplyPIDpostCalibration()\n";
-  if(whichDet == 0){// ITS
+  if(whichDet == 0 && wSDD){// ITS
     std::cout << "Loading ITS correction" << std::endl;
     TString localPath = "/home/aaron/Data/diElec_framework_output/PIDcalibration/";
-    TString fileName = "outputITS";
-    if(wSDD == kTRUE){
-      fileName.Append("_MC.root");
-    }else{
-      fileName.Append("_woSDD_MC.root");
-    }
+    TString fileName  = "outputITS_MC.root";
 
     TFile* inFile = TFile::Open(localPath+fileName);
     if(!inFile){
@@ -147,14 +142,13 @@ void ApplyPIDpostCalibration(AliAnalysisTaskElectronEfficiencyV2* task, Int_t wh
 // #########################################################
 // #########################################################
 
-AliAnalysisFilter* SetupTrackCutsAndSettings(TString cutDefinition)
+AliAnalysisFilter* SetupTrackCutsAndSettings(TString cutDefinition, Bool_t wSDD)
 {
   std::cout << "SetupTrackCutsAndSettings( cutInstance = " << cutDefinition << " )" <<std::endl;
   AliAnalysisFilter *anaFilter = new AliAnalysisFilter("anaFilter","anaFilter"); // named constructor seems mandatory!
 
-  Bool_t SDDstatus = kTRUE;
 
-  LMEECutLib* LMcutlib = new LMEECutLib(SDDstatus);
+  LMEECutLib* LMcutlib = new LMEECutLib(wSDD);
   if(cutDefinition == "kResolutionCuts"){
     std::cout << "Resolution Track Cuts being set" << std::endl;
     anaFilter->AddCuts(LMcutlib->GetTrackCuts(LMEECutLib::kResolutionTrackCuts, LMEECutLib::kResolutionTrackCuts));

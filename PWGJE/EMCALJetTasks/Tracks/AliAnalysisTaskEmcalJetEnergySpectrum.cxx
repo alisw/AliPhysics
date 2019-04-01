@@ -69,7 +69,9 @@ AliAnalysisTaskEmcalJetEnergySpectrum::AliAnalysisTaskEmcalJetEnergySpectrum():
   fRequestTriggerClusters(true),
   fRequestCentrality(false),
   fUseAliEventCuts(false),
-  fCentralityEstimator("V0M")
+  fUseSumw2(false),
+  fCentralityEstimator("V0M"),
+  fUserPtBinning()
 {
   SetUseAliAnaUtils(true);
 }
@@ -90,7 +92,9 @@ AliAnalysisTaskEmcalJetEnergySpectrum::AliAnalysisTaskEmcalJetEnergySpectrum(con
   fRequestTriggerClusters(true),
   fRequestCentrality(false),
   fUseAliEventCuts(false),
-  fCentralityEstimator("V0M")
+  fUseSumw2(false),
+  fCentralityEstimator("V0M"),
+  fUserPtBinning()
 {
   SetUseAliAnaUtils(true);
 }
@@ -123,8 +127,8 @@ void AliAnalysisTaskEmcalJetEnergySpectrum::UserCreateOutputObjects(){
   fHistos->CreateTH1("hEventCentralityAbs", "Event centrality absolute", 100., 0., 100.);
   fHistos->CreateTH1("hClusterCounter", "Event counter histogram", kTrgClusterN, -0.5, kTrgClusterN - 0.5);
   fHistos->CreateTH1("hClusterCounterAbs", "Event counter histogram absolute", kTrgClusterN, -0.5, kTrgClusterN - 0.5);
-  fHistos->CreateTHnSparse("hJetTHnSparse", "jet thnsparse", 6, binnings, "s");
-  fHistos->CreateTHnSparse("hMaxJetTHnSparse", "jet thnsparse", 6, binnings, "s");
+  fHistos->CreateTHnSparse("hJetTHnSparse", "jet thnsparse", 6, binnings, fUseSumw2 ? "s" : "");
+  fHistos->CreateTHnSparse("hMaxJetTHnSparse", "jet thnsparse", 6, binnings, fUseSumw2 ? "s" : "");
 
   for(auto h : *fHistos->GetListOfHistograms()) fOutput->Add(h);
 

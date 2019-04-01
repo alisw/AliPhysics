@@ -102,7 +102,8 @@ TObjArray *rmaxFacPtHardSetting = settingMaxFacPtHard.Tokenize("_");
   if(fMaxPtHardSet)
     analysisEventCuts->SetMaxFacPtHard(maxFacPtHard);
   if(fSingleMaxPtHardSet)
-    analysisEventCuts->SetMaxFacPtHardSingleParticle(maxFacPtHardSingle);  analysisEventCuts->SetCorrectionTaskSetting(corrTaskSetting);
+    analysisEventCuts->SetMaxFacPtHardSingleParticle(maxFacPtHardSingle);
+  analysisEventCuts->SetCorrectionTaskSetting(corrTaskSetting);
   if (periodNameV0Reader.CompareTo("") != 0) analysisEventCuts->SetPeriodEnum(periodNameV0Reader);
   analysisEventCuts->InitializeCutsFromCutString(TaskEventCutnumber.Data());
   analysisEventCuts->SetFillCutHistograms("",kFALSE);

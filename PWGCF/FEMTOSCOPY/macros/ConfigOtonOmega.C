@@ -16,7 +16,9 @@ AliFemtoDreamTrackCuts *OmegaBachCuts,
 AliOtonOmegaCascadeCuts *AntiCascadeOmegaCuts,
 AliFemtoDreamTrackCuts *AntiOmegaPosCuts,
 AliFemtoDreamTrackCuts *AntiOmegaNegCuts,
-AliFemtoDreamTrackCuts *AntiOmegaBachCuts
+AliFemtoDreamTrackCuts *AntiOmegaBachCuts,
+AliFemtoDreamTrackCuts *TrackCuts,
+AliFemtoDreamTrackCuts *AntiTrackCuts
 ){
 
 
@@ -106,4 +108,7 @@ AntiOmegaNegCuts->SetCheckPileUp(false);
   AntiOmegaBachCuts->SetCutTPCCrossedRows(false, 50, 0.5);
   AntiOmegaBachCuts->SetPID(AliPID::kKaon, 999., 4,true,3);
 
+
+
+//Proton cuts:
 }

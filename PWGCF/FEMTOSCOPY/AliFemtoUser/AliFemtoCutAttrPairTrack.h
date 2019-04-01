@@ -126,6 +126,11 @@ struct PairCutTrackAttrShareQuality {
 
   bool Pass(const AliFemtoTrack &track1, const AliFemtoTrack &track2) const
     {
+      // quick-return if we don't want to cut
+      if (share_fraction_max >= 1.0 && share_quality_max >= 1.0) {
+        return true;
+      }
+
       const std::pair<double, double>
         qual_and_frac = calc_share_quality_fraction(track1, track2);
 
@@ -141,25 +146,50 @@ struct PairCutTrackAttrShareQuality {
   calc_share_quality_fraction(const AliFemtoTrack &track1,
                               const AliFemtoTrack &track2)
     {
-      const TBits
-        &tpc_clusters_1 = track1.TPCclusters(),
-        &tpc_sharing_1 = track1.TPCsharing(),
-        &tpc_clusters_2 = track2.TPCclusters(),
-        &tpc_sharing_2 = track2.TPCsharing(),
+      Int_t nh = 0;
+      Int_t an = 0;
+      Int_t ns = 0;
 
-        cls1_and_cls2 = tpc_clusters_1 & tpc_clusters_2,
-        cls1_xor_cls2 = tpc_clusters_1 ^ tpc_clusters_2,
-        shr1_and_shr2 = tpc_sharing_1 & tpc_sharing_2,
-        not_sharing = ~const_cast<TBits&>(shr1_and_shr2);
+      const unsigned int n_bits = track1.TPCclusters().GetNbits();
 
-      const double
-        cls1_xor_cls2_bits = cls1_xor_cls2.CountBits(),
-        nh = cls1_xor_cls2_bits + 2 * cls1_and_cls2.CountBits(),
-        ns = 2 * (cls1_and_cls2 & shr1_and_shr2).CountBits(),
-        an = cls1_xor_cls2_bits + ns / 2 - (cls1_and_cls2 & not_sharing).CountBits(),
+      const auto &tpc_clusters_1 = track1.TPCclusters(),
+                 &tpc_clusters_2 = track2.TPCclusters(),
 
-        share_quality = an / nh,
-        share_fraction = ns / nh;
+                 &tpc_sharing_1 = track1.TPCsharing(),
+                 &tpc_sharing_2 = track2.TPCsharing();
+
+      for (unsigned int imap = 0; imap < n_bits; imap++) {
+          const bool cluster_bit_1 = tpc_clusters_1.TestBitNumber(imap),
+                     cluster_bit_2 = tpc_clusters_2.TestBitNumber(imap);
+        // If both have clusters in the same row
+        if (cluster_bit_1 && cluster_bit_2) {
+           // Do they share it ?
+           if (tpc_sharing_1.TestBitNumber(imap) && tpc_sharing_2.TestBitNumber(imap))
+           {
+              an++;
+              nh+=2;
+              ns+=2;
+           }
+           // Different hits on the same padrow
+           else {
+              an--;
+              nh+=2;
+           }
+        }
+        else if (cluster_bit_1 || cluster_bit_2) {
+           // One track has a hit, the other does not
+           an++;
+           nh++;
+        }
+      }
+
+      Float_t share_quality = 0.0;
+      Float_t share_fraction = 0.0;
+
+      if (__builtin_expect(nh > 0, 1)) {
+        share_quality = an * 1.0 / nh;
+        share_fraction = ns * 1.0 / nh;
+      }
 
       return std::make_pair(share_quality, share_fraction);
     }

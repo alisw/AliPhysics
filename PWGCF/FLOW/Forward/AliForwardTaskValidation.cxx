@@ -32,6 +32,7 @@ using std::endl;
 
 AliForwardTaskValidation::AliForwardTaskValidation()
   : AliAnalysisTaskSE(),
+    fSettings(),
     fIsValidEvent(false),
     fEventValidators(),
     fEventValidatorsMC(),
@@ -48,13 +49,23 @@ AliForwardTaskValidation::AliForwardTaskValidation()
     fFMDV0A_post(0),
     fFMDV0C(0),
     fFMDV0C_post(0),
-    fUtil(),
-    fSettings()
+    fOutliers(0),
+    centralDist(),
+    refDist(),
+    forwardDist(),
+    fUtil()
 {
 }
 
-AliForwardTaskValidation::AliForwardTaskValidation(const char *name, bool mc)
+
+AliForwardTaskValidation::AliForwardTaskValidation(const AliForwardTaskValidation& o)
+  : AliAnalysisTaskSE()
+{
+}
+
+AliForwardTaskValidation::AliForwardTaskValidation(const char *name)
   : AliAnalysisTaskSE(name),
+    fSettings(),
     fIsValidEvent(false),
     fEventValidators(),
     fEventValidatorsMC(),
@@ -71,8 +82,11 @@ AliForwardTaskValidation::AliForwardTaskValidation(const char *name, bool mc)
     fFMDV0A_post(0),
     fFMDV0C(0),
     fFMDV0C_post(0),
-    fUtil(),
-    fSettings()
+    fOutliers(0),
+    centralDist(),
+    refDist(),
+    forwardDist(),
+    fUtil()
 {
   // Apply all cuts by default
   if (!fSettings.esd) {
@@ -93,11 +107,8 @@ AliForwardTaskValidation::AliForwardTaskValidation(const char *name, bool mc)
     fEventValidators.push_back(EventValidation::kNotSPDClusterVsTrackletBG);
     fEventValidators.push_back(EventValidation::kPassesFMD_V0CorrelatioCut);
   }
-  if (fSettings.mc) {
-    this->isMC = kTRUE;
-  }
+
     fEventValidatorsMC.push_back(EventValidationMC::kNoEventCutMC);
-    fEventValidatorsMC.push_back(EventValidationMC::kHasMultSelectionMC);
     fEventValidatorsMC.push_back(EventValidationMC::kHasEntriesFMDMC);
     fEventValidatorsMC.push_back(EventValidationMC::kHasValidFMDMC);
     fEventValidatorsMC.push_back(EventValidationMC::kHasPrimariesMC);
@@ -116,6 +127,7 @@ AliForwardTaskValidation::AliForwardTaskValidation(const char *name, bool mc)
   //fEventCuts.SetupRun2PbPb();
   //fEventCuts.SetManualMode();// = true;
   // Enable mulivertex pileup cuts
+  fEventCuts.OverrideAutomaticTriggerSelection(AliVEvent::kINT7);
   fEventCuts.fPileUpCutMV = true;
 }
 
@@ -125,7 +137,7 @@ Bool_t AliForwardTaskValidation::AcceptTrigger(AliVEvent::EOfflineTriggerTypes T
 };
 
 
-AliForwardTaskValidation* AliForwardTaskValidation::ConnectTask(TString name,bool mc, TString suffix) {
+AliForwardTaskValidation* AliForwardTaskValidation::ConnectTask(TString name, TString suffix) {
 
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
   if (!mgr) {
@@ -145,7 +157,7 @@ AliForwardTaskValidation* AliForwardTaskValidation::ConnectTask(TString name,boo
 			 AliAnalysisManager::kExchangeContainer,
 			 Form("%s", mgr->GetCommonFileName()));
 
-  auto *taskValidation = new AliForwardTaskValidation("TaskValidation", mc);
+  auto *taskValidation = new AliForwardTaskValidation("TaskValidation");
 
   if (!taskValidation) {
     ::Error("CreateTasks", "Failed to add task!");
@@ -227,8 +239,6 @@ if (fSettings.use_primaries_fwd  || fSettings.use_primaries_cen){
     switch (this->fEventValidatorsMC[idx]) {
       case EventValidationMC::kNoEventCutMC:
         discardedEvtsAx->SetBinLabel(idx + 1, "No cuts"); break;
-      case EventValidationMC::kHasMultSelectionMC:
-        discardedEvtsAx->SetBinLabel(idx + 1, "Has MultSelection"); break;
       case EventValidationMC::kHasEntriesFMDMC:
         discardedEvtsAx->SetBinLabel(idx + 1, "Has entries FMD"); break;
       case EventValidationMC::kHasValidFMDMC:
@@ -349,8 +359,7 @@ void AliForwardTaskValidation::UserExec(Option_t *)
     case EventValidation::kIsAODEvent:
       this->fIsValidEvent = this->IsAODEvent(); break;
     case EventValidation::kTrigger:
-      if (this->isMC == kTRUE) this->fIsValidEvent = kTRUE;
-      else this->fIsValidEvent = this->AcceptTrigger(AliVEvent::kINT7);
+      this->fIsValidEvent = this->AcceptTrigger(AliVEvent::kINT7);
       break;
     case EventValidation::kHasFMD:
       this->fIsValidEvent = this->HasFMD(); break;
@@ -754,7 +763,6 @@ Bool_t AliForwardTaskValidation::HasValidFMD(){
   Int_t nBadBins = 0;
   Int_t phibins = this->forwardDist->GetNbinsY();
   Double_t totalFMDpar = 0;
-  bool useEvent = true;
 
   for (Int_t etaBin = 1; etaBin <= this->forwardDist->GetNbinsX(); etaBin++) {
     Double_t eta = this->forwardDist->GetXaxis()->GetBinCenter(etaBin);
@@ -764,7 +772,7 @@ Bool_t AliForwardTaskValidation::HasValidFMD(){
     Int_t nInAvg = 0;
 
     for (Int_t phiBin = 0; phiBin <= phibins; phiBin++) {
-       if (!this->isMC){
+       if (!fSettings.mc){
          if ( fabs(eta) > 1.7) {
            if (phiBin == 0 && this->forwardDist->GetBinContent(etaBin, 0) == 0) break;
          }

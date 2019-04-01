@@ -81,6 +81,7 @@ set(SRCS
   Cascades/Run2/AliAnalysisTaskWeakDecayVertexer.cxx
   Cascades/Run2/AliAnalysisTaskStrEffStudy.cxx
   Cascades/Run2/AliAnalysisTaskMCPredictions.cxx
+  Cascades/Run2/AliAnalysisTaskStrangeCascadesDiscrete.cxx
   )
 
 # Headers from sources

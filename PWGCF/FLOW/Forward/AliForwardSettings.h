@@ -19,23 +19,19 @@ class AliForwardSettings : public TObject {
  public:
   AliForwardSettings();
 
-  // Types of data this analysis can access
-  enum {kMCTRUTH, kRECON};
-  // The type of data this task is accessing
-  Int_t fDataType;
-
   // Lower bound phi acceptance (should always be 0)
   Double_t fPhiAcceptanceLowEdge;
   // Upper bound phi acceptance (should always be 2pi)
   Double_t fPhiAcceptanceUpEdge;
-  // Lower bound eta acceptance (should always be -6.0)
-  Double_t fEtaLowEdge;
-  // Upper bound eta acceptance (should always be 6.0)
-  Double_t fEtaUpEdge;
   // Number of bins used along phi
   // fPhiBins must be divisable by 2, but not by 4; so that we can later shift it by pi/2 (2pi is total int.)
   // The idea is to have the deltaPhi histogram with a bin centered arround 0
   Int_t fNPhiBins;
+
+  // Lower bound eta acceptance (should always be -6.0)
+  Double_t fEtaLowEdge;
+  // Upper bound eta acceptance (should always be 6.0)
+  Double_t fEtaUpEdge;
   // Lower edge of the Zvtx acceptance region in cm
   Double_t fZVtxAcceptanceLowEdge;
   // Upper edge of the Z_vtx acceptance region in cm
@@ -63,8 +59,8 @@ class AliForwardSettings : public TObject {
   bool doNUA;
 
   Double_t gap;
-  Double_t maxpt;
   Double_t minpt;
+  Double_t maxpt;
   Bool_t mc;
   Bool_t esd;
 
@@ -78,13 +74,13 @@ class AliForwardSettings : public TObject {
   Bool_t use_primaries_cen;
   Bool_t use_primaries_fwd;
   Bool_t useEventcuts;
+  TString centrality_estimator;
   Bool_t etagap;
   Bool_t makeFakeHoles;
   Int_t fnoClusters;
   Double_t fCutChargedDCAxyMax;
   Double_t fCutChargedDCAzMax;
   Bool_t doPt;
-  TString centrality_estimator;
   // return true if good event
 
   // flags used for method of cumulant

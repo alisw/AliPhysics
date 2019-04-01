@@ -145,7 +145,7 @@ void AliForwardFlowRun2Task::UserCreateOutputObjects()
 
     static_cast<TList*>(fAnalysisList->At(2))->Add(new THnD("fQcorrfactor", "fQcorrfactor", dimensions, rbins, xmin, xmax)); //(eta, n)
     static_cast<TList*>(fAnalysisList->At(2))->Add(new THnD("fpcorrfactor","fpcorrfactor", dimensions, dbins, xmin, xmax)); //(eta, n)
-    Int_t ptnmax =  (fSettings.doPt ? 10 : 1);
+    Int_t ptnmax =  (fSettings.doPt ? 10 : 0);
 
     // create a THn for each harmonic
     for (Int_t n = 2; n <= fMaxMoment; n++) {
@@ -251,13 +251,14 @@ void AliForwardFlowRun2Task::UserExec(Option_t *)
   AliForwardGenericFramework calculator = AliForwardGenericFramework();
   calculator.fSettings = fSettings;
 
-  calculator.CumulantsAccumulate(*refDist, fOutputList, cent, zvertex,"central",true,false);
-  calculator.CumulantsAccumulate(*centralDist, fOutputList, cent, zvertex,"central",false,true);  
+  if (fSettings.ref_mode & fSettings.kFMDref) calculator.CumulantsAccumulate(*refDist, fOutputList, cent, zvertex,"forward",true,false);
+  else calculator.CumulantsAccumulate(*refDist, fOutputList, cent, zvertex,"central",true,false);
+  // calculator.CumulantsAccumulate(*centralDist, fOutputList, cent, zvertex,"central",false,true);  
   calculator.CumulantsAccumulate(*forwardDist, fOutputList, cent, zvertex,"forward",false,true);
 
-  Int_t ptnmax =  (fSettings.doPt ? 10 : 1);
+  Int_t ptnmax =  (fSettings.doPt ? 9 : 0);
 
-  TH1F pthist = TH1F("pthist", "", ptnmax, fSettings.minpt, fSettings.maxpt);
+  TH1F pthist = TH1F("pthist", "", ptnmax+1, fSettings.minpt, fSettings.maxpt);
 
   for (Int_t ptn = 0; ptn <=ptnmax; ptn ++ ){
     
@@ -267,8 +268,7 @@ void AliForwardFlowRun2Task::UserExec(Option_t *)
     centralDist->Reset();
 
     // Fill centralDist
-    if (fSettings.useSPD) fUtil.FillFromTracklets(centralDist);
-    else  fUtil.FillFromTracks(centralDist, fSettings.tracktype); //(fSettings.useTPC)
+    fUtil.FillDataCentral(centralDist);
 
     UInt_t randomInt = fRandom.Integer(fSettings.fnoSamples);
 

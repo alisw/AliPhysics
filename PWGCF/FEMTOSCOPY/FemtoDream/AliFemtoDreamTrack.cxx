@@ -150,6 +150,7 @@ void AliFemtoDreamTrack::ApplyESDtoAODFilter(const bool TPCOnlyTrack) {
         fESDTrack->GetESDEvent(), fESDTrack->GetID());
   } else {
     fESDTPCOnlyTrack = fESDTrack;
+    fFilterMap = 96; // to mimic the filterbit of global tracks
   }
 }
 void AliFemtoDreamTrack::SetESDTrackingInformation(const bool TPCOnlyTrack) {

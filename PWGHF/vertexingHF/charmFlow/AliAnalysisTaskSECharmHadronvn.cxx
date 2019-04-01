@@ -1241,7 +1241,7 @@ int AliAnalysisTaskSECharmHadronvn::IsCandidateSelected(AliAODRecoDecayHF *&d, i
             if(!vHF->FillRecoCasc(fAOD,((AliAODRecoCascadeHF*)d),true)) return 0;
         break;
         case kDstoKKpi:
-            isSelBit = d->HasSelectionBit(AliRDHFCuts::kDplusCuts);
+            isSelBit = d->HasSelectionBit(AliRDHFCuts::kDsCuts);
             if(!isSelBit || !vHF->FillRecoCand(fAOD,(AliAODRecoDecayHF3Prong*)d)) return 0;            
         break;
     }
