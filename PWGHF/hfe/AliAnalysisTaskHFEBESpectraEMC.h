@@ -20,7 +20,7 @@ class AliMultSelection;
 
 class AliAnalysisTaskHFEBESpectraEMC : public AliAnalysisTaskSE {
 public:
-    enum HijingOrNot {kHijing,kElse};
+    enum EnhanceSigOrNot {kMB,kEnhance};
     enum pi0etaType {kNoMother, kNoFeedDown, kNotIsPrimary, kLightMesons, kBeauty, kCharm};
     
     AliAnalysisTaskHFEBESpectraEMC();
@@ -59,10 +59,13 @@ public:
     Bool_t  GetNMCPartProduced();
     void    GetPi0EtaWeight(THnSparse *SparseWeight);
     Int_t   GetPi0EtaType(AliAODMCParticle *part);
+    
+    Bool_t  IsNonHFE(AliAODMCParticle *MCPart, Bool_t &fFromMB, Int_t &type, Int_t &iMom, Int_t &MomPDG, Double_t &MomPt);
+    
     Bool_t  GetNonHFEEffiDenom(AliVTrack *track);
-    Bool_t  IsNonHFE(AliAODMCParticle *MCPart, Bool_t &fFromHijing, Int_t &type, Int_t &iMom, Int_t &MomPDG, Double_t &MomPt);
     Bool_t  GetNonHFEEffiRecoTag(AliVTrack *track);
     Bool_t  GetNonHFEEffiULSLS(AliVTrack *track, AliVTrack *Assotrack, Bool_t fFlagLS, Bool_t fFlagULS, Double_t mass);
+    
     void    SwitchPi0EtaWeightCalc(Bool_t fSwitch) {fCalculateWeight = fSwitch;};
     void    SetNonHFEEffi(Bool_t fSwitch) {fCalculateNonHFEEffi = fSwitch;};
 
@@ -113,14 +116,16 @@ private:
     Bool_t              fCalculateWeight;//
     Bool_t              fCalculateNonHFEEffi;//
     Int_t               fNTotMCpart; //! N of total MC particles produced by generator
-    Int_t               fNpureMC;//! N of particles from main generator (Hijing/Pythia)
+    Int_t               fNpureMC;//! N of particles from main generator (MB/Enhanced)
     Int_t               fNembMCpi0; //! N > fNembMCpi0 = particles from pi0 generator
     Int_t               fNembMCeta; //! N > fNembMCeta = particles from eta generator
     Bool_t              fIsFrmEmbPi0;//!
     Bool_t              fIsFrmEmbEta;//!
     Int_t               ftype;//!
     Double_t            fWeight;//!
-    
+    Double_t            fWeightPi0;//!
+    Double_t            fWeightEta;//!
+
     TF1                 *fPi0Weight;//!
     TF1                 *fEtaWeight;//!
     
