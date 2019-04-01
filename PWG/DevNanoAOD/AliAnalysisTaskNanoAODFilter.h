@@ -13,9 +13,6 @@
 #ifndef ALIANALYSISTASKNANOAODESEFILTER_H
 #define ALIANALYSISTASKNANOAODESEFILTER_H
 
-class TH1F;
-class TList;
-class AliESDtrackCuts;
 class AliAnalysisCuts;
 class AliNanoAODReplicator;
 class AliNanoAODCustomSetter;
@@ -55,7 +52,8 @@ public:
   void  SetVarListHead (TString var                     ) { fVarListHead = var;}
   void  SetVarFiredTriggerClasses (TString var          ) { fVarListHeader_fTC = var;}
   void  ReplicatorSaveVzero(Bool_t var ) {fSaveVzero=var;}
-  void  ReplicatorSaveAODZDC(Bool_t var ) {fSaveAODZDC=var;}
+  void  ReplicatorSaveZDC(Bool_t var ) {fSaveZDC=var;}
+  void  ReplicatorSaveV0s(Bool_t var, AliAnalysisCuts* v0Cuts = 0) {fSaveV0s=var; fV0Cuts = v0Cuts;}
 
   void SetInputArrayName(TString name) {fInputArrayName=name;}
   void SetOutputArrayName(TString name) {fOutputArrayName=name;}
@@ -68,12 +66,14 @@ private:
   TString fVarListHeader_fTC; // List of fired trigger classes used in the NanoAOD generation if the fired Trigger Classes are safed
   AliAnalysisCuts * fEvtCuts; // Event cuts
   AliAnalysisCuts * fTrkCuts; // Track cuts
+  AliAnalysisCuts * fV0Cuts; // Track cuts
 
   AliNanoAODCustomSetter * fSetter; // setter for custom variables
   
   Bool_t fSaveCutsFlag; // If true, the event and track cuts are saved to disk. Can only be set in the constructor.
-  Bool_t fSaveAODZDC;  // if kTRUE AliAODZDC will be saved in AliAODEvent
+  Bool_t fSaveZDC;  // if kTRUE AliAODZDC will be saved in AliAODEvent
   Bool_t fSaveVzero; // if kTRUE AliAODVZERO will be saved in AliAODEvent
+  Bool_t fSaveV0s; // if kTRUE AliAODv0 will be saved in AliAODEvent
 
   TString fInputArrayName; // name of TObjectArray of Tracks
   TString fOutputArrayName; // name of TObjectArray of AliNanoAODTracks
@@ -81,7 +81,7 @@ private:
   AliAnalysisTaskNanoAODFilter(const AliAnalysisTaskNanoAODFilter&); // not implemented
   AliAnalysisTaskNanoAODFilter& operator=(const AliAnalysisTaskNanoAODFilter&); // not implemented
 
-  ClassDef(AliAnalysisTaskNanoAODFilter, 4); // example of analysis
+  ClassDef(AliAnalysisTaskNanoAODFilter, 5); // example of analysis
 };
 
 #endif
