@@ -18,6 +18,6 @@ void runOnNano()
   chain->Add("AliAOD.NanoAOD.root");
 
   TStopwatch watch;
-  mgr->StartAnalysis("local", chain, 100);
+  mgr->StartAnalysis("local", chain, 1000);
   watch.Print();
 }

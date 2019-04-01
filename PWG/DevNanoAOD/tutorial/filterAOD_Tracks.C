@@ -54,5 +54,5 @@ void filterAOD_Tracks()
   chain->Add("AliAOD.root");
 
   Printf("Starting Analysis....");
-  mgr->StartAnalysis("local", chain, 100);
+  mgr->StartAnalysis("local", chain, 1000);
 }
