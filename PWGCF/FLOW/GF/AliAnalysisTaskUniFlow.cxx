@@ -3793,7 +3793,16 @@ void AliAnalysisTaskUniFlow::UserCreateOutputObjects()
     fQAEvents->Add(fhEventSampling);
     fhEventCentrality = new TH1D("fhEventCentrality",Form("Event centrality (%s); %s", GetCentEstimatorLabel(fCentEstimator), GetCentEstimatorLabel(fCentEstimator)), fCentBinNum,fCentMin,fCentMax);
     fQAEvents->Add(fhEventCentrality);
-    fh2EventCentralityNumRefs = new TH2D("fh2EventCentralityNumRefs",Form("Event centrality (%s) vs. N_{RFP}; %s; N_{RFP}",GetCentEstimatorLabel(fCentEstimator), GetCentEstimatorLabel(fCentEstimator)), fCentBinNum,fCentMin,fCentMax, 150,0,150);
+
+    Int_t iMinRFPs = 0;
+    Int_t iMaxRFPs = 150;
+    Int_t iBinsRPFs = 150;
+    if(fColSystem == kPbPb) {
+        iMinRFPs = 0;
+        iMaxRFPs = 5000;
+        iBinsRPFs = 100;
+    }
+    fh2EventCentralityNumRefs = new TH2D("fh2EventCentralityNumRefs",Form("Event centrality (%s) vs. N_{RFP}; %s; N_{RFP}",GetCentEstimatorLabel(fCentEstimator), GetCentEstimatorLabel(fCentEstimator)), fCentBinNum,fCentMin,fCentMax, iBinsRPFs,iMinRFPs,iMaxRFPs);
     fQAEvents->Add(fh2EventCentralityNumRefs);
 
     if(fEventRejectAddPileUp)
