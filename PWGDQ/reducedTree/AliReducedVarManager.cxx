@@ -126,7 +126,7 @@ const Double_t AliReducedVarManager::fgkVZEROChannelRadii[64] = {
 };
 const Double_t AliReducedVarManager::fgkVZEROAz = 340.0;   // cm
 const Double_t AliReducedVarManager::fgkVZEROCz = 90.0;    // cm
-const Double_t AliReducedVarManager::fgkVZEROminMult = 0.5;   // minimum VZERO channel multiplicity
+const Double_t AliReducedVarManager::fgkVZEROminMult = -0.01;   // minimum VZERO channel multiplicity
 const Float_t  AliReducedVarManager::fgkTPCQvecRapGap = 0.8;    // symmetric interval in the middle of the TPC excluded from EP calculation
       Float_t  AliReducedVarManager::fgBeamMomentum = 1380.;   // beam momentum in GeV/c
      
@@ -185,6 +185,7 @@ TProfile2D* AliReducedVarManager::fgTPCqVecRecentering[2] = {0x0};
 Bool_t AliReducedVarManager::fgOptionCalibrateVZEROqVec = kFALSE;
 Bool_t AliReducedVarManager::fgOptionRecenterVZEROqVec = kFALSE;
 Bool_t AliReducedVarManager::fgOptionRecenterTPCqVec = kFALSE;
+Bool_t AliReducedVarManager::fgOptionEventRes = kFALSE;
 //__________________________________________________________________
 AliReducedVarManager::AliReducedVarManager() :
   TObject()
@@ -800,21 +801,24 @@ void AliReducedVarManager::FillEventInfo(BASEEVENT* baseEvent, Float_t* values, 
     if(fgOptionCalibrateVZEROqVec && fgAvgVZEROChannelMult[0]) {
        Float_t calibVZEROMult[64] = {0.};
        Float_t refMult=0;
+      for(Int_t ich=0;ich<64;++ich) fgUsedVars[kVZEROChannelMultCalib+ich] = kTRUE; 
+       
       for(Int_t iCh=0; iCh<64; ++iCh) {
          if(event->MultChannelVZERO(iCh)>=fgkVZEROminMult) {
-             
-            fgUsedVars[kVZEROChannelMultCalib+iCh] = kTRUE; 
-             
+                         
             Float_t avMult = fgAvgVZEROChannelMult[iCh]->GetBinContent(fgAvgVZEROChannelMult[iCh]->FindBin(event->Vertex(2), event->CentralitySPD()));
             Int_t refCh = iCh-(iCh%8);
             if(iCh==refCh)
-                refMult=avMult;
-          //  cout<<"V0 channel"<<" "<<iCh<<" "<<"Reference Channel "<<refCh<<" "<<"Reference multiplicity"<<refMult<<"Avg mult"<<avMult<<endl;
+                refMult=fgAvgVZEROChannelMult[iCh]->GetBinContent(fgAvgVZEROChannelMult[iCh]->GetXaxis()->FindBin(0.0),fgAvgVZEROChannelMult[iCh]->GetYaxis()->FindBin(event->CentralitySPD()));
+            
             calibVZEROMult[iCh] = event->MultChannelVZERO(iCh) / (avMult>1.0e-6 ? avMult : 1.0)*refMult;
             values[kVZEROChannelMultCalib+iCh]=calibVZEROMult[iCh];
             
-           // cout<<iCh<<" "<<values[kVZEROChannelMultCalib+iCh]<<" "<<calibVZEROMult[iCh]<<" "<<refMult<<endl;
+          //  cout<<"V0 channel"<<" "<<iCh<<" "<<"Reference Channel "<<refCh<<" "<<"Reference multiplicity"<<refMult<<"Avg mult"<<avMult<<" "<<values[kVZEROChannelMult+iCh]<<" "<<values[kVZEROChannelMultCalib+iCh]<<endl;
+            
          }
+         else
+             fgUsedVars[kVZEROChannelMultCalib+iCh] = kFALSE; // will not be filled in histograms by the histogram manager
       }
       event->GetVZEROQvector(qvecVZEROA, EVENTPLANE::kVZEROA, calibVZEROMult);
       event->GetVZEROQvector(qvecVZEROC, EVENTPLANE::kVZEROC, calibVZEROMult);
@@ -914,31 +918,32 @@ void AliReducedVarManager::FillEventInfo(BASEEVENT* baseEvent, Float_t* values, 
      if(event->GetEventPlaneStatus(EVENTPLANE::kTPC,ih+1)!=EVENTPLANE::kUnset) {
         values[kTPCQvecXtree+ih] = event->GetQx(EVENTPLANE::kTPC,ih+1);
         values[kTPCQvecYtree+ih] = event->GetQy(EVENTPLANE::kTPC,ih+1);
+        values[kTPCRPtree+ih] = event->GetEventPlane(EVENTPLANE::kTPC,ih+1);
         
-//TPC Q vector recentering       
+          //TPC Q vector recentering       
           if(fgOptionRecenterTPCqVec && fgTPCqVecRecentering[0] && ih==1) {
-                Float_t recenterOffsetTPC = fgTPCqVecRecentering[0]->GetBinContent(fgTPCqVecRecentering[0]->FindBin(event->CentralityVZERO(), event->Vertex(2)));
-                Double_t widthEqTPC = fgTPCqVecRecentering[0]->GetBinError(fgTPCqVecRecentering[0]->FindBin(event->CentralityVZERO(), event->Vertex(2)));
-                values[kTPCQvecXtree+1] -= recenterOffsetTPC;
+            Float_t recenterOffsetTPC = fgTPCqVecRecentering[0]->GetBinContent(fgTPCqVecRecentering[0]->FindBin(event->CentralityVZERO(), event->Vertex(2)));
+            Double_t widthEqTPC = fgTPCqVecRecentering[0]->GetBinError(fgTPCqVecRecentering[0]->FindBin(event->CentralityVZERO(), event->Vertex(2)));
+            values[kTPCQvecXtree+1] -= recenterOffsetTPC;
 
                 if(widthEqTPC >0.0)
                    values[kTPCQvecXtree+1] /=widthEqTPC;
                 else
                    values[kTPCQvecXtree+1]=0;
                 
-                recenterOffsetTPC = fgTPCqVecRecentering[1]->GetBinContent(fgTPCqVecRecentering[1]->FindBin(event->CentralityVZERO(), event->Vertex(2)));
-                widthEqTPC = fgTPCqVecRecentering[1]->GetBinError(fgTPCqVecRecentering[1]->FindBin(event->CentralityVZERO(), event->Vertex(2)));
-                values[kTPCQvecYtree+1] -= recenterOffsetTPC;
+            recenterOffsetTPC = fgTPCqVecRecentering[1]->GetBinContent(fgTPCqVecRecentering[1]->FindBin(event->CentralityVZERO(), event->Vertex(2)));
+            widthEqTPC = fgTPCqVecRecentering[1]->GetBinError(fgTPCqVecRecentering[1]->FindBin(event->CentralityVZERO(), event->Vertex(2)));
+            values[kTPCQvecYtree+1] -= recenterOffsetTPC;
                 
                 if(widthEqTPC >0.0)
                    values[kTPCQvecYtree+1] /=widthEqTPC;
                 else
                    values[kTPCQvecYtree+1]=0;
-                
+                 
+            values[kTPCRPtree+ih]=TMath::ATan2(values[kTPCQvecYtree+1],values[kTPCQvecXtree+1])/Double_t(ih+1);
+      
         }
-        
-        values[kTPCRPtree+ih] = event->GetEventPlane(EVENTPLANE::kTPC,ih+1);
-        
+ 
      }
      if(event->GetEventPlaneStatus(EVENTPLANE::kTPCptWeights,ih+1)!=EVENTPLANE::kUnset) {
         values[kTPCQvecXptWeightsTree+ih] = event->GetQx(EVENTPLANE::kTPCptWeights,ih+1);
@@ -987,6 +992,25 @@ void AliReducedVarManager::FillEventInfo(BASEEVENT* baseEvent, Float_t* values, 
           values[kTPCRPres+iVZEROside*6+ih] = TMath::Cos(values[kTPCRPres+iVZEROside*6+ih]*(ih+1));
 	}
       }
+     // cout<<values[kCentVZERO]<<" "<<values[kCentSPD]<<" "<<values[kVtxZ]<<" "<<values[kTPCRPres+1*6+ih]<<" "<<values[kTPCRPres+0*6+ih]<<" "<<values[kVZERORPres+ih]<<endl;
+//      cout<<values[kTPCRPres+0*6+ih]<<endl;
+//      cout<<values[kTPCRPres+1*6+ih]<<endl;
+//      cout<<values[kVZERORPres+ih]<<endl;
+      //resolution of V0A, V0C or TPC as reference detector
+      if(fgOptionEventRes && (fgUsedVars[kVZEROARPres+ih]||fgUsedVars[kVZEROCRPres+ih]||fgUsedVars[kVZEROTPCRPres+ih])){
+         
+         if(values[kTPCRPres+1*6+ih]>1.0e-7 && values[kTPCRPres+0*6+ih]>1.0e-7 && values[kVZERORPres+ih]>1.0e-7){
+    
+          values[kVZEROARPres+ih] = TMath::Sqrt(values[kTPCRPres+1*6+ih]/(values[kVZERORPres + ih]*values[kTPCRPres+0*6+ih]));
+          values[kVZEROCRPres+ih] = TMath::Sqrt(values[kTPCRPres+0*6+ih]/(values[kVZERORPres + ih]*values[kTPCRPres+1*6+ih]));
+          values[kVZEROTPCRPres+ih] = TMath::Sqrt(values[kVZERORPres+ih]/(values[kTPCRPres+0*6 + ih]*values[kTPCRPres+1*6+ih]));
+        }
+        else{
+          values[kVZEROARPres+ih]=0;
+          values[kVZEROCRPres+ih]=0;
+          values[kVZEROTPCRPres+ih]=0;
+        }
+    }//end if fgOptionEventRes
      
   }// end loop over harmonics
   
@@ -1544,15 +1568,15 @@ void AliReducedVarManager::FillTrackInfo(BASETRACK* p, Float_t* values) {
   }
 
   if(tpcEPUsed) {
-     Float_t tpcEPsubtracted[6] = {0.0};
-     Double_t qVec[6][2] = {{0.0}};
-     for(Int_t ih=0; ih<6; ++ih) {qVec[ih][0]=values[kTPCQvecXtotal+ih]; qVec[ih][1]=values[kTPCQvecYtotal+ih];}
-     EVENT* eventInfo = NULL;
-     if(fgEvent->IsA()==EVENT::Class()) eventInfo = (EVENT*)fgEvent;
-     if((p->IsA() == AliReducedTrackInfo::Class()) && eventInfo) {
-        eventInfo->SubtractParticleFromQvector((AliReducedTrackInfo*)p,qVec,EVENTPLANE::kTPC,-0.8,-0.5*fgkTPCQvecRapGap);
-        eventInfo->SubtractParticleFromQvector((AliReducedTrackInfo*)p,qVec,EVENTPLANE::kTPC,0.5*fgkTPCQvecRapGap,0.8);
-     }
+//      Float_t tpcEPsubtracted[6] = {0.0};
+//      Double_t qVec[6][2] = {{0.0}};
+//      for(Int_t ih=0; ih<6; ++ih) {qVec[ih][0]=values[kTPCQvecXtotal+ih]; qVec[ih][1]=values[kTPCQvecYtotal+ih];}
+//      EVENT* eventInfo = NULL;
+//      if(fgEvent->IsA()==EVENT::Class()) eventInfo = (EVENT*)fgEvent;
+//      if((p->IsA() == AliReducedTrackInfo::Class()) && eventInfo) {
+//         eventInfo->SubtractParticleFromQvector((AliReducedTrackInfo*)p,qVec,EVENTPLANE::kTPC,-0.8,-0.5*fgkTPCQvecRapGap);
+//         eventInfo->SubtractParticleFromQvector((AliReducedTrackInfo*)p,qVec,EVENTPLANE::kTPC,0.5*fgkTPCQvecRapGap,0.8);
+//      }
 
      // TODO: Make sure the pair legs are properly subtracted from the TPC event plane calculation
      //              For the moment this part of the code is commented out
@@ -1564,21 +1588,37 @@ void AliReducedVarManager::FillTrackInfo(BASETRACK* p, Float_t* values) {
         eventInfo->SubtractParticleFromQvector((AliReducedTrackInfo*)eventInfo->GetTrack(((AliReducedPairInfo*)p)->LegId(1)),qVec,EVENTPLANE::kTPC,0.5*fgkTPCQvecRapGap,0.8);
      }  */
      // recalculate the TPC event plane
-     for(Int_t ih=0; ih<6;++ih) 
-        tpcEPsubtracted[ih] = TMath::ATan2(qVec[ih][1], qVec[ih][0])/Double_t(ih+1);
-     for(Int_t ih=0; ih<6; ++ih) {
+//      for(Int_t ih=0; ih<6;++ih) 
+//         tpcEPsubtracted[ih] = TMath::ATan2(qVec[ih][1], qVec[ih][0])/Double_t(ih+1);
+//      for(Int_t ih=0; ih<6; ++ih) {
+//         // vn using Psi_n
+//         if(fgUsedVars[kTPCFlowVn+ih])
+//            values[kTPCFlowVn+ih] = TMath::Cos(DeltaPhi(values[kPhi],tpcEPsubtracted[ih])*(ih+1));
+//         if(fgUsedVars[kTPCFlowSine+ih]) 
+//            values[kTPCFlowSine+ih] = TMath::Sin(DeltaPhi(values[kPhi],tpcEPsubtracted[ih])*(ih+1));
+//         if(fgUsedVars[kTPCuQ+ih]) {
+//            values[kTPCuQ+ih] = TMath::Cos((values[kPhi]-tpcEPsubtracted[ih])*(ih+1));
+//            values[kTPCuQ+ih] *= TMath::Sqrt(qVec[ih][0]*qVec[ih][0] + qVec[ih][1]*qVec[ih][1]);
+//         }
+//         if(fgUsedVars[kTPCuQsine+ih]) {
+//            values[kTPCuQsine+ih] = TMath::Sin((values[kPhi]-tpcEPsubtracted[ih])*(ih+1));
+//            values[kTPCuQsine+ih] *= TMath::Sqrt(qVec[ih][0]*qVec[ih][0] + qVec[ih][1]*qVec[ih][1]);
+//         }
+//      }
+
+        for(Int_t ih=0; ih<6; ++ih) {
         // vn using Psi_n
         if(fgUsedVars[kTPCFlowVn+ih])
-           values[kTPCFlowVn+ih] = TMath::Cos(DeltaPhi(values[kPhi],tpcEPsubtracted[ih])*(ih+1));
+           values[kTPCFlowVn+ih] = TMath::Cos(DeltaPhi(values[kPhi],values[kTPCRPtree+ih])*(ih+1));
         if(fgUsedVars[kTPCFlowSine+ih]) 
-           values[kTPCFlowSine+ih] = TMath::Sin(DeltaPhi(values[kPhi],tpcEPsubtracted[ih])*(ih+1));
+           values[kTPCFlowSine+ih] = TMath::Sin(DeltaPhi(values[kPhi],values[kTPCRPtree+ih])*(ih+1));
         if(fgUsedVars[kTPCuQ+ih]) {
-           values[kTPCuQ+ih] = TMath::Cos((values[kPhi]-tpcEPsubtracted[ih])*(ih+1));
-           values[kTPCuQ+ih] *= TMath::Sqrt(qVec[ih][0]*qVec[ih][0] + qVec[ih][1]*qVec[ih][1]);
+           values[kTPCuQ+ih] = TMath::Cos((values[kPhi]-values[kTPCRPtree+ih])*(ih+1));
+           values[kTPCuQ+ih] *= TMath::Sqrt(values[kVZEROQvecX+ih]*values[kVZEROQvecX+ih] + values[kVZEROQvecY+ih]*values[kVZEROQvecY+ih]);
         }
         if(fgUsedVars[kTPCuQsine+ih]) {
-           values[kTPCuQsine+ih] = TMath::Sin((values[kPhi]-tpcEPsubtracted[ih])*(ih+1));
-           values[kTPCuQsine+ih] *= TMath::Sqrt(qVec[ih][0]*qVec[ih][0] + qVec[ih][1]*qVec[ih][1]);
+           values[kTPCuQsine+ih] = TMath::Sin((values[kPhi]-values[kTPCRPtree+ih])*(ih+1));
+           values[kTPCuQsine+ih] *= TMath::Sqrt(values[kVZEROQvecX+ih]*values[kVZEROQvecX+ih] + values[kVZEROQvecY+ih]*values[kVZEROQvecY+ih]);
         }
      }
   }
@@ -2834,6 +2874,12 @@ void AliReducedVarManager::SetDefaultVarNames() {
     fgVariableNames[kVZERORPres+iHarmonic] = Form("#sqrt{%d(#Psi_{%d}^{VZERO-A}-#Psi_{%d}^{VZERO-C})}",
 						    iHarmonic+1,iHarmonic+1,iHarmonic+1);
     fgVariableUnits[kVZERORPres+iHarmonic] = "rad.^{1/2}";
+    fgVariableNames[kVZEROARPres+iHarmonic] = Form("#sqrt{cos(%d(#Psi_{%d}^{VZERO-C}-#Psi_{%d}^{TPC}))/cos(%d(#Psi_{%d}^{VZERO-A}-#Psi_{%d}^{VZERO-C}))*cos(%d(#Psi_{%d}^{VZERO-A}-#Psi_{%d}^{TPC}))}",
+						    iHarmonic+1,iHarmonic+1,iHarmonic+1,iHarmonic+1,iHarmonic+1,iHarmonic+1,iHarmonic+1,iHarmonic+1,iHarmonic+1);
+    fgVariableUnits[kVZEROARPres+iHarmonic] = "rad.^{1/2}";
+    fgVariableNames[kVZEROCRPres+iHarmonic] = Form("#sqrt{cos(%d(#Psi_{%d}^{VZERO-A}-#Psi_{%d}^{TPC}))/cos(%d(#Psi_{%d}^{VZERO-A}-#Psi_{%d}^{VZERO-C}))*cos(%d(#Psi_{%d}^{VZERO-C}-#Psi_{%d}^{TPC}))}",
+						    iHarmonic+1,iHarmonic+1,iHarmonic+1,iHarmonic+1,iHarmonic+1,iHarmonic+1,iHarmonic+1,iHarmonic+1,iHarmonic+1);
+    fgVariableUnits[kVZEROCRPres+iHarmonic] = "rad.^{1/2}";
     fgVariableNames[kVZEROXaXc+iHarmonic] = Form("Q_{x,%d}^{VZERO-A} #times Q_{x,%d}^{VZERO-C}", iHarmonic+1, iHarmonic+1);
     fgVariableUnits[kVZEROXaXc+iHarmonic] = "";
     fgVariableNames[kVZEROXaYa+iHarmonic] = Form("Q_{x,%d}^{VZERO-A} #times Q_{y,%d}^{VZERO-A}", iHarmonic+1, iHarmonic+1);
@@ -2864,9 +2910,9 @@ void AliReducedVarManager::SetDefaultVarNames() {
     fgVariableNames[kTPCRPres+iHarmonic] = Form("#sqrt{%d(#Psi_{%d}^{TPC}-#Psi_{%d}^{VZERO-A})}", 
 						  iHarmonic+1, iHarmonic+1, iHarmonic+1);
     fgVariableUnits[kTPCRPres+iHarmonic] = "rad^{1/2}";
-    fgVariableNames[kTPCRPres+6+iHarmonic] = Form("#sqrt{%d(#Psi_{%d}^{TPC}-#Psi_{%d}^{VZERO-C})}", 
-						  iHarmonic+1, iHarmonic+1, iHarmonic+1);
-    fgVariableUnits[kTPCRPres+6+iHarmonic] = "rad^{1/2}";
+    fgVariableNames[kVZEROTPCRPres+6+iHarmonic] = Form("#sqrt{cos(%d(#Psi_{%d}^{VZERO-A}-#Psi_{%d}^{VZERO-C}))/cos(%d(#Psi_{%d}^{VZERO-A}-#Psi_{%d}^{TPC}))*cos(%d(#Psi_{%d}^{VZERO-A}-#Psi_{%d}^{TPC}))}",
+						    iHarmonic+1,iHarmonic+1,iHarmonic+1,iHarmonic+1,iHarmonic+1,iHarmonic+1,iHarmonic+1,iHarmonic+1,iHarmonic+1);
+    fgVariableUnits[kVZEROTPCRPres+6+iHarmonic] = "rad^{1/2}";
     fgVariableNames[kRPXtpcXvzeroa+iHarmonic] = Form("Q_{x,%d}^{TPC} #times Q_{x,%d}^{VZERO-A}", iHarmonic+1, iHarmonic+1);
     fgVariableUnits[kRPXtpcXvzeroa+iHarmonic] = "";
     fgVariableNames[kRPXtpcXvzeroc+iHarmonic] = Form("Q_{x,%d}^{TPC} #times Q_{x,%d}^{VZERO-C}", iHarmonic+1, iHarmonic+1);
@@ -3466,6 +3512,14 @@ void AliReducedVarManager::SetRecenterTPCqVector(Bool_t option) {
    // set the option whether to recenter the TPC event plane
    //   
    fgOptionRecenterTPCqVec = option;
+  
+}
+
+void AliReducedVarManager::SetEventResolution(Bool_t option) {
+   //
+   // set the option whether to divide by resolution the flow coefficients
+   //   
+   fgOptionEventRes = option;
   
 }
 

@@ -368,8 +368,12 @@ class AliReducedVarManager : public TObject {
     kTPCQvecY = kTPCQvecX+6,                                                           
     kTPCRP    = kTPCQvecY+6,                // Event plane using TPC                    
     kTPCRPres = kTPCRP+6,                // Event plane resolution variables sqrt(n*(RPtpc-RPvzeroa)),sqrt(n*(RPtpc-RPvzeroc))
+    kVZEROARPres=kTPCRPres+6,           //event plane resolution using V0A as reference detector 
+    kVZEROCRPres=kVZEROARPres+6,       //event plane resolution using V0C as reference detector
+    kVZEROTPCRPres=kVZEROCRPres+6,    //event plane resolution using tpc as reference detector
+    
     // Correlations between TPC and VZERO event planes
-    kRPXtpcXvzeroa    = kTPCRPres+6*2,          
+    kRPXtpcXvzeroa    = kVZEROTPCRPres+6*2,          
     kRPXtpcXvzeroc    = kRPXtpcXvzeroa+6,       
     kRPYtpcYvzeroa    = kRPXtpcXvzeroc+6,       
     kRPYtpcYvzeroc    = kRPYtpcYvzeroa+6,       
@@ -735,6 +739,7 @@ class AliReducedVarManager : public TObject {
   static void SetCalibrateVZEROqVector(Bool_t option);
   static void SetRecenterVZEROqVector(Bool_t option);
   static void SetRecenterTPCqVector(Bool_t option);
+  static void SetEventResolution(Bool_t option);
   static Int_t GetCorrectedMultiplicity( Int_t estimator = kMultiplicity, Int_t correction = 0, Int_t reference = 0, Int_t smearing = 0 );
   
  private:
@@ -794,9 +799,10 @@ class AliReducedVarManager : public TObject {
   static TProfile2D* fgAvgVZEROChannelMult[64];       // average multiplicity in VZERO channels vs (vtxZ,centSPD)
   static TProfile2D* fgVZEROqVecRecentering[4];       // (vtxZ,centSPD) maps of the VZERO A and C recentering Qvector offsets
   static TProfile2D* fgTPCqVecRecentering[2];       // (vtxZ,centV0) maps of the TPC recentering Qvector offsets
-  static Bool_t fgOptionCalibrateVZEROqVec;
-  static Bool_t fgOptionRecenterVZEROqVec;
-  static Bool_t fgOptionRecenterTPCqVec;
+  static Bool_t fgOptionCalibrateVZEROqVec;         //option to calibrate V0
+  static Bool_t fgOptionRecenterVZEROqVec;         //option to do Q vector recentering for V0
+  static Bool_t fgOptionRecenterTPCqVec;           //option to do Q vector recentering for TPC
+  static Bool_t fgOptionEventRes;                 //option to divide by resolution
   
   AliReducedVarManager(AliReducedVarManager const&);
   AliReducedVarManager& operator=(AliReducedVarManager const&);  
