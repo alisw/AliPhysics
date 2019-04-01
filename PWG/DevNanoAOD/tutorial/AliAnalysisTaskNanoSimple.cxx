@@ -65,13 +65,13 @@ void  AliAnalysisTaskNanoSimple::UserExec(Option_t */*option*/)
   if (!fInputEvent)
     return;
   
-  // TODO NOTE Access to custom variables. Use static here for caching of index
-  const Int_t kcstNSigmaTPCPi  = AliNanoAODTrackMapping::GetInstance()->GetVarIndex("cstNSigmaTPCPi");
-  const Int_t kcstNSigmaTPCKa  = AliNanoAODTrackMapping::GetInstance()->GetVarIndex("cstNSigmaTPCKa");
-  const Int_t kcstNSigmaTPCPr  = AliNanoAODTrackMapping::GetInstance()->GetVarIndex("cstNSigmaTPCPr");
-  const Int_t kcstNSigmaTOFPi  = AliNanoAODTrackMapping::GetInstance()->GetVarIndex("cstNSigmaTOFPi");
-  const Int_t kcstNSigmaTOFKa  = AliNanoAODTrackMapping::GetInstance()->GetVarIndex("cstNSigmaTOFKa");
-  const Int_t kcstNSigmaTOFPr  = AliNanoAODTrackMapping::GetInstance()->GetVarIndex("cstNSigmaTOFPr");
+  // NOTE Access to custom variables. Use static here for caching of index
+  static const Int_t kcstNSigmaTPCPi  = AliNanoAODTrackMapping::GetInstance()->GetVarIndex("cstNSigmaTPCPi");
+  static const Int_t kcstNSigmaTPCKa  = AliNanoAODTrackMapping::GetInstance()->GetVarIndex("cstNSigmaTPCKa");
+  static const Int_t kcstNSigmaTPCPr  = AliNanoAODTrackMapping::GetInstance()->GetVarIndex("cstNSigmaTPCPr");
+  static const Int_t kcstNSigmaTOFPi  = AliNanoAODTrackMapping::GetInstance()->GetVarIndex("cstNSigmaTOFPi");
+  static const Int_t kcstNSigmaTOFKa  = AliNanoAODTrackMapping::GetInstance()->GetVarIndex("cstNSigmaTOFKa");
+  static const Int_t kcstNSigmaTOFPr  = AliNanoAODTrackMapping::GetInstance()->GetVarIndex("cstNSigmaTOFPr");
 
   const AliVVertex* vertex = fInputEvent->GetPrimaryVertex();
   if (vertex->GetNContributors() < 1)
