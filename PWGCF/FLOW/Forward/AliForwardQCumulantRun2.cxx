@@ -211,26 +211,27 @@ void AliForwardQCumulantRun2::saveEvent(TH2D& dNdetadphi, TList* outputList, dou
             //if (w2 <= 0) continue;
             //if (two/w2 < 0) continue;
 
-            Double_t x[5] = {noSamples, vertexpos, refEtaA, cent, static_cast<Double_t>(fSettings.kW4Four)};
+            Double_t x[5] = {noSamples, vertexpos, refEtaA, cent, Double_t(fSettings.kW4Four)};
 
-            x[4] = fSettings.kW2Two;
+
+            x[4] = Double_t(fSettings.kW2Two);
             cumuRef->Fill(x, two);
-            x[4] = fSettings.kW2;
+            x[4] = Double_t(fSettings.kW2);
             cumuRef->Fill(x, w2);
-            x[4] = fSettings.kWA;
+            x[4] = Double_t(fSettings.kWA);
             cumuRef->Fill(x, multA);
-            x[4] = fSettings.kWB;
+            x[4] = Double_t(fSettings.kWB);
             cumuRef->Fill(x, multB);
 
 
             // NUA
-            x[4] = fSettings.kCosphi1A;
+            x[4] = Double_t(fSettings.kCosphi1A);
             cumuRef->Fill(x, dQnReA);
-            x[4] = fSettings.kSinphi1A;
+            x[4] = Double_t(fSettings.kSinphi1A);
             cumuRef->Fill(x, dQnImA);
-            x[4] = fSettings.kCosphi1B;
+            x[4] = Double_t(fSettings.kCosphi1B);
             cumuRef->Fill(x, dQnReB);
-            x[4] = fSettings.kSinphi1B;
+            x[4] = Double_t(fSettings.kSinphi1B);
             cumuRef->Fill(x, dQnImB);
 
             if (!(fSettings.fFlowFlags & fSettings.kEtaGap)) {
@@ -244,24 +245,24 @@ void AliForwardQCumulantRun2::saveEvent(TH2D& dNdetadphi, TList* outputList, dou
               +(TMath::Power(dQ2nReA,2.)+TMath::Power(dQ2nImA,2.));
 
 
-              x[4] = fSettings.kW4Four;
+              x[4] = Double_t(fSettings.kW4Four);
               cumuRef->Fill(x, four);
-              x[4] = fSettings.kW4;
+              x[4] = Double_t(fSettings.kW4);
               cumuRef->Fill(x, w4);
 
               x[4] = fSettings.k3pWeight;
               cumuRef->Fill(x, multA*(multA-1.)*(multA-2.));
 
             // NUA
-            x[4] = fSettings.kCosphi1phi2p;
+            x[4] = Double_t(fSettings.kCosphi1phi2p);
             cumuRef->Fill(x, dQnReA*dQnReA - dQ2nReA);
-            x[4] = fSettings.kCosphi1phi2m;
+            x[4] = Double_t(fSettings.kCosphi1phi2m);
             cumuRef->Fill(x, two);
-            x[4] = fSettings.kSinphi1phi2p;
+            x[4] = Double_t(fSettings.kSinphi1phi2p);
             cumuRef->Fill(x, dQnImA*dQnImA - dQ2nImA);
-            x[4] = fSettings.kCosphi1phi2phi3m;
+            x[4] = Double_t(fSettings.kCosphi1phi2phi3m);
             cumuRef->Fill(x, calcCosPhi1Phi2Phi3m(dQnReA, dQnImA, dQ2nReA, dQ2nImA, multA) );
-            x[4] = fSettings.kSinphi1phi2phi3m;
+            x[4] = Double_t(fSettings.kSinphi1phi2phi3m);
             cumuRef->Fill(x, calcSinPhi1Phi2Phi3m(dQnReA, dQnImA, dQ2nReA, dQ2nImA, multA) );
             }
             prevRefEtaBin = refEtaBinA;
@@ -310,13 +311,14 @@ void AliForwardQCumulantRun2::saveEvent(TH2D& dNdetadphi, TList* outputList, dou
                       std::cout << "pnIm = " << pnIm << std::endl;
            std::cout << "dQnImB = " << dQnImB << std::endl;
 }
-        Double_t x[5] = {noSamples,vertexpos, eta, cent, static_cast<Double_t>(fSettings.kW2Two)};
+        Double_t x[5] = {noSamples,vertexpos, eta, cent, Double_t(fSettings.kW2Two)};
+
         cumuDiff->Fill(x, twoPrime);
 
-        x[4] = fSettings.kW2;
+        x[4] = Double_t(fSettings.kW2);
         cumuDiff->Fill(x, w2p);
 
-        x[4] = fSettings.kWA;
+        x[4] = Double_t(fSettings.kWA);
         cumuDiff->Fill(x, mp);
 
         if ((fSettings.fFlowFlags & fSettings.kEtaGap)) continue;
@@ -326,9 +328,9 @@ void AliForwardQCumulantRun2::saveEvent(TH2D& dNdetadphi, TList* outputList, dou
 
         x[4] = fSettings.k3pWeight;
         cumuDiff->Fill(x, (mp*multA-2.*mq)*(multA-1.));
-        x[4] = fSettings.kW4Four;
+        x[4] = Double_t(fSettings.kW4Four);
         cumuDiff->Fill(x, fourPrime);
-        x[4] = fSettings.kW4;
+        x[4] = Double_t(fSettings.kW4);
         cumuDiff->Fill(x, w4p);
 
         // NUA

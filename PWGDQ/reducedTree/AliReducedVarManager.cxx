@@ -1299,6 +1299,23 @@ void AliReducedVarManager::FillEventOnlineTrigger(UShort_t triggerBit, Float_t* 
      values[kOnlineTriggerFired2] = (((AliReducedEventInfo*)fgEvent)->TriggerMask()&(ULong_t(1)<<triggerBit2) ? triggerBit2 : -1.0);
 }
 
+//________________________________________________________________
+void AliReducedVarManager::FillV0Channel(Int_t ich, Float_t* values) {
+   //
+   // Update the V0 channel number
+   //
+   if(ich>=0 && ich<64) {
+      values[kVZEROCurrentChannel] = ich;
+      values[kVZEROCurrentChannelMult] = values[kVZEROChannelMult+ich];
+      values[kVZEROCurrentChannelMultCalib] = values[kVZEROChannelMultCalib+ich];
+   }
+   else {
+      values[kVZEROCurrentChannel] = -1;
+      values[kVZEROCurrentChannelMult] = -999.;
+      values[kVZEROCurrentChannelMultCalib] = -999.;
+   }
+}
+
 //_________________________________________________________________
 void AliReducedVarManager::FillMCTruthInfo(TRACK* p, Float_t* values, TRACK* leg1 /* = 0x0 */, TRACK* leg2 /* = 0x0 */) {
    //
@@ -2666,6 +2683,9 @@ void AliReducedVarManager::SetDefaultVarNames() {
   }
   fgVariableNames[kSPDnSingleClusters]  = "SPD single clusters";    fgVariableUnits[kSPDnSingleClusters]  = "";  
   fgVariableNames[kEventMixingId]       = "Event mixing id";        fgVariableUnits[kEventMixingId]       = "";  
+  fgVariableNames[kVZEROCurrentChannel] = "VZERO channel";          fgVariableUnits[kVZEROCurrentChannel] = "";
+  fgVariableNames[kVZEROCurrentChannelMult] = "VZERO channel multiplicity";   fgVariableUnits[kVZEROCurrentChannelMult] = "";
+  fgVariableNames[kVZEROCurrentChannelMultCalib] = "VZERO channel calibrated multiplicity";   fgVariableUnits[kVZEROCurrentChannelMultCalib] = "";
   fgVariableNames[kVZEROAemptyChannels] = "VZERO-A empty channels"; fgVariableUnits[kVZEROAemptyChannels] = "";
   fgVariableNames[kVZEROCemptyChannels] = "VZERO-C empty channels"; fgVariableUnits[kVZEROCemptyChannels] = "";
   for(Int_t ich=0;ich<64;++ich) {
