@@ -110,8 +110,10 @@ AliAnalysisTaskSE* AddTaskForwardFlowRun2( bool doNUA, bool makeFakeHoles,
 
   task->fSettings.doNUA = doNUA;
   if (task->fSettings.doNUA){
+    if (nua_file.Contains("alien:")) TGrid::Connect("alien:");
+
+
     TFile *file = new TFile(nua_file);
-    TFile *file_ref = new TFile(ref_nua_file);
 
     if (nua_mode == AliForwardSettings::kInterpolate)
       resName += "_NUA_interpolate";
@@ -128,10 +130,12 @@ AliAnalysisTaskSE* AddTaskForwardFlowRun2( bool doNUA, bool makeFakeHoles,
     task->fSettings.nuaforward->SetDirectory(0);
     file->Close();
 
-    file_ref->GetObject("nuacentral_ref", task->fSettings.nuacentral_ref);
-    task->fSettings.nuacentral->SetDirectory(0);
-    file_ref->GetObject("nuaforward_ref", task->fSettings.nuaforward_ref);
-    task->fSettings.nuaforward->SetDirectory(0);
+    TFile *file_ref = new TFile(ref_nua_file);
+    file_ref->GetObject("nuacentral", task->fSettings.nuacentral_ref);
+    task->fSettings.nuacentral_ref->SetDirectory(0);
+    file_ref->GetObject("nuaforward", task->fSettings.nuaforward_ref);
+    task->fSettings.nuaforward_ref->SetDirectory(0);
+
     file_ref->Close();
 
   }
