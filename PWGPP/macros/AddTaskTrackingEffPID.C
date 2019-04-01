@@ -9,7 +9,10 @@
 
 AliAnalysisTaskTrackingEffPID* AddTaskTrackingEffPID(TString suffix = "",
 						     TString collSyst="pp",
-						     bool useGeneratedKine=kTRUE) {
+						     bool useGeneratedKine=kTRUE,
+						     TString cutObjFile = "",
+						     TString cutObjNam = "",
+						     Int_t filtBit=4) {
 
   // Get the current analysis manager
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
@@ -23,11 +26,24 @@ AliAnalysisTaskTrackingEffPID* AddTaskTrackingEffPID(TString suffix = "",
     ::Error("AddTaskLFefficiencies", "This task requires an input event handler");
     return 0x0;
   }
-
+  
   AliAnalysisTaskTrackingEffPID *taskeff = new AliAnalysisTaskTrackingEffPID();
   taskeff->SetUseGeneratedKine(useGeneratedKine);
   taskeff->SetCollisionSystem(collSyst);
 
+  if(!cutObjFile.IsNull()){
+    TFile *f=TFile::Open(cutObjFile.Data(),"READ");
+    if(f){
+      AliESDtrackCuts* esdc = (AliESDtrackCuts*)f->Get(cutObjNam.Data());
+      if(esdc){
+	taskeff->SetTrackCuts(esdc);
+	taskeff->UseTrackCutObjectForAODTracks();
+	taskeff->SetFilterBitCutForAODTracks(-1);
+	printf("Use AliESDtrackCuts from file %s\n",cutObjFile.Data());
+      }
+    }
+  }
+  
   mgr->AddTask(taskeff);
 
   TString outputFileName = AliAnalysisManager::GetCommonFileName();
