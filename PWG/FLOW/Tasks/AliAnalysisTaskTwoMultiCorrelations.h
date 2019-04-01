@@ -95,17 +95,42 @@ public:
     this->fNumberOfTracksMin = minNumberOfTracks;
   } 
 
-  void SetTrackSelection(Double_t minPt, Double_t maxPt, Double_t minEta, Double_t maxEta, Int_t minNumberOfClustersTPC, Double_t minChiSquareTPC, Double_t maxChiSquareTPC, Double_t maxDCAxy, Double_t maxDCAz)
+/// Setters of the differents cuts of the track selection.
+  void SetPtSelection(Bool_t cutOnPt, Double_t minPt, Double_t maxPt)
   {
+    this->fCutOnPt = cutOnPt;
     this->fPtMin = minPt;
     this->fPtMax = maxPt;
+  }
+
+  void SetEtaSelection(Bool_t cutOnEta, Double_t minEta, Double_t maxEta)
+  {
+    this->fCutOnEta = cutOnEta;
     this->fEtaMin = minEta;
     this->fEtaMax = maxEta;
+  }
+
+  void SetTPCSelection(Int_t trackFilter, Bool_t cutOnTPC, Int_t minNumberOfClustersTPC, Bool_t cutOnChiSquareTPC, Double_t minChiSquareTPC, Double_t maxChiSquareTPC)
+  {
+    this->fFilter = trackFilter;
+    this->fCutOnNumberOfTPC = cutOnTPC;
     this->fNumberOfTPCMin = minNumberOfClustersTPC;
+    this->fCutOnChiSquarePInTPC = cutOnChiSquareTPC;
     this->fChiSquarePInTPCMin = minChiSquareTPC;
     this->fChiSquarePInTPCMax = maxChiSquareTPC;
+  }
+
+  void SetDCASelection(Bool_t cutOnDCA, Double_t maxDCAxy, Double_t maxDCAz)
+  {
+    this->fCutOnDCA = cutOnDCA;
     this->fDCAxyMax = maxDCAxy;
     this->fDCAzMax = maxDCAz;
+  }
+
+  void SetChargeSelection(Bool_t cutOnElectricCharge, Int_t electricCharge)
+  {
+    this->fCutOnCharge = cutOnElectricCharge;
+    this->fCharge = electricCharge;
   }
 
   void SetQAHistoForEventSelection(Int_t HNOTbins, Double_t HNOTmax)
@@ -129,7 +154,7 @@ public:
 // Methods called in 'UserExec'.
   virtual void AnalyseAODevent(AliAODEvent *aAODevent);
   virtual void AnalyseMCevent(AliMCEvent *aMCevent);
-  Bool_t ApplyTrackSelection(Double_t momentum, Double_t pseudorapidity, Int_t NclustersInTPC, Double_t TPCchiSquare, Double_t xyDCA, Double_t zDCA);
+  Bool_t ApplyTrackSelection(Double_t momentum, Double_t pseudorapidity, Int_t NclustersInTPC, Double_t TPCchiSquare, Double_t xyDCA, Double_t zDCA, Int_t eCharge);
   virtual void CalculateQvectors(long long numberOfParticles, Double_t angles[], Double_t pWeights[]);
   TComplex Q(Int_t n, Int_t p);
   virtual void ComputeMultiparticleCorrelations(long long numberOfParticles, Double_t angles[], Double_t pWeights[]);
@@ -189,19 +214,27 @@ private:
   Int_t fNumberOfTracksMin; // Strict minimum number of tracks needed in an event to have an event weight which makes sense. (default: 6)
 
 // Track selection.
+  Bool_t fCutOnPt;  // Apply the cuts on the transverse momentum? (default: kFALSE)
   Double_t fPtMin;  // Minimum value of the transverse momentum. (default: 0.2 GeV)
   Double_t fPtMax;  // Maximum value of the transverse momentum. (default: 5 GeV)
 
+  Bool_t fCutOnEta; // Apply the cuts on the pseudorapidity? (default: kFALSE)
   Double_t fEtaMin; // Minimum value of the pseudorapidity. (default: -0.8)
   Double_t fEtaMax; // Maximum value of the pseudorapidity. (default: 0.8)
 
   Int_t fFilter;  // Filter bit used on the tracks. (default: 128)
+  Bool_t fCutOnNumberOfTPC; // Apply the cut on the number of TPC clusters? (default: kFALSE)
   Int_t fNumberOfTPCMin; // Minimum number of TPC clusters. (default: 70)
+  Bool_t fCutOnChiSquarePInTPC; // Apply the cuts on chi^2 of the track momentum in TPC? (default: kFALSE)
   Double_t fChiSquarePInTPCMin;  // Minimum value of chi^2 of the track momentum in TPC. (default: 0.1)
   Double_t fChiSquarePInTPCMax;  // Maximum value of chi^2 of the track momentum in TPC. (default: 4.)
-  
+
+  Bool_t fCutOnDCA; // Apply the cuts on the DCA coordinates? (default: kFALSE)  
   Double_t fDCAxyMax;  // Maximum value for the xy-coordinate of the DCA. (default: 3.2 cm)
   Double_t fDCAzMax;  // Maximum value for the z-coordinate of the DCA. (default: 2.4 cm)
+
+  Bool_t fCutOnCharge;  // Apply the cuts on the electric charge of the tracks? (default: kFALSE)
+  Int_t fCharge;  // Charge of the tracks. (default: 0)
 
 // TH1D with the observables for the event selection.
   TH1D *fHistoCentrality; //! Distribution of the centrality of the events.
@@ -232,6 +265,8 @@ private:
   TH1D *fHistoDCAXYAfterSelection;  //! Distribution of the xy-plane of the DCA after the full selection.
   TH1D *fHistoDCAZBeforeSelection;  //! Distribution of the z-coordinate of the DCA before the track selection.
   TH1D *fHistoDCAZAfterSelection; //! Distribution of the z-coordinate of the DCA after the full selection.
+  TH1I *fHistoChargeBeforeSelection;  //! Distribution of the electric charge of the tracks before the track selection.
+  TH1I *fHistoChargeAfterSelection; //! Distribution of the electric charge of the tracks after the full selection.
 
 // TProfiles with the final multiparticle correlations.
   TProfile *fProfileTwoParticleCorrelations;  //! <2>_{j,-j} for j = 1..6. (6 bins)
@@ -243,8 +278,8 @@ private:
 
 //--------------------------------------------------------------------------------------//
 // Version number to handle properly objects written before and after the changes.
-// Version 7, date: 2019-02-27.
-  ClassDef(AliAnalysisTaskTwoMultiCorrelations, 7);
+// Version 8, date: 2019-04-01.
+  ClassDef(AliAnalysisTaskTwoMultiCorrelations, 8);
 
 };  // End: class AliAnalysisTaskTwoMultiCorrelations.
 
