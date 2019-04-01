@@ -6,7 +6,6 @@ void runOnNano()
   AliAODInputHandler* iH = new AliAODInputHandler();
   mgr->SetInputEventHandler(iH);
 
-  gROOT->ProcessLine(".L AliAnalysisTaskNanoSimple.cxx+g");
   gROOT->LoadMacro("AddTaskSimple.C");
   AliAnalysisTask* task = AddTaskSimple();
   
