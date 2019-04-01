@@ -106,6 +106,10 @@ AliAnalysisTaskUPCforward::AliAnalysisTaskUPCforward()
       fZNATimeStrictTimeWindowH(0),
       fZNCTimeWithoutTimingH{0, 0, 0, 0},
       fZNATimeWithoutTimingH{0, 0, 0, 0},
+      fZNCTime4FillingH(0),
+      fZNATime4FillingH(0),
+      fZNCminusZNAtimeVsZNCplusZNAtimeH{0, 0, 0, 0},
+      fZNCminusZNAtimeVsZNCplusZNAtime4FillingH(0),
       fCounterZNCH(0),
       fCounterZNAH(0),
       fInvariantMassDistributionNoNeutronsH(0),
@@ -207,6 +211,10 @@ AliAnalysisTaskUPCforward::AliAnalysisTaskUPCforward(const char* name)
       fZNATimeStrictTimeWindowH(0),
       fZNCTimeWithoutTimingH{0, 0, 0, 0},
       fZNATimeWithoutTimingH{0, 0, 0, 0},
+      fZNCTime4FillingH(0),
+      fZNATime4FillingH(0),
+      fZNCminusZNAtimeVsZNCplusZNAtimeH{0, 0, 0, 0},
+      fZNCminusZNAtimeVsZNCplusZNAtime4FillingH(0),
       fCounterZNCH(0),
       fCounterZNAH(0),
       fInvariantMassDistributionNoNeutronsH(0),
@@ -515,6 +523,23 @@ void AliAnalysisTaskUPCforward::UserCreateOutputObjects()
                                                );
     fOutputList->Add(fZNATimeWithoutTimingH[iTiming]);
   }
+
+  fZNCTime4FillingH = new TH1F("fZNCTime4FillingH", "fZNCTime4FillingH", 6000, -1500, 1500);
+  fOutputList->Add(fZNCTime4FillingH);
+
+  fZNATime4FillingH = new TH1F("fZNATime4FillingH", "fZNATime4FillingH", 6000, -1500, 1500);
+  fOutputList->Add(fZNATime4FillingH);
+
+  for(int iTiming = 0; iTiming < 4; iTiming++) {
+    fZNCminusZNAtimeVsZNCplusZNAtimeH[iTiming] = new TH2F( Form("fZNCminusZNAtimeVsZNCplusZNAtimeH_%d", iTiming),
+                                                           Form("fZNCminusZNAtimeVsZNCplusZNAtimeH_%d", iTiming),
+                                                           1200, -300, 300, 1200, -300, 300
+                                                           );
+    fOutputList->Add(fZNCminusZNAtimeVsZNCplusZNAtimeH[iTiming]);
+  }
+
+  fZNCminusZNAtimeVsZNCplusZNAtime4FillingH = new TH2F("fZNCminusZNAtimeVsZNCplusZNAtime4FillingH", "fZNCminusZNAtimeVsZNCplusZNAtime4FillingH", 1200, -300, 300, 1200, -300, 300);
+  fOutputList->Add(fZNCminusZNAtimeVsZNCplusZNAtime4FillingH);
 
   fCounterZNCH = new TH1F("fCounterZNCH", "fCounterZNCH", 6, -0.5, 5.5);
   fOutputList->Add(fCounterZNCH);
@@ -1296,8 +1321,12 @@ void AliAnalysisTaskUPCforward::UserExec(Option_t *)
       isZNCfiredStrict = kTRUE;
       if( dataZDC->IsZNCfired() ) fZNCTimeStrictTimeWindowH->Fill(fZNCTDC[iZDC]);
     }
-    fZNATimeWithoutTimingH[iZDC]->Fill(fZNATDC[iZDC]);
-    fZNCTimeWithoutTimingH[iZDC]->Fill(fZNCTDC[iZDC]);
+    fZNATimeWithoutTimingH[iZDC]             ->Fill(fZNATDC[iZDC]);
+    fZNCTimeWithoutTimingH[iZDC]             ->Fill(fZNCTDC[iZDC]);
+    fZNCTime4FillingH                        ->Fill(fZNCTDC[iZDC]);
+    fZNATime4FillingH                        ->Fill(fZNATDC[iZDC]);
+    fZNCminusZNAtimeVsZNCplusZNAtimeH[iZDC]  ->Fill(fZNCTDC[iZDC]-fZNATDC[iZDC], fZNCTDC[iZDC]+fZNATDC[iZDC]);
+    fZNCminusZNAtimeVsZNCplusZNAtime4FillingH->Fill(fZNCTDC[iZDC]-fZNATDC[iZDC], fZNCTDC[iZDC]+fZNATDC[iZDC]);
   }
 
   /*
