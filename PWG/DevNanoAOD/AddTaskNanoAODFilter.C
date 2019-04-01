@@ -1,15 +1,3 @@
-#if !defined(__CLING__) && (!defined (__CINT__) || (defined(__MAKECINT__)))
-#include <iostream>
-#include "TString.h"
-#include "AliAnalysisManager.h"
-#include "AliAnalysisTaskSE.h"
-#include "AliAnalysisTaskNanoAODESEFilter.h"
-#include "AliAnalysisDataContainer.h"
-#include "AliVEventHandler.h"
-#include "AliESEHelpers.h"
-#endif
-
-
 AliAnalysisTaskSE* AddTaskNanoAODFilter(Int_t iMC, Bool_t savecuts = 0) 
 {
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
