@@ -19,7 +19,7 @@ void runTask(Float_t etamax=0.5,const char * incollection = 0, const char * outf
   }
   else if (TString(incollection).Contains("xml")){
     TGrid::Connect("alien://");
-    TAlienCollection * coll = TAlienCollection::Open (incollection);
+    TGridCollection * coll = gGrid->OpenCollection(incollection);
     while(coll->Next()){
       chain->Add(TString("alien://")+coll->GetLFN());
     }

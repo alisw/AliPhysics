@@ -41,14 +41,13 @@ public:
 
   Bool_t IsSelected(TObject * object ); 
   Bool_t IsSelected(TList * /*list*/) { return kFALSE; }
-  Bool_t AcceptTrack(AliAODTrack * track);
-  Bool_t AcceptTrack(AliESDtrack * track);
+  Bool_t AcceptTrack(const AliAODTrack * track);
+  Bool_t AcceptTrack(const AliESDtrack * track);
   Bool_t GetDCA(const AliAODTrack * track, Double_t dca[2]);
   Bool_t GetDCA(const AliESDtrack * track, Double_t dca[2]);
 
 
-  void DeleteTracks() { fOwnedTracks.Delete(); }
-  void FillDCAHist(Float_t dcaz, Float_t dcaxy, AliVTrack * track);
+  void FillDCAHist(Float_t dcaz, Float_t dcaxy, const AliVTrack * track);
   AliConversionTrackCuts();
   AliConversionTrackCuts(TString name, TString title);
   ~AliConversionTrackCuts();
@@ -61,7 +60,7 @@ public:
   void      CreateTrackEff(Bool_t create = kTRUE) { fkCreateTrackEff = create; }
 
   TList * CreateHistograms();
-  void FillHistograms(Int_t cutIndex, AliVTrack * track);
+  void FillHistograms(Int_t cutIndex, const AliVTrack * track);
   virtual void   Print(const Option_t *option = "") const;
 
 protected :
@@ -82,8 +81,6 @@ protected :
   Double_t fDCAZmax;                // maximum value for longitudinal DCA
   Double_t fDCAXYmax;                  // maximum xy value for dca
   
-  TObjArray fOwnedTracks;
-
   Bool_t fInitialized;
 
   TH2F * fhPhi;

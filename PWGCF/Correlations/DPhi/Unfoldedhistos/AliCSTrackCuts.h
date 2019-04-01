@@ -13,7 +13,6 @@ class TH1F;
 class TH2F;
 class AliESDtrackCuts;
 class AliVTrack;
-class TParticle;
 
 /// \class AliCSTrackCuts
 /// \brief Class which implements track selection cuts

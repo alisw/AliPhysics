@@ -17,10 +17,10 @@ SteerAnalysisTaskParticleEfficiencyLF(const Char_t *inputfilename, Int_t maxFile
   if (str.EndsWith(".xml")) {
     TGrid::Connect("alien://");
     Info("SteerTaskParticleEfficiency", "reading data list from collection:");
-    TAlienCollection coll(inputfilename, maxFiles);
-    coll.Reset();
-    while (coll.Next()) {
-      filename = coll.GetTURL();
+    TGridCollection *coll = gGrid->OpenCollection(inputfilename, maxFiles);
+    coll->Reset();
+    while (coll->Next()) {
+      filename = coll->GetTURL();
       Info("SteerTaskParticleEfficiency", Form("%s", filename));
       chain->Add(filename);
     }

@@ -22,6 +22,8 @@ class TObjArray;
 class TLorentzVector;
 class TVector3;
 
+class AliVParticle;
+
 class AliCocktailSmearing {
   
 public:
@@ -48,7 +50,7 @@ protected:
   void            SmearOpeningAngle(TLorentzVector &lv1, TLorentzVector &lv2);
   Double_t        eMass()  { return 0.5109989e-3; }
   
-  TLorentzVector  Smear(TParticle * part);
+  TLorentzVector  Smear(AliVParticle * part);
   TLorentzVector  ApplySmearingOton(const TLorentzVector& vec, short ch);
   
   // variables

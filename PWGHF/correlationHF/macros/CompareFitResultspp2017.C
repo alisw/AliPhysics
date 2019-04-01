@@ -125,7 +125,7 @@ void Init3x3Settings(){
   markersizeMC=1.;
 }
 
-TString yaxisTitle[5]={"Associated yield","#sigma_{fit,NS} (rad)","Baseline (rad^{-1})","Associated yield","#sigma_{fit,AS} (rad)"};
+TString yaxisTitle[5]={"Associated yield","Peak width (rad)","Baseline (rad^{-1})","Associated yield","Peak width (rad)"};
 Double_t leftMarginCanvas=0.17;
 Double_t rightMarginCanvas=0.055;
 Double_t bottomMarginCanvas=0.13;
@@ -1396,14 +1396,14 @@ TCanvas* CompareDatatoModels(Int_t collsystem,Int_t binass,Int_t quantity,TPad *
   }
     
   printf("binass = %d, quantity = %d\n",binass,quantity);
-  if((binass==1 && quantity==3) || (binass==1 && quantity==4)) { //remove NSy and NSw of 0.3-1 in 3-5 and 16-24
+  if((binass==1 && quantity==3) || (binass==1 && quantity==4)) { //remove ASy and ASw of 0.3-1 in 3-5 and 16-24
      grData[0]->RemovePoint(3);
      grData[0]->RemovePoint(0);
      hData[0]->SetBinContent(3,0);
      hData[0]->SetBinError(3,0);
      hData[0]->SetBinContent(6,0);
      hData[0]->SetBinError(6,0);
-     printf("Removing NSy and NSw of 0.3-1 in 3-5 and 16-24\n");
+     printf("Removing ASy and ASw of 0.3-1 in 3-5 and 16-24\n");
    }
 
   pd->cd();
@@ -1606,7 +1606,7 @@ TCanvas* CompareDatatoModels(Int_t collsystem,Int_t binass,Int_t quantity,TPad *
       grMC[kmc]->SetLineColor(modelColors[kmc]);
       grMC[kmc]->SetLineWidth(1);
       grMC[kmc]->SetMarkerStyle(modelMarkerStyle[kmc]);
-      grMC[kmc]->SetFillStyle(3001+kmc);
+      grMC[kmc]->SetFillStyle(0);//3001+kmc);
       grMC[kmc]->SetFillColor(modelColors[kmc]);
       grMC[kmc]->SetMarkerSize(markersizeMC);
       if(drawSystMC){
@@ -2488,7 +2488,7 @@ void CompareFitResults_Ratios_NS_1() {
                   hModRat[k]->SetBinContent(7,-99);
                   hModRat[k]->SetBinError(7,-99);
                   hModRat[k]->DrawCopy("same");
-                  grModRat[k]->SetFillStyle(1);
+                  grModRat[k]->SetFillStyle(0);
                   grModRat[k]->SetMarkerStyle(modelMarkerStyleRatio[k]);
                   grModRat[k]->Draw("E2");
                 }
@@ -2612,7 +2612,7 @@ void CompareFitResults_Ratios_NS_2() {
                   hModRat[k]->SetBinContent(7,-99);
                   hModRat[k]->SetBinError(7,-99);
                   hModRat[k]->DrawCopy("same");
-                  grModRat[k]->SetFillStyle(1);
+                  grModRat[k]->SetFillStyle(0);
                   grModRat[k]->SetMarkerStyle(modelMarkerStyleRatio[k]);
                   grModRat[k]->Draw("E2");
                 }
@@ -2706,7 +2706,7 @@ void CompareFitResults_Ratios_AS_1() {
                         grDataRat->SetPointError(ip,exval[ip],exval[ip],err,err);
                     }                
                 }
-                else {
+                else { //this for ad hoc points removal!
                     for(int ip=0;ip<grModRef->GetN();ip++) {                  
                         Double_t err = yvalDa[ip]/yvalMCref[ip+1]*(TMath::Sqrt((eyvalDa[ip]/yvalDa[ip])*(eyvalDa[ip]/yvalDa[ip])+(eyvalMCref[ip+1]/yvalMCref[ip+1])*(eyvalMCref[ip+1]/yvalMCref[ip+1])));
                         grDataRat->SetPoint(ip,xval[ip+1],yvalDa[ip]/yvalMCref[ip+1]);
@@ -2744,7 +2744,7 @@ void CompareFitResults_Ratios_AS_1() {
                   hModRat[k]->SetBinContent(7,-99);
                   hModRat[k]->SetBinError(7,-99);
                   hModRat[k]->DrawCopy("same");
-                  grModRat[k]->SetFillStyle(1);
+                  grModRat[k]->SetFillStyle(0);
                   grModRat[k]->SetMarkerStyle(modelMarkerStyleRatio[k]);
                   grModRat[k]->Draw("E2");
                 }
@@ -2879,7 +2879,7 @@ void CompareFitResults_Ratios_AS_2() {
                   hModRat[k]->SetBinContent(7,-99);
                   hModRat[k]->SetBinError(7,-99);
                   hModRat[k]->DrawCopy("same");
-                  grModRat[k]->SetFillStyle(1);
+                  grModRat[k]->SetFillStyle(0);
                   grModRat[k]->SetMarkerStyle(modelMarkerStyleRatio[k]);
                   grModRat[k]->Draw("E2");
                 }

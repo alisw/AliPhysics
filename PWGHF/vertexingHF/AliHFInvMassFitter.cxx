@@ -46,7 +46,7 @@ ClassImp(AliHFInvMassFitter);
 /////////////////////////////////////////////////////////////
 
 //__________________________________________________________________________
-AliHFInvMassFitter::AliHFInvMassFitter() : 
+AliHFInvMassFitter::AliHFInvMassFitter() :
   TNamed(),
   fHistoInvMass(0x0),
   fMinMass(0),
@@ -273,7 +273,7 @@ Int_t AliHFInvMassFitter::MassFitter(Bool_t draw){
     if(draw) DrawFit();
     estimSignal=0.;
     doFinalFit=kFALSE;
-  } 
+  }
 
   fRawYieldHelp=estimSignal; // needed for reflection normalization
   if(!fBkgFuncRefit){
@@ -386,19 +386,19 @@ void AliHFInvMassFitter::DrawHere(TVirtualPad* c, Double_t nsigma,Int_t writeFit
       for(Int_t ipar=1; ipar<fNParsSig; ipar++){
 	pinfom->AddText(Form("%s = %.3f #pm %.3f",fTotFunc->GetParName(ipar+fNParsBkg),fTotFunc->GetParameter(ipar+fNParsBkg),fTotFunc->GetParError(ipar+fNParsBkg)));
       }
-      pinfom->Draw();
-      
+      if(writeFitInfo>=1) pinfom->Draw();
+
       Double_t bkg,errbkg;
       Background(nsigma,bkg,errbkg);
       Double_t signif,errsignif;
       Significance(nsigma,signif,errsignif);
-      
+
       pinfos->AddText(Form("S = %.0f #pm %.0f ",fRawYield,fRawYieldErr));
       pinfos->AddText(Form("B (%.0f#sigma) = %.0f #pm %.0f",nsigma,bkg,errbkg));
       pinfos->AddText(Form("S/B (%.0f#sigma) = %.4f ",nsigma,fRawYield/bkg));
       if(fRflFunc)  pinfos->AddText(Form("Refl/Sig =  %.3f #pm %.3f ",fRflFunc->GetParameter(0),fRflFunc->GetParError(0)));
       pinfos->AddText(Form("Signif (%.0f#sigma) = %.1f #pm %.1f ",nsigma,signif,errsignif));
-      pinfos->Draw();
+      if(writeFitInfo>=2) pinfos->Draw();
     }
   }
   c->Update();
@@ -438,12 +438,12 @@ TF1* AliHFInvMassFitter::CreateBackgroundFitFunction(TString fname, Double_t int
   TF1* funcbkg =  new TF1(fname.Data(),this,&AliHFInvMassFitter::FitFunction4Bkg,fMinMass,fMaxMass,fNParsBkg,"AliHFInvMassFitter","FitFunction4Bkg");
   switch (fTypeOfFit4Bkg) {
   case 0: //gaus+expo
-    funcbkg->SetParNames("BkgInt","Slope"); 
-    funcbkg->SetParameters(integral,-2.); 
+    funcbkg->SetParNames("BkgInt","Slope");
+    funcbkg->SetParameters(integral,-2.);
     break;
   case 1:
     funcbkg->SetParNames("BkgInt","Slope");
-    funcbkg->SetParameters(integral,-100.); 
+    funcbkg->SetParameters(integral,-100.);
     break;
   case 2:
     funcbkg->SetParNames("BkgInt","Coef1","Coef2");
@@ -454,11 +454,11 @@ TF1* AliHFInvMassFitter::CreateBackgroundFitFunction(TString fname, Double_t int
     funcbkg->SetParameter(0,0.);
     funcbkg->FixParameter(0,0.);
     break;
-  case 4:     
+  case 4:
     funcbkg->SetParNames("BkgInt","Coef1");
     funcbkg->SetParameters(integral,0.5);
     break;
-  case 5:    
+  case 5:
     funcbkg->SetParNames("Coef1","Coef2");
     funcbkg->SetParameters(-10.,5.);
     break;
@@ -476,7 +476,7 @@ TF1* AliHFInvMassFitter::CreateBackgroundFitFunction(TString fname, Double_t int
     break;
   }
   //  if(fFixToHistoIntegral) funcbkg->FixParameter(0,integral);
-  funcbkg->SetLineColor(kBlue+3); 
+  funcbkg->SetLineColor(kBlue+3);
   return funcbkg;
 }
 //______________________________________________________________________________
@@ -655,7 +655,7 @@ Double_t AliHFInvMassFitter::FitFunction4Bkg (Double_t *x, Double_t *par){
   case 2:
     //parabola
     //y=a+b*x+c*x**2 -> integral = a(max-min) + 1/2*b*(max^2-min^2) +
-    //+ 1/3*c*(max^3-min^3) -> 
+    //+ 1/3*c*(max^3-min^3) ->
     //a = (integral-1/2*b*(max^2-min^2)-1/3*c*(max^3-min^3))/(max-min)
     // * [0] = integralBkg;
     // * [1] = b;
@@ -666,8 +666,8 @@ Double_t AliHFInvMassFitter::FitFunction4Bkg (Double_t *x, Double_t *par){
   case 3:
     total=par[0];
     break;
-  case 4:  
-    //power function 
+  case 4:
+    //power function
     //y=a(x-m_pi)^b -> integral = a/(b+1)*((max-m_pi)^(b+1)-(min-m_pi)^(b+1))
     //
     //a = integral*(b+1)/((max-m_pi)^(b+1)-(min-m_pi)^(b+1))
@@ -683,19 +683,19 @@ Double_t AliHFInvMassFitter::FitFunction4Bkg (Double_t *x, Double_t *par){
     break;
   case 5:
    //power function wit exponential
-    //y=a*Sqrt(x-m_pi)*exp(-b*(x-m_pi))  
-    { 
+    //y=a*Sqrt(x-m_pi)*exp(-b*(x-m_pi))
+    {
     Double_t mpi = TDatabasePDG::Instance()->GetParticle(211)->Mass();
 
     total = par[0]*TMath::Sqrt(x[0] - mpi)*TMath::Exp(-1.*par[1]*(x[0]-mpi));
     //    AliInfo("Background function set to: wit exponential");
-    } 
+    }
     break;
   case 6:
     // the following comment must be removed
     //     // pol 3, following convention for pol 2
     //     //y=a+b*x+c*x**2+d*x**3 -> integral = a(max-min) + 1/2*b*(max^2-min^2) +
-    //     //+ 1/3*c*(max^3-min^3) + 1/4 d * (max^4-min^4) -> 
+    //     //+ 1/3*c*(max^3-min^3) + 1/4 d * (max^4-min^4) ->
     //     //a = (integral-1/2*b*(max^2-min^2)-1/3*c*(max^3-min^3) - 1/4 d * (max^4-min^4) )/(max-min)
     //     // * [0] = integralBkg;
     //     // * [1] = b;
@@ -787,7 +787,7 @@ Double_t AliHFInvMassFitter::FitFunction4BkgAndRefl(Double_t *x, Double_t *par){
 }
 //_________________________________________________________________________
 Double_t AliHFInvMassFitter::FitFunction4SecPeak (Double_t *x, Double_t *par){
-  /// Fit function for a second gaussian peak 
+  /// Fit function for a second gaussian peak
   /// To be used, e.g., for D+->KKpi in the Ds mass spectrum
 
   //gaussian = A/(sigma*sqrt(2*pi))*exp(-(x-mean)^2/2/sigma^2)
@@ -802,13 +802,13 @@ Double_t AliHFInvMassFitter::FitFunction4SecPeak (Double_t *x, Double_t *par){
 Double_t AliHFInvMassFitter::FitFunction4Mass(Double_t *x, Double_t *par){
   /// Total fit function (signal+background+possible second peak)
   ///
-  
+
   Double_t bkg=FitFunction4Bkg(x,par);
   Double_t sig=FitFunction4Sgn(x,&par[fNParsBkg]);
   Double_t sec=0.;
   if(fSecondPeak) sec=FitFunction4SecPeak(x,&par[fNParsBkg+fNParsSig]);
   Double_t refl=0;
-  if(fReflections) refl=FitFunction4Refl(x,&par[fNParsBkg+fNParsSig+fNParsSec]); 
+  if(fReflections) refl=FitFunction4Refl(x,&par[fNParsBkg+fNParsSig+fNParsSec]);
   return bkg+sig+sec+refl;
 }
 
@@ -842,7 +842,7 @@ void AliHFInvMassFitter::Background(Double_t nOfSigma,Double_t &background,Doubl
   Double_t maxMass=fMass+nOfSigma*fSigmaSgn;
   Background(minMass,maxMass,background,errbackground);
   return;
-  
+
 }
 //___________________________________________________________________________
 void AliHFInvMassFitter::Background(Double_t min, Double_t max, Double_t &background,Double_t &errbackground) const {
@@ -876,7 +876,7 @@ void AliHFInvMassFitter::Background(Double_t min, Double_t max, Double_t &backgr
   intBerr=TMath::Sqrt(sum2);
 
   background=funcbkg->Integral(min,max)/(Double_t)fHistoInvMass->GetBinWidth(1);
-  errbackground=intBerr/intB*background; 
+  errbackground=intBerr/intB*background;
 
   return;
 
@@ -910,7 +910,7 @@ void AliHFInvMassFitter::Significance(Double_t min, Double_t max, Double_t &sign
   }
 
   AliVertexingHFUtils::ComputeSignificance(fRawYield,fRawYieldErr,background,errbackground,significance,errsignificance);
-  
+
   return;
 }
 //________________________________________________________________________
@@ -983,7 +983,7 @@ Double_t AliHFInvMassFitter::BackFitFuncPolHelper(Double_t *x,Double_t *par){
 // _______________________________________________________________________
 TH1F* AliHFInvMassFitter::SetTemplateReflections(const TH1 *h, TString opt,Double_t minRange,Double_t maxRange){
   /// Method to create the reflection invariant mass distributions from MC templates
-  /// option could be: 
+  /// option could be:
   ///    "template"                use MC histograms
   ///    "1gaus" ot "singlegaus"   single gaussian function fit to MC templates
   ///    "2gaus" ot "doublegaus"   double gaussian function fit to MC templates
@@ -1084,7 +1084,7 @@ TH1F* AliHFInvMassFitter::SetTemplateReflections(const TH1 *h, TString opt,Doubl
 }
 // _______________________________________________________________________
 Double_t AliHFInvMassFitter::GetRawYieldBinCounting(Double_t& errRyBC, Double_t nOfSigma, Int_t option, Int_t pdgCode) const{
-  /// Method to compute the signal using inv. mass histo bin counting 
+  /// Method to compute the signal using inv. mass histo bin counting
   /// -> interface method to compute yield in nsigma range around peak
   /// pdgCode: if==411,421,413,413 or 4122: range defined based on PDG mass
   //           else (default) mean of gaussian fit
@@ -1112,7 +1112,7 @@ Double_t AliHFInvMassFitter::GetRawYieldBinCounting(Double_t& errRyBC, Double_t 
 }
 // _______________________________________________________________________
 Double_t AliHFInvMassFitter::GetRawYieldBinCounting(Double_t& errRyBC, Double_t minMass, Double_t maxMass, Int_t option) const{
-  /// Method to compute the signal using inv. mass histo bin counting 
+  /// Method to compute the signal using inv. mass histo bin counting
   /// after background subtraction from background fit function
   ///   option=0: background fit function from 1st fit step (only side bands)
   ///   option=1: background fit function from 2nd fit step (S+B)
@@ -1151,7 +1151,7 @@ Double_t AliHFInvMassFitter::GetRawYieldBinCounting(Double_t& errRyBC, Double_t 
 
 
 // _______________________________________________________________________
-TH1F* AliHFInvMassFitter::GetResidualsAndPulls(TH1 *hPulls,TH1 *hResidualTrend,TH1 *hPullsTrend, Double_t minrange,Double_t maxrange){
+TH1F* AliHFInvMassFitter::GetResidualsAndPulls(TH1 *hPulls,TH1 *hResidualTrend,TH1 *hPullsTrend, Double_t minrange,Double_t maxrange, Int_t option){
 
   /// fill and return the residual and pull histos
 
@@ -1187,9 +1187,14 @@ TH1F* AliHFInvMassFitter::GetResidualsAndPulls(TH1 *hPulls,TH1 *hResidualTrend,T
 
   Double_t res=-1.e-6,min=1.e+12,max=-1.e+12;
   TArrayD *arval=new TArrayD(binma-binmi+1);
-  for(Int_t jst=1;jst<=fHistoInvMass->GetNbinsX();jst++){      
-    
-    res=fHistoInvMass->GetBinContent(jst)-fTotFunc->Integral(fHistoInvMass->GetBinLowEdge(jst),fHistoInvMass->GetBinLowEdge(jst)+fHistoInvMass->GetBinWidth(jst))/fHistoInvMass->GetBinWidth(jst);
+  for(Int_t jst=1;jst<=fHistoInvMass->GetNbinsX();jst++){
+    Double_t integFit=0;
+    if(option==0) integFit=fTotFunc->Integral(fHistoInvMass->GetBinLowEdge(jst),fHistoInvMass->GetBinLowEdge(jst)+fHistoInvMass->GetBinWidth(jst));
+    else{
+      integFit=fBkgFuncRefit->Integral(fHistoInvMass->GetBinLowEdge(jst),fHistoInvMass->GetBinLowEdge(jst)+fHistoInvMass->GetBinWidth(jst));
+      if(option==2) integFit+=fRflFunc->Integral(fHistoInvMass->GetBinLowEdge(jst),fHistoInvMass->GetBinLowEdge(jst)+fHistoInvMass->GetBinWidth(jst));
+    }
+    res=fHistoInvMass->GetBinContent(jst)-integFit/fHistoInvMass->GetBinWidth(jst);
     if(jst>=binmi&&jst<=binma){
       arval->AddAt(res,jst-binmi);
       if(res<min)min=res;
@@ -1202,13 +1207,23 @@ TH1F* AliHFInvMassFitter::GetResidualsAndPulls(TH1 *hPulls,TH1 *hResidualTrend,T
     }
     if(hPulls){
       if(jst>=binmi&&jst<=binma)hPulls->Fill(res/fHistoInvMass->GetBinError(jst));
-    }    
+    }
     if(hPullsTrend){
       hPullsTrend->SetBinContent(jst,res/fHistoInvMass->GetBinError(jst));
       hPullsTrend->SetBinError(jst,0.0001);
     }
   }
-  if(hResidualTrend)hResidualTrend->GetXaxis()->SetRange(binmi,binma);
+  if(hResidualTrend){
+    hResidualTrend->GetXaxis()->SetRange(binmi,binma);
+    if(option!=0){
+      TF1 *fgauss=new TF1("signalTermForRes","[0]/TMath::Sqrt(2.*TMath::Pi())/[2]*TMath::Exp(-(x-[1])*(x-[1])/2./[2]/[2])",fHistoInvMass->GetBinLowEdge(1),fHistoInvMass->GetBinLowEdge(fHistoInvMass->GetNbinsX()+1));
+      fgauss->SetParameter(0,fRawYield*fHistoInvMass->GetBinWidth(1));
+      fgauss->SetParameter(1,fMass);
+      fgauss->SetParameter(2,fSigmaSgn);
+      fgauss->SetLineColor(kBlue);
+      hResidualTrend->GetListOfFunctions()->Add(fgauss);
+    }
+  }
   if(hPullsTrend){
     hPullsTrend->GetXaxis()->SetRange(binmi,binma);
     hPullsTrend->SetMinimum(-7);
@@ -1230,6 +1245,17 @@ TH1F* AliHFInvMassFitter::GetResidualsAndPulls(TH1 *hPulls,TH1 *hResidualTrend,T
   delete arval;
   return hout;
 }
+// _______________________________________________________________________
+TH1F* AliHFInvMassFitter::GetOverBackgroundResidualsAndPulls(TH1 *hPulls,TH1 *hResidualTrend,TH1 *hPullsTrend, Double_t minrange,Double_t maxrange){
+  ///
+  return GetResidualsAndPulls(hPulls,hResidualTrend,hPullsTrend,minrange,maxrange,1);
+}
+// _______________________________________________________________________
+TH1F* AliHFInvMassFitter::GetOverBackgroundPlusReflResidualsAndPulls(TH1 *hPulls,TH1 *hResidualTrend,TH1 *hPullsTrend, Double_t minrange,Double_t maxrange){
+  ///
+  return GetResidualsAndPulls(hPulls,hResidualTrend,hPullsTrend,minrange,maxrange,2);
+}
+
 // _______________________________________________________________________
 void AliHFInvMassFitter::PrintFunctions(){
   /// dump the function parameters

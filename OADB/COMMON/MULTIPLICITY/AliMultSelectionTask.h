@@ -130,10 +130,11 @@ public:
     //Calibration mode downscaling for manageable output
     void SetDownscaleFactor ( Double_t lDownscale ) { fDownscaleFactor = lDownscale; }
     
-    void SetOADB ( TString lOADBfilename ); 
+    void SetOADB ( TString lOADBfilename );
+    AliOADBContainer* GetOADB() {return fOADB;}; //for expert manipulation only
     
     // Static method for AddTaskMultSelection
-    static AliMultSelectionTask* AddTaskMultSelection ( Bool_t lCalibration = kFALSE, TString lExtraOptions = "", Int_t lNDebugEstimators = 1, const TString lMasterJobSessionFlag = "");
+    static AliMultSelectionTask* AddTaskMultSelection ( Bool_t lCalibration = kFALSE, TString lExtraOptions = "", Int_t lNDebugEstimators = 1, TString lContainerAppend = "", const TString lMasterJobSessionFlag = "");
 
     virtual void   UserCreateOutputObjects();
     virtual void   UserExec(Option_t *option);
@@ -300,6 +301,7 @@ private:
     AliMultVariable *fMC_NchEta08;
     AliMultVariable *fMC_NchEta10;
     AliMultVariable *fMC_NchEta14;
+    AliMultVariable *fMC_b;
     
     //Histograms / Anything else as needed
     TH1D *fHistEventCounter; //!

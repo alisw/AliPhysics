@@ -74,6 +74,9 @@ public:
   Bool_t IsMCTruth(AliVParticle* mcD1, AliVParticle* mcD2, const AliDielectronSignalMC* signalMC) const;
   Bool_t IsMCTruth(Int_t label, AliDielectronSignalMC* signalMC, Int_t branch) const;
   Int_t GetMothersLabel(Int_t daughterLabel) const;
+  Int_t GetFirstMothersLabelInChain(Int_t daughterLabel) const;
+  Int_t GetMinLabelParticlePrimaryAround(Int_t label) const;
+  Int_t GetMaxLabelParticlePrimaryAround(Int_t label) const; 
   Int_t GetPdgFromLabel(Int_t label) const;
   Int_t GetHFProcess(Int_t label);
 

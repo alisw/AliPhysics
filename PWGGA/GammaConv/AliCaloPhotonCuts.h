@@ -279,7 +279,8 @@ class AliCaloPhotonCuts : public AliAnalysisCuts {
     void        SetCaloIsolationName(TString name)             {fCaloIsolationName = name; return;}
     MCSet       FindEnumForMCSet(TString namePeriod);
 
-    void        ApplyNonLinearity(AliVCluster* cluster, Int_t isMC);
+    void        ApplyNonLinearity(AliVCluster* cluster, Int_t isMC, AliVEvent *event = 0x0);
+    void        ApplySMWiseEnergyCorrection(AliVCluster* cluster, Int_t isMC, AliVEvent *event = 0x0);
 
     Float_t     FunctionNL_kPi0MC(Float_t e, Float_t p0, Float_t p1, Float_t p2, Float_t p3, Float_t p4, Float_t p5, Float_t p6);
     Float_t     FunctionNL_PHOSOnlyMC(Float_t e, Float_t p0, Float_t p1, Float_t p2);
@@ -348,6 +349,7 @@ class AliCaloPhotonCuts : public AliAnalysisCuts {
     Bool_t      GetIsAcceptedForBasicCounting()                 {return fIsAcceptedForBasic;}
 
     Bool_t      GetDoFlatEnergySubtraction()                    {return fDoFlatEnergySubtraction;}
+    Bool_t      GetDoSecondaryTrackMatching()                   {return fDoSecondaryTrackMatching;}
 
     // modify acceptance via histogram with cellID
     void        SetHistoToModifyAcceptance(TH1S* histAcc)       {fHistoModifyAcc  = histAcc; return;}
@@ -497,6 +499,7 @@ class AliCaloPhotonCuts : public AliAnalysisCuts {
     Bool_t    fUseNonLinearity;                         // flag for switching NonLinearity correction
     Int_t     fIsPureCalo;                              // flag for MergedCluster analysis
     Int_t     fNactiveEmcalCells;                       // total number of active emcal cells
+    Bool_t    fDoSecondaryTrackMatching;                // flag to switch on secondary trackmatching
 
     //vector
     std::vector<Int_t> fVectorMatchedClusterIDs;        // vector with cluster IDs that have been matched to tracks in merged cluster analysis
@@ -619,7 +622,7 @@ class AliCaloPhotonCuts : public AliAnalysisCuts {
 
   private:
 
-    ClassDef(AliCaloPhotonCuts,81)
+    ClassDef(AliCaloPhotonCuts,84)
 };
 
 #endif

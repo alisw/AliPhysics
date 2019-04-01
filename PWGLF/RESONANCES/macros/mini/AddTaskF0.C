@@ -5,6 +5,11 @@
 //Allows basic configuration of pile-up check and event cuts
 //
 ****************************************************************************/
+#ifdef __CLING__
+R__ADD_INCLUDE_PATH($ALICE_PHYSICS)
+#include <PWGLF/RESONANCES/macros/mini/ConfigF0.C>
+#endif
+
 enum pairYCutSet { kPairDefault,
 		   kCentralTight,
 		   kpADefault,
@@ -224,7 +229,9 @@ AliRsnMiniAnalysisTask * AddTaskF0
   //-----------------------------------------------------------------------------------------------
   // -- CONFIG ANALYSIS --------------------------------------------------------------------------
   //-----------------------------------------------------------------------------------------------
+#ifdef __CINT__
   gROOT->LoadMacro("$ALICE_PHYSICS/PWGLF/RESONANCES/macros/mini/ConfigF0.C");
+#endif 
   if (!ConfigF0(task, isMC, collSys, cutsPair, enaMultSel, masslow, massup, nbins, aodFilterBit, cutPiPid, nsigma, enableMonitor) ) return 0x0;
   
   //-----------------------------------------------------------------------------------------------

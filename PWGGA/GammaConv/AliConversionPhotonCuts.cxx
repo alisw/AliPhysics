@@ -54,6 +54,8 @@
 #include "AliAODMCParticle.h"
 #include "AliAODMCHeader.h"
 #include "AliTRDTriggerAnalysis.h"
+#include "AliDalitzAODESDMC.h"
+#include "AliDalitzEventMC.h"
 
 class iostream;
 
@@ -956,7 +958,7 @@ Bool_t AliConversionPhotonCuts::PhotonIsSelectedAODMC(AliAODMCParticle *particle
     AliAODMCParticle* eNeg = NULL;
 
     if(particle->GetNDaughters() >= 2){
-      for(Int_t daughterIndex=particle->GetDaughter(0);daughterIndex<=particle->GetDaughter(1);daughterIndex++){
+      for(Int_t daughterIndex=particle->GetDaughterLabel(0);daughterIndex<=particle->GetDaughterLabel(1);daughterIndex++){
         AliAODMCParticle *tmpDaughter = static_cast<AliAODMCParticle*>(aodmcArray->At(daughterIndex));
         if(!tmpDaughter) continue;
         if(((tmpDaughter->GetMCProcessCode())) == 5){    // STILL A BUG IN ALIROOT >>8 HAS TPO BE REMOVED AFTER FIX
@@ -1014,6 +1016,76 @@ Bool_t AliConversionPhotonCuts::PhotonIsSelectedAODMC(AliAODMCParticle *particle
   return kFALSE;
 }
 
+///________________________________________________________________________
+Bool_t AliConversionPhotonCuts::PhotonIsSelectedMCAODESD(AliDalitzAODESDMC *particle,AliDalitzEventMC *mcEvent,Bool_t checkForConvertedGamma){
+// MonteCarlo Photon Selection
+    if(!mcEvent)return kFALSE;
+    if (particle->GetPdgCodeG() == 22){
+        if( particle->EtaG() > (fEtaCut) || particle->EtaG() < (-fEtaCut) )
+            return kFALSE;
+        if(fEtaCutMin>-0.1){
+        if( particle->EtaG() < (fEtaCutMin) && particle->EtaG() > (-fEtaCutMin) )
+            return kFALSE;
+        }
+        if(particle->GetMotherG() >-1 && mcEvent->Particle(particle->GetMotherG())->GetPdgCodeG() == 22){
+            return kFALSE; // no photon as mothers!
+        }
+        if(!checkForConvertedGamma) return kTRUE; // return in case of accepted gamma
+        // looking for conversion gammas (electron + positron from pairbuilding (= 5) )
+        AliDalitzAODESDMC* ePos = NULL;
+        AliDalitzAODESDMC* eNeg = NULL;
+        if(particle->GetNDaughtersG() >= 2){
+        //      cout<<particle->GetNDaughtersG()<<endl;
+            for(Int_t daughterIndex=particle->GetFirstDaughterG();daughterIndex<=particle->GetLastDaughterG();daughterIndex++){
+                if(daughterIndex<0) continue;
+                    AliDalitzAODESDMC *tmpDaughter = mcEvent->Particle(daughterIndex);
+                    // cout<<tmpDaughter->GetPdgCodeG()<<endl;
+                    //NOTE 8 Marzo problem here. never and ID 5
+                    if(tmpDaughter->GetUniqueIDG() == 5){
+                        if(tmpDaughter->GetPdgCodeG() == 11){
+                        eNeg = tmpDaughter;
+                    } else if(tmpDaughter->GetPdgCodeG() == -11){
+                    ePos = tmpDaughter;
+                        }
+                    }
+            }
+        }
+    if(ePos == NULL || eNeg == NULL){ // means we do not have two daughters from pair production
+        return kFALSE;
+    }
+    if( ePos->EtaG() > (fEtaCut) || ePos->EtaG() < (-fEtaCut) ||
+        eNeg->EtaG() > (fEtaCut) || eNeg->EtaG() < (-fEtaCut) )
+        return kFALSE;
+    if(fEtaCutMin > -0.1){
+        if( (ePos->EtaG() < (fEtaCutMin) && ePos->EtaG() > (-fEtaCutMin)) ||
+            (eNeg->EtaG() < (fEtaCutMin) && eNeg->EtaG() > (-fEtaCutMin)) )
+            return kFALSE;
+            }
+    if(ePos->GetRatioVxyG()>fMaxR){
+        return kFALSE; // cuts on distance from collision point
+    }
+        //cout<<" Paso RadioXY "<<endl;
+    if(TMath::Abs(ePos->VertexOnZ()) > fMaxZ){
+        return kFALSE;  // outside material
+    }
+    if(TMath::Abs(eNeg->VertexOnZ()) > fMaxZ){
+        return kFALSE;  // outside material
+    }
+    if( ePos->GetRatioVxyG() <= ((TMath::Abs(ePos->VertexOnZ()) * fLineCutZRSlope) - fLineCutZValue)){
+        return kFALSE;  // line cut to exclude regions where we do not reconstruct
+    } else if ( fEtaCutMin != -0.1 &&   ePos->GetRatioVxyG() >= ((TMath::Abs(ePos->VertexOnZ()) * fLineCutZRSlopeMin) - fLineCutZValueMin)){
+        return kFALSE;
+    }
+    if( eNeg->GetRatioVxyG() <= ((TMath::Abs(eNeg->VertexOnZ()) * fLineCutZRSlope) - fLineCutZValue)){
+        return kFALSE; // line cut to exclude regions where we do not reconstruct
+    } else if ( fEtaCutMin != -0.1 &&   eNeg->GetRatioVxyG() >= ((TMath::Abs(eNeg->VertexOnZ()) * fLineCutZRSlopeMin) - fLineCutZValueMin)){
+        return kFALSE;
+    }
+        return kTRUE;
+    //if(AcceptanceCut(particle,ePos,eNeg))return kTRUE;
+    }
+    return kFALSE;
+}
 ///________________________________________________________________________
 Bool_t AliConversionPhotonCuts::PhotonCuts(AliConversionPhotonBase *photon,AliVEvent *event){   // Specific Photon Cuts
 
@@ -1457,9 +1529,9 @@ Bool_t AliConversionPhotonCuts::TracksAreSelected(AliVTrack * negTrack, AliVTrac
   Bool_t passCuts = kTRUE;
 
   if(negTrack->IsA()==AliAODTrack::Class()) {
-    passCuts = passCuts * SpecificTrackCuts(static_cast<AliAODTrack*>(negTrack), static_cast<AliAODTrack*>(posTrack),cutIndex);
+    passCuts = SpecificTrackCuts(static_cast<AliAODTrack*>(negTrack), static_cast<AliAODTrack*>(posTrack),cutIndex);
   } else {
-    passCuts = passCuts * SpecificTrackCuts(static_cast<AliESDtrack*>(negTrack), static_cast<AliESDtrack*>(posTrack),cutIndex);
+    passCuts = SpecificTrackCuts(static_cast<AliESDtrack*>(negTrack), static_cast<AliESDtrack*>(posTrack),cutIndex);
   }
 
   if(!passCuts){
@@ -1799,8 +1871,8 @@ Bool_t AliConversionPhotonCuts::PIDProbabilityCut(AliConversionPhotonBase *photo
 
     Bool_t iResult=kFALSE;
 
-    Double_t *posProbArray = new Double_t[AliPID::kSPECIES];
-    Double_t *negProbArray = new Double_t[AliPID::kSPECIES];
+    Double_t posProbArray[AliPID::kSPECIES];
+    Double_t negProbArray[AliPID::kSPECIES];
 
     AliESDtrack* negTrack   = esdEvent->GetTrack(photon->GetTrackLabelNegative());
     AliESDtrack* posTrack   = esdEvent->GetTrack(photon->GetTrackLabelPositive());
@@ -1815,8 +1887,6 @@ Bool_t AliConversionPhotonCuts::PIDProbabilityCut(AliConversionPhotonBase *photo
       }
     }
 
-    delete [] posProbArray;
-    delete [] negProbArray;
     return iResult;
 
   } else {

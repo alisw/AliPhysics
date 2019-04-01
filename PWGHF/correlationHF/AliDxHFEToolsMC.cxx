@@ -112,7 +112,7 @@ int AliDxHFEToolsMC::Init(const char* option)
   // initialize according to options
   TString strOption(option);
   bool bControlHist=true;
-  std::auto_ptr<TObjArray> tokens(strOption.Tokenize(" "));
+  std::unique_ptr<TObjArray> tokens(strOption.Tokenize(" "));
   if (tokens.get() && tokens->GetEntriesFast()>0) {
     for (int itoken=0; itoken<tokens->GetEntriesFast(); itoken++) {
       if (tokens->At(itoken)==NULL) continue;
@@ -281,7 +281,7 @@ TH1* AliDxHFEToolsMC::CreateControlHistogram(const char* name,
 					     const char** binLabels) const
 {
   /// create control histogram
-  std::auto_ptr<TH1> h(new TH1D(name, title, nBins, -0.5, nBins-0.5));
+  std::unique_ptr<TH1> h(new TH1D(name, title, nBins, -0.5, nBins-0.5));
   if (!h.get()) return NULL;
   for (int iLabel=0; iLabel<nBins; iLabel++) {
     h->GetXaxis()->SetBinLabel(iLabel+1, binLabels[iLabel]);    

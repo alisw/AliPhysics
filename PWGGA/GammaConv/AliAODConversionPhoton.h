@@ -65,9 +65,14 @@ class AliAODConversionPhoton : public AliAODConversionParticle, public AliConver
     Int_t GetNCaloPhotonMCLabels(){return fNCaloPhotonMCLabels;}
     Int_t GetNCaloPhotonMotherMCLabels(){return fNCaloPhotonMotherMCLabels;}
     Int_t GetCaloPhotonMotherMCLabel(Int_t i){return fCaloPhotonMotherMCLabels[i];}
+    Int_t GetNNeutralPionMCLabels(){return fNNeutralPionLabels;}
+    Int_t GetNeutralPionMCLabel(Int_t i){return fNeutralPionLabels[i];}
+    Float_t GetNeutralPionEnergyFraction(Int_t i){return fNeutralPionEnergyFraction[i];}
+    Float_t GetLeadingNeutralPionIndex(){return fLeadingNeutralPionIndex;}
+    Int_t GetLeadingNeutralPionDaughterIndex(){return fLeadingNeutralPionDaughterIndex;}
 
-    void SetCaloPhotonMCFlags(AliMCEvent *mcEvent, Bool_t enableSort);
-    void SetCaloPhotonMCFlagsAOD(AliVEvent* event, Bool_t enableSort);
+    void SetCaloPhotonMCFlags(AliMCEvent *mcEvent, Bool_t enableSort, Bool_t mergedAnalysis = kFALSE, AliVCluster* cluster = NULL);
+    void SetCaloPhotonMCFlagsAOD(AliVEvent* event, Bool_t enableSort, Bool_t mergedAnalysis = kFALSE, AliVCluster* cluster = NULL);
     void SetCaloClusterRef(Long_t ref){fCaloClusterRef = ref;}
     Long_t GetCaloClusterRef()const {return fCaloClusterRef;}
     void PrintCaloMCLabelsAndInfo(AliMCEvent *mcEvent);
@@ -97,18 +102,23 @@ class AliAODConversionPhoton : public AliAODConversionParticle, public AliConver
 
     Long_t fCaloPhotonMCLabels[50];         //!
     Long_t fCaloPhotonMotherMCLabels[20];   //!
+    Long_t fNeutralPionLabels[20];   //!
+    Int_t fLeadingNeutralPionIndex;   //!
+    Int_t fLeadingNeutralPionDaughterIndex;   //!
+    Float_t fNeutralPionEnergyFraction[20];   //!
     Long_t fCaloClusterRef;                 //!
     Float_t fDCArPrimVtx;
     Float_t fDCAzPrimVtx;
     Float_t fInvMassPair;
     Int_t fNCaloPhotonMCLabels;             //!
     Int_t fNCaloPhotonMotherMCLabels;       //!
+    Int_t fNNeutralPionLabels;       //!
     Int_t fCaloPhotonMCFlags;               //!
     Int_t fPairedId;                        //!
     Bool_t fCaloPhoton;                     //!
     Bool_t fUseForMesonPair;                //!
 
-    ClassDef(AliAODConversionPhoton,7)
+    ClassDef(AliAODConversionPhoton,9)
 };
 
 

@@ -130,7 +130,7 @@ void AliAnalysisTaskSigma0Run2::UserExec(Option_t * /*option*/) {
   // PHOTON SELECTION
   fGammaArray = fV0Reader->GetReconstructedGammas();  // Gammas from default Cut
   if (!fIsLightweight) {
-    fPhotonQA->PhotonQA(fInputEvent, fGammaArray);
+    fPhotonQA->PhotonQA(fInputEvent, fMCEvent, fGammaArray);
   }
   std::vector<AliSigma0ParticleV0> gammaConvContainer;
   CastToVector(gammaConvContainer, fInputEvent);
@@ -520,6 +520,7 @@ void AliAnalysisTaskSigma0Run2::UserCreateOutputObjects() {
 
   if (!fIsLightweight) {
     fPhotonQA = new AliSigma0V0Cuts();
+    fPhotonQA->SetIsMC(fIsMC);
     fPhotonQA->SetLightweight(false);
     fPhotonQA->SetPID(22);
     fPhotonQA->SetPosPID(AliPID::kElectron, 11);

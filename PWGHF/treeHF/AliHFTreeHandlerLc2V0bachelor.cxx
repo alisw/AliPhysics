@@ -22,19 +22,18 @@ ClassImp(AliHFTreeHandlerLc2V0bachelor);
 //________________________________________________________________
 AliHFTreeHandlerLc2V0bachelor::AliHFTreeHandlerLc2V0bachelor():
   AliHFTreeHandler(),
-  fImpParProng(),
-  fImpParK0s(),
-  fDecayLengthK0s(),
-  fInvMassK0s(),
-  fDCAK0s(),
-  fPtK0s(),
-  fEtaK0s(),
-  fPhiK0s(),
-  fcTauK0s(),
-  fV0PointingAngle(),
-  fCosThetaStar(),
-  fsignd0(),
-  fArmqTOverAlpha(),
+  fImpParK0s(-9999.),
+  fDecayLengthK0s(-9999.),
+  fInvMassK0s(-9999.),
+  fDCAK0s(-9999.),
+  fPtK0s(-9999.),
+  fEtaK0s(-9999.),
+  fPhiK0s(-9999.),
+  fcTauK0s(-9999.),
+  fV0PointingAngle(-9999.),
+  fCosThetaStar(-9999.),
+  fsignd0(-9999.),
+  fArmqTOverAlpha(-9999.),
   fCalcSecoVtx(0)
 {
   //
@@ -42,24 +41,25 @@ AliHFTreeHandlerLc2V0bachelor::AliHFTreeHandlerLc2V0bachelor():
   //
 
   fNProngs = 3; // --> cannot be changed (prong 0 is the bachelor, 1,2 are prongs of the K0s)
+  for(unsigned int iProng=0; iProng<fNProngs; iProng++) 
+    fImpParProng[iProng] = -9999.;
 }
 
 //________________________________________________________________
 AliHFTreeHandlerLc2V0bachelor::AliHFTreeHandlerLc2V0bachelor(int PIDopt):
   AliHFTreeHandler(PIDopt),
-  fImpParProng(),
-  fImpParK0s(),
-  fDecayLengthK0s(),
-  fInvMassK0s(),
-  fDCAK0s(),
-  fPtK0s(),
-  fEtaK0s(),
-  fPhiK0s(),
-  fcTauK0s(),
-  fV0PointingAngle(),
-  fCosThetaStar(),
-  fsignd0(),
-  fArmqTOverAlpha(),
+  fImpParK0s(-9999.),
+  fDecayLengthK0s(-9999.),
+  fInvMassK0s(-9999.),
+  fDCAK0s(-9999.),
+  fPtK0s(-9999.),
+  fEtaK0s(-9999.),
+  fPhiK0s(-9999.),
+  fcTauK0s(-9999.),
+  fV0PointingAngle(-9999.),
+  fCosThetaStar(-9999.),
+  fsignd0(-9999.),
+  fArmqTOverAlpha(-9999.),
   fCalcSecoVtx(0)
 {
   //
@@ -67,6 +67,8 @@ AliHFTreeHandlerLc2V0bachelor::AliHFTreeHandlerLc2V0bachelor(int PIDopt):
   //
 
   fNProngs = 3; // --> cannot be changed (prong 0 is the bachelor, 1,2 are prongs of the K0s)
+  for(unsigned int iProng=0; iProng<fNProngs; iProng++) 
+    fImpParProng[iProng] = -9999.;
 }
 
 //________________________________________________________________
@@ -84,7 +86,7 @@ TTree* AliHFTreeHandlerLc2V0bachelor::BuildTree(TString name, TString title)
 
   if (fTreeVar) {
     delete fTreeVar;
-    fTreeVar = 0x0;
+    fTreeVar = nullptr;
   }
   fTreeVar = new TTree(name.Data(), title.Data());
 
@@ -118,49 +120,49 @@ TTree* AliHFTreeHandlerLc2V0bachelor::BuildTree(TString name, TString title)
 }
 
 //________________________________________________________________
-bool AliHFTreeHandlerLc2V0bachelor::SetVariables(AliAODRecoDecayHF* cand, float bfield, int masshypo, AliPIDResponse* pidrespo) 
+bool AliHFTreeHandlerLc2V0bachelor::SetVariables(int runnumber, unsigned int eventID, AliAODRecoDecayHF* cand, float bfield, int masshypo, AliPIDResponse* pidrespo) 
 {
   if(!cand) return false;
   if(fFillOnlySignal) { //if fill only signal and not signal candidate, do not store
-    if(!(fCandTypeMap&kSignal)) return true;
+    if(!(fCandType&kSignal)) return true;
   }
-  fNCandidates++;
-
+  fRunNumber=runnumber;
+  fEvID=eventID;
+    
   //topological variables
   //common
-  fCandType.push_back(fCandTypeMap);
-  fPt.push_back(cand->Pt());
-  fY.push_back(cand->Y(411));
-  fEta.push_back(cand->Eta());
-  fPhi.push_back(cand->Phi());
+  fPt=cand->Pt();
+  fY=cand->Y(4122);
+  fEta=cand->Eta();
+  fPhi=cand->Phi();
   if(fCalcSecoVtx){
-    fDecayLength.push_back(cand->DecayLength());
-    fDecayLengthXY.push_back(cand->DecayLengthXY());
-    fNormDecayLengthXY.push_back(cand->NormalizedDecayLengthXY());
-    fCosP.push_back(cand->CosPointingAngle());
-    fCosPXY.push_back(cand->CosPointingAngleXY());
-    fImpParXY.push_back(cand->ImpParXY());
-    fDCA.push_back(cand->GetDCA());
+    fDecayLength=cand->DecayLength();
+    fDecayLengthXY=cand->DecayLengthXY();
+    fNormDecayLengthXY=cand->NormalizedDecayLengthXY();
+    fCosP=cand->CosPointingAngle();
+    fCosPXY=cand->CosPointingAngleXY();
+    fImpParXY=cand->ImpParXY();
+    fDCA=cand->GetDCA();
   }
   
   //Lc -> K0sp variables  
-  fInvMass.push_back(((AliAODRecoCascadeHF*)cand)->InvMassLctoK0sP());
+  fInvMass=((AliAODRecoCascadeHF*)cand)->InvMassLctoK0sP();
   
   AliAODv0 * v0part = ((AliAODRecoCascadeHF*)cand)->Getv0();
   for(unsigned int iProng = 0; iProng < fNProngs; iProng++) {
-    if(iProng==0) fImpParProng[iProng].push_back(cand->Getd0Prong(iProng));
-    else          fImpParProng[iProng].push_back(v0part->Getd0Prong(iProng-1));
+    if(iProng==0) fImpParProng[iProng]=cand->Getd0Prong(iProng);
+    else          fImpParProng[iProng]=v0part->Getd0Prong(iProng-1);
   }
-  fImpParK0s.push_back(cand->Getd0Prong(1));
-  fDecayLengthK0s.push_back(((AliAODRecoCascadeHF*)cand)->DecayLengthV0());
-  fInvMassK0s.push_back(v0part->MassK0Short());
-  fDCAK0s.push_back(v0part->GetDCA());
-  fPtK0s.push_back(v0part->Pt());
-  fEtaK0s.push_back(v0part->Eta());
-  fPhiK0s.push_back(v0part->Phi());
+  fImpParK0s=cand->Getd0Prong(1);
+  fDecayLengthK0s=((AliAODRecoCascadeHF*)cand)->DecayLengthV0();
+  fInvMassK0s=v0part->MassK0Short();
+  fDCAK0s=v0part->GetDCA();
+  fPtK0s=v0part->Pt();
+  fEtaK0s=v0part->Eta();
+  fPhiK0s=v0part->Phi();
 
-  fcTauK0s.push_back(((AliAODRecoCascadeHF*)cand)->DecayLengthV0()*0.497/(v0part->P()));
-  fV0PointingAngle.push_back(((AliAODRecoCascadeHF*)cand)->CosV0PointingAngle());
+  fcTauK0s=((AliAODRecoCascadeHF*)cand)->DecayLengthV0()*0.497/(v0part->P());
+  fV0PointingAngle=((AliAODRecoCascadeHF*)cand)->CosV0PointingAngle();
 
   // Cosine of proton emission angle (theta*) in the rest frame of the mother particle
   // (from AliRDHFCutsLctoV0)
@@ -173,7 +175,7 @@ bool AliHFTreeHandlerLc2V0bachelor::SetVariables(AliAODRecoDecayHF* cand, float 
   TVector3 vboost = vlc.BoostVector();
   vpr.Boost(-vboost);
   Double_t cts = TMath::Cos(vpr.Angle(vlc.Vect()));
-  fCosThetaStar.push_back(cts);
+  fCosThetaStar=cts;
 
   // Sign of d0 proton (different from regular d0)
   // (from AliRDHFCutsLctoV0)
@@ -190,10 +192,10 @@ bool AliHFTreeHandlerLc2V0bachelor::SetVariables(AliAODRecoDecayHF* cand, float 
   Double_t signd0 = 1.;
   if(innerpro<0.) signd0 = -1.;  
   signd0 = signd0*TMath::Abs(d0z0bach[0]);
-  fsignd0.push_back(signd0);
+  fsignd0=signd0;
   
   //Armenteros qT/|alpha|
-  fArmqTOverAlpha.push_back( v0part->PtArmV0()/TMath::Abs(v0part->AlphaV0()) );
+  fArmqTOverAlpha= v0part->PtArmV0()/TMath::Abs(v0part->AlphaV0());
   
   //single track variables
   AliAODTrack* prongtracks[3];
@@ -211,34 +213,4 @@ bool AliHFTreeHandlerLc2V0bachelor::SetVariables(AliAODRecoDecayHF* cand, float 
   if(!setpid) return false;
 
   return true;
-}
-
-//________________________________________________________________
-void AliHFTreeHandlerLc2V0bachelor::FillTree() {
-  fTreeVar->Fill();
-  
-  //VERY IMPORTANT: CLEAR ALL VECTORS
-  if(!fIsMCGenTree) {
-    ResetDmesonCommonVarVectors();
-    fImpParK0s.clear();
-    fDecayLengthK0s.clear();
-    fInvMassK0s.clear();
-    fDCAK0s.clear();
-    fPtK0s.clear();
-    fEtaK0s.clear();
-    fPhiK0s.clear();
-    fcTauK0s.clear();
-    fV0PointingAngle.clear();
-    fCosThetaStar.clear();
-    fsignd0.clear();
-    fArmqTOverAlpha.clear();
-    for(unsigned int iProng = 0; iProng<fNProngs; iProng++) fImpParProng[iProng].clear();
-    ResetSingleTrackVarVectors();
-    if(fPidOpt != kNoPID) ResetPidVarVectors();
-  }
-  else {
-    ResetMCGenVectors();
-  }
-  fCandTypeMap = 0;
-  fNCandidates = 0;
 }

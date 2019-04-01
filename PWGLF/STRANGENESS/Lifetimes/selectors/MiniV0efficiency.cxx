@@ -123,7 +123,7 @@ Bool_t MiniV0efficiency::Process(Long64_t entry) {
             fHistV0ctMC[j]->Fill(MCmass*(miniMC.GetDistOverP()));
           }
           if(ind>=0){
-            if(miniMC.GetNBodies()==2 && part==p_vec[2]  && miniMC.IsHyperCandidate()==true){
+            if(miniMC.GetNBodies()==2 && part==p_vec[2]){
               auto& minihyper= V0Hyper[ind];  
               if(minihyper.GetCandidateInvMass()!=-1){ 
                 fHistV0ptData[2]->Fill(minihyper.GetV0pt());
@@ -133,7 +133,7 @@ Bool_t MiniV0efficiency::Process(Long64_t entry) {
 
               }
             }  
-            else if(part!=p_vec[2] && miniMC.IsHyperCandidate()==false ){              
+            else if(part!=p_vec[2]){              
                 auto& minidata= V0s[ind];  
                 fHistV0ptData[j]->Fill(minidata.GetV0pt());
                 fHistV0ctData[j]->Fill(MCmass*(minidata.GetDistOverP()));

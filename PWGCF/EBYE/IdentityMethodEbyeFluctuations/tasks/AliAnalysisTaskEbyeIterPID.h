@@ -34,10 +34,13 @@ class fPIDCombined;
 #include "TCutG.h"
 #include "TTreeStream.h"
 #include "AliESDv0Cuts.h"
+#include "AliEventCuts.h"
 
 // class AliAnalysisTaskPIDetaTreeElectrons : public AliAnalysisTaskPIDV0base {
 class AliAnalysisTaskEbyeIterPID : public AliAnalysisTaskSE {
  public:
+
+  AliEventCuts fEventCuts;     /// Event cuts
 
 // ---------------------------------------------------------------------------------
 //                           Constructor and Destructor
@@ -181,12 +184,15 @@ class AliAnalysisTaskEbyeIterPID : public AliAnalysisTaskSE {
   void   SetDeDxCheck(const Bool_t ifDeDxCheck = kFALSE)              {fDEdxCheck           = ifDeDxCheck;}
   void   SetEffMatrix(const Bool_t ifEffMatrix = kFALSE)              {fEffMatrix           = ifEffMatrix;}
   void   SetFillAllCutVariables(const Bool_t ifAllCuts = kFALSE)      {fFillTracks          = ifAllCuts;}
+  void   SetFillOnlyHists(const Bool_t ifFillOnlyHists = kFALSE)      {fFillOnlyHists       = ifFillOnlyHists;}
   void   SetFillEffLookUpTable(const Bool_t ifEffLookUpTable = kFALSE){fFillEffLookUpTable  = ifEffLookUpTable;}
   void   SetFillHigherMomentsMCclosure(const Bool_t ifHigherMomentsMCclosure = kFALSE){fFillHigherMomentsMCclosure  = ifHigherMomentsMCclosure;}
   void   SetRunFastSimulation(const Bool_t ifFastSimul = kFALSE)      {fRunFastSimulation   = ifFastSimul;}
   void   SetRunFastHighMomentCal(const Bool_t ifFastHighMom = kFALSE) {fRunFastHighMomentCal= ifFastHighMom;}
   void   SetFillGenDistributions(const Bool_t ifGenDistributions = kFALSE) {fFillGenDistributions= ifGenDistributions;}
   void   SetFillTreeMC(const Bool_t ifTreeMC = kFALSE)                {fFillTreeMC= ifTreeMC;}
+
+  void   SetDefaultTrackCuts(const Bool_t ifDefaultTrackCuts = kFALSE){fDefaultTrackCuts= ifDefaultTrackCuts;}
   void   SetFillNudynFastGen(const Bool_t ifNudynFastGen = kFALSE)    {fFillNudynFastGen= ifNudynFastGen;}
   void   SetUsePtCut(const Int_t ifUsePtCut = 1)                      {fUsePtCut            = ifUsePtCut;}
   void   SetTrackOriginType(const Int_t ifTrackOriginType = 0)        {fTrackOriginType     = ifTrackOriginType;}
@@ -225,7 +231,7 @@ class AliAnalysisTaskEbyeIterPID : public AliAnalysisTaskSE {
 
 
   // Set the binning of centrality
-  void   SetCentralityBinning(const Int_t tmpCentbins, Float_t tmpfxCentBins[])
+  void SetCentralityBinning(const Int_t tmpCentbins, Float_t tmpfxCentBins[])
   {
     // Create the histograms to be used in the binning of eta, cent and momentum
     std::cout << " Info::marsland: !!!!!! Centrality binning is being set !!!!!!! " << std::endl;
@@ -451,7 +457,6 @@ private:
   void FastGen();                           // Run over galice.root for Fastgen
   void FastGenHigherMoments();     // Run over galice.root for Fastgen and calculate higher moments
   void MCclosureHigherMoments();   // Calculate higher moments for REC and GEN
-  void CalculateFastGenVsFullMCHigherMoments();
   void WeakAndMaterial();                   // Look full acceptance, weak decay and material
   void FillDnchDeta();                      // Fill dnch/deta values for each cent and eta bin
   void FillEffMatrix();            // Prepare efficiency matrix
@@ -536,14 +541,16 @@ private:
   Bool_t            fEffMatrix;              // flag for efficiency matrix filling
   Bool_t            fDEdxCheck;              // flag to check only the dEdx performance
   Bool_t            fIncludeITS;             // decide whether to use ITS or not
-  Bool_t            fFillTracks;               // switch whether to fill all cut variables
-  Bool_t            fFillEffLookUpTable;
+  Bool_t            fFillTracks;             // switch whether to fill all cut variables
+  Bool_t            fFillOnlyHists;          //
+  Bool_t            fFillEffLookUpTable;     //
   Bool_t            fFillHigherMomentsMCclosure;
   Bool_t            fFillArmPodTree;         // switch whether to fill clean sample tree
   Bool_t            fRunFastSimulation;      // when running over galice.root do not fill other objects
   Bool_t            fRunFastHighMomentCal;   // when running over galice.root do not fill other objects
   Bool_t            fFillGenDistributions;   // when running over galice.root do not fill other objects
   Bool_t            fFillTreeMC;
+  Bool_t            fDefaultTrackCuts;
   Bool_t            fFillNudynFastGen;
   Int_t             fUsePtCut;
   Int_t             fTrackOriginType;
@@ -610,10 +617,6 @@ private:
   Float_t           fMuMC;
   Float_t           fLaMC;
 
-  Float_t           fPtotMCgen;
-  Float_t           fPtMCgen;
-  Float_t           fEtaMCgen;
-  Int_t             fSignMCgen;
   Double_t          fMCImpactParameter;
 
   Float_t           fElMCgen;
@@ -725,32 +728,32 @@ private:
   Int_t              fSystDCAxy;             // 0 --> default ||| -1 --> -sigma ||| +1 --> +sigma
   Int_t              fSystChi2;              // 0 -->  4      ||| -1 -->    3   ||| +1 -->   5
   Int_t              fSystVz;                // 0 -->  10     ||| -1 -->    8   ||| +1 -->   12
-  Float_t            fNetPiFirstMoments[2][4][10][16];    //[fNResModeMC][fNMomBinsMC][fNCentBinsMC][fNEtaWinBinsMC]
-  Float_t            fNetKaFirstMoments[2][4][10][16];    //[fNResModeMC][fNMomBinsMC][fNCentBinsMC][fNEtaWinBinsMC]
-  Float_t            fNetPrFirstMoments[2][4][10][16];    //[fNResModeMC][fNMomBinsMC][fNCentBinsMC][fNEtaWinBinsMC]
-  Float_t            fNetLaFirstMoments[2][4][10][16];    //[fNResModeMC][fNMomBinsMC][fNCentBinsMC][fNEtaWinBinsMC]
-  Float_t            fNetChFirstMoments[2][4][10][16];    //[fNResModeMC][fNMomBinsMC][fNCentBinsMC][fNEtaWinBinsMC]
+  Float_t            fNetPiFirstMoments[2][4][10][8];    //[fNResModeMC][fNMomBinsMC][fNCentBinsMC][fNEtaWinBinsMC]
+  Float_t            fNetKaFirstMoments[2][4][10][8];    //[fNResModeMC][fNMomBinsMC][fNCentBinsMC][fNEtaWinBinsMC]
+  Float_t            fNetPrFirstMoments[2][4][10][8];    //[fNResModeMC][fNMomBinsMC][fNCentBinsMC][fNEtaWinBinsMC]
+  Float_t            fNetLaFirstMoments[2][4][10][8];    //[fNResModeMC][fNMomBinsMC][fNCentBinsMC][fNEtaWinBinsMC]
+  Float_t            fNetChFirstMoments[2][4][10][8];    //[fNResModeMC][fNMomBinsMC][fNCentBinsMC][fNEtaWinBinsMC]
 
-  Float_t            fNetPiFirstMomentsRec[4][10][16];    //[fNMomBinsMC][fNCentBinsMC][fNEtaWinBinsMC]
-  Float_t            fNetKaFirstMomentsRec[4][10][16];    //[fNMomBinsMC][fNCentBinsMC][fNEtaWinBinsMC]
-  Float_t            fNetPrFirstMomentsRec[4][10][16];    //[fNMomBinsMC][fNCentBinsMC][fNEtaWinBinsMC]
-  Float_t            fNetPiFirstMomentsGen[4][10][16];    //[fNMomBinsMC][fNCentBinsMC][fNEtaWinBinsMC]
-  Float_t            fNetKaFirstMomentsGen[4][10][16];    //[fNMomBinsMC][fNCentBinsMC][fNEtaWinBinsMC]
-  Float_t            fNetPrFirstMomentsGen[4][10][16];    //[fNMomBinsMC][fNCentBinsMC][fNEtaWinBinsMC]
+  Float_t            fNetPiFirstMomentsRec[4][10][8];    //[fNMomBinsMC][fNCentBinsMC][fNEtaWinBinsMC]
+  Float_t            fNetKaFirstMomentsRec[4][10][8];    //[fNMomBinsMC][fNCentBinsMC][fNEtaWinBinsMC]
+  Float_t            fNetPrFirstMomentsRec[4][10][8];    //[fNMomBinsMC][fNCentBinsMC][fNEtaWinBinsMC]
+  Float_t            fNetPiFirstMomentsGen[4][10][8];    //[fNMomBinsMC][fNCentBinsMC][fNEtaWinBinsMC]
+  Float_t            fNetKaFirstMomentsGen[4][10][8];    //[fNMomBinsMC][fNCentBinsMC][fNEtaWinBinsMC]
+  Float_t            fNetPrFirstMomentsGen[4][10][8];    //[fNMomBinsMC][fNCentBinsMC][fNEtaWinBinsMC]
 
-  Float_t            fCrossPiFirstMomentsRec[4][10][16];    //[fNMomBinsMC][fNCentBinsMC][fNEtaWinBinsMC]
-  Float_t            fCrossKaFirstMomentsRec[4][10][16];    //[fNMomBinsMC][fNCentBinsMC][fNEtaWinBinsMC]
-  Float_t            fCrossPrFirstMomentsRec[4][10][16];    //[fNMomBinsMC][fNCentBinsMC][fNEtaWinBinsMC]
-  Float_t            fCrossPiFirstMomentsGen[4][10][16];    //[fNMomBinsMC][fNCentBinsMC][fNEtaWinBinsMC]
-  Float_t            fCrossKaFirstMomentsGen[4][10][16];    //[fNMomBinsMC][fNCentBinsMC][fNEtaWinBinsMC]
-  Float_t            fCrossPrFirstMomentsGen[4][10][16];    //[fNMomBinsMC][fNCentBinsMC][fNEtaWinBinsMC]
+  Float_t            fCrossPiFirstMomentsRec[4][10][8];    //[fNMomBinsMC][fNCentBinsMC][fNEtaWinBinsMC]
+  Float_t            fCrossKaFirstMomentsRec[4][10][8];    //[fNMomBinsMC][fNCentBinsMC][fNEtaWinBinsMC]
+  Float_t            fCrossPrFirstMomentsRec[4][10][8];    //[fNMomBinsMC][fNCentBinsMC][fNEtaWinBinsMC]
+  Float_t            fCrossPiFirstMomentsGen[4][10][8];    //[fNMomBinsMC][fNCentBinsMC][fNEtaWinBinsMC]
+  Float_t            fCrossKaFirstMomentsGen[4][10][8];    //[fNMomBinsMC][fNCentBinsMC][fNEtaWinBinsMC]
+  Float_t            fCrossPrFirstMomentsGen[4][10][8];    //[fNMomBinsMC][fNCentBinsMC][fNEtaWinBinsMC]
 
-  Float_t            fPiFirstMomentsGen[2][4][10][16];    //[2][fNMomBinsMC][fNCentBinsMC][fNEtaWinBinsMC]
-  Float_t            fKaFirstMomentsGen[2][4][10][16];    //[2][fNMomBinsMC][fNCentBinsMC][fNEtaWinBinsMC]
-  Float_t            fPrFirstMomentsGen[2][4][10][16];    //[2][fNMomBinsMC][fNCentBinsMC][fNEtaWinBinsMC]
-  Float_t            fPiFirstMomentsRec[2][4][10][16];    //[2][fNMomBinsMC][fNCentBinsMC][fNEtaWinBinsMC]
-  Float_t            fKaFirstMomentsRec[2][4][10][16];    //[2][fNMomBinsMC][fNCentBinsMC][fNEtaWinBinsMC]
-  Float_t            fPrFirstMomentsRec[2][4][10][16];    //[2][fNMomBinsMC][fNCentBinsMC][fNEtaWinBinsMC]
+  Float_t            fPiFirstMomentsGen[2][4][10][8];    //[2][fNMomBinsMC][fNCentBinsMC][fNEtaWinBinsMC]
+  Float_t            fKaFirstMomentsGen[2][4][10][8];    //[2][fNMomBinsMC][fNCentBinsMC][fNEtaWinBinsMC]
+  Float_t            fPrFirstMomentsGen[2][4][10][8];    //[2][fNMomBinsMC][fNCentBinsMC][fNEtaWinBinsMC]
+  Float_t            fPiFirstMomentsRec[2][4][10][8];    //[2][fNMomBinsMC][fNCentBinsMC][fNEtaWinBinsMC]
+  Float_t            fKaFirstMomentsRec[2][4][10][8];    //[2][fNMomBinsMC][fNCentBinsMC][fNEtaWinBinsMC]
+  Float_t            fPrFirstMomentsRec[2][4][10][8];    //[2][fNMomBinsMC][fNCentBinsMC][fNEtaWinBinsMC]
 
 
   Float_t            *fetaDownArr;           //[fNEtaWinBinsMC]

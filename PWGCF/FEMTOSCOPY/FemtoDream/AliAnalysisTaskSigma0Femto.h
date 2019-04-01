@@ -23,17 +23,15 @@ class AliVTrack;
 class AliAnalysisTaskSigma0Femto : public AliAnalysisTaskSE {
  public:
   AliAnalysisTaskSigma0Femto();
-  AliAnalysisTaskSigma0Femto(const char *name);
+  AliAnalysisTaskSigma0Femto(const char *name, const bool isMC);
   virtual ~AliAnalysisTaskSigma0Femto();
 
   virtual void UserCreateOutputObjects();
   virtual void UserExec(Option_t *option);
 
   void SetV0ReaderName(TString name) { fV0ReaderName = name; }
-  void SetIsHeavyIon(bool isHeavyIon) { fIsHeavyIon = isHeavyIon; }
   void SetIsMC(bool isMC) { fIsMC = isMC; }
   void SetLightweight(bool isLightweight) { fIsLightweight = isLightweight; }
-  void SetIsRun1(bool isRun1) { fIsRun1 = isRun1; }
   void SetV0Percentile(float v0perc) { fV0PercentileMax = v0perc; }
   void SetTrigger(UInt_t trigger) { fTrigger = trigger; }
   void SetMultiplicityMode(UInt_t trigger) { fMultMode = trigger; }
@@ -55,25 +53,12 @@ class AliAnalysisTaskSigma0Femto : public AliAnalysisTaskSE {
     fConfig = config;
   }
 
-  bool AcceptEvent(AliVEvent *event);
-  bool AcceptEventRun1(AliVEvent *event);
-  bool AcceptEventRun2(AliVEvent *event);
   void CastToVector(std::vector<AliSigma0ParticleV0> &container,
                     const AliVEvent *inputEvent);
   void CastToVector(std::vector<AliSigma0ParticlePhotonMother> &sigmaContainer,
                     std::vector<AliFemtoDreamBasePart> &particles,
                     const AliMCEvent *mcEvent);
-  void CastToVector(std::vector<AliSigma0ParticleV0> &container,
-                    std::vector<AliFemtoDreamBasePart> &particles,
-                    const AliMCEvent *mcEvent);
   void FillTriggerHisto(TH1F *histo);
-  void FillCorrelationCorrelator(
-      const std::vector<AliFemtoDreamBasePart> &particles,
-      const std::vector<AliFemtoDreamBasePart> &sigmasFemto,
-      const std::vector<AliSigma0ParticlePhotonMother> &sigmas,
-      const bool isAnti) const;
-  float ComputeRelk(const TVector3 &Part1Momentum, const int PDGPart1,
-                    const TVector3 &Part2Momentum, const int PDGPart2) const;
 
  private:
   AliAnalysisTaskSigma0Femto(const AliAnalysisTaskSigma0Femto &task);
@@ -89,6 +74,8 @@ class AliAnalysisTaskSigma0Femto : public AliAnalysisTaskSE {
   AliSigma0PhotonMotherCuts *fSigmaCuts;      //
   AliSigma0PhotonMotherCuts *fAntiSigmaCuts;  //
 
+  TRandom3 *fRandom;  //!
+
   AliFemtoDreamEvent *fEvent;                        //!
   AliFemtoDreamEventCuts *fEvtCuts;                  //
   AliFemtoDreamTrack *fProtonTrack;                  //!
@@ -99,9 +86,7 @@ class AliAnalysisTaskSigma0Femto : public AliAnalysisTaskSE {
   AliFemtoDreamPartCollection *fPartColl;            //!
 
   bool fIsMC;                //
-  bool fIsHeavyIon;          //
   bool fIsLightweight;       //
-  bool fIsRun1;              //
   bool fPhotonLegPileUpCut;  //
   float fV0PercentileMax;    //
   UInt_t fTrigger;           //
@@ -109,25 +94,20 @@ class AliAnalysisTaskSigma0Femto : public AliAnalysisTaskSE {
 
   TClonesArray *fGammaArray;  //!
 
-  // Histograms
-  // =====================================================================
+  TList *fQA;                      //!
+  TList *fEvtHistList;             //!
+  TList *fTrackCutHistList;        //!
+  TList *fTrackCutHistMCList;      //!
+  TList *fAntiTrackCutHistList;    //!
+  TList *fAntiTrackCutHistMCList;  //!
+  TList *fLambdaHistList;          //!
+  TList *fAntiLambdaHistList;      //!
+  TList *fPhotonHistList;          //!
+  TList *fSigmaHistList;           //!
+  TList *fAntiSigmaHistList;       //!
+  TList *fResultList;              //!
+  TList *fResultQAList;            //!
 
-  TList *fOutputContainer;                                 //!
-  TList *fQA;                                              //!
-  TList *fOutputFemto;                                     //!
-  TH2F *fHistCorrelationPSigmaPLambda[3];                  //!
-  TH2F *fHistCorrelationPSigmaPGamma[3];                   //!
-  TH2F *fHistCorrelationPLambdaPGamma[3];                  //!
-  TH1F *fHistDiffPSigma[3];                                //!
-  TH1F *fHistDiffPGamma[3];                                //!
-  TH1F *fHistDiffPLambda[3];                               //!
-  TH2F *fHistCorrelationAntiPAntiSigmaAntiPAntiLambda[3];  //!
-  TH2F *fHistCorrelationAntiPAntiSigmaAntiPAntiGamma[3];   //!
-  TH2F *fHistCorrelationAntiPAntiLambdaAntiPAntiGamma[3];  //!
-  TH1F *fHistDiffPAntiSigma[3];                            //!
-  TH1F *fHistDiffPAntiGamma[3];                            //!
-  TH1F *fHistDiffPAntiLambda[3];                           //!
-
-  ClassDef(AliAnalysisTaskSigma0Femto, 11)
+  ClassDef(AliAnalysisTaskSigma0Femto, 15)
 };
 #endif

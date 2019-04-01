@@ -1528,10 +1528,10 @@ void AliAnalysisTaskSED0MassNonPromptFraction::FillMCGenHists(AliAODEvent* aod, 
        
         if (TMath::Abs(((AliAODMCParticle*)partD0)->GetPdgCode() != 421)) continue;
         
-        AliAODMCParticle *partDaughter = (AliAODMCParticle*)arrMC->At(partD0->GetDaughter(0));
+        AliAODMCParticle *partDaughter = (AliAODMCParticle*)arrMC->At(partD0->GetDaughterLabel(0));
         //if(!partDaughter) continue;
         
-        if (!arrMC->At(partD0->GetDaughter(0))) continue;
+        if (!arrMC->At(partD0->GetDaughterLabel(0))) continue;
         
         Double_t XvtxGen=0;
         Double_t YvtxGen=0;
@@ -1960,9 +1960,9 @@ void AliAnalysisTaskSED0MassNonPromptFraction::FillVarHists(AliAODEvent* aod,Ali
             Double_t ZpGen=0;
             
             
-            AliAODMCParticle *partDaughter = (AliAODMCParticle*)arrMC->At(partD0->GetDaughter(0));
+            AliAODMCParticle *partDaughter = (AliAODMCParticle*)arrMC->At(partD0->GetDaughterLabel(0));
            
-            if (!arrMC->At(partD0->GetDaughter(0))) return;
+            if (!arrMC->At(partD0->GetDaughterLabel(0))) return;
            
             
             XvtxGen = partDaughter->Xv();
@@ -3475,7 +3475,7 @@ Float_t AliAnalysisTaskSED0MassNonPromptFraction::GetTrueImpactParameter(AliAODM
   }
 
   //  Int_t nDau=partD0->GetNDaughters();
-  Int_t labelFirstDau = partD0->GetDaughter(0); 
+  Int_t labelFirstDau = partD0->GetDaughterLabel(0); 
 
   for(Int_t iDau=0; iDau<2; iDau++){
     Int_t ind = labelFirstDau+iDau;

@@ -186,6 +186,10 @@ class AliAnalysisTaskSELc2V0bachelorTMVAApp : public AliAnalysisTaskSE
 
   TH1F* fHistoCentrality;             //!<! histogram with centrality from AliRDHFCuts
   TH1F* fHistoEvents;                 //!<! histogram with number of events analyzed
+  TH1F* fHistoTracklets_1;            //!<! histogram with number of tracklets in the event in eta [-1, 1]
+  TH2F* fHistoTracklets_1_cent;       //!<! histogram with number of tracklets in the event in eta [-1, 1] vs centrality
+  TH1F* fHistoTracklets_All;          //!<! histogram with number of tracklets in the event in eta [-999, 999]
+  TH2F* fHistoTracklets_All_cent;     //!<! histogram with number of tracklets in the event in eta [-999, 999] vs centrality
   TH1F* fHistoLc;                     //!<! histogram with number of Lc
   TH1F* fHistoLcOnTheFly;             //!<! histogram with number of Lc with on-the-fly V0
   Bool_t fFillOnlySgn;                /// flag to fill only signal (speeding up processing)
@@ -293,7 +297,8 @@ class AliAnalysisTaskSELc2V0bachelorTMVAApp : public AliAnalysisTaskSE
   TF1 *fFuncWeightFONLL5overLHC13d3Lc; //!<! weight function for FONLL vs pPb prod.
   TH1F* fHistoMCNch;                   //!<! histogram with Nch distribution from MC production
  
-  Int_t fNTracklets;                   /// tracklet multiplicity in event
+  Int_t fNTracklets_1;                 /// tracklet multiplicity in event in [-1. 1]
+  Int_t fNTracklets_All;               /// tracklet multiplicity in event without eta cut
   Float_t fCentrality;                 /// centrality
   
   Bool_t fFillTree;                    /// flag to decide whether to fill the sgn and bkg trees
@@ -318,7 +323,7 @@ class AliAnalysisTaskSELc2V0bachelorTMVAApp : public AliAnalysisTaskSE
   Bool_t fDebugHistograms;             /// flag to decide whether or not to have extra histograms (useful mainly for debug)
   
   /// \cond CLASSIMP    
-  ClassDef(AliAnalysisTaskSELc2V0bachelorTMVAApp, 1); /// class for Lc->p K0
+  ClassDef(AliAnalysisTaskSELc2V0bachelorTMVAApp, 3); /// class for Lc->p K0
   /// \endcond    
 };
 
