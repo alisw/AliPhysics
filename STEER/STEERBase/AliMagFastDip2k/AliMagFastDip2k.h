@@ -1,0 +1,5 @@
+#include "AliMagFastDip2k_0.h"
+#include "AliMagFastDip2k_1.h"
+#include "AliMagFastDip2k_2.h"
+#include "AliMagFastDip2k_3.h"
+#include "AliMagFastDip2k_4.h"

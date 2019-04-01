@@ -1,11 +1,11 @@
-#include "AliMagFast.h"
-#include "AliMagFastDip2k.h"
-typedef unsigned short ushort;
-const float Infinity = INFINITY;
-AliMagFast::SegmentEnd_t dip2k_z_slices[] = {
-};
-AliMagFast::SegmentSearch_t dip2k_z_segments[] = {
-};
-AliMagFast::SegmentSearch_t dip2k_z = {-1, 0.0, -1760.0, dip2k_z_slices, dip2k_z_segments};
-AliMagFast::ChebFormula_t dip2k_params[] = {
-};
+#include "AliMagFastDip2k_00.cxx"
+#include "AliMagFastDip2k_01.cxx"
+#include "AliMagFastDip2k_02.cxx"
+#include "AliMagFastDip2k_03.cxx"
+#include "AliMagFastDip2k_04.cxx"
+#include "AliMagFastDip2k_05.cxx"
+#include "AliMagFastDip2k_06.cxx"
+#include "AliMagFastDip2k_07.cxx"
+#include "AliMagFastDip2k_08.cxx"
+#include "AliMagFastDip2k_09.cxx"
+#include "AliMagFastDip2k_10.cxx"
