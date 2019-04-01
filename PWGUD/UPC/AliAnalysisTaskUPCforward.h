@@ -428,6 +428,48 @@ class AliAnalysisTaskUPCforward : public AliAnalysisTaskSE
         TH1F*                   fZNATimeWithoutTimingH[4];         //!
 
                                 /**
+                                 * This histogram records the time distribution
+                                 * of neutron ZDC. I am filling it with all the
+                                 * possible TDC info. Basically it is the sum
+                                 * of the all the 4 histograms.
+                                 */
+        TH1F*                   fZNCTime4FillingH;         //!
+
+                                /**
+                                 * This histogram records the time distribution
+                                 * of neutron ZDC. I am filling it with all the
+                                 * possible TDC info. Basically it is the sum
+                                 * of the all the 4 histograms.
+                                 */
+        TH1F*                   fZNATime4FillingH;         //!
+
+                                /**
+                                 * This histogram records the time distribution
+                                 * of neutron ZDC. What we are
+                                 * plotting here is the distribution of:
+                                 * (ZNC-ZNA time) vs (ZNC+ZNA time).
+                                 * Such a plot should show up all the different
+                                 * collision possibilities (main-main,
+                                 * main-satellite/satellite-main and
+                                 * satellite-satellite).
+                                 */
+        TH2F*                   fZNCminusZNAtimeVsZNCplusZNAtimeH[4];  //!
+
+                                /**
+                                 * This histogram records the time distribution
+                                 * of neutron ZDC. I am filling it with all the
+                                 * possible TDC info. Basically it is the sum
+                                 * of the all the 4 histograms. What we are
+                                 * plotting here is the distribution of:
+                                 * (ZNC-ZNA time) vs (ZNC+ZNA time).
+                                 * Such a plot should show up all the different
+                                 * collision possibilities (main-main,
+                                 * main-satellite/satellite-main and
+                                 * satellite-satellite).
+                                 */
+        TH2F*                   fZNCminusZNAtimeVsZNCplusZNAtime4FillingH;  //!
+
+                                /**
                                  * This histogram records which information
                                  * I am looking at when I fill the time
                                  * histogram, and this effect should
@@ -748,7 +790,7 @@ class AliAnalysisTaskUPCforward : public AliAnalysisTaskSE
          * If I happen to encounter it again in the future, I will make sure to
          * record it!
          */
-        ClassDef(AliAnalysisTaskUPCforward, 7);
+        ClassDef(AliAnalysisTaskUPCforward, 8);
 };
 
 #endif
