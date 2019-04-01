@@ -78,7 +78,6 @@ void AliForwardGenericFramework::CumulantsAccumulate(TH2D& dNdetadphi, TList* ou
         if ((fSettings.nua_mode & fSettings.kInterpolate) && detType == "forward") weight = AliForwardNUATask::InterpolateWeight(dNdetadphi,phiBin,etaBin,weight);
 
         if (doRefFlow){
-          std::cout << "eta = "<< eta << std::endl;
           if (detType == "central" && !fSettings.use_primaries_cen) {
             Double_t nuaeta = fSettings.nuacentral_ref->GetXaxis()->FindBin(eta);
             Double_t nuaphi = fSettings.nuacentral_ref->GetYaxis()->FindBin(phi);
