@@ -91,16 +91,23 @@ AliAnalysisTaskTwoMultiCorrelations::AliAnalysisTaskTwoMultiCorrelations() :
   fVertexMaxZ(10.),
   fNumberOfTracksMin(6),
 // Track selection.
+  fCutOnPt(kFALSE),
   fPtMin(0.2),
   fPtMax(5.),
+  fCutOnEta(kFALSE),
   fEtaMin(-0.8),
   fEtaMax(0.8),
   fFilter(128),
+  fCutOnNumberOfTPC(kFALSE),
   fNumberOfTPCMin(70),
+  fCutOnChiSquarePInTPC(kFALSE),
   fChiSquarePInTPCMin(0.1),
   fChiSquarePInTPCMax(4.),
+  fCutOnDCA(kFALSE),
   fDCAxyMax(3.2),
   fDCAzMax(2.4),
+  fCutOnCharge(kFALSE),
+  fCharge(0),
 // TH1D with the observables for the event selection.
   fHistoCentrality(NULL),
   fHistoInitialNumberOfTracks(NULL),
@@ -129,6 +136,8 @@ AliAnalysisTaskTwoMultiCorrelations::AliAnalysisTaskTwoMultiCorrelations() :
   fHistoDCAXYAfterSelection(NULL),
   fHistoDCAZBeforeSelection(NULL),
   fHistoDCAZAfterSelection(NULL),
+  fHistoChargeBeforeSelection(NULL),
+  fHistoChargeAfterSelection(NULL),
 // TProfiles with the final multiparticle correlations.
   fProfileTwoParticleCorrelations(NULL),
   fProfileFourParticleCorrelations(NULL),
@@ -179,16 +188,23 @@ AliAnalysisTaskTwoMultiCorrelations::AliAnalysisTaskTwoMultiCorrelations(const c
   fVertexMaxZ(10.),
   fNumberOfTracksMin(6),
 // Track selection.
+  fCutOnPt(kFALSE),
   fPtMin(0.2),
   fPtMax(5.),
+  fCutOnEta(kFALSE),
   fEtaMin(-0.8),
   fEtaMax(0.8),
   fFilter(128),
+  fCutOnNumberOfTPC(kFALSE),
   fNumberOfTPCMin(70),
+  fCutOnChiSquarePInTPC(kFALSE),
   fChiSquarePInTPCMin(0.1),
   fChiSquarePInTPCMax(4.),
+  fCutOnDCA(kFALSE),
   fDCAxyMax(3.2),
   fDCAzMax(2.4),
+  fCutOnCharge(kFALSE),
+  fCharge(0),
 // TH1D with the observables for the event selection.
   fHistoCentrality(NULL),
   fHistoInitialNumberOfTracks(NULL),
@@ -217,6 +233,8 @@ AliAnalysisTaskTwoMultiCorrelations::AliAnalysisTaskTwoMultiCorrelations(const c
   fHistoDCAXYAfterSelection(NULL),
   fHistoDCAZBeforeSelection(NULL),
   fHistoDCAZAfterSelection(NULL),
+  fHistoChargeBeforeSelection(NULL),
+  fHistoChargeAfterSelection(NULL),
 // TProfiles with the final multiparticle correlations.
   fProfileTwoParticleCorrelations(NULL),
   fProfileFourParticleCorrelations(NULL),
@@ -359,7 +377,7 @@ void AliAnalysisTaskTwoMultiCorrelations::BookAllLists()
 void AliAnalysisTaskTwoMultiCorrelations::BookQAListBeforeSelection()
 {
 /* Book the TH1D with the observables involved in the event selection. */
-// Centrality distribution.
+// Distribution of the centrality.
   fHistoCentrality = new TH1D("fHistoCentrality", "Distribution of the centrality before the event selection", 100, 0., 100.);
   fHistoCentrality->SetStats(kTRUE);
   fHistoCentrality->GetXaxis()->SetTitle("Centrality percentile");
@@ -377,37 +395,37 @@ void AliAnalysisTaskTwoMultiCorrelations::BookQAListBeforeSelection()
   fHistoNumberOfTracksBeforeTrackSelection->GetXaxis()->SetTitle("Number of tracks");
   fQAListBeforeSelection->Add(fHistoNumberOfTracksBeforeTrackSelection);
 
-// x-position of the PV distribution.
+// Distribution of the x-position of the PV.
   fHistoVertexXBeforeSelection = new TH1D("fHistoVertexXBeforeSelection", "Distribution of PV_{x} before the selection", 1000, -20., 20.);
   fHistoVertexXBeforeSelection->SetStats(kTRUE);
   fHistoVertexXBeforeSelection->GetXaxis()->SetTitle("PV_{x}");
   fQAListBeforeSelection->Add(fHistoVertexXBeforeSelection);
 
-// y-position of the PV distribution.
+// Distribution of the y-position of the PV.
   fHistoVertexYBeforeSelection = new TH1D("fHistoVertexYBeforeSelection", "Distribution of PV_{y} before the selection", 1000, -20., 20.);
   fHistoVertexYBeforeSelection->SetStats(kTRUE);
   fHistoVertexYBeforeSelection->GetXaxis()->SetTitle("PV_{y}");
   fQAListBeforeSelection->Add(fHistoVertexYBeforeSelection);
 
-// z-position of the PV distribution.
+// Distribution of the z-position of the PV.
   fHistoVertexZBeforeSelection = new TH1D("fHistoVertexZBeforeSelection", "Distribution of PV_{z} before the selection", 1000, -20., 20.);
   fHistoVertexZBeforeSelection->SetStats(kTRUE);
   fHistoVertexZBeforeSelection->GetXaxis()->SetTitle("PV_{z}");
   fQAListBeforeSelection->Add(fHistoVertexZBeforeSelection);
 
-// Transverse momentum distribution.
+// Distribution of the transverse momentum.
   fHistoPtBeforeSelection = new TH1D("fHistoPtBeforeSelection", "Distribution of p_{T} before the track selection", 1000, 0., 20.);
   fHistoPtBeforeSelection->SetStats(kTRUE);
   fHistoPtBeforeSelection->GetXaxis()->SetTitle("p_{T}");
   fQAListBeforeSelection->Add(fHistoPtBeforeSelection);
 
-// Pseudorapidity distribution.
+// Distribution of the pseudorapidity.
   fHistoEtaBeforeSelection = new TH1D("fHistoEtaBeforeSelection", "Distribution of #eta before the track selection", 1000, -1., 1.);
   fHistoEtaBeforeSelection->SetStats(kTRUE);
   fHistoEtaBeforeSelection->GetXaxis()->SetTitle("#eta");
   fQAListBeforeSelection->Add(fHistoEtaBeforeSelection);
 
-// Azimuthal angles distribution.
+// Distribution of the azimuthal angles.
   fHistoPhiBeforeSelection = new TH1D("fHistoPhiBeforeSelection", "Distributiion of #phi before the track selection", 1000, 0., 6.3);
   fHistoPhiBeforeSelection->SetStats(kTRUE);
   fHistoPhiBeforeSelection->GetXaxis()->SetTitle("#phi");
@@ -425,17 +443,23 @@ void AliAnalysisTaskTwoMultiCorrelations::BookQAListBeforeSelection()
   fHistoTPCChiSquareBeforeSelection->GetXaxis()->SetTitle("#chi^{2}/NDF in TPC");
   fQAListBeforeSelection->Add(fHistoTPCChiSquareBeforeSelection);
 
-// xy-plane of the DCA distribution.
+// Distribution of the xy-plane of the DCA.
   fHistoDCAXYBeforeSelection = new TH1D("fHistoDCAXYBeforeSelection", "Distribution of DCA_{xy} before the track selection", 1000, 0., 10.);
   fHistoDCAXYBeforeSelection->SetStats(kTRUE);
   fHistoDCAXYBeforeSelection->GetXaxis()->SetTitle("DCA_{xy}");
   fQAListBeforeSelection->Add(fHistoDCAXYBeforeSelection);
 
-// z-coordinate of the DCA distribution.
+// Distribution of the z-coordinate of the DCA.
   fHistoDCAZBeforeSelection = new TH1D("fHistoDCAZBeforeSelection", "Distribution of DCA_{z} before the track selection", 1000, 0., 10.);
   fHistoDCAZBeforeSelection->SetStats(kTRUE);
   fHistoDCAZBeforeSelection->GetXaxis()->SetTitle("DCA_{z}");
   fQAListBeforeSelection->Add(fHistoDCAZBeforeSelection);
+
+// Distribution of the electric charge.
+  fHistoChargeBeforeSelection = new TH1I("fHistoChargeBeforeSelection", "Distribution of the electric charge before the track selection", 2, -2, 2);
+  fHistoChargeBeforeSelection->SetStats(kTRUE);
+  fHistoChargeBeforeSelection->GetXaxis()->SetTitle("Charge");
+  fQAListBeforeSelection->Add(fHistoChargeBeforeSelection);
 }
 
 //======================================================================================//
@@ -448,37 +472,37 @@ void AliAnalysisTaskTwoMultiCorrelations::BookQAListAfterSelection()
   fHistoFinalNumberOfTracks->GetXaxis()->SetTitle("Number of tracks");
   fQAListAfterSelection->Add(fHistoFinalNumberOfTracks);
 
-// x-position of the PV distribution.
+// Distribution of the x-position of the PV.
   fHistoVertexXAfterSelection = new TH1D("fHistoVertexXAfterSelection", "Distribution of PV_{x} after the full selection", 1000, -20., 20.);
   fHistoVertexXAfterSelection->SetStats(kTRUE);
   fHistoVertexXAfterSelection->GetXaxis()->SetTitle("PV_{x}");
   fQAListAfterSelection->Add(fHistoVertexXAfterSelection);
 
-// y-position of the PV distribution.
+// Distribution of the y-position of the PV.
   fHistoVertexYAfterSelection = new TH1D("fHistoVertexYAfterSelection", "Distribution of PV_{y} after the full selection", 1000, -20., 20.);
   fHistoVertexYAfterSelection->SetStats(kTRUE);
   fHistoVertexYAfterSelection->GetXaxis()->SetTitle("PV_{y}");
   fQAListAfterSelection->Add(fHistoVertexYAfterSelection);
 
-// z-position of the PV distribution.
+// Distribution of the z-position of the PV.
   fHistoVertexZAfterSelection = new TH1D("fHistoVertexZAfterSelection", "Distribution of PV_{z} after the full selection", 1000, -20., 20.);
   fHistoVertexZAfterSelection->SetStats(kTRUE);
   fHistoVertexZAfterSelection->GetXaxis()->SetTitle("PV_{z}");
   fQAListAfterSelection->Add(fHistoVertexZAfterSelection);
 
-// Transverse momentum distribution.
+// Distribution of the transverse momentum.
   fHistoPtAfterSelection = new TH1D("fHistoPtAfterSelection", "Distribution of p_{T} after the full selection", 1000, 0., 20.);
   fHistoPtAfterSelection->SetStats(kTRUE);
   fHistoPtAfterSelection->GetXaxis()->SetTitle("p_{T}");
   fQAListAfterSelection->Add(fHistoPtAfterSelection);
 
-// Pseudorapidity distribution.
+// Distribution of the pseudorapidity.
   fHistoEtaAfterSelection = new TH1D("fHistoEtaAfterSelection", "Distribution of #eta after the full selection", 1000, -1., 1.);
   fHistoEtaAfterSelection->SetStats(kTRUE);
   fHistoEtaAfterSelection->GetXaxis()->SetTitle("#eta");
   fQAListAfterSelection->Add(fHistoEtaAfterSelection);
 
-// Azimuthal angles distribution.
+// Distribution of the azimuthal angles.
   fHistoPhiAfterSelection = new TH1D("fHistoPhiAfterSelection", "Distribution of #phi after the full selection", 1000, 0., 6.3);
   fHistoPhiAfterSelection->SetStats(kTRUE);
   fHistoPhiAfterSelection->GetXaxis()->SetTitle("#phi");
@@ -496,17 +520,23 @@ void AliAnalysisTaskTwoMultiCorrelations::BookQAListAfterSelection()
   fHistoTPCChiSquareAfterSelection->GetXaxis()->SetTitle("#chi^{2}/NDF in TPC");
   fQAListAfterSelection->Add(fHistoTPCChiSquareAfterSelection);
 
-// xy-plane of the DCA distribution.
+// Distribution of the xy-plane of the DCA.
   fHistoDCAXYAfterSelection = new TH1D("fHistoDCAXYAfterSelection", "Distribution of DCA_{xy} after the full selection", 1000, 0., 10.);
   fHistoDCAXYAfterSelection->SetStats(kTRUE);
   fHistoDCAXYAfterSelection->GetXaxis()->SetTitle("DCA_{xy}");
   fQAListAfterSelection->Add(fHistoDCAXYAfterSelection);
 
-// z-coordinate of the DCA distribution.
+// Distribution of the z-coordinate of the DCA.
   fHistoDCAZAfterSelection = new TH1D("fHistoDCAZAfterSelection", "Distribution of DCA_{z} after the full selection", 1000, 0., 10.);
   fHistoDCAZAfterSelection->SetStats(kTRUE);
   fHistoDCAZAfterSelection->GetXaxis()->SetTitle("DCA_{z}");
   fQAListAfterSelection->Add(fHistoDCAZAfterSelection);
+
+// Distribution of the electric charge.
+  fHistoChargeAfterSelection = new TH1I("fHistoChargeAfterSelection", "Distribution of the electric charge after the full selection", 2, -2, 2);
+  fHistoChargeAfterSelection->SetStats(kTRUE);
+  fHistoChargeAfterSelection->GetXaxis()->SetTitle("Charge");
+  fQAListAfterSelection->Add(fHistoChargeAfterSelection);
 }
 
 //======================================================================================//
@@ -638,6 +668,7 @@ void AliAnalysisTaskTwoMultiCorrelations::AnalyseAODevent(AliAODEvent *aAODevent
   Double_t DCAy = 0.; // y-value of the DCA.
   Double_t DCAz = 0.; // z-value of the DCA.
   Double_t DCAxy = 0.;  // xy-value of the DCA.
+  Int_t charge = 0; // Electric charge.
 
 // Look at each track in the event to mark them as selected or not.
   for (long long iTrack = 0; iTrack < numberOfTracksBeforeTrackSelection; iTrack++)
@@ -655,6 +686,7 @@ void AliAnalysisTaskTwoMultiCorrelations::AnalyseAODevent(AliAODEvent *aAODevent
     DCAx = currentTrack->XAtDCA();
     DCAy = currentTrack->YAtDCA();
     DCAz = currentTrack->ZAtDCA();
+    charge = currentTrack->Charge();
 
     DCAxy = TMath::Sqrt((DCAx*DCAx) + (DCAy*DCAy));
 
@@ -666,9 +698,10 @@ void AliAnalysisTaskTwoMultiCorrelations::AnalyseAODevent(AliAODEvent *aAODevent
     fHistoTPCChiSquareBeforeSelection->Fill(chiSquareInTPC);
     fHistoDCAXYBeforeSelection->Fill(DCAxy);
     fHistoDCAZBeforeSelection->Fill(DCAz);
+    fHistoChargeBeforeSelection->Fill(charge);
 
   // Apply the track selection to the provided track.
-    if (ApplyTrackSelection(pT, eta, numberOfTPCClusters, chiSquareInTPC, DCAxy, DCAz))  // The track passed the selection.
+    if (ApplyTrackSelection(pT, eta, numberOfTPCClusters, chiSquareInTPC, DCAxy, DCAz, charge))  // The track passed the selection.
     {
       IsTrackSelected[iTrack] = 1;
       finalNumberOfTracks++;
@@ -709,6 +742,7 @@ void AliAnalysisTaskTwoMultiCorrelations::AnalyseAODevent(AliAODEvent *aAODevent
       DCAy = aTrack->YAtDCA();
       DCAz = aTrack->ZAtDCA();
       DCAxy = TMath::Sqrt((DCAx*DCAx) + (DCAy*DCAy));
+      charge = aTrack->Charge();
 
       if (fUseParticleWeights) {Fatal(sMethodName.Data(), "ERROR: TBA.");}
       else {particleWeightArray[indexInNewArrays] = 1.;}
@@ -721,6 +755,7 @@ void AliAnalysisTaskTwoMultiCorrelations::AnalyseAODevent(AliAODEvent *aAODevent
       fHistoTPCChiSquareAfterSelection->Fill(chiSquareInTPC);
       fHistoDCAXYAfterSelection->Fill(DCAxy);
       fHistoDCAZAfterSelection->Fill(DCAz);
+      fHistoChargeAfterSelection->Fill(charge);
 
     // Increase the value of 'indexInNewArrays' by one.
       indexInNewArrays++;
@@ -746,6 +781,7 @@ void AliAnalysisTaskTwoMultiCorrelations::AnalyseAODevent(AliAODEvent *aAODevent
   DCAx = 0.;
   DCAy = 0.;
   DCAz = 0.;
+  charge = 0;
   delete [] phiArray;
   delete [] particleWeightArray;
   indexInNewArrays = 0;
@@ -816,6 +852,7 @@ void AliAnalysisTaskTwoMultiCorrelations::AnalyseMCevent(AliMCEvent *aMCevent)
   Double_t pT = 0.; // Transverse momentum.
   Double_t eta = 0.;  // Pseudorapidity.
   Double_t phi = 0.;  // Azimuthal angle.
+  Int_t charge = 0; // Electric charge.
 
 // Look at each track in the event to mark them as selected or not.
   for (long long iTrack = 0; iTrack < numberOfTracksBeforeTrackSelection; iTrack++)
@@ -827,15 +864,22 @@ void AliAnalysisTaskTwoMultiCorrelations::AnalyseMCevent(AliMCEvent *aMCevent)
     pT = currentTrack->Pt();
     eta = currentTrack->Eta();
     phi = currentTrack->Phi();
+    charge = currentTrack->Charge();
 
   // Fill the histograms before the track selection.
     fHistoPtBeforeSelection->Fill(pT);
     fHistoEtaBeforeSelection->Fill(eta);
     fHistoPhiBeforeSelection->Fill(phi);
-
+    fHistoChargeBeforeSelection->Fill(charge);
 
   // Apply the track selection to the provided track.
-    if ((fPtMin <= pT) && (pT <= fPtMax) && (fEtaMin <= eta) && (eta <= fEtaMax)) // The track passed the selection.
+    Bool_t cutOnCharge = kTRUE; // Set to kTRUE by default in case no selection over the charge is done.
+    if (fCutOnCharge) // Check if the track passes the cut in case it is applied.
+    {
+      if (charge != fCharge) {cutOnCharge = kFALSE;}
+    }
+
+    if ((fPtMin <= pT) && (pT <= fPtMax) && (fEtaMin <= eta) && (eta <= fEtaMax) && (cutOnCharge))  // Apply the cuts to the track.
     {
       IsTrackSelected[iTrack] = 1;
       finalNumberOfTracks++;
@@ -869,6 +913,7 @@ void AliAnalysisTaskTwoMultiCorrelations::AnalyseMCevent(AliMCEvent *aMCevent)
       pT = aTrack->Pt();
       eta = aTrack->Eta();
       phiArray[indexInNewArrays] = aTrack->Phi();
+      charge = aTrack->Charge();
 
       if (fUseParticleWeights) {Fatal(sMethodName.Data(), "ERROR: TBA.");}
       else {particleWeightArray[indexInNewArrays] = 1.;}
@@ -877,6 +922,7 @@ void AliAnalysisTaskTwoMultiCorrelations::AnalyseMCevent(AliMCEvent *aMCevent)
       fHistoPtAfterSelection->Fill(pT);
       fHistoEtaAfterSelection->Fill(eta);
       fHistoPhiAfterSelection->Fill(phiArray[indexInNewArrays]);
+      fHistoChargeAfterSelection->Fill(charge);
 
     // Increase the value of 'indexInNewArrays' by one.
       indexInNewArrays++;
@@ -897,23 +943,32 @@ void AliAnalysisTaskTwoMultiCorrelations::AnalyseMCevent(AliMCEvent *aMCevent)
   pT = 0.;
   eta = 0.;
   phi = 0.;
+  charge = 0;
   delete [] phiArray;
   delete [] particleWeightArray;
   indexInNewArrays = 0;
 }
 
 //======================================================================================//
-Bool_t AliAnalysisTaskTwoMultiCorrelations::ApplyTrackSelection(Double_t momentum, Double_t pseudorapidity, Int_t NclustersInTPC, Double_t TPCchiSquare, Double_t xyDCA, Double_t zDCA)
+Bool_t AliAnalysisTaskTwoMultiCorrelations::ApplyTrackSelection(Double_t momentum, Double_t pseudorapidity, Int_t NclustersInTPC, Double_t TPCchiSquare, Double_t xyDCA, Double_t zDCA, Int_t eCharge)
 {
 /* Apply the track selection to the arguments and return if it is passed or not. */
-  Bool_t cutOnPt = (fPtMin <= momentum) && (momentum <= fPtMax);
-  Bool_t cutOnEta = (fEtaMin <= pseudorapidity) && (pseudorapidity <= fEtaMax);
-  Bool_t cutOnNumberOfTPC = (fNumberOfTPCMin < NclustersInTPC);
-  Bool_t cutOnChiSquare = (fChiSquarePInTPCMin <= TPCchiSquare) && (TPCchiSquare <= fChiSquarePInTPCMax);
-  Bool_t cutOnDCAxy = (xyDCA < fDCAxyMax);
-  Bool_t cutOnDCAz = (zDCA < fDCAzMax);
+  Bool_t testOfPt = kTRUE;  // Cut on the transverse momentum.
+  Bool_t testOfEta = kTRUE; // Cut on the pseudorapidity.
+  Bool_t testOfNumberOfTPC = kTRUE; // Cut on the number of TPC clusters.
+  Bool_t testOfChiSquareTPC = kTRUE;  // Cut on the chi^2 of the momentum in the TPC.
+  Bool_t testOfDCAxy = kTRUE; // Cut on the DCA of the track in the xy-plane.
+  Bool_t testOfDCAz = kTRUE;  // Cut on the DCA of the track along the z-direction.
+  Bool_t testOfCharge = kTRUE;  // Cut on the electric charge.
 
-  return cutOnPt && cutOnEta && cutOnNumberOfTPC && cutOnChiSquare && cutOnDCAxy && cutOnDCAz;
+  if (fCutOnPt) {testOfPt = (fPtMin <= momentum) && (momentum <= fPtMax);}
+  if (fCutOnEta) {testOfEta = (fEtaMin <= pseudorapidity) && (pseudorapidity <= fEtaMax);}
+  if (fCutOnNumberOfTPC) {testOfNumberOfTPC = (fNumberOfTPCMin < NclustersInTPC);}
+  if (fCutOnChiSquarePInTPC) {testOfChiSquareTPC = (fChiSquarePInTPCMin <= TPCchiSquare) && (TPCchiSquare <= fChiSquarePInTPCMax);}
+  if (fCutOnDCA) {testOfDCAxy = (xyDCA < fDCAxyMax); testOfDCAz = (zDCA < fDCAzMax);}
+  if (fCutOnCharge) {testOfCharge = (eCharge == fCharge);}
+
+  return testOfPt && testOfEta && testOfNumberOfTPC && testOfChiSquareTPC && testOfDCAxy && testOfDCAz && testOfCharge;
 }
 
 //======================================================================================//
