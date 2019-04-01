@@ -341,10 +341,10 @@ void AliAnalysisTaskSECharmHadronvn::UserCreateOutputObjects()
     
     int nqnbins=1; //single bin if unbiased analysis
     double qnmin = 0.;
-    double qnmax = 10.;
+    double qnmax = 15.;
     if(fFlowMethod==kEvShapeEP || fFlowMethod==kEvShapeSP || fFlowMethod==kEvShapeEPVsMass) {
         if(!fPercentileqn) {
-            nqnbins=500;
+            nqnbins=300;
         }
         else {
             nqnbins=100;
@@ -1249,7 +1249,7 @@ int AliAnalysisTaskSECharmHadronvn::IsCandidateSelected(AliAODRecoDecayHF *&d, i
     int isSelected = fRDCuts->IsSelected(d,AliRDHFCuts::kAll,fAOD);
     if(!isSelected) return 0;
     if(fDecChannel==kDstoKKpi) {
-        if(!(isSelected&4) || !(isSelected&8)) return 0;
+        if(!(isSelected&4) && !(isSelected&8)) return 0;
     }
 
     double ptD = d->Pt();
