@@ -136,8 +136,8 @@ void AliForwardGenericFramework::CumulantsAccumulate(TH2D& dNdetadphi, TList* ou
         Double_t realPart = TMath::Power(weight, p)*TMath::Cos(n*phi);
         Double_t imPart =   TMath::Power(weight, p)*TMath::Sin(n*phi);
 
-        Double_t re[4] = {0.5, static_cast<Double_t>(n), static_cast<Double_t>(p), difEta};
-        Double_t im[4] = {-0.5, static_cast<Double_t>(n), static_cast<Double_t>(p), difEta};
+        Double_t re[4] = {0.5, Double_t(n), Double_t(p), difEta};
+        Double_t im[4] = {-0.5, Double_t(n), Double_t(p), difEta};
 
         if (doDiffFlow){
           fpvector->Fill(re, realPart);
@@ -214,51 +214,55 @@ void AliForwardGenericFramework::saveEvent(TList* outputList, double cent, doubl
         if (prevRefEtaBin){ // only used once
 
           if (!(fSettings.etagap)){
-            Double_t z[5] = {noSamples, zvertex, refEtaA, cent, static_cast<Double_t>(fSettings.kW2Two)};
+            Double_t z[5] = {noSamples, zvertex, refEtaA, cent, Double_t(fSettings.kW2Two)};
+
             fQcorrfactor->Fill(z, fAutoRef.GetBinContent(etaBin));
           }
           // two-particle cumulant
           double two = Two(n, -n, refEtaBinA, refEtaBinB).Re();
           double dn2 = Two(0,0, refEtaBinA, refEtaBinB).Re();
 
-          Double_t x[5] = {noSamples, zvertex, refEtaA, cent, static_cast<Double_t>(fSettings.kW4Four)};
-          x[4] = fSettings.kW2Two;
+          Double_t x[5] = {noSamples, zvertex, refEtaA, cent, Double_t(fSettings.kW4Four)};
+          x[4] = Double_t(fSettings.kW2Two);
+
           cumuRef->Fill(x, two);
-          x[4] = fSettings.kW2;
+          x[4] = Double_t(fSettings.kW2);
           cumuRef->Fill(x, dn2);
 
           // four-particle cumulant
           double four = Four(n, n, -n, -n, refEtaBinA, refEtaBinB).Re();
           double dn4 = Four(0,0,0,0 , refEtaBinA, refEtaBinB).Re();
 
-          x[4] = fSettings.kW4Four;
+          x[4] = Double_t(fSettings.kW4Four);
           cumuRef->Fill(x, four);
-          x[4] = fSettings.kW4;
+          x[4] = Double_t(fSettings.kW4);
           cumuRef->Fill(x, dn4);
 
           prevRefEtaBin = kFALSE;
         }
         // DIFFERENTIAL FLOW -----------------------------------------------------------------------------
         if (n == 2 && (!(fSettings.etagap))){
-          Double_t k[5] = {noSamples, zvertex, eta, cent, static_cast<Double_t>(fSettings.kW2Two)};
+          Double_t k[5] = {noSamples, zvertex, eta, cent, Double_t(fSettings.kW2Two)};
+
           fpcorrfactor->Fill(k, fAutoDiff.GetBinContent(etaBin));
         }
         // two-particle cumulant
         double twodiff = TwoDiff(n, -n, refEtaBinB, etaBin).Re();
         double dn2diff = TwoDiff(0,0, refEtaBinB, etaBin).Re();
 
-        Double_t y[5] = {noSamples, zvertex, eta, cent, static_cast<Double_t>(fSettings.kW2Two)};
+        Double_t y[5] = {noSamples, zvertex, eta, cent, Double_t(fSettings.kW2Two)};
+
         cumuDiff->Fill(y, twodiff);
-        y[4] = fSettings.kW2;
+        y[4] = Double_t(fSettings.kW2);
         cumuDiff->Fill(y, dn2diff);
 
         // four-particle cumulant
         double fourdiff = FourDiff(n, n, -n, -n, refEtaBinB, etaBin,etaBin).Re();
         double dn4diff = FourDiff(0,0,0,0, refEtaBinB, etaBin,etaBin).Re();
 
-        y[4] = fSettings.kW4Four;
+        y[4] = Double_t(fSettings.kW4Four);
         cumuDiff->Fill(y, fourdiff);
-        y[4] = fSettings.kW4;
+        y[4] = Double_t(fSettings.kW4);
         cumuDiff->Fill(y, dn4diff);
       } // if w2 > 0
     } //eta
