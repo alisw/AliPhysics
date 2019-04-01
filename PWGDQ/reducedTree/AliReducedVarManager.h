@@ -340,6 +340,9 @@ class AliReducedVarManager : public TObject {
     kSPDnSingleClusters=kITSnClusters+6,   // number of clusters in SPD layer 1 not mached to tracklets from layer 2
     kEventMixingId,     // Id of the event mixing category 
     // VZERO event plane related variables
+    kVZEROCurrentChannel,         // current VZERO channel
+    kVZEROCurrentChannelMult,     // current VZERO channel multiplicity
+    kVZEROCurrentChannelMultCalib,  // current VZERO channel calibrated multiplicity
     kVZEROAemptyChannels,  // Number of empty VZERO channels in A side          
     kVZEROCemptyChannels,  // Number of empty VZERO channels in C side          
     kVZEROChannelMult,                        // VZERO multiplicity per channel 
@@ -685,6 +688,7 @@ class AliReducedVarManager : public TObject {
   static void FillL0TriggerInputs(AliReducedEventInfo* event, Int_t input, Float_t* values, Int_t input2=999);
   static void FillL1TriggerInputs(AliReducedEventInfo* event, Int_t input, Float_t* values, Int_t input2=999);
   static void FillL2TriggerInputs(AliReducedEventInfo* event, Int_t input, Float_t* values, Int_t input2=999);
+  static void FillV0Channel(Int_t ich, Float_t* values);
   static void FillTrackingFlag(AliReducedTrackInfo* track, UInt_t flag, Float_t* values);
   static void FillTrackQualityFlag(AliReducedBaseTrack* track, UShort_t flag, Float_t* values, UShort_t flag2=999);
   static void FillTrackMCFlag(AliReducedBaseTrack* track, UShort_t flag, Float_t* values, UShort_t flag2=999);

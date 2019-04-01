@@ -339,8 +339,13 @@ void AliReducedAnalysisTest::Process() {
     }  // end loop over pairs
   }  // end if(pairList)
     
-  if(fFillEventHistograms)
+  if(fFillEventHistograms) {
       fHistosManager->FillHistClass("Event_AfterCuts", fValues);
+      for(UShort_t ich=0; ich<64; ++ich) {
+         AliReducedVarManager::FillV0Channel(ich, fValues);
+         fHistosManager->FillHistClass("V0Channels", fValues);
+      }
+  }
 }
 
 //___________________________________________________________________________
