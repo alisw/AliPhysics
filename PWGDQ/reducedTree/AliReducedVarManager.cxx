@@ -372,6 +372,7 @@ void AliReducedVarManager::FillEventInfo(BASEEVENT* baseEvent, Float_t* values, 
   // fill event wise info
   //
   // Basic event information
+    
 
   values[kVtxX]                      = baseEvent->Vertex(0);
   values[kVtxY]                       = baseEvent->Vertex(1);
@@ -855,6 +856,7 @@ void AliReducedVarManager::FillEventInfo(BASEEVENT* baseEvent, Float_t* values, 
        values[kVZEROQvecX+2*6+ih] = qvecVZEROA[ih][0] + qvecVZEROC[ih][0];
        values[kVZEROQvecY+2*6+ih] = qvecVZEROA[ih][1] + qvecVZEROC[ih][1];
        values[kVZERORP   +2*6+ih] = TMath::ATan2(values[kVZEROQvecY+2*6+ih], values[kVZEROQvecX+2*6+ih])/Double_t(ih+1);
+       
      
        if(fgUsedVars[kVZEROQaQcSP+ih]) {
           values[kVZEROQaQcSP+ih] = TMath::Cos((ih+1)*(values[kVZERORP+0*6+ih]-values[kVZERORP+1*6+ih]));
@@ -901,32 +903,30 @@ void AliReducedVarManager::FillEventInfo(BASEEVENT* baseEvent, Float_t* values, 
         values[kTPCQvecYtree+ih] = event->GetQy(EVENTPLANE::kTPC,ih+1);
         values[kTPCRPtree+ih] = event->GetEventPlane(EVENTPLANE::kTPC,ih+1);
         
-//TPC Q vector recentering       
+          //TPC Q vector recentering       
           if(fgOptionRecenterTPCqVec && fgTPCqVecRecentering[0] && ih==1) {
-                Float_t recenterOffsetTPC = fgTPCqVecRecentering[0]->GetBinContent(fgTPCqVecRecentering[0]->FindBin(event->CentralityVZERO(), event->Vertex(2)));
-                Double_t widthEqTPC = fgTPCqVecRecentering[0]->GetBinError(fgTPCqVecRecentering[0]->FindBin(event->CentralityVZERO(), event->Vertex(2)));
-                values[kTPCQvecXtree+1] -= recenterOffsetTPC;
+            Float_t recenterOffsetTPC = fgTPCqVecRecentering[0]->GetBinContent(fgTPCqVecRecentering[0]->FindBin(event->CentralityVZERO(), event->Vertex(2)));
+            Double_t widthEqTPC = fgTPCqVecRecentering[0]->GetBinError(fgTPCqVecRecentering[0]->FindBin(event->CentralityVZERO(), event->Vertex(2)));
+            values[kTPCQvecXtree+1] -= recenterOffsetTPC;
 
                 if(widthEqTPC >0.0)
                    values[kTPCQvecXtree+1] /=widthEqTPC;
                 else
                    values[kTPCQvecXtree+1]=0;
                 
-                recenterOffsetTPC = fgTPCqVecRecentering[1]->GetBinContent(fgTPCqVecRecentering[1]->FindBin(event->CentralityVZERO(), event->Vertex(2)));
-                widthEqTPC = fgTPCqVecRecentering[1]->GetBinError(fgTPCqVecRecentering[1]->FindBin(event->CentralityVZERO(), event->Vertex(2)));
-                values[kTPCQvecYtree+1] -= recenterOffsetTPC;
+            recenterOffsetTPC = fgTPCqVecRecentering[1]->GetBinContent(fgTPCqVecRecentering[1]->FindBin(event->CentralityVZERO(), event->Vertex(2)));
+            widthEqTPC = fgTPCqVecRecentering[1]->GetBinError(fgTPCqVecRecentering[1]->FindBin(event->CentralityVZERO(), event->Vertex(2)));
+            values[kTPCQvecYtree+1] -= recenterOffsetTPC;
                 
                 if(widthEqTPC >0.0)
                    values[kTPCQvecYtree+1] /=widthEqTPC;
                 else
                    values[kTPCQvecYtree+1]=0;
-                
-                values[kTPCRPtree+ih]=TMath::ATan2(values[kTPCQvecYtree+1],values[kTPCQvecXtree+1])/Double_t(ih+1);
-                
+                 
+            values[kTPCRPtree+ih]=TMath::ATan2(values[kTPCQvecYtree+1],values[kTPCQvecXtree+1])/Double_t(ih+1);
+      
         }
-        
-        
-        
+ 
      }
      if(event->GetEventPlaneStatus(EVENTPLANE::kTPCptWeights,ih+1)!=EVENTPLANE::kUnset) {
         values[kTPCQvecXptWeightsTree+ih] = event->GetQx(EVENTPLANE::kTPCptWeights,ih+1);
@@ -975,23 +975,25 @@ void AliReducedVarManager::FillEventInfo(BASEEVENT* baseEvent, Float_t* values, 
           values[kTPCRPres+iVZEROside*6+ih] = TMath::Cos(values[kTPCRPres+iVZEROside*6+ih]*(ih+1));
 	}
       }
-      
+     // cout<<values[kCentVZERO]<<" "<<values[kCentSPD]<<" "<<values[kVtxZ]<<" "<<values[kTPCRPres+1*6+ih]<<" "<<values[kTPCRPres+0*6+ih]<<" "<<values[kVZERORPres+ih]<<endl;
+//      cout<<values[kTPCRPres+0*6+ih]<<endl;
+//      cout<<values[kTPCRPres+1*6+ih]<<endl;
+//      cout<<values[kVZERORPres+ih]<<endl;
       //resolution of V0A, V0C or TPC as reference detector
-     if(fgOptionEventRes){
+      if(fgOptionEventRes && (fgUsedVars[kVZEROARPres+ih]||fgUsedVars[kVZEROCRPres+ih]||fgUsedVars[kVZEROTPCRPres+ih])){
          
-         if(values[kTPCRPres+1*6+ih]>0 && values[kTPCRPres+1*6+ih]>0 && values[kTPCRPres+1*6+ih]>0){
-             
-       values[kVZEROARPres+ih] = TMath::Sqrt(values[kTPCRPres+1*6+ih]/(values[kVZERORPres + ih]*values[kTPCRPres+0*6+ih]));
-       values[kVZEROCRPres+ih] = TMath::Sqrt(values[kTPCRPres+0*6+ih]/(values[kVZERORPres + ih]*values[kTPCRPres+1*6+ih]));
-       values[kVZEROTPCRPres+ih] = TMath::Sqrt(values[kVZERORPres+ih]/(values[kTPCRPres+0*6 + ih]*values[kTPCRPres+1*6+ih]));
-             
-        }else{
-       values[kVZEROARPres+ih]=0;
-       values[kVZEROCRPres+ih]=0;
-       values[kVZEROTPCRPres+ih]=0;}
-  
-          
-       }
+         if(values[kTPCRPres+1*6+ih]>1.0e-7 && values[kTPCRPres+0*6+ih]>1.0e-7 && values[kVZERORPres+ih]>1.0e-7){
+    
+          values[kVZEROARPres+ih] = TMath::Sqrt(values[kTPCRPres+1*6+ih]/(values[kVZERORPres + ih]*values[kTPCRPres+0*6+ih]));
+          values[kVZEROCRPres+ih] = TMath::Sqrt(values[kTPCRPres+0*6+ih]/(values[kVZERORPres + ih]*values[kTPCRPres+1*6+ih]));
+          values[kVZEROTPCRPres+ih] = TMath::Sqrt(values[kVZERORPres+ih]/(values[kTPCRPres+0*6 + ih]*values[kTPCRPres+1*6+ih]));
+        }
+        else{
+          values[kVZEROARPres+ih]=0;
+          values[kVZEROCRPres+ih]=0;
+          values[kVZEROTPCRPres+ih]=0;
+        }
+    }//end if fgOptionEventRes
      
   }// end loop over harmonics
   
