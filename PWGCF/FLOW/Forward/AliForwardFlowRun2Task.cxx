@@ -251,7 +251,8 @@ void AliForwardFlowRun2Task::UserExec(Option_t *)
   AliForwardGenericFramework calculator = AliForwardGenericFramework();
   calculator.fSettings = fSettings;
 
-  calculator.CumulantsAccumulate(*refDist, fOutputList, cent, zvertex,"central",true,false);
+  if (fSettings.ref_mode & fSettings.kFMDref) calculator.CumulantsAccumulate(*refDist, fOutputList, cent, zvertex,"forward",true,false);
+  else calculator.CumulantsAccumulate(*refDist, fOutputList, cent, zvertex,"central",true,false);
   // calculator.CumulantsAccumulate(*centralDist, fOutputList, cent, zvertex,"central",false,true);  
   calculator.CumulantsAccumulate(*forwardDist, fOutputList, cent, zvertex,"forward",false,true);
 
