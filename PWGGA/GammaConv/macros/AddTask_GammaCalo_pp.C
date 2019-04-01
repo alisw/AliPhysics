@@ -1478,6 +1478,12 @@ void AddTask_GammaCalo_pp(
     cuts.AddCutCalo("j0010113","4117911077032230000","01631031000000d0"); // std
     cuts.AddCutCalo("q0010113","4117911077032230000","01631031000000d0"); // std
     cuts.AddCutCalo("r0010113","4117911077032230000","01631031000000d0"); // std
+  } else if (trainConfig == 2007){ // EMCAL+DCAL clusters standard cuts pp 5TeV MB
+    cuts.AddCutCalo("00010113","4117911077032230000","01631031000000d0"); // Standard EDC
+    cuts.AddCutCalo("00010113","4117911070032230000","01631031000000d0"); // Standard EDC, no TM
+  } else if (trainConfig == 2008){ // EMCAL+DCAL clusters standard cuts pp 5TeV triggered analysis
+    cuts.AddCutCalo("000a1113","4117911070032230000","01631031000000d0"); // std EMC7
+    cuts.AddCutCalo("000a2113","4117911070032230000","01631031000000d0"); // std EG2
 
   // includes both stripes EMCal and DCal
   } else if (trainConfig == 2010){ // EMCAL+DCAL clusters standard cuts, triggers, no NL, std TM, tight timing
