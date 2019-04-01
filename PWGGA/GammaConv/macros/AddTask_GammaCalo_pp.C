@@ -1459,7 +1459,7 @@ void AddTask_GammaCalo_pp(
     cuts.AddCutCalo("00010113","411790607f032230000","01631031000000d0"); // INT7 - TB NL
     cuts.AddCutCalo("00010113","411791107f032230000","01631031000000d0"); // Standard EDC
   } else if (trainConfig == 2002){  // EMCAL+DCAL clusters 13 TeV std. QA
-    cuts.AddCutCalo("00010113","4117900077032220000","01631031000000d0"); // no timing cut, no NL INT7
+    cuts.AddCutCalo("00010113","4117900017032220000","01631031000000d0"); // no timing cut, no NL INT7
     cuts.AddCutCalo("00010113","4117900077032220000","01631031000000d0"); // -30ns, 35ns timing cut, no NL INT7
   } else if (trainConfig == 2003){ // EMCAL+DCAL clusters standard cuts - QA extra stripes
     cuts.AddCutCalo("00010113","4117911077032230000","01631031000000d0"); // Standard EDC
@@ -1694,7 +1694,7 @@ void AddTask_GammaCalo_pp(
   task->SetDoTHnSparse(enableTHnSparse);
   task->SetProduceTreeEOverP(doTreeEOverP);
   task->SetEnableSortingOfMCClusLabels(enableSortingMCLabels);
-  if(trainConfig == 2020 || trainConfig == 2021 || trainConfig == 2022) task->SetDoPi0Only(kTRUE);
+  if(trainConfig == 2002 || trainConfig == 2020 || trainConfig == 2021 || trainConfig == 2022) task->SetDoPi0Only(kTRUE);
   if(trainConfig == 446) task->SetSoftAnalysis(kTRUE);
   if(enableExtMatchAndQA > 1){ task->SetPlotHistsExtQA(kTRUE);}
   if(trainConfig == 106 || trainConfig == 125 || trainConfig == 145){
