@@ -146,6 +146,7 @@ fkDoCascadeRefit( kFALSE ) ,
 fMaxIterationsWhenMinimizing(27),
 fkPreselectX(kTRUE),
 fkSkipLargeXYDCA(kTRUE),
+fkMonteCarlo(kFALSE),
 fkUseOptimalTrackParams(kFALSE),
 fkUseOptimalTrackParamsBachelor(kFALSE),
 fMinPtV0(   -1 ), //pre-selection
@@ -206,6 +207,7 @@ fkDoCascadeRefit( kFALSE ) ,
 fMaxIterationsWhenMinimizing(27),
 fkPreselectX(kTRUE),
 fkSkipLargeXYDCA(kTRUE),
+fkMonteCarlo(kFALSE), 
 fkUseOptimalTrackParams(kFALSE),
 fkUseOptimalTrackParamsBachelor(kFALSE),
 fMinPtV0(   -1 ), //pre-selection
@@ -491,7 +493,11 @@ void AliAnalysisTaskWeakDecayVertexer::UserExec(Option_t *)
             lESDevent->ResetCascades();
             SelectiveResetV0s(lESDevent, 0);
         }
-        Tracks2V0vertices(lESDevent);
+        if( !fkMonteCarlo ){
+            Tracks2V0vertices(lESDevent);
+        }else{
+            Tracks2V0verticesMC(lESDevent);
+        }
         
         //reset on-the-fly, job is done
         if(fkUseOptimalTrackParams && !fkUseOptimalTrackParamsBachelor)
@@ -675,6 +681,267 @@ Long_t AliAnalysisTaskWeakDecayVertexer::Tracks2V0vertices(AliESDEvent *event) {
             Int_t pidx=pos[k];
             AliESDtrack *ptrk=event->GetTrack(pidx);
             if(!ptrk) continue;
+            
+            fHistV0Statistics->Fill(0.5); //number of considered pairs
+            
+            Double_t lNegMassForTracking = ntrk->GetMassForTracking();
+            Double_t lPosMassForTracking = ptrk->GetMassForTracking();
+            
+            if (TMath::Abs(ntrk->GetD(xPrimaryVertex,yPrimaryVertex,b))<fV0VertexerSels[1])
+                if (TMath::Abs(ptrk->GetD(xPrimaryVertex,yPrimaryVertex,b))<fV0VertexerSels[2]) continue;
+            
+            fHistV0Statistics->Fill(1.5); //pass distance to PV
+            
+            AliExternalTrackParam nt(*ntrk), pt(*ptrk);
+            Bool_t lUsedOptimalParams = kFALSE;
+            
+            if( fkUseOptimalTrackParams ){
+                //reroute to pointers obtained with on-the-fly finding, please
+                map<pair<int,int>, int>::iterator iter = fOTFMap.find(make_pair(nidx,pidx));
+                if(iter != fOTFMap.end())
+                {
+                    Int_t lEquivalentOTFV0 = (*iter).second; // or iter->second;
+                    AliESDv0 *v0_otf = ((AliESDEvent*)event)->GetV0(lEquivalentOTFV0);
+                    if(!v0_otf){
+                        AliWarning(Form("Invalid V0 at position %i!", lEquivalentOTFV0));
+                        fHistV0OptimalTrackParamUse->Fill(2.5);
+                    }else{
+                        AliExternalTrackParam ptimproved(*(v0_otf->GetParamP()));
+                        AliExternalTrackParam ntimproved(*(v0_otf->GetParamN()));
+                        if( v0_otf->GetParamP()->Charge() > 0 && v0_otf->GetParamN()->Charge() < 0 ) {
+                            //V0 daughter track swapping is required! Note: everything is swapped here... P->N, N->P
+                            pt = ptimproved;
+                            nt = ntimproved;
+                        }else{
+                            //swap charges if charges are swapped
+                            pt = ntimproved;
+                            nt = ptimproved;
+                        }
+                        fHistV0OptimalTrackParamUse->Fill(1.5);
+                        lUsedOptimalParams=kTRUE;
+                    }
+                }else{
+                    //OTF not available for this pair
+                    fHistV0OptimalTrackParamUse->Fill(0.5);
+                }
+            }
+            AliExternalTrackParam *ntp=&nt, *ptp=&pt;
+            Double_t xn, xp, dca;
+            
+            //Improved call: use own function, including XY-pre-opt stage
+            
+            //Re-propagate to closest position to the primary vertex if asked to do so
+            if (fkResetInitialPositions){
+                Double_t dztemp[2], covartemp[3];
+                //Safety margin: 250 -> exceedingly large... not sure this makes sense, but ok
+                ntp->PropagateToDCA( vtxT3D , b , 250, dztemp, covartemp );
+                ptp->PropagateToDCA( vtxT3D , b , 250, dztemp, covartemp );
+            }
+            
+            if( fkDoImprovedDCAV0DauPropagation ){
+                //Improved: use own call
+                dca=GetDCAV0Dau(ptp, ntp, xp, xn, b, lNegMassForTracking, lPosMassForTracking);
+            }else{
+                //Old: use old call
+                dca=nt.GetDCA(&pt,b,xn,xp);
+            }
+            
+            if (dca > fV0VertexerSels[3]) continue;
+            
+            fHistV0Statistics->Fill(2.5); //pass dca
+            
+            if ((xn+xp) > 2*fV0VertexerSels[6] && fkPreselectX) continue;
+            if ((xn+xp) < 2*fV0VertexerSels[5] && fkPreselectX) continue;
+            
+            fHistV0Statistics->Fill(3.5); //pass X within R2D cut
+            
+            if(!fkDoMaterialCorrection){
+                nt.PropagateTo(xn,b);
+                pt.PropagateTo(xp,b);
+            }else{
+                AliExternalTrackParam *ntp=&nt, *ptp=&pt;
+                AliTrackerBase::PropagateTrackTo(ntp, xn, lNegMassForTracking, 3, kFALSE, 0.75, kFALSE, kTRUE );
+                AliTrackerBase::PropagateTrackTo(ptp, xp, lPosMassForTracking, 3, kFALSE, 0.75, kFALSE, kTRUE );
+            }
+            
+            //select maximum eta range (after propagation)
+            if (TMath::Abs(nt.Eta())>0.8&&fkExtraCleanup) continue;
+            if (TMath::Abs(pt.Eta())>0.8&&fkExtraCleanup) continue;
+            
+            fHistV0Statistics->Fill(4.5); //pass eta cut
+            
+            AliESDv0 vertex(nt,nidx,pt,pidx);
+            
+            //Experimental: refit V0 if asked to do so
+            if( fkDoV0Refit ) vertex.Refit();
+            
+            //No selection: it was not previously applied, don't  apply now.
+            //if (vertex.GetChi2V0() > fChi2max) continue;
+            
+            Double_t x=vertex.Xv(), y=vertex.Yv();
+            Double_t r2=x*x + y*y;
+            if (r2 < fV0VertexerSels[5]*fV0VertexerSels[5]) continue;
+            if (r2 > fV0VertexerSels[6]*fV0VertexerSels[6]) continue;
+            
+            fHistV0Statistics->Fill(5.5); //pass radius cut
+            
+            Float_t cpa=vertex.GetV0CosineOfPointingAngle(xPrimaryVertex,yPrimaryVertex,zPrimaryVertex);
+            
+            //Simple cosine cut (no pt dependence for now)
+            if (cpa < fV0VertexerSels[4]) continue;
+            
+            fHistV0Statistics->Fill(6.5); //pass cosPA
+            
+            vertex.SetDcaV0Daughters(dca);
+            vertex.SetV0CosineOfPointingAngle(cpa);
+            vertex.ChangeMassHypothesis(kK0Short);
+            
+            //pre-select on pT
+            Double_t lMomX       = 0. , lMomY = 0., lMomZ = 0.;
+            Double_t lTransvMom  = 0. ;
+            vertex.GetPxPyPz( lMomX, lMomY, lMomZ );
+            lTransvMom      = TMath::Sqrt( lMomX*lMomX   + lMomY*lMomY );
+            if(lTransvMom<fMinPtV0) continue;
+            if(lTransvMom>fMaxPtV0) continue;
+            
+            fHistV0Statistics->Fill(7.5); //within pT range
+            if (lUsedOptimalParams) fHistV0Statistics->Fill(8.5); //good V0, used OTF params
+            
+            event->AddV0(&vertex);
+            
+            nvtx++;
+            
+            //if ( nvtx % 10000 ) gObjectTable->Print(); //debug, REMOVE ME PLEASE
+        }
+    }
+    Info("Tracks2V0vertices","Number of reconstructed V0 vertices: %ld",nvtx);
+    return nvtx;
+}
+
+
+//________________________________________________________________________
+Long_t AliAnalysisTaskWeakDecayVertexer::Tracks2V0verticesMC(AliESDEvent *event) {
+    //--------------------------------------------------------------------
+    //This function reconstructs V0 vertices
+    //...but checks also the MC record to see if indeed the track pairs
+    //   correspond to perfect V0s - if not, the V0s are discarded.
+    //   WARNING: if this is used, the resulting V0s are useless for
+    //   background studies but are still OK for calculating efficiencies.
+    //--------------------------------------------------------------------
+    
+    //pointers to query MC information
+    AliMCEvent  *lMCevent  = 0x0;
+    AliStack    *lMCstack  = 0x0;
+    
+    //=================================================
+    // Monte Carlo-related information
+    lMCevent = MCEvent();
+    if (!lMCevent) {
+        Printf("ERROR: Could not retrieve MC event \n");
+        cout << "Name of the file with pb :" <<  fInputHandler->GetTree()->GetCurrentFile()->GetName() << endl;
+        return 0;
+    }
+    lMCstack = lMCevent->Stack();
+    if (!lMCstack) {
+        Printf("ERROR: Could not retrieve MC stack \n");
+        cout << "Name of the file with pb :" <<  fInputHandler->GetTree()->GetCurrentFile()->GetName() << endl;
+        return 0;
+    }
+    //=================================================
+    
+    //populate map if requested to do so
+    if (fkUseOptimalTrackParams) {
+        Int_t nv0s = 0;
+        nv0s = event->GetNumberOfV0s();
+        fOTFMap.clear(); //don't forget to clean up!
+        for (Int_t iV0 = 0; iV0 < nv0s; iV0++) //extra-crazy test
+        {   // This is the begining of the V0 loop
+            AliESDv0 *v0 = ((AliESDEvent*)event)->GetV0(iV0);
+            if(v0->GetOnFlyStatus()>0){
+                //map convention: negative track first, positive track second
+                fOTFMap.insert(make_pair(make_pair(v0->GetNindex(), v0->GetPindex()), iV0));
+            }
+        }//finished preparing map
+    }
+    
+    const AliESDVertex *vtxT3D=event->GetPrimaryVertex();
+    
+    Double_t xPrimaryVertex=vtxT3D->GetX();
+    Double_t yPrimaryVertex=vtxT3D->GetY();
+    Double_t zPrimaryVertex=vtxT3D->GetZ();
+    
+    Long_t nentr=event->GetNumberOfTracks();
+    Double_t b=event->GetMagneticField();
+    
+    if (nentr<2) return 0;
+    
+    TArrayI neg(nentr);
+    TArrayI pos(nentr);
+    
+    Long_t nneg=0, npos=0, nvtx=0;
+    
+    //Particles of interest
+    const Int_t lNV0Types = 5;
+    Int_t lV0Types[lNV0Types]          = { 310, 3122, -3122,  1010010030, -1010010030};
+
+    Long_t i;
+    for (i=0; i<nentr; i++) {
+        AliESDtrack *esdTrack=event->GetTrack(i);
+        ULong_t status=esdTrack->GetStatus();
+        
+        //==================================================================================
+        //Query MC information to check if this track comes from one of the desired species
+        Int_t lLabel = (Int_t) TMath::Abs( esdTrack->GetLabel() );
+        TParticle* lParticle = lMCstack->Particle( lLabel );
+        Int_t lLabelMother = lParticle->GetFirstMother();
+        if( lLabelMother < 0 ) continue;
+        //Do not select on primaries so that this list can be used for cascades too
+        //if( lMCstack->IsPhysicalPrimary(lLabelMother) ) continue;
+        TParticle *lParticleMother = lMCstack->Particle( lLabelMother );
+        Int_t lParticleMotherPDG = lParticleMother->GetPdgCode();
+        Bool_t lOfDesiredType = kFALSE;
+        for(Int_t iType=0; iType<lNV0Types; iType++){
+            if( lParticleMotherPDG == lV0Types[iType] ) lOfDesiredType = kTRUE;
+        }
+        if( !lOfDesiredType ) continue;
+        //==================================================================================
+        
+        //if ((status&AliESDtrack::kITSrefit)==0)//not to accept the ITS SA tracks
+        if ((status&AliESDtrack::kTPCrefit)==0) continue;
+        
+        //Track pre-selection: clusters
+        Float_t lThisTrackLength = -1;
+        if (esdTrack->GetInnerParam()) lThisTrackLength = esdTrack->GetLengthInActiveZone(1, 2.0, 220.0, b);
+        if (esdTrack->GetTPCNcls() < 70 && lThisTrackLength<80 &&fkExtraCleanup ) continue;
+        
+        Double_t d=esdTrack->GetD(xPrimaryVertex,yPrimaryVertex,b);
+        if (TMath::Abs(d)<fV0VertexerSels[2]) continue;
+        if (TMath::Abs(d)>fV0VertexerSels[6]) continue;
+        
+        if (esdTrack->GetSign() < 0.) neg[nneg++]=i;
+        else pos[npos++]=i;
+    }
+    
+    for (i=0; i<nneg; i++) {
+        Long_t nidx=neg[i];
+        AliESDtrack *ntrk=event->GetTrack(nidx);
+        if(!ntrk) continue;
+        
+        for (Int_t k=0; k<npos; k++) {
+            Int_t pidx=pos[k];
+            AliESDtrack *ptrk=event->GetTrack(pidx);
+            if(!ptrk) continue;
+            
+            //==================================================================================
+            //Check if same mother
+            Int_t lLabelneg = (Int_t) TMath::Abs( ntrk->GetLabel() );
+            Int_t lLabelpos = (Int_t) TMath::Abs( ptrk->GetLabel() );
+            TParticle* lParticleneg = lMCstack->Particle( lLabelneg );
+            TParticle* lParticlepos = lMCstack->Particle( lLabelpos );
+            Int_t lLabelMotherneg = lParticleneg->GetFirstMother();
+            Int_t lLabelMotherpos = lParticlepos->GetFirstMother();
+            if(lLabelMotherneg!=lLabelMotherpos) continue; //discard if combination not good
+            //==================================================================================
             
             fHistV0Statistics->Fill(0.5); //number of considered pairs
             
