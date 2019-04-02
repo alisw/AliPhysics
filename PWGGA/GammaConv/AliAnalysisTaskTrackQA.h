@@ -11,10 +11,11 @@
 #include <vector>
 #include "AliV0ReaderV1.h"
 #include "AliConvEventCuts.h"
-#include "AliPrimaryPionSelector.h"
-#include "AliPrimaryKaonSelector.h"
-#include "AliPrimaryProtonSelector.h"
-#include "AliPrimaryDeuteronSelector.h"
+#include "AliIdentifiedPrimarySelector.h"
+//#include "AliPrimaryPionSelector.h"
+//#include "AliPrimaryKaonSelector.h"
+//#include "AliPrimaryProtonSelector.h"
+//#include "AliPrimaryDeuteronSelector.h"
 #include "TList.h"
 #include "TClonesArray.h"
 
@@ -39,6 +40,7 @@ class AliAnalysisTaskTrackQA : public AliAnalysisTaskSE{
   void SetIsMC(Int_t isMC)                                      {fIsMC=isMC;}
   void SetV0Reader(AliV0ReaderV1 *v0Reader)                     {fV0Reader=v0Reader;}
   void SetV0ReaderName(TString name)                            {fV0ReaderName=name; return;}
+//  void SetIdentifiedPrimarySelectorName(TString name)                        {fPionSelectorName=name; return;}
   void SetPionSelectorName(TString name)                        {fPionSelectorName=name; return;}
   void SetKaonSelectorName(TString name)                        {fKaonSelectorName=name; return;}
   void SetProtonSelectorName(TString name)                      {fProtonSelectorName=name; return;}
@@ -70,13 +72,13 @@ class AliAnalysisTaskTrackQA : public AliAnalysisTaskSE{
   
   AliV0ReaderV1*    fV0Reader;	                //
   TString           fV0ReaderName;
-  AliPrimaryPionSelector*     fPionSelector;                  //!<! primary charged pion selector, basic selection of pi+,pi-
+  AliIdentifiedPrimarySelector*     fPionSelector;                  //!<! primary charged pion selector, basic selection of pi+,pi-
   TString           fPionSelectorName; 
-  AliPrimaryKaonSelector*     fKaonSelector;                  //!<! primary charged Kaon selector, basic selection of K+,K-
+  AliIdentifiedPrimarySelector*     fKaonSelector;                  //!<! primary charged Kaon selector, basic selection of K+,K-
   TString           fKaonSelectorName; 
-  AliPrimaryProtonSelector*   fProtonSelector;                //!<! primary charged proton selector, basic selection of p+,p-
+  AliIdentifiedPrimarySelector*   fProtonSelector;                //!<! primary charged proton selector, basic selection of p+,p-
   TString           fProtonSelectorName; 
-  AliPrimaryDeuteronSelector* fDeuteronSelector;              //!<! primary charged deuteron selector, basic selection of d+,d-
+  AliIdentifiedPrimarySelector* fDeuteronSelector;              //!<! primary charged deuteron selector, basic selection of d+,d-
   TString           fDeuteronSelectorName; 
   TList*            fEventCutArray;              ///<
   TList*            fPionCutArray;               ///<

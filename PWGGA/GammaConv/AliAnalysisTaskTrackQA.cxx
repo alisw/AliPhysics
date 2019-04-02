@@ -297,10 +297,10 @@ void AliAnalysisTaskTrackQA::UserCreateOutputObjects()
 
   for(Int_t iCut = 0; iCut<fnCuts;iCut++){
     TString cutstringEvent      = ((AliConvEventCuts*)fEventCutArray->At(iCut))->GetCutNumber();
-    TString cutstringPion       = ((AliPrimaryPionCuts*)fPionCutArray->At(iCut))->GetCutNumber();
-    TString cutstringKaon       = ((AliPrimaryKaonCuts*)fKaonCutArray->At(iCut))->GetCutNumber();
-    TString cutstringProton     = ((AliPrimaryProtonCuts*)fProtonCutArray->At(iCut))->GetCutNumber();
-    TString cutstringDeuteron   = ((AliPrimaryDeuteronCuts*)fDeuteronCutArray->At(iCut))->GetCutNumber();
+    TString cutstringPion       = ((AliIdentifiedPrimaryCuts*)fPionCutArray->At(iCut))->GetCutNumber();
+    TString cutstringKaon       = ((AliIdentifiedPrimaryCuts*)fKaonCutArray->At(iCut))->GetCutNumber();
+    TString cutstringProton     = ((AliIdentifiedPrimaryCuts*)fProtonCutArray->At(iCut))->GetCutNumber();
+    TString cutstringDeuteron   = ((AliIdentifiedPrimaryCuts*)fDeuteronCutArray->At(iCut))->GetCutNumber();
     TString fullCutString         = "";
     fullCutString               = Form("%s_%s_%s_%s_%s",cutstringEvent.Data(),cutstringPion.Data(), cutstringKaon.Data(),cutstringProton.Data(),cutstringDeuteron.Data());
     //fullCutString               = Form("%s_%s",cutstringEvent.Data(),cutstringPion.Data());
@@ -418,39 +418,39 @@ void AliAnalysisTaskTrackQA::UserCreateOutputObjects()
 
   }
 
-  fPionSelector=(AliPrimaryPionSelector*)AliAnalysisManager::GetAnalysisManager()->GetTask("PionSelector");
+  fPionSelector=(AliIdentifiedPrimarySelector*)AliAnalysisManager::GetAnalysisManager()->GetTask("PionSelector");
   if(!fPionSelector){printf("Error: No PionSelector");return;} // 
 
   if( fPionSelector ){
-    if ( ((AliPrimaryPionCuts*)fPionSelector->GetPrimaryPionCuts())->GetCutHistograms() ){
-      fOutputContainer->Add( ((AliPrimaryPionCuts*)fPionSelector->GetPrimaryPionCuts())->GetCutHistograms() );
+    if ( ((AliIdentifiedPrimaryCuts*)fPionSelector->GetIdentifiedPrimaryCuts())->GetCutHistograms() ){
+      fOutputContainer->Add( ((AliIdentifiedPrimaryCuts*)fPionSelector->GetIdentifiedPrimaryCuts())->GetCutHistograms() );
     }
   }
 
-  fKaonSelector=(AliPrimaryKaonSelector*)AliAnalysisManager::GetAnalysisManager()->GetTask("KaonSelector");
+  fKaonSelector=(AliIdentifiedPrimarySelector*)AliAnalysisManager::GetAnalysisManager()->GetTask("KaonSelector");
   if(!fKaonSelector){printf("Error: No KaonSelector");return;} // 
 
   if( fKaonSelector ){
-    if ( ((AliPrimaryKaonCuts*)fKaonSelector->GetPrimaryKaonCuts())->GetCutHistograms() ){
-      fOutputContainer->Add( ((AliPrimaryKaonCuts*)fKaonSelector->GetPrimaryKaonCuts())->GetCutHistograms() );
+    if ( ((AliIdentifiedPrimaryCuts*)fKaonSelector->GetIdentifiedPrimaryCuts())->GetCutHistograms() ){
+      fOutputContainer->Add( ((AliIdentifiedPrimaryCuts*)fKaonSelector->GetIdentifiedPrimaryCuts())->GetCutHistograms() );
     }
   }
 
-  fProtonSelector=(AliPrimaryProtonSelector*)AliAnalysisManager::GetAnalysisManager()->GetTask("ProtonSelector");
+  fProtonSelector=(AliIdentifiedPrimarySelector*)AliAnalysisManager::GetAnalysisManager()->GetTask("ProtonSelector");
   if(!fProtonSelector){printf("Error: No ProtonSelector");return;} // 
 
   if( fProtonSelector ){
-    if ( ((AliPrimaryProtonCuts*)fProtonSelector->GetPrimaryProtonCuts())->GetCutHistograms() ){
-      fOutputContainer->Add( ((AliPrimaryProtonCuts*)fProtonSelector->GetPrimaryProtonCuts())->GetCutHistograms() );
+    if ( ((AliIdentifiedPrimaryCuts*)fProtonSelector->GetIdentifiedPrimaryCuts())->GetCutHistograms() ){
+      fOutputContainer->Add( ((AliIdentifiedPrimaryCuts*)fProtonSelector->GetIdentifiedPrimaryCuts())->GetCutHistograms() );
     }
   }
 
-  fDeuteronSelector=(AliPrimaryDeuteronSelector*)AliAnalysisManager::GetAnalysisManager()->GetTask("DeuteronSelector");
+  fDeuteronSelector=(AliIdentifiedPrimarySelector*)AliAnalysisManager::GetAnalysisManager()->GetTask("DeuteronSelector");
   if(!fDeuteronSelector){printf("Error: No DeuteronSelector");return;} // 
 
   if( fDeuteronSelector ){
-    if ( ((AliPrimaryDeuteronCuts*)fDeuteronSelector->GetPrimaryDeuteronCuts())->GetCutHistograms() ){
-      fOutputContainer->Add( ((AliPrimaryDeuteronCuts*)fDeuteronSelector->GetPrimaryDeuteronCuts())->GetCutHistograms() );
+    if ( ((AliIdentifiedPrimaryCuts*)fDeuteronSelector->GetIdentifiedPrimaryCuts())->GetCutHistograms() ){
+      fOutputContainer->Add( ((AliIdentifiedPrimaryCuts*)fDeuteronSelector->GetIdentifiedPrimaryCuts())->GetCutHistograms() );
     }
   }
 
@@ -463,26 +463,26 @@ void AliAnalysisTaskTrackQA::UserCreateOutputObjects()
     }
 
     if( fPionCutArray){
-      if( ((AliPrimaryPionCuts*)fPionCutArray->At(iCut))->GetCutHistograms() ) {
-        fCutFolder[iCut]->Add( ((AliPrimaryPionCuts*)fPionCutArray->At(iCut))->GetCutHistograms() );
+      if( ((AliIdentifiedPrimaryCuts*)fPionCutArray->At(iCut))->GetCutHistograms() ) {
+        fCutFolder[iCut]->Add( ((AliIdentifiedPrimaryCuts*)fPionCutArray->At(iCut))->GetCutHistograms() );
       }
     }
 
     if( fKaonCutArray){
-      if( ((AliPrimaryKaonCuts*)fKaonCutArray->At(iCut))->GetCutHistograms() ) {
-        fCutFolder[iCut]->Add( ((AliPrimaryKaonCuts*)fKaonCutArray->At(iCut))->GetCutHistograms() );
+      if( ((AliIdentifiedPrimaryCuts*)fKaonCutArray->At(iCut))->GetCutHistograms() ) {
+        fCutFolder[iCut]->Add( ((AliIdentifiedPrimaryCuts*)fKaonCutArray->At(iCut))->GetCutHistograms() );
       }
     }
 
     if( fProtonCutArray){
-      if( ((AliPrimaryProtonCuts*)fProtonCutArray->At(iCut))->GetCutHistograms() ) {
-        fCutFolder[iCut]->Add( ((AliPrimaryProtonCuts*)fProtonCutArray->At(iCut))->GetCutHistograms() );
+      if( ((AliIdentifiedPrimaryCuts*)fProtonCutArray->At(iCut))->GetCutHistograms() ) {
+        fCutFolder[iCut]->Add( ((AliIdentifiedPrimaryCuts*)fProtonCutArray->At(iCut))->GetCutHistograms() );
       }
     }
 
     if( fDeuteronCutArray){
-      if( ((AliPrimaryDeuteronCuts*)fDeuteronCutArray->At(iCut))->GetCutHistograms() ) {
-        fCutFolder[iCut]->Add( ((AliPrimaryDeuteronCuts*)fDeuteronCutArray->At(iCut))->GetCutHistograms() );
+      if( ((AliIdentifiedPrimaryCuts*)fDeuteronCutArray->At(iCut))->GetCutHistograms() ) {
+        fCutFolder[iCut]->Add( ((AliIdentifiedPrimaryCuts*)fDeuteronCutArray->At(iCut))->GetCutHistograms() );
       }
     }
 
@@ -527,26 +527,26 @@ void AliAnalysisTaskTrackQA::UserExec(Option_t *){
 
   if(fIsMC>0) fMCEvent = MCEvent();
 
-  fPionSelector=(AliPrimaryPionSelector*)AliAnalysisManager::GetAnalysisManager()->GetTask("PionSelector");
+  fPionSelector=(AliIdentifiedPrimarySelector*)AliAnalysisManager::GetAnalysisManager()->GetTask("PionSelector");
   if(!fPionSelector){printf("Error: No PionSelector");return;} // 
-  fSelectorNegPionIndex = fPionSelector->GetReconstructedNegPionIndex(); // Neg Pions from default Cut
-  fSelectorPosPionIndex = fPionSelector->GetReconstructedPosPionIndex(); // Pos Pions from default Cut
+  fSelectorNegPionIndex = fPionSelector->GetReconstructedNegIdentifiedIndex(); // Neg Pions from default Cut
+  fSelectorPosPionIndex = fPionSelector->GetReconstructedPosIdentifiedIndex(); // Pos Pions from default Cut
 
-  fKaonSelector=(AliPrimaryKaonSelector*)AliAnalysisManager::GetAnalysisManager()->GetTask("KaonSelector");
+  fKaonSelector=(AliIdentifiedPrimarySelector*)AliAnalysisManager::GetAnalysisManager()->GetTask("KaonSelector");
   if(!fKaonSelector){printf("Error: No KaonSelector");return;} // 
-  fSelectorNegKaonIndex = fKaonSelector->GetReconstructedNegKaonIndex(); // Neg Kaons from default Cut
-  fSelectorPosKaonIndex = fKaonSelector->GetReconstructedPosKaonIndex(); // Pos Kaons from default Cut
+  fSelectorNegKaonIndex = fKaonSelector->GetReconstructedNegIdentifiedIndex(); // Neg Kaons from default Cut
+  fSelectorPosKaonIndex = fKaonSelector->GetReconstructedPosIdentifiedIndex(); // Pos Kaons from default Cut
 
 
-  fProtonSelector=(AliPrimaryProtonSelector*)AliAnalysisManager::GetAnalysisManager()->GetTask("ProtonSelector");
+  fProtonSelector=(AliIdentifiedPrimarySelector*)AliAnalysisManager::GetAnalysisManager()->GetTask("ProtonSelector");
   if(!fProtonSelector){printf("Error: No ProtonSelector");return;} // 
-  fSelectorNegProtonIndex = fProtonSelector->GetReconstructedNegProtonIndex(); // Neg Protons from default Cut
-  fSelectorPosProtonIndex = fProtonSelector->GetReconstructedPosProtonIndex(); // Pos Protons from default Cut
+  fSelectorNegProtonIndex = fProtonSelector->GetReconstructedNegIdentifiedIndex(); // Neg Protons from default Cut
+  fSelectorPosProtonIndex = fProtonSelector->GetReconstructedPosIdentifiedIndex(); // Pos Protons from default Cut
 
-  fDeuteronSelector=(AliPrimaryDeuteronSelector*)AliAnalysisManager::GetAnalysisManager()->GetTask("DeuteronSelector");
+  fDeuteronSelector=(AliIdentifiedPrimarySelector*)AliAnalysisManager::GetAnalysisManager()->GetTask("DeuteronSelector");
   if(!fDeuteronSelector){printf("Error: No DeuteronSelector");return;} // 
-  fSelectorNegDeuteronIndex = fDeuteronSelector->GetReconstructedNegDeuteronIndex(); // Neg Deuterons from default Cut
-  fSelectorPosDeuteronIndex = fDeuteronSelector->GetReconstructedPosDeuteronIndex(); // Pos Deuterons from default Cut
+  fSelectorNegDeuteronIndex = fDeuteronSelector->GetReconstructedNegIdentifiedIndex(); // Neg Deuterons from default Cut
+  fSelectorPosDeuteronIndex = fDeuteronSelector->GetReconstructedPosIdentifiedIndex(); // Pos Deuterons from default Cut
 
 
 
@@ -640,7 +640,7 @@ void AliAnalysisTaskTrackQA::ProcessPionCandidates(){
 
   for(UInt_t i = 0; i < fSelectorNegPionIndex.size(); i++){
     AliESDtrack* negPionCandidate =dynamic_cast<AliESDtrack*>(fInputEvent->GetTrack(fSelectorNegPionIndex[i]));
-    if(! ((AliPrimaryPionCuts*)fPionCutArray->At(fiCut))->PionIsSelected(negPionCandidate) ) continue;
+    if(! ((AliIdentifiedPrimaryCuts*)fPionCutArray->At(fiCut))->IdentifiedIsSelected(negPionCandidate) ) continue;
     //    lGoodNegPionIndexPrev.push_back(   fSelectorNegPionIndex[i] );
 
     Float_t bNeg[2];
@@ -680,7 +680,7 @@ void AliAnalysisTaskTrackQA::ProcessPionCandidates(){
  
   for(UInt_t i = 0; i < fSelectorPosPionIndex.size(); i++){
     AliESDtrack* posPionCandidate = dynamic_cast<AliESDtrack*>(fInputEvent->GetTrack(fSelectorPosPionIndex[i]));
-    if(! ((AliPrimaryPionCuts*)fPionCutArray->At(fiCut))->PionIsSelected(posPionCandidate) ) continue;
+    if(! ((AliIdentifiedPrimaryCuts*)fPionCutArray->At(fiCut))->IdentifiedIsSelected(posPionCandidate) ) continue;
     //   lGoodPosPionIndexPrev.push_back(   fSelectorPosPionIndex[i]  );
     Float_t bPos[2];
     Float_t bCovPos[3];
@@ -738,7 +738,7 @@ void AliAnalysisTaskTrackQA::ProcessKaonCandidates(){
 
   for(UInt_t i = 0; i < fSelectorNegKaonIndex.size(); i++){
     AliESDtrack* negKaonCandidate =dynamic_cast<AliESDtrack*>(fInputEvent->GetTrack(fSelectorNegKaonIndex[i]));
-    if(! ((AliPrimaryKaonCuts*)fKaonCutArray->At(fiCut))->KaonIsSelected(negKaonCandidate) ) continue;
+    if(! ((AliIdentifiedPrimaryCuts*)fKaonCutArray->At(fiCut))->IdentifiedIsSelected(negKaonCandidate) ) continue;
     //    lGoodNegKaonIndexPrev.push_back(   fSelectorNegKaonIndex[i] );
     Float_t bNeg[2];
     Float_t bCovNeg[3];
@@ -759,7 +759,7 @@ void AliAnalysisTaskTrackQA::ProcessKaonCandidates(){
  
   for(UInt_t i = 0; i < fSelectorPosKaonIndex.size(); i++){
     AliESDtrack* posKaonCandidate = dynamic_cast<AliESDtrack*>(fInputEvent->GetTrack(fSelectorPosKaonIndex[i]));
-    if(! ((AliPrimaryKaonCuts*)fKaonCutArray->At(fiCut))->KaonIsSelected(posKaonCandidate) ) continue;
+    if(! ((AliIdentifiedPrimaryCuts*)fKaonCutArray->At(fiCut))->IdentifiedIsSelected(posKaonCandidate) ) continue;
     //   lGoodPosKaonIndexPrev.push_back(   fSelectorPosKaonIndex[i]  );
     Float_t bPos[2];
     Float_t bCovPos[3];
@@ -799,7 +799,7 @@ void AliAnalysisTaskTrackQA::ProcessProtonCandidates(){
   vector<Int_t> lGoodPosProtonIndexPrev(0);
   for(UInt_t i = 0; i < fSelectorNegProtonIndex.size(); i++){
     AliESDtrack* negProtonCandidate =dynamic_cast<AliESDtrack*>(fInputEvent->GetTrack(fSelectorNegProtonIndex[i]));
-    if(! ((AliPrimaryProtonCuts*)fProtonCutArray->At(fiCut))->ProtonIsSelected(negProtonCandidate) ) continue;
+    if(! ((AliIdentifiedPrimaryCuts*)fProtonCutArray->At(fiCut))->IdentifiedIsSelected(negProtonCandidate) ) continue;
    //    lGoodNegProtonIndexPrev.push_back(   fSelectorNegProtonIndex[i] );
 
     Float_t bNeg[2];
@@ -824,7 +824,7 @@ void AliAnalysisTaskTrackQA::ProcessProtonCandidates(){
  
   for(UInt_t i = 0; i < fSelectorPosProtonIndex.size(); i++){
     AliESDtrack* posProtonCandidate = dynamic_cast<AliESDtrack*>(fInputEvent->GetTrack(fSelectorPosProtonIndex[i]));
-    if(! ((AliPrimaryProtonCuts*)fProtonCutArray->At(fiCut))->ProtonIsSelected(posProtonCandidate) ) continue;
+    if(! ((AliIdentifiedPrimaryCuts*)fProtonCutArray->At(fiCut))->IdentifiedIsSelected(posProtonCandidate) ) continue;
     //   lGoodPosProtonIndexPrev.push_back(   fSelectorPosProtonIndex[i]  );
     Float_t bPos[2];
     Float_t bCovPos[3];
@@ -864,7 +864,7 @@ void AliAnalysisTaskTrackQA::ProcessDeuteronCandidates(){
 
   for(UInt_t i = 0; i < fSelectorNegDeuteronIndex.size(); i++){
     AliESDtrack* negDeuteronCandidate =dynamic_cast<AliESDtrack*>(fInputEvent->GetTrack(fSelectorNegDeuteronIndex[i]));
-    if(! ((AliPrimaryDeuteronCuts*)fDeuteronCutArray->At(fiCut))->DeuteronIsSelected(negDeuteronCandidate) ) continue;
+    if(! ((AliIdentifiedPrimaryCuts*)fDeuteronCutArray->At(fiCut))->IdentifiedIsSelected(negDeuteronCandidate) ) continue;
     //    lGoodNegDeuteronIndexPrev.push_back(   fSelectorNegDeuteronIndex[i] );
 
     Float_t bNeg[2];
@@ -886,7 +886,7 @@ void AliAnalysisTaskTrackQA::ProcessDeuteronCandidates(){
 
   for(UInt_t i = 0; i < fSelectorPosDeuteronIndex.size(); i++){
     AliESDtrack* posDeuteronCandidate = dynamic_cast<AliESDtrack*>(fInputEvent->GetTrack(fSelectorPosDeuteronIndex[i]));
-    if(! ((AliPrimaryDeuteronCuts*)fDeuteronCutArray->At(fiCut))->DeuteronIsSelected(posDeuteronCandidate) ) continue;
+    if(! ((AliIdentifiedPrimaryCuts*)fDeuteronCutArray->At(fiCut))->IdentifiedIsSelected(posDeuteronCandidate) ) continue;
     //   lGoodPosDeuteronIndexPrev.push_back(   fSelectorPosDeuteronIndex[i]  );
     Float_t bPos[2];
     Float_t bCovPos[3];

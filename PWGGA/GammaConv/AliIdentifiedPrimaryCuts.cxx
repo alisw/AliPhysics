@@ -3,7 +3,7 @@
  * Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. 	*
  *				       					 									*
  * Authors: Friederike Bock												  	*
- * Extended to Kaons by A. Marin
+ * Extended to Identified Primary by A. Marin
  * Version 1.0								  								*
  *																			*
  * Permission to use, copy, modify and distribute this software and its	  	*
@@ -23,7 +23,7 @@
 ////////////////////////////////////////////////
 
 
-#include "AliPrimaryKaonCuts.h"
+#include "AliIdentifiedPrimaryCuts.h"
 #include "AliAODConversionPhoton.h"
 #include "AliKFVertex.h"
 #include "AliAODTrack.h"
@@ -45,70 +45,73 @@ class iostream;
 
 using namespace std;
 
-ClassImp(AliPrimaryKaonCuts)
+ClassImp(AliIdentifiedPrimaryCuts)
 
 
-const char* AliPrimaryKaonCuts::fgkCutNames[AliPrimaryKaonCuts::kNCuts] = {
-	"kEtaCut",				// 0
-	"kClsITSCut",			// 1
-	"kClsTPCCut",			// 2
-	"kDCAcut",				// 3
-	"kPtCut",				// 4
-	"kPiDedxSigmaITSCut",	// 5
-	"kPiDedxSigmaTPCCut",	// 6
-	"kPiTOFSigmaCut",		// 7 
-	"kMassCut"				// 8
+const char* AliIdentifiedPrimaryCuts::fgkCutNames[AliIdentifiedPrimaryCuts::kNCuts] = {
+  "kParticleTypeCut",   // 0=e , 1=mu, 2=pi, 3=K, 4=p, 5=d,..... 
+  "kEtaCut",				// 0
+  "kClsITSCut",			// 1
+  "kClsTPCCut",			// 2
+  "kDCAcut",				// 3
+  "kPtCut",				// 4
+  "kPiDedxSigmaITSCut",	// 5
+  "kPiDedxSigmaTPCCut",	// 6
+  "kPiTOFSigmaCut",		// 7 
+  "kMassCut"				// 8
 };
 
 //________________________________________________________________________
-AliPrimaryKaonCuts::AliPrimaryKaonCuts(const char *name,const char *title) : AliAnalysisCuts(name,title),
-	fHistograms(NULL),
-    fDoLightOutput(kFALSE),
-	fPIDResponse(NULL),
-	fEsdTrackCuts(NULL),
-	fEtaCut(0.9),
-	fEtaShift(0.0),
-	fDoEtaCut(kFALSE),
-	fPtCut(0.0),
-	fMinClsTPC(0), // minimum clusters in the TPC
-    fChi2PerClsTPC(0), // maximum Chi2 per cluster in the TPC
-    fRequireTPCRefit(kFALSE), // require a refit in the TPC
-	fMinClsTPCToF(0), // minimum clusters to findable clusters
-	fDodEdxSigmaITSCut(kFALSE),
-	fDodEdxSigmaTPCCut(kTRUE),
-	fDoTOFsigmaCut(kFALSE), // RRnewTOF
-	fPIDnSigmaAboveKaonLineITS(100),
-	fPIDnSigmaBelowKaonLineITS(-100),
-	fPIDnSigmaAboveKaonLineTPC(100),
-	fPIDnSigmaBelowKaonLineTPC(-100),
-	fPIDnSigmaAboveKaonLineTOF(100), // RRnewTOF
-	fPIDnSigmaBelowKaonLineTOF(-100), // RRnewTOF
-	fUseCorrectedTPCClsInfo(kFALSE),
-	fUseTOFpid(kFALSE),
-	fRequireTOF(kFALSE),
-	fDoMassCut(kFALSE),
-	fMassCut(10),
-	fDoWeights(kFALSE),
-    fMaxDCAToVertexZ(8000),
-	fCutString(NULL),
+AliIdentifiedPrimaryCuts::AliIdentifiedPrimaryCuts(const char *name,const char *title) : AliAnalysisCuts(name,title),
+
+ fHistograms(NULL),
+ fDoLightOutput(kFALSE),
+ fPIDResponse(NULL),
+ fEsdTrackCuts(NULL),
+ fParticleTypeCut(2),
+ fEtaCut(0.9),
+ fEtaShift(0.0),
+ fDoEtaCut(kFALSE),
+ fPtCut(0.0),
+ fMinClsTPC(0), // minimum clusters in the TPC
+ fChi2PerClsTPC(0), // maximum Chi2 per cluster in the TPC
+ fRequireTPCRefit(kFALSE), // require a refit in the TPC
+ fMinClsTPCToF(0), // minimum clusters to findable clusters
+ fDodEdxSigmaITSCut(kFALSE),
+ fDodEdxSigmaTPCCut(kTRUE),
+ fDoTOFsigmaCut(kFALSE), // RRnewTOF
+ fPIDnSigmaAboveIdentifiedLineITS(100),
+ fPIDnSigmaBelowIdentifiedLineITS(-100),
+ fPIDnSigmaAboveIdentifiedLineTPC(100),
+ fPIDnSigmaBelowIdentifiedLineTPC(-100),
+ fPIDnSigmaAboveIdentifiedLineTOF(100), // RRnewTOF
+ fPIDnSigmaBelowIdentifiedLineTOF(-100), // RRnewTOF
+  fUseCorrectedTPCClsInfo(kFALSE),
+  fUseTOFpid(kFALSE),
+  fRequireTOF(kFALSE),
+  fDoMassCut(kFALSE),
+  fMassCut(10),
+  fDoWeights(kFALSE),
+  fMaxDCAToVertexZ(8000),
+  fCutString(NULL),
   fCutStringRead(""),
-	fHistCutIndex(NULL),
-	fHistdEdxCuts(NULL),
-	fHistITSdEdxbefore(NULL),
-	fHistITSdEdxafter(NULL),
-	fHistTPCdEdxbefore(NULL),
-	fHistTPCdEdxafter(NULL),
-	fHistTPCdEdxSignalbefore(NULL),
-	fHistTPCdEdxSignalafter(NULL),
-	fHistTOFbefore(NULL),
-	fHistTOFafter(NULL),
-	fHistTrackDCAxyPtbefore(NULL),
-	fHistTrackDCAxyPtafter(NULL),
-	fHistTrackDCAzPtbefore(NULL),
-	fHistTrackDCAzPtafter(NULL),
-	fHistTrackNFindClsPtTPCbefore(NULL),
-	fHistTrackNFindClsPtTPCafter(NULL),
-	fStringITSClusterCut("")
+  fHistCutIndex(NULL),
+  fHistdEdxCuts(NULL),
+  fHistITSdEdxbefore(NULL),
+  fHistITSdEdxafter(NULL),
+  fHistTPCdEdxbefore(NULL),
+  fHistTPCdEdxafter(NULL),
+  fHistTPCdEdxSignalbefore(NULL),
+  fHistTPCdEdxSignalafter(NULL),
+  fHistTOFbefore(NULL),
+  fHistTOFafter(NULL),
+  fHistTrackDCAxyPtbefore(NULL),
+  fHistTrackDCAxyPtafter(NULL),
+  fHistTrackDCAzPtbefore(NULL),
+  fHistTrackDCAzPtafter(NULL),
+  fHistTrackNFindClsPtTPCbefore(NULL),
+  fHistTrackNFindClsPtTPCafter(NULL),
+  fStringITSClusterCut("")
 {
 	InitPIDResponse();
 	for(Int_t jj=0;jj<kNCuts;jj++){ fCuts[jj]=0; }
@@ -120,7 +123,7 @@ AliPrimaryKaonCuts::AliPrimaryKaonCuts(const char *name,const char *title) : Ali
 }
 
 //________________________________________________________________________
-AliPrimaryKaonCuts::~AliPrimaryKaonCuts() {
+AliIdentifiedPrimaryCuts::~AliIdentifiedPrimaryCuts() {
 		// Destructor
 	//Deleting fHistograms leads to seg fault it it's added to output collection of a task
 	// if(fHistograms)
@@ -134,7 +137,7 @@ AliPrimaryKaonCuts::~AliPrimaryKaonCuts() {
 }
 
 //________________________________________________________________________
-void AliPrimaryKaonCuts::InitCutHistograms(TString name, Bool_t preCut,TString cutNumber){
+void AliIdentifiedPrimaryCuts::InitCutHistograms(TString name, Bool_t preCut,TString cutNumber){
 
 	// Initialize Cut Histograms for QA (only initialized and filled if function is called)
 
@@ -153,25 +156,25 @@ void AliPrimaryKaonCuts::InitCutHistograms(TString name, Bool_t preCut,TString c
 	}
 	if(fHistograms==NULL){
 		fHistograms=new TList();
-		if(name=="")fHistograms->SetName(Form("KaonCuts_%s",cutName.Data()));
+		if(name=="")fHistograms->SetName(Form("IdentifiedCuts_%s",cutName.Data()));
 		else fHistograms->SetName(Form("%s_%s",name.Data(),cutName.Data()));
 	}
 
 
-	fHistCutIndex=new TH1F(Form("IsKaonSelected %s",cutName.Data()),"IsKaonSelected",10,-0.5,9.5);
-	fHistCutIndex->GetXaxis()->SetBinLabel(kKaonIn+1,"in");
+	fHistCutIndex=new TH1F(Form("IsIdentifiedSelected %s",cutName.Data()),"IsIdentifiedSelected",10,-0.5,9.5);
+	fHistCutIndex->GetXaxis()->SetBinLabel(kIdentifiedIn+1,"in");
 	fHistCutIndex->GetXaxis()->SetBinLabel(kNoTracks+1,"no tracks");
 	fHistCutIndex->GetXaxis()->SetBinLabel(kTrackCuts+1,"Track cuts");
 	fHistCutIndex->GetXaxis()->SetBinLabel(kdEdxCuts+1,"dEdx");
-	fHistCutIndex->GetXaxis()->SetBinLabel(kKaonOut+1,"out");
+	fHistCutIndex->GetXaxis()->SetBinLabel(kIdentifiedOut+1,"out");
 	fHistograms->Add(fHistCutIndex);
 
 	// dEdx Cuts
-	fHistdEdxCuts=new TH1F(Form("KaondEdxCuts %s",cutName.Data()),"dEdxCuts",5,-0.5,4.5);
+	fHistdEdxCuts=new TH1F(Form("IdentifieddEdxCuts %s",cutName.Data()),"dEdxCuts",5,-0.5,4.5);
 	fHistdEdxCuts->GetXaxis()->SetBinLabel(1,"in");
-	fHistdEdxCuts->GetXaxis()->SetBinLabel(2,"ITSkaon");
-	fHistdEdxCuts->GetXaxis()->SetBinLabel(3,"TPCkaon");
-	fHistdEdxCuts->GetXaxis()->SetBinLabel(4,"TOFkaon");
+	fHistdEdxCuts->GetXaxis()->SetBinLabel(2,"ITSidentified");
+	fHistdEdxCuts->GetXaxis()->SetBinLabel(3,"TPCidentified");
+	fHistdEdxCuts->GetXaxis()->SetBinLabel(4,"TOFidentified");
 	fHistdEdxCuts->GetXaxis()->SetBinLabel(5,"out");
 	fHistograms->Add(fHistdEdxCuts);
 	
@@ -181,51 +184,51 @@ void AliPrimaryKaonCuts::InitCutHistograms(TString name, Bool_t preCut,TString c
 	TAxis *axisBeforedEdxSignal = NULL;
     if(!fDoLightOutput){
       if(preCut){
-        fHistITSdEdxbefore=new TH2F(Form("Kaon_ITS_before %s",cutName.Data()),"ITS dEdx kaon before" ,150,0.05,20,400,-10,10);
+        fHistITSdEdxbefore=new TH2F(Form("Identified_ITS_before %s",cutName.Data()),"ITS dEdx identified before" ,150,0.05,20,400,-10,10);
         fHistograms->Add(fHistITSdEdxbefore);
         axisBeforeITS = fHistITSdEdxbefore->GetXaxis();
 
-        fHistTPCdEdxbefore=new TH2F(Form("Kaon_dEdx_before %s",cutName.Data()),"dEdx kaon before" ,150,0.05,20,400,-10,10);
+        fHistTPCdEdxbefore=new TH2F(Form("Identified_dEdx_before %s",cutName.Data()),"dEdx identified before" ,150,0.05,20,400,-10,10);
         fHistograms->Add(fHistTPCdEdxbefore);
         axisBeforedEdx = fHistTPCdEdxbefore->GetXaxis();
 
-        fHistTPCdEdxSignalbefore=new TH2F(Form("Kaon_dEdxSignal_before %s",cutName.Data()),"dEdx kaon signal before" ,150,0.05,20.0,800,0.0,200);
+        fHistTPCdEdxSignalbefore=new TH2F(Form("Identified_dEdxSignal_before %s",cutName.Data()),"dEdx identified signal before" ,150,0.05,20.0,800,0.0,200);
         fHistograms->Add(fHistTPCdEdxSignalbefore);
         axisBeforedEdxSignal = fHistTPCdEdxSignalbefore->GetXaxis();
 
-        fHistTOFbefore=new TH2F(Form("Kaon_TOF_before %s",cutName.Data()),"TOF kaon before" ,150,0.05,20,400,-6,10);
+        fHistTOFbefore=new TH2F(Form("Identified_TOF_before %s",cutName.Data()),"TOF identified before" ,150,0.05,20,400,-6,10);
         fHistograms->Add(fHistTOFbefore);
         axisBeforeTOF = fHistTOFbefore->GetXaxis();
 
-        fHistTrackDCAxyPtbefore = new TH2F(Form("hTrackKaon_DCAxy_Pt_before %s",cutName.Data()),"DCAxy Vs Pt of tracks before",800,-4.0,4.0,400,0.,10.);
+        fHistTrackDCAxyPtbefore = new TH2F(Form("hTrackIdentified_DCAxy_Pt_before %s",cutName.Data()),"DCAxy Vs Pt of tracks before",800,-4.0,4.0,400,0.,10.);
         fHistograms->Add(fHistTrackDCAxyPtbefore);
 
-        fHistTrackDCAzPtbefore  = new TH2F(Form("hTrackKaon_DCAz_Pt_before %s",cutName.Data()), "DCAz  Vs Pt of tracks before",800,-4.0,4.0,400,0.,10.);
+        fHistTrackDCAzPtbefore  = new TH2F(Form("hTrackIdentified_DCAz_Pt_before %s",cutName.Data()), "DCAz  Vs Pt of tracks before",800,-4.0,4.0,400,0.,10.);
         fHistograms->Add(fHistTrackDCAzPtbefore);
 
-        fHistTrackNFindClsPtTPCbefore = new TH2F(Form("hTrackKaon_NFindCls_Pt_TPC_before %s",cutName.Data()),"Track: N Findable Cls TPC Vs Pt before",100,0,1,400,0.,10.);
+        fHistTrackNFindClsPtTPCbefore = new TH2F(Form("hTrackIdentified_NFindCls_Pt_TPC_before %s",cutName.Data()),"Track: N Findable Cls TPC Vs Pt before",100,0,1,400,0.,10.);
         fHistograms->Add(fHistTrackNFindClsPtTPCbefore);
       }
 
-      fHistITSdEdxafter=new TH2F(Form("Kaon_ITS_after %s",cutName.Data()),"ITS dEdx kaon after" ,150,0.05,20,400, -10,10);
+      fHistITSdEdxafter=new TH2F(Form("Identified_ITS_after %s",cutName.Data()),"ITS dEdx identified after" ,150,0.05,20,400, -10,10);
       fHistograms->Add(fHistITSdEdxafter);
 
-      fHistTPCdEdxafter=new TH2F(Form("Kaon_dEdx_after %s",cutName.Data()),"dEdx kaon after" ,150,0.05,20,400, -10,10);
+      fHistTPCdEdxafter=new TH2F(Form("Identified_dEdx_after %s",cutName.Data()),"dEdx identified after" ,150,0.05,20,400, -10,10);
       fHistograms->Add(fHistTPCdEdxafter);
 
-      fHistTPCdEdxSignalafter=new TH2F(Form("Kaon_dEdxSignal_after %s",cutName.Data()),"dEdx kaon signal after" ,150,0.05,20.0,800,0.0,200);
+      fHistTPCdEdxSignalafter=new TH2F(Form("Identified_dEdxSignal_after %s",cutName.Data()),"dEdx identified signal after" ,150,0.05,20.0,800,0.0,200);
       fHistograms->Add(fHistTPCdEdxSignalafter);
 
-      fHistTOFafter=new TH2F(Form("Kaon_TOF_after %s",cutName.Data()),"TOF kaon after" ,150,0.05,20,400,-6,10);
+      fHistTOFafter=new TH2F(Form("Identified_TOF_after %s",cutName.Data()),"TOF identified after" ,150,0.05,20,400,-6,10);
       fHistograms->Add(fHistTOFafter);
 
-      fHistTrackDCAxyPtafter  = new TH2F(Form("hTrackKaon_DCAxy_Pt_after %s",cutName.Data()),"DCAxy Vs Pt of tracks after",800,-4.0,4.0,400,0.,10.);
+      fHistTrackDCAxyPtafter  = new TH2F(Form("hTrackIdentified_DCAxy_Pt_after %s",cutName.Data()),"DCAxy Vs Pt of tracks after",800,-4.0,4.0,400,0.,10.);
       fHistograms->Add(fHistTrackDCAxyPtafter);
 
-      fHistTrackDCAzPtafter  = new TH2F(Form("hTrackKaon_DCAz_Pt_after %s",cutName.Data()), "DCAz Vs Pt of tracks  after",800,-4.0,4.0,400,0.,10.);
+      fHistTrackDCAzPtafter  = new TH2F(Form("hTrackIdentified_DCAz_Pt_after %s",cutName.Data()), "DCAz Vs Pt of tracks  after",800,-4.0,4.0,400,0.,10.);
       fHistograms->Add(fHistTrackDCAzPtafter);
 
-      fHistTrackNFindClsPtTPCafter = new TH2F(Form("hTrackKaon_NFindCls_Pt_TPC_after %s",cutName.Data()),"Track: N Findable Cls TPC Vs Pt after",100,0,1,400,0.,10.);
+      fHistTrackNFindClsPtTPCafter = new TH2F(Form("hTrackIdentified_NFindCls_Pt_TPC_after %s",cutName.Data()),"Track: N Findable Cls TPC Vs Pt after",100,0,1,400,0.,10.);
       fHistograms->Add(fHistTrackNFindClsPtTPCafter);
     }
     if(!fDoLightOutput){
@@ -260,7 +263,7 @@ void AliPrimaryKaonCuts::InitCutHistograms(TString name, Bool_t preCut,TString c
 
 
 //________________________________________________________________________
-Bool_t AliPrimaryKaonCuts::InitPIDResponse(){
+Bool_t AliIdentifiedPrimaryCuts::InitPIDResponse(){
 
 // Set Pointer to AliPIDResponse
 
@@ -276,14 +279,14 @@ Bool_t AliPrimaryKaonCuts::InitPIDResponse(){
   return kFALSE;
 }
 ///________________________________________________________________________
-Bool_t AliPrimaryKaonCuts::KaonIsSelectedMC(Int_t labelParticle,AliMCEvent *mcEvent){
+Bool_t AliIdentifiedPrimaryCuts::IdentifiedIsSelectedMC(Int_t labelParticle,AliMCEvent *mcEvent){
 	
     if( labelParticle < 0 || labelParticle >= mcEvent->GetNumberOfTracks() ) return kFALSE;
 // 	if( mcEvent->IsPhysicalPrimary(labelParticle) == kFALSE ) return kFALSE;  // moved to actual tasks
 
     TParticle* particle = mcEvent->Particle(labelParticle);
 
-	if( TMath::Abs( particle->GetPdgCode() ) != 211 )  return kFALSE;
+    //	if( TMath::Abs( particle->GetPdgCode() ) != 211 )  return kFALSE;
 	
 	if( fDoEtaCut ){
 	if( particle->Eta() > (fEtaCut + fEtaShift) || particle->Eta() < (-fEtaCut + fEtaShift) )
@@ -294,14 +297,14 @@ Bool_t AliPrimaryKaonCuts::KaonIsSelectedMC(Int_t labelParticle,AliMCEvent *mcEv
 }
 
 ///________________________________________________________________________
-Bool_t AliPrimaryKaonCuts::KaonIsSelectedAODMC(Int_t labelParticle,TClonesArray *AODMCTrackArray){
+Bool_t AliIdentifiedPrimaryCuts::IdentifiedIsSelectedAODMC(Int_t labelParticle,TClonesArray *AODMCTrackArray){
 
     if( labelParticle < 0 || labelParticle >= AODMCTrackArray->GetSize()) return kFALSE;
 // 	if( mcEvent->IsPhysicalPrimary(labelParticle) == kFALSE ) return kFALSE;  // moved to actual tasks
 
     AliAODMCParticle* particle = static_cast<AliAODMCParticle*>(AODMCTrackArray->At(labelParticle));
 
-    if( TMath::Abs( particle->GetPdgCode() ) != 211 )  return kFALSE;
+    //   if( TMath::Abs( particle->GetPdgCode() ) != 211 )  return kFALSE;
     if( fDoEtaCut ){
     if( particle->Eta() > (fEtaCut + fEtaShift) || particle->Eta() < (-fEtaCut + fEtaShift) )
         return kFALSE;
@@ -311,7 +314,7 @@ Bool_t AliPrimaryKaonCuts::KaonIsSelectedAODMC(Int_t labelParticle,TClonesArray 
 }
 
 ///________________________________________________________________________
-Bool_t AliPrimaryKaonCuts::KaonIsSelected(AliESDtrack* lTrack){
+Bool_t AliIdentifiedPrimaryCuts::IdentifiedIsSelected(AliESDtrack* lTrack){
     //Selection of Reconstructed electrons
 	
 	Float_t b[2];
@@ -332,7 +335,7 @@ Bool_t AliPrimaryKaonCuts::KaonIsSelected(AliESDtrack* lTrack){
 	Double_t clsToF = GetNFindableClustersTPC(lTrack);
 
 
-	if (fHistCutIndex) fHistCutIndex->Fill(kKaonIn);
+	if (fHistCutIndex) fHistCutIndex->Fill(kIdentifiedIn);
 
 	if (fHistTrackDCAxyPtbefore) fHistTrackDCAxyPtbefore->Fill(dcaToVertexXY,lTrack->Pt());
 	if (fHistTrackDCAzPtbefore) fHistTrackDCAzPtbefore->Fill( dcaToVertexZ, lTrack->Pt());
@@ -356,8 +359,8 @@ Bool_t AliPrimaryKaonCuts::KaonIsSelected(AliESDtrack* lTrack){
 		return kFALSE;
 	}
 
-	//Kaon passed the cuts
-	if (fHistCutIndex) fHistCutIndex->Fill(kKaonOut);
+	//Identified passed the cuts
+	if (fHistCutIndex) fHistCutIndex->Fill(kIdentifiedOut);
 	if (fHistTrackDCAxyPtafter) fHistTrackDCAxyPtafter->Fill(dcaToVertexXY,lTrack->Pt());
 	if (fHistTrackDCAzPtafter) fHistTrackDCAzPtafter->Fill(dcaToVertexZ,lTrack->Pt());
 	if (fHistTrackNFindClsPtTPCafter) fHistTrackNFindClsPtTPCafter->Fill( clsToF, lTrack->Pt());
@@ -366,7 +369,7 @@ Bool_t AliPrimaryKaonCuts::KaonIsSelected(AliESDtrack* lTrack){
 }
 
 ///________________________________________________________________________
-Bool_t AliPrimaryKaonCuts::KaonIsSelectedAOD(AliAODTrack* lTrack){
+Bool_t AliIdentifiedPrimaryCuts::IdentifiedIsSelectedAOD(AliAODTrack* lTrack){
     //Selection of Reconstructed electrons
 
     Float_t b[2];
@@ -377,7 +380,7 @@ Bool_t AliPrimaryKaonCuts::KaonIsSelectedAOD(AliAODTrack* lTrack){
     }
 
 
-    if (fHistCutIndex) fHistCutIndex->Fill(kKaonIn);
+    if (fHistCutIndex) fHistCutIndex->Fill(kIdentifiedIn);
 
 
     AliVTrack * track = dynamic_cast<AliVTrack*>(lTrack);
@@ -415,8 +418,8 @@ Bool_t AliPrimaryKaonCuts::KaonIsSelectedAOD(AliAODTrack* lTrack){
     }
 
 
-    //Kaon passed the cuts
-    if (fHistCutIndex) fHistCutIndex->Fill(kKaonOut);
+    //Identified passed the cuts
+    if (fHistCutIndex) fHistCutIndex->Fill(kIdentifiedOut);
     if (fHistTrackDCAxyPtafter) fHistTrackDCAxyPtafter->Fill(dcaToVertexXY,lTrack->Pt());
     if (fHistTrackDCAzPtafter) fHistTrackDCAzPtafter->Fill(dcaToVertexZ,lTrack->Pt());
     if (fHistTrackNFindClsPtTPCafter) fHistTrackNFindClsPtTPCafter->Fill( clsToF, lTrack->Pt());
@@ -425,7 +428,7 @@ Bool_t AliPrimaryKaonCuts::KaonIsSelectedAOD(AliAODTrack* lTrack){
 }
 
 ///________________________________________________________________________
-Bool_t AliPrimaryKaonCuts::TrackIsSelected(AliESDtrack* lTrack) {
+Bool_t AliIdentifiedPrimaryCuts::TrackIsSelected(AliESDtrack* lTrack) {
   // Track Selection for Photon Reconstruction
   Double_t clsToF = GetNFindableClustersTPC(lTrack);
 
@@ -450,7 +453,7 @@ Bool_t AliPrimaryKaonCuts::TrackIsSelected(AliESDtrack* lTrack) {
   return kTRUE;
 }
 ///________________________________________________________________________
-Bool_t AliPrimaryKaonCuts::TrackIsSelectedAOD(AliAODTrack* lTrack) {
+Bool_t AliIdentifiedPrimaryCuts::TrackIsSelectedAOD(AliAODTrack* lTrack) {
   // Track Selection for Photon Reconstruction
   Double_t clsToF = GetNFindableClustersTPC(lTrack);
 
@@ -476,71 +479,294 @@ Bool_t AliPrimaryKaonCuts::TrackIsSelectedAOD(AliAODTrack* lTrack) {
 }
 
 ///________________________________________________________________________
-Bool_t AliPrimaryKaonCuts::dEdxCuts(AliVTrack *fCurrentTrack){
+Bool_t AliIdentifiedPrimaryCuts::dEdxCuts(AliVTrack *fCurrentTrack){
 
-	// Kaon Identification Cuts for Photon reconstruction
+  // Identified Identification Cuts for Photon reconstruction
 
-	if(!fPIDResponse){  InitPIDResponse();  }// Try to reinitialize PID Response
-	if(!fPIDResponse){  AliError("No PID Response"); return kFALSE;}// if still missing fatal error
+  if(!fPIDResponse){  InitPIDResponse();  }// Try to reinitialize PID Response
+  if(!fPIDResponse){  AliError("No PID Response"); return kFALSE;}// if still missing fatal error
 
-	Int_t cutIndex=0;
+  Int_t cutIndex=0;
+  
+  if(fHistdEdxCuts)fHistdEdxCuts->Fill(cutIndex);
 
+  switch(GetParticleTypeCut()){
+      case 0:
+         if(fHistITSdEdxbefore)fHistITSdEdxbefore->Fill(fCurrentTrack->P(),fPIDResponse->NumberOfSigmasITS(fCurrentTrack, AliPID::kElectron));
+	 if(fHistTPCdEdxbefore)fHistTPCdEdxbefore->Fill(fCurrentTrack->P(),fPIDResponse->NumberOfSigmasTPC(fCurrentTrack, AliPID::kElectron));
+	 break;
+      case 1:
+         if(fHistITSdEdxbefore)fHistITSdEdxbefore->Fill(fCurrentTrack->P(),fPIDResponse->NumberOfSigmasITS(fCurrentTrack, AliPID::kMuon));
+	 if(fHistTPCdEdxbefore)fHistTPCdEdxbefore->Fill(fCurrentTrack->P(),fPIDResponse->NumberOfSigmasTPC(fCurrentTrack, AliPID::kMuon));
+	 break;
+      case 2:
+         if(fHistITSdEdxbefore)fHistITSdEdxbefore->Fill(fCurrentTrack->P(),fPIDResponse->NumberOfSigmasITS(fCurrentTrack, AliPID::kPion));
+	 if(fHistTPCdEdxbefore)fHistTPCdEdxbefore->Fill(fCurrentTrack->P(),fPIDResponse->NumberOfSigmasTPC(fCurrentTrack, AliPID::kPion));
+	 break;
+      case 3:
+         if(fHistITSdEdxbefore)fHistITSdEdxbefore->Fill(fCurrentTrack->P(),fPIDResponse->NumberOfSigmasITS(fCurrentTrack, AliPID::kKaon));
+	 if(fHistTPCdEdxbefore)fHistTPCdEdxbefore->Fill(fCurrentTrack->P(),fPIDResponse->NumberOfSigmasTPC(fCurrentTrack, AliPID::kKaon));
+	 break;
+     case 4:
+         if(fHistITSdEdxbefore)fHistITSdEdxbefore->Fill(fCurrentTrack->P(),fPIDResponse->NumberOfSigmasITS(fCurrentTrack, AliPID::kProton));
+	 if(fHistTPCdEdxbefore)fHistTPCdEdxbefore->Fill(fCurrentTrack->P(),fPIDResponse->NumberOfSigmasTPC(fCurrentTrack, AliPID::kProton));
+	 break;
+     case 5:
+         if(fHistITSdEdxbefore)fHistITSdEdxbefore->Fill(fCurrentTrack->P(),fPIDResponse->NumberOfSigmasITS(fCurrentTrack, AliPID::kDeuteron));
+	 if(fHistTPCdEdxbefore)fHistTPCdEdxbefore->Fill(fCurrentTrack->P(),fPIDResponse->NumberOfSigmasTPC(fCurrentTrack, AliPID::kDeuteron));
+	 break;
+  }
+
+  if(fHistTPCdEdxSignalbefore)fHistTPCdEdxSignalbefore->Fill(fCurrentTrack->P(),TMath::Abs(fCurrentTrack->GetTPCsignal()));
+  
+  cutIndex++;
+
+  if( fDodEdxSigmaITSCut == kTRUE ){
+    switch(GetParticleTypeCut()){
+    case 0:
+      if( fPIDResponse->NumberOfSigmasITS(fCurrentTrack,AliPID::kElectron) < fPIDnSigmaBelowIdentifiedLineITS ||
+	  fPIDResponse->NumberOfSigmasITS(fCurrentTrack,AliPID::kElectron) > fPIDnSigmaAboveIdentifiedLineITS ){	
 	if(fHistdEdxCuts)fHistdEdxCuts->Fill(cutIndex);
-	if(fHistITSdEdxbefore)fHistITSdEdxbefore->Fill(fCurrentTrack->P(),fPIDResponse->NumberOfSigmasITS(fCurrentTrack, AliPID::kKaon));
-	if(fHistTPCdEdxbefore)fHistTPCdEdxbefore->Fill(fCurrentTrack->P(),fPIDResponse->NumberOfSigmasTPC(fCurrentTrack, AliPID::kKaon));
-	if(fHistTPCdEdxSignalbefore)fHistTPCdEdxSignalbefore->Fill(fCurrentTrack->P(),TMath::Abs(fCurrentTrack->GetTPCsignal()));
+	return kFALSE;
+      }
+      break;
+    case 1:
+      if( fPIDResponse->NumberOfSigmasITS(fCurrentTrack,AliPID::kMuon) < fPIDnSigmaBelowIdentifiedLineITS ||
+	  fPIDResponse->NumberOfSigmasITS(fCurrentTrack,AliPID::kMuon) > fPIDnSigmaAboveIdentifiedLineITS ){	
+	if(fHistdEdxCuts)fHistdEdxCuts->Fill(cutIndex);
+	return kFALSE;
+      }
+      break;
+    case 2:
+      if( fPIDResponse->NumberOfSigmasITS(fCurrentTrack,AliPID::kPion) < fPIDnSigmaBelowIdentifiedLineITS ||
+	  fPIDResponse->NumberOfSigmasITS(fCurrentTrack,AliPID::kPion) > fPIDnSigmaAboveIdentifiedLineITS ){	
+	if(fHistdEdxCuts)fHistdEdxCuts->Fill(cutIndex);
+	return kFALSE;
+      }
+      break;
+    case 3:
+      if( fPIDResponse->NumberOfSigmasITS(fCurrentTrack,AliPID::kKaon) < fPIDnSigmaBelowIdentifiedLineITS ||
+	  fPIDResponse->NumberOfSigmasITS(fCurrentTrack,AliPID::kKaon) > fPIDnSigmaAboveIdentifiedLineITS ){	
+	if(fHistdEdxCuts)fHistdEdxCuts->Fill(cutIndex);
+	return kFALSE;
+      }
+      break;
+    case 4:
+      if( fPIDResponse->NumberOfSigmasITS(fCurrentTrack,AliPID::kProton) < fPIDnSigmaBelowIdentifiedLineITS ||
+	  fPIDResponse->NumberOfSigmasITS(fCurrentTrack,AliPID::kProton) > fPIDnSigmaAboveIdentifiedLineITS ){	
+	if(fHistdEdxCuts)fHistdEdxCuts->Fill(cutIndex);
+	return kFALSE;
+      }
+      break;
+    case 5:
+      if( fPIDResponse->NumberOfSigmasITS(fCurrentTrack,AliPID::kDeuteron) < fPIDnSigmaBelowIdentifiedLineITS ||
+	  fPIDResponse->NumberOfSigmasITS(fCurrentTrack,AliPID::kDeuteron) > fPIDnSigmaAboveIdentifiedLineITS ){	
+	if(fHistdEdxCuts)fHistdEdxCuts->Fill(cutIndex);
+	return kFALSE;
+      }
+      break;
 
-	cutIndex++;
-
-	if( fDodEdxSigmaITSCut == kTRUE ){
-		if( fPIDResponse->NumberOfSigmasITS(fCurrentTrack,AliPID::kKaon)<fPIDnSigmaBelowKaonLineITS ||
-				fPIDResponse->NumberOfSigmasITS(fCurrentTrack,AliPID::kKaon)> fPIDnSigmaAboveKaonLineITS ){	
-			if(fHistdEdxCuts)fHistdEdxCuts->Fill(cutIndex);
-			return kFALSE;
-		}
-	}
-		
+    }
+  }
+  switch(GetParticleTypeCut()){
+      case 0:
+	if(fHistITSdEdxafter)fHistITSdEdxafter->Fill(fCurrentTrack->P(),fPIDResponse->NumberOfSigmasITS(fCurrentTrack, AliPID::kElectron));
+	break;
+      case 1:
+	if(fHistITSdEdxafter)fHistITSdEdxafter->Fill(fCurrentTrack->P(),fPIDResponse->NumberOfSigmasITS(fCurrentTrack, AliPID::kMuon));
+	break;
+      case 2:
+	if(fHistITSdEdxafter)fHistITSdEdxafter->Fill(fCurrentTrack->P(),fPIDResponse->NumberOfSigmasITS(fCurrentTrack, AliPID::kPion));
+	break;
+      case 3:
 	if(fHistITSdEdxafter)fHistITSdEdxafter->Fill(fCurrentTrack->P(),fPIDResponse->NumberOfSigmasITS(fCurrentTrack, AliPID::kKaon));
+	break;
+      case 4:
+	if(fHistITSdEdxafter)fHistITSdEdxafter->Fill(fCurrentTrack->P(),fPIDResponse->NumberOfSigmasITS(fCurrentTrack, AliPID::kProton));
+	break;
+      case 5:
+	if(fHistITSdEdxafter)fHistITSdEdxafter->Fill(fCurrentTrack->P(),fPIDResponse->NumberOfSigmasITS(fCurrentTrack, AliPID::kDeuteron));
+	break;
+  }
+
+		
+  	
 	
-	
-	cutIndex++;
+  cutIndex++;
 		
 		
-	if(fDodEdxSigmaTPCCut == kTRUE){
-		// TPC Kaon Line
-		if( fPIDResponse->NumberOfSigmasTPC(fCurrentTrack,AliPID::kKaon)<fPIDnSigmaBelowKaonLineTPC ||
-			fPIDResponse->NumberOfSigmasTPC(fCurrentTrack,AliPID::kKaon)>fPIDnSigmaAboveKaonLineTPC){
-			if(fHistdEdxCuts)fHistdEdxCuts->Fill(cutIndex);
-			return kFALSE;
-		}
-		cutIndex++;
-	} else { cutIndex+=1; }
-	
-	if( ( fCurrentTrack->GetStatus() & AliESDtrack::kTOFpid ) && ( !( fCurrentTrack->GetStatus() & AliESDtrack::kTOFmismatch) ) ){
-		if(fHistTOFbefore) fHistTOFbefore->Fill(fCurrentTrack->P(),fPIDResponse->NumberOfSigmasTOF(fCurrentTrack, AliPID::kKaon));
-		if(fUseTOFpid){
-			if( fPIDResponse->NumberOfSigmasTOF(fCurrentTrack, AliPID::kKaon)>fPIDnSigmaAboveKaonLineTOF ||
-				fPIDResponse->NumberOfSigmasTOF(fCurrentTrack, AliPID::kKaon)<fPIDnSigmaBelowKaonLineTOF ){
-				if(fHistdEdxCuts)fHistdEdxCuts->Fill(cutIndex);
-				return kFALSE;
-			}
-		}
-		if(fHistTOFafter)fHistTOFafter->Fill(fCurrentTrack->P(),fPIDResponse->NumberOfSigmasTOF(fCurrentTrack, AliPID::kKaon));
-	} else if ( fRequireTOF == kTRUE ) {
-		if(fHistdEdxCuts)fHistdEdxCuts->Fill(cutIndex);
-		return kFALSE;
+  if(fDodEdxSigmaTPCCut == kTRUE){
+    // TPC Identified Line
+    switch(GetParticleTypeCut()){
+      case 0:
+	if( fPIDResponse->NumberOfSigmasTPC(fCurrentTrack,AliPID::kElectron) < fPIDnSigmaBelowIdentifiedLineTPC ||
+	    fPIDResponse->NumberOfSigmasTPC(fCurrentTrack,AliPID::kElectron) > fPIDnSigmaAboveIdentifiedLineTPC){
+	  if(fHistdEdxCuts)fHistdEdxCuts->Fill(cutIndex);
+	  return kFALSE;
 	}
-	cutIndex++;
-		
-	if(fHistdEdxCuts)fHistdEdxCuts->Fill(cutIndex);
-	if(fHistTPCdEdxafter)fHistTPCdEdxafter->Fill(fCurrentTrack->P(),fPIDResponse->NumberOfSigmasTPC(fCurrentTrack, AliPID::kKaon));
-	if(fHistTPCdEdxSignalafter)fHistTPCdEdxSignalafter->Fill(fCurrentTrack->P(),TMath::Abs(fCurrentTrack->GetTPCsignal()));
+	break;
+      case 1:
+	if( fPIDResponse->NumberOfSigmasTPC(fCurrentTrack,AliPID::kMuon) < fPIDnSigmaBelowIdentifiedLineTPC ||
+	    fPIDResponse->NumberOfSigmasTPC(fCurrentTrack,AliPID::kMuon) > fPIDnSigmaAboveIdentifiedLineTPC){
+	  if(fHistdEdxCuts)fHistdEdxCuts->Fill(cutIndex);
+	  return kFALSE;
+	}
+	break;
+      case 2:
+	if( fPIDResponse->NumberOfSigmasTPC(fCurrentTrack,AliPID::kPion) < fPIDnSigmaBelowIdentifiedLineTPC ||
+	    fPIDResponse->NumberOfSigmasTPC(fCurrentTrack,AliPID::kPion) > fPIDnSigmaAboveIdentifiedLineTPC){
+	  if(fHistdEdxCuts)fHistdEdxCuts->Fill(cutIndex);
+	  return kFALSE;
+	}
+	break;
+     case 3:
+	if( fPIDResponse->NumberOfSigmasTPC(fCurrentTrack,AliPID::kKaon) < fPIDnSigmaBelowIdentifiedLineTPC ||
+	    fPIDResponse->NumberOfSigmasTPC(fCurrentTrack,AliPID::kKaon) > fPIDnSigmaAboveIdentifiedLineTPC){
+	  if(fHistdEdxCuts)fHistdEdxCuts->Fill(cutIndex);
+	  return kFALSE;
+	}
+	break;
+     case 4:
+	if( fPIDResponse->NumberOfSigmasTPC(fCurrentTrack,AliPID::kProton) < fPIDnSigmaBelowIdentifiedLineTPC ||
+	    fPIDResponse->NumberOfSigmasTPC(fCurrentTrack,AliPID::kProton) > fPIDnSigmaAboveIdentifiedLineTPC){
+	  if(fHistdEdxCuts)fHistdEdxCuts->Fill(cutIndex);
+	  return kFALSE;
+	}
+	break;
+     case 5:
+	if( fPIDResponse->NumberOfSigmasTPC(fCurrentTrack,AliPID::kDeuteron) < fPIDnSigmaBelowIdentifiedLineTPC ||
+	    fPIDResponse->NumberOfSigmasTPC(fCurrentTrack,AliPID::kDeuteron) > fPIDnSigmaAboveIdentifiedLineTPC){
+	  if(fHistdEdxCuts)fHistdEdxCuts->Fill(cutIndex);
+	  return kFALSE;
+	}
+	break;
+    }
+    cutIndex++;
+  } else { cutIndex+=1; }
 	
-	return kTRUE;
+  if( ( fCurrentTrack->GetStatus() & AliESDtrack::kTOFpid ) && ( !( fCurrentTrack->GetStatus() & AliESDtrack::kTOFmismatch) ) ){
+    switch(GetParticleTypeCut()){
+      case 0:
+	if(fHistTOFbefore) fHistTOFbefore->Fill(fCurrentTrack->P(),fPIDResponse->NumberOfSigmasTOF(fCurrentTrack, AliPID::kElectron));
+	break;
+      case 1:
+	if(fHistTOFbefore) fHistTOFbefore->Fill(fCurrentTrack->P(),fPIDResponse->NumberOfSigmasTOF(fCurrentTrack, AliPID::kMuon));
+	break;
+      case 2:
+	if(fHistTOFbefore) fHistTOFbefore->Fill(fCurrentTrack->P(),fPIDResponse->NumberOfSigmasTOF(fCurrentTrack, AliPID::kPion));
+	break;
+      case 3:
+        if(fHistTOFbefore) fHistTOFbefore->Fill(fCurrentTrack->P(),fPIDResponse->NumberOfSigmasTOF(fCurrentTrack, AliPID::kKaon));
+	break;
+      case 4:
+	if(fHistTOFbefore) fHistTOFbefore->Fill(fCurrentTrack->P(),fPIDResponse->NumberOfSigmasTOF(fCurrentTrack, AliPID::kProton));
+	break;
+      case 5:
+	if(fHistTOFbefore) fHistTOFbefore->Fill(fCurrentTrack->P(),fPIDResponse->NumberOfSigmasTOF(fCurrentTrack, AliPID::kDeuteron));
+	break;
+    }
+    if(fUseTOFpid){
+      switch(GetParticleTypeCut()){
+        case 0:
+	  if( fPIDResponse->NumberOfSigmasTOF(fCurrentTrack, AliPID::kElectron) > fPIDnSigmaAboveIdentifiedLineTOF ||
+	      fPIDResponse->NumberOfSigmasTOF(fCurrentTrack, AliPID::kElectron) < fPIDnSigmaBelowIdentifiedLineTOF ){
+	    if(fHistdEdxCuts)fHistdEdxCuts->Fill(cutIndex);
+	    return kFALSE;
+	  }
+	break;
+        case 1:
+	  if( fPIDResponse->NumberOfSigmasTOF(fCurrentTrack, AliPID::kMuon) > fPIDnSigmaAboveIdentifiedLineTOF ||
+	      fPIDResponse->NumberOfSigmasTOF(fCurrentTrack, AliPID::kMuon) < fPIDnSigmaBelowIdentifiedLineTOF ){
+	    if(fHistdEdxCuts)fHistdEdxCuts->Fill(cutIndex);
+	    return kFALSE;
+	  }
+	  break; 
+       case 2:
+	  if( fPIDResponse->NumberOfSigmasTOF(fCurrentTrack, AliPID::kPion) > fPIDnSigmaAboveIdentifiedLineTOF ||
+	      fPIDResponse->NumberOfSigmasTOF(fCurrentTrack, AliPID::kPion) < fPIDnSigmaBelowIdentifiedLineTOF ){
+	    if(fHistdEdxCuts)fHistdEdxCuts->Fill(cutIndex);
+	    return kFALSE;
+	  }
+	break;
+        case 3:
+	  if( fPIDResponse->NumberOfSigmasTOF(fCurrentTrack, AliPID::kKaon) > fPIDnSigmaAboveIdentifiedLineTOF ||
+	      fPIDResponse->NumberOfSigmasTOF(fCurrentTrack, AliPID::kKaon) < fPIDnSigmaBelowIdentifiedLineTOF ){
+	    if(fHistdEdxCuts)fHistdEdxCuts->Fill(cutIndex);
+	    return kFALSE;
+	  }
+	break;
+        case 4:
+	  if( fPIDResponse->NumberOfSigmasTOF(fCurrentTrack, AliPID::kProton) > fPIDnSigmaAboveIdentifiedLineTOF ||
+	      fPIDResponse->NumberOfSigmasTOF(fCurrentTrack, AliPID::kProton) < fPIDnSigmaBelowIdentifiedLineTOF ){
+	    if(fHistdEdxCuts)fHistdEdxCuts->Fill(cutIndex);
+	    return kFALSE;
+	  }
+	break;
+        case 5:
+	  if( fPIDResponse->NumberOfSigmasTOF(fCurrentTrack, AliPID::kDeuteron) > fPIDnSigmaAboveIdentifiedLineTOF ||
+	      fPIDResponse->NumberOfSigmasTOF(fCurrentTrack, AliPID::kDeuteron) < fPIDnSigmaBelowIdentifiedLineTOF ){
+	    if(fHistdEdxCuts)fHistdEdxCuts->Fill(cutIndex);
+	    return kFALSE;
+	  }
+	break;
+      }
+    }
+
+    switch(GetParticleTypeCut()){
+      case 0:
+	if(fHistTOFafter) fHistTOFafter->Fill(fCurrentTrack->P(),fPIDResponse->NumberOfSigmasTOF(fCurrentTrack, AliPID::kElectron));
+	break;
+      case 1:
+	if(fHistTOFafter) fHistTOFafter->Fill(fCurrentTrack->P(),fPIDResponse->NumberOfSigmasTOF(fCurrentTrack, AliPID::kMuon));
+	break;
+      case 2:
+	if(fHistTOFafter) fHistTOFafter->Fill(fCurrentTrack->P(),fPIDResponse->NumberOfSigmasTOF(fCurrentTrack, AliPID::kPion));
+	break;
+      case 3:
+        if(fHistTOFafter) fHistTOFafter->Fill(fCurrentTrack->P(),fPIDResponse->NumberOfSigmasTOF(fCurrentTrack, AliPID::kKaon));
+	break;
+      case 4:
+	if(fHistTOFafter) fHistTOFafter->Fill(fCurrentTrack->P(),fPIDResponse->NumberOfSigmasTOF(fCurrentTrack, AliPID::kProton));
+	break;
+      case 5:
+	if(fHistTOFafter) fHistTOFafter->Fill(fCurrentTrack->P(),fPIDResponse->NumberOfSigmasTOF(fCurrentTrack, AliPID::kDeuteron));
+	break;
+    }
+
+  } else if ( fRequireTOF == kTRUE ) {
+    if(fHistdEdxCuts)fHistdEdxCuts->Fill(cutIndex);
+    return kFALSE;
+  }
+  cutIndex++;
+  
+  if(fHistdEdxCuts)fHistdEdxCuts->Fill(cutIndex);
+  switch(GetParticleTypeCut()){
+  case 0:
+    if(fHistTPCdEdxafter)fHistTPCdEdxafter->Fill(fCurrentTrack->P(),fPIDResponse->NumberOfSigmasTPC(fCurrentTrack, AliPID::kElectron));
+    break;
+  case 1:
+    if(fHistTPCdEdxafter)fHistTPCdEdxafter->Fill(fCurrentTrack->P(),fPIDResponse->NumberOfSigmasTPC(fCurrentTrack, AliPID::kMuon));
+    break;
+  case 2:
+    if(fHistTPCdEdxafter)fHistTPCdEdxafter->Fill(fCurrentTrack->P(),fPIDResponse->NumberOfSigmasTPC(fCurrentTrack, AliPID::kPion));
+    break;
+  case 3:
+    if(fHistTPCdEdxafter)fHistTPCdEdxafter->Fill(fCurrentTrack->P(),fPIDResponse->NumberOfSigmasTPC(fCurrentTrack, AliPID::kKaon));
+    break;
+  case 4:
+    if(fHistTPCdEdxafter)fHistTPCdEdxafter->Fill(fCurrentTrack->P(),fPIDResponse->NumberOfSigmasTPC(fCurrentTrack, AliPID::kProton));
+    break;
+  case 5:
+    if(fHistTPCdEdxafter)fHistTPCdEdxafter->Fill(fCurrentTrack->P(),fPIDResponse->NumberOfSigmasTPC(fCurrentTrack, AliPID::kDeuteron));
+    break;
+  }
+  if(fHistTPCdEdxSignalafter)fHistTPCdEdxSignalafter->Fill(fCurrentTrack->P(),TMath::Abs(fCurrentTrack->GetTPCsignal()));
+  
+  return kTRUE;
 }
 
 ///________________________________________________________________________
-AliVTrack *AliPrimaryKaonCuts::GetTrack(AliVEvent * event, Int_t label){
+AliVTrack *AliIdentifiedPrimaryCuts::GetTrack(AliVEvent * event, Int_t label){
     //Returns pointer to the track with given ESD label
     //(Important for AOD implementation, since Track array in AOD data is different
     //from ESD array, but ESD tracklabels are stored in AOD Tracks)
@@ -565,7 +791,7 @@ AliVTrack *AliPrimaryKaonCuts::GetTrack(AliVEvent * event, Int_t label){
 }
 
 ///________________________________________________________________________
-Double_t AliPrimaryKaonCuts::GetNFindableClustersTPC(AliVTrack* lTrack){
+Double_t AliIdentifiedPrimaryCuts::GetNFindableClustersTPC(AliVTrack* lTrack){
 
 	Double_t clsToF=0;
 	if ( !fUseCorrectedTPCClsInfo ){
@@ -580,7 +806,7 @@ Double_t AliPrimaryKaonCuts::GetNFindableClustersTPC(AliVTrack* lTrack){
 }
 
 ///________________________________________________________________________
-Bool_t AliPrimaryKaonCuts::UpdateCutString() {
+Bool_t AliIdentifiedPrimaryCuts::UpdateCutString() {
 ///Update the cut string (if it has been created yet)
 
 	if(fCutString && fCutString->GetString().Length() == kNCuts) {
@@ -593,12 +819,12 @@ Bool_t AliPrimaryKaonCuts::UpdateCutString() {
 }
 
 ///________________________________________________________________________
-Bool_t AliPrimaryKaonCuts::InitializeCutsFromCutString(const TString analysisCutSelection ) {
+Bool_t AliIdentifiedPrimaryCuts::InitializeCutsFromCutString(const TString analysisCutSelection ) {
   fCutStringRead = Form("%s",analysisCutSelection.Data());
   
 	// Initialize Cuts from a given Cut string
 
-	AliInfo(Form("Set KaonCuts Number: %s",analysisCutSelection.Data()));
+	AliInfo(Form("Set IdentifiedCuts Number: %s",analysisCutSelection.Data()));
 	
 	if(analysisCutSelection.Length()!=kNCuts) {
 		AliError(Form("Cut selection has the wrong length! size is %d, number of cuts is %d", analysisCutSelection.Length(), kNCuts));
@@ -626,12 +852,20 @@ Bool_t AliPrimaryKaonCuts::InitializeCutsFromCutString(const TString analysisCut
 	return kTRUE;
 }
 ///________________________________________________________________________
-Bool_t AliPrimaryKaonCuts::SetCut(cutIds cutID, const Int_t value) {
-	///Set individual cut ID
+Bool_t AliIdentifiedPrimaryCuts::SetCut(cutIds cutID, const Int_t value) {
+  ///Set individual cut ID
 
-	//cout << "Updating cut  " << fgkCutNames[cutID] << " (" << cutID << ") to " << value << endl;
+  //cout << "Updating cut  " << fgkCutNames[cutID] << " (" << cutID << ") to " << value << endl;
 
 	switch (cutID) {
+ 		case kParticleTypeCut:
+			if( SetParticleTypeCut(value)) {
+				fCuts[kParticleTypeCut] = value;
+				UpdateCutString();
+				return kTRUE;
+			} else return kFALSE;
+ 
+
 		case kEtaCut:
 			if( SetEtaCut(value)) {
 				fCuts[kEtaCut] = value;
@@ -663,19 +897,19 @@ Bool_t AliPrimaryKaonCuts::SetCut(cutIds cutID, const Int_t value) {
 				return kTRUE;
 			} else return kFALSE;
 		case kPidedxSigmaITSCut:
-			if( SetITSdEdxCutKaonLine(value)) { 
+			if( SetITSdEdxCutIdentifiedLine(value)) { 
 				fCuts[kPidedxSigmaITSCut] = value;
 				UpdateCutString();
 				return kTRUE;
 			} else return kFALSE;
 		case kPidedxSigmaTPCCut:
-			if( SetTPCdEdxCutKaonLine(value)) { 
+			if( SetTPCdEdxCutIdentifiedLine(value)) { 
 				fCuts[kPidedxSigmaTPCCut] = value;
 				UpdateCutString();
 				return kTRUE;
 			} else return kFALSE;
 		case kPiTOFSigmaPID:
-			if( SetTOFKaonPIDCut(value)) {
+			if( SetTOFIdentifiedPIDCut(value)) {
 				fCuts[kPiTOFSigmaPID] = value;
 				UpdateCutString();
 				return kTRUE;
@@ -696,7 +930,7 @@ Bool_t AliPrimaryKaonCuts::SetCut(cutIds cutID, const Int_t value) {
 }
 
 ///________________________________________________________________________
-void AliPrimaryKaonCuts::PrintCuts() {
+void AliIdentifiedPrimaryCuts::PrintCuts() {
     // Print out current Cut Selection
 	for(Int_t ic = 0; ic < kNCuts; ic++) {
 		printf("%-30s : %d \n", fgkCutNames[ic], fCuts[ic]);
@@ -704,9 +938,9 @@ void AliPrimaryKaonCuts::PrintCuts() {
 }
 
 ///________________________________________________________________________
-void AliPrimaryKaonCuts::PrintCutsWithValues() {
+void AliIdentifiedPrimaryCuts::PrintCutsWithValues() {
    // Print out current Cut Selection with value
-	printf("\nCharged Kaon cutnumber \n");
+	printf("\nCharged Identified cutnumber \n");
 	for(Int_t ic = 0; ic < kNCuts; ic++) {
 		printf("%d",fCuts[ic]);
 	}
@@ -726,9 +960,9 @@ void AliPrimaryKaonCuts::PrintCutsWithValues() {
 // 	"kDCAcut",				// 3
 	printf("\t min pT > %3.2f \n", fPtCut);
 	printf("PID cuts \n");
-	if (fDodEdxSigmaITSCut)printf("\t %3.2f < ITS n_sigma pi < %3.2f \n", fPIDnSigmaBelowKaonLineITS, fPIDnSigmaAboveKaonLineITS );
-	if (fDodEdxSigmaTPCCut)printf("\t %3.2f < TPC n_sigma pi < %3.2f \n", fPIDnSigmaBelowKaonLineTPC, fPIDnSigmaAboveKaonLineTPC );
-	if (fDoTOFsigmaCut)printf("\t %3.2f < TOF n_sigma pi < %3.2f \n", fPIDnSigmaBelowKaonLineTOF, fPIDnSigmaAboveKaonLineTOF );
+	if (fDodEdxSigmaITSCut)printf("\t %3.2f < ITS n_sigma pi < %3.2f \n", fPIDnSigmaBelowIdentifiedLineITS, fPIDnSigmaAboveIdentifiedLineITS );
+	if (fDodEdxSigmaTPCCut)printf("\t %3.2f < TPC n_sigma pi < %3.2f \n", fPIDnSigmaBelowIdentifiedLineTPC, fPIDnSigmaAboveIdentifiedLineTPC );
+	if (fDoTOFsigmaCut)printf("\t %3.2f < TOF n_sigma pi < %3.2f \n", fPIDnSigmaBelowIdentifiedLineTOF, fPIDnSigmaAboveIdentifiedLineTOF );
 	if (fDoMassCut) printf("two-pion mass cut < %3.2f \n", fMassCut);
 	printf("\n\n");
 }
@@ -736,55 +970,55 @@ void AliPrimaryKaonCuts::PrintCutsWithValues() {
 
 
 ///________________________________________________________________________
-Bool_t AliPrimaryKaonCuts::SetITSdEdxCutKaonLine(Int_t ededxSigmaCut){ 
+Bool_t AliIdentifiedPrimaryCuts::SetITSdEdxCutIdentifiedLine(Int_t ededxSigmaCut){ 
   switch(ededxSigmaCut){
  case 0: 
    fDodEdxSigmaITSCut = kFALSE;
-   fPIDnSigmaBelowKaonLineITS=-100;
-   fPIDnSigmaAboveKaonLineITS= 100;
+   fPIDnSigmaBelowIdentifiedLineITS=-100;
+   fPIDnSigmaAboveIdentifiedLineITS= 100;
    break;
  case 1: // -10,10
    fDodEdxSigmaITSCut = kTRUE;
-   fPIDnSigmaBelowKaonLineITS=-10;
-   fPIDnSigmaAboveKaonLineITS=10;
+   fPIDnSigmaBelowIdentifiedLineITS=-10;
+   fPIDnSigmaAboveIdentifiedLineITS=10;
    break;
  case 2: // -6,7
    fDodEdxSigmaITSCut = kTRUE;
-   fPIDnSigmaBelowKaonLineITS=-6;
-   fPIDnSigmaAboveKaonLineITS=7;
+   fPIDnSigmaBelowIdentifiedLineITS=-6;
+   fPIDnSigmaAboveIdentifiedLineITS=7;
    break;
  case 3: // -5,5
    fDodEdxSigmaITSCut = kTRUE;
-   fPIDnSigmaBelowKaonLineITS=-5;
-   fPIDnSigmaAboveKaonLineITS=5;
+   fPIDnSigmaBelowIdentifiedLineITS=-5;
+   fPIDnSigmaAboveIdentifiedLineITS=5;
    break;
  case 4: // -4,5
    fDodEdxSigmaITSCut = kTRUE;
-   fPIDnSigmaBelowKaonLineITS=-4;
-   fPIDnSigmaAboveKaonLineITS=5;
+   fPIDnSigmaBelowIdentifiedLineITS=-4;
+   fPIDnSigmaAboveIdentifiedLineITS=5;
    break;
  case 5: // -3,5
    fDodEdxSigmaITSCut = kTRUE;
-   fPIDnSigmaBelowKaonLineITS=-3;
-   fPIDnSigmaAboveKaonLineITS=5;
+   fPIDnSigmaBelowIdentifiedLineITS=-3;
+   fPIDnSigmaAboveIdentifiedLineITS=5;
    break;
  case 6: // -4,4
    fDodEdxSigmaITSCut = kTRUE;
-   fPIDnSigmaBelowKaonLineITS=-4;
-   fPIDnSigmaAboveKaonLineITS=4;
+   fPIDnSigmaBelowIdentifiedLineITS=-4;
+   fPIDnSigmaAboveIdentifiedLineITS=4;
    break;
  case 7: // -2.5,4
    fDodEdxSigmaITSCut = kTRUE;
-   fPIDnSigmaBelowKaonLineITS=-2.5;
-   fPIDnSigmaAboveKaonLineITS=4;
+   fPIDnSigmaBelowIdentifiedLineITS=-2.5;
+   fPIDnSigmaAboveIdentifiedLineITS=4;
    break;
  case 8: // -2,3.5
    fDodEdxSigmaITSCut = kTRUE;
-   fPIDnSigmaBelowKaonLineITS=-2;
-   fPIDnSigmaAboveKaonLineITS=3.5;
+   fPIDnSigmaBelowIdentifiedLineITS=-2;
+   fPIDnSigmaAboveIdentifiedLineITS=3.5;
    break;
  default:
-   cout<<"Warning: ITSdEdxCutKaonLine not defined"<<ededxSigmaCut<<endl;
+   cout<<"Warning: ITSdEdxCutIdentifiedLine not defined"<<ededxSigmaCut<<endl;
    return kFALSE;
    
 }
@@ -792,66 +1026,66 @@ Bool_t AliPrimaryKaonCuts::SetITSdEdxCutKaonLine(Int_t ededxSigmaCut){
 }
 
 ///________________________________________________________________________
-Bool_t AliPrimaryKaonCuts::SetTPCdEdxCutKaonLine(Int_t ededxSigmaCut){
+Bool_t AliIdentifiedPrimaryCuts::SetTPCdEdxCutIdentifiedLine(Int_t ededxSigmaCut){
   switch(ededxSigmaCut){
  case 0: 
    fDodEdxSigmaTPCCut = kFALSE;
-   fPIDnSigmaBelowKaonLineTPC=-10;
-   fPIDnSigmaAboveKaonLineTPC=10;
+   fPIDnSigmaBelowIdentifiedLineTPC=-10;
+   fPIDnSigmaAboveIdentifiedLineTPC=10;
    break;
  case 1: // -10,10
    fDodEdxSigmaTPCCut = kTRUE;
-   fPIDnSigmaBelowKaonLineTPC=-10;
-   fPIDnSigmaAboveKaonLineTPC=10;
+   fPIDnSigmaBelowIdentifiedLineTPC=-10;
+   fPIDnSigmaAboveIdentifiedLineTPC=10;
    break;
  case 2: // -6,7
    fDodEdxSigmaTPCCut = kTRUE;
-   fPIDnSigmaBelowKaonLineTPC=-6;
-   fPIDnSigmaAboveKaonLineTPC=7;
+   fPIDnSigmaBelowIdentifiedLineTPC=-6;
+   fPIDnSigmaAboveIdentifiedLineTPC=7;
    break;
  case 3: // -5,5
    fDodEdxSigmaTPCCut = kTRUE;
-   fPIDnSigmaBelowKaonLineTPC=-5;
-   fPIDnSigmaAboveKaonLineTPC=5;
+   fPIDnSigmaBelowIdentifiedLineTPC=-5;
+   fPIDnSigmaAboveIdentifiedLineTPC=5;
    break;
  case 4: // -4,5
    fDodEdxSigmaTPCCut = kTRUE;
-   fPIDnSigmaBelowKaonLineTPC=-4;
-   fPIDnSigmaAboveKaonLineTPC=5;
+   fPIDnSigmaBelowIdentifiedLineTPC=-4;
+   fPIDnSigmaAboveIdentifiedLineTPC=5;
    break;	
  case 5: // -4,4
    fDodEdxSigmaTPCCut = kTRUE;
-   fPIDnSigmaBelowKaonLineTPC=-4;
-   fPIDnSigmaAboveKaonLineTPC=4;
+   fPIDnSigmaBelowIdentifiedLineTPC=-4;
+   fPIDnSigmaAboveIdentifiedLineTPC=4;
    break;
  case 6: // -3,4
    fDodEdxSigmaTPCCut = kTRUE;
-   fPIDnSigmaBelowKaonLineTPC=-3;
-   fPIDnSigmaAboveKaonLineTPC=4;
+   fPIDnSigmaBelowIdentifiedLineTPC=-3;
+   fPIDnSigmaAboveIdentifiedLineTPC=4;
    break;
  case 7: // -3,3
    fDodEdxSigmaTPCCut = kTRUE;
-   fPIDnSigmaBelowKaonLineTPC=-3;
-   fPIDnSigmaAboveKaonLineTPC=3;
+   fPIDnSigmaBelowIdentifiedLineTPC=-3;
+   fPIDnSigmaAboveIdentifiedLineTPC=3;
    break;
  case 8: // -2,3.
    fDodEdxSigmaTPCCut = kTRUE;
-   fPIDnSigmaBelowKaonLineTPC=-2;
-   fPIDnSigmaAboveKaonLineTPC=3.;
+   fPIDnSigmaBelowIdentifiedLineTPC=-2;
+   fPIDnSigmaAboveIdentifiedLineTPC=3.;
  case 9: // -2,2.
    fDodEdxSigmaTPCCut = kTRUE;
-   fPIDnSigmaBelowKaonLineTPC=-2;
-   fPIDnSigmaAboveKaonLineTPC=2.;
+   fPIDnSigmaBelowIdentifiedLineTPC=-2;
+   fPIDnSigmaAboveIdentifiedLineTPC=2.;
    break;
  default:
-   cout<<"Warning: TPCdEdxCutKaonLine not defined"<<ededxSigmaCut<<endl;
+   cout<<"Warning: TPCdEdxCutIdentifiedLine not defined"<<ededxSigmaCut<<endl;
    return kFALSE;
 }
   return kTRUE;
 }
 
 ///________________________________________________________________________
-Bool_t AliPrimaryKaonCuts::SetITSClusterCut(Int_t clsITSCut){
+Bool_t AliIdentifiedPrimaryCuts::SetITSClusterCut(Int_t clsITSCut){
 	if( !fEsdTrackCuts ) {
 		cout<<"Warning: AliESDtrackCut is not initialized "<<endl;
 		return kFALSE;
@@ -902,7 +1136,7 @@ Bool_t AliPrimaryKaonCuts::SetITSClusterCut(Int_t clsITSCut){
 }
 
 ///________________________________________________________________________
-Bool_t AliPrimaryKaonCuts::SetTPCClusterCut(Int_t clsTPCCut){  
+Bool_t AliIdentifiedPrimaryCuts::SetTPCClusterCut(Int_t clsTPCCut){  
 	switch(clsTPCCut){
 		case 0: // 0
 			fMinClsTPC= 0.;
@@ -984,7 +1218,47 @@ Bool_t AliPrimaryKaonCuts::SetTPCClusterCut(Int_t clsTPCCut){
 }
 
 ///________________________________________________________________________
-Bool_t AliPrimaryKaonCuts::SetEtaCut(Int_t etaCut){ 
+Bool_t AliIdentifiedPrimaryCuts::SetParticleTypeCut(Int_t particleTypeCut){ 
+	// Set eta Cut
+	switch(particleTypeCut){
+		case 0: 
+		  fParticleTypeCut = 0;  // electron
+		  break;
+		case 1: 
+		  fParticleTypeCut = 1;  // muon
+		  break;
+		case 2: 
+		  fParticleTypeCut = 2;  // pion
+		  break;
+		case 3: 
+		  fParticleTypeCut = 3;  // kaon
+		  break;
+		case 4: 
+		  fParticleTypeCut = 4;  // proton
+		  break;
+		case 5: 
+		  fParticleTypeCut = 5;  // deuteron
+		  break;
+		case 6: 
+		  fParticleTypeCut = 6;  // triton
+		  break;
+		case 7: 
+		  fParticleTypeCut = 7;  // kHe3
+		  break;
+		case 8: 
+		  fParticleTypeCut = 8;  // alpha
+		  break;
+
+		default:
+			cout<<"Warning: ParticleTypeCut not defined "<<particleTypeCut<<endl;
+			return kFALSE;
+	}
+	return kTRUE;
+}
+
+
+///________________________________________________________________________
+Bool_t AliIdentifiedPrimaryCuts::SetEtaCut(Int_t etaCut){ 
 	// Set eta Cut
 	switch(etaCut){
 		case 0: 
@@ -1031,7 +1305,7 @@ Bool_t AliPrimaryKaonCuts::SetEtaCut(Int_t etaCut){
 }
 
 ///________________________________________________________________________
-Bool_t AliPrimaryKaonCuts::SetPtCut(Int_t ptCut){ 
+Bool_t AliIdentifiedPrimaryCuts::SetPtCut(Int_t ptCut){ 
 	switch(ptCut){	  
 		case 0: 
 			fPtCut = 0.075;		
@@ -1057,7 +1331,7 @@ Bool_t AliPrimaryKaonCuts::SetPtCut(Int_t ptCut){
 
 
 ///________________________________________________________________________
-Bool_t AliPrimaryKaonCuts::SetDCACut(Int_t dcaCut)
+Bool_t AliIdentifiedPrimaryCuts::SetDCACut(Int_t dcaCut)
 { 
   // Set DCA Cut
   if( !fEsdTrackCuts ) {
@@ -1100,54 +1374,54 @@ Bool_t AliPrimaryKaonCuts::SetDCACut(Int_t dcaCut)
 }
 
 ///________________________________________________________________________
-Bool_t AliPrimaryKaonCuts::SetTOFKaonPIDCut(Int_t TOFelectronPID){
+Bool_t AliIdentifiedPrimaryCuts::SetTOFIdentifiedPIDCut(Int_t TOFelectronPID){
     // Set Cut
   switch(TOFelectronPID){ 
  case 0: // no cut
    fRequireTOF = kFALSE;
    fUseTOFpid = kFALSE;
-   fPIDnSigmaBelowKaonLineTOF=-100;
-   fPIDnSigmaAboveKaonLineTOF=100;
+   fPIDnSigmaBelowIdentifiedLineTOF=-100;
+   fPIDnSigmaAboveIdentifiedLineTOF=100;
    break;
  case 1: // -7,7
    fRequireTOF = kFALSE;
    fUseTOFpid = kTRUE;
-   fPIDnSigmaBelowKaonLineTOF=-7;
-   fPIDnSigmaAboveKaonLineTOF=7;
+   fPIDnSigmaBelowIdentifiedLineTOF=-7;
+   fPIDnSigmaAboveIdentifiedLineTOF=7;
    break;
  case 2: // -5,5
    fRequireTOF = kFALSE;
    fUseTOFpid = kTRUE;
-   fPIDnSigmaBelowKaonLineTOF=-5;
-   fPIDnSigmaAboveKaonLineTOF=5;
+   fPIDnSigmaBelowIdentifiedLineTOF=-5;
+   fPIDnSigmaAboveIdentifiedLineTOF=5;
    break;
  case 3: // -3,5
    fRequireTOF = kFALSE;
    fUseTOFpid = kTRUE;
-   fPIDnSigmaBelowKaonLineTOF=-3;
-   fPIDnSigmaAboveKaonLineTOF=5;
+   fPIDnSigmaBelowIdentifiedLineTOF=-3;
+   fPIDnSigmaAboveIdentifiedLineTOF=5;
    break;
  case 4: // -2,3
    fRequireTOF = kFALSE;
    fUseTOFpid = kTRUE;
-   fPIDnSigmaBelowKaonLineTOF=-2;
-   fPIDnSigmaAboveKaonLineTOF=3;
+   fPIDnSigmaBelowIdentifiedLineTOF=-2;
+   fPIDnSigmaAboveIdentifiedLineTOF=3;
    break;
  case 5: // -3, 3 TOF mandatory
    fRequireTOF = kTRUE;
    fUseTOFpid  = kTRUE;
-   fPIDnSigmaBelowKaonLineTOF= -3;
-   fPIDnSigmaAboveKaonLineTOF=  3;
+   fPIDnSigmaBelowIdentifiedLineTOF= -3;
+   fPIDnSigmaAboveIdentifiedLineTOF=  3;
    break;
  default:
-   cout<<"Warning: TOFKaonCut not defined "<<TOFelectronPID<<endl;
+   cout<<"Warning: TOFIdentifiedCut not defined "<<TOFelectronPID<<endl;
    return kFALSE;
 } 
   return kTRUE;
 }
 
 ///________________________________________________________________________
-Bool_t AliPrimaryKaonCuts::SetMassCut(Int_t massCut){
+Bool_t AliIdentifiedPrimaryCuts::SetMassCut(Int_t massCut){
     // Set Cut
 	switch(massCut){ 
 		case 0: // no cut
@@ -1199,16 +1473,16 @@ Bool_t AliPrimaryKaonCuts::SetMassCut(Int_t massCut){
 
 
 ///________________________________________________________________________
-TString AliPrimaryKaonCuts::GetCutNumber(){
+TString AliIdentifiedPrimaryCuts::GetCutNumber(){
 	// returns TString with current cut number
 	return fCutStringRead;
 }
 
 
 ///________________________________________________________________________
-AliPrimaryKaonCuts* AliPrimaryKaonCuts::GetStandardCuts2010PbPb(){
+AliIdentifiedPrimaryCuts* AliIdentifiedPrimaryCuts::GetStandardCuts2010PbPb(){
     //Create and return standard 2010 PbPb cuts
-    AliPrimaryKaonCuts *cuts=new AliPrimaryKaonCuts("StandardCuts2010PbPb","StandardCuts2010PbPb");
+    AliIdentifiedPrimaryCuts *cuts=new AliIdentifiedPrimaryCuts("StandardCuts2010PbPb","StandardCuts2010PbPb");
     if(!cuts->InitializeCutsFromCutString("000000400")){
 		cout<<"Warning: Initialization of Standardcuts2010PbPb failed"<<endl;	
 	}
@@ -1216,9 +1490,9 @@ AliPrimaryKaonCuts* AliPrimaryKaonCuts::GetStandardCuts2010PbPb(){
 }
 
 ///________________________________________________________________________
-AliPrimaryKaonCuts* AliPrimaryKaonCuts::GetStandardCuts2010pp(){
+AliIdentifiedPrimaryCuts* AliIdentifiedPrimaryCuts::GetStandardCuts2010pp(){
     //Create and return standard 2010 PbPb cuts
-    AliPrimaryKaonCuts *cuts=new AliPrimaryKaonCuts("StandardCuts2010pp","StandardCuts2010pp");
+    AliIdentifiedPrimaryCuts *cuts=new AliIdentifiedPrimaryCuts("StandardCuts2010pp","StandardCuts2010pp");
                                           
     if(!cuts->InitializeCutsFromCutString("000000400")){
 		cout<<"Warning: Initialization of Standardcuts2010pp failed"<<endl;

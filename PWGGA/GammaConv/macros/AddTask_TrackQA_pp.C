@@ -108,17 +108,17 @@ void AddTask_TrackQA_pp( Int_t   trainConfig             = 1,                  /
   cout<< "  "<< endl;
 
  //========= Add Pion Selector ====================
-  TString PionCuts          = "000000200";            //Pion Cuts
+  TString PionCuts          = "2000000200";            //Pion Cuts
   //  TString PionSelectorName = Form("PionSelector_%s", PionCuts.Data());
   TString PionSelectorName = Form("PionSelector");
-  if( !(AliPrimaryPionSelector*)mgr->GetTask(PionSelectorName.Data()) ){
-    AliPrimaryPionSelector *fPionSelector = new AliPrimaryPionSelector(PionSelectorName.Data());
-    AliPrimaryPionCuts *fPionCuts=0;
+  if( !(AliIdentifiedPrimarySelector*)mgr->GetTask(PionSelectorName.Data()) ){
+    AliIdentifiedPrimarySelector *fPionSelector = new AliIdentifiedPrimarySelector(PionSelectorName.Data());
+    AliIdentifiedPrimaryCuts *fPionCuts=0;
     if( PionCuts!=""){
-      fPionCuts= new AliPrimaryPionCuts(PionCuts.Data(),PionCuts.Data());
+      fPionCuts= new AliIdentifiedPrimaryCuts(PionCuts.Data(),PionCuts.Data());
       //      if(runLightOutput>0) fPionCuts->SetLightOutput(kTRUE);
       if(fPionCuts->InitializeCutsFromCutString(PionCuts.Data())){
-        fPionSelector->SetPrimaryPionCuts(fPionCuts);
+        fPionSelector->SetIdentifiedPrimaryCuts(fPionCuts);
         fPionCuts->SetFillCutHistograms("Pion",kTRUE);
       }
     }
@@ -138,16 +138,16 @@ void AddTask_TrackQA_pp( Int_t   trainConfig             = 1,                  /
   cout<< "  "<< endl;
 
 //========= Add Kaon Selector ====================
-  TString KaonCuts          = "000000200";            //Kaon Cuts
+  TString KaonCuts          = "3000000200";            //Kaon Cuts
   TString KaonSelectorName = Form("KaonSelector");
-  if( !(AliPrimaryKaonSelector*)mgr->GetTask(KaonSelectorName.Data()) ){
-    AliPrimaryKaonSelector *fKaonSelector = new AliPrimaryKaonSelector(KaonSelectorName.Data());
-    AliPrimaryKaonCuts *fKaonCuts=0;
+  if( !(AliIdentifiedPrimarySelector*)mgr->GetTask(KaonSelectorName.Data()) ){
+    AliIdentifiedPrimarySelector *fKaonSelector = new AliIdentifiedPrimarySelector(KaonSelectorName.Data());
+    AliIdentifiedPrimaryCuts *fKaonCuts=0;
     if( KaonCuts!=""){
-      fKaonCuts= new AliPrimaryKaonCuts(KaonCuts.Data(),KaonCuts.Data());
+      fKaonCuts= new AliIdentifiedPrimaryCuts(KaonCuts.Data(),KaonCuts.Data());
       //      if(runLightOutput>0) fPionCuts->SetLightOutput(kTRUE);
       if(fKaonCuts->InitializeCutsFromCutString(KaonCuts.Data())){
-        fKaonSelector->SetPrimaryKaonCuts(fKaonCuts);
+        fKaonSelector->SetIdentifiedPrimaryCuts(fKaonCuts);
         fKaonCuts->SetFillCutHistograms("Kaon",kTRUE);
       }
     }
@@ -166,16 +166,16 @@ void AddTask_TrackQA_pp( Int_t   trainConfig             = 1,                  /
   cout<< "  "<< endl;
 
  //========= Add Proton Selector ====================
-  TString ProtonCuts          = "000000200";            //Proton Cuts
+  TString ProtonCuts          = "4000000200";            //Proton Cuts
   TString ProtonSelectorName = Form("ProtonSelector");
-  if( !(AliPrimaryProtonSelector*)mgr->GetTask(ProtonSelectorName.Data()) ){
-    AliPrimaryProtonSelector *fProtonSelector = new AliPrimaryProtonSelector(ProtonSelectorName.Data());
-    AliPrimaryProtonCuts *fProtonCuts=0;
+  if( !(AliIdentifiedPrimarySelector*)mgr->GetTask(ProtonSelectorName.Data()) ){
+    AliIdentifiedPrimarySelector *fProtonSelector = new AliIdentifiedPrimarySelector(ProtonSelectorName.Data());
+    AliIdentifiedPrimaryCuts *fProtonCuts=0;
     if( ProtonCuts!=""){
-      fProtonCuts= new AliPrimaryProtonCuts(ProtonCuts.Data(),ProtonCuts.Data());
+      fProtonCuts= new AliIdentifiedPrimaryCuts(ProtonCuts.Data(),ProtonCuts.Data());
       //     if(runLightOutput>0) fPionCuts->SetLightOutput(kTRUE);
       if(fProtonCuts->InitializeCutsFromCutString(ProtonCuts.Data())){
-        fProtonSelector->SetPrimaryProtonCuts(fProtonCuts);
+        fProtonSelector->SetIdentifiedPrimaryCuts(fProtonCuts);
         fProtonCuts->SetFillCutHistograms("Proton",kTRUE);
       }
     }
@@ -192,16 +192,16 @@ void AddTask_TrackQA_pp( Int_t   trainConfig             = 1,                  /
   cout<< "  "<< endl;
   cout<< "  "<< endl;
  //========= Add Deuteron Selector ====================
-  TString DeuteronCuts          = "000000200";            //Deuteron Cuts
+  TString DeuteronCuts          = "5000000200";            //Deuteron Cuts
   TString DeuteronSelectorName = Form("DeuteronSelector");
-  if( !(AliPrimaryDeuteronSelector*)mgr->GetTask(DeuteronSelectorName.Data()) ){
-    AliPrimaryDeuteronSelector *fDeuteronSelector = new AliPrimaryDeuteronSelector(DeuteronSelectorName.Data());
-    AliPrimaryDeuteronCuts *fDeuteronCuts=0;
+  if( !(AliIdentifiedPrimarySelector*)mgr->GetTask(DeuteronSelectorName.Data()) ){
+    AliIdentifiedPrimarySelector *fDeuteronSelector = new AliIdentifiedPrimarySelector(DeuteronSelectorName.Data());
+    AliIdentifiedPrimaryCuts *fDeuteronCuts=0;
     if( DeuteronCuts!=""){
-      fDeuteronCuts= new AliPrimaryDeuteronCuts(DeuteronCuts.Data(),DeuteronCuts.Data());
+      fDeuteronCuts= new AliIdentifiedPrimaryCuts(DeuteronCuts.Data(),DeuteronCuts.Data());
       //     if(runLightOutput>0) fDeuteronCuts->SetLightOutput(kTRUE);
       if(fDeuteronCuts->InitializeCutsFromCutString(DeuteronCuts.Data())){
-        fDeuteronSelector->SetPrimaryDeuteronCuts(fDeuteronCuts);
+        fDeuteronSelector->SetIdentifiedPrimaryCuts(fDeuteronCuts);
         fDeuteronCuts->SetFillCutHistograms("Deuteron",kTRUE);
       }
     }
@@ -246,14 +246,14 @@ void AddTask_TrackQA_pp( Int_t   trainConfig             = 1,                  /
   //  fTrackQA->SetDoMultWeights(doMultiplicityWeighting);
   // CutHandlerConvMaterial cuts;
   if(trainConfig == 1){
-    cuts.AddCutTrackQA("00000103", "429400700", "429400700", "429400700", "429400700");
-    //cuts.AddCutTrackQAPion("00000103", "429400700");
+    cuts.AddCutTrackQA("00000103", "2429400700", "3429400700", "4429400700", "5429400700");
+    //cuts.AddCutTrackQAPion("00000103", "2429400700");
   } else if (trainConfig == 2) {
-    cuts.AddCutTrackQA("00000103", "329400700", "329400700", "329400700", "329400700");
-    //cuts.AddCutTrackQAPion("00000103", "329400700");
+    cuts.AddCutTrackQA("00000103", "2329400700", "3329400700", "4329400700", "5329400700");
+    //cuts.AddCutTrackQAPion("00000103", "2329400700");
   } else if (trainConfig == 3) {
-    cuts.AddCutTrackQA("00000103", "329000500", "329000500", "329000500", "329000500");
-    //cuts.AddCutTrackQAPion("00000103", "329400700");
+    cuts.AddCutTrackQA("00000103", "2329000500", "3329000500", "4329000500", "5329000500");
+    //cuts.AddCutTrackQAPion("00000103", "2329400700");
 
   }else {
     cout<< " should not be here" << endl;
@@ -285,16 +285,16 @@ void AddTask_TrackQA_pp( Int_t   trainConfig             = 1,                  /
 
 
   PionCutList->SetOwner(kTRUE);
-  AliPrimaryPionCuts **analysisPionCuts     = new AliPrimaryPionCuts*[numberOfCuts];
+  AliIdentifiedPrimaryCuts **analysisPionCuts     = new AliIdentifiedPrimaryCuts*[numberOfCuts];
 
   KaonCutList->SetOwner(kTRUE);
-  AliPrimaryKaonCuts **analysisKaonCuts     = new AliPrimaryKaonCuts*[numberOfCuts];
+  AliIdentifiedPrimaryCuts **analysisKaonCuts     = new AliIdentifiedPrimaryCuts*[numberOfCuts];
 
   ProtonCutList->SetOwner(kTRUE);
-  AliPrimaryProtonCuts **analysisProtonCuts     = new AliPrimaryProtonCuts*[numberOfCuts];
+  AliIdentifiedPrimaryCuts **analysisProtonCuts     = new AliIdentifiedPrimaryCuts*[numberOfCuts];
 
   DeuteronCutList->SetOwner(kTRUE);
-  AliPrimaryDeuteronCuts **analysisDeuteronCuts     = new AliPrimaryDeuteronCuts*[numberOfCuts];
+  AliIdentifiedPrimaryCuts **analysisDeuteronCuts     = new AliIdentifiedPrimaryCuts*[numberOfCuts];
 
 
 
@@ -317,7 +317,7 @@ void AddTask_TrackQA_pp( Int_t   trainConfig             = 1,                  /
     analysisEventCuts[i]->SetFillCutHistograms("",kTRUE);
 
 
-    analysisPionCuts[i] = new AliPrimaryPionCuts();
+    analysisPionCuts[i] = new AliIdentifiedPrimaryCuts();
     //analysisPionCuts[i] ->SetPionSelectorName(PionSelectorName);
     //    if(runLightOutput>0) analysisPionCuts[i]->SetLightOutput(kTRUE);
     if( !analysisPionCuts[i]->InitializeCutsFromCutString((cuts.GetPionCut(i)).Data())) {
@@ -326,9 +326,10 @@ void AddTask_TrackQA_pp( Int_t   trainConfig             = 1,                  /
     } else {
       PionCutList->Add(analysisPionCuts[i]);
       analysisPionCuts[i]->SetFillCutHistograms("Pion",kFALSE,cutName);
+      cout<< "Particle Type-2::"<< analysisPionCuts[i]->GetParticleTypeCut()<< endl;
     }
 
-    analysisKaonCuts[i] = new AliPrimaryKaonCuts();
+    analysisKaonCuts[i] = new AliIdentifiedPrimaryCuts();
     //    if(runLightOutput>0) analysisKaonCuts[i]->SetLightOutput(kTRUE);
     if( !analysisKaonCuts[i]->InitializeCutsFromCutString((cuts.GetKaonCut(i)).Data())) {
       cout<< "ERROR:  analysisKaonCuts [ " <<i<<" ] "<<endl;
@@ -336,9 +337,10 @@ void AddTask_TrackQA_pp( Int_t   trainConfig             = 1,                  /
     } else {
       KaonCutList->Add(analysisKaonCuts[i]);
       analysisKaonCuts[i]->SetFillCutHistograms("Kaon",kFALSE,cutName);
+      cout<< "Particle Type-3::"<< analysisKaonCuts[i]->GetParticleTypeCut()<< endl;
     }
 
-    analysisProtonCuts[i] = new AliPrimaryProtonCuts();
+    analysisProtonCuts[i] = new AliIdentifiedPrimaryCuts();
     //    if(runLightOutput>0) analysisProtonCuts[i]->SetLightOutput(kTRUE);
     if( !analysisProtonCuts[i]->InitializeCutsFromCutString((cuts.GetProtonCut(i)).Data())) {
       cout<< "ERROR:  analysisProtonCuts [ " <<i<<" ] "<<endl;
@@ -346,9 +348,10 @@ void AddTask_TrackQA_pp( Int_t   trainConfig             = 1,                  /
     } else {
       ProtonCutList->Add(analysisProtonCuts[i]);
       analysisProtonCuts[i]->SetFillCutHistograms("Proton",kFALSE,cutName);
+      cout<< "Particle Type-4::"<< analysisProtonCuts[i]->GetParticleTypeCut()<< endl;
     }
 
-    analysisDeuteronCuts[i] = new AliPrimaryDeuteronCuts();
+    analysisDeuteronCuts[i] = new AliIdentifiedPrimaryCuts();
     //    if(runLightOutput>0) analysisDeuteronCuts[i]->SetLightOutput(kTRUE);
     if( !analysisDeuteronCuts[i]->InitializeCutsFromCutString((cuts.GetDeuteronCut(i)).Data())) {
       cout<< "ERROR:  analysisDeuteronCuts [ " <<i<<" ] "<<endl;
@@ -356,6 +359,7 @@ void AddTask_TrackQA_pp( Int_t   trainConfig             = 1,                  /
     } else {
       DeuteronCutList->Add(analysisDeuteronCuts[i]);
       analysisDeuteronCuts[i]->SetFillCutHistograms("Deuteron",kFALSE,cutName);
+      cout<< "Particle Type-5::"<< analysisDeuteronCuts[i]->GetParticleTypeCut()<< endl;
     }
  
   }

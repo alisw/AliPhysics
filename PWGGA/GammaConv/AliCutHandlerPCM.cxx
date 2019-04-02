@@ -367,7 +367,7 @@ void AliCutHandlerPCM::AddCutTrackQA(TString eventCut, TString pionCut, TString 
     fValidCuts = false;
     return;
   }
-  if( eventCut.Length()!=8 || pionCut.Length()!=9 || kaonCut.Length()!=9  || protonCut.Length()!=9  || deuteronCut.Length()!=9    ) {
+  if( eventCut.Length()!=8 || pionCut.Length()!=10 || kaonCut.Length()!=10  || protonCut.Length()!=10  || deuteronCut.Length()!=10    ) {
     cout << "ERROR in AliCutHandlerPCM: Incorrect length of cut string!" << endl;
     fValidCutsEvent = kFALSE;
     fValidCutsChargedPion = kFALSE;
@@ -392,7 +392,7 @@ void AliCutHandlerPCM::AddCutTrackQAPion(TString eventCut, TString pionCut){
     fValidCuts = false;
     return;
   }
-  if( eventCut.Length()!=8 || pionCut.Length()!=9    ) {
+  if( eventCut.Length()!=8 || pionCut.Length()!=10    ) {
     cout << "ERROR in AliCutHandlerPCM: Incorrect length of cut string!" << endl;
     fValidCutsEvent = kFALSE;
     fValidCutsChargedPion   = kFALSE;

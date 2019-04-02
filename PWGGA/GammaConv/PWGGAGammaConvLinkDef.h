@@ -57,12 +57,9 @@
 #pragma link C++ class AliDalitzAODESDMC+;
 #pragma link C++ class AliDalitzEventMC+;
 #pragma link C++ class AliAnalysisTaskTrackQA+;
-#pragma link C++ class AliPrimaryKaonSelector+;
-#pragma link C++ class AliPrimaryProtonSelector+;
-#pragma link C++ class AliPrimaryDeuteronSelector+;
-#pragma link C++ class AliPrimaryKaonCuts+;
-#pragma link C++ class AliPrimaryProtonCuts+;
-#pragma link C++ class AliPrimaryDeuteronCuts+;
+#pragma link C++ class AliIdentifiedPrimarySelector+;
+#pragma link C++ class AliIdentifiedPrimaryCuts+;
+
 // Old tasks
 #pragma link C++ class AliAnalysisTaskGCPartToPWG4Part+;
 #pragma link C++ class AliPrimaryPionSelector+;
