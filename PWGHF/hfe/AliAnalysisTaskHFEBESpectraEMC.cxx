@@ -91,7 +91,8 @@ fTPCnSigma(-999.0),
 fTPCnSigmaMin(-1),
 fTPCnSigmaMax(3),
 fM02Min(0.05),
-fM02Max(0.5),
+fM02Max1(0.9),
+fM02Max2(0.7),
 fM20Min(0.0),
 fM20Max(2000),
 fEovPMin(0.9),
@@ -114,6 +115,8 @@ fWeightPi0(1),
 fWeightEta(1),
 fPi0Weight(0),
 fEtaWeight(0),
+fnBinsDCAHisto(400),
+fTrkDCA(-999.0),
 fOutputList(0),
 fNevents(0),
 fCent(0),
@@ -177,10 +180,15 @@ fEMCTrkMatch_Phi(0),
 fEMCTrkMatch_Eta(0),
 fInclsElecPt(0),
 fHadPt_AftEID(0),
-fHistEop_AftEID(0),
+fHadEovp_AftEID(0),
+fEop_AftEID(0),
 fNElecInEvt(0),
 fULSElecPt(0),
 fLSElecPt(0),
+fHadDCA(0),
+fInclElecDCA(0),
+fULSElecDCA(0),
+fLSElecDCA(0),
 fRealInclsElecPt(0),
 fNonHFeTrkPt(0),
 fMissingEmbEtaEleTrkPt(0),
@@ -255,7 +263,8 @@ fTPCnSigma(-999.0),
 fTPCnSigmaMin(-1),
 fTPCnSigmaMax(3),
 fM02Min(0.05),
-fM02Max(0.5),
+fM02Max1(0.9),
+fM02Max2(0.7),
 fM20Min(0.0),
 fM20Max(2000),
 fEovPMin(0.9),
@@ -278,6 +287,8 @@ fWeightPi0(1),
 fWeightEta(1),
 fPi0Weight(0),
 fEtaWeight(0),
+fnBinsDCAHisto(400),
+fTrkDCA(-999.0),
 fOutputList(0),
 fNevents(0),
 fCent(0),
@@ -341,10 +352,15 @@ fEMCTrkMatch_Phi(0),
 fEMCTrkMatch_Eta(0),
 fInclsElecPt(0),
 fHadPt_AftEID(0),
-fHistEop_AftEID(0),
+fHadEovp_AftEID(0),
+fEop_AftEID(0),
 fNElecInEvt(0),
 fULSElecPt(0),
 fLSElecPt(0),
+fHadDCA(0),
+fInclElecDCA(0),
+fULSElecDCA(0),
+fLSElecDCA(0),
 fRealInclsElecPt(0),
 fNonHFeTrkPt(0),
 fMissingEmbEtaEleTrkPt(0),
@@ -597,8 +613,11 @@ void AliAnalysisTaskHFEBESpectraEMC::UserCreateOutputObjects()
     fHadPt_AftEID = new TH1F("fHadPt_AftEID","p_{T} distribution of hadrons after Eid cuts;p_{T} (GeV/c);counts",500,0,50);
     fOutputList->Add(fHadPt_AftEID);
     
-    fHistEop_AftEID = new TH2F("fHistEop_AftEID", "E/p distribution after nsig, SS cuts;p_{T} (GeV/c);E/p", 200,0,20,60, 0.0, 3.0);
-    fOutputList->Add(fHistEop_AftEID);
+    fHadEovp_AftEID = new TH2F("fHadEovp_AftEID", "E/p distribution for hadrons -10<nsig<-3.5, SS cuts;p_{T} (GeV/c);E/p", 60,0,30,100, 0.0, 2.0);
+    fOutputList->Add(fHadEovp_AftEID);
+    
+    fEop_AftEID = new TH2F("fEop_AftEID", "E/p distribution after nsig, SS cuts;p_{T} (GeV/c);E/p", 60,0,30,100, 0.0, 2.0);
+    fOutputList->Add(fEop_AftEID);
     
     fNElecInEvt = new TH1F("fNElecInEvt","No of electrons in the event; N^{ele};counts",20,-0.5,19.5);
     fOutputList->Add(fNElecInEvt);
@@ -614,6 +633,18 @@ void AliAnalysisTaskHFEBESpectraEMC::UserCreateOutputObjects()
     
     fLSElecPt= new TH1F("fLSElecPt","p_{T} distribution of LS electrons;p_{T} (GeV/c);counts",500,0,50);
     fOutputList->Add(fLSElecPt);
+    
+    fHadDCA = new TH2F("fHadDCA","Hadron DCA; p_{T}(GeV/c); DCAxMagFieldxSign; counts;", 60,0,30., fnBinsDCAHisto,-0.4,0.4);
+    fOutputList->Add(fHadDCA);
+    
+    fInclElecDCA = new TH2F("fInclElecDCA","Inclusive electron DCA; p_{T}(GeV/c); DCAxMagFieldxSign; counts;", 60,0,30., fnBinsDCAHisto,-0.4,0.4);
+    fOutputList->Add(fInclElecDCA);
+    
+    fULSElecDCA = new TH2F("fULSElecDCA","ULS electron DCA; p_{T}(GeV/c); DCAxMagFieldxSign; counts;", 60,0,30., fnBinsDCAHisto,-0.4,0.4);
+    fOutputList->Add(fULSElecDCA);
+    
+    fLSElecDCA = new TH2F("fLSElecDCA","LS electron DCA; p_{T}(GeV/c); DCAxMagFieldxSign; counts;", 60,0,30., fnBinsDCAHisto,-0.4,0.4);
+    fOutputList->Add(fLSElecDCA);
     
     if(fFlagSparse){
         Int_t bins[6]=      {280, 160, 40, 200, 200, 20}; //pT;nSigma;eop;m20;m02;iSM
@@ -869,6 +900,12 @@ void AliAnalysisTaskHFEBESpectraEMC::UserExec(Option_t *)
     fNevents->Fill(2); //events after z vtx cut
     fCent->Fill(centrality); //centrality dist.
     
+    ////////////////
+    // Mag. field //
+    ////////////////
+    Int_t fMagSign = 1;
+    if(fAOD->GetMagneticField()<0) fMagSign = -1;
+    
     /////////////////////////////
     //EMCAL cluster information//
     /////////////////////////////
@@ -956,6 +993,9 @@ void AliAnalysisTaskHFEBESpectraEMC::UserExec(Option_t *)
             
         if(atrack->PropagateToDCA(pVtx, fVevent->GetMagneticField(), 20., d0z0, cov))
         if(TMath::Abs(d0z0[0]) > DCAxyCut || TMath::Abs(d0z0[1]) > DCAzCut) continue;
+        
+        fTrkDCA = -999.0;
+        fTrkDCA = d0z0[0] * atrack->Charge() * fMagSign;
         
         ////////////////////
         //Track properties//
@@ -1095,12 +1135,16 @@ void AliAnalysisTaskHFEBESpectraEMC::UserExec(Option_t *)
             Bool_t fHadTrack = kFALSE, fElectTrack = kFALSE;
             fElectTrack = PassEIDCuts(track, clustMatch, fHadTrack);
             
-            if(fHadTrack)
+            if(fHadTrack){
                 fHadPt_AftEID->Fill(TrkPt);
+                fHadDCA->Fill(TrkPt,fTrkDCA);
+            }
             
             if(!fElectTrack) continue;
             
             fInclsElecPt->Fill(TrkPt);
+            fInclElecDCA->Fill(TrkPt,fTrkDCA);
+            
             fNEle++;
             
             //////////////////////////////////
@@ -1151,18 +1195,33 @@ Bool_t AliAnalysisTaskHFEBESpectraEMC::PassEIDCuts(AliVTrack *track, AliVCluster
     //Hadron E/p distribution
     if(fTPCnSigma > fTPCnSigmaHadMin && fTPCnSigma < fTPCnSigmaHadMax)
     {
-        if((m02 > fM02Min && m02 < fM02Max) && (m20 > fM20Min && m20 < fM20Max))
-        {
-            if(eop > fEovPMin && eop < fEovPMax) hadTrk=kTRUE;
+        if(TrkPt < 8.0){
+            if((m02 > fM02Min && m02 < fM02Max1) && (m20 > fM20Min && m20 < fM20Max))
+                {
+                    fHadEovp_AftEID->Fill(TrkPt,eop);
+                    if(eop > fEovPMin && eop < fEovPMax) hadTrk=kTRUE;
+                }
+        }
+        if(TrkPt >= 8.0){
+            if((m02 > fM02Min && m02 < fM02Max2) && (m20 > fM20Min && m20 < fM20Max))
+            {
+                fHadEovp_AftEID->Fill(TrkPt,eop);
+                if(eop > fEovPMin && eop < fEovPMax) hadTrk=kTRUE;
+            }
         }
     }
     Hadtrack = hadTrk;
     
     if(fTPCnSigma < fTPCnSigmaMin || fTPCnSigma > fTPCnSigmaMax) return kFALSE;
-    if(m02 < fM02Min || m02 > fM02Max) return kFALSE;
+    if(TrkPt < 8.0){
+        if(m02 < fM02Min || m02 > fM02Max1) return kFALSE;
+    }
+    if(TrkPt >= 8.0){
+        if(m02 < fM02Min || m02 > fM02Max2) return kFALSE;
+    }
     if(m20 < fM20Min || m20 > fM20Max) return kFALSE;
     
-    fHistEop_AftEID->Fill(TrkPt,eop);
+    fEop_AftEID->Fill(TrkPt,eop);
     
     if(eop < fEovPMin || eop > fEovPMax) return kFALSE;
     
@@ -1261,11 +1320,15 @@ void AliAnalysisTaskHFEBESpectraEMC::SelectPhotonicElectron(Int_t itrack, AliVTr
 
         Double_t TrkPt = track->Pt();
         if(mass < fInvmassCut){
-            if(fFlagLS)
+            if(fFlagLS){
                 fLSElecPt->Fill(TrkPt);
+                fLSElecDCA->Fill(TrkPt,fTrkDCA);
+            }
 
-            if(fFlagULS)
+            if(fFlagULS){
                 fULSElecPt->Fill(TrkPt);
+                fULSElecDCA->Fill(TrkPt,fTrkDCA);
+            }
         }
         
         if(mass < fInvmassCut && fFlagULS && !flagPhotonicElec)
@@ -1514,7 +1577,7 @@ Bool_t AliAnalysisTaskHFEBESpectraEMC::GetNonHFEEffiDenom(AliVTrack *track)
     //Calculate Non-HFE efficiency demoninator
     
     fIsFrmEmbPi0 = kFALSE, fIsFrmEmbEta = kFALSE;
-    ftype = -1, fWeightPi0 = 1.0, fWeightEta = 1.0;
+    ftype = -1, fWeightPi0 = 1.0, fWeightEta = 1.0, fWeight=1.0;
     Bool_t fFromMB = kTRUE;
     
     Int_t MomPDG = -999, GMomPDG=-999, GGMomPDG=-999, GGGMomPDG=-999;
@@ -1610,10 +1673,12 @@ Bool_t AliAnalysisTaskHFEBESpectraEMC::GetNonHFEEffiDenom(AliVTrack *track)
         fNonHFeEmbTrkPt->Fill(TrkPt);
         
         if(fIsFrmEmbPi0) {
+            fWeight = fWeightPi0;
             fPi0eEmbWeightTrkPt->Fill(TrkPt,fWeightPi0);
             fNonHFeEmbWeightTrkPt->Fill(TrkPt,fWeightPi0);
         }
         if(fIsFrmEmbEta){
+            fWeight = fWeightEta;
             fEtaeEmbWeightTrkPt->Fill(TrkPt,fWeightEta);
             fNonHFeEmbWeightTrkPt->Fill(TrkPt,fWeightEta);
         }
