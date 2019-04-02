@@ -131,7 +131,7 @@ AliNanoAODTrackMapping::AliNanoAODTrackMapping(const char * mappingString) :
       if(var == validatorString[ivalidator++]) isValid = kTRUE;
     }
     //... it is custom    
-    if (!( isValid || var.BeginsWith("cst")) ) AliFatal(Form("Invalid var [%s]", var.Data()));
+    if (!( isValid || var.BeginsWith("cst") || var.BeginsWith("PID.")) ) AliFatal(Form("Invalid var [%s]", var.Data()));
     // If the variable is valid, add it to the list. We have to create a new TObjstring because otherwise it is deleted with the tokens
     if     (var == "pt"               ) fPt                = index;
     else if(var == "phi"              ) fPhi               = index;
