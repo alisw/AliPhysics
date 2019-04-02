@@ -839,6 +839,10 @@ Bool_t AliRDHFCuts::IsEventSelectedWithAliEventCuts(AliVEvent *event) {
   else if(fOptPileup==kRejectMVPileupEvent){
     fAliEventCuts->fPileUpCutMV=kTRUE;
     fAliEventCuts->fUseSPDpileUpCut=kFALSE;
+    fAliEventCuts->fUtils.SetMinPlpContribMV(fMinContrPileupMV);
+    fAliEventCuts->fUtils.SetMaxPlpChi2MV(fMaxVtxChi2PileupMV);
+    fAliEventCuts->fUtils.SetMinWDistMV(fMinWDzPileupMV);
+    fAliEventCuts->fUtils.SetCheckPlpFromDifferentBCMV(fRejectPlpFromDiffBCMV);
   }
   fAliEventCuts->SetMaxVertexZposition(fMaxVtxZ);
 
