@@ -1278,8 +1278,6 @@ Bool_t AliAnalysisHFjetTagHFE::Run()
          if(jetLead)
            {
             LeadJetpT = jetLead->Pt();
-            //Double_t BGfracAll = CalRandomCone(LeadJetPhi,LeadJetEta,0.3) - fJetsCont->GetRhoVal()*acos(-1.0)*pow(0.3,2);
-            //fHistBGfrac->Fill(BGfracAll);
            } 
         
 
@@ -1287,7 +1285,8 @@ Bool_t AliAnalysisHFjetTagHFE::Run()
 
          // check Raw jet info
          double jetpT = jet->Pt();
-         double Rho_area = fJetsCont->GetRhoVal() * jet->Area();
+         //double Rho_area = fJetsCont->GetRhoVal() * jet->Area();
+         double Rho_area = rho * jet->Area();
          double jetpTsub = jetpT - Rho_area;
          double jetEta = jet->Eta();
          double jetPhi = jet->Phi();
@@ -1346,7 +1345,8 @@ Bool_t AliAnalysisHFjetTagHFE::Run()
 
 
             //Double_t BGfracAll = CalRandomCone(ExJetPhi,ExJetEta,0.3) - fJetsCont->GetRhoVal()*acos(-1.0)*pow(0.3,2);
-            Double_t BGfracAll = CalRandomCone(ExJetPhi,ExJetEta,jetRadius) - fJetsCont->GetRhoVal()*acos(-1.0)*pow(jetRadius,2);
+            //Double_t BGfracAll = CalRandomCone(ExJetPhi,ExJetEta,jetRadius) - fJetsCont->GetRhoVal()*acos(-1.0)*pow(jetRadius,2);
+            Double_t BGfracAll = CalRandomCone(ExJetPhi,ExJetEta,jetRadius) - rho*acos(-1.0)*pow(jetRadius,2);
             fHistBGfrac->Fill(BGfracAll);
 
 
@@ -1720,7 +1720,6 @@ Bool_t AliAnalysisHFjetTagHFE::Run()
               { 
                //Bool_t iTagHFjet = tagHFjet( jet, epTarray, 0, pt);
                if(idbHFEj)cout << "iTagHFjet = " << iTagHFjet << endl;
-	       //Float_t corrPt = jet->Pt() - fJetsCont->GetRhoVal() * jet->Area();
 	       Float_t pTeJet = jet->Pt();
 	       Float_t Phi_eJet = jet->Phi();
 	       Float_t Eta_eJet = jet->Eta();
@@ -1787,9 +1786,9 @@ Bool_t AliAnalysisHFjetTagHFE::Run()
 
                               ExJetPhi[2] = Phi_eJet;
                               ExJetEta[2] = Eta_eJet;
-                              //Double_t BGfracHFE = CalRandomCone(ExJetPhi,ExJetEta,0.3) - fJetsCont->GetRhoVal()*acos(-1.0)*pow(0.3,2);
                               Double_t randomcone = CalRandomCone(ExJetPhi,ExJetEta,jetRadius);
-                              Double_t BGfracHFE = randomcone - fJetsCont->GetRhoVal()*acos(-1.0)*pow(jetRadius,2);
+                              //Double_t BGfracHFE = randomcone - fJetsCont->GetRhoVal()*acos(-1.0)*pow(jetRadius,2);
+                              Double_t BGfracHFE = randomcone - rho*acos(-1.0)*pow(jetRadius,2);
                               fHistBGrandHFEev->Fill(randomcone);
                               fHistBGfracHFEev->Fill(BGfracHFE);
 
