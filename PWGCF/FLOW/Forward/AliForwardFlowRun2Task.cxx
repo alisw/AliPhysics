@@ -122,7 +122,7 @@ void AliForwardFlowRun2Task::UserCreateOutputObjects()
     fEventList->Add(new TH1D("Centrality","Centrality",fSettings.fCentBins,0,100));
     fEventList->Add(new TH1D("Vertex","Vertex",fSettings.fNZvtxBins,fSettings.fZVtxAcceptanceLowEdge,fSettings.fZVtxAcceptanceUpEdge));
     fEventList->Add(new TH1D("FMDHits","FMDHits",100,0,10));
-    fEventList->Add(new TH1F("dNdeta","dNdeta",100 /*fSettings.fNDiffEtaBins*/,fSettings.fEtaLowEdge,fSettings.fEtaUpEdge));
+    fEventList->Add(new TH1F("dNdeta","dNdeta",200 /*fSettings.fNDiffEtaBins*/,fSettings.fEtaLowEdge,fSettings.fEtaUpEdge));
 
     fAnalysisList->Add(new TList());
     fAnalysisList->Add(new TList());
@@ -260,21 +260,28 @@ void AliForwardFlowRun2Task::UserExec(Option_t *)
 
   TH1F pthist = TH1F("pthist", "", ptnmax+1, fSettings.minpt, fSettings.maxpt);
 
-  for (Int_t ptn = 0; ptn <=ptnmax; ptn ++ ){
-    
-    fUtil.fSettings.minpt = pthist.GetXaxis()->GetBinLowEdge(ptn+1);
-    fUtil.fSettings.maxpt = pthist.GetXaxis()->GetBinUpEdge(ptn+1);
+  if (fSettings.doPt){
+    for (Int_t ptn = 0; ptn <=ptnmax; ptn ++ ){
+      
+      fUtil.fSettings.minpt = pthist.GetXaxis()->GetBinLowEdge(ptn+1);
+      fUtil.fSettings.maxpt = pthist.GetXaxis()->GetBinUpEdge(ptn+1);
 
-    centralDist->Reset();
+      centralDist->Reset();
 
-    // Fill centralDist
-    fUtil.FillDataCentral(centralDist);
+      // Fill centralDist
+      fUtil.FillDataCentral(centralDist);
 
+      UInt_t randomInt = fRandom.Integer(fSettings.fnoSamples);
+
+      calculator.CumulantsAccumulate(*centralDist, fOutputList, cent, zvertex,"central",false,true);  
+      calculator.saveEvent(fOutputList, cent, zvertex,  randomInt, ptn);    
+      calculator.fpvector->Reset();
+    }
+  }
+  else{
     UInt_t randomInt = fRandom.Integer(fSettings.fnoSamples);
-
     calculator.CumulantsAccumulate(*centralDist, fOutputList, cent, zvertex,"central",false,true);  
-    calculator.saveEvent(fOutputList, cent, zvertex,  randomInt, ptn);    
-    calculator.fpvector->Reset();
+    calculator.saveEvent(fOutputList, cent, zvertex,  randomInt, 0);    
   }
 
   calculator.reset();
