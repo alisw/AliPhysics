@@ -264,6 +264,7 @@ public:
     
     //Re-vertex Cascades
     Long_t V0sTracks2CascadeVertices(AliESDEvent *event);
+    Long_t V0sTracks2CascadeVerticesMC(AliESDEvent *event);
     //Re-vertex Cascades without checking bachelor charge - V0 Mass hypo correspondence
     Long_t V0sTracks2CascadeVerticesUncheckedCharges(AliESDEvent *event);
     //Helper functions
