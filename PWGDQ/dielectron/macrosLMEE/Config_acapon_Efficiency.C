@@ -169,6 +169,11 @@ AliAnalysisFilter* SetupTrackCutsAndSettings(TString cutDefinition, Bool_t wSDD)
     anaFilter->SetName(cutDefinition);
     anaFilter->Print();
   }
+  else if(cutDefinition == "kScheidPID"){ 
+    anaFilter->AddCuts(LMcutlib->GetTrackCuts(LMEECutLib::kCutSet1, LMEECutLib::kScheidPID));
+    anaFilter->SetName(cutDefinition);
+    anaFilter->Print();
+  }
   // ######## PID Cut variation settings #################
   // These variations use the kCutSet1 track cuts and only vary PID
   else if(cutDefinition == "kPIDcut1"){ 
