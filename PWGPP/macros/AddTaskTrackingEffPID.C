@@ -57,7 +57,16 @@ AliAnalysisTaskTrackingEffPID* AddTaskTrackingEffPID(TString suffix = "",
 							   AliAnalysisManager::kOutputContainer,
 							   outputFileName.Data() );
 
+  TString cutlistname="listTrackCuts";
+  cutlistname+=suffix.Data();
+
+  AliAnalysisDataContainer* ccuts = mgr->CreateContainer(cutlistname,
+							 TList::Class(),
+							 AliAnalysisManager::kParamContainer,
+							 outputFileName.Data() );
+  
   mgr->ConnectInput  (taskeff,  0, mgr->GetCommonInputContainer());
   mgr->ConnectOutput (taskeff,  1, coutput);
+  mgr->ConnectOutput (taskeff,  2, ccuts);
   return taskeff;
 }
