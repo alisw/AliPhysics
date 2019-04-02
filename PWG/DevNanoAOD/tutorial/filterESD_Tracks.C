@@ -33,8 +33,7 @@ void filterESD_Tracks()
   AddTaskESDFilter(kFALSE, kFALSE, kFALSE, kTRUE, kFALSE, kFALSE, kFALSE, kFALSE, 1500, 3, kFALSE, kFALSE, kFALSE, kFALSE);
   
   AliAnalysisTaskNanoAODFilter* task = (AliAnalysisTaskNanoAODFilter*) AddTaskNanoAODFilter(0, kFALSE);
-  AliNanoAODSimpleSetter* setter = new AliNanoAODSimpleSetter;
-  task->SetSetter(setter);
+  task->AddSetter(new AliNanoAODSimpleSetter);
   
   // Event selection
   // filter bit
@@ -53,9 +52,9 @@ void filterESD_Tracks()
   // Fields to store
   // event level
   // Note: vertices are kept by default
-  task->SetVarListHead("OfflineTrigger,MagField,MultSelection.RefMult08");
+  task->SetVarListHeader("OfflineTrigger,MagField,MultSelection.RefMult08");
   // track level
-  task->SetVarList("pt,theta,phi");
+  task->SetVarListTrack("pt,theta,phi");
 
   task->SetTrkCuts(trkCuts);
   task->SetEvtCuts(evtCuts);

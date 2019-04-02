@@ -29,6 +29,7 @@ void filterESD_V0s()
   AddTaskConfigOCDB("raw://");
   
   // V0 finder
+  // TODO this should only run for selected events
   gROOT->LoadMacro("$ALICE_PHYSICS/PWGLF/STRANGENESS/Cascades/Run2/macros/AddTaskWeakDecayVertexer.C");
   AliAnalysisTaskWeakDecayVertexer* v0Finder = AddTaskWeakDecayVertexer();
   v0Finder->SetUseImprovedFinding();
@@ -38,8 +39,7 @@ void filterESD_V0s()
   AddTaskESDFilter(kFALSE, kFALSE, kFALSE, kTRUE, kFALSE, kFALSE, kFALSE, kFALSE, 1500, 3, kTRUE, kFALSE, kFALSE, kFALSE);
   
   AliAnalysisTaskNanoAODFilter* task = (AliAnalysisTaskNanoAODFilter*) AddTaskNanoAODFilter(0, kFALSE);
-  AliNanoAODSimpleSetter* setter = new AliNanoAODSimpleSetter;
-  task->SetSetter(setter);
+  task->AddSetter(new AliNanoAODSimpleSetter);
   
   // Event selection
   // filter bit
@@ -58,15 +58,15 @@ void filterESD_V0s()
   // Fields to store
   // event level
   // Note: vertices are kept by default
-  task->SetVarListHead("OfflineTrigger,MagField,MultSelection.RefMult08");
+  task->SetVarListHeader("OfflineTrigger,MagField,MultSelection.RefMult08");
   // track level
-  task->SetVarList("pt,theta,phi");
+  task->SetVarListTrack("pt,theta,phi");
 
   task->SetTrkCuts(trkCuts);
   task->SetEvtCuts(evtCuts);
 
   // V0s
-  task->ReplicatorSaveV0s(kTRUE, new AliAnalysisNanoAODV0Cuts);
+  task->SaveV0s(kTRUE, new AliAnalysisNanoAODV0Cuts);
 
   mgr->SetDebugLevel(1); // enable debug printouts
   if (!mgr->InitAnalysis()) 

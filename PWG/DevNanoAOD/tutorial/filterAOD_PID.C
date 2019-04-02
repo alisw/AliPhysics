@@ -17,8 +17,7 @@ void filterAOD_PID()
   AliAnalysisTaskPIDResponse* taskPID = AddTaskPIDResponse(kFALSE);
   
   AliAnalysisTaskNanoAODFilter* task = (AliAnalysisTaskNanoAODFilter*) AddTaskNanoAODFilter(0, kFALSE);
-  AliNanoAODSimpleSetter* setter = new AliNanoAODSimpleSetter;
-  task->SetSetter(setter);
+  task->AddSetter(new AliNanoAODSimpleSetter);
   
   // Event selection
   // filter bit
@@ -37,9 +36,9 @@ void filterAOD_PID()
   // Fields to store
   // event level
   // vertices kept by default
-  task->SetVarListHead("OfflineTrigger,MagField");
+  task->SetVarListHeader("OfflineTrigger,MagField");
   // track level
-  task->SetVarList("pt,theta,phi,cstNSigmaTPCPi,cstNSigmaTPCKa,cstNSigmaTPCPr,cstNSigmaTOFPi,cstNSigmaTOFKa,cstNSigmaTOFPr");
+  task->SetVarListTrack("pt,theta,phi,cstNSigmaTPCPi,cstNSigmaTPCKa,cstNSigmaTPCPr,cstNSigmaTOFPi,cstNSigmaTOFKa,cstNSigmaTOFPr");
 
   task->SetTrkCuts(trkCuts);
   task->SetEvtCuts(evtCuts);
