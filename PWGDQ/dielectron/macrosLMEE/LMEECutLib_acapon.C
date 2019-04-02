@@ -58,7 +58,9 @@ class LMEECutLib {
     kCutVar17,
     kCutVar18,
     kCutVar19,
-    kCutVar20
+    kCutVar20,
+    // Cut set used by Sebastian Scheid (also pPb at 5 TeV analysis)
+    kScheidPID
   };
 
 
@@ -912,6 +914,23 @@ AliAnalysisCuts* LMEECutLib::GetPIDCuts(Int_t PIDcuts) {
       cuts->AddCut(cutsPID);
       cuts->Print();
       return cuts;
+    case kScheidPID:
+      // "Hadron rejection band" PID scheme
+      // PID with the TPC as per usual, then recover electron passing second
+      // criteria
+      AliDielectronCutGroup* hadBandRej = new AliDielectronCutGroup("hadBandRejs", "hadBandRej", AliDielectronCutGroup::kCompOR);
+      AliDielectronPID* cutsTPC   = new AliDielectronPID("cutsTCP", "cutsTCP");
+      cutsTPC->AddCut(AliDielectronPID::kTPC, AliPID::kElectron, -3., 3., 0., 100., kFALSE);
+      cutsTPC->AddCut(AliDielectronPID::kTPC, AliPID::kPion, -100., 3.5, 0., 100., kTRUE);
+      cutsTPC->AddCut(AliDielectronPID::kTPC, AliPID::kKaon, -3., 3., 0.2, 100., kTRUE);
+      cutsTPC->AddCut(AliDielectronPID::kTPC, AliPID::kProton, -3., 3., 0.2, 100., kTRUE);
+      AliDielectronPID* recoverTOF = new AliDielectronPID("recoverTOF", "recoverTOF");
+      recoverTOF->AddCut(AliDielectronPID::kTPC, AliPID::kElectron, -3., 3., 0., 100., kFALSE);
+      recoverTOF->AddCut(AliDielectronPID::kTPC, AliPID::kPion, -100., 4, 0., 100., kTRUE);
+      recoverTOF->AddCut(AliDielectronPID::kTOF, AliPID::kElectron, -3., 3., 0., 100., kFALSE, AliDielectronPID::kRequire);
+      hadBandRej->AddCut(cutsTPC);
+      hadBandRej->AddCut(recoverTOF);
+      return hadBandRej;
     case kCutVar1:
       cutsPID->AddCut(AliDielectronPID::kTPC, AliPID::kElectron, -4., 4., 0., 100., kFALSE);
       Printf("Use TMVA cut value = %f",0.05);
