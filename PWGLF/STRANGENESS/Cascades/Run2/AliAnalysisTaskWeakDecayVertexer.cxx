@@ -520,7 +520,11 @@ void AliAnalysisTaskWeakDecayVertexer::UserExec(Option_t *)
         lESDevent->ResetCascades();
         //Only regenerate candidates if within interesting interval
         if(!fkUseUncheckedChargeCascadeVertexer){
-            V0sTracks2CascadeVertices(lESDevent);
+            if(!fkMonteCarlo){
+                V0sTracks2CascadeVertices(lESDevent);
+            }else{
+                V0sTracks2CascadeVerticesMC(lESDevent);
+            }
         }else{
             V0sTracks2CascadeVerticesUncheckedCharges(lESDevent);
         }
@@ -1389,6 +1393,390 @@ Long_t AliAnalysisTaskWeakDecayVertexer::V0sTracks2CascadeVertices(AliESDEvent *
             Double_t lXiTransvMom  = 0. ;
             cascade.GetPxPyPz( lXiMomX, lXiMomY, lXiMomZ );
             lXiTransvMom  	= TMath::Sqrt( lXiMomX*lXiMomX   + lXiMomY*lXiMomY );
+            if(lXiTransvMom<fMinPtCascade) continue;
+            if(lXiTransvMom>fMaxPtCascade) continue;
+            
+            //Filter masses: anti-cascade hypotheses
+            Double_t lV0quality = 0.;
+            cascade.ChangeMassHypothesis(lV0quality , -3312); // pdg code -3312 = Xi+
+            Double_t lInvMassXi = cascade.GetEffMassXi();
+            cascade.ChangeMassHypothesis(lV0quality , -3334); // pdg code -3312 = Xi+
+            Double_t lInvMassOmega = cascade.GetEffMassXi();
+            
+            //Remove if outside window of interest
+            if(TMath::Abs(lInvMassXi   -1.322)>fMassWindowAroundCascade &&
+               TMath::Abs(lInvMassOmega-1.672)>fMassWindowAroundCascade ) continue;
+            
+            cascade.SetDcaXiDaughters(dca);
+            
+            //Change back to default XiPlus hypothesis
+            cascade.ChangeMassHypothesis(lV0quality , -3312);
+            event->AddCascade(&cascade);
+            ncasc++;
+            
+        } // end loop tracks
+    } // end loop V0s
+    
+    Info("V0sTracks2CascadeVertices","Number of reconstructed cascades: %ld",ncasc);
+    
+    return ncasc;
+}
+
+//________________________________________________________________________
+Long_t AliAnalysisTaskWeakDecayVertexer::V0sTracks2CascadeVerticesMC(AliESDEvent *event) {
+    //--------------------------------------------------------------------
+    // This function reconstructs cascade vertices
+    //      Adapted to the ESD by I.Belikov (Jouri.Belikov@cern.ch)
+    //      Now also with MC association
+    //--------------------------------------------------------------------
+    const AliESDVertex *vtxT3D=event->GetPrimaryVertex();
+    
+    //pointers to query MC information
+    AliMCEvent  *lMCevent  = 0x0;
+    AliStack    *lMCstack  = 0x0;
+    
+    //=================================================
+    // Monte Carlo-related information
+    lMCevent = MCEvent();
+    if (!lMCevent) {
+        Printf("ERROR: Could not retrieve MC event \n");
+        cout << "Name of the file with pb :" <<  fInputHandler->GetTree()->GetCurrentFile()->GetName() << endl;
+        return 0;
+    }
+    lMCstack = lMCevent->Stack();
+    if (!lMCstack) {
+        Printf("ERROR: Could not retrieve MC stack \n");
+        cout << "Name of the file with pb :" <<  fInputHandler->GetTree()->GetCurrentFile()->GetName() << endl;
+        return 0;
+    }
+    //=================================================
+    
+    Double_t xPrimaryVertex=vtxT3D->GetX();
+    Double_t yPrimaryVertex=vtxT3D->GetY();
+    Double_t zPrimaryVertex=vtxT3D->GetZ();
+    
+    Double_t b=event->GetMagneticField();
+    Int_t nV0=(Int_t)event->GetNumberOfV0s();
+    
+    //populate map if requested to do so
+    if (fkUseOptimalTrackParamsBachelor) {
+        Int_t nv0s = 0;
+        nv0s = event->GetNumberOfV0s();
+        fOTFMap.clear(); //don't forget to clean up!
+        for (Int_t iV0 = 0; iV0 < nv0s; iV0++) //extra-crazy test
+        {   // This is the begining of the V0 loop
+            AliESDv0 *v0 = ((AliESDEvent*)event)->GetV0(iV0);
+            if(v0->GetOnFlyStatus()>0){
+                //map convention: negative track first, positive track second
+                fOTFMap.insert(make_pair(make_pair(v0->GetNindex(), v0->GetPindex()), iV0));
+            }
+        }//finished preparing map
+    }
+    
+    //stores relevant V0s in an array
+    TObjArray vtcs(nV0);
+    Long_t i;
+    for (i=0; i<nV0; i++) {
+        AliESDv0 *v=event->GetV0(i);
+        if ( v->GetOnFlyStatus() && !fkUseOnTheFlyV0Cascading) continue;
+        if (!v->GetOnFlyStatus() &&  fkUseOnTheFlyV0Cascading) continue;
+        
+        //Fix incorrect storing of charges in on-the-fly V0s
+        if( fkUseOnTheFlyV0Cascading ){
+            //Fix charge ordering
+            CheckChargeV0( v );
+            //Remove like-sign
+            if( v->GetParamN()->Charge() > 0 && v->GetParamP()->Charge() > 0 ){
+                continue;
+            }
+            if( v->GetParamN()->Charge() < 0 && v->GetParamP()->Charge() < 0 ){
+                continue;
+            }
+        }
+        
+        //+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+        //Pre-filter candidates for CPU time reduction
+        //+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+        
+        //1) DCA V0 Dau
+        if( v->GetDcaV0Daughters() > fV0VertexerSels[3] ) continue;
+        
+        //2) CosPA
+        if( v->GetV0CosineOfPointingAngle(xPrimaryVertex,yPrimaryVertex,zPrimaryVertex)< fV0VertexerSels[4] ) continue;
+        
+        //3) DCA neg/pos to PV
+        UInt_t lKeyPos = (UInt_t)TMath::Abs(v->GetPindex());
+        UInt_t lKeyNeg = (UInt_t)TMath::Abs(v->GetNindex());
+        AliESDtrack *pTrack=((AliESDEvent*)event)->GetTrack(lKeyPos);
+        AliESDtrack *nTrack=((AliESDEvent*)event)->GetTrack(lKeyNeg);
+        
+        //==================================================================================
+        //Query MC information to check if this track comes from one of the desired species
+        Int_t lLabel = (Int_t) TMath::Abs( pTrack->GetLabel() );
+        TParticle* lParticle = lMCstack->Particle( lLabel );
+        Int_t lLabelMother = lParticle->GetFirstMother();
+        if( lLabelMother < 0 ) continue;
+        TParticle *lParticleMother = lMCstack->Particle( lLabelMother );
+        Int_t lParticleMotherPDG = lParticleMother->GetPdgCode();
+        Bool_t lOfDesiredType = kFALSE;
+        if( TMath::Abs(lParticleMotherPDG) != 3122  ) continue; //discard K0s (will help a lot)
+        //==================================================================================
+        
+        
+        Double_t lDcaPosToPrimVertex = TMath::Abs(pTrack->GetD(xPrimaryVertex,
+                                                               yPrimaryVertex,
+                                                               b) );
+        
+        Double_t lDcaNegToPrimVertex = TMath::Abs(nTrack->GetD(xPrimaryVertex,
+                                                               yPrimaryVertex,
+                                                               b) );
+        if(lDcaNegToPrimVertex<fV0VertexerSels[1]||lDcaPosToPrimVertex<fV0VertexerSels[2]) continue; //ignore if too close
+        
+        //4) V0 Decay Radius
+        Double_t tDecayVertexV0[3];
+        v->GetXYZ(tDecayVertexV0[0],tDecayVertexV0[1],tDecayVertexV0[2]);
+        Double_t lV0Radius = TMath::Sqrt(tDecayVertexV0[0]*tDecayVertexV0[0]+tDecayVertexV0[1]*tDecayVertexV0[1]);
+        if(lV0Radius<fV0VertexerSels[5]) continue;
+        
+        //5) kTPC refit check
+        // TPC refit condition (done during reconstruction for Offline but not for On-the-fly)
+        if( !(pTrack->GetStatus() & AliESDtrack::kTPCrefit)) continue;
+        if( !(nTrack->GetStatus() & AliESDtrack::kTPCrefit)) continue;
+        
+        //6) 70 clusters or length not smaller than 80
+        Float_t lSmallestTrackLength = 1000;
+        Float_t lPosTrackLength = -1;
+        Float_t lNegTrackLength = -1;
+        
+        if (pTrack->GetInnerParam()) lPosTrackLength = pTrack->GetLengthInActiveZone(1, 2.0, 220.0, b);
+        if (nTrack->GetInnerParam()) lNegTrackLength = nTrack->GetLengthInActiveZone(1, 2.0, 220.0, b);
+        
+        if ( lPosTrackLength  < lSmallestTrackLength ) lSmallestTrackLength = lPosTrackLength;
+        if ( lNegTrackLength  < lSmallestTrackLength ) lSmallestTrackLength = lNegTrackLength;
+        if ( ( ( ( pTrack->GetTPCClusterInfo(2,1) ) < 70 ) || ( ( nTrack->GetTPCClusterInfo(2,1) ) < 70 ) ) && lSmallestTrackLength<80 ){
+            if(fkExtraCleanup) continue;
+        }
+        
+        //7) Daughter eta
+        Double_t lNegEta = nTrack->Eta();
+        Double_t lPosEta = pTrack->Eta();
+        if( (TMath::Abs(lNegEta)>0.8 || TMath::Abs(lPosEta)>0.8)&&fkExtraCleanup ) continue;
+        
+        //8) dE/dx
+        //Pre-select dE/dx: only proceed if at least one of these tracks looks like a proton
+        if(fkPreselectDedxLambda){
+            Double_t lNSigPproton = TMath::Abs(fPIDResponse->NumberOfSigmasTPC( pTrack, AliPID::kProton ));
+            Double_t lNSigNproton = TMath::Abs(fPIDResponse->NumberOfSigmasTPC( nTrack, AliPID::kProton ));
+            if( lNSigPproton>5.0 && lNSigNproton>5.0 ) continue;
+        }
+        //+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+        
+        if (v->GetD(xPrimaryVertex,yPrimaryVertex,zPrimaryVertex)<fCascadeVertexerSels[1]) continue;
+        vtcs.AddLast(v);
+    }
+    nV0=vtcs.GetEntriesFast();
+    
+    // stores relevant tracks in another array
+    Long_t nentr=(Int_t)event->GetNumberOfTracks();
+    TArrayI trk(nentr); Long_t ntr=0;
+    for (i=0; i<nentr; i++) {
+        AliESDtrack *esdtr=event->GetTrack(i);
+        ULong_t status=esdtr->GetStatus();
+        
+        //==================================================================================
+        //Query MC information to check if this track comes from one of the desired species
+        Int_t lLabel = (Int_t) TMath::Abs( esdtr->GetLabel() );
+        TParticle* lParticle = lMCstack->Particle( lLabel );
+        Int_t lLabelMother = lParticle->GetFirstMother();
+        if( lLabelMother < 0 ) continue;
+        TParticle *lParticleMother = lMCstack->Particle( lLabelMother );
+        Int_t lParticleMotherPDG = lParticleMother->GetPdgCode();
+        if( TMath::Abs(lParticleMotherPDG) != 3122 &&
+           TMath::Abs(lParticleMotherPDG) != 3122 ) continue; //keep only tracks coming from Xi, Omega
+        //==================================================================================
+        
+        if ((status&AliESDtrack::kITSrefit)==0)
+            if ((status&AliESDtrack::kTPCrefit)==0) continue;
+        
+        //Track pre-selection: Track Quality
+        Float_t lThisTrackLength = -1;
+        if (esdtr->GetInnerParam()) lThisTrackLength = esdtr->GetLengthInActiveZone(1, 2.0, 220.0, b);
+        if (esdtr->GetTPCNcls() < 70 && lThisTrackLength<80 && fkExtraCleanup ) continue;
+        
+        if (TMath::Abs(esdtr->GetD(xPrimaryVertex,yPrimaryVertex,b))<fCascadeVertexerSels[3]) continue;
+        trk[ntr++]=i;
+    }
+    
+    Double_t massLambda=1.11568;
+    Long_t ncasc=0;
+    
+    // Looking for the cascades...
+    for (i=0; i<nV0; i++) { //loop on V0s
+        AliESDv0 *v=(AliESDv0*)vtcs.UncheckedAt(i);
+        AliESDv0 v0(*v);
+        v0.ChangeMassHypothesis(kLambda0); // the v0 must be Lambda
+        if (TMath::Abs(v0.GetEffMass()-massLambda)>fCascadeVertexerSels[2]) continue;
+        for (Int_t j=0; j<ntr; j++) {//loop on tracks
+            Int_t bidx=trk[j];
+            //Bo:   if (bidx==v->GetNindex()) continue; //bachelor and v0's negative tracks must be different
+            if (bidx==v0.GetIndex(0)) continue; //Bo:  consistency 0 for neg
+            
+            AliESDtrack *btrk=event->GetTrack(bidx);
+            Float_t lBachMassForTracking=btrk->GetMassForTracking();
+            
+            if (btrk->GetSign()>0) continue;  // bachelor's charge
+            
+            AliESDv0 *pv0=&v0;
+            AliExternalTrackParam bt(*btrk);
+            if(fkUseOptimalTrackParamsBachelor) {
+                //Look for a better bachelor description, please
+                //reroute to pointers obtained with on-the-fly finding
+                map<pair<int,int>, int>::iterator iter = fOTFMap.find(make_pair(bidx,v->GetPindex()));
+                if(iter != fOTFMap.end())
+                {
+                    Int_t lEquivalentOTFV0 = (*iter).second; // or iter->second;
+                    AliESDv0 *v0_otf = ((AliESDEvent*)event)->GetV0(lEquivalentOTFV0);
+                    if(!v0_otf){
+                        AliWarning(Form("Invalid V0 at position %i!", lEquivalentOTFV0));
+                        fHistV0OptimalTrackParamUseBachelor->Fill(2.5);
+                    }else{
+                        AliExternalTrackParam btimproved(*(v0_otf->GetParamN()));
+                        bt = btimproved;
+                        fHistV0OptimalTrackParamUseBachelor->Fill(1.5);
+                    }
+                }else{
+                    //OTF not available for this pair
+                    fHistV0OptimalTrackParamUseBachelor->Fill(0.5);
+                }
+            }
+            AliExternalTrackParam *pbt=&bt;
+            
+            Double_t dca=PropagateToDCA(pv0,pbt,event,b,lBachMassForTracking);
+            if (dca > fCascadeVertexerSels[4]) continue;
+            
+            //eta cut - test
+            if (TMath::Abs(pbt->Eta())>0.8&&fkExtraCleanup) continue;
+            
+            AliESDcascade cascade(*pv0,*pbt,bidx);//constucts a cascade candidate
+            //PH        if (cascade.GetChi2Xi() > fChi2max) continue;
+            
+            //Improve estimate of cascade decay position using uncertainties if requested to do so
+            if( fkDoCascadeRefit ) cascade.RefitCascade(pbt);
+            
+            Double_t x,y,z; cascade.GetXYZcascade(x,y,z); // Bo: bug correction
+            Double_t r2=x*x + y*y;
+            if (r2 > fCascadeVertexerSels[7]*fCascadeVertexerSels[7]) continue;   // condition on fiducial zone
+            if (r2 < fCascadeVertexerSels[6]*fCascadeVertexerSels[6]) continue;
+            
+            Double_t pxV0,pyV0,pzV0;
+            pv0->GetPxPyPz(pxV0,pyV0,pzV0);
+            if (x*pxV0+y*pyV0+z*pzV0 < 0) continue; //causality
+            
+            Double_t x1,y1,z1; pv0->GetXYZ(x1,y1,z1);
+            if (r2 > (x1*x1+y1*y1)) continue;
+            
+            if (cascade.GetCascadeCosineOfPointingAngle(xPrimaryVertex,yPrimaryVertex,zPrimaryVertex) <fCascadeVertexerSels[5]) continue; //condition on the cascade pointing angle
+            
+            //pre-select on pT
+            Double_t lXiMomX       = 0. , lXiMomY = 0., lXiMomZ = 0.;
+            Double_t lXiTransvMom  = 0. ;
+            cascade.GetPxPyPz( lXiMomX, lXiMomY, lXiMomZ );
+            lXiTransvMom      = TMath::Sqrt( lXiMomX*lXiMomX   + lXiMomY*lXiMomY );
+            if(lXiTransvMom<fMinPtCascade) continue;
+            if(lXiTransvMom>fMaxPtCascade) continue;
+            
+            //Filter masses: anti-cascade hypotheses
+            Double_t lV0quality = 0.;
+            cascade.ChangeMassHypothesis(lV0quality , 3312); // pdg code -3312 = Xi+
+            Double_t lInvMassXi = cascade.GetEffMassXi();
+            cascade.ChangeMassHypothesis(lV0quality , 3334); // pdg code -3312 = Xi+
+            Double_t lInvMassOmega = cascade.GetEffMassXi();
+            
+            //Remove if outside window of interest
+            if(TMath::Abs(lInvMassXi   -1.322)>fMassWindowAroundCascade &&
+               TMath::Abs(lInvMassOmega-1.672)>fMassWindowAroundCascade ) continue;
+            
+            cascade.SetDcaXiDaughters(dca);
+            
+            //Change back to default XiMinus hypothesis
+            cascade.ChangeMassHypothesis(lV0quality , 3312);
+            event->AddCascade(&cascade);
+            ncasc++;
+        } // end loop tracks
+    } // end loop V0s
+    
+    // Looking for the anti-cascades...
+    for (i=0; i<nV0; i++) { //loop on V0s
+        AliESDv0 *v=(AliESDv0*)vtcs.UncheckedAt(i);
+        AliESDv0 v0(*v);
+        v0.ChangeMassHypothesis(kLambda0Bar); //the v0 must be anti-Lambda
+        if (TMath::Abs(v0.GetEffMass()-massLambda)>fCascadeVertexerSels[2]) continue;
+        
+        for (Int_t j=0; j<ntr; j++) {//loop on tracks
+            Int_t bidx=trk[j];
+            if (bidx==v0.GetIndex(1)) continue; //Bo:  consistency 1 for pos
+            
+            AliESDtrack *btrk=event->GetTrack(bidx);
+            Float_t lBachMassForTracking=btrk->GetMassForTracking();
+            
+            if (btrk->GetSign()<0) continue;  // bachelor's charge
+            
+            AliESDv0 *pv0=&v0;
+            AliExternalTrackParam bt(*btrk);
+            if(fkUseOptimalTrackParamsBachelor) {
+                //Look for a better bachelor description, please
+                //reroute to pointers obtained with on-the-fly finding
+                map<pair<int,int>, int>::iterator iter = fOTFMap.find(make_pair(v->GetNindex(),bidx));
+                if(iter != fOTFMap.end())
+                {
+                    Int_t lEquivalentOTFV0 = (*iter).second; // or iter->second;
+                    AliESDv0 *v0_otf = ((AliESDEvent*)event)->GetV0(lEquivalentOTFV0);
+                    if(!v0_otf){
+                        AliWarning(Form("Invalid V0 at position %i!", lEquivalentOTFV0));
+                        fHistV0OptimalTrackParamUseBachelor->Fill(2.5);
+                    }else{
+                        AliExternalTrackParam btimproved(*(v0_otf->GetParamP()));
+                        bt = btimproved;
+                        fHistV0OptimalTrackParamUseBachelor->Fill(1.5);
+                    }
+                }else{
+                    //OTF not available for this pair
+                    fHistV0OptimalTrackParamUseBachelor->Fill(0.5);
+                }
+            }
+            AliExternalTrackParam *pbt=&bt;
+            
+            Double_t dca=PropagateToDCA(pv0,pbt,event,b,lBachMassForTracking);
+            if (dca > fCascadeVertexerSels[4]) continue;
+            
+            //eta cut - test
+            if (TMath::Abs(pbt->Eta())>0.8 && fkExtraCleanup) continue;
+            
+            AliESDcascade cascade(*pv0,*pbt,bidx); //constucts a cascade candidate
+            //PH         if (cascade.GetChi2Xi() > fChi2max) continue;
+            
+            //Improve estimate of cascade decay position using uncertainties if requested to do so
+            if( fkDoCascadeRefit ) cascade.RefitCascade(pbt);
+            
+            Double_t x,y,z; cascade.GetXYZcascade(x,y,z); // Bo: bug correction
+            Double_t r2=x*x + y*y;
+            if (r2 > fCascadeVertexerSels[7]*fCascadeVertexerSels[7]) continue;   // condition on fiducial zone
+            if (r2 < fCascadeVertexerSels[6]*fCascadeVertexerSels[6]) continue;
+            
+            Double_t pxV0,pyV0,pzV0;
+            pv0->GetPxPyPz(pxV0,pyV0,pzV0);
+            if (x*pxV0+y*pyV0+z*pzV0 < 0) continue; //causality
+            
+            Double_t x1,y1,z1; pv0->GetXYZ(x1,y1,z1);
+            if (r2 > (x1*x1+y1*y1)) continue;
+            
+            if (cascade.GetCascadeCosineOfPointingAngle(xPrimaryVertex,yPrimaryVertex,zPrimaryVertex) < fCascadeVertexerSels[5]) continue; //condition on the cascade pointing angle
+            
+            //pre-select on pT
+            Double_t lXiMomX       = 0. , lXiMomY = 0., lXiMomZ = 0.;
+            Double_t lXiTransvMom  = 0. ;
+            cascade.GetPxPyPz( lXiMomX, lXiMomY, lXiMomZ );
+            lXiTransvMom      = TMath::Sqrt( lXiMomX*lXiMomX   + lXiMomY*lXiMomY );
             if(lXiTransvMom<fMinPtCascade) continue;
             if(lXiTransvMom>fMaxPtCascade) continue;
             
