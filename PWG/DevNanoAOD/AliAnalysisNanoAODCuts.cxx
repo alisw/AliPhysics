@@ -208,8 +208,8 @@ void AliNanoAODSimpleSetter::SetNanoAODHeader(const AliAODEvent* event, AliNanoA
 void AliNanoAODSimpleSetter::SetNanoAODTrack (const AliAODTrack * aodTrack, AliNanoAODTrack * nanoTrack) 
 {
   // Set custom variables in the special track
-  // 1. Cache the indexes
   
+  // Cache the indexes
   static Int_t kcstNSigmaTPCPi  = AliNanoAODTrackMapping::GetInstance()->GetVarIndex("cstNSigmaTPCPi");
   static Int_t kcstNSigmaTPCKa  = AliNanoAODTrackMapping::GetInstance()->GetVarIndex("cstNSigmaTPCKa");
   static Int_t kcstNSigmaTPCPr  = AliNanoAODTrackMapping::GetInstance()->GetVarIndex("cstNSigmaTPCPr");
