@@ -832,6 +832,13 @@ Bool_t AliMultSelectionCalibratorMC::Calibrate() {
                                     fitdata[iRun][iEst]->GetParameter(1),
                                     fitdata[iRun][iEst]->GetParameter(2));
                     lTempDef.ReplaceAll("ESTIMATOR",lTemporary.Data());
+                    
+                    //Trick: add anchor-point-like logic to avoid low-multiplicity issues
+                    if(fsels->GetEstimator(iEst)->GetUseAnchor()){
+                        lTempDef.Prepend(Form("%s>%.10f?",fsels->GetEstimator(iEst)->GetDefinition().Data(),fsels->GetEstimator(iEst)->GetAnchorPoint()));
+                        lTempDef.Append(":0.0");
+                    }
+                    
                     cout<<"================================================================================"<<endl;
                     cout<<" Quadratic fit print obtained for estimator "<<fsels->GetEstimator( iEst )->GetName()<<endl;
                     cout<<lTempDef.Data()<<endl;
@@ -901,6 +908,13 @@ Bool_t AliMultSelectionCalibratorMC::Calibrate() {
                                         fitdata[iRun][iEst]->GetParameter(1),
                                         fitdata[iRun][iEst]->GetParameter(2));
                         lTempDef.ReplaceAll("ESTIMATOR",lTemporary.Data());
+                        
+                        //Trick: add anchor-point-like logic to avoid low-multiplicity issues
+                        if(fsels->GetEstimator(iEst)->GetUseAnchor()){
+                            lTempDef.Prepend(Form("%s>%.10f?",fsels->GetEstimator(iEst)->GetDefinition().Data(),fsels->GetEstimator(iEst)->GetAnchorPoint()));
+                            lTempDef.Append(":0.0");
+                        }
+                        
                         cout<<"================================================================================"<<endl;
                         cout<<" Quadratic fit print obtained for estimator "<<fsels->GetEstimator( iEst )->GetName()<<endl;
                         cout<<lTempDef.Data()<<endl;
