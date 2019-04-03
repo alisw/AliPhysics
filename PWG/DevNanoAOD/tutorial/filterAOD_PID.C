@@ -1,5 +1,3 @@
-#include "../AddTaskNanoAODFilter.C"
-
 void filterAOD_PID()
 {
   AliAnalysisManager* mgr = new AliAnalysisManager("NanoAOD Filter", "NanoAOD filter for nanoAOD production");
@@ -13,10 +11,9 @@ void filterAOD_PID()
   mgr->SetOutputEventHandler(aodOutputHandler);
   
   // PID response
-  gROOT->LoadMacro("$ALICE_ROOT/ANALYSIS/macros/AddTaskPIDResponse.C");
-  AliAnalysisTaskPIDResponse* taskPID = AddTaskPIDResponse(kFALSE);
+  gInterpreter->ExecuteMacro("$ALICE_ROOT/ANALYSIS/macros/AddTaskPIDResponse.C");
   
-  AliAnalysisTaskNanoAODFilter* task = (AliAnalysisTaskNanoAODFilter*) AddTaskNanoAODFilter(0, kFALSE);
+  AliAnalysisTaskNanoAODFilter* task = (AliAnalysisTaskNanoAODFilter*) gInterpreter->ExecuteMacro("$ALICE_PHYSICS/PWG/DevNanoAOD/AddTaskNanoAODFilter.C(0, kFALSE)");
   task->AddSetter(new AliNanoAODSimpleSetter);
   
   // Event selection
