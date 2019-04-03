@@ -609,6 +609,7 @@ if(!MultSelection){
   Int_t V0MotherPdg, V0Daughter1Pdg, V0Daughter2Pdg;
   double recoRadius=0.;
   Double_t IPCorrected = 0.;
+  Double_t IPCorrectedChField = 0.;
   Int_t RunBin = ReturnRunBin(aodEvent->GetRunNumber());
 
   if(analyzeEvent)
@@ -658,19 +659,20 @@ if(!MultSelection){
           fExtraCuts->GetHFEImpactParameters((AliVTrack *)track,dcaxyD,dcaErr);
           IP = dcaxyD*track->Charge()*TMath::Sign(1.,aodEvent->GetMagneticField());
           GetCorrectedImpactParameter(aodEvent, track, vtx[2], IPCorrected);
-          if(centrality>=20.0 && centrality<=50.0) fIPData->Fill(track->Pt(), dcaxyD);
+          IPCorrectedChField = IPCorrected *track->Charge()*TMath::Sign(1.,aodEvent->GetMagneticField());
+          if(centrality>=20.0 && centrality<=50.0) fIPData->Fill(track->Pt(), IPCorrectedChField);
           if(track->Pt() > 0.5)
           {
             DeltaPhi->Fill(DPhi);
             if(DPhi < TMath::Pi()/4. || DPhi > TMath::Pi()*3./4.) // IP
             {
-              if(centrality>=20.0 && centrality<=40.0) fpTIP2040IP->Fill(track->Pt(), IPCorrected);
-              if(centrality>=30.0 && centrality<=50.0) fpTIP3050IP->Fill(track->Pt(), IPCorrected);
+              if(centrality>=20.0 && centrality<=40.0) fpTIP2040IP->Fill(track->Pt(), IPCorrectedChField);
+              if(centrality>=30.0 && centrality<=50.0) fpTIP3050IP->Fill(track->Pt(), IPCorrectedChField);
             }
             else
             {
-              if(centrality>=20.0 && centrality<=40.0) fpTIP2040OOP->Fill(track->Pt(), IPCorrected);
-              if(centrality>=30.0 && centrality<=50.0) fpTIP3050OOP->Fill(track->Pt(), IPCorrected);
+              if(centrality>=20.0 && centrality<=40.0) fpTIP2040OOP->Fill(track->Pt(), IPCorrectedChField);
+              if(centrality>=30.0 && centrality<=50.0) fpTIP3050OOP->Fill(track->Pt(), IPCorrectedChField);
             }
           }
         }
