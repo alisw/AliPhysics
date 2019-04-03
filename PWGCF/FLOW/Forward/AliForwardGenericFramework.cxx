@@ -59,7 +59,9 @@ void AliForwardGenericFramework::CumulantsAccumulate(TH2D& dNdetadphi, TList* ou
       Double_t weight = dNdetadphi.GetBinContent(etaBin, phiBin);
 
       if (!fSettings.use_primaries_fwd && !fSettings.esd){
-        if (dNdetadphi.GetBinContent(etaBin, 0) == 0 && detType == "forward") break;
+        if (!fSettings.mc){
+          if (dNdetadphi.GetBinContent(etaBin, 0) == 0 && detType == "forward") break;
+        }
       }
 
 
@@ -153,7 +155,7 @@ void AliForwardGenericFramework::CumulantsAccumulate(TH2D& dNdetadphi, TList* ou
         }
 
         if (doRefFlow){
-          if ((fSettings.etagap) && fabs(eta)<=fSettings.gap) continue;
+          if ((fSettings.etagap) && fabs(eta)<=fSettings.gap && fabs(eta)>3.5) continue;
 
           Double_t req[4] = {0.5, static_cast<Double_t>(n), static_cast<Double_t>(p), refEta};
           Double_t imq[4] = {-0.5, static_cast<Double_t>(n), static_cast<Double_t>(p), refEta};
