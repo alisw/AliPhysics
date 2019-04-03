@@ -776,13 +776,26 @@ void AliAnalysisTaskUPCforward::UserExec(Option_t *)
      -
      -
      - NEW: trigger class for the 2015 data.
-     - Strange enough, this very same code seems to work for 2015 data too,
-     - without their trigger classes!!!!
+     - The available classes in 2015 data were:
+     - CMUP10-B-NOPF-MUFAST,
+     - CMUP11-B-NOPF-MUFAST,
+     - CMUP13-B-NOPF-MUFAST,
+     - CTEST63-B-NOPF-MUFAST,
+     - CTEST64-B-NOPF-MUFAST.
+     - However, the CTESTs contain little to no data, so we
+     - can just skip on them...
+     - One thing I didn't know before, was that the CMUP11 trigger
+     - class is in common with the 2018 dataset!!
+     - This means that I could still obtain something
+     - even with this string request for the 2015 data...
+     -
    */
   TString trigger = fAOD->GetFiredTriggerClasses();
   if (    !(trigger.Contains("CMUP11-B-NOPF-MUFAST") ||
 	          trigger.Contains("CMUP26-B-NOPF-MUFAST") ||
-	          trigger.Contains("CMUP6-B-NOPF-MUFAST"))
+	          trigger.Contains("CMUP6-B-NOPF-MUFAST")  ||
+            trigger.Contains("CMUP10-B-NOPF-MUFAST") ||
+            trigger.Contains("CMUP13-B-NOPF-MUFAST")  )
           )  {
                     PostData(1, fOutputList);
                     return;
