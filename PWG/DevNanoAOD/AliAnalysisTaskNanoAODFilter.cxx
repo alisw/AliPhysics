@@ -56,6 +56,7 @@ AliAnalysisTaskNanoAODFilter::AliAnalysisTaskNanoAODFilter() // All data members
   fEvtCuts(0),
   fTrkCuts(0),
   fV0Cuts(0),
+  fCascadeCuts(0),
   fSaveCutsFlag(0),
   fInputArrayName(""),
   fOutputArrayName("")
@@ -71,18 +72,21 @@ AliAnalysisTaskNanoAODFilter::AliAnalysisTaskNanoAODFilter(const char *name, Boo
    fEvtCuts(0),
    fTrkCuts(0),
    fV0Cuts(0),
+   fCascadeCuts(0),
    fSaveCutsFlag(saveCutsFlag),
    fInputArrayName(""),
    fOutputArrayName("")
 
 {
+  // Constructor
+
   fReplicator = new AliNanoAODReplicator("NanoAODReplicator", "remove non interesting tracks, writes special tracks array tracks");
   
-  // Constructor
   if(fSaveCutsFlag) {
     DefineOutput(1, AliAnalysisCuts::Class());
     DefineOutput(2, AliAnalysisCuts::Class());
     DefineOutput(3, AliAnalysisCuts::Class());
+    DefineOutput(4, AliAnalysisCuts::Class());
   }
 }
 
@@ -108,6 +112,8 @@ void AliAnalysisTaskNanoAODFilter::UserCreateOutputObjects()
       PostData(2, fTrkCuts); 
     if (fV0Cuts)
       PostData(3, fV0Cuts);
+    if (fCascadeCuts)
+      PostData(4, fCascadeCuts);
   }
 }
 

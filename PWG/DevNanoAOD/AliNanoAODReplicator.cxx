@@ -28,8 +28,6 @@
 // Author: Michele Floris, michele.floris@cern.ch
 
 
-class AliESDv0;
-class AliESDVertex;
 class AliAODVertex;
 class AliAODRecoDecay;
 
@@ -44,12 +42,10 @@ class AliAODRecoDecay;
 #include "AliAnalysisCuts.h"
 #include "TF1.h"
 #include "AliExternalTrackParam.h"
-#include "AliESDv0.h"
 #include "AliAODv0.h"
 #include "AliPIDResponse.h"
 #include <iostream>
 #include <cassert>
-#include "AliESDtrack.h"
 #include "TObjArray.h"
 #include "AliAnalysisFilter.h"
 #include "AliNanoAODTrack.h"
@@ -64,9 +60,6 @@ class AliAODRecoDecay;
 #include "AliVTrack.h"
 #include "AliVertexerTracks.h"
 #include "AliKFVertex.h"
-#include "AliESDEvent.h"
-#include "AliESDVertex.h"
-#include "AliESDtrackCuts.h"
 #include "AliAODEvent.h"
 #include "AliAnalysisFilter.h"
 
@@ -86,6 +79,7 @@ AliNanoAODReplicator::AliNanoAODReplicator() :
 AliAODBranchReplicator(), 
   fTrackCuts(0), 
   fV0Cuts(0), 
+  fCascadeCuts(0), 
   fTracks(0x0), 
   fHeader(0x0), 
   fVertices(0x0), 
@@ -102,9 +96,11 @@ AliAODBranchReplicator(),
   fVzero(0x0),
   fAodZDC(0x0),
   fV0s(0x0),
+  fCascades(0x0),
   fSaveZDC(0),
   fSaveVzero(0),
   fSaveV0s(0),
+  fSaveCascades(kFALSE),
   fInputArrayName(""),
   fOutputArrayName("tracks")
   {
@@ -115,6 +111,7 @@ AliNanoAODReplicator::AliNanoAODReplicator(const char* name, const char* title) 
   AliAODBranchReplicator(name,title), 
   fTrackCuts(0), 
   fV0Cuts(0), 
+  fCascadeCuts(0), 
   fTracks(0x0), 
   fHeader(0x0), 
   fVertices(0x0), 
@@ -131,9 +128,11 @@ AliNanoAODReplicator::AliNanoAODReplicator(const char* name, const char* title) 
   fVzero(0x0),
   fAodZDC(0x0),
   fV0s(0x0),
+  fCascades(0x0),
   fSaveZDC(0),
   fSaveVzero(0),
   fSaveV0s(0),
+  fSaveCascades(kFALSE),
   fInputArrayName(""),
   fOutputArrayName("tracks")
 {
@@ -424,7 +423,7 @@ TList* AliNanoAODReplicator::GetList() const
       fList->SetOwner(kTRUE);
 
       fTracks = new TClonesArray("AliNanoAODTrack");
-      fTracks->SetName(fOutputArrayName.Data()); // TODO: consider the possibility to use a different name to distinguish in AliAODEvent
+      fTracks->SetName(fOutputArrayName.Data());
       fList->Add(fTracks);
 
       Int_t numberOfHeaderParam = 0;
@@ -451,20 +450,26 @@ TList* AliNanoAODReplicator::GetList() const
       fHeader->SetName("header"); // TODO: consider the possibility to use a different name to distinguish in AliAODEvent
       fList->Add(fHeader);    
         
-      if(fSaveVzero==1){
+      if(fSaveVzero){
           fVzero = new AliAODVZERO();
           fList->Add(fVzero);
       }
         
-      if(fSaveZDC==1){
+      if(fSaveZDC){
           fAodZDC = new AliAODZDC();
           fList->Add(fAodZDC);
       }
 
-      if(fSaveV0s==1){
+      if(fSaveV0s){
           fV0s = new TClonesArray("AliAODv0",2);
           fV0s->SetName("v0s");
           fList->Add(fV0s);
+      }
+      
+      if(fSaveCascades){
+          fCascades = new TClonesArray("AliAODcascade",2);
+          fCascades->SetName("cascades");
+          fList->Add(fCascades);
       }
 
       fVertices = new TClonesArray("AliAODVertex",2);
@@ -495,6 +500,9 @@ void AliNanoAODReplicator::ReplicateAndFilter(const AliAODEvent& source)
   
   if (fV0s)
     fV0s->Clear("C");
+    
+  if (fCascades)
+    fCascades->Clear("C");
   
   if (fMCMode > 0){
     if(!fMCHeader) {
@@ -565,7 +573,7 @@ void AliNanoAODReplicator::ReplicateAndFilter(const AliAODEvent& source)
       *fVzero = *vzeroAOD;
   }
   
-  if(fSaveZDC==1){
+  if(fSaveZDC){
       fAodZDC->Clear("C");
       AliAODZDC *aodZDC(0x0);
       aodZDC = static_cast<AliAODZDC*>(source.GetZDCData());
@@ -573,7 +581,7 @@ void AliNanoAODReplicator::ReplicateAndFilter(const AliAODEvent& source)
       
   }
 
-  if(fSaveV0s==1){
+  if(fSaveV0s){
     TIter nextV(source.GetV0s());
     AliAODv0* v;
     Int_t nvertices = 0;
@@ -587,6 +595,20 @@ void AliNanoAODReplicator::ReplicateAndFilter(const AliAODEvent& source)
     }
     // Printf("n(tracks) = %d n(V0) = %d -> %d", source.GetNumberOfTracks(), source.GetNumberOfV0s(), nvertices);
   }
+  
+  if (fSaveCascades) {
+    TIter nextC(const_cast<AliAODEvent&>(source).GetCascades());
+    AliAODcascade* cascade;
+    Int_t n = 0;
+    while ( ( cascade = static_cast<AliAODcascade*>(nextC()) ) )
+    {
+      if (fCascadeCuts && !fCascadeCuts->IsSelected(v))
+        continue;
+      AliAODcascade* tmp = (AliAODcascade*) cascade->Clone();
+      new((*fCascades)[n++]) AliAODcascade(*tmp);
+      delete tmp;
+    }
+  }  
   
   AliDebug(1,Form("input mu tracks=%d tracks=%d vertices=%d",
                   input,fTracks->GetEntries(),fVertices->GetEntries())); 

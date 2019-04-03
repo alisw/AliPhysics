@@ -102,4 +102,10 @@ void  AliAnalysisTaskNanoSimple::UserExec(Option_t */*option*/)
     for (int i = 0; i < aod->GetNumberOfV0s(); i++)
       Printf("V0 %d: dca = %f", i, aod->GetV0(i)->DcaV0ToPrimVertex());
   }
+
+  // cascade access - as usual
+  if (aod->GetCascades()) {
+    for (int i = 0; i < aod->GetNumberOfCascades(); i++)
+      Printf("Cascade %d: xi mass = %f", i, aod->GetCascade(i)->MassXi());
+  }
 }

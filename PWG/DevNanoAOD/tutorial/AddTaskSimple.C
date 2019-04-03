@@ -1,4 +1,4 @@
-AliAnalysisTask* AddTaskSimple(const char* containerName = "")
+AliAnalysisTaskSE* AddTaskSimple(const char* containerName = "")
 {
   // Get the pointer to the existing analysis manager via the static access method.
   //==============================================================================
