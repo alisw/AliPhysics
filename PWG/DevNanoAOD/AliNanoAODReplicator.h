@@ -75,19 +75,17 @@ class AliNanoAODReplicator : public AliAODBranchReplicator
   
   void SetTrackCuts(AliAnalysisCuts* cuts) { fTrackCuts = cuts; }
   void SetV0Cuts(AliAnalysisCuts* cuts) { fV0Cuts = cuts; }
+  void SetCascadeCuts(AliAnalysisCuts* cuts) { fCascadeCuts = cuts; }
 
   void AddCustomSetter(AliNanoAODCustomSetter * var) { fCustomSetters.push_back(var);  }
     
-  void SetSaveVzero(Int_t b)  { fSaveVzero = b; }
-  void SetSaveZDC(Int_t b)    { fSaveZDC = b; }
-  void SetSaveV0s(Int_t b)    { fSaveV0s = b; }
+  void SetSaveVzero(Bool_t b)  { fSaveVzero = b; }
+  void SetSaveZDC(Bool_t b)    { fSaveZDC = b; }
+  void SetSaveV0s(Bool_t b)    { fSaveV0s = b; }
+  void SetSaveCascades(Bool_t b) { fSaveCascades = b; }
+  
   void SetMCMode(Int_t mode)  { fMCMode = mode; }
   
-  Int_t GetSaveVzero() { return fSaveVzero; }
-  Int_t GetSaveZDC()   { return fSaveZDC; }
-  Int_t GetSaveV0s()   { return fSaveV0s; }
-  Int_t GetMCMode()    { return fMCMode; }
-
   void SetInputArrayName(TString name) {fInputArrayName=name;}
   void SetOutputArrayName(TString name) {fOutputArrayName=name;}
 
@@ -103,6 +101,7 @@ class AliNanoAODReplicator : public AliAODBranchReplicator
  
   AliAnalysisCuts* fTrackCuts; // decides which tracks to keep
   AliAnalysisCuts* fV0Cuts;    // decides which V0s to keep
+  AliAnalysisCuts* fCascadeCuts; // decides which cascades to keep
   
   mutable TClonesArray* fTracks; //! internal array of arrays of NanoAOD tracks
   mutable AliNanoAODHeader* fHeader; //! internal array of headers
@@ -127,10 +126,12 @@ class AliNanoAODReplicator : public AliAODBranchReplicator
   mutable AliAODVZERO* fVzero; //! internal array of AliAODVZEROs
   mutable AliAODZDC* fAodZDC; //! internal array of AliAODZDCs
   mutable TClonesArray* fV0s;    //! internal array of AliAODv0
+  mutable TClonesArray* fCascades;    //! internal array of AliAODcascade
     
-  Int_t fSaveZDC;    // if kTRUE AliAODZDC will be saved in AliAODEvent
-  Int_t fSaveVzero;  // if kTRUE AliAODVZERO will be saved in AliAODEvent
-  Int_t fSaveV0s;    // if kTRUE AliAODv0 will be saved in AliAODEvent
+  Bool_t fSaveZDC;    // if kTRUE AliAODZDC will be saved in AliAODEvent
+  Bool_t fSaveVzero;  // if kTRUE AliAODVZERO will be saved in AliAODEvent
+  Bool_t fSaveV0s;    // if kTRUE AliAODv0 will be saved in AliAODEvent
+  Bool_t fSaveCascades; // if kTRUE AliAODcascade will be saved in AliAODEvent
 
   TString fInputArrayName; // name of array if tracks are stored in a TObjectArray
   TString fOutputArrayName; // name of the output array, where the NanoAODTracks are stored
@@ -138,7 +139,7 @@ class AliNanoAODReplicator : public AliAODBranchReplicator
   AliNanoAODReplicator(const AliNanoAODReplicator&);
   AliNanoAODReplicator& operator=(const AliNanoAODReplicator&);
 
-  ClassDef(AliNanoAODReplicator, 5) // Branch replicator for ESD to muon AOD.
+  ClassDef(AliNanoAODReplicator, 6) // Branch replicator for ESD to muon AOD.
 };
 
 #endif

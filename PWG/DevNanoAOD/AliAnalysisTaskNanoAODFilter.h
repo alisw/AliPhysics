@@ -50,6 +50,7 @@ public:
   void  SaveVzero(Bool_t var)                             { fReplicator->SetSaveVzero(var); }
   void  SaveZDC(Bool_t var)                               { fReplicator->SetSaveZDC(var); }
   void  SaveV0s(Bool_t var, AliAnalysisCuts* v0Cuts = 0)  { fReplicator->SetSaveV0s(var); fV0Cuts = v0Cuts; fReplicator->SetV0Cuts(v0Cuts); }
+  void  SaveCascades(Bool_t var, AliAnalysisCuts* cuts = 0) { fReplicator->SetSaveCascades(var); fCascadeCuts = cuts; fReplicator->SetCascadeCuts(cuts); }
   
   AliNanoAODReplicator* GetReplicator() { return fReplicator; }
 
@@ -62,7 +63,8 @@ protected:
 
   AliAnalysisCuts * fEvtCuts; // Event cuts
   AliAnalysisCuts * fTrkCuts; // Track cuts
-  AliAnalysisCuts * fV0Cuts; // Track cuts
+  AliAnalysisCuts * fV0Cuts; // V0 cuts
+  AliAnalysisCuts * fCascadeCuts; // Cascade cuts
 
   Bool_t fSaveCutsFlag; // If true, the event and track cuts are saved to disk. Can only be set in the constructor.
 
@@ -72,7 +74,7 @@ protected:
   AliAnalysisTaskNanoAODFilter(const AliAnalysisTaskNanoAODFilter&); // not implemented
   AliAnalysisTaskNanoAODFilter& operator=(const AliAnalysisTaskNanoAODFilter&); // not implemented
 
-  ClassDef(AliAnalysisTaskNanoAODFilter, 6); // Nano AOD Filter Task
+  ClassDef(AliAnalysisTaskNanoAODFilter, 7); // Nano AOD Filter Task
 };
 
 #endif

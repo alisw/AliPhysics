@@ -7,7 +7,8 @@ void runOnNano()
   mgr->SetInputEventHandler(iH);
 
   gROOT->LoadMacro("AddTaskSimple.C");
-  AliAnalysisTask* task = AddTaskSimple();
+  AliAnalysisTaskSE* task = AddTaskSimple();
+  task->SelectCollisionCandidates(AliVEvent::kINT7);
   
   mgr->InitAnalysis();
   mgr->PrintStatus();
