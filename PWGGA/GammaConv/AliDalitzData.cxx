@@ -29,19 +29,18 @@ ClassImp( AliDalitzData )
         {
         fAODEvent=lAODEvent;
     };
-    
-        AliDalitzData::~AliDalitzData(){
-        }
-    
-     AliDalitzAODESD* AliDalitzData::GetTrack(Int_t i){
+    AliDalitzData::~AliDalitzData(){}
+
+      AliDalitzAODESD* AliDalitzData::GetTrack(Int_t i){
          if (fIsESD==kTRUE){
-                AliDalitzAODESD* esdtrack= new AliDalitzAODESD((AliESDtrack*)fESDEvent->GetTrack(i));
+                AliDalitzAODESD* esdtrack = new AliDalitzAODESD((AliESDtrack*)fESDEvent->GetTrack(i));
                 esdtrack->ComputeImpactParameter();
                 return esdtrack;}
          else { AliDalitzAODESD* aodtrack= new AliDalitzAODESD((AliAODTrack*)fAODEvent->GetTrack(i));
                 aodtrack->ComputeImpactParameter(fAODEvent->GetPrimaryVertex(),fAODEvent->GetMagneticField());
                 return aodtrack;}
      }
+
     Int_t AliDalitzData::GetNumberOfTracks(){
          if (fIsESD==kTRUE) return fESDEvent->GetNumberOfTracks();
          else return fAODEvent->GetNumberOfTracks();

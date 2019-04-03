@@ -504,7 +504,7 @@ Bool_t AliConversionMesonCuts::MesonIsSelectedAODMC(AliAODMCParticle *MCMother,T
 }
 
 //________________________________________________________________________
-Bool_t AliConversionMesonCuts::MesonIsSelectedMCAODESD(AliDalitzAODESDMC *fMCMother,AliDalitzEventMC *mcEvent, Double_t fRapidityShift){
+Bool_t AliConversionMesonCuts::MesonIsSelectedMCAODESD(AliDalitzAODESDMC *fMCMother,AliDalitzEventMC *mcEvent, Double_t fRapidityShift) const{
 // Returns true for all pions within acceptance cuts for decay into 2 photons
 // If bMCDaughtersInAcceptance is selected, it requires in addition that both daughter photons are within acceptance cuts
     if(!mcEvent)return kFALSE;
@@ -527,8 +527,8 @@ Bool_t AliConversionMesonCuts::MesonIsSelectedMCAODESD(AliDalitzAODESDMC *fMCMot
         // Select only -> 2y decay channel
         if(fMCMother->GetNDaughtersG()!=2)return kFALSE;
         if((fMCMother->GetLastDaughterG()<0) || (fMCMother->GetFirstDaughterG()<0)) return kFALSE;
-            AliDalitzAODESDMC *MDaughter0=mcEvent->Particle(fMCMother->GetFirstDaughterG());
-            AliDalitzAODESDMC *MDaughter1=mcEvent->Particle(fMCMother->GetLastDaughterG());
+            std::unique_ptr<AliDalitzAODESDMC> MDaughter0=std::unique_ptr<AliDalitzAODESDMC>(mcEvent->Particle(fMCMother->GetFirstDaughterG()));
+            std::unique_ptr<AliDalitzAODESDMC> MDaughter1=std::unique_ptr<AliDalitzAODESDMC>(mcEvent->Particle(fMCMother->GetLastDaughterG()));
         if ((MDaughter0->GetPdgCodeG()!=22) || (MDaughter1->GetPdgCodeG()!=22)) return kFALSE;
             return kTRUE;
     }
@@ -653,7 +653,7 @@ Bool_t AliConversionMesonCuts::MesonIsSelectedAODMCDalitz(AliAODMCParticle *fMCM
 }
 
 //________________________________________________________________________
- Bool_t AliConversionMesonCuts::MesonIsSelectedMCDalitzAODESD(AliDalitzAODESDMC *fMCMother,AliDalitzEventMC *mcEvent, Int_t &labelelectron, Int_t &labelpositron, Int_t &labelgamma, Double_t fRapidityShift){
+ Bool_t AliConversionMesonCuts::MesonIsSelectedMCDalitzAODESD(AliDalitzAODESDMC* fMCMother,AliDalitzEventMC *mcEvent, Int_t &labelelectron, Int_t &labelpositron, Int_t &labelgamma, Double_t fRapidityShift) const{
 // Returns true for all pions within acceptance cuts for decay into 2 photons
 // If bMCDaughtersInAcceptance is selected, it requires in addition that both daughter photons are within acceptance cuts
     if( !mcEvent )return kFALSE;
@@ -680,30 +680,36 @@ Bool_t AliConversionMesonCuts::MesonIsSelectedAODMCDalitz(AliAODMCParticle *fMCM
     // Select only -> Dalitz decay channel
     if( fMCMother->GetNDaughtersG() != 3 )return kFALSE;
 
-    AliDalitzAODESDMC *positron = 0x0;
-    AliDalitzAODESDMC *electron = 0x0;
-    AliDalitzAODESDMC    *gamma = 0x0;
-
+    AliDalitzAODESDMC* positron;
+    AliDalitzAODESDMC* electron;
+    AliDalitzAODESDMC* gamma;
+//NOTE Working Now!!
     for(Int_t index= fMCMother->GetFirstDaughterG();index<= fMCMother->GetLastDaughterG();index++){
         if(index < 0) continue;
-        AliDalitzAODESDMC* temp = mcEvent->Particle(index);
+        std::unique_ptr<AliDalitzAODESDMC> temp = std::unique_ptr<AliDalitzAODESDMC>(mcEvent->Particle(index));
         //TParticle* temp = (TParticle*)mcEvent->Particle( index );
         switch( temp->GetPdgCodeG() ) {
-        case ::kPositron:
-            positron      =  temp;
-            labelpositron = index;
+        case ::kPositron:{
+           // std::unique_ptr<AliDalitzAODESDMC> positron = std::make_unique<AliDalitzAODESDMC>(*temp);
+          //  auto positron      =  std::make_shared(temp);
+            //auto positron = std::move(temp);
+           // flagpositron=kTRUE
+              positron      =  temp.get();
+            labelpositron = index; }
             break;
-        case ::kElectron:
-            electron      =  temp;
-            labelelectron = index;
+        case ::kElectron:{
+            electron      =  temp.get();
+          //  std::unique_ptr<AliDalitzAODESDMC> electron = std::make_unique<AliDalitzAODESDMC>(*temp);
+      //   auto electron      =  std::move(temp);
+            labelelectron = index;}
             break;
-        case ::kGamma:
-            gamma         =  temp;
-            labelgamma    = index;
+        case ::kGamma:{
+            gamma         =  temp.get();
+            labelgamma    = index;}
             break;
         }
     }
-    if( positron && electron && gamma) return kTRUE;
+   // if( positron.get() && electron.get() && gamma.get()) return kTRUE;
     return kFALSE;
 }
 //________________________________________________________________________
@@ -1322,7 +1328,7 @@ Bool_t AliConversionMesonCuts::MesonIsSelectedAODMCChiC(AliAODMCParticle *fMCMot
 }
 
 //________________________________________________________________________
-Bool_t AliConversionMesonCuts::MesonIsSelectedMCChiCAODESD(AliDalitzAODESDMC *fMCMother,AliDalitzEventMC *mcEvent,Int_t & labelelectronChiC, Int_t & labelpositronChiC, Int_t & labelgammaChiC, Double_t fRapidityShift){
+Bool_t AliConversionMesonCuts::MesonIsSelectedMCChiCAODESD(AliDalitzAODESDMC* fMCMother,AliDalitzEventMC *mcEvent,Int_t & labelelectronChiC, Int_t & labelpositronChiC, Int_t & labelgammaChiC, Double_t fRapidityShift) const{
 // Returns true for all ChiC within acceptance cuts for decay into JPsi + gamma -> e+ + e- + gamma
 // If bMCDaughtersInAcceptance is selected, it requires in addition that both daughter photons are within acceptance cuts
     if(!mcEvent)return kFALSE;
@@ -1349,43 +1355,43 @@ Bool_t AliConversionMesonCuts::MesonIsSelectedMCChiCAODESD(AliDalitzAODESDMC *fM
         // Select only -> ChiC radiative (JPsi+gamma) decay channel
         if(fMCMother->GetNDaughtersG()!=2)return kFALSE;
 
-            AliDalitzAODESDMC *jpsi   = 0x0;
-            AliDalitzAODESDMC *gamma   = 0x0;
-            AliDalitzAODESDMC *positron = 0x0;
-            AliDalitzAODESDMC *electron = 0x0;
+            AliDalitzAODESDMC* jpsi   ;
+            AliDalitzAODESDMC* gamma  ;
+            AliDalitzAODESDMC* positron ;
+            AliDalitzAODESDMC* electron ;
 
         //Int_t labeljpsiChiC = -1;
 
         for(Int_t index= fMCMother->GetFirstDaughterG();index<= fMCMother->GetLastDaughterG();index++){
             if(index < 0) continue;
-            AliDalitzAODESDMC* temp = mcEvent->Particle(index);
+            std::unique_ptr<AliDalitzAODESDMC> temp = std::unique_ptr<AliDalitzAODESDMC>(mcEvent->Particle(index));
             //TParticle* temp = (TParticle*)mcEvent->Particle( index );
 
             switch( temp->GetPdgCodeG() ) {
             case 443:
-                jpsi =  temp;
+                jpsi =  temp.get();
                 //labeljpsiChiC = index;
                 break;
             case 22:
-            gamma    =  temp;
+                gamma    =  temp.get();
             labelgammaChiC = index;
             break;
             }
         }
-    if ( !jpsi || ! gamma) return kFALSE;
+    if ( !jpsi || ! gamma ) return kFALSE;
     if(jpsi->GetNDaughtersG()!=2)return kFALSE;
 
     for(Int_t index= jpsi->GetFirstDaughterG();index<= jpsi->GetLastDaughterG();index++){
         if(index < 0) continue;
-        AliDalitzAODESDMC* temp = mcEvent->Particle(index);
+        std::unique_ptr<AliDalitzAODESDMC> temp = std::unique_ptr<AliDalitzAODESDMC>(mcEvent->Particle(index));
         //TParticle* temp = (TParticle*)mcEvent->Particle( index );
         switch( temp->GetPdgCodeG() ) {
         case -11:
-            electron =  temp;
+            electron = temp.get();
             labelelectronChiC = index;
         break;
         case 11:
-            positron =  temp;
+            positron =  temp.get();
             labelpositronChiC = index;
         break;
         }

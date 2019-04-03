@@ -1017,7 +1017,7 @@ Bool_t AliConversionPhotonCuts::PhotonIsSelectedAODMC(AliAODMCParticle *particle
 }
 
 ///________________________________________________________________________
-Bool_t AliConversionPhotonCuts::PhotonIsSelectedMCAODESD(AliDalitzAODESDMC *particle,AliDalitzEventMC *mcEvent,Bool_t checkForConvertedGamma){
+Bool_t AliConversionPhotonCuts::PhotonIsSelectedMCAODESD(AliDalitzAODESDMC* particle,AliDalitzEventMC *mcEvent,Bool_t checkForConvertedGamma) const{
 // MonteCarlo Photon Selection
     if(!mcEvent)return kFALSE;
     if (particle->GetPdgCodeG() == 22){
@@ -1032,25 +1032,25 @@ Bool_t AliConversionPhotonCuts::PhotonIsSelectedMCAODESD(AliDalitzAODESDMC *part
         }
         if(!checkForConvertedGamma) return kTRUE; // return in case of accepted gamma
         // looking for conversion gammas (electron + positron from pairbuilding (= 5) )
-        AliDalitzAODESDMC* ePos = NULL;
-        AliDalitzAODESDMC* eNeg = NULL;
+        std::unique_ptr<AliDalitzAODESDMC> ePos ;
+        std::unique_ptr<AliDalitzAODESDMC> eNeg;
         if(particle->GetNDaughtersG() >= 2){
         //      cout<<particle->GetNDaughtersG()<<endl;
             for(Int_t daughterIndex=particle->GetFirstDaughterG();daughterIndex<=particle->GetLastDaughterG();daughterIndex++){
                 if(daughterIndex<0) continue;
-                    AliDalitzAODESDMC *tmpDaughter = mcEvent->Particle(daughterIndex);
+                    std::unique_ptr<AliDalitzAODESDMC> tmpDaughter = std::unique_ptr<AliDalitzAODESDMC>(mcEvent->Particle(daughterIndex));
                     // cout<<tmpDaughter->GetPdgCodeG()<<endl;
                     //NOTE 8 Marzo problem here. never and ID 5
                     if(tmpDaughter->GetUniqueIDG() == 5){
                         if(tmpDaughter->GetPdgCodeG() == 11){
-                        eNeg = tmpDaughter;
+                        eNeg = std::unique_ptr<AliDalitzAODESDMC>(mcEvent->Particle(daughterIndex));
                     } else if(tmpDaughter->GetPdgCodeG() == -11){
-                    ePos = tmpDaughter;
+                    ePos = std::unique_ptr<AliDalitzAODESDMC>(mcEvent->Particle(daughterIndex));
                         }
                     }
             }
         }
-    if(ePos == NULL || eNeg == NULL){ // means we do not have two daughters from pair production
+    if(ePos.get() == NULL || eNeg.get() == NULL){ // means we do not have two daughters from pair production
         return kFALSE;
     }
     if( ePos->EtaG() > (fEtaCut) || ePos->EtaG() < (-fEtaCut) ||
