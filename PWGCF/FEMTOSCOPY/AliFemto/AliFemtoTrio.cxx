@@ -17,6 +17,18 @@ fTrack3type(kUnknown)
   
 }
 
+AliFemtoTrio::AliFemtoTrio(AliFemtoTrio& trio):
+fTrack1(trio.fTrack1),
+fTrack2(trio.fTrack2),
+fTrack3(trio.fTrack3),
+fTrack1type(trio.fTrack1type),
+fTrack2type(trio.fTrack2type),
+fTrack3type(trio.fTrack3type)
+{
+  
+}
+
+
 AliFemtoTrio::~AliFemtoTrio()
 {
 
@@ -100,3 +112,82 @@ double AliFemtoTrio::MInv31()
   double pz = p3.pz() + p1.pz();
   return sqrt(E*E-(px*px+py*py+pz*pz));
 }
+
+double AliFemtoTrio::GetTheta12()
+{
+  AliFemtoLorentzVector a = fTrack1->FourMomentum();
+  AliFemtoLorentzVector b = fTrack2->FourMomentum();
+  AliFemtoLorentzVector c = fTrack3->FourMomentum();
+  
+  AliFemtoLorentzVector r = a+b;
+  AliFemtoLorentzVector je = r+c;
+  
+  je.boost(r);
+  return r.Theta()-je.Theta();
+}
+
+double AliFemtoTrio::GetTheta23()
+{
+  AliFemtoLorentzVector a = fTrack2->FourMomentum();
+  AliFemtoLorentzVector b = fTrack3->FourMomentum();
+  AliFemtoLorentzVector c = fTrack1->FourMomentum();
+  
+  AliFemtoLorentzVector r = a+b;
+  AliFemtoLorentzVector je = r+c;
+  
+  je.boost(r);
+  return r.Theta()-je.Theta();
+}
+
+double AliFemtoTrio::GetTheta31()
+{
+  AliFemtoLorentzVector a = fTrack3->FourMomentum();
+  AliFemtoLorentzVector b = fTrack1->FourMomentum();
+  AliFemtoLorentzVector c = fTrack2->FourMomentum();
+  
+  AliFemtoLorentzVector r = a+b;
+  AliFemtoLorentzVector je = r+c;
+  
+  je.boost(r);
+  return r.Theta()-je.Theta();
+}
+
+double AliFemtoTrio::GetTheta1()
+{
+  AliFemtoLorentzVector a = fTrack2->FourMomentum();
+  AliFemtoLorentzVector b = fTrack3->FourMomentum();
+  AliFemtoLorentzVector c = fTrack1->FourMomentum();
+  
+  AliFemtoLorentzVector r = a+b;
+  AliFemtoLorentzVector je = r+c;
+  
+  je.boost(c);
+  return c.Theta()-je.Theta();
+}
+
+double AliFemtoTrio::GetTheta2()
+{
+  AliFemtoLorentzVector a = fTrack3->FourMomentum();
+  AliFemtoLorentzVector b = fTrack1->FourMomentum();
+  AliFemtoLorentzVector c = fTrack2->FourMomentum();
+  
+  AliFemtoLorentzVector r = a+b;
+  AliFemtoLorentzVector je = r+c;
+  
+  je.boost(c);
+  return c.Theta()-je.Theta();
+}
+
+double AliFemtoTrio::GetTheta3()
+{
+  AliFemtoLorentzVector a = fTrack1->FourMomentum();
+  AliFemtoLorentzVector b = fTrack2->FourMomentum();
+  AliFemtoLorentzVector c = fTrack3->FourMomentum();
+  
+  AliFemtoLorentzVector r = a+b;
+  AliFemtoLorentzVector je = r+c;
+  
+  je.boost(c);
+  return c.Theta()-je.Theta();
+}
+

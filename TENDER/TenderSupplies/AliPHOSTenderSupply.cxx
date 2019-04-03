@@ -819,7 +819,40 @@ Double_t AliPHOSTenderSupply::CorrectNonlinearity(Double_t en){
     return en*(fNonlinearityParams[0]+fNonlinearityParams[1]*TMath::Exp(-en*fNonlinearityParams[2]))*(1.+fNonlinearityParams[3]*TMath::Exp(-en*fNonlinearityParams[4]))*(1.+fNonlinearityParams[6]/(en*en+fNonlinearityParams[5])) ;
   }
   if(fNonlinearityVersion=="Run2"){
-     return (1.-0.08/(1.+en*en/0.055))*(0.03+6.65e-02*TMath::Sqrt(en)+en) ; ; 
+     return (1.-0.08/(1.+en*en/0.055))*(0.03+6.65e-02*TMath::Sqrt(en)+en) ; 
+  }
+  if(fNonlinearityVersion=="Run2MC"){ //Default for Run2 + some correction
+    return (1.-0.08/(1.+en*en/0.055))*(0.03+6.65e-02*TMath::Sqrt(en)+en)*fNonlinearityParams[0]*(1+fNonlinearityParams[1]/(1.+en*en/fNonlinearityParams[2]/fNonlinearityParams[2])) ;
+  }
+  if(fNonlinearityVersion=="Run2Tune"){ //Improved Run2 tune
+    if(en<=0.) return 0.;   
+    const Double_t x0=5.17 ;
+    const Double_t a= 1.02165   ; 
+    const Double_t b=-2.548e-01 ; 
+    const Double_t c= 6.483e-01 ;     
+    const Double_t d=-4.775e-01 ;    
+    const Double_t e= 1.205e-01 ;
+    const Double_t beta= b+2.*c/TMath::Sqrt(x0)+3.*d/x0+4.*e/x0/TMath::Sqrt(x0) ;
+    const Double_t alpha = a+b/TMath::Sqrt(x0)+c/x0+d/x0/TMath::Sqrt(x0)+e/(x0*x0)-beta/TMath::Sqrt(x0) ;
+    if(en<x0){
+      return 1.02384*(a*en+b*TMath::Sqrt(en)+c+d/TMath::Sqrt(en)+e/en) ;
+    }
+    else{
+      return 1.02384*(alpha*en+beta*TMath::Sqrt(en)) ;  
+    }
+  }
+  if(fNonlinearityVersion=="Run2TuneMC"){ //Improved Run2 tune for MC
+    if(en<=0.) return 0.;
+
+    const Double_t p0 = 1.04397;
+    const Double_t p1 = 0.512307;
+    const Double_t p2 = 0.133812;
+    const Double_t p3 = -0.150093;
+    const Double_t p4 = -0.455062;
+
+    const Double_t Nonlin = p0+p1/en+p2/en/en+p3/TMath::Sqrt(en)+p4/en/TMath::Sqrt(en);
+
+    return en * Nonlin;
   }
 
   return en ;

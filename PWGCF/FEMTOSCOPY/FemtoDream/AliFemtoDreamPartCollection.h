@@ -20,21 +20,35 @@
 class AliFemtoDreamPartCollection {
  public:
   AliFemtoDreamPartCollection();
-  AliFemtoDreamPartCollection(AliFemtoDreamCollConfig *conf);
+  AliFemtoDreamPartCollection(const AliFemtoDreamPartCollection& coll);
+  AliFemtoDreamPartCollection(AliFemtoDreamCollConfig *conf,
+                              bool MinimalBooking);
+  AliFemtoDreamPartCollection& operator=(
+      const AliFemtoDreamPartCollection& coll);
   virtual ~AliFemtoDreamPartCollection();
   void SetEvent(std::vector<std::vector<AliFemtoDreamBasePart>> &Particles,
-                double ZVtx,double Mult);
-  void PrintEvent(int ZVtx,int Mult);
-  TList* GetHistList(){return fResults->GetHistList();};
-  TList* GetQAList(){return fResults->GetQAHists();};
+                float ZVtx, float Mult, float cent);
+  void PrintEvent(int ZVtx, int Mult);
+  TList* GetHistList() {
+    return fResults->GetHistList();
+  }
+  ;
+  TList* GetQAList() {
+    return fResults->GetQAHists();
+  }
+  ;
+  TString ClassName() {
+    return "ParticleCollection";
+  }
+  ;
  private:
-  void FindBin(double ZVtxPos,double Multiplicity,int *returnBins);
+  void FindBin(float ZVtxPos, float Multiplicity, int *returnBins);
   AliFemtoDreamCorrHists *fResults;
   unsigned int fNSpecies;
   std::vector<std::vector<AliFemtoDreamZVtxMultContainer>> fZVtxMultBuffer;
-  std::vector<double> fValuesZVtxBins;
-  std::vector<int> fValuesMultBins;
-  ClassDef(AliFemtoDreamPartCollection,1);
+  std::vector<float> fValuesZVtxBins;
+  std::vector<int> fValuesMultBins;ClassDef(AliFemtoDreamPartCollection,2)
+  ;
 };
 
 #endif /* ALIFEMTODREAMPARTCOLLECTION_H_ */

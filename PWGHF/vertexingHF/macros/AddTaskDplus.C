@@ -33,7 +33,7 @@ AliAnalysisTaskSEDplus *AddTaskDplus(Int_t system=0/*0=pp,1=PbPb*/,
   } else {
       filecuts=TFile::Open(filename.Data());
       if(!filecuts ||(filecuts&& !filecuts->IsOpen())){
-	AliFatal("Input file not found : check your cut object");
+	::Fatal("AddTaskDplus", "Input file not found : check your cut object");
       }
   }
 
@@ -129,9 +129,9 @@ AliAnalysisTaskSEDplus *AddTaskDplus(Int_t system=0/*0=pp,1=PbPb*/,
   AliAnalysisDataContainer *coutputDplusNorm = mgr->CreateContainer(normname,AliNormalizationCounter::Class(),
 								AliAnalysisManager::kOutputContainer,
 								outputfile.Data());
-
+  AliAnalysisDataContainer *coutputDplus2 = 0x0; 
   if(storeNtuple){
-    AliAnalysisDataContainer *coutputDplus2 = mgr->CreateContainer(ntuplename,TNtuple::Class(),
+    coutputDplus2 = mgr->CreateContainer(ntuplename,TNtuple::Class(),
 								   AliAnalysisManager::kOutputContainer,
 								   outputfile.Data());
 

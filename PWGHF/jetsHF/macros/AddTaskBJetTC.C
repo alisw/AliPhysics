@@ -9,10 +9,15 @@ AliAnalysisTaskBJetTC* AddTaskBJetTC(
 		const char *taskname           	= "AliAnalysisTaskBJetTC",
 		const char *njetsMC             = "Jets",
 		const char *nrhoMC              = "RhoMC",
-		Bool_t V0PhotonRejection 	= kFALSE,
+		Bool_t DoSVAnalysis		= kFALSE,
 		Bool_t DoPtRelAna		= kFALSE,
 		Bool_t DoJetProb 		= kFALSE,
 		TString pathToResolFunc		= "",
+		TString pathToResolFuncb	= "",
+		TString pathToResolFuncc	= "",
+		TString pathToResolFunclf	= "",
+		Bool_t V0PhotonRejection 	= kFALSE,
+		TString cutnumberAODBranch 	= "",  // cutnumber for AOD branch
   		Int_t       ptHardBin           = -999,
 		const char* suffix 		= "")
 {
@@ -37,19 +42,17 @@ AliAnalysisTaskBJetTC* AddTaskBJetTC(
 	}
 
 
-
+	TString V0ReaderName = "";
   	if(V0PhotonRejection){
 
 		  //=========  Set Cutnumber for V0Reader ================================
-		  TString cutnumberAODBranch = "8000000060084000001500000";  // cutnumber for AOD branch
-		  //TString cutnumberAODBranch = "00000003_06000008400100001000000000";  // cutnumber for AOD branch
 		  TString cutnumberPhoton = "10000029200000003220400000";
 		  TString cutnumberEvent = "80010103";
 
 		  Bool_t doEtaShift = kFALSE;
 		  AliAnalysisDataContainer *cinput = mgr->GetCommonInputContainer();
 		  //========= Add V0 Reader to  ANALYSIS manager if not yet existent =====
-		  TString V0ReaderName = Form("V0ReaderV1_%s_%s",cutnumberEvent.Data(),cutnumberPhoton.Data());
+		  V0ReaderName = Form("V0ReaderV1_%s_%s",cutnumberEvent.Data(),cutnumberPhoton.Data());
 		  if( !(AliV0ReaderV1*)mgr->GetTask(V0ReaderName.Data()) ){
 			AliV0ReaderV1 *fV0ReaderV1 = new AliV0ReaderV1(V0ReaderName.Data());
 		    fV0ReaderV1->SetUseOwnXYZCalculation(kTRUE);
@@ -57,14 +60,14 @@ AliAnalysisTaskBJetTC* AddTaskBJetTC(
 		    fV0ReaderV1->SetUseAODConversionPhoton(kTRUE);
 		    if (!mgr) {
 		      Error("AddTask_V0ReaderV1", "No analysis manager found.");
-		      return;
+		      return NULL;
 		    }
 
 		    AliConvEventCuts *fEventCuts=NULL;
 		    if(cutnumberEvent!=""){
 		      fEventCuts= new AliConvEventCuts(cutnumberEvent.Data(),cutnumberEvent.Data());
 		      fEventCuts->SetPreSelectionCutFlag(kTRUE);
-		      fEventCuts->SetPeriodEnumExplicit(AliConvEventCuts::kLHC16q);
+		      fEventCuts->SetPeriodEnumExplicit(AliConvEventCuts::kLHC16qt);
 		      fEventCuts->SetV0ReaderName(V0ReaderName);
 		      fEventCuts->SetLightOutput(kTRUE);
 		      if(fEventCuts->InitializeCutsFromCutString(cutnumberEvent.Data())){
@@ -172,6 +175,9 @@ AliAnalysisTaskBJetTC* AddTaskBJetTC(
 
 	jetTask->SetIsPythia(isMC);
 
+	jetTask->SetDoSVAnalysis(DoSVAnalysis);
+	jetTask->SetDoTCAnalysis(kTRUE);
+
         if(V0PhotonRejection) jetTask->SetV0ReaderName(V0ReaderName);
 
 
@@ -181,6 +187,18 @@ AliAnalysisTaskBJetTC* AddTaskBJetTC(
 		for(int i=0; i<7; i++){
 			jetTask->SetResFunction((TF1*)file->Get(Form("QualityClass%i",i)), i);
 		}
+
+		if(isMC){
+			TFile* fileb = TFile::Open(pathToResolFuncb.Data());
+			TFile* filec = TFile::Open(pathToResolFuncc.Data());
+			TFile* filelf = TFile::Open(pathToResolFunclf.Data());
+
+			for(int i=0; i<7; i++){
+				jetTask->SetResFunctionb((TF1*)fileb->Get(Form("QualityClass%i",i)), i);
+				jetTask->SetResFunctionc((TF1*)filec->Get(Form("QualityClass%i",i)), i);
+				jetTask->SetResFunctionlf((TF1*)filelf->Get(Form("QualityClass%i",i)), i);
+			}
+		}
 	}
 
 	//-------------------------------------------------------
@@ -188,7 +206,6 @@ AliAnalysisTaskBJetTC* AddTaskBJetTC(
 	//-------------------------------------------------------
 
 	mgr->AddTask(jetTask);
-
 
 	// Create containers for input/output
 	AliAnalysisDataContainer *cinput1  = mgr->GetCommonInputContainer()  ;

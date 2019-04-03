@@ -17,7 +17,7 @@ class AliBalancePsi;
 class AliESDtrackCuts;
 class AliEventPoolManager;
 class AliAnalysisUtils;
-
+class AliPID;
 
 #include "AliAnalysisTaskSE.h"
 #include "AliBalancePsi.h"
@@ -28,18 +28,18 @@ class AliAnalysisUtils;
  
 //================================correction
 #define kCENTRALITY 101
-#define kNBRUN 100
+#define kNBRUN 200
 //const Double_t centralityArrayForPbPb[kCENTRALITY+1] = {0.,5.,10.,20.,30.,40.,50.,60.,70.,80.};
 //const TString centralityArrayForPbPb_string[kCENTRALITY] = {"0-5","5-10","10-20","20-30","30-40","40-50","50-60","60-70","70-80"};
 //================================correction
 
 class AliAnalysisTaskBFPsi : public AliAnalysisTaskSE {
  public:
-  enum etriggerSel{kMB, kCentral, kINT7, kppHighMult};
-  enum eCorrProcedure{kNoCorr, kDataDrivCorr, kMCCorr};
+  enum etriggerSel{kMB, kCentral15, kCentral18, kINT7, kppHighMult};
+  enum eCorrProcedure{kNoCorr, kDataDrivCorr, kMCCorr, kMC1DCorr};
   
   AliAnalysisTaskBFPsi(const char *name = "AliAnalysisTaskBFPsi");
-  virtual ~AliAnalysisTaskBFPsi(); 
+  virtual ~AliAnalysisTaskBFPsi();
    
   virtual void   UserCreateOutputObjects();
   virtual void   UserExec(Option_t *option);
@@ -69,13 +69,13 @@ class AliAnalysisTaskBFPsi : public AliAnalysisTaskSE {
   
   void SetCentralityArrayBins(Int_t nCentralityBins, Double_t *centralityArrayForCorrections){
     fCentralityArrayBinsForCorrections = nCentralityBins;
-    for (Int_t i=0; i<=nCentralityBins; i++)
+    for (Int_t i=0; i<=nCentralityBins-1; i++)
       fCentralityArrayForCorrections[i] = centralityArrayForCorrections[i];
   }
 
   void SetArrayRuns(Int_t nRuns, Int_t *runsArrayForCorrections){
     fTotalNbRun = nRuns;
-    for (Int_t i=0; i<=nRuns; i++)
+    for (Int_t i=0; i<=nRuns-1; i++)
       fRunNb[i] = runsArrayForCorrections[i];
   }
  
@@ -104,6 +104,7 @@ class AliAnalysisTaskBFPsi : public AliAnalysisTaskSE {
     fVyMax = vy;
     fVzMax = vz;
   }
+
 
   void SetRequireHighPtTrigger(Double_t gpTtrigger) {
     fRequireHighPtTrigger = kTRUE;
@@ -165,6 +166,18 @@ class AliAnalysisTaskBFPsi : public AliAnalysisTaskSE {
     fPDGCodeToBeAnalyzed = gPdgCode;
   }
 
+   void SetRejectInjectedSignals() {fExcludeInjectedSignals = kTRUE;}
+
+   void SetRejectInjectedSignalsGenName(TString genToBeKept) {
+    fGenToBeKept = genToBeKept; 
+    fRejectCheckGenName=kTRUE;
+    fExcludeInjectedSignals = kTRUE;
+  }
+
+  void SetUseNUADeep() {
+    fUseNUADeep = kTRUE;
+  }
+
   //Centrality
   void SetCentralityEstimator(const char* centralityEstimator) {fCentralityEstimator = centralityEstimator;}
   const char* GetCentralityEstimator(void)  const              {return fCentralityEstimator;}
@@ -202,14 +215,32 @@ class AliAnalysisTaskBFPsi : public AliAnalysisTaskSE {
   void CheckPileUp() {fCheckPileUp = kTRUE;}
   void CheckPrimaryFlagAOD() {fCheckPrimaryFlagAOD = kTRUE;}
   void UseMCforKinematics() {fUseMCforKinematics = kTRUE;}
+  void SetRebinnedCorrHistos() {fRebinCorrHistos = kTRUE;}
   void SetCentralityWeights(TH1* hist) { fCentralityWeights = hist; }
   Bool_t AcceptEventCentralityWeight(Double_t centrality);
 
   void SetUseAdditionalVtxCuts(Bool_t useAdditionalVtxCuts) {
     fUseAdditionalVtxCuts=useAdditionalVtxCuts;}
 
-  void SetUseOutOfBunchPileUpCutsLHC15o(Bool_t useOutOfBunchPileUpCuts) {
-    fUseOutOfBunchPileUpCutsLHC15o=useOutOfBunchPileUpCuts;}
+  void SetUseOutOfBunchPileUpCutsLHC15o(Bool_t useOutOfBunchPileUpCuts, Float_t slope=3.38, Float_t offset=15000) {
+    fCheckOutOfBunchPileUp = kTRUE;
+    fUseOOBPileUpCutsLHC15o = useOutOfBunchPileUpCuts;
+    fPileupLHC15oSlope = slope;
+    fPileupLHC15oOffset = offset;
+  }
+  
+  void SetUseOutOfBunchPileUpCutsLHC15oJpsi(Bool_t useOutOfBunchPileUpCutsJpsi){
+    fCheckOutOfBunchPileUp = kTRUE;
+    fUseOOBPileUpCutsLHC15oJpsi = useOutOfBunchPileUpCutsJpsi;
+  }
+
+  void SetUseOutOfBunchPileUpCutsLHC18onTPCclus(Bool_t useOutOfBunchPileUpCutsnTPCclus, Float_t slope = 2000.0, Float_t param1 = 0.013, Float_t param2 = 1.25e-9){
+    fCheckOutOfBunchPileUp = kTRUE;
+    fUseOOBPileUpCutsLHC18nTPCclus = useOutOfBunchPileUpCutsnTPCclus;
+    fOOBLHC18Slope = slope;
+    fOOBLHC18Par1 = param1;
+    fOOBLHC18Par2 = param2;
+  }
   
   void SetUseDetailedTrackQA(Bool_t useDetailedTracksQA) {
     fDetailedTracksQA=useDetailedTracksQA;}
@@ -231,8 +262,14 @@ class AliAnalysisTaskBFPsi : public AliAnalysisTaskSE {
 
   void SetUseNSigmaPID(Double_t gMaxNSigma) {
     fUsePID = kTRUE; fUsePIDPropabilities = kFALSE; fUsePIDnSigma = kTRUE;
-    fPIDNSigma = gMaxNSigma; }
-
+    fPIDNSigma = gMaxNSigma;} //not used at the moment. Values are hardcoded in the .cxx for the different species
+  
+  void SetUseNSigmaPIDNewTrial(Double_t gMaxNSigmaNewTrial) {
+        fUsePIDNewTrial = kTRUE; fUsePIDPropabilities = kFALSE; fUsePIDnSigma = kTRUE;
+        fPIDNSigma = gMaxNSigmaNewTrial;}
+    
+  void SetPIDMomCut(Float_t pidMomCut)  {fPIDMomCut = pidMomCut;} // pT threshold to move from TPC only and TPC+TOF for both methods: Bayes and nSigma Combined. usually 0.6 for pi and p and 0.4 for K.
+  
   void SetDetectorUsedForPID(kDetectorUsedForPID detConfig) {
     fPidDetectorConfig = detConfig;}
   void SetEventClass(TString receivedEventClass){
@@ -264,8 +301,8 @@ class AliAnalysisTaskBFPsi : public AliAnalysisTaskSE {
     }
 
     void SetVZEROCalibrationFile(const char* filename, const char* lhcPeriod);
-    void SetParticleOfInterest(kParticleOfInterest poi);
-
+    void SetParticleOfInterest(AliPID::EParticleType poi);
+    
 
  private:
   Double_t    IsEventAccepted(AliVEvent* event);
@@ -309,7 +346,7 @@ class AliAnalysisTaskBFPsi : public AliAnalysisTaskSE {
   TList *fListNUA;  //fList of TH3F for NUA run-by-run corrections
   TList *fListNUE;   //fList of TH1F for NUE run-by-run corrections
 
-  AliAnalysisTaskBFPsi::eCorrProcedure fCorrProcedure; 
+  AliAnalysisTaskBFPsi::eCorrProcedure fCorrProcedure;
 
   //defualt kFALSE to be switch on for old correction method
   
@@ -350,6 +387,10 @@ class AliAnalysisTaskBFPsi : public AliAnalysisTaskSE {
   TH3F *fHistEtaPhiPosCorr;//eta-phi pos particles after corrections  (QA histogram) 
   TH3F *fHistEtaPhiNeg;//eta-phi neg particles (QA histogram)
   TH3F *fHistEtaPhiNegCorr;//eta-phi neg particles after corrections (QA histogram)
+  TH3F *fHistEtaPhiVzPlus;//eta-phi-Vz pos particles (QA histogram)
+  TH3F *fHistEtaPhiVzMinus;//eta-phi-Vz neg particles (QA histogram)
+  TH3F *fHistEtaPhiVzPlusCorr;//eta-phi-Vz pos particles after corrections  (QA histogram)
+  TH3F *fHistEtaPhiVzMinusCorr;//eta-phi-Vz neg particles after corrections (QA histogram)
   TH2F *fHistPhiBefore;//phi before v2 afterburner (QA histogram)
   TH2F *fHistPhiAfter;//phi after v2 afterburner (QA histogram)
   TH2F *fHistPhiPos;//phi for positive particles (QA histogram)
@@ -358,14 +399,16 @@ class AliAnalysisTaskBFPsi : public AliAnalysisTaskSE {
   TH2F *fHistRefTracks;//reference track multiplicities (QA histogram)
   TH2F *fHistPhivZ;//phi vs Vz (QA histos) 
   TH2F *fHistEtavZ;//eta vs Vz (QA histos)
-
+  TH1F *fHistPdgMC;
+  TH1F *fHistPdgMCAODrec;//pdg code of accepted tracks in MCAODrec
   TH1F *fHistSphericity; //sphericity of accepted tracks
   TH2F *fHistMultiplicityVsSphericity; //multiplicity vs sphericity of accepted tracks
   TH2F *fHistMeanPtVsSphericity; //mean pT vs sphericity of accepted tracks
   TH1F *fHistSphericityAfter; //sphericity of accepted tracks
   TH2F *fHistMultiplicityVsSphericityAfter; //multiplicity vs sphericity of accepted tracks
   TH2F *fHistMeanPtVsSphericityAfter; //mean pT vs sphericity of accepted tracks
-
+  TH2F *fHistPhiNUADeep;
+    
   //============PID============//
   TH2D *fHistdEdxVsPTPCbeforePID;//TPC dEdx vs momentum before PID cuts (QA histogram)
   TH2D *fHistBetavsPTOFbeforePID;//beta vs momentum before PID cuts (QA histogram)
@@ -414,11 +457,12 @@ class AliAnalysisTaskBFPsi : public AliAnalysisTaskSE {
   AliPIDResponse *fPIDResponse;     //! PID response object
   AliPIDCombined       *fPIDCombined;     //! combined PID object
   
-  kParticleOfInterest  fParticleOfInterest;//analyzed particle
+  AliPID::EParticleType fParticleOfInterest;//analyzed particle
   kDetectorUsedForPID   fPidDetectorConfig;//used detector for PID
   Double_t fMassParticleOfInterest;//particle mass (for rapidity calculation) 
 
   Bool_t fUsePID; //flag to use PID 
+  Bool_t fUsePIDNewTrial;
   Bool_t fUsePIDnSigma;//flag to use nsigma method for PID
   Bool_t fUsePIDPropabilities;//flag to use probability method for PID
   Bool_t fUseRapidity;//flag to use rapidity instead of pseudorapidity in correlation histograms
@@ -430,6 +474,9 @@ class AliAnalysisTaskBFPsi : public AliAnalysisTaskSE {
   Double_t fElectronRejectionNSigma;//nsigma cut for electron rejection
   Double_t fElectronRejectionMinPt;//minimum pt for electron rejection (default = 0.)
   Double_t fElectronRejectionMaxPt;//maximum pt for electron rejection (default = 1000.)
+
+  Double_t fPIDMomCut; // pT value from which we switche from TPC only to TPC TOD PID (both nsigma and Bayes) 
+  
   //============PID============//
 
   AliESDtrackCuts *fESDtrackCuts; //ESD track cuts
@@ -457,17 +504,26 @@ class AliAnalysisTaskBFPsi : public AliAnalysisTaskSE {
   Bool_t fCheckPileUp;//Usage of the "Pile-Up" event check
   Bool_t fCheckPrimaryFlagAOD;// Usage of check on AliAODtrack::kPrimary (default = OFF)
   Bool_t fUseMCforKinematics;//Usage of MC information for filling the kinematics information of particles (only in MCAODrec mode)
-
+  Bool_t fRebinCorrHistos;//Rebinning of corrected plots
   Bool_t fUseAdditionalVtxCuts;//usage of additional clean up cuts for primary vertex.
-
-  Bool_t fUseOutOfBunchPileUpCutsLHC15o;//usage of correlation cuts to exclude out of bunche pile up. To be used for 2015 PbPb data.
+  Bool_t fCheckOutOfBunchPileUp; //default kFALSE! 
+  Bool_t fUseOOBPileUpCutsLHC15o;//usage of correlation cuts to exclude out of bunche pile up. To be used for 2015 PbPb data. multEsd - fPileupLHC15oSlope*multTPC) > fPileupLHC15oOffset
+  Float_t fPileupLHC15oSlope; //parameters for LHC15o pile-up rejection  default: slope=3.35, offset 15000
+  Float_t fPileupLHC15oOffset;
+  
+  Bool_t fUseOOBPileUpCutsLHC15oJpsi;//multVZERO < (-2200 + 2.5*ntrkTPCout + 1.2e-5*ntrkTPCout*ntrkTPCout
+  
+  Bool_t fUseOOBPileUpCutsLHC18nTPCclus; //multVZERO < (-fOOBLHC18Slope + fOOBLHC18Par1*nTPCclus + fOOBLHC18Par2*nTPCclus*nTPCclus 
+  Float_t fOOBLHC18Slope;
+  Float_t fOOBLHC18Par1;
+  Float_t fOOBLHC18Par2; 
 
   Bool_t fDetailedTracksQA; //fill Eta, Phi vs Vx histos to be used to check ME pools. 
 
   Double_t fVxMax;//vxmax
   Double_t fVyMax;//vymax
   Double_t fVzMax;//vzmax
-
+  
   Bool_t fRequireHighPtTrigger;//use pT trigger
   Double_t fPtTriggerMin;//pT trigger min
   TH2F *fHistPtTriggerThreshold;//QA histo
@@ -496,6 +552,7 @@ class AliAnalysisTaskBFPsi : public AliAnalysisTaskSE {
 
   TF1 *fDifferentialV2;//pt-differential v2 (from real data)
   Bool_t fUseFlowAfterBurner;//Usage of a flow after burner
+  Bool_t fUseNUADeep;//Usage of a deep in phi
 
   Bool_t fIncludeSecondariesInMCgen;//flag to include the secondaries from material and weak decays in the MC analysis (needed for fIncludeResonancePDGInMC)
   Bool_t fExcludeSecondariesInMC;//flag to exclude the secondaries from material and weak decays in the MCAODrec analysis
@@ -507,6 +564,11 @@ class AliAnalysisTaskBFPsi : public AliAnalysisTaskSE {
   Int_t fPDGCodeToBeAnalyzed; //Analyze a set of particles in MC and MCAODrec
   Int_t fExcludeResonancePDGInMC;// exclude the resonance with this PDG from the MC analysis
   Int_t fIncludeResonancePDGInMC;// include excluvely this resonance with this PDG to the MC and MCAODrec analysis
+
+  Bool_t fExcludeInjectedSignals; //Flag to reject MC injected signals from MC analysis
+  Bool_t fRejectCheckGenName; // Flag to activate the injected signal rejection based on the name of the MC generator 
+  TString fGenToBeKept; //String to select the generator name that has to be kept for analysis
+  
   TString fEventClass; //Can be "EventPlane", "Centrality", "Multiplicity"
   TString fCustomBinning;//for setting customized binning (for output AliTHn of AliBalancePsi)
   
@@ -515,13 +577,25 @@ class AliAnalysisTaskBFPsi : public AliAnalysisTaskSE {
   TH1F *fHistVZEROCGainEqualizationMap;//VZERO calibration map
   TH2F *fHistVZEROChannelGainEqualizationMap; //VZERO calibration map
 
+  TH2F *fHistGlobalvsESDBeforePileUpCuts; //histos to monitor Out of bunch pile up selection
+  TH2F *fHistGlobalvsESDAfterPileUpCuts;
+
+  TH2F *fHistV0MvsTPCoutBeforePileUpCuts; //histos to monitor pile up cuts J/psi
+  TH2F *fHistV0MvsTPCoutAfterPileUpCuts;
+
+  TH2F *fHistV0MvsnTPCclusBeforePileUpCuts; 
+  TH2F *fHistV0MvsnTPCclusAfterPileUpCuts;
+
+  TH1F *fHistCentrBeforePileUpCuts;
+  TH1F *fHistCentrAfterPileUpCuts;
+  
   //AliAnalysisUtils
   AliAnalysisUtils *fUtils;//AliAnalysisUtils
 
   AliAnalysisTaskBFPsi(const AliAnalysisTaskBFPsi&); // not implemented
   AliAnalysisTaskBFPsi& operator=(const AliAnalysisTaskBFPsi&); // not implemented
   
-  ClassDef(AliAnalysisTaskBFPsi, 12); // example of analysis
+  ClassDef(AliAnalysisTaskBFPsi, 16); // example of analysis
 };
 
 

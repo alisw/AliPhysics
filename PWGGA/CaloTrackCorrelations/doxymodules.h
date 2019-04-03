@@ -13,14 +13,25 @@
  */
 
 /**
- * \defgroup CaloTrackCorrMacros CaloTrackCorr Analysis Configuration Macros
+ * \defgroup CaloTrackCorrMacros CaloTrackCorr Analysis Configuration and Postprocessing Macros
  * \ingroup CaloTrackCorrelations
- * \brief Analysis task configuration macros for CaloTrackCorr package
+ * \brief Analysis task configuration and postprocessing macros for CaloTrackCorr package 
+ */
+
+/**
+ * \defgroup CaloTrackCorrMacrosPlotting CaloTrackCorr Plotting Macros
+ * \ingroup CaloTrackCorrMacros
+ * \brief Macros processing output analysis histograms. 
+ * 
+ * All macros can be found in the subdirectory "plotting" and now there are 
+ * 2 categories:
+ *  + invmass: invariant mass fits and comparisons
+ *  + shape: shower shape and other parameters comparison between productions
  */
 
 /**
  * \defgroup CaloTrackCorrMacrosQA CaloTrackCorr QA Configuration and Postprocessing Macros
- * \ingroup CaloTrackCorrelations
+ * \ingroup CaloTrackCorrMacros
  * \brief Analysis task configuration and postprocessing macros for CaloTrackCorr package devoted to QA
  */
 
@@ -29,7 +40,7 @@
  * \ingroup CaloTrackCorrMacrosQA
  * \brief Postprocessing files for EMCal analysis QA wagon for Pt hard binned productions
  *
- * The macros and scritps recover the merged output per pT hard bin and run, merges per run, 
+ * The macros and scripts recover the merged output per pT hard bin and run, merges per run, 
  * extracts the wagon histograms and scales each pT hard bin by its cross section and produce the QA plots
  *
  * The files are:

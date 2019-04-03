@@ -11,6 +11,7 @@ using std::endl;
 #include <TClonesArray.h>
 #include <TIterator.h>
 #include <TList.h>
+#include <TRandom.h>
 
 #include "AliReducedVarManager.h"
 #include "AliReducedEventInfo.h"
@@ -19,6 +20,7 @@ using std::endl;
 #include "AliReducedTrackInfo.h"
 #include "AliReducedPairInfo.h"
 #include "AliHistogramManager.h"
+#include "AliReducedTrackCut.h"
 
 ClassImp(AliReducedAnalysisJpsi2ee);
 
@@ -35,6 +37,7 @@ AliReducedAnalysisJpsi2ee::AliReducedAnalysisJpsi2ee() :
   fOptionLoopOverTracks(kTRUE),
   fOptionRunPrefilter(kTRUE),
   fOptionStoreJpsiCandidates(kFALSE),
+  fFillCaloClusterHistograms(kFALSE),
   fEventCuts(),
   fTrackCuts(),
   fPreFilterTrackCuts(),
@@ -46,8 +49,11 @@ AliReducedAnalysisJpsi2ee::AliReducedAnalysisJpsi2ee() :
   fPrefilterNegTracks(),
   fJpsiCandidates(),
   fLegCandidatesMCcuts(),
+  fLegCandidatesMCcuts_RequestSameMother(),
   fJpsiMotherMCcuts(),
-  fJpsiElectronMCcuts()
+  fJpsiElectronMCcuts(),
+  fSkipMCEvent(kFALSE),
+  fMCJpsiPtWeights(0x0)
 {
   //
   // default constructor
@@ -67,6 +73,7 @@ AliReducedAnalysisJpsi2ee::AliReducedAnalysisJpsi2ee(const Char_t* name, const C
   fOptionLoopOverTracks(kTRUE),
   fOptionRunPrefilter(kTRUE),
   fOptionStoreJpsiCandidates(kFALSE),
+  fFillCaloClusterHistograms(kFALSE),
   fEventCuts(),
   fTrackCuts(),
   fPreFilterTrackCuts(),
@@ -78,8 +85,11 @@ AliReducedAnalysisJpsi2ee::AliReducedAnalysisJpsi2ee(const Char_t* name, const C
   fPrefilterNegTracks(),
   fJpsiCandidates(),
   fLegCandidatesMCcuts(),
+  fLegCandidatesMCcuts_RequestSameMother(),
   fJpsiMotherMCcuts(),
-  fJpsiElectronMCcuts()
+  fJpsiElectronMCcuts(),
+  fSkipMCEvent(kFALSE),
+  fMCJpsiPtWeights(0x0)
 {
   //
   // named constructor
@@ -97,6 +107,7 @@ AliReducedAnalysisJpsi2ee::AliReducedAnalysisJpsi2ee(const Char_t* name, const C
    fLegCandidatesMCcuts.SetOwner(kTRUE);
    fJpsiMotherMCcuts.SetOwner(kTRUE);
    fJpsiElectronMCcuts.SetOwner(kTRUE);
+   for(Int_t i=0;i<32;++i) fLegCandidatesMCcuts_RequestSameMother[i] = kTRUE;
 }
 
 
@@ -242,7 +253,7 @@ void AliReducedAnalysisJpsi2ee::Process() {
         cout << "Event no. " << fEventCounter << endl;
   }
   else {
-    if(fEventCounter%100000==0) 
+    if(fEventCounter%10000==0) 
        cout << "Event no. " << fEventCounter << endl;
   }
   fEventCounter++;
@@ -264,12 +275,23 @@ void AliReducedAnalysisJpsi2ee::Process() {
       AliReducedVarManager::FillEventOnlineTrigger(ibit, fValues);
       fHistosManager->FillHistClass("EventTriggers_BeforeCuts", fValues);
   }
-  
-  
+
   // apply event selection
-  if(!IsEventSelected(fEvent)) return;
+  if(!IsEventSelected(fEvent, fValues)) return;
   
-  if(fOptionRunOverMC) FillMCTruthHistograms();
+  // fill calorimeter info histograms before event cuts
+  if(fFillCaloClusterHistograms) {
+    for(Int_t icl=0; icl<eventInfo->GetNCaloClusters(); ++icl) {
+      AliReducedVarManager::FillCaloClusterInfo(eventInfo->GetCaloCluster(icl), fValues);
+      fHistosManager->FillHistClass("CaloClusters", fValues);
+    }
+  }
+
+  if(fOptionRunOverMC) {
+     fSkipMCEvent = kFALSE;
+     FillMCTruthHistograms();
+     if(fSkipMCEvent) return;
+  }
   
   // select tracks
   if(fOptionLoopOverTracks)
@@ -296,7 +318,7 @@ void AliReducedAnalysisJpsi2ee::Process() {
     FillTrackHistograms();
   
   // Feed the selected tracks to the event mixing handler 
-  if(!fOptionRunOverMC && fOptionRunMixing && fOptionRunPairing)
+  if(fOptionRunMixing)
     fMixingHandler->FillEvent(&fPosTracks, &fNegTracks, fValues, AliReducedPairInfo::kJpsiToEE);
   
   // Do the same event pairing
@@ -313,6 +335,11 @@ void AliReducedAnalysisJpsi2ee::Process() {
      AliReducedVarManager::FillEventOnlineTrigger(ibit, fValues);
      fHistosManager->FillHistClass("EventTriggers_AfterCuts", fValues);
   }
+  for(UShort_t ich=0; ich<64; ++ich) {
+     AliReducedVarManager::FillV0Channel(ich, fValues);
+     fHistosManager->FillHistClass("V0Channels", fValues);
+  }
+  
 }
 
 
@@ -391,6 +418,15 @@ void AliReducedAnalysisJpsi2ee::FillTrackHistograms(AliReducedBaseTrack* track, 
                   if(mcDecisionMap & (UInt_t(1)<<iMC))
                      fHistosManager->FillHistClass(Form("%sITSclusterMap_%s_%s", trackClass.Data(), fTrackCuts.At(icut)->GetName(),
                                                                      fLegCandidatesMCcuts.At(iMC)->GetName()), fValues);
+               }
+            }
+            AliReducedVarManager::FillITSsharedLayerFlag(trackInfo, iLayer, fValues);
+            fHistosManager->FillHistClass(Form("%sITSsharedClusterMap_%s", trackClass.Data(), fTrackCuts.At(icut)->GetName()), fValues);
+            if(mcDecisionMap) {
+               for(Int_t iMC=0; iMC<=fLegCandidatesMCcuts.GetEntries(); ++iMC) {
+                  if(mcDecisionMap & (UInt_t(1)<<iMC))
+                     fHistosManager->FillHistClass(Form("%sITSsharedClusterMap_%s_%s", trackClass.Data(), fTrackCuts.At(icut)->GetName(),
+                                                        fLegCandidatesMCcuts.At(iMC)->GetName()), fValues);
                }
             }
          }
@@ -475,6 +511,8 @@ void AliReducedAnalysisJpsi2ee::LoopOverTracks(Int_t arrayOption /*=1*/) {
             for(Int_t iLayer=0; iLayer<6; ++iLayer) {
                AliReducedVarManager::FillITSlayerFlag(trackInfo, iLayer, fValues);
                fHistosManager->FillHistClass("TrackITSclusterMap_BeforeCuts", fValues);
+               AliReducedVarManager::FillITSsharedLayerFlag(trackInfo, iLayer, fValues);
+               fHistosManager->FillHistClass("TrackITSsharedClusterMap_BeforeCuts", fValues);
             }
             for(Int_t iLayer=0; iLayer<8; ++iLayer) {
                AliReducedVarManager::FillTPCclusterBitFlag(trackInfo, iLayer, fValues);
@@ -723,15 +761,26 @@ UInt_t AliReducedAnalysisJpsi2ee::CheckReconstructedLegMCTruth(AliReducedBaseTra
    if(ptrack->IsA() != AliReducedTrackInfo::Class()) return 0;
    if(ntrack->IsA() != AliReducedTrackInfo::Class()) return 0;
    
-   // check that the tracks have the same mother
-   if(TMath::Abs(((AliReducedTrackInfo*)ptrack)->MCLabel(1)) != TMath::Abs(((AliReducedTrackInfo*)ntrack)->MCLabel(1))) return 0;
-   
    // check the MC requirements on each of the leg and their logical intersection
    if(fLegCandidatesMCcuts.GetEntries()==0) return 0;
    UInt_t pTrackDecisions = CheckReconstructedLegMCTruth(ptrack);
    if(!pTrackDecisions) return 0;
    UInt_t nTrackDecisions = CheckReconstructedLegMCTruth(ntrack);
-   return (pTrackDecisions & nTrackDecisions);
+   
+   UInt_t decisions = 0;
+   for(Int_t i=0; i<fLegCandidatesMCcuts.GetEntries(); ++i) {
+      Bool_t pDecision = ( pTrackDecisions & (UInt_t(1)<<i) );
+      Bool_t nDecision = ( nTrackDecisions & (UInt_t(1)<<i) );
+      
+      // if needed, check that the tracks have the same mother
+      Bool_t sameMotherDecision = kTRUE;
+      if(fLegCandidatesMCcuts_RequestSameMother[i])
+         sameMotherDecision = (TMath::Abs(((AliReducedTrackInfo*)ptrack)->MCLabel(1)) == TMath::Abs(((AliReducedTrackInfo*)ntrack)->MCLabel(1)));
+      if(sameMotherDecision && pDecision && nDecision)
+         decisions |= (UInt_t(1)<<i);
+   }
+   
+   return decisions;
 }
 
 //___________________________________________________________________________
@@ -759,6 +808,41 @@ void AliReducedAnalysisJpsi2ee::LoopOverMCTracks(Int_t trackArray /*=1*/) {
    TClonesArray* trackList = (trackArray==1 ? fEvent->GetTracks() : fEvent->GetTracks2());
    if(!trackList) return;
    TIter nextTrack(trackList);
+   
+   // if the pt dependent weights were set, check the weight and reject randomly the event
+   if(fMCJpsiPtWeights) {
+      for(Int_t it=0; it<trackList->GetEntries(); ++it) {
+         mother = (AliReducedTrackInfo*)nextTrack();
+         if(!mother->IsMCKineParticle()) continue;
+      
+         // apply selections on the jpsi mother
+         UInt_t motherDecisions = CheckMotherMCTruth(mother);
+         if(!motherDecisions) continue;
+         
+         Double_t pt = mother->Pt();
+         if(pt>fMCJpsiPtWeights->GetXaxis()->GetXmax()) 
+            pt = fMCJpsiPtWeights->GetXaxis()->GetXmax();
+         Double_t weight = fMCJpsiPtWeights->GetBinContent(fMCJpsiPtWeights->FindBin(pt));
+         if(weight>1.0) weight = 1.0;
+         Double_t rnd = gRandom->Rndm(); 
+         if(weight<rnd) {
+            fSkipMCEvent = kTRUE;
+            return;
+         }
+      }
+   }
+   
+   
+   // Loop through the MC signals and check whether there are required MC signals without a defined mother 
+   UInt_t signalsWithoutMother = 0;
+   for(Int_t i=0; i<fJpsiMotherMCcuts.GetEntries(); ++i) {
+      AliReducedInfoCut* cut = (AliReducedInfoCut*)fJpsiMotherMCcuts.At(i);
+      if(!((AliReducedTrackCut*)cut)->GetMCFilterMap()) 
+         signalsWithoutMother |= (UInt_t(1)<<i);
+   }
+   
+   // Loop through the list of pure MC particles and find the required mothers and their corresponding daughters
+   nextTrack.Reset();
    for(Int_t it=0; it<trackList->GetEntries(); ++it) {
       mother = (AliReducedTrackInfo*)nextTrack();
       if(!mother->IsMCKineParticle()) continue;
@@ -782,6 +866,7 @@ void AliReducedAnalysisJpsi2ee::LoopOverMCTracks(Int_t trackArray /*=1*/) {
          if(!(motherDecisions & (UInt_t(1)<<iCut)))  continue;
          fHistosManager->FillHistClass(Form("%s_PureMCTruth_BeforeSelection", fJpsiMotherMCcuts.At(iCut)->GetName()), fValues);         
       }
+      
       if(!daughter1) continue;
       if(!daughter2) continue;
       
@@ -797,6 +882,52 @@ void AliReducedAnalysisJpsi2ee::LoopOverMCTracks(Int_t trackArray /*=1*/) {
          fHistosManager->FillHistClass(Form("%s_PureMCTruth_AfterSelection", fJpsiMotherMCcuts.At(iCut)->GetName()), fValues);         
       }
    }  // end loop over tracks
+   
+   
+   // Loop through the list of pure MC particles and find those signals which do not require a mother (e.g. pairs of electrons without a mother)
+   // NOTE: At the moment, just signals with exactly 2 prongs per event are allowed
+   if(signalsWithoutMother) {
+      nextTrack.Reset();
+      daughter1 = 0x0;
+      daughter2 = 0x0;
+      UInt_t daughter1Decisions = 0;
+      UInt_t daughter2Decisions = 0;
+      AliReducedTrackInfo* tempTrack = 0x0;
+      for(Int_t it=0; it<trackList->GetEntries(); ++it) {
+         tempTrack = (AliReducedTrackInfo*)nextTrack();
+         if(!tempTrack->IsMCKineParticle()) continue;
+         
+         UInt_t daughterDecisions = CheckDaughterMCTruth(tempTrack);
+         daughterDecisions &= signalsWithoutMother;
+         if(!daughterDecisions) continue;
+         
+         if(!daughter1) {
+            daughter1 = tempTrack;
+            daughter1Decisions = daughterDecisions;
+            continue;
+         }
+         if(daughter1 && !daughter2) {
+            daughter2 = tempTrack;
+            daughter2Decisions = daughterDecisions;
+         }
+         
+         if(daughter1 && daughter2) {
+            daughterDecisions = daughter1Decisions & daughter2Decisions;
+            
+            for(Int_t i=AliReducedVarManager::kNEventVars; i<AliReducedVarManager::kEMCALmatchedEOverP; ++i) fValues[i]=-9999.;
+            AliReducedVarManager::FillMCTruthInfo(daughter1, daughter2, fValues);
+            
+            // loop over cuts and fill histograms
+            for(Int_t iCut = 0; iCut<fJpsiElectronMCcuts.GetEntries(); ++iCut) {
+               if(!(daughterDecisions & (UInt_t(1)<<iCut)))  continue;
+               // the same information is filled in both Before and After histogram lists
+               fHistosManager->FillHistClass(Form("%s_PureMCTruth_BeforeSelection", fJpsiMotherMCcuts.At(iCut)->GetName()), fValues);         
+               fHistosManager->FillHistClass(Form("%s_PureMCTruth_AfterSelection", fJpsiMotherMCcuts.At(iCut)->GetName()), fValues);         
+            }
+         }
+      }   // end loop over tracks
+   }   // end if(signalsWithoutMother)
+   
    return;
 }
 
@@ -810,6 +941,9 @@ UInt_t AliReducedAnalysisJpsi2ee::CheckMotherMCTruth(AliReducedTrackInfo* mother
    UInt_t decisionMap = 0;
    for(Int_t i=0; i<fJpsiMotherMCcuts.GetEntries(); ++i) {
       AliReducedInfoCut* cut = (AliReducedInfoCut*)fJpsiMotherMCcuts.At(i);
+      // If no MC bit was requested for the mother, skip this mother signal
+      // The MC cut will be applied just at the daughter level (this is likely an MC signal without a mother, e.g. electrons from gamma-gamma continuum from Starlight)
+      if(!((AliReducedTrackCut*)cut)->GetMCFilterMap()) continue;
       if(cut->IsSelected(mother)) 
          decisionMap |= (UInt_t(1)<<i);
    }
@@ -827,7 +961,7 @@ UInt_t AliReducedAnalysisJpsi2ee::CheckDaughterMCTruth(AliReducedTrackInfo* daug
    UInt_t decisionMap = 0;
    for(Int_t i=0; i<fJpsiElectronMCcuts.GetEntries(); ++i) {
       AliReducedInfoCut* cut = (AliReducedInfoCut*)fJpsiElectronMCcuts.At(i);
-      if(cut->IsSelected(daughter)) 
+      if(cut->IsSelected(daughter))
          decisionMap |= (UInt_t(1)<<i);
    }
    

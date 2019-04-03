@@ -44,7 +44,6 @@ class AliDalitzElectronSelector : public AliAnalysisTaskSE {
 
  protected:
    //selected electron arrays
-   
    Bool_t ProcessESDs();
    AliDalitzElectronCuts *fElectronCuts; // Pointer to the ConversionCut Selection
    vector<Int_t> fPositronsIndex;
@@ -54,11 +53,8 @@ class AliDalitzElectronSelector : public AliAnalysisTaskSE {
  private:
    AliDalitzElectronSelector (const AliDalitzElectronSelector&); // not implemented
    AliDalitzElectronSelector & operator=(const AliDalitzElectronSelector&); // not implemented
-
-
-   
    ClassDef(AliDalitzElectronSelector,1)
-      };
+};
 
 inline void AliDalitzElectronSelector::SetDalitzElectronCuts(const TString cut){
    if(fElectronCuts != NULL){

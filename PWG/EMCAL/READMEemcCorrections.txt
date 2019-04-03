@@ -18,9 +18,11 @@ The following correction components are available:
 - [CellBadChannel](\ref AliEmcalCorrectionCellBadChannel) -- Sets cells marked as bad to E = 0, using OADB bad channel map.
 - [CellEnergy](\ref AliEmcalCorrectionCellEnergy) -- Performs energy calibration of cells, using OADB calibration.
 - [CellTimeCalib](\ref AliEmcalCorrectionCellTimeCalib) -- Performs time calibration of cells, using OADB calibration.
+- [EmulateCrosstalk](\ref AliEmcalCorrectionCellEmulateCrosstalk) -- Emulate cell-level crosstalk.
 - [Clusterizer](\ref AliEmcalCorrectionClusterizer) -- Clusterizes a collection of cells into a collection of clusters.
 - [ClusterExotics](\ref AliEmcalCorrectionClusterExotics) -- Flags exotic clusters for removal from the cluster collection.
 - [ClusterNonLinearity](\ref AliEmcalCorrectionClusterNonLinearity) -- Corrects cluster energy for non-linear response.
+- [ClusterNonLinearityMCAfterburner](\ref AliEmcalCorrectionClusterNonLinearityMCAfterburner.h) -- This is an additional correction for MC. The effect is that the pi0 mass position is the same for data and MC. It is only defined for specific periods.
 - [ClusterTrackMatcher](\ref AliEmcalCorrectionClusterTrackMatcher) -- Matches each track to a single cluster, if they are in close enough proximity.
 - [ClusterHadronicCorrection](\ref AliEmcalCorrectionClusterHadronicCorrection) -- For clusters that have one or more matched tracks, reduces the cluster energy in order to avoid overestimating the particle's energy.
 - [PHOSCorrection](\ref AliEmcalCorrectionPHOSCorrections) -- Perform PHOS correction via an interface to the PHOS tender.
@@ -69,6 +71,8 @@ correctionTask->SetUserConfigurationFilename("userConfiguration.yaml");
 correctionTask->Initialize();
 ~~~
 
+Note that this should be added after `CDBconnect`, which is required to use the correction framework.
+
 ## LEGO Train Wagon                                             {#emcCorrectionsLEGOTrainWagon}
 
 There are some special procedures for the LEGO train. There will be a centralized EMCal Correction Task wagon which
@@ -93,7 +97,10 @@ __R_ADDTASK__->Initialize(true);
 
 Note that your configuration wagon should depend on the centralized correction task wagon, but your tasks (such as jet
 finders, user tasks, etc) should depend **only** on the centralized correction task wagon.
-They should not depend on your configuration wagon!
+They should not depend on your configuration wagon! One side effect of this configuration is that intermediate train
+test may fail with an error about the correction task not being configured. Intermediate tests failing is not necessarily
+a problem in itself - instead, check on the result of the full train test. If that test was successful, the train is fine
+and can be started. For more, see the [FAQ answer](\ref emcCorrectionsLEGOTrainTests).
 
 # Configuring Corrections                                       {#configureEMCalCorrections}
 
@@ -230,6 +237,7 @@ __Clusters__ (Includes all options for EMCal Containers):
 | --------------------- | --------------------------------- |
 | clusNonLinCorrEnergyCut | Double determining the cluster non-linearity energy cut |
 | clusHadCorrEnergyCut  | Double determining the cluster hadronic cluster energy cut |
+| defaultClusterEnergy  | String defining the default energy type of the container (kNonLinCorr, kHadCorr, ...) |
 | includePHOS           | True if PHOS cluster should be included |
 
 __Tracks__ (Includes all options for EMCal Containers):
@@ -274,7 +282,11 @@ There are a number of useful advanced options to make the Corrections Framework 
 
 #### Shared parameters
 
-Often, a user will want to change some parameters in unison. Say, if a pt cut is changed, it should be changed everywhere. In such a case, it is useful to able to define a variable so that one change will change things everything. This can be accomplished by defining a parameters in the "shared parameters" section of the %YAML file. The name of the parameter defined in the shared parameters section can be referenced in other areas of the file by prepending ``sharedParameters:`` to the parameter name. Consider the example below:
+Often, a user will want to change some parameters in unison. Say, if a pt cut is changed, it should be changed
+everywhere. In such a case, it is useful to able to define a variable so that one change will change things everything.
+This can be accomplished by defining a parameters in the "shared parameters" section of the %YAML file. The name of the
+parameter defined in the shared parameters section can be referenced in other areas of the file by prepending
+``sharedParameters:`` to the parameter name. Consider the example below:
 
 ~~~
 sharedParameters:
@@ -286,7 +298,44 @@ Correction2:
     anotherExample: "sharedParameters:aMinimumValue"
 ~~~
 
-In the example, any change to ``aMinimumValue`` will be propagated to ``exampleValue`` in ``Correction1`` and ``anotherExample`` in ``Correction2``. Note that the parameter name (here, ``aMinimumValu``) can be anything that the user desires. When setting the value, don't forget to prepend "sharedParameters:" (in our example, "sharedParameters:aMinimumValu")!
+In the example, any change to ``aMinimumValue`` will be propagated to ``exampleValue`` in ``Correction1`` and
+``anotherExample`` in ``Correction2``. Note that the parameter name (here, ``aMinimumValu``) can be anything that
+the user desires. When setting the value, don't forget to prepend "sharedParameters:" (in our example,
+"sharedParameters:aMinimumValu")!
+
+Note that shared parameters are inherently somewhat limited. It can only retrieve values where the requested type
+is arithmetic, string, or bool. The retrieved shared parameters value can only be of those same types. Note that
+the shared parameters correspond to each configuration file.  ie. If ``sharedParameters:test`` is requested in the
+first configuration file, then it will only look for the sharedParameters value in that configuration. Thus, if a
+sharedParameter is requested in a later configuration file, the earlier configuration shared parameter values
+**will not** be considered.
+
+As an explicit example, to change the recalculation of the MC labels including the fractional energy on cell level
+to ``false`` while leaving the cluster-track matcher setting the same in your user config, it should look like
+(omitting unrelated values for brevity):
+
+~~~
+sharedParameter:
+    enableFracEMCRecalc: false
+Clusterizer:
+    enableFracEMCRecalc: true
+ClusterTrackMatcher:
+    inducedTCardMinimum: "sharedParameter:enableFracEMCRecalc"
+~~~
+
+To change the ``enableFracEMCRecalc`` for both in your user config, you'll need to do:
+
+~~~
+sharedParameter:
+    enableFracEMCRecalc: false
+Clusterizer:
+    enableFracEMCRecalc: "sharedParameters:enableFracEMCRecalc"
+ClusterTrackMatcher:
+    inducedTCardMinimum: "sharedParameters:enableFracEMCRecalc"
+~~~
+
+**It isn't enough to just change the value in the shared parameter of the user config!**. This is because the
+``sharedParameters`` field of each configuration do not override each other.
 
 ## Running multiple corrections at once ("specializing")                      {#emcCorrectionsSpecialization}
 
@@ -468,6 +517,35 @@ for (int i = 0; i < clusters->GetEntries(); i++) {
     }
 }
 ~~~
+
+# FAQ                                                                       {#emcCorrectionsFAQ}
+
+## I am seeing an error related to the EMCal geometry - what is wrong?      {#emcCorrectionsGeometryError}
+
+For example, you may see an error similar to below.
+
+~~~
+F-AliEMCALGeometry::GetMatrixForSuperModule: Cannot find EMCAL misalignment matrices! Recover them either:
+- importing TGeoManager from file geometry.root or
+- from OADB in file OADB/EMCAL/EMCALlocal2master.root or
+- from OCDB in directory OCDB/EMCAL/Align/Data/ or
+- from AliESDs (not in AliAOD) via AliESDRun::GetEMCALMatrix(Int_t superModIndex).
+Store them via AliEMCALGeometry::SetMisalMatrix(Int_t superModIndex)
+~~~
+
+This is due to the OCDB being inaccessible. Please ensure that you ran the `CDBconnet` task.
+
+## Some of the LEGO train tests failed and I can't launch my train! Help!   {#emcCorrectionsLEGOTrainTests}
+
+When a configure wagon is used, it is out of the main dependency chain, which can cause some LEGO train tests to fail.
+In particular, this happens when the configure wagon is not run during a test, which is especially common during intermediate
+tests (ie running some, but not all wagons). In the case that some of these intermediate tests fail, check the full train test.
+If that test was successful, then those failed tests can safely be ignored.
+
+However, train operators should be aware that the LEGO train framework will not allow a train to be launched if any test is
+reported as failed. To workaround this issue, the operator should run a **fast test**, which will only run the baseline and
+full train tests. As noted above, the full test should run successfully with the configure wagon, so assuming that both the
+baseline and full train tests succeed, it is then possible to launch the train.
 
 # Details on the framework and the corrections
 

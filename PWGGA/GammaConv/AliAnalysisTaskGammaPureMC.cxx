@@ -62,7 +62,7 @@ AliAnalysisTaskGammaPureMC::AliAnalysisTaskGammaPureMC(): AliAnalysisTaskSE(),
   fHistPtYPiPl(nullptr),
   fHistPtYPiMi(nullptr),
   fHistPtYEta(nullptr),
-  fHistPtYEtaPrim(nullptr),
+  fHistPtYEtaPrime(nullptr),
   fHistPtYOmega(nullptr),
   fHistPtYRho0(nullptr),
   fHistPtYRhoPl(nullptr),
@@ -78,6 +78,8 @@ AliAnalysisTaskGammaPureMC::AliAnalysisTaskGammaPureMC(): AliAnalysisTaskSE(),
   fHistPtYDeltaMi(nullptr),
   fHistPtYDelta0(nullptr),
   fHistPtYLambda(nullptr),
+  fHistPtYKPl(nullptr),
+  fHistPtYKMi(nullptr),
   fHistPtYPi0FromEta(nullptr),
   fHistPtYPi0FromLambda(nullptr),
   fHistPtYPi0FromK(nullptr),
@@ -105,12 +107,17 @@ AliAnalysisTaskGammaPureMC::AliAnalysisTaskGammaPureMC(): AliAnalysisTaskSE(),
   fHistPtAlphaEtaGGPHOAcc(nullptr),
   fHistPtAlphaEtaGGPCMEMCAcc(nullptr),
   fHistPtAlphaEtaGGPCMPHOAcc(nullptr),
-  fHistPtYEtaPrimGG(nullptr),
-  fHistPtYEtaPrimGGPCMAcc(nullptr),
-  fHistPtYEtaPrimGGEMCAcc(nullptr),
-  fHistPtYEtaPrimGGPHOAcc(nullptr),
-  fHistPtYEtaPrimGGPCMEMCAcc(nullptr),
-  fHistPtYEtaPrimGGPCMPHOAcc(nullptr),
+  fHistPtYEtaPrimeGG(nullptr),
+  fHistPtYEtaPrimeGGPCMAcc(nullptr),
+  fHistPtYEtaPrimeGGEMCAcc(nullptr),
+  fHistPtYEtaPrimeGGPHOAcc(nullptr),
+  fHistPtYEtaPrimeGGPCMEMCAcc(nullptr),
+  fHistPtYEtaPrimeGGPCMPHOAcc(nullptr),
+  fHistPtAlphaEtaPrimeGGPCMAcc(nullptr),
+  fHistPtAlphaEtaPrimeGGEMCAcc(nullptr),
+  fHistPtAlphaEtaPrimeGGPHOAcc(nullptr),
+  fHistPtAlphaEtaPrimeGGPCMEMCAcc(nullptr),
+  fHistPtAlphaEtaPrimeGGPCMPHOAcc(nullptr),
   fHistPtYPi0FromKGG(nullptr),
   fHistPtYPi0FromKGGPCMAcc(nullptr),
   fHistPtYPi0FromKGGEMCAcc(nullptr),
@@ -126,7 +133,8 @@ AliAnalysisTaskGammaPureMC::AliAnalysisTaskGammaPureMC(): AliAnalysisTaskSE(),
   fHistPtAlphaPi0FromKGGEMCAccSamePi0(nullptr),
   fHistPtAlphaPi0FromKGGEMCAccDiffPi0(nullptr),
   fIsK0(1),
-  fIsMC(1)
+  fIsMC(1),
+  fMaxpT(100)
 {
 
 }
@@ -142,7 +150,7 @@ AliAnalysisTaskGammaPureMC::AliAnalysisTaskGammaPureMC(const char *name):
   fHistPtYPiPl(nullptr),
   fHistPtYPiMi(nullptr),
   fHistPtYEta(nullptr),
-  fHistPtYEtaPrim(nullptr),
+  fHistPtYEtaPrime(nullptr),
   fHistPtYOmega(nullptr),
   fHistPtYRho0(nullptr),
   fHistPtYRhoPl(nullptr),
@@ -158,6 +166,8 @@ AliAnalysisTaskGammaPureMC::AliAnalysisTaskGammaPureMC(const char *name):
   fHistPtYDeltaMi(nullptr),
   fHistPtYDelta0(nullptr),
   fHistPtYLambda(nullptr),
+  fHistPtYKPl(nullptr),
+  fHistPtYKMi(nullptr),
   fHistPtYPi0FromEta(nullptr),
   fHistPtYPi0FromLambda(nullptr),
   fHistPtYPi0FromK(nullptr),
@@ -185,12 +195,17 @@ AliAnalysisTaskGammaPureMC::AliAnalysisTaskGammaPureMC(const char *name):
   fHistPtAlphaEtaGGPHOAcc(nullptr),
   fHistPtAlphaEtaGGPCMEMCAcc(nullptr),
   fHistPtAlphaEtaGGPCMPHOAcc(nullptr),
-  fHistPtYEtaPrimGG(nullptr),
-  fHistPtYEtaPrimGGPCMAcc(nullptr),
-  fHistPtYEtaPrimGGEMCAcc(nullptr),
-  fHistPtYEtaPrimGGPHOAcc(nullptr),
-  fHistPtYEtaPrimGGPCMEMCAcc(nullptr),
-  fHistPtYEtaPrimGGPCMPHOAcc(nullptr),
+  fHistPtYEtaPrimeGG(nullptr),
+  fHistPtYEtaPrimeGGPCMAcc(nullptr),
+  fHistPtYEtaPrimeGGEMCAcc(nullptr),
+  fHistPtYEtaPrimeGGPHOAcc(nullptr),
+  fHistPtYEtaPrimeGGPCMEMCAcc(nullptr),
+  fHistPtYEtaPrimeGGPCMPHOAcc(nullptr),
+  fHistPtAlphaEtaPrimeGGPCMAcc(nullptr),
+  fHistPtAlphaEtaPrimeGGEMCAcc(nullptr),
+  fHistPtAlphaEtaPrimeGGPHOAcc(nullptr),
+  fHistPtAlphaEtaPrimeGGPCMEMCAcc(nullptr),
+  fHistPtAlphaEtaPrimeGGPCMPHOAcc(nullptr),
   fHistPtYPi0FromKGG(nullptr),
   fHistPtYPi0FromKGGPCMAcc(nullptr),
   fHistPtYPi0FromKGGEMCAcc(nullptr),
@@ -206,7 +221,8 @@ AliAnalysisTaskGammaPureMC::AliAnalysisTaskGammaPureMC(const char *name):
   fHistPtAlphaPi0FromKGGEMCAccSamePi0(nullptr),
   fHistPtAlphaPi0FromKGGEMCAccDiffPi0(nullptr),
   fIsK0(1),
-  fIsMC(1)
+  fIsMC(1),
+  fMaxpT(100)
 {
   // Define output slots here
   DefineOutput(1, TList::Class());
@@ -244,253 +260,282 @@ void AliAnalysisTaskGammaPureMC::UserCreateOutputObjects(){
   fHistPtHard->Sumw2();
   fOutputContainer->Add(fHistPtHard);
 
-  fHistPtYPi0                		= new TH2F("Pt_Y_Pi0","Pt_Y_Pi0", 1000,0, 100, 200, -1.0, 1.0);
+  fHistPtYPi0                		= new TH2F("Pt_Y_Pi0","Pt_Y_Pi0", fMaxpT*10, 0, fMaxpT, 200, -1.0, 1.0);
   fHistPtYPi0->Sumw2();
   fOutputContainer->Add(fHistPtYPi0);
 
-  fHistPtYPiPl                		= new TH2F("Pt_Y_PiPl","Pt_Y_PiPl", 1000,0, 100, 200, -1.0, 1.0);
+  fHistPtYPiPl                		= new TH2F("Pt_Y_PiPl","Pt_Y_PiPl", fMaxpT*10, 0, fMaxpT, 200, -1.0, 1.0);
   fHistPtYPiPl->Sumw2();
   fOutputContainer->Add(fHistPtYPiPl);
 
-  fHistPtYPiMi                		= new TH2F("Pt_Y_PiMi","Pt_Y_PiMi", 1000,0, 100, 200, -1.0, 1.0);
+  fHistPtYPiMi                		= new TH2F("Pt_Y_PiMi","Pt_Y_PiMi", fMaxpT*10, 0, fMaxpT, 200, -1.0, 1.0);
   fHistPtYPiMi->Sumw2();
   fOutputContainer->Add(fHistPtYPiMi);
 
-  fHistPtYEta                 		= new TH2F("Pt_Y_Eta","Pt_Y_Eta", 1000,0, 100, 200, -1.0, 1.0);
+  fHistPtYEta                 		= new TH2F("Pt_Y_Eta","Pt_Y_Eta", fMaxpT*10, 0, fMaxpT, 200, -1.0, 1.0);
   fHistPtYEta->Sumw2();
   fOutputContainer->Add(fHistPtYEta);
 
-  fHistPtYEtaPrim             		= new TH2F("Pt_Y_EtaPrim","Pt_Y_EtaPrim", 1000,0, 100, 200, -1.0, 1.0);
-  fHistPtYEtaPrim->Sumw2();
-  fOutputContainer->Add(fHistPtYEtaPrim);
+  fHistPtYEtaPrime             		= new TH2F("Pt_Y_EtaPrime","Pt_Y_EtaPrime", fMaxpT*10, 0, fMaxpT, 200, -1.0, 1.0);
+  fHistPtYEtaPrime->Sumw2();
+  fOutputContainer->Add(fHistPtYEtaPrime);
 
-  fHistPtYOmega               		= new TH2F("Pt_Y_Omega","Pt_Y_Omega", 1000,0, 100, 200, -1.0, 1.0);
+  fHistPtYOmega               		= new TH2F("Pt_Y_Omega","Pt_Y_Omega", fMaxpT*10, 0, fMaxpT, 200, -1.0, 1.0);
   fHistPtYOmega->Sumw2();
   fOutputContainer->Add(fHistPtYOmega);
 
-  fHistPtYRho0                		= new TH2F("Pt_Y_Rho0","Pt_Y_Rho0", 1000,0, 100, 200, -1.0, 1.0);
+  fHistPtYRho0                		= new TH2F("Pt_Y_Rho0","Pt_Y_Rho0", fMaxpT*10, 0, fMaxpT, 200, -1.0, 1.0);
   fHistPtYRho0->Sumw2();
   fOutputContainer->Add(fHistPtYRho0);
 
-  fHistPtYRhoPl               		= new TH2F("Pt_Y_RhoPl","Pt_Y_RhoPl", 1000,0, 100, 200, -1.0, 1.0);
+  fHistPtYRhoPl               		= new TH2F("Pt_Y_RhoPl","Pt_Y_RhoPl", fMaxpT*10, 0, fMaxpT, 200, -1.0, 1.0);
   fHistPtYRhoPl->Sumw2();
   fOutputContainer->Add(fHistPtYRhoPl);
 
-  fHistPtYRhoMi               		= new TH2F("Pt_Y_RhoMi","Pt_Y_RhoMi", 1000,0, 100, 200, -1.0, 1.0);
+  fHistPtYRhoMi               		= new TH2F("Pt_Y_RhoMi","Pt_Y_RhoMi", fMaxpT*10, 0, fMaxpT, 200, -1.0, 1.0);
   fHistPtYRhoMi->Sumw2();
   fOutputContainer->Add(fHistPtYRhoMi);
 
-  fHistPtYPhi                 		= new TH2F("Pt_Y_Phi","Pt_Y_Phi", 1000,0, 100, 200, -1.0, 1.0);
+  fHistPtYPhi                 		= new TH2F("Pt_Y_Phi","Pt_Y_Phi", fMaxpT*10, 0, fMaxpT, 200, -1.0, 1.0);
   fHistPtYPhi->Sumw2();
   fOutputContainer->Add(fHistPtYPhi);
 
-  fHistPtYJPsi                		= new TH2F("Pt_Y_JPsi","Pt_Y_JPsi", 1000,0, 100, 200, -1.0, 1.0);
+  fHistPtYJPsi                		= new TH2F("Pt_Y_JPsi","Pt_Y_JPsi", fMaxpT*10, 0, fMaxpT, 200, -1.0, 1.0);
   fHistPtYJPsi->Sumw2();
   fOutputContainer->Add(fHistPtYJPsi);
 
-  fHistPtYSigma0              		= new TH2F("Pt_Y_Sigma0","Pt_Y_Sigma0", 1000,0, 100, 200, -1.0, 1.0);
+  fHistPtYSigma0              		= new TH2F("Pt_Y_Sigma0","Pt_Y_Sigma0", fMaxpT*10, 0, fMaxpT, 200, -1.0, 1.0);
   fHistPtYSigma0->Sumw2();
   fOutputContainer->Add(fHistPtYSigma0);
 
-  fHistPtYK0s                 		= new TH2F("Pt_Y_K0s","Pt_Y_K0s", 1000,0, 100, 200, -1.0, 1.0);
+  fHistPtYK0s                 		= new TH2F("Pt_Y_K0s","Pt_Y_K0s", fMaxpT*10, 0, fMaxpT, 200, -1.0, 1.0);
   fHistPtYK0s->Sumw2();
   fOutputContainer->Add(fHistPtYK0s);
 
-  fHistPtYK0l                 		= new TH2F("Pt_Y_K0l","Pt_Y_K0l", 1000,0, 100, 200, -1.0, 1.0);
+  fHistPtYK0l                 		= new TH2F("Pt_Y_K0l","Pt_Y_K0l", fMaxpT*10, 0, fMaxpT, 200, -1.0, 1.0);
   fHistPtYK0l->Sumw2();
   fOutputContainer->Add(fHistPtYK0l);
 
-  fHistPtYK0star              		= new TH2F("Pt_Y_K0star","Pt_Y_K0star", 1000,0, 100, 200, -1.0, 1.0);
+  fHistPtYK0star              		= new TH2F("Pt_Y_K0star","Pt_Y_K0star", fMaxpT*10, 0, fMaxpT, 200, -1.0, 1.0);
   fHistPtYK0star->Sumw2();
   fOutputContainer->Add(fHistPtYK0star);
 
-  fHistPtYDeltaPlPl           		= new TH2F("Pt_Y_DeltaPlPl","Pt_Y_DeltaPlPl", 1000,0, 100, 200, -1.0, 1.0);
+  fHistPtYDeltaPlPl           		= new TH2F("Pt_Y_DeltaPlPl","Pt_Y_DeltaPlPl", fMaxpT*10, 0, fMaxpT, 200, -1.0, 1.0);
   fHistPtYDeltaPlPl->Sumw2();
   fOutputContainer->Add(fHistPtYDeltaPlPl);
 
-  fHistPtYDeltaPl             		= new TH2F("Pt_Y_DeltaPl","Pt_Y_DeltaPl", 1000,0, 100, 200, -1.0, 1.0);
+  fHistPtYDeltaPl             		= new TH2F("Pt_Y_DeltaPl","Pt_Y_DeltaPl", fMaxpT*10, 0, fMaxpT, 200, -1.0, 1.0);
   fHistPtYDeltaPl->Sumw2();
   fOutputContainer->Add(fHistPtYDeltaPl);
 
-  fHistPtYDeltaMi             		= new TH2F("Pt_Y_DeltaMi","Pt_Y_DeltaMi", 1000,0, 100, 200, -1.0, 1.0);
+  fHistPtYDeltaMi             		= new TH2F("Pt_Y_DeltaMi","Pt_Y_DeltaMi", fMaxpT*10, 0, fMaxpT, 200, -1.0, 1.0);
   fHistPtYDeltaMi->Sumw2();
   fOutputContainer->Add(fHistPtYDeltaMi);
 
-  fHistPtYDelta0              		= new TH2F("Pt_Y_Delta0","Pt_Y_Delta0", 1000,0, 100, 200, -1.0, 1.0);
+  fHistPtYDelta0              		= new TH2F("Pt_Y_Delta0","Pt_Y_Delta0", fMaxpT*10, 0, fMaxpT, 200, -1.0, 1.0);
   fHistPtYDelta0->Sumw2();
   fOutputContainer->Add(fHistPtYDelta0);
 
-  fHistPtYLambda              		= new TH2F("Pt_Y_Lambda","Pt_Y_Lambda", 1000,0, 100, 200, -1.0, 1.0);
+  fHistPtYLambda              		= new TH2F("Pt_Y_Lambda","Pt_Y_Lambda", fMaxpT*10, 0, fMaxpT, 200, -1.0, 1.0);
   fHistPtYLambda->Sumw2();
   fOutputContainer->Add(fHistPtYLambda);
 
-  fHistPtYPi0FromEta          		= new TH2F("Pt_Y_Pi0FromEta","Pt_Y_Pi0FromEta", 1000,0, 100, 200, -1.0, 1.0);
+  fHistPtYKPl              		= new TH2F("Pt_Y_KPl","Pt_Y_KPl", fMaxpT*10, 0, fMaxpT, 200, -1.0, 1.0);
+  fHistPtYKPl->Sumw2();
+  fOutputContainer->Add(fHistPtYKPl);
+
+  fHistPtYKMi              		= new TH2F("Pt_Y_KMi","Pt_Y_KMi", fMaxpT*10, 0, fMaxpT, 200, -1.0, 1.0);
+  fHistPtYKMi->Sumw2();
+  fOutputContainer->Add(fHistPtYKMi);
+
+  fHistPtYPi0FromEta          		= new TH2F("Pt_Y_Pi0FromEta","Pt_Y_Pi0FromEta", fMaxpT*10, 0, fMaxpT, 200, -1.0, 1.0);
   fHistPtYPi0FromEta->Sumw2();
   fOutputContainer->Add(fHistPtYPi0FromEta);
 
-  fHistPtYPi0FromLambda       		= new TH2F("Pt_Y_Pi0FromLambda","Pt_Y_Pi0FromLambda", 1000,0, 100, 200, -1.0, 1.0);
+  fHistPtYPi0FromLambda       		= new TH2F("Pt_Y_Pi0FromLambda","Pt_Y_Pi0FromLambda", fMaxpT*10, 0, fMaxpT, 200, -1.0, 1.0);
   fHistPtYPi0FromLambda->Sumw2();
   fOutputContainer->Add(fHistPtYPi0FromLambda);
 
-  fHistPtYPi0FromK            		= new TH2F("Pt_Y_Pi0FromK","Pt_Y_Pi0FromK", 1000,0, 100, 200, -1.0, 1.0);
+  fHistPtYPi0FromK            		= new TH2F("Pt_Y_Pi0FromK","Pt_Y_Pi0FromK", fMaxpT*10, 0, fMaxpT, 200, -1.0, 1.0);
   fHistPtYPi0FromK->Sumw2();
   fOutputContainer->Add(fHistPtYPi0FromK);
 
-  fHistPtYPiPlFromK           		= new TH2F("Pt_Y_PiPlFromK","Pt_Y_PiPlFromK", 1000,0, 100, 200, -1.0, 1.0);
+  fHistPtYPiPlFromK           		= new TH2F("Pt_Y_PiPlFromK","Pt_Y_PiPlFromK", fMaxpT*10, 0, fMaxpT, 200, -1.0, 1.0);
   fHistPtYPiPlFromK->Sumw2();
   fOutputContainer->Add(fHistPtYPiPlFromK);
 
-  fHistPtYPiMiFromK           		= new TH2F("Pt_Y_PiMiFromK","Pt_Y_PiMiFromK", 1000,0, 100, 200, -1.0, 1.0);
+  fHistPtYPiMiFromK           		= new TH2F("Pt_Y_PiMiFromK","Pt_Y_PiMiFromK", fMaxpT*10, 0, fMaxpT, 200, -1.0, 1.0);
   fHistPtYPiMiFromK->Sumw2();
   fOutputContainer->Add(fHistPtYPiMiFromK);
 
 
-  fHistPtYPi0GG               		= new TH2F("Pt_Y_Pi0GG","Pt_Y_Pi0GG", 1000,0, 100, 200, -1.0, 1.0);
+  fHistPtYPi0GG               		= new TH2F("Pt_Y_Pi0GG","Pt_Y_Pi0GG", fMaxpT*10, 0, fMaxpT, 200, -1.0, 1.0);
   fHistPtYPi0GG->Sumw2();
   fOutputContainer->Add(fHistPtYPi0GG);
-  fHistPtYPi0GGPCMAcc         		= new TH2F("Pt_Y_Pi0GGPCMAcc","Pt_Y_Pi0GGPCMAcc", 1000,0, 100, 200, -1.0, 1.0);
+  fHistPtYPi0GGPCMAcc         		= new TH2F("Pt_Y_Pi0GGPCMAcc","Pt_Y_Pi0GGPCMAcc", fMaxpT*10, 0, fMaxpT, 200, -1.0, 1.0);
   fHistPtYPi0GGPCMAcc->Sumw2();
   fOutputContainer->Add(fHistPtYPi0GGPCMAcc);
-  fHistPtYPi0GGEMCAcc         		= new TH2F("Pt_Y_Pi0GGEMCAcc","Pt_Y_Pi0GGEMCAcc", 1000,0, 100, 200, -1.0, 1.0);
+  fHistPtYPi0GGEMCAcc         		= new TH2F("Pt_Y_Pi0GGEMCAcc","Pt_Y_Pi0GGEMCAcc", fMaxpT*10, 0, fMaxpT, 200, -1.0, 1.0);
   fHistPtYPi0GGEMCAcc->Sumw2();
   fOutputContainer->Add(fHistPtYPi0GGEMCAcc);
-  fHistPtYPi0GGPHOAcc         		= new TH2F("Pt_Y_Pi0GGPHOAcc","Pt_Y_Pi0GGPHOAcc", 1000,0, 100, 200, -1.0, 1.0);
+  fHistPtYPi0GGPHOAcc         		= new TH2F("Pt_Y_Pi0GGPHOAcc","Pt_Y_Pi0GGPHOAcc", fMaxpT*10, 0, fMaxpT, 200, -1.0, 1.0);
   fHistPtYPi0GGPHOAcc->Sumw2();
   fOutputContainer->Add(fHistPtYPi0GGPHOAcc);
-  fHistPtYPi0GGPCMEMCAcc      		= new TH2F("Pt_Y_Pi0GGPCMEMCAcc","Pt_Y_Pi0GGPCMEMCAcc", 1000,0, 100, 200, -1.0, 1.0);
+  fHistPtYPi0GGPCMEMCAcc      		= new TH2F("Pt_Y_Pi0GGPCMEMCAcc","Pt_Y_Pi0GGPCMEMCAcc", fMaxpT*10, 0, fMaxpT, 200, -1.0, 1.0);
   fHistPtYPi0GGPCMEMCAcc->Sumw2();
   fOutputContainer->Add(fHistPtYPi0GGPCMEMCAcc);
-  fHistPtYPi0GGPCMPHOAcc      		= new TH2F("Pt_Y_Pi0GGPCMPHOAcc","Pt_Y_Pi0GGPCMPHOAcc", 1000,0, 100, 200, -1.0, 1.0);
+  fHistPtYPi0GGPCMPHOAcc      		= new TH2F("Pt_Y_Pi0GGPCMPHOAcc","Pt_Y_Pi0GGPCMPHOAcc", fMaxpT*10, 0, fMaxpT, 200, -1.0, 1.0);
   fHistPtYPi0GGPCMPHOAcc->Sumw2();
   fOutputContainer->Add(fHistPtYPi0GGPCMPHOAcc);
 
-  fHistPtYEtaGG               		= new TH2F("Pt_Y_EtaGG","Pt_Y_EtaGG", 1000,0, 100, 200, -1.0, 1.0);
+  fHistPtYEtaGG               		= new TH2F("Pt_Y_EtaGG","Pt_Y_EtaGG", fMaxpT*10, 0, fMaxpT, 200, -1.0, 1.0);
   fHistPtYEtaGG->Sumw2();
   fOutputContainer->Add(fHistPtYEtaGG);
-  fHistPtYEtaGGPCMAcc         		= new TH2F("Pt_Y_EtaGGPCMAcc","Pt_Y_EtaGGPCMAcc", 1000,0, 100, 200, -1.0, 1.0);
+  fHistPtYEtaGGPCMAcc         		= new TH2F("Pt_Y_EtaGGPCMAcc","Pt_Y_EtaGGPCMAcc", fMaxpT*10, 0, fMaxpT, 200, -1.0, 1.0);
   fHistPtYEtaGGPCMAcc->Sumw2();
   fOutputContainer->Add(fHistPtYEtaGGPCMAcc);
-  fHistPtYEtaGGEMCAcc         		= new TH2F("Pt_Y_EtaGGEMCAcc","Pt_Y_EtaGGEMCAcc", 1000,0, 100, 200, -1.0, 1.0);
+  fHistPtYEtaGGEMCAcc         		= new TH2F("Pt_Y_EtaGGEMCAcc","Pt_Y_EtaGGEMCAcc", fMaxpT*10, 0, fMaxpT, 200, -1.0, 1.0);
   fHistPtYEtaGGEMCAcc->Sumw2();
   fOutputContainer->Add(fHistPtYEtaGGEMCAcc);
-  fHistPtYEtaGGPHOAcc         		= new TH2F("Pt_Y_EtaGGPHOAcc","Pt_Y_EtaGGPHOAcc", 1000,0, 100, 200, -1.0, 1.0);
+  fHistPtYEtaGGPHOAcc         		= new TH2F("Pt_Y_EtaGGPHOAcc","Pt_Y_EtaGGPHOAcc", fMaxpT*10, 0, fMaxpT, 200, -1.0, 1.0);
   fHistPtYEtaGGPHOAcc->Sumw2();
   fOutputContainer->Add(fHistPtYEtaGGPHOAcc);
-  fHistPtYEtaGGPCMEMCAcc      		= new TH2F("Pt_Y_EtaGGPCMEMCAcc","Pt_Y_EtaGGPCMEMCAcc", 1000,0, 100, 200, -1.0, 1.0);
+  fHistPtYEtaGGPCMEMCAcc      		= new TH2F("Pt_Y_EtaGGPCMEMCAcc","Pt_Y_EtaGGPCMEMCAcc", fMaxpT*10, 0, fMaxpT, 200, -1.0, 1.0);
   fHistPtYEtaGGPCMEMCAcc->Sumw2();
   fOutputContainer->Add(fHistPtYEtaGGPCMEMCAcc);
-  fHistPtYEtaGGPCMPHOAcc      		= new TH2F("Pt_Y_EtaGGPCMPHOAcc","Pt_Y_EtaGGPCMPHOAcc", 1000,0, 100, 200, -1.0, 1.0);
+  fHistPtYEtaGGPCMPHOAcc      		= new TH2F("Pt_Y_EtaGGPCMPHOAcc","Pt_Y_EtaGGPCMPHOAcc", fMaxpT*10, 0, fMaxpT, 200, -1.0, 1.0);
   fHistPtYEtaGGPCMPHOAcc->Sumw2();
   fOutputContainer->Add(fHistPtYEtaGGPCMPHOAcc);
 
-  fHistPtYEtaPrimGG           		= new TH2F("Pt_Y_EtaPrimGG","Pt_Y_EtaPrimGG", 1000,0, 100, 200, -1.0, 1.0);
-  fHistPtYEtaPrimGG->Sumw2();
-  fOutputContainer->Add(fHistPtYEtaPrimGG);
-  fHistPtYEtaPrimGGPCMAcc     		= new TH2F("Pt_Y_EtaPrimGGPCMAcc","Pt_Y_EtaPrimGGPCMAcc", 1000,0, 100, 200, -1.0, 1.0);
-  fHistPtYEtaPrimGGPCMAcc->Sumw2();
-  fOutputContainer->Add(fHistPtYEtaPrimGGPCMAcc);
-  fHistPtYEtaPrimGGEMCAcc     		= new TH2F("Pt_Y_EtaPrimGGEMCAcc","Pt_Y_EtaPrimGGEMCAcc", 1000,0, 100, 200, -1.0, 1.0);
-  fHistPtYEtaPrimGGEMCAcc->Sumw2();
-  fOutputContainer->Add(fHistPtYEtaPrimGGEMCAcc);
-  fHistPtYEtaPrimGGPHOAcc     		= new TH2F("Pt_Y_EtaPrimGGPHOAcc","Pt_Y_EtaPrimGGPHOAcc", 1000,0, 100, 200, -1.0, 1.0);
-  fHistPtYEtaPrimGGPHOAcc->Sumw2();
-  fOutputContainer->Add(fHistPtYEtaPrimGGPHOAcc);
-  fHistPtYEtaPrimGGPCMEMCAcc  		= new TH2F("Pt_Y_EtaPrimGGPCMEMCAcc","Pt_Y_EtaPrimGGPCMEMCAcc", 1000,0, 100, 200, -1.0, 1.0);
-  fHistPtYEtaPrimGGPCMEMCAcc->Sumw2();
-  fOutputContainer->Add(fHistPtYEtaPrimGGPCMEMCAcc);
-  fHistPtYEtaPrimGGPCMPHOAcc  		= new TH2F("Pt_Y_EtaPrimGGPCMPHOAcc","Pt_Y_EtaPrimGGPCMPHOAcc", 1000,0, 100, 200, -1.0, 1.0);
-  fHistPtYEtaPrimGGPCMPHOAcc->Sumw2();
-  fOutputContainer->Add(fHistPtYEtaPrimGGPCMPHOAcc);
+  fHistPtYEtaPrimeGG           		= new TH2F("Pt_Y_EtaPrimeGG","Pt_Y_EtaPrimeGG", fMaxpT*10, 0, fMaxpT, 200, -1.0, 1.0);
+  fHistPtYEtaPrimeGG->Sumw2();
+  fOutputContainer->Add(fHistPtYEtaPrimeGG);
+  fHistPtYEtaPrimeGGPCMAcc     		= new TH2F("Pt_Y_EtaPrimeGGPCMAcc","Pt_Y_EtaPrimeGGPCMAcc", fMaxpT*10, 0, fMaxpT, 200, -1.0, 1.0);
+  fHistPtYEtaPrimeGGPCMAcc->Sumw2();
+  fOutputContainer->Add(fHistPtYEtaPrimeGGPCMAcc);
+  fHistPtYEtaPrimeGGEMCAcc     		= new TH2F("Pt_Y_EtaPrimeGGEMCAcc","Pt_Y_EtaPrimeGGEMCAcc", fMaxpT*10, 0, fMaxpT, 200, -1.0, 1.0);
+  fHistPtYEtaPrimeGGEMCAcc->Sumw2();
+  fOutputContainer->Add(fHistPtYEtaPrimeGGEMCAcc);
+  fHistPtYEtaPrimeGGPHOAcc     		= new TH2F("Pt_Y_EtaPrimeGGPHOAcc","Pt_Y_EtaPrimeGGPHOAcc", fMaxpT*10, 0, fMaxpT, 200, -1.0, 1.0);
+  fHistPtYEtaPrimeGGPHOAcc->Sumw2();
+  fOutputContainer->Add(fHistPtYEtaPrimeGGPHOAcc);
+  fHistPtYEtaPrimeGGPCMEMCAcc  		= new TH2F("Pt_Y_EtaPrimeGGPCMEMCAcc","Pt_Y_EtaPrimeGGPCMEMCAcc", fMaxpT*10, 0, fMaxpT, 200, -1.0, 1.0);
+  fHistPtYEtaPrimeGGPCMEMCAcc->Sumw2();
+  fOutputContainer->Add(fHistPtYEtaPrimeGGPCMEMCAcc);
+  fHistPtYEtaPrimeGGPCMPHOAcc  		= new TH2F("Pt_Y_EtaPrimeGGPCMPHOAcc","Pt_Y_EtaPrimeGGPCMPHOAcc", fMaxpT*10, 0, fMaxpT, 200, -1.0, 1.0);
+  fHistPtYEtaPrimeGGPCMPHOAcc->Sumw2();
+  fOutputContainer->Add(fHistPtYEtaPrimeGGPCMPHOAcc);
 
-  fHistPtAlphaPi0GGPCMAcc     		= new TH2F("Pt_Alpha_Pi0GGPCMAcc","Pt_Alpha_Pi0GGPCMAcc", 500,0.1, 50, 100, 0., 1.);
+  fHistPtAlphaPi0GGPCMAcc     		= new TH2F("Pt_Alpha_Pi0GGPCMAcc","Pt_Alpha_Pi0GGPCMAcc", fMaxpT*5, 0.1, fMaxpT/2, 100, 0., 1.);
   SetLogBinningXTH2(fHistPtAlphaPi0GGPCMAcc);
   fHistPtAlphaPi0GGPCMAcc->Sumw2();
   fOutputContainer->Add(fHistPtAlphaPi0GGPCMAcc);
-  fHistPtAlphaPi0GGEMCAcc     		= new TH2F("Pt_Alpha_Pi0GGEMCAcc","Pt_Alpha_Pi0GGEMCAcc", 500,0.1, 50, 100, 0., 1.);
+  fHistPtAlphaPi0GGEMCAcc     		= new TH2F("Pt_Alpha_Pi0GGEMCAcc","Pt_Alpha_Pi0GGEMCAcc", fMaxpT*5, 0.1, fMaxpT/2, 100, 0., 1.);
   SetLogBinningXTH2(fHistPtAlphaPi0GGEMCAcc);
   fHistPtAlphaPi0GGEMCAcc->Sumw2();
   fOutputContainer->Add(fHistPtAlphaPi0GGEMCAcc);
-  fHistPtAlphaPi0GGPHOAcc     		= new TH2F("Pt_Alpha_Pi0GGPHOAcc","Pt_Alpha_Pi0GGPHOAcc", 500,0.1, 50, 100, 0., 1.);
+  fHistPtAlphaPi0GGPHOAcc     		= new TH2F("Pt_Alpha_Pi0GGPHOAcc","Pt_Alpha_Pi0GGPHOAcc", fMaxpT*5, 0.1, fMaxpT/2, 100, 0., 1.);
   SetLogBinningXTH2(fHistPtAlphaPi0GGPHOAcc);
   fHistPtAlphaPi0GGPHOAcc->Sumw2();
   fOutputContainer->Add(fHistPtAlphaPi0GGPHOAcc);
-  fHistPtAlphaPi0GGPCMEMCAcc  		= new TH2F("Pt_Alpha_Pi0GGPCMEMCAcc","Pt_Alpha_Pi0GGPCMEMCAcc", 500,0.1, 50, 200, -1., 1.);
+  fHistPtAlphaPi0GGPCMEMCAcc  		= new TH2F("Pt_Alpha_Pi0GGPCMEMCAcc","Pt_Alpha_Pi0GGPCMEMCAcc", fMaxpT*5, 0.1, fMaxpT/2, 200, -1., 1.);
   SetLogBinningXTH2(fHistPtAlphaPi0GGPCMEMCAcc);
   fHistPtAlphaPi0GGPCMEMCAcc->Sumw2();
   fOutputContainer->Add(fHistPtAlphaPi0GGPCMEMCAcc);
-  fHistPtAlphaPi0GGPCMPHOAcc  		= new TH2F("Pt_Alpha_Pi0GGPCMPHOAcc","Pt_Alpha_Pi0GGPCMPHOAcc", 500,0.1, 50, 200, -1., 1.);
+  fHistPtAlphaPi0GGPCMPHOAcc  		= new TH2F("Pt_Alpha_Pi0GGPCMPHOAcc","Pt_Alpha_Pi0GGPCMPHOAcc", fMaxpT*5, 0.1, fMaxpT/2, 200, -1., 1.);
   SetLogBinningXTH2(fHistPtAlphaPi0GGPCMPHOAcc);
   fHistPtAlphaPi0GGPCMPHOAcc->Sumw2();
   fOutputContainer->Add(fHistPtAlphaPi0GGPCMPHOAcc);
 
-  fHistPtAlphaEtaGGPCMAcc     		= new TH2F("Pt_Alpha_EtaGGPCMAcc","Pt_Alpha_EtaGGPCMAcc", 500,0.1, 50, 100, 0., 1.);
+  fHistPtAlphaEtaGGPCMAcc     		= new TH2F("Pt_Alpha_EtaGGPCMAcc","Pt_Alpha_EtaGGPCMAcc", fMaxpT*5, 0.1, fMaxpT/2, 100, 0., 1.);
   SetLogBinningXTH2(fHistPtAlphaEtaGGPCMAcc);
   fHistPtAlphaEtaGGPCMAcc->Sumw2();
   fOutputContainer->Add(fHistPtAlphaEtaGGPCMAcc);
-  fHistPtAlphaEtaGGEMCAcc     		= new TH2F("Pt_Alpha_EtaGGEMCAcc","Pt_Alpha_EtaGGEMCAcc", 500,0.1, 50, 100, 0., 1.);
+  fHistPtAlphaEtaGGEMCAcc     		= new TH2F("Pt_Alpha_EtaGGEMCAcc","Pt_Alpha_EtaGGEMCAcc", fMaxpT*5, 0.1, fMaxpT/2, 100, 0., 1.);
   SetLogBinningXTH2(fHistPtAlphaEtaGGEMCAcc);
   fHistPtAlphaEtaGGEMCAcc->Sumw2();
   fOutputContainer->Add(fHistPtAlphaEtaGGEMCAcc);
-  fHistPtAlphaEtaGGPHOAcc     		= new TH2F("Pt_Alpha_EtaGGPHOAcc","Pt_Alpha_EtaGGPHOAcc", 500,0.1, 50, 100, 0., 1.);
+  fHistPtAlphaEtaGGPHOAcc     		= new TH2F("Pt_Alpha_EtaGGPHOAcc","Pt_Alpha_EtaGGPHOAcc", fMaxpT*5, 0.1, fMaxpT/2, 100, 0., 1.);
   SetLogBinningXTH2(fHistPtAlphaEtaGGPHOAcc);
   fHistPtAlphaEtaGGPHOAcc->Sumw2();
   fOutputContainer->Add(fHistPtAlphaEtaGGPHOAcc);
-  fHistPtAlphaEtaGGPCMEMCAcc  		= new TH2F("Pt_Alpha_EtaGGPCMEMCAcc","Pt_Alpha_EtaGGPCMEMCAcc", 500,0.1, 50, 200, -1., 1.);
+  fHistPtAlphaEtaGGPCMEMCAcc  		= new TH2F("Pt_Alpha_EtaGGPCMEMCAcc","Pt_Alpha_EtaGGPCMEMCAcc", fMaxpT*5, 0.1, fMaxpT/2, 200, -1., 1.);
   SetLogBinningXTH2(fHistPtAlphaEtaGGPCMEMCAcc);
   fHistPtAlphaEtaGGPCMEMCAcc->Sumw2();
   fOutputContainer->Add(fHistPtAlphaEtaGGPCMEMCAcc);
-  fHistPtAlphaEtaGGPCMPHOAcc  		= new TH2F("Pt_Alpha_EtaGGPCMPHOAcc","Pt_Alpha_EtaGGPCMPHOAcc", 500,0.1, 50, 200, -1., 1.);
+  fHistPtAlphaEtaGGPCMPHOAcc  		= new TH2F("Pt_Alpha_EtaGGPCMPHOAcc","Pt_Alpha_EtaGGPCMPHOAcc", fMaxpT*5, 0.1, fMaxpT/2, 200, -1., 1.);
   SetLogBinningXTH2(fHistPtAlphaEtaGGPCMPHOAcc);
   fHistPtAlphaEtaGGPCMPHOAcc->Sumw2();
   fOutputContainer->Add(fHistPtAlphaEtaGGPCMPHOAcc);
 
+  fHistPtAlphaEtaPrimeGGPCMAcc     		= new TH2F("Pt_Alpha_EtaPrimeGGPCMAcc","Pt_Alpha_EtaPrimeGGPCMAcc", fMaxpT*5, 0.1, fMaxpT/2, 100, 0., 1.);
+  SetLogBinningXTH2(fHistPtAlphaEtaPrimeGGPCMAcc);
+  fHistPtAlphaEtaPrimeGGPCMAcc->Sumw2();
+  fOutputContainer->Add(fHistPtAlphaEtaPrimeGGPCMAcc);
+  fHistPtAlphaEtaPrimeGGEMCAcc     		= new TH2F("Pt_Alpha_EtaPrimeGGEMCAcc","Pt_Alpha_EtaPrimeGGEMCAcc", fMaxpT*5, 0.1, fMaxpT/2, 100, 0., 1.);
+  SetLogBinningXTH2(fHistPtAlphaEtaPrimeGGEMCAcc);
+  fHistPtAlphaEtaPrimeGGEMCAcc->Sumw2();
+  fOutputContainer->Add(fHistPtAlphaEtaPrimeGGEMCAcc);
+  fHistPtAlphaEtaPrimeGGPHOAcc     		= new TH2F("Pt_Alpha_EtaPrimeGGPHOAcc","Pt_Alpha_EtaPrimeGGPHOAcc", fMaxpT*5, 0.1, fMaxpT/2, 100, 0., 1.);
+  SetLogBinningXTH2(fHistPtAlphaEtaPrimeGGPHOAcc);
+  fHistPtAlphaEtaPrimeGGPHOAcc->Sumw2();
+  fOutputContainer->Add(fHistPtAlphaEtaPrimeGGPHOAcc);
+  fHistPtAlphaEtaPrimeGGPCMEMCAcc  		= new TH2F("Pt_Alpha_EtaPrimeGGPCMEMCAcc","Pt_Alpha_EtaPrimeGGPCMEMCAcc", fMaxpT*5, 0.1, fMaxpT/2, 200, -1., 1.);
+  SetLogBinningXTH2(fHistPtAlphaEtaPrimeGGPCMEMCAcc);
+  fHistPtAlphaEtaPrimeGGPCMEMCAcc->Sumw2();
+  fOutputContainer->Add(fHistPtAlphaEtaPrimeGGPCMEMCAcc);
+  fHistPtAlphaEtaPrimeGGPCMPHOAcc  		= new TH2F("Pt_Alpha_EtaPrimeGGPCMPHOAcc","Pt_Alpha_EtaPrimeGGPCMPHOAcc", fMaxpT*5, 0.1, fMaxpT/2, 200, -1., 1.);
+  SetLogBinningXTH2(fHistPtAlphaEtaPrimeGGPCMPHOAcc);
+  fHistPtAlphaEtaPrimeGGPCMPHOAcc->Sumw2();
+  fOutputContainer->Add(fHistPtAlphaEtaPrimeGGPCMPHOAcc);
+
   if (fIsK0 == 1){
-        fHistPtYPi0FromKGG          		= new TH2F("Pt_Y_Pi0FromKGG","Pt_Y_Pi0FromKGG", 1000,0, 100, 200, -1.0, 1.0);
+        fHistPtYPi0FromKGG          		= new TH2F("Pt_Y_Pi0FromKGG","Pt_Y_Pi0FromKGG", fMaxpT*10, 0, fMaxpT, 200, -1.0, 1.0);
         fHistPtYPi0FromKGG->Sumw2();
         fOutputContainer->Add(fHistPtYPi0FromKGG);
-        fHistPtYPi0FromKGGPCMAcc    		= new TH2F("Pt_Y_Pi0FromKGGPCMAcc","Pt_Y_Pi0FromKGGPCMAcc", 1000,0, 100, 200, -1.0, 1.0);
+        fHistPtYPi0FromKGGPCMAcc    		= new TH2F("Pt_Y_Pi0FromKGGPCMAcc","Pt_Y_Pi0FromKGGPCMAcc", fMaxpT*10, 0, fMaxpT, 200, -1.0, 1.0);
         fHistPtYPi0FromKGGPCMAcc->Sumw2();
         fOutputContainer->Add(fHistPtYPi0FromKGGPCMAcc);
-        fHistPtYPi0FromKGGEMCAcc    		= new TH2F("Pt_Y_Pi0FromKGGEMCAcc","Pt_Y_Pi0FromKGGEMCAcc", 1000,0, 100, 200, -1.0, 1.0);
+        fHistPtYPi0FromKGGEMCAcc    		= new TH2F("Pt_Y_Pi0FromKGGEMCAcc","Pt_Y_Pi0FromKGGEMCAcc", fMaxpT*10, 0, fMaxpT, 200, -1.0, 1.0);
         fHistPtYPi0FromKGGEMCAcc->Sumw2();
         fOutputContainer->Add(fHistPtYPi0FromKGGEMCAcc);
-        fHistPtYPi0FromKGGPCMEMCAcc 		= new TH2F("Pt_Y_Pi0FromKGGPCMEMCAcc","Pt_Y_Pi0FromKGGPCMEMCAcc", 1000,0, 100, 200, -1.0, 1.0);
+        fHistPtYPi0FromKGGPCMEMCAcc 		= new TH2F("Pt_Y_Pi0FromKGGPCMEMCAcc","Pt_Y_Pi0FromKGGPCMEMCAcc", fMaxpT*10, 0, fMaxpT, 200, -1.0, 1.0);
         fHistPtYPi0FromKGGPCMEMCAcc->Sumw2();
         fOutputContainer->Add(fHistPtYPi0FromKGGPCMEMCAcc);
-        fHistPtYPi0FromKGGEMCPCMAcc 		= new TH2F("Pt_Y_Pi0FromKGGEMCPCMAcc","Pt_Y_Pi0FromKGGEMCPCMAcc", 1000,0, 100, 200, -1.0, 1.0);
+        fHistPtYPi0FromKGGEMCPCMAcc 		= new TH2F("Pt_Y_Pi0FromKGGEMCPCMAcc","Pt_Y_Pi0FromKGGEMCPCMAcc", fMaxpT*10, 0, fMaxpT, 200, -1.0, 1.0);
         fHistPtYPi0FromKGGEMCPCMAcc->Sumw2();
         fOutputContainer->Add(fHistPtYPi0FromKGGEMCPCMAcc);
-        fHistPtYPi0FromKGGEMCAccSamePi0    = new TH2F("Pt_Y_Pi0FromKGGEMCAccSamePi0","Pt_Y_Pi0FromKGGEMCAccSamePi0", 1000,0, 100, 200, -1.0, 1.0);
+        fHistPtYPi0FromKGGEMCAccSamePi0    = new TH2F("Pt_Y_Pi0FromKGGEMCAccSamePi0","Pt_Y_Pi0FromKGGEMCAccSamePi0", fMaxpT*10, 0, fMaxpT, 200, -1.0, 1.0);
         fHistPtYPi0FromKGGEMCAccSamePi0->Sumw2();
         fOutputContainer->Add(fHistPtYPi0FromKGGEMCAccSamePi0);
-        fHistPtYPi0FromKGGEMCAccDiffPi0  	= new TH2F("Pt_Y_Pi0FromKGGEMCAccDiffPi0","Pt_Y_Pi0FromKGGEMCAccDiffPi0", 1000,0, 100, 200, -1.0, 1.0);
+        fHistPtYPi0FromKGGEMCAccDiffPi0  	= new TH2F("Pt_Y_Pi0FromKGGEMCAccDiffPi0","Pt_Y_Pi0FromKGGEMCAccDiffPi0", fMaxpT*10, 0, fMaxpT, 200, -1.0, 1.0);
         fHistPtYPi0FromKGGEMCAccDiffPi0->Sumw2();
         fOutputContainer->Add(fHistPtYPi0FromKGGEMCAccDiffPi0);
-        fHistPtAlphaPi0FromKGG              = new TH2F("Pt_Alpha_Pi0FromKGG","Pt_Alpha_Pi0FromKGG", 500,0.1, 50, 200, -1., 1.);
-    	SetLogBinningXTH2(fHistPtAlphaPi0FromKGG);
+        fHistPtAlphaPi0FromKGG              = new TH2F("Pt_Alpha_Pi0FromKGG","Pt_Alpha_Pi0FromKGG", fMaxpT*5, 0.1, fMaxpT/2, 200, -1., 1.);
+        SetLogBinningXTH2(fHistPtAlphaPi0FromKGG);
         fHistPtAlphaPi0FromKGG->Sumw2();
         fOutputContainer->Add(fHistPtAlphaPi0FromKGG);
-        fHistPtAlphaPi0FromKGGPCMAcc        = new TH2F("Pt_Alpha_Pi0FromKGGPCMAcc","Pt_Alpha_Pi0FromKGGPCMAcc", 500,0.1, 50, 200, -1., 1.);
-    	SetLogBinningXTH2(fHistPtAlphaPi0FromKGGPCMAcc);
+        fHistPtAlphaPi0FromKGGPCMAcc        = new TH2F("Pt_Alpha_Pi0FromKGGPCMAcc","Pt_Alpha_Pi0FromKGGPCMAcc", fMaxpT*5, 0.1, fMaxpT/2, 200, -1., 1.);
+        SetLogBinningXTH2(fHistPtAlphaPi0FromKGGPCMAcc);
         fHistPtAlphaPi0FromKGGPCMAcc->Sumw2();
         fOutputContainer->Add(fHistPtAlphaPi0FromKGGPCMAcc);
-        fHistPtAlphaPi0FromKGGEMCAcc      = new TH2F("Pt_Alpha_Pi0FromKGGEMCAcc","Pt_Alpha_Pi0FromKGGEMCAcc", 500,0.1, 50, 200, -1., 1.);
-    	SetLogBinningXTH2(fHistPtAlphaPi0FromKGGEMCAcc);
+        fHistPtAlphaPi0FromKGGEMCAcc      = new TH2F("Pt_Alpha_Pi0FromKGGEMCAcc","Pt_Alpha_Pi0FromKGGEMCAcc", fMaxpT*5, 0.1, fMaxpT/2, 200, -1., 1.);
+        SetLogBinningXTH2(fHistPtAlphaPi0FromKGGEMCAcc);
         fHistPtAlphaPi0FromKGGEMCAcc->Sumw2();
         fOutputContainer->Add(fHistPtAlphaPi0FromKGGEMCAcc);
-        fHistPtAlphaPi0FromKGGPCMEMCAcc      = new TH2F("Pt_Alpha_Pi0FromKGGPCMEMCAcc","Pt_Alpha_Pi0FromKGGPCMEMCAcc", 500,0.1, 50, 200, -1., 1.);
-    	SetLogBinningXTH2(fHistPtAlphaPi0FromKGGPCMEMCAcc);
+        fHistPtAlphaPi0FromKGGPCMEMCAcc      = new TH2F("Pt_Alpha_Pi0FromKGGPCMEMCAcc","Pt_Alpha_Pi0FromKGGPCMEMCAcc", fMaxpT*5, 0.1, fMaxpT/2, 200, -1., 1.);
+        SetLogBinningXTH2(fHistPtAlphaPi0FromKGGPCMEMCAcc);
         fHistPtAlphaPi0FromKGGPCMEMCAcc->Sumw2();
         fOutputContainer->Add(fHistPtAlphaPi0FromKGGPCMEMCAcc);
-        fHistPtAlphaPi0FromKGGEMCPCMAcc      = new TH2F("Pt_Alpha_Pi0FromKGGEMCPCMAcc","Pt_Alpha_Pi0FromKGGEMCPCMAcc", 500,0.1, 50, 200, -1., 1.);
+        fHistPtAlphaPi0FromKGGEMCPCMAcc      = new TH2F("Pt_Alpha_Pi0FromKGGEMCPCMAcc","Pt_Alpha_Pi0FromKGGEMCPCMAcc", fMaxpT*5, 0.1, fMaxpT/2, 200, -1., 1.);
     	SetLogBinningXTH2(fHistPtAlphaPi0FromKGGEMCPCMAcc);
         fHistPtAlphaPi0FromKGGEMCPCMAcc->Sumw2();
         fOutputContainer->Add(fHistPtAlphaPi0FromKGGEMCPCMAcc);
-        fHistPtAlphaPi0FromKGGEMCAccSamePi0      = new TH2F("Pt_Alpha_Pi0FromKGGEMCAccSamePi0","Pt_Alpha_Pi0FromKGGEMCAccSamePi0", 500,0.1, 50, 200, -1., 1.);
+        fHistPtAlphaPi0FromKGGEMCAccSamePi0      = new TH2F("Pt_Alpha_Pi0FromKGGEMCAccSamePi0","Pt_Alpha_Pi0FromKGGEMCAccSamePi0", fMaxpT*5, 0.1, fMaxpT/2, 200, -1., 1.);
     	SetLogBinningXTH2(fHistPtAlphaPi0FromKGGEMCAccSamePi0);
         fHistPtAlphaPi0FromKGGEMCAccSamePi0->Sumw2();
         fOutputContainer->Add(fHistPtAlphaPi0FromKGGEMCAccSamePi0);
-        fHistPtAlphaPi0FromKGGEMCAccDiffPi0      = new TH2F("Pt_Alpha_Pi0FromKGGEMCAccDiffPi0","Pt_Alpha_Pi0FromKGGEMCAccDiffPi0", 500,0.1, 50, 200, -1., 1.);
+        fHistPtAlphaPi0FromKGGEMCAccDiffPi0      = new TH2F("Pt_Alpha_Pi0FromKGGEMCAccDiffPi0","Pt_Alpha_Pi0FromKGGEMCAccDiffPi0", fMaxpT*5, 0.1, fMaxpT/2, 200, -1., 1.);
     	SetLogBinningXTH2(fHistPtAlphaPi0FromKGGEMCAccDiffPi0);
         fHistPtAlphaPi0FromKGGEMCAccDiffPi0->Sumw2();
         fOutputContainer->Add(fHistPtAlphaPi0FromKGGEMCAccDiffPi0);
@@ -594,7 +639,7 @@ void AliAnalysisTaskGammaPureMC::ProcessMCParticles()
     else
       hasMother                 = kFALSE;
 
-    const std::array<int, 18> kAcceptPdgCodes = {kPdgPi0, kPdgEta, kPdgEtaPrime, kPdgOmega, kPdgPiPlus, kPdgRho0, kPdgPhi, kPdgJPsi, kPdgSigma0, kPdgK0Short, kPdgDeltaPlus, kPdgDeltaPlusPlus, kPdgDeltaMinus, kPdgDelta0, kPdgRhoPlus, kPdgKStar, kPdgK0Long, kPdgLambda};
+    const std::array<int, 19> kAcceptPdgCodes = {kPdgPi0, kPdgEta, kPdgEtaPrime, kPdgOmega, kPdgPiPlus, kPdgRho0, kPdgPhi, kPdgJPsi, kPdgSigma0, kPdgK0Short, kPdgDeltaPlus, kPdgDeltaPlusPlus, kPdgDeltaMinus, kPdgDelta0, kPdgRhoPlus, kPdgKStar, kPdgK0Long, kPdgLambda, kPdgKPlus};
     if(std::find(kAcceptPdgCodes.begin(), kAcceptPdgCodes.end(), TMath::Abs(particle->GetPdgCode())) ==  kAcceptPdgCodes.end()) continue;  // species not supported
 
     if (!(TMath::Abs(particle->Energy()-particle->Pz())>0.)) continue;
@@ -625,7 +670,7 @@ void AliAnalysisTaskGammaPureMC::ProcessMCParticles()
       fHistPtYEta->Fill(particle->Pt(), particle->Y());
       break;
     case kPdgEtaPrime:
-      fHistPtYEtaPrim->Fill(particle->Pt(), particle->Y());
+      fHistPtYEtaPrime->Fill(particle->Pt(), particle->Y());
       break;
     case kPdgOmega:
       fHistPtYOmega->Fill(particle->Pt(), particle->Y());
@@ -691,6 +736,12 @@ void AliAnalysisTaskGammaPureMC::ProcessMCParticles()
       break;
     case kPdgLambda:
       fHistPtYLambda->Fill(particle->Pt(), particle->Y());
+      break;
+    case kPdgKPlus:
+      fHistPtYKPl->Fill(particle->Pt(), particle->Y());
+      break;
+    case kPdgKMinus:
+      fHistPtYKMi->Fill(particle->Pt(), particle->Y());
       break;
     }
 
@@ -794,21 +845,33 @@ void AliAnalysisTaskGammaPureMC::ProcessMCParticles()
         }
       }
       if (particle->GetPdgCode()==kPdgEtaPrime){
-        fHistPtYEtaPrimGG->Fill(particle->Pt(), particle->Y());
-        if (TESTBIT(acceptanceGamma[0], kPCMAcceptance) && TESTBIT(acceptanceGamma[1], kPCMAcceptance))
-          fHistPtYEtaPrimGGPCMAcc->Fill(particle->Pt(), particle->Y());
-        if (TESTBIT(acceptanceGamma[0], kEMCALAcceptance) && TESTBIT(acceptanceGamma[1], kEMCALAcceptance))
-          fHistPtYEtaPrimGGEMCAcc->Fill(particle->Pt(), particle->Y());
-        if (TESTBIT(acceptanceGamma[0], kPHOSAcceptance) && TESTBIT(acceptanceGamma[1], kPHOSAcceptance))
-          fHistPtYEtaPrimGGPHOAcc->Fill(particle->Pt(), particle->Y());
+        fHistPtYEtaPrimeGG->Fill(particle->Pt(), particle->Y());
+        if (TESTBIT(acceptanceGamma[0], kPCMAcceptance) && TESTBIT(acceptanceGamma[1], kPCMAcceptance)){
+          fHistPtYEtaPrimeGGPCMAcc->Fill(particle->Pt(), particle->Y());
+          fHistPtAlphaEtaPrimeGGPCMAcc->Fill(particle->Pt(), TMath::Abs(alpha));
+        }
+        if (TESTBIT(acceptanceGamma[0], kEMCALAcceptance) && TESTBIT(acceptanceGamma[1], kEMCALAcceptance)){
+          fHistPtYEtaPrimeGGEMCAcc->Fill(particle->Pt(), particle->Y());
+          fHistPtAlphaEtaPrimeGGEMCAcc->Fill(particle->Pt(), TMath::Abs(alpha));
+        }
+        if (TESTBIT(acceptanceGamma[0], kPHOSAcceptance) && TESTBIT(acceptanceGamma[1], kPHOSAcceptance)){
+          fHistPtYEtaPrimeGGPHOAcc->Fill(particle->Pt(), particle->Y());
+          fHistPtAlphaEtaPrimeGGPHOAcc->Fill(particle->Pt(), TMath::Abs(alpha));
+        }
         if ( (TESTBIT(acceptanceGamma[0], kPCMAcceptance)  && TESTBIT(acceptanceGamma[1], kEMCALAcceptance)) ||
             (TESTBIT(acceptanceGamma[1], kPCMAcceptance) && TESTBIT(acceptanceGamma[0], kEMCALAcceptance))
-        )
-          fHistPtYEtaPrimGGPCMEMCAcc->Fill(particle->Pt(), particle->Y());
+        ){
+          fHistPtYEtaPrimeGGPCMEMCAcc->Fill(particle->Pt(), particle->Y());
+          if (!TESTBIT(acceptanceGamma[1], kEMCALAcceptance)) alpha = (energyGamma[1]-energyGamma[0])/(energyGamma[0]+energyGamma[1]);
+          fHistPtAlphaEtaPrimeGGPCMEMCAcc->Fill(particle->Pt(), alpha);
+        }
         if ( (TESTBIT(acceptanceGamma[0], kPCMAcceptance) && TESTBIT(acceptanceGamma[1], kPHOSAcceptance)) ||
             (TESTBIT(acceptanceGamma[1], kPCMAcceptance) && TESTBIT(acceptanceGamma[0], kPHOSAcceptance))
-        )
-          fHistPtYEtaPrimGGPCMPHOAcc->Fill(particle->Pt(), particle->Y());
+        ){
+          fHistPtYEtaPrimeGGPCMPHOAcc->Fill(particle->Pt(), particle->Y());
+          if (TESTBIT(!acceptanceGamma[1],kPHOSAcceptance)) alpha = (energyGamma[1]-energyGamma[0])/(energyGamma[0]+energyGamma[1]);
+          fHistPtAlphaEtaPrimeGGPCMPHOAcc->Fill(particle->Pt(), alpha);
+        }
       }
     }
 

@@ -26,9 +26,10 @@
 //______________________________________________________________________________
 AliJIaaHistograms::AliJIaaHistograms(AliJCard* cardP) :
 	AliJHistogramInterface(cardP),
-    //fhDEtaNear(),
-    //fhDEtaNearM(),
+	//fhDEtaNear(),
+	//fhDEtaNearM(),
 	fhDphiDetaPta(),
+	//fhResonanceCut(),
 	fhIphiTrigg(),
 	fhIetaTrigg(),
 	fhIphiAssoc(),
@@ -42,8 +43,8 @@ AliJIaaHistograms::AliJIaaHistograms(AliJCard* cardP) :
 	fhIphiAssocFromFile(),
 	fhLPpt(),
 	fhChargedPt(),
-    fhChargedPtPublished(),
 	fhChargedPtNoCorr(),
+	fhChargedPtPublished(),
 	fhTrackingEfficiency(),
 	fhChargedEta(),
 	fhLPeta(),
@@ -51,7 +52,8 @@ AliJIaaHistograms::AliJIaaHistograms(AliJCard* cardP) :
 	fhCentr(),
 	fhiCentr(),
 	fhZVert(),
-	fhResonanceCut(),
+	fhEP(),
+	fhPhiS(),
 	fmaxEtaRange(0)
 {
 	fmaxEtaRange = fCard->Get("EtaRange");
@@ -60,9 +62,10 @@ AliJIaaHistograms::AliJIaaHistograms(AliJCard* cardP) :
 //______________________________________________________________________________
 AliJIaaHistograms::AliJIaaHistograms(const AliJIaaHistograms& obj) :
 	AliJHistogramInterface(obj),
-    //fhDEtaNear(obj.fhDEtaNear),
-    //fhDEtaNearM(obj.fhDEtaNearM),
+	//fhDEtaNear(obj.fhDEtaNear),
+	//fhDEtaNearM(obj.fhDEtaNearM),
 	fhDphiDetaPta(obj.fhDphiDetaPta),
+	//fhResonanceCut(obj.fhResonanceCut),
 	fhIphiTrigg(obj.fhIphiTrigg),
 	fhIetaTrigg(obj.fhIetaTrigg),
 	fhIphiAssoc(obj.fhIphiAssoc),
@@ -76,8 +79,8 @@ AliJIaaHistograms::AliJIaaHistograms(const AliJIaaHistograms& obj) :
 	fhIphiAssocFromFile(obj.fhIphiAssocFromFile),
 	fhLPpt(obj.fhLPpt),
 	fhChargedPt(obj.fhChargedPt),
-    fhChargedPtPublished(obj.fhChargedPtPublished),
 	fhChargedPtNoCorr(obj.fhChargedPtNoCorr),
+	fhChargedPtPublished(obj.fhChargedPtPublished),
 	fhTrackingEfficiency(obj.fhTrackingEfficiency),
 	fhChargedEta(obj.fhChargedEta),
 	fhLPeta(obj.fhLPeta),
@@ -85,7 +88,8 @@ AliJIaaHistograms::AliJIaaHistograms(const AliJIaaHistograms& obj) :
 	fhCentr(obj.fhCentr),
 	fhiCentr(obj.fhiCentr),
 	fhZVert(obj.fhZVert),
-	fhResonanceCut(obj.fhResonanceCut),
+	fhEP(obj.fhEP),
+	fhPhiS(obj.fhPhiS),
 	fmaxEtaRange(obj.fmaxEtaRange)
 {
 	// copy constructor
@@ -139,48 +143,48 @@ void AliJIaaHistograms::CreateCorrelationHistograms()
 	double pTa2 = fPTaBin.GetMax();
 
 	fhIphiTrigg
-            << TH1D( "fhIphiTrigg", "",  bins, -kJPi, kJPi)
-			<<  fCentBin << fPTtBin  << "END";
+		<< TH1D( "fhIphiTrigg", "",  bins, -kJPi, kJPi)
+		<<  fCentBin << fPTtBin  << "END";
 	fhIetaTrigg
-			<< TH1D( "hIetaTrigg", "",  80, -fmaxEtaRange, fmaxEtaRange)
-			<<  fCentBin << fPTtBin  << "END";// inclusive eta
-    fhTriggPtBin // all triggers
-			<< TH1D( "hTriggPtBin", "", (int)TMath::Ceil((pTt2-pTt1)/ptbw),pTt1, pTt2)
-			<<  fCentBin << fVtxBin << fPTtBin  << "END";
+		<< TH1D( "hIetaTrigg", "",  80, -fmaxEtaRange, fmaxEtaRange)
+		<<  fCentBin << fPTtBin  << "END";// inclusive eta
+	fhTriggPtBin // all triggers
+		<< TH1D( "hTriggPtBin", "", (int)TMath::Ceil((pTt2-pTt1)/ptbw),pTt1, pTt2)
+		<<  fCentBin << fVtxBin << fPTtBin  << "END";
 
 	//=======================================
 	//  associated pt histos
 	//=======================================
 	fhAssocPtBin
-			<< TH1D( "hAssocPtBin", "", (int)TMath::Ceil((pTa2-pTa1)/ptbw), pTa1, pTa2)
-			<<  fCentBin << fPTtBin << fPTaBin  << "END";
+		<< TH1D( "hAssocPtBin", "", (int)TMath::Ceil((pTa2-pTa1)/ptbw), pTa1, pTa2)
+		<<  fCentBin << fPTtBin << fPTaBin  << "END";
 	fhIphiAssoc
-            << TH1D( "fhIphiAssoc", "",  bins, -kJPi, kJPi)
-			<<  fCentBin << fPTaBin  << "END";
+		<< TH1D( "fhIphiAssoc", "",  bins, -kJPi, kJPi)
+		<<  fCentBin << fPTaBin  << "END";
 	fhIetaAssoc
-			<< TH1D( "hIetaAssoc", "",  80, -fmaxEtaRange, fmaxEtaRange)
-			<<  fCentBin << fPTaBin  << "END";
+		<< TH1D( "hIetaAssoc", "",  80, -fmaxEtaRange, fmaxEtaRange)
+		<<  fCentBin << fPTaBin  << "END";
 
 
 	//======================================
 	// correlation histos (and mixed event)
 	//======================================
 
-    //fhDEtaNear
-    //		<< TH1D( "hDEtaNear", "",  160, -2*fmaxEtaRange, 2*fmaxEtaRange)
-    //        <<  fCentBin << fVtxBin << fPhiGapBin << fPTtBin << fPTaBin  << "END";
+	//fhDEtaNear
+	//		<< TH1D( "hDEtaNear", "",  160, -2*fmaxEtaRange, 2*fmaxEtaRange)
+	//        <<  fCentBin << fVtxBin << fPhiGapBin << fPTtBin << fPTaBin  << "END";
 
-    //fhDEtaNearM
-    //		<< TH1D( "hDEtaNearM", "",  160, -2*fmaxEtaRange, 2*fmaxEtaRange)
-    //        <<  fCentBin << fVtxBin << fPhiGapBin << fPTtBin << fPTaBin  << "END";
+	//fhDEtaNearM
+	//		<< TH1D( "hDEtaNearM", "",  160, -2*fmaxEtaRange, 2*fmaxEtaRange)
+	//        <<  fCentBin << fVtxBin << fPhiGapBin << fPTtBin << fPTaBin  << "END";
 
 	fhDphiDetaPta
-            << TH2D( "hDphiDetaPta", "", 160, -2*fmaxEtaRange, 2*fmaxEtaRange, 80, -0.5*kJPi, 1.5*kJPi)
-			<<  fTypBin <<  fCentBin << fVtxBin << fPTtBin << fPTaBin  << "END";
+		<< TH2D( "hDphiDetaPta", "", 160, -2*fmaxEtaRange, 2*fmaxEtaRange, 80, -0.5*kJPi, 1.5*kJPi)
+		<<  fTypBin <<  fCentBin << fVtxBin << fPTtBin << fPTaBin  << "END";
 
-	fhResonanceCut
-            << TH2D( "hResonanceCut", "", 160, -2*fmaxEtaRange, 2*fmaxEtaRange, 80, -0.5*kJPi, 1.5*kJPi)
-			<<  fTypBin <<  fCentBin << fVtxBin << fPTtBin << fPTaBin  << "END";
+	//fhResonanceCut
+	//	<< TH2D( "hResonanceCut", "", 160, -2*fmaxEtaRange, 2*fmaxEtaRange, 80, -0.5*kJPi, 1.5*kJPi)
+	//	<<  fTypBin <<  fCentBin << fVtxBin << fPTtBin << fPTaBin  << "END";
 
 	delete [] uEBinBorders;
 }
@@ -198,8 +202,8 @@ void AliJIaaHistograms::CreateEventTrackHistos(){
 	double logBW = (log(limH)-log(limL))/nBINS;
 	for(int ij=0;ij<=nBINS;ij++) logBinsX[ij]=limL*exp(ij*logBW);
 
-    double xbins_pub[] = {0.15,   0.2,    0.25,   0.3,    0.35,   0.4,    0.45,   0.5,    0.55,   0.6,    0.65,   0.7,    0.75,   0.8,    0.85,   0.9,    0.95,   1,  1.1,    1.2,    1.3,    1.4,    1.5,    1.6,    1.7,    1.8,    1.9,    2,  2.2,    2.4,    2.6,    2.8,    3,  3.2,    3.4,    3.6,    3.8,    4,  4.5,    5,  5.5,    6,  6.5,    7,  8,  9,  10, 11, 12, 13, 14, 15, 16, 18, 20, 22, 24,26,  28, 30, 32, 34, 36, 40, 45};
-    const int nbins_pub = 64;
+	double xbins_pub[] = {0.15,   0.2,    0.25,   0.3,    0.35,   0.4,    0.45,   0.5,    0.55,   0.6,    0.65,   0.7,    0.75,   0.8,    0.85,   0.9,    0.95,   1,  1.1,    1.2,    1.3,    1.4,    1.5,    1.6,    1.7,    1.8,    1.9,    2,  2.2,    2.4,    2.6,    2.8,    3,  3.2,    3.4,    3.6,    3.8,    4,  4.5,    5,  5.5,    6,  6.5,    7,  8,  9,  10, 11, 12, 13, 14, 15, 16, 18, 20, 22, 24,26,  28, 30, 32, 34, 36, 40, 45};
+	const int nbins_pub = 64;
 
 	fhLPpt       << TH1D("hLPpt","LP pt", nBINS, logBinsX ) << "END";
 	fhChargedEta << TH1D("hChargedEta","All eta",100,-1.0,1.0)<< "END";
@@ -209,23 +213,29 @@ void AliJIaaHistograms::CreateEventTrackHistos(){
 	fhZVert      << TH1D("hZVert", "", 100, -30., 30.) << fCentBin << "END";
 
 	fhChargedMult
-			<< TH1D("hChargedMult","", 300, 0., 3500.)
-			<< fCentBin << "END";
+		<< TH1D("hChargedMult","", 300, 0., 3500.)
+		<< fCentBin << "END";
 	fhZVert
-			<< TH1D("hZVert", "", 100, -30., 30.)
-			<< fCentBin << "END";
+		<< TH1D("hZVert", "", 100, -30., 30.)
+		<< fCentBin << "END";
+	fhEP
+		<< TH1D( "fhEP", "",  240, -kJPi, kJPi)
+		<<  fCentBin << "END";
+	fhPhiS
+		<< TH1D( "fhPhiS", "",  1200, -1., 360.1)
+		<<  fCentBin << fPTtBin << "END"; // in degree 0-360
 	fhChargedPt
-			<< TH1D("hChargedPt","", nBINS, logBinsX )
-			<< fCentBin << "END";
-    fhChargedPtPublished
-            << TH1D("hChargedPtPublished","",nbins_pub,xbins_pub)
-            << fCentBin << "END";
+		<< TH1D("hChargedPt","", nBINS, logBinsX )
+		<< fCentBin << "END";
+	fhChargedPtPublished
+		<< TH1D("hChargedPtPublished","",nbins_pub,xbins_pub)
+		<< fCentBin << "END";
 	fhChargedPtNoCorr
-			<< TH1D("hChargedPtNoCorr","", nBINS, logBinsX )
-			<< fCentBin << "END";
+		<< TH1D("hChargedPtNoCorr","", nBINS, logBinsX )
+		<< fCentBin << "END";
 	fhTrackingEfficiency
-			<< TProfile("hTrackingEff","",nBINS, logBinsX)
-			<< fCentBin << "END";
+		<< TProfile("hTrackingEff","",nBINS, logBinsX)
+		<< fCentBin << "END";
 }
 
 

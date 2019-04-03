@@ -45,6 +45,8 @@ public:
    // called at end of analysis
    virtual void Terminate(Option_t* option);
 
+
+   enum Detector {kITS, kTPC, kTOF};
    Bool_t               GetEnablePhysicsSelection() const   {return fSelectPhysics; }
    Int_t                GetTriggerMask() const              {return fTriggerMask; }
    AliAnalysisCuts*     GetEventFilter()                    {return fEventFilter;}
@@ -56,9 +58,17 @@ public:
    // MC Signal setter
    void   AddSingleLegMCSignal(AliDielectronSignalMC signal1)         {fSingleLegMCSignal.push_back(signal1);}
    void   AddPairMCSignal(AliDielectronSignalMC signal1)              {fPairMCSignal.push_back(signal1);}
+   void   AddMCSignalsWhereDielectronPairNotFromSameMother(std::vector<bool> vec) {fDielectronPairNotFromSameMother = vec;}
+
+   // PID correction functions
+   void   SetCentroidCorrFunction(Detector det, TObject *fun, UInt_t varx, UInt_t vary=0, UInt_t varz=0);
+   void   SetWidthCorrFunction   (Detector det, TObject *fun, UInt_t varx, UInt_t vary=0, UInt_t varz=0);
+
 
    // Generator
-   void   SetGeneratorName(TString generatorName) { fGeneratorName = generatorName;}
+   void   SetGeneratorName         (TString generatorName) { fGeneratorName = generatorName;}
+   void   SetGeneratorMCSignalName (TString generatorName) { fGeneratorMCSignalName  = generatorName;}
+   void   SetGeneratorULSSignalName(TString generatorName) { fGeneratorULSSignalName = generatorName;}
 
    // Event setter
    void   SetEnablePhysicsSelection(Bool_t selectPhysics)   {fSelectPhysics = selectPhysics;}
@@ -74,6 +84,7 @@ public:
    // Resolution setter
    void   SetResolutionFile(std::string filename) {fResoFilename = filename; }
    void   SetResolutionFileFromAlien(std::string filename) {fResoFilenameFromAlien = filename; }
+   void   SetSmearGenerated(bool setSmearingGen) { fDoGenSmearing = setSmearingGen; }
    void   SetResolutionDeltaPtBinsLinear (const double min, const double max, const unsigned int steps){SetBinsLinear("ptDelta_reso", min, max, steps);}
    void   SetResolutionRelPtBinsLinear   (const double min, const double max, const unsigned int steps){SetBinsLinear("ptRel_reso", min, max, steps);}
    void   SetResolutionEtaBinsLinear  (const double min, const double max, const unsigned int steps){SetBinsLinear("eta_reso", min, max, steps);}
@@ -90,12 +101,15 @@ public:
    void   SetThetaBinsLinear(const double min, const double max, const unsigned int steps){SetBinsLinear("theta", min, max, steps);}
 
    // pair binning setter
+   void   SetMassBins(std::vector<double> massBins){fMassBins=massBins;}
    void   SetMassBinsLinear(const double min, const double max, const unsigned int steps){SetBinsLinear("mass", min, max, steps);}
+   void   SetPairPtBins(std::vector<double> pairptBins){ fPairPtBins = pairptBins;}
    void   SetPairPtBinsLinear(const double min, const double max, const unsigned int steps){SetBinsLinear("pairpt", min, max, steps);}
 
    // Pair related setter
    void   SetDoPairing(Bool_t doPairing) {fDoPairing = doPairing;}
    void   SetULSandLS(Bool_t doULSandLS) {fDoULSandLS = doULSandLS;}
+   void   SetDeactivateLS(Bool_t deactivateLS) {fDeactivateLS = deactivateLS;}
    void   SetKinematicCuts(double ptMin, double ptMax, double etaMin, double etaMax) {fPtMin = ptMin; fPtMax = ptMax; fEtaMin = etaMin; fEtaMax = etaMax;}
 
    // Set Cocktail waiting
@@ -115,13 +129,20 @@ public:
   class Particle{
   public:
     Particle() :
-      fPt(-99), fEta(-99), fPhi(-99), fCharge(-99), fPt_smeared(0.), fEta_smeared(0.), fPhi_smeared(0.), fTrackID(0), fMotherID(0), isMCSignal(), isReconstructed() {}
+      fPt(-99), fEta(-99), fPhi(-99), fCharge(-99), fPt_smeared(0.), fEta_smeared(0.), fPhi_smeared(0.), fTrackID(0), fMotherID(0), fMCSignalPair(false), fULSSignalPair(false), isMCSignal(), isReconstructed(), DielectronPairFromSameMother() {}
     Particle(double pt, double eta, double phi, short charge) :
-      fPt(pt), fEta(eta), fPhi(phi), fCharge(charge), fPt_smeared(0.), fEta_smeared(0.), fPhi_smeared(0.), fTrackID(0), fMotherID(0), isMCSignal(), isReconstructed() {}
+      fPt(pt), fEta(eta), fPhi(phi), fCharge(charge), fPt_smeared(0.), fEta_smeared(0.), fPhi_smeared(0.), fTrackID(0), fMotherID(0), fMCSignalPair(false), fULSSignalPair(false), isMCSignal(), isReconstructed(), DielectronPairFromSameMother() {}
+
     void SetTrackID(int id) {fTrackID = id;}
     void SetMotherID(int id) {fMotherID = id;}
+    void SetMCSignalPair (bool value) {fMCSignalPair = value;}
+    void SetULSSignalPair(bool value) {fULSSignalPair = value;}
+    void SetDielectronPairFromSameMother(std::vector<Bool_t> vec){DielectronPairFromSameMother = vec;}
+
     int  GetTrackID() {return fTrackID;}
     int  GetMotherID() {return fMotherID;}
+    bool GetMCSignalPair() {return fMCSignalPair;}
+    bool GetULSSignalPair() {return fULSSignalPair;}
 
     double  fPt;
     double  fEta;
@@ -132,8 +153,11 @@ public:
     double  fPhi_smeared;
     int     fTrackID;
     int     fMotherID;
+    bool    fMCSignalPair;
+    bool    fULSSignalPair;
     std::vector<Bool_t> isMCSignal;
     std::vector<Bool_t> isReconstructed;
+    std::vector<Bool_t> DielectronPairFromSameMother;
   };
 
 private:
@@ -144,15 +168,15 @@ private:
   void    SetPIDResponse(AliPIDResponse *fPIDRespIn)        {fPIDResponse = fPIDRespIn;}
   void    CheckSingleLegMCsignals(std::vector<Bool_t>& vec, const int track);
   void    CheckPairMCsignals(std::vector<Bool_t>& vec, AliVParticle* part1, AliVParticle* part2);
-  bool    CheckGenerator(int trackID, TString generator);
-
+  bool    CheckGenerator(int trackID, std::vector<unsigned int> vecHashes);
+  void    CheckIfFromMotherWithDielectronAsDaughter(Particle& part);
   Bool_t  CheckIfOneIsTrue(std::vector<Bool_t>& vec);
 
   Particle    CreateParticle(AliVParticle* part);
 
   void    CreateSupportHistos();
 
-  void    FillTrackHistograms(AliVParticle* track);
+  void    FillTrackHistograms(AliVParticle* track, AliVParticle* mcTrack);
 
   TLorentzVector ApplyResolution(double pt, double eta, double phi, short ch);
   Double_t GetSmearing(TObjArray *arr, Double_t x);
@@ -175,10 +199,13 @@ private:
   TList* fResolutionList;
 
   TH2D* fPGen_DeltaP;
+  TH2D* fPGen_PrecOverPGen;
   TH2D* fPtGen_DeltaPt;
   TH2D* fPtGen_DeltaPtOverPtGen;
-  TH2D* fPGen_PrecOverPGen;
   TH2D* fPtGen_PtRecOverPtGen;
+  TH2D* fPtGen_DeltaPt_wGenSmeared;
+  TH2D* fPtGen_DeltaPtOverPtGen_wGenSmeared;
+  TH2D* fPtGen_PtRecOverPtGen_wGenSmeared;
   TH2D* fPGen_DeltaEta;
   TH2D* fPtGen_DeltaEta;
   TH2D* fPGen_DeltaTheta;
@@ -201,6 +228,7 @@ private:
   std::vector<double> fResolutionThetaBins;
   std::vector<double> fMassBins;
   std::vector<double> fPairPtBins;
+  bool fDoGenSmearing;
 
   double  fPtMin; // Kinematic cut for pairing
   double  fPtMax; // Kinematic cut for pairing
@@ -214,8 +242,14 @@ private:
 
   std::vector<AliDielectronSignalMC> fSingleLegMCSignal;
   std::vector<AliDielectronSignalMC> fPairMCSignal;
+  std::vector<bool> fDielectronPairNotFromSameMother; // this is used to get electrons from charmed mesons in a environment where GEANT is doing the decay of D mesons, like in LHC18b5a
 
   TString fGeneratorName;
+  TString fGeneratorMCSignalName;
+  TString fGeneratorULSSignalName;
+  std::vector<unsigned int> fGeneratorHashs;
+  std::vector<unsigned int> fGeneratorMCSignalHashs;
+  std::vector<unsigned int> fGeneratorULSSignalHashs;
 
   AliPIDResponse* fPIDResponse;
   AliVEvent*      fEvent;
@@ -261,6 +295,7 @@ private:
 
   Bool_t fDoPairing;
   Bool_t fDoULSandLS;
+  Bool_t fDeactivateLS;
   std::vector<Particle> fGenNegPart;
   std::vector<Particle> fGenPosPart;
   std::vector<Particle> fRecNegPart;
@@ -277,6 +312,14 @@ private:
   TH1F* fPtOmega;
   TH1F* fPtPhi;
   TH1F* fPtJPsi;
+
+  TH1* fPostPIDCntrdCorrTPC;     // post pid correction object for centroids in TPC
+  TH1* fPostPIDWdthCorrTPC;      // post pid correction object for widths in TPC
+  TH1* fPostPIDCntrdCorrITS;     // post pid correction object for centroids in ITS
+  TH1* fPostPIDWdthCorrITS;      // post pid correction object for widths in ITS
+  TH1* fPostPIDCntrdCorrTOF;     // post pid correction object for centroids in TOF
+  TH1* fPostPIDWdthCorrTOF;      // post pid correction object for widths in TOF
+
 
   AliAnalysisTaskElectronEfficiencyV2(const AliAnalysisTaskElectronEfficiencyV2&); // not implemented
   AliAnalysisTaskElectronEfficiencyV2& operator=(const AliAnalysisTaskElectronEfficiencyV2&); // not implemented

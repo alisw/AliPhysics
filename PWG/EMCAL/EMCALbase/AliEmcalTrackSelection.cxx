@@ -34,7 +34,7 @@
 #include "AliVCuts.h"
 #include "AliVTrack.h"
 #include "AliVEvent.h"
-#include "iostream"
+#include <iostream>
 
 /// \cond CLASSIMP
 ClassImp(AliEmcalManagedObject)
@@ -116,6 +116,10 @@ void AliEmcalTrackSelection::AddTrackCuts(PWG::EMCAL::AliEmcalCutBase *cuts) {
 }
 
 void AliEmcalTrackSelection::AddTrackCuts(TObjArray *cuts){
+  if(!cuts) {
+    AliErrorStream() << "Not setting cuts since cut array is null" << std::endl; 
+    return;
+  }
   for(auto c : *cuts){
     PWG::EMCAL::AliEmcalCutBase *emccuts = dynamic_cast<PWG::EMCAL::AliEmcalCutBase*>(c);
     if(emccuts){

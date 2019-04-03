@@ -11,7 +11,7 @@
 #include <TCanvas.h>
 #include <TText.h>
 
-#include "AliVdMData.h"
+#include "AliVdMMetaData.h"
 
 
 void PlotBkgd(TCanvas *c1, Int_t fillNumber, TTree *TE, const AliXMLEngine::Node& n, const TCut& vtxCuts) {
@@ -23,8 +23,8 @@ void PlotBkgd(TCanvas *c1, Int_t fillNumber, TTree *TE, const AliXMLEngine::Node
   const Double_t *timeEnd   = tSep.GetV2();
 
   Printf("%s %d %.0f %.0f",
-         AliVdMData::GetScanName(n).Data(),
-         AliVdMData::GetScanType(n),
+         AliVdMMetaData::GetScanName(n).Data(),
+         AliVdMMetaData::GetScanType(n),
          timeStart[0], timeEnd[m-1]);
 
   TCut timeCut(TString::Format("timestamp>%.0f && timestamp<%.0f", timeStart[0], timeEnd[m-1]));
@@ -39,7 +39,7 @@ void PlotBkgd(TCanvas *c1, Int_t fillNumber, TTree *TE, const AliXMLEngine::Node
   TText tt;
   tt.SetTextSize(0.05);
   tt.SetTextAlign(21);
-  tt.DrawTextNDC(0.5, 0.96, TString::Format("Fill %d ", fillNumber)+AliVdMData::GetScanName(n));
+  tt.DrawTextNDC(0.5, 0.96, TString::Format("Fill %d ", fillNumber)+AliVdMMetaData::GetScanName(n));
 
   TString binsX = TString::Format("%.0f,%.0f,%.0f", timeEnd[m-1]-timeStart[0], timeStart[0], timeEnd[m-1]);
 

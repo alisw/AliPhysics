@@ -84,7 +84,10 @@ ClassImp(AliNanoAODReplicator)
 //_____________________________________________________________________________
 AliNanoAODReplicator::AliNanoAODReplicator() :
 AliAODBranchReplicator(), 
-  fTrackCut(0), fTracks(0x0), fHeader(0x0), fNTracksVariables(0), // FIXME: Start using cuts, and check if fNTracksVariables is needed
+  fTrackCuts(0), 
+  fV0Cuts(0), 
+  fTracks(0x0), 
+  fHeader(0x0), 
   fVertices(0x0), 
   fList(0x0),
   fMCParticles(0x0),
@@ -94,69 +97,54 @@ AliAODBranchReplicator(),
   fParticleSelected(),
   fVarList(""),
   fVarListHeader(""),
-  fCustomSetter(0),
+  fVarListHeader_fTC(""),
+  fCustomSetters(),
   fVzero(0x0),
   fAodZDC(0x0),
-  fNumberOfHeaderParam(0),
-  fNumberOfHeaderParamInt(0),
-  fSaveAODZDC(0),
+  fV0s(0x0),
+  fSaveZDC(0),
   fSaveVzero(0),
+  fSaveV0s(0),
   fInputArrayName(""),
-  fOutputArrayName("tracks"),
-  fVarListHeader_fTC(""){
+  fOutputArrayName("tracks")
+  {
   // Default ctor. we need it to avoid instantiating a wrong mapping when reading from file
   }
 
-AliNanoAODReplicator::AliNanoAODReplicator(const char* name, const char* title,
-					   const char * varlist,
-					   const char * varListHeader,
-					   AliAnalysisCuts* trackCut,
-					   Int_t mcMode
-					     ) :
+AliNanoAODReplicator::AliNanoAODReplicator(const char* name, const char* title) :
   AliAODBranchReplicator(name,title), 
-
-  fTrackCut(trackCut), fTracks(0x0), fHeader(0x0), fNTracksVariables(0), // FIXME: Start using cuts, and check if fNTracksVariables is needed
+  fTrackCuts(0), 
+  fV0Cuts(0), 
+  fTracks(0x0), 
+  fHeader(0x0), 
   fVertices(0x0), 
   fList(0x0),
   fMCParticles(0x0),
   fMCHeader(0x0),
-  fMCMode(mcMode),
+  fMCMode(0),
   fLabelMap(),
   fParticleSelected(),
-  fVarList(varlist),
-  fVarListHeader(varListHeader),
-  fCustomSetter(0),
+  fVarList(""),
+  fVarListHeader(""),
+  fVarListHeader_fTC(""),
+  fCustomSetters(),
   fVzero(0x0),
   fAodZDC(0x0),
-  fNumberOfHeaderParam(0),
-  fNumberOfHeaderParamInt(0),
-  fSaveAODZDC(0),
+  fV0s(0x0),
+  fSaveZDC(0),
   fSaveVzero(0),
+  fSaveV0s(0),
   fInputArrayName(""),
-  fOutputArrayName("tracks"),
-  fVarListHeader_fTC("")
+  fOutputArrayName("tracks")
 {
   // default ctor
-  AliNanoAODTrackMapping * tm =new AliNanoAODTrackMapping(fVarList);
-  fNTracksVariables = tm->GetSize();  
-  //  tm->Print();
-    
-  for (Int_t i=0; i < fVarListHeader.Length(); i++){
-      if (fVarListHeader.Data()[i] == ',') fNumberOfHeaderParam++;
-  }
-  
-  if(fVarListHeader.CompareTo("")==0) fNumberOfHeaderParam=2;
-  else fNumberOfHeaderParam = fNumberOfHeaderParam+1 ;
-
-  fNumberOfHeaderParamInt = AliNanoAODHeader::GetIntParameters(fVarListHeader);
-  fNumberOfHeaderParam -= fNumberOfHeaderParamInt;
 }
 
 //_____________________________________________________________________________
 AliNanoAODReplicator::~AliNanoAODReplicator()
 {
   // dtor
-  delete fTrackCut;
+  delete fTrackCuts;
   delete fList;
 }
 
@@ -314,8 +302,8 @@ void AliNanoAODReplicator::FilterMC(const AliAODEvent& source)
 	  if ( IsParticleSelected(nmc) )
 	    {
 	      // 
-	      Int_t d0 =  p->GetDaughter(0);
-	      Int_t d1 =  p->GetDaughter(1);
+	      Int_t d0 =  p->GetDaughterLabel(0);
+	      Int_t d1 =  p->GetDaughterLabel(1);
 	      Int_t m =   p->GetMother();
         
 	      // other than for the track labels, negative values mean
@@ -439,7 +427,27 @@ TList* AliNanoAODReplicator::GetList() const
       fTracks->SetName(fOutputArrayName.Data()); // TODO: consider the possibility to use a different name to distinguish in AliAODEvent
       fList->Add(fTracks);
 
-      fHeader = new AliNanoAODHeader(fNumberOfHeaderParam, fNumberOfHeaderParamInt);
+      Int_t numberOfHeaderParam = 0;
+      Int_t numberOfHeaderParamInt = 0;
+      for (Int_t i=0; i < fVarListHeader.Length(); i++){
+          if (fVarListHeader.Data()[i] == ',') numberOfHeaderParam++;
+      }
+      
+      if (fVarListHeader.CompareTo("")==0) 
+        numberOfHeaderParam = 2;
+      else 
+        numberOfHeaderParam = numberOfHeaderParam+1 ;
+
+      numberOfHeaderParamInt = AliNanoAODHeader::GetIntParameters(fVarListHeader);
+      numberOfHeaderParam -= numberOfHeaderParamInt;
+      fHeader = new AliNanoAODHeader(numberOfHeaderParam, numberOfHeaderParamInt);
+
+      // HACK for missing initializing upstream in AliRoot (v5-09-46). Wait for next tag.
+      fHeader->SetFiredTriggerClassesIndex(-1);
+      fHeader->SetBunchCrossNumberIndex(-1);
+      fHeader->SetOrbitNumberIndex(-1);
+      fHeader->SetPeriodNumberIndex(-1);
+
       fHeader->SetName("header"); // TODO: consider the possibility to use a different name to distinguish in AliAODEvent
       fList->Add(fHeader);    
         
@@ -448,26 +456,29 @@ TList* AliNanoAODReplicator::GetList() const
           fList->Add(fVzero);
       }
         
-      if(fSaveAODZDC==1){
+      if(fSaveZDC==1){
           fAodZDC = new AliAODZDC();
           fList->Add(fAodZDC);
       }
 
+      if(fSaveV0s==1){
+          fV0s = new TClonesArray("AliAODv0",2);
+          fV0s->SetName("v0s");
+          fList->Add(fV0s);
+      }
 
       fVertices = new TClonesArray("AliAODVertex",2);
       fVertices->SetName("vertices");    
-    
-        
       fList->Add(fVertices);
     
       if ( fMCMode > 0 )
-	{
-	  fMCHeader = new AliAODMCHeader;    
-	  fMCParticles = new TClonesArray("AliAODMCParticle",1000);
-	  fMCParticles->SetName(AliAODMCParticle::StdBranchName());
-	  fList->Add(fMCHeader);
-	  fList->Add(fMCParticles);
-	}
+      {
+        fMCHeader = new AliAODMCHeader;    
+        fMCParticles = new TClonesArray("AliAODMCParticle",1000);
+        fMCParticles->SetName(AliAODMCParticle::StdBranchName());
+        fList->Add(fMCHeader);
+        fList->Add(fMCParticles);
+      }
     }
   return fList;
 }
@@ -477,16 +488,14 @@ void AliNanoAODReplicator::ReplicateAndFilter(const AliAODEvent& source)
 {
   // Replicate (and filter if filters are there) the relevant parts we're interested in AODEvent
   
-
-  // assert(fTracks!=0x0);
+  fTracks->Clear("C");
   
-  //*fTZERO = *(source.GetTZEROData());
-  
-  
-
-  fTracks->Clear("C");			
   assert(fVertices!=0x0);
   fVertices->Clear("C");
+  
+  if (fV0s)
+    fV0s->Clear("C");
+  
   if (fMCMode > 0){
     if(!fMCHeader) {
       AliFatal(Form("fMCMode = %d, but MC header not found", fMCMode));
@@ -502,13 +511,12 @@ void AliNanoAODReplicator::ReplicateAndFilter(const AliAODEvent& source)
 
   //AliAODVertex *vtx = source.GetPrimaryVertex();
 
-  // TODO: implement header!
-  //  *fHeader = *source.GetHeader();
-  if(fCustomSetter){
-    // Set custom variables in the header if the callback is set
-    fHeader->SetMapFiredTriggerClasses(fVarListHeader_fTC);
-    fCustomSetter->SetNanoAODHeader(&source, fHeader,fVarListHeader);
-  }
+  fHeader->SetMapFiredTriggerClasses(fVarListHeader_fTC);
+
+  // Set custom variables in the header if the callback is set
+  for (std::list<AliNanoAODCustomSetter*>::iterator it = fCustomSetters.begin(); it != fCustomSetters.end(); ++it)
+    (*it)->SetNanoAODHeader(&source, fHeader, fVarListHeader);
+
   Int_t entries = -1;
   TClonesArray* particleArray = 0x0;
 
@@ -527,43 +535,58 @@ void AliNanoAODReplicator::ReplicateAndFilter(const AliAODEvent& source)
     else track = (AliVTrack*)source.GetTrack(j);
 
     AliAODTrack *aodtrack =(AliAODTrack*)track;// FIXME DYNAMIC CAST?
-    if(fTrackCut && !fTrackCut->IsSelected(aodtrack)) continue;
+    if(fTrackCuts && !fTrackCuts->IsSelected(aodtrack)) continue;
 
-    AliNanoAODTrack * special = new((*fTracks)[ntracks++]) AliNanoAODTrack (aodtrack, fVarList);
+    AliNanoAODTrack* nanoTrack = new((*fTracks)[ntracks++]) AliNanoAODTrack (aodtrack, fVarList);
 
-    if(fCustomSetter) fCustomSetter->SetNanoAODTrack(aodtrack, special);
+    for (std::list<AliNanoAODCustomSetter*>::iterator it = fCustomSetters.begin(); it != fCustomSetters.end(); ++it)
+      (*it)->SetNanoAODTrack(aodtrack, nanoTrack);
   }  
   //----------------------------------------------------------
   
+  // TODO make copying of all vertices optional (and keep only vtx_z)
   TIter nextV(source.GetVertices());
   AliAODVertex* v;
   Int_t nvertices(0);
-  
   while ( ( v = static_cast<AliAODVertex*>(nextV()) ) )
+  {
+    AliAODVertex* tmp = v->CloneWithoutRefs();
+    AliAODVertex* copiedVertex = new((*fVertices)[nvertices++]) AliAODVertex(*tmp);
+    
+    copiedVertex->SetNContributors(v->GetNContributors()); 
+    
+    delete tmp;
+  }
+  
+  if(fSaveVzero==1){
+      fVzero->Clear("C");
+      AliAODVZERO *vzeroAOD(0x0);
+      vzeroAOD = static_cast<AliAODVZERO*>(source.GetVZEROData());
+      *fVzero = *vzeroAOD;
+  }
+  
+  if(fSaveZDC==1){
+      fAodZDC->Clear("C");
+      AliAODZDC *aodZDC(0x0);
+      aodZDC = static_cast<AliAODZDC*>(source.GetZDCData());
+      *fAodZDC = *aodZDC;
+      
+  }
+
+  if(fSaveV0s==1){
+    TIter nextV(source.GetV0s());
+    AliAODv0* v;
+    Int_t nvertices = 0;
+    while ( ( v = static_cast<AliAODv0*>(nextV()) ) )
     {
-      AliAODVertex* tmp = v->CloneWithoutRefs();
-      AliAODVertex* copiedVertex = new((*fVertices)[nvertices++]) AliAODVertex(*tmp);
-      
-      copiedVertex->SetNContributors(v->GetNContributors()); 
-      
+      if (fV0Cuts && !fV0Cuts->IsSelected(v))
+        continue;
+      AliAODv0* tmp = (AliAODv0*) v->Clone();
+      new((*fV0s)[nvertices++]) AliAODv0(*tmp);
       delete tmp;
     }
-    
-    if(fSaveVzero==1){
-        fVzero->Clear("C");
-        AliAODVZERO *vzeroAOD(0x0);
-        vzeroAOD = static_cast<AliAODVZERO*>(source.GetVZEROData());
-        *fVzero = *vzeroAOD;
-    }
-    
-    if(fSaveAODZDC==1){
-        fAodZDC->Clear("C");
-        AliAODZDC *aodZDC(0x0);
-        aodZDC = static_cast<AliAODZDC*>(source.GetZDCData());
-        *fAodZDC = *aodZDC;
-        
-    }
-  
+    // Printf("n(tracks) = %d n(V0) = %d -> %d", source.GetNumberOfTracks(), source.GetNumberOfV0s(), nvertices);
+  }
   
   AliDebug(1,Form("input mu tracks=%d tracks=%d vertices=%d",
                   input,fTracks->GetEntries(),fVertices->GetEntries())); 

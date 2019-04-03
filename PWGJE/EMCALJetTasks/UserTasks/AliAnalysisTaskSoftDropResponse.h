@@ -20,6 +20,7 @@
 //-----------------------------------------------------------------------
 
 #include "AliJetResponseMaker.h"
+#include "AliEmcalEmbeddingQA.h"
 
 #include "FJ_includes.h"
 
@@ -28,6 +29,8 @@ class AliAnalysisTaskSoftDropResponse : public AliJetResponseMaker {
   AliAnalysisTaskSoftDropResponse();
   AliAnalysisTaskSoftDropResponse(const char *name);
   virtual ~AliAnalysisTaskSoftDropResponse();
+  
+  void                        UserCreateOutputObjects();
 
   static AliAnalysisTaskSoftDropResponse * AddTaskSoftDropResponse(
       const char *ntracks1           = "Tracks",
@@ -60,6 +63,7 @@ class AliAnalysisTaskSoftDropResponse : public AliJetResponseMaker {
 
  protected:
 
+  Bool_t                      FillHistograms();
   void                        FillMatchingHistos(AliEmcalJet* jet1, AliEmcalJet* jet2, Double_t d, Double_t CE1, Double_t CE2);
   void                        AllocateTHnSparse();
 
@@ -68,6 +72,17 @@ class AliAnalysisTaskSoftDropResponse : public AliJetResponseMaker {
   Int_t                       fZ2gAxis;                                 ///< add Z2g axis in matching THnSparse (default=0)
 
  private:
+ 
+  void               Decluster(const fastjet::PseudoJet& jet);
+  fastjet::ClusterSequence* Recluster(const AliEmcalJet* jet);
+  
+  void               FillZgRgVectors(const AliEmcalJet* jet);
+
+  Int_t fNsdsteps; //!<!
+  std::vector<Float_t> fZg_values; //!<! n_SD ordering
+  std::vector<Float_t> fRg_values; //!<! n_SD ordering
+  std::vector<Int_t>   fSDsteps_values; //!<!
+ 
   AliAnalysisTaskSoftDropResponse(const AliAnalysisTaskSoftDropResponse&); // not implemented
   AliAnalysisTaskSoftDropResponse &operator=(const AliAnalysisTaskSoftDropResponse&);  // not implemented
 

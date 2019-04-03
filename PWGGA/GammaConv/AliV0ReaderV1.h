@@ -97,6 +97,9 @@ class AliV0ReaderV1 : public AliAnalysisTaskSE {
     void               SetAddv0sInESDFilter(Bool_t addv0s)          {kAddv0sInESDFilter = addv0s;}
     void               CountTracks();
     void               CountTPCoutTracks();
+    void               CalculateSphericity();
+    void               CalculateSphericityMCTrue(AliVEvent *inputEvent);
+    void               CalculatePtMaxSector();
 
     void               SetConversionCuts(const TString cut);
     void               SetConversionCuts(AliConversionPhotonCuts *cuts) {fConversionCuts=cuts; return;}
@@ -127,6 +130,19 @@ class AliV0ReaderV1 : public AliAnalysisTaskSE {
     TString            GetPeriodName()                                  {return fPeriodName;}
     Int_t              GetPtHardFromFile()                              {return fPtHardBin;}
     Int_t              GetNumberOfPrimaryTracks()                       {return fNumberOfPrimaryTracks;}
+    Double_t           GetSphericity()                                  {return fSphericity;}
+    Double_t           GetPhiMainSphericityAxis()                       {return fSphericityAxisMainPhi;}
+    Double_t           GetPhiSecondarySphericityAxis()                  {return fSphericityAxisSecondaryPhi;}
+    Bool_t             IsSphericityAxisInEMCalAcceptance()              {return fInEMCalAcceptance;}
+    Int_t              GetNumberOfRecTracks()                           {return fNumberOfRecTracks;}
+    Double_t           GetHighestPt()                                   {return fHighestPt;}
+    Double_t           GetTotalPt()                                     {return fTotalPt;}
+    Double_t           GetMeanPt()                                      {return fMeanPt;}
+    Double_t           GetSphericityTrue()                              {return fSphericityTrue;}
+    Int_t              GetNumberOfTruePrimaryTracks()                   {return fNumberOfTruePrimaryTracks;}
+    void               SetCalcSphericity(Bool_t set)                    {fCalcSphericity=set; return;}
+    void               SetCalcSector(Bool_t set)                        {fCalcSector=set; return;}
+    Int_t              GetPtMaxSector()                                 {return fPtMaxSector;}
     Int_t              GetNumberOfTPCoutTracks()                        {return fNumberOfTPCoutTracks;}
     void               SetUseMassToZero (Bool_t b)                      {if(b){ cout<<"enable set mass to zero for AliAODConversionPhoton"<<endl;}
                                                                          else { cout<<"disable set mass to zero for AliAODConversionPhoton "<<endl;}
@@ -197,6 +213,19 @@ class AliV0ReaderV1 : public AliAnalysisTaskSE {
     Bool_t         fEventIsSelected;
     Int_t          fNumberOfPrimaryTracks;        // Number of Primary Tracks in AOD or ESD
     Int_t          fNumberOfTPCoutTracks;         // Number of TPC Tracks with TPCout flag
+    Bool_t         fCalcSphericity;               // enable sphericity calculation
+    Bool_t         fCalcSector;                   // enable sector of ptmax particle calculation
+    Double_t       fSphericity;                   // Sphericity of the event
+    Double_t       fSphericityAxisMainPhi;        // Phi of the main sphericity axis
+    Double_t       fSphericityAxisSecondaryPhi;   // Phi of the secondary sphericity axis
+    Bool_t         fInEMCalAcceptance;            // Flag for the sphericity axis in the EMCal acceptance
+    Int_t          fNumberOfRecTracks;            // Number of reconstructed tracks used in sphericity calculation
+    Double_t       fHighestPt;                    // Highest pt in the event
+    Double_t       fTotalPt;                      // Total pt of the event
+    Double_t       fMeanPt;                       // Mean pt of the event
+    Double_t       fSphericityTrue;               // True sphericity of the event
+    Int_t          fNumberOfTruePrimaryTracks;    // True number of primary tracks used in sphericity calculation
+    Int_t          fPtMaxSector;                  // Sector of the detector with the maximum pt particle
     TString        fPeriodName;
     Int_t          fPtHardBin;                    // ptHard bin from file
     Bool_t         fUseMassToZero;                // switch on setting the mass to 0 for AODConversionPhotons
@@ -256,7 +285,8 @@ class AliV0ReaderV1 : public AliAnalysisTaskSE {
     AliV0ReaderV1(AliV0ReaderV1 &original);
     AliV0ReaderV1 &operator=(const AliV0ReaderV1 &ref);
 
-    ClassDef(AliV0ReaderV1, 16)
+
+    ClassDef(AliV0ReaderV1, 22)
 
 };
 

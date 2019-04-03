@@ -69,8 +69,8 @@
 #include "AliTracker.h"
 #include "TTreeStream.h"
 
-#include "info/AliTRDtrackInfo.h"
-#include "info/AliTRDeventInfo.h"
+#include "AliTRDtrackInfo.h"
+#include "AliTRDeventInfo.h"
 #include "AliTRDinfoGen.h"
 #include "AliTRDcheckDET.h"
 #include "AliTRDpwgppHelper.h"

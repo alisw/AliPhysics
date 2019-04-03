@@ -31,9 +31,9 @@ include_directories(${ROOT_INCLUDE_DIRS}
                     ${AliPhysics_SOURCE_DIR}/CORRFW
                     ${AliPhysics_SOURCE_DIR}/OADB
                     ${AliPhysics_SOURCE_DIR}/OADB/COMMON/MULTIPLICITY
-		    ${AliPhysics_SOURCE_DIR}/PWGCF/Correlations/Base
+		                ${AliPhysics_SOURCE_DIR}/PWGCF/Correlations/Base
                     ${AliPhysics_SOURCE_DIR}/PWGPP/EVCHAR/FlowVectorCorrections/QnCorrections
-		    ${AliPhysics_SOURCE_DIR}/PWGPP/EVCHAR/FlowVectorCorrections/QnCorrectionsInterface/
+		                ${AliPhysics_SOURCE_DIR}/PWGPP/EVCHAR/FlowVectorCorrections/QnCorrectionsInterface/
   )
 set(SRCS
   Exotica/Hdibaryon/AliAnalysisTaskHdibaryonLPpi.cxx
@@ -50,9 +50,23 @@ set(SRCS
   Hypernuclei/Hyp2Body/AliAnalysisTaskHypTritEventTree.cxx
   Hypernuclei/Hyp2Body/AliReducedHypTritEvent.cxx
   Hypernuclei/Hyp2Body/AliAnalysisTaskHypCrossCheck.cxx
+  Hypernuclei/Hyp2Body/AliAnalysisTaskHyperTriton2He3piML.cxx
   Hypernuclei/Hyp3Body/AliAnalysisTaskHypertriton3.cxx
   Hypernuclei/Hyp3Body/AliAnalysisTaskHypertriton3Dev.cxx
   Hypernuclei/Hyp3Body/AliAnalysisTaskHypertriton3AOD.cxx
+  Hypernuclei/NewHyp3Body/AliAnalysisTaskHypertriton3New.cxx
+  Hypernuclei/Vertexer3Body/AliVertexerHyperTriton3Body.cxx
+  Nuclei/Absorption/AliAnalysisTaskDeuteronAbsorption.cxx
+  Nuclei/AbsorptionRatios/AliAnalysisTaskLightN.cxx
+  Nuclei/AbsorptionRatios/AliLightNEventHist.cxx
+  Nuclei/AbsorptionRatios/AliLightNAnalysis.cxx
+  Nuclei/AbsorptionRatios/AliLightNTrack.cxx
+  Nuclei/AbsorptionRatios/AliLightNBasePart.cxx
+  Nuclei/AbsorptionRatios/AliLightNTrackCuts.cxx
+  Nuclei/AbsorptionRatios/AliLightNEvent.cxx
+  Nuclei/AbsorptionRatios/AliLightNTrackHist.cxx
+  Nuclei/AbsorptionRatios/AliLightNEventCuts.cxx
+  Nuclei/AbsorptionRatios/AliLightNTrackMCHist.cxx
   Nuclei/DeltaMasses/AliAnalysisNucleiMass.cxx
   Nuclei/DeltaMasses/AliAnalysisNuclMult.cxx
   Nuclei/DeuteronpA/AliAnalysisDeuteronpA.cxx
@@ -61,18 +75,21 @@ set(SRCS
   Nuclei/He4pp/AliAnalysisHe4.cxx
   Nuclei/NucleiPbPb/AliAnalysisTaskNucleiYield.cxx
   Nuclei/NucleiPbPb/AliAnalysisTaskNucleiYieldESD.cxx
-  Nuclei/NucleiPbPb/AliNuclexEventCuts.cxx
   Nuclei/NucleiPbPb/AliAnalysisTaskNucleiPIDqa.cxx
+  Nuclei/NucleiPbPb/AliAnalysisTaskSignalLoss.cxx
   Nuclei/Nucleipp/AliAnalysisTaskB2.cxx
   Nuclei/Nucleipp/AliAnalysisTaskB2AOD.cxx
   Nuclei/Nucleipp/AliLnAODtrackCuts.cxx
   Nuclei/Nucleipp/AliLnHistoMap.cxx
   Nuclei/Nucleipp/AliLnID.cxx
+  Nuclei/NucleiReducedTree/AliAnalysisTaskReducedTreeNuclei.cxx
+  Nuclei/TritonAnalysis/AliAnalysisTaskTritonVsMultiplicity_PbPb.cxx
   Nuclei/v2/AliAnalysisTaskNucleiv2.cxx
   Nuclei/v2/AliAnalysisTaskNucleiv2SP.cxx
   Nuclei/v2/AliAnalysisTaskNucleiv2pPb.cxx
   Nuclei/v2/AliAnalysisTaskAllPtcv2.cxx
   Nuclei/NucleiKine/AliAnalysisTaskNucleiKine.cxx
+  Nuclei/NucleiKine/AliAnalysisTaskNucleiKineCor.cxx
   Utils/NuclexFilter/AliAODMCNuclExReplicator.cxx
   Utils/NuclexFilter/AliAODNuclExReplicator.cxx
   Utils/NuclexFilter/AliAnalysisTaskESDNuclExFilter.cxx
@@ -82,7 +99,15 @@ set(SRCS
   Utils/RecoDecay/AliAODRecoDecayLF2Prong.cxx
   Utils/CODEX/AliAnalysisCODEX.cxx
   Utils/CODEX/AliAnalysisCODEXtask.cxx
+  Utils/NucleiSkimAOD/AliAnalysisTaskNucleiSkimAOD.cxx
   )
+
+if(ROOT_VERSION_MAJOR EQUAL 6)
+	 set(SRCS
+		  ${SRCS}
+				  Hypernuclei/NewHyp3Body/selector/AliSelectorFindableHyperTriton3Body.cxx
+						  )
+	  endif()
 
 # Headers from sources
 string(REPLACE ".cxx" ".h" HDRS "${SRCS}")
@@ -93,7 +118,7 @@ get_directory_property(incdirs INCLUDE_DIRECTORIES)
 generate_dictionary("${MODULE}" "${MODULE}LinkDef.h" "${HDRS}" "${incdirs}")
 
 set(ROOT_DEPENDENCIES)
-set(ALIROOT_DEPENDENCIES ANALYSISalice CORRFW OADB PWGUDbase PWGHFvertexingHF PWGPPevcharQn PWGflowTasks EVGEN)
+set(ALIROOT_DEPENDENCIES ANALYSISalice CORRFW OADB PWGUDbase PWGHFvertexingHF PWGPPevcharQn PWGflowTasks EVGEN PWGLFcommonutils)
 
 # Generate the ROOT map
 # Dependecies

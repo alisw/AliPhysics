@@ -18,7 +18,7 @@
 #include <TPaveStats.h>
 #endif
 
-enum EDDecay{kD0Kpi,kDplusKpipi,kDstarD0pi,kDsKKpi,kLcpKpi,kLcK0Sp};
+enum EDDecay{kD0Kpi,kDplusKpipi,kDstarD0pi,kDsKKpi,kLcpKpi,kLcK0Sp,kDplusKKpi};
 enum EFidY{kFixedY,kPtDepY};
 enum EPtShape{kFlat,kFONLL8TeV,kFONLL8TeVfeeddown,kFONLL7TeV,kPythia7TeV,kFONLL5TeV,kFONLL13TeVprompt,kFONLL13TeVfeeddown,kPythia13TeVprompt,kPythia13TeVfeeddown};
 
@@ -116,6 +116,12 @@ void ComputeAcceptance(){
     nKaonDau=0;
     nProtonDau=1;
     outFileName.Append("LcK0Sp_");
+  }else if(fDDecay==kDplusKKpi){
+    pdgCode=411;
+    nPionDau=1;
+    nKaonDau=2;
+    nProtonDau=0;
+    outFileName.Append("DplusKKpi_");
   }else{
     printf("ERROR: Wrong decay selected\n");
     return;

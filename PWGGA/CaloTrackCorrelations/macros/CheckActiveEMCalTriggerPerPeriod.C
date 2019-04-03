@@ -28,13 +28,13 @@
 /// The options that can be passed to the macro are:
 ///
 /// \param simulation: bool with data (0) or MC (1) condition
-/// \param trigger: trigger string name (EMCAL_L0, EMCAL_L1, EMCAL_L2, DCAL_L0, DCAL_L1, DCAL_L2)
-/// \param period: LHCXX
+/// \param trigger: trigger string name (EMCAL_L0, EMCAL_L1, EMCAL_L2, DCAL_L0, DCAL_L1, DCAL_L2), it can be modified for CaloOnly periods.
+/// \param period: LHCXXx
 /// \param year: 2011, ...
 ///
 /// \return True if analysis can be done.
 ///
-Bool_t CheckActiveEMCalTriggerPerPeriod(Bool_t simulation, TString trigger, TString period, Int_t year)
+Bool_t CheckActiveEMCalTriggerPerPeriod(Bool_t simulation, TString & trigger, TString period, Int_t year)
 {
   // Accept directly all MB kind of events
   //
@@ -152,7 +152,7 @@ Bool_t CheckActiveEMCalTriggerPerPeriod(Bool_t simulation, TString trigger, TStr
     return kFALSE;
   }
   
-  // Run2: L1 trigger not used again until LHC15o period
+  // Run2: L0 and L2 trigger not used in LHC15o period
   //
   if ( year == 2015 && period == "LHC15o" && ( trigger.Contains("L0") || trigger.Contains("L2") ) )
   { 
@@ -160,6 +160,36 @@ Bool_t CheckActiveEMCalTriggerPerPeriod(Bool_t simulation, TString trigger, TStr
            trigger.Data(),period.Data());
     
     return kFALSE;
+  }
+
+  // Run2: triggers not used in LHC17n period XeXe
+  //
+  if ( year == 2017 && period == "LHC17n" && trigger.Contains("L") ) 
+  { 
+    printf("CheckActiveEMCalTriggerPerPeriod() - REMARK! : No %s triggered events by EMCal triggers for period %s XeXe, SKIP \n", 
+           trigger.Data(),period.Data());
+    
+    return kFALSE;
+  }
+  
+  // Run2: L1 trigger not used in LHC17pq period
+  //
+  if ( year == 2017 && ( period == "LHC17p" || period == "LHC17q" ) && ( trigger.Contains("L1") ) )
+  { 
+    printf("CheckActiveEMCalTriggerPerPeriod() - REMARK! : No %s triggered events by EMCal L1 trigger for period %s, SKIP \n", 
+           trigger.Data(),period.Data());
+    
+    return kFALSE;
+  }
+  
+  // Some periods with triggered events do not have TPC and the trigger mask is kCaloOnly, 
+  // indicate this via the trigger string, so that in macro ConfigureAndGetEventTriggerMaskAndCaloTriggerString.C
+  // the proper trigger mask AliVEvent::kCaloOnly is applied.
+  if ( !trigger.Contains("CaloOnly") && 
+      ( period == "LHC15n" || period == "LHC17p" || period == "LHC17q") ) 
+  {
+    trigger+="_CaloOnly";
+    printf("CheckActiveEMCalTriggerPerPeriod() - Add <_CaloOnly> to trigger string: %s!!!\n",trigger.Data());
   }
   
   return kTRUE;

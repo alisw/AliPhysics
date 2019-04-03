@@ -5,7 +5,7 @@
 #include "TParticle.h"
 #include "AliLog.h"
 #include "TObject.h"
-#include "AliMCEvent.h"   
+#include "AliMCEvent.h"
 #include "AliESDEvent.h"
 #include "AliKFParticle.h"
 #include "TParticle.h"
@@ -26,13 +26,13 @@ using namespace std;
 
 class AliConversionPhotonBase {
 
- public: 
+ public:
 
   //Constructors
-  AliConversionPhotonBase();    
+  AliConversionPhotonBase();
 
   //Copy Constructor
-  AliConversionPhotonBase(const AliConversionPhotonBase & g);           
+  AliConversionPhotonBase(const AliConversionPhotonBase & g);
   //assignment operator
   AliConversionPhotonBase & operator = (const AliConversionPhotonBase & g);
 
@@ -47,7 +47,7 @@ class AliConversionPhotonBase {
   void SetChi2perNDF(Float_t chi2) {fChi2perNDF = chi2;}
   Float_t GetChi2perNDF() const {return fChi2perNDF;}
 
-  
+
   ///Track labels
   void SetLabelPositive(Int_t label){fLabel[0] = label;}
   void SetLabelNegative(Int_t label){fLabel[1] = label;}
@@ -111,7 +111,7 @@ class AliConversionPhotonBase {
   virtual Double_t GetPx() const = 0;
   virtual Double_t GetPy() const = 0;
   virtual Double_t GetPz() const = 0;
-  
+
 
   Float_t GetMass() const { return fIMass; }
   void SetMass( Float_t mass) { fIMass = mass; }
@@ -119,24 +119,24 @@ class AliConversionPhotonBase {
   Float_t GetPsiPair() const {return fPsiPair;}
   void SetPsiPair(Float_t PsiPair){fPsiPair=PsiPair;}
 
-  
- protected:
 
-  Int_t fLabel[2]; // Electron/Positron Track Label
-  Int_t fV0Index; // Index of the V0
-  Int_t fMCLabel[2]; // Electron/Positron MC Label
-  Float_t fChi2perNDF; // Chi2perNDF
-  Double_t fArmenteros[2]; // Armenteros Paramters
-  Double_t fConversionPoint[3]; // Conversion Point
-  Bool_t fTagged; // Is it tagged as decay pion (only for gammas)
-  Float_t fIMass; // Invariant Mass of dilepton pair
-  Float_t fPsiPair; // Psi Pair Value
-  UChar_t fQuality; //Photon Quality: 
-                     //0: garbage,
-                     //1: both tracks TPC only,
-                     //2: 1 track TPC only
-                     //3: both tracks more than 1 ITS cluster
-  ClassDef(AliConversionPhotonBase,5);
+  protected:
+    Double_t fArmenteros[2];      // Armenteros Paramters
+    Double_t fConversionPoint[3]; // Conversion Point
+    Float_t fChi2perNDF;          // Chi2perNDF
+    Float_t fIMass;               // Invariant Mass of dilepton pair
+    Float_t fPsiPair;             // Psi Pair Value
+
+    Int_t fLabel[2];              // Electron/Positron Track Label
+    Int_t fV0Index;               // Index of the V0
+    Int_t fMCLabel[2];            // Electron/Positron MC Label
+    UChar_t fQuality;             // Photon Quality:
+                                  // 0: garbage,
+                                  // 1: both tracks TPC only,
+                                  // 2: 1 track TPC only
+                                  // 3: both tracks more than 1 ITS cluster
+    Bool_t fTagged;               // Is it tagged as decay pion (only for gammas)
+  ClassDef(AliConversionPhotonBase,6);
 };
 
 

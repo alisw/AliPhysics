@@ -214,7 +214,10 @@ class AliCaloPID : public TObject {
   Float_t GetPHOSRCut()                  const { return fPHOSRCut             ; }   
   
   // Track matching EMC
-  // Fixed
+  
+  void    SetEOverP(Float_t min, Float_t max)  { fEOverPMin  = min ; fEOverPMax  = max ; }
+  
+  // Fixed residuals
   void    SetEMCALDEtaCut(Float_t dcut )       { fEMCALDEtaCut      = dcut    ; }
   Float_t GetEMCALDEtaCut()              const { return fEMCALDEtaCut         ; }   
   
@@ -222,7 +225,7 @@ class AliCaloPID : public TObject {
   Float_t GetEMCALDPhiCut()              const { return fEMCALDPhiCut         ; }   
   
   // Track matching EMC
-  // Pt dependent
+  // Pt dependent residuals
   
   // Activate pT dependent track matching
   void    SwitchOnEMCTrackPtDepResMatching ()  { fEMCALUseTrackPtDepMatchingCut = kTRUE  ; }  
@@ -337,6 +340,10 @@ private:
   
   Float_t   fEMCALL0CutMax;                     ///<  Max Cut on shower shape lambda0, used in PID evaluation, only EMCAL.
   Float_t   fEMCALL0CutMin;                     ///<  Min Cut on shower shape lambda0, used in PID evaluation, only EMCAL.
+  
+  Float_t   fEOverPMin;                          ///<  Max calo cluster E / track p
+  Float_t   fEOverPMax;                          ///<  Min calo cluster E / track p 
+  
   Float_t   fEMCALDEtaCut;                      ///<  Track matching fixed cut on eta residual.
   Float_t   fEMCALDPhiCut;                      ///<  Track matching fixed cut on phi residual.
   
@@ -394,7 +401,7 @@ private:
   AliCaloPID(              const AliCaloPID & cpid) ; 
   
   /// \cond CLASSIMP
-  ClassDef(AliCaloPID,22) ;
+  ClassDef(AliCaloPID,23) ;
   /// \endcond
 
 } ;

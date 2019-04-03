@@ -27,7 +27,6 @@
 #include "AliAnaCaloTrackCorrMaker.h"
 #include "AliAnalysisManager.h"
 #include "AliInputEventHandler.h"
-#include "ConfigureEMCALRecoUtils.C"
 
 #endif // CINT
 
@@ -99,6 +98,8 @@ AliAnalysisTaskCaloTrackCorrelation *AddTaskCalorimeterQA(const char *suffix="de
   reader->SetCTSPtMin  (0.);
   reader->SetZvertexCut(10.);
   
+  reader->SetMultiplicityWithPhysSel(kFALSE); // Do not rely on Physics selection in case calibration not done yet.
+  
   reader->SetDeltaAODFileName(""); //Do not create deltaAOD file, this analysis do not create branches.
   reader->SwitchOffWriteDeltaAOD()  ;
   
@@ -152,13 +153,16 @@ AliAnalysisTaskCaloTrackCorrelation *AddTaskCalorimeterQA(const char *suffix="de
   AliEMCALRecoUtils* recou = cu->GetEMCALRecoUtils();
 
   gROOT->LoadMacro("$ALICE_PHYSICS/PWGPP/EMCAL/macros/ConfigureEMCALRecoUtils.C");
-  ConfigureEMCALRecoUtils(recou,
-                          simulation,
-                          bExotic,
-                          bNonLin,
-                          bEnCalib,
-                          bBadMap,
-                          bTiCalib);  
+
+  TString recouStr = Form("(reinterpret_cast<AliEMCALRecoUtils*>(%p))", recou);
+  
+  gInterpreter->ProcessLine(Form("ConfigureEMCALRecoUtils(%s, %d, %d, %d, %d, %d, %d)", recouStr.Data(),
+				 (Int_t)simulation,
+				 (Int_t)bExotic,
+				 (Int_t)bNonLin,
+				 (Int_t)bEnCalib,
+				 (Int_t)bBadMap,
+				 (Int_t)bTiCalib));  
   
   if(bBadMap) 
     cu->SwitchOnBadChannelsRemoval();
@@ -222,7 +226,7 @@ AliAnalysisTaskCaloTrackCorrelation *AddTaskCalorimeterQA(const char *suffix="de
   
   emcalQA->GetHistogramRanges()->SetHistoMassRangeAndNBins(0., 0.65, 325) ;
   emcalQA->GetHistogramRanges()->SetHistoAsymmetryRangeAndNBins(0., 1. , 10 );
-  emcalQA->GetHistogramRanges()->SetHistoPOverERangeAndNBins(0,2.,50);
+  emcalQA->GetHistogramRanges()->SetHistoEOverPRangeAndNBins(0,2.,50);
   emcalQA->GetHistogramRanges()->SetHistodEdxRangeAndNBins(0.,200.,100);
   emcalQA->GetHistogramRanges()->SetHistodRRangeAndNBins(0.,0.10,50);
   //emcalQA->GetHistogramRanges()->SetHistoTimeRangeAndNBins( 400,900,250);

@@ -41,6 +41,10 @@ class AliEmcalCorrectionCellEmulateCrosstalk : public AliEmcalCorrectionComponen
 
   // T-Card correlation emulation, do on MC
   void           MakeCellTCardCorrelation();
+  void           CalculateInducedEnergyInTCardCell(Int_t absId, Int_t absIdRef, 
+                                                   Int_t sm, Float_t ampRef, 
+                                                   Int_t cellCase) ;
+
   void           AddInducedEnergiesToExistingCells();
   void           AddInducedEnergiesToNewCells();
   
@@ -75,9 +79,14 @@ class AliEmcalCorrectionCellEmulateCrosstalk : public AliEmcalCorrectionComponen
   Bool_t                fRandomizeTCard;           ///<  Use random induced energy
   
   Float_t               fTCardCorrMinAmp;          ///<  Minimum cell energy to induce signal on adjacent cells
+  Float_t               fTCardCorrMinInduced;      ///<  Minimum induced energy signal on adjacent cells, sum of induced plus original energy, use same as cell energy clusterization cut
+  Float_t               fTCardCorrMaxInducedELeak; ///<  Maximum value of induced energy signal that is always leaked, ~5-10 MeV
   Float_t               fTCardCorrMaxInduced;      ///<  Maximum induced energy signal on adjacent cells
   
   Bool_t                fPrintOnce;                ///< Print once analysis parameters
+  
+  AliAODCaloCells      *fAODCellsTmp;              //!<! Temporal array of cells copy
+
   
 private:
   
@@ -88,7 +97,7 @@ private:
   static RegisterCorrectionComponent<AliEmcalCorrectionCellEmulateCrosstalk> reg;
 
   /// \cond CLASSIMP
-  ClassDef(AliEmcalCorrectionCellEmulateCrosstalk, 1); // EMCal cell crosstalk emulation correction component
+  ClassDef(AliEmcalCorrectionCellEmulateCrosstalk, 3); // EMCal cell crosstalk emulation correction component
   /// \endcond
 };
 

@@ -16,6 +16,9 @@ AliAnalysisGrid* CreateAlienHandler(const char *runMode,Bool_t gridMerge)
   //Set the run mode (can be "full", "test", "offline", "submit" or "terminate")
   plugin->SetRunMode(runMode);
 
+  // Set MC chain if MC truth as input
+  plugin->SetUseMCchain(bMC && bMConlyTruth);
+
   plugin->SetNtestFiles(nNoOfTestFiles); // num of test files in "test" mode
 
   if (TString(runMode).EqualTo("test"))
@@ -82,7 +85,7 @@ AliAnalysisGrid* CreateAlienHandler(const char *runMode,Bool_t gridMerge)
       "AliAnalysisTaskCorrelationsStudies.h AliAnalysisTaskCorrelationsStudies.cxx"); */
 
   // alternatively pass a par file with source information
-  plugin->EnablePackage("PWGCFCorrelationsDPhi.par");
+//  plugin->EnablePackage("PWGCFCorrelationsDPhi.par");
 
 // Declare the output file names separated by blanks.
 // (can be like: file.root or file.root@ALICE::Niham::File)

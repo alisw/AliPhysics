@@ -34,20 +34,6 @@ ClassImp(AliEmcalCorrectionTask);
 ClassImp(AliEmcalCorrectionCellContainer);
 /// \endcond
 
-const std::map <std::string, AliVCluster::VCluUserDefEnergy_t> AliEmcalCorrectionTask::fgkClusterEnergyTypeMap = {
-  {"kNonLinCorr", AliVCluster::kNonLinCorr },
-  {"kHadCorr", AliVCluster::kHadCorr },
-  {"kUserDefEnergy1", AliVCluster::kUserDefEnergy1 },
-  {"kUserDefEnergy2", AliVCluster::kUserDefEnergy2 }
-};
-
-const std::map <std::string, AliEmcalTrackSelection::ETrackFilterType_t> AliEmcalCorrectionTask::fgkTrackFilterTypeMap = {
-  {"kNoTrackFilter", AliEmcalTrackSelection::kNoTrackFilter },
-  {"kCustomTrackFilter", AliEmcalTrackSelection::kCustomTrackFilter },
-  {"kHybridTracks",  AliEmcalTrackSelection::kHybridTracks },
-  {"kTPCOnlyTracks", AliEmcalTrackSelection::kTPCOnlyTracks }
-};
-
 /**
  * Default constructor.
  */
@@ -372,23 +358,24 @@ void AliEmcalCorrectionTask::InitializeConfiguration()
   }
 
   // Setup and initialize configurations
-  // user is added first so that it will be checked first.
-  // User file
-  int returnValue = fYAMLConfig.AddConfiguration(fUserConfigurationFilename, "user");
-  if (returnValue >= 0) {
-    AliInfoStream() << "Using user EMCal corrections configuration located at \"" << fUserConfigurationFilename << "\"\n";
-  }
-  else {
-    AliInfoStream() << "User file at \"" << fUserConfigurationFilename << "\" does not exist! All settings will be from the default file!\n";
-  }
-
+  // default is added first so that it will be checked last.
   // Default file
-  returnValue = fYAMLConfig.AddConfiguration(fDefaultConfigurationFilename, "default");
+  int returnValue = fYAMLConfig.AddConfiguration(fDefaultConfigurationFilename, "default");
   if (returnValue >= 0) {
     AliInfoStream() << "Using default EMCal corrections configuration located at \"" << fDefaultConfigurationFilename << "\"\n";
   }
   else {
     AliFatal(TString::Format("Default file located at \"%s\" does not exist!", fDefaultConfigurationFilename.c_str()));
+  }
+
+  // User file
+  returnValue = fYAMLConfig.AddConfiguration(fUserConfigurationFilename, "user");
+  if (returnValue >= 0) {
+    AliInfoStream() << "Using user EMCal corrections configuration located at \"" << fUserConfigurationFilename << "\"\n";
+  }
+  else {
+    // For any tasks to be enabled, we must have a user config. So we make a missing user config a fatal.
+    AliFatal(TString::Format("User config file at \"%s\" does not exist! Please check the user config filename!", fUserConfigurationFilename.c_str()));
   }
 
   // Initialize
@@ -904,14 +891,13 @@ void AliEmcalCorrectionTask::SetupContainer(const AliEmcalContainerUtils::InputO
   AliClusterContainer * clusterContainer = dynamic_cast<AliClusterContainer *>(cont);
   if (clusterContainer) {
     // Default energy
-    // Probably not needed for the corrections
-    /*result = fYAMLConfig.GetProperty(inputObjectPropertiesPath, "defaultClusterEnergy", tempString, false);
+    result = fYAMLConfig.GetProperty(inputObjectPropertiesPath, "defaultClusterEnergy", tempString, false);
     if (result) {
       // Need to get the enumeration
-      AliVCluster::VCluUserDefEnergy_t clusterEnergyType = fgkClusterEnergyTypeMap.at(tempString);
+      AliVCluster::VCluUserDefEnergy_t clusterEnergyType = AliClusterContainer::fgkClusterEnergyTypeMap.at(tempString);
       AliDebugStream(2) << clusterContainer->GetName() << ": Setting cluster energy type to " << clusterEnergyType << std::endl;
       clusterContainer->SetDefaultClusterEnergy(clusterEnergyType);
-    }*/
+    }
 
     // NonLinCorrEnergyCut
     result = fYAMLConfig.GetProperty(inputObjectPropertiesPath, "clusNonLinCorrEnergyCut", tempDouble, false);
@@ -955,8 +941,8 @@ void AliEmcalCorrectionTask::SetupContainer(const AliEmcalContainerUtils::InputO
     result = fYAMLConfig.GetProperty(inputObjectPropertiesPath, "trackFilterType", tempString, false);
     if (result) {
       // Need to get the enumeration
-      AliEmcalTrackSelection::ETrackFilterType_t trackFilterType = fgkTrackFilterTypeMap.at(tempString);
-      AliDebugStream(2) << trackContainer->GetName() << ": Setting trackFilterType of " << trackFilterType << std::endl;
+      AliEmcalTrackSelection::ETrackFilterType_t trackFilterType = AliTrackContainer::fgkTrackFilterTypeMap.at(tempString);
+      AliDebugStream(2) << trackContainer->GetName() << ": Setting trackFilterType of " << trackFilterType << " (" << tempString << ")\n";
       trackContainer->SetTrackFilterType(trackFilterType);
     }
 

@@ -99,6 +99,6 @@ class AliGammaConversionAODBGHandler : public TObject {
 		AliGammaConversionBGVector 			fBGEventsENeg; 					// electron background electron events
 		AliGammaConversionMotherBGVector 	fBGEventsMeson; 				// neutral meson background events
 		
-	ClassDef(AliGammaConversionAODBGHandler,6)
+	ClassDef(AliGammaConversionAODBGHandler,7)
 };
 #endif

@@ -40,6 +40,7 @@ AliDielectronTrackCuts::AliDielectronTrackCuts() :
   fNegateV0DauterCut(kFALSE),
   fITSclusterBitMap(0),
   fITSclusterCutType(kOneOf),
+  fSelectGlobalTrack(kFALSE),
   fRequireITSRefit(kFALSE),
   fRequireTPCRefit(kFALSE),
   fTPCNclRobustCut(-1),
@@ -53,7 +54,7 @@ AliDielectronTrackCuts::AliDielectronTrackCuts() :
 
   for (Int_t i = 0; i < 3; i++)
     fCutClusterRequirementITS[i] = kOff;
-  
+
 }
 
 //______________________________________________
@@ -63,6 +64,7 @@ AliDielectronTrackCuts::AliDielectronTrackCuts(const char* name, const char* tit
   fNegateV0DauterCut(kFALSE),
   fITSclusterBitMap(0),
   fITSclusterCutType(kOneOf),
+  fSelectGlobalTrack(kFALSE),
   fRequireITSRefit(kFALSE),
   fRequireTPCRefit(kFALSE),
   fTPCNclRobustCut(-1),
@@ -76,7 +78,7 @@ AliDielectronTrackCuts::AliDielectronTrackCuts(const char* name, const char* tit
 
   for (Int_t i = 0; i < 3; i++)
     fCutClusterRequirementITS[i] = kOff;
-  
+
 }
 
 //______________________________________________
@@ -85,7 +87,7 @@ AliDielectronTrackCuts::~AliDielectronTrackCuts()
   //
   // Default Destructor
   //
-  
+
 }
 
 //______________________________________________
@@ -97,8 +99,20 @@ Bool_t AliDielectronTrackCuts::IsSelected(TObject* track)
 
   AliVTrack *vtrack=dynamic_cast<AliVTrack*>(track);
   if (!vtrack) return kFALSE;
-  
+
   Bool_t accept=kTRUE;
+
+  // use filter bit to speed up the AOD analysis (track pre-filter)
+  // relevant filter bits are:
+  // kTPCqual==1             -> TPC quality cuts
+  // kTPCqualSPDany==4       -> + SPD any
+  // kTPCqualSPDanyPIDele==8 -> + nSigmaTPCele +-3 (inclusion)
+
+  if (track->IsA()==AliAODTrack::Class()) {
+    if(fSelectGlobalTrack) if(((AliAODTrack*)track)->GetID() < 0) accept=kFALSE;
+    if(fAODFilterBit!=kSwitchOff) accept*=((AliAODTrack*)track)->TestFilterBit(fAODFilterBit);
+  }
+
   if (fV0DaughterCut) {
     Bool_t isV0=track->TestBit(BIT(fV0DaughterCut));
     if (fNegateV0DauterCut) isV0=!isV0;
@@ -122,7 +136,7 @@ Bool_t AliDielectronTrackCuts::IsSelected(TObject* track)
     for(Int_t i=5; i>=0; i--) {
       if(TESTBIT(vtrack->GetITSClusterMap(),i)) {
 	nITScls++;
-	requiredNcls=6-fWaiveITSNcls-i; 
+	requiredNcls=6-fWaiveITSNcls-i;
       }
     }
     accept*=(requiredNcls<=nITScls);
@@ -147,15 +161,6 @@ Bool_t AliDielectronTrackCuts::IsSelected(TObject* track)
   }
 
 
-  // use filter bit to speed up the AOD analysis (track pre-filter)
-  // relevant filter bits are:
-  // kTPCqual==1             -> TPC quality cuts
-  // kTPCqualSPDany==4       -> + SPD any
-  // kTPCqualSPDanyPIDele==8 -> + nSigmaTPCele +-3 (inclusion) 
-  if (track->IsA()==AliAODTrack::Class() && fAODFilterBit!=kSwitchOff) {
-    accept*=((AliAODTrack*)track)->TestFilterBit(fAODFilterBit);
-  }
-
   return accept;
 }
 
@@ -174,7 +179,7 @@ void AliDielectronTrackCuts::SetV0DaughterCut(AliPID::EParticleType type, Bool_t
 Bool_t AliDielectronTrackCuts::CheckITSClusterRequirement(ITSClusterRequirement req, Bool_t clusterL1, Bool_t clusterL2) const
 {
   // checks if the cluster requirement is fullfilled (in this case: return kTRUE)
-  
+
   switch (req)
   {
   case kOff:        return kTRUE;
@@ -186,7 +191,7 @@ Bool_t AliDielectronTrackCuts::CheckITSClusterRequirement(ITSClusterRequirement 
   case kOnlySecond: return clusterL2 && !clusterL1;
   case kBoth:       return clusterL1 && clusterL2;
   }
-  
+
   return kFALSE;
 }
 
@@ -199,5 +204,5 @@ Bool_t AliDielectronTrackCuts::CheckITSClusterCut(UChar_t itsBits) const
   case kAtLeast: return (itsBits & fITSclusterBitMap)==fITSclusterBitMap;
   case kExact:   return (itsBits==fITSclusterBitMap);
   }
-  return kTRUE;  
+  return kTRUE;
 }

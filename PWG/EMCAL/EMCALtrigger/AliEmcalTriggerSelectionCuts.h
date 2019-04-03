@@ -27,9 +27,15 @@
 #ifndef ALIEMCALTRIGGERSELECTIONCUTS_H
 #define ALIEMCALTRIGGERSELECTIONCUTS_H
 
+#include <iosfwd>
 #include <TObject.h>
 
 class AliEMCALTriggerPatchInfo;
+
+// operator<< has to be forward declared carefully to stay in the global namespace so that it works with CINT.
+// For generally how to keep the operator in the global namespace, See: https://stackoverflow.com/a/38801633
+namespace PWG { namespace EMCAL { class AliEmcalTriggerSelectionCuts; } }
+std::ostream & operator<< (std::ostream &in, const PWG::EMCAL::AliEmcalTriggerSelectionCuts &cuts);
 
 namespace PWG {
 namespace EMCAL {
@@ -101,6 +107,17 @@ public:
    */
   Int_t CompareTriggerPatches(const AliEMCALTriggerPatchInfo *first, const AliEMCALTriggerPatchInfo *second) const;
 
+  /**
+   * @brief Output stream operator
+   * 
+   * Print cut settings to the stream.
+   * 
+   * @param stream Output stream used for logging
+   * @param cuts Selection cuts object to be put on the stream
+   * @return Stream after logging
+   */
+  friend std::ostream& ::operator<<(std::ostream &stream, const AliEmcalTriggerSelectionCuts &cuts);
+
 protected:
 
   /**
@@ -137,6 +154,17 @@ protected:
   Double_t              fThreshold;                 ///< Threshold used
   Bool_t                fUseSimpleOffline;          ///< Request simple offline patches
   Bool_t                fUseRecalc;                 ///< Request recalc patch
+
+private:
+
+  /**
+   * @brief Helper function for output stream operator
+   * 
+   * Putting all cut settings to the output stream
+   * 
+   * @param stream Output stream used for logging
+   */
+  void PrintStream(std::ostream &stream) const;
 
   /// \cond CLASSIMP
   ClassDef(AliEmcalTriggerSelectionCuts, 1);         // Cuts for the EMCAL Trigger selection

@@ -1,24 +1,20 @@
 #ifndef AliAnalysisTaskReducedTreeNuclei_cxx
 #define AliAnalysisTaskReducedTreeNuclei_cxx
 
-
+#ifndef ALIANALYSISTASKSE_H
 #include "AliAnalysisTaskSE.h"
-#include "AliMultSelection.h"
-#include "AliAnalysisTask.h"
-#include "AliPIDResponse.h"
-#include "AliAODVertex.h"
-#include "AliAODEvent.h"
-#include "AliAODTrack.h"
+#endif
+
+class AliMultSelection;
+class AliPIDResponse;
+class AliAODEvent;
+class AliAODTrack;
+class AliAnalysisUtils;
+class TList;
+class TTree;
+class TH1F;
+
 #include "AliEventCuts.h"
-#include "AliAnalysisUtils.h"
-#include "TObjArray.h"
-#include "TVector2.h"
-#include "TVector3.h"
-#include "AliAODv0.h"
-#include "TList.h"
-#include "TTree.h"
-#include "TH1F.h"
-#include "TH2F.h"
 
 class AliAnalysisTaskReducedTreeNuclei : public AliAnalysisTaskSE {
    
@@ -30,9 +26,15 @@ public:
    virtual void   UserCreateOutputObjects();
    virtual void   UserExec (Option_t *option);
    
+   void FillTritonTree(Bool_t fillTri){ fFillTri=fillTri; }
+   void FillHypTritonTree(Bool_t fillHypTri){ fFillHypTri=fillHypTri; }
+   
+   
+
    Bool_t   GetInputEvent ();
    Bool_t   PassedBasicTrackQualityCuts (AliAODTrack *track);
    Bool_t   IsHeliumCandidate           (AliAODTrack *track);
+   Bool_t   IsTritonCandidate           (AliAODTrack *track);
    Bool_t   IsHyperTritonCandidate      (AliAODTrack *track1,AliAODTrack *track2);
    Double_t    GetDCAxy                    (AliAODTrack *track);
    Double_t    GetDCAz                     (AliAODTrack *track);
@@ -45,17 +47,32 @@ private:
    AliEventCuts   fAODeventCuts;// Event cuts
    AliAnalysisUtils *fUtils;//!
    
-   TList          *fOutputList;//!
+   // globle varibles
+   Bool_t fFillTri;
+   Bool_t fFillHypTri;
+
    TList          *fQAList;//!
-   // Event histogram
-   TH1F *histoEventSelection; //!
+   
+   // Event Selection Tree
+//    TTree *TreeEventSelection;//!
+
+   TList          *fOutputList;//!
+   // Event histograms
+   TH2D *histoEventSelection; //!
+   TH2D *histoEventMultiplicity; //!
    //Reduced Trees
    TTree *reducedTree_Helium;//!
+   TTree *reducedTree_Triton;//!
    TTree *reducedTree_HyperTriton;//!
    
    //Variables (Helium)
+   // trigger 
+   bool isTrigINT7;//
+   bool isTrigHighMult;//
+//    Long64_t triggerMask;
    Int_t magFieldSign;//
    
+//    Int_t SelectionStep;//
    //check for more estimators, e.g. SPD, TPC track multiplicity ...
    Double_t multPercentile_V0M;//
    Double_t multPercentile_V0A;//
@@ -120,18 +137,18 @@ private:
    Int_t nTPC_FindableClusters;//
    Int_t nTPC_CrossedRows;//
    Int_t nTPC_Clusters_dEdx;//
-   Int_t HasPointOnITSLayer0;//
-   Int_t HasPointOnITSLayer1;//
-   Int_t HasPointOnITSLayer2;//
-   Int_t HasPointOnITSLayer3;//
-   Int_t HasPointOnITSLayer4;//
-   Int_t HasPointOnITSLayer5;//
-   Int_t HasSharedPointOnITSLayer0;//
-   Int_t HasSharedPointOnITSLayer1;//
-   Int_t HasSharedPointOnITSLayer2;//
-   Int_t HasSharedPointOnITSLayer3;//
-   Int_t HasSharedPointOnITSLayer4;//
-   Int_t HasSharedPointOnITSLayer5;//
+   bool HasPointOnITSLayer0;//
+   bool HasPointOnITSLayer1;//
+   bool HasPointOnITSLayer2;//
+   bool HasPointOnITSLayer3;//
+   bool HasPointOnITSLayer4;//
+   bool HasPointOnITSLayer5;//
+   bool HasSharedPointOnITSLayer0;//
+   bool HasSharedPointOnITSLayer1;//
+   bool HasSharedPointOnITSLayer2;//
+   bool HasSharedPointOnITSLayer3;//
+   bool HasSharedPointOnITSLayer4;//
+   bool HasSharedPointOnITSLayer5;//
    Double_t chi2_TPC;//check
    Double_t chi2_NDF;//check
    Double_t chi2_ITS;//check
@@ -213,18 +230,18 @@ private:
    Int_t nTPC_Clusters_dEdx_Daughter1;//
    Int_t nTRD_Clusters_Daughter1;
    Int_t nITS_Clusters_Daughter1;//
-   Int_t HasPointOnITSLayer0_Daughter1;//
-   Int_t HasPointOnITSLayer1_Daughter1;//
-   Int_t HasPointOnITSLayer2_Daughter1;//
-   Int_t HasPointOnITSLayer3_Daughter1;//
-   Int_t HasPointOnITSLayer4_Daughter1;//
-   Int_t HasPointOnITSLayer5_Daughter1;//
-   Int_t HasSharedPointOnITSLayer0_Daughter1;//
-   Int_t HasSharedPointOnITSLayer1_Daughter1;//
-   Int_t HasSharedPointOnITSLayer2_Daughter1;//
-   Int_t HasSharedPointOnITSLayer3_Daughter1;//
-   Int_t HasSharedPointOnITSLayer4_Daughter1;//
-   Int_t HasSharedPointOnITSLayer5_Daughter1;//
+   bool HasPointOnITSLayer0_Daughter1;//
+   bool HasPointOnITSLayer1_Daughter1;//
+   bool HasPointOnITSLayer2_Daughter1;//
+   bool HasPointOnITSLayer3_Daughter1;//
+   bool HasPointOnITSLayer4_Daughter1;//
+   bool HasPointOnITSLayer5_Daughter1;//
+   bool HasSharedPointOnITSLayer0_Daughter1;//
+   bool HasSharedPointOnITSLayer1_Daughter1;//
+   bool HasSharedPointOnITSLayer2_Daughter1;//
+   bool HasSharedPointOnITSLayer3_Daughter1;//
+   bool HasSharedPointOnITSLayer4_Daughter1;//
+   bool HasSharedPointOnITSLayer5_Daughter1;//
    
    Double_t chi2_TPC_Daughter1;//
    Double_t chi2_NDF_Daughter1;//
@@ -265,18 +282,18 @@ private:
    Int_t nTPC_Clusters_dEdx_Daughter2;//
    Int_t nTRD_Clusters_Daughter2;
    Int_t nITS_Clusters_Daughter2;//
-   Int_t HasPointOnITSLayer0_Daughter2;//
-   Int_t HasPointOnITSLayer1_Daughter2;//
-   Int_t HasPointOnITSLayer2_Daughter2;//
-   Int_t HasPointOnITSLayer3_Daughter2;//
-   Int_t HasPointOnITSLayer4_Daughter2;//
-   Int_t HasPointOnITSLayer5_Daughter2;//
-   Int_t HasSharedPointOnITSLayer0_Daughter2;//
-   Int_t HasSharedPointOnITSLayer1_Daughter2;//
-   Int_t HasSharedPointOnITSLayer2_Daughter2;//
-   Int_t HasSharedPointOnITSLayer3_Daughter2;//
-   Int_t HasSharedPointOnITSLayer4_Daughter2;//
-   Int_t HasSharedPointOnITSLayer5_Daughter2;//
+   bool HasPointOnITSLayer0_Daughter2;//
+   bool HasPointOnITSLayer1_Daughter2;//
+   bool HasPointOnITSLayer2_Daughter2;//
+   bool HasPointOnITSLayer3_Daughter2;//
+   bool HasPointOnITSLayer4_Daughter2;//
+   bool HasPointOnITSLayer5_Daughter2;//
+   bool HasSharedPointOnITSLayer0_Daughter2;//
+   bool HasSharedPointOnITSLayer1_Daughter2;//
+   bool HasSharedPointOnITSLayer2_Daughter2;//
+   bool HasSharedPointOnITSLayer3_Daughter2;//
+   bool HasSharedPointOnITSLayer4_Daughter2;//
+   bool HasSharedPointOnITSLayer5_Daughter2;//
    
    Double_t chi2_TPC_Daughter2;//
    Double_t chi2_NDF_Daughter2;//
@@ -307,6 +324,6 @@ private:
    AliAnalysisTaskReducedTreeNuclei(const AliAnalysisTaskReducedTreeNuclei&);
    AliAnalysisTaskReducedTreeNuclei& operator=(const AliAnalysisTaskReducedTreeNuclei&);
    
-   ClassDef(AliAnalysisTaskReducedTreeNuclei, 1);
+  ClassDef(AliAnalysisTaskReducedTreeNuclei, 4);
 };
 #endif

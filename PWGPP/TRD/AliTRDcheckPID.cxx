@@ -52,9 +52,9 @@
 #include <AliTRDCalPIDNN.h>
 #include "AliTRDcheckPID.h"
 #include "AliTRDinfoGen.h"
-#include "info/AliTRDtrackInfo.h"
-#include "info/AliTRDpidInfo.h"
-#include "info/AliTRDv0Info.h"
+#include "AliTRDtrackInfo.h"
+#include "AliTRDpidInfo.h"
+#include "AliTRDv0Info.h"
 
 Char_t const * AliTRDcheckPID::fgMethod[3] = {"LQ", "NN", "ESD"};
 

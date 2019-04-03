@@ -194,7 +194,7 @@ AliFemtoEventReaderAODChain *Reader = new AliFemtoEventReaderAODChain();
     Reader->SetCentralityFlattening(kFALSE);
     Reader->SetReadV0(0);
     // rdr->SetPrimaryVertexCorrectionTPCPoints(kTRUE);
-////    Reader->SetDCAglobalTrack(kTRUE);
+    Reader->SetDCAglobalTrack(kTRUE);
  
     
   AliFemtoManager* Manager=new AliFemtoManager();

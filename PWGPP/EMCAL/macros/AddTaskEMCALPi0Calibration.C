@@ -8,7 +8,7 @@
 /// \author : Gustavo Conesa Balbastre <Gustavo.Conesa.Balbastre@cern.ch>, (LPSC-CNRS)
 ///
 
-
+// Root6
 #if !defined(__CINT__) || defined(__MAKECINT__)
 
 #include <TString.h>
@@ -19,7 +19,9 @@
 #include "AliAnalysisTaskEMCALPi0CalibSelection.h"
 #include "AliAnalysisManager.h"
 #include "AliAnalysisDataContainer.h"
-#include "ConfigureEMCALRecoUtils.C"
+
+R__ADD_INCLUDE_PATH($ALICE_PHYSICS)
+#include "PWGPP/EMCAL/macros/ConfigureEMCALRecoUtils.C"
 
 #endif // CINT
 
@@ -87,12 +89,22 @@ AliAnalysisTaskEMCALPi0CalibSelection * AddTaskEMCALPi0Calibration
 
   pi0calib->SetTriggerName(trigger);
   
+  // Centrality selection
+//  pi0calib->SwitchOnCentrality();
+//  pi0calib->SetCentralityRange(50.,90.);
+//  pi0calib->SetCentralityClass("V0M");
+  
+  //
   // Cluster recalculation, Reco Utils configuration
-  
-  
+  //
   AliEMCALRecoUtils * reco = pi0calib->GetEMCALRecoUtils();
   
+  // Root5
+#if defined(__CINT__)
+
   gROOT->LoadMacro("$ALICE_PHYSICS/PWGPP/EMCAL/macros/ConfigureEMCALRecoUtils.C");
+
+#endif
   
   ConfigureEMCALRecoUtils(reco,
                           simu,                             

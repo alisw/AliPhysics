@@ -54,7 +54,6 @@ AliConversionTrackCuts::AliConversionTrackCuts() :
   fFilterBit(2048),
   fDCAZmax(3.2*3.2),
   fDCAXYmax(2.4*2.4),
-  fOwnedTracks(),
   fInitialized(kFALSE),
   fhPhi(NULL),
   //  fhPt(NULL),
@@ -70,7 +69,6 @@ AliConversionTrackCuts::AliConversionTrackCuts() :
   fHistograms(NULL) 
 {
   //Constructor
-  fOwnedTracks.SetOwner(kTRUE);
 }
 //________________________________________________________________________
 AliConversionTrackCuts::AliConversionTrackCuts(TString name, TString title = "title") : 
@@ -82,7 +80,6 @@ AliConversionTrackCuts::AliConversionTrackCuts(TString name, TString title = "ti
   fFilterBit(2048),
   fDCAZmax(-1),
   fDCAXYmax(-1),
-  fOwnedTracks(),
   fInitialized(kFALSE),
   fhPhi(NULL),  
   //fhPt(NULL),
@@ -98,7 +95,6 @@ AliConversionTrackCuts::AliConversionTrackCuts(TString name, TString title = "ti
   fHistograms(NULL)
 {
   //Constructor
-  fOwnedTracks.SetOwner(kTRUE);
 }
 
 
@@ -121,7 +117,6 @@ AliConversionTrackCuts::AliConversionTrackCuts(TString name, TString title = "ti
      delete fEsdTrackCutsExtra2;
    fEsdTrackCutsExtra2 = NULL;
 
-   fOwnedTracks.Delete();
 }
 
 //______________________________________________________________________________
@@ -204,30 +199,27 @@ void AliConversionTrackCuts::DefineESDCuts() {
 
 
 //______________________________________________________________________________
-Bool_t AliConversionTrackCuts::AcceptTrack(AliESDtrack * track) {
+Bool_t AliConversionTrackCuts::AcceptTrack(const AliESDtrack * track) {
   //Check esd track
   FillHistograms(kPreCut, track);
-
 
   if( fFilterBit == 256) {
 
     ///Standalone tpc tracks constrained
     const AliExternalTrackParam * param = track->GetConstrainedParam();
     if(param) {
-      AliESDtrack* esdTrack = new AliESDtrack(*track);
-      esdTrack->CopyFromVTrack(param);
-      track = esdTrack;
-      fOwnedTracks.Add(track);
+      AliESDtrack esdTrack(track);
+      esdTrack.CopyFromVTrack(param);
 
-      if( !fEsdTrackCuts->IsSelected(track)) return kFALSE;
+      if( !fEsdTrackCuts->IsSelected(&esdTrack)) return kFALSE;
 
       FillHistograms(1, track);
 
       Double_t dca[2];
-      GetDCA(track, dca);
+      GetDCA(&esdTrack, dca);
       
-      FillDCAHist(dca[1], dca[0], track);
-      if(fhEtaPhi) fhEtaPhi->Fill(track->Eta(), track->Phi());
+      FillDCAHist(dca[1], dca[0], &esdTrack);
+      if(fhEtaPhi) fhEtaPhi->Fill(esdTrack.Eta(), esdTrack.Phi());
       return kTRUE;
     } else {
       return kFALSE;
@@ -263,30 +255,29 @@ Bool_t AliConversionTrackCuts::AcceptTrack(AliESDtrack * track) {
   }
 
   ///If passing extra
-  if (fEsdTrackCutsExtra1 && fEsdTrackCutsExtra1->IsSelected(track)) {
-    FillHistograms(1, track);
-    FillHistograms(2, track);
+  AliESDtrack internaltrack(track); // local copy used in order to keep constantnes of the input object
+  if (fEsdTrackCutsExtra1 && fEsdTrackCutsExtra1->IsSelected(&internaltrack)) {
+    FillHistograms(1, &internaltrack);
+    FillHistograms(2, &internaltrack);
 
-    FillDCAHist(dca[1], dca[0], track);
-    if(fhEtaPhi) fhEtaPhi->Fill(track->Eta(), track->Phi());
+    FillDCAHist(dca[1], dca[0], &internaltrack);
+    if(fhEtaPhi) fhEtaPhi->Fill(internaltrack.Eta(), internaltrack.Phi());
     
     return kTRUE;
   } 
 
   ///If passing extra2
-  if (fEsdTrackCutsExtra2 && fEsdTrackCutsExtra2->IsSelected(track)) {
-    const AliExternalTrackParam * param = track->GetConstrainedParam();
+  if (fEsdTrackCutsExtra2 && fEsdTrackCutsExtra2->IsSelected(&internaltrack)) {
+    const AliExternalTrackParam * param = internaltrack.GetConstrainedParam();
     if(param) {
-      AliESDtrack* esdTrack = new AliESDtrack(*track);
-      esdTrack->CopyFromVTrack(param);
-      track = esdTrack;
-      fOwnedTracks.Add(track);
+      AliESDtrack esdTrack(internaltrack);
+      esdTrack.CopyFromVTrack(param);
 
-      FillHistograms(3, track);
-      FillHistograms(1, track);
+      FillHistograms(3, &esdTrack);
+      FillHistograms(1, &esdTrack);
 
-      FillDCAHist(dca[1], dca[0], track);
-      if(fhEtaPhi) fhEtaPhi->Fill(track->Eta(), track->Phi());
+      FillDCAHist(dca[1], dca[0], &esdTrack);
+      if(fhEtaPhi) fhEtaPhi->Fill(esdTrack.Eta(), esdTrack.Phi());
 
       return kTRUE;
     } else {
@@ -312,7 +303,7 @@ Bool_t AliConversionTrackCuts::AcceptTrack(AliESDtrack * track) {
   // return kTRUE;
 }
 
-Bool_t AliConversionTrackCuts::AcceptTrack(AliAODTrack * track) {
+Bool_t AliConversionTrackCuts::AcceptTrack(const AliAODTrack * track) {
   //Check aod track
   
   FillHistograms(kPreCut, track);
@@ -531,7 +522,7 @@ TList * AliConversionTrackCuts::CreateHistograms() {
   return fHistograms;
 }
 
-void AliConversionTrackCuts::FillHistograms(Int_t cutIndex, AliVTrack * track) {
+void AliConversionTrackCuts::FillHistograms(Int_t cutIndex, const AliVTrack * track) {
 
   //Fill histograms
   if(fhPhi) fhPhi->Fill(cutIndex, track->Phi());
@@ -540,7 +531,7 @@ void AliConversionTrackCuts::FillHistograms(Int_t cutIndex, AliVTrack * track) {
 
 }
 
-void AliConversionTrackCuts::FillDCAHist(Float_t dcaz, Float_t dcaxy, AliVTrack * track) {
+void AliConversionTrackCuts::FillDCAHist(Float_t dcaz, Float_t dcaxy, const AliVTrack * track) {
   if(fhdcaxyPt) fhdcaxyPt->Fill(track->Pt(), dcaxy);
   if(fhdcazPt) fhdcazPt->Fill(track->Pt(), dcaz);
   if(fhdca) fhdca->Fill(dcaz, dcaxy);

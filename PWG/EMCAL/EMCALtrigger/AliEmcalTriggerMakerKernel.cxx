@@ -65,6 +65,8 @@ AliEmcalTriggerMakerKernel::AliEmcalTriggerMakerKernel():
   fSmearModelMean(nullptr),
   fSmearModelSigma(nullptr),
   fSmearThreshold(0.1),
+  fScaleShift(0.),
+  fDoBackgroundSubtraction(false),
   fGeometry(nullptr),
   fPatchAmplitudes(nullptr),
   fPatchADCSimple(nullptr),
@@ -78,6 +80,7 @@ AliEmcalTriggerMakerKernel::AliEmcalTriggerMakerKernel():
   memset(fL1ThresholdsOffline, 0, sizeof(ULong64_t) * 4);
   fCellTimeLimits[0] = -10000.;
   fCellTimeLimits[1] = 10000.;
+  memset(fRhoValues, 0, sizeof(Double_t) * kNIndRho);
 }
 
 AliEmcalTriggerMakerKernel::~AliEmcalTriggerMakerKernel() {
@@ -152,6 +155,7 @@ void AliEmcalTriggerMakerKernel::ConfigureForPbPb2015()
   AddL1TriggerAlgorithm(64, 103, 1<<fTriggerBitConfig->GetGammaHighBit() | 1<<fTriggerBitConfig->GetGammaLowBit(), 2, 1);
   AddL1TriggerAlgorithm(0, 63, 1<<fTriggerBitConfig->GetJetHighBit() | 1<<fTriggerBitConfig->GetJetLowBit() | 1<<fTriggerBitConfig->GetBkgBit(), 8, 4);
   AddL1TriggerAlgorithm(64, 103, 1<<fTriggerBitConfig->GetJetHighBit() | 1<<fTriggerBitConfig->GetJetLowBit() | 1<<fTriggerBitConfig->GetBkgBit(), 8, 4);
+  fDoBackgroundSubtraction = true;
   fConfigured = true;
 }
 
@@ -398,6 +402,13 @@ void AliEmcalTriggerMakerKernel::ReadTriggerData(AliVCaloTrigger *trigger){
       }
     }
   }
+
+  // Reading of the rho values (only PbPb)
+  if(fDoBackgroundSubtraction) {
+    AliInfoStream() << "Reading median values: EMCAL " << fRhoValues[kIndRhoEMCAL] << ", DCAL " << fRhoValues[kIndRhoDCAL] << std::endl;
+    fRhoValues[kIndRhoEMCAL] = trigger->GetMedian(0);     // EMCAL STU at position 0
+    fRhoValues[kIndRhoDCAL] = trigger->GetMedian(1);      // DCAL STU at position 1
+  }
 }
 
 void AliEmcalTriggerMakerKernel::ReadCellData(AliVCaloCells *cells){
@@ -417,6 +428,8 @@ void AliEmcalTriggerMakerKernel::ReadCellData(AliVCaloCells *cells){
              celltime = cells->GetTime(iCell);
     if(celltime < fCellTimeLimits[0] || celltime > fCellTimeLimits[1]) continue;
     if(amp < fMinCellAmplitude) continue;
+    if(fScaleShift) amp += fScaleShift;
+    amp = TMath::Max(amp, 0.);      // never go negative in energy
     // get position
     Int_t absId=-1;
     fGeometry->GetFastORIndexFromCellIndex(cellId, absId);
@@ -537,6 +550,12 @@ void AliEmcalTriggerMakerKernel::CreateTriggerPatches(const AliVEvent *inputeven
       if(patchit->GetADC() > fBkgThreshold) SETBIT(offlinebits, AliEMCALTriggerPatchInfo::kRecalcOffset + fTriggerBitConfig->GetBkgBit());
       if(patchit->GetOfflineADC() > fBkgThreshold) SETBIT(offlinebits, AliEMCALTriggerPatchInfo::kOfflineOffset + fTriggerBitConfig->GetBkgBit());
       onlinebits &= bkgPatchMask;
+    }
+    if(fDoBackgroundSubtraction) {
+      double area = TMath::Power(static_cast<double>(patchit->GetPatchSize())/8., 2);
+      double rhoval = (patchit->GetRowStart() >= 64) ? fRhoValues[kIndRhoDCAL] : fRhoValues[kIndRhoEMCAL];  // Rho values are for a detector measured in the opposite arm
+      AliDebugStream(1) << "Subtracting background for area " << area << ": " << rhoval  << " -> " << (area * rhoval) << std::endl;
+      patchit->SetADC(patchit->GetADC() - area * rhoval);
     }
     // convert
     AliEMCALTriggerPatchInfo fullpatch;

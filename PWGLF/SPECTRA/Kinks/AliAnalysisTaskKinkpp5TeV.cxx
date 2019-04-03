@@ -57,12 +57,12 @@ AliAnalysisTaskKinkpp5TeV::AliAnalysisTaskKinkpp5TeV()
         fnSigmaTPC(0),fradiurKink(0),fLenthKink(0),fEtaK(0),frapiKESD(0),fzVertexPositionKinKvsKinkRad(0),fSignPtNcl(0),fSignPtrapiK(0),frapiKNcl(0),fSignPt(0),
         fChi2NclTPC(0),fRatioChi2Ncl(0),flifetime(),fPtKinkKaon(0),fDCAkink(0),fPtKink(0),fPtKinkPos(0),fPtKinkNeg(0),fPtKinkK0(0),fPtKinkK0P(0),fPtKinkK0N(0),
         fPtKinkGyu(0),fPtKinkGyuP(0),fPtKinkGyuN(0),fKinKRbn(0),fradPtRpDt(0),fAngMomK(0),fPosiKinkK(0),fPosiKinKXZ(0), fPosiKinKYZ(0),fPIDResponse(0),fNumberOfEvent(0),
-        fNumberOfEvent_cent(0),fESDtrackCuts(0),fbgCleaningHigh(0),fTPCSignalPt(0),fqTvsPt(0),fInvMassPt(0),fCent(0),fEventVsCentrality(0)
+        fNumberOfEvent_cent(0),fESDtrackCuts(0),fbgCleaningHigh(0),fTPCSignalPt(0),fqTvsPt(0),fInvMassPt(0),fCent(0),fEventVsCentrality(0),fnsigma(3.5)
 
 {}
 
 //________________________________________________________________________
-AliAnalysisTaskKinkpp5TeV::AliAnalysisTaskKinkpp5TeV(const char *name, Float_t lRadiusKUp,  Float_t lRadiusKLow, Int_t lNCluster, Float_t lLowQtValue, Float_t yRange) 
+AliAnalysisTaskKinkpp5TeV::AliAnalysisTaskKinkpp5TeV(const char *name, Float_t lRadiusKUp,  Float_t lRadiusKLow, Int_t lNCluster, Float_t lLowQtValue, Float_t yRange, Float_t lnsigma) 
   : AliAnalysisTaskSE(name),  fOutputList(0), fHistPt(0),fVtxCut(10.),fMultiplicity(0),fIncompletEvent(0),fMultpileup(0), fMultV0trigger(0),fZvertex(0),fEventVertex(0),
 	fRatioCrossedRows(0),fZvXv(0), fZvYv(0), fXvYv(0),fRpr(0),fdcaToVertexXY(0),fdcaToVertexXYafterCut(0),fptAllKink(0),fRatioCrossedRowsKink(0),fPosiKink(0),
 	fQtAll(0),fptKink(0),fQtMothP(0),fqT1(0),fEta(0),fqT2(0),fKinkKaonBackg(0),f1(0), f2(0),fPtCut1(0),fAngMotherPi(0),
@@ -72,7 +72,7 @@ AliAnalysisTaskKinkpp5TeV::AliAnalysisTaskKinkpp5TeV(const char *name, Float_t l
 	fnSigmaTPC(0),fradiurKink(0),fLenthKink(0),fEtaK(0),frapiKESD(0),fzVertexPositionKinKvsKinkRad(0),fSignPtNcl(0),fSignPtrapiK(0),frapiKNcl(0),fSignPt(0),
 	fChi2NclTPC(0),fRatioChi2Ncl(0),flifetime(),fPtKinkKaon(0),fDCAkink(0),fPtKink(0),fPtKinkPos(0),fPtKinkNeg(0),fPtKinkK0(0),fPtKinkK0P(0),fPtKinkK0N(0),
 	fPtKinkGyu(0),fPtKinkGyuP(0),fPtKinkGyuN(0),fKinKRbn(0),fradPtRpDt(0),fAngMomK(0),fPosiKinkK(0),fPosiKinKXZ(0), fPosiKinKYZ(0),fPIDResponse(0),fNumberOfEvent(0),
-	fNumberOfEvent_cent(0),fESDtrackCuts(0),fbgCleaningHigh(0),fTPCSignalPt(0),fqTvsPt(0),fInvMassPt(0),fCent(0),fEventVsCentrality(0)
+	fNumberOfEvent_cent(0),fESDtrackCuts(0),fbgCleaningHigh(0),fTPCSignalPt(0),fqTvsPt(0),fInvMassPt(0),fCent(0),fEventVsCentrality(0),fnsigma(3.5)
 
 {
   // Constructor
@@ -408,7 +408,7 @@ void AliAnalysisTaskKinkpp5TeV::UserExec(Option_t *)
 	fNumberOfEvent->Fill(3.5);
 
 //multiplicity/ centrality 
-        Float_t cent = -999;
+/*        Float_t cent = -999;
         if (esd->GetRunNumber() < 244824) { //OLD multiplicity/centrality class framework
         AliCentrality *centrality = esd->GetCentrality();
         cent = centrality->GetCentralityPercentile("V0M");
@@ -423,7 +423,9 @@ void AliAnalysisTaskKinkpp5TeV::UserExec(Option_t *)
 //        if ((cent < 0) || (cent > 100)) return; //Event selection
         }
         }
+
         fCent->Fill(cent);
+*/
 	fNumberOfEvent->Fill(4.5);
 
 // check incomplete event
@@ -462,7 +464,7 @@ void AliAnalysisTaskKinkpp5TeV::UserExec(Option_t *)
         if (TMath::Abs( vpos[2] ) > 10. ) return;
         fEventVertex->Fill(2);
         fNumberOfEvent->Fill(10.5);
-        fEventVsCentrality->Fill(cent, 2);
+       // fEventVsCentrality->Fill(cent, 2);
 
    	for (Int_t iTrack = 0; iTrack < esd->GetNumberOfTracks(); iTrack++) {
 
@@ -699,7 +701,8 @@ void AliAnalysisTaskKinkpp5TeV::UserExec(Option_t *)
 	//  here the kaons selected by the decay features
         fTPCSignlMotherK->Fill( track->GetInnerParam()->GetP() ,(track->GetTPCsignal() )) ;
 //nsigma cut
-	if ( nsigma > 3.5) continue;
+//	if ( nsigma > 3.5) continue;
+ if ( nsigma > fnsigma) continue;
 	fqT1  ->Fill(qT) ;
 	fqTvsPt->Fill(trackPt, qT);
         fInvMassPt->Fill(invariantMassKmu, trackPt);

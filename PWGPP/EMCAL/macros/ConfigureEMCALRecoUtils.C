@@ -12,11 +12,13 @@
 /// \author : Gustavo Conesa Balbastre <Gustavo.Conesa.Balbastre@cern.ch>, (LPSC-CNRS)
 ///
 
-#if !defined(__CINT__) || defined(__MAKECINT__)
+/*
+#if !defined(__CINT__) || defined(__MAKECINT__) || !defined(__CLING__)
 
 #include "AliEMCALRecoUtils.h"
 
 #endif
+*/
 
 /// Main method
 ///

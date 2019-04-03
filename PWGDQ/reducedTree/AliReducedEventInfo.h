@@ -38,6 +38,9 @@ class AliReducedEventInfo : public AliReducedBaseEvent {
   UInt_t    TimeStamp()                       const {return fTimeStamp;}
   UInt_t    EventType()                       const {return fEventType;}
   ULong64_t TriggerMask()                     const {return fTriggerMask;}
+  ULong64_t OnlineTriggerMask()               const {return fOnlineTriggerMask;}
+  ULong64_t OnlineTriggerMaskNext50()         const {return fOnlineTriggerMaskNext50;}
+  TString   TriggerClass()                    const {return fTriggerClass;}
   Bool_t    IsPhysicsSelection()              const {return fIsPhysicsSelection;}
   Bool_t    IsSPDPileup()                     const {return fIsSPDPileup;}
   Bool_t    IsSPDPileupMultBins()             const {return fIsSPDPileupMultBins;}
@@ -45,8 +48,13 @@ class AliReducedEventInfo : public AliReducedBaseEvent {
   Float_t   VertexCovMatrix(Int_t iCov = 0)   const {return (iCov>=0 && iCov<6 ? fVtxCovMatrix[iCov] : 0.0);}
   Float_t   VertexTPC(Int_t axis)             const {return (axis>=0 && axis<=2 ? fVtxTPC[axis] : 0);}
   Int_t     VertexTPCContributors()           const {return fNVtxTPCContributors;}
+  // For the next two member functions:
+  //  side:  0- A&C combined; 1- A-side; 2- C-side
+  Float_t   TPCpileupZ(Int_t side = 0)        const {return (side<0 || side>2 ? -999. : (side==0 ? 0.5*(fTPCpileupZ[0]+fTPCpileupZ[1]) : fTPCpileupZ[side-1]));}
+  Int_t     TPCpileupContributors(Int_t side = 0) const {return (side<0 || side>2 ? -999 : (side==0 ? fTPCpileupContributors[0]+fTPCpileupContributors[1] : fTPCpileupContributors[side-1]));}
   Float_t   VertexSPD(Int_t axis)             const {return (axis>=0 && axis<=2 ? fVtxSPD[axis] : 0);}
   Int_t     VertexSPDContributors()           const {return fNVtxSPDContributors;}
+  Float_t   VertexMC(Int_t axis)              const {return (axis>=0 && axis<=2 ? fVtxMC[axis] : 0);}
   Int_t     NTPCClusters()                    const {return fNTPCclusters;}
   Float_t   VertexTZERO()                     const {return fT0zVertex;}
   Int_t     NpileupSPD()                      const {return fNpileupSPD;}
@@ -60,6 +68,11 @@ class AliReducedEventInfo : public AliReducedBaseEvent {
   UInt_t    ITSClusters(Int_t layer)          const {return (layer>=1 && layer<=6 ? fITSClusters[layer-1] : 0);}
   Int_t     SPDnSingleClusters()              const {return fSPDnSingle;}
   Int_t     TracksPerTrackingFlag(Int_t flag) const {return (flag>=0 && flag<32 ? fNtracksPerTrackingFlag[flag] : -999);}
+  Int_t     TracksWithTPCout()                const {return fNtracksTPCout;}
+  Int_t     Nch16 (Bool_t exclJpsiDau = kFALSE )  const {return (exclJpsiDau? fNch[0] : fNch[1] );}
+  Int_t     Nch10 (Bool_t exclJpsiDau = kFALSE )  const {return (exclJpsiDau? fNch[2] : fNch[3] );}
+  Int_t     NchV0A(Bool_t exclJpsiDau = kFALSE ) const {return (exclJpsiDau? fNch[4] : fNch[5] );}
+  Int_t     NchV0C(Bool_t exclJpsiDau = kFALSE ) const {return (exclJpsiDau? fNch[6] : fNch[7] );}
   
   Float_t   MultEstimatorOnlineV0M()   const {return fMultiplicityEstimators[0];}
   Float_t   MultEstimatorOnlineV0A()   const {return fMultiplicityEstimators[1];}
@@ -90,9 +103,9 @@ class AliReducedEventInfo : public AliReducedBaseEvent {
   Float_t   MultEstimatorPercentileV0C()   const {return fMultiplicityEstimatorPercentiles[12];}
   
   Float_t   MultChannelVZERO(Int_t channel)   const {return (channel>=0 && channel<=63 ? fVZEROMult[channel] : -999.);}
-  Float_t   MultVZEROA()                      const;
-  Float_t   MultVZEROC()                      const;
-  Float_t   MultVZERO()                       const;
+  Float_t   MultVZEROA(Bool_t fromChannels=kFALSE)                      const;
+  Float_t   MultVZEROC(Bool_t fromChannels=kFALSE)                      const;
+  Float_t   MultVZERO(Bool_t fromChannels=kFALSE)                       const;
   Float_t   MultRingVZEROA(Int_t ring)        const;
   Float_t   MultRingVZEROC(Int_t ring)        const;
   
@@ -136,17 +149,12 @@ class AliReducedEventInfo : public AliReducedBaseEvent {
 	 			    Bool_t (*IsTrackSelected)(AliReducedTrackInfo*)=NULL);
   
   // Event plane information handling for the case when event plane information is written directly in the trees
-  //void SetEventPlane(const AliReducedEventPlaneInfo* ep) 
-  //    {if(ep) {fEventPlane=new AliReducedEventPlaneInfo(); fEventPlane->CopyEvent(ep);}};
-  //AliReducedEventPlaneInfo* GetEventPlane() const {return fEventPlane;};
   void SetEventPlane(const AliReducedEventPlaneInfo* ep) {if(ep) fEventPlane.CopyEvent(ep);}
+  Double_t GetEventPlane(Int_t detector, Int_t harmonic) const {return fEventPlane.EventPlane(detector, harmonic);};    
+  Double_t GetQx(Int_t detector, Int_t harmonic) const {return fEventPlane.Qx(detector, harmonic);}
+  Double_t GetQy(Int_t detector, Int_t harmonic) const {return fEventPlane.Qy(detector, harmonic);}
+  Double_t GetEventPlaneStatus(Int_t detector, Int_t harmonic) const {return fEventPlane.GetEventPlaneStatus(detector, harmonic);}
   
-  //Double_t GetEventPlane(Int_t detector, Int_t harmonic) const 
-   //   {if(fEventPlane) return fEventPlane->EventPlane(detector, harmonic); return 0.0;};
-  Double_t GetEventPlane(Int_t detector, Int_t harmonic) const 
-      {return fEventPlane.EventPlane(detector, harmonic); return 0.0;};    
-      
-
   virtual void ClearEvent();
   
   static const Float_t fgkZdcNalpha;
@@ -161,6 +169,9 @@ class AliReducedEventInfo : public AliReducedBaseEvent {
   UInt_t    fTimeStamp;             // time stamp of the event                
   UInt_t    fEventType;             // event type                             
   ULong64_t fTriggerMask;           // trigger mask
+  ULong64_t fOnlineTriggerMask;     // online trigger mask  (bits 1-50)
+  ULong64_t fOnlineTriggerMaskNext50;   // online trigger mask (bits 51-100)
+  TString   fTriggerClass;          // trigger class
   Float_t   fMultiplicityEstimators[13];   // multiplicity estimators: "OnlineV0M", "OnlineV0A", "OnlineV0C", "ADM", "ADA", "ADC", "SPDClusters", "SPDTracklets", "RefMult05", "RefMult08"
   Float_t   fMultiplicityEstimatorPercentiles[13];   // multiplicity estimators: "OnlineV0M", "OnlineV0A", "OnlineV0C", "ADM", "ADA", "ADC", "SPDClusters", "SPDTracklets", "RefMult05", "RefMult08"
   Bool_t    fIsPhysicsSelection;    // PhysicsSelection passed event
@@ -170,8 +181,11 @@ class AliReducedEventInfo : public AliReducedBaseEvent {
   Float_t   fVtxCovMatrix[6];       // Covariance matrix of the event vertex
   Float_t   fVtxTPC[3];             // TPC only event vertex       
   Int_t     fNVtxTPCContributors;   // TPC only event vertex contributors
+  Float_t   fTPCpileupZ[2];         // TPC pileup event Z position; [0]: A-side; [1]: C-side 
+  Int_t     fTPCpileupContributors[2]; // TPC pileup event contributors; [0]: A-side; [1]: C-side
   Float_t   fVtxSPD[3];             // SPD only event vertex
   Int_t     fNVtxSPDContributors;  // SPD only event vertex contributors
+  Float_t   fVtxMC[3];              // MC event vertex
   Int_t     fNpileupSPD;            // number of pileup vertices from SPD     
   Int_t     fNpileupTracks;         // number of pileup vertices from tracks  
   Int_t     fNTPCclusters;          // number of TPC clusters
@@ -184,6 +198,8 @@ class AliReducedEventInfo : public AliReducedBaseEvent {
   UInt_t    fITSClusters[6];        // number of ITS clusters per layer
   Int_t     fSPDnSingle;            // number of clusters in SPD layer 1, not associated to a tracklet on SPD layer 2
   Int_t     fNtracksPerTrackingFlag[32];  // number of tracks for each tracking status bit                
+  Int_t     fNtracksTPCout;          // number of kTPCout tracks in ESDs
+  Int_t     fNch[8];                // number of MCtruth charged particles in different eta regions
   Float_t   fVZEROMult[64];         // VZERO multiplicity in all 64 channels
   Float_t   fVZEROTotalMult[2];    // Total VZERO multiplicity
   Float_t   fZDCnEnergy[10];         // neutron ZDC energy in all 8 channels
@@ -210,7 +226,7 @@ class AliReducedEventInfo : public AliReducedBaseEvent {
   AliReducedEventInfo& operator= (const AliReducedEventInfo &c);
   AliReducedEventInfo(const AliReducedEventInfo &c);
 
-  ClassDef(AliReducedEventInfo, 7);
+  ClassDef(AliReducedEventInfo, 13);
 };
 
 #endif

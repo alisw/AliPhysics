@@ -495,7 +495,7 @@ std::vector<AliAODConversionPhoton> AliAnalysisTaskK0toPi0Pi0::MakeConversionPho
 }
 
 //=================================== SELECT MESON ====================================================================
-std::vector<AliAODConversionMother> AliAnalysisTaskK0toPi0Pi0::SelectMeson(std::vector<AliAODConversionMother> &candidates, 
+std::vector<AliAODConversionMother> AliAnalysisTaskK0toPi0Pi0::SelectMeson(std::vector<AliAODConversionMother> &candidates,
 																		   AliConversionMesonCuts &cuts, MesonType_t meson, const char *reccase){
   std::vector<AliAODConversionMother> selectedCandidates;
   TString mesonName;
@@ -529,7 +529,6 @@ std::vector<AliAODConversionMother> AliAnalysisTaskK0toPi0Pi0::MakePi0Candidates
       for(auto secphoton : *secondaryLeg) {
         AliAODConversionMother candidate(&primphoton, &secphoton);
         AliDebug(2, Form("Made Pi0 candidate same - Mass %f [%f - %f] GeV/c2", candidate.M(), cuts.GetSelectionLow(), cuts.GetSelectionHigh()));
-        //if(!cuts.CheckWhetherInMassRange(candidate.M()))continue;
         if(candidate.M() < 1e-4 || candidate.M() > 0.2)continue;
         AliDebug(2, "Candidate in mass window");
         candidates.push_back(candidate);
@@ -541,7 +540,6 @@ std::vector<AliAODConversionMother> AliAnalysisTaskK0toPi0Pi0::MakePi0Candidates
       for(auto seciter = primiter + 1; seciter != primaryLeg->end(); ++seciter){
         AliAODConversionMother candidate(&(*primiter), &(*seciter));
         AliDebug(2, Form("Made Pi0 candidate mixed - Mass %f [%f - %f] GeV/c2", candidate.M(), cuts.GetSelectionLow(), cuts.GetSelectionHigh()));
-        //if(!cuts.CheckWhetherInMassRange(candidate.M()))continue;
         if(candidate.M() < 1e-4 || candidate.M() > 0.2)continue;
         AliDebug(2, "Candidate in mass window");
         candidates.push_back(candidate);

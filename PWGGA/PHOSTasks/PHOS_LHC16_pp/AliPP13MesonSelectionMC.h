@@ -5,7 +5,7 @@
 #include <map>
 
 // --- Custom header files ---
-#include "AliPP13PhysPhotonSelectionMC.h"
+#include "AliPP13SpectrumSelectionMC.h"
 #include "AliPP13ParticlesHistogram.h"
 #include "AliPP13SelectionWeights.h"
 
@@ -36,7 +36,8 @@ struct ParticleSpectrum
 		fEtaPhi(0),
 		fPtLong(0),
 		fPt(0),
-		fPtPrimaries()
+		fPtPrimaries(),
+		fPtPrimariesStandard()
 	{
 		fPtAllRange = new TH1F(Form("hPt_allrange_%s", n), Form("Generated p_{T} spectrum of %ss in 4 #pi ; p_{T}, GeV/c", n), ptsize, ptbins);
 		fPtRadius   = new TH2F(Form("hPt_%s_radius", n), Form("Generated radius, p_{T} spectrum of all %ss; r, cm; p_{T}, GeV/c", n), 500, 0., 500., 400, 0, 20);
@@ -58,6 +59,10 @@ struct ParticleSpectrum
 			const char * s = (i == 0) ? "secondary": "primary";
 			fPtPrimaries[i] = new TH1F(Form("hPt_%s_%s_", n, s), Form("Generated p_{T} spectrum of %s %ss; p_{T}, GeV/c", s, n), ptsize, ptbins);
 			fListOfHistos->Add(fPtPrimaries[i]);
+
+			fPtPrimariesStandard[i] = new TH1F(Form("hPt_%s_%s_standard", n, s), Form("Generated p_{T} spectrum of %s %ss; p_{T}, GeV/c", s, n), 200, 0, 20);
+			fListOfHistos->Add(fPtPrimariesStandard[i]);
+
 		}
 	}
 
@@ -69,11 +74,12 @@ struct ParticleSpectrum
 	TH1F * fPtLong;     //!
 	TH1F * fPt;         //!
 	TH1F * fPtPrimaries[2]; //!
+	TH1F * fPtPrimariesStandard[2]; //!
 
 };
 
 
-class AliPP13MesonSelectionMC: public AliPP13PhysPhotonSelectionMC
+class AliPP13MesonSelectionMC: public AliPP13SpectrumSelectionMC
 {
 public:
 	enum Modes {kGenerated = 0, kReconstructed = 1, kNhists = 2};
@@ -86,9 +92,8 @@ public:
 		kKplus = 321, kKminus = -321, kSigmaZero = 3212
 	};
 
-				
 	AliPP13MesonSelectionMC():
-		AliPP13PhysPhotonSelectionMC(),
+		AliPP13SpectrumSelectionMC(),
 		fPrimaryPi0(),
 		fSecondaryPi0(),
 		fFeedDownPi0(),
@@ -119,7 +124,7 @@ public:
 
 	AliPP13MesonSelectionMC(const char * name, const char * title, 
 			AliPP13ClusterCuts cuts, AliPP13SelectionWeights * w):
-		AliPP13PhysPhotonSelectionMC(name, title, cuts, w),
+		AliPP13SpectrumSelectionMC(name, title, cuts, w),
 		fPrimaryPi0(),
 		fSecondaryPi0(),
 		fFeedDownPi0(),
@@ -173,7 +178,6 @@ public:
 protected:
 	virtual void ConsiderPair(const AliVCluster * c1, const AliVCluster * c2, const EventFlags & eflags);
 
-	virtual Bool_t IsPrimary(const AliAODMCParticle * particle) const;
 	virtual AliAODMCParticle * GetParent(Int_t label, Int_t & plabel, TClonesArray * particles) const;
 	virtual AliAODMCParticle * GetParent(Int_t label, TClonesArray * particles) const
 	{

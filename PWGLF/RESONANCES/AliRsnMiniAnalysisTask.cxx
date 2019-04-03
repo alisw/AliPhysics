@@ -11,7 +11,6 @@
 //
 // Author: A. Pulvirenti
 // Developers: F. Bellini (fbellini@cern.ch)
-//
 
 #include <Riostream.h>
 
@@ -47,7 +46,8 @@
 #include "AliRsnMiniParticle.h"
 
 #include "AliRsnMiniAnalysisTask.h"
-
+#include "AliRsnMiniResonanceFinder.h"
+//#include "AliSpherocityUtils.h"
 
 ClassImp(AliRsnMiniAnalysisTask)
 
@@ -78,6 +78,7 @@ AliRsnMiniAnalysisTask::AliRsnMiniAnalysisTask() :
    fHAEventsVsMulti(0x0),
    fHAEventsVsTracklets(0x0),
    fHAEventVzCent(0x0),
+   fHAEventSpherocityCent(0x0),
    fHAEventMultiCent(0x0),
    fHAEventRefMultiCent(0x0),
    fHAEventPlane(0x0),
@@ -93,7 +94,7 @@ AliRsnMiniAnalysisTask::AliRsnMiniAnalysisTask() :
    fCheckDecay(kTRUE),
    fMaxNDaughters(-1),
    fCheckP(kFALSE),
-   fCheckFeedDown(kFALSE),   
+   fCheckFeedDown(kFALSE),
    fOriginDselection(kFALSE),
    fKeepDfromB(kFALSE),
    fKeepDfromBOnly(kFALSE),
@@ -101,7 +102,11 @@ AliRsnMiniAnalysisTask::AliRsnMiniAnalysisTask() :
    fMotherAcceptanceCutMinPt(0.0),
    fMotherAcceptanceCutMaxEta(0.9),
    fKeepMotherInAcceptance(kFALSE),
-   fRsnTreeInFile(kFALSE)
+   fRsnTreeInFile(kFALSE),
+   fComputeSpherocity(kFALSE),
+   fSpherocity(-10),
+   fTrackFilter(0x0),
+   fResonanceFinders(0)
 {
 //
 // Dummy constructor ALWAYS needed for I/O.
@@ -135,6 +140,7 @@ AliRsnMiniAnalysisTask::AliRsnMiniAnalysisTask(const char *name, Bool_t useMC,Bo
    fHAEventsVsMulti(0x0),
    fHAEventsVsTracklets(0x0),
    fHAEventVzCent(0x0),
+   fHAEventSpherocityCent(0x0),
    fHAEventMultiCent(0x0),
    fHAEventRefMultiCent(0x0),
    fHAEventPlane(0x0),
@@ -150,7 +156,7 @@ AliRsnMiniAnalysisTask::AliRsnMiniAnalysisTask(const char *name, Bool_t useMC,Bo
    fCheckDecay(kTRUE),
    fMaxNDaughters(-1),
    fCheckP(kFALSE),
-   fCheckFeedDown(kFALSE),   
+   fCheckFeedDown(kFALSE),
    fOriginDselection(kFALSE),
    fKeepDfromB(kFALSE),
    fKeepDfromBOnly(kFALSE),
@@ -158,7 +164,11 @@ AliRsnMiniAnalysisTask::AliRsnMiniAnalysisTask(const char *name, Bool_t useMC,Bo
    fMotherAcceptanceCutMinPt(0.0),
    fMotherAcceptanceCutMaxEta(0.9),
    fKeepMotherInAcceptance(kFALSE),
-   fRsnTreeInFile(saveRsnTreeInFile)
+   fRsnTreeInFile(saveRsnTreeInFile),
+   fComputeSpherocity(kFALSE),
+   fSpherocity(-10),
+   fTrackFilter(0x0),
+   fResonanceFinders(0)
 {
 //
 // Default constructor.
@@ -198,6 +208,7 @@ AliRsnMiniAnalysisTask::AliRsnMiniAnalysisTask(const AliRsnMiniAnalysisTask &cop
    fHAEventsVsMulti(0x0),
    fHAEventsVsTracklets(0x0),
    fHAEventVzCent(0x0),
+   fHAEventSpherocityCent(0x0),
    fHAEventMultiCent(0x0),
    fHAEventRefMultiCent(0x0),
    fHAEventPlane(0x0),
@@ -213,7 +224,7 @@ AliRsnMiniAnalysisTask::AliRsnMiniAnalysisTask(const AliRsnMiniAnalysisTask &cop
    fCheckDecay(copy.fCheckDecay),
    fMaxNDaughters(copy.fMaxNDaughters),
    fCheckP(copy.fCheckP),
-   fCheckFeedDown(copy.fCheckFeedDown),   
+   fCheckFeedDown(copy.fCheckFeedDown),
    fOriginDselection(copy.fOriginDselection),
    fKeepDfromB(copy.fOriginDselection),
    fKeepDfromBOnly(copy.fKeepDfromBOnly),
@@ -221,7 +232,11 @@ AliRsnMiniAnalysisTask::AliRsnMiniAnalysisTask(const AliRsnMiniAnalysisTask &cop
    fMotherAcceptanceCutMinPt(copy.fMotherAcceptanceCutMinPt),
    fMotherAcceptanceCutMaxEta(copy.fMotherAcceptanceCutMaxEta),
    fKeepMotherInAcceptance(copy.fKeepMotherInAcceptance),
-   fRsnTreeInFile(copy.fRsnTreeInFile)
+   fRsnTreeInFile(copy.fRsnTreeInFile),
+   fComputeSpherocity(copy.fComputeSpherocity),
+   fSpherocity(copy.fSpherocity),
+   fTrackFilter(copy.fTrackFilter),
+   fResonanceFinders(copy.fResonanceFinders)
 {
 //
 // Copy constructor.
@@ -265,6 +280,7 @@ AliRsnMiniAnalysisTask &AliRsnMiniAnalysisTask::operator=(const AliRsnMiniAnalys
    fHAEventsVsMulti = copy.fHAEventsVsMulti;
    fHAEventsVsTracklets = copy.fHAEventsVsTracklets;
    fHAEventVzCent = copy.fHAEventVzCent;
+   fHAEventSpherocityCent = copy.fHAEventSpherocityCent;
    fHAEventMultiCent = copy.fHAEventMultiCent;
    fHAEventRefMultiCent = copy.fHAEventRefMultiCent;
    fHAEventPlane = copy.fHAEventPlane;
@@ -286,6 +302,10 @@ AliRsnMiniAnalysisTask &AliRsnMiniAnalysisTask::operator=(const AliRsnMiniAnalys
    fMotherAcceptanceCutMaxEta = copy.fMotherAcceptanceCutMaxEta;
    fKeepMotherInAcceptance = copy.fKeepMotherInAcceptance;
    fRsnTreeInFile = copy.fRsnTreeInFile;
+   fComputeSpherocity = copy.fComputeSpherocity;
+   fSpherocity = copy.fSpherocity;
+   fTrackFilter = copy.fTrackFilter;
+   fResonanceFinders = copy.fResonanceFinders;
 
    return (*this);
 }
@@ -317,14 +337,22 @@ Int_t AliRsnMiniAnalysisTask::AddTrackCuts(AliRsnCutSet *cuts)
 //
 
    TObject *obj = fTrackCuts.FindObject(cuts->GetName());
+   Int_t v = 0;
 
    if (obj) {
       AliInfo(Form("A cut set named '%s' already exists", cuts->GetName()));
-      return fTrackCuts.IndexOf(obj);
+      v = fTrackCuts.IndexOf(obj);
    } else {
       fTrackCuts.AddLast(cuts);
-      return fTrackCuts.IndexOf(cuts);
+      v = fTrackCuts.IndexOf(cuts);
    }
+
+   for (Int_t i=0; i<fResonanceFinders.GetEntries(); i++){
+      AliRsnMiniResonanceFinder* f = (AliRsnMiniResonanceFinder*) fResonanceFinders[i];
+      if(f) f->IncrementResonanceCutID();
+   }
+    
+   return v;
 }
 
 //__________________________________________________________________________________________________
@@ -349,6 +377,12 @@ void AliRsnMiniAnalysisTask::UserCreateOutputObjects()
    if (fESDtrackCuts) delete fESDtrackCuts;
    fESDtrackCuts = AliESDtrackCuts::GetStandardITSTPCTrackCuts2010();
 
+   //initialize quality trackcuts for spherocity
+   if(!fTrackFilter){	
+     fTrackFilter = new AliAnalysisFilter("trackFilter2015");
+     SetTrackCuts(fTrackFilter);
+   }
+
    // create list and set it as owner of its content (MANDATORY)
    if (fBigOutput) OpenFile(1);
    fOutput = new TList();
@@ -360,7 +394,7 @@ void AliRsnMiniAnalysisTask::UserCreateOutputObjects()
    fHEventStat->GetXaxis()->SetBinLabel(2, "V0AND");
    fHEventStat->GetXaxis()->SetBinLabel(3, "Candle");
    fHEventStat->GetXaxis()->SetBinLabel(4, "Accepted");
-   fHEventStat->GetXaxis()->SetBinLabel(5, "Not Accepted - Total");   
+   fHEventStat->GetXaxis()->SetBinLabel(5, "Not Accepted - Total");
    fHEventStat->GetXaxis()->SetBinLabel(6, "Not Accepted - No Track Vertex");
    fHEventStat->GetXaxis()->SetBinLabel(7, "Not Accepted - Not Enough Contributors");
    fHEventStat->GetXaxis()->SetBinLabel(8, "Not Accepted - No Vertex inside |z| < 10 cm");
@@ -391,6 +425,7 @@ void AliRsnMiniAnalysisTask::UserCreateOutputObjects()
    if(fHAEventVzCent) fOutput->Add(fHAEventVzCent);
    if(fHAEventMultiCent) fOutput->Add(fHAEventMultiCent);
    if(fHAEventRefMultiCent) fOutput->Add(fHAEventRefMultiCent);
+   if(fHAEventSpherocityCent) fOutput->Add(fHAEventSpherocityCent);
    if(fHAEventPlane) fOutput->Add(fHAEventPlane);
 
    AliAnalysisTaskFlowVectorCorrections *flowQnVectorTask = dynamic_cast<AliAnalysisTaskFlowVectorCorrections *>(AliAnalysisManager::GetAnalysisManager()->GetTask("FlowQnVectorCorrections"));
@@ -408,7 +443,7 @@ void AliRsnMiniAnalysisTask::UserCreateOutputObjects()
    // create temporary tree for filtered events
    if (fMiniEvent) SafeDelete(fMiniEvent);
    if (fRsnTreeInFile) OpenFile(2);
-   fEvBuffer = new TTree("EventBuffer", "Temporary buffer for mini events");  
+   fEvBuffer = new TTree("EventBuffer", "Temporary buffer for mini events");
    fMiniEvent = new AliRsnMiniEvent();
    fEvBuffer->Branch("events", "AliRsnMiniEvent", &fMiniEvent);
    
@@ -453,6 +488,11 @@ void AliRsnMiniAnalysisTask::UserExec(Option_t *)
    // fill a mini-event from current
    // and skip this event if no tracks were accepted
    FillMiniEvent(check);
+
+   for (Int_t i=0; i<fResonanceFinders.GetEntries(); i++){
+      AliRsnMiniResonanceFinder* f = (AliRsnMiniResonanceFinder*) fResonanceFinders[i];
+      if(f) f->RunResonanceFinder(fMiniEvent);
+   }
 
    // fill MC based histograms on mothers,
    // which do need the original event
@@ -826,52 +866,53 @@ Char_t AliRsnMiniAnalysisTask::CheckCurrentEvent()
       isSelected = kTRUE;
    }
 
-   AliRsnCutEventUtils* evtUtils=new AliRsnCutEventUtils("temporary_cutEventUtils");
-   evtUtils->IsSelected(&fRsnEvent);
-
-   AliRsnCutPrimaryVertex* cutPrimaryVertex=new AliRsnCutPrimaryVertex("temporary_cutPrimaryVertex");
-   cutPrimaryVertex->IsSelected(&fRsnEvent);
-
    // if the above exit point is not taken, the event is accepted
    AliDebugClass(2, Form("Stats: %s", msg.Data()));
    if (isSelected) {
+     
      fHEventStat->Fill(3.1);
      Double_t multi = ComputeCentrality((output == 'E'));
      Double_t tracklets = ComputeTracklets();
      Double_t refmulti = ComputeReferenceMultiplicity((output == 'E'), fRefMultiType.Data());
+     fSpherocity = (fComputeSpherocity) ? ComputeSpherocity() : -10;
      fHAEventsVsMulti->Fill(multi);
      fHAEventsVsTracklets->Fill(tracklets);
      if(fHAEventVzCent) fHAEventVzCent->Fill(multi,fInputEvent->GetPrimaryVertex()->GetZ());
+     if(fHAEventSpherocityCent && fComputeSpherocity) fHAEventSpherocityCent->Fill(multi,fSpherocity);
      if(fHAEventMultiCent) fHAEventMultiCent->Fill(multi,ComputeMultiplicity(output == 'E', fHAEventMultiCent->GetYaxis()->GetTitle()));
      if(fHAEventRefMultiCent) fHAEventRefMultiCent->Fill(refmulti, ComputeReferenceMultiplicity(output == 'E', fHAEventRefMultiCent->GetYaxis()->GetTitle()));
      if(fHAEventPlane) fHAEventPlane->Fill(multi,ComputeAngle());
-     SafeDelete(evtUtils);
-     SafeDelete(cutPrimaryVertex);
-      return output;
+     return output;
+     
    } else {
+
      fHEventStat->Fill(4.1);
-     AliAnalysisUtils *utils = new AliAnalysisUtils();
      const AliVVertex *vertex = fInputEvent->GetPrimaryVertex();
-     if (!vertex) fHEventStat->Fill(5.1);
-     else {
+     if (!vertex) {
+       fHEventStat->Fill(5.1);
+     } else {
        TString title=vertex->GetTitle();
+       AliRsnCutEventUtils* evtUtils = new AliRsnCutEventUtils("temporary_cutEventUtils");
+       evtUtils->IsSelected(&fRsnEvent);
+       AliRsnCutPrimaryVertex* cutPrimaryVertex = new AliRsnCutPrimaryVertex("temporary_cutPrimaryVertex");
+       cutPrimaryVertex->IsSelected(&fRsnEvent);
+       
        if( (title.Contains("Z")) || (title.Contains("3D")) || vertex->GetNContributors()<1.) {
 	 if( (title.Contains("Z")) || (title.Contains("3D")) ) fHEventStat->Fill(5.1);
 	 if(vertex->GetNContributors()<1.) fHEventStat->Fill(6.1);
        }
        else if(TMath::Abs(vertex->GetZ())>10.) fHEventStat->Fill(7.1);
-       else if(utils->IsPileUpEvent(fInputEvent)) fHEventStat->Fill(8.1);
+       else if(((AliAnalysisUtils *)evtUtils->GetAnalysisUtils())->IsPileUpEvent(fInputEvent)) fHEventStat->Fill(8.1);
        else if(!cutPrimaryVertex->GoodZResolutionSPD()) fHEventStat->Fill(9.1);
        else if(!cutPrimaryVertex->GoodDispersionSPD()) fHEventStat->Fill(10.1);
        else if(!cutPrimaryVertex->GoodZDifferenceSPDTrack()) fHEventStat->Fill(11.1);
        else if(evtUtils->IsIncompleteDAQ()) fHEventStat->Fill(12.1);
        else if(evtUtils->FailsPastFuture()) fHEventStat->Fill(13.1);
-       else if(utils->IsSPDClusterVsTrackletBG(fInputEvent)) fHEventStat->Fill(14.1);
+       else if(evtUtils->IsSPDClusterVsTrackletBG(fInputEvent)) fHEventStat->Fill(14.1);
+       SafeDelete(evtUtils);
+       SafeDelete(cutPrimaryVertex);  
      }
-
-    SafeDelete(evtUtils);
-    SafeDelete(cutPrimaryVertex);
-    SafeDelete(utils);
+     
      return 0;
    }
 }
@@ -891,6 +932,7 @@ void AliRsnMiniAnalysisTask::FillMiniEvent(Char_t evType)
    fMiniEvent->SetRef(fRsnEvent.GetRef());
    fMiniEvent->SetRefMC(fRsnEvent.GetRefMC());
    fMiniEvent->Vz()    = fInputEvent->GetPrimaryVertex()->GetZ();
+   fMiniEvent->Spherocity()  = fSpherocity;
    fMiniEvent->Angle() = ComputeAngle();
    fMiniEvent->Mult()  = ComputeCentrality((evType == 'E'));
    fMiniEvent->RefMult()  = ComputeReferenceMultiplicity((evType == 'E'), fRefMultiType.Data());
@@ -927,7 +969,7 @@ void AliRsnMiniAnalysisTask::FillMiniEvent(Char_t evType)
          if (cuts->IsSelected(&cursor)) miniParticlePtr->SetCutBit(ic);
         }
         // continue;
-        
+       
         // if a track passes at least one track cut, it is added to the pool
       // if (miniParticle.CutBits()) {
         if (miniParticlePtr->CutBits()) {
@@ -1085,14 +1127,14 @@ Double_t AliRsnMiniAnalysisTask::ComputeReferenceMultiplicity(Bool_t isESD,TStri
       */
       computedRefMulti = AliESDtrackCuts::GetReferenceMultiplicity(esdevent, AliESDtrackCuts::kTracklets, 0.8, 0.0);
     } else {
-      /* If track vertex available, use combined estimator 
-	 = number of global tracks/event 
+      /* If track vertex available, use combined estimator
+	 = number of global tracks/event
 	 + number of ITS standalone tracks complementary to TPC for a given event
 	 + number of SPD tracklets complementary to global/ITSSA tracks for a given events,
 	 all of them within the specified eta range
       */
-      computedRefMulti = AliESDtrackCuts::GetReferenceMultiplicity((AliESDEvent *)fInputEvent, AliESDtrackCuts::kTrackletsITSTPC, 0.8, 0.0);       
-    } 
+      computedRefMulti = AliESDtrackCuts::GetReferenceMultiplicity((AliESDEvent *)fInputEvent, AliESDtrackCuts::kTrackletsITSTPC, 0.8, 0.0);
+    }
   } else {
     AliAODEvent *aodevent = dynamic_cast<AliAODEvent *>(fInputEvent);
     if (!aodevent) return kFALSE;
@@ -1103,7 +1145,7 @@ Double_t AliRsnMiniAnalysisTask::ComputeReferenceMultiplicity(Bool_t isESD,TStri
     // (-3) -> only if old AOD, but then -> recompute
     // (-4) -> kept, user might discard, but will be killed anyhow by ev. sel.
     //Hack: if this is -3, this is an old AOD filtering and we need to fall back on tracklets.
-    if( (lStoredRefMult == -3)||(!type.CompareTo("TRACKLETS")) ) { 
+    if( (lStoredRefMult == -3)||(!type.CompareTo("TRACKLETS")) ) {
       //(then -1 and -2 are NOT the case, -4 unchecked but impossible since no track vtx)
       //Get Multiplicity object
       AliAODTracklets *spdmult = aodevent->GetMultiplicity();
@@ -1183,7 +1225,7 @@ Double_t AliRsnMiniAnalysisTask::ComputeTracklets()
       Double_t theta=spdmult->GetTheta(iTr);
       Double_t eta=-TMath::Log(TMath::Tan(theta/2.));
       if(eta>-1.0 && eta<1.0) count++;
-    } 
+    }
   }
   else if (fInputEvent->InheritsFrom(AliAODEvent::Class())) {
     AliAODEvent *aodEvent = (AliAODEvent *)fInputEvent;
@@ -1197,6 +1239,69 @@ Double_t AliRsnMiniAnalysisTask::ComputeTracklets()
   }
 
   return count;
+}
+
+//__________________________________________________________________________________________________
+Double_t AliRsnMiniAnalysisTask::ComputeSpherocity()
+{
+//
+// Get spherocity
+//
+
+  AliVEvent * evTypeS = InputEvent();
+  Int_t ntracksLoop = evTypeS->GetNumberOfTracks();
+  Int_t GoodTracks = 0;
+  Float_t spherocity = -10.0;
+  Float_t pFull = 0;
+  Float_t Spherocity = 2;
+  Float_t pt[10000],phi[1000];
+  
+  //computing total pt
+  Float_t sumapt = 0;
+  for(Int_t i1 = 0; i1 < ntracksLoop; ++i1){
+    AliVTrack   *track = (AliVTrack *)evTypeS->GetTrack(i1);
+    AliAODTrack *aodt  = dynamic_cast<AliAODTrack *>(track);
+    AliESDtrack *esdt  = dynamic_cast<AliESDtrack *>(track);
+    if (aodt) if (!aodt->TestFilterBit(5)) continue;
+    if (esdt) if (!fTrackFilter->IsSelected(esdt)) continue;
+    if (track->Pt() < 0.15) continue;
+    if(TMath::Abs(track->Eta()) > 0.8) continue;
+    pt[i1] = track->Pt();
+    sumapt += pt[i1];
+    GoodTracks++;
+  }
+
+  //Getting thrust
+  for(Int_t i = 0; i < 360/0.1; ++i){
+	Float_t numerador = 0;
+	Float_t phiparam  = 0;
+	Float_t nx = 0;
+	Float_t ny = 0;
+	phiparam=( (TMath::Pi()) * i * 0.1 ) / 180; // parametrization of the angle
+	nx = TMath::Cos(phiparam);            // x component of an unitary vector n
+	ny = TMath::Sin(phiparam);            // y component of an unitary vector n
+	for(Int_t i1 = 0; i1 < ntracksLoop; ++i1){
+	  AliVTrack   *track = (AliVTrack *)evTypeS->GetTrack(i1);
+	  AliAODTrack *aodt  = dynamic_cast<AliAODTrack *>(track);
+	  AliESDtrack *esdt  = dynamic_cast<AliESDtrack *>(track);
+	  if (aodt) if (!aodt->TestFilterBit(5)) continue;
+	  if (esdt) if (!fTrackFilter->IsSelected(esdt)) continue;
+	  if (track->Pt() < 0.15) continue;
+	  if(TMath::Abs(track->Eta()) > 0.8) continue;
+	  pt[i1] = track->Pt();
+	  phi[i1] = track->Phi();
+	  Float_t pxA = pt[i1] * TMath::Cos( phi[i1] );
+	  Float_t pyA = pt[i1] * TMath::Sin( phi[i1] );
+	  numerador += TMath::Abs( ny * pxA - nx * pyA );//product between p  proyection in XY plane and the unitary vector
+	}
+	pFull=TMath::Power( (numerador / sumapt),2 );
+	if(pFull < Spherocity)//maximization of pFull
+	  {
+	    Spherocity = pFull;
+	  }
+  }
+  spherocity=((Spherocity)*TMath::Pi()*TMath::Pi())/4.0;
+  if (GoodTracks > 2) return spherocity;
 }
 
 //__________________________________________________________________________________________________
@@ -1214,16 +1319,22 @@ void AliRsnMiniAnalysisTask::FillTrueMotherESD(AliRsnMiniEvent *miniEvent)
    TLorentzVector p1, p2;
    AliRsnMiniOutput *def = 0x0;
 
+   for (Int_t i=0; i<fResonanceFinders.GetEntries(); i++){
+      AliRsnMiniResonanceFinder* f = (AliRsnMiniResonanceFinder*) fResonanceFinders[i];
+      if(f) f->FillMother(fMCEvent, miniEvent);
+   }
+
    for (id = 0; id < ndef; id++) {
       def = (AliRsnMiniOutput *)fHistograms[id];
       if (!def) continue;
       if (!def->IsMother() && !def->IsMotherInAcc()) continue;
       for (ip = 0; ip < npart; ip++) {
          AliMCParticle *part = (AliMCParticle *)fMCEvent->GetTrack(ip);
+	 
          //get mother pdg code
          if (!AliRsnDaughter::IsEquivalentPDGCode(part->Particle()->GetPdgCode() , def->GetMotherPDG())) continue;
          // check that daughters match expected species
-         if (part->Particle()->GetNDaughters() < 2) continue; 
+         if (part->Particle()->GetNDaughters() < 2) continue;
 	 if (fMaxNDaughters > 0 && part->Particle()->GetNDaughters() > fMaxNDaughters) continue;
          label1 = part->Particle()->GetDaughter(0);
          label2 = part->Particle()->GetDaughter(1);
@@ -1242,7 +1353,7 @@ void AliRsnMiniAnalysisTask::FillTrueMotherESD(AliRsnMiniEvent *miniEvent)
             p2.SetXYZM(daughter2->Px(), daughter2->Py(), daughter2->Pz(), def->GetMass(0));
          }
          if (fCheckDecay && !okMatch) continue;
-	 if(fCheckP && (TMath::Abs(part->Px()-(daughter1->Px()+daughter2->Px()))/(TMath::Abs(part->Px())+1.e-13)) > 0.00001 &&	 
+	 if(fCheckP && (TMath::Abs(part->Px()-(daughter1->Px()+daughter2->Px()))/(TMath::Abs(part->Px())+1.e-13)) > 0.00001 &&
      				(TMath::Abs(part->Py()-(daughter1->Py()+daughter2->Py()))/(TMath::Abs(part->Py())+1.e-13)) > 0.00001 &&
      				(TMath::Abs(part->Pz()-(daughter1->Pz()+daughter2->Pz()))/(TMath::Abs(part->Pz())+1.e-13)) > 0.00001 ) continue;
 	 if(fCheckFeedDown){
@@ -1275,7 +1386,7 @@ void AliRsnMiniAnalysisTask::FillTrueMotherESD(AliRsnMiniEvent *miniEvent)
 		if(isFromB){
 		  if (!fKeepDfromB) pdgGranma = -9999; //skip particle if come from a B meson.
 		}
-		else{ 
+		else{
 		  if (fKeepDfromBOnly) pdgGranma = -999;
 		  
 		if (pdgGranma == -99999){
@@ -1283,14 +1394,14 @@ void AliRsnMiniAnalysisTask::FillTrueMotherESD(AliRsnMiniEvent *miniEvent)
 			continue;
 		}
 		if (pdgGranma == -9999){
-			AliDebug(2,"This particle come from a B decay channel but according to the settings of the task, we keep only the prompt charm particles\n");	
+			AliDebug(2,"This particle come from a B decay channel but according to the settings of the task, we keep only the prompt charm particles\n");
 			continue;
-		}	
+		}
 		
 		if (pdgGranma == -999){
-			AliDebug(2,"This particle come from a prompt charm particles but according to the settings of the task, we want only the ones coming from B\n");  
+			AliDebug(2,"This particle come from a prompt charm particles but according to the settings of the task, we want only the ones coming from B\n");
 			continue;
-		}	
+		}
 
 	      }
 	 }
@@ -1305,7 +1416,7 @@ void AliRsnMiniAnalysisTask::FillTrueMotherESD(AliRsnMiniEvent *miniEvent)
 	 if(fKeepMotherInAcceptance){
 	      if(daughter1->Pt()<fMotherAcceptanceCutMinPt || daughter2->Pt()<fMotherAcceptanceCutMinPt || TMath::Abs(daughter1->Eta())>fMotherAcceptanceCutMaxEta ||  TMath::Abs(daughter2->Eta())>fMotherAcceptanceCutMaxEta) continue;
 	      def->FillMotherInAcceptance(&miniPair, miniEvent, &fValues);
-	 }	 
+	 }
 	 
 	 
       }
@@ -1328,18 +1439,24 @@ void AliRsnMiniAnalysisTask::FillTrueMotherAOD(AliRsnMiniEvent *miniEvent)
    TLorentzVector p1, p2;
    AliRsnMiniOutput *def = 0x0;
 
+   for (Int_t i=0; i<fResonanceFinders.GetEntries(); i++){
+      AliRsnMiniResonanceFinder* f = (AliRsnMiniResonanceFinder*) fResonanceFinders[i];
+      if(f) f->FillMother(list, miniEvent);
+   }
+
    for (id = 0; id < ndef; id++) {
       def = (AliRsnMiniOutput *)fHistograms[id];
       if (!def) continue;
       if (!def->IsMother() && !def->IsMotherInAcc()) continue;
       for (ip = 0; ip < npart; ip++) {
          AliAODMCParticle *part = (AliAODMCParticle *)list->At(ip);
+	 
          if (!AliRsnDaughter::IsEquivalentPDGCode(part->GetPdgCode() , def->GetMotherPDG())) continue;
          // check that daughters match expected species
          if (part->GetNDaughters() < 2) continue;
 	 if (fMaxNDaughters > 0 && part->GetNDaughters() > fMaxNDaughters) continue;
-         label1 = part->GetDaughter(0);
-         label2 = part->GetDaughter(1);
+         label1 = part->GetDaughterLabel(0);
+         label2 = part->GetDaughterLabel(1);
          daughter1 = (AliAODMCParticle *)list->At(label1);
          daughter2 = (AliAODMCParticle *)list->At(label2);
          okMatch = kFALSE;
@@ -1355,7 +1472,7 @@ void AliRsnMiniAnalysisTask::FillTrueMotherAOD(AliRsnMiniEvent *miniEvent)
             p2.SetXYZM(daughter2->Px(), daughter2->Py(), daughter2->Pz(), def->GetMass(0));
          }
          if (fCheckDecay && !okMatch) continue;
-	 if(fCheckP && (TMath::Abs(part->Px()-(daughter1->Px()+daughter2->Px()))/(TMath::Abs(part->Px())+1.e-13)) > 0.00001 &&	 
+	 if(fCheckP && (TMath::Abs(part->Px()-(daughter1->Px()+daughter2->Px()))/(TMath::Abs(part->Px())+1.e-13)) > 0.00001 &&
      				(TMath::Abs(part->Py()-(daughter1->Py()+daughter2->Py()))/(TMath::Abs(part->Py())+1.e-13)) > 0.00001 &&
      				(TMath::Abs(part->Pz()-(daughter1->Pz()+daughter2->Pz()))/(TMath::Abs(part->Pz())+1.e-13)) > 0.00001 ) continue;
 	 if(fCheckFeedDown){
@@ -1388,7 +1505,7 @@ void AliRsnMiniAnalysisTask::FillTrueMotherAOD(AliRsnMiniEvent *miniEvent)
 		if(isFromB){
 		  if (!fKeepDfromB) pdgGranma = -9999; //skip particle if come from a B meson.
 		}
-		else{ 
+		else{
 		  if (fKeepDfromBOnly) pdgGranma = -999;
 		  }
 		  
@@ -1397,15 +1514,15 @@ void AliRsnMiniAnalysisTask::FillTrueMotherAOD(AliRsnMiniEvent *miniEvent)
 			continue;
 		}
 		if (pdgGranma == -9999){
-			AliDebug(2,"This particle come from a B decay channel but according to the settings of the task, we keep only the prompt charm particles\n");	
+			AliDebug(2,"This particle come from a B decay channel but according to the settings of the task, we keep only the prompt charm particles\n");
 			continue;
-		}	
+		}
 		
 		if (pdgGranma == -999){
-			AliDebug(2,"This particle come from a prompt charm particles but according to the settings of the task, we want only the ones coming from B\n");  
+			AliDebug(2,"This particle come from a prompt charm particles but according to the settings of the task, we want only the ones coming from B\n");
 			continue;
-		}	
-	 } 
+		}
+	 }
 	 // assign momenta to computation object
          miniPair.Sum(0) = miniPair.Sum(1) = (p1 + p2);
          miniPair.FillRef(def->GetMotherMass());
@@ -1446,7 +1563,7 @@ void AliRsnMiniAnalysisTask::SetDselection(UShort_t originDselection)
 		fKeepDfromBOnly = kFALSE;
 	}
 	
-	return;	
+	return;
 }
 //__________________________________________________________________________________________________
 Bool_t AliRsnMiniAnalysisTask::EventsMatch(AliRsnMiniEvent *event1, AliRsnMiniEvent *event2)
@@ -1509,12 +1626,12 @@ Double_t AliRsnMiniAnalysisTask::ApplyCentralityPatchPbPb2011(){
     return -999.0;
   }
   
-  Double_t cent = (Float_t)(centrality->GetCentralityPercentile("V0M"));               
+  Double_t cent = (Float_t)(centrality->GetCentralityPercentile("V0M"));
   Double_t rnd_hc = -1., testf = 0.0, ff = 0, N1 = -1., N2 = -1.;
 
   if(fUseCentralityPatchPbPb2011==510){
     N1 = 1.9404e+06;
-    N2 = 1.56435e+06; //N2 is the reference 
+    N2 = 1.56435e+06; //N2 is the reference
     ff = 5.04167e+06 - 1.49885e+06*cent + 2.35998e+05*cent*cent -1.22873e+04*cent*cent*cent;
   } else {
     if(fUseCentralityPatchPbPb2011==1020){
@@ -1531,7 +1648,7 @@ Double_t AliRsnMiniAnalysisTask::ApplyCentralityPatchPbPb2011(){
 
   //AliDebugClass(1, Form("Flat Centrality %d", fUseCentralityPatchPbPb2011));
 
-  if (rnd_hc < 0 || rnd_hc > 1 ) 
+  if (rnd_hc < 0 || rnd_hc > 1 )
     {
       AliWarning("Wrong Random number generated");
       return -999.0;
@@ -1636,6 +1753,10 @@ void AliRsnMiniAnalysisTask::SetEventQAHist(TString type,TH1 *histo)
    if(!type.CompareTo("eventsvsmulti")) fHAEventsVsMulti = (TH1F*) histo;
    else if(!type.CompareTo("eventsvstracklets")) fHAEventsVsTracklets = (TH1F*) histo;
    else if(!type.CompareTo("vz")) fHAEventVzCent = (TH2F*) histo;
+   else if(!type.CompareTo("spherocitycent")){
+      fHAEventSpherocityCent = (TH2F*) histo;
+      fComputeSpherocity = kTRUE;
+   }
    else if(!type.CompareTo("multicent")) {
       if(multitype.CompareTo("QUALITY") && multitype.CompareTo("TRACKS") && multitype.CompareTo("TRACKLETS")) {
          AliWarning(Form("multiplicity vs. centrality histogram y-axis %s unknown, setting to TRACKS",multitype.Data()));
@@ -1648,7 +1769,7 @@ void AliRsnMiniAnalysisTask::SetEventQAHist(TString type,TH1 *histo)
        AliWarning(Form("Reference multiplicity vs. centrality histogram y-axis %s unknown, setting to GLOBAL",multitype.Data()));
        histo->GetYaxis()->SetTitle("GLOBAL");
      }
-     fHAEventRefMultiCent = (TH2F*) histo;     
+     fHAEventRefMultiCent = (TH2F*) histo;
    }
    else if(!type.CompareTo("eventplane")) fHAEventPlane = (TH2F*) histo;
    else AliWarning(Form("event QA histogram slot %s undefined",type.Data()));
@@ -1742,4 +1863,48 @@ AliQnCorrectionsQnVector *AliRsnMiniAnalysisTask::GetQnVectorFromList(
       theQnVector = NULL;
   }
   return theQnVector;
+}
+
+//----------------------------------------------------------------------------------
+Int_t AliRsnMiniAnalysisTask::AddResonanceFinder(AliRsnMiniResonanceFinder* f)
+{
+   //
+   // Add a new AliRsnMiniResonanceFinder object.
+   // A user can add as many as he wants, and each one corresponds
+   // to one of the available bits in the AliRsnMiniParticle mask.
+   // The only check is the following: if a ResonanceFinder set with the same name
+   // as the argument is there, this is not added.
+   // Return value is the cut ID for the ResonanceFinder f.
+   //
+
+   TObject *obj = fResonanceFinders.FindObject(f->GetName());
+   Int_t v = 0;
+
+   if (obj) {
+      AliInfo(Form("A ResonanceFinder named '%s' already exists", f->GetName()));
+      v = fResonanceFinders.IndexOf(obj) + GetNumberOfTrackCuts();
+   } else {
+      fResonanceFinders.AddLast(f);
+      v = fResonanceFinders.IndexOf(f) + GetNumberOfTrackCuts();
+      f->SetResonanceCutID(v);
+   }
+
+   return v;
+}
+
+void AliRsnMiniAnalysisTask::SetTrackCuts(AliAnalysisFilter* fTrackFilter){
+
+	AliESDtrackCuts* esdTrackCuts = new AliESDtrackCuts();
+	//TPC Only
+	esdTrackCuts->SetMinNClustersTPC(50);
+	esdTrackCuts->SetMaxChi2PerClusterTPC(4);
+	esdTrackCuts->SetAcceptKinkDaughters(kFALSE);
+	esdTrackCuts->SetMaxDCAToVertexZ(3.2);
+	esdTrackCuts->SetMaxDCAToVertexXY(2.4);
+	esdTrackCuts->SetDCAToVertex2D(kTRUE);
+	
+	esdTrackCuts->SetRequireTPCRefit(kTRUE);// TPC Refit
+	esdTrackCuts->SetRequireITSRefit(kTRUE);// ITS Refit
+	fTrackFilter->AddCuts(esdTrackCuts);
+
 }

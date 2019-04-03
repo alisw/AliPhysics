@@ -85,6 +85,7 @@ class AliEmcalCorrectionClusterTrackMatcher : public AliEmcalCorrectionComponent
   Double_t      fMaxDistance;           ///< maximum distance to match clusters and tracks
   Bool_t        fUsePIDmass;            ///< Use PID-based mass hypothesis for track propagation, rather than pion mass hypothesis
   Bool_t        fUseDCA;                ///< Use DCA as starting point for track propagation, rather than primary vertex
+  Bool_t        fUseOuterParamInESDs;   ///< Use TPC outer parameters instead of inner parameters for track propagation, ESDs only
   Bool_t        fUpdateTracks;          ///< update tracks with matching info
   Bool_t        fUpdateClusters;        ///< update clusters with matching info
   
@@ -115,7 +116,7 @@ private:
   static RegisterCorrectionComponent<AliEmcalCorrectionClusterTrackMatcher> reg;
 
   /// \cond CLASSIMP
-  ClassDef(AliEmcalCorrectionClusterTrackMatcher, 4); // EMCal cluster track matcher correction component
+  ClassDef(AliEmcalCorrectionClusterTrackMatcher, 5); // EMCal cluster track matcher correction component
   /// \endcond
 };
 

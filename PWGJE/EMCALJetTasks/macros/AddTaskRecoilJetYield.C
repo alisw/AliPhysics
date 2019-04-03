@@ -21,10 +21,10 @@ AliAnalysisTaskRecoilJetYield* AddTaskRecoilJetYield(const char * njetsData, //d
 								    TString     trigClass      = "",
 								    TString     kEmcalTriggers = "",
 								    TString     tag            = "",
-								    AliAnalysisTaskRecoilJetYield::JetShapeType jetShapeType,
-								    AliAnalysisTaskRecoilJetYield::JetShapeSub jetShapeSub,
-								    AliAnalysisTaskRecoilJetYield::JetSelectionType jetSelection,
-								    Float_t minpTHTrigger =0.,  Float_t maxpTHTrigger =0., AliAnalysisTaskRecoilJetYield::DerivSubtrOrder derivSubtrOrder = 0  ) {
+						     AliAnalysisTaskRecoilJetYield::JetShapeType jetShapeType = AliAnalysisTaskRecoilJetYield::kTruth,
+						     AliAnalysisTaskRecoilJetYield::JetShapeSub jetShapeSub = AliAnalysisTaskRecoilJetYield::kNoSub,
+						     AliAnalysisTaskRecoilJetYield::JetSelectionType jetSelection = AliAnalysisTaskRecoilJetYield::kInclusive,
+								    Float_t minpTHTrigger =0.,  Float_t maxpTHTrigger =0.  ) {
   
   
   
@@ -44,18 +44,18 @@ AliAnalysisTaskRecoilJetYield* AddTaskRecoilJetYield(const char * njetsData, //d
       ::Error("AliAnalysisTaskRecoilJetYield", "This task requires an input event handler");
       return NULL;
     }
-
+  TString wagonName1,wagonName2;
   if (jetShapeType==AliAnalysisTaskRecoilJetYield::kData || jetShapeType==AliAnalysisTaskRecoilJetYield::kSim){
-    TString wagonName1 = Form("AliAnalysisTaskRecoilJetYield_%s_TC%s%s",njetsData,trigClass.Data(),tag.Data());
-    TString wagonName2 = Form("AliAnalysisTaskRecoilJetYield_%s_TC%s%sTree",njetsData,trigClass.Data(),tag.Data());
+    wagonName1 = Form("AliAnalysisTaskRecoilJetYield_%s_TC%s%s",njetsData,trigClass.Data(),tag.Data());
+    wagonName2 = Form("AliAnalysisTaskRecoilJetYield_%s_TC%s%sTree",njetsData,trigClass.Data(),tag.Data());
   }
-  if (jetShapeType==AliAnalysisTaskRecoilJetYield::kTrue || jetShapeType==AliAnalysisTaskRecoilJetYield::kTrueDet || jetShapeType==AliAnalysisTaskRecoilJetYield::kGenOnTheFly){
-    TString wagonName1 = Form("AliAnalysisTaskRecoilJetYield_%s_TC%s%s",njetsTrue,trigClass.Data(),tag.Data());
-    TString wagonName2 = Form("AliAnalysisTaskRecoilJetYield_%s_TC%s%sTree",njetsTrue,trigClass.Data(),tag.Data());
+  if (jetShapeType==AliAnalysisTaskRecoilJetYield::kTruth || jetShapeType==AliAnalysisTaskRecoilJetYield::kTrueDet || jetShapeType==AliAnalysisTaskRecoilJetYield::kGenOnTheFly){
+    wagonName1 = Form("AliAnalysisTaskRecoilJetYield_%s_TC%s%s",njetsTrue,trigClass.Data(),tag.Data());
+    wagonName2 = Form("AliAnalysisTaskRecoilJetYield_%s_TC%s%sTree",njetsTrue,trigClass.Data(),tag.Data());
   }
   if (jetShapeType==AliAnalysisTaskRecoilJetYield::kDetEmbPart){
-    TString wagonName1 = Form("AliAnalysisTaskRecoilJetYield_%s_TC%s%s",njetsHybridS,trigClass.Data(),tag.Data());
-    TString wagonName2 = Form("AliAnalysisTaskRecoilJetYield_%s_TC%s%sTree",njetsHybridS,trigClass.Data(),tag.Data());
+    wagonName1 = Form("AliAnalysisTaskRecoilJetYield_%s_TC%s%s",njetsHybridS,trigClass.Data(),tag.Data());
+    wagonName2 = Form("AliAnalysisTaskRecoilJetYield_%s_TC%s%sTree",njetsHybridS,trigClass.Data(),tag.Data());
   }
   //Configure jet tagger task
   AliAnalysisTaskRecoilJetYield *task = new AliAnalysisTaskRecoilJetYield(wagonName1.Data());
@@ -69,7 +69,6 @@ AliAnalysisTaskRecoilJetYield* AddTaskRecoilJetYield(const char * njetsData, //d
   task->SetSubJetMinPt(SubJetMinPt);
   task->SetJetRadius(R);
   task->SetSharedFractionPtMin(fSharedFractionPtMin);
-  task->SetDerivativeSubtractionOrder(derivSubtrOrder);
   if (jetSelection == AliAnalysisTaskRecoilJetYield::kRecoil) task->SetPtTriggerSelections(minpTHTrigger, maxpTHTrigger);
 
   // TString thename(njetsBase);
@@ -104,8 +103,8 @@ AliAnalysisTaskRecoilJetYield* AddTaskRecoilJetYield(const char * njetsData, //d
 
   TString strType(type);
   
-  ///////kTrue///////
-  if (jetShapeType==AliAnalysisTaskRecoilJetYield::kTrue) {
+  ///////kTruth///////
+  if (jetShapeType==AliAnalysisTaskRecoilJetYield::kTruth) {
     JetContTrue = task->AddJetContainer(njetsTrue,strType,R);
     if(JetContTrue) {
       JetContTrue->SetRhoName(nrhoBase);
@@ -240,7 +239,7 @@ AliAnalysisTaskRecoilJetYield* AddTaskRecoilJetYield(const char * njetsData, //d
   TString contName1(wagonName1);
   TString contName2(wagonName2);
   
-  if (jetShapeType == AliAnalysisTaskRecoilJetYield::kTrue){
+  if (jetShapeType == AliAnalysisTaskRecoilJetYield::kTruth){
     contName1 += "_True";
     contName2 += "_True";
   }
@@ -272,14 +271,6 @@ AliAnalysisTaskRecoilJetYield* AddTaskRecoilJetYield(const char * njetsData, //d
   if (jetShapeSub == AliAnalysisTaskRecoilJetYield::kConstSub){
     contName1 += "_ConstSub";
     contName2 += "_ConstSub";
-  }
-  if (jetShapeSub == AliAnalysisTaskRecoilJetYield::kDerivSub && derivSubtrOrder == 0){
-    contName1 += "_DerivSubSecondOrder";
-    contName2 += "_DerivSubSecondOrder";
-  }
-  if (jetShapeSub == AliAnalysisTaskRecoilJetYield::kDerivSub && derivSubtrOrder == 1){
-    contName1 += "_DerivSubFirstOrder";
-    contName2 += "_DerivSubFirstOrder";
   }
   if (jetSelection == AliAnalysisTaskRecoilJetYield::kInclusive){
     contName1 += "_Incl";

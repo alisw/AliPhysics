@@ -17,6 +17,7 @@
 #include <TH1F.h>
 #include <TH2F.h>
 #include <TH3F.h>
+#include <THnSparse.h>
 #include <TArrayD.h>
 #include <TFile.h>
 #include <TRandom.h>
@@ -127,6 +128,8 @@ class AliAnalysisTaskSEDvsMultiplicity : public AliAnalysisTaskSE
 
   void SetSubtractTrackletsFromDaughters(Bool_t opt){fSubtractTrackletsFromDau=opt;}
   Int_t CheckOrigin(TClonesArray* arrayMC, AliAODMCParticle *mcPartCandidate) const;
+
+  void SetLcToV0decay(Bool_t flag) {fLctoV0=flag;  }
 
   /// Flag to use the zvtx correction from ( 0= none, 1= usual d2h, 2=AliESDUtils for VZERO multiplicity)
   void SetUseVZEROParameterizedVertexCorr(Int_t flag) { fDoVZER0ParamVertexCorr=flag; }
@@ -259,6 +262,7 @@ class AliAnalysisTaskSEDvsMultiplicity : public AliAnalysisTaskSE
   TProfile* fMultEstimatorAvg[4]; /// TProfile with mult vs. Z per period
   Double_t fRefMult;   /// refrence multiplcity (period b)
   Int_t fPdgMeson;   /// pdg code of analyzed meson
+  Bool_t fLctoV0;    /// flag for Lc in K0sp decay
 
   Int_t fMultiplicityEstimator; /// Definition of the multiplicity estimator: kNtrk10=0, kNtrk10to16=1, kVZERO=2
   Int_t fMCPrimariesEstimator;  /// Definition of the primaries estimator eta range: |eta|<1.0=0, -1.6<|eta|<1.0=1, VZEROrange=2
@@ -268,7 +272,7 @@ class AliAnalysisTaskSEDvsMultiplicity : public AliAnalysisTaskSE
   Int_t fYearNumber; ///year number of the data taking
 
   /// \cond CLASSIMP
-  ClassDef(AliAnalysisTaskSEDvsMultiplicity,18); /// charmed hadrons vs. mult task
+  ClassDef(AliAnalysisTaskSEDvsMultiplicity,19); /// charmed hadrons vs. mult task
   /// \endcond
 };
 

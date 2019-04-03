@@ -106,6 +106,8 @@ struct AliTrackletdNdeta2 : public AliTrackletAODUtils
     kDTFS = 0x0010,
     /** Correct for fakes even if doing DTFS */
     kFake = 0x0020,
+    /** Correct for centrality assumetry */
+    kCentAverage = 0x0040,
     /** MC closure test */
     kClosure      = 0x01000,
     /** Debug flat */
@@ -457,6 +459,16 @@ struct AliTrackletdNdeta2 : public AliTrackletAODUtils
 	       Double_t    simEff,
 	       TDirectory* outParent,
 	       Int_t       deltaDimen);
+  /** 
+   * Flatten the result with respect to the mean centrality of the
+   * bin.  This scales each IPz row by the mean centrality in that row
+   * divided by the mean centrality of the full bin.  This only
+   * happens if the appropriate flag is set.
+   * 
+   * @param h Result histogram 
+   * @param c Real data container.
+   */
+  void FlattenCentrality(TH2* h, Container* c);
   
   /* @} */
   //____________________________________________________________________
@@ -1217,7 +1229,7 @@ Bool_t AliTrackletdNdeta2::Deltas0D(Container*  realCont,
   // Make an output directory 
   TDirectory* outDir = outParent->mkdir("delta0d");
 
-  // Get the real and simulated measured folders 
+  // Get the real and simulated measured folders
   Container* realMeas  = GetC(realCont, "measured");
   Container* simMeas   = GetC(simCont,  "measured");
   if (!realMeas || !simMeas) return false;
@@ -1793,9 +1805,9 @@ TH1* AliTrackletdNdeta2::Results(Container*  realCont,
   TH2* realC = fk ? CopyH2(GetC(realCont,"measured"),     "etaIPz", "realC"):0;
   TH2* simM  =      CopyH2(GetC(simCont, "measured"),     "etaIPz", "simM");
   TH2* simC  = fk ? CopyH2(GetC(simCont, "combinatorics"),"etaIPz", "simC") :0;
-  TH2* simG  =      CopyH2(GetC(simCont,  "generated"),   "etaIPz", "simG");
-  TH2* simS  =      CopyH2(GetC(simCont,  "measured"),    "etaIPz", "simS");
-  TH2* simA  =      CopyH2(GetC(simCont,  "generated"),   "etaIPz", "simA");
+  TH2* simG  =      CopyH2(GetC(simCont, "generated"),    "etaIPz", "simG");
+  TH2* simS  =      CopyH2(GetC(simCont, "measured"),     "etaIPz", "simS");
+  TH2* simA  =      CopyH2(GetC(simCont, "generated"),    "etaIPz", "simA");
   TH2* simB  = fk ? CopyH2(GetC(simCont, "combinatorics"),"etaIPz", "simB") :0;
   TH2* simT  = sc ? CopyH2(GetC(simCont, "secondaries"),  "dtfs",   "simT") :0;
   TH2* realG = rs ? CopyH2(GetC(realCont,"generated"),    "etaIPz", "realG"):0;
@@ -1902,6 +1914,8 @@ TH1* AliTrackletdNdeta2::Results(Container*  realCont,
   result->SetTitle("R");
   result->SetZTitle("R");
 
+  FlattenCentrality(result,realCont);
+		    
   // Output directory for full stuff
   TDirectory* full = outDir->mkdir("full");
   
@@ -2040,6 +2054,36 @@ TH1* AliTrackletdNdeta2::Results(Container*  realCont,
   dndeta->SetBinContent(dndeta->GetNbinsX()+1,simEff);
   
   return dndeta;
+}
+
+//____________________________________________________________________
+void AliTrackletdNdeta2::FlattenCentrality(TH2* h, Container* c)
+{
+  if (!(fProc & kCentAverage)) return;
+  DebugGuard g(fProc&kDebug,1,"Correcting for non-flat centrality in bin");
+
+  TH1* centIpz = GetH1(c, "centIpz");
+  if (!centIpz) {
+    Warning("FlattenCentrality", "No average cent vs IPz data");
+    return;
+  }
+  Double_t meanC = centIpz->GetMean(2);
+  if (meanC < 0 || meanC > 100) {
+    Warning("FlattenCentrality", "Average centrality %f funny", meanC);
+    return;
+  }
+  for (Int_t iz = 1; iz <= centIpz->GetXaxis()->GetNbins(); iz++) {
+    Double_t cc = centIpz->GetBinContent(iz);
+    Double_t rc = meanC / cc;
+#if 0
+    DebugGuard g2(fProc&kDebug,1,"<c>=%7.4f%% <ci>=%7.4f%% -> %6.4f",
+		  meanC, cc, rc);
+#endif 
+    for (Int_t ieta = 1; ieta <= h->GetXaxis()->GetNbins(); ieta++) {
+      h->SetBinContent(ieta, iz, rc * h->GetBinContent(ieta, iz));
+      h->SetBinError  (ieta, iz, rc * h->GetBinError  (ieta, iz)); 
+    }
+  }
 }
 
 
@@ -2736,6 +2780,7 @@ void AliTrackletdNdeta2::VisualizeParams(Container* realSums,
   VisualizeParam("max#alpha", y, fMaxAlpha);
   VisualizeParam("min#it{k}", y, fMinK);
   VisualizeParam("max#it{k}", y, fMaxK);
+  VisualizeParam("Flatten c", y, (fProc & kCentAverage) != 0);
   if (fFudge != 1) VisualizeParam("Fudge",     y, fFudge);
   
   // From tasks 

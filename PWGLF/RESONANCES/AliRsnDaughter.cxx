@@ -181,6 +181,12 @@ const char *AliRsnDaughter::SpeciesName(ESpecies species)
       case kLambda:   return "Lambda";
       case kXi:       return "Xi";
       case kOmega:    return "Omega";
+      case kKstar0:   return "Kstar0";
+      case kPhi:      return "Phi";
+      case kLambdastar: return "Lambdastar";
+      case kKstarpm:    return "Kstarpm";
+      case kSigmastarp: return "Sigmastarp";
+      case kSigmastarm: return "Sigmastarm";
       default:        return "Undef";
    }
 }
@@ -202,6 +208,12 @@ Long_t AliRsnDaughter::SpeciesPDG(ESpecies species)
       case kLambda:   return 3122;
       case kXi:       return 3312;
       case kOmega:    return 3334;
+      case kKstar0:   return 313;
+      case kPhi:      return 333;
+      case kLambdastar: return 3124;
+      case kKstarpm:    return 323;
+      case kSigmastarp: return 3224;
+      case kSigmastarm: return 3114;
       default:        return 0;
    }
 }
@@ -231,7 +243,7 @@ EPARTYPE AliRsnDaughter::ToAliPID(ESpecies species)
 //
 // Convert an enum element from this object
 // into the enumeration of AliPID.
-// If no match are cound 'kUnknown' is returned.
+// If no match is found 'kUnknown' is returned.
 //
 
    switch (species) {
@@ -251,7 +263,7 @@ AliRsnDaughter::ESpecies AliRsnDaughter::FromAliPID(EPARTYPE pid)
 //
 // Convert an enum element from AliPID
 // into the enumeration of this object.
-// If no match are cound 'kUnknown' is returned.
+// If no match is found 'kUnknown' is returned.
 //
 
    switch (pid) {

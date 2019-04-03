@@ -59,7 +59,16 @@ AliAnalysisTaskFemto::AliAnalysisTaskFemto(TString name,
   f1DcorrectionsProtonsMinus(NULL),
   f1DcorrectionsAll(NULL),
   f1DcorrectionsLambdas(NULL),
-  f1DcorrectionsLambdasMinus(NULL)
+  f1DcorrectionsLambdasMinus(NULL),
+  f4DcorrectionsPions(NULL),
+  f4DcorrectionsKaons(NULL),
+  f4DcorrectionsProtons(NULL),
+  f4DcorrectionsPionsMinus(NULL),
+  f4DcorrectionsKaonsMinus(NULL),
+  f4DcorrectionsProtonsMinus(NULL),
+  f4DcorrectionsAll(NULL),
+  f4DcorrectionsLambdas(NULL),
+  f4DcorrectionsLambdasMinus(NULL)
 {
   // Constructor.
   // Input slot #0 works with an Ntuple
@@ -70,7 +79,7 @@ AliAnalysisTaskFemto::AliAnalysisTaskFemto(TString name,
 }
 //________________________________________________________________________
 AliAnalysisTaskFemto::AliAnalysisTaskFemto(TString name,
-                                           TString aConfigMacro = "ConfigFemtoAnalysis.C",
+                                           TString aConfigMacro,
                                            Bool_t aVerbose):
   AliAnalysisTaskSE(name), //AliAnalysisTask(name,""),
   fESD(NULL),
@@ -94,7 +103,16 @@ AliAnalysisTaskFemto::AliAnalysisTaskFemto(TString name,
   f1DcorrectionsProtonsMinus(NULL),
   f1DcorrectionsAll(NULL),
   f1DcorrectionsLambdas(NULL),
-  f1DcorrectionsLambdasMinus(NULL)
+  f1DcorrectionsLambdasMinus(NULL),
+  f4DcorrectionsPions(NULL),
+  f4DcorrectionsKaons(NULL),
+  f4DcorrectionsProtons(NULL),
+  f4DcorrectionsPionsMinus(NULL),
+  f4DcorrectionsKaonsMinus(NULL),
+  f4DcorrectionsProtonsMinus(NULL),
+  f4DcorrectionsAll(NULL),
+  f4DcorrectionsLambdas(NULL),
+  f4DcorrectionsLambdasMinus(NULL)
 {
   // Constructor.
   // Input slot #0 works with an Ntuple
@@ -127,7 +145,16 @@ AliAnalysisTaskFemto::AliAnalysisTaskFemto(const AliAnalysisTaskFemto &aFemtoTas
   f1DcorrectionsProtonsMinus(aFemtoTask.f1DcorrectionsProtonsMinus),
   f1DcorrectionsAll(aFemtoTask.f1DcorrectionsAll),
   f1DcorrectionsLambdas(aFemtoTask.f1DcorrectionsLambdas),
-  f1DcorrectionsLambdasMinus(aFemtoTask.f1DcorrectionsLambdasMinus)
+  f1DcorrectionsLambdasMinus(aFemtoTask.f1DcorrectionsLambdasMinus),
+  f4DcorrectionsPions(aFemtoTask.f4DcorrectionsPions),
+  f4DcorrectionsKaons(aFemtoTask.f4DcorrectionsKaons),
+  f4DcorrectionsProtons(aFemtoTask.f4DcorrectionsProtons),
+  f4DcorrectionsPionsMinus(aFemtoTask.f4DcorrectionsPionsMinus),
+  f4DcorrectionsKaonsMinus(aFemtoTask.f4DcorrectionsKaonsMinus),
+  f4DcorrectionsProtonsMinus(aFemtoTask.f4DcorrectionsProtonsMinus),
+  f4DcorrectionsAll(aFemtoTask.f4DcorrectionsAll),
+  f4DcorrectionsLambdas(aFemtoTask.f4DcorrectionsLambdas),
+  f4DcorrectionsLambdasMinus(aFemtoTask.f4DcorrectionsLambdasMinus)
 {
   // copy constructor
 }
@@ -164,6 +191,16 @@ AliAnalysisTaskFemto &AliAnalysisTaskFemto::operator=(const AliAnalysisTaskFemto
   f1DcorrectionsLambdas = aFemtoTask.f1DcorrectionsLambdas;
   f1DcorrectionsLambdasMinus = aFemtoTask.f1DcorrectionsLambdasMinus;
 
+  f4DcorrectionsPions = aFemtoTask.f4DcorrectionsPions;
+  f4DcorrectionsKaons = aFemtoTask.f4DcorrectionsKaons;
+  f4DcorrectionsProtons = aFemtoTask.f4DcorrectionsProtons;
+  f4DcorrectionsPionsMinus = aFemtoTask.f4DcorrectionsPionsMinus;
+  f4DcorrectionsKaonsMinus = aFemtoTask.f4DcorrectionsKaonsMinus;
+  f4DcorrectionsProtonsMinus = aFemtoTask.f4DcorrectionsProtonsMinus;
+  f4DcorrectionsAll = aFemtoTask.f4DcorrectionsAll;
+  f4DcorrectionsLambdas = aFemtoTask.f4DcorrectionsLambdas;
+  f4DcorrectionsLambdasMinus = aFemtoTask.f4DcorrectionsLambdasMinus;
+
   return *this;
 }
 
@@ -176,12 +213,11 @@ AliAnalysisTaskFemto::~AliAnalysisTaskFemto()
 void AliAnalysisTaskFemto::ConnectInputData(Option_t *)
 {
   AliInfo(Form("   ConnectInputData %s\n", GetName()));
-
-  fESD = 0;
-  fESDpid = 0;
-  fAOD = 0;
-  fAODpidUtil = 0;
-  fAODheader = 0;
+  fESD = nullptr;
+  fESDpid = nullptr;
+  fAOD = nullptr;
+  fAODpidUtil = nullptr;
+  fAODheader = nullptr;
   fAnalysisType = 0;
 
   TTree *tree = dynamic_cast<TTree *>(GetInputData(0));
@@ -190,8 +226,7 @@ void AliAnalysisTaskFemto::ConnectInputData(Option_t *)
     return;
   }
 
-  AliFemtoEventReaderESDChain *femtoReader = dynamic_cast<AliFemtoEventReaderESDChain *>(fReader);
-  if ((dynamic_cast<AliFemtoEventReaderESDChain *>(fReader))) {
+  if (auto *femtoReader = dynamic_cast<AliFemtoEventReaderESDChain *>(fReader)) {
     AliESDInputHandler *esdH = dynamic_cast<AliESDInputHandler *>(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler());
 
     if (esdH) {
@@ -221,9 +256,7 @@ void AliAnalysisTaskFemto::ConnectInputData(Option_t *)
       fESD = (AliESDEvent*)esdH->GetEvent();
     }
   }
-
-  AliFemtoEventReaderESDChainKine *femtoReaderESDKine = dynamic_cast<AliFemtoEventReaderESDChainKine *>(fReader);
-  if ((dynamic_cast<AliFemtoEventReaderESDChainKine *>(fReader))) {
+  else if (auto *femtoReaderESDKine = dynamic_cast<AliFemtoEventReaderESDChainKine *>(fReader)) {
     AliESDInputHandler *esdH = dynamic_cast<AliESDInputHandler *>(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler());
 
     if (esdH) {
@@ -233,7 +266,6 @@ void AliAnalysisTaskFemto::ConnectInputData(Option_t *)
       fESD = (AliESDEvent*)esdH->GetEvent();
       fESDpid = esdH->GetESDpid();
       femtoReaderESDKine->SetESDPid(fESDpid);
-
     }
   }
 
@@ -257,9 +289,7 @@ void AliAnalysisTaskFemto::ConnectInputData(Option_t *)
     }
   }
 
-
-  AliFemtoEventReaderAODChain *femtoReaderAOD = dynamic_cast<AliFemtoEventReaderAODChain *>(fReader);
-  if (dynamic_cast<AliFemtoEventReaderAODChain *>(fReader)) {
+  if (auto *femtoReaderAOD = dynamic_cast<AliFemtoEventReaderAODChain *>(fReader)) {
     AliAODInputHandler *aodH = dynamic_cast<AliAODInputHandler *>(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler());
 
     if (!aodH) {
@@ -289,45 +319,81 @@ void AliAnalysisTaskFemto::ConnectInputData(Option_t *)
       if (fVerbose)
         cout << "AliAnalysisTaskFemto::AodpidUtil:" << fAODpidUtil << endl;
       femtoReaderAOD->SetAODpidUtil(fAODpidUtil);
+
+      //Applying 1D corrections
       if(f1DcorrectionsPions) {
-	if (fVerbose)	cout<<"AliAnalysisTaskFemto::Setting 1d corrections pions"<<f1DcorrectionsPions;
-	femtoReaderAOD->Set1DCorrectionsPions(f1DcorrectionsPions);
+        if (fVerbose)	cout<<"AliAnalysisTaskFemto::Setting 1d corrections pions"<<f1DcorrectionsPions;
+        femtoReaderAOD->Set1DCorrectionsPions(f1DcorrectionsPions);
       }
       if(f1DcorrectionsKaons) {
-	if (fVerbose)	cout<<"AliAnalysisTaskFemto::Setting 1d corrections kaons"<<f1DcorrectionsKaons;
-	femtoReaderAOD->Set1DCorrectionsKaons(f1DcorrectionsKaons);
+        if (fVerbose)	cout<<"AliAnalysisTaskFemto::Setting 1d corrections kaons"<<f1DcorrectionsKaons;
+        femtoReaderAOD->Set1DCorrectionsKaons(f1DcorrectionsKaons);
       }
       if(f1DcorrectionsProtons) {
-	if (fVerbose)	cout<<"AliAnalysisTaskFemto::Setting 1d corrections protons"<<f1DcorrectionsProtons;
-	femtoReaderAOD->Set1DCorrectionsProtons(f1DcorrectionsProtons);
+        if (fVerbose)	cout<<"AliAnalysisTaskFemto::Setting 1d corrections protons"<<f1DcorrectionsProtons;
+        femtoReaderAOD->Set1DCorrectionsProtons(f1DcorrectionsProtons);
       }
-
       if(f1DcorrectionsPionsMinus) {
-	if (fVerbose)	cout<<"AliAnalysisTaskFemto::Setting 1d corrections pions Minus"<<f1DcorrectionsPionsMinus;
-	femtoReaderAOD->Set1DCorrectionsPionsMinus(f1DcorrectionsPionsMinus);
+        if (fVerbose)	cout<<"AliAnalysisTaskFemto::Setting 1d corrections pions Minus"<<f1DcorrectionsPionsMinus;
+        femtoReaderAOD->Set1DCorrectionsPionsMinus(f1DcorrectionsPionsMinus);
       }
       if(f1DcorrectionsKaonsMinus) {
-	if (fVerbose)	cout<<"AliAnalysisTaskFemto::Setting 1d corrections kaons Minus"<<f1DcorrectionsKaonsMinus;
-	femtoReaderAOD->Set1DCorrectionsKaons(f1DcorrectionsKaonsMinus);
+        if (fVerbose)	cout<<"AliAnalysisTaskFemto::Setting 1d corrections kaons Minus"<<f1DcorrectionsKaonsMinus;
+        femtoReaderAOD->Set1DCorrectionsKaonsMinus(f1DcorrectionsKaonsMinus);
       }
       if(f1DcorrectionsProtonsMinus) {
-	if (fVerbose)	cout<<"AliAnalysisTaskFemto::Setting 1d corrections protons Minus"<<f1DcorrectionsProtonsMinus;
-	femtoReaderAOD->Set1DCorrectionsProtons(f1DcorrectionsProtonsMinus);
+        if (fVerbose)	cout<<"AliAnalysisTaskFemto::Setting 1d corrections protons Minus"<<f1DcorrectionsProtonsMinus;
+        femtoReaderAOD->Set1DCorrectionsProtonsMinus(f1DcorrectionsProtonsMinus);
       }
-
-
       if(f1DcorrectionsAll) {
-	if (fVerbose)	cout<<"AliAnalysisTaskFemto::Setting 1d corrections all"<<f1DcorrectionsAll;
-	femtoReaderAOD->Set1DCorrectionsAll(f1DcorrectionsAll);
+        if (fVerbose)	cout<<"AliAnalysisTaskFemto::Setting 1d corrections all"<<f1DcorrectionsAll;
+        femtoReaderAOD->Set1DCorrectionsAll(f1DcorrectionsAll);
       }
       if(f1DcorrectionsLambdas) {
-	if (fVerbose)	cout<<"AliAnalysisTaskFemto::Setting 1d corrections lambas"<<f1DcorrectionsLambdas;
-	femtoReaderAOD->Set1DCorrectionsLambdas(f1DcorrectionsLambdas);
+        if (fVerbose)	cout<<"AliAnalysisTaskFemto::Setting 1d corrections lambas"<<f1DcorrectionsLambdas;
+        femtoReaderAOD->Set1DCorrectionsLambdas(f1DcorrectionsLambdas);
+      }
+      if(f1DcorrectionsLambdasMinus) {
+        if (fVerbose)	cout<<"AliAnalysisTaskFemto::Setting 1d corrections lambas Minus"<<f1DcorrectionsLambdasMinus;
+        femtoReaderAOD->Set1DCorrectionsLambdasMinus(f1DcorrectionsLambdasMinus);
       }
 
-      if(f1DcorrectionsLambdasMinus) {
-	if (fVerbose)	cout<<"AliAnalysisTaskFemto::Setting 1d corrections lambas Minus"<<f1DcorrectionsLambdasMinus;
-	femtoReaderAOD->Set1DCorrectionsLambdas(f1DcorrectionsLambdasMinus);
+      //Applying 4D corrections
+      if(f4DcorrectionsPions) {
+        if (fVerbose)	cout<<"AliAnalysisTaskFemto::Setting 4d corrections pions"<<f4DcorrectionsPions;
+        femtoReaderAOD->Set4DCorrectionsPions(f4DcorrectionsPions);
+      }
+      if(f4DcorrectionsKaons) {
+        if (fVerbose)	cout<<"AliAnalysisTaskFemto::Setting 4d corrections kaons"<<f4DcorrectionsKaons;
+        femtoReaderAOD->Set4DCorrectionsKaons(f4DcorrectionsKaons);
+      }
+      if(f4DcorrectionsProtons) {
+        if (fVerbose)	cout<<"AliAnalysisTaskFemto::Setting 4d corrections protons"<<f4DcorrectionsProtons;
+        femtoReaderAOD->Set4DCorrectionsProtons(f4DcorrectionsProtons);
+      }
+      if(f4DcorrectionsPionsMinus) {
+        if (fVerbose)	cout<<"AliAnalysisTaskFemto::Setting 4d corrections pions Minus"<<f4DcorrectionsPionsMinus;
+        femtoReaderAOD->Set4DCorrectionsPionsMinus(f4DcorrectionsPionsMinus);
+      }
+      if(f4DcorrectionsKaonsMinus) {
+        if (fVerbose)	cout<<"AliAnalysisTaskFemto::Setting 4d corrections kaons Minus"<<f4DcorrectionsKaonsMinus;
+        femtoReaderAOD->Set4DCorrectionsKaonsMinus(f4DcorrectionsKaonsMinus);
+      }
+      if(f4DcorrectionsProtonsMinus) {
+        if (fVerbose)	cout<<"AliAnalysisTaskFemto::Setting 4d corrections protons Minus"<<f4DcorrectionsProtonsMinus;
+        femtoReaderAOD->Set4DCorrectionsProtonsMinus(f4DcorrectionsProtonsMinus);
+      }
+      if(f4DcorrectionsAll) {
+        if (fVerbose)	cout<<"AliAnalysisTaskFemto::Setting 4d corrections all"<<f4DcorrectionsAll;
+        femtoReaderAOD->Set4DCorrectionsAll(f4DcorrectionsAll);
+      }
+      if(f4DcorrectionsLambdas) {
+        if (fVerbose)	cout<<"AliAnalysisTaskFemto::Setting 4d corrections lambas"<<f4DcorrectionsLambdas;
+        femtoReaderAOD->Set4DCorrectionsLambdas(f4DcorrectionsLambdas);
+      }
+      if(f4DcorrectionsLambdasMinus) {
+        if (fVerbose)	cout<<"AliAnalysisTaskFemto::Setting 4d corrections lambas Minus"<<f4DcorrectionsLambdasMinus;
+        femtoReaderAOD->Set4DCorrectionsLambdasMinus(f4DcorrectionsLambdasMinus);
       }
 
       fAODheader = dynamic_cast<AliAODHeader *>(fAOD->GetHeader());
@@ -338,8 +404,7 @@ void AliAnalysisTaskFemto::ConnectInputData(Option_t *)
   }
 
 
-  AliFemtoEventReaderAODKinematicsChain *femtoReaderAODKine = dynamic_cast<AliFemtoEventReaderAODKinematicsChain *>(fReader);
-  if (dynamic_cast<AliFemtoEventReaderAODKinematicsChain *>(fReader)) {
+  if (auto *femtoReaderAODKine = dynamic_cast<AliFemtoEventReaderAODKinematicsChain *>(fReader)) {
     AliAODInputHandler *aodH = dynamic_cast<AliAODInputHandler *>(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler());
 
     if (!aodH) {
@@ -383,15 +448,16 @@ void AliAnalysisTaskFemto::CreateOutputObjects()
     AliInfo("Creating Femto Analysis objects\n");
 
   gSystem->SetIncludePath("-I$ROOTSYS/include -I./STEERBase/ -I./ESD/ -I./AOD/ -I./ANALYSIS/ -I./ANALYSISalice/ -I./PWG2AOD/AOD -I./PWG2femtoscopy/FEMTOSCOPY/AliFemto -I./PWG2femtoscopyUser/FEMTOSCOPY/AliFemtoUser");
-  //  char fcm[2000];
-//   sprintf(fcm, "%s++", fConfigMacro);
-//   gROOT->LoadMacro(fcm);
   gROOT->LoadMacro(fConfigMacro);
   //  fJetFinder = (AliJetFinder*) gInterpreter->ProcessLine("ConfigJetAnalysis()");
-  if (!fConfigParams)
-    SetFemtoManager((AliFemtoManager *) gInterpreter->ProcessLine("ConfigFemtoAnalysis()"));
-  else
-    SetFemtoManager((AliFemtoManager *) gInterpreter->ProcessLine(Form("ConfigFemtoAnalysis(%s)", fConfigParams.Data())));
+
+  TString cmd = Form("ConfigFemtoAnalysis(%s)", fConfigParams.Data());
+  auto *femto_manager = reinterpret_cast<AliFemtoManager*>(gInterpreter->ProcessLine(cmd));
+  if (femto_manager == nullptr) {
+    AliError(Form("ConfigFemtoAnalysis function returned NULL (i.e. no manager)\n--- invoked function ---\n%s\n---", cmd.Data()));
+  }
+
+  SetFemtoManager(femto_manager);
 
   fOutputList = fManager->Analysis(0)->GetOutputList();
   fOutputList->SetOwner(kTRUE);
@@ -413,25 +479,30 @@ void AliAnalysisTaskFemto::CreateOutputObjects()
 //________________________________________________________________________
 void AliAnalysisTaskFemto::Exec(Option_t *)
 {
+  AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
+  auto *event_handler = static_cast<AliInputEventHandler *>(mgr->GetInputEventHandler());
+
   // Task making a femtoscopic analysis.
   if (fOfflineTriggerMask) {
-    Bool_t isSelected = (((AliInputEventHandler *)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected() & fOfflineTriggerMask);
+    Bool_t isSelected = event_handler->IsEventSelected() & fOfflineTriggerMask;
     if (!isSelected) {
-      if (fVerbose)
-        cout << "AliAnalysisTaskFemto: is not selected" << endl;
+      if (fVerbose) {
+        // std::cout << "AliAnalysisTaskFemto: is not selected" << endl;
+        AliInfo("Event is not selected");
+      }
       return;
     }
   }
 
   if (fAnalysisType == 1) {
     if (!fESD) {
-      if (fVerbose)
+      if (fVerbose) {
         AliWarning("fESD not available");
+      }
       return;
     }
     //Get MC data
-    AliMCEventHandler *mctruth = (AliMCEventHandler *)
-                                    ((AliAnalysisManager::GetAnalysisManager())->GetMCtruthEventHandler());
+    AliMCEventHandler *mctruth = static_cast<AliMCEventHandler*>(mgr->GetMCtruthEventHandler());
 
     AliGenHijingEventHeader *hdh = 0;
     AliGenCocktailEventHeader *hd = 0;
@@ -476,24 +547,20 @@ void AliAnalysisTaskFemto::Exec(Option_t *)
           AliWarning("No ESD reader for ESD analysis !\n");
       }
 
-      AliFemtoEventReaderESDChain *fesdc = dynamic_cast<AliFemtoEventReaderESDChain *>(fReader);
-      if (fesdc) {
+      if (auto *fesdc = dynamic_cast<AliFemtoEventReaderESDChain *>(fReader)) {
         // Process the event with no Kine information
         fesdc->SetESDSource(fESD);
         fManager->ProcessEvent();
       }
     }
-    AliFemtoEventReaderKinematicsChain *fkinec = dynamic_cast<AliFemtoEventReaderKinematicsChain *>(fReader);
-    if (fkinec) {
+
+    if (auto *fkinec = dynamic_cast<AliFemtoEventReaderKinematicsChain *>(fReader)) {
       // Process the event with Kine information only
       fkinec->SetStackSource(fStack);
       fkinec->SetGenEventHeader(header);
       fManager->ProcessEvent();
     }
-
-
-    AliFemtoEventReaderESDChainKine *fesdck = dynamic_cast<AliFemtoEventReaderESDChainKine *>(fReader);
-    if (fesdck) {
+    else if (auto *fesdck = dynamic_cast<AliFemtoEventReaderESDChainKine *>(fReader)) {
       // Process the event with Kine information
       fesdck->SetESDSource(fESD);
       fesdck->SetStackSource(fStack);
@@ -501,30 +568,25 @@ void AliAnalysisTaskFemto::Exec(Option_t *)
       fesdck->SetGenEventHeader(hdh);
       fManager->ProcessEvent();
     }
-
-
-    AliFemtoEventReaderKinematicsChainESD *fkcesd = dynamic_cast<AliFemtoEventReaderKinematicsChainESD *>(fReader);
-    if (fkcesd) {
+    else if (auto *fkcesd = dynamic_cast<AliFemtoEventReaderKinematicsChainESD *>(fReader)) {
       // Process the event with Kine information
       fkcesd->SetESDSource(fESD);
       fkcesd->SetStackSource(fStack);
       fkcesd->SetGenEventHeader(hdh);
       fManager->ProcessEvent();
     }
-
-    AliFemtoEventReaderStandard *fstd = dynamic_cast<AliFemtoEventReaderStandard *>(fReader);
-    if (fstd) {
+    else if (auto *fstd = dynamic_cast<AliFemtoEventReaderStandard *>(fReader)) {
       // Process the event with Kine information
       fstd->SetESDSource(fESD);
       if (mctruth) {
         fstd->SetStackSource(fStack);
         fstd->SetGenEventHeader(hdh);
         fstd->SetInputType(AliFemtoEventReaderStandard::kESDKine);
-      } else
+      } else {
         fstd->SetInputType(AliFemtoEventReaderStandard::kESD);
+      }
       fManager->ProcessEvent();
     }
-
 
     // Post the output histogram list
     PostData(0, fOutputList);
@@ -538,7 +600,7 @@ void AliAnalysisTaskFemto::Exec(Option_t *)
     }
 
     // Get AOD
-//     AliAODInputHandler *aodH = dynamic_cast<AliAODInputHandler*> (AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler());
+//     AliAODInputHandler *aodH = dynamic_cast<AliAODInputHandler*>(event_handler);
 
 //     if (!aodH) {
 //       AliWarning("Could not get AODInputHandler");
@@ -552,33 +614,30 @@ void AliAnalysisTaskFemto::Exec(Option_t *)
 
 
 
-    if (fVerbose)
+    if (fVerbose) {
       AliInfo(Form("Tracks in AOD: %d \n", fAOD->GetNumberOfTracks()));
+    }
 
     if (fAOD->GetNumberOfTracks() > 0) {
       if (!fReader) {
-        if (fVerbose)
+        if (fVerbose) {
           AliWarning("No AOD reader for AOD analysis! \n");
+        }
       } else {
-        AliFemtoEventReaderAODChain *faodc = dynamic_cast<AliFemtoEventReaderAODChain *>(fReader);
-
-        if (faodc) {
+        if (auto *faodc = dynamic_cast<AliFemtoEventReaderAODChain *>(fReader)) {
           // Process the event
           faodc->SetAODSource(fAOD);
           fManager->ProcessEvent();
         }
-        AliFemtoEventReaderStandard *fstd = dynamic_cast<AliFemtoEventReaderStandard *>(fReader);
 
-        if (fstd) {
+        else if (auto *fstd = dynamic_cast<AliFemtoEventReaderStandard *>(fReader)) {
           // Process the event
           fstd->SetAODSource(fAOD);
           fstd->SetInputType(AliFemtoEventReaderStandard::kAOD);
           fManager->ProcessEvent();
         }
 
-	AliFemtoEventReaderAODKinematicsChain *faodkine = dynamic_cast<AliFemtoEventReaderAODKinematicsChain *>(fReader);
-
-        if (faodkine) {
+        else if (auto *faodkine = dynamic_cast<AliFemtoEventReaderAODKinematicsChain *>(fReader)) {
           // Process the event
           faodkine->SetAODSource(fAOD);
           fManager->ProcessEvent();
@@ -701,6 +760,7 @@ void AliAnalysisTaskFemto::SetFemtoManager(AliFemtoManager *aManager)
                  "approved AliFemtoEventReader subclass. Will not run femto analysis.\n");\
   }
 }
+
 void AliAnalysisTaskFemto::Set1DCorrectionsPions(TH1D *h1)
 {
   if (fVerbose)
@@ -754,4 +814,53 @@ void AliAnalysisTaskFemto::Set1DCorrectionsLambdas(TH1D *h1)
 void AliAnalysisTaskFemto::Set1DCorrectionsLambdasMinus(TH1D *h1)
 {
   f1DcorrectionsLambdasMinus = h1;
+}
+
+
+void AliAnalysisTaskFemto::Set4DCorrectionsPions(THnSparse *h1)
+{
+  if (fVerbose)
+    printf("Reading corrections\n");
+  f4DcorrectionsPions = h1;
+}
+
+void AliAnalysisTaskFemto::Set4DCorrectionsKaons(THnSparse *h1)
+{
+  f4DcorrectionsKaons = h1;
+}
+
+void AliAnalysisTaskFemto::Set4DCorrectionsProtons(THnSparse *h1)
+{
+  f4DcorrectionsProtons = h1;
+}
+
+void AliAnalysisTaskFemto::Set4DCorrectionsPionsMinus(THnSparse *h1)
+{
+  f4DcorrectionsPionsMinus = h1;
+}
+
+void AliAnalysisTaskFemto::Set4DCorrectionsKaonsMinus(THnSparse *h1)
+{
+  f4DcorrectionsKaonsMinus = h1;
+}
+
+void AliAnalysisTaskFemto::Set4DCorrectionsProtonsMinus(THnSparse *h1)
+{
+  f4DcorrectionsProtonsMinus = h1;
+}
+
+void AliAnalysisTaskFemto::Set4DCorrectionsAll(THnSparse *h1)
+{
+  f4DcorrectionsAll = h1;
+}
+
+void AliAnalysisTaskFemto::Set4DCorrectionsLambdas(THnSparse *h1)
+{
+  f4DcorrectionsLambdas = h1;
+}
+
+
+void AliAnalysisTaskFemto::Set4DCorrectionsLambdasMinus(THnSparse *h1)
+{
+  f4DcorrectionsLambdasMinus = h1;
 }

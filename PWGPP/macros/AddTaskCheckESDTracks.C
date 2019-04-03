@@ -19,7 +19,7 @@ AliAnalysisTaskCheckESDTracks *AddTaskCheckESDTracks(TString suffix="",
     ::Error("AddTaskCheckESDTracks", "This task requires an input event handler");
     return NULL;
   }   
-  AliInputEventHandler* h=mgr->GetInputEventHandler();
+  AliInputEventHandler* h= (AliInputEventHandler*)mgr->GetInputEventHandler();
   h->SetNeedField(kTRUE);
 
   TString type = mgr->GetInputEventHandler()->GetDataType(); // can be "ESD" or "AOD"

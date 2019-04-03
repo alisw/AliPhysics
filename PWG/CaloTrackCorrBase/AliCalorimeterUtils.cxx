@@ -161,7 +161,7 @@ void AliCalorimeterUtils::AccessOADB(AliVEvent* event)
           SetEMCALChannelStatusMap(i,hbm);
           
         } // loop
-      } else AliInfo("Do NOT remove EMCAL bad channels\n"); // run array
+      } else AliInfo("Do NOT remove EMCAL bad channels"); // run array
       
       delete contBC;
     }  // Remove bad
@@ -888,24 +888,34 @@ void AliCalorimeterUtils::ConfigureEMCALRecoUtils
   
   // Non linearity
   
-  if( bNonLin ) 
-  { 
+  if( bNonLin )
+  {
+    fCorrectELinearity = kTRUE;
+    
     if(!bMC)
     {
-      if ( debug > 0 ) printf("ConfigureEMCALRecoUtils() xxx SET Non linearity correction kBeamTestCorrected xxx\n");
+      if ( debug > 0 )
+        printf("ConfigureEMCALRecoUtils() xxx SET Non linearity correction kBeamTestCorrected xxx\n");
+      
       fEMCALRecoUtils->SetNonLinearityFunction(AliEMCALRecoUtils::kBeamTestCorrectedv3);
     }
     else
-    {       
-      if ( debug > 0 ) printf("ConfigureEMCALRecoUtils() xxx SET Non linearity correction kPi0MCv3 xxx\n");
+    {
+      if ( debug > 0 )
+        printf("ConfigureEMCALRecoUtils() xxx SET Non linearity correction kPi0MCv3 xxx\n");
+      
       fEMCALRecoUtils->SetNonLinearityFunction(AliEMCALRecoUtils::kPi0MCv3);
     }
-  }
-  else 
+  } // Non linearity correction ON
+  else
   {
-    if ( debug > 0 ) printf("ConfigureEMCALRecoUtils() xxx DON'T SET Non linearity correction xxx\n");
+    fCorrectELinearity = kFALSE;
+
+    if ( debug > 0 )
+      printf("ConfigureEMCALRecoUtils() xxx DON'T SET Non linearity correction xxx\n");
+    
     fEMCALRecoUtils->SetNonLinearityFunction(AliEMCALRecoUtils::kNoCorrection);
-  }
+  } // Non linearity correction OFF
   
 }
 
@@ -1882,10 +1892,10 @@ Bool_t AliCalorimeterUtils::IsMCParticleInCalorimeterAcceptance(Int_t calo, TPar
     Bool_t ok = GetEMCALGeometry()->GetAbsCellIdFromEtaPhi(particle->Eta(),particle->Phi(),absID);
     if(ok)
     {
-      Int_t icol = -1, irow = -1, iRCU = -1;
+      Int_t icol = -1, irow = -1, iRCU = -1, status = 0;
       Int_t nModule = GetModuleNumberCellIndexes(absID,calo, icol, irow, iRCU);
-      Int_t status  = GetEMCALChannelStatus(nModule,icol,irow);
-      if(status > 0) ok = kFALSE;
+      Bool_t bad    = GetEMCALChannelStatus(nModule,icol,irow,status);
+      if( bad ) ok = kFALSE;
     }
 
     return ok ;
@@ -1924,10 +1934,10 @@ Bool_t AliCalorimeterUtils::IsMCParticleInCalorimeterAcceptance(Int_t calo, AliA
     Bool_t ok = GetEMCALGeometry()->GetAbsCellIdFromEtaPhi(particle->Eta(),phi,absID);
     if(ok)
     {
-      Int_t icol = -1, irow = -1, iRCU = -1;
+      Int_t icol = -1, irow = -1, iRCU = -1, status = 0;
       Int_t nModule = GetModuleNumberCellIndexes(absID,calo, icol, irow, iRCU);
-      Int_t status  = GetEMCALChannelStatus(nModule,icol,irow);
-      if(status > 0) ok = kFALSE;
+      Bool_t bad    = GetEMCALChannelStatus(nModule,icol,irow,status);
+      if( bad ) ok = kFALSE;
     }
 
     return ok ;
@@ -1966,10 +1976,10 @@ Bool_t AliCalorimeterUtils::IsMCParticleInCalorimeterAcceptance(Int_t calo, AliV
     Bool_t ok = GetEMCALGeometry()->GetAbsCellIdFromEtaPhi(particle->Eta(),phi,absID);
     if(ok)
     {
-      Int_t icol = -1, irow = -1, iRCU = -1;
+      Int_t icol = -1, irow = -1, iRCU = -1, status = 0;
       Int_t nModule = GetModuleNumberCellIndexes(absID,calo, icol, irow, iRCU);
-      Int_t status  = GetEMCALChannelStatus(nModule,icol,irow);
-      if(status > 0) ok = kFALSE;
+      Bool_t bad    = GetEMCALChannelStatus(nModule,icol,irow,status);
+      if( bad ) ok = kFALSE;
     }
     
     return ok ;
@@ -2008,10 +2018,10 @@ Bool_t AliCalorimeterUtils::IsMCParticleInCalorimeterAcceptance(Int_t calo, Floa
     Bool_t ok = GetEMCALGeometry()->GetAbsCellIdFromEtaPhi(eta,phi,absID);
     if(ok)
     {
-      Int_t icol = -1, irow = -1, iRCU = -1;
+      Int_t icol = -1, irow = -1, iRCU = -1, status = 0;
       Int_t nModule = GetModuleNumberCellIndexes(absID,calo, icol, irow, iRCU);
-      Int_t status  = GetEMCALChannelStatus(nModule,icol,irow);
-      if(status > 0) ok = kFALSE;
+      Bool_t bad    = GetEMCALChannelStatus(nModule,icol,irow,status);
+      if( bad ) ok = kFALSE;
     }
 
     return ok ;
@@ -2240,7 +2250,7 @@ void AliCalorimeterUtils::RecalculateClusterTrackMatching(AliVEvent * event,
     fEMCALRecoUtils->GetMatchedResiduals(clus->GetID(),dZ,dR);
     
     if ( TMath::Abs(clus->GetTrackDx()) < 500 )
-      AliDebug(2,Form("Residuals (Old, New): z (%2.4f,%2.4f), x (%2.4f,%2.4f)\n",
+      AliDebug(2,Form("Residuals (Old, New): z (%2.4f,%2.4f), x (%2.4f,%2.4f)",
                       clus->GetTrackDz(),dZ,clus->GetTrackDx(),dR));
     
     clus->SetTrackDistance(dR,dZ);

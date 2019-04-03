@@ -98,6 +98,7 @@ class AliConvEventCuts : public AliAnalysisCuts {
         kLHC10e20,        //!< anchored LHC10e pass 2
         kLHC10e21,        //!< anchored LHC10e pass 2
         kLHC14j4,         //!< anchored LHC10[b-g] pass 4
+        kLHC14b7,         //!< anchored LHC11 pass 1
         kLHC13d2,         //!< anchored LHC10h pass 2
         kLHC13d2b,        //!< anchored LHC10h pass 2
         kLHC12a11a,       //!< anchored LHC10h pass 2
@@ -133,13 +134,10 @@ class AliConvEventCuts : public AliAnalysisCuts {
         // 2012
         kLHC12,           //!< pp 8TeV
         // MC's corresponding to 2012 data
-        kLHC14e2a,        //!< anchored LHC12[a-h] pass 1
         kLHC14e2b,        //!< anchored LHC12[a-h] pass 1
-        kLHC14e2c,        //!< anchored LHC12[a-h] pass 1
         kLHC15h1,         //!< anchored LHC12[a-h] pass 2
         kLHC15h2,         //!< anchored LHC12[a-h] pass 2
-        kLHC16c2,         //!< anchored LHC12[a-h] pass 2 - JJ
-        kLHC16c2_plus,    //!< anchored LHC12[a-h] pass 2 - JJ - additional stat
+        kLHC12P2JJ,       //!< anchored LHC12[a-h] pass 2 - JJ
 
         // 2013
         kLHC13bc,         //!< pPb 5.023TeV
@@ -155,6 +153,7 @@ class AliConvEventCuts : public AliAnalysisCuts {
         kLHC16c3a,        //!< anchored LHC13[d-e] pass 2 - JJ
         kLHC16c3b,        //!< anchored LHC13[d-e] pass 2 - JJ
         kLHC16c3c,        //!< anchored LHC13[d-e] pass 2 - GJ
+        kLHC18j5,         //!< anchored LHC13[b-c] pass 4 - General Purpose
         kLHC15g2,         //!< anchored LHC13g pass 1
         kLHC15a3a,        //!< anchored LHC13g pass 1 - JJ
         kLHC15a3a_plus,   //!< anchored LHC13g pass 1 - JJ
@@ -165,6 +164,7 @@ class AliConvEventCuts : public AliAnalysisCuts {
         kLHC15fm,         //!< pp 13 TeV
         kLHC15n,          //!< pp 5 TeV
         kLHC15o,          //!< PbPb 5 TeV
+        kLHC18qr,         //!< PbPb 5 TeV
         // MC's corresponding to 2015 data
         kLHC15g3a3,       //!< anchored LHC15f pass 1
         kLHC15g3a,        //!< anchored LHC15f pass 1
@@ -182,10 +182,6 @@ class AliConvEventCuts : public AliAnalysisCuts {
         kLHC15k1a2,       //!< LHC15o low IR firstPhysics
         kLHC15k1a3,       //!< LHC15o low IR firstPhysics
         kLHC16j7,         //!< LHC15o low IR pass4
-        kLHC16g1,         //!< anchored LHC15o pass1 - general purpose
-        kLHC16g1a,        //!< anchored LHC15o pass1 - general purpose 0-10%
-        kLHC16g1b,        //!< anchored LHC15o pass1 - general purpose 10-50%
-        kLHC16g1c,        //!< anchored LHC15o pass1 - general purpose 50-90%
         kLHC16g2,         //!< anchored LHC15o pass1 - general purpose EPOS-LHC
         kLHC16g3,         //!< anchored LHC15o pass1 - general purpose DPMJET
         kLHC16h4,         //!< anchored LHC15o pass1 - injected signals 0-100%
@@ -211,9 +207,21 @@ class AliConvEventCuts : public AliAnalysisCuts {
         kLHC16k5a,        //!< anchored LHC15n pass3 - general purpose Pythia8
         kLHC16k5b,        //!< anchored LHC15n pass3 - general purpose Pythia6
         kLHC17e2,         //!< anchored LHC15n pass4 - general purpose Pythia8
+        kLHC18j3,         //!< anchored LHC15n pass4 - general purpose Pythia8
         kLHC15k5a,        //!< anchored LHC15f pass2 - HF-forced MC for D2H analyses
         kLHC15k5b,        //!< anchored LHC15f pass2 - HF-forced MC for HFE analyses
         kLHC15k5c,        //!< anchored LHC15f pass2 - HF-forced MC for HFCJ analyses
+        kLHC18b11a,       //!< anchored to LHC15o    - gamma-jets Pythia events embedded in HI MC events
+        kLHC18b11b,       //!< anchored to LHC15o    - gamma-jets Pythia events embedded in HI MC events
+        kLHC18b11c,       //!< anchored to LHC15o    - gamma-jets Pythia events embedded in HI MC events
+        kLHC18e1,         //!< anchored to LHC15o    - general purpose - fixed MC
+        kLHC18e1a,        //!< anchored LHC15o pass1 - general purpose - 0-10%
+        kLHC18e1b,        //!< anchored LHC15o pass1 - general purpose - 10-50%
+        kLHC18e1c,        //!< anchored LHC15o pass1 - general purpose - 50-90%
+        kLHC18l8a,        //!< anchored to LHC18qr    - general purpose Pythia8
+        kLHC18l8b,        //!< anchored to LHC18qr    - general purpose Pythia8
+        kLHC18l8c,        //!< anchored to LHC18qr    - general purpose Pythia8
+
 
         // MC upgrade
         kLHC13d19,        //!< upgrade 5.5TeV PbPb
@@ -228,30 +236,37 @@ class AliConvEventCuts : public AliAnalysisCuts {
         kLHC16P1Pyt8,       //!< anchored LHC16x pass 1 nom B-field - general purpose Pythia8
         kLHC16P1Pyt8LowB,   //!< anchored LHC16f pass 1 low B-field - general purpose Pythia8
         kLHC16P1EPOS,       //!< anchored LHC16x pass 1 nom B-field - general purpose EPOS
+        kLHC16P1PHO,        //!< anchored LHC16d pass 1 nom B- field - for MBW Phojet
         kLHC16P1JJ,         //!< anchored LHC16x pass 1 nom B-field - Pythia8 JJ
         kLHC16P1JJLowB,     //!< anchored LHC16f pass 1 low B-field - Pythia8 JJ
-        kLHC17h8a,             //!< anchored LHC16d,e,g,h,j,o,p pass 1 - heavy flavour MC Pythia6
-        kLHC17h8b,             //!< anchored LHC16d,e,g,h,j,o,p pass 1 - heavy flavour MC Pythia6
-        kLHC17h8c,             //!< anchored LHC16i,j,o,p pass 1 - heavy flavour MC Pythia6
-        kLHC17c3b1,            //!< anchored LHC16k pass 1 - heavy flavour MC Pythia6
-        kLHC17c3a1,            //!< anchored LHC16k pass 1 - heavy flavour MC Pythia6
-        kLHC17c3b2,            //!< anchored LHC16l pass 1 - heavy flavour MC Pythia6
-        kLHC17c3a2,            //!< anchored LHC16l pass 1 - heavy flavour MC Pythia6
+        kLHC17h8a,          //!< anchored LHC16d,e,g,h,j,o,p pass 1 - heavy flavour MC Pythia6
+        kLHC17h8b,          //!< anchored LHC16d,e,g,h,j,o,p pass 1 - heavy flavour MC Pythia6
+        kLHC17h8c,          //!< anchored LHC16i,j,o,p pass 1 - heavy flavour MC Pythia6
+        kLHC17c3b1,         //!< anchored LHC16k pass 1 - heavy flavour MC Pythia6
+        kLHC17c3a1,         //!< anchored LHC16k pass 1 - heavy flavour MC Pythia6
+        kLHC17c3b2,         //!< anchored LHC16l pass 1 - heavy flavour MC Pythia6
+        kLHC17c3a2,         //!< anchored LHC16l pass 1 - heavy flavour MC Pythia6
+        kLHC17i3a1,         //!< anchored LHC16i,j,k,l,o,p GammaJet - EMCal triggered
+        kLHC17i3c1,         //!< anchored LHC16i,j,k,l,o,p JetJet - EMCal triggered
 
         //General purpose- pPb
         kLHC17a3a,            //!< anchored LHC16r pass 1 - general purpose EPOSLHC
         kLHC17a3b,            //!< anchored LHC16r pass 1 - general purpose DPMJET
         kLHC17a4a,            //!< anchored LHC16s pass 1 - general purpose EPOSLHC
         kLHC17a4b,            //!< anchored LHC16s pass 1 - general purpose DPMJET
+        kLHC18f3bc,           //!< anchored LHC16rs pass 1 - general purpose DPMJET
         kLHC17f2a,            //!< anchored LHC16qt pass 1 - general purpose EPOSLHC
         kLHC17f2b,            //!< anchored LHC16qt pass 1 - general purpose DPMJET
+        kLHC18f3,             //!< anchored LHC16qt pass 1 - general purpose DPMJET
         kLHC17g8a,            //!< anchored LHC16qt pass 1 - jet-jet MC in EPOSLHC
+        kLHC17f3,             //!< anchored LHC16r pass 1 - general purpose
         kLHC17f3a,            //!< anchored LHC16r pass 1 - general purpose EPOSLHC
         kLHC17f3b,            //!< anchored LHC16r pass 1 - general purpose DPMJET
+        kLHC17f4,             //!< anchored LHC16s pass 1 - general purpose
         kLHC17f4a,            //!< anchored LHC16s pass 1 - general purpose EPOSLHC
         kLHC17f4b,            //!< anchored LHC16s pass 1 - general purpose DPMJET
-        kLHC17g8b,            //!< anchored LHC16s pass 1 - jet-jet MC in EPOSLHC
-        kLHC17g8c,            //!< anchored LHC16r pass 1 - jet-jet MC in EPOSLHC
+        kLHC16rP1JJ,          //!< anchored LHC16r pass 1 - jet-jet MC in EPOSLHC
+        kLHC16sP1JJ,          //!< anchored LHC16s pass 1 - jet-jet MC in EPOSLHC
 
         //heavy flavour MC pPb k17d2a_fast,
         kLHC17d2a,          //!< anchored LHC16q,t pass 1 - heavy flavour MC Hijing, fast only
@@ -262,23 +277,34 @@ class AliConvEventCuts : public AliAnalysisCuts {
         kLHC17LowB,           //!< pp 13 TeV low B field
         kLHC17n,              //!< Xe-Xe 5.44 TeV
         kLHC17pq,             //!< pp 5 TeV
+        // MC Xe-Xe
         kLHC17j7,             //!< MC for Xe-Xe 5.44 TeV HIJING
+        kLHC17XeXeHi,         //!< MC for Xe-Xe 5.44 TeV HIJING
+        // 5 TeV MC 2016
         kLHC17l3b,            //!< anchored LHC17p/q pass 1 - general purpose w/GEANT3,
+        kLHC18j2,             //!< anchored LHC17p/q pass 1 - general purpose w/GEANT3,
         kLHC17l4b,            //!< anchored LHC17p/q pass 1 - general purpose w/GEANT4,
-        //13 TeV LHC2017
-        kLHC17k1,               //!LHC17g added dielectrons from HF
-        kLHC17k4,               //!LHC17i
-        kLHC17h11,              //!LHC17j
-        kLHC17h7b,              //!LHC17j
-        kLHC17h7a,              //!LHC17j
-        kLHC17j5a,              //!LHC17k Strangeness enhanced
-        kLHC17j5b,              //!LHC17l Strangeness enhanced
-        kLHC17j5c,              //!LHC17o Strangeness enhanced
-        kLHC17h1,               //!< anchored LHC17c pass 1 - general purpose MC
-        kLHC17h3,               //!< anchored LHC17g pass 1 - general purpose MC
-        kLHC17l5,               //!< anchored LHC17m pass 1 - general purpose MC
+        kLHC18b8,             //!< anchored LHC17p/q pass 1 - jet-jet MC w/GEANT3,
+        kLHC17P1PHO,          //!< anchored LHC17p only low Intensity Phojet 5 TeV
+        //13 TeV MC 2017
+        kLHC17P1Pyt8NomB,     //!LHC17x Pythia8 MB productions nom B anchored to LHC17x
+        kLHC17P1Pyt6NomB,     //!LHC17x Pythia8 MB productions nom B anchored to LHC17x
+        kLHC17P1PHONomB13TeV, //!LHC17x Phojet MB productions nom B anchored to LHC17x
+        kLHC17P1Pyt8LowB,     //!LHC17x Pythia8 MB productions low B anchored to LHC17g
+        kLHC17j5a,            //!LHC17k Strangeness enhanced
+        kLHC17j5b,            //!LHC17l Strangeness enhanced
+        kLHC17j5c,            //!LHC17o Strangeness enhanced
+        //13 TeV LHC2017 JJ
+        kLHC17P1JJ,           //!LHC17k JJ
+        kLHC17P1JJLowB,       //!LHC17k JJ
+        // 2018
+        kLHC18NomB,           //!< pp 13 TeV nominal B field
+        kLHC18LowB,           //!< pp 13 TeV low B field
 
-	//
+        //13 TeV LHC2018
+        kLHC18P1Pyt8NomB,     //!LHC18x Pythia8 MB productions nom B anchored to LHC18x
+        kLHC18P1Pyt8LowB,     //!LHC18x Pythia8 MB productions low B anchored to LHC18c
+
         kUnknownPeriod//!< kUnknownPeriod
       };
 
@@ -397,9 +423,26 @@ class AliConvEventCuts : public AliAnalysisCuts {
                                                                                       fNameHistoReweightingMultData = nameHistoMultData         ;
                                                                                       fNameHistoReweightingMultMC = nameHistoMultMC             ;
                                                                                     }
+      void    SetUseGammaPtReweightingWithHistogramFromFile( Bool_t gammareweight=kTRUE,
+							     TString path="$ALICE_PHYSICS/PWGGA/GammaConv/MCGammaSpectraInput.root",
+							     TString histoNameGamma = "",
+							     TString histoDataNameGamma = "")
+                                                                                    {
+                                                                                      AliInfo(Form("enabled pT reweighting for: Gamma : %i ", gammareweight));
+                                                                                      fDoReweightHistoMCGamma = gammareweight                   ;
+                                                                                      fPathTrFGammaReweighting = path                           ;
+                                                                                      fNameHistoReweightingGamma = histoNameGamma               ;
+                                                                                      fNameDataHistoReweightingGamma = histoDataNameGamma       ;
+                                                                                    }
 
+      void    SetMinFacPtHard(Float_t value)                                        { fMinFacPtHard = value                                     ;
+                                                                                      AliInfo(Form("minimum factor between pt hard and jet put to: %2.2f",fMinFacPtHard));
+                                                                                    }
       void    SetMaxFacPtHard(Float_t value)                                        { fMaxFacPtHard = value                                     ;
                                                                                       AliInfo(Form("maximum factor between pt hard and jet put to: %2.2f",fMaxFacPtHard));
+                                                                                    }
+      void    SetMaxFacPtHardSingleParticle(Float_t value)                          { fMaxFacPtHardSingleParticle = value                       ;
+                                                                                      AliInfo(Form("maximum factor between pt hard and pt of pi0 or eta put to: %2.2f",fMaxFacPtHardSingleParticle));
                                                                                     }
       void    SetDebugLevel( Int_t value)                                           { fDebugLevel = value                                       ; }
 
@@ -408,6 +451,9 @@ class AliConvEventCuts : public AliAnalysisCuts {
       TString*  GetFoundHeader()                                                    { return fGeneratorNames                                    ; }
       Int_t     GetEventQuality()                                                   { return fEventQuality                                      ; }
       Bool_t    GetIsFromPileup()                                                   { return fRemovePileUp                                      ; }
+      Bool_t    GetIsFromPileupSPD()                                                { return fRemovePileUpSPD                                   ; }
+      Int_t     GetUseSphericity()                                                  { return fUseSphericity                                     ; }
+      Bool_t    GetUseSphericityTrue()                                              { return fUseSphericityTrue                                 ; }
       Int_t     GetPastFutureLowBC()                                                { return fPastFutureRejectionLow                            ; }
       Int_t     GetPastFutureHighBC()                                               { return fPastFutureRejectionHigh                           ; }
       Bool_t    GetDoPileUpRejectV0MTPCout()                                        { return fDoPileUpRejectV0MTPCout                           ; }
@@ -440,6 +486,7 @@ class AliConvEventCuts : public AliAnalysisCuts {
       Float_t   GetWeightForCentralityFlattening(AliVEvent *event = 0x0);
       Float_t   GetWeightForMultiplicity(Int_t mult);
       Float_t   GetWeightForMeson( Int_t index, AliMCEvent *mcEvent, AliVEvent *event = 0x0);
+      Float_t   GetWeightForGamma( Int_t index, AliMCEvent *mcEvent, AliVEvent *event = 0x0);
       Float_t   GetCentrality(AliVEvent *event);
       Bool_t    GetUseNewMultiplicityFramework();
       void      GetCorrectEtaShiftFromPeriod();
@@ -479,6 +526,7 @@ class AliConvEventCuts : public AliAnalysisCuts {
       void    InitCutHistograms(  TString name="",
                                   Bool_t preCut = kTRUE);
       void    SetLightOutput( Bool_t flag ){fDoLightOutput = flag; return;}
+      void    SetUseSphericityTrue( Bool_t flag ){fUseSphericityTrue = flag;}
 
       ///Cut functions
       Int_t   IsParticleFromBGEvent(  Int_t index,
@@ -490,15 +538,16 @@ class AliConvEventCuts : public AliAnalysisCuts {
       void    LoadWeightingFlatCentralityFromFile ();
       void    LoadWeightingMultiplicityFromFile ();
       void    LoadReweightingHistosMCFromFile ();
+      void    LoadGammaPtReweightingHistosMCFromFile (); 
 
       // Event Cuts
       Bool_t    IsCentralitySelected(AliVEvent *event, AliMCEvent *mcEvent);
       Bool_t    IsOutOfBunchPileupPastFuture(AliVEvent *event);
       Bool_t    IsPileUpV0MTPCout(AliVEvent *event);
       Bool_t    VertexZCut(AliVEvent *event);
-      Bool_t    IsJetJetMCEventAccepted(AliMCEvent *event, Double_t& weight);
-      Float_t   GetPtHard(AliMCEvent *event);
-      void      GetXSectionAndNTrials(AliMCEvent *event, Float_t &XSection, Float_t &NTrials);
+      Bool_t    IsJetJetMCEventAccepted(AliMCEvent *mcEvent, Double_t& weight, AliVEvent* event = 0x0);
+      Float_t   GetPtHard(AliMCEvent *mcEvent, AliVEvent* event = 0x0);
+      void      GetXSectionAndNTrials(AliMCEvent *mcEvent, Float_t &XSection, Float_t &NTrials, AliVEvent* event = 0x0 );
       Float_t   GetMaxPtJet()                                                       { return fMaxPtJetMC                                        ; }
       Bool_t    MimicTrigger( AliVEvent *event,
                               Bool_t isMC );
@@ -551,10 +600,13 @@ class AliConvEventCuts : public AliAnalysisCuts {
       Int_t                       fMultiplicityMethod;                    ///< selected multiplicity method
       Int_t                       fSpecialTrigger;                        ///< flag
       Int_t                       fSpecialSubTrigger;                     ///< flag
-      Bool_t                      fRemovePileUp;                          ///< flag
+      Bool_t                      fRemovePileUp;                          ///< flag specifies if any pileup cut is applied
+      Bool_t                      fRemovePileUpSPD;                       ///< flag specifies if SPD pileup cuts are applied
+      Int_t                       fUseSphericity;                         ///< flag that specifies the sphericityCut
+      Bool_t                      fUseSphericityTrue;                     ///< switch for true sphericity cuts
       Int_t                       fPastFutureRejectionLow;                ///< sets bunch crossing event rejection in past
-      Int_t                       fPastFutureRejectionHigh;               ///< sets bunch crossing event rejection in future
-      Int_t                       fDoPileUpRejectV0MTPCout;               ///< reject event if # TPCout tracks does not follow expected V=M mult
+      Int_t                       fPastFutureRejectionHigh;               ///< sets bunch crossing event rejection in future. If both are 0, the cut is not applied
+      Int_t                       fDoPileUpRejectV0MTPCout;               ///< reject event if # TPCout tracks does not follow expected V0M mult
       TF1 *                       fFPileUpRejectV0MTPCout;                ///< Pol1 function to compute the cut
       Int_t                       fRejectExtraSignals;                    ///<
       UInt_t                      fOfflineTriggerMask;                    ///< Task processes collision candidates only
@@ -586,6 +638,10 @@ class AliConvEventCuts : public AliAnalysisCuts {
       TString                     fNameFitDataPi0;                        ///< Fit name for fit to spectrum of pi0s in Data
       TString                     fNameFitDataEta;                        ///< Fit name for fit to spectrum of etas in Data
       TString                     fNameFitDataK0s;                        ///< Fit name for fit to spectrum of k0s in Data
+      Bool_t                      fDoReweightHistoMCGamma;                ///< Flag for reweighting Gamma input with histogram
+      TString                     fPathTrFGammaReweighting;               ///< Path for file used in gamma reweighting
+      TString                     fNameHistoReweightingGamma;             ///< Histogram name for reweighting Gamma
+      TString                     fNameDataHistoReweightingGamma;         ///< Histogram Data name for reweighting Gamma
       // Histograms
       TH1F*                       fHistoEventCuts;                        ///< bookkeeping for event selection cuts
       TH1F*                       fHistoPastFutureBits;                   ///< bookkeeping for event selection cuts
@@ -608,11 +664,14 @@ class AliConvEventCuts : public AliAnalysisCuts {
       TF1*                        fFitDataPi0;                            ///< fit to pi0 spectrum in Data
       TF1*                        fFitDataEta;                            ///< fit to eta spectrum in Data
       TF1*                        fFitDataK0s;                            ///< fit to K0s spectrum in Data
+      TH1D*                       hReweightMCHistGamma;                   ///< histogram MC   input for reweighting Gamma
+      TH1D*                       hReweightDataHistGamma;                 ///< histogram data input for reweighting Gamma 
       Int_t                       fAddedSignalPDGCode;
       Bool_t                      fPreSelCut;                             // Flag for preselection cut used in V0Reader
       Bool_t                      fTriggerSelectedManually;               // Flag for manual trigger selection
       TString                     fSpecialTriggerName;                    // Name of the Special Triggers
       TString                     fSpecialSubTriggerName;                 // Name of the Special Triggers
+      TString                     fSpecialSubTriggerNameAdditional;       // Name of an additional Special Trigger
       Int_t                       fNSpecialSubTriggerOptions;
       TH2F*                       hSPDClusterTrackletBackgroundBefore;    ///< SPD tracklets vs SPD clusters for background-correction before cut
       TH2F*                       hSPDClusterTrackletBackground;          ///< SPD tracklets vs SPD clusters for background-correction
@@ -630,6 +689,7 @@ class AliConvEventCuts : public AliAnalysisCuts {
       // Primary secondary distinction
       Double_t                    fSecProdBoundary;                       ///< 3D radius of production (cm) for primary-secodary distinction
       Float_t                     fMaxPtJetMC;                            ///< maximum jet pt in event
+      Float_t                     fMinFacPtHard;                          ///< minimum factor between maximum jet pt and pt hard generated
       Float_t                     fMaxFacPtHard;                          ///< maximum factor between maximum jet pt and pt hard generated
       Float_t                     fMaxFacPtHardSingleParticle;            ///< maximum factor between maximum single particle pt (pi0/eta) and pt hard generated
       Bool_t                      fMimicTrigger;                          ///< enable trigger mimiking
@@ -645,7 +705,7 @@ class AliConvEventCuts : public AliAnalysisCuts {
   private:
 
       /// \cond CLASSIMP
-      ClassDef(AliConvEventCuts,44)
+      ClassDef(AliConvEventCuts,65)
       /// \endcond
 };
 

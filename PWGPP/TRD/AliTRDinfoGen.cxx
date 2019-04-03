@@ -97,12 +97,12 @@
 
 #include "AliTRDinfoGen.h"
 #include "AliTRDpwgppHelper.h"
-#include "info/AliTRDtrackInfo.h"
-#include "info/AliTRDeventInfo.h"
-#include "info/AliTRDv0Info.h"
-#include "info/AliTRDchmbInfo.h"
-#include "info/AliTRDtriggerInfo.h"
-#include "info/AliTRDeventCuts.h"
+#include "AliTRDtrackInfo.h"
+#include "AliTRDeventInfo.h"
+#include "AliTRDv0Info.h"
+#include "AliTRDchmbInfo.h"
+#include "AliTRDtriggerInfo.h"
+#include "AliTRDeventCuts.h"
 
 ClassImp(AliTRDinfoGen)
 
@@ -643,6 +643,7 @@ void AliTRDinfoGen::UserExec(Option_t *){
     if(HasMCdata()){
       label = esdTrack->GetLabel(); 
       alab = TMath::Abs(label);
+      if (alab>=nTracksMC) continue; // bg track?
       // register the track
       // RS: this check makes no sense for events with embedding
       //      if(alab < UInt_t(nTracksMC)){ 
@@ -721,8 +722,8 @@ void AliTRDinfoGen::UserExec(Option_t *){
     }
 
     // read track REC info
-    if (fESDfriend->GetNumberOfTracks() > itrk) {
-      const AliESDfriendTrack* esdFriendTrack = dynamic_cast<const AliESDfriendTrack*>(fESDfriend->GetTrack(itrk));
+    const AliESDfriendTrack* esdFriendTrack = dynamic_cast<const AliESDfriendTrack*>(esdTrack->GetFriendTrack());
+    if (esdFriendTrack) {
       fTrackInfo->SetTPCoutParam(esdFriendTrack->GetTPCOut());
       fTrackInfo->SetITSoutParam(esdFriendTrack->GetITSOut());
       const AliTrackPointArray *tps(NULL);

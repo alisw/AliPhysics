@@ -43,6 +43,8 @@ class AliEmcalJet;
 class AliParticleContainer;
 class AliTrackContainer;
 
+#define EXPERIMENTAL_JETCONSTITUENTS
+
 namespace EmcalTriggerJets {
 
 /**
@@ -120,6 +122,9 @@ struct AliJetKineParameters {
   Double_t fNEF;                             ///< Jet Neutral Energy Fraction
   Int_t    fNCharged;                        ///< Number of charged constituents
   Int_t    fNNeutral;                        ///< Number of neutral constituents
+  Double_t fZLeading;                        ///< z of the leading constituent
+  Double_t fZLeadingCharged;                 ///< z of the leading charged constituent
+  Double_t fZLeadingNeutral;                 ///< z of the leading neutral constituent
 
   void LinkJetTreeBranches(TTree *jettree, const char *tag);
 };
@@ -137,21 +142,12 @@ struct AliJetStructureParameters {
 };
 
 struct AliJetTreeGlobalParameters {
-  Double_t fJetRadius;
-  Double_t fEventWeight;
-  Double_t fRhoParamters[4];
+  Double_t fJetRadius;                        ///< jet radius
+  Double_t fEventWeight;                      ///< event weight (downscale factor)
+  Int_t    fTriggerClusterIndex;              ///< Index of the trigger cluster (0 - CENT, 1 - CENTNOTRD)
+  Double_t fRhoParamters[4];                  ///< Rho parameters
 
   void LinkJetTreeBranches(TTree *jettree, bool fillRho);
-};
-
-struct Triggerinfo {
-  std::string fTriggerClass;
-  std::string fBunchCrossing;
-  std::string fPastFutureProtection;
-  std::string fTriggerCluster;
-
-  std::string ExpandClassName() const; 
-  bool IsTriggerClass(const std::string &triggerclass) const;
 };
 
 /**
@@ -189,6 +185,11 @@ public:
     kAKTAlgo = 2
   };
 
+  enum JetRecType_t {
+    kDetLevel = 0,
+    kPartLevel = 1
+  };
+
 	AliAnalysisTaskEmcalJetSubstructureTree();
 	AliAnalysisTaskEmcalJetSubstructureTree(const char *name);
 	virtual ~AliAnalysisTaskEmcalJetSubstructureTree();
@@ -214,13 +215,17 @@ public:
   void SetUseChargedConstituents(Bool_t doUse) { fUseChargedConstituents = doUse; }
   void SetUseNeutralConstituents(Bool_t doUse) { fUseNeutralConstituents = doUse; }
 
-	static AliAnalysisTaskEmcalJetSubstructureTree *AddEmcalJetSubstructureTreeMaker(Bool_t isMC, Bool_t isData, Double_t jetradius, AliJetContainer::EJetType_t jettype, AliJetContainer::ERecoScheme_t recombinationScheme, const char *name);
+  void SetHasRecEvent(Bool_t hasrec) { fHasRecEvent = hasrec; }
+  void SetHasTrueEvent(Bool_t hastrue) { fHasTrueEvent = hastrue; }
+
+	static AliAnalysisTaskEmcalJetSubstructureTree *AddEmcalJetSubstructureTreeMaker(Bool_t isMC, Bool_t isData, Double_t jetradius, AliJetContainer::EJetType_t jettype, AliJetContainer::ERecoScheme_t recombinationScheme, Bool_t useDCAL, const char *name);
 
 protected:
 	virtual void UserCreateOutputObjects();
 	virtual bool Run();
 	virtual void RunChanged(Int_t newrun);
   virtual void UserExecOnce();
+  virtual Bool_t IsTriggerSelected();
 
 	AliJetSubstructureData MakeJetSubstructure(const AliEmcalJet &jet, double jetradius, const AliParticleContainer *tracks, const AliClusterContainer *clusters, const AliJetSubstructureSettings &settings) const;
 
@@ -228,17 +233,16 @@ protected:
 
 	AliNSubjettinessParameters MakeNsubjettinessParameters(const fastjet::PseudoJet &jet, const AliNSubjettinessDefinition &cut) const;
   
-  AliJetKineParameters MakeJetKineParameters(const AliEmcalJet &jet) const;
+  AliJetKineParameters MakeJetKineParameters(const AliEmcalJet &jet, JetRecType_t rectype, const AliParticleContainer *const particles, const AliClusterContainer *const clusters) const;
 
 	Double_t MakeAngularity(const AliEmcalJet &jet, const AliParticleContainer *tracks, const AliClusterContainer *clusters) const;
 
 	Double_t MakePtD(const AliEmcalJet &jet, const AliParticleContainer *const particles, const AliClusterContainer *const clusters) const;
 
   void FillLuminosity();
-
+  
 	void DoConstituentQA(const AliEmcalJet *jet, const AliParticleContainer *tracks, const AliClusterContainer *clusters);
 
-  std::vector<Triggerinfo> DecodeTriggerString(const std::string &triggerstring) const;
   std::string MatchTrigger(const std::string &triggerclass) const;
   bool IsSelectEmcalTriggers(const std::string &triggerstring) const;
 
@@ -262,6 +266,8 @@ private:
 	Double_t                     fSDBetaCut;                  ///< Soft drop beta cut
 	Reclusterizer_t              fReclusterizer;              ///< Reclusterizer method
 
+  Bool_t                       fHasRecEvent;                ///< Has reconstructed event (for trigger selection)
+  Bool_t                       fHasTrueEvent;               ///< Has Monte-Carlo truth (for trigger selection)
 	UInt_t                       fTriggerSelectionBits;       ///< Trigger selection bits
   TString                      fTriggerSelectionString;     ///< Trigger selection string
   TString                      fNameTriggerDecisionContainer; ///< Global trigger decision container

@@ -30,6 +30,14 @@
 ClassImp(AliClusterContainer);
 /// \endcond
 
+// string to enum map for use with the %YAML config
+const std::map <std::string, AliVCluster::VCluUserDefEnergy_t> AliClusterContainer::fgkClusterEnergyTypeMap = {
+  {"kNonLinCorr", AliVCluster::kNonLinCorr },
+  {"kHadCorr", AliVCluster::kHadCorr },
+  {"kUserDefEnergy1", AliVCluster::kUserDefEnergy1 },
+  {"kUserDefEnergy2", AliVCluster::kUserDefEnergy2 }
+};
+
 // Properly instantiate the object
 AliEmcalContainerIndexMap <TClonesArray, AliVCluster> AliClusterContainer::fgEmcalContainerIndexMap;
 

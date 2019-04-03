@@ -25,7 +25,8 @@ AliAnalysisTaskSEXic2eleXifromAODtracks *AddTaskXic2eleXifromAODtracks(TString f
   } else {
     filecuts=TFile::Open(finname.Data());
     if(!filecuts ||(filecuts&& !filecuts->IsOpen())){
-      AliFatal("Input file not found : check your cut object");
+      Printf("FATAL: Input file not found : check your cut object");
+      return NULL;
     }
   }
 
@@ -37,7 +38,7 @@ AliAnalysisTaskSEXic2eleXifromAODtracks *AddTaskXic2eleXifromAODtracks(TString f
   RDHFCutsXic2eleXianal->SetMaxPtCandidate(10000.);
   if (!RDHFCutsXic2eleXianal) {
     cout << "Specific AliRDHFCutsXic2eleXianal not found\n";
-    return;
+    return NULL;
   }
 
 
@@ -107,8 +108,8 @@ AliAnalysisTaskSEXic2eleXifromAODtracks *AddTaskXic2eleXifromAODtracks(TString f
     } else{
       TFile* fileEstimator=TFile::Open(estimatorFilename.Data());
       if(!fileEstimator)  {
-        AliFatal("File with multiplicity estimator not found\n");
-        return;
+        Printf("FATAL: File with multiplicity estimator not found\n");
+        return NULL;
       }
       task->SetReferenceMultiplcity(9.26);
       const Char_t* profilebasename="SPDmult10";
@@ -117,8 +118,8 @@ AliAnalysisTaskSEXic2eleXifromAODtracks *AddTaskXic2eleXifromAODtracks(TString f
       for(Int_t ip=0; ip<4; ip++) {
         multEstimatorAvg[ip] = (TProfile*)(fileEstimator->Get(Form("%s_%s",profilebasename,periodNames[ip]))->Clone(Form("%s_%s_clone",profilebasename,periodNames[ip])));
         if (!multEstimatorAvg[ip]) {
-          AliFatal(Form("Multiplicity estimator for %s not found! Please check your estimator file",periodNames[ip]));
-          return;
+          Printf("Multiplicity estimator for %s not found! Please check your estimator file",periodNames[ip]);
+          return NULL;
         }
       }
       task->SetMultiplVsZProfileLHC10b(multEstimatorAvg[0]);

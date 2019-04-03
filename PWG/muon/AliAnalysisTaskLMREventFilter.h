@@ -46,6 +46,7 @@ private:
   TH1D *fhL0TriggerInputMUL;
   TH1D *fhL0TriggerInputMSL;
   TH1D *fhL0TriggerInputTVX;
+  TH1D *fhL2TriggerCINT7CENTNOTRD;
   TH2D *fhNMu;
 
   Int_t fL0TriggerInputMLL;

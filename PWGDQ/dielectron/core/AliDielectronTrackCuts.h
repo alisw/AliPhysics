@@ -5,7 +5,7 @@
  * See cxx source for full Copyright notice                               */
 
 //#############################################################
-//#                                                           # 
+//#                                                           #
 //#         Class AliDielectronTrackCuts                     #
 //#                                                           #
 //#  Authors:                                                 #
@@ -39,19 +39,20 @@ public:
 
   void SetV0DaughterCut(AliPID::EParticleType type, Bool_t negate=kFALSE);
   void SetClusterRequirementITS(Detector det, ITSClusterRequirement req = kOff) { fCutClusterRequirementITS[det] = req; }
-  
+
   void SetRequireITSRefit(Bool_t req) { fRequireITSRefit=req; }
   void SetRequireTPCRefit(Bool_t req) { fRequireTPCRefit=req; }
 
   void SetTPCNclFRobust(Int_t cut) { fTPCNclRobustCut=cut; }
   void SetMinNCrossedRowsOverFindable(Double_t CrossedOverFindable) { fTPCcrossedOverFindable = CrossedOverFindable; }
-  
+
   Int_t GetV0DaughterCut() const { return fV0DaughterCut; }
   ITSClusterRequirement GetClusterRequirementITS(Detector det) const { return fCutClusterRequirementITS[det]; }
 
   void SetITSclusterCut(ITSclusterCutType type, UChar_t map) { fITSclusterBitMap=map; fITSclusterCutType=type; }
 
 
+  void SetGlobalTracksOnly(Bool_t setter = kTRUE) {fSelectGlobalTrack = setter;}
   void SetAODFilterBit(EFilterBit type) { fAODFilterBit = type; }
   void SetMaxWaivedITSNcls(Int_t max) { fWaiveITSNcls = max; }
 
@@ -60,7 +61,7 @@ public:
   //
   virtual Bool_t IsSelected(TObject* track);
   virtual Bool_t IsSelected(TList*   /* list */ ) {return kFALSE;}
-  
+
 
 private:
 
@@ -73,7 +74,9 @@ private:
 
   UChar_t fITSclusterBitMap;                           // map of requested ITS clusters
   ITSclusterCutType fITSclusterCutType;                // logic of requested ITS clusters
-  
+
+  Bool_t fSelectGlobalTrack;                           // Cut for AODs to select global tracks (should in principle be covered by the filter bits, but if one wants to check efficiencies and cut only on acceptance, this selection is needed!)
+
   Bool_t fRequireITSRefit;                             // require ITS refit
   Bool_t fRequireTPCRefit;                             // require TPC refit
 
@@ -81,7 +84,7 @@ private:
   Double_t fTPCcrossedOverFindable;			           // TPC Crossed Rows / Findable Clusters Cut, analogous to ESDTrackCuts
 
   Int_t fAODFilterBit;                                 // Filter bit for AOD analysis
-  Int_t fWaiveITSNcls;                                 // max number of waived ITS clusters after first hit 
+  Int_t fWaiveITSNcls;                                 // max number of waived ITS clusters after first hit
 
   Bool_t CheckITSClusterRequirement(ITSClusterRequirement req, Bool_t clusterL1, Bool_t clusterL2) const;
   Bool_t CheckITSClusterCut(UChar_t itsBits) const;

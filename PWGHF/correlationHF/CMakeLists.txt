@@ -49,6 +49,7 @@ set(SRCS
     AliDPlushCutOptim.cxx
     AliAnalysisTaskDStarCorrelations.cxx
     AliAnalysisTaskSED0Correlations.cxx
+    AliAnalysisTaskSED0CorrelationsVsMult.cxx
     AliAnalysisTaskSEDplusCorrelations.cxx
     AliAnalysisTaskSEmcCorr.cxx	
     AliAnalysisTaskSEHFCJqa.cxx

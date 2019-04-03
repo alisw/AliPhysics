@@ -8,13 +8,13 @@
 #include <TCanvas.h>
 #include <TCut.h>
 
-#include "AliVdMData.h"
+#include "AliVdMMetaData.h"
 
 #include "PlotBkgd.h"
 
 void PlotBkgdLumiRegion()
 {
-  AliVdMData d(AliVdMData::GetFileName("4690/4690.xml"));
+  AliVdMMetaData d(AliVdMMetaData::GetFileName("4690/4690.xml"));
 
   const TString vtxFileName = "4690/4690_vtx.root";
   const TCut    vtxCuts     = "ntrksTRKnc>=11 && chi2/ntrksTRKnc<2";
@@ -22,7 +22,7 @@ void PlotBkgdLumiRegion()
   const Int_t   bcidSel     = -1; // all BCIDs
   const TString pn          = "pdf/4690/LumiRegionBkgd_4690.pdf";
 
-  TFile *f = TFile::Open(AliVdMData::GetFileName(vtxFileName));
+  TFile *f = TFile::Open(AliVdMMetaData::GetFileName(vtxFileName));
   TTree *TE = (TTree*)gDirectory->Get("Vertex_Performance/cOutputVtxESD");
 
   TCanvas *c1 = new TCanvas;

@@ -14,10 +14,9 @@ include_directories(${ROOT_INCLUDE_DIRS}
 
 # Sources - alphabetical order
 set(SRCS
-  AliFemtoBaryoniaAnalysis.cxx
-  AliFemtoTrio.cxx
-  AliFemtoTrioCut.cxx
-  AliFemtoTrioMinvFctn.cxx
+  AliAnalysisTaskFemto.cxx
+  AliAnalysisTaskFemtoMJ.cxx
+  AliAnalysisTaskFemtoNu.cxx
   AliFemtoSimpleAnalysis.cxx
   AliFemtoEventAnalysis.cxx
   AliFemtoSpatialSeparationFunction.cxx
@@ -29,6 +28,7 @@ set(SRCS
   AliFemtoAnalysisReactionPlane.cxx
   AliFemtoBPLCMS3DCorrFctn.cxx
   AliFemtoBPLCMS3DCorrFctnKK.cxx
+  AliFemtoConfigObject.cxx
   AliFemtoCorrFctn3DLCMSSym.cxx
   AliFemtoQinvCorrFctn.cxx
   AliFemtoBasicEventCut.cxx
@@ -68,6 +68,7 @@ set(SRCS
   AliFemtoCutMonitorParticleYPt.cxx
   AliFemtoCutMonitorParticleVertPos.cxx
   AliFemtoCutMonitorParticlePID.cxx
+  AliFemtoCutMonitorParticlePIDBeta.cxx
   AliFemtoCutMonitorEventMult.cxx
   AliFemtoCutMonitorEventVertex.cxx
   AliFemtoKTPairCut.cxx
@@ -76,11 +77,10 @@ set(SRCS
   AliFemtoEventReaderAOD.cxx
   AliFemtoEventReaderAODChain.cxx
   AliFemtoEventReaderAODMultSelection.cxx
+  AliFemtoEventReaderAlt.cxx
   AliFemtoAODTrackCut.cxx
   AliFemtoCutMonitor.cxx
   AliFemtoCorrFctn.cxx
-  AliAnalysisTaskFemto.cxx
-  AliAnalysisTaskFemtoMJ.cxx
   AliTwoTrackRes.cxx
   AliFemtoMCTrackCut.cxx
   AliFemtoEventReaderKinematicsChain.cxx
@@ -94,6 +94,7 @@ set(SRCS
   AliFemtoXiSharedDaughterCut.cxx
   AliFemtoSphericityEventCut.cxx
   AliFemtoSpherocityEventCut.cxx
+  AliFemtoResultStorage.cxx
   AliFemtoCorrFctnDPhiStarDEta.cxx
   AliFemtoCorrFctnDPhiStarDEtaStar.cxx
   AliFemtoCorrFctnDPhiStarKStarMergedFraction.cxx
@@ -107,6 +108,13 @@ set(SRCS
   AliFemtoCutMonitorPairBetaT.cxx
   AliFemtoCutMonitorXi.cxx
   AliFemtoEventReaderAODKinematicsChain.cxx
+  AliFemtoMultCorrAnalysis.cxx
+  AliFemtoTrioAnalysis.cxx
+  AliFemtoTrio.cxx
+  AliFemtoTrioCut.cxx
+  AliFemtoTrioFctn.cxx
+  AliFemtoTrioMinvFctn.cxx
+  AliFemtoTrioDEtaDPhiFctn.cxx
   )
 
 # Headers from sources
@@ -160,7 +168,13 @@ set(HDRS ${HDRS}
   AliFemtoCorrFctnDPhiStarKStarAverageMergedPointsFraction.h
   AliFemtoBetaTPairCut.h
   AliFemtoCutMonitorPairBetaT.h
-  AliFemtoAvgSepCalculator.h
+  AliFemtoTrioAnalysis.h
+  AliFemtoTrioCut.h
+  AliFemtoTrio.h
+  AliFemtoTrioFctn.h
+  AliFemtoTrioMinvFctn.h
+  AliFemtoTrioDEtaDPhiFctn.h
+  AliFemtoTrioFctnCollection.h
   )
 
 set ( FSRCS

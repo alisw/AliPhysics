@@ -1,5 +1,12 @@
 
-AliAnalysisTaskElectronEfficiencyV2* AddTask_caklein_efficiency(TString name = "name", Bool_t isAOD, Bool_t getFromAlien = kFALSE, TString configFile="Config_caklein_efficiency_v2.C", Bool_t DoCentralityCorrection = kFALSE) {
+AliAnalysisTaskElectronEfficiencyV2* AddTask_caklein_efficiency(TString name = "name",
+                                                                Bool_t isAOD,
+                                                                Bool_t getFromAlien = kFALSE,
+                                                                TString configFile="Config_caklein_efficiency_v2.C",
+                                                                Bool_t DoCentralityCorrection = kFALSE,
+                                                                Bool_t cutlibPreloaded = kFALSE,
+                                                                Int_t wagonnr = 0,
+                                                                Int_t centrality = 4) {
 
   std::cout << "########################################\nADDTASK of ANALYSIS started\n########################################" << std::endl;
 
@@ -28,32 +35,32 @@ AliAnalysisTaskElectronEfficiencyV2* AddTask_caklein_efficiency(TString name = "
   TString configLMEECutLibPath(configBasePath+configLMEECutLib);
 
   // Loading config and cutlib
-  Bool_t err=kFALSE;
-  err |= gROOT->LoadMacro(configLMEECutLibPath.Data());
-  err |= gROOT->LoadMacro(configFilePath.Data());
-  if (err) { Error("AddTask_caklein_ElectronEfficiency_v2","Config(s) could not be loaded!"); return 0x0; }
+  // err |= gROOT->LoadMacro(configLMEECutLibPath.Data());
+  // err |= gROOT->LoadMacro(configFilePath.Data());
+  // if (err) { Error("AddTask_caklein_ElectronEfficiency_v2","Config(s) could not be loaded!"); return 0x0; }
 
-  // Download resolution file (configured in your config.C)
-  // if (GetResolutionFromAlien == kTRUE)
-  //   std::cout << "Trying to download resolution file" << std::endl;
-  //   gSystem->Exec(Form("alien_cp alien://%s .",resoFilenameFromAlien.c_str()));
-  //   std::cout << "Load resolution file from AliEn" << std::endl;
-  // }
-  //
-  // // Download centrality file (configured in your config.C)
-  // if (GetCentralityFromAlien == kTRUE && !gSystem->Exec(Form("alien_cp alien://%s .",CentralityFilenameFromAlien.c_str()))){
-  //   std::cout << "Load centrality file from AliEn" << std::endl;
-  // }
+  Bool_t err=kFALSE;
+  if (!cutlibPreloaded) { // should not be needed but seems to be...
+    std::cout << "Cutlib was not preloaded" << std::endl;
+    err |= gROOT->LoadMacro(configLMEECutLibPath.Data());
+    err |= gROOT->LoadMacro(configFilePath.Data());
+  }
+  else{
+    std::cout << "Cutlib was preloaded in a previous task" << std::endl;
+  }
+
 
   // #########################################################
   // #########################################################
   // Creating an instance of the task
-  AliAnalysisTaskElectronEfficiencyV2* task = new AliAnalysisTaskElectronEfficiencyV2(name.Data());
+  AliAnalysisTaskElectronEfficiencyV2* task = new AliAnalysisTaskElectronEfficiencyV2(Form("%s%d",name.Data(), wagonnr));
 
   // #########################################################
   // #########################################################
   // Possibility to set generator. If nothing set all generators are taken into account
-  task->SetGeneratorName(generatorName);
+  // task->SetGeneratorName(generatorName);
+  task->SetGeneratorMCSignalName(generatorNameForMCSignal);
+  task->SetGeneratorULSSignalName(generatorNameForULSSignal);
 
   // #########################################################
   // #########################################################
@@ -61,6 +68,11 @@ AliAnalysisTaskElectronEfficiencyV2* AddTask_caklein_efficiency(TString name = "
   task->SetEnablePhysicsSelection(kTRUE);
   task->SetTriggerMask(triggerNames);
   task->SetEventFilter(SetupEventCuts(isAOD)); //returns eventCuts from Config.
+
+  double centMin = 0.;
+  double centMax = 60.;
+  GetCentrality(centrality, centMin, centMax);
+  std::cout << "CentMin = " << centMin << "  CentMax = " << centMax << std::endl;
   task->SetCentrality(centMin, centMax);
 
   // #########################################################
@@ -100,6 +112,7 @@ AliAnalysisTaskElectronEfficiencyV2* AddTask_caklein_efficiency(TString name = "
   // Resolution File, If resoFilename = "" no correction is applied
   task->SetResolutionFile(resoFilename);
   task->SetResolutionFileFromAlien(resoFilenameFromAlien);
+  task->SetSmearGenerated(SetGeneratedSmearingHistos);
   task->SetResolutionDeltaPtBinsLinear   (DeltaMomMin, DeltaMomMax, NbinsDeltaMom);
   task->SetResolutionRelPtBinsLinear   (RelMomMin, RelMomMax, NbinsRelMom);
   task->SetResolutionEtaBinsLinear  (DeltaEtaMin, DeltaEtaMax, NbinsDeltaEta);
@@ -113,6 +126,11 @@ AliAnalysisTaskElectronEfficiencyV2* AddTask_caklein_efficiency(TString name = "
 
   // #########################################################
   // #########################################################
+  // Set MCSignal and Cutsetting to fill the support histograms
+  task->SetSupportHistoMCSignalAndCutsetting(nMCSignal, nCutsetting);
+
+  // #########################################################
+  // #########################################################
   // Set Cocktail weighting
   task->SetDoCocktailWeighting(DoCocktailWeighting);
   task->SetCocktailWeighting(CocktailFilename);
@@ -123,6 +141,7 @@ AliAnalysisTaskElectronEfficiencyV2* AddTask_caklein_efficiency(TString name = "
   // Pairing related config
   task->SetDoPairing(DoPairing);
   task->SetULSandLS(DoULSLS);
+  task->SetDeactivateLS(DeactivateLS);
 
   // #########################################################
   // #########################################################
@@ -130,6 +149,13 @@ AliAnalysisTaskElectronEfficiencyV2* AddTask_caklein_efficiency(TString name = "
   // e.g. secondaries and primaries. or primaries from charm and resonances
   AddSingleLegMCSignal(task);
   AddPairMCSignal(task);
+  std::vector<bool> DielectronsPairNotFromSameMother = AddSingleLegMCSignal(task);
+  task->AddMCSignalsWhereDielectronPairNotFromSameMother(DielectronsPairNotFromSameMother);
+
+
+  // #########################################################
+  // #########################################################
+  // Set mean and width correction for ITS, TPC and TOF
 
 
   // #########################################################
@@ -142,11 +168,12 @@ AliAnalysisTaskElectronEfficiencyV2* AddTask_caklein_efficiency(TString name = "
     TString cutDefinition(arrNames->At(iCut)->GetName());
     AliAnalysisFilter* filter = SetupTrackCutsAndSettings(cutDefinition, isAOD);
     task->AddTrackCuts(filter);
+    DoAdditionalWork(task);
   }
 
 
   mgr->AddTask(task);
   mgr->ConnectInput(task, 0, mgr->GetCommonInputContainer());
-  mgr->ConnectOutput(task, 1, mgr->CreateContainer("efficiency", TList::Class(), AliAnalysisManager::kOutputContainer, fileName.Data()));
+  mgr->ConnectOutput(task, 1, mgr->CreateContainer(Form("efficiency%d", wagonnr), TList::Class(), AliAnalysisManager::kOutputContainer, fileName.Data()));
   return task;
 }

@@ -62,12 +62,11 @@ set(SRCS
     AliAnalysisTaskNeutralMesons.cxx
     AliAnalysisTaskGammaHadron.cxx
     AliAnalysisTaskEMCALPi0GammaCorr.cxx
-
     AliEMCalpi0AddedSignalsTask.cxx
     AliHijingClusterMCStatStruct.cxx
     AlietaClusterMCStatStruct.cxx
     Alipi0ClusterMCStatStruct.cxx
-
+    AliCLTask.cxx
    )
 
 # Headers from sources

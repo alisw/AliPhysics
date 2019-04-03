@@ -13,6 +13,7 @@
 #include "AliRsnEvent.h"
 #include "AliRsnDaughter.h"
 #include "AliRsnMiniParticle.h"
+#include "AliRsnMiniPair.h"
 
 class THnSparse;
 class TList;
@@ -74,6 +75,7 @@ public:
    Double_t        GetMass(Int_t i)     const {return AliRsnDaughter::SpeciesMass(GetDaughter(i));}
    Long_t          GetPDG(Int_t i)      const {return AliRsnDaughter::SpeciesPDG(GetDaughterTrue(i));}
    Int_t           GetCharge(Int_t i)   const {if (i <= 0) return fCharge[0]; else return fCharge[1];}
+   Bool_t          GetUseStoredMass(Int_t i) const {if (i <= 0) return fUseStoredMass[0]; else return fUseStoredMass[1];}
    Long_t          GetMotherPDG()       const {return fMotherPDG;}
    Double_t        GetMotherMass()      const {return fMotherMass;}
    Bool_t          GetFillHistogramOnlyInRange() { return fCheckHistRange; }
@@ -85,6 +87,7 @@ public:
    void            SetDaughter(Int_t i, RSNPID value);
    void            SetDaughterTrue(Int_t i, RSNPID value);
    void            SetCharge(Int_t i, Char_t  value)  {if (i <= 0) fCharge[0] = value; else fCharge[1] = value;}
+   void            SetUseStoredMass(Int_t i,Bool_t value=kTRUE) { if(i <= 0) fUseStoredMass[0] = value; else fUseStoredMass[1] = value;}
    void            SetMotherPDG(Long_t pdg)           {fMotherPDG = pdg;}
    void            SetMotherMass(Double_t mass)       {fMotherMass = mass;}
    void            SetPairCuts(AliRsnCutSet *set)     {fPairCuts = set;}
@@ -121,6 +124,7 @@ private:
    RSNPID           fDaughter[2];      //  species of daughters, used to assign mass
    RSNPID           fDaughterTrue[2];  //  species of daughters, used to select PDG code in simulations
    Char_t           fCharge[2];        //  required track charge
+   Bool_t           fUseStoredMass[2]; //  use the mass stored in the mini particle, not the PDG mass
    Long_t           fMotherPDG;        //  PDG code of resonance
    Double_t         fMotherMass;       //  nominal resonance mass
    AliRsnCutSet    *fPairCuts;         //  cuts on the pair
@@ -141,7 +145,7 @@ private:
    Bool_t 	    fRejectIfNoQuark;  // flag to remove events not generated with PYTHIA
    Bool_t           fCheckHistRange;   //  check if values is in histogram range
 
-   ClassDef(AliRsnMiniOutput, 6)  // AliRsnMiniOutput class
+   ClassDef(AliRsnMiniOutput, 7)  // AliRsnMiniOutput class
 };
 
 #endif

@@ -17,18 +17,19 @@
 
 /**
  * @class PWG::Tools::AliYAMLConfiguration
- * @brief YAML configuration class for AliPhysics.
+ * @brief %YAML configuration class for AliPhysics.
  *
- * A class to handle generic reading and writing to YAML files. This can be used to configure tasks, coordinate trains,
+ * A class to handle generic reading and writing to %YAML files. This can be used to configure tasks, coordinate trains,
  * or many other tasks which require configuration. While yaml-cpp can be used directly, this class handles many details
  * such as accessing files on AliEn, as well as generally simplifying the user experience. The class can also handle
- * multiple configuration files, first looking in the first file, and then if the value is not found, looking in
- * subsequent configurations until the value is found. Values that are used in multiple places can be set together
- * using "Shared Paramaters" (see the section below) or using YAML anchors.
+ * multiple configuration files, first looking in the last added file, and then if the value is not found, looking in
+ * previous configurations until the value is found. Values are accessed in this order so the values in the initial file
+ * can be overridden by values defined in subsequently added files. Values that are used in multiple places can be set
+ * together using "Shared Paramaters" (see the section below) or using %YAML anchors.
  *
  * Usage information:
  *
- * Consider the following example YAML configuration.
+ * Consider the following example %YAML configuration.
  *
  * ~~~
  * hello:
@@ -41,69 +42,87 @@
  *   - entry3
  * ~~~
  *
- * To use the class, at least one YAML configuration file must be added to the class. To do so, use:
+ * To use the class, first add the config class to your task (be certain to stream it to store the
+ * configuration with your class!):
  *
  * ~~~{.cxx}
- * PWG::Tools::AliYAMLConfiguration config;
- * config.AddConfiguration(filename, name);
- * // Will only be checked if a requested value is not in the first configuration.
- * config.AddConfiguration(filename2, name2);
- * // Can also just start with an empty configuration if desired. Perhaps for writing.
- * config.AddEmptyConfiguration(name3);
+ * PWG::Tools::AliYAMLConfiguration fYAMLConfig; ///< YAML configuration.
+ *
+ * /// Retrieve the YAML configurations for direct access for printing, etc.
+ * PWG::Tools::AliYAMLConfiguration & GetYAMLConfiguration() { return fYAMLConfig; }
+ * ~~~
+ *
+ * Then, to use it in your task:
+ *
+ * ~~~{.cxx}
+ * // Will only be checked if a requested value is not in the second configuration.
+ * fYAMLConfig.AddConfiguration(filename, name);
+ * // Will be checked first. This is so it can override values in the first added configuration.
+ * fYAMLConfig.AddConfiguration(filename2, name2);
  *
  * // Once all configuration is done and the YAML nodes will not be modified any more
  * // (for example, at the end of an AddTask), call Initialize() to lock in the configurations
  * // for streaming to the grid.
- * config.Initialize();
+ * fYAMLConfig.Initialize();
  * ~~~
  *
- * YAML objects cannot be streamed, so after the configuration class is streamed, it must be re-initialized. This can
- * be done in any function after streaming has been completed, such as `UserCreateOutputObjects()`. It only needs to be
- * performed once.
+ * %YAML objects cannot be streamed due to CINT limitations, so after the configuration class is
+ * streamed, it must be re-initialized. This can be done in any function after streaming has been
+ * completed, such as `UserCreateOutputObjects()`. It only needs to be performed once.
  *
  * ~~~{.cxx}
  * fYAMLConfig.Reinitialize();
  * ~~~
  *
- * To access a value, use the GetProperty(...) or WriteProperty(...) functions. To use them, you must define an
- * object of the desired type that you would like to read or write, and then describe the path to the property.
- * The path consists of the names of YAML nodes, separated by a user specified delimiter (":" is the default).
- * For the example YAML above, to read "exampleValue", the user would define an int to be set to the read value
- * and the path would be "hello:world:exampleValue". As a convenience, there is a helper function which simplifies
- * specifying the path. It will instead take a std::vector of strings to specify the path, thereby also setting
- * the proper delimiter. So the path would be `{"hello", "world", "exampleValue"}`. Note that you may need to
- * explicitly specify such an initialization as `std::vector<std::string>` if you don't define it as a
- * variable.
+ * To access or write a value, use the GetProperty(...) or WriteProperty(...) functions. To use
+ * them, you must define an object of the desired type that you would like to read or write, and
+ * then describe the path to the property. The path consists of the names of YAML nodes, separated
+ * by a user specified delimiter (":" is the default).  For the example YAML above, to read
+ * "exampleValue", the user would define an int to be set to the read value and the path would
+ * be "hello:world:exampleValue". As a convenience, there is a helper function which simplifies
+ * specifying the path. It will instead take a std::vector of strings to specify the path,
+ * thereby also setting the proper delimiter. So the path would be
+ * `{"hello", "world", "exampleValue"}`. Note that you may need to explicitly specify such an
+ * initialization as `std::vector<std::string>` if you none of the arguments are already defined
+ * as variables.
  *
  * Explicitly, this would look like:
  *
  * ~~~{.cxx}
  * int tempInt = 0;
  * // True specifies that the value must exist in the config
- * config.GetProperty({"hello", "world", "examplePath"}, tempInt, true);
+ * fYAMLConfig.GetProperty({"hello", "world", "examplePath"}, tempInt, true);
  * std::cout << tempInt << "\n"; // Returns "10"
  * // Alternatively, you could specify the path explicitly (although not recommended)
- * config.GetProperty("hello:world:exampleValue", tempInt);
+ * fYAMLConfig.GetProperty("hello:world:exampleValue", tempInt);
  * // The type specifies what is returned
  * double tempDouble = 0.;
- * config.GetProperty("example", tempDouble);
+ * fYAMLConfig.GetProperty("example", tempDouble);
  * std::vector <std::string> importantValues;
- * config.GetProperty("importantValues", importantValues);
+ * fYAMLConfig.GetProperty("importantValues", importantValues);
  * // The vector "importantValues" now contains three strings
  * ~~~
  *
- * That's basically all there is to using it. For more information, look at the documentation of the various
- * GetProperty(...) and WriteProperty(...) functions. The interfaces to both functions are fairly similar.
+ * If you are accessing a %YAML file on AliEn (which is supported by default), the file will be
+ * copied to the directory where the task is run. Conveniently, this means that the configuration
+ * file is also easily accessible in the LEGO test train directory.
+ *
+ * That's basically all there is to using it. For more information, look at the documentation
+ * of the various GetProperty(...) and WriteProperty(...) functions. The interfaces to both
+ * functions are fairly similar.
  *
  * Notes on using shared parameters:
  *
- * sharedParameters are inherently limited. It can only retrieve values where the requested type is arithmetic, string,
- * or bool. The retrieved shared parameters value can only be of those same types. Note that the shared parameters
- * correspond to each configuration file. ie. If "sharedParameters:test" is requested in the first configuration file,
- * then it will only look for the sharedParameters value in that configuration. Thus, if a sharedParameter is requested
- * in a later configuration file, the earlier configuration shared parameter values will not be considered.
+ * sharedParameters are inherently limited. It can only retrieve values where the requested
+ * type is arithmetic, string, or bool. The retrieved shared parameters value can only be of
+ * those same types. Note that the shared parameters correspond to each configuration file.
+ * ie. If `sharedParameters:test` is requested in the first configuration file, then it will
+ * only look for the sharedParameters value in that configuration. Thus, if a sharedParameter
+ * is requested in a later configuration file, the earlier configuration shared parameter
+ * values will not be considered.
  *
- * Given the limitations, YAML anchors are recommended for more advanced usage as they can be much more sophisticated.
+ * Given the limitations, YAML anchors are recommended for more advanced usage as they can
+ * be much more sophisticated.
  *
  * @author Raymond Ehlers <raymond.ehlers@yale.edu>, Yale University
  * @date Sept 19, 2017
@@ -131,6 +150,34 @@ template<>
   };
 }
 #endif
+
+/**
+ * Allow reverse range based iteration. We use this to iterate over the available
+ * configurations in reverse to find the requested value. We iterate in reverse
+ * because it allows configurations that are added later to override values in
+ * configurations that are already added. Otherwise, overriding values could only
+ * be performed by rearranging configuration files (which was not possible in the
+ * EMCal Correction Framework, for exmaple).
+ *
+ * From: https://stackoverflow.com/a/21510202
+ */
+template <typename It>
+class Range
+{
+  It b, e;
+
+ public:
+  Range(It b, It e) : b(b), e(e) {}
+  It begin() const { return b; }
+  It end() const { return e; }
+};
+
+template <typename ORange, typename OIt = decltype(std::begin(std::declval<ORange>())),
+     typename It = std::reverse_iterator<OIt>>
+Range<It> reverse(ORange&& originalRange)
+{
+  return Range<It>(It(std::end(originalRange)), It(std::begin(originalRange)));
+}
 
 // operator<< has to be forward declared carefully to stay in the global namespace so that it works with CINT.
 // For generally how to keep the operator in the global namespace, See: https://stackoverflow.com/a/38801633
@@ -442,7 +489,8 @@ bool AliYAMLConfiguration::GetProperty(std::string propertyName, T & property, c
   }
 
   bool setProperty = false;
-  for (auto configPair : fConfigurations)
+  // Search in reverse so it is possible to override configuration values.
+  for (auto configPair : reverse(fConfigurations))
   {
     if (setProperty == true) {
       AliDebugGeneralStream("AliYAMLConfiguration", 2) << "Property \"" << propertyName << "\" found!\n";

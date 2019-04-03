@@ -34,6 +34,9 @@ ClassImp(AliJetContainer);
  */
 AliJetContainer::AliJetContainer():
   AliParticleContainer(),
+  fJetType(kUndefinedJetType),
+  fJetAlgorithm(undefined_jet_algorithm),
+  fRecombinationScheme(undefined_scheme),
   fJetAcceptanceType(0),
   fJetRadius(0),
   fRhoName(),
@@ -75,6 +78,9 @@ AliJetContainer::AliJetContainer():
  */
 AliJetContainer::AliJetContainer(const char *name):
   AliParticleContainer(name),
+  fJetType(kUndefinedJetType),
+  fJetAlgorithm(undefined_jet_algorithm),
+  fRecombinationScheme(undefined_scheme),
   fJetAcceptanceType(0),
   fJetRadius(0),
   fRhoName(),
@@ -127,6 +133,9 @@ AliJetContainer::AliJetContainer(const char *name):
 AliJetContainer::AliJetContainer(EJetType_t jetType, EJetAlgo_t jetAlgo, ERecoScheme_t recoScheme, Double_t radius,
     AliParticleContainer* partCont, AliClusterContainer* clusCont, TString tag):
   AliParticleContainer(GenerateJetName(jetType, jetAlgo, recoScheme, radius, partCont, clusCont, tag)),
+  fJetType(jetType),
+  fJetAlgorithm(jetAlgo),
+  fRecombinationScheme(recoScheme),
   fJetAcceptanceType(0),
   fJetRadius(radius),
   fRhoName(),
@@ -632,6 +641,12 @@ Double_t AliJetContainer::GetLeadingHadronPt(const AliEmcalJet *jet) const
 /**
  * Retrieve the 4-momentum of leading hadron of the jet.
  * The mass hypothesis is always set to the pion mass (0.139 GeV/c^2).
+ * NOTE: The cluster energy used to calculate the momentum will always be
+ *       the _raw_ energy because the cluster container is not used. There are a
+ *       number of possible alternative approaches to use the user selected energy
+ *       (such as the hadronic corrected energy). One possible alternative which
+ *       uses the cluster energy selected during jet finding is to access the
+ *       leading AliEmcalClusterJetConstituent.
  * @param[out] mom Reference to a TLorentzVector object where the result is returned
  * @param[in] jet Pointer to a AliEmcalJet object
  */
@@ -880,6 +895,9 @@ TString AliJetContainer::GenerateJetName(EJetType_t jetType, EJetAlgo_t jetAlgo,
     break;
   case kNeutralJet:
     typeString = "Neutral";
+    break;
+  case kUndefinedJetType:
+    typeString = "Undefined";
     break;
   }
 

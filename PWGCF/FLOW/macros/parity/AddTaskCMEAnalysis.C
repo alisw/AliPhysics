@@ -16,7 +16,8 @@ void AddTaskCMEAnalysis(Bool_t isPbPb = kTRUE,
 			Bool_t gRunMHLS = kTRUE,
 			Bool_t gRunMHUS = kTRUE,
 			Bool_t doQA = kFALSE,
-			Bool_t doHigherHarmonic = kFALSE) {
+			Bool_t doHigherHarmonic = kFALSE,
+			Int_t vnHarmonic=2, TString sLabel = "FB96") {
   //Macro to be used for studies of CME for charged particles
   //The macro uses as an input a configuration macro that
   //creates the AliFlowEventCuts and AliFlowTrackCuts objects
@@ -122,7 +123,26 @@ void AddTaskCMEAnalysis(Bool_t isPbPb = kTRUE,
     cutsPOI_PNwQA[iCentralityBin] = createFlowPOICutObject(gCentrality[iCentralityBin],gCentrality[iCentralityBin+1],qVector,gEtaGap,isVZERO,isPbPb,gAODfilterBit,whichData,gDCAvtxXY,gDCAvtxZ,0,doQA);
 
         
-    //if(isPbPb) {
+    //change container names, Add FB in extension. So that wagons with different FB can run in same train. 
+    suffixNamePP[iCentralityBin] += "Centrality";
+    suffixNamePP[iCentralityBin] += gCentrality[iCentralityBin];
+    suffixNamePP[iCentralityBin] += "To";
+    suffixNamePP[iCentralityBin] += gCentrality[iCentralityBin+1];
+    suffixNamePP[iCentralityBin] += sLabel;
+  
+    suffixNameNN[iCentralityBin] += "Centrality";
+    suffixNameNN[iCentralityBin] += gCentrality[iCentralityBin];
+    suffixNameNN[iCentralityBin] += "To";
+    suffixNameNN[iCentralityBin] += gCentrality[iCentralityBin+1];
+    suffixNameNN[iCentralityBin] += sLabel;
+
+    suffixNamePN[iCentralityBin] += "Centrality";
+    suffixNamePN[iCentralityBin] += gCentrality[iCentralityBin];
+    suffixNamePN[iCentralityBin] += "To";
+    suffixNamePN[iCentralityBin] += gCentrality[iCentralityBin+1];
+    suffixNamePN[iCentralityBin] += sLabel;
+
+    /*
       suffixNamePP[iCentralityBin] += "Centrality";
       suffixNamePP[iCentralityBin] += gCentrality[iCentralityBin];
       suffixNamePP[iCentralityBin] += "To";
@@ -137,7 +157,7 @@ void AddTaskCMEAnalysis(Bool_t isPbPb = kTRUE,
       suffixNamePN[iCentralityBin] += gCentrality[iCentralityBin];
       suffixNamePN[iCentralityBin] += "To";
       suffixNamePN[iCentralityBin] += gCentrality[iCentralityBin+1];
-      //}
+    */
 
     /*if(gChargePOI == 1) 
 	suffixName[iCentralityBin] += "PlusPlus";
@@ -291,9 +311,9 @@ void AddTaskCMEAnalysis(Bool_t isPbPb = kTRUE,
   
   for(Int_t iCentralityBin = 0; iCentralityBin < nCentralities - 1; iCentralityBin++) {
 
+    //======================== Initiate v2 Tasks ==========================
 
     //------- PP --------------
-
     AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
     if (!mgr) {
       Error("AddTaskFlowEvent", "No analysis manager to connect to.");
@@ -359,26 +379,25 @@ void AddTaskCMEAnalysis(Bool_t isPbPb = kTRUE,
   
     //======================================================================//
     if(gRunSP) {
-      if(!doHigherHarmonic){
-	TString outputSPv2_PP = fileName;
-	outputSPv2_PP += ":outputSPv2analysis";
-	outputSPv2_PP += "PlusPlus";
+      TString outputSPv2_PP = fileName;
+      outputSPv2_PP += ":outputSPv2analysis";
+      outputSPv2_PP += "PlusPlus";
 
-	taskSPv2_PP[iCentralityBin] = new AliAnalysisTaskScalarProduct(Form("TaskScalarProduct_%s",outputSlotPP_NameSPv2[iCentralityBin].Data()),kFALSE);
-	taskSPv2_PP[iCentralityBin]->SetHarmonic(2);
-	taskSPv2_PP[iCentralityBin]->SelectCollisionCandidates(triggerSelectionString);
-	taskSPv2_PP[iCentralityBin]->SetRelDiffMsub(1.0);
-	taskSPv2_PP[iCentralityBin]->SetTotalQvector(qVector);
-	taskSPv2_PP[iCentralityBin]->SetApplyCorrectionForNUA(kTRUE);
+      taskSPv2_PP[iCentralityBin] = new AliAnalysisTaskScalarProduct(Form("TaskScalarProduct_%s",outputSlotPP_NameSPv2[iCentralityBin].Data()),kFALSE);
+      taskSPv2_PP[iCentralityBin]->SetHarmonic(vnHarmonic);
+      taskSPv2_PP[iCentralityBin]->SelectCollisionCandidates(triggerSelectionString);
+      taskSPv2_PP[iCentralityBin]->SetRelDiffMsub(1.0);
+      taskSPv2_PP[iCentralityBin]->SetTotalQvector(qVector);
+      taskSPv2_PP[iCentralityBin]->SetApplyCorrectionForNUA(kTRUE);
       
-	coutputSPv2_PP[iCentralityBin] = mgr->CreateContainer(Form("%s",outputSlotPP_NameSPv2[iCentralityBin].Data()),TList::Class(),AliAnalysisManager::kOutputContainer,outputSPv2_PP);
-	mgr->AddTask(taskSPv2_PP[iCentralityBin]);
-	mgr->ConnectInput(taskSPv2_PP[iCentralityBin],0,flowEvent_PP[iCentralityBin]);
-	mgr->ConnectInput(taskSPv2_PP[iCentralityBin],0,coutputFE_PP[iCentralityBin]);
-	mgr->ConnectOutput(taskSPv2_PP[iCentralityBin],1,coutputSPv2_PP[iCentralityBin]);
-      }
-   
-      else if(doHigherHarmonic){
+      coutputSPv2_PP[iCentralityBin] = mgr->CreateContainer(Form("%s",outputSlotPP_NameSPv2[iCentralityBin].Data()),TList::Class(),AliAnalysisManager::kOutputContainer,outputSPv2_PP);
+      mgr->AddTask(taskSPv2_PP[iCentralityBin]);
+      mgr->ConnectInput(taskSPv2_PP[iCentralityBin],0,flowEvent_PP[iCentralityBin]);
+      mgr->ConnectInput(taskSPv2_PP[iCentralityBin],0,coutputFE_PP[iCentralityBin]);
+      mgr->ConnectOutput(taskSPv2_PP[iCentralityBin],1,coutputSPv2_PP[iCentralityBin]);
+      
+	/*
+        else if(doHigherHarmonic){
 	TString outputSPv4_PP = fileName;
 	outputSPv4_PP += ":outputSPv4analysis";
 	outputSPv4_PP += "PlusPlus";  
@@ -395,7 +414,7 @@ void AddTaskCMEAnalysis(Bool_t isPbPb = kTRUE,
 	mgr->ConnectInput(taskSPv4_PP[iCentralityBin],0,flowEvent_PP[iCentralityBin]);
 	mgr->ConnectInput(taskSPv4_PP[iCentralityBin],0,coutputFE_PP[iCentralityBin]);
 	mgr->ConnectOutput(taskSPv4_PP[iCentralityBin],1,coutputSPv4_PP[iCentralityBin]);
-      }
+      }*/
     }
     //======================================================================//
    
@@ -403,32 +422,32 @@ void AddTaskCMEAnalysis(Bool_t isPbPb = kTRUE,
     
     //======================================================================//
     if(gRunQC) {
-      if(!doHigherHarmonic){
-	TString outputQCv2_PP = fileName;
-	outputQCv2_PP += ":outputQCv2analysis";
-	outputQCv2_PP += "PlusPlus";
+
+      TString outputQCv2_PP = fileName;
+      outputQCv2_PP += ":outputQCv2analysis";
+      outputQCv2_PP += "PlusPlus";
       
-	taskQCv2_PP[iCentralityBin] = new AliAnalysisTaskQCumulants(Form("TaskQCumulant_%s",outputSlotPP_NameQCv2[iCentralityBin].Data()),kFALSE);
-	taskQCv2_PP[iCentralityBin]->SetHarmonic(2);
-	taskQCv2_PP[iCentralityBin]->SelectCollisionCandidates(triggerSelectionString);
-	taskQCv2_PP[iCentralityBin]->SetUsePhiWeights(kFALSE); 
-	taskQCv2_PP[iCentralityBin]->SetUsePtWeights(kFALSE);
-	taskQCv2_PP[iCentralityBin]->SetUseEtaWeights(kFALSE); 
-	taskQCv2_PP[iCentralityBin]->SetCalculateCumulantsVsM(kFALSE);
-	taskQCv2_PP[iCentralityBin]->SetnBinsMult(10000);
-	taskQCv2_PP[iCentralityBin]->SetMinMult(0.);
-	taskQCv2_PP[iCentralityBin]->SetMaxMult(10000.);
-	taskQCv2_PP[iCentralityBin]->SetApplyCorrectionForNUA(kTRUE);
-	taskQCv2_PP[iCentralityBin]->SetFillMultipleControlHistograms(kFALSE);     
+      taskQCv2_PP[iCentralityBin] = new AliAnalysisTaskQCumulants(Form("TaskQCumulant_%s",outputSlotPP_NameQCv2[iCentralityBin].Data()),kFALSE);
+      taskQCv2_PP[iCentralityBin]->SetHarmonic(vnHarmonic);
+      taskQCv2_PP[iCentralityBin]->SelectCollisionCandidates(triggerSelectionString);
+      taskQCv2_PP[iCentralityBin]->SetUsePhiWeights(kFALSE); 
+      taskQCv2_PP[iCentralityBin]->SetUsePtWeights(kFALSE);
+      taskQCv2_PP[iCentralityBin]->SetUseEtaWeights(kFALSE); 
+      taskQCv2_PP[iCentralityBin]->SetCalculateCumulantsVsM(kFALSE);
+      taskQCv2_PP[iCentralityBin]->SetnBinsMult(10000);
+      taskQCv2_PP[iCentralityBin]->SetMinMult(0.);
+      taskQCv2_PP[iCentralityBin]->SetMaxMult(10000.);
+      taskQCv2_PP[iCentralityBin]->SetApplyCorrectionForNUA(kTRUE);
+      taskQCv2_PP[iCentralityBin]->SetFillMultipleControlHistograms(kFALSE);     
       
-	coutputQCv2_PP[iCentralityBin] = mgr->CreateContainer(Form("%s",outputSlotPP_NameQCv2[iCentralityBin].Data()),TList::Class(),AliAnalysisManager::kOutputContainer,outputQCv2_PP);
-	mgr->AddTask(taskQCv2_PP[iCentralityBin]);
-	mgr->ConnectInput(taskQCv2_PP[iCentralityBin],0,flowEvent_PP[iCentralityBin]);
-	mgr->ConnectInput(taskQCv2_PP[iCentralityBin],0,coutputFE_PP[iCentralityBin]);
-	mgr->ConnectOutput(taskQCv2_PP[iCentralityBin],1,coutputQCv2_PP[iCentralityBin]);
-      }
+      coutputQCv2_PP[iCentralityBin] = mgr->CreateContainer(Form("%s",outputSlotPP_NameQCv2[iCentralityBin].Data()),TList::Class(),AliAnalysisManager::kOutputContainer,outputQCv2_PP);
+      mgr->AddTask(taskQCv2_PP[iCentralityBin]);
+      mgr->ConnectInput(taskQCv2_PP[iCentralityBin],0,flowEvent_PP[iCentralityBin]);
+      mgr->ConnectInput(taskQCv2_PP[iCentralityBin],0,coutputFE_PP[iCentralityBin]);
+      mgr->ConnectOutput(taskQCv2_PP[iCentralityBin],1,coutputQCv2_PP[iCentralityBin]);
+      
  
-      else if(doHigherHarmonic){
+      /*else if(doHigherHarmonic){
 	TString outputQCv4_PP = fileName;
 	outputQCv4_PP += ":outputQCv4analysis";
 	outputQCv4_PP += "PlusPlus";
@@ -451,7 +470,7 @@ void AddTaskCMEAnalysis(Bool_t isPbPb = kTRUE,
 	mgr->ConnectInput(taskQCv4_PP[iCentralityBin],0,flowEvent_PP[iCentralityBin]);
 	mgr->ConnectInput(taskQCv4_PP[iCentralityBin],0,coutputFE_PP[iCentralityBin]);
 	mgr->ConnectOutput(taskQCv4_PP[iCentralityBin],1,coutputQCv4_PP[iCentralityBin]);
-      }
+	}*/
     }
 
 
@@ -521,25 +540,25 @@ void AddTaskCMEAnalysis(Bool_t isPbPb = kTRUE,
       
     //======================================================================//
     if(gRunSP) {
-      if(!doHigherHarmonic){
-	TString outputSPv2_NN = fileName;
-	outputSPv2_NN += ":outputSPv2analysis";
-	outputSPv2_NN += "MinusMinus";
 
-	taskSPv2_NN[iCentralityBin] = new AliAnalysisTaskScalarProduct(Form("TaskScalarProduct_%s",outputSlotNN_NameSPv2[iCentralityBin].Data()),kFALSE);
-	taskSPv2_NN[iCentralityBin]->SetHarmonic(2);
-	taskSPv2_NN[iCentralityBin]->SelectCollisionCandidates(triggerSelectionString);
-	taskSPv2_NN[iCentralityBin]->SetRelDiffMsub(1.0);
-	taskSPv2_NN[iCentralityBin]->SetTotalQvector(qVector);
-	taskSPv2_NN[iCentralityBin]->SetApplyCorrectionForNUA(kTRUE);
+      TString outputSPv2_NN = fileName;
+      outputSPv2_NN += ":outputSPv2analysis";
+      outputSPv2_NN += "MinusMinus";
+
+      taskSPv2_NN[iCentralityBin] = new AliAnalysisTaskScalarProduct(Form("TaskScalarProduct_%s",outputSlotNN_NameSPv2[iCentralityBin].Data()),kFALSE);
+      taskSPv2_NN[iCentralityBin]->SetHarmonic(vnHarmonic);
+      taskSPv2_NN[iCentralityBin]->SelectCollisionCandidates(triggerSelectionString);
+      taskSPv2_NN[iCentralityBin]->SetRelDiffMsub(1.0);
+      taskSPv2_NN[iCentralityBin]->SetTotalQvector(qVector);
+      taskSPv2_NN[iCentralityBin]->SetApplyCorrectionForNUA(kTRUE);
       
-	coutputSPv2_NN[iCentralityBin] = mgr->CreateContainer(Form("%s",outputSlotNN_NameSPv2[iCentralityBin].Data()),TList::Class(),AliAnalysisManager::kOutputContainer,outputSPv2_NN);
-	mgr->AddTask(taskSPv2_NN[iCentralityBin]);
-	mgr->ConnectInput(taskSPv2_NN[iCentralityBin],0,flowEvent_NN[iCentralityBin]);
-	mgr->ConnectInput(taskSPv2_NN[iCentralityBin],0,coutputFE_NN[iCentralityBin]);
-	mgr->ConnectOutput(taskSPv2_NN[iCentralityBin],1,coutputSPv2_NN[iCentralityBin]);
-      }
-      else if(doHigherHarmonic){
+      coutputSPv2_NN[iCentralityBin] = mgr->CreateContainer(Form("%s",outputSlotNN_NameSPv2[iCentralityBin].Data()),TList::Class(),AliAnalysisManager::kOutputContainer,outputSPv2_NN);
+      mgr->AddTask(taskSPv2_NN[iCentralityBin]);
+      mgr->ConnectInput(taskSPv2_NN[iCentralityBin],0,flowEvent_NN[iCentralityBin]);
+      mgr->ConnectInput(taskSPv2_NN[iCentralityBin],0,coutputFE_NN[iCentralityBin]);
+      mgr->ConnectOutput(taskSPv2_NN[iCentralityBin],1,coutputSPv2_NN[iCentralityBin]);
+      
+      /*else if(doHigherHarmonic){
 	TString outputSPv4_NN = fileName;
 	outputSPv4_NN += ":outputSPv4analysis";
 	outputSPv4_NN += "MinusMinus";
@@ -556,37 +575,37 @@ void AddTaskCMEAnalysis(Bool_t isPbPb = kTRUE,
 	mgr->ConnectInput(taskSPv4_NN[iCentralityBin],0,flowEvent_NN[iCentralityBin]);
 	mgr->ConnectInput(taskSPv4_NN[iCentralityBin],0,coutputFE_NN[iCentralityBin]);
 	mgr->ConnectOutput(taskSPv4_NN[iCentralityBin],1,coutputSPv4_NN[iCentralityBin]);
-      }
+	}*/
     }
     //======================================================================//
 
     //======================================================================//
     if(gRunQC) {
-      if(!doHigherHarmonic){
-	TString outputQCv2_NN = fileName;
-	outputQCv2_NN += ":outputQCv2analysis";
-	outputQCv2_NN += "MinusMinus";
+
+      TString outputQCv2_NN = fileName;
+      outputQCv2_NN += ":outputQCv2analysis";
+      outputQCv2_NN += "MinusMinus";
       
-	taskQCv2_NN[iCentralityBin] = new AliAnalysisTaskQCumulants(Form("TaskQCumulant_%s",outputSlotNN_NameQCv2[iCentralityBin].Data()),kFALSE);
-	taskQCv2_NN[iCentralityBin]->SetHarmonic(2);
-	taskQCv2_NN[iCentralityBin]->SelectCollisionCandidates(triggerSelectionString);
-	taskQCv2_NN[iCentralityBin]->SetUsePhiWeights(kFALSE); 
-	taskQCv2_NN[iCentralityBin]->SetUsePtWeights(kFALSE);
-	taskQCv2_NN[iCentralityBin]->SetUseEtaWeights(kFALSE); 
-	taskQCv2_NN[iCentralityBin]->SetCalculateCumulantsVsM(kFALSE);
-	taskQCv2_NN[iCentralityBin]->SetnBinsMult(10000);
-	taskQCv2_NN[iCentralityBin]->SetMinMult(0.);
-	taskQCv2_NN[iCentralityBin]->SetMaxMult(10000.);
-	taskQCv2_NN[iCentralityBin]->SetApplyCorrectionForNUA(kTRUE);
-	taskQCv2_NN[iCentralityBin]->SetFillMultipleControlHistograms(kFALSE);     
+      taskQCv2_NN[iCentralityBin] = new AliAnalysisTaskQCumulants(Form("TaskQCumulant_%s",outputSlotNN_NameQCv2[iCentralityBin].Data()),kFALSE);
+      taskQCv2_NN[iCentralityBin]->SetHarmonic(vnHarmonic);
+      taskQCv2_NN[iCentralityBin]->SelectCollisionCandidates(triggerSelectionString);
+      taskQCv2_NN[iCentralityBin]->SetUsePhiWeights(kFALSE); 
+      taskQCv2_NN[iCentralityBin]->SetUsePtWeights(kFALSE);
+      taskQCv2_NN[iCentralityBin]->SetUseEtaWeights(kFALSE); 
+      taskQCv2_NN[iCentralityBin]->SetCalculateCumulantsVsM(kFALSE);
+      taskQCv2_NN[iCentralityBin]->SetnBinsMult(10000);
+      taskQCv2_NN[iCentralityBin]->SetMinMult(0.);
+      taskQCv2_NN[iCentralityBin]->SetMaxMult(10000.);
+      taskQCv2_NN[iCentralityBin]->SetApplyCorrectionForNUA(kTRUE);
+      taskQCv2_NN[iCentralityBin]->SetFillMultipleControlHistograms(kFALSE);     
       
-	coutputQCv2_NN[iCentralityBin] = mgr->CreateContainer(Form("%s",outputSlotNN_NameQCv2[iCentralityBin].Data()),TList::Class(),AliAnalysisManager::kOutputContainer,outputQCv2_NN);
-	mgr->AddTask(taskQCv2_NN[iCentralityBin]);
-	mgr->ConnectInput(taskQCv2_NN[iCentralityBin],0,flowEvent_NN[iCentralityBin]);
-	mgr->ConnectInput(taskQCv2_NN[iCentralityBin],0,coutputFE_NN[iCentralityBin]);
-	mgr->ConnectOutput(taskQCv2_NN[iCentralityBin],1,coutputQCv2_NN[iCentralityBin]);
-      }
-      else if(doHigherHarmonic){
+      coutputQCv2_NN[iCentralityBin] = mgr->CreateContainer(Form("%s",outputSlotNN_NameQCv2[iCentralityBin].Data()),TList::Class(),AliAnalysisManager::kOutputContainer,outputQCv2_NN);
+      mgr->AddTask(taskQCv2_NN[iCentralityBin]);
+      mgr->ConnectInput(taskQCv2_NN[iCentralityBin],0,flowEvent_NN[iCentralityBin]);
+      mgr->ConnectInput(taskQCv2_NN[iCentralityBin],0,coutputFE_NN[iCentralityBin]);
+      mgr->ConnectOutput(taskQCv2_NN[iCentralityBin],1,coutputQCv2_NN[iCentralityBin]);
+      
+      /*else if(doHigherHarmonic){
 	TString outputQCv4_NN = fileName;
 	outputQCv4_NN += ":outputQCv4analysis";
 	outputQCv4_NN += "MinusMinus";
@@ -609,7 +628,7 @@ void AddTaskCMEAnalysis(Bool_t isPbPb = kTRUE,
 	mgr->ConnectInput(taskQCv4_NN[iCentralityBin],0,flowEvent_NN[iCentralityBin]);
 	mgr->ConnectInput(taskQCv4_NN[iCentralityBin],0,coutputFE_NN[iCentralityBin]);
 	mgr->ConnectOutput(taskQCv4_NN[iCentralityBin],1,coutputQCv4_NN[iCentralityBin]);
-      }
+	}*/
     }
 
    //------------------- PN --------------
@@ -675,25 +694,25 @@ void AddTaskCMEAnalysis(Bool_t isPbPb = kTRUE,
       
     //======================================================================//
     if(gRunSP) {
-      if(!doHigherHarmonic){
-	TString outputSPv2_PN = fileName;
-	outputSPv2_PN += ":outputSPv2analysis";
-	outputSPv2_PN += "PlusMinus";
 
-	taskSPv2_PN[iCentralityBin] = new AliAnalysisTaskScalarProduct(Form("TaskScalarProduct_%s",outputSlotPN_NameSPv2[iCentralityBin].Data()),kFALSE);
-	taskSPv2_PN[iCentralityBin]->SetHarmonic(2);
-	taskSPv2_PN[iCentralityBin]->SelectCollisionCandidates(triggerSelectionString);
-	taskSPv2_PN[iCentralityBin]->SetRelDiffMsub(1.0);
-	taskSPv2_PN[iCentralityBin]->SetTotalQvector(qVector);
-	taskSPv2_PN[iCentralityBin]->SetApplyCorrectionForNUA(kTRUE);
+      TString outputSPv2_PN = fileName;
+      outputSPv2_PN += ":outputSPv2analysis";
+      outputSPv2_PN += "PlusMinus";
+
+      taskSPv2_PN[iCentralityBin] = new AliAnalysisTaskScalarProduct(Form("TaskScalarProduct_%s",outputSlotPN_NameSPv2[iCentralityBin].Data()),kFALSE);
+      taskSPv2_PN[iCentralityBin]->SetHarmonic(vnHarmonic);
+      taskSPv2_PN[iCentralityBin]->SelectCollisionCandidates(triggerSelectionString);
+      taskSPv2_PN[iCentralityBin]->SetRelDiffMsub(1.0);
+      taskSPv2_PN[iCentralityBin]->SetTotalQvector(qVector);
+      taskSPv2_PN[iCentralityBin]->SetApplyCorrectionForNUA(kTRUE);
       
-	coutputSPv2_PN[iCentralityBin] = mgr->CreateContainer(Form("%s",outputSlotPN_NameSPv2[iCentralityBin].Data()),TList::Class(),AliAnalysisManager::kOutputContainer,outputSPv2_PN);
-	mgr->AddTask(taskSPv2_PN[iCentralityBin]);
-	mgr->ConnectInput(taskSPv2_PN[iCentralityBin],0,flowEvent_PN[iCentralityBin]);
-	mgr->ConnectInput(taskSPv2_PN[iCentralityBin],0,coutputFE_PN[iCentralityBin]);
-	mgr->ConnectOutput(taskSPv2_PN[iCentralityBin],1,coutputSPv2_PN[iCentralityBin]);
-      }
-      else if(doHigherHarmonic){
+      coutputSPv2_PN[iCentralityBin] = mgr->CreateContainer(Form("%s",outputSlotPN_NameSPv2[iCentralityBin].Data()),TList::Class(),AliAnalysisManager::kOutputContainer,outputSPv2_PN);
+      mgr->AddTask(taskSPv2_PN[iCentralityBin]);
+      mgr->ConnectInput(taskSPv2_PN[iCentralityBin],0,flowEvent_PN[iCentralityBin]);
+      mgr->ConnectInput(taskSPv2_PN[iCentralityBin],0,coutputFE_PN[iCentralityBin]);
+      mgr->ConnectOutput(taskSPv2_PN[iCentralityBin],1,coutputSPv2_PN[iCentralityBin]);
+
+      /*else if(doHigherHarmonic){
 	TString outputSPv4_PN = fileName;
 	outputSPv4_PN += ":outputSPv4analysis";
 	outputSPv4_PN += "PlusMinus";
@@ -710,37 +729,37 @@ void AddTaskCMEAnalysis(Bool_t isPbPb = kTRUE,
 	mgr->ConnectInput(taskSPv4_PN[iCentralityBin],0,flowEvent_PN[iCentralityBin]);
 	mgr->ConnectInput(taskSPv4_PN[iCentralityBin],0,coutputFE_PN[iCentralityBin]);
 	mgr->ConnectOutput(taskSPv4_PN[iCentralityBin],1,coutputSPv4_PN[iCentralityBin]);
-      }
+	}*/
     }
     //======================================================================//
 
     //======================================================================//
     if(gRunQC) {
-      if(!doHigherHarmonic){
-	TString outputQCv2_PN = fileName;
-	outputQCv2_PN += ":outputQCv2analysis";
-	outputQCv2_PN += "PlusMinus";
 
-	taskQCv2_PN[iCentralityBin] = new AliAnalysisTaskQCumulants(Form("TaskQCumulant_%s",outputSlotPN_NameQCv2[iCentralityBin].Data()),kFALSE);
-	taskQCv2_PN[iCentralityBin]->SetHarmonic(2);
-	taskQCv2_PN[iCentralityBin]->SelectCollisionCandidates(triggerSelectionString);
-	taskQCv2_PN[iCentralityBin]->SetUsePhiWeights(kFALSE); 
-	taskQCv2_PN[iCentralityBin]->SetUsePtWeights(kFALSE);
-	taskQCv2_PN[iCentralityBin]->SetUseEtaWeights(kFALSE); 
-	taskQCv2_PN[iCentralityBin]->SetCalculateCumulantsVsM(kFALSE);
-	taskQCv2_PN[iCentralityBin]->SetnBinsMult(10000);
-	taskQCv2_PN[iCentralityBin]->SetMinMult(0.);
-	taskQCv2_PN[iCentralityBin]->SetMaxMult(10000.);
-	taskQCv2_PN[iCentralityBin]->SetApplyCorrectionForNUA(kTRUE);
-	taskQCv2_PN[iCentralityBin]->SetFillMultipleControlHistograms(kFALSE);     
+      TString outputQCv2_PN = fileName;
+      outputQCv2_PN += ":outputQCv2analysis";
+      outputQCv2_PN += "PlusMinus";
+
+      taskQCv2_PN[iCentralityBin] = new AliAnalysisTaskQCumulants(Form("TaskQCumulant_%s",outputSlotPN_NameQCv2[iCentralityBin].Data()),kFALSE);
+      taskQCv2_PN[iCentralityBin]->SetHarmonic(vnHarmonic);
+      taskQCv2_PN[iCentralityBin]->SelectCollisionCandidates(triggerSelectionString);
+      taskQCv2_PN[iCentralityBin]->SetUsePhiWeights(kFALSE); 
+      taskQCv2_PN[iCentralityBin]->SetUsePtWeights(kFALSE);
+      taskQCv2_PN[iCentralityBin]->SetUseEtaWeights(kFALSE); 
+      taskQCv2_PN[iCentralityBin]->SetCalculateCumulantsVsM(kFALSE);
+      taskQCv2_PN[iCentralityBin]->SetnBinsMult(10000);
+      taskQCv2_PN[iCentralityBin]->SetMinMult(0.);
+      taskQCv2_PN[iCentralityBin]->SetMaxMult(10000.);
+      taskQCv2_PN[iCentralityBin]->SetApplyCorrectionForNUA(kTRUE);
+      taskQCv2_PN[iCentralityBin]->SetFillMultipleControlHistograms(kFALSE);     
       
-	coutputQCv2_PN[iCentralityBin] = mgr->CreateContainer(Form("%s",outputSlotPN_NameQCv2[iCentralityBin].Data()),TList::Class(),AliAnalysisManager::kOutputContainer,outputQCv2_PN);
-	mgr->AddTask(taskQCv2_PN[iCentralityBin]);
-	mgr->ConnectInput(taskQCv2_PN[iCentralityBin],0,flowEvent_PN[iCentralityBin]);
-	mgr->ConnectInput(taskQCv2_PN[iCentralityBin],0,coutputFE_PN[iCentralityBin]);
-	mgr->ConnectOutput(taskQCv2_PN[iCentralityBin],1,coutputQCv2_PN[iCentralityBin]);
-      }
-      else if(doHigherHarmonic){
+      coutputQCv2_PN[iCentralityBin] = mgr->CreateContainer(Form("%s",outputSlotPN_NameQCv2[iCentralityBin].Data()),TList::Class(),AliAnalysisManager::kOutputContainer,outputQCv2_PN);
+      mgr->AddTask(taskQCv2_PN[iCentralityBin]);
+      mgr->ConnectInput(taskQCv2_PN[iCentralityBin],0,flowEvent_PN[iCentralityBin]);
+      mgr->ConnectInput(taskQCv2_PN[iCentralityBin],0,coutputFE_PN[iCentralityBin]);
+      mgr->ConnectOutput(taskQCv2_PN[iCentralityBin],1,coutputQCv2_PN[iCentralityBin]);
+
+      /*else if(doHigherHarmonic){
 	TString outputQCv4_PN = fileName;
 	outputQCv4_PN += ":outputQCv4analysis";
 	outputQCv4_PN += "PlusMinus";
@@ -763,13 +782,27 @@ void AddTaskCMEAnalysis(Bool_t isPbPb = kTRUE,
 	mgr->ConnectInput(taskQCv4_PN[iCentralityBin],0,flowEvent_PN[iCentralityBin]);
 	mgr->ConnectInput(taskQCv4_PN[iCentralityBin],0,coutputFE_PN[iCentralityBin]);
 	mgr->ConnectOutput(taskQCv4_PN[iCentralityBin],1,coutputQCv4_PN[iCentralityBin]);
-      }
+	}*/
     }
 
     //======================================================================//
 
 
-    //======================================================================//
+
+
+
+
+
+
+
+
+
+
+
+
+
+    //============================== now CME correlator ================================//
+
     //---------- PP -------------
       if(!doHigherHarmonic){
 	TString outputMHLS_PP = fileName;
@@ -784,7 +817,7 @@ void AddTaskCMEAnalysis(Bool_t isPbPb = kTRUE,
 	taskMHLS_PP[iCentralityBin]->SetEvaluateDifferential3pCorrelator(kTRUE); // evaluate <<cos[n(psi1+psi2-2phi3)]>> (Remark: two nested loops)
 	taskMHLS_PP[iCentralityBin]->SetOppositeChargesPOI(kFALSE); //
 	if(isPbPb){
-	  taskMHLS_PP[iCentralityBin]->SetRejectPileUp(kTRUE);
+	  taskMHLS_PP[iCentralityBin]->SetRejectPileUp(checkPileup);
 	  taskMHLS_PP[iCentralityBin]->SetRejectPileUpTight(checkPileup);
 	}
 	else{
@@ -811,7 +844,7 @@ void AddTaskCMEAnalysis(Bool_t isPbPb = kTRUE,
 	taskMHLS_PP2[iCentralityBin]->SetEvaluateDifferential3pCorrelator(kTRUE); // evaluate <<cos[n(psi1+psi2-2phi3)]>> (Remark: two nested loops)
 	taskMHLS_PP2[iCentralityBin]->SetOppositeChargesPOI(kFALSE); //
 	if(isPbPb){
-	  taskMHLS_PP2[iCentralityBin]->SetRejectPileUp(kTRUE);
+	  taskMHLS_PP2[iCentralityBin]->SetRejectPileUp(checkPileup);
 	  taskMHLS_PP2[iCentralityBin]->SetRejectPileUpTight(checkPileup);
 	}
 	else{
@@ -840,7 +873,7 @@ void AddTaskCMEAnalysis(Bool_t isPbPb = kTRUE,
 	taskMHLS_NN[iCentralityBin]->SetEvaluateDifferential3pCorrelator(kTRUE); // evaluate <<cos[n(psi1+psi2-2phi3)]>> (Remark: two nested loops)
 	taskMHLS_NN[iCentralityBin]->SetOppositeChargesPOI(kFALSE); //
 	if(isPbPb){
-	  taskMHLS_NN[iCentralityBin]->SetRejectPileUp(kTRUE);
+	  taskMHLS_NN[iCentralityBin]->SetRejectPileUp(checkPileup);
 	  taskMHLS_NN[iCentralityBin]->SetRejectPileUpTight(checkPileup);
 	}
 	else{
@@ -867,7 +900,7 @@ void AddTaskCMEAnalysis(Bool_t isPbPb = kTRUE,
 	taskMHLS_NN2[iCentralityBin]->SetEvaluateDifferential3pCorrelator(kTRUE); // evaluate <<cos[n(psi1+psi2-2phi3)]>> (Remark: two nested loops)
 	taskMHLS_NN2[iCentralityBin]->SetOppositeChargesPOI(kFALSE); //
 	if(isPbPb){
-	  taskMHLS_NN2[iCentralityBin]->SetRejectPileUp(kTRUE);
+	  taskMHLS_NN2[iCentralityBin]->SetRejectPileUp(checkPileup);
 	  taskMHLS_NN2[iCentralityBin]->SetRejectPileUpTight(checkPileup);
 	}
 	else{
@@ -898,7 +931,7 @@ void AddTaskCMEAnalysis(Bool_t isPbPb = kTRUE,
 	taskMHUS[iCentralityBin]->SetOppositeChargesPOI(kTRUE); //
  	taskMHUS[iCentralityBin]->SetFillQAHistograms(doQA);
 	if(isPbPb){
-	  taskMHUS[iCentralityBin]->SetRejectPileUp(kTRUE);
+	  taskMHUS[iCentralityBin]->SetRejectPileUp(checkPileup);
 	  taskMHUS[iCentralityBin]->SetRejectPileUpTight(checkPileup);
 	}
 	else{
@@ -927,7 +960,7 @@ void AddTaskCMEAnalysis(Bool_t isPbPb = kTRUE,
 	taskMHUS2[iCentralityBin]->SetOppositeChargesPOI(kTRUE); //
  	taskMHUS2[iCentralityBin]->SetFillQAHistograms(doQA);
 	if(isPbPb){
-	  taskMHUS2[iCentralityBin]->SetRejectPileUp(kTRUE);
+	  taskMHUS2[iCentralityBin]->SetRejectPileUp(checkPileup);
 	  taskMHUS2[iCentralityBin]->SetRejectPileUpTight(checkPileup);
 	}
 	else{
@@ -989,10 +1022,13 @@ AliFlowEventCuts *createFlowEventCutObject(Int_t gCentralityMin = -1,
     
     //Create the event cut objects
     AliFlowEventCuts *cutsEvent = new AliFlowEventCuts(Form("eventcutsCentrality%dTo%d",gCentralityMin,gCentralityMax));
+
     if(isPbPb) {
       //cutsEvent->SetCentralityPercentileRange(gCentralityMin,gCentralityMax);
       cutsEvent->SetCentralityPercentileMethod(gCentralityEstimator);
+
       cutsEvent->SetCentralityPercentileRange(gCentralityMin,gCentralityMax,kFALSE);
+
       if(whichData==2011){ 
 	cutsEvent->SetLHC11h(kTRUE);
       }
@@ -1000,10 +1036,10 @@ AliFlowEventCuts *createFlowEventCutObject(Int_t gCentralityMin = -1,
 	cutsEvent->SetLHC11h(kFALSE);
 	if(whichData==2015){ 
 	  cutsEvent->SetCentralityPercentileRange(gCentralityMin,gCentralityMax,kTRUE);
-	  //cutsEvent->SetCheckPileup(bPileup); //
+        //cutsEvent->SetCheckPileup(bPileup); //
 	}
       }
-      cutsEvent->SetCutTPCmultiplicityOutliersAOD(kTRUE);
+      cutsEvent->SetCutTPCmultiplicityOutliersAOD(kFALSE);
     }
     else{
        cutsEvent->SetCentralityPercentileMethod(gCentralityEstimator);

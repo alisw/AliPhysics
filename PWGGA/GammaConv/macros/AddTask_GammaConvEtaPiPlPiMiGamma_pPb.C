@@ -143,13 +143,13 @@ void AddTask_GammaConvEtaPiPlPiMiGamma_pPb(
   stringShift = "pPb";
 
   if( trainConfig == 1 ) {
-    eventCutArray[ 0] = "80000113"; ConvCutarray[0] = "00200009117000008260400000"; PionCutarray[0] = "000000400"; MesonCutarray[0] = "0103503500000000"; //standard cut Pi0 PbPb 00-100
+    eventCutArray[ 0] = "80000113"; ConvCutarray[0] = "00200009117000008260400000"; PionCutarray[0] = "000000400"; MesonCutarray[0] = "0103503000000000"; //standard cut Pi0 PbPb 00-100
   } else if( trainConfig == 1 ) {
-    eventCutArray[ 0] = "80000113"; ConvCutarray[0] = "00200009117000008260400000"; PionCutarray[0] = "000000403"; MesonCutarray[0] = "0103503500000000"; //standard cut Pi0 PbPb 00-100
+    eventCutArray[ 0] = "80000113"; ConvCutarray[0] = "00200009117000008260400000"; PionCutarray[0] = "000000403"; MesonCutarray[0] = "0103503000000000"; //standard cut Pi0 PbPb 00-100
   } else if( trainConfig == 1 ) {
-    eventCutArray[ 0] = "80000113"; ConvCutarray[0] = "00200009117000008260400000"; PionCutarray[0] = "000000404"; MesonCutarray[0] = "0103503500000000"; //standard cut Pi0 PbPb 00-100
+    eventCutArray[ 0] = "80000113"; ConvCutarray[0] = "00200009117000008260400000"; PionCutarray[0] = "000000404"; MesonCutarray[0] = "0103503000000000"; //standard cut Pi0 PbPb 00-100
   } else if( trainConfig == 1 ) {
-    eventCutArray[ 0] = "80000113"; ConvCutarray[0] = "00200009117000008260400000"; PionCutarray[0] = "000000405"; MesonCutarray[0] = "0103503500000000"; //standard cut Pi0 PbPb 00-100
+    eventCutArray[ 0] = "80000113"; ConvCutarray[0] = "00200009117000008260400000"; PionCutarray[0] = "000000405"; MesonCutarray[0] = "0103503000000000"; //standard cut Pi0 PbPb 00-100
   }
 
   TList *EventCutList = new TList();

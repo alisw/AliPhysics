@@ -1,8 +1,8 @@
 void SetupTrackCutsDieleFilter(AliDielectron *diele, Bool_t isAOD);
 void SetupPairCutsDieleFilter(AliDielectron *diele, Bool_t isAOD);
-void SetupEventCutsDieleFilter(AliDielectron *diele, Int_t cutDefinition);
+void SetupEventCutsDieleFilter(AliDielectron *diele);
 
-void InitHistogramsDieleFilter(AliDielectron *diele);
+void InitHistogramsDieleFilter(AliDielectron *diele, Bool_t isAOD);
 
 AliESDtrackCuts *SetupESDtrackCutsDieleFilter();
 
@@ -55,7 +55,7 @@ void SetupTrackCutsDieleFilter(AliDielectron *diele, Bool_t isAOD)
     diele->GetTrackFilter().AddCuts(SetupESDtrackCutsDieleFilter());
   } else {
     AliDielectronTrackCuts *trackCuts=new AliDielectronTrackCuts("trackCuts","trackCuts");
-    trackCuts->SetClusterRequirementITS(AliESDtrackCuts::kSPD,AliESDtrackCuts::kAny);
+    trackCuts->SetClusterRequirementITS((AliDielectronTrackCuts::Detector)AliESDtrackCuts::kSPD,(AliDielectronTrackCuts::ITSClusterRequirement)AliESDtrackCuts::kAny);
     trackCuts->SetRequireTPCRefit(kTRUE);
     trackCuts->SetRequireITSRefit(kTRUE);
     diele->GetTrackFilter().AddCuts(trackCuts);

@@ -1,5 +1,5 @@
 //  Macro designed for use with the AliAnalysisTaskPIDBFDptDpt task.
-//  Author: Jinjin(Au-Au) Pan, Claude Pruneau & Prabhat Pujahari, Wayne State University
+//  Author: Jinjin(Au-Au) Pan & Claude Pruneau, Wayne State University
 //
 //   PbPb               10:     centralityMethod = 4 (V0),        trigger = kFALSE (AliVEvent::kMB).
 //   PbPb_2015_kTRUE    15:     centralityMethod = 4 (V0),        trigger = kTRUE (AliVEvent::kINT7).
@@ -33,14 +33,9 @@ AliAnalysisTaskPIDBFDptDpt * AddTaskPIDBFDptDpt
  double vZwidth                 =  0.5, // zMin, zMax & vZwidth determine _nBins_vertexZ.
  int    trackFilterBit          =  1,   // PbPb10(Global=1;TPConly=128;Hybrid=272); pPb13(Global=?;TPConly=?;Hybrid=768); pp10(Global=1;TPConly=?; Hybrid=?)
  int    nClusterMin             =  70,
- double eta1Min                 = -0.8, // set y1min acturally if useRapidity==1
  double eta1Max                 =  0.8, // set y1max acturally if useRapidity==1
- double eta2Min                 = -0.8, // set y2min acturally if useRapidity==1
- double eta2Max                 =  0.8, // set y2max acturally if useRapidity==1
  double etaBinWidth             =  0.1, // set yBinWidth acturally if useRapidity==1
- double dcaZMin                 = -3.2,
  double dcaZMax                 =  3.2,
- double dcaXYMin                = -2.4,
  double dcaXYMax                =  2.4,
  int nCentrality                =  6,
  int particleID                 =  1,   // Pion=0, Kaon=1, Proton=2
@@ -51,11 +46,16 @@ AliAnalysisTaskPIDBFDptDpt * AddTaskPIDBFDptDpt
  double ptMin                   =  0.2, // pt range lower limit cut ( also for pt histos )
  double ptTOFlowerMin           =  0.5, // boundary between TPC & TOF region
  double ptCUTupperMax           =  2.0, // pt range upper limit cut
+ double ptMax                   =  3.0, // pt range upper limit for histos; NOT pt cut!!!
  double ptWidthBin              =  0.1, // pt bin width in histos
  int nBinsPhi                   =  36,  // 36 is default value
  Bool_t NoResonances            = kTRUE, // only for MCAOD
  Bool_t NoElectron              = kTRUE, // only for MCAOD
- bool   PurePIDinMC             = 0,   // 0: Contamination in MCAODreco;       1: No Contamination in MCAODreco
+ bool   PurePIDinMC             = 0,   // 0: MisID in MCAODreco;       1: No MisID in MCAODreco
+ bool   PureNoWeakinMC          = 0,   // 0: No MisID but Secondaries from weak decays in MCAODreco;       1: No MisID and No Secondaries from weak decays in MCAODreco
+ bool   PureNoWeakMaterialinMC  = 0,   // 0: No MisID and No Secondaries from weak decays but Secondaries from material in MCAODreco;       1: No MisID and No Secondaries from weak decays and material in MCAODreco
+ bool   NoWeakinMC              = 0,   // 0: Secondaries from weak decays in MCAODreco;       1: No Secondaries from weak decays in MCAODreco
+ bool   NoMaterialinMC          = 0,   // 0: Secondaries from material in MCAODreco;          1: No Secondaries from material in MCAODreco
  const char* taskname           = "ChPM",
  char *inputHistogramFileName   = "alien:///alice/cern.ch/user/j/jipan/TUNE_rHJ_2eCut_8vZ32_G162_4C4_NOwCut_08y16_36phi_02pt2_pi_Pos_S1S2/TUNE_rHJ_2eCut_8vZ32_G162_4C4_NOwCut_08y16_36phi_02pt2_pi_Pos_S1S2.root" )
 
@@ -72,13 +72,17 @@ AliAnalysisTaskPIDBFDptDpt * AddTaskPIDBFDptDpt
   bool    useEventPlane         = 0;   // 0: No      1: Yes
   double  EventPlaneMin         = -3.1415927/6;
   double  EventPlaneMax         =  3.1415927/6;
-  double ptMax                  =  3.0; // pt range upper limit for histos; NOT pt cut!!!
   bool Use_AliHelperPID         =  0;   // 0: Not Use_AliHelperPID       1: Use_AliHelperPID
   int pidType                   =  2;  // kNSigmaTPC,kNSigmaTOF, kNSigmaTPCTOF // for AliHelperPID
   Bool_t requestTOFPID          =  1;  // for AliHelperPID
   Bool_t isMC                   =  0;  // for AliHelperPID
-  
+  double eta2Max                =  eta1Max; // set y2max acturally if useRapidity==1
+  double eta1Min                = -eta1Max; // set y1min acturally if useRapidity==1
+  double eta2Min                = -eta1Max; // set y2min acturally if useRapidity==1
+  double dcaZMin                = -dcaZMax;
+  double dcaXYMin               = -dcaXYMax;	
 
+	
   if      ( System == "PbPb" )                { centralityMethod = 4; trigger = kFALSE; }
   else if ( System == "PbPb_2015_kTRUE" )     { centralityMethod = 4; trigger = kTRUE;  }
   else if ( System == "PbPb_2015_kFALSE" )    { centralityMethod = 4; trigger = kTRUE;  }
@@ -217,6 +221,76 @@ AliAnalysisTaskPIDBFDptDpt * AddTaskPIDBFDptDpt
       minCentrality[4] = 30.;     maxCentrality[4]  = 40.;
       minCentrality[5] = 40.;     maxCentrality[5]  = 50.;
       minCentrality[6] = 50.;     maxCentrality[6]  = 90.; }
+  else if ( CentralityGroup == 26 )
+    { minCentrality[0] = 0;       maxCentrality[0]  = 5.;
+      minCentrality[1] = 5.;      maxCentrality[1]  = 10.;
+      minCentrality[2] = 10.;     maxCentrality[2]  = 20.;
+      minCentrality[3] = 20.;     maxCentrality[3]  = 30.;
+      minCentrality[4] = 30.;     maxCentrality[4]  = 40.;
+      minCentrality[5] = 40.;     maxCentrality[5]  = 50.;
+      minCentrality[6] = 50.;     maxCentrality[6]  = 60.;
+      minCentrality[7] = 60.;     maxCentrality[7]  = 90.; }
+  else if ( CentralityGroup == 27 )
+    { minCentrality[0] = 0;       maxCentrality[0]  = 10.;
+      minCentrality[1] = 10.;     maxCentrality[1]  = 20.;
+      minCentrality[2] = 20.;     maxCentrality[2]  = 30.;
+      minCentrality[3] = 30.;     maxCentrality[3]  = 40.;
+      minCentrality[4] = 40.;     maxCentrality[4]  = 50.;
+      minCentrality[5] = 50.;     maxCentrality[5]  = 90.; }
+  else if ( CentralityGroup == 28 )
+    { minCentrality[0] = 0;       maxCentrality[0]  = 10.;
+      minCentrality[1] = 10.;     maxCentrality[1]  = 20.;
+      minCentrality[2] = 20.;     maxCentrality[2]  = 40.;
+      minCentrality[3] = 40.;     maxCentrality[3]  = 60.;
+      minCentrality[4] = 60.;     maxCentrality[4]  = 80.; }
+  else if ( CentralityGroup == 29 )
+    { minCentrality[0] = 0;       maxCentrality[0]  = 10.;
+      minCentrality[1] = 30.;     maxCentrality[1]  = 40.;
+      minCentrality[2] = 70.;     maxCentrality[2]  = 90.; }
+  else if ( CentralityGroup == 30 )
+    { minCentrality[0] = 0;       maxCentrality[0]  = 10.;
+      minCentrality[1] = 10.;     maxCentrality[1]  = 20.;
+      minCentrality[2] = 20.;     maxCentrality[2]  = 30.;
+      minCentrality[3] = 30.;     maxCentrality[3]  = 40.;
+      minCentrality[4] = 40.;     maxCentrality[4]  = 50.;
+      minCentrality[5] = 50.;     maxCentrality[5]  = 70.;
+      minCentrality[6] = 70.;     maxCentrality[6]  = 100.; }
+  else if ( CentralityGroup == 31 )
+    { minCentrality[0] = 0;       maxCentrality[0]  = 5.;
+      minCentrality[1] = 5.;      maxCentrality[1]  = 10.;
+      minCentrality[2] = 10.;     maxCentrality[2]  = 20.;
+      minCentrality[3] = 20.;     maxCentrality[3]  = 40.;
+      minCentrality[4] = 40.;     maxCentrality[4]  = 60.;
+      minCentrality[5] = 60.;     maxCentrality[5]  = 80.;
+      minCentrality[6] = 80.;     maxCentrality[6]  = 100.; }
+  else if ( CentralityGroup == 32 )
+    { minCentrality[0] = 0;       maxCentrality[0]  = 5.;
+      minCentrality[1] = 5.;      maxCentrality[1]  = 10.;
+      minCentrality[2] = 10.;     maxCentrality[2]  = 20.;
+      minCentrality[3] = 20.;     maxCentrality[3]  = 30.;
+      minCentrality[4] = 30.;     maxCentrality[4]  = 40.;
+      minCentrality[5] = 40.;     maxCentrality[5]  = 50.;
+      minCentrality[6] = 50.;     maxCentrality[6]  = 70.;
+      minCentrality[7] = 70.;     maxCentrality[7]  = 100.; }
+  else if ( CentralityGroup == 33 )
+    { minCentrality[0] = 0;       maxCentrality[0]  = 20.;
+      minCentrality[1] = 20.;     maxCentrality[1]  = 40.;
+      minCentrality[2] = 40.;     maxCentrality[2]  = 90.; }
+  else if ( CentralityGroup == 34 )
+    { minCentrality[0] = 0;       maxCentrality[0]  = 10.;
+      minCentrality[1] = 10.;     maxCentrality[1]  = 20.;
+      minCentrality[2] = 20.;     maxCentrality[2]  = 30.;
+      minCentrality[3] = 30.;     maxCentrality[3]  = 40.;
+      minCentrality[4] = 40.;     maxCentrality[4]  = 60.;
+      minCentrality[5] = 60.;     maxCentrality[5]  = 90.; }
+  else if ( CentralityGroup == 35 )
+    { minCentrality[0] = 0;       maxCentrality[0]  = 5.;
+      minCentrality[1] = 5.;      maxCentrality[1]  = 10.;
+      minCentrality[2] = 10.;     maxCentrality[2]  = 20.;
+      minCentrality[3] = 20.;     maxCentrality[3]  = 30.;
+      minCentrality[4] = 30.;     maxCentrality[4]  = 40.;
+      minCentrality[5] = 40.;     maxCentrality[5]  = 60.;
+      minCentrality[6] = 60.;     maxCentrality[6]  = 90.; }
   else    return 0;
   
   double dedxMin                =  0.0;
@@ -376,6 +450,10 @@ AliAnalysisTaskPIDBFDptDpt * AddTaskPIDBFDptDpt
       task->SetPIDparticle(         pidparticle     );
       task->SetUse_pT_cut(          Use_PT_Cut      );
       task->SetIfContaminationInMC(   PurePIDinMC   );
+      task->SetIfContaminationWeakInMC( PureNoWeakinMC );
+      task->SetIfContaminationWeakMaterialInMC( PureNoWeakMaterialinMC );
+      task->SetIfWeakInMC( NoWeakinMC );
+      task->SetIfMaterialInMC( NoMaterialinMC );
       task->SetUseWeights(          useWeights      );
       task->SetUseRapidity(         useRapidity     );
       task->SetEventPlane(         useEventPlane     );

@@ -64,7 +64,6 @@
 #include "AliKFParticle.h"
 #include "AliKFVertex.h"
 #include "AliESDCaloTrigger.h"
-#include "AliEMCALRecoUtils.h"
 #include "AliEMCALGeometry.h"
 #include "AliGeomManager.h"
 #include "stdio.h"

@@ -25,6 +25,10 @@ class AliReducedTrackCut : public AliReducedVarCut {
   void SetRequestSPDfirst() {fCutOnITShitMap |= (1<<0); fUseANDonITShitMap = kFALSE; fRequestCutOnITShitMap = kTRUE;}
   void SetRequestSPDany() {fCutOnITShitMap |= (1<<0); fCutOnITShitMap |= (1<<1); fUseANDonITShitMap = kFALSE; fRequestCutOnITShitMap = kTRUE;}
   void SetRequestSPDboth() {fCutOnITShitMap |= (1<<0); fCutOnITShitMap |= (1<<1); fUseANDonITShitMap = kTRUE; fRequestCutOnITShitMap = kTRUE;}
+  void SetITSsharedClsRejectMap(UChar_t sharedMap, Bool_t useAND=kFALSE) {fCutOnITSsharedClsMap = sharedMap; fUseANDonITSsharedClsMap = useAND; fRequestCutOnITSsharedClsMap = kTRUE;}
+  void SetRejectSharedClsOnLayer(Int_t layer) {if(layer<0 || layer>5) return; fCutOnITSsharedClsMap |= (1<<layer); fUseANDonITSsharedClsMap = kFALSE; fRequestCutOnITSsharedClsMap = kTRUE;}
+  void SetRejectSharedClsSPDany() {fCutOnITSsharedClsMap |= (1<<0); fCutOnITSsharedClsMap |= (1<<1); fUseANDonITSsharedClsMap = kFALSE; fRequestCutOnITSsharedClsMap = kTRUE;}
+  void SetRejectSharedClsSPDboth() {fCutOnITSsharedClsMap |= (1<<0); fCutOnITSsharedClsMap |= (1<<1); fUseANDonITSsharedClsMap = kTRUE; fRequestCutOnITSsharedClsMap = kTRUE;}
   void SetRequestTOFout(Bool_t flag = kTRUE) {fRequestTOFout = flag;}  
   void SetRequestTRDmatch(Bool_t flag = kTRUE) {fRequestTRDonlineMatch = flag;}
   
@@ -93,7 +97,7 @@ class AliReducedTrackCut : public AliReducedVarCut {
    
    // ITS quantities
   Bool_t    fRequestITSrefit;                // if true, request kITSrefit flag to be on
-  UChar_t fCutOnITShitMap;               // hit map encoding various requests on cluster configurations
+  UChar_t   fCutOnITShitMap;               // hit map encoding various requests on cluster configurations
   Bool_t    fUseANDonITShitMap;        // if false, at least one of the enabled positions in the cut map should have corresponding clusters
                                                           // if true, all the enabled bits should have matching clusters
                                                           // The bits left to zero will not be used when evaluating the cut
@@ -101,6 +105,14 @@ class AliReducedTrackCut : public AliReducedVarCut {
                                                           // e.g.  110000 and FALSE: equivalent to SPDany (at least one hit in the first two layers)
                                                           // e.g.  110000 and TRUE: equivalent to requesting both SPD layers to have a hit
    Bool_t   fRequestCutOnITShitMap;  // if true, apply the cut above
+   UChar_t  fCutOnITSsharedClsMap;       // map encoding various requests on shared cluster configurations to reject
+   Bool_t   fUseANDonITSsharedClsMap;      // if false, at least one of the enabled positions in the map should have corresponding shared clusters to reject
+                                          // if true, all the enabled bits should have shared clusters to reject
+                                          // The bits left to zero will not be used when evaluating the cut
+                                          // e.g.  100000 and TRUE: reject tracks with a shared cls in the first layer
+                                          // e.g.  110000 and TRUE: reject tracks with shared cls in both of the first 2 layers
+                                          // e.g.  110000 and FALSE: reject tracks with shared cls in either of the first 2 layers
+   Bool_t   fRequestCutOnITSsharedClsMap;  // if true, apply the cut above
    
    // TPC quantities
    Bool_t   fRequestTPCrefit;               // if true, request TPC refit      

@@ -79,7 +79,7 @@ class CEPRawEventBuffer : public TObject
     void                        SetTotalPHOSTime(Float_t tme)       { fPHOSTotalTime      = tme;  }
         
     /// Global variable setter
-    void                        SetEventVariables(AliESDEvent* ESDobj);
+    void                        SetEventVariables(AliESDEvent* ESDobj, TArrayI* TTindices);
 
     /// Modifiers
     void                        Reset();

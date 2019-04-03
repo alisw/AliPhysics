@@ -26,14 +26,7 @@
 //#include "AliAnalysisFilter.h"
 //#include "AliMCEvent.h"
 #include "AliJRunHeader.h"
-#include "AliESDVZERO.h"
-#include "AliESDTZERO.h"
-//#include "AliESDFMD.h"
-#include "AliESDZDC.h"
 #include "AliJConst.h"
-#include "AliESDpid.h"
-#include "AliPHOSGeoUtils.h"
-#include "AliPIDResponse.h"
 #include "AliPIDCombined.h"
 #include "AliJFilter.h"
 #include "AliJEfficiencyScanner.h"
@@ -50,12 +43,8 @@ class TTree;
 class TFormula;
 
 class AliMCEvent; 
-class AliESDEvent; 
 class AliAODEvent; 
 class AliAODTrack; 
-class AliESDtrackCuts;
-class AliESDVZERO;
-class AliESDCentrality;
 
 class AliJRunHeader;
 class AliMCEvent;
@@ -89,10 +78,10 @@ class AliJCORRANTask : public AliAnalysisTaskSE {
 
  private:
   
-  Int_t 			fFilterEntry; // entry to compare
-  AliJFilter *fFilter; // filter object
-  AliJRunHeader * fAliJRunHeader;
+  Int_t 			fFilterEntry; //! entry to compare
+  AliJFilter *fFilter; //! filter object 
+  AliJRunHeader * fAliJRunHeader; //
 
-  ClassDef(AliJCORRANTask, 3); 
+  ClassDef(AliJCORRANTask, 1); 
 };
 #endif // AliJCORRANTask_H

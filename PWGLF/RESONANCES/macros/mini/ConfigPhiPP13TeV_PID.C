@@ -4,6 +4,8 @@
 *** Configuration script for phi analysis of 2015-2016 pp 13-TeV data ***
 ****************************************************************************/
 
+//Bool_t SetCustomQualityCut(AliRsnCutTrackQuality * trkQualityCut, Int_t customQualityCutsID = 0, Int_t customFilterBit = 0);
+
 Bool_t ConfigPhiPP13TeV_PID
 (  
  AliRsnMiniAnalysisTask *task, 
@@ -92,14 +94,14 @@ Bool_t ConfigPhiPP13TeV_PID
   int j,nmult=0;
   if(isMC){
     for(j=0;j<10;j++){multbins[nmult]=0.001*j; nmult++;}
-    for(j=1;j<10;j++){multbins[nmult]=0.01*j; nmult++;}
-    for(j=1;j<10;j++){multbins[nmult]=0.1*j; nmult++;}
+    for(j=1;j<50;j++){multbins[nmult]=0.01*j; nmult++;}
+    for(j=5;j<10;j++){multbins[nmult]=0.1*j; nmult++;}
     for(j=1;j<10;j++){multbins[nmult]=j; nmult++;}
     for(j=2;j<=20;j++){multbins[nmult]=5.*j; nmult++;}
   }else if(triggerMask==AliVEvent::kHighMultV0){
     for(j=0;j<10;j++){multbins[nmult]=0.001*j; nmult++;}
-    for(j=1;j<10;j++){multbins[nmult]=0.01*j; nmult++;}
-    for(j=1;j<=10;j++){multbins[nmult]=0.1*j; nmult++;}
+    for(j=1;j<50;j++){multbins[nmult]=0.01*j; nmult++;}
+    for(j=5;j<=10;j++){multbins[nmult]=0.1*j; nmult++;}
   }else{
     for(j=0;j<10;j++){multbins[nmult]=0.1*j; nmult++;}
     for(j=1;j<10;j++){multbins[nmult]=j; nmult++;}
@@ -177,14 +179,20 @@ Bool_t ConfigPhiPP13TeV_PID
     if (polarizationOpt.Contains("T")) outm->AddAxis(cttmID,21,-1.,1.);
 
     AliRsnMiniOutput* outmf=task->CreateOutput(Form("phi_MotherFine%s", suffix),"HIST","MOTHER");
-    outmf->SetDaughter(0,AliRsnDaughter::kKaon);
-    outmf->SetDaughter(1,AliRsnDaughter::kKaon);
-    outmf->SetMotherPDG(333);
-    outmf->SetMotherMass(1.019461);
+    //outmf->SetDaughter(0,AliRsnDaughter::kKaon);
+    //outmf->SetDaughter(1,AliRsnDaughter::kKaon);
+    //outmf->SetMotherPDG(333);
+    //outmf->SetMotherMass(1.019461);
+    //outmf->SetPairCuts(cutsPair);
+    //outmf->AddAxis(imID,215,0.985,1.2);
+    outmf->SetDaughter(0,AliRsnDaughter::kXi);
+    outmf->SetDaughter(1,AliRsnDaughter::kPion);
+    outmf->SetMotherPDG(3324);
+    outmf->SetMotherMass(1.5318);
     outmf->SetPairCuts(cutsPair);
-    outmf->AddAxis(imID,215,0.985,1.2);
+    outmf->AddAxis(imID,200,1.3,1.7);
     outmf->AddAxis(ptID,300,0.,3.);//fine binning for efficiency weighting
-    outmf->AddAxis(centID,nmult,multbins);
+    //outmf->AddAxis(centID,nmult,multbins);
     //if(!isPP || MultBins) outmf->AddAxis(centID,100,0.,100.);
     //else outmf->AddAxis(centID,161,-0.5,160.5);
     if (polarizationOpt.Contains("J")) outmf->AddAxis(ctjmID,21,-1.,1.);

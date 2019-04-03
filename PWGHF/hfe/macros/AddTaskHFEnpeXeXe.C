@@ -21,7 +21,8 @@ AliAnalysisTask *AddTaskHFEnpeXeXe(
         kSystAsociatedDCA = 4,
         kSystAsociatedTPCcluster = 5,
         kSystAsociatedMinpTWeights = 6,
-        kSystTrackPIDMixedCuts = 7
+        kSystTrackPIDMixedCuts = 7,
+        kSystWeights = 8
     };
 
     
@@ -121,12 +122,22 @@ AliAnalysisTask *AddTaskHFEnpeXeXe(
             // TPC low cut = -0.1 (tpcl2) WITH WEIGHTS
             RegisterTaskNPEXeXe( centrMin,centrMax,newCentralitySelection,MCthere, isAOD, isBeauty, kDefTPCcl, kDefTPCclPID, kDefITScl, kDefDCAr, kDefDCAz, tpcl13,
                                 dEdxhm, kDefTOFs,-4.,2., AliHFEextraCuts::kBoth, kDefITSchi2percluster, kDefTPCclshared, etacorrection, multicorrection, kDefEtaIncMin, kDefEtaIncMax,
-                                kassETAm, kassETAp,kassMinpT, kassITS, kassTPCcl, kassTPCPIDcl, kassDCAr, kassDCAz, dEdxaclm, dEdxachm, kTRUE, kFALSE,kWei,kWeightMC);
+                                kassETAm, kassETAp,kassMinpT, kassITS, kassTPCcl, kassTPCPIDcl, kassDCAr, kassDCAz, dEdxaclm, dEdxachm, kTRUE, kFALSE,kWei,kWeightMC,0);
         
         
         
         
         switch (RunSystematic) {
+             
+            case kSystWeights:
+                
+                RegisterTaskNPEXeXe( centrMin,centrMax,newCentralitySelection,MCthere, isAOD, isBeauty, kDefTPCcl, kDefTPCclPID, kDefITScl, kDefDCAr, kDefDCAz, tpcl13,
+                                    dEdxhm, kDefTOFs,-4.,2., AliHFEextraCuts::kBoth, kDefITSchi2percluster, kDefTPCclshared, etacorrection, multicorrection, kDefEtaIncMin, kDefEtaIncMax,
+                                    kassETAm, kassETAp,kassMinpT, kassITS, kassTPCcl, kassTPCPIDcl, kassDCAr, kassDCAz, dEdxaclm, dEdxachm, kTRUE, kFALSE,kWei,kWeightMC,8);
+                
+                break;
+
+                
             case kSystMultiple:
                 // ITS hits
                 RegisterTaskNPEXeXe( centrMin,centrMax,newCentralitySelection,MCthere, isAOD,isBeauty, kDefTPCcl, kDefTPCclPID, 3, kDefDCAr, kDefDCAz, tpcl13,
@@ -527,7 +538,7 @@ AliAnalysisTask *RegisterTaskNPEXeXe(
                                      Int_t assTPCPIDcl=80, Double_t assDCAr=1.0, Double_t assDCAz=2.0,
                                      Double_t *assTPCSminus = NULL, Double_t *assTPCSplus=NULL,
                                      Bool_t useCat1Tracks = kTRUE, Bool_t useCat2Tracks = kTRUE,
-                                     Int_t weightlevelback = -1,Int_t wei = 2,Bool_t toflast = kFALSE
+                                     Int_t weightlevelback = -1,Int_t wei = 2,Int_t systweights = 0,Bool_t toflast = kFALSE
                                      )
 {
     Bool_t usekfparticle = kFALSE;
@@ -602,8 +613,8 @@ AliAnalysisTask *RegisterTaskNPEXeXe(
     
     // ------- to manage containers name with negative TPC low cut --------
     TString appendix = "";                                                                   // letter 'm' added in this point (after TPCs)
-    if(IsTPClowcutNegative)      appendix+=TString::Format("SPD%d_incEta%dTPCc%dTPCp%dITS%dDCAr%dz%dTPCsm%d%dTOFs%dITSmins%dITSmaxs%dm%dt%d_photMinpT%dTPCc%dTPCp%dITS%dDCAr%dDCAz%dTPCs%d%s%s%s%s",ipixelany,etaInclusiveMax,tpcCls,tpcClsPID,itsCls,idcaxy,idcaz,tpclow,tpchigh,itofs,iitssmin,iitssmax,imult,itofpos,iassMinpT,assTPCcl,assTPCPIDcl,assITS,iassDCAr,iassDCAz,iassTPCSplus,cweightsback.Data(),cmvx.Data(),cbeauty.Data(),kfp.Data());
-    else                         appendix+=TString::Format("SPD%d_incEta%dTPCc%dTPCp%dITS%dDCAr%dz%dTPCs%d%dTOFs%dITSmins%dITSmaxs%dm%dt%d_photMinpT%dTPCc%dTPCp%dITS%dDCAr%dDCAz%dTPCs%d%s%s%s%s",ipixelany,etaInclusiveMax,tpcCls,tpcClsPID,itsCls,idcaxy,idcaz,tpclow,tpchigh,itofs,iitssmin,iitssmax,imult,itofpos,iassMinpT,assTPCcl,assTPCPIDcl,assITS,iassDCAr,iassDCAz,iassTPCSplus,cweightsback.Data(),cmvx.Data(),cbeauty.Data(),kfp.Data());
+    if(IsTPClowcutNegative)      appendix+=TString::Format("SPD%d_incEta%dTPCc%dTPCp%dITS%dDCAr%dz%dTPCsm%d%dTOFs%dITSmins%dITSmaxs%dm%dt%d_photMinpT%dTPCc%dTPCp%dITS%dDCAr%dDCAz%dTPCs%d%s%s%s%s%d",ipixelany,etaInclusiveMax,tpcCls,tpcClsPID,itsCls,idcaxy,idcaz,tpclow,tpchigh,itofs,iitssmin,iitssmax,imult,itofpos,iassMinpT,assTPCcl,assTPCPIDcl,assITS,iassDCAr,iassDCAz,iassTPCSplus,cweightsback.Data(),cmvx.Data(),cbeauty.Data(),kfp.Data(),systweights);
+    else                         appendix+=TString::Format("SPD%d_incEta%dTPCc%dTPCp%dITS%dDCAr%dz%dTPCs%d%dTOFs%dITSmins%dITSmaxs%dm%dt%d_photMinpT%dTPCc%dTPCp%dITS%dDCAr%dDCAz%dTPCs%d%s%s%s%s%d",ipixelany,etaInclusiveMax,tpcCls,tpcClsPID,itsCls,idcaxy,idcaz,tpclow,tpchigh,itofs,iitssmin,iitssmax,imult,itofpos,iassMinpT,assTPCcl,assTPCPIDcl,assITS,iassDCAr,iassDCAz,iassTPCSplus,cweightsback.Data(),cmvx.Data(),cbeauty.Data(),kfp.Data(),systweights);
     
     printf("Add macro appendix %s\n", appendix.Data());
     
@@ -636,8 +647,11 @@ AliAnalysisTask *RegisterTaskNPEXeXe(
     if (useMC)    task->SetHasMCData(kTRUE);
     else       task->SetHasMCData(kFALSE);
     
-    if(useMC && weightlevelback>=0) {
+    if(useMC && weightlevelback>=0 && systweights ==0) {
         ConfigWeightFactors(task,kFALSE,wei,"nonHFEcorrect_XeXe.root");
+    }
+    if(useMC && weightlevelback>=0 && systweights ==8) {
+        ConfigWeightFactors(task,kFALSE,wei,"nonHFEcorrect_XeXe_ChargedPion.root");
     }
     
     // ----- trigger selecton ---------

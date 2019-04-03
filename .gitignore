@@ -79,3 +79,6 @@ rpm-tmp.*
 ._*
 .AppleDouble
 .LSOverride
+
+# compile_commands.json
+compile_commands.json

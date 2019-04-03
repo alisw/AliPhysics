@@ -64,7 +64,7 @@ AliEmcalTrackSelResultPtr AliEmcalAODHybridTrackCuts::IsSelected(TObject *o){
     if(fHybridFilterBits[0] > -1 && fHybridFilterBits[1] > -1) {
       if(aodtrack->TestFilterBit(BIT(fHybridFilterBits[0]))) tracktype = AliEmcalTrackSelResultHybrid::kHybridGlobal;
       else if(aodtrack->TestFilterBit(BIT(fHybridFilterBits[1]))){
-        if(aodtrack->GetStatus() & AliVTrack::kITSrefit) tracktype = AliEmcalTrackSelResultHybrid::kHybridConstrained;
+        if(aodtrack->GetStatus() & AliVTrack::kITSrefit) tracktype = AliEmcalTrackSelResultHybrid::kHybridConstrainedTrue; // no module map -> set all complementary hybrid tracks to true complementary hybrid tracks
         else tracktype = AliEmcalTrackSelResultHybrid::kHybridConstrainedNoITSrefit;
       }
     }
@@ -143,7 +143,7 @@ bool TestAliEmcalAODHybridTrackCuts::TestDef2010wRefit() const {
       AliErrorStream() << "Hybrid track information not found for track CAT2" << std::endl;
       nfailure++;          // no hybrid track type found - failure
     } else {
-      if(tracktype->GetHybridTrackType() != AliEmcalTrackSelResultHybrid::kHybridConstrained){
+      if(tracktype->IsHybridTrackConstrained()){
         AliErrorStream() << "Track not selected as hybrid track CAT2: " << int(tracktype->GetHybridTrackType()) << std::endl;
         nfailure++; // wrong hybrid track type
       }
@@ -216,7 +216,7 @@ bool TestAliEmcalAODHybridTrackCuts::TestDef2010woRefit() const {
       AliErrorStream() << "Hybrid track information not found for track CAT2" << std::endl;
       nfailure++;          // no hybrid track type found - failure
     } else {
-      if(tracktype->GetHybridTrackType() != AliEmcalTrackSelResultHybrid::kHybridConstrained){
+      if(tracktype->IsHybridTrackConstrained()){
         AliErrorStream() << "Track not selected as hybrid track CAT2: " << int(tracktype->GetHybridTrackType()) << std::endl;
         nfailure++; // wrong hybrid track type
       }
@@ -277,7 +277,7 @@ bool TestAliEmcalAODHybridTrackCuts::TestDef2011() const {
       AliErrorStream() << "Hybrid track information not found for track CAT2" << std::endl;
       nfailure++;
     } else {
-      if(tracktype->GetHybridTrackType() != AliEmcalTrackSelResultHybrid::kHybridConstrained){
+      if(tracktype->IsHybridTrackConstrained()){
         AliErrorStream() << "Track not selected as hybrid track CAT2: " << int(tracktype->GetHybridTrackType()) << std::endl;
         nfailure++;
       }

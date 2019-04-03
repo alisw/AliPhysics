@@ -40,6 +40,7 @@ class AliAnTOFtrack {
   Float_t fTOFExpTime[kExpSpecies];  //Expected time for all species
   Float_t fTOFExpSigma[kExpSpecies]; //Expected sigmas for all species
   Float_t fT0TrkTime;                //T0 best for the event
+  Double32_t fT0TrkSigma;            //[0,1048.576,20]  T0 best resolution for the event
   Double32_t fTOFchan;               //[-1.5,262142.5,18]  Channel of the matched track
   Float_t fEta;                      //Eta distribution of the track
   Double32_t fPhi;                   //[0,6.5536,16]  Phi distribution of the track
@@ -86,18 +87,11 @@ class AliAnTOFtrack {
 
   ///
   /// Method to get the track gamma * beta
-  Double_t GetGammaBeta() const
-  {
-    Double_t beta = GetBeta();
-    return beta / (TMath::Sqrt(1 - beta * beta));
-  }
+  Double_t GetGammaBeta() const;
 
   ///
-  /// Method to get the track mass
-  Double_t GetTOFMass(const Double_t p) const { return p / GetGammaBeta(); }
-  ///
   /// Method to get the track mass from the momentum at vertex
-  Double_t GetTOFMass() const { return GetTOFMass(GetMomentum()); }
+  Double_t GetTOFMass() const;
 
   //T0 Methods
 
@@ -191,30 +185,7 @@ class AliAnTOFtrack {
 
   ///
   /// Method to get the particle momentum
-  void Print() const
-  {
-    cout << "fTrkMask " << fTrkMask << endl;
-    cout << "fTPCPIDMask " << fTPCPIDMask << endl;
-    cout << "fTrkCutMask " << fTrkCutMask << endl;
-    cout << "fDCAXY " << fDCAXY << endl;
-    cout << "fDCAZ " << fDCAZ << endl;
-    cout << "fLength " << fLength << endl;
-    cout << "fLengthRatio " << fLengthRatio << endl;
-    cout << "fTOFTime " << fTOFTime << endl;
-    cout << "fTOFMismatchTime " << fTOFMismatchTime << endl;
-    for (Int_t i = 0; i < kExpSpecies; i++) {
-      cout << "fTOFExpTime[" << i << "] " << fTOFExpTime[i] << endl;
-      cout << "fTOFExpSigma[" << i << "] " << fTOFExpSigma[i] << endl;
-    }
-    cout << "fT0TrkTime " << fT0TrkTime << endl;
-    cout << "fTOFchan " << fTOFchan << endl;
-    cout << "fEta " << fEta << endl;
-    cout << "fPhi " << fPhi << endl;
-    cout << "fPt " << fPt << endl;
-    cout << "fPTPC " << fPTPC << endl;
-    cout << "fNTOFClusters " << fNTOFClusters << endl;
-    cout << "fTPCSignal " << fTPCSignal << endl;
-  };
+  void Print() const;
 };
 
 #endif

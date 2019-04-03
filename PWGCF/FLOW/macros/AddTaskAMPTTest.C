@@ -61,7 +61,7 @@ AliAnalysisTaskFlowEvent *AddTaskAMPTTest(TString fileNameBase="AnalysisResults"
   Bool_t DoQAcorrelations=kFALSE;
 
   //Methods
-  Bool_t METHODS[] = {SP,LYZ1SUM,LYZ1PROD,LYZ2SUM,LYZ2PROD,LYZEP,GFC,QC,FQD,MCEP,MH,NL};
+  Bool_t METHODS[] = {SP,QC};
 
   // Boolean to use/not use weights for the Q vector
   Bool_t WEIGHTS[] = {kFALSE,kFALSE,kFALSE}; //Phi, v'(pt), v'(eta)
@@ -174,7 +174,7 @@ AliAnalysisTaskFlowEvent *AddTaskAMPTTest(TString fileNameBase="AnalysisResults"
     }
     else {
       cout<<" WARNING: the file <weights.root> with weights from the previous run was not available."<<endl;
-      break;
+      return NULL;
     } 
   }
   
@@ -200,7 +200,7 @@ AliAnalysisTaskFlowEvent *AddTaskAMPTTest(TString fileNameBase="AnalysisResults"
       TFile* fInputFileLYZ2SUM = (TFile*)outputFile->FindObjectAny(inputFileNameLYZ2SUM.Data());
       if(!fInputFileLYZ2SUM || fInputFileLYZ2SUM->IsZombie()) { 
 	cerr << " ERROR: To run LYZ2SUM you need the output file from LYZ1SUM. This file is not there! Please run LYZ1SUM first." << endl ; 
-	break;
+	return NULL;
       }
       else {
 	TList* fInputListLYZ2SUM = (TList*)fInputFileLYZ2SUM->Get("LYZ1SUM");
@@ -217,7 +217,7 @@ AliAnalysisTaskFlowEvent *AddTaskAMPTTest(TString fileNameBase="AnalysisResults"
       TFile* fInputFileLYZ2PROD = (TFile*)outputFile->FindObjectAny(inputFileNameLYZ2PROD.Data());
       if(!fInputFileLYZ2PROD || fInputFileLYZ2PROD->IsZombie()) { 
 	cerr << " ERROR: To run LYZ2PROD you need the output file from LYZ1PROD. This file is not there! Please run LYZ1PROD first." << endl ; 
-	break;
+	return NULL;
       }
       else {
 	TList* fInputListLYZ2PROD = (TList*)fInputFileLYZ2PROD->Get("LYZ1PROD");
@@ -249,7 +249,7 @@ AliAnalysisTaskFlowEvent *AddTaskAMPTTest(TString fileNameBase="AnalysisResults"
     TFile* fInputFileLYZEP = (TFile*)outputFile->FindObjectAny(inputFileNameLYZEP.Data());
     if(!fInputFileLYZEP || fInputFileLYZEP->IsZombie()) { 
       cerr << " ERROR: To run LYZEP you need the output file from LYZ2SUM. This file is not there! Please run LYZ2SUM first." << endl ; 
-      break;
+      return NULL;
     }
     else {
       TList* fInputListLYZEP = (TList*)fInputFileLYZEP->Get("LYZ2SUM");
@@ -259,25 +259,6 @@ AliAnalysisTaskFlowEvent *AddTaskAMPTTest(TString fileNameBase="AnalysisResults"
   }
   
   
-  // Create the FMD task and add it to the manager
-  //===========================================================================
-  if (rptypestr == "FMD") {
-    AliFMDAnalysisTaskSE *taskfmd = NULL;
-    if (rptypestr == "FMD") {
-      taskfmd = new AliFMDAnalysisTaskSE("TaskFMD");
-      mgr->AddTask(taskfmd);
-      
-      AliFMDAnaParameters* pars = AliFMDAnaParameters::Instance();
-      pars->Init();
-      pars->SetProcessPrimary(kTRUE); //for MC only
-      pars->SetProcessHits(kFALSE);
-      
-      //pars->SetRealData(kTRUE); //for real data
-      //pars->SetProcessPrimary(kFALSE); //for real data
-    }
-  }
-  
-  // Create the flow event task, add it to the manager.
   //===========================================================================
   AliAnalysisTaskFlowEvent *taskFE = NULL;
 
@@ -306,8 +287,11 @@ AliAnalysisTaskFlowEvent *AddTaskAMPTTest(TString fileNameBase="AnalysisResults"
 
   // Create the analysis tasks, add them to the manager.
   //===========================================================================
+    AliAnalysisTaskScalarProduct *taskSP;
+    AliAnalysisTaskQCumulants *taskQC;
+
   if (SP){
-    AliAnalysisTaskScalarProduct *taskSP = new AliAnalysisTaskScalarProduct(Form("TaskScalarProduct %s",outputSlotName.Data()),WEIGHTS[0]);
+    taskSP = new AliAnalysisTaskScalarProduct(Form("TaskScalarProduct %s",outputSlotName.Data()),WEIGHTS[0]);
     taskSP->SetRelDiffMsub(1.0);
     taskSP->SetApplyCorrectionForNUA(kTRUE);
     taskSP->SetHarmonic(harmonic);
@@ -315,43 +299,8 @@ AliAnalysisTaskFlowEvent *AddTaskAMPTTest(TString fileNameBase="AnalysisResults"
     else     taskSP->SetTotalQvector("Qa");
     mgr->AddTask(taskSP);
   }
-  if (LYZ1SUM){
-    AliAnalysisTaskLeeYangZeros *taskLYZ1SUM = new AliAnalysisTaskLeeYangZeros(Form("TaskLeeYangZerosSUM %s",outputSlotName.Data()),kTRUE);
-    taskLYZ1SUM->SetFirstRunLYZ(kTRUE);
-    taskLYZ1SUM->SetUseSumLYZ(kTRUE);
-    mgr->AddTask(taskLYZ1SUM);
-  }
-  if (LYZ1PROD){
-    AliAnalysisTaskLeeYangZeros *taskLYZ1PROD = new AliAnalysisTaskLeeYangZeros(Form("TaskLeeYangZerosPROD %s",outputSlotName.Data()),kTRUE);
-    taskLYZ1PROD->SetFirstRunLYZ(kTRUE);
-    taskLYZ1PROD->SetUseSumLYZ(kFALSE);
-    mgr->AddTask(taskLYZ1PROD);
-  }
-  if (LYZ2SUM){
-    AliAnalysisTaskLeeYangZeros *taskLYZ2SUM = new AliAnalysisTaskLeeYangZeros(Form("TaskLeeYangZerosSUM %s",outputSlotName.Data()),kFALSE);
-    taskLYZ2SUM->SetFirstRunLYZ(kFALSE);
-    taskLYZ2SUM->SetUseSumLYZ(kTRUE);
-    mgr->AddTask(taskLYZ2SUM);
-  }
-  if (LYZ2PROD){
-    AliAnalysisTaskLeeYangZeros *taskLYZ2PROD = new AliAnalysisTaskLeeYangZeros(Form("TaskLeeYangZerosPROD %s",outputSlotName.Data()),kFALSE);
-    taskLYZ2PROD->SetFirstRunLYZ(kFALSE);
-    taskLYZ2PROD->SetUseSumLYZ(kFALSE);
-    mgr->AddTask(taskLYZ2PROD);
-  }
-  if (LYZEP){
-    AliAnalysisTaskLYZEventPlane *taskLYZEP = new AliAnalysisTaskLYZEventPlane(Form("TaskLYZEventPlane %s",outputSlotName.Data()));
-    mgr->AddTask(taskLYZEP);
-  }
-  if (GFC){
-    AliAnalysisTaskCumulants *taskGFC = new AliAnalysisTaskCumulants(Form("TaskCumulants %s",outputSlotName.Data()),useWeights);
-    taskGFC->SetUsePhiWeights(WEIGHTS[0]); 
-    taskGFC->SetUsePtWeights(WEIGHTS[1]);
-    taskGFC->SetUseEtaWeights(WEIGHTS[2]); 
-    mgr->AddTask(taskGFC);
-  }
   if (QC){
-    AliAnalysisTaskQCumulants *taskQC = new AliAnalysisTaskQCumulants(Form("TaskQCumulants %s",outputSlotName.Data()),useWeights);
+    taskQC = new AliAnalysisTaskQCumulants(Form("TaskQCumulants %s",outputSlotName.Data()),useWeights);
     //taskQC->SetMultiplicityIs(AliFlowCommonConstants::kRP); 
     taskQC->SetMultiplicityIs(AliFlowCommonConstants::kExternal); 
     //taskQC->SetFillProfilesVsMUsingWeights(kFALSE);
@@ -368,57 +317,11 @@ AliAnalysisTaskFlowEvent *AddTaskAMPTTest(TString fileNameBase="AnalysisResults"
     taskQC->SetFillMultipleControlHistograms(kFALSE);     
     mgr->AddTask(taskQC);
   }
-  if (FQD){
-    AliAnalysisTaskFittingQDistribution *taskFQD = new AliAnalysisTaskFittingQDistribution(Form("TaskFittingQDistribution %s",outputSlotName.Data()),kFALSE);
-    taskFQD->SetUsePhiWeights(WEIGHTS[0]); 
-    taskFQD->SetqMin(0.);
-    taskFQD->SetqMax(1000.);
-    taskFQD->SetqNbins(10000);
-    mgr->AddTask(taskFQD);
-  }
-  if (MCEP){
-    AliAnalysisTaskMCEventPlane *taskMCEP = new AliAnalysisTaskMCEventPlane(Form("TaskMCEventPlane %s",outputSlotName.Data()));
-    taskMCEP->SetHarmonic(harmonic);
-    mgr->AddTask(taskMCEP);
-  }
-  if (MH){
-    AliAnalysisTaskMixedHarmonics *taskMH = new AliAnalysisTaskMixedHarmonics(Form("TaskMixedHarmonics %s",outputSlotName.Data()),useWeights);
-    taskMH->SetHarmonic(1); // n in cos[n(phi1+phi2-2phi3)] and cos[n(psi1+psi2-2phi3)]
-    taskMH->SetNoOfMultipicityBins(10000);
-    taskMH->SetMultipicityBinWidth(1.);
-    taskMH->SetMinMultiplicity(1.);
-    taskMH->SetCorrectForDetectorEffects(kTRUE);
-    taskMH->SetEvaluateDifferential3pCorrelator(kTRUE); // evaluate <<cos[n(psi1+psi2-2phi3)]>> (Remark: two nested loops)    
-    if(chargePOI == 0)
-      taskMH->SetOppositeChargesPOI(kTRUE);    
-    else
-      taskMH->SetOppositeChargesPOI(kFALSE); // POIs psi1 and psi2 in cos[n(psi1+psi2-2phi3)] will have opposite charges  
-    mgr->AddTask(taskMH);
-  }  
-  if (NL){
-    AliAnalysisTaskNestedLoops *taskNL = new AliAnalysisTaskNestedLoops(Form("TaskNestedLoops %s",outputSlotName.Data()),useWeights);
-    taskNL->SetHarmonic(1); // n in cos[n(phi1+phi2-2phi3)] and cos[n(psi1+psi2-2phi3)]
-    taskNL->SetEvaluateNestedLoopsForRAD(kTRUE); // RAD = Relative Angle Distribution
-    taskNL->SetEvaluateNestedLoopsForMH(kTRUE); // evalaute <<cos[n(phi1+phi2-2phi3)]>> (Remark: three nested loops)   
-    taskNL->SetEvaluateDifferential3pCorrelator(kFALSE); // evaluate <<cos[n(psi1+psi2-2phi3)]>>  (Remark: three nested loops)   
-    taskNL->SetOppositeChargesPOI(kFALSE); // POIs psi1 and psi2 in cos[n(psi1+psi2-2phi3)] will have opposite charges  
-    mgr->AddTask(taskNL);
-  }
 
   // Create the output container for the data produced by the task
   // Connect to the input and output containers
   //===========================================================================
   AliAnalysisDataContainer *cinput1 = mgr->GetCommonInputContainer();
-  
-  if (rptypestr == "FMD") {
-    AliAnalysisDataContainer *coutputFMD = 
-      mgr->CreateContainer(Form("BackgroundCorrected %s",outputSlotName.Data()), TList::Class(), AliAnalysisManager::kExchangeContainer);
-    //input and output taskFMD     
-    mgr->ConnectInput(taskfmd, 0, cinput1);
-    mgr->ConnectOutput(taskfmd, 1, coutputFMD);
-    //input into taskFE
-    mgr->ConnectInput(taskFE,1,coutputFMD);
-  }
   
   AliAnalysisDataContainer *coutputFE = 
   mgr->CreateContainer(Form("FlowEventSimple %s",outputSlotName.Data()),AliFlowEventSimple::Class(),AliAnalysisManager::kExchangeContainer);
@@ -437,10 +340,9 @@ AliAnalysisTaskFlowEvent *AddTaskAMPTTest(TString fileNameBase="AnalysisResults"
   // Create the output containers for the data produced by the analysis tasks
   // Connect to the input and output containers
   //===========================================================================
-  if (useWeights) {    
-    AliAnalysisDataContainer *cinputWeights = mgr->CreateContainer(Form("Weights %s",outputSlotName.Data()),
+    AliAnalysisDataContainer *cinputWeights;
+   if( useWeights) cinputWeights = mgr->CreateContainer(Form("Weights %s",outputSlotName.Data()),
 								   TList::Class(),AliAnalysisManager::kInputContainer); 
-  }
 
   if(SP) {
     TString outputSP = fileName;
@@ -455,80 +357,6 @@ AliAnalysisTaskFlowEvent *AddTaskAMPTTest(TString fileNameBase="AnalysisResults"
       cinputWeights->SetData(weightsList);
     }
   }
-  if(LYZ1SUM) {
-    TString outputLYZ1SUM = fileName;
-    outputLYZ1SUM += ":outputLYZ1SUManalysis";
-    outputLYZ1SUM+= rptypestr;
-    AliAnalysisDataContainer *coutputLYZ1SUM = mgr->CreateContainer(Form("LYZ1SUM%s",outputSlotName.Data()), 
-								    TList::Class(),AliAnalysisManager::kOutputContainer,outputLYZ1SUM); 
-    mgr->ConnectInput(taskLYZ1SUM,0,coutputFE);
-    mgr->ConnectOutput(taskLYZ1SUM,1,coutputLYZ1SUM);
-  }
-  if(LYZ1PROD) {
-    TString outputLYZ1PROD = fileName;
-    outputLYZ1PROD += ":outputLYZ1PRODanalysis";
-    outputLYZ1PROD+= rptypestr;
-    AliAnalysisDataContainer *coutputLYZ1PROD = mgr->CreateContainer(Form("LYZ1PROD%s",outputSlotName.Data()), 
-								     TList::Class(),AliAnalysisManager::kOutputContainer,outputLYZ1PROD); 
-    mgr->ConnectInput(taskLYZ1PROD,0,coutputFE); 
-    mgr->ConnectOutput(taskLYZ1PROD,1,coutputLYZ1PROD);
-  }
-  if(LYZ2SUM) {
-    AliAnalysisDataContainer *cinputLYZ2SUM = mgr->CreateContainer(Form("LYZ2SUMin%s",outputSlotName.Data()),
-								   TList::Class(),AliAnalysisManager::kInputContainer);
-    TString outputLYZ2SUM = fileName;
-    outputLYZ2SUM += ":outputLYZ2SUManalysis";
-    outputLYZ2SUM+= rptypestr;
-    
-    AliAnalysisDataContainer *coutputLYZ2SUM = mgr->CreateContainer(Form("LYZ2SUM%s",outputSlotName.Data()), 
-								    TList::Class(),AliAnalysisManager::kOutputContainer,outputLYZ2SUM); 
-    mgr->ConnectInput(taskLYZ2SUM,0,coutputFE); 
-    mgr->ConnectInput(taskLYZ2SUM,1,cinputLYZ2SUM);
-    mgr->ConnectOutput(taskLYZ2SUM,1,coutputLYZ2SUM); 
-    cinputLYZ2SUM->SetData(fInputListLYZ2SUM);
-  }
-  if(LYZ2PROD) {
-    AliAnalysisDataContainer *cinputLYZ2PROD = mgr->CreateContainer(Form("LYZ2PRODin%s",outputSlotName.Data()),
-								    TList::Class(),AliAnalysisManager::kInputContainer);
-    TString outputLYZ2PROD = fileName;
-    outputLYZ2PROD += ":outputLYZ2PRODanalysis";
-    outputLYZ2PROD+= rptypestr;
-    
-    AliAnalysisDataContainer *coutputLYZ2PROD = mgr->CreateContainer(Form("LYZ2PROD%s",outputSlotName.Data()), 
-								     TList::Class(),AliAnalysisManager::kOutputContainer,outputLYZ2PROD); 
-    mgr->ConnectInput(taskLYZ2PROD,0,coutputFE); 
-    mgr->ConnectInput(taskLYZ2PROD,1,cinputLYZ2PROD);
-    mgr->ConnectOutput(taskLYZ2PROD,1,coutputLYZ2PROD); 
-    cinputLYZ2PROD->SetData(fInputListLYZ2PROD);
-  }
-  if(LYZEP) {
-    AliAnalysisDataContainer *cinputLYZEP = mgr->CreateContainer(Form("LYZEPin%s",outputSlotName.Data()),
-								 TList::Class(),AliAnalysisManager::kInputContainer);
-    TString outputLYZEP = fileName;
-    outputLYZEP += ":outputLYZEPanalysis";
-    outputLYZEP+= rptypestr;
-    
-    AliAnalysisDataContainer *coutputLYZEP = mgr->CreateContainer(Form("LYZEP%s",outputSlotName.Data()), 
-								  TList::Class(),AliAnalysisManager::kOutputContainer,outputLYZEP); 
-    mgr->ConnectInput(taskLYZEP,0,coutputFE); 
-    mgr->ConnectInput(taskLYZEP,1,cinputLYZEP);
-    mgr->ConnectOutput(taskLYZEP,1,coutputLYZEP); 
-    cinputLYZEP->SetData(fInputListLYZEP);
-  }
-  if(GFC) {
-    TString outputGFC = fileName;
-    outputGFC += ":outputGFCanalysis";
-    outputGFC+= rptypestr;
-    
-    AliAnalysisDataContainer *coutputGFC = mgr->CreateContainer(Form("GFC%s",outputSlotName.Data()), 
-								TList::Class(),AliAnalysisManager::kOutputContainer,outputGFC); 
-    mgr->ConnectInput(taskGFC,0,coutputFE); 
-    mgr->ConnectOutput(taskGFC,1,coutputGFC);
-    if (useWeights) {
-      mgr->ConnectInput(taskGFC,1,cinputWeights);
-      cinputWeights->SetData(weightsList);
-    } 
-  }
   if(QC) {
     TString outputQC = fileName;
     outputQC += ":outputQCanalysis";
@@ -542,58 +370,6 @@ AliAnalysisTaskFlowEvent *AddTaskAMPTTest(TString fileNameBase="AnalysisResults"
       mgr->ConnectInput(taskQC,1,cinputWeights);
       cinputWeights->SetData(weightsList);
     }
-  }
-  if(FQD) {
-    TString outputFQD = fileName;
-    outputFQD += ":outputFQDanalysis";
-    outputFQD+= rptypestr;
-    
-    AliAnalysisDataContainer *coutputFQD = mgr->CreateContainer(Form("FQD%s",outputSlotName.Data()), 
-								TList::Class(),AliAnalysisManager::kOutputContainer,outputFQD); 
-    mgr->ConnectInput(taskFQD,0,coutputFE); 
-    mgr->ConnectOutput(taskFQD,1,coutputFQD);
-    if(useWeights) {
-      mgr->ConnectInput(taskFQD,1,cinputWeights);
-      cinputWeights->SetData(weightsList);
-    } 
-  }
-  if(MCEP) {
-    TString outputMCEP = fileName;
-    outputMCEP += ":outputMCEPanalysis";
-    outputMCEP+= rptypestr;
-    
-    AliAnalysisDataContainer *coutputMCEP = mgr->CreateContainer(Form("MCEP%s",outputSlotName.Data()), 
-								 TList::Class(),AliAnalysisManager::kOutputContainer,outputMCEP); 
-    mgr->ConnectInput(taskMCEP,0,coutputFE);
-    mgr->ConnectOutput(taskMCEP,1,coutputMCEP); 
-  }
-  if(MH) {
-    TString outputMH = fileName;
-    outputMH += ":outputMHanalysis";
-    outputMH += rptypestr;
-        
-    AliAnalysisDataContainer *coutputMH = mgr->CreateContainer(Form("MH%s",outputSlotName.Data()), 
-							       TList::Class(),AliAnalysisManager::kOutputContainer,outputMH); 
-    mgr->ConnectInput(taskMH,0,coutputFE); 
-    mgr->ConnectOutput(taskMH,1,coutputMH); 
-    //if (useWeights) {
-    //  mgr->ConnectInput(taskMH,1,cinputWeights);
-    //  cinputWeights->SetData(weightsList);
-    //} 
-  }
-  if(NL) {
-    TString outputNL = fileName;
-    outputNL += ":outputNLanalysis";
-    outputNL += rptypestr;
-
-    AliAnalysisDataContainer *coutputNL = mgr->CreateContainer(Form("NL%s",outputSlotName.Data()), 
-							       TList::Class(),AliAnalysisManager::kOutputContainer,outputNL); 
-    mgr->ConnectInput(taskNL,0,coutputFE);
-    mgr->ConnectOutput(taskNL,1,coutputNL);
-    //if (useWeights) {
-    //  mgr->ConnectInput(taskNL,1,cinputWeights);
-    //  cinputWeights->SetData(weightsList);
-    //} 
   }
 
   ///////////////////////////////////////////////////////////////////////////////////////////

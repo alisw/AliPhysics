@@ -10,9 +10,10 @@
 
 class AliFemtoTrio {
 public:
-  enum EPart { kKaonPlus , kKaonMinus , kPionPlus , kPionMinus , kUnknown};
+  enum EPart { kKaonPlus , kKaonMinus , kPionPlus , kPionMinus , kProton, kAntiProton, kUnknown};
   
   AliFemtoTrio();
+  AliFemtoTrio(AliFemtoTrio&);
   ~AliFemtoTrio();
 
   // track Gets:
@@ -33,6 +34,14 @@ public:
   double MInv12(); // returns invariant mass of particles 1 and 2 from the trio
   double MInv23(); // returns invariant mass of particles 2 and 3 from the trio
   double MInv31(); // returns invariant mass of particles 3 and 1 from the trio
+  
+  double GetTheta12();
+  double GetTheta23();
+  double GetTheta31();
+  
+  double GetTheta1();
+  double GetTheta2();
+  double GetTheta3();
   
 private:
   AliFemtoParticle* fTrack1;  // first particle in the trio

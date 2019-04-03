@@ -10,8 +10,9 @@ AliAnalysisTaskAccCont *AddTaskAccCont(Double_t vertexZ=10.,
 				       TString centEstim = "V0M",
 				       AliAnalysisTaskAccCont::kSystem systemType = AliAnalysisTaskAccCont::kPbPb,
 				       AliAnalysisTaskAccCont::kCentralityBinning nCenBins = AliAnalysisTaskAccCont::kFull,
-				       AliAnalysisTaskAccCont::kParticleOfInterest particleType = AliAnalysisTaskAccCont::kMuon,
-				       TString fileNameBase="AnalysisResults") {
+				       AliPID::EParticleType particleType = AliPID::kMuon,
+				       TString fileNameBase="AnalysisResults",
+		                       TString MCorData = "data") {
   // Creates an analysis task and adds it to the analysis manager.
   // Get the pointer to the existing analysis manager via the static access method.
   TString outputFileName(fileNameBase);
@@ -36,11 +37,18 @@ AliAnalysisTaskAccCont *AddTaskAccCont(Double_t vertexZ=10.,
   }
   
   }
+
+  else if(nCenBins == AliAnalysisTaskAccCont::kMCgen){
+
+  gCentrality[0]=0;
+  gCentrality[1]=100;
+
+  }
   //===========================================================================
 
 
   Int_t nCentralities = 2;
-  if(nCenBins == AliAnalysisTaskAccCont::kFull) nCentralities = 2;
+  if(nCenBins == AliAnalysisTaskAccCont::kFull || nCenBins == AliAnalysisTaskAccCont::kMCgen) nCentralities = 2;
   else if(nCenBins == AliAnalysisTaskAccCont::kBins) nCentralities = nCentralitiesMax;
 
   AliAnalysisTaskAccCont *task[nCentralitiesMax];
@@ -61,7 +69,7 @@ AliAnalysisTaskAccCont *AddTaskAccCont(Double_t vertexZ=10.,
 
     if(PID){
     suffixName[iCentralityBin] += "_PID_";
-    suffixName[iCentralityBin] += particleType;
+    suffixName[iCentralityBin] += AliPID::ParticleShortName(particleType);
     }
     
     if(UseRapidity)
@@ -71,6 +79,8 @@ AliAnalysisTaskAccCont *AddTaskAccCont(Double_t vertexZ=10.,
     suffixName[iCentralityBin] += "_full";
     else if(nCenBins == AliAnalysisTaskAccCont::kBins)
     suffixName[iCentralityBin] += "_bins";
+    else if(nCenBins == AliAnalysisTaskAccCont::kMCgen)
+    suffixName[iCentralityBin] += "_MCgen";
 
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
   if (!mgr) {
@@ -105,11 +115,23 @@ AliAnalysisTaskAccCont *AddTaskAccCont(Double_t vertexZ=10.,
   task[iCentralityBin]->SetKinematicsCutsAOD(ptMin,ptMax,etaMin,etaMax);
   task[iCentralityBin]->SetCentralityPercentileRange(gCentrality[iCentralityBin],gCentrality[iCentralityBin+1]);
   
-  if(systemType == AliAnalysisTaskAccCont::kPbPb)
+  if(systemType == AliAnalysisTaskAccCont::kPbPb){
+  if (MCorData == "data"){
+  task[iCentralityBin]->CheckPileUp();
   task[iCentralityBin]->UsePileUpCutsPbPb();
-  else if(systemType == AliAnalysisTaskAccCont::kpPb)
+  }
+  else if (MCorData == "MCrec")
+  task[iCentralityBin]->SetMCRec();
+  }
+  else if(systemType == AliAnalysisTaskAccCont::kpPb){
+  if (MCorData == "data"){
+  task[iCentralityBin]->CheckPileUp();
   task[iCentralityBin]->UsePileUpCutspPb();
- 
+  }
+  else if (MCorData == "MCrec")
+  task[iCentralityBin]->SetMCRec();
+  }
+
   if(UseRapidity)
   task[iCentralityBin]->SetUseRapidity(); 
  
@@ -119,8 +141,11 @@ AliAnalysisTaskAccCont *AddTaskAccCont(Double_t vertexZ=10.,
   
   //PID
   if(PID){
+  if(systemType == AliAnalysisTaskAccCont::kpPb)
+  task[iCentralityBin]->SetUseNSigmaPIDNewTrial();
+  else
   task[iCentralityBin]->UsePID();
-  task[iCentralityBin]->SetNSigmaPID(nsigma);
+  //task[iCentralityBin]->SetNSigmaPID(nsigma);
   task[iCentralityBin]->setParticleType(particleType);
   mgr->AddTask(task[iCentralityBin]);  
   }
@@ -140,6 +165,9 @@ AliAnalysisTaskAccCont *AddTaskAccCont(Double_t vertexZ=10.,
   coutResults[iCentralityBin] = mgr->CreateContainer(Form("listResults_%s",suffixName[iCentralityBin].Data()), TList::Class(),AliAnalysisManager::kOutputContainer,outputFileName.Data());
 
   mgr->ConnectOutput(task[iCentralityBin], 2, coutResults[iCentralityBin]);
-}
+
+  return task[iCentralityBin];
+  
+  }
 
 }

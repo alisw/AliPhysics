@@ -432,6 +432,20 @@ void AliYAMLConfiguration::PrintConfiguration(std::ostream & stream, const std::
  */
 std::string AliYAMLConfiguration::toString(const int index) const
 {
+  // Reinitialize the YAML configuration nodes for improved visualization. This function
+  // only reinitializes from the stream strings if the YAML nodes aren't created.
+  // NOTE: We cast away the const here because we want to keep the overload of Print().
+  //       This of course usually not a good thing to do, but it's also the only reasonable option
+  //       because ROOT 5 cannot handle YAML::Node at all. Also, this basically amounts to
+  //       generating the YAML::Node(s) from an existing member, so the modification of the
+  //       object isn't modified by much.
+  bool reinitialized = false;
+  if (fInitialized) {
+    // Only attempt to run this if initialized (and therefore would need reinitialization).
+    const_cast<AliYAMLConfiguration *>(this)->Reinitialize();
+    reinitialized = true;
+  }
+
   std::stringstream tempSS;
 
   if (index < 0) {
@@ -439,6 +453,10 @@ std::string AliYAMLConfiguration::toString(const int index) const
     tempSS << std::boolalpha;
     tempSS << "AliYAMLConfiguration:\n";
     tempSS << "Initialized: " << fInitialized << "\n";
+    // As a note to the user
+    if (reinitialized) {
+      tempSS << "Reinitialized YAML nodes during print: " << reinitialized << "\n";
+    }
     tempSS << "Prefix string: \"" << fPrefixString << "\"\n";
     tempSS << "Delimiter: \"" << fDelimiter << "\"\n";
     tempSS << "Configurations vector length: " << fConfigurations.size() << ", Configurations string vector length: " << fConfigurationsStrings.size() << "\n";

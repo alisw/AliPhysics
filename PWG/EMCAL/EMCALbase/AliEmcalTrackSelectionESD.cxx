@@ -121,6 +121,13 @@ void AliEmcalTrackSelectionESD::GenerateTrackCuts(ETrackFilterType_t type, const
     AddTrackCuts(hybridcuts);
     break;
   }
+  case kHybridTracks2018TRD:
+  {
+    AliDebugStream(1) << "Generate 2018  hybrid track cuts with TRD track length" << std::endl;
+    auto hybridcuts = new AliEmcalESDHybridTrackCuts("hybrid_2018_TRD", AliEmcalESDHybridTrackCuts::kDef2018TRD);
+    AddTrackCuts(hybridcuts);
+    break;
+  }
 
   default:
     break;

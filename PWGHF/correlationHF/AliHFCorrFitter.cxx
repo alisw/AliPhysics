@@ -27,6 +27,10 @@
 #include <TCanvas.h>
 #include <TH1F.h>
 #include <TF1.h>
+#include <TF2.h>
+#include <TMatrixD.h>
+#include <TFitResult.h>
+#include <TFitResultPtr.h>
 #include "AliHFCorrelationUtils.h"
 #include "AliHFCorrFitter.h"
 #include <Riostream.h>
@@ -41,6 +45,8 @@
 #include <TColor.h>
 #include <TClass.h>
 #include <sstream>
+#include <TVirtualFitter.h>
+#include <TMinuit.h>
 
 //Correlation histogram should be normalised per bin width and No. of trigger----------
 
@@ -72,7 +78,13 @@ AliHFCorrFitter::AliHFCorrFitter():
   fMaxBaselineRange(0.5*TMath::Pi()),
   fTypeOfFitfunc(kTwoGausPeriodicity),
   fDmesonType(AliHFCorrelationUtils::kDaverage),
-  fIsReflected(kFALSE)
+  fIsReflected(kFALSE),
+  fMinDpt(0.),
+  fMaxDpt(0.),
+  fMinAsspt(0.),
+  fMaxAsspt(0.),
+  fIspPb(kFALSE),
+  fBetaVal(0.)
 {
   //Default Constructor......... fix me
 
@@ -101,7 +113,13 @@ fMinBaselineRange(0.25*TMath::Pi()),
 fMaxBaselineRange(0.5*TMath::Pi()),
 fTypeOfFitfunc(kTwoGausPeriodicity),
 fDmesonType(AliHFCorrelationUtils::kDaverage),
-fIsReflected(kFALSE)
+fIsReflected(kFALSE),
+fMinDpt(0.),
+fMaxDpt(0.),
+fMinAsspt(0.),
+fMaxAsspt(0.),
+fIspPb(kFALSE),
+fBetaVal(0.)
 {
   if(isowner)fHist=histoToFit;
   else fHist=(TH1F*)histoToFit->Clone("fHist");
@@ -132,7 +150,13 @@ AliHFCorrFitter::AliHFCorrFitter(const AliHFCorrFitter &source):
   fMaxBaselineRange(source.fMaxBaselineRange),
   fTypeOfFitfunc(source.fTypeOfFitfunc),
   fDmesonType(source.fDmesonType),
-  fIsReflected(source.fIsReflected)
+  fIsReflected(source.fIsReflected),
+  fMinDpt(source.fMinDpt),
+  fMaxDpt(source.fMaxDpt),
+  fMinAsspt(source.fMinAsspt),
+  fMaxAsspt(source.fMaxAsspt),
+  fIspPb(source.fIspPb),
+  fBetaVal(source.fBetaVal)
 {
   //copy constructor
 }
@@ -179,7 +203,13 @@ AliHFCorrFitter& AliHFCorrFitter::operator=(const AliHFCorrFitter &cfit)
   fTypeOfFitfunc=cfit.fTypeOfFitfunc;
   fDmesonType=cfit.fDmesonType;
   fIsReflected=cfit.fIsReflected;
-  
+  fMinDpt=cfit.fMinDpt;
+  fMaxDpt=cfit.fMaxDpt;
+  fMinAsspt=cfit.fMinAsspt;
+  fMaxAsspt=cfit.fMaxAsspt;
+  fIspPb=cfit.fIspPb;
+  fBetaVal=cfit.fBetaVal;
+
   return *this;
 
 }
@@ -381,11 +411,11 @@ case 4:
     
     fFit->SetParName(0,"ped");
     fFit->SetParName(1,"NS Y");   
-    fFit->SetParName(2,"NS mean 1g");
-    fFit->SetParName(3,"NS #sigma 1g");
+    fFit->SetParName(2,"NS mean");
+    fFit->SetParName(3,"NS #sigma");
     fFit->SetParName(4,"AS Y");
-    fFit->SetParName(5,"AS mean");
-    fFit->SetParName(6,"AS #sigma");
+    fFit->SetParName(5,"AS mean 1g");
+    fFit->SetParName(6,"AS #sigma 1g");
     fFit->SetParName(7,"fract 1g");  
     fFit->SetParName(8,"AS #sigma 2g");
     break;
@@ -443,6 +473,633 @@ case 4:
     fFit->SetParName(8,"v_{2} D meson");
     break;
     
+  case 7: //Generalized Gaussian (Fabio)
+   // fFit=new TF1("kModifNSGausPeriodicity","[0]+[1]*([7]/(2.*[3]*TMath::Gamma(1./[7]))*TMath::Exp(-TMath::Power(TMath::Abs(x-[2])/[3],[7])))+[4]/TMath::Sqrt(2.*TMath::Pi())/[6]*TMath::Exp(-(x-[5])*(x-[5])/2./([6]*[6]))+[1]*([7]/(2.*[3]*TMath::Gamma(1./[7]))*TMath::Exp(-TMath::Power(TMath::Abs(x-2.*TMath::Pi()-[2])/[3],[7])))+[1]*([7]/(2.*[3]*TMath::Gamma(1./[7]))*TMath::Exp(-TMath::Power(TMath::Abs(x+2.*TMath::Pi()-[2])/[3],[7])))+[4]/TMath::Sqrt(2.*TMath::Pi())/[6]*TMath::Exp(-(x-2.*TMath::Pi()-[5])*(x-2.*TMath::Pi()-[5])/2./([6]*[6]))+[4]/TMath::Sqrt(2.*TMath::Pi())/[6]*TMath::Exp(-(x+2.*TMath::Pi()-[5])*(x+2.*TMath::Pi()-[5])/2./([6]*[6]))",fMin,fMax);
+   // fGausNS=new TF1("fModGausNSper","[0]*([3]/(2.*[2]*TMath::Gamma(1./[3]))*TMath::Exp(-TMath::Power(TMath::Abs(x-[1])/[2],[3])))+[0]*([3]/(2.*[2]*TMath::Gamma(1./[3]))*TMath::Exp(-TMath::Power(TMath::Abs(x-2.*TMath::Pi()-[1])/[2],[3])))+[0]*([3]/(2.*[2]*TMath::Gamma(1./[3]))*TMath::Exp(-TMath::Power(TMath::Abs(x+2.*TMath::Pi()-[1])/[2],[3])))",fMin,fMax);
+   // fGausAS=new TF1("fGausASper","[0]/TMath::Sqrt(2.*TMath::Pi())/[2]*TMath::Exp(-(x-[1])*(x-[1])/2./([2]*[2]))+[0]/TMath::Sqrt(2.*TMath::Pi())/[2]*TMath::Exp(-(x-2.*TMath::Pi()-[1])*(x-2.*TMath::Pi()-[1])/2./([2]*[2]))+[0]/TMath::Sqrt(2.*TMath::Pi())/[2]*TMath::Exp(-(x+2.*TMath::Pi()-[1])*(x+2.*TMath::Pi()-[1])/2./([2]*[2]))",fMin,fMax);
+  
+    fFit=new TF1("kModifNSGausPeriodicity","[0]+[1]*([7]*TMath::Sqrt(TMath::Gamma(3./[7]))/(2.*[3]*TMath::Power(TMath::Gamma(1./[7]),3./2.))*TMath::Exp(-TMath::Power(TMath::Abs(x-[2])*TMath::Sqrt(TMath::Gamma(3./[7]))/([3]*TMath::Sqrt(TMath::Gamma(1./[7]))),[7])))+[4]/TMath::Sqrt(2.*TMath::Pi())/[6]*TMath::Exp(-(x-[5])*(x-[5])/2./([6]*[6]))+[1]*([7]*TMath::Sqrt(TMath::Gamma(3./[7]))/(2.*[3]*TMath::Power(TMath::Gamma(1./[7]),3./2.))*TMath::Exp(-TMath::Power(TMath::Abs(x-2*TMath::Pi()-[2])*TMath::Sqrt(TMath::Gamma(3./[7]))/([3]*TMath::Sqrt(TMath::Gamma(1./[7]))),[7])))+[1]*([7]*TMath::Sqrt(TMath::Gamma(3./[7]))/(2.*[3]*TMath::Power(TMath::Gamma(1./[7]),3./2.))*TMath::Exp(-TMath::Power(TMath::Abs(x+2*TMath::Pi()-[2])*TMath::Sqrt(TMath::Gamma(3./[7]))/([3]*TMath::Sqrt(TMath::Gamma(1./[7]))),[7])))+[4]/TMath::Sqrt(2.*TMath::Pi())/[6]*TMath::Exp(-(x-2.*TMath::Pi()-[5])*(x-2.*TMath::Pi()-[5])/2./([6]*[6]))+[4]/TMath::Sqrt(2.*TMath::Pi())/[6]*TMath::Exp(-(x+2.*TMath::Pi()-[5])*(x+2.*TMath::Pi()-[5])/2./([6]*[6]))",fMin,fMax);
+    fGausNS=new TF1("fModGausNSper","[0]*([3]*TMath::Sqrt(TMath::Gamma(3./[3]))/(2.*[2]*TMath::Power(TMath::Gamma(1./[3]),3./2.))*TMath::Exp(-TMath::Power(TMath::Abs(x-[1])*TMath::Sqrt(TMath::Gamma(3./[3]))/([2]*TMath::Sqrt(TMath::Gamma(1./[3]))),[3])))+[0]*([3]*TMath::Sqrt(TMath::Gamma(3./[3]))/(2.*[2]*TMath::Power(TMath::Gamma(1./[3]),3./2.))*TMath::Exp(-TMath::Power(TMath::Abs(x-2*TMath::Pi()-[1])*TMath::Sqrt(TMath::Gamma(3./[3]))/([2]*TMath::Sqrt(TMath::Gamma(1./[3]))),[3])))+[0]*([3]*TMath::Sqrt(TMath::Gamma(3./[3]))/(2.*[2]*TMath::Power(TMath::Gamma(1./[3]),3./2.))*TMath::Exp(-TMath::Power(TMath::Abs(x+2*TMath::Pi()-[1])*TMath::Sqrt(TMath::Gamma(3./[3]))/([2]*TMath::Sqrt(TMath::Gamma(1./[3]))),[3])))",fMin,fMax);
+    fGausAS=new TF1("fGausASper","[0]/TMath::Sqrt(2.*TMath::Pi())/[2]*TMath::Exp(-(x-[1])*(x-[1])/2./([2]*[2]))+[0]/TMath::Sqrt(2.*TMath::Pi())/[2]*TMath::Exp(-(x-2.*TMath::Pi()-[1])*(x-2.*TMath::Pi()-[1])/2./([2]*[2]))+[0]/TMath::Sqrt(2.*TMath::Pi())/[2]*TMath::Exp(-(x+2.*TMath::Pi()-[1])*(x+2.*TMath::Pi()-[1])/2./([2]*[2]))",fMin,fMax);
+    fPed=new TF1("fPed","[0]",fMin,fMax);  
+
+    fFit->SetParLimits(0,0.,999.);
+    fFit->SetParLimits(1,0.005,25.);
+    fFit->SetParLimits(2,-0.55,0.55);
+    fFit->SetParLimits(3,0,0.8); //P.S. put 0.6 if fits fail...
+    fFit->SetParLimits(4,0.005,25.);
+    fFit->SetParLimits(5,2.85,3.55);   
+    fFit->SetParLimits(6,0.05,3.14/2.);   
+    fFit->SetParLimits(7,0.25,5.);
+    if(fMinAsspt==3 && fMaxAsspt==99) fFit->SetParLimits(7,0.5,3.);
+
+    //default starting pars
+    fFit->SetParameter(0,1.);
+    fFit->SetParameter(1,1.);
+    fFit->SetParameter(2,0.);
+    fFit->SetParameter(3,0.3);
+    fFit->SetParameter(4,0.25);
+    fFit->SetParameter(5,TMath::Pi());
+    fFit->SetParameter(6,0.3);
+    fFit->SetParameter(7,2);
+    
+    if(fIspPb) { //for pPb analyses (TESTED AND WORKING)
+      if(fMinAsspt==0.3 && fMaxAsspt==99) {  //dedicated starting parameters
+        printf("Dedicated starting fit parameters...");
+        fFit->SetParameter(0,2.4);
+        fFit->SetParameter(1,0.8);
+        fFit->SetParameter(3,0.4);
+        fFit->SetParameter(4,1.0);
+        fFit->SetParameter(6,0.6);
+      }
+      if(fMinAsspt==0.3 && fMaxAsspt==1) {  //dedicated starting parameters
+        printf("Dedicated starting fit parameters...");
+        fFit->SetParameter(0,1.8);
+        fFit->SetParameter(1,0.4);
+        fFit->SetParameter(3,0.4);
+        fFit->SetParameter(4,0.5);
+        fFit->SetParameter(6,0.6);
+      }    
+      if(fMinAsspt==1 && fMaxAsspt==99) {  //dedicated starting parameters
+        printf("Dedicated starting fit parameters...");
+        fFit->SetParameter(0,0.6);
+        fFit->SetParameter(1,0.4);
+        fFit->SetParameter(3,0.3);
+        fFit->SetParameter(4,0.6);
+        fFit->SetParameter(6,0.6);
+        if(fMinDpt>=16) {
+          fFit->SetParameter(0,1.25);
+          fFit->SetParameter(1,1.8);
+          fFit->SetParameter(3,0.15);
+          fFit->SetParameter(4,0.7);
+          fFit->SetParameter(6,0.15);        
+          fFit->SetParameter(7,0.51);
+          fFit->SetParLimits(7,0.5,3.);        
+        }
+      }    
+      if(fMinAsspt==1 && fMaxAsspt==2) {  //dedicated starting parameters
+        printf("Dedicated starting fit parameters...");
+        fFit->SetParameter(0,0.5);
+        fFit->SetParameter(1,0.4);
+        fFit->SetParameter(3,0.3);
+        fFit->SetParameter(4,0.4);
+        fFit->SetParameter(6,0.7);
+      }
+      if(fMinAsspt==2 && fMaxAsspt==3) {  //dedicated starting parameters
+        printf("Dedicated starting fit parameters...");
+        fFit->SetParameter(0,0.08);
+        fFit->SetParameter(1,0.1);
+        fFit->SetParameter(3,0.3);
+        fFit->SetParameter(4,0.1);
+        fFit->SetParameter(6,0.4);
+        if(fMinDpt==2) {
+          fFit->SetParameter(0,0.1);
+          fFit->SetParameter(1,0.005);
+          fFit->SetParameter(3,0.6);
+          fFit->SetParameter(4,0.007);
+          fFit->SetParameter(6,0.4);
+        }
+        if(fMinDpt>=16) {
+          fFit->SetParLimits(7,0.5,3.);
+          fFit->SetParameter(1,0.5);
+          fFit->SetParameter(4,0.15);
+          fFit->SetParameter(7,1);
+        }      
+      }
+      if(fMinAsspt==2 && fMaxAsspt==99) {  //dedicated starting parameters
+        printf("Dedicated starting fit parameters...");
+        fFit->SetParameter(0,0.08);
+        fFit->SetParameter(1,0.1);
+        fFit->SetParameter(3,0.3);
+        fFit->SetParameter(4,0.1);
+        fFit->SetParameter(6,0.4);
+        if(fMinDpt==2) {
+          fFit->SetParameter(0,0.1);
+          fFit->SetParameter(1,0.005);
+          fFit->SetParameter(3,0.6);
+          fFit->SetParameter(4,0.01);
+          fFit->SetParameter(6,0.4);
+        }      
+      }    
+      if(fMinAsspt==3 && fMaxAsspt==99) {  //dedicated starting parameters
+        printf("Dedicated starting fit parameters...");
+        fFit->SetParameter(0,0.04);
+        fFit->SetParameter(1,0.05);
+        fFit->SetParameter(3,0.2);
+        fFit->SetParameter(4,0.1);
+        fFit->SetParameter(6,0.5);
+      }
+    }
+
+    if(!fIspPb) { //for pp analyses
+
+      fFit->SetParLimits(7,0.5,3.5);
+
+      if(fMinAsspt==0.3 && fMaxAsspt==99) {  //dedicated starting parameters
+        printf("Dedicated starting fit parameters...");
+        fFit->SetParameter(0,2.4);
+        fFit->SetParameter(1,0.8);
+        fFit->SetParameter(3,0.4);
+        fFit->SetParameter(4,1.0);
+        fFit->SetParameter(6,0.6);
+      }
+      if(fMinAsspt==0.3 && fMaxAsspt==1) {  //dedicated starting parameters
+        printf("Dedicated starting fit parameters...");
+        fFit->SetParameter(0,1.8);
+        fFit->SetParameter(1,0.4);
+        fFit->SetParameter(3,0.4);
+        fFit->SetParameter(4,0.5);
+        fFit->SetParameter(6,0.6);
+      }    
+      if(fMinAsspt==1 && fMaxAsspt==99) {  //dedicated starting parameters
+        printf("Dedicated starting fit parameters...");
+        fFit->SetParameter(0,0.6);
+        fFit->SetParameter(1,0.4);
+        fFit->SetParameter(3,0.3);
+        fFit->SetParameter(4,0.6);
+        fFit->SetParameter(6,0.6);
+      }    
+      if(fMinAsspt==1 && fMaxAsspt==2) {  //dedicated starting parameters
+        printf("Dedicated starting fit parameters...");
+        fFit->SetParameter(0,0.5);
+        fFit->SetParameter(1,0.4);
+        fFit->SetParameter(3,0.3);
+        fFit->SetParameter(4,0.4);
+        fFit->SetParameter(6,0.7);
+      }
+      if(fMinAsspt==2 && fMaxAsspt==3) {  //dedicated starting parameters
+        printf("Dedicated starting fit parameters...");
+        fFit->SetParameter(0,0.08);
+        fFit->SetParameter(1,0.1);
+        fFit->SetParameter(3,0.3);
+        fFit->SetParameter(4,0.1);
+        fFit->SetParameter(6,0.4);
+        if(fMinDpt==2) {
+          fFit->SetParameter(0,0.1);
+          fFit->SetParameter(1,0.005);
+          fFit->SetParameter(3,0.6);
+          fFit->SetParameter(4,0.007);
+          fFit->SetParameter(6,0.4);
+        }
+        if(fMinDpt>=16) {
+          fFit->SetParLimits(7,0.5,3.);
+          fFit->SetParameter(1,0.5);
+          fFit->SetParameter(4,0.15);
+          fFit->SetParameter(7,1);
+        }      
+      }
+      if(fMinAsspt==2 && fMaxAsspt==99) {  //dedicated starting parameters
+        printf("Dedicated starting fit parameters...");
+        fFit->SetParameter(0,0.08);
+        fFit->SetParameter(1,0.1);
+        fFit->SetParameter(3,0.3);
+        fFit->SetParameter(4,0.1);
+        fFit->SetParameter(6,0.4);
+        if(fMinDpt==2) {
+          fFit->SetParameter(0,0.1);
+          fFit->SetParameter(1,0.005);
+          fFit->SetParameter(3,0.6);
+          fFit->SetParameter(4,0.01);
+          fFit->SetParameter(6,0.4);
+        }      
+      }    
+      if(fMinAsspt==3 && fMaxAsspt==99) {  //dedicated starting parameters
+        printf("Dedicated starting fit parameters...");
+        fFit->SetParameter(0,0.04);
+        fFit->SetParameter(1,0.05);
+        fFit->SetParameter(3,0.2);
+        fFit->SetParameter(4,0.1);
+        fFit->SetParameter(6,0.5);
+      }
+    }    
+
+    fFit->SetParName(0,"ped");
+    fFit->SetParName(1,"NS Y");
+    fFit->SetParName(2,"NS mean");
+    fFit->SetParName(3,"NS #sigma");
+    fFit->SetParName(4,"AS Y");
+    fFit->SetParName(5,"AS mean");
+    fFit->SetParName(6,"AS #sigma");
+    fFit->SetParName(7,"NS shape par");
+    break;
+
+ case 8: //Generalized Gaussian (Fabio) with beta fixed to MC value
+    fFit=new TF1("kModifNSGausPeriodicityFixBeta","[0]+[1]*([7]*TMath::Sqrt(TMath::Gamma(3./[7]))/(2.*[3]*TMath::Power(TMath::Gamma(1./[7]),3./2.))*TMath::Exp(-TMath::Power(TMath::Abs(x-[2])*TMath::Sqrt(TMath::Gamma(3./[7]))/([3]*TMath::Sqrt(TMath::Gamma(1./[7]))),[7])))+[4]/TMath::Sqrt(2.*TMath::Pi())/[6]*TMath::Exp(-(x-[5])*(x-[5])/2./([6]*[6]))+[1]*([7]*TMath::Sqrt(TMath::Gamma(3./[7]))/(2.*[3]*TMath::Power(TMath::Gamma(1./[7]),3./2.))*TMath::Exp(-TMath::Power(TMath::Abs(x-2*TMath::Pi()-[2])*TMath::Sqrt(TMath::Gamma(3./[7]))/([3]*TMath::Sqrt(TMath::Gamma(1./[7]))),[7])))+[1]*([7]*TMath::Sqrt(TMath::Gamma(3./[7]))/(2.*[3]*TMath::Power(TMath::Gamma(1./[7]),3./2.))*TMath::Exp(-TMath::Power(TMath::Abs(x+2*TMath::Pi()-[2])*TMath::Sqrt(TMath::Gamma(3./[7]))/([3]*TMath::Sqrt(TMath::Gamma(1./[7]))),[7])))+[4]/TMath::Sqrt(2.*TMath::Pi())/[6]*TMath::Exp(-(x-2.*TMath::Pi()-[5])*(x-2.*TMath::Pi()-[5])/2./([6]*[6]))+[4]/TMath::Sqrt(2.*TMath::Pi())/[6]*TMath::Exp(-(x+2.*TMath::Pi()-[5])*(x+2.*TMath::Pi()-[5])/2./([6]*[6]))",fMin,fMax);
+    fGausNS=new TF1("fModGausNSperFixBeta","[0]*([3]*TMath::Sqrt(TMath::Gamma(3./[3]))/(2.*[2]*TMath::Power(TMath::Gamma(1./[3]),3./2.))*TMath::Exp(-TMath::Power(TMath::Abs(x-[1])*TMath::Sqrt(TMath::Gamma(3./[3]))/([2]*TMath::Sqrt(TMath::Gamma(1./[3]))),[3])))+[0]*([3]*TMath::Sqrt(TMath::Gamma(3./[3]))/(2.*[2]*TMath::Power(TMath::Gamma(1./[3]),3./2.))*TMath::Exp(-TMath::Power(TMath::Abs(x-2*TMath::Pi()-[1])*TMath::Sqrt(TMath::Gamma(3./[3]))/([2]*TMath::Sqrt(TMath::Gamma(1./[3]))),[3])))+[0]*([3]*TMath::Sqrt(TMath::Gamma(3./[3]))/(2.*[2]*TMath::Power(TMath::Gamma(1./[3]),3./2.))*TMath::Exp(-TMath::Power(TMath::Abs(x+2*TMath::Pi()-[1])*TMath::Sqrt(TMath::Gamma(3./[3]))/([2]*TMath::Sqrt(TMath::Gamma(1./[3]))),[3])))",fMin,fMax);
+    fGausAS=new TF1("fGausASper","[0]/TMath::Sqrt(2.*TMath::Pi())/[2]*TMath::Exp(-(x-[1])*(x-[1])/2./([2]*[2]))+[0]/TMath::Sqrt(2.*TMath::Pi())/[2]*TMath::Exp(-(x-2.*TMath::Pi()-[1])*(x-2.*TMath::Pi()-[1])/2./([2]*[2]))+[0]/TMath::Sqrt(2.*TMath::Pi())/[2]*TMath::Exp(-(x+2.*TMath::Pi()-[1])*(x+2.*TMath::Pi()-[1])/2./([2]*[2]))",fMin,fMax);
+    fPed=new TF1("fPed","[0]",fMin,fMax);  
+
+    fFit->SetParLimits(0,0.,999.);
+    fFit->SetParLimits(1,0.005,25.);
+    fFit->SetParLimits(2,-0.55,0.55);
+    fFit->SetParLimits(3,0,0.8); //P.S. put 0.6 if fits fail...
+    fFit->SetParLimits(4,0.005,25.);
+    fFit->SetParLimits(5,2.85,3.55);   
+    fFit->SetParLimits(6,0.05,3.14/2.);   
+    fFit->SetParLimits(7,0.25,5.);
+    if(fMinAsspt==3 && fMaxAsspt==99) fFit->SetParLimits(7,0.5,3.);
+
+    //default starting pars
+    fFit->SetParameter(0,1.);
+    fFit->SetParameter(1,1.);
+    fFit->SetParameter(2,0.);
+    fFit->SetParameter(3,0.3);
+    fFit->SetParameter(4,0.25);
+    fFit->SetParameter(5,TMath::Pi());
+    fFit->SetParameter(6,0.3);
+    fFit->SetParameter(7,2);
+    
+    if(fIspPb) { //for pPb analyses (TESTED AND WORKING)
+      if(fMinAsspt==0.3 && fMaxAsspt==99) {  //dedicated starting parameters
+        printf("Dedicated starting fit parameters...");
+        fFit->SetParameter(0,2.4);
+        fFit->SetParameter(1,0.8);
+        fFit->SetParameter(3,0.4);
+        fFit->SetParameter(4,1.0);
+        fFit->SetParameter(6,0.6);
+      }
+      if(fMinAsspt==0.3 && fMaxAsspt==1) {  //dedicated starting parameters
+        printf("Dedicated starting fit parameters...");
+        fFit->SetParameter(0,1.8);
+        fFit->SetParameter(1,0.4);
+        fFit->SetParameter(3,0.4);
+        fFit->SetParameter(4,0.5);
+        fFit->SetParameter(6,0.6);
+      }    
+      if(fMinAsspt==1 && fMaxAsspt==99) {  //dedicated starting parameters
+        printf("Dedicated starting fit parameters...");
+        fFit->SetParameter(0,0.6);
+        fFit->SetParameter(1,0.4);
+        fFit->SetParameter(3,0.3);
+        fFit->SetParameter(4,0.6);
+        fFit->SetParameter(6,0.6);
+        if(fMinDpt>=16) {
+          fFit->SetParameter(0,1.25);
+          fFit->SetParameter(1,1.8);
+          fFit->SetParameter(3,0.15);
+          fFit->SetParameter(4,0.7);
+          fFit->SetParameter(6,0.15);        
+          fFit->SetParameter(7,0.51);
+          fFit->SetParLimits(7,0.5,3.);        
+        }
+      }    
+      if(fMinAsspt==1 && fMaxAsspt==2) {  //dedicated starting parameters
+        printf("Dedicated starting fit parameters...");
+        fFit->SetParameter(0,0.5);
+        fFit->SetParameter(1,0.4);
+        fFit->SetParameter(3,0.3);
+        fFit->SetParameter(4,0.4);
+        fFit->SetParameter(6,0.7);
+      }
+      if(fMinAsspt==2 && fMaxAsspt==3) {  //dedicated starting parameters
+        printf("Dedicated starting fit parameters...");
+        fFit->SetParameter(0,0.08);
+        fFit->SetParameter(1,0.1);
+        fFit->SetParameter(3,0.3);
+        fFit->SetParameter(4,0.1);
+        fFit->SetParameter(6,0.4);
+        if(fMinDpt==2) {
+          fFit->SetParameter(0,0.1);
+          fFit->SetParameter(1,0.005);
+          fFit->SetParameter(3,0.6);
+          fFit->SetParameter(4,0.007);
+          fFit->SetParameter(6,0.4);
+        }
+        if(fMinDpt>=16) {
+          fFit->SetParLimits(7,0.5,3.);
+          fFit->SetParameter(1,0.5);
+          fFit->SetParameter(4,0.15);
+          fFit->SetParameter(7,1);
+        }      
+      }
+      if(fMinAsspt==2 && fMaxAsspt==99) {  //dedicated starting parameters
+        printf("Dedicated starting fit parameters...");
+        fFit->SetParameter(0,0.08);
+        fFit->SetParameter(1,0.1);
+        fFit->SetParameter(3,0.3);
+        fFit->SetParameter(4,0.1);
+        fFit->SetParameter(6,0.4);
+        if(fMinDpt==2) {
+          fFit->SetParameter(0,0.1);
+          fFit->SetParameter(1,0.005);
+          fFit->SetParameter(3,0.6);
+          fFit->SetParameter(4,0.01);
+          fFit->SetParameter(6,0.4);
+        }      
+      }    
+      if(fMinAsspt==3 && fMaxAsspt==99) {  //dedicated starting parameters
+        printf("Dedicated starting fit parameters...");
+        fFit->SetParameter(0,0.04);
+        fFit->SetParameter(1,0.05);
+        fFit->SetParameter(3,0.2);
+        fFit->SetParameter(4,0.1);
+        fFit->SetParameter(6,0.5);
+      }
+    }
+
+    if(!fIspPb) { //for pp analyses
+
+      fFit->SetParLimits(7,0.5,3.5);
+
+      if(fMinAsspt==0.3 && fMaxAsspt==99) {  //dedicated starting parameters
+        printf("Dedicated starting fit parameters...");
+        fFit->SetParameter(0,2.4);
+        fFit->SetParameter(1,0.8);
+        fFit->SetParameter(3,0.4);
+        fFit->SetParameter(4,1.0);
+        fFit->SetParameter(6,0.6);
+      }
+      if(fMinAsspt==0.3 && fMaxAsspt==1) {  //dedicated starting parameters
+        printf("Dedicated starting fit parameters...");
+        fFit->SetParameter(0,1.8);
+        fFit->SetParameter(1,0.4);
+        fFit->SetParameter(3,0.4);
+        fFit->SetParameter(4,0.5);
+        fFit->SetParameter(6,0.6);
+      }    
+      if(fMinAsspt==1 && fMaxAsspt==99) {  //dedicated starting parameters
+        printf("Dedicated starting fit parameters...");
+        fFit->SetParameter(0,0.6);
+        fFit->SetParameter(1,0.4);
+        fFit->SetParameter(3,0.3);
+        fFit->SetParameter(4,0.6);
+        fFit->SetParameter(6,0.6);
+      }    
+      if(fMinAsspt==1 && fMaxAsspt==2) {  //dedicated starting parameters
+        printf("Dedicated starting fit parameters...");
+        fFit->SetParameter(0,0.5);
+        fFit->SetParameter(1,0.4);
+        fFit->SetParameter(3,0.3);
+        fFit->SetParameter(4,0.4);
+        fFit->SetParameter(6,0.7);
+      }
+      if(fMinAsspt==2 && fMaxAsspt==3) {  //dedicated starting parameters
+        printf("Dedicated starting fit parameters...");
+        fFit->SetParameter(0,0.08);
+        fFit->SetParameter(1,0.1);
+        fFit->SetParameter(3,0.3);
+        fFit->SetParameter(4,0.1);
+        fFit->SetParameter(6,0.4);
+        if(fMinDpt==2) {
+          fFit->SetParameter(0,0.1);
+          fFit->SetParameter(1,0.005);
+          fFit->SetParameter(3,0.6);
+          fFit->SetParameter(4,0.007);
+          fFit->SetParameter(6,0.4);
+        }
+        if(fMinDpt>=16) {
+          fFit->SetParLimits(7,0.5,3.);
+          fFit->SetParameter(1,0.5);
+          fFit->SetParameter(4,0.15);
+          fFit->SetParameter(7,1);
+        }      
+      }
+      if(fMinAsspt==2 && fMaxAsspt==99) {  //dedicated starting parameters
+        printf("Dedicated starting fit parameters...");
+        fFit->SetParameter(0,0.08);
+        fFit->SetParameter(1,0.1);
+        fFit->SetParameter(3,0.3);
+        fFit->SetParameter(4,0.1);
+        fFit->SetParameter(6,0.4);
+        if(fMinDpt==2) {
+          fFit->SetParameter(0,0.1);
+          fFit->SetParameter(1,0.005);
+          fFit->SetParameter(3,0.6);
+          fFit->SetParameter(4,0.01);
+          fFit->SetParameter(6,0.4);
+        }      
+      }    
+      if(fMinAsspt==3 && fMaxAsspt==99) {  //dedicated starting parameters
+        printf("Dedicated starting fit parameters...");
+        fFit->SetParameter(0,0.04);
+        fFit->SetParameter(1,0.05);
+        fFit->SetParameter(3,0.2);
+        fFit->SetParameter(4,0.1);
+        fFit->SetParameter(6,0.5);
+      }
+    }    
+
+    fFit->FixParameter(7,fBetaVal);
+
+    fFit->SetParName(0,"ped");
+    fFit->SetParName(1,"NS Y");
+    fFit->SetParName(2,"NS mean");
+    fFit->SetParName(3,"NS #sigma");
+    fFit->SetParName(4,"AS Y");
+    fFit->SetParName(5,"AS mean");
+    fFit->SetParName(6,"AS #sigma");
+    fFit->SetParName(7,"NS shape par");
+    break;
+
+ case 9: //Generalized Gaussian (Fabio) with beta constrained to +/-20% from MC value
+    fFit=new TF1("kModifNSGausPeriodicityConstrainedBeta","[0]+[1]*([7]*TMath::Sqrt(TMath::Gamma(3./[7]))/(2.*[3]*TMath::Power(TMath::Gamma(1./[7]),3./2.))*TMath::Exp(-TMath::Power(TMath::Abs(x-[2])*TMath::Sqrt(TMath::Gamma(3./[7]))/([3]*TMath::Sqrt(TMath::Gamma(1./[7]))),[7])))+[4]/TMath::Sqrt(2.*TMath::Pi())/[6]*TMath::Exp(-(x-[5])*(x-[5])/2./([6]*[6]))+[1]*([7]*TMath::Sqrt(TMath::Gamma(3./[7]))/(2.*[3]*TMath::Power(TMath::Gamma(1./[7]),3./2.))*TMath::Exp(-TMath::Power(TMath::Abs(x-2*TMath::Pi()-[2])*TMath::Sqrt(TMath::Gamma(3./[7]))/([3]*TMath::Sqrt(TMath::Gamma(1./[7]))),[7])))+[1]*([7]*TMath::Sqrt(TMath::Gamma(3./[7]))/(2.*[3]*TMath::Power(TMath::Gamma(1./[7]),3./2.))*TMath::Exp(-TMath::Power(TMath::Abs(x+2*TMath::Pi()-[2])*TMath::Sqrt(TMath::Gamma(3./[7]))/([3]*TMath::Sqrt(TMath::Gamma(1./[7]))),[7])))+[4]/TMath::Sqrt(2.*TMath::Pi())/[6]*TMath::Exp(-(x-2.*TMath::Pi()-[5])*(x-2.*TMath::Pi()-[5])/2./([6]*[6]))+[4]/TMath::Sqrt(2.*TMath::Pi())/[6]*TMath::Exp(-(x+2.*TMath::Pi()-[5])*(x+2.*TMath::Pi()-[5])/2./([6]*[6]))",fMin,fMax);
+    fGausNS=new TF1("fModGausNSperConstrainedBeta","[0]*([3]*TMath::Sqrt(TMath::Gamma(3./[3]))/(2.*[2]*TMath::Power(TMath::Gamma(1./[3]),3./2.))*TMath::Exp(-TMath::Power(TMath::Abs(x-[1])*TMath::Sqrt(TMath::Gamma(3./[3]))/([2]*TMath::Sqrt(TMath::Gamma(1./[3]))),[3])))+[0]*([3]*TMath::Sqrt(TMath::Gamma(3./[3]))/(2.*[2]*TMath::Power(TMath::Gamma(1./[3]),3./2.))*TMath::Exp(-TMath::Power(TMath::Abs(x-2*TMath::Pi()-[1])*TMath::Sqrt(TMath::Gamma(3./[3]))/([2]*TMath::Sqrt(TMath::Gamma(1./[3]))),[3])))+[0]*([3]*TMath::Sqrt(TMath::Gamma(3./[3]))/(2.*[2]*TMath::Power(TMath::Gamma(1./[3]),3./2.))*TMath::Exp(-TMath::Power(TMath::Abs(x+2*TMath::Pi()-[1])*TMath::Sqrt(TMath::Gamma(3./[3]))/([2]*TMath::Sqrt(TMath::Gamma(1./[3]))),[3])))",fMin,fMax);
+    fGausAS=new TF1("fGausASper","[0]/TMath::Sqrt(2.*TMath::Pi())/[2]*TMath::Exp(-(x-[1])*(x-[1])/2./([2]*[2]))+[0]/TMath::Sqrt(2.*TMath::Pi())/[2]*TMath::Exp(-(x-2.*TMath::Pi()-[1])*(x-2.*TMath::Pi()-[1])/2./([2]*[2]))+[0]/TMath::Sqrt(2.*TMath::Pi())/[2]*TMath::Exp(-(x+2.*TMath::Pi()-[1])*(x+2.*TMath::Pi()-[1])/2./([2]*[2]))",fMin,fMax);
+    fPed=new TF1("fPed","[0]",fMin,fMax);  
+
+    fFit->SetParLimits(0,0.,999.);
+    fFit->SetParLimits(1,0.005,25.);
+    fFit->SetParLimits(2,-0.55,0.55);
+    fFit->SetParLimits(3,0,0.8); //P.S. put 0.6 if fits fail...
+    fFit->SetParLimits(4,0.005,25.);
+    fFit->SetParLimits(5,2.85,3.55);   
+    fFit->SetParLimits(6,0.05,3.14/2.);   
+    fFit->SetParLimits(7,0.25,5.);
+    if(fMinAsspt==3 && fMaxAsspt==99) fFit->SetParLimits(7,0.5,3.);
+
+    //default starting pars
+    fFit->SetParameter(0,1.);
+    fFit->SetParameter(1,1.);
+    fFit->SetParameter(2,0.);
+    fFit->SetParameter(3,0.3);
+    fFit->SetParameter(4,0.25);
+    fFit->SetParameter(5,TMath::Pi());
+    fFit->SetParameter(6,0.3);
+    fFit->SetParameter(7,2);
+    
+    if(fIspPb) { //for pPb analyses (TESTED AND WORKING)
+      if(fMinAsspt==0.3 && fMaxAsspt==99) {  //dedicated starting parameters
+        printf("Dedicated starting fit parameters...");
+        fFit->SetParameter(0,2.4);
+        fFit->SetParameter(1,0.8);
+        fFit->SetParameter(3,0.4);
+        fFit->SetParameter(4,1.0);
+        fFit->SetParameter(6,0.6);
+      }
+      if(fMinAsspt==0.3 && fMaxAsspt==1) {  //dedicated starting parameters
+        printf("Dedicated starting fit parameters...");
+        fFit->SetParameter(0,1.8);
+        fFit->SetParameter(1,0.4);
+        fFit->SetParameter(3,0.4);
+        fFit->SetParameter(4,0.5);
+        fFit->SetParameter(6,0.6);
+      }    
+      if(fMinAsspt==1 && fMaxAsspt==99) {  //dedicated starting parameters
+        printf("Dedicated starting fit parameters...");
+        fFit->SetParameter(0,0.6);
+        fFit->SetParameter(1,0.4);
+        fFit->SetParameter(3,0.3);
+        fFit->SetParameter(4,0.6);
+        fFit->SetParameter(6,0.6);
+        if(fMinDpt>=16) {
+          fFit->SetParameter(0,1.25);
+          fFit->SetParameter(1,1.8);
+          fFit->SetParameter(3,0.15);
+          fFit->SetParameter(4,0.7);
+          fFit->SetParameter(6,0.15);        
+          fFit->SetParameter(7,0.51);
+          fFit->SetParLimits(7,0.5,3.);        
+        }
+      }    
+      if(fMinAsspt==1 && fMaxAsspt==2) {  //dedicated starting parameters
+        printf("Dedicated starting fit parameters...");
+        fFit->SetParameter(0,0.5);
+        fFit->SetParameter(1,0.4);
+        fFit->SetParameter(3,0.3);
+        fFit->SetParameter(4,0.4);
+        fFit->SetParameter(6,0.7);
+      }
+      if(fMinAsspt==2 && fMaxAsspt==3) {  //dedicated starting parameters
+        printf("Dedicated starting fit parameters...");
+        fFit->SetParameter(0,0.08);
+        fFit->SetParameter(1,0.1);
+        fFit->SetParameter(3,0.3);
+        fFit->SetParameter(4,0.1);
+        fFit->SetParameter(6,0.4);
+        if(fMinDpt==2) {
+          fFit->SetParameter(0,0.1);
+          fFit->SetParameter(1,0.005);
+          fFit->SetParameter(3,0.6);
+          fFit->SetParameter(4,0.007);
+          fFit->SetParameter(6,0.4);
+        }
+        if(fMinDpt>=16) {
+          fFit->SetParLimits(7,0.5,3.);
+          fFit->SetParameter(1,0.5);
+          fFit->SetParameter(4,0.15);
+          fFit->SetParameter(7,1);
+        }      
+      }
+      if(fMinAsspt==2 && fMaxAsspt==99) {  //dedicated starting parameters
+        printf("Dedicated starting fit parameters...");
+        fFit->SetParameter(0,0.08);
+        fFit->SetParameter(1,0.1);
+        fFit->SetParameter(3,0.3);
+        fFit->SetParameter(4,0.1);
+        fFit->SetParameter(6,0.4);
+        if(fMinDpt==2) {
+          fFit->SetParameter(0,0.1);
+          fFit->SetParameter(1,0.005);
+          fFit->SetParameter(3,0.6);
+          fFit->SetParameter(4,0.01);
+          fFit->SetParameter(6,0.4);
+        }      
+      }    
+      if(fMinAsspt==3 && fMaxAsspt==99) {  //dedicated starting parameters
+        printf("Dedicated starting fit parameters...");
+        fFit->SetParameter(0,0.04);
+        fFit->SetParameter(1,0.05);
+        fFit->SetParameter(3,0.2);
+        fFit->SetParameter(4,0.1);
+        fFit->SetParameter(6,0.5);
+      }
+    }
+
+    if(!fIspPb) { //for pp analyses
+
+      fFit->SetParLimits(7,0.5,3.5);
+
+      if(fMinAsspt==0.3 && fMaxAsspt==99) {  //dedicated starting parameters
+        printf("Dedicated starting fit parameters...");
+        fFit->SetParameter(0,2.4);
+        fFit->SetParameter(1,0.8);
+        fFit->SetParameter(3,0.4);
+        fFit->SetParameter(4,1.0);
+        fFit->SetParameter(6,0.6);
+      }
+      if(fMinAsspt==0.3 && fMaxAsspt==1) {  //dedicated starting parameters
+        printf("Dedicated starting fit parameters...");
+        fFit->SetParameter(0,1.8);
+        fFit->SetParameter(1,0.4);
+        fFit->SetParameter(3,0.4);
+        fFit->SetParameter(4,0.5);
+        fFit->SetParameter(6,0.6);
+      }    
+      if(fMinAsspt==1 && fMaxAsspt==99) {  //dedicated starting parameters
+        printf("Dedicated starting fit parameters...");
+        fFit->SetParameter(0,0.6);
+        fFit->SetParameter(1,0.4);
+        fFit->SetParameter(3,0.3);
+        fFit->SetParameter(4,0.6);
+        fFit->SetParameter(6,0.6);
+      }    
+      if(fMinAsspt==1 && fMaxAsspt==2) {  //dedicated starting parameters
+        printf("Dedicated starting fit parameters...");
+        fFit->SetParameter(0,0.5);
+        fFit->SetParameter(1,0.4);
+        fFit->SetParameter(3,0.3);
+        fFit->SetParameter(4,0.4);
+        fFit->SetParameter(6,0.7);
+      }
+      if(fMinAsspt==2 && fMaxAsspt==3) {  //dedicated starting parameters
+        printf("Dedicated starting fit parameters...");
+        fFit->SetParameter(0,0.08);
+        fFit->SetParameter(1,0.1);
+        fFit->SetParameter(3,0.3);
+        fFit->SetParameter(4,0.1);
+        fFit->SetParameter(6,0.4);
+        if(fMinDpt==2) {
+          fFit->SetParameter(0,0.075);
+          fFit->SetParameter(1,0.02);
+          fFit->SetParameter(3,0.8);
+          fFit->SetParameter(4,0.035);
+          fFit->SetParameter(6,0.64);
+        }
+        if(fMinDpt>=16) {
+          fFit->SetParLimits(7,0.5,3.);
+          fFit->SetParameter(1,0.5);
+          fFit->SetParameter(4,0.15);
+          fFit->SetParameter(7,1);
+        }      
+      }
+      if(fMinAsspt==2 && fMaxAsspt==99) {  //dedicated starting parameters
+        printf("Dedicated starting fit parameters...");
+        fFit->SetParameter(0,0.08);
+        fFit->SetParameter(1,0.1);
+        fFit->SetParameter(3,0.3);
+        fFit->SetParameter(4,0.1);
+        fFit->SetParameter(6,0.4);
+        if(fMinDpt==2) {
+          fFit->SetParameter(0,0.1);
+          fFit->SetParameter(1,0.005);
+          fFit->SetParameter(3,0.6);
+          fFit->SetParameter(4,0.01);
+          fFit->SetParameter(6,0.4);
+        }      
+      }    
+      if(fMinAsspt==3 && fMaxAsspt==99) {  //dedicated starting parameters
+        printf("Dedicated starting fit parameters...");
+        fFit->SetParameter(0,0.04);
+        fFit->SetParameter(1,0.05);
+        fFit->SetParameter(3,0.2);
+        fFit->SetParameter(4,0.1);
+        fFit->SetParameter(6,0.5);
+      }
+    }    
+
+    fFit->SetParameter(7,fBetaVal);
+    fFit->SetParLimits(7,fBetaVal*0.8,fBetaVal*1.2);
+
+    fFit->SetParName(0,"ped");
+    fFit->SetParName(1,"NS Y");
+    fFit->SetParName(2,"NS mean");
+    fFit->SetParName(3,"NS #sigma");
+    fFit->SetParName(4,"AS Y");
+    fFit->SetParName(5,"AS mean");
+    fFit->SetParName(6,"AS #sigma");
+    fFit->SetParName(7,"NS shape par");
+    break;    
+
   }
   
 }
@@ -477,14 +1134,21 @@ Double_t AliHFCorrFitter::FindBaseline(){
     Float_t *hval=new Float_t[fHist->GetNbinsX()];// needed because problems were found with usage of fHist->GetArray();
     for(Int_t k=1;k<=fHist->GetNbinsX();k++){
       hval[k-1]=fHist->GetBinContent(k);
+      //printf("bin %d val %f #pm %f\n",k,hval[k-1],fHist->GetBinError(k));
     }
     Double_t errAv=0.,av=0.;
     TMath::Sort(fHist->GetNbinsX(),hval,ind,kFALSE);//  KFALSE->increasing order
     // Average of abs(fFixBase) lower points
     for(Int_t k=0;k<npointsAv;k++){
-      //      Printf("Point %d, index %d,value: %f",k,ind[k],fHist->GetBinContent(ind[k]+1));
+      //Printf("Point %d, index %d,value: %f\n",k,ind[k],fHist->GetBinContent(ind[k]+1));
+      if(fHist->GetBinError(ind[k]+1)==0.) //***temporary fix by Fabio, in case of null entries which induce a crash. Anyway, try to find a better fix, could bias the basline in upward direction!!!***
+      {
+        printf("****** WARNING!!! ****** Null entries found in histogram to be fit! These points are been excluded from baseline evaluation...\n");
+        npointsAv++;
+        continue;
+      }     
       av+=(fHist->GetBinContent(ind[k]+1)/(fHist->GetBinError(ind[k]+1)*fHist->GetBinError(ind[k]+1)));
-      //printf("havl: %f, hist :%f+-%f \n",hval[ind[k]+1],h->GetBinContent(ind[k]+1),h->GetBinError(ind[k]+1));
+      //printf("havl: %f, hist :%f+-%f \n",hval[ind[k]+1],fHist->GetBinContent(ind[k]+1),fHist->GetBinError(ind[k]+1));
       errAv+=1./(fHist->GetBinError(ind[k]+1)*fHist->GetBinError(ind[k]+1));	  
     }
     av/=errAv;
@@ -582,12 +1246,13 @@ Double_t AliHFCorrFitter::FindBaseline(){
      Printf("max and min range:%f and %f",fMaxBaselineRange,fMinBaselineRange);
      if(fHist->GetBinLowEdge(binPhi)>=-1.*fMaxBaselineRange && fHist->GetBinLowEdge(binPhi+1)<=-1.*fMinBaselineRange){
        cout << "iBin = " << binPhi << endl;
+       if(fHist->GetBinError(binPhi)==0) {printf("*** WARNING! 0-entries bin! Bin being skipped... ***\n"); continue;} //ADDED BY FABIO FOR EMPTY BIN CASES!!
        av+=fHist->GetBinContent(binPhi)/(fHist->GetBinError(binPhi)*fHist->GetBinError(binPhi));
        errAv+=1./(fHist->GetBinError(binPhi)*fHist->GetBinError(binPhi));
      }
-     
      if(fHist->GetBinLowEdge(binPhi)>=fMinBaselineRange && fHist->GetBinLowEdge(binPhi+1)<=fMaxBaselineRange){
        cout << "iBin = " << binPhi << endl;
+       if(fHist->GetBinError(binPhi)==0) {printf("*** WARNING! 0-entries bin! Bin being skipped... ***\n"); continue;} //ADDED BY FABIO FOR EMPTY BIN CASES!!
        av+=fHist->GetBinContent(binPhi)/(fHist->GetBinError(binPhi)*fHist->GetBinError(binPhi));
        errAv+=1./(fHist->GetBinError(binPhi)*fHist->GetBinError(binPhi));
      }
@@ -699,7 +1364,15 @@ void AliHFCorrFitter::Fitting(Bool_t drawSplitTerm)
     if(fTypeOfFitfunc!=0)fFit->FixParameter(5,TMath::Pi());
   }
   Printf("AliHFCorrFitter::Fitting, fitting");
-  fHist->Fit(fFit,"REMI","",fMin,fMax);
+  TVirtualFitter::SetMaxIterations(20000);
+  TFitResultPtr fitptr = fHist->Fit(fFit,"RIMES","",fMin,fMax);
+  TMatrixD cor = fitptr->GetCorrelationMatrix();
+  TMatrixD cov = fitptr->GetCovarianceMatrix();
+  printf("*** Correlation Matrix - The final one! ***\n");
+  cor.Print();
+  gMinuit->mnmatu(1);
+  printf("*** Covariance Matrix - The final one! ***\n");
+  cov.Print();
   if(fFixBase==0){
     fBaseline=fFit->GetParameter(0);
     fErrbaseline=fFit->GetParError(0);
@@ -750,12 +1423,15 @@ void AliHFCorrFitter::SetSingleTermsForDrawing(Bool_t draw)
   if(fTypeOfFitfunc==1||fTypeOfFitfunc==2){
     par=new Double_t[7];
   }
-  else   if(fTypeOfFitfunc==3||fTypeOfFitfunc==4||fTypeOfFitfunc==6){
+  else if(fTypeOfFitfunc==3||fTypeOfFitfunc==4||fTypeOfFitfunc==6){
     par=new Double_t[9];
   }
   else if(fTypeOfFitfunc==5){
     par=new Double_t[3];
   }
+  else if(fTypeOfFitfunc==7||fTypeOfFitfunc==8||fTypeOfFitfunc==9){
+    par=new Double_t[8];
+  } 
   else {
     Printf("AliHFCorrFitter::SetSingleTermsForDrawing, wrong type of function");
     return;
@@ -779,8 +1455,6 @@ void AliHFCorrFitter::SetSingleTermsForDrawing(Bool_t draw)
     fGausNS->SetLineColor(kBlue);
     fGausAS->SetLineStyle(2);
     fGausAS->SetLineColor(kGreen);
-
-
   }
   else{
     fPed->SetParameter(1,par[1]);
@@ -805,6 +1479,21 @@ void AliHFCorrFitter::SetSingleTermsForDrawing(Bool_t draw)
   else if(fTypeOfFitfunc==6){
     fPed->SetParameter(1,par[7]);
     fPed->SetParameter(2,par[8]);
+  }
+
+  if(fTypeOfFitfunc==7||fTypeOfFitfunc==8||fTypeOfFitfunc==8){   
+    fGausNS->SetParameter(0,par[1]);
+    fGausNS->SetParameter(1,par[2]);
+    fGausNS->SetParameter(2,par[3]);
+    fGausNS->SetParameter(3,par[7]);
+    fGausAS->SetParameter(0,par[4]);
+    fGausAS->SetParameter(1,par[5]);
+    fGausAS->SetParameter(2,par[6]);
+
+    fGausNS->SetLineStyle(2);
+    fGausNS->SetLineColor(kBlue);
+    fGausAS->SetLineStyle(2);
+    fGausAS->SetLineColor(kGreen);
   }
 
   if(draw){// it could be simplified, but in this way we draw in the proper order for better visualization
@@ -857,24 +1546,43 @@ void AliHFCorrFitter::DrawLegendWithParameters(){
     TPaveText *pvStatTests1=new TPaveText(0.51,0.6,0.85,0.82,"NDC");
     pvStatTests1->SetFillStyle(0);
     pvStatTests1->SetBorderSize(0);
-    TText *t1,*t2,*t3,*t3bis=0x0,*tAvSig=0x0,*t4,*t5;
+    TText *t1,*t2,*t3,*t3bis=0x0,*tAvSig=0x0,*t4,*t5,*t5bis=0x0,*tAvSigAS=0x0,*t6=0x0;
     if(fTypeOfFitfunc==kConstThreeGausPeriodicity){
       t1=pvStatTests1->AddText(0.,0.85,Form("#chi^{2}/ndf = %.1f/%d ",fFit->GetChisquare(),fFit->GetNDF()));
-      t2=pvStatTests1->AddText(0.,0.73,Form("NS Y = %.2f#pm%.2f ",fFit->GetParameter(nsy),fFit->GetParError(nsy)));    
+      t2=pvStatTests1->AddText(0.,0.73,Form("NS Y = %.3f#pm%.3f ",fFit->GetParameter(nsy),fFit->GetParError(nsy)));    
       nss=fFit->GetParNumber("NS #sigma 1g");
-      t3=pvStatTests1->AddText(0.,0.61,Form("NS #sigma 1g= %.2f#pm%.2f ",fFit->GetParameter(nss),fFit->GetParError(nss)));
+      t3=pvStatTests1->AddText(0.,0.61,Form("NS #sigma 1g= %.3f#pm%.3f ",fFit->GetParameter(nss),fFit->GetParError(nss)));
       nss=fFit->GetParNumber("NS #sigma 2g");
-      t3bis=pvStatTests1->AddText(0.,0.49,Form("NS #sigma 2g= %.2f#pm%.2f ",fFit->GetParameter(nss),fFit->GetParError(nss)));
-      tAvSig=pvStatTests1->AddText(0.,0.37,Form("NS effective #sigma = %.2f#pm%.2f",GetNSSigma(),GetNSSigmaError()));
-      t4=pvStatTests1->AddText(0.,0.24,Form("AS Y = %.2f#pm%.2f ",fFit->GetParameter(asy),fFit->GetParError(asy)));
-      t5=pvStatTests1->AddText(0.,0.12,Form("AS #sigma = %.2f#pm%.2f ",fFit->GetParameter(ass),fFit->GetParError(ass)));
+      t3bis=pvStatTests1->AddText(0.,0.49,Form("NS #sigma 2g= %.3f#pm%.3f ",fFit->GetParameter(nss),fFit->GetParError(nss)));
+      tAvSig=pvStatTests1->AddText(0.,0.37,Form("NS effective #sigma = %.3f#pm%.3f",GetNSSigma(),GetNSSigmaError()));
+      t4=pvStatTests1->AddText(0.,0.24,Form("AS Y = %.3f#pm%.3f ",fFit->GetParameter(asy),fFit->GetParError(asy)));
+      t5=pvStatTests1->AddText(0.,0.12,Form("AS #sigma = %.3f#pm%.3f ",fFit->GetParameter(ass),fFit->GetParError(ass)));
+    }
+    if(fTypeOfFitfunc==kConstThreeGausPeriodicityAS){
+      t1=pvStatTests1->AddText(0.,0.85,Form("#chi^{2}/ndf = %.1f/%d ",fFit->GetChisquare(),fFit->GetNDF()));
+      t2=pvStatTests1->AddText(0.,0.73,Form("NS Y = %.3f#pm%.3f ",fFit->GetParameter(nsy),fFit->GetParError(nsy)));    
+      t3=pvStatTests1->AddText(0.,0.61,Form("NS #sigma= %.3f#pm%.3f ",fFit->GetParameter(nss),fFit->GetParError(nss)));
+      t4=pvStatTests1->AddText(0.,0.49,Form("AS Y = %.3f#pm%.3f ",fFit->GetParameter(asy),fFit->GetParError(asy)));
+      ass=fFit->GetParNumber("AS #sigma 1g");
+      t5=pvStatTests1->AddText(0.,0.37,Form("AS #sigma 1g = %.3f#pm%.3f ",fFit->GetParameter(ass),fFit->GetParError(ass)));
+      ass=fFit->GetParNumber("AS #sigma 2g");
+      t5bis=pvStatTests1->AddText(0.,0.24,Form("AS #sigma 2g = %.3f#pm%.3f ",fFit->GetParameter(ass),fFit->GetParError(ass)));
+      tAvSigAS=pvStatTests1->AddText(0.,0.12,Form("AS effective #sigma = %.3f#pm%.3f",GetASSigma(),GetASSigmaError()));
+    }    
+    if(fTypeOfFitfunc==kModifNSGausPeriodicity || fTypeOfFitfunc==kModifNSGausPeriodicityFixBeta || fTypeOfFitfunc==kModifNSGausPeriodicityConstrainedBeta){
+      t1=pvStatTests1->AddText(0.,0.87,Form("#chi^{2}/ndf = %.1f/%d ",fFit->GetChisquare(),fFit->GetNDF()));
+      t2=pvStatTests1->AddText(0.,0.73,Form("NS Y = %.3f#pm%.3f ",fFit->GetParameter(nsy),fFit->GetParError(nsy)));    
+      t3=pvStatTests1->AddText(0.,0.58,Form("NS wdt = %.3f#pm%.3f ",fFit->GetParameter(nss),fFit->GetParError(nss)));
+      t4=pvStatTests1->AddText(0.,0.44,Form("AS Y = %.3f#pm%.3f ",fFit->GetParameter(asy),fFit->GetParError(asy)));
+      t5=pvStatTests1->AddText(0.,0.30,Form("AS #sigma = %.3f#pm%.3f ",fFit->GetParameter(ass),fFit->GetParError(ass)));
+      t6=pvStatTests1->AddText(0.,0.15,Form("NS exp = %.3f#pm%.3f ",fFit->GetParameter(7),fFit->GetParError(7)));
     }
     else{
       t1=pvStatTests1->AddText(0.,0.87,Form("#chi^{2}/ndf = %.1f/%d ",fFit->GetChisquare(),fFit->GetNDF()));
-      t2=pvStatTests1->AddText(0.,0.69,Form("NS Y = %.2f#pm%.2f ",fFit->GetParameter(nsy),fFit->GetParError(nsy)));    
-      t3=pvStatTests1->AddText(0.,0.51,Form("NS #sigma= %.2f#pm%.2f ",fFit->GetParameter(nss),fFit->GetParError(nss)));
-      t4=pvStatTests1->AddText(0.,0.33,Form("AS Y = %.2f#pm%.2f ",fFit->GetParameter(asy),fFit->GetParError(asy)));
-      t5=pvStatTests1->AddText(0.,0.15,Form("AS #sigma = %.2f#pm%.2f ",fFit->GetParameter(ass),fFit->GetParError(ass)));
+      t2=pvStatTests1->AddText(0.,0.69,Form("NS Y = %.3f#pm%.3f ",fFit->GetParameter(nsy),fFit->GetParError(nsy)));    
+      t3=pvStatTests1->AddText(0.,0.51,Form("NS #sigma= %.3f#pm%.3f ",fFit->GetParameter(nss),fFit->GetParError(nss)));
+      t4=pvStatTests1->AddText(0.,0.33,Form("AS Y = %.3f#pm%.3f ",fFit->GetParameter(asy),fFit->GetParError(asy)));
+      t5=pvStatTests1->AddText(0.,0.15,Form("AS #sigma = %.3f#pm%.3f ",fFit->GetParameter(ass),fFit->GetParError(ass)));
     }
     t1->SetTextSize(0.02);
     t2->SetTextSize(0.02);
@@ -885,14 +1593,19 @@ void AliHFCorrFitter::DrawLegendWithParameters(){
     }
     t4->SetTextSize(0.02);
     t5->SetTextSize(0.02);
+    if(t5bis){
+      t5bis->SetTextSize(0.02);
+      tAvSigAS->SetTextSize(0.02);
+    }
+    if(t6) t6->SetTextSize(0.02);
     if(fBaseline<-998.){
-      TText* t6=pvStatTests1->AddText(0.,0.,Form("baseline = %.2f#pm%.2f ",fFit->GetParameter(bas),fFit->GetParError(bas)));
+      TText* t6=pvStatTests1->AddText(0.,0.,Form("baseline = %.3f#pm%.3f ",fFit->GetParameter(bas),fFit->GetParError(bas)));
       t6->SetTextSize(0.02);
       
     }
     else
       {
-	TText* t6=pvStatTests1->AddText(0.,0.,Form("baseline = %.2f#pm%.2f ",fBaseline,fErrbaseline));
+	TText* t6=pvStatTests1->AddText(0.,0.,Form("baseline = %.3f#pm%.3f ",fBaseline,fErrbaseline));
 	t6->SetTextSize(0.02);
 	
       }
@@ -903,4 +1616,3 @@ void AliHFCorrFitter::DrawLegendWithParameters(){
     
     pvStatTests1->Draw("same");
 }
-

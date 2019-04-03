@@ -346,7 +346,8 @@ Bool_t AliPhysicsSelection::Initialize(const AliVEvent* event){
     if ((run>=136849 && run<=139517) ||
         (run>=166477 && run<=170593) ||
         (run>=243399 && run<=243984) ||
-        (run>=244913 && run<=246994)) fIsPP = kFALSE;
+        (run>=244913 && run<=246994) ||
+        (run>=295243)) fIsPP = kFALSE;
   }
   return Initialize(event->GetRunNumber());
 }

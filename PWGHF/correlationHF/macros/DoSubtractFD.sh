@@ -14,6 +14,8 @@ declare suffixTemplSystm=$8
 declare -i subtrMCclos=$9
 declare -i useoldFilenames=${10}
 declare -i centralitybin=${11}
+declare -i purityOpt=${12}
+declare puritytemplatedir=${13}
 declare dirmacroRun="${ALICE_PHYSICS}/../src/PWGHF/correlationHF/macros"
 declare dirmacroFD="${ALICE_PHYSICS}/../src/PWGHF/correlationHF/macros"
 if [ ${localcode} = 1 ]; then
@@ -38,15 +40,16 @@ SetTemplateDir("${templatedir}")
 SetDirectoryInputFiles("${inputfiledir}")
 SetInputFileNameRoot("$inputfileroot")
 SetFDtemplateSystemString("${suffixTemplSystm}")
+SetPurityTemplateDir("${puritytemplatedir}")
 //cout<<"file: "<<$file<<endl
 //Printf("Analyzing file: %s",${file})
 Printf("Coll syst=%d",${collsyst})
 Printf("Meson: %d",$mesonIndex)
-${macrosPP[$mesonIndex]}($collsyst,$subtrMCclos,$useoldFilenames,$centralitybin)
+${macrosPP[$mesonIndex]}($collsyst,$subtrMCclos,$useoldFilenames,$centralitybin,$purityOpt)
 .q
 EOF
-    
 echo "DoSubtractFD: done"
+
 elif [ $collsyst = 1 ]; then
     echo "DoSubtractFD: subtracting FD for meson $mesonIndex in coll system $collsyst"
     root -b <<EOF &> out.log
@@ -58,15 +61,16 @@ SetTemplateDir("${templatedir}")
 SetDirectoryInputFiles("${inputfiledir}")
 SetInputFileNameRoot("$inputfileroot")
 SetFDtemplateSystemString("${suffixTemplSystm}")
+SetPurityTemplateDir("${puritytemplatedir}")
 //cout<<"file: "<<$file<<endl
 //Printf("Analyzing file: %s",${file})
 Printf("Coll syst=%d",${collsyst})
 Printf("Meson: %d",$mesonIndex)
-${macrosPPb[$mesonIndex]}($collsyst,$subtrMCclos,$useoldFilenames,$centralitybin)
+${macrosPPb[$mesonIndex]}($collsyst,$subtrMCclos,$useoldFilenames,$centralitybin,$purityOpt)
 .q
 EOF
-
 echo "DoSubtractFD: done"
+
 elif [ $collsyst = 2 ]; then
     echo "DoSubtractFD: subtracting FD for meson $mesonIndex in coll system $collsyst (2016)"
     root -b <<EOF &> out.log
@@ -78,11 +82,33 @@ SetTemplateDir("${templatedir}")
 SetDirectoryInputFiles("${inputfiledir}")
 SetInputFileNameRoot("$inputfileroot")
 SetFDtemplateSystemString("${suffixTemplSystm}")
+SetPurityTemplateDir("${puritytemplatedir}")
 //cout<<"file: "<<$file<<endl
 //Printf("Analyzing file: %s",${file})
 Printf("Coll syst=%d",${collsyst})
 Printf("Meson: %d",$mesonIndex)
-${macrosPPb[$mesonIndex]}($collsyst,$subtrMCclos,$useoldFilenames,$centralitybin)
+${macrosPPb[$mesonIndex]}($collsyst,$subtrMCclos,$useoldFilenames,$centralitybin,$purityOpt)
+.q
+EOF
+echo "DoSubtractFD: done"  
+
+elif [ $collsyst = 3 ]; then
+    echo "DoSubtractFD: subtracting FD for meson $mesonIndex in coll system $collsyst"
+    root -b <<EOF &> out.log
+Printf("inside root");
+.L ${dirmacroRun}/${macrosPP[$mesonIndex]}.C
+SetFDmacroDirectory("${dirmacroFD}")
+SetFpromptInputFile("$fpromptfile")
+SetTemplateDir("${templatedir}")
+SetDirectoryInputFiles("${inputfiledir}")
+SetInputFileNameRoot("$inputfileroot")
+SetFDtemplateSystemString("${suffixTemplSystm}")
+SetPurityTemplateDir("${puritytemplatedir}")
+//cout<<"file: "<<$file<<endl
+//Printf("Analyzing file: %s",${file})
+Printf("Coll syst=%d",${collsyst})
+Printf("Meson: %d",$mesonIndex)
+${macrosPP[$mesonIndex]}($collsyst,$subtrMCclos,$useoldFilenames,$centralitybin,$purityOpt)
 .q
 EOF
 echo "DoSubtractFD: done"  

@@ -66,6 +66,7 @@ set(SRCS
   AliJXtAnalysis.cxx
   AliJHistogramInterface.cxx
   AliJCorrelationInterface.cxx
+  AliJESE.cxx
   jtAnalysis/AliJDiHadronJtTask.cxx
   jtAnalysis/AliJJtAnalysis.cxx
   jtAnalysis/AliJJtHistograms.cxx
@@ -75,6 +76,11 @@ set(SRCS
   iaaAnalysis/AliJIaaCorrelations.cxx
   iaaAnalysis/AliJIaaHistograms.cxx
   AliJPartLifetime.cxx
+  AliJCatalystTask.cxx
+  jtAnalysis/AliJJtTask.cxx
+  jtAnalysis/AliJJtAna.cxx
+  iaaAnalysis/AliJCIaaTask.cxx
+  iaaAnalysis/AliJIaaAna.cxx
   )
 
 # Headers from sources

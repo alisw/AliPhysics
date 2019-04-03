@@ -16,10 +16,10 @@
 //______________________________________________________________________________
 // Analysis task for jT Analysis
 // author: B.K Kim,  D.J. Kim, T. Snellman
-// ALICE Group University of Jyvaskyla 
-// Finland 
+// ALICE Group University of Jyvaskyla
+// Finland
 // Fill the analysis containers for ESD or AOD
-// Adapted for AliAnalysisTaskSE and AOD objects  
+// Adapted for AliAnalysisTaskSE and AOD objects
 //////////////////////////////////////////////////////////////////////////////
 
 #include "AliAODEvent.h"
@@ -27,36 +27,40 @@
 #include "AliAnalysisTaskSE.h"
 #include "AliAODHandler.h"
 #include "AliParticleContainer.h"
+#include "AliMultSelection.h"
 #include "AliAnalysisManager.h"
 #include "AliJHistManager.h"
 #include "AliLog.h"
 #include "AliJMCTrack.h"
-#include "AliJJetJtTask.h" 
+#include "AliJJetJtTask.h"
 #include "AliJCard.h"
 #include "AliJetContainer.h"
 #include "AliJEfficiency.h"
 
 //______________________________________________________________________________
-AliJJetJtTask::AliJJetJtTask() :   
-    AliAnalysisTaskSE("AliJJetJtTaskTask"),
-	fJetTask(NULL),
-	fMCJetTask(NULL),
-	fJetTaskName(""),
-	fMCJetTaskName(""),
+AliJJetJtTask::AliJJetJtTask() :
+  AliAnalysisTaskSE("AliJJetJtTaskTask"),
+  fJetTask(NULL),
+  fMCJetTask(NULL),
+  fJetTaskName(""),
+  fMCJetTaskName(""),
+  fSelector(""),
   fJJetJtAnalysis(0x0),
-  fJMCTracks(NULL),
   fOutput(NULL),
   fCard(NULL),
   fFirstEvent(kTRUE),
   cBin(-1),
   zBin(-1),
+  fDoMC(0),
+  fSide(0),
+  fDoLog(0),
   NRandom(1),
   moveJet(0),
-  fDoMC(0),
+  fCentCut(100),
   zVert(-999),
-  fDoLog(0),
   fAnaUtils(NULL),
   fRunTable(NULL),
+  fJMCTracks(NULL),
   fEventHist()
 
 {
@@ -70,20 +74,23 @@ AliJJetJtTask::AliJJetJtTask(const char *name, TString inputformat):
   fMCJetTask(NULL),
   fJetTaskName(""),
   fMCJetTaskName(""),
+  fSelector(""),
   fJJetJtAnalysis(0x0),
-  fJMCTracks(NULL),
   fOutput(NULL),
   fCard(NULL),
   fFirstEvent(kTRUE),
   cBin(-1),
   zBin(-1),
+  fDoMC(0),
+  fSide(0),
+  fDoLog(0),
   NRandom(1),
   moveJet(0),
-  fDoMC(0),
+  fCentCut(100),
   zVert(-999),
-  fDoLog(0),
   fAnaUtils(NULL),
   fRunTable(NULL),
+  fJMCTracks(NULL),
   fEventHist()
 {
   // Constructor
@@ -97,21 +104,22 @@ AliJJetJtTask::AliJJetJtTask(const char *name, TString inputformat):
 AliJJetJtTask::AliJJetJtTask(const AliJJetJtTask& ap) :
   AliAnalysisTaskSE(ap.GetName()), 
   fJetTask(ap.fJetTask),
-  fMCJetTask(ap.fMCJetTask),
   fJetTaskName(ap.fJetTaskName),
+  fMCJetTask(ap.fMCJetTask),
   fMCJetTaskName(ap.fMCJetTaskName),
+  fSelector(ap.fSelector),
   fJJetJtAnalysis( ap.fJJetJtAnalysis ),
-  fJMCTracks(ap.fJMCTracks),
   fOutput( ap.fOutput ),
   fCard(ap.fCard),
   fFirstEvent(ap.fFirstEvent),
   cBin(ap.cBin),
   zBin(ap.zBin),
+  fSide(ap.fSide),
   NRandom(ap.NRandom),
   moveJet(ap.moveJet),
-  fDoMC(ap.fDoMC),
+  fCentCut(ap.fCentCut),
   zVert(ap.zVert),
-  fDoLog(ap.fDoLog),
+  fJMCTracks(ap.fJMCTracks),
   fAnaUtils(ap.fAnaUtils),
   fRunTable(ap.fRunTable),
   fEventHist(ap.fEventHist)
@@ -162,7 +170,7 @@ void AliJJetJtTask::UserCreateOutputObjects()
 
   OpenFile(1);
   fOutput = gDirectory;//->mkdir("JDiHadronCorr");
-  fOutput->cd();    
+  fOutput->cd();
 
   fJetTask = (AliJJetTask*)(man->GetTask( fJetTaskName));
 
@@ -175,6 +183,9 @@ void AliJJetJtTask::UserCreateOutputObjects()
   fJJetJtAnalysis->SetMC(fDoMC);
   if(fDoLog) fJJetJtAnalysis->SetLog(fDoLog);
   fJJetJtAnalysis->SetLeadingJets(fLeadingJets);
+  fJJetJtAnalysis->SetSide(fSide);
+  fJJetJtAnalysis->SetnR(fJetTask->GetnR());
+  fJJetJtAnalysis->Setnkt(fJetTask->Getnkt());
   fJJetJtAnalysis->UserCreateOutputObjects();
 
   fCard->WriteCard(gDirectory);
@@ -187,7 +198,7 @@ void AliJJetJtTask::UserCreateOutputObjects()
 
 
   for( int ij=0;ij< fJetTask->GetNumberOfJetCollections();ij++ ){
-    fJJetJtAnalysis->AddJets( fJetTask->GetAliJJetList( ij ),fJetTask->GetTrackOrMCParticle(ij) );
+    fJJetJtAnalysis->AddJets( fJetTask->GetAliJJetList( ij ),fJetTask->GetTrackOrMCParticle(ij), fJetTask->GetConeSize(ij));
   }
   fJJetJtAnalysis->SetJTracks(fJetTask->GetJTracks());
   if(fDoMC){
@@ -197,8 +208,9 @@ void AliJJetJtTask::UserCreateOutputObjects()
   fFirstEvent = kTRUE;
 }
 
+
 //______________________________________________________________________________
-/// Primary loop 
+/// Primary loop
 void AliJJetJtTask::UserExec(Option_t* /*option*/) 
 {
   // Processing of one event
@@ -228,11 +240,35 @@ void AliJJetJtTask::UserExec(Option_t* /*option*/)
   // centrality
   float fcent = -999;
   if(fRunTable->IsHeavyIon() || fRunTable->IsPA()){
-    AliCentrality *cent = event->GetCentrality();
-    if( ! cent ) return;
-    fcent = cent->GetCentralityPercentile("V0M");
-  } else {
+    if(fDebug > 6) cout << fRunTable->GetPeriodName() << endl;
+    if(fSelector != ""){
+      fcent = sel->GetMultiplicityPercentile(fSelector);
+    }else{
+      if(fRunTable->IsPA() && !(fRunTable->GetPeriodName().BeginsWith("LHC13"))){
+        sel = (AliMultSelection*) InputEvent() -> FindListObject("MultSelection");
+        if (sel) {
+          fcent = sel->GetMultiplicityPercentile("V0A");
+        }
+        else{
+          if(fDebug > 2) cout << "Sel not found" << endl;
+        }
+      }else{
+        AliCentrality *cent = event->GetCentrality();
+        if( ! cent ) return;
+        if(fRunTable->GetPeriodName().BeginsWith("LHC13")){
+          fcent = cent->GetCentralityPercentile("V0A");
+        }else{
+          fcent = cent->GetCentralityPercentile("V0M");
+        }
+      }
+    }
+  }
+  else {
     fcent = -1;
+  }
+  if(fcent > fCentCut){
+    if(fDebug > 2) cout << "Skip event, Centrality was " << fcent << " and cut is " << fCentCut << endl;
+    return;
   }
 
   cBin = fCard->GetBin(kCentrType, fcent);;
@@ -287,7 +323,7 @@ void AliJJetJtTask::UserExec(Option_t* /*option*/)
 /// 
 void AliJJetJtTask::FindDaughters(AliJJet *jet, AliAODMCParticle *track, AliMCParticleContainer *mcTracksCont){
 
-  for(int id = track->GetFirstDaughter(); id <= track->GetLastDaughter() ; id++){
+  for(int id = track->GetDaughterFirst(); id <= track->GetDaughterLast() ; id++){
     AliAODMCParticle *daughter = static_cast<AliAODMCParticle*>(mcTracksCont->GetParticle(id));
     if(daughter->GetNDaughters() > 0){
       FindDaughters(jet,daughter,mcTracksCont);
@@ -335,6 +371,7 @@ bool AliJJetJtTask::IsGoodEvent(AliVEvent *event) {
     fEventHist->Fill( 0 );
 
     Bool_t triggerkMB = ((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected() & ( AliVEvent::kMB );
+    // Make sure if V0OR or whayt
 
     if( triggerkMB ){
       triggeredEventMB = kTRUE;  //event triggered as minimum bias

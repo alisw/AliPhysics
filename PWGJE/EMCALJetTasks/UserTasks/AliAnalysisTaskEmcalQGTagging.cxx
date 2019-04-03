@@ -71,7 +71,14 @@ AliAnalysisTaskEmcalQGTagging::AliAnalysisTaskEmcalQGTagging() :
   fCentMax(10),
   fOneConstSelectOn(kFALSE),
   fTrackCheckPlots(kFALSE),
+  fCheckResolution(kFALSE),
   fSubjetCutoff(0.1),
+  fMinPtConst(1),
+  fHardCutoff(0),
+  fDoTwoTrack(kFALSE),
+  fPhiCutValue(0.02),
+  fEtaCutValue(0.02),
+  fMagFieldPolarity(1),
   fDerivSubtrOrder(0),
   fh2ResponseUW(0x0),
   fh2ResponseW(0x0), 
@@ -86,12 +93,12 @@ AliAnalysisTaskEmcalQGTagging::AliAnalysisTaskEmcalQGTagging() :
   fhPhi(0x0),
   fhTrackPhi(0x0),
   fHLundIterative(0x0),
-  fHCheckResolutionSubjets(0x0),  
+  fHCheckResolutionSubjets(0x0),
   fNbOfConstvspT(0x0),
   fTreeObservableTagging(0)
 
 {
-   for(Int_t i=0;i<17;i++){
+   for(Int_t i=0;i<8;i++){
     fShapesVar[i]=0;}
   SetMakeGeneralHistograms(kTRUE);
   DefineOutput(1, TList::Class());
@@ -120,7 +127,14 @@ AliAnalysisTaskEmcalQGTagging::AliAnalysisTaskEmcalQGTagging(const char *name) :
   fCentMax(10),
   fOneConstSelectOn(kFALSE),
   fTrackCheckPlots(kFALSE),
+  fCheckResolution(kFALSE),
   fSubjetCutoff(0.1),
+  fMinPtConst(1),
+  fHardCutoff(0),
+  fDoTwoTrack(kFALSE),
+  fPhiCutValue(0.02),
+  fEtaCutValue(0.02),
+  fMagFieldPolarity(1),
   fDerivSubtrOrder(0),
   fh2ResponseUW(0x0),
   fh2ResponseW(0x0),
@@ -141,7 +155,7 @@ AliAnalysisTaskEmcalQGTagging::AliAnalysisTaskEmcalQGTagging(const char *name) :
   
 {
   // Standard constructor.
-  for(Int_t i=0;i<17;i++){
+  for(Int_t i=0;i<8;i++){
     fShapesVar[i]=0;}
   SetMakeGeneralHistograms(kTRUE);
   
@@ -198,11 +212,11 @@ AliAnalysisTaskEmcalQGTagging::~AliAnalysisTaskEmcalQGTagging()
 
 
   
-   //log(1/theta),log(z*theta),jetpT,algo// 
-   const Int_t dimSpec   = 5;
-   const Int_t nBinsSpec[5]     = {50,50,10,3,10};
-   const Double_t lowBinSpec[5] = {0.0,-10,  0,0,0};
-   const Double_t hiBinSpec[5]  = {5.0,  0,200,3,10};
+   //log(1/theta),log(kt),jetpT,depth, algo, Eradiator// 
+   const Int_t dimSpec   = 6;
+   const Int_t nBinsSpec[6]     = {50,100,100,20,100,2};
+   const Double_t lowBinSpec[6] = {0.,-10,0,0,0,0};
+   const Double_t hiBinSpec[6]  = {5.,10.,100,20,100,2};
    fHLundIterative = new THnSparseF("fHLundIterative",
                    "LundIterativePlot [log(1/theta),log(z*theta),pTjet,algo]",
                    dimSpec,nBinsSpec,lowBinSpec,hiBinSpec);
@@ -210,10 +224,10 @@ AliAnalysisTaskEmcalQGTagging::~AliAnalysisTaskEmcalQGTagging()
 
 
   //// 
-   const Int_t dimResol   = 4;
-   const Int_t nBinsResol[4]     = {10,10,80,80};
-   const Double_t lowBinResol[4] = {0,0,-1,-1};
-   const Double_t hiBinResol[4]  = {200,0.3,1,1};
+   const Int_t dimResol   = 5;
+   const Int_t nBinsResol[5]     = {10,10,80,80,80};
+   const Double_t lowBinResol[5] = {0,0,-1,-1,-1};
+   const Double_t hiBinResol[5]  = {200,0.3,1,1,1};
    fHCheckResolutionSubjets = new THnSparseF("fHCheckResolutionSubjets",
                    "Mom.Resolution of Subjets vs opening angle",
 					     dimResol,nBinsResol,lowBinResol,hiBinResol);
@@ -238,7 +252,7 @@ AliAnalysisTaskEmcalQGTagging::~AliAnalysisTaskEmcalQGTagging()
 
  
   TH1::AddDirectory(oldStatus);
-  const Int_t nVar = 12;
+  const Int_t nVar = 8;
   const char* nameoutput = GetOutputSlot(2)->GetContainer()->GetName();
   fTreeObservableTagging = new TTree(nameoutput, nameoutput);
   
@@ -247,27 +261,13 @@ AliAnalysisTaskEmcalQGTagging::~AliAnalysisTaskEmcalQGTagging()
 
   fShapesVarNames[0] = "partonCode"; 
   fShapesVarNames[1] = "ptJet"; 
-  fShapesVarNames[2] = "ptDJet"; 
-  fShapesVarNames[3] = "phiJet";
-  // fShapesVarNames[4] = "nbOfConst";
-  fShapesVarNames[4] = "angularity";
-  //fShapesVarNames[5] = "circularity";
-  fShapesVarNames[5] = "lesub";
-  //fShapesVarNames[7] = "coronna";
+  fShapesVarNames[2] = "ktAv"; 
+  fShapesVarNames[3] = "thetaAv";
+  fShapesVarNames[4] = "ptJetMatch"; 
+  fShapesVarNames[5] = "ktAvMatch"; 
+  fShapesVarNames[6] = "thetaAvMatch";
+  fShapesVarNames[7]="weightPythia";
 
-  fShapesVarNames[6] = "ptJetMatch"; 
-  fShapesVarNames[7] = "ptDJetMatch"; 
-  fShapesVarNames[8] = "phiJetMatch";
-  // fShapesVarNames[12] = "nbOfConstMatch";
-  fShapesVarNames[9] = "angularityMatch";
-  //fShapesVarNames[12] = "circularityMatch";
-  fShapesVarNames[10] = "lesubMatch";
-  //fShapesVarNames[14] = "coronnaMatch";
-  fShapesVarNames[11]="weightPythia";
-  //fShapesVarNames[14]="ntrksEvt";
-  //fShapesVarNames[16]="rhoVal";
-  //fShapesVarNames[17]="rhoMassVal";
-  //fShapesVarNames[12]="ptUnsub";
 
    for(Int_t ivar=0; ivar < nVar; ivar++){
     cout<<"looping over variables"<<endl;
@@ -380,8 +380,8 @@ Bool_t AliAnalysisTaskEmcalQGTagging::FillHistograms()
   }
   
   
-  AliParticleContainer *partContAn = GetParticleContainer(0);
-  TClonesArray *trackArrayAn = partContAn->GetArray();
+  // AliParticleContainer *partContAn = GetParticleContainer(0);
+  //TClonesArray *trackArrayAn = partContAn->GetArray();
  
   
   Float_t rhoVal=0, rhoMassVal = 0.;
@@ -433,7 +433,7 @@ Bool_t AliAnalysisTaskEmcalQGTagging::FillHistograms()
       
       fShapesVar[0] = 0.;
       if(fJetShapeType == kDetEmbPartPythia){
-        AliJetContainer *jetContTrue = GetJetContainer(1);
+	// AliJetContainer *jetContTrue = GetJetContainer(1);
         AliJetContainer *jetContUS = GetJetContainer(2);
 	
         if(fJetShapeSub==kConstSub){
@@ -455,7 +455,7 @@ Bool_t AliAnalysisTaskEmcalQGTagging::FillHistograms()
           continue;
         }
         
-        AliJetContainer *jetContPart=GetJetContainer(3);
+        //AliJetContainer *jetContPart=GetJetContainer(3);
         jet3=jet2->ClosestJet();
         
         if(!jet3){
@@ -527,7 +527,7 @@ Bool_t AliAnalysisTaskEmcalQGTagging::FillHistograms()
         
       
         fh2ResponseUW->Fill(jet1->Pt(),jet3->Pt());
-        CheckSubjetResolution(jet1,jetCont,jet3,jetContTrue);
+        if(fCheckResolution) CheckSubjetResolution(jet1,jetCont,jet3,jetContTrue);
         
       }
       
@@ -584,49 +584,34 @@ Bool_t AliAnalysisTaskEmcalQGTagging::FillHistograms()
 
   
       fShapesVar[1] = ptSubtracted;
-      fShapesVar[2] = GetJetpTD(jet1,0);
-      fShapesVar[3] =jet1->Phi();
-      if(fJetShapeType==kData && fJetSelection == kRecoil) fShapesVar[3]=RelativePhi(triggerHadron->Phi(), jet1->Phi());
-	//GetJetMass(jet1,0);
-      fShapesVar[4] = GetJetAngularity(jet1,0);
-      //fShapesVar[5] = GetJetCircularity(jet1,0);
-      fShapesVar[5] = GetJetLeSub(jet1,0);
-      //fShapesVar[6] = GetJetCoronna(jet1,0);
-      RecursiveParents(jet1,jetCont,0);
-      RecursiveParents(jet1,jetCont,1);
-      RecursiveParents(jet1,jetCont,2);
+      RecursiveParents(jet1,jetCont);
+     
       
-      Float_t ptMatch=0., ptDMatch=0., massMatch=0., constMatch=0.,angulMatch=0.,circMatch=0., lesubMatch=0., sigma2Match=0., coronnaMatch=0;
+      Float_t ptMatch=0.;
       Int_t kMatched = 0;
-
+      Double_t ktAvMatch=0;;
+      Double_t thetaAvMatch=0;
+      Double_t aver1=0;
+      Double_t aver2=0;
        if (fJetShapeType==kPythiaDef) {
          kMatched =1;
          if(fJetShapeSub==kConstSub) kMatched = 3;
         
          ptMatch=jet3->Pt();
-         ptDMatch=GetJetpTD(jet3, kMatched);
-         massMatch=jet3->Phi();
-	 // GetJetMass(jet3,kMatched);
-         //constMatch=1.*GetJetNumberOfConstituents(jet2,kMatched);
-         angulMatch=GetJetAngularity(jet3, kMatched);
-	 //circMatch=GetJetCircularity(jet3, kMatched);
-         lesubMatch=GetJetLeSub(jet3, kMatched);
-	 //coronnaMatch=GetJetCoronna(jet3,kMatched); 
-         //sigma2Match = GetSigma2(jet2, kMatched);
+	 RecursiveParentsMCAverage(jet3,kMatched, aver1, aver2);
+	 ktAvMatch=aver1;
+	 thetaAvMatch=aver2;
+      
        }
       
         if (fJetShapeType==kDetEmbPartPythia) {
         if(fJetShapeSub==kConstSub) kMatched = 3;
         if(fJetShapeSub==kDerivSub) kMatched = 2;
         ptMatch=jet3->Pt();
-        ptDMatch=GetJetpTD(jet3, kMatched);
-        massMatch=jet3->Phi();
-	//GetJetMass(jet3,kMatched);
-        // constMatch=1.*GetJetNumberOfConstituents(jet3,kMatched);
-        angulMatch=GetJetAngularity(jet3, kMatched);
-	// circMatch=GetJetCircularity(jet3, kMatched);
-        lesubMatch=GetJetLeSub(jet3, kMatched);
-        //coronnaMatch = GetJetCoronna(jet3, kMatched);
+
+        RecursiveParentsMCAverage(jet3,kMatched, aver1, aver2);
+	 ktAvMatch=aver1;
+	 thetaAvMatch=aver2;
         
       }
 
@@ -635,32 +620,18 @@ Bool_t AliAnalysisTaskEmcalQGTagging::FillHistograms()
       if (fJetShapeType == kMCTrue || fJetShapeType == kData || fJetShapeType == kGenOnTheFly) {
         kMatched = 0;
         ptMatch=0.;
-        ptDMatch=0.;
-        massMatch=0.;
-	//constMatch=0.;
-        angulMatch=0.;
-	// circMatch=0.;
-        lesubMatch=0.;
-        //coronnaMatch =0.;
+        ktAvMatch=0.;
+        thetaAvMatch=0.;
+	
         
       }
       
     
 
-      fShapesVar[6] = ptMatch;
-      fShapesVar[7] = ptDMatch;
-      fShapesVar[8] = massMatch;
-      fShapesVar[9] = angulMatch;
-      //fShapesVar[12] = circMatch;
-      fShapesVar[10] = lesubMatch;
-      //  fShapesVar[14] = coronnaMatch;
-      fShapesVar[11] = kWeight;
-      //fShapesVar[16] = ntracksEvt;
-      // fShapesVar[16] = rhoVal;
-      //fShapesVar[17] = rhoMassVal;
-      //fShapesVar[16] = jet1->Pt();
-
-
+      fShapesVar[4] = ptMatch;
+      fShapesVar[5] = ktAvMatch;
+      fShapesVar[6] = thetaAvMatch;
+      fShapesVar[7] = kWeight;
       fTreeObservableTagging->Fill();
       
 
@@ -1163,31 +1134,26 @@ Double_t AliAnalysisTaskEmcalQGTagging::RelativePhi(Double_t mphi,Double_t vphi)
 
 
 //_________________________________________________________________________
-void AliAnalysisTaskEmcalQGTagging::RecursiveParents(AliEmcalJet *fJet,AliJetContainer *fJetCont, Int_t ReclusterAlgo){
+void AliAnalysisTaskEmcalQGTagging::RecursiveParents(AliEmcalJet *fJet,AliJetContainer *fJetCont){
  
   std::vector<fastjet::PseudoJet>  fInputVectors;
   fInputVectors.clear();
   fastjet::PseudoJet  PseudoTracks;
-  double xflagalgo=0; 
+  
   AliParticleContainer *fTrackCont = fJetCont->GetParticleContainer();
   
     if (fTrackCont) for (Int_t i=0; i<fJet->GetNumberOfTracks(); i++) {
       AliVParticle *fTrk = fJet->TrackAt(i, fTrackCont->GetArray());
-      if (!fTrk) continue; 
+      if (!fTrk) continue;
+      if(fDoTwoTrack==kTRUE && CheckClosePartner(i,fJet,fTrk,fTrackCont)) continue;
       PseudoTracks.reset(fTrk->Px(), fTrk->Py(), fTrk->Pz(),fTrk->E());
       PseudoTracks.set_user_index(fJet->TrackAt(i)+100);
       fInputVectors.push_back(PseudoTracks);
      
     }
-    fastjet::JetAlgorithm jetalgo(fastjet::antikt_algorithm);
+    fastjet::JetAlgorithm jetalgo(fastjet::cambridge_algorithm);
 
-    if(ReclusterAlgo==0){ xflagalgo=0.5;
-      jetalgo=fastjet::kt_algorithm ;}
-      
-      if(ReclusterAlgo==1){ xflagalgo=1.5;
-	jetalgo=fastjet::cambridge_algorithm;}
-	if(ReclusterAlgo==2){ xflagalgo=2.5;
-	  jetalgo=fastjet::antikt_algorithm;} 
+   
   
   fastjet::JetDefinition fJetDef(jetalgo, 1., static_cast<fastjet::RecombinationScheme>(0), fastjet::BestFJ30 ); 
 
@@ -1201,20 +1167,32 @@ void AliAnalysisTaskEmcalQGTagging::RecursiveParents(AliEmcalJet *fJet,AliJetCon
    fastjet::PseudoJet j1;
    fastjet::PseudoJet j2;
    jj=fOutputJets[0];
-   double ndepth=0;
+   double ktaverage=0;
+   double thetaverage=0;
+   double nall=0;
+   double flagSubjet=0;
     while(jj.has_parents(j1,j2)){
-      ndepth=ndepth+1;
+      nall=nall+1;
     if(j1.perp() < j2.perp()) swap(j1,j2);
+    flagSubjet=0;
     double delta_R=j1.delta_R(j2);
     double z=j2.perp()/(j1.perp()+j2.perp());
     double y =log(1.0/delta_R);
-    double lnpt_rel=log(z*delta_R);
-    Double_t LundEntries[5] = {y,lnpt_rel,fOutputJets[0].perp(),xflagalgo,ndepth};  
-    fHLundIterative->Fill(LundEntries);
+    double lnpt_rel=log(j2.perp()*delta_R);
+    double yh=j1.e()+j2.e();
+     vector < fastjet::PseudoJet > constitj1 = sorted_by_pt(j1.constituents());
+     if(constitj1[0].perp()>fMinPtConst) flagSubjet=1; 
+    if(z>fHardCutoff){
+      ktaverage=ktaverage+lnpt_rel;
+      thetaverage=thetaverage+delta_R;
+    Double_t LundEntries[6] = {y,lnpt_rel,fOutputJets[0].perp(),nall,yh,flagSubjet};  
+    fHLundIterative->Fill(LundEntries);}
     jj=j1;} 
 
-
-
+   
+     fShapesVar[2]=ktaverage/nall;
+     fShapesVar[3]=thetaverage/nall;
+ 
 
   } catch (fastjet::Error) {
     AliError(" [w] FJ Exception caught.");
@@ -1228,6 +1206,74 @@ void AliAnalysisTaskEmcalQGTagging::RecursiveParents(AliEmcalJet *fJet,AliJetCon
 
   
 }
+//_________________________________________________________________________
+void AliAnalysisTaskEmcalQGTagging::RecursiveParentsMCAverage(AliEmcalJet *fJet,Int_t km, Double_t &average1, Double_t &average2){
+  AliJetContainer *jetCont = GetJetContainer(km);
+  std::vector<fastjet::PseudoJet>  fInputVectors;
+  fInputVectors.clear();
+  fastjet::PseudoJet  PseudoTracks;
+  
+  AliParticleContainer *fTrackCont = jetCont->GetParticleContainer();
+  
+    if (fTrackCont) for (Int_t i=0; i<fJet->GetNumberOfTracks(); i++) {
+      AliVParticle *fTrk = fJet->TrackAt(i, fTrackCont->GetArray());
+      if (!fTrk) continue;
+     
+      PseudoTracks.reset(fTrk->Px(), fTrk->Py(), fTrk->Pz(),fTrk->E());
+      PseudoTracks.set_user_index(fJet->TrackAt(i)+100);
+      fInputVectors.push_back(PseudoTracks);
+     
+    }
+    fastjet::JetAlgorithm jetalgo(fastjet::cambridge_algorithm);
+
+   
+  
+  fastjet::JetDefinition fJetDef(jetalgo, 1., static_cast<fastjet::RecombinationScheme>(0), fastjet::BestFJ30 ); 
+
+  try {
+    fastjet::ClusterSequence fClustSeqSA(fInputVectors, fJetDef);
+    std::vector<fastjet::PseudoJet>   fOutputJets;
+    fOutputJets.clear();
+    fOutputJets=fClustSeqSA.inclusive_jets(0);
+  
+   fastjet::PseudoJet jj;
+   fastjet::PseudoJet j1;
+   fastjet::PseudoJet j2;
+   jj=fOutputJets[0];
+   double ktaverage=0;
+   double thetaverage=0;
+   double nall=0;
+   double flagSubjet=0;
+    while(jj.has_parents(j1,j2)){
+      nall=nall+1;
+    if(j1.perp() < j2.perp()) swap(j1,j2);
+   
+    double delta_R=j1.delta_R(j2);
+   
+    double lnpt_rel=log(j2.perp()*delta_R);
+      
+      ktaverage=ktaverage+lnpt_rel;
+      thetaverage=thetaverage+delta_R;
+   
+    jj=j1;} 
+
+   
+     average1=ktaverage/nall;
+     average2=thetaverage/nall;
+ 
+
+  } catch (fastjet::Error) {
+    AliError(" [w] FJ Exception caught.");
+    //return -1;
+  }
+
+
+
+
+  return;
+
+  
+  }
 
 //_________________________________________________________________________
 void AliAnalysisTaskEmcalQGTagging::CheckSubjetResolution(AliEmcalJet *fJet,AliJetContainer *fJetCont,AliEmcalJet *fJetM,AliJetContainer *fJetContM){
@@ -1285,41 +1331,40 @@ void AliAnalysisTaskEmcalQGTagging::CheckSubjetResolution(AliEmcalJet *fJet,AliJ
     jj=fOutputJets[0];
     jjM=fOutputJetsM[0];
 
-   double z=0;
+   double z1=0;
+   double z2=0;
    double zcut=0.1;
-   while((jj.has_parents(j1,j2)) && (z<zcut)){
+   while((jj.has_parents(j1,j2)) && (z1<zcut)){
     if(j1.perp() < j2.perp()) swap(j1,j2);
    
-     z=j2.perp()/(j1.perp()+j2.perp());
+     z1=j2.perp()/(j1.perp()+j2.perp());
     jj=j1;} 
-   if(z<zcut) return;
-    z=0;
+   if(z1<zcut) return;
+    
 
      
-   while((jjM.has_parents(j1M,j2M)) && (z<zcut)){
+   while((jjM.has_parents(j1M,j2M)) && (z2<zcut)){
     if(j1M.perp() < j2M.perp()) swap(j1M,j2M);
    
-     z=j2M.perp()/(j1M.perp()+j2M.perp());
+     z2=j2M.perp()/(j1M.perp()+j2M.perp());
     jjM=j1M;}
-   if(z<zcut) return;
+   if(z2<zcut) return;
         
 
 
    double delta_R1=j1.delta_R(j1M);
    double delta_R2=j2.delta_R(j2M);
    double delta_R=j1.delta_R(j2);
-  
+   double residz=(z1-z2)/z2;
    double resid1=(j1.perp()-j1M.perp())/j1M.perp(); 
    double resid2=(j2.perp()-j2M.perp())/j2M.perp(); 
     
    if((delta_R1<fSubjetCutoff) && (delta_R2<fSubjetCutoff)){
-   Double_t ResolEntries[4] = {fOutputJets[0].perp(),delta_R,resid1,resid2};  
+   Double_t ResolEntries[5] = {fOutputJets[0].perp(),delta_R,resid1,resid2,residz};  
    fHCheckResolutionSubjets->Fill(ResolEntries);}
 
-   
 
-
-  } catch (fastjet::Error) {
+   } catch (fastjet::Error) {
     AliError(" [w] FJ Exception caught.");
     //return -1;
   }
@@ -1338,6 +1383,49 @@ void AliAnalysisTaskEmcalQGTagging::CheckSubjetResolution(AliEmcalJet *fJet,AliJ
 }
 
 
+Bool_t AliAnalysisTaskEmcalQGTagging::CheckClosePartner(Int_t index, AliEmcalJet *fJet,AliVParticle *fTrk1, AliParticleContainer *fTrackCont){
+      //check if tracks are close//
+      for (Int_t i=0; i<fJet->GetNumberOfTracks(); i++) {
+      AliVParticle *fTrk2 = fJet->TrackAt(i, fTrackCont->GetArray());
+      if (!fTrk2) continue;
+      if(i==index) continue;
+      Double_t phi1 = fTrk1->Phi();
+      Double_t phi2 = fTrk2->Phi();
+      Double_t chg1 = fTrk1->Charge();
+      Double_t chg2 = fTrk2->Charge();
+      Double_t ptv1 = fTrk1->Pt();
+      Double_t ptv2 = fTrk2->Pt();
+      Double_t deta=fTrk2->Eta()-fTrk1->Eta();
+      const Float_t kLimit = fPhiCutValue* 3;
+
+      if (TMath::Abs(fTrk1->Eta()-fTrk2->Eta()) < fEtaCutValue*2.5*3){
+      Float_t initdpsinner = (phi2 - TMath::ASin(0.075*chg2*fMagFieldPolarity*0.8/ptv2) -
+      (phi1 - TMath::ASin(0.075*chg1*fMagFieldPolarity*0.8/ptv1)));
+      
+      Float_t initdpsouter = (phi2 - TMath::ASin(0.075*chg2*fMagFieldPolarity*2.5/ptv2) -
+      (phi1 - TMath::ASin(0.075*chg1*fMagFieldPolarity*2.5/ptv1)));
+
+      initdpsinner = TVector2::Phi_mpi_pi(initdpsinner);
+      initdpsouter = TVector2::Phi_mpi_pi(initdpsouter);
+
+      
+
+     if (TMath::Abs(initdpsinner) < kLimit ||
+      TMath::Abs(initdpsouter) < kLimit || initdpsinner * initdpsouter < 0 ) {
+      Double_t mindps = 1e5;
+    
+   
+   
+        for (Double_t rad = 0.8; rad < 2.51; rad += 0.01) {
+          Double_t dps = (phi2 - TMath::ASin(0.075*chg2*fMagFieldPolarity*rad/ptv2) - (phi1 - TMath::ASin(0.075*chg1*fMagFieldPolarity*rad/ptv1)));
+          dps = TVector2::Phi_mpi_pi(dps);
+          if (TMath::Abs(dps) < TMath::Abs(mindps))
+            mindps = dps;
+        }
+	if(TMath::Abs(mindps)<fPhiCutValue && TMath::Abs(deta)<fEtaCutValue) return kTRUE;
+     } }
+	 return kFALSE;
+      }}
 
 
 

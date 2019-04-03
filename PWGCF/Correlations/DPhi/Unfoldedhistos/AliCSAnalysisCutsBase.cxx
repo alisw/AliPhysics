@@ -29,6 +29,7 @@ AliCSAnalysisCutsBase::ProdPeriods  AliCSAnalysisCutsBase::fgDataPeriod = AliCSA
 AliCSAnalysisCutsBase::ProdPeriods  AliCSAnalysisCutsBase::fgAnchorPeriod = AliCSAnalysisCutsBase::kNoPeriod;
 AliCSAnalysisCutsBase::EnergyValue  AliCSAnalysisCutsBase::fgEnergy = AliCSAnalysisCutsBase::kUnset;
 Bool_t                              AliCSAnalysisCutsBase::fgIsMC = kFALSE;
+Bool_t                              AliCSAnalysisCutsBase::fgIsMConlyTruth = kFALSE;
 AliInputEventHandler               *AliCSAnalysisCutsBase::fgInputHandler = NULL;
 AliMCEventHandler                  *AliCSAnalysisCutsBase::fgMCHandler = NULL;
 Bool_t                              AliCSAnalysisCutsBase::fgIsESD = kTRUE;
@@ -419,6 +420,12 @@ void AliCSAnalysisCutsBase::NotifyRunGlobal() {
   } else if (szLHCPeriod.Contains("LHC13b2_efix")){
     fgDataPeriod = kLHC13b2_efix;
     fgIsMC = kTRUE;
+    fgAnchorPeriod = kLHC13bc;
+    fgEnergy = kpPb5TeV;
+  } else if (szLHCPeriod.Contains("LHC13b2")){
+    fgDataPeriod = kLHC13b2;
+    fgIsMC = kTRUE;
+    fgAnchorPeriod = kLHC13bc;
     fgEnergy = kpPb5TeV;
   } else if (szLHCPeriod.CompareTo("LHC13e7") == 0){
     fgDataPeriod = kLHC13e7;
@@ -599,6 +606,22 @@ void AliCSAnalysisCutsBase::NotifyRunGlobal() {
     fgDataPeriod = kLHC13d19;
     fgIsMC = kTRUE;
     fgEnergy = kPbPb5TeV;
+
+  // LHC18x PbPb productions
+  } else if (szLHCPeriod.Contains("LHC18q")){
+    fgDataPeriod = kLHC18q;
+    fgAnchorPeriod = kLHC18q;
+    fgIsMC = kFALSE;
+    fgEnergy = kPbPb5TeV;
+
+  // fast MC productions
+  } else if (szLHCPeriod.Contains("LHC13f3")) {
+    fgDataPeriod = kLHC13f3;
+    fgAnchorPeriod = kLHC10h;
+    fgIsMC = kTRUE;
+    fgIsMConlyTruth = kTRUE;
+    fgEnergy = kPbPb2760GeV;
+
   } else {
     AliFatalClass(Form("Analysis period %s not supported. Please update the class!!!", szLHCPeriod.Data()));
     fgDataPeriod = kNoPeriod;

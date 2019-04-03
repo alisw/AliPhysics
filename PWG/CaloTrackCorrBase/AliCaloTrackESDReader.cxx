@@ -24,7 +24,6 @@
 #include "AliMCEvent.h"
 #include "AliESDtrackCuts.h"
 #include "AliGenCocktailEventHeader.h"
-#include "AliGenPythiaEventHeader.h"
 #include "AliLog.h"
 
 /// \cond CLASSIMP
@@ -92,6 +91,8 @@ Bool_t AliCaloTrackESDReader::CheckForPrimaryVertex() const
 AliGenEventHeader* AliCaloTrackESDReader::GetGenEventHeader() const
 {
   if ( !fMC ) return 0x0 ;
+    
+  if ( fGenEventHeader ) return fGenEventHeader;
   
   AliGenEventHeader * eventHeader = fMC->GenEventHeader();
   
@@ -126,8 +127,9 @@ void AliCaloTrackESDReader::Init()
 {  
   AliCaloTrackReader::Init();
   
-  if(!fESDtrackCuts)
-    fESDtrackCuts = AliESDtrackCuts::GetStandardTPCOnlyTrackCuts(); //initialize with TPC only tracks
+  // Do not initialize anymore to allow selection just by track status
+//  if(!fESDtrackCuts)
+//    fESDtrackCuts = AliESDtrackCuts::GetStandardTPCOnlyTrackCuts(); //TPC only tracks
 }
 
 //______________________________________________________________________________
@@ -138,15 +140,17 @@ Bool_t AliCaloTrackESDReader::SelectTrack(AliVTrack* track, Double_t pTrack[3])
 {  
   AliESDtrack* esdTrack = dynamic_cast<AliESDtrack*> (track);
   
-  if(!esdTrack) return kFALSE;
+  if ( !esdTrack )      return kFALSE;
+  
+  track->GetPxPyPz(pTrack) ;
+
+  if ( !fESDtrackCuts ) return kTRUE; // Since not defined, do no rely on predefined track-cuts
   
   const AliExternalTrackParam* constrainParam = esdTrack->GetConstrainedParam();
   
-  if(fESDtrackCuts->AcceptTrack(esdTrack))
-  {
-    track->GetPxPyPz(pTrack) ;
-    
-    if(fConstrainTrack)
+  if ( fESDtrackCuts->AcceptTrack(esdTrack) )
+  {    
+    if ( fConstrainTrack )
     {
       if( !constrainParam ) return kFALSE;
       
@@ -155,7 +159,7 @@ Bool_t AliCaloTrackESDReader::SelectTrack(AliVTrack* track, Double_t pTrack[3])
       
     } // use constrained tracks
     
-    if(fSelectSPDHitTracks && !esdTrack->HasPointOnITSLayer(0) && !esdTrack->HasPointOnITSLayer(1))
+    if ( fSelectSPDHitTracks && !esdTrack->HasPointOnITSLayer(0) && !esdTrack->HasPointOnITSLayer(1) )
       return kFALSE ; // Not much sense to use with TPC only or Hybrid tracks
   }
   
@@ -163,11 +167,10 @@ Bool_t AliCaloTrackESDReader::SelectTrack(AliVTrack* track, Double_t pTrack[3])
   else if(fESDtrackComplementaryCuts && fESDtrackComplementaryCuts->AcceptTrack(esdTrack))
   {
     // constrain the track
-    if( !constrainParam ) return kFALSE;
+    if ( !constrainParam ) return kFALSE;
     
     esdTrack->Set(constrainParam->GetX(),constrainParam->GetAlpha(),constrainParam->GetParameter(),constrainParam->GetCovariance());
     esdTrack->GetConstrainedPxPyPz(pTrack);
-    
   }
   else return kFALSE;
   

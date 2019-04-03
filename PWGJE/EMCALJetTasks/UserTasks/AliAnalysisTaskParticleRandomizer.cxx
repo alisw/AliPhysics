@@ -201,7 +201,7 @@ AliAODTrack* AliAnalysisTaskParticleRandomizer::GetAODTrack(AliPicoTrack* track)
   newTrack->SetTheta(2.*atan(exp(-track->Eta()))); // there is no setter for eta
   newTrack->SetPhi(track->Phi());
   newTrack->SetCharge(track->Charge());
-  newTrack->SetLabel(track->GetLabel());
+  newTrack->SetLabel(100000+track->GetLabel()); // this tags tracks as 'embedded tracks'
 
   // Hybrid tracks (compatible with LHC11h)
   UInt_t filterMap = BIT(8) | BIT(9);

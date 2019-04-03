@@ -27,10 +27,6 @@ makeHTMLindexPerRun()
   <br>
   <h2>Signals: spectra</h2>
   </div>
-  <a href="cZNA_Spectra.png">ZNA spectrum</a><br>
-  <a href="cZNC_Spectra.png">ZNC spectrum</a><br>
-  <a href="cZPA_Spectra.png">ZPA spectrum</a><br>
-  <a href="cZPC_Spectra.png">ZPC spectrum</a><br>
   <a href="cZEM1_Spectra.png">ZEM1 spectrum</a><br>
   <a href="cZEM2_Spectra.png">ZEM2 spectrum</a><br>
   <h2>Signals: mean values</h2>

@@ -514,6 +514,9 @@ void AliPerformanceDEdx::Analyse()
         h2D = (TH2F*)fDeDxHisto->Projection(0,i);
 
         f1[i]->SetRange(40,60); // should be pion peak
+	f1[i]->SetParameters(h2D->ProjectionY()->GetMaximum(),
+			     h2D->ProjectionY()->GetMean(),
+			     h2D->ProjectionY()->GetRMS());
         h2D->FitSlicesY(f1[i],0,-1,10,"QNR",arr[i]); // gaus fit of pion peak
 
         h1D = (TH1F*)arr[i]->At(1);

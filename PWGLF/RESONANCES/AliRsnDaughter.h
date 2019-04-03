@@ -32,6 +32,7 @@ public:
       kTrack,
       kV0,
       kCascade,
+      kResonance,
       kNoType
    };
 
@@ -45,6 +46,12 @@ public:
       kLambda,
       kXi,
       kOmega,
+      kKstar0,
+      kPhi,
+      kLambdastar,
+       kKstarpm,
+       kSigmastarp,
+       kSigmastarm,
       kUnknown
    };
 
@@ -141,7 +148,7 @@ private:
    AliVParticle  *fRefMC;       // reference to corresponding MC particle
    AliRsnEvent   *fOwnerEvent;  // pointer to owner event
 
-   ClassDef(AliRsnDaughter, 13)
+   ClassDef(AliRsnDaughter, 14)
 };
 
 //__________________________________________________________________________________________________
@@ -218,6 +225,13 @@ inline AliRsnDaughter::ERefType AliRsnDaughter::RefType(ESpecies species)
       case kXi:
       case kOmega:
          return kCascade;
+      case kKstar0:
+      case kPhi:
+      case kLambdastar:
+      case kKstarpm:
+      case kSigmastarp:
+      case kSigmastarm:
+         return kResonance;
       default:
          return kNoType;
    }

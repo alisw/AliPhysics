@@ -13,10 +13,9 @@
  * about the suitability of this software for any purpose. It is          *
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
-
-
 #include "AliFemtoLambdaParticle.h"
 
+ClassImp(AliFemtoLambdaParticle)
 
 AliFemtoLambdaParticle::AliFemtoLambdaParticle() :
   fMomentum(),
@@ -33,35 +32,36 @@ AliFemtoLambdaParticle::AliFemtoLambdaParticle() :
   fMomentumPosDaughter(),
   fMomentumNegDaughter(),
   fPhiPosdaughter(0),
+  fPhiStarPosdaughter(),
   fEtaPosdaughter(0),
   fPhiNegdaughter(0),
+  fPhiStarNegdaughter(),
   fEtaNegdaughter(0),
   fReal(kFALSE)
 {
   //Default constructor
 }
 //_____________________________________________________________________________
-/*
-AliFemtoLambdaParticle::AliFemtoLambdaParticle(const AliFemtoLambdaParticle &obj) :
-  fMomentum(),
-  fMomentumMC(),
-  fMomentumMCMother(),
-  fPDGCode(obj.fPDGCode),
-  fPDGCodeMother(obj.fPDGCodeMother),
-  fPt(obj.fPt),
-  fMass(obj.fMass),
-  fDaughterID1(obj.fDaughterID1),
-  fDaughterID2(obj.fDaughterID2),
-  fV0tag(obj.fV0tag),
-  fPointing(obj.fPointing),
-  fPhiPosdaughter(obj.fPhiPosdaughter),
-  fEtaPosdaughter(obj.fEtaPosdaughter),
-  fPhiNegdaughter(obj.fPhiNegdaughter),
-  fEtaNegdaughter(obj.fEtaNegdaughter)
-{
-  // copy constructor
-}
-*/
+//AliFemtoLambdaParticle::AliFemtoLambdaParticle(const AliFemtoLambdaParticle &obj) :
+//  fMomentum(),
+//  fMomentumMC(),
+//  fMomentumMCMother(),
+//  fPDGCode(obj.fPDGCode),
+//  fPDGCodeMother(obj.fPDGCodeMother),
+//  fPt(obj.fPt),
+//  fMass(obj.fMass),
+//  fDaughterID1(obj.fDaughterID1),
+//  fDaughterID2(obj.fDaughterID2),
+//  fV0tag(obj.fV0tag),
+//  fPointing(obj.fPointing),
+//  fPhiPosdaughter(obj.fPhiPosdaughter),
+//  fEtaPosdaughter(obj.fEtaPosdaughter),
+//  fPhiNegdaughter(obj.fPhiNegdaughter),
+//  fEtaNegdaughter(obj.fEtaNegdaughter)
+//{
+//  // copy constructor
+//}
+
 //_____________________________________________________________________________
 AliFemtoLambdaParticle &AliFemtoLambdaParticle::operator=(const AliFemtoLambdaParticle &obj)
 {
@@ -88,13 +88,13 @@ AliFemtoLambdaParticle &AliFemtoLambdaParticle::operator=(const AliFemtoLambdaPa
   fEtaNegdaughter = obj.fEtaNegdaughter;
   fReal = obj.fReal;
 
+
   for(int i=0;i<9;i++)
    {
-     for(int j=0;j<3;j++)
-       {
-	 fPosDaughPosTPC[i][j] = obj.fPosDaughPosTPC[i][j];
-	 fNegDaughPosTPC[i][j] = obj.fNegDaughPosTPC[i][j];
-       }
+     fPhiStarPosdaughter[i] = obj.fPhiStarPosdaughter[i];
+     fPhiStarNegdaughter[i] = obj.fPhiStarNegdaughter[i];
+     fPositionPosTPC[i] = obj.fPositionPosTPC[i];
+     fPositionNegTPC[i] = obj.fPositionNegTPC[i];
    }
   
   

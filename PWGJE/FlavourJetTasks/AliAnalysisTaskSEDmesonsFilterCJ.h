@@ -36,6 +36,7 @@ class AliAODRecoCascadeHF;
 class AliAODRecoDecayHF2Prong;
 class AliAODRecoDecay;
 class AliStack;
+class AliNormalizationCounter;
 
 class AliAnalysisTaskSEDmesonsFilterCJ : public AliAnalysisTaskEmcal 
 {
@@ -158,6 +159,7 @@ class AliAnalysisTaskSEDmesonsFilterCJ : public AliAnalysisTaskEmcal
   Bool_t          fKeepOnlyDfromB;         //  only accept D mesons coming from a B meson decay (MC)
   AliAODEvent    *fAodEvent;               //!
   AliAODMCHeader *fMCHeader;		   //!
+  AliNormalizationCounter *fCounter;       //! AliNormalizationCounter
   TRandom3	 *fRan;			   //! Random number generator
   TClonesArray   *fArrayDStartoD0pi;       //!
   TClonesArray   *fMCarray;                //!

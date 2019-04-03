@@ -34,7 +34,6 @@
 #include <TProfile.h>
 
 class TH1I;
-class TParticle ;
 class TFile ;
 class TClonesArray ;
 class AliCFManager;
@@ -67,7 +66,8 @@ class AliCFTaskVertexingHF: public AliAnalysisTaskSE {
   enum {
     kSnail = 0,    /// slow configuration, all variables
     kCheetah = 1,   /// fast configuration, only a subset of variables
-    kFalcon = 2   /// super fast configuration, only (pt,y,centrality)
+    kFalcon = 2,   /// super fast configuration, only (pt,y,centrality)
+    kESE = 3   /// configuration with variables for ESE analysis (pt,y,centrality,q2,mult)
   };
 
   enum {
@@ -242,7 +242,8 @@ class AliCFTaskVertexingHF: public AliAnalysisTaskSE {
   void SetPtWeightsFromD0Cent080dataModMartinezoverLHC16i2abc();
   void SetPtWeightsFromFONLL5overLHC16i6a();
   void SetPtWeightsFromFONLL5andDplusdataoverLHC16i2a();
-
+  void SetPtWeightsFromFONLL5overLHC18a4a2();
+  
   void SetResonantDecay(UInt_t resonantDecay) {fResonantDecay = resonantDecay;}
   UInt_t GetResonantDecay() const {return fResonantDecay;}
 
@@ -272,6 +273,8 @@ class AliCFTaskVertexingHF: public AliAnalysisTaskSE {
 
   void SetCutOnMomConservation(Float_t cut) {fCutOnMomConservation = cut;}
   Bool_t GetCutOnMomConservation() const {return fCutOnMomConservation;}
+
+  Double_t ComputeTPCq2(AliAODEvent* aod, AliAODMCHeader* mcHeader, Double_t etamin, Double_t etamax, Double_t ptmin, Double_t ptmax) const;
 
  protected:
   AliCFManager   *fCFManager;   ///  pointer to the CF manager

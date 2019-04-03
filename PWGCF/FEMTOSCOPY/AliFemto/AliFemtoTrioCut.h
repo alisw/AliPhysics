@@ -40,7 +40,6 @@ private:
   double fIncludeTrioMass;
   double fIncludeTrioDelta;
   
-  double GetPairMInv(AliFemtoParticle *track1,AliFemtoParticle *track2);
 #ifdef __ROOT__
   ClassDef(AliFemtoTrioCut, 0)
 #endif

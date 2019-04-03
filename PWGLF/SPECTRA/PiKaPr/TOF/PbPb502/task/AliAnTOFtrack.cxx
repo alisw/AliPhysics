@@ -196,6 +196,22 @@ Bool_t AliAnTOFtrack::IsNegative() const
   return kFALSE;
 }
 
+//________________________________________________________________________
+Double_t AliAnTOFtrack::GetGammaBeta() const
+{
+  Double_t beta = GetBeta();
+  if (beta == 1.)
+    return -999.;
+  return beta / (TMath::Sqrt(1. - beta * beta));
+}
+
+//________________________________________________________________________
+Double_t AliAnTOFtrack::GetTOFMass() const
+{
+  Double_t gb = GetGammaBeta();
+  return gb <= 0 ? gb : GetMomentum() / gb;
+}
+
 ///////////////////////////
 ///DCA Utility functions///
 ///////////////////////////
@@ -340,3 +356,32 @@ Bool_t AliAnTOFtrack::IsOrT0TOF_T0A_T0C() const
     return kTRUE;
   return kFALSE;
 }
+
+//________________________________________________________________________
+void AliAnTOFtrack::Print() const
+{
+#define PrintVar(Var) \
+  cout << #Var << " " << Var << endl;
+  PrintVar(fTrkMask);
+  PrintVar(fTPCPIDMask);
+  PrintVar(fTrkCutMask);
+  PrintVar(fDCAXY);
+  PrintVar(fDCAZ);
+  PrintVar(fLength);
+  PrintVar(fLengthRatio);
+  PrintVar(fTOFTime);
+  PrintVar(fTOFMismatchTime);
+  for (Int_t i = 0; i < kExpSpecies; i++) {
+    PrintVar(fTOFExpTime[i]);
+    PrintVar(fTOFExpSigma[i]);
+  }
+  PrintVar(fT0TrkTime);
+  PrintVar(fTOFchan);
+  PrintVar(fEta);
+  PrintVar(fPhi);
+  PrintVar(fPt);
+  PrintVar(fPTPC);
+  PrintVar(fNTOFClusters);
+  PrintVar(fTPCSignal);
+#undef PrintVar
+};

@@ -33,40 +33,39 @@ class AliITSPIDResponse;
 class AliMCEvent;
 class AliVTrack;
 
+#include <THnSparse.h>
+
 #include "AliEventCuts.h"
 #include "AliAnalysisTaskSE.h"
 
-class AliAnalysisTaskSEITSsaSpectra : public AliAnalysisTaskSE {
+class AliAnalysisTaskSEITSsaSpectra : public AliAnalysisTaskSE
+{
 
-public:
+ public:
   // 3 track-by-track PID approaches
   // kNSigCut : nSigma with symmetric band and ITSsaHybrid BB parameterization
   // kMeanCut : nSigma with asymmetric band and ITSsaHybrid BB parameterization
   // kLanGaus : Landau-Gauss Bayessian approach
-  // in addition, statistic pid analysis available setting fFillIntDistHist
-  enum EPID_Type       {kNSigCut, kMeanCut, kLanGaus};
-  enum EPileup_Type    {
-		kNoPileup,
-		kPileupSPD,
-		kPileupInMultBins,
-		kPileupMV
-	};
+  // in addition, statistic pid analysis available by setting fFillIntDistHist
+  enum EPID_Type { kNSigCut, kMeanCut, kLanGaus };
+  enum EPileup_Type { kNoPileup, kPileupSPD, kPileupInMultBins, kPileupMV };
   enum EEvtCut_Type {
-    kIsReadable=1,
-		kPassMultSel,
-		kIsSDDIn,
+    kIsReadable = 1,
+    kPassMultSel,
+    kIsSDDIn,
     kIsNotIncDAQ,
     kPassTrig,
-		kPassINELgtZERO,
-		kCorrelations,
-		kPassSPDclsVsTCut,
-    kIsPileupSPD,
-		kIsPileupSPDinMultBins,
-		kIsPileupMV,
+    kPassINELgtZERO,
+    kCorrelations,
+    kPassSPDclsVsTCut,
+    kIsNotPileupSPD,
+    kIsNotPileupSPDinMultBins,
+    kIsNotPileupMV,
+    kIsNotPileup,
     kHasRecVtx,
     kHasGoodVtxZ,
     kNEvtCuts
-  };///< event selection criteria
+  }; ///< event selection criteria
   enum ETrkCut_Type {
     kHasNoSelection = 1,
     kIsITSsa,
@@ -80,84 +79,99 @@ public:
     kPassPtCut,
     kPassDCAzcut,
     kPassDCAxycut
-  };///< track selection criteria
+  }; ///< track selection criteria
   enum {
-    kNchg  =  2, ///< pos = 0, neg = 1;
-    kNspc  =  3, ///< pion = 0, kaon, 1, proton = 2
-    kNbins = 22  ///< deprecated parameter
+    kNchg = 2,  ///< pos = 0, neg = 1;
+    kNspc = 3,  ///< pion = 0, kaon, 1, proton = 2
+    kNbins = 22 ///< deprecated parameter
   };
 
-  AliAnalysisTaskSEITSsaSpectra();
+  AliAnalysisTaskSEITSsaSpectra(bool __def_prior = true, bool __fill_ntuple = false);
   virtual ~AliAnalysisTaskSEITSsaSpectra();
 
-  virtual void   UserCreateOutputObjects();
-  virtual void   Init();
-  virtual void   LocalInit() {Init();}
-  virtual void   UserExec(Option_t*);
-  virtual void   Terminate(Option_t*);
+  virtual void UserCreateOutputObjects();
+  virtual void Initialization();
+  virtual void LocalInit() { Initialization(); }
+  virtual void UserExec(Option_t *);
+  virtual void Terminate(Option_t *);
 
-  //Setters for histo bins
-  void SetBins     (int nbins, float min, float max, float* bins);
-  void SetCentBins (int nbins, float *bins);
-  void SetDCABins  (int nbins, float min, float max);
-  void SetDCABins  (int nbins, float* bins);
-  void SetPtBins   (int nbins, float *bins);
+  // Setters for histo bins
+  void SetBins(const int nbins, float min, float max, float *bins);
+  void SetCentBins(int nbins, float *bins);
+  void SetDCABins(int nbins, float *bins);
+  void SetPtBins(int nbins, float *bins);
 
-  //Setters for event selection settings
-  void SetTriggerSel   (UInt_t   tg = AliVEvent::kMB)  { fTriggerSel   = tg;   }
-  void SetMaxVtxZCut               (Double_t vz = 10)  { fMaxVtxZCut   = vz;   }
-	void SetChkIsEventINELgtZERO (Bool_t chk=kTRUE)      { fChkIsEventINELgtZERO = chk; }
-  void SetDoCheckSDDIn          (Bool_t flag = kTRUE)  { fChkIsSDDIn   = flag; }
-  void SetDoRejIncDAQ           (Bool_t flag = kTRUE)  { fRejIncDAQ    = flag; }
-  void SetDoSPDclsVsTrackletsCut(Bool_t flag = kTRUE)  { fDoSPDCvsTCut = flag; }
-	void SetUseSelectVertex2015pp (Bool_t flag = kTRUE)  { fUseSelectVertex2015pp = flag; }
-	void SetVtxQACheck   (Bool_t chkSPDres = kTRUE, Bool_t chkZsep = kTRUE, Bool_t reqBoth = kFALSE)
-  {fChkVtxSPDRes = chkSPDres; fChkVtxZSep = chkZsep; fReqBothVtx = reqBoth;}
-  void SetUseExtEventCuts       (Bool_t flag = kTRUE)  { fExtEventCuts = flag; }
+  // Setters for event selection settings
+  void SetTriggerSel(UInt_t tg = AliVEvent::kMB) { fTriggerSel = tg; }
+  void SetMaxVtxZCut(double vz = 10) { fMaxVtxZCut = vz; }
+  void SetChkIsEventINELgtZERO(bool chk = kTRUE) { fChkIsEventINELgtZERO = chk; }
+  void SetDoCheckSDDIn(bool flag = kTRUE) { fChkIsSDDIn = flag; }
+  void SetDoRejIncDAQ(bool flag = kTRUE) { fRejIncDAQ = flag; }
+  void SetDoSPDclsVsTrackletsCut(bool flag = kTRUE) { fDoSPDCvsTCut = flag; }
+  void SetUseSelectVertex2015pp(bool flag = kTRUE) { fUseSelectVertex2015pp = flag; }
+  void SetVtxQACheck(bool chkSPDres = kTRUE, bool chkZsep = kTRUE, bool reqBoth = kFALSE)
+  {
+    fChkVtxSPDRes = chkSPDres;
+    fChkVtxZSep = chkZsep;
+    fReqBothVtx = reqBoth;
+  }
+  void SetUseExtEventCuts(bool flag = kTRUE) { fExtEventCuts = flag; }
 
-  //Setters for mult sel.
-	void SetMultMethod(unsigned int meth=0) {fMultMethod = meth;}
-	void SetMultEvSel(Bool_t flag=kFALSE){ fMultEvSel = flag;}
-  void SetMultEstimator(TString centEst = "V0M") {fMultEstimator = centEst;}
-  void SetMultiplicityCut(Float_t low, Float_t up)
+  // Setters for mult sel.
+  void SetMultMethod(unsigned int meth = 0) { fMultMethod = meth; }
+  void SetMultEvSel(bool flag = kFALSE) { fMultEvSel = flag; }
+  void SetMultEstimator(TString centEst = "V0M") { fMultEstimator = centEst; }
+  void SetMultiplicityCut(float low, float up)
   {
     if ((up > low) && (!(low < 0.)) && (!(up > 100.))) {
-      fLowMult = low; fUpMult = up;
+      fLowMult = low;
+      fUpMult = up;
     }
   }
 
-  //Setters for pileup settings
-	void SetPileupSelection(unsigned long plp=1ULL) { fPlpType = plp; }
-  void SetSPDPileupSelection(Int_t cont = 3, Float_t distance = 0.8)
-	{ fMinPlpContribSPD = cont; fMinPlpZdistSPD = distance; }
-  void SetMVPileUpSelection(Int_t cont = 5, Float_t chi2 = 5, Float_t wgthZdiff = 15., Bool_t chkDiffBC = kFALSE)
-	{ fMinPlpContribMV = cont; fMaxPlpChi2MV = chi2; fMinWDistMV = wgthZdiff; fCheckPlpFromDifferentBCMV = chkDiffBC; }
+  // Setters for pileup settings
+  void SetPileupSelection(unsigned long plp = 1ULL) { fPlpType = plp; }
+  void SetSPDPileupSelection(int cont = 3, float distance = 0.8)
+  {
+    fMinPlpContribSPD = cont;
+    fMinPlpZdistSPD = distance;
+  }
+  void SetMVPileUpSelection(int cont = 5, float chi2 = 5, float wgthZdiff = 15., bool chkDiffBC = kFALSE)
+  {
+    fMinPlpContribMV = cont;
+    fMaxPlpChi2MV = chi2;
+    fMinWDistMV = wgthZdiff;
+    fCheckPlpFromDifferentBCMV = chkDiffBC;
+  }
 
-  //Setters for track cut settings
-  void SetMinSPDPoints   (Int_t     np =   1) { fMinSPDPts       =  np; }
-  void SetMinNdEdxSamples(Int_t     np =   3) { fMinNdEdxSamples =  np; }
-  void SetAbsEtaCut      (Double_t eta =  .8) { fAbsEtaCut       = eta; }
-  void SetMinRapCut      (Double_t   y = -.5) { fMinRapCut       =   y; }
-  void SetMaxRapCut      (Double_t   y =  .5) { fMaxRapCut       =   y; }
-  void SetCMSRapFct      (Double_t  dy =  .0) { fCMSRapFct       =  dy; }
-  void SetMindEdx        (Double_t  md =  .0) { fMindEdx         =  md; }
-  void SetMinNSigma      (Double_t  ns = 1.5) { fMinNSigma       =  ns; }
-  void SetMaxChi2Clu     (Double_t chi = 2.5) { fMaxChi2Clu      = chi; }
+  // Setters for track cut settings
+  void SetMinSPDPoints(int np = 1) { fMinSPDPts = np; }
+  void SetMinNdEdxSamples(int np = 3) { fMinNdEdxSamples = np; }
+  void SetAbsEtaCut(double eta = .8) { fAbsEtaCut = eta; }
+  void SetMinRapCut(double y = -.5) { fMinRapCut = y; }
+  void SetMaxRapCut(double y = .5) { fMaxRapCut = y; }
+  void SetCMSRapFct(double dy = .0) { fCMSRapFct = dy; }
+  void SetMindEdx(double md = .0) { fMindEdx = md; }
+  void SetMinNSigma(double ns = 1.5) { fMinNSigma = ns; }
+  void SetMaxChi2Clu(double chi = 2.5) { fMaxChi2Clu = chi; }
 
-  void SetDCACuts(Double_t nsxy = 7., Double_t nsz = 7.) { fNSigmaDCAxy = nsxy; fNSigmaDCAz  = nsz; }
+  void SetDCACuts(double nsxy = 7., double nsz = 7.)
+  {
+    fNSigmaDCAxy = nsxy;
+    fNSigmaDCAz = nsz;
+  }
 
-  //Setters for global settings
-  void SetPidTech(Int_t tech) {fPidMethod = static_cast<EPID_Type>(tech);}
-  void SetUseDefaultPriors(Bool_t flag = kTRUE) { fUseDefaultPriors = flag; }
-	void SetITSPidParams(AliITSPidParams* pidParams)     { fITSPidParams = pidParams; }
-  void SetIsMC            (Bool_t flag = kTRUE) { fIsMC       = flag; }
-  void SetFillNtuple      (Bool_t flag = kTRUE) { fFillNtuple = flag;}
-  void SetFillIntDistHist () { fFillIntDistHist = kTRUE; }
+  // Setters for global settings
+  void SetPidTech(int tech) { fPidMethod = static_cast<EPID_Type>(tech); }
+  void SetITSPidParams(AliITSPidParams *pidParams) { fITSPidParams = pidParams; }
+  void SetIsNominalBfield(bool flag = kTRUE) {fIsNominalBfield = flag;}
+  void SetIsMC(bool flag = kTRUE) { fIsMC = flag; }
+  void SetFillIntDistHist() { fFillIntDistHist = kTRUE; }
 
-	AliEventCuts* GetAliEventCuts() { return &fEventCuts; }
+  AliEventCuts *GetAliEventCuts() { return &fEventCuts; }
 
-  //Setters for smearing settings
-  void SetSmearMC(Double_t smearp, Double_t smeardedx)
+  // Setters for smearing settings
+  void SetSmearMC(double smearp, double smeardedx)
   {
     fSmearMC = kTRUE;
     fSmearP = smearp;
@@ -165,204 +179,207 @@ public:
   }
 
   // Default event selection cuts
-  void   SetupStandardEventCutsForRun1();
-  void   SetupEventCutsForRun1pPb();
-  void   SetupStandardEventCutsForRun2();
+  void SetupStandardEventCutsForRun1();
+  void SetupEventCutsForRun1pPb();
+  void SetupStandardEventCutsForRun2();
 
-protected:
-  Bool_t   IsEventAccepted(EEvtCut_Type& evtSel);
-  Bool_t   IsMultSelected();
-  UInt_t   IsPileup();
-  Bool_t   IsGoodVtxZ();
-  Bool_t   IsGoodSPDvtxRes(const AliESDVertex* spdVtx);
-  Bool_t   SelectVertex2015pp();
+ protected:
+  bool IsEventAccepted(EEvtCut_Type &evtSel);
+  bool IsMultSelected();
+  UInt_t IsPileup();
+  bool IsGoodVtxZ();
+  bool IsGoodSPDvtxRes(const AliESDVertex *spdVtx);
+  bool SelectVertex2015pp();
 
-  Bool_t   IsRapIn(Double_t y) { return (y > fMinRapCut && y < fMaxRapCut) ? kTRUE : kFALSE;}
-  Bool_t   DCAcut(Double_t impactXY, Double_t impactZ, Double_t pt) const;
-  Bool_t   DCAcutXY(Double_t impactXY, Double_t pt) const;
-  Bool_t   DCAcutZ(Double_t impactZ, Double_t pt) const;
+  bool IsRapIn(double y) { return (y > fMinRapCut && y < fMaxRapCut) ? kTRUE : kFALSE; }
+  bool DCAcut(double impactXY, double impactZ, double pt) const;
+  bool DCAcutXY(double impactXY, double pt) const;
+  bool DCAcutZ(double impactZ, double pt) const;
 
-  Double_t CookdEdx(Double_t* s) const;
-  Double_t Eta2y(Double_t pt, Double_t m, Double_t eta) const;
+  double CookdEdx(double *s) const;
+  double Eta2y(double pt, double m, double eta) const;
 
-  void     AnalyseMCParticles(AliMCEvent* lMCevent, EEvtCut_Type step, bool lHasGoodVtxGen);
-  void     CreateDCAcutFunctions();
-  void     PostAllData();
+  void AnalyseMCParticles(AliMCEvent *lMCevent, EEvtCut_Type step, bool lHasGoodVtxGen);
+  void CreateDCAcutFunctions();
+  void PostAllData();
 
-  Int_t    GetTrackPid(AliESDtrack* track, Double_t* logdiff) const;
-  Int_t    GetMostProbable(const Double_t* pDens, const Double_t* priors) const;
-  void     GetPriors(const AliVTrack* track, Double_t* priors) const;
-  void     ComputeBayesProbabilities(Double_t* probs, const Double_t* pDens, const Double_t* prior);
+  double BetheITSsaHybrid(double p, double mass) const;
+  int GetTrackPid(AliESDtrack *track, double *logdiff) const;
+  int GetMostProbable(const double *pDens, const double *priors) const;
+  void GetPriors(const AliVTrack *track, double *priors) const;
+  void ComputeBayesProbabilities(double *probs, const double *pDens, const double *prior);
 
-private:
-  AliAnalysisTaskSEITSsaSpectra(const AliAnalysisTaskSEITSsaSpectra& source);
-  AliAnalysisTaskSEITSsaSpectra& operator=(const AliAnalysisTaskSEITSsaSpectra& source);
+ private:
+  AliAnalysisTaskSEITSsaSpectra(const AliAnalysisTaskSEITSsaSpectra &source);
+  AliAnalysisTaskSEITSsaSpectra &operator=(const AliAnalysisTaskSEITSsaSpectra &source);
 
-  AliESDEvent*       fESD;            ///<  ESD object
-  AliITSPidParams*   fITSPidParams;   //-> parameterization used for PID
-  AliITSPIDResponse* fITSPIDResponse; //!<! class with BB parameterizations
+  AliESDEvent *fESD;                  ///<  ESD object
+  AliITSPidParams *fITSPidParams;     //-> parameterization used for PID
+  AliITSPIDResponse *fITSPIDResponse; //!<! class with BB parameterizations
 
-  //Standard event cut
-  AliEventCuts fEventCuts;            // basic cut variables for events
+  // Standard event cut
+  AliEventCuts fEventCuts; // basic cut variables for events
 
   /////////////////////////////////////////////////////
   // List
   /////////////////////////////////////////////////////
-  TList*   fOutput;                    //!<! list with output
-  TList*   fListCuts;                  //!<! list with functions storing DCA cut
-  TList*   fListTree;                  //!<! list with trees
-  TList*   fListPriors;                //!<! list with priors in case of bayesian pid approach
+  TList *fOutput;     //!<! list with output
+  TList *fListCuts;   //!<! list with functions storing DCA cut
+  TList *fListTree;   //!<! list with trees
+  TList *fListPriors; //!<! list with priors in case of bayesian pid approach
 
-  TF1*     fDCAxyCutFunc;              ///< function with DCAz cut vs. pt
-  TF1*     fDCAzCutFunc;               ///< function with DCAxy cut vs. pt
+  TF1 *fDCAxyCutFunc; ///< function with DCAz cut vs. pt
+  TF1 *fDCAzCutFunc;  ///< function with DCAxy cut vs. pt
 
-  TNtuple* fNtupleData;                //!<! output ntuple
-  TNtuple* fNtupleMC;                  //!<! output MC ntuple
+  TNtuple *fNtupleData; //!<! output ntuple
+  TNtuple *fNtupleMC;   //!<! output MC ntuple
 
   /////////////////////////////////////////////////////
   // General Histos
   /////////////////////////////////////////////////////
-  TH2I* fHistNEvents;                           //!<! histo with number of events / mult bin
-  TH2I* fHistMCEvents;                          //!<! histo with MC number of events / mult bin
-  TH1F* fHistMultBefEvtSel;                     //!<! histo with multiplicity of the events before event selection
-  TH1F* fHistMultAftEvtSel;                     //!<! histo with multiplicity of the events after all event selection
-  TH2F* fHistVtxZ;                              //!<! histo with the distribution of the primary vertex Z coordinate
+  TH2I *fHistNEvents;       //!<! histo with number of events / mult bin
+  TH2I *fHistMCEvents;      //!<! histo with MC number of events / mult bin
+  TH1F *fHistMultBefEvtSel; //!<! histo with multiplicity of the events before event selection
+  TH1F *fHistMultAftEvtSel; //!<! histo with multiplicity of the events after all event selection
+  TH2F *fHistVtxZ;          //!<! histo with the distribution of the primary vertex Z coordinate
 
-  TH3F* fHistNTracks[kNchg];                    //!<! histo with number of tracks vs Pt
-  TH2F* fHistDEDX;                              //!<! histo with dedx versus momentum
-  TH2F* fHistDEDXdouble;                        //!<! histo with dedx versus signed momentum
-  TH2F* fHistNSigmaSep[kNchg * kNspc];          //!<! histo nsigma separation vs momentum
+  TH3F *fHistNTracks[kNchg];           //!<! histo with number of tracks vs Pt
+  TH2F *fHistDEDX;                     //!<! histo with dedx versus momentum
+  TH2F *fHistDEDXdouble;               //!<! histo with dedx versus signed momentum
+  TH2F *fHistNSigmaSep[kNchg * kNspc]; //!<! histo nsigma separation vs momentum
+  TH2F *fHistSepPowerReco[kNchg * kNspc];  //!<!
+  TH2F *fHistSepPowerTrue[kNchg * kNspc];  //!<!
 
   // MC histograms with spectra of primaries from the MC truth
-  TH3F* fHistPrimMCGenVtxZall[kNchg * kNspc];   //!<! histo from events with gen Zvtx cut
-  TH3F* fHistPrimMCGenVtxZcut[kNchg * kNspc];   //!<! histo from events with rec Zvtx cut
+  TH3F *fHistMCPart[kNchg * kNspc];            //!<! histo from events w/o gen Zvtx cut
+  TH3F *fHistMCPartGoodGenVtxZ[kNchg * kNspc]; //!<! histo from events w/  gen Zvtx cut (<10cm)
 
-  //Reconstructed
-  TH2F* fHistReco      [kNchg * kNspc];         //!<! NSigma histos for 6 species
-  TH3F* fHistMCReco    [kNchg * kNspc];         //!<! NSigma histos for 6 species
-  TH3F* fHistMCPrimReco[kNchg * kNspc];         //!<! NSigma histos for 6 species
+  // Reconstructed
+  TH2F *fHistReco[kNchg * kNspc];         //!<! NSigma histos for 6 species
+  THnSparseF *fHistRecoMC[kNchg * kNspc]; //!<! NSigma histos for 6 species
 
   // MC histograms using reco values
-  TH2F* fHistPrimMCReco[kNchg * kNspc];         //!<! histo with spectra of primaries from the MC truth
-  TH2F* fHistSstrMCReco[kNchg * kNspc];         //!<! histo with spectra of strange decays from the MC truth
-  TH2F* fHistSmatMCReco[kNchg * kNspc];         //!<! histo with spectra of sec. from material from the MC truth
+  TH3F *fHistTruePIDMCReco[kNchg * kNspc]; //!<! histo with spectra of primaries from the MC truth
 
   // DCAxy distributions
-  TH3F* fHistRecoDCA[kNchg * kNspc];            //!<! histo with DCA distibution in the pion hypotesis (positive)
+  TH3F *fHistDCAReco[kNchg * kNspc]; //!<! histo with DCA distibution
 
-  //DCA Templates
-  TH3F* fHistPrimDCA[kNchg * kNspc];            //!<! histo with DCA distibution and dedx PID
-  TH3F* fHistSstrDCA[kNchg * kNspc];            //!<! histo with DCA distibution and dedx PID
-  TH3F* fHistSmatDCA[kNchg * kNspc];            //!<! histo with DCA distibution and dedx PID
+  // DCA Templates
+  TH3F *fHistDCARecoPID_prim[kNchg * kNspc]; //!<! histo with DCA distibution and dedx PID
+  TH3F *fHistDCARecoPID_sstr[kNchg * kNspc]; //!<! histo with DCA distibution and dedx PID
+  TH3F *fHistDCARecoPID_smat[kNchg * kNspc]; //!<! histo with DCA distibution and dedx PID
 
-  TH3F* fHistMCtruthPrimDCA[kNchg * kNspc];     //!<! histo with DCA distibution and MC truth PID
-  TH3F* fHistMCtruthSstrDCA[kNchg * kNspc];     //!<! histo with DCA distibution and MC truth PID
-  TH3F* fHistMCtruthSmatDCA[kNchg * kNspc];     //!<! histo with DCA distibution and MC truth PID
+  TH3F *fHistDCATruePID_prim[kNchg * kNspc]; //!<! histo with DCA distibution and MC truth PID
+  TH3F *fHistDCATruePID_sstr[kNchg * kNspc]; //!<! histo with DCA distibution and MC truth PID
+  TH3F *fHistDCATruePID_smat[kNchg * kNspc]; //!<! histo with DCA distibution and MC truth PID
 
-  TH1F* fHistCharge[4];                         //!<! histo with charge distribution to check the calibration
+  TH1F *fHistCharge[4]; //!<! histo with charge distribution to check the calibration
 
-  //dEdx distributions
-  TH2F* fHistPosHypPi; //! histo with DCA distibution in the kaons hypotesis (positive)
-  TH2F* fHistPosHypKa; //! histo with DCA distibution in the kaons hypotesis (positive)
-  TH2F* fHistPosHypPr; //! histo with DCA distibution in the protons hypotesis (positive)
-  TH2F* fHistNegHypPi; //! histo with DCA distibution in the pions hypotesis (negative)
-  TH2F* fHistNegHypKa; //! histo with DCA distibution in the kaons hypotesis (negative)
-  TH2F* fHistNegHypPr; //! histo with DCA distibution in the protons hypotesis (negative)
+  // dEdx distributions
+  TH2F *fHistPosHypPi; //! histo with DCA distibution in the kaons hypotesis (positive)
+  TH2F *fHistPosHypKa; //! histo with DCA distibution in the kaons hypotesis (positive)
+  TH2F *fHistPosHypPr; //! histo with DCA distibution in the protons hypotesis (positive)
+  TH2F *fHistNegHypPi; //! histo with DCA distibution in the pions hypotesis (negative)
+  TH2F *fHistNegHypKa; //! histo with DCA distibution in the kaons hypotesis (negative)
+  TH2F *fHistNegHypPr; //! histo with DCA distibution in the protons hypotesis (negative)
 
-  //dEdx distributions for MC
-  TH2F* fHistMCPosOtherHypPion; //! histo with dedx using the MC truth
-  TH2F* fHistMCPosOtherHypKaon; //! histo with dedx using the MC truth
-  TH2F* fHistMCPosOtherHypProt; //! histo with dedx using the MC truth
-  TH2F* fHistMCPosElHypPion; //! histo with dedx using the MC truth
-  TH2F* fHistMCPosElHypKaon; //! histo with dedx using the MC truth
-  TH2F* fHistMCPosElHypProt; //! histo with dedx using the MC truth
-  TH2F* fHistMCPosPiHypPion; //! histo with dedx using the MC truth
-  TH2F* fHistMCPosPiHypKaon; //! histo with dedx using the MC truth
-  TH2F* fHistMCPosPiHypProt; //! histo with dedx using the MC truth
-  TH2F* fHistMCPosKaHypPion; //! histo with dedx using the MC truth
-  TH2F* fHistMCPosKaHypKaon; //! histo with dedx using the MC truth
-  TH2F* fHistMCPosKaHypProt; //! histo with dedx using the MC truth
-  TH2F* fHistMCPosPrHypPion; //! histo with dedx using the MC truth
-  TH2F* fHistMCPosPrHypKaon; //! histo with dedx using the MC truth
-  TH2F* fHistMCPosPrHypProt; //! histo with dedx using the MC truth
+  // dEdx distributions for MC
+  TH2F *fHistMCPosOtherHypPion; //! histo with dedx using the MC truth
+  TH2F *fHistMCPosOtherHypKaon; //! histo with dedx using the MC truth
+  TH2F *fHistMCPosOtherHypProt; //! histo with dedx using the MC truth
+  TH2F *fHistMCPosElHypPion;    //! histo with dedx using the MC truth
+  TH2F *fHistMCPosElHypKaon;    //! histo with dedx using the MC truth
+  TH2F *fHistMCPosElHypProt;    //! histo with dedx using the MC truth
+  TH2F *fHistMCPosPiHypPion;    //! histo with dedx using the MC truth
+  TH2F *fHistMCPosPiHypKaon;    //! histo with dedx using the MC truth
+  TH2F *fHistMCPosPiHypProt;    //! histo with dedx using the MC truth
+  TH2F *fHistMCPosKaHypPion;    //! histo with dedx using the MC truth
+  TH2F *fHistMCPosKaHypKaon;    //! histo with dedx using the MC truth
+  TH2F *fHistMCPosKaHypProt;    //! histo with dedx using the MC truth
+  TH2F *fHistMCPosPrHypPion;    //! histo with dedx using the MC truth
+  TH2F *fHistMCPosPrHypKaon;    //! histo with dedx using the MC truth
+  TH2F *fHistMCPosPrHypProt;    //! histo with dedx using the MC truth
 
-  TH2F* fHistMCNegOtherHypPion; //! histo with dedx using the MC truth
-  TH2F* fHistMCNegOtherHypKaon; //! histo with dedx using the MC truth
-  TH2F* fHistMCNegOtherHypProt; //! histo with dedx using the MC truth
-  TH2F* fHistMCNegElHypPion; //! histo with dedx using the MC truth
-  TH2F* fHistMCNegElHypKaon; //! histo with dedx using the MC truth
-  TH2F* fHistMCNegElHypProt; //! histo with dedx using the MC truth
-  TH2F* fHistMCNegPiHypPion; //! histo with dedx using the MC truth
-  TH2F* fHistMCNegPiHypKaon; //! histo with dedx using the MC truth
-  TH2F* fHistMCNegPiHypProt; //! histo with dedx using the MC truth
-  TH2F* fHistMCNegKaHypPion; //! histo with dedx using the MC truth
-  TH2F* fHistMCNegKaHypKaon; //! histo with dedx using the MC truth
-  TH2F* fHistMCNegKaHypProt; //! histo with dedx using the MC truth
-  TH2F* fHistMCNegPrHypPion; //! histo with dedx using the MC truth
-  TH2F* fHistMCNegPrHypKaon; //! histo with dedx using the MC truth
-  TH2F* fHistMCNegPrHypProt; //! histo with dedx using the MC truth
+  TH2F *fHistMCNegOtherHypPion; //! histo with dedx using the MC truth
+  TH2F *fHistMCNegOtherHypKaon; //! histo with dedx using the MC truth
+  TH2F *fHistMCNegOtherHypProt; //! histo with dedx using the MC truth
+  TH2F *fHistMCNegElHypPion;    //! histo with dedx using the MC truth
+  TH2F *fHistMCNegElHypKaon;    //! histo with dedx using the MC truth
+  TH2F *fHistMCNegElHypProt;    //! histo with dedx using the MC truth
+  TH2F *fHistMCNegPiHypPion;    //! histo with dedx using the MC truth
+  TH2F *fHistMCNegPiHypKaon;    //! histo with dedx using the MC truth
+  TH2F *fHistMCNegPiHypProt;    //! histo with dedx using the MC truth
+  TH2F *fHistMCNegKaHypPion;    //! histo with dedx using the MC truth
+  TH2F *fHistMCNegKaHypKaon;    //! histo with dedx using the MC truth
+  TH2F *fHistMCNegKaHypProt;    //! histo with dedx using the MC truth
+  TH2F *fHistMCNegPrHypPion;    //! histo with dedx using the MC truth
+  TH2F *fHistMCNegPrHypKaon;    //! histo with dedx using the MC truth
+  TH2F *fHistMCNegPrHypProt;    //! histo with dedx using the MC truth
 
   TArrayF fCentBins;
   TArrayF fDCABins;
   TArrayF fPtBins;
 
-  //evt sel.
-  UInt_t   fTriggerSel;
-  Double_t fMaxVtxZCut;
-	Bool_t   fChkIsEventINELgtZERO;   // flag for select INEL>0 events
-  Bool_t   fChkIsSDDIn;             // flag for counrint ev. in p-p 2.76
-  Bool_t   fRejIncDAQ;              // flag for reject events with incomplete DAQ
-  Bool_t   fDoSPDCvsTCut;           // flag for check compatibility between SPD clusters and tracklets
-	Bool_t   fUseSelectVertex2015pp;  // flag to select vertex based on criteria for 2015 pp data
-  Bool_t   fChkVtxSPDRes;           // enable check on spd vtx resolution
-  Bool_t   fChkVtxZSep;             // enable check on proximity of the z coordinate between both vertexer
-  Bool_t   fReqBothVtx;             // ask for both trk and SPD vertex
-  Bool_t   fExtEventCuts;           // enable use of AliEventCuts for event selection
-  //mult sel.
-  unsigned int fMultMethod;    // method for cent/mult values: 0=skip mult sel, 1=new cent framework, 2=old cent framework, 3=tracks+tracklets, 4=tracklets, 5=cluster on SPD
-  TString      fMultEstimator; // centrality/multiplicity framework estimator name
-	Bool_t       fMultEvSel;
-  Float_t      fLowMult;       // low Centrality cut
-  Float_t      fUpMult;        // up  Centrality cut
-  Float_t      fEvtMult;       // event multiplicity -0.5 by default
-  //Pileup selection setting
-  unsigned long  fPlpType;
-	//PileupSPD settings
-  Int_t    fMinPlpContribSPD; //minimum contributors to the pilup vertices, SPD
-  Float_t  fMinPlpZdistSPD;   //minimum distance for the SPD pileup vertex
-  //PileupMV settings
-  Int_t    fMinPlpContribMV; //minimum contributors to the pilup vertices, multi-vertex
-  Float_t  fMaxPlpChi2MV;    //minimum value of Chi2perNDF of the pileup vertex, multi-vertex
-  Float_t  fMinWDistMV;      //minimum of the sqrt of weighted distance between the primary and the pilup vertex, multi-vertex
-  Bool_t   fCheckPlpFromDifferentBCMV; //pileup from different BC (Bunch Crossings)
+  // evt sel.
+  UInt_t fTriggerSel;
+  double fMaxVtxZCut;
+  bool fChkIsEventINELgtZERO;  // flag for select INEL>0 events
+  bool fChkIsSDDIn;            // flag for counrint ev. in p-p 2.76
+  bool fRejIncDAQ;             // flag for reject events with incomplete DAQ
+  bool fDoSPDCvsTCut;          // flag for check compatibility between SPD clusters and tracklets
+  bool fUseSelectVertex2015pp; // flag to select vertex based on criteria for 2015 pp data
+  bool fChkVtxSPDRes;          // enable check on spd vtx resolution
+  bool fChkVtxZSep;            // enable check on proximity of the z coordinate between both vertexer
+  bool fReqBothVtx;            // ask for both trk and SPD vertex
+  bool fExtEventCuts;          // enable use of AliEventCuts for event selection
+  // mult sel.
+  unsigned int fMultMethod; // method for cent/mult values: 0=skip mult sel, 1=new cent framework, 2=old cent framework,
+                            // 3=tracks+tracklets, 4=tracklets, 5=cluster on SPD
+  TString fMultEstimator;   // centrality/multiplicity framework estimator name
+  bool fMultEvSel;
+  float fLowMult; // low Centrality cut
+  float fUpMult;  // up  Centrality cut
+  float fEvtMult; // event multiplicity -0.5 by default
+  // Pileup selection setting
+  unsigned long fPlpType;
+  // PileupSPD settings
+  int fMinPlpContribSPD; // minimum contributors to the pilup vertices, SPD
+  float fMinPlpZdistSPD; // minimum distance for the SPD pileup vertex
+  // PileupMV settings
+  int fMinPlpContribMV;            // minimum contributors to the pilup vertices, multi-vertex
+  float fMaxPlpChi2MV;             // minimum value of Chi2perNDF of the pileup vertex, multi-vertex
+  float fMinWDistMV;               // minimum of the sqrt of weighted distance between the primary and the pilup vertex,
+                                   // multi-vertex
+  bool fCheckPlpFromDifferentBCMV; // pileup from different BC (Bunch Crossings)
 
-  //trk sel.
-  Int_t    fMinSPDPts;       // minimum number of SPD Points
-  Int_t    fMinNdEdxSamples; // minimum number of SDD+SSD points
-  Double_t fAbsEtaCut;       // limits in pseudorap
-  Double_t fMinRapCut;
-  Double_t fMaxRapCut;
-  Double_t fCMSRapFct;
-  Double_t fMindEdx;         // minimum dE/dx value in a layer (to cut noise)
-  Double_t fMinNSigma;       // minimum number of sigmas
-  Double_t fMaxChi2Clu;      // maximum cluster
-  Double_t fNSigmaDCAxy;     // DCA cut in bend. plane
-  Double_t fNSigmaDCAz;      // DCA cut along z
+  // trk sel.
+  int fMinSPDPts;       // minimum number of SPD Points
+  int fMinNdEdxSamples; // minimum number of SDD+SSD points
+  double fAbsEtaCut;    // limits in pseudorap
+  double fMinRapCut;
+  double fMaxRapCut;
+  double fCMSRapFct;
+  double fMindEdx;     // minimum dE/dx value in a layer (to cut noise)
+  double fMinNSigma;   // minimum number of sigmas
+  double fMaxChi2Clu;  // maximum cluster
+  double fNSigmaDCAxy; // DCA cut in bend. plane
+  double fNSigmaDCAz;  // DCA cut along z
 
-  //Global setting
-  Int_t  fYear;           // FIXME Year (2009, 2010)
-  EPID_Type fPidMethod;   // track-by-track pid approach
+  // Global setting
+  int fYear;            // FIXME Year (2009, 2010)
+  EPID_Type fPidMethod; // track-by-track pid approach
 
-  Bool_t fUseDefaultPriors; // flag to use default(equal) priors
-  Bool_t fIsMC;             // flag to switch on the MC analysis for the efficiency estimation
-  Bool_t fFillNtuple;       // flag to fill ntuples
-  Bool_t fFillIntDistHist;  // flag to fill histogram with information for statistic pid analysis
+  bool fUseDefaultPriors; // flag to use default(equal) priors
+  bool fFillNtuple;       // flag to fill ntuples
+  bool fIsMC;             // flag to switch on the MC analysis for the efficiency estimation
+  bool fIsNominalBfield;  // flag to select the magnetic field (nominal = 0.5 T)
+  bool fFillIntDistHist;  // flag to fill histogram with information for statistic pid analysis
 
-  //smearing
-  TRandom3* fRandGener; // generator for smearing
-  Bool_t    fSmearMC;   // flag to apply extra smearing on MC
-  Double_t  fSmearP;    // extra relative smearing on simulated momentum
-  Double_t  fSmeardEdx; // extra relative smearing on simulated dE/dx
+  // smearing
+  TRandom3 *fRandGener; // generator for smearing
+  bool fSmearMC;        // flag to apply extra smearing on MC
+  double fSmearP;       // extra relative smearing on simulated momentum
+  double fSmeardEdx;    // extra relative smearing on simulated dE/dx
 
   ClassDef(AliAnalysisTaskSEITSsaSpectra, 12);
 };

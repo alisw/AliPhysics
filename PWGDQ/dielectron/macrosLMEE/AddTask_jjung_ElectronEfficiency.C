@@ -2,7 +2,8 @@ AliAnalysisTask *AddTask_jjung_ElectronEfficiency(Bool_t getFromAlien=kFALSE,
                                                      TString cFileName = "Config_jjung_ElectronEfficiency.C",
                                                      Char_t* outputFileName="LMEE.root",
                                                      Bool_t deactivateTree=kFALSE, // enabling this has priority over 'writeTree'! (needed for LEGO trains)
-                                                     TString resolutionfile = ""
+                                                     TString resolutionfile = "",                                                    
+                                                     Int_t wagonnr=0
                                                      )
 {
 
@@ -45,7 +46,7 @@ AliAnalysisTask *AddTask_jjung_ElectronEfficiency(Bool_t getFromAlien=kFALSE,
 
 
   // Electron efficiency task
-  AliAnalysisTaskElectronEfficiency *task = new AliAnalysisTaskElectronEfficiency("jjung_ElectronEfficiency");
+  AliAnalysisTaskElectronEfficiency *task = new AliAnalysisTaskElectronEfficiency(Form("jjung_ElectronEfficiency_%d",wagonnr));
   std::cout << "task created: " << task->GetName() << std::endl;
 
   if(CalcEfficiencyRec && !resolutionfile.IsNull() &&
@@ -63,7 +64,7 @@ AliAnalysisTask *AddTask_jjung_ElectronEfficiency(Bool_t getFromAlien=kFALSE,
   task->SetCalcEfficiencyPoslabel(CalcEfficiencyPoslabel);
   SetupMCSignals(task);
   //event related
-  task->SetEventFilter(SetupEventCuts()); //returns eventCuts from Config. //cutlib->GetEventCuts(LMEECutLib::kPbPb2011_TPCTOF_Semi1)
+  task->SetEventFilter(SetupEventCuts(wagonnr)); //returns eventCuts from Config. //cutlib->GetEventCuts(LMEECutLib::kPbPb2011_TPCTOF_Semi1)
   task->SetCentralityRange(CentMin, CentMax);
   task->SetNminEleInEventForRej(NminEleInEventForRej);
   //track related
@@ -123,16 +124,32 @@ AliAnalysisTask *AddTask_jjung_ElectronEfficiency(Bool_t getFromAlien=kFALSE,
 
   //
   // Create containers for input/output
-  //
-  AliAnalysisDataContainer *coutput1 = mgr->CreateContainer("jjung_ElectronEfficiency", TList::Class(),
-                                                            AliAnalysisManager::kOutputContainer,outputFileName);
-  AliAnalysisDataContainer *coutput2 = mgr->CreateContainer("jjung_supportHistos", TList::Class(),
-                                                            AliAnalysisManager::kOutputContainer,outputFileName);
-  AliAnalysisDataContainer *coutput3 = mgr->CreateContainer("jjung_EffTree", TTree::Class(),
-                                                            AliAnalysisManager::kOutputContainer,outputFileName);
-  AliAnalysisDataContainer *coutput4 = mgr->CreateContainer("jjung_stats", TH1D::Class(),
-                                                            AliAnalysisManager::kOutputContainer,outputFileName);
+  AliAnalysisDataContainer *coutput1 = 0x0;
+  AliAnalysisDataContainer *coutput2 = 0x0;
+  AliAnalysisDataContainer *coutput3 = 0x0;
+  AliAnalysisDataContainer *coutput4 = 0x0;
 
+  if(wagonnr == 0){
+    coutput1 = mgr->CreateContainer("jjung_ElectronEfficiency", TList::Class(),             
+                                    AliAnalysisManager::kOutputContainer,outputFileName);
+    coutput2 = mgr->CreateContainer("jjung_supportHistos", TList::Class(),
+                                    AliAnalysisManager::kOutputContainer,outputFileName);
+    coutput3 = mgr->CreateContainer("jjung_EffTree", TTree::Class(),
+                                    AliAnalysisManager::kOutputContainer,outputFileName);
+    coutput4 = mgr->CreateContainer("jjung_stats", TH1D::Class(),
+                                    AliAnalysisManager::kOutputContainer,outputFileName);
+  } 
+  
+  else{
+    coutput1 = mgr->CreateContainer(Form("jjung_ElectronEfficiency_%d",wagonnr), TList::Class(),
+                                    AliAnalysisManager::kOutputContainer,outputFileName);
+    coutput2 = mgr->CreateContainer(Form("jjung_supportHistos_%d",wagonnr), TList::Class(),
+                                    AliAnalysisManager::kOutputContainer,outputFileName);
+    coutput3 = mgr->CreateContainer(Form("jjung_EffTree_%d",wagonnr), TTree::Class(),
+                                    AliAnalysisManager::kOutputContainer,outputFileName);
+    coutput4 = mgr->CreateContainer(Form("jjung_stats_%d",wagonnr), TH1D::Class(),
+                                    AliAnalysisManager::kOutputContainer,outputFileName);
+  }
   //connect input/output
   mgr->ConnectInput(task,0,mgr->GetCommonInputContainer());
   mgr->ConnectOutput(task,1,coutput1);

@@ -66,9 +66,9 @@ AliAnalysisTaskPHOSEmbedding* AddTaskPHOSEmbedding(
   mgr->AddTask(task);
   mgr->ConnectInput(task, 0, mgr->GetCommonInputContainer() );
  
-  //TString outputFile = AliAnalysisManager::GetCommonFileName();
-  //AliAnalysisDataContainer *coutput1 = mgr->CreateContainer(Form("%s","list_test"), THashList::Class(), AliAnalysisManager::kOutputContainer, outputFile.Data());//event characerization
-  //mgr->ConnectOutput(task, 1, coutput1);
+  TString outputFile = AliAnalysisManager::GetCommonFileName();
+  AliAnalysisDataContainer *coutput1 = mgr->CreateContainer(Form("hist_%s",taskname.Data()), THashList::Class(), AliAnalysisManager::kOutputContainer, Form("%s:%s",outputFile.Data(),"PWGGA_PHOSTasks_PHOSRun2"));
+  mgr->ConnectOutput(task, 1, coutput1);
 
   return task;
 }

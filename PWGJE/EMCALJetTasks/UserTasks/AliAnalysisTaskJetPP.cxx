@@ -85,7 +85,7 @@ AliAnalysisTaskJetPP::AliAnalysisTaskJetPP():
 AliAnalysisTaskEmcalJet("AliAnalysisTaskJetPP", kTRUE),  
   fUseDefaultVertexCut(1), fUsePileUpCut(1), fIsMC(0), 
  fSignalJetRadius(0.4), 
-fSignalJetEtaWindow(0.9 - fSignalJetRadius), fTrackEtaWindow(0.9), fMinTrackPt(0.150), fMinJetArea(0.0),  
+fSignalJetEtaWindow(0.9 - fSignalJetRadius), fTrackEtaWindow(0.9), fMinTrackPt(0.150), fASPDCvsTCut(65.), fBSPDCvsTCut(4.), fMinJetArea(0.0),  
 fCentralityType("V0A"), fHelperClass(0), fInitializedLocal(0),
 fZVertexCut(10.0), fhJetPt(0x0), fhCuts(0x0), fhTrackPt(0x0),fhJetConstituentPt(0x0),fhJetEtaPt(0x0),fhAktJetEtaPhi(0x0),fhKtJetEtaPhi(0x0),fhJetAreaPt(0x0),fhJetPhiPt(0x0),fhZVertex(0x0),fhYVertex(0x0),fhXVertex(0x0),fhJetPtRho(0x0),fhJetPtConeRho(0x0),fhJetPtCMSRho(0x0),fhRho(0x0),fhConeRho(0x0),fhCMSRho(0x0),fhTrackEtaPt(0x0),fhGenTrackEtaPt(0x0),fhTrackPhiPt(0x0),fhTrackEtaPhi(0x0),fhKTJetPt(0x0),fhZVertexBC(0x0), fhRemx(0x0), fhPrimGenTrkPt(0x0), fhGenJetPt(0x0), fhRecTrkPt(0x0), fhFakeTrkPt(0x0),fhMult(0x0),fhTrackPhiCG(0x0),fhTrackPhiTPCG(0x0),fhAtimesRhoMedian(0x0),fhAtimesRhoCone(0x0),fhAtimesRhoCMS(0x0)
 {
@@ -104,7 +104,7 @@ AliAnalysisTaskJetPP::AliAnalysisTaskJetPP(const char *name) :
 AliAnalysisTaskEmcalJet(name,kTRUE),  
   fUseDefaultVertexCut(1), fUsePileUpCut(1), fIsMC(0), 
  fSignalJetRadius(0.4), 
-fSignalJetEtaWindow(0.9 - fSignalJetRadius), fTrackEtaWindow(0.9), fMinTrackPt(0.150), fMinJetArea(0.0),  
+fSignalJetEtaWindow(0.9 - fSignalJetRadius), fTrackEtaWindow(0.9), fMinTrackPt(0.150), fASPDCvsTCut(65.), fBSPDCvsTCut(4.), fMinJetArea(0.0),  
 fCentralityType("V0A"), fHelperClass(0), fInitializedLocal(0),
 fZVertexCut(10.0),fhJetPt(0x0),fhCuts(0x0), fhTrackPt(0x0),fhJetConstituentPt(0x0),fhJetEtaPt(0x0),fhAktJetEtaPhi(0x0),fhKtJetEtaPhi(0x0),fhJetAreaPt(0x0),fhJetPhiPt(0x0),fhZVertex(0x0),fhYVertex(0x0),fhXVertex(0x0),fhJetPtRho(0x0),fhJetPtConeRho(0x0),fhJetPtCMSRho(0x0),fhRho(0x0),fhConeRho(0x0),fhCMSRho(0x0),fhTrackEtaPt(0x0),fhTrackPhiPt(0x0),fhTrackEtaPhi(0x0),fhGenTrackEtaPt(0x0),fhKTJetPt(0x0),fhZVertexBC(0x0), fhRemx(0x0), fhPrimGenTrkPt(0x0), fhGenJetPt(0x0), fhRecTrkPt(0x0), fhFakeTrkPt(0x0),fhMult(0x0),fhTrackPhiCG(0x0),fhTrackPhiTPCG(0x0),fhAtimesRhoMedian(0x0),fhAtimesRhoCone(0x0),fhAtimesRhoCMS(0x0)
 
@@ -129,28 +129,19 @@ Bool_t AliAnalysisTaskJetPP::IsEventInAcceptance(AliVEvent* event){
    if(!event) return kFALSE;
  
    //___________________________________________________
-   //TEST PILE UP
-   if(fUsePileUpCut){
-      if(!fHelperClass || fHelperClass->IsPileUpEvent(event)){ 
-         return kFALSE;
-      }
-      if(fHelperClass && !fHelperClass->IsPileUpEvent(event)) fhCuts->Fill(1.5);//events that passed the pileup cut
-   }
-
-   //___________________________________________________
    //BEFORE VERTEX CUT
    fhZVertexBC->Fill(event->GetPrimaryVertex()->GetZ()); 
    if(fUseDefaultVertexCut){
       if(!fHelperClass || !fHelperClass->IsVertexSelected2013pA(event)){
          return kFALSE;
       }
-      if(fHelperClass && fHelperClass->IsVertexSelected2013pA(event)) fhCuts->Fill(2.5);//events that passed the vertex cut
+      if(fHelperClass && fHelperClass->IsVertexSelected2013pA(event)) fhCuts->Fill(1.5);//events that passed the vertex cut
    }else{
 
       if(TMath::Abs(event->GetPrimaryVertex()->GetZ()) > fZVertexCut){ 
                  return kFALSE;
       }
-      else fhCuts->Fill(2.5);//events that passed the vertex cut
+      else fhCuts->Fill(1.5);//events that passed the vertex cut
    }
    fhZVertex->Fill(event->GetPrimaryVertex()->GetZ());
    fhXVertex->Fill(event->GetPrimaryVertex()->GetX());
@@ -159,6 +150,19 @@ Bool_t AliAnalysisTaskJetPP::IsEventInAcceptance(AliVEvent* event){
    //___________________________________________________
    //AFTER VERTEX CUT
    return kTRUE;
+}
+//PILEUP CUT
+Bool_t AliAnalysisTaskJetPP::IsSPDClusterVsTrackletBG(AliVEvent *event){ //NEW PILEUP
+   if(fUsePileUpCut){
+      Int_t nClustersLayer0 = event->GetNumberOfITSClusters(0);
+      Int_t nClustersLayer1 = event->GetNumberOfITSClusters(1);
+      Int_t nTracklets      = event->GetMultiplicity()->GetNumberOfTracklets();
+      if (nClustersLayer0 + nClustersLayer1 > fASPDCvsTCut + nTracklets*fBSPDCvsTCut){
+         return kTRUE;
+      }
+   }
+   fhCuts->Fill(2.5);
+   return kFALSE;
 }
 
 //________________________________________________________________________
@@ -224,8 +228,7 @@ Bool_t AliAnalysisTaskJetPP::FillHistograms(){
 
    //Select events (vertex, pile-up,...) 
    if(!IsEventInAcceptance(InputEvent())) return kFALSE; //post data is in UserExec
-
-   fhCuts->Fill(3.5); // to co prezilo
+   if(IsSPDClusterVsTrackletBG(InputEvent())) return kFALSE;
 
 
    // JET+TRACK CONTAINERS
@@ -480,7 +483,7 @@ void AliAnalysisTaskJetPP::UserCreateOutputObjects(){
    fhZVertexBC = new TH1D("fhZVertexBC","Z vertex before the cut",200,-50.0,50.0);
    fhXVertex = new TH1D("fhXVertex","X vertex",300,-15.0,15.0);
    fhYVertex = new TH1D("fhYVertex","Y vertex",300,-15.0,15.0);
-   fhCuts = new TH1D("fhCuts","Cuts statistics",4,0,4);
+   fhCuts = new TH1D("fhCuts","Cuts statistics",3,0,3);
    fhRho = new TH1D("fhRho","k_{T} jet background",500,0,50.0);
    fhConeRho = new TH1D("fhConeRho","Local a-k_{T} jet background",500,0,50.0);
    fhCMSRho = new TH1D("fhCMSRho","CMS-style a-k_{T} jet background",500,0,50.0);

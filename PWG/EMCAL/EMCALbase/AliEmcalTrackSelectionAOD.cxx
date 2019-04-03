@@ -167,19 +167,18 @@ PWG::EMCAL::AliEmcalTrackSelResultPtr AliEmcalTrackSelectionAOD::IsTrackAccepted
   TBits trackbitmap(64);
   trackbitmap.ResetAllBits();
   UInt_t cutcounter(0);
-  TClonesArray selectionStatus("PWG::EMCAL::AliEmcalTrackSelResultPtr", fListOfCuts->GetEntries());
-  selectionStatus.SetOwner(kTRUE);
+  std::vector<PWG::EMCAL::AliEmcalTrackSelResultPtr> selectionStatus(fListOfCuts->GetEntries());
   if (fListOfCuts) {
-    for (auto cutIter : *fListOfCuts){
+    for (auto cutIter : *fListOfCuts){ // @suppress("Symbol is not resolved")
       PWG::EMCAL::AliEmcalCutBase *trackCuts = static_cast<PWG::EMCAL::AliEmcalCutBase*>(static_cast<AliEmcalManagedObject *>(cutIter)->GetObject());
       PWG::EMCAL::AliEmcalTrackSelResultPtr cutresults = trackCuts->IsSelected(aodt);
       if (cutresults) trackbitmap.SetBitNumber(cutcounter);
-      new(selectionStatus[selectionStatus.GetEntries()]) PWG::EMCAL::AliEmcalTrackSelResultPtr(cutresults);
+      selectionStatus.push_back(cutresults);
       cutcounter++;
     }
   }
 
-  PWG::EMCAL::AliEmcalTrackSelResultPtr result(aodt, kFALSE, new PWG::EMCAL::AliEmcalTrackSelResultCombined(&selectionStatus));
+  PWG::EMCAL::AliEmcalTrackSelResultPtr result(aodt, kFALSE, new PWG::EMCAL::AliEmcalTrackSelResultCombined(selectionStatus));
   if (fSelectionModeAny){
     // In case of ANY one of the cuts need to be fulfilled (equivalent to one but set)
     result.SetSelectionResult(trackbitmap.CountBits() > 0 || cutcounter == 0);
@@ -194,7 +193,7 @@ PWG::EMCAL::AliEmcalTrackSelResultPtr AliEmcalTrackSelectionAOD::IsTrackAccepted
 void AliEmcalTrackSelectionAOD::AddFilterBit(UInt_t filterbits){
   PWG::EMCAL::AliEmcalAODFilterBitCuts *filtercuts = nullptr;
   // Find existing filter bit cuts
-  for(auto c : *fListOfCuts) {
+  for(auto c : *fListOfCuts) { // @suppress("Symbol is not resolved")
     if(auto vcutswrapper = dynamic_cast<PWG::EMCAL::AliEmcalVCutsWrapper*>(c)) {
       if(auto aodcuts = dynamic_cast<PWG::EMCAL::AliEmcalAODFilterBitCuts *>(vcutswrapper->GetCutObject())){
         filtercuts = aodcuts;
@@ -221,6 +220,7 @@ Bool_t AliEmcalTrackSelectionAOD::GetHybridFilterBits(Char_t bits[], TString per
       period == "lhc12i" || period == "lhc13b" || period == "lhc13c" ||
       period == "lhc13d" || period == "lhc13e" || period == "lhc13f" ||
       period == "lhc13g" ||
+
       (period.Length() == 6 && (period.BeginsWith("lhc15") || period.BeginsWith("lhc16") || period.BeginsWith("lhc17"))) // all Run-2 data, excluding MC productions
   ) {
     bits[0] = 8;
@@ -228,9 +228,17 @@ Bool_t AliEmcalTrackSelectionAOD::GetHybridFilterBits(Char_t bits[], TString per
   }
 
   else if (period == "lhc10f7a" || period == "lhc12a15e" || period.BeginsWith("lhc12a17") ||
+      period == "lhc14j4b" || period == "lhc14j4c" || period == "lhc14j4d" ||
+      period == "lhc14j4e" ||
+      period == "lhc15i2b" || period == "lhc15i2c" || period == "lhc15i2d" ||
+      period == "lhc15i2e" ||
+      period == "lhc15g6b" || period == "lhc15g6c" || period == "lhc15g6d" ||
+      period == "lhc15g6e" ||
       period == "lhc13b4" || period == "lhc13b4_fix" || period == "lhc13b4_plus" || period == "lhc14k1a" || period == "lhc14k1b" || period == "lhc13e4" ||
       period.BeginsWith("lhc14a1") || period.BeginsWith("lhc13b2_efix") ||
-      period.BeginsWith("lhc15g6") || period.BeginsWith("lhc16e1") || period.BeginsWith("lhc17f8")) {
+      period.BeginsWith("lhc15g6") || period.BeginsWith("lhc16c2") || period.BeginsWith("lhc16e1") || period.BeginsWith("lhc17f8") || 
+      period.BeginsWith("lhc18b8") || period.BeginsWith("lhc18f5") || period.BeginsWith("lhc18g2") || period.BeginsWith("lhc17g8a") || 
+      period.BeginsWith("lhc19a1")) {
     bits[0] = 8;
     bits[1] = 9;
   }
@@ -328,7 +336,7 @@ bool TestAliEmcalTrackSelectionAOD::TestHybridDef2010wRefit() const {
       AliErrorStream() << "No hybrid selection result found for CAT2 hybrid track" << std::endl;
       nfailure++;
     } else {
-      if(hybridcat->GetHybridTrackType() != AliEmcalTrackSelResultHybrid::kHybridConstrained) {
+      if(hybridcat->IsHybridTrackConstrained()) {
         AliErrorStream() << "Incorrect hybrid track type for CAT2 hybrid track: " << hybridcat->GetHybridTrackType() << std::endl;
         nfailure++;
       }
@@ -401,7 +409,7 @@ bool TestAliEmcalTrackSelectionAOD::TestHybridDef2010woRefit() const {
       AliErrorStream() << "No hybrid selection result found for CAT2 hybrid track" << std::endl;
       nfailure++;
     } else {
-      if(hybridcat->GetHybridTrackType() != AliEmcalTrackSelResultHybrid::kHybridConstrained) {
+      if(hybridcat->IsHybridTrackConstrained()) {
         AliErrorStream() << "Incorrect hybrid track type for CAT2 hybrid track: " << hybridcat->GetHybridTrackType() << std::endl;
         nfailure++;
       }
@@ -462,7 +470,7 @@ bool TestAliEmcalTrackSelectionAOD::TestHybridDef2011() const {
       AliErrorStream() << "No hybrid selection result found for CAT2 hybrid track" << std::endl;
       nfailure++;
     } else {
-      if(hybridcat->GetHybridTrackType() != AliEmcalTrackSelResultHybrid::kHybridConstrained) {
+      if(hybridcat->IsHybridTrackConstrained()) {
         AliErrorStream() << "Incorrect hybrid track type for CAT2 hybrid track: " << hybridcat->GetHybridTrackType() << std::endl;
         nfailure++;
       }

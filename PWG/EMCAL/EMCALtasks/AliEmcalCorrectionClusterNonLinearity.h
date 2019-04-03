@@ -43,6 +43,8 @@ protected:
   TH1F                  *fEnergyDistAfter;           //!<!energy distribution after
   TH2F                  *fEnergyTimeHistAfter;       //!<!energy/time distribution after
   
+  Bool_t                 fSetForceClusterE;          ///< Only for backwards compatibility, force cluster->E() to be set to the cluster non-linearity corrected energy. Off by default. For the standard methods, see: http://alidoc.cern.ch/AliPhysics/master/READMEcontainers.html#emcalContainerClusterEnergyCorrections
+  
  private:
   AliEmcalCorrectionClusterNonLinearity(const AliEmcalCorrectionClusterNonLinearity &);               // Not implemented
   AliEmcalCorrectionClusterNonLinearity &operator=(const AliEmcalCorrectionClusterNonLinearity &);    // Not implemented
@@ -51,7 +53,7 @@ protected:
   static RegisterCorrectionComponent<AliEmcalCorrectionClusterNonLinearity> reg;
 
   /// \cond CLASSIMP
-  ClassDef(AliEmcalCorrectionClusterNonLinearity, 2); // EMCal cluster non-linearity correction component
+  ClassDef(AliEmcalCorrectionClusterNonLinearity, 3); // EMCal cluster non-linearity correction component
   /// \endcond
 };
 

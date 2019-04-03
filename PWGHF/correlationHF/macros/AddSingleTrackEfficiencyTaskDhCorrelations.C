@@ -18,17 +18,15 @@ const Double_t thetamax = TMath::Pi();
 const Double_t zvtxmin = -10.0;
 const Double_t zvtxmax =  10.0;
 //
-// The following cuts are used on a specific container step, not used in standard efficiency evaluation for D-h analyses (and are active only for ESD analysis)
+// The following cuts are used on MC particles in step 3 (we don't use it) to check that they're reconstructable, so no influence on D-h effs
 const Int_t mintrackrefsTPC = 5;
 const Int_t mintrackrefsITS = 4;
 const Int_t mintrackrefsTOF = 0;
 const Int_t mintrackrefsMUON = 0;
-const Int_t minclustersTPC = 70;
-const Int_t minclustersITS = 2;
 const Bool_t TPCRefit = kTRUE;
 const Bool_t ITSRefit = kFALSE;
 const Bool_t ischarged = kTRUE;
-const Int_t  fBit = 0;
+//const Int_t fBit = 0;
 //const TString centralityEstimator = "ZNA";
 
 //
@@ -72,7 +70,8 @@ AliCFSingleTrackEfficiencyTask *AddSingleTrackEfficiencyTaskDhCorrelations(const
                                                                            TString effName="",
                                                                            TString cutObjName="",
 									   TString centralityEstimator="ZNA",
-                                                                           Double_t maxRadiusForPrimaries=999.
+                                                                           Double_t maxRadiusForPrimaries=999.,
+                                                                           Int_t fBit=0, //set this!! It's the filterbit to be checked!
 									   )
 {
     

@@ -1,3 +1,33 @@
+/// \file runEMCalTriggerQA.C
+/// \brief Simple run macro to run EMCal trigger QA
+///
+/// \ingroup EMCALFWTASKS
+/// A simple run macro to run the EMCal trigger QA task for use
+/// on the QA train
+///
+/// \author Salvatore Aiola <salvatore.aiola@cern.ch>, Yale University
+/// \date Mar 09, 2016
+
+class AliESDInputHandler;
+class AliAODInputHandler;
+class AliVEvent;
+class AliAnalysisManager;
+class AliPhysicsSelectionTask;
+class AliMultSelectionTask;
+class AliEmcalTriggerMakerTask;
+class AliEmcalTriggerQATask;
+
+// Include AddTask macros for ROOT 6 compatibility
+#ifdef __CLING__
+// Tell ROOT where to find AliRoot headers
+R__ADD_INCLUDE_PATH($ALICE_ROOT)
+// Tell ROOT where to find AliPhysics headers
+R__ADD_INCLUDE_PATH($ALICE_PHYSICS)
+#include "OADB/macros/AddTaskPhysicsSelection.C"
+#include "OADB/COMMON/MULTIPLICITY/macros/AddTaskMultSelection.C"
+#include "PWGPP/PilotTrain/AddTaskCDBconnect.C"
+#include "PWG/EMCAL/macros/AddTaskEmcalTriggerMakerNew.C"
+#endif
 
 void LoadMacros();
 
@@ -53,7 +83,9 @@ AliAnalysisManager* runEMCalTriggerQA(
   // Analysis manager
   AliAnalysisManager* pMgr = new AliAnalysisManager(cTaskName);
 
+  #ifndef __CLING__
   LoadMacros();
+  #endif
 
   if (iDataType == kAod) {
     AliAODInputHandler* pAODHandler = AliAnalysisTaskEmcal::AddAODHandler();
@@ -98,12 +130,32 @@ AliAnalysisManager* runEMCalTriggerQA(
 
   TChain* pChain = 0;
   if (iDataType == kAod) {
+    #ifdef __CLING__
+    std::stringstream aodChain;
+    aodChain << ".x " << gSystem->Getenv("ALICE_PHYSICS") <<  "/PWG/EMCAL/macros/CreateAODChain.C(";
+    aodChain << "\"" << sLocalFiles.Data() << "\", ";
+    aodChain << iNumEvents << ", ";
+    aodChain << 0 << ", ";
+    aodChain << std::boolalpha << kFALSE << ");";
+    pChain = reinterpret_cast<TChain *>(gROOT->ProcessLine(aodChain.str().c_str()));
+    #else
     gROOT->LoadMacro("$ALICE_PHYSICS/PWG/EMCAL/macros/CreateAODChain.C");
     pChain = CreateAODChain(sLocalFiles.Data(), iNumFiles, 0, kFALSE);
+    #endif
   }
   else {
+    #ifdef __CLING__
+    std::stringstream esdChain;
+    esdChain << ".x " << gSystem->Getenv("ALICE_PHYSICS") <<  "/PWG/EMCAL/macros/CreateESDChain.C(";
+    esdChain << "\"" << sLocalFiles.Data() << "\", ";
+    esdChain << iNumEvents << ", ";
+    esdChain << 0 << ", ";
+    esdChain << std::boolalpha << kFALSE << ");";
+    pChain = reinterpret_cast<TChain *>(gROOT->ProcessLine(esdChain.str().c_str()));
+    #else
     gROOT->LoadMacro("$ALICE_PHYSICS/PWG/EMCAL/macros/CreateESDChain.C");
     pChain = CreateESDChain(sLocalFiles.Data(), iNumFiles, 0, kFALSE);
+    #endif
   }
 
   // start analysis

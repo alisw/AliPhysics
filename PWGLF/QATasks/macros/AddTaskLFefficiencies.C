@@ -7,7 +7,7 @@
 #include "AliPID.h"
 #endif
 
-AliAnalysisTaskLFefficiencies* AddTaskLFefficiencies() {
+AliAnalysisTaskLFefficiencies* AddTaskLFefficiencies(TString suffix = "") {
 
   // Get the current analysis manager
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
@@ -27,7 +27,7 @@ AliAnalysisTaskLFefficiencies* AddTaskLFefficiencies() {
   mgr->AddTask(eff);
 
   TString output = "AnalysisResults.root:PWGLF_QA";
-  AliAnalysisDataContainer *effCont = mgr->CreateContainer("efficiencies",
+  AliAnalysisDataContainer *effCont = mgr->CreateContainer(Form("efficiencies%s", suffix.Data()),
       TList::Class(),
       AliAnalysisManager::kOutputContainer,
       output.Data());

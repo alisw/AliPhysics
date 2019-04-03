@@ -101,10 +101,11 @@ void AliJDiHadronJtTask::UserCreateOutputObjects()
   
   //=== Get AnalysisManager
   AliAnalysisManager *man = AliAnalysisManager::GetAnalysisManager();
-  if(!man->GetOutputEventHandler()) {
-    Fatal("UserCreateOutputObjects", "This task needs an AOD handler");
-    return;
-  }
+  // no need!!!!
+  //if(!man->GetOutputEventHandler()) {
+  //  Fatal("UserCreateOutputObjects", "This task needs an AOD handler");
+  //  return;
+  //}
 
    fFilterTask = (AliJCORRANTask*)(man->GetTask( fFilterTaskName ));
 
@@ -113,7 +114,7 @@ void AliJDiHadronJtTask::UserCreateOutputObjects()
    fOutput->cd();
 
 	// Order should be kept for correct functionality
-   fJtAnalysis->SetRunHeader(fFilterTask->GetJRunHeader());
+   fJtAnalysis->SetRunHeader(fFilterTask->GetFilter()->GetAliJRunHeader()); // caution RunHeader must be taken from the filter since it is set in the task macro
    fJtAnalysis->UserCreateOutputObjects();
    fJtAnalysis->SetHeaderList(fFilterTask->GetFilter()->GetHeaderList());
    fJtAnalysis->SetTrackList(fFilterTask->GetFilter()->GetTrackList());

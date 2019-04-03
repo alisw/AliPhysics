@@ -15,11 +15,10 @@ AliAnalysisTaskEmcalHfeTagging* AddTaskEmcalHfeTagging(const char * njetsBase,
 						     TString     trigClass      = "",
 						     TString     kEmcalTriggers = "",
 						     TString     tag            = "",
-                             AliAnalysisTaskEmcalHfeTagging::JetShapeType jetShapeType,
-                             AliAnalysisTaskEmcalHfeTagging::JetShapeSub jetShapeSub,
-                             AliAnalysisTaskEmcalHfeTagging::JetSelectionType jetSelection,
-                             AliAnalysisTaskEmcalHfeTagging::JetShapeTree jetShapeTree,
-                 Float_t minpTHTrigger =0.,  Float_t maxpTHTrigger =0., Int_t derivSubtrOrder = 0 ) {
+                             AliAnalysisTaskEmcalHfeTagging::JetShapeType jetShapeType = AliAnalysisTaskEmcalHfeTagging::kData,
+                             AliAnalysisTaskEmcalHfeTagging::JetShapeSub jetShapeSub = AliAnalysisTaskEmcalHfeTagging::kNoSub,
+                             AliAnalysisTaskEmcalHfeTagging::JetSelectionType jetSelection = AliAnalysisTaskEmcalHfeTagging::kInclusive,
+                 Float_t minpTHTrigger =0.,  Float_t maxpTHTrigger =0., Int_t derivSubtrOrder = 0, Int_t     MCweight = 0) {
  
 
   
@@ -43,26 +42,8 @@ AliAnalysisTaskEmcalHfeTagging* AddTaskEmcalHfeTagging(const char * njetsBase,
   TString wagonName1;
   TString wagonName2;
     
-    
-  if (jetShapeTree == AliAnalysisTaskEmcalHfeTagging::kAll){
-    wagonName1 = Form("JetHfeTaggings_%s_TC%s%sList_All",njetsBase,trigClass.Data(),tag.Data());
-    wagonName2 = Form("JetHfeTaggings_%s_TC%s%sTree_All",njetsBase,trigClass.Data(),tag.Data());
-  }
-    
-  if (jetShapeTree == AliAnalysisTaskEmcalHfeTagging::kInclElec){
-    wagonName1 = Form("JetHfeTaggings_%s_TC%s%sList_InclElec",njetsBase,trigClass.Data(),tag.Data());
-    wagonName2 = Form("JetHfeTaggings_%s_TC%s%sTree_InclElec",njetsBase,trigClass.Data(),tag.Data());
-  }
-    
-  if (jetShapeTree == AliAnalysisTaskEmcalHfeTagging::kPhotElec){
-    wagonName1 = Form("JetHfeTaggings_%s_TC%s%sList_PhotElec",njetsBase,trigClass.Data(),tag.Data());
-    wagonName2 = Form("JetHfeTaggings_%s_TC%s%sTree_PhotElec",njetsBase,trigClass.Data(),tag.Data());
-  }
-    
-  if (jetShapeTree == AliAnalysisTaskEmcalHfeTagging::kNoElec){
-    wagonName1 = Form("JetHfeTaggings_%s_TC%s%sList_NoElec",njetsBase,trigClass.Data(),tag.Data());
-    wagonName2 = Form("JetHfeTaggings_%s_TC%s%sTree_NoElec",njetsBase,trigClass.Data(),tag.Data());
-  }
+  wagonName1 = Form("JetHfeTaggings_%s_TC%s%sList_All",njetsBase,trigClass.Data(),tag.Data());
+  wagonName2 = Form("JetHfeTaggings_%s_TC%s%sTree_All",njetsBase,trigClass.Data(),tag.Data());
     
   //Configure jet tagger task
   AliAnalysisTaskEmcalHfeTagging *task = new AliAnalysisTaskEmcalHfeTagging(wagonName1.Data());
@@ -73,7 +54,7 @@ AliAnalysisTaskEmcalHfeTagging* AddTaskEmcalHfeTagging(const char * njetsBase,
   task->SetJetShapeSub(jetShapeSub);
   task->SetJetSelection(jetSelection);
   task->SetDerivativeSubtractionOrder(derivSubtrOrder);
-  task->SetJetShapeTree(jetShapeTree);
+  task->SetMCweight(MCweight);
     
     
   if (jetSelection == AliAnalysisTaskEmcalHfeTagging::kRecoil) task->SetPtTriggerSelections(minpTHTrigger, maxpTHTrigger);

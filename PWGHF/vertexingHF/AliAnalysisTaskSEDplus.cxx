@@ -523,13 +523,14 @@ void AliAnalysisTaskSEDplus::UserCreateOutputObjects()
   fHistNEvents->SetMinimum(0);
   fOutput->Add(fHistNEvents);
 
-  fHistNCandidates = new TH1F("hNCandidates","number of candidates",6,-0.5,5.5);
+  fHistNCandidates = new TH1F("hNCandidates","number of candidates",7,-0.5,6.5);
   fHistNCandidates->GetXaxis()->SetBinLabel(1,"no. of 3prong candidates");
   fHistNCandidates->GetXaxis()->SetBinLabel(2,"no. of cand with D+ bitmask");
   fHistNCandidates->GetXaxis()->SetBinLabel(3,"D+ not on-the-fly reco");
   fHistNCandidates->GetXaxis()->SetBinLabel(4,"D+ after topological cuts");
   fHistNCandidates->GetXaxis()->SetBinLabel(5,"D+ after Topological+SingleTrack cuts");
   fHistNCandidates->GetXaxis()->SetBinLabel(6,"D+ after Topological+SingleTrack+PID cuts");
+  fHistNCandidates->GetXaxis()->SetBinLabel(7,"D+ rejected by preselect");
   fHistNCandidates->GetXaxis()->SetNdivisions(1,kFALSE);
   fHistNCandidates->SetMinimum(0);
   fOutput->Add(fHistNCandidates);
@@ -989,6 +990,16 @@ void AliAnalysisTaskSEDplus::UserExec(Option_t */*option*/)
 	continue;
       }
       fHistNCandidates->Fill(1);
+
+      TObjArray arrTracks(3);
+      for(Int_t jdau=0; jdau<3; jdau++){
+        AliAODTrack *tr=vHF->GetProng(aod,d,jdau);
+        arrTracks.AddAt(tr,jdau);
+      }
+      if(!fRDCutsAnalysis->PreSelect(arrTracks)){
+        fHistNCandidates->Fill(6);
+        continue;
+      }
 
       if(!(vHF->FillRecoCand(aod,d))) { //Fill the data members of the candidate only if they are empty.
         fHistNCandidates->Fill(2); //monitor how often this fails
@@ -1828,7 +1839,7 @@ Float_t AliAnalysisTaskSEDplus::GetTrueImpactParameter(const AliAODMCHeader *mcH
   }
 
   Int_t nDau=partDp->GetNDaughters();
-  Int_t labelFirstDau = partDp->GetDaughter(0);
+  Int_t labelFirstDau = partDp->GetDaughterLabel(0);
   if(nDau==3){
     for(Int_t iDau=0; iDau<3; iDau++){
       Int_t ind = labelFirstDau+iDau;
@@ -1859,7 +1870,7 @@ Float_t AliAnalysisTaskSEDplus::GetTrueImpactParameter(const AliAODMCHeader *mcH
       }else{
 	Int_t nDauRes=part->GetNDaughters();
 	if(nDauRes==2){
-	  Int_t labelFirstDauRes = part->GetDaughter(0);
+	  Int_t labelFirstDauRes = part->GetDaughterLabel(0);
 	  for(Int_t iDauRes=0; iDauRes<2; iDauRes++){
 	    Int_t indDR = labelFirstDauRes+iDauRes;
 	    AliAODMCParticle* partDR = dynamic_cast<AliAODMCParticle*>(arrayMC->At(indDR));

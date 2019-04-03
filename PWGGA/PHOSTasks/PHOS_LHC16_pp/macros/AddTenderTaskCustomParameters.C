@@ -1,3 +1,9 @@
+#ifdef __CLING__
+// Tell ROOT where to find AliPhysics headers
+R__ADD_INCLUDE_PATH($ALICE_PHYSICS)
+#include <PWGGA/PHOSTasks/PHOS_PbPb/AddAODPHOSTender.C>
+#endif
+
 AliPHOSTenderTask * AddTenderTaskCustomParameters(Bool_t isMC = kFALSE, TString badmap = "BadMap_LHC16-updated.root")
 {
 	// Copy necessary map from the private directory
@@ -12,11 +18,13 @@ AliPHOSTenderTask * AddTenderTaskCustomParameters(Bool_t isMC = kFALSE, TString 
 	//
 	gROOT->LoadMacro("$ALICE_PHYSICS/PWGGA/PHOSTasks/PHOS_PbPb/AddAODPHOSTender.C");
 	TString tenderOption = isMC ? "Run2Default" : "";
+	TString nonlinearity = isMC ? "Run2Tune" : "Run2TuneMC";
 
 	AliPHOSTenderTask * tenderPHOS = AddAODPHOSTender("PHOSTenderTask", "PHOStender", tenderOption, 1, isMC);
 	AliPHOSTenderSupply * PHOSSupply = tenderPHOS->GetPHOSTenderSupply();
 	// IMPORTANT: Set the map of bad channels
 	PHOSSupply->ForceUsingBadMap(badmap.Data());
+	PHOSSupply->SetNonlinearityVersion(nonlinearity); 
 	if (isMC)
 	{
 		// Important: Keep track of this variable

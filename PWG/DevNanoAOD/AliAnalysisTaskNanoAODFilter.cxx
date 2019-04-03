@@ -52,16 +52,11 @@ ClassImp(AliAnalysisTaskNanoAODFilter)
 AliAnalysisTaskNanoAODFilter::AliAnalysisTaskNanoAODFilter() // All data members should be initialised here
 :AliAnalysisTaskSE(),
   fMCMode(0),
-  fTrkrep(0),
-  fVarList(""),
-  fVarListHead(""),
-  fVarListHeader_fTC(""),
+  fReplicator(0),
   fEvtCuts(0),
   fTrkCuts(0),
-  fSetter(0),
+  fV0Cuts(0),
   fSaveCutsFlag(0),
-  fSaveAODZDC(kFALSE),
-  fSaveVzero(kFALSE),
   fInputArrayName(""),
   fOutputArrayName("")
 {
@@ -72,27 +67,23 @@ AliAnalysisTaskNanoAODFilter::AliAnalysisTaskNanoAODFilter() // All data members
 AliAnalysisTaskNanoAODFilter::AliAnalysisTaskNanoAODFilter(const char *name, Bool_t saveCutsFlag) // All data members should be initialised here
   :AliAnalysisTaskSE(name),
    fMCMode(0),
-   fTrkrep(0),
-   fVarList(""),
-   fVarListHead(""),
-   fVarListHeader_fTC(""),
+   fReplicator(0),
    fEvtCuts(0),
    fTrkCuts(0),
-   fSetter(0),
+   fV0Cuts(0),
    fSaveCutsFlag(saveCutsFlag),
-   fSaveAODZDC(kFALSE),
-   fSaveVzero(kFALSE),
    fInputArrayName(""),
    fOutputArrayName("")
 
 {
+  fReplicator = new AliNanoAODReplicator("NanoAODReplicator", "remove non interesting tracks, writes special tracks array tracks");
+  
   // Constructor
   if(fSaveCutsFlag) {
     DefineOutput(1, AliAnalysisCuts::Class());
     DefineOutput(2, AliAnalysisCuts::Class());
+    DefineOutput(3, AliAnalysisCuts::Class());
   }
-
-
 }
 
 //________________________________________________________________________
@@ -100,6 +91,8 @@ AliAnalysisTaskNanoAODFilter::~AliAnalysisTaskNanoAODFilter()
 {
   // Destructor. Clean-up the output list, but not the histograms that are put inside
   // (the list is owner and will clean-up these histograms). Protect in PROOF case.
+  
+  delete fReplicator;
 }
 
 //________________________________________________________________________
@@ -109,8 +102,12 @@ void AliAnalysisTaskNanoAODFilter::UserCreateOutputObjects()
   // Called once (on the worker node)
       
   if(fSaveCutsFlag) {
-    PostData(1, fEvtCuts); 
-    PostData(2, fTrkCuts); 
+    if (fEvtCuts)
+      PostData(1, fEvtCuts); 
+    if (fTrkCuts)
+      PostData(2, fTrkCuts); 
+    if (fV0Cuts)
+      PostData(3, fV0Cuts);
   }
 }
 
@@ -126,31 +123,17 @@ void AliAnalysisTaskNanoAODFilter::AddFilteredAOD(const char* aodfilename, const
     AliFatal("Cannot get extension");
   }
   
-
-  AliNanoAODReplicator * rep = new AliNanoAODReplicator("NanoAODReplicator",
-							"remove non interesting tracks, "
-							"writes special tracks array tracks",
-							fVarList,
-							fVarListHead,
-							fTrkCuts,
-							fMCMode);
-
+  fReplicator->SetTrackCuts(fTrkCuts);
+  fReplicator->SetMCMode(fMCMode);
      
-  cout<<"rep: "<<rep<<endl;
-  rep->SetCustomSetter(fSetter);
-  if (fSaveVzero) rep->SetVzero(1);
-  if (fSaveAODZDC) rep->SetAODZDC(1);
-  if (fVarListHeader_fTC) rep->SetVarListHeaderStringVariable(fVarListHeader_fTC);
-  if (!fInputArrayName.IsNull()) rep->SetInputArrayName(fInputArrayName);
-  if (!fOutputArrayName.IsNull()) rep->SetOutputArrayName(fOutputArrayName);
-
-  std::cout << "SETTER: " << fSetter << " " << rep->GetCustomSetter() << std::endl;
+  if (!fInputArrayName.IsNull()) fReplicator->SetInputArrayName(fInputArrayName);
+  if (!fOutputArrayName.IsNull()) fReplicator->SetOutputArrayName(fOutputArrayName);
 
   ext->DropUnspecifiedBranches(); // all branches not part of a FilterBranch call (below) will be dropped
       
-  ext->FilterBranch("tracks",rep);
-  ext->FilterBranch("vertices",rep);  
-  ext->FilterBranch("header",rep);  
+  ext->FilterBranch("tracks",fReplicator);
+  ext->FilterBranch("vertices",fReplicator);  
+  ext->FilterBranch("header",fReplicator);  
             
   if ( fMCMode > 0 ) 
     {
@@ -159,8 +142,8 @@ void AliAnalysisTaskNanoAODFilter::AddFilteredAOD(const char* aodfilename, const
       // For events w/o muon, mcparticles array will be empty and mcheader will be dummy
       // (e.g. strlen(GetGeneratorName())==0)
       
-      ext->FilterBranch("mcparticles",rep);
-      ext->FilterBranch("mcHeader",rep);
+      ext->FilterBranch("mcparticles",fReplicator);
+      ext->FilterBranch("mcHeader",fReplicator);
     }
 }
 
@@ -169,25 +152,23 @@ void AliAnalysisTaskNanoAODFilter::Init()
 
   // Initialization
   AddFilteredAOD("AliAOD.NanoAOD.root", "NanoAODTracksEvents");
-
 }
 
-
-
-//________________________________________________________________________
 void AliAnalysisTaskNanoAODFilter::UserExec(Option_t *) 
 {
   // Main loop
   Long64_t ientry = Entry();
   if(fDebug)printf("Nano AOD Filter: Analysing event # %5d\n", (Int_t) ientry);
 
-  AliAODEvent *lAODevent=(AliAODEvent*)InputEvent();
+  AliAODEvent *lAODevent= dynamic_cast<AliAODEvent*> (InputEvent());
+  if (!lAODevent)
+    lAODevent = AODEvent(); // On the fly ESD filtering
+  if (!lAODevent)
+    AliFatal("No input event");
   
-    
-  AliAODHandler* handler = dynamic_cast<AliAODHandler*>(AliAnalysisManager::GetAnalysisManager()->GetOutputEventHandler());
-
   if(fEvtCuts && !fEvtCuts->IsSelected(lAODevent)) return;// FIXME: should event cuts be called here or in the branch replicator? Do we get duplicated events if we skip here (arrays not reset in the branch replicator?)
 
+  AliAODHandler* handler = dynamic_cast<AliAODHandler*>(AliAnalysisManager::GetAnalysisManager()->GetOutputEventHandler());
   if ( handler ){
     AliAODExtension *extNanoAOD = handler->GetFilteredAOD("AliAOD.NanoAOD.root");
    if ( extNanoAOD ) {				
@@ -195,12 +176,6 @@ void AliAnalysisTaskNanoAODFilter::UserExec(Option_t *)
      extNanoAOD->SelectEvent();
      extNanoAOD->FinishEvent();
    }
-  }
-
-
-  if(fSaveCutsFlag) {
-    PostData(1, fEvtCuts); 
-    PostData(2, fTrkCuts); 
   }
 }
 

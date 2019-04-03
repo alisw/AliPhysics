@@ -22,7 +22,7 @@ AliPHOSEventCuts::AliPHOSEventCuts(const char *name):
   fMaxAbsZvtx(10.),
   fRejectPileup(kTRUE),
   fRejectDAQIncomplete(kTRUE),
-  fPF(AliPHOSEventCuts::kMultiVertexer)
+  fPF(AliPHOSEventCuts::kSPDInMultBins)
 {
   // Constructor
 
@@ -38,15 +38,19 @@ AliPHOSEventCuts::~AliPHOSEventCuts()
 Bool_t AliPHOSEventCuts::AcceptEvent(AliVEvent *event)
 {
 
-  //select event which PHOS was readout from trigger cluster point of view.
-  //for example, PHOS was not in MUFAST cluster.
-  TString trigClasses = event->GetFiredTriggerClasses();
-
-  if(!fIsMC && !trigClasses.Contains("CENT") && !trigClasses.Contains("FAST")){
-    //At least, PHOS must be in CENT or FAST as a readout cluster. INT7 or PHI7 do not matter.
-    AliWarning(Form("Skip event with triggers %s",trigClasses.Data()));
-    return kFALSE;
-  }
+//  //select event which PHOS was readout from trigger cluster point of view.
+//  //for example, PHOS was not in MUFAST cluster.
+//  TString trigClasses = event->GetFiredTriggerClasses();
+//
+//  if(!fIsMC 
+//      && !trigClasses.Contains("-CENT") //accept CENT, CENTNO[TRD|PMD]
+//      && !trigClasses.Contains("-FAST") //accept FAST
+//      && !trigClasses.Contains("-CALO") //accept CALO, CALOFAST
+//    ){
+//    //At least, PHOS must be in CENT[|NOTRD|NOPMD] or [CALO|FAST] or as a readout cluster. INT7 or PHI7 do not matter.
+//    AliWarning(Form("Skip event with triggers %s",trigClasses.Data()));
+//    return kFALSE;
+//  }
 
   Int_t run = event->GetRunNumber();
 

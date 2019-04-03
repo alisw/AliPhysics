@@ -13,6 +13,7 @@
 #pragma link C++ class AliAnalysisTaskpypy+;
 #pragma link C++ class AliAnalysisTaskpzpz+;
 #pragma link C++ class AlianalysisTaskDptPID+;
+#pragma link C++ class AliAnalysisTaskHadronPhiCorr+;
 #pragma link C++ class AliAnalysisTask3PCorrelations+;
 #pragma link C++ class AliAnalysisTaskPhiCorrelations+;
 #pragma link C++ class AliAnalysisTaskCorrelationsDev+;
@@ -64,6 +65,7 @@
 #pragma link C++ class AliAnalysisTaskEPCorrAAMC+;
 #pragma link C++ class AliCorrReducedTrackAAMC+;
 #pragma link C++ class AliAnalysisTaskPIDBFDptDpt+;
+#pragma link C++ class AliAnalysisTaskGeneralBF+;
 #pragma link C++ class AliAnaTaskMomScan+;
 #pragma link C++ class AliCorrelationAnalysis+;
 #pragma link C++ class AliAnalysisTaskSEpPbCorrelationsYS+;
@@ -80,4 +82,6 @@
 #pragma link C++ class AliCSTrackMaps+;
 #pragma link C++ class AliCSTrackSelection+;
 #pragma link C++ class AliDptDptCorrelations+;
+#pragma link C++ class AliAnalysisTaskDiHadCorrelHighPt+;
+#pragma link C++ class AliV0ChParticle+;
 #endif

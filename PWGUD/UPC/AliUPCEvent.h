@@ -80,6 +80,7 @@ public:
   void SetZNCTime(Float_t tdc) {fZNCTime = tdc;}
   void SetZNATime(Float_t tdc) {fZNATime = tdc;}
   void SetZNTDCm(Float_t *znatdcm,Float_t *znctdcm,Float_t *zpatdcm,Float_t *zpctdcm);
+  void SetBCnumber(UShort_t bcNumber) {fBCnumber = bcNumber;}
 
   AliUPCTrack *AddTrack(void);
   AliUPCMuonTrack *AddMuonTrack(void);
@@ -162,6 +163,7 @@ public:
   Float_t GetZNCTDCm(Int_t channel) {return fZNCTDCm[channel];} 
   Float_t GetZPATDCm(Int_t channel) {return fZPATDCm[channel];}
   Float_t GetZPCTDCm(Int_t channel) {return fZPCTDCm[channel];} 
+  UShort_t GetBCnumber() {return fBCnumber;}
 
   Int_t GetNumberOfTracks(void) const { return fNtracks; }
   AliUPCTrack *GetTrack(Int_t iTrack) const;
@@ -232,6 +234,7 @@ protected:
   Float_t fZPCTDCm[4];
   TBits fIR1Map; //PF protection
   TBits fIR2Map; //PF protection
+  UShort_t fBCnumber;
   TClonesArray *fUPCTracks; //-> array of central upc tracks
   Int_t fNtracks; // number of central upc tracks in event
   TClonesArray *fUPCMuonTracks; //-> array of muon upc tracks
@@ -245,7 +248,7 @@ protected:
   static TClonesArray *fgUPCMuonTracks; // array of muon upc tracks
   static TClonesArray *fgMCParticles; // array of MC particles
 
-  ClassDef(AliUPCEvent,4);
+  ClassDef(AliUPCEvent,5);
 };
 
 #endif

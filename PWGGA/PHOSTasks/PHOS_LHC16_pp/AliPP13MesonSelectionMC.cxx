@@ -85,19 +85,6 @@ void AliPP13MesonSelectionMC::ConsiderPair(const AliVCluster * c1, const AliVClu
 		return;
 
 	Int_t hcode = hadron->GetPdgCode();
-
-	if (primary)
-	{
-		fPrimaryPi0[kReconstructed]->Fill(hcode, ma12, pt12);
-		return;
-	}
-
-	if (!IsPrimary(hadron))
-	{
-		fSecondaryPi0[kReconstructed]->Fill(hcode, ma12, pt12);
-		return;
-	}
-
 	fFeedDownPi0[kReconstructed]->FillAll(hcode, ma12, pt12);
 }
 
@@ -273,13 +260,3 @@ AliAODMCParticle * AliPP13MesonSelectionMC::GetParent(Int_t label, Int_t & plabe
 	AliAODMCParticle * parent = dynamic_cast<AliAODMCParticle * >(particles->At(plabel));
 	return parent;
 }
-
-//________________________________________________________________
-Bool_t AliPP13MesonSelectionMC::IsPrimary(const AliAODMCParticle * particle) const
-{
-	// Look what particle left vertex (e.g. with vertex with radius <1 cm)
-	Double_t rcut = 1.;
-	Double_t r2 = particle->Xv() * particle->Xv() + particle->Yv() * particle->Yv()	;
-	return r2 < rcut * rcut;
-}
-

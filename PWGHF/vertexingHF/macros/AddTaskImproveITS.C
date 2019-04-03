@@ -20,9 +20,9 @@ AliAnalysisTaskSEImproveITS *AddTaskImproveITS(Bool_t isRunInVertexing=kFALSE, /
   outputFileName+=":ITSImprover";
   AliAnalysisDataContainer *coutput
      =mgr->CreateContainer("debug",
-                           TNtuple::Class(),
+                           TList::Class(),
                            AliAnalysisManager::kOutputContainer,
-                           outputFileName);
+                           outputFileName.Data());
   
   mgr->ConnectInput (task,0,mgr->GetCommonInputContainer());
   mgr->ConnectOutput(task,1,coutput);

@@ -1,6 +1,6 @@
 AliAnalysisTaskPHOSPi0EtaToGammaGamma* AddTaskPHOSPi0EtaToGammaGamma_PbPb_5TeV(
     const char* name     = "Pi0EtaToGammaGamma",
-    const UInt_t trigger = AliVEvent::kINT7,
+    UInt_t trigger = AliVEvent::kINT7,
     const TString CollisionSystem = "PbPb",
     const Bool_t isMC = kFALSE,
     const Int_t L1input = -1,//L1H,L1M,L1L
@@ -39,28 +39,18 @@ AliAnalysisTaskPHOSPi0EtaToGammaGamma* AddTaskPHOSPi0EtaToGammaGamma_PbPb_5TeV(
     ::Error("AddTaskPHOSPi0EtaToGammaGamma", "No analysis manager to connect to");
     return NULL;
   }
-  
+
   if (!mgr->GetInputEventHandler()) {
     ::Error("AddTaskPHOSPi0EtaToGammaGamma", "This task requires an input event handler");
     return NULL;
   }
 
-	TString TriggerName="";
-	if     (trigger == (UInt_t)AliVEvent::kAny)  TriggerName = "kAny";
-	else if(trigger == (UInt_t)AliVEvent::kINT7) TriggerName = "kINT7";
-	else if(trigger == (UInt_t)AliVEvent::kPHI7) TriggerName = "kPHI7";
+  TString TriggerName="";
+  if     (trigger == (UInt_t)AliVEvent::kAny)  TriggerName = "kAny";
+  else if(trigger == (UInt_t)AliVEvent::kINT7) TriggerName = "kINT7";
+  else if(trigger & AliVEvent::kPHI7)          TriggerName = "kPHI7";
 
-  //if(trigger == (UInt_t)AliVEvent::kPHI7){
-  //  if(triggerinput.Contains("L1") || triggerinput.Contains("L0")){
-  //    TriggerName = TriggerName + "_" + triggerinput;
-
-  //  }
-  //  else{
-  //    ::Error("AddTaskPHOSPi0EtaToGammaGamma", "PHOS trigger analysis requires at least trigger input (L0 or L1[H,M,L]).");
-  //    return NULL;
-  //  }
-  //}
-  if(trigger == (UInt_t)AliVEvent::kPHI7){
+  if(trigger & AliVEvent::kPHI7){
     if(L1input > 0){
       if(L1input == 7)      TriggerName = TriggerName + "_" + "L1H";
       else if(L1input == 6) TriggerName = TriggerName + "_" + "L1M";
@@ -115,8 +105,7 @@ AliAnalysisTaskPHOSPi0EtaToGammaGamma* AddTaskPHOSPi0EtaToGammaGamma_PbPb_5TeV(
   }
   else taskname = Form("%s_%s_%s_Cen%d_%d%s_BS%dns_DBC%dcell_Emin%dMeV",name,CollisionSystem.Data(),TriggerName.Data(),(Int_t)CenMin,(Int_t)CenMax,PIDname.Data(),(Int_t)bs,(Int_t)(distBC),(Int_t)(Emin*1e+3));
 
-  if(trigger == (UInt_t)AliVEvent::kPHI7 && ApplyTOFTrigger) taskname += "_TOFTrigger";
-
+  if((trigger & AliVEvent::kPHI7) && ApplyTOFTrigger) taskname += "_TOFTrigger";
   if(ForceActiveTRU) taskname += "_ForceActiveTRU";
 
   AliAnalysisTaskPHOSPi0EtaToGammaGamma* task = new AliAnalysisTaskPHOSPi0EtaToGammaGamma(taskname);
@@ -127,23 +116,25 @@ AliAnalysisTaskPHOSPi0EtaToGammaGamma* AddTaskPHOSPi0EtaToGammaGamma_PbPb_5TeV(
   else if(L1input == 5)  Ethre = 0.0;
   else if(L0input == 9)  Ethre = 0.0;//LHC15n
   else if(L0input == 17) Ethre = 0.0;//LHC17p
-  if(trigger == (UInt_t)AliVEvent::kPHI7) task->SetPHOSTriggerAnalysis(L1input,L0input,Ethre,isMC,ApplyTOFTrigger,-1);
-  if(kMC && trigger == (UInt_t)AliVEvent::kPHI7) trigger = AliVEvent::kINT7;//change trigger selection in MC when you do PHOS trigger analysis.
+  if(trigger & AliVEvent::kPHI7)      task->SetPHOSTriggerAnalysis(L1input,L0input,Ethre,isMC,ApplyTOFTrigger,-1);
+  else if(trigger & AliVEvent::kINT7) task->SetPHOSTriggerAnalysisMB(L1input,L0input,Ethre,isMC,ApplyTOFTrigger,-1);
+  if(isMC && (trigger & AliVEvent::kPHI7)) trigger = AliVEvent::kINT7;//change trigger selection in MC when you do PHOS trigger analysis.
   if(ForceActiveTRU) task->SetForceActiveTRU(L1input,L0input,Ethre,isMC);//this is to measure rejection factor from cluster energy kPHI7/kINT7 with same acceptance.
   task->SelectCollisionCandidates(trigger);
+  task->SetTriggerThreshold(Ethre);
 
   task->SetCollisionSystem(systemID);//colliions system : pp=0, PbPb=1, pPb (Pbp)=2;
   task->SetJetJetMC(isJJMC);
   task->SetMCType(MCtype);
- 
+
   task->SetNonLinearityStudy(NonLinStudy);
- 
+
   task->SetTenderFlag(usePHOSTender);
   task->SetMCFlag(isMC);
-  task->SetCoreEnergyFlag(useCoreE);
+  //  task->SetCoreEnergyFlag(useCoreE);
 
   task->SetEventCuts(isMC,pf);
-  task->SetClusterCuts(useCoreDisp,NsigmaCPV,NsigmaDisp,distBC);
+  task->SetClusterCuts(useCoreDisp,NsigmaCPV,NsigmaDisp,useCoreE,distBC);
 
   task->SetCentralityMin(CenMin);
   task->SetCentralityMax(CenMax);
@@ -159,25 +150,65 @@ AliAnalysisTaskPHOSPi0EtaToGammaGamma* AddTaskPHOSPi0EtaToGammaGamma_PbPb_5TeV(
   //centrality setting
   task->SetCentralityEstimator("V0M");
 
-  //setting esd track selection for hybrid track
-  gROOT->LoadMacro("$ALICE_PHYSICS/PWGJE/macros/CreateTrackCutsPWGJE.C");
-  AliESDtrackCuts *cutsG = CreateTrackCutsPWGJE(10001008);//for good global tracks
+  AliESDtrackCuts *cutsG = AliESDtrackCuts::GetStandardITSTPCTrackCuts2011(kFALSE);//standard cuts with very loose DCA
+  cutsG->SetMaxDCAToVertexXY(2.4);
+  cutsG->SetMaxDCAToVertexZ(3.2);
+  cutsG->SetDCAToVertex2D(kTRUE);
   task->SetESDtrackCutsForGlobal(cutsG);
-  AliESDtrackCuts *cutsGC = CreateTrackCutsPWGJE(10011008);//for good global-constrained tracks
+
+  AliESDtrackCuts *cutsGC = AliESDtrackCuts::GetStandardITSTPCTrackCuts2011();//standard cuts with tight DCA cut
   task->SetESDtrackCutsForGlobalConstrained(cutsGC);
 
   //bunch space for TOF cut
   task->SetBunchSpace(bs);//in unit of ns.
   if(!isMC && TOFcorrection){
-    TF1 *f1tof = new TF1("f1TOFCutEfficiency","[0] * (2/(1+exp(-[1]*(x-[2]))) - 1) - ( 0 + [3]/(exp( -(x-[4]) / [5] ) + 1)  )",0,100);
+    //TF1 *f1tof = new TF1("f1TOFCutEfficiency","[0] * (2/(1+exp(-[1]*(x-[2]))) - 1) - ( 0 + [3]/(exp( -(x-[4]) / [5] ) + 1)  )",0,100);
+    //f1tof->SetParameters(0.996,5.61,-0.146,0.036,7.39,0.054);
+
+    //TF1 *f1tof = new TF1("f1TOFCutEfficiency","[0] * (2/(1+exp(-[1]*(x-[2]))) - 1) * ( 1 + [3]/(TMath::TwoPi() * [5]) * exp(-(x-[4]) * (x-[4])/(2 * [5]*[5] )) *( 1 + TMath::Erf([6]*((x-[4])/[5]))) )",0,100);
+    //f1tof->SetNpx(1000);
+    //f1tof->FixParameter(0, 9.97378e-01);
+    //f1tof->FixParameter(1, 6.66818e+00);
+    //f1tof->FixParameter(2,-5.65437e-02);
+    //f1tof->FixParameter(3,-7.38995e-01);
+    //f1tof->FixParameter(4, 9.72815e+00);
+    //f1tof->FixParameter(5, 1.17920e+00);
+    //f1tof->FixParameter(6, 5.55735e-02);
+
+    TF1 *f1tof = new TF1("f1TOFCutEfficiency","[0]/(exp(-(x-[1])/[2]) + 1) - ([3]/(exp( -(x-[4]) / [5] ) + 1))",0,100);
     f1tof->SetNpx(1000);
-    f1tof->SetParameters(0.996,5.61,-0.146,0.036,7.39,0.054);
+    f1tof->FixParameter(0,9.99550e-01);
+    f1tof->FixParameter(1,7.61897e-03);
+    f1tof->FixParameter(2,1.42936e-01);
+    f1tof->FixParameter(3,3.70000e-02);
+    f1tof->FixParameter(4,7.17525e+00);
+    f1tof->FixParameter(5,4.66735e-01);
     task->SetTOFCutEfficiencyFunction(f1tof);
+  }
+  if(!isMC && Trgcorrection){
+    if(L1input == 7){
+      printf("L1H is selected\n");
+      //TF1 *f1trg = new TF1("f1TriggerEfficiency","[0]/(TMath::Exp(-(x-[1])/[2]) + 1)",0,100);
+      //f1trg->SetParameters(0.431,8.83,0.79);//from MB //acc x trigger efficiency 6-50GeV
+      TF1 *f1trg = new TF1("f1TriggerEfficiency","[0]/(TMath::Exp(-(x-[1])/[2]) + 1) + [3]/(TMath::Exp(-(x-[4])/[5]) + 1)",0,100);
+      //f1trg->SetParameters(0.218,8.02,0.588,0.236,10.3,0.883);//from MB //acc x trigger efficiency 5-40GeV
+      f1trg->SetParameters(0.180,7.89,0.544,0.270,9.84,0.875);//from MB //acc x trigger efficiency 5-40GeV
+      f1trg->SetNpx(1000);
+      task->SetTriggerEfficiency(f1trg);
+    }
+    else if(L1input==6){
+      printf("L1M is selected\n");
+      //TF1 *f1trg = new TF1("f1TriggerEfficiency","[0]/(TMath::Exp(-(x-[1])/[2]) + 1)",0,100);
+      //f1trg->SetParameters(0.445,4.43,0.72);//from MB //acc x trigger efficiency 6-50GeV
+      TF1 *f1trg = new TF1("f1TriggerEfficiency","[0]/(TMath::Exp(-(x-[1])/[2]) + 1) + [3]/(TMath::Exp(-(x-[4])/[5]) + 1)",0,100);
+      //f1trg->SetParameters(0.220,3.87,0.334,0.230,5.32,0.523);//from MB //acc x trigger efficiency 2-40GeV
+      f1trg->SetParameters(0.230,3.87,0.339,0.220,5.22,0.496);//from MB //acc x trigger efficiency 2-40GeV
+      f1trg->SetNpx(1000);
+      task->SetTriggerEfficiency(f1trg);
+    }
   }
 
   if(isMC){
-
-
     //for pi0
     const Int_t Ncen_Pi0 = 11;
     const Double_t centrality_Pi0[Ncen_Pi0] = {0,5,10,20,30,40,50,60,70,80,100};
@@ -185,8 +216,8 @@ AliAnalysisTaskPHOSPi0EtaToGammaGamma* AddTaskPHOSPi0EtaToGammaGamma_PbPb_5TeV(
 
     TObjArray *farray_Pi0 = new TObjArray(Ncen_Pi0-1);
     TF1 *f1weightPi0[Ncen_Pi0-1];
-    const Double_t p0_Pi0[Ncen_Pi0-1] = {8.52796e-02,9.57970e-02,1.09042e-01,1.28762e-01 ,1.51087e-01 ,1.82705e-01 ,2.16360e-01 ,2.37666e-01 ,2.52706e-01 ,3.34001e-01};
-    const Double_t p1_Pi0[Ncen_Pi0-1] = {8.34243e-01,8.11715e-01,7.73274e-01,7.28962e-01 ,6.77506e-01 ,6.06502e-01 ,5.31093e-01 ,4.52193e-01 ,3.86976e-01 ,3.22488e-01};
+    const Double_t p0_Pi0[Ncen_Pi0-1] = {2. * 8.52796e-02,2. * 9.57970e-02,2. * 1.09042e-01,2. * 1.28762e-01 ,2. * 1.51087e-01 ,2. * 1.82705e-01 ,2. * 2.16360e-01 ,2. * 2.37666e-01 ,2. * 2.52706e-01 ,2. * 3.34001e-01};
+    const Double_t p1_Pi0[Ncen_Pi0-1] = {2. * 8.34243e-01,2. * 8.11715e-01,2. * 7.73274e-01,2. * 7.28962e-01 ,2. * 6.77506e-01 ,2. * 6.06502e-01 ,2. * 5.31093e-01 ,2. * 4.52193e-01 ,2. * 3.86976e-01 ,2. * 3.22488e-01};
     const Double_t p2_Pi0[Ncen_Pi0-1] = {9.27577e-01,9.53380e-01,9.52280e-01,9.78872e-01 ,9.82192e-01 ,1.01124e+00 ,1.08236e+00 ,1.14572e+00 ,1.12243e+00 ,2.16920e+00};
     const Double_t p3_Pi0[Ncen_Pi0-1] = {2.13453e-01,2.09818e-01,2.03573e-01,2.00238e-01 ,1.94211e-01 ,1.87993e-01 ,1.94509e-01 ,1.95069e-01 ,1.75698e-01 ,3.62140e-01};
 
@@ -196,7 +227,7 @@ AliAnalysisTaskPHOSPi0EtaToGammaGamma* AddTaskPHOSPi0EtaToGammaGamma_PbPb_5TeV(
       farray_Pi0->Add(f1weightPi0[icen]);
     }
 
-    task->SetAdditionalPi0PtWeightFunction(centarray_Pi0,farray_Pi0);
+    task->SetAdditionalPi0PtWeightFunction(centarray_Pi0,farray_Pi0);//do not change pi0 spectra in MC
 
     //for K0S
     const Int_t Ncen_K0S = 7;
@@ -219,7 +250,7 @@ AliAnalysisTaskPHOSPi0EtaToGammaGamma* AddTaskPHOSPi0EtaToGammaGamma_PbPb_5TeV(
 
     task->SetAdditionalK0SPtWeightFunction(centarray_K0S,farray_K0S);
 
-     //for L0
+    //for L0
     const Int_t Ncen_L0 = 7;
     const Double_t centrality_L0[Ncen_L0] = {0,5,10,20,40,60,100};
     TArrayD *centarray_L0 = new TArrayD(Ncen_L0,centrality_L0);
@@ -237,13 +268,13 @@ AliAnalysisTaskPHOSPi0EtaToGammaGamma* AddTaskPHOSPi0EtaToGammaGamma_PbPb_5TeV(
       farray_L0->Add(f1weightL0[icen]);
     }
 
-    task->SetAdditionalL0PtWeightFunction(centarray_L0,farray_L0);
+    //task->SetAdditionalL0PtWeightFunction(centarray_L0,farray_L0);
 
   }
 
   mgr->AddTask(task);
   mgr->ConnectInput(task, 0, mgr->GetCommonInputContainer() );
- 
+
   TString outputFile = AliAnalysisManager::GetCommonFileName();
   TString prefix = Form("hist_%s",taskname.Data());
 

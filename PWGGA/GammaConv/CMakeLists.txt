@@ -28,13 +28,16 @@ include_directories(${ROOT_INCLUDE_DIRS}
                     ${AliPhysics_SOURCE_DIR}/PWG/EMCAL/EMCALtasks
                     ${AliPhysics_SOURCE_DIR}/PWG/EMCAL/EMCALtrigger
                     ${AliPhysics_SOURCE_DIR}/PWG/CaloTrackCorrBase
-                    ${AliPhysics_SOURCE_DIR}/PWG/Cocktail                    
+                    ${AliPhysics_SOURCE_DIR}/PWG/Cocktail
                     ${AliPhysics_SOURCE_DIR}/PWG/FLOW
+                    ${AliPhysics_SOURCE_DIR}/PWG/JETFW
+                    ${AliPhysics_SOURCE_DIR}/PWG/Tools
                     ${AliPhysics_SOURCE_DIR}/PWG/TRD
+                    ${AliPhysics_SOURCE_DIR}/PWGJE/EMCALJetTasks
                     ${AliPhysics_SOURCE_DIR}/TENDER/Tender
                     ${AliPhysics_SOURCE_DIR}/TENDER/TenderSupplies
                     ${AliPhysics_SOURCE_DIR}/PWGGA/PHOSTasks/PHOS_PbPb
-                    ${AliPhysics_SOURCE_DIR}/PWGGA/PWGGAUtils                    
+                    ${AliPhysics_SOURCE_DIR}/PWGGA/PWGGAUtils
                    )
 
 # Sources in alphabetical order
@@ -43,26 +46,38 @@ set(SRCS
     AliAnaConvCorrPhoton.cxx
     AliAnaConvCorrPion.cxx
     AliAnaConvIsolation.cxx
+    AliAnalysisTaskConvCaloCalibration.cxx
     AliAnalysisTaskConversionQA.cxx
+    AliAnalysisTaskConvJet.cxx
+    AliAnalysisTaskClusterQA.cxx
     AliAnalysisTaskdPhi.cxx
     AliAnalysisTaskEtaToPiPlPiMiGamma.cxx
     AliAnalysisTaskGammaCalo.cxx
-    AliAnalysisTaskGammaCaloMerged.cxx    
+    AliAnalysisTaskGammaCaloIso.cxx
+    AliAnalysisTaskGammaCaloMerged.cxx
     AliAnalysisTaskGammaConvCalo.cxx
+    AliAnalysisTaskGammaConvCaloIso.cxx
     AliAnalysisTaskGammaConvDalitzV1.cxx
     AliAnalysisTaskGammaConvFlow.cxx
     AliAnalysisTaskGammaConvV1.cxx
+    AliAnalysisTaskGammaConvDtrue.cxx
     AliAnalysisTaskGCPartToPWG4Part.cxx
     AliAnalysisTaskMaterial.cxx
     AliAnalysisTaskMaterialHistos.cxx
     AliAnalysisTaskNeutralMesonToPiPlPiMiPiZero.cxx
+    AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson.cxx
     AliAnalysisTaskOmegaToPiZeroGamma.cxx
+    AliAnalysisTaskHeavyNeutralMesonToGG.cxx
     AliAnalysisTaskK0toPi0Pi0.cxx
     AliAnalysisTaskPi0v2.cxx
+    AliAnalysisTaskTrackQA.cxx	
+    AliIdentifiedPrimaryCuts.cxx
+    AliIdentifiedPrimarySelector.cxx
     AliAnalysisTaskResolution.cxx
     AliAnalysisTaskGammaCaloDalitzV1.cxx
     AliAnalysisTaskGammaPureMC.cxx
     AliAnalysisTaskGammaCocktailMC.cxx
+    AliAnalysisTaskGammaTriggerQA.cxx
     AliAnalysisTaskHadronicCocktailMC.cxx
     AliAODConversionMother.cxx
     AliAODConversionParticle.cxx
@@ -82,22 +97,29 @@ set(SRCS
     AliGammaConversionAODBGHandler.cxx
     AliKFConversionMother.cxx
     AliKFConversionPhoton.cxx
+    AliPhotonIsolation.cxx
     AliPrimaryPionCuts.cxx
     AliPrimaryPionSelector.cxx
     AliV0ReaderV1.cxx
     AliConversionCutHandler.cxx
+    AliCutHandlerPCM.cxx
+    AliDalitzData.cxx
+    AliDalitzAODESD.cxx
+    AliDalitzAODESDMC.cxx
+    AliDalitzEventMC.cxx
+
    )
 
 # Headers from sources
 string(REPLACE ".cxx" ".h" HDRS "${SRCS}")
-
+set(HDRS ${HDRS})
 # Generate the dictionary
 # It will create G_ARG1.cxx and G_ARG1.h / ARG1 = function first argument
 get_directory_property(incdirs INCLUDE_DIRECTORIES)
 generate_dictionary("${MODULE}" "${MODULE}LinkDef.h" "${HDRS}" "${incdirs}")
 
 set(ROOT_DEPENDENCIES Core EG GenVector Geom Gpad Hist MathCore Matrix Net Physics RIO Tree)
-set(ALIROOT_DEPENDENCIES ANALYSIS ANALYSISalice AOD EMCALbase EMCALUtils ESD STEERBase PWGTRD PWGflowTasks Tender TenderSupplies PWGEMCALbase PWGEMCALtasks PWGEMCALtrigger PWGCaloTrackCorrBase PWGGAUtils)
+set(ALIROOT_DEPENDENCIES ANALYSIS ANALYSISalice AOD EMCALbase EMCALUtils ESD STEERBase PWGTRD PWGflowTasks Tender TenderSupplies PWGEMCALbase PWGEMCALtasks PWGEMCALtrigger PWGCaloTrackCorrBase PWGGAUtils PWGJETFW )
 set(ALIPHYSICS_DECPENDENCIES PWGCocktail)
 
 # Generate the ROOT map
@@ -108,7 +130,7 @@ generate_rootmap("${MODULE}" "${LIBDEPS}" "${CMAKE_CURRENT_SOURCE_DIR}/${MODULE}
 # Generate a PARfile target for this library
 add_target_parfile(${MODULE} "${SRCS}" "${HDRS}" "${MODULE}LinkDef.h" "${LIBDEPS}")
 
-# Create an object to be reused in case of static libraries 
+# Create an object to be reused in case of static libraries
 # Otherwise the sources will be compiled twice
 add_library(${MODULE}-object OBJECT ${SRCS} G__${MODULE}.cxx)
 # Add a library to the project using the object

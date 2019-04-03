@@ -35,12 +35,14 @@ class AliAnalysisCODEXtask : public AliAnalysisTaskSE {
     AliESDtrackCuts Cuts;
     AliEventCuts    mEventCuts;
     double          mPtCut;                 /// Minimum pt stored in the output trees
+    double          mITSsaPtCut;            /// Maximum pt for the ITSsa track
     unsigned char   mPOI;                   /// Particles Of Interest (POI) to be stored in the output
     unsigned char   mEventPOI;              /// Events without POI with this PDG code can be rejected
     double          mNsigmaTPCselectionPOI; /// Maximum number of sigmas in the TPC from the expected signal of a POI
     double          mNsigmaTOFselectionPOI; /// Maximum number of sigmas in the TPC from the expected signal of a POI
     double          mStartingPtTOFselection;/// pt at which the TOF selection starts
     bool            mSkipEmptyEvents;       /// If true events without any tracks are not stored in the output tree
+    bool            mITSstandalone;         /// If true ITS standalone PID is provided
 
     void Discard(const TString discard) { mToDiscard = discard;};
 

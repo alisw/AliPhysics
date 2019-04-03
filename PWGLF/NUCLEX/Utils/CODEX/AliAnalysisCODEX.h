@@ -69,13 +69,14 @@ namespace AliAnalysisCODEX {
     kIsFake = BIT(12),
     kTOFmismatch = BIT(13),
     kIsKink = BIT(14),
-    kTRDout = BIT(15)
+    kTRDrefit = BIT(15)
   };
 
   enum EventMask {
     kMCevent = BIT(0),
     kNegativeB = BIT(1),
-    kInelGt0 = BIT(2)
+    kInelGt0 = BIT(2),
+    kTriggerClasses = BIT(3)
   };
 
   enum ITSbits {
@@ -175,6 +176,9 @@ namespace AliAnalysisCODEX {
       float GetDCAz() const { return DCAz * kDCAbinWidth;}
       void  SetDCAz(float c) { DCAz = round(c / kDCAbinWidth); }
 
+      unsigned char GetTRDnTracklets() const { return TRDnTracklets; }
+      void SetTRDnTracklets(unsigned char nTRDtrklt) { TRDnTracklets = nTRDtrklt; }
+
       /// Templates
       template<typename F>void  P(F p[3]) const { p[0] = Px(); p[1] = Py(); p[2] = Pz(); }
 
@@ -187,7 +191,7 @@ namespace AliAnalysisCODEX {
       float            TOFsignal;    /// TOF time (T0 already subtracted)
       int              wildcard;     /// In the MC: index of the mother, in the data: TOF channel
       float            length;       /// Track length
-      char             TPCsigmas[8]; /// TPC sigmas. Not yet fully clear if it is possible to recompute them on the fly.
+      char             TPCsigmas[8]; /// TPC sigmas. If TPC PID is not available ITS sigms is stored.
       unsigned short   mask;         /// Mask (see ne enumerator above for the meaning)
       short            DCAxy;        /// DCAxy (binned)
       short            DCAz;         /// DCAz (binned)
@@ -202,6 +206,7 @@ namespace AliAnalysisCODEX {
       unsigned char    ITSchi2NDF;   /// Chi2/ndf (binned) in ITS
       unsigned char    GoldenChi2;   /// Golden Chi2 defined as Constrained Global TPC chi2 (binned)
       unsigned char    ActiveLength; /// Active length in the TPCchi2NDF
+      unsigned char    TRDnTracklets;/// Number of TRD tracklets associated with the track
 
   };
 
@@ -249,7 +254,7 @@ namespace AliAnalysisCODEX {
         mDepth(depth),
         mLevel(),
         mCWBin(maxcent / centr),
-        mVWBin(2.0f * maxvtz / vert),
+        mVWBin(2.0f * maxvtz / (float)vert),
         mCMax(maxcent),
         mVMax(maxvtz),
         mPartMass() {

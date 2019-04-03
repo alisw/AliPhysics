@@ -28,6 +28,8 @@ class AliEmcalList;
 #include <vector>
 #include <string>
 
+#include <TStopwatch.h>
+#include <TRandom3.h>
 #include <AliAnalysisTaskSE.h>
 #include "AliEventCuts.h"
 #include "AliYAMLConfiguration.h"
@@ -124,6 +126,8 @@ class AliAnalysisTaskEmcalEmbeddingHelper : public AliAnalysisTaskSE {
   void SetESD(const char * treeName = "esdTree")                  { fTreeName     = treeName; }
   /// Set to embed from AOD
   void SetAOD(const char * treeName = "aodTree")                  { fTreeName     = treeName; }
+  /// Set whether to print and plot execution time of InitTree()
+  void SetPrintTimingInfoToLog(bool b)                            { fPrintTimingInfoToLog = b;}
   /**
    * Enable to begin embedding at a random entry in each embedded file. Will then loop around in order
    * so that all entries are made available.
@@ -179,6 +183,7 @@ class AliAnalysisTaskEmcalEmbeddingHelper : public AliAnalysisTaskSE {
   AliEventCuts * GetInternalEventCuts();
   /// Set internal event centrality selection
   void SetCentralityRange(double min, double max)                 { fCentMin = min; fCentMax = max; }
+  void SetRandomRejectionFactor(Double_t configure = 1.)          { fRandomRejectionFactor = configure; }
   /* @} */
 
   /**
@@ -295,6 +300,8 @@ class AliAnalysisTaskEmcalEmbeddingHelper : public AliAnalysisTaskSE {
   Bool_t          InitEvent()           ;
   void            InitTree()            ;
   bool            PythiaInfoFromCrossSectionFile(std::string filename);
+  // Validation helper
+  void            ValidatePhysicsSelectionForInternalEventSelection();
   // Helper functions
   bool            IsFileAccessible() const;
   void            ConnectToAliEn() const;
@@ -324,8 +331,12 @@ class AliAnalysisTaskEmcalEmbeddingHelper : public AliAnalysisTaskSE {
   bool                                 fUseManualInternalEventCuts; ///<  If true, manual event cuts mode will be used for AliEventCuts
   AliEventCuts                                  fInternalEventCuts; ///<  If enabled, Handles internal event selection
   bool                                          fEmbeddedEventUsed; //!<! If true, the internal event was selected, so the embedded event is used. Defaults to true so other tasks are not disrupted if internal event selection is disabled.
+  bool                                  fValidatedPhysicsSelection; ///<  Validate that the physics selection is set appropriately.
+  UInt_t                                 fInternalEventTriggerMask; ///<  Internal event physics selection (trigger mask) to be used with AliEventCuts.
   double                                        fCentMin          ; ///<  Minimum centrality for internal event selection
   double                                        fCentMax          ; ///<  Maximum centrality for internal event selection
+  Double_t                                      fRandomRejectionFactor; ///< factor by which to reject events
+  TRandom3                                      fRandom           ; ///< for random rejection of events
 
   bool                                    fAutoConfigurePtHardBins; ///<  If true, attempt to auto configure pt hard bins. Only works on the LEGO train.
   std::string                               fAutoConfigureBasePath; ///<  The base path to the auto configuration (for example, "/alice/cern.ch/user/a/alitrain/")
@@ -360,6 +371,9 @@ class AliAnalysisTaskEmcalEmbeddingHelper : public AliAnalysisTaskSE {
   double                                        fPythiaCrossSection; //!<! Pythia cross section for the current event (extracted from the pythia header).
   double                                        fPythiaCrossSectionFromFile; //!<! Average pythia cross section extracted from a xsec file.
   double                                        fPythiaPtHard     ; //!<! Pt hard of the current event (extracted from the pythia header).
+  
+  bool                                          fPrintTimingInfoToLog; ///< Flag to print time to execute InitTree(), for logging purposes
+  TStopwatch                                    fTimer            ;    //!<! Timer for the InitTree() function
 
   static AliAnalysisTaskEmcalEmbeddingHelper   *fgInstance        ; //!<! Global instance of this class
 
@@ -368,7 +382,7 @@ class AliAnalysisTaskEmcalEmbeddingHelper : public AliAnalysisTaskSE {
   AliAnalysisTaskEmcalEmbeddingHelper &operator=(const AliAnalysisTaskEmcalEmbeddingHelper&); // not implemented
 
   /// \cond CLASSIMP
-  ClassDef(AliAnalysisTaskEmcalEmbeddingHelper, 10);
+  ClassDef(AliAnalysisTaskEmcalEmbeddingHelper, 12);
   /// \endcond
 };
 #endif

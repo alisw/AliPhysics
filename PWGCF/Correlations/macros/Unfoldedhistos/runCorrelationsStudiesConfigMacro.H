@@ -1,11 +1,15 @@
 #ifndef RUNCORRELATIONSTUDIESCONFIG_H_
 #define RUNCORRELATIONSTUDIESCONFIG_H_
 
+#include <TString.h>
+#include <TObjArray.h>
+
 Bool_t bASCIIoutput;
 
 Bool_t bGRIDPlugin;
 Bool_t bTrainScope;
 Bool_t bMC;
+Bool_t bMConlyTruth;
 
 Bool_t isHeavyIon;
 

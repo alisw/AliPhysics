@@ -30,6 +30,14 @@
 #include "AliAnalysisManager.h"
 #include "AliDptDptCorrelations.h"
 
+Int_t AliDptDptCorrelations::fgkNoOfResonances = 4; ///< four resonances / conversions for the time being
+Double_t AliDptDptCorrelations::fgkMass[16] = {/* photon */ 0.0, /* k0 */ 0.4976, /* lambda */ 1.115, /* rho */ 0.775};
+Double_t AliDptDptCorrelations::fgkChildMass[2][16] = {
+    {0.510e-3, 0.1396, 0.1396, 0.1396},
+    {0.510e-3, 0.1396, 0.9383, 0.1396}
+};
+Double_t AliDptDptCorrelations::fgkMassThreshold[16] = {0.04,0.01,0.05,0.04};
+
 /// Default constructor for object serialization
 AliDptDptCorrelations::AliDptDptCorrelations() :
     TNamed(),
@@ -52,14 +60,20 @@ AliDptDptCorrelations::AliDptDptCorrelations() :
     fCharge_1(NULL),
     fIxEtaPhi_1(NULL),
     fIxPt_1(NULL),
+    fFlags_1(NULL),
     fPt_1(NULL),
+    fEta_1(NULL),
+    fPhi_1(NULL),
     fCorrection_1(NULL),
     fNoOfTracks2(0),
     fId_2(NULL),
     fCharge_2(NULL),
     fIxEtaPhi_2(NULL),
     fIxPt_2(NULL),
+    fFlags_2(NULL),
     fPt_2(NULL),
+    fEta_2(NULL),
+    fPhi_2(NULL),
     fCorrection_2(NULL),
     /* correction weights */
     fCorrectionWeights_1(NULL),
@@ -182,9 +196,13 @@ AliDptDptCorrelations::AliDptDptCorrelations() :
     fhN2nw_12_vsC(NULL),
     fhSum2PtPtnw_12_vsC(NULL),
     fhSum2PtNnw_12_vsC(NULL),
-    fhSum2NPtnw_12_vsC(NULL)
+    fhSum2NPtnw_12_vsC(NULL),
+    fhResonanceRoughMasses(NULL),
+    fhResonanceMasses(NULL),
+    fhDiscardedResonanceMasses(NULL)
 {
-
+  for (Int_t ires = 0; ires < 16; ires++)
+    fThresholdMult[ires] = 0x0;
 }
 
 /// Normal constructor
@@ -210,14 +228,20 @@ AliDptDptCorrelations::AliDptDptCorrelations(const char *name) :
     fCharge_1(NULL),
     fIxEtaPhi_1(NULL),
     fIxPt_1(NULL),
+    fFlags_1(NULL),
     fPt_1(NULL),
+    fEta_1(NULL),
+    fPhi_1(NULL),
     fCorrection_1(NULL),
     fNoOfTracks2(0),
     fId_2(NULL),
     fCharge_2(NULL),
     fIxEtaPhi_2(NULL),
     fIxPt_2(NULL),
+    fFlags_2(NULL),
     fPt_2(NULL),
+    fEta_2(NULL),
+    fPhi_2(NULL),
     fCorrection_2(NULL),
     /* correction weights */
     fCorrectionWeights_1(NULL),
@@ -340,9 +364,13 @@ AliDptDptCorrelations::AliDptDptCorrelations(const char *name) :
     fhN2nw_12_vsC(NULL),
     fhSum2PtPtnw_12_vsC(NULL),
     fhSum2PtNnw_12_vsC(NULL),
-    fhSum2NPtnw_12_vsC(NULL)
+    fhSum2NPtnw_12_vsC(NULL),
+    fhResonanceRoughMasses(NULL),
+    fhResonanceMasses(NULL),
+    fhDiscardedResonanceMasses(NULL)
 {
-
+  for (Int_t ires = 0; ires < 16; ires++)
+    fThresholdMult[ires] = 0x0;
 }
 
 /// \brief Default destructor
@@ -375,18 +403,31 @@ AliDptDptCorrelations::~AliDptDptCorrelations() {
 /// \param confstring string containing the binning configuration parameters
 void AliDptDptCorrelations::ConfigureBinning(const char *confstring) {
 
-  Double_t min_pt, max_pt, width_pt;
-  Double_t min_eta, max_eta, width_eta;
-  Char_t buffer[20];
+  Double_t min_pt = 0.0, max_pt = 0.0, width_pt = 0.0;
+  Double_t min_eta = 0.0, max_eta = 0.0, width_eta = 0.0;
 
-  sscanf(confstring, "halfsymm:%3s;phishift:%lf;%lf,%lf,%lf,%lf,%lf,%lf,%lf,%lf,%lf",
-      buffer,
-      &fNBinsPhiShift,
-      &fMin_vertexZ, &fMax_vertexZ, &fWidth_vertexZ,
-      &min_pt, &max_pt, &width_pt,
-      &min_eta, &max_eta, &width_eta);
+  /* few sanity checks */
+  TString str = confstring;
+  if (!str.Contains("halfsymm") || !str.Contains("phishift"))
+    return;
 
-  fHalfSymmetrize = TString(buffer).EqualTo("yes");
+  TObjArray *array = str.Tokenize(";");
+  for (Int_t item = 0; item < array->GetEntries(); item++) {
+    const TString &stritem = ((TObjString*) array->At(item))->GetString();
+    if (stritem.BeginsWith("halfsymm:")) {
+      fHalfSymmetrize = stritem.Contains("yes");
+    }
+    else if (stritem.BeginsWith("phishift:")) {
+      sscanf(stritem.Data(), "phishift:%lf", &fNBinsPhiShift);
+    }
+    else {
+      sscanf(stritem, "%lf,%lf,%lf,%lf,%lf,%lf,%lf,%lf,%lf",
+          &fMin_vertexZ, &fMax_vertexZ, &fWidth_vertexZ,
+          &min_pt, &max_pt, &width_pt,
+          &min_eta, &max_eta, &width_eta);
+    }
+  }
+
   fMin_pt_1 = fMin_pt_2 = min_pt;
   fMax_pt_1 = fMax_pt_2 = max_pt;
   fWidth_pt_1 = fWidth_pt_2 = width_pt;
@@ -395,6 +436,29 @@ void AliDptDptCorrelations::ConfigureBinning(const char *confstring) {
   fWidth_eta_1 = fWidth_eta_2 = width_eta;
   AliInfo("=====================================================");
   AliInfo(Form("Configured binning: %s", GetBinningConfigurationString().Data()));
+  AliInfo("=====================================================");
+}
+
+/// \brief Establishes the resonances rejection configuration
+/// \param confstring string containing the resonances rejection configuration parameters
+/// Basically one digit per supported resonance and the digit is the factor in one fourth
+/// of the modulus around the resonance mass
+void AliDptDptCorrelations::ConfigureResonances(const char *confstring) {
+
+  /* few sanity checks */
+  TString str = confstring;
+  if (!str.Contains("resonances:"))
+    return;
+
+  Int_t rescode;
+  sscanf(str.Data(), "resonances:%d", &rescode);
+  Int_t mult = 1;
+  for (Int_t ires = 0; ires < fgkNoOfResonances; ires++) {
+    fThresholdMult[ires] = Int_t(rescode / mult) % 10;
+    mult *= 10;
+  }
+  AliInfo("=====================================================");
+  AliInfo(Form("Configured resonance rejection cuts with string %s", GetResonancesConfigurationString().Data()));
   AliInfo("=====================================================");
 }
 
@@ -419,6 +483,18 @@ TString AliDptDptCorrelations::GetBinningConfigurationString() const {
         fMin_eta_1, fMax_eta_1, fWidth_eta_1));
   }
 }
+
+/// \brief Build the resonances rejection configuration string
+/// \return the configuration string corresponding to the current resonance rejection configuration
+TString AliDptDptCorrelations::GetResonancesConfigurationString() const {
+  TString str = "resonances:";
+
+  for (Int_t ires = 0; ires < fgkNoOfResonances; ires++) {
+    str += TString::Format("%01d",fThresholdMult[fgkNoOfResonances - 1 - ires]);
+  }
+  return str;
+}
+
 
 
 /// \brief Initializes the member data structures
@@ -463,6 +539,15 @@ void AliDptDptCorrelations::Initialize()
   fOutput->Add(new TParameter<Double_t>("MinPhi",fMin_phi_1,'f'));
   fOutput->Add(new TParameter<Double_t>("MaxPhi",fMax_phi_1,'f'));
 
+  /* incorporate the resonance rejection configuration parameter */
+  Int_t rescode = 0;
+  Int_t mult = 1;
+  for (Int_t ires = 0; ires < fgkNoOfResonances; ires++) {
+    rescode += fThresholdMult[ires] * mult;
+    mult *= 10;
+  }
+  fOutput->Add(new TParameter<Int_t>("ResonancesCode",rescode,'f'));
+
   /* after the parameters dump the proper phi limits are set according to the phi shift */
   fMax_phi_1         = fMax_phi_1 - fWidth_phi_1 * fNBinsPhiShift;
   fMin_phi_1         = fMin_phi_1 - fWidth_phi_1 * fNBinsPhiShift;
@@ -475,7 +560,10 @@ void AliDptDptCorrelations::Initialize()
   fCharge_1 = new Int_t[fArraySize];
   fIxEtaPhi_1 = new Int_t[fArraySize];
   fIxPt_1 = new Int_t[fArraySize];
+  fFlags_1 = new UInt_t[fArraySize];
   fPt_1 = new Float_t[fArraySize];
+  fEta_1 = new Float_t[fArraySize];
+  fPhi_1 = new Float_t[fArraySize];
   fCorrection_1 = new Float_t[fArraySize];
   fN1_1_vsPt = new Double_t[fNBins_pt_1]; for (Int_t i = 0; i < fNBins_pt_1; i++) fN1_1_vsPt[i] = 0.0;
   fN1_1_vsEtaPhi = new Double_t[fNBins_etaPhi_1]; for (Int_t i = 0; i < fNBins_etaPhi_1; i++) fN1_1_vsEtaPhi[i] = 0.0;
@@ -487,7 +575,10 @@ void AliDptDptCorrelations::Initialize()
   fCharge_2 = new Int_t[fArraySize];
   fIxEtaPhi_2 = new Int_t[fArraySize];
   fIxPt_2 = new Int_t[fArraySize];
+  fFlags_2 = new UInt_t[fArraySize];
   fPt_2 = new Float_t[fArraySize];
+  fEta_2 = new Float_t[fArraySize];
+  fPhi_2 = new Float_t[fArraySize];
   fCorrection_2 = new Float_t[fArraySize];
   fN1_2_vsPt = new Double_t[fNBins_pt_2]; for (Int_t i = 0; i < fNBins_pt_2; i++) fN1_2_vsPt[i] = 0.0;
   fN1_2_vsEtaPhi = new Double_t[fNBins_etaPhi_2]; for (Int_t i = 0; i < fNBins_etaPhi_2; i++) fN1_2_vsEtaPhi[i] = 0.0;
@@ -515,6 +606,10 @@ void AliDptDptCorrelations::Initialize()
     fOutput->Add(fhN1_2_vsZEtaPhiPt);
   }
   else {
+    fhResonanceRoughMasses = new TH2F("ResonanceRoughMasses","Approx invariant mass;res id;Inv mass", fgkNoOfResonances, -0.5, fgkNoOfResonances - 0.5, 1000, 0.0, 5.0);
+    fhResonanceMasses = new TH2F("ResonanceMasses","Invariant mass;res id;Inv mass", fgkNoOfResonances, -0.5, fgkNoOfResonances - 0.5, 1000, 0.0, 5.0);
+    fhDiscardedResonanceMasses = new TH2F("DiscardedResonanceMasses","Discarded invariant mass;res id;Inv mass", fgkNoOfResonances, -0.5, fgkNoOfResonances - 0.5, 1000, 0.0, 5.0);
+
     fhN1_1_vsEtaPhi = new TH2F("n1_1_vsEtaPhi","#LT n_{1} #GT;#eta_{1};#varphi_{1} (radian);#LT n_{1} #GT",
         fNBins_eta_1, fMin_eta_1, fMax_eta_1,  fNBins_phi_1, fMin_phi_1, fMax_phi_1);
     fhSum1Pt_1_vsEtaPhi = new TH2F("sumPt_1_vsEtaPhi","#LT #Sigma p_{t,1} #GT;#eta_{1};#varphi_{1} (radian);#LT #Sigma p_{t,1} #GT (GeV/c)",
@@ -551,6 +646,10 @@ void AliDptDptCorrelations::Initialize()
     fhSum2PtPtnw_12_vsC = new TProfile("sumPtPtNw_12_vsM","#LT #Sigma p_{t,1}p_{t,2} #GT;Centrality (%);#LT #Sigma p_{t,1}p_{t,2} #GT (GeV)^{2}",100,0.0,100.0);
     fhSum2PtNnw_12_vsC = new TProfile("sumPtNNw_12_vsM","#LT #Sigma p_{t,1}N #GT;Centrality (%);#LT #Sigma p_{t,1}N #GT (GeV)",100,0.0,100.0);
     fhSum2NPtnw_12_vsC = new TProfile("sumNPtNw_12_vsM","#LT N#Sigma p_{t,2} #GT;Centrality (%);#LT N#Sigma p_{t,2} #GT (GeV)",100,0.0,100.0);
+
+    fOutput->Add(fhResonanceRoughMasses);
+    fOutput->Add(fhResonanceMasses);
+    fOutput->Add(fhDiscardedResonanceMasses);
 
     fOutput->Add(fhN1_1_vsEtaPhi);
     fOutput->Add(fhSum1Pt_1_vsEtaPhi);
@@ -591,15 +690,16 @@ Bool_t AliDptDptCorrelations::SetWeigths(const TH3F *h3_1, const TH3F *h3_2) {
   Bool_t done = kTRUE;
 
   if (fUseWeights){
-    Int_t ixZ, ixEtaPhi, ixPt;
     if (h3_1) {
       /* allocate memory for track 1 weights */
       fCorrectionWeights_1 = new Float_t[fNBins_vertexZ*fNBins_etaPhi_1*fNBins_pt_1];
 
-      for (ixZ = 0; ixZ < fNBins_vertexZ; ixZ++) {
-        for (ixEtaPhi=0; ixEtaPhi < fNBins_etaPhi_1; ixEtaPhi++) {
-          for (ixPt=0; ixPt < fNBins_pt_1; ixPt++) {
-            fCorrectionWeights_1[ixZ*fNBins_etaPhi_1*fNBins_pt_1+ixEtaPhi*fNBins_pt_1+ixPt] = h3_1->GetBinContent(ixZ+1,ixEtaPhi+1,ixPt+1);
+      for (Int_t ixZ = 0; ixZ < fNBins_vertexZ; ixZ++) {
+        Double_t zval = fMin_vertexZ + fWidth_vertexZ*(ixZ+0.5);
+        for (Int_t ixEtaPhi=0; ixEtaPhi < fNBins_etaPhi_1; ixEtaPhi++) {
+          for (Int_t ixPt=0; ixPt < fNBins_pt_1; ixPt++) {
+            Double_t pTval = fMin_pt_1 + fWidth_pt_1*(ixPt+0.5);
+            fCorrectionWeights_1[ixZ*fNBins_etaPhi_1*fNBins_pt_1+ixEtaPhi*fNBins_pt_1+ixPt] = h3_1->GetBinContent(h3_1->GetXaxis()->FindBin(zval),ixEtaPhi+1,h3_1->GetZaxis()->FindBin(pTval));
           }
         }
       }
@@ -613,10 +713,12 @@ Bool_t AliDptDptCorrelations::SetWeigths(const TH3F *h3_1, const TH3F *h3_2) {
       /* allocate memory for track 1 weights */
       fCorrectionWeights_2 = new Float_t[fNBins_vertexZ*fNBins_etaPhi_2*fNBins_pt_2];
 
-      for (ixZ = 0; ixZ < fNBins_vertexZ; ixZ++) {
-        for (ixEtaPhi=0; ixEtaPhi < fNBins_etaPhi_2; ixEtaPhi++) {
-          for (ixPt=0; ixPt < fNBins_pt_2; ixPt++) {
-            fCorrectionWeights_2[ixZ*fNBins_etaPhi_2*fNBins_pt_2+ixEtaPhi*fNBins_pt_2+ixPt] = h3_2->GetBinContent(ixZ+1,ixEtaPhi+1,ixPt+1);
+      for (Int_t ixZ = 0; ixZ < fNBins_vertexZ; ixZ++) {
+        Double_t zval = fMin_vertexZ + fWidth_vertexZ*(ixZ+0.5);
+        for (Int_t ixEtaPhi=0; ixEtaPhi < fNBins_etaPhi_2; ixEtaPhi++) {
+          for (Int_t ixPt=0; ixPt < fNBins_pt_2; ixPt++) {
+            Double_t pTval = fMin_pt_2 + fWidth_pt_2*(ixPt+0.5);
+            fCorrectionWeights_2[ixZ*fNBins_etaPhi_2*fNBins_pt_2+ixEtaPhi*fNBins_pt_2+ixPt] = h3_2->GetBinContent(h3_2->GetXaxis()->FindBin(zval),ixEtaPhi+1,h3_2->GetZaxis()->FindBin(pTval));
           }
         }
       }
@@ -894,28 +996,7 @@ Bool_t AliDptDptCorrelations::ProcessTrack(Int_t trkId, AliVTrack *trk) {
 /// \param trkId the external particle Id
 /// \param part the passed particle
 /// \return kTRUE if the particle is properly handled kFALSE otherwise
-Bool_t AliDptDptCorrelations::ProcessTrack(Int_t trkId, TParticle *part) {
-
-  if (fUseSimulation) {
-    return kFALSE;
-  }
-  else
-    if (part->GetPDG()->Charge() != 0) {
-      return ProcessTrack(trkId, (part->GetPDG()->Charge() > 0) ? 1 : -1, Float_t(part->Pt()), Float_t(part->Eta()), Float_t(part->Phi()));
-    }
-    else {
-      return kFALSE;
-    }
-}
-
-
-/// \brief process a true particle and store its parameters if feasible
-///
-/// If simulation is orderd the track is discarded and kFALSE is returned
-/// \param trkId the external particle Id
-/// \param part the passed particle
-/// \return kTRUE if the particle is properly handled kFALSE otherwise
-Bool_t AliDptDptCorrelations::ProcessTrack(Int_t trkId, AliAODMCParticle *part) {
+Bool_t AliDptDptCorrelations::ProcessTrack(Int_t trkId, AliVParticle *part) {
 
   if (fUseSimulation) {
     return kFALSE;
@@ -937,7 +1018,7 @@ Bool_t AliDptDptCorrelations::ProcessTrack(Int_t trkId, AliAODMCParticle *part) 
 /// \param eta the track \f$ \eta \f$
 /// \param phi the track \f$ \phi \f$
 /// \return kTRUE if the track is properly handled kFALSE otherwise
-Bool_t AliDptDptCorrelations::ProcessTrack(Int_t trkId, Int_t charge, Float_t pT, Float_t eta, Float_t phi) {
+Bool_t AliDptDptCorrelations::ProcessTrack(Int_t trkId, Int_t charge, Float_t pT, Float_t eta, Float_t ophi) {
 
   if(charge == 0) return kFALSE;
 
@@ -950,6 +1031,7 @@ Bool_t AliDptDptCorrelations::ProcessTrack(Int_t trkId, Int_t charge, Float_t pT
     }
 
     /* consider a potential phi origin shift */
+    Float_t phi = ophi;
     if (!(phi < fMax_phi_1)) phi = phi - 2*TMath::Pi();
     Int_t ixPhi = Int_t ((phi - fMin_phi_1) / fWidth_phi_1);
     if (ixPhi < 0 || !(ixPhi < fNBins_phi_1)) {
@@ -1010,7 +1092,10 @@ Bool_t AliDptDptCorrelations::ProcessTrack(Int_t trkId, Int_t charge, Float_t pT
       fCharge_1[fNoOfTracks1]       = charge;
       fIxEtaPhi_1[fNoOfTracks1]     = ixEtaPhi;
       fIxPt_1[fNoOfTracks1]         = ixPt;
+      fFlags_1[fNoOfTracks1]        = 0x0;
       fPt_1[fNoOfTracks1]           = pT;
+      fEta_1[fNoOfTracks1]          = eta;
+      fPhi_1[fNoOfTracks1]          = ophi;
       fCorrection_1[fNoOfTracks1]   = corr;
       fN1_1                         += corr;
       fN1_1_vsEtaPhi[ixEtaPhi]      += corr;
@@ -1036,6 +1121,7 @@ Bool_t AliDptDptCorrelations::ProcessTrack(Int_t trkId, Int_t charge, Float_t pT
     }
 
     /* consider a potential phi origin shift */
+    Float_t phi = ophi;
     if (!(phi < fMax_phi_2)) phi = phi - 2*TMath::Pi();
     Int_t ixPhi = Int_t ((phi - fMin_phi_2) / fWidth_phi_2);
     if (ixPhi <0 || !(ixPhi < fNBins_phi_2)) {
@@ -1094,7 +1180,10 @@ Bool_t AliDptDptCorrelations::ProcessTrack(Int_t trkId, Int_t charge, Float_t pT
       fCharge_2[fNoOfTracks2]       = charge;
       fIxEtaPhi_2[fNoOfTracks2]     = ixEtaPhi;
       fIxPt_2[fNoOfTracks2]         = ixPt;
+      fFlags_2[fNoOfTracks2]        = 0x0;
       fPt_2[fNoOfTracks2]           = pT;
+      fEta_2[fNoOfTracks2]          = eta;
+      fPhi_2[fNoOfTracks2]          = ophi;
       fCorrection_2[fNoOfTracks2]   = corr;
       fN1_2                         += corr;
       fSum1Pt_2                     += corrPt;
@@ -1435,8 +1524,34 @@ void AliDptDptCorrelations::ProcessNotHalfSymmLikeSignPairs(Int_t bank) {
   }
 }
 
+/// \brief Flag the potential products of conversions and / or resonances
+void AliDptDptCorrelations::FlagConversionsAndResonances() {
+  AliInfo("");
+  /* pair with different charges. Both track list are different */
+  for (Int_t ix1 = 0; ix1 < fNoOfTracks1; ix1++) {
+    for (Int_t ix2 = 0; ix2 < fNoOfTracks2; ix2++) {
+
+      for (Int_t ires = 0; ires < fgkNoOfResonances; ires++) {
+        if (fThresholdMult[ires] != 0) {
+          Float_t mass = checkIfResonance(ires, kTRUE, fPt_1[ix1], fEta_1[ix1], fPhi_1[ix1], fPt_2[ix2], fEta_2[ix2], fPhi_2[ix2]);
+
+          if (0 < mass) {
+            fFlags_1[ix1] |= (0x1 << ires);
+            fFlags_2[ix2] |= (0x1 << ires);
+            fhResonanceMasses->Fill(ires,TMath::Sqrt(mass));
+          }
+        }
+      }
+    } //ix2
+  } //ix1
+}
+
 /// \brief Process track combinations with oposite charge
 void AliDptDptCorrelations::ProcessUnlikeSignPairs() {
+  AliInfo("");
+  /* flag the resonances / conversion candidates */
+  FlagConversionsAndResonances();
+
   /* pair with different charges. Both track list are different */
   for (Int_t ix1 = 0; ix1 < fNoOfTracks1; ix1++)
   {
@@ -1454,43 +1569,67 @@ void AliDptDptCorrelations::ProcessUnlikeSignPairs() {
     Float_t pt_1     = fPt_1[ix1];
 
     for (Int_t ix2 = 0; ix2 < fNoOfTracks2; ix2++) {
-      Float_t corr      = corr_1 * fCorrection_2[ix2];
+      /* process the resonance suppression for this pair if needed */
+      Bool_t processpair = kTRUE;
+      for (Int_t ires = 0; ires < fgkNoOfResonances; ires++) {
+        if (fThresholdMult[ires] != 0) {
+          /* check if both tracks are flagged for the current resonance */
+          if (((fFlags_1[ix1] & fFlags_2[ix2]) & UInt_t(0x1 << ires)) != UInt_t(0x1 << ires)) {
+            /* no, they are not, continue */
+            continue;
+          }
+          else {
+            /* yes, check if applicable */
+            Float_t mass = checkIfResonance(ires, kFALSE, fPt_1[ix1], fEta_1[ix1], fPhi_1[ix1], fPt_2[ix2], fEta_2[ix2], fPhi_2[ix2]);
 
-      /* apply the pair correction if applicable */
-      if (effcorr != NULL) {
-        Int_t ieta1 = Int_t(ixEtaPhi_1/fNBins_phi_1);
-        Int_t iphi1 = ixEtaPhi_1 % fNBins_phi_1;
-        Int_t ieta2 = Int_t(fIxEtaPhi_2[ix2]/fNBins_phi_1);
-        Int_t iphi2 = fIxEtaPhi_2[ix2] % fNBins_phi_1;
-        Int_t deltaetabin = ieta1-ieta2+fNBins_eta_1;
-        Int_t ixdeltaphi = iphi1-iphi2; if (ixdeltaphi < 0) ixdeltaphi += fNBins_phi_1;
-        bins[0] = deltaetabin;
-        bins[1] = ixdeltaphi+1;
-        bins[2] = ixPt_1+1;
-        bins[3] = fIxPt_2[ix2]+1;
-        corr = corr / effcorr->GetBinContent(bins);
+            if (0 < mass) {
+              fhDiscardedResonanceMasses->Fill(ires,TMath::Sqrt(mass));
+              processpair = kFALSE;
+              break;
+            }
+          }
+        }
       }
 
-      Int_t ij        = getLinearSymmIndex(ixEtaPhi_1, fNBins_etaPhi_1, fIxEtaPhi_2[ix2], fNBins_etaPhi_2);
+      if (processpair) {
+        Float_t corr      = corr_1 * fCorrection_2[ix2];
 
-      fN2_12                                              += 2*corr;
-      fN2_12_vsEtaPhi[ij]                                 += corr;
-      Float_t ptpt                                         = pt_1*fPt_2[ix2];
-      fSum2PtPt_12                                        += 2*corr*ptpt;
-      fSum2PtN_12                                         += corr*pt_1 + corr*fPt_2[ix2];
-      fSum2NPt_12                                         += corr*fPt_2[ix2] + corr*pt_1 ;
-      fSum2PtPt_12_vsEtaPhi[ij]                           += corr*ptpt;
-      fSum2PtN_12_vsEtaPhi[ij]                            += corr*pt_1;
-      fSum2NPt_12_vsEtaPhi[ij]                            += corr*fPt_2[ix2];
-      fN2_12_vsPtPt[ixPt_1*fNBins_pt_2 + fIxPt_2[ix2]]    += corr;
-      fN2_12_vsPtPt[fIxPt_2[ix2]*fNBins_pt_1 + ixPt_1]    += corr;
+        /* apply the pair correction if applicable */
+        if (effcorr != NULL) {
+          Int_t ieta1 = Int_t(ixEtaPhi_1/fNBins_phi_1);
+          Int_t iphi1 = ixEtaPhi_1 % fNBins_phi_1;
+          Int_t ieta2 = Int_t(fIxEtaPhi_2[ix2]/fNBins_phi_1);
+          Int_t iphi2 = fIxEtaPhi_2[ix2] % fNBins_phi_1;
+          Int_t deltaetabin = ieta1-ieta2+fNBins_eta_1;
+          Int_t ixdeltaphi = iphi1-iphi2; if (ixdeltaphi < 0) ixdeltaphi += fNBins_phi_1;
+          bins[0] = deltaetabin;
+          bins[1] = ixdeltaphi+1;
+          bins[2] = ixPt_1+1;
+          bins[3] = fIxPt_2[ix2]+1;
+          corr = corr / effcorr->GetBinContent(bins);
+        }
 
-      fNnw2_12                    += 2;
-      fSum2PtPtnw_12              += 2*ptpt;
-      fSum2PtNnw_12               += pt_1;
-      fSum2PtNnw_12               += fPt_2[ix2];
-      fSum2NPtnw_12               += fPt_2[ix2];
-      fSum2NPtnw_12               += pt_1;
+        Int_t ij        = getLinearSymmIndex(ixEtaPhi_1, fNBins_etaPhi_1, fIxEtaPhi_2[ix2], fNBins_etaPhi_2);
+
+        fN2_12                                              += 2*corr;
+        fN2_12_vsEtaPhi[ij]                                 += corr;
+        Float_t ptpt                                         = pt_1*fPt_2[ix2];
+        fSum2PtPt_12                                        += 2*corr*ptpt;
+        fSum2PtN_12                                         += corr*pt_1 + corr*fPt_2[ix2];
+        fSum2NPt_12                                         += corr*fPt_2[ix2] + corr*pt_1 ;
+        fSum2PtPt_12_vsEtaPhi[ij]                           += corr*ptpt;
+        fSum2PtN_12_vsEtaPhi[ij]                            += corr*pt_1;
+        fSum2NPt_12_vsEtaPhi[ij]                            += corr*fPt_2[ix2];
+        fN2_12_vsPtPt[ixPt_1*fNBins_pt_2 + fIxPt_2[ix2]]    += corr;
+        fN2_12_vsPtPt[fIxPt_2[ix2]*fNBins_pt_1 + ixPt_1]    += corr;
+
+        fNnw2_12                    += 2;
+        fSum2PtPtnw_12              += 2*ptpt;
+        fSum2PtNnw_12               += pt_1;
+        fSum2PtNnw_12               += fPt_2[ix2];
+        fSum2NPtnw_12               += fPt_2[ix2];
+        fSum2NPtnw_12               += pt_1;
+      }
     } //ix2
   } //ix1
 }
@@ -1498,6 +1637,10 @@ void AliDptDptCorrelations::ProcessUnlikeSignPairs() {
 /// \brief Process track combinations with oposite charge
 /// The half symmetrizing process for memory reduction is not used
 void AliDptDptCorrelations::ProcessNotHalfSymmUnlikeSignPairs() {
+  AliInfo("");
+  /* flag the resonances / conversion candidates */
+  FlagConversionsAndResonances();
+
   /* pair with different charges. Both track list are different */
   for (Int_t ix1 = 0; ix1 < fNoOfTracks1; ix1++)
   {
@@ -1515,40 +1658,64 @@ void AliDptDptCorrelations::ProcessNotHalfSymmUnlikeSignPairs() {
     Float_t pt_1     = fPt_1[ix1];
 
     for (Int_t ix2 = 0; ix2 < fNoOfTracks2; ix2++) {
-      Float_t corr      = corr_1 * fCorrection_2[ix2];
+      /* process the resonance suppression for this pair if needed */
+      Bool_t processpair = kTRUE;
+      for (Int_t ires = 0; ires < fgkNoOfResonances; ires++) {
+        if (fThresholdMult[ires] != 0) {
+          /* check if both tracks are flagged for the current resonance */
+          if (((fFlags_1[ix1] & fFlags_2[ix2]) & UInt_t(0x1 << ires)) != UInt_t(0x1 << ires)) {
+            /* no, they are not, continue */
+            continue;
+          }
+          else {
+            /* yes, check if applicable */
+            Float_t mass = checkIfResonance(ires, kFALSE, fPt_1[ix1], fEta_1[ix1], fPhi_1[ix1], fPt_2[ix2], fEta_2[ix2], fPhi_2[ix2]);
 
-      /* apply the pair correction if applicable */
-      if (effcorr != NULL) {
-        Int_t ieta1 = Int_t(ixEtaPhi_1/fNBins_phi_1);
-        Int_t iphi1 = ixEtaPhi_1 % fNBins_phi_1;
-        Int_t ieta2 = Int_t(fIxEtaPhi_2[ix2]/fNBins_phi_1);
-        Int_t iphi2 = fIxEtaPhi_2[ix2] % fNBins_phi_1;
-        Int_t deltaetabin = ieta1-ieta2+fNBins_eta_1;
-        Int_t ixdeltaphi = iphi1-iphi2; if (ixdeltaphi < 0) ixdeltaphi += fNBins_phi_1;
-        bins[0] = deltaetabin;
-        bins[1] = ixdeltaphi+1;
-        bins[2] = ixPt_1+1;
-        bins[3] = fIxPt_2[ix2]+1;
-        corr = corr / effcorr->GetBinContent(bins);
+            if (0 < mass) {
+              fhDiscardedResonanceMasses->Fill(ires,TMath::Sqrt(mass));
+              processpair = kFALSE;
+              break;
+            }
+          }
+        }
       }
 
-      Int_t ij                                             = ixEtaPhi_1*fNBins_etaPhi_1 + fIxEtaPhi_2[ix2];
+      if (processpair) {
+        Float_t corr      = corr_1 * fCorrection_2[ix2];
 
-      fN2_12                                              += corr;
-      fN2_12_vsEtaPhi[ij]                                 += corr;
-      Float_t ptpt                                         = pt_1*fPt_2[ix2];
-      fSum2PtPt_12                                        += corr*ptpt;
-      fSum2PtN_12                                         += corr*pt_1;
-      fSum2NPt_12                                         += corr*fPt_2[ix2];
-      fSum2PtPt_12_vsEtaPhi[ij]                           += corr*ptpt;
-      fSum2PtN_12_vsEtaPhi[ij]                            += corr*pt_1;
-      fSum2NPt_12_vsEtaPhi[ij]                            += corr*fPt_2[ix2];
-      fN2_12_vsPtPt[ixPt_1*fNBins_pt_2 + fIxPt_2[ix2]]    += corr;
+        /* apply the pair correction if applicable */
+        if (effcorr != NULL) {
+          Int_t ieta1 = Int_t(ixEtaPhi_1/fNBins_phi_1);
+          Int_t iphi1 = ixEtaPhi_1 % fNBins_phi_1;
+          Int_t ieta2 = Int_t(fIxEtaPhi_2[ix2]/fNBins_phi_1);
+          Int_t iphi2 = fIxEtaPhi_2[ix2] % fNBins_phi_1;
+          Int_t deltaetabin = ieta1-ieta2+fNBins_eta_1;
+          Int_t ixdeltaphi = iphi1-iphi2; if (ixdeltaphi < 0) ixdeltaphi += fNBins_phi_1;
+          bins[0] = deltaetabin;
+          bins[1] = ixdeltaphi+1;
+          bins[2] = ixPt_1+1;
+          bins[3] = fIxPt_2[ix2]+1;
+          corr = corr / effcorr->GetBinContent(bins);
+        }
 
-      fNnw2_12                    += 1;
-      fSum2PtPtnw_12              += ptpt;
-      fSum2PtNnw_12               += pt_1;
-      fSum2NPtnw_12               += fPt_2[ix2];
+        Int_t ij                                             = ixEtaPhi_1*fNBins_etaPhi_1 + fIxEtaPhi_2[ix2];
+
+        fN2_12                                              += corr;
+        fN2_12_vsEtaPhi[ij]                                 += corr;
+        Float_t ptpt                                         = pt_1*fPt_2[ix2];
+        fSum2PtPt_12                                        += corr*ptpt;
+        fSum2PtN_12                                         += corr*pt_1;
+        fSum2NPt_12                                         += corr*fPt_2[ix2];
+        fSum2PtPt_12_vsEtaPhi[ij]                           += corr*ptpt;
+        fSum2PtN_12_vsEtaPhi[ij]                            += corr*pt_1;
+        fSum2NPt_12_vsEtaPhi[ij]                            += corr*fPt_2[ix2];
+        fN2_12_vsPtPt[ixPt_1*fNBins_pt_2 + fIxPt_2[ix2]]    += corr;
+
+        fNnw2_12                    += 1;
+        fSum2PtPtnw_12              += ptpt;
+        fSum2PtNnw_12               += pt_1;
+        fSum2NPtnw_12               += fPt_2[ix2];
+      }
     } //ix2
   } //ix1
 }
@@ -1562,6 +1729,12 @@ void  AliDptDptCorrelations::FinalizeProcess()
     fillHistoWithArray(fhN1_1_vsZEtaPhiPt,       fN1_1_vsZEtaPhiPt,     fNBins_vertexZ, fNBins_etaPhi_1, fNBins_pt_1);
     fillHistoWithArray(fhN1_2_vsPt,              fN1_2_vsPt,            fNBins_pt_2);
     fillHistoWithArray(fhN1_2_vsZEtaPhiPt,       fN1_2_vsZEtaPhiPt,     fNBins_vertexZ, fNBins_etaPhi_2, fNBins_pt_2);
+
+    /* for the time being, the errors are trivial so, we do not use results file space */
+    fhN1_1_vsPt->Sumw2(false);
+    fhN1_1_vsZEtaPhiPt->Sumw2(false);
+    fhN1_2_vsPt->Sumw2(false);
+    fhN1_2_vsZEtaPhiPt->Sumw2(false);
   }
   else {
     fillHistoWithArray(fhN1_1_vsEtaPhi,          fN1_1_vsEtaPhi,        fNBins_eta_1,   fNBins_phi_1);
@@ -1574,6 +1747,17 @@ void  AliDptDptCorrelations::FinalizeProcess()
     fillHistoWithArray(fhSum2PtN_12_vsEtaPhi,    fSum2PtN_12_vsEtaPhi,  fNBins_etaPhi_12);
     fillHistoWithArray(fhSum2NPt_12_vsEtaPhi,    fSum2NPt_12_vsEtaPhi,  fNBins_etaPhi_12);
     fillHistoWithArray(fhN2_12_vsPtPt,           fN2_12_vsPtPt,         fNBins_pt_1,    fNBins_pt_2);
+
+    /* for the time being, the errors are trivial so, we do not use results file space */
+    fhN1_1_vsEtaPhi->Sumw2(false);
+    fhSum1Pt_1_vsEtaPhi->Sumw2(false);
+    fhN1_2_vsEtaPhi->Sumw2(false);
+    fhSum1Pt_2_vsEtaPhi->Sumw2(false);
+    fhN2_12_vsEtaPhi->Sumw2(false);
+    fhSum2PtPt_12_vsEtaPhi->Sumw2(false);
+    fhSum2PtN_12_vsEtaPhi->Sumw2(false);
+    fhSum2NPt_12_vsEtaPhi->Sumw2(false);
+    fhN2_12_vsPtPt->Sumw2(false);
   }
 }
 

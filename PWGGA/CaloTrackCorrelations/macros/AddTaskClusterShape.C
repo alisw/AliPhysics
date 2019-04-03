@@ -11,11 +11,18 @@
 
 #if !defined(__CINT__) || defined(__MAKECINT__)
 
+// ROOT
 #include <TString.h>
 #include <TROOT.h>
 #include <TSystem.h>
 
+// ALIROOT/ALIPHYSICS
+#include "AliAnalysisManager.h"
+#include "AliInputEventHandler.h"
+#include "AliVTrack.h"
 #include "AliLog.h"
+
+// CaloTrackCorrr
 #include "AliAnalysisTaskCaloTrackCorrelation.h"
 #include "AliCaloTrackESDReader.h"
 #include "AliCaloTrackAODReader.h"
@@ -24,15 +31,13 @@
 #include "AliHistogramRanges.h"
 #include "AliAnaCalorimeterQA.h"
 #include "AliAnaCaloTrackCorrMaker.h"
-#include "AliAnalysisManager.h"
-#include "AliInputEventHandler.h"
-#include "AliVTrack.h"
-#include "ConfigureAndGetEventTriggerMaskAndCaloTriggerString.C"
-#include "AliESDtrackCuts.h"
-#include "CreateTrackCutsPWGJE.C"
-#include "CheckActiveEMCalTriggerPerPeriod.C"
+
+// Macros
+R__ADD_INCLUDE_PATH($ALICE_PHYSICS)
 //#include "ConfigureEMCALRecoUtils.C"
-#include "GetAlienGlobalProductionVariables.C"
+#include "PWGGA/CaloTrackCorrelations/macros/ConfigureAndGetEventTriggerMaskAndCaloTriggerString.C"
+#include "PWGGA/CaloTrackCorrelations/macros/CheckActiveEMCalTriggerPerPeriod.C"
+#include "PWGGA/CaloTrackCorrelations/macros/GetAlienGlobalProductionVariables.C"
 
 #endif // CINT
 
@@ -359,46 +364,11 @@ AliCaloTrackReader * ConfigureReader(TString col,           Bool_t simulation,
   //  }
   reader->SwitchOffShowerShapeSmearing();
   
+  reader->SwitchOffFiducialCut();
+  
   //
-  // Tracks
-  //
+  // No track in this analysis
   reader->SwitchOffCTS();
-  
-  reader->SwitchOffUseTrackTimeCut();
-  reader->SetTrackTimeCut(0,50);
-  
-  reader->SwitchOnFiducialCut();
-  reader->GetFiducialCut()->SetSimpleCTSFiducialCut(0.8, 0, 360) ;
-  
-  reader->SwitchOffUseTrackDCACut();
-  //reader->SetTrackDCACut(0,0.0105);
-  //reader->SetTrackDCACut(1,0.035);
-  //reader->SetTrackDCACut(2,1.1);
-  
-  if(inputDataType=="ESD")
-  {
-    gROOT->LoadMacro("$ALICE_PHYSICS/PWGJE/macros/CreateTrackCutsPWGJE.C");
-    
-    //AliESDtrackCuts * esdTrackCuts = CreateTrackCutsPWGJE(10041004);
-    //reader->SetTrackCuts(esdTrackCuts);
-    
-    AliESDtrackCuts * esdTrackCuts  = CreateTrackCutsPWGJE(10001008);
-    reader->SetTrackCuts(esdTrackCuts);
-    AliESDtrackCuts * esdTrackCuts2 = CreateTrackCutsPWGJE(10011008);
-    reader->SetTrackComplementaryCuts(esdTrackCuts2);
-    
-    reader->SwitchOnConstrainTrackToVertex();
-  }
-  else if(inputDataType=="AOD")
-  {
-    reader->SwitchOnAODHybridTrackSelection(); // Check that the AODs have Hybrids!!!!
-    reader->SwitchOnAODTrackSharedClusterSelection();
-    reader->SetTrackStatus(AliVTrack::kITSrefit);
-    
-    //reader->SwitchOnAODPrimaryTrackSelection(); // Used in preliminary results of QM from Nicolas and Xiangrong?
-    //reader->SwitchOnTrackHitSPDSelection();     // Check that the track has at least a hit on the SPD, not much sense to use for hybrid or TPC only tracks
-    //reader->SetTrackFilterMask(128);            // Filter bit, not mask, use if off hybrid, TPC only
-  }
   
   //
   // Calorimeter
@@ -494,11 +464,8 @@ AliCaloTrackReader * ConfigureReader(TString col,           Bool_t simulation,
   reader->SetZvertexCut(10.);               // Open cut
   reader->SwitchOnPrimaryVertexSelection(); // and besides primary vertex
   
-  reader->SwitchOnRejectNoTrackEvents();
-  reader->SetTrackMultiplicityEtaCut(0.8);
-  
   reader->SwitchOffV0ANDSelection() ;       // and besides v0 AND
-  reader->SwitchOnPileUpEventRejection();  // remove pileup by default off, apply it only for MB not for trigger
+  reader->SwitchOnPileUpEventRejection();   // remove pileup by default off, apply it only for MB not for trigger
   
   if(col=="PbPb")
   {
@@ -636,16 +603,25 @@ AliAnaClusterShapeCorrelStudies* ConfigureClusterShape
   if(simulation) ana->SetConstantTimeShift(615);
   
   ana->SwitchOffFiducialCut();
-  
+    
   ana->SwitchOnStudyClusterShape();
   
-  ana->SwitchOnStudyClusterShapeParam();
+  ana->SwitchOnStudyEMCalModuleCells();
+  
+  ana->SwitchOffStudyClusterShapeParam();
+  
+  ana->SwitchOffStudyMatchedPID() ;
   
   ana->SwitchOffStudyWeight();
   
+  ana->SetNCellBinLimits(-1); // no analysis on predefined bins in nCell
+  
   ana->SwitchOffStudyTCardCorrelation() ;
   ana->SwitchOffStudyExotic();
-    
+  ana->SwitchOffStudyInvariantMass();
+  ana->SwitchOffStudyColRowFromCellMax() ;
+  ana->SwitchOffStudyCellTime() ;
+  
   // PID cuts (Track-matching)
   ana->SwitchOnCaloPID(); // do PID selection, unless specified in GetCaloPID, selection not based on bayesian
   AliCaloPID* caloPID = ana->GetCaloPID();
@@ -789,7 +765,7 @@ void SetAnalysisCommonParameters(AliAnaCaloTrackCorrBaseClass* ana,
   histoRanges->SetHistodRRangeAndNBins(0.,0.06,60);//QA
   
   // QA, electron, charged
-  histoRanges->SetHistoPOverERangeAndNBins(0,1.5,150);
+  histoRanges->SetHistoEOverPRangeAndNBins(0,1.5,150);
   histoRanges->SetHistodEdxRangeAndNBins(0.,200.,200);
   
   // QA
@@ -835,10 +811,7 @@ void SetAnalysisCommonParameters(AliAnaCaloTrackCorrBaseClass* ana,
   //
   if(simulation) ana->SwitchOnDataMC() ;//Access MC stack and fill more histograms, AOD MC not implemented yet.
   else           ana->SwitchOffDataMC() ;
-  
-  //Set here generator name, default pythia
-  //ana->GetMCAnalysisUtils()->SetMCGenerator("");
-  
+
   //
   // Debug
   //

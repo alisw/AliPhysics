@@ -37,6 +37,7 @@
 
 #include "AliAODTrack.h"
 #include "AliESDtrackCuts.h"
+#include "AliEmcalAODFilterBitCuts.h"
 #include "AliEmcalESDHybridTrackCuts.h"
 #include "AliEmcalTrackSelection.h"
 #include "AliEmcalTrackSelectionESD.h"
@@ -268,13 +269,17 @@ AliEmcalTrackSelection *AliEmcalAnalysisFactory::TrackCutsFactory(TString cutstr
     for(auto c : *cuts){
       TString &cut = static_cast<TObjString *>(c)->String();
       if(cut == "standard"){
-        aodsel->AddFilterBit(AliAODTrack::kTrkGlobal);
-        AliEMCalTriggerExtraCuts *extracuts = FindTrackCuts(trackcuts);
-        if(!extracuts){
-          extracuts = new AliEMCalTriggerExtraCuts;
-          trackcuts.Add(extracuts);
+        auto filterbitcuts = new PWG::EMCAL::AliEmcalAODFilterBitCuts("globalcuts", "Global track cuts");
+        filterbitcuts->SetFilterBits(AliAODTrack::kTrkGlobal);
+        std::cout << "Adding standard global track cuts" << std::endl;
+        trackcuts.Add(filterbitcuts);
+
+        AliEMCalTriggerExtraCuts *crossedrowcut = FindTrackCuts(trackcuts);
+        if(!crossedrowcut){
+          crossedrowcut = new AliEMCalTriggerExtraCuts;
+          trackcuts.Add(crossedrowcut);
         }
-        extracuts->SetMinTPCCrossedRows(120);
+        crossedrowcut->SetMinTPCCrossedRows(120);
       }
       if(cut == "hybrid"){
         aodsel->GenerateTrackCuts(AliEmcalTrackSelection::kHybridTracks, AliTrackContainer::GetDefTrackCutsPeriod());
@@ -292,12 +297,12 @@ AliEmcalTrackSelection *AliEmcalAnalysisFactory::TrackCutsFactory(TString cutstr
         aodsel->GenerateTrackCuts(AliEmcalTrackSelection::kHybridTracks2011woNoRefit, AliTrackContainer::GetDefTrackCutsPeriod());
       }
       if(cut == "geo"){
-        AliEMCalTriggerExtraCuts *extracuts = FindTrackCuts(trackcuts);
-        if(!extracuts){
-          extracuts = new AliEMCalTriggerExtraCuts;
-          trackcuts.Add(extracuts);
+        AliEMCalTriggerExtraCuts *geocuts = FindTrackCuts(trackcuts);
+        if(!geocuts){
+          geocuts = new AliEMCalTriggerExtraCuts;
+          trackcuts.Add(geocuts);
         }
-        extracuts->SetMinTPCTrackLengthCut();
+        geocuts->SetMinTPCTrackLengthCut();
       }
     }
     result->AddTrackCuts(&trackcuts);
