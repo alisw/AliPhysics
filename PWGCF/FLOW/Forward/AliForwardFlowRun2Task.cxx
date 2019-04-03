@@ -122,7 +122,7 @@ void AliForwardFlowRun2Task::UserCreateOutputObjects()
     fEventList->Add(new TH1D("Centrality","Centrality",fSettings.fCentBins,0,100));
     fEventList->Add(new TH1D("Vertex","Vertex",fSettings.fNZvtxBins,fSettings.fZVtxAcceptanceLowEdge,fSettings.fZVtxAcceptanceUpEdge));
     fEventList->Add(new TH1D("FMDHits","FMDHits",100,0,10));
-    fEventList->Add(new TH1F("dNdeta","dNdeta",200 /*fSettings.fNDiffEtaBins*/,fSettings.fEtaLowEdge,fSettings.fEtaUpEdge));
+    fEventList->Add(new TH2F("dNdeta","dNdeta",200 /*fSettings.fNDiffEtaBins*/,fSettings.fEtaLowEdge,fSettings.fEtaUpEdge,10,0,100));
 
     fAnalysisList->Add(new TList());
     fAnalysisList->Add(new TList());
@@ -233,16 +233,25 @@ void AliForwardFlowRun2Task::UserExec(Option_t *)
   refDist = &refDist_tmp;
   refDist->SetDirectory(0);
 
-  TH1F* dNdeta = static_cast<TH1F*>(fEventList->FindObject("dNdeta"));
+  TH2F* dNdeta = static_cast<TH2F*>(fEventList->FindObject("dNdeta"));
 
   dNdeta->SetDirectory(0);
-  fUtil.dodNdeta = kTRUE;
-  fUtil.dNdeta = dNdeta;
+  //fUtil.dodNdeta = kTRUE;
+  //fUtil.dNdeta = dNdeta;
   fUtil.FillData(refDist,centralDist,forwardDist);
 
+  Double_t cent = fUtil.GetCentrality(fSettings.centrality_estimator);
+
+  for (Int_t etaBin = 1; etaBin <= centralDist->GetNbinsX(); etaBin++) {
+    Double_t eta = centralDist->GetXaxis()->GetBinCenter(etaBin);
+    dNdeta->Fill(eta,cent);
+  }
+  for (Int_t etaBin = 1; etaBin <= forwardDist->GetNbinsX(); etaBin++) {
+    Double_t eta = forwardDist->GetXaxis()->GetBinCenter(etaBin);
+    dNdeta->Fill(eta,cent);
+  }
 
   Double_t zvertex = fUtil.GetZ();
-  Double_t cent = fUtil.GetCentrality(fSettings.centrality_estimator);
 
   if (fSettings.makeFakeHoles) fUtil.MakeFakeHoles(*forwardDist);
 

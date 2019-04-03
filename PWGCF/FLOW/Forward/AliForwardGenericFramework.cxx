@@ -166,7 +166,7 @@ void AliForwardGenericFramework::CumulantsAccumulate(TH2D& dNdetadphi, TList* ou
       } // end p loop
     } // End of n loop
   } // End of phi loop
-  } // end of eta
+} // end of eta
 
   return;
 }
