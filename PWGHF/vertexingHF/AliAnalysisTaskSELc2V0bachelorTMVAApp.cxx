@@ -515,7 +515,7 @@ void AliAnalysisTaskSELc2V0bachelorTMVAApp::UserCreateOutputObjects() {
   fVariablesTreeBkg = new TTree(Form("%s_Bkg", nameoutput), "Candidates variables tree, Background");
 
   Int_t nVar; 
-  if (fUseMCInfo)  nVar = 48; //"full" tree if MC
+  if (fUseMCInfo)  nVar = 49; //"full" tree if MC
   else nVar = 33; //"reduced" tree if data
   
   fCandidateVariables = new Float_t [nVar];
@@ -570,6 +570,7 @@ void AliAnalysisTaskSELc2V0bachelorTMVAApp::UserCreateOutputObjects() {
     fCandidateVariableNames[45] = "signd0";
     fCandidateVariableNames[46] = "centrality";
     fCandidateVariableNames[47] = "NtrkAll";
+    fCandidateVariableNames[48] = "origin";
   }
   else {   // "light mode"
     fCandidateVariableNames[0] = "massLc2K0Sp";
@@ -1372,7 +1373,7 @@ void AliAnalysisTaskSELc2V0bachelorTMVAApp::MakeAnalysisForLc2prK0S(AliAODEvent 
 	  }
 	}
 	else if (fKeepingOnlyPYTHIABkg){
-	  // we have decided to fill the background only when the candidate has the daugthers that all come from HIJING underlying event!
+	  // we have decided to fill the background only when the candidate has the daugthers that all come from PYTHIA underlying event!
 	  AliAODTrack *bachelor = (AliAODTrack*)lcK0spr->GetBachelor();
 	  AliAODTrack *v0pos = (AliAODTrack*)lcK0spr->Getv0PositiveTrack();
 	  AliAODTrack *v0neg = (AliAODTrack*)lcK0spr->Getv0NegativeTrack();
@@ -1678,9 +1679,11 @@ void AliAnalysisTaskSELc2V0bachelorTMVAApp::FillLc2pK0Sspectrum(AliAODRecoCascad
   Double_t ptLcMC = -1;
   Double_t weightPythia = -1, weight5LHC13d3 = -1, weight5LHC13d3Lc = -1; 
 
+  AliAODMCParticle *partLcMC = 0x0;
+  
   if (fUseMCInfo) {
     if (iLctopK0s >= 0) {
-      AliAODMCParticle *partLcMC = (AliAODMCParticle*)mcArray->At(iLctopK0s);
+      partLcMC = (AliAODMCParticle*)mcArray->At(iLctopK0s);
       ptLcMC = partLcMC->Pt();
       //Printf("--------------------- Reco pt = %f, MC particle pt = %f", part->Pt(), ptLcMC);
       weightPythia = fFuncWeightPythia->Eval(ptLcMC);
@@ -1791,7 +1794,6 @@ void AliAnalysisTaskSELc2V0bachelorTMVAApp::FillLc2pK0Sspectrum(AliAODRecoCascad
     
     signd0 = signd0*TMath::Abs(d0z0bach[0]);
     
-    
     if (fUseMCInfo) {   //  save full tree if on MC
       fCandidateVariables[0] = invmassLc;
       fCandidateVariables[1] = invmassLc2Lpi;
@@ -1842,7 +1844,11 @@ void AliAnalysisTaskSELc2V0bachelorTMVAApp::FillLc2pK0Sspectrum(AliAODRecoCascad
       fCandidateVariables[44] = countTreta1corr;
       fCandidateVariables[45] = signd0;
       fCandidateVariables[46] = fCentrality;
-      fCandidateVariables[47] = fNTracklets_All;      
+      fCandidateVariables[47] = fNTracklets_All;
+      if (partLcMC) 
+	fCandidateVariables[48] = fUtils->CheckOrigin(mcArray, partLcMC, kTRUE);
+      else
+	fCandidateVariables[48] = -1;
     }      
     else { //remove MC-only variables from tree if data
       fCandidateVariables[0] = invmassLc;
