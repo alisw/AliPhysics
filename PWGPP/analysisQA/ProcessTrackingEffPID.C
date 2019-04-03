@@ -480,4 +480,5 @@ int GetEmptyMarker(int mar){
   if(mar==29) return 30;
   if(mar==33) return 27;
   if(mar==34) return 28;
+  return 24;
 }
