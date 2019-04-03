@@ -1187,6 +1187,7 @@ void AliAODEvent::FixCascades(){
   // the on-fly and offline algorithms, the on-fly (first found in the array)
   // was used in the AOD cascade.
 
+  if (fCascades==0) return;
   Int_t nCasc=GetNumberOfCascades();
   if(nCasc==0) return;
 
