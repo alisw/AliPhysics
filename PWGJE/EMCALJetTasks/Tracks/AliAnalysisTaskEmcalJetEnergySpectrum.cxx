@@ -56,8 +56,8 @@ using namespace EmcalTriggerJets;
 AliAnalysisTaskEmcalJetEnergySpectrum::AliAnalysisTaskEmcalJetEnergySpectrum():
   AliAnalysisTaskEmcalJet(),
   fHistos(nullptr),
-  fEventCuts(nullptr),
   fIsMC(false),
+  fFillHSparse(false),
 	fTriggerSelectionBits(AliVEvent::kAny),
   fTriggerSelectionString(""),
   fRequireSubsetMB(false),
@@ -79,8 +79,8 @@ AliAnalysisTaskEmcalJetEnergySpectrum::AliAnalysisTaskEmcalJetEnergySpectrum():
 AliAnalysisTaskEmcalJetEnergySpectrum::AliAnalysisTaskEmcalJetEnergySpectrum(const char *name):
   AliAnalysisTaskEmcalJet(name, true),
   fHistos(nullptr),
-  fEventCuts(nullptr),
   fIsMC(false),
+  fFillHSparse(false),
 	fTriggerSelectionBits(AliVEvent::kAny),
   fTriggerSelectionString(""),
   fRequireSubsetMB(false),
@@ -117,9 +117,6 @@ void AliAnalysisTaskEmcalJetEnergySpectrum::UserCreateOutputObjects(){
     }
   }
 
-  TLinearBinning centralitybinning(100, 0., 100.), etabinning(100, -1., 1.), phibinning(100., 0., 7.), nefbinning(100, 0., 1.), trgclusterbinning(kTrgClusterN + 1, -0.5, kTrgClusterN -0.5);
-  TVariableBinning jetptbinning(fUserPtBinning);
-  const TBinning *binnings[6] = {&centralitybinning, &jetptbinning, &etabinning, &phibinning, &nefbinning, &trgclusterbinning};
   fHistos = new THistManager(Form("Histos_%s", GetName()));
   fHistos->CreateTH1("hEventCounter", "Event counter histogram", 1, 0.5, 1.5);
   fHistos->CreateTH1("hEventCounterAbs", "Event counter histogram absolute", 1, 0.5, 1.5);
@@ -127,27 +124,18 @@ void AliAnalysisTaskEmcalJetEnergySpectrum::UserCreateOutputObjects(){
   fHistos->CreateTH1("hEventCentralityAbs", "Event centrality absolute", 100., 0., 100.);
   fHistos->CreateTH1("hClusterCounter", "Event counter histogram", kTrgClusterN, -0.5, kTrgClusterN - 0.5);
   fHistos->CreateTH1("hClusterCounterAbs", "Event counter histogram absolute", kTrgClusterN, -0.5, kTrgClusterN - 0.5);
-  fHistos->CreateTHnSparse("hJetTHnSparse", "jet thnsparse", 6, binnings, fUseSumw2 ? "s" : "");
-  fHistos->CreateTHnSparse("hMaxJetTHnSparse", "jet thnsparse", 6, binnings, fUseSumw2 ? "s" : "");
+  fHistos->CreateTH2("hJetSpectrum", "Jet pt spectrum", kTrgClusterN, -0.5, kTrgClusterN - 0.5, 350., 0., 350.);
+  fHistos->CreateTH2("hJetSpectrumMax", "Max jet pt spectrum", kTrgClusterN, -0.5, kTrgClusterN - 0.5, 350., 0., 350.);
+  if(fFillHSparse) {
+    TLinearBinning centralitybinning(100, 0., 100.), etabinning(100, -1., 1.), phibinning(100., 0., 7.), nefbinning(100, 0., 1.), trgclusterbinning(kTrgClusterN + 1, -0.5, kTrgClusterN -0.5);
+    TVariableBinning jetptbinning(fUserPtBinning);
+    const TBinning *binnings[6] = {&centralitybinning, &jetptbinning, &etabinning, &phibinning, &nefbinning, &trgclusterbinning};
+    fHistos->CreateTHnSparse("hJetTHnSparse", "jet thnsparse", 6, binnings, fUseSumw2 ? "s" : "");
+    fHistos->CreateTHnSparse("hMaxJetTHnSparse", "jet thnsparse", 6, binnings, fUseSumw2 ? "s" : "");
+  }
 
   for(auto h : *fHistos->GetListOfHistograms()) fOutput->Add(h);
-
-  if(fUseAliEventCuts) {
-    fEventCuts = new AliEventCuts(true);
-    // Do not perform trigger selection in the AliEvent cuts but let the task do this before
-    fEventCuts->OverrideAutomaticTriggerSelection(AliVEvent::kAny, true);
-    fOutput->Add(fEventCuts);
-  }
   PostData(1, fOutput);
-}
-
-bool AliAnalysisTaskEmcalJetEnergySpectrum::IsEventSelected(){
-  if(fEventCuts) {
-    if(!IsTriggerSelected()) return false;
-    if(!fEventCuts->AcceptEvent(fInputEvent)) return false;
-    return true;
-  }
-  return AliAnalysisTaskEmcal::IsEventSelected();
 }
 
 Bool_t AliAnalysisTaskEmcalJetEnergySpectrum::CheckMCOutliers() {
@@ -207,8 +195,11 @@ bool AliAnalysisTaskEmcalJetEnergySpectrum::Run(){
     if(!maxjet || (j->E() > maxjet->E())) maxjet = j;
     double datapoint[6] = {eventCentrality, j->Pt(), j->Eta(), j->Phi(), j->NEF(), 0.};
     for(auto t : trgclusters){
-      datapoint[5] = static_cast<double>(t);
-      fHistos->FillTHnSparse("hJetTHnSparse", datapoint, weight);
+      fHistos->FillTH2("hJetSpectrum", static_cast<double>(t), j->Pt(), weight);
+      if(fFillHSparse) {
+        datapoint[5] = static_cast<double>(t);
+        fHistos->FillTHnSparse("hJetTHnSparse", datapoint, weight);
+      }
     }
   }
 
@@ -222,8 +213,11 @@ bool AliAnalysisTaskEmcalJetEnergySpectrum::Run(){
     maxdata[4] = maxjet->NEF();
   }
   for(auto t : trgclusters){
-    maxdata[5] = static_cast<double>(t);
-    fHistos->FillTHnSparse("hMaxJetTHnSparse", maxdata, weight);
+    fHistos->FillTH2("hJetSpectrumMax", maxdata[1], weight);
+    if(fFillHSparse){
+      maxdata[5] = static_cast<double>(t);
+      fHistos->FillTHnSparse("hMaxJetTHnSparse", maxdata, weight);
+    }
   }
   return true;
 }
