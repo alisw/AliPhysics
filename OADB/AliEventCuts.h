@@ -10,6 +10,7 @@
 #include <vector>
 
 #include "AliVEvent.h"
+#include "AliAnalysisCuts.h"
 #include "AliAnalysisUtils.h"
 
 class AliESDtrackCuts;
@@ -209,6 +210,14 @@ class AliEventCuts : public TList {
     AliESDtrackCuts* fTPConlyCuts;   //!<! Cuts corresponding to the standalone TPC cuts in the ESDs (used only for correlations cuts in ESDs)
 
     ClassDef(AliEventCuts,8)
+};
+
+class AliEventCutsNanoInterface : public AliEventCuts, public virtual AliAnalysisCuts  {
+  public:
+  virtual Bool_t IsSelected(TObject* ev) {
+    SetSelected(AcceptEvent(static_cast<AliVEvent*>(ev))); 
+    return Selected();
+  }
 };
 
 template<typename F> F AliEventCuts::PolN(F x,F* coef, int n) {
