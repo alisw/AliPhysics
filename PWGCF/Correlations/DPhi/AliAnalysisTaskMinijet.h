@@ -41,6 +41,8 @@ class AliAnalysisTaskMinijet : public AliAnalysisTaskSE {
   void         SetSelectParticles(Int_t selectParticles)             {fSelectParticles = selectParticles;}
   void         SetSelectParticlesAssoc(Int_t selectParticlesAssoc)   {fSelectParticlesAssoc = selectParticlesAssoc;}
   void         SetCheckSDD(Bool_t checkSDD, Int_t selOption)         {fCheckSDD = checkSDD; fSelOption = selOption;}
+  void         SetCheckCorruptedChunks(Bool_t check)                 {fCheckCorruptedChunks = check;}
+  void         SetRepropagateToDCA(Bool_t flag)                      {fRepropagateToDCA = flag;}
   void         SetCorrStrangeness(Bool_t corrStrangeness)            {fCorrStrangeness = corrStrangeness;}
   void         SetThreeParticleCorrelation(Bool_t threeParticleCorr) {fThreeParticleCorr = threeParticleCorr;}
   void         SetRejectCorrupted(Bool_t rejectChunks, Int_t nTPC)   {fRejectChunks = rejectChunks; fNTPC = nTPC;}
@@ -109,6 +111,8 @@ class AliAnalysisTaskMinijet : public AliAnalysisTaskSE {
   Int_t        fSelectParticles;            // only in cas of MC: use also neutral particles or not 
   Int_t        fSelectParticlesAssoc;       // only in cas of MC: use also neutral particles or not 
   Bool_t       fCheckSDD;                   // check if SDD was in read out partition (needed for LHC11a)
+  Bool_t       fCheckCorruptedChunks;       // fill control histograms for corrupted chunks
+  Bool_t       fRepropagateToDCA;           // propagate AOD tracks back to the vertex
   Int_t        fSelOption;                  // 0 = use hit in SDD for event selection, 1 = use trigger for event selection
   Bool_t       fCorrStrangeness;            // for data correction -> Pythia simulations underestimate contamination from strangness
   Bool_t       fThreeParticleCorr;          // perform three particle correlation
