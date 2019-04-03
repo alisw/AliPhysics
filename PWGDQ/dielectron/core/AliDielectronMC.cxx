@@ -344,17 +344,17 @@ AliAODMCParticle* AliDielectronMC::GetMCTrackMother(const AliAODMCParticle* _par
 }
 
 //____________________________________________________________
-TParticle* AliDielectronMC::GetMCTrackMotherFromStack(const AliESDtrack* _track)
-{
+//TParticle* AliDielectronMC::GetMCTrackMotherFromStack(const AliESDtrack* _track)
+//{
   //
   // return MC track mother from MC event
   //
-  TParticle* mcpart = GetMCTrackFromStack(_track);
-  if ( !mcpart || mcpart->GetFirstMother()<=0 ) return NULL;
-  TParticle* mcmother = fMCEvent->Particle(mcpart->GetFirstMother());
-  if (!mcmother) return NULL;
-  return mcmother;
-}
+//  TParticle* mcpart = GetMCTrackFromStack(_track);
+//  if ( !mcpart || mcpart->GetFirstMother()<=0 ) return NULL;
+//  TParticle* mcmother = fMCEvent->Particle(mcpart->GetFirstMother());
+//  if (!mcmother) return NULL;
+//  return mcmother;
+//}
 
 //____________________________________________________________
 Int_t AliDielectronMC::GetMCPID(const AliESDtrack* _track)
@@ -434,15 +434,15 @@ Int_t AliDielectronMC::GetMotherPDG( const AliAODMCParticle* _track)
 }
 
 //____________________________________________________________
-Int_t AliDielectronMC::GetMotherPDGFromStack(const AliESDtrack* _track)
-{
+//Int_t AliDielectronMC::GetMotherPDGFromStack(const AliESDtrack* _track)
+//{
   //
   // return PDG code of the mother track from MC event
   //
-  TParticle* mcmother = GetMCTrackMotherFromStack(_track);
-  if (!mcmother) return -999;
-  return mcmother->GetPdgCode();
-}
+//  TParticle* mcmother = GetMCTrackMotherFromStack(_track);
+//  if (!mcmother) return -999;
+//  return mcmother->GetPdgCode();
+//}
 
 //____________________________________________________________
 Int_t AliDielectronMC::GetMCProcess(const AliESDtrack* _track)
@@ -456,15 +456,15 @@ Int_t AliDielectronMC::GetMCProcess(const AliESDtrack* _track)
 }
 
 //____________________________________________________________
-Int_t AliDielectronMC::GetMCProcessFromStack(const AliESDtrack* _track)
-{
+//Int_t AliDielectronMC::GetMCProcessFromStack(const AliESDtrack* _track)
+//{
   //
   // return process number of the track
   //
-  TParticle* mcpart = GetMCTrackFromStack(_track);
-  if (!mcpart) return -999;
-  return mcpart->GetUniqueID();
-}
+  //TParticle* mcpart = GetMCTrackFromStack(_track);
+  //if (!mcpart) return -999;
+  //return mcpart->GetUniqueID();
+//}
 
 //____________________________________________________________
 Int_t AliDielectronMC::NumberOfDaughters(const AliESDtrack* track)
@@ -525,15 +525,15 @@ Int_t AliDielectronMC::GetMCProcessMother(const AliESDtrack* _track)
 }
 
 //____________________________________________________________
-Int_t AliDielectronMC::GetMCProcessMotherFromStack(const AliESDtrack* _track)
-{
+//Int_t AliDielectronMC::GetMCProcessMotherFromStack(const AliESDtrack* _track)
+//{
   //
   // return process number of the mother of the track
   //
-  TParticle* mcmother = GetMCTrackMotherFromStack(_track);
-  if (!mcmother) return -999;
-  return mcmother->GetUniqueID();
-}
+//  TParticle* mcmother = GetMCTrackMotherFromStack(_track);
+//  if (!mcmother) return -999;
+//  return mcmother->GetUniqueID();
+//}
 
 //____________________________________________________________
 Bool_t AliDielectronMC::IsMCMotherToEE(const AliVParticle *particle, Int_t pdgMother)
