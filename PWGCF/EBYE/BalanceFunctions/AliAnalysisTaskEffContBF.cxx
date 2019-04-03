@@ -98,6 +98,7 @@ AliAnalysisTaskEffContBF::AliAnalysisTaskEffContBF() : AliAnalysisTaskSE(),
     fUsePIDFromPDG(kFALSE),
     fpartOfInterest(AliPID::kPion),
     fPDGCodeWanted(0),
+    fMassParticleOfInterest(0.13957),
     fVxMax(3.0),
     fVyMax(3.0),
     fVzMax(10.),
@@ -187,6 +188,7 @@ AliAnalysisTaskEffContBF::AliAnalysisTaskEffContBF(const char *name)
     fUsePIDFromPDG(kFALSE),
     fpartOfInterest(AliPID::kPion),
     fPDGCodeWanted(0),
+    fMassParticleOfInterest(0.13957),
     fVxMax(3.0), 
     fVyMax(3.0),
     fVzMax(10.), 
@@ -507,7 +509,7 @@ void AliAnalysisTaskEffContBF::UserExec(Option_t *) {
   const Int_t maxMCLabelCounter = 20000;
   
   Double_t eta[maxMCLabelCounter];
-  Double_t Y[maxMCLabelCounter];
+  Double_t vY[maxMCLabelCounter];
   Double_t pt[maxMCLabelCounter];
   Double_t phi[maxMCLabelCounter];
   Int_t level[maxMCLabelCounter];
@@ -599,24 +601,18 @@ void AliAnalysisTaskEffContBF::UserExec(Option_t *) {
 		  continue;
 		
 		//acceptance
-        
-        if (fUseY){
-            
-            if(TMath::Abs(track->Y()) > fMaxEta)
-            continue;
-        
-        }
-              
-        else if (!fUseY){
-                  
-            if(TMath::Abs(track->Eta()) > fMaxEta)
-            continue;
-                  
-        }
-              
-            
-        if((track->Pt() > fMaxPt)||(track->Pt() <  fMinPt))
-        continue;
+		
+		if (fUseY){
+		  if(TMath::Abs(track->Y(fMassParticleOfInterest)) > fMaxEta)
+		    continue;	  
+		}
+		else {
+		  if(TMath::Abs(track->Eta()) > fMaxEta)
+		    continue;
+		}
+		
+		if((track->Pt() > fMaxPt)||(track->Pt() <  fMinPt))
+		  continue;
 		
 		Double_t phiRad = track->Phi(); 
 		
@@ -692,54 +688,55 @@ void AliAnalysisTaskEffContBF::UserExec(Option_t *) {
 		if (AODmcTrack->IsPhysicalPrimary()) {
 		  if(gAODmcCharge > 0){
             		if (fUseY)
-            			fHistContaminationPrimariesPlus->Fill(track->Y(),track->Pt(),phiRad);
-            		else if (!fUseY)
-            			fHistContaminationPrimariesPlus->Fill(track->Eta(),track->Pt(),phiRad);
+			  fHistContaminationPrimariesPlus->Fill(track->Y(fMassParticleOfInterest),track->Pt(),phiRad);
+            		else 
+			  fHistContaminationPrimariesPlus->Fill(track->Eta(),track->Pt(),phiRad);
 		  }
 		  if(gAODmcCharge < 0){
-            		if (fUseY)
-            			fHistContaminationPrimariesMinus->Fill(track->Y(),track->Pt(),phiRad);
-            		else if (!fUseY)
-            			fHistContaminationPrimariesMinus->Fill(track->Eta(),track->Pt(),phiRad);
+		    if (fUseY)
+		      fHistContaminationPrimariesMinus->Fill(track->Y(fMassParticleOfInterest),track->Pt(),phiRad);
+		    else
+		      fHistContaminationPrimariesMinus->Fill(track->Eta(),track->Pt(),phiRad);
 		  }
 		}
+		
 		else{
 		  Bool_t isFromMaterial = kFALSE;
 		  if (AODmcTrack->IsSecondaryFromMaterial()) isFromMaterial = kTRUE;
 		  if(gAODmcCharge > 0){
-            		if (fUseY)
-            			fHistContaminationSecondariesPlus->Fill(track->Y(),track->Pt(),phiRad);
-            		else if (!fUseY)
-           			fHistContaminationSecondariesPlus->Fill(track->Eta(),track->Pt(),phiRad);
-              	  	if (isFromMaterial){
-                		if (fUseY)
-                    			fHistContaminationSecondariesMaterialPlus->Fill(track->Y(),track->Pt(),phiRad);
-                  		else if (!fUseY)
-                    			fHistContaminationSecondariesMaterialPlus->Fill(track->Eta(),track->Pt(),phiRad);
-              	  	}
-              	  	else {
-                  		if (fUseY)
-                      			fHistContaminationSecondariesWeakDecPlus->Fill(track->Y(),track->Pt(),phiRad);
-                  		else if (!fUseY)
-                      			fHistContaminationSecondariesWeakDecPlus->Fill(track->Eta(),track->Pt(),phiRad);
-              	  	}
+		    if (fUseY)
+		      fHistContaminationSecondariesPlus->Fill(track->Y(fMassParticleOfInterest),track->Pt(),phiRad);
+		    else
+		      fHistContaminationSecondariesPlus->Fill(track->Eta(),track->Pt(),phiRad);
+		    if (isFromMaterial){
+		      if (fUseY)
+			fHistContaminationSecondariesMaterialPlus->Fill(track->Y(fMassParticleOfInterest),track->Pt(),phiRad);
+		      else 
+			fHistContaminationSecondariesMaterialPlus->Fill(track->Eta(),track->Pt(),phiRad);
+		    }
+		    else {
+		      if (fUseY)
+			fHistContaminationSecondariesWeakDecPlus->Fill(track->Y(fMassParticleOfInterest),track->Pt(),phiRad);
+		      else 
+			fHistContaminationSecondariesWeakDecPlus->Fill(track->Eta(),track->Pt(),phiRad);
+		    }
 		  }
 		  if(gAODmcCharge < 0){
               		if (fUseY)
-                  		fHistContaminationSecondariesMinus->Fill(track->Y(),track->Pt(),phiRad);
-              		else if (!fUseY)
-                  		fHistContaminationSecondariesMinus->Fill(track->Eta(),track->Pt(),phiRad);
+			  fHistContaminationSecondariesMinus->Fill(track->Y(fMassParticleOfInterest),track->Pt(),phiRad);
+              		else
+			  fHistContaminationSecondariesMinus->Fill(track->Eta(),track->Pt(),phiRad);
               	  	if (isFromMaterial){
-                  		if (fUseY)
-                      			fHistContaminationSecondariesMaterialMinus->Fill(track->Y(),track->Pt(),phiRad);
-                  		else if (!fUseY)
-                      			fHistContaminationSecondariesMaterialMinus->Fill(track->Eta(),track->Pt(),phiRad);
+			  if (fUseY)
+			    fHistContaminationSecondariesMaterialMinus->Fill(track->Y(fMassParticleOfInterest),track->Pt(),phiRad);
+			  else 
+			    fHistContaminationSecondariesMaterialMinus->Fill(track->Eta(),track->Pt(),phiRad);
               	  	}
               	  	else {
-                  		if (fUseY)
-                      			fHistContaminationSecondariesWeakDecMinus->Fill(track->Y(),track->Pt(),phiRad);
-                  		else if (!fUseY)
-                      			fHistContaminationSecondariesWeakDecMinus->Fill(track->Eta(),track->Pt(),phiRad);
+			  if (fUseY)
+			    fHistContaminationSecondariesWeakDecMinus->Fill(track->Y(fMassParticleOfInterest),track->Pt(),phiRad);
+			  else
+			    fHistContaminationSecondariesWeakDecMinus->Fill(track->Eta(),track->Pt(),phiRad);
                   	}
 		  }
                }
@@ -758,27 +755,21 @@ void AliAnalysisTaskEffContBF::UserExec(Option_t *) {
 		Double_t vz = mcTrack->Zv();
 		if (TMath::Abs(vz) > 50.) continue;
 		//acceptance
-      
-        if (fUseY)
-        {
-            
-            if(TMath::Abs(mcTrack->Y()) > fMaxEta)
-            continue;
-        
-        }
-              
-        else if (!fUseY){
-                  
-            if(TMath::Abs(mcTrack->Eta()) > fMaxEta)
-            continue;
-                  
-        }
 		
-        if((mcTrack->Pt() > fMaxPt)||(mcTrack->Pt() < fMinPt))
-        continue;
+		if (fUseY){		  
+		  if(TMath::Abs(mcTrack->Y()) > fMaxEta)
+		    continue;  
+		}
+		else{
+		  if(TMath::Abs(mcTrack->Eta()) > fMaxEta)
+		    continue;
+		}
+		
+		if((mcTrack->Pt() > fMaxPt)||(mcTrack->Pt() < fMinPt))
+		  continue;
 		
 		if(!mcTrack->IsPhysicalPrimary()) continue;
-
+		
 		if (fInjectedSignals){
 		  if (fRejectCheckGenName){
 		    TString generatorName;
@@ -788,7 +779,7 @@ void AliAnalysisTaskEffContBF::UserExec(Option_t *) {
 		    
 		  }  
 		}
-
+		
 		//Exclude electrons with PDG
                 if(fExcludeElectronsInMC){
 
@@ -808,26 +799,26 @@ void AliAnalysisTaskEffContBF::UserExec(Option_t *) {
 		Double_t phiRad = mcTrack->Phi();
 		
           	if(gMCCharge > 0){
-			if (fUseY)
-                  		fHistGeneratedEtaPtPhiPlus->Fill(mcTrack->Y(),
-                                                   mcTrack->Pt(),
-                                                   phiRad);
-              		else if (!fUseY)
-                  		fHistGeneratedEtaPtPhiPlus->Fill(mcTrack->Eta(),
-						   mcTrack->Pt(),
-						   phiRad);
-          
+		  if (fUseY)
+		    fHistGeneratedEtaPtPhiPlus->Fill(mcTrack->Y(),
+						     mcTrack->Pt(),
+						     phiRad);
+		  else
+		    fHistGeneratedEtaPtPhiPlus->Fill(mcTrack->Eta(),
+						     mcTrack->Pt(),
+						     phiRad);
+		  
          	}	
           	else if(gMCCharge < 0){
-              		if (fUseY)
-                  		fHistGeneratedEtaPtPhiMinus->Fill(mcTrack->Y(),
-                                                    mcTrack->Pt(),
-                                                    phiRad); 
-              		else if (!fUseY)
-                  		fHistGeneratedEtaPtPhiMinus->Fill(mcTrack->Eta(),
-						    mcTrack->Pt(),
-						    phiRad);
-          
+		  if (fUseY)
+		    fHistGeneratedEtaPtPhiMinus->Fill(mcTrack->Y(),
+						      mcTrack->Pt(),
+						      phiRad); 
+		  else
+		    fHistGeneratedEtaPtPhiMinus->Fill(mcTrack->Eta(),
+						      mcTrack->Pt(),
+						      phiRad);
+		  
          	}
 		      
 		Bool_t labelTPC = kTRUE;
@@ -839,7 +830,7 @@ void AliAnalysisTaskEffContBF::UserExec(Option_t *) {
 		  }
 		  //fill the arrays for 2 particle analysis
 		  eta[nMCLabelCounter]    = mcTrack->Eta();
-          	  Y[nMCLabelCounter]      = mcTrack->Y();
+          	  vY[nMCLabelCounter]      = mcTrack->Y();
 		  pt[nMCLabelCounter]     = mcTrack->Pt();
 		  phi[nMCLabelCounter]    = mcTrack->Phi();
 		  charge[nMCLabelCounter] = gMCCharge;
@@ -904,17 +895,18 @@ void AliAnalysisTaskEffContBF::UserExec(Option_t *) {
 		  
                   //acceptance
                   if (fUseY){
-                      if(TMath::Abs(trackAOD->Y()) > fMaxEta)
-                          continue;
+                      if(TMath::Abs(trackAOD->Y(fMassParticleOfInterest)) > fMaxEta)
+			continue;
                   }
-                  else if (!fUseY){
-                      if(TMath::Abs(trackAOD->Eta()) > fMaxEta)
-                          continue;
+                  else{
+		    if(TMath::Abs(trackAOD->Eta()) > fMaxEta)
+		      continue;
                   }
                   
                   if((trackAOD->Pt() > fMinPt)&&(trackAOD->Pt() < fMaxPt)) {
 		    level[k]  = 2;
-                  }else{ continue;}
+                  }
+		  else{ continue;}
 		  
                   Short_t gCharge = trackAOD->Charge();
                   Double_t phiRad = trackAOD->Phi();
@@ -1043,30 +1035,30 @@ void AliAnalysisTaskEffContBF::UserExec(Option_t *) {
                       }
                       if(ParticleFlag && gCharge > 0){
                           if (fUseY)
-                              fHistSurvivedEtaPtPhiPlus->Fill(trackAOD->Y(),trackAOD->Pt(),phiRad);
-                          else if (!fUseY)
-                              fHistSurvivedEtaPtPhiPlus->Fill(trackAOD->Eta(),trackAOD->Pt(),phiRad);
+			    fHistSurvivedEtaPtPhiPlus->Fill(trackAOD->Y(fMassParticleOfInterest),trackAOD->Pt(),phiRad);
+                          else
+			    fHistSurvivedEtaPtPhiPlus->Fill(trackAOD->Eta(),trackAOD->Pt(),phiRad);
                       }
                       else if(ParticleFlag && gCharge < 0){
-                          if (fUseY)
-                              fHistSurvivedEtaPtPhiMinus->Fill(trackAOD->Y(),trackAOD->Pt(),phiRad);
-                          else if (!fUseY)
-                              fHistSurvivedEtaPtPhiMinus->Fill(trackAOD->Eta(),trackAOD->Pt(),phiRad);
+			if (fUseY)
+			  fHistSurvivedEtaPtPhiMinus->Fill(trackAOD->Y(fMassParticleOfInterest),trackAOD->Pt(),phiRad);
+			else
+			 fHistSurvivedEtaPtPhiMinus->Fill(trackAOD->Eta(),trackAOD->Pt(),phiRad);
                       }
                   }
 		  else {
-             	  if (gCharge > 0) {
-                  	if (fUseY)
-                      		fHistSurvivedEtaPtPhiPlus->Fill(trackAOD->Y(),trackAOD->Pt(),phiRad);
-                  	else if (!fUseY)
-                      		fHistSurvivedEtaPtPhiPlus->Fill(trackAOD->Eta(),trackAOD->Pt(),phiRad);
-              	  }	
-              	  else if(gCharge < 0)  {
-                  	if (fUseY)
-                      		fHistSurvivedEtaPtPhiMinus->Fill(trackAOD->Y(),trackAOD->Pt(),phiRad);
-                  	else if (!fUseY)
-                      		fHistSurvivedEtaPtPhiMinus->Fill(trackAOD->Eta(),trackAOD->Pt(),phiRad);
-              	  }	
+		    if (gCharge > 0) {
+		      if (fUseY)
+			fHistSurvivedEtaPtPhiPlus->Fill(trackAOD->Y(fMassParticleOfInterest),trackAOD->Pt(),phiRad);
+		      else
+			fHistSurvivedEtaPtPhiPlus->Fill(trackAOD->Eta(),trackAOD->Pt(),phiRad);
+		    }	
+		    else if(gCharge < 0)  {
+		      if (fUseY)
+			fHistSurvivedEtaPtPhiMinus->Fill(trackAOD->Y(fMassParticleOfInterest),trackAOD->Pt(),phiRad);
+		      else
+			fHistSurvivedEtaPtPhiMinus->Fill(trackAOD->Eta(),trackAOD->Pt(),phiRad);
+		    }	
 		  }
 		  
               }//end of mcGoods
@@ -1088,8 +1080,8 @@ void AliAnalysisTaskEffContBF::UserExec(Option_t *) {
     // control 1D histograms (charge might be different?)
     if(charge[i] > 0){
         if (fUseY){
-            if(level[i] > 0) fHistGeneratedEtaPtPlusControl->Fill(Y[i],pt[i]);
-            if(level[i] > 1) fHistSurvivedEtaPtPlusControl->Fill(Y[i],pt[i]);
+            if(level[i] > 0) fHistGeneratedEtaPtPlusControl->Fill(vY[i],pt[i]);
+            if(level[i] > 1) fHistSurvivedEtaPtPlusControl->Fill(vY[i],pt[i]);
         }
         else if (!fUseY){
             if(level[i] > 0) fHistGeneratedEtaPtPlusControl->Fill(eta[i],pt[i]);
@@ -1098,8 +1090,8 @@ void AliAnalysisTaskEffContBF::UserExec(Option_t *) {
     }
     else if(charge[i] < 0){
         if (fUseY){
-            if(level[i] > 0) fHistGeneratedEtaPtMinusControl->Fill(Y[i],pt[i]);
-            if(level[i] > 1) fHistSurvivedEtaPtMinusControl->Fill(Y[i],pt[i]);
+            if(level[i] > 0) fHistGeneratedEtaPtMinusControl->Fill(vY[i],pt[i]);
+            if(level[i] > 1) fHistSurvivedEtaPtMinusControl->Fill(vY[i],pt[i]);
         }
         else if (!fUseY){
             if(level[i] > 0) fHistGeneratedEtaPtMinusControl->Fill(eta[i],pt[i]);
@@ -1112,86 +1104,86 @@ void AliAnalysisTaskEffContBF::UserExec(Option_t *) {
       
       if(charge[i] > 0 && charge[j] > 0 ){
 	if(level[i] > 0 && level[j] > 0) {
-        if (fUseY)
-            fHistGeneratedEtaPtPlusPlus->Fill(TMath::Abs(Y[i]-Y[j]),pt[i]);
-        else if (!fUseY)
-            fHistGeneratedEtaPtPlusPlus->Fill(TMath::Abs(eta[i]-eta[j]),pt[i]);
-        if (TMath::Abs(phi[i]-phi[j]) <  TMath::Pi()){
-        if (fUseY)
-            fHistGeneratedPhiEtaPlusPlus->Fill(TMath::Abs(phi[i]-phi[j]),TMath::Abs(Y[i]-Y[j]));
-        else if (!fUseY)
-            fHistGeneratedPhiEtaPlusPlus->Fill(TMath::Abs(phi[i]-phi[j]),TMath::Abs(eta[i]-eta[j]));
-        }
+	  if (fUseY)
+            fHistGeneratedEtaPtPlusPlus->Fill(TMath::Abs(vY[i]-vY[j]),pt[i]);
+	  else
+	    fHistGeneratedEtaPtPlusPlus->Fill(TMath::Abs(eta[i]-eta[j]),pt[i]);
+	  if (TMath::Abs(phi[i]-phi[j]) <  TMath::Pi()){
+	    if (fUseY)
+	      fHistGeneratedPhiEtaPlusPlus->Fill(TMath::Abs(phi[i]-phi[j]),TMath::Abs(vY[i]-vY[j]));
+	    else
+	      fHistGeneratedPhiEtaPlusPlus->Fill(TMath::Abs(phi[i]-phi[j]),TMath::Abs(eta[i]-eta[j]));
+	  }
 	}
 	if(level[i] > 1 && level[j] > 1) {
-        if (fUseY)
-            fHistSurvivedEtaPtPlusPlus->Fill(TMath::Abs(Y[i]-Y[j]),pt[i]);
-        else if (!fUseY)
+	  if (fUseY)
+            fHistSurvivedEtaPtPlusPlus->Fill(TMath::Abs(vY[i]-vY[j]),pt[i]);
+	  else
             fHistSurvivedEtaPtPlusPlus->Fill(TMath::Abs(eta[i]-eta[j]),pt[i]);
-        if (TMath::Abs(phi[i]-phi[j]) < TMath::Pi()){
-        if (fUseY)
-            fHistSurvivedPhiEtaPlusPlus->Fill(TMath::Abs(phi[i]-phi[j]),TMath::Abs(Y[i]-Y[j]));
-        else if (!fUseY)
-            fHistSurvivedPhiEtaPlusPlus->Fill(TMath::Abs(phi[i]-phi[j]),TMath::Abs(eta[i]-eta[j]));
+	  if (TMath::Abs(phi[i]-phi[j]) < TMath::Pi()){
+	    if (fUseY)
+	      fHistSurvivedPhiEtaPlusPlus->Fill(TMath::Abs(phi[i]-phi[j]),TMath::Abs(vY[i]-vY[j]));
+	    else
+	      fHistSurvivedPhiEtaPlusPlus->Fill(TMath::Abs(phi[i]-phi[j]),TMath::Abs(eta[i]-eta[j]));
         }
 	}
       }
       
       else if(charge[i] < 0 && charge[j] < 0 ){
 	if(level[i] > 0 && level[j] > 0) {
-        if (fUseY)
-            fHistGeneratedEtaPtMinusMinus->Fill(TMath::Abs(Y[i]-Y[j]),pt[i]);
-        else if (!fUseY)
+	  if (fUseY)
+            fHistGeneratedEtaPtMinusMinus->Fill(TMath::Abs(vY[i]-vY[j]),pt[i]);
+	  else
             fHistGeneratedEtaPtMinusMinus->Fill(TMath::Abs(eta[i]-eta[j]),pt[i]);
-        if (TMath::Abs(phi[i]-phi[j]) <  TMath::Pi()){
-        if (fUseY)
-            fHistGeneratedPhiEtaMinusMinus->Fill(TMath::Abs(phi[i]-phi[j]),TMath::Abs(Y[i]-Y[j]));
-        else if (!fUseY)
-            fHistGeneratedPhiEtaMinusMinus->Fill(TMath::Abs(phi[i]-phi[j]),TMath::Abs(eta[i]-eta[j]));
-        }
+	  if (TMath::Abs(phi[i]-phi[j]) <  TMath::Pi()){
+	    if (fUseY)
+	      fHistGeneratedPhiEtaMinusMinus->Fill(TMath::Abs(phi[i]-phi[j]),TMath::Abs(vY[i]-vY[j]));
+	    else
+	      fHistGeneratedPhiEtaMinusMinus->Fill(TMath::Abs(phi[i]-phi[j]),TMath::Abs(eta[i]-eta[j]));
+	  }
 	}
 	if(level[i] > 2 && level[j] > 1) {
-        if (fUseY)
-            fHistSurvivedEtaPtMinusMinus->Fill(TMath::Abs(Y[i]-Y[j]),pt[i]);
-        else if (!fUseY)
+	  if (fUseY)
+            fHistSurvivedEtaPtMinusMinus->Fill(TMath::Abs(vY[i]-vY[j]),pt[i]);
+	  else
             fHistSurvivedEtaPtMinusMinus->Fill(TMath::Abs(eta[i]-eta[j]),pt[i]);
-        if (TMath::Abs(phi[i]-phi[j]) <  TMath::Pi()){
-        if (fUseY)
-            fHistSurvivedPhiEtaMinusMinus->Fill(TMath::Abs(phi[i]-phi[j]),TMath::Abs(Y[i]-Y[j]));
-        else if (!fUseY)
-	    fHistSurvivedPhiEtaMinusMinus->Fill(TMath::Abs(phi[i]-phi[j]),TMath::Abs(eta[i]-eta[j]));
-        }
+	  if (TMath::Abs(phi[i]-phi[j]) <  TMath::Pi()){
+	    if (fUseY)
+	      fHistSurvivedPhiEtaMinusMinus->Fill(TMath::Abs(phi[i]-phi[j]),TMath::Abs(vY[i]-vY[j]));
+	    else
+	      fHistSurvivedPhiEtaMinusMinus->Fill(TMath::Abs(phi[i]-phi[j]),TMath::Abs(eta[i]-eta[j]));
+	  }
 	}
       }
       
       else if((charge[i] > 0 && charge[j] < 0)||(charge[i] < 0 && charge[j] > 0)){
 	if(level[i] > 0 && level[j] > 0) {
-        if (fUseY)
-            fHistGeneratedEtaPtPlusMinus->Fill(TMath::Abs(Y[i]-Y[j]),pt[i]);
-        else if (!fUseY)
-            fHistGeneratedEtaPtPlusMinus->Fill(TMath::Abs(eta[i]-eta[j]),pt[i]);
-        if (TMath::Abs(phi[i]-phi[j]) <  TMath::Pi()){
-        if (fUseY)
-            fHistGeneratedPhiEtaPlusMinus->Fill(TMath::Abs(phi[i]-phi[j]),TMath::Abs(Y[i]-Y[j]));
-        else if (!fUseY)
-            fHistGeneratedPhiEtaPlusMinus->Fill(TMath::Abs(phi[i]-phi[j]),TMath::Abs(eta[i]-eta[j]));
-        }
+	  if (fUseY)
+	    fHistGeneratedEtaPtPlusMinus->Fill(TMath::Abs(vY[i]-vY[j]),pt[i]);
+	  else
+	    fHistGeneratedEtaPtPlusMinus->Fill(TMath::Abs(eta[i]-eta[j]),pt[i]);
+	  if (TMath::Abs(phi[i]-phi[j]) <  TMath::Pi()){
+	    if (fUseY)
+	      fHistGeneratedPhiEtaPlusMinus->Fill(TMath::Abs(phi[i]-phi[j]),TMath::Abs(vY[i]-vY[j]));
+	    else 
+	      fHistGeneratedPhiEtaPlusMinus->Fill(TMath::Abs(phi[i]-phi[j]),TMath::Abs(eta[i]-eta[j]));
+	  }
 	}
 	if(level[i] > 2 && level[j] > 1) {
-        if (fUseY)
-            fHistSurvivedEtaPtPlusMinus->Fill(TMath::Abs(Y[i]-Y[j]),pt[i]);
-        else if (!fUseY)
+	  if (fUseY)
+            fHistSurvivedEtaPtPlusMinus->Fill(TMath::Abs(vY[i]-vY[j]),pt[i]);
+	  else
             fHistSurvivedEtaPtPlusMinus->Fill(TMath::Abs(eta[i]-eta[j]),pt[i]);
-        if (TMath::Abs(phi[i]-phi[j]) <  TMath::Pi()){
-        if (fUseY)
-            fHistSurvivedPhiEtaPlusMinus->Fill(TMath::Abs(phi[i]-phi[j]),TMath::Abs(Y[i]-Y[j]));
-        else if (!fUseY)
-            fHistSurvivedPhiEtaPlusMinus->Fill(TMath::Abs(phi[i]-phi[j]),TMath::Abs(eta[i]-eta[j]));
-        }
+	  if (TMath::Abs(phi[i]-phi[j]) <  TMath::Pi()){
+	    if (fUseY)
+	      fHistSurvivedPhiEtaPlusMinus->Fill(TMath::Abs(phi[i]-phi[j]),TMath::Abs(vY[i]-vY[j]));
+	    else
+	      fHistSurvivedPhiEtaPlusMinus->Fill(TMath::Abs(phi[i]-phi[j]),TMath::Abs(eta[i]-eta[j]));
+	  }
 	}	
       }
     }
-  }
+    }
 }
 
 //________________________________________________________________________
