@@ -108,6 +108,7 @@ public:
     void SetFilterMB     ( Bool_t lVar ) { fkFilterMB    = lVar; } ;
     void SetDebug        ( Bool_t lVar ) { fkDebug       = lVar; } ;
     void SetNDebug       ( Int_t  lVar ) { fNDebug       = lVar; } ;
+    void SetStoreAllQA( Bool_t lVar ) { fkStoreQA = lVar; }
     void SetHighMultQABinning( Bool_t lVar ) { fkHighMultQABinning = lVar; }
     void SetGeneratorOnly( Bool_t lVar ) { fkGeneratorOnly = lVar; }
     
@@ -154,6 +155,7 @@ private:
     Bool_t fkAddInfo;     //if true, save info
     Bool_t fkFilterMB;    //if true, save only kMB events
     Bool_t fkAttached;    //if true, has already attached to ESD (AOD)
+    Bool_t fkStoreQA;     //if true, store all QA histograms (and not just typical)
     Bool_t fkHighMultQABinning; //if true, use narrow binning for percentile histograms
     Bool_t fkGeneratorOnly; //if true, skip loading of reco objects
     

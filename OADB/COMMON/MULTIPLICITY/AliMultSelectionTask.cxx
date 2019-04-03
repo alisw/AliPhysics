@@ -103,7 +103,7 @@ ClassImp(AliMultSelectionTask)
 
 AliMultSelectionTask::AliMultSelectionTask()
 : AliAnalysisTaskSE(), fListHist(0), fTreeEvent(0),
-fkCalibration ( kFALSE ), fkAddInfo(kTRUE), fkFilterMB(kTRUE), fkAttached(0),
+fkCalibration ( kFALSE ), fkAddInfo(kTRUE), fkFilterMB(kTRUE), fkAttached(0), fkStoreQA(kFALSE),
 fkHighMultQABinning(kFALSE), fkGeneratorOnly(kFALSE), fkDebug(kTRUE),
 fkDebugAliCentrality ( kFALSE ), fkDebugAliPPVsMultUtils( kFALSE ), fkDebugIsMC( kFALSE ), fkDebugAdditional2DHisto( kFALSE ),
 fkUseDefaultCalib (kFALSE), fkUseDefaultMCCalib (kFALSE),
@@ -258,7 +258,7 @@ fOADB(nullptr)
 
 AliMultSelectionTask::AliMultSelectionTask(const char *name, TString lExtraOptions, Bool_t lCalib, Int_t lNDebugEstimators)
 : AliAnalysisTaskSE(name), fListHist(0), fTreeEvent(0), fESDtrackCuts(0), fTrackCuts(0), fTrackCutsGlobal2015(0), fTrackCutsITSsa2010(0), fUtils(0),
-fkCalibration ( lCalib ), fkAddInfo(kTRUE), fkFilterMB(kTRUE), fkAttached(0),
+fkCalibration ( lCalib ), fkAddInfo(kTRUE), fkFilterMB(kTRUE), fkAttached(0), fkStoreQA(kFALSE),
 fkHighMultQABinning(kFALSE), fkGeneratorOnly(kFALSE), fkDebug(kTRUE),
 fkDebugAliCentrality ( kFALSE ), fkDebugAliPPVsMultUtils( kFALSE ), fkDebugIsMC ( kFALSE ), fkDebugAdditional2DHisto( kFALSE ),
 fkUseDefaultCalib (kFALSE), fkUseDefaultMCCalib (kFALSE),
@@ -824,190 +824,208 @@ void AliMultSelectionTask::UserCreateOutputObjects()
         }
     }
     
-    //QA Histograms - User-side output for cross-checking
-    if ( !fHistQA_V0M ) {
-        fHistQA_V0M = new TH1D("fHistQA_V0M", ";V0M Percentile;Count", lNDesiredBoundaries, lDesiredBoundaries);
-        fListHist->Add(fHistQA_V0M);
+    //===========================================================================
+    //Non-selected histograms: optional, include all triggers
+    if( fkStoreQA ){
+        
+        //QA Histograms - User-side output for cross-checking
+        if ( !fHistQA_V0M ) {
+            fHistQA_V0M = new TH1D("fHistQA_V0M", ";V0M Percentile;Count", lNDesiredBoundaries, lDesiredBoundaries);
+            fListHist->Add(fHistQA_V0M);
+        }
+        if ( !fHistQA_V0A ) {
+            fHistQA_V0A = new TH1D("fHistQA_V0A", ";V0A Percentile;Count", lNDesiredBoundaries, lDesiredBoundaries);
+            fListHist->Add(fHistQA_V0A);
+        }
+        if ( !fHistQA_V0C ) {
+            fHistQA_V0C = new TH1D("fHistQA_V0C", ";V0C Percentile;Count", lNDesiredBoundaries, lDesiredBoundaries);
+            fListHist->Add(fHistQA_V0C);
+        }
+        if ( !fHistQA_CL0 ) {
+            fHistQA_CL0 = new TH1D("fHistQA_CL0", ";CL0 Percentile;Count", lNDesiredBoundaries, lDesiredBoundaries);
+            fListHist->Add(fHistQA_CL0);
+        }
+        if ( !fHistQA_CL1 ) {
+            fHistQA_CL1 = new TH1D("fHistQA_CL1", ";CL1 Percentile;Count", lNDesiredBoundaries, lDesiredBoundaries);
+            fListHist->Add(fHistQA_CL1);
+        }
+        if ( !fHistQA_SPDClusters ) {
+            fHistQA_SPDClusters = new TH1D("fHistQA_SPDClusters", ";SPDClusters Percentile;Count", lNDesiredBoundaries, lDesiredBoundaries);
+            fListHist->Add(fHistQA_SPDClusters);
+        }
+        if ( !fHistQA_SPDTracklets ) {
+            fHistQA_SPDTracklets = new TH1D("fHistQA_SPDTracklets", ";SPDTracklets Percentile;Count", lNDesiredBoundaries, lDesiredBoundaries);
+            fListHist->Add(fHistQA_SPDTracklets);
+        }
+        if ( !fHistQA_ZNA ) {
+            fHistQA_ZNA = new TH1D("fHistQA_ZNA", ";ZNA Percentile;Count", lNDesiredBoundaries, lDesiredBoundaries);
+            fListHist->Add(fHistQA_ZNA);
+        }
+        if ( !fHistQA_ZNC ) {
+            fHistQA_ZNC = new TH1D("fHistQA_ZNC", ";ZNC Percentile;Count", lNDesiredBoundaries, lDesiredBoundaries);
+            fListHist->Add(fHistQA_ZNC);
+        }
+        if ( !fHistQA_ZNApp ) {
+            fHistQA_ZNApp = new TH1D("fHistQA_ZNApp", ";ZNApp Percentile;Count", lNDesiredBoundaries, lDesiredBoundaries);
+            fListHist->Add(fHistQA_ZNApp);
+        }
+        if ( !fHistQA_ZNCpp ) {
+            fHistQA_ZNCpp = new TH1D("fHistQA_ZNCpp", ";ZNCpp Percentile;Count", lNDesiredBoundaries, lDesiredBoundaries);
+            fListHist->Add(fHistQA_ZNCpp);
+        }
+        if ( !fHistQA_NTracksINELgtONE ){
+            fHistQA_NTracksINELgtONE = new TH1D("fHistQA_NTracksINELgtONE", ";N Tracks Percentile;Count", lNDesiredBoundaries, lDesiredBoundaries);
+            fListHist->Add(fHistQA_NTracksINELgtONE);
+        }
+        if ( !fHistQA_NPartINELgtONE ){
+            fHistQA_NPartINELgtONE = new TH1D("fHistQA_NPartINELgtONE", ";N Part Percentile;Count", lNDesiredBoundaries, lDesiredBoundaries);
+            fListHist->Add(fHistQA_NPartINELgtONE);
+        }
+        //To compare SPD tracklets in data and MC
+        if ( !fHistQA_TrackletsVsV0M ) {
+            fHistQA_TrackletsVsV0M = new TProfile("fHistQA_TrackletsVsV0M", ";V0M Percentile;#LTSPD Tracklets#GT", lNDesiredBoundaries, lDesiredBoundaries);
+            fListHist->Add(fHistQA_TrackletsVsV0M);
+        }
+        if ( !fHistQA_TrackletsVsCL0 ) {
+            fHistQA_TrackletsVsCL0 = new TProfile("fHistQA_TrackletsVsCL0", ";CL0 Percentile;#LTSPD Tracklets#GT", lNDesiredBoundaries, lDesiredBoundaries);
+            fListHist->Add(fHistQA_TrackletsVsCL0);
+        }
+        if ( !fHistQA_TrackletsVsCL1 ) {
+            fHistQA_TrackletsVsCL1 = new TProfile("fHistQA_TrackletsVsCL1", ";CL1 Percentile;#LTSPD Tracklets#GT", lNDesiredBoundaries, lDesiredBoundaries);
+            fListHist->Add(fHistQA_TrackletsVsCL1);
+        }
     }
-    if ( !fHistQA_V0A ) {
-        fHistQA_V0A = new TH1D("fHistQA_V0A", ";V0A Percentile;Count", lNDesiredBoundaries, lDesiredBoundaries);
-        fListHist->Add(fHistQA_V0A);
-    }
-    if ( !fHistQA_V0C ) {
-        fHistQA_V0C = new TH1D("fHistQA_V0C", ";V0C Percentile;Count", lNDesiredBoundaries, lDesiredBoundaries);
-        fListHist->Add(fHistQA_V0C);
-    }
-    if ( !fHistQA_CL0 ) {
-        fHistQA_CL0 = new TH1D("fHistQA_CL0", ";CL0 Percentile;Count", lNDesiredBoundaries, lDesiredBoundaries);
-        fListHist->Add(fHistQA_CL0);
-    }
-    if ( !fHistQA_CL1 ) {
-        fHistQA_CL1 = new TH1D("fHistQA_CL1", ";CL1 Percentile;Count", lNDesiredBoundaries, lDesiredBoundaries);
-        fListHist->Add(fHistQA_CL1);
-    }
-    if ( !fHistQA_SPDClusters ) {
-        fHistQA_SPDClusters = new TH1D("fHistQA_SPDClusters", ";SPDClusters Percentile;Count", lNDesiredBoundaries, lDesiredBoundaries);
-        fListHist->Add(fHistQA_SPDClusters);
-    }
-    if ( !fHistQA_SPDTracklets ) {
-        fHistQA_SPDTracklets = new TH1D("fHistQA_SPDTracklets", ";SPDTracklets Percentile;Count", lNDesiredBoundaries, lDesiredBoundaries);
-        fListHist->Add(fHistQA_SPDTracklets);
-    }
-    if ( !fHistQA_ZNA ) {
-        fHistQA_ZNA = new TH1D("fHistQA_ZNA", ";ZNA Percentile;Count", lNDesiredBoundaries, lDesiredBoundaries);
-        fListHist->Add(fHistQA_ZNA);
-    }
-    if ( !fHistQA_ZNC ) {
-        fHistQA_ZNC = new TH1D("fHistQA_ZNC", ";ZNC Percentile;Count", lNDesiredBoundaries, lDesiredBoundaries);
-        fListHist->Add(fHistQA_ZNC);
-    }
-    if ( !fHistQA_ZNApp ) {
-        fHistQA_ZNApp = new TH1D("fHistQA_ZNApp", ";ZNApp Percentile;Count", lNDesiredBoundaries, lDesiredBoundaries);
-        fListHist->Add(fHistQA_ZNApp);
-    }
-    if ( !fHistQA_ZNCpp ) {
-        fHistQA_ZNCpp = new TH1D("fHistQA_ZNCpp", ";ZNCpp Percentile;Count", lNDesiredBoundaries, lDesiredBoundaries);
-        fListHist->Add(fHistQA_ZNCpp);
-    }
-    if ( !fHistQA_NTracksINELgtONE ){
-        fHistQA_NTracksINELgtONE = new TH1D("fHistQA_NTracksINELgtONE", ";N Tracks Percentile;Count", lNDesiredBoundaries, lDesiredBoundaries);
-        fListHist->Add(fHistQA_NTracksINELgtONE);
-    }
-    if ( !fHistQA_NPartINELgtONE ){
-        fHistQA_NPartINELgtONE = new TH1D("fHistQA_NPartINELgtONE", ";N Part Percentile;Count", lNDesiredBoundaries, lDesiredBoundaries);
-        fListHist->Add(fHistQA_NPartINELgtONE);
-    }
-    //To compare SPD tracklets in data and MC
-    if ( !fHistQA_TrackletsVsV0M ) {
-        fHistQA_TrackletsVsV0M = new TProfile("fHistQA_TrackletsVsV0M", ";V0M Percentile;#LTSPD Tracklets#GT", lNDesiredBoundaries, lDesiredBoundaries);
-        fListHist->Add(fHistQA_TrackletsVsV0M);
-    }
-    if ( !fHistQA_TrackletsVsCL0 ) {
-        fHistQA_TrackletsVsCL0 = new TProfile("fHistQA_TrackletsVsCL0", ";CL0 Percentile;#LTSPD Tracklets#GT", lNDesiredBoundaries, lDesiredBoundaries);
-        fListHist->Add(fHistQA_TrackletsVsCL0);
-    }
-    if ( !fHistQA_TrackletsVsCL1 ) {
-        fHistQA_TrackletsVsCL1 = new TProfile("fHistQA_TrackletsVsCL1", ";CL1 Percentile;#LTSPD Tracklets#GT", lNDesiredBoundaries, lDesiredBoundaries);
-        fListHist->Add(fHistQA_TrackletsVsCL1);
-    }
+    //===========================================================================
     
+    //===========================================================================
+    //Key histogram: V0M percentile, keep
     //Histograms filled with event selection embedded
     if ( !fHistQASelected_V0M ) {
         fHistQASelected_V0M = new TH1D("fHistQASelected_V0M", ";V0M Percentile;Count", lNDesiredBoundaries, lDesiredBoundaries);
         fListHist->Add(fHistQASelected_V0M);
     }
-    if ( !fHistQASelected_V0A ) {
-        fHistQASelected_V0A = new TH1D("fHistQASelected_V0A", ";V0A Percentile;Count", lNDesiredBoundaries, lDesiredBoundaries);
-        fListHist->Add(fHistQASelected_V0A);
+    //===========================================================================
+    
+    //optional histos
+    if( fkStoreQA ){
+        if ( !fHistQASelected_V0A ) {
+            fHistQASelected_V0A = new TH1D("fHistQASelected_V0A", ";V0A Percentile;Count", lNDesiredBoundaries, lDesiredBoundaries);
+            fListHist->Add(fHistQASelected_V0A);
+        }
+        if ( !fHistQASelected_V0C ) {
+            fHistQASelected_V0C = new TH1D("fHistQASelected_V0C", ";V0C Percentile;Count", lNDesiredBoundaries, lDesiredBoundaries);
+            fListHist->Add(fHistQASelected_V0C);
+        }
+        if ( !fHistQASelected_CL0 ) {
+            fHistQASelected_CL0 = new TH1D("fHistQASelected_CL0", ";CL0 Percentile;Count", lNDesiredBoundaries, lDesiredBoundaries);
+            fListHist->Add(fHistQASelected_CL0);
+        }
+        if ( !fHistQASelected_CL1 ) {
+            fHistQASelected_CL1 = new TH1D("fHistQASelected_CL1", ";CL1 Percentile;Count", lNDesiredBoundaries, lDesiredBoundaries);
+            fListHist->Add(fHistQASelected_CL1);
+        }
+        if ( !fHistQASelected_SPDClusters ) {
+            fHistQASelected_SPDClusters = new TH1D("fHistQASelected_SPDClusters", ";SPDClusters Percentile;Count", lNDesiredBoundaries, lDesiredBoundaries);
+            fListHist->Add(fHistQASelected_SPDClusters);
+        }
+        if ( !fHistQASelected_SPDTracklets ) {
+            fHistQASelected_SPDTracklets = new TH1D("fHistQASelected_SPDTracklets", ";SPDTracklets Percentile;Count", lNDesiredBoundaries, lDesiredBoundaries);
+            fListHist->Add(fHistQASelected_SPDTracklets);
+        }
+        if ( !fHistQASelected_ZNA ) {
+            fHistQASelected_ZNA = new TH1D("fHistQASelected_ZNA", ";ZNA Percentile;Count", lNDesiredBoundaries, lDesiredBoundaries);
+            fListHist->Add(fHistQASelected_ZNA);
+        }
+        if ( !fHistQASelected_ZNC ) {
+            fHistQASelected_ZNC = new TH1D("fHistQASelected_ZNC", ";ZNC Percentile;Count", lNDesiredBoundaries, lDesiredBoundaries);
+            fListHist->Add(fHistQASelected_ZNC);
+        }
+        if ( !fHistQASelected_ZNApp ) {
+            fHistQASelected_ZNApp = new TH1D("fHistQASelected_ZNApp", ";ZNApp Percentile;Count", lNDesiredBoundaries, lDesiredBoundaries);
+            fListHist->Add(fHistQASelected_ZNApp);
+        }
+        if ( !fHistQASelected_ZNCpp ) {
+            fHistQASelected_ZNCpp = new TH1D("fHistQASelected_ZNCpp", ";ZNCpp Percentile;Count", lNDesiredBoundaries, lDesiredBoundaries);
+            fListHist->Add(fHistQASelected_ZNCpp);
+        }
+        if ( !fHistQASelected_NTracksINELgtONE ){
+            fHistQASelected_NTracksINELgtONE = new TH1D("fHistQASelected_NTracksINELgtONE", ";N Tracks Percentile;Count", lNDesiredBoundaries, lDesiredBoundaries);
+            fListHist->Add(fHistQASelected_NTracksINELgtONE);
+        }
+        if ( !fHistQASelected_NPartINELgtONE ){
+            fHistQASelected_NPartINELgtONE = new TH1D("fHistQASelected_NPartINELgtONE", ";N Part Percentile;Count", lNDesiredBoundaries, lDesiredBoundaries);
+            fListHist->Add(fHistQASelected_NPartINELgtONE);
+        }
     }
-    if ( !fHistQASelected_V0C ) {
-        fHistQASelected_V0C = new TH1D("fHistQASelected_V0C", ";V0C Percentile;Count", lNDesiredBoundaries, lDesiredBoundaries);
-        fListHist->Add(fHistQASelected_V0C);
-    }
-    if ( !fHistQASelected_CL0 ) {
-        fHistQASelected_CL0 = new TH1D("fHistQASelected_CL0", ";CL0 Percentile;Count", lNDesiredBoundaries, lDesiredBoundaries);
-        fListHist->Add(fHistQASelected_CL0);
-    }
-    if ( !fHistQASelected_CL1 ) {
-        fHistQASelected_CL1 = new TH1D("fHistQASelected_CL1", ";CL1 Percentile;Count", lNDesiredBoundaries, lDesiredBoundaries);
-        fListHist->Add(fHistQASelected_CL1);
-    }
-    if ( !fHistQASelected_SPDClusters ) {
-        fHistQASelected_SPDClusters = new TH1D("fHistQASelected_SPDClusters", ";SPDClusters Percentile;Count", lNDesiredBoundaries, lDesiredBoundaries);
-        fListHist->Add(fHistQASelected_SPDClusters);
-    }
-    if ( !fHistQASelected_SPDTracklets ) {
-        fHistQASelected_SPDTracklets = new TH1D("fHistQASelected_SPDTracklets", ";SPDTracklets Percentile;Count", lNDesiredBoundaries, lDesiredBoundaries);
-        fListHist->Add(fHistQASelected_SPDTracklets);
-    }
-    if ( !fHistQASelected_ZNA ) {
-        fHistQASelected_ZNA = new TH1D("fHistQASelected_ZNA", ";ZNA Percentile;Count", lNDesiredBoundaries, lDesiredBoundaries);
-        fListHist->Add(fHistQASelected_ZNA);
-    }
-    if ( !fHistQASelected_ZNC ) {
-        fHistQASelected_ZNC = new TH1D("fHistQASelected_ZNC", ";ZNC Percentile;Count", lNDesiredBoundaries, lDesiredBoundaries);
-        fListHist->Add(fHistQASelected_ZNC);
-    }
-    if ( !fHistQASelected_ZNApp ) {
-        fHistQASelected_ZNApp = new TH1D("fHistQASelected_ZNApp", ";ZNApp Percentile;Count", lNDesiredBoundaries, lDesiredBoundaries);
-        fListHist->Add(fHistQASelected_ZNApp);
-    }
-    if ( !fHistQASelected_ZNCpp ) {
-        fHistQASelected_ZNCpp = new TH1D("fHistQASelected_ZNCpp", ";ZNCpp Percentile;Count", lNDesiredBoundaries, lDesiredBoundaries);
-        fListHist->Add(fHistQASelected_ZNCpp);
-    }
-    if ( !fHistQASelected_NTracksINELgtONE ){
-        fHistQASelected_NTracksINELgtONE = new TH1D("fHistQASelected_NTracksINELgtONE", ";N Tracks Percentile;Count", lNDesiredBoundaries, lDesiredBoundaries);
-        fListHist->Add(fHistQASelected_NTracksINELgtONE);
-    }
-    if ( !fHistQASelected_NPartINELgtONE ){
-        fHistQASelected_NPartINELgtONE = new TH1D("fHistQASelected_NPartINELgtONE", ";N Part Percentile;Count", lNDesiredBoundaries, lDesiredBoundaries);
-        fListHist->Add(fHistQASelected_NPartINELgtONE);
-    }
+    
+    
     //To compare SPD tracklets in data and MC
     if ( !fHistQASelected_TrackletsVsV0M ) {
         fHistQASelected_TrackletsVsV0M = new TProfile("fHistQASelected_TrackletsVsV0M", ";V0M Percentile;#LTSPD Tracklets#GT", lNDesiredBoundaries, lDesiredBoundaries);
         fListHist->Add(fHistQASelected_TrackletsVsV0M);
     }
-    if ( !fHistQASelected_TrackletsVsCL0 ) {
-        fHistQASelected_TrackletsVsCL0 = new TProfile("fHistQASelected_TrackletsVsCL0", ";CL0 Percentile;#LTSPD Tracklets#GT", lNDesiredBoundaries, lDesiredBoundaries);
-        fListHist->Add(fHistQASelected_TrackletsVsCL0);
-    }
-    if ( !fHistQASelected_TrackletsVsCL1 ) {
-        fHistQASelected_TrackletsVsCL1 = new TProfile("fHistQASelected_TrackletsVsCL1", ";CL1 Percentile;#LTSPD Tracklets#GT", lNDesiredBoundaries, lDesiredBoundaries);
-        fListHist->Add(fHistQASelected_TrackletsVsCL1);
-    }
     
-    //In development: QA with global track information
-    if ( !fHistQASelected_NTracksGlobalVsV0M ) {
-        fHistQASelected_NTracksGlobalVsV0M = new TProfile("fHistQASelected_NTracksGlobalVsV0M", ";V0M Percentile;#LTGlobal Tracks#GT", lNDesiredBoundaries, lDesiredBoundaries);
-        fListHist->Add(fHistQASelected_NTracksGlobalVsV0M);
-    }
-    if ( !fHistQASelected_NTracksGlobalVsCL0 ) {
-        fHistQASelected_NTracksGlobalVsCL0 = new TProfile("fHistQASelected_NTracksGlobalVsCL0", ";CL0 Percentile;#LTGlobal Tracks#GT", lNDesiredBoundaries, lDesiredBoundaries);
-        fListHist->Add(fHistQASelected_NTracksGlobalVsCL0);
-    }
-    if ( !fHistQASelected_NTracksGlobalVsCL1 ) {
-        fHistQASelected_NTracksGlobalVsCL1 = new TProfile("fHistQASelected_NTracksGlobalVsCL1", ";CL1 Percentile;#LTGlobal Tracks#GT", lNDesiredBoundaries, lDesiredBoundaries);
-        fListHist->Add(fHistQASelected_NTracksGlobalVsCL1);
-    }
-    if ( !fHistQASelected_PtGlobalVsV0M ) {
-        fHistQASelected_PtGlobalVsV0M = new TProfile("fHistQASelected_PtGlobalVsV0M", ";V0M Percentile;#LTp_{T}#GT", lNDesiredBoundaries, lDesiredBoundaries);
-        fListHist->Add(fHistQASelected_PtGlobalVsV0M);
-    }
-    if ( !fHistQASelected_PtGlobalVsCL0 ) {
-        fHistQASelected_PtGlobalVsCL0 = new TProfile("fHistQASelected_PtGlobalVsCL0", ";CL0 Percentile;#LTp_{T}#GT", lNDesiredBoundaries, lDesiredBoundaries);
-        fListHist->Add(fHistQASelected_PtGlobalVsCL0);
-    }
-    if ( !fHistQASelected_PtGlobalVsCL1 ) {
-        fHistQASelected_PtGlobalVsCL1 = new TProfile("fHistQASelected_PtGlobalVsCL1", ";CL1 Percentile;#LTp_{T}#GT", lNDesiredBoundaries, lDesiredBoundaries);
-        fListHist->Add(fHistQASelected_PtGlobalVsCL1);
-    }
-    
-    //In development: QA with ITSsa track information
-    if ( !fHistQASelected_NTracksITSsaVsV0M ) {
-        fHistQASelected_NTracksITSsaVsV0M = new TProfile("fHistQASelected_NTracksITSsaVsV0M", ";V0M Percentile;#LTITSsa Tracks#GT", lNDesiredBoundaries, lDesiredBoundaries);
-        fListHist->Add(fHistQASelected_NTracksITSsaVsV0M);
-    }
-    if ( !fHistQASelected_NTracksITSsaVsCL0 ) {
-        fHistQASelected_NTracksITSsaVsCL0 = new TProfile("fHistQASelected_NTracksITSsaVsCL0", ";CL0 Percentile;#LTITSsa Tracks#GT", lNDesiredBoundaries, lDesiredBoundaries);
-        fListHist->Add(fHistQASelected_NTracksITSsaVsCL0);
-    }
-    if ( !fHistQASelected_NTracksITSsaVsCL1 ) {
-        fHistQASelected_NTracksITSsaVsCL1 = new TProfile("fHistQASelected_NTracksITSsaVsCL1", ";CL1 Percentile;#LTITSsa Tracks#GT", lNDesiredBoundaries, lDesiredBoundaries);
-        fListHist->Add(fHistQASelected_NTracksITSsaVsCL1);
-    }
-    if ( !fHistQASelected_PtITSsaVsV0M ) {
-        fHistQASelected_PtITSsaVsV0M = new TProfile("fHistQASelected_PtITSsaVsV0M", ";V0M Percentile;#LTp_{T}#GT", lNDesiredBoundaries, lDesiredBoundaries);
-        fListHist->Add(fHistQASelected_PtITSsaVsV0M);
-    }
-    if ( !fHistQASelected_PtITSsaVsCL0 ) {
-        fHistQASelected_PtITSsaVsCL0 = new TProfile("fHistQASelected_PtITSsaVsCL0", ";CL0 Percentile;#LTp_{T}#GT", lNDesiredBoundaries, lDesiredBoundaries);
-        fListHist->Add(fHistQASelected_PtITSsaVsCL0);
-    }
-    if ( !fHistQASelected_PtITSsaVsCL1 ) {
-        fHistQASelected_PtITSsaVsCL1 = new TProfile("fHistQASelected_PtITSsaVsCL1", ";CL1 Percentile;#LTp_{T}#GT", lNDesiredBoundaries, lDesiredBoundaries);
-        fListHist->Add(fHistQASelected_PtITSsaVsCL1);
+    if(fkStoreQA){
+        if ( !fHistQASelected_TrackletsVsCL0 ) {
+            fHistQASelected_TrackletsVsCL0 = new TProfile("fHistQASelected_TrackletsVsCL0", ";CL0 Percentile;#LTSPD Tracklets#GT", lNDesiredBoundaries, lDesiredBoundaries);
+            fListHist->Add(fHistQASelected_TrackletsVsCL0);
+        }
+        if ( !fHistQASelected_TrackletsVsCL1 ) {
+            fHistQASelected_TrackletsVsCL1 = new TProfile("fHistQASelected_TrackletsVsCL1", ";CL1 Percentile;#LTSPD Tracklets#GT", lNDesiredBoundaries, lDesiredBoundaries);
+            fListHist->Add(fHistQASelected_TrackletsVsCL1);
+        }
+        
+        //In development: QA with global track information
+        if ( !fHistQASelected_NTracksGlobalVsV0M ) {
+            fHistQASelected_NTracksGlobalVsV0M = new TProfile("fHistQASelected_NTracksGlobalVsV0M", ";V0M Percentile;#LTGlobal Tracks#GT", lNDesiredBoundaries, lDesiredBoundaries);
+            fListHist->Add(fHistQASelected_NTracksGlobalVsV0M);
+        }
+        if ( !fHistQASelected_NTracksGlobalVsCL0 ) {
+            fHistQASelected_NTracksGlobalVsCL0 = new TProfile("fHistQASelected_NTracksGlobalVsCL0", ";CL0 Percentile;#LTGlobal Tracks#GT", lNDesiredBoundaries, lDesiredBoundaries);
+            fListHist->Add(fHistQASelected_NTracksGlobalVsCL0);
+        }
+        if ( !fHistQASelected_NTracksGlobalVsCL1 ) {
+            fHistQASelected_NTracksGlobalVsCL1 = new TProfile("fHistQASelected_NTracksGlobalVsCL1", ";CL1 Percentile;#LTGlobal Tracks#GT", lNDesiredBoundaries, lDesiredBoundaries);
+            fListHist->Add(fHistQASelected_NTracksGlobalVsCL1);
+        }
+        if ( !fHistQASelected_PtGlobalVsV0M ) {
+            fHistQASelected_PtGlobalVsV0M = new TProfile("fHistQASelected_PtGlobalVsV0M", ";V0M Percentile;#LTp_{T}#GT", lNDesiredBoundaries, lDesiredBoundaries);
+            fListHist->Add(fHistQASelected_PtGlobalVsV0M);
+        }
+        if ( !fHistQASelected_PtGlobalVsCL0 ) {
+            fHistQASelected_PtGlobalVsCL0 = new TProfile("fHistQASelected_PtGlobalVsCL0", ";CL0 Percentile;#LTp_{T}#GT", lNDesiredBoundaries, lDesiredBoundaries);
+            fListHist->Add(fHistQASelected_PtGlobalVsCL0);
+        }
+        if ( !fHistQASelected_PtGlobalVsCL1 ) {
+            fHistQASelected_PtGlobalVsCL1 = new TProfile("fHistQASelected_PtGlobalVsCL1", ";CL1 Percentile;#LTp_{T}#GT", lNDesiredBoundaries, lDesiredBoundaries);
+            fListHist->Add(fHistQASelected_PtGlobalVsCL1);
+        }
+        
+        //In development: QA with ITSsa track information
+        if ( !fHistQASelected_NTracksITSsaVsV0M ) {
+            fHistQASelected_NTracksITSsaVsV0M = new TProfile("fHistQASelected_NTracksITSsaVsV0M", ";V0M Percentile;#LTITSsa Tracks#GT", lNDesiredBoundaries, lDesiredBoundaries);
+            fListHist->Add(fHistQASelected_NTracksITSsaVsV0M);
+        }
+        if ( !fHistQASelected_NTracksITSsaVsCL0 ) {
+            fHistQASelected_NTracksITSsaVsCL0 = new TProfile("fHistQASelected_NTracksITSsaVsCL0", ";CL0 Percentile;#LTITSsa Tracks#GT", lNDesiredBoundaries, lDesiredBoundaries);
+            fListHist->Add(fHistQASelected_NTracksITSsaVsCL0);
+        }
+        if ( !fHistQASelected_NTracksITSsaVsCL1 ) {
+            fHistQASelected_NTracksITSsaVsCL1 = new TProfile("fHistQASelected_NTracksITSsaVsCL1", ";CL1 Percentile;#LTITSsa Tracks#GT", lNDesiredBoundaries, lDesiredBoundaries);
+            fListHist->Add(fHistQASelected_NTracksITSsaVsCL1);
+        }
+        if ( !fHistQASelected_PtITSsaVsV0M ) {
+            fHistQASelected_PtITSsaVsV0M = new TProfile("fHistQASelected_PtITSsaVsV0M", ";V0M Percentile;#LTp_{T}#GT", lNDesiredBoundaries, lDesiredBoundaries);
+            fListHist->Add(fHistQASelected_PtITSsaVsV0M);
+        }
+        if ( !fHistQASelected_PtITSsaVsCL0 ) {
+            fHistQASelected_PtITSsaVsCL0 = new TProfile("fHistQASelected_PtITSsaVsCL0", ";CL0 Percentile;#LTp_{T}#GT", lNDesiredBoundaries, lDesiredBoundaries);
+            fListHist->Add(fHistQASelected_PtITSsaVsCL0);
+        }
+        if ( !fHistQASelected_PtITSsaVsCL1 ) {
+            fHistQASelected_PtITSsaVsCL1 = new TProfile("fHistQASelected_PtITSsaVsCL1", ";CL1 Percentile;#LTp_{T}#GT", lNDesiredBoundaries, lDesiredBoundaries);
+            fListHist->Add(fHistQASelected_PtITSsaVsCL1);
+        }
     }
     // Additional histogram to get the anchor percentage for INELgtONE estimator
     if ( fkDebugIsMC && fkDebugAdditional2DHisto ){
@@ -1790,23 +1808,26 @@ void AliMultSelectionTask::UserExec(Option_t *)
         Float_t lINELgtONEpart = -1.;
         if(fkDebugIsMC) lINELgtONEpart = lSelection->GetMultiplicityPercentile("INELgtONEParticles");
         
-        fHistQA_V0M -> Fill( lV0M );
-        fHistQA_V0A -> Fill( lV0A );
-        fHistQA_V0C -> Fill( lV0C );
-        fHistQA_CL0 -> Fill( lCL0 );
-        fHistQA_CL1 -> Fill( lCL1 );
-        fHistQA_SPDClusters  -> Fill( lSPDClusters  );
-        fHistQA_SPDTracklets -> Fill( lSPDTracklets );
-        fHistQA_ZNA -> Fill( lZNA );
-        fHistQA_ZNC -> Fill( lZNC );
-        fHistQA_ZNApp -> Fill( lZNApp );
-        fHistQA_ZNCpp -> Fill( lZNCpp );
-        fHistQA_NTracksINELgtONE -> Fill( lINELgtONEtracks );
-        if(fkDebugIsMC) fHistQA_NPartINELgtONE   -> Fill( lINELgtONEpart );
-        
-        fHistQA_TrackletsVsV0M -> Fill( lV0M, ltracklets );
-        fHistQA_TrackletsVsCL0 -> Fill( lCL0, ltracklets );
-        fHistQA_TrackletsVsCL1 -> Fill( lCL1, ltracklets );
+        if(fkStoreQA){
+            fHistQA_V0M -> Fill( lV0M );
+            fHistQA_V0A -> Fill( lV0A );
+            fHistQA_V0C -> Fill( lV0C );
+            fHistQA_CL0 -> Fill( lCL0 );
+            fHistQA_CL1 -> Fill( lCL1 );
+            fHistQA_SPDClusters  -> Fill( lSPDClusters  );
+            fHistQA_SPDTracklets -> Fill( lSPDTracklets );
+            fHistQA_ZNA -> Fill( lZNA );
+            fHistQA_ZNC -> Fill( lZNC );
+            fHistQA_ZNApp -> Fill( lZNApp );
+            fHistQA_ZNCpp -> Fill( lZNCpp );
+            fHistQA_NTracksINELgtONE -> Fill( lINELgtONEtracks );
+            
+            if(fkDebugIsMC) fHistQA_NPartINELgtONE   -> Fill( lINELgtONEpart );
+            
+            fHistQA_TrackletsVsV0M -> Fill( lV0M, ltracklets );
+            fHistQA_TrackletsVsCL0 -> Fill( lCL0, ltracklets );
+            fHistQA_TrackletsVsCL1 -> Fill( lCL1, ltracklets );
+        }
         
         lV0M = lSelection->GetMultiplicityPercentile("V0M",kTRUE);
         lV0A = lSelection->GetMultiplicityPercentile("V0A",kTRUE);
@@ -1823,25 +1844,31 @@ void AliMultSelectionTask::UserExec(Option_t *)
         if(fkDebugIsMC)lINELgtONEpart = lSelection->GetMultiplicityPercentile("INELgtONEParticles",kTRUE);
         
         fHistQASelected_V0M -> Fill( lV0M );
-        fHistQASelected_V0A -> Fill( lV0A );
-        fHistQASelected_V0C -> Fill( lV0C );
-        fHistQASelected_CL0 -> Fill( lCL0 );
-        fHistQASelected_CL1 -> Fill( lCL1 );
-        fHistQASelected_SPDClusters  -> Fill( lSPDClusters  );
-        fHistQASelected_SPDTracklets -> Fill( lSPDTracklets );
-        fHistQASelected_ZNC -> Fill( lZNC );
-        fHistQASelected_ZNApp -> Fill( lZNApp );
-        fHistQASelected_ZNCpp -> Fill( lZNCpp );
-        fHistQASelected_NTracksINELgtONE -> Fill( lINELgtONEtracks );
-        if(fkDebugIsMC) fHistQASelected_NPartINELgtONE   -> Fill( lINELgtONEpart );
+        
+        if(fkStoreQA){
+            fHistQASelected_V0A -> Fill( lV0A );
+            fHistQASelected_V0C -> Fill( lV0C );
+            fHistQASelected_CL0 -> Fill( lCL0 );
+            fHistQASelected_CL1 -> Fill( lCL1 );
+            fHistQASelected_SPDClusters  -> Fill( lSPDClusters  );
+            fHistQASelected_SPDTracklets -> Fill( lSPDTracklets );
+            fHistQASelected_ZNC -> Fill( lZNC );
+            fHistQASelected_ZNApp -> Fill( lZNApp );
+            fHistQASelected_ZNCpp -> Fill( lZNCpp );
+            fHistQASelected_NTracksINELgtONE -> Fill( lINELgtONEtracks );
+            if(fkDebugIsMC) fHistQASelected_NPartINELgtONE   -> Fill( lINELgtONEpart );
+        }
         
         fHistQASelected_TrackletsVsV0M -> Fill( lV0M, ltracklets );
-        fHistQASelected_TrackletsVsCL0 -> Fill( lCL0, ltracklets );
-        fHistQASelected_TrackletsVsCL1 -> Fill( lCL1, ltracklets );
+        
+        if(fkStoreQA){
+            fHistQASelected_TrackletsVsCL0 -> Fill( lCL0, ltracklets );
+            fHistQASelected_TrackletsVsCL1 -> Fill( lCL1, ltracklets );
+        }
         
         //Track momentum QA
         //requires reco objects
-        if( !fkGeneratorOnly ){
+        if( !fkGeneratorOnly&&fkStoreQA ){
             for(Long_t itrack = 0; itrack<lVevent->GetNumberOfTracks(); itrack++) {
                 AliVTrack *track = lVevent -> GetVTrack( itrack );
                 if ( !track ) continue;
@@ -1862,12 +1889,14 @@ void AliMultSelectionTask::UserExec(Option_t *)
             }
         }
         
-        fHistQASelected_NTracksGlobalVsV0M -> Fill( lV0M, fNTracksGlobal2015->GetValueInteger() );
-        fHistQASelected_NTracksGlobalVsCL0 -> Fill( lCL0, fNTracksGlobal2015->GetValueInteger() );
-        fHistQASelected_NTracksGlobalVsCL1 -> Fill( lCL1, fNTracksGlobal2015->GetValueInteger() );
-        fHistQASelected_NTracksITSsaVsV0M  -> Fill( lV0M, fNTracksITSsa2010->GetValueInteger() );
-        fHistQASelected_NTracksITSsaVsCL0  -> Fill( lCL0, fNTracksITSsa2010->GetValueInteger() );
-        fHistQASelected_NTracksITSsaVsCL1  -> Fill( lCL1, fNTracksITSsa2010->GetValueInteger() );
+        if(fkStoreQA){
+            fHistQASelected_NTracksGlobalVsV0M -> Fill( lV0M, fNTracksGlobal2015->GetValueInteger() );
+            fHistQASelected_NTracksGlobalVsCL0 -> Fill( lCL0, fNTracksGlobal2015->GetValueInteger() );
+            fHistQASelected_NTracksGlobalVsCL1 -> Fill( lCL1, fNTracksGlobal2015->GetValueInteger() );
+            fHistQASelected_NTracksITSsaVsV0M  -> Fill( lV0M, fNTracksITSsa2010->GetValueInteger() );
+            fHistQASelected_NTracksITSsaVsCL0  -> Fill( lCL0, fNTracksITSsa2010->GetValueInteger() );
+            fHistQASelected_NTracksITSsaVsCL1  -> Fill( lCL1, fNTracksITSsa2010->GetValueInteger() );
+        }
         //=============================================================================
         
         //Add to AliVEvent
