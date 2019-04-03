@@ -729,6 +729,39 @@ class AliAnalysisTaskUPCforward : public AliAnalysisTaskSE
                                  */
         TH1F*                   fPhiCollinsSoperFrameJPsiRapidityBinsH[8];
 
+                                /**
+                                 * This histogram shows the angular distribution
+                                 * of the positive muon in the HELICITY frame.
+                                 * COS(THETA) distribution. Divided per
+                                 * rapidity bins. 10 of them.
+                                 */
+        TH1F*                   fCosThetaHelicityFrameJPsiTenRapidityBinsH[10];
+
+                                /**
+                                 * This histogram shows the angular distribution
+                                 * of the positive muon in the HELICITY frame.
+                                 * PHI distribution. Divided per
+                                 * rapidity bins. 10 of them.
+                                 */
+        TH1F*                   fPhiHelicityFrameJPsiTenRapidityBinsH[10];
+
+                                /**
+                                 * This histogram shows the angular distribution
+                                 * of the positive muon in the COLLINS-SOPER
+                                 * frame.  COS(THETA) distribution. Divided per
+                                 * rapidity bins. 10 of them.
+                                 */
+        TH1F*                   fCosThetaCollinsSoperFrameJPsiTenRapidityBinsH[10];
+
+                                /**
+                                 * This histogram shows the angular distribution
+                                 * of the positive muon in the COLLINS-SOPER
+                                 * frame. PHI distribution. Divided per
+                                 * rapidity bins. 10 of them.
+                                 */
+        TH1F*                   fPhiCollinsSoperFrameJPsiTenRapidityBinsH[10];
+
+
 
         //_______________________________
         // CUTS
@@ -790,7 +823,7 @@ class AliAnalysisTaskUPCforward : public AliAnalysisTaskSE
          * If I happen to encounter it again in the future, I will make sure to
          * record it!
          */
-        ClassDef(AliAnalysisTaskUPCforward, 8);
+        ClassDef(AliAnalysisTaskUPCforward, 9);
 };
 
 #endif
