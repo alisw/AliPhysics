@@ -104,8 +104,10 @@ void  AliAnalysisTaskNanoSimple::UserExec(Option_t */*option*/)
   }
 
   // cascade access - as usual
-  if (aod->GetCascades()) {
-    for (int i = 0; i < aod->GetNumberOfCascades(); i++)
-      Printf("Cascade %d: xi mass = %f", i, aod->GetCascade(i)->MassXi());
-  }
+  
+  // TODO in current AliRoot tag (v5-09-46), GetCascades() produces a SEGV if not filled
+  //if (aod->GetCascades()) {
+  //  for (int i = 0; i < aod->GetNumberOfCascades(); i++)
+  //    Printf("Cascade %d: xi mass = %f", i, aod->GetCascade(i)->MassXi());
+  //}
 }
