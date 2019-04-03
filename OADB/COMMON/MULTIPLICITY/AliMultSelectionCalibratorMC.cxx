@@ -804,39 +804,45 @@ Bool_t AliMultSelectionCalibratorMC::Calibrate() {
                 lTempDef.ReplaceAll("fZpaFired", "1");
                 lTempDef.ReplaceAll("fZpcFired", "1");
                 
+                //remember to not be silly...
+                TString lEstName = fsels->GetEstimator(iEst)->GetName();
                 //Construction of estimator re-definition
-                if(!fkUseQuadraticMapping){
-                    lTempDef.Prepend(Form("%.10f*(",lScaleFactors[iEst][iRun] ));
-                    lTempDef.Append(")"); //don't forget parentheses...
-                }else{
-                    //Experimental quadratic fit
-                    TString lTemporary = lTempDef.Data();
-                    
-                    /*
-                     //Substitution logic:
-                     xdata = TMath::Power((ydata - Adata)/Bdata, 1./Cdata)
-                     ydata -> ymc = Amc + Bmc * xmc ^ Cmc
-                     
-                     full formula:
-                     
-                     xdata = TMath::Power(( Amc + Bmc * TMath::Power(xmc,Cmc) - Adata )/Bdata, 1./Cdata);
-                     */
-                    
-                    //lTempDef = Form(TMath::Power(( (Amc + Bmc * TMath::Power(xmc,Cmc)) - Adata )/Bdata, 1./Cdata),
-                    lTempDef = Form("TMath::Power(( (%.10f + %.10f * TMath::Power(%s,%.10f)) - %.10f )/%.10f, 1./%.10f)",
-                                    fitmc[iRun][iEst]->GetParameter(0),
-                                    fitmc[iRun][iEst]->GetParameter(1),
-                                    lTempDef.Data(),
-                                    fitmc[iRun][iEst]->GetParameter(2),
-                                    fitdata[iRun][iEst]->GetParameter(0),
-                                    fitdata[iRun][iEst]->GetParameter(1),
-                                    fitdata[iRun][iEst]->GetParameter(2));
-                    lTempDef.ReplaceAll("ESTIMATOR",lTemporary.Data());
-                    
-                    //Trick: add anchor-point-like logic to avoid low-multiplicity issues
-                    if(fsels->GetEstimator(iEst)->GetUseAnchor()){
-                        lTempDef.Prepend(Form("%s>%.10f?",fsels->GetEstimator(iEst)->GetDefinition().Data(),fsels->GetEstimator(iEst)->GetAnchorPoint()));
-                        lTempDef.Append(":0.0");
+                if( !lEstName.Contains("SPD") &&
+                   !lEstName.Contains("CL0") &&
+                   !lEstName.Contains("CL1") ){
+                    if(!fkUseQuadraticMapping){
+                        lTempDef.Prepend(Form("%.10f*(",lScaleFactors[iEst][iRun] ));
+                        lTempDef.Append(")"); //don't forget parentheses...
+                    }else{
+                        //Experimental quadratic fit
+                        TString lTemporary = lTempDef.Data();
+                        
+                        /*
+                         //Substitution logic:
+                         xdata = TMath::Power((ydata - Adata)/Bdata, 1./Cdata)
+                         ydata -> ymc = Amc + Bmc * xmc ^ Cmc
+                         
+                         full formula:
+                         
+                         xdata = TMath::Power(( Amc + Bmc * TMath::Power(xmc,Cmc) - Adata )/Bdata, 1./Cdata);
+                         */
+                        
+                        //lTempDef = Form(TMath::Power(( (Amc + Bmc * TMath::Power(xmc,Cmc)) - Adata )/Bdata, 1./Cdata),
+                        lTempDef = Form("TMath::Power(( (%.10f + %.10f * TMath::Power(%s,%.10f)) - %.10f )/%.10f, 1./%.10f)",
+                                        fitmc[iRun][iEst]->GetParameter(0),
+                                        fitmc[iRun][iEst]->GetParameter(1),
+                                        lTempDef.Data(),
+                                        fitmc[iRun][iEst]->GetParameter(2),
+                                        fitdata[iRun][iEst]->GetParameter(0),
+                                        fitdata[iRun][iEst]->GetParameter(1),
+                                        fitdata[iRun][iEst]->GetParameter(2));
+                        lTempDef.ReplaceAll("ESTIMATOR",lTemporary.Data());
+                        
+                        //Trick: add anchor-point-like logic to avoid low-multiplicity issues
+                        if(fsels->GetEstimator(iEst)->GetUseAnchor()){
+                            lTempDef.Prepend(Form("%s>%.10f?",fsels->GetEstimator(iEst)->GetDefinition().Data(),0.5*fsels->GetEstimator(iEst)->GetAnchorPoint()));
+                            lTempDef.Append(":0.0");
+                        }
                     }
                     
                     cout<<"================================================================================"<<endl;
@@ -844,6 +850,7 @@ Bool_t AliMultSelectionCalibratorMC::Calibrate() {
                     cout<<lTempDef.Data()<<endl;
                     cout<<"================================================================================"<<endl;
                 }
+                
                 fsels->GetEstimator( iEst )->SetDefinition ( lTempDef.Data() );
             }
             
@@ -882,37 +889,42 @@ Bool_t AliMultSelectionCalibratorMC::Calibrate() {
                 for(Int_t iEst=0; iEst<lNEstimators; iEst++){
                     lTempDef = fselsdef->GetEstimator( iEst )->GetDefinition();
                     //Construction of estimator re-definition
-                    if(!fkUseQuadraticMapping){
-                        lTempDef.Prepend(Form("%.10f*(",lScaleFactors[iEst][iRun] ));
-                        lTempDef.Append(")"); //don't forget parentheses...
-                    }else{
-                        //Experimental quadratic fit
-                        TString lTemporary = lTempDef.Data();
-                        
-                        /*
-                         //Substitution logic:
-                         xdata = TMath::Power((ydata - Adata)/Bdata, 1./Cdata)
-                         ydata -> ymc = Amc + Bmc * xmc ^ Cmc
-                         
-                         full formula:
-                         
-                         xdata = TMath::Power(( Amc + Bmc * TMath::Power(xmc,Cmc) - Adata )/Bdata, 1./Cdata);
-                         */
-                        
-                        lTempDef = Form("TMath::Power(( (%.10f + %.10f * TMath::Power(%s,%.10f)) - %.10f )/%.10f, 1./%.10f)",
-                                        fitmc[iRun][iEst]->GetParameter(0),
-                                        fitmc[iRun][iEst]->GetParameter(1),
-                                        lTempDef.Data(),
-                                        fitmc[iRun][iEst]->GetParameter(2),
-                                        fitdata[iRun][iEst]->GetParameter(0),
-                                        fitdata[iRun][iEst]->GetParameter(1),
-                                        fitdata[iRun][iEst]->GetParameter(2));
-                        lTempDef.ReplaceAll("ESTIMATOR",lTemporary.Data());
-                        
-                        //Trick: add anchor-point-like logic to avoid low-multiplicity issues
-                        if(fsels->GetEstimator(iEst)->GetUseAnchor()){
-                            lTempDef.Prepend(Form("%s>%.10f?",fsels->GetEstimator(iEst)->GetDefinition().Data(),fsels->GetEstimator(iEst)->GetAnchorPoint()));
-                            lTempDef.Append(":0.0");
+                    TString lEstName = fsels->GetEstimator(iEst)->GetName();
+                    if( !lEstName.Contains("SPD") &&
+                       !lEstName.Contains("CL0") &&
+                       !lEstName.Contains("CL1") ){
+                        if(!fkUseQuadraticMapping){
+                            lTempDef.Prepend(Form("%.10f*(",lScaleFactors[iEst][iRun] ));
+                            lTempDef.Append(")"); //don't forget parentheses...
+                        }else{
+                            //Experimental quadratic fit
+                            TString lTemporary = lTempDef.Data();
+                            
+                            /*
+                             //Substitution logic:
+                             xdata = TMath::Power((ydata - Adata)/Bdata, 1./Cdata)
+                             ydata -> ymc = Amc + Bmc * xmc ^ Cmc
+                             
+                             full formula:
+                             
+                             xdata = TMath::Power(( Amc + Bmc * TMath::Power(xmc,Cmc) - Adata )/Bdata, 1./Cdata);
+                             */
+                            
+                            lTempDef = Form("TMath::Power(( (%.10f + %.10f * TMath::Power(%s,%.10f)) - %.10f )/%.10f, 1./%.10f)",
+                                            fitmc[iRun][iEst]->GetParameter(0),
+                                            fitmc[iRun][iEst]->GetParameter(1),
+                                            lTempDef.Data(),
+                                            fitmc[iRun][iEst]->GetParameter(2),
+                                            fitdata[iRun][iEst]->GetParameter(0),
+                                            fitdata[iRun][iEst]->GetParameter(1),
+                                            fitdata[iRun][iEst]->GetParameter(2));
+                            lTempDef.ReplaceAll("ESTIMATOR",lTemporary.Data());
+                            
+                            //Trick: add anchor-point-like logic to avoid low-multiplicity issues
+                            if(fsels->GetEstimator(iEst)->GetUseAnchor()){
+                                lTempDef.Prepend(Form("%s>%.10f?",fselsdef->GetEstimator(iEst)->GetDefinition().Data(),0.5*fselsdef->GetEstimator(iEst)->GetAnchorPoint()));
+                                lTempDef.Append(":0.0");
+                            }
                         }
                         
                         cout<<"================================================================================"<<endl;
