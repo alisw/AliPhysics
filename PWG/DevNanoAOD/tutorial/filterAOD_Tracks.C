@@ -26,6 +26,7 @@ void filterAOD_Tracks()
   AliAnalysisNanoAODEventCuts* evtCuts = new AliAnalysisNanoAODEventCuts;
   evtCuts->SetVertexRange(8);
   evtCuts->SetCutPileUpMV(kTRUE);
+  evtCuts->SetAliEventCuts(new AliEventCuts);
 
   // Track selection
   AliAnalysisNanoAODTrackCuts* trkCuts = new AliAnalysisNanoAODTrackCuts;

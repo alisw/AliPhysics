@@ -8,6 +8,7 @@
 #include "AliAnalysisManager.h"
 #include "AliInputEventHandler.h"
 #include "AliAODv0.h"
+#include "AliEventCuts.h"
 
 ClassImp(AliAnalysisNanoAODTrackCuts)
 ClassImp(AliAnalysisNanoAODV0Cuts)
@@ -55,7 +56,8 @@ AliAnalysisNanoAODEventCuts::AliAnalysisNanoAODEventCuts():
   fMinMultiplicity(-1),
   fMaxMultiplicity(-1),
   fAnalysisUtils(0),
-  fCutPileUpMV(kFALSE)  
+  fCutPileUpMV(kFALSE),
+  fEventCuts(0)
 {
   // default ctor   
   fAnalysisUtils = new AliAnalysisUtils;
@@ -66,6 +68,9 @@ Bool_t AliAnalysisNanoAODEventCuts::IsSelected(TObject* obj)
   // Returns true if object accepted on the event level
   
   AliAODEvent* evt = dynamic_cast<AliAODEvent*>(obj);
+  
+  if (fEventCuts && !fEventCuts->AcceptEvent(evt))
+    return kFALSE;
   
   if (fCutPileUpMV)
     if (fAnalysisUtils->IsPileUpMV(evt))

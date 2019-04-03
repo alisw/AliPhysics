@@ -6,6 +6,8 @@
 #include "AliAnalysisUtils.h"
 #include <map>
 
+class AliEventCuts;
+
 class AliAnalysisNanoAODTrackCuts : public AliAnalysisCuts
 {
 public:
@@ -57,6 +59,8 @@ public:
   AliAnalysisUtils* GetAnalysisUtils() { return fAnalysisUtils; }
   void SetCutPileUpMV(Bool_t flag) { fCutPileUpMV = flag; }
   
+  void SetAliEventCuts(AliEventCuts* cuts) { fEventCuts = cuts; }
+  
 private:
   Float_t fVertexRange; // Only events with primary vertex within this range are accepted (whatever the vertex)
   
@@ -66,6 +70,7 @@ private:
   
   AliAnalysisUtils* fAnalysisUtils; // AnalysisUtils object
   Bool_t fCutPileUpMV;      // Use fAnalysisUtils->IsPileUpMV to remove pile up. Customize by using GetAnalysisUtils()
+  AliEventCuts* fEventCuts; // AliEventCut object for Run 2
   
   ClassDef(AliAnalysisNanoAODEventCuts, 3); // event cut object for nano AOD filtering
 };
