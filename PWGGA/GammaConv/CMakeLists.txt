@@ -70,6 +70,9 @@ set(SRCS
     AliAnalysisTaskHeavyNeutralMesonToGG.cxx
     AliAnalysisTaskK0toPi0Pi0.cxx
     AliAnalysisTaskPi0v2.cxx
+    AliAnalysisTaskTrackQA.cxx	
+    AliIdentifiedPrimaryCuts.cxx
+    AliIdentifiedPrimarySelector.cxx
     AliAnalysisTaskResolution.cxx
     AliAnalysisTaskGammaCaloDalitzV1.cxx
     AliAnalysisTaskGammaPureMC.cxx
