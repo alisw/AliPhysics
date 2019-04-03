@@ -1012,71 +1012,70 @@ void AliAnalysisTaskGammaCalo::UserCreateOutputObjects(){
   } else if ( ((AliConvEventCuts*)fV0Reader->GetEventCuts())->GetEnergyEnum() == AliConvEventCuts::k13TeV ||
               ((AliConvEventCuts*)fV0Reader->GetEventCuts())->GetEnergyEnum() == AliConvEventCuts::k13TeVLowB ){
     if( fDoPi0Only ){
-      nBinsPt                   = 217;
+      nBinsPt                   = 218;
       minPt                     = 0;
       maxPt                     = 25;
       binWidthPt                = 0.1;
       for(Int_t i=0; i<nBinsPt+1;i++){
         if (i < 1) arrPtBinning[i]              = 0.3*i;
-        else if(i<197) arrPtBinning[i]          = 0.3+0.1*(i-1);
-        else if(i<217) arrPtBinning[i]          = 20.+0.25*(i-197);
+        else if(i<198) arrPtBinning[i]          = 0.3+0.1*(i-1);
+        else if(i<218) arrPtBinning[i]          = 20.+0.25*(i-198);
         else  arrPtBinning[i]                   = maxPt;
       }
-      nBinsQAPt                 = 150;
+      nBinsQAPt                 = 145;
       maxQAPt                   = 25;
       for(Int_t i=0; i<nBinsQAPt+1;i++){
         if(i<100) arrQAPtBinning[i]             = 0.1*i;
         else if(i<140) arrQAPtBinning[i]        = 10.+0.25*(i-100);
-        else if(i<150) arrQAPtBinning[i]        = 20.+0.5*(i-140);
+        else if(i<145) arrQAPtBinning[i]        = 20.+1.0*(i-140);
         else arrQAPtBinning[i]                  = maxQAPt;
       }
-      nBinsClusterPt            = 307;
+      nBinsClusterPt            = 310;
       minClusterPt              = 0;
       maxClusterPt              = 100;
       for(Int_t i=0; i<nBinsClusterPt+1;i++){
         if (i < 1) arrClusPtBinning[i]          = 0.3*i;
-        else if(i<197) arrClusPtBinning[i]      = 0.3+0.1*(i-1);
-        else if(i<237) arrClusPtBinning[i]      = 20.+0.25*(i-197);
-        else if(i<277) arrClusPtBinning[i]      = 30.+0.5*(i-237);
-        else if(i<297) arrClusPtBinning[i]      = 50.+1.0*(i-277);
-        else if(i<307) arrClusPtBinning[i]      = 70.+2.5*(i-297);
+        else if(i<198) arrClusPtBinning[i]      = 0.3+0.1*(i-1);
+        else if(i<238) arrClusPtBinning[i]      = 20.+0.25*(i-198);
+        else if(i<278) arrClusPtBinning[i]      = 30.+0.5*(i-238);
+        else if(i<298) arrClusPtBinning[i]      = 50.+1.0*(i-278);
+        else if(i<310) arrClusPtBinning[i]      = 70.+2.5*(i-298);
         else arrClusPtBinning[i]                = maxClusterPt;
       }
 
     } else {
-      nBinsPt                   = 307;
+      nBinsPt                   = 310;
       minPt                     = 0;
       maxPt                     = 100;
       binWidthPt                = 0.1;
       for(Int_t i=0; i<nBinsPt+1;i++){
         if (i < 1) arrPtBinning[i]              = 0.3*i;
-        else if(i<197) arrPtBinning[i]          = 0.3+0.1*(i-1);
-        else if(i<237) arrPtBinning[i]          = 20.+0.25*(i-197);
-        else if(i<277) arrPtBinning[i]          = 30.+0.5*(i-237);
-        else if(i<297) arrPtBinning[i]          = 50.+1.0*(i-277);
-        else if(i<307) arrPtBinning[i]          = 70.+2.5*(i-297);
+        else if(i<198) arrPtBinning[i]          = 0.3+0.1*(i-1);
+        else if(i<238) arrPtBinning[i]          = 20.+0.25*(i-198);
+        else if(i<278) arrPtBinning[i]          = 30.+0.5*(i-238);
+        else if(i<298) arrPtBinning[i]          = 50.+1.0*(i-278);
+        else if(i<310) arrPtBinning[i]          = 70.+2.5*(i-298);
         else  arrPtBinning[i]                   = maxPt;
       }
-      nBinsQAPt                 = 270;
+      nBinsQAPt                 = 240;
       maxQAPt                   = 100;
       for(Int_t i=0; i<nBinsQAPt+1;i++){
-        if(i<60) arrQAPtBinning[i]              = 0.05*i;
-        else if(i<130) arrQAPtBinning[i]        = 3.+0.1*(i-60);
-        else if(i<170) arrQAPtBinning[i]        = 10.+0.25*(i-130);
-        else if(i<210) arrQAPtBinning[i]        = 20.+0.5*(i-170);
-        else if(i<270) arrQAPtBinning[i]        = 40.+1.0*(i-210);
+        if(i<100) arrQAPtBinning[i]             = 0.1*i;
+        else if(i<140) arrQAPtBinning[i]        = 10.+0.25*(i-100);
+        else if(i<180) arrQAPtBinning[i]        = 20.+0.5*(i-140);
+        else if(i<240) arrQAPtBinning[i]        = 40.+1.0*(i-180);
         else arrQAPtBinning[i]                  = maxQAPt;
       }
-      nBinsClusterPt            = 307;
+      nBinsClusterPt            = 310;
       minClusterPt              = 0;
       maxClusterPt              = 100;
       for(Int_t i=0; i<nBinsClusterPt+1;i++){
         if (i < 1) arrClusPtBinning[i]          = 0.3*i;
-        else if(i<197) arrClusPtBinning[i]      = 0.3+0.1*(i-1);
-        else if(i<237) arrClusPtBinning[i]      = 20.+0.25*(i-197);
-        else if(i<277) arrClusPtBinning[i]      = 30.+0.5*(i-237);
-        else if(i<297) arrClusPtBinning[i]      = 50.+1.0*(i-277);
-        else if(i<307) arrClusPtBinning[i]      = 70.+2.5*(i-297);
+        else if(i<198) arrClusPtBinning[i]      = 0.3+0.1*(i-1);
+        else if(i<238) arrClusPtBinning[i]      = 20.+0.25*(i-198);
+        else if(i<278) arrClusPtBinning[i]      = 30.+0.5*(i-238);
+        else if(i<298) arrClusPtBinning[i]      = 50.+1.0*(i-278);
+        else if(i<310) arrClusPtBinning[i]      = 70.+2.5*(i-298);
         else arrClusPtBinning[i]                = maxClusterPt;
       }
     }
