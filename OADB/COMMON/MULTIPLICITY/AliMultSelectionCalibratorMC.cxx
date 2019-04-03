@@ -33,7 +33,7 @@ AliMultSelectionCalibratorMC::AliMultSelectionCalibratorMC() :
     fBufferFileNameMC  ("bufferMC.root"),
     fOutputFileName(""), fInput(0), fSelection(0), fMultSelectionCuts(0), fCalibHists(0),
     lNDesiredBoundaries(0), lDesiredBoundaries(0), fRunToUseAsDefault(-1),
-    fkUseQuadraticMapping(kFALSE)
+    fkUseQuadraticMapping(kFALSE), fNV0MCutoffs(0), fV0MCutoffs()
 {
     // Constructor
 
@@ -56,7 +56,7 @@ AliMultSelectionCalibratorMC::AliMultSelectionCalibratorMC(const char * name, co
     fBufferFileNameMC  ("bufferMC.root"),
     fOutputFileName(""), fInput(0), fSelection(0), fMultSelectionCuts(0), fCalibHists(0),
     lNDesiredBoundaries(0), lDesiredBoundaries(0), fRunToUseAsDefault(-1),
-    fkUseQuadraticMapping(kFALSE)
+    fkUseQuadraticMapping(kFALSE), fNV0MCutoffs(0), fV0MCutoffs()
 {
     // Named Constructor
 
@@ -843,6 +843,15 @@ Bool_t AliMultSelectionCalibratorMC::Calibrate() {
                             lTempDef.Prepend(Form("%s>%.10f?",fsels->GetEstimator(iEst)->GetDefinition().Data(),0.5*fsels->GetEstimator(iEst)->GetAnchorPoint()));
                             lTempDef.Append(":0.0");
                         }
+                        
+                        //Use V0M high-cutoff if provided
+                        if( lEstName.Contains("V0M"))
+                            if ( fV0MCutoffs.find( lRunNumbers[iRun] ) != fV0MCutoffs.end() ) {
+                                Float_t lV0MCutoff = fV0MCutoffs[ lRunNumbers[iRun] ];
+                                cout<<"-> Run "<<lRunNumbers[iRun]<<": will use V0M cutoff of "<<lV0MCutoff<<endl;
+                                lTempDef.Prepend(Form("((fAmplitude_V0A)+(fAmplitude_V0C))<%.5f?", lV0MCutoff));
+                                lTempDef.Append(":0.0"); //reject otherwise
+                            }
                     }
                     
                     cout<<"================================================================================"<<endl;
@@ -925,6 +934,15 @@ Bool_t AliMultSelectionCalibratorMC::Calibrate() {
                                 lTempDef.Prepend(Form("%s>%.10f?",fselsdef->GetEstimator(iEst)->GetDefinition().Data(),0.5*fselsdef->GetEstimator(iEst)->GetAnchorPoint()));
                                 lTempDef.Append(":0.0");
                             }
+                            
+                            //Use V0M high-cutoff if provided
+                            if( lEstName.Contains("V0M"))
+                                if ( fV0MCutoffs.find( lRunNumbers[iRun] ) != fV0MCutoffs.end() ) {
+                                    Float_t lV0MCutoff = fV0MCutoffs[ lRunNumbers[iRun] ];
+                                    cout<<"-> Run "<<lRunNumbers[iRun]<<": will use V0M cutoff of "<<lV0MCutoff<<endl;
+                                    lTempDef.Prepend(Form("((fAmplitude_V0A)+(fAmplitude_V0C))<%.5f?", lV0MCutoff));
+                                    lTempDef.Append(":0.0"); //reject otherwise
+                                }
                         }
                         
                         cout<<"================================================================================"<<endl;
@@ -1099,3 +1117,13 @@ void AliMultSelectionCalibratorMC::SetupStandardInput() {
     //============================================================
     
 }
+
+//________________________________________________________________
+void AliMultSelectionCalibratorMC::AddV0MCutoff ( Int_t lRunNumber, Float_t lV0MCutoff ){
+    //Add mapping : all runs in range go to current value of fNRunRanges
+    //Ease of access
+    fV0MCutoffs.insert( std::pair<int,float>(lRunNumber,lV0MCutoff));
+    fNV0MCutoffs++;
+    AliInfoF("Added V0M cutoff for run #%i at %.5f", (Int_t)lRunNumber, (Float_t) lV0MCutoff) ;
+}
+
