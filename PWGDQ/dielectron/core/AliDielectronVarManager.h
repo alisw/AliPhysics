@@ -2128,11 +2128,11 @@ inline void AliDielectronVarManager::FillVarDielectronPair(const AliDielectronPa
 	Double_t det1  = -1.;                // Determinant of covariance matrix
 	det1 = dcaRes1[0]*dcaRes1[2] - dcaRes1[1]*dcaRes1[1];
 	det2 = dcaRes2[0]*dcaRes2[2] - dcaRes2[1]*dcaRes2[1];
-	if(det1>1e-9) {
+	if(det1>0.) {
 	  chi21 = (dca1[0]*dca1[0]*dcaRes1[2] + dca1[1]*dca1[1]*dcaRes1[0] - 2*dca1[0]*dca1[1]*dcaRes1[1])/det1;
 	  tmp_leg1dcaXYZsig = TMath::Sqrt(TMath::Abs(chi21));
 	}
-	if(det2>1e-9) {
+	if(det2>0.) {
 	  chi22 = (dca2[0]*dca2[0]*dcaRes2[2] + dca2[1]*dca2[1]*dcaRes2[0] - 2*dca2[0]*dca2[1]*dcaRes2[1])/det2;
 	  tmp_leg2dcaXYZsig = TMath::Sqrt(TMath::Abs(chi22));
 	}
