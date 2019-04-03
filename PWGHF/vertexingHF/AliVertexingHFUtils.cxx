@@ -2763,7 +2763,7 @@ ROOT::Fit::FitResult AliVertexingHFUtils::DoInPlaneOutOfPlaneSimultaneusFit(AliH
   //define fitter and fit
   ROOT::Fit::Fitter simulfitter;
   simulfitter.Config().SetParamsSettings(npars*2-ncommonpars,initpars.data()); //set initial parameters from prefits
-  if(nparsSecPeak>0) { //fix S/R 
+  if(nparsRefl>0) { //fix S/R 
     simulfitter.Config().ParSettings(nparsBkg+nparsSgn+nparsSecPeak).Fix();
 
     iter = find(commonpars.begin(),commonpars.end(),npars+nparsBkg+nparsSgn+nparsSecPeak);

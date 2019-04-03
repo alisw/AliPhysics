@@ -53,7 +53,7 @@ TH1D* ComputeEPresolution(double &resol, double &resolunc, TH3F *hDeltaPsiVsqnVs
 TH1D* ComputeSPresolution(double &resol, double &resolunc, TH3F *hQiVsqnVsCentr[3], int harmonic, double qnmin, double qnmax);
 void GetInOutOfPlaneInvMassHistos(THnSparseF *sparse, TH1F *&hInvMassInPlane, TH1F *&hInvMassOutOfPlane, int harmonic, double qnmin, double qnmax, double ptmin, double ptmax);
 TH1F* GetFuncPhiVsMassHistos(THnSparseF* sparse, TString histoname, int iAxis, double qnmin, double qnmax, double ptmin, double ptmax, double massrebin, double resol);
-float GetAveragePtInRange(float &averagePtUnc, THnSparseF *sparse, double qnmin, double qnmax, double ptmin, double ptmax, int bkgfunc, int sgnfunc, bool useRefl, TH1F* hMCRefl, double SoverR, string reflopt, int meson);
+float GetAveragePtInRange(float &averagePtUnc, THnSparseF *sparse, double qnmin, double qnmax, double ptmin, double ptmax, int bkgfunc, int sgnfunc, bool useRefl, TH1F* hMCRefl, double SoverR, string reflopt, int meson, double massD);
 double ComputeEPvn(double &vnunc, double nIn, double nInUnc, double nOut, double nOutUnc, double resol, double corr = 0.);
 void ApplySelection(THnSparseF *sparse, int axisnum, double min, double max);
 void ResetAxes(THnSparseF *sparse, int axisnum = -1);
@@ -307,7 +307,7 @@ void CharmHadronVnFitSystematics(string cfgFileName, string refFileName, int ref
 
         float averagePtUnc = -1.;  
         int bkgfunc = (meson==AliAnalysisTaskSECharmHadronvn::kDstartoKpipi) ? AliHFInvMassFitter::kPowEx : AliHFInvMassFitter::kExpo;
-        float averagePt = GetAveragePtInRange(averagePtUnc, sMassVsPtVsPhiVsCentrVsqn, qnmin, qnmax, PtMin[iPt], PtMax[iPt], bkgfunc, AliHFInvMassFitter::kGaus, useRefl, hMCRefl[iPt], SoverR, reflopt, meson);
+        float averagePt = GetAveragePtInRange(averagePtUnc, sMassVsPtVsPhiVsCentrVsqn, qnmin, qnmax, PtMin[iPt], PtMax[iPt], BkgFunc, SgnFunc, useRefl, hMCRefl[iPt], SoverR, reflopt, meson, massD);
 
         //get inv-mass histos
         ApplySelection(sMassVsPtVsPhiVsCentrVsqn,1,PtMin[iPt],PtMax[iPt]);
@@ -377,7 +377,9 @@ void CharmHadronVnFitSystematics(string cfgFileName, string refFileName, int ref
                                 massfitterInt.SetInitialGaussianMean(massD);
                                 massfitterInt.SetInitialGaussianSigma(0.010);
                                 if(meson==AliAnalysisTaskSECharmHadronvn::kDstoKKpi)
-                                    massfitterInt.IncludeSecondGausPeak(massDplus,false,0.08,false);
+                                    massfitterInt.IncludeSecondGausPeak(massDplus,true,0.008,true);
+                                else if(meson==AliAnalysisTaskSECharmHadronvn::kDstartoKpipi)
+                                    massfitterInt.SetInitialGaussianSigma(0.001);
                                 if(useRefl) {       
                                     massfitterInt.SetTemplateReflections(hMCRefl[iPt],reflopt,MassMin[iMassMin],MassMax[iMassMax]);
                                     massfitterInt.SetFixReflOverS(SoverR);
@@ -399,7 +401,9 @@ void CharmHadronVnFitSystematics(string cfgFileName, string refFileName, int ref
                                         massfitterFreeSigma[iDeltaPhi]->SetInitialGaussianMean(massD);
                                         massfitterFreeSigma[iDeltaPhi]->SetInitialGaussianSigma(0.010);
                                         if(meson==AliAnalysisTaskSECharmHadronvn::kDstoKKpi)
-                                            massfitterFreeSigma[iDeltaPhi]->IncludeSecondGausPeak(massDplus,false,0.08,false);
+                                            massfitterFreeSigma[iDeltaPhi]->IncludeSecondGausPeak(massDplus,true,0.008,true);
+                                        else if(meson==AliAnalysisTaskSECharmHadronvn::kDstartoKpipi)
+                                            massfitterInt.SetInitialGaussianSigma(0.001);
                                         if(useRefl) {       
                                             massfitterFreeSigma[iDeltaPhi]->SetTemplateReflections(hMCRefl[iPt],reflopt,MassMin[iMassMin],MassMax[iMassMax]);
                                             massfitterFreeSigma[iDeltaPhi]->SetFixReflOverS(SoverR);
@@ -417,7 +421,7 @@ void CharmHadronVnFitSystematics(string cfgFileName, string refFileName, int ref
                                         massfitterFixSigma[iDeltaPhi]->SetInitialGaussianMean(massD);
                                         massfitterFixSigma[iDeltaPhi]->SetFixGaussianSigma(massfitterInt.GetSigma());
                                         if(meson==AliAnalysisTaskSECharmHadronvn::kDstoKKpi)
-                                            massfitterFixSigma[iDeltaPhi]->IncludeSecondGausPeak(massDplus,false,0.08,false);
+                                            massfitterFixSigma[iDeltaPhi]->IncludeSecondGausPeak(massDplus,true,0.008,true);
                                         if(useRefl) {       
                                             massfitterFixSigma[iDeltaPhi]->SetTemplateReflections(hMCRefl[iPt],reflopt,MassMin[iMassMin],MassMax[iMassMax]);
                                             massfitterFixSigma[iDeltaPhi]->SetFixReflOverS(SoverR);
@@ -429,7 +433,7 @@ void CharmHadronVnFitSystematics(string cfgFileName, string refFileName, int ref
                                         //simultaneus fit
                                         massfitterSimFit[iDeltaPhi] = new AliHFInvMassFitter(hInvMassDeltaPhiToFit[iDeltaPhi],MassMin[iMassMin],MassMax[iMassMax],BkgFunc,SgnFunc);
                                         if(meson==AliAnalysisTaskSECharmHadronvn::kDstoKKpi)
-                                            massfitterSimFit[iDeltaPhi]->IncludeSecondGausPeak(massDplus,false,0.08,false);
+                                            massfitterSimFit[iDeltaPhi]->IncludeSecondGausPeak(massDplus,true,0.008,true);
                                         if(useRefl) {       
                                             massfitterSimFit[iDeltaPhi]->SetTemplateReflections(hMCRefl[iPt],reflopt,MassMin[iMassMin],MassMax[iMassMax]);
                                             massfitterSimFit[iDeltaPhi]->SetFixReflOverS(SoverR);
@@ -503,7 +507,7 @@ void CharmHadronVnFitSystematics(string cfgFileName, string refFileName, int ref
                                     vnvsmassfitter->SetInitialGaussianMean(massD,1);
                                     vnvsmassfitter->SetInitialGaussianSigma(massfitterInt.GetSigma(),1);
                                     if(meson==AliAnalysisTaskSECharmHadronvn::kDstoKKpi)
-                                        vnvsmassfitter->IncludeSecondGausPeak(massDplus,false,0.08,false,false);
+                                        vnvsmassfitter->IncludeSecondGausPeak(massDplus,true,0.008,true,false);
                                     if(useRefl) {
                                         vnvsmassfitter->SetTemplateReflections(hMCRefl[iPt],reflopt,MassMin[iMassMin],MassMax[iMassMax]);
                                         vnvsmassfitter->SetFixReflOverS(SoverR);
@@ -881,7 +885,7 @@ TH1F* GetFuncPhiVsMassHistos(THnSparseF* sparse, TString histoname, int iAxis, d
 
 //___________________________________________________________________________________//
 //method that returns average pT in [ptmin, ptmax]
-float GetAveragePtInRange(float &averagePtUnc, THnSparseF *sparse, double qnmin, double qnmax, double ptmin, double ptmax, int bkgfunc, int sgnfunc, bool useRefl, TH1F* hMCRefl, double SoverR, string reflopt, int meson) {
+float GetAveragePtInRange(float &averagePtUnc, THnSparseF *sparse, double qnmin, double qnmax, double ptmin, double ptmax, int bkgfunc, int sgnfunc, bool useRefl, TH1F* hMCRefl, double SoverR, string reflopt, int meson, double massD) {
 
     ApplySelection(sparse,1,ptmin,ptmax);
     ApplySelection(sparse,8,qnmin,qnmax);
@@ -892,11 +896,16 @@ float GetAveragePtInRange(float &averagePtUnc, THnSparseF *sparse, double qnmin,
 
     AliHFInvMassFitter massfitter(hMass,minfit,maxfit,bkgfunc,sgnfunc);
     massfitter.SetUseLikelihoodFit();
+    massfitter.SetInitialGaussianSigma(0.01);
+    massfitter.SetInitialGaussianMean(massD);
     if(meson==AliAnalysisTaskSECharmHadronvn::kDstoKKpi) {
         double massDplus = TDatabasePDG::Instance()->GetParticle(411)->Mass();
-        massfitter.IncludeSecondGausPeak(massDplus,false,0.08,false);
+        massfitter.IncludeSecondGausPeak(massDplus,true,0.008,true);
     }
-    if(useRefl) {
+    else if(meson==AliAnalysisTaskSECharmHadronvn::kDstartoKpipi) {
+        massfitter.SetInitialGaussianSigma(0.001);
+    }
+    if(meson==AliAnalysisTaskSECharmHadronvn::kD0toKpi && useRefl) {
         massfitter.SetTemplateReflections(hMCRefl,reflopt,minfit,maxfit);
         massfitter.SetFixReflOverS(SoverR);
     }    
@@ -913,6 +922,8 @@ float GetAveragePtInRange(float &averagePtUnc, THnSparseF *sparse, double qnmin,
     hMassVsPt = NULL;
     delete hMass;
     hMass = NULL;
+
+    ResetAxes(sparse);
 
     return averagePt;
 }
