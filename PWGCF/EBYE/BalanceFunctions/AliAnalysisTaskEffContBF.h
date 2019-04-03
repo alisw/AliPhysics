@@ -97,6 +97,7 @@ class AliAnalysisTaskEffContBF : public AliAnalysisTaskSE {
  void SetUsePIDfromPDG(Bool_t usePID=kFALSE, AliPID::EParticleType partOfInterest = AliPID::kPion) {
    fUsePIDFromPDG = usePID;
    fpartOfInterest = partOfInterest;
+   fMassParticleOfInterest = AliPID::ParticleMass(partOfInterest);
   }
   
   void SetUsePIDnSigmaComb(Bool_t UsePIDnSigmaComb){
@@ -228,6 +229,7 @@ class AliAnalysisTaskEffContBF : public AliAnalysisTaskSE {
   Bool_t fUsePIDFromPDG; //flag to switch on MC PID (used for PID tracking eff) 
   AliPID::EParticleType fpartOfInterest; //
   Int_t fPDGCodeWanted;//
+  Float_t fMassParticleOfInterest;//
     
   Double_t fVxMax;// vxmax
   Double_t fVyMax;// vymax
@@ -255,7 +257,7 @@ class AliAnalysisTaskEffContBF : public AliAnalysisTaskSE {
   AliAnalysisTaskEffContBF(const AliAnalysisTaskEffContBF&); // not implemented
   AliAnalysisTaskEffContBF& operator=(const AliAnalysisTaskEffContBF&); // not implemented
   
-  ClassDef(AliAnalysisTaskEffContBF, 4); // example of analysis
+  ClassDef(AliAnalysisTaskEffContBF, 5); // example of analysis
 };
 
 #endif
