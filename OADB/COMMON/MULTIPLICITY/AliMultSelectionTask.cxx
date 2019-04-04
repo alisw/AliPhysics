@@ -2968,19 +2968,20 @@ Bool_t AliMultSelectionTask::IsHijing() const {
     //Function to check if this is Hijing MC
     Bool_t lReturnValue = kFALSE;
     AliMCEvent*  mcEvent = MCEvent();
-    if (mcEvent) {
-        TList* cocktList = mcEvent->GetCocktailList();
-        if (cocktList) {
-            TIter next(cocktList);
-            while (const TObject *obj=next()){
-                //Look for an object inheriting from the hijing header class
-                if ( obj->InheritsFrom(AliGenHijingEventHeader::Class()) ){ lReturnValue = kTRUE; }
+    TList* cocktList = mcEvent->GetCocktailList();
+    if (cocktList) {
+        TIter next(cocktList);
+        while (const TObject *obj=next()){
+            //Look for an object inheriting from the hijing header class
+            if ( obj->InheritsFrom(AliGenHijingEventHeader::Class()) ){
+                lReturnValue = kTRUE;
+                break;
             }
         }
-        else {
-            AliGenEventHeader* mcGenH = mcEvent->GenEventHeader();
-            lReturnValue = mcGenH->InheritsFrom(AliGenHijingEventHeader::Class());
-        }
+    } // if cocktList
+    else {
+        AliGenEventHeader* mcGenH = mcEvent->GenEventHeader();
+        lReturnValue = mcGenH->InheritsFrom(AliGenHijingEventHeader::Class());
     }
     return lReturnValue;
 }
