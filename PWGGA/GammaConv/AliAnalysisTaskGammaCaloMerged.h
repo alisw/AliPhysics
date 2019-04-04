@@ -186,6 +186,7 @@ class AliAnalysisTaskGammaCaloMerged : public AliAnalysisTaskSE {
 
     // MC validated cluster histos
     TH2F**                  fHistoTrueClusEFracFirstLabel;                      //!
+    TH2F**                  fHistoTrueClusEFracLeadingPi0;                      //!
     TH2F**                  fHistoTrueClusMergedPtvsM02;                        //!
     TH2F**                  fHistoTrueClusPi0PtvsM02;                           //!
     TH2F**                  fHistoTrueClusMultiplePi0PtvsM02;                   //!
@@ -298,7 +299,7 @@ class AliAnalysisTaskGammaCaloMerged : public AliAnalysisTaskSE {
     AliAnalysisTaskGammaCaloMerged(const AliAnalysisTaskGammaCaloMerged&); // Prevent copy-construction
     AliAnalysisTaskGammaCaloMerged &operator=(const AliAnalysisTaskGammaCaloMerged&); // Prevent assignment
 
-    ClassDef(AliAnalysisTaskGammaCaloMerged, 31);
+    ClassDef(AliAnalysisTaskGammaCaloMerged, 32);
 };
 
 #endif

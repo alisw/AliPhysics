@@ -132,6 +132,7 @@ AliAnalysisTaskGammaCaloMerged::AliAnalysisTaskGammaCaloMerged(): AliAnalysisTas
   fHistoMCDecayGammaPt(NULL),
   fHistoMCAllGammaPt(NULL),
   fHistoTrueClusEFracFirstLabel(NULL),
+  fHistoTrueClusEFracLeadingPi0(NULL),
   fHistoTrueClusMergedPtvsM02(NULL),
   fHistoTrueClusPi0PtvsM02(NULL),
   fHistoTrueClusMultiplePi0PtvsM02(NULL),
@@ -304,6 +305,7 @@ AliAnalysisTaskGammaCaloMerged::AliAnalysisTaskGammaCaloMerged(const char *name)
   fHistoMCDecayGammaPt(NULL),
   fHistoMCAllGammaPt(NULL),
   fHistoTrueClusEFracFirstLabel(NULL),
+  fHistoTrueClusEFracLeadingPi0(NULL),
   fHistoTrueClusMergedPtvsM02(NULL),
   fHistoTrueClusPi0PtvsM02(NULL),
   fHistoTrueClusMultiplePi0PtvsM02(NULL),
@@ -819,6 +821,7 @@ void AliAnalysisTaskGammaCaloMerged::UserCreateOutputObjects(){
     }
 
     fHistoTrueClusEFracFirstLabel                 = new TH2F*[fnCuts];
+    fHistoTrueClusEFracLeadingPi0                 = new TH2F*[fnCuts];
     fHistoTrueClusMergedPtvsM02                   = new TH2F*[fnCuts];
     fHistoTrueClusPi0PtvsM02                      = new TH2F*[fnCuts];
     fHistoTrueClusMultiplePi0PtvsM02              = new TH2F*[fnCuts];
@@ -1042,6 +1045,8 @@ void AliAnalysisTaskGammaCaloMerged::UserCreateOutputObjects(){
 
       fHistoTrueClusEFracFirstLabel[iCut]             = new TH2F("ESD_TrueClusEFracFirstLabel_E_Frac","ESD_TrueClusEFracFirstLabel_E_Frac",ptBins, arrPtBinning,50, -0.01, 1.01);
       fTrueList[iCut]->Add(fHistoTrueClusEFracFirstLabel[iCut]);
+      fHistoTrueClusEFracLeadingPi0[iCut]             = new TH2F("ESD_TrueClusEFracLeadingPi0_E_Frac","ESD_TrueClusEFracLeadingPi0_E_Frac",ptBins, arrPtBinning,50, -0.01, 1.01);
+      fTrueList[iCut]->Add(fHistoTrueClusEFracLeadingPi0[iCut]);
       fHistoTrueClusMergedPtvsM02[iCut]             = new TH2F("ESD_TrueClusMerged_Pt_M02","ESD_TrueClusMerged_Pt_M02",ptBins, arrPtBinning,showerShapeBins, startShowerShape, endShowerShape);
       fTrueList[iCut]->Add(fHistoTrueClusMergedPtvsM02[iCut]);
       fHistoTrueClusPi0PtvsM02 [iCut]               = new TH2F("ESD_TrueClusFromPi0_Pt_M02","ESD_TrueClusFromPi0_Pt_M02",ptBins, arrPtBinning,showerShapeBins, startShowerShape, endShowerShape);
@@ -1195,6 +1200,7 @@ void AliAnalysisTaskGammaCaloMerged::UserCreateOutputObjects(){
 
       if (fIsMC == 2){
         fHistoTrueClusEFracFirstLabel[iCut]->Sumw2();
+        fHistoTrueClusEFracLeadingPi0[iCut]->Sumw2();
         fHistoTrueClusMergedPtvsM02[iCut]->Sumw2();
         fHistoTrueClusPi0PtvsM02[iCut]->Sumw2();
         fHistoTrueClusMultiplePi0PtvsM02[iCut]->Sumw2();
@@ -1859,6 +1865,8 @@ void AliAnalysisTaskGammaCaloMerged::ProcessTrueClusterCandidates(AliAODConversi
 
   if (TrueClusterCandidate->GetNCaloPhotonMCLabels()>0){
     fHistoTrueClusEFracFirstLabel[fiCut]->Fill(cluster->E(), cluster->GetClusterMCEdepFraction(0), tempClusterWeight);
+    if(TrueClusterCandidate->GetNNeutralPionMCLabels()>0)
+      fHistoTrueClusEFracLeadingPi0[fiCut]->Fill(cluster->E(), TrueClusterCandidate->GetNeutralPionEnergyFraction(TrueClusterCandidate->GetLeadingNeutralPionIndex()), tempClusterWeight);
     // check if leading pi0 comes not from label 0 in cluster
     // for this do:
     // -> check if neutral pions were found in cluster
@@ -2229,6 +2237,8 @@ void AliAnalysisTaskGammaCaloMerged::ProcessTrueClusterCandidatesAOD(AliAODConve
 
   if (TrueClusterCandidate->GetNCaloPhotonMCLabels()>0){
     fHistoTrueClusEFracFirstLabel[fiCut]->Fill(cluster->E(), cluster->GetClusterMCEdepFraction(0), tempClusterWeight);
+    if(TrueClusterCandidate->GetNNeutralPionMCLabels()>0)
+      fHistoTrueClusEFracLeadingPi0[fiCut]->Fill(cluster->E(), TrueClusterCandidate->GetNeutralPionEnergyFraction(TrueClusterCandidate->GetLeadingNeutralPionIndex()), tempClusterWeight);
     // check if leading pi0 comes not from label 0 in cluster
     // for this do:
     // -> check if neutral pions were found in cluster
