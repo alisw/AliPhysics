@@ -33,7 +33,7 @@ class AliAnalysisCuts : public AliVCuts
     virtual Long64_t Merge(TCollection* /* list */)      { return 0; }
     virtual TList* GetOutput()                { return 0; }
     virtual TObject *GetStatistics(Option_t *) const {return 0;}
- private:
+ protected:
     UInt_t fFilterMask; ///< Mask to use one of the previous decisions inside a filter
     Bool_t fSelected;   ///< Final decision on selction
     ClassDef(AliAnalysisCuts, 5); // Base class for filter decisions on ESD objects
