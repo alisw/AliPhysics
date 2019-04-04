@@ -431,7 +431,6 @@ void CharmHadronVnAnalysis(string cfgFileName) {
                 rawYieldsSimFit[iDeltaPhi] = massfitterSimFit[iDeltaPhi][iPt]->GetSignalFunc()->GetParameter(0) / hInvMass[0][iPt]->GetBinWidth(1);
                 rawYieldsSimFitUnc[iDeltaPhi] = massfitterSimFit[iDeltaPhi][iPt]->GetSignalFunc()->GetParError(0) / hInvMass[0][iPt]->GetBinWidth(1);
             }
-            commonpars.clear();
 
             hSigmaSimFit->SetBinContent(iPt+1,massfitterSimFit[0][iPt]->GetSignalFunc()->GetParameter(2)*1000);
             hSigmaSimFit->SetBinError(iPt+1,massfitterSimFit[0][iPt]->GetSignalFunc()->GetParError(2)*1000);
@@ -446,7 +445,7 @@ void CharmHadronVnAnalysis(string cfgFileName) {
             vnvsmassfitter[iPt]->SetInitialGaussianMean(massD,fixMeanVnVsMassFit);
             vnvsmassfitter[iPt]->SetInitialGaussianSigma(hSigmaInt->GetBinContent(iPt+1)/1000,fixSigmaVnVsMassFit);
             if(meson==AliAnalysisTaskSECharmHadronvn::kDstoKKpi)
-                vnvsmassfitter[iPt]->IncludeSecondGausPeak(massDplus,true,0.008,true,false);
+                vnvsmassfitter[iPt]->IncludeSecondGausPeak(massDplus,true,0.008,true,true);
             if(useRefl) {
                 vnvsmassfitter[iPt]->SetTemplateReflections(hMCRefl[iPt],reflopt,MassMin[iPt],MassMax[iPt]);
                 vnvsmassfitter[iPt]->SetFixReflOverS(SoverR);
@@ -499,7 +498,7 @@ void CharmHadronVnAnalysis(string cfgFileName) {
                 cosnphiDvsmassfitter[iPt]->SetReflVnOption(AliHFVnVsMassFitter::kSameVnSignal);
             }
             if(meson==AliAnalysisTaskSECharmHadronvn::kDstoKKpi)
-                cosnphiDvsmassfitter[iPt]->IncludeSecondGausPeak(massDplus,true,0.008,true,false);
+                cosnphiDvsmassfitter[iPt]->IncludeSecondGausPeak(massDplus,true,0.008,true,true);
             cosnphiDvsmassfitter[iPt]->SimultaneusFit(false);
             sinnphiDvsmassfitter[iPt] = new AliHFVnVsMassFitter(hInvMassInt[iPt],hSinnPhiDVsMass[iPt],MassMin[iPt],MassMax[iPt],BkgFunc,SgnFunc,VnBkgFunc);
             sinnphiDvsmassfitter[iPt]->SetHarmonic(harmonic);
@@ -511,7 +510,7 @@ void CharmHadronVnAnalysis(string cfgFileName) {
                 sinnphiDvsmassfitter[iPt]->SetReflVnOption(AliHFVnVsMassFitter::kSameVnSignal);
             }
             if(meson==AliAnalysisTaskSECharmHadronvn::kDstoKKpi)
-                sinnphiDvsmassfitter[iPt]->IncludeSecondGausPeak(massDplus,true,0.008,true,false);
+                sinnphiDvsmassfitter[iPt]->IncludeSecondGausPeak(massDplus,true,0.008,true,true);
             sinnphiDvsmassfitter[iPt]->SimultaneusFit(false);
             
             hMeanCosnPhiDVsPt->SetBinContent(iPt+1,cosnphiDvsmassfitter[iPt]->GetVn());

@@ -307,7 +307,7 @@ void CharmHadronVnFitSystematics(string cfgFileName, string refFileName, int ref
 
         float averagePtUnc = -1.;  
         int bkgfunc = (meson==AliAnalysisTaskSECharmHadronvn::kDstartoKpipi) ? AliHFInvMassFitter::kPowEx : AliHFInvMassFitter::kExpo;
-        float averagePt = GetAveragePtInRange(averagePtUnc, sMassVsPtVsPhiVsCentrVsqn, qnmin, qnmax, PtMin[iPt], PtMax[iPt], BkgFunc, SgnFunc, useRefl, hMCRefl[iPt], SoverR, reflopt, meson, massD);
+        float averagePt = GetAveragePtInRange(averagePtUnc, sMassVsPtVsPhiVsCentrVsqn, qnmin, qnmax, PtMin[iPt], PtMax[iPt], bkgfunc, SgnFunc, useRefl, hMCRefl[iPt], SoverR, reflopt, meson, massD);
 
         //get inv-mass histos
         ApplySelection(sMassVsPtVsPhiVsCentrVsqn,1,PtMin[iPt],PtMax[iPt]);
@@ -446,6 +446,7 @@ void CharmHadronVnFitSystematics(string cfgFileName, string refFileName, int ref
                                         rawYieldsSimFit[iDeltaPhi] = massfitterSimFit[iDeltaPhi]->GetSignalFunc()->GetParameter(0) / hInvMassDeltaPhiToFit[0]->GetBinWidth(1);
                                         rawYieldsSimFitUnc[iDeltaPhi] = massfitterSimFit[iDeltaPhi]->GetSignalFunc()->GetParError(0) / hInvMassDeltaPhiToFit[0]->GetBinWidth(1);
                                     }
+                                    commonpars.clear();
 
                                     double vnFreeSigma=0., vnBinCount=0., vnFixSigma=0., vnSimFit=0., vnFreeSigmaUnc=0., vnBinCountUnc=0., vnFixSigmaUnc=0., vnSimFitUnc=0.;
                                     vnFreeSigma = ComputeEPvn(vnFreeSigmaUnc,rawYieldsFreeSigma[0],rawYieldsFreeSigmaUnc[0],rawYieldsFreeSigma[1],rawYieldsFreeSigmaUnc[1],resol);
@@ -507,7 +508,7 @@ void CharmHadronVnFitSystematics(string cfgFileName, string refFileName, int ref
                                     vnvsmassfitter->SetInitialGaussianMean(massD,1);
                                     vnvsmassfitter->SetInitialGaussianSigma(massfitterInt.GetSigma(),1);
                                     if(meson==AliAnalysisTaskSECharmHadronvn::kDstoKKpi)
-                                        vnvsmassfitter->IncludeSecondGausPeak(massDplus,true,0.008,true,false);
+                                        vnvsmassfitter->IncludeSecondGausPeak(massDplus,true,0.008,true,true);
                                     if(useRefl) {
                                         vnvsmassfitter->SetTemplateReflections(hMCRefl[iPt],reflopt,MassMin[iMassMin],MassMax[iMassMax]);
                                         vnvsmassfitter->SetFixReflOverS(SoverR);
