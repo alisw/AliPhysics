@@ -589,9 +589,7 @@ void AliEmcalCorrectionClusterizer::RecPoints2Clusters(TClonesArray *clus)
     Float_t *parentListDE = recpoint->GetParentsDE();  // deposited energy
     
     c->SetLabel(parentList, parentMult);
-    if(fSetCellMCLabelFromEdepFrac) {
-      c->SetClusterMCEdepFractionFromEdepArray(parentListDE);
-    }
+    c->SetClusterMCEdepFractionFromEdepArray(parentListDE);
     
     //
     // Set the cell energy deposition fraction map:
