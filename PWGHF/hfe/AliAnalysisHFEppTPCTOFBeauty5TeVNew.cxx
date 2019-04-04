@@ -2424,7 +2424,7 @@ void AliAnalysisHFEppTPCTOFBeauty5TeVNew::UserExec(Option_t *)
 
           }
           qadca_DCorr[2]=DCAxy*track->Charge()*signB;
-          cout<<"fDWeight in D:  "<<fDWeight<<endl;	
+          //cout<<"fDWeight in D:  "<<fDWeight<<endl;	
           if(qadca_DCorr[1]>0.) fD0_DCorr->Fill(qadca_DCorr, fDWeight);
         }//end of electrons from charm
 
@@ -2536,7 +2536,7 @@ void AliAnalysisHFEppTPCTOFBeauty5TeVNew::UserExec(Option_t *)
           fDCAxy_pt_beautybaryons->Fill(fPt,DCAxy*track->Charge()*signB);
           }
           qadca_BCorr[2]=DCAxy*track->Charge()*signB;
-          cout<<"fBWeight in B:  "<<fBWeight<<endl;
+         // cout<<"fBWeight in B:  "<<fBWeight<<endl;
           if(qadca_BCorr[1]>0.) fD0_BCorr->Fill(qadca_BCorr, fBWeight);	
         }//end of electrons from beauty
       }//end of hfe
