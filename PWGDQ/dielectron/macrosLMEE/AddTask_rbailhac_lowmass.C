@@ -2,7 +2,8 @@ AliAnalysisTask *AddTask_rbailhac_lowmass(Bool_t getFromAlien=kFALSE,
 					  TString cFileName = "Config_rbailhac_lowmass.C",
 					  Char_t* outputFileName="LMEE.root",
 					  ULong64_t triggerMask = AliVEvent::kINT7,
-					  Bool_t pileupon = kFALSE
+					  Bool_t pileupon = kFALSE,
+					  TString nametask = "rbailhac"
                                              )
 {
 
@@ -31,7 +32,7 @@ AliAnalysisTask *AddTask_rbailhac_lowmass(Bool_t getFromAlien=kFALSE,
   gROOT->LoadMacro(configFilePath.Data());
 
   //create task and add it to the manager (MB)
-  TString appendix(TString::Format("pileup%d",(Int_t)pileupon));
+  TString appendix(TString::Format("%s_pileup%d",nametask.Data(),(Int_t)pileupon));
   printf("appendix %s\n", appendix.Data());
   AliAnalysisTaskMultiDielectron *task = new AliAnalysisTaskMultiDielectron(Form("MultiDielectron_%s",appendix.Data()));
   if (!hasMC) task->UsePhysicsSelection();
