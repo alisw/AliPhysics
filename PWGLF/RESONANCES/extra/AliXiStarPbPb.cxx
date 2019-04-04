@@ -452,8 +452,8 @@ void AliXiStarPbPb::XiStarInit()
     fCutValues[6][8] = 2.5;
     fCutValues[7][9] = 0.95;
     fCutValues[8][10] = 0.275;
-    fCutValues[9][11] = 0.998; //checking for tight CPA V0
-    fCutValues[10][12] = 0.95;
+    fCutValues[9][11] = 0.98; //checking t CPA V0
+    fCutValues[10][12] = 0.98; //checking t CPA Xi
     
     // Open CPA L and Xi
     fCutValues[11][0] = 70; fCutValues[11][1] = 70; fCutValues[11][2] = 70; fCutValues[11][3] = 70;// 80
@@ -464,8 +464,8 @@ void AliXiStarPbPb::XiStarInit()
     fCutValues[16][8] = 2.5;
     fCutValues[17][9] = 0.96;
     fCutValues[18][10] = 0.275;
-    fCutValues[19][11] = 0.95;
-    fCutValues[20][12] = 0.9992; //checking for tight CPA Xi
+    fCutValues[19][11] = 0.99;  //checking t CPA V0
+    fCutValues[20][12] = 0.99; //checking t CPA Xi
     
     /*
      //systematic variation// Loose
