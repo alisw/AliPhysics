@@ -212,14 +212,6 @@ class AliEventCuts : public TList {
     ClassDef(AliEventCuts,8)
 };
 
-class AliEventCutsNanoInterface : public AliEventCuts, public virtual AliAnalysisCuts  {
-  public:
-  virtual Bool_t IsSelected(TObject* ev) {
-    SetSelected(AcceptEvent(static_cast<AliVEvent*>(ev))); 
-    return Selected();
-  }
-};
-
 template<typename F> F AliEventCuts::PolN(F x,F* coef, int n) {
   if (n < 1) ::Fatal("AliEventCuts::PolN","PolN should be used only for n>=1.");
   F ret = coef[0] + coef[1] * x;
