@@ -54,7 +54,8 @@ public:
     Double_t                          radius,
     Bool_t                            useDCAL,
     const char *                      namepartcont,
-    const char *                      trigger
+    const char *                      trigger,
+    const char *                      suffix
   );
 
 protected:
