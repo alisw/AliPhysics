@@ -1591,8 +1591,8 @@ Long_t AliAnalysisTaskWeakDecayVertexer::V0sTracks2CascadeVerticesMC(AliESDEvent
         if( lLabelMother < 0 ) continue;
         TParticle *lParticleMother = lMCstack->Particle( lLabelMother );
         Int_t lParticleMotherPDG = lParticleMother->GetPdgCode();
-        if( TMath::Abs(lParticleMotherPDG) != 3122 &&
-           TMath::Abs(lParticleMotherPDG) != 3122 ) continue; //keep only tracks coming from Xi, Omega
+        if( TMath::Abs(lParticleMotherPDG) != 3312 &&
+           TMath::Abs(lParticleMotherPDG) != 3334 ) continue; //keep only tracks coming from Xi, Omega
         //==================================================================================
         
         if ((status&AliESDtrack::kITSrefit)==0)
