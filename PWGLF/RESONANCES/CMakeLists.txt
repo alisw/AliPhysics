@@ -100,6 +100,7 @@ set(SRCS
   AliRsnMiniTaskPhiVn.cxx
 
   PostProcessing/Xi1530/AliAnalysisTaskXi1530.cxx
+  PostProcessing/f0980/AliAnalysisTaskInclusivef0f2.cxx
   )
 
 # Headers from sources
@@ -141,3 +142,4 @@ install(FILES ${HDRS} DESTINATION include)
 # Install macros
 install(DIRECTORY macros DESTINATION PWGLF/RESONANCES)
 install(FILES PostProcessing/Xi1530/AddTaskXi1530.C DESTINATION PWGLF/RESONANCES/PostProcessing/Xi1530)
+install(FILES PostProcessing/f0980/AddTaskInclusivef0f2.C DESTINATION PWGLF/RESONANCES/PostProcessing/f0980)
