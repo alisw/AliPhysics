@@ -2,8 +2,8 @@
 /* See cxx source for full Copyright notice */
 /* $Id$ */
 
-#ifndef ALIANALYSISTASKUNIFLOW_H
-#define ALIANALYSISTASKUNIFLOW_H
+#ifndef ALIANALYSISTASKUNIFLOWMULTISTRANGE_H
+#define ALIANALYSISTASKUNIFLOWMULTISTRANGE_H
 
 #include "AliAnalysisTaskSE.h"
 #include "AliEventCuts.h"
@@ -611,7 +611,7 @@ class AliAnalysisTaskUniFlowMultiStrange : public AliAnalysisTaskSE
       TH2D*		      fhQAV0sArmenterosLambda[fiNumIndexQA];	//! Armenteros-Podolanski plot for Lambda candidates
       TH2D*		      fhQAV0sArmenterosALambda[fiNumIndexQA];	//! Armenteros-Podolanski plot for ALambda candidates
        TH2D*                  fhEventq2TPC;//!Event q2  
-      ClassDef(AliAnalysisTaskUniFlowMultiStrange, 7);
+      ClassDef(AliAnalysisTaskUniFlowMultiStrange, 0);
 };
 
 AliAnalysisTaskUniFlowMultiStrange::CorrTask::CorrTask() :

@@ -66,6 +66,9 @@
 //
 // =================================================================================================
 
+#ifndef ALIANALYSISTASKUNIFLOWMULTISTRANGE_CXX
+#define ALIANALYSISTASKUNIFLOWMULTISTRANGE_CXX
+
 #include <TDatabasePDG.h>
 #include <TPDGCode.h>
 
@@ -4680,4 +4683,4 @@ Double_t AliAnalysisTaskUniFlowMultiStrange::GetFlowWeightCascade(const AliAODca
   return dWeight;
 }
 
-
+#endif
