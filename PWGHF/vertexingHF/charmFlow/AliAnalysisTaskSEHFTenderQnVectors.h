@@ -53,6 +53,9 @@ public:
     void SetTriggerInfo(TString trigClass, unsigned long long mask=0)                                    {fTriggerClass = trigClass; fTriggerMask = mask;}
     void LoadSplinesForqnPercentile(TString splinesfilepath);
 
+    void EnableTPCPhiVsCentrDistrHistosVsRun()                                                           {fEnableTPCPhiVsCentrDistr=true;}
+    void EnableQVecTPCVsCentrDistrHistosVsRun()                                                          {fEnableQvecTPCVsCentrDistr=true;}
+
 private:
 
     double GetEventPlaneAngle(double Qx, double Qy) const {return (TMath::Pi()+TMath::ATan2(-Qy,-Qx))/2;} 
@@ -63,7 +66,13 @@ private:
     TH1F *fHistCentrality;                           //!<! histo with centrality
     TH1F *fHistEventPlaneTPC[3];                     //!<! histos of TPC (Full, PosEta, NegEta) EP angle 
     TH1F *fHistEventPlaneV0[3];                      //!<! histos of V0 (Full, V0A, V0C) EP angle
-  
+
+    TH2F* fTPCPhiVsCentrDistr[2];                    //!<! histos of phi vs. centr of selected TPC tracks in eta>0 and eta<0
+    TH2F* fQvecTPCVsCentrDistr[3];                   //!<! histos of TPC Q-vector vs. centr for tracks with eta>0 and eta<0
+
+    bool fEnableTPCPhiVsCentrDistr;                  /// flag to enable histos of phi vs. centr
+    bool fEnableQvecTPCVsCentrDistr;                 /// flag to enable histos of TPC Q-vector vs. centr
+
     AliHFQnVectorHandler* fHFQnVecHandler;           /// Qn-vector handler
     int fHarmonic;                                   /// Qn-vector harmonic
     int fCalibType;                                  /// type of calibrations used by handler
@@ -76,12 +85,11 @@ private:
 
     AliAODEvent* fAOD;                               /// AOD event
     int fPrevEventRun;                               /// run number of event previously analysed
-    TList *fPhiVsCentrDistr;                         // !<! output list of phi vs. centr TH2 of selected TPC tracks in eta>0 and eta<0
 
     TString fTriggerClass;                           /// trigger class
     unsigned long long fTriggerMask;                 /// trigger mask
 
-    ClassDef(AliAnalysisTaskSEHFTenderQnVectors, 2);
+    ClassDef(AliAnalysisTaskSEHFTenderQnVectors, 3);
 };
 
 #endif
