@@ -92,7 +92,7 @@
 #pragma link C++ class SHyperTritonHe3pi+;
 #pragma link C++ class std::vector<RHyperTritonHe3pi>+;
 #pragma link C++ class std::vector<SHyperTritonHe3pi>+;
-#pragma link C++ class RCollision;
+#pragma link C++ class RCollision+;
 
 
 /// * Hyp3body
@@ -101,6 +101,7 @@
 #pragma link C++ class AliAnalysisTaskHypertriton3AOD+;
 
 /// * New Hyp3body
+#pragma link C++ class AliAnalysisTaskFindableHypertriton3+;
 #pragma link C++ class AliAnalysisTaskHypertriton3New+;
 
 /// Hypertriton Selector
