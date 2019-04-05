@@ -39,13 +39,51 @@ Bool_t AliAnalysisNanoAODV0Cuts::IsSelected(TObject* obj)
 {
   // Returns true if the track is good!
   // TODO this is only an example implementation.
+  float v0pTmin = 0.2;
+  float v0EtaMax = 0.9;
+  float TransverseRadiusMin = 0.2;
+  float TransverseRadiusMax = 100;
+  float CPAmin = 0.98;
+  float DCADaugv0VtxMax = 1.5;
+  float DCADaugPrimVtxMin = 0.05;
+  AliAODv0* v0 = static_cast<AliAODv0*>(obj);
+  AliAODEvent* evt = static_cast<AliAODEvent*>(v0->GetEvent());
 
-  AliAODv0* track = static_cast<AliAODv0*>(obj);
-  
-  if (TMath::Abs(track->DcaV0ToPrimVertex() > 10))
-    return kFALSE;
-  
-  return kTRUE;  
+  if(v0->GetNProngs() != 2) {
+    return false;
+  }
+  if(v0->GetNDaughters() != 2) {
+    return false;
+  }
+  if (v0->GetOnFlyStatus()) {
+    return false;
+  }
+  if (v0->Pt() > v0pTmin) {
+    return false;
+  }
+  float xvP = evt->GetPrimaryVertex()->GetX();
+  float yvP = evt->GetPrimaryVertex()->GetY();
+  float zvP = evt->GetPrimaryVertex()->GetZ();
+  double vecTarget[3] = { xvP, yvP, zvP };
+  float TransverseRadius = v0->DecayLengthXY(vecTarget);
+  if (TransverseRadius > TransverseRadiusMax
+      || TransverseRadius < TransverseRadiusMin) {
+    return false;
+  }
+  if (v0->CosPointingAngle(vecTarget) > CPAmin) {
+    return false;
+  }
+  if (v0->Eta() < v0EtaMax) {
+    return false;
+  }
+  if (v0->DcaV0Daughters() < DCADaugv0VtxMax) {
+    return false;
+  }
+  if (v0->DcaPosToPrimVertex() < DCADaugPrimVtxMin
+      || v0->DcaNegToPrimVertex() < DCADaugPrimVtxMin) {
+    return false;
+  }
+  return true;
 }
 
 AliAnalysisNanoAODEventCuts::AliAnalysisNanoAODEventCuts():
