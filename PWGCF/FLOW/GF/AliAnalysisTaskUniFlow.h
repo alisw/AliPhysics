@@ -173,6 +173,8 @@ class AliAnalysisTaskUniFlow : public AliAnalysisTaskSE
 
       AliEventCuts            fEventCuts; //
 
+
+
     private:
       static const Int_t      fPIDNumSpecies = 5; // Number of considered species for PID
       static const Int_t      fFlowNumHarmonicsMax = 7; // maximum harmonics length of flow vector array
@@ -181,6 +183,8 @@ class AliAnalysisTaskUniFlow : public AliAnalysisTaskSE
       const char*             GetSpeciesName(PartSpecies species) const;
       const char*             GetSpeciesLabel(PartSpecies species) const;
       const char*             GetEtaGapName(Double_t dEtaGap) const { return Form("%02.2g",10.0*dEtaGap); }
+
+      Bool_t                  sortPt(const AliVTrack* t1, const AliVTrack* t2) { return (t1->Pt() < t2->Pt()); } // function for std::sort
 
       Bool_t                  InitializeTask(); // called once on beginning of task (within CreateUserObjects method)
       Bool_t                  LoadWeights(); // load weights histograms
@@ -228,7 +232,7 @@ class AliAnalysisTaskUniFlow : public AliAnalysisTaskSE
 
       // Flow related methods
       void                    FillRefsVectors(Double_t dGap); // fill flow vector Q with RFPs for reference flow
-      Int_t                   FillPOIsVectors(Double_t dEtaGap, PartSpecies species, Double_t dPtLow, Double_t dPtHigh, Double_t dMassLow = 0.0, Double_t dMassHigh = 0.0); // fill flow vectors p,q and s with POIs (for given species) for differential flow calculations
+      Int_t                   FillPOIsVectors(Double_t dEtaGap, PartSpecies species, Int_t& indStart, Int_t& tracksInBin, Double_t dPtLow, Double_t dPtHigh, Double_t dMassLow = 0.0, Double_t dMassHigh = 0.0); // fill flow vectors p,q and s with POIs (for given species) for differential flow calculations
       void                    ResetFlowVector(TComplex (&array)[fFlowNumHarmonicsMax][fFlowNumWeightPowersMax]); // set values to TComplex(0,0,0) for given array
       void                    ListFlowVector(TComplex (&array)[fFlowNumHarmonicsMax][fFlowNumWeightPowersMax]) const; // printf all values of given Flow vector array
 
