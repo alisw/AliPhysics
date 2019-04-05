@@ -41,7 +41,7 @@ AliNanoAODTrack::AliNanoAODTrack() :
   AliNanoAODStorage(),
   fLabel(0),
   fProdVertex(0),
-  fCharge(0),
+  fNanoFlags(0),
   fAODEvent(NULL)
 {
   // default constructor
@@ -63,7 +63,7 @@ AliNanoAODTrack::AliNanoAODTrack(AliAODTrack * aodTrack, const char * vars) :
   AliNanoAODStorage(),
   fLabel(0),
   fProdVertex(0),
-  fCharge(0),
+  fNanoFlags(0),
   fAODEvent(NULL)
 {
   // constructor
@@ -130,7 +130,20 @@ AliNanoAODTrack::AliNanoAODTrack(AliAODTrack * aodTrack, const char * vars) :
 
 
   fLabel = aodTrack->GetLabel();
-  fCharge = aodTrack->Charge();
+  
+  if (aodTrack->Charge() > 0)
+    SETBIT(fNanoFlags, kNanoCharge);
+
+  Bool_t hasTOFout  = aodTrack->GetStatus() & AliVTrack::kTOFout;
+  Bool_t hasTOFtime = aodTrack->GetStatus() & AliVTrack::kTIME;
+  const Float_t len = aodTrack->GetIntegratedLength();
+  if (Bool_t(hasTOFout && hasTOFtime) && (len > 350.))
+    SETBIT(fNanoFlags, kNanoHasTOFPID);
+  
+  for (int i=0; i<6; i++)
+    if (aodTrack->HasPointOnITSLayer(i))
+      SETBIT(fNanoFlags, kNanoClusterITS0+i);
+    
   fProdVertex = aodTrack->GetProdVertex();
   // SetUsedForVtxFit(usedForVtxFit);// FIXME: what is this
   // SetUsedForPrimVtxFit(usedForPrimVtxFit);// FIXME: what is this
@@ -145,7 +158,7 @@ AliNanoAODTrack::AliNanoAODTrack(AliESDTrack * /*esdTrack*/, const char * /*vars
   AliNanoAODStorage(),
   fLabel(0),
   fProdVertex(0),
-  fCharge(0),
+  fNanoFlags(0),
   fAODEvent(NULL)
 {
   // ctor: Creates a special track by copying the requested variables from an ESD track
@@ -158,7 +171,7 @@ AliNanoAODTrack::AliNanoAODTrack(const char * vars) :
   AliNanoAODStorage(),
   fLabel(0),
   fProdVertex(0),
-  fCharge(0),
+  fNanoFlags(0),
   fAODEvent(NULL)
 {
    // ctor: Creates a special track simply allocating the required variables
@@ -197,7 +210,7 @@ AliNanoAODTrack::AliNanoAODTrack(const AliNanoAODTrack& trk) :
   AliNanoAODStorage(),
   fLabel(trk.fLabel),
   fProdVertex(trk.fProdVertex),
-  fCharge(trk.fCharge),
+  fNanoFlags(trk.fNanoFlags),
   fAODEvent(trk.fAODEvent)
 {
   // Copy constructor
@@ -222,7 +235,7 @@ AliNanoAODTrack& AliNanoAODTrack::operator=(const AliNanoAODTrack& trk)
 
     fLabel      = trk.fLabel;
     fProdVertex = trk.fProdVertex;
-    fCharge     = trk.fCharge;
+    fNanoFlags   = trk.fNanoFlags;
     fAODEvent   = trk.fAODEvent;
     
   }
@@ -576,3 +589,10 @@ Bool_t AliNanoAODTrack::InitPIDIndex()
   }
   return anyFilled;
 }
+
+Int_t AliNanoAODTrack::GetTOFBunchCrossing(Double_t /*b=0*/, Bool_t /*tpcPIDonly=kFALSE*/) const 
+{ 
+  // TODO move to AliNanoAODTrackMapping
+  static const Int_t cstIndex = AliNanoAODTrackMapping::GetInstance()->GetVarIndex("cstTOFBunchCrossing");
+  return GetVar(cstIndex);
+};
