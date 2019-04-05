@@ -682,6 +682,11 @@ void AliAnalysisTaskCombinHF::UserExec(Option_t */*option*/){
   fHistNEvents->Fill(1);
   fHistEventMultCent->Fill(evCentr,fMultiplicity);
 
+
+  Int_t pdgOfD=421;
+  if(fMeson==kDplus) pdgOfD=411;
+  else if(fMeson==kDs) pdgOfD=431;
+
   // select and flag tracks
   UChar_t* status = new UChar_t[ntracks];
   for(Int_t iTr=0; iTr<ntracks; iTr++){
@@ -693,7 +698,7 @@ void AliAnalysisTaskCombinHF::UserExec(Option_t */*option*/){
     }
     if(fReadMC && fSignalOnlyMC && arrayMC){
       // for fast MC analysis we skip tracks not coming from charm hadrons
-      Bool_t isCharm=AliVertexingHFUtils::IsTrackFromCharm(track,arrayMC);
+      Bool_t isCharm=AliVertexingHFUtils::IsTrackFromHadronDecay(pdgOfD,track,arrayMC);
       if(!isCharm) continue;
     }
     if(IsTrackSelected(track)) status[iTr]+=1;
