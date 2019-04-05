@@ -47,7 +47,7 @@ Bool_t AliAnalysisNanoAODV0Cuts::IsSelected(TObject* obj)
   float DCADaugv0VtxMax = 1.5;
   float DCADaugPrimVtxMin = 0.05;
   AliAODv0* v0 = static_cast<AliAODv0*>(obj);
-  AliAODEvent* evt = static_cast<AliAODEvent*>(v0->GetEvent());
+  const AliAODEvent* evt = static_cast<const AliAODEvent*>(v0->GetEvent());
 
   if(v0->GetNProngs() != 2) {
     return false;
