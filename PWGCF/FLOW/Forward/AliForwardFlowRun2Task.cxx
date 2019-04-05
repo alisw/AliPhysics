@@ -97,6 +97,7 @@ AliForwardFlowRun2Task::AliForwardFlowRun2Task(const char* name) : AliAnalysisTa
   // Rely on validation task for event and track selection
   DefineInput(1, AliForwardTaskValidation::Class());
   DefineInput(2, TList::Class());
+  DefineInput(3, TList::Class());
   DefineOutput(1, TList::Class());
 }
 
@@ -171,8 +172,8 @@ void AliForwardFlowRun2Task::UserCreateOutputObjects()
 
     fSettings.nuacentral = static_cast<TH3F*>( static_cast<TList*>(this->GetInputData(2))->FindObject("nuacentral") );
     fSettings.nuaforward = static_cast<TH3F*>( static_cast<TList*>(this->GetInputData(2))->FindObject("nuaforward") );
-    fSettings.nuacentral_ref = static_cast<TH3F*>( static_cast<TList*>(this->GetInputData(2))->FindObject("nuacentral_ref") );
-    fSettings.nuaforward_ref = static_cast<TH3F*>( static_cast<TList*>(this->GetInputData(2))->FindObject("nuaforward_ref") );
+    fSettings.nuacentral_ref = static_cast<TH3F*>( static_cast<TList*>(this->GetInputData(3))->FindObject("nuacentral") );
+    fSettings.nuaforward_ref = static_cast<TH3F*>( static_cast<TList*>(this->GetInputData(3))->FindObject("nuaforward") );
 
     PostData(1, fOutputList);
     TH1::AddDirectory(saveAutoAdd);
