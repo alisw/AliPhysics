@@ -127,6 +127,7 @@ AliForwardTaskValidation::AliForwardTaskValidation(const char *name)
   //fEventCuts.SetupRun2PbPb();
   //fEventCuts.SetManualMode();// = true;
   // Enable mulivertex pileup cuts
+  fEventCuts.SetCentralityEstimators("V0A","CL0");
   fEventCuts.OverrideAutomaticTriggerSelection(AliVEvent::kINT7);
   fEventCuts.fPileUpCutMV = true;
 }

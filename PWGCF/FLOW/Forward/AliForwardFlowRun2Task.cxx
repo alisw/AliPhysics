@@ -96,6 +96,7 @@ AliForwardFlowRun2Task::AliForwardFlowRun2Task(const char* name) : AliAnalysisTa
 
   // Rely on validation task for event and track selection
   DefineInput(1, AliForwardTaskValidation::Class());
+  DefineInput(2, TList::Class());
   DefineOutput(1, TList::Class());
 }
 
@@ -122,7 +123,7 @@ void AliForwardFlowRun2Task::UserCreateOutputObjects()
     fEventList->Add(new TH1D("Centrality","Centrality",fSettings.fCentBins,0,100));
     fEventList->Add(new TH1D("Vertex","Vertex",fSettings.fNZvtxBins,fSettings.fZVtxAcceptanceLowEdge,fSettings.fZVtxAcceptanceUpEdge));
     fEventList->Add(new TH1D("FMDHits","FMDHits",100,0,10));
-    fEventList->Add(new TH2F("dNdeta","dNdeta",200 /*fSettings.fNDiffEtaBins*/,fSettings.fEtaLowEdge,fSettings.fEtaUpEdge,10,0,100));
+    fEventList->Add(new TH2F("dNdeta","dNdeta",200 /*fSettings.fNDiffEtaBins*/,fSettings.fEtaLowEdge,fSettings.fEtaUpEdge,fSettings.fCentBins,0,100));
 
     fAnalysisList->Add(new TList());
     fAnalysisList->Add(new TList());
@@ -138,10 +139,10 @@ void AliForwardFlowRun2Task::UserCreateOutputObjects()
     Int_t fMaxMoment = 5;
     Int_t dimensions = 5;
 
-    Int_t dbins[5] = {fSettings.fnoSamples, fSettings.fNZvtxBins, fSettings.fNDiffEtaBins, fSettings.fCentBins, fSettings.kSinphi1phi2phi3p+1} ;
-    Int_t rbins[5] = {fSettings.fnoSamples, fSettings.fNZvtxBins, fSettings.fNRefEtaBins, fSettings.fCentBins, fSettings.kSinphi1phi2phi3p+1} ;
+    Int_t dbins[5] = {fSettings.fnoSamples, fSettings.fNZvtxBins, fSettings.fNDiffEtaBins, fSettings.fCentBins, fSettings.kW4Four+1} ;
+    Int_t rbins[5] = {fSettings.fnoSamples, fSettings.fNZvtxBins, fSettings.fNRefEtaBins, fSettings.fCentBins, fSettings.kW4Four+1} ;
     Double_t xmin[5] = {0,fSettings.fZVtxAcceptanceLowEdge, fSettings.fEtaLowEdge, 0, 0};
-    Double_t xmax[5] = {10,fSettings.fZVtxAcceptanceUpEdge, fSettings.fEtaUpEdge, 100, static_cast<Double_t>(fSettings.kSinphi1phi2phi3p+1)};
+    Double_t xmax[5] = {10,fSettings.fZVtxAcceptanceUpEdge, fSettings.fEtaUpEdge, 100, static_cast<Double_t>(fSettings.kW4Four+1)};
 
     static_cast<TList*>(fAnalysisList->At(2))->Add(new THnD("fQcorrfactor", "fQcorrfactor", dimensions, rbins, xmin, xmax)); //(eta, n)
     static_cast<TList*>(fAnalysisList->At(2))->Add(new THnD("fpcorrfactor","fpcorrfactor", dimensions, dbins, xmin, xmax)); //(eta, n)
@@ -168,6 +169,11 @@ void AliForwardFlowRun2Task::UserCreateOutputObjects()
       }
     }
 
+    fSettings.nuacentral = static_cast<TH3F*>( static_cast<TList*>(this->GetInputData(2))->FindObject("nuacentral") );
+    fSettings.nuaforward = static_cast<TH3F*>( static_cast<TList*>(this->GetInputData(2))->FindObject("nuaforward") );
+    fSettings.nuacentral_ref = static_cast<TH3F*>( static_cast<TList*>(this->GetInputData(2))->FindObject("nuacentral_ref") );
+    fSettings.nuaforward_ref = static_cast<TH3F*>( static_cast<TList*>(this->GetInputData(2))->FindObject("nuaforward_ref") );
+
     PostData(1, fOutputList);
     TH1::AddDirectory(saveAutoAdd);
   }
@@ -182,6 +188,9 @@ void AliForwardFlowRun2Task::UserExec(Option_t *)
   //  Parameters:
   //   option: Not used
   //
+
+
+
   // Get the event validation object
    AliForwardTaskValidation* ev_val = dynamic_cast<AliForwardTaskValidation*>(this->GetInputData(1));
    if (!ev_val->IsValidEvent()){
