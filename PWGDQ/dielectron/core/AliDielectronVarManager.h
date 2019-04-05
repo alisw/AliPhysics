@@ -74,6 +74,7 @@
 #include "AliDielectronHelper.h"
 #include "AliDielectronQnEPcorrection.h"
 
+#include "AliAnalysisDataContainer.h"
 #include "AliAnalysisManager.h"
 #include "AliInputEventHandler.h"
 #include "AliVZEROEPSelectionTask.h"
@@ -81,6 +82,10 @@
 #include "AliQnCorrectionsManager.h"
 #include "AliQnCorrectionsQnVector.h"
 #include "AliAnalysisTaskFlowVectorCorrections.h"
+
+#include "AliFlowVector.h"
+#include "AliFlowEvent.h"
+#include "AliAnalysisTaskZDCEP.h"
 
 #include "AliAODMCHeader.h"
 #include "AliTRDgeometry.h"
@@ -790,6 +795,7 @@ private:
   static void FillVarMCEvent(const AliMCEvent *event,                Double_t * const values);
   static void FillVarTPCEventPlane(const AliEventplane *evplane,     Double_t * const values);
   static void FillQnEventplanes(TList *qnlist,                       Double_t * const values);
+  static void FillZDCEventPlane(Double_t * const values);
 
   static void InitVZEROCalibrationHistograms(Int_t runNo);
   static void InitVZERORecenteringHistograms(Int_t runNo);
@@ -2721,7 +2727,7 @@ inline void AliDielectronVarManager::FillVarVEvent(const AliVEvent *event, Doubl
 
   // If QnCorrections framework (est. 2016) task should be used run the AddTask with your train. The following function will overwrite the existing AliEventplane object with the information extracted from the QnCorrections Task. Then the following code can be used as usual. The current implementation uses only the second harmonic but this could be adaptet if needed.
   if( AliAnalysisTaskFlowVectorCorrections *flowQnVectorTask =
-      dynamic_cast<AliAnalysisTaskFlowVectorCorrections*> (man->GetTask("FlowQnVectorCorrections")) )
+      dynamic_cast<AliAnalysisTaskFlowVectorCorrections*> (man->GetTask("FlowQnVectorCorrections")) ){
     if(flowQnVectorTask != NULL){
       AliQnCorrectionsManager *flowQnVectorMgr = flowQnVectorTask->GetAliQnCorrectionsManager();
       TList *qnlist = flowQnVectorMgr->GetQnVectorList();
@@ -2732,6 +2738,11 @@ inline void AliDielectronVarManager::FillVarVEvent(const AliVEvent *event, Doubl
         }
       }
     }
+  }// end if QnCorrections framework
+  else{
+    // else fill ZDC event plane from charged particle and D meson v1 analysis)
+    FillZDCEventPlane(values);
+  }
 
   // v2 calculation variables with eventplane estimators from run1 commented out to reduce the memory usage
   // ep angle interval [todo, fill]
@@ -2900,8 +2911,6 @@ inline void AliDielectronVarManager::FillVarVEvent(const AliVEvent *event, Doubl
 
   // values[AliDielectronVarManager::kv0ZDCrpRes] = cos(2*(values[AliDielectronVarManager::kZDCArpH1] - values[AliDielectronVarManager::kv0ArpH2]));
   // values[AliDielectronVarManager::kZDCrpResH1] = cos(values[AliDielectronVarManager::kZDCArpH1] - values[AliDielectronVarManager::kZDCCrpH1]);
-
-
 
 }
 
@@ -4193,6 +4202,39 @@ inline void AliDielectronVarManager::FillQnEventplanes(TList *qnlist, Double_t *
     // values[kQnCorrFMDAy_FMDCx] = values[kQnFMDAyH2] * values[kQnFMDCxH2];
     // values[kQnCorrFMDAy_FMDCy] = values[kQnFMDAyH2] * values[kQnFMDCyH2];
   }
+}
+
+//________________________________________________________________
+inline void AliDielectronVarManager::FillZDCEventPlane(Double_t * const values){
+
+  AliFlowVector vQarray[2];
+  
+  AliAnalysisTaskZDCEP *fZDCEPTask = dynamic_cast<AliAnalysisTaskZDCEP*>(AliAnalysisManager::GetAnalysisManager()->GetTask("AnalysisTaskZDCEP"));
+
+  if (fZDCEPTask != NULL) {
+
+    // get ZDC Q-vectors
+    TObjArray* dataContainers               = (AliAnalysisManager::GetAnalysisManager())->GetContainers();
+    AliAnalysisDataContainer* dataContainer = dynamic_cast<AliAnalysisDataContainer*>(dataContainers->FindObject("ZDCEPExchangeContainer"));
+    AliFlowEvent* anEvent                   = dynamic_cast<AliFlowEvent*>(dataContainer->GetData());
+    if(anEvent) {
+      // Get Q vectors for the subevents
+      anEvent->GetZDC2Qsub(vQarray);
+     } else { 
+      Printf("Flowevent not found. Aborting!!!\n");
+      return;
+    }
+  } 
+  else {
+    Printf("This task needs AliAnalysisTaskZDCEP and it is not present. Aborting!!!");
+    return;
+  }
+
+  // ZDCC = vQarray[0], ZDCA = vQarray[1], see AliFlowEventSimple
+  values[AliDielectronVarManager::kQnZDCCrpH1] = TVector2::Phi_mpi_pi(vQarray[0].Phi())/2;
+  values[AliDielectronVarManager::kQnZDCArpH1] = TVector2::Phi_mpi_pi(vQarray[1].Phi())/2;
+
+  return;
 }
 
 //________________________________________________________________
