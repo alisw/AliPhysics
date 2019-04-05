@@ -420,7 +420,7 @@ void CharmHadronVnFitSystematics(string cfgFileName, string refFileName, int ref
 
                                         //bin counting 
                                         if(fitFreeSigmaStatus[iDeltaPhi] == 1)
-                                            rawYieldsBinCount[iDeltaPhi] = massfitterFreeSigma[iDeltaPhi]->GetRawYieldBinCounting(rawYieldsBinCountUnc[iDeltaPhi],3.5,0,pdgcode); 
+                                            rawYieldsBinCount[iDeltaPhi] = massfitterFreeSigma[iDeltaPhi]->GetRawYieldBinCounting(rawYieldsBinCountUnc[iDeltaPhi],3,1,pdgcode); 
                                         else
                                             rawYieldsBinCount[iDeltaPhi] = 1.;
 
