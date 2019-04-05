@@ -63,13 +63,16 @@ public:
   void SetBeta(double beta) { fBeta = beta; }
   void SetZcut(double zcut) { fZcut = zcut; }
   void SetReclusterizingAlgorithm(EReclusterizer_t reclust) { fReclusterizer = reclust; }
+  void SetSampleFraction(Double_t samplefraction) { fSampleFraction = samplefraction; }
   void SetUseChargedConstituents(bool doUse) { fUseChargedConstituents = doUse; }
   void SetUseNeutralConstituents(bool doUse) { fUseNeutralConstituents = doUse; }
+  void SetNameMCParticleContainer(const char *name) { fNameMCParticles = name; }
 
-  static AliAnalysisTaskEmcalSoftDropResponse *AddTaskEmcalSoftDropResponse(Double_t jetradius, AliJetContainer::EJetType_t jettype, AliJetContainer::ERecoScheme_t recombinationScheme, const char *trigger);
+  static AliAnalysisTaskEmcalSoftDropResponse *AddTaskEmcalSoftDropResponse(Double_t jetradius, AliJetContainer::EJetType_t jettype, AliJetContainer::ERecoScheme_t recombinationScheme, const char *namepartcont, const char *trigger);
 
 protected:
   virtual void UserCreateOutputObjects();
+  virtual Bool_t CheckMCOutliers();
   virtual bool Run();
 
   TBinning *GetDefaultPartLevelPtBinning() const;
@@ -85,9 +88,12 @@ private:
   Double_t                      fZcut;                      ///< Zcut (softdrop definition)
   Double_t                      fBeta;                      ///< Beta (softdrop definition)
   EReclusterizer_t              fReclusterizer;             ///< Reclusterizing algorithm
+  Double32_t                    fSampleFraction;            ///< Fraction of statistics used for the analysis
   Bool_t                        fUseChargedConstituents;    ///< Use charged constituents for softdrop
   Bool_t                        fUseNeutralConstituents;    ///< Use neutral constituents for softdrop
+  TString                       fNameMCParticles;           ///< Name of the MC particle container
   TRandom                       *fSampleSplitter;           ///< Sample splitter
+  TRandom                       *fSampleTrimmer;            ///< Sample trimmer
   TBinning                      *fPartLevelPtBinning;       ///< Particle level pt binning
   TBinning                      *fDetLevelPtBinning;        ///< Detector level pt binning
   RooUnfoldResponse             *fZgResponse;               //!<! RooUnfold response object

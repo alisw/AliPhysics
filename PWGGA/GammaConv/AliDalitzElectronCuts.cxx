@@ -38,6 +38,10 @@
 #include "TObjString.h"
 #include "AliAODEvent.h"
 #include "AliESDEvent.h"
+#include "AliDalitzData.h"
+#include "AliDalitzAODESD.h"
+#include "AliDalitzEventMC.h"
+#include "AliDalitzAODESDMC.h"
 #include "TList.h"
 class iostream;
 
@@ -82,6 +86,9 @@ AliDalitzElectronCuts::AliDalitzElectronCuts(const char *name,const char *title)
   fPsiPairCut(0.45),
   fDeltaPhiCutMin(0.),
   fDeltaPhiCutMax(0.12),
+  fMaxDCAVertexz(1000.),
+  fMaxDCAVertexxy(1000.),
+  fDCAVertexPt(""),
   fMinClsTPC(0), // minimum clusters in the TPC
   fMinClsTPCToF(0), // minimum clusters to findable clusters
   fDodEdxSigmaITSCut(kFALSE),
@@ -110,6 +117,7 @@ AliDalitzElectronCuts::AliDalitzElectronCuts(const char *name,const char *title)
   fPIDMinPPionRejectionLowP(0.5),
   fUseCorrectedTPCClsInfo(kFALSE),
   fUseCrossedRows(kFALSE),
+  fITSCut(0),
   fUseTOFpid(kFALSE),
   fRequireTOF(kFALSE),
   fDoMassCut(kFALSE),
@@ -153,7 +161,96 @@ AliDalitzElectronCuts::AliDalitzElectronCuts(const char *name,const char *title)
   Bool_t selectPrimaries=kFALSE;
   fesdTrackCuts = AliESDtrackCuts::GetStandardITSTPCTrackCuts2010(selectPrimaries);
 }
+//NOTE work here Edgar New function.
+Bool_t AliDalitzElectronCuts::AcceptedAODESDTrack(AliDalitzAODESD* aliaodtrack) {
+    //SetMaxChi2TPCConstrainedGlobal
+    //fesdTrackCuts->SetMaxChi2TPCConstrainedGlobal(1e10);
+  //  if (!(aliaodtrack->GetDalitzAODTrack()->TestFilterBit(28))){
+    //    return kFALSE;
+        //56
+    //}
 
+    if(!(aliaodtrack->GetDalitzAODTrack()->IsHybridGlobalConstrainedGlobal())){//GlobalConstrained
+      return kFALSE;
+    }
+
+     if((aliaodtrack->GetDalitzAODTrack()->IsGlobalConstrained())){//GlobalConstrained
+      return kFALSE;
+    }
+
+    if(fUseCrossedRows){
+        if (aliaodtrack->GetTPCCrossedRowsG()<kclsTPCCut) return kFALSE;}
+    else {
+        if (aliaodtrack->GetNclsG()<kclsTPCCut) return kFALSE;}
+
+    //0:First layer SPD
+    //1:Second layer SPD
+    //2:First layer SDD
+    //3:Second layer SDD
+    //4:First layer SSD
+    //5:Second layer SSD
+    //cout<<fITSCut<<endl;
+    if(fITSCut==1){//At list on hit any layer of SPD point
+        if (!aliaodtrack->HasPointOnITSLayerG(0)) return kFALSE;
+    }
+    if(fITSCut==2){//At list on hit any layer of SPD point
+        if ((!aliaodtrack->HasPointOnITSLayerG(0))&&(!aliaodtrack->HasPointOnITSLayerG(1))) return kFALSE;
+    }
+    if(fITSCut==3){//At list on hit any layer of SPD point
+        if ((!aliaodtrack->HasPointOnITSLayerG(0))&&(aliaodtrack->GetITSclsG()<4)) return kFALSE;
+    }
+    if(fITSCut==4){//At list on hit any layer of SPD point
+        if ((!aliaodtrack->HasPointOnITSLayerG(0))&&(!aliaodtrack->HasPointOnITSLayerG(1))&&(aliaodtrack->GetITSclsG()<3)) return kFALSE;
+    }
+    if(fITSCut==5){//At list on hit any layer of SPD point
+        if ((!aliaodtrack->HasPointOnITSLayerG(0))&&(!aliaodtrack->HasPointOnITSLayerG(1))&&(aliaodtrack->GetITSclsG()<4)) return kFALSE;
+    }
+    if(fITSCut==6){//At list on hit any layer of SPD point
+        if ((!aliaodtrack->HasPointOnITSLayerG(0))&&(!aliaodtrack->HasPointOnITSLayerG(1))&&(aliaodtrack->GetITSclsG()<5)) return kFALSE;
+    }
+    if(fITSCut==7){//At list on hit any layer of SPD point
+        if ((aliaodtrack->GetITSclsG()<4)) return kFALSE;
+    }
+    if(fITSCut==8){//At list on hit any layer of SPD point
+        if ((!aliaodtrack->HasPointOnITSLayerG(0))||(!aliaodtrack->HasPointOnITSLayerG(1))) return kFALSE;
+    }
+    if(fITSCut==9){//At list on hit any layer of SPD point
+        if ((!aliaodtrack->HasPointOnITSLayerG(0))||(!aliaodtrack->HasPointOnITSLayerG(1))&&(aliaodtrack->GetITSclsG()<4)) return kFALSE;
+    }
+
+    //DCAcut
+    if(fDCAVertexPt.CompareTo("no")){
+        fDCAVertexPt.ReplaceAll("pt","x");
+         TFormula* DCAPtCutsForm= new TFormula("Conversion",fDCAVertexPt.Data());
+         fMaxDCAVertexxy=DCAPtCutsForm->Eval(aliaodtrack->GetPtG());
+         delete DCAPtCutsForm;
+    }
+  //  cout<<" Datos DCAz "<<aliaodtrack->GetDCAz()<<" Datos DCAxy "<<aliaodtrack->GetDCAxy()<<endl;
+    //cout<<" CorteDCAz "<<fMaxDCAVertexz<<" CorteDCAxy "<<fMaxDCAVertexxy<<endl;
+  //cout<<dcaCut<<endl;
+    if (TMath::Abs(aliaodtrack->GetDCAxy())>fMaxDCAVertexxy){
+     return kFALSE;
+    }
+    //cout<<fMaxDCAVertexxy<<" xy and z "<<fMaxDCAVertexz<<endl;
+    if (TMath::Abs(aliaodtrack->GetDCAz())>fMaxDCAVertexz){
+        cout<<fMaxDCAVertexz<<endl;
+     return kFALSE;
+    }
+
+  //  if(dcaCut==1){//At list on hit any layer of SPD point
+    //    if ((!aliaodtrack->HasPointOnITSLayerG(0))||(!aliaodtrack->HasPointOnITSLayerG(1))&&(aliaodtrack->GetITSclsG()<4)) return kFALSE;
+    //}
+  //  Bool_t PxPyPzAtDCA(Double_t* p) const
+//{ p[0] = PxAtDCA(); p[1] = PyAtDCA(); p[2] = PzAtDCA(); return kTRUE; }
+  //  Bool_t XYZAtDCA(Double_t* x) const
+//{ x[0] = XAtDCA(); x[1] = YAtDCA(); x[2] = ZAtDCA(); return kTRUE; }
+
+    return kTRUE;
+    //Filtro que quiero
+    //minimo de cluster TPC y ITS
+    //DCA x and y
+    //Constrained global
+}
 //________________________________________________________________________
 AliDalitzElectronCuts::~AliDalitzElectronCuts() {
   // Destructor
@@ -349,42 +446,55 @@ Bool_t AliDalitzElectronCuts::InitPIDResponse(){
 ///________________________________________________________________________
 Bool_t AliDalitzElectronCuts::ElectronIsSelectedMC(Int_t labelParticle,AliMCEvent *mcEvent)
 {
-  if( labelParticle < 0 || labelParticle >= mcEvent->GetNumberOfTracks() ) return kFALSE;
+return kTRUE; //Dummy function
+}
+///________________________________________________________________________
+Bool_t AliDalitzElectronCuts::ElectronIsSelectedMC(Int_t labelParticle,AliMCEvent *mcESDEvent, AliDalitzEventMC *mcAODESDEvent )
+{
+  if( labelParticle < 0 || labelParticle >= mcESDEvent->GetNumberOfTracks() ) return kFALSE;
   //if( mcEvent->IsPhysicalPrimary(labelParticle) == kFALSE ) return kFALSE; //Ask Ana
+  std::unique_ptr<AliDalitzAODESDMC> particle = std::unique_ptr<AliDalitzAODESDMC>(mcAODESDEvent->Particle(labelParticle));
+  //TParticle* particle = mcEvent->Particle(labelParticle);
 
-  TParticle* particle = mcEvent->Particle(labelParticle);
-
-  if( TMath::Abs( particle->GetPdgCode() ) != 11 )  return kFALSE;
+  if( TMath::Abs( particle->GetPdgCodeG() ) != 11 )  return kFALSE;
 
   if( fDoEtaCut ){
-    if( particle->Eta() > fEtaCut  || particle->Eta() < -fEtaCut  )
+    if( particle->EtaG() > fEtaCut  || particle->EtaG() < -fEtaCut  )
     return kFALSE;
   }
 
   return kTRUE;
 }
 
-
 ///________________________________________________________________________
 Bool_t AliDalitzElectronCuts::ElectronIsSelected(AliESDtrack* lTrack)
 {
+    //Dummy Function
+}
+///________________________________________________________________________
+Bool_t AliDalitzElectronCuts::ElectronIsSelected(AliDalitzAODESD* lTrack)
+{
+    //cout<<"ElectronIsSelected Entro"<<endl;
+    if(lTrack->GetIsESD()){
+        if ( ! lTrack->GetParamG() ){
+            return kFALSE;
+          //  lTrack->IsHybridGlobalConstrainedGlobal();
+        }
+    }
+   // cout<<"ParamG"<<lTrack->GetParamG()<<endl;
+  //cout<<"PasoGetParamG"<<endl;
   //Selection of Reconstructed electrons
   Float_t b[2];
   Float_t bCov[3];
-  lTrack->GetImpactParameters(b,bCov);
-
-  if (bCov[0]<=0 || bCov[2]<=0) {
-    AliDebug(1, "Estimated b resolution lower or equal zero!");
-    bCov[0]=0; bCov[2]=0;
-  }
+  lTrack->GetImpactParametersG(b,bCov);
 
   Float_t dcaToVertexXY = b[0];
   Float_t dcaToVertexZ  = b[1];
   Double_t clsToF = GetNFindableClustersTPC(lTrack);
 
-  if( hTrackDCAxyPtbefore) hTrackDCAxyPtbefore->Fill(dcaToVertexXY,lTrack->Pt());
-  if( hTrackDCAzPtbefore ) hTrackDCAzPtbefore->Fill( dcaToVertexZ, lTrack->Pt());
-  if( hTrackNFindClsPtTPCbefore ) hTrackNFindClsPtTPCbefore->Fill( clsToF, lTrack->Pt());
+  if( hTrackDCAxyPtbefore) hTrackDCAxyPtbefore->Fill(dcaToVertexXY,lTrack->GetPtG());
+  if( hTrackDCAzPtbefore ) hTrackDCAzPtbefore->Fill( dcaToVertexZ, lTrack->GetPtG());
+  if( hTrackNFindClsPtTPCbefore ) hTrackNFindClsPtTPCbefore->Fill( clsToF, lTrack->GetPtG());
 
   if(hCutIndex)hCutIndex->Fill(kElectronIn);
   if (lTrack == NULL){
@@ -392,62 +502,65 @@ Bool_t AliDalitzElectronCuts::ElectronIsSelected(AliESDtrack* lTrack)
       return kFALSE;
   }
 
-  if ( ! lTrack->GetConstrainedParam() ){
-    return kFALSE;
-  }
-  AliVTrack * track = dynamic_cast<AliVTrack*>(lTrack);
+ // if ( ! lTrack->GetParamG() ){
+   // return kFALSE;
+ // }NOTE comente 22 Febrero
 
   // Track Cuts
   if( !TrackIsSelected(lTrack) ){
     if(hCutIndex)hCutIndex->Fill(kTrackCuts);
     return kFALSE;
   }
-
-  if( lTrack->GetSign() > 0.0 ){
-    if (hTrackPosEtabeforeDedx) hTrackPosEtabeforeDedx->Fill(lTrack->Eta());
+  if( lTrack->GetSignG() > 0.0 ){
+    if (hTrackPosEtabeforeDedx) hTrackPosEtabeforeDedx->Fill(lTrack->GetEtaG());
   } else{
-    if(hTrackNegEtabeforeDedx) hTrackNegEtabeforeDedx->Fill(lTrack->Eta());
+    if(hTrackNegEtabeforeDedx) hTrackNegEtabeforeDedx->Fill(lTrack->GetEtaG());
 
   }
-
+    AliVTrack * track = lTrack->GetDalitzVTrack();
   // dEdx Cuts
   if( ! dEdxCuts( track ) ) {
     if(hCutIndex)hCutIndex->Fill(kdEdxCuts);
     return kFALSE;
   }
 
-  if( lTrack->GetSign() > 0.0 ){
-    if( hTrackPosEtaafterDedx) hTrackPosEtaafterDedx->Fill(lTrack->Eta());
+  if( lTrack->GetSignG() > 0.0 ){
+    if( hTrackPosEtaafterDedx) hTrackPosEtaafterDedx->Fill(lTrack->GetEtaG());
   } else{
-    if( hTrackNegEtaafterDedx) hTrackNegEtaafterDedx->Fill(lTrack->Eta());
+    if( hTrackNegEtaafterDedx) hTrackNegEtaafterDedx->Fill(lTrack->GetEtaG());
   }
 
   //Electron passed the cuts
   if(hCutIndex)hCutIndex->Fill(kElectronOut);
 
-  if( hTrackDCAxyPtafter) 	   hTrackDCAxyPtafter->Fill(dcaToVertexXY,lTrack->Pt());
-  if( hTrackDCAzPtafter ) 	   hTrackDCAzPtafter->Fill(dcaToVertexZ,lTrack->Pt());
-  if( hTrackNFindClsPtTPCafter ) hTrackNFindClsPtTPCafter->Fill( clsToF, lTrack->Pt());
+  if( hTrackDCAxyPtafter) 	   hTrackDCAxyPtafter->Fill(dcaToVertexXY,lTrack->GetPtG());
+  if( hTrackDCAzPtafter ) 	   hTrackDCAzPtafter->Fill(dcaToVertexZ,lTrack->GetPtG());
+  if( hTrackNFindClsPtTPCafter ) hTrackNFindClsPtTPCafter->Fill( clsToF, lTrack->GetPtG());
 
-
+//cout<<" Acabo ElectronIsSelected "<<endl;
   return kTRUE;
 }
 
 ///________________________________________________________________________
-Bool_t AliDalitzElectronCuts::TrackIsSelected(AliESDtrack* lTrack) {
+Bool_t AliDalitzElectronCuts::TrackIsSelected(AliDalitzAODESD* lTrack) {
   // Track Selection for Photon Reconstruction
   Double_t clsToF = GetNFindableClustersTPC(lTrack);
-  if( ! fesdTrackCuts->AcceptTrack(lTrack) ){
-    return kFALSE;
+  if (lTrack->GetIsESD()){
+    if( ! fesdTrackCuts->AcceptTrack(lTrack->GetDalitzESDTrack())){
+        return kFALSE;
+    }
   }
-
+  else
+      if (!(AcceptedAODESDTrack(lTrack)==kTRUE)){
+        return kFALSE;
+    }
   if( fDoEtaCut ) {
-    if(  lTrack->Eta() > fEtaCut  || lTrack->Eta() < -fEtaCut ) {
+    if(  lTrack->GetEtaG() > fEtaCut  || lTrack->GetEtaG() < -fEtaCut ) {
       return kFALSE;
     }
   }
-
-  if( lTrack->Pt() < fPtMinCut || lTrack->Pt() > fPtMaxCut ) {
+//cout<<" Paso Eta Cuts "<<lTrack->GetEtaG()<<endl;
+  if( lTrack->GetPtG() < fPtMinCut || lTrack->GetPtG() > fPtMaxCut ) {
     return kFALSE;
   }
 
@@ -626,22 +739,22 @@ Bool_t AliDalitzElectronCuts::MassCut(Double_t pi0CandidatePt , Double_t vphoton
   return kFALSE;
 }
 
-Double_t AliDalitzElectronCuts::GetNFindableClustersTPC(AliESDtrack* lTrack){
+Double_t AliDalitzElectronCuts::GetNFindableClustersTPC(AliDalitzAODESD* lTrack){
   Double_t clsToF=0;
   if( fUseCrossedRows == kFALSE ) {
     if ( !fUseCorrectedTPCClsInfo ){
-      if(lTrack->GetTPCNclsF()!=0){
-        clsToF = (Double_t)lTrack->GetNcls(1)/(Double_t)lTrack->GetTPCNclsF();
+      if(lTrack->GetTPCNclsFG()!=0){
+        clsToF = (Double_t)lTrack->GetNclsG()/(Double_t)lTrack->GetTPCNclsFG();
       }// Ncluster/Nfindablecluster
-    } else {
+    } //else {
       //clsToF = lTrack->GetTPCClusterInfo(2,0,GetFirstTPCRow(photon->GetConversionRadius()));
-      clsToF = lTrack->GetTPCClusterInfo(2,0); //NOTE ask friederike
-    }
+      //clsToF = lTrack->GetTPCClusterInfo(2,0); //NOTE ask Friederike, we never used
+    //}
   } else  {
-    Float_t nCrossedRowsTPC = lTrack->GetTPCCrossedRows();
+    Float_t nCrossedRowsTPC = lTrack->GetTPCCrossedRowsG();
     clsToF = 1.0;
-    if ( lTrack->GetTPCNclsF()>0 ) {
-      clsToF = nCrossedRowsTPC / lTrack->GetTPCNclsF();
+    if ( lTrack->GetTPCNclsFG()>0 ) {
+      clsToF = nCrossedRowsTPC / lTrack->GetTPCNclsFG();
     }
   }
   return clsToF;
@@ -1060,6 +1173,10 @@ Bool_t AliDalitzElectronCuts::SetTPCdEdxCutPionLine(Int_t pidedxSigmaCut) {
       fPIDnSigmaAbovePionLineTPC=3.0;
       fPIDnSigmaAbovePionLineTPCHighPt=1.0;
       break;
+    case 12:  // c
+      fPIDnSigmaAbovePionLineTPC=2.0;
+      fPIDnSigmaAbovePionLineTPCHighPt=0.5;
+      break;
     default:
       cout<<"Warning: pidedxSigmaCut not defined "<<pidedxSigmaCut<<endl;
       return kFALSE;
@@ -1105,7 +1222,7 @@ Bool_t AliDalitzElectronCuts::SetMinMomPiondEdxTPCCut(Int_t piMomdedxSigmaCut)
 }
 ///________________________________________________________________________
 Bool_t AliDalitzElectronCuts::SetITSClusterCut(Int_t clsITSCut){
-
+fITSCut=clsITSCut;//Important to update AOD, if yoy modifiy this options, please updated it on function AcceptedAODESDTrack
   if( !fesdTrackCuts ) {
     cout<<"Warning: AliESDtrackCut is not initialized "<<endl;
     return kFALSE;
@@ -1399,42 +1516,68 @@ Bool_t AliDalitzElectronCuts::SetDCACut(Int_t dcaCut)
   }
 
   switch(dcaCut){
-
     case 0: //Open cuts//
-      fesdTrackCuts->SetMaxDCAToVertexZ(1000);
-      fesdTrackCuts->SetMaxDCAToVertexXY(1000);
+        fMaxDCAVertexxy=1000.;
+        fMaxDCAVertexz=1000.;
+        fDCAVertexPt="no";
+      fesdTrackCuts->SetMaxDCAToVertexZ(fMaxDCAVertexz);
+      fesdTrackCuts->SetMaxDCAToVertexXY(fMaxDCAVertexxy);
       break;
     case 1:
-      fesdTrackCuts->SetMaxDCAToVertexXYPtDep("0.0182+0.0350/pt^1.01"); //Standard 2010
-      fesdTrackCuts->SetMaxDCAToVertexZ(2);
+        fMaxDCAVertexxy=1000.;
+        fMaxDCAVertexz=2.;
+        fDCAVertexPt="0.0182+0.0350/pt^1.01";
+      fesdTrackCuts->SetMaxDCAToVertexXYPtDep(fDCAVertexPt.Data()); //Standard 2010
+      fesdTrackCuts->SetMaxDCAToVertexZ(fMaxDCAVertexz);
       break;
     case 2:
-      fesdTrackCuts->SetMaxDCAToVertexZ(2);
-      fesdTrackCuts->SetMaxDCAToVertexXY(1);
+        fMaxDCAVertexxy=1.;
+        fMaxDCAVertexz=2.;
+        fDCAVertexPt="no";
+      fesdTrackCuts->SetMaxDCAToVertexZ(fMaxDCAVertexz);
+      fesdTrackCuts->SetMaxDCAToVertexXY(fMaxDCAVertexxy);
       break;
     case 3:
-      fesdTrackCuts->SetMaxDCAToVertexXYPtDep("0.0105+0.0350/pt^1.1"); //Standard 2011
-      fesdTrackCuts->SetMaxDCAToVertexZ(2);
+        fMaxDCAVertexxy=1000.;
+        fMaxDCAVertexz=2.;
+        fDCAVertexPt="0.0105+0.0350/pt^1.1";
+      fesdTrackCuts->SetMaxDCAToVertexXYPtDep(fDCAVertexPt.Data()); //Standard 2011
+      fesdTrackCuts->SetMaxDCAToVertexZ(fMaxDCAVertexz);
       break;
     case 4:
-      fesdTrackCuts->SetMaxDCAToVertexXYPtDep("0.0525+0.175/pt^1.1");
-      fesdTrackCuts->SetMaxDCAToVertexZ(2);
+        fMaxDCAVertexxy=1000.;
+        fMaxDCAVertexz=2.;
+        fDCAVertexPt="0.0525+0.175/pt^1.1";
+      fesdTrackCuts->SetMaxDCAToVertexXYPtDep(fDCAVertexPt.Data());
+      fesdTrackCuts->SetMaxDCAToVertexZ(fMaxDCAVertexz);
       break;
     case 5:
-      fesdTrackCuts->SetMaxDCAToVertexXYPtDep("0.0182+0.0350/pt^1.01");
-      fesdTrackCuts->SetMaxDCAToVertexZ(1);
+        fMaxDCAVertexxy=1000.;
+        fMaxDCAVertexz=1.;
+        fDCAVertexPt="0.0182+0.0350/pt^1.01";
+      fesdTrackCuts->SetMaxDCAToVertexXYPtDep(fDCAVertexPt.Data());
+      fesdTrackCuts->SetMaxDCAToVertexZ(fMaxDCAVertexz);
       break;
     case 6:
-      fesdTrackCuts->SetMaxDCAToVertexXYPtDep("0.0182+0.0350/pt^1.01");
-      fesdTrackCuts->SetMaxDCAToVertexZ(5);
+        fMaxDCAVertexxy=1000.;
+        fMaxDCAVertexz=5.;
+        fDCAVertexPt="0.0182+0.0350/pt^1.01";
+      fesdTrackCuts->SetMaxDCAToVertexXYPtDep(fDCAVertexPt.Data());
+      fesdTrackCuts->SetMaxDCAToVertexZ(fMaxDCAVertexz);
       break;
     case 7:
-      fesdTrackCuts->SetMaxDCAToVertexXYPtDep("0.0105+0.0350/pt^1.1"); //Standard 2011
-      fesdTrackCuts->SetMaxDCAToVertexZ(1);
+        fMaxDCAVertexxy=1000.;
+        fMaxDCAVertexz=1.;
+        fDCAVertexPt="0.0105+0.0350/pt^1.1";
+      fesdTrackCuts->SetMaxDCAToVertexXYPtDep(fDCAVertexPt.Data()); //Standard 2011
+      fesdTrackCuts->SetMaxDCAToVertexZ(fMaxDCAVertexz);
       break;
     case 8:
-      fesdTrackCuts->SetMaxDCAToVertexXYPtDep("0.0105+0.0350/pt^1.1"); //Standard 2011
-      fesdTrackCuts->SetMaxDCAToVertexZ(5);
+        fMaxDCAVertexxy=1000.;
+        fMaxDCAVertexz=5.;
+        fDCAVertexPt="0.0105+0.0350/pt^1.1";
+      fesdTrackCuts->SetMaxDCAToVertexXYPtDep(fDCAVertexPt.Data()); //Standard 2011
+      fesdTrackCuts->SetMaxDCAToVertexZ(fMaxDCAVertexz);
       break;
     default:
       cout<<"Warning: dcaCut not defined "<<dcaCut<<endl;

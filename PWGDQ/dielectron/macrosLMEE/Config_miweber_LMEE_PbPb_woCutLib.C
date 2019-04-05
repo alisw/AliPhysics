@@ -1475,6 +1475,11 @@ void InitHistograms(AliDielectron *die, Int_t cutDefinition)
   histos->UserHistogram("Event","Centrality","Centrality;Centrality/%",202,-1.,100.,AliDielectronVarManager::kCentrality);
   histos->UserHistogram("Event","CentralityNew","Centrality;Centrality/%",202,-1.,100.,AliDielectronVarManager::kCentralityNew);
   histos->UserHistogram("Event","nEvTPC_eventplaneents",";;ev plane;",AliDielectronHelper::MakeLinBinning(180,  TMath::Pi()/-2.,TMath::Pi()/2.),AliDielectronVarManager::kQnTPCrpH2);
+  histos->UserHistogram("Event","nEvZDCA_eventplaneents",";;ev plane;",AliDielectronHelper::MakeLinBinning(180,  TMath::Pi()/-2.,TMath::Pi()/2.),AliDielectronVarManager::kQnZDCArpH1);
+  histos->UserHistogram("Event","nEvZDCC_eventplaneents",";;ev plane;",AliDielectronHelper::MakeLinBinning(180,  TMath::Pi()/-2.,TMath::Pi()/2.),AliDielectronVarManager::kQnZDCCrpH1);
+  histos->UserHistogram("Event","NTPCclsEvent","kNTPCclsEvent;Centrality/%;kNTPCclsEvent",202,-1.,100.,500,0,5000000,AliDielectronVarManager::kCentralityNew,AliDielectronVarManager::kNTPCclsEvent);
+  histos->UserHistogram("Event","NTPCtrkswITSout","kNTPCtrkswITSout;Centrality/%;kNTPCtrkswITSout",202,-1.,100.,500,0,15000,AliDielectronVarManager::kCentralityNew,AliDielectronVarManager::kNTPCtrkswITSout);
+
 
   //add histograms to track class
   histos->UserHistogram("Track","Centrality","Centrality;Centrality (%);#tracks",100,0.,100.,AliDielectronVarManager::kCentralityNew);
@@ -1510,9 +1515,9 @@ void InitHistograms(AliDielectron *die, Int_t cutDefinition)
 			AliDielectronVarManager::kM, AliDielectronVarManager::kQnTPCrpH2);
   
   histos->UserHistogram("Pair", 
-			"InvMass_PairPlaneMagInProTPC","Inv.Mass:PairPlaneMagInProTPC;Inv. Mass (GeV/c^{2}); kPairPlaneMagInProTPC",
+			"InvMass_PairPlaneMagInProZDC","Inv.Mass:PairPlaneMagInProZDC;Inv. Mass (GeV/c^{2}); kPairPlaneMagInProZDC",
 			500,0.,5.,200,-1,1,
-			AliDielectronVarManager::kM, AliDielectronVarManager::kPairPlaneMagInProTPC);
+			AliDielectronVarManager::kM, AliDielectronVarManager::kPairPlaneMagInProZDC);
   
   histos->UserHistogram("Pair", 
 			"InvMass_QnTPCDelta","Inv.Mass:QnTPC;Inv. Mass (GeV/c^{2}); kQnDeltaPhiTPCrpH2",

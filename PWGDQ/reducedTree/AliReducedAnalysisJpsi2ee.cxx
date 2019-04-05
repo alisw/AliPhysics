@@ -277,7 +277,7 @@ void AliReducedAnalysisJpsi2ee::Process() {
   }
 
   // apply event selection
-  if(!IsEventSelected(fEvent)) return;
+  if(!IsEventSelected(fEvent, fValues)) return;
   
   // fill calorimeter info histograms before event cuts
   if(fFillCaloClusterHistograms) {
@@ -335,6 +335,11 @@ void AliReducedAnalysisJpsi2ee::Process() {
      AliReducedVarManager::FillEventOnlineTrigger(ibit, fValues);
      fHistosManager->FillHistClass("EventTriggers_AfterCuts", fValues);
   }
+  for(UShort_t ich=0; ich<64; ++ich) {
+     AliReducedVarManager::FillV0Channel(ich, fValues);
+     fHistosManager->FillHistClass("V0Channels", fValues);
+  }
+  
 }
 
 

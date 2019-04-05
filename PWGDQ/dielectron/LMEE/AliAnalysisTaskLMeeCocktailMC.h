@@ -24,6 +24,7 @@ class AliAnalysisTaskLMeeCocktailMC : public AliAnalysisTaskSE {
     void SetWriteTTree(Bool_t WriteTTree){fWriteTTree = WriteTTree;}
     void SetMaxEta(Float_t maxEta = 0.8){fMaxEta = maxEta;}
     void SetMinPt(Float_t MinPt = 0.2){fMinPt = MinPt;}
+    void SetMaxPt(Float_t MaxPt = 8.0){fMaxPt = MaxPt;}
     void SetResolType(Int_t ResolType = 2){fResolType = ResolType;}
     void SetALTweight(Int_t ALTweightType = 1){fALTweightType = ALTweightType;}
     void SetResFileName(TString name){ fResolDataSetName = name; }
@@ -41,7 +42,6 @@ class AliAnalysisTaskLMeeCocktailMC : public AliAnalysisTaskSE {
   protected:
     AliVEvent*            fInputEvent;                // current event
     AliMCEvent*           fMCEvent;                   // corresponding MC event
-    AliStack*             fMCStack;                   // stack belonging to MC event
     TList*                fOutputContainer;           // Output container
     
     Int_t*                fParticleList;              // array with particle Pdg values
@@ -158,8 +158,9 @@ class AliAnalysisTaskLMeeCocktailMC : public AliAnalysisTaskSE {
     TTree*               teeTTree; 
 
     Int_t                 fIsMC;                      // MC flag
-    Float_t              fMaxEta;                      // Max Eta
-    Float_t              fMinPt;
+    Float_t              fMaxEta;                     // Max single electron Eta
+    Float_t              fMinPt;                      // Min single electron Pt
+    Float_t              fMaxPt;                      // Max single electron Pt
     Bool_t               fWriteTTree;
     Int_t              fcollisionSystem;
     Int_t                fResolType;

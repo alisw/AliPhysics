@@ -175,8 +175,8 @@ Bool_t AliCFVertexingHFCascade::GetGeneratedValuesFromMCParticle(Double_t* vecto
 
   Bool_t bGenValues = kFALSE;
 
-  Int_t daughter0cascade = fmcPartCandidate->GetDaughter(0);
-  Int_t daughter1cascade = fmcPartCandidate->GetDaughter(1);
+  Int_t daughter0cascade = fmcPartCandidate->GetDaughterLabel(0);
+  Int_t daughter1cascade = fmcPartCandidate->GetDaughterLabel(1);
 
   AliAODMCParticle* mcPartDaughter0 = dynamic_cast<AliAODMCParticle*>(fmcArray->At(daughter0cascade));
   AliAODMCParticle* mcPartDaughter1 = dynamic_cast<AliAODMCParticle*>(fmcArray->At(daughter1cascade));
@@ -203,8 +203,8 @@ Bool_t AliCFVertexingHFCascade::GetGeneratedValuesFromMCParticle(Double_t* vecto
   fmcPartCandidate->XvYvZv(vtx1);  // cm
 
   //Daughters of the neutral particle of the cascade
-  Int_t daughter0 = mcPartDaughterNeutrDaugh->GetDaughter(0); // this is the positive
-  Int_t daughter1 = mcPartDaughterNeutrDaugh->GetDaughter(1); // this is the negative
+  Int_t daughter0 = mcPartDaughterNeutrDaugh->GetDaughterLabel(0); // this is the positive
+  Int_t daughter1 = mcPartDaughterNeutrDaugh->GetDaughterLabel(1); // this is the negative
 
   AliAODMCParticle* mcPartNeutrDaughter0 = dynamic_cast<AliAODMCParticle*>(fmcArray->At(daughter0));
   AliAODMCParticle* mcPartNeutrDaughter1 = dynamic_cast<AliAODMCParticle*>(fmcArray->At(daughter1));
@@ -460,8 +460,8 @@ Bool_t AliCFVertexingHFCascade::CheckMCChannelDecay() const
 
   Bool_t checkCD = kFALSE;
   
-  Int_t daughter0 = fmcPartCandidate->GetDaughter(0);
-  Int_t daughter1 = fmcPartCandidate->GetDaughter(1);
+  Int_t daughter0 = fmcPartCandidate->GetDaughterLabel(0);
+  Int_t daughter1 = fmcPartCandidate->GetDaughterLabel(1);
   AliAODMCParticle* mcPartDaughter0 = dynamic_cast<AliAODMCParticle*>(fmcArray->At(daughter0));
   AliAODMCParticle* mcPartDaughter1 = dynamic_cast<AliAODMCParticle*>(fmcArray->At(daughter1));
 
@@ -520,7 +520,7 @@ Bool_t AliCFVertexingHFCascade::EvaluateIfCorrectNeutrDaugh(AliAODMCParticle* ne
   AliDebug(2, Form("neutralDaugh = %p, pdg = %d", neutralDaugh, neutralDaugh->GetPdgCode()));
 
   if (fPDGcascade == 4122) {
-    Int_t labelresonanceDaugh = neutralDaugh->GetDaughter(0);
+    Int_t labelresonanceDaugh = neutralDaugh->GetDaughterLabel(0);
     AliAODMCParticle* resonanceDaugh = dynamic_cast<AliAODMCParticle*>(fmcArray->At(labelresonanceDaugh));
     if (!resonanceDaugh){
       return kFALSE;
@@ -536,8 +536,8 @@ Bool_t AliCFVertexingHFCascade::EvaluateIfCorrectNeutrDaugh(AliAODMCParticle* ne
     }
   }
 
-  Int_t daughterNeutrDaugh0 = neutralDaugh->GetDaughter(0);
-  Int_t daughterNeutrDaugh1 = neutralDaugh->GetDaughter(1);
+  Int_t daughterNeutrDaugh0 = neutralDaugh->GetDaughterLabel(0);
+  Int_t daughterNeutrDaugh1 = neutralDaugh->GetDaughterLabel(1);
   
   AliDebug(2, Form("daughter0 = %d and daughter1 = %d", daughterNeutrDaugh0, daughterNeutrDaugh1));
   if (daughterNeutrDaugh0 == 0 || daughterNeutrDaugh1 == 0) {
@@ -704,13 +704,12 @@ Double_t AliCFVertexingHFCascade::GetEtaProng(Int_t iProng) const
 
     Double_t etaProng =-9999;
     AliAODRecoDecay* neutrDaugh=0; 
-    Int_t ibachelor = 1;
+    Int_t ibachelor = 0;
     if (fPDGcascade == 413) {
       neutrDaugh = cascade->Get2Prong();
     }
     else if (fPDGcascade == 4122) {
       neutrDaugh = cascade->Getv0();
-      ibachelor = 0;
     }
     if (iProng==0) etaProng = neutrDaugh->EtaProng(0);
     if (iProng==1) etaProng = neutrDaugh->EtaProng(1);
@@ -732,12 +731,17 @@ Double_t AliCFVertexingHFCascade::GetPtProng(Int_t iProng) const
 
     AliAODRecoCascadeHF* cascade = (AliAODRecoCascadeHF*)fRecoCandidate;
     Double_t ptProng= -9999;
-    AliAODRecoDecay* neutrDaugh=0; 
-    if (fPDGcascade == 413) neutrDaugh = cascade->Get2Prong();
-    else if (fPDGcascade == 4122) neutrDaugh = cascade->Getv0();
+    AliAODRecoDecay* neutrDaugh=0;
+    Int_t ibachelor = 0;
+    if (fPDGcascade == 413) {
+      neutrDaugh = cascade->Get2Prong();
+    }
+    else if (fPDGcascade == 4122) {
+      neutrDaugh = cascade->Getv0();
+    }
     if (iProng == 0) ptProng = neutrDaugh->PtProng(0);
     if (iProng == 1) ptProng = neutrDaugh->PtProng(1);
-    if (iProng == 2) ptProng = cascade->PtProng(1);
+    if (iProng == 2) ptProng = cascade->PtProng(ibachelor);
     
     //	Double_t ptProng = fRecoCandidate->PtProng(iProng);  
     return ptProng;

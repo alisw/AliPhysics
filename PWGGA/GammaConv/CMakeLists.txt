@@ -46,6 +46,7 @@ set(SRCS
     AliAnaConvCorrPhoton.cxx
     AliAnaConvCorrPion.cxx
     AliAnaConvIsolation.cxx
+    AliAnalysisTaskConvCaloCalibration.cxx
     AliAnalysisTaskConversionQA.cxx
     AliAnalysisTaskConvJet.cxx
     AliAnalysisTaskClusterQA.cxx
@@ -69,6 +70,9 @@ set(SRCS
     AliAnalysisTaskHeavyNeutralMesonToGG.cxx
     AliAnalysisTaskK0toPi0Pi0.cxx
     AliAnalysisTaskPi0v2.cxx
+    AliAnalysisTaskTrackQA.cxx	
+    AliIdentifiedPrimaryCuts.cxx
+    AliIdentifiedPrimarySelector.cxx
     AliAnalysisTaskResolution.cxx
     AliAnalysisTaskGammaCaloDalitzV1.cxx
     AliAnalysisTaskGammaPureMC.cxx
@@ -99,6 +103,11 @@ set(SRCS
     AliV0ReaderV1.cxx
     AliConversionCutHandler.cxx
     AliCutHandlerPCM.cxx
+    AliDalitzData.cxx
+    AliDalitzAODESD.cxx
+    AliDalitzAODESDMC.cxx
+    AliDalitzEventMC.cxx
+
    )
 
 # Headers from sources

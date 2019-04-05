@@ -3,6 +3,11 @@
 
 #include "AliAnalysisCuts.h"
 #include "AliNanoAODCustomSetter.h"
+#include "AliAnalysisUtils.h"
+#include "AliEventCuts.h"
+#include <map>
+
+class AliEventCuts;
 
 class AliAnalysisNanoAODTrackCuts : public AliAnalysisCuts
 {
@@ -23,9 +28,20 @@ private:
   Float_t fMinPt; // miminum pt of the tracks
   Float_t fMaxEta; // MaxEta
 
-
-
   ClassDef(AliAnalysisNanoAODTrackCuts,1); // track cut object for nano AOD filtering
+};
+
+class AliAnalysisNanoAODV0Cuts : public AliAnalysisCuts
+{
+public:
+  AliAnalysisNanoAODV0Cuts() {}
+  virtual ~AliAnalysisNanoAODV0Cuts() {}
+  virtual Bool_t IsSelected(TObject* obj); // TObject should be an AliAODv0
+  virtual Bool_t IsSelected(TList*   /* list */ ) { return kTRUE; }
+
+private:
+
+  ClassDef(AliAnalysisNanoAODV0Cuts, 1); // track cut object for nano AOD filtering
 };
 
 class AliAnalysisNanoAODEventCuts : public AliAnalysisCuts
@@ -35,34 +51,37 @@ public:
   virtual ~AliAnalysisNanoAODEventCuts() {}
   virtual Bool_t IsSelected(TObject* obj); // TObject should be an AliAODEvent
   virtual Bool_t IsSelected(TList*   /* list */ ) { return kTRUE; }
-  Float_t GetVertexRange() { return fVertexRange; }
-  void  SetVertexRange (Float_t var) { fVertexRange = var;}
-  void  SetMultiplicityRange(AliAnalysisCuts* cutObject, Int_t minMultiplicity, Int_t maxMultiplicity) { fTrackCut = cutObject; fMinMultiplicity = minMultiplicity; fMaxMultiplicity = maxMultiplicity; }
   
-public:
-  Float_t fVertexRange; // Only events with primary vertex within this range are accepted (whatever the vertex)
+  void SetMultiplicityRange(AliAnalysisCuts* cutObject, Int_t minMultiplicity, Int_t maxMultiplicity) { fTrackCut = cutObject; fMinMultiplicity = minMultiplicity; fMaxMultiplicity = maxMultiplicity; }
+  AliEventCuts& GetAliEventCuts() { return fEventCuts; }
   
+private:
   AliAnalysisCuts* fTrackCut; // track cut object for multiplicity cut
   Int_t fMinMultiplicity;   // minimum number of tracks to accept this event
   Int_t fMaxMultiplicity;   // maximal number of tracks to accept this event
   
-  ClassDef(AliAnalysisNanoAODEventCuts,2); // event cut object for nano AOD filtering
+  AliEventCuts fEventCuts; // AliEventCut object for Run 2
+  
+  ClassDef(AliAnalysisNanoAODEventCuts, 3); // event cut object for nano AOD filtering
 };
 
 class AliNanoAODSimpleSetter : public AliNanoAODCustomSetter
 {
 public:
-  AliNanoAODSimpleSetter(){;}
+  AliNanoAODSimpleSetter() : fInitialized(kFALSE), fMultMap() {;}
   virtual ~AliNanoAODSimpleSetter(){;}
 
   virtual void SetNanoAODHeader(const AliAODEvent * event   , AliNanoAODHeader * head ,TString varListHeader  );
-  virtual void SetNanoAODTrack (const AliAODTrack * /*aodTrack*/, AliNanoAODTrack * /*spTrack*/){;}
+  virtual void SetNanoAODTrack (const AliAODTrack * /*aodTrack*/, AliNanoAODTrack * /*spTrack*/);
+  
+protected:
+  void Init(AliNanoAODHeader* head, TString varListHeader);
+  
+  Bool_t fInitialized;
+  std::map<TString,int> fMultMap;
 
-  ClassDef(AliNanoAODSimpleSetter, 1)
+  ClassDef(AliNanoAODSimpleSetter, 2)
 
 };
-
-
-
 
 #endif /* _ALIANALYSISNANOAODCUTSANDSETTERS_H_ */

@@ -219,12 +219,14 @@ void AliForwardGenericFramework::saveEvent(TList* outputList, double cent, doubl
           //   Double_t z[5] = {noSamples, zvertex, refEtaA, cent, Double_t(fSettings.kW2Two)};
           //   fQcorrfactor->Fill(z, fAutoRef.GetBinContent(etaBin));
           // }
+
           // two-particle cumulant
           double two = Two(n, -n, refEtaBinA, refEtaBinB).Re();
           double dn2 = Two(0,0, refEtaBinA, refEtaBinB).Re();
 
           Double_t x[5] = {noSamples, zvertex, refEtaA, cent, Double_t(fSettings.kW4Four)};
           x[4] = Double_t(fSettings.kW2Two);
+
           cumuRef->Fill(x, two);
           x[4] = Double_t(fSettings.kW2);
           cumuRef->Fill(x, dn2);
@@ -245,11 +247,13 @@ void AliForwardGenericFramework::saveEvent(TList* outputList, double cent, doubl
         //   Double_t k[5] = {noSamples, zvertex, eta, cent, Double_t(fSettings.kW2Two)};
         //   fpcorrfactor->Fill(k, fAutoDiff.GetBinContent(etaBin));
         // }
+
         // two-particle cumulant
         double twodiff = TwoDiff(n, -n, refEtaBinB, etaBin).Re();
         double dn2diff = TwoDiff(0,0, refEtaBinB, etaBin).Re();
 
         Double_t y[5] = {noSamples, zvertex, eta, cent, Double_t(fSettings.kW2Two)};
+
         cumuDiff->Fill(y, twodiff);
         y[4] = Double_t(fSettings.kW2);
         cumuDiff->Fill(y, dn2diff);

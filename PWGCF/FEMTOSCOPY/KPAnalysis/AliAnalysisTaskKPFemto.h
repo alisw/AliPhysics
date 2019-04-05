@@ -36,6 +36,8 @@ class AliAnalysisTaskKPFemto : public AliAnalysisTaskSE {
   void SetUseContainer (Bool_t kusecontainer) { fUseContainer = kusecontainer;}
   void SetCollidingSystem (const char* collSystem = "pp") { fCollidingSystem = collSystem ;}
   void SetYear (Int_t year = 2010) { fYear = year;}
+  void SetHMTrigger (Bool_t isHMtrigger = kFALSE) { fHMtrigger = isHMtrigger;}
+  void SetFilterBit (Int_t filterBit = 128) { fFilterBit = filterBit;}
 
   // void DoPairshh    (const Float_t centralityBin, int fieldsign);
   // void DoPairsh1h2    (const Float_t centralityBin, int fieldsign,Float_t );
@@ -94,6 +96,8 @@ class AliAnalysisTaskKPFemto : public AliAnalysisTaskSE {
   TString     fAnalysisType;                  // "ESD" or "AOD" analysis type  
   TString     fCollidingSystem;               // "pp", "pPb", "PbPb" 
   Int_t       fYear;
+  Bool_t      fHMtrigger;
+  Int_t       fFilterBit;
   firstpart_t fFirstpart;
   firstpart_t fSecondpart;
   Float_t     fnSigmaTPCPIDfirstParticle;
@@ -213,9 +217,13 @@ class AliAnalysisTaskKPFemto : public AliAnalysisTaskSE {
   TH2F  *fHistSecondTPCdEdxAfter;     
   TH2F  *fHistFirstTOFTPCsignalvsptAfter; 
   TH2F  *fHistSecondTOFTPCsignalvsptAfter; 
-  TH2F  *fHistFirstMassTOFvsPtAfter; 
-  TH2F  *fHistSecondMassTOFvsPtAfter;  
-    
+  
+  TH2F *fHistFirstMassTOFvsPt3sTPC; 
+  TH2F *fHistSecondMassTOFvsPt3sTPC;
+  
+  TH2F *fHistFirstMassTOFvsPt3sTPC3sTOF; 
+  TH2F *fHistSecondMassTOFvsPt3sTPC3sTOF; 
+   
   //----------------
   
   TTree *fHistSparseSignal ;  
@@ -250,7 +258,7 @@ class AliAnalysisTaskKPFemto : public AliAnalysisTaskSE {
   Int_t   tpdgcodeP1; 
   Int_t   tpdgcodeP2;
   Float_t tKstarGen;
-  
+
   //-----------------
   
   TH1F              *fHistTrackBufferOverflow;             //! 

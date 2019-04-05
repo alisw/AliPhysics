@@ -55,7 +55,7 @@ class AliSigma0V0Cuts : public TObject {
   float ComputePhotonMass(const AliESDv0 *v0) const;
   float ComputePhotonMassRefit(const AliESDv0 *v0) const;
   float ComputePsiPair(const AliESDv0 *v0) const;
-  void PhotonQA(AliVEvent *inputEvent, const TClonesArray *photons);
+  void PhotonQA(AliVEvent *inputEvent, AliMCEvent *mcEvent, const TClonesArray *photons);
 
   void SetLightweight(bool isLightweight) { fIsLightweight = isLightweight; }
   void SetCheckCutsMC(bool checkCuts) { fCheckCutsMC = checkCuts; }
@@ -197,7 +197,6 @@ class AliSigma0V0Cuts : public TObject {
   TH1F *fHistV0Pt;             //!
   TH1F *fHistV0Mass;           //!
   TH2F *fHistV0MassPt;         //!
-  TH1F *fHistLambdaMassK0Rej;  //!
   TH1F *fHistK0MassAfter;      //!
   TH2F *fHistCosPA;            //!
   TH2F *fHistEtaPhi;           //!
@@ -312,7 +311,7 @@ class AliSigma0V0Cuts : public TObject {
   TH2F *fHistSingleParticlePID[2];                         //!
 
  private:
-  ClassDef(AliSigma0V0Cuts, 9)
+  ClassDef(AliSigma0V0Cuts, 10)
 };
 
 #endif

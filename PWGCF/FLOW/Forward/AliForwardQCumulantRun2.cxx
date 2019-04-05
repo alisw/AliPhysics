@@ -213,6 +213,7 @@ void AliForwardQCumulantRun2::saveEvent(TH2D& dNdetadphi, TList* outputList, dou
 
             Double_t x[5] = {noSamples, vertexpos, refEtaA, cent, Double_t(fSettings.kW4Four)};
 
+
             x[4] = Double_t(fSettings.kW2Two);
             cumuRef->Fill(x, two);
             x[4] = Double_t(fSettings.kW2);
@@ -311,6 +312,7 @@ void AliForwardQCumulantRun2::saveEvent(TH2D& dNdetadphi, TList* outputList, dou
            std::cout << "dQnImB = " << dQnImB << std::endl;
 }
         Double_t x[5] = {noSamples,vertexpos, eta, cent, Double_t(fSettings.kW2Two)};
+
         cumuDiff->Fill(x, twoPrime);
 
         x[4] = Double_t(fSettings.kW2);

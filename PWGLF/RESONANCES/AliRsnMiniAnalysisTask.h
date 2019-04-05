@@ -25,6 +25,7 @@
 #include "AliRsnMiniResonanceFinder.h"
 
 #include "AliESDtrackCuts.h"
+#include "AliAnalysisFilter.h"
 
 class TList;
 
@@ -73,6 +74,7 @@ public:
    void                KeepMotherInAcceptance(Bool_t keepMotherInAcceptance) {fKeepMotherInAcceptance = keepMotherInAcceptance;}
    void                SaveRsnTreeInFile(Bool_t saveInFile=kTRUE) {fRsnTreeInFile = saveInFile;}
    void                SetComputeSpherocity(Bool_t doit=kTRUE) {fComputeSpherocity = doit;}
+   void                SetTrackCuts(AliAnalysisFilter* fTrackFilter);
 
    Int_t               AddTrackCuts(AliRsnCutSet *cuts);
    TClonesArray       *Outputs()                          {return &fHistograms;}
@@ -144,6 +146,7 @@ private:
    TH2F                *fHAEventMultiCent;//  histogram of multiplicity vs. centrality
    TH2F                *fHAEventRefMultiCent;//  histogram of reference multiplicity vs. centrality
    TH2F                *fHAEventPlane;    //  histogram of event plane vs. multiplicity/centrality
+   AliAnalysisFilter   *fTrackFilter;
 
    AliRsnCutSet        *fEventCuts;       //  cuts on events
    TObjArray            fTrackCuts;       //  list of single track cuts

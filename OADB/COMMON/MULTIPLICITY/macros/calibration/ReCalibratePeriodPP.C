@@ -6,7 +6,8 @@
 //
 ////////////////////////////////////////////////////////////
 
-ReCalibratePeriodPP(TString lPeriodName = "LHC16k",
+ReCalibratePeriodPP(const Char_t* inputDir, Int_t runNo, 
+                    TString lPeriodName = "LHC16k",
                     TString lWhichData = "VHM",
                     Long_t lRunToUseAsDefault = 257630 ) {
 
@@ -27,7 +28,8 @@ ReCalibratePeriodPP(TString lPeriodName = "LHC16k",
 
     //All fine, let's try the calibrator
     AliMultSelectionCalibrator *lCalib = new AliMultSelectionCalibrator("lCalib");
-
+    lCalib->SetSelectedTriggerClass(AliVEvent::kHighMultV0);
+    
     //============================================================
     // --- Definition of Boundaries ---
     //============================================================
@@ -164,8 +166,10 @@ ReCalibratePeriodPP(TString lPeriodName = "LHC16k",
       Float_t ancPoint;
       sscanf(buffer, "%d %d %f %f", &run_a, &run_b, &ancPer, &ancPoint);
       if(run_a!=run_b) { cout << "Error: runs do not match" << endl; return -1; }
+      if(run_a!=runNo) continue;
       //Debug; print info retrieved from file
       printf("Run: %d %d \t %.2f%%   %f\n", run_a, run_b, ancPer, ancPoint);
+      if(ancPer<0.0 || ancPoint<0.0) return;
       lRuns.push_back(run_a);
       lAnchorPercentile.push_back(ancPer);
       lAnchorPoint.push_back(ancPoint);
@@ -201,8 +205,8 @@ ReCalibratePeriodPP(TString lPeriodName = "LHC16k",
     // --- Definition of Input/Output ---
     //============================================================
     
-    lCalib -> SetInputFile  ( Form("../%s/AnalysisResults.root", lWhichData.Data()) );
-    lCalib -> SetBufferFile ( Form("buffer-%s-%s.root", lPeriodName.Data(), lWhichData.Data()) );
-    lCalib -> SetOutputFile ( Form("OADB-%s-%s.root", lPeriodName.Data(), lWhichData.Data()) );
+    lCalib -> SetInputFile  ( Form("%s/AnalysisResults_%d.root", inputDir, runNo) );
+    lCalib -> SetBufferFile ( Form("temp/buffers/buffer-%s-%d-%s.root", lPeriodName.Data(), runNo, lWhichData.Data()) );
+    lCalib -> SetOutputFile ( Form("temp/partialOADBs/OADB-%s-%d-%s.root", lPeriodName.Data(), runNo, lWhichData.Data()) );
     lCalib -> Calibrate     ();
 }

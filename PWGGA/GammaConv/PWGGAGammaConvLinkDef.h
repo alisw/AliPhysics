@@ -51,10 +51,17 @@
 #pragma link C++ class AliAnalysisTaskK0toPi0Pi0+;
 #pragma link C++ class AliAnalysisTaskGammaConvDtrue+;
 #pragma link C++ class AliAnalysisTaskGammaTriggerQA+;
+#pragma link C++ class AliAnalysisTaskConvCaloCalibration+;
+#pragma link C++ class AliDalitzData+;
+#pragma link C++ class AliDalitzAODESD+;
+#pragma link C++ class AliDalitzAODESDMC+;
+#pragma link C++ class AliDalitzEventMC+;
+#pragma link C++ class AliAnalysisTaskTrackQA+;
+#pragma link C++ class AliIdentifiedPrimarySelector+;
+#pragma link C++ class AliIdentifiedPrimaryCuts+;
 
 // Old tasks
 #pragma link C++ class AliAnalysisTaskGCPartToPWG4Part+;
-
 #pragma link C++ class AliPrimaryPionSelector+;
 #pragma link C++ class AliPrimaryPionCuts+;
 #pragma link C++ class AliAnalysisTaskEtaToPiPlPiMiGamma+;

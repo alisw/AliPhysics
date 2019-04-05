@@ -31,6 +31,7 @@
 #include "AliAnalysisManager.h"
 #include "AliInputEventHandler.h"
 #include "TChain.h"
+#include "AliDalitzAODESD.h"
 
 class iostream;
 
@@ -99,9 +100,9 @@ Bool_t AliDalitzElectronSelector::ProcessEvent(AliVEvent *inputEvent,AliMCEvent 
   if(!fElectronCuts){AliError("No ConversionCuts");return kFALSE;}
 
 
-  if(fInputEvent->IsA()==AliESDEvent::Class()){
+  //if(fInputEvent->IsA()==AliESDEvent::Class()){
     ProcessESDs();
-  }
+  //}
 
   //if(fInputEvent->IsA()==AliAODEvent::Class()){
   //GetAODConversionGammas();
@@ -112,26 +113,45 @@ Bool_t AliDalitzElectronSelector::ProcessEvent(AliVEvent *inputEvent,AliMCEvent 
 ///________________________________________________________________________
 Bool_t AliDalitzElectronSelector::ProcessESDs(){
   // Process ESD V0s for conversion photon reconstruction
-  AliESDEvent *fESDEvent=dynamic_cast<AliESDEvent*>(fInputEvent);
-  if(fESDEvent){
-    for(Int_t currentTrackIndex=0;currentTrackIndex<fESDEvent->GetNumberOfTracks();currentTrackIndex++){
-      AliESDtrack *fCurrentTrack = (AliESDtrack*)(fESDEvent->GetTrack(currentTrackIndex));
+    AliAODEvent *fAODEvent=0;
+    AliESDEvent *fESDEvent=0;
+    Int_t NumberOfTracks=0;
+
+    if(fInputEvent->IsA()==AliESDEvent::Class()){
+        fESDEvent=dynamic_cast<AliESDEvent*>(fInputEvent);
+        NumberOfTracks=fESDEvent->GetNumberOfTracks();
+    }
+    else {fAODEvent=dynamic_cast<AliAODEvent*>(fInputEvent);
+        NumberOfTracks=fAODEvent->GetNumberOfTracks();
+    }
+  //if(fESDEvent){
+    for(Int_t currentTrackIndex=0;currentTrackIndex<NumberOfTracks;currentTrackIndex++){
+      AliDalitzAODESD *fCurrentTrack =0;
+
+      if(fESDEvent){
+            fCurrentTrack= new AliDalitzAODESD((AliESDtrack*)(fESDEvent->GetTrack(currentTrackIndex)));
+            fCurrentTrack->ComputeImpactParameter();
+      }
+      else {fCurrentTrack= new AliDalitzAODESD((AliAODTrack*)(fAODEvent->GetTrack(currentTrackIndex)));
+        fCurrentTrack->ComputeImpactParameter(fAODEvent->GetPrimaryVertex(),fAODEvent->GetMagneticField());
+      }
+
       if(!fCurrentTrack){
         printf("Requested Track does not exist");
         continue;
       }
       if (  fElectronCuts->ElectronIsSelected( fCurrentTrack ) ) {
-        if( fCurrentTrack->GetSign() > 0.0 ){
+        if( fCurrentTrack->GetSignG() > 0.0 ){
           fPositronsIndex.push_back(currentTrackIndex);
         } else {
           fElectronsIndex.push_back(currentTrackIndex);
         }
       }
+        delete fCurrentTrack;
     }
-  }
+  //}
   return kTRUE;
 }
-
 
 //________________________________________________________________________
 void AliDalitzElectronSelector::Terminate(Option_t *)

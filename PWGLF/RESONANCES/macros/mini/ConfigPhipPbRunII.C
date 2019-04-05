@@ -91,16 +91,16 @@ Bool_t ConfigPhipPbRunII(AliRsnMiniAnalysisTask *task,
     else
       out->AddAxis(resID, 200, -0.02, 0.02);
     // axis Y: transverse momentum
-    out->AddAxis(ptID, 300, 0.0, 30.0);
+    out->AddAxis(ptID, 200, 0.0, 20.0);
     // axis Z: centrality-multiplicity
     //if (!isPP)
-    out->AddAxis(centID, 100, 0.0, 100.0);
+    out->AddAxis(centID, 20, 0.0, 100.0);
     //else 
     //out->AddAxis(centID, 400, 0.0, 400.0);
     //axis W: pseudorapidity
     //out->AddAxis(etaID, 20, -1.0, 1.0);
     //axis J: rapidity
-    //out->AddAxis(yID, 90, -4.5, 4.5);
+    out->AddAxis(yID, 18, -0.9, 0.9);
   }
   return kTRUE;
 }

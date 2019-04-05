@@ -204,6 +204,7 @@ AliAnalysisHFjetTagHFE::AliAnalysisHFjetTagHFE() :
   fEMCClsEtaPhi(0),
   fHistBGfrac(0),
   fHistBGfracHFEev(0),
+  fHistBGrandHFEev(0),
   fHistJetEnergyReso(0),
   fPi0Weight(0),
   fEtaWeight(0),
@@ -220,7 +221,8 @@ AliAnalysisHFjetTagHFE::AliAnalysisHFjetTagHFE() :
   fMCarray(0),
   fMCparticle(0),
   fMCparticleMother(0),
-  iMCcorr(kTRUE)
+  iMCcorr(kTRUE),
+  iDCApTweight(kTRUE)
   //fmcData(kFALSE)
 {
   // Default constructor.
@@ -386,6 +388,7 @@ AliAnalysisHFjetTagHFE::AliAnalysisHFjetTagHFE(const char *name) :
   fEMCClsEtaPhi(0),
   fHistBGfrac(0),
   fHistBGfracHFEev(0),
+  fHistBGrandHFEev(0),
   fHistJetEnergyReso(0),
   fPi0Weight(0),
   fEtaWeight(0),
@@ -403,7 +406,8 @@ AliAnalysisHFjetTagHFE::AliAnalysisHFjetTagHFE(const char *name) :
   fMCarray(0),
   fMCparticle(0),
   fMCparticleMother(0),
-  iMCcorr(kTRUE)
+  iMCcorr(kTRUE),
+  iDCApTweight(kTRUE)
   //fmcData(kFALSE)
 {
   // Standard constructor.
@@ -875,6 +879,9 @@ void AliAnalysisHFjetTagHFE::UserCreateOutputObjects()
   fHistBGfracHFEev = new TH1F("fHistBGfracHFEev", "BG frac; #Delta p_{T}(GeV/c)", 200, -100.0, 100.0);
   fOutput->Add(fHistBGfracHFEev);
 
+  fHistBGrandHFEev = new TH1F("fHistBGrandHFEev", "BG rand; #Delta p_{T}(GeV/c)", 200, -100.0, 100.0);
+  fOutput->Add(fHistBGrandHFEev);
+
   fHistJetEnergyReso = new TH2D("fHistJetENergyReso",";p_{T,ch jet}^{part};<(p_{T,ch,jet}^{det}-p_{T,ch,jet}^{part}/p_{T,ch,jet}^{part})>",100,0,100,200,-1,1);
   fOutput->Add(fHistJetEnergyReso);
 
@@ -1271,8 +1278,6 @@ Bool_t AliAnalysisHFjetTagHFE::Run()
          if(jetLead)
            {
             LeadJetpT = jetLead->Pt();
-            //Double_t BGfracAll = CalRandomCone(LeadJetPhi,LeadJetEta,0.3) - fJetsCont->GetRhoVal()*acos(-1.0)*pow(0.3,2);
-            //fHistBGfrac->Fill(BGfracAll);
            } 
         
 
@@ -1280,7 +1285,8 @@ Bool_t AliAnalysisHFjetTagHFE::Run()
 
          // check Raw jet info
          double jetpT = jet->Pt();
-         double Rho_area = fJetsCont->GetRhoVal() * jet->Area();
+         //double Rho_area = fJetsCont->GetRhoVal() * jet->Area();
+         double Rho_area = rho * jet->Area();
          double jetpTsub = jetpT - Rho_area;
          double jetEta = jet->Eta();
          double jetPhi = jet->Phi();
@@ -1339,7 +1345,8 @@ Bool_t AliAnalysisHFjetTagHFE::Run()
 
 
             //Double_t BGfracAll = CalRandomCone(ExJetPhi,ExJetEta,0.3) - fJetsCont->GetRhoVal()*acos(-1.0)*pow(0.3,2);
-            Double_t BGfracAll = CalRandomCone(ExJetPhi,ExJetEta,jetRadius) - fJetsCont->GetRhoVal()*acos(-1.0)*pow(jetRadius,2);
+            //Double_t BGfracAll = CalRandomCone(ExJetPhi,ExJetEta,jetRadius) - fJetsCont->GetRhoVal()*acos(-1.0)*pow(jetRadius,2);
+            Double_t BGfracAll = CalRandomCone(ExJetPhi,ExJetEta,jetRadius) - rho*acos(-1.0)*pow(jetRadius,2);
             fHistBGfrac->Fill(BGfracAll);
 
 
@@ -1713,7 +1720,6 @@ Bool_t AliAnalysisHFjetTagHFE::Run()
               { 
                //Bool_t iTagHFjet = tagHFjet( jet, epTarray, 0, pt);
                if(idbHFEj)cout << "iTagHFjet = " << iTagHFjet << endl;
-	       //Float_t corrPt = jet->Pt() - fJetsCont->GetRhoVal() * jet->Area();
 	       Float_t pTeJet = jet->Pt();
 	       Float_t Phi_eJet = jet->Phi();
 	       Float_t Eta_eJet = jet->Eta();
@@ -1780,8 +1786,10 @@ Bool_t AliAnalysisHFjetTagHFE::Run()
 
                               ExJetPhi[2] = Phi_eJet;
                               ExJetEta[2] = Eta_eJet;
-                              //Double_t BGfracHFE = CalRandomCone(ExJetPhi,ExJetEta,0.3) - fJetsCont->GetRhoVal()*acos(-1.0)*pow(0.3,2);
-                              Double_t BGfracHFE = CalRandomCone(ExJetPhi,ExJetEta,jetRadius) - fJetsCont->GetRhoVal()*acos(-1.0)*pow(jetRadius,2);
+                              Double_t randomcone = CalRandomCone(ExJetPhi,ExJetEta,jetRadius);
+                              //Double_t BGfracHFE = randomcone - fJetsCont->GetRhoVal()*acos(-1.0)*pow(jetRadius,2);
+                              Double_t BGfracHFE = randomcone - rho*acos(-1.0)*pow(jetRadius,2);
+                              fHistBGrandHFEev->Fill(randomcone);
                               fHistBGfracHFEev->Fill(BGfracHFE);
 
                       } // end of HF selections
@@ -1813,8 +1821,14 @@ Bool_t AliAnalysisHFjetTagHFE::Run()
                      
                        if(track->Pt()>4.0 && track->Pt()<18.0)
                           {
-                           Double_t wb = fpowheg_b->Eval(pTeJetTrue)/fpythia_b->Eval(pTeJetTrue);
-                           Double_t wc = fpowheg_c->Eval(pTeJetTrue)/fpythia_c->Eval(pTeJetTrue);
+                           Double_t wb = 1.0;
+                           Double_t wc = 1.0;
+    
+                           if(iDCApTweight)
+                             {
+                              wb = fpowheg_b->Eval(pTeJetTrue)/fpythia_b->Eval(pTeJetTrue);
+                              wc = fpowheg_c->Eval(pTeJetTrue)/fpythia_c->Eval(pTeJetTrue);
+                             }
 
                            if(ich)
                               {
@@ -2161,6 +2175,7 @@ Double_t AliAnalysisHFjetTagHFE::CalRandomCone(Double_t HFjetPhi[], Double_t HFj
      }
 
            //cout << "all : pTrand = "<< pTrand << endl; 
+
 
   return pTrand;
 }

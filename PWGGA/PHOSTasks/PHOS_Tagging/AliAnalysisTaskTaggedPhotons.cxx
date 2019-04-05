@@ -79,6 +79,7 @@ AliAnalysisTaskTaggedPhotons::AliAnalysisTaskTaggedPhotons() :
   fCentBin(0), 
   fRunNumber(0),
   fIsMB(kTRUE),
+  fUseCaloFastTr(kFALSE),
   fIsMC(0),
   fIsFastMC(0),
   fRP(0.),
@@ -102,7 +103,9 @@ AliAnalysisTaskTaggedPhotons::AliAnalysisTaskTaggedPhotons() :
   for(int cen=1; cen<=fNCenBin; cen++)
     fCenBinEdges.AddAt(int(100.*cen/fNCenBin),cen-1) ; 
 
-  for(Int_t i=0; i<7; i++)
+  fWeightParamPi0[0]=1.;  
+
+  for(Int_t i=1; i<7; i++)
     fWeightParamPi0[i]=0.;  
 
   for(Int_t i=0; i<6; i++)
@@ -128,6 +131,7 @@ AliAnalysisTaskTaggedPhotons::AliAnalysisTaskTaggedPhotons(const char *name) :
   fCentBin(0), 
   fRunNumber(0),
   fIsMB(kTRUE),
+  fUseCaloFastTr(kFALSE),
   fIsMC(0),
   fIsFastMC(0),
   fRP(0.),
@@ -174,6 +178,7 @@ AliAnalysisTaskTaggedPhotons::AliAnalysisTaskTaggedPhotons(const AliAnalysisTask
   fCentBin(0), 
   fRunNumber(0),
   fIsMB(kTRUE),
+  fUseCaloFastTr(kFALSE),
   fIsMC(0),
   fIsFastMC(0),
   fRP(0.),
@@ -325,11 +330,11 @@ void AliAnalysisTaskTaggedPhotons::UserCreateOutputObjects()
   snprintf(cPID[6],6,"Both2"); 
   snprintf(cPID[7],6,"Both3"); 
   
-  fNPID=8 ;
+  fNPID=4 ;  //Extend to 8 to look at PID cuts systematics
   
-  Int_t nPt=69;
-  Double_t ptBins[70]={0.,0.1,0.2,0.3,0.4, 0.5,0.6,0.7,0.8,0.9, 1.0,1.1,1.2,1.3,1.4, 1.5,1.6,1.7,1.8,1.9, 2.0,2.2,2.4,2.6,2.8, 
-                       3.,3.2,3.4,3.6,3.8, 4.0,4.5,4.8,5.,5.5, 5.6,6.0,6.4,6.5,7.0, 7.2,7.5,8.0,8.5,9.0, 9.5,10.,11.,12.,13., 14.,15.,16.,17.,18., 19.,20.,22.,24.,26., 28.,30.,32., 35.,40.,45., 50.,55.,60.,65.};
+  Int_t nPt=70;
+  Double_t ptBins[71]={0.,0.1,0.2,0.3,0.4, 0.5,0.6,0.7,0.8,0.9, 1.0,1.1,1.2,1.3,1.4, 1.5,1.6,1.7,1.8,1.9, 2.0,2.2,2.4,2.6,2.8, 
+                       3.,3.2,3.4,3.6,3.8, 4.0,4.5,4.8,5.,5.5, 5.6,6.0,6.4,6.5,7.0, 7.2,7.5,8.0,8.5,9.0, 9.5,10.,11.,12.,13., 14.,15.,16.,17.,18., 19.,20.,22.,24.,26., 28.,30.,32., 35.,40.,45., 50.,55.,60.,65.,70.};
 
                      
                      
@@ -504,16 +509,7 @@ void AliAnalysisTaskTaggedPhotons::UserCreateOutputObjects()
   
   
   if(fIsMC){
-      
-      fOutputContainer->Add(new TH1F("hMCConversionRadius","Clusters without label",600,0.,600.)) ;
-      fOutputContainer->Add(new TH2F("hMCRecPi0Vtx","Secondary pi0s",100,0.,10.,600,0.,600.)) ;
-      fOutputContainer->Add(new TH2F("hMCRecEtaVtx","Secondary etas",100,0.,10.,600,0.,600.)) ;
-      fOutputContainer->Add(new TH2F("hMCRecOmegaVtx","Secondary etas",100,0.,10.,600,0.,600.)) ;
-      fOutputContainer->Add(new TH2F("hMCRecEtaprVtx","Secondary etas",100,0.,10.,600,0.,600.)) ;
-      fOutputContainer->Add(new TH2F("hMCRecK0sVtx","Secondary K0s",100,0.,10.,600,0.,600.)) ;
-      fOutputContainer->Add(new TH2F("hMCRecK0lVtx","Secondary K0l",100,0.,10.,600,0.,600.)) ;
-      fOutputContainer->Add(new TH2F("hMCGammaPi0MisConvR","Converted photons",400,0.,40.,600,0.,600.)) ;
-      
+            
       for(Int_t mod=1; mod<5; mod++){
         fOutputContainer->Add(new TH1F(Form("hMCMinBiasPhot%d",mod),"MinBias photons",500,0.,50.)) ;
         fOutputContainer->Add(new TH1F(Form("hMCMinBiasPhotMap%d",mod),"MinBias photons in trigger area",500,0.,50.)) ;
@@ -607,7 +603,7 @@ void AliAnalysisTaskTaggedPhotons::UserCreateOutputObjects()
   
   
   for(Int_t i=0;i<10;i++)
-    for(Int_t j=0;j<5;j++)
+    for(Int_t j=0;j<fNCenBin;j++)
       fPHOSEvents[i][j]=0x0 ;    //Container for PHOS photons
   
 
@@ -632,7 +628,7 @@ void AliAnalysisTaskTaggedPhotons::UserExec(Option_t *)
   // Event selection flags
   //  FillHistogram("hSelEvents",0) ;
     
-  AliVEvent* event = (AliVEvent*)InputEvent();
+  AliAODEvent* event = (AliAODEvent*)InputEvent();
   if(!event){
     AliDebug(1,"No event") ;
     PostData(1, fOutputContainer);
@@ -654,9 +650,17 @@ void AliAnalysisTaskTaggedPhotons::UserExec(Option_t *)
   
   if((!fIsFastMC) && (!fIsMC)){
 
-    Bool_t isMB = (((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected() & AliVEvent::kINT7)  ; 
-    Bool_t isPHI7 = (((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected() & AliVEvent::kPHI7);
-
+    Bool_t isMB = (fInputHandler->IsEventSelected() & AliVEvent::kINT7)  ; 
+    Bool_t isPHI7 = (fInputHandler->IsEventSelected() & AliVEvent::kPHI7);
+    if(fUseCaloFastTr){
+      if(fInputHandler->IsEventSelected() & AliVEvent::kMuonCalo){ 
+        TString trigClasses = ((AliAODHeader*)event->GetHeader())->GetFiredTriggerClasses();
+//         //MuonCalo includes EMCAL and PHOS triggers. Select only PHOS triggers  
+        Bool_t is0PH0fired = trigClasses.Contains("CPHI7-B-NOPF-CALOFAST") ;       
+        if(is0PH0fired)FillHistogram("hSelEvents",9) ;
+        isPHI7=isPHI7 || is0PH0fired;
+      }
+    }
 
     if((fIsMB && !isMB) || (!fIsMB && !isPHI7)){
       PostData(1, fOutputContainer);
@@ -703,8 +707,7 @@ void AliAnalysisTaskTaggedPhotons::UserExec(Option_t *)
   FillHistogram("hCentrality",fCentrality,fCentWeight) ;
   FillHistogram("hCentralityRaw",fCentrality) ;
   FillHistogram("hSelEvents",6) ;
-  
-  
+    
 //   AliEventplane *eventPlane = event->GetEventplane();
 //   if( ! eventPlane ) { //Event has no event plane
 //     PostData(1, fOutputContainer);
@@ -1107,10 +1110,10 @@ void AliAnalysisTaskTaggedPhotons::FillMCHistos(){
 	if(grandParentPDG==111){
 	  //First find which daughter is our cluster
           //iparent - index of curent photon	  
-	  Int_t ipartner=grandParent->GetDaughter(0) ;
+	  Int_t ipartner=grandParent->GetDaughterLabel(0) ;
 	  if(ipartner==iparent){//look for other
   	    if(grandParent->GetNDaughters()>1){
-	      ipartner=grandParent->GetDaughter(1);  
+	      ipartner=grandParent->GetDaughterLabel(1);  
 	    }
 	    else{
 	      ipartner=-1 ;
@@ -1239,7 +1242,7 @@ void AliAnalysisTaskTaggedPhotons::FillMCHistos(){
                 if(!isPartnerLost){
 		  //this photon is converted before it is registered
 		  if(partner->GetNDaughters()>0){
-		    AliAODMCParticle* tmpP=(AliAODMCParticle*)fStack->At(partner->GetDaughter(0));
+		    AliAODMCParticle* tmpP=(AliAODMCParticle*)fStack->At(partner->GetDaughterLabel(0));
 		    if(tmpP->Xv()*tmpP->Xv()+tmpP->Yv()*tmpP->Yv()<450.*450.){  
 		      FillPIDHistograms("hMCDecWMisPartnConv",p) ;  //Spectrum of tagged with missed partner
 		      isPartnerLost=kTRUE;
@@ -2644,7 +2647,7 @@ Bool_t AliAnalysisTaskTaggedPhotons::SelectCentrality(AliVEvent * event){
      fCentBin=0;
      while(fCentBin<fNCenBin && fCentrality>fCenBinEdges.At(fCentBin))
         fCentBin++ ;
-     if(fCentBin>=fNCenBin) fNCenBin=fNCenBin-1; 
+     if(fCentBin>=fNCenBin) fCentBin=fNCenBin-1; 
       
      if(fIsMB)
         fCentWeight=1. ;// CentralityWeightPP(fCentrality); 

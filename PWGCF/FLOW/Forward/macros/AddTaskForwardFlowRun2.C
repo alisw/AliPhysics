@@ -85,6 +85,10 @@ AliAnalysisTaskSE* AddTaskForwardFlowRun2( bool doNUA, bool makeFakeHoles,
     task->fSettings.fFlowFlags = task->fSettings.kEtaGap;
     task->fSettings.fNRefEtaBins = 1;
     task->fSettings.gap = gap;
+
+//    resName += std::to_string((int)(10*gap));
+
+    //resName += std::to_string(gap);
   }
   else {
     task->fSettings.fNRefEtaBins = 1; // eller skal det være et andet antal?
@@ -129,6 +133,7 @@ AliAnalysisTaskSE* AddTaskForwardFlowRun2( bool doNUA, bool makeFakeHoles,
 
   task->fSettings.minpt = minpt;
   task->fSettings.maxpt = maxpt;
+  
 
   task->fSettings.doNUA = doNUA;
   task->fSettings.nua_mode = nua_mode; 

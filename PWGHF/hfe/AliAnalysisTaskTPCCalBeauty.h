@@ -46,6 +46,7 @@ public:
     void            SetFillSprs(Bool_t fillElecSprs) {fFlagFillSprs = fillElecSprs;};
     void            SetMC(Bool_t setMCfill) {fFlagFillMCHistos = setMCfill;};
     void            SetSSCut(Double_t maxM20Cut) {fMaxM20Cut = maxM20Cut;};
+    void            UseLongAxis(Bool_t applyM02) {fApplyM02Cut = applyM02;}
     void            SetEoP(Double_t eopCut) {fMinEoPCut = eopCut;};
     void            SetNSig(Double_t nSigCut) {fMinNSigCut = nSigCut;};
     
@@ -87,6 +88,7 @@ private:
     Bool_t              fDCalDG1;        // DCal Threshold DG1
     //Bool_t              fFlagApplySSCut; //switch to turn on SS cut
     Double_t            fMaxM20Cut;      // set eID M20 cut
+    Bool_t              fApplyM02Cut;    // apply M02 instead of M20 cut
     Double_t            fMinEoPCut;      // set eID E/p cut
     Double_t            fMinNSigCut;     // set eID nSig cut
     
@@ -120,11 +122,12 @@ private:
     TH1F                *fTrkClsEta;     //! track and cluster delta eta
     TH1F                *fClsPhi;         //! cluster phi
     TH1F                *fClsEta;         //! cluster eta
-    TH1F                *fClsEamDCal;    //! cluster energy after matching to DCal
-    TH1F                *fClsEamEMCal;   //! cluster energy after matching to EMCal
-    TH1F                *fClsEAll;   //! cluster energy of all track-matched clusters
-    TH1F                *fClsEamElecEMC;   //! cluster energy of e- after matching to EMCal
-    TH1F                *fClsEamElecDC;   //! cluster energy of e- after matching to EMCal
+    //TH1F                *fClsEamDCal;    //! cluster energy after matching to DCal
+    //TH1F                *fClsEamEMCal;   //! cluster energy after matching to EMCal
+    //TH1F                *fClsEAll;   //! cluster energy of all track-matched clusters
+    TH1F                *fClsE;   //! cluster energy of EMCal/DCal depending on subfolder
+    //TH1F                *fClsEamElecEMC;   //! cluster energy of e- after matching to EMCal
+    //TH1F                *fClsEamElecDC;   //! cluster energy of e- after matching to EMCal
     TH1F                *fTrkPhi;        //! track phi after track matching
     TH1F                *fTrkEta;        //! track eta after track matching
     TH1F                *fdEdx;          //! track dEdx
@@ -137,18 +140,18 @@ private:
     TH1F                *fInvmassLS;     //! Plots LS mass dist
     TH1F                *fInvmassULS;    //! Plots ULS mass dist
     
-    TH1F                *fInvmassLSWeightEnhEta;   //! Plots LS mass dist
-    TH1F                *fInvmassULSWeightEnhEta;  //!
-    TH1F                *fInvmassLSWeightEnhPi0;   //!
-    TH1F                *fInvmassULSWeightEnhPi0;  //!
-    TH1F                *fInvmassLSHijingEta;      //!
-    TH1F                *fInvmassULSHijingEta;     //!
-    TH1F                *fInvmassLSHijingPi0;      //!
-    TH1F                *fInvmassULSHijingPi0;     //!
-    TH1F                *fInvmassLSHijingPhoton;   //!
-    TH1F                *fInvmassULSHijingPhoton;  //!
-    TH1F                *fInvmassLSEnhPhoton;         //!
-    TH1F                *fInvmassULSEnhPhoton;        //!
+    //TH1F                *fInvmassLSWeightEnhEta;   //! Plots LS mass dist
+    //TH1F                *fInvmassULSWeightEnhEta;  //!
+    //TH1F                *fInvmassLSWeightEnhPi0;   //!
+    //TH1F                *fInvmassULSWeightEnhPi0;  //!
+    //TH1F                *fInvmassLSHijingEta;      //!
+    //TH1F                *fInvmassULSHijingEta;     //!
+    //TH1F                *fInvmassLSHijingPi0;      //!
+    //TH1F                *fInvmassULSHijingPi0;     //!
+    //TH1F                *fInvmassLSHijingPhoton;   //!
+    //TH1F                *fInvmassULSHijingPhoton;  //!
+    //TH1F                *fInvmassLSEnhPhoton;         //!
+    //TH1F                *fInvmassULSEnhPhoton;        //!
     
     TH2F                *fULSdcaBelow;   //! ULS electron DCA vs. pT, m<0.1
     TH2F                *fLSdcaBelow;    //! LS electron DCA vs. pT, m<0.1
@@ -180,8 +183,8 @@ private:
     TH2F                *fHadronEoP;     //! Hadron EoP vs. pT
     TH2F                *fHadronEoPNoM20;     //! Hadron EoP vs. pT
     TH2F                *fHadronDCA;     //! Hadron DCA vs. pT
-    TH2F                *fHadronCamDCAHij;     //! Hadron DCA vs. pT, no sign, no E/p cut
-    TH2F                *fHadronCamDCA;     //! Hadron DCA vs. pT, no sign, no E/p cut
+    //TH2F                *fHadronCamDCAHij;     //! Hadron DCA vs. pT, no sign, no E/p cut
+    //TH2F                *fHadronCamDCA;     //! Hadron DCA vs. pT, no sign, no E/p cut
     
     TF1                 *fPi0Weight;    //! Function to weight enhanced pi0
     TF1                 *fEtaWeight;    //! Function to weight enhanced eta
@@ -214,12 +217,12 @@ private:
     TH2F                *fEnhPhotonDCA;        //!
     TH1F                *fEnhPhotonWeightedPt; //!
     
-    TH1F                *ComboNumWeight;       //!
-    TH1F                *ComboNumNoWeight;     //!
-    TH1F                *ComboDenomWeight;     //!
-    TH1F                *ComboDenomNoWeight;   //!
+    TH1F                *fComboNumWeight;       //!
+    TH1F                *fComboNumNoWeight;     //!
+    TH1F                *fComboDenomWeight;     //!
+    TH1F                *fComboDenomNoWeight;   //!
     
-    TH1F                *DMesonPDG; //! plots abs(pdg) of D mesons in the stack
+    TH1F                *fDMesonPDG; //! plots abs(pdg) of D mesons in the stack
     TH1F                *fD0MesonPt;  //!
     TH1F                *fD0MesonFromDStarPt; //!
     TH1F                *fDPlusMesonPt; //!
@@ -232,12 +235,12 @@ private:
     TH1F                *fCBaryonPt; //!
     
     TH1F                *fBMesonPt; //!
-    TH1F                *fBMesonPtATLAS; //!
-    TH1F                *fBPlusPtATLAS; //!
-    TH1F                *fBMesonPtCMS; //!
-    TH1F                *fBPlusPtCMS; //!
-    TH1F                *fBMesonPtLHCb; //!
-    TH1F                *fBPlusPtLHCb; //!
+    //TH1F                *fBMesonPtATLAS; //!
+    //TH1F                *fBPlusPtATLAS; //!
+    //TH1F                *fBMesonPtCMS; //!
+    //TH1F                *fBPlusPtCMS; //!
+    //TH1F                *fBMesonPtLHCb; //!
+    //TH1F                *fBPlusPtLHCb; //!
     TH1F                *fBBaryonPt; //!
     
     TH1F                *fBMesonElecPt; //!
@@ -247,7 +250,6 @@ private:
     TH2F    *fD0FromDStarDCAWeight; //!
     TH2F    *fPromptD0DCANoWeight; //!
     TH2F    *fD0FromDStarDCANoWeight; //!
-    
     
     Int_t               fNtotMCpart;     //! N of total MC particles produced by generator
     Int_t               fNpureMC;        //! N of particles from main generator (Hijing/Pythia)
@@ -260,17 +262,17 @@ private:
     THnSparse           *fSprsTemplatesWeightVar1;  //! Sparse for templates
     THnSparse           *fSprsTemplatesWeightVar2;  //! Sparse for templates
     
-    TH2F                *fDTemplateWeight; //!
-    TH2F                *fDTemplateNoWeight; //!
-    TH2F                *fDTemplateWeightNew; //!
-    TH2F                *fDTemplateWeightVar1; //!
-    TH2F                *fDTemplateWeightVar2; //!
+    //TH2F                *fDTemplateWeight; //!
+    //TH2F                *fDTemplateNoWeight; //!
+    //TH2F                *fDTemplateWeightNew; //!
+    //TH2F                *fDTemplateWeightVar1; //!
+    //TH2F                *fDTemplateWeightVar2; //!
     
-    TH2F                *fBTemplateWeight; //!
-    TH2F                *fBTemplateNoWeight; //!
-    TH2F                *fBTemplateWeightNew; //!
-    TH2F                *fBTemplateWeightVar1; //!
-    TH2F                *fBTemplateWeightVar2; //!
+    //TH2F                *fBTemplateWeight; //!
+    //TH2F                *fBTemplateNoWeight; //!
+    //TH2F                *fBTemplateWeightNew; //!
+    //TH2F                *fBTemplateWeightVar1; //!
+    //TH2F                *fBTemplateWeightVar2; //!
     
     TH1F                *fAllElecStack; //!
     TH1F                *fHFElecStack; //!

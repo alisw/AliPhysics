@@ -87,6 +87,8 @@ ClassImp(AliAnalysisTaskSEXicPlus2XiPiPifromAODtracks);
 AliAnalysisTaskSEXicPlus2XiPiPifromAODtracks::AliAnalysisTaskSEXicPlus2XiPiPifromAODtracks() : 
   AliAnalysisTaskSE(),
   fUseMCInfo(kFALSE),
+  fFillSignalOnly(kFALSE),
+  fFillBkgOnly(kFALSE),
   fOutput(0),
   fOutputAll(0),
   fListCuts(0),
@@ -148,6 +150,8 @@ AliAnalysisTaskSEXicPlus2XiPiPifromAODtracks::AliAnalysisTaskSEXicPlus2XiPiPifro
 											   Bool_t writeVariableTree) :
   AliAnalysisTaskSE(name),
   fUseMCInfo(kFALSE),
+  fFillSignalOnly(kFALSE),
+  fFillBkgOnly(kFALSE),
   fOutput(0),
   fOutputAll(0),
   fListCuts(0),
@@ -589,6 +593,7 @@ void AliAnalysisTaskSEXicPlus2XiPiPifromAODtracks::MakeAnalysis
 	AliAODMCParticle *mcdaughterxi = 0;
 	Int_t mclabxic = 0;
 	Int_t nmclabxic = 0;
+	Bool_t isXic = kFALSE;
 	if(fUseMCInfo)
 	{
 		Int_t pdgDg[3]={211,3312,211};
@@ -610,9 +615,9 @@ void AliAnalysisTaskSEXicPlus2XiPiPifromAODtracks::MakeAnalysis
 					break;
 				}
 			}
-
+			isXic=kTRUE;
       Int_t pi_counter = 0;
-      for(Int_t idau=mcxic->GetFirstDaughter();idau<mcxic->GetLastDaughter()+1;idau++)
+      for(Int_t idau=mcxic->GetDaughterFirst();idau<mcxic->GetDaughterLast()+1;idau++)
       {
         //cout<<idau<<endl;
         if(idau<0) break;
@@ -636,8 +641,7 @@ void AliAnalysisTaskSEXicPlus2XiPiPifromAODtracks::MakeAnalysis
 		}
 	}
 
-	FillROOTObjects(xicobj,mcxic,mcdaughter1,mcdaughter2,mcdaughterxi,nmclabxic);
-
+	FillROOTObjects(xicobj,mcxic,mcdaughter1,mcdaughter2,mcdaughterxi,nmclabxic,isXic);
 	xicobj->GetSecondaryVtx()->RemoveDaughters();
 	xicobj->UnsetOwnPrimaryVtx();
 	delete xicobj;xicobj=NULL;
@@ -649,7 +653,7 @@ void AliAnalysisTaskSEXicPlus2XiPiPifromAODtracks::MakeAnalysis
 }
 
 //________________________________________________________________________
-void AliAnalysisTaskSEXicPlus2XiPiPifromAODtracks::FillROOTObjects(AliAODRecoCascadeHF3Prong *xicobj, AliAODMCParticle *mcpart, AliAODMCParticle *mcdaughter1, AliAODMCParticle *mcdaughter2, AliAODMCParticle *mcdaughterxi, Int_t mcnused) 
+void AliAnalysisTaskSEXicPlus2XiPiPifromAODtracks::FillROOTObjects(AliAODRecoCascadeHF3Prong *xicobj, AliAODMCParticle *mcpart, AliAODMCParticle *mcdaughter1, AliAODMCParticle *mcdaughter2, AliAODMCParticle *mcdaughterxi, Int_t mcnused, Bool_t isXic) 
 {
   //
   // Fill histogram or Tree depending on fWriteVariableTree flag
@@ -659,6 +663,13 @@ void AliAnalysisTaskSEXicPlus2XiPiPifromAODtracks::FillROOTObjects(AliAODRecoCas
   AliAODTrack *part2 = xicobj->GetBachelor2();
   AliAODcascade *casc = xicobj->GetCascade();
 
+  Double_t dca[3];
+  xicobj->GetDCAs(dca);
+  
+  if ((fUseMCInfo && fFillSignalOnly && !fFillBkgOnly && !isXic) || (fUseMCInfo && !fFillSignalOnly && fFillBkgOnly && isXic)) return;
+  else {
+  
+  //  if (!fUseMCInfo || (fUseMCInfo && fFillSignalOnly && isXiC) || (fUseMCInfo && !fFillSignalOnly)){
   fCandidateVariables[ 0] = xicobj->InvMassPiXiPi();
   fCandidateVariables[ 1] = xicobj->Px();
   fCandidateVariables[ 2] = xicobj->Py();
@@ -695,8 +706,6 @@ void AliAnalysisTaskSEXicPlus2XiPiPifromAODtracks::FillROOTObjects(AliAODRecoCas
   fCandidateVariables[31] = xicobj->CascDecayLengthV0();
   fCandidateVariables[32] = xicobj->CascCosPointingAngleV0();
 
-  Double_t dca[3];
-  xicobj->GetDCAs(dca);
   fCandidateVariables[33] = dca[0];
   fCandidateVariables[34] = dca[1];
   fCandidateVariables[35] = dca[2];
@@ -717,51 +726,51 @@ void AliAnalysisTaskSEXicPlus2XiPiPifromAODtracks::FillROOTObjects(AliAODRecoCas
 
   if(fAnalCuts->GetIsUsePID())
     {
-			nSigmaTPCpi1 = fAnalCuts->GetPidHF()->GetPidResponse()->NumberOfSigmasTPC(part1,AliPID::kPion);
+      nSigmaTPCpi1 = fAnalCuts->GetPidHF()->GetPidResponse()->NumberOfSigmasTPC(part1,AliPID::kPion);
       fCandidateVariables[42] = nSigmaTPCpi1;
-			nSigmaTPCpi2 = fAnalCuts->GetPidHF()->GetPidResponse()->NumberOfSigmasTPC(part2,AliPID::kPion);
+      nSigmaTPCpi2 = fAnalCuts->GetPidHF()->GetPidResponse()->NumberOfSigmasTPC(part2,AliPID::kPion);
       fCandidateVariables[43] = nSigmaTPCpi2;
-			nSigmaTOFpi1 = fAnalCuts->GetPidHF()->GetPidResponse()->NumberOfSigmasTOF(part1,AliPID::kPion);
+      nSigmaTOFpi1 = fAnalCuts->GetPidHF()->GetPidResponse()->NumberOfSigmasTOF(part1,AliPID::kPion);
       fCandidateVariables[44] = nSigmaTOFpi1;
-			nSigmaTOFpi2 = fAnalCuts->GetPidHF()->GetPidResponse()->NumberOfSigmasTOF(part2,AliPID::kPion);
+      nSigmaTOFpi2 = fAnalCuts->GetPidHF()->GetPidResponse()->NumberOfSigmasTOF(part2,AliPID::kPion);
       fCandidateVariables[45] = nSigmaTOFpi2;
 
-			if(fAnalCuts->GetPidHF()->GetUseCombined()){
-				probPion1 =  fAnalCuts->GetPionProbabilityTPCTOF(part1);
-				probPion2 =  fAnalCuts->GetPionProbabilityTPCTOF(part2);
-			}
+      if(fAnalCuts->GetPidHF()->GetUseCombined()){
+	probPion1 =  fAnalCuts->GetPionProbabilityTPCTOF(part1);
+	probPion2 =  fAnalCuts->GetPionProbabilityTPCTOF(part2);
+      }
       fCandidateVariables[46] = probPion1;
       fCandidateVariables[47] = probPion2;
     }
-	fCandidateVariables[48] = -9999;
-	fCandidateVariables[49] = -9999;
-	fCandidateVariables[50] = -9999;
-	fCandidateVariables[51] = -9999;
-	fCandidateVariables[52] = -9999;
-	fCandidateVariables[53] = -9999;
-	fCandidateVariables[54] = -9999;
-	fCandidateVariables[55] = -9999;
-	fCandidateVariables[56] = -9999;
-	fCandidateVariables[57] = -9999;
-	fCandidateVariables[65] = -9999;
-	fCandidateVariables[66] = -9999;
-	fCandidateVariables[67] = -9999;
-	fCandidateVariables[68] = -9999;
-	fCandidateVariables[69] = -9999;
-	fCandidateVariables[70] = -9999;
-	fCandidateVariables[71] = -9999;
-	fCandidateVariables[72] = -9999;
-	fCandidateVariables[73] = -9999;
-	fCandidateVariables[74] = -9999;
-	fCandidateVariables[75] = -9999;
-	fCandidateVariables[76] = -9999;
+  fCandidateVariables[48] = -9999;
+  fCandidateVariables[49] = -9999;
+  fCandidateVariables[50] = -9999;
+  fCandidateVariables[51] = -9999;
+  fCandidateVariables[52] = -9999;
+  fCandidateVariables[53] = -9999;
+  fCandidateVariables[54] = -9999;
+  fCandidateVariables[55] = -9999;
+  fCandidateVariables[56] = -9999;
+  fCandidateVariables[57] = -9999;
+  fCandidateVariables[65] = -9999;
+  fCandidateVariables[66] = -9999;
+  fCandidateVariables[67] = -9999;
+  fCandidateVariables[68] = -9999;
+  fCandidateVariables[69] = -9999;
+  fCandidateVariables[70] = -9999;
+  fCandidateVariables[71] = -9999;
+  fCandidateVariables[72] = -9999;
+  fCandidateVariables[73] = -9999;
+  fCandidateVariables[74] = -9999;
+  fCandidateVariables[75] = -9999;
+  fCandidateVariables[76] = -9999;
 
-	if(fUseMCInfo){
-		if(mcpart){
-			fCandidateVariables[48] = mcpart->Label();
-			fCandidateVariables[49] = mcnused;
-			fCandidateVariables[50] = mcpart->GetPdgCode();
-			fCandidateVariables[54] = mcpart->Pt();
+  if(fUseMCInfo){
+    if(mcpart){
+      fCandidateVariables[48] = mcpart->Label();
+      fCandidateVariables[49] = mcnused;
+      fCandidateVariables[50] = mcpart->GetPdgCode();
+      fCandidateVariables[54] = mcpart->Pt();
       if(mcdaughter1&&mcdaughter2&&mcdaughterxi){
         Double_t mcprimvertx = mcpart->Xv();
         Double_t mcprimverty = mcpart->Yv();
@@ -795,14 +804,14 @@ void AliAnalysisTaskSEXicPlus2XiPiPifromAODtracks::FillROOTObjects(AliAODRecoCas
         fCandidateVariables[75] = mcdaughterxi->Py();
         fCandidateVariables[76] = mcdaughterxi->Pz();
       }
-		}
-	}
-	fCandidateVariables[58] = casc->Px();
-	fCandidateVariables[59] = casc->Py();
-	fCandidateVariables[60] = casc->Pz();
-	fCandidateVariables[61] = -9999.;
-	fCandidateVariables[62] = -9999.;
-	fCandidateVariables[63] = -9999.;
+    }
+  }
+  fCandidateVariables[58] = casc->Px();
+  fCandidateVariables[59] = casc->Py();
+  fCandidateVariables[60] = casc->Pz();
+  fCandidateVariables[61] = -9999.;
+  fCandidateVariables[62] = -9999.;
+  fCandidateVariables[63] = -9999.;
   if(TMath::Abs(casc->MassLambda()-1.115683)<0.02){
     fCandidateVariables[61] = casc->MomPosX();
     fCandidateVariables[62] = casc->MomPosY();
@@ -824,48 +833,76 @@ void AliAnalysisTaskSEXicPlus2XiPiPifromAODtracks::FillROOTObjects(AliAODRecoCas
   fCandidateVariables[84] = xicobj->GetSecondaryVtx()->GetY();
   fCandidateVariables[85] = xicobj->GetSecondaryVtx()->GetZ();
 
-	if(fUseMCInfo){
-  }
-
+  fCandidateVariables[86] = part1->GetTPCClusterInfo(2,1);
+  fCandidateVariables[87] = part2->GetTPCClusterInfo(2,1);
+  AliAODTrack *ptrack = (AliAODTrack*) (casc->GetDaughter(0));
+  AliAODTrack *ntrack = (AliAODTrack*) (casc->GetDaughter(1));
+  AliAODTrack *btrack = (AliAODTrack*) (casc->GetDecayVertexXi()->GetDaughter(0));
+  
+  fCandidateVariables[88] = btrack->GetTPCClusterInfo(2,1);
+  fCandidateVariables[89] = ptrack->GetTPCClusterInfo(2,1);
+  fCandidateVariables[90] = ntrack->GetTPCClusterInfo(2,1);
+  }//close if to check mc fill only signal
 
 
   if(fWriteVariableTree)
     fVariablesTree->Fill();
   else{
-	  if(fAnalCuts->IsSelected(xicobj,AliRDHFCuts::kCandidate))
-	  {
-	    Double_t cont[3];
-	    cont[0] = xicobj->InvMassPiXiPi();
-	    cont[1] = xicobj->Pt();
-	    cont[2] = fCentrality;
-	    fHistoXicMass->Fill(cont);
+    if(fAnalCuts->IsSelected(xicobj,AliRDHFCuts::kCandidate))
+      {
+	Double_t cont[3];
+	cont[0] = xicobj->InvMassPiXiPi();
+	cont[1] = xicobj->Pt();
+	cont[2] = fCentrality;
+	fHistoXicMass->Fill(cont);
 
-      fHistoDcaPi1Pi2->Fill(dca[2]);
-      fHistoDcaPiCasc->Fill(dca[0]);
-      fHistoDcaPiCasc->Fill(dca[1]);
-      fHistoLikeDecayLength->Fill(xicobj->DecayLength());
-      fHistoLikeDecayLengthXY->Fill(xicobj->DecayLengthXY());
-      fHistoXicCosPAXY->Fill(xicobj->XicCosPointingAngle());
-      fHistoXiMass->Fill(xicobj->CascMassXi());
-      fHistoCascDcaXiDaughters->Fill(xicobj->CascDcaXiDaughters());
-      fHistoCascDcaV0Daughters->Fill(xicobj->CascDcaV0Daughters());
-      fHistoCascDcaV0ToPrimVertex->Fill(xicobj->CascDcaV0ToPrimVertex());
-      fHistoCascDcaPosToPrimVertex->Fill(xicobj->CascDcaPosToPrimVertex());
-      fHistoCascDcaNegToPrimVertex->Fill(xicobj->CascDcaNegToPrimVertex());
-      fHistoCascDcaBachToPrimVertex->Fill(xicobj->CascDcaBachToPrimVertex());
-      fHistoCascCosPAXiPrim->Fill(xicobj->CascCosPointingAngle());
-      fHistoXiPt->Fill(xicobj->PtProng(1));
-      fHistoPiPt->Fill(xicobj->PtProng(0));
-      fHistoPiPt->Fill(xicobj->PtProng(2));
-      fHistoPid0->Fill(xicobj->Getd0Prong(0));
-      fHistoPid0->Fill(xicobj->Getd0Prong(2));
-      fHistonSigmaTPCpi->Fill(nSigmaTPCpi1);
-      fHistonSigmaTPCpi->Fill(nSigmaTPCpi2);
-      fHistonSigmaTOFpi->Fill(nSigmaTOFpi1);
-      fHistonSigmaTOFpi->Fill(nSigmaTOFpi2);
-      fHistoProbPion->Fill(probPion1);
-      fHistoProbPion->Fill(probPion2);
-	  }
+	fHistoDcaPi1Pi2->Fill(dca[2]);
+	fHistoDcaPiCasc->Fill(dca[0]);
+	fHistoDcaPiCasc->Fill(dca[1]);
+	fHistoLikeDecayLength->Fill(xicobj->DecayLength());
+	fHistoLikeDecayLengthXY->Fill(xicobj->DecayLengthXY());
+	fHistoXicCosPAXY->Fill(xicobj->XicCosPointingAngle());
+	fHistoXiMass->Fill(xicobj->CascMassXi());
+	fHistoCascDcaXiDaughters->Fill(xicobj->CascDcaXiDaughters());
+	fHistoCascDcaV0Daughters->Fill(xicobj->CascDcaV0Daughters());
+	fHistoCascDcaV0ToPrimVertex->Fill(xicobj->CascDcaV0ToPrimVertex());
+	fHistoCascDcaPosToPrimVertex->Fill(xicobj->CascDcaPosToPrimVertex());
+	fHistoCascDcaNegToPrimVertex->Fill(xicobj->CascDcaNegToPrimVertex());
+	fHistoCascDcaBachToPrimVertex->Fill(xicobj->CascDcaBachToPrimVertex());
+	fHistoCascCosPAXiPrim->Fill(xicobj->CascCosPointingAngle());
+	fHistoXiPt->Fill(xicobj->PtProng(1));
+	fHistoPiPt->Fill(xicobj->PtProng(0));
+	fHistoPiPt->Fill(xicobj->PtProng(2));
+	fHistoPid0->Fill(xicobj->Getd0Prong(0));
+	fHistoPid0->Fill(xicobj->Getd0Prong(2));
+
+ Double_t nSigmaTPCpi1=-9999.;
+  Double_t nSigmaTPCpi2=-9999.;
+  Double_t nSigmaTOFpi1=-9999.;
+  Double_t nSigmaTOFpi2=-9999.;
+  Double_t probPion1=-9999.;
+  Double_t probPion2=-9999.;
+
+  if(fAnalCuts->GetIsUsePID())
+    {
+      nSigmaTPCpi1 = fAnalCuts->GetPidHF()->GetPidResponse()->NumberOfSigmasTPC(part1,AliPID::kPion);    
+      nSigmaTPCpi2 = fAnalCuts->GetPidHF()->GetPidResponse()->NumberOfSigmasTPC(part2,AliPID::kPion);
+      nSigmaTOFpi1 = fAnalCuts->GetPidHF()->GetPidResponse()->NumberOfSigmasTOF(part1,AliPID::kPion);      
+      nSigmaTOFpi2 = fAnalCuts->GetPidHF()->GetPidResponse()->NumberOfSigmasTOF(part2,AliPID::kPion);
+      
+      if(fAnalCuts->GetPidHF()->GetUseCombined()){
+	probPion1 =  fAnalCuts->GetPionProbabilityTPCTOF(part1);
+	probPion2 =  fAnalCuts->GetPionProbabilityTPCTOF(part2);
+      }
+    }
+  
+	fHistonSigmaTPCpi->Fill(nSigmaTPCpi1);
+	fHistonSigmaTPCpi->Fill(nSigmaTPCpi2);
+	fHistonSigmaTOFpi->Fill(nSigmaTOFpi1);
+	fHistonSigmaTOFpi->Fill(nSigmaTOFpi2);
+	fHistoProbPion->Fill(probPion1);
+	fHistoProbPion->Fill(probPion2);
+      }
 	
   }
   return;
@@ -879,7 +916,7 @@ void AliAnalysisTaskSEXicPlus2XiPiPifromAODtracks::DefineTreeVariables()
   //
   const char* nameoutput = GetOutputSlot(3)->GetContainer()->GetName();
   fVariablesTree = new TTree(nameoutput,"Candidates variables tree");
-  Int_t nVar = 86;
+  Int_t nVar = 91;
   fCandidateVariables = new Float_t [nVar];
   TString * fCandidateVariableNames = new TString[nVar];
 
@@ -980,7 +1017,12 @@ void AliAnalysisTaskSEXicPlus2XiPiPifromAODtracks::DefineTreeVariables()
   fCandidateVariableNames[84]="XicVertY";
   fCandidateVariableNames[85]="XicVertZ";
 
-
+  fCandidateVariableNames[86]="TPCClsP1";
+  fCandidateVariableNames[87]="TPCClsP2";
+  fCandidateVariableNames[88]="TPCClsCascBach";
+  fCandidateVariableNames[89]="TPCClsV0trkPos";
+  fCandidateVariableNames[90]="TPCClsV0trkNeg";
+ 
   for (Int_t ivar=0; ivar<nVar; ivar++) {
     fVariablesTree->Branch(fCandidateVariableNames[ivar].Data(),&fCandidateVariables[ivar],Form("%s/f",fCandidateVariableNames[ivar].Data()));
   }

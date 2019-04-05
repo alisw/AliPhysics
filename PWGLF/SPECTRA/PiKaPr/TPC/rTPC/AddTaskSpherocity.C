@@ -14,7 +14,10 @@ AliAnalysisTaskSpherocity* AddTaskSpherocity(
 		Bool_t PostCalib = kFALSE,
 		Bool_t LowpT = kFALSE,
 		Bool_t MakePid = kFALSE,
-		const Int_t LHC16l = 1  // 1-LHC16l 0-LHC16k 
+		const Int_t LHC16l = 1,  // 1-LHC16l 0-LHC16k 
+		const Bool_t IsV0M = kFALSE, 
+		const Double_t JettyValue = 0.5,
+		const Double_t IsotrValue = 0.7
 		)   
 {
 
@@ -60,6 +63,9 @@ AliAnalysisTaskSpherocity* AddTaskSpherocity(
 	task->SetAnalysisMC(AnalysisMC);
 	task->SetAddLowPt(LowpT);
 	task->SetPeriod(LHC16l);
+	task->SetEstimator(IsV0M);
+	task->SetJettyCutOff(JettyValue);
+	task->SetIsotrCutOff(IsotrValue);
 
 	if(system==1){
 		task->SetAnalysisPbPb(kTRUE);

@@ -108,7 +108,7 @@ AliEMCALTenderSupply::AliEMCALTenderSupply() :
   ,fRemapMCLabelForAODs(0)
   ,fUseAutomaticRecalib(1)
   ,fUseAutomaticRunDepRecalib(1)
-  ,fUseRunDepTempCalibRun2(0)
+  ,fUseNewRunDepTempCalib(0)
   ,fUseAutomaticTimeCalib(1)
   ,fUseAutomaticRecParam(1)
 {
@@ -182,7 +182,7 @@ AliEMCALTenderSupply::AliEMCALTenderSupply(const char *name, const AliTender *te
   ,fRemapMCLabelForAODs(0)
   ,fUseAutomaticRecalib(1)
   ,fUseAutomaticRunDepRecalib(1)
-  ,fUseRunDepTempCalibRun2(0)
+  ,fUseNewRunDepTempCalib(0)
   ,fUseAutomaticTimeCalib(1)
   ,fUseAutomaticRecParam(1)
 {
@@ -256,7 +256,7 @@ AliEMCALTenderSupply::AliEMCALTenderSupply(const char *name, AliAnalysisTaskSE *
   ,fRemapMCLabelForAODs(0)
   ,fUseAutomaticRecalib(1)
   ,fUseAutomaticRunDepRecalib(1)
-  ,fUseRunDepTempCalibRun2(0)
+  ,fUseNewRunDepTempCalib(0)
   ,fUseAutomaticTimeCalib(1)
   ,fUseAutomaticRecParam(1)
 {
@@ -1202,9 +1202,7 @@ Int_t AliEMCALTenderSupply::InitRunDepRecalib()
   // opening the OADB container
   // 
   // For more information see https://alice.its.cern.ch/jira/browse/EMCAL-135
-  if(event->GetRunNumber() > 197692){
-    if(!fUseRunDepTempCalibRun2)
-      return 0;
+  if(fUseNewRunDepTempCalib){
 
     if (fDebugLevel>0)
       AliInfo("Initialising Run2 temperature recalibration factors");
@@ -1333,6 +1331,10 @@ Int_t AliEMCALTenderSupply::InitRunDepRecalib()
 
     // Run1 treatment with old calibration
   } else {
+    if(event->GetRunNumber() > 197692){
+      AliInfo("Temperature calibration could not be loaded. Please use useNewRWTempCalib = kTRUE in the AddTaskEMCALTender for Run2 data!");
+      return 0;
+    }
 
     if (fDebugLevel>0)
       AliInfo("Initialising Run1 recalibration factors");
@@ -2061,8 +2063,7 @@ void AliEMCALTenderSupply::RecPoints2Clusters(TClonesArray *clus)
     if (parentMult > 0)
     {
       c->SetLabel(parentList, parentMult);
-      if(fSetCellMCLabelFromEdepFrac)
-        c->SetClusterMCEdepFractionFromEdepArray(parentListDE);
+      c->SetClusterMCEdepFractionFromEdepArray(parentListDE);
     }
     
     //

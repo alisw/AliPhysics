@@ -87,7 +87,7 @@ AliEventCuts::AliEventCuts(bool saveplots) : TList(),
   fkLabels{"raw","selected"},
   fManualMode{false},
   fSavePlots{saveplots},
-  fCurrentRun{-1},
+  fCurrentRun{-0xBADCAFE},
   fFlag{BIT(kNoCuts)},
   fCentEstimators{"V0M","CL0"},
   fCentPercentiles{-1.f},
@@ -171,13 +171,15 @@ bool AliEventCuts::AcceptEvent(AliVEvent *ev) {
 
   /// Vertex existance
   const AliVVertex* vtTrc = ev->GetPrimaryVertex();
+  bool isTrackV = true;
+  if(vtTrc->IsFromVertexer3D() || vtTrc->IsFromVertexerZ()) isTrackV=false;
   const AliVVertex* vtSPD = ev->GetPrimaryVertexSPD();
   /// On current AODs primary vertex could be from TPC or invalid SPD vertex
   /// The following check should be applied only on AOD.
   bool goodAODvtx = (dynamic_cast<AliAODEvent*>(ev) ? GoodPrimaryAODVertex(ev) : true) || !fCheckAODvertex;
 
   if (vtSPD->GetNContributors() > 0) fFlag |= BIT(kVertexSPD);
-  if (vtTrc->GetNContributors() > 1 && goodAODvtx) fFlag |= BIT(kVertexTracks);
+  if (vtTrc->GetNContributors() > 1 && isTrackV && goodAODvtx) fFlag |= BIT(kVertexTracks);
   if (((fFlag & BIT(kVertexTracks)) ||  !fRequireTrackVertex) && (fFlag & BIT(kVertexSPD))) fFlag |= BIT(kVertex);
   const AliVVertex* &vtx = bool(fFlag & BIT(kVertexTracks)) ? vtTrc : vtSPD;
   fPrimaryVertex = const_cast<AliVVertex*>(vtx);
@@ -420,7 +422,14 @@ void AliEventCuts::AutomaticSetup(AliVEvent *ev) {
     AliFatal("I don't find the AOD event nor the ESD one, aborting.");
   else {
     AliMCEventHandler* eventHandler = dynamic_cast<AliMCEventHandler*> (AliAnalysisManager::GetAnalysisManager()->GetMCtruthEventHandler());
-    fMC = (eventHandler) ? true : false;
+    TClonesArray* aodMC = (TClonesArray*)ev->GetList()->FindObject(AliAODMCParticle::StdBranchName());
+    fMC = (eventHandler || aodMC);
+  }
+
+  if (fCurrentRun == -1 && fMC) {
+    ::Info("AliEventCuts::AutomaticSetup","MCGEN train / Kinematics only production detected, disabling all the cuts.");
+    fGreenLight = true;
+    return;
   }
 
   if (fCurrentRun == 280234 || fCurrentRun == 280235) {
@@ -875,6 +884,7 @@ bool AliEventCuts::GoodPrimaryAODVertex(AliVEvent* ev) {
   if (!aodEv) {
     ::Fatal("AliEventCuts::GoodPrimaryAODVertex","Passed argument is not an AOD event.");
   }
+  if (!aodEv->GetPrimaryVertex()) return kFALSE;
   if (aodEv->GetPrimaryVertex()->GetType()!=AliAODVertex::kPrimary) return kFALSE;
   const AliAODVertex *vtPrim = aodEv->GetPrimaryVertex();
   const AliAODVertex *vtTPC  = aodEv->GetPrimaryVertexTPC();

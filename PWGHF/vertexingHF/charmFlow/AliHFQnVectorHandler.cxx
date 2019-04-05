@@ -17,9 +17,10 @@
 // S. Trogolo, stefano.trogolo@cern.ch
 ///////////////////////////////////////////////////////////////////////////////////////
 
-#include <TMath.h>
+#include <TGrid.h>
 
 #include "AliHFQnVectorHandler.h"
+#include "AliAODVertex.h"
 #include "AliOADBContainer.h"
 #include "AliLog.h"
 #include "AliAnalysisManager.h"
@@ -51,10 +52,9 @@ AliHFQnVectorHandler::AliHFQnVectorHandler():
     fQnVecNormFullV0(1.),
     fQnVecNormV0A(1.),
     fQnVecNormV0C(1.),
-    fWeightsTPC(nullptr),
-    fFractionOfTracksForQnTPC(1.1),
     fUsedTrackPosIDs(),
     fUsedTrackNegIDs(),
+    fFractionOfTracksForQnTPC(1.1),
     fAODEvent(nullptr),
     fV0(nullptr),
     fRun(0),
@@ -65,6 +65,8 @@ AliHFQnVectorHandler::AliHFQnVectorHandler():
     fIsOADBFileOpen(false),
     fCalibObjRun(-9999),
     fHistMultV0(nullptr),
+    fWeightsTPC(nullptr),
+    fEnablePhiDistrHistos(false),
     fQnVectorTask(nullptr),
     fQnVectorMgr(nullptr)
 {
@@ -93,6 +95,9 @@ AliHFQnVectorHandler::AliHFQnVectorHandler():
         fQx2sV0C[iZvtx] = nullptr;
         fQy2sV0C[iZvtx] = nullptr;  
     }
+
+    fPhiVsCentrTPC[0]=nullptr;
+    fPhiVsCentrTPC[1]=nullptr;
 }
 
 //________________________________________________________________
@@ -116,10 +121,9 @@ AliHFQnVectorHandler::AliHFQnVectorHandler(int calibType, int normMeth, int harm
     fQnVecNormFullV0(1.),
     fQnVecNormV0A(1.),
     fQnVecNormV0C(1.),
-    fWeightsTPC(nullptr),
-    fFractionOfTracksForQnTPC(1.1),
     fUsedTrackPosIDs(),
     fUsedTrackNegIDs(),
+    fFractionOfTracksForQnTPC(1.1),
     fAODEvent(nullptr),
     fV0(nullptr),
     fRun(0),
@@ -130,6 +134,8 @@ AliHFQnVectorHandler::AliHFQnVectorHandler(int calibType, int normMeth, int harm
     fIsOADBFileOpen(false),
     fCalibObjRun(-9999),
     fHistMultV0(nullptr),
+    fWeightsTPC(nullptr),
+    fEnablePhiDistrHistos(false),
     fQnVectorTask(nullptr),
     fQnVectorMgr(nullptr)
 {
@@ -158,6 +164,9 @@ AliHFQnVectorHandler::AliHFQnVectorHandler(int calibType, int normMeth, int harm
         fQx2sV0C[iZvtx] = nullptr;
         fQy2sV0C[iZvtx] = nullptr;  
     }
+
+    fPhiVsCentrTPC[0]=nullptr;
+    fPhiVsCentrTPC[1]=nullptr;
 }
 
 //________________________________________________________________
@@ -166,6 +175,8 @@ AliHFQnVectorHandler::~AliHFQnVectorHandler()
     //
     // Standard destructor
     //
+    if(fPhiVsCentrTPC[0]) delete fPhiVsCentrTPC[0];
+    if(fPhiVsCentrTPC[1]) delete fPhiVsCentrTPC[1];
 }
 
 //________________________________________________________________
@@ -393,6 +404,22 @@ void AliHFQnVectorHandler::GetUnNormQnVecV0(double QnVecFullV0[2], double QnVecV
 }
 
 //________________________________________________________________
+void AliHFQnVectorHandler::GetqnTPC(double &qnFullTPC, double &qnPosTPC, double &qnNegTPC) 
+{
+    qnFullTPC = fQnVecNormFullTPC / TMath::Sqrt(fMultFullTPC);
+    qnPosTPC  = fQnVecNormPosTPC / TMath::Sqrt(fMultPosTPC);
+    qnNegTPC  = fQnVecNormNegTPC / TMath::Sqrt(fMultNegTPC);
+}
+    
+//________________________________________________________________
+void AliHFQnVectorHandler::GetqnV0(double &qnFullV0, double &qnV0A, double &qnV0C)
+{
+    qnFullV0 = fQnVecNormFullV0 / TMath::Sqrt(fMultFullV0);
+    qnV0A    = fQnVecNormV0A / TMath::Sqrt(fMultV0A);
+    qnV0C    = fQnVecNormV0C / TMath::Sqrt(fMultV0C);
+}
+
+//________________________________________________________________
 void AliHFQnVectorHandler::GetMultQnVecTPC(double &MultFullTPC, double &MultPosTPC, double &MultNegTPC)
 {
     MultFullTPC = fMultFullTPC;
@@ -425,16 +452,16 @@ void AliHFQnVectorHandler::GetEventPlaneAngleV0(double &EvPlaneFullV0, double &E
 }
 
 //________________________________________________________________
-void AliHFQnVectorHandler::RemoveTracksFromQnTPC(vector<AliAODTrack*> trToRem, double QnVecFullTPC[2], double QnVecPosTPC[2], double QnVecNegTPC[2], bool getUnNormalised) 
+void AliHFQnVectorHandler::RemoveTracksFromQnTPC(vector<AliAODTrack*> trToRem, double QnVecFullTPC[2], double QnVecPosTPC[2], double QnVecNegTPC[2], double &multFullTPC, double &multPosTPC, double &multNegTPC, bool getUnNormalised) 
 {
     for(int iComp=0; iComp<2; iComp++) {
         QnVecFullTPC[iComp] = fQnVecFullTPC[iComp];
         QnVecPosTPC[iComp]  = fQnVecPosTPC[iComp];
         QnVecNegTPC[iComp]  = fQnVecNegTPC[iComp];
     }
-    double multFullTPC = fMultFullTPC;
-    double multPosTPC = fMultPosTPC;
-    double multNegTPC = fMultNegTPC;
+    multFullTPC = fMultFullTPC;
+    multPosTPC = fMultPosTPC;
+    multNegTPC = fMultNegTPC;
 
     TBits posIDsAfterRem(fUsedTrackPosIDs);
     TBits negIDsAfterRem(fUsedTrackNegIDs);
@@ -469,7 +496,6 @@ void AliHFQnVectorHandler::RemoveTracksFromQnTPC(vector<AliAODTrack*> trToRem, d
                 negIDsAfterRem.ResetBitNumber(TMath::Abs(trID));
         }
     }
-
     else if(fCalibType==kQnFrameworkCalib) {
 
         TString detTPCConfName[3] = {"TPC","TPCPosEta","TPCNegEta"};
@@ -533,7 +559,7 @@ void AliHFQnVectorHandler::RemoveTracksFromQnTPC(vector<AliAODTrack*> trToRem, d
                     double qxRecSub = (qxPlain*M[iDet] - qxToRem[iDet]) / (M[iDet]-multToRem[iDet]) - corrX;
                     double qyRecSub = (qyPlain*M[iDet] - qyToRem[iDet]) / (M[iDet]-multToRem[iDet]) - corrY;
 
-                    double qxTwist = -999., qyTwist = -999., Lbplus = 0., Lbminus = 0., qxTwistSub = -999., qyTwistSub = -999.;
+                    double qxTwist = -999., qyTwist = -999., Lbplus = 0., Lbminus = 0.;
                     //auto-correlation removal from twist step (if present)
                     theQnVectorCorr = dynamic_cast<AliQnCorrectionsQnVector*>(pQvecList->FindObject("twist")); //twist step for TPC
                     if (theQnVectorCorr && theQnVectorCorr->IsGoodQuality() && theQnVectorUncorr->GetN() > 0) {
@@ -593,6 +619,20 @@ void AliHFQnVectorHandler::RemoveTracksFromQnTPC(vector<AliAODTrack*> trToRem, d
                 }
             break;
         }
+    }
+}
+
+//________________________________________________________________
+void AliHFQnVectorHandler::EnablePhiDistrHistos() 
+{
+    fEnablePhiDistrHistos=true;
+    TString histonames[2] = {"TPCPosEta","TPCNegEta"};
+    for(int iHisto=0; iHisto<2; iHisto++) {
+        if(fPhiVsCentrTPC[iHisto]) {
+            delete fPhiVsCentrTPC[iHisto];
+            fPhiVsCentrTPC[iHisto]=nullptr;
+        }
+        fPhiVsCentrTPC[iHisto] = new TH2F(Form("fPhiVsCentrTPC%s",histonames[iHisto].Data()),";centrality (%);#varphi;Entries",10,0.,100.,180,0.,2*TMath::Pi());
     }
 }
 
@@ -809,11 +849,17 @@ void AliHFQnVectorHandler::ComputeQvecTPC()
         fQnVecPosTPC[iComp]  = 0.;
         fQnVecNegTPC[iComp]  = 0.;
     }
-    fMultPosTPC = 0., fMultFullTPC = 0., fMultPosTPC = 0.;
+    fMultPosTPC = 0., fMultFullTPC = 0., fMultNegTPC = 0.;
     fQnVecNormFullTPC = 1., fQnVecNormPosTPC  = 1., fQnVecNormNegTPC  = 1.;
     fUsedTrackPosIDs.ResetAllBits();
     fUsedTrackNegIDs.ResetAllBits();
     
+    //reset phi distributions
+    if(fEnablePhiDistrHistos) {
+        fPhiVsCentrTPC[0]->Reset();
+        fPhiVsCentrTPC[1]->Reset();
+    }
+
     int nTracks=fAODEvent->GetNumberOfTracks();
     for(int iTrack=0; iTrack<nTracks; iTrack++){
         AliAODTrack* track=dynamic_cast<AliAODTrack*>(fAODEvent->GetTrack(iTrack));
@@ -834,11 +880,15 @@ void AliHFQnVectorHandler::ComputeQvecTPC()
             fQnVecPosTPC[0] += qx;
             fQnVecPosTPC[1] += qy;
             fMultPosTPC     += 1;
+            if(fEnablePhiDistrHistos && fPhiVsCentrTPC[0])
+                fPhiVsCentrTPC[0]->Fill(fCentrality,phi);
         }
         else {
             fQnVecNegTPC[0] += qx;
             fQnVecNegTPC[1] += qy;
             fMultNegTPC     += 1;
+            if(fEnablePhiDistrHistos && fPhiVsCentrTPC[1])
+                fPhiVsCentrTPC[1]->Fill(fCentrality,phi);
         }
     }
 
@@ -920,11 +970,12 @@ void AliHFQnVectorHandler::ComputeQvecV0()
 
     int iCentBin = static_cast<int>(fCentrality)+1;
 
-    fQnVecV0A[0] = (fQnVecV0A[0] - fQx2mV0A[zvtxbin]->GetBinContent(iCentBin))/fQx2sV0A[zvtxbin]->GetBinContent(iCentBin);
-    fQnVecV0A[1] = (fQnVecV0A[1] - fQy2mV0A[zvtxbin]->GetBinContent(iCentBin))/fQy2sV0A[zvtxbin]->GetBinContent(iCentBin);
-    fQnVecV0C[0] = (fQnVecV0C[0] - fQx2mV0C[zvtxbin]->GetBinContent(iCentBin))/fQx2sV0C[zvtxbin]->GetBinContent(iCentBin);   
-    fQnVecV0C[1] = (fQnVecV0C[1] - fQy2mV0C[zvtxbin]->GetBinContent(iCentBin))/fQy2sV0C[zvtxbin]->GetBinContent(iCentBin);
-    
+    //only recentering and not width equalisation to preserve multiplicity dependence (needed for qn)
+    fQnVecV0A[0] = (fQnVecV0A[0] - fQx2mV0A[zvtxbin]->GetBinContent(iCentBin));///fQx2sV0A[zvtxbin]->GetBinContent(iCentBin);
+    fQnVecV0A[1] = (fQnVecV0A[1] - fQy2mV0A[zvtxbin]->GetBinContent(iCentBin));///fQy2sV0A[zvtxbin]->GetBinContent(iCentBin);
+    fQnVecV0C[0] = (fQnVecV0C[0] - fQx2mV0C[zvtxbin]->GetBinContent(iCentBin));///fQx2sV0C[zvtxbin]->GetBinContent(iCentBin);   
+    fQnVecV0C[1] = (fQnVecV0C[1] - fQy2mV0C[zvtxbin]->GetBinContent(iCentBin));///fQy2sV0C[zvtxbin]->GetBinContent(iCentBin);    
+
     fQnVecNormFullV0 = TMath::Sqrt(fQnVecFullV0[0]*fQnVecFullV0[0]+fQnVecFullV0[1]*fQnVecFullV0[1]);
     fQnVecNormV0A    = TMath::Sqrt(fQnVecV0A[0]*fQnVecV0A[0]+fQnVecV0A[1]*fQnVecV0A[1]);
     fQnVecNormV0C    = TMath::Sqrt(fQnVecV0C[0]*fQnVecV0C[0]+fQnVecV0C[1]*fQnVecV0C[1]);
@@ -939,6 +990,9 @@ bool AliHFQnVectorHandler::OpenInfoCalbration()
         fOADBFile = nullptr;
     }
 
+    if (!gGrid) {
+        TGrid::Connect("alien://");
+    }
     fOADBFile = TFile::Open(fOADBFileName.Data());
 
     if(!fOADBFile){

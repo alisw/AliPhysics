@@ -78,7 +78,7 @@ TChain* CreateChain(const char *xmlfile, const char *type="ESD")
    printf("***************************************\n");
    printf("    Getting chain of trees %s\n", treename.Data());
    printf("***************************************\n");
-   TAlienCollection *coll = TAlienCollection::Open(xmlfile);
+   TGridCollection *coll = gGrid->OpenCollection(xmlfile);
    if (!coll) {
       ::Error("CreateChain", "Cannot create an AliEn collection from %s", xmlfile);
       return NULL;

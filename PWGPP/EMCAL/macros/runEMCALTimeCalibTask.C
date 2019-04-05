@@ -206,7 +206,7 @@ void runEMCALTimeCalibTask(Int_t type=0, Bool_t isESD=kTRUE, Bool_t isPhysicsSel
 TChain *CreateChainFromCollection(const char* xmlfile, const char *treeName="esdTree")
 {
 // Create a chain from an alien collection.
-   TAlienCollection * myCollection  = TAlienCollection::Open(xmlfile);
+   TGridCollection * myCollection  = gGrid->OpenCollection(xmlfile);
 
    if (!myCollection) {
       ::Error("CreateChainSingle", "Cannot create an AliEn collection from %s", xmlfile) ;

@@ -4,6 +4,22 @@
 
 #pragma once
 
+// Used by the 'AddMultipleTasks.C' macro
+#if defined(ROOT6_MACROLOAD_WORKAROUND) && !defined(ALIANALYSISTASKFEMTONU_H)
+#define ALIANALYSISTASKFEMTONU_H
+
+class AliAnalysisTask;
+// class Macrocfg;
+
+
+class AliAnalysisTaskFemtoNu {
+public:
+  static AliAnalysisTask* BuildForMacro(TString,TString,TString,TString);
+};
+
+
+#endif
+
 #ifndef ALIANALYSISTASKFEMTONU_H
 #define ALIANALYSISTASKFEMTONU_H
 
@@ -95,6 +111,28 @@ public:
 
   };
 
+  struct MacroCfg : public TNamed {
+
+    TString macro,
+            auto_directory,
+            output_filename,
+            output_container,
+            subwagon_array,
+            subwagon_type;
+
+    MacroCfg();
+    virtual ~MacroCfg();
+
+
+    TString GetFilename()
+      {
+        return (output_container == "")
+             ? output_filename
+             : TString::Format("%s:%s", output_filename.Data(), output_container.Data());
+      }
+
+  };
+
 public:
 
   /// Default parameters initialize all values to zero (NULL) and empty strings
@@ -146,6 +184,9 @@ public:
 
   /// The output-slot number of the AliFemtoResultStorage object
   static const unsigned RESULT_STORAGE_OUTPUT_SLOT;
+
+  // used to subvert ROOT6 macro loading bug
+  static AliAnalysisTask* BuildForMacro(TString,TString,TString,TString);
 
 protected:
 
