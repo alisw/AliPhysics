@@ -1,7 +1,7 @@
 
 // For: Net Lambda fluctuation analysis via traditional method
 // By: Ejiro Naomi Umaka Apr 2018
-// Updated Apr 4
+// Updated Apr 5
 
 
 #include "AliAnalysisManager.h"
@@ -812,8 +812,8 @@ void AliAnalysisTaskNetLambdaTrad::UserExec(Option_t *)
         negpion  = fPIDResponse->NumberOfSigmasTPC( esdnTrack, AliPID::kPion );
         //----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
         
-        if(TMath::Abs(peta) > 1) continue;
-        if(TMath::Abs(neta) > 1) continue;
+        if(TMath::Abs(peta) > 0.8) continue;
+        if(TMath::Abs(neta) > 0.8) continue;
         if(cosPointingAngle < 0.99) continue;
         if(dcaDaughters > 0.8) continue;
         if(v0Radius < 5.0) continue;
