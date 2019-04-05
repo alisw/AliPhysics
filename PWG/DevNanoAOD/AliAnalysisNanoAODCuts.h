@@ -4,6 +4,7 @@
 #include "AliAnalysisCuts.h"
 #include "AliNanoAODCustomSetter.h"
 #include "AliAnalysisUtils.h"
+#include "AliEventCuts.h"
 #include <map>
 
 class AliEventCuts;
@@ -51,26 +52,15 @@ public:
   virtual Bool_t IsSelected(TObject* obj); // TObject should be an AliAODEvent
   virtual Bool_t IsSelected(TList*   /* list */ ) { return kTRUE; }
   
-  Float_t GetVertexRange() { return fVertexRange; }
-  void SetVertexRange (Float_t var) { fVertexRange = var;}
-  
   void SetMultiplicityRange(AliAnalysisCuts* cutObject, Int_t minMultiplicity, Int_t maxMultiplicity) { fTrackCut = cutObject; fMinMultiplicity = minMultiplicity; fMaxMultiplicity = maxMultiplicity; }
-  
-  AliAnalysisUtils* GetAnalysisUtils() { return fAnalysisUtils; }
-  void SetCutPileUpMV(Bool_t flag) { fCutPileUpMV = flag; }
-  
-  void SetAliEventCuts(AliEventCuts* cuts) { fEventCuts = cuts; }
+  AliEventCuts& GetAliEventCuts() { return fEventCuts; }
   
 private:
-  Float_t fVertexRange; // Only events with primary vertex within this range are accepted (whatever the vertex)
-  
   AliAnalysisCuts* fTrackCut; // track cut object for multiplicity cut
   Int_t fMinMultiplicity;   // minimum number of tracks to accept this event
   Int_t fMaxMultiplicity;   // maximal number of tracks to accept this event
   
-  AliAnalysisUtils* fAnalysisUtils; // AnalysisUtils object
-  Bool_t fCutPileUpMV;      // Use fAnalysisUtils->IsPileUpMV to remove pile up. Customize by using GetAnalysisUtils()
-  AliEventCuts* fEventCuts; // AliEventCut object for Run 2
+  AliEventCuts fEventCuts; // AliEventCut object for Run 2
   
   ClassDef(AliAnalysisNanoAODEventCuts, 3); // event cut object for nano AOD filtering
 };
@@ -78,7 +68,7 @@ private:
 class AliNanoAODSimpleSetter : public AliNanoAODCustomSetter
 {
 public:
-  AliNanoAODSimpleSetter() : fInitialized(kFALSE) {;}
+  AliNanoAODSimpleSetter() : fInitialized(kFALSE), fMultMap() {;}
   virtual ~AliNanoAODSimpleSetter(){;}
 
   virtual void SetNanoAODHeader(const AliAODEvent * event   , AliNanoAODHeader * head ,TString varListHeader  );

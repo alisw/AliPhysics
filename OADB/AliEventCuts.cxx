@@ -875,6 +875,7 @@ bool AliEventCuts::GoodPrimaryAODVertex(AliVEvent* ev) {
   if (!aodEv) {
     ::Fatal("AliEventCuts::GoodPrimaryAODVertex","Passed argument is not an AOD event.");
   }
+  if (!aodEv->GetPrimaryVertex()) return kFALSE;
   if (aodEv->GetPrimaryVertex()->GetType()!=AliAODVertex::kPrimary) return kFALSE;
   const AliAODVertex *vtPrim = aodEv->GetPrimaryVertex();
   const AliAODVertex *vtTPC  = aodEv->GetPrimaryVertexTPC();

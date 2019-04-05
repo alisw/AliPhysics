@@ -19,6 +19,9 @@ class AliNanoAODCustomSetter;
 
 #include "AliAnalysisTaskSE.h"
 #include "AliNanoAODReplicator.h"
+#include "AliNanoAODTrack.h"
+#include "AliPID.h"
+#include <list>
 
 class AliAnalysisTaskNanoAODFilter : public AliAnalysisTaskSE {
 public:
@@ -37,14 +40,12 @@ public:
   void  SetMCMode (Int_t var) { fMCMode = var;}
   void AddFilteredAOD(const char* aodfilename, const char* title);
 
-  AliAnalysisCuts *           GetEvtCuts() { return fEvtCuts; }
-  AliAnalysisCuts *           GetTrkCuts() { return fTrkCuts; }
-
-  void  SetEvtCuts     (AliAnalysisCuts * var           ) { fEvtCuts = var;}
+  void  AddEvtCuts     (AliAnalysisCuts * var           ) { fEvtCuts.push_back(var);}
   void  SetTrkCuts     (AliAnalysisCuts * var           ) { fTrkCuts = var;}
   void  AddSetter      (AliNanoAODCustomSetter * var    ) { fReplicator->AddCustomSetter(var); }
 
   void  SetVarListTrack(TString var                     ) { fReplicator->SetVarListTrack(var);}
+  void  AddPIDField(AliNanoAODTrack::ENanoPIDResponse response, AliPID::EParticleType particle);
   void  SetVarListHeader(TString var                    ) { fReplicator->SetVarListHeader(var);}
   void  SetVarFiredTriggerClasses (TString var          ) { fReplicator->SetVarListHeaderTC(var);}
   void  SaveVzero(Bool_t var)                             { fReplicator->SetSaveVzero(var); }
@@ -61,11 +62,12 @@ protected:
   Int_t fMCMode; // true if processing monte carlo. if > 1 not all MC particles are filtered
   AliNanoAODReplicator* fReplicator; // replicator
 
-  AliAnalysisCuts * fEvtCuts; // Event cuts
-  AliAnalysisCuts * fTrkCuts; // Track cuts
-  AliAnalysisCuts * fV0Cuts; // V0 cuts
-  AliAnalysisCuts * fCascadeCuts; // Cascade cuts
+  std::list<AliAnalysisCuts*> fEvtCuts; // Event cuts
+  AliAnalysisCuts* fTrkCuts; // Track cuts
+  AliAnalysisCuts* fV0Cuts; // V0 cuts
+  AliAnalysisCuts* fCascadeCuts; // Cascade cuts
 
+  TList* fQAOutput;     //  Output list for cut objects and QA
   Bool_t fSaveCutsFlag; // If true, the event and track cuts are saved to disk. Can only be set in the constructor.
 
   TString fInputArrayName; // name of TObjectArray of Tracks
@@ -74,7 +76,7 @@ protected:
   AliAnalysisTaskNanoAODFilter(const AliAnalysisTaskNanoAODFilter&); // not implemented
   AliAnalysisTaskNanoAODFilter& operator=(const AliAnalysisTaskNanoAODFilter&); // not implemented
 
-  ClassDef(AliAnalysisTaskNanoAODFilter, 7); // Nano AOD Filter Task
+  ClassDef(AliAnalysisTaskNanoAODFilter, 8); // Nano AOD Filter Task
 };
 
 #endif
