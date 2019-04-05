@@ -30,7 +30,7 @@ void filterAOD_Tracks()
   // Fields to store
   // event level
   // Note: vertices are kept by default
-  task->SetVarListHeader("OfflineTrigger,MagField,MultSelection.RefMult08");
+  task->SetVarListHeader("OfflineTrigger,MagField,MultSelection.RefMult08,cstTOFBunchCrossing");
   // track level
   task->SetVarListTrack("pt,theta,phi");
 

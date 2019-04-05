@@ -187,8 +187,11 @@ void AliNanoAODSimpleSetter::SetNanoAODHeader(const AliAODEvent* event, AliNanoA
 void AliNanoAODSimpleSetter::SetNanoAODTrack (const AliAODTrack * aodTrack, AliNanoAODTrack * nanoTrack) 
 {
   // Set custom variables in the special track
+
+  // PID
+  
   // Initialize PID track mapping
-  static Bool_t bPIDFilled = AliNanoAODTrack::InitPIDIndex();
+  static const Bool_t bPIDFilled = AliNanoAODTrack::InitPIDIndex();
   
   // PID variables
   if (bPIDFilled)
@@ -219,4 +222,9 @@ void AliNanoAODSimpleSetter::SetNanoAODTrack (const AliAODTrack * aodTrack, AliN
       }
     }
   }
+
+  // additional fields which are to be moved to AliNanoAODTrack
+  static const Int_t cstTOFBunchCrossing = AliNanoAODTrackMapping::GetInstance()->GetVarIndex("cstTOFBunchCrossing");
+  if (cstTOFBunchCrossing != -1)
+    nanoTrack->SetVar(cstTOFBunchCrossing, aodTrack->GetTOFBunchCrossing());
 }

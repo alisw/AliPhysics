@@ -74,6 +74,22 @@ public:
     kSigmaTOF = 1,
     kLAST = 2
   };
+  
+  enum {
+    kNanoCharge = 0, // (0 -> negative | 1 -> positive)
+    kNanoHasTOFPID,
+    kNanoClusterITS0,
+    kNanoClusterITS1,
+    kNanoClusterITS2,
+    kNanoClusterITS3,
+    kNanoClusterITS4,
+    kNanoClusterITS5,
+  };
+  
+  UInt_t GetNanoFlags() const { return fNanoFlags; }
+  virtual Short_t  Charge() const { return TESTBIT(fNanoFlags, kNanoCharge) ? 1 : -1; }
+  Bool_t HasTOFPID() { return TESTBIT(fNanoFlags, kNanoHasTOFPID); }
+  virtual Bool_t HasPointOnITSLayer(Int_t i) const { return TESTBIT(fNanoFlags, i+kNanoClusterITS0); }
 
   using TObject::ClassName;
   
@@ -119,7 +135,6 @@ public:
   Double_t Y(Double_t m) const;
   
   virtual Double_t Eta() const { return -TMath::Log(TMath::Tan(0.5 * Theta())); }
-  virtual Short_t  Charge() const {return fCharge; } // FIXME: leave like this? Create shorts array?
   virtual Double_t GetSign() const {return fCharge; }
   virtual Bool_t   PropagateToDCA(const AliVVertex *vtx, 
 				  Double_t b, Double_t maxd, Double_t dz[2], Double_t covar[3]);
@@ -268,7 +283,7 @@ public:
   Double_t  GetTPCmomentum()     const { return GetVar(AliNanoAODTrackMapping::GetInstance()->GetTPCmomentum()); }
   Double_t  GetTPCTgl()          const { return GetVar(AliNanoAODTrackMapping::GetInstance()->GetTPCTgl());      } // FIXME: what is this?
   Double_t  GetTOFsignal()       const { return GetVar(AliNanoAODTrackMapping::GetInstance()->GetTOFsignal());   } 
-  Double_t  GetIntegratedLength() const { AliFatal("Not implemented"); return 0;} // TODO: implement track lenght
+  Double_t  GetIntegratedLength() const { return GetVar(AliNanoAODTrackMapping::GetInstance()->GetintegratedLenght()); } 
   void      SetIntegratedLength(Double_t/* l*/) {AliFatal("Not implemented");}
   Double_t  GetTOFsignalTunedOnData() const { return GetVar(AliNanoAODTrackMapping::GetInstance()->GetTOFsignalTuned());}
   void      SetTOFsignalTunedOnData(Double_t signal) {fVars[AliNanoAODTrackMapping::GetInstance()->GetTOFsignalTuned()] = signal;}
@@ -287,7 +302,7 @@ public:
   //  Bool_t GetOuterHmpPxPyPz(Double_t *p) const;
   //  Int_t     GetHMPIDcluIdx()     const;// FIXME: array of ints?
   //   void      GetITSdEdxSamples(Double_t s[4]) const; // FIXME: To be reimplemented. Use one kin var for each sample
-  Int_t   GetTOFBunchCrossing(Double_t /*b=0*/, Bool_t /*tpcPIDonly=kFALSE*/) const {AliFatal("Not Implemented"); return 0;};
+  Int_t   GetTOFBunchCrossing(Double_t /*b=0*/, Bool_t /*tpcPIDonly=kFALSE*/) const;
   UChar_t   GetTRDncls(Int_t /*layer*/)                           const {AliFatal("Not Implemented"); return 0;}; 
   Double_t  GetTRDslice(Int_t /*plane*/, Int_t /*slice*/)         const {AliFatal("Not Implemented"); return 0;};
   Double_t  GetTRDmomentum(Int_t /*plane*/, Double_t */*sp*/=0x0) const {AliFatal("Not Implemented"); return 0;};
@@ -390,6 +405,7 @@ private :
   Int_t         fLabel;             // track label, points back to MC track
   TRef          fProdVertex;        // vertex of origin
   Short_t       fCharge; // track charge
+  UInt_t        fNanoFlags;  // nano flags
   
   static Int_t fgPIDIndexes[ENanoPIDResponse::kLAST][AliPID::kSPECIESC];
   
