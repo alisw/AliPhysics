@@ -448,7 +448,7 @@ Bool_t AliSelectorFindableHyperTriton3Body::Process(Long64_t entry) {
         fHistSameTrackCheck[3]->Fill(sameAll - 0.5);
       }
       fClonesVector.clear();
-      if (lIsGoodTrack[3] && lIsGoodPID[3] && lIsGoodCharge && lIsGoodCandidate fClonesVector.push_back(fCand);
+      if (lIsGoodTrack[3] && lIsGoodPID[3] && lIsGoodCharge && lIsGoodCandidate) fClonesVector.push_back(fCand);
     }
   // }
 
