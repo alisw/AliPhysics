@@ -659,7 +659,8 @@ void CharmHadronVnFitSystematics(string cfgFileName, string refFileName, int ref
     TCanvas* cSyst = new TCanvas("cSyst","",1920,1080);
     DivideCanvas(cSyst,nPtBins);
     for(unsigned int iPt=0; iPt<nPtBins; iPt++) {
-        hFrameSyst[iPt] = new TH2F(Form("hFrameSyst_Pt%d",iPt),Form("%0.1f < #it{p}_{T} < %0.1f GeV/#it{c};;Mean #pm RMS #it{v}_{%d}-#it{v}_{%d}^{ref}{%s}",PtMin[iPt],PtMax[iPt],harmonic,harmonic,v2measname.Data()),4,0.5,4.5,1,-0.1,0.1); 
+        double statunc = gVnRef->GetErrorYlow(iPt);
+        hFrameSyst[iPt] = new TH2F(Form("hFrameSyst_Pt%d",iPt),Form("%0.1f < #it{p}_{T} < %0.1f GeV/#it{c};;Mean #pm RMS #it{v}_{%d}-#it{v}_{%d}^{ref}{%s}",PtMin[iPt],PtMax[iPt],harmonic,harmonic,v2measname.Data()),4,0.5,4.5,1,-1.5*statunc,1.5*statunc); 
         hFrameSyst[iPt]->SetDirectory(0);
         hFrameSyst[iPt]->GetXaxis()->SetBinLabel(1,"Simultaneus Fit");
         hFrameSyst[iPt]->GetXaxis()->SetBinLabel(2,"Free Sigma");
