@@ -19,6 +19,44 @@
  *
  * @ingroup pwglf_forward_flow
  */
+
+AliAnalysisDataContainer* makeWeightContainer(TString nua_file, TString ref_nua_file, TString containerName){
+  AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
+  AliAnalysisDataContainer* weights;
+  if (nua_file.Contains("alien:") || ref_nua_file.Contains("alien:")) TGrid::Connect("alien:");
+  TFile* file;
+  if (nua_file.Contains(containerName))
+    file = TFile::Open(nua_file.Data(), "READ");
+  else
+    file = TFile::Open(ref_nua_file.Data(), "READ");
+
+  if(!file) { printf("E-AddTaskForwardFlowRun2: Input file with differential weights not found!\n"); return NULL; }
+
+  TList* weights_list = new TList();
+  weights_list->SetName("nuaWeights");
+  
+  TH3F* nuacentral = new TH3F();
+  TH3F* nuaforward = new TH3F();
+
+  file->GetObject("nuacentral", nuacentral);
+  nuacentral->SetDirectory(0);
+  nuacentral->SetNameTitle("nuacentral","nuacentral");
+
+  file->GetObject("nuaforward", nuaforward);
+  nuaforward->SetDirectory(0);
+  nuaforward->SetNameTitle("nuaforward","nuaforward");
+  file->Close();
+
+  weights_list->Add(nuacentral);
+  weights_list->Add(nuaforward);
+
+  weights = mgr->CreateContainer(containerName,TList::Class(), AliAnalysisManager::kInputContainer,Form("%s", mgr->GetCommonFileName()));
+  weights->SetData(weights_list);
+  return weights;
+}
+
+
+
 AliAnalysisTaskSE* AddTaskForwardFlowRun2( bool doNUA, bool makeFakeHoles, 
                                           TString nua_file, TString ref_nua_file, 
                                           UShort_t nua_mode, 
@@ -115,130 +153,47 @@ AliAnalysisTaskSE* AddTaskForwardFlowRun2( bool doNUA, bool makeFakeHoles,
 
   mgr->ConnectInput(task, 0, mgr->GetCommonInputContainer());
 
-
-  //if (false){
   if (task->fSettings.doNUA){
 
     TObjArray* taskContainers = mgr->GetContainers();
     AliAnalysisDataContainer* weights;
+    
     if (nua_file.Contains("ITS") || ref_nua_file.Contains("ITS")) 
     {
       weights = (AliAnalysisDataContainer*) taskContainers->FindObject("ITSclusters");
     
       if (!weights){
-        std::cout << "I-AddTaskForwardFlowRun2: Weights not defined - reading now. " << std::endl;
-        if (nua_file.Contains("alien:") || ref_nua_file.Contains("alien:")) TGrid::Connect("alien:");
-        TFile* file;
-        if (nua_file.Contains("ITS"))
-          file = TFile::Open(nua_file.Data(), "READ");
-        else
-          file = TFile::Open(ref_nua_file.Data(), "READ");
-
-        if(!file) { printf("E-AddTaskForwardFlowRun2: Input file with differential weights not found!\n"); return NULL; }
-
-        TList* weights_list = new TList();
-        weights_list->SetName("nuaWeights");
+        std::cout << "I-AddTaskForwardFlowRun2: ITS weights not defined - reading now. " << std::endl;
         
-        TH3F* nuacentral = new TH3F();
-        TH3F* nuaforward = new TH3F();
-
-        file->GetObject("nuacentral", nuacentral);
-        nuacentral->SetDirectory(0);
-        nuacentral->SetNameTitle("nuacentral","nuacentral");
-
-        file->GetObject("nuaforward", nuaforward);
-        nuaforward->SetDirectory(0);
-        nuaforward->SetNameTitle("nuaforward","nuaforward");
-        file->Close();
-
-        weights_list->Add(nuacentral);
-        weights_list->Add(nuaforward);
-
-        weights = mgr->CreateContainer("ITSclusters",TList::Class(), AliAnalysisManager::kInputContainer,Form("%s", mgr->GetCommonFileName()));
-        weights->SetData(weights_list);
+        weights = makeWeightContainer(nua_file,ref_nua_file,"ITSclusters");
       }
       if (nua_file.Contains("ITS")) task->ConnectInput(2,weights);
       if (ref_nua_file.Contains("ITS")) task->ConnectInput(3,weights);
     }
-    else if  (nua_file.Contains("SPD")||ref_nua_file.Contains("SPD")) 
+    if  (nua_file.Contains("SPD")||ref_nua_file.Contains("SPD")) 
     {
       weights = (AliAnalysisDataContainer*) taskContainers->FindObject("SPDtracklets");
     
       if (!weights){
-        std::cout << "I-AddTaskForwardFlowRun2: Weights not defined - reading now. " << std::endl;
-        if (nua_file.Contains("alien:") || ref_nua_file.Contains("alien:")) TGrid::Connect("alien:");
-        TFile* file;
-        if (nua_file.Contains("SPD"))
-          file = TFile::Open(nua_file.Data(), "READ");
-        else
-          file = TFile::Open(ref_nua_file.Data(), "READ");
-
-        if(!file) { printf("E-AddTaskForwardFlowRun2: Input file with differential weights not found!\n"); return NULL; }
-
-        TList* weights_list = new TList();
-        weights_list->SetName("nuaWeights");
-        
-        TH3F* nuacentral = new TH3F();
-        TH3F* nuaforward = new TH3F();
-
-        file->GetObject("nuacentral", nuacentral);
-        nuacentral->SetDirectory(0);
-        nuacentral->SetNameTitle("nuacentral","nuacentral");
-
-        file->GetObject("nuaforward", nuaforward);
-        nuaforward->SetDirectory(0);
-        nuaforward->SetNameTitle("nuaforward","nuaforward");
-        file->Close();
-
-        weights_list->Add(nuacentral);
-        weights_list->Add(nuaforward);
-
-        weights = mgr->CreateContainer("SPDtracklets",TList::Class(), AliAnalysisManager::kInputContainer,Form("%s", mgr->GetCommonFileName()));
-        weights->SetData(weights_list);
+        std::cout << "I-AddTaskForwardFlowRun2: SPD weights not defined - reading now. " << std::endl;
+        weights = makeWeightContainer(nua_file,ref_nua_file,"SPDtracklets");
       }
       if (nua_file.Contains("SPD")) task->ConnectInput(2,weights);
       if (ref_nua_file.Contains("SPD")) task->ConnectInput(3,weights);
     }
-    else if  (nua_file.Contains("global")||ref_nua_file.Contains("global")) 
+
+    if  (nua_file.Contains("global")||ref_nua_file.Contains("global")) 
     {
       weights = (AliAnalysisDataContainer*) taskContainers->FindObject("globaltracks");
     
       if (!weights){
-        std::cout << "I-AddTaskForwardFlowRun2: Weights not defined - reading now. " << std::endl;
-        if (nua_file.Contains("alien:") || ref_nua_file.Contains("alien:")) TGrid::Connect("alien:");
-        TFile* file;
-        if (nua_file.Contains("global"))
-          file = TFile::Open(nua_file.Data(), "READ");
-        else
-          file = TFile::Open(ref_nua_file.Data(), "READ");
-
-        if(!file) { printf("E-AddTaskForwardFlowRun2: Input file with differential weights not found!\n"); return NULL; }
-
-        TList* weights_list = new TList();
-        weights_list->SetName("nuaWeights");
-        
-        TH3F* nuacentral = new TH3F();
-        TH3F* nuaforward = new TH3F();
-
-        file->GetObject("nuacentral", nuacentral);
-        nuacentral->SetDirectory(0);
-        nuacentral->SetNameTitle("nuacentral","nuacentral");
-
-        file->GetObject("nuaforward", nuaforward);
-        nuaforward->SetDirectory(0);
-        nuaforward->SetNameTitle("nuaforward","nuaforward");
-        file->Close();
-
-        weights_list->Add(nuacentral);
-        weights_list->Add(nuaforward);
-
-        weights = mgr->CreateContainer("globaltracks",TList::Class(), AliAnalysisManager::kInputContainer,Form("%s", mgr->GetCommonFileName()));
-        weights->SetData(weights_list);
+        std::cout << "I-AddTaskForwardFlowRun2: Global tracks weights not defined - reading now. " << std::endl;
+        weights = makeWeightContainer(nua_file,ref_nua_file,"globaltracks");
       }  
       if (nua_file.Contains("global")) task->ConnectInput(2,weights);
       if (ref_nua_file.Contains("global")) task->ConnectInput(3,weights);
     }
-    else printf("E-AddTaskForwardFlowRun2: Invalid central detector for NUA weights!\n");
+    //else printf("E-AddTaskForwardFlowRun2: Invalid central detector for NUA weights!\n");
   }
   return task;
 }

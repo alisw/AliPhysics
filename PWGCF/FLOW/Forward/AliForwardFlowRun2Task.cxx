@@ -123,7 +123,7 @@ void AliForwardFlowRun2Task::UserCreateOutputObjects()
 
     fEventList->Add(new TH1D("Centrality","Centrality",fSettings.fCentBins,0,100));
     fEventList->Add(new TH1D("Vertex","Vertex",fSettings.fNZvtxBins,fSettings.fZVtxAcceptanceLowEdge,fSettings.fZVtxAcceptanceUpEdge));
-    fEventList->Add(new TH1D("FMDHits","FMDHits",100,0,10));
+    //fEventList->Add(new TH1D("FMDHits","FMDHits",100,0,10));
     fEventList->Add(new TH2F("dNdeta","dNdeta",200 /*fSettings.fNDiffEtaBins*/,fSettings.fEtaLowEdge,fSettings.fEtaUpEdge,fSettings.fCentBins,0,100));
 
     fAnalysisList->Add(new TList());
@@ -131,7 +131,7 @@ void AliForwardFlowRun2Task::UserCreateOutputObjects()
     fAnalysisList->Add(new TList());
     static_cast<TList*>(fAnalysisList->At(0))->SetName("Reference");
     static_cast<TList*>(fAnalysisList->At(1))->SetName("Differential");
-    static_cast<TList*>(fAnalysisList->At(2))->SetName("AutoCorrection");
+    //static_cast<TList*>(fAnalysisList->At(2))->SetName("AutoCorrection");
 
     fOutputList->Add(fAnalysisList);
     fOutputList->Add(fEventList);
@@ -145,8 +145,8 @@ void AliForwardFlowRun2Task::UserCreateOutputObjects()
     Double_t xmin[5] = {0,fSettings.fZVtxAcceptanceLowEdge, fSettings.fEtaLowEdge, 0, 0};
     Double_t xmax[5] = {10,fSettings.fZVtxAcceptanceUpEdge, fSettings.fEtaUpEdge, 100, static_cast<Double_t>(fSettings.kW4Four+1)};
 
-    static_cast<TList*>(fAnalysisList->At(2))->Add(new THnD("fQcorrfactor", "fQcorrfactor", dimensions, rbins, xmin, xmax)); //(eta, n)
-    static_cast<TList*>(fAnalysisList->At(2))->Add(new THnD("fpcorrfactor","fpcorrfactor", dimensions, dbins, xmin, xmax)); //(eta, n)
+    //static_cast<TList*>(fAnalysisList->At(2))->Add(new THnD("fQcorrfactor", "fQcorrfactor", dimensions, rbins, xmin, xmax)); //(eta, n)
+    //static_cast<TList*>(fAnalysisList->At(2))->Add(new THnD("fpcorrfactor","fpcorrfactor", dimensions, dbins, xmin, xmax)); //(eta, n)
     Int_t ptnmax =  (fSettings.doPt ? 10 : 0);
 
     // create a THn for each harmonic
