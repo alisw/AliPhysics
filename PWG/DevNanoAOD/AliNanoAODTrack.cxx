@@ -33,7 +33,8 @@
 
 ClassImp(AliNanoAODTrack)
 
-
+Int_t AliNanoAODTrack::fgPIDIndexes[ENanoPIDResponse::kLAST][AliPID::kSPECIESC] = { -1 };
+  
 //______________________________________________________________________________
 AliNanoAODTrack::AliNanoAODTrack() : 
   AliVTrack(),
@@ -560,4 +561,18 @@ void  AliNanoAODTrack::Clear(Option_t * /*opt*/) {
   // empty storage
   fVars.clear();
   fNVars = 0;
+}
+
+Bool_t AliNanoAODTrack::InitPIDIndex()
+{
+  Bool_t anyFilled = kFALSE;
+  for (Int_t r = 0; r<kLAST; r++) {
+    for (Int_t p = 0; p<AliPID::kSPECIESC; p++) {
+      Int_t index = AliNanoAODTrackMapping::GetInstance()->GetVarIndex(GetPIDVarName((ENanoPIDResponse) r, (AliPID::EParticleType) p));
+      fgPIDIndexes[r][p] = index;
+      if (index != -1)
+        anyFilled = kTRUE;
+    }
+  }
+  return anyFilled;
 }

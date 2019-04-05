@@ -69,7 +69,12 @@ class AliESDTrack;
 class AliNanoAODTrack : public AliVTrack, public AliNanoAODStorage {
 
 public:
-  
+  enum ENanoPIDResponse {
+    kSigmaTPC = 0,
+    kSigmaTOF = 1,
+    kLAST = 2
+  };
+
   using TObject::ClassName;
   
   AliNanoAODTrack();
@@ -369,6 +374,10 @@ void SetChi2perNDF(Double_t chi2perNDF) { fVars[AliNanoAODTrackMapping::GetInsta
   virtual Int_t    GetNcls(Int_t /*idet*/) const {AliFatal("Not Implemented"); return 0;}; 
   virtual const Double_t *PID() const {AliFatal("Not Implemented"); return 0;}; 
 
+  // PID access functions
+  static Int_t GetPIDIndex(ENanoPIDResponse r, AliPID::EParticleType p)  { return fgPIDIndexes[r][p]; }
+  static const char* GetPIDVarName(ENanoPIDResponse r, AliPID::EParticleType p) {  return Form("cstPID.%d.%s", r, AliPID::ParticleShortName(p)); }
+  static Bool_t InitPIDIndex();
 
 
 private :
@@ -381,6 +390,9 @@ private :
   Int_t         fLabel;             // track label, points back to MC track
   TRef          fProdVertex;        // vertex of origin
   Short_t       fCharge; // track charge
+  
+  static Int_t fgPIDIndexes[ENanoPIDResponse::kLAST][AliPID::kSPECIESC];
+  
   const AliAODEvent* fAODEvent;     //! 
 
   ClassDef(AliNanoAODTrack, 1);

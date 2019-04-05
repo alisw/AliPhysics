@@ -65,14 +65,6 @@ void  AliAnalysisTaskNanoSimple::UserExec(Option_t */*option*/)
   if (!fInputEvent)
     return;
   
-  // NOTE Access to custom variables. Use static here for caching of index
-  static const Int_t kcstNSigmaTPCPi  = AliNanoAODTrackMapping::GetInstance()->GetVarIndex("cstNSigmaTPCPi");
-  static const Int_t kcstNSigmaTPCKa  = AliNanoAODTrackMapping::GetInstance()->GetVarIndex("cstNSigmaTPCKa");
-  static const Int_t kcstNSigmaTPCPr  = AliNanoAODTrackMapping::GetInstance()->GetVarIndex("cstNSigmaTPCPr");
-  static const Int_t kcstNSigmaTOFPi  = AliNanoAODTrackMapping::GetInstance()->GetVarIndex("cstNSigmaTOFPi");
-  static const Int_t kcstNSigmaTOFKa  = AliNanoAODTrackMapping::GetInstance()->GetVarIndex("cstNSigmaTOFKa");
-  static const Int_t kcstNSigmaTOFPr  = AliNanoAODTrackMapping::GetInstance()->GetVarIndex("cstNSigmaTOFPr");
-
   const AliVVertex* vertex = fInputEvent->GetPrimaryVertex();
   if (vertex->GetNContributors() < 1)
     return;
@@ -92,7 +84,11 @@ void  AliAnalysisTaskNanoSimple::UserExec(Option_t */*option*/)
     
     // for custom variables, cast to nano AOD track
     AliNanoAODTrack* nanoTrack = dynamic_cast<AliNanoAODTrack*>(track);
-    if (nanoTrack && kcstNSigmaTPCPr != -1)
+    // NOTE Access to custom variables. Use static here for caching of index
+    static Bool_t bPIDAvailable = AliNanoAODTrack::InitPIDIndex();
+    static const Int_t kcstNSigmaTPCPr  = AliNanoAODTrack::GetPIDIndex(AliNanoAODTrack::kSigmaTPC, AliPID::kProton);
+    static const Int_t kcstNSigmaTOFPr  = AliNanoAODTrack::GetPIDIndex(AliNanoAODTrack::kSigmaTOF, AliPID::kProton);
+    if (nanoTrack && bPIDAvailable)
       Printf("TPC_sigma_proton = %f  TOF_sigma_proton = %f", nanoTrack->GetVar(kcstNSigmaTPCPr), nanoTrack->GetVar(kcstNSigmaTOFPr));
   }
   
