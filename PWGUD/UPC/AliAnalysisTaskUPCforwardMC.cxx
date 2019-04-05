@@ -1261,7 +1261,7 @@ void AliAnalysisTaskUPCforwardMC::UserExec(Option_t *)
        -
        */
     for(Int_t iRapidityBin = 0; iRapidityBin < 8; iRapidityBin++){
-        if( (possibleJPsiCopy.Rapidity() + 4) < 1.5*(iRapidityBin + 1)/8 ){
+        if( (possibleJPsiCopy.Rapidity() + 4.) < 1.5*((Double_t)iRapidityBin + 1.)/8. ){
           fThetaDistribOfPositiveMuonRestFrameJPsiRapidityBinH[iRapidityBin]->Fill(cosThetaMuonsRestFrame[0]);
           /* - New part: filling all possible histograms!
              -
@@ -1302,7 +1302,7 @@ void AliAnalysisTaskUPCforwardMC::UserExec(Option_t *)
        - NEW: the following code is for 10 rapidity bins...
        */
     for(Int_t iRapidityBin = 0; iRapidityBin < 10; iRapidityBin++){
-        if( (possibleJPsiCopy.Rapidity() + 4) < 1.5*(iRapidityBin + 1)/10 ){
+        if( (possibleJPsiCopy.Rapidity() + 4.) < 1.5*((Double_t)iRapidityBin + 1.)/10. ){
           fCosThetaHelicityFrameJPsiTenRapidityBinsH[iRapidityBin]->Fill( CosThetaHelicityFrame( muonsCopy2[0],
                                                                                                  muonsCopy2[1],
                                                                                                  possibleJPsiCopy
@@ -1523,7 +1523,7 @@ void AliAnalysisTaskUPCforwardMC::ProcessMCParticles(AliMCEvent* fMCEventArg)
                      -
                      */
                   for(Int_t iRapidityBin = 0; iRapidityBin < 8; iRapidityBin++){
-                      if( (possibleJPsiMC.Rapidity() + 4) < 1.5*(iRapidityBin + 1)/8 ){
+                      if( (possibleJPsiMC.Rapidity() + 4.) < 1.5*((Double_t)iRapidityBin + 1.)/8. ){
                         fMCthetaDistribOfPositiveMuonRestFrameJPsiGeneratedTruthRapidityBinH[iRapidityBin]->Fill(cosThetaMuonsRestFrameMC[0]);
                         /* - New part: filling all possible histograms!
                            -
@@ -1556,7 +1556,7 @@ void AliAnalysisTaskUPCforwardMC::ProcessMCParticles(AliMCEvent* fMCEventArg)
                      -
                    */
                   for(Int_t iRapidityBin = 0; iRapidityBin < 10; iRapidityBin++){
-                      if( (possibleJPsiMC.Rapidity() + 4) < 1.5*(iRapidityBin + 1)/10 ){
+                      if( (possibleJPsiMC.Rapidity() + 4.) < 1.5*((Double_t)iRapidityBin + 1.)/10. ){
                         fMCCosThetaHelicityFrameJPsiTenRapidityBinsH[iRapidityBin]->Fill( CosThetaHelicityFrame( muonsMCcopy[0],
                                                                                                                  muonsMCcopy[1],
                                                                                                                  possibleJPsiMC
@@ -1617,7 +1617,7 @@ void AliAnalysisTaskUPCforwardMC::ProcessMCParticles(AliMCEvent* fMCEventArg)
                      -
                      */
                   for(Int_t iRapidityBin = 0; iRapidityBin < 8; iRapidityBin++){
-                      if( (possibleJPsiMC.Rapidity() + 4) < 1.5*(iRapidityBin + 1)/8 ){
+                      if( (possibleJPsiMC.Rapidity() + 4.) < 1.5*((Double_t)iRapidityBin + 1.)/8. ){
                         fMCthetaDistribOfPositiveMuonRestFrameJPsiGeneratedTruthRapidityBinH[iRapidityBin]->Fill(cosThetaMuonsRestFrameMC[1]);
                         /* - New part: filling all possible histograms!
                            -
@@ -1650,7 +1650,7 @@ void AliAnalysisTaskUPCforwardMC::ProcessMCParticles(AliMCEvent* fMCEventArg)
                      -
                    */
                   for(Int_t iRapidityBin = 0; iRapidityBin < 10; iRapidityBin++){
-                      if( (possibleJPsiMC.Rapidity() + 4) < 1.5*(iRapidityBin + 1)/10 ){
+                      if( (possibleJPsiMC.Rapidity() + 4.) < 1.5*((Double_t)iRapidityBin + 1.)/10. ){
                         fMCCosThetaHelicityFrameJPsiTenRapidityBinsH[iRapidityBin]->Fill( CosThetaHelicityFrame( muonsMCcopy[1],
                                                                                                                  muonsMCcopy[0],
                                                                                                                  possibleJPsiMC
