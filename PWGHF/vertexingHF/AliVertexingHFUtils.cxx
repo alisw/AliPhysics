@@ -710,6 +710,28 @@ Bool_t AliVertexingHFUtils::IsTrackFromBeauty(AliAODTrack* tr, TClonesArray* arr
   return kFALSE;
 }
 //____________________________________________________________________________
+Bool_t AliVertexingHFUtils::IsTrackFromHadronDecay(Int_t pdgMoth, AliAODTrack* tr, TClonesArray* arrayMC){
+  /// check if an AOD track originated from a charm hadron decay
+  Int_t absLabel=TMath::Abs(tr->GetLabel());
+  Int_t absPdgMoth=TMath::Abs(pdgMoth);
+  AliAODMCParticle* mcPart=dynamic_cast<AliAODMCParticle*>(arrayMC->At(absLabel));
+  Int_t mother = mcPart->GetMother();
+  Int_t istep = 0;
+  while (mother >0 ){
+    istep++;
+    AliAODMCParticle* mcGranma = dynamic_cast<AliAODMCParticle*>(arrayMC->At(mother));
+    if (mcGranma){
+      Int_t abspdgGranma = TMath::Abs(mcGranma->GetPdgCode());
+      if (abspdgGranma==absPdgMoth) return kTRUE;
+      mother = mcGranma->GetMother();
+    }else{
+      printf("AliVertexingHFUtils::IsTrackFromHadronDecay: Failed casting the mother particle!");
+      break;
+    }
+  }
+  return kFALSE;
+}
+//____________________________________________________________________________
 Double_t AliVertexingHFUtils::GetBeautyMotherPt(TClonesArray* arrayMC, AliAODMCParticle *mcPart){
   /// get the pt of the beauty hadron (feed-down case), returns negative value for prompt
 

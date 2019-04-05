@@ -148,6 +148,7 @@ class AliVertexingHFUtils : public TObject{
   static Int_t CheckOrigin(AliMCEvent* mcEvent, AliMCParticle *mcPart, Bool_t searchUpToQuark=kTRUE);
   static Bool_t IsTrackFromCharm(AliAODTrack* tr, TClonesArray* arrayMC);
   static Bool_t IsTrackFromBeauty(AliAODTrack* tr, TClonesArray* arrayMC);
+  static Bool_t IsTrackFromHadronDecay(Int_t pdgMoth, AliAODTrack* tr, TClonesArray* arrayMC);
   static Double_t GetBeautyMotherPt(TClonesArray* arrayMC, AliAODMCParticle *mcPart);
   static Int_t CheckD0Decay(AliMCEvent* mcEvent, Int_t label, Int_t* arrayDauLab);
   static Int_t CheckD0Decay(TClonesArray* arrayMC, AliAODMCParticle *mcPart, Int_t* arrayDauLab);
