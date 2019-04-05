@@ -17,7 +17,7 @@ AliForwardSettings::AliForwardSettings() :
   fnoSamples(10),
   fNRefEtaBins(1),
   fNDiffEtaBins(50),
-  fCentBins(10),
+  fCentBins(100),
   fFlowFlags(),
   nuacentral(),
   nuaforward(),

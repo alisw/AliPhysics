@@ -127,6 +127,7 @@ AliForwardTaskValidation::AliForwardTaskValidation(const char *name)
   //fEventCuts.SetupRun2PbPb();
   //fEventCuts.SetManualMode();// = true;
   // Enable mulivertex pileup cuts
+  // fEventCuts.SetCentralityEstimators("V0A","CL0");
   fEventCuts.OverrideAutomaticTriggerSelection(AliVEvent::kINT7);
   fEventCuts.fPileUpCutMV = true;
 }
@@ -279,6 +280,9 @@ outlist->Add(this->fQA_event_discard_flow_MC);
 }
 
 void AliForwardTaskValidation::UserCreateOutputObjects() {
+  fEventCuts.SetCentralityEstimators((std::string)this->fSettings.centrality_estimator,"CL0");
+
+
   // Stop right here if there are no Validators to work with
   if (this->fEventValidators.size() == 0 && this->fEventValidatorsMC.size() == 0) {
     AliFatal("No event validators specified!");

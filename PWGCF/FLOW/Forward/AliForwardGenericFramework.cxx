@@ -32,10 +32,10 @@ AliForwardGenericFramework::AliForwardGenericFramework()
   fpvector = new THnD("pvector", "pvector", dimensions, dbins, xmin, xmax);
   fqvector = new THnD("qvector", "qvector", dimensions, dbins, xmin, xmax);
 
-  fAutoRef = TH1F("fAutoRef","fAutoRef", fSettings.fNRefEtaBins, fSettings.fEtaLowEdge, fSettings.fEtaUpEdge);
-  fAutoDiff = TH1F("fAutoDiff","fAutoDiff", fSettings.fNDiffEtaBins, fSettings.fEtaLowEdge, fSettings.fEtaUpEdge);
-  fAutoRef.SetDirectory(0);
-  fAutoDiff.SetDirectory(0);
+  // fAutoRef = TH1F("fAutoRef","fAutoRef", fSettings.fNRefEtaBins, fSettings.fEtaLowEdge, fSettings.fEtaUpEdge);
+  // fAutoDiff = TH1F("fAutoDiff","fAutoDiff", fSettings.fNDiffEtaBins, fSettings.fEtaLowEdge, fSettings.fEtaUpEdge);
+  // fAutoRef.SetDirectory(0);
+  // fAutoDiff.SetDirectory(0);
 }
 
 
@@ -148,22 +148,22 @@ void AliForwardGenericFramework::CumulantsAccumulate(TH2D& dNdetadphi, TList* ou
           if (!(fSettings.etagap) && doRefFlow){
             fqvector->Fill(re, realPart);
             fqvector->Fill(im, imPart);
-            if (weight > 1.00001 ){
-              fAutoDiff.Fill(eta, TMath::Gamma(weight+1)/TMath::Gamma(weight-1));
-            }
+            // if (weight > 1.00001 ){
+            //   fAutoDiff.Fill(eta, TMath::Gamma(weight+1)/TMath::Gamma(weight-1));
+            // }
           }
         }
 
         if (doRefFlow){
-          if ((fSettings.etagap) && fabs(eta)<=fSettings.gap && fabs(eta)>3.5) continue;
+          if ((fSettings.etagap) && (fabs(eta)<=fSettings.gap || fabs(eta)>3.5)) continue;// && 
 
           Double_t req[4] = {0.5, static_cast<Double_t>(n), static_cast<Double_t>(p), refEta};
           Double_t imq[4] = {-0.5, static_cast<Double_t>(n), static_cast<Double_t>(p), refEta};
           fQvector->Fill(req, realPart);
           fQvector->Fill(imq, imPart);
-          if (!(fSettings.etagap) && weight > 1.00001){
-            fAutoRef.Fill(eta, TMath::Gamma(weight+1)/TMath::Gamma(weight-1));
-          }
+          // if (!(fSettings.etagap) && weight > 1.00001){
+          //   fAutoRef.Fill(eta, TMath::Gamma(weight+1)/TMath::Gamma(weight-1));
+          // }
         }
       } // end p loop
     } // End of n loop
@@ -178,9 +178,9 @@ void AliForwardGenericFramework::CumulantsAccumulate(TH2D& dNdetadphi, TList* ou
 void AliForwardGenericFramework::saveEvent(TList* outputList, double cent, double zvertex,UInt_t r, Int_t ptn){
   TList* analysisList = static_cast<TList*>(outputList->FindObject("Analysis"));
   TList* refList = static_cast<TList*>(analysisList->FindObject("Reference"));
-  TList* autoList = static_cast<TList*>(analysisList->FindObject("AutoCorrection"));
-  THnD*  fQcorrfactor = static_cast<THnD*>(autoList->FindObject("fQcorrfactor"));
-  THnD*  fpcorrfactor = static_cast<THnD*>(autoList->FindObject("fpcorrfactor"));
+  // TList* autoList = static_cast<TList*>(analysisList->FindObject("AutoCorrection"));
+  // THnD*  fQcorrfactor = static_cast<THnD*>(autoList->FindObject("fQcorrfactor"));
+  // THnD*  fpcorrfactor = static_cast<THnD*>(autoList->FindObject("fpcorrfactor"));
   TList* difList = static_cast<TList*>(analysisList->FindObject("Differential"));
 
   THnD* cumuRef = 0;
@@ -215,11 +215,11 @@ void AliForwardGenericFramework::saveEvent(TList* outputList, double cent, doubl
         // REFERENCE FLOW --------------------------------------------------------------------------------
         if (prevRefEtaBin){ // only used once
 
-          if (!(fSettings.etagap)){
-            Double_t z[5] = {noSamples, zvertex, refEtaA, cent, Double_t(fSettings.kW2Two)};
+          // if (!(fSettings.etagap)){
+          //   Double_t z[5] = {noSamples, zvertex, refEtaA, cent, Double_t(fSettings.kW2Two)};
+          //   fQcorrfactor->Fill(z, fAutoRef.GetBinContent(etaBin));
+          // }
 
-            fQcorrfactor->Fill(z, fAutoRef.GetBinContent(etaBin));
-          }
           // two-particle cumulant
           double two = Two(n, -n, refEtaBinA, refEtaBinB).Re();
           double dn2 = Two(0,0, refEtaBinA, refEtaBinB).Re();
@@ -243,11 +243,11 @@ void AliForwardGenericFramework::saveEvent(TList* outputList, double cent, doubl
           prevRefEtaBin = kFALSE;
         }
         // DIFFERENTIAL FLOW -----------------------------------------------------------------------------
-        if (n == 2 && (!(fSettings.etagap))){
-          Double_t k[5] = {noSamples, zvertex, eta, cent, Double_t(fSettings.kW2Two)};
+        // if (n == 2 && (!(fSettings.etagap))){
+        //   Double_t k[5] = {noSamples, zvertex, eta, cent, Double_t(fSettings.kW2Two)};
+        //   fpcorrfactor->Fill(k, fAutoDiff.GetBinContent(etaBin));
+        // }
 
-          fpcorrfactor->Fill(k, fAutoDiff.GetBinContent(etaBin));
-        }
         // two-particle cumulant
         double twodiff = TwoDiff(n, -n, refEtaBinB, etaBin).Re();
         double dn2diff = TwoDiff(0,0, refEtaBinB, etaBin).Re();
