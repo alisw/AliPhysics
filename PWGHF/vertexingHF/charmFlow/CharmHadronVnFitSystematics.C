@@ -307,7 +307,7 @@ void CharmHadronVnFitSystematics(string cfgFileName, string refFileName, int ref
 
         float averagePtUnc = -1.;  
         int bkgfunc = (meson==AliAnalysisTaskSECharmHadronvn::kDstartoKpipi) ? AliHFInvMassFitter::kPowEx : AliHFInvMassFitter::kExpo;
-        float averagePt = GetAveragePtInRange(averagePtUnc, sMassVsPtVsPhiVsCentrVsqn, qnmin, qnmax, PtMin[iPt], PtMax[iPt], BkgFunc, SgnFunc, useRefl, hMCRefl[iPt], SoverR, reflopt, meson, massD);
+        float averagePt = GetAveragePtInRange(averagePtUnc, sMassVsPtVsPhiVsCentrVsqn, qnmin, qnmax, PtMin[iPt], PtMax[iPt], bkgfunc, SgnFunc, useRefl, hMCRefl[iPt], SoverR, reflopt, meson, massD);
 
         //get inv-mass histos
         ApplySelection(sMassVsPtVsPhiVsCentrVsqn,1,PtMin[iPt],PtMax[iPt]);
@@ -392,6 +392,7 @@ void CharmHadronVnFitSystematics(string cfgFileName, string refFileName, int ref
                                     AliHFInvMassFitter *massfitterFixSigma[2];
                                     AliHFInvMassFitter *massfitterSimFit[2];
                                     double rawYieldsFreeSigma[2], rawYieldsBinCount[2], rawYieldsFixSigma[2], rawYieldsSimFit[2], rawYieldsFreeSigmaUnc[2], rawYieldsBinCountUnc[2], rawYieldsFixSigmaUnc[2], rawYieldsSimFitUnc[2];
+                                    int fitFreeSigmaStatus[2], fitFixSigmaStatus[2];
                                     ROOT::Fit::FitResult resultSimFit;
 
                                     for(int iDeltaPhi=0; iDeltaPhi<2; iDeltaPhi++) {
@@ -408,12 +409,20 @@ void CharmHadronVnFitSystematics(string cfgFileName, string refFileName, int ref
                                             massfitterFreeSigma[iDeltaPhi]->SetTemplateReflections(hMCRefl[iPt],reflopt,MassMin[iMassMin],MassMax[iMassMax]);
                                             massfitterFreeSigma[iDeltaPhi]->SetFixReflOverS(SoverR);
                                         }
-                                        massfitterFreeSigma[iDeltaPhi]->MassFitter(false);
-                                        rawYieldsFreeSigma[iDeltaPhi] = massfitterFreeSigma[iDeltaPhi]->GetRawYield();
-                                        rawYieldsFreeSigmaUnc[iDeltaPhi] = massfitterFreeSigma[iDeltaPhi]->GetRawYieldError();                                        
+                                        fitFreeSigmaStatus[iDeltaPhi] = massfitterFreeSigma[iDeltaPhi]->MassFitter(false);
+                                        if(fitFreeSigmaStatus[iDeltaPhi] == 1) {
+                                            rawYieldsFreeSigma[iDeltaPhi] = massfitterFreeSigma[iDeltaPhi]->GetRawYield();
+                                            rawYieldsFreeSigmaUnc[iDeltaPhi] = massfitterFreeSigma[iDeltaPhi]->GetRawYieldError(); 
+                                        }else {
+                                            rawYieldsFreeSigma[iDeltaPhi] = 1.;
+                                            rawYieldsFreeSigmaUnc[iDeltaPhi] = 1.; 
+                                        }                                       
 
                                         //bin counting 
-                                        rawYieldsBinCount[iDeltaPhi] = massfitterFreeSigma[iDeltaPhi]->GetRawYieldBinCounting(rawYieldsBinCountUnc[iDeltaPhi],3.5,0,pdgcode); 
+                                        if(fitFreeSigmaStatus[iDeltaPhi] == 1)
+                                            rawYieldsBinCount[iDeltaPhi] = massfitterFreeSigma[iDeltaPhi]->GetRawYieldBinCounting(rawYieldsBinCountUnc[iDeltaPhi],3,1,pdgcode); 
+                                        else
+                                            rawYieldsBinCount[iDeltaPhi] = 1.;
 
                                         //fix sigma
                                         massfitterFixSigma[iDeltaPhi] = new AliHFInvMassFitter(hInvMassDeltaPhiToFit[iDeltaPhi],MassMin[iMassMin],MassMax[iMassMax],BkgFunc,SgnFunc);
@@ -426,10 +435,14 @@ void CharmHadronVnFitSystematics(string cfgFileName, string refFileName, int ref
                                             massfitterFixSigma[iDeltaPhi]->SetTemplateReflections(hMCRefl[iPt],reflopt,MassMin[iMassMin],MassMax[iMassMax]);
                                             massfitterFixSigma[iDeltaPhi]->SetFixReflOverS(SoverR);
                                         }
-                                        massfitterFixSigma[iDeltaPhi]->MassFitter(false);
-                                        rawYieldsFixSigma[iDeltaPhi] = massfitterFixSigma[iDeltaPhi]->GetRawYield();
-                                        rawYieldsFixSigmaUnc[iDeltaPhi] = massfitterFixSigma[iDeltaPhi]->GetRawYieldError();                                        
-                                    
+                                        fitFixSigmaStatus[iDeltaPhi] = massfitterFixSigma[iDeltaPhi]->MassFitter(false);
+                                        if(fitFixSigmaStatus[iDeltaPhi] == 1) {
+                                            rawYieldsFixSigma[iDeltaPhi] = massfitterFixSigma[iDeltaPhi]->GetRawYield();
+                                            rawYieldsFixSigmaUnc[iDeltaPhi] = massfitterFixSigma[iDeltaPhi]->GetRawYieldError();                                        
+                                        }else {
+                                            rawYieldsFixSigma[iDeltaPhi] = 1.;
+                                            rawYieldsFixSigmaUnc[iDeltaPhi] = 1.;   
+                                        }
                                         //simultaneus fit
                                         massfitterSimFit[iDeltaPhi] = new AliHFInvMassFitter(hInvMassDeltaPhiToFit[iDeltaPhi],MassMin[iMassMin],MassMax[iMassMax],BkgFunc,SgnFunc);
                                         if(meson==AliAnalysisTaskSECharmHadronvn::kDstoKKpi)
@@ -439,51 +452,53 @@ void CharmHadronVnFitSystematics(string cfgFileName, string refFileName, int ref
                                             massfitterSimFit[iDeltaPhi]->SetFixReflOverS(SoverR);
                                         }
                                     }
-                                    vector<unsigned int> commonpars = {static_cast<unsigned int>(massfitterFreeSigma[0]->GetBackgroundFullRangeFunc()->GetNpar())+1,static_cast<unsigned int>(massfitterFreeSigma[0]->GetBackgroundFullRangeFunc()->GetNpar())+2};
 
-                                    resultSimFit = AliVertexingHFUtils::DoInPlaneOutOfPlaneSimultaneusFit(massfitterSimFit[0], massfitterSimFit[1], hInvMassDeltaPhiToFit[0], hInvMassDeltaPhiToFit[1], MassMin[iMassMin], MassMax[iMassMax], massD, commonpars);
-                                    for(int iDeltaPhi=0; iDeltaPhi<2; iDeltaPhi++) {            
-                                        rawYieldsSimFit[iDeltaPhi] = massfitterSimFit[iDeltaPhi]->GetSignalFunc()->GetParameter(0) / hInvMassDeltaPhiToFit[0]->GetBinWidth(1);
-                                        rawYieldsSimFitUnc[iDeltaPhi] = massfitterSimFit[iDeltaPhi]->GetSignalFunc()->GetParError(0) / hInvMassDeltaPhiToFit[0]->GetBinWidth(1);
-                                    }
+                                    if(fitFreeSigmaStatus[0] == 1 && fitFreeSigmaStatus[1] == 1 && fitFixSigmaStatus[0] == 1 && fitFixSigmaStatus[1] == 1) {
+                                        vector<unsigned int> commonpars = {static_cast<unsigned int>(massfitterFreeSigma[0]->GetBackgroundFullRangeFunc()->GetNpar())+1,static_cast<unsigned int>(massfitterFreeSigma[0]->GetBackgroundFullRangeFunc()->GetNpar())+2};
+                                        resultSimFit = AliVertexingHFUtils::DoInPlaneOutOfPlaneSimultaneusFit(massfitterSimFit[0], massfitterSimFit[1], hInvMassDeltaPhiToFit[0], hInvMassDeltaPhiToFit[1], MassMin[iMassMin], MassMax[iMassMax], massD, commonpars);
+                                        for(int iDeltaPhi=0; iDeltaPhi<2; iDeltaPhi++) {            
+                                            rawYieldsSimFit[iDeltaPhi] = massfitterSimFit[iDeltaPhi]->GetSignalFunc()->GetParameter(0) / hInvMassDeltaPhiToFit[0]->GetBinWidth(1);
+                                            rawYieldsSimFitUnc[iDeltaPhi] = massfitterSimFit[iDeltaPhi]->GetSignalFunc()->GetParError(0) / hInvMassDeltaPhiToFit[0]->GetBinWidth(1);
+                                        }
 
-                                    double vnFreeSigma=0., vnBinCount=0., vnFixSigma=0., vnSimFit=0., vnFreeSigmaUnc=0., vnBinCountUnc=0., vnFixSigmaUnc=0., vnSimFitUnc=0.;
-                                    vnFreeSigma = ComputeEPvn(vnFreeSigmaUnc,rawYieldsFreeSigma[0],rawYieldsFreeSigmaUnc[0],rawYieldsFreeSigma[1],rawYieldsFreeSigmaUnc[1],resol);
-                                    vnBinCount = ComputeEPvn(vnBinCountUnc,rawYieldsBinCount[0],rawYieldsBinCountUnc[0],rawYieldsBinCount[1],rawYieldsBinCountUnc[1],resol);
-                                    vnFixSigma = ComputeEPvn(vnFixSigmaUnc,rawYieldsFixSigma[0],rawYieldsFixSigmaUnc[0],rawYieldsFixSigma[1],rawYieldsFixSigmaUnc[1],resol);
-                                    int posRawYieldPar = massfitterFreeSigma[0]->GetBackgroundFullRangeFunc()->GetNpar();
-                                    int nTotPars = massfitterFreeSigma[0]->GetMassFunc()->GetNpar();
-                                    vnSimFit = ComputeEPvn(vnSimFitUnc,rawYieldsSimFit[0],rawYieldsSimFitUnc[0],rawYieldsSimFit[1],rawYieldsSimFitUnc[1],resol,resultSimFit.Correlation(posRawYieldPar,posRawYieldPar+nTotPars)); 
-                                
-                                    float array4ntupleFreeSigma[29] = {(float)PtMin[iPt],(float)PtMax[iPt],(float)averagePt,(float)averagePtUnc,(float)kFreeSigma,(float)hInvMassDeltaPhiToFit[0]->GetBinWidth(1),(float)MassMin[iMassMin],(float)MassMax[iMassMax],(float)SgnFunc,(float)BkgFunc,(float)rawYieldsFreeSigma[0],(float)rawYieldsFreeSigma[1],(float)rawYieldsFreeSigmaUnc[0],(float)rawYieldsFreeSigmaUnc[1],(float)massfitterFreeSigma[0]->GetMean(),(float)massfitterFreeSigma[1]->GetMean(),(float)massfitterFreeSigma[0]->GetMeanUncertainty(),(float)massfitterFreeSigma[1]->GetMeanUncertainty(),(float)massfitterFreeSigma[0]->GetSigma(),(float)massfitterFreeSigma[1]->GetSigma(),(float)massfitterFreeSigma[0]->GetSigmaUncertainty(),(float)massfitterFreeSigma[1]->GetSigmaUncertainty(),(float)massfitterFreeSigma[0]->GetReducedChiSquare(),(float)massfitterFreeSigma[1]->GetReducedChiSquare(),(float)vnFreeSigma,(float)vnFreeSigmaUnc,(float)qnmin,(float)qnmax,(float)iTrial};
-                                    float array4ntupleFixSigma[29] = {(float)PtMin[iPt],(float)PtMax[iPt],(float)averagePt,(float)averagePtUnc,(float)kFixSigma,(float)hInvMassDeltaPhiToFit[0]->GetBinWidth(1),(float)MassMin[iMassMin],(float)MassMax[iMassMax],(float)SgnFunc,(float)BkgFunc,(float)rawYieldsFixSigma[0],(float)rawYieldsFixSigma[1],(float)rawYieldsFixSigmaUnc[0],(float)rawYieldsFixSigmaUnc[1],(float)massfitterFixSigma[0]->GetMean(),(float)massfitterFixSigma[1]->GetMean(),(float)massfitterFixSigma[0]->GetMeanUncertainty(),(float)massfitterFixSigma[1]->GetMeanUncertainty(),(float)massfitterInt.GetSigma(),(float)massfitterInt.GetSigma(),(float)massfitterInt.GetSigmaUncertainty(),(float)massfitterInt.GetSigmaUncertainty(),(float)massfitterFixSigma[0]->GetReducedChiSquare(),(float)massfitterFixSigma[1]->GetReducedChiSquare(),(float)vnFixSigma,(float)vnFixSigmaUnc,(float)qnmin,(float)qnmax,(float)iTrial};
-                                    float array4ntupleSimFit[29] = {(float)PtMin[iPt],(float)PtMax[iPt],(float)averagePt,(float)averagePtUnc,(float)kSimFit,(float)hInvMassDeltaPhiToFit[0]->GetBinWidth(1),(float)MassMin[iMassMin],(float)MassMax[iMassMax],(float)SgnFunc,(float)BkgFunc,(float)rawYieldsSimFit[0],(float)rawYieldsSimFit[1],(float)rawYieldsSimFitUnc[0],(float)rawYieldsSimFitUnc[1],(float)massfitterSimFit[0]->GetSignalFunc()->GetParameter(1),(float)massfitterSimFit[0]->GetSignalFunc()->GetParameter(1),(float)massfitterSimFit[1]->GetSignalFunc()->GetParError(1),(float)massfitterSimFit[1]->GetSignalFunc()->GetParError(1),(float)massfitterSimFit[0]->GetSignalFunc()->GetParameter(2),(float)massfitterSimFit[0]->GetSignalFunc()->GetParameter(2),(float)massfitterSimFit[1]->GetSignalFunc()->GetParError(2),(float)massfitterSimFit[1]->GetSignalFunc()->GetParError(2),(float)resultSimFit.MinFcnValue()/resultSimFit.Ndf(),(float)resultSimFit.MinFcnValue()/resultSimFit.Ndf(),(float)vnSimFit,(float)vnSimFitUnc,(float)qnmin,(float)qnmax,(float)iTrial};
-                                    float array4ntupleBinCount[29] = {(float)PtMin[iPt],(float)PtMax[iPt],(float)averagePt,(float)averagePtUnc,(float)kBinCount,(float)hInvMassDeltaPhiToFit[0]->GetBinWidth(1),(float)MassMin[iMassMin],(float)MassMax[iMassMax],(float)SgnFunc,(float)BkgFunc,(float)rawYieldsBinCount[0],(float)rawYieldsBinCount[1],(float)rawYieldsBinCountUnc[0],(float)rawYieldsBinCountUnc[1],-1.,-1.,-1.,-1.,-1.,-1.,-1.,-1.,-1.,-1.,(float)vnBinCount,(float)vnBinCountUnc,(float)qnmin,(float)qnmax,(float)iTrial};
+                                        double vnFreeSigma=0., vnBinCount=0., vnFixSigma=0., vnSimFit=0., vnFreeSigmaUnc=0., vnBinCountUnc=0., vnFixSigmaUnc=0., vnSimFitUnc=0.;
+                                        vnFreeSigma = ComputeEPvn(vnFreeSigmaUnc,rawYieldsFreeSigma[0],rawYieldsFreeSigmaUnc[0],rawYieldsFreeSigma[1],rawYieldsFreeSigmaUnc[1],resol);
+                                        vnBinCount = ComputeEPvn(vnBinCountUnc,rawYieldsBinCount[0],rawYieldsBinCountUnc[0],rawYieldsBinCount[1],rawYieldsBinCountUnc[1],resol);
+                                        vnFixSigma = ComputeEPvn(vnFixSigmaUnc,rawYieldsFixSigma[0],rawYieldsFixSigmaUnc[0],rawYieldsFixSigma[1],rawYieldsFixSigmaUnc[1],resol);
+                                        int posRawYieldPar = massfitterFreeSigma[0]->GetBackgroundFullRangeFunc()->GetNpar();
+                                        int nTotPars = massfitterFreeSigma[0]->GetMassFunc()->GetNpar();
+                                        vnSimFit = ComputeEPvn(vnSimFitUnc,rawYieldsSimFit[0],rawYieldsSimFitUnc[0],rawYieldsSimFit[1],rawYieldsSimFitUnc[1],resol,resultSimFit.Correlation(posRawYieldPar,posRawYieldPar+nTotPars)); 
                                     
-                                    multiTrialNtuple->Fill(array4ntupleFreeSigma);
-                                    multiTrialNtuple->Fill(array4ntupleFixSigma);
-                                    multiTrialNtuple->Fill(array4ntupleSimFit);
-                                    multiTrialNtuple->Fill(array4ntupleBinCount);
+                                        float array4ntupleFreeSigma[29] = {(float)PtMin[iPt],(float)PtMax[iPt],(float)averagePt,(float)averagePtUnc,(float)kFreeSigma,(float)hInvMassDeltaPhiToFit[0]->GetBinWidth(1),(float)MassMin[iMassMin],(float)MassMax[iMassMax],(float)SgnFunc,(float)BkgFunc,(float)rawYieldsFreeSigma[0],(float)rawYieldsFreeSigma[1],(float)rawYieldsFreeSigmaUnc[0],(float)rawYieldsFreeSigmaUnc[1],(float)massfitterFreeSigma[0]->GetMean(),(float)massfitterFreeSigma[1]->GetMean(),(float)massfitterFreeSigma[0]->GetMeanUncertainty(),(float)massfitterFreeSigma[1]->GetMeanUncertainty(),(float)massfitterFreeSigma[0]->GetSigma(),(float)massfitterFreeSigma[1]->GetSigma(),(float)massfitterFreeSigma[0]->GetSigmaUncertainty(),(float)massfitterFreeSigma[1]->GetSigmaUncertainty(),(float)massfitterFreeSigma[0]->GetReducedChiSquare(),(float)massfitterFreeSigma[1]->GetReducedChiSquare(),(float)vnFreeSigma,(float)vnFreeSigmaUnc,(float)qnmin,(float)qnmax,(float)iTrial};
+                                        float array4ntupleFixSigma[29] = {(float)PtMin[iPt],(float)PtMax[iPt],(float)averagePt,(float)averagePtUnc,(float)kFixSigma,(float)hInvMassDeltaPhiToFit[0]->GetBinWidth(1),(float)MassMin[iMassMin],(float)MassMax[iMassMax],(float)SgnFunc,(float)BkgFunc,(float)rawYieldsFixSigma[0],(float)rawYieldsFixSigma[1],(float)rawYieldsFixSigmaUnc[0],(float)rawYieldsFixSigmaUnc[1],(float)massfitterFixSigma[0]->GetMean(),(float)massfitterFixSigma[1]->GetMean(),(float)massfitterFixSigma[0]->GetMeanUncertainty(),(float)massfitterFixSigma[1]->GetMeanUncertainty(),(float)massfitterInt.GetSigma(),(float)massfitterInt.GetSigma(),(float)massfitterInt.GetSigmaUncertainty(),(float)massfitterInt.GetSigmaUncertainty(),(float)massfitterFixSigma[0]->GetReducedChiSquare(),(float)massfitterFixSigma[1]->GetReducedChiSquare(),(float)vnFixSigma,(float)vnFixSigmaUnc,(float)qnmin,(float)qnmax,(float)iTrial};
+                                        float array4ntupleSimFit[29] = {(float)PtMin[iPt],(float)PtMax[iPt],(float)averagePt,(float)averagePtUnc,(float)kSimFit,(float)hInvMassDeltaPhiToFit[0]->GetBinWidth(1),(float)MassMin[iMassMin],(float)MassMax[iMassMax],(float)SgnFunc,(float)BkgFunc,(float)rawYieldsSimFit[0],(float)rawYieldsSimFit[1],(float)rawYieldsSimFitUnc[0],(float)rawYieldsSimFitUnc[1],(float)massfitterSimFit[0]->GetSignalFunc()->GetParameter(1),(float)massfitterSimFit[0]->GetSignalFunc()->GetParameter(1),(float)massfitterSimFit[1]->GetSignalFunc()->GetParError(1),(float)massfitterSimFit[1]->GetSignalFunc()->GetParError(1),(float)massfitterSimFit[0]->GetSignalFunc()->GetParameter(2),(float)massfitterSimFit[0]->GetSignalFunc()->GetParameter(2),(float)massfitterSimFit[1]->GetSignalFunc()->GetParError(2),(float)massfitterSimFit[1]->GetSignalFunc()->GetParError(2),(float)resultSimFit.MinFcnValue()/resultSimFit.Ndf(),(float)resultSimFit.MinFcnValue()/resultSimFit.Ndf(),(float)vnSimFit,(float)vnSimFitUnc,(float)qnmin,(float)qnmax,(float)iTrial};
+                                        float array4ntupleBinCount[29] = {(float)PtMin[iPt],(float)PtMax[iPt],(float)averagePt,(float)averagePtUnc,(float)kBinCount,(float)hInvMassDeltaPhiToFit[0]->GetBinWidth(1),(float)MassMin[iMassMin],(float)MassMax[iMassMax],(float)SgnFunc,(float)BkgFunc,(float)rawYieldsBinCount[0],(float)rawYieldsBinCount[1],(float)rawYieldsBinCountUnc[0],(float)rawYieldsBinCountUnc[1],-1.,-1.,-1.,-1.,-1.,-1.,-1.,-1.,-1.,-1.,(float)vnBinCount,(float)vnBinCountUnc,(float)qnmin,(float)qnmax,(float)iTrial};
+                                        
+                                        multiTrialNtuple->Fill(array4ntupleFreeSigma);
+                                        multiTrialNtuple->Fill(array4ntupleFixSigma);
+                                        multiTrialNtuple->Fill(array4ntupleSimFit);
+                                        multiTrialNtuple->Fill(array4ntupleBinCount);
 
-                                    if(massfitterFreeSigma[0]->GetReducedChiSquare()<maxRedChi2 && massfitterFreeSigma[1]->GetReducedChiSquare()<maxRedChi2) {
-                                        hVnResFreeSigma[iPt]->Fill(vnFreeSigma-vnRef);
-                                        gVnVsTrialFreeSigma[iPt]->SetPoint(iTrial,iTrial,vnFreeSigma);
-                                        gVnVsTrialFreeSigma[iPt]->SetPointError(iTrial,0.,0.,vnFreeSigmaUnc,vnFreeSigmaUnc);
-                                    }
-                                    if(massfitterFixSigma[0]->GetReducedChiSquare()<maxRedChi2 && massfitterFixSigma[1]->GetReducedChiSquare()<maxRedChi2) {
-                                        hVnResFixSigma[iPt]->Fill(vnFixSigma-vnRef);
-                                        gVnVsTrialFixSigma[iPt]->SetPoint(iTrial,iTrial,vnFixSigma);
-                                        gVnVsTrialFixSigma[iPt]->SetPointError(iTrial,0.,0.,vnFixSigmaUnc,vnFixSigmaUnc);
-                                    }
-                                    if(massfitterFreeSigma[0]->GetReducedChiSquare()<maxRedChi2 && massfitterFreeSigma[1]->GetReducedChiSquare()<maxRedChi2) {
-                                        hVnResBinCounting[iPt]->Fill(vnBinCount-vnRef);
-                                        gVnVsTrialBinCounting[iPt]->SetPoint(iTrial,iTrial,vnBinCount);
-                                        gVnVsTrialBinCounting[iPt]->SetPointError(iTrial,0.,0.,vnBinCountUnc,vnBinCountUnc);
-                                    }
-                                    if(resultSimFit.MinFcnValue()/resultSimFit.Ndf()<maxRedChi2) {
-                                        hVnResSimFit[iPt]->Fill(vnSimFit-vnRef);
-                                        gVnVsTrialSimFit[iPt]->SetPoint(iTrial,iTrial,vnSimFit);
-                                        gVnVsTrialSimFit[iPt]->SetPointError(iTrial,0.,0.,vnSimFitUnc,vnSimFitUnc);
+                                        if(massfitterFreeSigma[0]->GetReducedChiSquare()<maxRedChi2 && massfitterFreeSigma[1]->GetReducedChiSquare()<maxRedChi2) {
+                                            hVnResFreeSigma[iPt]->Fill(vnFreeSigma-vnRef);
+                                            gVnVsTrialFreeSigma[iPt]->SetPoint(iTrial,iTrial,vnFreeSigma);
+                                            gVnVsTrialFreeSigma[iPt]->SetPointError(iTrial,0.,0.,vnFreeSigmaUnc,vnFreeSigmaUnc);
+                                        }
+                                        if(massfitterFixSigma[0]->GetReducedChiSquare()<maxRedChi2 && massfitterFixSigma[1]->GetReducedChiSquare()<maxRedChi2) {
+                                            hVnResFixSigma[iPt]->Fill(vnFixSigma-vnRef);
+                                            gVnVsTrialFixSigma[iPt]->SetPoint(iTrial,iTrial,vnFixSigma);
+                                            gVnVsTrialFixSigma[iPt]->SetPointError(iTrial,0.,0.,vnFixSigmaUnc,vnFixSigmaUnc);
+                                        }
+                                        if(massfitterFreeSigma[0]->GetReducedChiSquare()<maxRedChi2 && massfitterFreeSigma[1]->GetReducedChiSquare()<maxRedChi2) {
+                                            hVnResBinCounting[iPt]->Fill(vnBinCount-vnRef);
+                                            gVnVsTrialBinCounting[iPt]->SetPoint(iTrial,iTrial,vnBinCount);
+                                            gVnVsTrialBinCounting[iPt]->SetPointError(iTrial,0.,0.,vnBinCountUnc,vnBinCountUnc);
+                                        }
+                                        if(resultSimFit.MinFcnValue()/resultSimFit.Ndf()<maxRedChi2) {
+                                            hVnResSimFit[iPt]->Fill(vnSimFit-vnRef);
+                                            gVnVsTrialSimFit[iPt]->SetPoint(iTrial,iTrial,vnSimFit);
+                                            gVnVsTrialSimFit[iPt]->SetPointError(iTrial,0.,0.,vnSimFitUnc,vnSimFitUnc);
+                                        }
                                     }
 
                                     for(int iDeltaPhi=0; iDeltaPhi<2; iDeltaPhi++) {
@@ -507,7 +522,7 @@ void CharmHadronVnFitSystematics(string cfgFileName, string refFileName, int ref
                                     vnvsmassfitter->SetInitialGaussianMean(massD,1);
                                     vnvsmassfitter->SetInitialGaussianSigma(massfitterInt.GetSigma(),1);
                                     if(meson==AliAnalysisTaskSECharmHadronvn::kDstoKKpi)
-                                        vnvsmassfitter->IncludeSecondGausPeak(massDplus,true,0.008,true,false);
+                                        vnvsmassfitter->IncludeSecondGausPeak(massDplus,true,0.008,true,true);
                                     if(useRefl) {
                                         vnvsmassfitter->SetTemplateReflections(hMCRefl[iPt],reflopt,MassMin[iMassMin],MassMax[iMassMax]);
                                         vnvsmassfitter->SetFixReflOverS(SoverR);
@@ -644,7 +659,8 @@ void CharmHadronVnFitSystematics(string cfgFileName, string refFileName, int ref
     TCanvas* cSyst = new TCanvas("cSyst","",1920,1080);
     DivideCanvas(cSyst,nPtBins);
     for(unsigned int iPt=0; iPt<nPtBins; iPt++) {
-        hFrameSyst[iPt] = new TH2F(Form("hFrameSyst_Pt%d",iPt),Form("%0.1f < #it{p}_{T} < %0.1f GeV/#it{c};;Mean #pm RMS #it{v}_{%d}-#it{v}_{%d}^{ref}{%s}",PtMin[iPt],PtMax[iPt],harmonic,harmonic,v2measname.Data()),4,0.5,4.5,1,-0.1,0.1); 
+        double statunc = gVnRef->GetErrorYlow(iPt);
+        hFrameSyst[iPt] = new TH2F(Form("hFrameSyst_Pt%d",iPt),Form("%0.1f < #it{p}_{T} < %0.1f GeV/#it{c};;Mean #pm RMS #it{v}_{%d}-#it{v}_{%d}^{ref}{%s}",PtMin[iPt],PtMax[iPt],harmonic,harmonic,v2measname.Data()),4,0.5,4.5,1,-1.5*statunc,1.5*statunc); 
         hFrameSyst[iPt]->SetDirectory(0);
         hFrameSyst[iPt]->GetXaxis()->SetBinLabel(1,"Simultaneus Fit");
         hFrameSyst[iPt]->GetXaxis()->SetBinLabel(2,"Free Sigma");
