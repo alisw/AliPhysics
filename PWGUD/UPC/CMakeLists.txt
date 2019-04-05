@@ -35,12 +35,13 @@ set(SRCS
     AliAnalysisTaskUpcFilter.cxx
     AliAnalysisTaskUpcK0sK0s.cxx
     AliAnalysisTaskUpcPhi.cxx
-    AliAnalysisTaskUPCPhiTest.cxx 
-  AliAnalysisTaskUpcPsi2s.cxx
+    AliAnalysisTaskUPCPhiTest.cxx
+		AliAnalysisTaskUpcPsi2s.cxx
     AliAnalysisTaskUpcRho0.cxx
 		AliAnalysisTaskUpcTree.cxx
 		AliAnalysisTaskUPCforward.cxx
 		AliAnalysisTaskUPCforwardMC.cxx
+		AliAnalysisTaskCTrue.cxx
     AliUPCEvent.cxx
     AliUPCMuonTrack.cxx
     AliUPCTrack.cxx
