@@ -115,6 +115,7 @@ AliAnalysisTaskCombinHF::AliAnalysisTaskCombinHF():
   fReadMC(kFALSE),
   fGoUpToQuark(kTRUE),
   fFullAnalysis(0),
+  fSignalOnlyMC(kFALSE),
   fPIDstrategy(knSigma),
   fmaxPforIDPion(0.8),
   fmaxPforIDKaon(2.),
@@ -214,6 +215,7 @@ AliAnalysisTaskCombinHF::AliAnalysisTaskCombinHF(Int_t meson, AliRDHFCuts* analy
   fReadMC(kFALSE),
   fGoUpToQuark(kTRUE),
   fFullAnalysis(0),
+  fSignalOnlyMC(kFALSE),
   fPIDstrategy(knSigma),
   fmaxPforIDPion(0.8),
   fmaxPforIDKaon(2.),
@@ -667,6 +669,8 @@ void AliAnalysisTaskCombinHF::UserExec(Option_t */*option*/){
     }
     fHistEventMultZv->Fill(zMCVertex,fMultiplicity);
     if(isEvSel) fHistEventMultZvEvSel->Fill(zMCVertex,fMultiplicity);
+    // switch off event mixing in case of signal only MC
+    if(fSignalOnlyMC) fDoEventMixing=0;
   }else{
     fHistEventMultZv->Fill(fVtxZ,fMultiplicity);
     if(isEvSel) fHistEventMultZvEvSel->Fill(fVtxZ,fMultiplicity);
@@ -686,6 +690,11 @@ void AliAnalysisTaskCombinHF::UserExec(Option_t */*option*/){
     if(!track){
       AliWarning("Error in casting track to AOD track. Not a standard AOD?");
       continue;
+    }
+    if(fReadMC && fSignalOnlyMC && arrayMC){
+      // for fast MC analysis we skip tracks not coming from charm hadrons
+      Bool_t isCharm=AliVertexingHFUtils::IsTrackFromCharm(track,arrayMC);
+      if(!isCharm) continue;
     }
     if(IsTrackSelected(track)) status[iTr]+=1;
     
@@ -872,7 +881,8 @@ void AliAnalysisTaskCombinHF::UserExec(Option_t */*option*/){
 //________________________________________________________________________
 void AliAnalysisTaskCombinHF::FillLSHistos(Int_t pdgD,Int_t nProngs, AliAODRecoDecay* tmpRD, Double_t* px, Double_t* py, Double_t* pz, UInt_t *pdgdau, Int_t charge){
   /// Fill histos for LS candidates
-  
+
+  if(fReadMC && fSignalOnlyMC) return;
   tmpRD->SetPxPyPzProngs(nProngs,px,py,pz);
   Double_t pt = tmpRD->Pt();
   Double_t minv2 = tmpRD->InvMass2(nProngs,pdgdau);
@@ -999,13 +1009,17 @@ Bool_t AliAnalysisTaskCombinHF::FillHistos(Int_t pdgD,Int_t nProngs, AliAODRecoD
 	      }
 	    }
 	  }else{
-	    fMassVsPtVsYBkg->Fill(mass,pt,rapid);
+	    if(fSignalOnlyMC) accept=kFALSE;
+	    else fMassVsPtVsYBkg->Fill(mass,pt,rapid);
 	  }
 	}
       }
     }
   }
-  
+  // skip track rotations in case of signal only MC
+  if(fReadMC && fSignalOnlyMC) return accept;
+
+  // Track rotations to estimate the background
   Int_t nRotated=0;
   Double_t massRot=0;// calculated later only if candidate is acceptable
   Double_t angleProngXY;
