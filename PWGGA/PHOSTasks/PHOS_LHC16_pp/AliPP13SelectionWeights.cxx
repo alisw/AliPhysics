@@ -28,9 +28,27 @@ Double_t AliPP13SelectionWeightsTOF::TofEfficiency(Double_t energy) const
 //________________________________________________________________
 Double_t AliPP13SelectionWeightsMC::Nonlinearity(Double_t x) const
 {
-    return fNonGlobal * (1. + fNonA / (1 + TMath::Power(x / fNonSigma, 2)));
-}
+    if (fNonGlobal < 0)
+        return 1.0;
 
+    // These magic numbers are taken from the official tender configuration
+    // https://github.com/alisw/AliPhysics/blob/master/TENDER/TenderSupplies/AliPHOSTenderSupply.cxx
+
+    Double_t p0 = 1.04397;
+    Double_t p1 = 0.512307;
+    Double_t p2 = 0.133812;
+    Double_t p3 = -0.150093;
+    Double_t p4 = -0.455062;
+
+    // Use only when fNonGlobal is > 0
+    if (fNonGlobal > 0)
+    {
+        p4 = fNonA;
+        p2 = fNonSigma;
+    }
+    return p0 + p1 / x + p2 / x / x + p3 / TMath::Sqrt(x) + p4 / x / TMath::Sqrt(x);
+}
+    
 
 
 //________________________________________________________________
@@ -59,22 +77,6 @@ Double_t AliPP13SelectionWeightsFeeddown::Weights(Double_t pT, const EventFlags 
 AliPP13SelectionWeights & AliPP13SelectionWeightsSPMC::SinglePi0()
 {
     AliPP13SelectionWeightsSPMC & ws = * new AliPP13SelectionWeightsSPMC();
-
-    // Weights 3
-    // ws.fW0 = 0.014875782846110793;
-    // ws.fW1 = 0.28727403800708634;
-    // ws.fW2 = 9.9198075195331;
-
-    // Weights 0 (new efficiency)
-    // ws.fW0 = 0.10325998438001027;
-    // ws.fW1 = 0.1710556728057399;
-    // ws.fW2 = 8.613628140871766;
-
-    // Debug
-    // ws.fW0 = 21.339890553914014;
-    // ws.fW1 = 0.08359755308503322;
-    // ws.fW2 = 7.334946541612603;
-
     // The latest iteration
     //
     ws.fW0 = 0.2622666606436988 / 0.0119143016137;
@@ -83,9 +85,6 @@ AliPP13SelectionWeights & AliPP13SelectionWeightsSPMC::SinglePi0()
     ws.fW3 = 0.135;
     ws.fW4 = 0.135;
 
-    // ws.fNonA = -0.035;
-    // ws.fNonSigma = 0.95;
-    // ws.fNonGlobal = 1.02;
     return ws;
 }
 
@@ -103,10 +102,6 @@ AliPP13SelectionWeights & AliPP13SelectionWeightsSPMC::SingleEta()
     ws.fW3 = 0.547;
     ws.fW4 = 0.547;
 
-    // The latest nonlinarity tested on the simples data
-    // ws.fNonA = -0.035;
-    // ws.fNonSigma = 0.95;
-    // ws.fNonGlobal = 1.02;
     return ws;
 }
 
