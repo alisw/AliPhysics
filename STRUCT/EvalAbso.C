@@ -33,7 +33,7 @@ void EvalAbso()
 //
     Float_t f0,f1,f2;
     Float_t a, z, dens, radl, absl;
-    char  name[21];
+    TString name;
 
     for (j=0; j< 2; j++) {
 	printf("\n                        A            Z           ZPos         DZ            dens        radL        absL");
@@ -46,7 +46,7 @@ void EvalAbso()
 	    f1 += dz/(2.*radl)*(2.*zmin[j][i]+dz);
 	    f2 += dz/(3.*radl)*(3.*zmin[j][i]*zmin[j][i]+3.*dz*zmin[j][i]+dz*dz);	
 	    printf("\n %3d %14s %12.3f %12.3f %12.3f %12.3f %12.3f %12.3f %12.3f",
-		   i+1, name, a, z, (zmax[j][i]+zmin[j][i])/2., dz, dens, radl, absl);
+		   i+1, name.Data(), a, z, (zmax[j][i]+zmin[j][i])/2., dz, dens, radl, absl);
 	}
 //  
 	Float_t deltaThetaB = 0.0136  * TMath::Sqrt(f0-f1*f1/f2);

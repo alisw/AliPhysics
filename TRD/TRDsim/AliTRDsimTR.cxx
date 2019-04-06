@@ -34,6 +34,7 @@
 #include <TMath.h>
 #include <TVirtualMC.h>
 #include <TVirtualMCStack.h>
+#include <TString.h>
 
 #include "AliModule.h"
 
@@ -118,7 +119,7 @@ AliTRDsimTR::AliTRDsimTR(AliModule *mod, Int_t foil, Int_t gap)
   Float_t rad;
   Float_t abs;
 
-  Char_t  name[21];
+  TString name;
 
   Init();
 
