@@ -1,6 +1,6 @@
 //___________________________________________________________________________________//
 // Brief: Macro for the analysis of the output of AliAnalysisTaskSECharmHadronvn     //
-// Main Function: CharmHadronVnAnalysis                                              //
+// Main Function: CharmHadronYieldRatioESE                                           //
 // Author: Fabrizio Grosa, fabrizio.grosa@cern.ch                                    //
 //                                                                                   //
 // Before running this macro make sure you have installed yaml-cpp on your laptop:   //
