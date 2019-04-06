@@ -828,7 +828,7 @@ Bool_t AliMultSelectionCalibratorMC::Calibrate() {
                          */
                         
                         //lTempDef = Form(TMath::Power(( (Amc + Bmc * TMath::Power(xmc,Cmc)) - Adata )/Bdata, 1./Cdata),
-                        lTempDef = Form("TMath::Power(( (%.10f + %.10f * TMath::Power(%s,%.10f)) - %.10f )/%.10f, 1./%.10f)",
+                        lTempDef = Form("(TMath::Power(( (%.10f + %.10f * TMath::Power(%s,%.10f)) - %.10f )/%.10f, 1./%.10f))",
                                         fitmc[iRun][iEst]->GetParameter(0),
                                         fitmc[iRun][iEst]->GetParameter(1),
                                         lTempDef.Data(),
@@ -840,8 +840,8 @@ Bool_t AliMultSelectionCalibratorMC::Calibrate() {
                         
                         //Trick: add anchor-point-like logic to avoid low-multiplicity issues
                         if(fsels->GetEstimator(iEst)->GetUseAnchor()){
-                            lTempDef.Prepend(Form("%s>%.10f?",fsels->GetEstimator(iEst)->GetDefinition().Data(),0.5*fsels->GetEstimator(iEst)->GetAnchorPoint()));
-                            lTempDef.Append(":0.0");
+                            lTempDef.Prepend(Form("(%s>%.10f)?(",fsels->GetEstimator(iEst)->GetDefinition().Data(),0.5*fsels->GetEstimator(iEst)->GetAnchorPoint()));
+                            lTempDef.Append("):0.0");
                         }
                         
                         //Use V0M high-cutoff if provided
@@ -849,8 +849,8 @@ Bool_t AliMultSelectionCalibratorMC::Calibrate() {
                             if ( fV0MCutoffs.find( lRunNumbers[iRun] ) != fV0MCutoffs.end() ) {
                                 Float_t lV0MCutoff = fV0MCutoffs[ lRunNumbers[iRun] ];
                                 cout<<"-> Run "<<lRunNumbers[iRun]<<": will use V0M cutoff of "<<lV0MCutoff<<endl;
-                                lTempDef.Prepend(Form("((fAmplitude_V0A)+(fAmplitude_V0C))<%.5f?", lV0MCutoff));
-                                lTempDef.Append(":0.0"); //reject otherwise
+                                lTempDef.Prepend(Form("(((fAmplitude_V0A)+(fAmplitude_V0C))<%.5f)?(", lV0MCutoff));
+                                lTempDef.Append("):0.0"); //reject otherwise
                             }
                     }
                     
@@ -931,8 +931,8 @@ Bool_t AliMultSelectionCalibratorMC::Calibrate() {
                             
                             //Trick: add anchor-point-like logic to avoid low-multiplicity issues
                             if(fsels->GetEstimator(iEst)->GetUseAnchor()){
-                                lTempDef.Prepend(Form("%s>%.10f?",fselsdef->GetEstimator(iEst)->GetDefinition().Data(),0.5*fselsdef->GetEstimator(iEst)->GetAnchorPoint()));
-                                lTempDef.Append(":0.0");
+                                lTempDef.Prepend(Form("(%s>%.10f)?(",fselsdef->GetEstimator(iEst)->GetDefinition().Data(),0.5*fselsdef->GetEstimator(iEst)->GetAnchorPoint()));
+                                lTempDef.Append("):0.0");
                             }
                             
                             //Use V0M high-cutoff if provided
@@ -940,8 +940,8 @@ Bool_t AliMultSelectionCalibratorMC::Calibrate() {
                                 if ( fV0MCutoffs.find( lRunNumbers[iRun] ) != fV0MCutoffs.end() ) {
                                     Float_t lV0MCutoff = fV0MCutoffs[ lRunNumbers[iRun] ];
                                     cout<<"-> Run "<<lRunNumbers[iRun]<<": will use V0M cutoff of "<<lV0MCutoff<<endl;
-                                    lTempDef.Prepend(Form("((fAmplitude_V0A)+(fAmplitude_V0C))<%.5f?", lV0MCutoff));
-                                    lTempDef.Append(":0.0"); //reject otherwise
+                                    lTempDef.Prepend(Form("(((fAmplitude_V0A)+(fAmplitude_V0C))<%.5f)?(", lV0MCutoff));
+                                    lTempDef.Append("):0.0"); //reject otherwise
                                 }
                         }
                         
