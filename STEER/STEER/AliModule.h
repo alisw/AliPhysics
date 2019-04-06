@@ -13,6 +13,7 @@
 //
 
 #include <TNamed.h>
+#include <TString.h>
 #include <TClonesArray.h>
 
 #include "AliTriggerDetector.h"
@@ -62,7 +63,7 @@ public:
   virtual void AliMaterial(Int_t imat, const char* name, Float_t a, 
 			   Float_t z, Float_t dens, Float_t radl,
 			   Float_t absl, Float_t *buf=0, Int_t nwbuf=0) const;
-  virtual void AliGetMaterial(Int_t imat, char* name, Float_t &a, 
+  virtual void AliGetMaterial(Int_t imat, TString& name, Float_t &a, 
 			      Float_t &z, Float_t &dens, Float_t &radl,
 			      Float_t &absl) const;
   virtual void AliMixture(Int_t imat, const char *name, Float_t *a,
