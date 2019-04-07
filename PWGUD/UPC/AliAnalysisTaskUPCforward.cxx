@@ -173,7 +173,12 @@ AliAnalysisTaskUPCforward::AliAnalysisTaskUPCforward()
       fCosThetaHelicityFrameJPsiRapidityBinsH{ 0, 0, 0, 0, 0, 0, 0, 0},
       fCosThetaCollinsSoperFrameJPsiRapidityBinsH{ 0, 0, 0, 0, 0, 0, 0, 0},
       fPhiHelicityFrameJPsiRapidityBinsH{ 0, 0, 0, 0, 0, 0, 0, 0},
-      fPhiCollinsSoperFrameJPsiRapidityBinsH{ 0, 0, 0, 0, 0, 0, 0, 0}
+      fPhiCollinsSoperFrameJPsiRapidityBinsH{ 0, 0, 0, 0, 0, 0, 0, 0},
+      fCosThetaHelicityFrameJPsiTenRapidityBinsH{ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
+      fCosThetaCollinsSoperFrameJPsiTenRapidityBinsH{ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
+      fPhiHelicityFrameJPsiTenRapidityBinsH{ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
+      fPhiCollinsSoperFrameJPsiTenRapidityBinsH{ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
+      fInvariantMassDistributionInBinsOfCosThetaHelicityFrameH{ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}
 {
     // default constructor, don't allocate memory here!
     // this is used by root for IO purposes, it needs to remain empty
@@ -278,7 +283,12 @@ AliAnalysisTaskUPCforward::AliAnalysisTaskUPCforward(const char* name)
       fCosThetaHelicityFrameJPsiRapidityBinsH{ 0, 0, 0, 0, 0, 0, 0, 0},
       fCosThetaCollinsSoperFrameJPsiRapidityBinsH{ 0, 0, 0, 0, 0, 0, 0, 0},
       fPhiHelicityFrameJPsiRapidityBinsH{ 0, 0, 0, 0, 0, 0, 0, 0},
-      fPhiCollinsSoperFrameJPsiRapidityBinsH{ 0, 0, 0, 0, 0, 0, 0, 0}
+      fPhiCollinsSoperFrameJPsiRapidityBinsH{ 0, 0, 0, 0, 0, 0, 0, 0},
+      fCosThetaHelicityFrameJPsiTenRapidityBinsH{ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
+      fCosThetaCollinsSoperFrameJPsiTenRapidityBinsH{ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
+      fPhiHelicityFrameJPsiTenRapidityBinsH{ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
+      fPhiCollinsSoperFrameJPsiTenRapidityBinsH{ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
+      fInvariantMassDistributionInBinsOfCosThetaHelicityFrameH{ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}
 {
     FillGoodRunVector(fVectorGoodRunNumbers);
 
@@ -688,6 +698,51 @@ void AliAnalysisTaskUPCforward::UserCreateOutputObjects()
     fOutputList->Add(fPhiCollinsSoperFrameJPsiRapidityBinsH[iRapidityBin]);
   }
 
+  for(Int_t iRapidityBin = 0; iRapidityBin < 10; iRapidityBin++ ){
+    fCosThetaHelicityFrameJPsiTenRapidityBinsH[iRapidityBin] = new TH1F(
+                Form("fCosThetaHelicityFrameJPsiTenRapidityBinsH_%d", iRapidityBin),
+                Form("fCosThetaHelicityFrameJPsiTenRapidityBinsH_%d", iRapidityBin),
+                1000, -1., 1.
+              );
+    fOutputList->Add(fCosThetaHelicityFrameJPsiTenRapidityBinsH[iRapidityBin]);
+  }
+
+  for(Int_t iRapidityBin = 0; iRapidityBin < 10; iRapidityBin++ ){
+    fCosThetaCollinsSoperFrameJPsiTenRapidityBinsH[iRapidityBin] = new TH1F(
+                Form("fCosThetaCollinsSoperFrameJPsiTenRapidityBinsH_%d", iRapidityBin),
+                Form("fCosThetaCollinsSoperFrameJPsiTenRapidityBinsH_%d", iRapidityBin),
+                1000, -1., 1.
+              );
+    fOutputList->Add(fCosThetaCollinsSoperFrameJPsiTenRapidityBinsH[iRapidityBin]);
+  }
+
+  for(Int_t iRapidityBin = 0; iRapidityBin < 10; iRapidityBin++ ){
+    fPhiHelicityFrameJPsiTenRapidityBinsH[iRapidityBin] = new TH1F(
+                Form("fPhiHelicityFrameJPsiTenRapidityBinsH_%d", iRapidityBin),
+                Form("fPhiHelicityFrameJPsiTenRapidityBinsH_%d", iRapidityBin),
+                10000, -10., 10.
+              );
+    fOutputList->Add(fPhiHelicityFrameJPsiTenRapidityBinsH[iRapidityBin]);
+  }
+
+  for(Int_t iRapidityBin = 0; iRapidityBin < 10; iRapidityBin++ ){
+    fPhiCollinsSoperFrameJPsiTenRapidityBinsH[iRapidityBin] = new TH1F(
+                Form("fPhiCollinsSoperFrameJPsiTenRapidityBinsH_%d", iRapidityBin),
+                Form("fPhiCollinsSoperFrameJPsiTenRapidityBinsH_%d", iRapidityBin),
+                10000, -10., 10.
+              );
+    fOutputList->Add(fPhiCollinsSoperFrameJPsiTenRapidityBinsH[iRapidityBin]);
+  }
+
+  for(Int_t iCosThetaBins = 0; iCosThetaBins < 10; iCosThetaBins++ ){
+    fInvariantMassDistributionInBinsOfCosThetaHelicityFrameH[iCosThetaBins] = new TH1F(
+                Form("fInvariantMassDistributionInBinsOfCosThetaHelicityFrameH_%d", iCosThetaBins),
+                Form("fInvariantMassDistributionInBinsOfCosThetaHelicityFrameH_%d", iCosThetaBins),
+                2000, 0, 20
+              );
+    fOutputList->Add(fInvariantMassDistributionInBinsOfCosThetaHelicityFrameH[iCosThetaBins]);
+  }
+
   //_______________________________
   // - End of the function
   PostData(1, fOutputList);           // postdata will notify the analysis manager of changes / updates to the
@@ -729,11 +784,29 @@ void AliAnalysisTaskUPCforward::UserExec(Option_t *)
      - CMUP6-B-NOPF-MUFAST.
      - At this 2nd step of fCounterH, all events are in fact proper events,
      - and with the correct trigger as well.
+     -
+     -
+     - NEW: trigger class for the 2015 data.
+     - The available classes in 2015 data were:
+     - CMUP10-B-NOPF-MUFAST,
+     - CMUP11-B-NOPF-MUFAST,
+     - CMUP13-B-NOPF-MUFAST,
+     - CTEST63-B-NOPF-MUFAST,
+     - CTEST64-B-NOPF-MUFAST.
+     - However, the CTESTs contain little to no data, so we
+     - can just skip on them...
+     - One thing I didn't know before, was that the CMUP11 trigger
+     - class is in common with the 2018 dataset!!
+     - This means that I could still obtain something
+     - even with this string request for the 2015 data...
+     -
    */
   TString trigger = fAOD->GetFiredTriggerClasses();
   if (    !(trigger.Contains("CMUP11-B-NOPF-MUFAST") ||
 	          trigger.Contains("CMUP26-B-NOPF-MUFAST") ||
-	          trigger.Contains("CMUP6-B-NOPF-MUFAST"))
+	          trigger.Contains("CMUP6-B-NOPF-MUFAST")  ||
+            trigger.Contains("CMUP10-B-NOPF-MUFAST") ||
+            trigger.Contains("CMUP13-B-NOPF-MUFAST")  )
           )  {
                     PostData(1, fOutputList);
                     return;
@@ -1478,6 +1551,7 @@ void AliAnalysisTaskUPCforward::UserExec(Option_t *)
      - dealing with negative values... -4.0 < Y < -2.5 !!!
      -
    */
+  Double_t possibleJPsiCopyMag =possibleJPsiCopy.Mag();
   if ( (possibleJPsiCopy.Mag() > 2.8) && (possibleJPsiCopy.Mag() < 3.3) && (possibleJPsiCopy.Pt() < 0.25) ) {
     fAngularDistribOfPositiveMuonRestFrameJPsiH->Fill(cosThetaMuonsRestFrame[0]);
     fAngularDistribOfNegativeMuonRestFrameJPsiH->Fill(cosThetaMuonsRestFrame[1]);
@@ -1515,7 +1589,7 @@ void AliAnalysisTaskUPCforward::UserExec(Option_t *)
        -
        */
     for(Int_t iRapidityBin = 0; iRapidityBin < 8; iRapidityBin++){
-        if( (possibleJPsiCopy.Rapidity() + 4) < 1.5*(iRapidityBin + 1)/8 ){
+        if( (possibleJPsiCopy.Rapidity() + 4.) < 1.5*((Double_t)iRapidityBin + 1.)/8. ){
           fThetaDistribOfPositiveMuonRestFrameJPsiRapidityBinH[iRapidityBin]->Fill(cosThetaMuonsRestFrame[0]);
           /* - New part: filling all possible histograms!
              -
@@ -1542,6 +1616,62 @@ void AliAnalysisTaskUPCforward::UserExec(Option_t *)
                                                                                         );
           break;
         }
+    }
+
+    /* - The following is a new addition.
+       - The plots before were divided in 8 rapidity bins.
+       - This means that the rapidity boundaries were not round numbers...
+       - After having discussed with my supervisor, we agreed that
+       - 10 rapidity bins are reasonable:
+       - 1) it is a round number to divide 1.5 rapidity units into;
+       - 2) it is not too much bigger than 8;
+       - 3) the point above implies that each rapidity bin should not be
+       -    that much more depleted than when divided in 8...
+       - For example, 4 rapidity bins are nowhere enough,
+       - 8 would be ok, but the edges of the bins are weird,
+       - 15 would be perfect, but there are too many rapidity bins,
+       - and this would imply scarcely populated bins!
+       -
+     */
+    for(Int_t iRapidityBin = 0; iRapidityBin < 10; iRapidityBin++){
+        if( (possibleJPsiCopy.Rapidity() + 4.) < 1.5*((Double_t)iRapidityBin + 1.)/10. ){
+          fCosThetaHelicityFrameJPsiTenRapidityBinsH[iRapidityBin]->Fill( CosThetaHelicityFrame( muonsCopy2[0],
+                                                                                                 muonsCopy2[1],
+                                                                                                 possibleJPsiCopy
+                                                                                                 )
+                                                                                              );
+          fCosThetaCollinsSoperFrameJPsiTenRapidityBinsH[iRapidityBin]->Fill( CosThetaCollinsSoper( muonsCopy2[0],
+                                                                                                    muonsCopy2[1],
+                                                                                                    possibleJPsiCopy
+                                                                                                    )
+                                                                                                  );
+          fPhiHelicityFrameJPsiTenRapidityBinsH[iRapidityBin]->Fill( CosPhiHelicityFrame( muonsCopy2[0],
+                                                                                          muonsCopy2[1],
+                                                                                          possibleJPsiCopy
+                                                                                          )
+                                                                                        );
+          fPhiCollinsSoperFrameJPsiTenRapidityBinsH[iRapidityBin]->Fill( CosPhiCollinsSoper( muonsCopy2[0],
+                                                                                             muonsCopy2[1],
+                                                                                             possibleJPsiCopy
+                                                                                             )
+                                                                                           );
+          break;
+        }
+    }
+
+    /* - The next few lines of code are better explained in the header.
+       - What happens here is that we fill the invariant mass distributions
+       - in terms of CosTheta bins. In this way we can compute the relative
+       - abundance of J/Psi and GammaGamma to the decay angular distribution.
+       -
+     */
+    Double_t steeringVariable = CosThetaHelicityFrame(muonsCopy2[0],muonsCopy2[1],possibleJPsiCopy);
+    for(Int_t iCosThetaBins = 0; iCosThetaBins < 10; iCosThetaBins++) {
+      if( (steeringVariable + 1.) < 2.*((Double_t)iCosThetaBins + 1.)/10. ){
+        // cout << steeringVariable << endl;
+        fInvariantMassDistributionInBinsOfCosThetaHelicityFrameH[iCosThetaBins]->Fill(possibleJPsiCopyMag);
+        break;
+      }
     }
   }
 

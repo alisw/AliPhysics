@@ -103,7 +103,8 @@ private:
     Double_t            fTPCnSigmaMin;//!
     Double_t            fTPCnSigmaMax;//!
     Double_t            fM02Min;//!
-    Double_t            fM02Max;//!
+    Double_t            fM02Max1;//!
+    Double_t            fM02Max2;//!
     Double_t            fM20Min;//!
     Double_t            fM20Max;//!
     Double_t            fEovPMin;//!
@@ -128,6 +129,8 @@ private:
 
     TF1                 *fPi0Weight;//!
     TF1                 *fEtaWeight;//!
+    Int_t               fnBinsDCAHisto;//!
+    Double_t            fTrkDCA;//!
     
     TList       *fOutputList; //!Output list
     TH1F        *fNevents;//! no of events
@@ -193,11 +196,16 @@ private:
     
     TH1F                *fInclsElecPt;//!
     TH1F                *fHadPt_AftEID;//!
-    TH2F                *fHistEop_AftEID;//!
+    TH2F                *fHadEovp_AftEID;//!
+    TH2F                *fEop_AftEID;//!
     TH1F                *fNElecInEvt;//!
     TH1F                *fULSElecPt;//!
     TH1F                *fLSElecPt;//!
-    
+    TH2F                *fHadDCA;//!
+    TH2F                *fInclElecDCA;//!
+    TH2F                *fULSElecDCA;//!
+    TH2F                *fLSElecDCA;//!
+
     TH1F                *fRealInclsElecPt;//!
     TH1F                *fNonHFeTrkPt;//!
     TH1F                *fMissingEmbEtaEleTrkPt;//!

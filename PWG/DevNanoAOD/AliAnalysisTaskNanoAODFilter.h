@@ -17,9 +17,11 @@ class AliAnalysisCuts;
 class AliNanoAODReplicator;
 class AliNanoAODCustomSetter;
 
-#ifndef ALIANALYSISTASKSE_H
 #include "AliAnalysisTaskSE.h"
-#endif
+#include "AliNanoAODReplicator.h"
+#include "AliNanoAODTrack.h"
+#include "AliPID.h"
+#include <list>
 
 class AliAnalysisTaskNanoAODFilter : public AliAnalysisTaskSE {
 public:
@@ -38,42 +40,35 @@ public:
   void  SetMCMode (Int_t var) { fMCMode = var;}
   void AddFilteredAOD(const char* aodfilename, const char* title);
 
-  AliAnalysisCuts *           GetEvtCuts() { return fEvtCuts; }
-  AliAnalysisCuts *           GetTrkCuts() { return fTrkCuts; }
-  AliNanoAODCustomSetter *    GetSetter()  { return fSetter; }
-  TString                     GetVarList() { return fVarList; }
-  TString                     GetVarListHead() { return fVarListHead; }
-  Bool_t                      GetSaveCutsFlag() { return fSaveCutsFlag; }
-
-  void  SetEvtCuts     (AliAnalysisCuts * var           ) { fEvtCuts = var;}
+  void  AddEvtCuts     (AliAnalysisCuts * var           ) { fEvtCuts.push_back(var);}
   void  SetTrkCuts     (AliAnalysisCuts * var           ) { fTrkCuts = var;}
-  void  SetSetter      (AliNanoAODCustomSetter * var    ) { fSetter = var;}
-  void  SetVarList     (TString var                     ) { fVarList = var;}
-  void  SetVarListHead (TString var                     ) { fVarListHead = var;}
-  void  SetVarFiredTriggerClasses (TString var          ) { fVarListHeader_fTC = var;}
-  void  ReplicatorSaveVzero(Bool_t var ) {fSaveVzero=var;}
-  void  ReplicatorSaveZDC(Bool_t var ) {fSaveZDC=var;}
-  void  ReplicatorSaveV0s(Bool_t var, AliAnalysisCuts* v0Cuts = 0) {fSaveV0s=var; fV0Cuts = v0Cuts;}
+  void  AddSetter      (AliNanoAODCustomSetter * var    ) { fReplicator->AddCustomSetter(var); }
+
+  void  SetVarListTrack(TString var                     ) { fReplicator->SetVarListTrack(var);}
+  void  AddPIDField(AliNanoAODTrack::ENanoPIDResponse response, AliPID::EParticleType particle);
+  void  SetVarListHeader(TString var                    ) { fReplicator->SetVarListHeader(var);}
+  void  SetVarFiredTriggerClasses (TString var          ) { fReplicator->SetVarListHeaderTC(var);}
+  void  SaveVzero(Bool_t var)                             { fReplicator->SetSaveVzero(var); }
+  void  SaveZDC(Bool_t var)                               { fReplicator->SetSaveZDC(var); }
+  void  SaveV0s(Bool_t var, AliAnalysisCuts* v0Cuts = 0)  { fReplicator->SetSaveV0s(var); fV0Cuts = v0Cuts; fReplicator->SetV0Cuts(v0Cuts); }
+  void  SaveCascades(Bool_t var, AliAnalysisCuts* cuts = 0) { fReplicator->SetSaveCascades(var); fCascadeCuts = cuts; fReplicator->SetCascadeCuts(cuts); }
+  
+  AliNanoAODReplicator* GetReplicator() { return fReplicator; }
 
   void SetInputArrayName(TString name) {fInputArrayName=name;}
   void SetOutputArrayName(TString name) {fOutputArrayName=name;}
 
-private:
+protected:
   Int_t fMCMode; // true if processing monte carlo. if > 1 not all MC particles are filtered
-  AliNanoAODReplicator* fTrkrep       ; // ! replicator
-  TString                  fVarList      ; // List of variables to be added to the special track
-  TString fVarListHead; // List of variables to be added to the special header
-  TString fVarListHeader_fTC; // List of fired trigger classes used in the NanoAOD generation if the fired Trigger Classes are safed
-  AliAnalysisCuts * fEvtCuts; // Event cuts
-  AliAnalysisCuts * fTrkCuts; // Track cuts
-  AliAnalysisCuts * fV0Cuts; // Track cuts
+  AliNanoAODReplicator* fReplicator; // replicator
 
-  AliNanoAODCustomSetter * fSetter; // setter for custom variables
-  
+  std::list<AliAnalysisCuts*> fEvtCuts; // Event cuts
+  AliAnalysisCuts* fTrkCuts; // Track cuts
+  AliAnalysisCuts* fV0Cuts; // V0 cuts
+  AliAnalysisCuts* fCascadeCuts; // Cascade cuts
+
+  TList* fQAOutput;     //  Output list for cut objects and QA
   Bool_t fSaveCutsFlag; // If true, the event and track cuts are saved to disk. Can only be set in the constructor.
-  Bool_t fSaveZDC;  // if kTRUE AliAODZDC will be saved in AliAODEvent
-  Bool_t fSaveVzero; // if kTRUE AliAODVZERO will be saved in AliAODEvent
-  Bool_t fSaveV0s; // if kTRUE AliAODv0 will be saved in AliAODEvent
 
   TString fInputArrayName; // name of TObjectArray of Tracks
   TString fOutputArrayName; // name of TObjectArray of AliNanoAODTracks
@@ -81,7 +76,7 @@ private:
   AliAnalysisTaskNanoAODFilter(const AliAnalysisTaskNanoAODFilter&); // not implemented
   AliAnalysisTaskNanoAODFilter& operator=(const AliAnalysisTaskNanoAODFilter&); // not implemented
 
-  ClassDef(AliAnalysisTaskNanoAODFilter, 5); // example of analysis
+  ClassDef(AliAnalysisTaskNanoAODFilter, 8); // Nano AOD Filter Task
 };
 
 #endif

@@ -80,9 +80,10 @@ void GetCentrality(const Int_t centrality, Double_t& CentMin, Double_t& CentMax)
   else if(centrality == 1){CentMin = 0;  CentMax = 20;}
   else if(centrality == 2){CentMin = 20; CentMax = 40;}
   else if(centrality == 3){CentMin = 40; CentMax = 60;}
-  else if(centrality == 4){CentMin = 60; CentMax = 80;}
-  else if(centrality == 5){CentMin = 80; CentMax = 100;}
-  else if(centrality == 6){CentMin = 0;  CentMax = 5;}
+  else if(centrality == 4){CentMin = 60; CentMax = 100;}
+  else if(centrality == 5){CentMin = 60; CentMax = 80;}
+  else if(centrality == 6){CentMin = 80; CentMax = 100;}
+  else if(centrality == 7){CentMin = 0;  CentMax = 5;}
   else                      {std::cout << "WARNING::Centrality range not found....." std::endl;}
   return;
 }
@@ -165,6 +166,11 @@ AliAnalysisFilter* SetupTrackCutsAndSettings(TString cutDefinition, Bool_t wSDD)
   else if(cutDefinition == "kTheoPID"){ // PID cut set from a Run 1 pPb analysis. Standard track cuts
     std::cout << "Setting up Theo PID. Standard track cuts." << std::endl;
     anaFilter->AddCuts(LMcutlib->GetTrackCuts(LMEECutLib::kCutSet1, LMEECutLib::kTheoPID));
+    anaFilter->SetName(cutDefinition);
+    anaFilter->Print();
+  }
+  else if(cutDefinition == "kScheidPID"){ 
+    anaFilter->AddCuts(LMcutlib->GetTrackCuts(LMEECutLib::kCutSet1, LMEECutLib::kScheidPID));
     anaFilter->SetName(cutDefinition);
     anaFilter->Print();
   }

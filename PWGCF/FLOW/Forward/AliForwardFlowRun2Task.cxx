@@ -96,6 +96,8 @@ AliForwardFlowRun2Task::AliForwardFlowRun2Task(const char* name) : AliAnalysisTa
 
   // Rely on validation task for event and track selection
   DefineInput(1, AliForwardTaskValidation::Class());
+  DefineInput(2, TList::Class());
+  DefineInput(3, TList::Class());
   DefineOutput(1, TList::Class());
 }
 
@@ -121,15 +123,15 @@ void AliForwardFlowRun2Task::UserCreateOutputObjects()
 
     fEventList->Add(new TH1D("Centrality","Centrality",fSettings.fCentBins,0,100));
     fEventList->Add(new TH1D("Vertex","Vertex",fSettings.fNZvtxBins,fSettings.fZVtxAcceptanceLowEdge,fSettings.fZVtxAcceptanceUpEdge));
-    fEventList->Add(new TH1D("FMDHits","FMDHits",100,0,10));
-    fEventList->Add(new TH1F("dNdeta","dNdeta",100 /*fSettings.fNDiffEtaBins*/,fSettings.fEtaLowEdge,fSettings.fEtaUpEdge));
+    //fEventList->Add(new TH1D("FMDHits","FMDHits",100,0,10));
+    fEventList->Add(new TH2F("dNdeta","dNdeta",200 /*fSettings.fNDiffEtaBins*/,fSettings.fEtaLowEdge,fSettings.fEtaUpEdge,fSettings.fCentBins,0,100));
 
     fAnalysisList->Add(new TList());
     fAnalysisList->Add(new TList());
     fAnalysisList->Add(new TList());
     static_cast<TList*>(fAnalysisList->At(0))->SetName("Reference");
     static_cast<TList*>(fAnalysisList->At(1))->SetName("Differential");
-    static_cast<TList*>(fAnalysisList->At(2))->SetName("AutoCorrection");
+    //static_cast<TList*>(fAnalysisList->At(2))->SetName("AutoCorrection");
 
     fOutputList->Add(fAnalysisList);
     fOutputList->Add(fEventList);
@@ -138,13 +140,13 @@ void AliForwardFlowRun2Task::UserCreateOutputObjects()
     Int_t fMaxMoment = 5;
     Int_t dimensions = 5;
 
-    Int_t dbins[5] = {fSettings.fnoSamples, fSettings.fNZvtxBins, fSettings.fNDiffEtaBins, fSettings.fCentBins, fSettings.kSinphi1phi2phi3p+1} ;
-    Int_t rbins[5] = {fSettings.fnoSamples, fSettings.fNZvtxBins, fSettings.fNRefEtaBins, fSettings.fCentBins, fSettings.kSinphi1phi2phi3p+1} ;
+    Int_t dbins[5] = {fSettings.fnoSamples, fSettings.fNZvtxBins, fSettings.fNDiffEtaBins, fSettings.fCentBins, fSettings.kW4Four+1} ;
+    Int_t rbins[5] = {fSettings.fnoSamples, fSettings.fNZvtxBins, fSettings.fNRefEtaBins, fSettings.fCentBins, fSettings.kW4Four+1} ;
     Double_t xmin[5] = {0,fSettings.fZVtxAcceptanceLowEdge, fSettings.fEtaLowEdge, 0, 0};
-    Double_t xmax[5] = {10,fSettings.fZVtxAcceptanceUpEdge, fSettings.fEtaUpEdge, 100, static_cast<Double_t>(fSettings.kSinphi1phi2phi3p+1)};
+    Double_t xmax[5] = {10,fSettings.fZVtxAcceptanceUpEdge, fSettings.fEtaUpEdge, 100, static_cast<Double_t>(fSettings.kW4Four+1)};
 
-    static_cast<TList*>(fAnalysisList->At(2))->Add(new THnD("fQcorrfactor", "fQcorrfactor", dimensions, rbins, xmin, xmax)); //(eta, n)
-    static_cast<TList*>(fAnalysisList->At(2))->Add(new THnD("fpcorrfactor","fpcorrfactor", dimensions, dbins, xmin, xmax)); //(eta, n)
+    //static_cast<TList*>(fAnalysisList->At(2))->Add(new THnD("fQcorrfactor", "fQcorrfactor", dimensions, rbins, xmin, xmax)); //(eta, n)
+    //static_cast<TList*>(fAnalysisList->At(2))->Add(new THnD("fpcorrfactor","fpcorrfactor", dimensions, dbins, xmin, xmax)); //(eta, n)
     Int_t ptnmax =  (fSettings.doPt ? 10 : 0);
 
     // create a THn for each harmonic
@@ -168,6 +170,11 @@ void AliForwardFlowRun2Task::UserCreateOutputObjects()
       }
     }
 
+    fSettings.nuacentral = static_cast<TH3F*>( static_cast<TList*>(this->GetInputData(2))->FindObject("nuacentral") );
+    fSettings.nuaforward = static_cast<TH3F*>( static_cast<TList*>(this->GetInputData(2))->FindObject("nuaforward") );
+    fSettings.nuacentral_ref = static_cast<TH3F*>( static_cast<TList*>(this->GetInputData(3))->FindObject("nuacentral") );
+    fSettings.nuaforward_ref = static_cast<TH3F*>( static_cast<TList*>(this->GetInputData(3))->FindObject("nuaforward") );
+
     PostData(1, fOutputList);
     TH1::AddDirectory(saveAutoAdd);
   }
@@ -182,6 +189,9 @@ void AliForwardFlowRun2Task::UserExec(Option_t *)
   //  Parameters:
   //   option: Not used
   //
+
+
+
   // Get the event validation object
    AliForwardTaskValidation* ev_val = dynamic_cast<AliForwardTaskValidation*>(this->GetInputData(1));
    if (!ev_val->IsValidEvent()){
@@ -233,16 +243,25 @@ void AliForwardFlowRun2Task::UserExec(Option_t *)
   refDist = &refDist_tmp;
   refDist->SetDirectory(0);
 
-  TH1F* dNdeta = static_cast<TH1F*>(fEventList->FindObject("dNdeta"));
+  TH2F* dNdeta = static_cast<TH2F*>(fEventList->FindObject("dNdeta"));
 
   dNdeta->SetDirectory(0);
-  fUtil.dodNdeta = kTRUE;
-  fUtil.dNdeta = dNdeta;
+  //fUtil.dodNdeta = kTRUE;
+  //fUtil.dNdeta = dNdeta;
   fUtil.FillData(refDist,centralDist,forwardDist);
 
+  Double_t cent = fUtil.GetCentrality(fSettings.centrality_estimator);
+
+  for (Int_t etaBin = 1; etaBin <= centralDist->GetNbinsX(); etaBin++) {
+    Double_t eta = centralDist->GetXaxis()->GetBinCenter(etaBin);
+    dNdeta->Fill(eta,cent);
+  }
+  for (Int_t etaBin = 1; etaBin <= forwardDist->GetNbinsX(); etaBin++) {
+    Double_t eta = forwardDist->GetXaxis()->GetBinCenter(etaBin);
+    dNdeta->Fill(eta,cent);
+  }
 
   Double_t zvertex = fUtil.GetZ();
-  Double_t cent = fUtil.GetCentrality(fSettings.centrality_estimator);
 
   if (fSettings.makeFakeHoles) fUtil.MakeFakeHoles(*forwardDist);
 
@@ -260,21 +279,28 @@ void AliForwardFlowRun2Task::UserExec(Option_t *)
 
   TH1F pthist = TH1F("pthist", "", ptnmax+1, fSettings.minpt, fSettings.maxpt);
 
-  for (Int_t ptn = 0; ptn <=ptnmax; ptn ++ ){
-    
-    fUtil.fSettings.minpt = pthist.GetXaxis()->GetBinLowEdge(ptn+1);
-    fUtil.fSettings.maxpt = pthist.GetXaxis()->GetBinUpEdge(ptn+1);
+  if (fSettings.doPt){
+    for (Int_t ptn = 0; ptn <=ptnmax; ptn ++ ){
+      
+      fUtil.fSettings.minpt = pthist.GetXaxis()->GetBinLowEdge(ptn+1);
+      fUtil.fSettings.maxpt = pthist.GetXaxis()->GetBinUpEdge(ptn+1);
 
-    centralDist->Reset();
+      centralDist->Reset();
 
-    // Fill centralDist
-    fUtil.FillDataCentral(centralDist);
+      // Fill centralDist
+      fUtil.FillDataCentral(centralDist);
 
+      UInt_t randomInt = fRandom.Integer(fSettings.fnoSamples);
+
+      calculator.CumulantsAccumulate(*centralDist, fOutputList, cent, zvertex,"central",false,true);  
+      calculator.saveEvent(fOutputList, cent, zvertex,  randomInt, ptn);    
+      calculator.fpvector->Reset();
+    }
+  }
+  else{
     UInt_t randomInt = fRandom.Integer(fSettings.fnoSamples);
-
     calculator.CumulantsAccumulate(*centralDist, fOutputList, cent, zvertex,"central",false,true);  
-    calculator.saveEvent(fOutputList, cent, zvertex,  randomInt, ptn);    
-    calculator.fpvector->Reset();
+    calculator.saveEvent(fOutputList, cent, zvertex,  randomInt, 0);    
   }
 
   calculator.reset();

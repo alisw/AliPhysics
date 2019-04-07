@@ -33,7 +33,7 @@ AliMultSelectionCalibratorMC::AliMultSelectionCalibratorMC() :
     fBufferFileNameMC  ("bufferMC.root"),
     fOutputFileName(""), fInput(0), fSelection(0), fMultSelectionCuts(0), fCalibHists(0),
     lNDesiredBoundaries(0), lDesiredBoundaries(0), fRunToUseAsDefault(-1),
-    fkUseQuadraticMapping(kFALSE)
+    fkUseQuadraticMapping(kFALSE), fNV0MCutoffs(0), fV0MCutoffs()
 {
     // Constructor
 
@@ -56,7 +56,7 @@ AliMultSelectionCalibratorMC::AliMultSelectionCalibratorMC(const char * name, co
     fBufferFileNameMC  ("bufferMC.root"),
     fOutputFileName(""), fInput(0), fSelection(0), fMultSelectionCuts(0), fCalibHists(0),
     lNDesiredBoundaries(0), lDesiredBoundaries(0), fRunToUseAsDefault(-1),
-    fkUseQuadraticMapping(kFALSE)
+    fkUseQuadraticMapping(kFALSE), fNV0MCutoffs(0), fV0MCutoffs()
 {
     // Named Constructor
 
@@ -804,39 +804,62 @@ Bool_t AliMultSelectionCalibratorMC::Calibrate() {
                 lTempDef.ReplaceAll("fZpaFired", "1");
                 lTempDef.ReplaceAll("fZpcFired", "1");
                 
+                //remember to not be silly...
+                TString lEstName = fsels->GetEstimator(iEst)->GetName();
                 //Construction of estimator re-definition
-                if(!fkUseQuadraticMapping){
-                    lTempDef.Prepend(Form("%.10f*(",lScaleFactors[iEst][iRun] ));
-                    lTempDef.Append(")"); //don't forget parentheses...
-                }else{
-                    //Experimental quadratic fit
-                    TString lTemporary = lTempDef.Data();
+                if( !lEstName.Contains("SPD") &&
+                   !lEstName.Contains("CL0") &&
+                   !lEstName.Contains("CL1") ){
+                    if(!fkUseQuadraticMapping){
+                        lTempDef.Prepend(Form("%.10f*(",lScaleFactors[iEst][iRun] ));
+                        lTempDef.Append(")"); //don't forget parentheses...
+                    }else{
+                        //Experimental quadratic fit
+                        TString lTemporary = lTempDef.Data();
+                        
+                        /*
+                         //Substitution logic:
+                         xdata = TMath::Power((ydata - Adata)/Bdata, 1./Cdata)
+                         ydata -> ymc = Amc + Bmc * xmc ^ Cmc
+                         
+                         full formula:
+                         
+                         xdata = TMath::Power(( Amc + Bmc * TMath::Power(xmc,Cmc) - Adata )/Bdata, 1./Cdata);
+                         */
+                        
+                        //lTempDef = Form(TMath::Power(( (Amc + Bmc * TMath::Power(xmc,Cmc)) - Adata )/Bdata, 1./Cdata),
+                        lTempDef = Form("(TMath::Power(( (%.10f + %.10f * TMath::Power(%s,%.10f)) - %.10f )/%.10f, 1./%.10f))",
+                                        fitmc[iRun][iEst]->GetParameter(0),
+                                        fitmc[iRun][iEst]->GetParameter(1),
+                                        lTempDef.Data(),
+                                        fitmc[iRun][iEst]->GetParameter(2),
+                                        fitdata[iRun][iEst]->GetParameter(0),
+                                        fitdata[iRun][iEst]->GetParameter(1),
+                                        fitdata[iRun][iEst]->GetParameter(2));
+                        lTempDef.ReplaceAll("ESTIMATOR",lTemporary.Data());
+                        
+                        //Trick: add anchor-point-like logic to avoid low-multiplicity issues
+                        if(fsels->GetEstimator(iEst)->GetUseAnchor()){
+                            lTempDef.Prepend(Form("(%s>%.10f)?(",fsels->GetEstimator(iEst)->GetDefinition().Data(),0.5*fsels->GetEstimator(iEst)->GetAnchorPoint()));
+                            lTempDef.Append("):0.0");
+                        }
+                        
+                        //Use V0M high-cutoff if provided
+                        if( lEstName.Contains("V0M"))
+                            if ( fV0MCutoffs.find( lRunNumbers[iRun] ) != fV0MCutoffs.end() ) {
+                                Float_t lV0MCutoff = fV0MCutoffs[ lRunNumbers[iRun] ];
+                                cout<<"-> Run "<<lRunNumbers[iRun]<<": will use V0M cutoff of "<<lV0MCutoff<<endl;
+                                lTempDef.Prepend(Form("(((fAmplitude_V0A)+(fAmplitude_V0C))<%.5f)?(", lV0MCutoff));
+                                lTempDef.Append("):0.0"); //reject otherwise
+                            }
+                    }
                     
-                    /*
-                     //Substitution logic:
-                     xdata = TMath::Power((ydata - Adata)/Bdata, 1./Cdata)
-                     ydata -> ymc = Amc + Bmc * xmc ^ Cmc
-                     
-                     full formula:
-                     
-                     xdata = TMath::Power(( Amc + Bmc * TMath::Power(xmc,Cmc) - Adata )/Bdata, 1./Cdata);
-                     */
-                    
-                    //lTempDef = Form(TMath::Power(( (Amc + Bmc * TMath::Power(xmc,Cmc)) - Adata )/Bdata, 1./Cdata),
-                    lTempDef = Form("TMath::Power(( (%.10f + %.10f * TMath::Power(%s,%.10f)) - %.10f )/%.10f, 1./%.10f)",
-                                    fitmc[iRun][iEst]->GetParameter(0),
-                                    fitmc[iRun][iEst]->GetParameter(1),
-                                    lTempDef.Data(),
-                                    fitmc[iRun][iEst]->GetParameter(2),
-                                    fitdata[iRun][iEst]->GetParameter(0),
-                                    fitdata[iRun][iEst]->GetParameter(1),
-                                    fitdata[iRun][iEst]->GetParameter(2));
-                    lTempDef.ReplaceAll("ESTIMATOR",lTemporary.Data());
                     cout<<"================================================================================"<<endl;
                     cout<<" Quadratic fit print obtained for estimator "<<fsels->GetEstimator( iEst )->GetName()<<endl;
                     cout<<lTempDef.Data()<<endl;
                     cout<<"================================================================================"<<endl;
                 }
+                
                 fsels->GetEstimator( iEst )->SetDefinition ( lTempDef.Data() );
             }
             
@@ -875,32 +898,53 @@ Bool_t AliMultSelectionCalibratorMC::Calibrate() {
                 for(Int_t iEst=0; iEst<lNEstimators; iEst++){
                     lTempDef = fselsdef->GetEstimator( iEst )->GetDefinition();
                     //Construction of estimator re-definition
-                    if(!fkUseQuadraticMapping){
-                        lTempDef.Prepend(Form("%.10f*(",lScaleFactors[iEst][iRun] ));
-                        lTempDef.Append(")"); //don't forget parentheses...
-                    }else{
-                        //Experimental quadratic fit
-                        TString lTemporary = lTempDef.Data();
+                    TString lEstName = fsels->GetEstimator(iEst)->GetName();
+                    if( !lEstName.Contains("SPD") &&
+                       !lEstName.Contains("CL0") &&
+                       !lEstName.Contains("CL1") ){
+                        if(!fkUseQuadraticMapping){
+                            lTempDef.Prepend(Form("%.10f*(",lScaleFactors[iEst][iRun] ));
+                            lTempDef.Append(")"); //don't forget parentheses...
+                        }else{
+                            //Experimental quadratic fit
+                            TString lTemporary = lTempDef.Data();
+                            
+                            /*
+                             //Substitution logic:
+                             xdata = TMath::Power((ydata - Adata)/Bdata, 1./Cdata)
+                             ydata -> ymc = Amc + Bmc * xmc ^ Cmc
+                             
+                             full formula:
+                             
+                             xdata = TMath::Power(( Amc + Bmc * TMath::Power(xmc,Cmc) - Adata )/Bdata, 1./Cdata);
+                             */
+                            
+                            lTempDef = Form("TMath::Power(( (%.10f + %.10f * TMath::Power(%s,%.10f)) - %.10f )/%.10f, 1./%.10f)",
+                                            fitmc[iRun][iEst]->GetParameter(0),
+                                            fitmc[iRun][iEst]->GetParameter(1),
+                                            lTempDef.Data(),
+                                            fitmc[iRun][iEst]->GetParameter(2),
+                                            fitdata[iRun][iEst]->GetParameter(0),
+                                            fitdata[iRun][iEst]->GetParameter(1),
+                                            fitdata[iRun][iEst]->GetParameter(2));
+                            lTempDef.ReplaceAll("ESTIMATOR",lTemporary.Data());
+                            
+                            //Trick: add anchor-point-like logic to avoid low-multiplicity issues
+                            if(fsels->GetEstimator(iEst)->GetUseAnchor()){
+                                lTempDef.Prepend(Form("(%s>%.10f)?(",fselsdef->GetEstimator(iEst)->GetDefinition().Data(),0.5*fselsdef->GetEstimator(iEst)->GetAnchorPoint()));
+                                lTempDef.Append("):0.0");
+                            }
+                            
+                            //Use V0M high-cutoff if provided
+                            if( lEstName.Contains("V0M"))
+                                if ( fV0MCutoffs.find( lRunNumbers[iRun] ) != fV0MCutoffs.end() ) {
+                                    Float_t lV0MCutoff = fV0MCutoffs[ lRunNumbers[iRun] ];
+                                    cout<<"-> Run "<<lRunNumbers[iRun]<<": will use V0M cutoff of "<<lV0MCutoff<<endl;
+                                    lTempDef.Prepend(Form("(((fAmplitude_V0A)+(fAmplitude_V0C))<%.5f)?(", lV0MCutoff));
+                                    lTempDef.Append("):0.0"); //reject otherwise
+                                }
+                        }
                         
-                        /*
-                         //Substitution logic:
-                         xdata = TMath::Power((ydata - Adata)/Bdata, 1./Cdata)
-                         ydata -> ymc = Amc + Bmc * xmc ^ Cmc
-                         
-                         full formula:
-                         
-                         xdata = TMath::Power(( Amc + Bmc * TMath::Power(xmc,Cmc) - Adata )/Bdata, 1./Cdata);
-                         */
-                        
-                        lTempDef = Form("TMath::Power(( (%.10f + %.10f * TMath::Power(%s,%.10f)) - %.10f )/%.10f, 1./%.10f)",
-                                        fitmc[iRun][iEst]->GetParameter(0),
-                                        fitmc[iRun][iEst]->GetParameter(1),
-                                        lTempDef.Data(),
-                                        fitmc[iRun][iEst]->GetParameter(2),
-                                        fitdata[iRun][iEst]->GetParameter(0),
-                                        fitdata[iRun][iEst]->GetParameter(1),
-                                        fitdata[iRun][iEst]->GetParameter(2));
-                        lTempDef.ReplaceAll("ESTIMATOR",lTemporary.Data());
                         cout<<"================================================================================"<<endl;
                         cout<<" Quadratic fit print obtained for estimator "<<fsels->GetEstimator( iEst )->GetName()<<endl;
                         cout<<lTempDef.Data()<<endl;
@@ -1073,3 +1117,13 @@ void AliMultSelectionCalibratorMC::SetupStandardInput() {
     //============================================================
     
 }
+
+//________________________________________________________________
+void AliMultSelectionCalibratorMC::AddV0MCutoff ( Int_t lRunNumber, Float_t lV0MCutoff ){
+    //Add mapping : all runs in range go to current value of fNRunRanges
+    //Ease of access
+    fV0MCutoffs.insert( std::pair<int,float>(lRunNumber,lV0MCutoff));
+    fNV0MCutoffs++;
+    AliInfoF("Added V0M cutoff for run #%i at %.5f", (Int_t)lRunNumber, (Float_t) lV0MCutoff) ;
+}
+

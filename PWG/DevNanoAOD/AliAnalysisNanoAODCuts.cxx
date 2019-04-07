@@ -8,6 +8,7 @@
 #include "AliAnalysisManager.h"
 #include "AliInputEventHandler.h"
 #include "AliAODv0.h"
+#include "AliEventCuts.h"
 
 ClassImp(AliAnalysisNanoAODTrackCuts)
 ClassImp(AliAnalysisNanoAODV0Cuts)
@@ -32,62 +33,78 @@ Bool_t AliAnalysisNanoAODTrackCuts::IsSelected(TObject* obj)
   if (TMath::Abs(track->Eta()) > fMaxEta) return kFALSE; 
   
   return kTRUE;  
-
 }
 
 Bool_t AliAnalysisNanoAODV0Cuts::IsSelected(TObject* obj)
 {
   // Returns true if the track is good!
   // TODO this is only an example implementation.
+  float v0pTmin = 0.2;
+  float v0EtaMax = 0.9;
+  float TransverseRadiusMin = 0.2;
+  float TransverseRadiusMax = 100;
+  float CPAmin = 0.98;
+  float DCADaugv0VtxMax = 1.5;
+  float DCADaugPrimVtxMin = 0.05;
+  AliAODv0* v0 = static_cast<AliAODv0*>(obj);
+  const AliAODEvent* evt = static_cast<const AliAODEvent*>(v0->GetEvent());
 
-  AliAODv0* track = static_cast<AliAODv0*>(obj);
-  
-  if (TMath::Abs(track->DcaV0ToPrimVertex() > 10))
-    return kFALSE;
-  
-  return kTRUE;  
+  if(v0->GetNProngs() != 2) {
+    return false;
+  }
+  if(v0->GetNDaughters() != 2) {
+    return false;
+  }
+  if (v0->GetOnFlyStatus()) {
+    return false;
+  }
+  if (v0->Pt() > v0pTmin) {
+    return false;
+  }
+  float xvP = evt->GetPrimaryVertex()->GetX();
+  float yvP = evt->GetPrimaryVertex()->GetY();
+  float zvP = evt->GetPrimaryVertex()->GetZ();
+  double vecTarget[3] = { xvP, yvP, zvP };
+  float TransverseRadius = v0->DecayLengthXY(vecTarget);
+  if (TransverseRadius > TransverseRadiusMax
+      || TransverseRadius < TransverseRadiusMin) {
+    return false;
+  }
+  if (v0->CosPointingAngle(vecTarget) > CPAmin) {
+    return false;
+  }
+  if (v0->Eta() < v0EtaMax) {
+    return false;
+  }
+  if (v0->DcaV0Daughters() < DCADaugv0VtxMax) {
+    return false;
+  }
+  if (v0->DcaPosToPrimVertex() < DCADaugPrimVtxMin
+      || v0->DcaNegToPrimVertex() < DCADaugPrimVtxMin) {
+    return false;
+  }
+  return true;
 }
 
 AliAnalysisNanoAODEventCuts::AliAnalysisNanoAODEventCuts():
   AliAnalysisCuts(), 
-  fVertexRange(-1),
   fTrackCut(0),
   fMinMultiplicity(-1),
   fMaxMultiplicity(-1),
-  fAnalysisUtils(0),
-  fCutPileUpMV(kFALSE)  
+  fEventCuts()
 {
   // default ctor   
-  fAnalysisUtils = new AliAnalysisUtils;
+  
 }
 
 Bool_t AliAnalysisNanoAODEventCuts::IsSelected(TObject* obj)
 {
   // Returns true if object accepted on the event level
   
-  AliAODEvent* evt = dynamic_cast<AliAODEvent*>(obj);
+  AliVEvent* evt = dynamic_cast<AliVEvent*>(obj);
   
-  if (fCutPileUpMV)
-    if (fAnalysisUtils->IsPileUpMV(evt))
-      return kFALSE;
-  
-  if (fVertexRange > 0)
-  {
-    const AliVVertex* vertex = evt->GetPrimaryVertex();
-    if (!vertex) 
-      return kFALSE;
-    
-    if (vertex->GetNContributors() < 1) 
-    {
-      // SPD vertex cut
-      vertex = evt->GetPrimaryVertexSPD();    
-      if (!vertex || vertex->GetNContributors() < 1) 
-        return kFALSE;
-    }    
-    
-    if (TMath::Abs(vertex->GetZ()) > fVertexRange) 
-      return kFALSE;
-  }
+  if (!fEventCuts.AcceptEvent(evt))
+    return kFALSE;
   
   if (fTrackCut != 0)
   {
@@ -208,17 +225,14 @@ void AliNanoAODSimpleSetter::SetNanoAODHeader(const AliAODEvent* event, AliNanoA
 void AliNanoAODSimpleSetter::SetNanoAODTrack (const AliAODTrack * aodTrack, AliNanoAODTrack * nanoTrack) 
 {
   // Set custom variables in the special track
-  // 1. Cache the indexes
-  
-  static Int_t kcstNSigmaTPCPi  = AliNanoAODTrackMapping::GetInstance()->GetVarIndex("cstNSigmaTPCPi");
-  static Int_t kcstNSigmaTPCKa  = AliNanoAODTrackMapping::GetInstance()->GetVarIndex("cstNSigmaTPCKa");
-  static Int_t kcstNSigmaTPCPr  = AliNanoAODTrackMapping::GetInstance()->GetVarIndex("cstNSigmaTPCPr");
-  static Int_t kcstNSigmaTOFPi  = AliNanoAODTrackMapping::GetInstance()->GetVarIndex("cstNSigmaTOFPi");
-  static Int_t kcstNSigmaTOFKa  = AliNanoAODTrackMapping::GetInstance()->GetVarIndex("cstNSigmaTOFKa");
-  static Int_t kcstNSigmaTOFPr  = AliNanoAODTrackMapping::GetInstance()->GetVarIndex("cstNSigmaTOFPr");
 
-  if (kcstNSigmaTPCPi != -1 || kcstNSigmaTPCKa != -1 || kcstNSigmaTPCPr != -1 ||
-      kcstNSigmaTOFPi != -1 || kcstNSigmaTOFKa != -1 || kcstNSigmaTOFPr != -1)
+  // PID
+  
+  // Initialize PID track mapping
+  static const Bool_t bPIDFilled = AliNanoAODTrack::InitPIDIndex();
+  
+  // PID variables
+  if (bPIDFilled)
   {
     // Get the PID info
     static AliPIDResponse* pidResponse = 0;
@@ -231,19 +245,24 @@ void AliNanoAODSimpleSetter::SetNanoAODTrack (const AliAODTrack * aodTrack, AliN
     if (!pidResponse)
       AliFatal("PID response not available but fields requested");
 
-    const AliVParticle *inEvHMain = dynamic_cast<const AliVParticle *>(aodTrack);
-    Double_t nsigmaTPCkProton = pidResponse->NumberOfSigmasTPC(inEvHMain, AliPID::kProton);
-    Double_t nsigmaTPCkKaon   = pidResponse->NumberOfSigmasTPC(inEvHMain, AliPID::kKaon); 
-    Double_t nsigmaTPCkPion   = pidResponse->NumberOfSigmasTPC(inEvHMain, AliPID::kPion); 
-    Double_t nsigmaTOFkProton = pidResponse->NumberOfSigmasTOF(inEvHMain, AliPID::kProton);
-    Double_t nsigmaTOFkKaon   = pidResponse->NumberOfSigmasTOF(inEvHMain, AliPID::kKaon); 
-    Double_t nsigmaTOFkPion   = pidResponse->NumberOfSigmasTOF(inEvHMain, AliPID::kPion); 
+    for (Int_t r = AliNanoAODTrack::kSigmaTPC; r<AliNanoAODTrack::kLAST; r++) {
+      for (Int_t p = 0; p<AliPID::kSPECIESC; p++) {
+        Int_t index = AliNanoAODTrack::GetPIDIndex((AliNanoAODTrack::ENanoPIDResponse) r, (AliPID::EParticleType) p);
+        if (index == -1)
+          continue;
+        Double_t value = 0;
+        if (r == AliNanoAODTrack::kSigmaTPC)
+          value = pidResponse->NumberOfSigmasTPC(aodTrack, (AliPID::EParticleType) p);
+        else if (r == AliNanoAODTrack::kSigmaTOF)
+          value = pidResponse->NumberOfSigmasTOF(aodTrack, (AliPID::EParticleType) p);
 
-    if (kcstNSigmaTPCPi != -1)  nanoTrack->SetVar(kcstNSigmaTPCPi, nsigmaTPCkPion);
-    if (kcstNSigmaTPCKa != -1)  nanoTrack->SetVar(kcstNSigmaTPCKa, nsigmaTPCkKaon);
-    if (kcstNSigmaTPCPr != -1)  nanoTrack->SetVar(kcstNSigmaTPCPr, nsigmaTPCkProton);
-    if (kcstNSigmaTOFPi != -1)  nanoTrack->SetVar(kcstNSigmaTOFPi, nsigmaTOFkPion);
-    if (kcstNSigmaTOFKa != -1)  nanoTrack->SetVar(kcstNSigmaTOFKa, nsigmaTOFkKaon);
-    if (kcstNSigmaTOFPr != -1)  nanoTrack->SetVar(kcstNSigmaTOFPr, nsigmaTOFkProton);
+        nanoTrack->SetVar(index, value);
+      }
+    }
   }
+
+  // additional fields which are to be moved to AliNanoAODTrack
+  static const Int_t cstTOFBunchCrossing = AliNanoAODTrackMapping::GetInstance()->GetVarIndex("cstTOFBunchCrossing");
+  if (cstTOFBunchCrossing != -1)
+    nanoTrack->SetVar(cstTOFBunchCrossing, aodTrack->GetTOFBunchCrossing());
 }

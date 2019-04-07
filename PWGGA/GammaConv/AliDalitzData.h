@@ -16,7 +16,11 @@
 **************************************************************************/
 
 // This class is to support AOD and ESD data
- 
+#include <memory>
+#include <utility>
+#include <iostream>
+//using  std::unique_ptr;
+using namespace std;
 #include "AliVTrack.h"
 #include "AliVVertex.h"
 #include "AliESDEvent.h"
@@ -35,12 +39,11 @@ class AliESDtrack;
 class AliAODEvent;
 class AliAODtrack;
 
-
 class AliDalitzData{
 public:
 
     AliDalitzData();
-    virtual ~AliDalitzData();
+   virtual ~AliDalitzData();
     
     AliDalitzData(AliESDEvent* lESDEvent);
     AliDalitzData(AliAODEvent* lAODEvent);
@@ -58,6 +61,7 @@ public:
         else return fAODEvent;
        }
     AliDalitzAODESD* GetTrack(Int_t i);
+   // Int_t GetTrack(Int_t i);
     Int_t GetNumberOfTrackletsG();
     Int_t GetNumberOfTracks();
     Int_t GetNumberOfITSClustersG(Int_t i);

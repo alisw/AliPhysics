@@ -53,6 +53,7 @@ class AliSigma0PhotonMotherCuts : public TObject {
   bool CheckDaughtersInAcceptance(const AliMCParticle *particle) const;
 
   void SetIsMC(bool isMC) { fIsMC = isMC; }
+  void SetDoCleanUp(bool doCleanUp) { fDoCleanUp = doCleanUp; }
   void SetLightweight(bool isLightweight) { fIsLightweight = isLightweight; }
   void SetIsSpectrum(bool isSpectrum) { fIsSpectrumAnalysis = isSpectrum; }
 
@@ -124,6 +125,7 @@ class AliSigma0PhotonMotherCuts : public TObject {
   TList *fHistogramsMC;  //!
 
   bool fIsMC;                //
+  bool fDoCleanUp;           //
   bool fIsLightweight;       //
   bool fIsSpectrumAnalysis;  //
 

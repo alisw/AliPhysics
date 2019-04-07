@@ -23,6 +23,10 @@
 #include "AliAODEvent.h"
 //#include "AliAODEvent.h"
 #include "AliDalitzAODESDMC.h"
+#include <memory>
+#include <utility>
+//using  std::unique_ptr;
+using namespace std;
 
 class AliESDtrack;
 class AliESDVertex;

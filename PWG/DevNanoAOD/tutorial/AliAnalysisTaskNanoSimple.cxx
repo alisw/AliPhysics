@@ -65,14 +65,6 @@ void  AliAnalysisTaskNanoSimple::UserExec(Option_t */*option*/)
   if (!fInputEvent)
     return;
   
-  // NOTE Access to custom variables. Use static here for caching of index
-  static const Int_t kcstNSigmaTPCPi  = AliNanoAODTrackMapping::GetInstance()->GetVarIndex("cstNSigmaTPCPi");
-  static const Int_t kcstNSigmaTPCKa  = AliNanoAODTrackMapping::GetInstance()->GetVarIndex("cstNSigmaTPCKa");
-  static const Int_t kcstNSigmaTPCPr  = AliNanoAODTrackMapping::GetInstance()->GetVarIndex("cstNSigmaTPCPr");
-  static const Int_t kcstNSigmaTOFPi  = AliNanoAODTrackMapping::GetInstance()->GetVarIndex("cstNSigmaTOFPi");
-  static const Int_t kcstNSigmaTOFKa  = AliNanoAODTrackMapping::GetInstance()->GetVarIndex("cstNSigmaTOFKa");
-  static const Int_t kcstNSigmaTOFPr  = AliNanoAODTrackMapping::GetInstance()->GetVarIndex("cstNSigmaTOFPr");
-
   const AliVVertex* vertex = fInputEvent->GetPrimaryVertex();
   if (vertex->GetNContributors() < 1)
     return;
@@ -88,12 +80,18 @@ void  AliAnalysisTaskNanoSimple::UserExec(Option_t */*option*/)
   unsigned int nTracks = fInputEvent->GetNumberOfTracks();
   for (unsigned int i = 0; i < nTracks; i++) {
     AliVTrack* track = (AliVTrack*) fInputEvent->GetTrack(i);
-    Printf("pt = %f", track->Pt());
+    Printf("pt = %f   ITS cluster = %d %d %d %d %d %d", track->Pt(), track->HasPointOnITSLayer(0), track->HasPointOnITSLayer(1), 
+           track->HasPointOnITSLayer(2), track->HasPointOnITSLayer(3), track->HasPointOnITSLayer(4), track->HasPointOnITSLayer(5));
+    //Printf("TOF BC = %d", track->GetTOFBunchCrossing());
     
     // for custom variables, cast to nano AOD track
     AliNanoAODTrack* nanoTrack = dynamic_cast<AliNanoAODTrack*>(track);
-    if (nanoTrack && kcstNSigmaTPCPr != -1)
-      Printf("TPC_sigma_proton = %f  TOF_sigma_proton = %f", nanoTrack->GetVar(kcstNSigmaTPCPr), nanoTrack->GetVar(kcstNSigmaTOFPr));
+    // NOTE Access to custom variables. Use static here for caching of index
+    static Bool_t bPIDAvailable = AliNanoAODTrack::InitPIDIndex();
+    static const Int_t kcstNSigmaTPCPr  = AliNanoAODTrack::GetPIDIndex(AliNanoAODTrack::kSigmaTPC, AliPID::kProton);
+    static const Int_t kcstNSigmaTOFPr  = AliNanoAODTrack::GetPIDIndex(AliNanoAODTrack::kSigmaTOF, AliPID::kProton);
+    if (nanoTrack && bPIDAvailable)
+      Printf("TPC_sigma_proton = %f  hasTOF = %d  TOF_sigma_proton = %f", nanoTrack->GetVar(kcstNSigmaTPCPr), nanoTrack->HasTOFPID(), nanoTrack->GetVar(kcstNSigmaTOFPr));
   }
   
   // V0 access - as usual
@@ -102,4 +100,12 @@ void  AliAnalysisTaskNanoSimple::UserExec(Option_t */*option*/)
     for (int i = 0; i < aod->GetNumberOfV0s(); i++)
       Printf("V0 %d: dca = %f", i, aod->GetV0(i)->DcaV0ToPrimVertex());
   }
+
+  // cascade access - as usual
+  
+  // TODO in current AliRoot tag (v5-09-46), GetCascades() produces a SEGV if not filled
+  //if (aod->GetCascades()) {
+  //  for (int i = 0; i < aod->GetNumberOfCascades(); i++)
+  //    Printf("Cascade %d: xi mass = %f", i, aod->GetCascade(i)->MassXi());
+  //}
 }

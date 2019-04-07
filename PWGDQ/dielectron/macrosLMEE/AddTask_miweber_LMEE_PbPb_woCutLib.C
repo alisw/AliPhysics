@@ -126,6 +126,8 @@ AliAnalysisTask *AddTask_miweber_LMEE_PbPb_woCutLib(Int_t cutDefinition = 0,
   
   
   mgr->ConnectInput(task,  0, mgr->GetCommonInputContainer());
+  if((AliAnalysisDataContainer*)mgr->GetContainers()->FindObject("ZDCEPExchangeContainer"))
+    mgr->ConnectInput(task,  1,(AliAnalysisDataContainer*)mgr->GetContainers()->FindObject("ZDCEPExchangeContainer"));
   mgr->ConnectOutput(task, 0, coutput1 );
   mgr->ConnectOutput(task, 1, cOutputHist1);
   mgr->ConnectOutput(task, 2, cOutputHist2);

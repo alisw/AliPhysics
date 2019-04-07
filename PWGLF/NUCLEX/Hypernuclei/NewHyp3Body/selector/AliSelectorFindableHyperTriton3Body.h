@@ -121,6 +121,7 @@ public:
   TH1D *fHistNSigmaCheck[4] = {nullptr};
   TH1D *fHistNSigmaFakeCheck[4] = {nullptr};
 
+  TH1D *fHistCheckPDGTrackPID = {nullptr};
 
   ClassDef(AliSelectorFindableHyperTriton3Body, 0);
 };

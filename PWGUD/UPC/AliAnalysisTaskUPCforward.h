@@ -635,7 +635,7 @@ class AliAnalysisTaskUPCforward : public AliAnalysisTaskSE
                                  * J/Psi. This histogram is needed to evaluate
                                  * the polarization of the J/Psi!
                                  */
-        TH1F*                   fAngularDistribOfPositiveMuonRestFrameJPsiH;
+        TH1F*                   fAngularDistribOfPositiveMuonRestFrameJPsiH;       //!
 
                                 /**
                                  * This histogram shows the angular distribution
@@ -643,14 +643,14 @@ class AliAnalysisTaskUPCforward : public AliAnalysisTaskSE
                                  * J/Psi. This histogram is needed to evaluate
                                  * the polarization of the J/Psi!
                                  */
-        TH1F*                   fAngularDistribOfNegativeMuonRestFrameJPsiH;
+        TH1F*                   fAngularDistribOfNegativeMuonRestFrameJPsiH;       //!
 
                                 /**
                                  * This histogram represents the check over
                                  * the helicity of the J/Psi. It should be flat
                                  * if I remember well enough!
                                  */
-        TH1F*                   fCheckHelicityRestFrameJPsiH;
+        TH1F*                   fCheckHelicityRestFrameJPsiH;       //!
 
                                 /**
                                  * This histogram shows the angular distribution
@@ -659,7 +659,7 @@ class AliAnalysisTaskUPCforward : public AliAnalysisTaskSE
                                  * the polarization of the J/Psi! Divided in
                                  * psudorapidity bins... 8??
                                  */
-        TH1F*                   fThetaDistribOfPositiveMuonRestFrameJPsiRapidityBinH[8];
+        TH1F*                   fThetaDistribOfPositiveMuonRestFrameJPsiRapidityBinH[8];       //!
 
 
 
@@ -674,28 +674,28 @@ class AliAnalysisTaskUPCforward : public AliAnalysisTaskSE
                                  * of the positive muon in the HELICITY frame.
                                  * COS(THETA) distribution.
                                  */
-        TH1F*                   fCosThetaHelicityFrameJPsiH;
+        TH1F*                   fCosThetaHelicityFrameJPsiH;       //!
 
                                 /**
                                  * This histogram shows the angular distribution
                                  * of the positive muon in the HELICITY frame.
                                  * PHI distribution.
                                  */
-        TH1F*                   fPhiHelicityFrameJPsiH;
+        TH1F*                   fPhiHelicityFrameJPsiH;       //!
 
                                 /**
                                  * This histogram shows the angular distribution
                                  * of the positive muon in the COLLINS-SOPER
                                  * frame.  COS(THETA) distribution.
                                  */
-        TH1F*                   fCosThetaCollinsSoperFrameJPsiH;
+        TH1F*                   fCosThetaCollinsSoperFrameJPsiH;       //!
 
                                 /**
                                  * This histogram shows the angular distribution
                                  * of the positive muon in the COLLINS-SOPER
                                  * frame. PHI distribution.
                                  */
-        TH1F*                   fPhiCollinsSoperFrameJPsiH;
+        TH1F*                   fPhiCollinsSoperFrameJPsiH;       //!
 
                                 /**
                                  * This histogram shows the angular distribution
@@ -703,7 +703,7 @@ class AliAnalysisTaskUPCforward : public AliAnalysisTaskSE
                                  * COS(THETA) distribution. Divided per
                                  * rapidity bins.
                                  */
-        TH1F*                   fCosThetaHelicityFrameJPsiRapidityBinsH[8];
+        TH1F*                   fCosThetaHelicityFrameJPsiRapidityBinsH[8];       //!
 
                                 /**
                                  * This histogram shows the angular distribution
@@ -711,7 +711,7 @@ class AliAnalysisTaskUPCforward : public AliAnalysisTaskSE
                                  * PHI distribution. Divided per
                                  * rapidity bins.
                                  */
-        TH1F*                   fPhiHelicityFrameJPsiRapidityBinsH[8];
+        TH1F*                   fPhiHelicityFrameJPsiRapidityBinsH[8];       //!
 
                                 /**
                                  * This histogram shows the angular distribution
@@ -719,7 +719,7 @@ class AliAnalysisTaskUPCforward : public AliAnalysisTaskSE
                                  * frame.  COS(THETA) distribution. Divided per
                                  * rapidity bins.
                                  */
-        TH1F*                   fCosThetaCollinsSoperFrameJPsiRapidityBinsH[8];
+        TH1F*                   fCosThetaCollinsSoperFrameJPsiRapidityBinsH[8];       //!
 
                                 /**
                                  * This histogram shows the angular distribution
@@ -727,7 +727,60 @@ class AliAnalysisTaskUPCforward : public AliAnalysisTaskSE
                                  * frame. PHI distribution. Divided per
                                  * rapidity bins.
                                  */
-        TH1F*                   fPhiCollinsSoperFrameJPsiRapidityBinsH[8];
+        TH1F*                   fPhiCollinsSoperFrameJPsiRapidityBinsH[8];       //!
+
+                                /**
+                                 * This histogram shows the angular distribution
+                                 * of the positive muon in the HELICITY frame.
+                                 * COS(THETA) distribution. Divided per
+                                 * rapidity bins. 10 of them.
+                                 */
+        TH1F*                   fCosThetaHelicityFrameJPsiTenRapidityBinsH[10];       //!
+
+                                /**
+                                 * This histogram shows the angular distribution
+                                 * of the positive muon in the HELICITY frame.
+                                 * PHI distribution. Divided per
+                                 * rapidity bins. 10 of them.
+                                 */
+        TH1F*                   fPhiHelicityFrameJPsiTenRapidityBinsH[10];       //!
+
+                                /**
+                                 * This histogram shows the angular distribution
+                                 * of the positive muon in the COLLINS-SOPER
+                                 * frame.  COS(THETA) distribution. Divided per
+                                 * rapidity bins. 10 of them.
+                                 */
+        TH1F*                   fCosThetaCollinsSoperFrameJPsiTenRapidityBinsH[10];       //!
+
+                                /**
+                                 * This histogram shows the angular distribution
+                                 * of the positive muon in the COLLINS-SOPER
+                                 * frame. PHI distribution. Divided per
+                                 * rapidity bins. 10 of them.
+                                 */
+        TH1F*                   fPhiCollinsSoperFrameJPsiTenRapidityBinsH[10];       //!
+
+                                /**
+                                 * This histogram shows the invariant mass
+                                 * distribution of the dimuon pairs in terms
+                                 * of bins of cos theta of the positive muon
+                                 * in the helicity frame of the J/Psi.
+                                 *
+                                 * What it means is that we divide in 5 bins of
+                                 * possible CosTheta of the decaying J/Psi,
+                                 * meaning  (-1,-0.8), (-0.8,-0.6), (-0.6,-0.4),
+                                 * (-0.4,-0.2) and so on until (0.8,1). We fill
+                                 * the invariant mass distribution of the
+                                 * dimuons in this many bins.
+                                 *
+                                 * The next step is to fit this invariant mass
+                                 * distributions, so as to obtain the relative
+                                 * contribution of J/Psi and GammaGamma to the
+                                 * angular distributions. This should help in
+                                 * validating our results...
+                                 */
+        TH1F*                   fInvariantMassDistributionInBinsOfCosThetaHelicityFrameH[10];       //!
 
 
         //_______________________________
@@ -770,7 +823,7 @@ class AliAnalysisTaskUPCforward : public AliAnalysisTaskSE
         /**
          * This is the vector containing the GOOD RunNumbers.
          */
-        std::vector<Int_t> fVectorGoodRunNumbers;
+        std::vector<Int_t> fVectorGoodRunNumbers;       //!
 
 
 
@@ -790,7 +843,7 @@ class AliAnalysisTaskUPCforward : public AliAnalysisTaskSE
          * If I happen to encounter it again in the future, I will make sure to
          * record it!
          */
-        ClassDef(AliAnalysisTaskUPCforward, 8);
+        ClassDef(AliAnalysisTaskUPCforward, 11);
 };
 
 #endif

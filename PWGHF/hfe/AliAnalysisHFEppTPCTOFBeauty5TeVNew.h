@@ -117,6 +117,7 @@ public:
     void SetDcorrFunction20(TF1* DcorrF20) {fDcorr20 = DcorrF20;};
     void SetDcorrFunction21(TF1* DcorrF21) {fDcorr21 = DcorrF21;};
     void SetDcorrFunction22(TF1* DcorrF22) {fDcorr22 = DcorrF22;};
+    void SetDcorrFunction(TF1* DcorrF) {fDcorr = DcorrF;};
     
     void SetHCFunction(TF1* HC) {fHC = HC;};
     void SetPi0WeightMB(TGraphErrors* hWeightPi0MB) {hMCWeightPi0MB = hWeightPi0MB;};
@@ -297,6 +298,23 @@ private:
     TH2F                *fDCAxy_pt_charmaft;//!
     TH2F                *fDCAxy_pt_beautybef;//!
     TH2F                *fDCAxy_pt_beautyaft;//!
+    TH2F                *fDCAxy_pt_beautybaryons;//!
+    TH2F		*fDCAxy_pt_DstarDplusbef;//!
+    TH2F		*fDCAxy_pt_Dplusbef;//!
+    TH2F		*fDCAxy_pt_DstarDzerobef;//!
+    TH2F		*fDCAxy_pt_Dzerobef;//!
+    TH2F		*fDCAxy_pt_DstarDsbef;//!
+    TH2F		*fDCAxy_pt_Dsbef;//!
+    TH2F		*fDCAxy_pt_charmmesonsbef;//!
+    TH2F		*fDCAxy_pt_DstarDplusAft;//!
+    TH2F		*fDCAxy_pt_DplusAft;//!
+    TH2F		*fDCAxy_pt_DstarDzeroAft;//!
+    TH2F		*fDCAxy_pt_DzeroAft;//!
+    TH2F		*fDCAxy_pt_DstarDsAft;//!
+    TH2F		*fDCAxy_pt_DsAft;//!
+    TH2F		*fDCAxy_pt_charmmesonsAft;//!
+    TH2F		*fDCAxy_pt_Lc;//!
+    TH2F		*fDCAxy_pt_charmbaryons;//!
     TH2F                *fDCAxy_pt_MesonB_beautybef;//!
     TH2F                *fDCAxy_pt_MesonB_beautyaft;//!
     TH2F                *fDCAxy_pt_MesonBD_beautybef;//!
@@ -404,6 +422,7 @@ private:
     TH2F				*hElecPt_vsCharmMotherPt_corr;//!
     
     TF1					*fBcorr;
+    TF1					*fDcorr;
     TF1					*fDcorr1;
     TF1					*fDcorr2;
     TF1					*fDcorr3;
@@ -463,8 +482,11 @@ private:
     Int_t               fNembMCpi0; //! N > fNembMCpi0 = particles from pi0 generator
     Int_t               fNembMCeta; //! N > fNembMCeta = particles from eta generator
     
- 
+    Double_t 		fBWeight;//!
+    Double_t 		fDWeight;//!
     THnSparseF           *fD0;//! DCA
+    THnSparseF           *fD0_DCorr;//! DCA
+    THnSparseF           *fD0_BCorr;//! DCA
     THnSparseF           *fD0Data;//! DCA data
     THnSparseF           *fD0HC;//! DCA HC
     //______________________________________________________________________

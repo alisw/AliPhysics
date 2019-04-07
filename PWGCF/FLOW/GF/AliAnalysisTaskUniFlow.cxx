@@ -62,6 +62,7 @@
 #ifndef ALIANALYSISTASKUNIFLOW_CXX
 #define ALIANALYSISTASKUNIFLOW_CXX
 
+#include <algorithm>
 #include <TDatabasePDG.h>
 #include <TPDGCode.h>
 
@@ -1115,10 +1116,20 @@ void AliAnalysisTaskUniFlow::UserExec(Option_t *)
     fhRefsMult->Fill(fVector[kRefs]->size());
   }
 
+  // sorting charged hadrons
+  std::sort(fVector[kCharged]->begin(), fVector[kCharged]->end(), [this](const AliVTrack* a, const AliVTrack* b){ return this->sortPt(a, b); });
+
   // Filtering other species
   if(fProcessSpec[kPion] || fProcessSpec[kKaon] || fProcessSpec[kProton]) { FilterPID(); }
-  if(fProcessSpec[kK0s] || fProcessSpec[kLambda]) { FilterV0s(); }
-  if(fProcessSpec[kPhi]) { FilterPhi(); }
+  if(fProcessSpec[kK0s] || fProcessSpec[kLambda]) {
+      FilterV0s();
+      std::sort(fVector[kK0s]->begin(), fVector[kK0s]->end(), [this](const AliVTrack* a, const AliVTrack* b){ return this->sortPt(a, b); });
+      std::sort(fVector[kLambda]->begin(), fVector[kLambda]->end(), [this](const AliVTrack* a, const AliVTrack* b){ return this->sortPt(a, b); });
+  }
+  if(fProcessSpec[kPhi]) {
+      FilterPhi();
+      std::sort(fVector[kPhi]->begin(), fVector[kPhi]->end(), [this](const AliVTrack* a, const AliVTrack* b){ return this->sortPt(a, b); });
+  }
 
   DumpTObjTable("UserExec: after filtering");
 
@@ -2639,87 +2650,106 @@ void AliAnalysisTaskUniFlow::FillQAPID(const QAindex iQAindex, const AliAODTrack
 // ============================================================================
 Bool_t AliAnalysisTaskUniFlow::ProcessCorrTask(const CorrTask* task)
 {
-  if(!task) { AliError("CorrTask does not exists!"); return kFALSE; }
-  // task->Print();
+    if(!task) { AliError("CorrTask does not exists!"); return kFALSE; }
+    // task->Print();
 
-  Int_t iNumHarm = task->fiNumHarm;
-  Int_t iNumGaps = task->fiNumGaps;
+    Int_t iNumHarm = task->fiNumHarm;
+    Int_t iNumGaps = task->fiNumGaps;
 
-  if(iNumGaps > 1) { AliError("Too many gaps! Not implemented yet!"); return kFALSE; }
-  if(iNumHarm > 4) { AliError("Too many harmonics! Not implemented yet!"); return kFALSE; }
+    if(iNumGaps > 1) { AliError("Too many gaps! Not implemented yet!"); return kFALSE; }
+    if(iNumHarm > 4) { AliError("Too many harmonics! Not implemented yet!"); return kFALSE; }
 
-  Double_t dGap = -1.0;
-  if(iNumGaps > 0) { dGap = task->fdGaps[0]; }
+    Double_t dGap = -1.0;
+    if(iNumGaps > 0) { dGap = task->fdGaps[0]; }
 
-  // Fill anyway -> needed for any correlations
-  FillRefsVectors(dGap); // TODO might check if previous task uses different Gap and if so, not fill it
+    // Fill anyway -> needed for any correlations
+    FillRefsVectors(dGap); // TODO might check if previous task uses different Gap and if so, not fill it
 
-  for(Int_t iSpec(0); iSpec < kUnknown; ++iSpec) {
-    AliDebug(2,Form("Processing species '%s'",GetSpeciesName(PartSpecies(iSpec))));
+    for(Int_t iSpec(0); iSpec < kUnknown; ++iSpec) {
+        AliDebug(2,Form("Processing species '%s'",GetSpeciesName(PartSpecies(iSpec))));
 
-    if(iSpec == kRefs) {
-      if(!task->fbDoRefs) { continue; }
-      CalculateCorrelations(task, kRefs);
-      continue;
-    }
+        if(iSpec == kRefs) {
+            if(!task->fbDoRefs) { continue; }
+            CalculateCorrelations(task, kRefs);
+            continue;
+        }
 
-    // here-after only POIs survive (Refs are dealt with already)
-    if(!task->fbDoPOIs) { continue; }
-    if(!fProcessSpec[iSpec]) { continue; }
+        // here-after only POIs survive (Refs are dealt with already)
+        if(!task->fbDoPOIs) { continue; }
+        if(!fProcessSpec[iSpec]) { continue; }
 
-    // NB: skip flow if Kaons are used only for Phi (flow not needed) not as full PID
-    if(iSpec == kKaon && (!fProcessSpec[kPion] || !fProcessSpec[kProton])) { continue; }
+        // NB: skip flow if Kaons are used only for Phi (flow not needed) not as full PID
+        if(iSpec == kKaon && (!fProcessSpec[kPion] || !fProcessSpec[kProton])) { continue; }
 
-    // loading (generic) profile to acess axes and bins
-    TH1* genProf = (TH1*) fListFlow[iSpec]->FindObject(Form("%s_Pos_sample0",task->fsName.Data()));
-    if(!genProf) { AliError(Form("Generic Profile '%s' not found", task->fsName.Data())); fListFlow[iSpec]->ls(); return kFALSE; }
+        // loading (generic) profile to acess axes and bins
+        TH1* genProf = (TH1*) fListFlow[iSpec]->FindObject(Form("%s_Pos_sample0",task->fsName.Data()));
+        if(!genProf) { AliError(Form("Generic Profile '%s' not found", task->fsName.Data())); fListFlow[iSpec]->ls(); return kFALSE; }
 
-    TAxis* axisPt = genProf->GetYaxis();
-    if(!axisPt) { AliError("Pt axis object not found!"); return kFALSE; }
-    Int_t iNumPtBins = axisPt->GetNbins();
+        TAxis* axisPt = genProf->GetYaxis();
+        if(!axisPt) { AliError("Pt axis object not found!"); return kFALSE; }
+        Int_t iNumPtBins = axisPt->GetNbins();
 
-    TAxis* axisMass = nullptr;
-    Int_t iNumMassBins = 1;
+        TAxis* axisMass = nullptr;
+        Int_t iNumMassBins = 1;
 
-    // check for 'massive' species
-    Bool_t bHasMass = HasMass(PartSpecies(iSpec));
-    if(bHasMass) {
-      axisMass = genProf->GetZaxis();
-      if(!axisMass) { AliError("Mass axis object not found!"); return kFALSE; }
-      iNumMassBins = axisMass->GetNbins();
-    }
+        // check for 'massive' species
+        Bool_t bHasMass = HasMass(PartSpecies(iSpec));
+        if(bHasMass) {
+            axisMass = genProf->GetZaxis();
+            if(!axisMass) { AliError("Mass axis object not found!"); return kFALSE; }
+            iNumMassBins = axisMass->GetNbins();
+        }
 
-    Int_t iNumPart = fVector[iSpec]->size();
-    Int_t iNumFilled = 0;
+        Int_t indexStart = 0;
 
-    for(Int_t iMass(1); iMass < iNumMassBins+1; ++iMass) {
-      if(iNumFilled >= iNumPart) { break; }
+        Int_t iNumPart = fVector[iSpec]->size();
+        Int_t iNumFilled = 0;
 
-      Double_t dMass = 0.0;
-      Double_t dMassLow = 0.0;
-      Double_t dMassHigh = 0.0;
+        for(Int_t iPt(1); iPt < iNumPtBins+1; ++iPt) {
+            Int_t iNumInPtBin = -10;
 
-      if(bHasMass) {
-        dMass = axisMass->GetBinCenter(iMass);
-        dMassLow = axisMass->GetBinLowEdge(iMass);
-        dMassHigh = axisMass->GetBinUpEdge(iMass);
-      }
+            Double_t dPt = axisPt->GetBinCenter(iPt);
+            Double_t dPtLow = axisPt->GetBinLowEdge(iPt);
+            Double_t dPtHigh = axisPt->GetBinUpEdge(iPt);
 
-      for(Int_t iPt(1); iPt < iNumPtBins+1; ++iPt) {
-        if(iNumFilled >= iNumPart) { break; }
+            for(Int_t iMass(1); iMass < iNumMassBins+1; ++iMass) {
 
-        Double_t dPt = axisPt->GetBinCenter(iPt);
-        Double_t dPtLow = axisPt->GetBinLowEdge(iPt);
-        Double_t dPtHigh = axisPt->GetBinUpEdge(iPt);
+                Double_t dMass = 0.0;
+                Double_t dMassLow = 0.0;
+                Double_t dMassHigh = 0.0;
 
-        // filling POIs (P,S) flow vectors
-        iNumFilled += FillPOIsVectors(dGap,PartSpecies(iSpec),dPtLow,dPtHigh,dMassLow,dMassHigh);
-        CalculateCorrelations(task, PartSpecies(iSpec),dPt,dMass);
-      } // end-for {iPt}
-    }  // end-for {iMass}
-  } // end-for {iSpecies}
+                if(bHasMass) {
+                    dMass = axisMass->GetBinCenter(iMass);
+                    dMassLow = axisMass->GetBinLowEdge(iMass);
+                    dMassHigh = axisMass->GetBinUpEdge(iMass);
+                }
 
-  return kTRUE;
+                Int_t contIndexStart = indexStart;
+
+                // filling POIs (P,S) flow vectors
+                Int_t iFilledHere = FillPOIsVectors(dGap ,PartSpecies(iSpec), contIndexStart, iNumInPtBin, dPtLow, dPtHigh, dMassLow, dMassHigh);
+                CalculateCorrelations(task, PartSpecies(iSpec),dPt,dMass);
+
+                // updating counters with numbers from this step
+                iNumFilled += iFilledHere;
+                iNumInPtBin -= iFilledHere;
+
+                // switching index when all masses were proccessed in given pt bin (if applicable)
+                // so strating point shifts to first particle in next pt bin
+                if(iNumInPtBin < 1 || iNumFilled >= iNumPart || iMass == iNumMassBins) {
+                    indexStart = contIndexStart;
+                    break;
+                }
+
+                // if(iNumFilled >= iNumPart) { break; }
+            }  // end-for {iMass}
+
+            if(iNumFilled >= iNumPart) { break; }
+
+        } // end-for {iPt}
+    } // end-for {iSpecies}
+
+    return kTRUE;
 }
 // ============================================================================
 void AliAnalysisTaskUniFlow::CalculateCorrelations(const CorrTask* const task, const PartSpecies species, const Double_t dPt, const Double_t dMass) const
@@ -3009,7 +3039,7 @@ void AliAnalysisTaskUniFlow::FillRefsVectors(const Double_t dGap)
   return;
 }
 // ============================================================================
-Int_t AliAnalysisTaskUniFlow::FillPOIsVectors(const Double_t dEtaGap, const PartSpecies species, const Double_t dPtLow, const Double_t dPtHigh, const Double_t dMassLow, const Double_t dMassHigh)
+Int_t AliAnalysisTaskUniFlow::FillPOIsVectors(const Double_t dEtaGap, const PartSpecies species, Int_t& indStart, Int_t& tracksInBin, const Double_t dPtLow, const Double_t dPtHigh, const Double_t dMassLow, const Double_t dMassHigh)
 {
   // Filling p,q and s flow vectors with POIs (given by species) for differential flow calculation
   // *************************************************************
@@ -3031,22 +3061,34 @@ Int_t AliAnalysisTaskUniFlow::FillPOIsVectors(const Double_t dEtaGap, const Part
   }
 
   Int_t iTracksFilled = 0; // counter of filled tracks
+  Int_t iTracksInPtBin = 0; // counter for all tracks in pt bins
 
-  for(auto part = vector->begin(); part != vector->end(); ++part)
-  {
-    Double_t dPt = (*part)->Pt();
-    Double_t dPhi = (*part)->Phi();
-    Double_t dEta = (*part)->Eta();
-    Double_t dMass = 0.0;
+  // for(auto part = vector->begin(); part != vector->end(); ++part)
+  for(Int_t index(indStart); index < (Int_t) vector->size(); ++index) {
+    AliVTrack* part = vector->at(index);
+    if(!part) { AliError("Particle does not exists within given vector"); return -1; }
+
+    Double_t dPhi = part->Phi();
+    Double_t dEta = part->Eta();
+    Double_t dPt = part->Pt();
+    Double_t dMass = (bHasMass ? part->M() : 0.0);
 
     // checking if pt is within pt (bin) range
-    if(dPt < dPtLow || dPt >= dPtHigh) { continue; }
+    if(dPt < dPtLow) { continue; }
+    if(dPt >= dPtHigh) {
+        // refresh the starting index value for next pt bin
+        indStart = index;
+        break;
+        // return iTracksFilled;
+    }
+
+    iTracksInPtBin++;
+
+    if(bHasMass) {
+        if(dMass < dMassLow || dMass >= dMassHigh) { continue; }
+    }
 
     // checking if mass is within mass (bin) range
-    if(bHasMass) {
-      dMass = (*part)->M();
-      if(dMass < dMassLow || dMass >= dMassHigh) { continue; }
-    }
 
     if(bHasGap && TMath::Abs(dEta) < dEtaLimit) { continue; }
 
@@ -3055,10 +3097,10 @@ Int_t AliAnalysisTaskUniFlow::FillPOIsVectors(const Double_t dEtaGap, const Part
 
     // loading weights if needed
     Double_t dWeight = 1.0;
-    if(fFlowUseWeights) { dWeight = GetFlowWeight(*part, species); }
+    if(fFlowUseWeights) { dWeight = GetFlowWeight(part, species); }
 
     // check if POI overlaps with RFPs (not for reconstructed)
-    Bool_t bIsWithinRefs = (!bHasMass && IsWithinRefs(static_cast<const AliAODTrack*>(*part)));
+    Bool_t bIsWithinRefs = (!bHasMass && IsWithinRefs(static_cast<const AliAODTrack*>(part)));
 
     if(!bHasGap) // no eta gap
     {
@@ -3120,6 +3162,10 @@ Int_t AliAnalysisTaskUniFlow::FillPOIsVectors(const Double_t dEtaGap, const Part
        }
      } // endif {dEtaGap}
    } // endfor {tracks}
+
+   // refresh the value only if first go (aka initialized to -10); after that it is used as a counter of remaining particles
+   if(tracksInBin < 0) { tracksInBin = iTracksInPtBin; }
+
    return iTracksFilled;
 }
 // ============================================================================

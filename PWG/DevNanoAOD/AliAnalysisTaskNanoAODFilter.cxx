@@ -41,9 +41,7 @@
 #include "AliAODHandler.h"
 #include "AliNanoAODReplicator.h"
 #include "AliNanoAODTrackMapping.h"
-
-using std::cout;
-using std::endl;
+#include "AliNanoAODTrack.h"
 
 ClassImp(AliAnalysisTaskNanoAODFilter)
 
@@ -52,18 +50,13 @@ ClassImp(AliAnalysisTaskNanoAODFilter)
 AliAnalysisTaskNanoAODFilter::AliAnalysisTaskNanoAODFilter() // All data members should be initialised here
 :AliAnalysisTaskSE(),
   fMCMode(0),
-  fTrkrep(0),
-  fVarList(""),
-  fVarListHead(""),
-  fVarListHeader_fTC(""),
-  fEvtCuts(0),
+  fReplicator(0),
+  fEvtCuts(),
   fTrkCuts(0),
   fV0Cuts(0),
-  fSetter(0),
-  fSaveCutsFlag(0),
-  fSaveZDC(kFALSE),
-  fSaveVzero(kFALSE),
-  fSaveV0s(kFALSE),
+  fCascadeCuts(0),
+  fQAOutput(0),
+  fSaveCutsFlag(kFALSE),
   fInputArrayName(""),
   fOutputArrayName("")
 {
@@ -74,28 +67,22 @@ AliAnalysisTaskNanoAODFilter::AliAnalysisTaskNanoAODFilter() // All data members
 AliAnalysisTaskNanoAODFilter::AliAnalysisTaskNanoAODFilter(const char *name, Bool_t saveCutsFlag) // All data members should be initialised here
   :AliAnalysisTaskSE(name),
    fMCMode(0),
-   fTrkrep(0),
-   fVarList(""),
-   fVarListHead(""),
-   fVarListHeader_fTC(""),
+   fReplicator(0),
    fEvtCuts(0),
    fTrkCuts(0),
    fV0Cuts(0),
-   fSetter(0),
+   fCascadeCuts(0),
+   fQAOutput(0),
    fSaveCutsFlag(saveCutsFlag),
-   fSaveZDC(kFALSE),
-   fSaveVzero(kFALSE),
-   fSaveV0s(kFALSE),
    fInputArrayName(""),
    fOutputArrayName("")
 
 {
   // Constructor
-  if(fSaveCutsFlag) {
-    DefineOutput(1, AliAnalysisCuts::Class());
-    DefineOutput(2, AliAnalysisCuts::Class());
-    DefineOutput(3, AliAnalysisCuts::Class());
-  }
+
+  fReplicator = new AliNanoAODReplicator("NanoAODReplicator", "remove non interesting tracks, writes special tracks array tracks");
+  
+  DefineOutput(1, TList::Class());
 }
 
 //________________________________________________________________________
@@ -103,6 +90,10 @@ AliAnalysisTaskNanoAODFilter::~AliAnalysisTaskNanoAODFilter()
 {
   // Destructor. Clean-up the output list, but not the histograms that are put inside
   // (the list is owner and will clean-up these histograms). Protect in PROOF case.
+  
+  delete fReplicator;
+  if (fQAOutput) 
+    delete fQAOutput;
 }
 
 //________________________________________________________________________
@@ -111,11 +102,21 @@ void AliAnalysisTaskNanoAODFilter::UserCreateOutputObjects()
   // Create histograms
   // Called once (on the worker node)
       
-  if(fSaveCutsFlag) {
-    PostData(1, fEvtCuts); 
-    PostData(2, fTrkCuts); 
-    PostData(3, fV0Cuts);
+  fQAOutput = new TList();
+  fQAOutput->SetOwner(kTRUE); 
+
+  if (fSaveCutsFlag) {
+    for (std::list<AliAnalysisCuts*>::iterator it = fEvtCuts.begin(); it != fEvtCuts.end(); ++it)
+      fQAOutput->Add(*it);
+    if (fTrkCuts)
+      fQAOutput->Add(fTrkCuts);
+    if (fV0Cuts)
+      fQAOutput->Add(fV0Cuts);
+    if (fCascadeCuts)
+      fQAOutput->Add(fCascadeCuts);
   }
+  
+  PostData(1, fQAOutput);
 }
 
 void AliAnalysisTaskNanoAODFilter::AddFilteredAOD(const char* aodfilename, const char* title)
@@ -130,36 +131,17 @@ void AliAnalysisTaskNanoAODFilter::AddFilteredAOD(const char* aodfilename, const
     AliFatal("Cannot get extension");
   }
   
-
-  // TODO direct access to replicator possible?
-  AliNanoAODReplicator * rep = new AliNanoAODReplicator("NanoAODReplicator",
-							"remove non interesting tracks, "
-							"writes special tracks array tracks",
-							fVarList,
-							fVarListHead,
-							fTrkCuts,
-							fMCMode);
-
+  fReplicator->SetTrackCuts(fTrkCuts);
+  fReplicator->SetMCMode(fMCMode);
      
-  cout<<"rep: "<<rep<<endl;
-  rep->SetCustomSetter(fSetter);
-  if (fSaveVzero) rep->SetSaveVzero(1);
-  if (fSaveZDC) rep->SetSaveZDC(1);
-  if (fSaveV0s) {
-    rep->SetSaveV0s(1);
-    rep->SetV0Cuts(fV0Cuts);
-  }
-  if (fVarListHeader_fTC) rep->SetVarListHeaderStringVariable(fVarListHeader_fTC);
-  if (!fInputArrayName.IsNull()) rep->SetInputArrayName(fInputArrayName);
-  if (!fOutputArrayName.IsNull()) rep->SetOutputArrayName(fOutputArrayName);
-
-  std::cout << "SETTER: " << fSetter << " " << rep->GetCustomSetter() << std::endl;
+  if (!fInputArrayName.IsNull()) fReplicator->SetInputArrayName(fInputArrayName);
+  if (!fOutputArrayName.IsNull()) fReplicator->SetOutputArrayName(fOutputArrayName);
 
   ext->DropUnspecifiedBranches(); // all branches not part of a FilterBranch call (below) will be dropped
       
-  ext->FilterBranch("tracks",rep);
-  ext->FilterBranch("vertices",rep);  
-  ext->FilterBranch("header",rep);  
+  ext->FilterBranch("tracks",fReplicator);
+  ext->FilterBranch("vertices",fReplicator);  
+  ext->FilterBranch("header",fReplicator);  
             
   if ( fMCMode > 0 ) 
     {
@@ -168,8 +150,8 @@ void AliAnalysisTaskNanoAODFilter::AddFilteredAOD(const char* aodfilename, const
       // For events w/o muon, mcparticles array will be empty and mcheader will be dummy
       // (e.g. strlen(GetGeneratorName())==0)
       
-      ext->FilterBranch("mcparticles",rep);
-      ext->FilterBranch("mcHeader",rep);
+      ext->FilterBranch("mcparticles",fReplicator);
+      ext->FilterBranch("mcHeader",fReplicator);
     }
 }
 
@@ -192,7 +174,9 @@ void AliAnalysisTaskNanoAODFilter::UserExec(Option_t *)
   if (!lAODevent)
     AliFatal("No input event");
   
-  if(fEvtCuts && !fEvtCuts->IsSelected(lAODevent)) return;// FIXME: should event cuts be called here or in the branch replicator? Do we get duplicated events if we skip here (arrays not reset in the branch replicator?)
+  for (std::list<AliAnalysisCuts*>::iterator it = fEvtCuts.begin(); it != fEvtCuts.end(); ++it)
+    if (!((*it)->IsSelected(lAODevent))) 
+      return;
 
   AliAODHandler* handler = dynamic_cast<AliAODHandler*>(AliAnalysisManager::GetAnalysisManager()->GetOutputEventHandler());
   if ( handler ){
@@ -205,20 +189,23 @@ void AliAnalysisTaskNanoAODFilter::UserExec(Option_t *)
   }
 }
 
-
-//________________________________________________________________________
 void AliAnalysisTaskNanoAODFilter::Terminate(Option_t *) 
 {
-  // print some debug info
-
 }
 
 void AliAnalysisTaskNanoAODFilter::FinishTaskOutput() {
 
-  // We save here the user info //
+  // We save here the user info
 
   AliAODHandler* handler = dynamic_cast<AliAODHandler*>(AliAnalysisManager::GetAnalysisManager()->GetOutputEventHandler());
   AliAODExtension *extNanoAOD = handler->GetFilteredAOD("AliAOD.NanoAOD.root");
-  extNanoAOD->GetTree()->GetUserInfo()->Add(AliNanoAODTrackMapping::GetInstance());
+  extNanoAOD->GetTree()->GetUserInfo()->Add(AliNanoAODTrackMapping::GetInstance(fReplicator->GetVarListTrack()));
+}
 
+void AliAnalysisTaskNanoAODFilter::AddPIDField(AliNanoAODTrack::ENanoPIDResponse response, AliPID::EParticleType particle)
+{
+  TString list(fReplicator->GetVarListTrack());
+  list += ",";
+  list += AliNanoAODTrack::GetPIDVarName(response, particle);
+  fReplicator->SetVarListTrack(list);
 }

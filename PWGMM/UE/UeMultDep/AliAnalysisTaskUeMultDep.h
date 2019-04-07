@@ -69,28 +69,50 @@ class AliAnalysisTaskUeMultDep : public AliAnalysisTaskSE {
 		TH1D * hPtL;
 		TH1D * hEtaL;
 		TH1D * hPhiL;
+		TH1D * hRefMult08;
+		TH1D * hV0Mmult;
+		
+		TProfile * ProfpTLvsNch;
 		TProfile * ProfpTLvsNchNS;
 		TProfile * ProfpTLvsNchAS;
 		TProfile * ProfpTLvsNchTS;
+
+		TH2D * hpTvsNch;
+		TH2D * hpTLvsNch;
 		TH2D * hpTLvsNchNS;
 		TH2D * hpTLvsNchAS;
 		TH2D * hpTLvsNchTS;
-		TH1D * hRefMult08;
-		TH1D * hV0Mmult;
-		TH2D * hpTvsNch;
-		TH2D * hpTLvsNch;
 		TH2D * hpTvsRefMult08;
 		TH2D * hpTLvsRefMult08;
 		TH2D * hpTvsV0Mmult;
 		TH2D * hpTLvsV0Mmult;
 		TH2D * hRefMultvsV0Mmult;
+		
 		TH3D * hpTvsV0MmultvsRefMult08;
 		TH3D * hpTLvsV0MmultvsRefMult08;
-		TH3D * hpTLvsRefMult08vsDphi;
-		TH3D * hpTLvsV0MmultvsDphi;
 		
-		THnSparseD * hptLvsv0MvsRefMultvsDphivsDeta;       //
-
+		TH3D * hpTLvsRefMult08vsDphi;
+		TH3D * hpTLvsRefMult08vsNch;
+		TH3D * hpTLvsRefMult08vsNchNS;
+		TH3D * hpTLvsRefMult08vsNchAS;
+		TH3D * hpTLvsRefMult08vsNchTS;
+		
+		TH3D * hpTLvsV0MmultvsDphi;
+		TH3D * hpTLvsV0MmultvsNch;
+		TH3D * hpTLvsV0MmultvsNchNS;
+		TH3D * hpTLvsV0MmultvsNchAS;
+		TH3D * hpTLvsV0MmultvsNchTS;
+		
+		TH3D * hpTvspTLvsRefMult08;
+		TH3D * hpTvspTLvsRefMult08NS;
+		TH3D * hpTvspTLvsRefMult08AS;
+		TH3D * hpTvspTLvsRefMult08TS;
+		
+		TH3D * hpTvspTLvsV0Mmult;
+		TH3D * hpTvspTLvsV0MmultNS;
+		TH3D * hpTvspTLvsV0MmultAS;
+		TH3D * hpTvspTLvsV0MmultTS;
+		
 		Double_t ftrackmult08;       //       
 		Double_t fv0mpercentile;     //
 
@@ -99,4 +121,3 @@ class AliAnalysisTaskUeMultDep : public AliAnalysisTaskSE {
 };
 
 #endif
-

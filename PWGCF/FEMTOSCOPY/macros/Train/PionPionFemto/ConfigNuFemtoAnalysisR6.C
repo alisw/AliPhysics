@@ -78,7 +78,8 @@ struct MacroParams : public TNamed {
   bool mcwg_strong { true };
   bool mcwg_3body { true };
 
-  bool eventreader_use_aux { false };
+  bool eventreader_run1 { false };
+  bool eventreader_use_alt { true };
   int eventreader_filter_bit { 7 };
   int eventreader_read_full_mc { false };
   bool eventreader_epvzero { true };
@@ -230,9 +231,11 @@ ConfigFemtoAnalysis(const TString& param_str="")
   // Begin to build the manager and analyses
   AliFemtoManager *manager = new AliFemtoManager();
 
-  AliFemtoEventReaderAOD *rdr = (macro_config.eventreader_use_aux)
-                              ? new AliFemtoEventReaderAlt()
-                              : new AliFemtoEventReaderAODMultSelection();
+  AliFemtoEventReaderAOD *rdr = (macro_config.eventreader_run1)
+	                        ? new AliFemtoEventReaderAODChain()
+	                      : (macro_config.eventreader_use_alt)
+                                ? new AliFemtoEventReaderAlt()
+                                : new AliFemtoEventReaderAODMultSelection();
 
     auto multest = static_cast<AliFemtoEventReaderAOD::EstEventMult>(macro_config.eventreader_use_multiplicity);
     rdr->SetFilterBit(macro_config.eventreader_filter_bit);

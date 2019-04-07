@@ -1,5 +1,5 @@
-AliAnalysisTaskSE *AddTaskSigma0Run2(bool isRun1 = false, bool isMC = false, bool isHeavyIon = false,
-                                     TString trigger = "kINT7",
+AliAnalysisTaskSE *AddTaskSigma0Run2(bool isRun1 = false, bool isMC = false, bool doCleanUp = true, bool isHeavyIon = false,
+                                     TString trigger = "kINT7", 
                                      const char *cutVariation = "0") {
   TString suffix;
   suffix.Form("%s", cutVariation);
@@ -160,6 +160,10 @@ AliAnalysisTaskSE *AddTaskSigma0Run2(bool isRun1 = false, bool isMC = false, boo
   sigmaCuts->SetV0ReaderName(V0ReaderName.Data());
   if (suffix == "0"){
   sigmaCuts->SetArmenterosCut(0,0.12,-1,-0.6);
+  sigmaCuts->SetDoCleanUp(doCleanUp);
+  }
+  if (suffix == "1"){
+  sigmaCuts->SetDoCleanUp(doCleanUp);
   }
   if (suffix != "0" && suffix != "999" && suffix != "1") {
     sigmaCuts->SetLightweight(true);
@@ -174,6 +178,10 @@ AliAnalysisTaskSE *AddTaskSigma0Run2(bool isRun1 = false, bool isMC = false, boo
   antiSigmaCuts->SetV0ReaderName(V0ReaderName.Data());
   if (suffix == "0"){
   antiSigmaCuts->SetArmenterosCut(0,0.12,-1,-0.6);
+  antiSigmaCuts->SetDoCleanUp(doCleanUp);
+  }
+  if (suffix == "1"){
+  antiSigmaCuts->SetDoCleanUp(doCleanUp);
   }
   if (suffix != "0" && suffix != "999" && suffix != "1") {
     antiSigmaCuts->SetLightweight(true);

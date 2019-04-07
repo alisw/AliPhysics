@@ -10,6 +10,7 @@
 #include <vector>
 
 #include "AliVEvent.h"
+#include "AliAnalysisCuts.h"
 #include "AliAnalysisUtils.h"
 
 class AliESDtrackCuts;

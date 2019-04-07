@@ -87,7 +87,7 @@ AliEventCuts::AliEventCuts(bool saveplots) : TList(),
   fkLabels{"raw","selected"},
   fManualMode{false},
   fSavePlots{saveplots},
-  fCurrentRun{-1},
+  fCurrentRun{-0xBADCAFE},
   fFlag{BIT(kNoCuts)},
   fCentEstimators{"V0M","CL0"},
   fCentPercentiles{-1.f},
@@ -422,7 +422,14 @@ void AliEventCuts::AutomaticSetup(AliVEvent *ev) {
     AliFatal("I don't find the AOD event nor the ESD one, aborting.");
   else {
     AliMCEventHandler* eventHandler = dynamic_cast<AliMCEventHandler*> (AliAnalysisManager::GetAnalysisManager()->GetMCtruthEventHandler());
-    fMC = (eventHandler) ? true : false;
+    TClonesArray* aodMC = (TClonesArray*)ev->GetList()->FindObject(AliAODMCParticle::StdBranchName());
+    fMC = (eventHandler || aodMC);
+  }
+
+  if (fCurrentRun == -1 && fMC) {
+    ::Info("AliEventCuts::AutomaticSetup","MCGEN train / Kinematics only production detected, disabling all the cuts.");
+    fGreenLight = true;
+    return;
   }
 
   if (fCurrentRun == 280234 || fCurrentRun == 280235) {
@@ -877,6 +884,7 @@ bool AliEventCuts::GoodPrimaryAODVertex(AliVEvent* ev) {
   if (!aodEv) {
     ::Fatal("AliEventCuts::GoodPrimaryAODVertex","Passed argument is not an AOD event.");
   }
+  if (!aodEv->GetPrimaryVertex()) return kFALSE;
   if (aodEv->GetPrimaryVertex()->GetType()!=AliAODVertex::kPrimary) return kFALSE;
   const AliAODVertex *vtPrim = aodEv->GetPrimaryVertex();
   const AliAODVertex *vtTPC  = aodEv->GetPrimaryVertexTPC();

@@ -123,14 +123,15 @@ class AliForwardSettings : public TObject {
   };
   // definition of different variables to save
   enum {
-    kWA = 1,           // multiplicity for all particles in subevent A (note subevent A can also be the entire event)
-    kWA2,           // multiplicity for all particles in subevent A (note subevent A can also be the entire event)
-    kWB,               // multiplicity for all particles in subevent B (note subevent B can NOT be the entire event)
-    kW2,               // <w2>
-    k3pWeight,         // M(M-1)(M-1) or (mp*M-2mq)(M-1)
-    kW4,               // <w4>
-    kW4Four,           // <w4*four>
+    //kWA = 1,           // multiplicity for all particles in subevent A (note subevent A can also be the entire event)
+    //kWA2,           // multiplicity for all particles in subevent A (note subevent A can also be the entire event)
+    //kWB,               // multiplicity for all particles in subevent B (note subevent B can NOT be the entire event)
+    kW2 = 1,               // <w2>
+    //k3pWeight,         // M(M-1)(M-1) or (mp*M-2mq)(M-1)
     kW2Two,            // <w2*two>
+    kW4,               // <w4>
+    kW4Four           // <w4*four>
+    /*
     kCosphi1A,         // <cos(phi1)> for subevent A
     kSinphi1A,         // <sin(phi1)> for subevent A
     kCosphi1B,         // <cos(phi1)> for subevent B
@@ -142,6 +143,26 @@ class AliForwardSettings : public TObject {
     kSinphi1phi2phi3m, // <sin(phi1-phi2-phi3)>
     kCosphi1phi2phi3p, // <cos(phi1+phi2-phi3)>
     kSinphi1phi2phi3p,  // <sin(phi1+phi2-phi3)>
+    */
+  };
+
+
+  enum {
+    kWA = 1,           // multiplicity for all particles in subevent A (note subevent A can also be the entire event)
+    kWA2,           // multiplicity for all particles in subevent A (note subevent A can also be the entire event)
+    kWB,               // multiplicity for all particles in subevent B (note subevent B can NOT be the entire event)
+    k3pWeight,         // M(M-1)(M-1) or (mp*M-2mq)(M-1)
+    kCosphi1A,         // <cos(phi1)> for subevent A
+    kSinphi1A,         // <sin(phi1)> for subevent A
+    kCosphi1B,         // <cos(phi1)> for subevent B
+    kSinphi1B,         // <sin(phi1)> for subevent B
+    kCosphi1phi2p,     // <cos(phi1+phi2)>
+    kCosphi1phi2m,     // <cos(phi1-phi2)>
+    kSinphi1phi2p,     // <sin(phi1+phi2)>
+    kCosphi1phi2phi3m, // <cos(phi1-phi2-phi3)>
+    kSinphi1phi2phi3m, // <sin(phi1-phi2-phi3)>
+    kCosphi1phi2phi3p, // <cos(phi1+phi2-phi3)>
+    kSinphi1phi2phi3p  // <sin(phi1+phi2-phi3)>
   };
 
   // definition of different variables to save

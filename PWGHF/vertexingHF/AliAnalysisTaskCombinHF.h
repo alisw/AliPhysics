@@ -38,7 +38,8 @@ public:
   virtual void FinishTaskOutput();
   
   void SetReadMC(Bool_t read){fReadMC=read;}
-
+  void UseOnlySignalInMC(Bool_t opt){fSignalOnlyMC=opt;}
+    
   void SetEventMixingWithCuts(Double_t maxDeltaVz, Double_t maxDeltaMult){
     fDoEventMixing=2; fMaxzVertDistForMix=maxDeltaVz; fMaxMultDiffForMix=maxDeltaMult;
   }
@@ -213,6 +214,7 @@ private:
   Bool_t  fReadMC;       ///  flag for access to MC
   Bool_t fGoUpToQuark;   /// flag for definition of c,b origin
   Int_t fFullAnalysis;   /// flag to set analysis level (0 is the fastest)
+  Bool_t fSignalOnlyMC;  /// flag to speed up the MC 
   
   Int_t    fPIDstrategy;   /// knSigma, kBayesianMaxProb, kBayesianThres
   Double_t fmaxPforIDPion; /// flag for upper p limit for id band for pion
@@ -243,7 +245,7 @@ private:
   TObjArray* fPionTracks; /// array of pion-compatible tracks (TLorentzVectors)
 
   /// \cond CLASSIMP
-  ClassDef(AliAnalysisTaskCombinHF,16); /// D0D+ task from AOD tracks
+  ClassDef(AliAnalysisTaskCombinHF,17); /// D0D+ task from AOD tracks
   /// \endcond
 };
 

@@ -136,7 +136,7 @@ Bool_t ConfigKStarPP13TeV_PID_sp
      out->AddAxis(centID, 120, 0.0, 120.0);
 
   
-    if(!useHIST) out->AddAxis(SpherocityID, 200, -0.5, 1.5);//AK    
+    if(!useHIST) out->AddAxis(SpherocityID, 1000, 0., 1.0);//AK    
     // axis W: pseudorapidity
     // out->AddAxis(etaID, 20, -1.0, 1.0);
     // axis J: rapidity
@@ -159,7 +159,7 @@ Bool_t ConfigKStarPP13TeV_PID_sp
     }   else    { 
       outm->AddAxis(centID, 400, 0.0, 400.0);
     }
-     if(!useHIST) outm->AddAxis(SpherocityID, 200, -0.5, 1.5);
+     if(!useHIST) outm->AddAxis(SpherocityID, 1000, 0., 1.0);
     
     //get mothers for antiK* PDG = -313
      if(!useHIST)  AliRsnMiniOutput *outam = task->CreateOutput(Form("antiKs_Mother%s", suffix), "SPARSE", "MOTHER"); 
@@ -176,7 +176,7 @@ Bool_t ConfigKStarPP13TeV_PID_sp
     }   else    { 
       outam->AddAxis(centID, 400, 0.0, 400.0);
     }
-     if(!useHIST)  outam->AddAxis(SpherocityID, 200, -0.5, 1.5);
+     if(!useHIST)  outam->AddAxis(SpherocityID, 1000, 0., 1.0);
     //get phase space of the decay from mothers
     AliRsnMiniOutput *outps = task->CreateOutput(Form("Ks_phaseSpace%s", suffix), "HIST", "TRUE");
     outps->SetDaughter(0, AliRsnDaughter::kKaon);
@@ -222,7 +222,7 @@ Bool_t ConfigKStarPP13TeV_PID_sp
 	outreflex->AddAxis(centID, 400, 0.0, 400.0);
       }
 
-      if(!useHIST) outreflex->AddAxis(SpherocityID, 200, -0.5, 1.5);//AK
+      if(!useHIST) outreflex->AddAxis(SpherocityID, 1000, 0., 1.0);//AK
       
       if(!useHIST)  AliRsnMiniOutput *outareflex = task->CreateOutput(Form("antiKs_reflex%s", suffix), "SPARSE", "TRUE");
       if(useHIST)   AliRsnMiniOutput *outareflex = task->CreateOutput(Form("antiKs_reflex%s", suffix), "HIST", "TRUE");//AK
@@ -240,7 +240,7 @@ Bool_t ConfigKStarPP13TeV_PID_sp
       }   else    { 
 	outareflex->AddAxis(centID, 400, 0.0, 400.0);
       }
-      if(!useHIST) outareflex->AddAxis(SpherocityID, 200, -0.5, 1.5);//AK
+      if(!useHIST) outareflex->AddAxis(SpherocityID, 1000, 0., 1.0);//AK
 
     }//end reflections
   }//end MC

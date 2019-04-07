@@ -30,6 +30,17 @@
 /// Nuclei
 /// * Absorption
 #pragma link C++ class AliAnalysisTaskDeuteronAbsorption+;
+/// * AbsorptionRatios
+#pragma link C++ class AliAnalysisTaskLightN+;
+#pragma link C++ class AliLightNEventHist+;
+#pragma link C++ class AliLightNAnalysis+;
+#pragma link C++ class AliLightNTrack+;
+#pragma link C++ class AliLightNBasePart+;
+#pragma link C++ class AliLightNTrackCuts+;
+#pragma link C++ class AliLightNEvent+;
+#pragma link C++ class AliLightNTrackHist+;
+#pragma link C++ class AliLightNEventCuts+;
+#pragma link C++ class AliLightNTrackMCHist+;
 /// * DeltaMasses
 #pragma link C++ class AliAnalysisNucleiMass+;
 #pragma link C++ class AliAnalysisNuclMult+;
@@ -81,7 +92,7 @@
 #pragma link C++ class SHyperTritonHe3pi+;
 #pragma link C++ class std::vector<RHyperTritonHe3pi>+;
 #pragma link C++ class std::vector<SHyperTritonHe3pi>+;
-#pragma link C++ class RCollision;
+#pragma link C++ class RCollision+;
 
 
 /// * Hyp3body
@@ -90,6 +101,7 @@
 #pragma link C++ class AliAnalysisTaskHypertriton3AOD+;
 
 /// * New Hyp3body
+#pragma link C++ class AliAnalysisTaskFindableHypertriton3+;
 #pragma link C++ class AliAnalysisTaskHypertriton3New+;
 
 /// Hypertriton Selector

@@ -171,6 +171,10 @@ protected:
     THnSparse *fPtBinNplusNminusChVOFour;
 
     
+    THnSparse *fPtBinNplusNminusChBKGM;
+    THnSparse *fPtBinNplusNminusChLF;
+    THnSparse *fPtBinNplusNminusChRT;
+    
     
     Int_t    GetPtBin(Double_t pt);
     
