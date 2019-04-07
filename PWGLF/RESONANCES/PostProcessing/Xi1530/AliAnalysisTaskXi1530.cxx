@@ -71,8 +71,8 @@ enum {
     kMCReco,
     kMCTrue,
     kMCTruePS,
-    INEL10,
-    INEL,
+    kINEL10,
+    kINEL,
     kAllType
 };                                                 // for Physicsl Results
 enum { kIsSelected = 1, kPS, kAllNone };           // for V0M signal QA plot
@@ -1592,10 +1592,10 @@ void AliAnalysisTaskXi1530::FillMCinput(AliMCEvent* fMCEvent, Int_t check) {
 
         if (check == 1)
             FillTHnSparse("hInvMass",
-                          {(double)kDefaultOption, (double)INEL, (double)fCent,
+                          {(double)kDefaultOption, (double)kINEL, (double)fCent,
                            mcInputTrack->Pt(), mcInputTrack->GetCalcMass()});
         else if (check == 2)
-            FillTHnSparse("hInvMass", {(double)kDefaultOption, (double)INEL10,
+            FillTHnSparse("hInvMass", {(double)kDefaultOption, (double)kINEL10,
                                        (double)fCent, mcInputTrack->Pt(),
                                        mcInputTrack->GetCalcMass()});
         else if (check == 3)
@@ -1628,11 +1628,11 @@ void AliAnalysisTaskXi1530::FillMCinputdXi(AliMCEvent* fMCEvent,
 
         if (check == 1)
             FillTHnSparse("hInvMass_dXi",
-                          {(double)INEL, (double)fCent, mcInputTrack->Pt(),
+                          {(double)kINEL, (double)fCent, mcInputTrack->Pt(),
                            mcInputTrack->GetCalcMass()});
         else if (check == 2)
             FillTHnSparse("hInvMass_dXi",
-                          {(double)INEL10, (double)fCent, mcInputTrack->Pt(),
+                          {(double)kINEL10, (double)fCent, mcInputTrack->Pt(),
                            mcInputTrack->GetCalcMass()});
         else if (check == 3)
             FillTHnSparse("hInvMass_dXi",
