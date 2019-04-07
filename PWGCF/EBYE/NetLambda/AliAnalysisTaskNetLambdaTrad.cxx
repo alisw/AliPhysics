@@ -1,7 +1,7 @@
 
 // For: Net Lambda fluctuation analysis via traditional method
 // By: Ejiro Naomi Umaka Apr 2018
-// Updated Apr 5
+// Updated Apr 6
 
 
 #include "AliAnalysisManager.h"
@@ -566,7 +566,7 @@ void AliAnalysisTaskNetLambdaTrad::UserExec(Option_t *)
     Int_t ptChUnTagFourMatch[dim];
     Int_t ptChUnTagFourLF[dim];
     Int_t ptChUnTagFourRT[dim];
-
+    
     for(Int_t idx = 0; idx < dim; idx++)
     {
         ptChVO[idx] = 0;
@@ -582,9 +582,9 @@ void AliAnalysisTaskNetLambdaTrad::UserExec(Option_t *)
         ptChTagThreeSigthree[idx] = 0.;
         ptChTagFourSigthree[idx] = 0.;
         
-        ptChUnTagFourMatch[dim] = 0.;
-        ptChUnTagFourLF[dim] = 0.;
-        ptChUnTagFourRT[dim] = 0.;
+        ptChUnTagFourMatch[idx] = 0.;
+        ptChUnTagFourLF[idx] = 0.;
+        ptChUnTagFourRT[idx] = 0.;
     }
     
     
@@ -994,8 +994,8 @@ void AliAnalysisTaskNetLambdaTrad::UserExec(Option_t *)
                 Int_t iptbinRecbkgM = GetPtBin(mcpt);
                 Int_t iptbinRecbkgLF = GetPtBin(mcpt);
                 Int_t iptbinRecbkgRT = GetPtBin(mcpt);
-
-
+                
+                
                 if(dcaV0ToVertex < 0.25 && dcaNegToVertex > 0.25 && dcaPosToVertex >  0.1  && TMath::Abs(posprnsg)  <= 3. && TMath::Abs(negpion)  <= 3.)
                 {
                     if(TMath::Abs(eta) < 0.8)
