@@ -1336,8 +1336,11 @@ void AliRsnMiniAnalysisTask::FillTrueMotherESD(AliRsnMiniEvent *miniEvent)
          // check that daughters match expected species
          if (part->Particle()->GetNDaughters() < 2) continue;
 	 if (fMaxNDaughters > 0 && part->Particle()->GetNDaughters() > fMaxNDaughters) continue;
-         label1 = part->Particle()->GetDaughter(0);
-         label2 = part->Particle()->GetDaughter(1);
+         //label1 = part->Particle()->GetDaughter(0); // Before Change in accessing MC infor in AliRoot v5-09-46
+         //label2 = part->Particle()->GetDaughter(1); // Before Change in accessing MC infor in AliRoot v5-09-46
+         label1 = part->GetDaughterLabel(0);
+         label2 = part->GetDaughterLabel(1);
+          
          daughter1 = (AliMCParticle *)fMCEvent->GetTrack(label1);
          daughter2 = (AliMCParticle *)fMCEvent->GetTrack(label2);
          okMatch = kFALSE;
