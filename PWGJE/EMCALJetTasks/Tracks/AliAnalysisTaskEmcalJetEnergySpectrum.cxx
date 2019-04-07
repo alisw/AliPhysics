@@ -213,7 +213,7 @@ bool AliAnalysisTaskEmcalJetEnergySpectrum::Run(){
     maxdata[4] = maxjet->NEF();
   }
   for(auto t : trgclusters){
-    fHistos->FillTH2("hJetSpectrumMax", maxdata[1], weight);
+    fHistos->FillTH2("hJetSpectrumMax", t, maxdata[1], weight);
     if(fFillHSparse){
       maxdata[5] = static_cast<double>(t);
       fHistos->FillTHnSparse("hMaxJetTHnSparse", maxdata, weight);
