@@ -2726,7 +2726,7 @@ void AliAnalysisHFEppTPCTOFBeauty5TeVNew::UserExec(Option_t *)
 
       fExtraCuts->GetHFEImpactParameters(trackAsso, d0z0Asso, covAsso);
       //fExtraCuts->SetRequireITSpixel(AliHFEextraCuts::kAny); 
-      fExtraCuts->SetClusterRatioTPC(0.6, AliHFEextraCuts::kFoundOverFindable);    
+      //fExtraCuts->SetClusterRatioTPC(0.6, AliHFEextraCuts::kFoundOverFindable);    
       // if(trackAsso->PropagateToDCA(pVtx, fAOD->GetMagneticField(), 20., d0z0Asso, covAsso))
       if(TMath::Abs(d0z0Asso[0]) > DCAxyCut || TMath::Abs(d0z0Asso[1]) > DCAzCut) continue;
 
@@ -2827,7 +2827,7 @@ void AliAnalysisHFEppTPCTOFBeauty5TeVNew::UserExec(Option_t *)
 
       fExtraCuts->GetHFEImpactParameters(trackAsso, d0z0Asso, covAsso);
      // fExtraCuts->SetRequireITSpixel(AliHFEextraCuts::kAny); 
-      fExtraCuts->SetClusterRatioTPC(0.6, AliHFEextraCuts::kFoundOverFindable);    
+      //fExtraCuts->SetClusterRatioTPC(0.6, AliHFEextraCuts::kFoundOverFindable);    
       // if(trackAsso->PropagateToDCA(pVtx, fAOD->GetMagneticField(), 20., d0z0Asso, covAsso))
       if(TMath::Abs(d0z0Asso[0]) > DCAxyCut || TMath::Abs(d0z0Asso[1]) > DCAzCut) continue;
 
