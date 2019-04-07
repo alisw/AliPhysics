@@ -218,8 +218,8 @@ class AliAnalysisTaskXi1530 : public AliAnalysisTaskSE {
     Bool_t IsMCEventTrueINEL0();
     Bool_t IsTrueXi1530(AliESDcascade* Xi, AliVTrack* pion);
     Bool_t IsTrueXi(AliESDcascade* Xi);
-    void FillMCinput(AliMCEvent* fMCEvent, Bool_t PS);
-    void FillMCinputdXi(AliMCEvent* fMCEvent, Bool_t PS);
+    void FillMCinput(AliMCEvent* fMCEvent, Int_t check);
+    void FillMCinputdXi(AliMCEvent* fMCEvent, Int_t check);
     void FillTrackToEventPool();
 
     TAxis AxisFix(TString name, int nbin, Double_t xmin, Double_t xmax);
@@ -349,7 +349,7 @@ class AliAnalysisTaskXi1530 : public AliAnalysisTaskSE {
     Double_t PVy = 999;
     Double_t PVz = 999;
     Double_t bField = 999;
-    ClassDef(AliAnalysisTaskXi1530, 13);
+    ClassDef(AliAnalysisTaskXi1530, 14);
     // 1: Frist version
     // 2: Add Track cut2 for the Xi daughter particles
     // 3: Add FillMixingPool function
@@ -365,6 +365,7 @@ class AliAnalysisTaskXi1530 : public AliAnalysisTaskSE {
     // 11: Not using AliStack informed by DPG and BTG coordination
     // 12: Add Exotic option and change default systematic vaule
     // 13: Change Lambda PV Cut default values(reversed)
+    // 14: Modify Fill MC input function for the Signal Loss 
 };
 
 #endif
