@@ -97,10 +97,12 @@ AliAnalysisTask *AddTask_miweber_LMEE_PbPb_woCutLib(Int_t cutDefinition = 0,
     // use pile-up rejection cuts based on TPC clusters/event
     if(bUsePileUpCutsTPCClusters){
 
+      Printf("Using TPC cluster based pile-up cuts with parameter 0 from %f to %f",pileUpCutsTPCClustersMin,pileUpCutsTPCClustersMax);
+
       TF1* fFitMin = new TF1("fFit","pol4",0,90);
       fFitMin->SetParameters(pileUpCutsTPCClustersMin,-109555,2309.01,-27.2048,0.129126);
       TF1* fFitMax = new TF1("fFit","pol4",0,90);
-      fFitMax->SetParameters(pileUpCutsTPCClustersMax,3.1e+06,-109555,2309.01,-27.2048,0.129126);
+      fFitMax->SetParameters(pileUpCutsTPCClustersMax,-109555,2309.01,-27.2048,0.129126);
       
       AliDielectronEventCuts *pileUpCuts = new AliDielectronEventCuts("pileUpCuts","pileUpCuts");
       pileUpCuts->SetMinCorrCutFunction(fFitMin, AliDielectronVarManager::kCentralityNew, AliDielectronVarManager::kNTPCclsEvent);
