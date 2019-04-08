@@ -163,6 +163,20 @@ AliAnalysisTaskSE* AddTaskForwardFlowRun2( bool doNUA, bool makeFakeHoles,
     TObjArray* taskContainers = mgr->GetContainers();
     AliAnalysisDataContainer* weights;
     
+    if (nua_file.Contains("reco") || ref_nua_file.Contains("reco")){
+      weights = (AliAnalysisDataContainer*) taskContainers->FindObject("reco");
+
+      if (!weights) weights = makeWeightContainer(nua_file,ref_nua_file,"reco");   
+      if (nua_file.Contains("reco")) task->ConnectInput(2,weights);
+      if (ref_nua_file.Contains("reco")) task->ConnectInput(3,weights);         
+    }
+        if (nua_file.Contains("prim") || ref_nua_file.Contains("prim")){
+      weights = (AliAnalysisDataContainer*) taskContainers->FindObject("prim");
+
+      if (!weights) weights = makeWeightContainer(nua_file,ref_nua_file,"prim");   
+      if (nua_file.Contains("prim")) task->ConnectInput(2,weights);
+      if (ref_nua_file.Contains("prim")) task->ConnectInput(3,weights);         
+    }
     if (nua_file.Contains("ITS") || ref_nua_file.Contains("ITS")) 
     {
       weights = (AliAnalysisDataContainer*) taskContainers->FindObject("ITSclusters");

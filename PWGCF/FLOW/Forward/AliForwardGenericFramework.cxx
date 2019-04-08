@@ -155,7 +155,7 @@ void AliForwardGenericFramework::CumulantsAccumulate(TH2D& dNdetadphi, TList* ou
         }
 
         if (doRefFlow){
-          if ((fSettings.etagap) && (fabs(eta)<=fSettings.gap || fabs(eta)>3.5)) continue;// && 
+          if ((fSettings.etagap) && (fabs(eta)<=fSettings.gap || fabs(eta)>3.0)) continue;// && 
 
           Double_t req[4] = {0.5, static_cast<Double_t>(n), static_cast<Double_t>(p), refEta};
           Double_t imq[4] = {-0.5, static_cast<Double_t>(n), static_cast<Double_t>(p), refEta};
