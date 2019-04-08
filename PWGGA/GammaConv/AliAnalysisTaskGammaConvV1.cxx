@@ -688,37 +688,35 @@ void AliAnalysisTaskGammaConvV1::UserCreateOutputObjects(){
               ((AliConvEventCuts*)fV0Reader->GetEventCuts())->GetEnergyEnum() == AliConvEventCuts::k13TeVLowB ||
               ((AliConvEventCuts*)fV0Reader->GetEventCuts())->GetEnergyEnum() == AliConvEventCuts::k5TeV  ){
 //    binWidthPt                = 0.05;
-    nBinsPt                   = 199;
+    nBinsPt                   = 169;
     minPt                     = 0;
     maxPt                     = 50;
     for(Int_t i=0; i<nBinsPt+1;i++){
       if (i < 1) arrPtBinning[i]              = 0.10*i;
-      else if(i<59) arrPtBinning[i]           = 0.10+0.05*(i-1);
-      else if(i<129) arrPtBinning[i]          = 3.+0.1*(i-59);
-      else if(i<169) arrPtBinning[i]          = 10.+0.25*(i-129);
-      else if(i<199) arrPtBinning[i]          = 20.+1.0*(i-169);
+      else if(i<29) arrPtBinning[i]           = 0.10+0.1*(i-1);
+      else if(i<99) arrPtBinning[i]           = 3.+0.1*(i-29);
+      else if(i<139) arrPtBinning[i]          = 10.+0.25*(i-99);
+      else if(i<169) arrPtBinning[i]          = 20.+1.0*(i-139);
       else arrPtBinning[i]                    = maxPt;
     }
-    nBinsQAPt                 = 200;
+    nBinsQAPt                 = 170;
     maxQAPt                   = 50;
     for(Int_t i=0; i<nBinsQAPt+1;i++){
-      if(i<60) arrQAPtBinning[i]              = 0.05*i;
-      else if(i<130) arrQAPtBinning[i]        = 3.+0.1*(i-60);
-      else if(i<170) arrQAPtBinning[i]        = 10.+0.25*(i-130);
-      else if(i<200) arrQAPtBinning[i]        = 20.+1.0*(i-170);
+      if(i<100) arrQAPtBinning[i]             = 0.1*i;
+      else if(i<140) arrQAPtBinning[i]        = 10.+0.25*(i-100);
+      else if(i<170) arrQAPtBinning[i]        = 20.+1.0*(i-140);
       else arrQAPtBinning[i]                  = maxQAPt;
     }
-    nBinsClusterPt            = 301;
+    nBinsClusterPt            = 274;
     minClusterPt              = 0;
     maxClusterPt              = 100;
     for(Int_t i=0; i<nBinsClusterPt+1;i++){
       if (i < 1) arrClusPtBinning[i]          = 0.3*i;
-      else if(i<55) arrClusPtBinning[i]       = 0.3+0.05*(i-1);
-      else if(i<125) arrClusPtBinning[i]      = 3.+0.1*(i-55);
-      else if(i<155) arrClusPtBinning[i]      = 10.+0.2*(i-125);
-      else if(i<211) arrClusPtBinning[i]      = 16.+0.25*(i-155);
-      else if(i<251) arrClusPtBinning[i]      = 30.+0.5*(i-211);
-      else if(i<301) arrClusPtBinning[i]      = 50.+1.0*(i-251);
+      else if(i<98) arrClusPtBinning[i]       = 0.3+0.1*(i-1);
+      else if(i<128) arrClusPtBinning[i]      = 10.+0.2*(i-98);
+      else if(i<184) arrClusPtBinning[i]      = 16.+0.25*(i-128);
+      else if(i<224) arrClusPtBinning[i]      = 30.+0.5*(i-184);
+      else if(i<274) arrClusPtBinning[i]      = 50.+1.0*(i-224);
       else arrClusPtBinning[i]                = maxClusterPt;
     }
   // Set special pt binning for XeXe 5.44TeV

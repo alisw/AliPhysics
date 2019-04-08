@@ -3803,14 +3803,14 @@ Bool_t AliConvEventCuts::MimicTrigger(AliVEvent *event, Bool_t isMC ){
                                     5.0,                        // LHC15i-m
                                     5.0,                        // LHC15n
                                     2000.0, 10.0,               // LHC15o
-                                    8.8,                        // LHC16i-k  (255515-258574)
+                                    8.5,                        // LHC16i-k  (255515-258574)
                                     5.5,                        // LHC16l (258883-260187)
-                                    8.8,                        // LHC16m-p (260216-)
+                                    8.5,                        // LHC16m-p (260216-)
                                     8.8, 10.8,                  // LHC16q (265015-265525)
                                     10.8, 7.8,                  // LHC16r (265589-266318)
                                     7.8,                        // LHC16s (266405-267131)
                                     7.8,                        // LHC16t (267161-267166)
-                                    8.8,                        // LHC17c-o (270531-281961)
+                                    8.5,                        // LHC17c-o (270531-281961)
                                     8.8                         // LHC17pq (282008-282441)
 //                                     8.8                         // 2018
                                   };
@@ -3859,14 +3859,14 @@ Bool_t AliConvEventCuts::MimicTrigger(AliVEvent *event, Bool_t isMC ){
                                       5.0,                        // LHC15i-m
                                       5.0,                        // LHC15n
                                       2000.0, 2000.0,             // LHC15o
-                                      3.9,                        // LHC16i-k  (255515-258574)
+                                      3.6,                        // LHC16i-k  (255515-258574)
                                       3.8,                        // LHC16l (258883-260187)
-                                      3.9,                        // LHC16m-p (260216-)
+                                      3.6,                        // LHC16m-p (260216-)
                                       3.9, 6.3,                   // LHC16q (265015-265525)
                                       6.3, 5.3,                   // LHC16r (265589-266318)
                                       5.3,                        // LHC16s (266405-267131)
                                       5.3,                        // LHC16t (267161-267166)
-                                      3.9,                        // LHC17c-o (270531-281961)
+                                      3.6,                        // LHC17c-o (270531-281961)
                                       3.9                         // LHC17pq (282008-282441)
 //                                       3.9                         // 2018
                                     };
@@ -4163,7 +4163,7 @@ Bool_t AliConvEventCuts::IsTriggerSelected(AliVEvent *event, Bool_t isMC)
         fOfflineTriggerMask = AliVEvent::kAny;
       }
     }
-    
+
     // DG event selection; special condition
     if ( (fSpecialTrigger == 11)  && fTriggerSelectedManually &&  fSpecialSubTriggerName.CompareTo("CCUP25-B-SPD1-CENTNOTRD") == 0 ) {
       if (firedTrigClass.Contains(fSpecialSubTriggerName.Data())) isSelected = 1;
@@ -5311,7 +5311,7 @@ Float_t AliConvEventCuts::GetWeightForMultiplicity(Int_t mult){
   Double_t cutOff = -1.0;  // if > 0 : if rel error too large => weight with 0 instead of 1 above this value
 
   //  For these periods allow larger statistical error in the MC to apply the multiplicity weight
-  if ( fPeriodEnum == kLHC16NomB || fPeriodEnum == kLHC16P1Pyt8 || fPeriodEnum == kLHC16P1PHO || 
+  if ( fPeriodEnum == kLHC16NomB || fPeriodEnum == kLHC16P1Pyt8 || fPeriodEnum == kLHC16P1PHO ||
        fPeriodEnum == kLHC17pq  ||  fPeriodEnum == kLHC17P1PHO  || fPeriodEnum == kLHC17l3b  || fPeriodEnum == kLHC18j2  || fPeriodEnum == kLHC17l4b){
     errorTolerance = 0.6;
   }
@@ -5438,11 +5438,11 @@ Float_t AliConvEventCuts::GetWeightForGamma(Int_t index, AliMCEvent *mcEvent, Al
 
   // check if MC production should be weighted. If it is with added particles check that particle is not rejected
   Int_t kCaseGen = 0;
-  if ( fPeriodEnum == kLHC16NomB || fPeriodEnum == kLHC16P1Pyt8 || fPeriodEnum == kLHC16P1PHO || 
+  if ( fPeriodEnum == kLHC16NomB || fPeriodEnum == kLHC16P1Pyt8 || fPeriodEnum == kLHC16P1PHO ||
     fPeriodEnum == kLHC17pq  ||  fPeriodEnum == kLHC17P1PHO  || fPeriodEnum == kLHC17l3b  )
-    kCaseGen = 2;  // regular MC   
+    kCaseGen = 2;  // regular MC
 
- 
+
   if (kCaseGen == 0) return 1.;
   if (kCaseGen == 1 && !IsParticleFromBGEvent(index, mcEvent, event)) return 1.;
 
@@ -5494,7 +5494,7 @@ Float_t AliConvEventCuts::GetWeightForGamma(Int_t index, AliMCEvent *mcEvent, Al
       if (!isfinite(functionResultData)) weight = 1.;
       if (!isfinite(weight)) weight = 1.;
     }
-  } 
+  }
 
   return weight;
 }
