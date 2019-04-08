@@ -101,7 +101,7 @@ class LMEECutLib {
   static TH1* fPostPIDWdthCorrTOF;   //Post PID correction object for electron sigma widths in TOF
 
   private:
-      Bool_t wSDD;
+    Bool_t wSDD;
 };
 
 // Eta correction for the centroid and width of electron sigmas in the TPC, can be one/two/three-dimensional
@@ -1164,7 +1164,8 @@ AliDielectronCutGroup* LMEECutLib::GetTrackCuts(Int_t cutSet, Int_t PIDcuts){
         varCutsFilter->AddCut(AliDielectronVarManager::kNclsITS,      5.0,   100.0); // < 5
         varCutsFilter->AddCut(AliDielectronVarManager::kNclsSFracITS, 0.0,   0.01);
       }else{
-        varCutsFilter->AddCut(AliDielectronVarManager::kNclsITS,      3.0,   100.0); // < 5
+        varCutsFilter->AddCut(AliDielectronVarManager::kNclsITS,      3.0,   100.0); // < 3
+        varCutsFilter->AddCut(AliDielectronVarManager::kNclsSFracITS, 0.0,   0.01);
       }
       varCutsFilter->AddCut(AliDielectronVarManager::kITSchi2Cl,      0.0,   4.5);
 
@@ -1789,4 +1790,3 @@ AliDielectronCutGroup* LMEECutLib::GetTrackCuts(Int_t cutSet, Int_t PIDcuts){
     std::cout << "Track cuts not applied...." << std::endl;
     return 0x0;
 }
-
