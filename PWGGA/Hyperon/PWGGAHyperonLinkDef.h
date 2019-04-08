@@ -16,6 +16,7 @@
 #pragma link C++ class AliSigma0ParticlePhotonMother+;
 #pragma link C++ class AliSigma0V0Cuts+;
 #pragma link C++ class AliSigma0PhotonMotherCuts+;
+#pragma link C++ class AliSigma0AODPhotonMotherCuts+;
 
 #endif
 

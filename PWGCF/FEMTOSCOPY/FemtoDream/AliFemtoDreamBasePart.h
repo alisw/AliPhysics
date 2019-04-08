@@ -21,6 +21,7 @@ class AliFemtoDreamBasePart {
   AliFemtoDreamBasePart &operator=(const AliFemtoDreamBasePart &obj);
   AliFemtoDreamBasePart(const AliSigma0ParticlePhotonMother &mother, const AliMCEvent *mcEvent);
   AliFemtoDreamBasePart(const AliSigma0ParticleV0 &daughter, const AliMCEvent *mcEvent);
+  AliFemtoDreamBasePart(const AliAODConversionPhoton *gamma, const AliVEvent *inputEvent);
   virtual ~AliFemtoDreamBasePart();
   enum PartOrigin {
     kPhysPrimary = 0,
@@ -113,6 +114,18 @@ class AliFemtoDreamBasePart {
     return fPhiAtRadius;
   }
   ;
+  float GetAveragePhiAtRadius(size_t iPart) {
+    if (iPart > fPhiAtRadius.size()) {
+      std::cout << "ERROR - AliFemtoDreamBasePart::GetAveragePhiAtRadius\n";
+      return 999.f;
+    }
+    float nCounts = fPhiAtRadius[iPart].size();
+    float avPhi = 0.f;
+    for (size_t i = 0; i < nCounts; ++i) {
+      avPhi += fPhiAtRadius[iPart][i];
+    }
+    return avPhi / nCounts;
+  }
   void SetXYZAtRadius(TVector3 XYZAtRad) {
     fXYZAtRadius.push_back(XYZAtRad);
   }
@@ -272,9 +285,10 @@ class AliFemtoDreamBasePart {
   bool fIsSet;  //has all the attributes set properly
   int fEvtMultiplicity;
  private:
-//  AliFemtoDreamBasePart(const AliFemtoDreamBasePart&);
-ClassDef(AliFemtoDreamBasePart,4)
-  ;
+  void PhiAtRadii(const AliVTrack *track, const float bfield,
+                  std::vector<float> &tmpVec);
+  //  AliFemtoDreamBasePart(const AliFemtoDreamBasePart&);
+  ClassDef(AliFemtoDreamBasePart, 4);
 };
 
 #endif /* ALIFEMTODREAMBASEPART_H_ */
