@@ -42,9 +42,6 @@ AliForwardGenericFramework::AliForwardGenericFramework()
 //_____________________________________________________________________
 void AliForwardGenericFramework::CumulantsAccumulate(TH2D& dNdetadphi, TList* outputList, double cent, double zvertex, TString detType, Bool_t doRefFlow, Bool_t doDiffFlow)
 {
-  //TList* eventList = static_cast<TList*>(outputList->FindObject("EventInfo"));
-  //TH1D* fFMDHits = static_cast<TH1D*>(eventList->FindObject("FMDHits"));
-
   for (Int_t etaBin = 1; etaBin <= dNdetadphi.GetNbinsX(); etaBin++) {
 
     Double_t eta = dNdetadphi.GetXaxis()->GetBinCenter(etaBin);
@@ -63,8 +60,6 @@ void AliForwardGenericFramework::CumulantsAccumulate(TH2D& dNdetadphi, TList* ou
           if (dNdetadphi.GetBinContent(etaBin, 0) == 0 && detType == "forward") break;
         }
       }
-
-
 
       if (fSettings.doNUA){
         // holes in the FMD
@@ -155,7 +150,8 @@ void AliForwardGenericFramework::CumulantsAccumulate(TH2D& dNdetadphi, TList* ou
         }
 
         if (doRefFlow){
-          if ((fSettings.etagap) && (fabs(eta)<=fSettings.gap || fabs(eta)>3.0)) continue;// && 
+          if ((fSettings.etagap) && fabs(eta)<=fSettings.gap) continue;
+          if (fSettings.etagap && fabs(eta)>3.0) continue;
 
           Double_t req[4] = {0.5, static_cast<Double_t>(n), static_cast<Double_t>(p), refEta};
           Double_t imq[4] = {-0.5, static_cast<Double_t>(n), static_cast<Double_t>(p), refEta};

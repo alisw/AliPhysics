@@ -48,7 +48,6 @@ AliForwardFlowUtil::AliForwardFlowUtil():
 fevent(),
 fAODevent(),
 fMCevent(),
-mc(kFALSE),
 dNdeta(),
 fSettings(),
 minpt(0.2),
@@ -90,7 +89,6 @@ void AliForwardFlowUtil::FillData(TH2D*& refDist, TH2D*& centralDist, TH2D*& for
     }
   }
   else {
-    this->mc = kTRUE;
     if(!fMCevent)
       throw std::runtime_error("Not MC as expected");
 
@@ -184,7 +182,6 @@ void AliForwardFlowUtil::FillDataCentral(TH2D*& centralDist)
     else  this->FillFromTracks(centralDist, fSettings.tracktype); //(fSettings.useTPC)
   }
   else {
-    this->mc = kTRUE;
     if(!fMCevent)
       throw std::runtime_error("Not MC as expected");
 

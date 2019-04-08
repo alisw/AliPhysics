@@ -32,6 +32,7 @@ class AliForwardTaskValidation : public AliAnalysisTaskSE {
       kNoEventCut,
       kIsAODEvent,
       kTrigger,
+      kHasTracklets,
       kHasFMD,
       kHasEntriesFMD,
       kHasValidFMD,
@@ -156,6 +157,8 @@ class AliForwardTaskValidation : public AliAnalysisTaskSE {
   Bool_t AcceptTrigger(AliVEvent::EOfflineTriggerTypes TriggerType);
   /// Check if the current event has a FMD object
   Bool_t HasFMD();
+  /// Check if the current event has tracklets
+  Bool_t HasTracklets();
   /// Check if the current event has any counts in the FMD
   Bool_t HasEntriesFMD();
   /// Check if there is a least one channel with a signal in the V0

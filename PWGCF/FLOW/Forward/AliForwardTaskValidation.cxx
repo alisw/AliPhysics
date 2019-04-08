@@ -206,6 +206,8 @@ void AliForwardTaskValidation::CreateQAHistograms(TList* outlist) {
       discardedEvtsAx->SetBinLabel(idx + 1, "AOD event"); break;
     case EventValidation::kTrigger:
       discardedEvtsAx->SetBinLabel(idx + 1, "Trigger"); break;
+    case EventValidation::kHasTracklets:
+      discardedEvtsAx->SetBinLabel(idx + 1, "Has Tracklets"); break;      
     case EventValidation::kHasFMD:
       discardedEvtsAx->SetBinLabel(idx + 1, "Has FMD"); break;
     case EventValidation::kHasEntriesFMD:
@@ -363,8 +365,9 @@ void AliForwardTaskValidation::UserExec(Option_t *)
     case EventValidation::kIsAODEvent:
       this->fIsValidEvent = this->IsAODEvent(); break;
     case EventValidation::kTrigger:
-      this->fIsValidEvent = this->AcceptTrigger(AliVEvent::kINT7);
-      break;
+      this->fIsValidEvent = this->AcceptTrigger(AliVEvent::kINT7); break;
+    case EventValidation::kHasTracklets:
+      this->fIsValidEvent = this->HasTracklets(); break;      
     case EventValidation::kHasFMD:
       this->fIsValidEvent = this->HasFMD(); break;
     case EventValidation::kHasEntriesFMD:
@@ -445,6 +448,16 @@ Bool_t AliForwardTaskValidation::HasFMD() {
     return false;
   }
   return true;
+}
+
+
+Bool_t AliForwardTaskValidation::HasTracklets() {
+  AliVMultiplicity* mult = fUtil.fAODevent->GetMultiplicity();
+  Int_t nTracklets = mult->GetNumberOfTracklets();
+  if (nTracklets > 1) {
+    return true;
+  }
+  return false;
 }
 
 Bool_t AliForwardTaskValidation::HasEntriesFMD() {

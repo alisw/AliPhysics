@@ -222,13 +222,13 @@ void AliForwardFlowRun2Task::UserExec(Option_t *)
   Double_t centralEtaMax = (fSettings.useSPD ? 2.5 : fSettings.useITS ? 6 : 1.5);
 
   // Make refDist
-  Int_t   refEtaBins = (((fSettings.ref_mode & fSettings.kITSref) || (fSettings.ref_mode & fSettings.kFMDref)) ? 200 : 400);
-  Int_t   refPhiBins = (((fSettings.ref_mode & fSettings.kITSref) || (fSettings.ref_mode & fSettings.kFMDref)) ? 20  : 400);
+  Int_t   refEtaBins = (((fSettings.ref_mode & fSettings.kITSref) | (fSettings.ref_mode & fSettings.kFMDref)) ? 200 : 400);
+  Int_t   refPhiBins = (((fSettings.ref_mode & fSettings.kITSref) | (fSettings.ref_mode & fSettings.kFMDref)) ? 20  : 400);
   Double_t refEtaMin = ((fSettings.ref_mode & fSettings.kSPDref) ? -2.5 
-                             : ((fSettings.ref_mode & fSettings.kITSref) || (fSettings.ref_mode & fSettings.kFMDref)) ? -4 
+                             : ((fSettings.ref_mode & fSettings.kITSref) | (fSettings.ref_mode & fSettings.kFMDref)) ? -4 
                              : -1.5);
   Double_t refEtaMax = ((fSettings.ref_mode & fSettings.kSPDref) ?  2.5 
-                             : ((fSettings.ref_mode & fSettings.kITSref) || (fSettings.ref_mode & fSettings.kFMDref)) ? 6 
+                             : ((fSettings.ref_mode & fSettings.kITSref) | (fSettings.ref_mode & fSettings.kFMDref)) ? 6 
                              : 1.5);
 
 
@@ -261,11 +261,15 @@ void AliForwardFlowRun2Task::UserExec(Option_t *)
 
   for (Int_t etaBin = 1; etaBin <= centralDist->GetNbinsX(); etaBin++) {
     Double_t eta = centralDist->GetXaxis()->GetBinCenter(etaBin);
-    dNdeta->Fill(eta,cent);
+    for (Int_t phiBin = 1; phiBin <= centralDist->GetNbinsX(); phiBin++) {
+      dNdeta->Fill(eta,cent,centralDist->GetBinContent(etaBin,phiBin));
+    }
   }
   for (Int_t etaBin = 1; etaBin <= forwardDist->GetNbinsX(); etaBin++) {
     Double_t eta = forwardDist->GetXaxis()->GetBinCenter(etaBin);
-    dNdeta->Fill(eta,cent);
+    for (Int_t phiBin = 1; phiBin <= forwardDist->GetNbinsX(); phiBin++) {
+      dNdeta->Fill(eta,cent,forwardDist->GetBinContent(etaBin,phiBin));
+    }
   }
 
   Double_t zvertex = fUtil.GetZ();
@@ -279,7 +283,7 @@ void AliForwardFlowRun2Task::UserExec(Option_t *)
 
   if (fSettings.ref_mode & fSettings.kFMDref) calculator.CumulantsAccumulate(*refDist, fOutputList, cent, zvertex,"forward",true,false);
   else calculator.CumulantsAccumulate(*refDist, fOutputList, cent, zvertex,"central",true,false);
-  // calculator.CumulantsAccumulate(*centralDist, fOutputList, cent, zvertex,"central",false,true);  
+
   calculator.CumulantsAccumulate(*forwardDist, fOutputList, cent, zvertex,"forward",false,true);
 
   Int_t ptnmax =  (fSettings.doPt ? 9 : 0);
@@ -309,7 +313,7 @@ void AliForwardFlowRun2Task::UserExec(Option_t *)
     calculator.CumulantsAccumulate(*centralDist, fOutputList, cent, zvertex,"central",false,true);  
     calculator.saveEvent(fOutputList, cent, zvertex,  randomInt, 0);    
   }
-  
+
   centralDist->Reset();
   forwardDist->Reset();
   refDist->Reset();
