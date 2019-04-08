@@ -31,7 +31,7 @@ class AliAnalysisTaskTPCMatchEff : public AliAnalysisTaskMKBase
         virtual void            AnaTrack();  //called once for every track        
         virtual void            AnaEvent();  //called once for every event        
         
-        static AliAnalysisTaskTPCMatchEff* AddTaskTPCMatchEff(const char* name = "TaskTPCMatchEff");
+        static AliAnalysisTaskTPCMatchEff* AddTaskTPCMatchEff(const char* name = "TaskTPCMatchEff", const char* outfile = 0);
 
     protected:    
         THnSparseD*             fHistMCMatchEff;     //-> for mc matching efficiency

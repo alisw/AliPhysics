@@ -2,6 +2,6 @@
 #include "AliAnalysisTaskMKTest.h"
 #endif
 
-AliAnalysisTaskMKTest* AliAnalysisTaskMKTest(const char* name = "TaskMKTest", const char* outfile = 0) {
+AliAnalysisTaskMKTest* AddTaskMKTest(const char* name = "TaskMKTest", const char* outfile = 0) {
   return AliAnalysisTaskMKTest::AddTaskMKTest(name, outfile);
 }

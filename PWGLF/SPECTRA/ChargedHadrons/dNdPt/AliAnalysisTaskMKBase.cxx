@@ -739,14 +739,14 @@ AliAnalysisTaskMKBase* AliAnalysisTaskMKBase::AddTaskMKBase(const char* name, co
 {
     AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
     if (!mgr) {
-        ::Error("AddTaskPhysicsSelection", "No analysis manager to connect to.");
+        ::Error("AddTaskMKBase", "No analysis manager to connect to.");
         return 0;
     }
 
     // Check the analysis type using the event handlers connected to the analysis manager.
     //==============================================================================
     if (!mgr->GetInputEventHandler()) {
-        ::Error("AddTaskPhysicsSelection", "This task requires an input event handler");
+        ::Error("AddTaskMKBase", "This task requires an input event handler");
         return NULL;
     }
     
