@@ -34,12 +34,84 @@ private:
 class AliAnalysisNanoAODV0Cuts : public AliAnalysisCuts
 {
 public:
-  AliAnalysisNanoAODV0Cuts() {}
+  AliAnalysisNanoAODV0Cuts();
   virtual ~AliAnalysisNanoAODV0Cuts() {}
-  virtual Bool_t IsSelected(TObject* obj); // TObject should be an AliAODv0
-  virtual Bool_t IsSelected(TList*   /* list */ ) { return kTRUE; }
-
+  virtual Bool_t IsSelected(TObject* obj);  // TObject should be an AliAODv0
+  virtual Bool_t IsSelected(TList* /* list */) {
+    return kTRUE;
+  }
+  void SetOnFlyStatus(bool flyStat) {
+    fSelectOnFly = true;
+    fOnFlyStatus = flyStat;
+  }
+  void Setv0pTMin(float pTMin) {
+    fSelectv0pT = true;
+    fv0pTMin = pTMin;
+  }
+  void Setv0EtaMax(float EtaMax) {
+    fSelectv0Eta = true;
+    fv0EtaMax = EtaMax;
+  }
+  void SetTransverseRadiusMin(float MinRad) {
+    fSelectTransverseRadius = true;
+    fTransverseRadiusMin = MinRad;
+  }
+  void SetTransverseRadiusMax(float MaxRad) {
+    fSelectTransverseRadius = true;
+    fTransverseRadiusMax = MaxRad;
+  }
+  void SetCPAMin(float CPAMin) {
+    fSelectCPA = true;
+    fCPAMin = CPAMin;
+  }
+  void SetMaxDCADaughtersToV0Vtx(float MaxDCA) {
+    fSelectDCADaugv0Vtx = true;
+    fDCADaugv0VtxMax = MaxDCA;
+  }
+  void SetMinDCADaughtersToPrimVtx(float MinDCA) {
+    fSelectDCADaugPrimVtx = true;
+    fDCADaugPrimVtxMin = MinDCA;
+  }
+  void SetDaughterEtaMax(float EtaMax) {
+    fSelectDaugEta = true;
+    fDaughEtaMax = EtaMax;
+  }
+  void SetMinClsTPCDaughters(int minCls) {
+    fSelectClsTPC = true;
+    fDaugMinClsTPC = minCls;
+  }
+  void SetDaughterMaxnSigTPC(float maxnSig) {
+    fSelectDaugnPID = true;
+    fDaugnSigTPCMax = maxnSig;
+  }
+  void SetRequireTimingDaughters(bool require) {
+    fSelectTimingDaug = true;
+    fTimingDaughter = require;
+  }
 private:
+  bool fSelectOnFly;
+  bool fOnFlyStatus;
+  bool fSelectv0pT;
+  float fv0pTMin;
+  bool fSelectv0Eta;
+  float fv0EtaMax;
+  bool fSelectTransverseRadius;
+  float fTransverseRadiusMin;
+  float fTransverseRadiusMax;
+  bool fSelectCPA;
+  float fCPAMin;
+  bool fSelectDCADaugv0Vtx;
+  float fDCADaugv0VtxMax;
+  bool fSelectDCADaugPrimVtx;
+  float fDCADaugPrimVtxMin;
+  bool fSelectDaugEta;
+  float fDaughEtaMax;
+  bool fSelectClsTPC;
+  int fDaugMinClsTPC;
+  bool fSelectDaugnPID;
+  float fDaugnSigTPCMax;
+  bool fSelectTimingDaug;
+  bool fTimingDaughter;
 
   ClassDef(AliAnalysisNanoAODV0Cuts, 1); // track cut object for nano AOD filtering
 };

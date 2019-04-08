@@ -35,30 +35,51 @@ Bool_t AliAnalysisNanoAODTrackCuts::IsSelected(TObject* obj)
   return kTRUE;  
 }
 
-Bool_t AliAnalysisNanoAODV0Cuts::IsSelected(TObject* obj)
-{
+AliAnalysisNanoAODV0Cuts::AliAnalysisNanoAODV0Cuts()
+    : AliAnalysisCuts(),
+      fSelectOnFly(false),
+      fOnFlyStatus(false),
+      fSelectv0pT(false),
+      fv0pTMin(0.2),
+      fSelectv0Eta(false),
+      fv0EtaMax(0.9),
+      fSelectTransverseRadius(false),
+      fTransverseRadiusMin(0.2),
+      fTransverseRadiusMax(100.),
+      fSelectCPA(false),
+      fCPAMin(0.98),
+      fSelectDCADaugv0Vtx(false),
+      fDCADaugv0VtxMax(1.5),
+      fSelectDCADaugPrimVtx(false),
+      fDCADaugPrimVtxMin(0.05),
+      fSelectDaugEta(false),
+      fDaughEtaMax(1.0),
+      fSelectClsTPC(false),
+      fDaugMinClsTPC(60),
+      fSelectDaugnPID(false),
+      fDaugnSigTPCMax(6.0),
+      fSelectTimingDaug(false),
+      fTimingDaughter(true){
+}
+
+Bool_t AliAnalysisNanoAODV0Cuts::IsSelected(TObject* obj) {
   // Returns true if the track is good!
   // TODO this is only an example implementation.
-  float v0pTmin = 0.2;
-  float v0EtaMax = 0.9;
-  float TransverseRadiusMin = 0.2;
-  float TransverseRadiusMax = 100;
-  float CPAmin = 0.98;
-  float DCADaugv0VtxMax = 1.5;
-  float DCADaugPrimVtxMin = 0.05;
   AliAODv0* v0 = static_cast<AliAODv0*>(obj);
   const AliAODEvent* evt = static_cast<const AliAODEvent*>(v0->GetEvent());
-
-  if(v0->GetNProngs() != 2) {
+  if (v0->GetNProngs() != 2) {
     return false;
   }
-  if(v0->GetNDaughters() != 2) {
+  if (v0->GetNDaughters() != 2) {
     return false;
   }
-  if (v0->GetOnFlyStatus()) {
+  if (fSelectOnFly && (v0->GetOnFlyStatus() == fOnFlyStatus)) {
     return false;
   }
-  if (v0->Pt() > v0pTmin) {
+  if (fSelectv0pT && (v0->Pt() > fv0pTMin)) {
+    return false;
+  }
+  if (fSelectv0Eta && (v0->Eta() < fv0EtaMax)) {
     return false;
   }
   float xvP = evt->GetPrimaryVertex()->GetX();
@@ -66,22 +87,92 @@ Bool_t AliAnalysisNanoAODV0Cuts::IsSelected(TObject* obj)
   float zvP = evt->GetPrimaryVertex()->GetZ();
   double vecTarget[3] = { xvP, yvP, zvP };
   float TransverseRadius = v0->DecayLengthXY(vecTarget);
-  if (TransverseRadius > TransverseRadiusMax
-      || TransverseRadius < TransverseRadiusMin) {
+  if (fSelectTransverseRadius) {
+    if (TransverseRadius > fTransverseRadiusMax
+        || TransverseRadius < fTransverseRadiusMin) {
+      return false;
+    }
+  }
+  if (fSelectCPA && (v0->CosPointingAngle(vecTarget) > fCPAMin)) {
     return false;
   }
-  if (v0->CosPointingAngle(vecTarget) > CPAmin) {
+  if (fSelectDCADaugv0Vtx && (v0->DcaV0Daughters() < fDCADaugv0VtxMax)) {
     return false;
   }
-  if (v0->Eta() < v0EtaMax) {
-    return false;
+  if (fSelectDCADaugPrimVtx) {
+    if (v0->DcaPosToPrimVertex() < fDCADaugPrimVtxMin
+        || v0->DcaNegToPrimVertex() < fDCADaugPrimVtxMin) {
+      return false;
+    }
   }
-  if (v0->DcaV0Daughters() < DCADaugv0VtxMax) {
-    return false;
+  //TODO: For the preselection it does not matter if the assignment positive and
+  //negative is correct, during creation of the Nano AOD this should be checked
+  AliAODTrack *pTrack = static_cast<AliAODTrack *>(v0->GetDaughter(0));
+  AliAODTrack *nTrack = static_cast<AliAODTrack *>(v0->GetDaughter(1));
+  if (fSelectDaugEta) {
+    if (pTrack->Eta() < fDaughEtaMax || nTrack->Eta() < fDaughEtaMax) {
+      return false;
+    }
   }
-  if (v0->DcaPosToPrimVertex() < DCADaugPrimVtxMin
-      || v0->DcaNegToPrimVertex() < DCADaugPrimVtxMin) {
-    return false;
+  if (fSelectClsTPC) {
+    if (pTrack->GetTPCNcls() < fDaugMinClsTPC
+        || nTrack->GetTPCNcls() < fDaugMinClsTPC) {
+      return false;
+    }
+  }
+  if (fSelectDaugnPID) {
+    static AliPIDResponse* pidResponse = 0;
+    if (!pidResponse) {
+      AliAnalysisManager *man = AliAnalysisManager::GetAnalysisManager();
+      AliInputEventHandler* inputHandler = (AliInputEventHandler*) (man
+          ->GetInputEventHandler());
+      pidResponse = inputHandler->GetPIDResponse();
+    }
+    AliPIDResponse::EDetPidStatus statusPosTPC = pidResponse->CheckPIDStatus(
+        AliPIDResponse::kTPC, pTrack);
+    AliPIDResponse::EDetPidStatus statusNegTPC = pidResponse->CheckPIDStatus(
+        AliPIDResponse::kTPC, nTrack);
+    if (!(statusPosTPC == AliPIDResponse::kDetPidOk
+        && statusNegTPC == AliPIDResponse::kDetPidOk)) {
+      return false;
+    }
+    float nSigPosPion = pidResponse->NumberOfSigmas(AliPIDResponse::kTPC,
+                                                    pTrack, AliPID::kPion);
+    float nSigPosProton = pidResponse->NumberOfSigmas(AliPIDResponse::kTPC,
+                                                      pTrack, AliPID::kProton);
+
+    float nSigNegPion = pidResponse->NumberOfSigmas(AliPIDResponse::kTPC,
+                                                    nTrack, AliPID::kPion);
+    float nSigNegProton = pidResponse->NumberOfSigmas(AliPIDResponse::kTPC,
+                                                      nTrack, AliPID::kProton);
+    //if the daughter tracks are not a proton or a pion within loose cuts,
+    //the candidate can be rejected
+    if (!(nSigPosPion < fDaugnSigTPCMax || nSigPosProton < fDaugnSigTPCMax)) {
+      return false;
+    }
+    if (!(nSigNegPion < fDaugnSigTPCMax || nSigNegProton < fDaugnSigTPCMax)) {
+      return false;
+    }
+  }
+  if (fTimingDaughter) {
+    if (!((pTrack->GetTOFBunchCrossing() == 0)
+        || (nTrack->GetTOFBunchCrossing() == 0))) {
+      bool PileUpPass = false;
+      for (int iLay = 0; iLay < 6; ++iLay) {
+        if (iLay == 2 || iLay == 3) {
+          //do not use SDD for Pile Up Rejection since detector is too slow
+          continue;
+        }
+        if (pTrack->HasPointOnITSLayer(iLay)
+            || nTrack->HasPointOnITSLayer(iLay)) {
+          PileUpPass = true;
+          break;
+        }
+      }
+      if (!PileUpPass) {
+        return false;
+      }
+    }
   }
   return true;
 }
