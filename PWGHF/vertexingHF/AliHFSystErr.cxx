@@ -3034,8 +3034,8 @@ void AliHFSystErr::InitDstoKKpi2016pPb0100(){
   for(Int_t i=5;  i<=6;  i++) fPIDEff->SetBinContent(i, 0.01); // [4-6] - StrongPID
   for(Int_t i=7;  i<=8;  i++) fPIDEff->SetBinContent(i, 0.01); // [6-8] - StrongPID
   for(Int_t i=9;  i<=12; i++) fPIDEff->SetBinContent(i, 0.01); // [8-12] - StrongPID
-  for(Int_t i=13; i<=16; i++) fPIDEff->SetBinContent(i, 0.015); // [12-16] - ConservativePID
-  for(Int_t i=17; i<=24; i++) fPIDEff->SetBinContent(i, 0.015); // [16-24] - ConservativePID
+  for(Int_t i=13; i<=16; i++) fPIDEff->SetBinContent(i, 0.0); // [12-16] - ConservativePID
+  for(Int_t i=17; i<=24; i++) fPIDEff->SetBinContent(i, 0.0); // [16-24] - ConservativePID
 
   // MC dN/dpt and multiplicity weights
   fMCPtShape = new TH1F("fMCPtShape","fMCPtShape",24,0,24);
