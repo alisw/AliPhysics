@@ -617,8 +617,8 @@ void AliAnalysisTaskSEpPbCorrelationsYS::UserCreateOutputObjects() {
 
    mixedDist=new TH2F("mixedDist", ";centrality;tracks;events", 101, 0, 101, 200, 0, fPoolMinNTracks*1.5 );
    mixedDist2=new TH2F("mixedDist2", ";centrality;events;events", 101, 0, 101, 100, -0.5, 99.5) ;
- fOutputList2->Add(mixedDist);
- fOutputList2->Add(mixedDist2);
+   fOutputList2->Add(mixedDist);
+   fOutputList2->Add(mixedDist2);
 
 
    const Int_t ipidBin[4] = {11, 40, 72, 15};
@@ -1018,17 +1018,21 @@ void AliAnalysisTaskSEpPbCorrelationsYS::UserCreateOutputObjects() {
      fHistTriggerTrackMix->SetVarTitle(1,"eta");
      //    fHistTriggerTrackMix->SetVarTitle(2,"z vertex");
    }else if(fAnaMode=="TPCFMD" ||fAnaMode=="TPCFMDC"||fAnaMode=="ITSFMD" || fAnaMode=="ITSFMDC"){
+     Double_t binning_cent_trig[9] = {0., 5.,  10., 20.
+				      , 40., 60.,70.,  80.,100.1};
+	
      const Int_t nEvtVarsFMD = 4;
      Int_t netabin;
-     if(fAnaMode=="TPCFMD"||fAnaMode=="TPCFMDC")	   netabin=8;
+     if(fAnaMode=="TPCFMD"||fAnaMode=="TPCFMDC")	   netabin=4;
      else    netabin=18;
-     const Int_t iEvtBinFMD[4] = {11,11,20,netabin};
-     Double_t binning_eta_tpcfmd[9]={-0.8,-0.6,-0.4,-0.2,0.,0.2,0.4,0.6,0.8};
+     const Int_t iEvtBinFMD[4] = {11,8,10,netabin};
+     //     Double_t binning_eta_tpcfmd[9]={-0.8,-0.6,-0.4,-0.2,0.,0.2,0.4,0.6,0.8};
+     Double_t binning_eta_tpcfmd[5]={-0.8,-0.4,-0.,0.4,0.8};
      Double_t binning_eta_itsfmd[19]={-1.7, -1.6, -1.4, -1.2, -1.0, -0.8, -0.6, -0.4, -0.2, 0.,0.2,  0.4,  0.6,  0.8,  1.0,  1.2,  1.4,  1.6,  1.7};
      
      fHistTriggerTrack = new AliTHn("fHistTriggerTrack", "fHistTriggerTrack", nCFStepstrig, nEvtVarsFMD, iEvtBinFMD);
      fHistTriggerTrack->SetBinLimits(0, binning_pt_lead);
-     fHistTriggerTrack->SetBinLimits(1, binning_cent);
+     fHistTriggerTrack->SetBinLimits(1, binning_cent_trig);
      fHistTriggerTrack->SetBinLimits(2, -10.,10.);
      if(fAnaMode=="TPCFMD"||fAnaMode=="TPCFMDC")	   fHistTriggerTrack->SetBinLimits(3, binning_eta_tpcfmd);
      else fHistTriggerTrack->SetBinLimits(3, binning_eta_itsfmd); 
@@ -1040,7 +1044,7 @@ void AliAnalysisTaskSEpPbCorrelationsYS::UserCreateOutputObjects() {
      
      fHistTriggerTrackMix = new AliTHn("fHistTriggerTrackMix", "fHistTriggerTrackMix", nCFStepstrig, nEvtVars, iEvtBin);
      fHistTriggerTrackMix->SetBinLimits(0, binning_pt_lead);
-     fHistTriggerTrackMix->SetBinLimits(1, binning_cent);
+     fHistTriggerTrackMix->SetBinLimits(1, binning_cent_trig);
      fHistTriggerTrackMix->SetVarTitle(0, "leading p_{T} GeV/c");
      fHistTriggerTrackMix->SetVarTitle(1, "centrality");
      
@@ -1162,7 +1166,7 @@ void AliAnalysisTaskSEpPbCorrelationsYS::UserCreateOutputObjects() {
 				       2.0,2.1,2.2,2.3,2.4,2.5,2.6,2.7,2.8,2.9,
 				       3.0,3.1,3.2,3.3,3.4,3.5,3.6,3.7,3.8,3.9,
 				       4.0,4.1,4.2};
-     Double_t binning_pt_fmdtpc[2]={0.,8.};
+     //     Double_t binning_pt_fmdtpc[2]={0.,8.};
      //      const Int_t iTrackBin_tpcfmd[6]={48,11,32,15,72,12};
      Int_t ndetatpcfmd;
      Int_t nfmdbin;
@@ -1173,8 +1177,10 @@ void AliAnalysisTaskSEpPbCorrelationsYS::UserCreateOutputObjects() {
        ndetatpcfmd=33;
        nfmdbin=17;
      }
-     const Double_t binning_cent_fmdfmd[7]={0.,5.,10.,20.,40.,60.,100.1};
-     const Int_t iTrackBin_tpcfmd[7]={ndetatpcfmd,1,nfmdbin,6,72,20,4};
+     Double_t binning_pt_fmdtpc[4]={0.3,0.8,4.,8.};
+       
+     const Double_t binning_cent_fmdfmd[9]={0.,5.,10.,20.,40.,60.,70,80.,100.1};
+     const Int_t iTrackBin_tpcfmd[7]={ndetatpcfmd,3,nfmdbin,8,72,10,2};
      fHistReconstTrack = new AliTHn("fHistReconstTrack", "fHistReconstTrack", nCFSteps, 7, iTrackBin_tpcfmd);
      fHistReconstTrackMix= new AliTHn("fHistReconstTrackMix", "fHistReconstTrackMix", nCFSteps, 7,iTrackBin_tpcfmd);
      if(fAnaMode=="TPCFMD") {
@@ -1217,8 +1223,8 @@ void AliAnalysisTaskSEpPbCorrelationsYS::UserCreateOutputObjects() {
      
    }else if(fAnaMode=="FMDFMD"){
      const Int_t nTrackVars_fmdfmd = 6;
-     const Double_t binning_cent_fmdfmd[7]={0.,5.,10.,20.,40.,60.,100.1};
-     const Int_t iTrackBin_fmdfmd[6]={49,17,32,6,20,20};
+     const Double_t binning_cent_fmdfmd[8]={0.,5.,10.,20.,40.,60.,80.,100.1};
+     const Int_t iTrackBin_fmdfmd[6]={49,17,32,7,20,20};
      fHistReconstTrack= new AliTHn("fHistReconstTrack", "fHistReconstTrack", nCFSteps, nTrackVars_fmdfmd,iTrackBin_fmdfmd);
      fHistReconstTrack->SetBinLimits(0,3.425,8.325);
      //    fHistReconstTrack->SetBinLimits(0,3.525,8.325);
@@ -1751,44 +1757,55 @@ void AliAnalysisTaskSEpPbCorrelationsYS::UserCreateOutputObjects() {
      
      delete hphiacceptance;
 
-     DumpTObjTable("End of fill fmd tracks");
-     
-     Float_t nV0A_hits = fvzero->GetMTotV0A();
-     Float_t nV0C_hits = fvzero->GetMTotV0C();
-     fFMDV0->Fill(nFMD_bwd_hits + nFMD_fwd_hits, nV0C_hits + nV0A_hits);
-     fFMDV0A->Fill(nFMD_fwd_hits, nV0A_hits);
-     fFMDV0C->Fill(nFMD_bwd_hits, nV0C_hits);
-     if(fFMDcut && fAnaMode!="TPCTPC"){
-       if (nV0A_hits + nV0C_hits < 1.5*(nFMD_fwd_hits + nFMD_bwd_hits) - 20) {
-	 selectedTracksLeading->Clear();
-	 delete selectedTracksLeading;
-	 selectedTracksAssociated->Clear();
-	 delete selectedTracksAssociated;
-	 PostData(1, fOutputList);
-	 PostData(2, fOutputList1);
-	 PostData(3, fOutputList2);
-     	 return;} //events cuts
-     }
-     
-     fFMDV0_post->Fill(nFMD_bwd_hits + nFMD_fwd_hits, nV0C_hits + nV0A_hits);
-     fFMDV0A_post->Fill(nFMD_fwd_hits, nV0A_hits);
-     fFMDV0C_post->Fill(nFMD_bwd_hits, nV0C_hits);
-     
-   }
-   fHist_Stat->Fill(7);
-   if(fcollisiontype=="pPb") fHistCentrality->Fill(lCentrality);
-   fHistzvertex->Fill(tPrimaryVtxPosition[2]);
-   DumpTObjTable("End of FMD vs V0 cuts");
+     if(nFMD_fwd_hits==0 || nFMD_bwd_hits==0){
+       selectedTracksLeading->Clear();
+       delete selectedTracksLeading;
+       selectedTracksAssociated->Clear();
+       delete selectedTracksAssociated;
+       PostData(1, fOutputList);
+       PostData(2, fOutputList1);
+       PostData(3, fOutputList2);
+       return;} //events cuts
    
-
-   if(fAnaMode=="TPCTPC"){
-     if(fasso=="hadron") selectedTracksAssociated=GetAcceptedTracksLeading(fEvent,kFALSE,selectedTracksAssociated);
-     else if (fasso == "Phi")    selectedTracksAssociated = GetAcceptedTracksAssociated(fEvent);
-     else if (fasso == "V0")    selectedTracksAssociated = GetAcceptedV0Tracks(fEvent);
-     else if (fasso == "PID")    selectedTracksAssociated = GetAcceptedTracksPID(fEvent);
-     else if (fasso == "Cascade")    selectedTracksAssociated = GetAcceptedCascadeTracks(fEvent);
+   fHist_Stat->Fill(6);
+   
+   DumpTObjTable("End of fill fmd tracks");
+   
+   Float_t nV0A_hits = fvzero->GetMTotV0A();
+   Float_t nV0C_hits = fvzero->GetMTotV0C();
+   fFMDV0->Fill(nFMD_bwd_hits + nFMD_fwd_hits, nV0C_hits + nV0A_hits);
+   fFMDV0A->Fill(nFMD_fwd_hits, nV0A_hits);
+   fFMDV0C->Fill(nFMD_bwd_hits, nV0C_hits);
+   if(fFMDcut && fAnaMode!="TPCTPC"){
+     if (nV0A_hits + nV0C_hits < 1.5*(nFMD_fwd_hits + nFMD_bwd_hits) - 20) {
+       selectedTracksLeading->Clear();
+       delete selectedTracksLeading;
+       selectedTracksAssociated->Clear();
+       delete selectedTracksAssociated;
+       PostData(1, fOutputList);
+       PostData(2, fOutputList1);
+       PostData(3, fOutputList2);
+       return;} //events cuts
    }
-   // Leading Particle
+   
+   fFMDV0_post->Fill(nFMD_bwd_hits + nFMD_fwd_hits, nV0C_hits + nV0A_hits);
+   fFMDV0A_post->Fill(nFMD_fwd_hits, nV0A_hits);
+   fFMDV0C_post->Fill(nFMD_bwd_hits, nV0C_hits);
+ }
+fHist_Stat->Fill(7);
+if(fcollisiontype=="pPb") fHistCentrality->Fill(lCentrality);
+fHistzvertex->Fill(tPrimaryVtxPosition[2]);
+DumpTObjTable("End of FMD vs V0 cuts");
+
+
+if(fAnaMode=="TPCTPC"){
+  if(fasso=="hadron") selectedTracksAssociated=GetAcceptedTracksLeading(fEvent,kFALSE,selectedTracksAssociated);
+  else if (fasso == "Phi")    selectedTracksAssociated = GetAcceptedTracksAssociated(fEvent);
+  else if (fasso == "V0")    selectedTracksAssociated = GetAcceptedV0Tracks(fEvent);
+  else if (fasso == "PID")    selectedTracksAssociated = GetAcceptedTracksPID(fEvent);
+  else if (fasso == "Cascade")    selectedTracksAssociated = GetAcceptedCascadeTracks(fEvent);
+ }
+// Leading Particle
    if(fAnaMode=="TPCFMD" || fAnaMode=="TPCTPC" || fAnaMode=="TPCFMDC"){
      selectedTracksLeading=GetAcceptedTracksLeading(fEvent,kTRUE,selectedTracksLeading);
    }else if(fAnaMode=="ITSFMD" || fAnaMode=="ITSFMDC"){
