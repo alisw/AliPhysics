@@ -50,6 +50,7 @@ ClassImp(AliAnalysisTaskCombinHF);
 AliAnalysisTaskCombinHF::AliAnalysisTaskCombinHF():
   AliAnalysisTaskSE(),
   fOutput(0x0),
+  fListCuts(0x0),
   fHistNEvents(0x0),
   fHistEventMultCent(0x0),
   fHistEventMultZv(0x0),
@@ -150,6 +151,7 @@ AliAnalysisTaskCombinHF::AliAnalysisTaskCombinHF():
 AliAnalysisTaskCombinHF::AliAnalysisTaskCombinHF(Int_t meson, AliRDHFCuts* analysiscuts):
   AliAnalysisTaskSE("DmesonCombin"),
   fOutput(0x0),
+  fListCuts(0x0),
   fHistNEvents(0x0),
   fHistEventMultCent(0x0),
   fHistEventMultZv(0x0),
@@ -247,6 +249,7 @@ AliAnalysisTaskCombinHF::AliAnalysisTaskCombinHF(Int_t meson, AliRDHFCuts* analy
 
   DefineOutput(1,TList::Class());  //My private output
   DefineOutput(2,AliNormalizationCounter::Class());
+  DefineOutput(3,TList::Class());
 }
 
 //________________________________________________________________________
@@ -294,6 +297,7 @@ AliAnalysisTaskCombinHF::~AliAnalysisTaskCombinHF()
   }
 
   delete fOutput;
+  if (fListCuts) delete fListCuts;
   delete fCounter;
   delete fTrackCutsAll;
   delete fTrackCutsPion;
@@ -560,6 +564,43 @@ void AliAnalysisTaskCombinHF::UserCreateOutputObjects()
   //Counter for Normalization
   fCounter = new AliNormalizationCounter("NormalizationCounter");
   fCounter->Init();
+
+  fListCuts = new TList();
+  fListCuts->SetOwner();
+  if(fTrackCutsAll){
+    AliESDtrackCuts* tatosave=new AliESDtrackCuts(*fTrackCutsAll);
+    fListCuts->Add(tatosave);
+  }
+  if(fTrackCutsPion){
+    AliESDtrackCuts* tptosave=new AliESDtrackCuts(*fTrackCutsPion);
+    tptosave->SetName(Form("%sForPions",fTrackCutsPion->GetName()));
+    fListCuts->Add(tptosave);
+  }
+  if(fTrackCutsKaon){
+    AliESDtrackCuts* tktosave=new AliESDtrackCuts(*fTrackCutsKaon);
+    tktosave->SetName(Form("%sForKaons",fTrackCutsKaon->GetName()));
+    fListCuts->Add(tktosave);
+  }
+  if(fPidHF){
+    AliAODPidHF* pidtosave=new AliAODPidHF(*fPidHF);
+    fListCuts->Add(pidtosave);
+  }
+  TH1F* hCutValues = new TH1F("hCutValues","",6,0.5,6.5);
+  hCutValues->SetBinContent(1,fFilterMask);
+  hCutValues->GetXaxis()->SetBinLabel(1,"Filter bit");
+  hCutValues->SetBinContent(2,(Float_t)fApplyCutCosThetaStar);
+  hCutValues->GetXaxis()->SetBinLabel(2,"Use costhetastar (D0)");
+  hCutValues->SetBinContent(3,fCutCosThetaStar);
+  hCutValues->GetXaxis()->SetBinLabel(3,"costhetastar (D0)");
+  hCutValues->SetBinContent(4,fPhiMassCut);
+  hCutValues->GetXaxis()->SetBinLabel(4,"phi mass (Ds)");
+  hCutValues->SetBinContent(5,fCutCos3PiKPhiRFrame);
+  hCutValues->GetXaxis()->SetBinLabel(5,"cos3piK (Ds)");
+  hCutValues->SetBinContent(6,fCutCosPiDsLabFrame);
+  hCutValues->GetXaxis()->SetBinLabel(6,"cospiDs (Ds)");
+  fListCuts->Add(hCutValues);
+  PostData(3, fListCuts);
+
   
   fKaonTracks = new TObjArray();
   fPionTracks=new TObjArray();

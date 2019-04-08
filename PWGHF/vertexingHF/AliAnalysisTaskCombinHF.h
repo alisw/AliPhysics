@@ -144,7 +144,8 @@ private:
   Double_t CosPiKPhiRFrame(TLorentzVector* dauK1, TLorentzVector* dauK2, TLorentzVector* daupi) const;
   Double_t CosPiDsLabFrame(TLorentzVector* dauK1, TLorentzVector* dauK2, TLorentzVector* daupi) const;
 
-  TList   *fOutput; //!<! list send on output slot 0
+  TList *fOutput;             //!<! list with output histograms
+  TList *fListCuts;           //!<! list with cut values 
   TH1F *fHistNEvents;         //!<!hist. for No. of events
   TH2F *fHistEventMultCent;     //!<!hist. for evnt Mult vs. centrality
   TH2F *fHistEventMultZv;       //!<!hist. of evnt Mult vs. Zv for all events
@@ -181,7 +182,7 @@ private:
   TH3F *fMassVsPtVsYMELSpp;   //!<! hist. of Y vs. Pt vs. Mass (mixedevents)
   TH3F *fMassVsPtVsYMELSmm;   //!<! hist. of Y vs. Pt vs. Mass (mixedevents)
   TH2F* fEventsPerPool;   //!<! hist with number of events per pool  
-  TH2F* fMixingsPerPool;    //!<! hist with number of mixings per pool  
+  TH2F* fMixingsPerPool;    //!<! hist with number of mixings per pool
   UInt_t fFilterMask; /// FilterMask
   AliESDtrackCuts* fTrackCutsAll; //// track selection
   AliESDtrackCuts* fTrackCutsPion; /// pion track selection
@@ -245,7 +246,7 @@ private:
   TObjArray* fPionTracks; /// array of pion-compatible tracks (TLorentzVectors)
 
   /// \cond CLASSIMP
-  ClassDef(AliAnalysisTaskCombinHF,17); /// D0D+ task from AOD tracks
+  ClassDef(AliAnalysisTaskCombinHF,18); /// D0D+ task from AOD tracks
   /// \endcond
 };
 
