@@ -18,7 +18,11 @@ AliAnalysisTask *AddTask_miweber_LMEE_PbPb_woCutLib(Int_t cutDefinition = 0,
 						    Bool_t useTPCCorr=kFALSE,
 						    Bool_t useRotation=kFALSE,
 						    Bool_t useMixing=kTRUE,
-						    Bool_t noPairing=kFALSE){
+						    Bool_t noPairing=kFALSE,
+						    Bool_t bUsePileUpCutsTPCClusters = kFALSE,
+						      Float_t pileUpCutsTPCClustersMin = 0.,
+						      Float_t pileUpCutsTPCClustersMax = 0.
+						    ){
 
 
   //get the current analysis manager
@@ -82,12 +86,32 @@ AliAnalysisTask *AddTask_miweber_LMEE_PbPb_woCutLib(Int_t cutDefinition = 0,
   AliDielectron *diel_low = Config_miweber_LMEE_PbPb_woCutLib(cutDefinition,bESDANA,bCutQA,kFALSE,useTPCCorr,useRotation,useMixing,noPairing,hasMC);
   if(diel_low){
     AliDielectronVarCuts *eventplaneCuts = new AliDielectronVarCuts("eventplaneCuts","eventplaneCuts");
+
     // use event plane cuts only for this cut set
     if(cutDefinition==671){
       eventplaneCuts->AddCut(AliDielectronVarManager::kQnTPCrpH2,-999.,kTRUE); // makes sure that the event has an eventplane
       eventplaneCuts->Print();
       diel_low->GetEventFilter().AddCuts(eventplaneCuts);
     }
+
+    // use pile-up rejection cuts based on TPC clusters/event
+    if(bUsePileUpCutsTPCClusters){
+
+      Printf("Using TPC cluster based pile-up cuts with parameter 0 from %f to %f",pileUpCutsTPCClustersMin,pileUpCutsTPCClustersMax);
+
+      TF1* fFitMin = new TF1("fFit","pol4",0,90);
+      fFitMin->SetParameters(pileUpCutsTPCClustersMin,-109555,2309.01,-27.2048,0.129126);
+      TF1* fFitMax = new TF1("fFit","pol4",0,90);
+      fFitMax->SetParameters(pileUpCutsTPCClustersMax,-109555,2309.01,-27.2048,0.129126);
+      
+      AliDielectronEventCuts *pileUpCuts = new AliDielectronEventCuts("pileUpCuts","pileUpCuts");
+      pileUpCuts->SetMinCorrCutFunction(fFitMin, AliDielectronVarManager::kCentralityNew, AliDielectronVarManager::kNTPCclsEvent);
+      pileUpCuts->SetMaxCorrCutFunction(fFitMax, AliDielectronVarManager::kCentralityNew, AliDielectronVarManager::kNTPCclsEvent);
+
+      pileUpCuts->Print();
+      diel_low->GetEventFilter().AddCuts(pileUpCuts);
+    }
+      
     task->AddDielectron(diel_low);
     printf("successfully added AliDielectron: %s\n",diel_low->GetName());
   }
