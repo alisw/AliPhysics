@@ -54,7 +54,7 @@ TH1D* ComputeSPresolution(double &resol, double &resolunc, TH3F *hQiVsqnVsCentr[
 void GetInOutOfPlaneInvMassHistos(THnSparseF *sparse, TH1F *&hInvMassInPlane, TH1F *&hInvMassOutOfPlane, int harmonic, double qnmin, double qnmax, double ptmin, double ptmax);
 TH1F* GetFuncPhiVsMassHistos(THnSparseF* sparse, TString histoname, int iAxis, double qnmin, double qnmax, double ptmin, double ptmax, double massrebin, double resol);
 float GetAveragePtInRange(float &averagePtUnc, THnSparseF *sparse, double qnmin, double qnmax, double ptmin, double ptmax, int bkgfunc, int sgnfunc, bool useRefl, TH1F* hMCRefl, double SoverR, string reflopt, int meson, double massD);
-double ComputeEPvn(double &vnunc, double nIn, double nInUnc, double nOut, double nOutUnc, double resol, double corr = 0.);
+double ComputeEPvn(double &vnunc, int harmonic, double nIn, double nInUnc, double nOut, double nOutUnc, double resol, double corr = 0.);
 void ApplySelection(THnSparseF *sparse, int axisnum, double min, double max);
 void ResetAxes(THnSparseF *sparse, int axisnum = -1);
 TList* LoadTListFromTaskOutput(YAML::Node config);
@@ -462,12 +462,12 @@ void CharmHadronVnFitSystematics(string cfgFileName, string refFileName, int ref
                                         }
 
                                         double vnFreeSigma=0., vnBinCount=0., vnFixSigma=0., vnSimFit=0., vnFreeSigmaUnc=0., vnBinCountUnc=0., vnFixSigmaUnc=0., vnSimFitUnc=0.;
-                                        vnFreeSigma = ComputeEPvn(vnFreeSigmaUnc,rawYieldsFreeSigma[0],rawYieldsFreeSigmaUnc[0],rawYieldsFreeSigma[1],rawYieldsFreeSigmaUnc[1],resol);
-                                        vnBinCount = ComputeEPvn(vnBinCountUnc,rawYieldsBinCount[0],rawYieldsBinCountUnc[0],rawYieldsBinCount[1],rawYieldsBinCountUnc[1],resol);
-                                        vnFixSigma = ComputeEPvn(vnFixSigmaUnc,rawYieldsFixSigma[0],rawYieldsFixSigmaUnc[0],rawYieldsFixSigma[1],rawYieldsFixSigmaUnc[1],resol);
+                                        vnFreeSigma = ComputeEPvn(vnFreeSigmaUnc,harmonic,rawYieldsFreeSigma[0],rawYieldsFreeSigmaUnc[0],rawYieldsFreeSigma[1],rawYieldsFreeSigmaUnc[1],resol);
+                                        vnBinCount = ComputeEPvn(vnBinCountUnc,harmonic,rawYieldsBinCount[0],rawYieldsBinCountUnc[0],rawYieldsBinCount[1],rawYieldsBinCountUnc[1],resol);
+                                        vnFixSigma = ComputeEPvn(vnFixSigmaUnc,harmonic,rawYieldsFixSigma[0],rawYieldsFixSigmaUnc[0],rawYieldsFixSigma[1],rawYieldsFixSigmaUnc[1],resol);
                                         int posRawYieldPar = massfitterFreeSigma[0]->GetBackgroundFullRangeFunc()->GetNpar();
                                         int nTotPars = massfitterFreeSigma[0]->GetMassFunc()->GetNpar();
-                                        vnSimFit = ComputeEPvn(vnSimFitUnc,rawYieldsSimFit[0],rawYieldsSimFitUnc[0],rawYieldsSimFit[1],rawYieldsSimFitUnc[1],resol,resultSimFit.Correlation(posRawYieldPar,posRawYieldPar+nTotPars)); 
+                                        vnSimFit = ComputeEPvn(vnSimFitUnc,harmonic,rawYieldsSimFit[0],rawYieldsSimFitUnc[0],rawYieldsSimFit[1],rawYieldsSimFitUnc[1],resol,resultSimFit.Correlation(posRawYieldPar,posRawYieldPar+nTotPars)); 
                                     
                                         float array4ntupleFreeSigma[29] = {(float)PtMin[iPt],(float)PtMax[iPt],(float)averagePt,(float)averagePtUnc,(float)kFreeSigma,(float)hInvMassDeltaPhiToFit[0]->GetBinWidth(1),(float)MassMin[iMassMin],(float)MassMax[iMassMax],(float)SgnFunc,(float)BkgFunc,(float)rawYieldsFreeSigma[0],(float)rawYieldsFreeSigma[1],(float)rawYieldsFreeSigmaUnc[0],(float)rawYieldsFreeSigmaUnc[1],(float)massfitterFreeSigma[0]->GetMean(),(float)massfitterFreeSigma[1]->GetMean(),(float)massfitterFreeSigma[0]->GetMeanUncertainty(),(float)massfitterFreeSigma[1]->GetMeanUncertainty(),(float)massfitterFreeSigma[0]->GetSigma(),(float)massfitterFreeSigma[1]->GetSigma(),(float)massfitterFreeSigma[0]->GetSigmaUncertainty(),(float)massfitterFreeSigma[1]->GetSigmaUncertainty(),(float)massfitterFreeSigma[0]->GetReducedChiSquare(),(float)massfitterFreeSigma[1]->GetReducedChiSquare(),(float)vnFreeSigma,(float)vnFreeSigmaUnc,(float)qnmin,(float)qnmax,(float)iTrial};
                                         float array4ntupleFixSigma[29] = {(float)PtMin[iPt],(float)PtMax[iPt],(float)averagePt,(float)averagePtUnc,(float)kFixSigma,(float)hInvMassDeltaPhiToFit[0]->GetBinWidth(1),(float)MassMin[iMassMin],(float)MassMax[iMassMax],(float)SgnFunc,(float)BkgFunc,(float)rawYieldsFixSigma[0],(float)rawYieldsFixSigma[1],(float)rawYieldsFixSigmaUnc[0],(float)rawYieldsFixSigmaUnc[1],(float)massfitterFixSigma[0]->GetMean(),(float)massfitterFixSigma[1]->GetMean(),(float)massfitterFixSigma[0]->GetMeanUncertainty(),(float)massfitterFixSigma[1]->GetMeanUncertainty(),(float)massfitterInt.GetSigma(),(float)massfitterInt.GetSigma(),(float)massfitterInt.GetSigmaUncertainty(),(float)massfitterInt.GetSigmaUncertainty(),(float)massfitterFixSigma[0]->GetReducedChiSquare(),(float)massfitterFixSigma[1]->GetReducedChiSquare(),(float)vnFixSigma,(float)vnFixSigmaUnc,(float)qnmin,(float)qnmax,(float)iTrial};
@@ -955,8 +955,8 @@ double ComputeEPvn(double &vnunc, double nIn, double nInUnc, double nOut, double
 
     double anisunc = TMath::Sqrt( anisDerivIn * anisDerivIn * nInUnc * nInUnc + anisDerivOut * anisDerivOut * nOutUnc * nOutUnc + 2 * anisDerivIn * anisDerivOut * nInUnc * nOutUnc * corr);
 
-    double vn = TMath::Pi() / 4 / resol * anis;
-    vnunc     = TMath::Pi() / 4 / resol * anisunc;
+    double vn = TMath::Pi() / harmonic / harmonic / resol * anis;
+    vnunc     = TMath::Pi() / harmonic / harmonic / resol * anisunc;
 
     return vn;
 }
