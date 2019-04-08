@@ -128,7 +128,24 @@ AliAnalysisTaskCTrue::AliAnalysisTaskCTrue()
       inputId_1ZED(0),
       inputId_0MUL(0),
       inputId_0OM2(0),
-      inputId_0VOM(0)
+      inputId_0VOM(0),
+      TotalWeightForEfficiency(0),
+      fVectorEfficiency(0),
+      // plots for CTRUE
+      fEntriesAgainstRunNumberProperlyH(0),
+      fTrackletsPerRunNumberH(0),
+      fVBAforRunNumberH(0),
+      fVBATrackletsForRunNumberH(0),
+      fVDAforRunNumberH(0),
+      fVDATrackletsForRunNumberH(0),
+      fVBAandVDAforRunNumberH(0),
+      fVBAandVDATrackletsForRunNumberH(0),
+      fVBCforRunNumberH(0),
+      fVBCTrackletsForRunNumberH(0),
+      fVDCforRunNumberH(0),
+      fVDCTrackletsForRunNumberH(0),
+      fVBCandVDCforRunNumberH(0),
+      fVBCandVDCTrackletsForRunNumberH(0)
 {
     // default constructor, don't allocate memory here!
     // this is used by root for IO purposes, it needs to remain empty
@@ -175,11 +192,29 @@ AliAnalysisTaskCTrue::AliAnalysisTaskCTrue(const char* name)
       inputId_1ZED(0),
       inputId_0MUL(0),
       inputId_0OM2(0),
-      inputId_0VOM(0)
+      inputId_0VOM(0),
+      TotalWeightForEfficiency(0),
+      fVectorEfficiency(0),
+      // plots for CTRUE
+      fEntriesAgainstRunNumberProperlyH(0),
+      fTrackletsPerRunNumberH(0),
+      fVBAforRunNumberH(0),
+      fVBATrackletsForRunNumberH(0),
+      fVDAforRunNumberH(0),
+      fVDATrackletsForRunNumberH(0),
+      fVBAandVDAforRunNumberH(0),
+      fVBAandVDATrackletsForRunNumberH(0),
+      fVBCforRunNumberH(0),
+      fVBCTrackletsForRunNumberH(0),
+      fVDCforRunNumberH(0),
+      fVDCTrackletsForRunNumberH(0),
+      fVBCandVDCforRunNumberH(0),
+      fVBCandVDCTrackletsForRunNumberH(0)
 {
     // fMapGoodRunsToMuAndWeight.insert( std::make_pair( 0, std::make_pair(0,0) ) );
     Set2018PbPb();
     FillGoodRunMapInfo(fMapGoodRunsToMuAndWeight);
+    fVectorEfficiency = new std::vector<Double_t>[3];
 
     // constructor
     DefineInput(0, TChain::Class());
@@ -390,6 +425,112 @@ void AliAnalysisTaskCTrue::UserCreateOutputObjects()
     fAnaTree ->Branch("fBCrossNum",   &fBCrossNum,   "fBCrossNum/s"  );
 
 
+
+    fEntriesAgainstRunNumberProperlyH = new TH1F("fEntriesAgainstRunNumberProperlyH", "fEntriesAgainstRunNumberProperlyH", 10000, 290000, 300000);
+    fEntriesAgainstRunNumberProperlyH->SetStats(0);
+    fEntriesAgainstRunNumberProperlyH->SetFillColor(38);
+    // fEntriesAgainstRunNumberProperlyH->SetCanExtend(TH1::kAllAxes);
+    fEntriesAgainstRunNumberProperlyH->LabelsDeflate();
+    fOutputList->Add(fEntriesAgainstRunNumberProperlyH);
+
+    fTrackletsPerRunNumberH = new TH1F("fTrackletsPerRunNumberH", "fTrackletsPerRunNumberH", 10000, 290000, 300000);
+    fTrackletsPerRunNumberH->SetStats(0);
+    fTrackletsPerRunNumberH->SetFillColor(38);
+    // fTrackletsPerRunNumberH->SetCanExtend(TH1::kAllAxes);
+    fTrackletsPerRunNumberH->LabelsDeflate();
+    fOutputList->Add(fTrackletsPerRunNumberH);
+
+    //_______________________________
+    // VOA plots
+
+    fVBAforRunNumberH = new TH1F("fVBAforRunNumberH", "fVBAforRunNumberH", 10000, 290000, 300000);
+    fVBAforRunNumberH->SetStats(0);
+    fVBAforRunNumberH->SetFillColor(38);
+    // fVBAforRunNumberH->SetCanExtend(TH1::kAllAxes);
+    fVBAforRunNumberH->LabelsDeflate();
+    fOutputList->Add(fVBAforRunNumberH);
+
+    fVBATrackletsForRunNumberH = new TH1F("fVBATrackletsForRunNumberH", "fVBATrackletsForRunNumberH", 10000, 290000, 300000);
+    fVBATrackletsForRunNumberH->SetStats(0);
+    fVBATrackletsForRunNumberH->SetFillColor(38);
+    // fVBATrackletsForRunNumberH->SetCanExtend(TH1::kAllAxes);
+    fVBATrackletsForRunNumberH->LabelsDeflate();
+    fOutputList->Add(fVBATrackletsForRunNumberH);
+
+    fVDAforRunNumberH = new TH1F("fVDAforRunNumberH", "fVDAforRunNumberH", 10000, 290000, 300000);
+    fVDAforRunNumberH->SetStats(0);
+    fVDAforRunNumberH->SetFillColor(38);
+    // fVDAforRunNumberH->SetCanExtend(TH1::kAllAxes);
+    fVDAforRunNumberH->LabelsDeflate();
+    fOutputList->Add(fVDAforRunNumberH);
+
+    fVDATrackletsForRunNumberH = new TH1F("fVDATrackletsForRunNumberH", "fVDATrackletsForRunNumberH", 10000, 290000, 300000);
+    fVDATrackletsForRunNumberH->SetStats(0);
+    fVDATrackletsForRunNumberH->SetFillColor(38);
+    // fVDATrackletsForRunNumberH->SetCanExtend(TH1::kAllAxes);
+    fVDATrackletsForRunNumberH->LabelsDeflate();
+    fOutputList->Add(fVDATrackletsForRunNumberH);
+
+    fVBAandVDAforRunNumberH = new TH1F("fVBAandVDAforRunNumberH", "fVBAandVDAforRunNumberH", 10000, 290000, 300000);
+    fVBAandVDAforRunNumberH->SetStats(0);
+    fVBAandVDAforRunNumberH->SetFillColor(38);
+    // fVBAandVDAforRunNumberH->SetCanExtend(TH1::kAllAxes);
+    fVBAandVDAforRunNumberH->LabelsDeflate();
+    fOutputList->Add(fVBAandVDAforRunNumberH);
+
+    fVBAandVDATrackletsForRunNumberH = new TH1F("fVBAandVDATrackletsForRunNumberH", "fVBAandVDATrackletsForRunNumberH", 10000, 290000, 300000);
+    fVBAandVDATrackletsForRunNumberH->SetStats(0);
+    fVBAandVDATrackletsForRunNumberH->SetFillColor(38);
+    // fVBAandVDATrackletsForRunNumberH->SetCanExtend(TH1::kAllAxes);
+    fVBAandVDATrackletsForRunNumberH->LabelsDeflate();
+    fOutputList->Add(fVBAandVDATrackletsForRunNumberH);
+
+    //_______________________________
+    // VOC plots
+
+    fVBCforRunNumberH = new TH1F("fVBCforRunNumberH", "fVBCforRunNumberH", 10000, 290000, 300000);
+    fVBCforRunNumberH->SetStats(0);
+    fVBCforRunNumberH->SetFillColor(38);
+    // fVBCforRunNumberH->SetCanExtend(TH1::kAllAxes);
+    fVBCforRunNumberH->LabelsDeflate();
+    fOutputList->Add(fVBCforRunNumberH);
+
+    fVBCTrackletsForRunNumberH = new TH1F("fVBCTrackletsForRunNumberH", "fVBCTrackletsForRunNumberH", 10000, 290000, 300000);
+    fVBCTrackletsForRunNumberH->SetStats(0);
+    fVBCTrackletsForRunNumberH->SetFillColor(38);
+    // fVBCTrackletsForRunNumberH->SetCanExtend(TH1::kAllAxes);
+    fVBCTrackletsForRunNumberH->LabelsDeflate();
+    fOutputList->Add(fVBCTrackletsForRunNumberH);
+
+    fVDCforRunNumberH = new TH1F("fVDCforRunNumberH", "fVDCforRunNumberH", 10000, 290000, 300000);
+    fVDCforRunNumberH->SetStats(0);
+    fVDCforRunNumberH->SetFillColor(38);
+    // fVDCforRunNumberH->SetCanExtend(TH1::kAllAxes);
+    fVDCforRunNumberH->LabelsDeflate();
+    fOutputList->Add(fVDCforRunNumberH);
+
+    fVDCTrackletsForRunNumberH = new TH1F("fVDCTrackletsForRunNumberH", "fVDCTrackletsForRunNumberH", 10000, 290000, 300000);
+    fVDCTrackletsForRunNumberH->SetStats(0);
+    fVDCTrackletsForRunNumberH->SetFillColor(38);
+    // fVDCTrackletsForRunNumberH->SetCanExtend(TH1::kAllAxes);
+    fVDCTrackletsForRunNumberH->LabelsDeflate();
+    fOutputList->Add(fVDCTrackletsForRunNumberH);
+
+    fVBCandVDCforRunNumberH = new TH1F("fVBCandVDCforRunNumberH", "fVBCandVDCforRunNumberH", 10000, 290000, 300000);
+    fVBCandVDCforRunNumberH->SetStats(0);
+    fVBCandVDCforRunNumberH->SetFillColor(38);
+    // fVBCandVDCforRunNumberH->SetCanExtend(TH1::kAllAxes);
+    fVBCandVDCforRunNumberH->LabelsDeflate();
+    fOutputList->Add(fVBCandVDCforRunNumberH);
+
+    fVBCandVDCTrackletsForRunNumberH = new TH1F("fVBCandVDCTrackletsForRunNumberH", "fVBCandVDCTrackletsForRunNumberH", 10000, 290000, 300000);
+    fVBCandVDCTrackletsForRunNumberH->SetStats(0);
+    fVBCandVDCTrackletsForRunNumberH->SetFillColor(38);
+    // fVBCandVDCTrackletsForRunNumberH->SetCanExtend(TH1::kAllAxes);
+    fVBCandVDCTrackletsForRunNumberH->LabelsDeflate();
+    fOutputList->Add(fVBCandVDCTrackletsForRunNumberH);
+
+
     // post output
     PostData(1, fAnaTree);
     PostData(2, fOutputList);
@@ -581,7 +722,50 @@ void AliAnalysisTaskCTrue::UserExec(Option_t *)
   //_______________________________
   /* - FULL ANALYSIS
      -
-  */
+     - The analysis is roughly divided in 4 parts:
+     - 1) configuration B
+     - 2) configuration C
+     - 3) configuration E
+     - 4) configuration A
+     -
+     - Until now the macros I was given were only able to
+     - analyse type B only. In the latter stages of this analysis
+     - task I will try to incorporate even the other three cases.
+     - The separation is done at the level of histograms already.
+     - What will happen is that I will fill everything inside a
+     - if "loop".
+     -
+     - We first remember that if CTRUE:
+     - 1 == B
+     - 2 == A
+     - 3 == C
+     - 4 == E
+     - and we will fill the respective histograms...
+     -
+     - The efficiency retrieval is instead done at the
+     - Terminate() level!! So jump up to that point to
+     - check the comments... This is needed because this type
+     - of analysis require the full statistics available per
+     - run!
+     -
+     - NB: this is the first prototype for the analysis task.
+     - If perhaps the Terminate() method doesn't work
+     - somehow, another way is feasible. Given that the
+     - runs are usually stuck together, I just have to check
+     - if the following is a different run and then compute the efficiency
+     - for the previous at this point...
+     - But this is a messier method and not totally safe.
+     -
+   */
+
+  /* - This type of instruction forces the label to receive a string
+     - type of name. So it gets automatically changed to a label of
+     - our custom. Every time it gets filled with a weight equal to 1,
+     - meaning that it works effectively as a good histogram.
+     -
+   */
+  fEntriesAgainstRunNumberProperlyH->Fill( Form("%d", fRunNum) , 1 );
+
 
   PostData(1, fAnaTree);
   PostData(2, fOutputList);
@@ -671,28 +855,58 @@ void AliAnalysisTaskCTrue::ComputeEfficiency( Int_t n,
                                               Double_t p1,
                                               Double_t p1e,
 	                                            Double_t *eff
+                                              // std::vector<Double_t>* fVectorEfficiencyC
                                               )
 {
-  Double_t w_tot = 0.0;
-  for(Int_t i=0;i<n;i++) {
-    Double_t w = weight[i];
-    w_tot += w;
-    Double_t p = p0+p1*mu[i];
-    eff[0] += (w*TMath::Exp(-p));
-    Double_t pm = p0+(p1-p1e)*mu[i];
-    eff[1] += (w*TMath::Exp(-pm));
-    Double_t pp = p0+(p1+p1e)*mu[i];
-    eff[2] += (w*TMath::Exp(-pp));
-    //  cout << i << " w " << w << " p " << p << " eff " <<  (w*TMath::Exp(-p)) << endl;
-  }
-  if (w_tot < 1e-12) return;
-  for(Int_t i=0;i<3;i++) eff[i] = eff[i]/w_tot;
+  // Double_t w_tot = 0.0;
+  // for(Int_t i=0;i<n;i++) {
+  //   Double_t w = weight[i];
+  //   w_tot += w;
+  //   Double_t p = p0+p1*mu[i];
+  //   eff[0] += (w*TMath::Exp(-p));
+  //   Double_t pm = p0+(p1-p1e)*mu[i];
+  //   eff[1] += (w*TMath::Exp(-pm));
+  //   Double_t pp = p0+(p1+p1e)*mu[i];
+  //   eff[2] += (w*TMath::Exp(-pp));
+  //   //  cout << i << " w " << w << " p " << p << " eff " <<  (w*TMath::Exp(-p)) << endl;
+  // }
+  // if (w_tot < 1e-12) return;
+  // for(Int_t i=0;i<3;i++) eff[i] = eff[i]/w_tot;
   /*
   cout << " efficiency  = " << eff[0]
        << " + " << (eff[1]-eff[0])
        << " - " << (eff[0]-eff[2])
        << endl;
   */
+  for(Int_t i=0;i<n;i++) {
+    TotalWeightForEfficiency += weight[i];
+    Double_t p  = p0+      p1*mu[i];
+    Double_t pm = p0+(p1-p1e)*mu[i];
+    Double_t pp = p0+(p1+p1e)*mu[i];
+
+    fVectorEfficiency[0].push_back( weight[i]*TMath::Exp(-p ) );
+    fVectorEfficiency[1].push_back( weight[i]*TMath::Exp(-pm) );
+    fVectorEfficiency[2].push_back( weight[i]*TMath::Exp(-pp) );
+  }
+}
+//_____________________________________________________________________________
+Double_t* AliAnalysisTaskCTrue::NormalizeEfficiency()
+{
+  Double_t effInTheCycle[3];
+  effInTheCycle[0] = effInTheCycle[1] = effInTheCycle[2] = 0;
+  for ( Int_t iLoop = 0; iLoop < 3; iLoop++){
+    effInTheCycle[iLoop] = 0;
+    for ( auto it = fVectorEfficiency[0].begin(); it != fVectorEfficiency[0].end(); it ++ ) {
+      effInTheCycle[iLoop] += (*it);
+    }
+    effInTheCycle[iLoop] /= TotalWeightForEfficiency;
+  }
+  Double_t* returningEff = new Double_t[3];
+  returningEff[0] = effInTheCycle[0];
+  returningEff[1] = effInTheCycle[1] - effInTheCycle[0];
+  returningEff[1] = effInTheCycle[0] - effInTheCycle[2];
+
+  return returningEff;
 }
 //_____________________________________________________________________________
 void AliAnalysisTaskCTrue::Terminate(Option_t *)

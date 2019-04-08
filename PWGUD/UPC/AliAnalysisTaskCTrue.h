@@ -137,7 +137,15 @@ public:
                                                     Double_t p1,
                                                     Double_t p1e,
     	                                              Double_t *eff
+                                                    // std::vector<Double_t>* fVectorEfficiencyC
                                                     );
+
+                                /**
+                                 * Normalize the total efficiency and
+                                 * retrieve the value with the corresponding
+                                 * error.
+                                 */
+    Double_t*                   NormalizeEfficiency();
 
                                 /**
                                  * Called at the END of the analysis (when all
@@ -219,6 +227,195 @@ private:
                                  */
     AliRunWithMuAndWeight       fMapGoodRunsToMuAndWeight;
 
+                                /**
+                                 * This histogram records the number of entries
+                                 * against the respective run number, but the
+                                 * binning is done properly, like normally
+                                 * found for this type of histograms.
+                                 * What is different is the usage of proper
+                                 * bin labels...
+                                 */
+    TH1F*                       fEntriesAgainstRunNumberProperlyH;         //!
+
+                                /**
+                                 * This histogram records the number of entries
+                                 * against the respective run number, but the
+                                 * binning is done properly, like normally
+                                 * found for this type of histograms.
+                                 * What is different is the usage of proper
+                                 * bin labels...
+                                 *
+                                 * Recording the number of tracklets per
+                                 * run number.
+                                 */
+    TH1F*                       fTrackletsPerRunNumberH;         //!
+
+    //_______________________________
+    // - V0A PLOTS
+                                /**
+                                 * This histogram records the number of entries
+                                 * against the respective run number, but the
+                                 * binning is done properly, like normally
+                                 * found for this type of histograms.
+                                 * What is different is the usage of proper
+                                 * bin labels...
+                                 *
+                                 * Recording the number of VBA firing per
+                                 * run number.
+                                 */
+    TH1F*                       fVBAforRunNumberH;         //!
+
+                                /**
+                                 * This histogram records the number of entries
+                                 * against the respective run number, but the
+                                 * binning is done properly, like normally
+                                 * found for this type of histograms.
+                                 * What is different is the usage of proper
+                                 * bin labels...
+                                 *
+                                 * Recording the number of VBA firing
+                                 * tracklets per
+                                 * run number.
+                                 */
+    TH1F*                       fVBATrackletsForRunNumberH;         //!
+
+                                /**
+                                 * This histogram records the number of entries
+                                 * against the respective run number, but the
+                                 * binning is done properly, like normally
+                                 * found for this type of histograms.
+                                 * What is different is the usage of proper
+                                 * bin labels...
+                                 *
+                                 * Recording the number of VDA firing per
+                                 * run number.
+                                 */
+    TH1F*                       fVDAforRunNumberH;         //!
+
+                                /**
+                                 * This histogram records the number of entries
+                                 * against the respective run number, but the
+                                 * binning is done properly, like normally
+                                 * found for this type of histograms.
+                                 * What is different is the usage of proper
+                                 * bin labels...
+                                 *
+                                 * Recording the number of VDA firing
+                                 * tracklets per
+                                 * run number.
+                                 */
+    TH1F*                       fVDATrackletsForRunNumberH;         //!
+
+                                /**
+                                 * This histogram records the number of entries
+                                 * against the respective run number, but the
+                                 * binning is done properly, like normally
+                                 * found for this type of histograms.
+                                 * What is different is the usage of proper
+                                 * bin labels...
+                                 *
+                                 * Recording the number of VBA and VDA
+                                 * firing per
+                                 * run number.
+                                 */
+    TH1F*                       fVBAandVDAforRunNumberH;         //!
+
+                                /**
+                                 * This histogram records the number of entries
+                                 * against the respective run number, but the
+                                 * binning is done properly, like normally
+                                 * found for this type of histograms.
+                                 * What is different is the usage of proper
+                                 * bin labels...
+                                 *
+                                 * Recording the number of VBA and VDA
+                                 * firing tracklets per
+                                 * run number.
+                                 */
+    TH1F*                       fVBAandVDATrackletsForRunNumberH;         //!
+
+    //_______________________________
+    // - V0C PLOTS
+                                /**
+                                 * This histogram records the number of entries
+                                 * against the respective run number, but the
+                                 * binning is done properly, like normally
+                                 * found for this type of histograms.
+                                 * What is different is the usage of proper
+                                 * bin labels...
+                                 *
+                                 * Recording the number of VBC firing per
+                                 * run number.
+                                 */
+    TH1F*                       fVBCforRunNumberH;         //!
+
+                                /**
+                                 * This histogram records the number of entries
+                                 * against the respective run number, but the
+                                 * binning is done properly, like normally
+                                 * found for this type of histograms.
+                                 * What is different is the usage of proper
+                                 * bin labels...
+                                 *
+                                 * Recording the number of VBC firing
+                                 * tracklets per
+                                 * run number.
+                                 */
+    TH1F*                       fVBCTrackletsForRunNumberH;         //!
+
+                                /**
+                                 * This histogram records the number of entries
+                                 * against the respective run number, but the
+                                 * binning is done properly, like normally
+                                 * found for this type of histograms.
+                                 *
+                                 * Recording the number of VDC firing per
+                                 * run number.
+                                 */
+    TH1F*                       fVDCforRunNumberH;         //!
+
+                                /**
+                                 * This histogram records the number of entries
+                                 * against the respective run number, but the
+                                 * binning is done properly, like normally
+                                 * found for this type of histograms.
+                                 * What is different is the usage of proper
+                                 * bin labels...
+                                 *
+                                 * Recording the number of VDC firing
+                                 * tracklets per
+                                 * run number.
+                                 */
+    TH1F*                       fVDCTrackletsForRunNumberH;         //!
+
+                                /**
+                                 * This histogram records the number of entries
+                                 * against the respective run number, but the
+                                 * binning is done properly, like normally
+                                 * found for this type of histograms.
+                                 * What is different is the usage of proper
+                                 * bin labels...
+                                 *
+                                 * Recording the number of VBC and VDC
+                                 * firing per
+                                 * run number.
+                                 */
+    TH1F*                       fVBCandVDCforRunNumberH;         //!
+
+                                /**
+                                 * This histogram records the number of entries
+                                 * against the respective run number, but the
+                                 * binning is done properly, like normally
+                                 * found for this type of histograms.
+                                 * What is different is the usage of proper
+                                 * bin labels...
+                                 *
+                                 * Recording the number of VBC and
+                                 * VDC firing tracklets per
+                                 * run number.
+                                 */
+    TH1F*                       fVBCandVDCTrackletsForRunNumberH;         //!
+
 
     //_______________________________
     // CUTS
@@ -287,6 +484,18 @@ private:
     UChar_t inputId_0OM2;     //!
     UChar_t inputId_0VOM;     //!
 
+                                /**
+                                 * This is the total weight needed for
+                                 * computing efficiencies and similar stuff.
+                                 */
+    Double_t                    TotalWeightForEfficiency;     //!
+
+                                /**
+                                 * Vector containing the efficiency
+                                 * values. There will be three of them, one
+                                 * for each of the efficiencies...
+                                 */
+    std::vector<Double_t>*      fVectorEfficiency;     //!
 
     /**
      * Not implemented yet...
@@ -304,7 +513,7 @@ private:
      * If I happen to encounter it again in the future, I will make sure to
      * record it!
      */
-    ClassDef(AliAnalysisTaskCTrue, 1);
+    ClassDef(AliAnalysisTaskCTrue, 2);
 };
 
 #endif
