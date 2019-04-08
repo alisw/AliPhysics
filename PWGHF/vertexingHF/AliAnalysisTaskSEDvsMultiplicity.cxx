@@ -447,6 +447,7 @@ void AliAnalysisTaskSEDvsMultiplicity::Init(){
     period[12]="LHC18o";
     period[13]="LHC18p";
     nProfiles = 14;
+   }
   }
   for(Int_t i=0; i<nProfiles; i++){
     if(fMultEstimatorAvg[i]){
@@ -454,7 +455,6 @@ void AliAnalysisTaskSEDvsMultiplicity::Init(){
       hprof->SetName(Form("ProfileTrkVsZvtx%s\n",period[i].Data()));
       fListProfiles->Add(hprof);
     }
-  }
   }
 
   PostData(4,fListProfiles);
