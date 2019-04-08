@@ -3306,12 +3306,14 @@ void AliAnalysisTaskStrangeCascadesDiscrete::UserExec(Option_t *)
             mom_cascade[0] =lPMom[0] + lNMom[0] + lBMom[0];
             mom_cascade[1] =lPMom[1] + lNMom[1] + lBMom[1];
             mom_cascade[2] =lPMom[2] + lNMom[2] + lBMom[2];
-            lInvMassOmegaMinusScratch = TMath::Sqrt(TMath::Max(E_cascade*E_cascade - mom_cascade[0]*mom_cascade[0] - mom_cascade[1]*mom_cascade[1]-mom_cascade[2]*mom_cascade[2],0.));
+            lInvMassOmegaMinusScratch = E_cascade*E_cascade - mom_cascade[0]*mom_cascade[0] - mom_cascade[1]*mom_cascade[1]-mom_cascade[2]*mom_cascade[2];
+            lInvMassOmegaMinusScratch = lInvMassOmegaMinusScratch > 0 ? TMath::Sqrt(lInvMassOmegaMinusScratch) : 0.;
             // if we assume that a particle is Xi-, then bachelor track is a pion
             //the total three momentum of the cascade is unchanged
             ebach = TMath::Sqrt(m_pion*m_pion + lBMom[0]*lBMom[0] + lBMom[1]*lBMom[1] + lBMom[2]*lBMom[2]);
             E_cascade = eproton+epion+ebach;
-            lInvMassXiMinusScratch = TMath::Sqrt(TMath::Max(E_cascade*E_cascade - mom_cascade[0]*mom_cascade[0] - mom_cascade[1]*mom_cascade[1]-mom_cascade[2]*mom_cascade[2],0.));
+            lInvMassXiMinusScratch = E_cascade*E_cascade - mom_cascade[0]*mom_cascade[0] - mom_cascade[1]*mom_cascade[1]-mom_cascade[2]*mom_cascade[2];
+            lInvMassXiMinusScratch = lInvMassXiMinusScratch > 0 ? TMath::Sqrt(lInvMassXiMinusScratch) : 0.;
             //
             // combo-backgrounds: For omega minus - AntiLambda(p-pion+)K-
             //                    For Xi minus - AntiLambda(p-pion+)pion-
@@ -3322,11 +3324,13 @@ void AliAnalysisTaskStrangeCascadesDiscrete::UserExec(Option_t *)
             eproton = TMath::Sqrt(m_proton*m_proton+lNMom[0]*lNMom[0]+lNMom[1]*lNMom[1]+lNMom[2]*lNMom[2]);
             ebach = TMath::Sqrt(m_kaon*m_kaon + lBMom[0]*lBMom[0] + lBMom[1]*lBMom[1] + lBMom[2]*lBMom[2]);
             E_cascade = eproton+epion+ebach;
-            lInvMassOmegaMinusBackground = TMath::Sqrt(TMath::Max(E_cascade*E_cascade - mom_cascade[0]*mom_cascade[0] - mom_cascade[1]*mom_cascade[1]-mom_cascade[2]*mom_cascade[2],0.));
+            lInvMassOmegaMinusBackground = E_cascade*E_cascade - mom_cascade[0]*mom_cascade[0] - mom_cascade[1]*mom_cascade[1]-mom_cascade[2]*mom_cascade[2];
+            lInvMassOmegaMinusBackground = lInvMassOmegaMinusBackground > 0 ? TMath::Sqrt(lInvMassOmegaMinusBackground) : 0.;
             //xi
             ebach = TMath::Sqrt(m_pion*m_pion + lBMom[0]*lBMom[0] + lBMom[1]*lBMom[1] + lBMom[2]*lBMom[2]);
             E_cascade = eproton+epion+ebach;
-            lInvMassXiMinusBackground = TMath::Sqrt(TMath::Max(E_cascade*E_cascade - mom_cascade[0]*mom_cascade[0] - mom_cascade[1]*mom_cascade[1]-mom_cascade[2]*mom_cascade[2],0.));
+            lInvMassXiMinusBackground = E_cascade*E_cascade - mom_cascade[0]*mom_cascade[0] - mom_cascade[1]*mom_cascade[1]-mom_cascade[2]*mom_cascade[2];
+            lInvMassXiMinusBackground = lInvMassXiMinusBackground > 0 ? TMath::Sqrt(lInvMassXiMinusBackground) : 0.;
             
         }
         else if(bachTrackXi->Charge() > 0){
@@ -3339,12 +3343,14 @@ void AliAnalysisTaskStrangeCascadesDiscrete::UserExec(Option_t *)
             mom_cascade[0] =lPMom[0] + lNMom[0] + lBMom[0];
             mom_cascade[1] =lPMom[1] + lNMom[1] + lBMom[1];
             mom_cascade[2] =lPMom[2] + lNMom[2] + lBMom[2];
-            lInvMassOmegaPlusScratch = TMath::Sqrt(TMath::Max(E_cascade*E_cascade - mom_cascade[0]*mom_cascade[0] - mom_cascade[1]*mom_cascade[1]-mom_cascade[2]*mom_cascade[2],0.));
+            lInvMassOmegaPlusScratch = E_cascade*E_cascade - mom_cascade[0]*mom_cascade[0] - mom_cascade[1]*mom_cascade[1]-mom_cascade[2]*mom_cascade[2];
+            lInvMassOmegaPlusScratch = lInvMassOmegaPlusScratch > 0 ? TMath::Sqrt(lInvMassOmegaPlusScratch) : 0.;
             // if we assume that a particle is Xi+, then bachelor track is a pion
             //the total three momentum of the cascade is unchanged
             ebach = TMath::Sqrt(m_pion*m_pion + lBMom[0]*lBMom[0] + lBMom[1]*lBMom[1] + lBMom[2]*lBMom[2]);
             E_cascade = eproton+epion+ebach;
-            lInvMassXiPlusScratch = TMath::Sqrt(TMath::Max(E_cascade*E_cascade - mom_cascade[0]*mom_cascade[0] - mom_cascade[1]*mom_cascade[1]-mom_cascade[2]*mom_cascade[2],0.));
+            lInvMassXiPlusScratch = E_cascade*E_cascade - mom_cascade[0]*mom_cascade[0] - mom_cascade[1]*mom_cascade[1]-mom_cascade[2]*mom_cascade[2];
+            lInvMassXiPlusScratch = lInvMassXiPlusScratch > 0 ? TMath::Sqrt(lInvMassXiPlusScratch) : 0.;
             //
             // combo-backgrounds: For omega plus - Lambda(p+pion-)K+
             //                    For Xi plus - Lambda(p+pion-)pion+
@@ -3355,11 +3361,13 @@ void AliAnalysisTaskStrangeCascadesDiscrete::UserExec(Option_t *)
             epion = TMath::Sqrt(m_pion*m_pion+lNMom[0]*lNMom[0]+lNMom[1]*lNMom[1]+lNMom[2]*lNMom[2]);
             ebach = TMath::Sqrt(m_kaon*m_kaon + lBMom[0]*lBMom[0] + lBMom[1]*lBMom[1] + lBMom[2]*lBMom[2]);
             E_cascade = eproton+epion+ebach;
-            lInvMassOmegaPlusBackground = TMath::Sqrt(TMath::Max(E_cascade*E_cascade - mom_cascade[0]*mom_cascade[0] - mom_cascade[1]*mom_cascade[1]-mom_cascade[2]*mom_cascade[2],0.));
+            lInvMassOmegaPlusBackground = E_cascade*E_cascade - mom_cascade[0]*mom_cascade[0] - mom_cascade[1]*mom_cascade[1]-mom_cascade[2]*mom_cascade[2];
+            lInvMassOmegaPlusBackground = lInvMassOmegaPlusBackground > 0 ? TMath::Sqrt(lInvMassOmegaPlusBackground) : 0.;
             //xi
             ebach = TMath::Sqrt(m_pion*m_pion + lBMom[0]*lBMom[0] + lBMom[1]*lBMom[1] + lBMom[2]*lBMom[2]);
             E_cascade = eproton+epion+ebach;
-            lInvMassXiPlusBackground = TMath::Sqrt(TMath::Max(E_cascade*E_cascade - mom_cascade[0]*mom_cascade[0] - mom_cascade[1]*mom_cascade[1]-mom_cascade[2]*mom_cascade[2],0.));
+            lInvMassXiPlusBackground = E_cascade*E_cascade - mom_cascade[0]*mom_cascade[0] - mom_cascade[1]*mom_cascade[1]-mom_cascade[2]*mom_cascade[2];
+            lInvMassXiPlusBackground = lInvMassXiPlusBackground > 0 ? TMath::Sqrt(lInvMassXiPlusBackground) : 0.;
             
         }
         else continue;
@@ -3373,16 +3381,15 @@ void AliAnalysisTaskStrangeCascadesDiscrete::UserExec(Option_t *)
         //Under Lambda hypothesis, the positive daughter is the proton, negative pion
         Double_t e12   = m_proton*m_proton+lPMom[0]*lPMom[0]+lPMom[1]*lPMom[1]+lPMom[2]*lPMom[2];
         Double_t e22   = m_pion*m_pion+lNMom[0]*lNMom[0]+lNMom[1]*lNMom[1]+lNMom[2]*lNMom[2];
-        fTreeCascVarV0MassLambda = TMath::Sqrt(TMath::Max(m_pion*m_pion+m_proton*m_proton
-                                                          +2.*(TMath::Sqrt(e12*e22)-lPMom[0]*lNMom[0]-lPMom[1]*lNMom[1]-lPMom[2]*lNMom[2]),0.));
-        
+        fTreeCascVarV0MassLambda = m_pion*m_pion+m_proton*m_proton +2.*(TMath::Sqrt(e12*e22)-lPMom[0]*lNMom[0]-lPMom[1]*lNMom[1]-lPMom[2]*lNMom[2]);
+        fTreeCascVarV0MassLambda = fTreeCascVarV0MassLambda > 0 ? TMath::Sqrt(fTreeCascVarV0MassLambda) : 0.;
+
         //+-+ Recalculate AntiLambda mass from scratch
         //Under Lambda hypothesis, the positive daughter is the pion, negative antiproton
         e12   = m_pion*m_pion+lPMom[0]*lPMom[0]+lPMom[1]*lPMom[1]+lPMom[2]*lPMom[2];
         e22   = m_proton*m_proton+lNMom[0]*lNMom[0]+lNMom[1]*lNMom[1]+lNMom[2]*lNMom[2];
-        fTreeCascVarV0MassAntiLambda = TMath::Sqrt(TMath::Max(m_proton*m_proton+m_pion*m_pion
-                                                              +2.*(TMath::Sqrt(e12*e22)-lPMom[0]*lNMom[0]-lPMom[1]*lNMom[1]-lPMom[2]*lNMom[2]),0.));
-        
+        fTreeCascVarV0MassAntiLambda = m_proton*m_proton+m_pion*m_pion +2.*(TMath::Sqrt(e12*e22)-lPMom[0]*lNMom[0]-lPMom[1]*lNMom[1]-lPMom[2]*lNMom[2]);
+        fTreeCascVarV0MassAntiLambda = fTreeCascVarV0MassAntiLambda > 0 ? TMath::Sqrt(fTreeCascVarV0MassAntiLambda) : 0.;
         
         
         // - II.Step 6 : extra info for QA (ESD)
