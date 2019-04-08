@@ -429,10 +429,10 @@ void AliXiStarPbPb::XiStarInit()
     fCutValues[0][6] = 0.035;
     fCutValues[0][7] = 0.06;
     fCutValues[0][8] = 2.5;
-    fCutValues[0][9] = 0.95;
-    fCutValues[0][10] = 0.275;
-    fCutValues[0][11] = 0.95; //tight selection of CPA L (0.998)
-    fCutValues[0][12] = 0.95; //tight selection of CPA Xi (0.9992)
+    fCutValues[0][9] = 1.5; // tight selection of DCA p-pi less then 0.95 (0.1) loose (1.5)
+    fCutValues[0][10] = 1.5; // tight selection of DCA L-pi less then 0.275 (0.3) loose (1.5)
+    fCutValues[0][11] = 0.998; //tight selection of CPA L (0.998) loose (0.95)
+    fCutValues[0][12] = 0.9992; //tight selection of CPA Xi (0.9992) loose (0.95)
     
     
     
@@ -450,10 +450,10 @@ void AliXiStarPbPb::XiStarInit()
     fCutValues[4][6] = 0.035;
     fCutValues[5][7] = 0.06;
     fCutValues[6][8] = 2.5;
-    fCutValues[7][9] = 0.95;
-    fCutValues[8][10] = 0.275;
-    fCutValues[9][11] = 0.98; //checking t CPA V0
-    fCutValues[10][12] = 0.98; //checking t CPA Xi
+    fCutValues[7][9] = 1.25;
+    fCutValues[8][10] = 1.0;
+    fCutValues[9][11] = 0.95; //checking t CPA V0
+    fCutValues[10][12] = 0.95; //checking t CPA Xi
     
     // Open CPA L and Xi
     fCutValues[11][0] = 70; fCutValues[11][1] = 70; fCutValues[11][2] = 70; fCutValues[11][3] = 70;// 80
@@ -462,8 +462,8 @@ void AliXiStarPbPb::XiStarInit()
     fCutValues[14][6] = 0.035;
     fCutValues[15][7] = 0.06;
     fCutValues[16][8] = 2.5;
-    fCutValues[17][9] = 0.96;
-    fCutValues[18][10] = 0.275;
+    fCutValues[17][9] = 1.0;
+    fCutValues[18][10] = 0.5;
     fCutValues[19][11] = 0.99;  //checking t CPA V0
     fCutValues[20][12] = 0.99; //checking t CPA Xi
     
