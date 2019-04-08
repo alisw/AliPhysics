@@ -735,29 +735,29 @@ void AliAnalysisTaskMKBase::FinishTaskOutput()
 ///
 /// \return the created task
 
-AliAnalysisTaskMKBase* AliAnalysisTaskMKBase::AddTaskMKBase(const char* name) 
+AliAnalysisTaskMKBase* AliAnalysisTaskMKBase::AddTaskMKBase(const char* name, const char* outfile) 
 {
     AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
     if (!mgr) {
-        ::Error("AddTaskPhysicsSelection", "No analysis manager to connect to.");
+        ::Error("AddTaskMKBase", "No analysis manager to connect to.");
         return 0;
     }
 
     // Check the analysis type using the event handlers connected to the analysis manager.
     //==============================================================================
     if (!mgr->GetInputEventHandler()) {
-        ::Error("AddTaskPhysicsSelection", "This task requires an input event handler");
+        ::Error("AddTaskMKBase", "This task requires an input event handler");
         return NULL;
     }
     
     // Setup output file
     //===========================================================================
-    TString fileName = AliAnalysisManager::GetCommonFileName();
-    //fileName += ":TaskMKBase";      // create a subfolder in the file
-    fileName = TString("out_");
-    fileName += name;
-    fileName += ".root";
-    //if (outfile) fileName = TString(outfile);
+    TString fileName = AliAnalysisManager::GetCommonFileName();        
+    fileName += ":";
+    fileName += name;  // create a subfolder in the file
+    if (outfile) { // if a finename is given, use that one
+        fileName = TString(outfile);
+    }
     
 
     // create the task

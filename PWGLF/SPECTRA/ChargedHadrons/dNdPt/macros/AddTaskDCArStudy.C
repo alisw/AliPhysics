@@ -2,6 +2,6 @@
 #include "AliAnalysisTaskDCArStudy.h"
 #endif
 
-AliAnalysisTaskDCArStudy* AddTaskDCArStudy() {
-  return AliAnalysisTaskDCArStudy::AddTaskDCArStudy("TaskDCArStudy");
+AliAnalysisTaskDCArStudy* AddTaskDCArStudy(const char* name = "TaskDCArStudy", const char* outfile = 0) {
+  return AliAnalysisTaskDCArStudy::AddTaskDCArStudy(name, outfile);
 }

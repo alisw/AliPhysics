@@ -86,7 +86,7 @@ void AliAnalysisTaskMKTest::AnaTrack()
 
 //_____________________________________________________________________________
 
-AliAnalysisTaskMKTest* AliAnalysisTaskMKTest::AddTaskMKTest(const char* name) 
+AliAnalysisTaskMKTest* AliAnalysisTaskMKTest::AddTaskMKTest(const char* name, const char* outfile) 
 {
     AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
     if (!mgr) {
@@ -103,12 +103,12 @@ AliAnalysisTaskMKTest* AliAnalysisTaskMKTest::AddTaskMKTest(const char* name)
     
     // Setup output file
     //===========================================================================
-    TString fileName = AliAnalysisManager::GetCommonFileName();
-    //fileName += ":TaskMKTest";      // create a subfolder in the file
-    fileName = TString("out_");
-    fileName += name;
-    fileName += ".root";
-    //if (outfile) fileName = TString(outfile);
+    TString fileName = AliAnalysisManager::GetCommonFileName();        
+    fileName += ":";
+    fileName += name;  // create a subfolder in the file
+    if (outfile) { // if a finename is given, use that one
+        fileName = TString(outfile);        
+    }
     
 
     // create the task

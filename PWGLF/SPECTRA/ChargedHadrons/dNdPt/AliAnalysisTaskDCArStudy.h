@@ -25,7 +25,7 @@ class AliAnalysisTaskDCArStudy : public AliAnalysisTaskMKBase
         virtual void            AnaTrack();  //called for every track
         virtual void            AnaEvent();  //called for every track        
         
-        static AliAnalysisTaskDCArStudy* AddTaskDCArStudy(const char* name = "TaskDCArStudy");
+        static AliAnalysisTaskDCArStudy* AddTaskDCArStudy(const char* name = "TaskDCArStudy", const char* outfile = 0);
 
     protected:     
         THnSparseD*             fHistDCA;    //-> dca hist  

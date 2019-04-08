@@ -116,7 +116,7 @@ void AliAnalysisTaskTPCMatchEff::AnaTrack()
 
 //_____________________________________________________________________________
 
-AliAnalysisTaskTPCMatchEff* AliAnalysisTaskTPCMatchEff::AddTaskTPCMatchEff(const char* name) 
+AliAnalysisTaskTPCMatchEff* AliAnalysisTaskTPCMatchEff::AddTaskTPCMatchEff(const char* name, const char* outfile) 
 {
     AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
     if (!mgr) {
@@ -133,13 +133,12 @@ AliAnalysisTaskTPCMatchEff* AliAnalysisTaskTPCMatchEff::AddTaskTPCMatchEff(const
     
     // Setup output file
     //===========================================================================
-    TString fileName = AliAnalysisManager::GetCommonFileName();
-    //fileName += ":TaskTPCMatchEff";      // create a subfolder in the file
-    fileName = TString("out_");
-    fileName += name;
-    fileName += ".root";
-    //if (outfile) fileName = TString(outfile);
-    
+    TString fileName = AliAnalysisManager::GetCommonFileName();        
+    fileName += ":";
+    fileName += name;  // create a subfolder in the file
+    if (outfile) { // if a finename is given, use that one
+        fileName = TString(outfile);        
+    }
 
     // create the task
     //===========================================================================
