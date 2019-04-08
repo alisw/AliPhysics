@@ -953,7 +953,7 @@ void AliAnalysisTaskSEHFTreeCreator::FillJetTree() {
 
   // Loop through jet containers, set jet variables for each, and fill each tree
   for(Int_t i =0; i<fJetCollArray.GetEntriesFast(); i++) {
-    fTreeHandlerJet.at(i)->FillTree(fEventID);
+    fTreeHandlerJet.at(i)->FillTree(fRunNumber, fEventID);
   }
 
 }
