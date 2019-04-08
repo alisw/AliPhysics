@@ -76,7 +76,6 @@ class AliForwardFlowUtil : public TObject {
   AliVEvent* fevent; //!
   AliAODEvent* fAODevent; //!
   AliMCEvent* fMCevent; //!
-  Bool_t mc; //!
   TH1F* dNdeta; //!
   AliForwardSettings fSettings;
   Double_t minpt;//!
