@@ -696,11 +696,24 @@ void AliForwardFlowUtil::FillFromPrimariesAODFMD(TH2D*& fwd) const
 
 
 void AliForwardFlowUtil::FillFromTracklets(TH2D*& cen) const {
-  AliAODTracklets* aodTracklets = fAODevent->GetTracklets();
+  AliVMultiplicity* mult = this->fAODevent->GetMultiplicity();
+  Int_t nTracklets = mult->GetNumberOfTracklets();
 
-  for (Int_t i = 0; i < aodTracklets->GetNumberOfTracklets(); i++) {
-    cen->Fill(aodTracklets->GetEta(i),aodTracklets->GetPhi(i), 1);
-    // if (dodNdeta) dNdeta->Fill(aodTracklets->GetEta(i),1);
+  for (Int_t i = 0; i < nTracklets; i++) {
+    // Using a dphi cut in units of mrad; This cut is motivated in
+    // https://aliceinfo.cern.ch/Notes/sites/aliceinfo.cern.ch.Notes/files/notes/analysis/lmilano/2017-Aug-11-analysis_note-note.pdf
+    auto dphi  = mult->GetDeltaPhi(i);
+    if (TMath::Abs(dphi) * 1000 > 5) {
+      continue;
+    }
+    auto eta   = -TMath::Log(TMath::Tan(mult->GetTheta(i)/2));
+    // Drop everything outside of -1.7 < eta 1.7 to avoid overlas with the FMD
+    if (eta < -1.7 || eta > 1.7) {
+      continue;
+    }
+    auto phi   = mult->GetPhi(i) + 39./34.*dphi;
+
+    cen->Fill(eta,phi, 1);
   }
 }
 
@@ -708,22 +721,11 @@ void AliForwardFlowUtil::FillFromTracklets(TH2D*& cen) const {
 void AliForwardFlowUtil::FillFromCentralClusters(TH2D*& cen) const {
   AliAODCentralMult* aodcmult = static_cast<AliAODCentralMult*>(fAODevent->FindListObject("CentralClusters"));
   cen = &aodcmult->GetHistogram();
-  // for (Int_t etaBin = 1; etaBin <= cen->GetNbinsX(); etaBin++) {
-  //   for (Int_t phiBin = 1; phiBin <= cen->GetNbinsX(); phiBin++) {
-  //     // if (dodNdeta) dNdeta->Fill(cen->GetXaxis()->GetBinCenter(etaBin),cen->GetBinContent(etaBin, phiBin));
-  //   }
-  // }
 }
 
 void AliForwardFlowUtil::FillFromForwardClusters(TH2D*& fwd) const {
   AliAODForwardMult* aodfmult = static_cast<AliAODForwardMult*>(fAODevent->FindListObject("Forward"));
   fwd = &aodfmult->GetHistogram();
-
-  // for (Int_t etaBin = 1; etaBin <= fwd->GetNbinsX(); etaBin++) {
-  //   for (Int_t phiBin = 1; phiBin <= fwd->GetNbinsX(); phiBin++) {
-  //     // if (dodNdeta) dNdeta->Fill(fwd->GetXaxis()->GetBinCenter(etaBin),fwd->GetBinContent(etaBin, phiBin));
-  //   }
-  // }
 }
 
 void AliForwardFlowUtil::FillFromTracks(TH2D*& cen, UInt_t tracktype) const {
@@ -753,7 +755,6 @@ void AliForwardFlowUtil::FillFromTracks(TH2D*& cen, UInt_t tracktype) const {
 
       if (track->Pt() >= this->minpt && track->Pt() <= this->maxpt){
         cen->Fill(track->Eta(),track->Phi(), 1);
-        // if (dodNdeta) dNdeta->Fill(track->Eta(),1);
       }
     }
   }
