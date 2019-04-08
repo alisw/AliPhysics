@@ -148,6 +148,26 @@ public:
     Double_t*                   NormalizeEfficiency();
 
                                 /**
+                                 * This function takes as argument 2 TH1F*
+                                 * and one TGraph. Basically it is like a fit.
+                                 * What happens here is that we obtain the final
+                                 * results we wanted for the efficiency.
+                                 * This needs all the other histograms to
+                                 * have already been filled however...
+                                 * This is the reason why it has to be called
+                                 * at the end of the analysis, inside the
+                                 * Terminate() function!!
+                                 *
+                                 * \param signal: the signal histo
+                                 * \param bkg:    the bkg    histo
+                                 * \param graphToBeFilled: self-explanatory
+                                 */
+    void                        DoPlot( TH1F*         signal,
+                                        TH1F*         background,
+                                        TGraphErrors* graphToBeFilled
+                                        );
+
+                                /**
                                  * Called at the END of the analysis (when all
                                  * events are processed). But it is not actually
                                  * doing anything! I guess it is mostly needed
@@ -237,6 +257,49 @@ private:
                                  */
     TH1F*                       fEntriesAgainstRunNumberProperlyH;         //!
 
+    /*_________________________________________________________________________
+    ***************************************************************************
+    *                                                                         *
+    *                                                                         *
+    *                             CTRUE == 1 (B)                              *
+    *                                                                         *
+    *                                                                         *
+    ***************************************************************************
+    __________________________________________________________________________*/
+
+                                /**
+                                 * This histogram records the number of entries
+                                 * against the respective run number, but the
+                                 * binning is done properly, like normally
+                                 * found for this type of histograms.
+                                 * What is different is the usage of proper
+                                 * bin labels...
+                                 *
+                                 * Counting the number of CTRUE==1 events.
+                                 */
+    TH1F*                       fCTrueBEventsPerRunNumberH;         //!
+
+                                /**
+                                 * This histogram records the number of entries
+                                 * against the respective run number, but the
+                                 * binning is done properly, like normally
+                                 * found for this type of histograms.
+                                 * What is different is the usage of proper
+                                 * bin labels...
+                                 *
+                                 * Counting the number of CTRUE==1 events
+                                 * with the following conditions:
+                                 * !f0UBA
+                                 * !f0UBC
+                                 * fADCDecision == 0
+                                 * fADCDecision == 0
+                                 * !f0VBA
+                                 * fV0ADecision == 0
+                                 * !f0VBC
+                                 * fV0CDecision == 0
+                                 */
+    TH1F*                       fCTrueBEventsPerRunNumberConditionsH;         //!
+
                                 /**
                                  * This histogram records the number of entries
                                  * against the respective run number, but the
@@ -252,6 +315,32 @@ private:
 
     //_______________________________
     // - V0A PLOTS
+                                /**
+                                 * This histogram records the number of entries
+                                 * against the respective run number, but the
+                                 * binning is done properly, like normally
+                                 * found for this type of histograms.
+                                 * What is different is the usage of proper
+                                 * bin labels...
+                                 *
+                                 * Recording the number of VBA firing per
+                                 * run number.
+                                 */
+    TH1F*                       fRecurringVetoAH;         //!
+
+                                /**
+                                 * This histogram records the number of entries
+                                 * against the respective run number, but the
+                                 * binning is done properly, like normally
+                                 * found for this type of histograms.
+                                 * What is different is the usage of proper
+                                 * bin labels...
+                                 *
+                                 * Recording the number of VBA firing per
+                                 * run number.
+                                 */
+    TH1F*                       fRecurringVetoAtrackletsH;         //!
+
                                 /**
                                  * This histogram records the number of entries
                                  * against the respective run number, but the
@@ -336,6 +425,32 @@ private:
 
     //_______________________________
     // - V0C PLOTS
+                                /**
+                                 * This histogram records the number of entries
+                                 * against the respective run number, but the
+                                 * binning is done properly, like normally
+                                 * found for this type of histograms.
+                                 * What is different is the usage of proper
+                                 * bin labels...
+                                 *
+                                 * Recording the number of VBA firing per
+                                 * run number.
+                                 */
+    TH1F*                       fRecurringVetoCH;         //!
+
+                                /**
+                                 * This histogram records the number of entries
+                                 * against the respective run number, but the
+                                 * binning is done properly, like normally
+                                 * found for this type of histograms.
+                                 * What is different is the usage of proper
+                                 * bin labels...
+                                 *
+                                 * Recording the number of VBA firing per
+                                 * run number.
+                                 */
+    TH1F*                       fRecurringVetoCtrackletsH;         //!
+
                                 /**
                                  * This histogram records the number of entries
                                  * against the respective run number, but the
@@ -513,7 +628,7 @@ private:
      * If I happen to encounter it again in the future, I will make sure to
      * record it!
      */
-    ClassDef(AliAnalysisTaskCTrue, 2);
+    ClassDef(AliAnalysisTaskCTrue, 4);
 };
 
 #endif
