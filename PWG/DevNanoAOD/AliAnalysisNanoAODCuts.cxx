@@ -79,7 +79,7 @@ Bool_t AliAnalysisNanoAODV0Cuts::IsSelected(TObject* obj) {
   if (fSelectv0pT && (v0->Pt() > fv0pTMin)) {
     return false;
   }
-  if (fSelectv0Eta && (v0->Eta() < fv0EtaMax)) {
+  if (fSelectv0Eta && (TMath::Abs(v0->Eta()) < fv0EtaMax)) {
     return false;
   }
   float xvP = evt->GetPrimaryVertex()->GetX();
@@ -110,7 +110,8 @@ Bool_t AliAnalysisNanoAODV0Cuts::IsSelected(TObject* obj) {
   AliAODTrack *pTrack = static_cast<AliAODTrack *>(v0->GetDaughter(0));
   AliAODTrack *nTrack = static_cast<AliAODTrack *>(v0->GetDaughter(1));
   if (fSelectDaugEta) {
-    if (pTrack->Eta() < fDaughEtaMax || nTrack->Eta() < fDaughEtaMax) {
+    if (TMath::Abs(pTrack->Eta()) < fDaughEtaMax
+        || TMath::Abs(nTrack->Eta()) < fDaughEtaMax) {
       return false;
     }
   }
