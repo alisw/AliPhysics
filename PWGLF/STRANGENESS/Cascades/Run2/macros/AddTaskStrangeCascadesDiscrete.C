@@ -1,10 +1,23 @@
 
+//Want to see output in gskorod folder.
+
 AliAnalysisTaskStrangeCascadesDiscrete *AddTaskStrangeCascadesDiscrete( Bool_t lSaveEventTree = kTRUE,
-                                                                                                     Bool_t lSaveV0 = kTRUE,
-                                                                                                     Bool_t lSaveCascade = kTRUE,
-                                                                                                     TString lExtraOptions = "",
-                                                                                                     const TString lMasterJobSessionFlag = "",
-                                                                                                     TString lExtraOutputName = "")
+                                                                       Bool_t lSaveV0 = kTRUE,
+                                                                       Bool_t lSaveCascade = kTRUE,
+                                                                       Bool_t lRunVertexers = kFALSE,
+                                                                       Bool_t lUseLightVertexer = kFALSE,
+                                                                       Double_t lCascaderMaxChi2 = 33.,
+                                                                       Double_t lCascaderV0MinImpactParam = 0.05, //0.050 per def
+                                                                       Double_t lCascaderV0MassWindow = 0.01, //0.010 per def
+                                                                       Double_t lCascaderBachMinImpactParam = 0.03, //0.03 per def
+                                                                       Double_t lCascaderMaxDCAV0andBach = 2.0, //2.0 per def
+                                                                       Double_t lCascaderMinCosAngle = 0.95, //0.95 per def
+                                                                       Double_t lCascaderMinRadius = 0.4, //0.4 per def
+                                                                       Double_t lCascaderMaxRadius =100., //100. per def
+                                                                       TString lExtraOptions = "",
+                                                                       const TString lMasterJobSessionFlag = "",
+                                                                       TString lExtraOutputName = ""
+                                                                       )
 {
     
     
@@ -70,14 +83,14 @@ AliAnalysisTaskStrangeCascadesDiscrete *AddTaskStrangeCascadesDiscrete( Bool_t l
     
     // if(lSaveEventTree)
     AliAnalysisDataContainer*  coutput8 = mgr->CreateContainer("skorodum_treeevent", TTree::Class(),
-                                                               AliAnalysisManager::kOutputContainer,"skorodum_cTreeEvent.root");
+                                                               AliAnalysisManager::kOutputContainer,"AnalysisResults.root");
     // if(lSaveV0)
     AliAnalysisDataContainer* coutput9 = mgr->CreateContainer("skorodum_treevo", TTree::Class(),
-                                                              AliAnalysisManager::kOutputContainer,"skorodum_cTreeV0.root");
+                                                              AliAnalysisManager::kOutputContainer,"AnalysisResults.root");
     
     //  if(lSaveCascade)
     AliAnalysisDataContainer* coutput10 = mgr->CreateContainer("skorodum_treecascade", TTree::Class(),
-                                                               AliAnalysisManager::kOutputContainer,"skorodum_cTreeCascade.root");
+                                                               AliAnalysisManager::kOutputContainer,"AnalysisResults.root");
     
     
    // AliAnalysisDataContainer* coutput11 = mgr->CreateContainer("skorodum_numbereventstree", TTree::Class(),AliAnalysisManager::kOutputContainer,"skorodum_cNumberEvents.root");
