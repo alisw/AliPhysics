@@ -20,8 +20,8 @@ AliAnalysisTask *AddTask_miweber_LMEE_PbPb_woCutLib(Int_t cutDefinition = 0,
 						    Bool_t useMixing=kTRUE,
 						    Bool_t noPairing=kFALSE,
 						    Bool_t bUsePileUpCutsTPCClusters = kFALSE,
-						      Double_t pileUpCutsTPCClustersMin = 0.,
-						      Double_t pileUpCutsTPCClustersMax = 0.
+						      Float_t pileUpCutsTPCClustersMin = 0.,
+						      Float_t pileUpCutsTPCClustersMax = 0.
 						    ){
 
 
