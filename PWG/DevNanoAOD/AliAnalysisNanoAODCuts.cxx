@@ -66,7 +66,6 @@ Bool_t AliAnalysisNanoAODV0Cuts::IsSelected(TObject* obj) {
   // Returns true if the track is good!
   // TODO this is only an example implementation.
   AliAODv0* v0 = static_cast<AliAODv0*>(obj);
-  const AliAODEvent* evt = static_cast<const AliAODEvent*>(v0->GetEvent());
   if (v0->GetNProngs() != 2) {
     return false;
   }
@@ -82,20 +81,25 @@ Bool_t AliAnalysisNanoAODV0Cuts::IsSelected(TObject* obj) {
   if (fSelectv0Eta && (TMath::Abs(v0->Eta()) < fv0EtaMax)) {
     return false;
   }
-  float xvP = evt->GetPrimaryVertex()->GetX();
-  float yvP = evt->GetPrimaryVertex()->GetY();
-  float zvP = evt->GetPrimaryVertex()->GetZ();
-  double vecTarget[3] = { xvP, yvP, zvP };
-  float TransverseRadius = v0->DecayLengthXY(vecTarget);
-  if (fSelectTransverseRadius) {
-    if (TransverseRadius > fTransverseRadiusMax
-        || TransverseRadius < fTransverseRadiusMin) {
-      return false;
-    }
-  }
-  if (fSelectCPA && (v0->CosPointingAngle(vecTarget) > fCPAMin)) {
-    return false;
-  }
+//  TODO: Does not work, GetEvent() returns 0 all the time.
+//  const AliAODEvent* evt = static_cast<const AliAODEvent*>(v0->GetEvent());
+//  if (!evt) {
+//    return false;
+//  }
+//  float xvP = 0;//evt->GetPrimaryVertex()->GetX();
+//  float yvP = 0;//evt->GetPrimaryVertex()->GetY();
+//  float zvP = 0;//evt->GetPrimaryVertex()->GetZ();
+//  double vecTarget[3] = { xvP, yvP, zvP };
+//  float TransverseRadius = v0->DecayLengthXY(vecTarget);
+//  if (fSelectTransverseRadius) {
+//    if (TransverseRadius > fTransverseRadiusMax
+//        || TransverseRadius < fTransverseRadiusMin) {
+//      return false;
+//    }
+//  }
+//  if (fSelectCPA && (v0->CosPointingAngle(vecTarget) > fCPAMin)) {
+//    return false;
+//  }
   if (fSelectDCADaugv0Vtx && (v0->DcaV0Daughters() < fDCADaugv0VtxMax)) {
     return false;
   }
