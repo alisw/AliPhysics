@@ -40,6 +40,7 @@ class AliFemtoDreamBasePart {
     return fP;
   }
   ;
+  float GetP() const { return fP.Mag(); }
   void SetMCMomentum(float px, float py, float pz) {
     fMCP.SetXYZ(px, py, pz);
   }
@@ -152,6 +153,8 @@ class AliFemtoDreamBasePart {
     return fCPA;
   }
   ;
+  void SetInvMass(float invMass) { fInvMass = invMass; }
+  float GetInvMass() const { return fInvMass; }
   void SetParticleOrigin(PartOrigin org) {
     fOrigin = org;
   }
@@ -254,6 +257,7 @@ class AliFemtoDreamBasePart {
   std::vector<int> fIDTracks;
   std::vector<int> fCharge;
   float fCPA;
+  float fInvMass;
   PartOrigin fOrigin;
   // pdg code as set by the track cuts, used for invariant mass calculation/mc matching in v0s
   int fPDGCode;
@@ -269,7 +273,7 @@ class AliFemtoDreamBasePart {
   int fEvtMultiplicity;
  private:
 //  AliFemtoDreamBasePart(const AliFemtoDreamBasePart&);
-ClassDef(AliFemtoDreamBasePart,3)
+ClassDef(AliFemtoDreamBasePart,4)
   ;
 };
 

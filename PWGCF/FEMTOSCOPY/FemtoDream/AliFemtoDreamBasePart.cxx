@@ -29,6 +29,7 @@ ClassImp(AliFemtoDreamBasePart) AliFemtoDreamBasePart::AliFemtoDreamBasePart()
       fIDTracks(0),
       fCharge(0),
       fCPA(0),
+      fInvMass(0),
       fOrigin(kUnknown),
       fPDGCode(0),
       fMCPDGCode(0),
@@ -60,6 +61,7 @@ AliFemtoDreamBasePart::AliFemtoDreamBasePart(const AliFemtoDreamBasePart &part)
       fIDTracks(part.fIDTracks),
       fCharge(part.fCharge),
       fCPA(part.fCPA),
+      fInvMass(0),
       fOrigin(part.fOrigin),
       fPDGCode(part.fPDGCode),
       fMCPDGCode(part.fMCPDGCode),
@@ -93,6 +95,7 @@ AliFemtoDreamBasePart &AliFemtoDreamBasePart::operator=(
   fIDTracks = obj.fIDTracks;
   fCharge = obj.fCharge;
   fCPA = obj.fCPA;
+  fInvMass = obj.fInvMass;
   fOrigin = obj.fOrigin;
   fPDGCode = obj.fPDGCode;
   fMCPDGCode = obj.fMCPDGCode;
@@ -127,6 +130,7 @@ AliFemtoDreamBasePart::AliFemtoDreamBasePart(
       fIDTracks(),
       fCharge(0),
       fCPA(0),
+      fInvMass(0),
       fOrigin(kUnknown),
       fPDGCode(mother.GetPDGCode()),
       fMCPDGCode(mother.GetPDGCode()),
@@ -230,6 +234,7 @@ AliFemtoDreamBasePart::AliFemtoDreamBasePart(
       fIDTracks(),
       fCharge(0),
       fCPA(0),
+      fInvMass(0),
       fOrigin(kUnknown),
       fPDGCode(daughter.GetPDGcode()),
       fMCPDGCode(daughter.GetPDGcode()),

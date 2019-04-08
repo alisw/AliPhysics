@@ -17,7 +17,6 @@ AliFemtoDreamv0::AliFemtoDreamv0()
       fHasDaughter(false),
       fpDaug(new AliFemtoDreamTrack()),
       fnDaug(new AliFemtoDreamTrack()),
-      fv0Mass(0),
       fdcav0Daug(0),
       fdcaPrim(0),
       fdcaPrimPos(0),
@@ -383,7 +382,6 @@ void AliFemtoDreamv0::Reset() {
     fOnlinev0 = false;
     fHasDaughter = false;
     //daughters don't need to be reset, are reset while setting a new track
-    fv0Mass = 0;
     fv0Vtx[0] = 99;
     fv0Vtx[1] = 99;
     fv0Vtx[2] = 99;

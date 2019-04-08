@@ -49,11 +49,11 @@ class AliFemtoDreamv0 : public AliFemtoDreamBasePart {
   }
   ;
   float Getv0Mass() const {
-    return fv0Mass;
+    return GetInvMass();
   }
   ;
   void Setv0Mass(float mass) {
-    fv0Mass = mass;
+    SetInvMass(mass);
   }
   ;
   float GetDCAv0Vtx(int i) const {
@@ -110,7 +110,6 @@ class AliFemtoDreamv0 : public AliFemtoDreamBasePart {
   bool fHasDaughter;
   AliFemtoDreamTrack *fpDaug;
   AliFemtoDreamTrack *fnDaug;
-  float fv0Mass;
   double fv0Vtx[3];  // Decay Vertex in xyz
   float fdcav0Daug;  // Daugther to Daughter DCA
   float fdcaPrim;
@@ -118,7 +117,7 @@ class AliFemtoDreamv0 : public AliFemtoDreamBasePart {
   float fdcaPrimNeg;  // rphi impact params w.r.t. Primary Vtx [cm]
   float flenDecay;   // Decay Length
   float fTransRadius;   // Decay Length in xy
-ClassDef(AliFemtoDreamv0,2)
+ClassDef(AliFemtoDreamv0, 3)
 };
 
 inline double AliFemtoDreamv0::DecayLengthV0(const double *DecayVtx,
