@@ -61,7 +61,7 @@ class AliAnalysisTaskMKBase : public AliAnalysisTaskSE
         static TH1D*           CreateLogHist(const char* name, const char* title) { return AlidNdPtTools::CreateLogHist(name, title); }
         static TH1D*           CreateLogHist(const char* name) { return AlidNdPtTools::CreateLogHist(name); }
         
-        static AliAnalysisTaskMKBase* AddTaskMKBase(const char* name = "TaskMKBase");
+        static AliAnalysisTaskMKBase* AddTaskMKBase(const char* name = "TaskMKBase", const char* outfile = 0);
 
     protected:
         

@@ -33,7 +33,7 @@ class AliAnalysisTaskMKTest : public AliAnalysisTaskMKBase
         virtual void            AnaTrack();  //called once for every track
         virtual void            AnaEvent();  //called once for every event        
         
-        static AliAnalysisTaskMKTest* AddTaskMKTest(const char* name = "TaskMKTest");
+        static AliAnalysisTaskMKTest* AddTaskMKTest(const char* name = "TaskMKTest", const char* outfile = 0);
 
     protected:    
         THnSparseD*             fHistPt;     //-> pt hist  
