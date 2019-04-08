@@ -910,30 +910,39 @@ void AliAnalysisHFEppTPCTOFBeauty5TeVNew::UserCreateOutputObjects()
   fOutputList->Add(hCharmMotherPt);
 
   hCharmMotherPt_vsElecPt = new TH2F("hCharmMotherPt_vsElecPt","; p_{T} [GeV/c]; Count",1000,0,50,1000,0,50);
+  hCharmMotherPt_vsElecPt->Sumw2();
   fOutputList->Add(hCharmMotherPt_vsElecPt);
 
   hElecPt_vsCharmMotherPt = new TH2F("hElecPt_vsCharmMotherPt","; p_{T} [GeV/c]; Count",1000,0,50,1000,0,50);
+  hElecPt_vsCharmMotherPt->Sumw2();
   fOutputList->Add(hElecPt_vsCharmMotherPt);
 
   hCharmMotherPt_vsElecPt_corr = new TH2F("hCharmMotherPt_vsElecPt_corr","; p_{T} [GeV/c]; Count",1000,0,50,1000,0,50);
+  hCharmMotherPt_vsElecPt_corr->Sumw2();
   fOutputList->Add(hCharmMotherPt_vsElecPt_corr);
 
   hElecPt_vsCharmMotherPt_corr = new TH2F("hElecPt_vsCharmMotherPt_corr","; p_{T} [GeV/c]; Count",1000,0,50,1000,0,50);
+  hElecPt_vsCharmMotherPt_corr->Sumw2();
   fOutputList->Add(hElecPt_vsCharmMotherPt_corr);
 
   hCharmMotherPt_corr = new TH1F("hCharmMotherPt_corr","; p_{T} [GeV/c]; Count",14,ptbinningHF);
+  hCharmMotherPt_corr->Sumw2();
   fOutputList->Add(hCharmMotherPt_corr);
 
   hCharmMotherPt_corr2 = new TH1F("hCharmMotherPt_corr2","; p_{T} [GeV/c]; Count",100,0,50);
+  hCharmMotherPt_corr2->Sumw2();
   fOutputList->Add(hCharmMotherPt_corr2);
 
   hBeautyMotherPtbef = new TH1F("hBeautyMotherPtbef","; p_{T} [GeV/c]; Count",14,ptbinningHF2);
+  hBeautyMotherPtbef->Sumw2();
   fOutputList->Add(hBeautyMotherPtbef);
 
   hBeautyMotherPtaft = new TH1F("hBeautyMotherPtaft","; p_{T} [GeV/c]; Count",14,ptbinningHF2);
+  hBeautyMotherPtaft->Sumw2();
   fOutputList->Add(hBeautyMotherPtaft);
 
   hBeautyMotherPt = new TH2F("hBeautyMotherPt","; p_{T} [GeV/c]; Count",1000,0,50,1000,0,50);
+  hBeautyMotherPt->Sumw2();
   fOutputList->Add(hBeautyMotherPt);
 
   hDCAPtProtons = new TH2F("hDCAPtProtons","; p_{T} [GeV/c]; Count",32,ptbinning,8000,-0.5,0.5);
@@ -961,6 +970,7 @@ void AliAnalysisHFEppTPCTOFBeauty5TeVNew::UserCreateOutputObjects()
 
 
   hBeautyMotherPt2Daft = new TH2F("hBeautyMotherPt2Daft","; p_{T} [GeV/c]; Count",1000,0,50,1000,0,50);
+  hBeautyMotherPt2Daft->Sumw2();
   fOutputList->Add(hBeautyMotherPt2Daft);
 
   fPtElec = new TH1F("fPtElec","; p_{T} [GeV/c]; Count",32,ptbinning);
@@ -990,85 +1000,112 @@ void AliAnalysisHFEppTPCTOFBeauty5TeVNew::UserCreateOutputObjects()
   fOutputList->Add(fDCAxy_pt_had_WoPID);
 
   fDCAxy_pt_charmbef = new TH2F("fDCAxy_pt_charmbef",";p_{t} (GeV/c);DCAxy hadrons",300,0,30,8000,-0.5,0.5);
+  fDCAxy_pt_charmbef->Sumw2();
   fOutputList->Add(fDCAxy_pt_charmbef);
   
   
   fDCAxy_pt_DstarDplusbef = new TH2F("fDCAxy_pt_DstarDplusbef",";p_{t} (GeV/c);DCAxy hadrons",300,0,30,8000,-0.5,0.5);
+  fDCAxy_pt_DstarDplusbef->Sumw2();
   fOutputList->Add(fDCAxy_pt_DstarDplusbef);
   
   fDCAxy_pt_DstarDplusAft = new TH2F("fDCAxy_pt_DstarDplusAft",";p_{t} (GeV/c);DCAxy hadrons",300,0,30,8000,-0.5,0.5);
+  fDCAxy_pt_DstarDplusAft->Sumw2();
   fOutputList->Add(fDCAxy_pt_DstarDplusAft);
   
   fDCAxy_pt_DstarDzerobef = new TH2F("fDCAxy_pt_DstarDzerobef",";p_{t} (GeV/c);DCAxy hadrons",300,0,30,8000,-0.5,0.5);
+  fDCAxy_pt_DstarDzerobef->Sumw2();
   fOutputList->Add(fDCAxy_pt_DstarDzerobef);
   
   fDCAxy_pt_DstarDzeroAft = new TH2F("fDCAxy_pt_DstarDzeroAft",";p_{t} (GeV/c);DCAxy hadrons",300,0,30,8000,-0.5,0.5);
+  fDCAxy_pt_DstarDzeroAft->Sumw2();
   fOutputList->Add(fDCAxy_pt_DstarDzeroAft);
   
   fDCAxy_pt_DstarDsbef = new TH2F("fDCAxy_pt_DstarDsbef",";p_{t} (GeV/c);DCAxy hadrons",300,0,30,8000,-0.5,0.5);
+  fDCAxy_pt_DstarDsbef->Sumw2();
   fOutputList->Add(fDCAxy_pt_DstarDsbef);
   
   fDCAxy_pt_DstarDsAft = new TH2F("fDCAxy_pt_DstarDsAft",";p_{t} (GeV/c);DCAxy hadrons",300,0,30,8000,-0.5,0.5);
+  fDCAxy_pt_DstarDsAft->Sumw2();
   fOutputList->Add(fDCAxy_pt_DstarDsAft);
   
   fDCAxy_pt_Dplusbef = new TH2F("fDCAxy_pt_Dplusbef",";p_{t} (GeV/c);DCAxy hadrons",300,0,30,8000,-0.5,0.5);
+  fDCAxy_pt_Dplusbef->Sumw2();
   fOutputList->Add(fDCAxy_pt_Dplusbef);
   
   fDCAxy_pt_Dzerobef = new TH2F("fDCAxy_pt_Dzerobef",";p_{t} (GeV/c);DCAxy hadrons",300,0,30,8000,-0.5,0.5);
+  fDCAxy_pt_Dzerobef->Sumw2();
   fOutputList->Add(fDCAxy_pt_Dzerobef);
   
   fDCAxy_pt_Dsbef = new TH2F("fDCAxy_pt_Dsbef",";p_{t} (GeV/c);DCAxy hadrons",300,0,30,8000,-0.5,0.5);
+  fDCAxy_pt_Dsbef->Sumw2();
   fOutputList->Add(fDCAxy_pt_Dsbef);
   
   fDCAxy_pt_DplusAft = new TH2F("fDCAxy_pt_DplusAft",";p_{t} (GeV/c);DCAxy hadrons",300,0,30,8000,-0.5,0.5);
+  fDCAxy_pt_DplusAft->Sumw2();
   fOutputList->Add(fDCAxy_pt_DplusAft);
   
   fDCAxy_pt_DzeroAft = new TH2F("fDCAxy_pt_DzeroAft",";p_{t} (GeV/c);DCAxy hadrons",300,0,30,8000,-0.5,0.5);
+  fDCAxy_pt_DzeroAft->Sumw2();
   fOutputList->Add(fDCAxy_pt_DzeroAft);
   
   fDCAxy_pt_DsAft = new TH2F("fDCAxy_pt_DsAft",";p_{t} (GeV/c);DCAxy hadrons",300,0,30,8000,-0.5,0.5);
+  fDCAxy_pt_DsAft->Sumw2();
   fOutputList->Add(fDCAxy_pt_DsAft);
   
   fDCAxy_pt_charmmesonsbef = new TH2F("fDCAxy_pt_charmmesonsbef",";p_{t} (GeV/c);DCAxy hadrons",300,0,30,8000,-0.5,0.5);
+  fDCAxy_pt_charmmesonsbef->Sumw2();
   fOutputList->Add(fDCAxy_pt_charmmesonsbef);
   
   fDCAxy_pt_charmmesonsAft = new TH2F("fDCAxy_pt_charmmesonsAft",";p_{t} (GeV/c);DCAxy hadrons",300,0,30,8000,-0.5,0.5);
+  fDCAxy_pt_charmmesonsAft->Sumw2();
   fOutputList->Add(fDCAxy_pt_charmmesonsAft);
   
   fDCAxy_pt_Lc = new TH2F("fDCAxy_pt_Lc",";p_{t} (GeV/c);DCAxy hadrons",300,0,30,8000,-0.5,0.5);
+  fDCAxy_pt_Lc->Sumw2();
   fOutputList->Add(fDCAxy_pt_Lc);
   
   fDCAxy_pt_charmbaryons = new TH2F("fDCAxy_pt_charmbaryons",";p_{t} (GeV/c);DCAxy hadrons",300,0,30,8000,-0.5,0.5);
+  fDCAxy_pt_charmbaryons->Sumw2();
   fOutputList->Add(fDCAxy_pt_charmbaryons);
   
   fDCAxy_pt_beautybaryons = new TH2F("fDCAxy_pt_beautybaryons",";p_{t} (GeV/c);DCAxy hadrons",300,0,30,8000,-0.5,0.5);
+  fDCAxy_pt_beautybaryons->Sumw2();
   fOutputList->Add(fDCAxy_pt_beautybaryons);
 
   fDCAxy_pt_charmaft = new TH2F("fDCAxy_pt_charmaft",";p_{t} (GeV/c);DCAxy hadrons",300,0,30,8000,-0.5,0.5);
+  fDCAxy_pt_charmaft->Sumw2();
   fOutputList->Add(fDCAxy_pt_charmaft);
 
   fDCAxy_pt_beautybef = new TH2F("fDCAxy_pt_beautybef",";p_{t} (GeV/c);DCAxy hadrons",300,0,30,8000,-0.5,0.5);
+  fDCAxy_pt_beautybef->Sumw2();
   fOutputList->Add(fDCAxy_pt_beautybef);
 
   fDCAxy_pt_beautyaft = new TH2F("fDCAxy_pt_beautyaft",";p_{t} (GeV/c);DCAxy hadrons",300,0,30,8000,-0.5,0.5);
+  fDCAxy_pt_beautyaft->Sumw2();
   fOutputList->Add(fDCAxy_pt_beautyaft); 
 
   fDCAxy_pt_MesonB_beautybef = new TH2F("fDCAxy_pt_MesonB_beautybef",";p_{t} (GeV/c);DCAxy hadrons",300,0,30,8000,-0.5,0.5);
+  fDCAxy_pt_MesonB_beautybef->Sumw2();
   fOutputList->Add(fDCAxy_pt_MesonB_beautybef);
 
   fDCAxy_pt_MesonB_beautyaft = new TH2F("fDCAxy_pt_MesonB_beautyaft",";p_{t} (GeV/c);DCAxy hadrons",300,0,30,8000,-0.5,0.5);
+  fDCAxy_pt_MesonB_beautyaft->Sumw2();
   fOutputList->Add(fDCAxy_pt_MesonB_beautyaft);
 
   fDCAxy_pt_MesonBD_beautybef = new TH2F("fDCAxy_pt_MesonBD_beautybef",";p_{t} (GeV/c);DCAxy hadrons",300,0,30,8000,-0.5,0.5);
+  fDCAxy_pt_MesonBD_beautybef->Sumw2();
   fOutputList->Add(fDCAxy_pt_MesonBD_beautybef);
 
   fDCAxy_pt_MesonBD_beautyaft = new TH2F("fDCAxy_pt_MesonBD_beautyaft",";p_{t} (GeV/c);DCAxy hadrons",300,0,30,8000,-0.5,0.5);
+  fDCAxy_pt_MesonBD_beautyaft->Sumw2();
   fOutputList->Add(fDCAxy_pt_MesonBD_beautyaft);
 
   fDCAxy_pt_BaryonB_beautybef = new TH2F("fDCAxy_pt_BaryonB_beautybef",";p_{t} (GeV/c);DCAxy hadrons",300,0,30,8000,-0.5,0.5);
+  fDCAxy_pt_BaryonB_beautybef->Sumw2();
   fOutputList->Add(fDCAxy_pt_BaryonB_beautybef);
 
   fDCAxy_pt_BaryonBD_beautybef = new TH2F("fDCAxy_pt_BaryonBD_beautybef",";p_{t} (GeV/c);DCAxy hadrons",300,0,30,8000,-0.5,0.5);
+  fDCAxy_pt_BaryonBD_beautybef->Sumw2();
   fOutputList->Add(fDCAxy_pt_BaryonBD_beautybef);
 
   fDCAxy_pt_had_onlyDCA_WoPID = new TH2F("fDCAxy_pt_had_onlyDCA_WoPID",";p_{t} (GeV/c);DCAxy hadrons_WoPID",300,0,30,8000,-0.5,0.5);
@@ -1174,66 +1211,86 @@ void AliAnalysisHFEppTPCTOFBeauty5TeVNew::UserCreateOutputObjects()
   fOutputList->Add(fTPCnsigma_pt_after_tof_its);
 
   fMCMBPtElePi0FoundAft = new TH1F("fMCMBPtElePi0FoundAft","; p_{T} [GeV/c]; Count",32,ptbinning);
+  fMCMBPtElePi0FoundAft->Sumw2();
   fOutputList->Add(fMCMBPtElePi0FoundAft);
 
   fMCEnhPtElePi0FoundAft = new TH1F("fMCEnhPtElePi0FoundAft","; p_{T} [GeV/c]; Count",32,ptbinning);
+  fMCEnhPtElePi0FoundAft->Sumw2();
   fOutputList->Add(fMCEnhPtElePi0FoundAft);
 
   fMCPtEleEtaFoundBef = new TH1F("fMCPtEleEtaFoundBef","; p_{T} [GeV/c]; Count",32,ptbinning);
+  fMCPtEleEtaFoundBef->Sumw2();
   fOutputList->Add(fMCPtEleEtaFoundBef);
 
   fMCPtElePi0FoundBef = new TH1F("fMCPtElePi0FoundBef","; p_{T} [GeV/c]; Count",32,ptbinning);
+  fMCPtElePi0FoundBef->Sumw2();
   fOutputList->Add(fMCPtElePi0FoundBef);
 
   fMCMBPtEleEtaFoundAft = new TH1F("fMCMBPtEleEtaFoundAft","; p_{T} [GeV/c]; Count",32,ptbinning);
+  fMCMBPtEleEtaFoundAft->Sumw2();
   fOutputList->Add(fMCMBPtEleEtaFoundAft);
 
   fMCEnhPtEleEtaFoundAft = new TH1F("fMCEnhPtEleEtaFoundAft","; p_{T} [GeV/c]; Count",32,ptbinning);
+  fMCEnhPtEleEtaFoundAft->Sumw2();
   fOutputList->Add(fMCEnhPtEleEtaFoundAft);
 
   fMCPtEleGammaFound = new TH1F("fMCPtEleGammaFound","; p_{T} [GeV/c]; Count",32,ptbinning);
   fOutputList->Add(fMCPtEleGammaFound);
 
   fMCPtElePi0GeneratedBef = new TH1F("fMCPtElePi0GeneratedBef","; p_{T} [GeV/c]; Count",32,ptbinning);
+  fMCPtElePi0GeneratedBef->Sumw2();
   fOutputList->Add(fMCPtElePi0GeneratedBef);
 
   fMCPtEleEtaGeneratedBef = new TH1F("fMCPtEleEtaGeneratedBef","; p_{T} [GeV/c]; Count",32,ptbinning);
+  fMCPtEleEtaGeneratedBef->Sumw2();
   fOutputList->Add(fMCPtEleEtaGeneratedBef);
 
   fMCMBPtElePi0GeneratedAft = new TH1F("fMCMBPtElePi0GeneratedAft","; p_{T} [GeV/c]; Count",32,ptbinning);
+  fMCMBPtElePi0GeneratedAft->Sumw2();
   fOutputList->Add(fMCMBPtElePi0GeneratedAft);
 
   fMCMBPtEleEtaGeneratedAft = new TH1F("fMCMBPtEleEtaGeneratedAft","; p_{T} [GeV/c]; Count",32,ptbinning);
+  fMCMBPtEleEtaGeneratedAft->Sumw2();
   fOutputList->Add(fMCMBPtEleEtaGeneratedAft);
 
   fMCEnhPtElePi0GeneratedAft = new TH1F("fMCEnhPtElePi0GeneratedAft","; p_{T} [GeV/c]; Count",32,ptbinning);
+  fMCEnhPtElePi0GeneratedAft->Sumw2();
   fOutputList->Add(fMCEnhPtElePi0GeneratedAft);
 
   fMCEnhPtEleEtaGeneratedAft = new TH1F("fMCEnhPtEleEtaGeneratedAft","; p_{T} [GeV/c]; Count",32,ptbinning);
+  fMCEnhPtEleEtaGeneratedAft->Sumw2();
   fOutputList->Add(fMCEnhPtEleEtaGeneratedAft);
 
   fMCPtEleGammaGenerated = new TH1F("fMCPtEleGammaGenerated","; p_{T} [GeV/c]; Count",32,ptbinning);
+  fMCPtEleGammaGenerated->Sumw2();
   fOutputList->Add(fMCPtEleGammaGenerated);
 
   fPtBeautyGenerated = new TH1F("fPtBeautyGenerated","; p_{T} [GeV/c]; Count",32,ptbinning);
+  fPtBeautyGenerated->Sumw2();
   fOutputList->Add(fPtBeautyGenerated);
 
   fPtGeneratedBmesons = new TH1F("fPtGeneratedBmesons","; p_{T} [GeV/c]; Count",1000,0,200);
+  fPtGeneratedBmesons->Sumw2();
   fOutputList->Add(fPtGeneratedBmesons);
 
   fPtBeautyReconstructedAll = new TH1F("fPtBeautyReconstructedAll","; p_{T} [GeV/c]; Count",32,ptbinning);
+  fPtBeautyReconstructedAll->Sumw2();
   fOutputList->Add(fPtBeautyReconstructedAll);
 
   fPtBeautyReconstructedTracks = new TH1F("fPtBeautyReconstructedTracks","; p_{T} [GeV/c]; Count",32,ptbinning);
+  fPtBeautyReconstructedTracks->Sumw2();
   fOutputList->Add(fPtBeautyReconstructedTracks);
 
   fPtBeautyReconstructedTracksPID = new TH1F("fPtBeautyReconstructedTracksPID","; p_{T} [GeV/c]; Count",32,ptbinning);
+  fPtBeautyReconstructedTracksPID->Sumw2();
   fOutputList->Add(fPtBeautyReconstructedTracksPID);
 
   fPtBeautyReconstructedTracksPIDTPC = new TH1F("fPtBeautyReconstructedTracksPIDTPC","; p_{T} [GeV/c]; Count",32,ptbinning);
+  fPtBeautyReconstructedTracksPIDTPC->Sumw2();
   fOutputList->Add(fPtBeautyReconstructedTracksPIDTPC);
 
   fPtBeautyReconstructedTracksPIDTOF = new TH1F("fPtBeautyReconstructedTracksPIDTOF","; p_{T} [GeV/c]; Count",32,ptbinning);
+  fPtBeautyReconstructedTracksPIDTOF->Sumw2();
   fOutputList->Add(fPtBeautyReconstructedTracksPIDTOF);
 
     fRealInclsElecPt = new TH1F("fRealInclsElecPt","; p_{T} [GeV/c]; Count",32,ptbinning);
@@ -1246,24 +1303,30 @@ void AliAnalysisHFEppTPCTOFBeauty5TeVNew::UserCreateOutputObjects()
     fOutputList->Add(fPtElePi0EtaGeneratedAft_NewNoWeight);
     
     fMCMBPtElePi0EtaGeneratedAft_New = new TH1F("fMCMBPtElePi0EtaGeneratedAft_New","; p_{T} [GeV/c]; Count",32,ptbinning);
+    fMCMBPtElePi0EtaGeneratedAft_New->Sumw2();
     fOutputList->Add(fMCMBPtElePi0EtaGeneratedAft_New);
     
     fMCEnhPtElePi0EtaGeneratedAft_New = new TH1F("fMCEnhPtElePi0EtaGeneratedAft_New","; p_{T} [GeV/c]; Count",32,ptbinning);
+    fMCEnhPtElePi0EtaGeneratedAft_New->Sumw2();
     fOutputList->Add(fMCEnhPtElePi0EtaGeneratedAft_New);
     
     fMCMBPtElePi0GeneratedAft_New = new TH1F("fMCMBPtElePi0GeneratedAft_New","; p_{T} [GeV/c]; Count",32,ptbinning);
+    fMCMBPtElePi0GeneratedAft_New->Sumw2();
     fOutputList->Add(fMCMBPtElePi0GeneratedAft_New);
     
     fMCEnhPtElePi0GeneratedAft_New = new TH1F("fMCEnhPtElePi0GeneratedAft_New","; p_{T} [GeV/c]; Count",32,ptbinning);
+    fMCEnhPtElePi0GeneratedAft_New->Sumw2();
     fOutputList->Add(fMCEnhPtElePi0GeneratedAft_New);
     
     fPtEleEtaGeneratedAft_NewNoWeight = new TH1F("fPtEleEtaGeneratedAft_NewNoWeight","; p_{T} [GeV/c]; Count",32,ptbinning);
     fOutputList->Add(fPtEleEtaGeneratedAft_NewNoWeight);
     
     fMCMBPtEleEtaGeneratedAft_New = new TH1F("fMCMBPtEleEtaGeneratedAft_New","; p_{T} [GeV/c]; Count",32,ptbinning);
+    fMCMBPtEleEtaGeneratedAft_New->Sumw2();
     fOutputList->Add(fMCMBPtEleEtaGeneratedAft_New);
     
     fMCEnhPtEleEtaGeneratedAft_New = new TH1F("fMCEnhPtEleEtaGeneratedAft_New","; p_{T} [GeV/c]; Count",32,ptbinning);
+    fMCEnhPtEleEtaGeneratedAft_New->Sumw2();
     fOutputList->Add(fMCEnhPtEleEtaGeneratedAft_New);
     
     fPtElePi0FoundAft_NewNoWeight = new TH1F("fPtElePi0FoundAft_NewNoWeight","; p_{T} [GeV/c]; Count",32,ptbinning);
@@ -1273,24 +1336,30 @@ void AliAnalysisHFEppTPCTOFBeauty5TeVNew::UserCreateOutputObjects()
     fOutputList->Add(fPtElePi0EtaFoundAft_NewNoWeight);
     
     fMCMBPtElePi0EtaFoundAft_New = new TH1F("fMCMBPtElePi0EtaFoundAft_New","; p_{T} [GeV/c]; Count",32,ptbinning);
+    fMCMBPtElePi0EtaFoundAft_New->Sumw2();
     fOutputList->Add(fMCMBPtElePi0EtaFoundAft_New);
     
     fMCEnhPtElePi0EtaFoundAft_New = new TH1F("fMCEnhPtElePi0EtaFoundAft_New","; p_{T} [GeV/c]; Count",32,ptbinning);
+    fMCEnhPtElePi0EtaFoundAft_New->Sumw2();
     fOutputList->Add(fMCEnhPtElePi0EtaFoundAft_New);
     
     fMCMBPtElePi0FoundAft_New = new TH1F("fMCMBPtElePi0FoundAft_New","; p_{T} [GeV/c]; Count",32,ptbinning);
+    fMCMBPtElePi0FoundAft_New->Sumw2();
     fOutputList->Add(fMCMBPtElePi0FoundAft_New);
     
     fMCEnhPtElePi0FoundAft_New = new TH1F("fMCEnhPtElePi0FoundAft_New","; p_{T} [GeV/c]; Count",32,ptbinning);
+    fMCEnhPtElePi0FoundAft_New->Sumw2();
     fOutputList->Add(fMCEnhPtElePi0FoundAft_New);
     
     fPtEleEtaFoundAft_NewNoWeight = new TH1F("fPtEleEtaFoundAft_NewNoWeight","; p_{T} [GeV/c]; Count",32,ptbinning);
     fOutputList->Add(fPtEleEtaFoundAft_NewNoWeight);
     
     fMCMBPtEleEtaFoundAft_New = new TH1F("fMCMBPtEleEtaFoundAft_New","; p_{T} [GeV/c]; Count",32,ptbinning);
+    fMCMBPtEleEtaFoundAft_New->Sumw2();
     fOutputList->Add(fMCMBPtEleEtaFoundAft_New);
     
     fMCEnhPtEleEtaFoundAft_New = new TH1F("fMCEnhPtEleEtaFoundAft_New","; p_{T} [GeV/c]; Count",32,ptbinning);
+    fMCEnhPtEleEtaFoundAft_New->Sumw2();
     fOutputList->Add(fMCEnhPtEleEtaFoundAft_New);
     
     
@@ -2461,7 +2530,7 @@ void AliAnalysisHFEppTPCTOFBeauty5TeVNew::UserExec(Option_t *)
 
             ///Correcting the pT spectrum
             
-            if(fIsFromMesonB && (fMCparticleMother->Pt() < 50)){
+            if(fIsFromMesonB && (fMCparticleMother->Pt() < 45)){
               fBWeight = fBcorr->Eval(fMCparticleMother->Pt());///always evaluating the function in the pT of the B meson
               //cout<<"pdg_mother = "<<pdg_mother<<endl;
               hBeautyMotherPt->Fill(fMCparticleMother->Pt(),fPt);
@@ -2476,7 +2545,7 @@ void AliAnalysisHFEppTPCTOFBeauty5TeVNew::UserExec(Option_t *)
                 fMCparticleGMother = (AliAODMCParticle*) fMCarray->At(fMCparticleMother->GetMother());
                 float pdg_gmother = fMCparticleGMother->GetPdgCode();
 
-                if(TMath::Abs(pdg_gmother)>500 && TMath::Abs(pdg_gmother)<600 && (fMCparticleGMother->Pt()<50)){
+                if(TMath::Abs(pdg_gmother)>500 && TMath::Abs(pdg_gmother)<600 && (fMCparticleGMother->Pt()<45)){
                   fBWeight = fBcorr->Eval(fMCparticleGMother->Pt());
                   hBeautyMotherPt->Fill(fMCparticleGMother->Pt(),fPt);
                   hBeautyMotherPtbef->Fill(fMCparticleGMother->Pt());
@@ -2489,7 +2558,7 @@ void AliAnalysisHFEppTPCTOFBeauty5TeVNew::UserExec(Option_t *)
                 else if(fMCparticleGMother->GetMother() > 0){
                   fMCparticleGGMother = (AliAODMCParticle*) fMCarray->At(fMCparticleGMother->GetMother());
                   float pdg_ggmother = fMCparticleGGMother->GetPdgCode();
-                  if(TMath::Abs(pdg_ggmother)>500 && TMath::Abs(pdg_ggmother)<600 && (fMCparticleGGMother->Pt()<50)){ 
+                  if(TMath::Abs(pdg_ggmother)>500 && TMath::Abs(pdg_ggmother)<600 && (fMCparticleGGMother->Pt()<45)){ 
                   fBWeight = fBcorr->Eval(fMCparticleGGMother->Pt());
                   hBeautyMotherPt->Fill(fMCparticleGGMother->Pt(),fPt);
                   hBeautyMotherPtbef->Fill(fMCparticleGGMother->Pt());
@@ -2500,7 +2569,7 @@ void AliAnalysisHFEppTPCTOFBeauty5TeVNew::UserExec(Option_t *)
                   }else if(fMCparticleGGMother->GetMother() > 0){
                     fMCparticleGGGMother = (AliAODMCParticle*) fMCarray->At(fMCparticleGGMother->GetMother());
                     float pdg_gggmother = fMCparticleGGGMother->GetPdgCode();
-                    if (TMath::Abs(pdg_gggmother)>500 && TMath::Abs(pdg_gggmother)<600 && (fMCparticleGGGMother->Pt()<50)){             
+                    if (TMath::Abs(pdg_gggmother)>500 && TMath::Abs(pdg_gggmother)<600 && (fMCparticleGGGMother->Pt()<45)){             
                     fBWeight = fBcorr->Eval(fMCparticleGGGMother->Pt());
                     hBeautyMotherPt->Fill(fMCparticleGGGMother->Pt(),fPt);
             	    hBeautyMotherPtbef->Fill(fMCparticleGGGMother->Pt());
