@@ -2739,7 +2739,7 @@ inline void AliDielectronVarManager::FillVarVEvent(const AliVEvent *event, Doubl
       }
     }
   }// end if QnCorrections framework
-  else{
+  else if (dynamic_cast<AliAnalysisTaskZDCEP*>(AliAnalysisManager::GetAnalysisManager()->GetTask("AnalysisTaskZDCEP"))){
     // else fill ZDC event plane from charged particle and D meson v1 analysis)
     FillZDCEventPlane(values);
   }
